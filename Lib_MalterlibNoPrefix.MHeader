@@ -1,0 +1,423 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Compile
+{
+	!!CompileDialect "C"
+	SearchPath "@(Builtin.BasePath)/SDK/libelf;@(Builtin.BasePath)/SDK/libelf/common;@(Compile.SearchPath)"
+	{
+		!!PlatformFamily "Linux"
+	}
+	SearchPath "@(Builtin.BasePath)/SDK/libdwarf;@(Compile.SearchPath)"
+	{
+		!!PlatformFamily "Linux"
+	}
+	SearchPath "@(MalterlibSysRoot)/usr/include/glib-2.0;@(Compile.SearchPath)"
+	{
+		!!PlatformFamily "Linux"
+	}
+	
+	PreprocessorDefines "DMibDynamicLibrary;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibDynamicLibrary true
+	}
+	PreprocessorDefines "DMibNoInlineNew;@(Compile.PreprocessorDefines)"
+	
+	PreprocessorDefines "DMibConfig_OverrideSystemMalloc;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_EnableOverrideSystemMalloc true
+	}
+	
+	// We don't destroy the heap unless we are in debug mode, this speeds up system exit	
+	PreprocessorDefines "DMibConfig_HeapNeverDestroyed;@(Compile.PreprocessorDefines)"
+	{
+		|
+		{
+			MalterlibMemoryManager_Debug false	// Specifically disabled
+			!DebugCode "true"				// Implicitly disabled
+		}
+	}
+
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_AlwaysRelease=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_AlwaysRelease true
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_AlwaysRelease=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemoryManager_AlwaysRelease true
+	}
+	
+	// Debug options
+	
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_Features=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug_Features true
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_Features=0;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug_Features false
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_Features=2;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			!MalterlibMemoryManager_Debug_Features true
+			!MalterlibMemoryManager_Debug_Features false
+		}
+	}
+	
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableStackTrace=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug_EnableStackTrace true
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableStackTrace=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemoryManager_Debug_EnableStackTrace true
+	}
+	
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreeValidation=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug_EnableFreeValidation true
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreeValidation=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemoryManager_Debug_EnableFreeValidation true
+	}	
+
+		
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableMemoryLeaks=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug_EnableMemoryLeaks true
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableMemoryLeaks=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemoryManager_Debug_EnableMemoryLeaks true
+	}	
+
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreedGuards=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug_EnableFreedGuards true
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreedGuards=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemoryManager_Debug_EnableFreedGuards true
+	}
+	
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableAllocatedFill=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug_EnableAllocatedFill true
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableAllocatedFill=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemoryManager_Debug_EnableAllocatedFill true
+	}
+	
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableEdgeGuards=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug_EnableEdgeGuards true
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableEdgeGuards=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemoryManager_Debug_EnableEdgeGuards true
+	}
+	PreprocessorDefines "DMibConfig_MemoryManager_Stats_Enable=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemoryManager_Stats_Enable true
+			MalterlibMemory_Shims_Enable true
+		}
+	}
+	PreprocessorDefines "DMibConfig_MemoryManager_Stats_Enable=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			!MalterlibMemoryManager_Stats_Enable true
+			MalterlibMemory_Shims_Enable true
+		}
+	}
+	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCallstack=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemoryManager_Stats_EnableCallstack true
+			MalterlibMemory_Shims_Enable true
+		}
+	}
+	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCallstack=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			!MalterlibMemoryManager_Stats_EnableCallstack true
+			MalterlibMemory_Shims_Enable true
+		}
+	}
+	PreprocessorDefines "DMibConfig_MemoryManager_CrossModule_Enable=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemoryManager_CrossModule_Enable true
+		}
+	}
+	PreprocessorDefines "DMibConfig_MemoryManager_CrossModule_Enable=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			!MalterlibMemoryManager_CrossModule_Enable true
+		}
+	}
+	PreprocessorDefines "DMibConfig_Memory_Shims_EnableLocal=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemory_Shims_Enable true
+			MalterlibMemory_Shims_EnableLocal true
+		}
+	}
+	PreprocessorDefines "DMibConfig_Memory_Shims_EnableLocal=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemory_Shims_Enable true
+			!MalterlibMemory_Shims_EnableLocal true
+		}
+	}
+
+	PreprocessorDefines "DMibConfig_Memory_Shims_EnableGlobal=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemory_Shims_Enable true
+			MalterlibMemory_Shims_EnableGlobal true
+		}
+	}
+	PreprocessorDefines "DMibConfig_Memory_Shims_EnableLocal=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemory_Shims_Enable true
+			!MalterlibMemory_Shims_EnableGlobal true
+		}
+	}
+}	
+%Group "Source"
+{
+	%File Source/Platform/Malterlib_Core_PlatformImp_DisableDebuOperatorNew.cpp
+	%File Source/Platform/Malterlib_Core_PlatformImp_DisableStackTraceUnit.cpp
+	%Group Memory
+	{
+		%Group "Memory"
+		{
+			Property.RealConfiguration Release
+			{
+				!!MalterlibMemoryManager_AlwaysRelease true
+			}
+			Property.RealConfiguration "@(MalterlibMemoryManager_AlwaysRelease)"
+			{
+				&
+				{
+					!MalterlibMemoryManager_AlwaysRelease ""
+					!MalterlibMemoryManager_AlwaysRelease "false"
+					!MalterlibMemoryManager_AlwaysRelease "true"
+				}
+			}
+			Compile.FullEval true
+			{
+				!RealConfiguration "@(Configuration)"
+			}
+			
+			// Which heap to use
+			Compile
+			{
+				!!CompileDialect "C"
+				PreprocessorDefines "DMibConfig_MemoryManager_Use@(MalterlibMemoryManager);@(Compile.PreprocessorDefines)"
+			}
+			
+			%File "../Memory/Source/Malterlib_Memory_SystemManager*"
+			%Group "No stack guard"
+			{
+				Compile.StackGuard false
+				{
+					!!PlatformFamily OSX
+				}
+				%File ../Memory/Source/Malterlib_Memory_SystemOverride*
+				%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSXLibSystem.cpp
+				{
+					Compile.Disabled true
+				}
+				%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSXDyldDummy.cpp
+				{
+					Compile.Disabled true
+				}
+			}
+			
+			%Group "OSX Malloc override"
+			{
+				&
+				{
+					MalterlibMemoryManager_EnableOverrideSystemMalloc true
+					PlatformFamily OSX
+					!DocumentationEnabled true
+				}
+				%Group MHook
+				{
+					Compile.Disabled true
+					{
+						!PlatformFamily OSX
+					}
+					
+					%File "../Instrumentation/Source/Malterlib_Instrumentation_FunctionHook*"
+					%Group SDK
+					{
+						Compile
+						{
+							PreprocessorDefines "malloc=nontracked_malloc;@(Compile.PreprocessorDefines)"
+							PreprocessorDefines "free=nontracked_free;@(Compile.PreprocessorDefines)"
+							PreprocessorDefines "calloc=nontracked_calloc;@(Compile.PreprocessorDefines)"
+							PreprocessorDefines "realloc=nontracked_realloc;@(Compile.PreprocessorDefines)"
+							PreprocessorDefines "cfree=nontracked_cfree;@(Compile.PreprocessorDefines)"
+							PreprocessorDefines "memalign=nontracked_memalign;@(Compile.PreprocessorDefines)"
+							PreprocessorDefines "valloc=nontracked_valloc;@(Compile.PreprocessorDefines)"
+							PreprocessorDefines "pvalloc=nontracked_pvalloc;@(Compile.PreprocessorDefines)"
+							PreprocessorDefines "malloc_usable_size=nontracked_malloc_usable_size;@(Compile.PreprocessorDefines)"
+						}
+						%Group disasm
+						{
+							%File "../../SDK/mhook/disasm-lib/*"
+						}
+					}
+				}
+			}
+			%File ../Memory/Source/Malterlib_Memory.cpp
+			%Group LLAlloc
+			{
+				!!MalterlibMemoryManager LLAlloc
+				%File ../../SDK/LLAlloc/ll_alloc.c
+				%File ../../SDK/LLAlloc/win_stub.cc
+				{
+					!!PlatformFamily Windows
+				}
+				%File "../../SDK/LLAlloc/*.h"
+			}
+		}
+		%File ../Memory/Source/Malterlib_Memory_Allocator_Heap.cpp
+	}
+	%Group Runtime
+	{
+		%Group Runtimes
+		{
+			%Group MSVC
+			{
+				%Group "Included"
+				{
+					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_LaunchProcess.cpp
+					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_StdInReader.cpp
+					%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_CPUUsageMonitor.*"
+					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_LocalSys.cpp
+					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_NTSpecific.cpp
+					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_StackTrace.cpp
+					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Net.cpp
+					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Net.h
+					Compile.Disabled true
+				}
+				
+				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC.cpp // Uses Malterlib heap enablement
+				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Windows2000.cpp
+				{
+					Compile.RuntimeChecks "Off"
+				}
+				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_StructuredException.cpp
+				{
+					Compile
+					{
+						Exceptions "Full"
+					}
+				}
+				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Registry.cpp
+				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Registry.h
+				%File Source/Platform/Malterlib_Core_PlatformImp_Windows_Inline.h
+				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_WindowsDefines.h
+				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_WindowsDefinesUndocumented.h
+				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_x86_64.asm
+				{
+					Compile.Disabled true
+					{
+						!Architecture "x64"
+					}
+				}
+				Compile.Disabled true
+				{
+					!PlatformType "Windows"
+				}
+			}
+			%Group MacOSX
+			{
+				%File Source/Platform/Malterlib_Core_PlatformImp_MacOSX*
+				{
+					Compile.Disabled true
+				}
+				%File Source/Platform/Malterlib_Core_PlatformImp_MacOSX.cpp
+				{
+					Compile.Disabled true
+					{
+						!PlatformFamily "OSX"
+					}
+				}
+				%File Source/Platform/Malterlib_Core_PlatformImp_MacOSX_ObjCPP.mm
+				{
+					Compile.Disabled true
+					{
+						!PlatformFamily "OSX"
+					}
+				}
+			}
+			%Group POSIX
+			{
+				Compile.Disabled true
+				%File Source/Platform/Malterlib_Core_PlatformImp_POSIX*
+			}
+			%Group Emscripten
+			{
+				Compile.Disabled true
+				{
+					!PlatformFamily Emscripten
+				}
+				%File Source/Platform/Malterlib_Core_PlatformImp_Emscripten*
+			}
+			%Group Linux
+			{
+				%File Source/Platform/Malterlib_Core_PlatformImp_Linux*
+				{
+					Compile.Disabled true
+				}
+				%File Source/Platform/Malterlib_Core_PlatformImp_Linux*.cpp
+				{
+					Compile.Disabled true
+					{
+						!PlatformFamily "Linux"
+					}
+				}
+				%File Source/Platform/Malterlib_Core_PlatformImp_Linux_SecurePassword_GNOME.cpp
+				{
+					Compile.Disabled true
+					{
+						!PlatformFamily "Linux"
+					}
+				}
+				%File Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp
+				{
+					Compile.Disabled true
+				}
+			}
+		}
+		%File Source/Malterlib_Core_PlatformInterfaceTemp.h
+		%File Source/Malterlib_Core_PlatformInterface.h
+		%Group Private
+		{
+			Compile.Disabled true
+			%File Source/Platform/Malterlib_Core_PlatformImp.imp.h
+			%File Source/Platform/Malterlib_Core_PlatformImp.h
+			%File Source/Platform/Malterlib_Core_PlatformImp_Integration.h
+		}
+	}		
+}

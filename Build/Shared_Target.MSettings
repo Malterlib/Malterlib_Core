@@ -1,0 +1,3711 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Dependency
+{
+	Link "true"
+	{
+		!!Dependency.Link ""
+	}
+}
+Dependency
+{
+	!!LanguageFamily "Native"
+
+	LinkWithObjectFiles "true"
+	{
+		&
+		{
+			Dependency.LinkWithObjectFiles ""
+			|
+			{
+				Configuration "Debug"
+				Configuration "Debug Inlined"
+				Configuration "Fast Compile"
+			}
+		}
+	}
+	LinkWithObjectFiles "false"
+	{
+		!!Dependency.LinkWithObjectFiles ""
+	}
+}
+
+// Target type
+Target
+{
+	Type "ConsoleExecutable"
+	{
+		!!Target.Type ""
+	}
+}
+
+// Properties derived from target type
+Property
+{
+	TargetIsExecutable "true"
+	{
+		&
+		{
+			Property.true "@(Builtin.Function->HasParentEntity('Target'))"
+			|
+			{
+				Target:Target.Type "ConsoleExecutable"
+				Target:Target.Type "UIExecutable"
+				Target:Target.Type "Executable"
+				Target:Target.Type "DynamicLibrary"
+				Target:Target.Type "SharedDynamicLibrary"
+				Target:Target.Type "Driver"
+			}
+		}
+	}
+}
+
+// Name / Filename
+Target
+{
+	BaseName "@(this.Identity)"
+
+	Name "Com_@(Target.BaseName)"
+	{
+		!!Target:Target.Type "ConsoleExecutable"
+	}
+	Name "Exe_@(Target.BaseName)"
+	{
+		!!Target:Target.Type "Executable"
+		!!Target:Target.Type "UIExecutable"
+	}
+		
+	Name "Drv_@(Target.BaseName)"
+	{
+		!!Target:Target.Type "Driver"
+	}
+	Name "Dll_@(Target.BaseName)"
+	{
+		!!Target:Target.Type "DynamicLibrary"
+		!!Target:Target.Type "SharedDynamicLibrary"
+	}
+	Name "Lib_@(Target.BaseName)"
+	{
+		!!Target:Target.Type "StaticLibrary"
+	}
+	Name "Tool_@(Target.BaseName)"
+	{
+		!!Target:Target.Type "Tool"
+	}
+
+	BaseFileName "@(Target.BaseName)"
+
+	// Filename
+	FileName "@(Target.BaseFileName)@(MalterlibConfigSuffix)_@(MalterlibArchitectureSuffix)@(MalterlibTargetExtraSuffix)"
+	{
+		&
+		{
+			Target.FileName ""
+			Property.MalterlibTargetNameType "Suffixed"
+		}
+	}
+	FileName "@(Target.BaseFileName)@(MalterlibTargetExtraSuffix)"
+	{
+		&
+		{
+			Target.FileName ""
+			Property.MalterlibTargetNameType "Normal"
+		}
+	}
+	FileName "@(Target.BaseFileName)"
+	{
+		&
+		{
+			Target.FileName ""
+			Property.MalterlibTargetNameType "BaseName"
+		}
+	}
+
+	FileName "@(Target.BaseFileName)@(MalterlibConfigSuffix)@(MalterlibTargetExtraSuffix)"
+	{
+		&
+		{
+			Target.FileName ""
+			Property.MalterlibTargetNameType "Launcher"
+		}
+	}
+
+	FileName "@(Target.BaseFileName)@(MalterlibConfigSuffix)@(MalterlibTargetExtraSuffix)"
+	{
+		&
+		{
+			Target.FileName ""
+			Property.MalterlibTargetNameType "Config"
+		}
+	}
+
+	FileName "@(Target.BaseFileName)_@(Architecture)@(MalterlibTargetExtraSuffix)"
+	{
+		&
+		{
+			Target.FileName ""
+			Property.MalterlibTargetNameType "Architectured"
+		}
+	}
+}
+
+Target
+{
+	!!GeneratorFamily Xcode
+	
+	EnableModuleDebugging "false"
+	
+	GenerateScheme true
+	{
+		&
+		{
+			Target.GenerateScheme ""
+			|
+			{
+				MalterlibAllSchemes true
+				|
+				{
+					!Target.LocalDebuggerCommand ""
+					!Target.RemoteDebuggerCommand ""
+				}
+			}
+		}
+	}
+	
+	GenerateScheme false
+	{
+		!!Target.GenerateScheme ""
+	}
+}
+
+Target
+{
+	!!LanguageFamily ".NET"
+
+	DefaultNamespace "@(Target:Target.BaseFileName)"
+	{
+		!!Target.DefaultNamespace ""
+	}
+
+	PlatformTarget "@(Architecture)"
+	ErrorReport "prompt"
+	CodeAnalysisRuleSet "AllRules.ruleset"
+}
+
+// File extensions windows
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformType "Windows"
+	}
+	FileExtension ".exe"
+	FileExtension ".sys"
+	{
+		!!Target.Type "Driver"
+	}
+	FileExtension ".dll"
+	{
+		!!Target.Type "DynamicLibrary"
+		!!Target.Type "SharedDynamicLibrary"
+	}
+	FileExtension ".lib"
+	{
+		!!Target.Type "StaticLibrary"
+	}
+}
+
+// File extensions .NET
+Target
+{
+	&
+	{
+		LanguageFamily ".NET"
+	}
+	FileExtension ".exe"
+	FileExtension ".dll"
+	{
+		!!Target.Type "DynamicLibrary"
+		!!Target.Type "SharedDynamicLibrary"
+	}
+}
+
+// File extensions unix
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformType "Unix"
+	}
+	FileExtension ".a"
+	{
+		!!Target.Type "StaticLibrary"
+	}
+	FileExtension ".so"
+	{
+		!!Target.Type "DynamicLibrary"
+		!!Target.Type "SharedDynamicLibrary"
+	}
+}
+
+// File extensions OSX
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformIsDarwin true
+	}
+	FileExtension ".app"
+	{
+		!!Target.Type "UIExecutable"
+	}
+	FileExtension ".kext"
+	{
+		!!Target.Type "Driver"
+	}
+	FileExtension ".a"
+	{
+		!!Target.Type "StaticLibrary"
+	}
+	FileExtension ".dylib"
+	{
+		!!Target.Type "DynamicLibrary"
+		!!Target.Type "SharedDynamicLibrary"
+	}
+}
+
+// File extensions Emscripten
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformFamily "Emscripten"
+	}
+	FileExtension ".a"
+	{
+		!!Target.Type "StaticLibrary"
+	}
+	FileExtension ".js"
+	{
+		!!Target.Type "DynamicLibrary"
+		!!Target.Type "SharedDynamicLibrary"
+	}
+	FileExtension ".html"
+	{
+		!!Target.Type "UIExecutable"
+		!!Target.Type "Executable"
+		!!Target.Type "ConsoleExecutable"
+	}
+}
+
+
+Property
+{
+	MalterlibUseClangForWindows false // User: Enable clang compilation for Windows platform
+	{
+		!!MalterlibUseClangForWindows ""
+	}
+}
+
+Target
+{
+	&
+	{
+		GeneratorFamily VisualStudio
+	}
+
+	VisualStudioPlatform "Clang"
+	{
+		&
+		{
+			Target.VisualStudioPlatform ""
+			LanguageFamily "Native"
+			MalterlibUseClangForWindows true
+		}
+	}
+
+	VisualStudioPlatform "x64"
+	{
+		&
+		{
+			Target.VisualStudioPlatform ""
+			Platform "Windows"
+			Architecture "x64"
+		}
+	}
+
+	VisualStudioPlatform "Win32"
+	{
+		&
+		{
+			Target.VisualStudioPlatform ""
+			LanguageFamily "Native"
+			Platform "Windows"
+			Architecture "x86"
+		}
+	}
+
+	VisualStudioPlatform "x86"
+	{
+		&
+		{
+			Target.VisualStudioPlatform ""
+			Platform "Windows"
+			Architecture "x86"
+		}
+	}
+	VisualStudioPlatform "Clang"
+	{
+		&
+		{
+			Target.VisualStudioPlatform ""
+			LanguageFamily "Native"
+		}
+	}
+	ClCompileSuffix "_Clang"
+	{
+		!!Target.VisualStudioPlatform "Clang"
+	}
+}
+
+Property
+{
+	MalterlibVisualStudioToolset "" // User: Manually set another visual studio toolset
+	{
+		!!MalterlibVisualStudioToolset ""
+	}
+}
+
+// Windows
+Target
+{
+	&
+	{
+		PlatformType "Windows"
+		LanguageFamily "Native"
+	}
+
+
+	// Toolset
+
+	PlatformToolset "clang"
+	{
+		&
+		{
+			Target.PlatformToolset ""
+			Target.VisualStudioPlatform "Clang"
+		}
+	}
+
+	PlatformToolset "v90"
+	{
+		&
+		{
+			Target.PlatformToolset ""
+			|
+			{
+				Target:Target.TargetFrameworkVersion "v2.0"
+				Target:Target.TargetFrameworkVersion "v3.0"
+				Target:Target.TargetFrameworkVersion "v3.5"
+			}
+		}
+	}
+
+	PlatformToolset "@(MalterlibVisualStudioToolset)"
+	{
+		&
+		{
+			!MalterlibVisualStudioToolset ""
+			Target.PlatformToolset ""
+		}
+	}
+	
+
+	PlatformToolset "v140"
+	{
+		&
+		{
+			Target.PlatformToolset ""
+			|
+			{
+				Generator "VisualStudio2013"
+				Generator "VisualStudio2015"
+			}
+		}
+	}
+
+	PlatformToolset "v110"
+	{
+		!!Target.PlatformToolset ""
+	}
+
+	PlatformToolsetCompiler "x:/Development/Malterlib/llvm/unstable/build/VisualStudio2012/bin/RelWithDebInfo/clang.exe" // User: Change the clang compiler location
+	{
+		!!Target.PlatformToolset "clang"
+	}
+
+	//PlatformToolset "v120_CTP_Nov2012"
+
+	IgnoreWarnCompileDuplicatedFilename true
+	{
+		!!Generator "VisualStudio2013"
+	}
+
+	CharacterSet "Unicode"
+	{
+		!!Target.CharacterSet ""
+	}
+
+	UseOfMfc "false"
+	UseOfAtl "false"
+	TargetMachine "MachineX86"
+	{
+		&
+		{
+			Architecture "x86"
+			!Target.Type "Tool"
+		}
+	}
+	TargetMachine "MachineX64"
+	{
+		&
+		{
+			Architecture "x64"
+			!Target.Type "Tool"
+		}
+	}
+
+	DefaultToolArchitecture "Native64Bit"
+	{
+		!!WindowsNativeToolChain "true"
+	}
+}
+
+Property
+{
+	MalterlibSysRoot "/Development/Malterlib/Tools/SDKs/@(Platform).sdk"
+	{
+		!!PlatformFamily Linux
+	}
+	
+	MalterlibToolsPrefix ""
+	MalterlibToolsPrefix "/opt/local/@(MalterlibNativeClangArchitecture)-elf/bin/"
+	{
+		!!PlatformFamily Linux
+	}
+	MalterlibToolsPrefix "/Development/Malterlib/llvm/unstable-emscripten/emscripten/"
+	{
+		!!PlatformFamily Emscripten
+	}
+}
+
+Property
+{
+	MalterlibLinkerDemangle true // User: Set to false to display mangled names in linker messages
+	{
+		!!MalterlibLinkerDemangle ""
+	}
+}
+
+// Emscripten
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		GeneratorFamily "Xcode"
+		PlatformFamily Emscripten
+	}
+
+	EmscriptenFastCompiler true
+	EmscriptenEmscriptenRoot "/Development/Malterlib/llvm/unstable-emscripten/emscripten"
+	EmscriptenLLVMRoot "/Development/Malterlib/llvm/unstable-emscripten/build/make/bin"
+	EmscriptenPython "/usr/bin/python"
+	EmscriptenNode "/opt/local/bin/node"
+}
+
+Target
+{
+	!!GeneratorFamily "Xcode"
+	
+	MToolPath "@(MToolPath)"
+}
+
+// Xcode
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		GeneratorFamily "Xcode"
+	}
+	
+	EnableLinkerGroups true
+	{
+		&
+		{
+			Target.EnableLinkerGroups ""
+			PlatformFamily Linux
+		}
+	}
+	EnableLinkerGroups false
+	{
+		!!Target.EnableLinkerGroups ""
+	}
+	LDFlags "-env_EMCC_FAST_COMPILER 1 @(Target.LDFlags)"
+	{
+		!!Target.EmscriptenFastCompiler true
+	}
+	LDFlags "-env_EMSCRIPTEN \"@(Target.EmscriptenEmscriptenRoot)\" @(Target.LDFlags)"
+	{
+		!Target.EmscriptenEmscriptenRoot ""
+	}
+	LDFlags "-env_LLVM \"@(Target.EmscriptenLLVMRoot)\" @(Target.LDFlags)"
+	{
+		!Target.EmscriptenLLVMRoot ""
+	}
+	LDFlags "-env_PYTHON \"@(Target.EmscriptenPython)\" @(Target.LDFlags)"
+	{
+		!Target.EmscriptenPython ""
+	}
+	LDFlags "-env_NODE \"@(Target.EmscriptenNode)\" @(Target.LDFlags)"
+	{
+		!Target.EmscriptenNode ""
+	}
+	LDFlags "-s DISABLE_SYSLIB_libcxx=1 -s DISABLE_SYSLIB_libcxxabi=1 @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Emscripten
+			!MalterlibDisableMalterlib true
+		}
+	}
+
+	LDFlags "-O2 -s DISABLE_EXCEPTION_CATCHING=0 @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Emscripten
+			!Compile.Optimize Off
+		}
+	}
+	
+	LDFlags "--closure 1 @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Emscripten
+			Configuration Release
+		}
+	}
+	LDFlags "--closure 0 @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Emscripten
+			!Configuration Release
+		}
+	}
+	
+	PlatformToolset "com.apple.compilers.llvm.clang.1_0"
+	{
+		&
+		{
+			Target.PlatformToolset ""
+			MalterlibDefaultToolset true
+		}
+	}
+	
+	PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
+	{
+		!!Target.PlatformToolset ""
+	}
+/*	PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/stable/build/make/bin/clang"
+	{
+		&
+		{
+			Target.PlatformToolsetCompiler ""
+			Generator "Xcode5"
+		}
+	}*/
+
+	
+	PlatformToolsetCompiler "@(MToolPath)" // User: Change the clang compiler location
+	{
+		&
+		{
+			Target.PlatformToolsetCompiler ""
+			Documentation Doxygen
+		}
+	}
+	
+	PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc" // User: Change the clang compiler location
+	{
+		&
+		{
+			Target.PlatformToolsetCompiler ""
+			PlatformFamily "Emscripten"
+		}
+	}
+	PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/stable/build/make/bin/clang" // User: Change the clang compiler location
+	{
+		&
+		{
+			Target.PlatformToolsetCompiler ""
+			!MalterlibDefaultToolset true
+		}
+	}
+	
+//	PlatformToolsetLibTool "/Deploy/LibTool/libtool"
+	PlatformToolsetLibTool "/Development/Malterlib/Tools/OSXPatches/libtool/libtool"
+	{
+		!!PlatformFamily Linux
+		!!PlatformFamily Emscripten
+	}
+
+	PlatformToolsetLibTool "@(MToolPath)"
+	{
+		!!Documentation Doxygen
+	}
+
+	LibToolFlags "--ToolClass DoxygenLibTool @(Target.LibToolFlags)"
+	{
+		&
+		{
+			Target:Target.Type StaticLibrary
+			Documentation Doxygen
+			GeneratorFamily Xcode
+		}
+	}
+
+	ExtraLibFlags "--ToolClass DoxygenLibTool @(Target.LibToolFlags)"
+	{
+		&
+		{
+			Target:Target.Type StaticLibrary
+			Documentation Doxygen
+			GeneratorFamily VisualStudio
+		}
+	}
+	
+
+	LDFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/doxygen/stable/bin/doxygen @(Target.LDFlags)"
+	{
+		&
+		{
+			!Target:Target.Type StaticLibrary
+			Documentation Doxygen
+			GeneratorFamily Xcode
+		}
+	}
+	
+
+	ExtraLinkerFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/doxygen/stable/bin/doxygen @(Target.LDFlags)"
+	{
+		&
+		{
+			!Target:Target.Type StaticLibrary
+			Documentation Doxygen
+			GeneratorFamily VisualStudio
+		}
+	}
+	
+	
+	LDFlags "-Wno-warn-absolute-paths @(Target.LDFlags)"
+	{
+		!!PlatformFamily Emscripten
+	}
+	
+	LDFlags "-target @(MalterlibTargetTriple) @(Target.LDFlags)"
+	{
+		!MalterlibTargetTriple ""
+	}
+
+	LDFlags "--sysroot \"@(MalterlibSysRoot)\" @(Target.LDFlags)"
+	{
+		!MalterlibSysRoot ""
+	}
+
+	LDFlags "-Xlinker -demangle @(Target.LDFlags)"
+	{
+		!!MalterlibLinkerDemangle true
+	}
+
+	LDFlags "-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\" @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x86
+		}
+	}
+
+	LDFlags "-Xlinker --wrap=memcpy -Xlinker -Bsymbolic -Xlinker -Bsymbolic-functions @(Target.LDFlags)"
+	{
+		!!PlatformFamily Linux
+	}
+	
+	LDFlags "-claim_xcode @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			GeneratorFamily Xcode
+			!Target.PlatformToolsetCompiler "/Development/Malterlib/Tools/External/Build/llvm/bin/clang"
+		}
+	}
+
+	LDFlags "-v @(Target.LDFlags)"
+	{
+		!!Compile.Verbose true
+	}
+
+	LDFlags "-B@(MalterlibToolsPrefix) @(Target.LDFlags)"
+	{
+		!MalterlibToolsPrefix ""
+	}
+
+	LDFlags "-shared @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			|
+			{
+				Target.Type DynamicLibrary
+				Target.Type SharedDynamicLibrary
+			}
+		}
+	}
+
+/*
+	LDFlags "-shared @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			TargetIsExecutable true
+		}
+	}
+	*/
+	
+	LibToolFlags "-crosspath /opt/local/@(MalterlibNativeClangArchitecture)-elf/bin"
+	{
+		&
+		{
+			PlatformFamily Linux
+			|
+			{
+				Architecture x86
+				Architecture x64
+			}
+		}
+	}
+	LibToolFlags "-crosspath /Development/Malterlib/llvm/unstable-emscripten/emscripten"
+	{
+		!!PlatformFamily Emscripten
+	}
+	
+	LibToolFlags "-env_EMCC_FAST_COMPILER 1 @(Target.LibToolFlags)"
+	{
+		!!Target.EmscriptenFastCompiler true
+	}
+	LibToolFlags "-env_EMSCRIPTEN \"@(Target.EmscriptenEmscriptenRoot)\" @(Target.LibToolFlags)"
+	{
+		!Target.EmscriptenEmscriptenRoot ""
+	}
+	LibToolFlags "-env_LLVM \"@(Target.EmscriptenLLVMRoot)\" @(Target.LibToolFlags)"
+	{
+		!Target.EmscriptenLLVMRoot ""
+	}
+	LibToolFlags "-env_PYTHON \"@(Target.EmscriptenPython)\" @(Target.LibToolFlags)"
+	{
+		!Target.EmscriptenPython ""
+	}
+	LibToolFlags "-env_NODE \"@(Target.EmscriptenNode)\" @(Target.LibToolFlags)"
+	{
+		!Target.EmscriptenNode ""
+	}	
+
+	CxxLanguage "C++17"
+	{
+		"!!Target.CxxLanguage" ""
+	}
+	//CxxStandardLibrary "libc++"
+	CxxStandardLibrary "none"
+	{
+		!MalterlibDisableMalterlib true
+	}
+	CxxStandardLibrary "libc++"
+	{
+		!!MalterlibUseStaticLibCxx false
+		!!MalterlibDisableMalterlib true
+		!!Target.PlatformToolset "com.apple.compilers.llvm.clang.1_0"
+	}
+	
+	HeadermapIncludeTarget false
+	HeadermapIncludeFrameworks false
+	HeadermapIncludeProject false
+	HeadermapEnable false
+
+	AlwaysSearchUserPaths "false"
+	CombineHiDPIImages "true" // to prevent Xcode upgrading warning
+	
+	StripDebugSymbolsDuringCopy "false"
+
+/*	StripLinkedProduct "true"
+	{
+		!!MalterlibDeploySymbols true
+	}
+	StripStyle "All"
+	UseSeperateStrip "true"
+	{
+		!!MalterlibDeploySymbols true
+	}*/
+
+	FilePrefix ""
+	
+	CodeSigningReqired false
+	{
+		!!PlatformFamily iOS
+	}
+
+	SDKRoot "OSX@(MalterlibMaxSupportedOSXVersion)"
+	{
+		!!PlatformFamily OSX
+	}
+
+	SDKRoot "iOS@(MalterlibMaxSupportediOSVersion)"
+	{
+		!!PlatformFamily iOS
+	}
+
+	SDKRoot "@(Platform)"
+	{
+		!!PlatformFamily Emscripten
+	}
+
+	SDKRoot "@(Platform)"
+	{
+		!!Target.SDKRoot ""
+	}
+
+	
+	DeploymentTarget "@(Platform)"
+	{
+		&
+		{
+			Target.DeploymentTarget ""
+			!PlatformFamily iOS
+		}
+	}
+	
+	iOSDeploymentTarget "@(Platform)"
+	{
+		&
+		{
+			Target.iOSDeploymentTarget ""
+			PlatformFamily iOS
+		}
+	}
+
+	ProductType "com.apple.product-type.library.static"
+	{
+		!!Target.Type "StaticLibrary"
+	}
+	ProductType "com.apple.product-type.library.dynamic"
+	{
+		!!Target.Type "DynamicLibrary"
+		!!Target.Type "SharedDynamicLibrary"
+	}
+	ProductType "com.apple.product-type.tool"
+	{
+		!!Target.Type "ConsoleExecutable"
+		!!Target.Type "Executable"
+	}
+	ProductType "com.apple.product-type.application"
+	{
+		!!Target.Type "UIExecutable"
+	}
+	ProductType "com.apple.product-type.kernel-extension.iokit"
+	{
+		!!Target.Type "Driver"
+	}
+	ProductType ""
+	{
+		!!Target.Type "Tool"
+	}
+	
+	ExecutableFolder ""
+
+	ExecutableFolder "@(Target.FileName)@(Target.FileExtension)/Contents/MacOS"
+	{
+		&
+		{
+			PlatformFamily OSX
+			MalterlibIsOSXBundle true
+		}
+	}
+
+	ExecutableFolder "@(Target.FileName)@(Target.FileExtension)"
+	{
+		&
+		{
+			PlatformFamily iOS
+			MalterlibIsOSXBundle true
+		}
+	}
+
+	ProjectDerivedSourcesDir "@(Target:Target.IntermediateDirectory)DerivedSources"
+	ProjectSharedPrecompPrefixDir "@(Target:Target.IntermediateDirectory)PrefixHeaders"
+	
+	CompatibilityVersion ""
+	{
+		!!Target.Type "DynamicLibrary"
+	}
+	
+	CurrentVersion ""
+	{
+		!!Target.Type "DynamicLibrary"
+	}
+
+	CompatibilityVersion "1.0"
+	{
+		!!Target.Type "SharedDynamicLibrary"
+	}
+	
+	CurrentVersion "1.1"
+	{
+		!!Target.Type "SharedDynamicLibrary"
+	}
+}
+
+// OSX
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformFamily OSX
+		!Target.Type "Tool"
+	}
+	ObjcLinkRuntime "false"
+
+	DebugInformationFormat "dwarf"
+	DebugInformationFormat "dwarf-with-dsym"
+	{
+		|
+		{
+			MalterlibDeploySymbols true
+			Target.Type Driver
+			&
+			{
+				MalterlibBuildServerTest true
+				|
+				{
+					MalterlibMainTest true
+					MalterlibHelperTest true
+				}
+			}
+		}
+	}
+
+	ValidArchitectures "@(MalterlibNativeClangArchitecture)"
+	Architectures "@(MalterlibNativeClangArchitecture)"
+
+	SupportedPlatforms "macosx"
+	OnlyActiveArchitectures "true"
+	NativeArchitecture "@(MalterlibNativeClangArchitecture)"
+	NativeArchitectureActual "@(MalterlibNativeClangArchitecture)"
+	
+}
+
+// iOS
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformFamily iOS
+		!Target.Type "Tool"
+	}
+	ObjcLinkRuntime "false"
+
+	DebugInformationFormat "dwarf"
+	DebugInformationFormat "dwarf-with-dsym"
+	{
+		|
+		{
+			MalterlibDeploySymbols true
+			Target.Type Driver
+			&
+			{
+				MalterlibBuildServerTest true
+				|
+				{
+					MalterlibMainTest true
+					MalterlibHelperTest true
+				}
+			}
+		}
+	}
+
+	ValidArchitectures "@(MalterlibNativeClangArchitecture)"
+	Architectures "@(MalterlibNativeClangArchitecture)"
+
+	SupportedPlatforms "iphonesimulator iphoneos"
+	OnlyActiveArchitectures "true"
+	NativeArchitecture "@(MalterlibNativeClangArchitecture)"
+	NativeArchitectureActual "@(MalterlibNativeClangArchitecture)"
+}
+
+// Linux
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformFamily "Linux"
+		!Target.Type "Tool"
+	}
+	ObjcLinkRuntime "false"
+
+	DebugInformationFormat ""
+	
+	ValidArchitectures "@(MalterlibNativeClangArchitecture)"
+	Architectures "@(MalterlibNativeClangArchitecture)"
+
+	SupportedPlatforms "macosx"
+	OnlyActiveArchitectures "true"
+	NativeArchitecture "@(MalterlibNativeClangArchitecture)"
+	NativeArchitectureActual "@(MalterlibNativeClangArchitecture)"
+	
+	DependencyInfoFile "" // Empty as the linker does not support it
+//	ValidArchitectures "none"
+//	Architectures "none"
+
+}
+
+// Emscripten
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformFamily "Emscripten"
+		!Target.Type "Tool"
+	}
+	ObjcLinkRuntime "false"
+
+	DebugInformationFormat ""
+	
+	ValidArchitectures "@(MalterlibNativeClangArchitecture)"
+	Architectures "@(MalterlibNativeClangArchitecture)"
+
+	SupportedPlatforms "macosx"
+	OnlyActiveArchitectures "true"
+	NativeArchitecture "@(MalterlibNativeClangArchitecture)"
+	NativeArchitectureActual "@(MalterlibNativeClangArchitecture)"
+	
+	DependencyInfoFile "" // Empty as the linker does not support it
+//	ValidArchitectures "none"
+//	Architectures "none"
+
+}
+
+Property
+{
+	TargetIsCodeGen "true"
+	{
+		!Target.Type "Tool"
+	}
+}
+
+// Code generating targets
+Target
+{
+	&
+	{
+		TargetIsCodeGen "true"
+		LanguageFamily "Native"
+	}
+
+	LinkTimeCodeGeneration "false"
+	LinkTimeCodeGeneration "true"
+	{
+		!!Compile.Optimize "On"
+		!!Compile.Optimize "Full"
+	}
+}
+
+// Executable targets
+Target
+{
+	!!TargetIsExecutable "true"
+	Version "@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision)"
+
+	GenerateDebugInformation "true"
+	GenerateDebugInformation "false"
+	{
+		!!Configuration "Fast Compile"
+	}
+}
+
+Property
+{
+	MalterlibPosixInitFileName "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/Objects-normal/@(MalterlibNativeClangArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o"
+	{
+		&
+		{
+			!MalterlibDefaultToolset true
+			!MalterlibDisableMalterlib true
+			MalterlibNeedsInitProject true
+		}
+	}
+}
+
+Property
+{
+	MalterlibOverrideMallocLibrary "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMalloc/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMalloc.dylib"
+	
+	MalterlibNeedsMallocOverrideLibrary true
+	{
+		&
+		{
+			TargetIsExecutable true
+			!Target.Type DynamicLibrary
+			!Target.Type SharedDynamicLibrary
+			!Target.Type Driver
+			!DocumentationEnabled true
+			!MalterlibDisableMalterlib true
+			PlatformIsDarwin true
+			MalterlibMemoryManager_EnableOverrideSystemMalloc true
+		}
+	}	
+}
+
+// Executable native targets
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		TargetIsExecutable "true"
+	}
+
+	LinkWithLibraries "@(Builtin.Inherit)"
+	{
+		&
+		{
+			Target.LinkWithLibraries ""
+			!Target.Type Driver
+		}
+	}
+
+	LinkWithLibraries "@(MalterlibPosixInitFileName) @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			Target.PlatformToolsetCompiler "/Development/Malterlib/Tools/External/Build/llvm/bin/clang"
+			TargetIsExecutable "true"
+			!Target.Type "Driver"
+			!MalterlibDisableMalterlib true
+			!MalterlibPosixInitFileName ""
+		}
+	}
+
+	LinkWithLibraries "-first_object @(MalterlibPosixInitFileName) @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			TargetIsExecutable "true"
+			!Target.Type "Driver"
+			!MalterlibDisableMalterlib true
+			!MalterlibPosixInitFileName ""
+		}
+	}
+
+	LinkWithLibraries "-sectcreate __TEXT __info_plist \"@(Target:Target.MalterlibInfoPListFile)\" @(Target.LinkWithLibraries)"
+	{
+
+		&
+		{
+			"!Target:Target.MalterlibInfoPListFile" ""
+			!MalterlibIsOSXBundle true
+		}
+	}
+
+	LinkWithLibraries "-framework CoreFoundation @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			!Target.Type Driver
+		}
+	}
+	
+	LinkWithLibraries "-framework CoreServices @(Target.LinkWithLibraries)"
+	{
+		// Used for FSEvents API
+		&
+		{
+			PlatformFamily OSX
+			!Target.Type Driver
+		}
+	}
+	
+	LinkWithLibraries "-framework AppKit @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			PlatformFamily OSX
+			!Target.Type Driver
+		}
+	}
+	
+	LinkWithLibraries "-framework Security @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			!Target.Type Driver
+		}
+	}
+
+	LinkWithLibraries "-framework Cocoa -framework IOKit -framework OpenGL @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			PlatformFamily OSX
+			!Target.Type Driver
+		}
+	}
+
+	LinkWithLibraries "-framework UIKit @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			PlatformFamily iOS
+			!Target.Type Driver
+		}
+	}
+
+	LinkWithLibraries "-pthread -ldl -luuid -lrt @(Target.LinkWithLibraries)"
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	LinkWithLibraries "-lasound @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Target.Type "UIExecutable"
+		}
+	}
+
+	LinkWithLibraries "\"-F@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(PlatformFamily)\" @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			MalterlibEnableBreakpad true
+			Target.Type "UIExecutable"
+		}
+	}
+	LinkWithLibraries "-framework Breakpad @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			MalterlibEnableBreakpad true
+			Target.Type "UIExecutable"
+		}
+	}
+	
+	LinkWithLibraries "-lc++abi @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			!MalterlibUseStaticLibCxxABI true
+			!Target.Type Driver
+		}
+	}
+
+	RealLinkWithLibraries "@(Target.LinkWithLibraries)"
+	{
+		!!GeneratorFamily Xcode
+	}
+	
+	RealLinkWithLibraries "\"@(MalterlibOverrideMallocLibrary)\" @(Target.RealLinkWithLibraries)"
+	{
+		!!MalterlibNeedsMallocOverrideLibrary true
+	}
+
+	SearchPath "@(Builtin.Inherit)"
+	{
+		!!Target.SearchPath ""
+	}
+
+	SearchPath "@('../../../SDK'->MakeAbsolute())/WDK/lib/WXP/i386;@(Target.SearchPath)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			Architecture "x86"
+		}
+	}	
+	SearchPath "@('../../../SDK'->MakeAbsolute())/WDK/lib/WNET/amd64;@(Target.SearchPath)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			Architecture "x64"
+		}
+	}
+	
+	SearchPath "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName);@(Target.SearchPath)"
+	{
+		&
+		{
+			MalterlibLinkWithOpenSSL true
+			MalterlibUsesOpenSSL true
+			!AOCCDisableSSL true
+		}
+	}
+	
+	LinkWithLibraries "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/libssl.a "\
+					  "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/libcrypto.a "\
+					  "@(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			MalterlibLinkWithOpenSSL true
+			PlatformType "Unix"
+			!AOCCDisableSSL true
+		}
+	}
+	
+	LinkWithLibraries "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/ssleay32.lib;"\
+					  "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/libeay32.lib;"\
+					  "@(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			MalterlibLinkWithOpenSSL true
+			PlatformFamily Windows
+			!AOCCDisableSSL true
+		}
+	}
+
+	LinkWithLibraries "-framework Security @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			MalterlibLinkWithOpenSSL true
+			PlatformIsDarwin true
+			!AOCCDisableSSL true
+			!Target.Type Driver
+		}
+	}
+
+	SearchPath "@('../../../SDK'->MakeAbsolute())/Perforce/lib/@(Platform)/@(ToolsetDir)/@(Architecture);@(Target.SearchPath)"
+	{
+		&
+		{
+			MalterlibLinkWithPerforce true
+			!PlatformFamily "Windows"
+			!PlatformIsDarwin true
+		}
+	}
+	SearchPath "@('../../../SDK'->MakeAbsolute())/Perforce/lib/OSX10.5/@(ToolsetDir)/@(Architecture);@(Target.SearchPath)"
+	{
+		&
+		{
+			MalterlibLinkWithPerforce true
+			PlatformFamily "OSX"
+		}
+	}
+
+	LinkWithLibraries "-Xlinker -( -lclient -lrpc -lsupp -Xlinker -) @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			MalterlibLinkWithPerforce true
+			!PlatformFamily "Windows"
+			!PlatformIsDarwin true
+		}
+	}
+	LinkWithLibraries "-lclient -lrpc -lsupp @(Target.LinkWithLibraries)"
+	{
+		&
+		{
+			MalterlibLinkWithPerforce true
+			!PlatformFamily "Windows"
+			PlatformIsDarwin true
+		}
+	}
+
+	RemoveUnreferencedSymbols "false"
+	RemoveUnreferencedSymbols "true" // OptimizeReferences
+	{
+		&
+		{
+			DebugCompiler "false"
+			!Configuration "Release Debug"
+		}
+	}
+}
+
+// .NET Executable Targets
+Target
+{
+	&
+	{
+		LanguageFamily .NET
+		TargetIsExecutable "true"
+	}
+	StartAction "Program"
+}
+
+// Windows native executable targets
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		TargetIsExecutable "true"
+		PlatformType "Windows"
+	}
+
+	IgnoreImportLibrary "true"
+	GenerateManifest "true"
+	GenerateManifest "false"
+	{
+		!!Configuration "Fast Compile"
+	}
+	LinkIncremental "true"
+	{
+		!!DebugCompiler "true"
+	}
+	LinkIncremental "false"
+	{
+		!!DebugCompiler "false"
+	}
+	LinkKeyFile "@(MalterlibStronglyNamedAssembly)"
+	{
+		&
+		{
+			!MalterlibStronglyNamedAssembly ""
+			!Configuration "Fast Compile"
+		}
+	}
+	DelaySign true
+	{
+		&
+		{
+			!MalterlibStronglyNamedAssembly ""
+			!Configuration "Fast Compile"
+		}
+	}
+	
+	SymbolFile "@(Builtin.OutputDirectory)@(Target.FileName).pdb"
+
+	SymbolFile ""
+	{
+		!!Configuration "Fast Compile"
+	}
+
+	SubSystem "Windows"
+	{
+	}
+	SubSystem "Console"
+	{
+		!!Target.Type "ConsoleExecutable"
+	}
+
+	LargeAddressAware "true"
+
+	MinimumRequiredVersion "6.0"
+
+	EntryPointSymbol "wWinMainCRTStartup"
+	{
+		&
+		{
+			Target.CharacterSet "Unicode"
+			|
+			{
+				Target.Type "Executable"
+				Target.Type "UIExecutable"
+			}
+		}
+	}
+	EntryPointSymbol "wmainCRTStartup"
+	{
+		&
+		{
+			Target.CharacterSet "Unicode"
+			Target.Type "ConsoleExecutable"
+		}
+	}
+	EntryPointSymbol "WinMainCRTStartup"
+	{
+		&
+		{
+			Target.CharacterSet "MultiByte"
+			|
+			{
+				Target.Type "Executable"
+				Target.Type "UIExecutable"
+			}
+		}
+	}
+	EntryPointSymbol "mainCRTStartup"
+	{
+		&
+		{
+			Target.CharacterSet "MultiByte"
+			Target.Type "ConsoleExecutable"
+		}
+	}
+	ExtraLinkerFlags "/CGTHREADS:8 /OPT:ICF=16 @(Target.ExtraLinkerFlags)"
+	{
+		&
+		{
+			DebugCompiler "false"
+			!Configuration "Release Debug"
+		}
+	}
+
+	AssemblyDebug "true"
+	{
+		!!DebugCompiler "true"
+		!!Configuration "Release Debug"
+	}
+}
+
+// Windows and driver targets
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		Target.Type "Driver"
+		PlatformType "Windows"
+	}
+	GenerateManifest "false"
+	SubSystem "Native"
+	Driver "true"
+	EntryPointSymbol "DriverEntry"
+	IgnoreAllDefaultLibraries "true"
+	LinkWithLibraries "BufferOverflowK.lib;Wdmsec.lib;ntoskrnl.lib;hal.lib;ntstrsafe.lib;@(Target.LinkWithLibraries)"
+	//RandomizedBaseAddress "false"
+	//DataExecutionPrevention "false"
+}
+
+// Debugger settings
+Target
+{
+	&
+	{
+		TargetIsExecutable "true"
+		!Target.Type DynamicLibrary
+		!Target.Type SharedDynamicLibrary
+	}
+
+	LocalDebuggerCommand "@(MalterlibDeployRoot)/@(MalterlibPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)"
+	{
+		&
+		{
+			Target.LocalDebuggerCommand ""
+			!MalterlibPostCopyProject ""
+			!MalterlibPostCopyDestination ""
+		}
+	}
+	LocalDebuggerCommand "@(MalterlibDeployRoot)/@(MalterlibPostCopyProject)/@(Target.FileName)@(Target.FileExtension)"
+	{
+		&
+		{
+			Target.LocalDebuggerCommand ""
+			!MalterlibPostCopyProject ""
+			MalterlibPostCopyDestination ""
+		}
+	}
+	RemoteDebuggerCommand "@(MalterlibRemoteDeployDebugRoot)/@(MalterlibPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)"
+	{
+		&
+		{
+			Target.RemoteDebuggerCommand ""
+			!MalterlibPostCopyProject ""
+			!MalterlibPostCopyDestination ""
+		}
+	}
+	RemoteDebuggerCommand "@(MalterlibRemoteDeployDebugRoot)/@(MalterlibPostCopyProject)/@(Target.FileName)@(Target.FileExtension)"
+	{
+		&
+		{
+			Target.RemoteDebuggerCommand ""
+			!MalterlibPostCopyProject ""
+			MalterlibPostCopyDestination ""
+		}
+	}
+}
+
+Target
+{
+	LocalDebuggerWorkingDirectory "@(Target.LocalDebuggerCommand->GetPath())"
+	{
+		&
+		{
+			Target.LocalDebuggerWorkingDirectory ""
+			!Target.LocalDebuggerCommand ""
+		}
+	}
+	RemoteDebuggerWorkingDirectory "@(Target.RemoteDebuggerCommand->GetPath())"
+	{
+		&
+		{
+			Target.RemoteDebuggerWorkingDirectory ""
+			!Target.RemoteDebuggerCommand ""
+		}
+	}
+	DebuggerCommandArguments "--Tests"
+	{
+		&
+		{
+			|
+			{
+				!Target.LocalDebuggerCommand ""
+				!Target.RemoteDebuggerCommand ""
+			}
+			|
+			{
+				Tests "Tests"
+				MalterlibTest "true"
+			}
+		}
+	}
+	DebuggerCommandArguments "--Tests --TestGroups (Performance)"
+	{
+		&
+		{
+			|
+			{
+				!Target.LocalDebuggerCommand ""
+				!Target.RemoteDebuggerCommand ""
+			}
+			|
+			{
+				Tests "Perf Tests"
+				MalterlibTest "true"
+			}
+		}
+	}
+}
+
+// ExeFS
+Property
+{
+
+	MalterlibLocalizationTranslationsPath "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)"
+	MalterlibLocalizationExeFSPath "@(MalterlibLocalizationTranslationsPath)/TranslationsExeFS/*"
+	MalterlibLocalizationTranslationHeadersPath "@(MalterlibLocalizationTranslationsPath)/TranslationHeaders"
+	MalterlibQtTweakPath "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTweaks/@(Platform)/@(Architecture)/@(FullConfiguration)"
+
+	MalterlibTempExeFSPath "@(Target.IntermediateDirectory)ExeFS/*"
+	{
+		!!MalterlibTempExeFSPath ""
+	}
+
+	MalterlibSharedIntermediateDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/Shared"
+	{
+		!!MalterlibSharedIntermediateDirectory ""
+	}
+
+	MalterlibSharedTempExeFSPath "@(MalterlibSharedIntermediateDirectory)/ExeFS/*"
+	{
+		!!MalterlibSharedTempExeFSPath ""
+	}
+
+
+	MalterlibOriginalModuleDestination "@(Target.OutputDirectory)@(Target.FileName)@(Target.FileExtension)"
+	MalterlibFinalModuleDestination "@(MalterlibOriginalModuleDestination)"
+	MalterlibFinalModuleDestination "@(Target.OutputDirectory)Deployed/@(Target.FileName)@(Target.FileExtension)"
+	{
+		&
+		{
+			!DocumentationEnabled true
+			|
+			{
+				TargetIsExecutable "true"
+				/*
+				&
+				{
+					|
+					{
+						MalterlibDoExeFS "true"
+						MalterlibSigning "true"
+						!MalterlibStronglyNamedAssembly ""
+						&
+						{
+							Target.Type "Driver"
+							MalterlibDriverSigning "true"
+						}
+					}
+				}
+				*/
+			}
+		}
+//		# TraceCondition,TraceEval
+	}
+	MalterlibFinalModuleDestinationPath "@(MalterlibFinalModuleDestination->GetPath())"
+	
+	MalterlibFinalModuleDestinationExecutable "@(MalterlibFinalModuleDestination)"
+	MalterlibFinalModuleDestinationExecutable "@(MalterlibFinalModuleDestination)/Contents/MacOS/@(Target:Target.FileName)"
+	{
+		!!MalterlibIsOSXBundle true
+	}
+
+	MalterlibOriginalModuleDestinationExecutable "@(MalterlibOriginalModuleDestination)"
+	MalterlibOriginalModuleDestinationExecutable "@(MalterlibOriginalModuleDestination)/Contents/MacOS/@(Target:Target.FileName)"
+	{
+		!!MalterlibIsOSXBundle true
+	}
+}
+
+Property
+{
+	GeneratedDirectory	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+	
+	GeneratedDirectoryNoConfig	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/"
+	GeneratedWorkspaceDirectory	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+	GeneratedWorkspaceDirectoryNoConfig	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/NoConfig/"
+
+	MalterlibUniqueConfig "@(GeneratedDirectory->Sanitize())"
+	MalterlibUniqueConfig "@(MalterlibUniqueConfig->Replace('-', '_'))"
+	MalterlibUniqueConfig "@(MalterlibUniqueConfig->Replace('.', '_'))"
+
+}
+Property 
+{
+	
+	MToolDirectory "@('../../Tools/Binaries/MTool'->MakeAbsolute())/@(HostPlatformFamily)"
+	{
+		!!PlatformFamily Windows
+	}
+	MToolDirectory "@('../../Tools/Binaries/MTool'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
+	{
+		!PlatformFamily Windows
+	}
+	
+	MToolPath "@(MToolDirectory)/MTool.com"
+	{
+		!!PlatformFamily Windows
+	}
+	MToolPath "@(MToolDirectory)/MTool"
+	{
+		!PlatformFamily Windows
+	}
+	
+}
+
+// Misc
+Target
+{
+	IntermediateDirectory	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+	OutputDirectory			"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Output/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+
+	ToolPath "@(Builtin.Inherit)"
+	{
+		!!Target.ToolPath ""
+	}
+	
+	ToolPath "/opt/local/bin;@(Target.ToolPath)"
+	{
+		!!GeneratorFamily Xcode
+	}
+	
+	ToolPath "@(MToolDirectory);@(Target.ToolPath)"
+	
+	ToolPath "@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(HostPlatformFamily);@(Target.ToolPath)"
+	{
+		&
+		{
+			HostPlatformFamily "OSX"
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+		}
+	}
+	
+	ToolPath "@('../../../SDK'->MakeAbsolute())/BreakpadBin/Linux;@(Target.ToolPath)"
+	{
+		&
+		{
+			HostPlatformFamily "OSX"
+			PlatformFamily "Linux"
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+		}
+	}
+
+	
+
+	ToolPath "@(Builtin.BasePath)/Malterlib/Tools/Binaries/NoLib/x86;@(Target.ToolPath)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			MalterlibGenerateLibrary "false"
+			WindowsNativeToolChain "false"
+		}
+	}
+	ToolPath "@(Builtin.BasePath)/Malterlib/Tools/Binaries/NoLib/x64;@(Target.ToolPath)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			MalterlibGenerateLibrary "false"
+			WindowsNativeToolChain "true"
+		}
+	}
+	
+}
+
+Property
+{
+	MalterlibBuildSpecifics 	"@(MalterlibBuildSpecifics)"\
+								"#define DMalterlibBundleIdentifier \"@(MalterlibBundleIdentifier)\""
+	{
+		!!MalterlibIsOSXBundle true
+	}
+}
+
+%Group "~Automatic/Build Specifics"
+{
+	%GenerateFile "Generate"
+	{
+		Property
+		{
+			Name "@(GeneratedDirectory)MalterlibBuild.h"
+
+			Contents "#pragma once\r\n@(MalterlibBuildSpecifics)"
+
+			UnicodeBOM "true"
+			Group "@(Platform) @(Architecture) @(Configuration)"
+		}
+		Compile
+		{
+			Type "None"
+		}		
+	}
+
+	!MalterlibBuildSpecifics ""
+}
+Target
+{
+	ExtraGroups "~Automatic/Build Specifics;@(Target.ExtraGroups)"
+	{
+		!MalterlibBuildSpecifics ""
+	}
+}
+
+%Group "~Automatic/Target Dependencies Linker"
+{
+	!!GeneratorFamily "Xcode"
+	%File "@(XcodeGeneratorDependencyFiles)"
+	{
+		Compile.AllowNonExisting true
+	}
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Target Dependencies Linker;@(Target.ExtraGroups)"
+	{
+		!!GeneratorFamily "Xcode"
+	}
+}
+
+// OSX Specific
+
+Property
+{
+	MalterlibPythonDebugScriptName "@(Target.FileName)@(Target.Extension).py"
+	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('-','_'))"
+	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace(' ','_'))"
+	
+	MalterlibBundleIdentifier "@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())"
+	{
+		!!MalterlibIsOSXBundle true
+	}
+
+	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
+                                    "mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources\"\r\n"\
+									"@(CheckErrors)\r\n"\
+									"MTool DiffCopy \"@(MalterlibExeIcon)\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources\" \"\" 0\r\n"\
+									"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			Target.Type "UIExecutable"
+			!MalterlibExeIcon ""
+		}
+	}
+
+	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
+                                    "mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Python\"\r\n"\
+									"@(CheckErrors)\r\n"\
+                                    "mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+									"@(CheckErrors)\r\n"\
+									"cp -f \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptName)\"\r\n"\
+									"@(CheckErrors)\r\n"\
+									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+									"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			!DocumentationEnabled true
+			!MalterlibBuildServerBuild true
+			PlatformIsDarwin true
+			Target.Type "UIExecutable"
+			!MalterlibDisableMalterlib "true"
+		}
+	}
+	
+	MalterlibPostBuildScriptPreSignMalterlibExeMainNibFilePath "@(MalterlibExeMainNibFile->GetLastPaths(2))"
+	
+	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
+									"MTool DiffCopy \"@(MalterlibExeMainNibFile)\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources/@(MalterlibPostBuildScriptPreSignMalterlibExeMainNibFilePath->GetPath())\" \"\" 0\r\n"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			Target.Type "UIExecutable"
+			!MalterlibExeMainNibFile ""
+		}
+	}
+
+	
+	MalterlibBreakpadSourceSuffix "_cli"
+	{
+		"!Target:Target.Type" "UIExecutable"
+	}
+	
+	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
+					"MTool DiffCopy \"@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(PlatformFamily)@(MalterlibBreakpadSourceSuffix)/Breakpad.framework\" \"@(Target:Target.IntermediateDirectory)Breakpad\" \"\" 0 1\r\n"\
+					"MTool DiffReplace \"http://www.google.com/privacypolicy.html\" \"@(MalterlibBreakpadPrivacyPolicyURL)\" \"@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(PlatformFamily)@(MalterlibBreakpadSourceSuffix)/Breakpad.framework/Localizable.strings\" \"@(Target:Target.IntermediateDirectory)Breakpad/Breakpad.framework\" \"\" 1 1 1\r\n"
+	{
+		&
+		{
+			MalterlibEnableBreakpad true
+			PlatformIsDarwin true
+			Target.Type "UIExecutable"
+		}
+	}
+	
+	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
+					"MTool DiffCopy \"@(Target:Target.IntermediateDirectory)Breakpad/Breakpad.framework\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Frameworks\" \"\" 0\r\n"
+	{
+		&
+		{
+			MalterlibEnableBreakpad true
+			PlatformIsDarwin true
+			Target.Type "UIExecutable"
+		}
+	}
+
+
+	
+}
+
+// Out of process Specific
+
+Property
+{
+	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
+									"MTool DiffCopy \"@(MalterlibOverrideMallocLibrary)\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS\" \"\" 0\r\n"
+	{
+		&
+		{
+			MalterlibNeedsMallocOverrideLibrary true
+			Target.Type "UIExecutable"
+		}
+	}
+	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
+									"MTool DiffCopy \"@(Builtin.Function->GetProperty('Property', 'MalterlibFinalModuleDestination', 'Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess'))\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS\" \"\" 0\r\n"
+	{
+		&
+		{
+			MalterlibOutOfProcessSupport "true"
+			PlatformFamily "OSX"
+		}
+	}
+	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
+									"MTool DiffCopy \"@(Builtin.Function->GetProperty('Property', 'MalterlibFinalModuleDestination', 'Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess'))\" \"@(MalterlibFinalModuleDestinationPath)\" \"\" 0\r\n"
+	{
+		&
+		{
+			MalterlibOutOfProcessSupport "true"
+			PlatformFamily "Windows"
+		}
+	}
+	
+	
+}
+
+Target
+{
+	MalterlibInfoPListFile "@(GeneratedDirectory)Info.plist"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			|
+			{
+				Target.Type "UIExecutable"
+				Target.Type "Driver"
+				Target.Type "Executable"
+				Target.Type "ConsoleExecutable"
+				Target.Type "DynamicLibrary"
+				Target.Type "SharedDynamicLibrary"
+			}
+		}
+	}
+}
+
+Property
+{
+	MalterlibTargetFriendlyName "@(Target:Target.Name)"
+	{
+		!!MalterlibTargetFriendlyName ""
+	}
+}
+
+%Group "~Automatic/OSX Specific"
+{
+	%GenerateFile "Generate"
+	{
+		Property
+		{
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			Name "@(GeneratedDirectory)Info.plist"
+
+			MalterlibOSXVersion	"@(Platform->Replace('OSX',''))"
+			{
+				!!MalterlibOSXVersion ""
+			}
+
+			Contents 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"\
+						"<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"\
+						"<plist version=\"1.0\">\n"\
+						"<dict>\n"\
+						"	<key>CFBundleDevelopmentRegion</key>\n"\
+						"		<string>en</string>\n"\
+						"	<key>CFBundleExecutable</key>\n"\
+						"		<string>@(Target:Target.FileName)</string>\n"\
+						"	<key>CFBundleIdentifier</key>\n"\
+						"		<string>@(MalterlibBundleIdentifier)</string>\n"\
+						"	<key>CFBundleInfoDictionaryVersion</key>\n"\
+						"		<string>6.0</string>\n"\
+						"	<key>CFBundleSignature</key>\n"\
+						"		<string>????</string>\n"\
+						"	<key>CFBundleVersion</key>\n"\
+						"		<string>@(ProductVersionMajor->FormatInt('{}')).@(ProductVersionMinor->FormatInt('{}')).@(ProductVersionRevision->FormatInt('{}'))</string>\n"
+
+			Contents 	"@(Contents)"\
+						"	<key>CFBundleName</key>\n"\
+						"		<string>@(MalterlibTargetFriendlyName)</string>\n"\
+						"	<key>CFBundleShortVersionString</key>\n"\
+						"		<string>@(Target:Target.Version)</string>\n"\
+						"	<key>NSHumanReadableCopyright</key>\n"\
+						"		<string>@(ProductCopyright)</string>\n"\
+						"	<key>NSPrincipalClass</key>\n"\
+						"		<string>NSApplication</string>\n"\
+						"	<key>LSMinimumSystemVersion</key>\n"\
+						"		<string>@(MalterlibOSXVersion)</string>\n"\
+						"	<key>MalterlibBranch</key>\n"\
+						"		<string>@(MalterlibFullBranch)</string>\n"\
+						"	<key>BuildTime</key>\n"\
+						"		<string>@(Builtin.Function->MalterlibTime('{}:{}'))</string>\n"\
+						"	<key>ProductVersionMajor</key>\n"\
+						"		<string>@(ProductVersionMajor)</string>\n"\
+						"	<key>ProductVersionMinor</key>\n"\
+						"		<string>@(ProductVersionMinor)</string>\n"\
+						"	<key>ProductVersionRevision</key>\n"\
+						"		<string>@(ProductVersionRevision)</string>\n"\
+						"	<key>ProductVersionExtra</key>\n"\
+						"		<string>@(ProductVersionExtra)</string>\n"\
+						"	<key>CFBundlePackageType</key>\n"\
+						"		<string>APPL</string>\n"\
+						"	<key>NSHighResolutionCapable</key>\n"\
+						"		<string>YES</string>\n"
+			{
+				!Target.Type "Driver"
+			}
+
+			Contents 	"@(Contents)"\
+						"	<key>CFBundlePackageType</key>\n"\
+						"		<string>KEXT</string>\n"
+			{
+				!!Target.Type "Driver"
+			}
+
+			Contents 	"@(Contents)"\
+						"	<key>CFBundleSupportedPlatforms</key>\n"\
+						"	<array>\n"\
+						"		<string>MacOSX</string>\n"\
+						"	</array>\n"
+			{
+				!!PlatformFamily "OSX"
+			}
+
+
+			Contents 	"@(Contents)"\
+						"	<key>BreakpadProduct</key>\n"\
+						"		<string>@(Target:Target.FileName)</string>\n"\
+						"	<key>BreakpadProductDisplay</key>\n"\
+						"		<string>@(MalterlibTargetFriendlyName)</string>\n"\
+						"	<key>BreakpadURL</key>\n"\
+						"		<string>@(MalterlibBreakpadUploadServer)</string>\n"\
+						"	<key>BreakpadReportInterval</key>\n"\
+						"		<string>@(MalterlibBreakpadReportInterval)</string>\n"\
+						"	<key>BreakpadVendor</key>\n"\
+						"		<string>@(ProductCompany)</string>\n"\
+						"	<key>BreakpadVersion</key>\n"\
+						"		<string>@(Target:Target.Version)</string>\n"\
+						"	<key>BreakpadInProcess</key>\n"\
+						"		<string>YES</string>\n"
+			
+			
+			{
+				!!MalterlibEnableBreakpad "true"
+			}
+
+			Contents 	"@(Contents)"\
+						"	<key>BreakpadRequestEmail</key>\n"\
+						"		<string>YES</string>\n"
+			{
+				&
+				{
+					MalterlibEnableBreakpad "true"
+					MalterlibBreakpadRequestEmail "true"
+				}
+			}			
+
+			Contents 	"@(Contents)"\
+						"	<key>BreakpadRequestComments</key>\n"\
+						"		<string>YES</string>\n"
+			{
+				&
+				{
+					MalterlibEnableBreakpad "true"
+					MalterlibBreakpadRequestComments "true"
+				}
+			}
+
+			Contents 	"@(Contents)"\
+						"	<key>CFBundleIconFile</key>\n"\
+						"	<string>@(MalterlibExeIcon->GetFileNoExt())</string>\n"
+			{
+				!MalterlibExeIcon ""
+			}
+
+
+			Contents 	"@(Contents)"\
+						"	<key>NSMainNibFile</key>\n"\
+						"	<string>@(MalterlibExeMainNibFile->GetFileNoExt())</string>\n"
+			{
+				!MalterlibExeMainNibFile ""
+			}
+			
+			
+			URLSchemeTemplateProtocol "					<string>@(Explodee)</string>\n"
+
+			URLSchemeTemplate 	"		<dict>\n"\
+							 	"			<key>CFBundleTypeRole</key>\n"\
+								"				<string>@(Expand1)</string>\n"\
+								"				<key>CFBundleURLName</key>\n"\
+								"				<string>@(Expand2)</string>\n"\
+								"				<key>CFBundleURLIconFile</key>\n"\
+								"				<string>@(Expand3)</string>\n"\
+								"				<key>CFBundleURLSchemes</key>\n"\
+								"				<array>\n"\
+								"@(Builtin.Function->ExplodeList('@(Expand0)', '|', 'URLSchemeTemplateProtocol'))"\
+								"				</array>\n"\
+								"		</dict>\n"
+			{
+				!Target:MalterlibURLScheme ""
+			}
+
+			URLSchemeTemplateOuter "@(Builtin.Function->ExpandList('@(Explodee)', ',', 'URLSchemeTemplate'))\n"
+			{
+				!Target:MalterlibURLScheme ""
+			}
+
+			Contents  	"@(Contents)"\
+						"	<key>CFBundleURLTypes</key>\n"\
+						"		<array>\n"\			
+						"@(Builtin.Function->ExplodeList('@(Target:MalterlibURLScheme)', ';', 'URLSchemeTemplateOuter'))\n"\
+						"		</array>\n"
+			{
+				!Target:MalterlibURLScheme ""
+			}
+			
+			Contents	"@(Contents)"\
+						"	<key>LSUIElement</key>\n"\
+						"		<string>1</string>\n"
+			{
+				!!Property.MalterlibOSXHideDockTile true
+			}
+
+			Contents  	"@(Contents)@(MalterlibExtraPListContents)"
+			{
+				!MalterlibExtraPListContents ""
+			}
+
+			Contents 	"@(Contents)\n"\
+						"</dict>\n"\
+						"</plist>\n"
+			UnicodeBOM "true"
+		}
+		Compile
+		{
+			Type "None"
+		}
+		
+		"!Target:Target.MalterlibInfoPListFile" ""
+	}
+}
+Target
+{
+	ExtraGroups "~Automatic/OSX Specific;@(Target.ExtraGroups)"
+	{
+		"!Target:Target.MalterlibInfoPListFile" ""
+	}
+}
+Property
+{
+	MalterlibLinuxProgramIdentifier "@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())"
+	{
+		&
+		{
+			PlatformFamily Linux
+			TargetIsExecutable true
+		}
+	}
+
+	MalterlibLinuxDesktopFile "@(GeneratedDirectory)@(MalterlibLinuxProgramIdentifier).desktop"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Target.Type UIExecutable
+			!MalterlibBuildServerBuild true
+		}
+	}
+}
+
+%Group "~Automatic/Posix Specific"
+{
+	%GenerateFile "Breakpad"
+	{
+		!!MalterlibEnableBreakpad true
+		
+		Property
+		{
+			!!Target.Type UIExecutable
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			
+			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
+			
+			Contents	"#include <Mib/Core/Core>\n\n"\
+						"namespace NMib\n"\
+						"{\n"\
+						"\tnamespace NSys\n"\
+						"\t{\n"\
+						"\t\tvoid fg_InitialiseCrashReporter()\n"\
+						"\t\t{\n"\
+						"\t\t\tNMib::fg_GetSys()->f_SetCrashHandler(NMib::NFile::CFile::fs_GetProgramDirectory() + \"/OutOfProcess@(MalterlibConfigSuffix)\", \"@(MalterlibBreakpadUploadServer)\");\n"\
+						"\t\t}\n"\
+						"\t}\n"\
+						"}\n"
+			
+			UnicodeBOM "true"
+			
+		}
+		
+		Property
+		{
+			!!Target.Type Executable
+			!!Target.Type ConsoleExecutable
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			
+			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
+			
+			Contents	"#include <Mib/Core/Core>\n\n"\
+						"namespace NMib\n"\
+						"{\n"\
+						"\tnamespace NSys\n"\
+						"\t{\n"\
+						"\t\tvoid fg_InitialiseCrashReporter()\n"\
+						"\t\t{\n"\
+						"\t\t\tNMib::fg_GetSys()->f_SetCrashHandler(\"\", \"@(MalterlibBreakpadUploadServer)\");\n"\
+						"\t\t}\n"\
+						"\t}\n"\
+						"}\n"
+			
+			UnicodeBOM "true"
+		}
+	}
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Posix Specific;@(Target.ExtraGroups)"
+	{
+		&
+		{
+			|
+			{
+				PlatformIsDarwin true
+				PlatformFamily Linux
+			}
+			TargetIsExecutable true
+		}
+	}
+}
+
+%Group "~Automatic/Linux Specific"
+{
+	%GenerateFile "Generate"
+	{
+		Property
+		{
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			Name "@(GeneratedDirectory)VersionInfo.cpp"
+
+			Contents 	"#include <Mib/Core/Core>\n"\
+						"assure_used static char fileid[] __attribute__ ((section(\"IDSVERSIONINFO\"))) = \"$Id: VersionInfo.cpp,v @(Target:Target.Version) @(Builtin.Function->DateTime('{YYYY}/{MM}/{DD} {HH}:{MNMN}:{SS}')) $\\n\"\n"\
+						"\"MalterlibBranch=@(MalterlibFullBranch)\\n\"\n"\
+						"\"BuildTime=@(Builtin.Function->MalterlibTime('{}:{}'))\\n\"\n"\
+						"\"ProductVersionMajor=@(ProductVersionMajor)\\n\"\n"\
+						"\"ProductVersionMinor=@(ProductVersionMinor)\\n\"\n"\
+						"\"ProductVersionRevision=@(ProductVersionRevision)\\n\"\n"\
+						"\"ProductVersionExtra=@(ProductVersionExtra)\\n\";\n"							
+
+			UnicodeBOM "true"
+		}
+	}
+
+	%GenerateFile ".desktop"
+	{
+		!MalterlibLinuxDesktopFile ""
+		Property
+		{
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			Name "@(MalterlibLinuxDesktopFile)"
+
+			Contents 	"[Desktop Entry]\n"\
+						"Name=@(MalterlibTargetFriendlyName)\n"\
+						"Version=@(ProductVersionMajor->FormatInt('{}')).@(ProductVersionMinor->FormatInt('{}')).@(ProductVersionRevision->FormatInt('{}'))\n"\
+						"Type=Application\n"
+
+			Contents 	"@(Contents)"\
+						"Icon=@(MalterlibDeployRoot)/@(MalterlibPostCopyProject)/@(MalterlibExeIcon->GetFile())\n"
+			{
+				!MalterlibExeIcon ""
+			}
+
+			Contents 	"@(Contents)"\
+						"Terminal=false\n"
+			{
+				!Target.Type ConsoleExecutable
+			}
+			Contents 	"@(Contents)"\
+						"Terminal=true\n"
+			{
+				!!Target.Type ConsoleExecutable
+			}
+
+
+			UnicodeBOM "false"
+		}
+	}
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Linux Specific;@(Target.ExtraGroups)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			TargetIsExecutable true
+		}
+	}
+}
+
+
+%Group "~Automatic/Windows Specific"
+{
+	%GenerateFile "Generate .NET Assembly Info"
+	{
+		!!LanguageFamily .NET
+		Property
+		{
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			Name "@(GeneratedDirectory)AssemblyInfo.cs"
+
+			CalcGUID @(MalterlibFinalModuleDestination->HashUUID('Bare'))
+
+			Contents 	"\n"
+
+			Contents 	"@(Contents)"\
+						"#if (@(MalterlibUniqueConfig))\r\n"\
+						"using System.Reflection;\r\n"\
+						"using System.Runtime.CompilerServices;\r\n"\
+						"using System.Runtime.InteropServices;\r\n"\
+						"[assembly: AssemblyTitle(\"@(ProductName)\")]\r\n"\
+						"[assembly: AssemblyDescription(\"@(ProductDescription)\")]\r\n"\
+						"[assembly: AssemblyConfiguration(\"@(ProductVersionExtra)\")]\r\n"\
+						"[assembly: AssemblyCompany(\"@(ProductCompany)\")]\r\n"\
+						"[assembly: AssemblyProduct(\"@(ProductName)\")]\r\n"\
+						"[assembly: AssemblyCopyright(\"@(ProductCopyright)\")]\r\n"\
+						"[assembly: AssemblyTrademark(\"\")]\r\n"\
+						"[assembly: AssemblyCulture(\"\")]\r\n"\
+						"[assembly: ComVisible(false)]\r\n"\
+						"[assembly: Guid(\"@(CalcGUID)\")]\r\n"\
+						"[assembly: AssemblyFileVersion(\"@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0\")]\r\n"\
+						"[assembly: AssemblyVersion(\"@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0\")]\r\n"\
+						"@(MalterlibExtraAssemblyInfo)"\
+						"#endif\r\n"
+			
+			UnicodeBOM "true"
+		}
+	}
+
+	%GenerateFile "Generate C++ Managed"
+	{
+		&
+		{
+			LanguageFamily Native
+			Target.CLRSupport true
+		}
+		Property
+		{
+
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			Name "@(GeneratedDirectory)AssemblyInfo.cpp"
+
+			CalcGUID @(MalterlibFinalModuleDestination->HashUUID('Bare'))
+
+			Contents 	"\n"
+
+			Contents 	"@(Contents)"\
+						"using namespace System;\r\n"\
+						"using namespace System::Reflection;\r\n"\
+						"using namespace System::Runtime::CompilerServices;\r\n"\
+						"using namespace System::Runtime::InteropServices;\r\n"\
+						"using namespace System::Security::Permissions;\r\n"\
+						"[assembly:AssemblyTitleAttribute(\"@(ProductName)\")];\r\n"\
+						"[assembly:AssemblyDescriptionAttribute(\"@(ProductDescription)\")];\r\n"\
+						"[assembly:AssemblyConfigurationAttribute(\"@(ProductVersionExtra)\")];\r\n"\
+						"[assembly:AssemblyCompanyAttribute(\"@(ProductCompany)\")];\r\n"\
+						"[assembly:AssemblyProductAttribute(\"@(ProductName)\")];\r\n"\
+						"[assembly:AssemblyCopyrightAttribute(\"@(ProductCopyright)\")];\r\n"\
+						"[assembly:AssemblyTrademarkAttribute(\"\")];\r\n"\
+						"[assembly:AssemblyCultureAttribute(\"\")];\r\n"\
+						"[assembly:ComVisible(false)];\r\n"\
+						"[assembly:Guid(\"@(CalcGUID)\")];\r\n"\
+						"[assembly:CLSCompliantAttribute(true)];\r\n"\
+						"[assembly:AssemblyFileVersionAttribute(\"@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0\")];\r\n"\
+						"[assembly:AssemblyVersionAttribute(\"@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0\")];\r\n"\
+						"#pragma warning(disable:4947) // Request minimum deprecated in .NET 4.0\r\n"\
+						"[assembly:SecurityPermission(SecurityAction::RequestMinimum, UnmanagedCode = true)];\r\n"\
+						"@(MalterlibExtraAssemblyInfo)"
+			
+			UnicodeBOM "true"
+		}
+	}
+
+	%GenerateFile "Generate Resource"
+	{
+		!!LanguageFamily Native
+		Property
+		{
+
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			Name "@(GeneratedDirectory)Resources.rc"
+
+			Contents 	"\n"
+
+			IcanCalcPath "@(MalterlibExeIcon->MakeRelative('@(GeneratedDirectory)'))"
+			IcanCalcPath "@(IcanCalcPath->WindowsPath())"
+			IcanCalcPath "@(IcanCalcPath->Replace('\\\\', '\\\\\\\\'))"
+
+			Contents 	"@(Contents)"\
+						"#define IDI_ICON1                       101\r\n"\
+						"// Next default values for new objects\r\n"\
+						"// \r\n"\
+						"#ifdef APSTUDIO_INVOKED\r\n"\
+						"#ifndef APSTUDIO_READONLY_SYMBOLS\r\n"\
+						"#define _APS_NEXT_RESOURCE_VALUE        102\r\n"\
+						"#define _APS_NEXT_COMMAND_VALUE         40001\r\n"\
+						"#define _APS_NEXT_CONTROL_VALUE         1001\r\n"\
+						"#define _APS_NEXT_SYMED_VALUE           101\r\n"\
+						"#endif\r\n"\
+						"#endif\r\n"\
+						"IDI_ICON1 ICON \"@(IcanCalcPath)\"\r\n"
+			{
+				!MalterlibExeIcon ""
+			}
+
+			ResourceFileType "VFT_UNKNOWN"
+
+			ResourceFileType "VFT_APP"
+			{
+				!!Target.Type "ConsoleExecutable"
+				!!Target.Type "UIExecutable"
+				!!Target.Type "Executable"
+			}
+			ResourceFileType "VFT_DRV"
+			{
+				!!Target.Type "Driver"
+			}
+			ResourceFileType "VFT_DLL"
+			{
+				!!Target.Type "DynamicLibrary"
+				!!Target.Type "SharedDynamicLibrary"
+			}
+
+			Contents 	"@(Contents)"\
+						"#include \"winres.h\"\r\n"\
+						"VS_VERSION_INFO VERSIONINFO\r\n"\
+						" FILEVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision),0\r\n"\
+						" PRODUCTVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision),0\r\n"\
+						" FILEFLAGSMASK 0x17L\r\n"\
+						"#ifdef _DEBUG\r\n"\
+						" FILEFLAGS VS_FF_DEBUG | VS_FF_PRIVATEBUILD\r\n"\
+						"#else\r\n"\
+						" FILEFLAGS VS_FF_PRIVATEBUILD\r\n"\
+						"#endif\r\n"\
+						" FILEOS VOS_NT_WINDOWS32\r\n"\
+						" FILETYPE @(ResourceFileType)\r\n"\
+						" FILESUBTYPE VFT2_UNKNOWN\r\n"\
+						"BEGIN\r\n"\
+						"	BLOCK \"StringFileInfo\"\r\n"\
+						"	BEGIN\r\n"\
+						"		BLOCK \"040904b0\"\r\n"\
+						"		BEGIN\r\n"\
+						"			VALUE \"CompanyName\", \"@(ProductCompany)\"\r\n"\
+						"			VALUE \"FileDescription\", \"@(ProductDescription)\"\r\n"\
+						"			VALUE \"FileVersion\", \"@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)\"\r\n"\
+						"			VALUE \"InternalName\", \"@(Target:Target.FileName)\"\r\n"\
+						"			VALUE \"LegalCopyright\", \"@(ProductCopyright)\"\r\n"\
+						"			VALUE \"OriginalFilename\", \"@(Target:Target.FileName)@(Target:Target.FileExtension)\"\r\n"\
+						"			VALUE \"ProductName\", \"@(ProductName)\"\r\n"\
+						"			VALUE \"ProductVersion\", \"@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)\"\r\n"\
+						"			VALUE \"PrivateBuild\", \"@(MalterlibFullBranch)\"\r\n"\
+						"		END\r\n"\
+						"	END\r\n"\
+						"	BLOCK \"VarFileInfo\"\r\n"\
+						"	BEGIN\r\n"\
+						"		VALUE \"Translation\", 0x0409, 1200\r\n"\
+						"	END\r\n"\
+						"END\r\n"
+
+			
+			UTF16 true
+			UnicodeBOM "true"
+		}
+	}
+}
+Target
+{
+	ExtraGroups "~Automatic/Windows Specific;@(Target.ExtraGroups)"
+	{
+		&
+		{
+			PlatformFamily Windows
+			TargetIsExecutable true
+			!MalterlibDisableAutomaticResources true
+		}
+	}
+}
+
+Property
+{
+	MalterlibModuleDefinitionContents ""
+	MalterlibModuleDefinitionContents "EXPORTS@(NativeLineEnding)"
+	{
+		!!PlatformFamily Windows
+	}
+
+	ModuleDefineTemplate "--keep-symbol=_@(Explodee) "
+
+	ModuleDefineTemplate "@(Explodee)@(NativeLineEnding)"
+	{
+		!!PlatformFamily Windows
+	}
+	ModuleDefineTemplate "_@(Explodee)@(NativeLineEnding)"
+	{
+		!!PlatformIsDarwin true
+	}
+	
+	
+	MalterlibModuleDefinitionContents  	"@(MalterlibModuleDefinitionContents)"\
+										"@(Builtin.Function->ExplodeList('@(MalterlibDefinedSymbols)', ';', 'ModuleDefineTemplate'))"
+	
+	MalterlibStripOptions "-u -r @(MalterlibStripOptions)"
+	{
+		!!PlatformIsDarwin true
+	}
+										
+	MalterlibStripOptions "-s \"@(GeneratedDirectory)Module.def\" @(MalterlibStripOptions)"
+	{
+		&
+		{
+			!MalterlibDefinedSymbols ""
+			PlatformIsDarwin true
+		}
+	}
+
+	MalterlibStripOptions "--strip-unneeded @(MalterlibStripOptions)"
+	{
+		!!PlatformFamily Linux
+	}
+
+	MalterlibStripOptions "@(MalterlibModuleDefinitionContents) @(MalterlibStripOptions)"
+	{
+		&
+		{
+			!MalterlibDefinedSymbols ""
+			PlatformFamily Linux
+		}
+	}
+	
+}
+
+%Group "~Automatic/DLL Definition"
+{
+	%GenerateFile "Generate"
+	{
+		Property
+		{
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			Name "@(GeneratedDirectory)Module.def"
+
+			Contents "@(MalterlibModuleDefinitionContents)"
+			UnicodeBOM "false"
+		}
+		Compile
+		{
+			Type "None"
+		}
+	}
+}
+Target
+{
+	ExtraGroups "~Automatic/DLL Definition;@(Target.ExtraGroups)"
+	{
+		&
+		{
+			!MalterlibDefinedSymbols ""
+			!PlatformFamily "Linux"
+		}
+	}
+	ModuleDefinitionFile "@(GeneratedDirectory)Module.def"
+	{
+		&
+		{
+			"!MalterlibDefinedSymbols" ""
+			PlatformFamily Windows
+		}
+	}	
+}
+
+
+// ExeFS
+
+Property
+{
+
+	MalterlibBuildServerPutPathUploadTemplateExpand	"MTool BuildServerPut Recursive=0 \"Source=@(Expand0)\" \"DestinationDir=@(MalterlibBuildServerPutPath)@(Expand1)\"\r\n"\
+													"@(CheckErrors)\r\n"
+	
+	MalterlibBuildServerPutPathUploadContents	"@(MalterlibBuildServerPutPathUploadContents)"\
+												"@(Builtin.Function->ExplodeList('@(MalterlibBuildServerPutSources)', ';', 'MalterlibBuildServerPutPathUploadTemplate'))"
+
+	
+	MalterlibExeFSExtraFilesContentsTemplateExpand	"@(MalterlibExeFSSpecContents)"\
+													"Include\r\n"\
+													"{\r\n"\
+													"	Pattern \"@(Expand0)\"\r\n"\
+													"	Destination \"@(Expand1)\"\r\n"\
+													"	Recurse 0\r\n"\
+													"}\r\n"
+	
+	MalterlibExeFSExtraFilesContentsTemplate	"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibExeFSExtraFilesContentsTemplateExpand'))"
+	{
+		!Explodee ""
+	}
+	
+	MalterlibExeFSExtraFilesContents	"@(Builtin.Function->ExplodeList('@(MalterlibExeFSExtraFiles)', ';', 'MalterlibExeFSExtraFilesContentsTemplate'))"
+	{
+		!MalterlibExeFSExtraFiles ""
+	}
+	
+	MalterlibExeFSSpecContents	"@(MalterlibExeFSSpecContents)"\
+								"Include\r\n"\
+								"{\r\n"\
+								"	Pattern \"@(MalterlibExeFSPath->UnixPath())\"\r\n"\
+								"}\r\n"\
+								"Include\r\n"\
+								"{\r\n"\
+								"	Pattern \"@(MalterlibTempExeFSPath->UnixPath())\"\r\n"\
+								"}\r\n"\
+								"Include\r\n"\
+								"{\r\n"\
+								"	Pattern \"@(MalterlibSharedTempExeFSPath->UnixPath())\"\r\n"\
+								"}\r\n"\
+								"@(MalterlibExeFSExtraFilesContents)"
+	{
+		&
+		{
+			TargetIsExecutable true
+			MalterlibDoExeFS true
+		}
+	}
+	MalterlibExeFSSpecContents	"@(MalterlibExeFSSpecContents)"\
+								"Include\r\n"\
+								"{\r\n"\
+								"	Pattern \"@(MalterlibLocalizationExeFSPath->UnixPath())\"\r\n"\
+								"}\r\n"
+	{
+		&
+		{
+			MalterlibDoTranslationExeFS "true"
+			MalterlibDoExeFS "true"
+		}
+	}
+}
+
+%Group "~Automatic/Malterlib ExeFS Files"
+{
+	%GenerateFile "Generate"
+	{
+		Property
+		{
+			Group "@(Platform) @(Architecture) @(Configuration)"
+			Name "@(GeneratedDirectory)/@(Workspace:Workspace.Name)_@(Target:Target.Name).MalterlibFSSpec"
+			Contents "@(MalterlibExeFSSpecContents)"
+			UnicodeBOM "true"
+		}
+	}
+	
+	%File "../Source/Dummy/Dummy.cpp"
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Malterlib ExeFS Files;@(Target.ExtraGroups)"
+	{
+		!MalterlibExeFSSpecContents ""
+	}
+
+}
+
+// Post build step
+
+Property
+{
+	MalterlibOriginalModuleDestinationExpLib "@(MalterlibOriginalModuleDestination->GetPath())/@(MalterlibOriginalModuleDestination->GetFileNoExt()).exp"
+	MalterlibOriginalModuleDestinationLib "@(MalterlibOriginalModuleDestination->GetPath())/@(MalterlibOriginalModuleDestination->GetFileNoExt()).lib"
+}
+
+Property
+{
+	CheckErrors ""
+	CheckErrors "CheckErrors"
+	{
+		!!PlatformType "Unix"
+	}
+}
+
+Property
+{
+	MalterlibDumpSymsCommand "dump_syms"
+	
+	MalterlibPostBuildScriptShowEnv "false" // User: Enable to show the environment variables of the build environment
+	{
+		!!MalterlibPostBuildScriptShowEnv ""
+	}
+}
+
+
+Property
+{
+	MalterlibBuildServerPutSources "@(MalterlibFinalModuleDestination);@(MalterlibBuildServerPutSources)"
+	{
+		!Target.Type Tool
+	}
+	MalterlibBuildServerPutSources "@(MalterlibOverrideMallocLibrary);@(MalterlibBuildServerPutSources)"
+	{
+		&
+		{
+			MalterlibNeedsMallocOverrideLibrary true
+			!Target.Type "UIExecutable"
+		}
+	}
+	
+	MalterlibBuildServerPutPathUploadTemplateExpand	"MTool BuildServerPut Recursive=0 \"Source=@(Expand0)\" \"DestinationDir=@(MalterlibBuildServerPutPath)@(Expand1)\"\r\n"\
+													"@(CheckErrors)\r\n"
+	
+	MalterlibBuildServerPutPathUploadTemplate	"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibBuildServerPutPathUploadTemplateExpand'))"
+	{
+		!Explodee ""
+	}
+	
+	MalterlibBuildServerPutPathUploadContents	"@(MalterlibBuildServerPutPathUploadContents)"\
+												"@(Builtin.Function->ExplodeList('@(MalterlibBuildServerPutSources)', ';', 'MalterlibBuildServerPutPathUploadTemplate'))"
+	
+
+	MalterlibTestPutSources "@(MalterlibFinalModuleDestination)"
+	MalterlibTestPutSources "@(Target:Target.SymbolFile);@(MalterlibTestPutSources)"
+	{
+		!!PlatformFamily Windows		
+	}
+	
+	MalterlibTestPutSources "@(MalterlibOriginalModuleDestination).dSYM;@(MalterlibTestPutSources)"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			TargetIsExecutable true
+			Target.DebugInformationFormat "dwarf-with-dsym"
+		}
+	}
+	
+	
+	MalterlibTestPutPathUploadTemplate	"MTool BuildServerPut Recursive=0 \"Source=@(Expand0)\" \"DestinationDir=@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
+											"@(CheckErrors)\r\n"
+	{
+		!MalterlibAutoBuild true
+	}
+
+	// AB Copy
+	MalterlibTestPutPathUploadTemplate	"echo mkdir -p \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
+											"mkdir -p \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
+											"echo cp -fr \"@(Expand0)\" \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)/\"\r\n"\
+											"cp -fr \"@(Expand0)\" \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)/\"\r\n"\
+											"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			!PlatformFamily Windows
+			MalterlibAutoBuild true
+		}
+	}
+	
+	MalterlibTestPutPathUploadTemplate	"echo mkdir \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
+											"mkdir \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
+											"echo MTool DiffCopy \"@(Expand0)\" \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
+											"MTool DiffCopy \"@(Expand0)\" \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
+											"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			PlatformFamily Windows		
+			MalterlibAutoBuild true
+		}
+	}
+
+	MalterlibTestPutPathUploadInternalTemplate	"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibTestPutPathUploadTemplate'))\r\n"
+	{
+		!Explodee ""
+	}
+	
+	MalterlibTestPutPathUploadContents	"@(MalterlibTestPutPathUploadContents)"\
+											"@(Builtin.Function->ExplodeList('@(MalterlibTestPutSources)', ';', 'MalterlibTestPutPathUploadInternalTemplate'))"
+
+	MalterlibTestPutPath "Test/@(Workspace:Workspace.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)"
+	{
+		&
+		{
+			MalterlibTestPutPath ""
+			|
+			{
+				MalterlibMainTest true
+				MalterlibHelperTest true
+			}
+		}
+	}	
+
+	MalterlibTestPutSources "@(MalterlibFinalModuleDestination).MainTest;@(MalterlibTestPutSources)"
+	{
+		!!MalterlibMainTest true
+	}	
+
+
+	Win32SignTool "MTool BuildServerTool Tool=SignToolWin32"
+	{
+		&
+		{
+			Win32SignTool ""
+			MalterlibBuildServerBuild "true"
+		}
+	}
+
+	Win32SignTool "@('../../../SDK'->MakeAbsolute())/WDK/bin/x86/SignTool.exe"
+	{
+		!!Win32SignTool ""
+	}
+
+	MalterlibWindowsSignCommandLine "@(Win32SignTool) sign /fd SHA256 /ac \"@(MalterlibSignIncludeCert->WindowsPath())\" /n \"@(MalterlibSignCertWindows)\" /t http://timestamp.globalsign.com/scripts/timestamp.dll \"@(MalterlibFinalModuleDestination->WindowsPath())\""
+
+	MalterlibWindowsSignCommandLine "@(Win32SignTool) sign /fd SHA256 /n \"@(MalterlibSignCertWindows)\" /t http://timestamp.globalsign.com/scripts/timestamp.dll \"@(MalterlibFinalModuleDestination->WindowsPath())\""
+	{
+		!!MalterlibSignIncludeCert "none"
+	}
+
+}
+
+Property
+{
+	PreBuildScriptDependenciesTemplate "@(Builtin.Function->GetProperty('Target', 'DependencyFile', '@(Explodee)'));"
+	{
+		!Explodee ""
+	}
+	
+	PreBuildScriptDependencies	"@(PreBuildScriptDependencies)"\
+								"@(Builtin.Function->ExplodeList('@(Target.Dependencies)', ';', 'PreBuildScriptDependenciesTemplate'))"
+	
+	PreBuildOutputfile "@(Target.IntermediateDirectory)PreBuildOutput.c"
+}
+
+Target
+{
+	!!GeneratorFamily Xcode
+
+	PreBuildScriptInputs "@(PreBuildScriptDependencies)"
+	PreBuildScriptOutputs "@(PreBuildOutputfile)"
+	PreBuildScript	"@(Target.PreBuildScript)\n"\
+					"\"@(Builtin.MToolExe)\" CheckDependencies \"Directory=@(Target.IntermediateDirectory)MalterlibDependencies\"\n"\
+					"if [ \"$?\" != \"0\" ]; then\n"\
+					"  echo error: Dependency checking failed\n"\
+					"  exit 1\n"\
+					"fi\n"\
+					"MTool TouchOrCreate \"@(PreBuildOutputfile)\"\n"\
+					"exit 0\n"
+	{
+		//!!MalterlibAccurateDependencies true
+	}
+
+
+}
+
+Target
+{
+	!!GeneratorFamily Xcode
+
+	PostBuildScriptInputs "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME)"
+	PostBuildScriptInputs "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)"
+	{
+		!Target.FileExtension ""
+	}
+	PostBuildScriptInputs "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)/Contents/MacOS/$(PRODUCT_NAME)"
+	{
+		&
+		{
+			PlatformFamily OSX
+			MalterlibIsOSXBundle true
+		}
+	}
+	PostBuildScriptInputs "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)/$(PRODUCT_NAME)"
+	{
+		&
+		{
+			PlatformFamily iOS
+			MalterlibIsOSXBundle true
+		}
+	}
+	PostBuildScriptOutputs "$(CONFIGURATION_BUILD_DIR)/@(Target.Name).c"
+
+}
+
+Property
+{
+
+	MalterlibPostCopySources "@(MalterlibFinalModuleDestination)|;@(MalterlibPostCopySources)"
+	{
+		!Target.Type Tool // Tool has no default executable
+	}
+	
+	MalterlibPostCopySources "@(MalterlibOriginalModuleDestination).dSYM|;@(MalterlibPostCopySources)"
+	{
+		&
+		{
+			Target.DebugInformationFormat "dwarf-with-dsym"
+			Target.Type Driver
+		}
+	}
+
+	MalterlibPostCopySources "@(Target:Target.IntermediateDirectory)Breakpad/Breakpad.framework|;@(MalterlibPostCopySources)"
+	{
+		&
+		{
+			MalterlibEnableBreakpad true
+			PlatformIsDarwin true
+			Target.Type "UIExecutable"
+		}
+	}
+	MalterlibPostCopySources "@(MalterlibLinuxDesktopFile)|;@(MalterlibPostCopySources)"
+	{
+		&
+		{
+			!MalterlibLinuxDesktopFile ""
+		}
+	}
+	MalterlibPostCopySources "@(MalterlibExeIcon)|;@(MalterlibPostCopySources)"
+	{
+		&
+		{
+			!MalterlibLinuxDesktopFile ""
+			!MalterlibExeIcon ""
+		}
+	}
+
+	MalterlibPostCopySources "@(MalterlibOverrideMallocLibrary)|;@(MalterlibPostCopySources)"
+	{
+		&
+		{
+			MalterlibNeedsMallocOverrideLibrary true
+			!Target.Type "UIExecutable"
+		}
+	}
+
+	
+	MalterlibPostCopySources	"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)|../Python;"\
+								"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.Extension)_LLDBLib|../Python;"\
+								"@(MalterlibPostCopySources)"
+	
+	{
+		&
+		{
+			!DocumentationEnabled true
+			PlatformIsDarwin true
+			TargetIsExecutable true
+			!Target.Type "UIExecutable"
+			!MalterlibDisableMalterlib true
+		}
+	}
+	
+
+	MalterlibPostCopyInternalTemplate	"MTool PostCopy \"@(Expand0)\" \"Config=@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig\" \"Project=@(MalterlibPostCopyProject)\" \"OutFolder=@(MalterlibPostCopyDestination)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash)\"\r\n"\
+										"@(CheckErrors)\r\n"
+	MalterlibPostCopyTemplate			"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibPostCopyInternalTemplate'))"
+	{
+		!Explodee ""
+	}
+	MalterlibPostCopyContents			"@(MalterlibPostCopyContents)"\
+										"@(Builtin.Function->ExplodeList('@(MalterlibPostCopySources)', ';', 'MalterlibPostCopyTemplate'))"
+
+	MalterlibPostCopyInternalTemplate2	"MTool PostCopy \"@(Expand0)\" \"Config=@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig\" \"Project=@(MalterlibPostCopyProject2)\" \"OutFolder=@(MalterlibPostCopyDestination2)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash2)\"\r\n"\
+										"@(CheckErrors)\r\n"
+	MalterlibPostCopyTemplate2			"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibPostCopyInternalTemplate2'))"
+	{
+		!Explodee ""
+	}
+	MalterlibPostCopyContents2			"@(MalterlibPostCopyContents)"\
+										"@(Builtin.Function->ExplodeList('@(MalterlibPostCopySources)', ';', 'MalterlibPostCopyTemplate2'))"
+	
+	MalterlibLLDBDebuggerScript			"@('../../Debug/Source/Malterlib_LLDB.py'->MakeAbsolute())"
+	MalterlibLLDBDebuggerScriptLibDir	"@('../../Debug/Source/Malterlib_LLDB'->MakeAbsolute())"
+}	
+
+Target
+{
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"set\r\n"
+	{
+		!!MalterlibPostBuildScriptShowEnv true
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"function CheckErrors {\r\n"\
+					"	if [[ $? -ne 0 ]]\r\n"\
+					"	then\r\n"\
+					"		echo ERROR: Command in post build script failed, aborting\r\n"\
+					"		exit 1\r\n"\
+					"	fi\r\n"\
+					"}\r\n"\
+					"\r\n"
+	{
+		!!PlatformType "Unix"
+	}
+
+
+/*
+	// This breaks the dependency checking in MSBuild
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"IF EXIST \"@(MalterlibOriginalModuleDestinationExpLib->WindowsPath())\" del \"@(MalterlibOriginalModuleDestinationExpLib->WindowsPath())\"\r\n"\
+					"IF EXIST \"@(MalterlibOriginalModuleDestinationLib->WindowsPath())\" del \"@(MalterlibOriginalModuleDestinationLib->WindowsPath())\"\r\n"
+	{
+		&
+		{
+			Target.Type "DynamicLibrary"
+			PlatformType "Windows"
+			!MalterlibSaveImpLib true
+		}
+	}
+	*/
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)\"\r\n"\
+					"@(CheckErrors)\r\n"\
+					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+					"@(CheckErrors)\r\n"\
+					"cp -f \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)\"\r\n"\
+					"@(CheckErrors)\r\n"\
+					"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+					"@(CheckErrors)\r\n"
+
+	{
+		&
+		{
+			!DocumentationEnabled true
+			PlatformIsDarwin true
+			TargetIsExecutable true
+			!Target.Type "UIExecutable"
+			!MalterlibDisableMalterlib "true"
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"MTool DiffCopy \"@(MalterlibOriginalModuleDestination)\" \"@(MalterlibFinalModuleDestinationPath)\" \"\" 0\r\n"\
+					"@(CheckErrors)\r\n"
+
+	{
+		&
+		{
+			!MalterlibFinalModuleDestination "@(MalterlibOriginalModuleDestination)"
+			!DisableDiffCopy "true"
+		}
+	}
+	
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"MTool DiffCopy \"@(MalterlibOriginalModuleDestination).dSYM\" \"@(MalterlibFinalModuleDestinationPath)\" \"\" 0\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			!MalterlibFinalModuleDestination "@(MalterlibOriginalModuleDestination)"
+			!DisableDiffCopy "true"
+			Target.DebugInformationFormat "dwarf-with-dsym"
+			PlatformIsDarwin true
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"MTool SetImageOsVersion \"@(MalterlibFinalModuleDestination)\" 5.01\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			TargetIsExecutable "true"
+			PlatformType "Windows"
+			LanguageFamily Native
+		}
+	}
+	
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"@(MalterlibExtraPostBuildScript)\r\n"
+	{
+		&
+		{
+			TargetIsExecutable "true"
+			!MalterlibExtraPostBuildScript ""
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"@(MalterlibPostBuildScriptPreSign)"
+	{
+		!MalterlibPostBuildScriptPreSign ""
+	}
+
+	// Do this before signing as we want to strip the executable
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo Deploy Symbols:\r\n"\
+					"echo @(MalterlibDumpSymsCommand) \"@(MalterlibFinalModuleDestinationExecutable)\" \\> \"@(MalterlibFinalModuleDestination).breakpad\"\r\n"\
+					"@(MalterlibDumpSymsCommand) \"@(MalterlibFinalModuleDestinationExecutable)\" > \"@(MalterlibFinalModuleDestination).breakpad\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			|
+			{
+				PlatformIsDarwin true
+				PlatformFamily "Linux"
+			}
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+		}
+	}
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo @(MalterlibDumpSymsCommand) \"@(MalterlibFinalModuleDestination).dSYM\" \\> \"@(MalterlibFinalModuleDestination).dSYM.breakpad\"\r\n"\
+					"@(MalterlibDumpSymsCommand) \"@(MalterlibFinalModuleDestination).dSYM\" > \"@(MalterlibFinalModuleDestination).dSYM.breakpad\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+			Target.DebugInformationFormat "dwarf-with-dsym"
+		}
+	}
+	
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo zip -qj \"@(MalterlibFinalModuleDestination)\" \"@(MalterlibFinalModuleDestination).zip\"\r\n"\
+					"if [ -f \"@(MalterlibFinalModuleDestination).zip\" ]\r\n"\
+					"then\r\n"\
+					"\trm \"@(MalterlibFinalModuleDestination).zip\"\r\n"\
+					"\t@(CheckErrors)\r\n"\
+					"fi\r\n"\
+					"zip -qj \"@(MalterlibFinalModuleDestination).zip\" \"@(MalterlibFinalModuleDestination)\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo @(MalterlibToolsPrefix)strip @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
+					"@(MalterlibToolsPrefix)strip @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			|
+			{
+				PlatformIsDarwin true
+				PlatformFamily "Linux"
+			}
+			TargetIsExecutable true
+			!MalterlibStripSymbols false
+			MalterlibDeploySymbols true
+			|
+			{
+				!Configuration "Release Testing"
+				PlatformFamily "Linux"
+			}
+		}
+	}
+					
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo zip -qj \"@(MalterlibFinalModuleDestination).breakpad.zip\" \"@(MalterlibFinalModuleDestination).breakpad\"\r\n"\
+					"if [ -f \"@(MalterlibFinalModuleDestination).breakpad.zip\" ]\r\n"\
+					"then\r\n"\
+					"\trm \"@(MalterlibFinalModuleDestination).breakpad.zip\"\r\n"\
+					"\t@(CheckErrors)\r\n"\
+					"fi\r\n"\
+					"zip -qj \"@(MalterlibFinalModuleDestination).breakpad.zip\" \"@(MalterlibFinalModuleDestination).breakpad\"\r\n"\
+					"@(CheckErrors)\r\n"\
+					"echo MTool SymbolBreakpad \"/Temp/SymbolTest\" \"@(MalterlibFinalModuleDestination).breakpad\"\r\n"\
+					"export BrekapadOutputPath=`MTool SymbolBreakpad \"@(MalterlibDeploySymbolsPath)\" \"@(MalterlibFinalModuleDestination).breakpad\"`\r\n"\
+					"@(CheckErrors)\r\n"\
+					"echo Deploying symbols to: $BrekapadOutputPath\r\n"
+	{
+		&
+		{
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformIsDarwin true
+			}
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo zip -qj \"@(MalterlibFinalModuleDestination).dSYM.breakpad\" \"@(MalterlibFinalModuleDestination).dSYM.breakpad.zip\"\r\n"\
+					"if [ -f \"@(MalterlibFinalModuleDestination).dSYM.breakpad.zip\" ]\r\n"\
+					"then\r\n"\
+					"\trm \"@(MalterlibFinalModuleDestination).dSYM.breakpad.zip\"\r\n"\
+					"\t@(CheckErrors)\r\n"\
+					"fi\r\n"\
+					"zip -qj \"@(MalterlibFinalModuleDestination).dSYM.breakpad.zip\" \"@(MalterlibFinalModuleDestination).dSYM.breakpad\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+			Target.DebugInformationFormat "dwarf-with-dsym"
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo zip -qj \"@(MalterlibFinalModuleDestination).dSYM\" \"@(MalterlibFinalModuleDestination).dSYM.zip\"\r\n"\
+					"if [ -f \"@(MalterlibFinalModuleDestination).dSYM.zip\" ]\r\n"\
+					"then\r\n"\
+					"\trm \"@(MalterlibFinalModuleDestination).dSYM.zip\"\r\n"\
+					"\t@(CheckErrors)\r\n"\
+					"fi\r\n"\
+					"zip -qrj \"@(MalterlibFinalModuleDestination).dSYM.zip\" \"@(MalterlibFinalModuleDestination).dSYM\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+			Target.DebugInformationFormat "dwarf-with-dsym"
+		}
+	}
+
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo MTool BuildServerTool Tool=ZMTool \"ProtectedDirs=$BrekapadOutputPath\" DiffCopy \"@(MalterlibFinalModuleDestination).breakpad.zip\" \"$BrekapadOutputPath\" \"\" 0\r\n"\
+					"MTool BuildServerTool Tool=ZMTool \"ProtectedDirs=$BrekapadOutputPath\" DiffCopy \"@(MalterlibFinalModuleDestination).breakpad.zip\" \"$BrekapadOutputPath\" \"\" 0\r\n"
+	{
+		&
+		{
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformIsDarwin true
+			}
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+			MalterlibBuildServerBuild true
+		}
+	}
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo MTool BuildServerTool Tool=ZMTool \"ProtectedDirs=$BrekapadOutputPath\" DiffCopy \"@(MalterlibFinalModuleDestination).dSYM.breakpad.zip\" \"$BrekapadOutputPath\" \"\" 0\r\n"\
+					"MTool BuildServerTool Tool=ZMTool \"ProtectedDirs=$BrekapadOutputPath\" DiffCopy \"@(MalterlibFinalModuleDestination).dSYM.breakpad.zip\" \"$BrekapadOutputPath\" \"\" 0\r\n"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+			MalterlibBuildServerBuild true
+			Target.DebugInformationFormat "dwarf-with-dsym"
+		}
+	}
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo MTool BuildServerTool Tool=ZMTool \"ProtectedDirs=$BrekapadOutputPath\" DiffCopy \"@(MalterlibFinalModuleDestination).dSYM.zip\" \"$BrekapadOutputPath\" \"\" 0\r\n"\
+					"MTool BuildServerTool Tool=ZMTool \"ProtectedDirs=$BrekapadOutputPath\" DiffCopy \"@(MalterlibFinalModuleDestination).dSYM.zip\" \"$BrekapadOutputPath\" \"\" 0\r\n"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+			MalterlibBuildServerBuild true
+			Target.DebugInformationFormat "dwarf-with-dsym"
+		}
+	}
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo MTool BuildServerTool Tool=ZMTool \"ProtectedDirs=$BrekapadOutputPath\" DiffCopy \"@(MalterlibFinalModuleDestination).zip\" \"$BrekapadOutputPath\" \"\" 0\r\n"\
+					"MTool BuildServerTool Tool=ZMTool \"ProtectedDirs=$BrekapadOutputPath\" DiffCopy \"@(MalterlibFinalModuleDestination).zip\" \"$BrekapadOutputPath\" \"\" 0\r\n"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+			MalterlibBuildServerBuild true
+		}
+	}
+
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"sn -Ra \"@(MalterlibFinalModuleDestination->WindowsPath())\" \"@(MalterlibStronglyNamedAssembly->WindowsPath())\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			TargetIsExecutable "true"
+			!MalterlibStronglyNamedAssembly ""
+			PlatformType "Windows"
+			!Configuration "Fast Compile"
+		}
+	}
+	
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo Sign:\r\n"\
+					"echo MTool BuildServerTool Tool=CodeSignOSX --force --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"MTool BuildServerTool Tool=CodeSignOSX --force --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			MalterlibBuildServerBuild "true"
+			PlatformFamily OSX
+			TargetIsExecutable "true"
+			|
+			{
+				MalterlibSigning "true"
+				&
+				{
+					Target.Type "Driver"
+					MalterlibDriverSigning "true"
+				}
+			}
+			
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo Sign:\r\n"\
+					"echo MTool BuildServerTool Tool=CodeSignOSX --force --deep --sign @(MalterlibSignCertiOS) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"MTool BuildServerTool Tool=CodeSignOSX --force --deep --sign @(MalterlibSignCertiOS) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			MalterlibBuildServerBuild "true"
+			PlatformFamily iOS
+			TargetIsExecutable "true"
+			|
+			{
+				MalterlibSigning "true"
+				&
+				{
+					Target.Type "Driver"
+					MalterlibDriverSigning "true"
+				}
+			}
+			
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo Sign:\r\n"\
+					"echo codesign --force --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"codesign --force --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			!MalterlibBuildServerBuild "true"
+			PlatformFamily "OSX"
+			TargetIsExecutable "true"
+			|
+			{
+				MalterlibSigning "true"
+				&
+				{
+					Target.Type "Driver"
+					MalterlibDriverSigning "true"
+				}
+			}
+			
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo Sign:\r\n"\
+					"echo codesign --force --deep --sign @(MalterlibSignCertiOS) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"codesign --force --deep --sign @(MalterlibSignCertiOS) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			!MalterlibBuildServerBuild "true"
+			PlatformFamily iOS
+			TargetIsExecutable "true"
+			|
+			{
+				MalterlibSigning "true"
+				&
+				{
+					Target.Type "Driver"
+					MalterlibDriverSigning "true"
+				}
+			}
+			
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo Sign:\r\n"\
+					"echo @(MalterlibWindowsSignCommandLine)\r\n"\
+					"@(MalterlibWindowsSignCommandLine)\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			PlatformType "Windows"
+			TargetIsExecutable "true"
+			|
+			{
+				MalterlibSigning "true"
+				&
+				{
+					Target.Type "Driver"
+					MalterlibDriverSigning "true"
+				}
+			}
+			
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo Deploy Symbols:\r\n"\
+					"echo MTool BuildServerTool Tool=ZMTool ExtraUploads=\"@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)\" \"ProtectedDirs=@(MalterlibDeploySymbolsPath)\" Symbol \"@(MalterlibDeploySymbolsPath)\" \"@(MalterlibFinalModuleDestination)\"\r\n"\
+					"MTool BuildServerTool Tool=ZMTool ExtraUploads=\"@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)\" \"ProtectedDirs=@(MalterlibDeploySymbolsPath)\" Symbol \"@(MalterlibDeploySymbolsPath)\" \"@(MalterlibFinalModuleDestination)\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			TargetIsExecutable "true"
+			MalterlibDeploySymbols "true"
+			PlatformFamily "Windows"
+		}
+	}
+	
+	
+
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"MTool DiffCopy \"@(MalterlibFinalModuleDestination)\" \"@(MalterlibTestDeployPath)\" \"\" 0\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			!MalterlibTestDeployPath ""
+			TargetIsExecutable true
+		}
+	}
+
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"MTool TouchOrCreate \"@(MalterlibTestDeployPath)/@(MalterlibFinalModuleDestination->GetFile()).MainTest\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			!MalterlibTestDeployPath ""
+			MalterlibMainTest true
+			TargetIsExecutable true
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"MTool TouchOrCreate \"@(MalterlibFinalModuleDestination).MainTest\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			!MalterlibTestPutPath ""
+			MalterlibBuildServerTest true
+			MalterlibMainTest true
+			TargetIsExecutable true
+		}
+	}
+
+	
+	
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"@(MalterlibPostCopyContents)"
+	{
+		&
+		{
+			!MalterlibBuildServerBuild "true"
+			!MalterlibPostCopyProject ""
+			!DisablePostCopy "true"
+			!MalterlibPostCopyContents ""
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"@(MalterlibPostCopyContents2)"
+	{
+		&
+		{
+			!MalterlibBuildServerBuild "true"
+			!MalterlibPostCopyProject2 ""
+			!DisablePostCopy "true"
+			!MalterlibPostCopyContents2 ""
+		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"@(MalterlibBuildServerPutPathUploadContents)"
+	{
+		&
+		{
+			!MalterlibBuildServerPutPath ""
+			MalterlibBuildServerBuild "true"
+			!MalterlibBuildServerTest "true"
+		}
+	}
+
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"@(MalterlibTestPutPathUploadContents)"
+	{
+		&
+		{
+			!MalterlibTestPutPath ""
+			MalterlibBuildServerTest "true"
+		}
+	}
+	
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo ***RESULT PROPERTY*** : ResultExecutable=@(MalterlibFinalModuleDestination->FullPath())\r\n"\
+					"\r\n"
+	{
+		!!MalterlibNotifyResult "true"
+	}
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"echo ***RESULT PROPERTY*** : ResultSymbols=@(SymbolFile->FullPath())"\
+					"\r\n"
+	{
+		&
+		{
+			MalterlibNotifyResult "true"
+			!SymbolFile ""
+		}
+	}
+
+	DependencyFile "@(Target.OutputDirectory)@(Target.Name).c"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+		}
+	}
+	
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"MTool CopyWriteTime \"@(MalterlibOriginalModuleDestinationExecutable)\" \"@(Target:Target.DependencyFile)\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		&
+		{
+			!Target:Target.DependencyFile ""
+			!Target:Target.Type Tool
+		}
+	}
+}

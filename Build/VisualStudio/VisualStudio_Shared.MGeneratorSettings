@@ -1,0 +1,31 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "Dependency"
+{
+	%GeneratorSetting "Dependency"
+	{
+		%GeneratorSetting "Link"
+		{
+			Property
+			{
+				Name "ReferenceOutputAssembly"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "Indirect"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+	}
+}

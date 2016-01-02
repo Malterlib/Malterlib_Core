@@ -1,0 +1,127 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "DotNet_CompileShared"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "Verbose"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "Symbols"
+		{
+			Property
+			{
+				Name DebugType
+				Validity NotFile
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					FullForDebug "full"
+					Full "pdbonly"
+					Fast "pdbonly"
+					None "none"
+				}
+			}
+		}	
+
+		%GeneratorSetting "Optimize"
+		{
+			Property
+			{
+				Name "Optimize"
+				Validity NotFile
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Off false
+					On true
+					Fast true
+					Full true
+				}
+			}
+		}
+		%GeneratorSetting "PreprocessorDefines"
+		{
+			Property
+			{
+				Name "DefineConstants"
+			}
+		}		
+		%GeneratorSetting "Warnings"
+		{
+			Property
+			{
+				Name "WarningLevel"
+				Validity NotFile
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Off 0
+					Minimal 1
+					On 3
+					Pedantic 4
+				}
+			}
+		}
+		%GeneratorSetting "AutoGen"
+		{
+			Property
+			{
+				Name "AutoGen"
+				Validity File
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true True
+					false False
+				}
+			}
+		}
+		%GeneratorSetting "DesignTimeSharedInput"
+		{
+			Property
+			{
+				Name "DesignTimeSharedInput"
+				Validity File
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true True
+					false False
+				}
+			}
+		}
+		%GeneratorSetting "DependentUpon"
+		{
+			Property
+			{
+				Name "DependentUpon"
+				Validity File
+			}
+		}
+		%GeneratorSetting "LastGenOutput"
+		{
+			Property
+			{
+				Name "LastGenOutput"
+				Validity File
+			}
+		}
+		
+	}
+}

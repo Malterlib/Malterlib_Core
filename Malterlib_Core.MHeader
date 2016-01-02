@@ -1,0 +1,186 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Import "../Core/Lib_Malterlib.MTarget"
+
+%Group "{Malterlib}/{Lib_Malterlib_Core}"
+{
+	%Group Core
+	{
+		%Group Include
+		{
+			Compile.Type "C++"
+			{
+				!!DocumentationEnabled true
+			}
+			%File "Include/Mib/Core/^*"
+		}
+		%File "Source/*"
+		%Group Platform
+		{
+			%File "Source/Platform/*"
+			{
+				Compile.Disabled true
+				{
+					!PlatformFamily "@(PlatformFamilyFromFile)"
+				}
+			}
+		}
+		%Group Documentation
+		{
+			%File "Documentation/*"
+		}
+	}
+	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(Target.ExtraGroups)"
+	{
+		!!MalterlibSubLibrarySeparate true
+	}
+	Property
+	{
+		Malterlib_Core_Dependencies "Lib_Malterlib_File;Lib_Malterlib_Exception;Lib_Malterlib_Contract;Lib_Malterlib_Memory;Lib_Malterlib_Thread;Lib_Malterlib_Atomic;Lib_Malterlib_Time;Lib_Malterlib_CrashReport;Lib_Malterlib_String;@(Malterlib_Core_Dependencies)"
+		Malterlib_Core_DebugDependencies "Lib_Malterlib_Debug;Lib_Malterlib_Contract;Lib_Malterlib_Log;Lib_Malterlib_Process;@(Malterlib_Core_DebugDependencies)"
+	}
+	%Dependency "@(Malterlib_Core_Dependencies)"
+	{
+		!!MalterlibSubLibrarySeparate true
+		Dependency.Indirect true
+	}
+	%Dependency "@(Malterlib_Core_DebugDependencies)"
+	{
+		!!MalterlibSubLibrarySeparate true
+		Dependency.Indirect true
+		Dependency.Link false
+		{
+			!DebugCompiler true
+		}
+	}
+	Target
+	{
+		&
+		{
+			!MalterlibIncludeRoots ""
+			MalterlibIncludeLevel Workspace
+		}
+		ExtraGroups "~Automatic/Include Roots;@(Target.ExtraGroups)"
+	}
+}
+
+//	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(AllSubLibraryGroups);@(MalterlibLibraryGroups);@(Target.ExtraGroups)"
+
+Property
+{
+	MalterlibLibrary_Core true
+	{
+		&
+		{
+			MalterlibLibrary_Core ""
+			MalterlibLibrary_All true
+		}
+	}
+	MalterlibSubLibraries "Core;@(MalterlibSubLibraries)"
+	{
+		!!MalterlibLibrary_Core true
+	}
+//	MalterlibSubLibrarySeparate_Lib_Malterlib_Core true
+	MalterlibIncludeRoots "@('Include'->MakeAbsolute());@(MalterlibIncludeRoots)"
+	{
+		!!MalterlibLibrary_Core true
+	}
+	MalterlibSubLibrarySeparate true
+	{
+		!!Documentation Doxygen
+	}
+}
+
+Property
+{
+	AllMalterlibLibrariesTemplate "Lib_Malterlib_@(Explodee);"
+	{
+		!Explodee ""
+	}
+	
+	AllMalterlibLibraries "@(Builtin.Function->ExplodeList('@(MalterlibSubLibraries)', ';', 'AllMalterlibLibrariesTemplate'))"
+	{
+	}
+}
+
+%Target "@(AllMalterlibLibraries)"
+{
+	Property.MalterlibNoShortcuts true	
+	
+	|
+	{
+		true "@(MalterlibSubLibrarySeparate_@(Target:this.Identity))"
+		true "@(MalterlibLibrarySeparate_@(Target:this.Identity))"
+		&
+		{
+			MalterlibSubLibrarySeparate true
+			!false "@(MalterlibSubLibrarySeparate_@(Target:this.Identity))" 
+		}
+	}
+	Property
+	{
+		DocumentationModule Malterlib
+	}
+	Target
+	{
+		ExtraGroups "{Malterlib}/{@(Target:this.Identity)};@(Target.ExtraGroups)"
+		Name "@(Target:this.Identity)"
+		Type StaticLibrary
+		Group "Libraries/Malterlib"
+	}
+}
+
+%Target Dll_Test_Malterlib_Helper_Core
+{
+	Property
+	{
+		MalterlibHelperTest true
+		MalterlibPostCopyProject "Tests"
+		ProductName "Malterlib Test Dll"
+	}
+	Target
+	{
+		BaseName "Test_Malterlib_Helper_Core"
+		Type "DynamicLibrary"
+		Group "Helpers"
+	}
+	Compile
+	{
+		!!CompileDialect C
+		PrefixHeader ""
+	}
+	%File Test/Test_Malterlib_Core_DllMain.cpp
+	%Dependency Lib_Malterlib
+}
+
+%Group "{Test}/{Malterlib_Core}"
+{
+	%Group "Tests"
+	{
+		%File "Test/*"
+		%File "Test/Test_Malterlib_Core_DllMain*"
+		{
+			Compile.Disabled true
+		}
+	}
+	%Dependency "Dll_Test_Malterlib_Helper_Core"
+}
+
+Property
+{
+	MalterlibEnableThirdPartyComparisonTests false // User: Enable thrird party comparison tests. Additional SDKs might be needed
+	{
+		!!MalterlibEnableThirdPartyComparisonTests ""
+	}
+}
+
+Property
+{
+	!!MalterlibEnableInternalTests true
+	
+	MalterlibTests "Malterlib_Core;@(MalterlibTests)"
+	MalterlibTestExtraGroups_Malterlib_Core "{Test}/{Malterlib_Core}"
+}
+
+Import "Tools/*/*.MHeader"

@@ -1,0 +1,51 @@
+#pragma once
+
+#include "Malterlib_Core_General.h"
+#include <Mib/Function/Function>
+
+namespace NMib
+{
+	template<typename tf_FOnExitFunctor>
+	TCOnScopeExit<NFunction::TCFunction<void ()>> fg_OnScopeExitCatch(tf_FOnExitFunctor &&_fOnExitFunctor)
+	{
+		return TCOnScopeExit<NFunction::TCFunction<void ()>>
+			(
+				[_fOnExitFunctor]()
+				{
+					try
+					{
+						_fOnExitFunctor();
+					}
+					catch (NException::CException const &_Exception)
+					{
+					}
+				}
+			)
+		;
+	}
+
+	struct COnScopeExitCatchHelper
+	{
+		template<typename tf_FOnExitFunctor>
+		TCOnScopeExit<NFunction::TCFunction<void ()>> operator >(tf_FOnExitFunctor &&_fOnExitFunctor)
+		{ 
+			return TCOnScopeExit<NFunction::TCFunction<void ()>>
+				(
+					[_fOnExitFunctor]()
+					{
+						try
+						{
+							_fOnExitFunctor();
+						}
+						catch (NException::CException const &_Exception)
+						{
+						}
+					}
+				)
+			;
+		}
+	};
+
+	extern COnScopeExitCatchHelper &g_OnScopeExitCatch;
+}
+

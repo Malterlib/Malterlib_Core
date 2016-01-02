@@ -1,0 +1,137 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "DotNet_SharedTarget"
+{
+	%GeneratorSetting "Target"
+	{
+		%GeneratorSetting "FileName"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+		%GeneratorSetting "FileExtension"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+		%GeneratorSetting "DefaultNamespace"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+		%GeneratorSetting "ToolPath"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+
+		%GeneratorSetting "GenerateDebugInformation"
+		{
+			Property
+			{
+				Name DebugSymbols
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}		
+
+		%GeneratorSetting "PostBuildScript"
+		{
+			Property
+			{
+				Name "PostBuildEvent"
+				Substitute "set PATH=$(MalterlibBuildSystemExecutablePath);%PATH%\r\n{}"
+			}
+		}
+
+		%GeneratorSetting "PreBuildScript"
+		{
+			Property
+			{
+				Name "PreBuildEvent"
+				Substitute "set PATH=$(MalterlibBuildSystemExecutablePath);%PATH%\r\n{}"
+			}
+		}
+
+		%GeneratorSetting "Version"
+		{
+			Property
+			{
+				Name ApplicationVersion
+			}
+		}		
+		%GeneratorSetting "PlatformTarget"
+		{
+			Property
+			{
+				Name PlatformTarget
+			}
+		}	
+		%GeneratorSetting "ErrorReport"
+		{
+			Property
+			{
+				Name ErrorReport
+			}
+		}
+		%GeneratorSetting "CodeAnalysisRuleSet"
+		{
+			Property
+			{
+				Name CodeAnalysisRuleSet
+			}
+		}
+		%GeneratorSetting "DebuggerCommandArguments"
+		{
+			Property
+			{
+				Name StartArguments
+			}
+		}
+		%GeneratorSetting "LocalDebuggerCommand"
+		{
+			Property
+			{
+				Name StartProgram
+			}
+		}
+		%GeneratorSetting "LocalDebuggerWorkingDirectory"
+		{
+			Property
+			{
+				Name StartWorkingDirectory
+			}
+		}
+		
+		%GeneratorSetting "RemoteDebuggerCommand"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+		%GeneratorSetting "RemoteDebuggerWorkingDirectory"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+		%GeneratorSetting "StartAction"
+	}
+}

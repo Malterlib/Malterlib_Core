@@ -1,0 +1,920 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	MalterlibNeedsInitProject true
+	{
+		!!PlatformType "Unix"
+	}
+}
+
+%Target "Lib_Malterlib_Init"
+{
+	&
+	{
+		MalterlibNeedsInitProject  true
+		!MalterlibDefaultToolset true
+	}
+	Property.DocumentationModule Malterlib
+	Property.MalterlibNoShortcuts true	
+
+	Target
+	{
+		BaseName "Malterlib_Init"
+		Type "StaticLibrary"
+		Group "Libraries/Malterlib"
+	}
+	Compile
+	{
+		!!CompileDialect "C"
+		PrefixHeader ""
+	}
+	%Group Source
+	{
+		%Group Runtime
+		{
+			%Group Runtimes
+			{
+				%Group MacOSX
+				{
+					%File Source/Platform/Malterlib_Core_PlatformImp_Posix_Init.cpp
+				}
+			}
+		}
+	}
+}
+
+%Group "~Automatic/Init Early"
+{
+	%File Source/Platform/Malterlib_Core_PlatformImp_Posix_Init.cpp
+	{
+		Compile.InitEarly true
+	}
+}
+
+Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
+{
+	&
+	{
+		MalterlibNeedsInitProject  true
+		MalterlibDefaultToolset true
+		TargetIsExecutable true
+		!MalterlibDisableMalterlib true
+	}
+}
+
+%Target "Lib_Malterlib_Runtime2"
+{
+	Property.MalterlibNoShortcuts true	
+	Property.DocumentationModule Malterlib
+	Target
+	{
+		BaseName "Malterlib_Runtime2"
+		Type "StaticLibrary"
+		Group "Libraries/Malterlib"
+	}
+	Compile
+	{
+		!!CompileDialect "C"
+		PrefixHeader ""
+		SearchPath "@(Builtin.BasePath)/SDK/libelf;@(Builtin.BasePath)/SDK/libelf/common;@(Compile.SearchPath)"
+		{
+			!!PlatformFamily "Linux"
+		}
+	}
+	%Group "Source"
+	{
+		Compile
+		{
+			!!MalterlibCompileSupportTabSetings true
+			IndentWidth 2
+			TabWidth 2
+			UsesTabs false
+		}
+		
+		%File "Source/Dummy/Dummy.cpp"
+		%Group compiler-rt
+		{
+			&
+			{
+				MalterlibUseStaticLibCxxABI true
+				|
+				{
+					PlatformFamily OSX
+					PlatformFamily Emscripten
+				}
+			}
+			%File "../../SDK/compiler-rt/lib/builtins/*.c"
+			%File "../../SDK/compiler-rt/lib/builtins/*.h"
+			%Group x86
+			{
+				!!Architecture x86
+				//%File "../../SDK/compiler-rt/lib/builtins/i386/*.c"
+				%File "../../SDK/compiler-rt/lib/builtins/i386/*.S"
+			}
+			%Group x64
+			{
+				!!Architecture x64
+				%File "../../SDK/compiler-rt/lib/builtins/x86_64/*.c"
+				%File "../../SDK/compiler-rt/lib/builtins/x86_64/*.S"
+			}
+			%Group ppc
+			{
+				!!Architecture ppc32
+				!!Architecture ppc64
+				%File "../../SDK/compiler-rt/lib/builtins/ppc/*.c"
+				%File "../../SDK/compiler-rt/lib/builtins/ppc/*.S"
+			}
+		}
+	}
+}
+
+%Target "Lib_Malterlib_Runtime"
+{
+	Property
+	{
+		MalterlibNoShortcuts true	
+		DocumentationModule Malterlib
+		MalterlibGenerateLibrary true // Always generate library here so files can be excluded
+	}
+	Target
+	{
+		BaseName "Malterlib_Runtime"
+		Type "StaticLibrary"
+		Group "Libraries/Malterlib"
+	}
+	Compile
+	{
+		!!CompileDialect "C"
+		PrefixHeader ""
+		PrecompilePrefixHeader false
+		SearchPath "@(Builtin.BasePath)/SDK/libelf;@(Builtin.BasePath)/SDK/libelf/common;@(Compile.SearchPath)"
+		{
+			!!PlatformFamily "Linux"
+		}
+		SearchPath "@('../../SDK/libunwind/include'->MakeAbsolute());@(Compile.SearchPath)"
+		{
+			&
+			{
+				MalterlibUseStaticLibCxxABI true
+				MalterlibUseStaticLibUnwind true
+			}
+		}
+		PreprocessorDefines "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED;@(Compile.PreprocessorDefines)"
+	}
+	Compile
+	{
+		&
+		{
+			CompileDialect "C"
+			|
+			{
+				PlatformFamily "Emscripten"
+				PlatformFamily "Linux"
+				PlatformFamily "OSX"
+			}
+			!DocumentationEnabled true
+		}
+		PreprocessorDefines "malloc=nontracked_malloc;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines "free=nontracked_free;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines "calloc=nontracked_calloc;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines "realloc=nontracked_realloc;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines "cfree=nontracked_cfree;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines "memalign=nontracked_memalign;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines "valloc=nontracked_valloc;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines "pvalloc=nontracked_pvalloc;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines "malloc_usable_size=nontracked_malloc_usable_size;@(Compile.PreprocessorDefines)"
+	}
+	%Group "Source"
+	{
+		%Group NonTracked
+		{
+			Compile
+			{
+				!!MalterlibCompileSupportTabSetings true
+				IndentWidth 2
+				TabWidth 2
+				UsesTabs false
+			}
+			%Group libc++
+			{
+				!!MalterlibUseStaticLibCxx "true"
+				Compile
+				{
+					DynamicTypeInfo true
+					{
+						!!ForceEnableDynamicTypeInfoLibCXX true
+					}
+				}
+				%Group Headers
+				{
+					%File "../../SDK/libcxx/include/*"
+					Compile.Type Header
+				}
+				%Group Source
+				{
+					%File "../../SDK/libcxx/src/*.cpp"
+					%File "../../SDK/libcxx/src/new.cpp"
+					{
+						Compile.PreprocessorDefines "DMibNewOverride;@(Compile.PreprocessorDefines)"
+					}
+					%File "../../SDK/libcxx/src/debug.cpp"
+					{
+						Compile.Disabled true
+					}
+				}
+			}
+			%Group libelf
+			{
+				!!PlatformFamily Linux
+				%File "../../SDK/libelf/*.c"
+				%File "../../SDK/libelf/*.h"
+			}
+			%Group libdwarf
+			{
+				!!PlatformFamily Linux
+				%File "../../SDK/libdwarf/*.c"
+				%File "../../SDK/libdwarf/*.h"
+			}
+			%Group libc++abi
+			{
+				!!MalterlibUseStaticLibCxxABI true
+				
+				%Group Lib
+				{
+					Compile
+					{
+						!!CompileDialect "C"
+						DynamicTypeInfo true
+						PreprocessorDefines "DMibNewOverrideImplementation;@(Compile.PreprocessorDefines)"
+					}
+					
+					%File "../../SDK/libcxxabi/src/*.cpp"
+					{
+						Compile.Disabled true
+						{
+							!!PlatformFamily Emscripten
+						}
+					}
+					%File "../../SDK/libcxxabi/src/*.ipp"
+					%File "../../SDK/libcxxabi/src/*.h"
+					%File "../../SDK/libcxxabi/include/*.h"
+					{
+						Compile.Disabled true
+					}
+					%File "../../SDK/libcxxabi/src/exception.cpp"
+					%File "../../SDK/libcxxabi/src/stdexcept.cpp"
+					%File "../../SDK/libcxxabi/src/typeinfo.cpp"
+					%File "../../SDK/libcxxabi/src/private_typeinfo.cpp"
+				}
+			}
+			%Group libunwind
+			{
+				&
+				{
+					MalterlibUseStaticLibCxxABI true
+					MalterlibUseStaticLibUnwind true
+				}
+				Compile
+				{
+					!!Compile.Type "Assembler"
+					
+					AllCPUSubTypes true
+					PreprocessorDefines "LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+				}
+				%File "../../SDK/libunwind/include/^*"
+				%File "../../SDK/libunwind/src/*"
+				{
+					Compile.Disabled true
+					{
+						!!PlatformFamily Emscripten
+					}
+				}
+			}
+		}
+		%Group "MSVC"
+		{
+			Compile.Disabled true
+			{
+				!PlatformType "Windows"
+			}
+
+			%Group "CDecl"
+			{
+				Compile
+				{
+					!!CompileDialect "C"
+					CallingConvention "Cdecl"
+					{
+						!Target.VisualStudioPlatform "Clang"
+					}
+				}
+				%Group CRT14
+				{
+					!!MalterlibEnableThirdPartyComparisonTests true
+					Compile.Disabled true
+					Compile
+					{
+						!!CompileDialect "C"
+						SearchPath "@('../../SDK/VS.14.Crt/vcruntime'->MakeAbsolute());@(Compile.SearchPath)"
+						PreprocessorDefines "_VCRT_BUILD;@(Compile.PreprocessorDefines)"
+						PrefixHeader "@('Source/Platform/Malterlib_Core_PlatformImp_MSVC_CRTPatches.h'->MakeAbsolute())"
+						{
+							!!PlatformType "Windows"
+						}
+					}
+
+					/*
+					%File "../../SDK/VS.14.Crt/^*.h"
+					%File "../../SDK/VS.14.Crt/^*.cpp"
+					%File "../../SDK/VS.14.Crt/^*.cxx"
+					%File "../../SDK/VS.14.Crt/^*.c"
+					%File "../../SDK/VS.14.Crt/^*.inl"
+					*/
+					%Group vcruntime
+					{
+						Compile.Disabled false
+						{
+							!!PlatformType "Windows"
+						}
+						%File "../../SDK/VS.14.Crt/vcruntime/exe_common.inl"
+						%File "../../SDK/VS.14.Crt/vcruntime/utility.cpp"
+						%File "../../SDK/VS.14.Crt/vcruntime/exe_main.cpp"
+						%File "../../SDK/VS.14.Crt/vcruntime/exe_winmain.cpp"
+						%File "../../SDK/VS.14.Crt/vcruntime/exe_wmain.cpp"
+						%File "../../SDK/VS.14.Crt/vcruntime/exe_wwinmain.cpp"
+						%File "../../SDK/VS.14.Crt/vcruntime/dll_dllmain.cpp"
+					}
+				}
+			}
+		}
+	}
+}
+
+%Target "Lib_MalterlibExecutable"
+{
+	Property.MalterlibNoShortcuts true	
+	Property.DocumentationModule Malterlib
+	Target
+	{
+		BaseName "MalterlibExecutable"
+		Type "StaticLibrary"
+		Group "Libraries/Malterlib"
+	}
+	Compile
+	{
+		!!CompileDialect "C"
+		PrefixHeader ""
+	}
+	Include "Lib_MalterlibNoPrefix.MHeader"
+}
+
+%Target "Lib_MalterlibDll"
+{
+	Property.MalterlibNoShortcuts true	
+	Property.DocumentationModule Malterlib
+	Property
+	{
+		MalterlibDynamicLibrary true
+	}
+	Target
+	{
+		BaseName "MalterlibDll"
+		Type "StaticLibrary"
+		Group "Libraries/Malterlib"
+	}
+	Compile
+	{
+		!!CompileDialect "C"
+		PrefixHeader ""
+	}
+	Include "Lib_MalterlibNoPrefix.MHeader"
+}
+
+Compile
+{
+	&
+	{
+		MalterlibEnableBreakpad true
+		|
+		{
+			CompileDialect "C"
+		}
+	}
+	SearchPath "@(Builtin.BasePath)/SDK/breakpad/src;@(Compile.SearchPath)"
+	PreprocessorDefines "typeof=__typeof__;@(Compile.PreprocessorDefines)"
+}
+
+%Group "~Automatic/Breakpad Support"
+{
+	%File Source/Platform/Malterlib_Core_PlatformImp_MacOSX_Breakpad.mm
+	{
+		Compile.Disabled "true"
+		{
+			|
+			{
+				!PlatformFamily "OSX"
+				!Target:Target.Type "UIExecutable"
+			}
+		}
+		
+	}
+	%File Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp
+	{
+		Compile.Disabled "true"
+		{
+			|
+			{
+				PlatformFamily "Windows"
+				&
+				{
+					PlatformFamily "OSX"
+					Target:Target.Type "UIExecutable"
+				}
+
+			}
+		}
+	}	
+	!!MalterlibEnableBreakpad "true"
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Breakpad Support;@(Target.ExtraGroups)"
+	{
+		!!MalterlibEnableBreakpad "true"
+	}
+}
+
+Compile
+{
+	&
+	{
+		MalterlibEnableBreakpadUploader true
+		|
+		{
+			CompileDialect "C"
+		}
+	}
+	SearchPath "@(Builtin.BasePath)/SDK/curl/include;@(Compile.SearchPath)"
+	PreprocessorDefines "CURL_STATICLIB;DMibBreakpadUploadServer=\"@(MalterlibBreakpadUploadServer)\";@(Compile.PreprocessorDefines)"
+}
+
+%Group "~Automatic/Breakpad Uploader Support"
+{
+	%File ../CrashReport/Source/Malterlib_CrashReport_BreakpadUploader.cpp
+	!!MalterlibEnableBreakpadUploader "true"
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Breakpad Uploader Support;@(Target.ExtraGroups)"
+	{
+		!!MalterlibEnableBreakpadUploader "true"
+	}
+}
+
+%Group "~Automatic/Program Identifier"
+{
+	%File Source/Platform/Malterlib_Core_PlatformImp_Linux_ProgramIdentifier.cpp
+	
+	&
+	{
+		PlatformFamily Linux
+		TargetIsExecutable true
+	}
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Program Identifier;@(Target.ExtraGroups)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			TargetIsExecutable true
+		}
+	}
+}
+
+%Group "~Automatic/Include Roots"
+{
+	Property
+	{
+		EvalFile "@(Explodee->GetFile())"
+		RelativePath "@(Explodee->MakeRelative(@(Explodee1)))"
+		ExpandTemplate2	"@(MalterlibIncludeOutputDir)/@(RelativePath)|RelativePath=@(RelativePath)|FullPath=@(Explodee);"
+		{
+			&
+			{
+				!EvalFile ""
+				!EvalFile ".DS_Store"
+			}
+		}
+		ExpandTemplate	"@(Builtin.Function->ExplodeList('@(Explodee->FindFilesRecursiveIn('*'))', ';', 'ExpandTemplate2'))"
+		{
+			!Explodee ""
+		}
+		ExplodedContents "@(Builtin.Function->ExplodeList('@(MalterlibIncludeRoots)', ';', 'ExpandTemplate'))\n"
+	}
+	
+	%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibIncludeRoots)', ';', 'ExpandTemplate'))"
+	{
+		Compile.Type "Header"
+		Property
+		{
+			Name "@(this.Identity)"
+			Contents "#include \"@(FullPath)\"\n"
+			Executable false
+			UnixLineEnds true
+			UnicodeBOM true
+			Group "@(Platform) @(Architecture) @(Configuration)/@(RelativePath->GetPath())"
+			{
+				!!MalterlibIncludePerConfig true
+			}
+			Group "@(RelativePath->GetPath())"
+			{
+				!MalterlibIncludePerConfig true
+			}
+		}
+		//!!MalterlibIncludeRoots ""
+	}
+}
+
+Property
+{
+	MalterlibLibrary_All true // Default to all functionality being included in the library
+	MalterlibIncludeLevel "Workspace" // These too will cause performance issues if changed
+	MalterlibIncludePerConfig false // These too will cause performance issues if changed
+	
+	MalterlibIncludeOutputDir "@(GeneratedDirectory)RootInclude"
+	{
+		&
+		{
+			MalterlibIncludeLevel "Target"
+			MalterlibIncludePerConfig true
+		}
+		
+	}
+	MalterlibIncludeOutputDir "@(GeneratedDirectoryNoConfig)RootInclude"
+	{
+		&
+		{
+			MalterlibIncludeLevel "Target"
+			!MalterlibIncludePerConfig true
+		}
+		
+	}
+	MalterlibIncludeOutputDir "@(GeneratedWorkspaceDirectory)RootInclude"
+	{
+		&
+		{
+			MalterlibIncludeLevel "Workspace"
+			MalterlibIncludePerConfig true
+		}
+		
+	}
+	MalterlibIncludeOutputDir "@(GeneratedWorkspaceDirectoryNoConfig)RootInclude"
+	{
+		&
+		{
+			MalterlibIncludeLevel "Workspace"
+			!MalterlibIncludePerConfig true
+		}
+	}
+}
+
+Property
+{
+	MalterlibMemoryManager_EnableOverrideSystemMalloc true
+	{
+		&
+		{
+			MalterlibMemoryManager_OverrideSystemMalloc true
+			!MalterlibMemoryManager System
+			!
+			{
+				&												// Disable for dynamic libraries on linux and OSX as only main executable should override malloc
+				{
+					MalterlibDynamicLibrary true
+					|
+					{
+						PlatformFamily Linux
+						PlatformFamily OSX
+					}
+				}
+			}
+		}
+	}
+}
+
+
+Target
+{
+	&
+	{
+		!MalterlibIncludeRoots ""
+		MalterlibIncludeLevel Target
+	}
+	ExtraGroups "~Automatic/Include Roots;@(Target.ExtraGroups)"
+}
+
+%Group "~Automatic/Malterlib Indirect Dependencies"
+{
+	Dependency.Indirect true
+	
+	%Dependency "Lib_Malterlib_Init"
+	{
+		&
+		{
+			MalterlibNeedsInitProject true
+			!MalterlibDefaultToolset true
+		}
+		Dependency.Link false
+	}
+	%Dependency "Lib_Malterlib_Runtime"
+	{
+		&
+		{
+			Documentation ""
+			|
+			{
+				PlatformFamily Windows
+				MalterlibUseStaticLibCxx true
+				MalterlibUseStaticLibCxxABI true
+			}
+		}
+		Dependency.LinkWithObjectFiles "false"
+	}
+	%Dependency "Lib_Malterlib_Runtime2"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxxABI true
+			Documentation ""
+		}
+	}
+	%Dependency "Lib_MalterlibDll"
+	{
+		!!Target:Target.Type "DynamicLibrary"
+	}
+	%Dependency "Lib_MalterlibExecutable"
+	{
+		|
+		{
+			Target:Target.Type "ConsoleExecutable"
+			Target:Target.Type "UIExecutable"
+			Target:Target.Type "Executable"
+		}
+	}
+	%Dependency "Dll_MalterlibOverrideMalloc"
+	{
+		&
+		{
+			|
+			{
+				PlatformFamily OSX
+				PlatformFamily Linux
+			}
+			Documentation ""
+			TargetIsExecutable true
+			!Target.Type DynamicLibrary
+			!Target.Type SharedDynamicLibrary
+			!MalterlibMemoryManager System
+		}
+		Dependency.Link true
+		{
+			&
+			{
+				PlatformFamily OSX
+				MalterlibMemoryManager_EnableOverrideSystemMalloc true
+			}
+		}
+		Dependency.Link false
+		{
+			!
+			{
+				&
+				{
+					PlatformFamily OSX
+					MalterlibMemoryManager_EnableOverrideSystemMalloc true
+				}
+			}
+		}
+	}
+}
+
+%Target "Lib_Malterlib"
+{
+	Property.MalterlibNoShortcuts true
+	Property
+	{
+		DocumentationModule Malterlib
+	}
+	Target
+	{
+		BaseName "Malterlib"
+		Type "StaticLibrary"
+		Group "Libraries/Malterlib"
+	}
+	Compile
+	{
+		!!CompileDialect "C"
+		PrefixHeader "@(Builtin.BasePath)/@(Builtin.Function->RelativeBase('../Core/Source/PrefixHeader/PCH.h'))"
+		{
+			!DocumentationEnabled true
+		}
+		SearchPath "@(Builtin.BasePath)/@(Builtin.Function->RelativeBase('../PCH'));@(Compile.SearchPath)"
+		SearchPath "@(Builtin.BasePath)/SDK/libelf;@(Builtin.BasePath)/SDK/libelf/common;@(Compile.SearchPath)"
+		{
+			!!PlatformFamily "Linux"
+		}
+		SearchPath "@(MalterlibSysRoot)/usr/include/glib-2.0;@(Compile.SearchPath)"
+		{
+			!!PlatformFamily "Linux"
+		}
+		SearchPath "@(Builtin.BasePath)/SDK/libdwarf;@(Compile.SearchPath)"
+		{
+			!!PlatformFamily "Linux"
+		}
+	}
+	%Group "Source"
+	{
+		%Group !PreComp
+		{
+			%File ../Core/Source/PrefixHeader/PCH.h
+		}
+	}
+	Property
+	{
+		AllSubLibraryGroupsTemplate "{Malterlib}/{Lib_Malterlib_@(Explodee)};"
+		{
+			&
+			{
+				!Explodee ""
+				!
+				{
+					|
+					{
+						true "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))"
+						true "@(MalterlibLibrarySeparate_Lib_Malterlib_@(Explodee))"
+						&
+						{
+							MalterlibSubLibrarySeparate true
+							!false "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))" 
+						}
+					}
+				}
+			}
+		}
+		
+		AllSubLibraryGroups "@(Builtin.Function->ExplodeList('@(MalterlibSubLibraries)', ';', 'AllSubLibraryGroupsTemplate'))"
+		{
+		}
+	}
+	
+	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(AllSubLibraryGroups);@(MalterlibLibraryGroups);@(Target.ExtraGroups)"
+	
+	%Group "Indirect Dependencies"
+	{
+		Property
+		{
+			AllDependenciesTemplate "Lib_Malterlib_@(Explodee);"
+			{
+				&
+				{
+					!Explodee ""
+					|
+					{
+						&
+						{
+							true "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))"
+							!true "@(MalterlibLibrarySeparate_Lib_Malterlib_@(Explodee))"
+						}
+						&
+						{
+							MalterlibSubLibrarySeparate true
+							!false "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))" 
+						}
+					}
+				}
+			}
+			
+			AllDependencies "@(Builtin.Function->ExplodeList('@(MalterlibSubLibraries)', ';', 'AllDependenciesTemplate'))"
+			{
+			}
+		}
+		
+		%Dependency "@(AllDependencies)"
+		
+		Dependency.Indirect true		
+	}
+}
+
+%Target "Dll_MalterlibOverrideMallocDummy"
+{
+	Property.MalterlibNoShortcuts true	
+	Target
+	{
+		BaseName "MalterlibOverrideMallocDummy"
+		Type "SharedDynamicLibrary"
+		Group "Libraries/Malterlib"
+		CxxStandardLibrary "none"
+		{
+			&
+			{
+				!MalterlibDefaultToolset true
+				!MalterlibUseStaticLibCxx false
+				LanguageFamily Native
+				GeneratorFamily "Xcode"
+			}
+		}
+	}
+	Target
+	{
+		!!PlatformFamily OSX
+		LinkWithLibraries ""
+		LinkWithStandardLibraries false
+		SharedLibraryInstallPath "/usr/lib/system/MalterlibMallocOverrideDummy.dylib"
+	}
+	Compile
+	{
+		!!CompileDialect "C"
+		PrefixHeader ""
+	}
+	Property
+	{
+		MalterlibDisableMalterlib true
+		MalterlibSigning false // Linker crashes if we sign this dylib
+	}
+	%Group Source
+	{
+		%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSXDyldDummy.cpp
+		{
+			!!PlatformFamily OSX
+		}
+		%File Source/Dummy/DummyMainRaw.cpp
+		{
+			!PlatformFamily OSX
+		}
+	}
+}
+
+%Target "Dll_MalterlibOverrideMalloc"
+{
+	Property.MalterlibNoShortcuts true	
+	Target
+	{
+		BaseName "MalterlibOverrideMalloc"
+		Type "SharedDynamicLibrary"
+		Group "Libraries/Malterlib"
+		CxxStandardLibrary "none"
+		{
+			&
+			{
+				!MalterlibDefaultToolset true
+				!MalterlibUseStaticLibCxx false
+				LanguageFamily Native
+				GeneratorFamily "Xcode"
+			}
+		}
+	}
+	Target
+	{
+		!!PlatformFamily OSX
+
+		LinkWithLibraries "-undefined dynamic_lookup \"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib\""
+		LinkWithLibraries "/usr/lib/dylib1.o @(Target.LinkWithLibraries)"
+		{
+			!!Platform "OSX10.5"
+		}
+		LinkWithStandardLibraries false
+		SharedLibraryInstallPath "@executable_path/MalterlibOverrideMalloc.dylib"
+	}
+	Compile
+	{
+		!!CompileDialect "C"
+		PrefixHeader ""
+		StackGuard false
+		{
+			!!PlatformFamily OSX
+		}
+	}
+	Property
+	{
+		MalterlibDisableMalterlib true
+	}
+	%Group Source
+	{
+		%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSXLibSystem.cpp
+		{
+			!!PlatformFamily OSX
+		}
+		%File Source/Dummy/DummyMainRaw.cpp
+		{
+			!PlatformFamily OSX
+		}
+	}
+	%Dependency "Dll_MalterlibOverrideMallocDummy"
+}

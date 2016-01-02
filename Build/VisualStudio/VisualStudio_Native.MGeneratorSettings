@@ -1,0 +1,250 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "Native_ImportTargets"
+{
+	%GeneratorSetting "Defaults"
+	{
+		Property
+		{
+			A0 "$(VCTargetsPath)\\Microsoft.Cpp.Default.props"
+		}
+	}		
+	%GeneratorSetting "Props"
+	{
+		Property
+		{
+			A0 "$(VCTargetsPath)\\Microsoft.Cpp.props"
+			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.props"
+			A2 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.props"
+			A3 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.props"
+		}
+	}		
+	%GeneratorSetting "Targets"
+	{
+		Property
+		{
+			A0 "$(VCTargetsPath)\\Microsoft.Cpp.targets"
+			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"
+			A2 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.targets"
+			A3 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.targets"
+		}
+	}		
+}
+%GeneratorSetting "Native_Root"
+{
+	%GeneratorSetting "Target"
+	{
+		%GeneratorSetting "Type"
+		{
+			Property
+			{
+				Name "ConfigurationType"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Executable Application
+					ConsoleExecutable Application
+					UIExecutable Application
+					Driver Application
+					DynamicLibrary DynamicLibrary
+					SharedDynamicLibrary DynamicLibrary
+					StaticLibrary StaticLibrary
+					Tool Makefile
+				}
+			}
+		}
+
+		%GeneratorSetting "PlatformToolset"
+		{
+			Property
+			{
+				Name "PlatformToolset"
+			}
+		}
+		%GeneratorSetting "CharacterSet"
+		{
+			Property
+			{
+				Name "CharacterSet"
+			}
+		}
+		%GeneratorSetting "IgnoreWarnCompileDuplicatedFilename"
+		{
+			Property
+			{
+				Name "IgnoreWarnCompileDuplicatedFilename"
+			}
+		}
+		%GeneratorSetting "UseOfMfc"
+		{
+			Property
+			{
+				Name "UseOfMfc"
+			}
+		}
+		%GeneratorSetting "UseOfAtl"
+		{
+			Property
+			{
+				Name "UseOfAtl"
+			}
+		}
+		%GeneratorSetting "LinkTimeCodeGeneration"
+		{
+			Property
+			{
+				Name "WholeProgramOptimization"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+					"" false
+				}
+			}
+		}
+		%GeneratorSetting "CLRSupport"
+		{
+			Property
+			{
+				Name "CLRSupport"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+					"" false
+				}
+			}
+		}
+			
+		%GeneratorSetting "DefaultToolArchitecture"
+		{
+			Property
+			{
+				Name "UseNativeEnvironment"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Native64Bit true
+					"" ""
+				}
+			}
+		}
+		%GeneratorSetting "IntermediateDirectory"
+		{
+			Property
+			{
+				Name "IntDir"
+			}
+		}
+		%GeneratorSetting "OutputDirectory"
+		{
+			Property
+			{
+				Name "OutDir"
+			}
+		}
+
+	}
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "Type"
+		{
+			%GeneratorSetting "ValueSet"
+			{
+				%GeneratorSetting "C"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								CompileAs "CompileAsC"
+								CompileAsManaged false
+							}
+						}
+					}
+				}
+				%GeneratorSetting "C++Managed"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								CompileAsManaged "true"
+								CompileAs "CompileAsCpp"
+							}
+						}
+					}
+				}
+				%GeneratorSetting "MSBuildTargets"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								SubType "Designer"
+							}
+						}
+					}
+				}
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					C++ ClCompile
+					C++Managed ClCompile
+					C ClCompile
+					Header ClInclude
+					None None
+					Assembler MASM
+					QtRcc QtRcc
+					QtMoc QtMoc
+					QtUic QtUic
+					MlTwk MlTwk
+					MalterlibFS MalterlibFS
+					WindowsResource ResourceCompile
+					MSBuildTargets None
+					VisualStudioVisualizer Natvis
+				}
+			}
+		}
+	}
+}
+%GeneratorSetting "Native_Dependency"
+{
+	%GeneratorSetting "Dependency"
+	{
+		%GeneratorSetting "LinkWithObjectFiles"
+		{
+			Property
+			{
+				Name "UseLibraryDependencyInputs"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+	}
+}

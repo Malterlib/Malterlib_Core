@@ -1,0 +1,20 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "VisualStudio2012"
+{
+	Include VisualStudio_CSharp.MGeneratorSettings
+	Include VisualStudio_CSharp_Compile.MGeneratorSettings
+	Include VisualStudio_CSharp_Target.MGeneratorSettings
+	Include VisualStudio_DotNet.MGeneratorSettings
+	Include VisualStudio_DotNet_Compile.MGeneratorSettings
+	Include VisualStudio_DotNet_Target.MGeneratorSettings
+	Include VisualStudio_Native.MGeneratorSettings
+	Include VisualStudio_Native_Compile.MGeneratorSettings
+	Include VisualStudio_Native_Compile_ClCompile.MGeneratorSettings
+	Include VisualStudio_Native_Compile_Clang.MGeneratorSettings
+	Include VisualStudio_Native_Target.MGeneratorSettings
+	Include VisualStudio_Shared.MGeneratorSettings
+	Include VisualStudio_Shared_Compile.MGeneratorSettings
+	Include VisualStudio_Shared_Target.MGeneratorSettings
+}

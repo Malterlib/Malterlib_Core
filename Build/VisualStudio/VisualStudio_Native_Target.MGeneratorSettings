@@ -1,0 +1,597 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "Native_SharedTarget"
+{
+	%GeneratorSetting "Target"
+	{
+		// Handled elsewhere
+		%GeneratorSetting "PlatformToolset"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "ClCompileSuffix"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "IgnoreWarnCompileDuplicatedFilename"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}		
+		%GeneratorSetting "CharacterSet"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "UseOfMfc"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "UseOfAtl"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "LinkTimeCodeGeneration"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "DefaultToolArchitecture"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "CLRSupport"
+		{
+			Property
+			{
+				Disabled 1
+			}
+		}
+
+		// Basics
+
+		%GeneratorSetting "PlatformToolsetCompiler"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "GccCompiler"
+				ConvertPath true
+			}
+		}
+
+		%GeneratorSetting "FileExtension"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "TargetExt"
+			}
+		}
+		%GeneratorSetting "FileName"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "TargetName"
+			}
+		}
+		%GeneratorSetting "ToolPath"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "ExecutablePath"
+				ConvertPath true
+			}
+		}
+		%GeneratorSetting "PostBuildScript"
+		{
+			Property
+			{
+				Entity "PostBuildEvent"
+				Name "Command"
+			}
+		}
+
+
+		%GeneratorSetting "PreBuildScript"
+		{
+			Property
+			{
+				Entity "PreBuildEvent"
+				Name "Command"
+			}
+		}
+
+		%GeneratorSetting "DebuggerCommandArguments"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name LocalDebuggerCommandArguments
+			}
+			%GeneratorSetting "Properties"
+			{
+				%GeneratorSetting "PropertyGroup"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting "RemoteDebuggerCommandArguments"
+					}
+				}
+			}
+		}
+		%GeneratorSetting "LocalDebuggerCommand"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name LocalDebuggerCommand
+			}
+		}
+		%GeneratorSetting "RemoteDebuggerCommand"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name RemoteDebuggerCommand
+			}
+		}
+		%GeneratorSetting "LocalDebuggerWorkingDirectory"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name LocalDebuggerWorkingDirectory
+			}
+		}
+		%GeneratorSetting "RemoteDebuggerWorkingDirectory"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name RemoteDebuggerWorkingDirectory
+			}
+		}
+	}
+}
+%GeneratorSetting "Native_StaticLibrary"
+{
+	%GeneratorSetting "Target"
+	{
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Entity "Lib"
+				Name "AdditionalLibraryDirectories"
+			}
+		}
+
+		%GeneratorSetting "TargetMachine"
+		{
+			Property
+			{
+				Entity "Lib"
+				Name "TargetMachine"
+			}
+		}
+		%GeneratorSetting "ExtraLibFlags"
+		{
+			Property
+			{
+				Entity "Lib"
+				Name AdditionalOptions
+				Substitute "{} %(Lib.AdditionalOptions)"
+			}
+		}
+	}
+}
+%GeneratorSetting "Native_DynamicLibrary"
+{
+	%GeneratorSetting "Target"
+	{
+		%GeneratorSetting "ModuleDefinitionFile"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "ModuleDefinitionFile"
+			}
+		}			
+	}
+}
+%GeneratorSetting "Native_Makefile"
+{
+	%GeneratorSetting "Target"
+	{
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Disabled 1
+			}
+		}
+		%GeneratorSetting "CommandLine_Build"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "NMakeBuildCommandLine"
+			}
+		}
+		%GeneratorSetting "CommandLine_ReBuild"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "NMakeReBuildCommandLine"
+			}
+		}
+		%GeneratorSetting "CommandLine_Clean"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "NMakeCleanCommandLine"
+			}
+		}
+		%GeneratorSetting "Output"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "NMakeOutput"
+			}
+		}
+	}
+}
+%GeneratorSetting "Native_SharedExecutable"
+{
+	%GeneratorSetting "Target"
+	{
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "AdditionalLibraryDirectories"
+			}
+		}
+
+		%GeneratorSetting "LinkKeyFile"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "KeyFile"
+			}
+			%GeneratorSetting "Properties"
+			{
+				%GeneratorSetting "PropertyGroup"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting "LinkKeyFile"
+					}
+				}
+			}
+		}
+			
+		%GeneratorSetting "TargetMachine"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "TargetMachine"
+			}
+		}
+		%GeneratorSetting "AssemblyDebug"
+		{
+			Property
+			{
+				Entity "Link"
+				Name AssemblyDebug
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "EntryPointSymbol"
+		{
+			Property
+			{
+				Entity "Link"
+				Name EntryPointSymbol
+			}
+		}
+		%GeneratorSetting "DelaySign"
+		{
+			Property
+			{
+				Entity "Link"
+				Name DelaySign
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+			%GeneratorSetting "Properties"
+			{
+				%GeneratorSetting "PropertyGroup"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting "LinkDelaySign"
+					}
+				}
+			}
+		}
+		%GeneratorSetting "IgnoreAllDefaultLibraries"
+		{
+			Property
+			{
+				Entity "Link"
+				Name IgnoreAllDefaultLibraries
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "GenerateDebugInformation"
+		{
+			Property
+			{
+				Entity "Link"
+				Name GenerateDebugInformation
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+
+		%GeneratorSetting "DataExecutionPrevention"
+		{
+			Property
+			{
+				Entity "Link"
+				Name DataExecutionPrevention
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+
+		%GeneratorSetting "Verbose"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "SuppressStartupBanner"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true ""
+					false "true"
+					"" "true"
+				}
+			}
+		}
+
+
+		%GeneratorSetting "RandomizedBaseAddress"
+		{
+			Property
+			{
+				Entity "Link"
+				Name RandomizedBaseAddress
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+
+		%GeneratorSetting "Driver"
+		{
+			Property
+			{
+				Entity "Link"
+				Name Driver
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true Driver
+					UpOnly UpOnly
+					WDM WDM
+				}
+			}
+		}
+
+		%GeneratorSetting "GenerateManifest"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name GenerateManifest
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "IgnoreImportLibrary"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name IgnoreImportLibrary
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "ExtraLinkerFlags"
+		{
+			Property
+			{
+				Entity "Link"
+				Name AdditionalOptions
+				Substitute "{} %(Link.AdditionalOptions)"
+			}
+		}
+		%GeneratorSetting "LargeAddressAware"
+		{
+			Property
+			{
+				Entity "Link"
+				Name LargeAddressAware
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "LinkIncremental"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name LinkIncremental
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "LinkWithLibraries"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "AdditionalDependencies"
+			}
+		}
+		%GeneratorSetting "RemoveUnreferencedSymbols"
+		{
+			Property
+			{
+				Entity "Link"
+				Name OptimizeReferences
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "SubSystem"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "SubSystem"
+			}
+		}
+		%GeneratorSetting "SymbolFile"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "ProgramDatabaseFile"
+			}
+		}
+		%GeneratorSetting "Version"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "Version"
+			}
+		}
+						
+		%GeneratorSetting "MinimumRequiredVersion"
+		{
+			Property
+			{
+				Entity "Link"
+				Name "MinimumRequiredVersion"
+			}
+		}
+	}
+}

@@ -1,0 +1,249 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%Target "Tool_GenerateBuildSystem"
+{
+	Property
+	{
+		IntermediateDirectoriesFile "@(GeneratedDirectory)IntermediateDirectories.txt"
+	}
+	Target
+	{
+		BaseName "GenerateBuildSystem"
+		Type "Tool"
+		CommandLine_Build "\"@(Builtin.Function->GetProperty('Property', 'Name', 'Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate'))\" Build \"@(IntermediateDirectoriesFile)\""
+		CommandLine_ReBuild "\"@(Builtin.Function->GetProperty('Property', 'Name', 'Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate'))\" ReBuild \"@(IntermediateDirectoriesFile)\""
+		CommandLine_Clean "\"@(Builtin.Function->GetProperty('Property', 'Name', 'Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate'))\" Clean \"@(IntermediateDirectoriesFile)\""
+		Output "@(Builtin.GeneratorStateFile)"
+		Group "Tools/Malterlib"
+	}
+	%Group "Source"
+	{
+		%Group "Post Copy"
+		{
+			%File "@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig"
+			{
+				Compile.AllowNonExisting true
+			}
+		}
+		%Group "Build System Source"
+		{
+			Compile.AllowNonExisting true
+			%Group "Build System"
+			{
+				%File "@(Builtin.Function->SourceFiles('*.MBuildSystem'))"
+			}
+			%Group "Headers"
+			{
+				%File "@(Builtin.Function->SourceFiles('*.MHeader'))"
+			}
+			%Group "Settings"
+			{
+				%File "@(Builtin.Function->SourceFiles('*.MSettings'))"
+			}
+			%Group "Targets"
+			{
+				%File "@(Builtin.Function->SourceFiles('*.MTarget'))"
+			}
+			%Group "Generator Settings"
+			{
+				%File "@(Builtin.Function->SourceFiles('*.MGeneratorSettings'))"
+			}
+			%Group "Dependency"
+			{
+				%File "@(Builtin.Function->SourceFiles('*.MDependency'))"
+			}
+			%Group "Workspace"
+			{
+				%File "@(Builtin.Function->SourceFiles('*.MWorkspace'))"
+			}
+		}
+		%Group "vs-tool"
+		{
+			!!GeneratorFamily VisualStudio
+			/*
+			%File "c:/Program Files (x86)/MSBuild/Microsoft.Cpp/v4.0/V120/Platforms/Clang/*"
+			%Group "Props"
+			{
+				%File "c:/Program Files (x86)/MSBuild/Microsoft.Cpp/v4.0/V120/Platforms/Clang/Props/*"
+			}
+			%Group "PlatformToolsets"
+			{
+				%Group "clang"
+				{
+					%File "c:/Program Files (x86)/MSBuild/Microsoft.Cpp/v4.0/V120/Platforms/Clang/PlatformToolsets/clang/*"
+				}
+			}
+			 */
+		}
+		/*
+		%Group "emscripten"
+		{
+			Compile
+			{
+				!!MalterlibCompileSupportTabSetings true
+				IndentWidth 2
+				TabWidth 2
+				UsesTabs false
+			}
+			
+			%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/*.py"
+			%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/em*"
+			%Group tools
+			{
+				%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/tools/*.py"
+				%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/tools/*.js"
+			}
+			%Group Library
+			{
+				%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/src/*"
+			}
+		}*/
+		%Group "MSBuild Targets"
+		{
+			Compile.Type XML
+			{
+				!GeneratorFamily VisualStudio
+			}
+			%File "VisualStudio/QtMoc.*"
+			%File "VisualStudio/MalterlibTargets.*"
+		}
+		%Group "Xcode Plugins"
+		{
+			&
+			{
+				!MalterlibBuildServerBuild true
+				GeneratorFamily Xcode
+			}
+			%Group "Clang LLVM P4 Generator"
+			{
+				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Clang LLVM P4 Generator.xcplugin/Contents/*"
+				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Clang LLVM P4 Generator.xcplugin/Contents/Resources/*"
+				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Clang LLVM P4 Generator.xcplugin/Contents/Resources/English.lproj/*"
+			}
+			%Group "Hansoft Tools.xcplugin"
+			{
+				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Hansoft Tools.xcplugin/Contents/*"
+				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Hansoft Tools.xcplugin/Contents/Resources/*"
+				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Hansoft Tools.xcplugin/Contents/Resources/English.lproj/*"
+			}
+		}
+		%Group "Build System Generated Files"
+		{
+			%GenerateFile "IntermediateDirectories"
+			{
+				&
+				{
+					GeneratorFamily Xcode
+				}
+				Property
+				{
+					IntermediateDirectoriesTemplate "@(Builtin.Function->GetProperty('Target', 'IntermediateDirectory', '@(Explodee)'))MalterlibDependencies\n"
+					{
+						!Explodee ""
+					}
+					
+					IntermediateDirectoriesContents	"@(IntermediateDirectoriesContents)"\
+													"@(Builtin.Function->ExplodeList('@(Workspace.AllTargets)', ';', 'IntermediateDirectoriesTemplate'))"
+					
+					Name "@(IntermediateDirectoriesFile)"
+					Contents "@(IntermediateDirectoriesContents)"
+					Executable false
+					UnicodeBOM "true"
+				}
+				Compile
+				{
+					Type "None"
+				}
+			}
+			%GenerateFile "Generate"
+			{
+				Property
+				{
+					RootOutputDirectory "@(Builtin.GeneratedBuildSystemDir)/../.."
+					
+					Name "@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/GenerateBuildSystem_@(Workspace:Workspace.Name)@(ScriptExtension)"
+					Contents "IF \"%DisableProjectGen%\" == \"1\" GOTO Skip\r\n"\
+							 "cd @(Builtin.BasePathRelativeProject->WindowsPath())\r\n"\
+							 "\"@(Builtin.MToolCom)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(RootOutputDirectory->MakeAbsolute())\" Action=%1\r\n"\
+							 "IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n"\
+							 ":Skip\r\n"
+					{
+						&
+						{
+							!MalterlibDisableBuildSystemGeneration true
+							HostPlatformFamily "Windows"
+						}
+					}
+					Contents "if [ \"$DisableProjectGen\" == \"1\" ]; then\n"\
+							 "  exit 0\n"\
+							 "fi\n"\
+							 "cd @(Builtin.BasePathRelativeProject)/..\n"\
+							 "\"@(Builtin.MToolExe)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(RootOutputDirectory->MakeAbsolute())\" Action=$1\n"\
+							 "ErrorLevel=$?\n"\
+ 							 "if [ \"$ErrorLevel\" == \"2\" ]; then\n"\
+							 "  echo error: Build system changed, aborting build\n"\
+							 "  exit 1\n"\
+							 "fi\n"\
+ 							 "if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
+							 "  echo error: Build system generation failed\n"\
+							 "  exit 1\n"\
+							 "fi\n"
+					{
+						&
+						{
+							!MalterlibDisableBuildSystemGeneration true
+							!HostPlatformFamily "Windows"
+						}
+					}
+					Contents	"@(Contents)"\
+								"\"@(Builtin.MToolExe)\" CheckDependencies \"$2\"\n"\
+								"if [ \"$?\" != \"0\" ]; then\n"\
+								"  echo error: Dependency checking failed\n"\
+								"  exit 1\n"\
+								"fi\n"
+					{
+						&
+						{
+							!HostPlatformFamily "Windows"
+							!MalterlibAccurateDependencies true					
+						}
+					}
+					Contents	"@(Contents)"\
+								"exit 0\n"
+					{
+						!!MalterlibDisableBuildSystemGeneration true
+					}
+					Executable true
+					UnixLineEnds "@(ScriptUnixLineEnds)"
+					UnicodeBOM "false"
+				}
+				Compile
+				{
+					Type "None"
+				}
+			}
+/*			%File "@(Builtin.Function->GeneratedFiles('*'))"
+			{
+				Compile
+				{
+					Type "None"
+				}
+			}*/
+		}
+	}
+}
+
+%Group "~Automatic/Dependencies/Tool_GenerateBuildSystem"
+{
+	%Dependency Tool_GenerateBuildSystem
+	{
+		Dependency.Link false
+	}
+}
+
+Target.ExtraGroups "~Automatic/Dependencies/Tool_GenerateBuildSystem;@(Target.ExtraGroups)"
+{
+	!Target:Target.Name "Tool_GenerateBuildSystem"
+}
+

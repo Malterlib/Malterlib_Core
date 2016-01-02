@@ -1,0 +1,454 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "Native_ClInclude"
+{
+	/*Property
+	{
+		Disabled "1"
+	}*/
+}
+%GeneratorSetting "Native_None"
+{
+/*	Property
+	{
+		Disabled "1"
+	}*/
+}
+%GeneratorSetting "Native_CompileShared"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "Disabled"
+		{
+			Property
+			{
+				Name "ExcludedFromBuild"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "Optimize"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "Verbose"
+		{
+			Property
+			{
+				Name "SuppressStartupBanner"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true ""
+					false "true"
+					"" "true"
+				}
+			}
+		}
+		%GeneratorSetting "DocumentationModule"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "--documentation-module {} %(ClCompile.AdditionalOptions)"
+			}
+		}
+		%GeneratorSetting "ToolClass"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "--ToolClass {} %(ClCompile.AdditionalOptions)"
+			}
+		}
+	}
+}
+%GeneratorSetting "Native_MASM"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "PreserveIdentifierCase"
+		{
+			Property
+			{
+				Name "PreserveIdentifierCase"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true 1
+					false 0
+				}
+			}
+		}
+	}
+}
+%GeneratorSetting "Native_QtMoc"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "ExtraCompilerFlags"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(QtMoc.AdditionalOptions)"
+			}
+		}
+		%GeneratorSetting "Optimize"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Name "AdditionalIncludeDirectories"
+			}
+		}
+		%GeneratorSetting "PreprocessOnly"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "DoNotGenerateInclude"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "DoNotDisplayWarnings"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "GenerateDebugInformation"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "DoCompileAndLink"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "ObjectFileName"
+		%GeneratorSetting "IncludePathPrefix"
+		%GeneratorSetting "PreprocessorDefines"
+		{
+			Property
+			{
+				Name "PreprocessorDefinitions"
+			}
+		}
+		%GeneratorSetting "PreprocessorUnDefinitions"
+		%GeneratorSetting "AdditionalIncludeDirectories"
+	}
+}
+%GeneratorSetting "Native_QtUic"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "ExtraCompilerFlags"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(QtUic.AdditionalOptions)"
+			}
+		}
+		
+		%GeneratorSetting "Optimize"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Name "AdditionalIncludeDirectories"
+			}
+		}
+		%GeneratorSetting "DisplayDependencies"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "NoProtection"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "NoImplicitIncludes"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+			
+		%GeneratorSetting "ObjectFileName"
+	}
+}
+%GeneratorSetting "Native_QtRcc"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "ExtraCompilerFlags"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(QtRcc.AdditionalOptions)"
+			}
+		}
+		
+		%GeneratorSetting "Optimize"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "Namespace"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "NoCompress"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "DoCompileAndLink"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+
+		%GeneratorSetting "ObjectFileName"
+		%GeneratorSetting "InitFunc"
+	}
+}
+%GeneratorSetting "Native_ResourceCompile"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "Optimize"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "Culture"
+		%GeneratorSetting "PreprocessorDefines"
+		{
+			Property
+			{
+				Name "PreprocessorDefinitions"
+			}
+		}
+		%GeneratorSetting "Verbose"
+		{
+			Property
+			{
+				Name "SuppressStartupBanner"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true ""
+					false "true"
+					"" ""
+				}
+			}
+		}		
+	}
+}
+%GeneratorSetting "Native_MlTwk"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "ExtraCompilerFlags"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(MlTwk.AdditionalOptions)"
+			}
+		}
+		%GeneratorSetting "Optimize"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "DoCompileAndLink"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "GenerateDebugInformation"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "ObjectFileName"
+	}
+}
+
+%GeneratorSetting "Native_MalterlibFS"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "ExtraCompilerFlags"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(MalterlibFS.AdditionalOptions)"
+			}
+		}
+		%GeneratorSetting "Optimize"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "DoCompileAndLink"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "VerboseLogging"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "OutputAsObjectFile"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "SymbolName"
+		%GeneratorSetting "ObjectFileName"
+		%GeneratorSetting "MalterlibFSPathPrefix"
+		%GeneratorSetting "CppFileName"
+	}
+}

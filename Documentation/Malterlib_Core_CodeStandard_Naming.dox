@@ -1,0 +1,745 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+/** 
+
+\page p_Malterlib_Core_CodeStandard_Naming Naming
+
+Names are written with upper camel case:
+~~~
+	VariableName
+	m_MemberVariableName
+	fg_FunctionCall
+	CClassName
+~~~
+
+They are NOT written with lower camel case or lower case:
+
+\code{+incorrect}
+	variableName
+	m_member_variable_name
+	functionCall
+	class_name
+\endcode
+
+Underscore is normally not used for anything other than prefixes, but can be used as a separator for groups of things like this:
+~~~
+	uint32 m_Category_Var1;
+	uint32 m_Category_Var2;
+	uint32 m_Category_Var3;
+	uint32 m_Category_Var4;
+	uint32 m_Category_Var5;
+~~~
+
+The exception to the upper camel case rule is that features that are emulation of missing language functionality or typedefs for built in types is written as lower case:
+~~~
+	inline_always
+	inline_never
+	module_import
+	assure_used
+	align_cacheline
+	likely
+	unlikely
+	abstract
+	uint32
+	fp64
+	mint
+~~~
+
+\section StoragePrefixes Storage prefixes
+
+All functions, parameters and variables must be prefixed by a storage prefix telling us where the entity originates from. Local variables are the only entities that do not have a storage prefix:
+Prefixes | Detailed information
+-------- | --------------------
+f_ fp_ fs_ fsp_ fg_ fsg_  | \ref FunctionPrefixes
+_ p_ o_ po_ t_ tp_ tf_ tpf_ d_ | \ref ParameterPrefixes
+c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref VariablePrefixes
+ 
+ 
+\subsection FunctionPrefixes Function prefixes
+
+ 
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td>f_</td>
+	<td>Member function</td>
+	<td>
+~~~
+	void f_Test()
+	void f_rTest()
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>fp_</td>
+	<td>Private or protected member function</td>
+	<td>
+~~~
+	void fp_Test()
+	void fp_rTest()
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>fs_</td>
+	<td>Static member function</td>
+	<td>
+~~~
+	static void fs_Test()
+	static void fs_rTest()
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>fsp_</td>
+	<td>Private or protected static member function</td>
+	<td>
+~~~
+	static void fsp_Test()
+	static void fsp_rTest()
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>fg_</td>
+	<td>Global function</td>
+	<td>
+~~~
+	void fg_Test()
+	void fg_rTest()
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>fsg_</td>
+	<td>Static global function</td>
+	<td>
+~~~
+	static void fsg_Test()
+	static void fsg_rTest()
+~~~
+	</td>
+	<td></td>
+</tr>
+</table>
+ 
+\subsection ParameterPrefixes Parameter prefixes
+
+\subsubsection FunctionParameterPrefixes Function parameter prefixes
+
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td>_</td>
+	<td>Function parameter</td>
+	<td>
+~~~
+	void f_Func(int _Test)
+	void f_Func(bool _bTest)
+	void f_Func(TCSet<int> _cTest)
+	void f_Func(mint _iTest)
+	void f_Func(mint _nTest)
+	void f_Func(int *_pTest)
+	void f_Func(FTest _fTest)
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>p_</td>
+	<td>Function parameter pack</td>
+	<td>
+~~~
+	void f_Func(t_CInt ...p_Test)
+	void f_Func(t_CBool ...p_bTest)
+	void f_Func(t_CContainer ...p_cTest)
+	void f_Func(t_CIndex ...p_iTest)
+	void f_Func(t_CNum ...p_nTest)
+	void f_Func(t_CPointer ...p_pTest)
+	void f_Func(t_FFunc ...p_fTest)
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>o_</td>
+	<td>Function output parameter</td>
+	<td>
+~~~
+	void f_Func(int &o_Test)
+	void f_Func(bool &o_bTest)
+	void f_Func(TCSet<int> &o_cTest)
+	void f_Func(mint &o_iTest)
+	void f_Func(mint &o_nTest)
+	void f_Func(int *&o_pTest)
+	void f_Func(FTest &o_fTest)
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>po_</td>
+	<td>Function output parameter pack</td>
+	<td>
+~~~
+	void f_Func(t_CInt &...po_Test)
+	void f_Func(t_CBool &...po_bTest)
+	void f_Func(t_CContainer &...po_cTest)
+	void f_Func(t_CIndex &...po_iTest)
+	void f_Func(t_CNum &...po_nTest)
+	void f_Func(t_CPointer &...po_pTest)
+	void f_Func(t_FFunc &...po_fTest)
+~~~
+	</td>
+	<td></td>
+</tr>
+</table>
+
+ 
+ 
+\subsubsection TemplateParameterPrefixes Template parameter prefixes
+
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td>t_</td>
+	<td>Template parameter</td>
+	<td>
+~~~
+	template <uint32 t_Test>
+	template <typename t_CTest>
+	template <typename t_FTest>
+	template <template <typename> class t_TCTest>
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>tp_</td>
+	<td>Template parameter pack	</td>
+	<td>
+~~~
+	template <uint32 ...tp_Test>
+	template <typename ...tp_CTest>
+	template <typename ...tp_FTest>
+	template <template <typename> class ...tp_TCTest>
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>tf_</td>
+	<td>Template function parameter</td>
+	<td>
+~~~
+	template <uint32 tf_Test>
+	template <typename tf_CTest>
+	template <typename tf_FTest>
+	template <template <typename> class tf_TCTest>
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>tfp_</td>
+	<td>Template function paramater pack</td>
+	<td>
+~~~
+	template <uint32 ...tfp_Test>
+	template <typename ...tfp_CTest>
+	template <typename ...tfp_FTest>
+	template <template <typename> class ...tfp_TCTest>
+~~~
+	</td>
+	<td></td>
+</tr>
+</table>
+
+  
+\subsubsection MacroParameterPrefixes Macro parameter prefix
+
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td>d_</td>
+	<td>Macro parameter</td>
+	<td>
+~~~
+	#define DTest(d_Test)
+	#define DTest(d_bTest)
+	#define DTest(d_cTest)
+	#define DTest(d_iTest)
+	#define DTest(d_nTest)
+	#define DTest(d_pTest)
+	#define DTest(d_fTest)
+	#define DTest(d_NTest)
+	#define DTest(d_CTest)
+	#define DTest(d_FTest)
+	#define DTest(d_ICTest)
+	#define DTest(d_TCTest)
+	#define DTest(d_TICTest)
+~~~
+	</td>
+	<td>Because a macro parameter can be just about anything, the prefix can be combined with many concept and type prefixes. See examples for which make sense to use.</td>
+</tr>
+</table>
+
+\subsection VariablePrefixes Variable prefixes
+
+\subsubsection LocalVariablePrefixes Local variable prefixes
+
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td></td>
+	<td>Local variables</td>
+	<td>
+~~~
+	uint32 Test = 0;
+	bool bTest = true;
+	TCSet<int> cTest;
+	mint iTest = 0;
+	mint nTest = 0;
+	int *pTest = nullptr;
+	FTest *fTest = &fg_Test;
+	auto fTest = []{};
+~~~
+	</td>
+	<td>The only place where no prefix is used is for local variables.</td>
+</tr>
+<tr>
+	<td>c_</td>
+	<td>Compile time constant local variables</td>
+	<td>
+~~~
+	static uint32 const c_Test = 0;
+	static bool const c_bTest = true;
+	static mint const c_iTest = 0;
+	static mint const c_nTest = 0;
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>s_</td>
+	<td>Static local variable</td>
+	<td>
+~~~
+	static uint32 s_Test = 0;
+	static bool s_bTest = true;
+	static TCSet<int> s_cTest;
+	static mint s_iTest = 0;
+	static mint s_nTest = 0;
+	static int *s_pTest = nullptr;
+	static FTest *s_fTest = &fg_Test;
+	static auto s_fTest = []{};
+~~~
+	</td>
+	<td></td>
+</tr>
+</table>
+
+\subsubsection GlobalVariablePrefixes Global variable prefixes
+
+ 
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td>g_</td>
+	<td>Global variables</td>
+	<td>
+~~~
+	uint32 g_Test = 0;
+	bool g_bTest = true;
+	TCSet<int> g_cTest;
+	mint g_iTest = 0;
+	mint g_nTest = 0;
+	int *g_pTest = nullptr;
+	FTest *g_fTest = &fg_Test;
+	auto g_fTest = []{};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>gc_</td>
+	<td>Compile time constant global variables</td>
+	<td>
+~~~
+	static uint32 const gc_Test = 0;
+	static bool const gc_bTest = true;
+	static mint const gc_iTest = 0;
+	static mint const gc_nTest = 0;
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>gs_</td>
+	<td>Static global variables</td>
+	<td>
+~~~
+	static uint32 gs_Test = 0;
+	static bool gs_bTest = true;
+	static TCSet<int> gs_cTest;
+	static mint gs_iTest = 0;
+	static mint gs_nTest = 0;
+	static int *gs_pTest = nullptr;
+	static FTest *gs_fTest = &fg_Test;
+	static auto gs_fTest = []{};
+~~~
+	</td>
+	<td></td>
+</tr>
+</table>
+
+\subsubsection MemberVariablePrefixes Member variable prefixes
+
+ 
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td>m_</td>
+	<td>Member variables</td>
+	<td>
+~~~
+	class CTest
+	{
+		uint32 m_Test;
+		bool m_bTest;
+		TCSet<int> m_cTest;
+		mint m_iTest;
+		mint m_nTest;
+		int *m_pTest;
+		FTest *m_fTest;
+		TCFunction<void ()> m_fTest;
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>mc_</td>
+	<td>Compile time constant member variables</td>
+	<td>
+~~~
+	class CTest
+	{
+		static uint32 const mc_Test = 0;
+		static bool const mc_bTest = true;
+		static mint const mc_iTest = 0;
+		static mint const mc_nTest = 0;
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ms_</td>
+	<td>Static member variables</td>
+	<td>
+~~~
+	class CTest
+	{
+		static uint32 ms_Test;
+		static bool ms_bTest;
+		static TCSet<int> ms_cTest;
+		static mint ms_iTest;
+		static mint ms_nTest;
+		static int *ms_pTest;
+		static FTest *ms_fTest;
+		static auto ms_fTest;
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>mp_</td>
+	<td>Private or protected member variables</td>
+	<td>
+~~~
+	class CTest
+	{
+		uint32 mp_Test;
+		bool mp_bTest;
+		TCSet<int> mp_cTest;
+		mint mp_iTest;
+		mint mp_nTest;
+		int *mp_pTest;
+		FTest *mp_fTest;
+		TCFunction<void ()> mp_fTest;
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>mcp_</td>
+	<td>Private or protected compile time constant member variables</td>
+	<td>
+~~~
+	class CTest
+	{
+		static uint32 const mcp_Test = 0;
+		static bool const mcp_bTest = true;
+		static mint const mcp_iTest = 0;
+		static mint const mcp_nTest = 0;
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>msp_</td>
+	<td>Private or protected static member variables</td>
+	<td>
+~~~
+	class CTest
+	{
+		static uint32 msp_Test;
+		static bool msp_bTest;
+		static TCSet<int> msp_cTest;
+		static mint msp_iTest;
+		static mint msp_nTest;
+		static int *msp_pTest;
+		static FTest *msp_fTest;
+		static auto msp_fTest;
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+</table>
+ 
+
+\section TypePrefixes Type prefixes
+
+Types, enumerators and namespaces are prefixed.
+
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td>E</td>
+	<td>Enums and enumerators</td>
+	<td>
+~~~
+	enum ETest
+	{
+		ETest_Value = 0
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>N</td>
+	<td>Namespaces</td>
+	<td>
+~~~
+	namespace NTest
+	{
+	}
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>C</td>
+	<td>Classes, structs, typedefs and any other type not specified here</td>
+	<td>
+~~~
+	class CTest
+	{
+	};
+	typedef int CTestInt;
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>IC</td>
+	<td>Interface classes</td>
+	<td>
+~~~
+	struct ICTest
+	{ 
+		virtual void f_Function() abstract; 
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>F</td>
+	<td>Function types</td>
+	<td>
+~~~
+	typedef void (FTest)();
+	FTest* fTest = []{};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TC</td>
+	<td>Template classes, structs and any other template type not specified here</td>
+	<td>
+~~~
+	template <typename t_CType>
+	struct TCTest
+	{
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>TIC</td>
+	<td>Template interface classes</td>
+	<td>
+~~~
+	template <typename t_CType>
+	struct TICTest
+	{
+		virtual void f_Function() abstract; 
+	};
+~~~
+	</td>
+	<td></td>
+</tr>
+</table>
+ 
+
+\section ConceptPrefixes Concept prefixes
+
+The concept prefix is intended to gives us information about a variable or parameter at a glance. Only a few highly used concepts have prefixes. The prefix goes after the storage prefix and before the name.
+
+Keep in mind that the concept is not necessarily a reflection of the type of the variable, but actually what concept the variable represents.
+
+If something models several concepts, only the most important or 'outer' concept is used for the prefix. For example a pointer to a boolean would be prefixed with 'p' only and not 'pb'. The reason for not adding several prefixes is to keep the rules simple and rather expose this complexity by explicitly putting this information in the variable name.
+
+Function return values should not be concept prefixed.
+
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td>b</td>
+	<td>Boolean</td>
+	<td>
+~~~
+	bool bTest = true;
+	void (bool _bTest);
+	struct CTest
+	{
+		bool m_bTest;
+		uint32 m_bTest:1;
+		uint32 m_bTest2:2;
+	};
+~~~
+	</td>
+	<td>A boolean is any value that is used like a boolean. This includes things with bool type and for example booleans saved in a bitfield.</td>
+</tr>
+<tr>
+	<td>i</td>
+	<td>Iterator or index</td>
+	<td>
+~~~
+	TCVector<uint8> ByteBuffer;
+	auto rByte = fg_Range(ByteBuffer);
+	for (auto iByte = rByte.f_Front(); iByte != rByte.f_Back(); ++iByte)
+		*iByte;
+
+	for (mint iByte = 0; iByte < ByteBuffer.f_GetLen(); ++iByte)
+		ByteBuffer[iByte];
+~~~
+	</td>
+	<td></td>
+</tr>
+<tr>
+	<td>n</td>
+	<td>Number of</td>
+	<td>
+~~~
+	TCVector<uint8> ByteBuffer;
+	mint nBytes = ByteBuffer.f_GetLen();
+~~~
+	</td>
+	<td>It does not mean that the variable is a number, it is only applicable if you can replace the n with "number of". </td>
+</tr>
+<tr>
+	<td>p</td>
+	<td>Pointer</td>
+	<td>
+~~~
+	TCVector<uint8> ByteBuffer;
+	uint8 const *pBytes = ByteBuffer.f_GetArray();
+	TCUniquePointer<uint32> pInstance = fg_Construct();
+~~~
+	</td>
+	<td>Both real pointers and smart-pointers are assumed to follow the pointer concept</td>
+</tr>
+<tr>
+	<td>f</td>
+	<td>Function object</td>
+	<td>
+~~~
+	typedef void (FTest)(int);
+	class CTest
+	{
+		TCFunction<void ()> m_fTest;
+		FTest *m_fTest2;
+	};
+ 
+	void fg_Test(CTest const &_Test)
+	{
+		auto fTest = []()
+			{
+				_Test.m_fTest();
+				if (_Test.m_fTest2)
+					_Test.m_fTest2();
+			}
+		;
+		fTest();
+	}
+~~~
+	</td>
+	<td>The function object concept applies to both function pointers and functors.</td>
+</tr>
+<tr>
+	<td>r</td>
+	<td>Range</td>
+	<td>
+~~~
+	TCVector<uint8> ByteBuffer;
+	for (auto rByte = fg_Range(ByteBuffer); rByte; ++rByte)
+		*rByte;
+~~~
+	</td>
+	<td>When applied to a variable the r concept prefix means a iterator range, not to be confused with the r prefix for a function.</td>
+</tr>
+<tr>
+	<td>r</td>
+	<td>Recursive function</td>
+	<td>
+~~~
+	void fg_rTest(uint32 _Value)
+	{
+		if (_Value > 0)
+			fg_rTest(_Value - 1);
+	}
+~~~
+	</td>
+	<td>When applied to a function the r concept prefix means recursive, not to be confused with the r prefix for a variable.</td>
+</tr>
+</table>
+ 
+ 
+*/
+

@@ -1,0 +1,2062 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+
+// Compile type deduction for native language
+Compile
+{
+	!!LanguageFamily "Native"
+
+	Type "StaticLibrary"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.a"
+			}
+		}
+	}
+
+	Type "DynamicLibrary"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.dylib"
+			}
+		}
+	}
+
+	Type "Assembler"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.li"
+				this.Identity "~*.asm"
+				this.Identity "~*.s"
+				this.Identity "~*.S"
+			}
+		}
+	}
+
+	Type "C++"
+	{
+		|
+		{
+			&
+			{
+				this.Type "File"
+				Compile.Type ""
+				|
+				{
+					this.Identity "~*.cpp"
+					this.Identity "~*.cxx"
+					this.Identity "~*.cc"
+				}
+			}
+			&
+			{
+				this.Type "File"
+				DocumentationEnabled true
+				Compile.Type ""
+				|
+				{
+					this.Identity "~*.h"
+					this.Identity "~*.hpp"
+					this.Identity "~*.dox" // For doxygen
+				}
+			}
+		}
+	}
+
+	Type "C"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.c"
+		}
+	}
+
+	Type "Header"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.h"
+				this.Identity "~*.hpp"
+				this.Identity "~*.dox" // For doxygen
+				!this.Identity "~*.*"
+			}
+		}
+	}
+
+	Type "QtRcc"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.qrc"
+		}
+	}
+
+	Type "QtUic"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.ui"
+		}
+	}
+
+	Type "MlTwk"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.twk"
+		}
+	}
+
+	Type "MalterlibFS"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.MalterlibFSSpec"
+		}
+	}
+
+	Type "WindowsResource"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+            this.Identity "~*.rc"
+		}
+	}
+
+	Type "MSBuildTargets"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.targets"
+				this.Identity "~*.props"
+			}
+		}
+	}
+
+	Type "VisualStudioVisualizer"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.natvis"
+			}
+		}
+	}
+}
+
+// Compile type deduction for .NET shared
+Compile
+{
+	!!LanguageFamily ".NET"
+
+	Type "AppxManifest"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.appxmanifest"
+		}
+	}
+	Type "ApplicationDefinition"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*App.xaml"
+		}
+	}
+	Type "Page"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.xaml"
+		}
+	}
+	Type "EmbeddedResource_ResX"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.resx"
+		}
+	}
+	Type "Settings"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.settings"
+		}
+	}	
+}
+
+// Compile type deduction for C#
+Compile
+{
+	!!Target.Language "C#"
+
+	Type "C#"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			this.Identity "~*.cs"
+		}
+	}
+}
+
+Compile
+{
+	&
+	{
+		LanguageFamily "Native"
+		|
+		{
+			PlatformIsDarwin true
+			GeneratorFamily Xcode // Needed because the file type cannot be different per config
+		}
+	}
+
+	Type "ObjC++"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.mm"
+			}
+		}
+	}
+
+	Type "ObjC"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.m"
+			}
+		}
+	}
+
+	Type "Nib"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.nib"
+			}
+		}
+	}
+
+	Type "Xib"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.xib"
+			}
+		}
+	}
+
+	Type "XCodeStoryboard"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.storyboard"
+			}
+		}
+	}
+
+	Type "XCodeAssets"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.xcassets"
+			}
+		}
+	}
+
+	Type "ShellScript"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.sh"
+			}
+ 		}
+	}
+	
+	Type "Python"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.py"
+			}
+		}
+	}
+
+	Type "JavaScript"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.js"
+				this.Identity "~*.ts" // Typescript
+			}
+		}
+	}
+
+	
+	Type "HTML"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.html"
+				this.Identity "~*.xhtml"
+				this.Identity "~*.htm"
+			}
+		}
+	}
+	
+	Type "CSS"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.css"
+				this.Identity "~*.less"
+			}
+		}
+	}
+	
+	Type "PNG"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.png"
+			}
+		}
+	}
+	
+	Type "SVG"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.svg"
+			}
+		}
+	}
+	
+	Type "XML"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.xml"
+			}
+		}
+	}
+		
+	Type "MacIcon"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.icns"
+			}
+		}
+	}
+
+	Type "StaticLibrary"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.a"
+			}
+		}
+	}
+
+	Type "DynamicLibrary"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.dylib"
+			}
+		}
+	}
+	
+	Type "JSON"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.json"
+			}
+		}
+	}
+	
+	// Malterlib build system types
+
+	Type "MalterlibBuildSystem"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.MTarget"
+				this.Identity "~*.MBuildSystem"
+				this.Identity "~*.MWorkspace"
+				this.Identity "~*.MHeader"
+				this.Identity "~*.MSettings"
+				this.Identity "~*.MGeneratorSettings"
+				this.Identity "~*.MBuildOptions"
+				this.Identity "~*.MConfig"
+				
+				this.Identity "~*.MLBuildOptions"
+				this.Identity "~*.ir"
+				this.Identity "~*.irg"
+			}
+		}
+	}
+
+
+}
+
+Compile
+{
+	///////////////////////////////
+	// Leave this last
+	///////////////////////////////
+
+	Type "None"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+		}
+	}
+}
+
+// Optimization needs to be available for all types
+Compile
+{
+	Optimize "Off"
+	{
+	}
+	Optimize "Fast"
+	{
+		&
+		{
+			RealDebugCompiler "false"
+			!RealConfiguration "Release Debug"
+		}
+	}
+
+	// The following levels are not enabled for RealConfiguration as they require link time code generation which we don't want in debug
+	Optimize "On"
+	{
+		!!Configuration "Release"
+	}
+	Optimize "Full"
+	{
+		!!Configuration "Optimized"
+	}
+}
+
+Compile
+{
+	!!LanguageFamily .NET
+
+	Symbols "Full"
+	Symbols "FullForDebug"
+	{
+		!!RealDebugCompiler "true"
+	}
+	Symbols "None"
+	{
+		!!Configuration "Fast Compile"
+	}
+
+	Warnings "Pedantic"
+
+	PreprocessorDefines "DMibNewBuildSystem;@(Builtin.Inherit)"
+	{
+		!!Compile.PreprocessorDefines ""
+	}
+		
+	PreprocessorDefines "DEBUG;@(Compile.PreprocessorDefines)"
+	{
+		!!DebugCode "true"
+	}
+	PreprocessorDefines "TRACE;@(Compile.PreprocessorDefines)"
+	{
+		!!DebugCode "true"
+	}
+
+	PreprocessorDefines "@(MalterlibUniqueConfig);DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->Replace(' ', ''));DConfig_@(ConfigNoSpace);@(Compile.PreprocessorDefines)"
+	{
+	}
+	PreprocessorDefines "DPConsole;@(Compile.PreprocessorDefines)"
+	{
+		!!Target.Type "ConsoleExecutable"
+	}
+	PreprocessorDefines "DMibConfig_Tests_Enable;@(Compile.PreprocessorDefines)"
+	{
+		!!Malterlib_Tests_Enable "true"
+	}
+	PreprocessorDefines "DMibConfig_Contracts_Enable;@(Compile.PreprocessorDefines)"
+	{
+		!!Malterlib_Contracts_Enable "true"
+	}	
+	PreprocessorDefines "DMibConfig_Memory_Shims_Enable;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemory_Shims_Enable "true"
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug "true"
+	}
+	PreprocessorDefines "DMalterlibEnable32Bit;@(Compile.PreprocessorDefines)"
+	{
+		!!BuildArch_x86 "1"
+	}
+
+}
+
+Property
+{
+	MalterlibPrefixHeaderWorkaround true
+
+	MalterlibNativeClangArchitecture "@(Architecture)"
+
+	MalterlibNativeClangArchitecture "i386" // Figure a way to include proper arch in Xcode
+	{
+		!!Architecture "le32"
+	}
+	
+	MalterlibNativeClangArchitecture "i386"
+	{
+		!!Architecture "x86"
+	}
+	MalterlibNativeClangArchitecture "x86_64"
+	{
+		!!Architecture "x64"
+	}
+	MalterlibNativeClangArchitecture "ppc"
+	{
+		!!Architecture "ppc32"
+	}
+
+	MalterlibNativeClangArchitecture "armv7"
+	{
+		!!Architecture "ArmV7"
+	}
+	MalterlibNativeClangArchitecture "armv7s"
+	{
+		!!Architecture "ArmV7s"
+	}
+	MalterlibNativeClangArchitecture "arm64"
+	{
+		!!Architecture "Arm64"
+	}
+}
+
+Property
+{
+	!!PlatformIsDarwin true
+
+	MalterlibNativeClangDarwinTarget "9"
+	{
+		!!Platform "OSX10.5"
+	}
+	MalterlibNativeClangDarwinTarget "10"
+	{
+		!!Platform "OSX10.6"
+	}
+	MalterlibNativeClangDarwinTarget "11"
+	{
+		!!Platform "OSX10.7"
+	}
+	MalterlibNativeClangDarwinTarget "12"
+	{
+		!!Platform "OSX10.8"
+	}
+	MalterlibNativeClangDarwinTarget "13"
+	{
+		!!Platform "OSX10.9"
+	}
+	MalterlibNativeClangDarwinTarget "14"
+	{
+		!!Platform "OSX10.10"
+		!!Platform "iOS8.1"
+	}
+	MalterlibNativeClangDarwinTarget "15"
+	{
+		!!Platform "OSX10.11"
+	}
+}
+
+Property
+{
+	MalterlibTargetTriple "@(MalterlibNativeClangArchitecture)-apple-darwin@(MalterlibNativeClangDarwinTarget)"
+	{
+		!!PlatformIsDarwin true
+	}
+	MalterlibTargetTriple "@(MalterlibNativeClangArchitecture)-pc-linux-gnu"
+	{
+		!!PlatformFamily Linux
+	}
+}
+
+
+Property 
+{
+	MalterlibFullSymbolsOnLinux "false" // User: Enable full symbol generation on Linux
+	{
+		!!MalterlibFullSymbolsOnLinux ""
+	}
+}
+
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformIsDarwin true
+		|
+		{
+			CompileDialect C
+		}
+	}
+
+	TargetTriple "@(MalterlibTargetTriple)"
+	AsyncUnwindTables true
+}
+
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformFamily Linux
+		|
+		{
+			CompileDialect C
+		}
+	}
+
+	TargetTriple "@(MalterlibTargetTriple)"
+//	AsyncUnwindTables true
+}
+
+Property
+{
+	MalterlibVerboseTemplateErrors "false" // User: Enabled more verbose template errors for clang
+	{
+		!!MalterlibVerboseTemplateErrors ""
+	}
+}
+
+Property
+{
+	MalterlibCompileSupportTabSetings true
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			!
+			{
+				|
+				{
+					// Directory/binary targets does not get the tab settings
+					Compile.Type "Nib"
+					Compile.Type "StaticLibrary"
+					Compile.Type "DynamicLibrary"
+	/*
+					// Text targets all get tab settings
+					Compile.Type "Assembler"
+					Compile.Type "C++"
+					Compile.Type "C"
+					Compile.Type "Header"
+					Compile.Type "QtRcc"
+					Compile.Type "QtUic"
+					Compile.Type "MlTwk"
+					Compile.Type "MalterlibFS"
+					Compile.Type "WindowsResource"
+					Compile.Type "MSBuildTargets"
+					Compile.Type "AppxManifest"
+					Compile.Type "ApplicationDefinition"
+					Compile.Type "Page"
+					Compile.Type "EmbeddedResource_ResX"
+					Compile.Type "Settings"
+					Compile.Type "C#"
+					Compile.Type "ObjC++"
+					Compile.Type "ObjC"
+					Compile.Type "MacIcon"
+					Compile.Type "None"
+	*/
+				}
+			}
+		}
+	}
+}
+
+Compile
+{
+	!!MalterlibCompileSupportTabSetings true
+
+	IndentWidth 4
+	TabWidth 4
+	UsesTabs true
+}
+
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		|
+		{
+			Compile.Type "C"
+		}
+	}
+	
+	CLanguage "GNU11"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Compile.CLanguage ""
+		}
+	}
+}
+
+Property
+{
+	!!PlatformFamily OSX
+	MaxSupportedPlatformVersion "@(MalterlibMaxSupportedOSXVersion->Replace('.',''))0"
+	{
+		!!MaxSupportedPlatformVersion ""
+	}
+	PlatformVersion "@(Platform->Replace('.',''))0"
+	PlatformVersion "@(PlatformVersion->Replace('OSX',''))"
+}
+Property
+{
+	!!PlatformFamily iOS
+	MaxSupportedPlatformVersion "@(MalterlibMaxSupportediOSVersion->Replace('.',''))0"
+	{
+		!!MaxSupportedPlatformVersion ""
+	}
+	PlatformVersion "@(Platform->Replace('.',''))0"
+	PlatformVersion "@(PlatformVersion->Replace('iOS',''))"
+
+}
+
+Property
+{
+	!!PlatformFamily "Emscripten"
+	PlatformVersion "1000"
+}
+
+// C and C++ Settings
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		|
+		{
+			CompileDialect C
+		}
+	}
+
+	Warnings "On"
+	WarningsAsErrors "true"
+	ClangUnstableWarnings "On"
+	{
+		&
+		{
+			!Target.PlatformToolsetCompiler "/Development/Malterlib/Tools/External/Build/llvm/bin/clang"
+			!Target.PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc"
+			|
+			{
+				!PlatformFamily Windows
+				MalterlibUseClangForWindows true
+			}
+		}
+	}
+	
+	EmscriptenWarnings "On"
+	{
+		!!PlatformFamily Emscripten
+	}
+	
+	SysRoot "@(MalterlibSysRoot)"
+	{
+		!MalterlibSysRoot ""
+	}
+
+
+	LinkerInternalLinkageOpt "inline"
+	{
+		&
+		{
+			PlatformFamily Windows
+			!PlatformToolset v90
+		}
+	}
+
+	ToolClass "DoxygenCompile"
+	{
+		!!Documentation Doxygen
+	}
+	
+	FunctionSections true
+	{
+		!!PlatformFamily OSX
+		!!PlatformFamily Linux
+	}
+	
+	DataSections true
+	{
+		!!PlatformFamily OSX
+		!!PlatformFamily Linux
+	}
+
+	Inline "Off"
+	{
+	}
+	Inline "Automatic"
+	{
+		&
+		{
+			RealDebugCompiler "false"
+			!RealConfiguration "Release Debug"
+		}
+	}
+	Inline "Explicit"
+	{
+		!!RealConfiguration "Debug Inlined"
+	}
+	
+	RuntimeLibrary "Static"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			!MalterlibDynamicCRT "true"
+		}
+	}
+	RuntimeLibrary "StaticDebug"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			!MalterlibDynamicCRT "true"
+			|
+			{
+				DebugCompiler "true"
+				Configuration "Debug Optimized"
+			}
+		}
+	}
+	RuntimeLibrary "Dynamic"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			MalterlibDynamicCRT "true"
+		}
+	}
+	RuntimeLibrary "DynamicDebug"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			MalterlibDynamicCRT "true"
+			|
+			{
+				DebugCompiler "true"
+				Configuration "Debug Optimized"
+			}
+		}
+	}
+
+	StructMemberAlignment "Default"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			PlatformType "Windows"
+		}
+	}
+	
+	AppleKernelOptions "true"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			Target.Type Driver
+		}
+	}
+
+	Exceptions "C++"
+	{
+	}
+
+	Exceptions "Off"
+	{
+		!!Target.Type "Driver"
+	}
+
+	PrefixHeader "@(Builtin.BasePath)/Malterlib/Core/Source/PrefixHeader/PCH.h"
+	{
+		&
+		{
+			Compile.PrefixHeader ""
+			!DocumentationEnabled true
+			!MalterlibQtSupport "true"
+			!Target.Type Driver
+		}
+	}
+	PrefixHeader "@(Builtin.BasePath)/Projects/Shared/PCHQt/PCH.h"
+	{
+		&
+		{
+			Compile.PrefixHeader ""
+			!DocumentationEnabled true
+			MalterlibQtSupport "true"
+			!Target.Type Driver
+		}
+	}
+
+	PrecompilePrefixHeader "true"
+	{
+		&
+		{
+			Compile.PrecompilePrefixHeader ""
+			!DocumentationEnabled true
+		}
+	}
+	PrecompilePrefixHeader "false"
+	{
+		&
+		{
+			|
+			{
+				this.Type "File"
+				!this.Type "File"
+			}
+			Compile.PrefixHeader ""
+		}
+	}
+	
+	SearchPath "@(Builtin.Inherit)"
+	{
+		!!SearchPath ""
+	}
+	
+	Verbose false // User: Enables output of cc1 command line
+	{
+		&
+		{
+			PlatformToolsetFamily clang
+			Compile.Verbose ""
+		}
+	}
+	
+	MiniOSVersion "@(Platform->Replace('iOS',''))"
+	{
+		!!PlatformFamily iOS
+	}
+	
+	BuiltinSearchPath ""
+	{
+		!!PlatformToolsetFamily clang
+	}
+
+	SearchPath "@(Builtin.BasePath)/SDK/libcxx/include;@(Compile.SearchPath)"
+	{
+		!!MalterlibUseStaticLibCxx "true"
+	}
+	SearchPath "@(Builtin.BasePath)/SDK/libcxxabi/include;@(Compile.SearchPath)"
+	{
+		!!MalterlibUseStaticLibCxxABI "true"
+	}
+
+	SearchPath "/Development/Malterlib/Tools/llvm/stable/build/make/lib/clang/3.5.0/include;@(Compile.SearchPath)"
+	{
+		!!Documentation Doxygen
+	}
+	
+	SearchPath "/Development/Malterlib/Tools/llvm/unstable/build/make/lib/clang/3.7.0/include;@(Compile.SearchPath)"
+	{
+		!!Target.PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/unstable/build/make/bin/clang"
+	}	
+	
+	SystemSearchPath "@(Builtin.BasePath)/SDK/boost;@(Compile.SystemSearchPath)"
+	{
+	}
+	SearchPath "@(Builtin.BasePath)/SDK/WDK/inc/ddk;@(Builtin.BasePath)/SDK/WDK/inc/api;@(Builtin.BasePath)/SDK/WDK/inc/crt;@(Compile.SearchPath)"
+	{
+		&
+		{
+			Target.Type "Driver"
+			PlatformType "Windows"
+		}
+	}
+
+	SearchPath "@(MalterlibLocalizationTranslationHeadersPath);@(Compile.SearchPath)"
+	{
+		!!MalterlibUsesTranslation "true"
+	}
+
+	SearchPath "@(Builtin.IntermediateDirectory);@(GeneratedDirectory);@(Compile.SearchPath)"
+
+	SearchPath "@(Builtin.BasePath)/SDK/OpenSSL/build/include/@(Platform)/@(Architecture);@(Compile.SearchPath)"
+	{
+		!AOCCDisableSSL "true"
+	}
+
+
+	SearchPath "@(Builtin.BasePath)/Projects;@(Compile.SearchPath)" // Project path is the most important
+	SearchPath "@(Builtin.BasePath);@(Compile.SearchPath)"
+	SearchPath "@(MalterlibIncludeOutputDir);@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePath)/Malterlib/Core/Include;@(Compile.SearchPath)"
+
+	SearchPath "@(Builtin.BasePath)/Malterlib/Core/Source/PrefixHeader;@(Compile.SearchPath)"
+	{
+		!!Compile.PrefixHeader "@(Builtin.BasePath)/Malterlib/Core/Source/PrefixHeader/PCH.h"
+	}
+
+	SearchPath "@(Builtin.BasePath)/Projects/Shared/PCHQt;@(Compile.SearchPath)"
+	{
+		!!Compile.PrefixHeader "@(Builtin.BasePath)/Projects/Shared/PCHQt/PCH.h"
+	}
+
+
+	FrameworkSearchPath "@(Builtin.BasePath)/SDK/BreakpadBin/@(PlatformFamily) @(Target.FrameworkSearchPath)"
+	{
+		&
+		{
+			PlatformFamily OSX
+			MalterlibEnableBreakpad true
+			Target:Target.Type "UIExecutable"
+		}
+	}
+	
+
+	MaxHeap "500"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+			!WindowsNativeToolChain true
+		}
+	}
+
+	CallingConvention "FastCall"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Architecture "x86"
+			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+
+	CallingConvention "StdCall"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+		}
+	}
+
+	ExtraCompilerFlags "/Yl@(Target.Name) /bigobj @(Compile.ExtraCompilerFlags)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+
+	VerboseTemplateErrors true
+	{
+		&
+		{
+			MalterlibVerboseTemplateErrors true
+			PlatformToolsetFamily "clang"
+			Compile.VerboseTemplateErrors ""
+		}
+	}
+
+
+	VerboseTemplateErrors false
+	{
+		&
+		{
+			PlatformToolsetFamily "clang"
+			Compile.VerboseTemplateErrors ""
+		}
+	}
+
+
+	DefaultHeaders "All"
+	{
+		!!PlatformIsDarwin true
+	}
+	
+	DefaultVisibility "AllHidden"
+	{
+		!!PlatformType "Unix"
+	}
+
+
+	PreprocessorDefines "@(Builtin.Inherit)"
+	{
+		!!Compile.PreprocessorDefines ""
+	}
+
+	PreprocessorDefines "DMibDefaultToolset;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibDefaultToolset true
+	}
+	
+	
+	PreprocessorDefines "_LIBCPP_NO_ALWAYS_INLINE;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			!DoesNotUseMalterlib true
+			DebugCode true
+			|
+			{
+				PlatformIsDarwin true
+				PlatformFamily Linux
+			}
+		}
+	}
+	
+	PreprocessorDefines "DMibPNoShortCuts;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibNoShortcuts true
+	}
+
+	PreprocessorDefines "DMibDebuggerHelpers;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			|
+			{
+				PlatformIsDarwin true
+				PlatformFamily "Linux"
+			}
+			!Configuration Release
+			!Configuration Optimized
+		}
+	}
+	
+	PreprocessorDefines "BOOST_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+	
+	PreprocessorDefines "DMibAlwaysUseLongWindowsPaths;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			MalterlibAlwaysUseLongWindowsPaths true
+		}
+	}
+	
+	PreprocessorDefines "DMibNoOSXCrossModuleExceptions;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			MalterlibNoOSXCrossModuleExceptions true
+		}
+	}
+	
+	PreprocessorDefines "_FILE_OFFSET_BITS=64;@(Compile.PreprocessorDefines)"
+	{
+		!!PlatformFamily "Linux"
+	}
+	
+	PreprocessorDefines "_POSIX_C_SOURCE=199506L;_XOPEN_SOURCE=500;_SVID_SOURCE;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			|
+			{
+				Compile.CLanguage "C89"
+				Compile.CLanguage "GNU89"
+			}
+		}
+	}
+	
+	PreprocessorDefines "DMalterlibLinuxProgramIdentifier=@(MalterlibLinuxProgramIdentifier);@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibLinuxProgramIdentifier ""
+	}
+
+	PreprocessorDefines "DMalterlibUseLegacyServiceCode;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibUseLegacyServiceCode "true"
+	}
+
+	PreprocessorDefines "DAOCCDisableSSL;@(Compile.PreprocessorDefines)"
+	{
+		!!AOCCDisableSSL "true"
+	}
+
+	PreprocessorDefines "__STDC_VERSION__=199901L;__restrict=;restrict=;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMaxSupportedOSXVersion "10.5"
+		!!MalterlibMaxSupportedOSXVersion "10.6"
+	}
+	
+	PreprocessorDefines "_WIN32_WINNT=@(MalterlibWindowsNtVersion);NTDDI_VERSION=@(MalterlibWindowsVersion);@(Compile.PreprocessorDefines)"
+	{
+		!!PlatformFamily "Windows"
+	}
+	
+	PreprocessorDefines "DMibNewBuildSystem;@(Compile.PreprocessorDefines)"
+
+	PreprocessorDefines "DDefaultToolArchitecture_@(Target:Target.DefaultToolArchitecture->Replace(' ', ''));DDefaultToolArchitecture=@(Target:Target.DefaultToolArchitecture->Replace(' ', ''));@(Compile.PreprocessorDefines)"
+	{
+		!Target:Target.DefaultToolArchitecture ""
+	}	
+
+	PreprocessorDefines "DMibSafeThreadLocals;@(Compile.PreprocessorDefines)"
+	{
+		!!EnableSafeThreadLocals "true"
+	}
+	PreprocessorDefines "DMibRuntimeInline0=Malterlib_Core_PlatformImp_Windows_Inline.h;@(Compile.PreprocessorDefines)"
+	{
+		!!PlatformFamily "Windows"
+	}
+	PreprocessorDefines "DMibRuntimeInline1=Malterlib_Core_PlatformImp_POSIX_Inline.h;@(Compile.PreprocessorDefines)"
+	{
+		!!PlatformIsDarwin true
+		!!PlatformFamily "Linux"
+		!!PlatformFamily "Emscripten"
+	}
+	PreprocessorDefines "_DEBUG;@(Compile.PreprocessorDefines)"
+	{
+		!!DebugCode "true"
+	}
+	PreprocessorDefines "DBG=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			Target.Type "Driver"
+			DebugCode "true"
+		}
+	}
+	PreprocessorDefines "DBUG_OFF;NDEBUG;_NDEBUG;@(Compile.PreprocessorDefines)"
+	{
+		!!DebugCode "false"
+	}
+	PreprocessorDefines "DBG=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			Target.Type "Driver"
+			DebugCode "false"
+		}
+	}
+
+	PreprocessorDefines "_X86_;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			Target.Type "Driver"
+			PlatformType "Windows"
+			Architecture "x86"
+		}
+	}
+	PreprocessorDefines "WIN64;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			Architecture "x64"
+			PlatformType "Windows"
+		}
+	}
+
+	PreprocessorDefines "_AMD64_;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			Target.Type "Driver"
+			PlatformType "Windows"
+			Architecture "x64"
+		}
+	}
+
+	PreprocessorDefines "_LIBCPP_BUILD_STATIC;_LIBCPP_TYPE_VIS=;_LIBCPP_FUNC_VIS=;_LIBCPP_EXCEPTION_ABI=;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibUseStaticLibCxx true
+	}
+	
+	PreprocessorDefines "LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibUseStaticLibCxxABI true
+	}
+	
+	PreprocessorDefines "DMibNewOverride;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			MalterlibQtSupport true
+			!DoesNotUseMalterlib true
+		}
+	}
+
+	PreprocessorDefines "_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH=1;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;_CRT_SECURE_NO_WARNINGS=1;_WINDOWS;WIN32;@(Compile.PreprocessorDefines)"
+	{
+		!!PlatformType "Windows"
+	}
+	PreprocessorDefines "DMalterlibBranch=\"@(MalterlibFullBranch)\";DProductVersion=0x@(ProductVersionMajor)@(ProductVersionMinor)@(ProductVersionRevision);DProductVersionSuffix=\"@(ProductVersionExtra)\";DProductSuffix_@(ProductVersionExtra);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DProductContact=@(ProductContact);DProductCompanyUniqueIdentifier=@(ProductCompanyUniqueIdentifier);DProductVersionMajor=@(ProductVersionMajor);DProductVersionMinor=@(ProductVersionMinor);DProductVersionRevision=@(ProductVersionRevision);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DConfigSuffix=\"@(MalterlibConfigSuffix)\";DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->Replace(' ', ''));DConfig_@(ConfigNoSpace);DArchitecture_@(Architecture);DPlatform_@(Platform->Replace('.', '_'));DTarget=@(Target:this.Identity);DConfig=@(Configuration);DRealConfig=@(RealConfiguration);DArchitecture=@(Architecture);DPlatform=@(Platform);DPlatformFamily=@(PlatformFamily);DPlatformFamily_@(PlatformFamily);@(Compile.PreprocessorDefines)"
+	{
+	}
+	PreprocessorDefines "DPlatformVersionMax=@(MaxSupportedPlatformVersion);@(Compile.PreprocessorDefines)"
+	{
+		!MaxSupportedPlatformVersion ""
+	}
+	PreprocessorDefines "DPlatformVersion=@(PlatformVersion);@(Compile.PreprocessorDefines)"
+	{
+		!PlatformVersion ""
+	}
+	PreprocessorDefines "DQConfigCppInclude=\"../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.cpp\";DQConfigInclude=\"../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.h\";DPQTSupport;QT_STATICPLUGIN;Q_DECL_IMPORT=;Q_DECL_EXPORT=;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibQtSupport "true"
+	}
+	PreprocessorDefines "_CONSOLE;DPConsole;@(Compile.PreprocessorDefines)"
+	{
+		!!Target.Type "ConsoleExecutable"
+	}
+	PreprocessorDefines "DPlatformVersion=@(PlatformVersion);@(Compile.PreprocessorDefines)"
+	{
+		!PlatformVersion ""
+	}
+	PreprocessorDefines "_DDK_;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+		}
+	}
+	PreprocessorDefines "_LIB;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "StaticLibrary"
+		}
+	}
+	PreprocessorDefines "_USRDLL;_WINDLL;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "DynamicLibrary"
+		}
+	}
+	PreprocessorDefines "DMibConfig_Tests_Enable=1;@(Compile.PreprocessorDefines)"
+	{
+		!!Malterlib_Tests_Enable "true"
+	}
+	PreprocessorDefines "DMibConfig_Tests_Enable=0;@(Compile.PreprocessorDefines)"
+	{
+		!Malterlib_Tests_Enable "true"
+	}
+
+	PreprocessorDefines "DMibConfig_Contracts_Enable=1;@(Compile.PreprocessorDefines)"
+	{
+		!!Malterlib_Contracts_Enable "true"
+	}	
+	PreprocessorDefines "DMibConfig_Contracts_Enable=0;@(Compile.PreprocessorDefines)"
+	{
+		!Malterlib_Contracts_Enable "true"
+	}	
+
+	PreprocessorDefines "DMibConfig_Memory_Shims_Enable=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemory_Shims_Enable "true"
+	}
+	PreprocessorDefines "DMibConfig_Memory_Shims_Enable=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemory_Shims_Enable "true"
+	}
+
+
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_Debug "true"
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemoryManager_Debug "true"
+	}	
+
+	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCategories=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemoryManager_Stats_EnableCategories true
+			MalterlibMemory_Shims_Enable true
+		}
+	}
+	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCategories=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			!MalterlibMemoryManager_Stats_EnableCategories true
+			MalterlibMemory_Shims_Enable true
+		}
+	}
+
+	PreprocessorDefines "DMalterlibEnable32Bit=@(BuildArch_x86);@(Compile.PreprocessorDefines)"
+	{
+		!BuildArch_x86 ""
+	}
+	PreprocessorDefines "DMalterlibEnable32Bit=1;@(Compile.PreprocessorDefines)"
+	{
+		!!BuildArch_x86 ""
+	}
+
+	PreprocessorDefines "DMibLinkTimeCodeGeneration;@(Compile.PreprocessorDefines)"
+	{
+		"!!Target:Target.LinkTimeCodeGeneration" "true"
+	}
+
+	
+	
+
+//	Symbols "None"
+//	Symbols "Fast"
+//	Symbols "FullForDebug"
+	Symbols "Fast" // Executables become too large on Linux
+	{
+		&
+		{
+			PlatformFamily Linux
+			!MalterlibFullSymbolsOnLinux true
+			!MalterlibDeploySymbols true
+		}
+	}
+	Symbols "Full"
+	{
+		!!Compile.Symbols ""
+	}
+	
+	ToolPrefix "/opt/local/x86_64-elf/bin;@(Compile.ToolPrefix)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x64
+		}
+	}
+	ToolPrefix "/opt/local/i386-elf/bin;@(Compile.ToolPrefix)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x86
+		}
+	}
+	
+	ExtraCompilerFlags "/Zo @(Compile.ExtraCompilerFlags)"
+	{
+		&
+		{
+			PlatformFamily Windows
+			!Target.PlatformToolset "v90"
+			|
+			{
+				Compile.Symbols "Full"
+				Compile.Symbols "FullForDebug"
+			}
+		}
+	}
+
+	Symbols "None"
+	{
+		!!Configuration "Fast Compile"
+	}
+	Symbols "Default"
+	{
+		&
+		{
+			|
+			{
+				Configuration Release
+				Configuration "Fast Compile"
+			}
+			PlatformFamily Emscripten
+		}
+	}
+	Symbols ""
+	{
+		&
+		{
+			PlatformType "Windows"
+			LanguageFamily "Native"
+			Target:Target.PlatformToolset "v90"
+			Configuration "Fast Compile"
+		}
+	}
+	
+/*	SplitSymbols true
+	{
+		!!PlatformFamily Linux
+	}*/
+
+/*	SymbolFile "@(Builtin.IntermediateDirectory)@(Target.FileName).pdb"
+
+	SymbolFile ""
+	{
+		!!Configuration "Fast Compile"
+	}*/
+
+	ConcurrentCompile "true"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Compile.PrecompilePrefixHeader "XInternalCreate"
+			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+
+	SeparateWCharType "true"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			PlatformType "Windows"
+		}
+	}
+
+	ForceConformanceInForLoopScope "true"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+	
+	PositionIndependantCode "true"
+	{
+		!!PlatformFamily Linux
+	}
+	
+	LinuxXcodeCompatibility true
+	{
+		&
+		{
+			PlatformFamily Linux
+			GeneratorFamily Xcode
+			!Target.PlatformToolsetCompiler "/Development/Malterlib/Tools/External/Build/llvm/bin/clang"
+		}
+	}
+	
+	DynamicTypeInfo false
+	{
+		!!Compile.DynamicTypeInfo ""
+	}
+	OpenMP "false"
+	{
+		!Target.VisualStudioPlatform "Clang"
+	}
+	UseFullPaths "true"
+	{
+		!Target.VisualStudioPlatform "Clang"
+	}
+	StringPooling "false"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			PlatformType "Windows"
+		}
+	}
+	StringPooling "true"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			PlatformType "Windows"
+			|
+			{
+				Compile.Optimize "On"
+				Compile.Optimize "Full"
+			}
+		}
+	}
+
+	MinimalRebuild "false"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			PlatformType "Windows"
+		}
+	}
+	RuntimeChecks "Off"
+	RuntimeChecks "On"
+	{
+		&
+		{
+			RealDebugCompiler "true"
+			!Compile.Type "C++Managed"
+			!Target:Target.Type Driver
+		}
+	}
+	RuntimeChecks "Fast"
+	{
+		&
+		{
+			RealConfiguration "Release Testing"
+			!Compile.Type "C++Managed"
+			!Target:Target.Type Driver
+		}
+	}
+	FunctionLevelLinking "false"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+	FunctionLevelLinking "true"
+	{
+		&
+		{
+			!Target.VisualStudioPlatform "Clang"
+			PlatformType "Windows"
+			|
+			{
+				RealDebugCompiler "false"
+				Target.Type "Driver"
+			}
+		}
+	}
+
+	ExtendedInstructionSet "Off"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target:Target.PlatformToolset "v90"
+			|
+			{
+				Architecture x86
+			}
+		}
+	}
+
+	ExtendedInstructionSet "AVX"
+	{
+		&
+		{
+			!
+			{
+				&
+				{
+					PlatformType "Windows"
+					Target:Target.PlatformToolset "v90"
+				}
+			}
+			RealConfiguration "Optimized"
+			|
+			{
+				Architecture x86
+				Architecture x64
+			}
+		}
+	}
+
+	FloatingPointModel "Precise"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+	FloatingPointExceptions "false"
+	{
+		!Target.VisualStudioPlatform "Clang"
+	}
+	EnableLanguageExtensions "true"
+	EnableFiberSafeOptimizations "false"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+	CreateHotpatchableImage "false"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+	IgnoreStandardIncludePath "true"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+		}
+	}
+}
+
+
+// ObjC and ObjC++ Settings
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		PlatformIsDarwin true
+		|
+		{
+			CompileDialect "C"
+		}
+	}
+
+	//ObjectiveCARC "true"
+	ObjectiveCARC "true"
+	{
+		!!PlatformFamily iOS
+	}
+	ObjectiveCARC "false"
+	{
+		!!Compile.ObjectiveCARC ""
+	}
+	ObjectiveCARC "false"
+	{
+		&
+		{
+			Compile.ObjectiveCARC ""
+			|
+			{
+				Platform "OSX10.5"
+				Platform "OSX10.6"
+			}
+		}
+	}
+	
+	PreprocessorDefines "DMibObjC_Arc;@(Compile.PreprocessorDefines)"
+	{
+		!!Compile.ObjectiveCARC "true"
+	}
+}
+
+// Windows resources
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		Compile.Type WindowsResource
+	}
+
+	Culture "0x0409"
+	PreprocessorDefines "@(Builtin.Inherit)"
+	{
+		!!Compile.PreprocessorDefines ""
+	}
+
+	PreprocessorDefines "NDEBUG;@(Compile.PreprocessorDefines)"
+	{
+		!!DebugCode "false"
+	}
+	PreprocessorDefines "DBG=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			DebugCode "false"
+			Target.Type "Driver"
+		}
+	}
+	PreprocessorDefines "_DEBUG;@(Compile.PreprocessorDefines)"
+	{
+		!!DebugCode "true"
+	}
+	PreprocessorDefines "DBG=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			DebugCode "false"
+			Target.Type "Driver"
+		}
+	}
+}
+
+
+// MalterlibFS
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		Compile.Type MalterlibFS
+	}
+
+	DoCompileAndLink true
+	VerboseLogging false
+	MalterlibFSPathPrefix ""
+
+	ObjectFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.obj"
+	{
+		!!PlatformFamily Windows
+	}
+	ObjectFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.s"
+	{
+		!PlatformFamily Windows
+	}
+	ASMFileName "@(Compile.ObjectFileName)"
+	{
+		!PlatformFamily Windows
+	}
+	Platform "@(PlatformFamily)"
+	{
+		!!PlatformFamily Linux
+		!!PlatformFamily OSX
+	}
+	
+	CppFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFSCPP.cpp"
+	//DependencyFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.d"
+	MalterlibDependencyFileName "@(Target:Target.IntermediateDirectory)MalterlibDependencies/@(Builtin.SourceFileName)_VirtualFS.MalterlibDependency"
+	{
+		&
+		{
+			GeneratorFamily Xcode
+			!MalterlibDisableDependencyFiles true
+		}
+	}
+	
+	SymbolName "_gc_VFS_Bytes"
+	{
+		&
+		{
+			PlatformFamily Windows
+			Architecture x86
+		}
+	}
+	OutputAsObjectFile true
+	{
+		!!PlatformFamily Windows
+	}
+	OutputAsAssembly true
+	{
+		!!PlatformFamily Linux
+		!!PlatformFamily OSX
+	}
+	/*OutputAsObjectFile Elf32
+	{
+		&
+		{
+			!PlatformFamily Windows
+			ArchitectureBitness 32
+		}
+	}
+	OutputAsObjectFile Elf64
+	{
+		&
+		{
+			!PlatformFamily Windows
+			ArchitectureBitness 64
+		}
+	}*/
+}
+
+// MlTwk
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		Compile.Type MlTwk
+	}
+
+	DoCompileAndLink "true"
+	{
+		&
+		{
+			Compile.DoCompileAndLink ""
+			!DebugCode "true"
+            !GeneratorFamily "Xcode" // Due to limitations in Xcode we always compile and link
+		}
+	}
+	DoCompileAndLink "false"
+	{
+		&
+		{
+			Compile.DoCompileAndLink ""
+			DebugCode "true"
+            !GeneratorFamily "Xcode" // Due to limitations in Xcode we always compile and link
+		}
+	}
+	GenerateDebugInformation "true"
+	{
+		!!Compile.GenerateDebugInformation ""
+	}
+
+	ObjectFileName "@(MalterlibQtTweakPath)/@(Builtin.SourceFileName)_Twk.cpp"
+}
+
+
+// Windows assembler settings
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		Compile.Type "Assembler"
+		PlatformType "Windows"
+	}
+
+	PreserveIdentifierCase "true"
+	{
+	}
+}
+
+// C#
+Compile
+{
+	&
+	{
+		Target:Target.Language C#
+		Compile.Type "Compile"
+	}
+}

@@ -1,0 +1,622 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	true true
+	false false
+}
+Property
+{
+	LanguageFamily "Native"
+	{
+		&
+		{
+			Property.true "@(Builtin.Function->HasParentEntity('Target'))"
+			|
+			{
+				Target:Target.Language ""
+				Target:Target.Language "Native"
+			}
+		}
+	}
+	LanguageFamily ".NET"
+	{
+		&
+		{
+			Property.true "@(Builtin.Function->HasParentEntity('Target'))"
+			Target:Target.Language C#
+		}
+	}
+}
+
+Property
+{
+	PlatformType "Unix"
+	PlatformType "Windows"
+	{
+		!!Platform "Windows"
+	}
+
+	// Version
+	PlatformVersion "510" // Windows XP
+	{
+		!!Platform "Windows"
+	}
+	PlatformVersion "1050" // OSX 10.5
+	{
+		!!Platform "OSX10.5"
+	}
+	PlatformVersion "1060" // OSX 10.6
+	{
+		!!Platform "OSX10.6"
+	}
+	PlatformVersion "1070" // OSX 10.7
+	{
+		!!Platform "OSX10.7"
+	}
+	PlatformVersion "1080" // OSX 10.8
+	{
+		!!Platform "OSX10.8"
+	}
+	PlatformVersion "1090" // OSX 10.9
+	{
+		!!Platform "OSX10.9"
+	}
+	PlatformVersion "10100" // OSX 10.10
+	{
+		!!Platform "OSX10.10"
+	}
+	PlatformVersion "10110" // OSX 10.11
+	{
+		!!Platform "OSX10.11"
+	}
+	PlatformVersion "260" // Linux kernel 2.6
+	{
+		!!Platform "Linux2.6"
+	}
+
+	PlatformVersion "810" // iOS 8.1
+	{
+		!!Platform "iOS8.1"
+	}
+	
+	// Family
+	PlatformFamily "Windows"
+	{
+		!!Platform "Windows"
+	}
+	PlatformFamily "OSX"
+	{
+		!!Platform "OSX10.5"
+		!!Platform "OSX10.6"
+		!!Platform "OSX10.7"
+		!!Platform "OSX10.8"
+		!!Platform "OSX10.9"
+		!!Platform "OSX10.10"
+		!!Platform "OSX10.11"
+	}
+	PlatformFamily "iOS"
+	{
+		!!Platform "iOS8.1"
+	}
+	PlatformFamily "Linux"
+	{
+		!!Platform "Linux2.6"
+	}
+	PlatformFamily "Emscripten"
+	{
+		!!Platform "Emscripten"
+	}
+	
+	PlatformIsDarwin true
+	{
+		!!PlatformFamily OSX
+		!!PlatformFamily iOS
+	}
+	
+	RealConfiguration "@(Configuration)"
+	
+	// Documentation
+	
+	DocumentationEnabled true
+	{
+		!!Documentation Doxygen
+	}
+	
+	// Config
+	
+	FullConfiguration "@(Configuration->Replace(' ',''))@(Tests->Replace(' ',''))@(Documentation->Replace(' ',''))"
+}
+
+Property
+{
+	// Family
+	ArchitectureBitness "32"
+	{
+		!!Architecture "x86"
+		!!Architecture "Arm"
+		!!Architecture "ppc32"
+	}
+	ArchitectureBitness "64"
+	{
+		!!Architecture "x64"
+		!!Architecture "Itanium"
+		!!Architecture "ppc64"
+	}
+	ArchitectureEndian "Little"
+	{
+		!!Architecture "x86"
+		!!Architecture "Arm"
+		!!Architecture "x64"
+		!!Architecture "Itanium"
+	}
+	ArchitectureEndian "Big"
+	{
+		!!Architecture "ppc64"
+		!!Architecture "ppc32"
+	}
+}
+
+Property
+{
+	ScriptExtension ".bat"
+	{
+		!!PlatformType "Windows"
+	}
+	ScriptExtension ".sh"
+	{
+		!!PlatformType "Unix"
+	}
+
+	ScriptExport "set"
+	{
+		!!PlatformType "Windows"
+	}
+	ScriptExport "export"
+	{
+		!!PlatformType "Unix"
+	}
+
+	ScriptPreamble "#!/bin/bash\n\n"
+	{
+		!!PlatformType "Unix"
+	}
+	
+	ScriptUnixLineEnds "false"
+	ScriptUnixLineEnds "true"
+	{
+		!!PlatformType "Unix"
+	}
+	
+	NativeLineEnding "\r\n"
+	NativeLineEnding "\n"
+	{
+		!!ScriptUnixLineEnds true
+	}
+}
+Property
+{
+	DebugCompiler "true"
+	{
+		!!Configuration "Debug"
+		!!Configuration "Debug Inlined"
+		!!Configuration "Fast Compile"
+	}
+	DebugCompiler "false"
+	{
+		!!Configuration "Debug Optimized"
+		!!Configuration "Profile"
+		!!Configuration "Release"
+		!!Configuration "Optimized"
+	    !!Configuration "Debug Optimized"
+		!!Configuration "Release Testing"
+		!!Configuration "Release Debug"
+	}
+	RealDebugCompiler "true"
+	{
+		!!RealConfiguration "Debug"
+		!!RealConfiguration "Debug Inlined"
+		!!RealConfiguration "Fast Compile"
+	}
+	RealDebugCompiler "false"
+	{
+		!!RealConfiguration "Debug Optimized"
+		!!RealConfiguration "Profile"
+		!!RealConfiguration "Release"
+		!!RealConfiguration "Optimized"
+	    !!RealConfiguration "Debug Optimized"
+		!!RealConfiguration "Release Testing"
+		!!RealConfiguration "Release Debug"
+	}
+}
+
+Property
+{
+	PlatformToolsetFamily "clang"
+	{
+		!!Target.PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
+		!!Target.PlatformToolset "com.apple.compilers.llvm.clang.1_0"
+	}
+
+	ToolsetDir "@(Target.PlatformToolset)"
+	ToolsetDir "VC17"
+	{
+		&
+		{
+			PlatformType "Windows"
+			|
+			{
+				Target.PlatformToolset "v110"
+				Target.PlatformToolset "v120_CTP_Nov2012"
+			}
+		}
+	}
+	ToolsetDir "VC18"
+	{
+		&
+		{
+			PlatformType "Windows"
+			|
+			{
+				Target.PlatformToolset "v120"
+			}
+		}
+	}
+	ToolsetDir "VC19"
+	{
+		&
+		{
+			PlatformType "Windows"
+			|
+			{
+				Target.PlatformToolset "v140"
+			}
+		}
+	}
+	ToolsetDir "clang_libc++"
+	{
+		!!PlatformToolsetFamily "clang"
+	}
+
+	WindowsNativeToolChain "true" // Visual Studio 2013 supports native toolchain for all targets
+}
+
+Property
+{
+	ExplicitTests "false"
+	ExplicitTests "true"
+	{
+		!!Configuration "Profile"
+		!!Configuration "Release"
+		!!Configuration "Optimized"
+	}
+}
+
+Property
+{
+	DebugCode "true"
+	{
+		!!Configuration "Debug"
+		!!Configuration "Debug Inlined"
+		!!Configuration "Debug Optimized"
+		!!Configuration "Fast Compile"
+	}
+	DebugCode "false"
+	{
+		!!DebugCode ""
+	}
+}
+
+
+Property
+{
+	ConfigNoSpace "@(Configuration->Replace(' ', ''))"
+	MalterlibBaseSourcePath "Development"
+	{
+		!!MalterlibBaseSourcePath ""
+	}
+	MalterlibCalcBranch "@(BuildSystemBasePath->GetLastPaths(4))"
+	MalterlibCalcBranch "@(BuildSystemBasePath->GetLastPaths(3))"
+	{
+		|
+		{
+			MalterlibCalcBranch "~*/@(MalterlibBaseSourcePath)/*"
+			MalterlibCalcBranch "~@(MalterlibBaseSourcePath)/*"
+		}
+	}
+	MalterlibCalcBranch "@(BuildSystemBasePath->GetLastPaths(2))"
+	{
+		|
+		{
+			MalterlibCalcBranch "~*/@(MalterlibBaseSourcePath)/*"
+			MalterlibCalcBranch "~@(MalterlibBaseSourcePath)/*"
+		}
+	}
+	MalterlibCalcBranch "@(BuildSystemBasePath->GetLastPaths(1))"
+	{
+		|
+		{
+			MalterlibCalcBranch "~*/@(MalterlibBaseSourcePath)/*"
+			MalterlibCalcBranch "~@(MalterlibBaseSourcePath)/*"
+		}
+	}
+	MalterlibBranch "@(MalterlibCalcBranch)"
+	{
+		!!MalterlibBranch ""
+	}
+	MalterlibTaskStreamName "@(MalterlibPerforceStreamName->ParseFormatString('{}({})','{1}'))"
+	{
+		!!MalterlibPerforceStreamName "~*(*)"
+	}
+	MalterlibCalcFullBranch "@(MalterlibBranch)"
+	MalterlibCalcFullBranch "@(MalterlibCalcFullBranch) (@(MalterlibTaskStreamName))"
+	{
+		!MalterlibTaskStreamName ""
+	}
+	MalterlibFullBranch "@(MalterlibCalcFullBranch)"
+	{
+		!!MalterlibFullBranch ""
+	}
+}
+
+Property
+{
+	
+	MalterlibIsOSXBundle "false"
+	MalterlibIsOSXBundle "true"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			|
+			{
+				"Target.Type" UIExecutable
+				"Target.Type" Driver
+			}
+		}
+		
+	}
+	MalterlibOSXHideDockTile "true"
+	{
+		&
+		{
+			MalterlibOSXHideDockTile ""
+			PlatformFamily OSX
+			TargetIsExecutable true
+			!Target.Type	UIExecutable
+		}
+	}
+}
+
+	
+
+
+Property
+{
+	MalterlibDebugPrefix ""
+	MalterlibDebugPrefix "D"
+	{
+		|
+		{
+			Configuration "Debug"
+			Configuration "Debug Inlined"
+			Configuration "Debug Optimized"
+			Configuration "Fast Compile"				
+		}
+	}
+
+	MalterlibDebugLibrariesFolderName "Release"
+	MalterlibDebugLibrariesFolderName "Debug"
+	{
+		|
+		{
+			Configuration "Debug"
+			Configuration "Debug Inlined"
+			Configuration "Debug Optimized"
+			Configuration "Fast Compile"				
+		}
+	}
+
+	MalterlibQtLibrarySuffix ""
+	MalterlibQtLibrarySuffix "D"
+	{
+		&
+		{
+			PlatformFamily Windows
+			MalterlibDebugLibrariesFolderName "Debug"
+		}
+	}
+	MalterlibQtLibrarySuffix "_debug"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			MalterlibDebugLibrariesFolderName "Debug"
+		}
+	}
+
+	MalterlibArchitectureSuffix "@(Architecture)"
+	MalterlibConfigSuffix ""
+	MalterlibConfigSuffix "D"
+	{
+		!!Configuration "Debug"
+	}
+	MalterlibConfigSuffix "DI"
+	{
+		!!Configuration "Debug Inlined"
+	}
+	MalterlibConfigSuffix "DO"
+	{
+		!!Configuration "Debug Optimized"
+	}
+	MalterlibConfigSuffix "FC"
+	{
+		!!Configuration "Fast Compile"
+	}
+
+	MalterlibConfigSuffix ""
+	{
+		!!DocumentationEnabled true
+	}
+
+	Malterlib_Tests_Enable "false"
+	{
+		&
+		{
+			Malterlib_Tests_Enable ""
+			DebugCode "false"
+			!Tests "Tests"
+			!Tests "Perf Tests"
+		}
+	}
+	Malterlib_Tests_Enable "true" // User: Force enable or disable of tests (set to true or false)
+	{
+		!!Malterlib_Tests_Enable ""
+	}
+
+	Malterlib_Contracts_Enable "false"
+	{
+		&
+		{
+			Malterlib_Contracts_Enable ""
+			DebugCode "false"
+			!Configuration "Release Testing"
+			!Tests "Tests"
+		}
+	}
+	Malterlib_Contracts_Enable "true" // User: Force enable or disable of contracts (set to true or false)
+	{
+		!!Malterlib_Contracts_Enable ""
+	}
+	MalterlibMemory_Shims_Enable "false"
+	{
+		&
+		{
+			MalterlibMemory_Shims_Enable ""
+			DebugCode "false"
+		}
+	}
+	MalterlibMemory_Shims_Enable "true" // User: Force enable or disable of memory shims (set to true or false). Also used for enabling remote debugger support currently
+	{
+		!!MalterlibMemory_Shims_Enable ""
+	}
+
+	MalterlibMemory_Shims_EnableLocal "false"
+	{
+		&
+		{
+			MalterlibMemory_Shims_EnableLocal ""
+			DebugCode "false"
+			!Tests "Tests"
+		}
+	}
+	MalterlibMemory_Shims_EnableLocal "true" // User: Enable thread local memory reporters. Used in for example tests to track memory in local scopes
+	{
+		!!MalterlibMemory_Shims_EnableLocal ""
+	}
+
+	MalterlibMemory_Shims_EnableGlobal "true" // User: Enable global memory reporter. Used for for example remote debugger support
+	{
+		!!MalterlibMemory_Shims_EnableGloball ""
+	}
+
+	MalterlibMemoryManager_Stats_Enable "false" // User: Report statistics about memory allocations at the end of the program
+	{
+		!!MalterlibMemoryManager_Stats_Enable ""
+	}
+
+	MalterlibMemoryManager_CrossModule_Enable	"true" // User: Enables cross module memory manager that shares the memory manager in all dlls with the executables memory manager
+	{
+		!!MalterlibMemoryManager_CrossModule_Enable ""
+	}
+
+	MalterlibMemoryManager_Stats_EnableCallstack "false" // User: Dump  statistics about memory allocations callstacks
+	{
+		!!MalterlibMemoryManager_Stats_EnableCallstack ""
+	}
+
+
+	MalterlibMemoryManager_Debug "true"
+	{
+		&
+		{
+			MalterlibMemoryManager_Debug ""
+			DebugCode true
+		}
+	}
+	MalterlibMemoryManager_Stats_EnableCategories "false" // User: Dump statistics about memory allocations through categories
+	{
+		!!MalterlibMemoryManager_Stats_EnableCallstack ""
+	}
+}
+
+Property
+{
+	VersionStringSuffix ""
+	{
+		!ProjectManagerConfig "Release Testing"
+	}
+
+	VersionStringSuffix "_Test"
+	{
+		!!ProjectManagerConfig "Release Testing"
+	}
+}
+
+Property
+{
+	CompileDialect "C"
+	{
+		!!Compile.Type "C"
+		!!Compile.Type "C++"
+		!!Compile.Type "ObjC"
+		!!Compile.Type "ObjC++"
+		!!Compile.Type "C++Managed"
+	}
+}
+
+
+Property
+{
+	PlatformFamilyFromImpFile "@(this.Identity->ParseFormatString('{}PlatformImp_{}_', '{1}'))"
+	PlatformFamilyFromImpFile "@(this.Identity->ParseFormatString('{}PlatformImp_{}.', '{1}'))"
+	{
+		!!PlatformFamilyFromImpFile ""
+	}
+}
+
+Property
+{
+	PlatformFamilyFromFile "@(this.Identity->ParseFormatString('{}Platform_{}_', '{1}'))"
+	PlatformFamilyFromFile "@(this.Identity->ParseFormatString('{}Platform_{}.', '{1}'))"
+	{
+		!!PlatformFamilyFromFile ""
+	}
+	
+	PlatformFamilyFromFile "OSX"
+	{
+		&
+		{
+			|
+			{
+				PlatformFamilyFromFile "Unix"
+				PlatformFamilyFromFile "POSIX"
+			}
+			PlatformFamily "OSX"
+		}
+	}
+	PlatformFamilyFromFile "Linux"
+	{
+		&
+		{
+			|
+			{
+				PlatformFamilyFromFile "Unix"
+				PlatformFamilyFromFile "POSIX"
+			}
+			PlatformFamily "Linux"
+		}
+	}
+}
+

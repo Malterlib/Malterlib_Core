@@ -1,0 +1,665 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "Native_ClCompile"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "ConcurrentCompile"
+		{
+			Property
+			{
+				Name "MultiProcessorCompilation"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}		
+		%GeneratorSetting "Symbols"
+		{
+			Property
+			{
+				Name "DebugInformationFormat"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					FullForDebug "EditAndContinue"
+					Full "ProgramDatabase"
+					Fast "OldStyle"
+					None "None"
+					"" ""
+				}
+			}
+		}		
+
+		%GeneratorSetting "CallingConvention"
+		{
+			Property
+			{
+				Name "CallingConvention"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Cdecl Cdecl
+					StdCall StdCall
+					FastCall FastCall
+				}
+			}
+		}
+
+		%GeneratorSetting "SymbolFile"
+		{
+			Property
+			{
+				Name "ProgramDataBaseFileName"
+			}
+		}
+
+		%GeneratorSetting "MaxHeap"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "-Zm{} %(ClCompile.AdditionalOptions)"
+			}
+		}
+
+		%GeneratorSetting "LinkerInternalLinkageOpt"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "-Zc:{} %(ClCompile.AdditionalOptions)"
+			}
+		}
+		
+
+		%GeneratorSetting "ExtraCompilerFlags"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(ClCompile.AdditionalOptions)"
+			}
+		}		
+		%GeneratorSetting "PreprocessorDefines"
+		{
+			Property
+			{
+				Name "PreprocessorDefinitions"
+			}
+		}		
+		
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Name "AdditionalIncludeDirectories"
+			}
+		}
+		%GeneratorSetting "SystemSearchPath"
+		{
+			Property
+			{
+				Name "AdditionalIncludeDirectories"
+				Substitute "{} %(ClCompile.AdditionalIncludeDirectories)"
+			}
+		}
+		%GeneratorSetting "Warnings"
+		{
+			Property
+			{
+				Name "WarningLevel"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Off TurnOffAllWarnings
+					Minimal Level1
+					On Level3
+					Pedantic Level4
+				}
+			}
+		}
+		%GeneratorSetting "WarningsAsErrors"
+		{
+			Property
+			{
+				Name "TreatWarningAsError"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+
+		%GeneratorSetting "IgnoreStandardIncludePath"
+		{
+			Property
+			{
+				Name "IgnoreStandardIncludePath"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		
+		%GeneratorSetting "SeparateWCharType"
+		{
+			Property
+			{
+				Name "TreatWChar_tAsBuiltInType"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+			
+		%GeneratorSetting "ForceConformanceInForLoopScope"
+		{
+			Property
+			{
+				Name "ForceConformanceInForLoopScope"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+
+		%GeneratorSetting "DynamicTypeInfo"
+		{
+			Property
+			{
+				Name "RuntimeTypeInfo"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "OpenMP"
+		{
+			Property
+			{
+				Name "OpenMPSupport"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+
+		%GeneratorSetting "UseFullPaths"
+		{
+			Property
+			{
+				Name "UseFullPaths"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "FunctionLevelLinking"
+		{
+			Property
+			{
+				Name "FunctionLevelLinking"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+			
+		%GeneratorSetting "StringPooling"
+		{
+			Property
+			{
+				Name "StringPooling"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+
+		%GeneratorSetting "CreateHotpatchableImage"
+		{
+			Property
+			{
+				Name "CreateHotpatchableImage"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+
+		%GeneratorSetting "EnableFiberSafeOptimizations"
+		{
+			Property
+			{
+				Name "EnableFiberSafeOptimizations"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+			
+		%GeneratorSetting "FloatingPointExceptions"
+		{
+			Property
+			{
+				Name "FloatingPointExceptions"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "FloatingPointModel"
+		{
+			Property
+			{
+				Name "FloatingPointModel"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Precise Precise
+					Strict Strict
+				}
+			}
+		}
+		%GeneratorSetting "EnableLanguageExtensions"
+		{
+			Property
+			{
+				Name "DisableLanguageExtensions"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true false
+					false true
+				}
+			}
+		}
+		%GeneratorSetting "MinimalRebuild"
+		{
+			Property
+			{
+				Name "MinimalRebuild"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "ExtendedInstructionSet"
+		{
+			Property
+			{
+				Name "EnableEnhancedInstructionSet"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Off NoExtensions
+					SSE1 StreamingSIMDExtensions
+					SSE2 StreamingSIMDExtensions2
+					AVX AdvancedVectorExtensions
+				}
+			}
+		}
+		%GeneratorSetting "RuntimeLibrary"
+		{
+			Property
+			{
+				Name "RuntimeLibrary"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Static MultiThreaded
+					StaticDebug MultiThreadedDebug
+					Dynamic MultiThreadedDLL
+					DynamicDebug MultiThreadedDebugDLL
+				}
+			}
+		}
+		%GeneratorSetting "StructMemberAlignment"
+		{
+			Property
+			{
+				Name "StructMemberAlignment"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Default Default
+					1 1Byte
+					2 2Bytes
+					4 4Bytes
+					8 8Bytes
+					16 16Bytes
+				}
+			}
+		}		
+		%GeneratorSetting "PrefixHeader"
+		{
+			Property
+			{
+				Name "ForcedIncludeFiles"
+				ConvertPath "true"
+			}
+			%GeneratorSetting "Properties"
+			{
+				%GeneratorSetting ""
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting "PrecompiledHeaderFile"
+					}
+				}
+			}
+		}
+		%GeneratorSetting "Exceptions"
+		{
+			Property
+			{
+				Name "ExceptionHandling"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Full "Async"
+					C++ "Sync"
+					ExternCandC++ "SyncCThrow"
+					Off "false"
+				}
+			}
+		}
+		%GeneratorSetting "PrecompilePrefixHeader"
+		{
+			Property
+			{
+				Name "PrecompiledHeader"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true "Use"
+					false "NotUsing"
+					XInternalCreate "Create" // Only used internally
+				}
+			}
+		}
+		%GeneratorSetting "XInternalPrecompiledHeaderOutputFile"
+		{
+			Property
+			{
+				Name "PrecompiledHeaderOutputFile"
+			}
+		}
+		%GeneratorSetting "Optimize"
+		{
+			Property
+			{
+				Name "Optimization"
+			}
+			%GeneratorSetting "ValueSet"
+			{
+				%GeneratorSetting "Off"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								IntrinsicFunctions "false"
+								WholeProgramOptimization "false"
+								OmitFramePointers "false"
+								FavorSizeOrSpeed "Neither" // Neither, Speed, Size
+							}
+						}
+					}
+				}
+				%GeneratorSetting "Fast"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								IntrinsicFunctions "true"
+								WholeProgramOptimization "false"
+								OmitFramePointers "false"
+								FavorSizeOrSpeed "Speed"
+							}
+						}
+					}
+				}
+				%GeneratorSetting "On"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								IntrinsicFunctions "true"
+								WholeProgramOptimization "true"
+								OmitFramePointers "false"
+								FavorSizeOrSpeed "Speed"
+							}
+						}
+					}
+				}
+				%GeneratorSetting "Full"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								IntrinsicFunctions "true"
+								WholeProgramOptimization "true"
+								OmitFramePointers "true"
+								FavorSizeOrSpeed "Speed"
+							}
+						}
+					}
+				}
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Off Disabled
+					On Full
+					Fast Full
+					Full Full
+				}
+			}
+		}
+		%GeneratorSetting "RuntimeChecks"
+		{
+			Property
+			{
+				Name ""
+			}
+			%GeneratorSetting "ValueSet"
+			{
+				%GeneratorSetting "Off"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								BasicRuntimeChecks "Default"
+								SmallerTypeCheck "false"
+								BufferSecurityCheck "false"
+								//SDLCheck "false"
+							}
+						}
+					}
+				}
+				%GeneratorSetting "Fast"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								BasicRuntimeChecks "Default"
+								SmallerTypeCheck "false"
+								BufferSecurityCheck "true"
+								//SDLCheck "true"
+							}
+						}
+					}
+				}
+				%GeneratorSetting "On"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								BasicRuntimeChecks "EnableFastChecks"
+								SmallerTypeCheck "false"
+								BufferSecurityCheck "true"
+								//SDLCheck "true"
+							}
+						}
+					}
+				}
+				%GeneratorSetting "Full"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								BasicRuntimeChecks "EnableFastChecks"
+								SmallerTypeCheck "true"
+								BufferSecurityCheck "true"
+								//SDLCheck "true"
+							}
+						}
+					}
+				}
+			}
+		}
+		%GeneratorSetting "Inline"
+		{
+			Property
+			{
+				Name "InlineFunctionExpansion"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Off Disabled
+					Explicit OnlyExplicitInline
+					Automatic AnySuitable
+				}
+			}
+		}
+		%GeneratorSetting "DisableSecurityWarnings"
+		{
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true ""
+					false ""
+				}
+			}
+		}		
+	}
+}

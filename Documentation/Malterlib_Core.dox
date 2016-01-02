@@ -1,0 +1,12 @@
+﻿// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+/**	\namespace NMib::NCore
+	\brief Core namespace
+ */
+
+/** \namespace NMib
+	\brief Malterlib root namespace
+
+	Used for generic functions and as container for other namespaces
+*/

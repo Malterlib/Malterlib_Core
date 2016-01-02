@@ -1,0 +1,157 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+/** \page p_Malterlib_Core_CodeStandard_Coloring Coloring
+
+This is the syntax coloring applied to examples in the documentation. There are also a number of tools and plugins for IDEs available from Malterlib that applies this coloring standard to your editor.
+ 
+The general design for this standard is to supply the reader with as many queues as possible to help quickly gain understanding of the source code. It works together with the code naming standard which makes it 
+easy to apply the highlighting without language specific parsing support.
+ 
+\code
+	#include <Mib/Core/Core>
+
+	// Comment
+	// http://example.com
+ 
+	
+	/// Doc comment
+	/// ===========
+	/// @brief \brief
+	/// http://example.com
+
+	#define DMacro(d_MacroParameter) \
+		d_MacroParameter
+
+	auto g_String = "String";
+	auto g_Char = 'C';
+	const static uint32 gc_GlobalConstant = 55;
+
+	namespace NTest
+	{
+		template <typename tf_CType, int tf_NonType>
+		void inline fg_FunctionGlobal();
+
+		enum ETest
+		{
+			ETest_Value
+		};
+
+		template <typename t_CType, int t_NonType> 
+		struct TCType
+		{
+			void f_FunctionPublic
+			(
+				uint32 _FunctionParameter
+				, uint32 & o_OutputFunctionParameter
+				, NMib::NFunction::TCFunction<void ()> _fFunctor
+				, NMib::NFunction::TCFunction<void ()> &o_fFunctor
+			) const volatile
+			{
+				ETest EnumValue = ETest_Value;
+
+				for(;;)
+				{
+				}
+				
+				auto pAutoVar = nullptr;
+				
+				auto fFunctor = []
+					{
+					}
+				;
+
+				fFunctor();
+				o_fFunctor();
+				m_fFunctor();
+				mp_fFunctor();
+			}
+			
+			NMib::NFunction::TCFunction<void ()> m_fFunctor;
+			
+			uint32 m_VariablePublic;
+			uint32 ms_StaticVariablePublic;
+			uint32 mc_ConstantPublic;
+			
+		private:
+			NMib::NFunction::TCFunction<void ()> mp_fFunctor;
+
+			uint32 mp_VariablePrivate;
+			static uint32 msp_StaticVariablePrivate;
+			static uint32 const mcp_ConstantPrivate;
+
+			void fp_FunctionPrivate();
+			
+		};
+	}
+\endcode
+ 
+\htmlonly
+
+<div class="code_table"><table border="0" cellspacing="0" style="margin-left:2px;border-spacing:5px"><tbody>
+<tr><th style="width:120px;background-color:black;color:white">Language</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#ffffff</td><td style="background-color:#ffffff"></td><td style="color:#ffffff">= * + - % {} [] () <></td><td></td></tr>
+<tr><td></td><td>#ffffff</td><td style="background-color:#ffffff"></td><td style="color:#ffffff">#</td><td></td></tr>
+<tr><td></td><td>#ffffff</td><td style="background-color:#ffffff"></td><td style="color:#ffffff">for if while do</td><td></td></tr>
+<tr><td></td><td>#c0c0c0</td><td style="background-color:#c0c0c0"></td><td style="color:#c0c0c0">typename</td><td></td></tr>
+<tr><td></td><td>#c0c0c0</td><td style="background-color:#c0c0c0"></td><td style="color:#c0c0c0">inline</td><td></td></tr>
+<tr><td></td><td>#808080</td><td style="background-color:#808080"></td><td style="color:#808080">\</td><td></td></tr>
+<tr><td></td><td>#ffc8ca</td><td style="background-color:#ffc8ca"></td><td style="color:#ffc8ca">public private protected friend</td><td></td></tr>
+<tr><td></td><td>#ffb680</td><td style="background-color:#ffb680"></td><td style="color:#ffb680">const volatile</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Builtin types</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#ff5966</td><td style="background-color:#ff5966"></td><td style="color:#ff5966">int bool void uint32</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Constant values</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#ff0080</td><td style="background-color:#ff0080"></td><td style="color:#ff0080">15 60.6</td><td></td></tr>
+<tr><td></td><td>#ff5bad</td><td style="background-color:#ff5bad"></td><td style="color:#ff5bad">t_Test</td><td></td></tr>
+<tr><td></td><td>#ff8ac5</td><td style="background-color:#ff8ac5"></td><td style="color:#ff8ac5">gc_Test ETest_Value mc_Test gc_Test c_Test true false nullptr</td><td></td></tr>
+<tr><td></td><td>#ca97b1</td><td style="background-color:#ca97b1"></td><td style="color:#ca97b1">mcp_Test</td><td></td></tr>
+<tr><td></td><td>#ffb7db</td><td style="background-color:#ffb7db"></td><td style="color:#ffb7db">tf_Test</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Character</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#ff48f0</td><td style="background-color:#ff48f0"></td><td style="color:#ff48f0">'T'</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Namespace</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#d785ff</td><td style="background-color:#d785ff"></td><td style="color:#d785ff">NTest</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Types</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#8269ff</td><td style="background-color:#8269ff"></td><td style="color:#8269ff">t_CTest t_TTest</td><td></td></tr>
+<tr><td></td><td>#cdc3ff</td><td style="background-color:#cdc3ff"></td><td style="color:#cdc3ff">tf_CTest tf_TTest</td><td></td></tr>
+<tr><td></td><td>#b8aaff</td><td style="background-color:#b8aaff"></td><td style="color:#b8aaff">CTest TCTest ETest</td><td></td></tr>
+<tr><td></td><td>#dbd3ff</td><td style="background-color:#dbd3ff"></td><td style="color:#dbd3ff">auto</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">String</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#009eff</td><td style="background-color:#009eff"></td><td style="color:#009eff">"String"</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Functors</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#00e4e6</td><td style="background-color:#00e4e6"></td><td style="color:#00e4e6">_fTest</td><td></td></tr>
+<tr><td></td><td>#36e8cd</td><td style="background-color:#36e8cd"></td><td style="color:#36e8cd">o_fTest</td><td></td></tr>
+<tr><td></td><td>#00edae</td><td style="background-color:#00edae"></td><td style="color:#00edae">fTest</td><td></td></tr>
+<tr><td></td><td>#00f265</td><td style="background-color:#00f265"></td><td style="color:#00f265">m_fTest</td><td></td></tr>
+<tr><td></td><td>#4fc17e</td><td style="background-color:#4fc17e"></td><td style="color:#4fc17e">mp_fTest</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Functions</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#26ff00</td><td style="background-color:#26ff00"></td><td style="color:#26ff00">f_Test fs_Test</td><td></td></tr>
+<tr><td></td><td>#1cb900</td><td style="background-color:#1cb900"></td><td style="color:#1cb900">fg_Test fsg_Test</td><td></td></tr>
+<tr><td></td><td>#8dd580</td><td style="background-color:#8dd580"></td><td style="color:#8dd580">fp_Test fsp_Test </td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Parameters</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#e6ff00</td><td style="background-color:#e6ff00"></td><td style="color:#e6ff00">_Test p_Test</td><td></td></tr>
+<tr><td></td><td>#fff54b</td><td style="background-color:#fff54b"></td><td style="color:#fff54b">p_Test po_Test</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#ffd700</td><td style="background-color:#ffd700"></td><td style="color:#ffd700">Var</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Member variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#ffa600</td><td style="background-color:#ffa600"></td><td style="color:#ffa600">m_Test ms_Test</td><td></td></tr>
+<tr><td></td><td>#c59d53</td><td style="background-color:#c59d53"></td><td style="color:#c59d53">mp_Test msp_Test</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Macros</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#ff7700</td><td style="background-color:#ff7700"></td><td style="color:#ff7700">DTest</td><td></td></tr>
+<tr><td></td><td>#ffbc81</td><td style="background-color:#ffbc81"></td><td style="color:#ffbc81">d_Test</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Globals</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#ff3f1c</td><td style="background-color:#ff3f1c"></td><td style="color:#ff3f1c">ms_Test</td><td></td></tr>
+<tr><td></td><td>#e13819</td><td style="background-color:#e13819"></td><td style="color:#e13819">g_Test gs_Test</td><td></td></tr>
+<tr><td></td><td>#d56955</td><td style="background-color:#d56955"></td><td style="color:#d56955">msp_Test</td><td></td></tr>
+</tbody></table></div>
+<div class="code_table"><table border="0" cellspacing="0" style="margin-left:2px;border-spacing:5px"><tbody>
+<tr><th style="width:120px;background-color:black;color:white">Comments</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#003737</td><td>#ff9f3b</td><td style="background-color:#003737"></td><td style="background-color:#ff9f3b"></td><td style="background-color:#003737;color:#ff9f3b">// Comment</td><td></td></tr>
+<tr><td></td><td>#003737</td><td>#9bcde6</td><td style="background-color:#003737"></td><td style="background-color:#9bcde6"></td><td style="background-color:#003737;color:#9bcde6">/// Documentation comment</td><td></td></tr>
+<tr><td></td><td>#003737</td><td>#f070b6</td><td style="background-color:#003737"></td><td style="background-color:#f070b6"></td><td style="background-color:#003737;color:#f070b6">@Keyword</td><td></td></tr>
+<tr><td></td><td>#003737</td><td>#9dff70</td><td style="background-color:#003737"></td><td style="background-color:#9dff70"></td><td style="background-color:#003737;color:#9dff70">http://example.com</td><td></td></tr>
+</tbody></table></div>
+ 
+\endhtmlonly
+
+*/
+

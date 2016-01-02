@@ -1,0 +1,153 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+// Windows paths
+Property
+{
+	!!HostPlatformFamily "Windows"
+
+	MalterlibCompiledFiles "X:/CompiledFiles/@(Generator)/"
+	{
+		!!MalterlibCompiledFiles ""
+	}
+	MalterlibCompiledFiles "@(MalterlibCompiledFiles->UnixPath())"
+	{
+		!MalterlibCompiledFiles ""
+	}
+
+	MalterlibDevelopmentRoot "X:/Development"
+	{
+		!!MalterlibDevelopmentRoot ""
+	}
+
+
+    MalterlibDeployRoot "X:\\Deploy"
+	{
+		!!MalterlibDeployRoot ""
+	}
+
+    MalterlibRemoteDeployRoot "R:\\Deploy"
+	{
+		!!MalterlibRemoteDeployRoot ""
+	}
+
+    MalterlibRemoteDeployDebugRoot "C:\\Deploy"
+	{
+		!!MalterlibRemoteDeployDebugRoot ""
+	}
+
+	MalterlibDeploySymbolsPath "Z:/Development/Symbols"
+	{
+		!!MalterlibDeploySymbolsPath ""
+	}
+}
+
+// Unix paths
+Property
+{
+	!!HostPlatformFamily "OSX"
+	!!HostPlatformFamily "Linux"
+
+	MalterlibCompiledFiles "/CompiledFiles/@(Generator)/"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			MalterlibCompiledFiles ""
+		}
+	}
+
+	MalterlibCompiledFiles "/CompiledFiles/"
+	{
+		!!MalterlibCompiledFiles ""
+	}
+
+	MalterlibDevelopmentRoot "/Development"
+	{
+		!!MalterlibDevelopmentRoot ""
+	}
+
+    MalterlibDeployRoot "/Deploy"
+	{
+		!!MalterlibDeployRoot ""
+	}
+
+    MalterlibRemoteDeployRoot "/RemoteDeploy"
+	{
+		!!MalterlibRemoteDeployRoot ""
+	}
+
+    MalterlibRemoteDeployDebugRoot "/LocalDeploy"
+	{
+		!!MalterlibRemoteDeployDebugRoot ""
+	}
+
+	MalterlibDeploySymbolsPath "Z:/Development/Symbols"
+	{
+		!!MalterlibDeploySymbolsPath ""
+	}
+}
+
+Property
+{
+	MalterlibLastCompiledFiles "@(MalterlibCompiledFiles->GetLastPaths(2))"
+	{
+	}
+
+	MalterlibCompiledFiles "@(MalterlibCompiledFiles)@(Generator)/"
+	{
+		!MalterlibLastCompiledFiles "@(Generator)"
+	}
+}
+
+// Calculated properties
+Property
+{
+	MalterlibTargetNameType "Normal"
+	{
+		&
+		{
+			Property.MalterlibTargetNameType ""
+			|
+			{
+				Target.Type StaticLibrary
+				Target.Type DynamicLibrary
+				Target.Type SharedDynamicLibrary
+			}
+		}
+	}
+	MalterlibTargetNameType "Suffixed"
+	{
+		&
+		{
+			PlatformFamily Windows
+			Property.MalterlibTargetNameType ""
+		}
+	}
+	MalterlibTargetNameType "Config"
+	{
+		&
+		{
+			!PlatformFamily Windows
+			Property.MalterlibTargetNameType ""
+		}
+	}
+
+    MalterlibGenerateLibrary "false"
+	{
+		&
+		{
+			MalterlibGenerateLibrary ""
+			DebugCompiler "true"
+		}
+	}
+    MalterlibGenerateLibrary "true"
+	{
+		&
+		{
+			MalterlibGenerateLibrary ""
+			DebugCompiler "false"
+		}
+	}
+
+}

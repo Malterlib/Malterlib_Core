@@ -1,0 +1,2374 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "Xcode"
+{
+	%GeneratorSetting "Root"
+	{
+		%GeneratorSetting "Compile"
+		{
+			%GeneratorSetting "Type"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						C++ sourcecode.cpp.cpp
+						C sourcecode.c.c
+						Header sourcecode.c.h
+						ObjC++ sourcecode.cpp.objcpp
+						ObjC sourcecode.c.objc
+						None text
+						StaticLibrary archive.ar
+						DynamicLibrary archive.ar
+						QtRcc sourcecode.qtres
+						QtMoc sourcecode.c.h
+						QtUic sourcecode.qtui
+						Assembler sourcecode.asm
+						MlTwk sourcecode.hstwk
+						WindowsResource text
+						MalterlibFS sourcecode.MalterlibFS
+						Nib wrapper.nib
+						MacIcon image.icns
+						ShellScript text.script.sh
+						MalterlibBuildSystem text.json
+						JSON text.json
+						Python text.script.python
+						JavaScript sourcecode.javascript
+						HTML text.html
+						CSS	text.css
+						PNG image.png
+						SVG text.xml
+						Xib file.xib
+						XCodeStoryboard file.storyboard
+						XCodeAssets folder.assetcatalog
+						XML text.xml
+						MSBuildTargets text.xml
+						VisualStudioVisualizer text.xml
+					}
+				}
+			}
+		}
+		%GeneratorSetting "Target"
+		{
+			%GeneratorSetting "Type"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Executable Application
+						ConsoleExecutable Application
+						UIExecutable Application
+						DynamicLibrary DynamicLibrary
+						SharedDynamicLibrary DynamicLibrary
+						StaticLibrary StaticLibrary
+						Driver Driver
+						Tool Makefile
+					}
+				}
+			}
+		}
+	}
+	%GeneratorSetting "Dependency"
+	{
+		%GeneratorSetting "Dependency"
+		{
+			%GeneratorSetting "Link"
+			{
+			}
+			%GeneratorSetting "LinkWithObjectFiles"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Indirect"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+		}
+	}
+	%GeneratorSetting "SharedApplication"
+	{
+		%GeneratorSetting "Target"
+		{
+			%GeneratorSetting "RemoveUnreferencedSymbols"
+			{
+				Property
+				{
+					Name "DEAD_CODE_STRIPPING"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "GenerateDebugInformation"
+			{
+				Property
+				{
+					Name "GCC_GENERATE_DEBUGGING_SYMBOLS"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "SearchPath"
+			{
+				Property
+				{
+					Name "LIBRARY_SEARCH_PATHS"
+				}
+			}
+			%GeneratorSetting "LinkWithLibraries"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "RealLinkWithLibraries"
+			{
+				Property
+				{
+					Name "OTHER_LDFLAGS"
+				}
+			}
+
+			// TODO
+			%GeneratorSetting "Version"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "EntryPointSymbol"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "ModuleDefinitionFile"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+		}
+	}
+			
+	%GeneratorSetting "StaticLibrary6"
+	{
+		%GeneratorSetting "LinkWithLibraries"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "RealLinkWithLibraries"
+		{
+			Property
+			{
+				Name "OTHER_LIBTOOLFLAGS"
+			}
+		}
+	}
+	
+	%GeneratorSetting "SharedMakefile"
+	{
+		%GeneratorSetting "Target"
+		{
+			%GeneratorSetting "CommandLine_Build"
+			{
+			}
+			%GeneratorSetting "CommandLine_Clean"
+			{
+			}
+		}
+	}
+	%GeneratorSetting "SharedTarget"
+	{
+		%GeneratorSetting "Target"
+		{
+			// Handled elsewhere
+
+			%GeneratorSetting "DependencyFile"
+			{
+				Property
+				{
+					Name "DependencyFile"
+				}
+			}
+
+			%GeneratorSetting "MToolPath"
+			{
+				Property
+				{
+					Name "MToolPath"
+				}
+			}			
+			
+			%GeneratorSetting "Group"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "BaseName"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "BaseFileName"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "FileNameBase"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "LinkTimeCodeGeneration"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Output"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "CharacterSet"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+
+            %GeneratorSetting "Disabled"
+            {
+                Property
+                {
+                    Disabled "1"
+                }
+            }
+
+			// Per configuration target settings
+			%GeneratorSetting "DependencyInfoFile"
+			{
+				Property
+				{
+					Name "LD_DEPENDENCY_INFO_FILE"
+				}
+			}
+			%GeneratorSetting "EmscriptenFastCompiler"
+			{
+				Property
+				{
+					Name "EMCC_FAST_COMPILER"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "1"
+						false "0"
+					}	
+				}
+			}
+			%GeneratorSetting "CodeSigningReqired"
+			{
+				Property
+				{
+					Name "CODE_SIGNING_REQUIRED"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}	
+				}
+			}
+ 			%GeneratorSetting "EmscriptenEmscriptenRoot"
+			{
+				Property
+				{
+					Name "EMCC_EMSCRIPTEN"
+				}
+			}
+			%GeneratorSetting "EmscriptenLLVMRoot"
+			{
+				Property
+				{
+					Name "EMCC_LLVM"
+				}
+			}
+			%GeneratorSetting "EmscriptenPython"
+			{
+				Property
+				{
+					Name "EMCC_PYTHON"
+				}
+			}
+			%GeneratorSetting "EmscriptenNode"
+			{
+				Property
+				{
+					Name "EMCC_NODE"
+				}
+			}
+			
+			%GeneratorSetting "FileName"
+			{
+				Property
+				{
+					Name "PRODUCT_NAME"
+				}
+			}
+			%GeneratorSetting "Name"
+			{
+			}
+			%GeneratorSetting "Type"
+			{
+				Property
+				{
+					Name "MACH_O_TYPE"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						StaticLibrary "staticlib"
+						DynamicLibrary "mh_bundle"
+						SharedDynamicLibrary "mh_dylib"
+						Executable "mh_execute"
+						Driver "mh_execute"
+						Tool "mh_execute"
+						ConsoleExecutable "mh_execute"
+						UIExecutable "mh_execute"
+					}	
+				}
+			}
+			%GeneratorSetting "MalterlibInfoPListFile"
+			{
+				Property
+				{
+					Name "INFOPLIST_FILE"
+				}
+			}
+
+			%GeneratorSetting "EnableLinkerGroups"
+			{
+				Property
+				{
+					Name "MALTERLIB_ENABLE_LINKER_GROUPS"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "true"
+						false "false"
+					}
+				}
+			}
+
+			%GeneratorSetting "LinkerGroup"
+			{
+				Property
+				{
+					Name "MALTERLIB_LINKER_GROUP"
+				}
+			}
+
+
+			%GeneratorSetting "BundleIdentifier"
+			{
+				Property
+				{
+                    Disabled "1"
+				}
+			}
+			%GeneratorSetting "FileExtension"
+			{
+				Property
+				{
+					Name "EXECUTABLE_EXTENSION"
+				}
+			}
+			%GeneratorSetting "IntermediateDirectory"
+			{
+				Property
+				{
+					Name "CONFIGURATION_TEMP_DIR"
+					RemoveLastSlash true
+				}
+				%GeneratorSetting "Properties"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							%GeneratorSetting "TARGET_TEMP_DIR"
+							%GeneratorSetting "TEMP_FILES_DIR"
+							%GeneratorSetting "TEMP_FILE_DIR"
+							%GeneratorSetting "PROJECT_TEMP_DIR"
+							%GeneratorSetting "PROJECT_TEMP_ROOT"
+							%GeneratorSetting "BUILD_DIR"
+							%GeneratorSetting "BUILD_ROOT"
+							%GeneratorSetting "OBJROOT"
+							%GeneratorSetting "SYMROOT"
+							%GeneratorSetting "TEMP_ROOT"
+						}
+					}
+				}
+			}
+			%GeneratorSetting "OutputDirectory"
+			{
+				Property
+				{
+					Name "CONFIGURATION_BUILD_DIR"
+					RemoveLastSlash true
+				}
+			}
+			%GeneratorSetting "FilePrefix"
+			{
+				Property
+				{
+					Name "EXECUTABLE_PREFIX"
+				}
+			}
+			%GeneratorSetting ProjectDerivedSourcesDir
+			{
+				Property
+				{
+					Name "PROJECT_DERIVED_FILE_DIR"
+				}
+			}
+			%GeneratorSetting ProjectSharedPrecompPrefixDir
+			{
+				Property
+				{
+					Name "SHARED_PRECOMPS_DIR"
+				}
+			}
+			%GeneratorSetting "ProductType"
+			{
+			}
+			%GeneratorSetting "ExecutableFolder"
+			{
+				Property
+				{
+					Name EXECUTABLE_FOLDER_PATH
+				}
+			}
+
+			%GeneratorSetting "SupportedPlatforms"
+			{
+				Property
+				{
+					Name "SUPPORTED_PLATFORMS"
+				}
+			}
+
+			%GeneratorSetting "OnlyActiveArchitectures"
+			{
+				Property
+				{
+					Name "ONLY_ACTIVE_ARCH"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "AlwaysSearchUserPaths"
+			{
+				Property
+				{
+					Name "ALWAYS_SEARCH_USER_PATHS"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}	
+				}
+			}
+			%GeneratorSetting "SDKRoot"
+			{
+				Property
+				{
+					Name "SDKROOT"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						OSX10.5 "macosx10.5"
+						OSX10.6 "macosx10.6"
+						OSX10.7 "macosx10.7"
+						OSX10.8 "macosx10.8"
+						OSX10.9 "macosx10.9"
+						OSX10.10 "macosx10.10"
+						OSX10.11 "macosx10.11"
+						iOS8.1 "iphoneos8.1"
+						Linux2.6 "linux2.6"
+						Emscripten "emscripten"
+					}
+				}
+			}
+			%GeneratorSetting "DeploymentTarget"
+			{
+				Property
+				{
+					Name "MACOSX_DEPLOYMENT_TARGET"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						OSX10.5 "10.5"
+						OSX10.6 "10.6"
+						OSX10.7 "10.7"
+						OSX10.8 "10.8"
+						OSX10.9 "10.9"
+						OSX10.10 "10.10"
+						OSX10.11 "10.11"
+						iOS8.1 "8.1"
+						Linux2.6 ""
+						Emscripten ""
+					}
+				}
+			}
+			%GeneratorSetting "iOSDeploymentTarget"
+			{
+				Property
+				{
+					Name "IPHONEOS_DEPLOYMENT_TARGET"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						iOS8.1 "8.1"
+					}
+				}
+			}
+			%GeneratorSetting "DebugInformationFormat"
+			{
+				Property
+				{
+					Name "DEBUG_INFORMATION_FORMAT"
+				}
+			}
+			%GeneratorSetting "Architectures"
+			{
+				Property
+				{
+					Name "ARCHS"
+				}
+/*				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Both "$(ARCHS_STANDARD_32_64_BIT)"
+						x86 "$(ARCHS_STANDARD_32_BIT)"
+						x64 "$(ARCHS_STANDARD_64_BIT)"
+					}
+				}*/
+			}
+			%GeneratorSetting "ValidArchitectures"
+			{
+				Property
+				{
+					Name "VALID_ARCHS"
+				}
+			}
+			
+			%GeneratorSetting "NativeArchitecture"
+			{
+				Property
+				{
+					Name "NATIVE_ARCH"
+				}
+			}
+			
+			%GeneratorSetting "NativeArchitectureActual"
+			{
+				Property
+				{
+					Name "NATIVE_ARCH_ACTUAL"
+				}
+			}
+			
+			%GeneratorSetting "CombineHiDPIImages"
+			{
+				Property
+				{
+					Name "COMBINE_HIDPI_IMAGES"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "PlatformToolset"
+			{
+				Property
+				{
+					Name "GCC_VERSION"
+				}
+			}
+			%GeneratorSetting "PlatformToolsetLibTool"
+			{
+				Property
+				{
+					Name "LIBTOOL"
+				}
+			}
+			%GeneratorSetting "LibToolFlags"
+			{
+				Property
+				{
+					Name "PRODUCT_SPECIFIC_LIBTOOLFLAGS"
+				}
+			}
+			%GeneratorSetting "LDFlags"
+			{
+				Property
+				{
+					Name "PRODUCT_SPECIFIC_LDFLAGS"
+				}
+			}
+			%GeneratorSetting "PlatformToolsetCompiler"
+			{
+				Property
+				{
+					Name "MALTERLIB_GENERATOR_CLANG"
+				}
+			}
+			%GeneratorSetting "HeadermapIncludeTarget"
+			{
+				Property
+				{
+					Name "HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+
+			%GeneratorSetting "HeadermapEnable"
+			{
+				Property
+				{
+					Name "USE_HEADERMAP"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+
+			%GeneratorSetting "HeadermapIncludeFrameworks"
+			{
+				Property
+				{
+					Name "HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+
+
+			%GeneratorSetting "HeadermapIncludeProject"
+			{
+				Property
+				{
+					Name "HEADERMAP_INCLUDES_PROJECT_HEADERS"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			
+			%GeneratorSetting "StripDebugSymbolsDuringCopy"
+			{
+				Property
+				{
+					Name "COPY_PHASE_STRIP"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "StripLinkedProduct"
+			{
+				Property
+				{
+					Name "STRIP_INSTALLED_PRODUCT"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "StripStyle"
+			{
+				Property
+				{
+					Name "STRIP_INSTALLED_PRODUCT"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						All "all"
+						Debugging "debugging"
+						NonGlobal "non-global"
+					}
+				}
+			}
+			%GeneratorSetting "UseSeperateStrip"
+			{
+				Property
+				{
+					Name "SEPARATE_STRIP"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "CxxLanguage"
+			{
+				Property
+				{
+					Name "CLANG_CXX_LANGUAGE_STANDARD"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						GNU++11 "gnu++0x"
+						C++11 "c++11"
+						C++14 "c++14"
+						C++17 "c++1z"
+					}
+				}
+			}
+			%GeneratorSetting "CLanguage"
+			{
+				Property
+				{
+					Name "GCC_C_LANGUAGE_STANDARD"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						C89 "c89"
+						C99 "c99"
+						C99 "c11"
+						GNU89 "GNU89"
+						GNU99 "GNU99"
+						GNU11 "GNU11"
+					}
+				}
+			}
+			%GeneratorSetting "CxxStandardLibrary"
+			{
+				Property
+				{
+					Name "CLANG_CXX_LIBRARY"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						none "none"
+						libc++ "libc++"
+						libstdc++ "libstdc++"
+					}
+				}
+			}
+			%GeneratorSetting "ObjcLinkRuntime"
+			{
+				Property
+				{
+					Name "CLANG_LINK_OBJC_RUNTIME"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "SharedLibraryInstallPath"
+			{
+				Property
+				{
+					Name "LD_DYLIB_INSTALL_NAME"
+				}
+			}
+			
+			%GeneratorSetting "LinkWithStandardLibraries"
+			{
+				Property
+				{
+					Name "LINK_WITH_STANDARD_LIBRARIES"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "CompatibilityVersion"
+			{
+				Property
+				{
+					Name "DYLIB_COMPATIBILITY_VERSION"
+				}
+			}
+			%GeneratorSetting "CurrentVersion"
+			{
+				Property
+				{
+					Name "DYLIB_CURRENT_VERSION"
+				}
+			}
+			%GeneratorSetting "ExtraGroups"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "ToolPath"
+			{
+				Property
+				{
+					Name "MalterlibBuildSystemExecutablePath"
+				}
+			}
+			%GeneratorSetting "PostBuildScript"
+			{
+				Property
+				{
+					Name "PostBuildScript"
+					Substitute "#!/bin/bash\r\nexport PATH=$MalterlibBuildSystemExecutablePath:$PATH\r\n{}"
+				}
+			}
+			%GeneratorSetting "PostBuildScriptInputs"
+			{
+				Property
+				{
+					Name "PostBuildScriptInputs"
+				}
+			}
+			%GeneratorSetting "PostBuildScriptOutputs"
+			{
+				Property
+				{
+					Name "PostBuildScriptOutputs"
+				}
+			}
+			%GeneratorSetting "PreBuildScript"
+			{
+				Property
+				{
+					Name "PreBuildScript"
+					Substitute "#!/bin/bash\r\nexport PATH=$MalterlibBuildSystemExecutablePath:$PATH\r\n{}"
+				}
+			}
+			%GeneratorSetting "PreBuildScriptInputs"
+			{
+				Property
+				{
+					Name "PreBuildScriptInputs"
+				}
+			}
+			%GeneratorSetting "PreBuildScriptOutputs"
+			{
+				Property
+				{
+					Name "PreBuildScriptOutputs"
+				}
+			}
+            %GeneratorSetting "DebuggerCommandArguments"
+			{
+				Property
+				{
+					Name "CommandLineArgument"
+				}
+			}
+            %GeneratorSetting "LocalDebuggerCommand"
+			{
+				Property
+				{
+					Name "LocalDebuggerCommand"
+				}
+			}
+            %GeneratorSetting "LocalDebuggerWorkingDirectory"
+			{
+				Property
+				{
+					Name "customWorkingDirectory"
+				}
+			}
+            %GeneratorSetting "GenerateScheme"
+			{
+				Property
+				{
+					Name "GenerateScheme"
+				}
+			}
+			
+            %GeneratorSetting "EnableModuleDebugging"
+			{
+				Property
+				{
+					Name "CLANG_ENABLE_MODULE_DEBUGGING"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+            
+            // Remote debugging
+			%GeneratorSetting "RemoteDebuggerCommand"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "RemoteDebuggerWorkingDirectory"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+            
+            // Todo
+            %GeneratorSetting "CommandLine_Build"
+			{
+            	Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "CommandLine_Clean"
+			{
+            	Property
+				{
+					Disabled "1"
+                }
+			}
+			%GeneratorSetting "CommandLine_ReBuild"
+			{
+				Property
+				{
+					Disabled "1" // Xcode does not have a rebuild action
+				}
+			}
+		}
+	}
+	%GeneratorSetting "SharedC"
+	{
+		%GeneratorSetting "Compile"
+		{
+			// Xcode config setting
+
+			%GeneratorSetting "LinuxXcodeCompatibility"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-claim_xcode"
+						false ""
+					}
+				}
+			}
+			
+			%GeneratorSetting "BuiltinSearchPath"
+			{
+				Property
+				{
+					Name HEADER_SEARCH_PATHS
+				}
+			}
+
+			%GeneratorSetting "ObjectiveCARC"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fobjc-arc"
+						false "-fno-objc-arc"
+					}
+				}
+			}			
+
+			// Enabled compile flag mappings
+			%GeneratorSetting "Symbols"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						FullForDebug "-gfull"
+						Full "-g -flimit-debug-info"
+						Fast "-gline-tables-only"
+						None "-g0"
+						Default ""
+					}
+				}
+			}
+			%GeneratorSetting "SplitSymbols"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-gsplit-dwarf"
+						false ""
+					}
+				}
+			}
+			
+
+			%GeneratorSetting "CxxLanguage"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						GNU++11 "-std=gnu++0x"
+						C++11 "-std=c++11"
+						C++14 "-std=c++14"
+						C++17 "-std=c++1z"
+						"" ""
+					}
+				}
+			}
+			%GeneratorSetting "CLanguage"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						C89 "-std=c89"
+						C99 "-std=c99"
+						C11 "-std=c11"
+						GNU89 "-std=gnu89"
+						GNU99 "-std=gnu99"
+						GNU11 "-std=gnu11"
+						"" ""
+					}
+				}
+			}
+			%GeneratorSetting "AsyncUnwindTables"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fasynchronous-unwind-tables"
+						false ""
+					}
+				}
+			}
+			
+			%GeneratorSetting "Verbose"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-v"
+						false ""
+					}
+				}
+			}
+
+			%GeneratorSetting "VerboseTemplateErrors"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fdiagnostics-show-template-tree -fno-elide-type -ftemplate-backtrace-limit=0"
+						false ""
+					}
+				}
+			}
+
+			%GeneratorSetting "LimitedDebugInfo"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-flimit-debug-info"
+						false ""
+					}
+				}
+			}
+
+
+			%GeneratorSetting "PreprocessorDefines"
+			{
+				Property
+				{
+					Prefix "-D"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					QuoteAfterEquals "1"
+				}
+			}
+			%GeneratorSetting "AdditionalOptions"
+			{
+				Property
+				{
+					Prefix ""
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					QuoteAfterEquals "1"
+				}
+			}
+			%GeneratorSetting "TargetTriple"
+			{
+				Property
+				{
+					Prefix "-target "
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+
+			%GeneratorSetting "ToolClass"
+			{
+				Property
+				{
+					Prefix "--ToolClass "
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+
+			%GeneratorSetting "MiniOSVersion"
+			{
+				Property
+				{
+					Prefix "-miphoneos-version-min="
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+			
+			%GeneratorSetting "SysRoot"
+			{
+				Property
+				{
+					Prefix "--sysroot "
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+			
+			%GeneratorSetting "DocumentationModule"
+			{
+				Property
+				{
+					Prefix "--documentation-module "
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+			
+			%GeneratorSetting "DocumentationDocSetFeedName"
+			{
+				Property
+				{
+					Prefix "--documentation-docset-feed-name "
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+			
+			%GeneratorSetting "DocumentationDocSetPublisherName"
+			{
+				Property
+				{
+					Prefix "--documentation-docset-publisher-name "
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+			
+			%GeneratorSetting "DocumentationDocSetPublisherID"
+			{
+				Property
+				{
+					Prefix "--documentation-docset-publisher-id "
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+			
+			%GeneratorSetting "DocumentationDocSetBundleID"
+			{
+				Property
+				{
+					Prefix "--documentation-docset-bundle-id "
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+			%GeneratorSetting "SearchPath"
+			{
+				Property
+				{
+					Prefix "-I"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					QuoteSeperatedValues "1"
+				}
+			}
+			%GeneratorSetting "ToolPrefix"
+			{
+				Property
+				{
+					Prefix "-B"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					QuoteSeperatedValues "1"
+				}
+			}
+			%GeneratorSetting "SystemSearchPath"
+			{
+				Property
+				{
+					Prefix "-isystem"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					QuoteSeperatedValues "1"
+				}
+			}
+			%GeneratorSetting "FrameworkSearchPath"
+			{
+				Property
+				{
+					Prefix "-F"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					QuoteSeperatedValues "1"
+				}
+			}
+			%GeneratorSetting "Warnings"
+			{
+				// TODO: These were the errors auto generated by Xcode compiler plugin settings.
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Off "-w"
+						Minimal "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-pointer-sign -Wno-tautological-compare -Wno-incompatible-pointer-types -Wno-unused-local-typedef"
+						On "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration"
+						Pedantic "-Weverything"
+/*
+						Minimal "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"
+						On "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"
+						Pedantic "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"						
+*/						
+					}
+				}
+			}
+			%GeneratorSetting "FunctionSections"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-ffunction-sections"
+					}
+				}
+			}
+			%GeneratorSetting "DataSections"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-fdata-sections"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_NoUnused"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-Wno-unused"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_NoUnknownPragmas"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-Wno-unknown-pragmas"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_NoVirtualOverride"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-Wno-inconsistent-missing-override"
+					}
+				}
+			}
+			
+
+			%GeneratorSetting "ClangUnstableWarnings"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						On "-Wno-header-guard -Wno-inline-new-delete"
+					}
+				}
+			}
+			
+			%GeneratorSetting "EmscriptenWarnings"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						On "-Wno-warn-absolute-paths -v"
+					}
+				}
+			}			
+
+			%GeneratorSetting "StackGuard"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fstack-protector"
+						false "-fno-stack-protector"
+					}
+				}
+			}			
+			
+			%GeneratorSetting "WarningsAsErrors"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true -Werror
+						false ""
+					}
+				}
+			}
+			%GeneratorSetting "DynamicTypeInfo"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true ""
+						false "-fno-rtti" // -fno-rtti"
+					}
+				}
+			}
+			%GeneratorSetting "PositionIndependantCode"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fPIC"
+						false ""
+					}
+				}
+			}
+
+			%GeneratorSetting "OpenMP"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true -fopenmp	
+						false ""
+					}
+				}
+			}
+			%GeneratorSetting "UseFullPaths"
+			{
+				// I think clang outputs full path always.
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true ""
+						false ""
+					}
+				}
+			}
+			/*
+			%GeneratorSetting "StringPooling"
+			{
+				// TODO
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true ""
+						false ""
+					}
+				}
+			}
+			*/
+
+			%GeneratorSetting "FloatingPointExceptions"
+			{
+				// Clang has no -ffast-math flag (as GCC does), but possibly 
+				// something can be found.
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true ""
+						false ""
+					}
+				}
+			}
+
+			/*
+			%GeneratorSetting "FloatingPointModel"
+			{
+				// TODO
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Precise ""
+						Strict ""
+					}
+				}
+			}
+			*/
+
+			%GeneratorSetting "EnableLanguageExtensions"
+			{
+				// TODO
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true ""
+						false ""
+					}
+				}
+			}
+
+			%GeneratorSetting "ExtendedInstructionSet"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Off "-mno-sse"
+						SSE1 "-msse"
+						SSE2 "-msse2"
+						SSE3 "-msse3"
+						SSSE3 "-mssse3"
+						SSE41 "-msse4.1"
+						SSE42 "-msse4.2"
+						AVX "-mavx -msse4.2"
+					}
+				}
+			}
+			
+			%GeneratorSetting "DefaultHeaders"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						None "-nostdinc"
+						NoStdLib "-nostdlibinc"
+						NoCompiler "-nobuiltininc"
+						All ""
+					}
+				}
+			}
+			
+			%GeneratorSetting "DefaultVisibility"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Hidden "-fvisibility=hidden"
+						InlineHidden "-fvisibility-inlines-hidden"
+						AllHidden "-fvisibility=hidden -fvisibility-inlines-hidden"
+					}
+				}
+			}
+
+			%GeneratorSetting "RuntimeLibrary"
+			{
+				// Not as simple with clang etc...
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Static ""
+						StaticDebug ""
+					}
+				}
+			}
+
+			/*
+			%GeneratorSetting "StructMemberAlignment"
+			{
+				// TODO
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Default ""
+						1 ""
+						2 ""
+						4 ""
+						8 ""
+						16 ""
+					}
+				}
+			}
+			*/
+
+			%GeneratorSetting "AppleKernelOptions"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fapple-kext -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -Wno-deprecated -Wno-overloaded-virtual"
+					}
+				}
+			}
+
+
+			%GeneratorSetting "PrefixHeader"
+			{
+				Property
+				{
+					Name "GCC_PREFIX_HEADER"
+				}
+			}
+			%GeneratorSetting "Exceptions"
+			{
+				// TODO
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Full ""
+						C++ ""
+						ExternCandC++ ""
+						Off "-fno-exceptions"
+					}
+				}
+			}
+			%GeneratorSetting "PrecompilePrefixHeader"
+			{
+				Property
+				{
+					Name "GCC_PRECOMPILE_PREFIX_HEADER"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+						XInternalCreate "" // Only used internally
+					}
+				}
+			}
+			%GeneratorSetting "Optimize"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Off "-O0"
+						Fast "-O3"
+						On "-O3"
+						//Full "-O4 -flto"
+						Full "-O3"
+					}
+				}
+			}
+			%GeneratorSetting "RuntimeChecks"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Off ""
+						Fast ""
+						On ""
+						Full ""
+/*
+						Fast "-fsanitize=undefined"
+						On "-fsanitize=undefined"
+						Full "-fsanitize=integer,address"
+*/					
+					}
+				}
+			}
+			%GeneratorSetting "Inline"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Off "-fno-inline"
+						Explicit "-fno-inline-functions"
+						Automatic ""
+					}
+				}
+			}
+			%GeneratorSetting "ShortWChar"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fshort-wchar"
+						false ""
+					}
+				}
+			}
+			%GeneratorSetting "DisableSecurityWarnings"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-Wno-format-security"
+						false ""
+					}
+				}
+			}	
+			%GeneratorSetting "DisableDeprecationWarnings"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-Wno-deprecated"
+						false ""
+					}
+				}
+			}	
+		}
+	}
+	%GeneratorSetting "C++"
+	{
+		%GeneratorSetting "Compile"
+		{
+		}
+	}
+	%GeneratorSetting "C"
+	{
+		%GeneratorSetting "Compile"
+		{
+		}
+	}
+	%GeneratorSetting "Header"
+	{
+		Property
+		{
+			Disabled "1"
+		}
+	}
+	%GeneratorSetting "ObjC++"
+	{
+	}
+	%GeneratorSetting "ObjC"
+	{
+	}
+	%GeneratorSetting "None"
+	{
+		Property
+		{
+			Disabled "1"
+		}
+	}
+	%GeneratorSetting "QtMoc"
+	{
+		%GeneratorSetting "Compile"
+		{
+			%GeneratorSetting "ObjectFileName"
+			{
+				Property
+				{
+					Name "MOC_OUTPUT_PATTERN"
+				}
+			}
+			%GeneratorSetting "MalterlibDependencyFileName"
+			{
+				Property
+				{
+					Name "MOC_MALTERLIB_DEPENDENCY"
+				}
+			}
+			%GeneratorSetting "SearchPath"
+			{
+				Property
+				{
+					Name "MOC_HEADER_SEARCH_PATHS"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					QuoteSeperatedValues "1"
+				}
+			}
+			%GeneratorSetting "IncludePathPrefix"
+			{
+				Property
+				{
+					Name "MOC_INCLUDE_PREFIX"
+				}
+			}
+			%GeneratorSetting "PreprocessorDefines"
+			{
+				Property
+				{
+					Name "MOC_DEFINES"
+					ConvertSeperator "1"
+					OldSeperator ";"
+					Seperator " "
+					QuoteAfterEquals "1"
+				}
+			}
+			%GeneratorSetting "PrefixHeader"
+			{
+				Property
+				{
+					Name "MOC_FORCE_INCLUDE"
+				}
+			}
+			%GeneratorSetting "DoNotDisplayWarnings"
+			{
+				Property
+				{
+					Name "MOC_NO_WARNINGS"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "DoCompileAndLink"
+			{
+				Property
+				{
+					Name FilesExcludedFromCompile
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "false"
+						false "true"
+					}
+				}
+			}
+
+			// Disabled
+			%GeneratorSetting "PreprocessOnly"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "PreprocessorUnDefinitions"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "DoNotGenerateInclude"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "GenerateDebugInformation"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Optimize"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+		}
+	}
+	%GeneratorSetting "QtUic"
+	{
+		%GeneratorSetting "Compile"
+		{
+			%GeneratorSetting "ObjectFileName"
+			{
+				Property
+				{
+					Name "UIC_OUTPUT_PATTERN"
+				}
+			}
+			%GeneratorSetting "NoProtection"
+			{
+				Property
+				{
+					Name "UIC_GUARDS"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+
+			// Disabled
+			%GeneratorSetting "SearchPath"
+			{
+				Property
+				{
+					Disabled "1" 
+				}
+			}
+			%GeneratorSetting "DisplayDependencies"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "NoImplicitIncludes"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Optimize"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+		}
+	}
+	%GeneratorSetting "QtRcc"
+	{
+		%GeneratorSetting "Compile"
+		{
+			%GeneratorSetting "ObjectFileName"
+			{
+				Property
+				{
+					Name "RCC_OUTPUT_PATTERN"
+				}
+			}
+			%GeneratorSetting "InitFunc"
+			{
+				Property
+				{
+					Name "RCC_INIT_FUNC"
+				}
+			}
+			%GeneratorSetting "MalterlibDependencyFileName"
+			{
+				Property
+				{
+					Name "RCC_MALTERLIB_DEPENDENCY"
+				}
+			}
+			
+			%GeneratorSetting "NoCompress"
+			{
+				Property
+				{
+					Name "RCC_COMPRESS"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "Namespace"
+			{
+				Property
+				{
+					Name "RCC_DISABLE_NAMESPACE"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+
+			// Disabled
+			%GeneratorSetting "DoCompileAndLink"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Optimize"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+		}
+	}
+	%GeneratorSetting "MlTwk"
+	{
+		%GeneratorSetting "Compile"
+		{
+			%GeneratorSetting "ObjectFileName"
+			{
+				Property
+				{
+					Name "TWK_OUTPUT_PATTERN"
+				}
+			}
+            
+			
+			// Disabled
+			%GeneratorSetting "GenerateDebugInformation"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Optimize"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+		}
+	}
+	%GeneratorSetting "MalterlibFS"
+	{
+		%GeneratorSetting "Compile"
+		{
+			%GeneratorSetting "ExtraCompilerFlags"
+			{
+				Property
+				{
+					Name "VFS_ADDITIONAL_OPTIONS"
+				}
+			}
+			%GeneratorSetting "Optimize"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "DoCompileAndLink"
+			{
+				Property
+				{
+					Disabled "1" // We don't support this yet on OSX
+				}
+			}
+			%GeneratorSetting "VerboseLogging"
+			{
+				Property
+				{
+					Name "VFS_VERBOSE"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true YES
+						false NO
+					}
+				}
+			}
+			%GeneratorSetting "OutputAsAssembly"
+			{
+				Property
+				{
+					Name "VFS_OUTPUTASASSEMBLY"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true YES
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "OutputAsObjectFile"
+			{
+				Property
+				{
+					Name "VFS_OUTPUTASOBJECT"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "NO"
+						Elf32 Elf32
+						Elf64 Elf64
+					}
+				}
+			}
+            %GeneratorSetting "ObjectFileName"
+            {
+                Property
+                {
+                    Name "VFS_OUTPUT_PATTERN"
+                }
+            }
+            %GeneratorSetting "ASMFileName"
+            {
+                Property
+                {
+                    Name "VFS_OUTPUT_PATTERN_ASM"
+                }
+            }
+            %GeneratorSetting "Platform"
+            {
+                Property
+                {
+                    Name "VFS_PLATFORM"
+                }
+            }
+			%GeneratorSetting "CppFileName"
+			{
+				Property
+				{
+					Name "VFS_OUTPUT_PATTERN_CPP"
+				}
+			}
+			%GeneratorSetting "DependencyFileName"
+			{
+				Property
+				{
+					Name "VFS_DEPENDENCY_FILE"
+				}
+			}
+			%GeneratorSetting "MalterlibDependencyFileName"
+			{
+				Property
+				{
+					Name "VFS_MALTERLIB_DEPENDENCY_FILE"
+				}
+			}
+			%GeneratorSetting "MalterlibFSPathPrefix"
+			{
+				Property
+				{
+					Name "VFS_PATH_PREFIX"
+				}
+			}
+		}
+	}
+	%GeneratorSetting "Assembler"
+	{
+		%GeneratorSetting "Compile"
+		{
+			%GeneratorSetting "Optimize"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "AllCPUSubTypes"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-force_cpusubtype_ALL"
+						false ""
+					}
+				}
+			}
+			%GeneratorSetting "PreprocessorDefines"
+			{
+				Property
+				{
+					Prefix "-D"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					QuoteAfterEquals "1"
+				}
+			}
+		}
+
+	}
+	%GeneratorSetting "CompileShared"
+	{
+		%GeneratorSetting "Compile"
+		{
+			// Disabled
+			%GeneratorSetting "Type"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "FullEval"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "AllowNonExisting"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "CallingConvention"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "SymbolFile"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			
+			%GeneratorSetting "Verbose"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			
+			%GeneratorSetting "IndentWidth"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			
+			%GeneratorSetting "TabWidth"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			
+			%GeneratorSetting "InitEarly"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			
+			%GeneratorSetting "UsesTabs"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Disabled"
+			{
+				Property
+				{
+					Name EXCLUDED_SOURCE_FILE_NAMES
+				}
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+	}
+}

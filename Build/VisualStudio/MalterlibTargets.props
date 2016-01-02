@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--	Copyright © 2015 Hansoft AB 
+		Distributed under the MIT license, see license text in LICENSE.Malterlib
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(MLTwkBeforeTargets)' == '' and '$(MLTwkAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <MLTwkBeforeTargets>ClCompile</MLTwkBeforeTargets>
+    <MLTwkAfterTargets>CustomBuild</MLTwkAfterTargets>
+ </PropertyGroup>
+
+  <PropertyGroup
+    Condition="'$(MalterlibFSBeforeTargets)' == '' and '$(MalterlibFSAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <MalterlibFSBeforeTargets>ClCompile</MalterlibFSBeforeTargets>
+    <MalterlibFSAfterTargets>CustomBuild</MalterlibFSAfterTargets>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <MlTwk>
+      <DoCompileAndLink Condition="$(Configuration.Contains('Debug')) == 'true' and $(Configuration.Contains('Release')) == 'false'">false</DoCompileAndLink>
+      <DoCompileAndLink Condition="$(Configuration.Contains('Debug')) == 'false' or '$(Configuration)' == 'Release Debug'">true</DoCompileAndLink>
+      <ObjectFileName>$(IntDir)%(Filename)_Twk.cpp</ObjectFileName>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+    </MlTwk>
+    <MalterlibFS>
+      <DoCompileAndLink>true</DoCompileAndLink>
+      <ObjectFileName>$(IntDir)%(Filename)_MalterlibFS.obj</ObjectFileName>
+      <CppFileName>$(IntDir)%(Filename)_MalterlibFS.cpp</CppFileName>
+      <VerboseLogging>false</VerboseLogging>
+      <MalterlibFSPathPrefix></MalterlibFSPathPrefix>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <OutputAsObjectFile>true</OutputAsObjectFile>
+      <SymbolName></SymbolName>
+    </MalterlibFS>
+  </ItemDefinitionGroup>
+</Project>

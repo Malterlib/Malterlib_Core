@@ -1,0 +1,36 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Include "VisualStudio/VisualStudio.MGeneratorSettings"
+Include "Xcode/Xcode.MGeneratorSettings"
+
+// Configurations
+Include "Shared_Configurations.MSettings"
+
+// Properties
+Include "Shared_Defaults.MSettings"
+Include "Shared_Calculated.MSettings"
+Include "Shared_Property.MSettings"
+
+// Compiler
+Include "Shared_Compile.MSettings"
+
+// Compiler
+Include "Shared_Workspace.MSettings"
+
+// Target, linker etc
+Include "Shared_Target.MSettings"
+
+// Files generated such as exporting vars to external build system
+Include "Shared_GeneratedFiles.MSettings"
+
+// Generate build system target automatically included in all workspaces
+Include "Tool_GenerateBuildSystem.MTarget"
+
+
+// Misc small settings
+
+Workspace
+{
+	Name "@(this.Identity)"
+}

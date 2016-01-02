@@ -1,0 +1,30 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "CompileShared"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "Type"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "AllowNonExisting"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "FullEval"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+	}
+}

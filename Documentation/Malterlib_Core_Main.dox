@@ -1,0 +1,13 @@
+﻿// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+/** \mainpage Malterlib
+
+	The Malterlib project design priorities
+	
+*/
+
+/*
+	1. Don't pay in performance for extra features (Don't pay for what you don't use)
+	2. Comp
+*/

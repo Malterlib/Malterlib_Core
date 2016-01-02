@@ -1,0 +1,343 @@
+﻿// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+#pragma once
+
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+
+#	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
+#		include <x86intrin.h>
+#	endif
+#elif defined(DCompiler_MSVC)
+#	ifndef _DDK_DRIVER_
+#		include <intrin.h>
+#	endif
+#else
+#	error "Implement this"
+#endif
+
+
+
+// Memory intrinsics
+#if defined(DPlatformFamily_OSX)
+	extern "C" void	*memcpy(void *, const void *, __SIZE_TYPE__);
+	extern "C" void	*memset(void *, int, __SIZE_TYPE__);
+	extern "C" void	*memmove(void *, const void *, __SIZE_TYPE__);
+#	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
+#	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
+#	define DMibPIntrinsicMemMove(d_Dest, d_Source, d_Size) memmove(d_Dest, d_Source, d_Size)
+#elif defined(DPlatformFamily_Linux)
+	extern "C" void *memcpy(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) throw () __attribute__ ((__nonnull__ (1, 2)));
+	extern "C" void *memset(void *__s, int __c, __SIZE_TYPE__ __n) throw () __attribute__ ((__nonnull__ (1)));
+	extern "C" void *memmove(void *__dest, __const void *__src, __SIZE_TYPE__ __n) throw () __attribute__((__nonnull__ (1, 2)));
+#	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
+#	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
+#	define DMibPIntrinsicMemMove(d_Dest, d_Source, d_Size) memmove(d_Dest, d_Source, d_Size)
+#elif defined(DPlatformFamily_Windows)
+	extern "C" void *  __cdecl memcpy(_Out_writes_bytes_all_(_Size) void * _Dst, _In_reads_bytes_(_Size) const void * _Src, _In_ size_t _Size);
+	extern "C" 
+	void *  __cdecl memmove(_Out_writes_bytes_all_opt_(_Size) void * _Dst, _In_reads_bytes_opt_(_Size) const void * _Src, _In_ size_t _Size);
+	extern "C" _Post_equal_to_(_Dst) _At_buffer_((unsigned char*)_Dst, _Iter_, _Size, _Post_satisfies_(((unsigned char*)_Dst)[_Iter_] == _Val))
+	void *  __cdecl memset(_Out_writes_bytes_all_(_Size) void * _Dst, _In_ int _Val, _In_ size_t _Size);
+#	pragma intrinsic(memcpy)
+#	pragma intrinsic(memset)
+//#	pragma intrinsic(memmove)
+#	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
+#	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
+#	define DMibPIntrinsicMemMove(d_Dest, d_Source, d_Size) memmove(d_Dest, d_Source, d_Size)
+#else
+#	error "Implement this"
+#endif
+
+
+// Prefetch
+#if DArchitectureExtension_SSE
+#	if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#		define DMibPPrefetch(d_ToPrefetch) _mm_prefetch((const char *)d_ToPrefetch, _MM_HINT_T0)
+#		define DMibPPrefetchOneTimeUse(d_ToPrefetch) _mm_prefetch((const char *)d_ToPrefetch, _MM_HINT_NTA)
+#	elif defined(DCompiler_MSVC)
+#		pragma intrinsic(_mm_prefetch)
+#		define DMibPPrefetch(d_ToPrefetch) _mm_prefetch((const char *)d_ToPrefetch, _MM_HINT_T0)
+#		define DMibPPrefetchOneTimeUse(d_ToPrefetch) _mm_prefetch((const char *)d_ToPrefetch, _MM_HINT_NTA)
+#	else
+#		error "Implement this"
+#	endif
+#else
+#	define DMibPPrefetch(d_ToPrefetch) (void)0
+#	define DMibPPrefetchOneTimeUse(d_ToPrefetch) (void)0
+#endif
+
+
+// Yield
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
+#		define yield_cpu _mm_pause()
+#	else
+#		define yield_cpu
+#	endif
+#elif defined(DCompiler_MSVC)
+#	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
+#		define yield_cpu _mm_pause()
+#	else
+#		define yield_cpu
+#	endif
+#else
+#	error "Implement this"
+#endif
+
+
+
+
+// Highest bit set
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+
+	namespace NMib
+	{
+		namespace NPlatformHelpers
+		{
+			static inline_always int fg_GetHighestBitSet32(unsigned long _Value)
+			{
+				if (!_Value)
+					return -1;
+				return 31 - __builtin_clz(_Value);
+			}
+			
+			static inline_always int fg_GetHighestBitSet32NoZero(unsigned long _Value)
+			{
+				return 31 - __builtin_clz(_Value);
+			}
+			
+			static inline_always int fg_GetLowestBitSet32(unsigned long _Value)
+			{
+				if (!_Value)
+					return -1;
+				return __builtin_ctz(_Value);
+			}
+			
+			static inline_always int fg_GetLowestBitSet32NoZero(unsigned long _Value)
+			{
+				return __builtin_ctz(_Value);
+			}
+
+#			if DMibPPtrBits >= 64
+				static inline_always int fg_GetHighestBitSet64(unsigned long _Value)
+				{
+					if (!_Value)
+						return -1;
+					return 63 - __builtin_clzll(_Value);
+				}
+				
+				static inline_always int fg_GetHighestBitSet64NoZero(unsigned long _Value)
+				{
+					return 63 - __builtin_clzll(_Value);
+				}
+				
+				static inline_always int fg_GetLowestBitSet64(unsigned long _Value)
+				{
+					if (!_Value)
+						return -1;
+					return __builtin_ctzll(_Value);
+				}
+				
+				static inline_always int fg_GetLowestBitSet64NoZero(unsigned long _Value)
+				{
+					return __builtin_ctzll(_Value);
+				}
+#			endif
+		}
+	}
+
+#	define DMibPGetHighestBitSet32(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet32(d_Value)
+#	define DMibPGetHighestBitSet32NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet32NoZero(d_Value)
+#	define DMibPGetLowestBitSet32(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet32(d_Value)
+#	define DMibPGetLowestBitSet32NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet32NoZero(d_Value)
+#	if DMibPPtrBits >= 64
+	#	define DMibPGetHighestBitSet64(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet64(d_Value)
+	#	define DMibPGetHighestBitSet64NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet64NoZero(d_Value)
+	#	define DMibPGetLowestBitSet64(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet64(d_Value)
+	#	define DMibPGetLowestBitSet64NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet64NoZero(d_Value)
+#	endif
+
+#elif defined(DCompiler_MSVC)
+
+#	pragma intrinsic(_BitScanReverse)
+#	if DMibPPtrBits >= 64
+#		pragma intrinsic(_BitScanReverse64)
+#	endif
+	namespace NMib
+	{
+		namespace NPlatformHelpers
+		{
+			static inline_always int fg_GetHighestBitSet32(unsigned long _Value)
+			{
+				if (!_Value)
+					return -1;
+				unsigned long Ret;
+				_BitScanReverse(&Ret, _Value);
+				return Ret;
+			}
+
+			static inline_always int fg_GetHighestBitSet32NoZero(unsigned long _Value)
+			{
+				unsigned long Ret;
+				_BitScanReverse(&Ret, _Value);
+				return Ret;
+			}
+
+			static inline_always int fg_GetLowestBitSet32(unsigned long _Value)
+			{
+				if (!_Value)
+					return -1;
+				unsigned long Ret;
+				_BitScanForward(&Ret, _Value);
+				return Ret;
+			}
+
+			static inline_always int fg_GetLowestBitSet32NoZero(unsigned long _Value)
+			{
+				unsigned long Ret;
+				_BitScanForward(&Ret, _Value);
+				return Ret;
+			}
+#			if DMibPPtrBits >= 64
+				static inline_always int fg_GetHighestBitSet64(unsigned __int64 _Value)
+				{
+					if (!_Value)
+						return -1;
+					unsigned long Ret;
+					_BitScanReverse64(&Ret, _Value);
+					return Ret;
+				}
+
+				static inline_always int fg_GetHighestBitSet64NoZero(unsigned __int64 _Value)
+				{
+					unsigned long Ret;
+					_BitScanReverse64(&Ret, _Value);
+					return Ret;
+				}
+
+				static inline_always int fg_GetLowestBitSet64(unsigned __int64 _Value)
+				{
+					if (!_Value)
+						return -1;
+					unsigned long Ret;
+					_BitScanForward64(&Ret, _Value);
+					return Ret;
+				}
+
+				static inline_always int fg_GetLowestBitSet64NoZero(unsigned __int64 _Value)
+				{
+					unsigned long Ret;
+					_BitScanForward64(&Ret, _Value);
+					return Ret;
+				}
+#			endif
+		}
+	}
+
+
+#	define DMibPGetHighestBitSet32(d_Value) NMib::NPlatformHelpers::fg_GetHighestBitSet32(d_Value)
+#	define DMibPGetHighestBitSet32NoZero(d_Value) NMib::NPlatformHelpers::fg_GetHighestBitSet32NoZero(d_Value)
+#	define DMibPGetLowestBitSet32(d_Value) NMib::NPlatformHelpers::fg_GetLowestBitSet32(d_Value)
+#	define DMibPGetLowestBitSet32NoZero(d_Value) NMib::NPlatformHelpers::fg_GetLowestBitSet32NoZero(d_Value)
+
+#	if DMibPPtrBits >= 64
+#		define DMibPGetHighestBitSet64(value) NMib::NPlatformHelpers::fg_GetHighestBitSet64(value);
+#		define DMibPGetHighestBitSet64NoZero(value) NMib::NPlatformHelpers::fg_GetHighestBitSet64NoZero(value);
+#		define DMibPGetLowestBitSet64(value) NMib::NPlatformHelpers::fg_GetLowestBitSet64(value);
+#		define DMibPGetLowestBitSet64NoZero(value) NMib::NPlatformHelpers::fg_GetLowestBitSet64NoZero(value);
+#	endif
+
+#else
+#	error "Implement this"
+#endif
+
+// Num bits set
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	ifdef DConfig_Optimized
+#		define DMibPNumBitsSet32(d_Value) __builtin_popcount(d_Value)
+#		if defined(DMibPPtrBits >= 64)
+#			define DMibPNumBitsSet64(d_Value) __builtin_popcountll(d_Value)
+#		endif
+#	endif
+#elif defined(DCompiler_MSVC)
+#	ifdef DConfig_Optimized
+#		if defined(DArchitecture_x86) || defined(DArchitecture_x64)
+#			include <nmmintrin.h>
+#			define DMibPNumBitsSet32(d_Value) _mm_popcnt_u32(d_Value)
+#			if defined(DArchitecture_x64)
+#				define DMibPNumBitsSet64(_x) _mm_popcnt_u64(_x)
+#			endif
+#		else
+#			error "Implement this"
+#		endif
+#	endif
+#else
+#	error "Implement this"
+#endif
+
+
+// Byte swap
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	define DMibPByteSwap16(d_Value) __builtin_bswap16(d_Value);
+#	define DMibPByteSwap32(d_Value) __builtin_bswap32(d_Value);
+#	define DMibPByteSwap64(d_Value) __builtin_bswap64(d_Value);
+#elif defined(DCompiler_MSVC)
+#	pragma intrinsic(_byteswap_ushort)
+#	pragma intrinsic(_byteswap_ulong)
+#	pragma intrinsic(_byteswap_uint64)
+#	define DMibPByteSwap16(d_Value) _byteswap_ushort(d_Value)
+#	define DMibPByteSwap32(d_Value) _byteswap_ulong(d_Value)
+#	define DMibPByteSwap64(d_Value) _byteswap_uint64(d_Value)
+#else
+#	error "Implement this"
+#endif
+
+
+// Rotate
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+
+#elif defined(DCompiler_MSVC)
+
+#	pragma intrinsic(_rotl8)
+#	pragma intrinsic(_rotr8)
+#	pragma intrinsic(_rotl16)
+#	pragma intrinsic(_rotr16)
+
+#	define DMibPRotateLeft8(d_Value, d_Shift) _rotl8(d_Value, d_Shift)
+#	define DMibPRotateLeft16(d_Value, d_Shift) _rotl16(d_Value, d_Shift)
+#	define DMibPRotateLeft32(d_Value, d_Shift) _rotl(d_Value, d_Shift)
+#	define DMibPRotateLeft64(d_Value, d_Shift) _rotl64(d_Value, d_Shift)
+
+#	pragma intrinsic(_rotl)
+#	pragma intrinsic(_rotr)
+#	pragma intrinsic(_rotl64)
+#	pragma intrinsic(_rotr64)
+
+#	define DMibPRotateRight8(d_Value, d_Shift) _rotr8(d_Value, d_Shift)
+#	define DMibPRotateRight16(d_Value, d_Shift) _rotr16(d_Value, d_Shift)
+#	define DMibPRotateRight32(d_Value, d_Shift) _rotr(d_Value, d_Shift)
+#	define DMibPRotateRight64(d_Value, d_Shift) _rotr64(d_Value, d_Shift)
+
+#else
+#	error "Implement this"
+#endif
+
+
+
+// Debug break
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	if DPlatformFamily_Emscripten
+#		define DMibPDebugBreak EM_ASM(debugger();)
+#	elif defined(DArchitecture_x64) || defined(DArchitecture_x86)
+#		define DMibPDebugBreak __asm__ ("int $3")
+#	else
+#		define DMibPDebugBreak __builtin_trap()
+#	endif
+#elif defined(DCompiler_MSVC)
+#	pragma intrinsic(__debugbreak)
+#	define DMibPDebugBreak __debugbreak()
+#else
+#	error "Implement this"
+#endif
+

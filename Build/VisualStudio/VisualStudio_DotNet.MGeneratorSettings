@@ -1,0 +1,39 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "DotNet_Root"
+{
+	%GeneratorSetting "Target"
+	{
+		%GeneratorSetting "FileName"
+		{
+			Property
+			{
+				Name "AssemblyName"
+			}
+		}
+		%GeneratorSetting "DefaultNamespace"
+		{
+			Property
+			{
+				Name "RootNamespace"
+			}
+		}
+		%GeneratorSetting "ToolPath"
+		{
+			Property
+			{
+				Name "MalterlibBuildSystemExecutablePath"
+				ConvertPath true
+			}
+		}
+		%GeneratorSetting "ProjectDir"
+		{
+			Property
+			{
+				Name "ProjectDir"
+				Substitute "$([System.IO.Path]::GetFullPath(\"$(MSBuildProjectDirectory){}\\\"))"
+			}
+		}
+	}
+}

@@ -1,0 +1,455 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	// Find base dir and export path
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"chcp 65001\r\n"\
+										"@(ScriptExport) OriginalDirectory=%CD%\r\n"\
+										"cd %~dp0..\\..\r\n"\
+										"@(ScriptExport) MalterlibBaseDir=%CD%\\\r\n"\
+										"cd %OriginalDirectory%\r\n"\
+										"@(ScriptExport) PATH=%MalterlibBaseDir%Malterlib\\Tools\\Binaries\\MTool\\Windows;%PATH%\r\n"\
+										"\r\n"
+	{
+		&
+		{
+			HostPlatformFamily Windows
+			!ScriptWindowsBash true
+		}
+	}
+
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"@(ScriptExport) \"PATH=/Applications/Xcode.app/Contents/Developer/usr/bin:$PATH\"\r\n"
+	{
+		!!Generator "Xcode" // Use old xcode build for Xcode generator
+	}									
+
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"@(ScriptExport) \"MalterlibBaseDir=`cd \"${BASH_SOURCE%/*}/..\" && pwd`/\"\r\n"\
+										"@(ScriptExport) \"PATH=${MalterlibBaseDir}Malterlib/Tools/Binaries/MTool/@(HostPlatformFamily)/@(HostArchitecture):$PATH\"\r\n"
+	{
+		!HostPlatformFamily Windows
+	}
+
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"@(ScriptExport) \"MalterlibBaseDir=`cd \"${BASH_SOURCE%/*}/..\" && pwd`/\"\r\n"\
+										"@(ScriptExport) \"PATH=${MalterlibBaseDir}Malterlib/Tools/Binaries/MTool/Windows:$PATH\"\r\n"\
+										"function MTool()\r\n"\
+										"{\r\n"\
+										"	MTool.com \"$@\"\r\n"\
+										"}\r\n"
+	{
+		!!ScriptWindowsBash true
+	}
+
+	
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"@(ScriptExport) \"MalterlibBranch=@(Property.MalterlibBranch)\"\r\n"\
+										"@(ScriptExport) \"MalterlibBranchWindows=@(Property.MalterlibBranch->WindowsPath())\"\r\n"\
+										"@(ScriptExport) \"MalterlibFullBranch=@(Property.MalterlibFullBranch)\"\r\n"\
+										"@(ScriptExport) \"MalterlibFullBranchWindows=@(Property.MalterlibFullBranch->WindowsPath())\"\r\n"\
+										"@(ScriptExport) \"MalterlibGenerator=@(Generator)\"\r\n"\
+										"@(ScriptExport) \"MalterlibBranchOnlyLast=@(Property.MalterlibBranch->RemoveStartPaths(1))\"\r\n"\
+										"@(ScriptExport) \"MalterlibFullBranchOnlyLast=@(Property.MalterlibFullBranch->RemoveStartPaths(1))\"\r\n"\
+										"@(ScriptExport) \"MalterlibSigning=@(MalterlibBuildSigning)\"\r\n"\
+										"@(ScriptExport) \"MalterlibSignIncludeCert=@(MalterlibSignIncludeCert->MakeAbsolute())\"\r\n"\
+										"@(ScriptExport) \"MalterlibSignCertOSX=@(MalterlibSignCertOSX)\"\r\n"\
+										"@(ScriptExport) \"MalterlibSignCertWindows=@(MalterlibSignCertWindows)\"\r\n"\
+										"\r\n"\
+										"@(ScriptExport) \"MalterlibCompiledFiles=@(MalterlibCompiledFiles)\"\r\n"\
+										"@(ScriptExport) \"MalterlibDoingProductBuild=@(MalterlibDoingProductBuild)\"\r\n"\
+										"\r\n"\
+										"@(ScriptExport) \"ProductVersionMajor=@(ProductVersionMajor)\"\r\n"\
+										"@(ScriptExport) \"ProductVersionMinor=@(ProductVersionMinor)\"\r\n"\
+										"@(ScriptExport) \"ProductVersionRevision=@(ProductVersionRevision)\"\r\n"\
+										"@(ScriptExport) \"ProductVersionExtra=@(ProductVersionExtra)\"\r\n"\
+										"@(ScriptExport) \"ProductName=@(ProductName)\"\r\n"\
+										"@(ScriptExport) \"ProductCompany=@(ProductCompany)\"\r\n"\
+										"@(ScriptExport) \"ProductCopyright=@(ProductCopyright)\"\r\n"\
+										"@(ScriptExport) \"ProductVersionHex=@(ProductVersionHex)\"\r\n"\
+										"\r\n"
+
+	ProductVersionString "@(ProductVersionMajor)_@(ProductVersionMinor)@(ProductVersionRevision)"
+	ProductVersionString "@(ProductVersionString)_@(ProductVersionExtra)"
+	{
+		!ProductVersionExtra ""
+	}
+	ProductVersionString "@(ProductVersionString)@(VersionStringSuffix)"
+	{
+		!VersionStringSuffix ""
+	}
+
+	ProductVersionStringDotted "@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision)"
+	ProductVersionStringDotted "@(ProductVersionStringDotted).@(ProductVersionExtra)"
+	{
+		!ProductVersionExtra ""
+	}
+	ProductVersionStringDotted "@(ProductVersionStringDotted)@(VersionStringSuffix->Replace('_','.'))"
+	{
+		!VersionStringSuffix ""
+	}
+
+	ProductVersionStringReadable "@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision)"
+	ProductVersionStringReadable "@(ProductVersionStringReadable) @(ProductVersionExtra)"
+	{
+		!ProductVersionExtra ""
+	}
+	ProductVersionStringReadable "@(ProductVersionStringReadable) @(VersionStringSuffix->Replace('_',''))"
+	{
+		!VersionStringSuffix ""
+	}
+
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"@(ScriptExport) \"ProductVersionString=@(ProductVersionString)\"\r\n"\
+										"@(ScriptExport) \"ProductVersionStringDotted=@(ProductVersionStringDotted)\"\r\n"\
+										"@(ScriptExport) \"ProductVersionStringReadable=@(ProductVersionStringReadable)\"\r\n"\
+										"\r\n"
+	{
+	}
+
+	VisualstudioCommonToolsEnvVar "VS110COMNTOOLS"
+	{
+		!!Generator "VisualStudio2012"
+	}
+	VisualstudioCommonToolsEnvVar "VS120COMNTOOLS"
+	{
+		!!Generator "VisualStudio2013"
+	}
+	VisualstudioCommonToolsEnvVar "VS140COMNTOOLS"
+	{
+		!!Generator "VisualStudio2015"
+	}
+
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"IF EXIST \"%@(VisualstudioCommonToolsEnvVar)%vsvars32.bat\" call \"%@(VisualstudioCommonToolsEnvVar)%vsvars32.bat\"\r\n"\
+										"\r\n"
+	{
+		&
+		{
+			HostPlatformFamily "Windows"
+			!ScriptWindowsBash true
+		}
+	}
+
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"pushd $MalterlibBaseDir/BuildSystem > /dev/null\r\n"\
+										"source ./SharedBuildSettingsVCVars.sh\r\n"\
+										"popd > /dev/null\r\n"\
+										"\r\n"
+	{
+		!!ScriptWindowsBash true
+	}
+
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"function CheckErrors {\r\n"\
+										"	if [[ $? -ne 0 ]] ; then\r\n"\
+										"		echo \"\"\r\n"\
+										"		echo ERROR: Build failed and aborted\r\n"\
+										"		exit 1\r\n"\
+										"	fi\r\n"\
+										"}\r\n"\
+										"function EvalVar {\r\n"\
+										"	eval \"echo \\${$1}\"\r\n"\
+										"}\r\n"\
+										"export -f CheckErrors\r\n"\
+										"export -f EvalVar\r\n"\
+										"\r\n"
+	{
+
+		!!PlatformType "Unix"
+		!!ScriptWindowsBash true
+	}
+
+	
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"\r\n"\
+										"export NumCPUs=`sysctl -n hw.ncpu`\r\n"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			HostPlatformFamily "OSX"
+		}
+	}
+	
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"\r\n"\
+										"export NumCPUs=`grep -c \"processor\" /proc/cpuinfo`\r\n"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			HostPlatformFamily "Linux"
+		}
+	}
+	
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"export XCodeBuildTool=\"xcodebuild -jobs $NumCPUs\"\r\n"
+	{
+		!!MalterlibUseXCodeBuild 1
+	}
+	
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"export XCodeBuildTool=\"/Development/Malterlib/Tools/External/xctool/xctool.sh -jobs $NumCPUs\"\r\n"
+	{
+		!MalterlibUseXCodeBuild 1
+	}
+
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"\r\n"\
+										"function CleanWorkspaceForConfig()\r\n"\
+										"{\r\n"\
+										"	local BuildPlatformCleanLocal=${2//./_}\r\n"\
+										"\r\n"\
+										"	if [ \"$(EvalVar BuildPlatform_${BuildPlatformCleanLocal})\" == \"0\" ] ; then\r\n"\
+										"		return 0\r\n"\
+										"	fi\r\n"\
+										"	if [ \"$(EvalVar BuildArch_$3)\" == \"0\" ] ; then\r\n"\
+										"		return 0\r\n"\
+										"	fi\r\n"\
+										"\r\n"\
+										"	$XCodeBuildTool -workspace \"BuildSystem/@(Generator)/$1.xcworkspace\" -scheme \"Build All $2 $3 $4\" clean\r\n"\
+										"	CheckErrors	\r\n"\
+										"}\r\n"\
+										"\r\n"\
+										"function CleanWorkspace()\r\n"\
+										"{\r\n"\
+										"	CleanWorkspaceForConfig \"$1\" OSX@(DefaultOSXPlatform) x64 \"$2\"\r\n"\
+										"	CleanWorkspaceForConfig \"$1\" Linux2.6 x64 \"$2\"\r\n"\
+										"	CleanWorkspaceForConfig \"$1\" Linux2.6 x86 \"$2\"\r\n"\
+										"}\r\n"\
+										"\r\n"\
+										"function CheckBuildPlatform()\r\n"\
+										"{\r\n"\
+										"	BuildPlatform=$1\r\n"\
+										"	BuildArchitecture=$2\r\n"\
+										"	BuildPlatformClean=${BuildPlatform//./_}\r\n"\
+										"\r\n"\
+										"	echo BuildPlatform=$BuildPlatform\r\n"\
+										"	echo BuildPlatformClean=$BuildPlatformClean\r\n"\
+										"	echo BuildArchitecture=$BuildArchitecture\r\n"\
+										"\r\n"\
+										"	if [ \"$(EvalVar BuildPlatform_${BuildPlatformClean})\" == \"0\" ] ; then\r\n"\
+										"		echo Platform disabled, aborting\r\n"\
+										"		exit 0\r\n"\
+										"	fi\r\n"\
+										"\r\n"\
+										"	if [ \"$(EvalVar BuildArch_$BuildArchitecture)\" == \"0\" ] ; then\r\n"\
+										"		echo Architecture disabled, aborting\r\n"\
+										"		exit 0\r\n"\
+										"	fi\r\n"\
+										"}\r\n"
+
+	{
+		!!GeneratorFamily "Xcode"
+	}
+}
+
+%GenerateFile "LocalBuildSettings"
+{
+	Property
+	{
+		Name "BuildSystem/SharedBuildSettings@(ScriptExtension)"
+		Contents "@(ScriptPreamble)@(SharedBuildSettingsScriptContents)"
+		Executable true
+		UnixLineEnds "@(ScriptUnixLineEnds)"
+		UnicodeBOM false
+	}
+}
+
+%GenerateFile "LocalBuildSettingsWindowsBash"
+{
+	!!HostPlatformFamily Windows
+	Property
+	{
+		ScriptExtension ".sh"
+		ScriptExport "export"
+		ScriptPreamble "#!/bin/bash\n\n"
+		ScriptUnixLineEnds true
+		ScriptWindowsBash true
+
+		Name "BuildSystem/SharedBuildSettings@(ScriptExtension)"
+		Contents "@(ScriptPreamble)@(SharedBuildSettingsScriptContents)"
+		Executable true
+		UnixLineEnds "@(ScriptUnixLineEnds)"
+		UnicodeBOM false
+	}
+}
+
+%GenerateFile "LocalBuildSettingsWindowsBashVCVarsBat"
+{
+	!!HostPlatformFamily Windows
+	Property
+	{
+		Name "BuildSystem/SharedBuildSettingsVCVars@(ScriptExtension)"
+		Executable true
+		UnixLineEnds "@(ScriptUnixLineEnds)"
+		UnicodeBOM false
+
+		Contents	"@(ScriptPreamble)"\
+					"@echo off\r\n"\
+					"IF EXIST \"%@(VisualstudioCommonToolsEnvVar)%vsvars32.bat\" call \"%@(VisualstudioCommonToolsEnvVar)%vsvars32.bat\"\r\n"\
+					"echo %PATH%\r\n"
+	}
+}
+
+%GenerateFile "LocalBuildSettingsWindowsBashVCVars"
+{
+	!!HostPlatformFamily Windows
+	Property
+	{
+		ScriptExtension ".sh"
+		ScriptExport "export"
+		ScriptPreamble "#!/bin/bash\n\n"
+		ScriptUnixLineEnds true
+		ScriptWindowsBash true
+
+		Name "BuildSystem/SharedBuildSettingsVCVars@(ScriptExtension)"
+		Executable true
+		UnixLineEnds "@(ScriptUnixLineEnds)"
+		UnicodeBOM false
+
+		Contents	"@(ScriptPreamble)"\
+					"function UpdatePath()\n"\
+					"{\n"\
+					"	local OLDIFS=$IFS\n"\
+					"	local IFS=$'\\n'\n"\
+					"	local OldPath=$(cmd.exe //C echo %PATH%)\n"\
+					"	local NewPath=$(cmd.exe //C SharedBuildSettingsVCVars.bat)\n"\
+					"	local DiffPath=${NewPath%%\"${OldPath}\"}\n"\
+					"	local IFS=$OLDIFS\n"\
+					"\n"\
+					"	local NewPath=${DiffPath//\\\\/\\/}\n"\
+					"	local NewPath=$(echo $NewPath | sed -e 's/\\(.\\):/\\/\\L\\1/g' -e 's/;/:/g')${PATH}\n"\
+					"	export \"PATH=$NewPath\"\n"\
+					"}\n"\
+					"\n"\
+					"UpdatePath\n"\
+
+					""
+	}
+}
+
+%GenerateFile "CheckBuildError"
+{
+	!!HostPlatformFamily "Windows"
+	Property
+	{
+		Name "BuildSystem/CheckBuildError.bat"
+		Contents	""\
+					"IF %ERRORLEVEL% NEQ 0 (\r\n"\
+					"	echo.\r\n"\
+					"	echo ERROR: Build failed and aborted\r\n"\
+					"	exit 1\r\n"\
+					")\r\n"
+		UnicodeBOM false
+		UnixLineEnds "@(ScriptUnixLineEnds)"
+		Executable true
+	}
+}
+
+Property
+{
+	
+	BuildServerHelpersPathContents	"@(ScriptExport) \"Output_@(ConfigName)=@(Target:Target.OutputDirectory->NativePath())\"\r\n"\
+									"@(ScriptExport) \"Product_@(ConfigName)=@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+									"@(ScriptExport) \"Intermediate_@(ConfigName)=@(Target:Target.IntermediateDirectory->NativePath())\"\r\n"\
+									"@(ScriptExport) \"MalterlibSharedIntermediateDirectory=@(Target:Property.MalterlibSharedIntermediateDirectory->NativePath())\"\r\n"\
+									"@(ScriptExport) \"Output_@(Target:Target.Name)_@(ConfigName)=@(Target:Target.OutputDirectory->NativePath())\"\r\n"\
+									"@(ScriptExport) \"Product_@(Target:Target.Name)_@(ConfigName)=@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+									"@(ScriptExport) \"Intermediate_@(Target:Target.Name)_@(ConfigName)=@(Target:Target.IntermediateDirectory->NativePath())\"\r\n"\
+									"@(ScriptExport) \"MalterlibSharedIntermediateDirectory_@(Target:Target.Name)=@(Target:Property.MalterlibSharedIntermediateDirectory->NativePath())\"\r\n"
+	{
+		!!Property.TargetIsExecutable true
+	}
+}
+
+%Group "~Automatic/Build Server Helpers"
+{
+	!Property.BuildServerHelpersPathContents ""
+
+	%GenerateFile "Paths"
+	{
+		//!!Tests ""
+		Property
+		{
+			ConfigName "@(Configuration->Replace(' ', ''))@(Tests->Replace(' ', ''))_@(Platform->Replace('.', '_'))_@(Architecture)"
+
+			Name "@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/Paths_@(ConfigName)@(ScriptExtension)"
+			Contents "@(ScriptPreamble)@(BuildServerHelpersPathContents)"
+			Executable true
+			UnixLineEnds "@(ScriptUnixLineEnds)"
+			UnicodeBOM false
+		}
+	}
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Build Server Helpers;@(Target.ExtraGroups)"
+	{
+		//!!MalterlibVersionedBuild true
+	}
+}
+
+Property
+{
+	
+	MalterlibRunTestsParams "@(Target:Target.DebuggerCommandArguments)"
+	{
+		!!MalterlibRunTestsParams ""
+	}
+
+	MalterlibRunTests true
+	{
+		&
+		{
+			MalterlibRunTests ""
+			MalterlibTest true
+		}
+	}
+
+	RunTestsPath		"@(MalterlibFinalModuleDestination->GetPath())"
+
+	RunTestsContents	"cd \"@(RunTestsPath->NativePath())\"\r\n"\
+							"\"@(MalterlibFinalModuleDestination->NativePath())\" @(MalterlibRunTestsParams)\r\n"
+	{
+		&
+		{
+			Property.MalterlibRunTests true
+			Property.MalterlibEnableTestHelpers true
+		}
+	}
+}
+
+%Group "~Automatic/Test Helpers"
+{
+	!Property.RunTestsContents ""
+
+	%GenerateFile "Paths"
+	{
+		//!!Tests ""
+		Property
+		{
+			ConfigName "@(Configuration->Replace(' ', ''))@(Tests->Replace(' ', ''))_@(Architecture)"
+			Name "@(BuildSystemOutputDir)/Tests/@(Workspace:Workspace.Name)/@(Target:Target.Name)/DoTests_@(ConfigName).@(ScriptExtension)"
+			Contents "@(ScriptPreamble)@(RunTestsContents)"
+			UnicodeBOM false
+			UnixLineEnds "@(ScriptUnixLineEnds)"
+			Executable true
+		}
+	}
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Test Helpers;@(Target.ExtraGroups)"
+	{
+		//MalterlibVersionedBuild true
+	}
+}
+
+
+

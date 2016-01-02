@@ -1,0 +1,30 @@
+﻿/*	Copyright © 2015 Hansoft AB 
+	Distributed under the MIT license, see license text in LICENSE.Malterlib
+*/
+
+/* Start of CMSMS style sheet 'styles' */
+@charset "utf-8";
+
+table
+{
+	border-collapse:collapse;
+}
+table, th, td
+{
+	font-size: 10px;
+	font-family: Unbroken, monospace;
+	border: 1px solid black;
+	padding-left: 10px;
+	padding-right :10px;
+}
+
+@media only screen and (min--moz-device-pixel-ratio: 2),
+only screen and (-o-min-device-pixel-ratio: 2/1),
+only screen and (-webkit-min-device-pixel-ratio: 2),
+only screen and (min-device-pixel-ratio: 2) 
+{
+	table, th, td
+	{
+		font-family: "Unbroken 20px", Unbroken, monospace;
+	}
+}	

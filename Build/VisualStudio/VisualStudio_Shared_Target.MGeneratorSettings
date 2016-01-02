@@ -1,0 +1,116 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "SharedTarget"
+{
+	%GeneratorSetting "Target"
+	{
+		// Handled elsewhere
+		%GeneratorSetting "VisualStudioPlatform"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "PlatformToolsetCompiler"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "Type"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "Group"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "Name"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "BaseName"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "BaseFileName"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "IntermediateDirectory"
+		{
+			Property
+			{
+				Disabled 1
+			}
+		}
+		%GeneratorSetting "OutputDirectory"
+		{
+			Property
+			{
+				Disabled 1
+			}
+		}
+		%GeneratorSetting "Disabled"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "Language"
+		{
+			Property
+			{
+				Disabled 1
+			}
+		}
+		%GeneratorSetting "TargetFrameworkVersion"
+		{
+			Property
+			{
+				Disabled 1
+			}
+		}
+		%GeneratorSetting "ExternalDependencies"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "ExtraGroups"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "LinkerGroup"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+
+	}
+}

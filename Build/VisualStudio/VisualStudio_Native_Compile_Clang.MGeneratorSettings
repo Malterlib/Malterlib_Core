@@ -1,0 +1,235 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%GeneratorSetting "Native_ClCompile_Clang"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "DynamicTypeInfo"
+		{
+			Property
+			{
+				Name "NoRTTI"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true false
+					false true
+				}
+			}
+		}
+		%GeneratorSetting "EnableLanguageExtensions"
+		{
+			Property
+			{
+				Name "EnableMicrosoftExtensions"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "Exceptions"
+		{
+			Property
+			{
+				Name "ExceptionHandling"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Full "true"
+					C++ "true"
+					ExternCandC++ "true"
+					Off "false"
+				}
+			}
+		}
+		%GeneratorSetting "ExtendedInstructionSet"
+		{
+			Property
+			{
+				Name "InstructionSet"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Off NotSet
+					MMX MMX
+					SSE1 SSE1
+					SSE2 SSE2
+					SSE3 SSE3
+					SSSE3 SSSE3
+					SSE4 SSE4
+					SSE4.1 SSE4.1
+					SSE4.2 SSE4.2
+					AVX AVX
+					AVX2 AVX2
+				}
+			}
+		}
+		%GeneratorSetting "ExtraCompilerFlags"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(ClCompile.AdditionalOptions)"
+			}
+		}		
+		%GeneratorSetting "Inline"
+		{
+			Property
+			{
+				Name "Inlining"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Off Off
+					Explicit On
+					Automatic On
+				}
+			}
+		}
+		%GeneratorSetting "PrecompilePrefixHeader"
+		{
+			Property
+			{
+				Name "PrecompiledHeader"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true "Use"
+					false "NotUsing"
+					XInternalCreate "Create" // Only used internally
+				}
+			}
+		}
+		%GeneratorSetting "PrefixHeader"
+		{
+			Property
+			{
+				Name "ForcedIncludeFiles"
+				ConvertPath "true"
+			}
+			%GeneratorSetting "Properties"
+			{
+				%GeneratorSetting ""
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting "PrecompiledHeaderFile"
+					}
+				}
+			}
+		}
+		%GeneratorSetting "PreprocessorDefines"
+		{
+			Property
+			{
+				Name "PreprocessorDefinitions"
+				EscapeSeparated true
+			}
+		}		
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Name "AdditionalIncludeDirectories"
+			}
+		}
+		%GeneratorSetting "RuntimeChecks"
+		{
+			Property
+			{
+				Disabled 1
+			}
+		}
+		%GeneratorSetting "Symbols"
+		{
+			Property
+			{
+				Name "GenerateDebugInformation"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					FullForDebug "FullDebugInfo"
+					Full "FullDebugInfo"
+					Fast "LimitedDebugInfo"
+					None "NoDebugInfo"
+					"" ""
+				}
+			}
+		}		
+		%GeneratorSetting "Warnings"
+		{
+			Property
+			{
+				Name "WarningLevel"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					Off DisableAllWarnings
+					Minimal DisableAllWarnings
+					On NormalWarnings
+					Pedantic AllWarnings
+				}
+			}
+		}
+		%GeneratorSetting "WarningsAsErrors"
+		{
+			Property
+			{
+				Name "WarningsAsErrors"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true true
+					false false
+				}
+			}
+		}
+		%GeneratorSetting "XInternalPrecompiledHeaderOutputFile"
+		{
+			Property
+			{
+				Name "PrecompiledHeaderOutputFile"
+			}
+		}
+		%GeneratorSetting "Verbose"
+		{
+			Property
+			{
+				Name "VerboseOutput"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true VerboseOutputMode
+					false NoVerboseOutput
+					"" NoVerboseOutput
+				}
+			}
+		}
+	}
+
+}
+

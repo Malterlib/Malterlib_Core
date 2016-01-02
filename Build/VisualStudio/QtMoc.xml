@@ -1,0 +1,478 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--	Copyright © 2015 Hansoft AB 
+		Distributed under the MIT license, see license text in LICENSE.Malterlib
+-->
+<ProjectSchemaDefinitions xmlns="http://schemas.microsoft.com/build/2009/properties" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <Rule
+    Name="QtMoc"
+    PageTemplate="tool"
+    DisplayName="Qt Moc Compiler"
+    Order="200">
+    <Rule.DataSource>
+      <DataSource
+        Persistence="ProjectFile"
+        ItemType="QtMoc" />
+    </Rule.DataSource>
+    <Rule.Categories>
+      <Category
+        Name="General">
+        <Category.DisplayName>
+          <sys:String>General</sys:String>
+        </Category.DisplayName>
+      </Category>
+      <Category
+        Name="Command Line"
+        Subtype="CommandLine">
+        <Category.DisplayName>
+          <sys:String>Command Line</sys:String>
+        </Category.DisplayName>
+      </Category>
+    </Rule.Categories>
+    <StringProperty
+      Name="Inputs"
+      Category="Command Line"
+      IsRequired="true">
+      <StringProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType="QtMoc"
+          SourceType="Item" />
+      </StringProperty.DataSource>
+    </StringProperty>
+    <BoolProperty
+      Name="PreprocessOnly"
+      DisplayName="Preprocess Only"
+      Description="Preprocess only; do not generate meta object code.     (-E)"
+      Switch="-E" />
+    <BoolProperty
+      Name="DoNotGenerateInclude"
+      DisplayName="No Include Statement"
+      Description="Do not generate an #include statement.     (-i)"
+      Switch="-i" />
+    <BoolProperty
+      Name="DoNotDisplayWarnings"
+      DisplayName="No Warnings"
+      Description="Do not display warnings.     (-nw)"
+      Switch="-nw" />
+    <BoolProperty
+      Name="DoCompileAndLink"
+      Category="General"
+      DisplayName="Compile and link"
+      Description="Compile and link."
+      IncludeInCommandLine ="false"
+      Visible="true" />
+    <StringProperty
+      Name="ObjectFileName"
+      Category="Output File"
+      DisplayName="Output File Name"
+      Description="Specifies the name of the output file.     (-o:[file])"
+      Switch="-o &quot;[value]&quot;" />
+    <StringListProperty
+      Name="IncludePathPrefix"
+      DisplayName="Include Path Prefix"
+      Description="Path prefix for included file.     (-p:[file])"
+      Switch="-p &quot;[value]&quot;" />
+    <StringListProperty
+      Name="PreprocessorDefinitions"
+      DisplayName="Preprocessor Definitions"
+      Description="Defines a text macro with the given name.     (-D[symbol])"
+      Switch="-D &quot;[value]&quot;" />
+    <StringListProperty
+      Name="PreprocessorUnDefinitions"
+      DisplayName="Preprocessor Undefinitions"
+      Description="Undefines the specified macro.     (-U[symbol])"
+      Switch="-U &quot;[value]&quot;" />
+    <StringListProperty
+      Name="AdditionalIncludeDirectories"
+      DisplayName="Include Paths"
+      Description="Sets path for include file.     (-I [path])"
+      Switch="-I &quot;[value]&quot;" />
+    <StringProperty
+      Name="CommandLineTemplate"
+      DisplayName="Command Line"
+      Visible="False"
+      IncludeInCommandLine="False" />
+    <DynamicEnumProperty
+     Name="QtMocBeforeTargets"
+     Category="General"
+     EnumProvider="Targets"
+     IncludeInCommandLine="False">
+      <DynamicEnumProperty.DisplayName>
+        <sys:String>Execute Before</sys:String>
+      </DynamicEnumProperty.DisplayName>
+      <DynamicEnumProperty.Description>
+        <sys:String>Specifies the targets for the build customization to run before.</sys:String>
+      </DynamicEnumProperty.Description>
+      <DynamicEnumProperty.ProviderSettings>
+        <NameValuePair
+          Name="Exclude"
+          Value="^QtMocBeforeTargets|^Compute" />
+      </DynamicEnumProperty.ProviderSettings>
+      <DynamicEnumProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType=""
+          HasConfigurationCondition="true" />
+      </DynamicEnumProperty.DataSource>
+    </DynamicEnumProperty>
+    <DynamicEnumProperty
+      Name="QtMocAfterTargets"
+      Category="General"
+      EnumProvider="Targets"
+      IncludeInCommandLine="False">
+      <DynamicEnumProperty.DisplayName>
+        <sys:String>Execute After</sys:String>
+      </DynamicEnumProperty.DisplayName>
+      <DynamicEnumProperty.Description>
+        <sys:String>Specifies the targets for the build customization to run after.</sys:String>
+      </DynamicEnumProperty.Description>
+      <DynamicEnumProperty.ProviderSettings>
+        <NameValuePair
+          Name="Exclude"
+          Value="^QtMocAfterTargets|^Compute" />
+      </DynamicEnumProperty.ProviderSettings>
+      <DynamicEnumProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType=""
+          HasConfigurationCondition="true" />
+      </DynamicEnumProperty.DataSource>
+    </DynamicEnumProperty>
+    <StringProperty
+      Name="ExecutionDescription"
+      DisplayName="Execution Description"
+      IncludeInCommandLine="False"
+      Visible="False" />
+    <StringListProperty
+      Name="AdditionalDependencies"
+      DisplayName="Additional Dependencies"
+      IncludeInCommandLine="False"
+      Visible="False" />
+    <StringProperty
+      Subtype="AdditionalOptions"
+      Name="AdditionalOptions"
+      Category="Command Line">
+      <StringProperty.DisplayName>
+        <sys:String>Additional Options</sys:String>
+      </StringProperty.DisplayName>
+      <StringProperty.Description>
+        <sys:String>Additional Options</sys:String>
+      </StringProperty.Description>
+    </StringProperty>
+  </Rule>
+  <ItemType
+    Name="QtMoc"
+    DisplayName="Qt Moc Compiler" />
+  <ContentType
+    Name="QtMoc"
+    DisplayName="Qt Moc Compiler"
+    ItemType="QtMoc" />
+  <Rule
+    Name="QtUic"
+    PageTemplate="tool"
+    DisplayName="Qt Uic Compiler"
+    Order="200">
+    <Rule.DataSource>
+      <DataSource
+        Persistence="ProjectFile"
+        ItemType="QtUic" />
+    </Rule.DataSource>
+    <Rule.Categories>
+      <Category
+        Name="General">
+        <Category.DisplayName>
+          <sys:String>General</sys:String>
+        </Category.DisplayName>
+      </Category>
+      <Category
+        Name="Command Line"
+        Subtype="CommandLine">
+        <Category.DisplayName>
+          <sys:String>Command Line</sys:String>
+        </Category.DisplayName>
+      </Category>
+    </Rule.Categories>
+    <StringProperty
+      Name="Inputs"
+      Category="Command Line"
+      IsRequired="true">
+      <StringProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType="QtUic"
+          SourceType="Item" />
+      </StringProperty.DataSource>
+    </StringProperty>
+    <BoolProperty
+      Name="DisplayDependencies"
+      DisplayName="Display dependencies"
+      Description="Display the dependencies.     (-d)"
+      Switch="-d" />
+    <BoolProperty
+      Name="NoProtection"
+      DisplayName="No header protection"
+      Description="Disable header protection     (-p)"
+      Switch="-p" />
+    <BoolProperty
+      Name="NoImplicitIncludes"
+      DisplayName="No Implicit Includes"
+      Description="Disable generation of #include-directives for forms generated by uic3     (-n)"
+      Switch="-n" />
+    <StringProperty
+      Name="ObjectFileName"
+      Category="Output File"
+      DisplayName="Output File Name"
+      Description="Specifies the name of the output file.     (-o:[file])"
+      Switch="-o &quot;[value]&quot;" />
+    <StringProperty
+      Name="i18nFunction"
+      DisplayName="i18n Function"
+      Description="Function to use for i18n.     (-tr:[func])"
+      Switch="-tr [value]" />
+    <StringProperty
+       Name="ChangeGenerator"
+       DisplayName="Change Generator"
+       Description="Change generator     (-g:[name])"
+       Switch="-g [value]" />
+    <StringProperty
+      Name="CommandLineTemplate"
+      DisplayName="Command Line"
+      Visible="False"
+      IncludeInCommandLine="False" />
+    <DynamicEnumProperty
+     Name="QtUicBeforeTargets"
+     Category="General"
+     EnumProvider="Targets"
+     IncludeInCommandLine="False">
+      <DynamicEnumProperty.DisplayName>
+        <sys:String>Execute Before</sys:String>
+      </DynamicEnumProperty.DisplayName>
+      <DynamicEnumProperty.Description>
+        <sys:String>Specifies the targets for the build customization to run before.</sys:String>
+      </DynamicEnumProperty.Description>
+      <DynamicEnumProperty.ProviderSettings>
+        <NameValuePair
+          Name="Exclude"
+          Value="^QtUicBeforeTargets|^Compute" />
+      </DynamicEnumProperty.ProviderSettings>
+      <DynamicEnumProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType=""
+          HasConfigurationCondition="true" />
+      </DynamicEnumProperty.DataSource>
+    </DynamicEnumProperty>
+    <DynamicEnumProperty
+      Name="QtUicAfterTargets"
+      Category="General"
+      EnumProvider="Targets"
+      IncludeInCommandLine="False">
+      <DynamicEnumProperty.DisplayName>
+        <sys:String>Execute After</sys:String>
+      </DynamicEnumProperty.DisplayName>
+      <DynamicEnumProperty.Description>
+        <sys:String>Specifies the targets for the build customization to run after.</sys:String>
+      </DynamicEnumProperty.Description>
+      <DynamicEnumProperty.ProviderSettings>
+        <NameValuePair
+          Name="Exclude"
+          Value="^QtUicAfterTargets|^Compute" />
+      </DynamicEnumProperty.ProviderSettings>
+      <DynamicEnumProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType=""
+          HasConfigurationCondition="true" />
+      </DynamicEnumProperty.DataSource>
+    </DynamicEnumProperty>
+    <StringProperty
+      Name="ExecutionDescription"
+      DisplayName="Execution Description"
+      IncludeInCommandLine="False"
+      Visible="False" />
+    <StringListProperty
+      Name="AdditionalDependencies"
+      DisplayName="Additional Dependencies"
+      IncludeInCommandLine="False"
+      Visible="False" />
+    <StringProperty
+      Subtype="AdditionalOptions"
+      Name="AdditionalOptions"
+      Category="Command Line">
+      <StringProperty.DisplayName>
+        <sys:String>Additional Options</sys:String>
+      </StringProperty.DisplayName>
+      <StringProperty.Description>
+        <sys:String>Additional Options</sys:String>
+      </StringProperty.Description>
+    </StringProperty>
+  </Rule>
+  <ItemType
+    Name="QtUic"
+    DisplayName="Qt Uic Compiler" />
+  <FileExtension
+    Name="*.ui"
+    ContentType="QtUic" />
+  <ContentType
+    Name="QtUic"
+    DisplayName="Qt Uic Compiler"
+    ItemType="QtUic" />
+
+  <Rule
+    Name="QtRcc"
+    PageTemplate="tool"
+    DisplayName="Qt Rcc Compiler"
+    Order="200">
+    <Rule.DataSource>
+      <DataSource
+        Persistence="ProjectFile"
+        ItemType="QtRcc" />
+    </Rule.DataSource>
+    <Rule.Categories>
+      <Category
+        Name="General">
+        <Category.DisplayName>
+          <sys:String>General</sys:String>
+        </Category.DisplayName>
+      </Category>
+      <Category
+        Name="Command Line"
+        Subtype="CommandLine">
+        <Category.DisplayName>
+          <sys:String>Command Line</sys:String>
+        </Category.DisplayName>
+      </Category>
+    </Rule.Categories>
+    <StringProperty
+      Name="Inputs"
+      Category="Command Line"
+      IsRequired="true">
+      <StringProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType="QtRcc"
+          SourceType="Item" />
+      </StringProperty.DataSource>
+    </StringProperty>
+    <BoolProperty
+      Name="DoCompileAndLink"
+      Category="General"
+      DisplayName="Compile and link"
+      Description="Compile and link."
+      IncludeInCommandLine ="false"
+      Visible="true" />
+    <StringProperty
+      Name="ObjectFileName"
+      Category="Output File"
+      DisplayName="Output File Name"
+      Description="Specifies the name of the output file.     (-o [file])"
+      Switch="-o &quot;[value]&quot;" />
+    <BoolProperty
+      Name="Namespace"
+      DisplayName="No namespace macros"
+      Description="Turn off namespace macros     (-namespace)"
+      Switch="-namespace" />
+    <StringProperty
+      Name="InitFunc"
+      DisplayName="Ext. Initialization Function"
+      Description="Create an external initialization function of this name.     (-name [file])"
+      Switch="-name [value]" />
+    <StringProperty
+      Name="CompressThreshold"
+      DisplayName="Compression Threshold"
+      Description="Size threshold at which to start compressing files.    (-threshold [func])"
+      Switch="-threshold [value]" />
+    <StringProperty
+       Name="CompressionLevel"
+       DisplayName="Compression Level"
+       Description="Compression Level     (-compress [name])"
+       Switch="-compress [value]" />
+    <BoolProperty
+      Name="NoCompress"
+      DisplayName="Disable Compression"
+      Description="Do not compress resource files     (-no-compress)"
+      Switch="-no-compress" />
+    <StringProperty
+      Name="CommandLineTemplate"
+      DisplayName="Command Line"
+      Visible="False"
+      IncludeInCommandLine="False" />
+    <DynamicEnumProperty
+     Name="QtRccBeforeTargets"
+     Category="General"
+     EnumProvider="Targets"
+     IncludeInCommandLine="False">
+      <DynamicEnumProperty.DisplayName>
+        <sys:String>Execute Before</sys:String>
+      </DynamicEnumProperty.DisplayName>
+      <DynamicEnumProperty.Description>
+        <sys:String>Specifies the targets for the build customization to run before.</sys:String>
+      </DynamicEnumProperty.Description>
+      <DynamicEnumProperty.ProviderSettings>
+        <NameValuePair
+          Name="Exclude"
+          Value="^QtRccBeforeTargets|^Compute" />
+      </DynamicEnumProperty.ProviderSettings>
+      <DynamicEnumProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType=""
+          HasConfigurationCondition="true" />
+      </DynamicEnumProperty.DataSource>
+    </DynamicEnumProperty>
+    <DynamicEnumProperty
+      Name="QtRccAfterTargets"
+      Category="General"
+      EnumProvider="Targets"
+      IncludeInCommandLine="False">
+      <DynamicEnumProperty.DisplayName>
+        <sys:String>Execute After</sys:String>
+      </DynamicEnumProperty.DisplayName>
+      <DynamicEnumProperty.Description>
+        <sys:String>Specifies the targets for the build customization to run after.</sys:String>
+      </DynamicEnumProperty.Description>
+      <DynamicEnumProperty.ProviderSettings>
+        <NameValuePair
+          Name="Exclude"
+          Value="^QtRccAfterTargets|^Compute" />
+      </DynamicEnumProperty.ProviderSettings>
+      <DynamicEnumProperty.DataSource>
+        <DataSource
+          Persistence="ProjectFile"
+          ItemType=""
+          HasConfigurationCondition="true" />
+      </DynamicEnumProperty.DataSource>
+    </DynamicEnumProperty>
+    <StringProperty
+      Name="ExecutionDescription"
+      DisplayName="Execution Description"
+      IncludeInCommandLine="False"
+      Visible="False" />
+    <StringListProperty
+      Name="AdditionalDependencies"
+      DisplayName="Additional Dependencies"
+      IncludeInCommandLine="False"
+      Visible="False" />
+    <StringProperty
+      Subtype="AdditionalOptions"
+      Name="AdditionalOptions"
+      Category="Command Line">
+      <StringProperty.DisplayName>
+        <sys:String>Additional Options</sys:String>
+      </StringProperty.DisplayName>
+      <StringProperty.Description>
+        <sys:String>Additional Options</sys:String>
+      </StringProperty.Description>
+    </StringProperty>
+  </Rule>
+  <ItemType
+    Name="QtRcc"
+    DisplayName="Qt Rcc Compiler" />
+  <FileExtension
+    Name="*.qrc"
+    ContentType="QtRcc" />
+  <ContentType
+    Name="QtRcc"
+    DisplayName="Qt Rcc Compiler"
+    ItemType="QtRcc" />
+</ProjectSchemaDefinitions>
