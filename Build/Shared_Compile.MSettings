@@ -350,6 +350,7 @@ Compile
 			|
 			{
 				this.Identity "~*.sh"
+				this.Identity "~*.conf"
 			}
  		}
 	}
