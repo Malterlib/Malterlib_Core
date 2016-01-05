@@ -202,6 +202,7 @@ namespace NMib
 		void f_SetDefaultLogFileName(NLog::CLogStr const &_Name);
 		void f_SetDefaultLogFileDirectory(NLog::CLogStr const &_Directory);
 		void f_RemoveTraceLogger();
+		void f_AddStdErrLogger();
 		
 		void f_RegisterProgram(const NStr::CStr &_ProgramName, const NStr::CStr &_SupportEmail, bint _bRunningAsService)
 		{

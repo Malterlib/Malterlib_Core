@@ -187,6 +187,14 @@ namespace NMib
 		m_pSystemLog->f_RemoveGlobalDestination(NLog::fg_LogTo_DebugOut);
 #endif
 	}
+	
+	void CSystem::f_AddStdErrLogger()
+	{
+#if DMibSysLogSeverities
+		m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr, nullptr);
+#endif
+	}
+
 
 	void CSystem::f_InitModule()
 	{
