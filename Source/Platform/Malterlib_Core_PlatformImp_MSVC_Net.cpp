@@ -813,10 +813,10 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		DMibErrorNet("Could not create a socket for listening");
 	}
 
-	#if !defined(DConfig_Release)
+	//#if !defined(DConfig_Release)
 		int bReuse = 1;
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
-	#endif
+	//#endif
 
 	int Result = bind(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
 
