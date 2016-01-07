@@ -492,10 +492,10 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 		setsockopt(FD, IPPROTO_IPV6, IPV6_V6ONLY, &bV6Only, sizeof(bV6Only));	
 	}
 	
-	#if !defined(DConfig_Release)
+	//#if !defined(DConfig_Release)
 		int bReuse = 1;
 		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));	
-	#endif
+	//#endif
 
 	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
 
