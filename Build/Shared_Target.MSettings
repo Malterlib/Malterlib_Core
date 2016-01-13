@@ -1702,11 +1702,7 @@ Target
 				!Target.LocalDebuggerCommand ""
 				!Target.RemoteDebuggerCommand ""
 			}
-			|
-			{
-				Tests "Perf Tests"
-				MalterlibTest "true"
-			}
+			Tests "Perf Tests"
 		}
 	}
 }
