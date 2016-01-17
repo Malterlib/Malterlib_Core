@@ -595,7 +595,7 @@ mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth)
 		}
 #endif
 
-		RegEBP = *((mint *)(RegEBP));
+		//RegEBP = *((mint *)(RegEBP));
 		return fsg_GetStackTrace((mint *)_pStack, _nMaxDepth, RegEBP);
 	}
 	catch(...)
