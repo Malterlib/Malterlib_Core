@@ -5518,7 +5518,7 @@ void NSys::fg_CreateSystem()
 
 	CSystemWindowsMSVC *pLocalSys;
 	{
-		static_assert(NTraits::TCAlignmentOf<CSystemWindowsMSVC>::mc_Value == 8, "Aligment error");
+		static_assert(NTraits::TCAlignmentOf<CSystemWindowsMSVC>::mc_Value <= 8, "Aligment error");
 		g_bCreatingSystemDone = true;
 		pLocalSys = new(NMib::g_SystemMemory) CSystemWindowsMSVC();
 		pLocalSys->f_Init();
