@@ -7,7 +7,7 @@ Property
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"chcp 65001\r\n"\
 										"@(ScriptExport) OriginalDirectory=%CD%\r\n"\
-										"cd %~dp0..\\..\r\n"\
+										"cd %~dp0..\r\n"\
 										"@(ScriptExport) MalterlibBaseDir=%CD%\\\r\n"\
 										"cd %OriginalDirectory%\r\n"\
 										"@(ScriptExport) PATH=%MalterlibBaseDir%Malterlib\\Tools\\Binaries\\MTool\\Windows;%PATH%\r\n"\
