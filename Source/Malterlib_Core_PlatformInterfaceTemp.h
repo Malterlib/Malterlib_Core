@@ -91,6 +91,7 @@ namespace NMib
 		void* fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned long long& _nDataBytes); // Currently only implemented on OSX, a NOP returning nullptr on all others,
 
 		void fg_System_ReportContractViolation(const NMib::NStr::CStrNonTracked &_Message);
+		NMib::NStr::CStrNonTracked fg_System_GetContractViolationMessage();
 		
 		bint fg_System_GetOperatingSystemVersion(int& o_Major, int& o_Minor, int& o_Fix, EOperatingSystemArch &o_Arch);
 		
@@ -156,6 +157,7 @@ namespace NMib
 		void fg_Debug_StopDeadlockDetector();
 		bint fg_Debug_IsDeadlocked();
 		void fg_Debug_EnableCrashDumpCaches();
+		void fg_Debug_EnableCrashDumps();
 		EDebugCheckFailureAction fg_Debug_ReportContractFailure(const ch8 *_pFileName, int32 _Line, void *_pCodePointer, const NMib::NStr::CStrNonTracked &_ErrorMessage);
 
 

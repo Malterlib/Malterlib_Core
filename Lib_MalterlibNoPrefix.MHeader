@@ -310,12 +310,9 @@ Compile
 			{
 				%Group "Included"
 				{
-					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_LaunchProcess.cpp
-					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_StdInReader.cpp
 					%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_CPUUsageMonitor.*"
 					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_LocalSys.cpp
 					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_NTSpecific.cpp
-					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_StackTrace.cpp
 					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Net.cpp
 					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Net.h
 					Compile.Disabled true
@@ -333,11 +330,8 @@ Compile
 						Exceptions "Full"
 					}
 				}
-				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Registry.cpp
-				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Registry.h
 				%File Source/Platform/Malterlib_Core_PlatformImp_Windows_Inline.h
 				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_WindowsDefines.h
-				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_WindowsDefinesUndocumented.h
 				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_x86_64.asm
 				{
 					Compile.Disabled true

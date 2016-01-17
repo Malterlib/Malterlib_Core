@@ -312,7 +312,6 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 				}
 				%Group CRT14
 				{
-					!!MalterlibEnableThirdPartyComparisonTests true
 					Compile.Disabled true
 					Compile
 					{
