@@ -1587,32 +1587,6 @@ namespace NMib
         NMib::NStr::CStrNonTracked fg_MacOSX_GetUserHomeDirectoryNonTracked();
 		NMib::NStr::CStrNonTracked fg_MacOSX_GetLogDirectoryNonTracked();
 
-
-
-		NMib::NStr::CStr fg_Process_GetOperatingSystemTag(int32 _MajorMax, int32 _MinorMax)
-		{
-			int Major, Minor, Fix;
-			EOperatingSystemArch Arch;
-			fg_System_GetOperatingSystemVersion(Major, Minor, Fix, Arch);
-			
-			if (Major > _MajorMax || (Major == _MajorMax && Minor > _MinorMax))
-			{
-				Major = _MajorMax;
-				Minor = _MinorMax;
-			}
-
-			return (CStr::CFormat("OSX{}.{}") << Major << Minor).f_GetStr();
-		}
-
-		NMib::NStr::CStr fg_Process_GetOperatingSystemDescription()
-		{
-			int Major, Minor, Fix;
-			EOperatingSystemArch Arch;
-			fg_System_GetOperatingSystemVersion(Major, Minor, Fix, Arch);
-
-			return (CStr::CFormat("Mac OSX {}.{}") << Major << Minor).f_GetStr();
-		}
-
 		NMib::NStr::CStr fg_MacOSX_GetSystemLanguage();
 
 	} // Namespace NSys

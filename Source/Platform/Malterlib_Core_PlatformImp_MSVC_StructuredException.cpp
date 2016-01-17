@@ -4,14 +4,20 @@
 #include "windows.h"
 #include <Mib/Core/Core>
 
-void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData))
+namespace NMib
 {
-	__try
+	namespace NPlatform
 	{
-		*((int *)0) = 0;
-	}
-	__except(_pCallback(GetExceptionInformation(), _pData))
-	{
+		void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData))
+		{
+			__try
+			{
+				*((int *)0) = 0;
+			}
+			__except(_pCallback(GetExceptionInformation(), _pData))
+			{
+			}
+		}
 	}
 }
 

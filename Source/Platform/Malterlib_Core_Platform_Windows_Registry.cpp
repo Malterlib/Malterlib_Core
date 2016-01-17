@@ -2,30 +2,22 @@
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
-extern NMib::NStr::CFStr256 fg_Win32_GetLastErrorStr(uint32 _Error);
+#include <Mib/Core/PlatformSpecific/WindowsString>
+#include <Mib/Core/PlatformSpecific/WindowsError>
 
-#include "Malterlib_Core_PlatformImp_MSVC_Registry.h"
-
-using namespace NMib;
-using namespace NStr;
-using namespace NContainer;
-
-CWStr fg_StrToWindows(const CStr &_Str);
+#include "Malterlib_Core_Platform_Windows_Registry.h"
 
 namespace NMib
 {
-
-	namespace NRuntimeMSVC
+	namespace NPlatform
 	{
-
-
 		/*************************************************************************************************\
 		|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 		| CWin32_Registry
 		|__________________________________________________________________________________________________
 		\*************************************************************************************************/
 
-		CWin32_Registry::CWin32_Registry(ERegRoot _Root, const CStr &_RootPath)
+		CWin32_Registry::CWin32_Registry(ERegRoot _Root, const NStr::CStr &_RootPath)
 		{
 			mp_Root = _RootPath;
 			mp_RegRoot = _Root;
@@ -47,7 +39,7 @@ namespace NMib
 			}
 		}
 
-		CWin32_Registry::CWin32_Registry(CWin32_Registry const& _Root, const CStr &_RootPath)
+		CWin32_Registry::CWin32_Registry(CWin32_Registry const& _Root, const NStr::CStr &_RootPath)
 		{
 			if (_RootPath.f_IsEmpty())
 				mp_Root = _Root.mp_Root;
@@ -72,7 +64,7 @@ namespace NMib
 		}
 
 
-		uint32 CWin32_Registry::f_Read_uint32(const CStr &_SubKey, const CStr &_KeyValue)
+		uint32 CWin32_Registry::f_Read_uint32(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
 			DWORD Temp = 0;
 	
@@ -81,27 +73,27 @@ namespace NMib
 			return Temp;
 		}
 
-		CStr CWin32_Registry::f_Read_Str(const CStr &_SubKey, const CStr &_KeyValue)
+		NStr::CStr CWin32_Registry::f_Read_Str(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
-			CStr Temp;
+			NStr::CStr Temp;
 	
 			fp_ReadRegKey(_SubKey, _KeyValue, nullptr, &Temp, nullptr, nullptr);
 	
 			return Temp;
 		}
 
-		TCVector<CStr> CWin32_Registry::f_Read_StrMulti(const CStr &_SubKey, const CStr &_KeyValue)
+		NContainer::TCVector<NStr::CStr> CWin32_Registry::f_Read_StrMulti(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
-			TCVector<CStr> Temp;
+			NContainer::TCVector<NStr::CStr> Temp;
 	
 			fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, nullptr, &Temp);
 	
 			return Temp;
 		}
 
-		TCVector<uint8> CWin32_Registry::f_Read_Bin(const CStr &_SubKey, const CStr &_KeyValue)
+		NContainer::TCVector<uint8> CWin32_Registry::f_Read_Bin(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
-			TCVector<uint8> Temp;
+			NContainer::TCVector<uint8> Temp;
 	
 			fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, &Temp, nullptr);
 	
@@ -109,21 +101,21 @@ namespace NMib
 		}
 
 	
-		uint32 CWin32_Registry::f_Read_uint32(const CStr &_SubKey, const CStr &_KeyValue, uint32 _Default)
+		uint32 CWin32_Registry::f_Read_uint32(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, uint32 _Default)
 		{
 			if (f_ValueExists(_SubKey, _KeyValue))
 				return f_Read_uint32(_SubKey, _KeyValue);
 			return _Default;
 		}
 
-		CStr CWin32_Registry::f_Read_Str(const CStr &_SubKey, const CStr &_KeyValue, const CStr &_Default)
+		NStr::CStr CWin32_Registry::f_Read_Str(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NStr::CStr &_Default)
 		{
 			if (f_ValueExists(_SubKey, _KeyValue))
 				return f_Read_Str(_SubKey, _KeyValue);
 			return _Default;
 		}
 
-		TCVector<CStr> CWin32_Registry::f_Read_StrMulti(const CStr &_SubKey, const CStr &_KeyValue, const TCVector<CStr> &_Default)
+		NContainer::TCVector<NStr::CStr> CWin32_Registry::f_Read_StrMulti(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::TCVector<NStr::CStr> &_Default)
 		{
 			if (f_ValueExists(_SubKey, _KeyValue))
 				return f_Read_StrMulti(_SubKey, _KeyValue);
@@ -131,14 +123,14 @@ namespace NMib
 		}
 
 
-		TCVector<uint8> CWin32_Registry::f_Read_Bin(const CStr &_SubKey, const CStr &_KeyValue, const TCVector<uint8> &_Default)
+		NContainer::TCVector<uint8> CWin32_Registry::f_Read_Bin(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::TCVector<uint8> &_Default)
 		{
 			if (f_ValueExists(_SubKey, _KeyValue))
 				return f_Read_Bin(_SubKey, _KeyValue);
 			return _Default;
 		}
 
-		CStr CWin32_Registry::fp_GetPath(const CStr &_SubKey)
+		NStr::CStr CWin32_Registry::fp_GetPath(const NStr::CStr &_SubKey)
 		{
 			if (!_SubKey.f_IsEmpty() && mp_Root.f_GetLen())
 			{
@@ -150,10 +142,10 @@ namespace NMib
 			return mp_Root;
 		}
 
-		bint CWin32_Registry::f_KeyExists(const CStr &_SubKey)
+		bint CWin32_Registry::f_KeyExists(const NStr::CStr &_SubKey)
 		{
 			HKEY PathKey = nullptr;
-			CWStr SubKey = fg_StrToWindows(_SubKey);
+			NStr::CWStr SubKey = NStr::NPlatform::fg_StrToWindows(_SubKey);
 	
 			if (RegOpenKeyExW(mp_hRootKey,SubKey,0,fp_GetAccess(KEY_READ),&PathKey) != ERROR_SUCCESS)
 				return false;
@@ -169,22 +161,22 @@ namespace NMib
 			return true;
 		}
 
-		bint CWin32_Registry::f_ValueExists(const CStr &_SubKey, const CStr &_KeyValue)
+		bint CWin32_Registry::f_ValueExists(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
 			HKEY PathKey = nullptr;
 			DWORD ValueType;
-			CStr SubKey = fp_GetPath(_SubKey);
-			CWStr KeyValue;
+			NStr::CStr SubKey = fp_GetPath(_SubKey);
+			NStr::CWStr KeyValue;
 			const ch16 *pKeyValue;
 			if (_KeyValue.f_IsEmpty())
 				pKeyValue = nullptr;
 			else
 			{
-				KeyValue = fg_StrToWindows(_KeyValue);
+				KeyValue = NStr::NPlatform::fg_StrToWindows(_KeyValue);
 				pKeyValue = KeyValue;
 			}
 	
-			if (RegOpenKeyExW(mp_hRootKey, fg_StrToWindows(SubKey),0,fp_GetAccess(KEY_READ),&PathKey) != ERROR_SUCCESS)
+			if (RegOpenKeyExW(mp_hRootKey, NStr::NPlatform::fg_StrToWindows(SubKey),0,fp_GetAccess(KEY_READ),&PathKey) != ERROR_SUCCESS)
 				return false;
 
 			auto Cleanup
@@ -206,22 +198,22 @@ namespace NMib
 		}
 
 
-		bint CWin32_Registry::f_IsBinary(const CStr &_SubKey, const CStr &_KeyValue)
+		bint CWin32_Registry::f_IsBinary(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
 			HKEY PathKey = nullptr;
 			DWORD ValueType;
-			CStr SubKey = fp_GetPath(_SubKey);
-			CWStr KeyValue;
+			NStr::CStr SubKey = fp_GetPath(_SubKey);
+			NStr::CWStr KeyValue;
 			const ch16 *pKeyValue;
 			if (_KeyValue.f_IsEmpty())
 				pKeyValue = nullptr;
 			else
 			{
-				KeyValue = fg_StrToWindows(_KeyValue);
+				KeyValue = NStr::NPlatform::fg_StrToWindows(_KeyValue);
 				pKeyValue = KeyValue;
 			}
 	
-			if (RegOpenKeyExW(mp_hRootKey, fg_StrToWindows(SubKey),0,fp_GetAccess(KEY_READ),&PathKey) != ERROR_SUCCESS)
+			if (RegOpenKeyExW(mp_hRootKey, NStr::NPlatform::fg_StrToWindows(SubKey),0,fp_GetAccess(KEY_READ),&PathKey) != ERROR_SUCCESS)
 				return false;
 
 			auto Cleanup
@@ -242,25 +234,25 @@ namespace NMib
 			return ValueType == REG_BINARY;
 		}
 
-		void CWin32_Registry::fp_ReadRegKey(const CStr &_SubKey, const CStr &_KeyValue, DWORD *_pDword, CStr *_pStr, TCVector<uint8> *_pMemory, TCVector<CStr> *_pMulti)
+		void CWin32_Registry::fp_ReadRegKey(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, DWORD *_pDword, NStr::CStr *_pStr, NContainer::TCVector<uint8> *_pMemory, NContainer::TCVector<NStr::CStr> *_pMulti)
 		{		
 			DWORD ValueSize = 0;
 			HKEY PathKey = nullptr;
 			DWORD ValueType;
-			CStr SubKey = fp_GetPath(_SubKey);
-			CWStr KeyValue;
+			NStr::CStr SubKey = fp_GetPath(_SubKey);
+			NStr::CWStr KeyValue;
 			const ch16 *pKeyValue;
 			if (_KeyValue.f_IsEmpty())
 				pKeyValue = nullptr;
 			else
 			{
-				KeyValue = fg_StrToWindows(_KeyValue);
+				KeyValue = NStr::NPlatform::fg_StrToWindows(_KeyValue);
 				pKeyValue = KeyValue;
 			}
 
 			HRESULT Error;
-			if ((Error = RegOpenKeyExW(mp_hRootKey, fg_StrToWindows(SubKey),0,fp_GetAccess(KEY_READ),&PathKey)) != ERROR_SUCCESS)
-				DMibError((CStr::CFormat("RegOpenKeyExW failed with: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			if ((Error = RegOpenKeyExW(mp_hRootKey, NStr::NPlatform::fg_StrToWindows(SubKey),0,fp_GetAccess(KEY_READ),&PathKey)) != ERROR_SUCCESS)
+				DMibError((NStr::CStr::CFormat("RegOpenKeyExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 
 			auto Cleanup
 				= fg_OnScopeExit
@@ -273,7 +265,7 @@ namespace NMib
 			;
 
 			if ((Error = RegQueryValueExW(PathKey,pKeyValue,0,&ValueType,nullptr,nullptr)) != ERROR_SUCCESS)
-				DMibError((CStr::CFormat("RegQueryValueExW failed with: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		
 			if ((ValueType == REG_DWORD) || (ValueType == REG_DWORD_LITTLE_ENDIAN) || (ValueType == REG_DWORD_BIG_ENDIAN))
 			{
@@ -282,7 +274,7 @@ namespace NMib
 			
 				ValueSize=4;
 				if ((Error = RegQueryValueExW(PathKey,pKeyValue,0,nullptr,(unsigned char*)_pDword,&ValueSize)) != ERROR_SUCCESS)
-					DMibError((CStr::CFormat("RegQueryValueExW failed with: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+					DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 			else if ((ValueType==REG_SZ || ValueType==REG_MULTI_SZ || ValueType==REG_EXPAND_SZ) || (ValueType == REG_BINARY)  || (ValueType == REG_RESOURCE_REQUIREMENTS_LIST)|| (ValueType == REG_RESOURCE_LIST))
 			{
@@ -290,11 +282,11 @@ namespace NMib
 				{
 					if (_pMulti)
 					{
-						TCVector<ch16> Temp;
+						NContainer::TCVector<ch16> Temp;
 						ValueSize = (((ValueSize+1)/2) + 2) * 2;
 						Temp.f_SetLen(ValueSize);
 						if ((Error = RegQueryValueExW(PathKey,pKeyValue,0,nullptr,(uint8 *)Temp.f_GetArray(),&ValueSize)) != ERROR_SUCCESS)
-							DMibError((CStr::CFormat("RegQueryValueExW failed with: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+							DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 
 						const ch16 *pParse = Temp.f_GetArray();
 						const ch16 *pParseEnd = pParse + ValueSize/2;
@@ -307,9 +299,9 @@ namespace NMib
 							}
 							if (pParseStart != pParse)
 							{
-								CWStr ToInsert;
+								NStr::CWStr ToInsert;
 								ToInsert.f_AddStr(pParseStart, pParse - pParseStart);
-								_pMulti->f_Insert(CStr(ToInsert));
+								_pMulti->f_Insert(NStr::CStr(ToInsert));
 								++pParse;
 							}
 							else
@@ -318,10 +310,10 @@ namespace NMib
 					}
 					else if (_pStr)
 					{
-						CWStr Temp;
+						NStr::CWStr Temp;
 						ValueSize = (((ValueSize+1)/2) + 2) * 2;
 						if ((Error = RegQueryValueExW(PathKey,pKeyValue,0,nullptr,(uint8 *)Temp.f_GetStr(ValueSize/2 + 1),&ValueSize)) != ERROR_SUCCESS)
-							DMibError((CStr::CFormat("RegQueryValueExW failed with: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+							DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 						Temp.f_SetAt(ValueSize/2, 0);
 						*_pStr = Temp;
 					}
@@ -329,14 +321,14 @@ namespace NMib
 					{
 						_pMemory->f_SetLen(ValueSize);
 						if ((Error = RegQueryValueExW(PathKey,pKeyValue,0,nullptr,_pMemory->f_GetArray(),&ValueSize)) != ERROR_SUCCESS)
-							DMibError((CStr::CFormat("RegQueryValueExW failed with: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+							DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 					}
 					else
 						DMibError("Wrong valuetype");
 				
 				}
 				else
-					DMibError((CStr::CFormat("RegQueryValueExW failed with: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+					DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 			else
 				DMibError("Unknown valuetype");
@@ -344,23 +336,23 @@ namespace NMib
 	
 		}
 
-		void CWin32_Registry::f_DeleteValue(const CStr &_SubKey, const CStr &_KeyValue)
+		void CWin32_Registry::f_DeleteValue(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
 			HKEY PathKey = nullptr;
-			CStr SubKey = fp_GetPath(_SubKey);
-			CWStr KeyValue;
+			NStr::CStr SubKey = fp_GetPath(_SubKey);
+			NStr::CWStr KeyValue;
 			const ch16 *pKeyValue;
 			if (_KeyValue.f_IsEmpty())
 				pKeyValue = nullptr;
 			else
 			{
-				KeyValue = fg_StrToWindows(_KeyValue);
+				KeyValue = NStr::NPlatform::fg_StrToWindows(_KeyValue);
 				pKeyValue = KeyValue;
 			}
 	
 			HRESULT Error;
-			if ((Error = RegOpenKeyExW(mp_hRootKey, fg_StrToWindows(SubKey),0,fp_GetAccess(KEY_SET_VALUE),&PathKey)) != ERROR_SUCCESS)
-				DMibError(CStr::CFormat("RegOpenKeyExW failed with: {}") << fg_Win32_GetLastErrorStr(Error));
+			if ((Error = RegOpenKeyExW(mp_hRootKey, NStr::NPlatform::fg_StrToWindows(SubKey),0,fp_GetAccess(KEY_SET_VALUE),&PathKey)) != ERROR_SUCCESS)
+				DMibError(NStr::CStr::CFormat("RegOpenKeyExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 		
 			auto Cleanup
 				= fg_OnScopeExit
@@ -373,12 +365,12 @@ namespace NMib
 			;
 
 			if ((Error = RegDeleteValueW(PathKey, pKeyValue)) != ERROR_SUCCESS)
-				DMibError(CStr::CFormat("RegDeleteValueW failed with: {}") << fg_Win32_GetLastErrorStr(Error));
+				DMibError(NStr::CStr::CFormat("RegDeleteValueW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 		}
 
-		void CWin32_Registry::fp_DeleteKey(const CStr &_Key)
+		void CWin32_Registry::fp_DeleteKey(const NStr::CStr &_Key)
 		{
-			TCVector<CStr> Children;
+			NContainer::TCVector<NStr::CStr> Children;
 			fp_EnumKeys(_Key, Children);
 			for (mint i = 0; i < Children.f_GetLen(); ++i)
 			{
@@ -386,67 +378,67 @@ namespace NMib
 			}
 
 			HRESULT Error;
-			if ((Error = RegDeleteKeyW(mp_hRootKey, fg_StrToWindows(_Key))) != ERROR_SUCCESS)
-				DMibError(CStr::CFormat("RegDeleteKeyW failed with: {}") << fg_Win32_GetLastErrorStr(Error));
+			if ((Error = RegDeleteKeyW(mp_hRootKey, NStr::NPlatform::fg_StrToWindows(_Key))) != ERROR_SUCCESS)
+				DMibError(NStr::CStr::CFormat("RegDeleteKeyW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 
 		}
 
 
-		void CWin32_Registry::f_DeleteKey(const CStr &_SubKey)
+		void CWin32_Registry::f_DeleteKey(const NStr::CStr &_SubKey)
 		{
-			CStr SubKey = fp_GetPath(_SubKey);
+			NStr::CStr SubKey = fp_GetPath(_SubKey);
 
 			fp_DeleteKey(SubKey);
 		}
 
 
-		void CWin32_Registry::f_Write(const CStr &_SubKey, const CStr &_KeyValue, uint32 _Value)
+		void CWin32_Registry::f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, uint32 _Value)
 		{
 			fp_WriteRegKey(_SubKey, _KeyValue, &_Value, nullptr, nullptr, nullptr);
 		}
 
 		/*
-		void CWin32_Registry::f_Write(const CStr &_SubKey, const CStr &_KeyValue, const CStr &_Value)
+		void CWin32_Registry::f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NStr::CStr &_Value)
 		{
-			CStr Temp;
+			NStr::CStr Temp;
 			Temp = _Value;
 	
 			fp_WriteRegKey(_SubKey, _KeyValue, nullptr, &Temp, nullptr, nullptr);
 		}
 		*/
 
-		void CWin32_Registry::f_Write(const CStr &_SubKey, const CStr &_KeyValue, const TCVector<uint8> &_Data)
+		void CWin32_Registry::f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::TCVector<uint8> &_Data)
 		{
 			fp_WriteRegKey(_SubKey, _KeyValue, nullptr, nullptr, &_Data, nullptr);
 		}
 
-		void CWin32_Registry::f_Write(const CStr &_SubKey, const CStr &_KeyValue, const CStr &_Value)
+		void CWin32_Registry::f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NStr::CStr &_Value)
 		{
 			fp_WriteRegKey(_SubKey, _KeyValue, nullptr, &_Value, nullptr, nullptr);
 		}
 
-		void CWin32_Registry::f_Write(const CStr &_SubKey, const CStr &_KeyValue, const TCVector<CStr> &_Multi)
+		void CWin32_Registry::f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::TCVector<NStr::CStr> &_Multi)
 		{
 			fp_WriteRegKey(_SubKey, _KeyValue, nullptr, nullptr, nullptr, &_Multi);
 		}
 
-		void CWin32_Registry::fp_WriteRegKey(const CStr &_SubKey, const CStr &_KeyValue, const DWORD *_pDword, const CStr *_pStr, const TCVector<uint8> *_pMemory, const TCVector<CStr> *_pMulti)
+		void CWin32_Registry::fp_WriteRegKey(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const DWORD *_pDword, const NStr::CStr *_pStr, const NContainer::TCVector<uint8> *_pMemory, const NContainer::TCVector<NStr::CStr> *_pMulti)
 		{
 			HKEY PathKey = nullptr;
-			CStr SubKey = fp_GetPath(_SubKey);
-			CWStr KeyValue;
+			NStr::CStr SubKey = fp_GetPath(_SubKey);
+			NStr::CWStr KeyValue;
 			const ch16 *pKeyValue;
 			if (_KeyValue.f_IsEmpty())
 				pKeyValue = nullptr;
 			else
 			{
-				KeyValue = fg_StrToWindows(_KeyValue);
+				KeyValue = NStr::NPlatform::fg_StrToWindows(_KeyValue);
 				pKeyValue = KeyValue;
 			}
 
 			HRESULT Error; 
-			if ((Error = RegCreateKeyExW(mp_hRootKey, fg_StrToWindows(SubKey),0,nullptr,REG_OPTION_NON_VOLATILE,fp_GetAccess(KEY_WRITE),nullptr,&PathKey,nullptr)) != ERROR_SUCCESS)
-				DMibError(CStr::CFormat("RegCreateKeyEx failed with: {}") << fg_Win32_GetLastErrorStr(Error));
+			if ((Error = RegCreateKeyExW(mp_hRootKey, NStr::NPlatform::fg_StrToWindows(SubKey),0,nullptr,REG_OPTION_NON_VOLATILE,fp_GetAccess(KEY_WRITE),nullptr,&PathKey,nullptr)) != ERROR_SUCCESS)
+				DMibError(NStr::CStr::CFormat("RegCreateKeyEx failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 
 			auto Cleanup
 				= fg_OnScopeExit
@@ -461,16 +453,16 @@ namespace NMib
 			if (_pDword)
 			{
 				if ((Error = RegSetValueExW(PathKey,pKeyValue,0,REG_DWORD,(unsigned char*)_pDword,4)) != ERROR_SUCCESS)
-					DMibError(CStr::CFormat("RegSetValueExW failed with: {}") << fg_Win32_GetLastErrorStr(Error));
+					DMibError(NStr::CStr::CFormat("RegSetValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 			}
 			else if (_pMulti)
 			{
 				mint NeededLen = 1;
-				TCVector<CWStr> TempMulti;
+				NContainer::TCVector<NStr::CWStr> TempMulti;
 				TempMulti.f_SetLen(_pMulti->f_GetLen());
 				for (mint i = 0; i < _pMulti->f_GetLen(); ++i)
 				{
-					TempMulti[i] = fg_StrToWindows((*_pMulti)[i]);
+					TempMulti[i] = NStr::NPlatform::fg_StrToWindows((*_pMulti)[i]);
 					mint Len = TempMulti[i].f_GetLen();
 					if (Len)
 					{
@@ -478,7 +470,7 @@ namespace NMib
 					}
 				}
 
-				TCVector<ch16> Temp;
+				NContainer::TCVector<ch16> Temp;
 				Temp.f_SetLen(NeededLen);
 				ch16 *pParse = Temp.f_GetArray();
 
@@ -495,20 +487,20 @@ namespace NMib
 
 				if ((Error = RegSetValueExW(PathKey,pKeyValue,0,REG_MULTI_SZ,(uint8 *)Temp.f_GetArray(),NeededLen*2)) != ERROR_SUCCESS)
 				{
-					DMibError(CStr::CFormat("RegSetValueEx failed with: {}") << fg_Win32_GetLastErrorStr(Error));
+					DMibError(NStr::CStr::CFormat("RegSetValueEx failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 				}
 			}
 			else if (_pStr)
 			{				
-				CWStr Temp = fg_StrToWindows(*_pStr);
+				NStr::CWStr Temp = NStr::NPlatform::fg_StrToWindows(*_pStr);
 
 				if ((Error = RegSetValueExW(PathKey,pKeyValue,0,REG_SZ,(uint8 *)Temp.f_GetStr(),Temp.f_GetLen()*2)) != ERROR_SUCCESS)
-					DMibError(CStr::CFormat("RegSetValueEx failed with: {}") << fg_Win32_GetLastErrorStr(Error));
+					DMibError(NStr::CStr::CFormat("RegSetValueEx failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 			}
 			else if (_pMemory)
 			{
 				if ((Error = RegSetValueExW(PathKey,pKeyValue,0,REG_BINARY,_pMemory->f_GetArray(),_pMemory->f_GetLen())) != ERROR_SUCCESS)
-					DMibError(CStr::CFormat("RegSetValueEx failed with: {}") << fg_Win32_GetLastErrorStr(Error));
+					DMibError(NStr::CStr::CFormat("RegSetValueEx failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 			}
 			else
 			{
@@ -516,12 +508,12 @@ namespace NMib
 			}
 		}
 
-		void CWin32_Registry::fp_EnumValues(const CStr &_Key, TCVector<CStr> &_Values)
+		void CWin32_Registry::fp_EnumValues(const NStr::CStr &_Key, NContainer::TCVector<NStr::CStr> &_Values)
 		{
 			HKEY PathKey = nullptr;
-			CStr SubKey = _Key;
+			NStr::CStr SubKey = _Key;
 
-			if (RegOpenKeyW(mp_hRootKey, fg_StrToWindows(SubKey),&PathKey) != ERROR_SUCCESS)
+			if (RegOpenKeyW(mp_hRootKey, NStr::NPlatform::fg_StrToWindows(SubKey),&PathKey) != ERROR_SUCCESS)
 				return;
 
 			auto Cleanup
@@ -542,7 +534,7 @@ namespace NMib
 
 			for (mint i = 0; i < nValues; ++i)
 			{
-				CWStr Temp;
+				NStr::CWStr Temp;
 				TmpLength = LongestValueName;
 				if(RegEnumValueW(PathKey, i, Temp.f_GetStr(LongestValueName), &TmpLength, nullptr, nullptr, nullptr, nullptr) == ERROR_NO_MORE_ITEMS)
 					break;
@@ -551,19 +543,19 @@ namespace NMib
 			}
 		}
 
-		void CWin32_Registry::f_EnumValues(const CStr &_SubKey, TCVector<CStr> &_Values)
+		void CWin32_Registry::f_EnumValues(const NStr::CStr &_SubKey, NContainer::TCVector<NStr::CStr> &_Values)
 		{
 			fp_EnumValues(fp_GetPath(_SubKey), _Values);
 		}
 
-		void CWin32_Registry::fp_EnumKeys(const CStr &_Key, TCVector<CStr> &_Keys)
+		void CWin32_Registry::fp_EnumKeys(const NStr::CStr &_Key, NContainer::TCVector<NStr::CStr> &_Keys)
 		{
 			HKEY PathKey = nullptr;
-			CStr SubKey = _Key;
+			NStr::CStr SubKey = _Key;
 
 			HRESULT Error;
-			if ((Error = RegOpenKeyW(mp_hRootKey, fg_StrToWindows(SubKey),&PathKey)) != ERROR_SUCCESS)
-				DMibError(CStr::CFormat("RegOpenKeyW failed with: {}") << fg_Win32_GetLastErrorStr(Error));
+			if ((Error = RegOpenKeyW(mp_hRootKey, NStr::NPlatform::fg_StrToWindows(SubKey),&PathKey)) != ERROR_SUCCESS)
+				DMibError(NStr::CStr::CFormat("RegOpenKeyW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 
 			auto Cleanup
 				= fg_OnScopeExit
@@ -583,7 +575,7 @@ namespace NMib
 
 			for (mint i = 0; i < nSubKeys; ++i)
 			{
-				CWStr Temp;
+				NStr::CWStr Temp;
 				if(RegEnumKeyW(PathKey, i, Temp.f_GetStr(LongestSubKey), LongestSubKey) == ERROR_NO_MORE_ITEMS)
 					break;
 				Temp.f_SetModified();
@@ -592,7 +584,7 @@ namespace NMib
 		}
 
 
-		void CWin32_Registry::f_EnumKeys(const CStr &_SubKey, TCVector<CStr> &_Keys)
+		void CWin32_Registry::f_EnumKeys(const NStr::CStr &_SubKey, NContainer::TCVector<NStr::CStr> &_Keys)
 		{
 			fp_EnumKeys(fp_GetPath(_SubKey), _Keys);
 		}

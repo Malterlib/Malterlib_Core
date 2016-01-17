@@ -285,7 +285,7 @@ aint CWindowsSocketContext::f_Main()
 								if (Error)
 								{
 									StateAdded |= NMib::NNet::ENetTCPState_Closed;
-									pSocket->m_CloseReason = fg_Win32_GetLastErrorStr(Error);
+									pSocket->m_CloseReason = NMib::NPlatform::fg_Win32_GetLastErrorStr(Error);
 								}
 								else
 								{
@@ -297,7 +297,7 @@ aint CWindowsSocketContext::f_Main()
 								int Error = WSAGETSELECTERROR(Message.lParam);
 								StateAdded |= NMib::NNet::ENetTCPState_Closed;
 								if (Error)
-									pSocket->m_CloseReason = fg_Win32_GetLastErrorStr(Error);
+									pSocket->m_CloseReason = NMib::NPlatform::fg_Win32_GetLastErrorStr(Error);
 								else
 									pSocket->m_CloseReason = "Connection gracefully disconnected.";
 							}
@@ -488,7 +488,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 
 	ADDRINFOW* pAddresses = nullptr;
 
-	CWStr AddressStr = fg_StrToWindows(_Address);
+	CWStr AddressStr = NStr::NPlatform::fg_StrToWindows(_Address);
 
 	int Result = GetAddrInfoW(AddressStr.f_GetStr(), nullptr, &AddrHint, &pAddresses);
 
@@ -508,7 +508,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 		else
 		{
 			uint32 Error = WSAGetLastError();
-			DMibErrorNet((CStr::CFormat("Could not resolve address, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not resolve address, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 	}
 
@@ -639,7 +639,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 		{	
 			uint32 Error = WSAGetLastError();
 			f_CheckDestroy();
-			DMibErrorNet((CStr::CFormat("Could not create a socket for connection, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not create a socket for connection, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
 		int Buf = EDefaultSocketBufSize;
@@ -650,7 +650,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 				uint32 Error = WSAGetLastError();
 				closesocket(hSock);
 				f_CheckDestroy();
-				DMibErrorNet((CStr::CFormat("Could not set connect socket receive buffer size, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				DMibErrorNet((CStr::CFormat("Could not set connect socket receive buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 
 			if (setsockopt(hSock, SOL_SOCKET, SO_SNDBUF, (char *)&Buf, sizeof(Buf)))
@@ -658,7 +658,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 				uint32 Error = WSAGetLastError();
 				closesocket(hSock);
 				f_CheckDestroy();
-				DMibErrorNet((CStr::CFormat("Could not set connect socket send buffer size, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				DMibErrorNet((CStr::CFormat("Could not set connect socket send buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
 
@@ -668,7 +668,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 			uint32 Error = WSAGetLastError();
 			closesocket(hSock);
 			f_CheckDestroy();
-			DMibErrorNet((CStr::CFormat("Could not set connect socket NoDelay setting, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not set connect socket NoDelay setting, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
 		if (_pBindAddress)
@@ -679,7 +679,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 				uint32 Error = WSAGetLastError();
 				closesocket(hSock);
 				f_CheckDestroy();
-				DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
 
@@ -707,7 +707,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 				}
 				pSocket = nullptr;
 				f_CheckDestroy();
-				DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
 
@@ -726,14 +726,14 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 					}
 					pSocket = nullptr;
 					f_CheckDestroy();
-					DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());				
+					DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());				
 				}
 			}
 			else
 			{
 				closesocket(hSock);
 				f_CheckDestroy();
-				DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
 		else
@@ -769,7 +769,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 				}
 				pSocket = nullptr;
 				f_CheckDestroy();
-				DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 
 		}
@@ -825,7 +825,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		uint32 Error = WSAGetLastError();
 		closesocket(hSock);
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	Result = listen(hSock, 16);
@@ -835,7 +835,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		uint32 Error = WSAGetLastError();
 		closesocket(hSock);
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not listen on socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not listen on socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	TCUniquePointer<CWindowsSocket> pSocket = fg_Construct();
@@ -858,7 +858,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		}
 		pSocket = nullptr;
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	return pSocket.f_Detach();
@@ -895,7 +895,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 		uint32 Error = WSAGetLastError();
 		closesocket(hSock);
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	TCUniquePointer<CWindowsSocket> pSocket = fg_Construct();
@@ -920,7 +920,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 		}
 		pSocket = nullptr;
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	return pSocket.f_Detach();
@@ -937,7 +937,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		if (LastError == WSAEWOULDBLOCK)
 			return nullptr;
 
-		DMibErrorNet((CStr::CFormat("Could not accpept socket, windows returned: {}") << fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not accpept socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
 	}
 
 	int Buf = EDefaultSocketBufSize;
@@ -947,14 +947,14 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		{
 			uint32 Error = WSAGetLastError();
 			closesocket(hSock);
-			DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
 		if (setsockopt(hSock, SOL_SOCKET, SO_SNDBUF, (char *)&Buf, sizeof(Buf)))
 		{
 			uint32 Error = WSAGetLastError();
 			closesocket(hSock);
-			DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 	}
 
@@ -964,7 +964,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 	{
 		uint32 Error = WSAGetLastError();
 		closesocket(hSock);
-		DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	TCUniquePointer<CWindowsSocket> pSocket = fg_Construct();
@@ -987,7 +987,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		}
 		pSocket = nullptr;
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 	return pSocket.f_Detach();
 }
@@ -1021,7 +1021,7 @@ mint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, mi
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
 		{
-			DMibErrorNet((CStr::CFormat("Could not revc from socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not revc from socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 		else
 			return 0;
@@ -1065,7 +1065,7 @@ mint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData,
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
 		{
-			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 		else
 			return 0;
@@ -1083,7 +1083,7 @@ mint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAdd
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
 		{
-			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 		else
 			return 0;
@@ -1102,7 +1102,7 @@ mint CWindowsSocketContext::f_ReceiveDatagram(CWindowsSocket *_pSocket, CWindows
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
 		{
-			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 		else
 			return 0;
@@ -1160,7 +1160,7 @@ CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pSocket, NMib::NF
 		uint32 Error = WSAGetLastError();
 		delete pReturn;
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	{
@@ -1234,7 +1234,7 @@ CWindowsAddress* CWindowsSocketContext::f_GetPeerAddress(CWindowsSocket *_pSocke
 	if (Ret != 0)
 	{
 		uint32 Error = WSAGetLastError();
-		DMibErrorNet((CStr::CFormat("Could not get peer address, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not get peer address, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	if (PeerAddr.ss_family == AF_INET)
@@ -1264,7 +1264,7 @@ uint32 CWindowsSocketContext::f_GetListenPort(CWindowsSocket *_pSocket)
 	if (Ret != 0)
 	{
 		uint32 Error = WSAGetLastError();
-		DMibErrorNet((CStr::CFormat("Could not get socket address, windows returned: {}") << fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not get socket address, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	if (PeerAddr.ss_family == AF_INET)
