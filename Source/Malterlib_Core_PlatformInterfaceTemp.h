@@ -227,6 +227,7 @@ namespace NMib
 
 		void *fg_System_CPUUsageMonitor_Open();
 		void fg_System_CPUUsageMonitor_Close(void *_pHandle);
+		void fg_System_EnableFloatingPointExceptions();
 		
 		void *fg_Process_GetCrossModuleMemoryManagerInterface();
 		void fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface);

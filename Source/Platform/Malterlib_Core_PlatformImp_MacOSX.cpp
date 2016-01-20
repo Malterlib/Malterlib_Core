@@ -230,8 +230,14 @@ extern "C"
 //#include <files.h>
 
 #include "Malterlib_Core_PlatformImp_MacOSX_ObjCPP.h"
+#include <xmmintrin.h>
 
 static inline_small class CSystemMacOSX *fg_GetLocalSys();
+
+void NSys::fg_System_EnableFloatingPointExceptions()
+{
+	_MM_SET_EXCEPTION_MASK(_MM_MASK_INEXACT);
+}
 
 void calling_convention_c fg_Malterlib_MakeActive()
 {
