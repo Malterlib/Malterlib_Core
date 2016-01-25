@@ -3,6 +3,11 @@
 
 namespace NMib
 {
+	[[noreturn]] void fg_NoReturn()
+	{
+		throw 1;
+	}
+
 	namespace NMisc
 	{
 		NAggregate::TCAggregate<NThread::TCThreadLocal<CAutoRandom, NMem::CAllocator_NonTrackedHeap>> g_Random = {DAggregateInit};
