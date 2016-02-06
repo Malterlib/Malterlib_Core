@@ -1373,9 +1373,14 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 	
 	g_bCreatingSystemDone = true;
 
-	auto pSystem = new(NMib::g_SystemMemory) CSystemMacOSX();
+	auto pSystemMemory = (void *)NMib::g_SystemMemory;
+	auto pSystem = new(pSystemMemory) CSystemMacOSX();
 	static_assert(NTraits::TCAlignmentOf<CSystemMacOSX>::mc_Value <= sizeof(mint), "Aligment error");
-	DMibFastCheck((void *)pSystem == (void *)&NMib::g_SystemMemory);
+	
+	NSys::fg_Compiler_MakeActive(&pSystemMemory);
+	NSys::fg_Compiler_MakeActive(&pSystem);
+	DMibFastCheck((void *)pSystem == pSystemMemory);
+	
 	g_bCanUseSystemMalloc = true;
 
 	if (!_bProvideDestroySystem)
