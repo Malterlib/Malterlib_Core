@@ -1082,6 +1082,18 @@
 				}
 			}
 			
+			%GeneratorSetting "Sanitize"
+			{
+				
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Address "-fsanitize=address -fno-omit-frame-pointer"
+					}
+				}
+			}
+			
 			%GeneratorSetting "BuiltinSearchPath"
 			{
 				Property
