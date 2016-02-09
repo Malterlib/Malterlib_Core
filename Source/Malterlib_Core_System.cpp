@@ -514,69 +514,6 @@ namespace NMib
 		return m_CommandLineData->m_lCommandLineParameters[_iIndex];
 	}
 
-	
-	CSystem::CTimeChangeNotificationSubscription::CTimeChangeNotificationSubscription()
-		: mp_pNotification(nullptr)
-	{
-	}
-	
-	CSystem::CTimeChangeNotificationSubscription::CTimeChangeNotificationSubscription(CTimeChangeNotificationSubscription &&_Other)
-	{
-		mp_pNotification = _Other.mp_pNotification;
-		_Other.mp_pNotification = nullptr;
-	}
-
-	CSystem::CTimeChangeNotificationSubscription &CSystem::CTimeChangeNotificationSubscription::operator =(CTimeChangeNotificationSubscription &&_Other)
-	{
-		fp_Remove();
-		mp_pNotification = _Other.mp_pNotification;
-		_Other.mp_pNotification = nullptr;
-		return *this;
-	}
-	
-	void CSystem::CTimeChangeNotificationSubscription::fp_Remove()
-	{
-		if (mp_pNotification)
-		{
-			DMibLock(fg_GetSys()->mp_TimeChangeNotificationLock);
-			fg_GetSys()->mp_TimeChangeNotifications.f_Remove(*mp_pNotification);
-			mp_pNotification = nullptr;
-		}
-	}
-
-	CSystem::CTimeChangeNotificationSubscription::~CTimeChangeNotificationSubscription()
-	{
-		fp_Remove();
-	}
-
-	CSystem::CTimeChangeNotificationSubscription::CTimeChangeNotificationSubscription
-		(
-			NFunction::TCFunction<void (NTime::CTime const &_OldTime, NTime::CTime const &_NewTime, NStr::CStr const &_Reason)> *_pNotification
-		)
-		: mp_pNotification(_pNotification)
-	{
-		
-	}
-	
-	CSystem::CTimeChangeNotificationSubscription CSystem::f_RegisterTimeChangeNotification
-		(
-			NFunction::TCFunction<void (NTime::CTime const &_OldTime, NTime::CTime const &_NewTime, NStr::CStr const &_Reason)> &&_fNotification
-		)
-	{		
-		DMibLock(mp_TimeChangeNotificationLock);
-		
-		auto &NewNotification = mp_TimeChangeNotifications.f_Insert(fg_Move(_fNotification));
-		return &NewNotification;		
-	}
-	
-	void CSystem::f_ReportTimeChange(NTime::CTime const &_OldTime, NTime::CTime const &_NewTime, NStr::CStr const &_Reason)
-	{
-		DMibLock(mp_TimeChangeNotificationLock);
-		
-		for (auto &fNotification : mp_TimeChangeNotifications)
-			fNotification(_OldTime, _NewTime, _Reason);
-	}
-
 	/************************************************************************************************\
 	||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
 	|| CSystemModule
