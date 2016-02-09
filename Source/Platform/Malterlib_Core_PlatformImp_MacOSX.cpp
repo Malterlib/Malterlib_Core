@@ -343,7 +343,7 @@ public:
 	bint f_WaitTimeout(fp32 _Timeout)
 	{
 		bint bRet = true;
-		CClock TimeWait;
+		CClockRaw TimeWait;
 		TimeWait.f_Start();
 		DMibLock(m_Lock);
 		fp64 Time = TimeWait.f_GetTime();

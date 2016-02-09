@@ -273,7 +273,7 @@ public:
 	{
 		int ErrNo;
 		bint bRet = true;
-		CClock TimeWait;
+		CClockRaw TimeWait;
 		TimeWait.f_Start();
 		if ((ErrNo = pthread_mutex_lock(fp_GetMutex())) != 0)
 			DMibError(NPlatform::fg_FormatErrno("pthread_mutex_lock (semaphore wait timeout)", ErrNo));

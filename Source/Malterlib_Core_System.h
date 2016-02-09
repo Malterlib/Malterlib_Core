@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Mib/Core/Core>
+#include <Mib/Container/LinkedList>
 
 #include "Malterlib_Core_PlatformInterface.h"
 #include "../../Log/Source/Malterlib_Log_Configuration.h"
@@ -120,6 +121,24 @@ namespace NMib
 		friend class CRunTimeObjectInfo;
 		friend class NThread::CSemaphoreReportableAggregate;
 
+	public:
+		class CTimeChangeNotificationSubscription
+		{
+			friend class CSystem;
+		public:
+			CTimeChangeNotificationSubscription(CTimeChangeNotificationSubscription const &_Other) = delete;
+			CTimeChangeNotificationSubscription &operator =(CTimeChangeNotificationSubscription const &_Other) = delete;
+			
+			CTimeChangeNotificationSubscription();
+			CTimeChangeNotificationSubscription(CTimeChangeNotificationSubscription &&_Other);
+			CTimeChangeNotificationSubscription &operator =(CTimeChangeNotificationSubscription &&_Other);
+			~CTimeChangeNotificationSubscription();
+		private:
+			CTimeChangeNotificationSubscription(NFunction::TCFunction<void (NTime::CTime const &_OldTime, NTime::CTime const &_NewTime, NStr::CStr const &_Reason)> *_pNotification);
+			void fp_Remove();
+			
+			NFunction::TCFunction<void (NTime::CTime const &_OldTime, NTime::CTime const &_NewTime, NStr::CStr const &_Reason)> *mp_pNotification;
+		};
 	private:
 
 		NThread::CMutual mp_SubSystemsLock;
@@ -155,9 +174,7 @@ namespace NMib
 
 		bint m_bInitDone;
 		bool m_bIsDll;
-
 		
- 
 #if DMibConfig_Memory_Shims_EnableGlobal
 		void fp_CreateGlobalMemoryReporter();
 		void fp_DestroyGlobalMemoryReporter();
@@ -176,6 +193,9 @@ namespace NMib
 		void fp_SubSystem_ExitModule();
 		
 	protected:
+		NThread::CMutual mp_TimeChangeNotificationLock;
+		NContainer::TCLinkedList<NFunction::TCFunction<void (NTime::CTime const &_OldTime, NTime::CTime const &_NewTime, NStr::CStr const &_Reason)>> mp_TimeChangeNotifications;
+		
 		NStr::CStr m_ProgramRoot;
 		NStr::CStrNonTracked m_ProgramRootNonTracked;
 
@@ -191,6 +211,13 @@ namespace NMib
 		void f_AddSubSystem(CSubSystem &_SubSystem);
 
 		static bool ms_bDisableMemoryManagerLeakReport;
+
+		void f_ReportTimeChange(NTime::CTime const &_OldTime, NTime::CTime const &_NewTime, NStr::CStr const &_Reason);
+		CTimeChangeNotificationSubscription f_RegisterTimeChangeNotification
+			(
+				NFunction::TCFunction<void (NTime::CTime const &_OldTime, NTime::CTime const &_NewTime, NStr::CStr const &_Reason)> &&_fNotification
+			)
+		;
 		
 		CVirtualMachineInfo const& f_GetVirtualMachineInfo() const
 		{
