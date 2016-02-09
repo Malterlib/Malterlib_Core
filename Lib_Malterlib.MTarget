@@ -312,6 +312,11 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 				}
 				%Group CRT14
 				{
+					|
+					{
+						MalterlibEnableThirdPartyComparisonTests true
+						PlatformFamily Windows
+					}
 					Compile.Disabled true
 					Compile
 					{
