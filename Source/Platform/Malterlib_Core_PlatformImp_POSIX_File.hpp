@@ -63,25 +63,28 @@ namespace NMib
 				if (RetVal)
 				{
 					int Error = errno;
-					
-					if (Error == ELOOP) // Too many Symbolic links encountered.
+					RetVal = lstat(File.f_GetStr(), &Stats);
+					if (RetVal)
 					{
-						if (_AttribMask & NMib::NFile::EFileAttrib_Link
-							|| (_AttribMask & (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory)) == (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory))
-							return true;
-						else
+						if (Error == ELOOP) // Too many Symbolic links encountered.
+						{
+							if (_AttribMask & NMib::NFile::EFileAttrib_Link
+								|| (_AttribMask & (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory)) == (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory))
+								return true;
+							else
+								return false;
+						}
+						else if (	Error == ENOENT 		// A component of _Filename does not exist (or _Filename is empty)
+							|| 	Error == ENOTDIR 		// A component of the path prefix is not a dir.
+							||	Error == EACCES 		// No access (permissions)
+							||	Error == ENAMETOOLONG 	// Path is too long
+							||	Error == ENOMEM) 		// Ran out of kernel memory
 							return false;
-					}
-					else if (	Error == ENOENT 		// A component of _Filename does not exist (or _Filename is empty)
-						|| 	Error == ENOTDIR 		// A component of the path prefix is not a dir.
-						||	Error == EACCES 		// No access (permissions)
-						||	Error == ENAMETOOLONG 	// Path is too long
-						||	Error == ENOMEM) 		// Ran out of kernel memory
-						return false;
-					else
-					{
-						// This will most likely be EFAULT (&Stats is invalid)
-						DMibErrorFile(NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("stat('{}') when checking if file exists") << _FileName, Error));
+						else
+						{
+							// This will most likely be EFAULT (&Stats is invalid)
+							DMibErrorFile(NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("stat('{}') when checking if file exists") << _FileName, Error));
+						}
 					}
 				}
 				
