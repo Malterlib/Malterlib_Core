@@ -48,13 +48,13 @@ namespace NMib
 #endif
 
 	template <typename tf_C1, typename tf_C2>
-	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second);
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second);
 
 	template <typename tf_C1, typename tf_C2>
-	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Max(tf_C1 &&_First, tf_C2 &&_Second);
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Max(tf_C1 &&_First, tf_C2 &&_Second);
 
 	template <typename tf_C1>
-	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First);
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First);
 	
 	template <typename tf_CType>
 	constexpr bool fg_ForbiddenType()

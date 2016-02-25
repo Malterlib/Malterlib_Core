@@ -72,20 +72,20 @@ namespace NMib
 	}
  
 	template <typename t_CType> 
-	inline_always_debug t_CType&& fg_Forward(typename NPrivate::TCForwardHelper<t_CType>::CType &_ToForward) 
+	constexpr inline_always_debug t_CType&& fg_Forward(typename NPrivate::TCForwardHelper<t_CType>::CType &_ToForward) 
 	{
     	return (t_CType&& )_ToForward;
 	}
 #else
 
 	template <typename t_CType> 
-	inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &_ToForward) 
+	constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &_ToForward) 
 	{
     	return static_cast<t_CType&&>(_ToForward);
 	}
 
 	template <typename t_CType> 
-	inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &&_ToForward) noexcept
+	constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &&_ToForward) noexcept
 	{
 		static_assert(!NTraits::TCIsLValueReference<t_CType>::mc_Value, "Cannot be a lvalue reference here");
     	return static_cast<t_CType&&>(_ToForward);
@@ -684,7 +684,7 @@ namespace NMib
 
 
 	template <typename tf_C1, typename tf_C2>
-	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second)
 	{
 		if (fg_Forward<tf_C1>(_First) < fg_Forward<tf_C2>(_Second))
 			return fg_Forward<tf_C1>(_First);
@@ -693,7 +693,7 @@ namespace NMib
 	}
 
 	template <typename tf_C1, typename tf_C2>
-	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Max(tf_C1 &&_First, tf_C2 &&_Second)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Max(tf_C1 &&_First, tf_C2 &&_Second)
 	{
 		if (fg_Forward<tf_C2>(_Second) < fg_Forward<tf_C1>(_First))
 			return fg_Forward<tf_C1>(_First);
@@ -702,13 +702,13 @@ namespace NMib
 	}
 
 	template <typename tf_C1, typename tf_C2, typename tf_C3>
-	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Clamp(tf_C1 &&_First, tf_C2 &&_Min, tf_C3 &&_Max)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Clamp(tf_C1 &&_First, tf_C2 &&_Min, tf_C3 &&_Max)
 	{
 		return fg_Max(fg_Min(fg_Forward<tf_C1>(_First), fg_Forward<tf_C3>(_Max)), fg_Forward<tf_C2>(_Min));
 	}
 
 	template <typename tf_C1>
-	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First)
 	{
 		if (fg_Forward<tf_C1>(_First) >= typename NTraits::TCRemoveReference<tf_C1>::CType(0))
 			return fg_Forward<tf_C1>(_First);
