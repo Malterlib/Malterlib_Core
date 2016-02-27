@@ -717,7 +717,21 @@ namespace NMib
 	}
 
 	template <typename t_ToAlign>
-	constexpr inline_small t_ToAlign fg_AlignUp(t_ToAlign _pMem, mint _Alignment)
+	constexpr inline_small t_ToAlign fg_AlignUpConstExpr(t_ToAlign _pMem, mint _Alignment)
+	{
+		typedef typename NTraits::TCUnsigned<typename NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>::CType>::CType CIntegerType;
+		return (t_ToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+	}
+
+	template <typename t_ToAlign>
+	constexpr inline_small t_ToAlign fg_AlignDownConstExpr(t_ToAlign _pMem, mint _Alignment)
+	{
+		typedef typename NTraits::TCUnsigned<typename NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>::CType>::CType CIntegerType;
+		return (t_ToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+	}
+
+	template <typename t_ToAlign>
+	inline_small t_ToAlign fg_AlignUp(t_ToAlign _pMem, mint _Alignment)
 	{
 		DMibFastCheck(_Alignment > 0);
 		typedef typename NTraits::TCUnsigned<typename NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>::CType>::CType CIntegerType;
@@ -725,7 +739,7 @@ namespace NMib
 	}
 
 	template <typename t_ToAlign>
-	constexpr inline_small t_ToAlign fg_AlignDown(t_ToAlign _pMem, mint _Alignment)
+	inline_small t_ToAlign fg_AlignDown(t_ToAlign _pMem, mint _Alignment)
 	{
 		DMibFastCheck(_Alignment > 0);
 		typedef typename NTraits::TCUnsigned<typename NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>::CType>::CType CIntegerType;
