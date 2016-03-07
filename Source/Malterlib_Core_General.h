@@ -684,7 +684,7 @@ namespace NMib
 
 
 	template <typename tf_C1, typename tf_C2>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second)
+	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second)
 	{
 		if (fg_Forward<tf_C1>(_First) < fg_Forward<tf_C2>(_Second))
 			return fg_Forward<tf_C1>(_First);
@@ -693,7 +693,7 @@ namespace NMib
 	}
 
 	template <typename tf_C1, typename tf_C2>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Max(tf_C1 &&_First, tf_C2 &&_Second)
+	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Max(tf_C1 &&_First, tf_C2 &&_Second)
 	{
 		if (fg_Forward<tf_C2>(_Second) < fg_Forward<tf_C1>(_First))
 			return fg_Forward<tf_C1>(_First);
@@ -702,19 +702,44 @@ namespace NMib
 	}
 
 	template <typename tf_C1, typename tf_C2, typename tf_C3>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Clamp(tf_C1 &&_First, tf_C2 &&_Min, tf_C3 &&_Max)
+	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Clamp(tf_C1 &&_First, tf_C2 &&_Min, tf_C3 &&_Max)
 	{
 		return fg_Max(fg_Min(fg_Forward<tf_C1>(_First), fg_Forward<tf_C3>(_Max)), fg_Forward<tf_C2>(_Min));
 	}
 
 	template <typename tf_C1>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First)
+	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First)
 	{
 		if (fg_Forward<tf_C1>(_First) >= typename NTraits::TCRemoveReference<tf_C1>::CType(0))
 			return fg_Forward<tf_C1>(_First);
 		else
 			return -fg_Forward<tf_C1>(_First);
 	}
+
+	template <typename tf_C1, typename tf_C2>
+	constexpr inline_small tf_C1 fg_MinConstexpr(tf_C1 _First, tf_C2 _Second)
+	{
+		return (_First < _Second) ? _First : _Second;
+	}
+
+	template <typename tf_C1, typename tf_C2>
+	constexpr inline_small tf_C1 fg_MaxConstexpr(tf_C1 _First, tf_C2 _Second)
+	{
+		return (_Second < _First) ? _First : _Second;
+	}
+
+	template <typename tf_C1, typename tf_C2, typename tf_C3>
+	constexpr inline_small tf_C1 fg_ClampConstexpr(tf_C1 _First, tf_C2 _Min, tf_C3 _Max)
+	{
+		return fg_MaxConstexpr(fg_MinConstExpr(_First, _Max), _Min);
+	}
+
+	template <typename tf_C1>
+	constexpr inline_small tf_C1 fg_AbsConstexpr(tf_C1 _First)
+	{
+		return (_First >= tf_C1(0)) ? _First : -_First;
+	}
+
 
 	template <typename t_ToAlign>
 	constexpr inline_small t_ToAlign fg_AlignUpConstExpr(t_ToAlign _pMem, mint _Alignment)

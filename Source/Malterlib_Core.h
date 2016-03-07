@@ -48,25 +48,28 @@ namespace NMib
 #endif
 
 	template <typename tf_C1, typename tf_C2>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second);
+	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second);
 
 	template <typename tf_C1, typename tf_C2>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Max(tf_C1 &&_First, tf_C2 &&_Second);
+	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Max(tf_C1 &&_First, tf_C2 &&_Second);
 
 	template <typename tf_C1>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First);
+	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First);
 	
-	template <typename tf_CType>
-	constexpr bool fg_ForbiddenType()
+	template <typename t_CType>
+	struct TCIsForbiddenType
 	{
-		return false;
-	}
+		enum
+		{
+			mc_Value = false
+		};
+	};
 	
 	[[noreturn]] void fg_NoReturn();
 	
 	
 	template <typename t_CTest>
-	using TCDisableIfForbidden = typename TCEnableIf<!fg_ForbiddenType<typename NTraits::TCRemoveReferenceAndQualifiers<t_CTest>::CType>()>::CType;
+	using TCDisableIfForbidden = typename TCEnableIf<!TCIsForbiddenType<typename NTraits::TCRemoveReferenceAndQualifiers<t_CTest>::CType>::mc_Value>::CType;
 }
 
 namespace NMib
