@@ -7,7 +7,6 @@
 
 namespace NMib
 {
-
 //	template <aint t_Dummy = 0>
 	class CRunTimeObjectInfo
 	{		
@@ -93,20 +92,6 @@ namespace NMib
 		}
 	};
 
-/*	template <typename t_CObject>
-		class TRuntimeClass : public CRunTimeObjectInfo<>
-	{
-		virtual const ch8 *GetObjectName()
-		{
-			return fg_GetTypeName<t_CObject>();
-		}
-
-		virtual void *f_CreateObject()
-		{
-			return new t_CObject;
-		}
-	};*/
-
 	template <typename t_CObject, typename t_CCastClass = void>
 	class TRuntimeClassNamed : public CRunTimeObjectInfo
 	{
@@ -174,7 +159,6 @@ namespace NMib
 			return nullptr;
 		}
 	};
-	
 
 	CRunTimeObjectInfo *fg_GetRuntimeTypeInfo(const ch8 *_pObjectName);
 	void *fg_CreateRuntimeType(const ch8 *_pObjectName);
@@ -183,13 +167,9 @@ namespace NMib
 	{
 		return static_cast<tf_CType *>(fg_CreateRuntimeType(_pObjectName));
 	}
-	
 
 #	define DMibRuntimeClassNamedCastedBase(_Class, _Name, _Cast) ::NMib::TRuntimeClassNamedBase<_Class, _Cast> g_RuntimeClassNamed_##_Class(#_Name, nullptr); 
-
 #	define DMibRuntimeClassNamedCasted(_Parent, _Class, _Name, _Cast) ::NMib::TRuntimeClassNamed<_Class, _Cast> g_RuntimeClassNamed_##_Class(#_Name, #_Parent);
-			
-	
 #	define DMibRuntimeClassMakeActive(_Name) NMib::NSys::fg_Compiler_MakeActive(0, &g_RuntimeClassNamed_##_Name)
 
 #	define DMibRuntimeClassNamed(_Parent, _Class, _Name) DMibRuntimeClassNamedCasted(_Parent, _Class, _Name, void)
@@ -199,7 +179,6 @@ namespace NMib
 #	define DMibRuntimeClassBaseNamed(_Class, _Name) DMibRuntimeClassNamedCastedBase(_Class, _Name, void)
 #	define DMibRuntimeClassBase(_Class) DMibRuntimeClassBaseNamed(_Class, _Class)
 #	define DMibRuntimeClassBaseCasted(_Class, _Cast) DMibRuntimeClassNamedCastedBase(_Class, _Class, _Cast)
-
 
 #	ifndef DMibPNoShortCuts
 #		define DRuntimeClassNamedCastedBase(_Class, _Name, _Cast) DMibRuntimeClassNamedCastedBase(_Class, _Name, _Cast)
@@ -214,8 +193,5 @@ namespace NMib
 #		define DRuntimeClassBaseCasted(_Class, _Cast) DMibRuntimeClassBaseCasted(_Class, _Cast)
 #		define DRuntimeClassMakeActive DMibRuntimeClassMakeActive
 #	endif
-	
 
 }
-
-
