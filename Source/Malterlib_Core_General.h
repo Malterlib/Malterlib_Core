@@ -1636,12 +1636,28 @@ namespace NMib
 	constexpr uint32 fg_GetMemberFunctionHash(const char * const _pFunctionName)
 	{
 		ch8 const *pStartName = nullptr;
-		for (ch8 const *pStr = _pFunctionName; *pStr; ++pStr)
-		{
-			if (*pStr == ':')
-				pStartName = pStr + 1;
-		}
+
+		ch8 const *pEnd = _pFunctionName;
+		for (; *pEnd; ++pEnd)
+			;
 		
+		mint nOpen = 0;
+		for (ch8 const *pParse = pEnd - 1; pParse > _pFunctionName; --pParse)
+		{
+			if (*pParse == '>' || *pParse == ')' || *pParse == ']')
+			{
+				++nOpen;
+			}
+			else if (*pParse == '<' || *pParse == '(' || *pParse == '[')
+				--nOpen;
+			
+			if (nOpen == 0 && *pParse == ':')
+			{
+				pStartName = pParse + 1;
+				break;
+			}
+		}
+			
 		auto ClassTypeName = fg_GetTypeNameConstExpr<typename NTraits::TCMemberFunctionPointerTraits<tf_CMemberFunction>::CClass>();
 		return fg_JenkinsHash(pStartName) ^ fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len);
 	}
