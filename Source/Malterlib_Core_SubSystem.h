@@ -3,37 +3,14 @@
 
 #pragma once
 
+#include "Malterlib_Core_SubSystemInterface.h"
+
 #include <Mib/Intrusive/DoublyLinkedList>
 #include <Mib/Type/Alignment>
 #include <Mib/Thread/SpinLock>
 
 namespace NMib
 {
-	enum ESubSystemDestruction
-	{
-		ESubSystemDestruction_BeforeMemoryManager
-		, ESubSystemDestruction_BeforeNonTrackedMemoryManager
-		, ESubSystemDestruction_Last
-	};
-	
-	struct CSubSystem
-	{
-		DMibListLinkD_Link(CSubSystemImpl, m_Link);
-		ESubSystemDestruction m_DestructionOrder;
-		
-		CSubSystem();
-		virtual ~CSubSystem();
-		
-		virtual void f_PrepareFork();
-		virtual void f_ForkedParent();
-		virtual void f_ForkedChild();
-		
-		virtual void f_DestroyThreadSpecific();
-		virtual void f_DestroyThreadLocal();
-
-		virtual void f_ExitModule();
-	};
-
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
 	class TCSubSystem
 	{
