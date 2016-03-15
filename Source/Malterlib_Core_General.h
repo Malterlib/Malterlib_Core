@@ -1662,10 +1662,10 @@ namespace NMib
 		return fg_JenkinsHash(pStartName) ^ fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len);
 	}
 
-	template <typename tf_CException>
-	constexpr uint32 fg_GetExceptionHash()
+	template <typename tf_CType>
+	constexpr uint32 fg_GetTypeHash()
 	{
-		auto ClassTypeName = fg_GetTypeNameConstExpr<tf_CException>();
+		auto ClassTypeName = fg_GetTypeNameConstExpr<tf_CType>();
 		return fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len);
 	}
 }
