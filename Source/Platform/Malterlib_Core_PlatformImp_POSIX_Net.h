@@ -168,6 +168,7 @@ public:
 		CPOSIXSocket* f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
 
 		bint f_Close(CPOSIXSocket* _pSocket);
+		void f_Shutdown(CPOSIXSocket* _pSocket);
 
 		mint f_Receive(CPOSIXSocket *_pSocket, void *_pData, mint _DataLen);
 		mint f_Send(CPOSIXSocket *_pSocket, const void *_pData, mint _DataLen);

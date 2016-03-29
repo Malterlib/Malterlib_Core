@@ -493,9 +493,18 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 	}
 	
 	//#if !defined(DConfig_Release)
+	{
 		int bReuse = 1;
-		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));	
+		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
+	}
 	//#endif
+	
+#ifdef DPlatformFamily_OSX
+	{
+		int bReuse = 1;
+		setsockopt(FD, SOL_SOCKET, SO_REUSEPORT, &bReuse, sizeof(bReuse));
+	}
+#endif
 
 	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
 
@@ -614,6 +623,19 @@ bint CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
 	delete _pSocket;
 
 	return true;
+}
+
+void CPOSIXSocketContext::f_Shutdown(CPOSIXSocket* _pSocket)
+{
+	int Result = shutdown(_pSocket->m_FD, SHUT_WR);
+
+	if (Result == -1)
+	{
+		if (errno != EAGAIN)
+		{
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("recv (receive from socket)", errno));
+		}
+	}
 }
 
 NMib::NNet::ENetTCPState CPOSIXSocketContext::f_GetState(CPOSIXSocket *_pSocket)

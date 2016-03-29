@@ -283,12 +283,12 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 							}
 						}
 
-						if (	CurEvent.flags & EV_EOF
+/*						if (	CurEvent.flags & EV_EOF
 							&& 	pSocket->m_CloseError == 0) // We may have already errored out.
 						{
 							pSocket->m_CloseError = CurEvent.fflags;
 							AddedState |= ENetTCPState_Closed;
-						}
+						}*/
 						
 						if (AddedState)
 						{

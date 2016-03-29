@@ -2073,6 +2073,11 @@ void NSys::NNet::fg_Close(void *_pSocket) // Closes the socket and connectio
 	fg_GetLocalSys()->m_SocketContext->f_Close((CPOSIXSocket*)_pSocket);
 }
 
+void NSys::NNet::fg_Shutdown(void *_pSocket)
+{
+	fg_GetLocalSys()->m_SocketContext->f_Shutdown((CPOSIXSocket*)_pSocket);
+}
+
 mint NSys::NNet::fg_Receive(void *_pSocket, void *_pData, mint _DataLen) // Returns bytes receive
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Receive((CPOSIXSocket*)_pSocket, _pData, _DataLen);
