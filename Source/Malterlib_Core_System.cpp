@@ -181,6 +181,15 @@ namespace NMib
 	{
 	}
 
+	void CSystem::f_RemoveAllLoggers()
+	{
+#if DMibSysLogSeverities
+		m_pSystemLog->f_RemoveGlobalDestination(NLog::fg_LogTo_DebugOut);
+		m_pSystemLog->f_RemoveGlobalDestination(NLog::fg_LogTo_File);
+		m_pSystemLog->f_RemoveGlobalDestination(NLog::fg_LogTo_StdErr);
+#endif
+	}
+	
 	void CSystem::f_RemoveTraceLogger()
 	{
 #if DMibSysLogSeverities
