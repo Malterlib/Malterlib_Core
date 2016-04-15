@@ -233,6 +233,10 @@ namespace NMib
 			if (bDebugOut)
 				m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_DebugOut, nullptr);
 
+#if DMibSysLogStdErr
+			m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr, nullptr);
+#endif
+
 			if (!bDisableSystemLog)
 			{
 				NLog::CLogStr ProgramName = fg_GetSys()->f_GetProgramNameNonTracked();
@@ -329,6 +333,13 @@ namespace NMib
 	
 	void CSystem::f_PrepareFork()
 	{
+#if DMibSysLogSeverities
+		if (m_pSystemLog)
+			m_pSystemLog->f_PrepareFork();
+
+		if (m_pDefaultLogFile)
+			m_pDefaultLogFile->f_PrepareFork();
+#endif
 		f_MemoryManager_PrepareFork();
 		m_EventMember_Lock.f_Lock();
 		m_EventMember_Lock.f_PrepareFork();
@@ -338,12 +349,26 @@ namespace NMib
 		m_EventMember_Lock.f_ForkedChild();
 		m_EventMember_Lock.f_Unlock();
 		f_MemoryManager_ForkedChild();
+#if DMibSysLogSeverities
+		if (m_pSystemLog)
+			m_pSystemLog->f_ForkedChild();
+
+		if (m_pDefaultLogFile)
+			m_pDefaultLogFile->f_ForkedChild();
+#endif
 	}
 	void CSystem::f_ForkedParent()
 	{
 		m_EventMember_Lock.f_ForkedParent();
 		m_EventMember_Lock.f_Unlock();
 		f_MemoryManager_ForkedParent();
+#if DMibSysLogSeverities
+		if (m_pSystemLog)
+			m_pSystemLog->f_ForkedParent();
+
+		if (m_pDefaultLogFile)
+			m_pDefaultLogFile->f_ForkedParent();
+#endif
 	}
 	
 	void CSystem::f_DestroyAggregates()
