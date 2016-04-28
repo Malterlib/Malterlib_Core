@@ -12,13 +12,18 @@ namespace NMib
 	}
 
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
-	void TCSubSystem<t_CSubSystem, t_DestructionOrder>::fp_Create()
+	void TCSubSystem<t_CSubSystem, t_DestructionOrder>::fp_Create(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct)
 	{
 		DMibLock(mp_Lock);
 		if (mp_bWasCreated)
 			return;
 		
-		t_CSubSystem *pSubSystem = new(mp_ObjectSpace.m_Aligned) t_CSubSystem();
+		t_CSubSystem *pSubSystem;
+		if (_fConstruct)
+			pSubSystem = _fConstruct(mp_ObjectSpace.m_Aligned);
+		else
+			pSubSystem = new(mp_ObjectSpace.m_Aligned) t_CSubSystem();
+		
 		pSubSystem->m_DestructionOrder = t_DestructionOrder;
 		
 		fg_GetSys()->f_AddSubSystem(*pSubSystem);
@@ -28,12 +33,19 @@ namespace NMib
 	}
 	
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
+	void TCSubSystem<t_CSubSystem, t_DestructionOrder>::f_Construct(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct)
+	{
+		DMibFastCheck(!mp_bWasCreated);
+		fp_Create(_fConstruct);
+	}
+	
+	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
 	t_CSubSystem &TCSubSystem<t_CSubSystem, t_DestructionOrder>::operator *()
 	{
 		if (mp_bWasCreated)
 			return *((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
 
-		fp_Create();
+		fp_Create(nullptr);
 		return *((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
 	}
 	
@@ -43,7 +55,7 @@ namespace NMib
 		if (mp_bWasCreated)
 			return ((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
 
-		fp_Create();
+		fp_Create(nullptr);
 		return ((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
 	}
 };
