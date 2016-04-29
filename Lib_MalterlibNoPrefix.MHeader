@@ -28,6 +28,11 @@ Compile
 		!!MalterlibMemoryManager_EnableOverrideSystemMalloc true
 	}
 	
+	PreprocessorDefines "DMibConfig_CheckOverrideMemoryLeaks;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemoryManager_CheckOverrideMemoryLeaks true
+	}
+	
 	// We don't destroy the heap unless we are in debug mode, this speeds up system exit	
 	PreprocessorDefines "DMibConfig_HeapNeverDestroyed;@(Compile.PreprocessorDefines)"
 	{

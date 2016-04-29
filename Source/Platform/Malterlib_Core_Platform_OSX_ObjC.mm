@@ -39,8 +39,11 @@ namespace NMib
 		{
 			if (!_pStr)
 				return NStr::CStr();
+
+			NSData *pData = [_pStr dataUsingEncoding: NSUTF8StringEncoding];
+			NStr::CStr Return{(ch8 const *)pData.bytes, pData.length};
 			
-			return NStr::CStr([_pStr UTF8String]);
+			return Return;
 		}
 	} 
 }

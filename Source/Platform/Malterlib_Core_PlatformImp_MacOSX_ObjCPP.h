@@ -127,12 +127,12 @@ namespace NMib
 				)
 			;
 			
+			struct CInternal;
+			
+			NPtr::TCUniquePointer<CInternal> m_pInternal;
+			
 			NMib::NThread::CMutual m_RunLoopLock;
-			void *m_RunLoop;
-			void *m_Thread;
-			void *m_pDispatchObject;
 			NStr::CStr m_DispatchObjectClassName;
-			void *m_pDispatchObjectClass;
 			zbool m_bDestroying;
 			
 			NMib::NContainer::TCThreadSafeQueue<NMib::NFunction::TCFunction<void (NFunction::CThisTag &)>> m_DispatchQueue;
