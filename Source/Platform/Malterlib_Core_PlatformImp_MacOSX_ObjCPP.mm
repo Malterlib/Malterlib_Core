@@ -54,6 +54,12 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get application support diretory)", errno));
 
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CFRelease(pData);
+				}
+			;
+
 			CStr Out;
 			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
 
@@ -74,6 +80,12 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get application support diretory)", errno));
 
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CFRelease(pData);
+				}
+			;
+
 			CWStrNonTracked Out;
 			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
 
@@ -93,6 +105,12 @@ namespace NMib
 
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get caches diretory)", errno));
+			
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CFRelease(pData);
+				}
+			;
 
 			CStr Out;
 			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
@@ -115,6 +133,12 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get caches diretory)", errno));
 
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CFRelease(pData);
+				}
+			;
+
 			CWStrNonTracked Out;
 			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
 
@@ -135,6 +159,12 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get log diretory)", errno));
 			
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CFRelease(pData);
+				}
+			;
+
 			CStr Out;
 			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
 			Out += "/Logs";
@@ -156,6 +186,12 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get log diretory)", errno));
 			
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CFRelease(pData);
+				}
+			;
+
 			CWStrNonTracked Out;
 			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
 			Out += "/Logs";
@@ -176,6 +212,12 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get home diretory)", errno));
             
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CFRelease(pData);
+				}
+			;
+
 			CStr Out;
 			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
             
@@ -194,6 +236,12 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get home diretory)", errno));
             
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CFRelease(pData);
+				}
+			;
+
 			CWStrNonTracked Out;
 			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
             
@@ -207,7 +255,7 @@ namespace NMib
 			if ( CFArrayGetCount(lLanguages) == 0 )
 				return "en";
 
-			CFStringRef pCode = (CFStringRef)CFArrayGetValueAtIndex (lLanguages, 0);
+			CFStringRef pCode = (CFStringRef)CFArrayGetValueAtIndex(lLanguages, 0);
 
 			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, pCode, kCFStringEncodingUTF8, '?');
 
@@ -218,9 +266,13 @@ namespace NMib
 			if (!pData)
 				DMibError(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get system language)", ErrNo));
 
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CFRelease(pData);
+				}
+			;
+
 			CStr Language(CFDataGetBytePtr(pData), CFDataGetLength(pData));
-			
-			CFRelease(pData);
 
 			return Language;
 		}
@@ -395,13 +447,25 @@ namespace NMib
 
 	namespace NOSXRuntime
 	{
+		struct CFileChangeNoticationContext::CInternal
+		{
+			CInternal()
+				: m_RunLoop(nullptr)
+				, m_Thread(nullptr)
+				, m_pDispatchObject(nullptr)
+				, m_pDispatchObjectClass(nullptr)
+			{
+			}
+			NSRunLoop *m_RunLoop;
+			NSThread *m_Thread;
+			id m_pDispatchObject;
+			Class m_pDispatchObjectClass;
+		};
+		
 		using namespace NFile;
 		CFileChangeNoticationContext::CFileChangeNoticationContext()
-			: m_RunLoop(nullptr)
-			, m_Thread(nullptr)
-			, m_pDispatchObject(nullptr)
-			, m_DispatchObjectClassName()
-			, m_pDispatchObjectClass(nullptr)
+			: m_DispatchObjectClassName()
+			, m_pInternal(fg_Construct()) 
 		{
 			m_DispatchObjectClassName
 				= "Dispatcher_" + NDataProcessing::CUniversallyUniqueIdentifier(NDataProcessing::EUniversallyUniqueIdentifierGenerate_Random)
@@ -421,13 +485,14 @@ namespace NMib
 		
 		CFileChangeNoticationContext::~CFileChangeNoticationContext()
 		{
+			auto &Internal = *m_pInternal;
 			if (m_pProcessThread)
 			{
 				m_pProcessThread->f_Stop(false);
 				{
 					DMibLock(m_RunLoopLock);
-					if (m_RunLoop)
-						CFRunLoopStop([(NSRunLoop *)m_RunLoop getCFRunLoop]);
+					if (Internal.m_RunLoop)
+						CFRunLoopStop([Internal.m_RunLoop getCFRunLoop]);
 				}
 				m_pProcessThread.f_Clear();
 			}
@@ -446,11 +511,11 @@ namespace NMib
 				pNotification->f_RefCountDecrease();
 			}
 			
-			if (m_pDispatchObject)
-				 [(id)m_pDispatchObject release];
+			if (Internal.m_pDispatchObject)
+				 [Internal.m_pDispatchObject release];
 			
-			if (m_pDispatchObjectClass)
-				objc_disposeClassPair((Class)m_pDispatchObjectClass);
+			if (Internal.m_pDispatchObjectClass)
+				objc_disposeClassPair(Internal.m_pDispatchObjectClass);
 		}
 		
 		CFileChangeNoticationContext::CNotification::CFileSnapshot::CFileSnapshot(CFileSnapshot *_pParent)
@@ -841,11 +906,12 @@ namespace NMib
 		
 		void CFileChangeNoticationContext::f_DispatchOnThread(NMib::NFunction::TCFunction<void (NFunction::CThisTag &)> const &_Dispatch)
 		{
+			auto &Internal = *m_pInternal;
 			m_DispatchQueue.f_Push(_Dispatch);
 			{
 				DMibLock(m_RunLoopLock);
-				if (m_RunLoop)
-					[(id)m_pDispatchObject performSelector:@selector(doDispatch:) onThread:(NSThread *)m_Thread withObject:nil waitUntilDone:false];
+				if (Internal.m_RunLoop)
+					[Internal.m_pDispatchObject performSelector:@selector(doDispatch:) onThread:Internal.m_Thread withObject:nil waitUntilDone:false];
 			}
 			
 			f_StartThread();
@@ -859,9 +925,13 @@ namespace NMib
 			if (m_pProcessThread)
 				return;
 			
+			auto &Internal = *m_pInternal;
+			
+			CAutoReleasePool ARPool;
+			
 			Class pDispatcherClass = objc_allocateClassPair([NSObject class], m_DispatchObjectClassName.f_GetStr(), 0);
 			
-			m_pDispatchObjectClass = pDispatcherClass;
+			Internal.m_pDispatchObjectClass = pDispatcherClass;
 
 			CStr Types = CStr::CFormat("{}{}{}{}") << @encode(id) << @encode(id) << @encode(SEL) << @encode(id);
 			
@@ -871,22 +941,24 @@ namespace NMib
 			
 			objc_registerClassPair(pDispatcherClass);
 			
-			m_pDispatchObject = [[pDispatcherClass alloc] init];
+			Internal.m_pDispatchObject = [[pDispatcherClass alloc] init];
 			
-			object_setInstanceVariable((id)m_pDispatchObject, "m_pContext", this);
+			object_setInstanceVariable((id)Internal.m_pDispatchObject, "m_pContext", this);
 			
 			m_pProcessThread
 				= NThread::CThreadObject::fs_StartThread
 				(
 					[this](NThread::CThreadObject *_pThread) -> aint
 					{
+						auto &Internal = *m_pInternal;
 						CAutoReleasePool ARPool;
+						NSPort *pPort = [NSMachPort port];
 						{
 							DMibLock(m_RunLoopLock);
-							m_RunLoop = [NSRunLoop currentRunLoop];
-							m_Thread = [NSThread currentThread];
-							[(NSRunLoop *)m_RunLoop addPort:[NSMachPort port] forMode:NSDefaultRunLoopMode]; // Dummy port so run loop does not quit at once
-							[(id)m_pDispatchObject performSelector:@selector(doDispatch:) onThread:(NSThread *)m_Thread withObject:nil waitUntilDone:false];
+							Internal.m_RunLoop = [NSRunLoop currentRunLoop];
+							Internal.m_Thread = [NSThread currentThread];
+							[Internal.m_RunLoop addPort:pPort forMode:NSDefaultRunLoopMode]; // Dummy port so run loop does not quit at once
+							[Internal.m_pDispatchObject performSelector:@selector(doDispatch:) onThread:Internal.m_Thread withObject:nil waitUntilDone:false];
 						}
 
 						
@@ -896,8 +968,10 @@ namespace NMib
 						}
 						{
 							DMibLock(m_RunLoopLock);
-							m_RunLoop = nullptr;
-							m_Thread = nullptr;
+							[Internal.m_RunLoop removePort:pPort forMode:NSDefaultRunLoopMode];
+							
+							Internal.m_RunLoop = nullptr;
+							Internal.m_Thread = nullptr;
 						}
 						
 						return 0;
@@ -1022,7 +1096,8 @@ namespace NMib
 					{
 						if (m_bDestroying)
 							return;
-						FSEventStreamScheduleWithRunLoop(pNotification->m_pEventStream, [((NSRunLoop *)m_RunLoop) getCFRunLoop], kCFRunLoopDefaultMode);
+						auto &Internal = *m_pInternal;
+						FSEventStreamScheduleWithRunLoop(pNotification->m_pEventStream, [Internal.m_RunLoop getCFRunLoop], kCFRunLoopDefaultMode);
 						pNotification->m_bAddedToRunLoop = true;
 						FSEventStreamStart(pNotification->m_pEventStream);
 						pNotification->m_bStreamStarted = true;

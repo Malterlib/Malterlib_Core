@@ -669,20 +669,28 @@ void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_In, N
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef stringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), kCFStringEncodingUTF8, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), kCFStringEncodingUTF8, false);
 	
-	if (!stringRef)
+	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (encode code page str)", errno));
-	else
-	{
-		CFDataRef data = CFStringCreateExternalRepresentation(kCFAllocatorDefault, stringRef, CodePage, _ErrorChar);
-		CFRelease(stringRef);
-		if (!data)
-			DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (encode code page str)", errno));
 
-		_Out.f_SetStr((ch8 const *)CFDataGetBytePtr(data), CFDataGetLength(data));
-		CFRelease(data);
-	}
+	auto Cleanup0 = g_OnScopeExit > [&]
+		{
+			CFRelease(pStringRef);
+		}
+	;
+	
+	CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, pStringRef, CodePage, _ErrorChar);
+	if (!pData)
+		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (encode code page str)", errno));
+	
+	auto Cleanup1 = g_OnScopeExit > [&]
+		{
+			CFRelease(pData);
+		}
+	;
+
+	_Out.f_SetStr((ch8 const *)CFDataGetBytePtr(pData), CFDataGetLength(pData));
 }
 
 void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracked const &_In, NMib::NStr::CAnsiStrNonTracked &_Out, uint32 _CodePage, ch8 _ErrorChar)
@@ -691,19 +699,28 @@ void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracked con
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef stringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), kCFStringEncodingUTF8, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), kCFStringEncodingUTF8, false);
 	
-	if (!stringRef)
+	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (encode code page str)", errno));
-	else
-	{
-		CFDataRef data = CFStringCreateExternalRepresentation(kCFAllocatorDefault, stringRef, CodePage, _ErrorChar);
-		CFRelease(stringRef);
-		if (!data)
-			DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (encode code page str)", errno));
-		_Out.f_SetStr((ch8 const *)CFDataGetBytePtr(data), CFDataGetLength(data));
-		CFRelease(data);
-	}
+
+	auto Cleanup0 = g_OnScopeExit > [&]
+		{
+			CFRelease(pStringRef);
+		}
+	;
+	
+	CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, pStringRef, CodePage, _ErrorChar);
+	if (!pData)
+		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (encode code page str)", errno));
+
+	auto Cleanup1 = g_OnScopeExit > [&]
+		{
+			CFRelease(pData);
+		}
+	;
+
+	_Out.f_SetStr((ch8 const *)CFDataGetBytePtr(pData), CFDataGetLength(pData));
 }
 
 void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr const &_In, NMib::NStr::CStr &_Out, uint32 _CodePage)
@@ -712,39 +729,42 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr const &_I
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef stringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), CodePage, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), CodePage, false);
 	
-	if (!stringRef)
+	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
+	
+	auto Cleanup0 = g_OnScopeExit > [&]
+		{
+			CFRelease(pStringRef);
+		}
+	;
+	
+	CFIndex nUniChars = CFStringGetLength(pStringRef);
+	const UniChar * Output = CFStringGetCharactersPtr(pStringRef);
+	
+	if (Output)
+	{
+		NMib::NStr::CWStr UniString;
+		NMib::NStr::CWStr::CChar* pDest = UniString.f_GetStr(nUniChars);
+
+		DMibSafeCheck(pDest, "Out of memory?");
+		
+		fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
+		pDest[nUniChars] = 0;
+
+		_Out = UniString;
+	}
 	else
 	{
-		CFIndex nUniChars = CFStringGetLength(stringRef);
-		const UniChar * Output = CFStringGetCharactersPtr(stringRef);
+		NMib::NStr::CWStr UniString;
+		auto *pChars = UniString.f_GetStr(nUniChars);
 		
-		if (Output)
-		{
-			NMib::NStr::CWStr UniString;
-			NMib::NStr::CWStr::CChar* pDest = UniString.f_GetStr(nUniChars);
-
-			DMibSafeCheck(pDest, "Out of memory?");
-			
-			fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
-			pDest[nUniChars] = 0;
-
-			_Out = UniString;
-		}
-		else
-		{
-			NMib::NStr::CWStr UniString;
-			auto *pChars = UniString.f_GetStr(nUniChars);
-			
-			*pChars = NMib::NStr::CWStr::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
-			CFStringGetCharacters(stringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
-			pChars[nUniChars] = NMib::NStr::CWStr::CChar(0);
-			
-			_Out = UniString;
-		}
-		CFRelease(stringRef);
+		*pChars = NMib::NStr::CWStr::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
+		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
+		pChars[nUniChars] = NMib::NStr::CWStr::CChar(0);
+		
+		_Out = UniString;
 	}
 }
 
@@ -755,39 +775,42 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::C
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef stringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_pIn, fg_StrLen(_pIn), CodePage, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_pIn, fg_StrLen(_pIn), CodePage, false);
 	
-	if (!stringRef)
+	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
+
+	auto Cleanup0 = g_OnScopeExit > [&]
+		{
+			CFRelease(pStringRef);
+		}
+	;
+	
+	CFIndex nUniChars = CFStringGetLength(pStringRef);
+	const UniChar * Output = CFStringGetCharactersPtr(pStringRef);
+
+	if (Output)
+	{
+		NMib::NStr::CWStr UniString;
+		NMib::NStr::CWStr::CChar* pDest = UniString.f_GetStr(nUniChars);
+
+		DMibSafeCheck(pDest, "Out of memory?");
+		
+		fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
+		pDest[nUniChars] = 0;
+
+		_Out = UniString;
+	}
 	else
 	{
-		CFIndex nUniChars = CFStringGetLength(stringRef);
-		const UniChar * Output = CFStringGetCharactersPtr(stringRef);
-	
-		if (Output)
-		{
-			NMib::NStr::CWStr UniString;
-			NMib::NStr::CWStr::CChar* pDest = UniString.f_GetStr(nUniChars);
+		NMib::NStr::CWStr UniString;
+		auto *pChars = UniString.f_GetStr(nUniChars);
 
-			DMibSafeCheck(pDest, "Out of memory?");
-			
-			fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
-			pDest[nUniChars] = 0;
-
-			_Out = UniString;
-		}
-		else
-		{
-			NMib::NStr::CWStr UniString;
-			auto *pChars = UniString.f_GetStr(nUniChars);
-
-			*pChars = NMib::NStr::CWStr::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
-			CFStringGetCharacters(stringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
-			pChars[nUniChars] = NMib::NStr::CWStr::CChar(0);
-			
-			_Out = UniString;
-		}
-		CFRelease(stringRef);
+		*pChars = NMib::NStr::CWStr::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
+		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
+		pChars[nUniChars] = NMib::NStr::CWStr::CChar(0);
+		
+		_Out = UniString;
 	}
 }
 
@@ -798,39 +821,42 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTracked
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef stringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), CodePage, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), CodePage, false);
 	
-	if (!stringRef)
+	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
+	
+	auto Cleanup0 = g_OnScopeExit > [&]
+		{
+			CFRelease(pStringRef);
+		}
+	;
+	
+	CFIndex nUniChars = CFStringGetLength(pStringRef);
+	const UniChar * Output = CFStringGetCharactersPtr(pStringRef);
+
+	if (Output)
+	{
+		NMib::NStr::CWStrNonTracked UniString;
+		NMib::NStr::CWStrNonTracked::CChar* pDest = UniString.f_GetStr(nUniChars);
+
+		DMibSafeCheck(pDest, "Out of memory?");
+		
+		fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
+		pDest[nUniChars] = 0;
+		
+		_Out = UniString;
+	}
 	else
 	{
-		CFIndex nUniChars = CFStringGetLength(stringRef);
-		const UniChar * Output = CFStringGetCharactersPtr(stringRef);
+		NMib::NStr::CWStrNonTracked UniString;
+		auto *pChars = UniString.f_GetStr(nUniChars);
 
-		if (Output)
-		{
-			NMib::NStr::CWStrNonTracked UniString;
-			NMib::NStr::CWStrNonTracked::CChar* pDest = UniString.f_GetStr(nUniChars);
+		*pChars = NMib::NStr::CWStrNonTracked::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
+		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
+		pChars[nUniChars] = NMib::NStr::CWStrNonTracked::CChar(0);
 
-			DMibSafeCheck(pDest, "Out of memory?");
-			
-			fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
-			pDest[nUniChars] = 0;
-			
-			_Out = UniString;
-		}
-		else
-		{
-			NMib::NStr::CWStrNonTracked UniString;
-			auto *pChars = UniString.f_GetStr(nUniChars);
-
-			*pChars = NMib::NStr::CWStrNonTracked::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
-			CFStringGetCharacters(stringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
-			pChars[nUniChars] = NMib::NStr::CWStrNonTracked::CChar(0);
-
-			_Out = UniString;
-		}
-		CFRelease(stringRef);
+		_Out = UniString;
 	}
 }
 
@@ -840,39 +866,42 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::C
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef stringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_pIn, fg_StrLen(_pIn), CodePage, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_pIn, fg_StrLen(_pIn), CodePage, false);
 	
-	if (!stringRef)
+	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
+
+	auto Cleanup0 = g_OnScopeExit > [&]
+		{
+			CFRelease(pStringRef);
+		}
+	;
+	
+	CFIndex nUniChars = CFStringGetLength(pStringRef);
+	const UniChar * Output = CFStringGetCharactersPtr(pStringRef);
+
+	if (Output)
+	{
+		NMib::NStr::CWStrNonTracked UniString;
+		NMib::NStr::CWStrNonTracked::CChar* pDest = UniString.f_GetStr(nUniChars);
+
+		DMibSafeCheck(pDest, "Out of memory?");
+		
+		fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
+		pDest[nUniChars] = 0;
+
+		_Out = UniString;
+	}
 	else
 	{
-		CFIndex nUniChars = CFStringGetLength(stringRef);
-		const UniChar * Output = CFStringGetCharactersPtr(stringRef);
+		NMib::NStr::CWStrNonTracked UniString;
+		auto *pChars = UniString.f_GetStr(nUniChars);
 
-		if (Output)
-		{
-			NMib::NStr::CWStrNonTracked UniString;
-			NMib::NStr::CWStrNonTracked::CChar* pDest = UniString.f_GetStr(nUniChars);
+		*pChars = NMib::NStr::CWStrNonTracked::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
+		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
+		pChars[nUniChars] = NMib::NStr::CWStrNonTracked::CChar(0);
 
-			DMibSafeCheck(pDest, "Out of memory?");
-			
-			fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
-			pDest[nUniChars] = 0;
-
-			_Out = UniString;
-		}
-		else
-		{
-			NMib::NStr::CWStrNonTracked UniString;
-			auto *pChars = UniString.f_GetStr(nUniChars);
-
-			*pChars = NMib::NStr::CWStrNonTracked::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
-			CFStringGetCharacters(stringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
-			pChars[nUniChars] = NMib::NStr::CWStrNonTracked::CChar(0);
-
-			_Out = UniString;
-		}
-		CFRelease(stringRef);
+		_Out = UniString;
 	}
 }
 
