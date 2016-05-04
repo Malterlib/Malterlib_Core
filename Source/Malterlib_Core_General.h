@@ -236,11 +236,23 @@ namespace NMib
 			return fg_Forward<t_CType>(m_Data);
 		}
 	};
+
+	template <>
+	class TCExplicit<void>
+	{
+	public:
+	};
+	
 	template <typename tf_CType>
 	inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		static_assert(NTraits::TCIsReference<tf_CType &&>::mc_Value || NTraits::TCIsPointer<tf_CType &&>::mc_Value, "Should always be a reference here");
 		return TCExplicit<tf_CType>(_In);
+	}
+	
+	inline_always_debug TCExplicit<void> fg_Explicit()
+	{
+		return TCExplicit<void>();
 	}
 	
 	namespace NInternal
