@@ -3536,8 +3536,14 @@ ECheckFileRights NSys::NFile::fg_CheckFileRights( const CStr & _File, NMib::NFil
 	return bRet ? ECheckFileRights_Access : ECheckFileRights_NoAccess;
 }
 
+namespace
+{
+	template <typename tf_CWinStr, typename tf_CStr>
+	void fg_SetAttributesInternal(ch16 const *_pFileName, EFileAttrib _Attributes);
+}
+
 template <typename tf_CWinStr, typename tf_CErrorStr, typename tf_CStr>
-void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags)
+void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
 	if ((_OpenFlags & (NMib::NFile::EFileOpen_Read | NMib::NFile::EFileOpen_Write | NMib::NFile::EFileOpen_ReadAttribs | NMib::NFile::EFileOpen_WriteAttribs)) == 0)
 		DMibErrorFile(tf_CErrorStr("Open flags contain neither read, read attribs, wriwe or write attribs flags, one of them must be specified"));
@@ -3637,17 +3643,21 @@ void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags)
 	TCUniquePointer<TCWin32File<tf_CWinStr, typename tf_CWinStr::CAllocator>, typename tf_CWinStr::CAllocator> pNewFile = fg_Construct(FileName);
 	pNewFile->m_pFile = pFile;
 	pNewFile->m_Flags = _OpenFlags;
+	
+	if (_Attributes != EFileAttrib_None)
+		fg_SetAttributesInternal<tf_CWinStr, tf_CStr>(pNewFile->f_GetName(), _Attributes);
+	
 	return pNewFile.f_Detach();
 }
 
-void *NSys::NFile::fg_Open(const CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags)
+void *NSys::NFile::fg_Open(const CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
-	return fg_OpenHelper<CWStr, CStr>(_FileName, _OpenFlags);
+	return fg_OpenHelper<CWStr, CStr>(_FileName, _OpenFlags, _Attributes);
 }
 
-void *NSys::NFile::fg_Open(const CStrNonTracked &_FileName, NMib::NFile::EFileOpen _OpenFlags)
+void *NSys::NFile::fg_Open(const CStrNonTracked &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
-	return fg_OpenHelper<CWStrNonTracked, CStrNonTracked>(_FileName, _OpenFlags);
+	return fg_OpenHelper<CWStrNonTracked, CStrNonTracked>(_FileName, _OpenFlags, _Attributes);
 }
 
 void NSys::NFile::fg_Close(void *_pFile)
@@ -4032,7 +4042,7 @@ void NSys::NFile::fg_FileEnumOtherHandles(const NMib::NStr::CStr &_FileName, NCo
 	void *pFile;
 	try
 	{
-		pFile = NSys::NFile::fg_Open(TestFileName, NMib::NFile::EFileOpen_Write);
+		pFile = NSys::NFile::fg_Open(TestFileName, NMib::NFile::EFileOpen_Write, NFile::EFileAttrib_None);
 	}
 	catch (NException::CException)
 	{

@@ -478,16 +478,22 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetValidAttributes()
 	return NMib::NFile::EFileAttrib_UnixAttributesValid;
 }
 
-template <typename tf_CFileStr, typename tf_CStr>
-int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, tf_CStr &_oPosixFileName)
+namespace 
 {
-	if ((_OpenFlags & (NMib::NFile::EFileOpen_Read | NMib::NFile::EFileOpen_Write)) == 0)
+	void fg_SetBSDFileAttributes(int _iFile, mode_t DefaultMode, NMib::NFile::EFileAttrib _Attributes, ch8 const *_pFileName);
+}
+	
+template <typename tf_CFileStr, typename tf_CStr>
+int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, tf_CStr &_oPosixFileName, NMib::NFile::EFileAttrib _Attributes)
+{
+	using namespace NMib::NFile;
+	if ((_OpenFlags & (EFileOpen_Read | EFileOpen_Write)) == 0)
 		DMibErrorFile("Open flags contain neither read or write flags, one of them must be specified");
 
-	if ((_OpenFlags & (NMib::NFile::EFileOpen_DontCreate | NMib::NFile::EFileOpen_DontOpenExisting)) == (NMib::NFile::EFileOpen_DontCreate | NMib::NFile::EFileOpen_DontOpenExisting))
+	if ((_OpenFlags & (EFileOpen_DontCreate | EFileOpen_DontOpenExisting)) == (EFileOpen_DontCreate | EFileOpen_DontOpenExisting))
 		DMibErrorFile("Conflicting open flags (both don't open existing and don't create)");
 
-	if ((_OpenFlags & (NMib::NFile::EFileOpen_DontOpenExisting | NMib::NFile::EFileOpen_Read | NMib::NFile::EFileOpen_Write)) == (NMib::NFile::EFileOpen_DontOpenExisting | NMib::NFile::EFileOpen_Read))
+	if ((_OpenFlags & (EFileOpen_DontOpenExisting | EFileOpen_Read | EFileOpen_Write)) == (EFileOpen_DontOpenExisting | EFileOpen_Read))
 		DMibErrorFile("You are trying to open a file that does not exist for read access only, this makes no sence)");
 
 	_oPosixFileName = fg_ConvertToPOSIXPath(_FileName);
@@ -503,22 +509,22 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		EDisp_OpenAlways,
 		EDisp_CreateAlways
 	};
-	if (_OpenFlags & NMib::NFile::EFileOpen_DontOpenExisting)
+	if (_OpenFlags & EFileOpen_DontOpenExisting)
 	{
 		CreateDisposition = EDisp_CreateNew;
 	}		
-	else if (_OpenFlags & NMib::NFile::EFileOpen_DontCreate)
+	else if (_OpenFlags & EFileOpen_DontCreate)
 	{
-		if (_OpenFlags & NMib::NFile::EFileOpen_DontTruncate)
+		if (_OpenFlags & EFileOpen_DontTruncate)
 			CreateDisposition = EDisp_OpenExisting;
 		else
 			CreateDisposition = EDisp_TruncateExisting;
 	}
 	else
 	{
-		if (_OpenFlags & NMib::NFile::EFileOpen_Write)
+		if (_OpenFlags & EFileOpen_Write)
 		{
-			if (_OpenFlags & NMib::NFile::EFileOpen_DontTruncate)
+			if (_OpenFlags & EFileOpen_DontTruncate)
 				CreateDisposition = EDisp_OpenAlways;
 			else
 				CreateDisposition = EDisp_CreateAlways;
@@ -528,11 +534,11 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 	}
 
 	uint32 Openflags = 0;
-	if ((_OpenFlags & (NMib::NFile::EFileOpen_Write | NMib::NFile::EFileOpen_Read)) == (NMib::NFile::EFileOpen_Write | NMib::NFile::EFileOpen_Read))
+	if ((_OpenFlags & (EFileOpen_Write | EFileOpen_Read)) == (EFileOpen_Write | EFileOpen_Read))
 		Openflags |= O_RDWR;
-	else if ((_OpenFlags & (NMib::NFile::EFileOpen_Write | NMib::NFile::EFileOpen_Read)) == (NMib::NFile::EFileOpen_Read))
+	else if ((_OpenFlags & (EFileOpen_Write | EFileOpen_Read)) == (EFileOpen_Read))
 		Openflags |= O_RDONLY;
-	else if ((_OpenFlags & (NMib::NFile::EFileOpen_Write | NMib::NFile::EFileOpen_Read)) == (NMib::NFile::EFileOpen_Write))
+	else if ((_OpenFlags & (EFileOpen_Write | EFileOpen_Read)) == (EFileOpen_Write))
 		Openflags |= O_WRONLY;
 	
 	switch (CreateDisposition)
@@ -563,7 +569,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			break;			
 	}
 	
-	bint bExists = NSys::NFile::fg_FileExistsGeneral(_FileName, NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory);
+	bint bExists = NSys::NFile::fg_FileExistsGeneral(_FileName, EFileAttrib_File|EFileAttrib_Directory);
 	if (bExists)
 	{
 		struct stat Stats;
@@ -571,27 +577,26 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("fstat('{}') when opening file") << FileName,errno));
 		
 		// For historical reasons EFileAttrib_File is never returned by this.
-		NMib::NFile::EFileAttrib Attribs = fsg_StatsToAttribs(Stats) & (~NMib::NFile::EFileAttrib_File);
+		EFileAttrib Attribs = fsg_StatsToAttribs(Stats) & (~EFileAttrib_File);
 		
 		if (!lstat(FileName, &Stats))
 		{
-			NMib::NFile::EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats);
-			Attribs |= LinkAttribs & NMib::NFile::EFileAttrib_Link;
+			EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats);
+			Attribs |= LinkAttribs & EFileAttrib_Link;
 		}
 		
-		if (Attribs & NMib::NFile::EFileAttrib_Directory)
+		if (Attribs & EFileAttrib_Directory)
 		{
-			if (!(_OpenFlags & NMib::NFile::EFileOpen_Directory))
+			if (!(_OpenFlags & EFileOpen_Directory))
 				DMibErrorFile(tf_CFileStr(typename tf_CFileStr::CFormat("Directory '{}' cannot be openened as file") << FileName));
 		}
 		else
 		{
-			if (_OpenFlags & NMib::NFile::EFileOpen_Directory)
+			if (_OpenFlags & EFileOpen_Directory)
 				DMibErrorFile(tf_CFileStr(typename tf_CFileStr::CFormat("File '{}' cannot be openened as directory") << FileName));
 		}
 	}
 
-	mode_t Mode = 0644;
 //	umask(0);
 #if DPlatformVersionMax >= 1070
 	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
@@ -602,16 +607,21 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 	if (iFile < 0)
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("open('{}') when opening file") << FileName, errno));
 	
+	auto Cleanup = g_OnScopeExit > [&]
+		{
+			close(iFile);
+		}
+	;
+
 	int LockFlags = 0;
 	if ((_OpenFlags & (NMib::NFile::EFileOpen_ShareRead | NMib::NFile::EFileOpen_ShareWrite)))
 		LockFlags = LOCK_SH|LOCK_NB;
 	else
 		LockFlags = LOCK_EX|LOCK_NB;
-		
+
 	if (flock(iFile, LockFlags))
 	{
 		int FlockErr = errno;
-		close(iFile);
 
 		if (FlockErr == EWOULDBLOCK)
 			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}') when opening file. The file is probably locked by another program") << FileName, errno));
@@ -640,18 +650,21 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		}
 	}
 
-	if (!bExists)
-		fchmod(iFile, Mode);
+	if (Openflags & (O_WRONLY | O_RDWR))
+		fg_SetBSDFileAttributes(iFile, 0644, _Attributes, _FileName);
+	else if (_Attributes != EFileAttrib_None)
+		DMibErrorFile("You cannot specify attributes without opening the file for write");
 
+	Cleanup.f_Clear();
 	return iFile;
 }
 
 template <typename tf_CFileStr, typename tf_CStr>
-void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags)
+void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
 	
 	tf_CStr PosixFileName;
-	int iFile = fg_OpenHelperBSDFile<tf_CFileStr, tf_CStr>(_FileName, _OpenFlags, PosixFileName);
+	int iFile = fg_OpenHelperBSDFile<tf_CFileStr, tf_CStr>(_FileName, _OpenFlags, PosixFileName, _Attributes);
 	
 	NPtr::TCUniquePointer<TCPOSIXFileImp<tf_CFileStr, typename tf_CFileStr::CAllocator>, typename tf_CFileStr::CAllocator> pNewFile = fg_Construct(PosixFileName);
 	pNewFile->m_BSDFile = iFile;
@@ -666,7 +679,7 @@ namespace
 		using namespace NMib::NFile;
 		auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache;
 		
-		void *pFileHandle = fg_OpenHelper<NMib::NStr::CFStr256>(_Path, Flags);
+		void *pFileHandle = fg_OpenHelper<NMib::NStr::CFStr256>(_Path, Flags, EFileAttrib_None);
 		auto Cleanup
 			= fg_OnScopeExit
 			(
@@ -705,7 +718,7 @@ mint NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, uint8 *_p
 	auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache;
 	
 	CFStr256 PosixFileName;
-	int BSDFile = fg_OpenHelperBSDFile<NMib::NStr::CFStr256>(_Path, Flags, PosixFileName);
+	int BSDFile = fg_OpenHelperBSDFile<NMib::NStr::CFStr256>(_Path, Flags, PosixFileName, EFileAttrib_None);
 	auto Cleanup
 		= fg_OnScopeExit
 		(
@@ -734,14 +747,14 @@ TCVector<ch8, NMem::CAllocator_NonTrackedHeap> NMib::NPlatform::fg_ReadProcFSNon
 	return ::fg_ReadProcFS<NMib::NStr::CStrNonTracked>(_Path);
 }
 
-void *NSys::NFile::fg_Open(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags)
+void *NSys::NFile::fg_Open(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
-	return fg_OpenHelper<NMib::NStr::CStr>(CStr(_FileName), _OpenFlags);
+	return fg_OpenHelper<NMib::NStr::CStr>(CStr(_FileName), _OpenFlags, _Attributes);
 }
 
-void *NSys::NFile::fg_Open(const NMib::NStr::CStrNonTracked &_FileName, NMib::NFile::EFileOpen _OpenFlags)
+void *NSys::NFile::fg_Open(const NMib::NStr::CStrNonTracked &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
-	return fg_OpenHelper<NMib::NStr::CStrNonTracked>(_FileName, _OpenFlags);
+	return fg_OpenHelper<NMib::NStr::CStrNonTracked>(_FileName, _OpenFlags, _Attributes);
 }
 
 void *NSys::NFile::fg_GetOSFile(void *_pFile)
@@ -950,56 +963,68 @@ namespace
 	}
 #endif
 }
+
+namespace 
+{
+	void fg_SetBSDFileAttributes(int _iFile, mode_t _DefaultMode, NMib::NFile::EFileAttrib _Attributes, ch8 const *_pFileName)
+	{
+		struct stat Stats;
+		if (fstat(_iFile, &Stats))
+			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when setting file attributes") << _pFileName, errno));
+		
+		if (!_DefaultMode)
+			_DefaultMode = Stats.st_mode;
+
+	#ifdef DMibPMachKernel
+		auto fl_MakeWritable
+			= [&]()
+			{
+				if (Stats.st_flags & UF_IMMUTABLE)
+				{
+					Stats.st_flags &= ~UF_IMMUTABLE,
+					fchflags(_iFile, Stats.st_flags);
+				}
+			}
+		;
+	#else
+		auto fl_MakeWritable
+			= [&]()
+			{
+			}
+		;
+	#endif
+		
+		// Set the mode...
+		{
+			uint32 Mode = fg_MalterlibAttributesToMode(_DefaultMode, _Attributes);
+
+			if (Mode != Stats.st_mode)
+			{
+				fl_MakeWritable();
+				if (fchmod(_iFile, Mode))
+					DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("chmod('{}') when setting file attributes") << _pFileName, errno));
+			}
+		}
+
+		
+	#ifdef DMibPMachKernel
+		{
+			uint32 Flags = fg_MalterlibAttributesToFlags(Stats.st_flags, _Attributes);
+
+			if (Flags != Stats.st_flags)
+			{
+				if (fchflags(_iFile, Flags))
+					DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fchflags('{}') when setting file attributes") << _pFileName, errno));
+			}
+		}
+	#endif
+	}
+}
+
 void NSys::NFile::fg_SetAttributes(void *_pFile, NMib::NFile::EFileAttrib _Attributes)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
-	struct stat Stats;
-	if (fstat(pFile->m_BSDFile, &Stats))
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when setting file attributes") << pFile->f_GetFileName(), errno));
-
-#ifdef DMibPMachKernel
-	auto fl_MakeWritable
-		= [&]()
-		{
-			if (Stats.st_flags & UF_IMMUTABLE)
-			{
-				Stats.st_flags &= ~UF_IMMUTABLE,
-				fchflags(pFile->m_BSDFile, Stats.st_flags);
-			}
-		}
-	;
-#else
-	auto fl_MakeWritable
-		= [&]()
-		{
-		}
-	;
-#endif
-	
-	// Set the mode...
-	{
-		uint32 Mode = fg_MalterlibAttributesToMode(Stats.st_mode, _Attributes);
-
-		if (Mode != Stats.st_mode)
-		{
-			fl_MakeWritable();
-			if (fchmod(pFile->m_BSDFile, Mode))
-				DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("chmod('{}') when setting file attributes") << pFile->f_GetFileName(), errno));
-		}
-	}
-
-	
-#ifdef DMibPMachKernel
-	{
-		uint32 Flags = fg_MalterlibAttributesToFlags(Stats.st_flags, _Attributes);
-
-		if (Flags != Stats.st_flags)
-		{
-			if (fchflags(pFile->m_BSDFile, Flags))
-				DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fchflags('{}') when setting file attributes") << pFile->f_GetFileName(), errno));
-		}
-	}
-#endif
+	fg_SetBSDFileAttributes(pFile->m_BSDFile, 0, _Attributes, pFile->f_GetFileName());
 }
 
 NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const& _Filename)
