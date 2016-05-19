@@ -5,6 +5,7 @@
 
 #include <Mib/Preprocessor/Preprocessor>
 #include <Mib/Core/Platform>
+#include <initializer_list>
 
 namespace NMib
 {
@@ -47,6 +48,9 @@ namespace NMib
 	static const EEndian gc_MachineEndian = EEndian_Big;
 #endif
 
+	template <typename t_CType>
+	using TCInitializerList = std::initializer_list<t_CType>;
+	
 	template <typename tf_C1, typename tf_C2>
 	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second);
 
