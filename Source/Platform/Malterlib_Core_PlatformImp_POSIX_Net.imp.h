@@ -631,9 +631,9 @@ void CPOSIXSocketContext::f_Shutdown(CPOSIXSocket* _pSocket)
 
 	if (Result == -1)
 	{
-		if (errno != EAGAIN)
+		if (errno != EAGAIN && errno != ENOTCONN)
 		{
-			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("recv (receive from socket)", errno));
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("shutdown", errno));
 		}
 	}
 }
