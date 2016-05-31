@@ -1198,12 +1198,20 @@ Target
 		TargetIsExecutable "true"
 	}
 
-	LinkWithLibraries "@(Builtin.Inherit)"
+	LinkWithLibraries "@(Target.LinkWithLibraries) @(Builtin.Inherit)"
 	{
 		&
 		{
-			Target.LinkWithLibraries ""
 			!Target.Type Driver
+			!PlatformFamily Windows
+		}
+	}
+	LinkWithLibraries "@(Target.LinkWithLibraries);@(Builtin.Inherit)"
+	{
+		&
+		{
+			!Target.Type Driver
+			PlatformFamily Windows
 		}
 	}
 
@@ -1348,10 +1356,7 @@ Target
 		!!MalterlibNeedsMallocOverrideLibrary true
 	}
 
-	SearchPath "@(Builtin.Inherit)"
-	{
-		!!Target.SearchPath ""
-	}
+	SearchPath "@(Target.SearchPath);@(Builtin.Inherit)"
 
 	SearchPath "@('../../../SDK'->MakeAbsolute())/WDK/lib/WXP/i386;@(Target.SearchPath)"
 	{
@@ -1819,10 +1824,7 @@ Target
 	IntermediateDirectory	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
 	OutputDirectory			"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Output/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
 
-	ToolPath "@(Builtin.Inherit)"
-	{
-		!!Target.ToolPath ""
-	}
+	ToolPath "@(Target.ToolPath);@(Builtin.Inherit)"
 	
 	ToolPath "/opt/local/bin;@(Target.ToolPath)"
 	{

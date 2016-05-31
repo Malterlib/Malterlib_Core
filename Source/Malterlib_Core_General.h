@@ -368,6 +368,42 @@ namespace NMib
 	{
 		return NInternal::TCAutoCCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
 	}
+
+	template <bool t_bCopy, bool t_bMove>
+	struct TCSupportCopyMove
+	{
+	};
+
+	template <>
+	struct TCSupportCopyMove<true, false>
+	{
+		TCSupportCopyMove() = default;
+		TCSupportCopyMove(TCSupportCopyMove const &) = default;
+		TCSupportCopyMove(TCSupportCopyMove &&) = delete;
+
+		TCSupportCopyMove &operator =(TCSupportCopyMove const &) = default;
+		TCSupportCopyMove &operator =(TCSupportCopyMove &&) = delete;
+	};
+	
+	template <>
+	struct TCSupportCopyMove<false, true>
+	{
+		TCSupportCopyMove() = default;
+		TCSupportCopyMove(TCSupportCopyMove const &) = delete;
+		TCSupportCopyMove(TCSupportCopyMove &&) = default;
+		TCSupportCopyMove &operator =(TCSupportCopyMove const &) = delete;
+		TCSupportCopyMove &operator =(TCSupportCopyMove &&) = default;
+	};
+	
+	template <>
+	struct TCSupportCopyMove<false, false>
+	{
+		TCSupportCopyMove() = default;
+		TCSupportCopyMove(TCSupportCopyMove const &) = delete;
+		TCSupportCopyMove(TCSupportCopyMove &&) = delete;
+		TCSupportCopyMove &operator =(TCSupportCopyMove const &) = delete;
+		TCSupportCopyMove &operator =(TCSupportCopyMove &&) = delete;
+	};
 	
 	template <typename t_CType>
 	inline_always_debug t_CType &fg_RemoveQualifiers(t_CType &_In)

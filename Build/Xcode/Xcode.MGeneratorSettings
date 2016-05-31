@@ -1229,6 +1229,7 @@
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"
+					IgnoreEmpty "1"
 					QuoteAfterEquals "1"
 				}
 			}
@@ -1240,6 +1241,7 @@
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"
+					IgnoreEmpty "1"
 					QuoteAfterEquals "1"
 				}
 			}
@@ -1348,6 +1350,7 @@
 					Prefix "-I"
 					ConvertSeperator "1"
 					Seperator " "
+					IgnoreEmpty "1"
 					OldSeperator ";"
 					QuoteSeperatedValues "1"
 				}
@@ -1359,6 +1362,7 @@
 					Prefix "-B"
 					ConvertSeperator "1"
 					Seperator " "
+					IgnoreEmpty "1"
 					OldSeperator ";"
 					QuoteSeperatedValues "1"
 				}
@@ -1370,6 +1374,7 @@
 					Prefix "-isystem"
 					ConvertSeperator "1"
 					Seperator " "
+					IgnoreEmpty "1"
 					OldSeperator ";"
 					QuoteSeperatedValues "1"
 				}
@@ -1381,6 +1386,7 @@
 					Prefix "-F"
 					ConvertSeperator "1"
 					Seperator " "
+					IgnoreEmpty "1"
 					OldSeperator ";"
 					QuoteSeperatedValues "1"
 				}
@@ -1871,6 +1877,7 @@
 					Name "MOC_HEADER_SEARCH_PATHS"
 					ConvertSeperator "1"
 					Seperator " "
+					IgnoreEmpty "1"
 					OldSeperator ";"
 					QuoteSeperatedValues "1"
 				}
@@ -1888,6 +1895,7 @@
 				{
 					Name "MOC_DEFINES"
 					ConvertSeperator "1"
+					IgnoreEmpty "1"
 					OldSeperator ";"
 					Seperator " "
 					QuoteAfterEquals "1"
@@ -2282,6 +2290,7 @@
 					Prefix "-D"
 					ConvertSeperator "1"
 					Seperator " "
+					IgnoreEmpty "1"
 					OldSeperator ";"
 					QuoteAfterEquals "1"
 				}
