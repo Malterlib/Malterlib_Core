@@ -580,19 +580,13 @@ Property
 Property
 {
 	PlatformFamilyFromImpFile "@(this.Identity->ParseFormatString('{}PlatformImp_{}_', '{1}'))"
-	PlatformFamilyFromImpFile "@(this.Identity->ParseFormatString('{}PlatformImp_{}.', '{1}'))"
-	{
-		!!PlatformFamilyFromImpFile ""
-	}
+	PlatformFamilyFromImpFile "@(PlatformFamilyFromImpFile->ParseFormatString('{}.', '{0}'))"
 }
 
 Property
 {
 	PlatformFamilyFromFile "@(this.Identity->ParseFormatString('{}Platform_{}_', '{1}'))"
-	PlatformFamilyFromFile "@(this.Identity->ParseFormatString('{}Platform_{}.', '{1}'))"
-	{
-		!!PlatformFamilyFromFile ""
-	}
+	PlatformFamilyFromFile "@(PlatformFamilyFromFile->ParseFormatString('{}.', '{0}'))"
 	
 	PlatformFamilyFromFile "OSX"
 	{

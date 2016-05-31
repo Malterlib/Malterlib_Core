@@ -181,6 +181,9 @@ namespace NMib
 #if DMibSysLogSeverities
 		NLog::CLogger* m_pSystemLog;
 		NLog::CLogFile* m_pDefaultLogFile;
+		mint m_TraceLoggerDestination = 0;
+		mint m_StdErrLoggerDestination = 0;
+		mint m_FileLoggerDestination = 0;
 #endif
 
 		void fp_InitComplete();	// Called by subclasses to signify they have finished constructing.

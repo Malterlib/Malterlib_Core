@@ -184,23 +184,30 @@ namespace NMib
 	void CSystem::f_RemoveAllLoggers()
 	{
 #if DMibSysLogSeverities
-		m_pSystemLog->f_RemoveGlobalDestination(NLog::fg_LogTo_DebugOut);
-		m_pSystemLog->f_RemoveGlobalDestination(NLog::fg_LogTo_File);
-		m_pSystemLog->f_RemoveGlobalDestination(NLog::fg_LogTo_StdErr);
+		while (m_pSystemLog->f_PopGlobalDestination())
+			;
+		m_TraceLoggerDestination = 0;
+		m_StdErrLoggerDestination = 0;
+		m_FileLoggerDestination = 0;
 #endif
 	}
 	
 	void CSystem::f_RemoveTraceLogger()
 	{
 #if DMibSysLogSeverities
-		m_pSystemLog->f_RemoveGlobalDestination(NLog::fg_LogTo_DebugOut);
+		if (m_TraceLoggerDestination)
+		{			
+			m_pSystemLog->f_RemoveGlobalDestination(m_TraceLoggerDestination);
+			m_TraceLoggerDestination = 0;
+		}
 #endif
 	}
 	
 	void CSystem::f_AddStdErrLogger()
 	{
 #if DMibSysLogSeverities
-		m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr, nullptr);
+		if (!m_StdErrLoggerDestination)
+			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr);
 #endif
 	}
 
@@ -231,10 +238,10 @@ namespace NMib
 				bDebugOut = false;
 
 			if (bDebugOut)
-				m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_DebugOut, nullptr);
+				m_TraceLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_DebugOut);
 
 #if DMibSysLogStdErr
-			m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr, nullptr);
+			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr);
 #endif
 
 			if (!bDisableSystemLog)
@@ -274,7 +281,7 @@ namespace NMib
 				m_pDefaultLogFile = DMibNew NLog::CLogFile();
 				//m_pDefaultLogFile->m_Filename = ProgramName + "_%TIME%.txt";
 				m_pDefaultLogFile->m_Filename = ProgramName + ".log";
-				m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_File, m_pDefaultLogFile);
+				m_pSystemLog->f_PushGlobalDestination(NLog::CFileLogger(m_pDefaultLogFile));
 			}
 		}
 #endif
