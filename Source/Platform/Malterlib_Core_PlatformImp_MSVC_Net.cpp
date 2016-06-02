@@ -371,6 +371,7 @@ CWindowsAddress* CWindowsSocketContext::f_CreateAddress(NMib::NNet::ENetAddressT
 			}
 			break;
 
+		case NMib::NNet::ENetAddressType_Unix:
 		default:
 		{
 			return nullptr;
@@ -417,6 +418,7 @@ bint CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const& _Address, NMi
 			}
 			break;
 
+		case NMib::NNet::ENetAddressType_Unix:
 		default:
 			{
 				return false; 
@@ -454,7 +456,7 @@ CWindowsAddress* CWindowsSocketContext::f_SetAddressRaw(CWindowsAddress* _pAddre
 				return _pAddress;
 			}
 			break;
-
+		case NMib::NNet::ENetAddressType_Unix:
 		default:
 			{
 				f_FreeAddress(_pAddress);
@@ -608,6 +610,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 			break;
 		}
 		case ENetAddressType_None:
+		case ENetAddressType_Unix:
 			break;
 		default:
 			break;
