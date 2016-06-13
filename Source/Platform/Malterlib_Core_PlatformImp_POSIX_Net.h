@@ -41,6 +41,7 @@ struct CPOSIXSocket
 	mint m_BindAddressSize = 0;
 	ENetAddressType m_BindAddressType = ENetAddressType_None;
 	NStr::CStr m_UnixFilePath;
+	NStr::CStr m_PeerUnixFilePath;
 
 	// This is stull that will be changed or use by the poller etc...
 	NMib::NThread::CMutual m_Lock;
@@ -265,8 +266,10 @@ private:
 
 	bool fp_GetSocketCreateParams(NMib::NNet::ENetAddressType _AddressType, CPOSIXImpSpecificSocketContext::CSocketCreateParams &o_Params);
 	
-	CPOSIXSocket* fp_Connect(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, bint _bAsyncConnect, CPOSIXAddress const *_pBindAddress);
-	CPOSIXSocket* fp_CreateSocket(int _FD, EPOSIXSocketMode _Mode, EPOSIXSocketEvent _Events, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, bint _bFromInherit = false);
+	CPOSIXSocket *fp_Connect(CPOSIXAddress const &_Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)> &&_OnStateChange, bint _bAsyncConnect, CPOSIXAddress const *_pBindAddress);
+	CPOSIXSocket *fp_CreateSocket(int _FD, EPOSIXSocketMode _Mode, EPOSIXSocketEvent _Events, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)> &&_OnStateChange, bint _bFromInherit = false);
+	void fp_PrepareUnixListen(CPOSIXAddress const &_Address); 
+	void fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address); 
 
 	CPOSIXImpSpecificSocketContext mp_ImpSpecific;
 

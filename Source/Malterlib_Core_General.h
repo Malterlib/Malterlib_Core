@@ -226,8 +226,9 @@ namespace NMib
 
 	public:
 
-		TCExplicit(t_CType _Data)
-			: m_Data(fg_Forward<t_CType>(_Data))
+		template <typename tf_CType>
+		TCExplicit(tf_CType &&_Data)
+			: m_Data(fg_Forward<tf_CType>(_Data))
 		{
 		}
 
@@ -243,11 +244,16 @@ namespace NMib
 	public:
 	};
 	
-	template <typename tf_CType>
+	template <typename tf_CType, TCEnableIfType<NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
 	inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
-		static_assert(NTraits::TCIsReference<tf_CType &&>::mc_Value || NTraits::TCIsPointer<tf_CType &&>::mc_Value, "Should always be a reference here");
 		return TCExplicit<tf_CType>(_In);
+	}
+	
+	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
+	inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
+	{
+		return TCExplicit<tf_CType>(fg_Move(_In));
 	}
 	
 	inline_always_debug TCExplicit<void> fg_Explicit()
