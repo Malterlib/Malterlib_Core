@@ -20,6 +20,7 @@ using namespace NMib;
 #include <grp.h>
 #include <uuid/uuid.h>
 #include <poll.h>
+#include <sys/ioctl.h>
 
 #include <sys/param.h>
 
@@ -83,6 +84,20 @@ void NSys::fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str)
 	fg_WriteStringToPipe(1, Output.f_GetStr(), Output.f_GetLen());
 //	printf("%s", Output.f_GetStr());
 }
+
+NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
+{
+	NSys::CConsoleProperties Return;
+	winsize WindowSize;
+	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &WindowSize))
+		return Return;
+	
+	Return.m_Width = WindowSize.ws_col;
+	Return.m_Height = WindowSize.ws_row;
+	
+	return Return;
+}
+
 
 void NSys::fg_ConsoleOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str)
 {

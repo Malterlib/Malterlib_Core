@@ -399,15 +399,19 @@ static NMib::NFile::EFileAttrib fsg_StatsToAttribs(t_CStats &_Stats)
 	NMib::NFile::EFileAttrib MalterlibAttr = NMib::NFile::EFileAttrib_None;
 	switch(_Stats.st_mode & S_IFMT)
 	{
-		case S_IFDIR:
-			MalterlibAttr |= NMib::NFile::EFileAttrib_Directory;
-			break;
-		case S_IFLNK:
-			MalterlibAttr |= NMib::NFile::EFileAttrib_Link;
-			break;
-		case S_IFREG:
-			MalterlibAttr |= NMib::NFile::EFileAttrib_File;
-			break;
+	case S_IFDIR: // [XSI] directory
+		MalterlibAttr |= NMib::NFile::EFileAttrib_Directory;
+		break;
+	case S_IFLNK: // [XSI] symbolic link
+		MalterlibAttr |= NMib::NFile::EFileAttrib_Link;
+		break;
+	case S_IFBLK: // [XSI] block special
+	case S_IFIFO: // [XSI] named pipe (fifo)
+	case S_IFCHR: // [XSI] character special
+	case S_IFREG: // [XSI] regular
+	case S_IFSOCK: // [XSI] socket
+		MalterlibAttr |= NMib::NFile::EFileAttrib_File;
+		break;
 	};
 	
 	if (_Stats.st_mode & S_IXUSR)

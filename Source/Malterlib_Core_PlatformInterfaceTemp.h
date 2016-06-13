@@ -107,6 +107,14 @@ namespace NMib
 		bint fg_ConsoleOutputValid();
 		bint fg_ConsoleErrorOutputValid();
 		bint fg_ConsoleInputValid();
+		
+		struct CConsoleProperties
+		{
+			uint32 m_Width = 0;
+			uint32 m_Height = 0;
+		};
+		
+		CConsoleProperties fg_GetConsoleProperties();
 
 		mint fg_Mem_GetNumNumaNodes();
 		void fg_Mem_GetNumaNodes(ENumaNode *_pNodens, mint _nNodes);

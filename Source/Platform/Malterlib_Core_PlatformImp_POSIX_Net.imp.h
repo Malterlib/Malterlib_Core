@@ -175,9 +175,9 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 
 	if (_Address.f_StartsWith("UNIX:"))
 	{
-		CStr Address;
 		int SocketType;
 		uint32 MalterlibSocketType;
+		CStr Address;
 		{
 			Address = _Address.f_Extract(fg_StrLen("UNIX:"));
 			SocketType = SOCK_STREAM;
@@ -208,19 +208,30 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 
 	addrinfo AddrHint;
 	fg_MemClear(AddrHint);
-
-	AddrHint.ai_family = AF_INET;
-
+	
+	CStr AddressStr = _Address;
+	
+	if (_Address.f_StartsWith("IPv4:"))
+	{
+		_PreferType = ENetAddressType_TCPv4;
+		AddressStr = _Address.f_Extract(fg_StrLen("IPv4:"));
+	}
+	else if (_Address.f_StartsWith("IPv6:"))
+	{
+		_PreferType = ENetAddressType_TCPv6;
+		AddressStr = _Address.f_Extract(fg_StrLen("IPv6:"));
+	}
+	
 	if (_PreferType == ENetAddressType_TCPv6)
 		AddrHint.ai_family = AF_INET6;
+	else
+		AddrHint.ai_family = AF_INET;
 
 	AddrHint.ai_socktype = SOCK_STREAM;
 
 	AddrHint.ai_flags = AI_ADDRCONFIG; 
 
 	addrinfo* pAddresses = nullptr;
-
-	CStr AddressStr = _Address;
 
 	auto Cleanup = fg_OnScopeExit(
 			[&]()
@@ -504,7 +515,37 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 		break;
 	}
 
-	return fp_CreateSocket(FD, bConnected ? EPOSIXSocketMode_Connect : EPOSIXSocketMode_Connecting, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_OnStateChange));
+	auto *pSocket = fp_CreateSocket(FD, bConnected ? EPOSIXSocketMode_Connect : EPOSIXSocketMode_Connecting, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_OnStateChange));
+	
+	ENetAddressType AddressType = _Address.f_GetType();
+	if (AddressType == ENetAddressType_Unix)
+	{
+		auto &Unix = _Address.f_GetUnix();
+		pSocket->m_PeerUnixFilePath = Unix.sun_path;
+	}
+	
+	return pSocket;
+}
+
+void CPOSIXSocketContext::fp_PrepareUnixListen(CPOSIXAddress const &_Address)
+{
+	if (_Address.f_GetType() == ENetAddressType_Unix)
+	{
+		auto &Unix = _Address.f_GetUnix();
+		NStr::CStr UnixFilePath = Unix.sun_path;
+		if (NFile::CFile::fs_FileExists(UnixFilePath))
+			NFile::CFile::fs_DeleteFile(UnixFilePath);
+	}
+}
+
+void CPOSIXSocketContext::fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address)
+{
+	ENetAddressType AddressType = _Address.f_GetType();
+	if (AddressType == ENetAddressType_Unix)
+	{
+		auto &Unix = _Address.f_GetUnix();
+		_pSocket->m_UnixFilePath = Unix.sun_path;
+	}
 }
 
 CPOSIXSocket* CPOSIXSocketContext::f_Connect(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, CPOSIXAddress const *_pBindAddress)
@@ -525,14 +566,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 	if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
 		return nullptr;
 	
-	NStr::CStr UnixFilePath;
-	if (AddressType == ENetAddressType_Unix)
-	{
-		auto &Unix = _Address.f_GetUnix();
-		UnixFilePath = Unix.sun_path;
-		if (NFile::CFile::fs_FileExists(UnixFilePath))
-			NFile::CFile::fs_DeleteFile(UnixFilePath);
-	}
+	fp_PrepareUnixListen(_Address);
 	
 	int FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type, SocketCreateParams.m_Protocol);
 
@@ -590,7 +624,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 	}
 	
 	auto pSocket = fp_CreateSocket(FD, EPOSIXSocketMode_Listen, EPOSIXSocketEvent_Read, fg_Move(_OnStateChange));
-	pSocket->m_UnixFilePath = fg_Move(UnixFilePath); 
+	fp_SetUnixListenAddress(pSocket, _Address);
 	return pSocket;
 }
 
@@ -601,6 +635,8 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Addres
 	CPOSIXImpSpecificSocketContext::CSocketCreateParams SocketCreateParams;
 	if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
 		return nullptr;
+
+	fp_PrepareUnixListen(_Address);
 	
 	int FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type, SocketCreateParams.m_Protocol);
 
@@ -633,6 +669,8 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Addres
 	}
 
 	auto pSocket = fp_CreateSocket(FD, EPOSIXSocketMode_Datagram, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_OnStateChange));
+
+	fp_SetUnixListenAddress(pSocket, _Address);
 	
 	pSocket->m_BindAddressSize = _Address.f_GetLen();
 	pSocket->m_BindAddressType = AddressType;
@@ -660,7 +698,20 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 		}
 	}
 
-	return fp_CreateSocket(ResultFD, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_OnStateChange));
+	auto *pSocket = fp_CreateSocket(ResultFD, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_OnStateChange));
+
+	{
+		sockaddr_storage SocketName;
+		socklen_t nAddrBytes = sizeof(SocketName);
+		int Ret = getsockname(_pSocket->m_FD, (struct sockaddr *)&SocketName, &nAddrBytes);
+		if (Ret == 0 && SocketName.ss_family == AF_UNIX)
+		{
+			auto &Unix = *((sockaddr_un *)&SocketName);
+			pSocket->m_PeerUnixFilePath = Unix.sun_path;
+		}
+	}
+	
+	return pSocket;
 }
 
 void CPOSIXSocketContext::f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange)
@@ -870,6 +921,18 @@ CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 	}
 	else if (PeerAddr.ss_family == AF_UNIX)
 	{
+		auto &UnixAddress = *(sockaddr_un const*)&PeerAddr;
+		if (fg_StrLen(UnixAddress.sun_path) == 0 && !_pSocket->m_PeerUnixFilePath.f_IsEmpty())
+		{
+			sockaddr_un Address;
+			Address.sun_family = AF_UNIX;
+			Address.sun_len = sizeof(Address);
+			fg_StrCopy(Address.sun_path, _pSocket->m_PeerUnixFilePath, sizeof(Address.sun_path));
+			
+			NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*(sockaddr_un const*)&Address);
+			return pAddress.f_Detach();
+		}			
+
 		NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*(sockaddr_un const*)&PeerAddr);
 		return pAddress.f_Detach();
 	}

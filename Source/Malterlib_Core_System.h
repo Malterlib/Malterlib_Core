@@ -394,6 +394,8 @@ namespace NMib
 		aint f_NumCommandLineParameters();
 		NStr::CStr f_CommandLineParameter(aint _iIndex);
 		
+		NContainer::TCVector<NMib::NStr::CStr> f_GetCommandLineArgs() const;
+		
 		static uint32 ms_PlatformVersion;
 	};
 

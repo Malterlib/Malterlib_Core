@@ -544,6 +544,14 @@ namespace NMib
 	{
 		return m_CommandLineData->m_CommandLine;
 	}
+	
+	NContainer::TCVector<NMib::NStr::CStr> CSystem::f_GetCommandLineArgs() const
+	{
+		NContainer::TCVector<NMib::NStr::CStr> CommandLineArgs;
+		NSys::fg_Process_GetCommandLineArgs(CommandLineArgs);
+		return CommandLineArgs;
+	}
+
 
 	aint CSystem::f_NumCommandLineParameters()
 	{
