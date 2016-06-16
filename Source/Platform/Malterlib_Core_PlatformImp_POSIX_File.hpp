@@ -47,6 +47,9 @@ namespace
 	}
 }
 
+template <typename t_CStats>
+static NMib::NFile::EFileAttrib fsg_StatsToAttribs(t_CStats &_Stats);
+
 namespace NMib
 {
 	namespace NSys
@@ -59,11 +62,13 @@ namespace NMib
 				tf_CStr File = fg_ConvertToPOSIXPath(_FileName);
 				struct stat Stats;
 				int RetVal = stat(File.f_GetStr(), &Stats);
-								
+				
+				NMib::NFile::EFileAttrib Attribs = NMib::NFile::EFileAttrib_None; 
 				if (RetVal)
 				{
 					int Error = errno;
 					RetVal = lstat(File.f_GetStr(), &Stats);
+					NMib::NFile::EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats);
 					if (RetVal)
 					{
 						if (Error == ELOOP) // Too many Symbolic links encountered.
@@ -86,12 +91,17 @@ namespace NMib
 							DMibErrorFile(NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("stat('{}') when checking if file exists") << _FileName, Error));
 						}
 					}
+					Attribs |= LinkAttribs;
+				}
+				else
+				{
+					Attribs = fsg_StatsToAttribs(Stats);
+					RetVal = lstat(File.f_GetStr(), &Stats);
+					if (!RetVal)
+						Attribs |= fsg_StatsToAttribs(Stats) & NMib::NFile::EFileAttrib_Link;
 				}
 				
-				uint32 ActualAttribs = ((Stats.st_mode & S_IFDIR) ? NMib::NFile::EFileAttrib_Directory : 0) |
-				((Stats.st_mode & S_IFREG) ? NMib::NFile::EFileAttrib_File : 0);
-				
-				if (!(_AttribMask & ActualAttribs))
+				if (!(_AttribMask & Attribs))
 					return false;
 				else
 					return true;
