@@ -107,7 +107,16 @@ Property
 		}
 	}
 	
-    MalterlibMaxSupportedOSXVersion "10.11" // User: Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+/*    MalterlibMaxSupportedOSXVersion "10.12" // User: Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	{
+		&
+		{
+			MalterlibMaxSupportedOSXVersion ""
+			Generator "Xcode8"
+		}
+	}
+*/
+	MalterlibMaxSupportedOSXVersion "10.11" // User: Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 	{
 		!!MalterlibMaxSupportedOSXVersion ""
 	}
