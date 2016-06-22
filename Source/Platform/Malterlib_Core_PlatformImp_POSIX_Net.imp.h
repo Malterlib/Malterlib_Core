@@ -184,10 +184,10 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 			MalterlibSocketType = 0x101;
 		}
 
-		if (Address.f_GetLen() > 103)
+		if (Address.f_GetLen() > (sizeof(sockaddr_un::sun_path) - 1))
 		{
 			if (_bThrowOnError)
-				DMibErrorNet("Unix sockets support a maximum path length of 103 characters");
+				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters", (sizeof(sockaddr_un::sun_path) - 1)));
 			else
 				return nullptr;
 		}
@@ -195,8 +195,10 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 		sockaddr_un AddressUn;
 		
 		AddressUn.sun_family = AF_UNIX;
-		NMib::NStr::fg_StrCopy(AddressUn.sun_path, Address, 104);
+		NMib::NStr::fg_StrCopy(AddressUn.sun_path, Address, sizeof(sockaddr_un::sun_path));
+#if !defined(DPlatformFamily_Linux)
 		AddressUn.sun_len = sizeof(AddressUn);
+#endif
 		
 		pAddress->f_Set(AddressUn);
 		return pAddress.f_Detach();
@@ -921,19 +923,23 @@ CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 	}
 	else if (PeerAddr.ss_family == AF_UNIX)
 	{
-		auto &UnixAddress = *(sockaddr_un const*)&PeerAddr;
+		auto UnixAddress = *(sockaddr_un const*)&PeerAddr;
+		if (nAddrBytes <= sizeof(UnixAddress.sun_family))
+			UnixAddress.sun_path[0] = 0;
 		if (fg_StrLen(UnixAddress.sun_path) == 0 && !_pSocket->m_PeerUnixFilePath.f_IsEmpty())
 		{
 			sockaddr_un Address;
 			Address.sun_family = AF_UNIX;
+#if !defined(DPlatformFamily_Linux)
 			Address.sun_len = sizeof(Address);
+#endif
 			fg_StrCopy(Address.sun_path, _pSocket->m_PeerUnixFilePath, sizeof(Address.sun_path));
 			
 			NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*(sockaddr_un const*)&Address);
 			return pAddress.f_Detach();
 		}			
 
-		NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*(sockaddr_un const*)&PeerAddr);
+		NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(UnixAddress);
 		return pAddress.f_Detach();
 	}
 	else
