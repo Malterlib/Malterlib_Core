@@ -1616,6 +1616,40 @@ Target
 	//DataExecutionPrevention "false"
 }
 
+Property
+{
+	MalterlibSeparatePostCopyPerPlatfrom true // User: Enable separate post copy projects when building for non-host platforms 
+	{
+		!!MalterlibSeparatePostCopyPerPlatfrom ""
+	}
+	MalterlibCalculatedPostCopyProject "@(MalterlibPostCopyProject)_@(PlatformFamily)"
+	{
+		&
+		{
+			!MalterlibPostCopyProject ""
+			MalterlibSeparatePostCopyPerPlatfrom true
+			!HostPlatformFamily "@(PlatformFamily)"
+		}
+	}
+	MalterlibCalculatedPostCopyProject "@(MalterlibPostCopyProject)"
+	{
+		!!MalterlibCalculatedPostCopyProject ""
+	}
+	MalterlibCalculatedPostCopyProject2 "@(MalterlibPostCopyProject2)_@(PlatformFamily)"
+	{
+		&
+		{
+			!MalterlibPostCopyProject2 ""
+			MalterlibSeparatePostCopyPerPlatfrom true
+			!HostPlatformFamily "@(PlatformFamily)"
+		}
+	}
+	MalterlibCalculatedPostCopyProject2 "@(MalterlibPostCopyProject2)"
+	{
+		!!MalterlibCalculatedPostCopyProject2 ""
+	}
+}
+
 // Debugger settings
 Target
 {
@@ -1626,39 +1660,39 @@ Target
 		!Target.Type SharedDynamicLibrary
 	}
 
-	LocalDebuggerCommand "@(MalterlibDeployRoot)/@(MalterlibPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)"
+	LocalDebuggerCommand "@(MalterlibDeployRoot)/@(MalterlibCalculatedPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)"
 	{
 		&
 		{
 			Target.LocalDebuggerCommand ""
-			!MalterlibPostCopyProject ""
+			!MalterlibCalculatedPostCopyProject ""
 			!MalterlibPostCopyDestination ""
 		}
 	}
-	LocalDebuggerCommand "@(MalterlibDeployRoot)/@(MalterlibPostCopyProject)/@(Target.FileName)@(Target.FileExtension)"
+	LocalDebuggerCommand "@(MalterlibDeployRoot)/@(MalterlibCalculatedPostCopyProject)/@(Target.FileName)@(Target.FileExtension)"
 	{
 		&
 		{
 			Target.LocalDebuggerCommand ""
-			!MalterlibPostCopyProject ""
+			!MalterlibCalculatedPostCopyProject ""
 			MalterlibPostCopyDestination ""
 		}
 	}
-	RemoteDebuggerCommand "@(MalterlibRemoteDeployDebugRoot)/@(MalterlibPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)"
+	RemoteDebuggerCommand "@(MalterlibRemoteDeployDebugRoot)/@(MalterlibCalculatedPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)"
 	{
 		&
 		{
 			Target.RemoteDebuggerCommand ""
-			!MalterlibPostCopyProject ""
+			!MalterlibCalculatedPostCopyProject ""
 			!MalterlibPostCopyDestination ""
 		}
 	}
-	RemoteDebuggerCommand "@(MalterlibRemoteDeployDebugRoot)/@(MalterlibPostCopyProject)/@(Target.FileName)@(Target.FileExtension)"
+	RemoteDebuggerCommand "@(MalterlibRemoteDeployDebugRoot)/@(MalterlibCalculatedPostCopyProject)/@(Target.FileName)@(Target.FileExtension)"
 	{
 		&
 		{
 			Target.RemoteDebuggerCommand ""
-			!MalterlibPostCopyProject ""
+			!MalterlibCalculatedPostCopyProject ""
 			MalterlibPostCopyDestination ""
 		}
 	}
@@ -2418,7 +2452,7 @@ Target
 						"Type=Application\n"
 
 			Contents 	"@(Contents)"\
-						"Icon=@(MalterlibDeployRoot)/@(MalterlibPostCopyProject)/@(MalterlibExeIcon->GetFile())\n"
+						"Icon=@(MalterlibDeployRoot)/@(MalterlibCalculatedPostCopyProject)/@(MalterlibExeIcon->GetFile())\n"
 			{
 				!MalterlibExeIcon ""
 			}
@@ -3108,7 +3142,7 @@ Property
 	}
 	
 
-	MalterlibPostCopyInternalTemplate	"MTool PostCopy \"@(Expand0)\" \"Config=@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig\" \"Project=@(MalterlibPostCopyProject)\" \"OutFolder=@(MalterlibPostCopyDestination)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash)\"\r\n"\
+	MalterlibPostCopyInternalTemplate	"MTool PostCopy \"@(Expand0)\" \"Config=@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig\" \"Project=@(MalterlibCalculatedPostCopyProject)\" \"OutFolder=@(MalterlibPostCopyDestination)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash)\"\r\n"\
 										"@(CheckErrors)\r\n"
 	MalterlibPostCopyTemplate			"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibPostCopyInternalTemplate'))"
 	{
@@ -3117,7 +3151,7 @@ Property
 	MalterlibPostCopyContents			"@(MalterlibPostCopyContents)"\
 										"@(Builtin.Function->ExplodeList('@(MalterlibPostCopySources)', ';', 'MalterlibPostCopyTemplate'))"
 
-	MalterlibPostCopyInternalTemplate2	"MTool PostCopy \"@(Expand0)\" \"Config=@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig\" \"Project=@(MalterlibPostCopyProject2)\" \"OutFolder=@(MalterlibPostCopyDestination2)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash2)\"\r\n"\
+	MalterlibPostCopyInternalTemplate2	"MTool PostCopy \"@(Expand0)\" \"Config=@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig\" \"Project=@(MalterlibCalculatedPostCopyProject2)\" \"OutFolder=@(MalterlibPostCopyDestination2)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash2)\"\r\n"\
 										"@(CheckErrors)\r\n"
 	MalterlibPostCopyTemplate2			"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibPostCopyInternalTemplate2'))"
 	{
@@ -3631,7 +3665,7 @@ Target
 		&
 		{
 			!MalterlibBuildServerBuild "true"
-			!MalterlibPostCopyProject ""
+			!MalterlibCalculatedPostCopyProject ""
 			!DisablePostCopy "true"
 			!MalterlibPostCopyContents ""
 		}
@@ -3643,7 +3677,7 @@ Target
 		&
 		{
 			!MalterlibBuildServerBuild "true"
-			!MalterlibPostCopyProject2 ""
+			!MalterlibCalculatedPostCopyProject2 ""
 			!DisablePostCopy "true"
 			!MalterlibPostCopyContents2 ""
 		}
