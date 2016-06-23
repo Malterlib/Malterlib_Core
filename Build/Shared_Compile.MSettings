@@ -1410,7 +1410,7 @@ Compile
 		!!MalterlibUseStaticLibCxx true
 	}
 	
-	PreprocessorDefines "LIBCXXRT;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "LIBCXX_BUILDING_LIBCXXABI;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibUseStaticLibCxxABI true
 	}
