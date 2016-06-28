@@ -375,7 +375,7 @@ Property
 		//!!Tests ""
 		Property
 		{
-			ConfigName "@(Configuration->Replace(' ', ''))@(Tests->Replace(' ', ''))_@(Platform->Replace('.', '_'))_@(Architecture)"
+			ConfigName "@(FullConfiguration)_@(Platform->Replace('.', '_'))_@(Architecture)"
 
 			Name "@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/Paths_@(ConfigName)@(ScriptExtension)"
 			Contents "@(ScriptPreamble)@(BuildServerHelpersPathContents)"
@@ -433,7 +433,7 @@ Property
 		//!!Tests ""
 		Property
 		{
-			ConfigName "@(Configuration->Replace(' ', ''))@(Tests->Replace(' ', ''))_@(Architecture)"
+			ConfigName "@(FullConfiguration->Replace(' ', ''))@(Tests->Replace(' ', ''))_@(Architecture)"
 			Name "@(BuildSystemOutputDir)/Tests/@(Workspace:Workspace.Name)/@(Target:Target.Name)/DoTests_@(ConfigName).@(ScriptExtension)"
 			Contents "@(ScriptPreamble)@(RunTestsContents)"
 			UnicodeBOM false

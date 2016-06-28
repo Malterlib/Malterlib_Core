@@ -533,7 +533,7 @@ Target
 			Executable false
 			UnixLineEnds true
 			UnicodeBOM true
-			Group "@(Platform) @(Architecture) @(Configuration)/@(RelativePath->GetPath())"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)/@(RelativePath->GetPath())"
 			{
 				!!MalterlibIncludePerConfig true
 			}

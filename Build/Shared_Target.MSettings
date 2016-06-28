@@ -1931,7 +1931,7 @@ Property
 			Contents "#pragma once\r\n@(MalterlibBuildSpecifics)"
 
 			UnicodeBOM "true"
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 		}
 		Compile
 		{
@@ -2128,7 +2128,7 @@ Property
 	{
 		Property
 		{
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			Name "@(GeneratedDirectory)Info.plist"
 
 			MalterlibOSXVersion	"@(Platform->Replace('OSX',''))"
@@ -2355,7 +2355,7 @@ Property
 		Property
 		{
 			!!Target.Type UIExecutable
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			
 			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
 			
@@ -2379,7 +2379,7 @@ Property
 		{
 			!!Target.Type Executable
 			!!Target.Type ConsoleExecutable
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			
 			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
 			
@@ -2422,7 +2422,7 @@ Target
 	{
 		Property
 		{
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			Name "@(GeneratedDirectory)VersionInfo.cpp"
 
 			Contents 	"#include <Mib/Core/Core>\n"\
@@ -2443,7 +2443,7 @@ Target
 		!MalterlibLinuxDesktopFile ""
 		Property
 		{
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			Name "@(MalterlibLinuxDesktopFile)"
 
 			Contents 	"[Desktop Entry]\n"\
@@ -2494,7 +2494,7 @@ Target
 		!!LanguageFamily .NET
 		Property
 		{
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			Name "@(GeneratedDirectory)AssemblyInfo.cs"
 
 			CalcGUID @(MalterlibFinalModuleDestination->HashUUID('Bare'))
@@ -2535,7 +2535,7 @@ Target
 		Property
 		{
 
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			Name "@(GeneratedDirectory)AssemblyInfo.cpp"
 
 			CalcGUID @(MalterlibFinalModuleDestination->HashUUID('Bare'))
@@ -2575,7 +2575,7 @@ Target
 		Property
 		{
 
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			Name "@(GeneratedDirectory)Resources.rc"
 
 			Contents 	"\n"
@@ -2733,7 +2733,7 @@ Property
 	{
 		Property
 		{
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			Name "@(GeneratedDirectory)Module.def"
 
 			Contents "@(MalterlibModuleDefinitionContents)"
@@ -2837,7 +2837,7 @@ Property
 	{
 		Property
 		{
-			Group "@(Platform) @(Architecture) @(Configuration)"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
 			Name "@(GeneratedDirectory)/@(Workspace:Workspace.Name)_@(Target:Target.Name).MalterlibFSSpec"
 			Contents "@(MalterlibExeFSSpecContents)"
 			UnicodeBOM "true"

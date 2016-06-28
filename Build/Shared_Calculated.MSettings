@@ -132,6 +132,9 @@ Property
 	// Config
 	
 	FullConfiguration "@(Configuration->Replace(' ',''))@(Tests->Replace(' ',''))@(Documentation->Replace(' ',''))"
+	{
+		!!FullConfiguration ""
+	}
 }
 
 Property

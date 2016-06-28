@@ -91,6 +91,9 @@ namespace NMib
 							DMibErrorFile(NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("stat('{}') when checking if file exists") << _FileName, Error));
 						}
 					}
+					// If this is a link that we don't know what it's pointing on assume file.
+					if (LinkAttribs & NMib::NFile::EFileAttrib_Link)
+						LinkAttribs |= NMib::NFile::EFileAttrib_File;
 					Attribs |= LinkAttribs;
 				}
 				else
