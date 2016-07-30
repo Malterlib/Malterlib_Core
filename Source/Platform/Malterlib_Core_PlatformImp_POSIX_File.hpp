@@ -912,58 +912,58 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(void *_pFile)
 	return Attribs; 
 }
 
+uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32 _Mode = 0644)
+{
+	uint32 Mode = _Mode;
+
+	if (_Attributes & NMib::NFile::EFileAttrib_UnixAttributesValid)
+	{
+		Mode &= ~uint32(S_IRWXU | S_IRWXG | S_IRWXO);
+		
+		if (_Attributes & NMib::NFile::EFileAttrib_UserRead)
+			Mode |= S_IRUSR;
+		if (_Attributes & NMib::NFile::EFileAttrib_UserWrite)
+			Mode |= S_IWUSR;
+		if (_Attributes & NMib::NFile::EFileAttrib_UserExecute)
+			Mode |= S_IXUSR;
+
+		if (_Attributes & NMib::NFile::EFileAttrib_GroupRead)
+			Mode |= S_IRGRP;
+		if (_Attributes & NMib::NFile::EFileAttrib_GroupWrite)
+			Mode |= S_IWGRP;
+		if (_Attributes & NMib::NFile::EFileAttrib_GroupExecute)
+			Mode |= S_IXGRP;
+
+		if (_Attributes & NMib::NFile::EFileAttrib_EveryoneRead)
+			Mode |= S_IROTH;
+		if (_Attributes & NMib::NFile::EFileAttrib_EveryoneWrite)
+			Mode |= S_IWOTH;
+		if (_Attributes & NMib::NFile::EFileAttrib_EveryoneExecute)
+			Mode |= S_IXOTH;
+	}
+	else
+	{
+#ifdef DMibPLinuxKernel
+		Mode &= ~uint32(S_IXUSR | S_IXGRP | S_IXOTH | S_IWUSR);
+#else
+		Mode &= ~uint32(S_IXUSR | S_IXGRP | S_IXOTH);
+#endif
+
+		if (_Attributes & NMib::NFile::EFileAttrib_Executable)
+			Mode |= S_IXUSR | S_IXGRP | S_IXOTH;
+#ifdef DMibPLinuxKernel
+		// Use user write flag for read only on linux
+		if (!(_Attributes & NMib::NFile::EFileAttrib_ReadOnly))
+			Mode |= S_IWUSR;
+#endif
+	}
+
+	
+	return Mode;
+}
+
 namespace
 {
-	uint32 fg_MalterlibAttributesToMode(uint32 _Mode, NMib::NFile::EFileAttrib _Attributes)
-	{
-		uint32 Mode = _Mode;
-
-		if (_Attributes & NMib::NFile::EFileAttrib_UnixAttributesValid)
-		{
-			Mode &= ~uint32(S_IRWXU | S_IRWXG | S_IRWXO);
-			
-			if (_Attributes & NMib::NFile::EFileAttrib_UserRead)
-				Mode |= S_IRUSR;
-			if (_Attributes & NMib::NFile::EFileAttrib_UserWrite)
-				Mode |= S_IWUSR;
-			if (_Attributes & NMib::NFile::EFileAttrib_UserExecute)
-				Mode |= S_IXUSR;
-
-			if (_Attributes & NMib::NFile::EFileAttrib_GroupRead)
-				Mode |= S_IRGRP;
-			if (_Attributes & NMib::NFile::EFileAttrib_GroupWrite)
-				Mode |= S_IWGRP;
-			if (_Attributes & NMib::NFile::EFileAttrib_GroupExecute)
-				Mode |= S_IXGRP;
-
-			if (_Attributes & NMib::NFile::EFileAttrib_EveryoneRead)
-				Mode |= S_IROTH;
-			if (_Attributes & NMib::NFile::EFileAttrib_EveryoneWrite)
-				Mode |= S_IWOTH;
-			if (_Attributes & NMib::NFile::EFileAttrib_EveryoneExecute)
-				Mode |= S_IXOTH;
-		}
-		else
-		{
-#ifdef DMibPLinuxKernel
-			Mode &= ~uint32(S_IXUSR | S_IXGRP | S_IXOTH | S_IWUSR);
-#else
-			Mode &= ~uint32(S_IXUSR | S_IXGRP | S_IXOTH);
-#endif
-
-			if (_Attributes & NMib::NFile::EFileAttrib_Executable)
-				Mode |= S_IXUSR | S_IXGRP | S_IXOTH;
-#ifdef DMibPLinuxKernel
-			// Use user write flag for read only on linux
-			if (!(_Attributes & NMib::NFile::EFileAttrib_ReadOnly))
-				Mode |= S_IWUSR;
-#endif
-		}
-
-		
-		return Mode;
-	}
-	
 #ifdef DMibPMachKernel
 	uint32 fg_MalterlibAttributesToFlags(uint32 _Flags, NMib::NFile::EFileAttrib _Attributes)
 	{
@@ -1013,7 +1013,7 @@ namespace
 		
 		// Set the mode...
 		{
-			uint32 Mode = fg_MalterlibAttributesToMode(_DefaultMode, _Attributes);
+			uint32 Mode = fg_MalterlibAttributesToMode(_Attributes, _DefaultMode);
 
 			if (Mode != Stats.st_mode)
 			{
@@ -1081,7 +1081,7 @@ void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _Filename, NMib::NFil
 	
 	// Set the mode...
 	{
-		uint32 Mode = fg_MalterlibAttributesToMode(Stats.st_mode, _Attributes);
+		uint32 Mode = fg_MalterlibAttributesToMode(_Attributes, Stats.st_mode);
 		
 		if (Mode != Stats.st_mode)
 		{
