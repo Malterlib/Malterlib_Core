@@ -1970,9 +1970,11 @@ Target
 
 Property
 {
-	MalterlibPythonDebugScriptName "@(Target.FileName)@(Target.Extension).py"
+	MalterlibPythonDebugScriptName "@(Target.FileName)@(Target.Extension)"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('-','_'))"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace(' ','_'))"
+	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('.','_'))"
+	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName).py"
 	
 	MalterlibBundleIdentifier "@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())"
 	{

@@ -1412,6 +1412,17 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_NoPessimizingMove"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-Wno-pessimizing-move"
+					}
+				}
+			}
 			%GeneratorSetting "FunctionSections"
 			{
 				%GeneratorSetting "Value"
