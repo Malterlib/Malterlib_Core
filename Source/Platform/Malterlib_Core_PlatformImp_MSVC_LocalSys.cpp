@@ -135,6 +135,7 @@ public:
 			};
 			DMibListLinkDS_List(CChange, m_Link) m_Changes;
 			NThread::CMutual m_ChangesLock;
+			NThread::CEvent m_FirstReadDoneEvent;
 
 			TCVector<uint8> m_ChangesBuffer;
 			OVERLAPPED m_ChangesOverlapped;
@@ -261,6 +262,7 @@ public:
 				{
 					m_bDoneRead = false;
 				}
+				m_FirstReadDoneEvent.f_SetSignaled();
 			}
 		};
 		typedef DMibListLinkDS_Iter(CNotification, m_Link)  CNotificationIter;
@@ -377,6 +379,7 @@ public:
 				DMibErrorFile((CStr::CFormat("You can get notifications for file changes on directories, not files ({})") << WindowStr).f_GetStr());
 			}
 
+			CNotification *pNot;
 			{
 				DMibLock(m_Lock);
 
@@ -386,7 +389,7 @@ public:
 					pBundle = DMibNew CNotificationBundle(this);
 					pBundle->f_Start();
 				}
-				CNotification *pNot = pBundle->m_Free.f_Pop();
+				pNot = pBundle->m_Free.f_Pop();
 				pNot->m_Handle = Handle;
 				pNot->m_pReportTo = _pReportTo;
 				pNot->m_Flags = _OpenFlags;
@@ -401,8 +404,9 @@ public:
 				}
 
 				pBundle->m_Event.f_Signal();
-				return pNot;
 			}
+			pNot->m_FirstReadDoneEvent.f_Wait();
+			return pNot;
 		}
 
 		void f_Close(void *_pNotification)
