@@ -166,6 +166,8 @@ namespace NLocal
 	NTSTATUS (WINAPI *g_fNtQueryInformationProcess)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
 
 	NTSTATUS (WINAPI *g_fLdrDisableThreadCalloutsForDll)(IN PVOID BaseAddress);
+	NTSTATUS (WINAPI *g_fRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
+
 }
 
 
@@ -777,7 +779,7 @@ namespace
 	{
 		tf_CWinStr WideChar = NStr::NPlatform::fg_StrToWindows<tf_CWinStr>(_Str);
 	#if defined(DMibDebug) || DMibConfig_Tests_Enable || defined(DConfig_Profile)
-		if (!_bRaw)
+		if (!_bRaw && NSys::fg_System_BeingDebugged())
 			NSys::fg_DebugOutput(WideChar.f_GetStr()); // Output to trace in debug
 	#endif
 	//	printf("%s", _pToOutput);
@@ -2030,9 +2032,13 @@ void fg_LoadFunctionPointers()
 
 		(FARPROC &)g_fNtQueryInformationProcess = GetProcAddress(g_hNtDll, "NtQueryInformationProcess");
 		(FARPROC &)g_fLdrDisableThreadCalloutsForDll = GetProcAddress(g_hNtDll, "LdrDisableThreadCalloutsForDll");
+		(FARPROC &)g_fRtlGetVersion = GetProcAddress(g_hNtDll, "RtlGetVersion");
 
 		g_VersionInfo.dwOSVersionInfoSize = sizeof(g_VersionInfo);
-		GetVersionExW((OSVERSIONINFO *)&g_VersionInfo);
+		if (g_fRtlGetVersion)
+			g_fRtlGetVersion((PRTL_OSVERSIONINFOW)&g_VersionInfo);
+		else
+			GetVersionExW((OSVERSIONINFO *)&g_VersionInfo);
 	}
 
 }
@@ -2191,43 +2197,52 @@ namespace NLocal
 
 }
 
+void fg_EnumProcessThreads(TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnThread);
+
 void fg_InitMalterlibAllEnumOtherThreads()
 {
-//	if (!g_bIsDll) // If we are the main executable we don't need to enum other threads
-//		return;
+	mint ThisUID = NSys::fg_Thread_GetCurrentUID();
+	fg_EnumProcessThreads
+		(
+			[&](mint _ThreadID)
+			{
+				fg_GetLocalSys()->f_ThreadLocalCreateThread(_ThreadID, ThisUID);
+			}
+		)
+	;
+}
 
+void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (mint _ThreadID, HANDLE _pThread)> const &_fOnThread)
+{
 	mint ThisUID = NSys::fg_Thread_GetCurrentUID();
 	uint32 CurrentProcess = GetCurrentProcessId();
 
 	//
-	bool bDone = false;
-
 	if (NLocal::g_fNtGetNextThread && NLocal::g_fGetThreadId)
 	{
 		auto CurrentProcess = GetCurrentProcess();
 		HANDLE hThread = nullptr;
-		bDone = true;
 		NLocal::g_fNtGetNextThread(CurrentProcess, nullptr, THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, 0, 0, &hThread);
 		while (hThread)
 		{
 			auto ThreadID = NLocal::g_fGetThreadId(hThread);
 
+			bool bCloseHandle = true;
 			if (ThreadID && ThreadID != ThisUID)
 			{
-				if (SuspendThread(hThread) != 0xFFFFFFFF)
-				{
-					fg_GetLocalSys()->f_ThreadLocalCreateThread(ThreadID, ThisUID);
-					ResumeThread(hThread);
-				}
+				bCloseHandle = !_fOnThread(ThreadID, hThread);
 			}
 			HANDLE hPrevThread = hThread;
 			hThread = nullptr;
 			NLocal::g_fNtGetNextThread(CurrentProcess, hPrevThread, THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, 0, 0, &hThread);
-			CloseHandle(hPrevThread);
+			if (bCloseHandle)
+				CloseHandle(hPrevThread);
 		}
+
+		return;
 	}
 
-	while (NLocal::g_fNtQuerySystemInformation && !bDone)
+	while (NLocal::g_fNtQuerySystemInformation)
 	{
 		DWORD NeededSize = 0;
 		NLocal::g_fNtQuerySystemInformation(SystemProcessInformation, nullptr, 0, &NeededSize);
@@ -2247,15 +2262,14 @@ void fg_InitMalterlibAllEnumOtherThreads()
 		{
 			if ((mint)pInfo->UniqueProcessId == CurrentProcess)
 			{
-				bDone = true;
 				for (mint i = 0; i < pInfo->NumberOfThreads; ++i)
 				{
 					auto &Thread = pInfo->Threads[i];
 					mint ThreadID = (mint)Thread.ClientId.UniqueThread;
 					if (Thread.State != NLocal::StateTerminated && ThreadID != ThisUID)
-						fg_GetLocalSys()->f_ThreadLocalCreateThread((mint)ThreadID, ThisUID);
+						_fOnThread((mint)ThreadID, nullptr);
 				}
-				break;
+				return;
 			}
 
 			if (!pInfo->NextEntryOffset)
@@ -2265,8 +2279,7 @@ void fg_InitMalterlibAllEnumOtherThreads()
 		}
 		break;
 	}
-	
-	if (!bDone)
+
 	{
 		HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, GetCurrentProcessId());
 		if (h != INVALID_HANDLE_VALUE) 
@@ -2291,12 +2304,166 @@ void fg_InitMalterlibAllEnumOtherThreads()
 						) 
 					{
 						//DMibTrace("Process {} Thread {}\n", te.th32OwnerProcessID << te.th32ThreadID);
-						fg_GetLocalSys()->f_ThreadLocalCreateThread(te.th32ThreadID, ThisUID);
+						_fOnThread(te.th32ThreadID, nullptr);
 					}
 					te.dwSize = sizeof(te);
 				} while (Thread32Next(h, &te));
 			}
 			CloseHandle(h);
+		}
+	}
+}
+
+namespace NPrivate
+{
+	struct CEnumThreadEntry
+	{
+		mint m_ThreadID;
+		HANDLE m_pThread;
+	};
+
+	struct CEnumThreadEntrySort
+	{
+		bool operator ()(CEnumThreadEntry const &_Left, CEnumThreadEntry const &_Right) const
+		{
+			return _Left.m_ThreadID < _Right.m_ThreadID;
+		}
+		bool operator ()(CEnumThreadEntry const &_Left, mint _Right) const
+		{
+			return _Left.m_ThreadID < _Right;
+		}
+		bool operator ()(mint _Left, CEnumThreadEntry const &_Right) const
+		{
+			return _Left < _Right.m_ThreadID;
+		}
+	};
+
+	bool fg_ThreadReady(HANDLE _pThread, bool &o_bValid)
+	{
+		NLocal::THREAD_BASIC_INFORMATION ThreadInfo;
+		if (!NT_SUCCESS(NLocal::g_fNtQueryInformationThread(_pThread, (::THREADINFOCLASS)NLocal::ThreadBasicInformation, &ThreadInfo, sizeof( NLocal::THREAD_BASIC_INFORMATION ), 0)))
+			return false;
+		CUndocumentedTEB *pOtherTEB = (CUndocumentedTEB *)ThreadInfo.TebBaseAddress;
+		if (!pOtherTEB)
+			return false;
+
+		if (NLocal::g_VersionInfo.dwMajorVersion >= 10 && pOtherTEB->LoaderWorker)
+			o_bValid = false;
+
+		return true;
+	}
+
+}
+
+
+void fg_EnumProcessThreads(TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnThread)
+{
+	// Enum threads
+	//	Suspend thread
+	// Repeat until no change
+	// Let user do thread manipulation
+	// Resume threads
+
+	using namespace ::NPrivate;
+
+	struct CState
+	{
+		TCVector<CEnumThreadEntry, NMem::CAllocator_VirtualNoTracking> m_Threads;
+		mint m_nEnum = 0;
+		mint m_nSuspend = 0;
+		mint m_nReady = 0;
+		mint m_nOpen = 0;
+		bool m_bDoneSomething = true;
+	};
+
+	CState State;
+
+	while (State.m_bDoneSomething)
+	{
+		State.m_bDoneSomething = false;
+		mint nStartingThreads = State.m_Threads.f_GetLen();
+		++State.m_nEnum;
+		fg_EnumProcessThreadsInternal
+			(
+				[&](mint _ThreadID, HANDLE _pThread) -> bool
+				{
+					if (State.m_Threads.f_BinarySearch(CEnumThreadEntrySort(), _ThreadID, nStartingThreads) >= 0)
+						return false;
+					State.m_bDoneSomething = true;
+					bool bOwnThread = !_pThread;
+					if (!_pThread)
+					{
+						_pThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
+						if (!_pThread)
+						{
+							++State.m_nOpen;
+							return false;
+						}
+					}
+					if (SuspendThread(_pThread) == 0xFFFFFFFF)
+					{
+						FILETIME CreationTime = {0};
+						FILETIME ExitTime = {0};
+						FILETIME KernelTime = {0};
+						FILETIME UserTime = {0};
+
+						GetThreadTimes(_pThread, &CreationTime, &ExitTime, &KernelTime, &UserTime);
+
+						if (bOwnThread)
+							CloseHandle(_pThread);
+
+						if (ExitTime.dwHighDateTime != 0 || ExitTime.dwLowDateTime != 0)
+						{
+							// Thread has exited, so we are not interested in it
+							auto &NewThread = State.m_Threads.f_Insert();
+							NewThread.m_ThreadID = _ThreadID;
+							NewThread.m_pThread = nullptr;
+						}
+						++State.m_nSuspend;
+						return false;
+					}
+					bool bValid = true;
+					if (!fg_ThreadReady(_pThread, bValid))
+					{
+						ResumeThread(_pThread);
+						if (bOwnThread)
+							CloseHandle(_pThread);
+						++State.m_nReady;
+						return false;
+					}
+					if (!bValid)
+					{
+						ResumeThread(_pThread);
+						if (bOwnThread)
+							CloseHandle(_pThread);
+						auto &NewThread = State.m_Threads.f_Insert();
+						NewThread.m_ThreadID = _ThreadID;
+						NewThread.m_pThread = nullptr;
+						return false;
+					}
+
+					auto &NewThread = State.m_Threads.f_Insert();
+					NewThread.m_ThreadID = _ThreadID;
+					NewThread.m_pThread = _pThread;
+					return true;
+				}
+			)
+		;
+		State.m_Threads.f_Sort(CEnumThreadEntrySort());
+	}
+
+	for (auto &Thread : State.m_Threads)
+	{
+		if (Thread.m_pThread)
+			_fOnThread(Thread.m_ThreadID);
+	}
+
+	for (auto &Thread : State.m_Threads)
+	{
+		if (Thread.m_pThread)
+		{
+			ResumeThread(Thread.m_pThread);
+			CloseHandle(Thread.m_pThread);
 		}
 	}
 }
@@ -2705,6 +2872,11 @@ void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Pri
 		ResumeThread(hThread);
 
 	return hThread;
+}
+
+void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnThread)
+{
+	fg_EnumProcessThreads(_fOnThread);
 }
 
 void NSys::fg_Thread_Suspend(void *_pThread)
@@ -4042,7 +4214,7 @@ void NSys::NFile::fg_FileEnumOtherHandles(const NMib::NStr::CStr &_FileName, NCo
 	void *pFile;
 	try
 	{
-		pFile = NSys::NFile::fg_Open(TestFileName, NMib::NFile::EFileOpen_Write, NFile::EFileAttrib_None);
+		pFile = NSys::NFile::fg_Open(TestFileName, NMib::NFile::EFileOpen_Write, NMib::NFile::EFileAttrib_None);
 	}
 	catch (NException::CException)
 	{
@@ -5275,6 +5447,11 @@ void *NSys::NNet::fg_Accept(void *_pSocket, NMib::NFunction::TCFunction<void (::
 void NSys::NNet::fg_Close(void *_pSocket) // Closes the socket and connectio
 {
 	fg_GetLocalSys()->m_SocketContext->f_Close((CWindowsSocket*)_pSocket);
+}
+
+void NSys::NNet::fg_Shutdown(void *_pSocket) // Closes the socket and connectio
+{
+	fg_GetLocalSys()->m_SocketContext->f_Shutdown((CWindowsSocket*)_pSocket);
 }
 
 mint NSys::NNet::fg_Receive(void *_pSocket, void *_pData, mint _DataLen) // Returns bytes receive

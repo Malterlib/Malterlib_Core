@@ -106,11 +106,13 @@ public:
 		f_Set(_TCPv6);
 	}
 
+#ifndef DPlatformFamily_Windows
 	CRuntimeNetAddress(sockaddr_un const &_Unix)
 		: mp_Type(NMib::NNet::ENetAddressType_None)
 	{
 		f_Set(_Unix);
 	}
+#endif
 
 	NMib::NNet::ENetAddressType f_GetType() const
 	{
@@ -140,22 +142,28 @@ public:
 	{
 		f_Set(NMib::NNet::ENetAddressType_TCPv6, &_TCPv6, sizeof(sockaddr_in6));
 	}
-	
+
+#ifndef DPlatformFamily_Windows
 	void f_Set(sockaddr_un const &_Unix)
 	{
 		f_Set(NMib::NNet::ENetAddressType_Unix, &_Unix, sizeof(sockaddr_un));
 	}
+#endif
 	
 	mint f_GetLen() const { return mp_lData.f_GetLen(); }
 	void const* f_Get() const { return mp_lData.f_GetArray(); }
 
 	sockaddr_in const& f_GetTCPv4() const { return *(sockaddr_in const*)mp_lData.f_GetArray(); }
 	sockaddr_in6 const& f_GetTCPv6() const { return *(sockaddr_in6 const*)mp_lData.f_GetArray(); }
+#ifndef DPlatformFamily_Windows
 	sockaddr_un const& f_GetUnix() const { return *(sockaddr_un const*)mp_lData.f_GetArray(); }
+#endif
 
 	sockaddr_in & f_GetTCPv4() { return *(sockaddr_in *)mp_lData.f_GetArray(); }
 	sockaddr_in6 & f_GetTCPv6() { return *(sockaddr_in6 *)mp_lData.f_GetArray(); }
+#ifndef DPlatformFamily_Windows
 	sockaddr_un & f_GetUnix() { return *(sockaddr_un *)mp_lData.f_GetArray(); }
+#endif
 
 	template<typename t_CAddrType>
 	t_CAddrType const& f_GetAsType(NMib::NNet::ENetAddressType _ExpectedType) const

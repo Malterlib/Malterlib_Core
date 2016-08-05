@@ -245,6 +245,46 @@ struct CUndocumentedTEB
 	PVOID                        unknown[2];                        /*     17b8 */
 #endif
 	PVOID                       *FlsSlots;                          /* fb4/17c8 */
+	PVOID					PreferredLanguages;						/*    /17d0 */
+	PVOID					UserPrefLanguages;						/*    /17d8 */
+	PVOID					MergedPrefLanguages;					/*    /17e0 */
+	ULONG					MuiImpersonation;						/*    /17e8 */
+	union
+	{
+		volatile USHORT		CrossTebFlags;							/*    /17ec */
+		USHORT				SpareCrossTebBits: 0x10;				/*    /17ec */
+	};
+	union
+	{
+		USHORT				SameTebFlags;							/*    /17ee */
+		struct
+		{
+			USHORT          SafeThunkCall: 1;
+			USHORT          InDbgPrint: 1;
+			USHORT          HasFiberData: 1;
+			USHORT          SkipThreadAttach: 1;
+			USHORT          WerInShipAssertCode: 1;
+			USHORT          RanProcessInit: 1;
+			USHORT          ClonedThread: 1;
+			USHORT          SuppressDebugMsg: 1;
+			USHORT          DisableUserStackWalk: 1;
+			USHORT          RtlExceptionAttached: 1;
+			USHORT          InitialThread: 1;
+			USHORT          SessionAware: 1;
+			USHORT          LoadOwner: 1;
+			USHORT          LoaderWorker: 1;
+			USHORT          SpareSameTebBits: 2;
+		};
+	};
+	PVOID					TxnScopeEnterCallback;					/*    /17f0 */
+	PVOID					TxnScopeExitCallback;					/*    /17f8 */
+	PVOID					TxnScopeContext;						/*    /1800 */
+	ULONG					LockCount;								/*    /1808 */
+	LONG					WowTebOffset;							/*    /180c */
+	PVOID					ResourceRetValue;						/*    /1810 */
+	PVOID					ReservedForWdf;							/*    /1818 */
+	uint64					ReservedForCrt;							/*    /1820 */
+	_GUID					EffectiveContainerId;					/*    /1828 */
 };
 
 namespace NLocal
@@ -281,6 +321,14 @@ namespace NLocal
 		KPRIORITY               Priority;
 		KPRIORITY               BasePriority;
 	} THREAD_BASIC_INFORMATION, *PTHREAD_BASIC_INFORMATION;
+
+	typedef struct _THREAD_TIMES_INFORMATION
+	{
+		LARGE_INTEGER           CreationTime;
+		LARGE_INTEGER           ExitTime;
+		LARGE_INTEGER           KernelTime;
+		LARGE_INTEGER           UserTime;
+	} THREAD_TIMES_INFORMATION, *PTHREAD_TIMES_INFORMATION;
 }
 
 #if _M_X64

@@ -230,6 +230,7 @@ public:
 		CWindowsSocket* f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
 
 		bint f_Close(CWindowsSocket* _pSocket);
+		bint f_Shutdown(CWindowsSocket *_pSocket);
 
 		mint f_Receive(CWindowsSocket *_pSocket, void *_pData, mint _DataLen);
 		mint f_Send(CWindowsSocket *_pSocket, const void *_pData, mint _DataLen);

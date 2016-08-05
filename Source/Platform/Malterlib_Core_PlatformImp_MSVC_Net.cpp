@@ -995,6 +995,18 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 	return pSocket.f_Detach();
 }
 
+bint CWindowsSocketContext::f_Shutdown(CWindowsSocket *_pSocket)
+{
+	int Ret = shutdown((SOCKET)_pSocket->m_pSocket, SD_SEND);
+
+	if (Ret == SOCKET_ERROR)
+	{
+		int Error = WSAGetLastError();
+		DMibErrorNet((CStr::CFormat("Could not shutdown socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+	}
+	return true;
+}
+
 bint CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 {
 	{

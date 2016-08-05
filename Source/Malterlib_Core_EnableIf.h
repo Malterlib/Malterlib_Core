@@ -45,13 +45,13 @@ namespace NMib
 	template <typename t_CInt, bool t_bFirstType, t_CInt t_Val0, t_CInt t_Val1>
 	struct TCChooseInt
 	{
-		static const t_CInt mc_Value = t_Val0;
+		static constexpr t_CInt mc_Value = t_Val0;
 	};
 
 	template <typename t_CInt, t_CInt t_Val0, t_CInt t_Val1>
 	struct TCChooseInt<t_CInt, false, t_Val0, t_Val1>
 	{
-		static const t_CInt mc_Value = t_Val1;
+		static constexpr t_CInt mc_Value = t_Val1;
 	};
 
 	template <bool t_bFirstType, int t_Val0, int t_Val1>

@@ -133,6 +133,7 @@ namespace NMib
 		void fg_Thread_Suspend(void *_pThread);
 		void fg_Thread_Resume(void *_pThread);
 		void fg_Thread_SmallestSleep();
+		void fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnThread);
 
 		mint fg_Thread_GetPhysicalCores();
 		mint fg_Thread_GetVirtualCores();

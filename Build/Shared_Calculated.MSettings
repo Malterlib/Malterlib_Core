@@ -282,6 +282,17 @@ Property
 			}
 		}
 	}
+	ToolsetDir "VC19_clang_c2"
+	{
+		&
+		{
+			PlatformType "Windows"
+			|
+			{
+				Target.PlatformToolset "v140_clang_c2"
+			}
+		}
+	}
 	ToolsetDir "clang_libc++"
 	{
 		!!PlatformToolsetFamily "clang"
@@ -584,7 +595,6 @@ Property
 	}
 }
 
-
 Property
 {
 	PlatformFamilyFromImpFile "@(this.Identity->ParseFormatString('{}PlatformImp_{}_', '{1}'))"
@@ -595,30 +605,24 @@ Property
 {
 	PlatformFamilyFromFile "@(this.Identity->ParseFormatString('{}Platform_{}_', '{1}'))"
 	PlatformFamilyFromFile "@(PlatformFamilyFromFile->ParseFormatString('{}.', '{0}'))"
-	
+}
+
+Property
+{
+	!!PlatformFamily "OSX"
 	PlatformFamilyFromFile "OSX"
 	{
-		&
-		{
-			|
-			{
-				PlatformFamilyFromFile "Unix"
-				PlatformFamilyFromFile "POSIX"
-			}
-			PlatformFamily "OSX"
-		}
-	}
-	PlatformFamilyFromFile "Linux"
-	{
-		&
-		{
-			|
-			{
-				PlatformFamilyFromFile "Unix"
-				PlatformFamilyFromFile "POSIX"
-			}
-			PlatformFamily "Linux"
-		}
+		!!PlatformFamilyFromFile "Unix"
+		!!PlatformFamilyFromFile "POSIX"
 	}
 }
 
+Property
+{
+	!!PlatformFamily "Linux"
+	PlatformFamilyFromFile "Linux"
+	{
+		!!PlatformFamilyFromFile "Unix"
+		!!PlatformFamilyFromFile "POSIX"
+	}
+}

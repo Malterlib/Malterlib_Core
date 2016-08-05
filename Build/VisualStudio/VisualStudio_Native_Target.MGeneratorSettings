@@ -52,7 +52,17 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Entity "Link"
+				Name LinkTimeCodeGeneration
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true UseLinkTimeCodeGeneration
+					Fast UseFastLinkTimeCodeGeneration
+					false Default
+				}
 			}
 		}
 		%GeneratorSetting "DefaultToolArchitecture"

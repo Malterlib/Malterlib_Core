@@ -828,14 +828,14 @@ namespace NMib
 	template <typename t_CToAlign, t_CToAlign t_Value, t_CToAlign t_Align>
 	struct TCAlignUp
 	{
-		static const t_CToAlign mc_Value = (t_Value + (t_Align - 1)) & (~(t_Align - 1));
+		static constexpr t_CToAlign mc_Value = (t_Value + (t_Align - 1)) & (~(t_Align - 1));
 	};
 
 
 	template <typename t_CToAlign, t_CToAlign t_Value, t_CToAlign t_Align>
 	struct TCAlignDown
 	{
-		static const t_CToAlign mc_Value = t_Value & (~(t_Align - 1));
+		static constexpr t_CToAlign mc_Value = t_Value & (~(t_Align - 1));
 	};
 
 	class CDefaultPointerHolder
@@ -1581,7 +1581,9 @@ namespace NMib
 		ch8 const *m_pString;
 		mint m_Len;
 	};
-	
+
+#ifndef DCompiler_MSVC		
+
 	template <typename tf_CType>
 	constexpr CConstExprSubStr fg_GetTypeNameConstExpr()
 	{
@@ -1654,7 +1656,6 @@ namespace NMib
 #endif
 	}
 	
-		
 	constexpr uint32 fg_JenkinsHash(const char * const _pString)
 	{
 		uint32 Hash = 0;
@@ -1722,6 +1723,7 @@ namespace NMib
 		auto ClassTypeName = fg_GetTypeNameConstExpr<tf_CType>();
 		return fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len);
 	}
+#endif
 }
 
 typedef NMib::TCAutoClear<bint> zbint;

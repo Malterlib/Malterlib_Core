@@ -6,9 +6,9 @@
 #if defined(__EDG__)
 // This is the intellisense compiler
 #elif _MSC_VER == 1900
-#	if _MSC_FULL_VER != 190023506
+#	if _MSC_FULL_VER != 190024210
 #		pragma message("Current compiler version: " DMibStringize(_MSC_FULL_VER))
-#		error "Compiler version is not 190023506, please install the approprita service pack of Visual Studio 2015"
+#		error "Compiler version is not 190024210, please install the approprita service pack of Visual Studio 2015"
 #	endif
 #else
 #	pragma message("Compiler version " DMibStringize(_MSC_VER) "  not supported")
@@ -64,6 +64,7 @@
 #pragma warning(disable:4822) // Undefined functions in local classes
 #pragma warning(disable:4456)
 #pragma warning(disable:4456) // Hides previous local declaration
+#pragma warning(disable:4595) // non-member operator new or delete functions may not be declared inline
 
 #ifdef __EDG__
 
