@@ -545,63 +545,34 @@ namespace NMib
 	{
 		// STL iterator adaptors used in new for syntax for (auto &iItem : Container)
 
-		namespace NPrivate
+		struct CIteratorEndSentinel
 		{
-			template <typename t_CIterator>
-			struct TCContainerIterator
-			{
-			private:
-				static t_CIterator &fs_Iterator();
-			public:
-				t_CIterator m_Iterator;
-				TCContainerIterator()
-				{
-				}
-				TCContainerIterator(t_CIterator &&_Other)
-					: m_Iterator(fg_Move(_Other))
-				{
-				}
-
-				bool operator != (TCContainerIterator const &_Right) const
-				{
-					return !!m_Iterator;
-				}
-
-				TCContainerIterator &operator ++()
-				{
-					++m_Iterator;
-					return *this;
-				}
-
-				auto operator *() -> decltype(*fs_Iterator())
-				{
-					return *m_Iterator;
-				}
-			};
-		}
+		};
+		
 		template <typename tf_CContainer>
-		auto begin(tf_CContainer &&_Container) -> NPrivate::TCContainerIterator<decltype((_Container.f_GetIterator()))>
+		inline_always bool operator ==(tf_CContainer &_Container, CIteratorEndSentinel const &_EndSentinel)
 		{
-			return NPrivate::TCContainerIterator<decltype((_Container.f_GetIterator()))>(_Container.f_GetIterator());
+			return !_Container;
 		}
+		
 		template <typename tf_CContainer>
-		auto end(tf_CContainer &&_Container) -> NPrivate::TCContainerIterator<decltype((_Container.f_GetIterator()))>
+		auto begin(tf_CContainer &&_Container)
 		{
-			return NPrivate::TCContainerIterator<decltype((_Container.f_GetIterator()))>();
+			return _Container.f_GetIterator();
+		}
+		
+		template <typename tf_CContainer>
+		CIteratorEndSentinel end(tf_CContainer &&_Container)
+		{
+			return CIteratorEndSentinel();
 		}
 	}
 	namespace NIntrusive
 	{
-		template <typename tf_CContainer>
-		auto begin(tf_CContainer &&_Container) -> NContainer::NPrivate::TCContainerIterator<decltype((_Container.f_GetIterator()))>
-		{
-			return NContainer::NPrivate::TCContainerIterator<decltype((_Container.f_GetIterator()))>(_Container.f_GetIterator());
-		}
-		template <typename tf_CContainer>
-		auto end(tf_CContainer &&_Container) -> NContainer::NPrivate::TCContainerIterator<decltype((_Container.f_GetIterator()))>
-		{
-			return NContainer::NPrivate::TCContainerIterator<decltype((_Container.f_GetIterator()))>();
-		}
+		using NContainer::CIteratorEndSentinel;
+		using NContainer::operator ==;
+		using NContainer::begin;
+		using NContainer::end;
 	}
 
 }
