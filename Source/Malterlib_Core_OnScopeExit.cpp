@@ -6,9 +6,10 @@
 
 namespace NMib
 {
-	COnScopeExitHelper &g_OnScopeExit = *((COnScopeExitHelper *)nullptr);
+	constexpr COnScopeExitHelper g_OnScopeExitInit{};
+	COnScopeExitHelper const &g_OnScopeExit = g_OnScopeExitInit;
 
-	COnScopeExitCatchHelper &g_OnScopeExitCatch = *((COnScopeExitCatchHelper *)nullptr);
-
+	constexpr COnScopeExitCatchHelper g_OnScopeExitCatchInit{};
+	COnScopeExitCatchHelper const &g_OnScopeExitCatch = g_OnScopeExitCatchInit;
 }
 

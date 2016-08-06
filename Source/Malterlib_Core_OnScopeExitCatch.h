@@ -27,7 +27,7 @@ namespace NMib
 	struct COnScopeExitCatchHelper
 	{
 		template<typename tf_FOnExitFunctor>
-		TCOnScopeExit<NFunction::TCFunction<void ()>> operator >(tf_FOnExitFunctor &&_fOnExitFunctor)
+		TCOnScopeExit<NFunction::TCFunction<void ()>> operator >(tf_FOnExitFunctor &&_fOnExitFunctor) const
 		{ 
 			return TCOnScopeExit<NFunction::TCFunction<void ()>>
 				(
@@ -46,6 +46,6 @@ namespace NMib
 		}
 	};
 
-	extern COnScopeExitCatchHelper &g_OnScopeExitCatch;
+	extern COnScopeExitCatchHelper const &g_OnScopeExitCatch;
 }
 
