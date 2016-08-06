@@ -147,9 +147,9 @@ namespace NMib
 				return fp_GetContext();
 			}
 		protected:
-			virtual void *fp_GetPointer() const pure;
-			virtual aint fp_GetIdentifier() const pure;
-			virtual mint fp_GetContext() const pure;
+			virtual void *fp_GetPointer() const = 0;
+			virtual aint fp_GetIdentifier() const = 0;
+			virtual mint fp_GetContext() const = 0;
 									
 		};
 		

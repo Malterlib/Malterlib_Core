@@ -189,9 +189,9 @@ public:
 	}
 	void *m_pFile;
 	NMib::NFile::EFileOpen m_Flags;
-	virtual CWStrPtr f_GetName() const pure;
-	virtual void f_Delete() pure;
-	virtual bool f_IsNonTracked() pure;
+	virtual CWStrPtr f_GetName() const = 0;
+	virtual void f_Delete() = 0;
+	virtual bool f_IsNonTracked() = 0;
 };
 
 template <typename t_CStr, typename t_CAllocator>

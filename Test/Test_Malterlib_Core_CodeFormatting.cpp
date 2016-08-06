@@ -136,7 +136,7 @@ typedef int CTestInt;
 
 struct ICTest
 { 
-	virtual void f_Function() pure; 
+	virtual void f_Function() = 0; 
 };
 
 typedef void (FTest)();
@@ -150,7 +150,7 @@ struct TCTest
 template <typename t_CType>
 struct TICTest
 {
-	virtual void f_Function() pure; 
+	virtual void f_Function() = 0; 
 };
 
 
@@ -431,7 +431,7 @@ struct CTest;
 // IC
 struct ICTest
 {
-	virtual void f_Test() pure;
+	virtual void f_Test() = 0;
 };
 
 // PF (Deprecated)
@@ -448,7 +448,7 @@ struct TCTest;
 template <typename>
 struct TICTest2
 {
-	virtual void f_Test() pure;
+	virtual void f_Test() = 0;
 };
 
 // pNamespace:

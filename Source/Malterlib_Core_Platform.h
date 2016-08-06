@@ -13,8 +13,6 @@ namespace NMib
 	};
 }
 
-#define pure = 0
-
 #include "Malterlib_Core_Platform_Detection.h"
 #include "Malterlib_Core_Platform_Config.h"
 #include "Malterlib_Core_Platform_BasicTypes.h"

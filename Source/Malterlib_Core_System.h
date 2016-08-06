@@ -19,7 +19,7 @@ namespace NMib
 		class CExceptionFilter
 		{
 		public:
-			virtual void f_Exception(void *_pExceptionData) pure;
+			virtual void f_Exception(void *_pExceptionData) = 0;
 		};
 
 		extern NAggregate::TCAggregate<NThread::TCThreadLocal<TCAutoClear<CExceptionFilter *>>, 64> g_ExceptionFilter;

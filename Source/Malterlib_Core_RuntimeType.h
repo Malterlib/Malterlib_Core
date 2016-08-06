@@ -49,10 +49,10 @@ namespace NMib
 
 		virtual ~CRunTimeObjectInfo();
 
-		virtual void *f_CreateObject() const pure;
-		virtual void *f_CreateObject(void *_pMemory) const pure;
-		virtual mint f_GetObjectSize() const pure;
-		virtual mint f_GetObjectAlign() const pure;
+		virtual void *f_CreateObject() const = 0;
+		virtual void *f_CreateObject(void *_pMemory) const = 0;
+		virtual mint f_GetObjectSize() const = 0;
+		virtual mint f_GetObjectAlign() const = 0;
 	};
 
 	class CRunTimeObjectInfoContainer : public CRunTimeObjectInfo

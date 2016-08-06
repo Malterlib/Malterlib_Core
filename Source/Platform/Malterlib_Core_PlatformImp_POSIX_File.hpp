@@ -383,8 +383,8 @@ public:
 	{
 	}
 	int m_BSDFile;
-	virtual ch8 const *f_GetFileName() pure;
-	virtual void f_Delete() pure;
+	virtual ch8 const *f_GetFileName() = 0;
+	virtual void f_Delete() = 0;
 };
 
 template <typename t_CStr, typename t_CAllocator>

@@ -13,7 +13,7 @@ namespace NMib
 	public:
 		CApplication();
 		virtual ~CApplication();
-		virtual aint f_Main() pure;
+		virtual aint f_Main() = 0;
 		void f_Exit(aint _ExitCode);
 
 		NStr::CStr f_CommandLineParameters();
