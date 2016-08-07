@@ -1423,12 +1423,12 @@ void *NSys::NNet::fg_AsyncConnect(NSys::NNet::CAddress _Address, NMib::NThread::
 	return nullptr;
 }
 
-void *NSys::NNet::fg_Listen(NSys::NNet::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo) // Report to the supplied event when a new connection has arrive
+void *NSys::NNet::fg_Listen(NSys::NNet::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NMib::NNet::ENetFlag _Flags) // Report to the supplied event when a new connection has arrive
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
-void *NSys::NNet::fg_ListenDatagram(NSys::NNet::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+void *NSys::NNet::fg_ListenDatagram(NSys::NNet::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NMib::NNet::ENetFlag _Flags)
 {
 	DMibError("Not implemented");
 	return nullptr;

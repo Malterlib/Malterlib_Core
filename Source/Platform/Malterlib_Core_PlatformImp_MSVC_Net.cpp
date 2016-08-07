@@ -797,7 +797,7 @@ CWindowsSocket *CWindowsSocketContext::f_AsyncConnect(CWindowsAddress const& _Ad
 	return fp_Connect(_Address, fg_Move(_OnStateChange), true, _pBindAddress);
 }
 
-CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange)
+CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NNet::ENetFlag _Flags)
 {
 	ENetAddressType AddressType = _Address.f_GetType();
 
@@ -816,10 +816,11 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		DMibErrorNet("Could not create a socket for listening");
 	}
 
-	//#if !defined(DConfig_Release)
+	if (_Flags & NNet::ENetFlag_ReuseAddress)
+	{
 		int bReuse = 1;
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
-	//#endif
+	}
 
 	int Result = bind(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
 
@@ -867,7 +868,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 	return pSocket.f_Detach();
 }
 
-CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange)
+CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NNet::ENetFlag _Flags)
 {
 	ENetAddressType AddressType = _Address.f_GetType();
 
@@ -885,11 +886,12 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 	{
 		DMibErrorNet("Could not create a socket for listening");
 	}
-/*
-	#if !defined(DConfig_Release)
+
+	if (_Flags & NNet::ENetFlag_ReuseAddress)
+	{
 		int bReuse = 1;
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
-	#endif*/
+	}
 
 	int Result = bind(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
 

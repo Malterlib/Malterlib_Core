@@ -225,8 +225,8 @@ public:
 		CWindowsSocket* f_Connect(CWindowsAddress const& _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, CWindowsAddress const *_pBindAddress);
 		CWindowsSocket* f_AsyncConnect(CWindowsAddress const& _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, CWindowsAddress const *_pBindAddress);
 		
-		CWindowsSocket* f_Listen(CWindowsAddress const& _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
-		CWindowsSocket* f_ListenDatagram(CWindowsAddress const& _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
+		CWindowsSocket* f_Listen(CWindowsAddress const& _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags);
+		CWindowsSocket* f_ListenDatagram(CWindowsAddress const& _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags);
 		CWindowsSocket* f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
 
 		bint f_Close(CWindowsSocket* _pSocket);

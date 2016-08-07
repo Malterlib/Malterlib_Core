@@ -166,8 +166,8 @@ public:
 		CPOSIXSocket* f_Connect(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, CPOSIXAddress const *_pBindAddress);
 		CPOSIXSocket* f_AsyncConnect(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, CPOSIXAddress const *_pBindAddress);
 		
-		CPOSIXSocket* f_Listen(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
-		CPOSIXSocket* f_ListenDatagram(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
+		CPOSIXSocket* f_Listen(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags);
+		CPOSIXSocket* f_ListenDatagram(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags);
 		CPOSIXSocket* f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
 
 		bint f_Close(CPOSIXSocket* _pSocket);

@@ -560,7 +560,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_AsyncConnect(CPOSIXAddress const& _Address,
 	return fp_Connect(_Address, fg_Move(_OnStateChange), true, _pBindAddress);
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange)
+CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags)
 {
 	ENetAddressType AddressType = _Address.f_GetType();
 
@@ -580,7 +580,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 
 	{
 		int Flags;
-		if ((Flags = fcntl(FD, F_GETFL)) == -1 || fcntl(FD, F_SETFL, Flags | O_NONBLOCK) == -1) 
+		if ((Flags = fcntl(FD, F_GETFL)) == -1 || fcntl(FD, F_SETFL, Flags | O_NONBLOCK) == -1)
 		{
 			int Error = errno;
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (listen set non blocking)", Error));
@@ -593,15 +593,15 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 		int bV6Only = 1;
 		setsockopt(FD, IPPROTO_IPV6, IPV6_V6ONLY, &bV6Only, sizeof(bV6Only));	
 	}
-	
-	//#if !defined(DConfig_Release)
+
+	if (_Flags & NNet::ENetFlag_ReuseAddress)
 	{
 		int bReuse = 1;
 		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
 	}
-	//#endif
 	
 #ifdef DPlatformFamily_OSX
+	if (_Flags & NNet::ENetFlag_ReuseAddress)
 	{
 		int bReuse = 1;
 		setsockopt(FD, SOL_SOCKET, SO_REUSEPORT, &bReuse, sizeof(bReuse));
@@ -630,7 +630,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 	return pSocket;
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange)
+CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags)
 {
 	ENetAddressType AddressType = _Address.f_GetType();
 
@@ -656,11 +656,11 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Addres
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (listen set non blocking)", Error));
 		}
 	}
-/*
-	#if !defined(DConfig_Release)
+	if (_Flags & NNet::ENetFlag_ReuseAddress)
+	{
 		int bReuse = 1;
 		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));	
-	#endif*/
+	}
 
 	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
 
