@@ -1157,6 +1157,8 @@ Target
 			LanguageFamily Native
 			!MalterlibDeploySymbols true
 			GeneratorFamily VisualStudio
+			!Target.PlatformToolset "v90"
+			!Target.CLRSupport true
 		}
 	}
 	GenerateDebugInformation "false"
