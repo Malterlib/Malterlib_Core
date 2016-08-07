@@ -556,13 +556,13 @@ namespace NMib
 		}
 		
 		template <typename tf_CContainer>
-		auto begin(tf_CContainer &&_Container)
+		auto begin(tf_CContainer &&_Container) -> decltype(_Container.f_GetIterator())
 		{
 			return _Container.f_GetIterator();
 		}
 		
 		template <typename tf_CContainer>
-		CIteratorEndSentinel end(tf_CContainer &&_Container)
+		CIteratorEndSentinel end(tf_CContainer &&_Container, TCEnableIfType<!NTraits::TCIsVoid<decltype(_Container.f_GetIterator())>::mc_Value, bool> = true)
 		{
 			return CIteratorEndSentinel();
 		}
@@ -570,7 +570,6 @@ namespace NMib
 	namespace NIntrusive
 	{
 		using NContainer::CIteratorEndSentinel;
-		using NContainer::operator ==;
 		using NContainer::begin;
 		using NContainer::end;
 	}
