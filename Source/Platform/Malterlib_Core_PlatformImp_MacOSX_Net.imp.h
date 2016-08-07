@@ -450,14 +450,14 @@ bint CPOSIXImpSpecificSocketContext::f_CreateAddress(CPOSIXAddress& _oAddr, NMib
 
 bool CPOSIXImpSpecificSocketContext::f_GetSocketCreateParams(::NMib::NNet::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams)
 {
-	if (_ExpectedType == 0x100)
+	if ((uint32)_ExpectedType == 0x100)
 	{
 		_oParams.m_Domain = PF_SYSTEM;
 		_oParams.m_Type = SOCK_DGRAM;
 		_oParams.m_Protocol = SYSPROTO_CONTROL;
 		return true;
 	}
-	else if (_ExpectedType == 0x101)
+	else if ((uint32)_ExpectedType == 0x101)
 	{
 		_oParams.m_Domain = PF_SYSTEM;
 		_oParams.m_Type = SOCK_STREAM;
@@ -518,7 +518,7 @@ bint CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, con
 		SockAddr.sc_id = CtlInfo.ctl_id;
 		SockAddr.sc_unit = 0;
 	 
-		_oAddr.f_Set(MalterlibSocketType, &SockAddr, sizeof(SockAddr));
+		_oAddr.f_Set((NMib::NNet::ENetAddressType)MalterlibSocketType, &SockAddr, sizeof(SockAddr));
 		
 		return true;
 	}
