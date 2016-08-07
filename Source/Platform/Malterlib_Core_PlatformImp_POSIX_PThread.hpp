@@ -356,7 +356,7 @@ void NSys::fg_Semaphore_Wait(void * _pSemaphore)
 bint NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
 {
 	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	return pSemaphore->f_WaitTimeout(_Timeout * fg_GetSys()->f_GetTimeSpeedReciprocal());
+	return pSemaphore->f_WaitTimeout(_Timeout * CSystem_Time::fs_GetTimeSpeedReciprocal());
 }
 
 bint NSys::fg_Semaphore_TryWait(void * _pSemaphore)
