@@ -1194,6 +1194,16 @@ Compile
 		}
 	}
 
+	ExtraCompilerFlags "/MP@(MalterlibCustomConcurrentCompile) @(Compile.ExtraCompilerFlags)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+			!MalterlibCustomConcurrentCompile ""
+		}
+	}
+
 	ExtraCompilerFlags "/std:c++latest @(Compile.ExtraCompilerFlags)"
 	{
 		&
@@ -1654,6 +1664,7 @@ Compile
 	{
 		&
 		{
+			Compile.ConcurrentCompile ""
 			PlatformType "Windows"
 			!Compile.PrecompilePrefixHeader "XInternalCreate"
 			!Target.VisualStudioPlatform "Clang"
