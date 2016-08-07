@@ -1150,6 +1150,15 @@ Target
 	Version "@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision)"
 
 	GenerateDebugInformation "true"
+	GenerateDebugInformation "DebugFastLink"
+	{
+		&
+		{
+			LanguageFamily Native
+			!MalterlibDeploySymbols true
+			GeneratorFamily VisualStudio
+		}
+	}
 	GenerateDebugInformation "false"
 	{
 		!!Configuration "Fast Compile"

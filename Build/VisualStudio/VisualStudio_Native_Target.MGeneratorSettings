@@ -397,6 +397,7 @@
 				Property
 				{
 					true true
+					DebugFastLink DebugFastLink
 					false false
 				}
 			}
