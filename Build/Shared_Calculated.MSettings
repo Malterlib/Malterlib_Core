@@ -390,8 +390,9 @@ Property
 			PlatformIsDarwin true
 			|
 			{
-				"Target.Type" UIExecutable
-				"Target.Type" Driver
+				Target.Type UIExecutable
+				Target.Type XcodeBundle
+				Target.Type Driver
 			}
 		}
 		
@@ -403,7 +404,8 @@ Property
 			MalterlibOSXHideDockTile ""
 			PlatformFamily OSX
 			TargetIsExecutable true
-			!Target.Type	UIExecutable
+			!Target.Type UIExecutable
+			!Target.Type XcodeBundle
 		}
 	}
 }

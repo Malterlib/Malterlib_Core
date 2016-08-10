@@ -54,6 +54,7 @@ Property
 				Target:Target.Type "UIExecutable"
 				Target:Target.Type "Executable"
 				Target:Target.Type "DynamicLibrary"
+				Target:Target.Type "XcodeBundle"
 				Target:Target.Type "SharedDynamicLibrary"
 				Target:Target.Type "Driver"
 			}
@@ -83,6 +84,7 @@ Target
 	Name "Dll_@(Target.BaseName)"
 	{
 		!!Target:Target.Type "DynamicLibrary"
+		!!Target:Target.Type "XcodeBundle"
 		!!Target:Target.Type "SharedDynamicLibrary"
 	}
 	Name "Lib_@(Target.BaseName)"
@@ -275,6 +277,10 @@ Target
 	{
 		!!Target.Type "DynamicLibrary"
 		!!Target.Type "SharedDynamicLibrary"
+	}
+	FileExtension ".framework"
+	{
+		!!Target.Type "XcodeBundle"
 	}
 }
 
@@ -778,6 +784,7 @@ Target
 			|
 			{
 				Target.Type DynamicLibrary
+				Target.Type XcodeBundle
 				Target.Type SharedDynamicLibrary
 			}
 		}
@@ -923,6 +930,8 @@ Target
 		!!Target.Type "DynamicLibrary"
 		!!Target.Type "SharedDynamicLibrary"
 	}
+	//TODO:  Target.Type XcodeBundle
+
 	ProductType "com.apple.product-type.tool"
 	{
 		!!Target.Type "ConsoleExecutable"
@@ -967,11 +976,13 @@ Target
 	CompatibilityVersion ""
 	{
 		!!Target.Type "DynamicLibrary"
+		!!Target.Type "XcodeBundle"
 	}
 	
 	CurrentVersion ""
 	{
 		!!Target.Type "DynamicLibrary"
+		!!Target.Type "XcodeBundle"
 	}
 
 	CompatibilityVersion "1.0"
@@ -1190,6 +1201,7 @@ Property
 		{
 			TargetIsExecutable true
 			!Target.Type DynamicLibrary
+			!Target.Type XcodeBundle
 			!Target.Type SharedDynamicLibrary
 			!Target.Type Driver
 			!DocumentationEnabled true
@@ -1668,6 +1680,7 @@ Target
 	{
 		TargetIsExecutable "true"
 		!Target.Type DynamicLibrary
+		!Target.Type XcodeBundle
 		!Target.Type SharedDynamicLibrary
 	}
 
@@ -1783,6 +1796,7 @@ Property
 
 
 	MalterlibOriginalModuleDestination "@(Target.OutputDirectory)@(Target.FileName)@(Target.FileExtension)"
+	MalterlibOriginalModulePath "@(MalterlibOriginalModuleDestination->GetPath())"
 	MalterlibFinalModuleDestination "@(MalterlibOriginalModuleDestination)"
 	MalterlibFinalModuleDestination "@(Target.OutputDirectory)Deployed/@(Target.FileName)@(Target.FileExtension)"
 	{
@@ -1989,7 +2003,8 @@ Property
 	
 	MalterlibBundleIdentifier "@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())"
 	{
-		!!MalterlibIsOSXBundle true
+		!!MalterlibBundleIdentifier ""
+//		!!MalterlibIsOSXBundle true
 	}
 
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
@@ -2005,15 +2020,20 @@ Property
 			!MalterlibExeIcon ""
 		}
 	}
+	
+	MalterlibBundleDebugLogation "@(MalterlibFinalModuleDestinationPath)"
+	{
+		!!MalterlibBundleDebugLogation ""		
+	}
 
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
-                                    "mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Python\"\r\n"\
+                                    "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python\"\r\n"\
 									"@(CheckErrors)\r\n"\
-                                    "mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+                                    "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
 									"@(CheckErrors)\r\n"\
-									"cp -f \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptName)\"\r\n"\
+									"cp -f \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptName)\"\r\n"\
 									"@(CheckErrors)\r\n"\
-									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
 									"@(CheckErrors)\r\n"
 	{
 		&
@@ -2021,7 +2041,7 @@ Property
 			!DocumentationEnabled true
 			!MalterlibBuildServerBuild true
 			PlatformIsDarwin true
-			Target.Type "UIExecutable"
+			MalterlibIsOSXBundle true
 			!MalterlibDisableMalterlib "true"
 		}
 	}
@@ -2082,7 +2102,7 @@ Property
 		&
 		{
 			MalterlibNeedsMallocOverrideLibrary true
-			Target.Type "UIExecutable"
+			MalterlibIsOSXBundle true
 		}
 	}
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
@@ -2121,6 +2141,7 @@ Target
 				Target.Type "Executable"
 				Target.Type "ConsoleExecutable"
 				Target.Type "DynamicLibrary"
+				Target.Type "XcodeBundle"
 				Target.Type "SharedDynamicLibrary"
 			}
 		}
@@ -2908,7 +2929,7 @@ Property
 		&
 		{
 			MalterlibNeedsMallocOverrideLibrary true
-			!Target.Type "UIExecutable"
+			!MalterlibIsOSXBundle true
 		}
 	}
 	
@@ -3134,7 +3155,7 @@ Property
 		&
 		{
 			MalterlibNeedsMallocOverrideLibrary true
-			!Target.Type "UIExecutable"
+			!MalterlibIsOSXBundle true
 		}
 	}
 
@@ -3149,7 +3170,7 @@ Property
 			!DocumentationEnabled true
 			PlatformIsDarwin true
 			TargetIsExecutable true
-			!Target.Type "UIExecutable"
+			!MalterlibIsOSXBundle true
 			!MalterlibDisableMalterlib true
 		}
 	}
@@ -3231,7 +3252,7 @@ Target
 			!DocumentationEnabled true
 			PlatformIsDarwin true
 			TargetIsExecutable true
-			!Target.Type "UIExecutable"
+			!MalterlibIsOSXBundle true
 			!MalterlibDisableMalterlib "true"
 		}
 	}

@@ -112,6 +112,7 @@ Property
 			{
 				Target.Type StaticLibrary
 				Target.Type DynamicLibrary
+				Target.Type XcodeBundle
 				Target.Type SharedDynamicLibrary
 			}
 		}

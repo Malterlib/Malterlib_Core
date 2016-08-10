@@ -21,6 +21,7 @@
 						None text
 						StaticLibrary archive.ar
 						DynamicLibrary archive.ar
+						XcodeBundle wrapper.cfbundle
 						QtRcc sourcecode.qtres
 						QtMoc sourcecode.c.h
 						QtUic sourcecode.qtui
@@ -61,6 +62,7 @@
 						ConsoleExecutable Application
 						UIExecutable Application
 						DynamicLibrary DynamicLibrary
+						XcodeBundle DynamicLibrary
 						SharedDynamicLibrary DynamicLibrary
 						StaticLibrary StaticLibrary
 						Driver Driver
@@ -373,6 +375,7 @@
 					{
 						StaticLibrary "staticlib"
 						DynamicLibrary "mh_bundle"
+						XcodeBundle "mh_bundle"
 						SharedDynamicLibrary "mh_dylib"
 						Executable "mh_execute"
 						Driver "mh_execute"

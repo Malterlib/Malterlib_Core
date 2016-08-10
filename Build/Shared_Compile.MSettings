@@ -33,6 +33,20 @@ Compile
 		}
 	}
 
+	Type "XcodeBundle"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.framework"
+				this.Identity "~*.xctest"
+			}
+		}
+	}
+	
 	Type "Assembler"
 	{
 		&
@@ -784,6 +798,8 @@ Property
 					Compile.Type "Nib"
 					Compile.Type "StaticLibrary"
 					Compile.Type "DynamicLibrary"
+					Compile.Type "XcodeBundle"
+					
 	/*
 					// Text targets all get tab settings
 					Compile.Type "Assembler"
