@@ -201,7 +201,7 @@ namespace
 					DMibTest(DMibExpr(!(CTestVal(2) < CTestVal(2))));
 				};
 
-				DMibTestSuite("Greater than equal")
+				DMibTestSuite("Less than equal")
 				{
 					DMibTest(DMibExpr(CTestVal(1)) <= DMibExpr(CTestVal(3)));
 					DMibTest(DMibExpr(CTestVal(2)) <= DMibExpr(CTestVal(3)));
