@@ -394,7 +394,10 @@ void *fg_ThreadStartRoutine(void *_pParams)
 		NLocal::g_f_pthread_setname_np(pthread_self(), StartParams.m_ThreadName.f_GetStr());
 #elif defined(DPlatformFamily_OSX)
 #if DPlatformVersionMax >= 1060
-	pthread_setname_np(StartParams.m_ThreadName.f_GetStr());
+#if DPlatformVersion < 1060
+	if (CSystem::ms_PlatformVersion >= 10'06'00)
+#endif
+		pthread_setname_np(StartParams.m_ThreadName.f_GetStr());
 #endif
 #elif defined(DPlatformFamily_Emscripten)
 #else

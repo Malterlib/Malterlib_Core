@@ -206,6 +206,10 @@ namespace NMib
 		{
 #ifdef DPlatformFamily_OSX
 #if DPlatformVersionMax >= 1060
+#if DPlatformVersion < 1060
+			if (CSystem::ms_PlatformVersion < 10'06'00)
+				return fg_Thread_GetCurrentUID();
+#endif
 			return syscall(SYS_thread_selfid);
 #else
 			return fg_Thread_GetCurrentUID();

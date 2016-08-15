@@ -2451,7 +2451,7 @@ ch8 const *NSys::NFile::fg_GetDllExtension()
 //
 // Exists in Mac OS X 10.6 and later
 
-#if DPlatformVersionMax <= 1050 || defined(DMibNoOSXCrossModuleExceptions)
+#if DPlatformVersionMax <= 1050 || DPlatformVersion <= 1050 || defined(DMibNoOSXCrossModuleExceptions)
 
 struct dyld_unwind_sections
 {

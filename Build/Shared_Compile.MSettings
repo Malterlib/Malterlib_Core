@@ -1327,6 +1327,20 @@ Compile
 		}
 	}
 	
+	PreprocessorDefines "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			|
+			{
+				MalterlibNoOSXCrossModuleExceptions true
+				Platform "OSX10.5"
+				MaxSupportedPlatformVersion "10.5"
+			}
+		}
+	}
+	
 	PreprocessorDefines "_FILE_OFFSET_BITS=64;@(Compile.PreprocessorDefines)"
 	{
 		!!PlatformFamily "Linux"

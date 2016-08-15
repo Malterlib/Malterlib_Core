@@ -40,12 +40,13 @@ Property
 			GeneratorFamily "Xcode"
 		}
 	}
-	EnablePlatform_OSX10_5 "false" // User: Enables 10.5 support for OSX platform
+	EnablePlatform_OSX10_5 "true" // User: Enables 10.5 support for OSX platform
 	{
 		&
 		{
 			EnablePlatform_OSX10_5 ""
 			GeneratorFamily "Xcode"
+			DefaultOSXPlatform "10.5"
 		}
 	}
 	EnablePlatform_OSX10_6 "true" // User: Enables 10.6 support for OSX platform
@@ -64,6 +65,67 @@ Property
 			EnablePlatform_OSX10_7 ""
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.7"
+		}
+	}
+	EnablePlatform_OSX10_8 "true" // User: Enables 10.7 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX10_8 ""
+			GeneratorFamily "Xcode"
+			DefaultOSXPlatform "10.8"
+		}
+	}
+	EnablePlatform_OSX10_9 "true" // User: Enables 10.7 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX10_9 ""
+			GeneratorFamily "Xcode"
+			DefaultOSXPlatform "10.9"
+		}
+	}
+	EnablePlatform_OSX10_10 "true" // User: Enables 10.7 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX10_10 ""
+			GeneratorFamily "Xcode"
+			DefaultOSXPlatform "10.10"
+		}
+	}
+	EnablePlatform_OSX10_11 "true" // User: Enables 10.7 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX10_11 ""
+			GeneratorFamily "Xcode"
+			DefaultOSXPlatform "10.11"
+		}
+	}
+	EnablePlatform_OSX10_12 "true" // User: Enables 10.7 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX10_12 ""
+			GeneratorFamily "Xcode"
+			DefaultOSXPlatform "10.12"
+		}
+	}
+	EnablePlatform_OSX10_5 "false" // User: Enables 10.7 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX10_5 ""
+			GeneratorFamily "Xcode"
+		}
+	}
+	EnablePlatform_OSX10_6 "false" // User: Enables 10.7 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX10_6 ""
+			GeneratorFamily "Xcode"
 		}
 	}
 	EnablePlatform_OSX10_7 "false" // User: Enables 10.7 support for OSX platform
