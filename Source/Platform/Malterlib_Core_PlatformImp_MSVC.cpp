@@ -2500,7 +2500,6 @@ void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 
 	g_bDoneMalterlibInitAll.f_FetchAdd(1);
 
-	g_bCanStartThreads = true;
 	fg_GetLocalSys()->f_InitModuleThreaded();
 	
 

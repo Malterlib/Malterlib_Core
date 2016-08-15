@@ -6,6 +6,8 @@
 #include <Mib/Log/Log>
 #include <Mib/Log/Destinations>
 
+void fg_MalterlibMallocOverride_CanStartThreads();
+
 namespace NMib
 {
 
@@ -314,10 +316,12 @@ namespace NMib
 
 	void CSystem::f_InitModuleThreaded()
 	{
+		g_bCanStartThreads = true;		
 #if DMibRemoteDebugger_Enabled
 		NRemoteDebugger::fg_RD_NetworkAvailableForClient();
 #endif
 		f_MemoryManager_CanStartThreads();
+		fg_MalterlibMallocOverride_CanStartThreads();
 	}
 		
 	void CSystem::f_InitModule(FConstruct **_pCConstructorsStart, FConstruct **_pCConstructorsEnd, FConstruct **_pCppConstructors, FConstruct **_pCppConstructorsEnd)

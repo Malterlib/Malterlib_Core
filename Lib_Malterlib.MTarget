@@ -682,11 +682,15 @@ Target
 	}
 	%Dependency "Lib_MalterlibDll"
 	{
-		|
+		&
 		{
-			Target:Target.Type "DynamicLibrary"
-			Target:Target.Type "SharedDynamicLibrary"
-			Target:Target.Type "XcodeBundle"
+			!MalterlibForceExecutable true
+			|
+			{
+				Target:Target.Type "DynamicLibrary"
+				Target:Target.Type "SharedDynamicLibrary"
+				Target:Target.Type "XcodeBundle"
+			}
 		}
 	}
 	%Dependency "Lib_MalterlibExecutable"
@@ -696,6 +700,7 @@ Target
 			Target:Target.Type "ConsoleExecutable"
 			Target:Target.Type "UIExecutable"
 			Target:Target.Type "Executable"
+			MalterlibForceExecutable true
 		}
 	}
 	%Dependency "Dll_MalterlibOverrideMalloc"
@@ -724,9 +729,16 @@ Target
 			}
 			Documentation ""
 			TargetIsExecutable true
-			!Target.Type DynamicLibrary
-			!Target.Type XcodeBundle
-			!Target.Type SharedDynamicLibrary
+			|
+			{
+				&
+				{
+					!Target.Type DynamicLibrary
+					!Target.Type XcodeBundle
+					!Target.Type SharedDynamicLibrary
+				}
+				MalterlibForceExecutable true
+			}
 			!MalterlibMemoryManager System
 		}
 		Dependency.Link true
@@ -911,6 +923,14 @@ Target
 	}
 }
 
+Property
+{
+	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem "" // User: Init early support. Currently breaks OSX 10.12
+	{
+		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem ""
+	}
+}
+
 %Target "Dll_MalterlibOverrideMalloc"
 {
 	Property.MalterlibNoShortcuts true	
@@ -935,6 +955,10 @@ Target
 		!!PlatformFamily OSX
 
 		LinkWithLibraries "-undefined dynamic_lookup \"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib\""
+		LinkWithLibraries "/usr/lib/libSystem.B.dylib @(Target.LinkWithLibraries)"
+		{
+			!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
+		}
 		LinkWithLibraries "/usr/lib/dylib1.o @(Target.LinkWithLibraries)"
 		{
 			!!Platform "OSX10.5"
@@ -949,6 +973,10 @@ Target
 		StackGuard false
 		{
 			!!PlatformFamily OSX
+		}
+		PreprocessorDefines "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport;@(Compile.PreprocessorDefines)"
+		{
+			!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true 
 		}
 	}
 	Property

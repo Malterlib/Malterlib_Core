@@ -931,7 +931,6 @@ void NSys::fg_CreateSystem()
 	pSystem->f_Init();
 	
 	pSystem->f_InitModule();
-	g_bCanStartThreads = true;
 	pSystem->f_InitModuleThreaded();
 	
 }

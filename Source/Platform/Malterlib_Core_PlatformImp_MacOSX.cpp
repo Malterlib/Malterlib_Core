@@ -1252,6 +1252,7 @@ namespace NMib
 	namespace NSys
 	{
 		void fg_CreateSystemMalloc(bool _bProvideDestroySystem);
+		void fg_CreateSystemVersion();
 		extern mint g_ThreadLocalOffsetPThread;
 	}
 	
@@ -1340,22 +1341,11 @@ void fg_TerminateHandler()
 	abort();
 }
 
-void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
+void NSys::fg_CreateSystemVersion()
 {
-	if (g_bCreatedSystemMalloc)
+	if (CSystem::ms_PlatformVersion != 0)
 		return;
 	
-	fg_MalterlibMallocOverrideInit();
-	
-	g_bCreatedSystemMalloc = true;
-	
-	g_VirtualMap.f_Construct();
-#ifdef DMibDynamicLibrary
-	g_bIsSharedLibrary = true;
-#else
-	g_bIsSharedLibrary = false;
-#endif
-
 	if (g_OperatingSystemMajor < 0)
 	{
 		int Dummy;
@@ -1397,6 +1387,25 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 		DMibPDebugBreak; // Not supported
 	
 	CSystem::ms_PlatformVersion = g_OperatingSystemMajor * 10000 + g_OperatingSystemMinor * 100 + g_OperatingSystemFix;
+}
+
+void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
+{
+	if (g_bCreatedSystemMalloc)
+		return;
+	
+	fg_MalterlibMallocOverrideInit();
+	
+	g_bCreatedSystemMalloc = true;
+	
+	g_VirtualMap.f_Construct();
+#ifdef DMibDynamicLibrary
+	g_bIsSharedLibrary = true;
+#else
+	g_bIsSharedLibrary = false;
+#endif
+
+	fg_CreateSystemVersion();
 
 	host_page_size(mach_host_self(), (vm_size_t *)&NMib::NSys::NPrivate::g_PageSize);
 	
@@ -1484,7 +1493,6 @@ void NSys::fg_CreateSystem()
 	
 	pSystem->f_Init();
 	pSystem->f_InitModule();
-	g_bCanStartThreads = true;
 	pSystem->f_InitModuleThreaded();
 	
 	setlinebuf(stdout); // Default to line buffered output

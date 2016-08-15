@@ -1203,6 +1203,7 @@ Property
 	{
 		&
 		{
+			MalterlibNeedsMallocOverrideLibrary ""
 			TargetIsExecutable true
 			!Target.Type DynamicLibrary
 			!Target.Type XcodeBundle
