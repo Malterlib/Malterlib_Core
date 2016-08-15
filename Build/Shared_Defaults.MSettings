@@ -395,6 +395,10 @@ Property
 	{
 		!!MalterlibEnableBreakpad ""
 	}
+	MalterlibClangVersion "3.9"
+	{
+		!!MalterlibClangVersion ""
+	}
 	/*
 	// TODO: Enable when supported
 	MalterlibEnableBreakpad "true"

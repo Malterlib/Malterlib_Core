@@ -905,7 +905,6 @@ Compile
 	{
 		&
 		{
-			!Target.PlatformToolsetCompiler "/Development/Malterlib/Tools/External/Build/llvm/bin/clang"
 			!Target.PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc"
 			|
 			{
@@ -1114,11 +1113,6 @@ Compile
 	{
 		!!Documentation Doxygen
 	}
-	
-	SearchPath "/Development/Malterlib/Tools/llvm/unstable/build/make/lib/clang/3.7.0/include;@(Compile.SearchPath)"
-	{
-		!!Target.PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/unstable/build/make/bin/clang"
-	}	
 	
 	SystemSearchPath "@(Builtin.BasePath)/SDK/boost;@(Compile.SystemSearchPath)"
 	{
@@ -1730,7 +1724,6 @@ Compile
 		{
 			PlatformFamily Linux
 			GeneratorFamily Xcode
-			!Target.PlatformToolsetCompiler "/Development/Malterlib/Tools/External/Build/llvm/bin/clang"
 		}
 	}
 	
