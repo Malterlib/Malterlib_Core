@@ -4719,34 +4719,6 @@ enum
 	EEmulateLinkVersion = 0x101
 };
 
-namespace
-{
-	NStr::CStr fg_ConvertToDevicePath(NStr::CStr const &_In)
-	{
-		NStr::CWStr DeviceName;
-		NStr::CWStr Drive = NFile::CFile::fs_GetDrive(_In);
-		mint Len = 256;
-		bool bFailed = false;
-		while (!QueryDosDevice(Drive, DeviceName.f_GetStr(Len), Len))
-		{
-			if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-			{
-				bFailed = true;
-				break;
-			}
-			Len *= 2;
-		}
-
-		if (bFailed)
-		{
-			auto Error = GetLastError();
-			DMibError(NStr::CStr::CFormat("In sandbox QueryDosDevice failed: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
-		}
-
-		return _In.f_Replace(Drive, DeviceName).f_ReplaceChar('/', '\\');
-	}
-}
-
 void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, EFileAttrib _Type, ESymbolicLinkFlag _Flags)
 {
 	fg_GetLocalSys()->f_EnableSymLinkSupport();
@@ -4763,7 +4735,7 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 			ToMount = CWStr(_FileFrom).f_ReplaceChar('/', '\\');
 		else if (_Flags & ESymbolicLinkFlag_ConvertToDevicePath)
 		{
-			ToMount = L"\\\\?\\GLOBALROOT" + fg_ConvertToDevicePath(_FileFrom);
+			ToMount = L"\\\\?\\GLOBALROOT" + NMib::NFile::NPlatform::fg_ConvertToDevicePath(_FileFrom);
 			//ToMount.f_SetAt(1, '\\');
 		}
 		else
@@ -4783,7 +4755,7 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 		if (_Flags & ESymbolicLinkFlag_Relative)
 			ToMount = CWStr(_FileFrom).f_ReplaceChar('/', '\\');
 		else if (_Flags & ESymbolicLinkFlag_ConvertToDevicePath)
-			ToMount = fg_ConvertToDevicePath(_FileFrom);
+			ToMount = NMib::NFile::NPlatform::fg_ConvertToDevicePath(_FileFrom);
 		else
 		{
 			ToMount = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom, true);

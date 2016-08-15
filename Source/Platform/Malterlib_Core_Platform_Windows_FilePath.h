@@ -26,6 +26,8 @@ namespace NMib
 			template <typename tf_CWindowsStr, typename tf_CRet, typename tf_CSrc>
 			tf_CRet fg_ConvertFromWindowsPath(const tf_CSrc &_Path);
 			NStr::CWStr fg_ConvertToWindowsPathLocal(const NStr::CStr &_Path, bool _bForceLong = false);
+
+			NStr::CStr fg_ConvertToDevicePath(NStr::CStr const &_In);
 		}
 	}
 }

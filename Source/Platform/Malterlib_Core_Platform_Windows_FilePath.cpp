@@ -3,6 +3,7 @@
 
 #include "Malterlib_Core_Platform_Windows_FilePath.h"
 #include <Mib/Core/PlatformSpecific/WindowsString>
+#include <Mib/Core/PlatformSpecific/WindowsError>
 
 namespace NMib
 {
@@ -52,6 +53,31 @@ namespace NMib
 			NStr::CStr fg_ConvertFromWindowsPath(const NStr::CStr &_Path)
 			{
 				return fg_ConvertFromWindowsPathInternal<NStr::CStr>(fg_ConvertToWindowsPath<NStr::CWStr, NStr::CWStr, NStr::CStr>(fg_ConvertFromWindowsPathInternal<NStr::CStr>(_Path), false, -1));
+			}
+
+			NStr::CStr fg_ConvertToDevicePath(NStr::CStr const &_In)
+			{
+				NStr::CWStr DeviceName;
+				NStr::CWStr Drive = NFile::CFile::fs_GetDrive(_In);
+				mint Len = 256;
+				bool bFailed = false;
+				while (!QueryDosDevice(Drive, DeviceName.f_GetStr(Len), Len))
+				{
+					if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+					{
+						bFailed = true;
+						break;
+					}
+					Len *= 2;
+				}
+
+				if (bFailed)
+				{
+					auto Error = GetLastError();
+					DMibError(NStr::CStr::CFormat("In sandbox QueryDosDevice failed: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
+				}
+
+				return _In.f_Replace(Drive, DeviceName).f_ReplaceChar('/', '\\');
 			}
 		}
 	}
