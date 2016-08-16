@@ -2791,14 +2791,6 @@ Target
 
 Property
 {
-
-	MalterlibBuildServerPutPathUploadTemplateExpand	"MTool BuildServerPut Recursive=0 \"Source=@(Expand0)\" \"DestinationDir=@(MalterlibBuildServerPutPath)@(Expand1)\"\r\n"\
-													"@(CheckErrors)\r\n"
-	
-	MalterlibBuildServerPutPathUploadContents	"@(MalterlibBuildServerPutPathUploadContents)"\
-												"@(Builtin.Function->ExplodeList('@(MalterlibBuildServerPutSources)', ';', 'MalterlibBuildServerPutPathUploadTemplate'))"
-
-	
 	MalterlibExeFSExtraFilesContentsTemplateExpand	"@(MalterlibExeFSSpecContents)"\
 													"Include\r\n"\
 													"{\r\n"\
@@ -3066,16 +3058,14 @@ Target
 
 }
 
-Target
+Property
 {
-	!!GeneratorFamily Xcode
-
-	PostBuildScriptInputs "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME)"
-	PostBuildScriptInputs "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)"
+	MalterlibExecutableInput "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME)"
+	MalterlibExecutableInput "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)"
 	{
 		!Target.FileExtension ""
 	}
-	PostBuildScriptInputs "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)/Contents/MacOS/$(PRODUCT_NAME)"
+	MalterlibExecutableInput "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)/Contents/MacOS/$(PRODUCT_NAME)"
 	{
 		&
 		{
@@ -3083,7 +3073,7 @@ Target
 			MalterlibIsOSXBundle true
 		}
 	}
-	PostBuildScriptInputs "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)/$(PRODUCT_NAME)"
+	MalterlibExecutableInput "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)/$(PRODUCT_NAME)"
 	{
 		&
 		{
@@ -3091,8 +3081,33 @@ Target
 			MalterlibIsOSXBundle true
 		}
 	}
-	PostBuildScriptOutputs "$(CONFIGURATION_BUILD_DIR)/@(Target.Name).c"
+	MalterlibPostBuildScriptInputs "@(MalterlibExecutableInput);@(MalterlibPostBuildScriptInputs)"
+	MalterlibPostBuildScriptInputs "@(MalterlibPostCopySources);@(MalterlibPostBuildScriptInputs)"
+	{
+		&
+		{
+			!MalterlibBuildServerBuild "true"
+			!MalterlibPostCopyProject ""
+			!DisablePostCopy "true"
+			!MalterlibPostCopySources ""
+		}
+	}
+	
+	MalterlibPostBuildScriptInputsInternalTemplate	"@(Expand0);"
+	MalterlibPostBuildScriptInputsTemplate			"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibPostBuildScriptInputsInternalTemplate'))"
+	{
+		!Explodee ""
+	}
+	MalterlibPostBuildScriptInputsContents "@(Builtin.Function->ExplodeList('@(MalterlibPostBuildScriptInputs)', ';', 'MalterlibPostBuildScriptInputsTemplate'))"
+	
+}
 
+Target
+{
+	!!GeneratorFamily Xcode
+
+	PostBuildScriptInputs "@(MalterlibPostBuildScriptInputsContents)"
+	PostBuildScriptOutputs "$(CONFIGURATION_BUILD_DIR)/@(Target.Name).c"
 }
 
 Property
