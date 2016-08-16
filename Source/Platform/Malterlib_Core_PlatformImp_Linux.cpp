@@ -1416,12 +1416,17 @@ void NSys::fg_CreateSystem()
 	}
 
 	g_bCreatingSystemDone = true;
-	auto pSystem = new(NMib::g_SystemMemory) CSystemLinux();
-	DMibFastCheck((void *)pSystem == (void *)&NMib::g_SystemMemory);
+	
+	auto pSystemMemory = (void *)NMib::g_SystemMemory;
+	auto pSystem = new(pSystemMemory) CSystemLinux();
+	static_assert(NTraits::TCAlignmentOf<CSystemLinux>::mc_Value <= sizeof(mint), "Aligment error");
+	
+	NSys::fg_Compiler_MakeActive(&pSystemMemory);
+	NSys::fg_Compiler_MakeActive(&pSystem);
+	DMibFastCheck((void *)pSystem == pSystemMemory);
 	
 	std::set_unexpected(&fg_UnexpectedExceptionHandler);
 	std::set_terminate(&fg_TerminateHandler);
-	
 	
 #ifndef DMibPAutomaticSystemCreation
 	NMib::g_pSys = pSystem;
