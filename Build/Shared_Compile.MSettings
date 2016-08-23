@@ -930,7 +930,7 @@ Compile
 		&
 		{
 			PlatformFamily Windows
-			!PlatformToolset v90
+			!Target.PlatformToolset v90
 		}
 	}
 

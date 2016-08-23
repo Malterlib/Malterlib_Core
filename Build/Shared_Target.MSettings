@@ -1864,6 +1864,18 @@ Property
 	
 }
 
+Property
+{
+	MSVCToolChainArchitecture "amd64"
+	{
+		!!Architecture "x64"
+	}
+	MSVCToolChainArchitecture "amd64_x86"
+	{
+		!!Architecture "x86"
+	}
+}
+
 // Misc
 Target
 {
@@ -1920,7 +1932,31 @@ Target
 			WindowsNativeToolChain "true"
 		}
 	}
-	
+
+	ToolPath "x:/Development/Malterlib/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
+	{
+		&
+		{
+			!MalterlibOverrideMSVCVersion ""
+			HostPlatformFamily "Windows"
+			WindowsNativeToolChain "true"
+			!Target.PlatformToolset "v90"
+		}
+	}
+}
+
+Compile
+{
+	SearchPath "x:/Development/Malterlib/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/include;@(Compile.SearchPath)"
+	{
+		&
+		{
+			!MalterlibOverrideMSVCVersion ""
+			CompileDialect "C"
+			HostPlatformFamily "Windows"
+			!Target.PlatformToolset "v90"
+		}
+	}
 }
 
 Property
