@@ -1169,6 +1169,7 @@ Target
 			GeneratorFamily VisualStudio
 			!Target.PlatformToolset "v90"
 			!Target.CLRSupport true
+			!MalterlibMemoryManager_Debug_EnableStackTrace true // Currently crashes in DIA if enabled
 		}
 	}
 	GenerateDebugInformation "false"
