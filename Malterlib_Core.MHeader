@@ -122,6 +122,10 @@ Property
 	{
 		DocumentationModule Malterlib
 	}
+	Property.MalterlibConcurrency_DistributedActors true
+	{
+		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
+	}
 	Target
 	{
 		ExtraGroups "{Malterlib}/{@(Target:this.Identity)};@(Target.ExtraGroups)"

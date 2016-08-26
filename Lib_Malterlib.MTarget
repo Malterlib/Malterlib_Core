@@ -19,6 +19,11 @@ Property
 	Property.DocumentationModule Malterlib
 	Property.MalterlibNoShortcuts true	
 
+	Property.MalterlibConcurrency_DistributedActors true
+	{
+		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
+	}
+	
 	Target
 	{
 		BaseName "Malterlib_Init"
@@ -83,6 +88,10 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 			!!PlatformFamily "Linux"
 		}
 	}
+	Property.MalterlibConcurrency_DistributedActors true
+	{
+		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
+	}
 	%Group "Source"
 	{
 		Compile
@@ -143,6 +152,10 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 		BaseName "Malterlib_Runtime"
 		Type "StaticLibrary"
 		Group "Libraries/Malterlib"
+	}
+	Property.MalterlibConcurrency_DistributedActors true
+	{
+		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
 	}
 	Compile
 	{
@@ -366,6 +379,10 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 		Type "StaticLibrary"
 		Group "Libraries/Malterlib"
 	}
+	Property.MalterlibConcurrency_DistributedActors true
+	{
+		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
+	}
 	Compile
 	{
 		!!CompileDialect "C"
@@ -387,6 +404,10 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 		BaseName "MalterlibDll"
 		Type "StaticLibrary"
 		Group "Libraries/Malterlib"
+	}
+	Property.MalterlibConcurrency_DistributedActors true
+	{
+		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
 	}
 	Compile
 	{
@@ -727,6 +748,10 @@ Target
 		BaseName "Malterlib"
 		Type "StaticLibrary"
 		Group "Libraries/Malterlib"
+	}
+	Property.MalterlibConcurrency_DistributedActors true
+	{
+		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
 	}
 	Compile
 	{
