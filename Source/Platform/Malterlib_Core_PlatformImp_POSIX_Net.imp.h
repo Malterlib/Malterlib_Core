@@ -594,14 +594,13 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 		setsockopt(FD, IPPROTO_IPV6, IPV6_V6ONLY, &bV6Only, sizeof(bV6Only));	
 	}
 
-	if (_Flags & NNet::ENetFlag_ReuseAddress)
 	{
 		int bReuse = 1;
 		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
 	}
 	
 #ifdef DPlatformFamily_OSX
-	if (_Flags & NNet::ENetFlag_ReuseAddress)
+	if (_Flags & NNet::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
 		setsockopt(FD, SOL_SOCKET, SO_REUSEPORT, &bReuse, sizeof(bReuse));
@@ -656,11 +655,18 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Addres
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (listen set non blocking)", Error));
 		}
 	}
-	if (_Flags & NNet::ENetFlag_ReuseAddress)
 	{
 		int bReuse = 1;
 		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));	
 	}
+
+#ifdef DPlatformFamily_OSX
+	if (_Flags & NNet::ENetFlag_ReusePort)
+	{
+		int bReuse = 1;
+		setsockopt(FD, SOL_SOCKET, SO_REUSEPORT, &bReuse, sizeof(bReuse));
+	}
+#endif
 
 	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
 

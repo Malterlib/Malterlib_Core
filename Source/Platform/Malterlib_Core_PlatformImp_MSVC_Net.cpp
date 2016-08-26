@@ -816,7 +816,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		DMibErrorNet("Could not create a socket for listening");
 	}
 
-	if (_Flags & NNet::ENetFlag_ReuseAddress)
+	if (_Flags & NNet::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
@@ -887,7 +887,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 		DMibErrorNet("Could not create a socket for listening");
 	}
 
-	if (_Flags & NNet::ENetFlag_ReuseAddress)
+	if (_Flags & NNet::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
