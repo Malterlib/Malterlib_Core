@@ -702,6 +702,7 @@ Target
 	{
 		&
 		{
+			!MalterlibMemoryManager_OverrideOSXSystemMalloc false
 			|
 			{
 				PlatformFamily OSX
