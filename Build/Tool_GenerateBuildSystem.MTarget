@@ -32,6 +32,7 @@
 			%Group "Build System"
 			{
 				%File "@(Builtin.Function->SourceFiles('*.MBuildSystem'))"
+				%File "@(Builtin.Function->SourceFiles('*.OldMBuildSystem'))"
 			}
 			%Group "Headers"
 			{

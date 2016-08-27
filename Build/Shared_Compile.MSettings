@@ -529,6 +529,7 @@ Compile
 			{
 				this.Identity "~*.MTarget"
 				this.Identity "~*.MBuildSystem"
+				this.Identity "~*.OldMBuildSystem"
 				this.Identity "~*.MWorkspace"
 				this.Identity "~*.MHeader"
 				this.Identity "~*.MSettings"
