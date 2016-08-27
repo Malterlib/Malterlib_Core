@@ -150,6 +150,7 @@ namespace NMib
 #	include "../../Core/Source/Platform/Malterlib_Core_PlatformImp.h"
 
 #	include "../../Core/Source/Malterlib_Core_Include.h"
+#include <Mib/Numeric/FloatImp>
 namespace NMib
 {
 	namespace NFile
