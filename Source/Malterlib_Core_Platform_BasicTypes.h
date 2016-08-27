@@ -27,6 +27,8 @@ typedef float pfp32;
 #define DMibPCanDo_fp32
 typedef double pfp64;
 #define DMibPCanDo_fp64
+typedef long double pfp80;
+#define DMibPCanDo_fp80
 
 
 #if defined(DPlatformFamily_OSX)
@@ -43,6 +45,9 @@ typedef double pfp64;
 		typedef signed long long int64;
 		#define DMibPCanDo_int64
 
+		typedef signed __int128 int128;
+		#define DMibPCanDo_int128
+
 		typedef unsigned char uint8;
 		#define DMibPCanDo_uint8
 
@@ -54,6 +59,9 @@ typedef double pfp64;
 
 		typedef unsigned long long uint64; // Nope msvs cant do this
 		#define DMibPCanDo_uint64
+
+		typedef unsigned __int128 uint128; // Nope msvs cant do this
+		#define DMibPCanDo_uint128
 
 		typedef int bint; // boolean integer (for better alignment)
 
@@ -145,6 +153,9 @@ typedef double pfp64;
 		typedef signed long long int64;
 		#define DMibPCanDo_int64
 
+		typedef signed __int128 int128;
+		#define DMibPCanDo_int128
+
 		typedef unsigned char uint8;
 		#define DMibPCanDo_uint8
 
@@ -156,6 +167,9 @@ typedef double pfp64;
 
 		typedef unsigned long long uint64; // Nope msvs cant do this
 		#define DMibPCanDo_uint64
+
+		typedef unsigned __int128 uint128;
+		#define DMibPCanDo_uint128
 
 		typedef int bint; // boolean integer (for better alignment)
 
