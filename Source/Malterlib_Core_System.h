@@ -181,7 +181,9 @@ namespace NMib
 #if DMibSysLogSeverities
 		NLog::CLogger* m_pSystemLog;
 		NLog::CLogFile* m_pDefaultLogFile;
+#if DMibEnableTrace > 0
 		mint m_TraceLoggerDestination = 0;
+#endif
 		mint m_StdErrLoggerDestination = 0;
 		mint m_FileLoggerDestination = 0;
 #endif

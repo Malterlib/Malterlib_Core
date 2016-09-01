@@ -150,6 +150,10 @@ namespace NMib
 
 	void CSystem::f_DestructThreadSpecific()
 	{
+#if DMibSysLogSeverities
+		m_pSystemLog->f_SetDispatcher(nullptr);
+#endif
+		
 		fp_SubSystem_DestroyThreadSpecific();
 
 		f_MemoryManager_DestroyThreads();
@@ -186,7 +190,9 @@ namespace NMib
 #if DMibSysLogSeverities
 		while (m_pSystemLog->f_PopGlobalDestination())
 			;
+#if DMibEnableTrace > 0
 		m_TraceLoggerDestination = 0;
+#endif
 		m_StdErrLoggerDestination = 0;
 		m_FileLoggerDestination = 0;
 #endif
@@ -194,12 +200,14 @@ namespace NMib
 	
 	void CSystem::f_RemoveTraceLogger()
 	{
+#if DMibEnableTrace > 0
 #if DMibSysLogSeverities
 		if (m_TraceLoggerDestination)
 		{			
 			m_pSystemLog->f_RemoveGlobalDestination(m_TraceLoggerDestination);
 			m_TraceLoggerDestination = 0;
 		}
+#endif
 #endif
 	}
 	
@@ -237,8 +245,10 @@ namespace NMib
 			if (bDisableSystemLog)
 				bDebugOut = false;
 
+#if DMibEnableTrace > 0
 			if (bDebugOut)
 				m_TraceLoggerDestination = m_pSystemLog->f_PushGlobalDestination(&NLog::fg_LogTo_DebugOut);
+#endif
 
 #if DMibSysLogStdErr
 			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(&NLog::fg_LogTo_StdErr);
