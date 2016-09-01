@@ -805,7 +805,11 @@ mint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, mint _
 
 mint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, mint _DataLen)
 {
-	int Result = send(_pSocket->m_FD, _pData, _DataLen, 0);
+	int Flags = 0;
+#ifdef DPlatformFamily_Linux
+	Flags |= MSG_NOSIGNAL;
+#endif
+	int Result = send(_pSocket->m_FD, _pData, _DataLen, Flags);
 
 	if (Result == -1)
 	{
@@ -824,9 +828,11 @@ mint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, min
 
 mint CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address, const void *_pData, mint _DataLen)
 {
-	auto &TCP = _Address.f_GetTCPv4();
-	(void)TCP;
-	int Result = sendto(_pSocket->m_FD, _pData, _DataLen, 0, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
+	int Flags = 0;
+#ifdef DPlatformFamily_Linux
+	Flags |= MSG_NOSIGNAL;
+#endif
+	int Result = sendto(_pSocket->m_FD, _pData, _DataLen, Flags, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
 
 	if (Result == -1)
 	{
