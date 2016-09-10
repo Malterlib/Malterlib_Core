@@ -1110,9 +1110,9 @@ Compile
 		!!MalterlibUseStaticLibCxxABI "true"
 	}
 
-	SearchPath "/Development/Malterlib/Tools/llvm/stable/build/make/lib/clang/3.5.0/include;@(Compile.SearchPath)"
+	SearchPath "/Development/Malterlib/Tools/llvm/@(MalterlibClangVersion)/build/make/lib/clang/@(MalterlibClangVersion).0/include;@(Compile.SearchPath)"
 	{
-		!!Documentation Doxygen
+		!MalterlibClangVersion ""
 	}
 	
 	SystemSearchPath "@(Builtin.BasePath)/SDK/boost;@(Compile.SystemSearchPath)"
