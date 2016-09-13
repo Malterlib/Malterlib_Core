@@ -904,10 +904,10 @@ namespace NMib
 			}
 		}
 		
-		void CFileChangeNoticationContext::f_DispatchOnThread(NMib::NFunction::TCFunction<void (NFunction::CThisTag &)> const &_Dispatch)
+		void CFileChangeNoticationContext::f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch)
 		{
 			auto &Internal = *m_pInternal;
-			m_DispatchQueue.f_Push(_Dispatch);
+			m_DispatchQueue.f_Push(fg_Move(_Dispatch));
 			{
 				DMibLock(m_RunLoopLock);
 				if (Internal.m_RunLoop)

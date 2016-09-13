@@ -135,9 +135,9 @@ namespace NMib
 			NStr::CStr m_DispatchObjectClassName;
 			zbool m_bDestroying;
 			
-			NMib::NContainer::TCThreadSafeQueue<NMib::NFunction::TCFunction<void (NFunction::CThisTag &)>> m_DispatchQueue;
+			NMib::NContainer::TCThreadSafeQueue<NMib::NFunction::TCFunctionMovable<void ()>> m_DispatchQueue;
 			
-			void f_DispatchOnThread(NMib::NFunction::TCFunction<void (NFunction::CThisTag &)> const &_Dispatch);
+			void f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch);
 			void f_StartThread();
 			void *f_Open(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo);
 			
