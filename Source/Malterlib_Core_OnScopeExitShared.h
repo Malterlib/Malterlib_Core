@@ -8,13 +8,20 @@
 
 namespace NMib
 {
-	typedef NPtr::TCSharedPointer<TCOnScopeExit<NFunction::TCFunction<void ()>>> COnScopeExitShared;
+	typedef NPtr::TCSharedPointer<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>> COnScopeExitShared;
 
-	template <typename tf_FOnExitFunctor>
-	NPtr::TCSharedPointer<TCOnScopeExit<NFunction::TCFunction<void ()>>> fg_OnScopeExitShared(tf_FOnExitFunctor &&_fOnExitFunctor) 
+	inline_always COnScopeExitShared fg_OnScopeExitShared(NFunction::TCFunctionMovable<void ()> &&_fOnExitFunctor) 
 	{ 
-		return fg_Construct<TCOnScopeExit<NFunction::TCFunction<void ()>>>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor)); 
+		return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>(fg_Move(_fOnExitFunctor)); 
 	}
 
+	struct COnScopeExitSharedHelper
+	{
+		template <typename tf_FOnScopeExit>
+		COnScopeExitShared operator >(tf_FOnScopeExit &&_fOnExitFunctor) const 
+		{ 
+			return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>(fg_Move(_fOnExitFunctor)); 
+		}
+	};
+	extern COnScopeExitSharedHelper const &g_OnScopeExitShared;
 }
-
