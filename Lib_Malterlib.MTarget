@@ -706,7 +706,21 @@ Target
 			|
 			{
 				PlatformFamily OSX
-				PlatformFamily Linux
+				&
+				{
+					PlatformFamily Linux
+					|
+					{
+						EnablePlatform_OSX10_5 true
+						EnablePlatform_OSX10_6 true
+						EnablePlatform_OSX10_7 true
+						EnablePlatform_OSX10_8 true
+						EnablePlatform_OSX10_9 true
+						EnablePlatform_OSX10_10 true
+						EnablePlatform_OSX10_11 true
+						EnablePlatform_OSX10_12 true
+					}
+				}
 			}
 			Documentation ""
 			TargetIsExecutable true
