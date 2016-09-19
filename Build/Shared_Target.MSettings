@@ -563,6 +563,10 @@ Target
 	{
 		!!Target.EnableLinkerGroups ""
 	}
+	LTOObjectFile ""
+	{
+		!!PlatformFamily Linux
+	}
 	LDFlags "-env_EMCC_FAST_COMPILER 1 @(Target.LDFlags)"
 	{
 		!!Target.EmscriptenFastCompiler true

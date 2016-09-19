@@ -294,6 +294,15 @@
 					Name "LD_DEPENDENCY_INFO_FILE"
 				}
 			}
+
+			%GeneratorSetting "LTOObjectFile"
+			{
+				Property
+				{
+					Name "LD_LTO_OBJECT_FILE"
+				}
+			}
+			
 			%GeneratorSetting "EmscriptenFastCompiler"
 			{
 				Property
