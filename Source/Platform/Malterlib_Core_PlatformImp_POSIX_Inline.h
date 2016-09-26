@@ -210,7 +210,9 @@ namespace NMib
 			if (CSystem::ms_PlatformVersion < 10'06'00)
 				return fg_Thread_GetCurrentUID();
 #endif
+DMibDeprecatedSupressStart;
 			return syscall(SYS_thread_selfid);
+DMibDeprecatedSupressStop;
 #else
 			return fg_Thread_GetCurrentUID();
 #endif

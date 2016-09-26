@@ -2071,6 +2071,7 @@ Property
 			PlatformIsDarwin true
 			MalterlibIsOSXBundle true
 			!MalterlibDisableMalterlib "true"
+			!Target.Type "Driver"
 		}
 	}
 	
