@@ -390,7 +390,7 @@ Target
 {
 	ExtraGroups "~Automatic/Build Server Helpers;@(Target.ExtraGroups)"
 	{
-		//!!MalterlibVersionedBuild true
+		!!MalterlibEnablePathHelpers true
 	}
 }
 

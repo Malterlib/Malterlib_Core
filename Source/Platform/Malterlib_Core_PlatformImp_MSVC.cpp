@@ -4922,6 +4922,16 @@ void NSys::NFile::fg_Rename(const CStr &_FileFrom, const CStr &_FileTo)
 		DMibErrorFile((CStr::CFormat("Windows returned an error from MoveFile({}, {}): {}") << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 }
 
+void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	DWORD Flags = REPLACEFILE_IGNORE_MERGE_ERRORS;
+	if (NLocal::g_VersionInfo.dwMajorVersion >= 6)
+		Flags |= REPLACEFILE_IGNORE_ACL_ERRORS;
+	
+	if (!ReplaceFileW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo), NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom), nullptr, Flags, nullptr, nullptr))
+		DMibErrorFile((CStr::CFormat("Windows returned an error from ReplaceFile({}, {}): {}") << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+}
+
 NMib::NStream::CFilePos NSys::NFile::fg_GetFreeSpace(const NMib::NStr::CStr &_Path)
 {
 	ULARGE_INTEGER FreeSpace;

@@ -499,7 +499,45 @@ namespace
 {
 	void fg_SetBSDFileAttributes(int _iFile, mode_t DefaultMode, NMib::NFile::EFileAttrib _Attributes, ch8 const *_pFileName);
 }
-	
+
+int fg_GetUnixOpenFlags()
+{
+	int Openflags = 0;
+#ifdef DPlatformFamily_OSX
+#if DPlatformVersionMax >= 1070
+	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
+		Openflags |= O_CLOEXEC;
+#endif
+#endif
+	return Openflags;
+}
+
+void fg_SetUnixHandleOptions(int _File)
+{
+#ifdef DPlatformFamily_OSX
+#if DPlatformVersionMax >= 1070
+	if (NMib::CSystem::ms_PlatformVersion < 10'07'00)
+#endif
+#endif
+	// Set CloseOnExec so that child processes do not get our open files.
+	{
+		int FDFlags = fcntl(_File, F_GETFD);
+		if (FDFlags != -1)
+		{
+			FDFlags |= FD_CLOEXEC;
+			
+			if (fcntl(_File, F_SETFD, FDFlags) == -1)
+			{
+				// We let this go deliberately. Nothing overly bad can happen.
+			}
+		}
+		else
+		{
+			// We let this go deliberately. Nothing overly bad can happen.
+		}
+	}
+}
+
 template <typename tf_CFileStr, typename tf_CStr>
 int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, tf_CStr &_oPosixFileName, NMib::NFile::EFileAttrib _Attributes)
 {
@@ -550,7 +588,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			CreateDisposition = EDisp_OpenExisting;
 	}
 
-	uint32 Openflags = 0;
+	uint32 Openflags = fg_GetUnixOpenFlags();
 	if ((_OpenFlags & (EFileOpen_Write | EFileOpen_Read)) == (EFileOpen_Write | EFileOpen_Read))
 		Openflags |= O_RDWR;
 	else if ((_OpenFlags & (EFileOpen_Write | EFileOpen_Read)) == (EFileOpen_Read))
@@ -615,10 +653,6 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 	}
 
 //	umask(0);
-#if DPlatformVersionMax >= 1070
-	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
-		Openflags |= O_CLOEXEC;
-#endif
 	
 	int iFile = open(FileName, Openflags);
 	if (iFile < 0)
@@ -646,26 +680,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}') when opening file") << FileName, errno));
 	}
 	
-#if DPlatformVersionMax >= 1070
-	if (NMib::CSystem::ms_PlatformVersion < 10'07'00)
-#endif
-	// Set CloseOnExec so that child processes do not get our open files.
-	{
-		int FDFlags = fcntl(iFile, F_GETFD);
-		if (FDFlags != -1)
-		{
-			FDFlags |= FD_CLOEXEC;
-			
-			if (fcntl(iFile, F_SETFD, FDFlags) == -1)
-			{
-				// We let this go deliberately. Nothing overly bad can happen.
-			}
-		}
-		else
-		{
-			// We let this go deliberately. Nothing overly bad can happen.
-		}
-	}
+	fg_SetUnixHandleOptions(iFile);
 
 	if (Openflags & (O_WRONLY | O_RDWR))
 		fg_SetBSDFileAttributes(iFile, 0644, _Attributes, _FileName);

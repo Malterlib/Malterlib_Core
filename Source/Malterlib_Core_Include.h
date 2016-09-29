@@ -324,7 +324,7 @@ namespace NMib
 #include "../../Container/Source/Malterlib_Container_Map.hpp"
 
 #ifdef DMibEnableDistributedActors
-#include "../../Concurrency/Source/Malterlib_Concurrency_RuntimeTypeRegistry.hpp"
+#include "../../Concurrency/Source/DistributedActor/Malterlib_Concurrency_RuntimeTypeRegistry.hpp"
 #endif
 
 #include "Platform/Malterlib_Core_PlatformImp.imp.h"

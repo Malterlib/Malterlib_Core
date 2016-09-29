@@ -878,23 +878,18 @@ namespace
 		auto FileData = fg_ReadProcFS<tf_CStr>(CmdlinePath);
 		
 		auto pParse = FileData.f_GetArray();
-		auto pParseEnd = pParse + FileData.f_GetLen();
+		auto pParseEnd = pParse + FileData.f_GetLen() - 1;
 		
 		while (pParse < pParseEnd)
 		{
 			auto *pStart = pParse;
-			fg_ParseToEndOfLine(pParse);
-			if (pParse-pStart)
-			{
-				Return.f_Insert(tf_CStr(pStart, pParse-pStart));
-			}
-			fg_ParseEndOfLine(pParse);
-			if (!(*pParse) && pParse < pParseEnd)
-			{
+			while (*pParse && pParse < pParseEnd)
 				++pParse;
-			}
+			Return.f_Insert(tf_CStr(pStart, pParse-pStart));
+			if (pParse < pParseEnd)
+				++pParse;
 		}
-
+		
 		return Return;
 	}
 }
@@ -1842,6 +1837,10 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 	}
 }
 
+void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	return fg_Rename(_FileFrom, _FileTo);
+}
 
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {

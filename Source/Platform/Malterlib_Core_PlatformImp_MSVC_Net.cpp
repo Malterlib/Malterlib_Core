@@ -832,7 +832,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
-	Result = listen(hSock, 16);
+	Result = listen(hSock, SOMAXCONN);
 
 	if (Result != 0)
 	{

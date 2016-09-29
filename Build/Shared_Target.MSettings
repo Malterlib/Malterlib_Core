@@ -2926,6 +2926,15 @@ Property
 	{
 		!!PlatformType "Unix"
 	}
+	Tar ""
+	Tar "tar"
+	{
+		!!PlatformType "Unix"
+	}
+	Tar "gnutar"
+	{
+		!!HostPlatformFamily "OSX"
+	}
 }
 
 Property
@@ -3769,6 +3778,7 @@ Target
 			!MalterlibBuildServerPutPath ""
 			MalterlibBuildServerBuild "true"
 			!MalterlibBuildServerTest "true"
+			!MalterlibBuildServerPutDisabled true
 		}
 	}
 
@@ -3780,6 +3790,16 @@ Target
 		{
 			!MalterlibTestPutPath ""
 			MalterlibBuildServerTest "true"
+			!MalterlibBuildServerPutDisabled true
+		}
+	}
+	
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"@(MalterlibPostBuildScript_Last)"
+	{
+		&
+		{
+			!MalterlibPostBuildScript_Last ""
 		}
 	}
 	

@@ -1953,6 +1953,7 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 }
 
 
+
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
 	if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, _Progress, false))
@@ -1969,6 +1970,12 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 	}
 	if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, _Progress, true))
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("copyfile('{}', '{}') when renaming file") << _FileFrom << _FileTo, ErrNo));
+}
+
+void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	if (rename(_FileFrom, _FileTo))
+		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("rename('{}', '{}')") << _FileFrom << _FileTo, errno));
 }
 
 #include <CoreServices/CoreServices.h>

@@ -357,7 +357,33 @@ namespace NMib
 		{
 			// Do nothing.
 		}
-					
+
+		static NSApplication *gs_pSerivceApplication = nullptr; 
+		void fg_CancelRunServiceStatusApp()
+		{
+			if (!gs_pSerivceApplication)
+				return;
+			dispatch_async
+				(
+					dispatch_get_main_queue()
+					, ^
+					{
+						[NSApp stop:NSApp];
+						NSEvent* event = [NSEvent otherEventWithType: NSApplicationDefined
+															location: NSMakePoint(0,0)
+													  modifierFlags: 0
+														  timestamp: 0.0
+														windowNumber: 0
+															context: nil
+															subtype: 0
+															  data1: 0
+															  data2: 0];
+						[NSApp postEvent: event atStart: true];
+					}
+				)
+			;
+		}
+		
 		void fg_RunServiceStatusApp(NFunction::TCFunction<void ()> const& _fPause, NFunction::TCFunction<void ()> const& _fResume, NStr::CStr const &_ServiceName, NContainer::TCVector<uint8> const& _IconData)
 		{
 			CAutoReleasePool ARPool;
@@ -367,8 +393,11 @@ namespace NMib
 			MenuContext.m_fResume = _fResume;
 			
 			NStr::CStr ClassName
-			= "MenuContext_" + NDataProcessing::CUniversallyUniqueIdentifier(NDataProcessing::EUniversallyUniqueIdentifierGenerate_Random)
-			.f_GetAsString(NDataProcessing::EUniversallyUniqueIdentifierFormat_AlphaNum)
+				= "MenuContext_" 
+				+ NDataProcessing::CUniversallyUniqueIdentifier(NDataProcessing::EUniversallyUniqueIdentifierGenerate_Random).f_GetAsString
+				(
+					NDataProcessing::EUniversallyUniqueIdentifierFormat_AlphaNum
+				)
 			;
 			
 			Class pMenuContextClass = objc_allocateClassPair([NSObject class], ClassName.f_GetStr(), 0);
@@ -387,7 +416,12 @@ namespace NMib
 			void* pMenuContextObject = [[pMenuContextClass alloc] init];
 			object_setInstanceVariable((id)pMenuContextObject, "m_pContext", &MenuContext);
 			
-			[NSApplication sharedApplication];
+			gs_pSerivceApplication = [NSApplication sharedApplication];
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					gs_pSerivceApplication = nullptr;
+				}
+			;
 			
 			NSMenu* pMenu = [[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:@""];
 			

@@ -419,6 +419,27 @@ bool CPOSIXSocketContext::fp_GetSocketCreateParams(NMib::NNet::ENetAddressType _
 	return true;
 }
 
+void fg_SetUnixSocketOptions(int _File)
+{
+	// Set CloseOnExec so that child processes do not get our open files.
+	{
+		int FDFlags = fcntl(_File, F_GETFD);
+		if (FDFlags != -1)
+		{
+			FDFlags |= FD_CLOEXEC;
+			
+			if (fcntl(_File, F_SETFD, FDFlags) == -1)
+			{
+				// We let this go deliberately. Nothing overly bad can happen.
+			}
+		}
+		else
+		{
+			// We let this go deliberately. Nothing overly bad can happen.
+		}
+	}
+}
+
 CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, bint _bAsyncConnect, CPOSIXAddress const *_pBindAddress)
 {
 	mint Retries = 32;
@@ -440,6 +461,8 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 			int Error = errno;
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (connect)", Error));
 		}
+		
+		fg_SetUnixSocketOptions(FD);
 
 		if (_pBindAddress)
 		{
@@ -577,6 +600,8 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 		int Error = errno;
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (listen)", Error));
 	}
+	
+	fg_SetUnixSocketOptions(FD);
 
 	{
 		int Flags;
@@ -615,7 +640,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("bind (listen)", Error));
 	}
 
-	Result = listen(FD, 16);
+	Result = listen(FD, SOMAXCONN);
 
 	if (Result != 0)
 	{
@@ -646,6 +671,8 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Addres
 		int Error = errno;
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (listen)", Error));
 	}
+	
+	fg_SetUnixSocketOptions(FD);
 
 	{
 		int Flags;
@@ -695,6 +722,8 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 		return nullptr;
 	}
 
+	fg_SetUnixSocketOptions(ResultFD);
+	
 	{
 		int Flags;
 		if ((Flags = fcntl(ResultFD, F_GETFL)) == -1 || fcntl(ResultFD, F_SETFL, Flags | O_NONBLOCK) == -1) 

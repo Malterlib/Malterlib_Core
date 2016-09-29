@@ -517,7 +517,7 @@ namespace
 		auto FileData = fg_ReadProcFS<tf_CStr>(CmdlinePath);
 		
 		auto pParse = FileData.f_GetArray();
-		auto pParseEnd = pParse + FileData.f_GetLen();
+		auto pParseEnd = pParse + FileData.f_GetLen() - 1;
 		
 		while (pParse < pParseEnd)
 		{
