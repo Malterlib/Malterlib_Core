@@ -1752,6 +1752,8 @@ typedef NMib::TCAutoClear<int160> zint160;
 typedef NMib::TCAutoClear<uint160> zuint160;
 typedef NMib::TCAutoClear<int256> zint256;
 typedef NMib::TCAutoClear<uint256> zuint256;
+typedef NMib::TCAutoClear<int320> zint320;
+typedef NMib::TCAutoClear<uint320> zuint320;
 typedef NMib::TCAutoClear<int512> zint512;
 typedef NMib::TCAutoClear<uint512> zuint512;
 typedef NMib::TCAutoClear<int1024> zint1024;
