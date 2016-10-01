@@ -7,6 +7,7 @@
 
 #include <Mib/Storage/Reference>
 #include <Mib/String/Mixed>
+#include <Mib/Numeric/fp128>
 
 struct CTestStruct
 {
