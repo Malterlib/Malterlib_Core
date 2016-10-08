@@ -292,7 +292,11 @@ Compile
 			{
 				&
 				{
-					MalterlibMemoryManager_EnableOverrideSystemMalloc true
+					|
+					{
+						MalterlibMemoryManager_EnableOverrideSystemMalloc true
+						MalterlibMemoryManager_OverrideDll true
+					}
 					PlatformFamily OSX
 					!DocumentationEnabled true
 				}

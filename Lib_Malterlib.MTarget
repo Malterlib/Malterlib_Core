@@ -684,7 +684,6 @@ Target
 	{
 		&
 		{
-			!MalterlibForceExecutable true
 			|
 			{
 				Target:Target.Type "DynamicLibrary"
@@ -700,7 +699,6 @@ Target
 			Target:Target.Type "ConsoleExecutable"
 			Target:Target.Type "UIExecutable"
 			Target:Target.Type "Executable"
-			MalterlibForceExecutable true
 		}
 	}
 	%Dependency "Dll_MalterlibOverrideMalloc"
@@ -737,7 +735,6 @@ Target
 					!Target.Type XcodeBundle
 					!Target.Type SharedDynamicLibrary
 				}
-				MalterlibForceExecutable true
 			}
 			!MalterlibMemoryManager System
 		}

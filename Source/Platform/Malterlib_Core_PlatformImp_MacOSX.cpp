@@ -1447,7 +1447,9 @@ void NSys::fg_CreateSystem()
 	
 	NPrivate::fg_SetupLimits();
 	
+#if !defined(DMibMemoryOverrideDll)
 	if (!g_bIsSharedLibrary) // Only use pthread_atfork in non-dylibs as atfork handlers cannot be unregistered before dlclose
+#endif
 	{
 #ifndef F_SETNOSIGPIPE
 		signal(SIGPIPE,SIG_IGN);
@@ -1579,7 +1581,9 @@ void *NSys::fg_Process_GetCrossModuleMemoryManagerInterface()
 
 void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 {
+#if !defined(DMibMemoryOverrideDll)
 	DMibFastCheck(!fg_GetSys()->f_IsDll());
+#endif
 	
 	g_pCrossModuleMemoryManagerInterface = _pInterface;
 	
