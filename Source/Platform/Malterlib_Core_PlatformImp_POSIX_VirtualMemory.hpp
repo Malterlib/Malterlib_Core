@@ -31,6 +31,8 @@ using namespace NMib;
 // POSIX virtual memory allocation
 // *************************************************************************************************************************
 
+#define DMibOSX_UseMadvise
+
 namespace NMib
 {
 	namespace NSys
@@ -46,8 +48,13 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 {
 	int Protection = PROT_READ | PROT_WRITE;
 #ifdef DPlatformFamily_OSX
+#ifdef DMibOSX_UseMadvise
+	if ((_Flags & EAllocationFlag_NoCommit) && CSystem::ms_PlatformVersion < 10'06'00)
+		Protection = PROT_NONE;
+#else
 	if (_Flags & EAllocationFlag_NoCommit)
 		Protection = PROT_NONE;
+#endif
 #endif
 
 	auto fl_ReportError
@@ -60,6 +67,24 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 		}
 	;
 	
+	auto fSetUncommited = [&](void *_pMemory)
+		{
+#ifdef DPlatformFamily_OSX
+#ifdef DMibOSX_UseMadvise
+			if ((_Flags & EAllocationFlag_NoCommit) && CSystem::ms_PlatformVersion >= 10'06'00)
+			{
+				Protection = PROT_NONE;
+				if (madvise(_pMemory, _Size, MADV_FREE_REUSE))
+				{
+					int ErrNo = errno;
+					DMibErrorMemory(NMib::NPlatform::fg_FormatErrno("madvise (virtual decommit)", ErrNo));
+				}
+			}
+#endif
+#endif
+			return _pMemory;
+		}
+	;
 	
 	int Tag = 244;
 	
@@ -94,7 +119,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 				DMibLock(g_VirtualMapLock);
 				(*g_VirtualMap)[((mint)pAddress)>>12] = _Size;
 			}
-			return pAddress;
+			return fSetUncommited(pAddress);
 		}
 		else
 		{
@@ -137,7 +162,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 				DMibLock(g_VirtualMapLock);
 				(*g_VirtualMap)[((mint)pStartAddress)>>12] = _Size;
 			}
-			return pStartAddress;
+			return fSetUncommited(pStartAddress);
 		}
 	}
 	else
@@ -154,7 +179,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 			(*g_VirtualMap)[((mint)pAddress)>>12] = _Size;
 		}
 		
-		return pAddress;
+		return fSetUncommited(pAddress);
 	}
 }
 
@@ -190,7 +215,18 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
 
-#ifdef DPlatformFamily_OSX
+#if defined(DPlatformFamily_OSX)
+#ifdef DMibOSX_UseMadvise
+	if (CSystem::ms_PlatformVersion >= 10'06'00)
+	{
+		if (madvise(pMemStart, pMemEnd - pMemStart, MADV_FREE_REUSE))
+		{
+			int ErrNo = errno;
+			DMibErrorMemory(NPlatform::fg_FormatErrno("madvise (virtual decommit)", ErrNo));
+		}
+		return;
+	}
+#endif
 	if (mprotect(pMemStart, pMemEnd - pMemStart, PROT_READ | PROT_WRITE))
 	{
 		int ErrNo = errno;
@@ -226,7 +262,18 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
 	
-#ifdef DPlatformFamily_OSX
+#if defined(DPlatformFamily_OSX)
+#ifdef DMibOSX_UseMadvise
+	if (CSystem::ms_PlatformVersion >= 10'06'00)
+	{
+		if (madvise(pMemStart, pMemEnd - pMemStart, MADV_FREE_REUSABLE))
+		{
+			int ErrNo = errno;
+			DMibErrorMemory(NPlatform::fg_FormatErrno("madvise (virtual decommit)", ErrNo));
+		}
+		return;
+	}
+#endif
 	if (mprotect(pMemStart, pMemEnd - pMemStart, PROT_NONE))
 	{
 		int ErrNo = errno;
