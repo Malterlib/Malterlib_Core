@@ -48,6 +48,14 @@ namespace NMib
 			if (mp_bIsValid)
 				mp_fOnExitFunctor();
 		}
+		void operator () ()
+		{
+			if (mp_bIsValid)
+			{
+				mp_bIsValid = false;
+				mp_fOnExitFunctor();
+			}
+		}
 		void f_Clear()
 		{
 			mp_bIsValid = false;
