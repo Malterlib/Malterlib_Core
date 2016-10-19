@@ -4924,8 +4924,10 @@ void NSys::NFile::fg_Rename(const CStr &_FileFrom, const CStr &_FileTo)
 void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
 	DWORD Flags = REPLACEFILE_IGNORE_MERGE_ERRORS;
+#ifdef REPLACEFILE_IGNORE_ACL_ERRORS
 	if (NLocal::g_VersionInfo.dwMajorVersion >= 6)
 		Flags |= REPLACEFILE_IGNORE_ACL_ERRORS;
+#endif
 	
 	if (!ReplaceFileW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo), NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom), nullptr, Flags, nullptr, nullptr))
 		DMibErrorFile((CStr::CFormat("Windows returned an error from ReplaceFile({}, {}): {}") << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
