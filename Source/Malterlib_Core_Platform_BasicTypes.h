@@ -31,11 +31,9 @@ typedef double pfp64;
 #define DMibPCanDo_fp64
 static_assert(sizeof(pfp64)*8 == 64, "fp64 not supported");
 
-#ifndef DCompiler_MSVC
 typedef long double pfp80;
 #define DMibPCanDo_fp80
-static_assert(sizeof(pfp80)*8 == 80, "fp80 not supported");
-#endif
+static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 
 #if defined(DPlatformFamily_OSX)
 #	if DMibPPtrBits >= 64
