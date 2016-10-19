@@ -3429,7 +3429,11 @@ Target
 			}
 			TargetIsExecutable true
 			!MalterlibStripSymbols false
-			MalterlibDeploySymbols true
+			|
+			{
+				MalterlibDeploySymbols true
+				MalterlibStripSymbols true
+			}
 			|
 			{
 				!Configuration "Release Testing"

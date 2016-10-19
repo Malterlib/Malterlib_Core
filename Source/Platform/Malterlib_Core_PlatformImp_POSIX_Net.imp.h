@@ -560,6 +560,21 @@ void CPOSIXSocketContext::fp_PrepareUnixListen(CPOSIXAddress const &_Address)
 		NStr::CStr UnixFilePath = Unix.sun_path;
 		if (NFile::CFile::fs_FileExists(UnixFilePath))
 			NFile::CFile::fs_DeleteFile(UnixFilePath);
+		auto Directory = NFile::CFile::fs_GetPath(UnixFilePath);
+		if (!NFile::CFile::fs_FileExists(Directory))
+		{
+			// If user want other permissions it needs to make sure that the directory is created beforehand
+			NFile::CFile::fs_CreateDirectory(Directory);
+			NFile::CFile::fs_SetAttributes
+				(
+					Directory
+					, NFile::EFileAttrib_UnixAttributesValid
+					| NFile::EFileAttrib_UserExecute 
+					| NFile::EFileAttrib_UserRead 
+					| NFile::EFileAttrib_UserWrite 
+				)
+			;
+		}
 	}
 }
 

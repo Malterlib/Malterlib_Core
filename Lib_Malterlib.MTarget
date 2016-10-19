@@ -905,6 +905,7 @@ Target
 	Property
 	{
 		MalterlibDisableMalterlib true
+		MalterlibStripSymbols false
 		MalterlibSigning false // Linker crashes if we sign this dylib
 	}
 	%Group Source
@@ -979,6 +980,7 @@ Property
 	Property
 	{
 		MalterlibDisableMalterlib true
+		MalterlibStripSymbols false
 	}
 	%Group Source
 	{
