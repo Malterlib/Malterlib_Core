@@ -31,6 +31,7 @@ using namespace NMib::NContainer;
 #include <Mib/Core/PlatformSpecific/OSXOSStatus>
 
 bint g_bIsSharedLibrary = false;
+bint g_bRegisteredAtFork = false;
 
 void fg_ForkPrepare();
 void fg_ForkParentOrChild();
@@ -1454,7 +1455,11 @@ void NSys::fg_CreateSystem()
 #ifndef F_SETNOSIGPIPE
 		signal(SIGPIPE,SIG_IGN);
 #endif
-		pthread_atfork(&CSystemMacOSX::fs_ForkPrepare, &CSystemMacOSX::fs_ForkParent, &CSystemMacOSX::fs_ForkChild);
+		if (!g_bRegisteredAtFork)
+		{
+			g_bRegisteredAtFork = true;
+			pthread_atfork(&CSystemMacOSX::fs_ForkPrepare, &CSystemMacOSX::fs_ForkParent, &CSystemMacOSX::fs_ForkChild);
+		}
 	}
 	
 	//atexit(&fg_DestroySystemAtExit);

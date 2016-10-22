@@ -141,7 +141,9 @@ namespace NMib
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
 
-
+		void fg_Mem_DisableLazyReturnCheckout();	
+		void fg_Mem_EnableLazyReturnCheckout();	
+		
 		void *fg_Mem_VirtualAllocInRange(mint &_Size, uint8 *_pLower, uint8 *_pUpper, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default, mint _Alignment = 0);
 		void *fg_Mem_VirtualAlloc(mint &_Size, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default, mint _Alignment = 0);
 		void *fg_Mem_VirtualRealloc(void *_pMem, mint &_Size, mint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default);
@@ -165,7 +167,7 @@ namespace NMib
 		| Threading																							|
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
-
+		
 		void *fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount);
 		void *fg_Semaphore_Duplicate(void * _pSemaphore);
 		void fg_Semaphore_ForkedChild(void * _pSemaphore);
