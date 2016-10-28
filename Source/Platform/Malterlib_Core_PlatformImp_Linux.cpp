@@ -2428,14 +2428,15 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 	DMibFastCheck(fg_Process_GetCrossModuleMemoryManagerInterface() == _pInterface);
 }
 
-
 #include <stdarg.h>
-extern "C" int __isoc99_sscanf(const char *a, const char *b, va_list args)
+
+extern "C" int __isoc99_sscanf(const char *s, const char *format, ...)
 {
-   int i;
-   va_list ap;
-   va_copy(ap,args);
-   i=sscanf(a,b,ap);
-   va_end(ap);
-   return i;
+	va_list arg;
+	int done;
+	va_start(arg, format);
+	done = vsscanf(s, format, arg);
+	va_end(arg);
+	return done;
 }
+
