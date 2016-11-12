@@ -175,6 +175,20 @@ Compile
 			!MalterlibMemoryManager_CrossModule_Enable true
 		}
 	}
+	PreprocessorDefines "DMibConfig_MemoryManager_HugePage_Enable=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemoryManager_HugePage_Enable true
+		}
+	}
+	PreprocessorDefines "DMibConfig_MemoryManager_HugePage_Enable=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			!MalterlibMemoryManager_HugePage_Enable true
+		}
+	}
 	PreprocessorDefines "DMibConfig_Memory_Shims_EnableLocal=1;@(Compile.PreprocessorDefines)"
 	{
 		&

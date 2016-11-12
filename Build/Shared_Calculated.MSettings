@@ -552,6 +552,11 @@ Property
 		!!MalterlibMemoryManager_CrossModule_Enable ""
 	}
 
+	MalterlibMemoryManager_HugePage_Enable	"false" // User: Enables transparent huge page support on Linux
+	{
+		!!MalterlibMemoryManager_HugePage_Enable ""
+	}
+
 	MalterlibMemoryManager_Stats_EnableCallstack "false" // User: Dump  statistics about memory allocations callstacks
 	{
 		!!MalterlibMemoryManager_Stats_EnableCallstack ""

@@ -73,7 +73,6 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 #ifdef DMibOSX_UseMadvise
 			if ((_Flags & EAllocationFlag_NoCommit) && CSystem::ms_PlatformVersion >= 10'06'00)
 			{
-				Protection = PROT_NONE;
 				if (madvise(_pMemory, _Size, MADV_FREE_REUSE))
 				{
 					int ErrNo = errno;
@@ -81,6 +80,15 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 				}
 			}
 #endif
+#endif
+#ifdef DPlatformFamily_Linux
+#if DMibConfig_MemoryManager_HugePage_Enable
+			madvise(_pMemory, _Size, MADV_HUGEPAGE);
+#else
+			madvise(_pMemory, _Size, MADV_NOHUGEPAGE);
+#endif
+			if ((_Flags & EAllocationFlag_NoCommit))
+				madvise(_pMemory, _Size, MADV_DONTNEED);
 #endif
 			return _pMemory;
 		}
