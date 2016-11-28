@@ -18,11 +18,15 @@ struct CInitMalterlib
 	{
 		NMib::NSys::fg_CreateSystem();
 	}
+	~CInitMalterlib()
+	{
+		NMib::NSys::fg_DestroySystem();
+	}
 };
 
 // Clang emits C++ initializers first, 101 is lowest allowed prio
 CInitMalterlib g_InitMalterlib __attribute__((init_priority(101)));
-
+/*
 extern "C"
 {
 	// The highest priority destructors are called last
@@ -31,7 +35,7 @@ extern "C"
 		NMib::NSys::fg_DestroySystem();
 	}
 }
-
+*/
 #else
 
 extern "C" void __attribute__ ((constructor(-1111111111))) fg_InitMalterlib()
