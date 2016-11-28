@@ -619,7 +619,7 @@ void fg_DestroySystemAtExit()
 
 namespace NMib
 {
-	mint g_SystemMemory[sizeof(CSystemEmscripten) / sizeof(uint64)];
+	mint align_cacheline g_SystemMemory[sizeof(CSystemEmscripten) / sizeof(uint64)];
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = false;
 	mint g_bCanStartThreads = false;
@@ -1331,6 +1331,11 @@ bint NSys::NFile::fg_ChangeNotification_Changed(void *_pNotification)
 }
 
 bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification)
+{
+	return false;
+}
+	
+bool NSys::NFile::fg_ChangeNotification_Supported()
 {
 	return false;
 }

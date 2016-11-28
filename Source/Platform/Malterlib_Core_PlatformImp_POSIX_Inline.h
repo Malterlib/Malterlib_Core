@@ -4,6 +4,7 @@
 extern "C"
 {
 	#include <pthread.h>
+
 #ifdef DPlatformFamily_OSX
 	#include <sys/syscall.h>
 	#include <unistd.h>
@@ -60,8 +61,10 @@ namespace NMib
 		// POSIX Thread Implementation
 		// *************************************************************************************************************************
 
+#ifdef DPlatformFamily_OSX
 		extern mint g_ThreadSelfOffset;
 		extern mint g_ThreadLocalOffset;
+#endif
 		
 		inline_always volatile mint fg_GetThreadSelf()
 		{
@@ -101,7 +104,21 @@ namespace NMib
 				return  (mint)pthread_self();
 			#endif
 		#elif defined(DPlatformFamily_Linux)
-			return  (mint)pthread_self();
+			#ifdef DMibAssumeGlibc
+				mint Return;
+				#if defined(__i386__)
+					asm ("mov %%gs:0x8,%0" : "=r"(Return) : );
+				#elif defined(__x86_64__)
+					asm ("mov %%fs:0x10,%0" : "=r"(Return) : );
+				#else
+					#error "Not Implemented"
+				#endif
+				
+				DMibFastCheck(Return == (mint)pthread_self());
+				return Return;
+			#else
+				return (mint)pthread_self();
+			#endif
 		#elif defined(DPlatformFamily_Emscripten)
 			return  (mint)pthread_self();
 		#else
@@ -144,7 +161,30 @@ namespace NMib
 				return (mint)pthread_getspecific((pthread_key_t)_iVariable);
 			#endif
 		#elif defined(DPlatformFamily_Linux)
-			return (mint)pthread_getspecific((pthread_key_t)_iVariable);
+			#ifdef DMibStaticThreadLocals
+				mint Return;
+				#if defined(__i386__)
+					asm ("mov %%gs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+				#elif defined(__x86_64__)
+					asm ("mov %%fs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+				#else
+					#error "Not Implemented"
+				#endif
+				return Return;
+/*			#elif defined(DMibAssumeGlibc)
+				mint Return;
+				#if defined(__i386__)
+					asm ("mov %%gs:0x0(%2,%1,4),%0" : "=r"(Return) : "r"(_iVariable * 2 + 1), "r"(DMibPOffsetOf(pthread, specific_1stblock)));
+				#elif defined(__x86_64__)
+					asm ("mov %%fs:0x318(,%1,8),%0" : "=r"(Return) : "r"(_iVariable * 2));
+				#else
+					#error "Not Implemented"
+				#endif
+				DMibFastCheck(Return == (mint)pthread_getspecific((pthread_key_t)_iVariable));
+				return Return;*/
+			#else
+				return (mint)pthread_getspecific((pthread_key_t)_iVariable);
+			#endif
 		#elif defined(DPlatformFamily_Emscripten)
 			return (mint)pthread_getspecific((pthread_key_t)_iVariable);
 		#else
@@ -183,9 +223,35 @@ namespace NMib
 			return fg_Thread_SetLocal(_ThreadID, _iStorage, _pData);
 		}
 
-		inline_always void *fg_Thread_GetLocalFast(mint _iStorage)
+		inline_always void *fg_Thread_GetLocalFast(mint _iVariable)
 		{
-			return fg_Thread_GetLocal(_iStorage);
+#if defined(DPlatformFamily_Linux)
+			mint Return;
+			#ifdef DMibStaticThreadLocals
+				#if defined(__i386__)
+					asm ("mov %%gs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+				#elif defined(__x86_64__)
+					asm ("mov %%fs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+				#else
+					#error "Not Implemented"
+				#endif
+/*			#elif defined(DMibAssumeGlibc)
+				mint Return;
+				#if defined(__i386__)
+					asm ("mov %%gs:0x0(%2,%1,4),%0" : "=r"(Return) : "r"(_iVariable * 2 + 1), "r"(DMibPOffsetOf(pthread, specific_1stblock)));
+				#elif defined(__x86_64__)
+					asm ("mov %%fs:0x318(,%1,8),%0" : "=r"(Return) : "r"(_iVariable * 2));
+				#else
+					#error "Not Implemented"
+				#endif
+				DMibFastCheck(Return == (mint)pthread_getspecific((pthread_key_t)_iVariable));*/
+			#else
+				return fg_Thread_GetLocal(_iVariable);
+			#endif
+			return (void *)Return;
+#else
+			return fg_Thread_GetLocal(_iVariable);
+#endif
 		}
 
 		inline_always void *fg_Thread_GetLocalAlwaysSetFast(mint _iStorage)
@@ -222,7 +288,5 @@ DMibDeprecatedSupressStop;
 			return fg_Thread_GetCurrentUID();
 #endif
 		}		
-		
 	}
 }
-

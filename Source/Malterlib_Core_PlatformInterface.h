@@ -203,10 +203,12 @@ namespace NMib
 
 	#ifdef DMibPSupportThreadLocalDestructors
 		mint fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*));
+		void fg_Thread_FreeLocalWithDestructor(mint _iStorage);
 	#endif
 		
 		void fg_Thread_FreeLocal(mint _iStorage);
 		void fg_Thread_SetLocal(mint _iStorage, void *_pData);
+		void fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_pData);
 		void fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData);
 		void *fg_Thread_GetLocal(mint _ThreadID, mint _iStorage);
 		void *fg_Thread_GetLocal(mint _iStorage);

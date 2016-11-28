@@ -759,6 +759,72 @@ Target
 	{
 		!!PlatformFamily Linux
 	}
+
+	LDFlags "-fuse-ld=gold @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Malterlib_LinuxUseGoldLinker true
+		}
+	}
+
+	LDFlags "-Xlinker --gdb-index @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Malterlib_LinuxUseGoldLinker true
+		}
+	}
+	
+	LDFlags "-Xlinker --export-dynamic-symbol=fg_IdsGetCrossModuleMemoryManagerInterface @(Target.LDFlags)"
+	{
+		&
+		{
+			Malterlib_LinuxUseGoldLinker true
+			PlatformFamily Linux
+			|
+			{
+				Target.Type "ConsoleExecutable"
+				Target.Type "Executable"
+				Target.Type "UIExecutable"
+			}
+		}
+	}
+	
+	LDFlags "-Xlinker --export-dynamic-symbol=fg_Malterlib_Thread_AllocLocal "\
+			"-Xlinker --export-dynamic-symbol=fg_Malterlib_Thread_FreeLocal @(Target.LDFlags)"
+	{
+		&
+		{
+			Malterlib_LinuxUseGoldLinker true
+			MalterlibThread_LinuxUseStaticThreadLocal true
+			PlatformFamily Linux
+			|
+			{
+				Target.Type "ConsoleExecutable"
+				Target.Type "Executable"
+				Target.Type "UIExecutable"
+			}
+		}
+	}
+	
+	LDFlags "-Xlinker --export-dynamic @(Target.LDFlags)"
+	{
+		&
+		{
+			!Malterlib_LinuxUseGoldLinker true
+			MalterlibThread_LinuxUseStaticThreadLocal true
+			PlatformFamily Linux
+			|
+			{
+				Target.Type "ConsoleExecutable"
+				Target.Type "Executable"
+				Target.Type "UIExecutable"
+			}
+		}
+	}
 	
 	LDFlags "-claim_xcode @(Target.LDFlags)"
 	{
@@ -1837,6 +1903,7 @@ Property
 Property
 {
 	GeneratedDirectory	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+	GeneratedGlobalDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/Generated/"
 	
 	GeneratedDirectoryNoConfig	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/"
 	GeneratedWorkspaceDirectory	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/"

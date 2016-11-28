@@ -20,13 +20,90 @@ using namespace NMib;
 // These static asserts check that everything is OK.
 // *************************************************************************************************************************
 
-static_assert( sizeof(pthread_key_t) <= sizeof(mint), 	"pthread_key_t must be the same size or smaller than a mint." );
-static_assert( sizeof(pthread_t) <= sizeof(mint), 		"pthread_t must be the same size or smaller than a mint." );
-static_assert( sizeof(pid_t) <= sizeof(mint), 		"pid_t must be the same size or smaller than a mint." );
+static_assert(sizeof(pthread_key_t) <= sizeof(mint), "pthread_key_t must be the same size or smaller than a mint.");
+static_assert(sizeof(pthread_t) <= sizeof(mint), "pthread_t must be the same size or smaller than a mint.");
+static_assert(sizeof(pid_t) <= sizeof(mint), "pid_t must be the same size or smaller than a mint.");
 
 // *************************************************************************************************************************
 // POSIX Thread Implementation
 // *************************************************************************************************************************
+
+mint NSys::fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*))
+{
+	pthread_key_t pKey = 0;
+	if (pthread_key_create(&pKey, _pDestructor))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", errno));
+	else if (pKey == 0)
+	{
+		// We don't support the key being 0, allocate the next key if this happens
+		if (pthread_key_create(&pKey, _pDestructor))
+			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", errno));
+		DMibFastCheck(pKey != 0);
+	}
+	
+	if (pthread_setspecific(pKey, nullptr))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc with destructor)", errno));
+	return (mint)pKey;
+}
+
+void NSys::fg_Thread_FreeLocalWithDestructor(mint _iStorage)
+{
+	pthread_key_t pKey = (pthread_key_t)_iStorage;
+	if (pthread_key_delete(pKey))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_delete (thread local free)", errno));
+}
+
+#ifdef DPlatformFamily_OSX
+mint NSys::g_ThreadSelfOffset = 0;
+mint NSys::g_ThreadLocalOffset = 0;
+namespace NMib
+{
+	namespace NSys
+	{
+		mint g_ThreadLocalOffsetPThread = 0;
+	}
+}
+#endif
+
+void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_pData)
+{
+	mint ThisThread = fg_Thread_GetCurrentUID();
+	if (ThisThread == _ThreadID)
+	{
+		pthread_key_t pKey = (pthread_key_t)_iStorage;
+		if (pthread_setspecific(pKey, _pData))
+			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", errno));
+		return;
+	}
+#ifdef DPlatformFamily_OSX
+	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
+		
+		TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
+		pThreadLocal->f_Exchange((mint)_pData)
+
+	#elif defined(DMibPSupportAlwaysCreatedThreadLocal)
+		#if DPlatformVersion >= 1070
+			#if defined(__i386__) || defined(__x86_64__)
+				TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
+			#else
+				#error "Not Implemented"
+			#endif
+			pThreadLocal->f_Exchange((mint)_pData);
+		#elif DPlatformVersion >= 1050
+			TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
+			pThreadLocal->f_Exchange((mint)_pData);
+		#else
+			#error "Not Implemented"
+		#endif
+	#else
+		DMibPDebugBreak; // Should never get here
+	#endif
+#else
+	DMibPDebugBreak; // Should never get here
+#endif
+}
+
+#ifndef DMibStaticThreadLocals
 
 mint NSys::fg_Thread_AllocLocal()
 {
@@ -44,25 +121,6 @@ mint NSys::fg_Thread_AllocLocal()
 	return (mint)pKey;
 }
 
-mint NSys::fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*))
-{
-	pthread_key_t pKey = 0;
-	if (pthread_key_create(&pKey, _pDestructor))
-		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", errno));
-	else if (pKey == 0)
-	{
-		// We don't support the key being 0, allocate the next key if this happens
-		if (pthread_key_create(&pKey, _pDestructor))
-			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", errno));
-		DMibFastCheck(pKey != 0);
-	}
-	
-	if (pthread_setspecific(pKey, nullptr))
-		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc with destructor)", errno));
-		
-	return (mint)pKey;
-}
-
 void NSys::fg_Thread_FreeLocal(mint _iStorage)
 {
 	pthread_key_t pKey = (pthread_key_t)_iStorage;
@@ -77,16 +135,6 @@ void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", errno));
 }
 
-mint NSys::g_ThreadSelfOffset = 0;
-mint NSys::g_ThreadLocalOffset = 0;
-namespace NMib
-{
-	namespace NSys
-	{
-		mint g_ThreadLocalOffsetPThread = 0;
-	}
-}
-
 void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 {
 	mint ThisThread = fg_Thread_GetCurrentUID();
@@ -95,36 +143,33 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 		fg_Thread_SetLocal(_iStorage, _pData);
 		return;
 	}
-#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
-	
-	TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-	pThreadLocal->f_Exchange((mint)_pData)
+#ifdef DPlatformFamily_OSX
+	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
+		
+		TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
+		pThreadLocal->f_Exchange((mint)_pData)
 
-#elif defined(DMibPSupportAlwaysCreatedThreadLocal)
-	#if DPlatformVersion >= 1070
-		#if defined(__i386__) || defined(__x86_64__)
-			TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
+	#elif defined(DMibPSupportAlwaysCreatedThreadLocal)
+		#if DPlatformVersion >= 1070
+			#if defined(__i386__) || defined(__x86_64__)
+				TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
+			#else
+				#error "Not Implemented"
+			#endif
+			pThreadLocal->f_Exchange((mint)_pData);
+		#elif DPlatformVersion >= 1050
+			TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
+			pThreadLocal->f_Exchange((mint)_pData);
 		#else
 			#error "Not Implemented"
 		#endif
-		pThreadLocal->f_Exchange((mint)_pData);
-	#elif DPlatformVersion >= 1050
-		TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-		pThreadLocal->f_Exchange((mint)_pData);
 	#else
-		#error "Not Implemented"
+		DMibPDebugBreak; // Should never get here
 	#endif
 #else
 	DMibPDebugBreak; // Should never get here
 #endif
 }
-
-#ifdef DMibDebuggerHelpers
-assure_used void *fg_Debug_GetThreadLocal(mint _iStorage)
-{
-	return NSys::fg_Thread_GetLocal(_iStorage);
-}
-#endif
 
 void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 {
@@ -140,6 +185,16 @@ void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 	
 	return nullptr;
 }
+
+#endif
+
+#ifdef DMibDebuggerHelpers
+assure_used void *fg_Debug_GetThreadLocal(mint _iStorage)
+{
+	return NSys::fg_Thread_GetLocal(_iStorage);
+}
+#endif
+
 void *NSys::fg_Thread_GetLocalFast(mint _ThreadID, mint _iStorage)
 {
 	return fg_Thread_GetLocal(_ThreadID, _iStorage);

@@ -30,7 +30,11 @@ namespace NLocal
 {
 	int (* g_f_pipe2)(int __pipedes[2], int __flags) __THROW __wur = nullptr;
 	int (* g_f_inotify_init1)(int __flags) __THROW = nullptr;
+	int (* g_f_inotify_init)(void) __THROW = nullptr;
+	int (* g_f_inotify_add_watch)(int __fd, const char *__name, uint32_t __mask) __THROW = nullptr;
+	int (* g_f_inotify_rm_watch)(int __fd, int __wd) __THROW = nullptr;
 	int (* g_f_pthread_setname_np)(pthread_t __target_thread, __const char *__name) = nullptr;
+	void *(* g_f_memcpy)(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) = &memmove;
 	_Unwind_Reason_Code (*g_f_unwind_backtrace) (_Unwind_Trace_Fn, void *);
 	_Unwind_Ptr (*g_f_unwind_getip) (struct _Unwind_Context *);
 	
@@ -38,9 +42,13 @@ namespace NLocal
 	{
 		(void * &)g_f_pipe2 = dlsym(RTLD_DEFAULT, "pipe2");
 		(void * &)g_f_inotify_init1 = dlsym(RTLD_DEFAULT, "inotify_init1");
+		(void * &)g_f_inotify_init = dlsym(RTLD_DEFAULT, "inotify_init");
+		(void * &)g_f_inotify_add_watch = dlsym(RTLD_DEFAULT, "inotify_add_watch");
+		(void * &)g_f_inotify_rm_watch = dlsym(RTLD_DEFAULT, "inotify_rm_watch");
 		(void * &)g_f_pthread_setname_np = dlsym(RTLD_DEFAULT, "pthread_setname_np");
 		(void * &)g_f_unwind_backtrace = dlsym(RTLD_DEFAULT, "_Unwind_Backtrace");
 		(void * &)g_f_unwind_getip = dlsym(RTLD_DEFAULT, "_Unwind_GetIP");
+		(void * &)g_f_memcpy = dlsym(RTLD_NEXT, "memcpy");
 	}
 }
 
@@ -78,6 +86,7 @@ void fg_ForkParentOrChild();
 #define DMibConfig_SemaphoreImplemented
 
 #include "Malterlib_Core_PlatformImp_POSIX_PThread.hpp"
+#include "Malterlib_Core_PlatformImp_Linux_PThread.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX.imp.h"
 #include "Malterlib_Core_PlatformImp_POSIX_File.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX_Console.hpp"
@@ -1097,7 +1106,7 @@ void fg_DestroySystemAtExit()
 
 namespace NMib
 {
-	mint g_SystemMemory[sizeof(CSystemLinux) / sizeof(mint)];
+	mint align_cacheline g_SystemMemory[sizeof(CSystemLinux) / sizeof(mint)];
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = false;
 	mint g_bCanStartThreads = false;
@@ -1414,7 +1423,7 @@ void NSys::fg_CreateSystem()
 	
 	auto pSystemMemory = (void *)NMib::g_SystemMemory;
 	auto pSystem = new(pSystemMemory) CSystemLinux();
-	static_assert(NTraits::TCAlignmentOf<CSystemLinux>::mc_Value <= sizeof(mint), "Aligment error");
+	static_assert(NTraits::TCAlignmentOf<CSystemLinux>::mc_Value <= DMibPMemoryCacheLineSize, "Aligment error");
 	
 	NSys::fg_Compiler_MakeActive(&pSystemMemory);
 	NSys::fg_Compiler_MakeActive(&pSystem);
@@ -1445,9 +1454,6 @@ void NSys::fg_CreateSystem()
 	
 	//atexit(&fg_DestroySystemAtExit);
 
-	
-	static_assert(NTraits::TCAlignmentOf<CSystemLinux>::mc_Value <= sizeof(mint), "Aligment error");
-	
 	fg_LoadLibraries();
 	
 	fg_InitBreakpad();
@@ -1875,6 +1881,11 @@ bint NSys::NFile::fg_ChangeNotification_Changed(void *_pNotification)
 bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification)
 {
 	return fg_GetLocalSys()->m_FileChangeNotificationContext->f_GetNotification(_pNotification, _Path, _Notification);
+}
+
+bool NSys::NFile::fg_ChangeNotification_Supported()
+{
+	return NLocal::g_f_inotify_init && NLocal::g_f_inotify_rm_watch && NLocal::g_f_inotify_add_watch;
 }
 
 // *************************************************************************************************************************
@@ -2365,22 +2376,43 @@ namespace NMib
 	}
 }
 
-#ifdef __amd64__
-#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver " #d_Symbols "," #d_Symbols "@GLIBC_2.2.5")
-#elif defined(__i386__)
-#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver " #d_Symbols "," #d_Symbols "@GLIBC_2.0")
-#else
-#error "Implement this"
+#ifdef DMibUseGoldLinker
+#if 0
+	#ifdef __amd64__
+		#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver __real_" #d_Symbols ",__real_" #d_Symbols "@GLIBC_2.2.5")
+	#elif defined(__i386__)
+		#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver __real_" #d_Symbols ",__real_" #d_Symbols "@GLIBC_2.0")
+	#else
+		#error "Implement this"
+	#endif
+
+	extern "C" void *__real_memcpy (void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n);
+	DDefineGLibCSymbolCompatible(memcpy);
 #endif
 
-DDefineGLibCSymbolCompatible(memcpy);
+	extern "C" void *__wrap_memcpy (void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n)
+	{
+		return NLocal::g_f_memcpy(__dest, __src, __n); // Due to bug in gold linker we can't get correct version of memcpy
+		//return __real_memcpy(__dest, __src, __n);
+	}
 
-extern "C" void *__wrap_memcpy (void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n)
-{
-    return memcpy(__dest, __src, __n);
-}
+#else
 
+	#ifdef __amd64__
+		#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver " #d_Symbols "," #d_Symbols "@GLIBC_2.2.5")
+	#elif defined(__i386__)
+		#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver " #d_Symbols "," #d_Symbols "@GLIBC_2.0")
+	#else
+		#error "Implement this"
+	#endif
 
+	DDefineGLibCSymbolCompatible(memcpy);
+
+	extern "C" void *__wrap_memcpy (void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n)
+	{
+		return memcpy(__dest, __src, __n);
+	}
+#endif
 
 namespace NMib
 {

@@ -2,6 +2,7 @@
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Test/Performance>
+#include <Mib/File/File>
 
 using namespace NMib::NStr;
 
@@ -88,7 +89,10 @@ namespace
 
 				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
 				
-				(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
+				if (NMib::NFile::CFileChangeNotification::fs_Supported())
+					(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
+				else
+					(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
 				DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop);
 
 				ThreadStarted.f_ResetSignaled();
@@ -210,7 +214,10 @@ namespace
 					void (calling_convention_c *pTestFunc)() = nullptr;
 					pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 					DMibTest(DMibExpr(pDll))(ETest_FailAndStop)(ETestFlag_Aggregated);
-					(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
+					if (NMib::NFile::CFileChangeNotification::fs_Supported())
+						(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
+					else
+						(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
 					DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop)(ETestFlag_Aggregated);
 					for (int i = 0; i < 2; ++i)
 						pTestFunc();

@@ -1120,7 +1120,7 @@ void NSys::fg_Message(const ch16 *_pMessageType, const ch16 *_pToOutput)
 
 namespace NMib
 {
-	mint g_SystemMemory[sizeof(CSystemMacOSX) / sizeof(mint)];
+	mint align_cacheline g_SystemMemory[sizeof(CSystemMacOSX) / sizeof(mint)];
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = false;
 	mint g_bCanStartThreads = false;
@@ -1414,7 +1414,7 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 
 	auto pSystemMemory = (void *)NMib::g_SystemMemory;
 	auto pSystem = new(pSystemMemory) CSystemMacOSX();
-	static_assert(NTraits::TCAlignmentOf<CSystemMacOSX>::mc_Value <= sizeof(mint), "Aligment error");
+	static_assert(NTraits::TCAlignmentOf<CSystemMacOSX>::mc_Value <= DMibPMemoryCacheLineSize, "Aligment error");
 	
 	NSys::fg_Compiler_MakeActive(&pSystemMemory);
 	NSys::fg_Compiler_MakeActive(&pSystem);
@@ -2017,6 +2017,10 @@ bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NM
 	return fg_GetLocalSys()->m_FileChangeNoticationContext->f_GetNotification(_pNotification, _Path, _Notification);
 }
 
+bool NSys::NFile::fg_ChangeNotification_Supported()
+{
+	return true;
+}
 
 // *************************************************************************************************************************
 // Net Implementation

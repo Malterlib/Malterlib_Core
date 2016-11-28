@@ -4431,6 +4431,11 @@ bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NM
 	return fg_GetLocalSys()->m_FileChangeNoticationContext->f_GetNotification(_pNotification, _Path, _Notification);
 }
 
+bool NSys::NFile::fg_ChangeNotification_Supported()
+{
+	return true;
+}
+
 NMib::NStr::CStr NSys::NFile::fg_GetOwnerOnLink(const NMib::NStr::CStr &_Path)
 {
 	return "";
@@ -5631,7 +5636,7 @@ void NSys::fg_PreDestroyHeap()
 namespace NMib
 {
 	
-	mint __declspec(align(8)) g_SystemMemory[sizeof(CSystemWindowsMSVC) / sizeof(mint)];
+	mint align_cacheline g_SystemMemory[sizeof(CSystemWindowsMSVC) / sizeof(mint)];
 	static_assert(__alignof(g_SystemMemory) == 8, "Alignment didn't work");
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = true;

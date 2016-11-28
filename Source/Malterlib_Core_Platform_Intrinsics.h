@@ -6,6 +6,7 @@
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 
 #	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
+#		include <stdint.h>
 #		include <x86intrin.h>
 #	endif
 #elif defined(DCompiler_MSVC)

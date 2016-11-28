@@ -1,0 +1,113 @@
+// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+#pragma once
+
+#ifdef DMibStaticThreadLocals
+
+using namespace NMib;
+
+#include <Mib/Container/BitArrayHierarchical>
+
+// *************************************************************************************************************************
+// POSIX Thread Implementation
+// *************************************************************************************************************************
+
+
+constexpr mint gc_nMalterlibThreadLocals = 256; // 2 KB on 64 bit platforms
+
+NThread::CSpinLockAggregate gc_nMalterlibThreadLocalsAllocatedLock = {DAggregateInit};
+NContainer::TCBitArrayHierarchical<gc_nMalterlibThreadLocals> gc_nMalterlibThreadLocalsAllocated{};
+
+#ifdef DMibDynamicLibrary
+	#ifndef DMibAssumeMalterlibHost
+		__thread mint __attribute__((tls_model("initial-exec"))) g_MalterlibThreadLocals[256] = {0};
+	#endif
+#else
+__thread mint __attribute__((tls_model("local-exec"))) g_MalterlibThreadLocals[256] = {0};
+#endif
+
+
+#if !defined(DMibDynamicLibrary)
+extern "C" assure_used module_export mint fg_Malterlib_Thread_AllocLocal()
+{
+	return NSys::fg_Thread_AllocLocal();
+}
+extern "C" assure_used module_export void fg_Malterlib_Thread_FreeLocal(mint _iStorage)
+{
+	NSys::fg_Thread_FreeLocal(_iStorage);
+}
+#endif
+
+#if defined(DMibDynamicLibrary) && defined(DMibAssumeMalterlibHost)
+extern "C" mint fg_Malterlib_Thread_AllocLocal();
+extern "C" void fg_Malterlib_Thread_FreeLocal(mint _iStorage);
+
+mint NSys::fg_Thread_AllocLocal()
+{
+	return fg_Malterlib_Thread_AllocLocal();
+}
+
+void NSys::fg_Thread_FreeLocal(mint _iStorage)
+{
+	return fg_Malterlib_Thread_FreeLocal(_iStorage);
+}
+#else
+mint NSys::fg_Thread_AllocLocal()
+{
+	aint iThreadLocal;
+	{
+		DMibLock(gc_nMalterlibThreadLocalsAllocatedLock);
+		iThreadLocal = gc_nMalterlibThreadLocalsAllocated.f_FindFreeBitAndSet();
+	}
+	if (iThreadLocal < 0)
+		DMibErrorSystemImp("Out of thread local indices");
+
+	smint Offset = (smint)&g_MalterlibThreadLocals[iThreadLocal] - (smint)NMib::NSys::fg_GetThreadSelf();
+	return (mint)Offset;
+}
+
+void NSys::fg_Thread_FreeLocal(mint _iStorage)
+{
+	smint StartOffset = (smint)&g_MalterlibThreadLocals[0] - (smint)NMib::NSys::fg_GetThreadSelf();
+	smint iStorage = (_iStorage - StartOffset) / sizeof(mint); 
+	if (iStorage < 0 || iStorage >= gc_nMalterlibThreadLocals)
+		DMibErrorSystemImp("Thread local index out of range");
+	bool bAllocated;
+	{
+		DMibLock(gc_nMalterlibThreadLocalsAllocatedLock);
+		bAllocated = gc_nMalterlibThreadLocalsAllocated.f_GetBit(iStorage);
+		if (unlikely(!bAllocated))
+			DMibErrorSystemImp("Thread local index has not been allocated");
+		gc_nMalterlibThreadLocalsAllocated.f_SetBit(iStorage, false);
+	}
+}
+#endif
+
+void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
+{
+	auto pAlloc = (void **)((uint8 *)NMib::NSys::fg_GetThreadSelf() + _iStorage);
+	*pAlloc = _pData;
+}
+
+void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
+{
+	mint ThisThread = fg_Thread_GetCurrentUID();
+	if (ThisThread == _ThreadID)
+	{
+		fg_Thread_SetLocal(_iStorage, _pData);
+		return;
+	}
+	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID + _iStorage);
+	pThreadLocal->f_Exchange((mint)_pData);
+}
+
+void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
+{
+	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
+		return fg_Thread_GetLocal(_iStorage);
+	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID + _iStorage);
+	return (void *)pThreadLocal->f_Load();
+}
+
+#endif

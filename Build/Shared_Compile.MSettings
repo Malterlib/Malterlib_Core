@@ -1391,6 +1391,37 @@ Compile
 	{
 		!!EnableSafeThreadLocals "true"
 	}
+	PreprocessorDefines "DMibStaticThreadLocals;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			MalterlibThread_LinuxUseStaticThreadLocal true
+		}
+	}
+	PreprocessorDefines "DMibAssumeGlibc;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			MalterlibThread_LinuxAssumeGlibc true
+		}
+	}
+	
+	PreprocessorDefines "DMibUseGoldLinker;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Malterlib_LinuxUseGoldLinker true
+		}
+	}
+	
+	PreprocessorDefines "DMibAssumeMalterlibHost;@(Compile.PreprocessorDefines)"
+	{
+		!!Malterlib_AssumeMalterlibHost true
+	}
+	
 	PreprocessorDefines "DMibRuntimeInline0=Malterlib_Core_PlatformImp_Windows_Inline.h;@(Compile.PreprocessorDefines)"
 	{
 		!!PlatformFamily "Windows"
@@ -1673,10 +1704,15 @@ Compile
 		}
 	}
 	
-/*	SplitSymbols true
+	SplitSymbols true
 	{
-		!!PlatformFamily Linux
-	}*/
+		&
+		{ 
+			PlatformFamily Linux
+			Malterlib_LinuxUseGoldLinker true
+			!MalterlibBuildServerBuild true
+		}
+	}
 
 /*	SymbolFile "@(Builtin.IntermediateDirectory)@(Target.FileName).pdb"
 

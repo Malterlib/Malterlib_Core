@@ -107,16 +107,7 @@ Property
 		}
 	}
 	
-/*    MalterlibMaxSupportedOSXVersion "10.12" // User: Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
-	{
-		&
-		{
-			MalterlibMaxSupportedOSXVersion ""
-			Generator "Xcode8"
-		}
-	}
-*/
-	MalterlibMaxSupportedOSXVersion "10.11" // User: Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMaxSupportedOSXVersion "10.12" // User: Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 	{
 		!!MalterlibMaxSupportedOSXVersion ""
 	}
@@ -410,6 +401,22 @@ Property
 		}
 	}
 	*/
+	MalterlibThread_LinuxUseStaticThreadLocal false // User: Use static thread locals on Linux. WARNING: This only works for executables, or load time dynamic libraries. Dynamic libraries loaded with dlopen() will not work, unless Malterlib_AssumeMalterlibHost is also specified.
+	{
+		!!MalterlibThread_LinuxUseStaticThreadLocal ""
+	}
+	MalterlibThread_LinuxAssumeGlibc true // User: Executable will only work on glibc system. Speeds up thread self access.
+	{
+		!!MalterlibThread_LinuxAssumeGlibc ""
+	}
+	Malterlib_AssumeMalterlibHost false // User: Dynamic libraries will only work when loaded from a process that uses Malterlib. Speeds up thread local access.
+	{
+		!!Malterlib_AssumeMalterlibHost ""
+	}
+	Malterlib_LinuxUseGoldLinker true // User: Use gold linker
+	{
+		!!Malterlib_LinuxUseGoldLinker ""
+	}
 }
 
 // Product version

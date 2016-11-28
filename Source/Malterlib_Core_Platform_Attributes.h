@@ -145,7 +145,7 @@
 // Aliasing
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define only_parameters_aliased 
-#	define return_not_aliased __attribute__((malloc))
+#	define return_not_aliased __attribute__((__malloc__))
 #	define function_does_not_return __attribute__((noreturn))
 #	define variable_not_aliased __restrict__
 

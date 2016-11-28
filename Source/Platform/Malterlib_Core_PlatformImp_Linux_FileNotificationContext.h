@@ -20,13 +20,8 @@ using namespace NMib::NTime;
 using namespace NMib::NMem;
 using namespace NMib::NContainer;
 
-namespace NLocal
-{
-	extern int (* g_f_inotify_init1)(int __flags) __THROW;
-	extern int (* g_f_pipe2)(int __pipedes[2], int __flags) __THROW __wur;
-}
-
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
+#include "Malterlib_Core_Platform_Linux_Optional.h"
 
 class CFileChangeNotificationContext
 {
@@ -41,8 +36,16 @@ public:
 		
 		if (NLocal::g_f_inotify_init1)
 			m_NotifyDescriptor = NLocal::g_f_inotify_init1(IN_NONBLOCK | IN_CLOEXEC); // This should never block, epoll takes care of that.
+		else if (NLocal::g_f_inotify_init)
+		{
+			if (!NLocal::g_f_inotify_add_watch)
+				DMibError("inotify_init(): Missing inotify_add_watch");
+			if (!NLocal::g_f_inotify_rm_watch)
+				DMibError("inotify_init(): Missing inotify_rm_watch");
+			m_NotifyDescriptor = NLocal::g_f_inotify_init();
+		}
 		else
-			m_NotifyDescriptor = inotify_init();
+			DMibError("inotify_init(): not available on system");
 
 		if (m_NotifyDescriptor < 0)
 		{
@@ -193,7 +196,7 @@ public:
 	int f_Inotify_AddWatch(CStr const &_Path)
 	{
 		uint32_t Mask = IN_ONLYDIR | IN_ALL_EVENTS;
-		int WatchDescriptor = inotify_add_watch(m_NotifyDescriptor, _Path.f_GetStr(), Mask);
+		int WatchDescriptor = NLocal::g_f_inotify_add_watch(m_NotifyDescriptor, _Path.f_GetStr(), Mask);
 		if (WatchDescriptor < 0)
 			DMibErrorFile(CStr::CFormat("inotify_add_watch({}) returned an error ({})") << _Path << errno);
 		return WatchDescriptor;
@@ -201,7 +204,7 @@ public:
 
 	void f_Inotify_RemoveWatch(int _Descriptor)
 	{
-		int Result = inotify_rm_watch(m_NotifyDescriptor, _Descriptor);
+		int Result = NLocal::g_f_inotify_rm_watch(m_NotifyDescriptor, _Descriptor);
 		if (Result < 0)
 		{
 			switch (errno)
