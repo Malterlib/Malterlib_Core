@@ -1087,6 +1087,19 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const& _
 	return Attribs;
 }
 
+NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const& _Filename)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_Filename);
+	struct stat Stats;
+	if (lstat(Canonical, &Stats))
+	{
+		auto ErrNo = errno;
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when getting file attributes") << Canonical, ErrNo));
+	}
+	NMib::NFile::EFileAttrib Attribs = fsg_StatsToAttribs(Stats);
+	return Attribs;
+}
+
 void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _Filename, NMib::NFile::EFileAttrib _Attributes)
 {
 	struct stat Stats;
@@ -1112,6 +1125,37 @@ void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _Filename, NMib::NFil
 		if (Flags != Stats.st_flags)
 		{
 			if (chflags(Filename, Flags))
+				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chflags('{}') when setting file attributes") << Filename,errno));
+		}
+	}
+#endif
+}
+
+void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _Filename, NMib::NFile::EFileAttrib _Attributes)
+{
+	struct stat Stats;
+	CStr Filename = fg_ConvertToPOSIXPath(_Filename);
+	if (lstat(Filename, &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when setting file attributes") << Filename,errno));
+	
+	// Set the mode...
+	{
+		uint32 Mode = fg_MalterlibAttributesToMode(_Attributes, Stats.st_mode);
+		
+		if (Mode != Stats.st_mode)
+		{
+			if (lchmod(Filename, Mode))
+				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chmod('{}') when setting file attributes") << Filename,errno));
+		}
+	}
+
+	// Set the flags...
+#ifdef DMibPMachKernel
+	{
+		uint32 Flags = fg_MalterlibAttributesToFlags(Stats.st_flags, _Attributes);
+		if (Flags != Stats.st_flags)
+		{
+			if (lchflags(Filename, Flags))
 				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chflags('{}') when setting file attributes") << Filename,errno));
 		}
 	}

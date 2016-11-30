@@ -4143,7 +4143,6 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetValidAttributes()
 	return NMib::NFile::EFileAttrib_None;
 }
 
-
 void NSys::NFile::fg_SetAttributes(void *_pFile, EFileAttrib _Attributes)
 {
 	auto *pFile = ((CWin32File *)_pFile);
@@ -4158,6 +4157,10 @@ void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _FileName, EFileAttri
 	fg_SetAttributesInternal<CWStr, CStr>(NMib::NFile::NPlatform::fg_ConvertToWindowsPath(_FileName, false), _Attributes);
 }
 
+void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _FileName, EFileAttrib _Attributes)
+{
+	return fg_SetAttributes(_FileName, _Attributes); 
+}
 
 EFileAttrib NSys::NFile::fg_GetAttributes(void *_pFile)
 {
@@ -4174,6 +4177,10 @@ EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const& _FileName)
 	return fg_GetAttributesInternal<CWStr, CStr>(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileName));
 }
 
+EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const& _FileName)
+{
+	return fg_GetAttributes(_FileName);
+}
 
 CMibFilePos NSys::NFile::fg_GetSize(void *_pFile)
 {
