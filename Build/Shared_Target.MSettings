@@ -704,7 +704,7 @@ Target
 	}
 	
 
-	LDFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/doxygen/stable/bin/doxygen @(Target.LDFlags)"
+	LDFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/doxygen/stable_build/bin/doxygen @(Target.LDFlags)"
 	{
 		&
 		{
@@ -715,7 +715,7 @@ Target
 	}
 	
 
-	ExtraLinkerFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/doxygen/stable/bin/doxygen @(Target.LDFlags)"
+	ExtraLinkerFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/stable_build/bin/doxygen @(Target.LDFlags)"
 	{
 		&
 		{
