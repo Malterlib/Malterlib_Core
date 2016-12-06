@@ -7,6 +7,8 @@
 #include <Mib/Log/Destinations>
 
 void fg_MalterlibMallocOverride_CanStartThreads();
+void fg_MalterlibMallocOverride_DestroyThreads();
+void fg_MalterlibMallocOverride_PreDestroyNonTrackedMemoryManager();
 
 namespace NMib
 {
@@ -138,6 +140,7 @@ namespace NMib
 		fp_DestroyGlobalMemoryReporter();
 #endif
 		fp_SubSystem_DestroyBeforeNonTrackedMemoryManager();
+		fg_MalterlibMallocOverride_PreDestroyNonTrackedMemoryManager();
 		fp_DestroyNonTrackedMemoryManager();
 
 		fp_ThreadLocalDestroy();
@@ -152,12 +155,15 @@ namespace NMib
 
 	void CSystem::f_DestructThreadSpecific()
 	{
+		g_bCanStartThreads = false;
+		
 #if DMibSysLogSeverities
 		m_pSystemLog->f_SetDispatcher(nullptr);
 #endif
 		
 		fp_SubSystem_DestroyThreadSpecific();
 
+		fg_MalterlibMallocOverride_DestroyThreads();
 		f_MemoryManager_DestroyThreads();
 	}
 
