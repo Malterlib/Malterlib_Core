@@ -385,6 +385,7 @@ namespace NMib
 
 		void f_ThreadEnum(NFunction::TCFunction<void (mint _ThreadID)> const &_EnumFunc);
 		bool f_ThreadDestroyed() const;
+		bool f_ThreadCreated() const;
 
 		void fp_ThreadLocalCreate();
 		void fp_ThreadLocalDestroy();

@@ -774,6 +774,9 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 {
 	if (_nMaxDepth == 0)
 		return 0;
+
+	if (!g_bCanStackTrace) // backtrace uses malloc in pthread_once, and _Unwind_Backtrace can deadlock on __GI___dl_iterate_phdr lock 
+		return 0;
 	
 	if (!NLocal::g_f_unwind_backtrace || !NLocal::g_f_unwind_getip)
 	{
@@ -781,8 +784,6 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 		// It's not safe to backtrace on x86 as we are using non-stackframe exception handling
 		return 0;
 #endif
-		if (!g_bCanStackTrace) // backtrace uses malloc in pthread_once
-			return 0;
 		int nReturned = backtrace((void**)_pStack, (int)_nMaxDepth);
 		
 		if (nReturned < 0)
