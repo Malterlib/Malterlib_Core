@@ -60,6 +60,7 @@ Property
 			}
 		}
 	}
+	TargetIdentity "@(Target:this.Identity)"
 }
 
 // Name / Filename
@@ -1501,43 +1502,6 @@ Target
 			PlatformIsDarwin true
 			!AOCCDisableSSL true
 			!Target.Type Driver
-		}
-	}
-
-	SearchPath "@('../../../SDK'->MakeAbsolute())/Perforce/lib/@(Platform)/@(ToolsetDir)/@(Architecture);@(Target.SearchPath)"
-	{
-		&
-		{
-			MalterlibLinkWithPerforce true
-			!PlatformFamily "Windows"
-			!PlatformIsDarwin true
-		}
-	}
-	SearchPath "@('../../../SDK'->MakeAbsolute())/Perforce/lib/OSX10.5/@(ToolsetDir)/@(Architecture);@(Target.SearchPath)"
-	{
-		&
-		{
-			MalterlibLinkWithPerforce true
-			PlatformFamily "OSX"
-		}
-	}
-
-	LinkWithLibraries "-Xlinker -( -lclient -lrpc -lsupp -Xlinker -) @(Target.LinkWithLibraries)"
-	{
-		&
-		{
-			MalterlibLinkWithPerforce true
-			!PlatformFamily "Windows"
-			!PlatformIsDarwin true
-		}
-	}
-	LinkWithLibraries "-lclient -lrpc -lsupp @(Target.LinkWithLibraries)"
-	{
-		&
-		{
-			MalterlibLinkWithPerforce true
-			!PlatformFamily "Windows"
-			PlatformIsDarwin true
 		}
 	}
 

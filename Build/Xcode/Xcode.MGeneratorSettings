@@ -1435,6 +1435,61 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_UsusedVariable"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-unused-variable"
+						true "-Wunused-variable"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_UnusedLabel"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-unused-label"
+						true "-Wunused-label"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_OverloadedVirtual"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-overloaded-virtual"
+						true "-Woverloaded-virtual"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_CharSubscripts"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-char-subscripts"
+						true "-Wchar-subscripts"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_Parentheses"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-parentheses"
+						true "-Wparentheses"
+					}
+				}
+			}
 			%GeneratorSetting "FunctionSections"
 			{
 				%GeneratorSetting "Value"
