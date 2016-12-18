@@ -2428,8 +2428,21 @@ void *NSys::fg_Mem_VirtualAllocInRange(mint &_Size, uint8 *_pLower, uint8 *_pUpp
 		auto err = vm_allocate( MachTask, &AllocAddress, _Size, 0);
 		if (err == KERN_SUCCESS)
 			return (void *) AllocAddress;
+
+		vm_size_t Size;
+		vm_region_basic_info_64 BasicInfo;
+		mach_msg_type_number_t InfoCount = VM_REGION_BASIC_INFO_COUNT_64;
+		mach_port_t ObjectName = MACH_PORT_NULL;
+		err = vm_region_64(MachTask, &AllocAddress, &Size, VM_REGION_BASIC_INFO_64, (vm_region_info_t)&BasicInfo, &InfoCount, &ObjectName);
+		if (err == KERN_SUCCESS)
+		{
+			AllocAddress = AllocAddress + Size; 
+		}
+		else
+			AllocAddress += NMib::NSys::NPrivate::g_PageSize;
 		
-		AllocAddress += NMib::NSys::NPrivate::g_PageSize;
+		if (ObjectName != MACH_PORT_NULL)
+			mach_port_deallocate(MachTask, ObjectName);
 	}
 	
 	return nullptr;	
