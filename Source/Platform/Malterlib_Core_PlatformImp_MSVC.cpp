@@ -5644,7 +5644,7 @@ namespace NMib
 {
 	
 	mint align_cacheline g_SystemMemory[sizeof(CSystemWindowsMSVC) / sizeof(mint)];
-	static_assert(__alignof(g_SystemMemory) == 8, "Alignment didn't work");
+	static_assert(__alignof(g_SystemMemory) >= DMibPMemoryCacheLineSize, "Alignment didn't work");
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = true;
 	mint g_bCanStartThreads = false;
