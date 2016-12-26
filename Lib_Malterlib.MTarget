@@ -101,8 +101,6 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 			TabWidth 2
 			UsesTabs false
 		}
-		
-		%File "Source/Dummy/Dummy.cpp"
 		%Group compiler-rt
 		{
 			&

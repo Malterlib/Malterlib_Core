@@ -517,6 +517,39 @@ Property
 	{
 		!!MalterlibLinkerDemangle ""
 	}
+	
+/*	PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/stable/build/make/bin/clang"
+	{
+		&
+		{
+			Target.PlatformToolsetCompiler ""
+			Generator "Xcode5"
+		}
+	}*/
+	PlatformToolsetCompiler "@(MToolPath)" // User: Change the clang compiler location
+	{
+		&
+		{
+			PlatformToolsetCompiler ""
+			Documentation Doxygen
+		}
+	}
+	PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc" // User: Change the clang compiler location
+	{
+		&
+		{
+			PlatformToolsetCompiler ""
+			PlatformFamily "Emscripten"
+		}
+	}
+	PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/@(MalterlibClangVersion)/build/make/bin/clang" // User: Change the clang compiler location
+	{
+		&
+		{
+			PlatformToolsetCompiler ""
+			!MalterlibDefaultToolset true
+		}
+	}
 }
 
 // Emscripten
@@ -636,41 +669,8 @@ Target
 	{
 		!!Target.PlatformToolset ""
 	}
-/*	PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/stable/build/make/bin/clang"
-	{
-		&
-		{
-			Target.PlatformToolsetCompiler ""
-			Generator "Xcode5"
-		}
-	}*/
 
-	
-	PlatformToolsetCompiler "@(MToolPath)" // User: Change the clang compiler location
-	{
-		&
-		{
-			Target.PlatformToolsetCompiler ""
-			Documentation Doxygen
-		}
-	}
-	
-	PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc" // User: Change the clang compiler location
-	{
-		&
-		{
-			Target.PlatformToolsetCompiler ""
-			PlatformFamily "Emscripten"
-		}
-	}
-	PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/@(MalterlibClangVersion)/build/make/bin/clang" // User: Change the clang compiler location
-	{
-		&
-		{
-			Target.PlatformToolsetCompiler ""
-			!MalterlibDefaultToolset true
-		}
-	}
+	PlatformToolsetCompiler "@(PlatformToolsetCompiler)"
 	
 //	PlatformToolsetLibTool "/Deploy/LibTool/libtool"
 	PlatformToolsetLibTool "/Development/Malterlib/Tools/OSXPatches/libtool/libtool"
@@ -1464,6 +1464,7 @@ Target
 	{
 		&
 		{
+			MalterlibSSLLibrary OpenSSL
 			MalterlibLinkWithOpenSSL true
 			MalterlibUsesOpenSSL true
 			!AOCCDisableSSL true
@@ -1477,6 +1478,7 @@ Target
 		&
 		{
 			MalterlibLinkWithOpenSSL true
+			MalterlibSSLLibrary OpenSSL
 			PlatformType "Unix"
 			!AOCCDisableSSL true
 		}
@@ -1489,6 +1491,7 @@ Target
 		&
 		{
 			MalterlibLinkWithOpenSSL true
+			MalterlibSSLLibrary OpenSSL
 			PlatformFamily Windows
 			!AOCCDisableSSL true
 		}
@@ -1866,7 +1869,7 @@ Property
 
 Property
 {
-	GeneratedDirectory	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+	GeneratedDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
 	GeneratedGlobalDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/Generated/"
 	
 	GeneratedDirectoryNoConfig	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/"
@@ -2865,12 +2868,18 @@ Target
 
 Property
 {
+	MalterlibExeFSExtraFilesContentsRecursive 0
+	MalterlibExeFSExtraFilesContentsRecursive 1
+	{
+		!"Expand0" "@(Expand0->Replace('^', ''))"
+	}
+  
 	MalterlibExeFSExtraFilesContentsTemplateExpand	"@(MalterlibExeFSSpecContents)"\
 													"Include\r\n"\
 													"{\r\n"\
-													"	Pattern \"@(Expand0)\"\r\n"\
+													"	Pattern \"@(Expand0->ReplaceChars('^', ''))\"\r\n"\
 													"	Destination \"@(Expand1)\"\r\n"\
-													"	Recurse 0\r\n"\
+													"	Recurse @(MalterlibExeFSExtraFilesContentsRecursive)\r\n"\
 													"}\r\n"
 	
 	MalterlibExeFSExtraFilesContentsTemplate	"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibExeFSExtraFilesContentsTemplateExpand'))"
@@ -2918,6 +2927,27 @@ Property
 	}
 }
 
+%Group "~Automatic/Dummy"
+{
+	%File "../Source/Dummy/Dummy.c"
+	{
+		!!MalterlibNeedLanguage_C true
+	}
+	%File "../Source/Dummy/Dummy.cpp"
+	{
+		!!MalterlibNeedLanguage_Cxx true
+	}
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Dummy;@(Target.ExtraGroups)"
+	{
+		!!MalterlibNeedLanguage_C true
+		!!MalterlibNeedLanguage_Cxx true
+	}
+}
+
 %Group "~Automatic/Malterlib ExeFS Files"
 {
 	%GenerateFile "Generate"
@@ -2930,10 +2960,23 @@ Property
 			UnicodeBOM "true"
 		}
 	}
-	
-	%File "../Source/Dummy/Dummy.cpp"
 }
 
+Property
+{
+	MalterlibNeedLanguage_Cxx "true"
+	{
+		!MalterlibExeFSSpecContents ""
+	}
+	MalterlibNeedLanguage_C "true"
+	{
+		&
+		{
+			!MalterlibNeedLanguage_Cxx true
+			GeneratorFamily Xcode
+		}
+	}
+}
 Target
 {
 	ExtraGroups "~Automatic/Malterlib ExeFS Files;@(Target.ExtraGroups)"

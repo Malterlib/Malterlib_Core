@@ -46,6 +46,7 @@
 						XML text.xml
 						MSBuildTargets text.xml
 						VisualStudioVisualizer text.xml
+						Custom text
 					}
 				}
 			}
@@ -841,7 +842,9 @@
 				{
 					Property
 					{
-						GNU++11 "gnu++0x"
+						GNU++11 "gnu++11"
+						GNU++14 "gnu++14"
+						GNU++17 "gnu++1z"
 						C++11 "c++11"
 						C++14 "c++14"
 						C++17 "c++1z"
@@ -1162,7 +1165,9 @@
 				{
 					Property
 					{
-						GNU++11 "-std=gnu++0x"
+						GNU++11 "-std=gnu++11"
+						GNU++14 "-std=gnu++14"
+						GNU++17 "-std=gnu++1z"
 						C++11 "-std=c++11"
 						C++14 "-std=c++14"
 						C++17 "-std=c++1z"
@@ -1446,7 +1451,18 @@
 					}
 				}
 			}
-			%GeneratorSetting "Warnings_UsusedVariable"
+			%GeneratorSetting "Warnings_TautolagicalPointerCompare"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-tautological-pointer-compare"
+						true "-Wtautological-pointer-compare"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_UnusedVariable"
 			{
 				%GeneratorSetting "Value"
 				{
@@ -1457,6 +1473,40 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_UnusedFunction"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-unused-function"
+						true "-Wunused-function"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_UnusedValue"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-unused-value"
+						true "-Wunused-value"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_VarArgs"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-varargs"
+						true "-Wvarargs"
+					}
+				}
+			}
+			
 			%GeneratorSetting "Warnings_UnusedLabel"
 			{
 				%GeneratorSetting "Value"
@@ -2356,6 +2406,28 @@
 	{
 		%GeneratorSetting "Compile"
 		{
+			%GeneratorSetting "TargetTriple"
+			{
+				Property
+				{
+					Prefix "-target "
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
+			%GeneratorSetting "SearchPath"
+			{
+				Property
+				{
+					Prefix "-I"
+					ConvertSeperator "1"
+					Seperator " "
+					IgnoreEmpty "1"
+					OldSeperator ";"
+					QuoteSeperatedValues "1"
+				}
+			}
 			%GeneratorSetting "Optimize"
 			{
 				Property
@@ -2394,6 +2466,41 @@
 		%GeneratorSetting "Compile"
 		{
 			// Disabled
+			%GeneratorSetting "Custom_CommandLine"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Custom_Outputs"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Custom_WorkingDirectory"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Custom_Inputs"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
+			%GeneratorSetting "Optimize"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
 			%GeneratorSetting "Type"
 			{
 				Property

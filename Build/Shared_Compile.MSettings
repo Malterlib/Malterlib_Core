@@ -99,7 +99,10 @@ Compile
 		{
 			this.Type "File"
 			Compile.Type ""
-			this.Identity "~*.c"
+			|
+			{
+				this.Identity "~*.c"
+			}
 		}
 	}
 
@@ -769,6 +772,7 @@ Compile
 		|
 		{
 			CompileDialect C
+			Compile.Type Assembler
 		}
 	}
 
@@ -1136,7 +1140,11 @@ Compile
 
 	SearchPath "@(Builtin.BasePath)/SDK/OpenSSL/build/include/@(Platform)/@(Architecture);@(Compile.SearchPath)"
 	{
-		!AOCCDisableSSL "true"
+		&
+		{
+			MalterlibSSLLibrary OpenSSL
+			!AOCCDisableSSL "true"
+		}
 	}
 
 
