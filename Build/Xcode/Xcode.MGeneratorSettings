@@ -1435,6 +1435,17 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_Cxx11Narrowing"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-c++11-narrowing"
+						true "-Wc++11-narrowing"
+					}
+				}
+			}
 			%GeneratorSetting "Warnings_UsusedVariable"
 			{
 				%GeneratorSetting "Value"
