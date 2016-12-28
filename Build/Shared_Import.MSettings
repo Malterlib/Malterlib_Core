@@ -1,0 +1,113 @@
+﻿// Copyright © 2015 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Import
+{
+	SharedTempDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(BuildSystemName)/Generated/@(Import:this.Identity->HashUUID())"
+	TempDirectory "@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@(FullConfiguration)"
+}
+
+Import
+{
+	CMake_Config "Release"
+	{
+		&
+		{
+			Import.CMake_Config ""
+			|
+			{
+				Configuration "Release"
+				Configuration "Profile"
+				Configuration "Optimized"
+				Configuration "Release Debug"
+				Configuration "Release Testing"
+			}
+		}
+	}
+	CMake_Config "Debug"
+	{
+		!!Import.CMake_Config ""
+	}
+	CMake_Languages "C=C;CXX=C++;ASM=Assembler;@(Import.CMake_Languages)"
+
+	CMake_SystemName "Darwin"
+	{
+		&
+		{
+			Import.CMake_SystemName ""
+			!PlatformFamily "@(HostPlatformFamily)" 
+			PlatformFamily "OSX"
+			!Documentation Doxygen
+		}
+	}
+	
+	CMake_SystemName "@(PlatformFamily)"
+	{
+		&
+		{
+			Import.CMake_SystemName ""
+			!PlatformFamily "@(HostPlatformFamily)" 
+			!Documentation Doxygen
+		}
+	}
+
+	CMake_SystemProcessor "x86_64"
+	{
+		&
+		{
+			!Import.CMake_SystemName ""
+			Import.CMake_SystemProcessor ""
+			Architecture x64
+			!Documentation Doxygen
+		}
+	}
+	
+	CMake_SystemProcessor "@(Architecture)"
+	{
+		&
+		{
+			!Import.CMake_SystemName ""
+			Import.CMake_SystemProcessor ""
+			!Documentation Doxygen
+		}
+	}
+	
+	CMake_SysRoot "@(MalterlibSysRoot)"
+	{
+		&
+		{
+			!MalterlibSysRoot ""
+			!Documentation Doxygen
+		}
+	}
+	
+	CMake_CCompiler "@(PlatformToolsetCompiler)"
+	{
+		!Documentation Doxygen
+	}
+	
+	CMake_CxxCompiler "@(PlatformToolsetCompiler)++"
+	{
+		!Documentation Doxygen
+	}
+	
+	CMake_CCompilerTarget "@(MalterlibTargetTriple)"
+	{
+		!Documentation Doxygen
+	}
+	
+	CMake_CxxCompilerTarget "@(MalterlibTargetTriple)"
+	{
+		!Documentation Doxygen
+	}
+	
+	CMake_CExternalToolChain "@(MalterlibToolsPrefix->Replace('/bin/', '/bin'))"
+	{
+		!Documentation Doxygen
+	}
+	
+	CMake_CxxExternalToolChain "@(MalterlibToolsPrefix->Replace('/bin/', '/bin'))"
+	{
+		!Documentation Doxygen
+	}
+}
