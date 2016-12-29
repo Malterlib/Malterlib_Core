@@ -15,12 +15,10 @@ Include "Shared_Compile.MSettings"
 Include "Shared_Workspace.MSettings"
 Include "Shared_Target.MSettings"
 Include "Shared_Repository.MSettings"
+Include "Shared_Import.MSettings"
 
 // Files generated such as exporting vars to external build system
 Include "Shared_GeneratedFiles.MSettings"
-
-// Imports such as CMake imports
-Include "Shared_Import.MSettings"
 
 // Generate build system target automatically included in all workspaces
 Include "Tool_GenerateBuildSystem.MTarget"
