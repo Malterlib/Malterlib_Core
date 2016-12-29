@@ -1,0 +1,117 @@
+// Copyright © 2016 Hansoft AB 
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Repository
+{
+	Type "Direct"
+	{
+		!!Repository.Type ""
+	}
+
+	MalterlibRoot "https://github.com/Malterlib"
+	{
+		!!Repository.MalterlibRoot ""
+	}
+
+	ExternalRoot "https://github.com/Malterlib"
+	{
+		!!Repository.ExternalRoot ""
+	}
+
+	ConfigFile "@(this.IdentityPath->GetPath())/@(Repository.Type).MRepo"
+	{
+		!!Repository.ConfigFile ""
+	}
+	StateFile "@(this.IdentityPath->GetPath())/@(Repository.Type).MRepoState"
+	{
+		!!Repository.StateFile ""
+	}
+	URL "@(Repository.ExternalRoot)/@(this.Identity).git"
+	{
+		&
+		{
+			Repository.URL ""
+			Repository.Type External
+		}
+	}
+	URL "@(Repository.MalterlibRoot)/Malterlib_@(this.Identity).git"
+	{
+		&
+		{
+			Repository.URL ""
+			Repository.Type Malterlib
+		}
+	}
+	URL "@(Repository.DefaultRoot)/@(this.Identity).git"
+	{
+		&
+		{
+			Repository.URL ""
+			Repository.Type Direct
+		}
+	}
+	Location "@('../../../External'->MakeAbsolute())/@(this.Identity)"
+	{
+		&
+		{
+			Repository.Location ""
+			Repository.Type External
+		}
+	}
+	Location "@('../../../Malterlib'->MakeAbsolute())/@(this.Identity)"
+	{
+		&
+		{
+			Repository.Location ""
+			Repository.Type Malterlib
+		}
+	}
+	Location "@('../../../@(this.Identity)'->MakeAbsolute())"
+	{
+		&
+		{
+			Repository.Location ""
+			Repository.Type Direct
+		}
+	}
+	DefaultBranch "malterlib"
+	{
+		&
+		{
+			Repository.DefaultBranch ""
+			Repository.Type External
+		}
+	}
+	DefaultBranch "master"
+	{
+		!!Repository.DefaultBranch ""
+	}
+	Submodule "true"
+	{
+		!!Repository.Submodule ""
+	}
+	SubmoduleName "External_@(this.Identity)"
+	{
+		&
+		{
+			Repository.SubmoduleName ""
+			Repository.Type External
+		}
+	}
+	SubmoduleName "Malterlib_@(this.Identity)"
+	{
+		&
+		{
+			Repository.SubmoduleName ""
+			Repository.Type Malterlib
+		}
+	}
+	SubmoduleName "@(this.Identity)"
+	{
+		&
+		{
+			Repository.SubmoduleName ""
+			Repository.Type Direct
+		}
+	}
+}

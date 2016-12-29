@@ -11,15 +11,10 @@ Include "Shared_Configurations.MSettings"
 Include "Shared_Defaults.MSettings"
 Include "Shared_Calculated.MSettings"
 Include "Shared_Property.MSettings"
-
-// Compiler
 Include "Shared_Compile.MSettings"
-
-// Compiler
 Include "Shared_Workspace.MSettings"
-
-// Target, linker etc
 Include "Shared_Target.MSettings"
+Include "Shared_Repository.MSettings"
 
 // Files generated such as exporting vars to external build system
 Include "Shared_GeneratedFiles.MSettings"
