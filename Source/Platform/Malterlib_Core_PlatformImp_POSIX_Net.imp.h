@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_PlatformImp_POSIX_Net.h"
@@ -464,6 +464,12 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 		
 		fg_SetUnixSocketOptions(FD);
 
+		auto Cleanup = g_OnScopeExit > [&]
+			{
+				close(FD);
+			}
+		;
+
 		if (_pBindAddress)
 		{
 			int bReuse = 1;
@@ -506,13 +512,11 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 			}
 			else if (Error == EADDRNOTAVAIL && _pBindAddress && BindPort == 0)
 			{
-				close(FD);
 				--Retries;
 				continue;
 			}
 			else
 			{
-				close(FD);
 				ENetAddressType AddressType = _Address.f_GetType();
 				if (AddressType == ENetAddressType_Unix)
 				{
@@ -537,6 +541,9 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 				DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (connect set non blocking)", Error));
 			}
 		}
+
+		Cleanup.f_Clear();
+
 		break;
 	}
 
@@ -618,6 +625,12 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 	
 	fg_SetUnixSocketOptions(FD);
 
+	auto Cleanup = g_OnScopeExit > [&]
+		{
+			close(FD);
+		}
+	;
+
 	{
 		int Flags;
 		if ((Flags = fcntl(FD, F_GETFL)) == -1 || fcntl(FD, F_SETFL, Flags | O_NONBLOCK) == -1)
@@ -659,10 +672,11 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 
 	if (Result != 0)
 	{
-		close(FD);
 		int Error = errno;
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("listen (listen)", Error));
 	}
+
+	Cleanup.f_Clear();
 	
 	auto pSocket = fp_CreateSocket(FD, EPOSIXSocketMode_Listen, EPOSIXSocketEvent_Read, fg_Move(_OnStateChange));
 	fp_SetUnixListenAddress(pSocket, _Address);
@@ -688,6 +702,12 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Addres
 	}
 	
 	fg_SetUnixSocketOptions(FD);
+
+	auto Cleanup = g_OnScopeExit > [&]
+		{
+			close(FD);
+		}
+	;
 
 	{
 		int Flags;
@@ -717,6 +737,8 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Addres
 		int Error = errno;
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("bind (listen)", Error));
 	}
+
+	Cleanup.f_Clear();
 
 	auto pSocket = fp_CreateSocket(FD, EPOSIXSocketMode_Datagram, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_OnStateChange));
 

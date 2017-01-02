@@ -645,22 +645,30 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 			DMibErrorNet((CStr::CFormat("Could not create a socket for connection, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
+		auto Cleanup = g_OnScopeExit > [&]
+			{
+				f_CheckDestroy();
+			}
+		;
+
+		auto SocketCleanup = g_OnScopeExit > [&]
+			{
+				closesocket(hSock);
+			}
+		;
+
 		int Buf = EDefaultSocketBufSize;
 		if (Buf > 0)
 		{
 			if (setsockopt(hSock, SOL_SOCKET, SO_RCVBUF, (char *)&Buf, sizeof(Buf)))
 			{
 				uint32 Error = WSAGetLastError();
-				closesocket(hSock);
-				f_CheckDestroy();
 				DMibErrorNet((CStr::CFormat("Could not set connect socket receive buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 
 			if (setsockopt(hSock, SOL_SOCKET, SO_SNDBUF, (char *)&Buf, sizeof(Buf)))
 			{
 				uint32 Error = WSAGetLastError();
-				closesocket(hSock);
-				f_CheckDestroy();
 				DMibErrorNet((CStr::CFormat("Could not set connect socket send buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
@@ -669,8 +677,6 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 		if (setsockopt(hSock, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
 		{
 			uint32 Error = WSAGetLastError();
-			closesocket(hSock);
-			f_CheckDestroy();
 			DMibErrorNet((CStr::CFormat("Could not set connect socket NoDelay setting, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
@@ -680,8 +686,6 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 			if (Result != 0)
 			{
 				uint32 Error = WSAGetLastError();
-				closesocket(hSock);
-				f_CheckDestroy();
 				DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
@@ -694,6 +698,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 
 			pSocket->m_OnStateChange = fg_Move(_OnStateChange);
 			pSocket->m_pSocket = (void *)hSock;
+			SocketCleanup.f_Clear();
 			{
 				DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 				mp_SocketTree.f_Insert(pSocket.f_Get());
@@ -709,7 +714,6 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 					mp_SocketTree.f_Remove(pSocket.f_Get());
 				}
 				pSocket = nullptr;
-				f_CheckDestroy();
 				DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
@@ -728,14 +732,11 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 						mp_SocketTree.f_Remove(pSocket.f_Get());
 					}
 					pSocket = nullptr;
-					f_CheckDestroy();
 					DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());				
 				}
 			}
 			else
 			{
-				closesocket(hSock);
-				f_CheckDestroy();
 				DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
@@ -756,6 +757,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 
 			pSocket->m_OnStateChange = fg_Move(_OnStateChange);
 			pSocket->m_pSocket = (void *)hSock;
+			SocketCleanup.f_Clear();
 			{
 				DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 				mp_SocketTree.f_Insert(pSocket.f_Get());
@@ -771,11 +773,11 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 					mp_SocketTree.f_Remove(pSocket.f_Get());
 				}
 				pSocket = nullptr;
-				f_CheckDestroy();
 				DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 
 		}
+		Cleanup.f_Clear();
 
 		return pSocket.f_Detach();
 
@@ -816,6 +818,13 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		DMibErrorNet("Could not create a socket for listening");
 	}
 
+	auto Cleanup = g_OnScopeExit > [&]
+		{
+			closesocket(hSock);
+			f_CheckDestroy();
+		}
+	;
+
 	if (_Flags & NNet::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
@@ -827,8 +836,6 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 	if (Result != 0)
 	{
 		uint32 Error = WSAGetLastError();
-		closesocket(hSock);
-		f_CheckDestroy();
 		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
@@ -837,8 +844,6 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 	if (Result != 0)
 	{
 		uint32 Error = WSAGetLastError();
-		closesocket(hSock);
-		f_CheckDestroy();
 		DMibErrorNet((CStr::CFormat("Could not listen on socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
@@ -846,6 +851,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 
 	pSocket->m_OnStateChange = fg_Move(_OnStateChange);
 	pSocket->m_pSocket = (void *)hSock;
+	Cleanup.f_Clear();
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 		mp_SocketTree.f_Insert(pSocket.f_Get());
@@ -887,6 +893,13 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 		DMibErrorNet("Could not create a socket for listening");
 	}
 
+	auto Cleanup = g_OnScopeExit > [&]
+		{
+			closesocket(hSock);
+			f_CheckDestroy();
+		}
+	;
+
 	if (_Flags & NNet::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
@@ -898,8 +911,6 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 	if (Result != 0)
 	{
 		uint32 Error = WSAGetLastError();
-		closesocket(hSock);
-		f_CheckDestroy();
 		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
@@ -907,6 +918,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 
 	pSocket->m_OnStateChange = fg_Move(_OnStateChange);
 	pSocket->m_pSocket = (void *)hSock;
+	Cleanup.f_Clear();
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 		mp_SocketTree.f_Insert(pSocket.f_Get());
