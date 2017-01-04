@@ -17,6 +17,8 @@ namespace NMib
 	{
 		void fg_InitialiseCrashReporter();
 		
+		ch8 **g_LaunchEnvironment = nullptr;
+		
 #if defined(DPlatformFamily_Linux)
 		static bool fsg_DumpCallback(google_breakpad::MinidumpDescriptor const &_Descriptor, void* _pContext, bool _bSucceeded)
 #else
@@ -55,7 +57,7 @@ namespace NMib
 					}
 				;
 				
-				execve(pArgs[0], const_cast<char**>(pArgs), nullptr);
+				execve(pArgs[0], const_cast<char**>(pArgs), g_LaunchEnvironment);
 				NMib::NSys::fg_TerminateProcess(1);
 			}
 			else if (Child > 0)
@@ -68,8 +70,16 @@ namespace NMib
 		
 		struct CBreakpad
 		{		
+			NContainer::TCVector<CStr> m_Env;
+			NContainer::TCVector<ch8 *> m_EnvList;
 			CBreakpad()
 			{
+				auto FinalEnv = NMib::NSys::fg_Process_GetEnvironmentVariables();
+				for (auto iEnv = FinalEnv.f_GetIterator(); iEnv; ++iEnv)
+					m_EnvList.f_Insert(m_Env.f_Insert(fg_Format("{}={}", iEnv.f_GetKey(), *iEnv)).f_GetStrUniqueWritable());
+				m_EnvList.f_Insert((ch8 *)nullptr);
+				g_LaunchEnvironment = m_EnvList.f_GetArray();  
+				
 				NMib::NStr::CStrNonTracked DumpLocation;
 				{
 					try
@@ -126,6 +136,7 @@ namespace NMib
 			~CBreakpad()
 			{
 				m_pExceptionHandler = nullptr;
+				g_LaunchEnvironment = nullptr;
 			}
 					
 			NMib::NPtr::TCUniquePointer<google_breakpad::ExceptionHandler, NMib::NMem::CAllocator_NonTrackedHeap> m_pExceptionHandler;
