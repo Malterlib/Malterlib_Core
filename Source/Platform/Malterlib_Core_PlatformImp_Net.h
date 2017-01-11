@@ -71,6 +71,13 @@ public:
 	bint f_IsEmpty();
 };
 
+struct CUnixAddress
+{
+	sockaddr_un m_UnixAddress;
+	NFile::EFileAttrib m_Permissions = NFile::EFileAttrib_None;
+};
+
+
 struct CRuntimeNetAddress
 {
 private:
@@ -107,7 +114,7 @@ public:
 	}
 
 #ifndef DPlatformFamily_Windows
-	CRuntimeNetAddress(sockaddr_un const &_Unix)
+	CRuntimeNetAddress(CUnixAddress const &_Unix)
 		: mp_Type(NMib::NNet::ENetAddressType_None)
 	{
 		f_Set(_Unix);
@@ -144,25 +151,36 @@ public:
 	}
 
 #ifndef DPlatformFamily_Windows
-	void f_Set(sockaddr_un const &_Unix)
+	void f_Set(CUnixAddress const &_Unix)
 	{
-		f_Set(NMib::NNet::ENetAddressType_Unix, &_Unix, sizeof(sockaddr_un));
+		f_Set(NMib::NNet::ENetAddressType_Unix, &_Unix, sizeof(CUnixAddress));
 	}
 #endif
 	
-	mint f_GetLen() const { return mp_lData.f_GetLen(); }
+	mint f_GetFullDataLen() const { return mp_lData.f_GetLen(); }
+	mint f_GetSockAddrLen() const 
+	{
+		using namespace NMib::NNet;
+		switch (mp_Type)
+		{
+			case ENetAddressType_TCPv4: return sizeof(sockaddr_in);
+			case ENetAddressType_TCPv6: return sizeof(sockaddr_in6);
+			case ENetAddressType_Unix: return sizeof(sockaddr_un);
+		}
+		return f_GetFullDataLen(); 
+	}
 	void const* f_Get() const { return mp_lData.f_GetArray(); }
 
 	sockaddr_in const& f_GetTCPv4() const { return *(sockaddr_in const*)mp_lData.f_GetArray(); }
 	sockaddr_in6 const& f_GetTCPv6() const { return *(sockaddr_in6 const*)mp_lData.f_GetArray(); }
 #ifndef DPlatformFamily_Windows
-	sockaddr_un const& f_GetUnix() const { return *(sockaddr_un const*)mp_lData.f_GetArray(); }
+	CUnixAddress const& f_GetUnix() const { return *(CUnixAddress const*)mp_lData.f_GetArray(); }
 #endif
 
 	sockaddr_in & f_GetTCPv4() { return *(sockaddr_in *)mp_lData.f_GetArray(); }
 	sockaddr_in6 & f_GetTCPv6() { return *(sockaddr_in6 *)mp_lData.f_GetArray(); }
 #ifndef DPlatformFamily_Windows
-	sockaddr_un & f_GetUnix() { return *(sockaddr_un *)mp_lData.f_GetArray(); }
+	CUnixAddress &f_GetUnix()  { return *(CUnixAddress *)mp_lData.f_GetArray(); }
 #endif
 
 	template<typename t_CAddrType>

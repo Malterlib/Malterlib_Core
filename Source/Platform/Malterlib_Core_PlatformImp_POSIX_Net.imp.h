@@ -173,16 +173,62 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 {
 	NMib::NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct();
 
-	if (_Address.f_StartsWith("UNIX:"))
+	if (_Address.f_StartsWith("UNIX(") || _Address.f_StartsWith("UNIX:"))
 	{
-		int SocketType;
-		uint32 MalterlibSocketType;
+		using namespace NMib::NFile;
+		
+		EFileAttrib Permissions = EFileAttrib_None;
 		CStr Address;
+		
+		if (_Address.f_StartsWith("UNIX(") )
 		{
-			Address = _Address.f_Extract(fg_StrLen("UNIX:"));
-			SocketType = SOCK_STREAM;
-			MalterlibSocketType = 0x101;
+			auto *pParse = _Address.f_GetStr() + 5;
+			bool bFailed = false;
+			uint32 UnixPermissions = fg_StrToIntParse(pParse, uint32(01000), "):", false, EStrToIntParseMode_Octal, &bFailed);
+			
+			if (bFailed || pParse[0] != ')' || pParse[1] != ':')
+			{
+				if (_bThrowOnError)
+					DMibErrorNet("Failed to parse unix permissions");
+				else
+					return nullptr;
+			}
+			
+			pParse += 2;
+			
+			if (UnixPermissions >= uint32(01000))
+			{
+				if (_bThrowOnError)
+					DMibErrorNet("Invalid permissions specified");
+				else
+					return nullptr;
+			}
+			
+			if (UnixPermissions & 0100)
+				Permissions |= EFileAttrib_UserExecute;
+			if (UnixPermissions & 0200)
+				Permissions |= EFileAttrib_UserWrite;
+			if (UnixPermissions & 0400)
+				Permissions |= EFileAttrib_UserRead;
+
+			if (UnixPermissions & 010)
+				Permissions |= EFileAttrib_GroupExecute;
+			if (UnixPermissions & 020)
+				Permissions |= EFileAttrib_GroupWrite;
+			if (UnixPermissions & 040)
+				Permissions |= EFileAttrib_GroupRead;
+
+			if (UnixPermissions & 01)
+				Permissions |= EFileAttrib_EveryoneExecute;
+			if (UnixPermissions & 02)
+				Permissions |= EFileAttrib_EveryoneWrite;
+			if (UnixPermissions & 04)
+				Permissions |= EFileAttrib_EveryoneRead;
+			
+			Address = CStr{pParse};
 		}
+		else
+			Address = _Address.f_Extract(fg_StrLen("UNIX:"));
 
 		if (Address.f_GetLen() > (sizeof(sockaddr_un::sun_path) - 1))
 		{
@@ -192,15 +238,16 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 				return nullptr;
 		}
 			
-		sockaddr_un AddressUn;
+		CUnixAddress AddressWithPermissions;
+		AddressWithPermissions.m_Permissions = Permissions;
+		sockaddr_un &AddressUn = AddressWithPermissions.m_UnixAddress;
 		
 		AddressUn.sun_family = AF_UNIX;
 		NMib::NStr::fg_StrCopy(AddressUn.sun_path, Address, sizeof(sockaddr_un::sun_path));
 #if !defined(DPlatformFamily_Linux)
 		AddressUn.sun_len = sizeof(AddressUn);
 #endif
-		
-		pAddress->f_Set(AddressUn);
+		pAddress->f_Set(AddressWithPermissions);
 		return pAddress.f_Detach();
 	}
 	else if (mp_ImpSpecific.f_ResolveAddress(*pAddress, _Address, _PreferType))
@@ -373,10 +420,43 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const& _A
 		case NMib::NNet::ENetAddressType_Unix:
 			{
 				auto &Address = _Address.f_GetUnix();
-				if (_bIncludeType)
-					AddressStr += "UNIX:";
 				
-				AddressStr += CStr::CFormat("{}") << Address.sun_path; 
+				using namespace NMib::NFile;
+				
+				EFileAttrib Permissions = Address.m_Permissions;
+				
+				uint32 UnixPermissions = 0;
+				
+				if (Permissions & EFileAttrib_UserExecute)
+					UnixPermissions |= 0100;
+				if (Permissions & EFileAttrib_UserWrite)
+					UnixPermissions |= 0200;
+				if (Permissions & EFileAttrib_UserRead)
+					UnixPermissions |= 0400;
+
+				if (Permissions & EFileAttrib_GroupExecute)
+					UnixPermissions |= 010;
+				if (Permissions & EFileAttrib_GroupWrite)
+					UnixPermissions |= 020;
+				if (Permissions & EFileAttrib_GroupRead)
+					UnixPermissions |= 040;
+
+				if (Permissions & EFileAttrib_EveryoneExecute)
+					UnixPermissions |= 01;
+				if (Permissions & EFileAttrib_EveryoneWrite)
+					UnixPermissions |= 02;
+				if (Permissions & EFileAttrib_EveryoneRead)
+					UnixPermissions |= 04;
+				
+				if (_bIncludeType)
+				{
+					if (UnixPermissions)
+						AddressStr += fg_Format("UNIX({nfo,sj3,sf0}):", UnixPermissions);
+					else
+						AddressStr += "UNIX:";
+				}
+				
+				AddressStr += Address.m_UnixAddress.sun_path; 
 			}
 			break;
 /*
@@ -475,7 +555,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 			int bReuse = 1;
 			setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
 
-			int Result = bind(FD, (sockaddr const*)_pBindAddress->f_Get(), _pBindAddress->f_GetLen());
+			int Result = bind(FD, (sockaddr const*)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
 			if (Result != 0)
 			{
 				int Error = errno;
@@ -492,7 +572,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 				DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (connect set async non blocking)", Error));
 			}
 		}
-		int Result = connect(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
+		int Result = connect(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 		uint16 BindPort = 0;
 		if (_pBindAddress)
@@ -521,7 +601,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 				if (AddressType == ENetAddressType_Unix)
 				{
 					auto &Unix = _Address.f_GetUnix();
-					DMibErrorNet(NMib::NPlatform::fg_FormatErrno(fg_Format("connect ({}, connect)", Unix.sun_path), Error));
+					DMibErrorNet(NMib::NPlatform::fg_FormatErrno(fg_Format("connect ({}, connect)", Unix.m_UnixAddress.sun_path), Error));
 				}
 				else
 					DMibErrorNet(NMib::NPlatform::fg_FormatErrno("connect (connect)", Error));
@@ -553,7 +633,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 	if (AddressType == ENetAddressType_Unix)
 	{
 		auto &Unix = _Address.f_GetUnix();
-		pSocket->m_PeerUnixFilePath = Unix.sun_path;
+		pSocket->m_PeerUnixFilePath = Unix.m_UnixAddress.sun_path;
 	}
 	
 	return pSocket;
@@ -561,9 +641,11 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect(CPOSIXAddress const& _Address, NMi
 
 void CPOSIXSocketContext::fp_PrepareUnixListen(CPOSIXAddress const &_Address)
 {
-	if (_Address.f_GetType() == ENetAddressType_Unix)
+	if ( _Address.f_GetType() == ENetAddressType_Unix) 
 	{
-		auto &Unix = _Address.f_GetUnix();
+		CUnixAddress const &UnixAddress = _Address.f_GetUnix();
+		
+		auto &Unix = UnixAddress.m_UnixAddress;
 		NStr::CStr UnixFilePath = Unix.sun_path;
 		if (NFile::CFile::fs_FileExists(UnixFilePath))
 			NFile::CFile::fs_DeleteFile(UnixFilePath);
@@ -591,7 +673,7 @@ void CPOSIXSocketContext::fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIX
 	if (AddressType == ENetAddressType_Unix)
 	{
 		auto &Unix = _Address.f_GetUnix();
-		_pSocket->m_UnixFilePath = Unix.sun_path;
+		_pSocket->m_UnixFilePath = Unix.m_UnixAddress.sun_path;
 	}
 }
 
@@ -660,14 +742,21 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen(CPOSIXAddress const& _Address, NMib:
 	}
 #endif
 
-	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
-
+	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	
 	if (Result != 0)
 	{
 		int Error = errno;
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("bind (listen)", Error));
 	}
 
+	if (AddressType == ENetAddressType_Unix)
+	{
+		auto &UnixAddress = _Address.f_GetUnix();
+		if (UnixAddress.m_Permissions)
+			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.m_UnixAddress.sun_path, UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
+	}
+	
 	Result = listen(FD, SOMAXCONN);
 
 	if (Result != 0)
@@ -730,12 +819,19 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Addres
 	}
 #endif
 
-	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
+	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
 		int Error = errno;
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("bind (listen)", Error));
+	}
+
+	if (AddressType == ENetAddressType_Unix)
+	{
+		auto &UnixAddress = _Address.f_GetUnix();
+		if (UnixAddress.m_Permissions)
+			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.m_UnixAddress.sun_path, UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
 	}
 
 	Cleanup.f_Clear();
@@ -744,7 +840,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram(CPOSIXAddress const& _Addres
 
 	fp_SetUnixListenAddress(pSocket, _Address);
 	
-	pSocket->m_BindAddressSize = _Address.f_GetLen();
+	pSocket->m_BindAddressSize = _Address.f_GetSockAddrLen();
 	pSocket->m_BindAddressType = AddressType;
 
 	return pSocket;
@@ -898,7 +994,7 @@ mint CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress c
 #ifdef DPlatformFamily_Linux
 	Flags |= MSG_NOSIGNAL;
 #endif
-	int Result = sendto(_pSocket->m_FD, _pData, _DataLen, Flags, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
+	int Result = sendto(_pSocket->m_FD, _pData, _DataLen, Flags, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Result == -1)
 	{
@@ -1006,18 +1102,21 @@ CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 			UnixAddress.sun_path[0] = 0;
 		if (fg_StrLen(UnixAddress.sun_path) == 0 && !_pSocket->m_PeerUnixFilePath.f_IsEmpty())
 		{
-			sockaddr_un Address;
-			Address.sun_family = AF_UNIX;
-#if !defined(DPlatformFamily_Linux)
-			Address.sun_len = sizeof(Address);
-#endif
-			fg_StrCopy(Address.sun_path, _pSocket->m_PeerUnixFilePath, sizeof(Address.sun_path));
 			
-			NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*(sockaddr_un const*)&Address);
+			CUnixAddress Address;
+			Address.m_UnixAddress.sun_family = AF_UNIX;
+#if !defined(DPlatformFamily_Linux)
+			Address.m_UnixAddress.sun_len = sizeof(Address.m_UnixAddress);
+#endif
+			fg_StrCopy(Address.m_UnixAddress.sun_path, _pSocket->m_PeerUnixFilePath, sizeof(Address.m_UnixAddress.sun_path));
+			
+			NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(Address);
 			return pAddress.f_Detach();
 		}			
 
-		NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(UnixAddress);
+		CUnixAddress Address;
+		Address.m_UnixAddress = UnixAddress;
+		NPtr::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(Address);
 		return pAddress.f_Detach();
 	}
 	else

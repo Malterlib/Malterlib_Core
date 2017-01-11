@@ -70,7 +70,7 @@ namespace NMib
 		
 		struct CBreakpad
 		{		
-			NContainer::TCVector<CStr> m_Env;
+			NContainer::TCVector<NMib::NStr::CStr> m_Env;
 			NContainer::TCVector<ch8 *> m_EnvList;
 			CBreakpad()
 			{
