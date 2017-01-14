@@ -71,12 +71,13 @@ public:
 	bint f_IsEmpty();
 };
 
+#ifndef DPlatformFamily_Windows
 struct CUnixAddress
 {
 	sockaddr_un m_UnixAddress;
 	NFile::EFileAttrib m_Permissions = NFile::EFileAttrib_None;
 };
-
+#endif
 
 struct CRuntimeNetAddress
 {
@@ -165,7 +166,9 @@ public:
 		{
 			case ENetAddressType_TCPv4: return sizeof(sockaddr_in);
 			case ENetAddressType_TCPv6: return sizeof(sockaddr_in6);
+#ifndef DPlatformFamily_Windows
 			case ENetAddressType_Unix: return sizeof(sockaddr_un);
+#endif
 		}
 		return f_GetFullDataLen(); 
 	}

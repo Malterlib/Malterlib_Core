@@ -682,7 +682,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 
 		if (_pBindAddress)
 		{
-			int Result = bind(hSock, (sockaddr const*)_pBindAddress->f_Get(), _pBindAddress->f_GetLen());
+			int Result = bind(hSock, (sockaddr const*)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
 			if (Result != 0)
 			{
 				uint32 Error = WSAGetLastError();
@@ -718,7 +718,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 			}
 		}
 
-		int Result = connect(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
+		int Result = connect(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 		if (Result != 0)
 		{		
 			uint32 Error = WSAGetLastError();
@@ -831,7 +831,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
 	}
 
-	int Result = bind(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
+	int Result = bind(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -906,7 +906,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
 	}
 
-	int Result = bind(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
+	int Result = bind(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -922,7 +922,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 		mp_SocketTree.f_Insert(pSocket.f_Get());
-		pSocket->m_BindAddressSize = _Address.f_GetLen();
+		pSocket->m_BindAddressSize = _Address.f_GetSockAddrLen();
 		pSocket->m_BindAddressType = AddressType;
 	}
 
@@ -1105,7 +1105,7 @@ mint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData,
 
 mint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAddress const&_Address, const void *_pData, mint _DataLen)
 {
-	int Ret = sendto((SOCKET)_pSocket->m_pSocket, (const char *)_pData, _DataLen, 0, (sockaddr const*)_Address.f_Get(), _Address.f_GetLen());
+	int Ret = sendto((SOCKET)_pSocket->m_pSocket, (const char *)_pData, _DataLen, 0, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Ret == SOCKET_ERROR)
 	{
