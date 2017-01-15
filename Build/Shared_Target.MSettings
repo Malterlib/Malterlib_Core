@@ -1699,26 +1699,34 @@ Property
 	{
 		!!MalterlibSeparatePostCopyPerPlatfrom ""
 	}
-	MalterlibCalculatedPostCopyProject "@(MalterlibPostCopyProject)_@(PlatformFamily)"
+	MalterlibCalculatedPostCopyProject "@(MalterlibPostCopyProject)_@(PlatformFamily)_@(Architecture)"
 	{
 		&
 		{
 			!MalterlibPostCopyProject ""
 			MalterlibSeparatePostCopyPerPlatfrom true
-			!HostPlatformFamily "@(PlatformFamily)"
+			|
+			{
+				!HostPlatformFamily "@(PlatformFamily)"
+				!HostArchitecture "@(Architecture)"
+			}
 		}
 	}
 	MalterlibCalculatedPostCopyProject "@(MalterlibPostCopyProject)"
 	{
 		!!MalterlibCalculatedPostCopyProject ""
 	}
-	MalterlibCalculatedPostCopyProject2 "@(MalterlibPostCopyProject2)_@(PlatformFamily)"
+	MalterlibCalculatedPostCopyProject2 "@(MalterlibPostCopyProject2)_@(PlatformFamily)_@(Architecture)"
 	{
 		&
 		{
 			!MalterlibPostCopyProject2 ""
 			MalterlibSeparatePostCopyPerPlatfrom true
-			!HostPlatformFamily "@(PlatformFamily)"
+			|
+			{
+				!HostPlatformFamily "@(PlatformFamily)"
+				!HostArchitecture "@(Architecture)"
+			}
 		}
 	}
 	MalterlibCalculatedPostCopyProject2 "@(MalterlibPostCopyProject2)"
