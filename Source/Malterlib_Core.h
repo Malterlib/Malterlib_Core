@@ -15,7 +15,9 @@ namespace NMib
 	};
 }
 
-#define DMalterlib
+#ifndef DMalterlib
+#define DMalterlib 1
+#endif
 
 #ifndef DMibNoAggregateConstexpr
 #	define DAggregateInit ::NMib::EAggregateInitialization_Force
