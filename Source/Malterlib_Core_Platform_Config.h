@@ -30,8 +30,8 @@
 #endif
 
 #if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux)
-#	ifndef DMibNewOverride
-#		define DMibNewOverride
+#	ifndef _LIBCPP_DISABLE_NEW_DELETE
+#		define _LIBCPP_DISABLE_NEW_DELETE
 #	endif
 #endif
 

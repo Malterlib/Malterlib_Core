@@ -238,6 +238,11 @@
 #	define DMib_EnableIfDefault = nullptr
 #endif
 
+#ifdef __cpp_noexcept_function_type
+#	define DMib_NoexceptFunctionType 1
+#else
+#	define DMib_NoexceptFunctionType 0
+#endif
 
 // Workarounds
 #if defined(DCompiler_MSVC)

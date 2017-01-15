@@ -1115,20 +1115,15 @@ Compile
 		!!PlatformToolsetFamily clang
 	}
 
-	SearchPath "@(Builtin.BasePath)/SDK/libcxx/include;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePath)/External/libcxx/include;@(Compile.SearchPath)"
 	{
 		!!MalterlibUseStaticLibCxx "true"
 	}
-	SearchPath "@(Builtin.BasePath)/SDK/libcxxabi/include;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePath)/External/libcxxabi/include;@(Compile.SearchPath)"
 	{
 		!!MalterlibUseStaticLibCxxABI "true"
 	}
 
-	SearchPath "/Development/Malterlib/Tools/llvm/@(MalterlibClangVersion)/build/make/lib/clang/@(MalterlibClangVersion).0/include;@(Compile.SearchPath)"
-	{
-		!MalterlibClangVersion ""
-	}
-	
 	SystemSearchPath "@(Builtin.BasePath)/SDK/boost;@(Compile.SystemSearchPath)"
 	{
 	}
@@ -1267,10 +1262,26 @@ Compile
 		}
 	}
 
-
-	DefaultHeaders "All"
+	DefaultHeaders "NoStdIncludeCxx"
 	{
-		!!PlatformIsDarwin true
+		&
+		{
+			PlatformType "Unix"
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			Target.PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
+		}
+	}
+	
+	DefaultLibraries "NoStdLibCxx"
+	{
+		&
+		{
+			PlatformType "Unix"
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			Target.PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
+		}
 	}
 	
 	DefaultVisibility "AllHidden"
@@ -1508,7 +1519,7 @@ Compile
 		!!MalterlibUseStaticLibCxx true
 	}
 	
-	PreprocessorDefines "LIBCXX_BUILDING_LIBCXXABI;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "LIBCXX_BUILDING_LIBCXXABI;_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibUseStaticLibCxxABI true
 	}
@@ -1518,7 +1529,7 @@ Compile
 		!DoesNotUseMalterlib true
 	}
 	
-	PreprocessorDefines "DMibNewOverride;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE;@(Compile.PreprocessorDefines)"
 	{
 		&
 		{

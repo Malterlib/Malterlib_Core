@@ -1,6 +1,42 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+%Repository "libcxx"
+{
+	Repository
+	{
+		Type External
+		Remotes "upstream=https://github.com/llvm-mirror/libcxx;upstream2=http://llvm.org/git/libcxx;@(Repository.Remotes)"
+	}
+}
+
+%Repository "libcxxabi"
+{
+	Repository
+	{
+		Type External
+		Remotes "upstream=https://github.com/llvm-mirror/libcxxabi;upstream2=http://llvm.org/git/libcxxabi;@(Repository.Remotes)"
+	}
+}
+
+%Repository "libunwind"
+{
+	Repository
+	{
+		Type External
+		Remotes "upstream=https://github.com/llvm-mirror/libunwind;upstream2=http://llvm.org/git/libunwind;@(Repository.Remotes)"
+	}
+}
+
+%Repository "compiler-rt"
+{
+	Repository
+	{
+		Type External
+		Remotes "upstream=https://github.com/llvm-mirror/compiler-rt;upstream2=http://llvm.org/git/compiler-rt;@(Repository.Remotes)"
+	}
+}
+
 Import "../Core/Lib_Malterlib.MTarget"
 
 %Group "{Malterlib}/{Lib_Malterlib_Core}"

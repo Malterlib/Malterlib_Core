@@ -112,26 +112,26 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 					PlatformFamily Emscripten
 				}
 			}
-			%File "../../SDK/compiler-rt/lib/builtins/*.c"
-			%File "../../SDK/compiler-rt/lib/builtins/*.h"
+			%File "../../External/compiler-rt/lib/builtins/*.c"
+			%File "../../External/compiler-rt/lib/builtins/*.h"
 			%Group x86
 			{
 				!!Architecture x86
 				//%File "../../SDK/compiler-rt/lib/builtins/i386/*.c"
-				%File "../../SDK/compiler-rt/lib/builtins/i386/*.S"
+				%File "../../External/compiler-rt/lib/builtins/i386/*.S"
 			}
 			%Group x64
 			{
 				!!Architecture x64
-				%File "../../SDK/compiler-rt/lib/builtins/x86_64/*.c"
-				%File "../../SDK/compiler-rt/lib/builtins/x86_64/*.S"
+				%File "../../External/compiler-rt/lib/builtins/x86_64/*.c"
+				%File "../../External/compiler-rt/lib/builtins/x86_64/*.S"
 			}
 			%Group ppc
 			{
 				!!Architecture ppc32
 				!!Architecture ppc64
-				%File "../../SDK/compiler-rt/lib/builtins/ppc/*.c"
-				%File "../../SDK/compiler-rt/lib/builtins/ppc/*.S"
+				%File "../../External/compiler-rt/lib/builtins/ppc/*.c"
+				%File "../../External/compiler-rt/lib/builtins/ppc/*.S"
 			}
 		}
 	}
@@ -164,7 +164,7 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 		{
 			!!PlatformFamily "Linux"
 		}
-		SearchPath "@('../../SDK/libunwind/include'->MakeAbsolute());@(Compile.SearchPath)"
+		SearchPath "@('../../External/libunwind/include'->MakeAbsolute());@(Compile.SearchPath)"
 		{
 			&
 			{
@@ -220,17 +220,17 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 				}
 				%Group Headers
 				{
-					%File "../../SDK/libcxx/include/*"
+					%File "../../External/libcxx/include/*"
 					Compile.Type Header
 				}
 				%Group Source
 				{
-					%File "../../SDK/libcxx/src/*.cpp"
-					%File "../../SDK/libcxx/src/new.cpp"
+					%File "../../External/libcxx/src/*.cpp"
+					%File "../../External/libcxx/src/new.cpp"
 					{
-						Compile.PreprocessorDefines "DMibNewOverride;@(Compile.PreprocessorDefines)"
+						Compile.PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE;@(Compile.PreprocessorDefines)"
 					}
-					%File "../../SDK/libcxx/src/debug.cpp"
+					%File "../../External/libcxx/src/debug.cpp"
 					{
 						Compile.Disabled true
 					}
@@ -258,26 +258,25 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 					{
 						!!CompileDialect "C"
 						DynamicTypeInfo true
-						PreprocessorDefines "DMibNewOverrideImplementation;@(Compile.PreprocessorDefines)"
+						PreprocessorDefines "LIBCXXABI_NO_NEW_DELETE;@(Compile.PreprocessorDefines)"
 					}
 					
-					%File "../../SDK/libcxxabi/src/*.cpp"
+					%File "../../External/libcxxabi/src/*.cpp"
 					{
 						Compile.Disabled true
 						{
 							!!PlatformFamily Emscripten
 						}
 					}
-					%File "../../SDK/libcxxabi/src/*.ipp"
-					%File "../../SDK/libcxxabi/src/*.h"
-					%File "../../SDK/libcxxabi/include/*.h"
+					%File "../../External/libcxxabi/src/*.h"
+					%File "../../External/libcxxabi/include/*.h"
 					{
 						Compile.Disabled true
 					}
-					%File "../../SDK/libcxxabi/src/exception.cpp"
-					%File "../../SDK/libcxxabi/src/stdexcept.cpp"
-					%File "../../SDK/libcxxabi/src/typeinfo.cpp"
-					%File "../../SDK/libcxxabi/src/private_typeinfo.cpp"
+					%File "../../External/libcxxabi/src/cxa_exception.cpp"
+					%File "../../External/libcxxabi/src/stdlib_stdexcept.cpp"
+					%File "../../External/libcxxabi/src/stdlib_typeinfo.cpp"
+					%File "../../External/libcxxabi/src/private_typeinfo.cpp"
 				}
 			}
 			%Group libunwind
@@ -292,10 +291,10 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 					!!Compile.Type "Assembler"
 					
 					AllCPUSubTypes true
-					PreprocessorDefines "LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+					PreprocessorDefines "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
 				}
-				%File "../../SDK/libunwind/include/^*"
-				%File "../../SDK/libunwind/src/*"
+				%File "../../External/libunwind/include/^*"
+				%File "../../External/libunwind/src/*"
 				{
 					Compile.Disabled true
 					{
@@ -877,15 +876,10 @@ Target
 		BaseName "MalterlibOverrideMallocDummy"
 		Type "SharedDynamicLibrary"
 		Group "Libraries/Malterlib"
-		CxxStandardLibrary "none"
+		LDFlags "-nostdlibc++ @(Target.LDFlags)"
 		{
-			&
-			{
-				!MalterlibDefaultToolset true
-				!MalterlibUseStaticLibCxx false
-				LanguageFamily Native
-				GeneratorFamily "Xcode"
-			}
+			!!PlatformFamily OSX
+			!!PlatformFamily Linux
 		}
 	}
 	Target
@@ -935,15 +929,10 @@ Property
 		BaseName "MalterlibOverrideMalloc"
 		Type "SharedDynamicLibrary"
 		Group "Libraries/Malterlib"
-		CxxStandardLibrary "none"
+		LDFlags "-nostdlibc++ @(Target.LDFlags)"
 		{
-			&
-			{
-				!MalterlibDefaultToolset true
-				!MalterlibUseStaticLibCxx false
-				LanguageFamily Native
-				GeneratorFamily "Xcode"
-			}
+			!!PlatformFamily OSX
+			!!PlatformFamily Linux
 		}
 	}
 	Target

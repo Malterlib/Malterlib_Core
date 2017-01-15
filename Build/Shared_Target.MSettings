@@ -451,7 +451,7 @@ Target
 		!!Target.PlatformToolset ""
 	}
 
-	PlatformToolsetCompiler "x:/Development/Malterlib/llvm/unstable/build/VisualStudio2012/bin/RelWithDebInfo/clang.exe" // User: Change the clang compiler location
+	PlatformToolsetCompiler "x:/Development/Malterlib/llvm/unstable/build/VisualStudio2012/bin/RelWithDebInfo/clang.exe"
 	{
 		!!Target.PlatformToolset "clang"
 	}
@@ -570,11 +570,7 @@ Property
 	}*/
 	PlatformToolsetCompiler "@(MToolPath)" // User: Change the clang compiler location
 	{
-		&
-		{
-			PlatformToolsetCompiler ""
-			Documentation Doxygen
-		}
+		!!Documentation Doxygen
 	}
 	PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc" // User: Change the clang compiler location
 	{
@@ -707,6 +703,16 @@ Target
 		{
 			PlatformFamily Emscripten
 			!Configuration Release
+		}
+	}
+	
+	LDFlags "-nostdlibc++ @(Target.LDFlags)"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			Target.PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
 		}
 	}
 	
@@ -945,17 +951,7 @@ Target
 	{
 		"!!Target.CxxLanguage" ""
 	}
-	//CxxStandardLibrary "libc++"
-	CxxStandardLibrary "none"
-	{
-		!MalterlibDisableMalterlib true
-	}
 	CxxStandardLibrary "libc++"
-	{
-		!!MalterlibUseStaticLibCxx false
-		!!MalterlibDisableMalterlib true
-		!!Target.PlatformToolset "com.apple.compilers.llvm.clang.1_0"
-	}
 	
 	HeadermapIncludeTarget false
 	HeadermapIncludeFrameworks false

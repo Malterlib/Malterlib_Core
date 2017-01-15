@@ -1783,6 +1783,19 @@
 						None "-nostdinc"
 						NoStdLib "-nostdlibinc"
 						NoCompiler "-nobuiltininc"
+						NoStdIncludeCxx "-nostdinc++"
+						All ""
+					}
+				}
+			}
+			
+			%GeneratorSetting "DefaultLibraries"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						NoStdLibCxx "-nostdlibc++"
 						All ""
 					}
 				}
