@@ -13,6 +13,9 @@
 
 #define DMibAllowCodeStandardViolations 1
 
+#ifndef FLS_OUT_OF_INDEXES
+#define FLS_OUT_OF_INDEXES ((DWORD)0xFFFFFFFF)
+#endif
 
 // Disable this support for now
 #if 0

@@ -456,6 +456,8 @@ Target
 		!!Target.PlatformToolset "clang"
 	}
 
+	PlatformVersion "@(MalterlibMaxSupportedWindowsVersion)"
+
 	//PlatformToolset "v120_CTP_Nov2012"
 
 	IgnoreWarnCompileDuplicatedFilename true
@@ -490,6 +492,46 @@ Target
 	DefaultToolArchitecture "Native64Bit"
 	{
 		!!WindowsNativeToolChain "true"
+	}
+
+
+	ExtraLinkerFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/stable_build/bin/doxygen @(Target.ExtraLinkerFlags)"
+	{
+		&
+		{
+			!Target:Target.Type StaticLibrary
+			Documentation Doxygen
+			GeneratorFamily VisualStudio
+		}
+	}
+
+	ExtraLibFlags "--ToolClass DoxygenLibTool @(Target.LibToolFlags)"
+	{
+		&
+		{
+			Target:Target.Type StaticLibrary
+			Documentation Doxygen
+			GeneratorFamily VisualStudio
+		}
+	}
+
+	ExtraLinkerFlags "/ignore:4042 @(Target.ExtraLinkerFlags)"
+	{
+		&
+		{
+			GeneratorFamily VisualStudio
+			TargetIsExecutable true
+		}
+
+	}
+	
+	ExtraLibFlags "/ignore:4042 @(Target.ExtraLibFlags)"
+	{
+		&
+		{
+			Target.Type StaticLibrary
+			GeneratorFamily VisualStudio
+		}
 	}
 }
 
@@ -540,6 +582,7 @@ Property
 		{
 			PlatformToolsetCompiler ""
 			PlatformFamily "Emscripten"
+			!HostPlatformFamily Windows
 		}
 	}
 	PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/@(MalterlibClangVersion)/build/make/bin/clang" // User: Change the clang compiler location
@@ -548,6 +591,17 @@ Property
 		{
 			PlatformToolsetCompiler ""
 			!MalterlibDefaultToolset true
+			!HostPlatformFamily Windows
+		}
+	}
+	PlatformToolsetCompiler "x:/Development/Malterlib/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture)/cl.exe"
+	{
+		&
+		{
+			PlatformToolsetCompiler ""
+			!MalterlibOverrideMSVCVersion ""
+			!MalterlibDefaultToolset true
+			HostPlatformFamily Windows
 		}
 	}
 }
@@ -694,16 +748,6 @@ Target
 		}
 	}
 
-	ExtraLibFlags "--ToolClass DoxygenLibTool @(Target.LibToolFlags)"
-	{
-		&
-		{
-			Target:Target.Type StaticLibrary
-			Documentation Doxygen
-			GeneratorFamily VisualStudio
-		}
-	}
-	
 
 	LDFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/doxygen/stable_build/bin/doxygen @(Target.LDFlags)"
 	{
@@ -714,18 +758,6 @@ Target
 			GeneratorFamily Xcode
 		}
 	}
-	
-
-	ExtraLinkerFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/stable_build/bin/doxygen @(Target.LDFlags)"
-	{
-		&
-		{
-			!Target:Target.Type StaticLibrary
-			Documentation Doxygen
-			GeneratorFamily VisualStudio
-		}
-	}
-	
 	
 	LDFlags "-Wno-warn-absolute-paths @(Target.LDFlags)"
 	{
@@ -1952,7 +1984,16 @@ Target
 		}
 	}
 
-	
+	ToolPath "x:/Development/Malterlib/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
+	{
+		&
+		{
+			!MalterlibOverrideMSVCVersion ""
+			HostPlatformFamily "Windows"
+			WindowsNativeToolChain "true"
+			!Target.PlatformToolset "v90"
+		}
+	}
 
 	ToolPath "@(Builtin.BasePath)/Malterlib/Tools/Binaries/NoLib/x86;@(Target.ToolPath)"
 	{
@@ -1963,6 +2004,7 @@ Target
 			WindowsNativeToolChain "false"
 		}
 	}
+	
 	ToolPath "@(Builtin.BasePath)/Malterlib/Tools/Binaries/NoLib/x64;@(Target.ToolPath)"
 	{
 		&
@@ -1970,17 +2012,6 @@ Target
 			PlatformType "Windows"
 			MalterlibGenerateLibrary "false"
 			WindowsNativeToolChain "true"
-		}
-	}
-
-	ToolPath "x:/Development/Malterlib/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
-	{
-		&
-		{
-			!MalterlibOverrideMSVCVersion ""
-			HostPlatformFamily "Windows"
-			WindowsNativeToolChain "true"
-			!Target.PlatformToolset "v90"
 		}
 	}
 }

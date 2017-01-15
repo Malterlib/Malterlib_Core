@@ -360,7 +360,7 @@ Property
 			MalterlibCalcBranch "~@(MalterlibBaseSourcePath)/*"
 		}
 	}
-	MalterlibBranch "@(MalterlibCalcBranch)"
+	MalterlibBranch "@(MalterlibCalcBranch->Replace(':', ''))"
 	{
 		!!MalterlibBranch ""
 	}

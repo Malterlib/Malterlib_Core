@@ -96,6 +96,86 @@
 		}
 	}
 }
+%GeneratorSetting "Native_YASM"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "PreprocessorDefines"
+		{
+			Property
+			{
+				Name "Defines"
+			}
+		}
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Name "IncludePaths"
+			}
+		}
+		%GeneratorSetting "ObjectFileName"
+		{
+			Property.Name "ObjectFile"
+		}
+	}
+}
+
+%GeneratorSetting "Native_CustomBuild"
+{
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "Custom_Message"
+		{
+			Property
+			{
+				Name "Message"
+			}
+		}
+		%GeneratorSetting "Custom_CommandLine"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "Custom_WorkingDirectory"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "CustomCombined_CommandLine"
+		{
+			Property
+			{
+				Name "Command"
+			}
+		}
+		%GeneratorSetting "Custom_Outputs"
+		{
+			Property
+			{
+				Name "Outputs"
+			}
+		}
+		%GeneratorSetting "Custom_Inputs"
+		{
+			Property
+			{
+				Name "AdditionalInputs"
+			}
+		}
+		%GeneratorSetting "Custom_CompileOutput"
+		{
+			Property
+			{
+				Name "LinkObjects"
+			}
+		}
+	}
+}
 %GeneratorSetting "Native_QtMoc"
 {
 	%GeneratorSetting "Compile"

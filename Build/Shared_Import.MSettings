@@ -29,6 +29,10 @@ Import
 		!!Import.CMake_Config ""
 	}
 	CMake_Languages "C=C;CXX=C++;ASM=Assembler;@(Import.CMake_Languages)"
+	CMake_Languages "ASM_NASM=AssemblerNasm;ASM_MASM=Assembler;RC=WindowsResource;@(Import.CMake_Languages)"
+	{
+		!!GeneratorFamily VisualStudio
+	}
 
 	CMake_SystemName "Darwin"
 	{
@@ -71,7 +75,41 @@ Import
 			!Documentation Doxygen
 		}
 	}
-	
+
+	CMake_CCompiler "@(PlatformToolsetCompiler)"
+	{
+		&
+		{
+			!Documentation Doxygen
+			!PlatformToolsetCompiler ""
+		}
+	}
+
+	CMake_CxxCompiler "@(PlatformToolsetCompiler)"
+	{
+		&
+		{
+			!Documentation Doxygen
+			HostPlatformFamily Windows
+			!PlatformToolsetCompiler ""
+		}
+	}
+
+	CMake_CxxCompiler "@(PlatformToolsetCompiler)++"
+	{
+		&
+		{
+			!Documentation Doxygen
+			!HostPlatformFamily Windows
+			!PlatformToolsetCompiler ""
+		}
+	}
+}
+
+Import
+{
+	!PlatformFamily Windows
+
 	CMake_SysRoot "@(MalterlibSysRoot)"
 	{
 		&
@@ -79,16 +117,6 @@ Import
 			!MalterlibSysRoot ""
 			!Documentation Doxygen
 		}
-	}
-	
-	CMake_CCompiler "@(PlatformToolsetCompiler)"
-	{
-		!Documentation Doxygen
-	}
-	
-	CMake_CxxCompiler "@(PlatformToolsetCompiler)++"
-	{
-		!Documentation Doxygen
 	}
 	
 	CMake_CCompilerTarget "@(MalterlibTargetTriple)"

@@ -6,6 +6,13 @@
 	%GeneratorSetting "Target"
 	{
 		// Handled elsewhere
+		%GeneratorSetting "PlatformVersion"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
 		%GeneratorSetting "PlatformToolset"
 		{
 			Property

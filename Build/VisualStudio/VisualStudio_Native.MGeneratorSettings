@@ -18,6 +18,7 @@
 			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.props"
 			A2 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.props"
 			A3 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.props"
+			A4 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\vsyasm.props"
 		}
 	}		
 	%GeneratorSetting "Targets"
@@ -28,6 +29,7 @@
 			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"
 			A2 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.targets"
 			A3 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.targets"
+			A4 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\vsyasm.targets"
 		}
 	}		
 }
@@ -214,6 +216,7 @@
 					Header ClInclude
 					None None
 					Assembler MASM
+					AssemblerNasm YASM
 					QtRcc QtRcc
 					QtMoc QtMoc
 					QtUic QtUic
@@ -222,6 +225,7 @@
 					WindowsResource ResourceCompile
 					MSBuildTargets None
 					VisualStudioVisualizer Natvis
+					Custom CustomBuild
 				}
 			}
 		}

@@ -7,6 +7,16 @@ Compile
 {
 	!!LanguageFamily "Native"
 
+	Type "Custom"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			!Compile.Custom_CommandLine ""
+		}
+	}
+
 	Type "StaticLibrary"
 	{
 		&
@@ -2146,3 +2156,33 @@ Compile
 		Compile.Type "Compile"
 	}
 }
+
+Compile 
+{
+	!!Compile.Type Custom
+
+	Custom_WorkingDirectory "@(this.Identity->GetPath())"
+	{
+		!!Compile.Custom_WorkingDirectory ""
+	}
+
+	FullEval true
+
+	Custom_Message "Generating @(File:this.Identity->GetFile())"
+	{
+		&
+		{
+			GeneratorFamily VisualStudio
+			this.Type File
+		}
+	}
+	
+	CustomCombined_CommandLine 	"@(Compile.Custom_WorkingDirectory->GetDrive())\r\n"\
+								"cd \"@(Compile.Custom_WorkingDirectory)\"\r\n"\
+								"@(Compile.Custom_CommandLine->Replace('\">\"', '>'))\r\n"
+	{
+		!!GeneratorFamily VisualStudio
+	}
+}
+
+

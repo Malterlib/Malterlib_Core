@@ -5766,6 +5766,7 @@ void __cdecl fg_DestroyMalterlibAggregates()
 	if (g_bSystemCreated && !g_bSysDeleted)
 	{
 		g_bAggregatesDestroyed = true;
+		fg_GetLocalSys()->f_DestroyThreadSpecific();
 		fg_GetLocalSys()->f_DestroyAggregates();
 	}
 }
