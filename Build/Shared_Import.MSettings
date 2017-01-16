@@ -104,6 +104,8 @@ Import
 			!PlatformToolsetCompiler ""
 		}
 	}
+	
+	CMake_Path "@(MToolDirectory);@(Import.CMake_Path)"
 }
 
 Import
