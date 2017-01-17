@@ -1297,6 +1297,11 @@ Compile
 		!!MalterlibDefaultToolset true
 	}
 	
+	ProvidedNewAligment "1"
+	{
+		!!PlatformFamily OSX
+		!!PlatformFamily Linux
+	}
 	
 	PreprocessorDefines "_LIBCPP_NO_ALWAYS_INLINE;@(Compile.PreprocessorDefines)"
 	{

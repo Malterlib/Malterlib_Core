@@ -145,13 +145,15 @@
 // Aliasing
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define only_parameters_aliased 
-#	define return_not_aliased __attribute__((__malloc__))
+#	define malloc_like __attribute__((__malloc__))
+#	define return_not_aliased 
 #	define function_does_not_return __attribute__((noreturn))
 #	define variable_not_aliased __restrict__
 
 #elif defined(DCompiler_MSVC)
 #	define only_parameters_aliased __declspec(noalias)
 #	define return_not_aliased __declspec(restrict)
+#	define malloc_like __declspec(restrict)
 #	define function_does_not_return __declspec(noreturn)
 #	define variable_not_aliased __restrict
 #else

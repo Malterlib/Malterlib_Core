@@ -1296,6 +1296,18 @@
 					OldSeperator ";"
 				}
 			}
+
+			%GeneratorSetting "ProvidedNewAligment"
+			{
+				Property
+				{
+					Prefix "-fnew-alignment="
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					IgnoreEmpty "1"
+				}
+			}
 			
 			%GeneratorSetting "SysRoot"
 			{
