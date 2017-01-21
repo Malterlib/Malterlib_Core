@@ -34,14 +34,14 @@ namespace NMib
 			}
 			
 			NThread::CMutualManyRead m_Lock;
-			TCMap<CStr, CStr> m_Environment;
-			TCMap<CStr, CStr> m_ProtectedEnvironment;
+			CSystemEnvironment m_Environment;
+			CSystemEnvironment m_ProtectedEnvironment;
 		};
 		
 		TCSubSystem<CSubSystem_Core_Environment, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Environment = {DAggregateInit};
 	}
 	
-	TCMap<CStr, CStr> CSystem::f_Environment() const
+	CSystemEnvironment CSystem::f_Environment() const
 	{
 		auto &SubSystem = *g_SubSystem_Core_Environment;
 		DMibLockRead(SubSystem.m_Lock);
@@ -71,7 +71,7 @@ namespace NMib
 		return _Default;
 	}
 	
-	NContainer::TCMap<CStr, CStr> CSystem::f_ProtectedEnvironment() const
+	CSystemEnvironment CSystem::f_ProtectedEnvironment() const
 	{
 		auto &SubSystem = *g_SubSystem_Core_Environment;
 		DMibLockRead(SubSystem.m_Lock);

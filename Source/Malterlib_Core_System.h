@@ -115,6 +115,12 @@ namespace NMib
 //	#else
 		typedef NMem::CAllocator_Virtual CMainHeapVirtualAllocator;
 //	#endif
+
+#ifdef DPlatformFamily_Windows
+	using CSystemEnvironment = NContainer::TCMap<NStr::CStr, NStr::CStr, NStr::CCompareNoCase>;
+#else
+	using CSystemEnvironment = NContainer::TCMap<NStr::CStr, NStr::CStr>;
+#endif
 			
 	class CSystem
 	{	
@@ -406,11 +412,11 @@ namespace NMib
 		/// Environment
 		/// ============
 		
-		NContainer::TCMap<NStr::CStr, NStr::CStr> f_Environment() const;
+		CSystemEnvironment f_Environment() const;
 		void f_SetEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Value);
 		NStr::CStr f_GetEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Default = {}, bool *o_pExists = nullptr) const;
 
-		NContainer::TCMap<NStr::CStr, NStr::CStr> f_ProtectedEnvironment() const; // Whole environment, with and without protected variables
+		CSystemEnvironment f_ProtectedEnvironment() const; // Whole environment, with and without protected variables
 		void f_ProtectEnvironmentVariable(NStr::CStr const &_Variable);
 		NStr::CStr f_GetProtectedEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Default = {}, bool *o_pExists = nullptr) const;
 		

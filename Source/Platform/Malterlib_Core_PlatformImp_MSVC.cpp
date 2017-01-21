@@ -2961,7 +2961,7 @@ void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
 	HCRYPTPROV hProvider = 0;
 
 	if (!CryptAcquireContextW(&hProvider, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-		DMibError((CStr::CFormat("Windows returned an error from CryptAcquireContextW: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError())).f_GetStr());
+		DMibError((CFStr256::CFormat("Windows returned an error from CryptAcquireContextW: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError())).f_GetStr());
 
 	auto Cleanup = fg_OnScopeExit
 		(
@@ -2972,7 +2972,7 @@ void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
 		)
 	;
 	if (!CryptGenRandom(hProvider, _nBytes, _pData))
-		DMibError((CStr::CFormat("Windows returned an error from CryptGenRandom: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError())).f_GetStr());
+		DMibError((CFStr256::CFormat("Windows returned an error from CryptGenRandom: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError())).f_GetStr());
 }
 
 
@@ -2986,7 +2986,7 @@ void NSys::fg_System_GenerateUUID(NDataProcessing::CUniversallyUniqueIdentifier 
 	UUID Ret;
 	HRESULT ErrorCode = UuidCreate(&Ret);
 	if (ErrorCode != RPC_S_OK)
-		DMibError((CStr::CFormat("Windows returned an error from UuidCreate: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(ErrorCode)).f_GetStr());
+		DMibError((CFStr256::CFormat("Windows returned an error from UuidCreate: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(ErrorCode)).f_GetStr());
 	
 	_UUID.m_TimeLow = Ret.Data1;
 	_UUID.m_TimeMid = Ret.Data2;
