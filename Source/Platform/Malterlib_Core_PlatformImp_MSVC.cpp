@@ -4932,6 +4932,10 @@ void NSys::NFile::fg_Rename(const CStr &_FileFrom, const CStr &_FileTo)
 	if (!MoveFileW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom), NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo)))
 		DMibErrorFile((CStr::CFormat("Windows returned an error from MoveFile({}, {}): {}") << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 }
+ 
+#ifndef REPLACEFILE_IGNORE_ACL_ERRORS
+#define REPLACEFILE_IGNORE_ACL_ERRORS 0x00000004
+#endif
 
 void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
