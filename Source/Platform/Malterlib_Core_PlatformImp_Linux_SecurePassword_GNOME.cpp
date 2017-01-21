@@ -83,7 +83,7 @@ namespace NMib
 			if (!mp_KeychainLibrary.f_OK())
 				return false;
 			
-			if (NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStr("GNOME_KEYRING_CONTROL")).f_IsEmpty())
+			if (fg_GetSys()->f_GetEnvironmentVariable("GNOME_KEYRING_CONTROL").f_IsEmpty())
 				return false;
 			return true;
 		}

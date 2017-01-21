@@ -29,14 +29,14 @@ using namespace NMib;
 // POSIX Environment Vars Implementation
 // *************************************************************************************************************************
 
-NMib::NStr::CStr NMib::NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStr const &_VariableName)
+NMib::NStr::CStr NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName)
 {
 	const char *pEnv = getenv(_VariableName);
 	if (!pEnv) // Not an error, NULL is returned if the env var does not exist.
 		return CStr();
 	return CStr(pEnv);
 }
-NMib::NStr::CStrNonTracked NMib::NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_VariableName)
+NMib::NStr::CStrNonTracked NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName)
 {
 	const char *pEnv = getenv(_VariableName);
 	if (!pEnv) // Not an error, NULL is returned if the env var does not exist.
@@ -44,7 +44,7 @@ NMib::NStr::CStrNonTracked NMib::NSys::fg_Process_GetEnvironmentVariable(NMib::N
 	return CStrNonTracked(pEnv);
 }
 
-bint NMib::NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr& _Value)
+bint NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr& _Value)
 {
 	const char *pEnv = getenv(_VariableName);
 	if (!pEnv)
@@ -52,7 +52,7 @@ bint NMib::NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStr const &_Vari
 	_Value = CStr(pEnv);
 	return true;
 }
-bint NMib::NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
+bint NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
 {
 	const char *pEnv = getenv(_VariableName);
 	if (!pEnv)
@@ -61,14 +61,14 @@ bint NMib::NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStrNonTracked co
 	return true;
 }
 
-void NMib::NSys::fg_Process_SetEnvironmentVariable(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr const &_Value)
+void NMib::NSys::fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr const &_Value)
 {
 	int ReturnValue = setenv(_VariableName, _Value, true);
 	if (ReturnValue)
 		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("setenv('{}')") << _VariableName, errno));
 }
 
-void NMib::NSys::fg_Process_SetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked const &_Value)
+void NMib::NSys::fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked const &_Value)
 {
 	int ReturnValue = setenv(_VariableName, _Value, true);
 	if (ReturnValue)

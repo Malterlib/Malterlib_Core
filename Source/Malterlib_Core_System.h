@@ -169,6 +169,7 @@ namespace NMib
 		
 		void fp_SubSystem_DestroyThreadLocal();
 		void fp_SubSystem_DestroyThreadSpecific();
+		void fp_SubSystem_PreDestroyThreadSpecific();
 		void fp_SubSystem_DestroyBeforeMemoryManager();
 		void fp_SubSystem_DestroyBeforeNonTrackedMemoryManager();
 		void fp_SubSystem_Destroy();
@@ -294,6 +295,7 @@ namespace NMib
 		CSystem(bool _bIsDll);
 		~CSystem();
 
+		void f_PreDestructThreadSpecific();
 		void f_DestructThreadSpecific();
 		void f_Destruct();
 
@@ -399,6 +401,18 @@ namespace NMib
 		NStr::CStr f_CommandLineParameter(aint _iIndex);
 		
 		NContainer::TCVector<NMib::NStr::CStr> f_GetCommandLineArgs() const;
+
+		///
+		/// Environment
+		/// ============
+		
+		NContainer::TCMap<NStr::CStr, NStr::CStr> f_Environment() const;
+		void f_SetEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Value);
+		NStr::CStr f_GetEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Default = {}, bool *o_pExists = nullptr) const;
+
+		NContainer::TCMap<NStr::CStr, NStr::CStr> f_ProtectedEnvironment() const; // Whole environment, with and without protected variables
+		void f_ProtectEnvironmentVariable(NStr::CStr const &_Variable);
+		NStr::CStr f_GetProtectedEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Default = {}, bool *o_pExists = nullptr) const;
 		
 		static uint32 ms_PlatformVersion;
 	};

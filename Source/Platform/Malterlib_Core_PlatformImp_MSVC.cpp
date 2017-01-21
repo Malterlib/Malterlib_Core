@@ -496,8 +496,7 @@ namespace
 			{
 				if (SubPath[0] == '%')
 				{
-					SubPath = NSys::fg_Process_GetEnvironmentVariable(CStr(SubPath.f_Replace("%", ""))
-						);
+					SubPath = fg_GetSys()->f_GetEnvironmentVariable(SubPath.f_Replace("%", ""));
 				}
 				if (!RetPath.f_IsEmpty() && RetPath[RetPath.f_GetLen() - 1] == '/')
 					RetPath += SubPath;
@@ -3052,7 +3051,7 @@ NStr::CStr NSys::fg_Process_GetCommandLine()
 	return Temp;
 }
 
-NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NSys::fg_Process_GetEnvironmentVariables()
+NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NSys::fg_Process_GetEnvironmentVariables_NonProtected()
 {
 	TCMap<NMib::NStr::CStr, NMib::NStr::CStr> Ret;
 	LPWSTR pStrings = GetEnvironmentStringsW();
@@ -3089,44 +3088,7 @@ NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NSys::fg_Process_GetEnviro
 	return Ret;
 }
 
-NContainer::TCMap<NMib::NStr::CStrNonTracked, NMib::NStr::CStrNonTracked> NSys::fg_Process_GetEnvironmentVariablesNonTracked()
-{
-	TCMap<NMib::NStr::CStrNonTracked, NMib::NStr::CStrNonTracked> Ret;
-	LPWSTR pStrings = GetEnvironmentStringsW();
-	if (!pStrings)
-		DMibError((CStr::CFormat("Windows returned an error from GetEnvironmentStringsW: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-	LPWSTR pStringsOrig = pStrings;
-	auto Cleanup 
-		= fg_OnScopeExit
-		(
-			[&]
-			{
-				if (pStringsOrig)
-					FreeEnvironmentStringsW(pStringsOrig);
-			}
-		)
-	;
-	while (pStrings && *pStrings)
-	{
-		CStrNonTracked String = CWStrNonTracked(pStrings);
-		CStrNonTracked Key;
-		CStrNonTracked Value;
-		if (String[0] == '=')
-		{
-			String = String.f_Extract(1);
-			Key = "=" + fg_GetStrSep(String, "=");
-		}
-		else
-			Key = fg_GetStrSep(String, "=");
-		Value = String;
-		Ret[Key] = Value;
-		pStrings += fg_StrLen(pStrings) + 1;
-	}
-
-	return Ret;
-}
-
-NMib::NStr::CStr NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStr const &_VariableName)
+NMib::NStr::CStr NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName)
 {
 	NMib::NStr::CWStr Temp;
 	ch16 *pStr = Temp.f_GetStr(32768);
@@ -3136,7 +3098,7 @@ NMib::NStr::CStr NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStr const 
 	return Temp;
 }
 
-bint NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value)
+bint NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value)
 {
 	NMib::NStr::CWStr Temp;
 	ch16 *pStr = Temp.f_GetStr(32768);
@@ -3149,13 +3111,13 @@ bint NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStr const &_VariableNa
 	return true;
 }
 
-void NMib::NSys::fg_Process_SetEnvironmentVariable(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr const &_Value)
+void NMib::NSys::fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr const &_Value)
 {
 	if (!SetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows(_VariableName), NMib::NStr::NPlatform::fg_StrToWindows(_Value)))
 		DMibError((CStr::CFormat("Windows returned an error from SetEnvironmentVariableW: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 }
 
-NMib::NStr::CStrNonTracked NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_VariableName)
+NMib::NStr::CStrNonTracked NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName)
 {
 	NMib::NStr::CWStrNonTracked Temp;
 	ch16 *pStr = Temp.f_GetStr(32768);
@@ -3165,7 +3127,7 @@ NMib::NStr::CStrNonTracked NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::C
 	return Temp;
 }
 
-bint NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
+bint NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
 {
 	NMib::NStr::CWStrNonTracked Temp;
 	ch16 *pStr = Temp.f_GetStr(32768);
@@ -3178,7 +3140,7 @@ bint NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_
 	return true;
 }
 
-void NMib::NSys::fg_Process_SetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked const &_Value)
+void NMib::NSys::fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked const &_Value)
 {
 	if (!SetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows<NMib::NStr::CWStrNonTracked>(_VariableName), NMib::NStr::NPlatform::fg_StrToWindows<NMib::NStr::CWStrNonTracked>(_Value)))
 		DMibError((CStr::CFormat("Windows returned an error from SetEnvironmentVariableW: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());

@@ -74,7 +74,7 @@ namespace NMib
 			NContainer::TCVector<ch8 *> m_EnvList;
 			CBreakpad()
 			{
-				auto FinalEnv = NMib::NSys::fg_Process_GetEnvironmentVariables();
+				auto FinalEnv = fg_GetSys()->f_Environment();
 				for (auto iEnv = FinalEnv.f_GetIterator(); iEnv; ++iEnv)
 					m_EnvList.f_Insert(m_Env.f_Insert(fg_Format("{}={}", iEnv.f_GetKey(), *iEnv)).f_GetStrUniqueWritable());
 				m_EnvList.f_Insert((ch8 *)nullptr);
@@ -86,7 +86,7 @@ namespace NMib
 					{
 						bint bUseMalterlibCrashDumpDir = false;
 
-						NMib::NStr::CStrNonTracked MalterlibCrashDumpDir = NSys::fg_Process_GetEnvironmentVariable(NMib::NStr::CStrNonTracked("MalterlibCrashDumpDir"));
+						NMib::NStr::CStrNonTracked MalterlibCrashDumpDir = NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibCrashDumpDir"));
 						if (!MalterlibCrashDumpDir.f_IsEmpty())
 						{
 							if (NMib::NMisc::fg_CheckAccessRights(MalterlibCrashDumpDir, false))

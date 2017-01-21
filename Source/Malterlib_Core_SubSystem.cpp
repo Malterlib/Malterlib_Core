@@ -25,6 +25,10 @@ namespace NMib
 	{
 	}
 	
+	void CSubSystem::f_PreDestroyThreadSpecific()
+	{
+	}
+	
 	void CSubSystem::f_DestroyThreadSpecific()
 	{
 	}
@@ -41,6 +45,13 @@ namespace NMib
 	{
 		DMibLock(mp_SubSystemsLock);
 		mp_SubSystems.f_InsertFirst(_SubSystem);
+	}
+
+	void CSystem::fp_SubSystem_PreDestroyThreadSpecific()
+	{
+		DMibLock(mp_SubSystemsLock);
+		for (auto &SubSystem : mp_SubSystems)
+			SubSystem.f_PreDestroyThreadSpecific();
 	}
 
 	void CSystem::fp_SubSystem_DestroyThreadSpecific()

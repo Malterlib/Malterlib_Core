@@ -62,20 +62,7 @@ namespace NMib
 	template <typename tf_C1>
 	inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First);
 	
-	template <typename t_CType>
-	struct TCIsForbiddenType
-	{
-		enum
-		{
-			mc_Value = false
-		};
-	};
-	
 	[[noreturn]] void fg_NoReturn();
-	
-	
-	template <typename t_CTest>
-	using TCDisableIfForbidden = typename TCEnableIf<!TCIsForbiddenType<typename NTraits::TCRemoveReferenceAndQualifiers<t_CTest>::CType>::mc_Value>::CType;
 }
 
 namespace NMib

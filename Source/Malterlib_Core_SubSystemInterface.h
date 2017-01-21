@@ -26,6 +26,7 @@ namespace NMib
 		virtual void f_ForkedParent();
 		virtual void f_ForkedChild();
 		
+		virtual void f_PreDestroyThreadSpecific();
 		virtual void f_DestroyThreadSpecific();
 		virtual void f_DestroyThreadLocal();
 

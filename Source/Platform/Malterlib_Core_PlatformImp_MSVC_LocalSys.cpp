@@ -735,6 +735,7 @@ public:
 
 	void f_DestroyThreadSpecific()
 	{
+		CSystem::f_PreDestructThreadSpecific();
 
 		m_pMemoryToucher.f_Clear();
 

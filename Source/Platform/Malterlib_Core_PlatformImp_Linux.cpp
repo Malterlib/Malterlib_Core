@@ -322,7 +322,7 @@ NMib::NSys::EDesktopEnvironment fg_DeduceDesktopEnvironment()
 {
 	using namespace NMib::NSys;
 	
-	NMib::NStr::CStr CurDesktop = fg_Process_GetEnvironmentVariable(NMib::NStr::CStr("XDG_CURRENT_DESKTOP"));
+	NMib::NStr::CStr CurDesktop = fg_GetSys()->f_GetEnvironmentVariable("XDG_CURRENT_DESKTOP");
 	if (!CurDesktop.f_IsEmpty())
 	{
 		if (CurDesktop == "Unity")
@@ -333,7 +333,7 @@ NMib::NSys::EDesktopEnvironment fg_DeduceDesktopEnvironment()
 			return EDesktopEnvironment_LXDE;
 	}
 	
-	NMib::NStr::CStr DesktopSession = fg_Process_GetEnvironmentVariable(NMib::NStr::CStr("DESKTOP_SESSION"));
+	NMib::NStr::CStr DesktopSession = fg_GetSys()->f_GetEnvironmentVariable("DESKTOP_SESSION");
 	if (!DesktopSession.f_IsEmpty())
 	{
 		if (DesktopSession == "gnome")
@@ -342,7 +342,7 @@ NMib::NSys::EDesktopEnvironment fg_DeduceDesktopEnvironment()
 			return EDesktopEnvironment_KDE4;
 		else if (DesktopSession == "kde")
 		{
-			if (!fg_Process_GetEnvironmentVariable(NMib::NStr::CStr("KDE_SESSION_VERSION")).f_IsEmpty())
+			if (!fg_GetSys()->f_GetEnvironmentVariable("KDE_SESSION_VERSION").f_IsEmpty())
 				return EDesktopEnvironment_KDE4;
 			
 			return EDesktopEnvironment_KDE3;
@@ -352,11 +352,11 @@ NMib::NSys::EDesktopEnvironment fg_DeduceDesktopEnvironment()
 			return EDesktopEnvironment_XCFE;
 	}
 	
-	if (!fg_Process_GetEnvironmentVariable(NMib::NStr::CStr("GNOME_DESKTOP_SESSION_ID")).f_IsEmpty())
+	if (!fg_GetSys()->f_GetEnvironmentVariable("GNOME_DESKTOP_SESSION_ID").f_IsEmpty())
 		return EDesktopEnvironment_GNOME;
-	else if (!fg_Process_GetEnvironmentVariable(NMib::NStr::CStr("KDE_FULL_SESSION")).f_IsEmpty())
+	else if (!fg_GetSys()->f_GetEnvironmentVariable("KDE_FULL_SESSION").f_IsEmpty())
 	{
-		if (!fg_Process_GetEnvironmentVariable(NMib::NStr::CStr("KDE_SESSION_VERSION")).f_IsEmpty())
+		if (!fg_GetSys()->f_GetEnvironmentVariable("KDE_SESSION_VERSION").f_IsEmpty())
 			return EDesktopEnvironment_KDE4;
 		
 		return EDesktopEnvironment_KDE3;
@@ -507,6 +507,8 @@ public:
 
 	void f_DestroyThreadSpecific()
 	{
+		CSystem::f_PreDestructThreadSpecific();
+		
 		m_Posix.f_DestroyThreadSpecific();
 
 		if (m_FileChangeNotificationContext.m_bConstructed)
@@ -727,7 +729,7 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::C
 	fg_SystemDecodeAnsiStr(_pIn, _Out);
 }
 
-NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NMib::NSys::fg_Process_GetEnvironmentVariables()
+NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NMib::NSys::fg_Process_GetEnvironmentVariables_NonProtected()
 {
 	NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> Vars;
 
@@ -1635,7 +1637,7 @@ namespace
 
 NMib::NStr::CStr NSys::NFile::fg_GetUserHomeDirectory()
 {
-	NMib::NStr::CStr HomeDir = fg_Process_GetEnvironmentVariable(CStr("HOME"));
+	NMib::NStr::CStr HomeDir = fg_GetSys()->f_GetEnvironmentVariable("HOME");
 	
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
@@ -1659,7 +1661,7 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetLogDirectoryNonTracked()
 
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserHomeDirectoryNonTracked()
 {
-	NMib::NStr::CStrNonTracked HomeDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("HOME"));
+	NMib::NStr::CStrNonTracked HomeDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME"));
 	
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
@@ -1713,13 +1715,13 @@ NStr::CStrNonTracked NSys::NFile::fg_GetUserProgramDirectoryNonTracked()
 
 NStr::CStr NSys::NFile::fg_GetTemporaryDirectory()
 {
-	NMib::NStr::CStr TmpDir = fg_Process_GetEnvironmentVariable(CStr("TMPDIR"));
+	NMib::NStr::CStr TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TMPDIR");
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStr("TMP"));
+		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TMP");
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStr("TEMP"));
+		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TEMP");
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStr("TEMPDIR"));
+		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TEMPDIR");
 	if (!TmpDir.f_IsEmpty())
 		return NMib::NFile::CFile::fs_AppendPath(TmpDir, fg_GetProgramUserName());
 	return "/tmp";
@@ -1727,13 +1729,13 @@ NStr::CStr NSys::NFile::fg_GetTemporaryDirectory()
 
 NStr::CStrNonTracked NSys::NFile::fg_GetTemporaryDirectoryNonTracked()
 {
-	NMib::NStr::CStrNonTracked TmpDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("TMPDIR"));
+	NMib::NStr::CStrNonTracked TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TMPDIR"));
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("TMP"));
+		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TMP"));
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("TEMP"));
+		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMP"));
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("TEMPDIR"));
+		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMPDIR"));
 	if(!TmpDir.f_IsEmpty()) 
 		return NMib::NFile::CFile::fs_AppendPath(TmpDir, fg_GetProgramUserNameNonTracked());
 	return "/tmp";

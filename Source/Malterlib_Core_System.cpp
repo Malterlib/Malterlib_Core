@@ -116,7 +116,7 @@ namespace NMib
 
 		m_CommandLineData.f_Construct();
 #if DMibRemoteDebugger_Enabled
-		if (NSys::fg_Process_GetEnvironmentVariable(NStr::CStrNonTracked("Malterlib_RemoteDebugger")) != "")
+		if (NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("Malterlib_RemoteDebugger")) != "")
 		{
 			NRemoteDebugger::fg_RD_InitializeClient();
 		}
@@ -151,6 +151,11 @@ namespace NMib
 	void CSystem::fp_InitComplete()
 	{
 		m_bInitDone = true;	
+	}
+
+	void CSystem::f_PreDestructThreadSpecific()
+	{
+		fp_SubSystem_PreDestroyThreadSpecific();
 	}
 
 	void CSystem::f_DestructThreadSpecific()
@@ -249,7 +254,7 @@ namespace NMib
 			bDebugOut = true;
 #endif
 			
-			bool bDisableSystemLog = NSys::fg_Process_GetEnvironmentVariable(NStr::CStrNonTracked("MalterlibDisableSystemLog")) == "true";
+			bool bDisableSystemLog = NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("MalterlibDisableSystemLog")) == "true";
 			if (bDisableSystemLog)
 				bDebugOut = false;
 

@@ -215,15 +215,15 @@ namespace NMib
 
 		NMib::NStr::CStr fg_Process_GetCommandLine();
 		void fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> &_List);
-		NMib::NStr::CStr fg_Process_GetEnvironmentVariable(NMib::NStr::CStr const &_VariableName);
-		NMib::NStr::CStrNonTracked fg_Process_GetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_VariableName);
-		bint fg_Process_GetEnvironmentVariable(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value);
-		bint fg_Process_GetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value);
-		void fg_Process_SetEnvironmentVariable(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr const &_Value);
-		void fg_Process_SetEnvironmentVariable(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked const &_Value);
+		
+		NMib::NStr::CStr fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName);
+		NMib::NStr::CStrNonTracked fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName);
+		bint fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value);
+		bint fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value);
+		void fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr const &_Value);
+		void fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked const &_Value);
 
-		NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> fg_Process_GetEnvironmentVariables();
-		NContainer::TCMap<NMib::NStr::CStrNonTracked, NMib::NStr::CStrNonTracked> fg_Process_GetEnvironmentVariablesNonTracked();
+		NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> fg_Process_GetEnvironmentVariables_NonProtected();
 		
 		NMib::NStr::CStr fg_System_GenerateUUID();
 		void fg_System_GenerateUUID(NDataProcessing::CUniversallyUniqueIdentifier &_UUID);

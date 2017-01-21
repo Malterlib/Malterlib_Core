@@ -160,6 +160,8 @@ public:
 
 	void f_DestroyThreadSpecific()
 	{
+		CSystem::f_PreDestructThreadSpecific();
+		
 		m_Posix.f_DestroyThreadSpecific();
 
 		CSystem::f_DestructThreadSpecific();
@@ -346,7 +348,7 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::C
 	fg_SystemDecodeAnsiStr(_pIn, _Out);
 }
 
-NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NMib::NSys::fg_Process_GetEnvironmentVariables()
+NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NMib::NSys::fg_Process_GetEnvironmentVariables_NonProtected()
 {
 	NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> Vars;
 
@@ -1102,7 +1104,7 @@ namespace
 
 NMib::NStr::CStr NSys::NFile::fg_GetUserHomeDirectory()
 {
-	NMib::NStr::CStr HomeDir = fg_Process_GetEnvironmentVariable(CStr("HOME"));
+	NMib::NStr::CStr HomeDir = fg_GetSys()->f_GetEnvironmentVariable("HOME");
 	
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
@@ -1126,7 +1128,7 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetLogDirectoryNonTracked()
 
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserHomeDirectoryNonTracked()
 {
-	NMib::NStr::CStrNonTracked HomeDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("HOME"));
+	NMib::NStr::CStrNonTracked HomeDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME"));
 	
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
@@ -1180,13 +1182,13 @@ NStr::CStrNonTracked NSys::NFile::fg_GetUserProgramDirectoryNonTracked()
 
 NStr::CStr NSys::NFile::fg_GetTemporaryDirectory()
 {
-	NMib::NStr::CStr TmpDir = fg_Process_GetEnvironmentVariable(CStr("TMPDIR"));
+	NMib::NStr::CStr TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TMPDIR");
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStr("TMP"));
+		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TMP");
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStr("TEMP"));
+		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TEMP");
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStr("TEMPDIR"));
+		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TEMPDIR");
 	if (!TmpDir.f_IsEmpty())
 		return NMib::NFile::CFile::fs_AppendPath(TmpDir, fg_GetProgramUserName());
 	return "/tmp";
@@ -1194,13 +1196,13 @@ NStr::CStr NSys::NFile::fg_GetTemporaryDirectory()
 
 NStr::CStrNonTracked NSys::NFile::fg_GetTemporaryDirectoryNonTracked()
 {
-	NMib::NStr::CStrNonTracked TmpDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("TMPDIR"));
+	NMib::NStr::CStrNonTracked TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TMPDIR"));
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("TMP"));
+		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TMP"));
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("TEMP"));
+		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMP"));
 	if (TmpDir.f_IsEmpty())
-		TmpDir = fg_Process_GetEnvironmentVariable(CStrNonTracked("TEMPDIR"));
+		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMPDIR"));
 	if(!TmpDir.f_IsEmpty()) 
 		return NMib::NFile::CFile::fs_AppendPath(TmpDir, fg_GetProgramUserNameNonTracked());
 	return "/tmp";
