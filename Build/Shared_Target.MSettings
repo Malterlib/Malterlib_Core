@@ -568,10 +568,6 @@ Property
 			Generator "Xcode5"
 		}
 	}*/
-	PlatformToolsetCompiler "@(MToolPath)" // User: Change the clang compiler location
-	{
-		!!Documentation Doxygen
-	}
 	PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc" // User: Change the clang compiler location
 	{
 		&
@@ -731,6 +727,10 @@ Target
 	}
 
 	PlatformToolsetCompiler "@(PlatformToolsetCompiler)"
+	PlatformToolsetCompiler "@(MToolPath)"
+	{
+		!!Documentation Doxygen
+	}
 	
 //	PlatformToolsetLibTool "/Deploy/LibTool/libtool"
 	PlatformToolsetLibTool "/Development/Malterlib/Tools/OSXPatches/libtool/libtool"

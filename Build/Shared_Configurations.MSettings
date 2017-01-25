@@ -594,6 +594,7 @@ Workspace.Enabled false
 		&
 		{
 			!HostPlatformFamily Windows
+			Platform "@(HostPlatform)"
 			Configuration "Debug"
 		}
 	}

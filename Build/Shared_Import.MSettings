@@ -1,15 +1,44 @@
 ﻿// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+Property
+{
+	ImportIdentityRelativeRootPath "@(Import:this.IdentityAsAbsolutePath->GetPath())"
+	ImportIdentityRelativeRootPath "@(ImportIdentityRelativeRootPath->MakeRelative(@(Builtin.BasePathAbsolute)))"
+	
+	IsMaintainedConfig "true"
+	{
+		&
+		{
+			IsMaintainedConfig ""
+			|
+			{
+				Import.CMake_Config "Debug"
+				Import.CMake_Config "Release"
+			}
+		}
+	}
+}
+
+
 Import
 {
-	SharedTempDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(BuildSystemName)/Generated/@(Import:this.Identity->HashUUID())"
-	TempDirectory "@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@(FullConfiguration)"
+	SharedTempDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(BuildSystemName)/Generated/@(ImportIdentityRelativeRootPath->Replace('/', '_'))"
+	TempDirectory "@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@(Import.CMake_Config)"
 }
 
 Import
 {
-	CMake_CacheDirectory "@(Import:this.IdentityPath->GetPath())/ImportCache/@(Import:this.Identity->HashUUID('Bare'))-@(Platform)-@(Architecture)-@(FullConfiguration)"
+	CMake_CacheDirectory "@(Import:this.IdentityPath->GetPath())/ImportCache/@(ImportIdentityRelativeRootPath->Replace('/', '_'))-@(Platform)-@(Architecture)-@(Import.CMake_Config)"
+	{
+		!!IsMaintainedConfig true
+	}
+	CMake_CacheDirectory "@(Builtin.BasePathAbsolute)/ImportCache/@(ImportIdentityRelativeRootPath->Replace('/', '_'))-@(Platform)-@(Architecture)-@(Import.CMake_Config)"
+	{
+		!IsMaintainedConfig true
+	}
+	
+	CMake_ReplacePrefixes "@(Import.TempDirectory)=@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@@(FullConfiguration);@(CMake_ReplacePrefixes)"
 
 	CMake_CacheExcludePatterns "*/CMakeFiles/*;*.cmake;*.ninja;*/CMakeCache.txt;*/MalterlibFullRebuildVersion;*/.NoDartCoverage;@(Import.CMake_CacheExcludePatterns)"
 	
@@ -47,7 +76,6 @@ Import
 			Import.CMake_SystemName ""
 			!PlatformFamily "@(HostPlatformFamily)" 
 			PlatformFamily "OSX"
-			!Documentation Doxygen
 		}
 	}
 	
@@ -57,7 +85,6 @@ Import
 		{
 			Import.CMake_SystemName ""
 			!PlatformFamily "@(HostPlatformFamily)" 
-			!Documentation Doxygen
 		}
 	}
 
@@ -68,7 +95,6 @@ Import
 			!Import.CMake_SystemName ""
 			Import.CMake_SystemProcessor ""
 			Architecture x64
-			!Documentation Doxygen
 		}
 	}
 	
@@ -78,7 +104,6 @@ Import
 		{
 			!Import.CMake_SystemName ""
 			Import.CMake_SystemProcessor ""
-			!Documentation Doxygen
 		}
 	}
 
@@ -86,7 +111,6 @@ Import
 	{
 		&
 		{
-			!Documentation Doxygen
 			!PlatformToolsetCompiler ""
 		}
 	}
@@ -95,7 +119,6 @@ Import
 	{
 		&
 		{
-			!Documentation Doxygen
 			HostPlatformFamily Windows
 			!PlatformToolsetCompiler ""
 		}
@@ -105,7 +128,6 @@ Import
 	{
 		&
 		{
-			!Documentation Doxygen
 			!HostPlatformFamily Windows
 			!PlatformToolsetCompiler ""
 		}
@@ -128,22 +150,7 @@ Import
 	}
 	
 	CMake_CCompilerTarget "@(MalterlibTargetTriple)"
-	{
-		!Documentation Doxygen
-	}
-	
 	CMake_CxxCompilerTarget "@(MalterlibTargetTriple)"
-	{
-		!Documentation Doxygen
-	}
-	
 	CMake_CExternalToolChain "@(MalterlibToolsPrefix->Replace('/bin/', '/bin'))"
-	{
-		!Documentation Doxygen
-	}
-	
 	CMake_CxxExternalToolChain "@(MalterlibToolsPrefix->Replace('/bin/', '/bin'))"
-	{
-		!Documentation Doxygen
-	}
 }

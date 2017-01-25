@@ -2605,7 +2605,7 @@
 			{
 				Property
 				{
-					Name EXCLUDED_SOURCE_FILE_NAMES
+					Name EXCLUDED_FILE_REFS
 				}
 				Property
 				{
