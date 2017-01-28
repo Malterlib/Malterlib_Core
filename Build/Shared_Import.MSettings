@@ -52,6 +52,12 @@ Import
 	
 	CMake_CacheReplaceContents "/opt/local/bin/=;/usr/bin/=;/usr/local/bin/=;@(Import.CMake_CacheReplaceContents)"
 
+	
+	CMake_CacheReplaceContents "C:/Go/bin/=;C:/strawberry/perl/bin/=;@(Import.CMake_CacheReplaceContents)"
+	{
+		!!HostPlatformFamily "Windows"
+	}
+
 	CMake_Config "Release"
 	{
 		&
