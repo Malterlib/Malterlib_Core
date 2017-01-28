@@ -48,7 +48,7 @@ Import
 	
 	CMake_ReplacePrefixes "@(Import.TempDirectory)=@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@@(FullConfiguration);@(CMake_ReplacePrefixes)"
 
-	CMake_CacheExcludePatterns "*/CMakeFiles/*;*.cmake;*.ninja;*/CMakeCache.txt;*/MalterlibFullRebuildVersion;*/.NoDartCoverage;@(Import.CMake_CacheExcludePatterns)"
+	CMake_CacheExcludePatterns "*/CMakeFiles/*;*/cmake.tmp/*;*.cmake;*.ninja;*/CMakeCache.txt;*/MalterlibFullRebuildVersion;*/.NoDartCoverage;@(Import.CMake_CacheExcludePatterns)"
 	
 	CMake_CacheReplaceContents "/opt/local/bin/=;/usr/bin/=;/usr/local/bin/=;@(Import.CMake_CacheReplaceContents)"
 
