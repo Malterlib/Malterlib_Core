@@ -1967,8 +1967,14 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 		return;
 	}
 	
-	if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, true))
-		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("copyfile('{}', '{}') when renaming file") << _FileFrom << _FileTo, ErrNo));
+	if (rename(_FileFrom, _FileTo))
+	{
+		int Error = errno;
+		if (Error != EXDEV)
+			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("rename('{}', '{}')") << _FileFrom << _FileTo, Error));
+		if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, true))
+			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("copyfile('{}', '{}') when renaming file") << _FileFrom << _FileTo, ErrNo));
+	}
 }
 
 
@@ -1987,8 +1993,15 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("rename('{}', '{}')") << _FileFrom << _FileTo, errno));
 		return;
 	}
-	if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, _Progress, true))
-		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("copyfile('{}', '{}') when renaming file") << _FileFrom << _FileTo, ErrNo));
+	
+	if (rename(_FileFrom, _FileTo))
+	{
+		int Error = errno;
+		if (Error != EXDEV)
+			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("rename('{}', '{}')") << _FileFrom << _FileTo, Error));
+		if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, _Progress, true))
+			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("copyfile('{}', '{}') when renaming file") << _FileFrom << _FileTo, ErrNo));
+	}
 }
 
 void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
