@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Property
@@ -29,6 +29,14 @@ Import
 
 Import
 {
+	CMake_UpdateCache "true"
+	{
+		&
+		{
+			Import.CMake_UpdateCache ""
+			!MalterlibBuildServerBuild true
+		}
+	}
 	CMake_CacheDirectory "@(Import:this.IdentityPath->GetPath())/ImportCache/@(ImportIdentityRelativeRootPath->Replace('/', '_'))-@(Platform)-@(Architecture)-@(Import.CMake_Config)"
 	{
 		!!IsMaintainedConfig true
