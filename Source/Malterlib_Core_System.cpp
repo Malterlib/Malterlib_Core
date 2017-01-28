@@ -372,6 +372,7 @@ namespace NMib
 		if (m_pDefaultLogFile)
 			m_pDefaultLogFile->f_PrepareFork();
 #endif
+		fp_SubSystem_PrepareFork();
 		f_MemoryManager_PrepareFork();
 		m_EventMember_Lock.f_Lock();
 		m_EventMember_Lock.f_PrepareFork();
@@ -381,6 +382,7 @@ namespace NMib
 		m_EventMember_Lock.f_ForkedChild();
 		m_EventMember_Lock.f_Unlock();
 		f_MemoryManager_ForkedChild();
+		fp_SubSystem_ForkedChild();
 #if DMibSysLogSeverities
 		if (m_pSystemLog)
 			m_pSystemLog->f_ForkedChild();
@@ -394,6 +396,7 @@ namespace NMib
 		m_EventMember_Lock.f_ForkedParent();
 		m_EventMember_Lock.f_Unlock();
 		f_MemoryManager_ForkedParent();
+		fp_SubSystem_ForkedParent();
 #if DMibSysLogSeverities
 		if (m_pSystemLog)
 			m_pSystemLog->f_ForkedParent();

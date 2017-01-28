@@ -47,6 +47,30 @@ namespace NMib
 		mp_SubSystems.f_InsertFirst(_SubSystem);
 	}
 
+	void CSystem::fp_SubSystem_PrepareFork()
+	{
+		mp_SubSystemsLock.f_Lock();
+		mp_SubSystemsLock.f_PrepareFork();
+		for (auto &SubSystem : mp_SubSystems)
+			SubSystem.f_PrepareFork();
+	}
+	
+	void CSystem::fp_SubSystem_ForkedChild()
+	{
+		for (auto &SubSystem : mp_SubSystems)
+			SubSystem.f_ForkedChild();
+		mp_SubSystemsLock.f_ForkedChild();
+		mp_SubSystemsLock.f_Unlock();
+	}
+	
+	void CSystem::fp_SubSystem_ForkedParent()
+	{
+		for (auto &SubSystem : mp_SubSystems)
+			SubSystem.f_ForkedParent();
+		mp_SubSystemsLock.f_ForkedParent();
+		mp_SubSystemsLock.f_Unlock();
+	}
+	
 	void CSystem::fp_SubSystem_PreDestroyThreadSpecific()
 	{
 		DMibLock(mp_SubSystemsLock);

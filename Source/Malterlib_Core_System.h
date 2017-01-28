@@ -172,6 +172,10 @@ namespace NMib
 		void fp_DestroyNonTrackedMemoryManager();
 		void fp_CreateMemoryManager();
 		void fp_DestroyMemoryManager();
+
+		void fp_SubSystem_PrepareFork();
+		void fp_SubSystem_ForkedChild();
+		void fp_SubSystem_ForkedParent();
 		
 		void fp_SubSystem_DestroyThreadLocal();
 		void fp_SubSystem_DestroyThreadSpecific();
