@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <Mib/Storage/Variant>
 #include <Mib/Core/OnScopeExitShared>
 
 namespace NMib
