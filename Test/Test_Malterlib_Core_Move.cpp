@@ -8,6 +8,7 @@
 #include <Mib/Storage/Reference>
 #include <Mib/String/Mixed>
 #include <Mib/Numeric/fp128>
+#include <Mib/Storage/Variant>
 
 struct CTestStruct
 {
