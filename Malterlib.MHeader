@@ -6,4 +6,3 @@ Import "Build/Shared.MSettings"
 
 // Import all sub projects
 Import "../*/*.MHeader"
-
