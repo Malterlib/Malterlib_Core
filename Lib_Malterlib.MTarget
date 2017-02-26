@@ -310,6 +310,20 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 				!PlatformType "Windows"
 			}
 
+			Property
+			{
+				VisualStudioVersion "14"
+				{
+					!!Generator VisualStudio2015
+				}
+				VisualStudioVersion "15"
+				{
+					!!Generator VisualStudio2017
+				}
+
+				VisualStudioCRTPath "../../SDK/VS.@(VisualStudioVersion).Crt"
+			}
+
 			%Group "CDecl"
 			{
 				Compile
@@ -320,7 +334,7 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 						!Target.VisualStudioPlatform "Clang"
 					}
 				}
-				%Group CRT14
+				%Group CRT
 				{
 					|
 					{
@@ -331,7 +345,7 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 					Compile
 					{
 						!!CompileDialect "C"
-						SearchPath "@('../../SDK/VS.14.Crt/vcruntime'->MakeAbsolute());@(Compile.SearchPath)"
+						SearchPath "@(VisualStudioCRTPath->MakeAbsolute())/vcruntime;@(Compile.SearchPath)"
 						PreprocessorDefines "_VCRT_BUILD;@(Compile.PreprocessorDefines)"
 						PrefixHeader "@('Source/Platform/Malterlib_Core_PlatformImp_MSVC_CRTPatches.h'->MakeAbsolute())"
 						{
@@ -339,26 +353,19 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 						}
 					}
 
-					/*
-					%File "../../SDK/VS.14.Crt/^*.h"
-					%File "../../SDK/VS.14.Crt/^*.cpp"
-					%File "../../SDK/VS.14.Crt/^*.cxx"
-					%File "../../SDK/VS.14.Crt/^*.c"
-					%File "../../SDK/VS.14.Crt/^*.inl"
-					*/
 					%Group vcruntime
 					{
 						Compile.Disabled false
 						{
 							!!PlatformType "Windows"
 						}
-						%File "../../SDK/VS.14.Crt/vcruntime/exe_common.inl"
-						%File "../../SDK/VS.14.Crt/vcruntime/utility.cpp"
-						%File "../../SDK/VS.14.Crt/vcruntime/exe_main.cpp"
-						%File "../../SDK/VS.14.Crt/vcruntime/exe_winmain.cpp"
-						%File "../../SDK/VS.14.Crt/vcruntime/exe_wmain.cpp"
-						%File "../../SDK/VS.14.Crt/vcruntime/exe_wwinmain.cpp"
-						%File "../../SDK/VS.14.Crt/vcruntime/dll_dllmain.cpp"
+						%File "../../SDK/VS.@(VisualStudioVersion).Crt/vcruntime/exe_common.inl"
+						%File "../../SDK/VS.@(VisualStudioVersion).Crt/vcruntime/utility.cpp"
+						%File "../../SDK/VS.@(VisualStudioVersion).Crt/vcruntime/exe_main.cpp"
+						%File "../../SDK/VS.@(VisualStudioVersion).Crt/vcruntime/exe_winmain.cpp"
+						%File "../../SDK/VS.@(VisualStudioVersion).Crt/vcruntime/exe_wmain.cpp"
+						%File "../../SDK/VS.@(VisualStudioVersion).Crt/vcruntime/exe_wwinmain.cpp"
+						%File "../../SDK/VS.@(VisualStudioVersion).Crt/vcruntime/dll_dllmain.cpp"
 					}
 				}
 			}

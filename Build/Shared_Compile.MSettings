@@ -939,7 +939,6 @@ Compile
 		!MalterlibSysRoot ""
 	}
 
-
 	LinkerInternalLinkageOpt "inline"
 	{
 		&
@@ -1336,7 +1335,12 @@ Compile
 		}
 	}
 	
-	PreprocessorDefines "BOOST_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "BOOST_ALL_NO_LIB;BOOST_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+
+	PreprocessorDefines "_HAS_AUTO_PTR_ETC=1;@(Compile.PreprocessorDefines)"
+	{
+		!!PlatformFamily Windows
+	}
 	
 	PreprocessorDefines "DMibAlwaysUseLongWindowsPaths;@(Compile.PreprocessorDefines)"
 	{

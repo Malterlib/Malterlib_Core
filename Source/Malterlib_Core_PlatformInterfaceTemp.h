@@ -14,10 +14,10 @@ namespace NMib
 		,EProtect_Exec			= DMibBit(2)
 		,EProtect_NoCache		= DMibBit(3)
 		,EProtect_WriteCombine	= DMibBit(4)
-		,EProtect_ReadWrite		= constenum(EProtect_Read) | constenum(EProtect_Write)
-		,EProtect_ReadExec		= constenum(EProtect_Read) | constenum(EProtect_Exec)
-		,EProtect_WriteExec		= constenum(EProtect_Write) | constenum(EProtect_Exec)
-		,EProtect_All			= constenum(EProtect_Read) | constenum(EProtect_Write) | constenum(EProtect_Exec)
+		,EProtect_ReadWrite		= EProtect_Read | EProtect_Write
+		,EProtect_ReadExec		= EProtect_Read | EProtect_Exec
+		,EProtect_WriteExec		= EProtect_Write | EProtect_Exec
+		,EProtect_All			= EProtect_Read | EProtect_Write | EProtect_Exec
 	};
 	
 	enum EDebugCheckFailureAction

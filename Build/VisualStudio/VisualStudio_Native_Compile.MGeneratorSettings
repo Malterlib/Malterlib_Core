@@ -73,6 +73,10 @@
 				Substitute "--ToolClass {} %(ClCompile.AdditionalOptions)"
 			}
 		}
+		%GeneratorSetting "ObjectFileName"
+		{
+			Property.Name "ObjectFileName"
+		}
 	}
 }
 %GeneratorSetting "Native_MASM"

@@ -106,6 +106,15 @@ Property
 			PlatformIsDarwin true
 		}
 	}
+
+	MalterlibMaxSupportedWindowsVersion "10.0.14393.0"
+	{
+		&
+		{
+			MalterlibMaxSupportedWindowsVersion ""
+			Generator "VisualStudio2017"
+		}
+	}
 	
 	MalterlibMaxSupportedWindowsVersion "10.0.10586.0" // User: Max supported Windows version.
 	{
@@ -371,7 +380,7 @@ Property
 			Architecture "x64"
 		}
 	}
-	MalterlibWindowsVersion "NTDDI_WS03"
+	MalterlibWindowsVersion "NTDDI_WS03SP2"
 	{
 		&
 		{

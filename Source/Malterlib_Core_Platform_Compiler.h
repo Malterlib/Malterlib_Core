@@ -98,20 +98,6 @@
 #endif
 
 
-
-// Workaround for MSVC constexr missing
-#if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define constenum(d_Enum) (d_Enum)
-#elif defined(DCompiler_MSVC)
-#	ifndef constenum
-#		define constenum(d_Enum) ((int)d_Enum)
-#	endif
-#else
-#	error "Implement this"
-#endif
-
-
-
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	if __has_feature(cxx_rtti)
 #		define DMibPTypeName(x) (typeid(x).name())

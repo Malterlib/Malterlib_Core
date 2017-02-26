@@ -109,21 +109,25 @@ Property
 	{
 	}
 
-	VisualstudioCommonToolsEnvVar "VS110COMNTOOLS"
+	VisualstudioVSToolsDir "@(VS110COMNTOOLS)"
 	{
 		!!Generator "VisualStudio2012"
 	}
-	VisualstudioCommonToolsEnvVar "VS120COMNTOOLS"
+	VisualstudioVSToolsDir "@(VS120COMNTOOLS)"
 	{
 		!!Generator "VisualStudio2013"
 	}
-	VisualstudioCommonToolsEnvVar "VS140COMNTOOLS"
+	VisualstudioVSToolsDir "@(VS140COMNTOOLS)"
 	{
 		!!Generator "VisualStudio2015"
 	}
+	VisualstudioVSToolsDir "@(Builtin.Function->ReadWindowsRegistry('LocalMachine', 'SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\VisualStudio\\\\SxS\\\\VS7', '15.0'))Common7\\Tools"
+	{
+		!!Generator "VisualStudio2017"
+	}
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
-										"IF EXIST \"%@(VisualstudioCommonToolsEnvVar)%vsvars32.bat\" call \"%@(VisualstudioCommonToolsEnvVar)%vsvars32.bat\"\r\n"\
+										"IF EXIST \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\" call \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\"\r\n"\
 										"\r\n"
 	{
 		&
@@ -290,7 +294,7 @@ Property
 
 		Contents	"@(ScriptPreamble)"\
 					"@echo off\r\n"\
-					"IF EXIST \"%@(VisualstudioCommonToolsEnvVar)%vsvars32.bat\" call \"%@(VisualstudioCommonToolsEnvVar)%vsvars32.bat\"\r\n"\
+					"IF EXIST \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\" call \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\"\r\n"\
 					"echo %PATH%\r\n"
 	}
 }
@@ -317,7 +321,7 @@ Property
 					"	local OLDIFS=$IFS\n"\
 					"	local IFS=$'\\n'\n"\
 					"	local OldPath=$(cmd.exe //C echo %PATH%)\n"\
-					"	local NewPath=$(cmd.exe //C SharedBuildSettingsVCVars.bat)\n"\
+					"	local NewPath=$(cmd.exe //C SharedBuildSettingsVCVars.bat | grep -v '^\\*\\*')\n"\
 					"	local DiffPath=${NewPath%%\"${OldPath}\"}\n"\
 					"	local IFS=$OLDIFS\n"\
 					"\n"\

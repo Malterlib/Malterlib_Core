@@ -76,7 +76,7 @@ namespace
 		ETestOperator_0 = DMibBit(0),
 		ETestOperator_1 = DMibBit(1),
 		ETestOperator_2 = DMibBit(2),
-		ETestOperator_All = constenum(ETestOperator_0) | constenum(ETestOperator_1) | constenum(ETestOperator_2),
+		ETestOperator_All = ETestOperator_0 | ETestOperator_1 | ETestOperator_2,
 		ETestOperator_LeftTest1 = 3 << 2,
 		ETestOperator_LeftTest2 = 3 << 4,
 		ETestOperator_Negative = -1

@@ -15,7 +15,7 @@
 #		endif
 #		ifndef NTDDI_VERSION
 #			define _WIN32_WINNT _WIN32_WINNT_WS03
-#			define NTDDI_VERSION NTDDI_WS03
+#			define NTDDI_VERSION NTDDI_WS03SP2
 #		endif
 #	else
 #		ifndef NTDDI_VERSION
@@ -91,7 +91,9 @@
 
 // Boost
 //#define BOOST_NO_STD_TYPEINFO
-#define BOOST_ALL_NO_LIB
+#ifndef BOOST_ALL_NO_LIB
+#	define BOOST_ALL_NO_LIB
+#endif
 
 
 // Float implementation

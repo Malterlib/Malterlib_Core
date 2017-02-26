@@ -446,6 +446,18 @@ Target
 		}
 	}
 
+	PlatformToolset "v141"
+	{
+		&
+		{
+			Target.PlatformToolset ""
+			|
+			{
+				Generator "VisualStudio2017"
+			}
+		}
+	}
+
 	PlatformToolset "v110"
 	{
 		!!Target.PlatformToolset ""
@@ -457,8 +469,6 @@ Target
 	}
 
 	PlatformVersion "@(MalterlibMaxSupportedWindowsVersion)"
-
-	//PlatformToolset "v120_CTP_Nov2012"
 
 	IgnoreWarnCompileDuplicatedFilename true
 	{
@@ -590,6 +600,18 @@ Property
 	{
 		&
 		{
+			Generator VisualStudio2015
+			PlatformToolsetCompiler ""
+			!MalterlibOverrideMSVCVersion ""
+			!MalterlibDefaultToolset true
+			HostPlatformFamily Windows
+		}
+	}
+	PlatformToolsetCompiler "@(Builtin.VisualStudioRoot)VC/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture)/cl.exe"
+	{
+		&
+		{
+			!Generator VisualStudio2015
 			PlatformToolsetCompiler ""
 			!MalterlibOverrideMSVCVersion ""
 			!MalterlibDefaultToolset true
@@ -1942,11 +1964,27 @@ Property
 
 Property
 {
+	!!Generator VisualStudio2015
+
 	MSVCToolChainArchitecture "amd64"
 	{
 		!!Architecture "x64"
 	}
 	MSVCToolChainArchitecture "amd64_x86"
+	{
+		!!Architecture "x86"
+	}
+}
+
+Property
+{
+	!Generator VisualStudio2015
+
+	MSVCToolChainArchitecture "HostX64/x64"
+	{
+		!!Architecture "x64"
+	}
+	MSVCToolChainArchitecture "HostX64/x86"
 	{
 		!!Architecture "x86"
 	}
@@ -1992,6 +2030,19 @@ Target
 	{
 		&
 		{
+			Generator VisualStudio2015
+			!MalterlibOverrideMSVCVersion ""
+			HostPlatformFamily "Windows"
+			WindowsNativeToolChain "true"
+			!Target.PlatformToolset "v90"
+		}
+	}
+
+	ToolPath "@(Builtin.VisualStudioRoot)VC/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
+	{
+		&
+		{
+			!Generator VisualStudio2015
 			!MalterlibOverrideMSVCVersion ""
 			HostPlatformFamily "Windows"
 			WindowsNativeToolChain "true"
@@ -2026,6 +2077,34 @@ Compile
 	{
 		&
 		{
+			Generator VisualStudio2015
+			!MalterlibOverrideMSVCVersion ""
+			CompileDialect "C"
+			HostPlatformFamily "Windows"
+			!Target.PlatformToolset "v90"
+		}
+	}
+
+	SearchPath "@(Builtin.VisualStudioRoot)VC/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/include;@(Compile.SearchPath)"
+	{
+		&
+		{
+			!Generator VisualStudio2015
+			!MalterlibOverrideMSVCVersion ""
+			CompileDialect "C"
+			HostPlatformFamily "Windows"
+			!Target.PlatformToolset "v90"
+		}
+	}
+}
+
+Target
+{
+	SearchPath "@(Builtin.VisualStudioRoot)VC/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/lib/@(Architecture);@(Target.SearchPath)"
+	{
+		&
+		{
+			!Generator VisualStudio2015
 			!MalterlibOverrideMSVCVersion ""
 			CompileDialect "C"
 			HostPlatformFamily "Windows"
