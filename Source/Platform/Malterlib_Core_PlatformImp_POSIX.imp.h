@@ -130,7 +130,7 @@ namespace NMib
 						size_t Size = sizeof(int);
 						int MaxFiles;
 						if (!sysctl(SysCtl, sizeof(SysCtl) / sizeof(*SysCtl), (void *)&MaxFiles, &Size, NULL, 0))
-							Limits.rlim_cur = fg_Min(fg_Max(Limits.rlim_cur, MaxFiles), Limits.rlim_max);;
+							Limits.rlim_cur = fg_Min(fg_Min(Limits.rlim_cur, MaxFiles), Limits.rlim_max);;
 					}
 #else
 					Limits.rlim_cur = Limits.rlim_max;
