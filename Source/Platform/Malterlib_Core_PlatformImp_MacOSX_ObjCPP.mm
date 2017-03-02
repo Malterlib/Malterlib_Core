@@ -424,10 +424,18 @@ namespace NMib
 			;
 			
 			NSMenu* pMenu = [[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:@""];
-			
-			NSMenuItem* pNameItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:NPlatform::fg_MaxOSX_GetString(_ServiceName) action:NULL keyEquivalent:@""];
-			[pNameItem setEnabled:false];
-			[pMenu addItem:pNameItem];
+
+			{
+				NSMenuItem* pNameItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:NPlatform::fg_MaxOSX_GetString(_ServiceName) action:NULL keyEquivalent:@""];
+				[pNameItem setEnabled:false];
+				[pMenu addItem:pNameItem];
+			}
+			{
+				NStr::CStr ProgramPath = NFile::CFile::fs_GetProgramPath();
+				NSMenuItem* pNameItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:NPlatform::fg_MaxOSX_GetString(ProgramPath) action:NULL keyEquivalent:@""];
+				[pNameItem setEnabled:false];
+				[pMenu addItem:pNameItem];
+			}
 			
 			[pMenu addItem:[NSMenuItem separatorItem]];
 			
