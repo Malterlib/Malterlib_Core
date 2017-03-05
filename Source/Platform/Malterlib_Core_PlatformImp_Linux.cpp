@@ -1426,7 +1426,7 @@ void NSys::fg_CreateSystem()
 	
 	auto pSystemMemory = (void *)NMib::g_SystemMemory;
 	auto pSystem = new(pSystemMemory) CSystemLinux();
-	static_assert(NTraits::TCAlignmentOf<CSystemLinux>::mc_Value <= DMibPMemoryCacheLineSize, "Aligment error");
+	static_assert(NTraits::TCAlignmentOf<CSystemLinux>::mc_Value <= mint(DMibPMemoryCacheLineSize), "Aligment error");
 	
 	NSys::fg_Compiler_MakeActive(&pSystemMemory);
 	NSys::fg_Compiler_MakeActive(&pSystem);
