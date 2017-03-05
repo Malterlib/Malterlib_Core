@@ -157,11 +157,13 @@ namespace NMib
 		return fg_Move(_In);
 	}
 
+#ifndef DDocumentation_Doxygen
 	template <typename t_CType, TCEnableIfType<!NTraits::TCIsRValueReference<t_CType>::mc_Value && NTraits::TCIsReference<t_CType>::mc_Value> * = nullptr>
 	constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In)
 	{
 		return static_cast<typename NTraits::TCRemoveReference<t_CType>::CType const &>(_In);
 	}
+#endif
 
 	template <typename t_CType>
 	class TCCopy

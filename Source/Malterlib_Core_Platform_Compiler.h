@@ -200,10 +200,6 @@
 #	error "Implement this"
 #endif
 
-
-
-
-
 // Offset
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define DMibPOffsetOf(_Type, _Member) ((aint)(&((_Type *)4)->_Member)-4)
