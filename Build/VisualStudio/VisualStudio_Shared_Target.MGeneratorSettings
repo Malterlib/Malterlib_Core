@@ -20,6 +20,13 @@
 				Disabled "1"
 			}
 		}
+		%GeneratorSetting "FollowIndirectDependencies"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
 		%GeneratorSetting "Type"
 		{
 			Property
