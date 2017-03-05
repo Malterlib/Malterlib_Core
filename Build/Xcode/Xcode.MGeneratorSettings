@@ -278,8 +278,14 @@
 					Disabled "1"
 				}
 			}
-
             %GeneratorSetting "Disabled"
+            {
+                Property
+                {
+                    Disabled "1"
+                }
+            }
+            %GeneratorSetting "FollowIndirectDependencies"
             {
                 Property
                 {

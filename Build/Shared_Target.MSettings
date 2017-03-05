@@ -38,6 +38,15 @@ Target
 	{
 		!!Target.Type ""
 	}
+	
+	FollowIndirectDependencies "true"
+	{
+		&
+		{
+			Target.FollowIndirectDependencies ""
+			Target.Type StaticLibrary
+		}
+	}
 }
 
 // Properties derived from target type
