@@ -809,24 +809,78 @@ void NSys::NFile::fg_Close(void *_pFile)
 mint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset, mint _NumBytes)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
-
-	ssize_t ReadBytes = pread(pFile->m_BSDFile, _pData, _NumBytes, _Offset);
 	
-	if (ReadBytes < 0)
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pread('{}') when reading file") << pFile->f_GetFileName(), errno));
-	
-	return ReadBytes;
+	if (_NumBytes > mint(1) * 1024 * 1024 * 1024)
+	{
+		mint ReturnBytes = 0;
+		mint nBytesLeft = _NumBytes;
+		CMibFilePos Offset = _Offset;
+		uint8 *pData = (uint8 *)_pData;
+		
+		while (nBytesLeft)
+		{
+			mint ThisTime = fg_Min(nBytesLeft, mint(1) * 1024 * 1024 * 1024);
+			ssize_t ReadBytes = pread(pFile->m_BSDFile, pData, ThisTime, Offset);
+			if (ReadBytes < 0)
+				DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pread('{}') when reading file") << pFile->f_GetFileName(), errno));
+			ReturnBytes += ReadBytes;
+			pData += ReadBytes;
+			Offset += ReadBytes;
+			nBytesLeft -= ReadBytes;
+			
+			if (ReadBytes != ThisTime)
+				break; // 			
+		}
+		
+		return ReturnBytes;
+	}
+	else
+	{
+		ssize_t ReadBytes = pread(pFile->m_BSDFile, _pData, _NumBytes, _Offset);
+		
+		if (ReadBytes < 0)
+			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pread('{}') when reading file") << pFile->f_GetFileName(), errno));
+		
+		return ReadBytes;
+	}
 }
 
 mint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos &_Offset, mint _NumBytes)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-	ssize_t WrittenBytes = pwrite(pFile->m_BSDFile, _pData, _NumBytes, _Offset);
-	
-	if (WrittenBytes < 0)
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pwrite('{}') when writing file") << pFile->f_GetFileName(), errno));
-	return WrittenBytes;
+	if (_NumBytes > mint(1) * 1024 * 1024 * 1024)
+	{
+		mint ReturnBytes = 0;
+		mint nBytesLeft = _NumBytes;
+		CMibFilePos Offset = _Offset;
+		uint8 const *pData = (uint8 const *)_pData;
+		
+		while (nBytesLeft)
+		{
+			mint ThisTime = fg_Min(nBytesLeft, mint(1) * 1024 * 1024 * 1024);
+			ssize_t WrittenBytes = pwrite(pFile->m_BSDFile, pData, ThisTime, Offset);
+			if (WrittenBytes < 0)
+				DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pwrite('{}') when writing file") << pFile->f_GetFileName(), errno));
+			ReturnBytes += WrittenBytes;
+			pData += WrittenBytes;
+			Offset += WrittenBytes;
+			nBytesLeft -= WrittenBytes;
+			
+			if (WrittenBytes != ThisTime)
+				break; // 			
+		}
+		
+		return ReturnBytes;
+	}
+	else
+	{
+		ssize_t WrittenBytes = pwrite(pFile->m_BSDFile, _pData, _NumBytes, _Offset);
+		
+		if (WrittenBytes < 0)
+			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pwrite('{}') when writing file") << pFile->f_GetFileName(), errno));
+		return WrittenBytes;
+	}
 }
 
 
