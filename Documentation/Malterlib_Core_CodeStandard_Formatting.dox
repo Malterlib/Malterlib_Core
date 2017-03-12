@@ -5,13 +5,13 @@
 
 \page p_Malterlib_Core_CodeStandard_Formatting Formatting
 
-\section Indentation
+\section s_Malterlib_Core_CodeStandard_Formatting_Indentation Indentation
 
 Indentation is done with 1 tab character. One tab character must be 4 columns. You should make sure that your editor is not set to expand tabs to spaces.
 
 Tabs are easier to navigate and manipulate in the text editor than spaces.
  
-\section Limits
+\section s_Malterlib_Core_CodeStandard_Formatting_Limits Limits
 
 One line should in almost all cases be limited to 190 columns.
 
@@ -19,11 +19,11 @@ Make sure that you have turned on column guides in your favorite text editor.
 
 The column limit should be as wide as possible while still fitting on the screen without scrolling. With a 6 pixel wide font this limit allows small screens down to 1280x720 to fit all columns without scrolling horizontally. On desktop screens 2560 pixels wide or wider this allows fitting code side by side for diffing.
  
-\section Whitespace
+\section s_Malterlib_Core_CodeStandard_Formatting_Whitespace Whitespace
  
 The standard for the whitespace is designed to be consistent. There should be only one correct way for an expression to be broken up with whitespace.
  
-\subsection Operators
+\subsection s_Malterlib_Core_CodeStandard_Formatting_Operators Operators
 All operators, except '.', '->' and '*' (dereference), have spaces before and after:
 ~~~
 	int a = b * c;
@@ -38,7 +38,7 @@ The comma operator have a space after but not before:
 	fg_Func(1, 2);
 ~~~
  
-\subsection SplittingStatement Splitting statements
+\subsection s_Malterlib_Core_CodeStandard_Formatting_SplittingStatement Splitting statements
 
 When splitting a statement across several lines, each substatement on the same logical level needs to always be on it's own line:
  
@@ -82,7 +82,7 @@ When a statement is split across lines, all scope markers have to be on their ow
 ~~~
 
 
-\subsection Clauses
+\subsection s_Malterlib_Core_CodeStandard_Formatting_Clauses Clauses
 Every start of a block (i.e. '{') is placed on a new line straight under the word it's connected to, while parenthesis is indented. 
 Every end of a block (i.e. '}') is placed on the same indent level as the start block is placed.
 There should be a space character between the clause and the parenthesis.
@@ -118,7 +118,7 @@ Incorrect example:
 	}
 \endcode
  
-\subsubsection If
+\subsubsection s_Malterlib_Core_CodeStandard_Formatting_If If
 ~~~
 	if (bTest)
 		fg_FuncCall0();
@@ -151,7 +151,7 @@ Incorrect example:
 	}
 ~~~
 
-\subsubsection For
+\subsubsection s_Malterlib_Core_CodeStandard_Formatting_For For
 
 ~~~
 	for (mint iValue = 0; iValue < 5; ++iValue)
@@ -179,7 +179,7 @@ Incorrect example:
 	}
 ~~~
  
-\subsubsection While
+\subsubsection s_Malterlib_Core_CodeStandard_Formatting_While While
 ~~~
 	while (bTest)
 		fg_FuncCall0();
@@ -206,7 +206,7 @@ Incorrect example:
 	}
 ~~~
 
-\subsubsection DoWhile Do While
+\subsubsection s_Malterlib_Core_CodeStandard_Formatting_DoWhile Do While
 ~~~
 	do
 		fg_FuncCall0();
@@ -237,7 +237,7 @@ Incorrect example:
 ~~~
  
 
-\subsubsection Switch
+\subsubsection s_Malterlib_Core_CodeStandard_Formatting_Switch Switch
 ~~~
 	switch (Value)
 	{
@@ -325,7 +325,7 @@ The correct way:
 	}
 ~~~
  
-\subsection Functions
+\subsection s_Malterlib_Core_CodeStandard_Formatting_Functions Functions
 
 A function declaration or prototype is defined as follows. Note that the ordering here is significant:
 \verbatim
@@ -427,7 +427,7 @@ Examples:
  
 ~~~
 
-\subsection Classes Classes, Structs and Unions
+\subsection s_Malterlib_Core_CodeStandard_Formatting_Classes Classes, Structs and Unions
  
 ~~~
 	class CTest

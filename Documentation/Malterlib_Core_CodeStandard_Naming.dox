@@ -46,17 +46,17 @@ The exception to the upper camel case rule is that features that are emulation o
 	mint
 ~~~
 
-\section StoragePrefixes Storage prefixes
+\section s_Malterlib_Core_CodeStandard_Naming_StoragePrefixes Storage prefixes
 
 All functions, parameters and variables must be prefixed by a storage prefix telling us where the entity originates from. Local variables are the only entities that do not have a storage prefix:
 Prefixes | Detailed information
 -------- | --------------------
-f_ fp_ fs_ fsp_ fg_ fsg_  | \ref FunctionPrefixes
-_ p_ o_ po_ t_ tp_ tf_ tpf_ d_ | \ref ParameterPrefixes
-c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref VariablePrefixes
+f_ fp_ fs_ fsp_ fg_ fsg_  | \ref s_Malterlib_Core_CodeStandard_Naming_FunctionPrefixes
+_ p_ o_ po_ t_ tp_ tf_ tpf_ d_ | \ref s_Malterlib_Core_CodeStandard_Naming_ParameterPrefixes
+c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_Naming_VariablePrefixes
  
  
-\subsection FunctionPrefixes Function prefixes
+\subsection s_Malterlib_Core_CodeStandard_Naming_FunctionPrefixes Function prefixes
 
  
 <table>
@@ -129,9 +129,9 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref VariablePrefixes
 </tr>
 </table>
  
-\subsection ParameterPrefixes Parameter prefixes
+\subsection s_Malterlib_Core_CodeStandard_Naming_ParameterPrefixes Parameter prefixes
 
-\subsubsection FunctionParameterPrefixes Function parameter prefixes
+\subsubsection s_Malterlib_Core_CodeStandard_Naming_FunctionParameterPrefixes Function parameter prefixes
 
 <table>
 <tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
@@ -203,7 +203,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref VariablePrefixes
 
  
  
-\subsubsection TemplateParameterPrefixes Template parameter prefixes
+\subsubsection s_Malterlib_Core_CodeStandard_Naming_TemplateParameterPrefixes Template parameter prefixes
 
 <table>
 <tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
@@ -262,7 +262,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref VariablePrefixes
 </table>
 
   
-\subsubsection MacroParameterPrefixes Macro parameter prefix
+\subsubsection s_Malterlib_Core_CodeStandard_Naming_MacroParameterPrefixes Macro parameter prefix
 
 <table>
 <tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
@@ -290,9 +290,9 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref VariablePrefixes
 </tr>
 </table>
 
-\subsection VariablePrefixes Variable prefixes
+\subsection s_Malterlib_Core_CodeStandard_Naming_VariablePrefixes Variable prefixes
 
-\subsubsection LocalVariablePrefixes Local variable prefixes
+\subsubsection s_Malterlib_Core_CodeStandard_Naming_LocalVariablePrefixes Local variable prefixes
 
 <table>
 <tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
@@ -345,7 +345,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref VariablePrefixes
 </tr>
 </table>
 
-\subsubsection GlobalVariablePrefixes Global variable prefixes
+\subsubsection s_Malterlib_Core_CodeStandard_Naming_GlobalVariablePrefixes Global variable prefixes
 
  
 <table>
@@ -399,7 +399,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref VariablePrefixes
 </tr>
 </table>
 
-\subsubsection MemberVariablePrefixes Member variable prefixes
+\subsubsection s_Malterlib_Core_CodeStandard_Naming_MemberVariablePrefixes Member variable prefixes
 
  
 <table>
@@ -519,7 +519,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref VariablePrefixes
 </table>
  
 
-\section TypePrefixes Type prefixes
+\section s_Malterlib_Core_CodeStandard_Naming_TypePrefixes Type prefixes
 
 Types, enumerators and namespaces are prefixed.
 
@@ -617,7 +617,7 @@ Types, enumerators and namespaces are prefixed.
 </table>
  
 
-\section ConceptPrefixes Concept prefixes
+\section s_Malterlib_Core_CodeStandard_Naming_ConceptPrefixes Concept prefixes
 
 The concept prefix is intended to gives us information about a variable or parameter at a glance. Only a few highly used concepts have prefixes. The prefix goes after the storage prefix and before the name.
 
