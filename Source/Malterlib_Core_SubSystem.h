@@ -37,7 +37,7 @@ namespace NMib
 		typedef uint8 CObjectType[sizeof(t_CSubSystem)];
 		typedef typename NTraits::TCAlign<CObjectType, NTraits::TCAlignmentOf<t_CSubSystem>::mc_Value>::CType CTypeAligned;
 		
-		inline_never void fp_Create(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
+		inline_never t_CSubSystem *fp_Create(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
 		
 		CTypeAligned mp_ObjectSpace;
 		NThread::CSpinLockAggregate mp_Lock;
