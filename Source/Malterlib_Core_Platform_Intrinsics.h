@@ -22,28 +22,35 @@
 // Memory intrinsics
 #if defined(DPlatformFamily_OSX)
 	extern "C" void	*memcpy(void *, const void *, __SIZE_TYPE__);
+	extern "C" int memcmp(const void *__s1, const void *__s2, size_t __n);
 	extern "C" void	*memset(void *, int, __SIZE_TYPE__);
 	extern "C" void	*memmove(void *, const void *, __SIZE_TYPE__);
 #	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
+#	define DMibPIntrinsicMemCmp(d_Left, d_Right, d_Size) memcmp(d_Left, d_Right, d_Size)
 #	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
 #	define DMibPIntrinsicMemMove(d_Dest, d_Source, d_Size) memmove(d_Dest, d_Source, d_Size)
 #elif defined(DPlatformFamily_Linux)
 	extern "C" void *memcpy(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) throw () __attribute__ ((__nonnull__ (1, 2)));
+	extern "C" int memcmp (__const void *__s1, __const void *__s2, size_t __n) throw () __attribute_pure__ __nonnull ((1, 2));
 	extern "C" void *memset(void *__s, int __c, __SIZE_TYPE__ __n) throw () __attribute__ ((__nonnull__ (1)));
 	extern "C" void *memmove(void *__dest, __const void *__src, __SIZE_TYPE__ __n) throw () __attribute__((__nonnull__ (1, 2)));
 #	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
+#	define DMibPIntrinsicMemCmp(d_Left, d_Right, d_Size) memcmp(d_Left, d_Right, d_Size)
 #	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
 #	define DMibPIntrinsicMemMove(d_Dest, d_Source, d_Size) memmove(d_Dest, d_Source, d_Size)
 #elif defined(DPlatformFamily_Windows)
 	extern "C" void *  __cdecl memcpy(_Out_writes_bytes_all_(_Size) void * _Dst, _In_reads_bytes_(_Size) const void * _Src, _In_ size_t _Size);
-	extern "C" 
-	void *  __cdecl memmove(_Out_writes_bytes_all_opt_(_Size) void * _Dst, _In_reads_bytes_opt_(_Size) const void * _Src, _In_ size_t _Size);
+	extern "C" int __cdecl memcmp(_In_reads_bytes_(_Size) void const* _Buf1, _In_reads_bytes_(_Size) void const* _Buf2, _In_ size_t _Size);
+	extern "C" void *  __cdecl memmove(_Out_writes_bytes_all_opt_(_Size) void * _Dst, _In_reads_bytes_opt_(_Size) const void * _Src, _In_ size_t _Size);
 	extern "C" _Post_equal_to_(_Dst) _At_buffer_((unsigned char*)_Dst, _Iter_, _Size, _Post_satisfies_(((unsigned char*)_Dst)[_Iter_] == _Val))
-	void *  __cdecl memset(_Out_writes_bytes_all_(_Size) void * _Dst, _In_ int _Val, _In_ size_t _Size);
+		void *  __cdecl memset(_Out_writes_bytes_all_(_Size) void * _Dst, _In_ int _Val, _In_ size_t _Size)
+	;
 #	pragma intrinsic(memcpy)
+#	pragma intrinsic(memcmp)
 #	pragma intrinsic(memset)
 //#	pragma intrinsic(memmove)
 #	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
+#	define DMibPIntrinsicMemCmp(d_Left, d_Right, d_Size) memcmp(d_Left, d_Right, d_Size)
 #	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
 #	define DMibPIntrinsicMemMove(d_Dest, d_Source, d_Size) memmove(d_Dest, d_Source, d_Size)
 #else
