@@ -1267,7 +1267,7 @@
 					Seperator " "
 					OldSeperator ";"
 					IgnoreEmpty "1"
-					QuoteAfterEquals "1"
+					QuoteSeperatedValues "1"
 				}
 			}
 			%GeneratorSetting "TargetTriple"
@@ -1323,6 +1323,7 @@
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"
+					QuoteSeperatedValues "1"
 				}
 			}
 			
@@ -1334,6 +1335,7 @@
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"
+					QuoteSeperatedValues "1"
 				}
 			}
 			
@@ -1345,6 +1347,7 @@
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"
+					QuoteSeperatedValues "1"
 				}
 			}
 			
@@ -1356,6 +1359,7 @@
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"
+					QuoteSeperatedValues "1"
 				}
 			}
 			
@@ -1367,6 +1371,7 @@
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"
+					QuoteSeperatedValues "1"
 				}
 			}
 			
@@ -1378,6 +1383,7 @@
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"
+					QuoteSeperatedValues "1"
 				}
 			}
 			%GeneratorSetting "SearchPath"

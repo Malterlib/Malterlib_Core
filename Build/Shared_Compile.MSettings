@@ -1291,7 +1291,7 @@ Compile
 
 	PreprocessorDefines "@(Compile.PreprocessorDefines);@(Builtin.Inherit)"
 	
-	PreprocessorDefines "DDocumentation_@(Documentation);DDocumentation=@(Documentation),@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DDocumentation_@(Documentation);DDocumentation=@(Documentation);@(Compile.PreprocessorDefines)"
 	{
 		!Documentation ""
 	}
