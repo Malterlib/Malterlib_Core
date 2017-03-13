@@ -121,7 +121,7 @@ Import
 		}
 	}
 
-	CMake_CCompiler "@(PlatformToolsetCompiler)"
+	CMake_CCompiler "@(PlatformToolsetCompiler->UnixPath())"
 	{
 		&
 		{
@@ -129,7 +129,7 @@ Import
 		}
 	}
 
-	CMake_CxxCompiler "@(PlatformToolsetCompiler)"
+	CMake_CxxCompiler "@(PlatformToolsetCompiler->UnixPath())"
 	{
 		&
 		{
@@ -138,7 +138,7 @@ Import
 		}
 	}
 
-	CMake_CxxCompiler "@(PlatformToolsetCompiler)++"
+	CMake_CxxCompiler "@(PlatformToolsetCompiler->UnixPath())++"
 	{
 		&
 		{
