@@ -974,7 +974,7 @@ bint NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
 			{
 				mint NameLen = fg_StrLen(*pVendorLookup);
 				if (	SysVendorData.f_GetLen() >= NameLen
-					&&	fg_MemCmp(SysVendorData.f_GetArray(), *pVendorLookup, NameLen) == 0)
+					&&	fg_MemCmp((uint8 const *)SysVendorData.f_GetArray(), (uint8 const *)*pVendorLookup, NameLen) == 0)
 				{
 					_Info.m_bDetected = true;
 					++pVendorLookup;
@@ -1005,7 +1005,7 @@ bint NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
 			{
 				mint NameLen = fg_StrLen(*pVendorLookup);
 				if (	BiosVendorData.f_GetLen() >= NameLen
-					&&	fg_MemCmp(BiosVendorData.f_GetArray(), *pVendorLookup, NameLen) == 0)
+					&&	fg_MemCmp((uint8 const *)BiosVendorData.f_GetArray(), (uint8 const *)*pVendorLookup, NameLen) == 0)
 				{
 					_Info.m_bDetected = true;
 					++pVendorLookup;
@@ -1037,7 +1037,7 @@ bint NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
 			{
 				mint NameLen = fg_StrLen(*pProductLookup);
 				if (	ProductNameData.f_GetLen() >= NameLen
-					&&	fg_MemCmp(ProductNameData.f_GetArray(), *pProductLookup, NameLen) == 0)
+					&&	fg_MemCmp((uint8 const *)ProductNameData.f_GetArray(), (uint8 const *)*pProductLookup, NameLen) == 0)
 				{
 					_Info.m_bDetected = true;
 					++pProductLookup;
