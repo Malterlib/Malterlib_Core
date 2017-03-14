@@ -486,8 +486,7 @@ Compile
 			CompileDialect "C"
 		}
 	}
-	SearchPath "@(Builtin.BasePath)/SDK/curl/include;@(Compile.SearchPath)"
-	PreprocessorDefines "CURL_STATICLIB;DMibBreakpadUploadServer=\"@(MalterlibBreakpadUploadServer)\";@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DMibBreakpadUploadServer=\"@(MalterlibBreakpadUploadServer)\";@(Compile.PreprocessorDefines)"
 }
 
 %Group "~Automatic/Breakpad Uploader Support"
