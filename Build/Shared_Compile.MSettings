@@ -1570,7 +1570,7 @@ Compile
 	{
 		!PlatformVersion ""
 	}
-	PreprocessorDefines "DQConfigCppInclude=\"../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.cpp\";DQConfigInclude=\"../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.h\";DPQTSupport;QT_STATICPLUGIN;Q_DECL_IMPORT=;Q_DECL_EXPORT=;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DQConfigCppInclude=\"../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.cpp\";DQConfigInclude=\"../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.h\";DQtCoreConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtcore-config.h\";DQtGuiConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtgui-config.h\";DQtMultimediaConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtmultimedia-config.h\";DQtWidgetsConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtwidgets-config.h\";DQtPrintSupportConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtprintsupport-config.h\";DQtNetworkConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtnetwork-config.h\";DPQTSupport;QT_STATICPLUGIN;Q_DECL_IMPORT=;Q_DECL_EXPORT=;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibQtSupport "true"
 	}
