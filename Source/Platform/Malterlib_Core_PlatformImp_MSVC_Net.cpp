@@ -481,8 +481,23 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 
 	AddrHint.ai_family = AF_INET;
 
+	CStr AddressStr = _Address;
+	
+	if (_Address.f_StartsWith("IPv4:"))
+	{
+		_PreferType = ENetAddressType_TCPv4;
+		AddressStr = _Address.f_Extract(fg_StrLen("IPv4:"));
+	}
+	else if (_Address.f_StartsWith("IPv6:"))
+	{
+		_PreferType = ENetAddressType_TCPv6;
+		AddressStr = _Address.f_Extract(fg_StrLen("IPv6:"));
+	}
+	
 	if (_PreferType == ENetAddressType_TCPv6)
 		AddrHint.ai_family = AF_INET6;
+	else
+		AddrHint.ai_family = AF_INET;
 
 	AddrHint.ai_socktype = SOCK_STREAM;
 
@@ -490,15 +505,15 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 
 	ADDRINFOW* pAddresses = nullptr;
 
-	CWStr AddressStr = NStr::NPlatform::fg_StrToWindows(_Address);
+	CWStr AddressStrWin = NStr::NPlatform::fg_StrToWindows(AddressStr);
 
-	int Result = GetAddrInfoW(AddressStr.f_GetStr(), nullptr, &AddrHint, &pAddresses);
+	int Result = GetAddrInfoW(AddressStrWin.f_GetStr(), nullptr, &AddrHint, &pAddresses);
 
 	// Try TCPv4 first, then v6.
 	if (_PreferType == ENetAddressType_None && Result != 0)
 	{
 		AddrHint.ai_family = AF_INET6;
-		Result = GetAddrInfoW(AddressStr.f_GetStr(), nullptr, &AddrHint, &pAddresses);
+		Result = GetAddrInfoW(AddressStrWin.f_GetStr(), nullptr, &AddrHint, &pAddresses);
 	}
 
 	if (Result != 0)
@@ -1310,6 +1325,11 @@ uint32 CWindowsSocketContext::f_GetListenPort(CWindowsSocket *_pSocket)
 	{
 		return 0;
 	}
+}
+
+mint NSys::NNet::fg_GetMaxUnixSocketNameLength()
+{
+	return 32768;
 }
 
 #include "Malterlib_Core_PlatformImp_Net.imp.h"

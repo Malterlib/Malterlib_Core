@@ -260,14 +260,23 @@ extern "C" void __cdecl fg_IdsLoadLibraryExternal()
 	++gs_LibraryRefCount;
 }
 
+namespace NMib
+{
+	namespace NSys
+	{
+		static LPTOP_LEVEL_EXCEPTION_FILTER g_pExpectedFilter = nullptr;
+		void fg_Windows_ExpectedFilter(LPTOP_LEVEL_EXCEPTION_FILTER _pFilter)
+		{
+			g_pExpectedFilter = _pFilter;
+		}
+	}
+}
+
 void* NSys::fg_LoadLibrary(CFStr256 const& _Library)
 {
 	if (!_Library.f_IsEmpty())
 	{
 		CFWStr256 LibPath = NMib::NFile::NPlatform::fg_ConvertToWindowsPath<CFWStr256, CFWStr256>(_Library, false);
-
-		LPTOP_LEVEL_EXCEPTION_FILTER pFilter = SetUnhandledExceptionFilter(nullptr);
-		SetUnhandledExceptionFilter(pFilter);
 
 		void *pRet = LoadLibraryW(LibPath.f_GetStr());
 		if (pRet)
@@ -278,12 +287,15 @@ void* NSys::fg_LoadLibrary(CFStr256 const& _Library)
 				pMalterlibLoadLibraryExternal();
 		}
 
-		LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(nullptr);
-		if (pFilterNew != pFilter)
+		
+		if (g_pExpectedFilter)
 		{
-			DMibDTrace("---------------------------------------- Restored unhandled exception filter after DLL load\n", 0);
+			LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(g_pExpectedFilter);
+			if (pFilterNew != g_pExpectedFilter)
+			{
+				DMibDTrace("---------------------------------------- Restored unhandled exception filter after DLL load\n", 0);
+			}
 		}
-		SetUnhandledExceptionFilter(pFilter);
 		return pRet;
 	}
 	else
@@ -305,9 +317,6 @@ void *NSys::fg_LoadLibrary(const CStr& _Library)
 	{
 		CWStr LibPath = NMib::NFile::NPlatform::fg_ConvertToWindowsPath(_Library, false);
 
-		LPTOP_LEVEL_EXCEPTION_FILTER pFilter = SetUnhandledExceptionFilter(nullptr);
-		SetUnhandledExceptionFilter(pFilter);
-
 		void *pRet = LoadLibraryW(LibPath.f_GetStr());
 		if (pRet)
 		{
@@ -317,12 +326,14 @@ void *NSys::fg_LoadLibrary(const CStr& _Library)
 				pMalterlibLoadLibraryExternal();
 		}
 
-		LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(nullptr);
-		if (pFilterNew != pFilter)
+		if (g_pExpectedFilter)
 		{
-			DMibDTrace("---------------------------------------- Restored unhandled exception filter after DLL load\n", 0);
+			LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(g_pExpectedFilter);
+			if (pFilterNew != g_pExpectedFilter)
+			{
+				DMibDTrace("---------------------------------------- Restored unhandled exception filter after DLL load\n", 0);
+			}
 		}
-		SetUnhandledExceptionFilter(pFilter);
 		return pRet;
 	}
 	else
@@ -343,9 +354,6 @@ void *NSys::fg_LoadLibrary(const CStrNonTracked& _Library)
 	{
 		CWStrNonTracked LibPath = NMib::NFile::NPlatform::fg_ConvertToWindowsPath<CWStrNonTracked, CWStrNonTracked>(_Library, false);
 
-		LPTOP_LEVEL_EXCEPTION_FILTER pFilter = SetUnhandledExceptionFilter(nullptr);
-		SetUnhandledExceptionFilter(pFilter);
-
 		void *pRet = LoadLibraryW(LibPath.f_GetStr());
 		if (pRet)
 		{
@@ -355,12 +363,14 @@ void *NSys::fg_LoadLibrary(const CStrNonTracked& _Library)
 				pMalterlibLoadLibraryExternal();
 		}
 
-		LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(nullptr);
-		if (pFilterNew != pFilter)
+		if (g_pExpectedFilter)
 		{
-			DMibDTrace("---------------------------------------- Restored unhandled exception filter after DLL load\n", 0);
+			LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(g_pExpectedFilter);
+			if (pFilterNew != g_pExpectedFilter)
+			{
+				DMibDTrace("---------------------------------------- Restored unhandled exception filter after DLL load\n", 0);
+			}
 		}
-		SetUnhandledExceptionFilter(pFilter);
 		return pRet;
 	}
 	else
@@ -377,8 +387,6 @@ void *NSys::fg_LoadLibrary(const CStrNonTracked& _Library)
 
 void NSys::fg_FreeLibrary(void *_pModule)
 {
-	LPTOP_LEVEL_EXCEPTION_FILTER pFilter = SetUnhandledExceptionFilter(nullptr);
-	SetUnhandledExceptionFilter(pFilter);
 
 	void (__cdecl *pMalterlibFreeLibraryExternal)();
 	pMalterlibFreeLibraryExternal = (void (__cdecl *)())GetProcAddress((HMODULE)_pModule, "IdsFreeLibraryExternal");
@@ -386,13 +394,14 @@ void NSys::fg_FreeLibrary(void *_pModule)
 		pMalterlibFreeLibraryExternal();
 	FreeLibrary((HMODULE)_pModule);
 
-	LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(nullptr);
-	if (pFilterNew != pFilter)
+	if (g_pExpectedFilter)
 	{
-		DMibDTrace("--------------------------------------- Restored unhandled exception filter after DLL unload\n", 0);
+		LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(g_pExpectedFilter);
+		if (pFilterNew != g_pExpectedFilter)
+		{
+			DMibDTrace("--------------------------------------- Restored unhandled exception filter after DLL unload\n", 0);
+		}
 	}
-	SetUnhandledExceptionFilter(pFilter);
-
 }
 
 void* NSys::fg_GetLibrarySymbol(void* _pModule, char const* _pSymbol)
@@ -943,6 +952,22 @@ void NSys::fg_ConsoleOutputFlush()
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
 	FlushFileBuffers(hCon);
 	*/
+}
+
+NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
+{
+	NSys::CConsoleProperties Return;
+
+	CONSOLE_SCREEN_BUFFER_INFO ConsoleScreenBufferInfo;
+	fg_MemClear(ConsoleScreenBufferInfo);
+
+    if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &ConsoleScreenBufferInfo))
+		return Return;
+	
+	Return.m_Width = ConsoleScreenBufferInfo.srWindow.Right - ConsoleScreenBufferInfo.srWindow.Left + 1;
+	Return.m_Height = ConsoleScreenBufferInfo.srWindow.Bottom - ConsoleScreenBufferInfo.srWindow.Top + 1;
+	
+	return Return;
 }
 
 void NSys::fg_ConsoleOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str)

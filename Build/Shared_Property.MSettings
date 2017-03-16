@@ -134,6 +134,11 @@ Property
 		}
 	}
 
+    MalterlibGenerateLibrary "true"
+	{
+		!!MalterlibGenerateLibrary ""
+	}
+
     MalterlibGenerateLibrary "false"
 	{
 		&

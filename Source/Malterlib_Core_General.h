@@ -159,7 +159,7 @@ namespace NMib
 
 #ifndef DDocumentation_Doxygen
 	template <typename t_CType, TCEnableIfType<!NTraits::TCIsRValueReference<t_CType>::mc_Value && NTraits::TCIsReference<t_CType>::mc_Value> * = nullptr>
-	constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In)
+	constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) -> typename NTraits::TCRemoveReference<t_CType>::CType const &
 	{
 		return static_cast<typename NTraits::TCRemoveReference<t_CType>::CType const &>(_In);
 	}
@@ -1596,36 +1596,35 @@ namespace NMib
 		mint m_Len;
 	};
 
-#ifndef DCompiler_MSVC		
-
 	template <typename tf_CType>
 	constexpr CConstExprSubStr fg_GetTypeNameConstExpr()
 	{
-#ifdef DCompiler_MSVC
+#if defined(DCompiler_MSVC)
 		ch8 const *pParseStart = DMibPFunctionSignature;
 		ch8 const *pParse = pParseStart;
 		while (*pParse && *pParse != '<')
 			++pParse;
 		if (*pParse == '<')
 			++pParse;
+		if (pParse[0] == 'c' && pParse[1] == 'l' && pParse[2] == 'a' && pParse[3] == 's' && pParse[4] == 's' && pParse[5] == ' ')
+			pParse += 6;
+		else if (pParse[0] == 's' && pParse[1] == 't' && pParse[2] == 'r' && pParse[3] == 'u' && pParse[4] == 'c' && pParse[5] == 't' && pParse[5] == ' ')
+			pParse += 7;
 		ch8 const *pStartType = pParse;
 		mint nStart = 0;
 		mint nStartParen = 0;
 
 		while (*pParse)
 		{
-			if (nStartParen)
+			if (*pParse == '(')
 			{
-				if (*pParse == '(')
-				{
-					++nStartParen;
-				}
-				else if (*pParse == ')')
-				{
-					--nStartParen;
-				}
+				++nStartParen;
 			}
-			else
+			else if (*pParse == ')')
+			{
+				--nStartParen;
+			}
+			else if (!nStartParen)
 			{
 				if (*pParse == '<')
 				{
@@ -1640,7 +1639,7 @@ namespace NMib
 			}
 			++pParse;
 		}
-		return CConstExprSubStr(pStartType, (pParse - pStartType) + 1);
+		return CConstExprSubStr(pStartType, (pParse - pStartType));
 #else
 		ch8 const *pParseStart = DMibPFunctionSignature;
 		ch8 const *pParse = pParseStart;
@@ -1666,38 +1665,44 @@ namespace NMib
 			}
 			++pParse;
 		}
-		return CConstExprSubStr(pStartType, (pParse - pStartType) + 1);
+		return CConstExprSubStr(pStartType, (pParse - pStartType));
 #endif
 	}
-	
+
 	constexpr uint32 fg_JenkinsHash(const char * const _pString)
 	{
 		uint32 Hash = 0;
 		for (ch8 const *pStr = _pString; *pStr; ++pStr)
 		{
-			Hash += *pStr;
-			Hash += (Hash << 10);
+			Hash = (uint64(Hash) + *pStr) & uint64(0xffffffff);
+			Hash = (uint64(Hash) + (Hash << 10)) & uint64(0xffffffff);
 			Hash ^= (Hash >> 6);
 		}
-		Hash += (Hash << 3);
+		Hash = (uint64(Hash) + (Hash << 3)) & uint64(0xffffffff);
 		Hash ^= (Hash >> 11);
-		Hash += (Hash << 15);
+		Hash = (uint64(Hash) + (Hash << 15)) & uint64(0xffffffff);
 		return Hash;
 	}
 
-	constexpr uint32 fg_JenkinsHash(const char * const _pString, mint _Len)
+	constexpr uint32 fg_JenkinsHash(const char * const _pString, mint _Len, ch8 _ExtraChar)
 	{
 		uint32 Hash = 0;
 		ch8 const *pEnd = _pString + _Len;
 		for (ch8 const *pStr = _pString; pStr < pEnd; ++pStr)
 		{
-			Hash += *pStr;
-			Hash += (Hash << 10);
+			Hash = (uint64(Hash) + *pStr) & uint64(0xffffffff);
+			Hash = (uint64(Hash) + (Hash << 10)) & uint64(0xffffffff);
 			Hash ^= (Hash >> 6);
 		}
-		Hash += (Hash << 3);
+		if (_ExtraChar)
+		{
+			Hash = (uint64(Hash) + _ExtraChar) & uint64(0xffffffff);
+			Hash = (uint64(Hash) + (Hash << 10)) & uint64(0xffffffff);
+			Hash ^= (Hash >> 6);
+		}
+		Hash = (uint64(Hash) + (Hash << 3)) & uint64(0xffffffff);
 		Hash ^= (Hash >> 11);
-		Hash += (Hash << 15);
+		Hash = (uint64(Hash) + (Hash << 15)) & uint64(0xffffffff);
 		return Hash;
 	}
 	
@@ -1728,16 +1733,15 @@ namespace NMib
 		}
 			
 		auto ClassTypeName = fg_GetTypeNameConstExpr<typename NTraits::TCMemberFunctionPointerTraits<tf_CMemberFunction>::CClass>();
-		return fg_JenkinsHash(pStartName) ^ fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len);
+		return fg_JenkinsHash(pStartName) ^ fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len, ']');
 	}
 
 	template <typename tf_CType>
 	constexpr uint32 fg_GetTypeHash()
 	{
 		auto ClassTypeName = fg_GetTypeNameConstExpr<tf_CType>();
-		return fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len);
+		return fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len, ']');
 	}
-#endif
 }
 
 typedef NMib::TCAutoClear<bint> zbint;
