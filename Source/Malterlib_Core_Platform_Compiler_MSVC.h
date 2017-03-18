@@ -63,13 +63,14 @@
 #pragma warning(disable:4706) // assignment within conditional expression
 #pragma warning(disable:4530) // exceptions
 #pragma warning(disable:4355) // this used in member initialization list
-#pragma warning(disable:4103) // alignment changed after including header, may be due to missing #pragma pack(pop)
 #pragma warning(disable:4521) // multiple copy constructors specified
 #pragma warning(disable:4522) // multiple assignment operators specified
 #pragma warning(disable:4822) // Undefined functions in local classes
 #pragma warning(disable:4456)
 #pragma warning(disable:4456) // Hides previous local declaration
 #pragma warning(disable:4595) // non-member operator new or delete functions may not be declared inline
+#pragma warning(disable:4742) // '`string'' has different alignment in -- To workaround seeming bug in microsoft PGO linker
+
 
 #ifdef __EDG__
 

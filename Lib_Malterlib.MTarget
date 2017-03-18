@@ -495,6 +495,11 @@ Compile
 	!!MalterlibEnableBreakpadUploader "true"
 }
 
+Property.MalterlibUseCurl true
+{
+	!!MalterlibEnableBreakpadUploader "true"
+}
+
 Target
 {
 	ExtraGroups "~Automatic/Breakpad Uploader Support;@(Target.ExtraGroups)"

@@ -1180,13 +1180,13 @@ namespace NMib
 	}
 
 	template <typename t_CIntType>
-	class TCLimitsInt : public NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::TCIsSigned<t_CIntType>::mc_Value, NTraits::TCIsFundamental<t_CIntType>::mc_Value>
+	class TCLimitsInt : public NMib::NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::TCIsSigned<t_CIntType>::mc_Value, NTraits::TCIsFundamental<t_CIntType>::mc_Value>
 	{
 	public:
 	};
 
 	template <typename t_CIntType>
-	class TCLimitsIntDyn : public NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::TCIsSigned<t_CIntType>::mc_Value, false>
+	class TCLimitsIntDyn : public NMib::NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::TCIsSigned<t_CIntType>::mc_Value, false>
 	{
 	public:
 	};
