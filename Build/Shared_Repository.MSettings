@@ -3,6 +3,29 @@
 
 Repository
 {
+	DefaultRoot "https://github.com/@(Repository.GithubCompany)"
+	{
+		&
+		{
+			Repository.DefaultRoot ""
+			!Repository.GithubCompany ""
+		}
+	}
+
+	DefaultPrefix "@(Repository.GithubCompany)_"
+	{
+		&
+		{
+			Repository.DefaultPrefix ""
+			!Repository.GithubCompany ""
+		}
+	}
+
+	DefaultLocationPrefix "@(Repository.DefaultPrefix->Replace('_', '/'))"
+	{
+		!!Repository.DefaultLocationPrefix ""
+	}
+
 	Type "Direct"
 	{
 		!!Repository.Type ""
@@ -26,6 +49,14 @@ Repository
 	{
 		!!Repository.StateFile ""
 	}
+	Prefix "@(Repository.DefaultPrefix)"
+	{
+		&
+		{
+			Repository.Prefix ""
+			!Repository.DefaultPrefix ""
+		}
+	}
 	URL "@(Repository.ExternalRoot)/@(this.Identity).git"
 	{
 		&
@@ -42,7 +73,7 @@ Repository
 			Repository.Type Malterlib
 		}
 	}
-	URL "@(Repository.DefaultRoot)/@(this.Identity).git"
+	URL "@(Repository.DefaultRoot)/@(Repository.Prefix)@(this.Identity).git"
 	{
 		&
 		{
@@ -66,12 +97,25 @@ Repository
 			Repository.Type Malterlib
 		}
 	}
-	Location "@('../../../@(this.Identity)'->MakeAbsolute())"
+
+	LocationPrefix "@(Repository.DefaultLocationPrefix)"
+	{
+		&
+		{
+			Repository.LocationPrefix ""
+			!Repository.DefaultLocationPrefix ""
+		}
+	}
+
+	CalcLocation "../../../@(Repository.LocationPrefix)@(this.Identity)"
+	
+	Location "@(Repository.CalcLocation->MakeAbsolute())"
 	{
 		&
 		{
 			Repository.Location ""
 			Repository.Type Direct
+			!Repository.SubmodulePrefix "nthoenuth"
 		}
 	}
 	DefaultBranch "malterlib"
@@ -90,6 +134,14 @@ Repository
 	{
 		!!Repository.Submodule ""
 	}
+	SubmodulePrefix "@(Repository.DefaultPrefix)"
+	{
+		&
+		{
+			Repository.SubmodulePrefix ""
+			!Repository.DefaultPrefix ""
+		}
+	}
 	SubmoduleName "External_@(this.Identity)"
 	{
 		&
@@ -106,7 +158,7 @@ Repository
 			Repository.Type Malterlib
 		}
 	}
-	SubmoduleName "@(this.Identity)"
+	SubmoduleName "@(Repository.SubmodulePrefix)@(this.Identity)"
 	{
 		&
 		{
