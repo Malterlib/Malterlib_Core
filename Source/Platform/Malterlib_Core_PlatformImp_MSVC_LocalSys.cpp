@@ -115,15 +115,17 @@ public:
 						return "";
 				}
 
-				void f_SetParent(CFileTreeNode *_pParent, CStr const &_FileName)
+				void f_SetFileName(CStr const &_FileName)
 				{
-					if (_pParent)
+					if (m_FileName != _FileName)
 					{
-						auto Mapped = _pParent->m_Children(_FileName, fg_Move(*this));
-						(*Mapped).m_FileName = _FileName;
+						auto pParent = m_pParent;
+						auto Temp = fg_Move(*this);
+						pParent->m_Children.f_Remove(m_FileName);
+						auto &Child = *pParent->m_Children(_FileName, fg_Move(Temp));
+						Child.m_FileName = _FileName;
+						Child.m_pParent = pParent;
 					}
-					else
-						f_Remove();
 				}
 
 				void f_Remove()
@@ -217,6 +219,7 @@ public:
 			DMibListLinkDS_Link(CNotification, m_LinkUpdated);
 
 			CFileTreeNode m_RootNode;
+			CStr m_RenameFromFilename;
 			HANDLE m_Handle;
 			CNotificationBundle *m_pBundle;
 			CStr m_RootDirectory;
@@ -299,10 +302,7 @@ public:
 								)
 							;
 							
-							CChange *pChange = nullptr;
-							switch (pNotification->Action)
-							{
-							case FILE_ACTION_ADDED:
+							auto fAdded = [&]
 								{
 									bool bRecursive = (pThis->m_Flags & EFileChange_Recursive) != 0;
 
@@ -329,10 +329,11 @@ public:
 									if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
 										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
 								}
-								break;
-							case FILE_ACTION_REMOVED:
+							;
+
+							auto fRemoved = [&](CStr const &_Path)
 								{
-									auto *pOldNode = pThis->m_RootNode.f_GetFile(Path);
+									auto *pOldNode = pThis->m_RootNode.f_GetFile(_Path);
 									if (pOldNode)
 									{
 										pOldNode->f_ForEach
@@ -350,6 +351,20 @@ public:
 									if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
 										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
 								}
+							;
+
+
+							switch (pNotification->Action)
+							{
+							case FILE_ACTION_ADDED:
+								{
+									fAdded();
+								}
+								break;
+							case FILE_ACTION_REMOVED:
+								{
+									fRemoved(Path);
+								}
 								break;
 							case FILE_ACTION_MODIFIED:
 								{
@@ -358,15 +373,15 @@ public:
 								break;
 							case FILE_ACTION_RENAMED_OLD_NAME:
 								{
-									pThis->m_pBundle->m_RenameFromFilename = Path;
+									pThis->m_RenameFromFilename = Path;
 								}
 								break;
 							case FILE_ACTION_RENAMED_NEW_NAME:
 								{
-									auto *pOldNode = pThis->m_RootNode.f_GetFile(pThis->m_pBundle->m_RenameFromFilename);
-									if (pOldNode)
+									auto *pOldNode = pThis->m_RootNode.f_GetFile(pThis->m_RenameFromFilename);
+									if (pOldNode && CFile::fs_GetPath(Path) == CFile::fs_GetPath(pThis->m_RenameFromFilename))
 									{
-										CStr OldPrefix = pThis->m_pBundle->m_RenameFromFilename;
+										CStr OldPrefix = pThis->m_RenameFromFilename;
 										pOldNode->f_ForEach
 											(
 												[&](CStr const &_RelativePath, bool _bDirectory)
@@ -376,16 +391,22 @@ public:
 												}
 											)
 										;
-										pOldNode->f_SetParent(pOldNode->m_pParent, Path);
+										pOldNode->f_SetFileName(CFile::fs_GetFile(Path));
+
+										if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
+										{
+											Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(pThis->m_RenameFromFilename));
+											Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
+										}
 									}
 									else
-										Context.f_AddChange(EFileChangeNotification_Renamed, Path, pThis->m_pBundle->m_RenameFromFilename);
-
-									if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
 									{
-										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(pThis->m_pBundle->m_RenameFromFilename));
-										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
+										if (!pThis->m_RenameFromFilename.f_IsEmpty())
+											fRemoved(pThis->m_RenameFromFilename);
+										fAdded();
 									}
+
+									pThis->m_RenameFromFilename.f_Clear();
 								}
 								break;
 							default:
@@ -486,8 +507,6 @@ public:
 			DMibListLinkDS_Link(CNotificationBundle, m_Link);
 			NThread::CEventAutoResetReportable m_Event;
 			
-			CStr m_RenameFromFilename;
-
 			aint f_Main()
 			{
 				m_EventWantQuit.f_ReportTo(&m_Event);
@@ -613,6 +632,8 @@ public:
 				pNot->m_pReportTo = _pReportTo;
 				pNot->m_Flags = _OpenFlags;
 				pNot->m_RootNode = fg_Move(RootNode);
+				for (auto &Child : pNot->m_RootNode.m_Children)
+					Child.m_pParent = &pNot->m_RootNode;
 
 				pBundle->m_Used.f_Insert(pNot);
 
