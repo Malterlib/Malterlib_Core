@@ -1332,7 +1332,7 @@ bint NSys::NFile::fg_ChangeNotification_Changed(void *_pNotification)
 	return false;
 }
 
-bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification)
+bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom)
 {
 	return false;
 }

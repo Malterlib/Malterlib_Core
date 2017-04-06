@@ -246,8 +246,7 @@ namespace NMib
 			 , EFileChangeNotification_Added		
 			 , EFileChangeNotification_Removed
 			 , EFileChangeNotification_Modified
-			 , EFileChangeNotification_RenamedFrom
-			 , EFileChangeNotification_RenamedTo
+			 , EFileChangeNotification_Renamed
 		};
 
 		enum EFileRight

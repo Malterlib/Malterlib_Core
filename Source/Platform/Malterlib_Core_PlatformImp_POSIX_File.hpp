@@ -499,6 +499,7 @@ namespace
 {
 	void fg_SetBSDFileAttributes(int _iFile, mode_t DefaultMode, NMib::NFile::EFileAttrib _Attributes, ch8 const *_pFileName);
 }
+uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32 _Mode = 0644);
 
 int fg_GetUnixOpenFlags()
 {
@@ -542,7 +543,7 @@ template <typename tf_CFileStr, typename tf_CStr>
 int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, tf_CStr &_oPosixFileName, NMib::NFile::EFileAttrib _Attributes)
 {
 	using namespace NMib::NFile;
-	if ((_OpenFlags & (EFileOpen_Read | EFileOpen_Write)) == 0)
+	if ((_OpenFlags & (EFileOpen_Read | EFileOpen_Write | EFileOpen_ReadAttribs | EFileOpen_WriteAttribs)) == 0)
 		DMibErrorFile("Open flags contain neither read or write flags, one of them must be specified");
 
 	if ((_OpenFlags & (EFileOpen_DontCreate | EFileOpen_DontOpenExisting)) == (EFileOpen_DontCreate | EFileOpen_DontOpenExisting))
@@ -587,13 +588,16 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		else
 			CreateDisposition = EDisp_OpenExisting;
 	}
+	
+	bool bRead = (_OpenFlags & (EFileOpen_Read | EFileOpen_ReadAttribs)) != 0;
+	bool bWrite = (_OpenFlags & (EFileOpen_Write | EFileOpen_WriteAttribs)) != 0;
 
 	uint32 Openflags = fg_GetUnixOpenFlags();
-	if ((_OpenFlags & (EFileOpen_Write | EFileOpen_Read)) == (EFileOpen_Write | EFileOpen_Read))
+	if (bRead && bWrite)
 		Openflags |= O_RDWR;
-	else if ((_OpenFlags & (EFileOpen_Write | EFileOpen_Read)) == (EFileOpen_Read))
+	else if (bRead)
 		Openflags |= O_RDONLY;
-	else if ((_OpenFlags & (EFileOpen_Write | EFileOpen_Read)) == (EFileOpen_Write))
+	else if (bWrite)
 		Openflags |= O_WRONLY;
 	
 	switch (CreateDisposition)
@@ -654,7 +658,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 
 //	umask(0);
 	
-	int iFile = open(FileName, Openflags);
+	int iFile = open(FileName, Openflags, fg_MalterlibAttributesToMode(_Attributes));
 	if (iFile < 0)
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("open('{}') when opening file") << FileName, errno));
 	
@@ -981,7 +985,7 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(void *_pFile)
 	return Attribs; 
 }
 
-uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32 _Mode = 0644)
+uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32 _Mode)
 {
 	uint32 Mode = _Mode;
 
@@ -1084,7 +1088,7 @@ namespace
 		{
 			uint32 Mode = fg_MalterlibAttributesToMode(_Attributes, _DefaultMode);
 
-			if (Mode != Stats.st_mode)
+			if ((Mode & ~S_IFMT) != (Stats.st_mode & ~S_IFMT))
 			{
 				fl_MakeWritable();
 				if (fchmod(_iFile, Mode))

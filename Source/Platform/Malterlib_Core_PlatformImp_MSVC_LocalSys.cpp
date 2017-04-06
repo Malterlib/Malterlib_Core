@@ -35,7 +35,7 @@ public:
 
 	bint m_bDestroying;
 
-	NMib::NAggregate::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
+	NAggregate::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
 
 	class CFileChangeNoticationContext
 	{
@@ -55,7 +55,105 @@ public:
 		class CNotification
 		{
 		public:
+			struct CFileTreeNode
+			{
+				CFileTreeNode(CFileTreeNode *_pParent)
+					: m_pParent(_pParent)
+				{
+				}
+
+				CFileTreeNode &f_MapFile(CStr const &_FileName, bool _bDirectory)
+				{
+					CStr PathLeft = _FileName;
+					CStr FileName = fg_GetStrSep(PathLeft, "/");
+					
+					auto &Child = *m_Children(FileName, this);
+					Child.m_FileName = FileName;
+
+					if (PathLeft.f_IsEmpty())
+					{
+						Child.m_bDirectory = _bDirectory;
+						return Child;
+					}
+					else
+					{
+						Child.m_bDirectory = true;
+						return Child.f_MapFile(PathLeft, _bDirectory);
+					}
+				}
+
+				CFileTreeNode *f_GetFile(CStr const &_FileName)
+				{
+					CStr PathLeft = _FileName;
+					CStr FileName = fg_GetStrSep(PathLeft, "/");
+					
+					auto pChild = m_Children.f_FindEqual(FileName);
+
+					if (!pChild)
+						return nullptr;
+
+					if (PathLeft.f_IsEmpty())
+						return pChild;
+					else
+						return pChild->f_GetFile(PathLeft);
+				}
+
+				CStr f_GetPath() const
+				{
+					auto pParent = this;
+					if (pParent->m_pParent)
+					{
+						CStr Path;
+						while (pParent)
+						{
+							Path = CFile::fs_AppendPath(pParent->m_FileName, Path);
+							pParent = pParent->m_pParent;
+						}
+						return Path;
+					}
+					else
+						return "";
+				}
+
+				void f_SetParent(CFileTreeNode *_pParent, CStr const &_FileName)
+				{
+					if (_pParent)
+					{
+						auto Mapped = _pParent->m_Children(_FileName, fg_Move(*this));
+						(*Mapped).m_FileName = _FileName;
+					}
+					else
+						f_Remove();
+				}
+
+				void f_Remove()
+				{
+					if (m_pParent)
+						m_pParent->m_Children.f_Remove(this);
+				}
+
+				template <typename tf_FOnNode>
+				void fp_ForEach(CStr const &_Path, tf_FOnNode &&_fOnNode)
+				{
+					_fOnNode(_Path, m_bDirectory);
+					for (auto &Child : m_Children)
+						Child.fp_ForEach(CFile::fs_AppendPath(_Path, Child.m_FileName), _fOnNode);
+				}
+
+				template <typename tf_FOnNode>
+				void f_ForEach(tf_FOnNode &&_fOnNode)
+				{
+					fp_ForEach(f_GetPath(), _fOnNode);
+				}
+
+				CStr m_FileName;
+				CFileTreeNode *m_pParent = nullptr;
+				TCMap<CStr, CFileTreeNode> m_Children;
+				bool m_bDirectory = false;
+			};
+
 			CNotification()
+				: m_RootNode(nullptr)
 			{
 				m_pBundle = nullptr;
 				m_Handle = INVALID_HANDLE_VALUE;
@@ -97,6 +195,7 @@ public:
 					}
 					else
 						m_LinkUpdate.f_Unlink();
+					m_LinkUpdated.f_Unlink();
 				}
 
 				if (m_Handle != INVALID_HANDLE_VALUE)
@@ -105,7 +204,7 @@ public:
 					m_Handle = INVALID_HANDLE_VALUE;
 				}
 
-				m_Changes.f_DeleteAll();
+				m_Changes.f_Clear();
 			}
 
 			void f_Cancel()
@@ -115,38 +214,75 @@ public:
 
 			DMibListLinkDS_Link(CNotification, m_Link);
 			DMibListLinkDS_Link(CNotification, m_LinkUpdate);
+			DMibListLinkDS_Link(CNotification, m_LinkUpdated);
+
+			CFileTreeNode m_RootNode;
 			HANDLE m_Handle;
 			CNotificationBundle *m_pBundle;
+			CStr m_RootDirectory;
 			bint m_bDoneRead;
 			bint m_bCancelled;
 
-			NMib::NFile::EFileChange m_Flags;
+			EFileChange m_Flags;
 			
 			class CChange
 			{
 			public:
-				CChange()
-				{
-					m_Notification = NFile::EFileChangeNotification_Undefined;
-				}
-				NFile::EFileChangeNotification m_Notification;
+				EFileChangeNotification m_Notification = EFileChangeNotification_Undefined;
 				CStr m_Path;
-				DMibListLinkDS_Link(CChange, m_Link);
+				NStr::CStr m_PathFrom;
+			
+				bool operator < (CChange const &_Right) const
+				{
+					return fg_TupleReferences(m_Notification, m_Path, m_PathFrom) < fg_TupleReferences(_Right.m_Notification, _Right.m_Path, _Right.m_PathFrom);
+				}
 			};
-			DMibListLinkDS_List(CChange, m_Link) m_Changes;
+		
+			struct CFindChangesContext
+			{
+				TCLinkedList<CChange> m_ChangesFileName;
+				TCLinkedList<CChange> m_Changes;
+				TCSet<CChange> m_ChangesSet;
+
+				void f_AddChange(EFileChangeNotification _Notification, CStr const &_Path, CStr const &_PathFrom = {})
+				{
+					CChange Change;
+					Change.m_Notification = _Notification;
+					Change.m_Path = _Path;
+					Change.m_PathFrom = _PathFrom;
+					if (!m_ChangesSet(Change).f_WasCreated())
+						return;
+
+					if (_Notification == EFileChangeNotification_Removed || _Notification == EFileChangeNotification_Added || _Notification == EFileChangeNotification_Renamed)
+						m_ChangesFileName.f_Insert(fg_Move(Change));
+					else
+						m_Changes.f_Insert(fg_Move(Change));
+
+				}
+			};
+
 			NThread::CMutual m_ChangesLock;
 			NThread::CEvent m_FirstReadDoneEvent;
+			TCLinkedList<CChange> m_Changes;
 
 			TCVector<uint8> m_ChangesBuffer;
 			OVERLAPPED m_ChangesOverlapped;
 
-			NMib::NThread::CSemaphoreReportableAggregate *m_pReportTo;
+			NThread::CSemaphoreReportableAggregate *m_pReportTo;
+
+			CFindChangesContext m_ChangesContext;
 
 			static void __stdcall CompletionRoutine(DWORD _ErrorCode, DWORD _NumberOfBytesTransfered, LPOVERLAPPED _pOverlapped)
 			{
 				CNotification *pThis = (CNotification *)_pOverlapped->hEvent;
 
 				DMibLock(pThis->m_pBundle->m_UpdateLock);
+
+				auto &Context = pThis->m_ChangesContext;
+
+				
+				if (!pThis->m_LinkUpdated.f_IsInList())
+					pThis->m_pBundle->m_Updated.f_Insert(pThis);
 
 				if (_ErrorCode == 0)
 				{
@@ -157,72 +293,116 @@ public:
 						while (pNotification)
 						{
 
+							CStr Path = NFile::NPlatform::fg_ConvertFromWindowsPath
+								(
+									CWStr::fs_Create(pNotification->FileName, pNotification->FileNameLength/sizeof(pNotification->FileName[0]))
+								)
+							;
+							
 							CChange *pChange = nullptr;
 							switch (pNotification->Action)
 							{
 							case FILE_ACTION_ADDED:
 								{
-									pChange = DMibNew CChange;
-									pChange->m_Notification = EFileChangeNotification_Added;
+									bool bRecursive = (pThis->m_Flags & EFileChange_Recursive) != 0;
+
+									CStr AbsolutePath = CFile::fs_AppendPath(pThis->m_RootDirectory, Path);
+
+									pThis->m_RootNode.f_MapFile(Path, CFile::fs_FileExists(AbsolutePath, EFileAttrib_Directory));
+
+									Context.f_AddChange(EFileChangeNotification_Added, Path);
+
+									try
+									{
+										for (auto &File : CFile::fs_FindFilesEx(AbsolutePath + "/*", EFileAttrib_File | EFileAttrib_Directory, bRecursive, false))
+										{
+											CStr RelativePath = File.m_Path.f_Extract(pThis->m_RootDirectory.f_GetLen() + 1);
+											pThis->m_RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);	
+											Context.f_AddChange(EFileChangeNotification_Added, RelativePath);
+										}
+									}
+									catch (CExceptionFile const &_Exception)
+									{
+										DMibDTrace("Error enumerating children in file change notification: {}\n", _Exception);
+									}
+
+									if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
+										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
 								}
 								break;
 							case FILE_ACTION_REMOVED:
 								{
-									pChange = DMibNew CChange;
-									pChange->m_Notification = EFileChangeNotification_Removed;
+									auto *pOldNode = pThis->m_RootNode.f_GetFile(Path);
+									if (pOldNode)
+									{
+										pOldNode->f_ForEach
+											(
+												[&](CStr const &_RelativePath, bool _bDirectory)
+												{
+													Context.f_AddChange(EFileChangeNotification_Removed, _RelativePath);
+												}
+											)
+										;
+										pOldNode->f_Remove();
+									}
+									else
+										Context.f_AddChange(EFileChangeNotification_Removed, Path);
+									if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
+										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
 								}
 								break;
 							case FILE_ACTION_MODIFIED:
 								{
-									pChange = DMibNew CChange;
-									pChange->m_Notification = EFileChangeNotification_Modified;
+									Context.f_AddChange(EFileChangeNotification_Modified, Path);
 								}
 								break;
 							case FILE_ACTION_RENAMED_OLD_NAME:
 								{
-									pChange = DMibNew CChange;
-									pChange->m_Notification = EFileChangeNotification_RenamedFrom;
+									pThis->m_pBundle->m_RenameFromFilename = Path;
 								}
 								break;
 							case FILE_ACTION_RENAMED_NEW_NAME:
 								{
-									pChange = DMibNew CChange;
-									pChange->m_Notification = EFileChangeNotification_RenamedTo;
+									auto *pOldNode = pThis->m_RootNode.f_GetFile(pThis->m_pBundle->m_RenameFromFilename);
+									if (pOldNode)
+									{
+										CStr OldPrefix = pThis->m_pBundle->m_RenameFromFilename;
+										pOldNode->f_ForEach
+											(
+												[&](CStr const &_RelativePath, bool _bDirectory)
+												{
+													CStr NewPath = CFile::fs_AppendPath(Path, _RelativePath.f_Extract(OldPrefix.f_GetLen() + 1));
+													Context.f_AddChange(EFileChangeNotification_Renamed, NewPath, _RelativePath);
+												}
+											)
+										;
+										pOldNode->f_SetParent(pOldNode->m_pParent, Path);
+									}
+									else
+										Context.f_AddChange(EFileChangeNotification_Renamed, Path, pThis->m_pBundle->m_RenameFromFilename);
+
+									if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
+									{
+										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(pThis->m_pBundle->m_RenameFromFilename));
+										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
+									}
 								}
 								break;
-							}
-
-							if (pChange)
-							{
-								
-								pChange->m_Path = NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr::fs_Create(pNotification->FileName, pNotification->FileNameLength/sizeof(pNotification->FileName[0])));
-
-								DMibLock(pThis->m_ChangesLock);
-								pThis->m_Changes.f_Insert(pChange);
+							default:
+								{
+									Context.f_AddChange(EFileChangeNotification_Unknown, {});
+								}
 							}
 							
 							if (pNotification->NextEntryOffset)
-							{
 								pNotification = (FILE_NOTIFY_INFORMATION *)((mint)pNotification + pNotification->NextEntryOffset);
-							}
 							else
 								pNotification = nullptr;
 						}
 					}
 					else
-					{
-						CChange *pChange = nullptr;
-						pChange = DMibNew CChange;
-						pChange->m_Notification = EFileChangeNotification_Unknown;
+						Context.f_AddChange(EFileChangeNotification_Unknown, {});
 
-						{
-							DMibLock(pThis->m_ChangesLock);
-							pThis->m_Changes.f_Insert(pChange);
-						}
-					}
-					
-					if (pThis->m_pReportTo)
-						pThis->m_pReportTo->f_Signal();
 					pThis->f_DoRead();
 				}
 				else
@@ -238,17 +418,17 @@ public:
 					return;
 				}
 				uint32 Flags = 0;
-				if (m_Flags & NFile::EFileChange_FileName)
+				if (m_Flags & EFileChange_FileName)
 					Flags |= FILE_NOTIFY_CHANGE_FILE_NAME;
-				if (m_Flags & NFile::EFileChange_DirectoryName)
+				if (m_Flags & EFileChange_DirectoryName)
 					Flags |= FILE_NOTIFY_CHANGE_DIR_NAME;
-				if (m_Flags & NFile::EFileChange_Attributes)
+				if (m_Flags & EFileChange_Attributes)
 					Flags |= FILE_NOTIFY_CHANGE_ATTRIBUTES;
-				if (m_Flags & NFile::EFileChange_FileSize)
+				if (m_Flags & EFileChange_FileSize)
 					Flags |= FILE_NOTIFY_CHANGE_SIZE;
-				if (m_Flags & NFile::EFileChange_Write)
+				if (m_Flags & EFileChange_Write)
 					Flags |= FILE_NOTIFY_CHANGE_LAST_WRITE;
-				if (m_Flags & NFile::EFileChange_Security)
+				if (m_Flags & EFileChange_Security)
 					Flags |= FILE_NOTIFY_CHANGE_SECURITY;
 
 				m_ChangesBuffer.f_SetLen(64*1024);
@@ -256,7 +436,7 @@ public:
 				NMem::fg_MemClear(m_ChangesOverlapped);
 				m_ChangesOverlapped.hEvent = this;
 
-				if (ReadDirectoryChangesW(m_Handle, m_ChangesBuffer.f_GetArray(), m_ChangesBuffer.f_GetLen(), (m_Flags & NFile::EFileChange_Recursive) != 0, Flags, &Dummy, &m_ChangesOverlapped, &CompletionRoutine))
+				if (ReadDirectoryChangesW(m_Handle, m_ChangesBuffer.f_GetArray(), m_ChangesBuffer.f_GetLen(), (m_Flags & EFileChange_Recursive) != 0, Flags, &Dummy, &m_ChangesOverlapped, &CompletionRoutine))
 					m_bDoneRead = true;
 				else
 				{
@@ -267,7 +447,7 @@ public:
 		};
 		typedef DMibListLinkDS_Iter(CNotification, m_Link)  CNotificationIter;
 
-		class CNotificationBundle : public NMib::NThread::CThread
+		class CNotificationBundle : public NThread::CThread
 		{
 		public:
 			virtual NStr::CStr f_GetThreadName()
@@ -301,10 +481,12 @@ public:
 			NThread::CMutual m_UpdateLock;
 			DMibListLinkDS_List(CNotification, m_LinkUpdate) m_ToRead;
 			DMibListLinkDS_List(CNotification, m_LinkUpdate) m_ToCancel;
+			DMibListLinkDS_List(CNotification, m_LinkUpdated) m_Updated;
 
 			DMibListLinkDS_Link(CNotificationBundle, m_Link);
 			NThread::CEventAutoResetReportable m_Event;
-
+			
+			CStr m_RenameFromFilename;
 
 			aint f_Main()
 			{
@@ -340,7 +522,32 @@ public:
 						}
 					}
 
-					WaitForSingleObjectEx(m_Event.m_pSemaphore, INFINITE, true);
+					auto Ret = WaitForSingleObjectEx(m_Event.m_pSemaphore, INFINITE, true);
+					{
+						CNotification *pPop;
+						{
+							DMibLock(m_UpdateLock);
+							pPop = m_Updated.f_Pop();
+							while (pPop)
+							{
+								if (!pPop->m_ChangesContext.m_ChangesFileName.f_IsEmpty() || !pPop->m_ChangesContext.m_Changes.f_IsEmpty())
+								{
+									DMibLock(pPop->m_ChangesLock);
+
+									pPop->m_Changes.f_Insert(fg_Move(pPop->m_ChangesContext.m_ChangesFileName));
+									pPop->m_Changes.f_Insert(fg_Move(pPop->m_ChangesContext.m_Changes));
+
+									if (pPop->m_pReportTo)
+										pPop->m_pReportTo->f_Signal();
+								}
+
+
+								pPop->m_ChangesContext = CNotification::CFindChangesContext();
+
+								pPop = m_Updated.f_Pop();
+							}
+						}
+					}
 				}
 
 				return 0;
@@ -353,10 +560,10 @@ public:
 
 		NThread::CMutual m_Lock;
 
-		void *f_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+		void *f_Open(const CStr &_FileName, EFileChange _OpenFlags, NThread::CSemaphoreReportableAggregate *_pReportTo)
 		{
-
-			CWStr WindowStr = NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileName);
+			CStr AbsolutePath = CFile::fs_GetExpandedPath(_FileName);
+			CWStr WindowStr = NFile::NPlatform::fg_ConvertToWindowsPathLocal(AbsolutePath);
 
 			HANDLE Handle = CreateFile(WindowStr, FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
 
@@ -364,21 +571,31 @@ public:
 			{
 				DMibErrorFile((CStr::CFormat("Windows returned an error from CreateFile({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 			}
+
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					CloseHandle(Handle);
+				}
+			;
 			
 			BY_HANDLE_FILE_INFORMATION Info;
 			
 			if (!GetFileInformationByHandle(Handle, &Info))
-			{
-				CloseHandle(Handle);
 				DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-			}
-
+			
 			if (!(Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-			{
-				CloseHandle(Handle);
 				DMibErrorFile((CStr::CFormat("You can get notifications for file changes on directories, not files ({})") << WindowStr).f_GetStr());
-			}
 
+			CNotification::CFileTreeNode RootNode(nullptr);
+
+			bool bRecursive = (_OpenFlags & EFileChange_Recursive) != 0;
+
+			for (auto &File : CFile::fs_FindFilesEx(AbsolutePath + "/*", EFileAttrib_File | EFileAttrib_Directory, bRecursive, false))
+			{
+				CStr RelativePath = File.m_Path.f_Extract(AbsolutePath.f_GetLen() + 1);
+				RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);	
+			}
+			
 			CNotification *pNot;
 			{
 				DMibLock(m_Lock);
@@ -391,8 +608,12 @@ public:
 				}
 				pNot = pBundle->m_Free.f_Pop();
 				pNot->m_Handle = Handle;
+				pNot->m_RootDirectory = AbsolutePath;
+				Cleanup.f_Clear();
 				pNot->m_pReportTo = _pReportTo;
 				pNot->m_Flags = _OpenFlags;
+				pNot->m_RootNode = fg_Move(RootNode);
+
 				pBundle->m_Used.f_Insert(pNot);
 
 				if (pBundle->m_Free.f_IsEmpty())
@@ -440,35 +661,36 @@ public:
 			{
 				DMibLock(pNotification->m_ChangesLock);
 				bChanged = !pNotification->m_Changes.f_IsEmpty();
-				pNotification->m_Changes.f_DeleteAll();
+				pNotification->m_Changes.f_Clear();
 			}
 			return bChanged;
 		}
-		bint f_GetNotification(void *_pNotification, CStr &_Path, NFile::EFileChangeNotification &_Notification)
+
+		bint f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, NStr::CStr &_PathFrom)
 		{
 			DMibLock(m_Lock);
 			CNotification *pNotification = (CNotification *)_pNotification;
-			bint bChanged = false;
 			{
 				DMibLock(pNotification->m_ChangesLock);
-				CNotification::CChange *pChange = pNotification->m_Changes.f_Pop();					
 
-				if (pChange)
+				if (!pNotification->m_Changes.f_IsEmpty())
 				{
-					_Path = pChange->m_Path;
-					_Notification = pChange->m_Notification;
-					bChanged = true;
-					delete pChange;
+					auto &Change = pNotification->m_Changes.f_GetFirst();
+					
+					_Path = Change.m_Path;
+					_Notification = Change.m_Notification;
+					_PathFrom = Change.m_PathFrom;
+
+					pNotification->m_Changes.f_Remove(Change);
+					return true;
 				}
-				else
-					bChanged = false;
 			}
-			return bChanged;
+			return false;
 		}
 
 	};
 
-	NMib::NAggregate::TCAggregate<CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
+	NAggregate::TCAggregate<CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
 
 
 	bool f_EnablePrivilege(TCHAR* pszPrivilege, BOOL bEnable)
@@ -609,7 +831,7 @@ public:
 //		DConOut("BaseName: {}" DMibNewLine, BaseName);
 		m_ProgramPath_CStr = NFile::NPlatform::fg_ConvertFromWindowsPath(BaseName); // Make sure unicode conversion is correct
 
-		m_ProgramDir_CStr = NFile::CFile::fs_GetPath(m_ProgramPath_CStr);
+		m_ProgramDir_CStr = CFile::fs_GetPath(m_ProgramPath_CStr);
 
 		m_ProgramDir_CStrNonTracked = m_ProgramDir_CStr;
 		m_ProgramPath_CStrNonTracked = m_ProgramPath_CStr;

@@ -4420,9 +4420,9 @@ bint NSys::NFile::fg_ChangeNotification_Changed(void *_pNotification)
 	return fg_GetLocalSys()->m_FileChangeNoticationContext->f_Changed(_pNotification);
 }
 
-bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification)
+bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom)
 {
-	return fg_GetLocalSys()->m_FileChangeNoticationContext->f_GetNotification(_pNotification, _Path, _Notification);
+	return fg_GetLocalSys()->m_FileChangeNoticationContext->f_GetNotification(_pNotification, _Path, _Notification, _PathFrom);
 }
 
 bool NSys::NFile::fg_ChangeNotification_Supported()
