@@ -1286,17 +1286,17 @@ NTime::CTime NSys::NFile::fg_GetCreationTime(NMib::NStr::CStr const& _FileName)
 #if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
 	struct stat Stats;
 	if (stat(Canonical, &Stats))
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when getting file creation time") << _FileName, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when getting file creation time") << _FileName, errno));
 	return fsg_TimespecToCTime(Stats.st_mtim);
 #else
 #if DPlatformVersion < 1060
 	struct stat64 Stats;
 	if (stat64(Canonical, &Stats))
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when getting file creation time") << _FileName, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat64('{}') when getting file creation time") << _FileName, errno));
 #else
 	struct stat Stats;
 	if (stat(Canonical, &Stats))
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when getting file creation time") << _FileName, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when getting file creation time") << _FileName, errno));
 #endif
 	return fsg_TimespecToCTime(Stats.st_birthtimespec);
 #endif
@@ -1320,7 +1320,7 @@ NTime::CTime NSys::NFile::fg_GetWriteTime(NMib::NStr::CStr const& _FileName)
 	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
 	struct stat Stats;
 	if (stat(Canonical, &Stats))
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when getting file write time") << _FileName, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when getting file write time") << _FileName, errno));
 #if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
 	return fsg_TimespecToCTime(Stats.st_mtim);
 #else
@@ -1328,6 +1328,53 @@ NTime::CTime NSys::NFile::fg_GetWriteTime(NMib::NStr::CStr const& _FileName)
 #endif
 }
 
+NTime::CTime NSys::NFile::fg_GetCreationTimeOnLink(NMib::NStr::CStr const& _FileName)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	struct stat Stats;
+	if (lstat(Canonical, &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when getting file creation time") << _FileName, errno));
+	return fsg_TimespecToCTime(Stats.st_mtim);
+#else
+#if DPlatformVersion < 1060
+	struct stat64 Stats;
+	if (lstat64(Canonical, &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat64('{}') when getting file creation time") << _FileName, errno));
+#else
+	struct stat Stats;
+	if (lstat(Canonical, &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when getting file creation time") << _FileName, errno));
+#endif
+	return fsg_TimespecToCTime(Stats.st_birthtimespec);
+#endif
+}
+
+NTime::CTime NSys::NFile::fg_GetAccessTimeOnLink(NMib::NStr::CStr const& _FileName)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (lstat(Canonical, &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when getting file access time") << _FileName, errno));
+#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	return fsg_TimespecToCTime(Stats.st_atim);
+#else
+	return fsg_TimespecToCTime(Stats.st_atimespec);
+#endif	
+}
+
+NTime::CTime NSys::NFile::fg_GetWriteTimeOnLink(NMib::NStr::CStr const& _FileName)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (lstat(Canonical, &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when getting file write time") << _FileName, errno));
+#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	return fsg_TimespecToCTime(Stats.st_mtim);
+#else
+	return fsg_TimespecToCTime(Stats.st_mtimespec);
+#endif
+}
 static timeval fsg_CTime2OSXTime(const NTime::CTime &_DateTime)
 {	
 	static CTime EpochStart = NTime::CTimeConvert::fs_CreateTime(1970, 1, 1);
@@ -1402,6 +1449,109 @@ void NSys::NFile::fg_SetWriteTime(void *_pFile, const NTime::CTime &_Time)
 	Vals[1] = fsg_CTime2OSXTime(_Time);
 	if (futimes(pFile->m_BSDFile, Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimes('{}') when setting file write time") << pFile->f_GetFileName(), errno));
+}
+
+void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (stat(Canonical.f_GetStr(), &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when setting file creation time") << _FileName, errno));
+	timeval Vals[2];
+#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
+#else
+	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
+#endif
+	Vals[0] = fsg_CTime2OSXTime(_Time);
+	if (utimes(Canonical.f_GetStr(), Vals))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimes('{}') when setting file creation time") << _FileName, errno));
+}
+
+void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (stat(Canonical.f_GetStr(), &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when setting file access time") << _FileName, errno));
+	timeval Vals[2];
+#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
+#else
+	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
+#endif
+	Vals[0] = fsg_CTime2OSXTime(_Time);
+	if (utimes(Canonical.f_GetStr(), Vals))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimes('{}') when setting file access time") << _FileName, errno));
+}
+
+void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (stat(Canonical.f_GetStr(), &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when setting file write time") << _FileName, errno));
+	timeval Vals[2];
+#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atim);
+#else
+	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atimespec);
+#endif
+	Vals[1] = fsg_CTime2OSXTime(_Time);
+	if (utimes(Canonical.f_GetStr(), Vals))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimes('{}') when setting file write time") << _FileName, errno));
+}
+
+
+void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (lstat(Canonical.f_GetStr(), &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when setting file creation time") << _FileName, errno));
+	timeval Vals[2];
+#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
+#else
+	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
+#endif
+	Vals[0] = fsg_CTime2OSXTime(_Time);
+	if (lutimes(Canonical.f_GetStr(), Vals))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lutimes('{}') when setting file creation time") << _FileName, errno));
+}
+
+void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (lstat(Canonical.f_GetStr(), &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when setting file access time") << _FileName, errno));
+	timeval Vals[2];
+#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
+#else
+	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
+#endif
+	Vals[0] = fsg_CTime2OSXTime(_Time);
+	if (lutimes(Canonical.f_GetStr(), Vals))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lutimes('{}') when setting file access time") << _FileName, errno));
+}
+
+void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (lstat(Canonical.f_GetStr(), &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when setting file write time") << _FileName, errno));
+	timeval Vals[2];
+#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atim);
+#else
+	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atimespec);
+#endif
+	Vals[1] = fsg_CTime2OSXTime(_Time);
+	if (lutimes(Canonical.f_GetStr(), Vals))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lutimes('{}') when setting file write time") << _FileName, errno));
 }
 
 NMib::NStr::CStr NSys::NFile::fg_GetOwnerOnLink(const NMib::NStr::CStr &_Path)
