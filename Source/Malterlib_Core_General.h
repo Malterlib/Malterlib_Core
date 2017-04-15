@@ -130,10 +130,17 @@ namespace NMib
 	template <typename t_CType> 
 	inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_Move(t_CType &&_ToMove) noexcept
 	{
+		static_assert(!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value, "Trying to move const value");
     	return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
 	}
 	
-	template <typename tf_CType> 
+	template <typename t_CType> 
+	inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
+	{
+    	return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
+	}
+	
+	template <typename tf_CType>
 	tf_CType fg_TempCopy(tf_CType const &_Value)
 	{
 		return _Value;
