@@ -1158,6 +1158,32 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr co
 	return Attribs;
 }
 
+NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NStr::CStr const& _FileName)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (stat(Canonical, &Stats))
+	{
+		auto ErrNo = errno;
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("stat('{}') when getting unique file ID") << Canonical, ErrNo));
+	}
+	
+	return {static_cast<uint64>(Stats.st_dev), Stats.st_ino};
+}
+
+NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifierOnLink(NMib::NStr::CStr const& _FileName)
+{
+	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
+	struct stat Stats;
+	if (lstat(Canonical, &Stats))
+	{
+		auto ErrNo = errno;
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when getting unique file ID on link") << Canonical, ErrNo));
+	}
+	
+	return {static_cast<uint64>(Stats.st_dev), Stats.st_ino};
+}
+
 void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _Filename, NMib::NFile::EFileAttrib _Attributes)
 {
 	struct stat Stats;
