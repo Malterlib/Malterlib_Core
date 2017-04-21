@@ -282,6 +282,23 @@ namespace NMib
 		return TCExplicit<void>();
 	}
 	
+	struct CExplicitHelper
+	{
+		template <typename tf_CType, TCEnableIfType<NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
+		inline_always_debug TCExplicit<tf_CType> operator = (tf_CType &&_In) const
+		{
+			return TCExplicit<tf_CType>(_In);
+		}
+		
+		template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
+		inline_always_debug TCExplicit<tf_CType> operator = (tf_CType &&_In) const
+		{
+			return TCExplicit<tf_CType>(fg_Move(_In));
+		}
+	};
+	
+	extern CExplicitHelper const &g_Explicit;
+	
 	namespace NInternal
 	{
 		struct CDefault
