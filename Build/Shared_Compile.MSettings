@@ -1803,15 +1803,6 @@ Compile
 		!!PlatformFamily Linux
 	}
 	
-	LinuxXcodeCompatibility true
-	{
-		&
-		{
-			PlatformFamily Linux
-			GeneratorFamily Xcode
-		}
-	}
-	
 	DynamicTypeInfo false
 	{
 		!!Compile.DynamicTypeInfo ""

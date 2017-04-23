@@ -66,6 +66,10 @@ Import "../Core/Lib_Malterlib.MTarget"
 		{
 			%File "Documentation/*"
 		}
+		%Group Build
+		{
+			%File "Build/*.sh"
+		}
 	}
 	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(Target.ExtraGroups)"
 	{

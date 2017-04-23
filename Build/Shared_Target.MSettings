@@ -597,7 +597,7 @@ Property
 			!HostPlatformFamily Windows
 		}
 	}
-	PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/@(MalterlibClangVersion)/build/make/bin/clang" // User: Change the clang compiler location
+	PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang" // User: Change the clang compiler location
 	{
 		&
 		{
@@ -897,15 +897,6 @@ Target
 		}
 	}
 	
-	LDFlags "-claim_xcode @(Target.LDFlags)"
-	{
-		&
-		{
-			PlatformFamily Linux
-			GeneratorFamily Xcode
-		}
-	}
-
 	LDFlags "-v @(Target.LDFlags)"
 	{
 		!!Compile.Verbose true

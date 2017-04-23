@@ -170,11 +170,24 @@
 					RootOutputDirectory "@(Builtin.GeneratedBuildSystemDir)/../.."
 					
 					Name "@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/GenerateBuildSystem_@(Workspace:Workspace.Name)@(ScriptExtension)"
-					Contents "IF \"%DisableProjectGen%\" == \"1\" GOTO Skip\r\n"\
-							 "cd @(Builtin.BasePathRelativeProject->WindowsPath())\r\n"\
-							 "\"@(Builtin.MToolCom)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(RootOutputDirectory->MakeAbsolute())\" Action=%1\r\n"\
-							 "IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n"\
-							 ":Skip\r\n"
+					
+					Contents	"@(Contents)"\
+								"@('BuildLLVM.sh'->MakeAbsolute()) \"@(MalterlibClangVersion)\" \"@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)\" \"@(MalterlibMainMalterlibRepo)\"\r\n"\
+								"ErrorLevel=$?\n"\
+								"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
+								"  echo error: Failed to update LLVM dependencies\n"\
+								"  exit 1\n"\
+								"fi\n"
+					{
+						!!PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang"
+					}
+					
+					Contents	"@(Contents)"\
+								"IF \"%DisableProjectGen%\" == \"1\" GOTO Skip\r\n"\
+								"cd @(Builtin.BasePathRelativeProject->WindowsPath())\r\n"\
+								"\"@(Builtin.MToolCom)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(RootOutputDirectory->MakeAbsolute())\" Action=%1\r\n"\
+								"IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n"\
+								":Skip\r\n"
 					{
 						&
 						{
@@ -182,20 +195,22 @@
 							HostPlatformFamily "Windows"
 						}
 					}
-					Contents "if [ \"$DisableProjectGen\" == \"1\" ]; then\n"\
-							 "  exit 0\n"\
-							 "fi\n"\
-							 "cd @(Builtin.BasePathRelativeProject)/..\n"\
-							 "\"@(Builtin.MToolExe)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(RootOutputDirectory->MakeAbsolute())\" Action=$1\n"\
-							 "ErrorLevel=$?\n"\
- 							 "if [ \"$ErrorLevel\" == \"2\" ]; then\n"\
-							 "  echo error: Build system changed, aborting build\n"\
-							 "  exit 1\n"\
-							 "fi\n"\
- 							 "if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
-							 "  echo error: Build system generation failed\n"\
-							 "  exit 1\n"\
-							 "fi\n"
+					
+					Contents	"@(Contents)"\
+								"if [ \"$DisableProjectGen\" == \"1\" ]; then\n"\
+								"  exit 0\n"\
+								"fi\n"\
+								"cd @(Builtin.BasePathRelativeProject)/..\n"\
+								"\"@(Builtin.MToolExe)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(RootOutputDirectory->MakeAbsolute())\" Action=$1\n"\
+								"ErrorLevel=$?\n"\
+								"if [ \"$ErrorLevel\" == \"2\" ]; then\n"\
+								"  echo error: Build system changed, aborting build\n"\
+								"  exit 1\n"\
+								"fi\n"\
+								"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
+								"  echo error: Build system generation failed\n"\
+								"  exit 1\n"\
+								"fi\n"
 					{
 						&
 						{

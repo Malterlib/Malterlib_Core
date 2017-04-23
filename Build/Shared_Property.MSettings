@@ -6,6 +6,10 @@ Property
 {
 	!!HostPlatformFamily "Windows"
 
+	MalterlibDependenciesDirectory "X:/CompiledFiles/Dependencies"
+	{
+		!!MalterlibDependenciesDirectory ""
+	}
 	MalterlibCompiledFiles "X:/CompiledFiles/@(Generator)/"
 	{
 		!!MalterlibCompiledFiles ""
@@ -48,6 +52,11 @@ Property
 	!!HostPlatformFamily "OSX"
 	!!HostPlatformFamily "Linux"
 
+	MalterlibDependenciesDirectory "/CompiledFiles/Dependencies"
+	{
+		!!MalterlibDependenciesDirectory ""
+	}
+	
 	MalterlibCompiledFiles "/CompiledFiles/@(Generator)/"
 	{
 		&
