@@ -323,6 +323,7 @@ public:
 									}
 									catch (CExceptionFile const &_Exception)
 									{
+										(void)_Exception;
 										DMibDTrace("Error enumerating children in file change notification: {}\n", _Exception);
 									}
 
