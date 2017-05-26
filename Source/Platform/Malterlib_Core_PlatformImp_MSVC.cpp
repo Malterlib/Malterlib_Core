@@ -168,6 +168,7 @@ namespace NLocal
 	NTSTATUS (WINAPI *g_fLdrDisableThreadCalloutsForDll)(IN PVOID BaseAddress);
 	NTSTATUS (WINAPI *g_fRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
 
+	BOOL (WINAPI *g_fGetFileInformationByHandleEx)(HANDLE hFile, Undocumented_FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
 }
 
 
@@ -2057,6 +2058,8 @@ void fg_LoadFunctionPointers()
 		(FARPROC &)g_fNtQueryInformationProcess = GetProcAddress(g_hNtDll, "NtQueryInformationProcess");
 		(FARPROC &)g_fLdrDisableThreadCalloutsForDll = GetProcAddress(g_hNtDll, "LdrDisableThreadCalloutsForDll");
 		(FARPROC &)g_fRtlGetVersion = GetProcAddress(g_hNtDll, "RtlGetVersion");
+
+		(FARPROC &)g_fGetFileInformationByHandleEx = GetProcAddress(g_hKernel32, "GetFileInformationByHandleEx");
 
 		g_VersionInfo.dwOSVersionInfoSize = sizeof(g_VersionInfo);
 		if (g_fRtlGetVersion)
@@ -4169,6 +4172,43 @@ EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const& _FileNam
 	return fg_GetAttributes(_FileName);
 }
 
+NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NStr::CStr const& _FileName)
+{
+	CFile File;
+	auto FileOpenFlags = EFileOpen_ShareAll | EFileOpen_ReadAttribs;
+	if (CFile::fs_FileExists(CStr(_FileName), EFileAttrib_Directory))
+		FileOpenFlags |= EFileOpen_Directory;
+	File.f_Open(_FileName, FileOpenFlags);
+
+	if (NLocal::g_fGetFileInformationByHandleEx)
+	{
+		Undocumented_FILE_ID_INFO FileIDInfo;
+		if (NLocal::g_fGetFileInformationByHandleEx(File.f_GetOSFile(), FileIdInfo, &FileIDInfo, sizeof(FileIDInfo)))
+		{
+			NMib::NFile::CUniqueFileIdentifier FileID;
+			FileID.m_VolumeID = FileIDInfo.VolumeSerialNumber;
+			FileID.m_FileID = 0;
+			fg_MemCopy(&FileID.m_FileID, &FileIDInfo.FileId, fg_Min(sizeof(FileID.m_FileID), sizeof(FileIDInfo.FileId)));
+		}
+	}
+
+	BY_HANDLE_FILE_INFORMATION FileInfo;
+	if (!GetFileInformationByHandle(File.f_GetOSFile(), &FileInfo))
+		DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << _FileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+
+	NMib::NFile::CUniqueFileIdentifier FileID;
+	FileID.m_VolumeID = FileInfo.dwVolumeSerialNumber;
+	FileID.m_FileID = uint64(FileInfo.nFileIndexHigh) << 32; 
+	FileID.m_FileID += FileInfo.nFileIndexLow;
+
+	return FileID;
+}
+
+NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifierOnLink(NMib::NStr::CStr const &_FileName)
+{
+	return fg_GetUniqueIdentifier(_FileName);
+}
+
 CMibFilePos NSys::NFile::fg_GetSize(void *_pFile)
 {
 	CMibFilePos Ret;
@@ -4338,6 +4378,51 @@ void NSys::NFile::fg_SetWriteTime(void *_pFile, const NTime::CTime &_Time)
 	}
 }
 
+void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	CFile File;
+	auto FileOpenFlags = EFileOpen_ShareAll | EFileOpen_ReadAttribs;
+	if (CFile::fs_FileExists(CStr(_FileName), EFileAttrib_Directory))
+		FileOpenFlags |= EFileOpen_Directory;
+	File.f_Open(_FileName, FileOpenFlags);
+	File.f_SetCreationTime(_Time);
+}
+
+void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	CFile File;
+	auto FileOpenFlags = EFileOpen_ShareAll | EFileOpen_ReadAttribs;
+	if (CFile::fs_FileExists(CStr(_FileName), EFileAttrib_Directory))
+		FileOpenFlags |= EFileOpen_Directory;
+	File.f_Open(_FileName, FileOpenFlags);
+	File.f_SetAccessTime(_Time);
+}
+
+void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	CFile File;
+	auto FileOpenFlags = EFileOpen_ShareAll | EFileOpen_ReadAttribs;
+	if (CFile::fs_FileExists(CStr(_FileName), EFileAttrib_Directory))
+		FileOpenFlags |= EFileOpen_Directory;
+	File.f_Open(_FileName, FileOpenFlags);
+	File.f_SetWriteTime(_Time);
+}
+
+void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	fg_SetCreationTime(_FileName, _Time);
+}
+
+void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	fg_SetAccessTime(_FileName, _Time);
+}
+
+void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+{
+	fg_SetWriteTime(_FileName, _Time);
+}
+
 NTime::CTime NSys::NFile::fg_GetCreationTime(void *_pFile)
 {
 	FILETIME Time;
@@ -4380,6 +4465,21 @@ NTime::CTime NSys::NFile::fg_GetWriteTime(NMib::NStr::CStr const& _FileName)
 	CFile File;
 	File.f_Open(CStr(_FileName), FileOpenFlags);
 	return File.f_GetWriteTime();
+}
+
+NTime::CTime NSys::NFile::fg_GetCreationTimeOnLink(NMib::NStr::CStr const& _FileName)
+{
+	return fg_GetCreationTime(_FileName);
+}
+
+NTime::CTime NSys::NFile::fg_GetAccessTimeOnLink(NMib::NStr::CStr const& _FileName)
+{
+	return fg_GetAccessTime(_FileName);
+}
+
+NTime::CTime NSys::NFile::fg_GetWriteTimeOnLink(NMib::NStr::CStr const& _FileName)
+{
+	return fg_GetWriteTime(_FileName);
 }
 
 NTime::CTime NSys::NFile::fg_GetAccessTime(void *_pFile)

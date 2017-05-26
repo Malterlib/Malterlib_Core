@@ -546,3 +546,36 @@ inline_always UndocumentedPEB *fg_GetPEB(CUndocumentedTEB *_pTeb)
 	return _pTeb->Peb;
 }
 
+enum Undocumented_FILE_INFO_BY_HANDLE_CLASS
+{
+    FileBasicInfo,
+    FileStandardInfo,
+    FileNameInfo,
+    FileRenameInfo,
+    FileDispositionInfo,
+    FileAllocationInfo,
+    FileEndOfFileInfo,
+    FileStreamInfo,
+    FileCompressionInfo,
+    FileAttributeTagInfo,
+    FileIdBothDirectoryInfo,
+    FileIdBothDirectoryRestartInfo,
+    FileIoPriorityHintInfo,
+    FileRemoteProtocolInfo,
+    FileFullDirectoryInfo,
+    FileFullDirectoryRestartInfo,
+    FileStorageInfo,
+    FileAlignmentInfo,
+    FileIdInfo,
+    FileIdExtdDirectoryInfo,
+    FileIdExtdDirectoryRestartInfo,
+    FileDispositionInfoEx,
+    FileRenameInfoEx,
+    MaximumFileInfoByHandleClass
+};
+
+struct Undocumented_FILE_ID_INFO 
+{
+    ULONGLONG VolumeSerialNumber;
+    FILE_ID_128 FileId;
+};

@@ -271,10 +271,16 @@ namespace NMib
 		return TCExplicit<tf_CType>(_In);
 	}
 	
-	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
+	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && !NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
 	inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(fg_Move(_In));
+	}
+	
+	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
+	inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
+	{
+		return TCExplicit<tf_CType>(_In);
 	}
 	
 	inline_always_debug TCExplicit<void> fg_Explicit()
