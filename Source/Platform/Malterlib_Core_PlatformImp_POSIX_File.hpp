@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+		// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 using namespace NMib;
@@ -589,8 +589,8 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			CreateDisposition = EDisp_OpenExisting;
 	}
 	
-	bool bRead = (_OpenFlags & (EFileOpen_Read | EFileOpen_ReadAttribs)) != 0;
-	bool bWrite = (_OpenFlags & (EFileOpen_Write | EFileOpen_WriteAttribs)) != 0;
+	bool bRead = (_OpenFlags & EFileOpen_Read) != 0;
+	bool bWrite = (_OpenFlags & EFileOpen_Write) != 0;
 
 	uint32 Openflags = fg_GetUnixOpenFlags();
 	if (bRead && bWrite)
