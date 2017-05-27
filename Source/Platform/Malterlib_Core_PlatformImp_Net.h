@@ -77,6 +77,13 @@ struct CUnixAddress
 	sockaddr_un m_UnixAddress;
 	NFile::EFileAttrib m_Permissions = NFile::EFileAttrib_None;
 };
+#else
+struct CUnixAddress
+{
+	constexpr static const mint mc_MaxLength = 2048;
+	ch8 m_FilePath[mc_MaxLength] = {0};
+	NFile::EFileAttrib m_Permissions = NFile::EFileAttrib_None;
+};
 #endif
 
 struct CRuntimeNetAddress
@@ -114,13 +121,11 @@ public:
 		f_Set(_TCPv6);
 	}
 
-#ifndef DPlatformFamily_Windows
 	CRuntimeNetAddress(CUnixAddress const &_Unix)
 		: mp_Type(NMib::NNet::ENetAddressType_None)
 	{
 		f_Set(_Unix);
 	}
-#endif
 
 	NMib::NNet::ENetAddressType f_GetType() const
 	{
@@ -151,12 +156,10 @@ public:
 		f_Set(NMib::NNet::ENetAddressType_TCPv6, &_TCPv6, sizeof(sockaddr_in6));
 	}
 
-#ifndef DPlatformFamily_Windows
 	void f_Set(CUnixAddress const &_Unix)
 	{
 		f_Set(NMib::NNet::ENetAddressType_Unix, &_Unix, sizeof(CUnixAddress));
 	}
-#endif
 	
 	mint f_GetFullDataLen() const { return mp_lData.f_GetLen(); }
 	mint f_GetSockAddrLen() const 
@@ -176,15 +179,11 @@ public:
 
 	sockaddr_in const& f_GetTCPv4() const { return *(sockaddr_in const*)mp_lData.f_GetArray(); }
 	sockaddr_in6 const& f_GetTCPv6() const { return *(sockaddr_in6 const*)mp_lData.f_GetArray(); }
-#ifndef DPlatformFamily_Windows
 	CUnixAddress const& f_GetUnix() const { return *(CUnixAddress const*)mp_lData.f_GetArray(); }
-#endif
 
 	sockaddr_in & f_GetTCPv4() { return *(sockaddr_in *)mp_lData.f_GetArray(); }
 	sockaddr_in6 & f_GetTCPv6() { return *(sockaddr_in6 *)mp_lData.f_GetArray(); }
-#ifndef DPlatformFamily_Windows
 	CUnixAddress &f_GetUnix()  { return *(CUnixAddress *)mp_lData.f_GetArray(); }
-#endif
 
 	template<typename t_CAddrType>
 	t_CAddrType const& f_GetAsType(NMib::NNet::ENetAddressType _ExpectedType) const

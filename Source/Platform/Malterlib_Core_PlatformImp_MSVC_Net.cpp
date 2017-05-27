@@ -476,6 +476,79 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 
 	NMib::NPtr::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct();
 
+	if (_Address.f_StartsWith("UNIX(") || _Address.f_StartsWith("UNIX:"))
+	{
+		using namespace NMib::NFile;
+		
+		EFileAttrib Permissions = EFileAttrib_None;
+		CStr Address;
+		
+		if (_Address.f_StartsWith("UNIX(") )
+		{
+			auto *pParse = _Address.f_GetStr() + 5;
+			bool bFailed = false;
+			uint32 UnixPermissions = fg_StrToIntParse(pParse, uint32(01000), "):", false, EStrToIntParseMode_Octal, &bFailed);
+			
+			if (bFailed || pParse[0] != ')' || pParse[1] != ':')
+			{
+				if (_bThrowOnError)
+					DMibErrorNet("Failed to parse unix permissions");
+				else
+					return nullptr;
+			}
+			
+			pParse += 2;
+			
+			if (UnixPermissions >= uint32(01000))
+			{
+				if (_bThrowOnError)
+					DMibErrorNet("Invalid permissions specified");
+				else
+					return nullptr;
+			}
+			
+			if (UnixPermissions & 0100)
+				Permissions |= EFileAttrib_UserExecute;
+			if (UnixPermissions & 0200)
+				Permissions |= EFileAttrib_UserWrite;
+			if (UnixPermissions & 0400)
+				Permissions |= EFileAttrib_UserRead;
+
+			if (UnixPermissions & 010)
+				Permissions |= EFileAttrib_GroupExecute;
+			if (UnixPermissions & 020)
+				Permissions |= EFileAttrib_GroupWrite;
+			if (UnixPermissions & 040)
+				Permissions |= EFileAttrib_GroupRead;
+
+			if (UnixPermissions & 01)
+				Permissions |= EFileAttrib_EveryoneExecute;
+			if (UnixPermissions & 02)
+				Permissions |= EFileAttrib_EveryoneWrite;
+			if (UnixPermissions & 04)
+				Permissions |= EFileAttrib_EveryoneRead;
+			
+			Address = CStr{pParse};
+		}
+		else
+			Address = _Address.f_Extract(fg_StrLen("UNIX:"));
+
+		if (Address.f_GetLen() > (CUnixAddress::mc_MaxLength - 1))
+		{
+			if (_bThrowOnError)
+				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters", (CUnixAddress::mc_MaxLength - 1)));
+			else
+				return nullptr;
+		}
+			
+		CUnixAddress AddressWithPermissions;
+		AddressWithPermissions.m_Permissions = Permissions;
+
+		NMib::NStr::fg_StrCopy(AddressWithPermissions.m_FilePath, Address, CUnixAddress::mc_MaxLength);
+		pAddress->f_Set(AddressWithPermissions);
+		return pAddress.f_Detach();
+	}
+
 	ADDRINFOW AddrHint;
 	fg_MemClear(AddrHint);
 
@@ -595,7 +668,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 
 	switch(_Address.f_GetType())
 	{
-		case ENetAddressType_TCPv4:
+	case ENetAddressType_TCPv4:
 		{
 			if (_bIncludeType)
 				AddressStr += "TCPv4:";
@@ -608,7 +681,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 													TCPv4.m_Port;
 			break;
 		}
-		case ENetAddressType_TCPv6:
+	case ENetAddressType_TCPv6:
 		{
 			if (_bIncludeType)
 				AddressStr += "TCPv6:";
@@ -624,8 +697,50 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 													TCPv6.m_Port;
 			break;
 		}
+	case NMib::NNet::ENetAddressType_Unix:
+		{
+			auto &Address = _Address.f_GetUnix();
+				
+			using namespace NMib::NFile;
+				
+			EFileAttrib Permissions = Address.m_Permissions;
+				
+			uint32 UnixPermissions = 0;
+				
+			if (Permissions & EFileAttrib_UserExecute)
+				UnixPermissions |= 0100;
+			if (Permissions & EFileAttrib_UserWrite)
+				UnixPermissions |= 0200;
+			if (Permissions & EFileAttrib_UserRead)
+				UnixPermissions |= 0400;
+
+			if (Permissions & EFileAttrib_GroupExecute)
+				UnixPermissions |= 010;
+			if (Permissions & EFileAttrib_GroupWrite)
+				UnixPermissions |= 020;
+			if (Permissions & EFileAttrib_GroupRead)
+				UnixPermissions |= 040;
+
+			if (Permissions & EFileAttrib_EveryoneExecute)
+				UnixPermissions |= 01;
+			if (Permissions & EFileAttrib_EveryoneWrite)
+				UnixPermissions |= 02;
+			if (Permissions & EFileAttrib_EveryoneRead)
+				UnixPermissions |= 04;
+				
+			if (_bIncludeType)
+			{
+				if (UnixPermissions)
+					AddressStr += fg_Format("UNIX({nfo,sj3,sf0}):", UnixPermissions);
+				else
+					AddressStr += "UNIX:";
+			}
+				
+			AddressStr += Address.m_FilePath; 
+			break;
+		}
+
 		case ENetAddressType_None:
-		case ENetAddressType_Unix:
 			break;
 		default:
 			break;
@@ -642,7 +757,37 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 {
 	f_CheckFailed();
 
-	ENetAddressType AddressType = _Address.f_GetType();
+	CWindowsAddress Address = _Address;
+
+	if (Address.f_GetType() == ENetAddressType_Unix)
+	{
+		CUnixAddress const &UnixAddress = Address.f_GetUnix();
+
+		CStr UnixFileName = UnixAddress.m_FilePath;
+		if (!CFile::fs_FileExists(UnixFileName))
+			DMibErrorNet(fg_Format("Unix socket '{}' does not exist", UnixFileName));
+
+		uint16 Port;
+
+		try
+		{
+			TCBinaryStreamFile<> UnixFile;
+			UnixFile.f_Open(UnixFileName, EFileOpen_Read | EFileOpen_NoLocalCache | EFileOpen_ShareRead | EFileOpen_ShareWrite);
+			UnixFile >> Port;
+		}
+		catch (CException const &_Exception)
+		{
+			DMibErrorNet(fg_Format("Failed to get port for unix socket: {}", _Exception.f_GetErrorStr()));
+		}
+
+		CNetAddressTCPv4 ConnectAddress{{127, 0, 0, 1}, Port};
+
+		NNet::CNetAddress NetAddress{ConnectAddress};
+
+		Address = *((CWindowsAddress *)NetAddress.f_AccessRaw());
+	}
+
+	ENetAddressType AddressType = Address.f_GetType();
 	SOCKET hSock = INVALID_SOCKET;
 	bint bConnected = false;
 
@@ -733,7 +878,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect(CWindowsAddress const& _Addres
 			}
 		}
 
-		int Result = connect(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+		int Result = connect(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
 		if (Result != 0)
 		{		
 			uint32 Error = WSAGetLastError();
@@ -814,9 +959,43 @@ CWindowsSocket *CWindowsSocketContext::f_AsyncConnect(CWindowsAddress const& _Ad
 	return fp_Connect(_Address, fg_Move(_OnStateChange), true, _pBindAddress);
 }
 
+TCUniquePointer<CWindowsSocket::CUnixListenState> CWindowsSocketContext::fp_PrepareUnixListen(CWindowsAddress &o_Address)
+{
+	if (o_Address.f_GetType() == ENetAddressType_Unix) 
+	{
+		CUnixAddress const &UnixAddress = o_Address.f_GetUnix();
+		
+		NStr::CStr UnixFilePath = UnixAddress.m_FilePath;
+		if (NFile::CFile::fs_FileExists(UnixFilePath))
+			NFile::CFile::fs_DeleteFile(UnixFilePath);
+		auto Directory = NFile::CFile::fs_GetPath(UnixFilePath);
+		if (!NFile::CFile::fs_FileExists(Directory))
+			NFile::CFile::fs_CreateDirectory(Directory);
+
+		TCUniquePointer<CWindowsSocket::CUnixListenState> pListenState = fg_Construct();
+
+		pListenState->m_Address = UnixAddress;
+		pListenState->m_UnixFileName = UnixFilePath;
+		pListenState->m_UnixFile.f_Open(pListenState->m_UnixFileName, EFileOpen_Write | EFileOpen_NoLocalCache | EFileOpen_ShareRead);
+
+		CNetAddressTCPv4 ListenAddress{{127, 0, 0, 1}, 0};
+
+		NNet::CNetAddress NetAddress{ListenAddress};
+
+		o_Address = *((CWindowsAddress *)NetAddress.f_AccessRaw());
+
+		return pListenState;
+	}
+
+	return {};
+}
+
 CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NNet::ENetFlag _Flags)
 {
-	ENetAddressType AddressType = _Address.f_GetType();
+	CWindowsAddress Address = _Address;
+	auto pUnixListen = fp_PrepareUnixListen(Address);
+
+	ENetAddressType AddressType = Address.f_GetType();
 
 	if (	AddressType != ENetAddressType_TCPv4
 		&&	AddressType != ENetAddressType_TCPv6)
@@ -846,7 +1025,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
 	}
 
-	int Result = bind(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	int Result = bind(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -866,6 +1045,15 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 
 	pSocket->m_OnStateChange = fg_Move(_OnStateChange);
 	pSocket->m_pSocket = (void *)hSock;
+	pSocket->m_pUnixListen = fg_Move(pUnixListen);
+
+	if (pSocket->m_pUnixListen)
+	{
+		uint16 ListenPort = f_GetListenPort(pSocket.f_Get());
+		auto &UnixListen = *pSocket->m_pUnixListen;
+		UnixListen.m_UnixFile << ListenPort;
+	}
+
 	Cleanup.f_Clear();
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
@@ -891,7 +1079,10 @@ CWindowsSocket *CWindowsSocketContext::f_Listen(CWindowsAddress const&_Address, 
 
 CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NNet::ENetFlag _Flags)
 {
-	ENetAddressType AddressType = _Address.f_GetType();
+	CWindowsAddress Address = _Address;
+	auto pUnixListen = fp_PrepareUnixListen(Address);
+
+	ENetAddressType AddressType = Address.f_GetType();
 
 	if (	AddressType != ENetAddressType_TCPv4
 		&&	AddressType != ENetAddressType_TCPv6)
@@ -921,7 +1112,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
 	}
 
-	int Result = bind(hSock, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	int Result = bind(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -933,11 +1124,21 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram(CWindowsAddress const&_A
 
 	pSocket->m_OnStateChange = fg_Move(_OnStateChange);
 	pSocket->m_pSocket = (void *)hSock;
+
+	pSocket->m_pUnixListen = fg_Move(pUnixListen);
+
+	if (pSocket->m_pUnixListen)
+	{
+		uint16 ListenPort = f_GetListenPort(pSocket.f_Get());
+		auto &UnixListen = *pSocket->m_pUnixListen;
+		UnixListen.m_UnixFile << ListenPort;
+	}
+
 	Cleanup.f_Clear();
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 		mp_SocketTree.f_Insert(pSocket.f_Get());
-		pSocket->m_BindAddressSize = _Address.f_GetSockAddrLen();
+		pSocket->m_BindAddressSize = Address.f_GetSockAddrLen();
 		pSocket->m_BindAddressType = AddressType;
 	}
 
@@ -1329,7 +1530,7 @@ uint32 CWindowsSocketContext::f_GetListenPort(CWindowsSocket *_pSocket)
 
 mint NSys::NNet::fg_GetMaxUnixSocketNameLength()
 {
-	return 32768;
+	return CUnixAddress::mc_MaxLength - 1;
 }
 
 #include "Malterlib_Core_PlatformImp_Net.imp.h"

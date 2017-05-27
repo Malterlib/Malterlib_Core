@@ -12,12 +12,12 @@ typedef CRuntimeNetAddress CWindowsAddress;
 class CWindowsSocket
 {
 public:
-	uint32 m_Magic;
-	uint32 m_Version;
-	void *m_pSocket;
-	TCAtomic<uint32> m_StateAtomic;
-
-	NMib::NThread::CMutual m_Lock;
+	struct CUnixListenState
+	{
+		CUnixAddress m_Address;
+		CStr m_UnixFileName;
+		TCBinaryStreamFile<> m_UnixFile;
+	};
 
 	class CAVLCompare_CTCPSocket
 	{
@@ -28,6 +28,13 @@ public:
 		}
 	};
 
+	uint32 m_Magic;
+	uint32 m_Version;
+	void *m_pSocket;
+	TCAtomic<uint32> m_StateAtomic;
+
+	NMib::NThread::CMutual m_Lock;
+
 	DMibIntrusiveLink(CWindowsSocket, NIntrusive::TCAVLLink<>, m_TreeLink);
 
 	NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)> m_OnStateChange;
@@ -36,6 +43,7 @@ public:
 
 	mint m_BindAddressSize = 0;
 	ENetAddressType m_BindAddressType = ENetAddressType_None;
+	TCUniquePointer<CUnixListenState> m_pUnixListen;
 
 #ifdef DTCPDelayEmulation
 
@@ -182,6 +190,8 @@ protected:
 	}
 
 	CWindowsSocket *fp_Connect(CWindowsAddress const& _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, bint _bAsyncConnect, CWindowsAddress const *_pBindAddress);
+
+	TCUniquePointer<CWindowsSocket::CUnixListenState> fp_PrepareUnixListen(CWindowsAddress &o_Address);
 
 public:
 	CWindowsSocketContext();
