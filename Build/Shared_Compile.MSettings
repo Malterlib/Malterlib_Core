@@ -1725,6 +1725,15 @@ Compile
 		}
 	}
 
+	ExtraCompilerFlags "/Zc:threadSafeInit- @(Compile.ExtraCompilerFlags)"
+	{
+		&
+		{
+			PlatformFamily Windows
+			!Target.PlatformToolset "v90"
+		}
+	}
+
 	Symbols "None"
 	{
 		!!Configuration "Fast Compile"
