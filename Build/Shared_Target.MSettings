@@ -1275,6 +1275,11 @@ Target
 	}
 }
 
+Property.MalterlibEnableFastLink false // This is still too buggy when debugging
+{
+	!!MalterlibEnableFastLink ""
+}
+
 // Executable targets
 Target
 {

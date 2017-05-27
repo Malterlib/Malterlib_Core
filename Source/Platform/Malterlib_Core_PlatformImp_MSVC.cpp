@@ -426,9 +426,12 @@ inline_never bint NSys::fg_Compiler_AlwaysFalse()
 	return false;
 }
 
-bint NSys::fg_Compiler_MakeActive(const void *_pReference)
+void (* volatile g_pFuncMakeActive)(const void *_pReference) = nullptr;
+
+inline_never assure_used bint NSys::fg_Compiler_MakeActive(const void *_pReference)
 {
-	DMibTraceSafe("", mint(_pReference));
+	if (g_pFuncMakeActive)
+		g_pFuncMakeActive(_pReference);
 	return true;
 }
 
@@ -1917,6 +1920,7 @@ mint g_OffsetThreadLocalOffset = 0x1780;
 mint g_OffsetThreadLocalOffset = 0xf94;
 #endif
 
+thread_local mint g_DebugTIB = (mint)fg_GetTEB();
 
 void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 {
@@ -2528,9 +2532,10 @@ void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 	g_bDoneMalterlibInitAll.f_FetchAdd(1);
 
 	fg_GetLocalSys()->f_InitModuleThreaded();
-	
 
 	NSys::fg_Compiler_MakeActive(&g_OffsetThreadLocalOffset);
+	NSys::fg_Compiler_MakeActive(&g_DebugTIB);
+	
 	fg_MakeTlsActive();
 
 	g_bDoneMalterlibInitAll.f_FetchAdd(1);
