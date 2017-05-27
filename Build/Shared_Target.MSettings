@@ -2179,7 +2179,7 @@ Target
 
 Property
 {
-	MalterlibPythonDebugScriptName "@(Target.FileName)@(Target.Extension)"
+	MalterlibPythonDebugScriptName "@(Target.FileName)@(Target.FileExtension)"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('-','_'))"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace(' ','_'))"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('.','_'))"
@@ -2213,11 +2213,11 @@ Property
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
                                     "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python\"\r\n"\
 									"@(CheckErrors)\r\n"\
-                                    "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+                                    "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.FileExtension)_LLDBLib\"\r\n"\
 									"@(CheckErrors)\r\n"\
 									"cp -f \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptName)\"\r\n"\
 									"@(CheckErrors)\r\n"\
-									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.FileExtension)_LLDBLib\"\r\n"\
 									"@(CheckErrors)\r\n"
 	{
 		&
@@ -3410,7 +3410,7 @@ Property
 
 	
 	MalterlibPostCopySources	"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)|../Python;"\
-								"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.Extension)_LLDBLib|../Python;"\
+								"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)_LLDBLib|../Python;"\
 								"@(MalterlibPostCopySources)"
 	
 	{
@@ -3488,11 +3488,11 @@ Target
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)\"\r\n"\
 					"@(CheckErrors)\r\n"\
-					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)_LLDBLib\"\r\n"\
 					"@(CheckErrors)\r\n"\
 					"cp -f \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)\"\r\n"\
 					"@(CheckErrors)\r\n"\
-					"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.Extension)_LLDBLib\"\r\n"\
+					"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)_LLDBLib\"\r\n"\
 					"@(CheckErrors)\r\n"
 
 	{

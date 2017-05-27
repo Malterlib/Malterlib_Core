@@ -79,6 +79,11 @@ namespace NMib
 
 				return _In.f_Replace(Drive, DeviceName).f_ReplaceChar('/', '\\');
 			}
+
+			NStr::CStr fg_ConvertToMinGWPath(NStr::CStr const &_In)
+			{
+				return NStr::fg_Format("/{}/{}", CFile::fs_GetDrive(_In).f_Left(1), _In.f_Extract(2));
+			}
 		}
 	}
 }

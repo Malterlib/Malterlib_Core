@@ -28,6 +28,8 @@ namespace NMib
 			NStr::CWStr fg_ConvertToWindowsPathLocal(const NStr::CStr &_Path, bool _bForceLong = false);
 
 			NStr::CStr fg_ConvertToDevicePath(NStr::CStr const &_In);
+
+			NStr::CStr fg_ConvertToMinGWPath(NStr::CStr const &_In);
 		}
 	}
 }
