@@ -482,6 +482,11 @@ Property
 		!!DocumentationEnabled true
 	}
 
+	Malterlib_RefcountDebugging_Enable "false" // User: Set to true to enable shared pointer reference debugging
+	{
+		!!Malterlib_RefcountDebugging_Enable ""
+	}
+
 	Malterlib_Tests_Enable "false"
 	{
 		&

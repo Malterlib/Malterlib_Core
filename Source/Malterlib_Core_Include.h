@@ -53,58 +53,8 @@ namespace NMib
 	template <typename t_CReturn>
 	struct TCVoidFunctor
 	{
-		t_CReturn operator ()() const volatile 
-		{
-			return t_CReturn();
-		}
-
-		template <typename tf_CP0>
-		t_CReturn operator ()(tf_CP0 &&) const volatile 
-		{
-			return t_CReturn();
-		}
-		template <typename tf_CP0, typename tf_CP1>
-		t_CReturn operator ()(tf_CP0 &&, tf_CP1 &&) const volatile 
-		{
-			return t_CReturn();
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2>
-		t_CReturn operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&) const volatile 
-		{
-			return t_CReturn();
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3>
-		t_CReturn operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&) const volatile 
-		{
-			return t_CReturn();
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4>
-		t_CReturn operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&) const volatile 
-		{
-			return t_CReturn();
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5>
-		t_CReturn operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&) const volatile 
-		{
-			return t_CReturn();
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5, typename tf_CP6>
-		t_CReturn operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&, tf_CP6 &&) const volatile 
-		{
-			return t_CReturn();
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5, typename tf_CP6, typename tf_CP7>
-		t_CReturn operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&, tf_CP6 &&, tf_CP7 &&) const volatile 
-		{
-			return t_CReturn();
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5, typename tf_CP6, typename tf_CP7, typename tf_CP8>
-		t_CReturn operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&, tf_CP6 &&, tf_CP7 &&, tf_CP8 &&) const volatile 
-		{
-			return t_CReturn();
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5, typename tf_CP6, typename tf_CP7, typename tf_CP8, typename tf_CP9>
-		t_CReturn operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&, tf_CP6 &&, tf_CP7 &&, tf_CP8 &&, tf_CP9 &&) const volatile 
+		template <typename ...tfp_CParam>
+		t_CReturn operator ()(tfp_CParam && ...) const volatile 
 		{
 			return t_CReturn();
 		}
@@ -113,54 +63,13 @@ namespace NMib
 	template <>
 	struct TCVoidFunctor<void>
 	{
-		void operator ()() const volatile 
-		{
-		}
-
-		template <typename tf_CP0>
-		void operator ()(tf_CP0 &&) const volatile 
-		{
-		}
-		template <typename tf_CP0, typename tf_CP1>
-		void operator ()(tf_CP0 &&, tf_CP1 &&) const volatile 
-		{
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2>
-		void operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&) const volatile 
-		{
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3>
-		void operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&) const volatile 
-		{
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4>
-		void operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&) const volatile 
-		{
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5>
-		void operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&) const volatile 
-		{
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5, typename tf_CP6>
-		void operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&, tf_CP6 &&) const volatile 
-		{
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5, typename tf_CP6, typename tf_CP7>
-		void operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&, tf_CP6 &&, tf_CP7 &&) const volatile 
-		{
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5, typename tf_CP6, typename tf_CP7, typename tf_CP8>
-		void operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&, tf_CP6 &&, tf_CP7 &&, tf_CP8 &&) const volatile 
-		{
-		}
-		template <typename tf_CP0, typename tf_CP1, typename tf_CP2, typename tf_CP3, typename tf_CP4, typename tf_CP5, typename tf_CP6, typename tf_CP7, typename tf_CP8, typename tf_CP9>
-		void operator ()(tf_CP0 &&, tf_CP1 &&, tf_CP2 &&, tf_CP3 &&, tf_CP4 &&, tf_CP5 &&, tf_CP6 &&, tf_CP7 &&, tf_CP8 &&, tf_CP9 &&) const volatile 
+		template <typename ...tfp_CParam>
+		void operator ()(tfp_CParam && ...) const volatile 
 		{
 		}
 	};
 
 	typedef TCVoidFunctor<void> CVoidFunctor;
-
 
 	namespace NPtr
 	{
@@ -292,6 +201,7 @@ namespace NMib
 #include "../../Core/Source/Malterlib_Core_System.h"
 
 #include <Mib/Container/LinkedList>
+#include <Mib/Stream/Streams/LinkedList>
 
 #include <Mib/Container/Registry>
 

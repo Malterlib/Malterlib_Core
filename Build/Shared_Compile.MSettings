@@ -636,6 +636,11 @@ Compile
 	{
 		!!Target.Type "ConsoleExecutable"
 	}
+	PreprocessorDefines "DMibConfig_RefcountDebugging;@(Compile.PreprocessorDefines)"
+	{
+		!!Malterlib_RefcountDebugging_Enable "true"
+	}
+
 	PreprocessorDefines "DMibConfig_Tests_Enable;@(Compile.PreprocessorDefines)"
 	{
 		!!Malterlib_Tests_Enable "true"
@@ -1606,6 +1611,15 @@ Compile
 			Target.Type "DynamicLibrary"
 		}
 	}
+	PreprocessorDefines "DMibConfig_RefcountDebugging=1;@(Compile.PreprocessorDefines)"
+	{
+		!!Malterlib_RefcountDebugging_Enable "true"
+	}
+	PreprocessorDefines "DMibConfig_RefcountDebugging=0;@(Compile.PreprocessorDefines)"
+	{
+		!Malterlib_RefcountDebugging_Enable "true"
+	}
+
 	PreprocessorDefines "DMibConfig_Tests_Enable=1;@(Compile.PreprocessorDefines)"
 	{
 		!!Malterlib_Tests_Enable "true"
