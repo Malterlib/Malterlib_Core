@@ -546,7 +546,8 @@ inline_always UndocumentedPEB *fg_GetPEB(CUndocumentedTEB *_pTeb)
 	return _pTeb->Peb;
 }
 
-enum Undocumented_FILE_INFO_BY_HANDLE_CLASS
+#if (_WIN32_WINNT < _WIN32_WINNT_LONGHORN)
+enum FILE_INFO_BY_HANDLE_CLASS
 {
     FileBasicInfo,
     FileStandardInfo,
@@ -573,6 +574,7 @@ enum Undocumented_FILE_INFO_BY_HANDLE_CLASS
     FileRenameInfoEx,
     MaximumFileInfoByHandleClass
 };
+#endif
 
 struct Undocumented_FILE_ID_INFO 
 {
