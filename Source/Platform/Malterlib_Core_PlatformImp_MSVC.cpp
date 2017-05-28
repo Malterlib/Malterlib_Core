@@ -5171,8 +5171,26 @@ void NSys::NFile::fg_Delete(const CStr &_File)
 
 void NSys::NFile::fg_DeleteDirectory(const CStr &_File)
 {
+	NTime::CClock Timeout{true};
+	mint nTries = 0;
+
+l_Retry:
+
+	++nTries;
+
 	if (!RemoveDirectoryW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_File)))
+	{
+		auto Error = GetLastError();
+		if (Error == ERROR_DIR_NOT_EMPTY)
+		{
+			if (Timeout.f_GetTime() < 0.1 || nTries < 10)
+			{
+				Sleep(0);
+				goto l_Retry;
+			}
+		}
 		DMibErrorFile((CStr::CFormat("Windows returned an error from RemoveDirectory({}): {}") << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	}
 }
 
 
@@ -5189,8 +5207,26 @@ void NSys::NFile::fg_Delete(const CStrNonTracked &_File)
 
 void NSys::NFile::fg_DeleteDirectory(const CStrNonTracked &_File)
 {
+	NTime::CClock Timeout{true};
+	mint nTries = 0;
+
+l_Retry:
+
+	++nTries;
+
 	if (!RemoveDirectoryW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal<CWStrNonTracked, CWStrNonTracked>(_File)))
+	{
+		auto Error = GetLastError();
+		if (Error == ERROR_DIR_NOT_EMPTY)
+		{
+			if (Timeout.f_GetTime() < 0.1 || nTries < 10)
+			{
+				Sleep(0);
+				goto l_Retry;
+			}
+		}
 		DMibErrorFile((CStrNonTracked::CFormat("Windows returned an error from RemoveDirectory({}): {}") << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	}
 }
 
 
