@@ -11,6 +11,9 @@ OutputDirectory="$2"
 MalterlibMainMalterlibRepo="$3"
 
 unset MACOSX_DEPLOYMENT_TARGET
+unset SDKROOT
+unset PRODUCT_SPECIFIC_LDFLAGS
+unset OTHER_CFLAGS_ONLY
 
 if [ ! -e "$OutputDirectory" ]; then
 	mkdir -p "$OutputDirectory"
