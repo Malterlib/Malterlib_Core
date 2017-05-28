@@ -20,6 +20,21 @@ CWindowsSocket::CWindowsSocket()
 	m_Version = 0x101;
 }
 
+CWindowsSocket::CUnixListenState::~CUnixListenState()
+{
+	try
+	{
+		if (m_UnixFile.f_IsValid())
+		{
+			m_UnixFile.f_Close();
+			CFile::fs_DeleteFile(m_UnixFileName);
+		}
+	}
+	catch (NFile::CExceptionFile const &)
+	{
+	}
+}
+
 CWindowsSocket::~CWindowsSocket()
 {
 	m_OnStateChange.f_Clear();

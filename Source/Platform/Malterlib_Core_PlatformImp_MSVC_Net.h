@@ -14,6 +14,8 @@ class CWindowsSocket
 public:
 	struct CUnixListenState
 	{
+		~CUnixListenState();
+
 		CUnixAddress m_Address;
 		CStr m_UnixFileName;
 		TCBinaryStreamFile<> m_UnixFile;
