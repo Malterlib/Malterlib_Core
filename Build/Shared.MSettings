@@ -20,6 +20,8 @@ Include "Shared_Import.MSettings"
 // Files generated such as exporting vars to external build system
 Include "Shared_GeneratedFiles.MSettings"
 
+Include "Shared_Dependencies.MSettings"
+
 // Generate build system target automatically included in all workspaces
 Include "Tool_GenerateBuildSystem.MTarget"
 

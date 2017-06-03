@@ -282,6 +282,17 @@ Compile
 {
 	&
 	{
+		Documentation Doxygen
+		Compile.Type "C++"
+	}
+	
+	PreprocessorDefines "__cplusplus=201402L;@(Compile.PreprocessorDefines)"
+}
+
+Compile
+{
+	&
+	{
 		LanguageFamily "Native"
 		|
 		{

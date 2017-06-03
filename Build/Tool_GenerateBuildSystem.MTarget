@@ -172,17 +172,6 @@
 					Name "@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/GenerateBuildSystem_@(Workspace:Workspace.Name)@(ScriptExtension)"
 					
 					Contents	"@(Contents)"\
-								"@('BuildLLVM.sh'->MakeAbsolute()) \"@(MalterlibClangVersion)\" \"@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)\" \"@(MalterlibMainMalterlibRepo)\"\r\n"\
-								"ErrorLevel=$?\n"\
-								"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
-								"  echo error: Failed to update LLVM dependencies\n"\
-								"  exit 1\n"\
-								"fi\n"
-					{
-						!!PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang"
-					}
-					
-					Contents	"@(Contents)"\
 								"IF \"%DisableProjectGen%\" == \"1\" GOTO Skip\r\n"\
 								"cd @(Builtin.BasePathRelativeProject->WindowsPath())\r\n"\
 								"\"@(Builtin.MToolCom)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(RootOutputDirectory->MakeAbsolute())\" Action=%1\r\n"\
@@ -218,6 +207,10 @@
 							!HostPlatformFamily "Windows"
 						}
 					}
+
+					Contents	"@(Contents)"\
+								"@(MalterlibBuildDependenciesContents)"
+					
 					Contents	"@(Contents)"\
 								"\"@(Builtin.MToolExe)\" CheckDependencies \"$2\"\n"\
 								"if [ \"$?\" != \"0\" ]; then\n"\

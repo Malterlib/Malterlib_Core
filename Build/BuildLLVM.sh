@@ -20,7 +20,7 @@ if [ ! -e "$OutputDirectory" ]; then
 	git clone -b $ClangVersion --recursive https://github.com/Malterlib/llvm-malterlib.git "$OutputDirectory"
 fi
 
-pushd "$OutputDirectory"
+pushd "$OutputDirectory" > /dev/null
 
 VersionTimeFile="$ScriptDir/llvm.$ClangVersion.versiontime"
 

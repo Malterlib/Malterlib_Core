@@ -787,7 +787,7 @@ Target
 	}
 
 
-	LDFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/doxygen/stable_build/bin/doxygen @(Target.LDFlags)"
+	LDFlags "--ToolClass DoxygenLD --doxygen-executable @(MalterlibDependenciesDirectory)/doxygen/build/bin/doxygen @(Target.LDFlags)"
 	{
 		&
 		{

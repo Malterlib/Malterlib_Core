@@ -1,0 +1,13 @@
+// Copyright © 2017 Hansoft AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property.MalterlibBuildDependenciesContents	"@(MalterlibBuildDependenciesContents)"\
+			"@('BuildLLVM.sh'->MakeAbsolute()) \"@(MalterlibClangVersion)\" \"@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)\" \"@(MalterlibMainMalterlibRepo)\"\r\n"\
+			"ErrorLevel=$?\n"\
+			"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
+			"  echo error: Failed to update LLVM dependencies\n"\
+			"  exit 1\n"\
+			"fi\n"
+{
+	!!PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang"
+}

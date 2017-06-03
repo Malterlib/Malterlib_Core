@@ -416,6 +416,7 @@ Compile
 				{
 					Compile.Disabled true
 					{
+						!!Documentation Doxygen
 						!PlatformFamily "OSX"
 					}
 				}
