@@ -44,8 +44,23 @@ Property
 		!!ScriptWindowsBash true
 	}
 
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"\r\n"\
+										"TempDirectory=/tmp\r\n"\
+										"if [ ! \"$TEMP\" == \"\" ] ; then\r\n"\
+										"	TempDirectory=\"$TEMP\"\r\n"\
+										"elif [ ! \"$TMP\" == \"\" ] ; then\r\n"\
+										"	TempDirectory=\"$TMP\"\r\n"\
+										"elif [ ! \"$TMPDIR\" == \"\" ] ; then\r\n"\
+										"	TempDirectory=\"$TMPDIR\"\r\n"\
+										"fi\r\n"
+	{
+		!HostPlatformFamily Windows
+		!!ScriptWindowsBash true
+	}
 	
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"\r\n"\
 										"@(ScriptExport) \"MalterlibBranch=@(Property.MalterlibBranch)\"\r\n"\
 										"@(ScriptExport) \"MalterlibBranchWindows=@(Property.MalterlibBranch->WindowsPath())\"\r\n"\
 										"@(ScriptExport) \"MalterlibFullBranch=@(Property.MalterlibFullBranch)\"\r\n"\
@@ -154,12 +169,13 @@ Property
 										"		exit 1\r\n"\
 										"	fi\r\n"\
 										"}\r\n"\
+										"\r\n"\
 										"function EvalVar {\r\n"\
 										"	eval \"echo \\${$1}\"\r\n"\
 										"}\r\n"\
+										"\r\n"\
 										"export -f CheckErrors\r\n"\
-										"export -f EvalVar\r\n"\
-										"\r\n"
+										"export -f EvalVar\r\n"
 	{
 
 		!!PlatformType "Unix"
