@@ -654,6 +654,32 @@ Target
 	MToolPath "@(MToolPath)"
 }
 
+Property
+{
+	ExportScriptEnvironmentContents_Template "export @(Explodee)=\"@(Builtin.Function->GetProperty('Property', '@(Explodee)', 'Target:*'))\"\n"
+	{
+		&
+		{
+			!Explodee ""
+			!PlatformFamily Windows
+		}
+	}
+	ExportScriptEnvironmentContents_Template "set @(Explodee)=\"@(Builtin.Function->GetProperty('Property', '@(Explodee)', 'Target:*'))\"\r\n"
+	{
+		&
+		{
+			!Explodee ""
+			PlatformFamily Windows
+		}
+	}
+	
+}
+
+Target
+{
+	ExportScriptEnvironmentContents "@(Builtin.Function->ExplodeList('@(Target.ExportScriptEnvironment)', ';', 'ExportScriptEnvironmentContents_Template'))"
+}
+
 // Xcode
 Target
 {

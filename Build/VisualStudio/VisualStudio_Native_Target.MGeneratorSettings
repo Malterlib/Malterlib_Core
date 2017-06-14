@@ -33,7 +33,21 @@
 			{
 				Disabled "1"
 			}
-		}		
+		}
+		%GeneratorSetting "ExportScriptEnvironment"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
+		%GeneratorSetting "ExportScriptEnvironmentContents"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
 		%GeneratorSetting "CharacterSet"
 		{
 			Property
