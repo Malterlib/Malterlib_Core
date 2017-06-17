@@ -3144,7 +3144,7 @@ Property
 Property
 {
 	CheckErrors ""
-	CheckErrors "CheckErrors"
+	CheckErrors ""
 	{
 		!!PlatformType "Unix"
 	}
@@ -3477,7 +3477,13 @@ Target
 {
 
 	PostBuildScript "@(Target.PostBuildScript)"\
-					"set\r\n"
+					"set -e\r\n"
+	{
+		!!PlatformType "Unix"
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"env\r\n"
 	{
 		!!MalterlibPostBuildScriptShowEnv true
 	}

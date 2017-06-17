@@ -25,6 +25,21 @@ Include "Shared_Dependencies.MSettings"
 // Generate build system target automatically included in all workspaces
 Include "Tool_GenerateBuildSystem.MTarget"
 
+// Error checking
+Target.CheckErrors ""
+{
+	!CheckError ""
+}
+
+Workspace.CheckErrors ""
+{
+	!CheckError ""
+}
+
+Compile.CheckErrors ""
+{
+	!CheckError ""
+}
 
 // Misc small settings
 
