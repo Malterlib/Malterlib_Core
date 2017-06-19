@@ -364,7 +364,7 @@ Property
 			Architecture "x86"
 		}
 	}
-	MalterlibWindowsVersion "NTDDI_WINXPSP2"
+	MalterlibWindowsVersion "NTDDI_WINXPSP3"
 	{
 		&
 		{
