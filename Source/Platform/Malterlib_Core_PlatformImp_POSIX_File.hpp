@@ -668,20 +668,23 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		}
 	;
 
-	int LockFlags = 0;
-	if ((_OpenFlags & (NMib::NFile::EFileOpen_ShareRead | NMib::NFile::EFileOpen_ShareWrite)))
-		LockFlags = LOCK_SH|LOCK_NB;
-	else
-		LockFlags = LOCK_EX|LOCK_NB;
-
-	if (flock(iFile, LockFlags))
+	if (_OpenFlags & (EFileOpen_Read | EFileOpen_Write))
 	{
-		int FlockErr = errno;
-
-		if (FlockErr == EWOULDBLOCK)
-			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}') when opening file. The file is probably locked by another program") << FileName, errno));
+		int LockFlags = 0;
+		if ((_OpenFlags & (NMib::NFile::EFileOpen_ShareRead | NMib::NFile::EFileOpen_ShareWrite)))
+			LockFlags = LOCK_SH|LOCK_NB;
 		else
-			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}') when opening file") << FileName, errno));
+			LockFlags = LOCK_EX|LOCK_NB;
+
+		if (flock(iFile, LockFlags))
+		{
+			int FlockErr = errno;
+
+			if (FlockErr == EWOULDBLOCK)
+				DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}', {nfh}) when opening file. The file is probably locked by another program") << FileName << LockFlags, errno));
+			else
+				DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}', {nfh}) when opening file") << FileName << LockFlags, errno));
+		}
 	}
 	
 	fg_SetUnixHandleOptions(iFile);
