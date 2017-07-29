@@ -545,7 +545,7 @@ Property
 
 	MalterlibMemory_Shims_EnableGlobal "true" // User: Enable global memory reporter. Used for for example remote debugger support
 	{
-		!!MalterlibMemory_Shims_EnableGloball ""
+		!!MalterlibMemory_Shims_EnableGlobal ""
 	}
 
 	MalterlibMemoryManager_Stats_Enable "false" // User: Report statistics about memory allocations at the end of the program

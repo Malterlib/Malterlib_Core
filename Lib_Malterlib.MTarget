@@ -312,14 +312,7 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 
 			Property
 			{
-				VisualStudioVersion "14"
-				{
-					!!Generator VisualStudio2015
-				}
 				VisualStudioVersion "15"
-				{
-					!!Generator VisualStudio2017
-				}
 
 				VisualStudioCRTPath "../../SDK/VS.@(VisualStudioVersion).Crt"
 			}

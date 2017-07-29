@@ -189,39 +189,6 @@ Compile
 			!MalterlibMemoryManager_HugePage_Enable true
 		}
 	}
-	PreprocessorDefines "DMibConfig_Memory_Shims_EnableLocal=1;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemory_Shims_Enable true
-			MalterlibMemory_Shims_EnableLocal true
-		}
-	}
-	PreprocessorDefines "DMibConfig_Memory_Shims_EnableLocal=0;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemory_Shims_Enable true
-			!MalterlibMemory_Shims_EnableLocal true
-		}
-	}
-
-	PreprocessorDefines "DMibConfig_Memory_Shims_EnableGlobal=1;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemory_Shims_Enable true
-			MalterlibMemory_Shims_EnableGlobal true
-		}
-	}
-	PreprocessorDefines "DMibConfig_Memory_Shims_EnableLocal=0;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemory_Shims_Enable true
-			!MalterlibMemory_Shims_EnableGlobal true
-		}
-	}
 }	
 %Group "Source"
 {
