@@ -773,6 +773,11 @@ extern "C"
 			return NMib::NMem::CAllocator_NonTrackedHeap::f_AllocAligned(__size, __alignment);
 #		endif
 	}
+	int nontracked_posix_memalign(void **_pOutput, size_t _Alignment, size_t _Size)
+	{
+		*_pOutput = nontracked_memalign(_Alignment, _Size);
+		return 0;
+	}
 	void *nontracked_valloc (size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);

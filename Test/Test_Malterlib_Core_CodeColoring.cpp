@@ -17,7 +17,7 @@
 
 auto g_String = "String";
 auto g_Char = 'C';
-const static uint32 gc_GlobalConstant = 55;
+[[maybe_unused]] const static uint32 gc_GlobalConstant = 55;
 
 namespace NTest
 {
@@ -40,13 +40,13 @@ namespace NTest
 			, NMib::NFunction::TCFunction<void ()> &o_fFunctor
 		) const volatile
 		{
-			ETest EnumValue = ETest_Value;
+			[[maybe_unused]] ETest EnumValue = ETest_Value;
 			
 			for(;;)
 			{
 			}
 			
-			auto pAutoVar = nullptr;
+			[[maybe_unused]] auto pAutoVar = nullptr;
 			
 			auto fFunctor = []
 				{

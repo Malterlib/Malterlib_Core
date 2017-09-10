@@ -66,7 +66,7 @@ namespace
 		return _Left < _Right.f_GetVal();
 	}
 
-	bint operator == (int _Left, const CTestVal &_Right)
+	[[maybe_unused]] bint operator == (int _Left, const CTestVal &_Right)
 	{
 		return _Left == _Right.f_GetVal();
 	}

@@ -7,11 +7,11 @@
 template <typename ...tf_CType>
 void fg_Test(tf_CType ...p_bTest)
 {
-	static auto s_fTest = []{};
+	[[maybe_unused]] static auto s_fTest = []{};
 }
 void fg_Test2()
 {
-	static auto s_fTest = []{};
+	[[maybe_unused]] static auto s_fTest = []{};
 }
 
 auto g_Test2 = &fg_Test2;
@@ -472,23 +472,23 @@ uint32 g_Test;
 
 // pGlobalStaticVariable:
 // gs_
-static uint32 gs_Test;
+[[maybe_unused]] static uint32 gs_Test;
 
 // pGlobalConstant:
 // gc_
-static const uint32 gc_Test = 0;
+[[maybe_unused]] static const uint32 gc_Test = 0;
  
 
 // Functions
 
 // pStaticFunction:
 // fsg_
-static void fsg_Test()
+[[maybe_unused]] static void fsg_Test()
 {
 }
 
 // fsgr_
-static void fsgr_Test()
+[[maybe_unused]] static void fsgr_Test()
 {
 	if (g_Test)
 		return fsgr_Test();

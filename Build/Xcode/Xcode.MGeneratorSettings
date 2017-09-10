@@ -1456,9 +1456,9 @@
 					Property
 					{
 						Off "-w"
-						Minimal "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-pointer-sign -Wno-tautological-compare -Wno-incompatible-pointer-types -Wno-unused-local-typedef"
-						On "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration"
-						Pedantic "-Weverything"
+						Minimal "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-pointer-sign -Wno-tautological-compare -Wno-incompatible-pointer-types -Wno-unused-local-typedef -Wno-aligned-allocation-unavailable"
+						On "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-aligned-allocation-unavailable"
+						Pedantic "-Weverything -Wno-aligned-allocation-unavailable"
 /*
 						Minimal "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"
 						On "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"

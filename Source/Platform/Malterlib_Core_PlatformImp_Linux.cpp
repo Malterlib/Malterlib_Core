@@ -152,7 +152,7 @@ public:
 		m_Maximum = _Maximum;
 	}
 	
-	~CImpSemaphore()
+	~CImpSemaphore() noexcept(false)
 	{
 		{		
 			DMibLock(m_Lock);
@@ -1306,6 +1306,11 @@ extern "C"
 			return NMib::NMem::CAllocator_NonTrackedHeap::f_AllocAligned(__size, __alignment);
 #		endif
 	}
+	int nontracked_posix_memalign(void **_pOutput, size_t _Alignment, size_t _Size)
+	{
+		*_pOutput = nontracked_memalign(_Alignment, _Size);
+		return 0;
+	}
 	void *nontracked_valloc (size_t __size) __THROW __wur
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
@@ -1432,7 +1437,6 @@ void NSys::fg_CreateSystem()
 	NSys::fg_Compiler_MakeActive(&pSystem);
 	DMibFastCheck((void *)pSystem == pSystemMemory);
 	
-	std::set_unexpected(&fg_UnexpectedExceptionHandler);
 	std::set_terminate(&fg_TerminateHandler);
 	
 #ifndef DMibPAutomaticSystemCreation

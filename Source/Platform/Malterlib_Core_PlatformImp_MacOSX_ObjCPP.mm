@@ -1594,7 +1594,7 @@ namespace NMib
 			
 			f_DispatchOnThread
 				(
-					[this, pNotification]()
+					[pNotification]()
 					{
 						pNotification->f_Clear();
 					}

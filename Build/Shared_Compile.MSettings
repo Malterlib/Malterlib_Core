@@ -1355,6 +1355,8 @@ Compile
 		}
 	}
 	
+	PreprocessorDefines "_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES;@(Compile.PreprocessorDefines)"
+	
 	PreprocessorDefines "BOOST_ALL_NO_LIB;BOOST_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
 
 	PreprocessorDefines "_HAS_AUTO_PTR_ETC=1;@(Compile.PreprocessorDefines)"
@@ -1543,7 +1545,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "_LIBCPP_BUILD_STATIC;_LIBCPP_TYPE_VIS=;_LIBCPP_FUNC_VIS=;_LIBCPP_EXCEPTION_ABI=;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "_LIBCPP_DISABLE_AVAILABILITY;_LIBCPP_BUILD_STATIC;_LIBCPP_TYPE_VIS=;_LIBCPP_FUNC_VIS=;_LIBCPP_EXCEPTION_ABI=;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibUseStaticLibCxx true
 	}

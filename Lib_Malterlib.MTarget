@@ -193,6 +193,7 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 		PreprocessorDefines "realloc=nontracked_realloc;@(Compile.PreprocessorDefines)"
 		PreprocessorDefines "cfree=nontracked_cfree;@(Compile.PreprocessorDefines)"
 		PreprocessorDefines "memalign=nontracked_memalign;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines "posix_memalign=nontracked_posix_memalign;@(Compile.PreprocessorDefines)"
 		PreprocessorDefines "valloc=nontracked_valloc;@(Compile.PreprocessorDefines)"
 		PreprocessorDefines "pvalloc=nontracked_pvalloc;@(Compile.PreprocessorDefines)"
 		PreprocessorDefines "malloc_usable_size=nontracked_malloc_usable_size;@(Compile.PreprocessorDefines)"
@@ -213,6 +214,7 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 				!!MalterlibUseStaticLibCxx "true"
 				Compile
 				{
+					PreprocessorDefines "_LIBCPP_BUILDING_LIBRARY;_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED;@(Compile.PreprocessorDefines)"
 					DynamicTypeInfo true
 					{
 						!!ForceEnableDynamicTypeInfoLibCXX true

@@ -299,6 +299,7 @@ Compile
 							PreprocessorDefines "realloc=nontracked_realloc;@(Compile.PreprocessorDefines)"
 							PreprocessorDefines "cfree=nontracked_cfree;@(Compile.PreprocessorDefines)"
 							PreprocessorDefines "memalign=nontracked_memalign;@(Compile.PreprocessorDefines)"
+							PreprocessorDefines "posix_memalign=nontracked_posix_memalign;@(Compile.PreprocessorDefines)"
 							PreprocessorDefines "valloc=nontracked_valloc;@(Compile.PreprocessorDefines)"
 							PreprocessorDefines "pvalloc=nontracked_pvalloc;@(Compile.PreprocessorDefines)"
 							PreprocessorDefines "malloc_usable_size=nontracked_malloc_usable_size;@(Compile.PreprocessorDefines)"
