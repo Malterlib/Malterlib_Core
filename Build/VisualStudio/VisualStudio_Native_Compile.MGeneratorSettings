@@ -14,6 +14,17 @@
 	{
 		Disabled "1"
 	}*/
+	%GeneratorSetting "Compile"
+	{
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Name "AdditionalIncludeDirectories"
+				Disabled "1"
+			}
+		}
+	}
 }
 %GeneratorSetting "Native_CompileShared"
 {

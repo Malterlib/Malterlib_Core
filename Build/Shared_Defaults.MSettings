@@ -107,16 +107,7 @@ Property
 		}
 	}
 
-	MalterlibMaxSupportedWindowsVersion "10.0.14393.0"
-	{
-		&
-		{
-			MalterlibMaxSupportedWindowsVersion ""
-			Generator "VisualStudio2017"
-		}
-	}
-	
-	MalterlibMaxSupportedWindowsVersion "10.0.10586.0" // User: Max supported Windows version.
+	MalterlibMaxSupportedWindowsVersion "10.0.15063.0" // User: Max supported Windows version.
 	{
 		!!MalterlibMaxSupportedWindowsVersion ""
 	}

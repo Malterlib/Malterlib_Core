@@ -4949,7 +4949,7 @@ NMib::NStr::CStr NSys::NFile::fg_ResolveSymbolicLink(const NMib::NStr::CStr &_Fi
 		return Link;
 	}
 
-	EFileOpen TargetFileOpenFlags = EFileOpen_Link;
+	EFileOpen TargetFileOpenFlags = EFileOpen_Read | EFileOpen_Link;
 	if (Attribs & EFileAttrib_Directory)
 		TargetFileOpenFlags |= EFileOpen_Directory;
 
