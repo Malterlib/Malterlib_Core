@@ -13,6 +13,7 @@
 ../../External/boost/functional 24c6954596b8d3166d92980115a951e1d098601b
 ../../External/boost/fusion 84d8afbb314c4ff14434fc20277fada4f07f110e
 ../../External/boost/integer 66dbc2c70aecc47d5a711b5dac6da6237721a644
+../../External/boost/intrusive 6e4953d3af2923758f373bd494ec65f763f3da87
 ../../External/boost/iostreams f06b2945ea465855c040dbe80452817d344ba9ea
 ../../External/boost/iterator ed027c2cceaffe84ed349591601bc71d9aabfba5
 ../../External/boost/lexical_cast 4b423ae2c69166a9e06631b2e001af4291c3aa45
