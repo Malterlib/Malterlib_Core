@@ -4844,6 +4844,16 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 		else
 			ToMount = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom);
 
+		if 
+			(
+				NLocal::g_VersionInfo.dwMajorVersion > 10 
+				|| NLocal::g_VersionInfo.dwMajorVersion == 10 && NLocal::g_VersionInfo.dwMinorVersion > 0
+				|| NLocal::g_VersionInfo.dwMajorVersion == 10 && NLocal::g_VersionInfo.dwBuildNumber >= 14972 
+			)
+		{
+			Flags |= 2; // SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE
+		}
+
 		if (NLocal::g_fCreateSymbolicLinkW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo), ToMount, Flags))
 			return;
 		else
