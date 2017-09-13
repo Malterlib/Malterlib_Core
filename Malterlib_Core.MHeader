@@ -37,7 +37,9 @@
 	}
 }
 
-Import "../Core/Lib_Malterlib.MTarget"
+Import "Malterlib_Core_boost.MHeader"
+
+Import "Lib_Malterlib.MTarget"
 
 %Group "{Malterlib}/{Lib_Malterlib_Core}"
 {
@@ -102,6 +104,20 @@ Import "../Core/Lib_Malterlib.MTarget"
 			MalterlibIncludeLevel Workspace
 		}
 		ExtraGroups "~Automatic/Include Roots;@(Target.ExtraGroups)"
+	}
+	Target
+	{
+		&
+		{
+			!MalterlibBoostModules ""
+			MalterlibIncludeLevel Workspace
+		}
+		ExtraGroups "~Automatic/Boost Include Roots;@(Target.ExtraGroups)"
+		|
+		{
+			MalterlibIncludePerConfig true
+			Config Debug
+		}
 	}
 }
 

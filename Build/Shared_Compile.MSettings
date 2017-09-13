@@ -1138,9 +1138,6 @@ Compile
 		!!MalterlibUseStaticLibCxxABI "true"
 	}
 
-	SystemSearchPath "@(Builtin.BasePath)/SDK/boost;@(Compile.SystemSearchPath)"
-	{
-	}
 	SearchPath "@(Builtin.BasePath)/SDK/WDK/inc/ddk;@(Builtin.BasePath)/SDK/WDK/inc/api;@(Builtin.BasePath)/SDK/WDK/inc/crt;@(Compile.SearchPath)"
 	{
 		&

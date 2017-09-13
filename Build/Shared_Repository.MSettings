@@ -81,6 +81,15 @@ Repository
 			Repository.Type Direct
 		}
 	}
+	Location "@('../../../External'->MakeAbsolute())/@(this.Identity->ParseFormatString('{}_{}', '{}/{}'))"
+	{
+		&
+		{
+			Repository.Location ""
+			Repository.Type External
+			Repository.ConvertUnderscoreToPath true
+		}
+	}
 	Location "@('../../../External'->MakeAbsolute())/@(this.Identity)"
 	{
 		&
@@ -89,6 +98,7 @@ Repository
 			Repository.Type External
 		}
 	}
+
 	Location "@('../../../Malterlib'->MakeAbsolute())/@(this.Identity)"
 	{
 		&

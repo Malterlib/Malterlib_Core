@@ -1,0 +1,287 @@
+// Copyright © 2017 Nonna Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	MalterlibBoostModulesCalcTemplate "boost_@(Explodee);"
+	{
+		!Explodee ""
+	}
+	
+	MalterlibBoostModulesCalc "@(ExplodeList('@(MalterlibBoostModules)', ';', 'MalterlibBoostModulesCalcTemplate'))"
+	
+	MalterlibBoostModulesGetName "@(this.Identity->Replace('boost_', ''))"
+}
+
+%Repository "@(MalterlibBoostModulesCalc)"
+{
+	Repository
+	{
+		Submodule false
+		Type External
+		ConvertUnderscoreToPath true
+		Remotes "upstream=https://github.com/boostorg/@(MalterlibBoostModulesGetName).git;@(Repository.Remotes)"
+	}
+}
+
+Property
+{
+	MalterlibBoostModulesIncludesCalcRelativePath "../../External/boost/@(Explodee)/include"
+	MalterlibBoostModulesIncludesCalcTemplate "@(MalterlibBoostModulesIncludesCalcRelativePath->MakeAbsolute());"
+	{
+		!Explodee ""
+	}
+	
+	MalterlibBoostModulesIncludesCalc "@(ExplodeList('@(MalterlibBoostModules)', ';', 'MalterlibBoostModulesIncludesCalcTemplate'))"
+}
+
+%Group "~Automatic/Boost Include Roots"
+{
+	Property
+	{
+		GetBoostRootPath "../../External/boost/@(Explodee1)/include/boost"
+		GetBoostRootPath "@(GetBoostRootPath->MakeAbsolute())"
+		EvalFile "@(Explodee->GetFile())"
+		RelativeBoostPath "@(Explodee->MakeRelative(@(GetBoostRootPath)))"
+		ExpandTemplate2	"@(MalterlibBoostIncludeOutputDir)/boost/@(RelativeBoostPath)|RelativePath=@(RelativeBoostPath)|FullPath=@(Explodee);"
+		{
+			&
+			{
+				!EvalFile ""
+				!EvalFile ".DS_Store"
+				|
+				{
+					!SubDirectory ""
+					&
+					{
+						!EvalFile "detail"
+						!EvalFile "pending"
+						!EvalFile "utility"
+						!EvalFile "chrono"
+					}
+				}
+			}
+		}
+		GetBoostIncludePath "@(MalterlibBoostModulesIncludesCalcRelativePath->MakeAbsolute())/boost@(SubDirectory)"
+		ExpandTemplateFiles	"@(Builtin.Function->ExplodeList('@(GetBoostIncludePath->FindFilesIn('*'))', ';', 'ExpandTemplate2'))"
+		{
+			!Explodee ""
+		}
+		ExpandTemplateDirectories	"@(Builtin.Function->ExplodeList('@(GetBoostIncludePath->FindDirectoriesIn('*'))', ';', 'ExpandTemplate2'))"
+		{
+			!Explodee ""
+		}
+	}
+
+	Property
+	{
+		Name "@(this.Identity)"
+		Contents "@(FullPath)"
+		Executable false
+		UnixLineEnds true
+		UnicodeBOM true
+		Symlink true
+		Group "@(Platform) @(Architecture) @(FullConfiguration)/@(RelativePath->GetPath())"
+		{
+			!!MalterlibIncludePerConfig true
+		}
+		Group "@(RelativePath->GetPath())"
+		{
+			!MalterlibIncludePerConfig true
+		}
+	}
+	%Group General
+	{
+		Compile.Type "Header"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
+		{
+			Compile.Type "Header"
+			Property.SymlinkDirectory true
+		}
+	}
+	%Group detail
+	{
+		Property.SubDirectory /detail
+		Compile.Type "Header"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
+		{
+			Compile.Type "Header"
+			Property.SymlinkDirectory true
+		}
+	}
+	%Group pending
+	{
+		Property.SubDirectory /pending
+		Compile.Type "Header"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
+		{
+			Compile.Type "Header"
+			Property.SymlinkDirectory true
+		}
+	}
+	%Group utility
+	{
+		Property.SubDirectory /utility
+		Compile.Type "Header"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
+		{
+			Compile.Type "Header"
+			Property.SymlinkDirectory true
+		}
+	}
+	%Group chrono
+	{
+		Property.SubDirectory /chrono
+		Compile.Type "Header"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
+		{
+			Compile.Type "Header"
+			Property.SymlinkDirectory true
+		}
+	}
+}
+
+Target
+{
+	&
+	{
+		!MalterlibBoostModules ""
+		MalterlibIncludeLevel Target
+	}
+	ExtraGroups "~Automatic/Boost Include Roots;@(Target.ExtraGroups)"
+	{
+		!!MalterlibIncludePerConfig true
+	}
+}
+
+Property
+{
+	MalterlibBoostIncludeOutputDir "@(GeneratedDirectory)BoostRootInclude"
+	{
+		&
+		{
+			MalterlibIncludeLevel "Target"
+			MalterlibIncludePerConfig true
+		}
+		
+	}
+	MalterlibBoostIncludeOutputDir "@(GeneratedDirectoryNoConfig)BoostRootInclude"
+	{
+		&
+		{
+			MalterlibIncludeLevel "Target"
+			!MalterlibIncludePerConfig true
+		}
+		
+	}
+	MalterlibBoostIncludeOutputDir "@(GeneratedWorkspaceDirectory)BoostRootInclude"
+	{
+		&
+		{
+			MalterlibIncludeLevel "Workspace"
+			MalterlibIncludePerConfig true
+		}
+		
+	}
+	MalterlibBoostIncludeOutputDir "@(GeneratedWorkspaceDirectoryNoConfig)BoostRootInclude"
+	{
+		&
+		{
+			MalterlibIncludeLevel "Workspace"
+			!MalterlibIncludePerConfig true
+		}
+	}
+}
+
+Compile
+{
+	&
+	{
+		CompileDialect C
+		!MalterlibBoostModules ""
+	}
+	
+	SystemSearchPath "@(MalterlibBoostIncludeOutputDir);@(Compile.SystemSearchPath)"
+}
+
+%Group BoostLibraries
+{
+	Target
+	{
+		Type "StaticLibrary"
+		Group "External/boost"
+	}
+	Compile
+	{
+		!!CompileDialect C
+		Warnings_NoUnused true
+		{
+			!!PlatformFamily OSX
+			!!PlatformFamily Linux
+		}
+	}
+	%Target Lib_boost_regex
+	{
+		!!true "@(MalterlibBoostModules->ContainsListElement(';', 'regex'))"
+		
+		Target
+		{
+			BaseName "boost_regex"
+		}
+		%Group Source
+		{
+			
+			%File "../../External/boost/regex/src/^*.cpp"
+		}
+	}
+	%Target Lib_boost_system
+	{
+		!!true "@(MalterlibBoostModules->ContainsListElement(';', 'system'))"
+		
+		Target
+		{
+			BaseName "boost_system"
+		}
+		%Group Source
+		{
+			%File "../../External/boost/system/src/^*.cpp"
+		}
+	}
+	%Target Lib_boost_thread
+	{
+		!!true "@(MalterlibBoostModules->ContainsListElement(';', 'thread'))"
+		
+		Target
+		{
+			BaseName "boost_thread"
+		}
+		Compile
+		{
+			PreprocessorDefines "BOOST_THREAD_BUILD_LIB;@(Compile.PreprocessorDefines)"
+		}
+		%Group thread
+		{
+			%Group pthread
+			{
+				Compile.Disabled true
+				{
+					!!PlatformFamily Windows
+				}
+				%File "../../External/boost/thread/src/pthread/^*.cpp"
+			}
+			%Group win32
+			{
+				Compile.Disabled true
+				{
+					!PlatformFamily Windows
+				}
+				%File "../../External/boost/thread/src/win32/^*.cpp"
+			}
+		}
+	}
+}
