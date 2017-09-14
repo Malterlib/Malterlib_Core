@@ -1467,6 +1467,17 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_DeprecatedDeclarations"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-deprecated-declarations"
+						true "-Wdeprecated-declarations"
+					}
+				}
+			}
 			%GeneratorSetting "Warnings_NoPessimizingMove"
 			{
 				%GeneratorSetting "Value"
