@@ -83,7 +83,7 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 	{
 		!!CompileDialect "C"
 		PrefixHeader ""
-		SearchPath "@(Builtin.BasePath)/SDK/libelf;@(Builtin.BasePath)/SDK/libelf/common;@(Compile.SearchPath)"
+		SearchPath "@(Builtin.BasePath)/External/elftoolchain/libelf;@(Builtin.BasePath)/External/elftoolchain/common;@(Compile.SearchPath)"
 		{
 			!!PlatformFamily "Linux"
 		}
@@ -160,7 +160,7 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 		!!CompileDialect "C"
 		PrefixHeader ""
 		PrecompilePrefixHeader false
-		SearchPath "@(Builtin.BasePath)/SDK/libelf;@(Builtin.BasePath)/SDK/libelf/common;@(Compile.SearchPath)"
+		SearchPath "@(Builtin.BasePath)/External/elftoolchain/libelf;@(Builtin.BasePath)/External/elftoolchain/common;@(Builtin.BasePath)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
 		{
 			!!PlatformFamily "Linux"
 		}
@@ -238,17 +238,70 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 					}
 				}
 			}
-			%Group libelf
+			%Group elftoolchain
 			{
-				!!PlatformFamily Linux
-				%File "../../SDK/libelf/*.c"
-				%File "../../SDK/libelf/*.h"
-			}
-			%Group libdwarf
-			{
-				!!PlatformFamily Linux
-				%File "../../SDK/libdwarf/*.c"
-				%File "../../SDK/libdwarf/*.h"
+				Property
+				{
+					ThisFileName "@(this.Identity->GetFileNoExt())"
+					ElfToolchainRoot "@('../../External/elftoolchain'->MakeAbsolute())"
+					
+					Executable false
+					UnixLineEnds true
+					UnicodeBOM false
+					Group "@(Platform) @(Architecture) @(FullConfiguration)/@(RelativePath->GetPath())"
+				}
+				%Group libelf
+				{
+					!!PlatformFamily Linux
+					%File "../../External/elftoolchain/libelf/*.c"
+					%File "../../External/elftoolchain/libelf/*.h"
+					%File "../../External/elftoolchain/libelf/*.m4"
+					
+					%Group Generated
+					{
+						Property
+						{
+							TypesFile "@('../../External/elftoolchain/libelf/elf_types.m4'->MakeAbsolute())"
+							
+							Name "@(GeneratedDirectory)libelf/@(ThisFileName).c"
+							Contents "@(ExecuteCommand('@(GeneratedDirectory)libelf/@(ThisFileName).state', '@(this.Identity->MakeAbsolute());@(TypesFile)', 'm4', '-E', '-d', '-DSRCDIR=@(ElfToolchainRoot)/libelf', '-I@(ElfToolchainRoot)/common', '@(this.Identity->MakeAbsolute())'))"
+						}
+						
+						%GenerateFile "../../External/elftoolchain/libelf/libelf_convert.m4"
+						%GenerateFile "../../External/elftoolchain/libelf/libelf_fsize.m4"
+						%GenerateFile "../../External/elftoolchain/libelf/libelf_msize.m4"
+					}
+				}
+				%Group libdwarf
+				{
+					!!PlatformFamily Linux
+					%File "../../External/elftoolchain/libdwarf/*.c"
+					%File "../../External/elftoolchain/libdwarf/*.h"
+					%File "../../External/elftoolchain/libdwarf/*.m4"
+
+					%Group Generated
+					{
+						Property
+						{
+							NameTable "@('../../External/elftoolchain/libdwarf/dwarf_nametbl.m4'->MakeAbsolute())"
+
+							Name "@(GeneratedDirectory)libdwarf/@(ThisFileName).c"
+							Contents "@(ExecuteCommand('@(GeneratedDirectory)libdwarf/@(ThisFileName).state', '@(this.Identity->MakeAbsolute());@(TypesFile)', 'm4', '-E', '-d', '-DSRCDIR=@(ElfToolchainRoot)/libdwarf', '-I@(ElfToolchainRoot)/common', '@(this.Identity->MakeAbsolute())'))"
+						}
+
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pubnames.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pubtypes.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_weaks.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_funcs.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_vars.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_types.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pro_pubnames.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pro_weaks.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pro_funcs.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pro_types.m4"
+						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pro_vars.m4"
+					}
+				}
 			}
 			%Group libc++abi
 			{
@@ -787,7 +840,7 @@ Target
 			!DocumentationEnabled true
 		}
 		SearchPath "@(Builtin.BasePath)/@(Builtin.Function->RelativeBase('../PCH'));@(Compile.SearchPath)"
-		SearchPath "@(Builtin.BasePath)/SDK/libelf;@(Builtin.BasePath)/SDK/libelf/common;@(Compile.SearchPath)"
+		SearchPath "@(Builtin.BasePath)/External/elftoolchain/common;@(Builtin.BasePath)/External/elftoolchain/libelf;@(Compile.SearchPath)"
 		{
 			!!PlatformFamily "Linux"
 		}
@@ -795,7 +848,7 @@ Target
 		{
 			!!PlatformFamily "Linux"
 		}
-		SearchPath "@(Builtin.BasePath)/SDK/libdwarf;@(Compile.SearchPath)"
+		SearchPath "@(Builtin.BasePath)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
 		{
 			!!PlatformFamily "Linux"
 		}
