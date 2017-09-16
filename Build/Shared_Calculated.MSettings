@@ -104,6 +104,7 @@ Property
 		!!Platform "OSX10.10"
 		!!Platform "OSX10.11"
 		!!Platform "OSX10.12"
+		!!Platform "OSX10.13"
 	}
 	PlatformFamily "iOS"
 	{
