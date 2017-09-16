@@ -749,6 +749,10 @@ Property
 	{
 		!!Platform "OSX10.12"
 	}
+	MalterlibNativeClangDarwinTarget "17"
+	{
+		!!Platform "OSX10.13"
+	}
 }
 
 Property

@@ -2031,7 +2031,7 @@ Target
 
 	ToolPath "@(Target.ToolPath);@(Builtin.Inherit)"
 	
-	ToolPath "/opt/local/bin;@(Target.ToolPath)"
+	ToolPath "/opt/local/bin;/usr/local/go/bin;/usr/local/bin;@(Target.ToolPath)"
 	{
 		!!GeneratorFamily Xcode
 	}

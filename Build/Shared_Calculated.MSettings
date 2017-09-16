@@ -75,6 +75,10 @@ Property
 	{
 		!!Platform "OSX10.12"
 	}
+	PlatformVersion "10130" // OSX 10.11
+	{
+		!!Platform "OSX10.13"
+	}
 	PlatformVersion "260" // Linux kernel 2.6
 	{
 		!!Platform "Linux2.6"
