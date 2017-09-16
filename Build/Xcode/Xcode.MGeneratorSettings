@@ -1903,11 +1903,21 @@
 				{
 					Property
 					{
-						true "-fapple-kext -fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -Wno-deprecated -Wno-overloaded-virtual"
+						true "-fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -Wno-deprecated -Wno-overloaded-virtual"
 					}
 				}
 			}
 
+			%GeneratorSetting "AppleKernelOptionsCxx"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fapple-kext"
+					}
+				}
+			}
 
 			%GeneratorSetting "PrefixHeader"
 			{

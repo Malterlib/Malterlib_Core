@@ -1052,6 +1052,16 @@ Compile
 		}
 	}
 	
+	AppleKernelOptionsCxx "true"
+	{
+		&
+		{
+			PlatformIsDarwin true
+			Target.Type Driver
+			Compile.Type "C++"
+		}
+	}
+	
 	AppleKernelOptions "true"
 	{
 		&
@@ -1282,6 +1292,7 @@ Compile
 		&
 		{
 			PlatformType "Unix"
+			!Target:Target.Type Driver
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
 			Target.PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
