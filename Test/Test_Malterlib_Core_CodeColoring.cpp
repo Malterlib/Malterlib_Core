@@ -2,6 +2,7 @@
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
+#	include <Mib/Core/Core>
 
 // Comment
 // http://example.com
@@ -17,11 +18,13 @@
 
 auto g_String = "String";
 auto g_Char = 'C';
-[[maybe_unused]] const static uint32 gc_GlobalConstant = 55;
+[[maybe_unused]] const static uint32 gc_GlobalConstant = (55 + 5 * 6 % ((67 | 77) & 88));
+static int gs_ThousandsSeparator = 10'000'000;
+double g_Double = 5.655 + 7.66e10;
 
 namespace NTest
 {
-	template <typename tf_CType, int tf_NonType>
+	template <typename tf_CType, int tf_NonType, int ...tfp_Values>
 	void inline fg_FunctionGlobal();
 	
 	enum ETest
@@ -35,17 +38,17 @@ namespace NTest
 		void f_FunctionPublic
 		(
 			uint32 _FunctionParameter
-			, uint32 & o_OutputFunctionParameter
+			, uint32 &o_OutputFunctionParameter
 			, NMib::NFunction::TCFunction<void ()> const &_fFunctor
 			, NMib::NFunction::TCFunction<void ()> &o_fFunctor
 		) const volatile
 		{
 			[[maybe_unused]] ETest EnumValue = ETest_Value;
 			
-			for(;;)
+			for (;;)
 			{
 			}
-			
+
 			[[maybe_unused]] auto pAutoVar = nullptr;
 			
 			auto fFunctor = []
@@ -57,6 +60,8 @@ namespace NTest
 			o_fFunctor();
 			m_fFunctor();
 			mp_fFunctor();
+
+			fFunctor.f_Clear();
 		}
 		
 		NMib::NFunction::TCFunction<void ()> m_fFunctor;
