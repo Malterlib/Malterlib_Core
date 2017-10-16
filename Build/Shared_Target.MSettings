@@ -2665,6 +2665,8 @@ Target
 {
 	%GenerateFile "Generate"
 	{
+		!MalterlibDisableMalterlib true
+		
 		Property
 		{
 			Group "@(Platform) @(Architecture) @(FullConfiguration)"

@@ -564,6 +564,7 @@ Target
 	{
 		PlatformFamily Linux
 		TargetIsExecutable true
+		!MalterlibDisableMalterlib true
 	}
 }
 
