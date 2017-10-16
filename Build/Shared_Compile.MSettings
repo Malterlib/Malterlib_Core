@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 
@@ -1145,11 +1145,19 @@ Compile
 
 	SearchPath "@(Builtin.BasePath)/External/libcxx/include;@(Compile.SearchPath)"
 	{
-		!!MalterlibUseStaticLibCxx "true"
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseStaticLibCxx "true"
+		}
 	}
 	SearchPath "@(Builtin.BasePath)/External/libcxxabi/include;@(Compile.SearchPath)"
 	{
-		!!MalterlibUseStaticLibCxxABI "true"
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseStaticLibCxxABI "true"
+		}
 	}
 
 	SearchPath "@(Builtin.BasePath)/SDK/WDK/inc/ddk;@(Builtin.BasePath)/SDK/WDK/inc/api;@(Builtin.BasePath)/SDK/WDK/inc/crt;@(Compile.SearchPath)"
@@ -1559,12 +1567,20 @@ Compile
 
 	PreprocessorDefines "_LIBCPP_DISABLE_AVAILABILITY;_LIBCPP_BUILD_STATIC;_LIBCPP_TYPE_VIS=;_LIBCPP_FUNC_VIS=;_LIBCPP_EXCEPTION_ABI=;@(Compile.PreprocessorDefines)"
 	{
-		!!MalterlibUseStaticLibCxx true
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseStaticLibCxx true
+		}
 	}
 	
 	PreprocessorDefines "LIBCXX_BUILDING_LIBCXXABI;_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
 	{
-		!!MalterlibUseStaticLibCxxABI true
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseStaticLibCxxABI true
+		}
 	}
 
 	PreprocessorDefines "DMalterlib=1;@(Compile.PreprocessorDefines)"
