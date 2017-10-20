@@ -38,12 +38,12 @@ namespace NMib
 
 	struct CVoidTag 
 	{
-		bool operator == (CVoidTag const &_Right)
+		bool operator == (CVoidTag const &_Right) const
 		{
 			return true;
 		}
 
-		bool operator < (CVoidTag const &_Right)
+		bool operator < (CVoidTag const &_Right) const
 		{
 			return false;
 		}
