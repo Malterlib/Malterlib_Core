@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -19,7 +19,7 @@
 auto g_String = "String";
 auto g_Char = 'C';
 [[maybe_unused]] const static uint32 gc_GlobalConstant = (55 + 5 * 6 % ((67 | 77) & 88));
-static int gs_ThousandsSeparator = 10'000'000;
+[[maybe_unused]] static int gs_ThousandsSeparator = 10'000'000;
 double g_Double = 5.655 + 7.66e10;
 
 namespace NTest
