@@ -2,6 +2,7 @@
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_PlatformImp_POSIX_Net.h"
+#include <Mib/Process/Platform>
 
 CPOSIXSocketContext::CPOSIXSocketContext()
 {
@@ -302,6 +303,17 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 		Result = getaddrinfo(AddressStr.f_GetStr(), nullptr, &AddrHint, &pAddresses);
 	}
 
+	if
+		(
+			Result != 0
+			&&
+			(
+				_Address == NMib::NProcess::NPlatform::fg_Process_GetComputerAddress()
+				|| _Address == NMib::NProcess::NPlatform::fg_Process_GetHostName()
+			)
+		)
+		Result = getaddrinfo("localhost", nullptr, &AddrHint, &pAddresses);
+	
 	if (Result != 0)
 	{
 		if (_bThrowOnError)
