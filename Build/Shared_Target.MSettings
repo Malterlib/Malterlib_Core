@@ -606,7 +606,7 @@ Property
 			!HostPlatformFamily Windows
 		}
 	}
-	PlatformToolsetCompiler "x:/Development/Malterlib/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture)/cl.exe"
+	PlatformToolsetCompiler "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture)/cl.exe"
 	{
 		&
 		{
@@ -617,7 +617,7 @@ Property
 			HostPlatformFamily Windows
 		}
 	}
-	PlatformToolsetCompiler "@(Builtin.VisualStudioRoot)VC/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture)/cl.exe"
+	PlatformToolsetCompiler "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture)/cl.exe"
 	{
 		&
 		{
@@ -1992,6 +1992,11 @@ Property
 	{
 		!PlatformFamily Windows
 	}
+
+	MalterlibToolsRoot "x:/Development/Malterlib/Tools"
+	{
+		!!MalterlibToolsRoot ""
+	}
 	
 }
 
@@ -2059,7 +2064,7 @@ Target
 		}
 	}
 
-	ToolPath "x:/Development/Malterlib/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
+	ToolPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
 	{
 		&
 		{
@@ -2071,7 +2076,7 @@ Target
 		}
 	}
 
-	ToolPath "@(Builtin.VisualStudioRoot)VC/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
+	ToolPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
 	{
 		&
 		{
@@ -2106,7 +2111,7 @@ Target
 
 Compile
 {
-	SearchPath "x:/Development/Malterlib/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/include;@(Compile.SearchPath)"
+	SearchPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/include;@(Compile.SearchPath)"
 	{
 		&
 		{
@@ -2118,7 +2123,7 @@ Compile
 		}
 	}
 
-	SearchPath "@(Builtin.VisualStudioRoot)VC/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/include;@(Compile.SearchPath)"
+	SearchPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/include;@(Compile.SearchPath)"
 	{
 		&
 		{
@@ -2133,7 +2138,7 @@ Compile
 
 Target
 {
-	SearchPath "@(Builtin.VisualStudioRoot)VC/Tools/MSVC/@(MalterlibOverrideMSVCVersion)/lib/@(Architecture);@(Target.SearchPath)"
+	SearchPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/lib/@(Architecture);@(Target.SearchPath)"
 	{
 		&
 		{
@@ -3290,9 +3295,18 @@ Property
 		!!Win32SignTool ""
 	}
 
-	MalterlibWindowsSignCommandLine "@(Win32SignTool) sign /fd SHA256 /ac \"@(MalterlibSignIncludeCert->WindowsPath())\" /n \"@(MalterlibSignCertWindows)\" /t http://timestamp.globalsign.com/scripts/timestamp.dll \"@(MalterlibFinalModuleDestination->WindowsPath())\""
+	Win32SignToolTimestampServerOptions "/td SHA256 /tr @(MalterlibSignTimestampServerRFC3161)"
+	{
+		!MalterlibSignTimestampServerRFC3161 ""
+	}
+	Win32SignToolTimestampServerOptions "/t @(MalterlibSignTimestampServer)"
+	{
+		!!Win32SignToolTimestampServerOptions ""
+	}
 
-	MalterlibWindowsSignCommandLine "@(Win32SignTool) sign /fd SHA256 /n \"@(MalterlibSignCertWindows)\" /t http://timestamp.globalsign.com/scripts/timestamp.dll \"@(MalterlibFinalModuleDestination->WindowsPath())\""
+	MalterlibWindowsSignCommandLine "@(Win32SignTool) sign /fd SHA256 /ac \"@(MalterlibSignIncludeCert->WindowsPath())\" /n \"@(MalterlibSignCertWindows)\" @(Win32SignToolTimestampServerOptions) \"@(MalterlibFinalModuleDestination->WindowsPath())\""
+
+	MalterlibWindowsSignCommandLine "@(Win32SignTool) sign /fd SHA256 /n \"@(MalterlibSignCertWindows)\" @(Win32SignToolTimestampServerOptions) \"@(MalterlibFinalModuleDestination->WindowsPath())\""
 	{
 		!!MalterlibSignIncludeCert "none"
 	}

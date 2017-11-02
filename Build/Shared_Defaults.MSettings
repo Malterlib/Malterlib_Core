@@ -139,6 +139,14 @@ Property
 	{
 		!!MalterlibSignIncludeCert ""
 	}
+	MalterlibSignTimestampServer "http://timestamp.globalsign.com/scripts/timestamp.dll" // User: Timestamp server to use when signing windows executables
+	{
+		!!MalterlibSignTimestampServer ""
+	}
+	MalterlibSignTimestampServerRFC3161 "" // User: RFC 3161 Timestamp server to use when signing windows executables. This will override any setting in MalterlibSignTimestampServer
+	{
+		!!MalterlibSignTimestampServerRFC3161 ""
+	}
 	MalterlibSignCertWindows "Hansoft AB" // User: Set this to your local certificate for driver development
 	{
 		!!MalterlibSignCertWindows ""

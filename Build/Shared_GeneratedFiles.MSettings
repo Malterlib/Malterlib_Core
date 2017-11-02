@@ -45,6 +45,16 @@ Property
 	}
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"function ZMTool()\r\n"\
+										"{\r\n"\
+										"	MTool BuildServerTool Tool=ZMTool \"$@\"\r\n"\
+										"}\r\n"
+	{
+		!!ScriptWindowsBash true
+		!HostPlatformFamily Windows
+	}
+
+	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"\r\n"\
 										"TempDirectory=/tmp\r\n"\
 										"if [ ! \"$TEMP\" == \"\" ] ; then\r\n"\
@@ -70,6 +80,9 @@ Property
 										"@(ScriptExport) \"MalterlibFullBranchOnlyLast=@(Property.MalterlibFullBranch->RemoveStartPaths(1))\"\r\n"\
 										"@(ScriptExport) \"MalterlibSigning=@(MalterlibBuildSigning)\"\r\n"\
 										"@(ScriptExport) \"MalterlibSignIncludeCert=@(MalterlibSignIncludeCert->MakeAbsolute())\"\r\n"\
+										"@(ScriptExport) \"MalterlibSignTimestampServer=@(MalterlibSignTimestampServer)\"\r\n"\
+										"@(ScriptExport) \"MalterlibSignTimestampServerRFC3161=@(MalterlibSignTimestampServerRFC3161)\"\r\n"\
+										"@(ScriptExport) \"Win32SignToolTimestampServerOptions=@(Win32SignToolTimestampServerOptions)\"\r\n"\
 										"@(ScriptExport) \"MalterlibSignCertOSX=@(MalterlibSignCertOSX)\"\r\n"\
 										"@(ScriptExport) \"MalterlibSignCertWindows=@(MalterlibSignCertWindows)\"\r\n"\
 										"\r\n"\
@@ -143,6 +156,7 @@ Property
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"IF EXIST \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\" call \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\"\r\n"\
+										"cd %OriginalDirectory%\r\n"\
 										"\r\n"
 	{
 		&
@@ -208,13 +222,21 @@ Property
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"export XCodeBuildTool=\"xcodebuild -jobs $NumCPUs\"\r\n"
 	{
-		!!MalterlibUseXCodeBuild 1
+		&
+		{
+			MalterlibUseXCodeBuild 1
+			HostPlatformFamily "OSX"
+		}
 	}
 	
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"export XCodeBuildTool=\"/Development/Malterlib/Tools/External/xctool/xctool.sh -jobs $NumCPUs\"\r\n"
 	{
-		!MalterlibUseXCodeBuild 1
+		&
+		{
+			!MalterlibUseXCodeBuild 1
+			HostPlatformFamily "OSX"
+		}
 	}
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
