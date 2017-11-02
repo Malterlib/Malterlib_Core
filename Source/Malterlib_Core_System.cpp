@@ -232,7 +232,6 @@ namespace NMib
 #endif
 	}
 
-
 	void CSystem::f_InitModule()
 	{
 		g_SystemModule.f_Init(this);
@@ -268,47 +267,54 @@ namespace NMib
 #endif
 
 			if (!bDisableSystemLog)
-			{
-				NLog::CLogStr ProgramName = fg_GetSys()->f_GetProgramNameNonTracked();
-				if (ProgramName.f_IsEmpty())
-				{
-					ProgramName = NFile::CFile::fs_GetFileNoExt(NFile::CFile::fs_GetProgramPathNonTracked());
-
-					{ // Condition the program name
-						mint UnderPos = ProgramName.f_FindReverse("_");
-						if (UnderPos != -1)
-						{
-							ProgramName = ProgramName.f_Extract(0, UnderPos);
-						}
-
-						mint Len = ProgramName.f_GetLen();
-
-						mint DIPos = ProgramName.f_FindNoCase("DI");
-						if (DIPos == (Len - 2))
-						{
-							ProgramName = ProgramName.f_Extract(0, Len - 2);
-						}
-						else
-						{
-							mint DPos = ProgramName.f_FindNoCase("D");
-							if (DPos == Len -1)
-							{
-								ProgramName = ProgramName.f_Extract(0, Len - 1);
-							}
-						}
-					}
-					if (ProgramName.f_IsEmpty())
-						ProgramName = "Malterlib";
-				}
-
-				m_pDefaultLogFile = DMibNew NLog::CLogFile();
-				//m_pDefaultLogFile->m_Filename = ProgramName + "_%TIME%.txt";
-				m_pDefaultLogFile->m_Filename = ProgramName + ".log";
-				m_pSystemLog->f_PushGlobalDestination(NLog::CFileLogger(m_pDefaultLogFile));
-			}
+				f_AddFileLogger();
 		}
 #endif
+	}
 
+	void CSystem::f_AddFileLogger()
+	{
+#if DMibSysLogSeverities
+		if (!m_FileLoggerDestination)
+		{
+			NLog::CLogStr ProgramName = fg_GetSys()->f_GetProgramNameNonTracked();
+			if (ProgramName.f_IsEmpty())
+			{
+				ProgramName = NFile::CFile::fs_GetFileNoExt(NFile::CFile::fs_GetProgramPathNonTracked());
+
+				{ // Condition the program name
+					mint UnderPos = ProgramName.f_FindReverse("_");
+					if (UnderPos != -1)
+					{
+						ProgramName = ProgramName.f_Extract(0, UnderPos);
+					}
+
+					mint Len = ProgramName.f_GetLen();
+
+					mint DIPos = ProgramName.f_FindNoCase("DI");
+					if (DIPos == (Len - 2))
+					{
+						ProgramName = ProgramName.f_Extract(0, Len - 2);
+					}
+					else
+					{
+						mint DPos = ProgramName.f_FindNoCase("D");
+						if (DPos == Len -1)
+						{
+							ProgramName = ProgramName.f_Extract(0, Len - 1);
+						}
+					}
+				}
+				if (ProgramName.f_IsEmpty())
+					ProgramName = "Malterlib";
+			}
+
+			m_pDefaultLogFile = DMibNew NLog::CLogFile();
+			//m_pDefaultLogFile->m_Filename = ProgramName + "_%TIME%.txt";
+			m_pDefaultLogFile->m_Filename = ProgramName + ".log";
+			m_FileLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::CFileLogger(m_pDefaultLogFile));
+		}
+#endif
 	}
 	
 	void CSystem::f_SetDefaultLogFileName(NLog::CLogStr const &_Name)

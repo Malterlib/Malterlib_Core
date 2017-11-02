@@ -1603,7 +1603,15 @@ Compile
 		!!PlatformType "Windows"
 	}
 	PreprocessorDefines "DMalterlibBranch=\"@(MalterlibFullBranch)\";DProductVersion=0x@(ProductVersionMajor)@(ProductVersionMinor)@(ProductVersionRevision);DProductVersionSuffix=\"@(ProductVersionExtra)\";DProductSuffix_@(ProductVersionExtra);@(Compile.PreprocessorDefines)"
-	PreprocessorDefines "DProductContact=@(ProductContact);DProductCompanyUniqueIdentifier=@(ProductCompanyUniqueIdentifier);DProductVersionMajor=@(ProductVersionMajor);DProductVersionMinor=@(ProductVersionMinor);DProductVersionRevision=@(ProductVersionRevision);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DProductVersionMajor=@(ProductVersionMajor);DProductVersionMinor=@(ProductVersionMinor);DProductVersionRevision=@(ProductVersionRevision);@(Compile.PreprocessorDefines)"
+
+	PreprocessorDefines "DProductCompanyUniqueIdentifier=@(ProductCompanyUniqueIdentifier);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DProductContact=@(ProductContact);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DProductCompany=\"@(ProductCompany)\";@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DProductCountry=\"@(ProductCountry)\";@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DProductLocality=\"@(ProductLocality)\";@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DProductOrganizationalUnit=\"@(ProductOrganizationalUnit)\";@(Compile.PreprocessorDefines)"
+
 	PreprocessorDefines "DConfigSuffix=\"@(MalterlibConfigSuffix)\";DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->Replace(' ', ''));DConfig_@(ConfigNoSpace);DArchitecture_@(Architecture);DPlatform_@(Platform->Replace('.', '_'));DTarget=@(Target:this.Identity);DConfig=@(Configuration);DRealConfig=@(RealConfiguration);DArchitecture=@(Architecture);DPlatform=@(Platform);DPlatformFamily=@(PlatformFamily);DPlatformFamily_@(PlatformFamily);@(Compile.PreprocessorDefines)"
 	{
 	}

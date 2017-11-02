@@ -457,7 +457,19 @@ Property
 	}
     ProductCompany "Unknown company"
 	{
-		!!ProductCompany "" 
+		!!ProductCompany ""
+	}
+    ProductCountry "INT"
+	{
+		!!ProductCountry ""
+	}
+    ProductLocality "Unknown"
+	{
+		!!ProductLocality ""
+	}
+    ProductOrganizationalUnit "Unknown"
+	{
+		!!ProductOrganizationalUnit ""
 	}
     ProductContact "Malterlib <support@malterlib.com>"
 	{
