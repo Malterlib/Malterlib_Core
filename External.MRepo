@@ -32,6 +32,8 @@
 ../../External/boost/smart_ptr 10c6233029b1766bd9c58499ca42c855020708cd
 ../../External/boost/spirit 3a88c6fea46246c4324da565fd225bf766e4fe86
 ../../External/boost/static_assert afe9e9d7864e23d50077115d51fa8ce17fc2e8be
+../../External/boost/system b97772973b8e46c0899092de1c1afac2feb56501
+../../External/boost/thread 748fdee203f2bb2166df3fbdb0b10d80c84b8a00
 ../../External/boost/throw_exception c98e2a893f52d4e6f387a62ae845d5a4646b785c
 ../../External/boost/tuple d77e569c899f7eb3d1f255889e739d586ba5900f
 ../../External/boost/type_index baa5019c90293d98eafbc6fd40a7e2edc6b1a8a6
