@@ -27,6 +27,13 @@
 				Disabled "1"
 			}
 		}
+		%GeneratorSetting "ExportScriptEnvironmentContents"
+		{
+			Property
+			{
+				Disabled "1"
+			}
+		}
 		%GeneratorSetting "Type"
 		{
 			Property
