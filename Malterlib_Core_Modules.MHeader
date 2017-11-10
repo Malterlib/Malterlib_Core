@@ -1,0 +1,56 @@
+// Copyright © 2017 Nonna Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property.MalterlibModules "Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Compression;Concurrency;Container;Contract;Core;CrashReport;Cryptography;Daemon;Database;Debug;Desktop;Documentation;Encoding;Exception;File;Function;Graphics;Instrumentation;InterProcess;Intrusive;Iterator;Log;Memory;Meta;Meteor;Mongo;Network;Numeric;Perforce;Preprocessor;Process;SQL;STL;Security;Storage;Stream;String;System;Test;Thread;Time;Tools;Type;Web;XML;@(Property.MalterlibModules)"
+
+%Repository "@(MalterlibModules)"
+{
+	!MalterlibUseGitRepo false
+	Repository
+	{
+		Type Malterlib
+		Remotes "upstream=https://github.com/Malterlib/Malterlib_@(this.Identity).git;@(Repository.Remotes)"
+		{
+			!Repository.URL "https://github.com/Malterlib/Malterlib_@(this.Identity).git"
+		}
+		ConfigFile "@('../..'->MakeAbsolute())/@(Repository.Type).MRepo"
+		{
+			!!this.Identity "Core"
+		}
+		StateFile "@('../..'->MakeAbsolute())/@(Repository.Type).MRepoState"
+		{
+			!!this.Identity "Core"
+		}
+	}
+}
+
+%Repository "MalterlibSDK"
+{
+	!MalterlibUseGitRepo false
+	Repository
+	{
+		Type Malterlib
+		Location "@('../../SDK'->MakeAbsolute())"
+		URL "@(Repository.MalterlibRoot)/MalterlibSDK.git"
+		Remotes "upstream=https://github.com/Malterlib/MalterlibSDK.git;@(Repository.Remotes)"
+		{
+			!Repository.URL "https://github.com/Malterlib/MalterlibSDK.git"
+		}
+	}
+}
+
+%Repository "MalterlibBinaries"
+{
+	!MalterlibUseGitRepo false
+	Repository
+	{
+		Type Malterlib
+		Location "@('../../Binaries/Malterlib'->MakeAbsolute())"
+		URL "@(Repository.MalterlibRoot)/MalterlibBinaries.git"
+		Remotes "upstream=https://github.com/Malterlib/MalterlibBinaries.git;@(Repository.Remotes)"
+		{
+			!Repository.URL "https://github.com/Malterlib/MalterlibBinaries.git"
+		}
+	}
+}
+

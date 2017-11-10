@@ -37,6 +37,7 @@
 	}
 }
 
+Import "Malterlib_Core_Modules.MHeader"
 Import "Malterlib_Core_boost.MHeader"
 
 Import "Lib_Malterlib.MTarget"
