@@ -11,7 +11,11 @@ Property.MalterlibModules "Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Co
 		Type Malterlib
 		Remotes "upstream=https://github.com/Malterlib/Malterlib_@(this.Identity).git;@(Repository.Remotes)"
 		{
-			!Repository.URL "https://github.com/Malterlib/Malterlib_@(this.Identity).git"
+			&
+			{
+				MalterlibUpstreamAccess true
+				!Repository.URL "https://github.com/Malterlib/Malterlib_@(this.Identity).git"
+			}
 		}
 		ConfigFile "@('../..'->MakeAbsolute())/@(Repository.Type).MRepo"
 		{
@@ -34,7 +38,11 @@ Property.MalterlibModules "Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Co
 		URL "@(Repository.MalterlibRoot)/MalterlibSDK.git"
 		Remotes "upstream=https://github.com/Malterlib/MalterlibSDK.git;@(Repository.Remotes)"
 		{
-			!Repository.URL "https://github.com/Malterlib/MalterlibSDK.git"
+			&
+			{
+				MalterlibUpstreamAccess true
+				!Repository.URL "https://github.com/Malterlib/MalterlibSDK.git"
+			}
 		}
 	}
 }
@@ -49,7 +57,11 @@ Property.MalterlibModules "Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Co
 		URL "@(Repository.MalterlibRoot)/MalterlibBinaries.git"
 		Remotes "upstream=https://github.com/Malterlib/MalterlibBinaries.git;@(Repository.Remotes)"
 		{
-			!Repository.URL "https://github.com/Malterlib/MalterlibBinaries.git"
+			&
+			{
+				MalterlibUpstreamAccess true
+				!Repository.URL "https://github.com/Malterlib/MalterlibBinaries.git"
+			}
 		}
 	}
 }
