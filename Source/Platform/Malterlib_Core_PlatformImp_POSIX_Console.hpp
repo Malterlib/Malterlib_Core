@@ -80,9 +80,14 @@ void fg_WriteStringToPipe(int _Handle, ch8 const *_pStr, mint _Len)
 void NSys::fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str)
 {
 	NMib::NStr::CStrNonTracked const &Output = _Str;
-	
+
 	fg_WriteStringToPipe(1, Output.f_GetStr(), Output.f_GetLen());
 //	printf("%s", Output.f_GetStr());
+}
+
+void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer)
+{
+	fg_WriteStringToPipe(1, (const ch8 *)_Buffer.f_GetArray(), _Buffer.f_GetLen());
 }
 
 NSys::CConsoleProperties NSys::fg_GetConsoleProperties()

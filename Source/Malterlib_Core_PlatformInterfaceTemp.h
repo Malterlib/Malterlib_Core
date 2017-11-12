@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -98,6 +98,7 @@ namespace NMib
 		void fg_System_ExitProcess(aint _ExitCode);
 
 		void fg_ConsoleOutputRaw(const NMib::NStr::CStrNonTracked &_Str);
+		void fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer);
 		void fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str);
 		void fg_ConsoleOutputFlush();
 		void fg_ConsoleOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str);

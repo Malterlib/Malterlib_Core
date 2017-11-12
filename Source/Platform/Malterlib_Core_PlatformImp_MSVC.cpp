@@ -989,6 +989,29 @@ void NSys::fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str)
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(EColor_Default, _Str, STD_OUTPUT_HANDLE, false);
 }
 
+void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer)
+{
+	uint32 Written = 0;
+	HANDLE hCon = GetStdHandle(_StdHandle);
+	if (!hCon)
+		return;
+	uint8 const *pOut = _Buffer.f_GetArray();
+	mint Len = _Buffer.f_GetLen();
+	uint8 Temp[2048];
+	while (Len)
+	{
+		uint8 *pTemp = NMib::NStr::fg_MemCopy(Temp, pOut, fg_Min(Len, 2048));
+		mint nChars = pTemp - Temp;
+		if (!WriteFile(hCon, Temp, nChars, &Written, nullptr))
+		{
+			break;
+		}
+		Len -= Written;
+		pOut += Written;
+	}
+	fg_MemClear(Temp);
+}
+
 void NSys::fg_ConsoleErrorOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str)
 {
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Foreground, _Str, STD_ERROR_HANDLE, false);
