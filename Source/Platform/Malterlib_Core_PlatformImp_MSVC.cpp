@@ -992,7 +992,8 @@ void NSys::fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str)
 void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer)
 {
 	uint32 Written = 0;
-	HANDLE hCon = GetStdHandle(_StdHandle);
+	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
+
 	if (!hCon)
 		return;
 	uint8 const *pOut = _Buffer.f_GetArray();
@@ -1000,9 +1001,9 @@ void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Bu
 	uint8 Temp[2048];
 	while (Len)
 	{
-		uint8 *pTemp = NMib::NStr::fg_MemCopy(Temp, pOut, fg_Min(Len, 2048));
-		mint nChars = pTemp - Temp;
-		if (!WriteFile(hCon, Temp, nChars, &Written, nullptr))
+		mint ToCopy = fg_Min(Len, 2048);
+		uint8 *pTemp = NMib::NMem::fg_MemCopy(Temp, pOut, ToCopy);
+		if (!WriteFile(hCon, Temp, ToCopy, &Written, nullptr))
 		{
 			break;
 		}
