@@ -442,20 +442,6 @@ Target
 		}
 	}
 	
-
-	PlatformToolset "v140"
-	{
-		&
-		{
-			Target.PlatformToolset ""
-			|
-			{
-				Generator "VisualStudio2013"
-				Generator "VisualStudio2015"
-			}
-		}
-	}
-
 	PlatformToolset "v141"
 	{
 		&
@@ -588,6 +574,22 @@ Property
 			Generator "Xcode5"
 		}
 	}*/
+
+	MalterlibMSVCVersion "@(MalterlibOverrideMSVCVersion)"
+	{
+		&
+		{
+			MalterlibMSVCVersion ""
+			!MalterlibOverrideMSVCVersion ""
+		}
+	}
+
+	MalterlibMSVCVersion "14.11.25503"
+	{
+		!!MalterlibMSVCVersion ""
+	}
+
+
 	PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc" // User: Change the clang compiler location
 	{
 		&
@@ -606,22 +608,10 @@ Property
 			!HostPlatformFamily Windows
 		}
 	}
-	PlatformToolsetCompiler "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture)/cl.exe"
-	{
-		&
-		{
-			Generator VisualStudio2015
-			PlatformToolsetCompiler ""
-			!MalterlibOverrideMSVCVersion ""
-			!MalterlibDefaultToolset true
-			HostPlatformFamily Windows
-		}
-	}
 	PlatformToolsetCompiler "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture)/cl.exe"
 	{
 		&
 		{
-			!Generator VisualStudio2015
 			PlatformToolsetCompiler ""
 			!MalterlibOverrideMSVCVersion ""
 			!MalterlibDefaultToolset true
@@ -1977,13 +1967,39 @@ Property
 	
 	MToolDirectory "@('../../Tools/Binaries/MTool'->MakeAbsolute())/@(HostPlatformFamily)"
 	{
-		!!PlatformFamily Windows
+		&
+		{
+			MalterlibUseGitRepo false
+			PlatformFamily Windows
+		}
 	}
 	MToolDirectory "@('../../Tools/Binaries/MTool'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
 	{
-		!PlatformFamily Windows
+		&
+		{
+			MalterlibUseGitRepo false
+			!PlatformFamily Windows
+		}
 	}
-	
+
+	MToolDirectory "@('../../../Binaries/Malterlib/General'->MakeAbsolute())/@(HostPlatformFamily)"
+	{
+		&
+		{
+			!MalterlibUseGitRepo false
+			PlatformFamily Windows
+		}
+	}
+
+	MToolDirectory "@('../../../Binaries/Malterlib/General'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
+	{
+		&
+		{
+			!MalterlibUseGitRepo false
+			!PlatformFamily Windows
+		}
+	}
+
 	MToolPath "@(MToolDirectory)/MTool.com"
 	{
 		!!PlatformFamily Windows
@@ -2002,22 +2018,6 @@ Property
 
 Property
 {
-	!!Generator VisualStudio2015
-
-	MSVCToolChainArchitecture "amd64"
-	{
-		!!Architecture "x64"
-	}
-	MSVCToolChainArchitecture "amd64_x86"
-	{
-		!!Architecture "x86"
-	}
-}
-
-Property
-{
-	!Generator VisualStudio2015
-
 	MSVCToolChainArchitecture "HostX64/x64"
 	{
 		!!Architecture "x64"
@@ -2064,23 +2064,10 @@ Target
 		}
 	}
 
-	ToolPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
-	{
-		&
-		{
-			Generator VisualStudio2015
-			!MalterlibOverrideMSVCVersion ""
-			HostPlatformFamily "Windows"
-			WindowsNativeToolChain "true"
-			!Target.PlatformToolset "v90"
-		}
-	}
-
 	ToolPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
 	{
 		&
 		{
-			!Generator VisualStudio2015
 			!MalterlibOverrideMSVCVersion ""
 			HostPlatformFamily "Windows"
 			WindowsNativeToolChain "true"
@@ -2115,19 +2102,6 @@ Compile
 	{
 		&
 		{
-			Generator VisualStudio2015
-			!MalterlibOverrideMSVCVersion ""
-			CompileDialect "C"
-			HostPlatformFamily "Windows"
-			!Target.PlatformToolset "v90"
-		}
-	}
-
-	SearchPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/include;@(Compile.SearchPath)"
-	{
-		&
-		{
-			!Generator VisualStudio2015
 			!MalterlibOverrideMSVCVersion ""
 			CompileDialect "C"
 			HostPlatformFamily "Windows"
@@ -2142,7 +2116,6 @@ Target
 	{
 		&
 		{
-			!Generator VisualStudio2015
 			!MalterlibOverrideMSVCVersion ""
 			CompileDialect "C"
 			HostPlatformFamily "Windows"

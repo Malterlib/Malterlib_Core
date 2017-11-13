@@ -21,6 +21,7 @@
 #include <Mib/Core/PlatformSpecific/WindowsOptional>
 #include <Mib/Core/PlatformSpecific/WindowsFile>
 #include <Mib/Core/PlatformSpecific/WindowsInject>
+#include <Mib/Core/PlatformSpecific/Windows>
 #include <TlHelp32.h>
 
 using namespace NMib;
@@ -169,6 +170,8 @@ namespace NLocal
 	NTSTATUS (WINAPI *g_fRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
 
 	BOOL (WINAPI *g_fGetFileInformationByHandleEx)(HANDLE hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
+
+	BOOL (WINAPI *g_fPrivIsDllSynchronizationHeld)( PBOOL );
 }
 
 
@@ -2089,6 +2092,8 @@ void fg_LoadFunctionPointers()
 
 		(FARPROC &)g_fGetFileInformationByHandleEx = GetProcAddress(g_hKernel32, "GetFileInformationByHandleEx");
 
+		(FARPROC &)g_fPrivIsDllSynchronizationHeld = GetProcAddress(g_hKernel32, "PrivIsDllSynchronizationHeld");
+
 		g_VersionInfo.dwOSVersionInfoSize = sizeof(g_VersionInfo);
 		if (g_fRtlGetVersion)
 			g_fRtlGetVersion((PRTL_OSVERSIONINFOW)&g_VersionInfo);
@@ -2586,7 +2591,6 @@ bool __cdecl fg_InitMalterlibAllInternal(void *_pInstance)
 
 	// We need to keep this function as simple as possible so no security cookie is inserted in this function
 	__security_init_cookie();
-	AuxUlibInitialize();
 
 	fg_InitMalterlibAllInternalComplex(_pInstance);
 	return true;
@@ -2604,6 +2608,19 @@ void * __cdecl fg_MalterlibAllocNonTracked(size_t _Size)
 	memset(pMem, 0, _Size);
 	return pMem;
 }
+
+bool NMib::NPlatform::fg_ThisThreadOwnsDllLock()
+{
+	if (NLocal::g_fPrivIsDllSynchronizationHeld)
+	{
+		BOOL bHeld = false;
+		NLocal::g_fPrivIsDllSynchronizationHeld(&bHeld);
+		return bHeld != 0;
+	}
+	UndocumentedPEB *pPeb = fg_GetPEB(fg_GetTEB());
+	return (uint32)(mint)pPeb->LoaderLock->OwningThread == GetCurrentThreadId();
+}
+
 
 namespace
 {
@@ -2870,9 +2887,7 @@ void NSys::fg_Thread_WillNotBlockUntilExit(void *_pThreadDestroyContext)
 
 void NSys::fg_Thread_BlockUntilExit(void *_pThreadDestroyContext)
 {
-	BOOL bDllHeld = false;
-	AuxUlibIsDLLSynchronizationHeld(&bDllHeld);
-	if (bDllHeld)
+	if (NMib::NPlatform::fg_ThisThreadOwnsDllLock())
 	{
 		Sleep(10);
 		return;

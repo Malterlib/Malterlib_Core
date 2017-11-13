@@ -32,6 +32,8 @@ namespace NMib
 		}
 
 		bint fg_IsVista();
+		bool fg_ThisThreadOwnsDllLock();
+
 	}
 }
 

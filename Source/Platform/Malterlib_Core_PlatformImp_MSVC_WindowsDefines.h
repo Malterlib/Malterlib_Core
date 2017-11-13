@@ -19,15 +19,8 @@
 #include <windows.h>
 #include <psapi.h>
 #include <stdlib.h>
-#include "SDK/WinAuxLIB/AUX_ULIB.H"
 
 #pragma comment(lib, "psapi.lib")
-
-#ifdef DArchitecture_x64
-#pragma comment(lib, __FILE__ "/../../../../../SDK/WinAuxLIB/x64/aux_ulib.lib")
-#else
-#pragma comment(lib, __FILE__ "/../../../../../SDK/WinAuxLIB/x86/aux_ulib.lib")
-#endif
 
 #include <windows.h>
 #include <winuser.h>

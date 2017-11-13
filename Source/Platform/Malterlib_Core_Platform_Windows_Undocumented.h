@@ -121,7 +121,7 @@ typedef struct _UndocumentedPEB
 	PVOID                        GdiSharedHandleTable;              /* 094/0f8 */
 	PVOID                        ProcessStarterHelper;              /* 098/100 */
 	PVOID                        GdiDCAttributeList;                /* 09c/108 */
-	PVOID                        LoaderLock;                        /* 0a0/110 */
+	PRTL_CRITICAL_SECTION        LoaderLock;                        /* 0a0/110 */
 	ULONG                        OSMajorVersion;                    /* 0a4/118 */
 	ULONG                        OSMinorVersion;                    /* 0a8/11c */
 	ULONG                        OSBuildNumber;                     /* 0ac/120 */
