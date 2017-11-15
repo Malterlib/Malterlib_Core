@@ -240,7 +240,7 @@ Property
 										"		return 0\r\n"\
 										"	fi\r\n"\
 										"\r\n"\
-										"	$XCodeBuildTool -workspace \"BuildSystem/@(Generator)/$1.xcworkspace\" -scheme \"Build All $2 $3 $4\" clean\r\n"\
+										"	$XCodeBuildTool -workspace \"@(Builtin.GeneratedBuildSystemDir)/$1.xcworkspace\" -scheme \"Build All $2 $3 $4\" clean\r\n"\
 										"	CheckErrors	\r\n"\
 										"}\r\n"\
 										"\r\n"\
