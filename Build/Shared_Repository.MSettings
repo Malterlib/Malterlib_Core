@@ -145,6 +145,21 @@ Repository
 			Repository.Type External
 		}
 	}
+
+	DefaultUpstreamBranch "master"
+	{
+		&
+		{
+			Repository.DefaultUpstreamBranch ""
+			Repository.Type External
+		}
+	}
+
+	DefaultUpstreamBranch "@(DefaultBranch)"
+	{
+		!!Repository.DefaultUpstreamBranch ""
+	}
+
 	DefaultBranch "master"
 	{
 		!!Repository.DefaultBranch ""
