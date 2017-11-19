@@ -168,12 +168,55 @@
 				Property
 				{
 					Name "@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/GenerateBuildSystem_@(Workspace:Workspace.Name)@(ScriptExtension)"
-					
+
 					Contents	"@(Contents)"\
 								"IF \"%DisableProjectGen%\" == \"1\" GOTO Skip\r\n"\
-								"cd @(Builtin.BasePathRelativeProject->WindowsPath())\r\n"\
+								":RetryGeneration\r\n"\
+								"cd @(Builtin.BasePathAbsolute->WindowsPath())\r\n"\
 								"\"@(Builtin.MToolCom)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(Builtin.GeneratedBuildSystemDir)\" Action=%1 UseCachedEnvironment=true\r\n"\
-								"IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n"\
+								"IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n"
+					{
+						&
+						{
+							!MalterlibDisableBuildSystemGeneration true
+							HostPlatformFamily "Windows"
+						}
+					}
+
+
+					MToolDirectory "@(Builtin.MToolCom->GetPath())"
+					IsSafeMTool true
+					{
+						!!MToolDirectory "@(Builtin.BasePathAbsolute)/BuildSystem/Binaries/General/Windows"
+					}
+
+					BuildSystemBasePath "@(Builtin.BasePathAbsolute)/BuildSystem"
+					BinariesPath "@(Builtin.BasePathAbsolute)/Binaries/Malterlib"
+					DependencyFile "@(BuildSystemBasePath)/Binaries/Binaries.MalterlibDependency"
+					UpdatedFile "@(BuildSystemBasePath)/Binaries.updated"
+					ExcludePatterns "*/.git;*/.DS_Store"
+
+					Contents	"@(Contents)"\
+								"if exist \"@(DependencyFile)\" \"@(Builtin.MToolCom)\" CheckDependencies Verbose=true \"Directory=@(BuildSystemBasePath)/Binaries\"\r\n"\
+								"if not exist \"@(UpdatedFile)\" (\r\n"\
+								"	echo Updated needed\r\n"\
+								"	\"@(Builtin.MToolCom)\" DiffCopy \"@(BinariesPath)/General/Windows\" \"@(BuildSystemBasePath)/Binaries/General\"\r\n"\
+								"	\"@(Builtin.MToolCom)\" DiffCopy \"@(BinariesPath)/*.sh\" \"@(BuildSystemBasePath)/Binaries\" \"\" 0\r\n"\
+								"	\"@(Builtin.MToolCom)\" TouchOrCreate \"@(BuildSystemBasePath)/Binaries.updated\"\r\n"\
+								"	\"@(Builtin.MToolCom)\" BuildDependencies \"OutputFile=@(DependencyFile)\" \"Output:@(UpdatedFile)\" \"Input:@(Builtin.BasePathAbsolute)/mib\" \"Find:@(BinariesPath)/*;RIF;33;@(ExcludePatterns)\"\r\n"\
+								"	if exist \"@(UpdatedFile)\" GOTO RetryGeneration\r\n"\
+								")\r\n"
+					{
+						&
+						{
+							
+							!MalterlibDisableBuildSystemGeneration true
+							HostPlatformFamily "Windows"
+							IsSafeMTool true
+						}
+					}
+
+					Contents	"@(Contents)"\
 								":Skip\r\n"
 					{
 						&
