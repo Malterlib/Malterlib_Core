@@ -1004,7 +1004,7 @@ void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Bu
 	uint8 Temp[2048];
 	while (Len)
 	{
-		mint ToCopy = fg_Min(Len, 2048);
+		mint ToCopy = fg_Min(Len, 2048u);
 		uint8 *pTemp = NMib::NMem::fg_MemCopy(Temp, pOut, ToCopy);
 		if (!WriteFile(hCon, Temp, ToCopy, &Written, nullptr))
 		{
