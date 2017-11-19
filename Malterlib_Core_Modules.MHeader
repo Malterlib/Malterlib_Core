@@ -87,3 +87,23 @@ Property
 		}
 	}
 }
+
+%GenerateFile "mib"
+{
+	!Empty "@(MalterlibBinariesPath->FindFilesIn('mib'))"
+
+	Property
+	{
+		MalterlibBinariesPath "@(Builtin.BasePathAbsolute)/Binaries/Malterlib"
+		MibScriptFile "@(Builtin.BasePathAbsolute)/mib"
+	}
+
+	Property
+	{
+		Name "@(MibScriptFile)"
+		Contents "@(ReadFile('@(MalterlibBinariesPath)/mib'))"
+		Executable true
+		UnixLineEnds true
+		UnicodeBOM false
+	}
+}
