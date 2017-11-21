@@ -384,6 +384,40 @@ Property
 	{
 		!!MalterlibFullBranch ""
 	}
+	MalterlibIsGitRepository true
+	{
+		!Empty "@(BuildSystemBasePath->FindDirectoriesIn('.git'))"
+	}
+
+	MalterlibGitRepoInputFiles "@(BuildSystemBasePath)/.git;@(BuildSystemBasePath)/.git/HEAD"
+
+	MalterlibGitHeadContents "@(ReadFile('@(BuildSystemBasePath)/.git/HEAD'))"
+	MalterlibGitHeadContentsParseString "ref: {}\n"
+	MalterlibGitHeadRef "@(MalterlibGitHeadContents->ParseFormatString('@(MalterlibGitHeadContentsParseString)', '{0}'))"
+
+	MalterlibGitRepoInputFiles "@(BuildSystemBasePath)/.git/@(MalterlibGitHeadRef);@(MalterlibGitRepoInputFiles)"
+	{
+		!MalterlibGitHeadRef ""
+	}
+
+	MalterlibParseRemoveNewlineString "{}\n"
+
+	MalterlibGitBranch "@(ExecuteCommand('@(GeneratedGlobalDirectory)/GitBranch.MState', '@(MalterlibGitRepoInputFiles)', 'git', 'symbolic-ref', '--short', 'HEAD'))"
+	{
+		!!MalterlibIsGitRepository true
+	}
+	MalterlibGitBranch "@(MalterlibGitBranch->ParseFormatString('@(MalterlibParseRemoveNewlineString)', '{0}'))"
+	{
+		!!MalterlibIsGitRepository true
+	}
+	MalterlibGitCommit "@(ExecuteCommand('@(GeneratedGlobalDirectory)/GitCommit.MState', '@(MalterlibGitRepoInputFiles)', 'git', 'rev-parse', 'HEAD'))"
+	{
+		!!MalterlibIsGitRepository true
+	}
+	MalterlibGitCommit "@(MalterlibGitCommit->ParseFormatString('@(MalterlibParseRemoveNewlineString)', '{0}'))"
+	{
+		!!MalterlibIsGitRepository true
+	}
 }
 
 Property

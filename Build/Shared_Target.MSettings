@@ -2389,6 +2389,10 @@ Property
 						"		<string>@(MalterlibOSXVersion)</string>\n"\
 						"	<key>MalterlibBranch</key>\n"\
 						"		<string>@(MalterlibFullBranch)</string>\n"\
+						"	<key>MalterlibGitBranch</key>\n"\
+						"		<string>@(MalterlibGitBranch)</string>\n"\
+						"	<key>MalterlibGitCommit</key>\n"\
+						"		<string>@(MalterlibGitCommit)</string>\n"\
 						"	<key>BuildTime</key>\n"\
 						"		<string>@(Builtin.Function->MalterlibTime('{}:{}'))</string>\n"\
 						"	<key>ProductVersionMajor</key>\n"\
@@ -2653,6 +2657,8 @@ Target
 			Contents 	"#include <Mib/Core/Core>\n"\
 						"assure_used static char fileid[] __attribute__ ((section(\"IDSVERSIONINFO\"))) = \"$Id: VersionInfo.cpp,v @(Target:Target.Version) @(Builtin.Function->DateTime('{YYYY}/{MM}/{DD} {HH}:{MNMN}:{SS}')) $\\n\"\n"\
 						"\"MalterlibBranch=@(MalterlibFullBranch)\\n\"\n"\
+						"\"MalterlibGitBranch=@(MalterlibGitBranch)\\n\"\n"\
+						"\"MalterlibGitCommit=@(MalterlibGitCommit)\\n\"\n"\
 						"\"BuildTime=@(Builtin.Function->MalterlibTime('{}:{}'))\\n\"\n"\
 						"\"ProductVersionMajor=@(ProductVersionMajor)\\n\"\n"\
 						"\"ProductVersionMinor=@(ProductVersionMinor)\\n\"\n"\
@@ -2871,7 +2877,7 @@ Target
 						"			VALUE \"OriginalFilename\", \"@(Target:Target.FileName)@(Target:Target.FileExtension)\"\r\n"\
 						"			VALUE \"ProductName\", \"@(ProductName)\"\r\n"\
 						"			VALUE \"ProductVersion\", \"@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)\"\r\n"\
-						"			VALUE \"PrivateBuild\", \"@(MalterlibFullBranch)\"\r\n"\
+						"			VALUE \"PrivateBuild\", \"{\\\"MalterlibBranch\": \\\"@(MalterlibFullBranch)\\\", \\\"MalterlibGitBranch\": \\\"@(MalterlibGitBranch)\\\", \\\"MalterlibGitCommit\": \\\"@(MalterlibGitCommit)\\\"}\"\r\n"\
 						"		END\r\n"\
 						"	END\r\n"\
 						"	BLOCK \"VarFileInfo\"\r\n"\

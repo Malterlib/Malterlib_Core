@@ -75,6 +75,8 @@ Property
 										"@(ScriptExport) \"MalterlibBranchWindows=@(Property.MalterlibBranch->WindowsPath())\"\r\n"\
 										"@(ScriptExport) \"MalterlibFullBranch=@(Property.MalterlibFullBranch)\"\r\n"\
 										"@(ScriptExport) \"MalterlibFullBranchWindows=@(Property.MalterlibFullBranch->WindowsPath())\"\r\n"\
+										"@(ScriptExport) \"MalterlibGitBranch=@(Property.MalterlibGitBranch)\"\r\n"\
+										"@(ScriptExport) \"MalterlibGitCommit=@(Property.MalterlibGitCommit)\"\r\n"\
 										"@(ScriptExport) \"MalterlibGenerator=@(Generator)\"\r\n"\
 										"@(ScriptExport) \"MalterlibBranchOnlyLast=@(Property.MalterlibBranch->RemoveStartPaths(1))\"\r\n"\
 										"@(ScriptExport) \"MalterlibFullBranchOnlyLast=@(Property.MalterlibFullBranch->RemoveStartPaths(1))\"\r\n"\
