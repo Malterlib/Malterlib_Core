@@ -28,7 +28,7 @@
 ../../External/boost/preprocessor b19e4deacb7103061f9c2c9efcdd77eaa5877df0
 ../../External/boost/proto d70c74c3a8d2abe746fe017edee564e6e8ae0efc
 ../../External/boost/range 56d470635de63862856b27be36dbf2eb9d75b043
-../../External/boost/regex 8191d582667c417334d65853e851be4ea3f8014f
+../../External/boost/regex d55423ad2ba24276650a0f9f60c23c1ff4351a70
 ../../External/boost/smart_ptr 10c6233029b1766bd9c58499ca42c855020708cd
 ../../External/boost/spirit 3a88c6fea46246c4324da565fd225bf766e4fe86
 ../../External/boost/static_assert afe9e9d7864e23d50077115d51fa8ce17fc2e8be
