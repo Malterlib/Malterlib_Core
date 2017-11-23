@@ -382,6 +382,18 @@ Property
 	}
 }
 
+%GenerateFile "last-build"
+{
+	Property
+	{
+		Name "BuildSystem/last-build"
+		Contents "@(MalterlibGitCommit)\n"
+		UnicodeBOM false
+		UnixLineEnds true
+		Executable true
+	}
+}
+
 Property
 {
 	
