@@ -2850,6 +2850,13 @@ Target
 				!!Target.Type "SharedDynamicLibrary"
 			}
 
+			
+			Backslash "\\"
+
+			PrivateBuildString "{\"MalterlibBranch\": \"@(MalterlibFullBranch)\", \"MalterlibGitBranch\": \"@(MalterlibGitBranch)\", \"MalterlibGitCommit\": \"@(MalterlibGitCommit)\"} \\"
+			PrivateBuildString "@(PrivateBuildString->Replace('@(Backslash)', '@(Backslash)@(Backslash)'))"
+			PrivateBuildString "@(PrivateBuildString->Replace('\"', '@(Backslash)x22'))"
+
 			Contents 	"@(Contents)"\
 						"#include \"winres.h\"\r\n"\
 						"VS_VERSION_INFO VERSIONINFO\r\n"\
@@ -2877,7 +2884,7 @@ Target
 						"			VALUE \"OriginalFilename\", \"@(Target:Target.FileName)@(Target:Target.FileExtension)\"\r\n"\
 						"			VALUE \"ProductName\", \"@(ProductName)\"\r\n"\
 						"			VALUE \"ProductVersion\", \"@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)\"\r\n"\
-						"			VALUE \"PrivateBuild\", \"{\\\"MalterlibBranch\": \\\"@(MalterlibFullBranch)\\\", \\\"MalterlibGitBranch\": \\\"@(MalterlibGitBranch)\\\", \\\"MalterlibGitCommit\": \\\"@(MalterlibGitCommit)\\\"}\"\r\n"\
+						"			VALUE \"PrivateBuild\", \"@(PrivateBuildString)\"\r\n"\
 						"		END\r\n"\
 						"	END\r\n"\
 						"	BLOCK \"VarFileInfo\"\r\n"\
