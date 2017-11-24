@@ -405,13 +405,30 @@ Property
 			UnicodeBOM false
 			UnixLineEnds true
 			Executable true
+			KeepGeneratedFile true
+		}
+	}
+}
+
+%Group "~Automatic/WorkspaceBranchLastBuild"
+{
+	%GenerateFile "last-build"
+	{
+		Property
+		{
+			Name "BuildSystem/last-build-@(Workspace:this.Identity)-@(MalterlibGitBranch)"
+			Contents "@(MalterlibGitCommit)\n"
+			UnicodeBOM false
+			UnixLineEnds true
+			Executable true
+			KeepGeneratedFile true
 		}
 	}
 }
 
 Workspace
 {
-	ExtraGroups "~Automatic/WorkspaceLastBuild;@(Workspace.ExtraGroups)"
+	ExtraGroups "~Automatic/WorkspaceLastBuild;~Automatic/WorkspaceBranchLastBuild;@(Workspace.ExtraGroups)"
 }
 
 Property
