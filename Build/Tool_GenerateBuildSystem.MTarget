@@ -122,6 +122,9 @@
 				!MalterlibBuildServerBuild true
 				GeneratorFamily Xcode
 			}
+			
+			Compile.AllowNonExisting true
+
 			%Group "Clang LLVM P4 Generator"
 			{
 				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Clang LLVM P4 Generator.xcplugin/Contents/*"

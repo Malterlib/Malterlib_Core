@@ -54,10 +54,38 @@ Property
 
 	MalterlibDependenciesDirectory "/CompiledFiles/Dependencies"
 	{
+		&
+		{
+			MalterlibDependenciesDirectory ""
+			!Empty "@('/'->FindDirectoriesIn('CompiledFiles'))"
+		}
+	}
+
+	MalterlibDependenciesDirectory "@(HOME)/.CompiledFiles/Dependencies"
+	{
 		!!MalterlibDependenciesDirectory ""
 	}
-	
+
 	MalterlibCompiledFiles "/CompiledFiles/@(Generator)/"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			MalterlibCompiledFiles ""
+			!Empty "@('/'->FindDirectoriesIn('CompiledFiles'))"
+		}
+	}
+
+	MalterlibCompiledFiles "/CompiledFiles/"
+	{
+		&
+		{
+			MalterlibCompiledFiles ""
+			!Empty "@('/'->FindDirectoriesIn('CompiledFiles'))"
+		}
+	}
+
+	MalterlibCompiledFiles "@(HOME)/.CompiledFiles/@(Generator)/"
 	{
 		&
 		{
@@ -66,7 +94,7 @@ Property
 		}
 	}
 
-	MalterlibCompiledFiles "/CompiledFiles/"
+	MalterlibCompiledFiles "@(HOME)/.CompiledFiles/"
 	{
 		!!MalterlibCompiledFiles ""
 	}
