@@ -394,6 +394,26 @@ Property
 	}
 }
 
+%Group "~Automatic/WorkspaceLastBuild"
+{
+	%GenerateFile "last-build"
+	{
+		Property
+		{
+			Name "BuildSystem/last-build-@(Workspace:this.Identity)"
+			Contents "@(MalterlibGitCommit)\n"
+			UnicodeBOM false
+			UnixLineEnds true
+			Executable true
+		}
+	}
+}
+
+Workspace
+{
+	ExtraGroups "~Automatic/WorkspaceLastBuild;@(Workspace.ExtraGroups)"
+}
+
 Property
 {
 	
