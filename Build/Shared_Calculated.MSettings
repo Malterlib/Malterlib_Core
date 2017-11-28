@@ -389,7 +389,7 @@ Property
 		!Empty "@(BuildSystemBasePath->FindDirectoriesIn('.git'))"
 	}
 
-	MalterlibGitRepoInputFiles "@(BuildSystemBasePath)/.git;@(BuildSystemBasePath)/.git/HEAD"
+	MalterlibGitRepoInputFiles "@(BuildSystemBasePath)/.git/HEAD"
 
 	MalterlibGitHeadContents "@(ReadFile('@(BuildSystemBasePath)/.git/HEAD'))"
 	MalterlibGitHeadContentsParseString "ref: {}\n"
