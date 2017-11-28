@@ -547,7 +547,7 @@ namespace NMib
 			while (auto pPop = m_OpenNotifications.f_Pop())
 			{
 				NPtr::TCSharedPointer<CNotification> pNotification = fg_Explicit((CNotification *)pPop);
-				pNotification->f_RefCountDecrease();
+				pNotification->f_RefCountDecrease(DMibRefcountDebuggingOnly(pNotification->m_DebugSelfRef));
 			}
 			
 			if (Internal.m_pDispatchObject)
@@ -1544,7 +1544,7 @@ namespace NMib
 				DMibLock(m_Lock);
 				m_OpenNotifications.f_Insert(pNotification.f_Get());
 			}
-			pNotification->f_RefCountIncrease();
+			pNotification->f_RefCountIncrease(DMibRefcountDebuggingOnly(pNotification->m_DebugSelfRef));
 
 			pNotification->m_Flags = _OpenFlags;
 			pNotification->m_pReportTo = _pReportTo;
@@ -1586,7 +1586,7 @@ namespace NMib
 			DMibLock(m_Lock);
 			NPtr::TCSharedPointer<CNotification> pNotification = fg_Explicit((CNotification *)_pNotification);
 			
-			pNotification->f_RefCountDecrease();
+			pNotification->f_RefCountDecrease(DMibRefcountDebuggingOnly(pNotification->m_DebugSelfRef));
 			{
 				DMibLock(pNotification->m_ChangesLock);
 				pNotification->m_pReportTo = nullptr;

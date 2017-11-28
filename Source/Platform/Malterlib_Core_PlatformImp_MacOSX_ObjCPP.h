@@ -169,7 +169,9 @@ namespace NMib
 				NThread::CMutual m_ChangesLock;
 				
 				NContainer::TCLinkedList<NContainer::TCTuple<NStr::CStr, bool>> m_RenamedFromQueue;
-				
+
+				DMibRefcountDebuggingOnly(NPtr::CRefCountDebugReference m_DebugSelfRef);
+
 				NMib::NThread::CSemaphoreReportableAggregate *m_pReportTo;
 				bool m_bAddedToRunLoop = false;
 				bool m_bStreamStarted = false;
@@ -203,7 +205,7 @@ namespace NMib
 			zbool m_bDestroying;
 			
 			NMib::NContainer::TCThreadSafeQueue<NMib::NFunction::TCFunctionMovable<void ()>> m_DispatchQueue;
-			
+
 			void f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch);
 			void f_StartThread();
 			void *f_Open(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo);
