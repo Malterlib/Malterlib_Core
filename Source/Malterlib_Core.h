@@ -172,6 +172,7 @@ namespace NMib
 			, EFileOpen_NoFileLength = DMibBit(15)		// Don't expect the file to have a file length and don't cache it
 			, EFileOpen_Directory = DMibBit(16)			// The target is a directory that is assumed to exist. Implies DontCreate and DontTruncate
 			, EFileOpen_Link = DMibBit(17)				// Open the actual link instead of what the link is pointing to
+			, EFileOpen_ShareBypass = DMibBit(18)		// Bypass file locking if possible
 			, EFileOpen_ShareAll = EFileOpen_ShareRead | EFileOpen_ShareWrite | EFileOpen_ShareDelete
 		};
 

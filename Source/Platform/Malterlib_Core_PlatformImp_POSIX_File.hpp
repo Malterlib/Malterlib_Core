@@ -550,7 +550,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		DMibErrorFile("Conflicting open flags (both don't open existing and don't create)");
 
 	if ((_OpenFlags & (EFileOpen_DontOpenExisting | EFileOpen_Read | EFileOpen_Write)) == (EFileOpen_DontOpenExisting | EFileOpen_Read))
-		DMibErrorFile("You are trying to open a file that does not exist for read access only, this makes no sence)");
+		DMibErrorFile("You are trying to open a file that does not exist for read access only, this makes no sense)");
 
 	_oPosixFileName = fg_ConvertToPOSIXPath(_FileName);
 	
@@ -668,7 +668,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		}
 	;
 
-	if (_OpenFlags & (EFileOpen_Read | EFileOpen_Write))
+	if ((_OpenFlags & (EFileOpen_Read | EFileOpen_Write)) && !(_OpenFlags & EFileOpen_ShareBypass))
 	{
 		int LockFlags = 0;
 		if ((_OpenFlags & (NMib::NFile::EFileOpen_ShareRead | NMib::NFile::EFileOpen_ShareWrite)))
@@ -686,7 +686,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 				DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}', {nfh}) when opening file") << FileName << LockFlags, errno));
 		}
 	}
-	
+
 	fg_SetUnixHandleOptions(iFile);
 
 	if (Openflags & (O_WRONLY | O_RDWR))
@@ -754,7 +754,7 @@ namespace
 mint NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, uint8 *_pData, mint _nBytes)
 {
 	using namespace NMib::NFile;
-	auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache;
+	auto Flags = EFileOpen_Read | EFileOpen_ShareBypass | EFileOpen_NoLocalCache;
 	
 	CFStr256 PosixFileName;
 	int BSDFile = fg_OpenHelperBSDFile<NMib::NStr::CFStr256>(_Path, Flags, PosixFileName, EFileAttrib_None);
