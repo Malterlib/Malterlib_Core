@@ -440,7 +440,7 @@ typedef char uuid_string_t[256];
 
 void NSys::fg_System_GenerateUUID(NDataProcessing::CUniversallyUniqueIdentifier &_UUID)
 {
-	static_assert(sizeof(uuid_t) == sizeof(_UUID), "");
+	static_assert(sizeof(uuid_t) == sizeof(_UUID));
 	uuid_generate((unsigned char *)&_UUID);
 #	if DMibEnableSafeCheck > 0
 		uuid_string_t RetStr;
@@ -1746,7 +1746,7 @@ namespace NMib
 			template <typename tf_CStr>
 			tf_CStr fg_GetProgramDirectoryGeneral()
 			{
-				static_assert(tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1, "");
+				static_assert(tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1);
 				uint32 Len = 0;
 				_NSGetExecutablePath(nullptr, &Len);
 				tf_CStr Ret;
@@ -1756,7 +1756,7 @@ namespace NMib
 			template <typename tf_CStr>
 			tf_CStr fg_GetProgramPathGeneral()
 			{
-				static_assert(tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1, "");
+				static_assert(tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1);
 				uint32 Len = 0;
 				_NSGetExecutablePath(nullptr, &Len);
 				tf_CStr Ret;

@@ -195,7 +195,7 @@ typedef char uuid_string_t[256];
 
 void NSys::fg_System_GenerateUUID(NDataProcessing::CUniversallyUniqueIdentifier &_UUID)
 {
-	static_assert(sizeof(uuid_t) == sizeof(_UUID), "");
+	static_assert(sizeof(uuid_t) == sizeof(_UUID));
 	uuid_generate((unsigned char *)&_UUID);
 #	if DMibEnableSafeCheck > 0
 	uuid_string_t RetStr;

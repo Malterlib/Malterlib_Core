@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -106,9 +106,7 @@
 #	include <new>
 #	define DMibPOverrideOperatorNew
 #elif defined(DPlatformFamily_Windows)
-#	ifndef _DEBUG
-#		define DMibPOverrideOperatorNew
-#	endif
+#	define DMibPOverrideOperatorNew
 #else
 #	error "Implement this"
 #endif

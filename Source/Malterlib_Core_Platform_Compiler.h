@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -207,29 +207,5 @@
 #	define DMibPOffsetOf(_Type, _Member) ((aint)(&((_Type *)0)->_Member))
 #else
 #	error "Implement this"
-#endif
-
-
-// C++14
-
-#if __cplusplus >= 201402L || _MSC_VER >= 1900
-#	define DMib_Cxx14 1
-#	define DMib_EnableIfDefault
-#else
-#	define DMib_Cxx14 0
-#	define DMib_EnableIfDefault = nullptr
-#endif
-
-#ifdef __cpp_noexcept_function_type
-#	define DMib_NoexceptFunctionType 1
-#else
-#	define DMib_NoexceptFunctionType 0
-#endif
-
-// Workarounds
-#if defined(DCompiler_MSVC)
-#	define DMibDecltypeThis
-#else
-#	define DMibDecltypeThis this->
 #endif
 

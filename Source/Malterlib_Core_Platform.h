@@ -47,19 +47,19 @@ namespace NMib
 
 
 // Sanity checks
-static_assert(sizeof(ch8) == 1, "");
-static_assert(sizeof(ch16) == 2, "");
-static_assert(sizeof(ch32) == 4, "");
-static_assert(sizeof(int8) == 1, "");
-static_assert(sizeof(int8) == 1, "");
-static_assert(sizeof(int16) == 2, "");
-static_assert(sizeof(int32) == 4, "");
-static_assert(sizeof(int64) == 8, "");
-static_assert(sizeof(uint8) == 1, "");
-static_assert(sizeof(uint16) == 2, "");
-static_assert(sizeof(uint32) == 4, "");
-static_assert(sizeof(uint64) == 8, "");
-static_assert(sizeof(void*) == sizeof(mint), "");
-static_assert(sizeof(void*) == sizeof(smint), "");
+static_assert(sizeof(ch8) == 1);
+static_assert(sizeof(ch16) == 2);
+static_assert(sizeof(ch32) == 4);
+static_assert(sizeof(int8) == 1);
+static_assert(sizeof(int8) == 1);
+static_assert(sizeof(int16) == 2);
+static_assert(sizeof(int32) == 4);
+static_assert(sizeof(int64) == 8);
+static_assert(sizeof(uint8) == 1);
+static_assert(sizeof(uint16) == 2);
+static_assert(sizeof(uint32) == 4);
+static_assert(sizeof(uint64) == 8);
+static_assert(sizeof(void*) == sizeof(mint));
+static_assert(sizeof(void*) == sizeof(smint));
 
 

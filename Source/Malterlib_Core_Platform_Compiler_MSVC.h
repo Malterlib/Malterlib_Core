@@ -1,14 +1,14 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
 
 #if defined(__EDG__)
 // This is the intellisense compiler
-#elif _MSC_VER == 1911
-#	if _MSC_FULL_VER != 191125547
+#elif _MSC_VER == 1912
+#	if _MSC_FULL_VER != 191225830
 #		pragma message("Current compiler version: " DMibStringize(_MSC_FULL_VER))
-#		error "Compiler version is not 191125547, please install the approprita service pack of Visual Studio 2017"
+#		error "Compiler version is not 191225830, please install the approprita service pack of Visual Studio 2017"
 #	endif
 #else
 #	pragma message("Compiler version " DMibStringize(_MSC_VER) "  not supported")
@@ -33,6 +33,8 @@
 #define _XKEYCHECK_H
 
 #define DMibNoAggregateConstexpr
+
+#define DCompiler_MSVC_Workaround 1
 
 #ifdef _DEBUG
 #pragma warning(disable:4714) // force inline not inlined

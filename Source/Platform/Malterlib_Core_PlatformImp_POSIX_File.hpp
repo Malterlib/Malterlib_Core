@@ -158,7 +158,7 @@ namespace NMib
 			template <typename tf_CStr>
 			tf_CStr fg_ResolveSymbolicLink(const tf_CStr &_FileFrom)
 			{
-				static_assert(tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1, "");
+				static_assert(tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1);
 				
 				tf_CStr FileFrom = fg_ConvertToPOSIXPath(_FileFrom);
 				tf_CStr NewString;

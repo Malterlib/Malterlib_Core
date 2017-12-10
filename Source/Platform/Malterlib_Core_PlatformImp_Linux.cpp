@@ -568,7 +568,7 @@ CSystem_POSIX *fg_GetSys_POSIX()
 
 void NSys::fg_System_GenerateUUID(NDataProcessing::CUniversallyUniqueIdentifier &_UUID)
 {
-	static_assert(sizeof(uuid_t) == sizeof(_UUID), "");
+	static_assert(sizeof(uuid_t) == sizeof(_UUID));
 	if (g_UUIDLibrary.f_OK())
 	{
 		g_UUIDLibrary.uuid_generate((unsigned char *)&_UUID);
