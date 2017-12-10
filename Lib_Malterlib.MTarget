@@ -368,7 +368,17 @@ Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
 			Property
 			{
 				VisualStudioRoot "@(Builtin.VisualStudioRoot->UnixPath())"
-				VisualStudioCRTPath "@(VisualStudioRoot)VC/Tools/MSVC/@(MalterlibMSVCVersion)/crt/src"
+
+				MSVCRootPath "@(MalterlibToolsRoot)/MSVC"
+				{
+					!MalterlibOverrideMSVCVersion ""
+				}
+				MSVCRootPath "@(VisualStudioRoot)VC/Tools/MSVC"
+				{
+					!!MSVCRootPath ""
+				}
+				
+				VisualStudioCRTPath "@(MSVCRootPath)/@(MalterlibMSVCVersion)/crt/src"
 			}
 
 			%Group "CDecl"
