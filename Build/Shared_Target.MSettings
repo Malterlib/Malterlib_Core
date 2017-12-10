@@ -2853,7 +2853,7 @@ Target
 			
 			Backslash "\\"
 
-			PrivateBuildString "{\"MalterlibBranch\": \"@(MalterlibFullBranch)\", \"MalterlibGitBranch\": \"@(MalterlibGitBranch)\", \"MalterlibGitCommit\": \"@(MalterlibGitCommit)\"} \\"
+			PrivateBuildString "{\"MalterlibBranch\": \"@(MalterlibFullBranch)\", \"MalterlibGitBranch\": \"@(MalterlibGitBranch)\", \"MalterlibGitCommit\": \"@(MalterlibGitCommit)\"}"
 			PrivateBuildString "@(PrivateBuildString->Replace('@(Backslash)', '@(Backslash)@(Backslash)'))"
 			PrivateBuildString "@(PrivateBuildString->Replace('\"', '@(Backslash)x22'))"
 
