@@ -30,7 +30,12 @@ using namespace NMib::NContainer;
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
 #include <Mib/Core/PlatformSpecific/OSXOSStatus>
 
+#ifdef DMibDynamicLibrary
+bint g_bIsSharedLibrary = true;
+#else
 bint g_bIsSharedLibrary = false;
+#endif
+
 bint g_bRegisteredAtFork = false;
 
 void fg_ForkPrepare();
@@ -1353,7 +1358,7 @@ void NSys::fg_CreateSystemVersion()
 {
 	if (CSystem::ms_PlatformVersion != 0)
 		return;
-	
+
 	if (g_OperatingSystemMajor < 0)
 	{
 		int Dummy;
@@ -1401,19 +1406,14 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 {
 	if (g_bCreatedSystemMalloc)
 		return;
-	
+
+	fg_CreateSystemVersion();
+
 	fg_MalterlibMallocOverrideInit();
 	
 	g_bCreatedSystemMalloc = true;
 	
 	g_VirtualMap.f_Construct();
-#ifdef DMibDynamicLibrary
-	g_bIsSharedLibrary = true;
-#else
-	g_bIsSharedLibrary = false;
-#endif
-
-	fg_CreateSystemVersion();
 
 	host_page_size(mach_host_self(), (vm_size_t *)&NMib::NSys::NPrivate::g_PageSize);
 	

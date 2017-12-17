@@ -28,15 +28,17 @@ using namespace NMib::NContainer;
 
 namespace NLocal
 {
-	int (* g_f_pipe2)(int __pipedes[2], int __flags) __THROW __wur = nullptr;
-	int (* g_f_inotify_init1)(int __flags) __THROW = nullptr;
-	int (* g_f_inotify_init)(void) __THROW = nullptr;
-	int (* g_f_inotify_add_watch)(int __fd, const char *__name, uint32_t __mask) __THROW = nullptr;
-	int (* g_f_inotify_rm_watch)(int __fd, int __wd) __THROW = nullptr;
-	int (* g_f_pthread_setname_np)(pthread_t __target_thread, __const char *__name) = nullptr;
-	void *(* g_f_memcpy)(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) = &memmove;
+	int (*g_f_pipe2)(int __pipedes[2], int __flags) __THROW __wur = nullptr;
+	int (*g_f_inotify_init1)(int __flags) __THROW = nullptr;
+	int (*g_f_inotify_init)(void) __THROW = nullptr;
+	int (*g_f_inotify_add_watch)(int __fd, const char *__name, uint32_t __mask) __THROW = nullptr;
+	int (*g_f_inotify_rm_watch)(int __fd, int __wd) __THROW = nullptr;
+	int (*g_f_pthread_setname_np)(pthread_t __target_thread, __const char *__name) = nullptr;
+	void *(*g_f_memcpy)(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) = &memmove;
 	_Unwind_Reason_Code (*g_f_unwind_backtrace) (_Unwind_Trace_Fn, void *);
 	_Unwind_Ptr (*g_f_unwind_getip) (struct _Unwind_Context *);
+	int (*g_f_utimensat)(int dirfd, const char *pathname, const struct timespec times[2], int flags) = nullptr;
+	int (*g_f_futimens)(int fd, const struct timespec times[2]) = nullptr;
 	
 	void fg_GetSymbols()
 	{
@@ -49,6 +51,8 @@ namespace NLocal
 		(void * &)g_f_unwind_backtrace = dlsym(RTLD_DEFAULT, "_Unwind_Backtrace");
 		(void * &)g_f_unwind_getip = dlsym(RTLD_DEFAULT, "_Unwind_GetIP");
 		(void * &)g_f_memcpy = dlsym(RTLD_NEXT, "memcpy");
+		(void * &)g_f_utimensat = dlsym(RTLD_DEFAULT, "utimensat");
+		(void * &)g_f_futimens = dlsym(RTLD_DEFAULT, "futimens");
 	}
 }
 
