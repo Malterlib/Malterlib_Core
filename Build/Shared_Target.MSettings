@@ -2064,6 +2064,19 @@ Target
 		}
 	}
 
+	
+	ToolPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/HostX64/x64;@(Target.ToolPath)"
+	{
+		&
+		{
+			!MalterlibOverrideMSVCVersion ""
+			HostPlatformFamily "Windows"
+			WindowsNativeToolChain "true"
+			!Target.PlatformToolset "v90"
+			MSVCToolChainArchitecture "HostX64/x86"
+		}
+	}
+
 	ToolPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture);@(Target.ToolPath)"
 	{
 		&
