@@ -3,7 +3,7 @@
 ../Algorithm 1ffa0f81a72ae2f8b21fde75b7df37e25c8973a2
 ../Atomic 682d55c5a8acd745cb21ffb272195b65918026e7
 ../Bit ee201034423e6e525b9f8973c9125f76b1d9fea4
-../BuildSystem a8b0c31dabbab1014f8f0bcd85b1217ed4689035
+../BuildSystem 9578324bcc157e747944342a6b8246de38cb190d
 ../Cloud d53512eb4de75d02c58c852d2dbcfd47e512c8fc
 ../CommandLine faeed6dbef1d78f7c885ee20616961b7e27b778f
 ../Compression 08384ae71c2b78f940bf2b6a61413eff27a52e24
@@ -19,7 +19,7 @@
 ../Documentation 231aa1b9a5cef27990d1cc3af6108d2d16e38096
 ../Encoding 6ec186da6fcf36277a8b9c4d9121c9182af3352d
 ../Exception f4b3e1dbfc4b506b0535e3f09aed762abfdc4141
-../File 816b7e4f16e9d0a7b0e4610851521695aca8d0a7
+../File b19ee0b9c9abf1a97b5c870d288b9a19e7b6f4bd
 ../Function fe9eb59e764df2baf902b448a04636d6d77466ec
 ../Graphics d02c91fe5808f01b8911f15d22e58195c06750c0
 ../Instrumentation e3f6b8e091d29bdcc6f78592d119be621b440c9c
@@ -27,12 +27,12 @@
 ../Intrusive e4e1a65509141db90ccee7cd1283c2658acbe1bc
 ../Iterator d76777e67204dfc20db1c384a329bcf23b72b18a
 ../Log 4b3cac77b5be2071e808549fe1cea9846108fdc5
-../Memory 8d32b1a536457c187ddaacde4bdf211f75190164
+../Memory b55aebacc94e1d4c7731603d6d49c1b6451bcab4
 ../Meta 3a4732da77a9c3f12ba9d2848401e0236581c00f
 ../Meteor f58f54b645de9c8ff5ede44333bc9f5efbd36fb6
-../Mongo f333aa3ccfd2f9b5e8a21cda34c311b7b463ef73
-../Network dcdfdb53aca145d10cb6b603be61354089bc85d8
-../Numeric ad1eade3096d51c2bb31ab4113170f5521ebd411
+../Mongo 7f4df8c3e69f0b3b2c861c9db083bce990f0819c
+../Network 1b7f6713196ff4bddc00a24e3c155466ac22870a
+../Numeric d08b93a981af6558ea1ff3b4625bde257f1ae961
 ../Perforce 7d08b2ee341e15e576f8dcec97474bd4e0234906
 ../Preprocessor f095184b1fd02f406afb19f2c0c971d891df691f
 ../Process 797a37c5c3819e842c1b1e7ae738f28b52bb51af
