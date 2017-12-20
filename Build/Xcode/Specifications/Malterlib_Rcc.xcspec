@@ -1,0 +1,78 @@
+/**
+    Rcc build task
+*/
+
+{   Type = Compiler;
+    Identifier = com.malterlib.compiler.qt.rcc;
+    Name = "Rcc";
+    Vendor = "Malterlib";
+    Description = "Compile a Qt resource file.";
+	ProgressDescription = "Compiling $(CommandProgressByType) source files";
+    CommandLine = "$(MLSRCROOT)/SDK/Qt/bin/OSX/rcc [options] -name $(RCC_INIT_NAME) -o $(RCC_OUTPUT_PATTERN) $(InputFile) ";
+    RuleName = "Rcc $(InputFile)";
+    ExecDescription = "Rcc $(InputFile)";
+    InputFileTypes = (
+        sourcecode.qt.rcc
+    );
+	OutputsAreSourceFiles = Yes;
+    SynthesizeBuildRule = Yes;
+    Outputs = (
+        "$(RCC_OUTPUT_PATTERN)"
+    );
+
+    CommandOutputParser = XCGccCommandOutputParser;
+    Options = (
+    	{   Name = RCC_OUTPUT_PATTERN;
+        	Type = string;
+            	DefaultValue = "$(InputFileBase)$(InputFileBaseUniquefier).cpp";
+            	Category = BuildOptions;
+    	}, 
+        {   Name = RCC_IDS_DEPENDENCY;
+            Type = string;
+            DefaultValue = "";
+            Category = BuildOptions;
+			CommandLineArgs = {
+				"" = ();
+				"<<otherwise>>" = ("-idsdependency", "$(value)");
+			};
+        },
+        {   Name = RCC_MALTERLIB_DEPENDENCY;
+            Type = string;
+            DefaultValue = "";
+            Category = BuildOptions;
+			CommandLineArgs = {
+				"" = ();
+				"<<otherwise>>" = ("-idsdependency", "$(value)");
+			};
+        },
+    	{   Name = RCC_INIT_NAME;
+            Type = string;
+            DefaultValue = "$(InputFileBase)";
+            Category = BuildOptions;
+    	},
+    	{   Name = RCC_COMPRESS_LEVEL;
+        	Type = string;
+            DefaultValue = "";
+            Category = BuildOptions;
+            CommandLinePrefixFlag = "-compress ";
+    	},
+    	{   Name = RCC_COMPRESS_THRESHOLD;
+        	Type = string;
+            DefaultValue = "";
+            Category = BuildOptions;
+            CommandLinePrefixFlag = "-threshold ";
+    	},   
+        {   Name = RCC_COMPRESS;
+            Type = bool;
+            DefaultValue = YES;
+            Category = BuildOptions;
+            CommandLineArgs = { YES = (); NO = (-no-compress); };
+        },
+        {   Name = RCC_DISABLE_NAMESPACE;
+            Type = bool;
+            DefaultValue = NO;
+            Category = BuildOptions;
+            CommandLineArgs = { YES = (-namespace); NO = (); };
+        },
+    );
+}

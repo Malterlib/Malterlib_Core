@@ -1,0 +1,139 @@
+/**
+	MalterlibFS build task
+*/
+
+{   
+	Type = Compiler;
+	Identifier = com.malterlib.compiler.malterlibfs;
+	Name = "Malterlib Virtual FS Compiler";
+	Vendor = "Malterlib";
+	Description = "Compile a Malterlib Virtual FS into source files";
+
+	ProgressDescription = "Compiling $(CommandProgressByType) source files";
+	
+	CommandLine = "$(MToolPath) VirtualFS -o \"$(VFS_OUTPUT_PATTERN)\" -ocpp \"$(VFS_OUTPUT_PATTERN_CPP)\" [options] \"$(InputFile)\""; 
+
+	RuleName = "Compile Virtual FS $(InputFile)";
+	ExecDescription = "Compile Virtual FS $(InputFile)";
+	InputFileTypes = (
+		sourcecode.malterlib.malterlibfs
+	);
+	OutputsAreSourceFiles = Yes;
+	SynthesizeBuildRule = Yes;
+	
+	Outputs = (
+		"$(VFS_OUTPUT_PATTERN_CPP)",
+		"$(VFS_OUTPUT_PATTERN_ASM)",
+	);
+
+	
+	CommandOutputParser = XCGccCommandOutputParser;
+	Options = (
+	{   
+		Name = VFS_OUTPUT_PATTERN;
+		Type = String;
+		Category = BuildOptions;
+		DefaultValue = "$(InputFileBase)$(InputFileBaseUniquefier).obj";
+	},
+	{   
+		Name = VFS_OUTPUT_PATTERN_CPP;
+		Type = String;
+		Category = BuildOptions;
+		DefaultValue = "$(InputFileBase)$(InputFileBaseUniquefier).cpp";
+	},
+	{   
+		Name = VFS_OUTPUT_PATTERN_ASM;
+		Type = String;
+		Category = BuildOptions;
+		DefaultValue = "$(VFS_OUTPUT_PATTERN_CPP)";
+	},
+	{   
+		Name = VFS_DEPENDENCY_FILE;
+		Type = String;
+		Category = BuildOptions;
+		DefaultValue = "Default";
+		CommandLineArgs = {
+			"" = ();
+			"Default" = ();
+			"<<otherwise>>" = ("-odepend", "$(value)");
+		};
+/*		IsInputDependency = YES;*/
+	},
+	{   
+		Name = VFS_IDS_DEPENDENCY_FILE;
+		Type = String;
+		Category = BuildOptions;
+		DefaultValue = "";
+		CommandLineArgs = {
+			"" = ();
+			"<<otherwise>>" = ("-oidsdepend", "$(value)");
+		};
+/*		IsInputDependency = YES;*/
+	},
+	{   
+		Name = VFS_MALTERLIB_DEPENDENCY_FILE;
+		Type = String;
+		Category = BuildOptions;
+		DefaultValue = "";
+		CommandLineArgs = {
+			"" = ();
+			"<<otherwise>>" = ("-oidsdepend", "$(value)");
+		};
+/*		IsInputDependency = YES;*/
+	},
+	{   
+		Name = VFS_PLATFORM;
+		Type = String;
+		Category = BuildOptions;
+		DefaultValue = "";
+		CommandLineArgs = {
+			"" = ();
+			"<<otherwise>>" = ("-platform", "$(value)");
+		};
+	},
+	{   
+		Name = VFS_VERBOSE;
+		Type = bool;
+		DefaultValue = YES;
+		Category = BuildOptions;
+		CommandLineArgs = { YES = (-verbose); NO = (); };
+	}, 
+	{   
+		Name = VFS_OUTPUTASOBJECT;
+		Type = Enumeration;
+		DefaultValue = NO;
+		Category = BuildOptions;
+		CommandLineArgs = {
+			"NO" = ();
+			"Elf32" = (-elf32);
+			"Elf64" = (-elf64);
+		};
+	}, 
+	{   
+		Name = VFS_OUTPUTASASSEMBLY;
+		Type = Enumeration;
+		DefaultValue = NO;
+		Category = BuildOptions;
+		CommandLineArgs = {
+			"NO" = ();
+			"YES" = (-asm);
+		};
+	}, 
+	{
+		Name = VFS_ADDITIONAL_OPTIONS;
+		Type = String;
+		Category = BuildOptions;
+		DefaultValue = "";
+	},  
+	{
+		Name = VFS_PATH_PREFIX;
+		Type = Enumeration;
+		Category = BuildOptions;
+		DefaultValue = "";
+		CommandLineArgs = {
+			"" = ();
+			"<<otherwise>>" = ("-dest", "$(value)");
+		};
+	},  
+	);
+}

@@ -1,0 +1,36 @@
+// Copyright © 2017 Nonna Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+%Group "~Automatic/Xcode Specifications"
+{
+	Property
+	{
+		XcodeSpecificationsDir "@(HOME)/Library/Application Support/Developer/Shared/Xcode/Specifications"
+		SpecificationsRoot "@('Build/Xcode/Specifications'->MakeAbsolute())"
+		EvalFile "@(Explodee->GetFile())"
+		RelativePath "@(Explodee->MakeRelative(@(SpecificationsRoot)))"
+		ExpandTemplate2	"@(XcodeSpecificationsDir)/@(RelativePath)|RelativePath=@(RelativePath)|FullPath=@(Explodee);"
+		{
+			&
+			{
+				!EvalFile ""
+				!EvalFile ".DS_Store"
+			}
+		}
+	}
+
+	%GenerateFile "@(Builtin.Function->ExplodeList('@(Explodee->FindFilesRecursiveIn('@(SpecificationsRoot)/*'))', ';', 'ExpandTemplate2'))"
+	{
+		Compile.Type "None"
+		Property
+		{
+			Name "@(this.Identity)"
+			Contents "@(ReadFile('@(FullPath)'))"
+			Executable false
+			UnixLineEnds true
+			UnicodeBOM false
+			Group "@(RelativePath->GetPath())"
+		}
+	}
+}
+

@@ -1,0 +1,37 @@
+/**
+    Uic build task
+*/
+
+{   Type = Compiler;
+    Identifier = com.malterlib.compiler.qt.uic;
+    Name = "Uic";
+    Vendor = "Malterlib";
+    Description = "Compile a UI file into a header.";
+	ProgressDescription = "Compiling $(CommandProgressByType) source files";
+    CommandLine = "$(MLSRCROOT)/SDK/Qt/bin/OSX/uic $(InputFile) [options] -o $(UIC_OUTPUT_PATTERN)";   
+    RuleName = "Uic $(InputFile)";
+    ExecDescription = "Uic $(InputFile)";
+    InputFileTypes = (
+        sourcecode.qt.uic
+    );
+	OutputsAreSourceFiles = Yes;
+    SynthesizeBuildRule = Yes;
+    Outputs = (
+        "$(UIC_OUTPUT_PATTERN)"
+    );
+
+    CommandOutputParser = XCGccCommandOutputParser;
+    Options = (
+        {   Name = UIC_GUARDS;
+            Type = bool;
+            DefaultValue = YES;
+            Category = BuildOptions;
+            CommandLineArgs = { YES = (); NO = (-p); };
+        },
+        {   Name = UIC_OUTPUT_PATTERN;
+        	Type = String;
+        	Category = BuildOptions;
+        	DefaultValue = "$(InputFileBase)$(InputFileBaseUniquefier).h";
+    	},
+    );
+}

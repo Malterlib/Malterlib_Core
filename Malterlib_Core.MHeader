@@ -82,6 +82,10 @@ Import "Lib_Malterlib.MTarget"
 		%Group Build
 		{
 			%File "Build/*.sh"
+			%Group XcodeSpecifications
+			{
+				%File "Build/Xcode/Specifications/^*"
+			}
 		}
 	}
 	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(Target.ExtraGroups)"
@@ -115,6 +119,11 @@ Import "Lib_Malterlib.MTarget"
 			MalterlibIncludeLevel Workspace
 		}
 		ExtraGroups "~Automatic/Include Roots;@(Target.ExtraGroups)"
+	}
+	Target
+	{
+		!!GeneratorFamily Xcode
+		ExtraGroups "~Automatic/Xcode Specifications;@(Target.ExtraGroups)"
 	}
 	Target
 	{

@@ -1,0 +1,31 @@
+/**
+    Twk build task
+*/
+
+{   Type = Compiler;
+    Identifier = com.malterlib.compiler.qt.twk;
+    Name = "Tweak Compiler";
+    Vendor = "Malterlib";
+    Description = "Compile a Malterlib Tweak file into header and source files";
+	ProgressDescription = "Compiling $(CommandProgressByType) source files";
+    CommandLine = "$(MToolPath) GenerateTweaks -o $(TWK_OUTPUT_PATTERN) [options] \"$(InputFile)\""; 
+
+	RuleName = "Compile Tweaks $(InputFile)";
+    ExecDescription = "Compile Tweaks $(InputFile)";
+    InputFileTypes = (
+        sourcecode.malterlib.twk,
+    );
+    SynthesizeBuildRule = Yes;
+    OutputsAreSourceFiles = Yes;
+
+    CommandOutputParser = XCGccCommandOutputParser;
+    Options = (
+    	{   Name = TWK_OUTPUT_PATTERN;
+        	Type = StringList;
+        	Category = BuildOptions;
+        	DefaultValue = "$(InputFileBase)$(InputFileBaseUniquefier).cpp";
+    		Outputs = ( "$(TWK_OUTPUT_PATTERN)" );
+    		InputFileTypes = ( sourcecode.malterlib.twk );
+    	},
+    );
+}

@@ -1,0 +1,79 @@
+(
+	{
+		Identifier = "sourcecode.malterlib.malterlibfs";
+		BasedOn = sourcecode;
+		Name = MalterlibFS;
+		Extensions = (
+			MalterlibFSSpec,
+		);
+		IsTextFile = YES;
+		IsSourceCode = YES;
+		AppliesToBuildRules = YES;
+		"ChangesCauseDependencyGraphInvalidation" = YES;
+	},
+	{
+		Identifier = "sourcecode.malterlib.twk";
+		BasedOn = sourcecode;
+		Name = "Malterlib Tweak File";
+		Extensions = (
+			twk,
+			TWK,
+			Twk,
+		);
+		IsTextFile = YES;
+		IsSourceCode = YES;
+		AppliesToBuildRules = YES;
+		"ChangesCauseDependencyGraphInvalidation" = YES;
+	},
+	{
+		Identifier = "sourcecode.qt.uic";
+		BasedOn = sourcecode;
+		Name = "Qt UI File";
+		Extensions = (
+			ui,
+		);
+		IsTextFile = YES;
+		IsSourceCode = YES;
+		AppliesToBuildRules = YES;
+		"ChangesCauseDependencyGraphInvalidation" = YES;
+	},
+	{
+		Identifier = "sourcecode.qt.rcc";
+		BasedOn = sourcecode;
+		Name = "Qt Resource File";
+		Extensions = (
+			qrc,
+		);
+		IsTextFile = YES;
+		IsSourceCode = YES;
+		AppliesToBuildRules = YES;
+		"ChangesCauseDependencyGraphInvalidation" = YES;
+	},
+	{
+		Identifier = "sourcecode.c.qt.moc.cpp";
+		BasedOn = sourcecode;
+		Name = "Qt Moc CPP File";
+		IsTextFile = YES;
+		IsSourceCode = YES;
+		AppliesToBuildRules = YES;
+		"ChangesCauseDependencyGraphInvalidation" = YES;
+	},
+	{
+		Identifier = "sourcecode.c.qt.moc.cpp.nolink";
+		BasedOn = sourcecode;
+		Name = "Qt Moc CPP File (not linked)";
+		IsTextFile = YES;
+		IsSourceCode = YES;
+		AppliesToBuildRules = YES;
+		"ChangesCauseDependencyGraphInvalidation" = YES;
+	},
+	{
+		Identifier = "sourcecode.c.qt.h.nolink";
+		BasedOn = sourcecode;
+		Name = "C++ Header (not linked)";
+		IsTextFile = YES;
+		IsSourceCode = YES;
+		AppliesToBuildRules = YES;
+		"ChangesCauseDependencyGraphInvalidation" = YES;
+	},
+)
