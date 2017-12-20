@@ -115,29 +115,6 @@
 			%File "VisualStudio/*.targets"
 			%File "VisualStudio/*.xml"
 		}
-		%Group "Xcode Plugins"
-		{
-			&
-			{
-				!MalterlibBuildServerBuild true
-				GeneratorFamily Xcode
-			}
-			
-			Compile.AllowNonExisting true
-
-			%Group "Clang LLVM P4 Generator"
-			{
-				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Clang LLVM P4 Generator.xcplugin/Contents/*"
-				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Clang LLVM P4 Generator.xcplugin/Contents/Resources/*"
-				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Clang LLVM P4 Generator.xcplugin/Contents/Resources/English.lproj/*"
-			}
-			%Group "Hansoft Tools.xcplugin"
-			{
-				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Hansoft Tools.xcplugin/Contents/*"
-				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Hansoft Tools.xcplugin/Contents/Resources/*"
-				%File "@(MalterlibDevelopmentRoot)/Malterlib/Tools/XcodePlugins/Hansoft Tools.xcplugin/Contents/Resources/English.lproj/*"
-			}
-		}
 		%Group "Build System Generated Files"
 		{
 			%GenerateFile "IntermediateDirectories"
@@ -170,7 +147,7 @@
 			{
 				Property
 				{
-					Name "@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/GenerateBuildSystem_@(Workspace:Workspace.Name)@(ScriptExtension)"
+					Name "@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/GenerateBuildSystem_@(Workspace:Workspace.Name)_@(Platform)_@(Architecture)@(ScriptExtension)"
 
 					Contents	"@(Contents)"\
 								"IF \"%DisableProjectGen%\" == \"1\" GOTO Skip\r\n"\

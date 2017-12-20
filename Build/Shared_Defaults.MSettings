@@ -220,7 +220,26 @@ Property
 	{
 		!!MalterlibDefaultToolset ""
 	}
-	
+
+	MalterlibDefaultCompiler "false" // User: Use default Xcode compiler
+	{
+		&
+		{
+			MalterlibDefaultCompiler ""
+			PlatformFamily Linux
+		}
+	}
+
+	MalterlibDefaultCompiler "true"
+	{
+		!!MalterlibDefaultCompiler ""
+	}
+
+	MalterlibDefaultXcode "true" // User: Use default Xcode clang compiler specifications
+	{
+		!!MalterlibDefaultXcode ""
+	}
+
 	MalterlibUseStaticLibCxxABI true
 	{
 		&

@@ -921,6 +921,25 @@ Property
 	PlatformVersion "1000"
 }
 
+// Assembler settings
+Compile
+{
+	&
+	{
+		LanguageFamily Native
+		Compile.Type "Assembler"
+	}
+
+	Warnings_UnusedCommandLineArgument false
+	{
+		&
+		{
+			GeneratorFamily Xcode
+			!Target.PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
+		}
+	}
+}
+
 // C and C++ Settings
 Compile
 {
@@ -1303,18 +1322,24 @@ Compile
 			!Target:Target.Type Driver
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
-			Target.PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
 		}
 	}
-	
-	DefaultLibraries "NoStdLibCxx"
+
+	Warnings_AlignedAllocationUnavailable false
 	{
 		&
 		{
-			PlatformType "Unix"
-			MalterlibUseStaticLibCxx true
-			!MalterlibDisableMalterlib true
-			Target.PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
+			GeneratorFamily Xcode
+			!MalterlibDefaultCompiler true
+		}
+	}
+
+	Warnings_UnusedCommandLineArgument false
+	{
+		&
+		{
+			GeneratorFamily Xcode
+			!Target.PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
 		}
 	}
 	

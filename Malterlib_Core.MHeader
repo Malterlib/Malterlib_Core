@@ -104,6 +104,11 @@ Import "Lib_Malterlib.MTarget"
 	}
 	%Dependency "@(Malterlib_Core_DebugDependencies)"
 	{
+		|
+		{
+			GeneratorFamily VisualStudio
+			DebugCompiler true
+		}
 		!!MalterlibSubLibrarySeparate true
 		Dependency.Indirect true
 		Dependency.Link false
@@ -264,3 +269,4 @@ Property
 }
 
 Import "Tools/*/*.MHeader"
+

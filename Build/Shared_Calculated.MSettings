@@ -249,7 +249,7 @@ Property
 {
 	PlatformToolsetFamily "clang"
 	{
-		!!Target.PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
+		!!Target.PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
 		!!Target.PlatformToolset "com.apple.compilers.llvm.clang.1_0"
 	}
 

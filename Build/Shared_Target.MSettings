@@ -543,9 +543,13 @@ Target
 
 Property
 {
-	MalterlibSysRoot "/Development/Malterlib/Tools/SDKs/@(Platform).sdk"
+	MalterlibSysRoot "@('../../../Binaries'->MakeAbsolute())/Malterlib_@(PlatformFamily)/SDKs/@(Platform).sdk"
 	{
-		!!PlatformFamily Linux
+		|
+		{
+			PlatformFamily Linux
+			PlatformFamily Emscripten
+		}
 	}
 	
 	MalterlibToolsPrefix ""
@@ -604,6 +608,7 @@ Property
 		&
 		{
 			PlatformToolsetCompiler ""
+			!MalterlibDefaultCompiler true
 			!MalterlibDefaultToolset true
 			!HostPlatformFamily Windows
 		}
@@ -615,6 +620,7 @@ Property
 			PlatformToolsetCompiler ""
 			!MalterlibOverrideMSVCVersion ""
 			!MalterlibDefaultToolset true
+			!MalterlibDefaultCompiler true
 			HostPlatformFamily Windows
 		}
 	}
@@ -668,6 +674,61 @@ Property
 Target
 {
 	ExportScriptEnvironmentContents "@(Builtin.Function->ExplodeList('@(Target.ExportScriptEnvironment)', ';', 'ExportScriptEnvironmentContents_Template'))"
+}
+
+// Xcode workarounds
+Target
+{
+	&
+	{
+		LanguageFamily Native
+		GeneratorFamily "Xcode"
+		MalterlibDefaultXcode true
+	}
+
+	Workaround_GCC_ENABLE_TRIGRAPHS ""
+	Workaround_GCC_ENABLE_PASCAL_STRINGS ""
+	Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS ""
+	Workaround_GCC_WARN_ABOUT_MISSING_PROTOTYPES ""
+	Workaround_GCC_WARN_ABOUT_RETURN_TYPE ""
+	Workaround_GCC_WARN_NON_VIRTUAL_DESTRUCTOR ""
+	Workaround_GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS ""
+	Workaround_CLANG_WARN__EXIT_TIME_DESTRUCTORS ""
+	Workaround_GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED ""
+	Workaround_GCC_WARN_MISSING_PARENTHESES ""
+	Workaround_GCC_WARN_CHECK_SWITCH_STATEMENTS ""
+	Workaround_GCC_WARN_UNUSED_FUNCTION ""
+	Workaround_GCC_WARN_UNUSED_LABEL ""
+	Workaround_GCC_WARN_UNUSED_PARAMETER ""
+	Workaround_GCC_WARN_UNUSED_VARIABLE ""
+	Workaround_GCC_WARN_UNUSED_VALUE ""
+	Workaround_CLANG_WARN_EMPTY_BODY ""
+	Workaround_GCC_WARN_UNINITIALIZED_AUTOS ""
+	Workaround_GCC_WARN_UNKNOWN_PRAGMAS ""
+	Workaround_GCC_WARN_SHADOW ""
+	Workaround_GCC_WARN_FOUR_CHARACTER_CONSTANTS ""
+	Workaround_CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION ""
+	Workaround_CLANG_WARN_CONSTANT_CONVERSION ""
+	Workaround_CLANG_WARN_INT_CONVERSION ""
+	Workaround_CLANG_WARN_BOOL_CONVERSION ""
+	Workaround_CLANG_WARN_ENUM_CONVERSION ""
+	Workaround_CLANG_WARN_FLOAT_CONVERSION ""
+	Workaround_CLANG_WARN_NON_LITERAL_NULL_CONVERSION ""
+	Workaround_CLANG_WARN_OBJC_LITERAL_CONVERSION ""
+	Workaround_GCC_WARN_64_TO_32_BIT_CONVERSION ""
+	Workaround_GCC_WARN_ABOUT_MISSING_NEWLINE ""
+	Workaround_CLANG_WARN_CXX0X_EXTENSIONS ""
+	Workaround_GCC_CW_ASM_SYNTAX ""
+	Workaround_GCC_STRICT_ALIASING ""
+	Workaround_GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS ""
+	Workaround_GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO ""
+	Workaround_CLANG_WARN_IMPLICIT_SIGN_CONVERSION ""
+	Workaround_CLANG_WARN_INFINITE_RECURSION ""
+	Workaround_CLANG_WARN_SUSPICIOUS_MOVE ""
+	Workaround_CLANG_WARN_COMMA ""
+	Workaround_CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING ""
+	Workaround_CLANG_WARN_STRICT_PROTOTYPES ""
+	Workaround_CLANG_WARN_RANGE_LOOP_ANALYSIS ""
 }
 
 // Xcode
@@ -756,32 +817,177 @@ Target
 		{
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
-			Target.PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
+			!MalterlibDefaultCompiler true
 		}
 	}
-	
+
+	LDFlags "-nostdlib @(Target.LDFlags)"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			MalterlibDefaultCompiler true
+		}
+	}
+
+	LDFlagsFirst "-lcrt1.10.6.o @(Target.LDFlagsFirst)"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			MalterlibDefaultCompiler true
+			|
+			{
+				Target.Type "ConsoleExecutable"
+				Target.Type "Executable"
+				Target.Type "UIExecutable"
+			}
+			|
+			{
+				Platform OSX10.6
+				Platform OSX10.7
+			}
+		}
+	}
+
+	LDFlagsFirst "-lcrt1.10.5.o @(Target.LDFlagsFirst)"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			MalterlibDefaultCompiler true
+			|
+			{
+				Target.Type "ConsoleExecutable"
+				Target.Type "Executable"
+				Target.Type "UIExecutable"
+			}
+			Platform OSX10.5
+		}
+	}
+
+	LDFlagsFirst "-lbundle1.o @(Target.LDFlagsFirst)"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			MalterlibDefaultCompiler true
+			|
+			{
+				Target.Type XcodeBundle
+				Target.Type DynamicLibrary
+			}
+			Platform OSX10.5
+		}
+	}
+
+	LDFlagsFirst "-ldylib1.10.5.o @(Target.LDFlagsFirst)"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			MalterlibDefaultCompiler true
+			|
+			{
+				Target.Type SharedDynamicLibrary
+			}
+			Platform OSX10.5
+		}
+	}
+
+	LDFlags "@(Target.LDFlags) -lSystem "
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			MalterlibDefaultCompiler true
+			TargetIsExecutable true
+			PlatformFamily OSX
+		}
+	}
+
+	LDFlags "@(Target.LDFlags) -framework Foundation -lobjc "
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+			MalterlibDefaultCompiler true
+			TargetIsExecutable true
+			PlatformFamily OSX
+			ObjcLinkRuntime rue
+		}
+	}
+
+	LDFlagsFirst "-force_load @(MalterlibPosixInitFileName) @(Target.LDFlagsFirst)"
+	{
+		&
+		{
+			TargetIsExecutable "true"
+			!Target.Type "Driver"
+			!MalterlibDisableMalterlib true
+			!MalterlibPosixInitFileName ""
+			PlatformFamily OSX
+			MalterlibDefaultCompiler true
+		}
+	}
+
+	LDFlagsFirst "@(MalterlibPosixInitFileName) @(Target.LDFlagsFirst)"
+	{
+		&
+		{
+			TargetIsExecutable "true"
+			!Target.Type "Driver"
+			!MalterlibDisableMalterlib true
+			!MalterlibPosixInitFileName ""
+			!PlatformFamily OSX
+			MalterlibDefaultCompiler true
+		}
+	}
+
+	LDFlags "-Wno-unused-command-line-argument @(Target.LDFlags)"
+	{
+		&
+		{
+			GeneratorFamily Xcode
+			!Target.PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
+		}
+	}
+
 	PlatformToolset "com.apple.compilers.llvm.clang.1_0"
 	{
 		&
 		{
 			Target.PlatformToolset ""
-			MalterlibDefaultToolset true
+			|
+			{
+				MalterlibDefaultXcode true
+				MalterlibDefaultToolset true
+			}
 		}
 	}
 	
-	PlatformToolset "com.apple.compilers.llvm.clang.p4generator"
+	PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
 	{
 		!!Target.PlatformToolset ""
 	}
 
 	PlatformToolsetCompiler "@(PlatformToolsetCompiler)"
+	{
+		!PlatformToolsetCompiler ""
+	}
 	PlatformToolsetCompiler "@(MToolPath)"
 	{
 		!!Documentation Doxygen
 	}
 	
-//	PlatformToolsetLibTool "/Deploy/LibTool/libtool"
-	PlatformToolsetLibTool "/Development/Malterlib/Tools/OSXPatches/libtool/libtool"
+	PlatformToolsetLibTool "@('../../../Binaries/Malterlib/OSXLibTool/libtool'->MakeAbsolute())"
 	{
 		!!PlatformFamily Linux
 		!!PlatformFamily Emscripten
@@ -1039,7 +1245,33 @@ Target
 		!!Target.SDKRoot ""
 	}
 
-	
+	RealSDKRoot "macosx10.5" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.5" } }
+	RealSDKRoot "macosx10.6" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.6" } }
+	RealSDKRoot "macosx10.7" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.7" } }
+	RealSDKRoot "macosx10.8" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.8" } }
+	RealSDKRoot "macosx10.9" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.9" } }
+	RealSDKRoot "macosx10.10" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.10" } }
+	RealSDKRoot "macosx10.11" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.11" } }
+	RealSDKRoot "macosx10.12" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.12" } }
+	RealSDKRoot "macosx10.13" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.13" } }
+	RealSDKRoot "iphoneos8.1" { & { Target.RealSDKRoot "" Target.SDKRoot "iOS8.1" } }
+	RealSDKRoot "@('../../../Binaries/Malterlib_Linux/SDKs/Linux2.6.sdk'->MakeAbsolute())"
+	{
+		&
+		{
+			Target.RealSDKRoot ""
+			Target.SDKRoot "Linux2.6"
+		}
+	}
+	RealSDKRoot "@('../../../Binaries/Malterlib_Emscripten/SDKs/Emscripten.sdk'->MakeAbsolute())"
+	{
+		&
+		{
+			Target.RealSDKRoot ""
+			Target.SDKRoot "Emscripten"
+		}
+	}
+
 	DeploymentTarget "@(Platform)"
 	{
 		&
@@ -1391,6 +1623,7 @@ Target
 			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			!MalterlibPosixInitFileName ""
+			!MalterlibDefaultCompiler true
 		}
 	}
 
@@ -2200,7 +2433,7 @@ Property
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('-','_'))"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace(' ','_'))"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('.','_'))"
-	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName).py"
+	MalterlibPythonDebugScriptFileName "@(MalterlibPythonDebugScriptName).py"
 	
 	MalterlibBundleIdentifier "@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())"
 	{
@@ -2230,11 +2463,11 @@ Property
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
                                     "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python\"\r\n"\
 									"@(CheckErrors)\r\n"\
-                                    "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.FileExtension)_LLDBLib\"\r\n"\
+                                    "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptName)_LLDBLib\"\r\n"\
 									"@(CheckErrors)\r\n"\
-									"cp -f \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptName)\"\r\n"\
+									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptFileName)\" \"\" 0 1 0 1\r\n"\
 									"@(CheckErrors)\r\n"\
-									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(Target.FileName)@(Target.FileExtension)_LLDBLib\"\r\n"\
+									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptName)_LLDBLib\"\r\n"\
 									"@(CheckErrors)\r\n"
 	{
 		&
@@ -3119,14 +3352,10 @@ Property
 {
 	MalterlibNeedLanguage_Cxx "true"
 	{
-		!MalterlibExeFSSpecContents ""
-	}
-	MalterlibNeedLanguage_C "true"
-	{
-		&
+		|
 		{
-			!MalterlibNeedLanguage_Cxx true
-			GeneratorFamily Xcode
+			!MalterlibExeFSSpecContents ""
+			GeneratorFamily Xcode // Needed for dependency checking
 		}
 	}
 }
@@ -3337,38 +3566,16 @@ Target
 					"  echo error: Dependency checking failed\n"\
 					"  exit 1\n"\
 					"fi\n"\
-					"MTool TouchOrCreate \"@(PreBuildOutputfile)\"\n"\
-					"exit 0\n"
+					"MTool TouchOrCreate \"@(PreBuildOutputfile)\"\n"
 	{
 		//!!MalterlibAccurateDependencies true
 	}
-
-
 }
 
 Property
 {
-	MalterlibExecutableInput "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME)"
-	MalterlibExecutableInput "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)"
-	{
-		!Target.FileExtension ""
-	}
-	MalterlibExecutableInput "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)/Contents/MacOS/$(PRODUCT_NAME)"
-	{
-		&
-		{
-			PlatformFamily OSX
-			MalterlibIsOSXBundle true
-		}
-	}
-	MalterlibExecutableInput "$(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME).$(EXECUTABLE_EXTENSION)/$(PRODUCT_NAME)"
-	{
-		&
-		{
-			PlatformFamily iOS
-			MalterlibIsOSXBundle true
-		}
-	}
+	MalterlibExecutableInput "@(MalterlibOriginalModuleDestinationExecutable)"
+
 	MalterlibPostBuildScriptInputs "@(MalterlibExecutableInput);@(MalterlibPostBuildScriptInputs)"
 	MalterlibPostBuildScriptInputs "@(MalterlibPostCopySources);@(MalterlibPostBuildScriptInputs)"
 	{
@@ -3382,12 +3589,20 @@ Property
 	}
 	
 	MalterlibPostBuildScriptInputsInternalTemplate	"@(Expand0);"
+	{
+		|
+		{
+			!Expand0 "@(MalterlibFinalModuleDestinationExecutable)"
+			MalterlibFinalModuleDestinationExecutable "@(MalterlibOriginalModuleDestinationExecutable)"
+		}
+	}
 	MalterlibPostBuildScriptInputsTemplate			"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibPostBuildScriptInputsInternalTemplate'))"
 	{
 		!Explodee ""
 	}
 	MalterlibPostBuildScriptInputsContents "@(Builtin.Function->ExplodeList('@(MalterlibPostBuildScriptInputs)', ';', 'MalterlibPostBuildScriptInputsTemplate'))"
-	
+
+	PostBuildOutputfile "@(Target.IntermediateDirectory)PostBuildOutput.cpp"
 }
 
 Target
@@ -3395,7 +3610,7 @@ Target
 	!!GeneratorFamily Xcode
 
 	PostBuildScriptInputs "@(MalterlibPostBuildScriptInputsContents)"
-	PostBuildScriptOutputs "$(CONFIGURATION_BUILD_DIR)/@(Target.Name).c"
+	PostBuildScriptOutputs "@(PostBuildOutputfile)"
 }
 
 Property
@@ -3450,8 +3665,8 @@ Property
 	}
 
 	
-	MalterlibPostCopySources	"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)|../Python;"\
-								"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)_LLDBLib|../Python;"\
+	MalterlibPostCopySources	"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptFileName)|../Python;"\
+								"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)_LLDBLib|../Python;"\
 								"@(MalterlibPostCopySources)"
 	
 	{
@@ -3535,11 +3750,11 @@ Target
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)\"\r\n"\
 					"@(CheckErrors)\r\n"\
-					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)_LLDBLib\"\r\n"\
+					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)_LLDBLib\"\r\n"\
 					"@(CheckErrors)\r\n"\
-					"cp -f \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)\"\r\n"\
+					"MTool DiffCopy \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptFileName)\" \"\" 0 1 0 1\r\n"\
 					"@(CheckErrors)\r\n"\
-					"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)_LLDBLib\"\r\n"\
+					"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)_LLDBLib\"\r\n"\
 					"@(CheckErrors)\r\n"
 
 	{
@@ -4067,14 +4282,14 @@ Target
 		}
 	}
 
-	DependencyFile "@(Target.OutputDirectory)@(Target.Name).c"
+	DependencyFile "@(Target.OutputDirectory)@(Target.Name).cpp"
 	{
 		&
 		{
 			GeneratorFamily "Xcode"
 		}
 	}
-	
+
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"MTool CopyWriteTime \"@(MalterlibOriginalModuleDestinationExecutable)\" \"@(Target:Target.DependencyFile)\"\r\n"\
 					"@(CheckErrors)\r\n"
@@ -4084,5 +4299,12 @@ Target
 			!Target:Target.DependencyFile ""
 			!Target:Target.Type Tool
 		}
+	}
+
+	PostBuildScript "@(Target.PostBuildScript)"\
+					"MTool TouchOrCreate \"@(PostBuildOutputfile)\"\r\n"\
+					"@(CheckErrors)\r\n"
+	{
+		!Target:Target.Type Tool
 	}
 }

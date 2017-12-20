@@ -41,7 +41,7 @@ Property
 		{
 			%Group Runtimes
 			{
-				%Group MacOSX
+				%Group Unix
 				{
 					%File Source/Platform/Malterlib_Core_PlatformImp_Posix_Init.cpp
 				}
@@ -795,56 +795,16 @@ Target
 		&
 		{
 			!MalterlibMemoryManager_OverrideOSXSystemMalloc false
-			|
-			{
-				PlatformFamily OSX
-				&
-				{
-					PlatformFamily Linux
-					|
-					{
-						EnablePlatform_OSX10_5 true
-						EnablePlatform_OSX10_6 true
-						EnablePlatform_OSX10_7 true
-						EnablePlatform_OSX10_8 true
-						EnablePlatform_OSX10_9 true
-						EnablePlatform_OSX10_10 true
-						EnablePlatform_OSX10_11 true
-						EnablePlatform_OSX10_12 true
-					}
-				}
-			}
+			PlatformFamily OSX
 			Documentation ""
 			TargetIsExecutable true
-			|
-			{
-				&
-				{
-					!Target.Type DynamicLibrary
-					!Target.Type XcodeBundle
-					!Target.Type SharedDynamicLibrary
-				}
-			}
-			!MalterlibMemoryManager System
-		}
-		Dependency.Link true
-		{
 			&
 			{
-				PlatformFamily OSX
-				MalterlibMemoryManager_EnableOverrideSystemMalloc true
+				!Target.Type DynamicLibrary
+				!Target.Type XcodeBundle
+				!Target.Type SharedDynamicLibrary
 			}
-		}
-		Dependency.Link false
-		{
-			!
-			{
-				&
-				{
-					PlatformFamily OSX
-					MalterlibMemoryManager_EnableOverrideSystemMalloc true
-				}
-			}
+			!MalterlibMemoryManager System
 		}
 	}
 }
@@ -968,7 +928,7 @@ Target
 		BaseName "MalterlibOverrideMallocDummy"
 		Type "SharedDynamicLibrary"
 		Group "Libraries/Malterlib"
-		LDFlags "-nostdlibc++ @(Target.LDFlags)"
+		LDFlags "-nostdlib @(Target.LDFlags)"
 		{
 			!!PlatformFamily OSX
 			!!PlatformFamily Linux
@@ -1021,7 +981,7 @@ Property
 		BaseName "MalterlibOverrideMalloc"
 		Type "SharedDynamicLibrary"
 		Group "Libraries/Malterlib"
-		LDFlags "-nostdlibc++ @(Target.LDFlags)"
+		LDFlags "-nostdlib @(Target.LDFlags)"
 		{
 			!!PlatformFamily OSX
 			!!PlatformFamily Linux

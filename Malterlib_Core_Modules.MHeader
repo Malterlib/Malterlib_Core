@@ -49,7 +49,7 @@ Property
 	{
 		Type Malterlib
 		Location "@('../../SDK'->MakeAbsolute())"
-		URL "@(Repository.MalterlibRoot)/MalterlibSDK.git"
+		URL "@(Repository.MalterlibRoot)/@(RepoName)"
 		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
 		{
 			!MalterlibRemotePrefixes  ""
@@ -72,12 +72,37 @@ Property
 	{
 		Type Malterlib
 		Location "@('../../Binaries/Malterlib'->MakeAbsolute())"
-		URL "@(Repository.MalterlibRoot)/MalterlibBinaries.git"
+		URL "@(Repository.MalterlibRoot)/@(RepoName)"
 		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
 		{
 			!MalterlibRemotePrefixes  ""
 		}
 		Remotes "malterlib=https://github.com/Malterlib/MalterlibBinaries.git;@(Repository.Remotes)"
+		{
+			&
+			{
+				MalterlibUpstreamAccess true
+				!Repository.URL "https://github.com/Malterlib/@(RepoName)"
+			}
+		}
+	}
+}
+
+%Repository "MalterlibBinaries_Linux"
+{
+	!!EnablePlatform_Linux2_6 true
+	
+	Property.RepoName "@(this.Identity).git"
+	Repository
+	{
+		Type Malterlib
+		Location "@('../../Binaries/Malterlib_Linux'->MakeAbsolute())"
+		URL "@(Repository.MalterlibRoot)/@(RepoName)"
+		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
+		{
+			!MalterlibRemotePrefixes  ""
+		}
+		Remotes "malterlib=https://github.com/Malterlib/MalterlibBinaries_Linux.git;@(Repository.Remotes)"
 		{
 			&
 			{
