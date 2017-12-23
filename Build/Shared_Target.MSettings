@@ -3388,7 +3388,7 @@ Property
 	{
 		!!PlatformType "Unix"
 	}
-	Tar "gnutar"
+	TarOptions "--disable-copyfile"
 	{
 		!!HostPlatformFamily "OSX"
 	}
