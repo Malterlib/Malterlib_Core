@@ -21,7 +21,7 @@
 	{
 		%Group "Post Copy"
 		{
-			%File "@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig"
+			%File "@(MalterlibPostCopyConfigFile)"
 			{
 				Compile.AllowNonExisting true
 			}

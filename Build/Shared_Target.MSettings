@@ -3577,6 +3577,18 @@ Property
 	MalterlibExecutableInput "@(MalterlibOriginalModuleDestinationExecutable)"
 
 	MalterlibPostBuildScriptInputs "@(MalterlibExecutableInput);@(MalterlibPostBuildScriptInputs)"
+	MalterlibPostBuildScriptInputs "@(MalterlibPostCopyConfigFile);@(MalterlibPostBuildScriptInputs)"
+	{
+		!MalterlibBuildServerBuild "true"
+		!MalterlibCalculatedPostCopyProject ""
+		!DisablePostCopy "true"
+		|
+		{
+			!MalterlibPostCopyContents ""
+			!MalterlibPostCopyContents2 ""
+		}
+	}
+
 	MalterlibPostBuildScriptInputs "@(MalterlibPostCopySources);@(MalterlibPostBuildScriptInputs)"
 	{
 		&
@@ -3679,9 +3691,10 @@ Property
 			!MalterlibDisableMalterlib true
 		}
 	}
-	
 
-	MalterlibPostCopyInternalTemplate	"MTool PostCopy \"@(Expand0)\" \"Config=@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig\" \"Project=@(MalterlibCalculatedPostCopyProject)\" \"OutFolder=@(MalterlibPostCopyDestination)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash)\"\r\n"\
+	MalterlibPostCopyConfigFile "@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig"
+
+	MalterlibPostCopyInternalTemplate	"MTool PostCopy \"@(Expand0)\" \"Config=@(MalterlibPostCopyConfigFile)\" \"Project=@(MalterlibCalculatedPostCopyProject)\" \"OutFolder=@(MalterlibPostCopyDestination)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash)\"\r\n"\
 										"@(CheckErrors)\r\n"
 	MalterlibPostCopyTemplate			"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibPostCopyInternalTemplate'))"
 	{
@@ -3690,7 +3703,7 @@ Property
 	MalterlibPostCopyContents			"@(MalterlibPostCopyContents)"\
 										"@(Builtin.Function->ExplodeList('@(MalterlibPostCopySources)', ';', 'MalterlibPostCopyTemplate'))"
 
-	MalterlibPostCopyInternalTemplate2	"MTool PostCopy \"@(Expand0)\" \"Config=@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig\" \"Project=@(MalterlibCalculatedPostCopyProject2)\" \"OutFolder=@(MalterlibPostCopyDestination2)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash2)\"\r\n"\
+	MalterlibPostCopyInternalTemplate2	"MTool PostCopy \"@(Expand0)\" \"Config=@(MalterlibPostCopyConfigFile)\" \"Project=@(MalterlibCalculatedPostCopyProject2)\" \"OutFolder=@(MalterlibPostCopyDestination2)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash2)\"\r\n"\
 										"@(CheckErrors)\r\n"
 	MalterlibPostCopyTemplate2			"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibPostCopyInternalTemplate2'))"
 	{
