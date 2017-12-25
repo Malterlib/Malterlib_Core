@@ -4,6 +4,9 @@
 Include "VisualStudio/VisualStudio.MGeneratorSettings"
 Include "Xcode/Xcode.MGeneratorSettings"
 
+// Configurations
+Include "Shared_Configurations.MSettings"
+
 // Properties
 Include "Shared_Defaults.MSettings"
 Include "Shared_Calculated.MSettings"

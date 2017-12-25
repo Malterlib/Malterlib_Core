@@ -9,11 +9,17 @@ Property
 		{
 			DefaultOSXPlatform ""
 			MalterlibDefaultToolset true
+			HostPlatformFamily OSX
 		}
 	}
 	DefaultOSXPlatform "10.6"
 	{
-		!!DefaultOSXPlatform ""
+		&
+		{
+			DefaultOSXPlatform ""
+			HostPlatformFamily OSX
+		}
+
 	}
 	EnablePlatform_Windows true // User: Enables Windows platform
 	{
@@ -29,7 +35,11 @@ Property
 		{
   			EnablePlatform_Linux2_6 ""
 			GeneratorFamily "Xcode"
-			MalterlibBuildServerBuild "true"
+			|
+			{
+				 MalterlibBuildServerBuild "true"
+				 HostPlatformFamily Linux
+			}
 		}
 	}
 	EnablePlatform_Linux2_6 "false" // User: Enables 2.6 support for Linux platform
