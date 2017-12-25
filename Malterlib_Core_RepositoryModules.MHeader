@@ -1,0 +1,85 @@
+// Copyright © 2017 Nonna Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	MalterlibRemotePrefixesTemplate ";@(Explodee)/@(RepoName)"
+	{
+		!Explodee ""	
+	}
+}
+
+Property.MalterlibModules "Core;@(Property.MalterlibModules)"
+
+%Repository "@(MalterlibModules)"
+{
+	!MalterlibUseGitRepo false
+	Property.RepoName "Malterlib_@(this.Identity).git"
+	Repository
+	{
+		Type Malterlib
+		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
+		{
+			!MalterlibRemotePrefixes  ""
+		}
+		Remotes "malterlib=https://github.com/Malterlib/@(RepoName);@(Repository.Remotes)"
+		{
+			&
+			{
+				MalterlibUpstreamAccess true
+				!Repository.URL "https://github.com/Malterlib/@(RepoName)"
+			}
+		}
+		ConfigFile "@('../..'->MakeAbsolute())/@(Repository.Type).MRepo"
+		{
+			!!this.Identity "Core"
+		}
+		StateFile "@('../..'->MakeAbsolute())/@(Repository.Type).MRepoState"
+		{
+			!!this.Identity "Core"
+		}
+	}
+}
+
+%Repository "MalterlibBinaries"
+{
+	Property.RepoName "@(this.Identity).git"
+	Repository
+	{
+		Type Malterlib
+		Location "@('../../Binaries/Malterlib'->MakeAbsolute())"
+		URL "@(Repository.MalterlibRoot)/@(RepoName)"
+		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
+		{
+			!MalterlibRemotePrefixes  ""
+		}
+		Remotes "malterlib=https://github.com/Malterlib/MalterlibBinaries.git;@(Repository.Remotes)"
+		{
+			&
+			{
+				MalterlibUpstreamAccess true
+				!Repository.URL "https://github.com/Malterlib/@(RepoName)"
+			}
+		}
+	}
+}
+
+%GenerateFile "mib"
+{
+	!Empty "@(MalterlibBinariesPath->FindFilesIn('mib'))"
+
+	Property
+	{
+		MalterlibBinariesPath "@(Builtin.BasePathAbsolute)/Binaries/Malterlib"
+		MibScriptFile "@(Builtin.BasePathAbsolute)/mib"
+	}
+
+	Property
+	{
+		Name "@(MibScriptFile)"
+		Contents "@(ReadFile('@(MalterlibBinariesPath)/mib'))"
+		Executable true
+		UnixLineEnds true
+		UnicodeBOM false
+	}
+}

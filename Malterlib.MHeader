@@ -3,6 +3,22 @@
 
 // Must start with the settings
 Import "Build/Shared.MSettings"
+{
+	!MalterlibOnlyRepositoryManagement true
+}
 
 // Import all sub projects
 Import "../*/*.MHeader"
+{
+	!MalterlibOnlyRepositoryManagement true
+}
+
+Import "Build/SharedRepositoryOnly.MSettings"
+{
+	!!MalterlibOnlyRepositoryManagement true
+}
+
+Import "Malterlib_Core_RepositoryModules.MHeader"
+{
+	!!MalterlibOnlyRepositoryManagement true
+}
