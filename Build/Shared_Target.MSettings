@@ -543,7 +543,7 @@ Target
 
 Property
 {
-	MalterlibSysRoot "@('../../../Binaries'->MakeAbsolute())/Malterlib_@(PlatformFamily)/SDKs/@(Platform).sdk"
+	MalterlibSysRoot "@(MalterlibSharedBinariesRoot)/Malterlib_@(PlatformFamily)/SDKs/@(Platform).sdk"
 	{
 		|
 		{
@@ -1255,7 +1255,7 @@ Target
 	RealSDKRoot "macosx10.12" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.12" } }
 	RealSDKRoot "macosx10.13" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.13" } }
 	RealSDKRoot "iphoneos8.1" { & { Target.RealSDKRoot "" Target.SDKRoot "iOS8.1" } }
-	RealSDKRoot "@('../../../Binaries/Malterlib_Linux/SDKs/Linux2.6.sdk'->MakeAbsolute())"
+	RealSDKRoot "@(MalterlibSharedBinariesRoot)/Malterlib_Linux/SDKs/Linux2.6.sdk"
 	{
 		&
 		{
@@ -1263,7 +1263,7 @@ Target
 			Target.SDKRoot "Linux2.6"
 		}
 	}
-	RealSDKRoot "@('../../../Binaries/Malterlib_Emscripten/SDKs/Emscripten.sdk'->MakeAbsolute())"
+	RealSDKRoot "@(MalterlibSharedBinariesRoot)/Malterlib_Emscripten/SDKs/Emscripten.sdk"
 	{
 		&
 		{

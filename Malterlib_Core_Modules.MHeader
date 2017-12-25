@@ -29,6 +29,11 @@ Property.MalterlibModules "Tools;Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandL
 	}
 }
 
+Property
+{
+	MalterlibSharedBinariesRoot "@(MalterlibDependenciesDirectory)/Binaries"
+}
+
 %Repository "MalterlibBinaries_Linux"
 {
 	!!EnablePlatform_Linux2_6 true
@@ -37,7 +42,8 @@ Property.MalterlibModules "Tools;Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandL
 	Repository
 	{
 		Type Malterlib
-		Location "@('../../Binaries/Malterlib_Linux'->MakeAbsolute())"
+
+		Location "@(MalterlibSharedBinariesRoot)/Malterlib_Linux"
 		URL "@(Repository.MalterlibRoot)/@(RepoName)"
 		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
 		{
