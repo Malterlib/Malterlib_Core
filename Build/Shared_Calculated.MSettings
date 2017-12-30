@@ -389,17 +389,29 @@ Property
 		!Empty "@(BuildSystemBasePath->FindDirectoriesIn('.git'))"
 	}
 
-	MalterlibGitRepoInputFiles "@(BuildSystemBasePath)/.git/HEAD"
+	MalterlibGitRepoGitDir "@(BuildSystemBasePath)/.git"
 
-	MalterlibGitHeadContents "@(ReadFile('@(BuildSystemBasePath)/.git/HEAD'))"
-	MalterlibGitHeadContentsParseString "ref: {}\n"
-	MalterlibGitHeadRef "@(MalterlibGitHeadContents->ParseFormatString('@(MalterlibGitHeadContentsParseString)', '{0}'))"
-
-	MalterlibGitRepoInputFiles "@(BuildSystemBasePath)/.git/@(MalterlibGitHeadRef);@(MalterlibGitRepoInputFiles)"
+	MalterlibGitRepoInputFiles "@(MalterlibGitRepoGitDir)/HEAD"
+	MalterlibGitRepoInputFiles "@(MalterlibGitRepoGitDir)/packed-refs"
 	{
-		!MalterlibGitHeadRef ""
+		!Empty "@(MalterlibGitRepoGitDir->FindFilesIn('packed-refs'))"
 	}
 
+	MalterlibGitHeadContents "@(ReadFile('@(MalterlibGitRepoGitDir)/HEAD'))"
+	MalterlibGitHeadContentsParseString "ref: {}\n"
+	MalterlibGitHeadRef "@(MalterlibGitHeadContents->ParseFormatString('@(MalterlibGitHeadContentsParseString)', '{0}'))"
+	MalterlibGitHeadRefFile "@(MalterlibGitHeadRefFile->GetFile())"
+	MalterlibGitHeadRefDir "@(MalterlibGitHeadRefFile->GetPath())"
+
+	MalterlibGitRepoInputFiles "@(MalterlibGitRepoGitDir)/@(MalterlibGitHeadRef);@(MalterlibGitRepoInputFiles)"
+	{
+		&
+		{
+			!MalterlibGitHeadRef ""
+			!Empty "@(MalterlibGitHeadRefDir->FindFilesIn('@(MalterlibGitHeadRefFile)'))"
+		}
+	}
+	
 	MalterlibParseRemoveNewlineString "{}\n"
 
 	MalterlibGitBranch "@(ExecuteCommand('@(GeneratedGlobalDirectory)/GitBranch.MState', '@(MalterlibGitRepoInputFiles)', 'git', 'symbolic-ref', '--short', 'HEAD'))"
