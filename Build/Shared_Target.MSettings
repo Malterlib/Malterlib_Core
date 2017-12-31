@@ -1556,7 +1556,7 @@ Target
 
 Property
 {
-	MalterlibPosixInitFileName "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/Objects-normal/@(MalterlibNativeClangArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o"
+	MalterlibPosixInitFileName "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/Objects-normal/@(MalterlibNativeClangArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o"
 	{
 		&
 		{
@@ -1569,7 +1569,7 @@ Property
 
 Property
 {
-	MalterlibOverrideMallocLibrary "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMalloc/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMalloc.dylib"
+	MalterlibOverrideMallocLibrary "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMalloc/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMalloc.dylib"
 	
 	MalterlibNeedsMallocOverrideLibrary true
 	{
@@ -2114,17 +2114,17 @@ Target
 Property
 {
 
-	MalterlibLocalizationTranslationsPath "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)"
+	MalterlibLocalizationTranslationsPath "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)"
 	MalterlibLocalizationExeFSPath "@(MalterlibLocalizationTranslationsPath)/TranslationsExeFS/*"
 	MalterlibLocalizationTranslationHeadersPath "@(MalterlibLocalizationTranslationsPath)/TranslationHeaders"
-	MalterlibQtTweakPath "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTweaks/@(Platform)/@(Architecture)/@(FullConfiguration)"
+	MalterlibQtTweakPath "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTweaks/@(Platform)/@(Architecture)/@(FullConfiguration)"
 
 	MalterlibTempExeFSPath "@(Target.IntermediateDirectory)ExeFS/*"
 	{
 		!!MalterlibTempExeFSPath ""
 	}
 
-	MalterlibSharedIntermediateDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/Shared"
+	MalterlibSharedIntermediateDirectory "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/Shared"
 	{
 		!!MalterlibSharedIntermediateDirectory ""
 	}
@@ -2183,12 +2183,12 @@ Property
 
 Property
 {
-	GeneratedDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
-	GeneratedGlobalDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/Generated/"
+	GeneratedDirectory "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+	GeneratedGlobalDirectory "@(MalterlibCompiledFilesSourceBase)/Generated/"
 	
-	GeneratedDirectoryNoConfig	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/"
-	GeneratedWorkspaceDirectory	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/"
-	GeneratedWorkspaceDirectoryNoConfig	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Generated/NoConfig/"
+	GeneratedDirectoryNoConfig	"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/"
+	GeneratedWorkspaceDirectory	"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+	GeneratedWorkspaceDirectoryNoConfig	"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/NoConfig/"
 
 	MalterlibUniqueConfig "@(GeneratedDirectory->Sanitize())"
 	MalterlibUniqueConfig "@(MalterlibUniqueConfig->Replace('-', '_'))"
@@ -2264,8 +2264,8 @@ Property
 // Misc
 Target
 {
-	IntermediateDirectory	"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
-	OutputDirectory			"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Output/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+	IntermediateDirectory	"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
+	OutputDirectory			"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
 
 	ToolPath "@(Target.ToolPath);@(Builtin.Inherit)"
 	

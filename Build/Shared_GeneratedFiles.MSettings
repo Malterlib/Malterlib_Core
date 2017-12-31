@@ -382,6 +382,19 @@ Property
 	}
 }
 
+%GenerateFile "CompiledFilesInfo"
+{
+	Property
+	{
+		Name "@(MalterlibCompiledFilesSourceBase)/source-info"
+		Contents 	"BaseDir @(MaltelibBasePathAbsolute)\n"\
+					"BuildSystemDir @(Builtin.GeneratedBuildSystemDir)\n"
+		UnicodeBOM false
+		UnixLineEnds true
+		Executable false
+	}
+}
+
 %GenerateFile "last-build"
 {
 	Property
@@ -390,7 +403,7 @@ Property
 		Contents "@(MalterlibGitCommit)\n"
 		UnicodeBOM false
 		UnixLineEnds true
-		Executable true
+		Executable false
 	}
 }
 
@@ -404,7 +417,7 @@ Property
 			Contents "@(MalterlibGitCommit)\n"
 			UnicodeBOM false
 			UnixLineEnds true
-			Executable true
+			Executable false
 			KeepGeneratedFile true
 		}
 	}
@@ -420,7 +433,7 @@ Property
 			Contents "@(MalterlibGitCommit)\n"
 			UnicodeBOM false
 			UnixLineEnds true
-			Executable true
+			Executable false
 			KeepGeneratedFile true
 		}
 	}

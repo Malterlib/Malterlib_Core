@@ -991,7 +991,7 @@ Property
 	{
 		!!PlatformFamily OSX
 
-		LinkWithLibraries "-undefined dynamic_lookup \"@(MalterlibCompiledFiles)@(MalterlibBranch)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib\""
+		LinkWithLibraries "-undefined dynamic_lookup \"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib\""
 		LinkWithLibraries "/usr/lib/libSystem.B.dylib @(Target.LinkWithLibraries)"
 		{
 			!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true

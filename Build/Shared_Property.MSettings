@@ -10,7 +10,7 @@ Property
 	{
 		!!MalterlibDependenciesDirectory ""
 	}
-	MalterlibCompiledFiles "X:/CompiledFiles/@(Generator)/"
+	MalterlibCompiledFiles "X:/CompiledFiles/"
 	{
 		!!MalterlibCompiledFiles ""
 	}
@@ -66,31 +66,12 @@ Property
 		!!MalterlibDependenciesDirectory ""
 	}
 
-	MalterlibCompiledFiles "/CompiledFiles/@(Generator)/"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			MalterlibCompiledFiles ""
-			!Empty "@('/'->FindDirectoriesIn('CompiledFiles'))"
-		}
-	}
-
 	MalterlibCompiledFiles "/CompiledFiles/"
 	{
 		&
 		{
 			MalterlibCompiledFiles ""
 			!Empty "@('/'->FindDirectoriesIn('CompiledFiles'))"
-		}
-	}
-
-	MalterlibCompiledFiles "@(HOME)/.CompiledFiles/@(Generator)/"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			MalterlibCompiledFiles ""
 		}
 	}
 
@@ -127,14 +108,10 @@ Property
 
 Property
 {
-	MalterlibLastCompiledFiles "@(MalterlibCompiledFiles->GetLastPaths(2))"
-	{
-	}
-
-	MalterlibCompiledFiles "@(MalterlibCompiledFiles)@(Generator)/"
-	{
-		!MalterlibLastCompiledFiles "@(Generator)"
-	}
+	MaltelibBasePathAbsolute "@(Builtin.BasePathAbsolute)"
+	MaltelibBasePathName "@(MaltelibBasePathAbsolute->GetFile())"
+	
+	MalterlibCompiledFilesSourceBase "@(MalterlibCompiledFiles)@(MaltelibBasePathName)-@(Builtin.GeneratedBuildSystemDir->HashSHA256('8'))"
 }
 
 // Calculated properties

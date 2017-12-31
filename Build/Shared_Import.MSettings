@@ -23,7 +23,7 @@ Property
 
 Import
 {
-	SharedTempDirectory "@(MalterlibCompiledFiles)@(MalterlibBranch)/@(BuildSystemName)/Generated/@(ImportIdentityRelativeRootPath->Replace('/', '_'))"
+	SharedTempDirectory "@(MalterlibCompiledFilesSourceBase)/@(BuildSystemName)/Generated/@(ImportIdentityRelativeRootPath->Replace('/', '_'))"
 	TempDirectory "@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@(Import.CMake_Config)"
 }
 
