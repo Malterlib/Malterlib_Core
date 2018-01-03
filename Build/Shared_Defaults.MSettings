@@ -215,7 +215,21 @@ Property
 	{
 		!!MalterlibBuildServerBuild ""
 	}
-	
+
+	MalterlibSupportSanitizers "false" // User: Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
+	{
+		!!MalterlibSupportSanitizers ""
+	}
+
+	MalterlibDefaultToolset "true"
+	{
+		&
+		{
+			MalterlibDefaultToolset ""
+			MalterlibSupportSanitizers "true"
+		}
+	}
+
 	MalterlibDefaultToolset "false" // User: Use default Xcode toolset with no custom modifications to libc++ or clang
 	{
 		!!MalterlibDefaultToolset ""
@@ -296,7 +310,16 @@ Property
 	{
 		!!MalterlibUseStaticLibCxx ""
 	}
-	
+
+	MalterlibMemoryManager "System"
+	{
+		&
+		{
+			MalterlibMemoryManager ""
+			MalterlibSupportSanitizers true
+		}
+	}
+
 	MalterlibMemoryManager "New" // User: Choose the memory manager. Options: Old, New, System, OverwriteCheck, DLMalloc, LLAlloc (default New)
 	{
 		!!MalterlibMemoryManager ""

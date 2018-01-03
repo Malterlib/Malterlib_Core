@@ -21,8 +21,7 @@ Compile
 	{
 		!!MalterlibDynamicLibrary true
 	}
-	PreprocessorDefines "DMibNoInlineNew;@(Compile.PreprocessorDefines)"
-	
+
 	PreprocessorDefines "DMibConfig_OverrideSystemMalloc;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemoryManager_EnableOverrideSystemMalloc true
@@ -324,6 +323,12 @@ Compile
 			}
 		}
 		%File ../Memory/Source/Malterlib_Memory_Allocator_Heap.cpp
+		{
+			Compile.PreprocessorDefines "DMibNoInlineNew;@(Compile.PreprocessorDefines)"
+			{
+				!!CompileDialect "C"
+			}
+		}
 	}
 	%Group Runtime
 	{

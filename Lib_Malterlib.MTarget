@@ -11,11 +11,7 @@ Property
 
 %Target "Lib_Malterlib_Init"
 {
-	&
-	{
-		MalterlibNeedsInitProject  true
-		!MalterlibDefaultToolset true
-	}
+	!!MalterlibNeedsInitProject  true
 	Property.DocumentationModule Malterlib
 	Property.MalterlibNoShortcuts true	
 
@@ -47,25 +43,6 @@ Property
 				}
 			}
 		}
-	}
-}
-
-%Group "~Automatic/Init Early"
-{
-	%File Source/Platform/Malterlib_Core_PlatformImp_Posix_Init.cpp
-	{
-		Compile.InitEarly true
-	}
-}
-
-Target.ExtraGroups "~Automatic/Init Early;@(Target.ExtraGroups)"
-{
-	&
-	{
-		MalterlibNeedsInitProject  true
-		MalterlibDefaultToolset true
-		TargetIsExecutable true
-		!MalterlibDisableMalterlib true
 	}
 }
 
@@ -740,11 +717,7 @@ Target
 	
 	%Dependency "Lib_Malterlib_Init"
 	{
-		&
-		{
-			MalterlibNeedsInitProject true
-			!MalterlibDefaultToolset true
-		}
+		!!MalterlibNeedsInitProject true
 		Dependency.Link false
 	}
 	%Dependency "Lib_Malterlib_Runtime"

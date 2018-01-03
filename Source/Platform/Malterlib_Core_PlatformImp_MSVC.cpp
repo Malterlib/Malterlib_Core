@@ -5960,19 +5960,6 @@ void fg_DestroySystem()
 
 extern int g_AllowDebugNewErrorGlobalStatic;
 
-#if !defined(DMibPOverrideOperatorNew)
-void DDefaultCallingConv operator delete(void *pUserData)
-{
-	NMib::NMem::fg_Free(pUserData);
-}
-
-void * DDefaultCallingConv operator new(size_t _Size)
-{
-	return NMib::NMem::fg_Alloc(_Size);
-}
-#endif
-
-
 void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 { // Should probably be moved to a file Malterlib_x86_MSVC.cpp or similar.
 	int CPUInfo[4];

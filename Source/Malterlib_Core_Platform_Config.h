@@ -102,7 +102,12 @@
 
 
 // New override
-#if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux)
+#if defined(DPlatformFamily_OSX)
+#	include <new>
+#	ifndef DMibDefaultToolset
+#		define DMibPOverrideOperatorNew
+#	endif
+#elif defined(DPlatformFamily_Linux)
 #	include <new>
 #	define DMibPOverrideOperatorNew
 #elif defined(DPlatformFamily_Windows)

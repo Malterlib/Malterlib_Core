@@ -1556,11 +1556,12 @@ Target
 
 Property
 {
-	MalterlibPosixInitFileName "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/Objects-normal/@(MalterlibNativeClangArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o"
+	MalterlibXcodeObjectsDirectory "$(OBJECT_FILE_DIR_$CURRENT_VARIANT:file)"
+
+	MalterlibPosixInitFileName "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibNativeClangArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o"
 	{
 		&
 		{
-			!MalterlibDefaultToolset true
 			!MalterlibDisableMalterlib true
 			MalterlibNeedsInitProject true
 		}

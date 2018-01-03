@@ -137,48 +137,6 @@ extern "C"
 }
 
 // *************************************************************************************************************************
-// POSIX Implementation specific headers
-// *************************************************************************************************************************
-
-#if !defined(DMibPOverrideOperatorNew)
-	void operator delete(void *pUserData)
-	{
-		if (fg_ContainsBlock(pUserData))
-			NMib::NMem::fg_Free(pUserData);
-		else
-			free(pUserData);
-			
-	}
-
-	void * operator new(size_t _Size)
-	{
-		#if 0 && DMibConfig_MalterlibMemoryManager_Debug
-			CMibCodeAddress StackTrace = NSys::fg_System_GetStackTrace(1);
-			if (StackTrace)
-			{
-				CStackTraceInfo *pInfo = NSys::fg_Debug_AquireStackTraceInfo(StackTrace);
-				if (pInfo)
-				{
-					DMibTrace(DMibPFileLineFormat " new operator used from {}. Use DMibNew instead. ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION ATTENTION\n", 
-						pInfo->m_pSourceFileName << pInfo->m_SourceLine << pInfo->m_pFunctionName);
-					NSys::fg_Debug_ReleaseStackTraceInfo(pInfo);
-				}
-				else
-				{
-					DMibTrace("Warning: new operator used\n", 0);
-				}
-			}
-			else
-			{
-				DMibTrace("Warning: new operator used\n", 0);
-			}
-		#endif
-		return NMib::NMem::fg_Alloc(_Size);
-	}
-
-#endif
-
-// *************************************************************************************************************************
 // POSIX Implementation
 // *************************************************************************************************************************
 
@@ -2272,7 +2230,6 @@ void* NSys::fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned
 
 mint NSys::fg_Thread_GetVirtualCores()
 {
-
  	int nCPUs = 0;
  	size_t DataSize = sizeof(nCPUs);
 	int Ret = sysctlbyname("hw.logicalcpu", &nCPUs, &DataSize, nullptr, 0);

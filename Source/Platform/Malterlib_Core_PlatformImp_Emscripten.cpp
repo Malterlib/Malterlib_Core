@@ -25,23 +25,6 @@ void fg_ForkParentOrChild();
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
 
 // *************************************************************************************************************************
-// POSIX Implementation specific headers
-// *************************************************************************************************************************
-
-#if !defined(DMibPOverrideOperatorNew)
-	void operator delete(void *pUserData)
-	{
-		NMib::NMem::fg_Free(pUserData);
-	}
-
-	void * operator new(size_t _Size)
-	{
-		return NMib::NMem::fg_Alloc(_Size);
-	}
-
-#endif
-
-// *************************************************************************************************************************
 // POSIX Implementation
 // *************************************************************************************************************************
 
