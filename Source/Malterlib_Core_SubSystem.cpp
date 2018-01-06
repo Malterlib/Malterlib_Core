@@ -47,30 +47,66 @@ namespace NMib
 		mp_SubSystems.f_InsertFirst(_SubSystem);
 	}
 
-	void CSystem::fp_SubSystem_PrepareFork()
+	void CSystem::fp_SubSystem_PrepareFork_BeforeMemoryManager()
 	{
 		mp_SubSystemsLock.f_Lock();
 		mp_SubSystemsLock.f_PrepareFork();
 		for (auto &SubSystem : mp_SubSystems)
-			SubSystem.f_PrepareFork();
+		{
+			if (SubSystem.m_DestructionOrder != ESubSystemDestruction_Last)
+				SubSystem.f_PrepareFork();
+		}
 	}
-	
-	void CSystem::fp_SubSystem_ForkedChild()
+
+	void CSystem::fp_SubSystem_ForkedChild_BeforeMemoryManager()
 	{
 		for (auto &SubSystem : mp_SubSystems)
-			SubSystem.f_ForkedChild();
+		{
+			if (SubSystem.m_DestructionOrder != ESubSystemDestruction_Last)
+				SubSystem.f_ForkedChild();
+		}
 		mp_SubSystemsLock.f_ForkedChild();
 		mp_SubSystemsLock.f_Unlock();
 	}
-	
-	void CSystem::fp_SubSystem_ForkedParent()
+
+	void CSystem::fp_SubSystem_ForkedParent_BeforeMemoryManager()
 	{
 		for (auto &SubSystem : mp_SubSystems)
-			SubSystem.f_ForkedParent();
+		{
+			if (SubSystem.m_DestructionOrder != ESubSystemDestruction_Last)
+				SubSystem.f_ForkedParent();
+		}
 		mp_SubSystemsLock.f_ForkedParent();
 		mp_SubSystemsLock.f_Unlock();
 	}
-	
+
+	void CSystem::fp_SubSystem_PrepareFork_AfterMemoryManager()
+	{
+		for (auto &SubSystem : mp_SubSystems)
+		{
+			if (SubSystem.m_DestructionOrder == ESubSystemDestruction_Last)
+				SubSystem.f_PrepareFork();
+		}
+	}
+
+	void CSystem::fp_SubSystem_ForkedChild_AfterMemoryManager()
+	{
+		for (auto &SubSystem : mp_SubSystems)
+		{
+			if (SubSystem.m_DestructionOrder == ESubSystemDestruction_Last)
+				SubSystem.f_ForkedChild();
+		}
+	}
+
+	void CSystem::fp_SubSystem_ForkedParent_AfterMemoryManager()
+	{
+		for (auto &SubSystem : mp_SubSystems)
+		{
+			if (SubSystem.m_DestructionOrder == ESubSystemDestruction_Last)
+				SubSystem.f_ForkedParent();
+		}
+	}
+
 	void CSystem::fp_SubSystem_PreDestroyThreadSpecific()
 	{
 		DMibLock(mp_SubSystemsLock);

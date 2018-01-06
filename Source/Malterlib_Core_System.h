@@ -173,10 +173,14 @@ namespace NMib
 		void fp_CreateMemoryManager();
 		void fp_DestroyMemoryManager();
 
-		void fp_SubSystem_PrepareFork();
-		void fp_SubSystem_ForkedChild();
-		void fp_SubSystem_ForkedParent();
-		
+		void fp_SubSystem_PrepareFork_BeforeMemoryManager();
+		void fp_SubSystem_ForkedChild_BeforeMemoryManager();
+		void fp_SubSystem_ForkedParent_BeforeMemoryManager();
+
+		void fp_SubSystem_PrepareFork_AfterMemoryManager();
+		void fp_SubSystem_ForkedChild_AfterMemoryManager();
+		void fp_SubSystem_ForkedParent_AfterMemoryManager();
+
 		void fp_SubSystem_DestroyThreadLocal();
 		void fp_SubSystem_DestroyThreadSpecific();
 		void fp_SubSystem_PreDestroyThreadSpecific();
@@ -395,6 +399,10 @@ namespace NMib
 		void f_ThreadLocalSet(void *_pStorageIndex, void *_pValue);
 		void f_OnThreadCreated(mint _ThreadID, mint _ParentID);
 		void f_OnThreadDestroyed();
+
+		void f_ThreadLocal_PrepareFork();
+		void f_ThreadLocal_ForkedChild();
+		void f_ThreadLocal_ForkedParent();
 
 		void f_ThreadEnum(NFunction::TCFunction<void (mint _ThreadID)> const &_EnumFunc);
 		bool f_ThreadDestroyed() const;
