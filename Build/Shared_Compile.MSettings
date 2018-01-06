@@ -1779,7 +1779,22 @@ Compile
 			MalterlibMemory_Shims_Enable true
 		}
 	}
-
+	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCallstack=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibMemoryManager_Stats_EnableCallstack true
+			MalterlibMemory_Shims_Enable true
+		}
+	}
+	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCallstack=0;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			!MalterlibMemoryManager_Stats_EnableCallstack true
+			MalterlibMemory_Shims_Enable true
+		}
+	}
 	PreprocessorDefines "DMalterlibEnable32Bit=@(BuildArch_x86);@(Compile.PreprocessorDefines)"
 	{
 		!BuildArch_x86 ""

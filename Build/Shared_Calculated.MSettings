@@ -632,7 +632,7 @@ Property
 	}
 	MalterlibMemoryManager_Stats_EnableCategories "false" // User: Dump statistics about memory allocations through categories
 	{
-		!!MalterlibMemoryManager_Stats_EnableCallstack ""
+		!!MalterlibMemoryManager_Stats_EnableCategories ""
 	}
 }
 
