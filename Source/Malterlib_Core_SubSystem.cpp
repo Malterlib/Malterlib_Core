@@ -53,7 +53,7 @@ namespace NMib
 		mp_SubSystemsLock.f_PrepareFork();
 		for (auto &SubSystem : mp_SubSystems)
 		{
-			if (SubSystem.m_DestructionOrder != ESubSystemDestruction_Last)
+			if (!SubSystem.f_IsAfterMemoryManager())
 				SubSystem.f_PrepareFork();
 		}
 	}
@@ -62,7 +62,7 @@ namespace NMib
 	{
 		for (auto &SubSystem : mp_SubSystems)
 		{
-			if (SubSystem.m_DestructionOrder != ESubSystemDestruction_Last)
+			if (!SubSystem.f_IsAfterMemoryManager())
 				SubSystem.f_ForkedChild();
 		}
 		mp_SubSystemsLock.f_ForkedChild();
@@ -73,7 +73,7 @@ namespace NMib
 	{
 		for (auto &SubSystem : mp_SubSystems)
 		{
-			if (SubSystem.m_DestructionOrder != ESubSystemDestruction_Last)
+			if (!SubSystem.f_IsAfterMemoryManager())
 				SubSystem.f_ForkedParent();
 		}
 		mp_SubSystemsLock.f_ForkedParent();
@@ -84,7 +84,7 @@ namespace NMib
 	{
 		for (auto &SubSystem : mp_SubSystems)
 		{
-			if (SubSystem.m_DestructionOrder == ESubSystemDestruction_Last)
+			if (SubSystem.f_IsAfterMemoryManager())
 				SubSystem.f_PrepareFork();
 		}
 	}
@@ -93,7 +93,7 @@ namespace NMib
 	{
 		for (auto &SubSystem : mp_SubSystems)
 		{
-			if (SubSystem.m_DestructionOrder == ESubSystemDestruction_Last)
+			if (SubSystem.f_IsAfterMemoryManager())
 				SubSystem.f_ForkedChild();
 		}
 	}
@@ -102,7 +102,7 @@ namespace NMib
 	{
 		for (auto &SubSystem : mp_SubSystems)
 		{
-			if (SubSystem.m_DestructionOrder == ESubSystemDestruction_Last)
+			if (SubSystem.f_IsAfterMemoryManager())
 				SubSystem.f_ForkedParent();
 		}
 	}
@@ -151,7 +151,19 @@ namespace NMib
 				pSubSystem->~CSubSystem();
 		}
 	}
-	
+
+	void CSystem::fp_SubSystem_DestroyBeforeThreadLocals()
+	{
+		DMibLock(mp_SubSystemsLock);
+		for (auto iSubSystem = mp_SubSystems.f_GetIterator(); iSubSystem;)
+		{
+			auto *pSubSystem = &*iSubSystem;
+			++iSubSystem;
+			if (pSubSystem->m_DestructionOrder == ESubSystemDestruction_BeforeThreadLocals)
+				pSubSystem->~CSubSystem();
+		}
+	}
+
 	void CSystem::fp_SubSystem_Destroy()
 	{
 		DMibLock(mp_SubSystemsLock);

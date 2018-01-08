@@ -186,6 +186,7 @@ namespace NMib
 		void fp_SubSystem_PreDestroyThreadSpecific();
 		void fp_SubSystem_DestroyBeforeMemoryManager();
 		void fp_SubSystem_DestroyBeforeNonTrackedMemoryManager();
+		void fp_SubSystem_DestroyBeforeThreadLocals();
 		void fp_SubSystem_Destroy();
 		void fp_SubSystem_ExitModule();
 		

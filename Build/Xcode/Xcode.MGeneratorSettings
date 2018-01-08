@@ -257,13 +257,6 @@
 					Disabled "1"
 				}
 			}
-			%GeneratorSetting "LinkTimeCodeGeneration"
-			{
-				Property
-				{
-					Disabled "1"
-				}
-			}
 			%GeneratorSetting "Output"
 			{
 				Property
@@ -353,7 +346,24 @@
 					Name "LD_LTO_OBJECT_FILE"
 				}
 			}
-			
+
+			%GeneratorSetting "LinkTimeCodeGeneration"
+			{
+				Property
+				{
+					Name "LLVM_LTO"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true YES
+						Fast YES_THIN
+						false NO
+					}
+				}
+			}
+
 			%GeneratorSetting "EmscriptenFastCompiler"
 			{
 				Property
@@ -1193,6 +1203,18 @@
 				}
 			}			
 
+			%GeneratorSetting "SizedDeallocation"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fsized-deallocation"
+						false "-fnosized-deallocation"
+					}
+				}
+			}
+
 			// Enabled compile flag mappings
 			%GeneratorSetting "Symbols"
 			{
@@ -2005,6 +2027,18 @@
 						true "YES"
 						false "NO"
 						XInternalCreate "" // Only used internally
+					}
+				}
+			}
+			%GeneratorSetting "LinkTimeCodeGeneration"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-flto"
+						Fast "-flto=thin"
+						false ""
 					}
 				}
 			}

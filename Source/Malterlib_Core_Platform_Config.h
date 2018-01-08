@@ -30,7 +30,7 @@
 #endif
 
 #if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux)
-#	ifndef _LIBCPP_DISABLE_NEW_DELETE
+#	if !defined(_LIBCPP_DISABLE_NEW_DELETE) && !defined(DMibDefaultToolset)
 #		define _LIBCPP_DISABLE_NEW_DELETE
 #	endif
 #endif

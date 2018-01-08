@@ -157,7 +157,7 @@ CFileChangeNotificationContext::~CFileChangeNotificationContext()
 		m_pNotificationThread.f_Clear();
 	}
 	
-	m_Notifications.f_DeleteAll();
+	m_Notifications.f_DeleteAllDefiniteType();
 
 	if (m_WakeupPipe[0] >= 0)
 		close(m_WakeupPipe[0]);

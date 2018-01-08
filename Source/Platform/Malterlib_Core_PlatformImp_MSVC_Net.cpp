@@ -39,7 +39,7 @@ CWindowsSocket::~CWindowsSocket()
 {
 	m_OnStateChange.f_Clear();
 #ifdef DTCPDelayEmulation
-	m_DelayedPackets.f_DeleteAll();
+	m_DelayedPackets.f_DeleteAllDefiniteType();
 #endif
 	if (m_pSocket && !(m_StateAtomic.f_Load() & DMibBit(31)))
 		closesocket((SOCKET)m_pSocket);

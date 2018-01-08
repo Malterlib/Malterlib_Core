@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 //#include "sal.h"
@@ -47,8 +47,8 @@ public:
 
 		~CFileChangeNoticationContext()
 		{
-			m_FreeBundles.f_DeleteAll();
-			m_FullBundles.f_DeleteAll();
+			m_FreeBundles.f_DeleteAllDefiniteType();
+			m_FullBundles.f_DeleteAllDefiniteType();
 		}
 
 		class CNotificationBundle;

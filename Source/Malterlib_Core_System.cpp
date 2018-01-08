@@ -143,6 +143,8 @@ namespace NMib
 		fg_MalterlibMallocOverride_PreDestroyNonTrackedMemoryManager();
 		fp_DestroyNonTrackedMemoryManager();
 
+		fp_SubSystem_DestroyBeforeThreadLocals();
+
 		fp_ThreadLocalDestroy();
 		
 		fp_SubSystem_Destroy();

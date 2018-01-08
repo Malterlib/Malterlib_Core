@@ -1156,7 +1156,12 @@ Compile
 	{
 		!!PlatformFamily iOS
 	}
-	
+
+	SizedDeallocation "true"
+	{
+		!!PlatformToolsetFamily "clang"
+	}
+
 	BuiltinSearchPath ""
 	{
 		!!PlatformToolsetFamily clang
@@ -1620,6 +1625,7 @@ Compile
 			PlatformIsDarwin true
 			MalterlibQtSupport true
 			!DoesNotUseMalterlib true
+			!MalterlibDefaultToolset true
 		}
 	}
 
@@ -1806,11 +1812,8 @@ Compile
 
 	PreprocessorDefines "DMibLinkTimeCodeGeneration;@(Compile.PreprocessorDefines)"
 	{
-		"!!Target:Target.LinkTimeCodeGeneration" "true"
+		"!Target:Target.LinkTimeCodeGeneration" "false"
 	}
-
-	
-	
 
 //	Symbols "None"
 //	Symbols "Fast"

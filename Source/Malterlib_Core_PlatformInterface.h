@@ -25,6 +25,7 @@ namespace NMib
 		, EAllocationFlag_WillFreeWithSize = DMibBit(5)
 		, EAllocationFlag_MainHeap = DMibBit(6)
 		, EAllocationFlag_NonTrackedMainHeap = DMibBit(7)
+		, EAllocationFlag_SizeNotNeeded = DMibBit(8)
 	};
 	
 	enum ENumaNode : int32

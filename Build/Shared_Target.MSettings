@@ -609,7 +609,6 @@ Property
 		{
 			PlatformToolsetCompiler ""
 			!MalterlibDefaultCompiler true
-			!MalterlibDefaultToolset true
 			!HostPlatformFamily Windows
 		}
 	}
@@ -619,11 +618,12 @@ Property
 		{
 			PlatformToolsetCompiler ""
 			!MalterlibOverrideMSVCVersion ""
-			!MalterlibDefaultToolset true
 			!MalterlibDefaultCompiler true
 			HostPlatformFamily Windows
 		}
 	}
+	PlatformToolsetCompilerBasePath "@(PlatformToolsetCompiler->GetPath())"
+	PlatformToolsetCompilerBasePath "@(PlatformToolsetCompilerBasePath->GetPath())"
 }
 
 // Emscripten
@@ -754,8 +754,13 @@ Target
 	}
 	LTOObjectFile ""
 	{
-		!!PlatformFamily Linux
+		&
+		{
+			PlatformFamily Linux
+			MalterlibEnableLinkTimeCodeGeneration false
+		}
 	}
+
 	LDFlags "-env_EMCC_FAST_COMPILER 1 @(Target.LDFlags)"
 	{
 		!!Target.EmscriptenFastCompiler true
@@ -818,6 +823,7 @@ Target
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
 			!MalterlibDefaultCompiler true
+			MalterlibCustomCompilerOptions true
 		}
 	}
 
@@ -827,7 +833,11 @@ Target
 		{
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
-			MalterlibDefaultCompiler true
+			|
+			{
+				MalterlibDefaultCompiler true
+				!MalterlibCustomCompilerOptions true
+			}
 		}
 	}
 
@@ -837,7 +847,11 @@ Target
 		{
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
-			MalterlibDefaultCompiler true
+			|
+			{
+				MalterlibDefaultCompiler true
+				!MalterlibCustomCompilerOptions true
+			}
 			|
 			{
 				Target.Type "ConsoleExecutable"
@@ -858,7 +872,11 @@ Target
 		{
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
-			MalterlibDefaultCompiler true
+			|
+			{
+				MalterlibDefaultCompiler true
+				!MalterlibCustomCompilerOptions true
+			}
 			|
 			{
 				Target.Type "ConsoleExecutable"
@@ -875,7 +893,11 @@ Target
 		{
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
-			MalterlibDefaultCompiler true
+			|
+			{
+				MalterlibDefaultCompiler true
+				!MalterlibCustomCompilerOptions true
+			}
 			|
 			{
 				Target.Type XcodeBundle
@@ -891,7 +913,11 @@ Target
 		{
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
-			MalterlibDefaultCompiler true
+			|
+			{
+				MalterlibDefaultCompiler true
+				!MalterlibCustomCompilerOptions true
+			}
 			|
 			{
 				Target.Type SharedDynamicLibrary
@@ -906,7 +932,11 @@ Target
 		{
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
-			MalterlibDefaultCompiler true
+			|
+			{
+				MalterlibDefaultCompiler true
+				!MalterlibCustomCompilerOptions true
+			}
 			TargetIsExecutable true
 			PlatformFamily OSX
 		}
@@ -918,7 +948,11 @@ Target
 		{
 			MalterlibUseStaticLibCxx true
 			!MalterlibDisableMalterlib true
-			MalterlibDefaultCompiler true
+			|
+			{
+				MalterlibDefaultCompiler true
+				!MalterlibCustomCompilerOptions true
+			}
 			TargetIsExecutable true
 			PlatformFamily OSX
 			ObjcLinkRuntime rue
@@ -934,7 +968,11 @@ Target
 			!MalterlibDisableMalterlib true
 			!MalterlibPosixInitFileName ""
 			PlatformFamily OSX
-			MalterlibDefaultCompiler true
+			|
+			{
+				MalterlibDefaultCompiler true
+				!MalterlibCustomCompilerOptions true
+			}
 		}
 	}
 
@@ -947,7 +985,11 @@ Target
 			!MalterlibDisableMalterlib true
 			!MalterlibPosixInitFileName ""
 			!PlatformFamily OSX
-			MalterlibDefaultCompiler true
+			|
+			{
+				MalterlibDefaultCompiler true
+				!MalterlibCustomCompilerOptions true
+			}
 		}
 	}
 
@@ -991,6 +1033,16 @@ Target
 	{
 		!!PlatformFamily Linux
 		!!PlatformFamily Emscripten
+	}
+
+	PlatformToolsetLibTool "@(PlatformToolsetCompilerBasePath)/bin/libtool"
+	{
+		&
+		{
+			GeneratorFamily Xcode
+			!MalterlibEnableLinkTimeCodeGeneration false
+			!MalterlibDefaultCompiler true
+		}
 	}
 
 	PlatformToolsetLibTool "@(MToolPath)"
@@ -1062,7 +1114,7 @@ Target
 		}
 	}
 
-	LDFlags "-Xlinker --gdb-index @(Target.LDFlags)"
+	LDFlags "-static-libgcc -Xlinker --gdb-index @(Target.LDFlags)"
 	{
 		&
 		{
@@ -1504,6 +1556,25 @@ Property
 	{
 		!Target.Type "Tool"
 	}
+
+	MalterlibEnableLinkTimeCodeGeneration "true"
+	{
+		&
+		{
+			MalterlibEnableLinkTimeCodeGeneration ""
+			PlatformFamily Windows
+			|
+			{
+				Compile.Optimize "On"
+				Compile.Optimize "Full"
+			}
+		}
+	}
+
+	MalterlibEnableLinkTimeCodeGeneration "false"
+	{
+		!!MalterlibEnableLinkTimeCodeGeneration ""
+	}
 }
 
 // Code generating targets
@@ -1515,12 +1586,7 @@ Target
 		LanguageFamily "Native"
 	}
 
-	LinkTimeCodeGeneration "false"
-	LinkTimeCodeGeneration "true"
-	{
-		!!Compile.Optimize "On"
-		!!Compile.Optimize "Full"
-	}
+	LinkTimeCodeGeneration "@(MalterlibEnableLinkTimeCodeGeneration)"
 }
 
 Property.MalterlibEnableFastLink false // This is still too buggy when debugging
@@ -1625,6 +1691,7 @@ Target
 			!MalterlibDisableMalterlib true
 			!MalterlibPosixInitFileName ""
 			!MalterlibDefaultCompiler true
+			MalterlibCustomCompilerOptions true
 		}
 	}
 

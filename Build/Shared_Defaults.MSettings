@@ -246,7 +246,30 @@ Property
 
 	MalterlibDefaultCompiler "true"
 	{
+		&
+		{
+			MalterlibDefaultCompiler ""
+			MalterlibDefaultToolset true
+		}
+	}
+
+	MalterlibDefaultCompiler "false"
+	{
 		!!MalterlibDefaultCompiler ""
+	}
+
+	MalterlibCustomCompilerOptions "true"
+	{
+		&
+		{
+			MalterlibCustomCompilerOptions ""
+			PlatformFamily Linux
+		}
+	}
+
+	MalterlibCustomCompilerOptions "false" // User: Use custom compiler options only available in patched compiler
+	{
+		!!MalterlibCustomCompilerOptions ""
 	}
 
 	MalterlibDefaultXcode "true" // User: Use default Xcode clang compiler specifications
@@ -280,6 +303,7 @@ Property
 			MalterlibUseStaticLibUnwind ""
 			|
 			{
+				PlatformFamily "Linux"
 				PlatformFamily "Emscripten"
 				PlatformIsDarwin true
 			}
@@ -320,7 +344,7 @@ Property
 		}
 	}
 
-	MalterlibMemoryManager "New" // User: Choose the memory manager. Options: Old, New, System, OverwriteCheck, DLMalloc, LLAlloc (default New)
+	MalterlibMemoryManager "Malterlib" // User: Choose the memory manager. Options: Malterlib, System, OverwriteCheck, DLMalloc, LLAlloc (default Malterlib)
 	{
 		!!MalterlibMemoryManager ""
 	}

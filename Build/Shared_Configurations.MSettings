@@ -3,7 +3,7 @@
 
 Property
 {
-	DefaultOSXPlatform "10.7"
+	DefaultOSXPlatform "10.13"
 	{
 		&
 		{
@@ -12,15 +12,20 @@ Property
 			HostPlatformFamily OSX
 		}
 	}
-	DefaultOSXPlatform "10.6"
+	DefaultOSXPlatform "10.7"
 	{
 		&
 		{
 			DefaultOSXPlatform ""
 			HostPlatformFamily OSX
 		}
-
 	}
+
+	DefaultOSXPlatform "10.13"
+	{
+		!!MalterlibSupportSanitizers true
+	}
+
 	EnablePlatform_Windows true // User: Enables Windows platform
 	{
 		&

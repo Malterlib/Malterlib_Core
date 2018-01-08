@@ -182,7 +182,7 @@
 								"	echo Updated needed\r\n"\
 								"	\"@(Builtin.MToolCom)\" DiffCopy \"@(BinariesPath)/General/Windows\" \"@(BuildSystemBasePath)/Binaries/General\"\r\n"\
 								"	\"@(Builtin.MToolCom)\" DiffCopy \"@(BinariesPath)/*.sh\" \"@(BuildSystemBasePath)/Binaries\" \"\" 0\r\n"\
-								"	\"@(Builtin.MToolCom)\" TouchOrCreate \"@(BuildSystemBasePath)/Binaries.updated\"\r\n"\
+								"	\"@(Builtin.MToolCom)\" TouchOrCreate \"@(UpdatedFile)\"\r\n"\
 								"	\"@(Builtin.MToolCom)\" BuildDependencies \"OutputFile=@(DependencyFile)\" \"Output:@(UpdatedFile)\" \"Input:@(Builtin.BasePathAbsolute)/mib\" \"Find:@(BinariesPath)/*;RIF;33;@(ExcludePatterns)\"\r\n"\
 								"	if exist \"@(UpdatedFile)\" GOTO RetryGeneration\r\n"\
 								")\r\n"
@@ -231,7 +231,31 @@
 
 					Contents	"@(Contents)"\
 								"@(MalterlibBuildDependenciesContents)"
-					
+
+					LibToolCopy_BinariesDirectory "@(PlatformToolsetCompilerBasePath)/bin"
+					LibToolCopy_UpdatedFile "@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.updated"
+					LibToolCopy_DependencyFile "@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.MalterlibDependency"
+
+					Contents	"@(Contents)"\
+								"if [ -f \"@(LibToolCopy_DependencyFile)\" ]; then\n"\
+								"	\"@(Builtin.MToolExe)\" CheckDependencies Verbose=true \"Directory=@(LibToolCopy_BinariesDirectory)\"\n"\
+								"fi\n"\
+								"if ! [ -f \"@(LibToolCopy_UpdatedFile)\" ] || ! [ -f \"@(LibToolCopy_BinariesDirectory)/libtool\" ]; then\n"\
+								"	echo Updated of libtool needed\n"\
+								"	set -e\n"\
+								"	\"@(Builtin.MToolExe)\" DiffCopy \"${TOOLCHAIN_DIR}/usr/bin/libtool\" \"@(LibToolCopy_BinariesDirectory)\"\n"\
+								"	\"@(Builtin.MToolExe)\" TouchOrCreate \"@(LibToolCopy_UpdatedFile)\"\n"\
+								"	\"@(Builtin.MToolExe)\" BuildDependencies \"OutputFile=@(LibToolCopy_DependencyFile)\" \"Output:@(LibToolCopy_UpdatedFile)\" \"Input:${TOOLCHAIN_DIR}/usr/bin/libtool\"\n"\
+								"	set +e\n"\
+								"fi\n"
+					{
+						&
+						{
+							GeneratorFamily Xcode
+							!MalterlibDefaultCompiler true
+						}
+					}
+
 					Contents	"@(Contents)"\
 								"\"@(Builtin.MToolExe)\" CheckDependencies \"$2\"\n"\
 								"if [ \"$?\" != \"0\" ]; then\n"\

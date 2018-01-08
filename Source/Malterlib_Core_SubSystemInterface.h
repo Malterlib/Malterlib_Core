@@ -11,6 +11,7 @@ namespace NMib
 	{
 		ESubSystemDestruction_BeforeMemoryManager
 		, ESubSystemDestruction_BeforeNonTrackedMemoryManager
+		, ESubSystemDestruction_BeforeThreadLocals
 		, ESubSystemDestruction_Last
 	};
 	
@@ -18,6 +19,11 @@ namespace NMib
 	{
 		DMibListLinkD_Link(CSubSystemImpl, m_Link);
 		ESubSystemDestruction m_DestructionOrder;
+
+		bool f_IsAfterMemoryManager() const
+		{
+			return m_DestructionOrder >= ESubSystemDestruction_BeforeThreadLocals;
+		}
 		
 		CSubSystem();
 		virtual ~CSubSystem();

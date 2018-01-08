@@ -2698,7 +2698,7 @@ namespace
 void __cdecl fg_MalterlibFreeNonTracked(void *_pMem)
 {
 	if (!fg_TerminatedThread()) // If thread was terminated incorretly it's not safe to delete memory
-		CAllocator_NonTrackedHeap::f_Free(_pMem);
+		CAllocator_NonTrackedHeap::f_FreeNoSize(_pMem);
 }
 
 
@@ -4936,7 +4936,7 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 		mint Size = sizeof(REPARSE_DATA_BUFFER) + nPathBytes;
 		REPARSE_DATA_BUFFER *pReparseData = (REPARSE_DATA_BUFFER *)NMem::fg_Alloc(Size);
 		fg_MemClear(pReparseData, Size);
-		auto Cleanup = fg_OnScopeExit([&]{NMem::fg_Free(pReparseData);});
+		auto Cleanup = fg_OnScopeExit([&]{NMem::fg_Free(pReparseData, Size);});
 
 		{
 			pReparseData->ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
@@ -5008,7 +5008,7 @@ NMib::NStr::CStr NSys::NFile::fg_ResolveSymbolicLink(const NMib::NStr::CStr &_Fi
 	mint Size = sizeof(REPARSE_DATA_BUFFER) + 65536 * sizeof(ch16);
 	REPARSE_DATA_BUFFER *pReparseData = (REPARSE_DATA_BUFFER *)NMem::fg_Alloc(Size);
 	fg_MemClear(pReparseData, Size);
-	auto Cleanup = fg_OnScopeExit([&]{NMem::fg_Free(pReparseData);});
+	auto Cleanup = fg_OnScopeExit([&]{NMem::fg_Free(pReparseData, Size);});
 
 	mint nIOControlBytes = Size;
 

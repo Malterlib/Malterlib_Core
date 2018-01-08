@@ -82,20 +82,20 @@ extern "C"
 #		if DMibConfig_MalterlibMemoryManager_Debug
 			return NMib::NMem::CAllocator_NonTrackedHeap::f_ReallocDebug(__ptr, __size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_Realloc(__ptr, __size);
+			return NMib::NMem::CAllocator_NonTrackedHeap::f_Realloc(__ptr, __size, 0);
 #		endif
 	}
 
 	void nontracked_free (void *__ptr)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMem::CAllocator_NonTrackedHeap::f_Free(__ptr);
+		return NMib::NMem::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
 	}
 
 	void nontracked_cfree (void *__ptr)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMem::CAllocator_NonTrackedHeap::f_Free(__ptr);
+		return NMib::NMem::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
 	}
 	void *nontracked_memalign (size_t __alignment, size_t __size)
 	{

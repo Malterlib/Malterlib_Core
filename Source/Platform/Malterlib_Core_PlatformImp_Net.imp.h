@@ -33,8 +33,8 @@ CAddressResolver::~CAddressResolver()
 	}
 
 	DMibLock(mp_Lock);
-		mp_PendingList.f_DeleteAll();
-		mp_DoneOrInProgressList.f_DeleteAll();
+		mp_PendingList.f_DeleteAllDefiniteType();
+		mp_DoneOrInProgressList.f_DeleteAllDefiniteType();
 }
 
 void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNet::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()>&& _fOnFinish)

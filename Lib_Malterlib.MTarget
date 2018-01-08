@@ -46,91 +46,17 @@ Property
 	}
 }
 
-%Target "Lib_Malterlib_Runtime2"
-{
-	Property.MalterlibNoShortcuts true	
-	Property.DocumentationModule Malterlib
-	Target
-	{
-		BaseName "Malterlib_Runtime2"
-		Type "StaticLibrary"
-		Group "Libraries/Malterlib"
-	}
-	Compile
-	{
-		!!CompileDialect "C"
-		PrefixHeader ""
-		SearchPath "@(Builtin.BasePath)/External/elftoolchain/libelf;@(Builtin.BasePath)/External/elftoolchain/common;@(Compile.SearchPath)"
-		{
-			!!PlatformFamily "Linux"
-		}
-	}
-	Property.MalterlibConcurrency_DistributedActors true
-	{
-		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
-	}
-	%Group "Source"
-	{
-		Compile
-		{
-			!!MalterlibCompileSupportTabSetings true
-			IndentWidth 2
-			TabWidth 2
-			UsesTabs false
-		}
-		%Group compiler-rt
-		{
-			&
-			{
-				MalterlibUseStaticLibCxxABI true
-				|
-				{
-					PlatformFamily OSX
-					PlatformFamily Emscripten
-				}
-			}
-			%File "../../External/compiler-rt/lib/builtins/*.c"
-			%File "../../External/compiler-rt/lib/builtins/*.h"
-			%Group x86
-			{
-				!!Architecture x86
-				//%File "../../SDK/compiler-rt/lib/builtins/i386/*.c"
-				%File "../../External/compiler-rt/lib/builtins/i386/*.S"
-			}
-			%Group x64
-			{
-				!!Architecture x64
-				%File "../../External/compiler-rt/lib/builtins/x86_64/*.c"
-				%File "../../External/compiler-rt/lib/builtins/x86_64/*.S"
-			}
-			%Group ppc
-			{
-				!!Architecture ppc32
-				!!Architecture ppc64
-				%File "../../External/compiler-rt/lib/builtins/ppc/*.c"
-				%File "../../External/compiler-rt/lib/builtins/ppc/*.S"
-			}
-		}
-	}
-}
-
-%Target "Lib_Malterlib_Runtime"
+%Group "{Lib_Malterlib_Runtime}/{SharedSettings}"
 {
 	Property
 	{
-		MalterlibNoShortcuts true	
+		MalterlibNoShortcuts true
 		DocumentationModule Malterlib
 		MalterlibGenerateLibrary true // Always generate library here so files can be excluded
-	}
-	Target
-	{
-		BaseName "Malterlib_Runtime"
-		Type "StaticLibrary"
-		Group "Libraries/Malterlib"
-	}
-	Property.MalterlibConcurrency_DistributedActors true
-	{
-		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
+		MalterlibConcurrency_DistributedActors true
+		{
+			!MalterlibConcurrency_DistributedActorsInAnyTarget ""
+		}
 	}
 	Compile
 	{
@@ -175,6 +101,155 @@ Property
 		PreprocessorDefines "pvalloc=nontracked_pvalloc;@(Compile.PreprocessorDefines)"
 		PreprocessorDefines "malloc_usable_size=nontracked_malloc_usable_size;@(Compile.PreprocessorDefines)"
 	}
+}
+
+%Target "Lib_Malterlib_RuntimeABI"
+{
+	Target
+	{
+		BaseName "Malterlib_RuntimeABI"
+		Type "StaticLibrary"
+		Group "Libraries/Malterlib"
+		LinkTimeCodeGeneration false
+		ExtraGroups "{Lib_Malterlib_Runtime}/{SharedSettings};@(Target.ExtraGroups)"
+	}
+	Property.WorkaroundLTOValue false
+	%Group "Source"
+	{
+		Compile
+		{
+			!!MalterlibCompileSupportTabSetings true
+			IndentWidth 2
+			TabWidth 2
+			UsesTabs false
+		}
+		%Group compiler-rt
+		{
+			&
+			{
+				MalterlibUseStaticLibCxxABI true
+				|
+				{
+					PlatformFamily Linux
+					PlatformFamily OSX
+					PlatformFamily Emscripten
+				}
+			}
+
+			Compile.LinkTimeCodeGeneration "@(MalterlibEnableLinkTimeCodeGeneration)"
+			{
+				!!CompileDialect "C"
+			}
+
+			%File "../../External/compiler-rt/lib/builtins/*.c"
+			%File "../../External/compiler-rt/lib/builtins/*.h"
+			%Group x86
+			{
+				!!Architecture x86
+				//%File "../../SDK/compiler-rt/lib/builtins/i386/*.c"
+				%File "../../External/compiler-rt/lib/builtins/i386/*.S"
+			}
+			%Group x64
+			{
+				!!Architecture x64
+				%File "../../External/compiler-rt/lib/builtins/x86_64/*.c"
+				%File "../../External/compiler-rt/lib/builtins/x86_64/*.S"
+			}
+			%Group ppc
+			{
+				!!Architecture ppc32
+				!!Architecture ppc64
+				%File "../../External/compiler-rt/lib/builtins/ppc/*.c"
+				%File "../../External/compiler-rt/lib/builtins/ppc/*.S"
+			}
+		}
+		%Group libunwind
+		{
+			&
+			{
+				MalterlibUseStaticLibCxxABI true
+				MalterlibUseStaticLibUnwind true
+			}
+
+			Compile.LinkTimeCodeGeneration "@(WorkaroundLTOValue)" // Exception handling breaks if this is enabled
+			{
+				!!CompileDialect "C"
+			}
+
+			Compile
+			{
+				!!Compile.Type "Assembler"
+
+
+				AllCPUSubTypes true
+				PreprocessorDefines "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+			}
+			%File "../../External/libunwind/include/^*"
+			%File "../../External/libunwind/src/*"
+			{
+				Compile.Disabled true
+				{
+					!!PlatformFamily Emscripten
+				}
+			}
+		}
+		%Group libc++abi
+		{
+			!!MalterlibUseStaticLibCxxABI true
+
+			Compile.LinkTimeCodeGeneration "@(MalterlibEnableLinkTimeCodeGeneration)"
+			{
+				!!CompileDialect "C"
+			}
+
+			Compile
+			{
+				!!CompileDialect "C"
+				DynamicTypeInfo true
+				PreprocessorDefines "LIBCXXABI_NO_NEW_DELETE;@(Compile.PreprocessorDefines)"
+			}
+
+			%File "../../External/libcxxabi/src/*.cpp"
+			{
+				Compile.Disabled true
+				{
+					!!PlatformFamily Emscripten
+				}
+			}
+			%File "../../External/libcxxabi/src/*.h"
+			%File "../../External/libcxxabi/include/*.h"
+			{
+				Compile.Disabled true
+			}
+			%File "../../External/libcxxabi/src/cxa_exception.cpp"
+			%File "../../External/libcxxabi/src/stdlib_stdexcept.cpp"
+			%File "../../External/libcxxabi/src/stdlib_typeinfo.cpp"
+			%File "../../External/libcxxabi/src/private_typeinfo.cpp"
+			%File "../../External/libcxxabi/src/private_typeinfo.cpp"
+			%File "../../External/libcxxabi/src/cxa_personality.cpp"
+			{
+				Compile.LinkTimeCodeGeneration "@(WorkaroundLTOValue)" // Exception handling breaks if this is enabled
+				{
+					!!CompileDialect "C"
+				}
+				Compile.Disabled true
+				{
+					!!PlatformFamily Emscripten
+				}
+			}
+		}
+	}
+}
+
+%Target "Lib_Malterlib_Runtime"
+{
+	Target
+	{
+		BaseName "Malterlib_Runtime"
+		Type "StaticLibrary"
+		Group "Libraries/Malterlib"
+		ExtraGroups "{Lib_Malterlib_Runtime}/{SharedSettings};@(Target.ExtraGroups)"
+	}
 	%Group "Source"
 	{
 		%Group NonTracked
@@ -208,6 +283,9 @@ Property
 					%File "../../External/libcxx/src/new.cpp"
 					{
 						Compile.PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE;@(Compile.PreprocessorDefines)"
+						{
+							!MalterlibDefaultToolset true
+						}
 					}
 					%File "../../External/libcxx/src/debug.cpp"
 					{
@@ -277,60 +355,6 @@ Property
 						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pro_funcs.m4"
 						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pro_types.m4"
 						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pro_vars.m4"
-					}
-				}
-			}
-			%Group libc++abi
-			{
-				!!MalterlibUseStaticLibCxxABI true
-				
-				%Group Lib
-				{
-					Compile
-					{
-						!!CompileDialect "C"
-						DynamicTypeInfo true
-						PreprocessorDefines "LIBCXXABI_NO_NEW_DELETE;@(Compile.PreprocessorDefines)"
-					}
-					
-					%File "../../External/libcxxabi/src/*.cpp"
-					{
-						Compile.Disabled true
-						{
-							!!PlatformFamily Emscripten
-						}
-					}
-					%File "../../External/libcxxabi/src/*.h"
-					%File "../../External/libcxxabi/include/*.h"
-					{
-						Compile.Disabled true
-					}
-					%File "../../External/libcxxabi/src/cxa_exception.cpp"
-					%File "../../External/libcxxabi/src/stdlib_stdexcept.cpp"
-					%File "../../External/libcxxabi/src/stdlib_typeinfo.cpp"
-					%File "../../External/libcxxabi/src/private_typeinfo.cpp"
-				}
-			}
-			%Group libunwind
-			{
-				&
-				{
-					MalterlibUseStaticLibCxxABI true
-					MalterlibUseStaticLibUnwind true
-				}
-				Compile
-				{
-					!!Compile.Type "Assembler"
-					
-					AllCPUSubTypes true
-					PreprocessorDefines "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
-				}
-				%File "../../External/libunwind/include/^*"
-				%File "../../External/libunwind/src/*"
-				{
-					Compile.Disabled true
-					{
-						!!PlatformFamily Emscripten
 					}
 				}
 			}
@@ -720,6 +744,14 @@ Target
 		!!MalterlibNeedsInitProject true
 		Dependency.Link false
 	}
+	%Dependency "Lib_Malterlib_RuntimeABI"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxxABI true
+			Documentation ""
+		}
+	}
 	%Dependency "Lib_Malterlib_Runtime"
 	{
 		&
@@ -729,18 +761,9 @@ Target
 			{
 				PlatformFamily Windows
 				MalterlibUseStaticLibCxx true
-				MalterlibUseStaticLibCxxABI true
 			}
 		}
 		Dependency.LinkWithObjectFiles "false"
-	}
-	%Dependency "Lib_Malterlib_Runtime2"
-	{
-		&
-		{
-			MalterlibUseStaticLibCxxABI true
-			Documentation ""
-		}
 	}
 	%Dependency "Lib_MalterlibDll"
 	{
