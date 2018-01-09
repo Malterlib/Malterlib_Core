@@ -27,7 +27,7 @@ void CFileChangeNotificationContext::CNotification::f_Clear()
 void CFileChangeNotificationContext::CNotification::f_Cancel()
 {
 	while (!m_Watches.f_IsEmpty())
-		m_pContext->f_UnlinkWatch(&(**m_Watches.f_FindSmallest()), this, false);
+		m_pContext->f_UnlinkWatch(*m_Watches.f_FindSmallest(), this, false);
 }
 
 auto CFileChangeNotificationContext::CNotification::f_WatchPath(CWatch *_pParentWatch, CStr const &_Path, bool _bThrow) -> CWatch *
@@ -42,7 +42,7 @@ auto CFileChangeNotificationContext::CNotification::f_WatchPath(CWatch *_pParent
 	{
 		if (_bThrow)
 			throw;
-		DMibTrace("Error add watch on sub path {} ({})", _Path << _Exception.f_GetErrorStr());
+		DMibTrace("Error add watch on sub path {} ({})\n", _Path << _Exception.f_GetErrorStr());
 		return nullptr;
 	}
 
@@ -99,7 +99,7 @@ void CFileChangeNotificationContext::CNotification::f_OnRemovedFromRename(CFindC
 	}
 	
 	if (_PendingRename.m_pWatch)
-		m_pContext->f_UnlinkWatch(_PendingRename.m_pWatch.f_Get(), this, true);
+		m_pContext->f_UnlinkWatch(_PendingRename.m_pWatch, this, true);
 }
 
 void CFileChangeNotificationContext::CNotification::f_OnAdded(CFindChangesContext &o_Context, CStr const &_Path, bool _bIsDir, CWatch* _pWatch)
@@ -129,7 +129,7 @@ void CFileChangeNotificationContext::CNotification::f_OnAdded(CFindChangesContex
 	;
 }
 
-void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContext &o_Context, inotify_event *_pEvent, CWatch *_pWatch)
+void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContext &o_Context, inotify_event *_pEvent, TCSharedPointer<CWatch> const &_pWatch)
 {
 	if (!_pEvent || !_pWatch)
 		return;
@@ -153,7 +153,7 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 		m_pContext->f_UnlinkWatch(_pWatch, this, true);
 	}
 	else if (_pEvent->mask & IN_CREATE)
-		f_OnAdded(o_Context, RelativePath, bIsDir, _pWatch);
+		f_OnAdded(o_Context, RelativePath, bIsDir, _pWatch.f_Get());
 	else if (_pEvent->mask & IN_DELETE)
 	{
 		if (((m_Flags & NFile::EFileChange_DirectoryName) && bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !bIsDir))
@@ -200,7 +200,7 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 			m_PendingRenames.f_Remove(pRename);
 		}
 		else
-			f_OnAdded(o_Context, RelativePath, bIsDir, _pWatch);
+			f_OnAdded(o_Context, RelativePath, bIsDir, _pWatch.f_Get());
 	}
 
 	if (((_pEvent->mask & IN_MODIFY) && (m_Flags & NFile::EFileChange_Write)) || ((_pEvent->mask & IN_ATTRIB) && (m_Flags & NFile::EFileChange_Attributes)))

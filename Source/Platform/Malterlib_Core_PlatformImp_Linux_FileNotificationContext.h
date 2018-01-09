@@ -138,14 +138,14 @@ public:
 			fr_ForEachChildFile("", _fOnFile, _bRecursive);
 		}
 		
-	private:
+	public:
 		DMibListLinkDS_Link(CWatch, mp_Link);
 		DMibListLinkDS_List(CWatch, mp_Link) mp_Children;
 		CWatch *mp_pParent;
-		int mp_Descriptor;
 		CStr mp_FileName;
 		CStr mp_Path;
 		TCSet<CNotification*> mp_References;
+		int mp_Descriptor;
 	};
 
 	class CNotificationThread;
@@ -187,7 +187,7 @@ public:
 		void f_Cancel();
 		CWatch *f_WatchPath(CWatch *_pParentWatch, CStr const &_Path, bool _bThrow);
 		void f_RegisterChange(CFindChangesContext &o_Context, CStr const &_Path, EFileChangeNotification _Notification, CStr const &_RenameFrom = {});
-		void f_OnEvent(CFindChangesContext &o_Context, inotify_event* _pEvent, CWatch* _pWatch);
+		void f_OnEvent(CFindChangesContext &o_Context, inotify_event* _pEvent, TCSharedPointer<CWatch> const &_pWatch);
 		void f_OnAdded(CFindChangesContext &o_Context, CStr const &_Path, bool _bIsDir, CWatch* _pWatch);
 		void f_OnRemovedFromRename(CFindChangesContext &o_Context, CPendingRename const &_PendingRename);
 
@@ -220,13 +220,20 @@ public:
 		CFileChangeNotificationContext *m_pContext;
 		TCVector<uint8> m_ChangesBuffer;
 	};
+
+	struct CPendingRename
+	{
+		TCSharedPointer<CWatch> m_pWatch;
+		bool m_bIsDirectory = false;
+	};
+	TCMap<uint32, CPendingRename> m_PendingRenames;
 	
 	int f_Inotify_AddWatch(CStr const &_Path);
 	void f_Inotify_RemoveWatch(int _Descriptor);
 	ssize_t f_Inotify_Read(TCVector<uint8> &_Buffer);
 	
 	CWatch &f_LinkWatch(int _WatchDescriptor, CStr const &_Path, CNotification *_pNotification, CWatch *_pParentWatch);
-	void f_UnlinkWatch(CWatch *_pWatch, CNotification *_pNotification, bool _bDescriptorInvalid);
+	void f_UnlinkWatch(TCSharedPointer<CWatch> _pWatch, CNotification *_pNotification, bool _bDescriptorInvalid);
 
 	void *f_Open(const CStr &_FileName, EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo);
 	void f_Close(void *_pNotification);

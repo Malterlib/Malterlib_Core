@@ -174,7 +174,7 @@ int CFileChangeNotificationContext::f_Inotify_AddWatch(CStr const &_Path)
 	uint32_t Mask = IN_ONLYDIR | IN_MODIFY | IN_ATTRIB | IN_MOVED_FROM | IN_MOVED_TO | IN_CREATE | IN_DELETE| IN_DELETE_SELF | IN_MOVE_SELF;
 	int WatchDescriptor = NLocal::g_f_inotify_add_watch(m_NotifyDescriptor, _Path.f_GetStr(), Mask);
 	if (WatchDescriptor < 0)
-		DMibErrorFile(CStr::CFormat("inotify_add_watch({}) returned an error ({})") << _Path << errno);
+		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("inotify_add_watch('{}')") << _Path, errno));
 	return WatchDescriptor;
 }
 
@@ -188,9 +188,10 @@ void CFileChangeNotificationContext::f_Inotify_RemoveWatch(int _Descriptor)
 			case EBADF:
 				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EBADF Not a valid file descriptor") << m_NotifyDescriptor << _Descriptor);
 			case EINVAL:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EINVAL: The inotify watch descriptor or file descriptor is not valid") << m_NotifyDescriptor << _Descriptor);
+				return; // This can happen due to race conditions
+//				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EINVAL: The inotify watch descriptor or file descriptor is not valid") << m_NotifyDescriptor << _Descriptor);
 			default:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): Unknown error") << m_NotifyDescriptor << _Descriptor);
+				DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{})") << m_NotifyDescriptor << _Descriptor, errno));
 		}
 	}
 
@@ -212,17 +213,17 @@ ssize_t CFileChangeNotificationContext::f_Inotify_Read(TCVector<uint8> &_Buffer)
 				// The file descriptor fd refers to a file other than a socket and has
 				// been marked nonblocking (O_NONBLOCK), and the read would block.
 			case EBADF:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}): EBADF: Not a valid file descriptor or is not open for reading") << m_NotifyDescriptor);
+				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EBADF: Not a valid file descriptor or is not open for reading") << m_NotifyDescriptor);
 			case EFAULT:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}): EFAULT: buf is outside your accessible address space") << m_NotifyDescriptor);
+				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EFAULT: buf is outside your accessible address space") << m_NotifyDescriptor);
 			case EINTR:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}): EINTR: The call was interrupted by a signal before any data was read") << m_NotifyDescriptor);
+				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EINTR: The call was interrupted by a signal before any data was read") << m_NotifyDescriptor);
 			case EIO:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}): EIO: I/O error") << m_NotifyDescriptor);
+				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EIO: I/O error") << m_NotifyDescriptor);
 			case EISDIR:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}): EISDIR fd refers to a directory") << m_NotifyDescriptor);
+				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EISDIR fd refers to a directory") << m_NotifyDescriptor);
 			default:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}) error {}") << m_NotifyDescriptor << errno);
+				DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("inotify read({})") << m_NotifyDescriptor, errno));
 		}
 	}
 	return ReadResult;
@@ -254,13 +255,13 @@ CFileChangeNotificationContext::CWatch &CFileChangeNotificationContext::f_LinkWa
 			DMibTrace("Failed to find files in sub watch {} ({})", _Path << _Exception.f_GetErrorStr());
 		}
 	}
-	
+
 	_pNotification->m_Watches[_WatchDescriptor] = pWatch;
 	pWatch->f_AddReference(_pNotification);
 	return *pWatch;
 }
 
-void CFileChangeNotificationContext::f_UnlinkWatch(CWatch *_pWatch, CNotification *_pNotification, bool _bDescriptorInvalid)
+void CFileChangeNotificationContext::f_UnlinkWatch(TCSharedPointer<CWatch> _pWatch, CNotification *_pNotification, bool _bDescriptorInvalid)
 {
 	_pNotification->m_Watches.f_Remove(_pWatch->f_GetDescriptor());
 	_pWatch->f_RemoveReference(_pNotification);
@@ -311,6 +312,13 @@ void CFileChangeNotificationContext::f_Close(void *_pNotification)
 	DMibLock(m_ContextLock);
 	CNotification *pNotification = (CNotification *)_pNotification;
 	pNotification->f_Clear();
+
+#if DMibEnableSafeCheck > 0
+	for (auto &pWatch : m_Watches)
+	{
+		DMibFastCheck(!pWatch->mp_References.f_FindEqual(pNotification));
+	}
+#endif
 	
 	m_Notifications.f_Remove(pNotification);
 	delete pNotification;
