@@ -533,7 +533,7 @@ Property
 	{
 		!!ProductCompany ""
 	}
-    ProductCountry "INT"
+    ProductCountry "XX"
 	{
 		!!ProductCountry ""
 	}
