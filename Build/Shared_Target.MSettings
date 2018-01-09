@@ -70,6 +70,21 @@ Property
 			}
 		}
 	}
+	TargetIsLaunchableExecutable "true"
+	{
+		&
+		{
+			Property.true "@(Builtin.Function->HasParentEntity('Target'))"
+			|
+			{
+				Target:Target.Type "ConsoleExecutable"
+				Target:Target.Type "UIExecutable"
+				Target:Target.Type "Executable"
+			}
+		}
+	}
+
+	TargetExecutable "@(Target.FileName)@(Target.FileExtension)"
 	TargetIdentity "@(Target:this.Identity)"
 }
 
