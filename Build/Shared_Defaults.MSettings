@@ -135,7 +135,7 @@ Property
 	{
 		!!MalterlibSigning ""
 	}
-	MalterlibSignIncludeCert "@(Builtin.BasePath)/Settings/Certificates/MSCV-GlobalSign.cer" // User: Set this to 'none' to disable incude cert for development
+	MalterlibSignIncludeCert "@(Builtin.BasePathAbsolute)/Settings/Certificates/MSCV-GlobalSign.cer" // User: Set this to 'none' to disable incude cert for development
 	{
 		!!MalterlibSignIncludeCert ""
 	}
@@ -203,7 +203,7 @@ Property
 	{
 		!!MalterlibDeploySymbols ""
 	}
-	MalterlibLocalizationRoot "@(Builtin.BasePath)/Projects/Localization"
+	MalterlibLocalizationRoot "@(Builtin.BasePathAbsolute)/Projects/Localization"
 	{
 		!!MalterlibLocalizationRoot ""
 	}

@@ -63,7 +63,7 @@ Property
 		!!CompileDialect "C"
 		PrefixHeader ""
 		PrecompilePrefixHeader false
-		SearchPath "@(Builtin.BasePath)/External/elftoolchain/libelf;@(Builtin.BasePath)/External/elftoolchain/common;@(Builtin.BasePath)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
+		SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf;@(Builtin.BasePathAbsolute)/External/elftoolchain/common;@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
 		{
 			!!PlatformFamily "Linux"
 		}
@@ -505,7 +505,7 @@ Compile
 			CompileDialect "C"
 		}
 	}
-	SearchPath "@(Builtin.BasePath)/SDK/breakpad/src;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/SDK/breakpad/src;@(Compile.SearchPath)"
 	PreprocessorDefines "typeof=__typeof__;@(Compile.PreprocessorDefines)"
 }
 
@@ -817,12 +817,12 @@ Target
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader "@(Builtin.BasePath)/@(Builtin.Function->RelativeBase('../Core/Source/PrefixHeader/PCH.h'))"
+		PrefixHeader "@('../Core/Source/PrefixHeader/PCH.h'->MakeAbsolute())"
 		{
 			!DocumentationEnabled true
 		}
-		SearchPath "@(Builtin.BasePath)/@(Builtin.Function->RelativeBase('../PCH'));@(Compile.SearchPath)"
-		SearchPath "@(Builtin.BasePath)/External/elftoolchain/common;@(Builtin.BasePath)/External/elftoolchain/libelf;@(Compile.SearchPath)"
+		SearchPath "@('../PCH'->MakeAbsolute());@(Compile.SearchPath)"
+		SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/common;@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf;@(Compile.SearchPath)"
 		{
 			!!PlatformFamily "Linux"
 		}
@@ -830,7 +830,7 @@ Target
 		{
 			!!PlatformFamily "Linux"
 		}
-		SearchPath "@(Builtin.BasePath)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
+		SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
 		{
 			!!PlatformFamily "Linux"
 		}

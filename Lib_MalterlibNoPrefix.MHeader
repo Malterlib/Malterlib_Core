@@ -4,11 +4,11 @@
 Compile
 {
 	!!CompileDialect "C"
-	SearchPath "@(Builtin.BasePath)/External/elftoolchain/libelf;@(Builtin.BasePath)/External/elftoolchain/common;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf;@(Builtin.BasePathAbsolute)/External/elftoolchain/common;@(Compile.SearchPath)"
 	{
 		!!PlatformFamily "Linux"
 	}
-	SearchPath "@(Builtin.BasePath)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
 	{
 		!!PlatformFamily "Linux"
 	}

@@ -1099,7 +1099,7 @@ Compile
 		!!Target.Type "Driver"
 	}
 
-	PrefixHeader "@(Builtin.BasePath)/Malterlib/Core/Source/PrefixHeader/PCH.h"
+	PrefixHeader "@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h"
 	{
 		&
 		{
@@ -1109,7 +1109,7 @@ Compile
 			!Target.Type Driver
 		}
 	}
-	PrefixHeader "@(Builtin.BasePath)/Projects/Shared/PCHQt/PCH.h"
+	PrefixHeader "@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h"
 	{
 		&
 		{
@@ -1167,7 +1167,7 @@ Compile
 		!!PlatformToolsetFamily clang
 	}
 
-	SearchPath "@(Builtin.BasePath)/External/libcxx/include;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/External/libcxx/include;@(Compile.SearchPath)"
 	{
 		&
 		{
@@ -1175,7 +1175,7 @@ Compile
 			MalterlibUseStaticLibCxx "true"
 		}
 	}
-	SearchPath "@(Builtin.BasePath)/External/libcxxabi/include;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/External/libcxxabi/include;@(Compile.SearchPath)"
 	{
 		&
 		{
@@ -1184,7 +1184,7 @@ Compile
 		}
 	}
 
-	SearchPath "@(Builtin.BasePath)/SDK/WDK/inc/ddk;@(Builtin.BasePath)/SDK/WDK/inc/api;@(Builtin.BasePath)/SDK/WDK/inc/crt;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/SDK/WDK/inc/ddk;@(Builtin.BasePathAbsolute)/SDK/WDK/inc/api;@(Builtin.BasePathAbsolute)/SDK/WDK/inc/crt;@(Compile.SearchPath)"
 	{
 		&
 		{
@@ -1198,9 +1198,9 @@ Compile
 		!!MalterlibUsesTranslation "true"
 	}
 
-	SearchPath "@(Builtin.IntermediateDirectory);@(GeneratedDirectory);@(Compile.SearchPath)"
+	SearchPath "@(Target.IntermediateDirectory);@(GeneratedDirectory);@(Compile.SearchPath)"
 
-	SearchPath "@(Builtin.BasePath)/SDK/OpenSSL/build/include/@(Platform)/@(Architecture);@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/SDK/OpenSSL/build/include/@(Platform)/@(Architecture);@(Compile.SearchPath)"
 	{
 		&
 		{
@@ -1210,23 +1210,23 @@ Compile
 	}
 
 
-	SearchPath "@(Builtin.BasePath)/Projects;@(Compile.SearchPath)" // Project path is the most important
-	SearchPath "@(Builtin.BasePath);@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/Projects;@(Compile.SearchPath)" // Project path is the most important
+	SearchPath "@(Builtin.BasePathAbsolute);@(Compile.SearchPath)"
 	SearchPath "@(MalterlibIncludeOutputDir);@(Compile.SearchPath)"
-	SearchPath "@(Builtin.BasePath)/Malterlib/Core/Include;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/Malterlib/Core/Include;@(Compile.SearchPath)"
 
-	SearchPath "@(Builtin.BasePath)/Malterlib/Core/Source/PrefixHeader;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader;@(Compile.SearchPath)"
 	{
-		!!Compile.PrefixHeader "@(Builtin.BasePath)/Malterlib/Core/Source/PrefixHeader/PCH.h"
+		!!Compile.PrefixHeader "@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h"
 	}
 
-	SearchPath "@(Builtin.BasePath)/Projects/Shared/PCHQt;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt;@(Compile.SearchPath)"
 	{
-		!!Compile.PrefixHeader "@(Builtin.BasePath)/Projects/Shared/PCHQt/PCH.h"
+		!!Compile.PrefixHeader "@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h"
 	}
 
 
-	FrameworkSearchPath "@(Builtin.BasePath)/SDK/BreakpadBin/@(PlatformFamily) @(Target.FrameworkSearchPath)"
+	FrameworkSearchPath "@(Builtin.BasePathAbsolute)/SDK/BreakpadBin/@(PlatformFamily) @(Target.FrameworkSearchPath)"
 	{
 		&
 		{

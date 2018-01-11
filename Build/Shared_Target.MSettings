@@ -2379,7 +2379,7 @@ Target
 		}
 	}
 
-	ToolPath "@(Builtin.BasePath)/Malterlib/Tools/Binaries/NoLib/x86;@(Target.ToolPath)"
+	ToolPath "@(Builtin.BasePathAbsolute)/Malterlib/Tools/Binaries/NoLib/x86;@(Target.ToolPath)"
 	{
 		&
 		{
@@ -2389,7 +2389,7 @@ Target
 		}
 	}
 	
-	ToolPath "@(Builtin.BasePath)/Malterlib/Tools/Binaries/NoLib/x64;@(Target.ToolPath)"
+	ToolPath "@(Builtin.BasePathAbsolute)/Malterlib/Tools/Binaries/NoLib/x64;@(Target.ToolPath)"
 	{
 		&
 		{
