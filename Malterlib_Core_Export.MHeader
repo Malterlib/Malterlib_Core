@@ -8,13 +8,6 @@ Property
 
 %Target "Malterlib_Export"
 {
-	Property
-	{
-		MalterlibPostCopyProject "Malterlib_Export_Exe"
-		{
-			!!MalterlibPostCopyProject ""
-		}
-	}
 	Target
 	{
 		FileName "MalterlibExport"
@@ -180,7 +173,7 @@ Property
 		Property
 		{
 			Name "@(MalterlibExportDirectory)/@(this.Identity)"
-			Contents "-force_load \"@(MalterlibPosixInitFileName)\" \"-L@(MalterlibExportDirectory)/Exe\" \n"
+			Contents "-force_load \"@(MalterlibPosixInitFileName)\" \"-L@(MalterlibExportDirectory)/Dll\" \n"
 			Executable false
 			UnixLineEnds true
 			UnicodeBOM false
@@ -191,7 +184,7 @@ Property
 		Property
 		{
 			Name "@(MalterlibExportDirectory)/@(this.Identity)"
-			Contents "-force_load \"@(MalterlibPosixInitFileName)\" \"-L@(MalterlibExportDirectory)/Dll\" \n"
+			Contents "-force_load \"@(MalterlibPosixInitFileName)\" \"-L@(MalterlibExportDirectory)/Exe\" \n"
 			Executable false
 			UnixLineEnds true
 			UnicodeBOM false
@@ -201,13 +194,6 @@ Property
 
 %Target "Malterlib_Export_Exe"
 {
-	Property
-	{
-		MalterlibPostCopyProject "Malterlib_Export_Exe"
-		{
-			!!MalterlibPostCopyProject ""
-		}
-	}
 	Target
 	{
 		FileName "libc++"
@@ -222,13 +208,6 @@ Property
 
 %Target "Malterlib_Export_Dll"
 {
-	Property
-	{
-		MalterlibPostCopyProject "Malterlib_Export_Dll"
-		{
-			!!MalterlibPostCopyProject ""
-		}
-	}
 	Target
 	{
 		FileName "libc++"
