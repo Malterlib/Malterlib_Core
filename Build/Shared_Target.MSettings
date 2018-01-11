@@ -2281,39 +2281,14 @@ Property
 Property 
 {
 	
-	MToolDirectory "@('../../Tools/Binaries/MTool'->MakeAbsolute())/@(HostPlatformFamily)"
-	{
-		&
-		{
-			MalterlibUseGitRepo false
-			PlatformFamily Windows
-		}
-	}
-	MToolDirectory "@('../../Tools/Binaries/MTool'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
-	{
-		&
-		{
-			MalterlibUseGitRepo false
-			!PlatformFamily Windows
-		}
-	}
-
 	MToolDirectory "@('../../../Binaries/Malterlib/General'->MakeAbsolute())/@(HostPlatformFamily)"
 	{
-		&
-		{
-			!MalterlibUseGitRepo false
-			PlatformFamily Windows
-		}
+		!!PlatformFamily Windows
 	}
 
 	MToolDirectory "@('../../../Binaries/Malterlib/General'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
 	{
-		&
-		{
-			!MalterlibUseGitRepo false
-			!PlatformFamily Windows
-		}
+		!PlatformFamily Windows
 	}
 
 	MToolPath "@(MToolDirectory)/MTool.com"
