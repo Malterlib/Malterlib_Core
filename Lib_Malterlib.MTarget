@@ -384,14 +384,6 @@ Property
 
 			%Group "CDecl"
 			{
-				Compile
-				{
-					!!CompileDialect "C"
-					CallingConvention "Cdecl"
-					{
-						!Target.VisualStudioPlatform "Clang"
-					}
-				}
 				%Group CRT
 				{
 					!!PlatformFamily Windows

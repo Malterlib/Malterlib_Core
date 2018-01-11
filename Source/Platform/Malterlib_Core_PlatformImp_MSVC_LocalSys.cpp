@@ -890,12 +890,12 @@ public:
 			f_InstallVistaExceptionHack();	
 	}
 
-	typedef void (FSetAssertInfo)(int32 _AssertType, const ch8 *_pAssertMessage);
+	typedef void (DMibCrossmoduleAPI FSetAssertInfo)(int32 _AssertType, const ch8 *_pAssertMessage);
 
 	FSetAssertInfo *m_pSetAssertInfo;
 	NThread::CMutual m_ContractInfoLock;
 	CStrNonTracked m_ContractAssertInfo;
-	static void fs_SetAssertInfo(int32 _AssertType, const ch8 *_pAssertMessage)
+	static void DMibCrossmoduleAPI fs_SetAssertInfo(int32 _AssertType, const ch8 *_pAssertMessage)
 	{
 		fg_GetLocalSys()->f_SetContractInfo(_pAssertMessage);
 	}

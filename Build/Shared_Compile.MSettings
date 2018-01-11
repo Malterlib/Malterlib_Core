@@ -1247,16 +1247,6 @@ Compile
 		}
 	}
 
-	CallingConvention "FastCall"
-	{
-		&
-		{
-			PlatformType "Windows"
-			Architecture "x86"
-			!Target.VisualStudioPlatform "Clang"
-		}
-	}
-
 	CallingConvention "StdCall"
 	{
 		&

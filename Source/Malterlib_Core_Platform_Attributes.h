@@ -23,8 +23,14 @@
 #	else
 #		define calling_convention_c
 #	endif
+#	define DMibCrossmoduleAPI
 #elif defined(DCompiler_MSVC)
 #	define calling_convention_c __cdecl
+#	ifdef DArchitecture_x86
+#		define DMibCrossmoduleAPI __fastcall
+#	else
+#		define DMibCrossmoduleAPI
+#	endif
 #else
 #	error "Implement this"
 #endif
