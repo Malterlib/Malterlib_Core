@@ -58,6 +58,7 @@ Property
 						!EvalFile "pending"
 						!EvalFile "utility"
 						!EvalFile "chrono"
+						!EvalFile "exception"
 					}
 				}
 			}
@@ -136,6 +137,17 @@ Property
 	%Group chrono
 	{
 		Property.SubDirectory /chrono
+		Compile.Type "Header"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
+		{
+			Compile.Type "Header"
+			Property.SymlinkDirectory true
+		}
+	}
+	%Group exception
+	{
+		Property.SubDirectory /exception
 		Compile.Type "Header"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
