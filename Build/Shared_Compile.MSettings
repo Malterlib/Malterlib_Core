@@ -1286,6 +1286,7 @@ Compile
 				Compile.Type C++Managed
 			}
 			!Target.VisualStudioPlatform "Clang"
+			!Target.PlatformToolset "v90"
 		}
 	}
 
