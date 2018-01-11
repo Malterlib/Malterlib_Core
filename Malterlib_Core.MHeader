@@ -270,3 +270,4 @@ Property
 
 Import "Tools/*/*.MHeader"
 
+Import "Malterlib_Core_Export.MHeader"

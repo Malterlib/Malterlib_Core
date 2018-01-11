@@ -1,0 +1,256 @@
+// Copyright © 2018 Nonna Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	MalterlibExportDirectory "@(Builtin.GeneratedBuildSystemDir)/Export/@(Platform)/@(Architecture)/@(FullConfiguration)"
+}
+
+%Target "Malterlib_Export"
+{
+	Property
+	{
+		MalterlibPostCopyProject "Malterlib_Export_Exe"
+		{
+			!!MalterlibPostCopyProject ""
+		}
+	}
+	Target
+	{
+		FileName "MalterlibExport"
+		Type StaticLibrary
+	}
+	%Dependency "Lib_Malterlib"
+	%Dependency "Lib_Malterlib_Init"
+	{
+		!!MalterlibNeedsInitProject true
+		Dependency.Link false
+	}
+	%Dependency "Lib_Malterlib_RuntimeABI"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxxABI true
+			Documentation ""
+		}
+	}
+	%Dependency "Lib_Malterlib_Runtime"
+	{
+		&
+		{
+			Documentation ""
+			|
+			{
+				PlatformFamily Windows
+				MalterlibUseStaticLibCxx true
+			}
+		}
+		Dependency.LinkWithObjectFiles "false"
+	}
+
+	%Group Source
+	{
+		%Group "C"
+		{
+			%File "Export/Malterlib_Core_Export_C"
+			{
+				Compile.Type C
+			}
+		}
+		%Group "C++"
+		{
+			%File "Export/Malterlib_Core_Export_C++"
+			{
+				Compile.Type C++
+			}
+		}
+		%Group "ObjC"
+		{
+			%File "Export/Malterlib_Core_Export_ObjC"
+			{
+				Compile.Type ObjC
+			}
+		}
+		%Group "ObjC++"
+		{
+			%File "Export/Malterlib_Core_Export_ObjC++"
+			{
+				Compile.Type ObjC++
+			}
+		}
+	}
+
+	Property
+	{
+		MalterlibExportCompileFlagsTypes "C;C++;@(MalterlibExportCompileFlagsTypes)"
+		MalterlibExportCompileFlagsTypes "ObjC;ObjC++;@(MalterlibExportCompileFlagsTypes)"
+		{
+			!!PlatformFamily OSX
+		}
+	}
+
+	%GenerateFile "@(MalterlibExportCompileFlagsTypes)"
+	{
+		Property
+		{
+			FileFullPath "Export/Malterlib_Core_Export_@(this.Identity)"
+			FileFullPath "@(FileFullPath->MakeAbsolute())"
+		}
+		Property
+		{
+			CompileFlags_PreprocessorDefines_EntityPath "Target:*.Group:Source.Group:@(this.Identity).File:@(FileFullPath)"
+			CompileFlags_PreprocessorDefines_Contents "@(GetProperty('Compile', 'PreprocessorDefines', '@(CompileFlags_PreprocessorDefines_EntityPath)'))"
+
+			CompileFlags_PreprocessorDefines_Template "\"-D@(Explodee->Replace('\"','\\\\\"'))\" "
+			{
+				&
+				{
+					!Explodee ""
+					Explodee "~*\"*"
+				}
+
+			}
+			CompileFlags_PreprocessorDefines_Template "\"-D@(Explodee)\" "
+			{
+				&
+				{
+					!Explodee ""
+					|
+					{
+						Explodee "~* *"
+						Explodee "~*(*"
+						Explodee "~*)*"
+					}
+					!Explodee "~*\"*"
+				}
+
+			}
+			CompileFlags_PreprocessorDefines_Template "-D@(Explodee) "
+			{
+				&
+				{
+					!Explodee ""
+					!
+					{
+						|
+						{
+							Explodee "~* *"
+							Explodee "~*(*"
+							Explodee "~*)*"
+							Explodee "~*\"*"
+						}
+					}
+					!Explodee "~*\"*"
+				}
+			}
+
+			CompileFlags_PreprocessorDefines "@(ExplodeList('@(CompileFlags_PreprocessorDefines_Contents)', ';', 'CompileFlags_PreprocessorDefines_Template'))"
+		}
+		Property
+		{
+			CompileFlags_IncludePaths_EntityPath "Target:*.Group:Source.Group:@(this.Identity).File:@(FileFullPath)"
+			CompileFlags_IncludePaths_Contents "@(GetProperty('Compile', 'SearchPath', '@(CompileFlags_IncludePaths_EntityPath)'))"
+
+			CompileFlags_IncludePaths_Template "\"-I@(Explodee)\" "
+			{
+				&
+				{
+					!Explodee ""
+				}
+
+			}
+
+			CompileFlags_IncludePaths "@(ExplodeList('@(CompileFlags_IncludePaths_Contents)', ';', 'CompileFlags_IncludePaths_Template'))"
+		}
+
+		Property
+		{
+			Name "@(MalterlibExportDirectory)/CompileFlags_@(this.Identity).txt"
+			Contents "@(CompileFlags_PreprocessorDefines) @(CompileFlags_IncludePaths) \n"
+			Executable false
+			UnixLineEnds true
+			UnicodeBOM false
+		}
+	}
+
+	Property.MalterlibXcodeObjectsDirectory "Objects-normal"
+
+	%GenerateFile "LDFlags_Dll.txt"
+	{
+		Property
+		{
+			Name "@(MalterlibExportDirectory)/@(this.Identity)"
+			Contents "-force_load \"@(MalterlibPosixInitFileName)\" \"-L@(MalterlibExportDirectory)/Exe\" \n"
+			Executable false
+			UnixLineEnds true
+			UnicodeBOM false
+		}
+	}
+	%GenerateFile "LDFlags_Exe.txt"
+	{
+		Property
+		{
+			Name "@(MalterlibExportDirectory)/@(this.Identity)"
+			Contents "-force_load \"@(MalterlibPosixInitFileName)\" \"-L@(MalterlibExportDirectory)/Dll\" \n"
+			Executable false
+			UnixLineEnds true
+			UnicodeBOM false
+		}
+	}
+}
+
+%Target "Malterlib_Export_Exe"
+{
+	Property
+	{
+		MalterlibPostCopyProject "Malterlib_Export_Exe"
+		{
+			!!MalterlibPostCopyProject ""
+		}
+	}
+	Target
+	{
+		FileName "libc++"
+		Type StaticLibrary
+	}
+	%Dependency "Malterlib_Export=Lib_Malterlib_Export"
+	%Dependency "Lib_MalterlibExecutable"
+
+	Property.MalterlibPostBuildScript_Last 	"@(MalterlibPostBuildScript_Last)"\
+											"MTool DiffCopy \"@(MalterlibFinalModuleDestination)\" \"@(MalterlibExportDirectory)/Exe\"\r\n"
+}
+
+%Target "Malterlib_Export_Dll"
+{
+	Property
+	{
+		MalterlibPostCopyProject "Malterlib_Export_Dll"
+		{
+			!!MalterlibPostCopyProject ""
+		}
+	}
+	Target
+	{
+		FileName "libc++"
+		Type StaticLibrary
+	}
+	%Dependency "Malterlib_Export=Lib_Malterlib_Export"
+	%Dependency "Lib_MalterlibDll"
+
+	Property.MalterlibPostBuildScript_Last 	"@(MalterlibPostBuildScript_Last)"\
+											"MTool DiffCopy \"@(MalterlibFinalModuleDestination)\" \"@(MalterlibExportDirectory)/Dll\"\r\n"
+}
+
+%Workspace "Malterlib_Export"
+{
+	Compile
+	{
+		!!CompileDialect C
+		PreprocessorDefines "DMibMemoryOverrideDll;@(Compile.PreprocessorDefines)"
+	}
+
+	%Target "Malterlib_Export_Exe"
+	%Target "Malterlib_Export_Dll"
+}
+
+
