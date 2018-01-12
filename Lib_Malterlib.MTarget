@@ -467,6 +467,22 @@ Property
 		PrefixHeader ""
 	}
 	Include "Lib_MalterlibNoPrefix.MHeader"
+
+	%Dependency "Lib_Malterlib_Instrumentation"
+	{
+		&
+		{
+			|
+			{
+				MalterlibMemoryManager_EnableOverrideSystemMalloc true
+				MalterlibMemoryManager_OverrideDll true
+			}
+			PlatformFamily OSX
+			!DocumentationEnabled true
+		}
+
+		Dependency.Indirect true
+	}
 }
 
 %Target "Lib_MalterlibDll"

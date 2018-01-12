@@ -252,48 +252,6 @@ Compile
 				}
 			}
 			
-			%Group "OSX Malloc override"
-			{
-				&
-				{
-					|
-					{
-						MalterlibMemoryManager_EnableOverrideSystemMalloc true
-						MalterlibMemoryManager_OverrideDll true
-					}
-					PlatformFamily OSX
-					!DocumentationEnabled true
-				}
-				%Group MHook
-				{
-					Compile.Disabled true
-					{
-						!PlatformFamily OSX
-					}
-					
-					%File "../Instrumentation/Source/Malterlib_Instrumentation_FunctionHook*"
-					%Group SDK
-					{
-						Compile
-						{
-							PreprocessorDefines "malloc=nontracked_malloc;@(Compile.PreprocessorDefines)"
-							PreprocessorDefines "free=nontracked_free;@(Compile.PreprocessorDefines)"
-							PreprocessorDefines "calloc=nontracked_calloc;@(Compile.PreprocessorDefines)"
-							PreprocessorDefines "realloc=nontracked_realloc;@(Compile.PreprocessorDefines)"
-							PreprocessorDefines "cfree=nontracked_cfree;@(Compile.PreprocessorDefines)"
-							PreprocessorDefines "memalign=nontracked_memalign;@(Compile.PreprocessorDefines)"
-							PreprocessorDefines "posix_memalign=nontracked_posix_memalign;@(Compile.PreprocessorDefines)"
-							PreprocessorDefines "valloc=nontracked_valloc;@(Compile.PreprocessorDefines)"
-							PreprocessorDefines "pvalloc=nontracked_pvalloc;@(Compile.PreprocessorDefines)"
-							PreprocessorDefines "malloc_usable_size=nontracked_malloc_usable_size;@(Compile.PreprocessorDefines)"
-						}
-						%Group disasm
-						{
-							%File "../../SDK/mhook/disasm-lib/*"
-						}
-					}
-				}
-			}
 			%File ../Memory/Source/Malterlib_Memory.cpp
 			%Group LLAlloc
 			{
@@ -426,5 +384,5 @@ Compile
 			%File Source/Platform/Malterlib_Core_PlatformImp.h
 			%File Source/Platform/Malterlib_Core_PlatformImp_Integration.h
 		}
-	}		
+	}
 }
