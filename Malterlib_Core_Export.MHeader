@@ -166,25 +166,56 @@ Property
 		}
 	}
 
-	Property.MalterlibXcodeObjectsDirectory "Objects-normal"
-
 	%GenerateFile "LDFlags_Dll.txt"
 	{
 		Property
 		{
-			Name "@(MalterlibExportDirectory)/@(this.Identity)"
-			Contents "-force_load \"@(MalterlibPosixInitFileName)\" \"-L@(MalterlibExportDirectory)/Dll\" \n"
-			Executable false
-			UnixLineEnds true
-			UnicodeBOM false
+			LDFlags_EntityPath "Workspace:*.Target:Dll_Malterlib_Export_Dll.Target:Dll_Malterlib_Export_Dll"
+			LDFlags_Contents "@(GetProperty('Target', 'LDFlagsFirst', '@(LDFlags_EntityPath)')) @(GetProperty('Target', 'LDFlags', '@(LDFlags_EntityPath)'))"
+			NeedsOverrideLibrary "@(GetProperty('Property', 'MalterlibNeedsMallocOverrideLibrary', '@(LDFlags_EntityPath)'))"
+			OverrideLibrary "@(GetProperty('Property', 'MalterlibOverrideMallocLibrary', '@(LDFlags_EntityPath)'))"
 		}
-	}
-	%GenerateFile "LDFlags_Exe.txt"
-	{
 		Property
 		{
 			Name "@(MalterlibExportDirectory)/@(this.Identity)"
-			Contents "-force_load \"@(MalterlibPosixInitFileName)\" \"-L@(MalterlibExportDirectory)/Exe\" \n"
+			Contents "@(LDFlags_Contents) \"-L@(MalterlibExportDirectory)/Dll\" -lc++"
+			Contents "@(Contents) \"@(OverrideLibrary)\""
+			{
+				!!NeedsOverrideLibrary true
+			}
+			Contents "@(Contents)\n"
+			Executable false
+			UnixLineEnds true
+			UnicodeBOM false
+
+		}
+	}
+	%GenerateFile "LDFlags_Exe.txt;LDFlags_MalterlibExe.txt"
+	{
+		Property
+		{
+			LDFlags_EntityPath "Workspace:*.Target:Exe_Malterlib_Export_Exe.Target:Exe_Malterlib_Export_Exe"
+			LDFlags_Contents "@(GetProperty('Target', 'LDFlagsFirst', '@(LDFlags_EntityPath)')) @(GetProperty('Target', 'LDFlags', '@(LDFlags_EntityPath)'))"
+			NeedsOverrideLibrary "@(GetProperty('Property', 'MalterlibNeedsMallocOverrideLibrary', '@(LDFlags_EntityPath)'))"
+			OverrideLibrary "@(GetProperty('Property', 'MalterlibOverrideMallocLibrary', '@(LDFlags_EntityPath)'))"
+		}
+		Property
+		{
+			NoApp_Object "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/Exe_Malterlib_Export_NoExe/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibNativeClangArchitecture)/Malterlib_Core_Export_NoExecutable.o"
+		}
+		Property
+		{
+			Name "@(MalterlibExportDirectory)/@(this.Identity)"
+			Contents "@(LDFlags_Contents) \"-L@(MalterlibExportDirectory)/Exe\" -lc++"
+			Contents "@(Contents) \"@(OverrideLibrary)\""
+			{
+				!!NeedsOverrideLibrary true
+			}
+			Contents "@(Contents) \"@(NoApp_Object)\""
+			{
+				!this.Identity "LDFlags_MalterlibExe.txt"
+			}
+			Contents "@(Contents)\n"
 			Executable false
 			UnixLineEnds true
 			UnicodeBOM false
@@ -192,10 +223,11 @@ Property
 	}
 }
 
-%Target "Malterlib_Export_Exe"
+%Target "Lib_Malterlib_Export_Exe"
 {
 	Target
 	{
+		Name Lib_Malterlib_Export_Exe
 		FileName "libc++"
 		Type StaticLibrary
 	}
@@ -206,10 +238,11 @@ Property
 											"MTool DiffCopy \"@(MalterlibFinalModuleDestination)\" \"@(MalterlibExportDirectory)/Exe\"\r\n"
 }
 
-%Target "Malterlib_Export_Dll"
+%Target "Lib_Malterlib_Export_Dll"
 {
 	Target
 	{
+		Name Lib_Malterlib_Export_Dll
 		FileName "libc++"
 		Type StaticLibrary
 	}
@@ -220,16 +253,63 @@ Property
 											"MTool DiffCopy \"@(MalterlibFinalModuleDestination)\" \"@(MalterlibExportDirectory)/Dll\"\r\n"
 }
 
+%Target "Exe_Malterlib_Export_Exe"
+{
+	Target
+	{
+		Name Exe_Malterlib_Export_Exe
+		Type ConsoleExecutable
+		GenerateScheme true
+	}
+	%Dependency "Lib_Malterlib"
+
+	%Group Source
+	{
+		%File "Export/Malterlib_Core_Export_Executable.cpp"
+	}
+}
+
+%Target "Exe_Malterlib_Export_NoExe"
+{
+	Target
+	{
+		Name Exe_Malterlib_Export_NoExe
+		Type ConsoleExecutable
+		GenerateScheme true
+	}
+	%Dependency "Lib_Malterlib"
+
+	%Group Source
+	{
+		%File "Export/Malterlib_Core_Export_NoExecutable.cpp"
+	}
+}
+
+%Target "Dll_Malterlib_Export_Dll"
+{
+	Target
+	{
+		Name Dll_Malterlib_Export_Dll
+		Type DynamicLibrary
+		GenerateScheme true
+	}
+	%Dependency "Lib_Malterlib"
+
+	%Group Source
+	{
+		%File "Export/Malterlib_Core_Export_Executable.cpp"
+	}
+}
+
 %Workspace "Malterlib_Export"
 {
-	Compile
-	{
-		!!CompileDialect C
-		PreprocessorDefines "DMibMemoryOverrideDll;@(Compile.PreprocessorDefines)"
-	}
+	Property.MalterlibXcodeObjectsDirectory "Objects-normal"
 
-	%Target "Malterlib_Export_Exe"
-	%Target "Malterlib_Export_Dll"
+	%Target "Lib_Malterlib_Export_Exe"
+	%Target "Lib_Malterlib_Export_Dll"
+	%Target "Exe_Malterlib_Export_Exe"
+	%Target "Exe_Malterlib_Export_NoExe"
+	%Target "Dll_Malterlib_Export_Dll"
 }
 
 
