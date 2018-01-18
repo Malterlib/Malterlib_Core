@@ -36,7 +36,11 @@ Property
 
 %Repository "MalterlibBinaries_Linux"
 {
-	!!EnablePlatform_Linux2_6 true
+	&
+	{
+		EnablePlatform_Linux2_6 true
+		!MalterlibUseGitRepo false
+	}
 	
 	Property.RepoName "@(this.Identity).git"
 	Repository
