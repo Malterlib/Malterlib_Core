@@ -13,6 +13,7 @@ Property
 		FileName "MalterlibExport"
 		Type StaticLibrary
 	}
+	%Dependency "Lib_zlib"
 	%Dependency "Lib_Malterlib"
 	%Dependency "Lib_Malterlib_Init"
 	{
@@ -59,6 +60,7 @@ Property
 		}
 		%Group "ObjC"
 		{
+			!!PlatformFamily OSX
 			%File "Export/Malterlib_Core_Export_ObjC"
 			{
 				Compile.Type ObjC
@@ -66,6 +68,7 @@ Property
 		}
 		%Group "ObjC++"
 		{
+			!!PlatformFamily OSX
 			%File "Export/Malterlib_Core_Export_ObjC++"
 			{
 				Compile.Type ObjC++
@@ -100,6 +103,7 @@ Property
 				{
 					!Explodee ""
 					Explodee "~*\"*"
+					!MalterlibExportSupportQuotes false
 				}
 
 			}
@@ -115,6 +119,7 @@ Property
 						Explodee "~*)*"
 					}
 					!Explodee "~*\"*"
+					!MalterlibExportSupportSpaceAndParenthesis false
 				}
 
 			}
@@ -260,6 +265,9 @@ Property
 		Name Exe_Malterlib_Export_Exe
 		Type ConsoleExecutable
 		GenerateScheme true
+		{
+			!!GeneratorFamily Xcode
+		}
 	}
 	%Dependency "Lib_Malterlib"
 
@@ -276,12 +284,16 @@ Property
 		Name Exe_Malterlib_Export_NoExe
 		Type ConsoleExecutable
 		GenerateScheme true
+		{
+			!!GeneratorFamily Xcode
+		}
 	}
 	%Dependency "Lib_Malterlib"
 
 	%Group Source
 	{
 		%File "Export/Malterlib_Core_Export_NoExecutable.cpp"
+		%File "Export/Malterlib_Core_Export_NoExecutableMain.cpp"
 	}
 }
 
@@ -292,6 +304,9 @@ Property
 		Name Dll_Malterlib_Export_Dll
 		Type DynamicLibrary
 		GenerateScheme true
+		{
+			!!GeneratorFamily Xcode
+		}
 	}
 	%Dependency "Lib_Malterlib"
 
