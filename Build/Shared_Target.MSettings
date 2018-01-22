@@ -178,13 +178,18 @@ Target
 	}
 }
 
+Property.MalterlibGenerateScheme true
+{
+	!!MalterlibGenerateScheme ""
+}
+
 Target
 {
 	!!GeneratorFamily Xcode
 	
 	EnableModuleDebugging "false"
 	
-	GenerateScheme true
+	GenerateScheme "@(MalterlibGenerateScheme)"
 	{
 		&
 		{
