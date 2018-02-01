@@ -1,4 +1,4 @@
-../../Binaries/Malterlib 1a04659d339c473b61743b28e5cc257ae88199a7
+../../Binaries/Malterlib 665a611e45506b10b0b8d71e64c63249637d837a
 ../../SDK 245e92404fc3cae93f873c99177eba60e186f0ec
 ../Algorithm 1ffa0f81a72ae2f8b21fde75b7df37e25c8973a2
 ../Atomic 682d55c5a8acd745cb21ffb272195b65918026e7
@@ -6,7 +6,7 @@
 ../BuildSystem 63066c7f75b83e505985cf5d536b0a16ddad48ba
 ../Cloud f55c824d571f19e108792ba4b00f0dc9dc39f6ad
 ../CommandLine faeed6dbef1d78f7c885ee20616961b7e27b778f
-../Compression bbe1d474477c7a31de9850a6763f405127352085
+../Compression a34aa965292c8db534292eca4ab4d119a53bc3dc
 ../Concurrency 14c7450100e0f85c7c85f0bc9078653ae5b86e7b
 ../Container 55393be2d38f8ee367fd18ce2bff23dfdb52f573
 ../Contract 30ec6b552536ed05d89e7f78c848fa8306bc7b41
