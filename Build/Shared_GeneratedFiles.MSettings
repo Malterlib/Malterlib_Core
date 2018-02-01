@@ -10,7 +10,7 @@ Property
 										"cd %~dp0..\r\n"\
 										"@(ScriptExport) MalterlibBaseDir=%CD%\\\r\n"\
 										"cd %OriginalDirectory%\r\n"\
-										"@(ScriptExport) PATH=%MalterlibBaseDir%Malterlib\\Tools\\Binaries\\MTool\\Windows;%PATH%\r\n"\
+										"@(ScriptExport) PATH=%MalterlibBaseDir%Binaries\\Malterlib\\General\\Windows;%PATH%\r\n"\
 										"\r\n"
 	{
 		&
@@ -28,14 +28,14 @@ Property
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"@(ScriptExport) \"MalterlibBaseDir=`cd \"${BASH_SOURCE%/*}/..\" && pwd`/\"\r\n"\
-										"@(ScriptExport) \"PATH=${MalterlibBaseDir}Malterlib/Tools/Binaries/MTool/@(HostPlatformFamily)/@(HostArchitecture):$PATH\"\r\n"
+										"@(ScriptExport) \"PATH=${MalterlibBaseDir}Binaries/Malterlib/General/@(HostPlatformFamily)/@(HostArchitecture):$PATH\"\r\n"
 	{
 		!HostPlatformFamily Windows
 	}
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"@(ScriptExport) \"MalterlibBaseDir=`cd \"${BASH_SOURCE%/*}/..\" && pwd`/\"\r\n"\
-										"@(ScriptExport) \"PATH=${MalterlibBaseDir}Malterlib/Tools/Binaries/MTool/Windows:$PATH\"\r\n"\
+										"@(ScriptExport) \"PATH=${MalterlibBaseDir}Binaries/Malterlib/General/Windows:$PATH\"\r\n"\
 										"function MTool()\r\n"\
 										"{\r\n"\
 										"	MTool.com \"$@\"\r\n"\
