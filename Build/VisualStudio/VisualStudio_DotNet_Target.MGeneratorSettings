@@ -33,7 +33,13 @@
 				Disabled true
 			}
 		}
-
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
 		%GeneratorSetting "GenerateDebugInformation"
 		{
 			Property
