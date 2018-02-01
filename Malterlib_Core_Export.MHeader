@@ -177,13 +177,14 @@ Property
 		{
 			LDFlags_EntityPath "Workspace:*.Target:Dll_Malterlib_Export_Dll.Target:Dll_Malterlib_Export_Dll"
 			LDFlags_Contents "@(GetProperty('Target', 'LDFlagsFirst', '@(LDFlags_EntityPath)')) @(GetProperty('Target', 'LDFlags', '@(LDFlags_EntityPath)'))"
+			LinkWithLibraries_Contents "@(GetProperty('Target', 'RealLinkWithLibraries', '@(LDFlags_EntityPath)'))"
 			NeedsOverrideLibrary "@(GetProperty('Property', 'MalterlibNeedsMallocOverrideLibrary', '@(LDFlags_EntityPath)'))"
 			OverrideLibrary "@(GetProperty('Property', 'MalterlibOverrideMallocLibrary', '@(LDFlags_EntityPath)'))"
 		}
 		Property
 		{
 			Name "@(MalterlibExportDirectory)/@(this.Identity)"
-			Contents "@(LDFlags_Contents) \"-L@(MalterlibExportDirectory)/Dll\" -lc++"
+			Contents "@(LDFlags_Contents) \"-L@(MalterlibExportDirectory)/Dll\" -lc++ @(LinkWithLibraries_Contents)"
 			Contents "@(Contents) \"@(OverrideLibrary)\""
 			{
 				!!NeedsOverrideLibrary true
@@ -201,6 +202,7 @@ Property
 		{
 			LDFlags_EntityPath "Workspace:*.Target:Exe_Malterlib_Export_Exe.Target:Exe_Malterlib_Export_Exe"
 			LDFlags_Contents "@(GetProperty('Target', 'LDFlagsFirst', '@(LDFlags_EntityPath)')) @(GetProperty('Target', 'LDFlags', '@(LDFlags_EntityPath)'))"
+			LinkWithLibraries_Contents "@(GetProperty('Target', 'RealLinkWithLibraries', '@(LDFlags_EntityPath)'))"
 			NeedsOverrideLibrary "@(GetProperty('Property', 'MalterlibNeedsMallocOverrideLibrary', '@(LDFlags_EntityPath)'))"
 			OverrideLibrary "@(GetProperty('Property', 'MalterlibOverrideMallocLibrary', '@(LDFlags_EntityPath)'))"
 		}
@@ -211,7 +213,7 @@ Property
 		Property
 		{
 			Name "@(MalterlibExportDirectory)/@(this.Identity)"
-			Contents "@(LDFlags_Contents) \"-L@(MalterlibExportDirectory)/Exe\" -lc++"
+			Contents "@(LDFlags_Contents) \"-L@(MalterlibExportDirectory)/Exe\" -lc++ @(LinkWithLibraries_Contents)"
 			Contents "@(Contents) \"@(OverrideLibrary)\""
 			{
 				!!NeedsOverrideLibrary true
