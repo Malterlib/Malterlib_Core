@@ -6,9 +6,9 @@
 #if defined(__EDG__)
 // This is the intellisense compiler
 #elif _MSC_VER == 1912
-#	if _MSC_FULL_VER != 191225830
+#	if _MSC_FULL_VER != 191225830 && _MSC_FULL_VER != 191225835
 #		pragma message("Current compiler version: " DMibStringize(_MSC_FULL_VER))
-#		error "Compiler version is not 191225830, please install the approprita service pack of Visual Studio 2017"
+#		error "Compiler version is not 191225835, please install the approprita service pack of Visual Studio 2017"
 #	endif
 #else
 #	pragma message("Compiler version " DMibStringize(_MSC_VER) "  not supported")
