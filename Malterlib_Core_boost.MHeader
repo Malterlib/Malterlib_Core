@@ -236,6 +236,10 @@ Compile
 			!!PlatformFamily OSX
 			!!PlatformFamily Linux
 		}
+		PreprocessorDefines "BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;@(Compile.PreprocessorDefines)"
+        {
+            !!PlatformFamily Windows
+        }
 	}
 	%Target Lib_boost_regex
 	{
