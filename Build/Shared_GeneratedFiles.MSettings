@@ -89,6 +89,7 @@ Property
 										"@(ScriptExport) \"MalterlibSignCertWindows=@(MalterlibSignCertWindows)\"\r\n"\
 										"\r\n"\
 										"@(ScriptExport) \"MalterlibCompiledFiles=@(MalterlibCompiledFiles)\"\r\n"\
+										"@(ScriptExport) \"MalterlibCompiledFilesSourceBase=@(MalterlibCompiledFilesSourceBase)\"\r\n"\
 										"@(ScriptExport) \"MalterlibDoingProductBuild=@(MalterlibDoingProductBuild)\"\r\n"\
 										"\r\n"\
 										"@(ScriptExport) \"ProductVersionMajor=@(ProductVersionMajor)\"\r\n"\

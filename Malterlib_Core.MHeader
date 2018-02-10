@@ -87,6 +87,10 @@ Import "Lib_Malterlib.MTarget"
 				%File "Build/Xcode/Specifications/^*"
 			}
 		}
+		%Group BuildScripts
+		{
+			%File "BuildScripts/*"
+		}
 	}
 	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(Target.ExtraGroups)"
 	{
