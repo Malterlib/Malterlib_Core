@@ -630,7 +630,14 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			}
 			break;			
 	}
-	
+
+#ifdef DPlatformFamily_Linux
+	if (_OpenFlags & NMib::NFile::EFileOpen_NoCache)
+		OpenFlags |= O_DIRECT;
+	if (_OpenFlags & NMib::NFile::EFileOpen_WriteThrough)
+		OpenFlags |= O_SYNC;
+#endif
+
 	bint bExists = NSys::NFile::fg_FileExistsGeneral(_FileName, EFileAttrib_File|EFileAttrib_Directory);
 	if (bExists)
 	{
@@ -670,6 +677,14 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			close(iFile);
 		}
 	;
+
+#ifdef DPlatformFamily_OSX
+	if (_OpenFlags & NMib::NFile::EFileOpen_NoCache)
+	{
+		if (fcntl(iFile, F_NOCACHE, 1))
+			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("fcntl('{}', F_NOCACHE, 1) when opening file") << FileName, errno));
+	}
+#endif
 
 	if ((_OpenFlags & (EFileOpen_Read | EFileOpen_Write)) && !(_OpenFlags & EFileOpen_ShareBypass))
 	{
