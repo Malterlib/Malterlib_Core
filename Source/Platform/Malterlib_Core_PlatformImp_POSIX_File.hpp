@@ -506,14 +506,14 @@ uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32
 
 int fg_GetUnixOpenFlags()
 {
-	int Openflags = 0;
+	int OpenFlags = 0;
 #ifdef DPlatformFamily_OSX
 #if DPlatformVersionMax >= 1070
 	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
-		Openflags |= O_CLOEXEC;
+		OpenFlags |= O_CLOEXEC;
 #endif
 #endif
-	return Openflags;
+	return OpenFlags;
 }
 
 void fg_SetUnixHandleOptions(int _File)
@@ -595,19 +595,19 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 	bool bRead = (_OpenFlags & EFileOpen_Read) != 0;
 	bool bWrite = (_OpenFlags & EFileOpen_Write) != 0;
 
-	uint32 Openflags = fg_GetUnixOpenFlags();
+	uint32 OpenFlags = fg_GetUnixOpenFlags();
 	if (bRead && bWrite)
-		Openflags |= O_RDWR;
+		OpenFlags |= O_RDWR;
 	else if (bRead)
-		Openflags |= O_RDONLY;
+		OpenFlags |= O_RDONLY;
 	else if (bWrite)
-		Openflags |= O_WRONLY;
+		OpenFlags |= O_WRONLY;
 	
 	switch (CreateDisposition)
 	{
 		case EDisp_CreateNew:
 			{
-				Openflags |= O_CREAT | O_EXCL;
+				OpenFlags |= O_CREAT | O_EXCL;
 			}
 			break;
 		case EDisp_OpenExisting:
@@ -616,17 +616,17 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			break;
 		case EDisp_TruncateExisting:
 			{
-				Openflags |= O_TRUNC;
+				OpenFlags |= O_TRUNC;
 			}
 			break;
 		case EDisp_OpenAlways:
 			{
-				Openflags |= O_CREAT;
+				OpenFlags |= O_CREAT;
 			}
 			break;
 		case EDisp_CreateAlways:
 			{
-				Openflags |= O_CREAT | O_TRUNC;
+				OpenFlags |= O_CREAT | O_TRUNC;
 			}
 			break;			
 	}
@@ -668,7 +668,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 
 //	umask(0);
 	
-	int iFile = open(FileName, Openflags, fg_MalterlibAttributesToMode(_Attributes));
+	int iFile = open(FileName, OpenFlags, fg_MalterlibAttributesToMode(_Attributes));
 	if (iFile < 0)
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("open('{}') when opening file") << FileName, errno));
 	
@@ -707,7 +707,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 
 	fg_SetUnixHandleOptions(iFile);
 
-	if (Openflags & (O_WRONLY | O_RDWR))
+	if (OpenFlags & (O_WRONLY | O_RDWR))
 		fg_SetBSDFileAttributes(iFile, 0644, _Attributes, _FileName);
 	else if (_Attributes != EFileAttrib_None)
 		DMibErrorFile("You cannot specify attributes without opening the file for write");
