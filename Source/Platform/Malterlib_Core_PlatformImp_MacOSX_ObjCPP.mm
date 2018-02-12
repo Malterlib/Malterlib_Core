@@ -489,37 +489,15 @@ namespace NMib
 		struct CFileChangeNoticationContext::CInternal
 		{
 			CInternal()
-				: m_RunLoop(nullptr)
-				, m_Thread(nullptr)
-				, m_pDispatchObject(nullptr)
-				, m_pDispatchObjectClass(nullptr)
 			{
 			}
-			NSRunLoop *m_RunLoop;
-			NSThread *m_Thread;
-			id m_pDispatchObject;
-			Class m_pDispatchObjectClass;
+			CFRunLoopRef m_RunLoopRef = nullptr;
 		};
 		
 		using namespace NFile;
 		CFileChangeNoticationContext::CFileChangeNoticationContext()
-			: m_DispatchObjectClassName()
-			, m_pInternal(fg_Construct()) 
+			: m_pInternal(fg_Construct())
 		{
-			m_DispatchObjectClassName
-				= "Dispatcher_" + NDataProcessing::CUniversallyUniqueIdentifier(NDataProcessing::EUniversallyUniqueIdentifierGenerate_Random)
-				.f_GetAsString(NDataProcessing::EUniversallyUniqueIdentifierFormat_AlphaNum)
-			;
-		}
-		
-		static id fg_DoDispatch(id self, SEL _cmd, id obj)
-		{
-			CFileChangeNoticationContext *pContext;
-			object_getInstanceVariable(self, "m_pContext", (void **)&pContext);
-			
-			while (auto ToDispatch = pContext->m_DispatchQueue.f_Pop())
-				(*ToDispatch)();
-			return nil;
 		}
 		
 		CFileChangeNoticationContext::~CFileChangeNoticationContext()
@@ -530,8 +508,8 @@ namespace NMib
 				m_pProcessThread->f_Stop(false);
 				{
 					DMibLock(m_RunLoopLock);
-					if (Internal.m_RunLoop)
-						CFRunLoopStop([Internal.m_RunLoop getCFRunLoop]);
+					if (Internal.m_RunLoopRef)
+						CFRunLoopStop(Internal.m_RunLoopRef);
 				}
 				m_pProcessThread.f_Clear();
 			}
@@ -549,12 +527,6 @@ namespace NMib
 				NPtr::TCSharedPointer<CNotification> pNotification = fg_Explicit((CNotification *)pPop);
 				pNotification->f_RefCountDecrease(DMibRefcountDebuggingOnly(pNotification->m_DebugSelfRef));
 			}
-			
-			if (Internal.m_pDispatchObject)
-				 [Internal.m_pDispatchObject release];
-			
-			if (Internal.m_pDispatchObjectClass)
-				objc_disposeClassPair(Internal.m_pDispatchObjectClass);
 		}
 		
 		CFileChangeNoticationContext::CNotification::CFileSnapshot::CFileSnapshot(CFileSnapshot *_pParent)
@@ -1373,8 +1345,22 @@ namespace NMib
 			m_DispatchQueue.f_Push(fg_Move(_Dispatch));
 			{
 				DMibLock(m_RunLoopLock);
-				if (Internal.m_RunLoop)
-					[Internal.m_pDispatchObject performSelector:@selector(doDispatch:) onThread:Internal.m_Thread withObject:nil waitUntilDone:false];
+				if (Internal.m_RunLoopRef)
+				{
+					auto pThis = this;
+					CFRunLoopPerformBlock
+						(
+						 	Internal.m_RunLoopRef
+						 	, kCFRunLoopDefaultMode
+						 	, ^()
+						 	{
+								while (auto ToDispatch = pThis->m_DispatchQueue.f_Pop())
+									(*ToDispatch)();
+							}
+						)
+					;
+					CFRunLoopWakeUp(Internal.m_RunLoopRef);
+				}
 			}
 			
 			f_StartThread();
@@ -1388,55 +1374,61 @@ namespace NMib
 			if (m_pProcessThread)
 				return;
 			
-			auto &Internal = *m_pInternal;
-			
-			CAutoReleasePool ARPool;
-			
-			Class pDispatcherClass = objc_allocateClassPair([NSObject class], m_DispatchObjectClassName.f_GetStr(), 0);
-			
-			Internal.m_pDispatchObjectClass = pDispatcherClass;
-
-			CStr Types = CStr::CFormat("{}{}{}{}") << @encode(id) << @encode(id) << @encode(SEL) << @encode(id);
-			
-			class_addMethod(pDispatcherClass, @selector(doDispatch:), (IMP)fg_DoDispatch, Types.f_GetStr());
-			
-			class_addIvar(pDispatcherClass, "m_pContext", sizeof(void *), rint(log2(sizeof(void *))), @encode(void *));
-			
-			objc_registerClassPair(pDispatcherClass);
-			
-			Internal.m_pDispatchObject = [[pDispatcherClass alloc] init];
-			
-			object_setInstanceVariable((id)Internal.m_pDispatchObject, "m_pContext", this);
-			
 			m_pProcessThread
 				= NThread::CThreadObject::fs_StartThread
 				(
 					[this](NThread::CThreadObject *_pThread) -> aint
 					{
 						auto &Internal = *m_pInternal;
-						CAutoReleasePool ARPool;
-						NSPort *pPort = [NSMachPort port];
-						{
-							DMibLock(m_RunLoopLock);
-							Internal.m_RunLoop = [NSRunLoop currentRunLoop];
-							Internal.m_Thread = [NSThread currentThread];
-							[Internal.m_RunLoop addPort:pPort forMode:NSDefaultRunLoopMode]; // Dummy port so run loop does not quit at once
-							[Internal.m_pDispatchObject performSelector:@selector(doDispatch:) onThread:Internal.m_Thread withObject:nil waitUntilDone:false];
-						}
 
-						
-						while (_pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
-						{
-							CFRunLoopRun();
-						}
+						CFRunLoopSourceContext RunLoopSourceContext
+							{
+								0
+								, nullptr
+								, nullptr
+								, nullptr
+								, nullptr
+								, nullptr
+								, nullptr
+								, nullptr
+								, nullptr
+								, [](void *info)
+								{
+								}
+							}
+						;
+
+						CFRunLoopSourceRef pDummyRunLoopSource = CFRunLoopSourceCreate
+							(
+							 	nullptr
+							 	, 0
+							 	, &RunLoopSourceContext
+							)
+						;
+
 						{
 							DMibLock(m_RunLoopLock);
-							[Internal.m_RunLoop removePort:pPort forMode:NSDefaultRunLoopMode];
-							
-							Internal.m_RunLoop = nullptr;
-							Internal.m_Thread = nullptr;
+							Internal.m_RunLoopRef = CFRunLoopGetCurrent();
+							CFRunLoopAddSource(Internal.m_RunLoopRef, pDummyRunLoopSource, kCFRunLoopDefaultMode);
 						}
-						
+						auto Cleanup = g_OnScopeExit > [&]
+							{
+								CFRelease(pDummyRunLoopSource);
+								CFRunLoopRemoveSource(Internal.m_RunLoopRef, pDummyRunLoopSource, kCFRunLoopDefaultMode);
+								{
+									DMibLock(m_RunLoopLock);
+									Internal.m_RunLoopRef = nullptr;
+								}
+							}
+						;
+
+
+						while (auto ToDispatch = m_DispatchQueue.f_Pop())
+							(*ToDispatch)();
+
+						while (_pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
+							CFRunLoopRun();
+
 						return 0;
 					}
 					, "File change notifications"
@@ -1563,7 +1555,7 @@ namespace NMib
 						if (m_bDestroying)
 							return;
 						auto &Internal = *m_pInternal;
-						FSEventStreamScheduleWithRunLoop(pNotification->m_pEventStream, [Internal.m_RunLoop getCFRunLoop], kCFRunLoopDefaultMode);
+						FSEventStreamScheduleWithRunLoop(pNotification->m_pEventStream, Internal.m_RunLoopRef, kCFRunLoopDefaultMode);
 						pNotification->m_bAddedToRunLoop = true;
 						FSEventStreamStart(pNotification->m_pEventStream);
 						pNotification->m_bStreamStarted = true;
