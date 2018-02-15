@@ -2310,7 +2310,7 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (mint _ThreadID, HANDL
 			break;
 
 		NeededSize *= 2;
-		TCVector<uint8> Data;
+		TCVector<uint8, NMem::CAllocator_VirtualNoTracking> Data;
 		Data.f_SetLen(NeededSize);
 		NLocal::SYSTEM_PROCESS_INFORMATION *pInfo = (NLocal::SYSTEM_PROCESS_INFORMATION *)Data.f_GetArray();
 
