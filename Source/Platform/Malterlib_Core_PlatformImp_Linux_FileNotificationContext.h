@@ -175,9 +175,10 @@ public:
 		
 		struct CPendingRename
 		{
+			NTime::CClock m_Clock{true};
 			CStr m_RelativePath;
-			bool m_bIsDir = false;
 			TCSharedPointer<CWatch> m_pWatch;
+			bool m_bIsDir = false;
 		};
 		
 		CNotification(CFileChangeNotificationContext* _pNotificationContext, CStr const &_BasePath);
@@ -187,7 +188,7 @@ public:
 		void f_Cancel();
 		CWatch *f_WatchPath(CWatch *_pParentWatch, CStr const &_Path, bool _bThrow);
 		void f_RegisterChange(CFindChangesContext &o_Context, CStr const &_Path, EFileChangeNotification _Notification, CStr const &_RenameFrom = {});
-		void f_OnEvent(CFindChangesContext &o_Context, inotify_event* _pEvent, TCSharedPointer<CWatch> const &_pWatch);
+		void f_OnEvent(CFindChangesContext &o_Context, inotify_event const &_Event, TCSharedPointer<CWatch> const &_pWatch);
 		void f_OnAdded(CFindChangesContext &o_Context, CStr const &_Path, bool _bIsDir, CWatch* _pWatch);
 		void f_OnRemovedFromRename(CFindChangesContext &o_Context, CPendingRename const &_PendingRename);
 
@@ -214,7 +215,8 @@ public:
 		~CNotificationThread();
 		
 		virtual NStr::CStr f_GetThreadName();
-		void f_ReadEvents();
+		bool f_ReadEvents();
+		void f_HandleRenameTimeouts(TCMap<CNotification *, CNotification::CFindChangesContext> &_NotificationContexts);
 		aint f_Main();
 		
 		CFileChangeNotificationContext *m_pContext;
@@ -224,9 +226,11 @@ public:
 	struct CPendingRename
 	{
 		TCSharedPointer<CWatch> m_pWatch;
+		NTime::CClock m_Clock{true};
 		bool m_bIsDirectory = false;
 	};
 	TCMap<uint32, CPendingRename> m_PendingRenames;
+	mint m_nPendingNotificationRenames = 0;
 	
 	int f_Inotify_AddWatch(CStr const &_Path);
 	void f_Inotify_RemoveWatch(int _Descriptor);

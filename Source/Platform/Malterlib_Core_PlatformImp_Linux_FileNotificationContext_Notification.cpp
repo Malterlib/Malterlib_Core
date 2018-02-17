@@ -129,49 +129,54 @@ void CFileChangeNotificationContext::CNotification::f_OnAdded(CFindChangesContex
 	;
 }
 
-void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContext &o_Context, inotify_event *_pEvent, TCSharedPointer<CWatch> const &_pWatch)
+void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContext &o_Context, inotify_event const &_Event, TCSharedPointer<CWatch> const &_pWatch)
 {
-	if (!_pEvent || !_pWatch)
+	DMibFastCheck(_pWatch);
+	if (!_pWatch)
 		return;
 
 	CStr EventPath = _pWatch->f_GetPath();
 	
-	CStr EventFileName(_pEvent->name, fg_StrLen(_pEvent->name, _pEvent->len));
+	CStr EventFileName(_Event.name, fg_StrLen(_Event.name, _Event.len));
 
 	if (!EventFileName.f_IsEmpty())
 		EventPath += CStr::CFormat("/{}") << EventFileName;
 	
 	CStr RelativePath = EventPath.f_Delete(0, m_BasePath.f_GetLen()+1);
-	//DMibConOut2("f_OnEvent: {} = 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8}\n", CStr(_pEvent->name, fg_StrLen(_pEvent->name, _pEvent->len)), _pEvent->mask, _pEvent->cookie);
+	//DMibConOut2("f_OnEvent: {} = 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8}\n", CStr(_Event.name, fg_StrLen(_Event.name, _Event.len)), _Event.mask, _Event.cookie);
 
-	bool bIsDir = (_pEvent->mask & IN_ISDIR) != 0;
+	bool bIsDir = (_Event.mask & IN_ISDIR) != 0;
 
-	if (_pEvent->mask & IN_DELETE_SELF)
+	if (_Event.mask & IN_DELETE_SELF)
 	{
 		if (RelativePath.f_IsEmpty() && (((m_Flags & NFile::EFileChange_DirectoryName) && bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !bIsDir)))
 			f_RegisterChange(o_Context, RelativePath, NMib::NFile::EFileChangeNotification_Removed);
 		m_pContext->f_UnlinkWatch(_pWatch, this, true);
 	}
-	else if (_pEvent->mask & IN_CREATE)
+	else if (_Event.mask & IN_CREATE)
 		f_OnAdded(o_Context, RelativePath, bIsDir, _pWatch.f_Get());
-	else if (_pEvent->mask & IN_DELETE)
+	else if (_Event.mask & IN_DELETE)
 	{
 		if (((m_Flags & NFile::EFileChange_DirectoryName) && bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !bIsDir))
 			f_RegisterChange(o_Context, RelativePath, NMib::NFile::EFileChangeNotification_Removed);
 		if (m_Flags & NFile::EFileChange_DirectoryName)
 			f_RegisterChange(o_Context, NFile::CFile::fs_GetPath(RelativePath), NMib::NFile::EFileChangeNotification_Modified);
 	}
-	else if (_pEvent->mask & IN_MOVED_FROM)
+	else if (_Event.mask & IN_MOVED_FROM)
 	{
-		CPendingRename &PendingRename = m_PendingRenames[_pEvent->cookie];
+		auto Mapped = m_PendingRenames(_Event.cookie);
+		CPendingRename &PendingRename = *Mapped;
+		if (Mapped.f_WasCreated())
+			++m_pContext->m_nPendingNotificationRenames;
+
 		PendingRename.m_RelativePath = RelativePath;
 		PendingRename.m_bIsDir = bIsDir;
 		PendingRename.m_pWatch = fg_Explicit(_pWatch->f_GetChild(EventFileName));
 		return;
 	}
-	else if (_pEvent->mask & IN_MOVED_TO)
+	else if (_Event.mask & IN_MOVED_TO)
 	{
-		auto pRename = m_PendingRenames.f_FindEqual(_pEvent->cookie);
+		auto pRename = m_PendingRenames.f_FindEqual(_Event.cookie);
 		if (pRename)
 		{
 			auto &Rename = *pRename;
@@ -198,11 +203,12 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 				;
 			}
 			m_PendingRenames.f_Remove(pRename);
+			--m_pContext->m_nPendingNotificationRenames;
 		}
 		else
 			f_OnAdded(o_Context, RelativePath, bIsDir, _pWatch.f_Get());
 	}
 
-	if (((_pEvent->mask & IN_MODIFY) && (m_Flags & NFile::EFileChange_Write)) || ((_pEvent->mask & IN_ATTRIB) && (m_Flags & NFile::EFileChange_Attributes)))
+	if (((_Event.mask & IN_MODIFY) && (m_Flags & NFile::EFileChange_Write)) || ((_Event.mask & IN_ATTRIB) && (m_Flags & NFile::EFileChange_Attributes)))
 		f_RegisterChange(o_Context, RelativePath, NMib::NFile::EFileChangeNotification_Modified);
 }

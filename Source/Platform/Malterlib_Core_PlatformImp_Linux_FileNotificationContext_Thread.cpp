@@ -19,7 +19,40 @@ CFileChangeNotificationContext::CNotificationThread::~CNotificationThread()
 {
 }
 
-void CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
+void CFileChangeNotificationContext::CNotificationThread::f_HandleRenameTimeouts(TCMap<CNotification *, CNotification::CFindChangesContext> &_NotificationContexts)
+{
+	for (auto &Notification : m_pContext->m_Notifications)
+	{
+		for (auto iRename = Notification.m_PendingRenames.f_GetIterator(); iRename;)
+		{
+			auto &Rename = *iRename;
+			if (Rename.m_Clock.f_GetTime() < 1.0)
+			{
+				++iRename;
+				continue;
+			}
+			auto &Context = _NotificationContexts[&Notification];
+			Notification.f_OnRemovedFromRename(Context, *iRename);
+			iRename.f_Remove();
+		}
+	}
+
+	auto &PendingRenames = m_pContext->m_PendingRenames;
+	for (auto iRename = PendingRenames.f_GetIterator(); iRename;)
+	{
+		auto &Rename = *iRename;
+		if (Rename.m_Clock.f_GetTime() < 1.0)
+		{
+			++iRename;
+			continue;
+		}
+
+		Rename.m_pWatch->f_SetParent(nullptr, CStr());
+		iRename.f_Remove();
+	}
+}
+
+bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 {
 	DMibLock(m_pContext->m_ContextLock);
 	TCMap<CNotification *, CNotification::CFindChangesContext> NotificationContexts;
@@ -34,11 +67,11 @@ void CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 		ssize_t Processed = 0;
 		while (ReadResult > Processed)
 		{
-			inotify_event *pEvent = (inotify_event*)(m_ChangesBuffer.f_GetArray() + Processed);
-			int EventSize = sizeof(struct inotify_event) + pEvent->len;
+			inotify_event &Event = *((inotify_event*)(m_ChangesBuffer.f_GetArray() + Processed));
+			int EventSize = sizeof(struct inotify_event) + Event.len;
 			Processed += EventSize;
 
-			auto *pWatchFind = m_pContext->m_Watches.f_FindEqual(pEvent->wd);
+			auto *pWatchFind = m_pContext->m_Watches.f_FindEqual(Event.wd);
 			if (!pWatchFind)
 				continue;
 
@@ -49,11 +82,11 @@ void CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 			{
 				CNotification *pNotification = *iNotification;
 				auto &Context = NotificationContexts[pNotification];
-				pNotification->f_OnEvent(Context, pEvent, pWatch);
+				pNotification->f_OnEvent(Context, Event, pWatch);
 
 				for (auto iRename = pNotification->m_PendingRenames.f_GetIterator(); iRename;)
 				{
-					if (iRename.f_GetKey() == pEvent->cookie)
+					if (iRename.f_GetKey() == Event.cookie)
 						++iRename;
 					else
 					{
@@ -65,7 +98,7 @@ void CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 
 			for (auto iRename = PendingRenames.f_GetIterator(); iRename;)
 			{
-				if (iRename.f_GetKey() == pEvent->cookie)
+				if (iRename.f_GetKey() == Event.cookie)
 					++iRename;
 				else
 				{
@@ -74,16 +107,16 @@ void CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 				}
 			}
 
-			CStr EventPath(pEvent->name, fg_StrLen(pEvent->name, pEvent->len));
+			CStr EventPath(Event.name, fg_StrLen(Event.name, Event.len));
 			CStr FullEventPath = CFile::fs_AppendPath(Watch.f_GetPath(), EventPath);
 			
-			if (pEvent->mask & IN_CREATE)
+			if (Event.mask & IN_CREATE)
 			{
 				Watch.m_ChildFiles[EventPath] = CFile::fs_FileExists(FullEventPath, EFileAttrib_Directory);
 			}
-			else if (pEvent->mask & IN_DELETE)
+			else if (Event.mask & IN_DELETE)
 				Watch.m_ChildFiles.f_Remove(EventPath);
-			else if (pEvent->mask & IN_MOVED_FROM)
+			else if (Event.mask & IN_MOVED_FROM)
 			{
 				bool bIsDirectory = false;
 				if (auto *pIsDir = Watch.m_ChildFiles.f_FindEqual(EventPath))
@@ -93,11 +126,11 @@ void CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 				}
 				auto *pChild = Watch.f_GetChild(EventPath);
 				if (pChild)
-					PendingRenames[pEvent->cookie] = {fg_Explicit(pChild), bIsDirectory};
+					PendingRenames[Event.cookie] = {fg_Explicit(pChild), bIsDirectory};
 			}
-			else if (pEvent->mask & IN_MOVED_TO)
+			else if (Event.mask & IN_MOVED_TO)
 			{
-				if (auto pRenameFrom = PendingRenames.f_FindEqual(pEvent->cookie))
+				if (auto pRenameFrom = PendingRenames.f_FindEqual(Event.cookie))
 				{
 					Watch.m_ChildFiles[EventPath] = pRenameFrom->m_bIsDirectory;
 					pRenameFrom->m_pWatch->f_SetParent(&Watch, FullEventPath);
@@ -108,8 +141,9 @@ void CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 			}
 		}
 	}
-	
 
+	f_HandleRenameTimeouts(NotificationContexts);
+	
 	for (auto &Context : NotificationContexts)
 	{
 		CNotification *pNotification = NotificationContexts.fs_GetKey(Context);
@@ -123,15 +157,18 @@ void CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 				pNotification->m_pReportTo->f_Signal();
 		}
 	}
+
+	return !m_pContext->m_PendingRenames.f_IsEmpty() || m_pContext->m_nPendingNotificationRenames != 0;
 }
 
 aint CFileChangeNotificationContext::CNotificationThread::f_Main()
 {
+	bool bNeedTimeout = false;
 	while (f_GetState() != NThread::EThreadState_EventWantQuit)
 	{
 		epoll_event Event;
-		int Result = epoll_wait(m_pContext->m_PollDescriptor, &Event, 1, -1);
-		
+		int Result = epoll_wait(m_pContext->m_PollDescriptor, &Event, 1, bNeedTimeout ? 1000 : -1);
+
 		if (Result == -1)
 		{
 			switch(errno)
@@ -149,9 +186,9 @@ aint CFileChangeNotificationContext::CNotificationThread::f_Main()
 			}
 		}
 		else if (Result && Event.data.fd == m_pContext->m_NotifyDescriptor)
-		{
-			f_ReadEvents();
-		}
+			bNeedTimeout = f_ReadEvents();
+		else
+			bNeedTimeout = f_ReadEvents();
 	}
 	return 0;
 }

@@ -628,6 +628,9 @@ namespace NMib
 				return;
 			}
 
+			for (auto iSnap = _Snapshot.m_Children.f_GetIterator(); iSnap; ++iSnap)
+				iSnap->m_bDelete = true;
+
 			DIR *pDir = opendir(Path);
 			if (pDir)
 			{
@@ -701,26 +704,23 @@ namespace NMib
 							)
 						)
 					{
-						for (auto iSnap = Child.m_Children.f_GetIterator(); iSnap; ++iSnap)
-							iSnap->m_bDelete = true;
-						
 						fgr_UpdateFileSnapshot(_SnapshotsByNode, Child, _RootPath, _bRecursive, _bRecursiveInfoNeeded);
-
-						for (auto iSnap = Child.m_Children.f_GetIterator(); iSnap;)
-						{
-							if (iSnap->m_bDelete)
-							{
-								if (iSnap->m_Link.f_IsInTree())
-									Child.m_ChildrenByName.f_Remove(*iSnap);
-								if (iSnap->m_LinkNode.f_IsInList())
-									iSnap->f_RemoveFromNodeMap(_SnapshotsByNode);
-								iSnap.f_Remove();
-								continue;
-							}
-							++iSnap;
-						}
 					}
 				}
+			}
+
+			for (auto iSnap = _Snapshot.m_Children.f_GetIterator(); iSnap;)
+			{
+				if (iSnap->m_bDelete)
+				{
+					if (iSnap->m_Link.f_IsInTree())
+						_Snapshot.m_ChildrenByName.f_Remove(*iSnap);
+					if (iSnap->m_LinkNode.f_IsInList())
+						iSnap->f_RemoveFromNodeMap(_SnapshotsByNode);
+					iSnap.f_Remove();
+					continue;
+				}
+				++iSnap;
 			}
 		}
 		
@@ -1120,7 +1120,7 @@ namespace NMib
 								}
 								++iOld;
 							}
-							
+
 							// Assume renames
 							{
 								auto iOld = OldFileNames.f_GetIterator();
@@ -1132,6 +1132,7 @@ namespace NMib
 									iOld.f_Remove();
 								}
 							}
+
 							for (auto &Removed : OldFileNames)
 								f_AddNotification(FindChangesContext, EFileChangeNotification_Removed, Removed);
 							for (auto &Added : NewFileNames)
