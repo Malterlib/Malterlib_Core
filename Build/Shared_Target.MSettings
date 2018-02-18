@@ -857,6 +857,7 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxx true
+			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			!MalterlibDefaultCompiler true
 			MalterlibCustomCompilerOptions true
@@ -868,6 +869,7 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxx true
+			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			|
 			{
@@ -882,6 +884,7 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxx true
+			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			|
 			{
@@ -907,6 +910,7 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxx true
+			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			|
 			{
@@ -928,6 +932,7 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxx true
+			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			|
 			{
@@ -948,6 +953,7 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxx true
+			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			|
 			{
@@ -967,6 +973,7 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxx true
+			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			|
 			{
@@ -983,6 +990,7 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxx true
+			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			|
 			{
