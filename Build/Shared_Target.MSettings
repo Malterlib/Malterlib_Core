@@ -193,6 +193,7 @@ Target
 	{
 		&
 		{
+			!MalterlibGenerateScheme false
 			Target.GenerateScheme ""
 			|
 			{
