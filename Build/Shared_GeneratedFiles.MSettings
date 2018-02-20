@@ -225,7 +225,7 @@ Property
 										"{\r\n"\
 										"	oldstate=\"$(shopt -po; shopt -p)\"\r\n"\
 										"	set -e\r\n"\
-										"	xcodebuild -jobs $NumCPUs \"$@\" | xcpretty\r\n"\
+										"	xcodebuild -jobs $NumCPUs \"$@\" | xcpretty --color\r\n"\
 										"	eval \"$oldstate\"\r\n"\
 										"}\r\n"\
 										"export XCodeBuild_Pretty\r\n"\
