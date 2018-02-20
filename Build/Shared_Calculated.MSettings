@@ -415,7 +415,7 @@ Property
 	
 	MalterlibParseRemoveNewlineString "{}\n"
 
-	MalterlibGitBranch "@(ExecuteCommand('@(GeneratedGlobalDirectory)/GitBranch.MState', '@(MalterlibGitRepoInputFiles)', 'git', 'symbolic-ref', '--short', 'HEAD'))"
+	MalterlibGitBranch "@(ExecuteCommand('@(GeneratedGlobalDirectory)GitBranch.MState', '@(MalterlibGitRepoInputFiles)', 'git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'))"
 	{
 		!!MalterlibIsGitRepository true
 	}
@@ -423,7 +423,7 @@ Property
 	{
 		!!MalterlibIsGitRepository true
 	}
-	MalterlibGitCommit "@(ExecuteCommand('@(GeneratedGlobalDirectory)/GitCommit.MState', '@(MalterlibGitRepoInputFiles)', 'git', 'rev-parse', 'HEAD'))"
+	MalterlibGitCommit "@(ExecuteCommand('@(GeneratedGlobalDirectory)GitCommit.MState', '@(MalterlibGitRepoInputFiles)', 'git', 'rev-parse', 'HEAD'))"
 	{
 		!!MalterlibIsGitRepository true
 	}
