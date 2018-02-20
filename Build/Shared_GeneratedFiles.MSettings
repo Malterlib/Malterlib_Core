@@ -221,7 +221,15 @@ Property
 	}
 	
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
-										"export XCodeBuildTool=\"/Development/Malterlib/Tools/External/xctool/xctool.sh -jobs $NumCPUs\"\r\n"
+										"function XCodeBuild_Pretty()\r\n"\
+										"{\r\n"\
+										"	oldstate=\"$(shopt -po; shopt -p)\"\r\n"\
+										"	set -e\r\n"\
+										"	xcodebuild -jobs $NumCPUs \"$@\" | xcpretty\r\n"\
+										"	eval \"$oldstate\"\r\n"\
+										"}\r\n"\
+										"export XCodeBuild_Pretty\r\n"\
+										"export XCodeBuildTool=XCodeBuild_Pretty\"\"\r\n"
 	{
 		&
 		{
