@@ -4861,6 +4861,16 @@ bint NMib::NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor,
 	return true;
 }
 
+void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	DMibErrorFile("Not supported");
+}
+
+bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	return false;
+}
+
 void NSys::NFile::fg_Copy(const CStr &_FileFrom, const CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
 	BOOL Cancel = false;

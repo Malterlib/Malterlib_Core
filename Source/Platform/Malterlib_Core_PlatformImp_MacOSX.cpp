@@ -20,6 +20,7 @@
 #include <mach/mach_time.h>
 #include <sys/utsname.h>
 #include <crt_externs.h>
+#include <sys/clonefile.h>
 
 using namespace NMib;
 using namespace NMib::NStr;
@@ -1913,12 +1914,31 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 	return Result;
 }
 
+void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	if (clonefile == nullptr)
+		DMibErrorFile("clonefile function not available in this version of macOS");
+
+	if (clonefile(_FileFrom, _FileTo, 0))
+		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("rename('{}', '{}')") << _FileFrom << _FileTo, errno));
+}
+
+bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	if (clonefile == nullptr)
+		return false;
+
+	if (clonefile(_FileFrom, _FileTo, 0))
+		return false;
+
+	return true;
+}
+
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
 	if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, false))
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("copyfile('{}', '{}') when copying file") << _FileFrom << _FileTo, ErrNo));
 }
-
 
 void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
@@ -1938,8 +1958,6 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("copyfile('{}', '{}') when renaming file") << _FileFrom << _FileTo, ErrNo));
 	}
 }
-
-
 
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
