@@ -80,6 +80,30 @@ namespace NMib
 				return _In.f_Replace(Drive, DeviceName).f_ReplaceChar('/', '\\');
 			}
 
+			void fg_RemoveDosDevice(NStr::CStr const &_Device)
+			{
+				using namespace NStr;
+				uint32 Flags = DDD_REMOVE_DEFINITION;
+
+				if (!DefineDosDevice(Flags, NStr::CWStr(_Device), nullptr))
+				{
+					auto Error = GetLastError();
+					DMibErrorFile("Windows returned an error from DefineDosDevice(0x{nfh}, {}, nullptr): {}"_f << Flags << _Device << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
+				}
+			}
+
+			void fg_DefineDosDevice(NStr::CStr const &_Device, NStr::CStr const &_Path)
+			{
+				using namespace NStr;
+				uint32 Flags = DDD_RAW_TARGET_PATH;
+
+				if (!DefineDosDevice(Flags, NStr::CWStr(_Device), NStr::CWStr(_Path)))
+				{
+					auto Error = GetLastError();
+					DMibErrorFile(NStr::CStr::CFormat("Windows returned an error from DefineDosDevice(0x{nfh}, {}, {}): {}") << Flags << _Device << _Path << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
+				}
+			}
+
 			NStr::CStr fg_ConvertToMinGWPath(NStr::CStr const &_In)
 			{
 				return NStr::fg_Format("/{}/{}", CFile::fs_GetDrive(_In).f_Left(1).f_LowerCase(), _In.f_Extract(3));

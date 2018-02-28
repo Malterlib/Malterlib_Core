@@ -28,6 +28,8 @@ namespace NMib
 			NStr::CWStr fg_ConvertToWindowsPathLocal(const NStr::CStr &_Path, bool _bForceLong = false);
 
 			NStr::CStr fg_ConvertToDevicePath(NStr::CStr const &_In);
+			void fg_DefineDosDevice(NStr::CStr const &_Device, NStr::CStr const &_Path);
+			void fg_RemoveDosDevice(NStr::CStr const &_Device);
 
 			NStr::CStr fg_ConvertToMinGWPath(NStr::CStr const &_In);
 		}
