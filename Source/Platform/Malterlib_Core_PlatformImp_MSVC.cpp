@@ -847,52 +847,6 @@ namespace
 	}
 }
 
-NMib::NStr::CStr NSys::fg_UserManagement_GetProcessRealUser()
-{
-	return NMib::NStr::CStr();
-}
-
-NMib::NStr::CStr NSys::fg_UserManagement_GetProcessEffectiveUser()
-{
-	return NMib::NStr::CStr();
-}
-
-NMib::NStr::CStr NSys::fg_UserManagement_GetProcessRealGroup()
-{
-	return NMib::NStr::CStr();
-}
-
-NMib::NStr::CStr NSys::fg_UserManagement_GetProcessEffectiveGroup()
-{
-	return NMib::NStr::CStr();
-}
-
-NMib::NStr::CStr NSys::fg_UserManagement_GetProcessRealUserName()
-{
-	return NMib::NStr::CStr();
-}
-
-NMib::NStr::CStr NSys::fg_UserManagement_GetProcessEffectiveUserName()
-{
-	return NMib::NStr::CStr();
-}
-
-NMib::NStr::CStr NSys::fg_UserManagement_GetProcessRealGroupName()
-{
-	return NMib::NStr::CStr();
-}
-
-NMib::NStr::CStr NSys::fg_UserManagement_GetProcessEffectiveGroupName()
-{
-	return NMib::NStr::CStr();
-}
-
-bint NSys::fg_UserManagement_IsValidName(NMib::NStr::CStr const &_Name)
-{
-	return true;
-}
-
-
 bint NSys::fg_ConsoleOutputValid()
 {
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
