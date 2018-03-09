@@ -2528,6 +2528,48 @@ void fg_EnumProcessThreads(TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnT
 	}
 }
 
+void fg_CheckProcessStop()
+{
+	using namespace NStr;
+	ch16 OutputVariable[257];
+	uint32 Size = GetEnvironmentVariableW(L"MalterlibLaunchStopProcess", OutputVariable, 256);
+
+	if (!Size || Size > 256)
+		return;
+
+	NStr::CFWStr256 Value(OutputVariable, Size);
+
+	uint32 ProcessID = Value.f_ToInt(uint32(0));
+	if (!ProcessID)
+	{
+		fg_ConsoleOutputHelper<CFWStr256, CFStr256>(NSys::EColor_Default, "Invalid process ID\n", STD_ERROR_HANDLE, true);
+		NMib::NSys::fg_TerminateProcess(1);
+		return;
+	}
+
+    FreeConsole();
+    if (!AttachConsole(ProcessID))
+	{
+		fg_ConsoleOutputHelper<CFWStr256, CFStr256>(NSys::EColor_Default, fg_Format<CFStr256>("Failed to attach to console: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr()), STD_ERROR_HANDLE, true);
+		NMib::NSys::fg_TerminateProcess(1);
+		return;
+	}
+
+    // Disable Ctrl-C handling for our program
+    SetConsoleCtrlHandler(nullptr, true);
+
+	if (!GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, ProcessID))
+	{
+		fg_ConsoleOutputHelper<CFWStr256, CFStr256>(NSys::EColor_Default, fg_Format<CFStr256>("Failed to generate CTRL_BREAK_EVENT: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr()), STD_ERROR_HANDLE, true);
+		NMib::NSys::fg_TerminateProcess(1);
+		return;
+	}
+ 
+    FreeConsole();
+ 
+	NMib::NSys::fg_TerminateProcess(0);
+}
+
 void fg_MakeTlsActive();
 void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 {
@@ -2548,6 +2590,8 @@ void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 			g_hDllInstance = (HINSTANCE)_pInstance;
 		}
 	}
+
+	fg_CheckProcessStop();
 
 	fg_CreateMalterlib();
 
