@@ -56,7 +56,7 @@
 			}
 		}		
 
-		%GeneratorSetting "PostBuildScript"
+		%GeneratorSetting "Real_PostBuildScript"
 		{
 			Property
 			{
@@ -65,12 +65,28 @@
 			}
 		}
 
-		%GeneratorSetting "PreBuildScript"
+		%GeneratorSetting "Real_PreBuildScript"
 		{
 			Property
 			{
 				Name "PreBuildEvent"
 				Substitute "set PATH=$(MalterlibBuildSystemExecutablePath);%PATH%\r\n{}"
+			}
+		}
+
+		%GeneratorSetting "PostBuildScript"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+
+		%GeneratorSetting "PreBuildScript"
+		{
+			Property
+			{
+				Disabled true
 			}
 		}
 

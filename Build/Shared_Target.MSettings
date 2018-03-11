@@ -350,6 +350,77 @@ Property
 	}
 }
 
+Property
+{
+	&
+	{
+		GeneratorFamily VisualStudio
+	}
+
+	MalterlibExportEnvironmentScript "@(GeneratedDirectory)ExportEnvironment.bat"
+	{
+		!Target.ExportScriptEnvironment ""
+	}
+}
+
+%Group "~Automatic/Export Environment"
+{
+	!!GeneratorFamily VisualStudio
+
+	%GenerateFile "Generate"
+	{
+		Property
+		{
+			Name "@(MalterlibExportEnvironmentScript)"
+
+			Contents "@(Target.ExportScriptEnvironmentContents)\r\n"
+
+			UnicodeBOM "false"
+
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
+		}
+	}
+}
+
+Target
+{
+	ExtraGroups "~Automatic/Export Environment;@(Target.ExtraGroups)"
+	{
+		&
+		{
+			GeneratorFamily VisualStudio
+			!MalterlibExportEnvironmentScript ""
+		}
+	}
+}
+
+Target
+{
+	&
+	{
+		GeneratorFamily VisualStudio
+		MalterlibExportEnvironmentScript ""
+		Target.Type Tool
+	}
+
+	Real_CommandLine_Build "@(Target.PreBuildScript)\r\n\r\n@(Target.CommandLine_Build)\r\n\r\n@(Target.PostBuildScript)"
+	Real_CommandLine_ReBuild "@(Target.CommandLine_ReBuild)"
+	Real_CommandLine_Clean "@(Target.CommandLine_Clean)"
+}
+Target
+{
+	&
+	{
+		GeneratorFamily VisualStudio
+		!MalterlibExportEnvironmentScript ""
+		Target.Type Tool
+	}
+
+	Real_CommandLine_Build "@(Target.PreBuildScript)\r\ncall \"@(MalterlibExportEnvironmentScript->WindowsPath())\"\r\n\r\n@(Target.CommandLine_Build)\r\n\r\n@(Target.PostBuildScript)"
+	Real_CommandLine_ReBuild "call \"@(MalterlibExportEnvironmentScript->WindowsPath())\"\r\n@(Target.CommandLine_ReBuild)"
+	Real_CommandLine_Clean "call \"@(MalterlibExportEnvironmentScript->WindowsPath())\"\r\n@(Target.CommandLine_Clean)"
+}
+
 Target
 {
 	&
@@ -697,15 +768,32 @@ Property
 			!PlatformFamily Windows
 		}
 	}
-	ExportScriptEnvironmentContents_Template "set @(Explodee)=\"@(Builtin.Function->GetProperty('Property', '@(Explodee)', 'Target:*'))\"\r\n"
+	ExportScriptEnvironmentContents_Template "set @(Explodee)=@(Builtin.Function->GetProperty('Property', '@(Explodee)', 'Target:*'))\r\n"
 	{
 		&
 		{
 			!Explodee ""
 			PlatformFamily Windows
+			!MalterlibExportEnvironmentMinGW true
 		}
 	}
-	
+
+	ExportScriptEnvironmentContents_MaybeMinGW "@(Builtin.Function->GetProperty('Property', '@(Explodee)', 'Target:*'))"
+	ExportScriptEnvironmentContents_MaybeMinGW "@(ExportScriptEnvironmentContents_MaybeMinGW->UnixPath())"
+	ExportScriptEnvironmentContents_MaybeMinGW "@(ExportScriptEnvironmentContents_MaybeMinGW->ParseFormatString('{}:/{}', '/{0,cl}/{1}'))"
+	{
+		!!ExportScriptEnvironmentContents_MaybeMinGW "~?:*"
+	}
+
+	ExportScriptEnvironmentContents_Template "set @(Explodee)=@(ExportScriptEnvironmentContents_MaybeMinGW)\r\n"
+	{
+		&
+		{
+			!Explodee ""
+			PlatformFamily Windows
+			MalterlibExportEnvironmentMinGW true
+		}
+	}
 }
 
 Target
@@ -3365,6 +3453,8 @@ Property
 													"	Destination \"@(Expand1)\"\r\n"\
 													"	Recurse @(MalterlibExeFSExtraFilesContentsRecursive)\r\n"\
 													"}\r\n"
+													{
+													}
 	
 	MalterlibExeFSExtraFilesContentsTemplate	"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibExeFSExtraFilesContentsTemplateExpand'))"
 	{
@@ -3650,6 +3740,14 @@ Property
 								"@(Builtin.Function->ExplodeList('@(Target.Dependencies)', ';', 'PreBuildScriptDependenciesTemplate'))"
 	
 	PreBuildOutputfile "@(Target.IntermediateDirectory)PreBuildOutput.c"
+}
+
+Target
+{
+	!!GeneratorFamily VisualStudio
+
+	Real_PreBuildScript "@(Target.ExportScriptEnvironmentContents)\r\n@(Target.PreBuildScript)"
+	Real_PostBuildScript "@(Target.ExportScriptEnvironmentContents)\r\n@(Target.PostBuildScript)"
 }
 
 Target

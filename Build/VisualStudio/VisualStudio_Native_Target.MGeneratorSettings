@@ -131,7 +131,8 @@
 				ConvertPath true
 			}
 		}
-		%GeneratorSetting "PostBuildScript"
+
+		%GeneratorSetting "Real_PostBuildScript"
 		{
 			Property
 			{
@@ -141,12 +142,28 @@
 		}
 
 
-		%GeneratorSetting "PreBuildScript"
+		%GeneratorSetting "Real_PreBuildScript"
 		{
 			Property
 			{
 				Entity "PreBuildEvent"
 				Name "Command"
+			}
+		}
+
+		%GeneratorSetting "PostBuildScript"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+
+		%GeneratorSetting "PreBuildScript"
+		{
+			Property
+			{
+				Disabled true
 			}
 		}
 
@@ -263,11 +280,33 @@
 		{
 			Property
 			{
+				Disabled 1
+			}
+		}
+		%GeneratorSetting "CommandLine_ReBuild"
+		{
+			Property
+			{
+				Disabled 1
+			}
+		}
+		%GeneratorSetting "CommandLine_Clean"
+		{
+			Property
+			{
+				Disabled 1
+			}
+		}
+
+		%GeneratorSetting "Real_CommandLine_Build"
+		{
+			Property
+			{
 				Parent "PropertyGroup"
 				Name "NMakeBuildCommandLine"
 			}
 		}
-		%GeneratorSetting "CommandLine_ReBuild"
+		%GeneratorSetting "Real_CommandLine_ReBuild"
 		{
 			Property
 			{
@@ -275,7 +314,7 @@
 				Name "NMakeReBuildCommandLine"
 			}
 		}
-		%GeneratorSetting "CommandLine_Clean"
+		%GeneratorSetting "Real_CommandLine_Clean"
 		{
 			Property
 			{
