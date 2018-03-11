@@ -184,6 +184,13 @@ namespace NMib
 				return ToRetW;
 			}
 
+			template <typename tf_CRet>
+			void fg_ConvertFromWindowsPathInternalDriveCase(tf_CRet &o_Path)
+			{
+				if (o_Path.f_GetLen() >= 2 && o_Path[1] == ':')
+					o_Path[0] = NStr::fg_CharLowerCase(o_Path[0]);
+			}
+			
 			template <typename tf_CRet, typename tf_CSrc>
 			tf_CRet fg_ConvertFromWindowsPathInternal(const tf_CSrc &_Path)
 			{
@@ -192,14 +199,20 @@ namespace NMib
 	
 				if (ToRet.f_CmpNoCase("//?/UNC/", 8) == 0)
 				{
-					return "//" + ToRet.f_Extract(8);
+					auto Path = "//" + ToRet.f_Extract(8);
+					fg_ConvertFromWindowsPathInternalDriveCase(Path);
+					return Path;
 				}
 				else if (ToRet.f_CmpNoCase("//?/", 4) == 0)
 				{
-					return ToRet.f_Extract(4);
+					auto Path = ToRet.f_Extract(4);
+					fg_ConvertFromWindowsPathInternalDriveCase(Path);
+					return Path;
 				}
 
-				return ToRet.f_TrimRight();
+				auto Path = ToRet.f_TrimRight();
+				fg_ConvertFromWindowsPathInternalDriveCase(Path);
+				return Path;
 			}
 
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSrc>
