@@ -208,6 +208,11 @@ Property
 	{
 		!!ScriptUnixLineEnds true
 	}
+
+	BashScriptPrefix "\"C:/Program Files/Git/bin/bash.exe\" "
+	{
+		!!PlatformFamily Windows
+	}
 }
 Property
 {
