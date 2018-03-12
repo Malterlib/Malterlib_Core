@@ -5353,7 +5353,7 @@ CStr NSys::NFile::fg_GetCurrentDirectory()
 NStr::CStr NSys::NFile::fg_GetUserProgramDirectory()
 {
 	WCHAR szPath[MAX_PATH];
-	if(SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_APPDATA|CSIDL_FLAG_CREATE, nullptr, 0, szPath))) 
+	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_APPDATA|CSIDL_FLAG_CREATE, nullptr, 0, szPath))) 
 	{
 		CStr FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPath());
 		aint iFind = FileName.f_FindReverse("_x");
@@ -5372,7 +5372,7 @@ NStr::CStr NSys::NFile::fg_GetUserProgramDirectory()
 NStr::CStr NSys::NFile::fg_GetUserLocalProgramDirectory()
 {
 	WCHAR szPath[MAX_PATH];
-	if(SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, nullptr, 0, szPath))) 
+	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE, nullptr, 0, szPath)))
 	{
 		CStr FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPath());
 		aint iFind = FileName.f_FindReverse("_x");
@@ -5395,7 +5395,7 @@ NStr::CStr NSys::NFile::fg_GetUserLocalProgramCacheDirectory()
 NStr::CStr NSys::NFile::fg_GetTemporaryDirectory()
 {
 	WCHAR szPath[MAX_PATH];
-	if(SUCCEEDED(GetTempPath(MAX_PATH, szPath))) 
+	if (SUCCEEDED(GetTempPath(MAX_PATH, szPath)))
 	{
 		CStr FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPath());
 		aint iFind = FileName.f_FindReverse("_x");
@@ -5413,15 +5413,8 @@ NStr::CStr NSys::NFile::fg_GetTemporaryDirectory()
 NMib::NStr::CStr NSys::NFile::fg_GetUserHomeDirectory()
 {
 	WCHAR szPath[MAX_PATH];
-	if(SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_PROFILE|CSIDL_FLAG_CREATE, nullptr, 0, szPath))) 
-	{
-		CStr FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPath());
-		aint iFind = FileName.f_FindReverse("_x");
-		if (iFind >= 0)
-			FileName = FileName.f_Left(iFind);
-		CStr Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(szPath));
-		return Ret;
-	}	
+	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_PROFILE|CSIDL_FLAG_CREATE, nullptr, 0, szPath)))
+		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(szPath));
 
 	return fg_GetProgramDirectory();
 }
