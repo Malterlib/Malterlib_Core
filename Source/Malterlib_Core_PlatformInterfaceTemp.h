@@ -294,7 +294,7 @@ namespace NMib
 		void fg_UserManagement_DeleteGroup(NMib::NStr::CStr const &_GroupName);
 		
 		bint fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib::NStr::CStr &_ReturnUID);
-		NMib::NStr::CStr fg_UserManagement_MakeValidUserName(NMib::NStr::CStr &_UserName);
+		NMib::NStr::CStr fg_UserManagement_MakeValidUserName(NMib::NStr::CStr const &_UserName);
 		void fg_UserManagement_CreateUser
 			(
 				NMib::NStr::CStr const &_InGroupName,

@@ -1654,7 +1654,7 @@ ch8 const *NSys::NFile::fg_GetDllExtension()
 	return ".js";
 }
 
-NMib::NStr::CStr NMib::NSys::fg_UserManagement_MakeValidUserName(NMib::NStr::CStr &_UserName)
+NMib::NStr::CStr NMib::NSys::fg_UserManagement_MakeValidUserName(NMib::NStr::CStr const &_UserName)
 {
 	return _UserName;
 }
