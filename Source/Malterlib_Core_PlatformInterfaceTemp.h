@@ -276,7 +276,12 @@ namespace NMib
 		/*
 			User management
 		*/
-		
+		enum EUserManagementCreateUserFlag
+		{
+			EUserManagementCreateUserFlag_None = 0
+			, EUserManagementCreateUserFlag_ShellAccess = DMibBit(0)
+		};
+
 		NMib::NStr::CStr fg_UserManagement_GetProcessRealUser();
 		NMib::NStr::CStr fg_UserManagement_GetProcessEffectiveUser();
 		
@@ -297,12 +302,13 @@ namespace NMib
 		NMib::NStr::CStr fg_UserManagement_MakeValidUserName(NMib::NStr::CStr const &_UserName);
 		void fg_UserManagement_CreateUser
 			(
-				NMib::NStr::CStr const &_InGroupName,
-				NMib::NStr::CStr const &_UserName,
-				NMib::NStr::CStrSecure const &_Password,
-				NMib::NStr::CStr const &_FullName,
-				NMib::NStr::CStr const &_HomeDirectory,
-				NMib::NStr::CStr &_ReturnUID
+				NMib::NStr::CStr const &_InGroupName
+				, NMib::NStr::CStr const &_UserName
+				, NMib::NStr::CStrSecure const &_Password
+				, NMib::NStr::CStr const &_FullName
+				, NMib::NStr::CStr const &_HomeDirectory
+				, NMib::NStr::CStr &_ReturnUID
+			 	, EUserManagementCreateUserFlag _Flags
 			)
 		;
 		
