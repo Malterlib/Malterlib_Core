@@ -226,7 +226,15 @@ Property
 										"	oldstate=\"$(shopt -po; shopt -p)\"\r\n"\
 										"	set -e\r\n"\
 										"	set -o pipefail\r\n"\
-										"	xcodebuild -jobs $NumCPUs \"$@\" | xcpretty --color\r\n"\
+										"	TempFile=`mktemp`\r\n"\
+										"	if ! xcodebuild -jobs $NumCPUs \"$@\" | tee \"$TempFile\" | xcpretty --color; then\r\n"\
+										"		echo \"error: Build failed. See full log:\"\r\n"\
+										"		echo \"\"\r\n"\
+										"		cat \"$TempFile\"\r\n"\
+										"		rm -f \"$TempFile\"\r\n"\
+										"		exit 1\r\n"\
+										"	fi\r\n"\
+										"	rm -f \"$TempFile\"\r\n"\
 										"	eval \"$oldstate\"\r\n"\
 										"}\r\n"\
 										"export XCodeBuild_Pretty\r\n"\
