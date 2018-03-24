@@ -229,8 +229,10 @@ Property
 										"	TempFile=`mktemp`\r\n"\
 										"	if ! xcodebuild -jobs $NumCPUs \"$@\" | tee \"$TempFile\" | xcpretty --color; then\r\n"\
 										"		echo \"error: Build failed. See full log:\"\r\n"\
+										"		wc -c \"$TempFile\"\r\n"\
 										"		echo \"\"\r\n"\
 										"		cat \"$TempFile\"\r\n"\
+										"		echo \"Full log output done\"\r\n"\
 										"		rm -f \"$TempFile\"\r\n"\
 										"		exit 1\r\n"\
 										"	fi\r\n"\
