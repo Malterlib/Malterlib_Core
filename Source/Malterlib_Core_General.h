@@ -1668,7 +1668,7 @@ namespace NMib
 			++pParse;
 		if (pParse[0] == 'c' && pParse[1] == 'l' && pParse[2] == 'a' && pParse[3] == 's' && pParse[4] == 's' && pParse[5] == ' ')
 			pParse += 6;
-		else if (pParse[0] == 's' && pParse[1] == 't' && pParse[2] == 'r' && pParse[3] == 'u' && pParse[4] == 'c' && pParse[5] == 't' && pParse[5] == ' ')
+		else if (pParse[0] == 's' && pParse[1] == 't' && pParse[2] == 'r' && pParse[3] == 'u' && pParse[4] == 'c' && pParse[5] == 't' && pParse[6] == ' ')
 			pParse += 7;
 		ch8 const *pStartType = pParse;
 		mint nStart = 0;
