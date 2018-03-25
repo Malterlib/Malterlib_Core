@@ -300,6 +300,7 @@ namespace NMib
 		
 		bint fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib::NStr::CStr &_ReturnUID);
 		NMib::NStr::CStr fg_UserManagement_MakeValidUserName(NMib::NStr::CStr const &_UserName);
+		NMib::NStr::CStr fg_UserManagement_MakeValidGroupName(NMib::NStr::CStr const &_GroupName);
 		void fg_UserManagement_CreateUser
 			(
 				NMib::NStr::CStr const &_InGroupName
