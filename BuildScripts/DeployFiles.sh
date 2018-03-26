@@ -25,7 +25,7 @@ fi
 MTool BuildServerGet "Source=$1" "DestinationDir=$DestinationDir"
 CheckErrors
 
-echo Important: Build now available at:
-echo Important: $DestinationDir
+echo VeryImportant: Build now available at:
+echo VeryImportant: $DestinationDir
 
 exit 0

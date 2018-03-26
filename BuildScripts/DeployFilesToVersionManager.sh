@@ -26,4 +26,4 @@ UploadToVersionManagerWithInfo "$TempDirectory/$2.tar.gz" "$2" All
 
 popd
 
-echo 'Important: Build now available at on VersionManager(s)'
+echo 'VeryImportant: Build now available at on VersionManager(s)'
