@@ -2525,7 +2525,7 @@ void fg_CheckProcessStop()
 }
 
 void fg_MakeTlsActive();
-void fg_InitMalterlibAllInternalComplex(void *_pInstance)
+inline_never void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 {
 	fg_LoadFunctionPointers();
 
@@ -2568,7 +2568,7 @@ void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 	g_bDoneMalterlibInitAll.f_FetchAdd(1);
 }
 
-bool __cdecl fg_InitMalterlibAllInternal(void *_pInstance)
+inline_never bool __cdecl fg_InitMalterlibAllInternal(void *_pInstance)
 {
 	smint Expected = 0;
 	if (!g_bDoneMalterlibInitAll.f_CompareExchangeStrong(Expected, 1))
