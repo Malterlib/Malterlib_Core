@@ -282,7 +282,7 @@ Property
 					%File "../../External/libcxx/src/*.cpp"
 					%File "../../External/libcxx/src/new.cpp"
 					{
-						Compile.PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE;@(Compile.PreprocessorDefines)"
+						Compile.PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE_DEFINITIONS;@(Compile.PreprocessorDefines)"
 						{
 							!MalterlibDefaultToolset true
 						}

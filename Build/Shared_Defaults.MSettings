@@ -465,7 +465,7 @@ Property
 	{
 		!!MalterlibEnableBreakpad ""
 	}
-	MalterlibClangVersion "5.0"
+	MalterlibClangVersion "6.0"
 	{
 		!!MalterlibClangVersion ""
 	}

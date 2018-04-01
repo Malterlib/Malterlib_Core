@@ -17,7 +17,7 @@ unset OTHER_CFLAGS_ONLY
 
 if [ ! -e "$OutputDirectory" ]; then
 	mkdir -p "$OutputDirectory"
-	git clone -b $ClangVersion --recursive https://github.com/Malterlib/llvm-malterlib.git "$OutputDirectory"
+	git clone -b $ClangVersion https://github.com/Malterlib/llvm-malterlib.git "$OutputDirectory"
 fi
 
 pushd "$OutputDirectory" > /dev/null
@@ -55,6 +55,10 @@ fi
 if [[ "$BuildTime" == "$VersionTime" ]]; then
 	exit 0
 fi
+
+export MalterlibRepositoryHardReset=true
+
+./mib update_repos
 
 pushd Scripts
 ./build.sh
