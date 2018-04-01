@@ -227,6 +227,7 @@ Property
 										"	set -e\r\n"\
 										"	set -o pipefail\r\n"\
 										"	TempFile=`mktemp`\r\n"\
+										"	export LC_CTYPE=\"en_US.UTF-8\"\r\n"\
 										"	if ! xcodebuild -jobs $NumCPUs \"$@\" | tee \"$TempFile\" | xcpretty --color; then\r\n"\
 										"		echo \"error: Build failed. See full log:\"\r\n"\
 										"		wc -c \"$TempFile\"\r\n"\
