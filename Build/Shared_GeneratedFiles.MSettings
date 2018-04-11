@@ -88,6 +88,10 @@ Property
 										"@(ScriptExport) \"MalterlibSignCertOSX=@(MalterlibSignCertOSX)\"\r\n"\
 										"@(ScriptExport) \"MalterlibSignCertWindows=@(MalterlibSignCertWindows)\"\r\n"\
 										"\r\n"\
+										"@(ScriptExport) \"HostPlatformFamily=@(HostPlatformFamily)\"\r\n"\
+										"@(ScriptExport) \"HostPlatform=@(HostPlatform)\"\r\n"\
+										"@(ScriptExport) \"HostArchitecture=@(HostArchitecture)\"\r\n"\
+										"@(ScriptExport) \"MalterlibDeployRoot=@(MalterlibDeployRoot)\"\r\n"\
 										"@(ScriptExport) \"MalterlibCompiledFiles=@(MalterlibCompiledFiles)\"\r\n"\
 										"@(ScriptExport) \"MalterlibCompiledFilesSourceBase=@(MalterlibCompiledFilesSourceBase)\"\r\n"\
 										"@(ScriptExport) \"MalterlibDoingProductBuild=@(MalterlibDoingProductBuild)\"\r\n"\
@@ -228,7 +232,7 @@ Property
 										"	set -o pipefail\r\n"\
 										"	TempFile=`mktemp`\r\n"\
 										"	export LC_CTYPE=\"en_US.UTF-8\"\r\n"\
-										"	if ! xcodebuild -jobs $NumCPUs \"$@\" | tee \"$TempFile\" | xcpretty --color; then\r\n"\
+										"	if ! xcodebuild -jobs $NumCPUs \"$@\" | tee \"$TempFile\" | xcpretty --color $MalterlibXCPrettyOptions; then\r\n"\
 										"		echo \"error: Build failed. See full log:\"\r\n"\
 										"		wc -c \"$TempFile\"\r\n"\
 										"		echo \"\"\r\n"\

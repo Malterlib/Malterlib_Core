@@ -87,6 +87,15 @@ Property
 
     MalterlibDeployRoot "/Deploy"
 	{
+		&
+		{
+			MalterlibDeployRoot ""
+			!Empty "@('/'->FindDirectoriesIn('Deploy'))"
+		}
+	}
+
+	MalterlibDeployRoot "@(HOME)/.Deploy"
+	{
 		!!MalterlibDeployRoot ""
 	}
 
