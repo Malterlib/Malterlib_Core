@@ -921,6 +921,14 @@ Property
 	PlatformVersion "1000"
 }
 
+Property
+{
+	MalterlibMSVCEnableUTF8 true
+	{
+		!!MalterlibMSVCEnableUTF8 ""
+	}
+}
+
 // Assembler settings
 Compile
 {
@@ -1858,6 +1866,16 @@ Compile
 	{
 		&
 		{
+			PlatformFamily Windows
+			!Target.PlatformToolset "v90"
+		}
+	}
+
+	ExtraCompilerFlags "/utf-8 @(Compile.ExtraCompilerFlags)"
+	{
+		&
+		{
+			MalterlibMSVCEnableUTF8 true
 			PlatformFamily Windows
 			!Target.PlatformToolset "v90"
 		}
