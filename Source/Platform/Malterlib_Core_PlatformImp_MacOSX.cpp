@@ -1920,7 +1920,7 @@ void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NS
 		DMibErrorFile("clonefile function not available in this version of macOS");
 
 	if (clonefile(_FileFrom, _FileTo, 0))
-		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("rename('{}', '{}')") << _FileFrom << _FileTo, errno));
+		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("clonefile('{}', '{}')") << _FileFrom << _FileTo, errno));
 }
 
 bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
