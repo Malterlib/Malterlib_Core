@@ -194,7 +194,6 @@ void CFileChangeNotificationContext::f_Inotify_RemoveWatch(int _Descriptor)
 				DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{})") << m_NotifyDescriptor << _Descriptor, errno));
 		}
 	}
-
 }
 
 ssize_t CFileChangeNotificationContext::f_Inotify_Read(TCVector<uint8> &_Buffer)
@@ -248,7 +247,7 @@ CFileChangeNotificationContext::CWatch &CFileChangeNotificationContext::f_LinkWa
 		{
 			// We can't do a subdirectory search directly here, that could cause a race condition, because we must add the watch before scanning a directory
 			for (auto &File : NFile::CFile::fs_FindFilesEx(_Path + "/*", NFile::EFileAttrib_Directory | NFile::EFileAttrib_File, false, false))
-				pWatch->m_ChildFiles[File.m_Path.f_Extract(_Path.f_GetLen() + 1)] = (File.m_Attribs & NFile::EFileAttrib_Directory) != 0; 
+				pWatch->m_ChildFiles[File.m_Path.f_Extract(_Path.f_GetLen() + 1)] = (File.m_Attribs & (NFile::EFileAttrib_Directory | NFile::EFileAttrib_Link)) == NFile::EFileAttrib_Directory;
 		}
 		catch (NException::CException const &_Exception)
 		{
@@ -291,6 +290,7 @@ void *CFileChangeNotificationContext::f_Open(const CStr &_FileName, NMib::NFile:
 		DMibErrorFile(CStr::CFormat("File change notifications are not supported on files, only directories ({})") << FileName);
 	}
 
+	auto SelfUniqueID = NFile::CFile::fs_GetUniqueIdentifier(_FileName);
 
 	{
 		DMibLock(m_ContextLock);
@@ -298,7 +298,8 @@ void *CFileChangeNotificationContext::f_Open(const CStr &_FileName, NMib::NFile:
 		NMib::NPtr::TCUniquePointer<CNotification> pNot = fg_Construct(this, FileName);
 		pNot->m_pReportTo = _pReportTo;
 		pNot->m_Flags = _OpenFlags;
-		
+		pNot->m_SelfUniqueID = SelfUniqueID;
+
 		pNot->f_WatchPath(nullptr, FileName, true);
 
 		m_Notifications.f_Insert(pNot.f_Get());

@@ -62,13 +62,15 @@ namespace NMib
 						
 				struct CFindChangesContext
 				{
-					NContainer::TCLinkedList<CChange> m_ChangesFileName;
+					NContainer::TCLinkedList<CChange> m_ChangesFileNameRename;
+					NContainer::TCLinkedList<CChange> m_ChangesFileNameRemove;
+					NContainer::TCLinkedList<CChange> m_ChangesFileNameAdd;
 					NContainer::TCLinkedList<CChange> m_Changes;
 					NContainer::TCSet<CChange> m_ChangesSet;
 					NContainer::TCSet<CFileKey> m_UsedOld;
 					NContainer::TCSet<CFileKey> m_PotentialOld;
 				};
-				
+
 				struct CFileSnapshot
 				{
 					CFileSnapshot(CFileSnapshot *_pParent);
@@ -94,7 +96,8 @@ namespace NMib
 					NMib::NStr::CStr m_FullFileName;
 					
 					CFileSnapshot *m_pParent;
-					zbool m_bDelete;
+					uint64 m_UpdateSequence = 0;
+					bool m_bDelete = false;
 					
 					DMibIntrusiveLink(CFileSnapshot, NMib::NIntrusive::TCAVLLink<>, m_Link);
 					DMibListLinkDS_Link(CFileSnapshot, m_LinkNode);
@@ -115,7 +118,32 @@ namespace NMib
 				};
 
 				using CSnapshotsByNode = NContainer::TCMap<CFileKey, DMibListLinkDS_List(CFileSnapshot, m_LinkNode)>;
-				
+
+				struct CUpdateSnapshotContext
+				{
+					CUpdateSnapshotContext
+						(
+							CSnapshotsByNode &_SnapshotsByNode
+							, CSnapshotsByNode &_OldSnapshotsByNode
+							, uint64 _UpdateSequence
+						 	, NStr::CStr const &_NotificationPath
+						)
+						: m_SnapshotsByNode(_SnapshotsByNode)
+						, m_OldSnapshotsByNode(_OldSnapshotsByNode)
+						, m_UpdateSequence(_UpdateSequence)
+						, m_NotificationPath(_NotificationPath)
+					{
+					}
+
+					CSnapshotsByNode &m_SnapshotsByNode;
+					CSnapshotsByNode &m_OldSnapshotsByNode;
+					uint64 m_UpdateSequence;
+					NStr::CStr m_NotificationPath;
+
+					NContainer::TCMap<NStr::CStr, zbool> m_DirsToUpdate;
+					NContainer::TCMap<NStr::CStr, zbool> m_ChangedPaths;
+				};
+
 				CFileSnapshot m_RootSnapshot;
 				CSnapshotsByNode m_SnapshotsByNode;
 				
@@ -134,9 +162,8 @@ namespace NMib
 						NStr::CStr const &_Path
 						, bool _bInitial
 						, bool _bNeedSubDirs
-						, CFileChangeNoticationContext::CNotification::CSnapshotsByNode &o_NewSnapshotsByNode
+						, CUpdateSnapshotContext &_UpdateContext
 						, CFileSnapshot &o_NewSnapshot
-						, NContainer::TCMap<NStr::CStr, zbool> &o_ChangedPaths
 					)
 				;
 				void f_InitialScan();
@@ -173,6 +200,7 @@ namespace NMib
 				DMibRefcountDebuggingOnly(NPtr::CRefCountDebugReference m_DebugSelfRef);
 
 				NMib::NThread::CSemaphoreReportableAggregate *m_pReportTo;
+				uint64 m_UpdateSequence = 0;
 				bool m_bAddedToRunLoop = false;
 				bool m_bStreamStarted = false;
 				bool m_bPerFileEvents = false;

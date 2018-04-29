@@ -78,9 +78,10 @@ bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 			auto pWatch = *pWatchFind;
 			auto &Watch = *pWatch;
 
-			for (auto iNotification = Watch.f_GetReferenceIterator(); iNotification; ++iNotification)
+			auto References = Watch.f_GetReferences();
+
+			for (auto *pNotification : References)
 			{
-				CNotification *pNotification = *iNotification;
 				auto &Context = NotificationContexts[pNotification];
 				pNotification->f_OnEvent(Context, Event, pWatch);
 

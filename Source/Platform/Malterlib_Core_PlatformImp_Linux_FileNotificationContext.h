@@ -92,11 +92,11 @@ public:
 			return mp_Descriptor;
 		}
 		
-		TCSet<CNotification*>::CIterator f_GetReferenceIterator()
+		TCSet<CNotification *> f_GetReferences()
 		{
-			return mp_References.f_GetIterator();
+			return mp_References;
 		}
-		
+
 		int f_GetReferencesCount()
 		{
 			return mp_References.f_GetLen();
@@ -191,14 +191,14 @@ public:
 		void f_OnEvent(CFindChangesContext &o_Context, inotify_event const &_Event, TCSharedPointer<CWatch> const &_pWatch);
 		void f_OnAdded(CFindChangesContext &o_Context, CStr const &_Path, bool _bIsDir, CWatch* _pWatch);
 		void f_OnRemovedFromRename(CFindChangesContext &o_Context, CPendingRename const &_PendingRename);
-
+		
 		DMibListLinkDS_Link(CNotification, m_Link);
 		TCMap<int, TCSharedPointer<CWatch>> m_Watches;
 		CStr m_BasePath;
 		CFileChangeNotificationContext *m_pContext;
 		
-		EFileChange m_Flags;
-		
+		NFile::CUniqueFileIdentifier m_SelfUniqueID;
+
 		TCLinkedList<CChange> m_Changes;
 		CMutual m_ChangesLock;
 		
@@ -206,6 +206,8 @@ public:
 		
 		CSemaphoreReportableAggregate *m_pReportTo;
 		
+		EFileChange m_Flags;
+		bool m_bSelfValid = true;
 	};
 
 	class CNotificationThread : public NMib::NThread::CThread

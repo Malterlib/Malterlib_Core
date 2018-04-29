@@ -547,7 +547,10 @@ namespace NMib
 				if (iChild->m_Link.f_IsInTree())
 					m_ChildrenByName.f_Insert(NewChild);
 				if (iChild->m_LinkNode.f_IsInList())
-					_SnapshotsByNode[NewChild.f_GetKey()].f_Insert(NewChild);
+				{
+					auto &Snapshots = _SnapshotsByNode[NewChild.f_GetKey()];
+					Snapshots.f_Insert(NewChild);
+				}
 			}
 		}
 		
@@ -594,37 +597,62 @@ namespace NMib
 			
 			m_RootSnapshot.f_Clear(m_SnapshotsByNode);
 		}
-		
-		void fg_LinkFileSnapshot
-			(
-				CFileChangeNoticationContext::CNotification::CSnapshotsByNode &_SnapshotsByNode
-				, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot
-			)
+
+		using CUpdateSnapshotContext = CFileChangeNoticationContext::CNotification::CUpdateSnapshotContext;
+
+		void fg_LinkFileSnapshot(CUpdateSnapshotContext &_Context, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot)
 		{
 			auto FileKey = _Snapshot.f_GetKey();
 
 			if (_Snapshot.m_LinkNode.f_IsInList())
-				_Snapshot.f_RemoveFromNodeMap(_SnapshotsByNode);
+				_Snapshot.f_RemoveFromNodeMap(_Context.m_SnapshotsByNode);
 			
 			_Snapshot.m_bDelete = false;
-			
-			_SnapshotsByNode[FileKey].f_Insert(_Snapshot);
+			_Snapshot.m_UpdateSequence = _Context.m_UpdateSequence;
+
+			auto &Snapshots = _Context.m_SnapshotsByNode[FileKey];
+			for (auto &Snapshot : Snapshots)
+			{
+				if (Snapshot.m_FullFileName.f_IsEmpty())
+					continue;
+				CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath / Snapshot.m_FullFileName);
+				if (_Context.m_DirsToUpdate(Directory).f_WasCreated())
+				{
+					DMibFileChangeNotificationsDebugOut("ADDED DIRECTORY '{}' from '{}' finding '{}'\n", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
+				}
+			}
+
+			if (auto *pOldSnapshots = _Context.m_OldSnapshotsByNode.f_FindEqual(FileKey))
+			{
+				for (auto &Snapshot : *pOldSnapshots)
+				{
+					if (Snapshot.m_FullFileName.f_IsEmpty())
+						continue;
+					CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath / Snapshot.m_FullFileName);
+					if (_Context.m_DirsToUpdate(Directory).f_WasCreated())
+					{
+						DMibFileChangeNotificationsDebugOut("ADDED OLD DIRECTORY '{}' from '{}' finding '{}'\n", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
+					}
+				}
+			}
+
+			Snapshots.f_Insert(_Snapshot);
 		}
 		
 		void fgr_UpdateFileSnapshot
 			(
-				CFileChangeNoticationContext::CNotification::CSnapshotsByNode &_SnapshotsByNode
-				, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot
-				, CStr const &_RootPath
+				CUpdateSnapshotContext &_Context
+			 	, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot
 				, bool _bRecursive
 				, bool _bRecursiveInfoNeeded
 			)
 		{
-			CStr Path = CFile::fs_AppendPath(_RootPath, _Snapshot.m_FullFileName);
+			CStr Path = _Context.m_NotificationPath / _Snapshot.m_FullFileName;
 			
 			if (_Snapshot.m_Stats.st_dev == 0)
 			{
-				_Snapshot.f_Clear(_SnapshotsByNode);
+				_Context.m_ChangedPaths[_Snapshot.m_FullFileName] = true;
+				_Snapshot.f_Clear(_Context.m_SnapshotsByNode);
 				return;
 			}
 
@@ -676,9 +704,7 @@ namespace NMib
 						_Snapshot.m_ChildrenByName.f_Remove(Child);
 					
 					if (Child.m_LinkNode.f_IsInList())
-						Child.f_RemoveFromNodeMap(_SnapshotsByNode);
-					
-					Child.m_bDelete = false;
+						Child.f_RemoveFromNodeMap(_Context.m_SnapshotsByNode);
 					
 					Child.m_FileName = FileName;
 					Child.m_FullFileName = CFile::fs_AppendPath(_Snapshot.m_FullFileName, FileName);
@@ -690,7 +716,7 @@ namespace NMib
 
 					_Snapshot.m_ChildrenByName.f_Insert(Child);
 					
-					fg_LinkFileSnapshot(_SnapshotsByNode, Child);
+					fg_LinkFileSnapshot(_Context, Child);
 					
 					if 
 						(
@@ -704,7 +730,7 @@ namespace NMib
 							)
 						)
 					{
-						fgr_UpdateFileSnapshot(_SnapshotsByNode, Child, _RootPath, _bRecursive, _bRecursiveInfoNeeded);
+						fgr_UpdateFileSnapshot(_Context, Child, _bRecursive, _bRecursiveInfoNeeded);
 					}
 				}
 			}
@@ -713,10 +739,13 @@ namespace NMib
 			{
 				if (iSnap->m_bDelete)
 				{
+					_Context.m_ChangedPaths[iSnap->m_FullFileName] = true;
+					iSnap->f_Clear(_Context.m_SnapshotsByNode);
+
 					if (iSnap->m_Link.f_IsInTree())
 						_Snapshot.m_ChildrenByName.f_Remove(*iSnap);
 					if (iSnap->m_LinkNode.f_IsInList())
-						iSnap->f_RemoveFromNodeMap(_SnapshotsByNode);
+						iSnap->f_RemoveFromNodeMap(_Context.m_SnapshotsByNode);
 					iSnap.f_Remove();
 					continue;
 				}
@@ -748,8 +777,12 @@ namespace NMib
 			
 			if (o_Context.m_ChangesSet(Change).f_WasCreated())
 			{
-				if (_Type == EFileChangeNotification_Removed || _Type == EFileChangeNotification_Added || _Type == EFileChangeNotification_Renamed)
-					o_Context.m_ChangesFileName.f_Insert(fg_Move(Change));
+				if (_Type == EFileChangeNotification_Renamed)
+					o_Context.m_ChangesFileNameRename.f_Insert(fg_Move(Change));
+				else if (_Type == EFileChangeNotification_Removed)
+					o_Context.m_ChangesFileNameRemove.f_Insert(fg_Move(Change));
+				else if (_Type == EFileChangeNotification_Added)
+					o_Context.m_ChangesFileNameAdd.f_Insert(fg_Move(Change));
 				else
 					o_Context.m_Changes.f_Insert(fg_Move(Change));
 			}
@@ -774,27 +807,44 @@ namespace NMib
 		{
 			if (_NewSnapshot.m_Stats.st_dev == 0)
 			{
-				m_RootSnapshot.f_PotentiallyRemoved(o_Context);
+				if (_NewSnapshot.m_FullFileName.f_IsEmpty())
+					m_RootSnapshot.f_PotentiallyRemoved(o_Context);
+				else
+				{
+					auto *pSnapshot = &m_RootSnapshot;
+					for (auto &File : _NewSnapshot.m_FullFileName.f_Split("/"))
+					{
+						pSnapshot = pSnapshot->m_ChildrenByName.f_FindEqual(File);
+						if (!pSnapshot)
+							break;
+					}
+					if (pSnapshot)
+						pSnapshot->f_PotentiallyRemoved(o_Context);
+				}
 				return;
 			}
-			
+
 			CFileSnapshot const *pOldSnapshot = nullptr;
 
 			if (auto const *pOldSnapshots = m_SnapshotsByNode.f_FindEqual(_NewSnapshot.f_GetKey()))
 			{
-				for (auto &OldSnapshot : *pOldSnapshots)
 				{
-					if (OldSnapshot.m_FullFileName == _NewSnapshot.m_FullFileName)
+					uint64 Best = 0;
+					for (auto &OldSnapshot : *pOldSnapshots)
 					{
-						pOldSnapshot = &OldSnapshot;
-						break;
+						DMibFastCheck(!OldSnapshot.m_bDelete);
+
+						if (OldSnapshot.m_FullFileName == _NewSnapshot.m_FullFileName && (OldSnapshot.m_UpdateSequence > Best || !pOldSnapshot))
+							pOldSnapshot = &OldSnapshot;
 					}
 				}
 				if (!pOldSnapshot)
 				{
+					uint64 Best = 0;
 					for (auto &OldSnapshot : *pOldSnapshots)
 					{
-						if (OldSnapshot.m_FileName == _NewSnapshot.m_FileName)
+						DMibFastCheck(!OldSnapshot.m_bDelete);
+						if (OldSnapshot.m_FileName == _NewSnapshot.m_FileName && (OldSnapshot.m_UpdateSequence > Best || !pOldSnapshot))
 						{
 							pOldSnapshot = &OldSnapshot;
 							break;
@@ -802,9 +852,20 @@ namespace NMib
 					}
 				}
 				if (!pOldSnapshot)
-					pOldSnapshot = pOldSnapshots->f_GetFirst();
+				{
+					uint64 Best = 0;
+					for (auto &OldSnapshot : *pOldSnapshots)
+					{
+						DMibFastCheck(!OldSnapshot.m_bDelete);
+						if (OldSnapshot.m_UpdateSequence > Best || !pOldSnapshot)
+						{
+							Best = OldSnapshot.m_UpdateSequence;
+							pOldSnapshot = &OldSnapshot;
+						}
+					}
+				}
 			}
-			
+
 			bool bIsDir = (_NewSnapshot.m_Stats.st_mode & S_IFDIR) && !(_NewSnapshot.m_Stats.st_mode & S_IFLNK);
 			
 			if (!pOldSnapshot)
@@ -923,9 +984,8 @@ namespace NMib
 				CStr const &_Path
 				, bool _bInitial
 				, bool _bNeedSubDirs
-				, CFileChangeNoticationContext::CNotification::CSnapshotsByNode &o_NewSnapshotsByNode
+			 	, CUpdateSnapshotContext &_UpdateContext
 				, CFileSnapshot &o_NewSnapshot
-				, TCMap<CStr, zbool> &o_ChangedPaths
 			)
 		{
 			bool bRecursive = (m_Flags & EFileChange_Recursive) != 0;
@@ -950,7 +1010,7 @@ namespace NMib
 				DMibSafeCheck(false, "Failed to make relative path!!");
 				return; // Error
 			}
-			
+
 			if (!_bInitial && (_Path != m_NotificationPath || (bRecursive != (m_Flags & EFileChange_Recursive) != 0)))
 			{
 				CFileSnapshot *pFindSnapshot = &o_NewSnapshot;
@@ -965,31 +1025,34 @@ namespace NMib
 				
 				if (pFindSnapshot)
 				{
-					auto &bChangedPathRecursive = o_ChangedPaths[pFindSnapshot->m_FullFileName];
+					auto &bChangedPathRecursive = _UpdateContext.m_ChangedPaths[pFindSnapshot->m_FullFileName];
 					if (bRecursive)
 						bChangedPathRecursive = true;
 					// We can do a partial update
 					if (bRecursive)
-						pFindSnapshot->f_Clear(o_NewSnapshotsByNode);
+						pFindSnapshot->f_Clear(_UpdateContext.m_SnapshotsByNode);
 					else
 					{
 						for (auto iSnap = pFindSnapshot->m_Children.f_GetIterator(); iSnap; ++iSnap)
 							iSnap->m_bDelete = true;
 					}
-					pFindSnapshot->f_RemoveFromNodeMap(o_NewSnapshotsByNode);
+					pFindSnapshot->f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
 					if (lstat(CFile::fs_AppendPath(m_NotificationPath, pFindSnapshot->m_FullFileName).f_GetStr(), &pFindSnapshot->m_Stats))
 						NMem::fg_MemClear(pFindSnapshot->m_Stats);
-					fg_LinkFileSnapshot(o_NewSnapshotsByNode, *pFindSnapshot);
-					fgr_UpdateFileSnapshot(o_NewSnapshotsByNode, *pFindSnapshot, m_NotificationPath, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
+					else
+						fg_LinkFileSnapshot(_UpdateContext, *pFindSnapshot);
+					fgr_UpdateFileSnapshot(_UpdateContext, *pFindSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
 					
 					for (auto iSnap = pFindSnapshot->m_Children.f_GetIterator(); iSnap;)
 					{
 						if (iSnap->m_bDelete)
 						{
+							_UpdateContext.m_ChangedPaths[iSnap->m_FullFileName] = true;
+							iSnap->f_Clear(_UpdateContext.m_SnapshotsByNode);
 							if (iSnap->m_Link.f_IsInTree())
 								pFindSnapshot->m_ChildrenByName.f_Remove(*iSnap);
 							if (iSnap->m_LinkNode.f_IsInList())
-								iSnap->f_RemoveFromNodeMap(o_NewSnapshotsByNode);
+								iSnap->f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
 							iSnap.f_Remove();
 							continue;
 						}
@@ -999,12 +1062,13 @@ namespace NMib
 				else
 				{
 					// We have to do a full update
-					o_NewSnapshot.f_RemoveFromNodeMap(o_NewSnapshotsByNode);
+					o_NewSnapshot.f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
 					if (lstat(m_NotificationPath.f_GetStr(), &o_NewSnapshot.m_Stats))
 						NMem::fg_MemClear(o_NewSnapshot.m_Stats);
-					fg_LinkFileSnapshot(o_NewSnapshotsByNode, o_NewSnapshot);
-					fgr_UpdateFileSnapshot(o_NewSnapshotsByNode, o_NewSnapshot, m_NotificationPath, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
-					auto &bChangedPathRecursive = o_ChangedPaths[""];
+					else
+						fg_LinkFileSnapshot(_UpdateContext, o_NewSnapshot);
+					fgr_UpdateFileSnapshot(_UpdateContext, o_NewSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
+					auto &bChangedPathRecursive = _UpdateContext.m_ChangedPaths[""];
 					if (bRecursive)
 						bChangedPathRecursive = true;
 				}
@@ -1013,12 +1077,13 @@ namespace NMib
 			}
 			else
 			{
-				o_NewSnapshot.f_RemoveFromNodeMap(o_NewSnapshotsByNode);
+				o_NewSnapshot.f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
 				if (lstat(m_NotificationPath.f_GetStr(), &o_NewSnapshot.m_Stats))
 					NMem::fg_MemClear(o_NewSnapshot.m_Stats);
-				fg_LinkFileSnapshot(o_NewSnapshotsByNode, o_NewSnapshot);
-				fgr_UpdateFileSnapshot(o_NewSnapshotsByNode, o_NewSnapshot, m_NotificationPath, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
-				auto &bChangedPathRecursive = o_ChangedPaths[""];
+				else
+					fg_LinkFileSnapshot(_UpdateContext, o_NewSnapshot);
+				fgr_UpdateFileSnapshot(_UpdateContext, o_NewSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
+				auto &bChangedPathRecursive = _UpdateContext.m_ChangedPaths[""];
 				if (bRecursive)
 					bChangedPathRecursive = true;
 			}
@@ -1035,24 +1100,64 @@ namespace NMib
 		{
 			CFileChangeNoticationContext::CNotification::CSnapshotsByNode NewSnapshotsByNode;
 			CFileSnapshot NewSnapshot{m_RootSnapshot, nullptr, NewSnapshotsByNode};
-			TCMap<CStr, zbool> ChangedPaths;
-			
+
+			++m_UpdateSequence;
+
+			CUpdateSnapshotContext UpdateContext{NewSnapshotsByNode, m_SnapshotsByNode, m_UpdateSequence, m_NotificationPath};
+
 			for (mint i = 0; i < _nEvents; ++i)
 			{
 				CStr Path(_pPaths[i]);
 				if (Path.f_GetAt(Path.f_GetLen() - 1) == '/')
 					Path = Path.f_Left(Path.f_GetLen() - 1);
-				
+
 				FSEventStreamEventFlags Flags = _Flags[i];
-				
-				f_ScanDir(Path, _bInitialScan, (Flags & kFSEventStreamEventFlagMustScanSubDirs) != 0, NewSnapshotsByNode, NewSnapshot, ChangedPaths);
+
+				UpdateContext.m_DirsToUpdate[Path] = (Flags & kFSEventStreamEventFlagMustScanSubDirs) != 0;
+			}
+
+			TCSet<NStr::CStr> UpdatedDirectories;
+			TCVector<NStr::CStr> RecursiveUpdatedDirectories;
+
+			for (bool bDoneSomething = true; bDoneSomething;)
+			{
+				bDoneSomething = false;
+
+				auto UpdateThisTime = UpdateContext.m_DirsToUpdate;
+
+				for (auto &bScanSubdirs : UpdateThisTime)
+				{
+					auto &Path = UpdateThisTime.fs_GetKey(bScanSubdirs);
+					if (!UpdatedDirectories(Path).f_WasCreated())
+						continue;
+
+					auto WholePath = Path + "/";
+					bool bAlreadyScanned = false;
+					for (auto &Dir : RecursiveUpdatedDirectories)
+					{
+						if (WholePath.f_StartsWith(Dir))
+						{
+							bAlreadyScanned = true;
+							break;
+						}
+					}
+
+					if (bAlreadyScanned)
+						continue;
+
+					if (bScanSubdirs)
+						RecursiveUpdatedDirectories.f_Insert(Path + "/");
+
+					bDoneSomething = true;
+					f_ScanDir(Path, _bInitialScan, bScanSubdirs, UpdateContext, NewSnapshot);
+				}
 			}
 			
-			fg_LinkFileSnapshot(NewSnapshotsByNode, NewSnapshot);
+			fg_LinkFileSnapshot(UpdateContext, NewSnapshot);
 
 			if (!_bInitialScan)
 			{
-				if (ChangedPaths.f_IsEmpty())
+				if (UpdateContext.m_ChangedPaths.f_IsEmpty())
 				{
 					NewSnapshotsByNode.f_Clear();
 					return;
@@ -1060,9 +1165,9 @@ namespace NMib
 
 				CFindChangesContext FindChangesContext;
 				
-				for (auto &bChangedPathRecursive : ChangedPaths)
+				for (auto &bChangedPathRecursive : UpdateContext.m_ChangedPaths)
 				{
-					CStr const &ChangedPath = ChangedPaths.fs_GetKey(bChangedPathRecursive);
+					CStr const &ChangedPath = UpdateContext.m_ChangedPaths.fs_GetKey(bChangedPathRecursive);
 					CFileSnapshot *pFindSnapshot = &NewSnapshot;
 					bool bRecursiveSetting = (m_Flags & EFileChange_Recursive) != 0;
 					{
@@ -1152,10 +1257,18 @@ namespace NMib
 					}
 				}
 				
-				if (!FindChangesContext.m_ChangesFileName.f_IsEmpty() || !FindChangesContext.m_Changes.f_IsEmpty())
+				if
+					(
+					 	!FindChangesContext.m_ChangesFileNameRename.f_IsEmpty()
+					 	|| !FindChangesContext.m_ChangesFileNameRemove.f_IsEmpty()
+					 	|| !FindChangesContext.m_ChangesFileNameAdd.f_IsEmpty()
+					 	|| !FindChangesContext.m_Changes.f_IsEmpty()
+					)
 				{
 					DMibLock(m_ChangesLock);
-					m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileName));
+					m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileNameRename));
+					m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileNameRemove));
+					m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileNameAdd));
 					m_Changes.f_Insert(fg_Move(FindChangesContext.m_Changes));
 					if (m_pReportTo)
 						m_pReportTo->f_Signal();
@@ -1171,7 +1284,10 @@ namespace NMib
 			m_RootSnapshot.m_Stats = NewSnapshot.m_Stats;
 			m_RootSnapshot.m_ChildrenByName = fg_Move(NewSnapshot.m_ChildrenByName);
 			m_RootSnapshot.m_Children = fg_Move(NewSnapshot.m_Children);
-			fg_LinkFileSnapshot(m_SnapshotsByNode, m_RootSnapshot);
+			{
+				CUpdateSnapshotContext UpdateContext{m_SnapshotsByNode, m_SnapshotsByNode, m_UpdateSequence, m_NotificationPath};
+				fg_LinkFileSnapshot(UpdateContext, m_RootSnapshot);
+			}
 		}
 		
 		void CFileChangeNoticationContext::CNotification::f_ProcessChangesPerFile
@@ -1292,10 +1408,18 @@ namespace NMib
 			
 			//DMibConOut2("GENERATED {}\n", FindChangesContext.m_ChangesFileName.f_GetLen() + FindChangesContext.m_Changes.f_GetLen());
 			
-			if (!FindChangesContext.m_ChangesFileName.f_IsEmpty() || !FindChangesContext.m_Changes.f_IsEmpty())
+			if
+				(
+					!FindChangesContext.m_ChangesFileNameRename.f_IsEmpty()
+					|| !FindChangesContext.m_ChangesFileNameRemove.f_IsEmpty()
+					|| !FindChangesContext.m_ChangesFileNameAdd.f_IsEmpty()
+					|| !FindChangesContext.m_Changes.f_IsEmpty()
+				)
 			{
 				DMibLock(m_ChangesLock);
-				m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileName));
+				m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileNameRename));
+				m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileNameRemove));
+				m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileNameAdd));
 				m_Changes.f_Insert(fg_Move(FindChangesContext.m_Changes));
 				if (m_pReportTo)
 					m_pReportTo->f_Signal();
