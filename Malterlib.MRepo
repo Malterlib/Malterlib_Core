@@ -1,4 +1,8 @@
-../../Binaries/Malterlib 8ef11986319571787f49b1e86f919bcabe635c41
+../../Binaries/Malterlib/Linux/x64 853a707dee4a9c0e26f8da5ad01814212155e6e9
+../../Binaries/Malterlib/Linux/x86 8ba331fc765b10fda2fe1315afa52695c53e4027
+../../Binaries/Malterlib/OSX/x64 f117017d737c249b8b92daae41a63808502dc76e
+../../Binaries/Malterlib/Windows/x64 1cb845e136ca708d3552a537d167fb75b191c6a1
+../../Binaries/Malterlib/Windows/x86 b92f183a2b2b9fbd2b15f7a28d001c9d3f67213f
 ../../SDK d983b7f63c08af3cfdc3e5bbb4c97bdd8b3614f7
 ../Algorithm 85e40b02987d6f98d9e5a480bbe668b166358aed
 ../Atomic 682d55c5a8acd745cb21ffb272195b65918026e7
@@ -46,7 +50,7 @@
 ../Test 744e334bfc5c2fc4f8811b4819ac583011dd2afa
 ../Thread 22221759df116c57212ce9524dc9470a759e2a05
 ../Time b47f1de6824cf8a49bf875c99cfaf71aeaa2bec7
-../Tools 11ed62eb0292e6949f832ecec63120b4f92631d3
+../Tools 98ee3806a5d03d7bbef6b7fb476dcc40d8b8d48d
 ../Type 0b6477360239ba9832cc7414fc7f3088d0b48636
 ../Web 193504f54491e595d77a1f8d1efd63364544ea7f
 ../XML 73a299064621d63f23a7e59f969ed2669b670b87

@@ -4,10 +4,6 @@
 
 set -e
 
-export IsWindows=false
-export IsLinux=false
-export IsOSX=false
-
 SysName=$(uname -s)
 ProcessorArch=$(uname -m)
 
@@ -44,27 +40,15 @@ if [[ "$MLBuildBuildSystemRoot" != "" ]]; then
 	BuildSystemRoot="$BuildSystemRoot/$MLBuildBuildSystemRoot"
 fi 
 
-if [ -d "$BuildSystemRoot/BuildSystem/Binaries/General" ]; then
-	ToolsRoot="$BuildSystemRoot/BuildSystem/Binaries/General"
-elif [ -d "$BuildSystemRoot/Binaries/Malterlib/General" ]; then
-	ToolsRoot="$BuildSystemRoot/Binaries/Malterlib/General"
-else
-	ToolsRoot="$BuildSystemRoot/Malterlib/Tools/Binaries/MTool"
-fi
+source "$BuildSystemRoot/Malterlib/Core/Scripts/Detect.sh"
+export MToolPath="$MToolExecutable"
 
-if [[ $SysName ==  MINGW* ]] || [[ $SysName ==  CYGWIN* ]] || [[ $SysName ==  windows* ]] ; then
-
-	if [[ "$ToolsRoot" != "$BuildSystemRoot/BuildSystem/Binaries/General" ]]; then
-		mkdir -p "$BuildSystemRoot/BuildSystem/MTool"
-		cp -r "$ToolsRoot/Windows/"* "$BuildSystemRoot/BuildSystem/MTool/"
-		MToolPath="$BuildSystemRoot/BuildSystem/MTool"
-	else
-		MToolPath="$ToolsRoot/Windows"
+if [[ "$MalterlibPlatform" ==  Windows ]]; then
+	if [[ "$MToolPath" != "$BuildSystemRoot/BuildSystem/SafeMib/Binaries/MTool" ]]; then
+		"$BuildSystemRoot/mib" setup_only
+		export MToolPath="$BuildSystemRoot/BuildSystem/SafeMib/Binaries/MTool"
 	fi
 
-	export PATH="$MToolPath:$PATH"
-
-	export IsWindows=true
 	function p4()
 	{
 		PWD= "$OriginalP4" "$@"
@@ -75,32 +59,9 @@ if [[ $SysName ==  MINGW* ]] || [[ $SysName ==  CYGWIN* ]] || [[ $SysName ==  wi
 		MTool.com "$@"
 	}
 	export MTool
-
-elif [[ $SysName ==  Darwin* ]] ; then
-	if [[ $ProcessorArch == i*86 ]] ; then
-		MToolPath="$ToolsRoot/OSX/x86"
-	elif [[ $ProcessorArch == x86_64 ]] ; then
-		MToolPath="$ToolsRoot/OSX/x64"
-	else
-		echo $ProcessorArch is not a recognized architecture and no build of MTool is available for it
-		exit 1
-	fi
-	export PATH="$MToolPath:$PATH"
-	export IsOSX=true
-elif [[ $SysName ==  Linux* ]] ; then
-	if [[ $ProcessorArch == i*86 ]] ; then
-		MToolPath="$ToolsRoot/Linux/x86"
-	elif [[ $ProcessorArch == x86_64 ]] ; then
-		MToolPath="$ToolsRoot/Linux/x64"
-	else
-		echo $ProcessorArch is not a recognized architecture and no build of MTool is available for it
-		exit 1
-	fi
-	export PATH="$MToolPath:$PATH"
-	export IsLinux=true
-else
-	echo "Couldn't detect system"
 fi
+
+export PATH="$MToolPath:$PATH"
 
 export CallDirect
 

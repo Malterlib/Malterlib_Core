@@ -2409,16 +2409,8 @@ Property
 }
 Property 
 {
-	
-	MToolDirectory "@('../../../Binaries/Malterlib/General'->MakeAbsolute())/@(HostPlatformFamily)"
-	{
-		!!PlatformFamily Windows
-	}
-
-	MToolDirectory "@('../../../Binaries/Malterlib/General'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
-	{
-		!PlatformFamily Windows
-	}
+	MalterlibBinariesDirectory "@('../../../Binaries/Malterlib'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
+	MToolDirectory "@('../../../Binaries/Malterlib'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
 
 	MToolPath "@(MToolDirectory)/MTool.com"
 	{
@@ -2508,7 +2500,7 @@ Target
 		}
 	}
 
-	ToolPath "@(Builtin.BasePathAbsolute)/Malterlib/Tools/Binaries/NoLib/x86;@(Target.ToolPath)"
+	ToolPath "@(MalterlibBinariesDirectory)/NoLib/x86;@(Target.ToolPath)"
 	{
 		&
 		{
@@ -2518,7 +2510,7 @@ Target
 		}
 	}
 	
-	ToolPath "@(Builtin.BasePathAbsolute)/Malterlib/Tools/Binaries/NoLib/x64;@(Target.ToolPath)"
+	ToolPath "@(MalterlibBinariesDirectory)/NoLib/x64;@(Target.ToolPath)"
 	{
 		&
 		{

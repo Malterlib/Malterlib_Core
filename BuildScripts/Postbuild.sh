@@ -10,10 +10,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/DetectSystem.sh"
 
-if [ "$IsWindows" == "true" ] ; then
+if [[ "$MalterlibPlatform" == "Windows" ]] ; then
 	"$DIR/PostbuildVisualStudio.sh" "$@"
 	exit $?
-elif [ "$IsOSX" == "true" ] || [ "$IsLinux" == "true" ] ; then
+elif [[ "$MalterlibPlatform" == "OSX" ]] || [[ "$MalterlibPlatform" == "Linux" ]] ; then
 	"$DIR/PostbuildXcode.sh" "$@"
 	exit $?
 else

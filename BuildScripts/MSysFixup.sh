@@ -14,7 +14,7 @@ fixupVar() {
 	fi
 }
 
-#if [ "$IsWindows" == "true" ] ; then
+#if [[ "$MalterlibPlatform" == "Windows" ]] ; then
 	fixupVar MalterlibAutoBuild MALTERLIBAUTOBUILD
 	fixupVar MalterlibAutoBuildMTool MALTERLIBAUTOBUILDMTOOL
 	fixupVar MalterlibAutoBuildTestPutPath MALTERLIBAUTOBUILDTESTPUTPATH

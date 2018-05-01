@@ -20,7 +20,7 @@ Extension=MBuildSystem
 
 shift
 
-if [ "$IsOSX" == "true" ] ; then
+if [[ "$MalterlibPlatform" == "OSX" ]] ; then
 	# Setting Xcode build location to legacy
 	defaults write com.apple.dt.Xcode IDEBuildLocationStyle DeterminedByTargets
 fi

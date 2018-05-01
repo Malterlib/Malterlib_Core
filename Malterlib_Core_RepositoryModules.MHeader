@@ -41,19 +41,46 @@ Property.MalterlibModules "Core;@(Property.MalterlibModules)"
 	}
 }
 
-%Repository "MalterlibBinaries"
+Property
 {
-	Property.RepoName "@(this.Identity).git"
+	MalterlibBinaryRepositories "MalterlibBinaries_@(HostPlatformFamily)_@(HostArchitecture);@(MalterlibBinaryRepositories)"
+
+	MalterlibAllBinaryRepositories false // User: Set to true to sync all binary repositories.
+	{
+		!!MalterlibAllBinaryRepositories ""
+	}
+}
+
+Property
+{
+	!!MalterlibAllBinaryRepositories true
+
+	MalterlibBinaryRepositories "MalterlibBinaries_OSX_x64;@(MalterlibBinaryRepositories)"
+	MalterlibBinaryRepositories "MalterlibBinaries_Linux_x64;@(MalterlibBinaryRepositories)"
+	MalterlibBinaryRepositories "MalterlibBinaries_Linux_x86;@(MalterlibBinaryRepositories)"
+	MalterlibBinaryRepositories "MalterlibBinaries_Windows_x64;@(MalterlibBinaryRepositories)"
+	MalterlibBinaryRepositories "MalterlibBinaries_Windows_x86;@(MalterlibBinaryRepositories)"
+}
+
+%Repository "@(MalterlibBinaryRepositories)"
+{
+	Property
+	{
+		RepoName "@(this.Identity).git"
+		RepoPlatformFamily "@(this.Identity->ParseFormatString('{}_{}_{}', '{1}'))"
+		RepoArchitecture "@(this.Identity->ParseFormatString('{}_{}_{}', '{2}'))"
+		RepoDir "../../Binaries/Malterlib/@(RepoPlatformFamily)/@(RepoArchitecture)"
+	}
 	Repository
 	{
 		Type Malterlib
-		Location "@('../../Binaries/Malterlib'->MakeAbsolute())"
+		Location "@(RepoDir->MakeAbsolute())"
 		URL "@(Repository.MalterlibRoot)/@(RepoName)"
 		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
 		{
 			!MalterlibRemotePrefixes  ""
 		}
-		Remotes "malterlib=https://github.com/Malterlib/MalterlibBinaries.git;@(Repository.Remotes)"
+		Remotes "malterlib=https://github.com/Malterlib/@(RepoName);@(Repository.Remotes)"
 		{
 			&
 			{
@@ -66,18 +93,18 @@ Property.MalterlibModules "Core;@(Property.MalterlibModules)"
 
 %GenerateFile "mib"
 {
-	!Empty "@(MalterlibBinariesPath->FindFilesIn('mib'))"
+	!Empty "@('.'->FindFilesIn('mib'))"
 
 	Property
 	{
-		MalterlibBinariesPath "@(Builtin.BasePathAbsolute)/Binaries/Malterlib"
 		MibScriptFile "@(Builtin.BasePathAbsolute)/mib"
+		SourceScriptFile "@('mib'->MakeAbsolute())"
 	}
 
 	Property
 	{
 		Name "@(MibScriptFile)"
-		Contents "@(ReadFile('@(MalterlibBinariesPath)/mib'))"
+		Contents "@(ReadFile('@(SourceScriptFile)'))"
 		Executable true
 		UnixLineEnds true
 		UnicodeBOM false

@@ -62,10 +62,10 @@ if [ -x "$MLBuildPrebuild" ]; then
 	"./$MLBuildPrebuild" "$@"
 fi
 
-if [ "$IsWindows" == "true" ] ; then
+if [[ "$MalterlibPlatform" == "Windows" ]] ; then
 	"$DIR/PrebuildVisualStudio.sh" "$@"
 	exit $?
-elif [ "$IsOSX" == "true" ] || [ "$IsLinux" == "true" ]; then
+elif [[ "$MalterlibPlatform" == "OSX" ]] || [[ "$MalterlibPlatform" == "Linux" ]]; then
 	"$DIR/PrebuildXcode.sh" "$@"
 	exit $?
 else
