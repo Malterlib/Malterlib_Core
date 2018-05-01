@@ -6,7 +6,13 @@ ScriptDir="$PWD"
 
 set -e
 
-source ../../Scripts/Detect.sh
+if [ -e ../../Scripts/Detect.sh ]; then
+	source ../../Scripts/Detect.sh
+elif [[ "$MToolPath" != "" ]]; then
+	MToolExecutable="$MToolPath/MTool"
+else
+	MToolExecutable="$ScriptDir/MTool"
+fi
 
 if [[ "$MalterlibCompiledFiles" != "" ]]; then
 	DependenciesDirectory="$MalterlibCompiledFiles/Dependencies"
