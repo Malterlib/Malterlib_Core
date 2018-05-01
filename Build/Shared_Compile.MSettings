@@ -714,6 +714,15 @@ Property
 
 Property
 {
+	MalterlibXcodeBuildArchitecture "@(MalterlibNativeClangArchitecture)"
+	MalterlibXcodeBuildArchitecture "x86_64"
+	{
+		!!PlatformFamily Linux
+	}
+}
+
+Property
+{
 	!!PlatformIsDarwin true
 
 	MalterlibNativeClangDarwinTarget "9"

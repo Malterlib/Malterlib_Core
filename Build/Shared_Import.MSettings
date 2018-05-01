@@ -83,6 +83,44 @@ Import
 		!!GeneratorFamily VisualStudio
 	}
 
+	CMake_Variables "CMAKE_TRY_COMPILE_PLATFORM_VARIABLES=CMAKE_EXE_LINKER_FLAGS_INIT;@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x86
+		}
+	}
+
+	CMake_Variables "CMAKE_EXE_LINKER_FLAGS_INIT=-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\";@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x86
+		}
+	}
+
+
+	CMake_Variables "CMAKE_STATIC_LINKER_FLAGS_INIT=-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\";@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x86
+		}
+	}
+
+
+	CMake_Variables "CMAKE_MODULE_LINKER_FLAGS_INIT=-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\";@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x86
+		}
+	}
+
 	CMake_SystemName "Darwin"
 	{
 		&
