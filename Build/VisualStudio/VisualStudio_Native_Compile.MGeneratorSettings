@@ -442,6 +442,13 @@
 				}
 			}
 		}		
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Name "AdditionalIncludeDirectories"
+			}
+		}
 	}
 }
 %GeneratorSetting "Native_MlTwk"
