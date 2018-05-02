@@ -139,6 +139,12 @@ if [[ "$MalterlibNoCore" != "true" ]] && ! [ -e Malterlib/Core ]; then
 	fi
 fi
 
+if ! [ -e ./Malterlib/Core/Scripts/Detect.sh ]; then
+	# Upgrade path
+	git -C Malterlib/Core fetch
+	git -C Malterlib/Core rebase 4b257ba80049200a5d8124fd21263153044670ec
+fi
+
 source ./Malterlib/Core/Scripts/Detect.sh
 if [[ "$MalterlibPlatform" ==  Windows ]]; then
 	mkdir -p /tmp
@@ -199,14 +205,16 @@ while true; do
 		fi
 
 		if ! [ -e BuildSystem/SafeMib/SafeMib.updated ]; then
-			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath" "BuildSystem/SafeMib/Binaries"
-			"$MToolExecutable" DiffCopy "Malterlib/Core/Scripts" "BuildSystem/SafeMib/Scripts"
+			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*.exe" "BuildSystem/SafeMib/Binaries"
+			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*.com" "BuildSystem/SafeMib/Binaries"
+			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*.dll" "BuildSystem/SafeMib/Binaries"
+			"$MToolExecutable" DiffCopy "Malterlib/Core/Scripts/*" "BuildSystem/SafeMib/Scripts"
 			"$MToolExecutable" TouchOrCreate "BuildSystem/SafeMib/SafeMib.updated"
 			ExcludePatterns="*/.git;*/.DS_Store"
 			"$MToolExecutable" BuildDependencies "OutputFile=$DependencyFile" "Output:BuildSystem/SafeMib/SafeMib.updated" "Input:${BASH_SOURCE[0]}" "Find:$MalterlibBinariesPath/*;RIF;33;Find:Malterlib/Core/Scripts/*;RIF;33;$ExcludePatterns"
 		fi
 
-		export MalterlibBinariesDir="$PWD/BuildSystem/SafMib/Binaries"
+		export MalterlibBinariesDir="$PWD/BuildSystem/SafeMib/Binaries"
 		ScriptsDir="$PWD/BuildSystem/SafeMib/Scripts"
 	fi
 
