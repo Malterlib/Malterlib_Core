@@ -41,12 +41,12 @@ if [[ "$MLBuildBuildSystemRoot" != "" ]]; then
 fi 
 
 source "$BuildSystemRoot/Malterlib/Core/Scripts/Detect.sh"
-export MToolPath="$MToolExecutable"
+export MToolPath="$MToolDirectory"
 
 if [[ "$MalterlibPlatform" ==  Windows ]]; then
-	if [[ "$MToolPath" != "$BuildSystemRoot/BuildSystem/SafeMib/Binaries/MTool" ]]; then
+	if [[ "$MToolPath" != "$BuildSystemRoot/BuildSystem/SafeMib/Binaries" ]]; then
 		"$BuildSystemRoot/mib" setup_only
-		export MToolPath="$BuildSystemRoot/BuildSystem/SafeMib/Binaries/MTool"
+		export MToolPath="$BuildSystemRoot/BuildSystem/SafeMib/Binaries"
 	fi
 
 	function p4()
