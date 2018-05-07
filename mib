@@ -113,6 +113,11 @@ function DetectRepoRoot()
 	fi
 }
 
+function GetMalterlibCoreHash()
+{
+	cat *.MRepo | grep 'Malterlib/Core ' | cut '-d ' -f 2 || true
+}
+
 if [[ "$MalterlibNoCore" != "true" ]] && ! [ -e Malterlib/Core ]; then
 	BootstrapInit
 	DetectRepoRoot
@@ -121,7 +126,7 @@ if [[ "$MalterlibNoCore" != "true" ]] && ! [ -e Malterlib/Core ]; then
 
 		OutputInfo "Cloning Malterlib/Core"
 
-		GitHash=`cat *.MRepo | grep 'Malterlib/Core ' | cut '-d ' -f 2 || true`
+		GitHash=`GetMalterlibCoreHash`
 		if [[ "$GitHash" != "" ]]; then
 			echo "Found commit hash in *.MRepo files: `OutputNote "$GitHash"`"
 
@@ -142,7 +147,19 @@ fi
 if ! [ -e ./Malterlib/Core/Scripts/Detect.sh ]; then
 	# Upgrade path
 	git -C Malterlib/Core fetch
-	git -C Malterlib/Core rebase 4b257ba80049200a5d8124fd21263153044670ec
+
+	GitHash=`GetMalterlibCoreHash`
+	if [[ "$GitHash" == "" ]]; then
+		OutputError "Cloud not find commit hash in *.MRepo, cannot upgrade"
+		exit 1
+	fi
+
+	if [[ "$MalterlibRepositoryHardReset" == "true" ]] || (git -C Malterlib/Core branch -r --contains HEAD > /dev/null && [ -z "$(git -C Malterlib/Core status --porcelain || echo no)" ]); then
+		git -C Malterlib/Core checkout -B master $GitHash
+	else
+		OutputError "Malterlib/Core is not clean, please resolve the situation before trying to upgrade"
+		exit 1
+	fi
 fi
 
 source ./Malterlib/Core/Scripts/Detect.sh
