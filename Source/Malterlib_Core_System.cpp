@@ -373,7 +373,6 @@ namespace NMib
 	
 	void CSystem::f_PrepareFork()
 	{
-		f_ThreadLocal_PrepareFork();
 #if DMibSysLogSeverities
 		if (m_pSystemLog)
 			m_pSystemLog->f_PrepareFork();
@@ -381,6 +380,7 @@ namespace NMib
 		if (m_pDefaultLogFile)
 			m_pDefaultLogFile->f_PrepareFork();
 #endif
+		f_ThreadLocal_PrepareFork();
 		fp_SubSystem_PrepareFork_BeforeMemoryManager();
 		f_MemoryManager_PrepareFork();
 		fp_SubSystem_PrepareFork_AfterMemoryManager();
@@ -394,6 +394,7 @@ namespace NMib
 		fp_SubSystem_ForkedChild_AfterMemoryManager();
 		f_MemoryManager_ForkedChild();
 		fp_SubSystem_ForkedChild_BeforeMemoryManager();
+		f_ThreadLocal_ForkedChild();
 #if DMibSysLogSeverities
 		if (m_pSystemLog)
 			m_pSystemLog->f_ForkedChild();
@@ -401,7 +402,6 @@ namespace NMib
 		if (m_pDefaultLogFile)
 			m_pDefaultLogFile->f_ForkedChild();
 #endif
-		f_ThreadLocal_ForkedChild();
 	}
 	void CSystem::f_ForkedParent()
 	{
@@ -410,6 +410,7 @@ namespace NMib
 		fp_SubSystem_ForkedParent_AfterMemoryManager();
 		f_MemoryManager_ForkedParent();
 		fp_SubSystem_ForkedParent_BeforeMemoryManager();
+		f_ThreadLocal_ForkedParent();
 #if DMibSysLogSeverities
 		if (m_pSystemLog)
 			m_pSystemLog->f_ForkedParent();
@@ -417,7 +418,6 @@ namespace NMib
 		if (m_pDefaultLogFile)
 			m_pDefaultLogFile->f_ForkedParent();
 #endif
-		f_ThreadLocal_ForkedParent();
 	}
 	
 	void CSystem::f_DestroyAggregates()
