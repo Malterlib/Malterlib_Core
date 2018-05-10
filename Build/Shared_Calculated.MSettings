@@ -372,6 +372,14 @@ Property
 			MalterlibCalcBranch "~@(MalterlibBaseSourcePath)/*"
 		}
 	}
+	MalterlibBranch "@(MalterlibGitBranch)"
+	{
+		&
+		{
+			MalterlibBranch ""
+			!MalterlibGitBranch ""
+		}
+	}
 	MalterlibBranch "@(MalterlibCalcBranch->Replace(':', ''))"
 	{
 		!!MalterlibBranch ""
@@ -385,6 +393,15 @@ Property
 	{
 		!MalterlibTaskStreamName ""
 	}
+	MalterlibFullBranch "@(MalterlibGitBranch)"
+	{
+		&
+		{
+			MalterlibFullBranch ""
+			!MalterlibGitBranch ""
+		}
+	}
+
 	MalterlibFullBranch "@(MalterlibCalcFullBranch)"
 	{
 		!!MalterlibFullBranch ""
