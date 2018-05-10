@@ -696,7 +696,7 @@ Property
 		}
 	}
 
-	MalterlibMSVCVersion "14.13.26128"
+	MalterlibMSVCVersion "14.14.26428"
 	{
 		!!MalterlibMSVCVersion ""
 	}

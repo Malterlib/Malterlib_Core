@@ -54,6 +54,8 @@ namespace
 				void *pDll = nullptr;
 				NMib::NThread::CEvent ThreadStarted;
 
+				NMib::NFile::CFile::fs_CreateDirectory(NMib::NFile::CFile::fs_GetProgramDirectory() / "DllStress");
+
 				ThreadStarted.f_ResetSignaled();
 
 				void (calling_convention_c *pTestFunc)() = nullptr;
@@ -208,6 +210,7 @@ namespace
 			};
 			DMibTestSuite("Dll stress")
 			{
+				NMib::NFile::CFile::fs_CreateDirectory(NMib::NFile::CFile::fs_GetProgramDirectory() / "DllStress");
 				for (int i = 0; i < 16; ++i)
 				{
 					void *pDll = nullptr;

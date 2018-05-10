@@ -24,7 +24,7 @@ extern "C"
 		using namespace NMib::NFile;
 		CFileChangeNotification FileChangeNotification;
 		//DMibTrace("ProgramDir: {}\n", CFile::fs_GetProgramDirectory());
-		FileChangeNotification.f_Open(CFile::fs_GetProgramDirectory(), EFileChange_Recursive | EFileChange_Write | EFileChange_FileName, nullptr);
+		FileChangeNotification.f_Open(CFile::fs_GetProgramDirectory() / "DllStress", EFileChange_Recursive | EFileChange_Write | EFileChange_FileName, nullptr);
 		FileChangeNotification.f_Close();
 	}
 }
