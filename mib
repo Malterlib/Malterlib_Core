@@ -222,13 +222,12 @@ while true; do
 		fi
 
 		if ! [ -e BuildSystem/SafeMib/SafeMib.updated ]; then
-			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*.exe" "BuildSystem/SafeMib/Binaries"
-			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*.com" "BuildSystem/SafeMib/Binaries"
-			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*.dll" "BuildSystem/SafeMib/Binaries"
-			"$MToolExecutable" DiffCopy "Malterlib/Core/Scripts/*" "BuildSystem/SafeMib/Scripts"
+			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*" "BuildSystem/SafeMib/Binaries" "" 1 1
+			"$MToolExecutable" DiffCopy "Malterlib/Core/Scripts/*" "BuildSystem/SafeMib/Scripts" "" 1 1
 			"$MToolExecutable" TouchOrCreate "BuildSystem/SafeMib/SafeMib.updated"
 			ExcludePatterns="*/.git;*/.DS_Store"
-			"$MToolExecutable" BuildDependencies "OutputFile=$DependencyFile" "Output:BuildSystem/SafeMib/SafeMib.updated" "Input:${BASH_SOURCE[0]}" "Find:$MalterlibBinariesPath/*;RIF;33;Find:Malterlib/Core/Scripts/*;RIF;33;$ExcludePatterns"
+
+			"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$DependencyFile\"`" "Output:`MalterlibConvertPath \"BuildSystem/SafeMib/SafeMib.updated\"`" "Input:`MalterlibConvertPath \"${BASH_SOURCE[0]}\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;Find:Malterlib/Core/Scripts/*;RIF;33;$ExcludePatterns"
 		fi
 
 		export MalterlibBinariesDir="$PWD/BuildSystem/SafeMib/Binaries"

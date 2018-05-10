@@ -43,6 +43,18 @@ function DoDetect()
 		echo $SysName is not supported platform
 		exit 1
 	fi
+	
+	if [[ "$MalterlibPlatform" ==  Windows ]] ; then
+		function MalterlibConvertPath()
+		{
+			cygpath -m "$1"
+		}
+	else
+		function MalterlibConvertPath()
+		{
+			echo "$1"
+		}
+	fi
 
 	if [[ "$MalterlibBinariesDir" != "" ]]; then
 		export MToolDirectory="$MalterlibBinariesDir"
@@ -54,6 +66,7 @@ function DoDetect()
 
 DoDetect
 
+export MalterlibConvertPath
 export MalterlibPlatform
 export MalterlibArch
 export MToolExecutable="$MToolDirectory/MTool"
