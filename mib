@@ -222,13 +222,17 @@ while true; do
 		fi
 
 		if ! [ -e BuildSystem/SafeMib/SafeMib.updated ]; then
+			echo Updating safe binaries
+
 			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*" "BuildSystem/SafeMib/Binaries" "" 1 1
 			"$MToolExecutable" DiffCopy "Malterlib/Core/Scripts/*" "BuildSystem/SafeMib/Scripts" "" 1 1
 			"$MToolExecutable" TouchOrCreate "BuildSystem/SafeMib/SafeMib.updated"
 			ExcludePatterns="*/.git;*/.DS_Store"
 
-			if [[ "$MalterlibConvertPath" != "" ]]; then
-				"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$DependencyFile\"`" "Output:`MalterlibConvertPath \"BuildSystem/SafeMib/SafeMib.updated\"`" "Input:`MalterlibConvertPath \"${BASH_SOURCE[0]}\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;Find:Malterlib/Core/Scripts/*;RIF;33;$ExcludePatterns"
+			if type MalterlibConvertPath > /dev/null; then
+				"$MToolExecutable" BuildDependencies "OutputFile=$DependencyFile" "Output:BuildSystem/SafeMib/SafeMib.updated" "Input:`MalterlibConvertPath \"${BASH_SOURCE[0]}\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;Find:Malterlib/Core/Scripts/*;RIF;33;$ExcludePatterns"
+			else
+				rm -f BuildSystem/SafeMib/SafeMib.updated
 			fi
 		fi
 
