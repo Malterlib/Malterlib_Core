@@ -3,6 +3,7 @@
 # Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BASH_SOURCE_FULL="$DIR/${BASH_SOURCE[0]##*/}"
 
 set -e
 
@@ -230,7 +231,7 @@ while true; do
 			ExcludePatterns="*/.git;*/.DS_Store"
 
 			if type MalterlibConvertPath > /dev/null; then
-				"$MToolExecutable" BuildDependencies "OutputFile=$DependencyFile" "Output:BuildSystem/SafeMib/SafeMib.updated" "Input:`MalterlibConvertPath \"${BASH_SOURCE[0]}\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;Find:Malterlib/Core/Scripts/*;RIF;33;$ExcludePatterns"
+				"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$DIR/$DependencyFile\"`" "Output:`MalterlibConvertPath \"$DIR/BuildSystem/SafeMib/SafeMib.updated\"`" "Input:`MalterlibConvertPath \"$BASH_SOURCE_FULL\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;$ExcludePatterns" "Find:`MalterlibConvertPath \"$DIR/Malterlib/Core/Scripts\"`/*;RIF;33;$ExcludePatterns"
 			else
 				rm -f BuildSystem/SafeMib/SafeMib.updated
 			fi
