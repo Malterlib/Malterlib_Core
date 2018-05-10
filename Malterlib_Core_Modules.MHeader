@@ -3,7 +3,7 @@
 
 Import "Malterlib_Core_RepositoryModules.MHeader"
 
-Property.MalterlibModules "Tools;Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Compression;Concurrency;Container;Contract;CrashReport;Cryptography;Daemon;Database;Debug;Desktop;Documentation;Encoding;Exception;File;Function;Graphics;Instrumentation;InterProcess;Intrusive;Iterator;Log;Memory;Meta;Meteor;Mongo;Network;Numeric;Perforce;Preprocessor;Process;SQL;STL;Security;Storage;Stream;String;System;Test;Thread;Time;Type;Web;XML;@(Property.MalterlibModules)"
+Property.MalterlibModules "Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Compression;Concurrency;Container;Contract;CrashReport;Cryptography;Daemon;Database;Debug;Desktop;Documentation;Encoding;Exception;File;Function;Graphics;Instrumentation;InterProcess;Intrusive;Iterator;Log;Memory;Meta;Meteor;Mongo;Network;Numeric;Perforce;Preprocessor;Process;SQL;STL;Security;Storage;Stream;String;System;Test;Thread;Time;Type;Web;XML;@(Property.MalterlibModules)"
 
 %Repository "MalterlibSDK"
 {
