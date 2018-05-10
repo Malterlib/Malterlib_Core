@@ -227,7 +227,9 @@ while true; do
 			"$MToolExecutable" TouchOrCreate "BuildSystem/SafeMib/SafeMib.updated"
 			ExcludePatterns="*/.git;*/.DS_Store"
 
-			"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$DependencyFile\"`" "Output:`MalterlibConvertPath \"BuildSystem/SafeMib/SafeMib.updated\"`" "Input:`MalterlibConvertPath \"${BASH_SOURCE[0]}\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;Find:Malterlib/Core/Scripts/*;RIF;33;$ExcludePatterns"
+			if [[ "$MalterlibConvertPath" != "" ]]; then
+				"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$DependencyFile\"`" "Output:`MalterlibConvertPath \"BuildSystem/SafeMib/SafeMib.updated\"`" "Input:`MalterlibConvertPath \"${BASH_SOURCE[0]}\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;Find:Malterlib/Core/Scripts/*;RIF;33;$ExcludePatterns"
+			fi
 		fi
 
 		export MalterlibBinariesDir="$PWD/BuildSystem/SafeMib/Binaries"
