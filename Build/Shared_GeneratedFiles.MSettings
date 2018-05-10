@@ -38,7 +38,7 @@ Property
 										"@(ScriptExport) \"PATH=${MalterlibBaseDir}Binaries/Malterlib/@(HostPlatformFamily)/@(HostArchitecture):$PATH\"\r\n"\
 										"function MTool()\r\n"\
 										"{\r\n"\
-										"	MTool.com \"$@\"\r\n"\
+										"	MTool.exe \"$@\"\r\n"\
 										"}\r\n"
 	{
 		!!ScriptWindowsBash true

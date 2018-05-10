@@ -56,7 +56,7 @@ if [[ "$MalterlibPlatform" ==  Windows ]]; then
 	export p4
 	function MTool()
 	{
-		MTool.com "$@"
+		MTool.exe "$@"
 	}
 	export MTool
 fi

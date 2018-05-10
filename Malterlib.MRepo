@@ -1,8 +1,8 @@
-../../Binaries/Malterlib/Linux/x64 605955e634e1aaa47f067b11493b8996e92f71cd
-../../Binaries/Malterlib/Linux/x86 8ba331fc765b10fda2fe1315afa52695c53e4027
-../../Binaries/Malterlib/OSX/x64 3996989cdca9bad82f98fe13dc0413da658ac69b
-../../Binaries/Malterlib/Windows/x64 5a3d7a36bec8662cf34deb926c06199eb974150c
-../../Binaries/Malterlib/Windows/x86 b92f183a2b2b9fbd2b15f7a28d001c9d3f67213f
+../../Binaries/Malterlib/Linux/x64 cb029f4460aa8dfd869022a2572597fb4364fd11
+../../Binaries/Malterlib/Linux/x86 cc46e65ef531466bb507191fea3603e3daee48f2
+../../Binaries/Malterlib/OSX/x64 951a3450f98abd8d701ebafba9927b4479d9aca9
+../../Binaries/Malterlib/Windows/x64 093813a4a1bb5941f05e46303af13a8dcb92078f
+../../Binaries/Malterlib/Windows/x86 b15c86baba5513657fac850720dee7f27adc92e0
 ../../SDK d983b7f63c08af3cfdc3e5bbb4c97bdd8b3614f7
 ../Algorithm 85e40b02987d6f98d9e5a480bbe668b166358aed
 ../Atomic 682d55c5a8acd745cb21ffb272195b65918026e7
@@ -34,8 +34,8 @@
 ../Memory 8199624eb3cb8e66303ad65e5a9422cee1624f17
 ../Meta 3a4732da77a9c3f12ba9d2848401e0236581c00f
 ../Meteor 23425932cdfcc1a8892032c5d9d37194b9e156c7
-../Mongo cb79d11badde2194f09bb42e1d6413aea4226079
-../Network a976246e25971b31aa49c61e3ad249addfede2b5
+../Mongo af38bf7a204fe9d35318cf818a76af818a96c809
+../Network 1576f64add76cd2f0d99e55b381665d6c9a2e3dd
 ../Numeric 3ad2be9e610b023adc887ef2355fc41bf7c20360
 ../Perforce f287c62f04b5a054726d43bed1be7efdf59f5b34
 ../Preprocessor f095184b1fd02f406afb19f2c0c971d891df691f

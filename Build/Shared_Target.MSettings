@@ -2412,7 +2412,7 @@ Property
 	MalterlibBinariesDirectory "@('../../../Binaries/Malterlib'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
 	MToolDirectory "@('../../../Binaries/Malterlib'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
 
-	MToolPath "@(MToolDirectory)/MTool.com"
+	MToolPath "@(MToolDirectory)/MTool.exe"
 	{
 		!!PlatformFamily Windows
 	}
