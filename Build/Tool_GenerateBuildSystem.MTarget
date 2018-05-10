@@ -153,7 +153,7 @@
 								"IF \"%DisableProjectGen%\" == \"1\" GOTO Skip\r\n"\
 								":RetryGeneration\r\n"\
 								"cd @(Builtin.BasePathAbsolute->WindowsPath())\r\n"\
-								"\"@(Builtin.MToolCom)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(Builtin.GeneratedBuildSystemDir)\" Action=%1 UseCachedEnvironment=true\r\n"\
+								"\"@(Builtin.MToolExe)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(Builtin.GeneratedBuildSystemDir)\" Action=%1 UseCachedEnvironment=true\r\n"\
 								"IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n"
 					{
 						&
@@ -164,7 +164,7 @@
 					}
 
 
-					MToolDirectory "@(Builtin.MToolCom->GetPath())"
+					MToolDirectory "@(Builtin.MToolExe->GetPath())"
 					IsSafeMTool true
 					{
 						!!MToolDirectory "@(Builtin.BasePathAbsolute)/BuildSystem/Binaries/General/Windows"
@@ -177,13 +177,13 @@
 					ExcludePatterns "*/.git;*/.DS_Store"
 
 					Contents	"@(Contents)"\
-								"if exist \"@(DependencyFile)\" \"@(Builtin.MToolCom)\" CheckDependencies Verbose=true \"Directory=@(BuildSystemBasePath)/Binaries\"\r\n"\
+								"if exist \"@(DependencyFile)\" \"@(Builtin.MToolExe)\" CheckDependencies Verbose=true \"Directory=@(BuildSystemBasePath)/Binaries\"\r\n"\
 								"if not exist \"@(UpdatedFile)\" (\r\n"\
 								"	echo Updated needed\r\n"\
-								"	\"@(Builtin.MToolCom)\" DiffCopy \"@(BinariesPath)/General/Windows\" \"@(BuildSystemBasePath)/Binaries/General\"\r\n"\
-								"	\"@(Builtin.MToolCom)\" DiffCopy \"@(BinariesPath)/*.sh\" \"@(BuildSystemBasePath)/Binaries\" \"\" 0\r\n"\
-								"	\"@(Builtin.MToolCom)\" TouchOrCreate \"@(UpdatedFile)\"\r\n"\
-								"	\"@(Builtin.MToolCom)\" BuildDependencies \"OutputFile=@(DependencyFile)\" \"Output:@(UpdatedFile)\" \"Input:@(Builtin.BasePathAbsolute)/mib\" \"Find:@(BinariesPath)/*;RIF;33;@(ExcludePatterns)\"\r\n"\
+								"	\"@(Builtin.MToolExe)\" DiffCopy \"@(BinariesPath)/General/Windows\" \"@(BuildSystemBasePath)/Binaries/General\"\r\n"\
+								"	\"@(Builtin.MToolExe)\" DiffCopy \"@(BinariesPath)/*.sh\" \"@(BuildSystemBasePath)/Binaries\" \"\" 0\r\n"\
+								"	\"@(Builtin.MToolExe)\" TouchOrCreate \"@(UpdatedFile)\"\r\n"\
+								"	\"@(Builtin.MToolExe)\" BuildDependencies \"OutputFile=@(DependencyFile)\" \"Output:@(UpdatedFile)\" \"Input:@(Builtin.BasePathAbsolute)/mib\" \"Find:@(BinariesPath)/*;RIF;33;@(ExcludePatterns)\"\r\n"\
 								"	if exist \"@(UpdatedFile)\" GOTO RetryGeneration\r\n"\
 								")\r\n"
 					{
