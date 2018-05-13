@@ -3,6 +3,11 @@
 
 Repository
 {
+	NoPushRemotes "upstream*"
+	{
+		!!Repository.NoPushRemotes ""
+	}
+
 	DefaultRoot "https://github.com/@(Repository.GithubCompany)"
 	{
 		&
