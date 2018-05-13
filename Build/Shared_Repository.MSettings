@@ -1,6 +1,35 @@
 // Copyright © 2016 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+Property
+{
+	MalterlibRepositoryEditor "" // User(Tools)="open -a SourceTree {}": Specify the editor to use for repositories. {} is replaced with the repository directory. The tool is launched from the repository directory.
+	{
+		!!MalterlibRepositoryEditor ""
+	}
+}
+Property
+{
+	!!HostPlatformFamily OSX
+
+	MalterlibRepositoryEditor "/usr/local/bin/fork status"
+	{
+		&
+		{
+			MalterlibRepositoryEditor ""
+			!Empty "@('/usr/local/bin'->FindFilesIn('fork'))"
+		}
+	}
+	MalterlibRepositoryEditor "open -a SourceTree {}"
+	{
+		&
+		{
+			MalterlibRepositoryEditor ""
+			!Empty "@('/Applications'->FindDirectoriesIn('SourceTree.app'))"
+		}
+	}
+}
+
 Repository
 {
 	NoPushRemotes "upstream*"
