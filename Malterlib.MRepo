@@ -1,8 +1,8 @@
-../../Binaries/Malterlib/Linux/x64 a449447fc434bf251d11a3aa2ed23114ee205114
-../../Binaries/Malterlib/Linux/x86 5a4634dfbeb8dd11fde1283f4e8cd2f3f8b647f7
-../../Binaries/Malterlib/OSX/x64 bb840193ef58d97cd7fb8c7ed36d9b57c696e585
-../../Binaries/Malterlib/Windows/x64 cc254350726f93fcb7e794d12c479206b0cb0156
-../../Binaries/Malterlib/Windows/x86 46ee4fa5c06be4eade42354b5657aab67475e372
+../../Binaries/Malterlib/Linux/x64 da2ddea6e97c2fccda22c6d21deda334656e43a8
+../../Binaries/Malterlib/Linux/x86 354c4391a11923d4d1cfe96fbb6a429712a58cb2
+../../Binaries/Malterlib/OSX/x64 50bd80516a05dac596018e34fbda7715b5651a91
+../../Binaries/Malterlib/Windows/x64 804d0a106be93922496159da069edd7c1ef62ad4
+../../Binaries/Malterlib/Windows/x86 eff1499a6edea90ccab3adc0c2b07e5b1c912c39
 ../../SDK d983b7f63c08af3cfdc3e5bbb4c97bdd8b3614f7
 ../Algorithm 85e40b02987d6f98d9e5a480bbe668b166358aed
 ../Atomic 682d55c5a8acd745cb21ffb272195b65918026e7
