@@ -557,7 +557,7 @@ Property
 		!!DocumentationEnabled true
 	}
 
-	Malterlib_RefcountDebugging_Enable "false" // User: Set to true to enable shared pointer reference debugging
+	Malterlib_RefcountDebugging_Enable "false" // User(Debug)=true: Set to true to enable shared pointer reference debugging
 	{
 		!!Malterlib_RefcountDebugging_Enable ""
 	}
@@ -572,7 +572,7 @@ Property
 			!Tests "Perf Tests"
 		}
 	}
-	Malterlib_Tests_Enable "true" // User: Force enable or disable of tests (set to true or false)
+	Malterlib_Tests_Enable "true" // User(Tests)=true: Force enable or disable of tests (set to true or false)
 	{
 		!!Malterlib_Tests_Enable ""
 	}
@@ -587,7 +587,7 @@ Property
 			!Tests "Tests"
 		}
 	}
-	Malterlib_Contracts_Enable "true" // User: Force enable or disable of contracts (set to true or false)
+	Malterlib_Contracts_Enable "true" // User(Debug)=false: Force enable or disable of contracts (set to true or false)
 	{
 		!!Malterlib_Contracts_Enable ""
 	}
@@ -599,7 +599,7 @@ Property
 			DebugCode "false"
 		}
 	}
-	MalterlibMemory_Shims_Enable "true" // User: Force enable or disable of memory shims (set to true or false). Also used for enabling remote debugger support currently
+	MalterlibMemory_Shims_Enable "true" // User(Debug): Force enable or disable of memory shims (set to true or false). Also used for enabling remote debugger support currently
 	{
 		!!MalterlibMemory_Shims_Enable ""
 	}
@@ -613,32 +613,32 @@ Property
 			!Tests "Tests"
 		}
 	}
-	MalterlibMemory_Shims_EnableLocal "true" // User: Enable thread local memory reporters. Used in for example tests to track memory in local scopes
+	MalterlibMemory_Shims_EnableLocal "true" // User(Debug)=false: Enable thread local memory reporters. Used in for example tests to track memory in local scopes
 	{
 		!!MalterlibMemory_Shims_EnableLocal ""
 	}
 
-	MalterlibMemory_Shims_EnableGlobal "true" // User: Enable global memory reporter. Used for for example remote debugger support
+	MalterlibMemory_Shims_EnableGlobal "true" // User(Debug)=false: Enable global memory reporter. Used for for example remote debugger support
 	{
 		!!MalterlibMemory_Shims_EnableGlobal ""
 	}
 
-	MalterlibMemoryManager_Stats_Enable "false" // User: Report statistics about memory allocations at the end of the program
+	MalterlibMemoryManager_Stats_Enable "false" // User(Memory Manager)=true: Report statistics about memory allocations at the end of the program
 	{
 		!!MalterlibMemoryManager_Stats_Enable ""
 	}
 
-	MalterlibMemoryManager_CrossModule_Enable	"true" // User: Enables cross module memory manager that shares the memory manager in all dlls with the executables memory manager
+	MalterlibMemoryManager_CrossModule_Enable	"true" // User(Memory Manager)=false: Enables cross module memory manager that shares the memory manager in all dlls with the executables memory manager
 	{
 		!!MalterlibMemoryManager_CrossModule_Enable ""
 	}
 
-	MalterlibMemoryManager_HugePage_Enable	"false" // User: Enables transparent huge page support on Linux
+	MalterlibMemoryManager_HugePage_Enable	"false" // User(Memory Manager)=true: Enables transparent huge page support on Linux
 	{
 		!!MalterlibMemoryManager_HugePage_Enable ""
 	}
 
-	MalterlibMemoryManager_Stats_EnableCallstack "false" // User: Dump  statistics about memory allocations callstacks
+	MalterlibMemoryManager_Stats_EnableCallstack "false" // User(Memory Manager)=true: Dump statistics about memory allocations callstacks
 	{
 		!!MalterlibMemoryManager_Stats_EnableCallstack ""
 	}
@@ -652,7 +652,7 @@ Property
 			DebugCode true
 		}
 	}
-	MalterlibMemoryManager_Stats_EnableCategories "false" // User: Dump statistics about memory allocations through categories
+	MalterlibMemoryManager_Stats_EnableCategories "false" // User(Memory Manager)=true: Dump statistics about memory allocations through categories
 	{
 		!!MalterlibMemoryManager_Stats_EnableCategories ""
 	}

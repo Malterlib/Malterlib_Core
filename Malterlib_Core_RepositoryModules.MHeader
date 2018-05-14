@@ -10,6 +10,14 @@ Property
 }
 
 Property.MalterlibModules "Core;@(Property.MalterlibModules)"
+Property.MalterlibRemotePrefixes "" // User(Repository)="remoteexample=https://gitlab.example.com/Malterlib;@(Repository.Remotes)": Specify extra Malterlib remotes
+{
+	!!MalterlibRemotePrefixes ""
+}
+Property.MalterlibUpstreamAccess "" // User(Repository)=true: Set to true if you have access to https://github.com/Malterlib
+{
+	!!MalterlibRemotePrefixes ""
+}
 
 %Repository "@(MalterlibModules)"
 {
@@ -45,7 +53,7 @@ Property
 {
 	MalterlibBinaryRepositories "MalterlibBinaries_@(HostPlatformFamily)_@(HostArchitecture);@(MalterlibBinaryRepositories)"
 
-	MalterlibAllBinaryRepositories false // User: Set to true to sync all binary repositories.
+	MalterlibAllBinaryRepositories false // User(Repository)=true: Set to true to sync all binary repositories.
 	{
 		!!MalterlibAllBinaryRepositories ""
 	}

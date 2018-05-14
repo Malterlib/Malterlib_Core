@@ -971,7 +971,7 @@ Target
 
 Property
 {
-	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem "" // User: Init early support. Currently breaks OSX 10.12
+	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem "" // User(Undocumented)=true: Init early support. Currently breaks OSX 10.12
 	{
 		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem ""
 	}

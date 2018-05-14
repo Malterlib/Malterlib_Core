@@ -344,7 +344,7 @@ Target
 
 Property
 {
-	MalterlibUseClangForWindows false // User: Enable clang compilation for Windows platform
+	MalterlibUseClangForWindows false // User(Toolset)=true: Enable clang compilation for Windows platform
 	{
 		!!MalterlibUseClangForWindows ""
 	}
@@ -484,7 +484,7 @@ Target
 
 Property
 {
-	MalterlibVisualStudioToolset "" // User: Manually set another visual studio toolset
+	MalterlibVisualStudioToolset "" // User(Toolset)=: Manually set another visual studio toolset
 	{
 		!!MalterlibVisualStudioToolset ""
 	}
@@ -673,7 +673,7 @@ Property
 
 Property
 {
-	MalterlibLinkerDemangle true // User: Set to false to display mangled names in linker messages
+	MalterlibLinkerDemangle true // User(Toolset)=false: Set to false to display mangled names in linker messages
 	{
 		!!MalterlibLinkerDemangle ""
 	}
@@ -702,7 +702,7 @@ Property
 	}
 
 
-	PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc" // User: Change the clang compiler location
+	PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc" // User(Toolset): Change the clang compiler location
 	{
 		&
 		{
@@ -711,7 +711,7 @@ Property
 			!HostPlatformFamily Windows
 		}
 	}
-	PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang" // User: Change the clang compiler location
+	PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang"
 	{
 		&
 		{
@@ -2185,7 +2185,7 @@ Target
 
 Property
 {
-	MalterlibSeparatePostCopyPerPlatfrom true // User: Enable separate post copy projects when building for non-host platforms 
+	MalterlibSeparatePostCopyPerPlatfrom true // User(Build System)=false: Enable separate post copy projects when building for non-host platforms
 	{
 		!!MalterlibSeparatePostCopyPerPlatfrom ""
 	}
@@ -3578,7 +3578,7 @@ Property
 {
 	MalterlibDumpSymsCommand "dump_syms"
 	
-	MalterlibPostBuildScriptShowEnv "false" // User: Enable to show the environment variables of the build environment
+	MalterlibPostBuildScriptShowEnv "false" // User(Build System)=true: Enable to show the environment variables of the build environment
 	{
 		!!MalterlibPostBuildScriptShowEnv ""
 	}

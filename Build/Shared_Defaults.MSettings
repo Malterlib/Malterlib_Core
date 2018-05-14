@@ -98,7 +98,7 @@ Property
 		}
 	}
 
-	MalterlibNoOSXCrossModuleExceptions "true" // User: Disables catching of exception across modules on OSX. This will bring in libunwind statically (default true)
+	MalterlibNoOSXCrossModuleExceptions "true" // User(Undocumented)=false: Disables catching of exception across modules on OSX. This will bring in libunwind statically (default true)
 	{
 		&
 		{
@@ -107,22 +107,22 @@ Property
 		}
 	}
 
-	MalterlibMaxSupportedWindowsVersion "10.0.15063.0" // User: Max supported Windows version.
+	MalterlibMaxSupportedWindowsVersion "10.0.15063.0" // User(Platform Version): Max supported Windows version.
 	{
 		!!MalterlibMaxSupportedWindowsVersion ""
 	}
 
-	MalterlibMaxSupportedOSXVersion "10.13" // User: Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMaxSupportedOSXVersion "10.13" // User(Platform Version): Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 	{
 		!!MalterlibMaxSupportedOSXVersion ""
 	}
 	
-    MalterlibMaxSupportediOSVersion "8.1" // User: Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+    MalterlibMaxSupportediOSVersion "8.1" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 	{
 		!!MalterlibMaxSupportediOSVersion ""
 	}
 	
-    MalterlibAllSchemes "" // User: Enable to generate schemes for all targets, even targets without debug commands
+    MalterlibAllSchemes "" // User(Build System)=true: Enable to generate schemes for all targets, even targets without debug commands
 	{
 		!!MalterlibAllSchemes ""
 	}
@@ -135,23 +135,23 @@ Property
 	{
 		!!MalterlibSigning ""
 	}
-	MalterlibSignIncludeCert "@(Builtin.BasePathAbsolute)/Settings/Certificates/MSCV-GlobalSign.cer" // User: Set this to 'none' to disable incude cert for development
+	MalterlibSignIncludeCert "@(Builtin.BasePathAbsolute)/Settings/Certificates/MSCV-GlobalSign.cer" // User(Signing): Set this to 'none' to disable incude cert for development
 	{
 		!!MalterlibSignIncludeCert ""
 	}
-	MalterlibSignTimestampServer "http://timestamp.globalsign.com/scripts/timestamp.dll" // User: Timestamp server to use when signing windows executables
+	MalterlibSignTimestampServer "http://timestamp.globalsign.com/scripts/timestamp.dll" // User(Signing): Timestamp server to use when signing windows executables
 	{
 		!!MalterlibSignTimestampServer ""
 	}
-	MalterlibSignTimestampServerRFC3161 "" // User: RFC 3161 Timestamp server to use when signing windows executables. This will override any setting in MalterlibSignTimestampServer
+	MalterlibSignTimestampServerRFC3161 "" // User(Signing): RFC 3161 Timestamp server to use when signing windows executables. This will override any setting in MalterlibSignTimestampServer
 	{
 		!!MalterlibSignTimestampServerRFC3161 ""
 	}
-	MalterlibSignCertWindows "Hansoft AB" // User: Set this to your local certificate for driver development
+	MalterlibSignCertWindows "Unknown Company" // User(Signing)="Name of cert": Set this to your local certificate for driver development
 	{
 		!!MalterlibSignCertWindows ""
 	}
-	MalterlibSignCertOSX "3f44c9ec9e8cf380146e7ecf696d8fe2651fc22f" // User: Set this to your Developer ID cert for driver development
+	MalterlibSignCertOSX "-" // User(Signing)=SHA1OfCert: Set this to your Developer ID cert for driver development
 	{
 		!!MalterlibSignCertOSX ""
 	}    
@@ -216,7 +216,7 @@ Property
 		!!MalterlibBuildServerBuild ""
 	}
 
-	MalterlibSupportSanitizers "false" // User: Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
+	MalterlibSupportSanitizers "false" // User(Debug): Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
 	{
 		!!MalterlibSupportSanitizers ""
 	}
@@ -230,12 +230,12 @@ Property
 		}
 	}
 
-	MalterlibDefaultToolset "false" // User: Use default Xcode toolset with no custom modifications to libc++ or clang
+	MalterlibDefaultToolset "false" // User(Undocumented)=true: Use default Xcode toolset with no custom modifications to libc++ or clang
 	{
 		!!MalterlibDefaultToolset ""
 	}
 
-	MalterlibDefaultCompiler "false" // User: Use default Xcode compiler
+	MalterlibDefaultCompiler "false" // User(Undocumented)=true: Use default Xcode compiler
 	{
 		&
 		{
@@ -267,12 +267,12 @@ Property
 		}
 	}
 
-	MalterlibCustomCompilerOptions "false" // User: Use custom compiler options only available in patched compiler
+	MalterlibCustomCompilerOptions "false" // User(Undocumented)=true: Use custom compiler options only available in patched compiler
 	{
 		!!MalterlibCustomCompilerOptions ""
 	}
 
-	MalterlibDefaultXcode "true" // User: Use default Xcode clang compiler specifications
+	MalterlibDefaultXcode "true" // User(Undocumented)=false: Use default Xcode clang compiler specifications
 	{
 		!!MalterlibDefaultXcode ""
 	}
@@ -291,7 +291,7 @@ Property
 			}
 		}
 	}
-	MalterlibUseStaticLibCxxABI false // User: Enables static libc++abi
+	MalterlibUseStaticLibCxxABI false // User(Toolset)=false: Enables static libc++abi
 	{
 		!!MalterlibUseStaticLibCxxABI ""
 	}
@@ -330,7 +330,7 @@ Property
 		}
 	}
 
-	MalterlibUseStaticLibCxx false // User: Enables static libc++
+	MalterlibUseStaticLibCxx false // User(Toolset)=false: Enables static libc++
 	{
 		!!MalterlibUseStaticLibCxx ""
 	}
@@ -344,12 +344,12 @@ Property
 		}
 	}
 
-	MalterlibMemoryManager "Malterlib" // User: Choose the memory manager. Options: Malterlib, System, OverwriteCheck, DLMalloc, LLAlloc (default Malterlib)
+	MalterlibMemoryManager "Malterlib" // User(Memory Manager)=OverwriteCheck: Choose the memory manager. Options: Malterlib, System, OverwriteCheck, DLMalloc, LLAlloc (default Malterlib)
 	{
 		!!MalterlibMemoryManager ""
 	}
 
-	MalterlibMemoryManager_AlwaysRelease "true" // User: Enable memory manager to always be compile as if release config (default true)
+	MalterlibMemoryManager_AlwaysRelease "true" // User(Memory Manager)=false: Enable memory manager to always be compile as if release config (default true)
 	{
 		&
 		{
@@ -358,42 +358,42 @@ Property
 		}
 	}
 	
-	MalterlibMemoryManager_Debug "" // User: Enable Enable debug memory manager that reports leaks and checks for overwrites. Toggling will recompile everything. (default true in debug configs, false otherwise)
+	MalterlibMemoryManager_Debug "" // User(Memory Manager)=true: Enable Enable debug memory manager that reports leaks and checks for overwrites. Toggling will recompile everything. (default true in debug configs, false otherwise)
 	{
 		!!MalterlibMemoryManager_Debug ""
 	}
 
-	MalterlibMemoryManager_Debug_Features "" // User: Global toggle for debug memory manager. Can be toggled without recompiling everything.
+	MalterlibMemoryManager_Debug_Features "" // User(Memory Manager)=false: Global toggle for debug memory manager. Can be toggled without recompiling everything.
 	{
 		!!MalterlibMemoryManager_Debug_Features ""
 	}
 	
-	MalterlibMemoryManager_Debug_EnableFreeValidation false // User: Enable validation of freed blocks. Detects double frees and invalid frees. High impact on performance. (default false)
+	MalterlibMemoryManager_Debug_EnableFreeValidation false // User(Memory Manager)=true: Enable validation of freed blocks. Detects double frees and invalid frees. High impact on performance. (default false)
 	{
 		!!MalterlibMemoryManager_Debug_EnableFreeValidation ""
 	}
 	
-	MalterlibMemoryManager_Debug_EnableMemoryLeaks false // User: Enables listing of memory leaks. High impact on performance. (default false)
+	MalterlibMemoryManager_Debug_EnableMemoryLeaks false // User(Memory Manager)=true: Enables listing of memory leaks. High impact on performance. (default false)
 	{
 		!!MalterlibMemoryManager_Debug_EnableMemoryLeaks ""
 	}
 	
-	MalterlibMemoryManager_Debug_EnableStackTrace false // User: Enable stack trace in debug heap (default false)
+	MalterlibMemoryManager_Debug_EnableStackTrace false // User(Memory Manager)=true: Enable stack trace in debug heap (default false)
 	{
 		!!MalterlibMemoryManager_Debug_EnableStackTrace ""
 	}
 
-	MalterlibMemoryManager_Debug_EnableFreedGuards true // User: Enable checks for overwritten freed memory in debug heap (0xDD pattern) (default true)
+	MalterlibMemoryManager_Debug_EnableFreedGuards true // User(Memory Manager)=false: Enable checks for overwritten freed memory in debug heap (0xDD pattern) (default true)
 	{
 		!!MalterlibMemoryManager_Debug_EnableFreedGuards ""
 	}
 	
-	MalterlibMemoryManager_Debug_EnableAllocatedFill true // User: Enable filling of allocated bytes in debug heap (0xCD pattern) (default true)
+	MalterlibMemoryManager_Debug_EnableAllocatedFill true // User(Memory Manager)=false: Enable filling of allocated bytes in debug heap (0xCD pattern) (default true)
 	{
 		!!MalterlibMemoryManager_Debug_EnableAllocatedFill ""
 	}
 
-	MalterlibMemoryManager_Debug_EnableEdgeGuards true // User: Enable checks for overwritten memory before and after allocated blocks (0xFD pattern) (default true). If disabled, also disables stack traces, leak checks 
+	MalterlibMemoryManager_Debug_EnableEdgeGuards true // User(Memory Manager)=false: Enable checks for overwritten memory before and after allocated blocks (0xFD pattern) (default true). If disabled, also disables stack traces, leak checks
 	{
 		!!MalterlibMemoryManager_Debug_EnableEdgeGuards ""
 	}
@@ -412,7 +412,7 @@ Property
 		}
 	}
 
-	MalterlibMemoryManager_OverrideSystemMalloc false // User: Override the default malloc
+	MalterlibMemoryManager_OverrideSystemMalloc false // User(Memory Manager)=true: Override the default malloc
 	{
 		!!MalterlibMemoryManager_OverrideSystemMalloc ""
 	}
@@ -480,19 +480,19 @@ Property
 		}
 	}
 	*/
-	MalterlibThread_LinuxUseStaticThreadLocal false // User: Use static thread locals on Linux. WARNING: This only works for executables, or load time dynamic libraries. Dynamic libraries loaded with dlopen() will not work, unless Malterlib_AssumeMalterlibHost is also specified.
+	MalterlibThread_LinuxUseStaticThreadLocal false // User(Undocumented)=true: Use static thread locals on Linux. WARNING: This only works for executables, or load time dynamic libraries. Dynamic libraries loaded with dlopen() will not work, unless Malterlib_AssumeMalterlibHost is also specified.
 	{
 		!!MalterlibThread_LinuxUseStaticThreadLocal ""
 	}
-	MalterlibThread_LinuxAssumeGlibc true // User: Executable will only work on glibc system. Speeds up thread self access.
+	MalterlibThread_LinuxAssumeGlibc true // User(Undocumented)=false: Executable will only work on glibc system. Speeds up thread self access.
 	{
 		!!MalterlibThread_LinuxAssumeGlibc ""
 	}
-	Malterlib_AssumeMalterlibHost false // User: Dynamic libraries will only work when loaded from a process that uses Malterlib. Speeds up thread local access.
+	Malterlib_AssumeMalterlibHost false // User(Undocumented)=true: Dynamic libraries will only work when loaded from a process that uses Malterlib. Speeds up thread local access.
 	{
 		!!Malterlib_AssumeMalterlibHost ""
 	}
-	Malterlib_LinuxUseGoldLinker true // User: Use gold linker
+	Malterlib_LinuxUseGoldLinker true // User(Toolset)=false: Use gold linker
 	{
 		!!Malterlib_LinuxUseGoldLinker ""
 	}

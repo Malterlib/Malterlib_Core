@@ -779,7 +779,7 @@ Property
 
 Property 
 {
-	MalterlibFullSymbolsOnLinux "false" // User: Enable full symbol generation on Linux
+	MalterlibFullSymbolsOnLinux "false" // User(Toolset)=true: Enable full symbol generation on Linux
 	{
 		!!MalterlibFullSymbolsOnLinux ""
 	}
@@ -820,7 +820,7 @@ Compile
 
 Property
 {
-	MalterlibVerboseTemplateErrors "false" // User: Enabled more verbose template errors for clang
+	MalterlibVerboseTemplateErrors "false" // User(Toolset)=true: Enabled more verbose template errors for clang
 	{
 		!!MalterlibVerboseTemplateErrors ""
 	}
@@ -1160,7 +1160,7 @@ Compile
 	
 	SearchPath "@(Compile.SearchPath);@(Builtin.Inherit)"
 	
-	Verbose false // User: Enables output of cc1 command line
+	Verbose false // User(Toolset)=true: Enables output of cc1 command line
 	{
 		&
 		{
