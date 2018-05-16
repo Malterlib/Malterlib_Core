@@ -56,7 +56,7 @@
       
       EchoOff="true"
       
-      ToolArchitecture                ="Native32Bit"
+      ToolArchitecture                ="Native64Bit"
       TrackFileAccess                 ="$(TrackFileAccess)"
       />
   </Target>
@@ -129,7 +129,7 @@
       
       EchoOff="true"
       
-      ToolArchitecture                ="Native32Bit"
+      ToolArchitecture                ="Native64Bit"
       TrackFileAccess                 ="$(TrackFileAccess)"
       />
   </Target>
