@@ -33,6 +33,44 @@ Property
 		}
 	}
 }
+Property
+{
+	!!HostPlatformFamily Windows
+
+/*	ForkDirectory "@(USERPROFILE)/AppData/Local/Fork"
+	MalterlibRepositoryEditor "@(ForkDirectory)/Fork.exe status"
+	{
+		&
+		{
+			MalterlibRepositoryEditor ""
+			!Empty "@(ForkDirectory->FindFilesIn('Fork.exe'))"
+		}
+	}*/
+
+	SourceTreeDirectory "@(USERPROFILE)/AppData/Local/SourceTree"
+	MalterlibRepositoryEditor "@(SourceTreeDirectory)/SourceTree.exe -f {} status"
+	{
+		&
+		{
+			MalterlibRepositoryEditor ""
+			!Empty "@(SourceTreeDirectory->FindFilesIn('SourceTree.exe'))"
+		}
+	}
+	MalterlibRepositoryEditorSequential true
+	{
+		!!MalterlibRepositoryEditor "@(SourceTreeDirectory)/SourceTree.exe -f {} status"
+	}
+	MalterlibRepositoryEditorWorkingDir "@(SourceTreeDirectory)"
+	{
+		!!MalterlibRepositoryEditor "@(SourceTreeDirectory)/SourceTree.exe -f {} status"
+	}
+	MalterlibRepositoryEditorSleep "1.0"
+	{
+		!!MalterlibRepositoryEditor "@(SourceTreeDirectory)/SourceTree.exe -f {} status"
+	}
+}
+
+
 
 Repository
 {
