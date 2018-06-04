@@ -175,6 +175,13 @@ if [ -e "$MalterlibBinariesPath" ]; then
 	find "$DIR/$MalterlibBinariesPath" -maxdepth 0 -type d -empty -exec rmdir {} \;
 fi
 
+BootstrapVersion="1"
+
+if ! [ -e "$MalterlibBinariesPath/Bootstrap.version" ] || [[ `cat "$MalterlibBinariesPath/Bootstrap.version"` != "$BootstrapVersion" ]]; then
+	echo Removing binaries because they are not compatible with current bootstrap process
+	rm -rf "$MalterlibBinariesPath"
+fi
+
 if ! [ -e "$MalterlibBinariesPath" ]; then
 	BootstrapInit
 	DetectRepoRoot
