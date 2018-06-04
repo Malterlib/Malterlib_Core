@@ -70,6 +70,18 @@ Property
 	MalterlibBinaryRepositories "MalterlibBinaries_Windows_x86;@(MalterlibBinaryRepositories)"
 }
 
+%Repository "."
+{
+	!!MalterlibIsGitRepository true
+
+	Repository
+	{
+		Type "Root"
+		Location "@(Builtin.BasePathAbsolute)"
+		URL "@(MalterlibGitOriginRemote)"
+	}
+}
+
 %Repository "@(MalterlibBinaryRepositories)"
 {
 	Property

@@ -347,8 +347,8 @@ Property
 	{
 		!!MalterlibBaseSourcePath ""
 	}
-	MalterlibCalcBranch "@(BuildSystemBasePath->GetLastPaths(4))"
-	MalterlibCalcBranch "@(BuildSystemBasePath->GetLastPaths(3))"
+	MalterlibCalcBranch "@(Builtin.BasePathAbsolute->GetLastPaths(4))"
+	MalterlibCalcBranch "@(Builtin.BasePathAbsolute->GetLastPaths(3))"
 	{
 		|
 		{
@@ -356,7 +356,7 @@ Property
 			MalterlibCalcBranch "~@(MalterlibBaseSourcePath)/*"
 		}
 	}
-	MalterlibCalcBranch "@(BuildSystemBasePath->GetLastPaths(2))"
+	MalterlibCalcBranch "@(Builtin.BasePathAbsolute->GetLastPaths(2))"
 	{
 		|
 		{
@@ -364,7 +364,7 @@ Property
 			MalterlibCalcBranch "~@(MalterlibBaseSourcePath)/*"
 		}
 	}
-	MalterlibCalcBranch "@(BuildSystemBasePath->GetLastPaths(1))"
+	MalterlibCalcBranch "@(Builtin.BasePathAbsolute->GetLastPaths(1))"
 	{
 		|
 		{
@@ -408,10 +408,10 @@ Property
 	}
 	MalterlibIsGitRepository true
 	{
-		!Empty "@(BuildSystemBasePath->FindDirectoriesIn('.git'))"
+		!Empty "@(Builtin.BasePathAbsolute->FindDirectoriesIn('.git'))"
 	}
 
-	MalterlibGitRepoGitDir "@(BuildSystemBasePath)/.git"
+	MalterlibGitRepoGitDir "@(Builtin.BasePathAbsolute)/.git"
 
 	MalterlibGitRepoInputFiles "@(MalterlibGitRepoGitDir)/HEAD;@(MalterlibGitRepoInputFiles)"
 	MalterlibGitRepoInputFiles "@(MalterlibGitRepoGitDir)/packed-refs;@(MalterlibGitRepoInputFiles)"
@@ -437,6 +437,14 @@ Property
 	
 	MalterlibParseRemoveNewlineString "{}\n"
 
+	MalterlibGitOriginRemote "@(ExecuteCommand('@(GeneratedGlobalDirectory)GitOriginRemote.MState', '@(MalterlibGitRepoGitDir)/config', 'git', 'remote', 'get-url', 'origin'))"
+	{
+		!!MalterlibIsGitRepository true
+	}
+	MalterlibGitOriginRemote "@(MalterlibGitOriginRemote->FindGetLine('*'))"
+	{
+		!!MalterlibIsGitRepository true
+	}
 	MalterlibGitBranch "@(ExecuteCommand('@(GeneratedGlobalDirectory)GitBranch.MState', '@(MalterlibGitRepoInputFiles)', 'git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'))"
 	{
 		!!MalterlibIsGitRepository true

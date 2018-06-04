@@ -70,10 +70,17 @@ Property
 	}
 }
 
-
-
 Repository
 {
+	UserEmail "" // User(Repository)=email@example.com: Specify user.email to configure for repositories
+	{
+		!!Repository.UserEmail ""
+	}
+	UserName "" // User(Repository)="Example Name": Specify user.name to configure for repositories
+	{
+		!!Repository.UserName ""
+	}
+
 	NoPushRemotes "upstream*"
 	{
 		!!Repository.NoPushRemotes ""
@@ -128,11 +135,19 @@ Repository
 
 	ConfigFile "@(this.IdentityPath->GetPath())/@(Repository.Type).MRepo"
 	{
-		!!Repository.ConfigFile ""
+		&
+		{
+			Repository.ConfigFile ""
+			!Repository.Type "Root"
+		}
 	}
 	StateFile "@(this.IdentityPath->GetPath())/@(Repository.Type).MRepoState"
 	{
-		!!Repository.StateFile ""
+		&
+		{
+			Repository.StateFile ""
+			!Repository.Type "Root"
+		}
 	}
 	Prefix "@(Repository.DefaultPrefix)"
 	{
