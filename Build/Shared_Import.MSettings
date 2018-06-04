@@ -29,6 +29,11 @@ Import
 
 Import
 {
+	CMake_VerboseHash false // User(Import)=true: Trace out the string used to determine the config hash for cmake imports
+	{
+		!!Import.CMake_VerboseHash ""
+	}
+
 	CMake_UpdateCache "true"
 	{
 		&
@@ -111,8 +116,16 @@ Import
 		}
 	}
 
-
 	CMake_Variables "CMAKE_MODULE_LINKER_FLAGS_INIT=-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\";@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x86
+		}
+	}
+
+	CMake_ExcludeFromHash "@(MalterlibSysRoot)/;@(Import.CMake_ExcludeFromHash)"
 	{
 		&
 		{
@@ -184,7 +197,7 @@ Import
 			!PlatformToolsetCompiler ""
 		}
 	}
-	
+
 	CMake_Path "@(MToolDirectory);@(Import.CMake_Path)"
 }
 
