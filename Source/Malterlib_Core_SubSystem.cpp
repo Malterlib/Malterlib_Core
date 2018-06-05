@@ -12,7 +12,11 @@ namespace NMib
 	CSubSystem::~CSubSystem()
 	{
 	}
-	
+
+	void CSubSystem::f_DestroyAggregates(bool _bDestroySystem)
+	{
+	}
+
 	void CSubSystem::f_PrepareFork()
 	{
 	}
@@ -128,40 +132,31 @@ namespace NMib
 			SubSystem.f_DestroyThreadLocal();
 	}
 
-	void CSystem::fp_SubSystem_DestroyBeforeMemoryManager()
+	void CSystem::fp_SubSystem_DestroySubsystems(ESubSystemDestruction _ToDestroy)
 	{
 		DMibLock(mp_SubSystemsLock);
 		for (auto iSubSystem = mp_SubSystems.f_GetIterator(); iSubSystem;)
 		{
 			auto *pSubSystem = &*iSubSystem;
 			++iSubSystem;
-			if (pSubSystem->m_DestructionOrder == ESubSystemDestruction_BeforeMemoryManager)
-				pSubSystem->~CSubSystem();
-		}
-	}
-	
-	void CSystem::fp_SubSystem_DestroyBeforeNonTrackedMemoryManager()
-	{
-		DMibLock(mp_SubSystemsLock);
-		for (auto iSubSystem = mp_SubSystems.f_GetIterator(); iSubSystem;)
-		{
-			auto *pSubSystem = &*iSubSystem;
-			++iSubSystem;
-			if (pSubSystem->m_DestructionOrder == ESubSystemDestruction_BeforeNonTrackedMemoryManager)
+			if (pSubSystem->m_DestructionOrder == _ToDestroy)
 				pSubSystem->~CSubSystem();
 		}
 	}
 
+	void CSystem::fp_SubSystem_DestroyBeforeMemoryManager()
+	{
+		fp_SubSystem_DestroySubsystems(ESubSystemDestruction_BeforeMemoryManager);
+	}
+	
+	void CSystem::fp_SubSystem_DestroyBeforeNonTrackedMemoryManager()
+	{
+		fp_SubSystem_DestroySubsystems(ESubSystemDestruction_BeforeNonTrackedMemoryManager);
+	}
+
 	void CSystem::fp_SubSystem_DestroyBeforeThreadLocals()
 	{
-		DMibLock(mp_SubSystemsLock);
-		for (auto iSubSystem = mp_SubSystems.f_GetIterator(); iSubSystem;)
-		{
-			auto *pSubSystem = &*iSubSystem;
-			++iSubSystem;
-			if (pSubSystem->m_DestructionOrder == ESubSystemDestruction_BeforeThreadLocals)
-				pSubSystem->~CSubSystem();
-		}
+		fp_SubSystem_DestroySubsystems(ESubSystemDestruction_BeforeThreadLocals);
 	}
 
 	void CSystem::fp_SubSystem_Destroy()
@@ -171,13 +166,19 @@ namespace NMib
 			pSubSystem->~CSubSystem();
 	}
 
+	void CSystem::fp_SubSystem_DestroyAggregates(bool _bDestroySystem)
+	{
+		DMibLock(mp_SubSystemsLock);
+		for (auto &SubSystem : mp_SubSystems)
+			SubSystem.f_DestroyAggregates(_bDestroySystem);
+	}
+
 	void CSystem::fp_SubSystem_ExitModule()
 	{
 		DMibLock(mp_SubSystemsLock);
 		for (auto &SubSystem : mp_SubSystems)
 			SubSystem.f_ExitModule();
 	}
-	
 };
 
 #include <Mib/Time/Timer>

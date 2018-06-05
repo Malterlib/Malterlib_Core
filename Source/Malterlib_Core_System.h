@@ -126,6 +126,7 @@ namespace NMib
 	{	
 		friend class CRunTimeObjectInfo;
 		friend class NThread::CSemaphoreReportableAggregate;
+		friend class CSystemModule;
 
 	private:
 
@@ -189,7 +190,10 @@ namespace NMib
 		void fp_SubSystem_DestroyBeforeThreadLocals();
 		void fp_SubSystem_Destroy();
 		void fp_SubSystem_ExitModule();
-		
+		void fp_SubSystem_DestroyAggregates(bool _bDestroySystem);
+
+		void fp_SubSystem_DestroySubsystems(ESubSystemDestruction _ToDestroy);
+
 	protected:
 		NStr::CStr m_ProgramRoot;
 		NStr::CStrNonTracked m_ProgramRootNonTracked;

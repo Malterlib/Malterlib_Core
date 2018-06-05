@@ -27,7 +27,9 @@ namespace NMib
 		
 		CSubSystem();
 		virtual ~CSubSystem();
-		
+
+		virtual void f_DestroyAggregates(bool _bDestroySystem);
+
 		virtual void f_PrepareFork();
 		virtual void f_ForkedParent();
 		virtual void f_ForkedChild();

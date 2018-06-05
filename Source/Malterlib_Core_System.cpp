@@ -625,6 +625,7 @@ namespace NMib
 
 	void CSystemModule::f_DestroyAggregates(bint _bDestroySystem)
 	{
+		fg_GetSys()->fp_SubSystem_DestroyAggregates(_bDestroySystem);
 		// Destroy aggregates in reverse order of construction
 		class CSort
 		{
