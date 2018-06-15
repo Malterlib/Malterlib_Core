@@ -1380,6 +1380,16 @@ void fg_TerminateHandler()
 }
 
 
+namespace NMib::NSys
+{
+	void fg_CreateSystem_Early(char **envp)
+	{
+		__environ = envp;
+		environ = envp;
+		NSys::fg_CreateSystem();
+	}
+}
+
 void NSys::fg_CreateSystem()
 {
 	if (g_bCreatedSystem)
