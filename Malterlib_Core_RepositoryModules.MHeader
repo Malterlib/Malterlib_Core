@@ -16,7 +16,7 @@ Property.MalterlibRemotePrefixes "" // User(Repository)="remoteexample=https://g
 }
 Property.MalterlibUpstreamAccess "" // User(Repository)=true: Set to true if you have access to https://github.com/Malterlib
 {
-	!!MalterlibRemotePrefixes ""
+	!!MalterlibUpstreamAccess ""
 }
 
 %Repository "@(MalterlibModules)"
