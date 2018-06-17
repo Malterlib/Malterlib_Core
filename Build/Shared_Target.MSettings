@@ -768,7 +768,7 @@ Property
 			!PlatformFamily Windows
 		}
 	}
-	ExportScriptEnvironmentContents_Template "set @(Explodee)=@(Builtin.Function->GetProperty('Property', '@(Explodee)', 'Target:*'))\r\n"
+	ExportScriptEnvironmentContents_Template "set \"@(Explodee)=@(Builtin.Function->GetProperty('Property', '@(Explodee)', 'Target:*'))\"\r\n"
 	{
 		&
 		{
@@ -785,7 +785,7 @@ Property
 		!!ExportScriptEnvironmentContents_MaybeMinGW "~?:*"
 	}
 
-	ExportScriptEnvironmentContents_Template "set @(Explodee)=@(ExportScriptEnvironmentContents_MaybeMinGW)\r\n"
+	ExportScriptEnvironmentContents_Template "set \"@(Explodee)=@(ExportScriptEnvironmentContents_MaybeMinGW)\"\r\n"
 	{
 		&
 		{
