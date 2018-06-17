@@ -1,8 +1,8 @@
-../../Binaries/Malterlib/Linux/x64 a0c8d0d63ec3f3735e51cbe3e8ca70024bbfc403
-../../Binaries/Malterlib/Linux/x86 48d3284802ccab8cee9e59c45bbf39022d332c80
-../../Binaries/Malterlib/OSX/x64 05ebd0ca91374dd2a658865f1391d852aa48a9ba
-../../Binaries/Malterlib/Windows/x64 233e2c9eedf71e721eab32b3983781d80af10d10
-../../Binaries/Malterlib/Windows/x86 936967041f492c9d43adccb06ca20f4dc40f1913
+../../Binaries/Malterlib/Linux/x64 b04ef9bfbfa371584a3b17e7f3aa91e228b6bf69
+../../Binaries/Malterlib/Linux/x86 f504071d5205739e77d6e0a938fe6326ec27399a
+../../Binaries/Malterlib/OSX/x64 6db5e5751d83639d34c2cdb76795d2592cf82371
+../../Binaries/Malterlib/Windows/x64 554fec8a684a80fe4d348b6dd7e3eebc32591180
+../../Binaries/Malterlib/Windows/x86 4edb1422d183ee5604ae32a9b2d3c2aa8bb71095
 ../../SDK d983b7f63c08af3cfdc3e5bbb4c97bdd8b3614f7
 ../Algorithm 85e40b02987d6f98d9e5a480bbe668b166358aed
 ../Atomic 682d55c5a8acd745cb21ffb272195b65918026e7
@@ -11,7 +11,7 @@
 ../Cloud 2ab0bdd3117f7a42293500493ca83e6b458b06db
 ../CommandLine faeed6dbef1d78f7c885ee20616961b7e27b778f
 ../Compression 8e813c5fecf571cebadab9cbdaf57eba3a9c96c2
-../Concurrency fe920605e5ecb3650910aa287b5f1d7acf3702f9
+../Concurrency 06a566f1b286f78b52b1b8035c5cc0a521c02efa
 ../Container 4f3d9b7e827d1ea1427b49cbde7a52582c3d1712
 ../Contract 30ec6b552536ed05d89e7f78c848fa8306bc7b41
 ../CrashReport e1d8d63ff4d1b74215e19382c43fdb7730ead14b
@@ -23,7 +23,7 @@
 ../Documentation 231aa1b9a5cef27990d1cc3af6108d2d16e38096
 ../Encoding 2ea6aa0c896b276098c6ced4a6f59e2cc3b662b2
 ../Exception 638da32e3575cd8186820b8f217884dacd8052c2
-../File b74ce161fc66af5bec6d21d7fad28579cccf3b35
+../File f080d1483d2f0e7b894969b5b19fb3410000a704
 ../Function 181dbddaa57d3a6aec7e8d5f82fad85a5e70dbea
 ../Graphics d02c91fe5808f01b8911f15d22e58195c06750c0
 ../Instrumentation 64b7644b667503abe9399c6e0fc578db7b4448ba
@@ -44,7 +44,7 @@
 ../STL 4e1ee7454bd75b9b745a756eb54249e0008b0424
 ../Security 3775c501d34cbaf40285c56e8c183c289a05941e
 ../Storage ea343863bd9d6b836ac725ed086234291d057de6
-../Stream 6ca60a012e3647d9afa54a6bd0c3c0f190d7d277
+../Stream aa79819ca3a9ecbb965cfbf8344fab309c134fda
 ../String e18bd790c5ef687b82e66a35cd0df3fa03a5f75e
 ../System 35210e37bb3482ce9f36803c98140e00069c6426
 ../Test 9258da62aeb06ea63ec369e4c4b71f4533c8a528
