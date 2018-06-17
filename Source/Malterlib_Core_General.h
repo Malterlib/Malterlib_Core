@@ -1646,22 +1646,22 @@ namespace NMib
 
 	struct CConstExprSubStr
 	{
-		constexpr CConstExprSubStr(ch8 const *_pString, mint _Len)
+		constexpr CConstExprSubStr(char const *_pString, mint _Len)
 			: m_pString(_pString)
 			, m_Len(_Len)
 		{
 		}
 
-		ch8 const *m_pString;
+		char const *m_pString;
 		mint m_Len;
 	};
 
 	template <typename tf_CType>
-	constexpr CConstExprSubStr fg_GetTypeNameConstExpr()
+	static constexpr CConstExprSubStr fg_GetTypeNameConstExpr()
 	{
 #if defined(DCompiler_MSVC)
-		ch8 const *pParseStart = DMibPFunctionSignature;
-		ch8 const *pParse = pParseStart;
+		char const *pParseStart = DMibPFunctionSignature;
+		char const *pParse = pParseStart;
 		while (*pParse && *pParse != '<')
 			++pParse;
 		if (*pParse == '<')
@@ -1670,7 +1670,7 @@ namespace NMib
 			pParse += 6;
 		else if (pParse[0] == 's' && pParse[1] == 't' && pParse[2] == 'r' && pParse[3] == 'u' && pParse[4] == 'c' && pParse[5] == 't' && pParse[6] == ' ')
 			pParse += 7;
-		ch8 const *pStartType = pParse;
+		char const *pStartType = pParse;
 		mint nStart = 0;
 		mint nStartParen = 0;
 
@@ -1701,15 +1701,15 @@ namespace NMib
 		}
 		return CConstExprSubStr(pStartType, (pParse - pStartType));
 #else
-		ch8 const *pParseStart = DMibPFunctionSignature;
-		ch8 const *pParse = pParseStart;
+		char const *pParseStart = DMibPFunctionSignature;
+		char const *pParse = pParseStart;
 		while (*pParse && *pParse != '=')
 			++pParse;
 		if (*pParse == '=')
 			++pParse;
 		if (*pParse == ' ')
 			++pParse;
-		ch8 const *pStartType = pParse;
+		char const *pStartType = pParse;
 		mint nStart = 1;
 
 		while (*pParse)
@@ -1729,10 +1729,10 @@ namespace NMib
 #endif
 	}
 
-	constexpr uint32 fg_JenkinsHash(const char * const _pString)
+	static constexpr uint32 fg_JenkinsHash(const char * const _pString)
 	{
 		uint32 Hash = 0;
-		for (ch8 const *pStr = _pString; *pStr; ++pStr)
+		for (char const *pStr = _pString; *pStr; ++pStr)
 		{
 			Hash = (uint64(Hash) + *pStr) & uint64(0xffffffff);
 			Hash = (uint64(Hash) + (Hash << 10)) & uint64(0xffffffff);
@@ -1744,11 +1744,10 @@ namespace NMib
 		return Hash;
 	}
 
-	constexpr uint32 fg_JenkinsHash(const char * const _pString, mint _Len, ch8 _ExtraChar)
+	static constexpr uint32 fg_JenkinsHash(const char * const _pString, mint _Len, char _ExtraChar)
 	{
 		uint32 Hash = 0;
-		ch8 const *pEnd = _pString + _Len;
-		for (ch8 const *pStr = _pString; pStr < pEnd; ++pStr)
+		for (char const *pStr = _pString; pStr < _pString + _Len; ++pStr)
 		{
 			Hash = (uint64(Hash) + *pStr) & uint64(0xffffffff);
 			Hash = (uint64(Hash) + (Hash << 10)) & uint64(0xffffffff);
@@ -1767,21 +1766,19 @@ namespace NMib
 	}
 	
 	template <typename tf_CMemberFunction>
-	constexpr uint32 fg_GetMemberFunctionHash(const char * const _pFunctionName)
+	static constexpr uint32 fg_GetMemberFunctionHash(const char * const _pFunctionName)
 	{
-		ch8 const *pStartName = nullptr;
+		char const *pStartName = nullptr;
 
-		ch8 const *pEnd = _pFunctionName;
-		for (; *pEnd; ++pEnd)
-			;
+		char const *pEnd = nullptr;
+		for (char const *pStart = _pFunctionName; *pStart; ++pStart)
+			pEnd = pStart;
 		
 		mint nOpen = 0;
-		for (ch8 const *pParse = pEnd - 1; pParse > _pFunctionName; --pParse)
+		for (char const *pParse = pEnd; pParse > _pFunctionName; --pParse)
 		{
 			if (*pParse == '>' || *pParse == ')' || *pParse == ']')
-			{
 				++nOpen;
-			}
 			else if (*pParse == '<' || *pParse == '(' || *pParse == '[')
 				--nOpen;
 			
@@ -1797,7 +1794,7 @@ namespace NMib
 	}
 
 	template <typename tf_CType>
-	constexpr uint32 fg_GetTypeHash()
+	static constexpr uint32 fg_GetTypeHash()
 	{
 		auto ClassTypeName = fg_GetTypeNameConstExpr<tf_CType>();
 		return fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len, ']');
