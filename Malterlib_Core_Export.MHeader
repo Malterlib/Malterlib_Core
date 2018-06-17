@@ -94,7 +94,7 @@ Property
 		}
 		Property
 		{
-			CompileFlags_PreprocessorDefines_EntityPath "Target:*.Group:Source.Group:@(this.Identity).File:@(FileFullPath)"
+			CompileFlags_PreprocessorDefines_EntityPath "Target:*.Group:Source.Group:@(this.Identity).\"File:@(FileFullPath)\""
 			CompileFlags_PreprocessorDefines_Contents "@(GetProperty('Compile', 'PreprocessorDefines', '@(CompileFlags_PreprocessorDefines_EntityPath)'))"
 
 			CompileFlags_PreprocessorDefines_Template "\"-D@(Explodee->Replace('\"','\\\\\"'))\" "
@@ -146,7 +146,7 @@ Property
 		}
 		Property
 		{
-			CompileFlags_IncludePaths_EntityPath "Target:*.Group:Source.Group:@(this.Identity).File:@(FileFullPath)"
+			CompileFlags_IncludePaths_EntityPath "Target:*.Group:Source.Group:@(this.Identity).\"File:@(FileFullPath)\""
 			CompileFlags_IncludePaths_Contents "@(GetProperty('Compile', 'SearchPath', '@(CompileFlags_IncludePaths_EntityPath)'))"
 
 			CompileFlags_IncludePaths_Template "\"-I@(Explodee)\" "
