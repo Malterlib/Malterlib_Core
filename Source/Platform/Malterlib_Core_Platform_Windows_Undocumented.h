@@ -5,12 +5,6 @@
 
 #include <winternl.h>
 
-typedef struct _CLIENT_ID
-{
-		PVOID UniqueProcess;
-		PVOID UniqueThread;
-} CLIENT_ID, *PCLIENT_ID;
-
 typedef void (*PPEBLOCKROUTINE)( PVOID PebLock ); 
 
 typedef struct _PEB_FREE_BLOCK {
