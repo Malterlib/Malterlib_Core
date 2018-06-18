@@ -78,25 +78,23 @@ void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_p
 #ifdef DPlatformFamily_OSX
 	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
 		
-		TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
+		NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
 		pThreadLocal->f_Exchange((mint)_pData)
 
-	#elif defined(DMibPSupportAlwaysCreatedThreadLocal)
+	#else
 		#if DPlatformVersion >= 1070
 			#if defined(__i386__) || defined(__x86_64__)
-				TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
+				NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
 			#else
 				#error "Not Implemented"
 			#endif
 			pThreadLocal->f_Exchange((mint)_pData);
 		#elif DPlatformVersion >= 1050
-			TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
+			NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
 			pThreadLocal->f_Exchange((mint)_pData);
 		#else
 			#error "Not Implemented"
 		#endif
-	#else
-		DMibPDebugBreak; // Should never get here
 	#endif
 #else
 	DMibPDebugBreak; // Should never get here
@@ -145,26 +143,23 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 	}
 #ifdef DPlatformFamily_OSX
 	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
-		
-		TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
+		NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
 		pThreadLocal->f_Exchange((mint)_pData)
 
-	#elif defined(DMibPSupportAlwaysCreatedThreadLocal)
+	#else
 		#if DPlatformVersion >= 1070
 			#if defined(__i386__) || defined(__x86_64__)
-				TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
+				NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
 			#else
 				#error "Not Implemented"
 			#endif
 			pThreadLocal->f_Exchange((mint)_pData);
 		#elif DPlatformVersion >= 1050
-			TCAtomic<mint> *pThreadLocal = (TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
+			NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
 			pThreadLocal->f_Exchange((mint)_pData);
 		#else
 			#error "Not Implemented"
 		#endif
-	#else
-		DMibPDebugBreak; // Should never get here
 	#endif
 #else
 	DMibPDebugBreak; // Should never get here
