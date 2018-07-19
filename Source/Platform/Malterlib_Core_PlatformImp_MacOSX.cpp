@@ -1529,35 +1529,48 @@ namespace NMib
 	}
 }
 
-namespace NMib
-{
-	namespace NSys
+#if !defined(DMibDynamicLibrary) || defined(DMibMemoryOverrideDll)
+	namespace NMib
 	{
-		void * g_pCrossModuleMemoryManagerInterface = nullptr;
+		namespace NSys
+		{
+			void * g_pCrossModuleMemoryManagerInterface = nullptr;
+		}
 	}
-}
 
-// Note: This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
-extern "C" assure_used module_export void * __attribute__((weak)) fg_IdsGetCrossModuleMemoryManagerInterface()
-{
-	return NMib::NSys::g_pCrossModuleMemoryManagerInterface;
-}
+	// Note: This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
+	extern "C" assure_used module_export void *fg_IdsGetCrossModuleMemoryManagerInterface()
+	{
+		return NMib::NSys::g_pCrossModuleMemoryManagerInterface;
+	}
+#endif
 
 void *NSys::fg_Process_GetCrossModuleMemoryManagerInterface()
 {
-	auto pRet = fg_IdsGetCrossModuleMemoryManagerInterface();
-	return pRet;
+#if defined(DMibDynamicLibrary) && !defined(DMibMemoryOverrideDll)
+	void * ( *fMalterlibGetCrossModuleMemoryManagerInterface)();
+	(void * &)fMalterlibGetCrossModuleMemoryManagerInterface = dlsym(RTLD_DEFAULT, "fg_IdsGetCrossModuleMemoryManagerInterface");
+	if (fMalterlibGetCrossModuleMemoryManagerInterface )
+	{
+		auto pRet = fMalterlibGetCrossModuleMemoryManagerInterface ();
+		return pRet;
+	}
+	else
+		return nullptr;
+#else
+	return NMib::NSys::g_pCrossModuleMemoryManagerInterface;
+#endif
 }
 
 void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 {
-#if !defined(DMibMemoryOverrideDll)
-	DMibFastCheck(!fg_GetSys()->f_IsDll());
-#endif
-	
+#if defined(DMibDynamicLibrary) && !defined(DMibMemoryOverrideDll)
+	DMibNeverGetHere;
+#else
 	g_pCrossModuleMemoryManagerInterface = _pInterface;
-	
+
 	DMibFastCheck(fg_IdsGetCrossModuleMemoryManagerInterface() == _pInterface);
+#endif
 }
 
 bint NSys::fg_System_BeingDebugged()
