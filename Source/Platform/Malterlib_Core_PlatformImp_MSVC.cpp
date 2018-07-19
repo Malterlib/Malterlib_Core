@@ -2053,6 +2053,8 @@ void fg_LoadFunctionPointers()
 			g_fRtlGetVersion((PRTL_OSVERSIONINFOW)&g_VersionInfo);
 		else
 			GetVersionExW((OSVERSIONINFO *)&g_VersionInfo);
+
+		CSystem::ms_PlatformVersion = g_VersionInfo.dwMajorVersion * 10'000'000 + g_VersionInfo.dwMinorVersion * 1'000'000 + g_VersionInfo.dwBuildNumber;
 	}
 
 }
