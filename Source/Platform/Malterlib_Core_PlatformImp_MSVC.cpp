@@ -5407,7 +5407,16 @@ NStr::CStr NSys::NFile::fg_GetTemporaryDirectory()
 		Ret += "/";
 		Ret += FileName;
 		return Ret;
-	}	
+	}
+
+	return fg_GetProgramDirectory();
+}
+
+NStr::CStr NSys::NFile::fg_GetRawTemporaryDirectory()
+{
+	WCHAR szPath[MAX_PATH];
+	if (SUCCEEDED(GetTempPath(MAX_PATH, szPath)))
+		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(szPath));
 
 	return fg_GetProgramDirectory();
 }
@@ -5537,6 +5546,15 @@ CStrNonTracked NSys::NFile::fg_GetTemporaryDirectoryNonTracked()
 
 	return fg_GetProgramDirectoryNonTracked();
 }
+
+CStrNonTracked NSys::NFile::fg_GetRawTemporaryDirectoryNonTracked()
+{
+	WCHAR szPath[MAX_PATH];
+	if (SUCCEEDED(GetTempPath(MAX_PATH, szPath)))
+		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(szPath));
+	return fg_GetProgramDirectoryNonTracked();
+}
+
 CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 {
 	MEMORY_BASIC_INFORMATION MemInfo;

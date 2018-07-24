@@ -1191,8 +1191,47 @@ NStr::CStrNonTracked NSys::NFile::fg_GetTemporaryDirectoryNonTracked()
 		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMP"));
 	if (TmpDir.f_IsEmpty())
 		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMPDIR"));
-	if(!TmpDir.f_IsEmpty()) 
+	if(!TmpDir.f_IsEmpty())
 		return NMib::NFile::CFile::fs_AppendPath(TmpDir, fg_GetProgramUserNameNonTracked());
+	return "/tmp";
+}
+
+
+NStr::CStr NSys::NFile::fg_GetRawTemporaryDirectory()
+{
+	NMib::NStr::CStr TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TMPDIR");
+	if (TmpDir.f_IsEmpty())
+		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TMP");
+	if (TmpDir.f_IsEmpty())
+		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TEMP");
+	if (TmpDir.f_IsEmpty())
+		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TEMPDIR");
+	if (!TmpDir.f_IsEmpty())
+	{
+		mint Len = TmpDir.f_GetLen();
+		if (TmpDir[Len - 1] == '/')
+			return TmpDir.f_Left(Len - 1);
+		return TmpDir;
+	}
+	return "/tmp";
+}
+
+NStr::CStrNonTracked NSys::NFile::fg_GetRawTemporaryDirectoryNonTracked()
+{
+	NMib::NStr::CStrNonTracked TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TMPDIR"));
+	if (TmpDir.f_IsEmpty())
+		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TMP"));
+	if (TmpDir.f_IsEmpty())
+		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMP"));
+	if (TmpDir.f_IsEmpty())
+		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMPDIR"));
+	if (!TmpDir.f_IsEmpty())
+	{
+		mint Len = TmpDir.f_GetLen();
+		if (TmpDir[Len - 1] == '/')
+			return TmpDir.f_Left(Len - 1);
+		return TmpDir;
+	}
 	return "/tmp";
 }
 
