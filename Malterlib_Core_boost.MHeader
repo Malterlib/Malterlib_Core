@@ -35,6 +35,18 @@ Property
 	MalterlibBoostModulesIncludesCalc "@(ExplodeList('@(MalterlibBoostModules)', ';', 'MalterlibBoostModulesIncludesCalcTemplate'))"
 }
 
+Property
+{
+	MalterlibAllBoostModules "false" // User(Repository)=true: Sync all boost repositories
+	{
+		!!MalterlibAllBoostModules ""
+	}
+	MalterlibBoostModules "@(MalterlibBoostModules);algorithm;array;asio;assert;assign;bind;chrono;concept_check;config;container;container_hash;core;date_time;detail;exception;foreach;function;function_types;functional;fusion;integer;intrusive;io;iostreams;iterator;lexical_cast;logic;math;move;mpl;numeric_conversion;optional;phoenix;predef;preprocessor;proto;range;ratio;regex;smart_ptr;spirit;static_assert;system;thread;throw_exception;tuple;type_index;type_traits;typeof;utility;variant;winapi"
+	{
+		!!MalterlibAllBoostModules true
+	}
+}
+
 %Group "~Automatic/Boost Include Roots"
 {
 	Property
@@ -55,6 +67,7 @@ Property
 					&
 					{
 						!EvalFile "detail"
+						!EvalFile "functional"
 						!EvalFile "pending"
 						!EvalFile "utility"
 						!EvalFile "chrono"
@@ -73,6 +86,7 @@ Property
 			!Explodee ""
 		}
 	}
+
 
 	Property
 	{
@@ -104,6 +118,17 @@ Property
 	%Group detail
 	{
 		Property.SubDirectory /detail
+		Compile.Type "Header"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
+		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
+		{
+			Compile.Type "Header"
+			Property.SymlinkDirectory true
+		}
+	}
+	%Group functional
+	{
+		Property.SubDirectory /functional
 		Compile.Type "Header"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
