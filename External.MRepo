@@ -50,7 +50,7 @@
 ../../External/boost/utility 56f13625b1f03f6022f7f4f63261867e1a3a9800
 ../../External/boost/variant 98b5d42e6d8fc188c40a56aa3a558bed595ee643
 ../../External/boost/winapi f004b4753d6fee6f68c90cfc65b075fa0a33d092
-../../External/compiler-rt 358a75153d37fa29ed4018c3ebabe884e761d06c
-../../External/libcxx 2decb1d25aa6e697049964de900c7e1583ec1aad
+../../External/compiler-rt 7368789c21eb59464aaf8c17da9106608dccbfe0
+../../External/libcxx 71dbbf9ccf979e1d4239faafbde225dba8fcb36e
 ../../External/libcxxabi 87d9cac69a54579ea7ba51346c231f9e35aa1cb9
 ../../External/libunwind f203e559ef36c4559fc00ab2edcd5baef0bb8f52
