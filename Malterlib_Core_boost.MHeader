@@ -96,6 +96,7 @@ Property
 		UnixLineEnds true
 		UnicodeBOM true
 		Symlink true
+		SymlinkBasePath "@(MalterlibBoostIncludeOutputDir)"
 		Group "@(Platform) @(Architecture) @(FullConfiguration)/@(RelativePath->GetPath())"
 		{
 			!!MalterlibIncludePerConfig true
