@@ -82,12 +82,18 @@ namespace NMib
 							else
 								return false;
 						}
-						else if (	Error == ENOENT 		// A component of _Filename does not exist (or _Filename is empty)
-							|| 	Error == ENOTDIR 		// A component of the path prefix is not a dir.
-							||	Error == EACCES 		// No access (permissions)
-							||	Error == ENAMETOOLONG 	// Path is too long
-							||	Error == ENOMEM) 		// Ran out of kernel memory
+						else if
+							(
+							 	Error == ENOENT 			// A component of _Filename does not exist (or _Filename is empty)
+							 	|| Error == ENOTDIR 		// A component of the path prefix is not a dir.
+							 	|| Error == EACCES 			// No access (permissions)
+							 	|| Error == ENAMETOOLONG 	// Path is too long
+							 	|| Error == ENOMEM 			// Ran out of kernel memory
+							 	|| Error == EINVAL			// Seen this happen os MacOS if you delete a symlink in the parent path while checking stats
+							)
+						{
 							return false;
+						}
 						else
 						{
 							// This will most likely be EFAULT (&Stats is invalid)
