@@ -112,6 +112,15 @@ Property
 		!!MalterlibMaxSupportedWindowsVersion ""
 	}
 
+	MalterlibMaxSupportedOSXVersion "10.14"
+	{
+		&
+		{
+			MalterlibMaxSupportedOSXVersion ""
+			Generator "Xcode10"
+		}
+	}
+
 	MalterlibMaxSupportedOSXVersion "10.13" // User(Platform Version): Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 	{
 		!!MalterlibMaxSupportedOSXVersion ""
