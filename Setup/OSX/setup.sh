@@ -35,6 +35,14 @@ Setting_Plugin_HideDistractions=true
 Setting_Plugin_P4Checkout=false
 Setting_SyntaxHighlight=true
 
+VersionLessThanEqual() {
+    [  "$1" = "`printf "$1\n$2" | sort -V | head -n1`" ]
+}
+
+VersionLessThan() {
+    [ "$1" = "$2" ] && return 1 || VersionLessThanEqual $1 $2
+}
+
 SignXcode()
 {
 	XcodeLocation=$1
@@ -47,7 +55,7 @@ SignXcode()
 	fi
 
 	XcodeVersion=`defaults read "$XcodeLocation/Contents/version.plist" CFBundleShortVersionString`
-	if [[ $XcodeVersion < 8.0 ]] ; then
+	if VersionLessThan $XcodeVersion 8.0 ; then
 		echo "Skipping unsigning because only 8.0 or later needs it $XcodeLocation"
 		return 0
 	fi
@@ -117,8 +125,8 @@ UpdatePorts()
 	if ! which brew > /dev/null ; then
 		/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 	fi
-	
-	brew update	
+
+	brew update
 	brew upgrade
 	brew install ruby
 	gem install rubygems-update
@@ -159,8 +167,8 @@ UpdateXcodePlugins()
 	XcodeVersion=`defaults read "$2/Contents/version.plist" CFBundleShortVersionString`
 	XcodeVersionSplit=( ${XcodeVersion//./ } )
 	XcodeVersionCompact=${XcodeVersionSplit[0]}${XcodeVersionSplit[1]}
-	if [[ $XcodeVersionCompact < 92 ]]; then
-		echo Too old, plugins not supported
+	if VersionLessThan $XcodeVersionCompact 92 ; then
+		echo "Too old ($XcodeVersionCompact), plugins not supported"
 		return 0
 	fi
 
@@ -360,6 +368,7 @@ function DoInstall()
 	fi
 	UpdateAllXcode
 
+	mkdir -p "$DependenciesDirectory"
 	echo $DependenciesVersion > "$DependenciesFile"
 }
 
