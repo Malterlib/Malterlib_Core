@@ -9,15 +9,15 @@ set -e
 
 cd "$DIR"
 
-if [ -e .malterlib_no_core ] && [[ "$MalterlibNoCore" == "" ]]; then
-	MalterlibNoCore="true"
+if [ -e .malterlib_only_repos ] && [[ "$MalterlibOnlyRepositoryManagement" == "" ]]; then
+	export MalterlibOnlyRepositoryManagement=true
 fi
 
 if [ -e Binaries/Malterlib/LICENSE.Malterlib ]; then
 	rm -rf Binaries/Malterlib
 fi
 
-if [[ "$MalterlibNoCore" != "true" ]] && [ -e Malterlib/Core ]; then
+if [ -e Malterlib/Core ]; then
 	find "$DIR/Malterlib/Core" -maxdepth 0 -type d -empty -exec rmdir {} \;
 fi
 
@@ -119,11 +119,11 @@ function GetMalterlibCoreHash()
 	cat *.MRepo | grep 'Malterlib/Core ' | cut '-d ' -f 2 || true
 }
 
-if [[ "$MalterlibNoCore" != "true" ]] && ! [ -e Malterlib/Core ]; then
+if ! [ -e Malterlib/Core ]; then
 	BootstrapInit
 	DetectRepoRoot
 
-	if [[ "$MalterlibNoCore" != "true" ]] && ! [ -e Malterlib/Core ]; then
+	if ! [ -e Malterlib/Core ]; then
 
 		OutputInfo "Cloning Malterlib/Core"
 
@@ -190,13 +190,8 @@ if ! [ -e "$MalterlibBinariesPath" ]; then
 
 		OutputInfo "Cloning $MalterlibBinariesPath"
 
-		if [[ "$MalterlibNoCore" == "true" ]]; then
-			RepoFolder="./"
-			GitHash=`cat *.MRepo | grep '^$MalterlibBinariesPath ' | cut '-d ' -f 2 || true`
-		else
-			RepoFolder="Malterlib/Core/"
-			GitHash=`cat Malterlib/Core/*.MRepo | grep "\\.\\./\\.\\./$MalterlibBinariesPath " | cut '-d ' -f 2 || true`
-		fi
+		RepoFolder="Malterlib/Core/"
+		GitHash=`cat Malterlib/Core/*.MRepo | grep "\\.\\./\\.\\./$MalterlibBinariesPath " | cut '-d ' -f 2 || true`
 
 		if [[ "$GitHash" != "" ]]; then
 			echo "Found commit hash in ${RepoFolder}*.MRepo files: `OutputNote "$GitHash"`"
