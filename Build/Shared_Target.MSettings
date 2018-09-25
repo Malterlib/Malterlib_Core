@@ -2396,7 +2396,6 @@ Property
 Property
 {
 	GeneratedDirectory "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
-	GeneratedGlobalDirectory "@(MalterlibCompiledFilesSourceBase)/Generated/"
 	
 	GeneratedDirectoryNoConfig	"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/"
 	GeneratedWorkspaceDirectory	"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/"

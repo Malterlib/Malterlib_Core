@@ -121,6 +121,7 @@ Property
 	MaltelibBasePathName "@(MaltelibBasePathAbsolute->GetFile())"
 	
 	MalterlibCompiledFilesSourceBase "@(MalterlibCompiledFiles)@(MaltelibBasePathName)-@(Builtin.GeneratedBuildSystemDir->HashSHA256('8'))"
+	GeneratedGlobalDirectory "@(MalterlibCompiledFilesSourceBase)/Generated/"
 }
 
 // Calculated properties
