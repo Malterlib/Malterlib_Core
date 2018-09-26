@@ -13,6 +13,11 @@ void fg_MalterlibMallocOverride_PreDestroyNonTrackedMemoryManager();
 namespace NMib
 {
 
+	namespace NMem
+	{
+		void fg_Mem_InitSubsystem();
+	}
+
 	mint g_bMemoryManagerNeededAfterDestroy = false;
 	
 	namespace NSys
@@ -122,6 +127,8 @@ namespace NMib
 		}
 #endif
 		fp_CreateMemoryManager();
+
+		NMem::fg_Mem_InitSubsystem();
 	}
 	
 	CSystem::~CSystem()

@@ -462,6 +462,9 @@ public:
 		{
 			pthread_setspecific(Sys.m_ForkThreadLocal, (void *)(mint)getpid());
 			Sys.m_Posix.f_GetMalterlibDisableStdErrLog(); // getenv fails on forked process, to workaround this here
+
+			Sys.m_Posix.m_ForkLock.f_Lock();
+			Sys.m_Posix.m_ForkLock.f_PrepareFork();
 			Sys.f_PrepareFork();
 			g_EventEmulationPool.f_Lock();
 			g_ImpSemaphorePool.f_Lock();
@@ -482,10 +485,16 @@ public:
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
 			if (Current == (void *)(mint)getpid())
+			{
 				Sys.f_ForkedParent(); // Parent
+				Sys.m_Posix.m_ForkLock.f_ForkedParent();
+				Sys.m_Posix.m_ForkLock.f_Unlock();
+			}
 			else
 			{
 				Sys.f_ForkedChild(); // Child
+				Sys.m_Posix.m_ForkLock.f_ForkedChild();
+				Sys.m_Posix.m_ForkLock.f_Unlock();
 			}
 		}
 	}
@@ -498,6 +507,8 @@ public:
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
 			Sys.f_ForkedParent();
+			Sys.m_Posix.m_ForkLock.f_ForkedParent();
+			Sys.m_Posix.m_ForkLock.f_Unlock();
 		}
 	}
 
@@ -511,6 +522,8 @@ public:
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
 			Sys.f_ForkedChild();
+			Sys.m_Posix.m_ForkLock.f_ForkedChild();
+			Sys.m_Posix.m_ForkLock.f_Unlock();
 		}
 	}
 	
