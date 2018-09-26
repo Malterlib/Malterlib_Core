@@ -1980,8 +1980,10 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 
 void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
+#if DPlatformVersionMax < 10120
 	if (clonefile == nullptr)
 		DMibErrorFile("clonefile function not available in this version of macOS");
+#endif
 
 	if (clonefile(_FileFrom, _FileTo, 0))
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("clonefile('{}', '{}')") << _FileFrom << _FileTo, errno));
@@ -1989,8 +1991,10 @@ void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NS
 
 bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
+#if DPlatformVersionMax < 10120
 	if (clonefile == nullptr)
 		return false;
+#endif
 
 	if (clonefile(_FileFrom, _FileTo, 0))
 		return false;

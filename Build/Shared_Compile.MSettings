@@ -762,6 +762,10 @@ Property
 	{
 		!!Platform "OSX10.13"
 	}
+	MalterlibNativeClangDarwinTarget "18"
+	{
+		!!Platform "OSX10.14"
+	}
 }
 
 Property
@@ -1094,7 +1098,11 @@ Compile
 		{
 			PlatformIsDarwin true
 			Target.Type Driver
-			Compile.Type "C++"
+			|
+			{
+				Compile.Type "C++"
+				Compile.Type "ObjC++"
+			}
 		}
 	}
 	
