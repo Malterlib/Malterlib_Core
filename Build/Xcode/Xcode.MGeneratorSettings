@@ -1531,14 +1531,14 @@
 					}
 				}
 			}
-			%GeneratorSetting "Warnings_AlignedAllocationUnavailable"
+			%GeneratorSetting "AlignedAllocationProvided"
 			{
 				%GeneratorSetting "Value"
 				{
 					Property
 					{
-						false "-Wno-aligned-allocation-unavailable"
-						true "-Waligned-allocation-unavailable"
+						false ""
+						true "-faligned-allocation"
 					}
 				}
 			}

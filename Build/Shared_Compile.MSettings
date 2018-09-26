@@ -1338,13 +1338,9 @@ Compile
 		}
 	}
 
-	Warnings_AlignedAllocationUnavailable false
+	AlignedAllocationProvided true
 	{
-		&
-		{
-			GeneratorFamily Xcode
-			!MalterlibDefaultCompiler true
-		}
+		!!GeneratorFamily Xcode
 	}
 
 	Warnings_UnusedCommandLineArgument false
