@@ -6,9 +6,54 @@ set -e
 
 ScriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+function LockFile
+{
+	if [ "$#" -ne 1 ]; then
+		echo 'usage: LockFile [LOCKFILENAME]' 1>&2
+		return 2
+	fi
+	LOCKFILE="$1"
+
+	echo "$$" >"$LOCKFILE.$$"
+	if ! ln "$LOCKFILE.$$" "$LOCKFILE" 2>/dev/null; then
+		PID=`head -1 "$LOCKFILE"`
+		if [ -z "$PID" ]; then
+		   rm -f "$LOCKFILE"
+		else
+		   kill -0 "$PID" 2>/dev/null || rm -f "$LOCKFILE"
+		fi
+
+		if ! ln "$LOCKFILE.$$" "$LOCKFILE" 2>/dev/null; then
+		   rm -f "$LOCKFILE.$$"
+		   return 1
+		fi
+	fi
+
+	rm -f "$LOCKFILE.$$"
+	trap 'rm -f "$LOCKFILE"' EXIT
+
+	return 0
+}
+
+
 ClangVersion="$1"
 OutputDirectory="$2"
 MalterlibMainMalterlibRepo="$3"
+
+LockDir="$(dirname "$OutputDirectory")"
+mkdir -p "$LockDir"
+
+SECONDS=0
+LastSeconds=-1
+while ! LockFile "${OutputDirectory}.lock"; do
+	ThisSeconds=$SECONDS
+	if [[ "$ThisSeconds" != "$LastSeconds" ]] && [[ "$(($ThisSeconds % 10))" == "0" ]]; then
+		echo Waiting for other llvm build to finish: $ThisSeconds s
+	else
+		sleep 1
+	fi
+	LastSeconds=$ThisSeconds
+done
 
 unset MACOSX_DEPLOYMENT_TARGET
 unset SDKROOT
