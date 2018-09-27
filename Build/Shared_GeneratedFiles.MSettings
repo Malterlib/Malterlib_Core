@@ -369,6 +369,9 @@ Property
 		UnicodeBOM false
 
 		Contents	"@(ScriptPreamble)"\
+					"if [[ \"$MalterlibImportedVCPath\" == \"true\" ]]; then\n"\
+					"	return 0\n"\
+					"fi\n"\
 					"function UpdatePath()\n"\
 					"{\n"\
 					"	local OLDIFS=$IFS\n"\
@@ -381,6 +384,7 @@ Property
 					"	local NewPath=${DiffPath//\\\\/\\/}\n"\
 					"	local NewPath=$(echo $NewPath | sed -e 's/\\(.\\):/\\/\\L\\1/g' -e 's/;/:/g')${PATH}\n"\
 					"	export \"PATH=$NewPath\"\n"\
+					"	export \"MalterlibImportedVCPath=true\"\n"\
 					"}\n"\
 					"\n"\
 					"UpdatePath\n"\
