@@ -59,7 +59,7 @@ void fg_WriteStringToPipe(int _Handle, ch8 const *_pStr, mint _Len)
 				pollfd ToPoll[1] = {0};
 				int nPoll = 0;
 				ToPoll[nPoll].fd = _Handle;
-				ToPoll[nPoll].events = POLLWRNORM;
+				ToPoll[nPoll].events = POLLWRNORM | POLLOUT;
 				ToPoll[nPoll].revents = 0;
 				++nPoll;
 					
