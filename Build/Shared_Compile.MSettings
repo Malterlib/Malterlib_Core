@@ -551,15 +551,15 @@ Compile
 			Compile.Type ""
 			|
 			{
-				this.Identity "~*.MTarget"
-				this.Identity "~*.MBuildSystem"
+				this.Identity "~*.MTarget*"
+				this.Identity "~*.MBuildSystem*"
 				this.Identity "~*.OldMBuildSystem"
-				this.Identity "~*.MWorkspace"
+				this.Identity "~*.MWorkspace*"
 				this.Identity "~*.MHeader"
-				this.Identity "~*.MSettings"
-				this.Identity "~*.MGeneratorSettings"
-				this.Identity "~*.MBuildOptions"
-				this.Identity "~*.MConfig"
+				this.Identity "~*.MSettings*"
+				this.Identity "~*.MGeneratorSettings*"
+				this.Identity "~*.MBuildOptions*"
+				this.Identity "~*.MConfig*"
 				
 				this.Identity "~*.MLBuildOptions"
 				this.Identity "~*.ir"

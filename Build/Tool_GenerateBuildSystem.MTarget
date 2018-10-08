@@ -31,32 +31,32 @@
 			Compile.AllowNonExisting true
 			%Group "Build System"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MBuildSystem'))"
+				%File "@(Builtin.Function->SourceFiles('*.MBuildSystem*'))"
 				%File "@(Builtin.Function->SourceFiles('*.OldMBuildSystem'))"
 			}
 			%Group "Headers"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MHeader'))"
+				%File "@(Builtin.Function->SourceFiles('*.MHeader*'))"
 			}
 			%Group "Settings"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MSettings'))"
+				%File "@(Builtin.Function->SourceFiles('*.MSettings*'))"
 			}
 			%Group "Targets"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MTarget'))"
+				%File "@(Builtin.Function->SourceFiles('*.MTarget*'))"
 			}
 			%Group "Generator Settings"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MGeneratorSettings'))"
+				%File "@(Builtin.Function->SourceFiles('*.MGeneratorSettings*'))"
 			}
 			%Group "Dependency"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MDependency'))"
+				%File "@(Builtin.Function->SourceFiles('*.MDependency*'))"
 			}
 			%Group "Workspace"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MWorkspace'))"
+				%File "@(Builtin.Function->SourceFiles('*.MWorkspace*'))"
 			}
 			%Group "CMake"
 			{
