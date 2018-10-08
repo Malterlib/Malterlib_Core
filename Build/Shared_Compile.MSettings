@@ -1538,12 +1538,17 @@ Compile
 			Malterlib_LinuxUseGoldLinker true
 		}
 	}
-	
+
 	PreprocessorDefines "DMibAssumeMalterlibHost;@(Compile.PreprocessorDefines)"
 	{
 		!!Malterlib_AssumeMalterlibHost true
 	}
-	
+
+	PreprocessorDefines "DMibInitInPreInitArray;@(Compile.PreprocessorDefines)"
+	{
+		!!Malterlib_LinuxInitInPreInitArray true
+	}
+
 	PreprocessorDefines "DMibRuntimeInline0=Malterlib_Core_PlatformImp_Windows_Inline.h;@(Compile.PreprocessorDefines)"
 	{
 		!!PlatformFamily "Windows"

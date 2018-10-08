@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+﻿// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 // Malterlib
@@ -136,6 +136,10 @@ Property
 		!!MalterlibAllSchemes ""
 	}
 	
+	MalterlibSharedDeployRoot "/Shared"
+	{
+		!!MalterlibSharedDeployRoot ""
+	}
     MalterlibSigning "false"
 	{
 		!!MalterlibSigning ""
@@ -501,7 +505,11 @@ Property
 	{
 		!!Malterlib_AssumeMalterlibHost ""
 	}
-	Malterlib_LinuxUseGoldLinker true // User(Toolset)=false: Use gold linker
+	Malterlib_LinuxInitInPreInitArray "false" // User: Init before other shared libraries has been initialized. This can cause problems in some GLIBC versions
+	{
+		!!Malterlib_LinuxInitInPreInitArray ""
+	}
+		Malterlib_LinuxUseGoldLinker true // User(Toolset)=false: Use gold linker
 	{
 		!!Malterlib_LinuxUseGoldLinker ""
 	}

@@ -44,6 +44,18 @@ Property
 		!!ScriptWindowsBash true
 	}
 
+	SharedBuildSettingsScriptContents 	"@(SharedBuildSettingsScriptContents)"\
+										"@(ScriptExport) MalterlibSharedDeployRoot=@(MalterlibSharedDeployRoot)\r\n"
+	{
+		!!PlatformFamily Windows
+	}
+
+	SharedBuildSettingsScriptContents 	"@(SharedBuildSettingsScriptContents)"\
+										"@(ScriptExport) \"MalterlibSharedDeployRoot=@(MalterlibSharedDeployRoot)\"\r\n"
+	{
+		!PlatformFamily Windows
+	}
+
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"function ZMTool()\r\n"\
 										"{\r\n"\

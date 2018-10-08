@@ -1394,15 +1394,16 @@ void fg_TerminateHandler()
 	abort();
 }
 
-
 namespace NMib::NSys
 {
+#ifdef DMibInitInPreInitArray
 	void fg_CreateSystem_Early(char **envp)
 	{
 		__environ = envp;
 		environ = envp;
 		NSys::fg_CreateSystem();
 	}
+#endif
 }
 
 void NSys::fg_CreateSystem()

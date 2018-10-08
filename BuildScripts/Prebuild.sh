@@ -53,7 +53,7 @@ if [[ "$MLBuildGit" != "" && "$MLBuildUseGit" == "1" ]]; then
 		popd > /dev/null
 	done
 else
-	./mib setup_only
+	./mib update_repos
 fi
 
 source "$DIR/DetectSystem.sh"

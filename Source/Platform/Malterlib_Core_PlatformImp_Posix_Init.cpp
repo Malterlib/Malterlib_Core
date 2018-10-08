@@ -7,7 +7,7 @@ namespace NMib
 	{
 		void fg_CreateSystem();
 		void fg_DestroySystem();
-#if DPlatformFamily_Linux
+#if DPlatformFamily_Linux && defined(DMibInitInPreInitArray)
 		void fg_CreateSystem_Early(char **envp);
 #endif
 	}
@@ -30,12 +30,16 @@ struct CInitMalterlib
 // Clang emits C++ initializers first, 101 is lowest allowed prio
 CInitMalterlib g_InitMalterlib __attribute__((init_priority(101)));
 
+#ifdef DMibInitInPreInitArray
+
 extern "C" void fg_InitMalterlib(int argc, char **argv, char **envp)
 {
 	NMib::NSys::fg_CreateSystem_Early(envp);
 }
 
 __attribute__((section(".preinit_array"), used)) static decltype(fg_InitMalterlib) *preinit_p = fg_InitMalterlib;
+
+#endif
 
 #else
 

@@ -17,9 +17,9 @@ TestPath=$(TempPath)/Tests
 echo TestPath=$TestPath
 
 if [ "$3" == "WithVersion" ]; then
-	DestinationDir="/Shared/Development/Installers/$2/${MalterlibFullBranchOnlyLast}/${ProductVersionStringReadable}$4"
+	DestinationDir="${MalterlibSharedDeployRoot}/Development/Installers/$2/${MalterlibFullBranchOnlyLast}/${ProductVersionStringReadable}$4"
 else
-	DestinationDir="/Shared/Development/Installers/$2/${MalterlibFullBranchOnlyLast}$4"
+	DestinationDir="${MalterlibSharedDeployRoot}/Development/Installers/$2/${MalterlibFullBranchOnlyLast}$4"
 fi
 
 MTool BuildServerGet "Source=$1" "DestinationDir=$DestinationDir"
