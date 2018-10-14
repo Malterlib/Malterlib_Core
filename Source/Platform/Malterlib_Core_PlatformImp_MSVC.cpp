@@ -3614,6 +3614,12 @@ EFileSystemFeature NSys::NFile::fg_GetFileSystemFeatures()
 	return EFileSystemFeature_HasDrives;
 }
 
+namespace
+{
+	template <typename tf_CWinStr, typename tf_CStr, bool tf_bThrow, bool tf_bAddFileAttribute>
+	EFileAttrib fg_GetAttributesInternalWithAttribs(ch16 const *_pFileName, uint32 _FileAttribs);
+}
+
 bint NSys::NFile::fg_FileExists(const CStr &_FileName, EFileAttrib _AttribMask)
 {
 	if (_FileName.f_IsEmpty())
@@ -3633,16 +3639,11 @@ bint NSys::NFile::fg_FileExists(const CStr &_FileName, EFileAttrib _AttribMask)
 		uint32 Attribs = GetFileAttributesW(Temp);
 
 		if (Attribs == INVALID_FILE_ATTRIBUTES)
-		{
 			return false;
-		}
 
-		if ((Attribs & FILE_ATTRIBUTE_DIRECTORY) && (_AttribMask & NMib::NFile::EFileAttrib_Directory))
-			return true;
+		auto MalterlibAttribs = fg_GetAttributesInternalWithAttribs<CWStr, CStr, false, true>(Temp, Attribs);
 
-		if (!(Attribs & FILE_ATTRIBUTE_DIRECTORY) && (_AttribMask & NMib::NFile::EFileAttrib_File))
-			return true;
-		return false;
+		return (_AttribMask & MalterlibAttribs) != EFileAttrib_None;
 	}
 }
 
@@ -3665,16 +3666,11 @@ bint NSys::NFile::fg_FileExists(const CStrNonTracked &_FileName, EFileAttrib _At
 		uint32 Attribs = GetFileAttributesW(Temp);
 
 		if (Attribs == INVALID_FILE_ATTRIBUTES)
-		{
 			return false;
-		}
+		
+		auto MalterlibAttribs = fg_GetAttributesInternalWithAttribs<CWStrNonTracked, CStrNonTracked, false, true>(Temp, Attribs);
 
-		if ((Attribs & FILE_ATTRIBUTE_DIRECTORY) && (_AttribMask & NMib::NFile::EFileAttrib_Directory))
-			return true;
-
-		if (!(Attribs & FILE_ATTRIBUTE_DIRECTORY) && (_AttribMask & NMib::NFile::EFileAttrib_File))
-			return true;
-		return false;
+		return (_AttribMask & MalterlibAttribs) != EFileAttrib_None;
 	}
 }
 
@@ -4108,30 +4104,31 @@ namespace
 
 	}
 
-	template <typename tf_CWinStr, typename tf_CStr>
-	EFileAttrib fg_GetAttributesInternal(ch16 const *_pFileName, bool _bThrow = true)
+	template <typename tf_CWinStr, typename tf_CStr, bool tf_bThrow, bool tf_bAddFileAttribute>
+	EFileAttrib fg_GetAttributesInternalWithAttribs(ch16 const *_pFileName, uint32 _FileAttribs)
 	{
-		uint32 FileAttribs = GetFileAttributesW(_pFileName);
-		if (FileAttribs == INVALID_FILE_ATTRIBUTES)
+		if (_FileAttribs == INVALID_FILE_ATTRIBUTES)
 		{
-			if (_bThrow)
+			if constexpr (tf_bThrow)
 				DMibErrorFile((tf_CStr::CFormat("Windows returned an error from GetFileAttributes({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 			else 
 				return EFileAttrib_None;
 		}
 
 		uint32 MalterlibAttr = 0;
-		if (FileAttribs & FILE_ATTRIBUTE_DIRECTORY)
+		if (_FileAttribs & FILE_ATTRIBUTE_DIRECTORY)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_Directory;
-		if (FileAttribs & FILE_ATTRIBUTE_REPARSE_POINT)
+		else if (tf_bAddFileAttribute)
+			MalterlibAttr |= NMib::NFile::EFileAttrib_File;
+		if (_FileAttribs & FILE_ATTRIBUTE_REPARSE_POINT)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_Link;
-		if (FileAttribs & FILE_ATTRIBUTE_HIDDEN)
+		if (_FileAttribs & FILE_ATTRIBUTE_HIDDEN)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_Hidden;
-		if (FileAttribs & FILE_ATTRIBUTE_READONLY)
+		if (_FileAttribs & FILE_ATTRIBUTE_READONLY)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_ReadOnly;
-		if (FileAttribs & FILE_ATTRIBUTE_SYSTEM)
+		if (_FileAttribs & FILE_ATTRIBUTE_SYSTEM)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_System;
-		if (FileAttribs & FILE_ATTRIBUTE_ARCHIVE)
+		if (_FileAttribs & FILE_ATTRIBUTE_ARCHIVE)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_Archive;
 
 		tf_CWinStr OriginalFileName(_pFileName);
@@ -4142,18 +4139,30 @@ namespace
 		uint32 Attribs = GetFileAttributesW(ExtendedAttribName);
 		if (Attribs != INVALID_FILE_ATTRIBUTES)
 		{
-			TCBinaryStreamFile<> Stream;
-			Stream.f_Open(tf_CStr(ExtendedAttribName), EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_RawFileName);
-			if (Stream.f_GetLength())
+			try
 			{
-				CMalterlibExtendedAttributes OldAttribs;
-				Stream >> OldAttribs;
+				TCBinaryStreamFile<> Stream;
+				Stream.f_Open(tf_CStr(ExtendedAttribName), EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_RawFileName);
+				if (Stream.f_GetLength())
+				{
+					CMalterlibExtendedAttributes OldAttribs;
+					Stream >> OldAttribs;
 
-				MalterlibAttr |= OldAttribs.m_ExtendedAttributes;
+					MalterlibAttr |= OldAttribs.m_ExtendedAttributes;
+				}
+			}
+			catch (CExceptionFile const &)
+			{
 			}
 		}
 
 		return (EFileAttrib)MalterlibAttr;
+	}
+
+	template <typename tf_CWinStr, typename tf_CStr, bool tf_bThrow>
+	EFileAttrib fg_GetAttributesInternal(ch16 const *_pFileName)
+	{
+		return fg_GetAttributesInternalWithAttribs<tf_CWinStr, tf_CStr, tf_bThrow, false>(_pFileName, GetFileAttributesW(_pFileName));
 	}
 }
 
@@ -4200,15 +4209,15 @@ EFileAttrib NSys::NFile::fg_GetAttributes(void *_pFile)
 {
 	auto *pFile = ((CWin32File *)_pFile);
 	if (pFile->f_IsNonTracked())
-		return fg_GetAttributesInternal<CWStrNonTracked, CStrNonTracked>(pFile->f_GetName());
+		return fg_GetAttributesInternal<CWStrNonTracked, CStrNonTracked, true>(pFile->f_GetName());
 	else
-		return fg_GetAttributesInternal<CWStr, CStr>(pFile->f_GetName());
+		return fg_GetAttributesInternal<CWStr, CStr, true>(pFile->f_GetName());
 }
 
 
 EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const& _FileName)
 {
-	return fg_GetAttributesInternal<CWStr, CStr>(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileName));
+	return fg_GetAttributesInternal<CWStr, CStr, true>(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileName));
 }
 
 EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const& _FileName)
@@ -4668,43 +4677,9 @@ public:
 	EFileAttrib f_ParseAttrib()
 	{
 		uint32 FileAttribs = m_FindData.dwFileAttributes;
-
-		EFileAttrib MalterlibAttr = EFileAttrib_None;
-		if (FileAttribs & FILE_ATTRIBUTE_DIRECTORY)
-			MalterlibAttr |= NMib::NFile::EFileAttrib_Directory;
-		else 
-			MalterlibAttr |= NMib::NFile::EFileAttrib_File;
-
-		if (FileAttribs & FILE_ATTRIBUTE_REPARSE_POINT)
-			MalterlibAttr |= NMib::NFile::EFileAttrib_Link;
-
-		if (FileAttribs & FILE_ATTRIBUTE_HIDDEN)
-			MalterlibAttr |= NMib::NFile::EFileAttrib_Hidden;
-
-		if (FileAttribs & FILE_ATTRIBUTE_READONLY)
-			MalterlibAttr |= NMib::NFile::EFileAttrib_ReadOnly;
-
-		if (FileAttribs & FILE_ATTRIBUTE_SYSTEM)
-			MalterlibAttr |= NMib::NFile::EFileAttrib_System;
-
 		CWStr OriginalFileName = m_FullPath + m_FindData.cFileName;
-		auto ExtendedAttribName = OriginalFileName + ":IdsExtAttribs:$DATA";
-		if (OriginalFileName.f_GetLen() < 260 && ExtendedAttribName.f_GetLen() >= 260)
-			ExtendedAttribName = NFile::NPlatform::fg_ConvertToWindowsPathLocal(NFile::NPlatform::fg_ConvertFromWindowsPathInternal<CWStr>(ExtendedAttribName));
 
-		uint32 Attribs = GetFileAttributesW(ExtendedAttribName);
-		if (Attribs != INVALID_FILE_ATTRIBUTES)
-		{
-			TCBinaryStreamFile<> Stream;
-			Stream.f_Open(CStr(ExtendedAttribName), EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_RawFileName);
-			if (Stream.f_GetLength())
-			{
-				CMalterlibExtendedAttributes OldAttribs;
-				Stream >> OldAttribs;
-
-				MalterlibAttr |= OldAttribs.m_ExtendedAttributes;
-			}
-		}
+		EFileAttrib MalterlibAttr = fg_GetAttributesInternalWithAttribs<CWStr, CStr, false, true>(OriginalFileName, FileAttribs);
 
 		return MalterlibAttr;
 	}
@@ -5023,7 +4998,7 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 NMib::NStr::CStr NSys::NFile::fg_ResolveSymbolicLink(const NMib::NStr::CStr &_FileFrom)
 {
 //	fg_GetLocalSys()->f_EnableBackupSupport();
-	auto Attribs = fg_GetAttributesInternal<CWStr, CStr>(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom), false);
+	auto Attribs = fg_GetAttributesInternal<CWStr, CStr, false>(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom));
 	if (Attribs & EFileAttrib_EmulatedLink)
 	{
 		TCBinaryStreamFile<> File;
