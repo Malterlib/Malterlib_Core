@@ -129,10 +129,10 @@ UpdatePorts()
 	brew update
 	brew upgrade
 	brew install ruby
-	gem install rubygems-update
-	gem install xcpretty
+	gem install -n /usr/local/bin rubygems-update
+	gem install -n /usr/local/bin xcpretty
 	update_rubygems --silent
-	gem update --system
+	gem update -n /usr/local/bin --system
 }
 
 UpdateXCTool()
