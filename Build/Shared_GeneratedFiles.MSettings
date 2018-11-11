@@ -111,6 +111,7 @@ Property
 										"@(ScriptExport) \"ProductVersionMajor=@(ProductVersionMajor)\"\r\n"\
 										"@(ScriptExport) \"ProductVersionMinor=@(ProductVersionMinor)\"\r\n"\
 										"@(ScriptExport) \"ProductVersionRevision=@(ProductVersionRevision)\"\r\n"\
+										"@(ScriptExport) \"ProductVersionRevisionNumber=@(ProductVersionRevision->FormatInt('{}'))\"\r\n"\
 										"@(ScriptExport) \"ProductVersionExtra=@(ProductVersionExtra)\"\r\n"\
 										"@(ScriptExport) \"ProductName=@(ProductName)\"\r\n"\
 										"@(ScriptExport) \"ProductCompany=@(ProductCompany)\"\r\n"\
