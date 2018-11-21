@@ -56,7 +56,22 @@ Compile
 			}
 		}
 	}
-	
+
+	Type "ShellScript"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*/mib"
+				this.Identity "~*.sh"
+				this.Identity "~*.conf"
+			}
+ 		}
+	}
+
 	Type "Assembler"
 	{
 		&
@@ -379,20 +394,6 @@ Compile
 		}
 	}
 
-	Type "ShellScript"
-	{
-		&
-		{
-			this.Type "File"
-			Compile.Type ""
-			|
-			{
-				this.Identity "~*.sh"
-				this.Identity "~*.conf"
-			}
- 		}
-	}
-	
 	Type "Python"
 	{
 		&
