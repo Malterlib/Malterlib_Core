@@ -109,9 +109,9 @@ UpdatePorts()
 	sudo port -N -s install i386-elf-binutils x86_64-elf-binutils
 
 	# For meteor manager
-	sudo port -N uninstall installed and npm installed and npm-devel installed and nodejs installed and nodejs-devel installed and nodejs6 installed and npm3 || true
+	sudo port -N uninstall installed and npm installed and npm-devel installed and nodejs installed and nodejs-devel installed and nodejs6 installed and npm3 installed and node8 || true
 
-	sudo port -N install nodejs8 npm5
+	sudo port -N install nodejs10
 
 	# Bring in dependencies for our custom build of doxygen
 	sudo port -N install cmake perl5 python27 flex bison libpng libiconv graphviz
