@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -44,15 +44,13 @@ namespace NMib
 
 		static CRunTimeObjectInfo *f_GetObject(const ch8*_pName);
 
+		void f_ForEachLeafChild(NFunction::TCFunction<void (CRunTimeObjectInfo const &_RuntimeObjectInfo)> const &_fOnChild) const;
 		void f_Construct(const ch8 *_pName, const ch8 *_pParent, bint _bIsStatic = true);
 		void f_Destruct();
 
 		virtual ~CRunTimeObjectInfo();
 
 		virtual void *f_CreateObject() const = 0;
-		virtual void *f_CreateObject(void *_pMemory) const = 0;
-		virtual mint f_GetObjectSize() const = 0;
-		virtual mint f_GetObjectAlign() const = 0;
 	};
 
 	class CRunTimeObjectInfoContainer : public CRunTimeObjectInfo
@@ -75,101 +73,36 @@ namespace NMib
 		{
 			DMibError("Trying to create an run time object with an unregistered class");
 		}
-
-		virtual mint f_GetObjectSize() const
-		{
-			DMibError("Trying to create an run time object with an unregistered class");
-		}
-
-		virtual mint f_GetObjectAlign() const
-		{
-			DMibError("Trying to create an run time object with an unregistered class");
-		}
-
-		virtual void *f_CreateObject(void *_pMemory) const
-		{
-			DMibError("Trying to create an run time object with an unregistered class");
-		}
 	};
 
 	template <typename t_CObject, typename t_CCastClass = void>
-	class TRuntimeClassNamed : public CRunTimeObjectInfo
+	class TCRuntimeClassNamed : public CRunTimeObjectInfo
 	{
 	public:
-		TRuntimeClassNamed(const ch8 *_pName, const ch8 *_pParent)
+		TCRuntimeClassNamed(const ch8 *_pName, const ch8 *_pParent)
 		{
 			f_Construct(_pName, _pParent);
 		}
 
-		virtual mint f_GetObjectSize() const
-		{
-			return sizeof(t_CObject);
-		}
-
-		virtual mint f_GetObjectAlign() const
-		{
-			DMibError("Not implemented");
-		}
-
-		virtual void *f_CreateObject(void *_pMemory) const
-		{
-			return (t_CCastClass *)new(_pMemory) t_CObject();
-		}
-
 		virtual void *f_CreateObject() const
 		{
-			return (t_CCastClass *)DMibNew t_CObject();
-		}
-	};
-
-	template <typename t_CObject, typename t_CCastClass = void>
-	class TRuntimeClassNamedBase : public CRunTimeObjectInfo
-	{
-	public:
-		TRuntimeClassNamedBase(const ch8 *_pName, const ch8 *_pParent)
-		{
-			f_Construct(_pName, _pParent);
-		}
-
-		virtual mint f_GetObjectSize() const
-		{
-			if (1)
-				DMibError("Not valid on a base type");
-			return 0;
-		}
-
-		virtual mint f_GetObjectAlign() const
-		{
-			if (1)
-				DMibError("Not implemented");
-			return 0;
-		}
-
-		virtual void *f_CreateObject(void *_pMemory) const
-		{
-			if (1)
-				DMibError("Not valid on a base type");
-			return nullptr;
-		}
-
-		virtual void *f_CreateObject() const
-		{
-			if (1)
-				DMibError("Not valid on a base type");
-			return nullptr;
+			if constexpr (NTraits::TCIsAbstract<t_CObject>::mc_Value)
+				DMibError("Cannot construct an abstract class");
+			else
+				return (t_CCastClass *)DMibNew t_CObject();
 		}
 	};
 
 	CRunTimeObjectInfo *fg_GetRuntimeTypeInfo(const ch8 *_pObjectName);
 	void *fg_CreateRuntimeType(const ch8 *_pObjectName);
 	template <typename tf_CType>
-	tf_CType *fg_CreateRuntimeType(const ch8 *_pObjectName)
+	NPtr::TCUniquePointer<tf_CType> fg_CreateRuntimeType(const ch8 *_pObjectName)
 	{
-		return static_cast<tf_CType *>(fg_CreateRuntimeType(_pObjectName));
+		return fg_Explicit(static_cast<tf_CType *>(fg_CreateRuntimeType(_pObjectName)));
 	}
 
-#	define DMibRuntimeClassNamedCastedBase(_Class, _Name, _Cast) ::NMib::TRuntimeClassNamedBase<_Class, _Cast> g_RuntimeClassNamed_##_Class(#_Name, nullptr); 
-#	define DMibRuntimeClassNamedCasted(_Parent, _Class, _Name, _Cast) ::NMib::TRuntimeClassNamed<_Class, _Cast> g_RuntimeClassNamed_##_Class(#_Name, #_Parent);
+#	define DMibRuntimeClassNamedCastedBase(_Class, _Name, _Cast) ::NMib::TCRuntimeClassNamed<_Class, _Cast> g_RuntimeClassNamed_##_Class(#_Name, nullptr);
+#	define DMibRuntimeClassNamedCasted(_Parent, _Class, _Name, _Cast) ::NMib::TCRuntimeClassNamed<_Class, _Cast> g_RuntimeClassNamed_##_Class(#_Name, #_Parent);
 #	define DMibRuntimeClassMakeActive(_Name) NMib::NSys::fg_Compiler_MakeActive(0, &g_RuntimeClassNamed_##_Name)
 
 #	define DMibRuntimeClassNamed(_Parent, _Class, _Name) DMibRuntimeClassNamedCasted(_Parent, _Class, _Name, void)

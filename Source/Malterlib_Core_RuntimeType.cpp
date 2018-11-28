@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -99,6 +99,17 @@ namespace NMib
 		}
 
 		return pNamespace;
+	}
+
+	void CRunTimeObjectInfo::f_ForEachLeafChild(NFunction::TCFunction<void (CRunTimeObjectInfo const &_RuntimeObjectInfo)> const &_fOnChild) const
+	{
+		for (auto &Child : m_Children)
+		{
+			if (Child.m_Children.f_IsEmpty())
+				_fOnChild(Child);
+			else
+				Child.f_ForEachLeafChild(_fOnChild);
+		}
 	}
 
 	void CRunTimeObjectInfo::f_Construct(const ch8 *_pName, const ch8 *_pParent, bint _bIsStatic)

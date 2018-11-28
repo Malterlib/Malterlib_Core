@@ -62,7 +62,7 @@ namespace NMib
 	{		
 		auto &ApplicationSubSystem = *g_SubSystem_Core_Application;
 		
-		ApplicationSubSystem.m_pApplication = fg_Explicit((CApplication *)fg_CreateRuntimeType(g_AppClasses.m_pAppClass));
+		ApplicationSubSystem.m_pApplication = fg_CreateRuntimeType<CApplication>(g_AppClasses.m_pAppClass);
 		if (!ApplicationSubSystem.m_pApplication)
 			return 255;
 		
