@@ -64,59 +64,61 @@ namespace NMib
 			{
 				tf_CStr File = fg_ConvertToPOSIXPath(_FileName);
 				struct stat Stats;
-				int RetVal = stat(File.f_GetStr(), &Stats);
-				
-				NMib::NFile::EFileAttrib Attribs = NMib::NFile::EFileAttrib_None; 
-				if (RetVal)
+
+				if (lstat(File.f_GetStr(), &Stats))
 				{
 					int Error = errno;
-					RetVal = lstat(File.f_GetStr(), &Stats);
-					NMib::NFile::EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats);
-					if (RetVal)
+					if
+						(
+							Error == ENOENT 			// A component of _Filename does not exist (or _Filename is empty)
+							|| Error == ENOTDIR 		// A component of the path prefix is not a dir.
+							|| Error == EACCES 			// No access (permissions)
+							|| Error == ENAMETOOLONG 	// Path is too long
+							|| Error == ENOMEM 			// Ran out of kernel memory
+							|| Error == EINVAL			// Seen this happen os MacOS if you delete a symlink in the parent path while checking stats
+						)
 					{
-						if (Error == ELOOP) // Too many Symbolic links encountered.
-						{
-							if (_AttribMask & NMib::NFile::EFileAttrib_Link
-								|| (_AttribMask & (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory)) == (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory))
-								return true;
-							else
-								return false;
-						}
-						else if
+						return false;
+					}
+					else
+					{
+						// This will most likely be EFAULT (&Stats is invalid)
+						DMibErrorFile(NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("stat('{}') when checking if file exists") << _FileName, Error));
+					}
+				}
+
+				NMib::NFile::EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats);
+
+				if (!(LinkAttribs & NMib::NFile::EFileAttrib_Link))
+					return (LinkAttribs & _AttribMask) != NMib::NFile::EFileAttrib_None;
+
+				NMib::NFile::EFileAttrib Attribs = NMib::NFile::EFileAttrib_None;
+				if (stat(File.f_GetStr(), &Stats))
+				{
+					int Error = errno;
+					if (Error == ELOOP) // Too many Symbolic links encountered.
+					{
+						if
 							(
-							 	Error == ENOENT 			// A component of _Filename does not exist (or _Filename is empty)
-							 	|| Error == ENOTDIR 		// A component of the path prefix is not a dir.
-							 	|| Error == EACCES 			// No access (permissions)
-							 	|| Error == ENAMETOOLONG 	// Path is too long
-							 	|| Error == ENOMEM 			// Ran out of kernel memory
-							 	|| Error == EINVAL			// Seen this happen os MacOS if you delete a symlink in the parent path while checking stats
+								(_AttribMask & NMib::NFile::EFileAttrib_Link)
+							 	|| (_AttribMask & (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory)) == (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory)
 							)
 						{
-							return false;
+							return true;
 						}
 						else
-						{
-							// This will most likely be EFAULT (&Stats is invalid)
-							DMibErrorFile(NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("stat('{}') when checking if file exists") << _FileName, Error));
-						}
+							return false;
 					}
+
 					// If this is a link that we don't know what it's pointing on assume file.
 					if (LinkAttribs & NMib::NFile::EFileAttrib_Link)
 						LinkAttribs |= NMib::NFile::EFileAttrib_File;
 					Attribs |= LinkAttribs;
 				}
 				else
-				{
-					Attribs = fsg_StatsToAttribs(Stats);
-					RetVal = lstat(File.f_GetStr(), &Stats);
-					if (!RetVal)
-						Attribs |= fsg_StatsToAttribs(Stats) & NMib::NFile::EFileAttrib_Link;
-				}
-				
-				if (!(_AttribMask & Attribs))
-					return false;
-				else
-					return true;
+					Attribs = fsg_StatsToAttribs(Stats) | NMib::NFile::EFileAttrib_Link;
+
+				return (Attribs & _AttribMask) != NMib::NFile::EFileAttrib_None;
 			}
 		}
 	}
@@ -1148,28 +1150,22 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const& _
 {
 	CStr Canonical = fg_ConvertToPOSIXPath(_Filename);
 	struct stat Stats;
-	if (stat(Canonical, &Stats))
+	if (lstat(Canonical, &Stats))
 	{
 		auto ErrNo = errno;
-		if (!lstat(Canonical, &Stats))
-		{
-			// This is needed to not throw an exception on broken links
-			NMib::NFile::EFileAttrib Attribs = fsg_StatsToAttribs(Stats) & (~NMib::NFile::EFileAttrib_File);
-			return Attribs;
-		}
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("stat('{}') when getting file attributes") << Canonical, ErrNo));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when getting file attributes") << Canonical, ErrNo));
 	}
 
 	// For historical reasons EFileAttrib_File is never returned by this.
-	NMib::NFile::EFileAttrib Attribs = fsg_StatsToAttribs(Stats) & (~NMib::NFile::EFileAttrib_File);
-	
-	if (!lstat(Canonical, &Stats))
-	{
-		NMib::NFile::EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats);
-		Attribs |= LinkAttribs & NMib::NFile::EFileAttrib_Link;
-	}
+	NMib::NFile::EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats) & (~NMib::NFile::EFileAttrib_File);
 
-	return Attribs;
+	if (!(LinkAttribs & NMib::NFile::EFileAttrib_Link))
+		return LinkAttribs;
+
+	if (stat(Canonical, &Stats))
+		return LinkAttribs;
+
+	return (fsg_StatsToAttribs(Stats) & (~NMib::NFile::EFileAttrib_File)) | NMib::NFile::EFileAttrib_Link;
 }
 
 NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const& _Filename)
@@ -2037,16 +2033,18 @@ uint64 CPOSIXFileFind::f_ParseAttrib()
 {
 	struct stat Stats;
 	CStr FileName = m_LastFullName;
-	auto Attribs = 0;
+	NMib::NFile::EFileAttrib LinkAttribs = NMib::NFile::EFileAttrib_None;
 	if (!lstat(FileName, &Stats))
 	{
-		NMib::NFile::EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats);
-		Attribs |= LinkAttribs & NMib::NFile::EFileAttrib_Link;
+		LinkAttribs = fsg_StatsToAttribs(Stats);
+		if (!(LinkAttribs & NMib::NFile::EFileAttrib_Link))
+			return LinkAttribs; // lstat is same as stat in this case
 	}
+
 	if (stat(FileName, &Stats))
-		return Attribs;
-	Attribs |= fsg_StatsToAttribs(Stats);
-	return Attribs;
+		return LinkAttribs;
+
+	return fsg_StatsToAttribs(Stats) | (LinkAttribs & NMib::NFile::EFileAttrib_Link);
 }
 
 void *NSys::NFile::fg_FindOpen(const NMib::NStr::CStr &_FindPattern)
