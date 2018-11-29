@@ -153,7 +153,7 @@
 								"IF \"%DisableProjectGen%\" == \"1\" GOTO Skip\r\n"\
 								":RetryGeneration\r\n"\
 								"cd @(Builtin.BasePathAbsolute->WindowsPath())\r\n"\
-								"\"@(Builtin.MToolExe)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(Builtin.GeneratedBuildSystemDir)\" Action=%1 UseCachedEnvironment=true\r\n"\
+								"\"@(Builtin.MalterlibExe)\" generate --build-system \"@(Builtin.BuildSystemSource)\" --generator \"@(Generator)\" --output-directory \"@(Builtin.GeneratedBuildSystemDir)\" --use-cached-environment --action \"%1\" \"@(Workspace:Workspace.Name)\"\r\n"\
 								"IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n"
 					{
 						&
@@ -211,7 +211,7 @@
 								"  exit 0\n"\
 								"fi\n"\
 								"cd @(Builtin.BasePathRelativeProject)/..\n"\
-								"\"@(Builtin.MToolExe)\" BuildSystemGen \"@(Builtin.BuildSystemSource)\" \"Generator=@(Generator)\" \"Workspace=@(Workspace:Workspace.Name)\" \"OutDir=@(Builtin.GeneratedBuildSystemDir)\" Action=$1 UseCachedEnvironment=true\n"\
+								"\"@(Builtin.MalterlibExe)\" generate --build-system \"@(Builtin.BuildSystemSource)\" --generator \"@(Generator)\" --output-directory \"@(Builtin.GeneratedBuildSystemDir)\" --action \"$1\" --use-cached-environment \"@(Workspace:Workspace.Name)\"\n"\
 								"ErrorLevel=$?\n"\
 								"if [ \"$ErrorLevel\" == \"2\" ]; then\n"\
 								"  echo error: Build system changed, aborting build\n"\

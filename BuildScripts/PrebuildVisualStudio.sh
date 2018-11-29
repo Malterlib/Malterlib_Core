@@ -17,7 +17,7 @@ echo "CurrentDir=$PWD"
 echo "Path=$PATH"
 
 BuildSystem=$1
-Generator=VisualStudio2017
+Generator=
 Extension=MBuildSystem
 
 shift
@@ -32,7 +32,8 @@ for Argument in "$@" ; do
 	else
 		echo Generating $Argument
 		set +e
-		MTool BuildSystemGen $BuildSystem.$Extension "Workspace=$Argument" Generator=$Generator DisableUserSettings=true
+
+		"$BuildSystemRoot/mib" generate --build-system "$BuildSystem.$Extension" --generator "$Generator" --no-use-user-settings "$Argument"
 		GenError="$?"
 		set -e
 		if [[ $GenError -ne 0 ]] && [[ $GenError -ne 2 ]] ; then
@@ -44,7 +45,7 @@ done
 
 source ./BuildSystem/SharedBuildSettings.sh
 
-Generator=VisualStudio2017
+Generator=
 
 if [ "$MalterlibPreBuildNoClean" != "true" ] ; then
 	for Argument in "$@" ; do

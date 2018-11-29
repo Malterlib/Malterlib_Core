@@ -175,7 +175,7 @@ if [ -e "$MalterlibBinariesPath" ]; then
 	find "$DIR/$MalterlibBinariesPath" -maxdepth 0 -type d -empty -exec rmdir {} \;
 fi
 
-BootstrapVersion="1"
+BootstrapVersion="2"
 
 if ! [ -e "$MalterlibBinariesPath/Bootstrap.version" ] || [[ `cat "$MalterlibBinariesPath/Bootstrap.version"` != "$BootstrapVersion" ]]; then
 	echo Removing binaries because they are not compatible with current bootstrap process
@@ -213,35 +213,51 @@ fi
 ReportBootstrapDone
 
 ScriptsDir="$PWD/Malterlib/Core/Scripts"
-Command=$1
-shift
+NumArguments=$#
+if (( $NumArguments >= 1 )); then
+	Command=$1
+	shift
+fi
 
 while true; do
-	if [[ "$MalterlibPlatform" ==  Windows ]] || [[ "$MalterlibSafeMib" == "true" ]]; then
-		DependencyFile=BuildSystem/SafeMib/SafeMib.MalterlibDependency
-
-		if [ -e "$DependencyFile" ]; then
-			"$MToolExecutable" CheckDependencies Verbose=true "Directory=BuildSystem/SafeMib"
-		fi
-
-		if ! [ -e BuildSystem/SafeMib/SafeMib.updated ]; then
-			echo Updating safe binaries
-
-			"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*" "BuildSystem/SafeMib/Binaries" "" 1 1
-			"$MToolExecutable" DiffCopy "Malterlib/Core/Scripts/*" "BuildSystem/SafeMib/Scripts" "" 1 1
-			"$MToolExecutable" TouchOrCreate "BuildSystem/SafeMib/SafeMib.updated"
-			ExcludePatterns="*/.git;*/.DS_Store"
-
-			if type MalterlibConvertPath > /dev/null; then
-				"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$DIR/$DependencyFile\"`" "Output:`MalterlibConvertPath \"$DIR/BuildSystem/SafeMib/SafeMib.updated\"`" "Input:`MalterlibConvertPath \"$BASH_SOURCE_FULL\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;$ExcludePatterns" "Find:`MalterlibConvertPath \"$DIR/Malterlib/Core/Scripts\"`/*;RIF;33;$ExcludePatterns"
-			else
-				rm -f BuildSystem/SafeMib/SafeMib.updated
-			fi
-		fi
-
-		export MalterlibBinariesDir="$PWD/BuildSystem/SafeMib/Binaries"
-		ScriptsDir="$PWD/BuildSystem/SafeMib/Scripts"
+	if [ -e "$PWD/Malterlib/Core/Scripts/mib.sh" ]; then
+		NewMTool=true
+	else
+		NewMTool=false
 	fi
+
+	function UpdateMTool()
+	{
+		if [[ "$MalterlibPlatform" ==  Windows ]] || [[ "$MalterlibSafeMib" == "true" ]]; then
+			DependencyFile=BuildSystem/SafeMib/SafeMib.MalterlibDependency
+
+			if [ -e "$DependencyFile" ]; then
+				"$MToolExecutable" CheckDependencies Verbose=true "Directory=BuildSystem/SafeMib"
+			fi
+
+			if ! [ -e BuildSystem/SafeMib/SafeMib.updated ]; then
+				echo Updating safe binaries
+
+				"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*" "BuildSystem/SafeMib/Binaries" "" 1 1
+				"$MToolExecutable" DiffCopy "Malterlib/Core/Scripts/*" "BuildSystem/SafeMib/Scripts" "" 1 1
+				"$MToolExecutable" TouchOrCreate "BuildSystem/SafeMib/SafeMib.updated"
+				ExcludePatterns="*/.git;*/.DS_Store"
+
+				if type MalterlibConvertPath > /dev/null; then
+					"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$DIR/$DependencyFile\"`" "Output:`MalterlibConvertPath \"$DIR/BuildSystem/SafeMib/SafeMib.updated\"`" "Input:`MalterlibConvertPath \"$BASH_SOURCE_FULL\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;$ExcludePatterns" "Find:`MalterlibConvertPath \"$DIR/Malterlib/Core/Scripts\"`/*;RIF;33;$ExcludePatterns"
+				else
+					rm -f BuildSystem/SafeMib/SafeMib.updated
+				fi
+			fi
+
+			export MalterlibBinariesDir="$PWD/BuildSystem/SafeMib/Binaries"
+			ScriptsDir="$PWD/BuildSystem/SafeMib/Scripts"
+		fi
+	}
+
+	UpdateMTool
+
+	export -f UpdateMTool
 
 	function RunTests()
 	{
@@ -288,10 +304,15 @@ while true; do
 			fi
 
 			set +e
-			"$ScriptsDir/Generate.sh" "$@"
+			if $NewMTool; then
+				"$ScriptsDir/mib.sh" generate "$@"
+			else
+				"$ScriptsDir/Generate.sh" "$@"
+			fi
 			MToolExit=$?
 			set -e
 			if [[ $MToolExit == 3 ]]; then
+				# TODO: deprecate this
 				echo MTool potentially updated, running command again
 				continue
 			elif [[ $MToolExit != 2 ]]; then
@@ -303,6 +324,10 @@ while true; do
 			fi
 		;;
 		setup_only)
+			# TODO: deprecate this
+			exit 0
+		;;
+		bootstrap_only)
 			exit 0
 		;;
 		setup)
@@ -337,14 +362,24 @@ while true; do
 		;;
 		*)
 			set +e
-			MalterlibTool=true "$ScriptsDir/Generate.sh" "$Command" "$@"
-			MToolExit=$?
-			set -e
-			if [[ $MToolExit == 3 ]]; then
-				echo MTool potentially updated, running command again
-				continue
+			if $NewMTool; then
+				if (( $NumArguments >= 1 )); then
+					"$ScriptsDir/mib.sh" "$Command" "$@"
+				else
+					"$ScriptsDir/mib.sh" "$@"
+				fi
+				exit $?
+			else
+				# TODO: deprecate this
+				MalterlibTool=true "$ScriptsDir/Generate.sh" "$Command" "$@"
+				MToolExit=$?
+				set -e
+				if [[ $MToolExit == 3 ]]; then
+					echo MTool potentially updated, running command again
+					continue
+				fi
+				exit $MToolExit
 			fi
-			exit $MToolExit
 	esac
 
 	break

@@ -15,7 +15,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/DetectSystem.sh"
 
 BuildSystem=$1
-Generator=Xcode9
+Generator=
 Extension=MBuildSystem
 
 shift
@@ -35,9 +35,8 @@ for Argument in "$@" ; do
 	else
 		echo Generating $Argument
 		which MTool
-		echo MTool BuildSystemGen $BuildSystem.$Extension "Workspace=$Argument" Generator=$Generator DisableUserSettings=true
 		set +e
-		MTool BuildSystemGen $BuildSystem.$Extension "Workspace=$Argument" Generator=$Generator DisableUserSettings=true
+		"$BuildSystemRoot/mib" generate --build-system "$BuildSystem.$Extension" --generator "$Generator" --no-use-user-settings "$Argument"
 		GenError="$?"
 		set -e
 		if [[ $GenError -ne 0 ]] && [[ $GenError -ne 2 ]] ; then
@@ -49,7 +48,7 @@ done
 
 source ./BuildSystem/SharedBuildSettings.sh
 
-Generator=Xcode9
+Generator=
 
 if [ "$MalterlibPreBuildNoClean" != "true" ] ; then
 

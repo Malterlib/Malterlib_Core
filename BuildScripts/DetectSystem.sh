@@ -45,7 +45,7 @@ export MToolPath="$MToolDirectory"
 
 if [[ "$MalterlibPlatform" ==  Windows ]]; then
 	if [[ "$MToolPath" != "$BuildSystemRoot/BuildSystem/SafeMib/Binaries" ]]; then
-		"$BuildSystemRoot/mib" setup_only
+		"$BuildSystemRoot/mib" bootstrap_only
 		export MToolPath="$BuildSystemRoot/BuildSystem/SafeMib/Binaries"
 	fi
 

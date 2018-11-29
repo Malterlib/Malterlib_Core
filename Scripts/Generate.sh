@@ -8,8 +8,6 @@ source "$DIR/Detect.sh"
 
 set -e
 
-Conf_Echo=false
-Conf_Old=false
 MalterlibXcodeVersion=
 MalterlibVisualStudioVersion=
 
@@ -52,23 +50,18 @@ else
 	Conf_Version=
 fi
 
-while getopts "seo" opt; do
-    case "$opt" in
-    o)  Conf_Old=true
-        ;;
-    e)  Conf_Echo=true
-        ;;
-    esac
-done
-
-shift $((OPTIND-1))
-
 [ "$1" = "--" ] && shift
 
 ToolType=BuildSystemGen
-
+MToolCommand=
 if [[ "$MalterlibTool" == "true" ]]; then
+	export MToolIsMalterlib="true"
+	export MalterlibProtectedEnvironment="MToolIsMalterlib;@MalterlibProtectedEnvironment"
 	ToolType=Malterlib
+	if (( $# >= 1)); then
+		MToolCommand=$1
+		shift
+	fi
 else
 	if (( $# >= 1)); then
 		Conf_Workspace=$1
@@ -76,16 +69,8 @@ else
 	fi
 fi
 
-function DoEcho()
-{
-	if [[ "$Conf_Echo" == "true" ]] ; then
-		echo $@
-	fi
-}
-
 function RunMTool()
 {
-	DoEcho "$MToolExecutable" "$@"
 	set +e
 	"$MToolExecutable" "$@"
 	MToolExit=$?
@@ -98,22 +83,24 @@ function RunMTool()
 
 function GenerateForVersion()
 {
-	if [[ "$Conf_Old" == "true" ]] ; then
-		Files=`find . -maxdepth 1 -name '*.OldMBuildSystem'`
-	else
-		Files=`find . -maxdepth 1 -name '*.MBuildSystem'`
-	fi
+	Files=`find . -maxdepth 1 -name '*.MBuildSystem'`
 
 	Generator="$1"
 	shift
 
 	for f in $Files ; do
-		if [ "$Conf_Old" == "true" ] ; then
-			RunMTool $ToolType "$f" "Generator=$Generator" "OutDir=$PWD/BuildSystem/Old" "$@"
-		elif [ "$Conf_Workspace" == "" ] ; then
-			RunMTool $ToolType "$f" "Generator=$Generator" "$@"
+		if [ -x "$MToolDirectory/mib" ]; then
+			if [[ "$MalterlibTool" == "true" ]]; then
+				"$MToolDirectory/mib" $MToolCommand --build-system "$f" --generator "$Generator" "$@"
+			else
+				"$MToolDirectory/mib" generate --build-system "$f" --generator "$Generator" "$Conf_Workspace" "$@"
+			fi
 		else
-			RunMTool $ToolType "$f" "Generator=$Generator" "Workspace=$Conf_Workspace" "$@"
+			if [ "$Conf_Workspace" == "" ] ; then
+				RunMTool $ToolType "$f" "Generator=$Generator" "$@"
+			else
+				RunMTool $ToolType "$f" "Generator=$Generator" "Workspace=$Conf_Workspace" "$@"
+			fi
 		fi
 	done
 }

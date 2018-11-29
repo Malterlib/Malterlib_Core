@@ -70,3 +70,4 @@ export MalterlibConvertPath
 export MalterlibPlatform
 export MalterlibArch
 export MToolExecutable="$MToolDirectory/MTool"
+export MalterlibExecutable="$MToolDirectory/mib"

@@ -10,9 +10,4 @@ source "$DIR/Detect.sh"
 
 set +e
 "$MToolExecutable" "$@"
-MToolExit=$?
-set -e
-
-if [[ $MToolExit != 0 ]] ; then
-	exit $MToolExit
-fi
+exit $?
