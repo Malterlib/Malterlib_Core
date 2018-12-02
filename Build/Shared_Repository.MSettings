@@ -157,6 +157,19 @@ Repository
 			!Repository.DefaultPrefix ""
 		}
 	}
+
+	ProtectedBranches "protected/*;@(Repository.ProtectedBranches)"
+
+	ProtectedBranches "malterlib_*;@(Repository.ProtectedBranches)"
+	{
+		!!Repository.Type External
+	}
+
+	ProtectedTags "malterlib_*;@(Repository.ProtectedTags)"
+	{
+		!!Repository.Type External
+	}
+
 	URL "@(Repository.ExternalRoot)/@(this.Identity).git"
 	{
 		&
