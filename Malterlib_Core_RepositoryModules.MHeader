@@ -18,6 +18,22 @@ Property.MalterlibUpstreamAccess "" // User(Repository)=true: Set to true if you
 {
 	!!MalterlibUpstreamAccess ""
 }
+Property.MalterlibUpstreamWriteAccess "" // User(Repository)=true: Set to true if you have write access to https://github.com/Malterlib
+{
+	!!MalterlibUpstreamWriteAccess ""
+}
+
+Property
+{
+	MalterlibUpstreamWritableHelper ">Write=@(MalterlibUpstreamWriteAccess)"
+	{
+		&
+		{
+			!MToolVersion ""
+			true "@(MToolVersion->CompareInt('>=', '2'))"
+		}
+	}
+}
 
 %Repository "@(MalterlibModules)"
 {
@@ -30,7 +46,7 @@ Property.MalterlibUpstreamAccess "" // User(Repository)=true: Set to true if you
 		{
 			!MalterlibRemotePrefixes  ""
 		}
-		Remotes "malterlib=https://github.com/Malterlib/@(RepoName);@(Repository.Remotes)"
+		Remotes "malterlib=https://github.com/Malterlib/@(RepoName)@(MalterlibUpstreamWritableHelper);@(Repository.Remotes)"
 		{
 			&
 			{
@@ -100,7 +116,7 @@ Property
 		{
 			!MalterlibRemotePrefixes  ""
 		}
-		Remotes "malterlib=https://github.com/Malterlib/@(RepoName);@(Repository.Remotes)"
+		Remotes "malterlib=https://github.com/Malterlib/@(RepoName)@(MalterlibUpstreamWritableHelper);@(Repository.Remotes)"
 		{
 			&
 			{

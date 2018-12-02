@@ -18,7 +18,7 @@ Property.MalterlibModules "Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Co
 		{
 			!MalterlibRemotePrefixes  ""
 		}
-		Remotes "malterlib=https://github.com/Malterlib/MalterlibSDK.git;@(Repository.Remotes)"
+		Remotes "malterlib=https://github.com/Malterlib/MalterlibSDK.git@(MalterlibUpstreamWritableHelper);@(Repository.Remotes)"
 		{
 			&
 			{
@@ -53,7 +53,7 @@ Property
 		{
 			!MalterlibRemotePrefixes  ""
 		}
-		Remotes "malterlib=https://github.com/Malterlib/MalterlibBinaries_Linux.git;@(Repository.Remotes)"
+		Remotes "malterlib=https://github.com/Malterlib/MalterlibBinaries_Linux.git@(MalterlibUpstreamWritableHelper);@(Repository.Remotes)"
 		{
 			&
 			{
