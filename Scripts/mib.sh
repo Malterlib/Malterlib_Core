@@ -9,15 +9,18 @@ set -e
 source "$DIR/Detect.sh"
 ExtraOptions=""
 
-export MToolIsMalterlib="true"
 export MalterlibProtectedEnvironment="MToolIsMalterlib;@MalterlibProtectedEnvironment"
 
 while true; do
+
+	export MToolIsMalterlib="true"
 
 	set +e
 	"$MalterlibExecutable" "$@" $ExtraOptions
 	MToolExit=$?
 	set -e
+
+	export MToolIsMalterlib="false"
 
 	if [[ $MToolExit == 3 ]]; then
 		ExtraOptions=
