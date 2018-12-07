@@ -49,6 +49,13 @@ namespace
 				NMib::NSys::fg_System_ExitProcess(2);
 			};
 #endif
+
+			DMibTestSuite("MemoryTrackWithoutDll")
+			{
+				DMibMemLightweightTrackAddFlagsScope(NMib::NMem::EMemoryReportLightweightScopeFlag_InCScope);
+				DMibMemLightweightTrackDisableScope;
+				delete (new int);
+			};
 			DMibTestSuite("DllLoad")
 			{
 				void *pDll = nullptr;

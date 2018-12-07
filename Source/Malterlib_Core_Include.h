@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #ifdef DMibSafety_IncMalterlib_H
@@ -24,15 +24,12 @@ namespace NMib
 
 	namespace NContainer
 	{
-		class CVectorBoundsCheckDefault;
-		class CVectorData;
-		class CVectorStaticData_GrowFixed;
-		template <mint t_MinSize = 16, bool t_bShrink = true>
-		class TCVectorStaticData_GrowDouble;
+		template <mint t_MinSize = 16, bool t_bShrink = true, bool t_bCheckBounds = true>
+		struct TCVectorOptions;
 
-		class CVectorStaticData_GrowOne;
+		struct CVectorOptionsDefault;
 
-		template <typename t_CData, typename t_CAllocator = NMib::NMem::CAllocator_Heap, typename t_CBoundsChecker = CVectorBoundsCheckDefault, typename t_CInternalData = CVectorData, typename t_CStaticData = TCVectorStaticData_GrowDouble<> >
+		template <typename t_CData, typename t_CAllocator = NMib::NMem::CAllocator_Heap, typename t_COptions = CVectorOptionsDefault>
 		class TCVector;
 	}
 
@@ -230,7 +227,7 @@ namespace NMib
 #include "../../Memory/Source/Malterlib_Memory_Allocator_Virtual.hpp"
 #include "../../Memory/Source/Malterlib_Memory_Allocator_Heap.hpp"
 #include "../../Memory/Source/Malterlib_Memory_Allocator_Secure.hpp"
-#include "../../Container/Source/Malterlib_Container_Vector.hpp"
+#include "../../Container/Source/Vector/Malterlib_Container_Vector_Format.hpp"
 #include "../../Container/Source/Malterlib_Container_Map.hpp"
 
 #ifdef DMibEnableDistributedActors

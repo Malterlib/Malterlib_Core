@@ -631,6 +631,11 @@ Property
 		!!MalterlibMemory_Shims_EnableLocal ""
 	}
 
+	MalterlibMemory_Shims_Lightweight "false" // User(Debug)=true: Enable lightweight thread local memory reporters for main memory manager only.
+	{
+		!!MalterlibMemory_Shims_EnableLocal ""
+	}
+
 	MalterlibMemory_Shims_EnableGlobal "true" // User(Debug)=false: Enable global memory reporter. Used for for example remote debugger support
 	{
 		!!MalterlibMemory_Shims_EnableGlobal ""

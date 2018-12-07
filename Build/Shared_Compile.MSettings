@@ -1761,6 +1761,15 @@ Compile
 		}
 	}
 
+	PreprocessorDefines "DMibConfig_Memory_Shims_Lightweight=1;@(Compile.PreprocessorDefines)"
+	{
+		!!MalterlibMemory_Shims_Lightweight true
+	}
+	PreprocessorDefines "DMibConfig_Memory_Shims_Lightweight=0;@(Compile.PreprocessorDefines)"
+	{
+		!MalterlibMemory_Shims_Lightweight true
+	}
+
 	PreprocessorDefines "DMibConfig_Memory_Shims_EnableGlobal=1;@(Compile.PreprocessorDefines)"
 	{
 		&

@@ -15,12 +15,22 @@ extern "C"
 	module_export void calling_convention_c fg_Test()
 	{
 		*g_ThreadLocal = NMib::NStr::CStr::fs_ToStr(NMib::NSys::fg_Thread_GetCurrentUID());
+		{
+			DMibMemLightweightTrackAddFlagsScope(NMib::NMem::EMemoryReportLightweightScopeFlag_InCScope);
+			DMibMemLightweightTrackDisableScope;
+			delete (new int);
+		}
 	}
 
 	module_export void calling_convention_c fg_TestFileNotifications()
 	{
 		*g_ThreadLocal = NMib::NStr::CStr::fs_ToStr(NMib::NSys::fg_Thread_GetCurrentUID());
-		
+		{
+			DMibMemLightweightTrackAddFlagsScope(NMib::NMem::EMemoryReportLightweightScopeFlag_InCScope);
+			DMibMemLightweightTrackDisableScope;
+			delete (new int);
+		}
+
 		using namespace NMib::NFile;
 		CFileChangeNotification FileChangeNotification;
 		//DMibTrace("ProgramDir: {}\n", CFile::fs_GetProgramDirectory());
