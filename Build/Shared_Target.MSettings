@@ -2607,7 +2607,7 @@ Target
 
 Property
 {
-	MalterlibPythonDebugScriptName "@(Target.FileName)@(Target.FileExtension)"
+	MalterlibPythonDebugScriptName "@(Target:Target.FileName)"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('-','_'))"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace(' ','_'))"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('.','_'))"
