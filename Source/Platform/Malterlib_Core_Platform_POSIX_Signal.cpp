@@ -22,7 +22,7 @@ namespace NMib::NSys
 			NThread::CMutual m_Lock;
 			CSignalHandlers m_SignalHandlers[NSIG];
 			NAtomic::TCAtomic<bool> m_bWasDestroyed;
-			NPtr::TCUniquePointer<NThread::CThreadObject> m_pThread;
+			NStorage::TCUniquePointer<NThread::CThreadObject> m_pThread;
 			
 			~CSubSystem_Core_Signal()
 			{

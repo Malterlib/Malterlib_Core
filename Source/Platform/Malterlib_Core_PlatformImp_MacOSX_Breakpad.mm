@@ -30,7 +30,7 @@ namespace NMib
 			if (plist)
 			{
 				
-				NMib::NStr::CStr TempDir = NMib::NFile::CFile::fs_GetTemporaryDirectory() + "/CrashDumps/" + NMib::NDataProcessing::fg_GetSecureUuidString(NDataProcessing::EUniversallyUniqueIdentifierFormat_AlphaNum);
+				NMib::NStr::CStr TempDir = NMib::NFile::CFile::fs_GetTemporaryDirectory() + "/CrashDumps/" + NMib::NCryptography::fg_GetSecureUuidString(NCryptography::EUniversallyUniqueIdentifierFormat_AlphaNum);
 				
 				try
 				{

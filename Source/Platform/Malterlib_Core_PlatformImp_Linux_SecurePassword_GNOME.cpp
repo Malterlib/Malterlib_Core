@@ -45,9 +45,9 @@ namespace NMib
 			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const& _Key);
 		};
 
-		NPtr::TCUniquePointer<CLinuxPasswordManager> fg_CreateGNOMEPasswordManager()
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateGNOMEPasswordManager()
 		{
-			NPtr::TCUniquePointer<CGNOMEPasswordManager> pManager = fg_Construct();
+			NStorage::TCUniquePointer<CGNOMEPasswordManager> pManager = fg_Construct();
 
 			if (!pManager->f_OK())
 				return nullptr;

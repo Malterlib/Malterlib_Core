@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 // -------------------------------------------------------------------------
@@ -125,7 +125,7 @@ private:
 		HANDLE m_hProcess;
 		HANDLE m_hObject;
 
-		TCVector<uint8> m_DataBuffer;
+		CByteVector m_DataBuffer;
 
 		void f_Cleanup()
 		{
@@ -142,7 +142,7 @@ private:
 		if (m_fNTQueryObject)
 		{
 			DWORD dwSize = sizeof(NLocalWindows::OBJECT_NAME_INFORMATION);
-			TCVector<uint8> DataBuffer;
+			CByteVector DataBuffer;
 			_ProcessInfo.m_DataBuffer.f_SetLen(dwSize);
 			NLocalWindows::POBJECT_NAME_INFORMATION pObjectInfo = (NLocalWindows::POBJECT_NAME_INFORMATION)_ProcessInfo.m_DataBuffer.f_GetArray();
 			NTSTATUS ntReturn;

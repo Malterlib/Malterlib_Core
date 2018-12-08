@@ -25,11 +25,11 @@ namespace NMib
 			return m_pName;
 		}
 		typedef NIntrusive::TCTreeCompare_String< CRunTimeObjectInfo, ch8 const *> CCompare;
-		DMibIntrusiveLink(CRunTimeObjectInfo, NIntrusive::TCAVLLink<>, m_TreeLinkNamespace);
+		NIntrusive::TCAVLLink<> m_TreeLinkNamespace;
 		DMibListLinkDS_Link(CRunTimeObjectInfo, m_TreeLinkChild); // 8 bytes
 		DMibListLinkDS_List(CRunTimeObjectInfo, m_TreeLinkChild) m_Children; // 4 bytes
-		NIntrusive::TCAVLTree<CRunTimeObjectInfo::CLinkTraits_m_TreeLinkNamespace, CRunTimeObjectInfo::CCompare> m_Namespace;
-		typedef NIntrusive::TCAVLTree<CRunTimeObjectInfo::CLinkTraits_m_TreeLinkNamespace, CRunTimeObjectInfo::CCompare>::CIterator CNamespaceIterator;
+		NIntrusive::TCAVLTree<&CRunTimeObjectInfo::m_TreeLinkNamespace, CRunTimeObjectInfo::CCompare> m_Namespace;
+		typedef NIntrusive::TCAVLTree<&CRunTimeObjectInfo::m_TreeLinkNamespace, CRunTimeObjectInfo::CCompare>::CIterator CNamespaceIterator;
 		CRunTimeObjectInfo *m_pParent; // 4 bytes
 		CRunTimeObjectInfo *m_pNamespace; // 4 bytes
 		const ch8 *m_pName;
@@ -96,7 +96,7 @@ namespace NMib
 	CRunTimeObjectInfo *fg_GetRuntimeTypeInfo(const ch8 *_pObjectName);
 	void *fg_CreateRuntimeType(const ch8 *_pObjectName);
 	template <typename tf_CType>
-	NPtr::TCUniquePointer<tf_CType> fg_CreateRuntimeType(const ch8 *_pObjectName)
+	NStorage::TCUniquePointer<tf_CType> fg_CreateRuntimeType(const ch8 *_pObjectName)
 	{
 		return fg_Explicit(static_cast<tf_CType *>(fg_CreateRuntimeType(_pObjectName)));
 	}

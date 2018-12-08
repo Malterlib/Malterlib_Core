@@ -37,9 +37,9 @@ CAddressResolver::~CAddressResolver()
 		mp_DoneOrInProgressList.f_DeleteAllDefiniteType();
 }
 
-void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNet::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()>&& _fOnFinish)
+void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish)
 {
-	NPtr::TCUniquePointer<CResolveRequest> pReq = fg_Construct();
+	NStorage::TCUniquePointer<CResolveRequest> pReq = fg_Construct();
 
 	pReq->m_Name = _Name;
 	pReq->m_Flags = EFlag_Pending;
@@ -59,7 +59,7 @@ void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNet::ENet
 	return pRet;
 }
 
-bint CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNet::CAddress& _oAddress, NMib::NStr::CStr &_Error)
+bint CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error)
 {
 	CResolveRequest* pReq = (CResolveRequest*)_pResolver;
 
@@ -122,9 +122,9 @@ aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject* _pThread)
 
 			try
 			{
-				pReq->m_Address = NMib::NSys::NNet::fg_ResolveAddress(pReq->m_Name, pReq->m_PreferType);
+				pReq->m_Address = NMib::NSys::NNetwork::fg_ResolveAddress(pReq->m_Name, pReq->m_PreferType);
 			}
-			catch(NMib::NNet::CExceptionNet const &_Error)
+			catch(NMib::NNetwork::CExceptionNet const &_Error)
 			{
 				pReq->m_ErrorString = _Error.f_GetErrorStr();
 				pReq->m_Address = nullptr;

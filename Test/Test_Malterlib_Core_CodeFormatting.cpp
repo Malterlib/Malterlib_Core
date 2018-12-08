@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -258,7 +258,7 @@ struct CTest
 TCMap<uint32> Indices;
 TCVector<uint32> Indices;
 
-TCVector<uint8> ByteBuffer;
+CByteVector ByteBuffer;
 auto rByte = fg_Range(ByteBuffer);
 for (auto iByte = rByte.f_Front(); iByte != rByte.f_Back(); ++iByte)
 	*iByte;
@@ -266,14 +266,14 @@ for (auto iByte = rByte.f_Front(); iByte != rByte.f_Back(); ++iByte)
 for (mint iByte = 0; iByte < ByteBuffer.f_GetLen(); ++iByte)
 	ByteBuffer[iByte];
 
-TCVector<uint8> ByteBuffer;
+CByteVector ByteBuffer;
 for (auto rByte = fg_Range(ByteBuffer); rByte; ++rByte)
 	*rByte;
 
-TCVector<uint8> ByteBuffer;
+CByteVector ByteBuffer;
 mint nBytes = ByteBuffer.f_GetLen();
 
-TCVector<uint8> ByteBuffer;
+CByteVector ByteBuffer;
 uint8 const *pBytes = ByteBuffer.f_GetArray();
 
 

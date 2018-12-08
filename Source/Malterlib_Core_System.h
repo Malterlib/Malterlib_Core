@@ -22,7 +22,7 @@ namespace NMib
 			virtual void f_Exception(void *_pExceptionData) = 0;
 		};
 
-		extern NAggregate::TCAggregate<NThread::TCThreadLocal<TCAutoClear<CExceptionFilter *>>, 64> g_ExceptionFilter;
+		extern NStorage::TCAggregate<NThread::TCThreadLocal<TCAutoClear<CExceptionFilter *>>, 64> g_ExceptionFilter;
 
 		class CExceptionFilterScope
 		{
@@ -60,10 +60,10 @@ namespace NMib
 	};
 #endif
 
-	namespace NMem
+	namespace NMemory
 	{
 #ifdef DMibDebug
-		extern NAggregate::TCAggregate<NThread::TCThreadLocal<NAtomic::TCAtomic<smint>>, 64> g_AllowDebugNewError;
+		extern NStorage::TCAggregate<NThread::TCThreadLocal<NAtomic::TCAtomic<smint>>, 64> g_AllowDebugNewError;
 		extern NAtomic::TCAtomic<smint> g_AllowDebugNewErrorGlobal;
 
 		NThread::TCThreadLocal<NAtomic::TCAtomic<smint>> & fg_AccessAllowDebugNewErrorGlobalSingleton();
@@ -111,9 +111,9 @@ namespace NMib
 	};
 	
 //	#ifdef DPlatformFamily_OSX
-//		typedef NMem::CAllocator_VirtualNoCommit CMainHeapVirtualAllocator;
+//		typedef NMemory::CAllocator_VirtualNoCommit CMainHeapVirtualAllocator;
 //	#else
-		typedef NMem::CAllocator_Virtual CMainHeapVirtualAllocator;
+		typedef NMemory::CAllocator_Virtual CMainHeapVirtualAllocator;
 //	#endif
 
 #ifdef DPlatformFamily_Windows
@@ -140,7 +140,7 @@ namespace NMib
 			NContainer::TCVector<NStr::CStr> m_lCommandLineParameters;
 		};
 
-		NMib::NAggregate::TCAggregateSimple<CCommandLineData> m_CommandLineData;
+		NMib::NStorage::TCAggregateSimple<CCommandLineData> m_CommandLineData;
 
 		CVirtualMachineInfo mp_VMInfo;
 
@@ -159,7 +159,7 @@ namespace NMib
 		NStr::CStr m_SupportEmail;
 		NStr::CStrNonTracked m_ProgramNameNonTracked;
 		NStr::CStrNonTracked m_SupportEmailNonTracked;
-		bint m_bRunningAsService;
+		bint m_bRunningAsDaemon;
 
 		bint m_bInitDone;
 		bool m_bIsDll;
@@ -230,13 +230,13 @@ namespace NMib
 		void f_AddStdErrLogger();
 		void f_AddFileLogger();
 		
-		void f_RegisterProgram(const NStr::CStr &_ProgramName, const NStr::CStr &_SupportEmail, bint _bRunningAsService)
+		void f_RegisterProgram(const NStr::CStr &_ProgramName, const NStr::CStr &_SupportEmail, bint _bRunningAsDaemon)
 		{
 			m_ProgramName = _ProgramName;
 			m_ProgramNameNonTracked = _ProgramName;
 			m_SupportEmail = _SupportEmail;
 			m_SupportEmailNonTracked = _SupportEmail;
-			m_bRunningAsService = _bRunningAsService;
+			m_bRunningAsDaemon = _bRunningAsDaemon;
 		}
 
 		bool f_IsDll() const
@@ -281,14 +281,14 @@ namespace NMib
 			return m_ProgramNameNonTracked;
 		}
 
-		bint f_GetRunningAsService() const
+		bint f_GetRunningAsDaemon() const
 		{
-			return m_bRunningAsService;
+			return m_bRunningAsDaemon;
 		}
 
-		void f_SetRunningAsService(bint _bRunningAsService)
+		void f_SetRunningAsDaemon(bint _bRunningAsDaemon)
 		{
-			m_bRunningAsService = _bRunningAsService;
+			m_bRunningAsDaemon = _bRunningAsDaemon;
 		}
 
 		// Thread safety?
@@ -365,7 +365,7 @@ namespace NMib
 
 		void f_MemoryManager_OnThreadCreated(mint _ThreadID, mint _ParentID);
 		
-		NMem::CMemoryManagerCheckout f_MemoryManager_Checkout();
+		NMemory::CMemoryManagerCheckout f_MemoryManager_Checkout();
 
 		void f_MemoryManager_DisableLeakReport(bool _bDisable);
 
@@ -484,7 +484,7 @@ namespace NMib
 
 		CSystem *m_pSystem;
 
-		DMibListLinkDA_List(NAggregate::CAggregate, m_Link) m_Aggregates;
+		DMibListLinkDA_List(NStorage::CAggregate, m_Link) m_Aggregates;
 
 		NThread::CMutualAggregate m_Lock;
 
@@ -497,8 +497,8 @@ namespace NMib
 
 		void f_Init(CSystem *_pSystem);
 
-		void f_AddAggregate(NAggregate::CAggregate *_pAggregate);
-		void f_RemoveAggregate(NAggregate::CAggregate *_pAggregate);
+		void f_AddAggregate(NStorage::CAggregate *_pAggregate);
+		void f_RemoveAggregate(NStorage::CAggregate *_pAggregate);
 	};
 	
 	extern CSystemModule g_SystemModule;

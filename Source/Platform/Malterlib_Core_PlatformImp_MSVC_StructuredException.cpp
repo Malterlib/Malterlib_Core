@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "windows.h"
@@ -24,7 +24,7 @@ namespace NMib
 class CMemoryToucher : public NMib::CVirtualDestructor
 {
 	class CInternal;
-	NMib::NPtr::TCUniquePointer<CInternal> m_pInternal;
+	NMib::NStorage::TCUniquePointer<CInternal> m_pInternal;
 public:
 	CMemoryToucher(fp64 _CPUUsage);
 	~CMemoryToucher();		

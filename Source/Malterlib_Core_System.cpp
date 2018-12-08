@@ -13,7 +13,7 @@ void fg_MalterlibMallocOverride_PreDestroyNonTrackedMemoryManager();
 namespace NMib
 {
 
-	namespace NMem
+	namespace NMemory
 	{
 		void fg_Mem_InitSubsystem();
 	}
@@ -67,14 +67,14 @@ namespace NMib
 
 	namespace NException
 	{
-		NAggregate::TCAggregate<NThread::TCThreadLocal<TCAutoClear<CExceptionFilter *>>, 64> g_ExceptionFilter = {DAggregateInit};
+		NStorage::TCAggregate<NThread::TCThreadLocal<TCAutoClear<CExceptionFilter *>>, 64> g_ExceptionFilter = {DAggregateInit};
 	}
 
-	namespace NMem
+	namespace NMemory
 	{
 #ifdef DMibDebug
 		NAtomic::TCAtomic<smint> g_AllowDebugNewErrorGlobal;
-		NAggregate::TCAggregate<NThread::TCThreadLocal<NAtomic::TCAtomic<smint>>, 64> g_AllowDebugNewError = {DAggregateInit};
+		NStorage::TCAggregate<NThread::TCThreadLocal<NAtomic::TCAtomic<smint>>, 64> g_AllowDebugNewError = {DAggregateInit};
 		NThread::TCThreadLocal<NAtomic::TCAtomic<smint>> & fg_AccessAllowDebugNewErrorGlobalSingleton()
 		{
 			return *g_AllowDebugNewError;
@@ -103,7 +103,7 @@ namespace NMib
 		// Things set in motion might need the g_pSys pointer
 		m_bInitDone = false;
 		g_pSys = this;
-		m_bRunningAsService = false;
+		m_bRunningAsDaemon = false;
 
 #if DMibSysLogSeverities
 		m_pSystemLog = nullptr;
@@ -123,12 +123,12 @@ namespace NMib
 #if DMibRemoteDebugger_Enabled
 		if (NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("Malterlib_RemoteDebugger")) != "")
 		{
-			NRemoteDebugger::fg_RD_InitializeClient();
+			NDebug::NRemoteDebugger::fg_RD_InitializeClient();
 		}
 #endif
 		fp_CreateMemoryManager();
 
-		NMem::fg_Mem_InitSubsystem();
+		NMemory::fg_Mem_InitSubsystem();
 	}
 	
 	CSystem::~CSystem()
@@ -138,7 +138,7 @@ namespace NMib
 		m_ProgramRootNonTracked.f_Clear();
 
 #if DMibRemoteDebugger_Enabled
-		NRemoteDebugger::fg_RD_DeinitializeClient();
+		NDebug::NRemoteDebugger::fg_RD_DeinitializeClient();
 #endif
 		
 		fp_SubSystem_DestroyThreadLocal();
@@ -344,7 +344,7 @@ namespace NMib
 	{
 		g_bCanStartThreads = true;		
 #if DMibRemoteDebugger_Enabled
-		NRemoteDebugger::fg_RD_NetworkAvailableForClient();
+		NDebug::NRemoteDebugger::fg_RD_NetworkAvailableForClient();
 #endif
 		f_MemoryManager_CanStartThreads();
 		fg_MalterlibMallocOverride_CanStartThreads();
@@ -638,7 +638,7 @@ namespace NMib
 		{
 		public:
 			typedef aint CRet;
-			static inline_small CRet fs_Compare(void *_pContext, NAggregate::CAggregate *_pFirst, NAggregate::CAggregate *_pSecond)
+			static inline_small CRet fs_Compare(void *_pContext, NStorage::CAggregate *_pFirst, NStorage::CAggregate *_pSecond)
 			{
 				if (_pFirst->m_Priority < _pSecond->m_Priority)
 					return -1;
@@ -648,7 +648,7 @@ namespace NMib
 			}
 		};
 		m_Aggregates.f_MergeSort<CSort>();
-		NAggregate::CAggregate * pAggregate = m_Aggregates.f_GetLast();
+		NStorage::CAggregate * pAggregate = m_Aggregates.f_GetLast();
 		while (pAggregate)
 		{
 			if (!_bDestroySystem && pAggregate->m_Priority < 128)
@@ -674,14 +674,14 @@ namespace NMib
 		m_pSystem = _pSystem;
 	}
 	
-	void CSystemModule::f_AddAggregate(NAggregate::CAggregate *_pAggregate)
+	void CSystemModule::f_AddAggregate(NStorage::CAggregate *_pAggregate)
 	{
 		DMibLock(m_Lock);
 		DMibFastCheck(m_pSystem); // System must exist
 		m_Aggregates.f_Insert(_pAggregate);
 	}
 	
-	void CSystemModule::f_RemoveAggregate(NAggregate::CAggregate *_pAggregate)
+	void CSystemModule::f_RemoveAggregate(NStorage::CAggregate *_pAggregate)
 	{
 		DMibLock(m_Lock);
 		DMibFastCheck(m_pSystem); // System must exist

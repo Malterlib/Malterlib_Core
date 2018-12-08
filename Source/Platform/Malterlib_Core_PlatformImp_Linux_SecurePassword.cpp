@@ -12,8 +12,8 @@ namespace NMib
 	namespace NSys
 	{	
 
-		NPtr::TCUniquePointer<CLinuxPasswordManager> fg_CreateGNOMEPasswordManager();
-		NPtr::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem* _pDBus);
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateGNOMEPasswordManager();
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem* _pDBus);
 
 		struct CNullPasswordManager : public CLinuxPasswordManager
 		{
@@ -59,11 +59,11 @@ namespace NMib
 			
 		};
 
-		NPtr::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem* _pDBus)
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem* _pDBus)
 		{
 			NMib::NSys::EDesktopEnvironment Desktop = NMib::NSys::fg_DesktopEnvironment_Get();
 
-			NPtr::TCUniquePointer<CLinuxPasswordManager> pManager;
+			NStorage::TCUniquePointer<CLinuxPasswordManager> pManager;
 
 			switch(Desktop)
 			{

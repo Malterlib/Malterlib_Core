@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 namespace NMib
@@ -10,7 +10,7 @@ namespace NMib
 
 	namespace NMisc
 	{
-		NAggregate::TCAggregate<NThread::TCThreadLocal<CAutoRandom, NMem::CAllocator_NonTrackedHeap>> g_Random = {DAggregateInit};
+		NStorage::TCAggregate<NThread::TCThreadLocal<CAutoRandom, NMemory::CAllocator_NonTrackedHeap>> g_Random = {DAggregateInit};
 
 		CAutoRandom::CAutoRandom()
 			: CRandomShiftRNG(uint32(NTime::NPlatform::fg_Timer_Cycles() & uint64(0xffffffff)), uint32((NTime::NPlatform::fg_Timer_Cycles() >> 32) & uint64(0xffffffff)), uint32(NTime::NPlatform::fg_Timer_Cycles() & uint64(0xffffffff)))
@@ -108,6 +108,32 @@ namespace NMib
 		bint fg_CheckAccessRights(NStr::CStr const& _Path, bool _bRandom)
 		{
 			return fg_CheckAccessRightsTemplated(_Path, _bRandom);
-		}			
+		}
+
+		CClassContainerList *fg_GetClassContainerListArgList(CClassContainerList &_List, CMibArgList &_Args)
+		{
+			void *CurrentPtr = DMibPArgListNextArg(_Args, void *);
+
+			while(CurrentPtr)
+			{
+//#ifdef DDebug
+				// TODO: Add dynamic cast fix
+//				DSafeCheck(dynamic_cast<CClassContainer *>((CClassContainer *) CurrentPtr), "Not a class container");
+//#endif
+				_List.m_List.f_Insert((CClassContainer *) CurrentPtr);
+
+				CurrentPtr = DMibPArgListNextArg(_Args, void *);
+			}
+
+			return &_List;
+		}
+
+		CClassContainerList *fg_GetClassContainerList(CClassContainerList *_pList, ...)
+		{
+			CMibArgList Args;
+			DMibPArgListStart(Args, _pList);
+
+			return fg_GetClassContainerListArgList(*_pList, Args);
+		}
 	}
 }

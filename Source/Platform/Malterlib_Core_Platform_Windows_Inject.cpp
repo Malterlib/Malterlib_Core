@@ -690,7 +690,7 @@ namespace NMib
 							{
 								auto pRemoteHeaders = fg_GetImageHeaders((HMODULE)Temp);
 						
-								if (pRemoteHeaders && NMem::fg_MemCmp((uint8 *)pRemoteHeaders, (uint8 *)pThisNtDllHeaders, sizeof(*pThisNtDllHeaders)) == 0)
+								if (pRemoteHeaders && NMemory::fg_MemCmp((uint8 *)pRemoteHeaders, (uint8 *)pThisNtDllHeaders, sizeof(*pThisNtDllHeaders)) == 0)
 								{
 									// If the headers are the same, it means that the checksum is the same
 									hRemoteNtDll = (HMODULE)MemInfo.AllocationBase;

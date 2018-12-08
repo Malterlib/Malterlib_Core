@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -405,7 +405,7 @@ namespace NMib
 			CAutoRandom();
 		};
 
-		extern NAggregate::TCAggregate<NThread::TCThreadLocal<CAutoRandom, NMem::CAllocator_NonTrackedHeap>> g_Random;
+		extern NStorage::TCAggregate<NThread::TCThreadLocal<CAutoRandom, NMemory::CAllocator_NonTrackedHeap>> g_Random;
 
 		static inline_small int32 fg_GetRandom()
 		{

@@ -7,6 +7,6 @@ namespace NMib
 	{
 		mint fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, uint8 *_pData, mint _nBytes);
 		NContainer::TCVector<ch8> fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path);
-		NContainer::TCVector<ch8, NMem::CAllocator_NonTrackedHeap> fg_ReadProcFSNonTracked(NMib::NStr::CFStr256 const &_Path);
+		NContainer::TCVector<ch8, NMemory::CAllocator_NonTrackedHeap> fg_ReadProcFSNonTracked(NMib::NStr::CFStr256 const &_Path);
 	}
 }

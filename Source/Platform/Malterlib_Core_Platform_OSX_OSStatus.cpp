@@ -24,11 +24,11 @@ namespace NMib
 					}
 				};
 
-				DMibIntrusiveLink(CError, NIntrusive::TCAVLLink<>, m_TreeLink);
+				NIntrusive::TCAVLLink<> m_TreeLink;
 			};
 			
 			CError m_Errors[sizeof(gs_OSXErrors)/sizeof(COSXError)];
-			NIntrusive::TCAVLTree<CError::CLinkTraits_m_TreeLink, CError::CCompare> m_Tree;
+			NIntrusive::TCAVLTree<&CError::m_TreeLink, CError::CCompare> m_Tree;
 			
 			CSubSystem_Core_OSX_ErrorStore()
 			{

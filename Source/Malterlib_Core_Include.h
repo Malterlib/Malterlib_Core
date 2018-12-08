@@ -8,10 +8,19 @@ namespace NMib
 {
 	class CSharedPointerHolder;
 
-	namespace NMem
+	namespace NMemory
 	{
 		class CAllocator_Heap;
 		class CAllocator_Virtual;
+
+		template
+		<
+			typename t_CBaseAllocator
+			, bool t_bStatic
+		>
+		class TCAllocator_Secure;
+
+		using CAllocator_HeapSecure = TCAllocator_Secure<CAllocator_Heap, true>;
 	}
 	
 	namespace NThread
@@ -29,8 +38,11 @@ namespace NMib
 
 		struct CVectorOptionsDefault;
 
-		template <typename t_CData, typename t_CAllocator = NMib::NMem::CAllocator_Heap, typename t_COptions = CVectorOptionsDefault>
+		template <typename t_CData, typename t_CAllocator = NMib::NMemory::CAllocator_Heap, typename t_COptions = CVectorOptionsDefault>
 		class TCVector;
+
+		using CByteVector = TCVector<uint8>;
+		using CSecureByteVector = TCVector<uint8, NMemory::CAllocator_HeapSecure>;
 	}
 
 	struct CVoidTag 
@@ -68,7 +80,7 @@ namespace NMib
 
 	typedef TCVoidFunctor<void> CVoidFunctor;
 
-	namespace NPtr
+	namespace NStorage
 	{
 		using CSharedPointerOptionUnderlaying = int32;
 		enum ESharedPointerOption : int32
@@ -127,6 +139,7 @@ namespace NMib
 #include "Malterlib_Core_PlatformInterface.h"
 
 #include <Mib/Debug/Debug>
+#include <Mib/CommandLine/Console>
 #include <Mib/Memory/Memory>
 
 #include <Mib/Memory/Allocators/Virtual>
@@ -135,15 +148,15 @@ namespace NMib
 
 namespace NMib
 {
-	namespace NMem
+	namespace NMemory
 	{
-		typedef NMib::NMem::CAllocator_Heap CDefaultAllocator;
+		typedef NMib::NMemory::CAllocator_Heap CDefaultAllocator;
 	}
 }
 
 namespace NMib
 {
-	namespace NPtr
+	namespace NStorage
 	{
 		template <typename t_CType, typename... tp_COptions>
 		class TCSharedPointer;
@@ -249,7 +262,7 @@ namespace NMib
 
 #ifndef DMibPNoShortCuts
 	using namespace NMib;
-	using namespace NMib::NMem;
+	using namespace NMib::NMemory;
 	using namespace NMib::NThread;
 	using namespace NMib::NTime;
 	using namespace NMib::NStr;
@@ -258,7 +271,7 @@ namespace NMib
 	using namespace NMib::NException;
 	using namespace NMib::NMisc;
 	using namespace NMib::NStream;
-	using namespace NMib::NRegistry;	
+	using namespace NMib::NContainer;	
 	using namespace NMib::NAtomic;	
 	using namespace NMib::NSystem;	
 	#define DNewLine DMibNewLine

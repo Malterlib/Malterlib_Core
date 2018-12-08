@@ -13,7 +13,7 @@ namespace NMib
 	{
 		struct CSubSystem_Core_Application : public CSubSystem
 		{
-			NPtr::TCUniquePointer<CApplication> m_pApplication;
+			NStorage::TCUniquePointer<CApplication> m_pApplication;
 			
 			void f_ExitModule() override
 			{

@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -91,9 +91,9 @@ namespace NMib
 			return Temp;
 		}
 
-		NContainer::TCVector<uint8> CWin32_Registry::f_Read_Bin(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
+		NContainer::CByteVector CWin32_Registry::f_Read_Bin(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
-			NContainer::TCVector<uint8> Temp;
+			NContainer::CByteVector Temp;
 	
 			fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, &Temp, nullptr);
 	
@@ -123,7 +123,7 @@ namespace NMib
 		}
 
 
-		NContainer::TCVector<uint8> CWin32_Registry::f_Read_Bin(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::TCVector<uint8> &_Default)
+		NContainer::CByteVector CWin32_Registry::f_Read_Bin(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::CByteVector &_Default)
 		{
 			if (f_ValueExists(_SubKey, _KeyValue))
 				return f_Read_Bin(_SubKey, _KeyValue);
@@ -234,7 +234,7 @@ namespace NMib
 			return ValueType == REG_BINARY;
 		}
 
-		void CWin32_Registry::fp_ReadRegKey(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, DWORD *_pDword, NStr::CStr *_pStr, NContainer::TCVector<uint8> *_pMemory, NContainer::TCVector<NStr::CStr> *_pMulti)
+		void CWin32_Registry::fp_ReadRegKey(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, DWORD *_pDword, NStr::CStr *_pStr, NContainer::CByteVector *_pMemory, NContainer::TCVector<NStr::CStr> *_pMulti)
 		{		
 			DWORD ValueSize = 0;
 			HKEY PathKey = nullptr;
@@ -407,7 +407,7 @@ namespace NMib
 		}
 		*/
 
-		void CWin32_Registry::f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::TCVector<uint8> &_Data)
+		void CWin32_Registry::f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::CByteVector &_Data)
 		{
 			fp_WriteRegKey(_SubKey, _KeyValue, nullptr, nullptr, &_Data, nullptr);
 		}
@@ -422,7 +422,7 @@ namespace NMib
 			fp_WriteRegKey(_SubKey, _KeyValue, nullptr, nullptr, nullptr, &_Multi);
 		}
 
-		void CWin32_Registry::fp_WriteRegKey(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const DWORD *_pDword, const NStr::CStr *_pStr, const NContainer::TCVector<uint8> *_pMemory, const NContainer::TCVector<NStr::CStr> *_pMulti)
+		void CWin32_Registry::fp_WriteRegKey(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const DWORD *_pDword, const NStr::CStr *_pStr, const NContainer::CByteVector *_pMemory, const NContainer::TCVector<NStr::CStr> *_pMulti)
 		{
 			HKEY PathKey = nullptr;
 			NStr::CStr SubKey = fp_GetPath(_SubKey);
@@ -479,7 +479,7 @@ namespace NMib
 					mint Len = TempMulti[i].f_GetLen();
 					if (Len)
 					{
-						NMib::NMem::fg_MemCopy(pParse, TempMulti[i].f_GetStr(), (Len + 1)*2);
+						NMib::NMemory::fg_MemCopy(pParse, TempMulti[i].f_GetStr(), (Len + 1)*2);
 						pParse += Len + 1;
 					}
 				}

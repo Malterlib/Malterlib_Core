@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 struct CEpollEvent
@@ -342,8 +342,8 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 				if (AddedState)
 				{ 
 					pSocket->m_State |= AddedState;
-					if (pSocket->m_OnStateChange)
-						pSocket->m_OnStateChange(AddedState);
+					if (pSocket->m_fOnStateChange)
+						pSocket->m_fOnStateChange(AddedState);
 				}
 			}
 
@@ -375,34 +375,34 @@ CPOSIXImpSpecificSocketContext::~CPOSIXImpSpecificSocketContext()
 {
 }
 
-bint CPOSIXImpSpecificSocketContext::f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNet::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+bint CPOSIXImpSpecificSocketContext::f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
 {
 	return false;
 }
 
-bint CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNet::ENetAddressType _PreferType)
+bint CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType)
 {
 	return false;
 }
 
-bint CPOSIXImpSpecificSocketContext::f_GetAddressRaw(CPOSIXAddress const& _Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bint CPOSIXImpSpecificSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
 {
 	return false;
 }
 
-CPOSIXAddress* CPOSIXImpSpecificSocketContext::f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNet::ENetAddressType _ExpectedType, void const* _pRawData, mint _nDataBytes)
+CPOSIXAddress* CPOSIXImpSpecificSocketContext::f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const* _pRawData, mint _nDataBytes)
 {
-	NMib::NSys::NNet::fg_FreeAddress(_Address);
+	NMib::NSys::NNetwork::fg_FreeAddress(_Address);
 	return nullptr;
 }
 
 
-int CPOSIXImpSpecificSocketContext::f_Connect(CPOSIXAddress const& _Address) // Returns a FD or -1
+int CPOSIXImpSpecificSocketContext::f_Connect(CPOSIXAddress const &_Address) // Returns a FD or -1
 {
 	return -1;
 }
 
-bool CPOSIXImpSpecificSocketContext::f_GetSocketCreateParams(::NMib::NNet::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams)
+bool CPOSIXImpSpecificSocketContext::f_GetSocketCreateParams(::NMib::NNetwork::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams)
 {
 	return false;
 }

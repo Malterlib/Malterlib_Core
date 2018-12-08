@@ -17,11 +17,11 @@
 using namespace NMib;
 using namespace NMib::NStr;
 using namespace NMib::NTime;
-using namespace NMib::NMem;
+using namespace NMib::NMemory;
 using namespace NMib::NContainer;
 using namespace NMib::NFile;
 using namespace NMib::NThread;
-using namespace NMib::NPtr;
+using namespace NMib::NStorage;
 
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
 #include "Malterlib_Core_Platform_Linux_Optional.h"
@@ -222,7 +222,7 @@ public:
 		aint f_Main();
 		
 		CFileChangeNotificationContext *m_pContext;
-		TCVector<uint8> m_ChangesBuffer;
+		CByteVector m_ChangesBuffer;
 	};
 
 	struct CPendingRename
@@ -236,7 +236,7 @@ public:
 	
 	int f_Inotify_AddWatch(CStr const &_Path);
 	void f_Inotify_RemoveWatch(int _Descriptor);
-	ssize_t f_Inotify_Read(TCVector<uint8> &_Buffer);
+	ssize_t f_Inotify_Read(CByteVector &_Buffer);
 	
 	CWatch &f_LinkWatch(int _WatchDescriptor, CStr const &_Path, CNotification *_pNotification, CWatch *_pParentWatch);
 	void f_UnlinkWatch(TCSharedPointer<CWatch> _pWatch, CNotification *_pNotification, bool _bDescriptorInvalid);

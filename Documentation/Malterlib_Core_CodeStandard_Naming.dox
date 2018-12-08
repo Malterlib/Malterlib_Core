@@ -651,7 +651,7 @@ Function return values should not be concept prefixed.
 	<td>Iterator or index</td>
 	<td>
 ~~~
-	TCVector<uint8> ByteBuffer;
+	CByteVector ByteBuffer;
 	auto rByte = fg_Range(ByteBuffer);
 	for (auto iByte = rByte.f_Front(); iByte != rByte.f_Back(); ++iByte)
 		*iByte;
@@ -667,7 +667,7 @@ Function return values should not be concept prefixed.
 	<td>Number of</td>
 	<td>
 ~~~
-	TCVector<uint8> ByteBuffer;
+	CByteVector ByteBuffer;
 	mint nBytes = ByteBuffer.f_GetLen();
 ~~~
 	</td>
@@ -678,7 +678,7 @@ Function return values should not be concept prefixed.
 	<td>Pointer</td>
 	<td>
 ~~~
-	TCVector<uint8> ByteBuffer;
+	CByteVector ByteBuffer;
 	uint8 const *pBytes = ByteBuffer.f_GetArray();
 	TCUniquePointer<uint32> pInstance = fg_Construct();
 ~~~
@@ -717,7 +717,7 @@ Function return values should not be concept prefixed.
 	<td>Range</td>
 	<td>
 ~~~
-	TCVector<uint8> ByteBuffer;
+	CByteVector ByteBuffer;
 	for (auto rByte = fg_Range(ByteBuffer); rByte; ++rByte)
 		*rByte;
 ~~~

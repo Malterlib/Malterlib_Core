@@ -83,7 +83,7 @@ namespace NMib
 
 			if (!pInfo)
 			{
-				NPtr::TCUniquePointer<CRunTimeObjectInfoContainer, NMem::CAllocator_NonTrackedHeap> pNewInfo = fg_Construct();
+				NStorage::TCUniquePointer<CRunTimeObjectInfoContainer, NMemory::CAllocator_NonTrackedHeap> pNewInfo = fg_Construct();
 				
 				pNewInfo->m_bIsStatic = false;
 				((CRunTimeObjectInfoContainer *)pNewInfo.f_Get())->f_Construct(Namespace);
@@ -183,7 +183,7 @@ namespace NMib
 				
 				pInfo->m_pNamespace->m_Namespace.f_Remove(pInfo);
 				pInfo->m_pNamespace = nullptr;
-				NPtr::TCUniquePointer<CRunTimeObjectInfo, NMem::CAllocator_NonTrackedHeap> pInfoPtr = fg_Explicit(pInfo);
+				NStorage::TCUniquePointer<CRunTimeObjectInfo, NMemory::CAllocator_NonTrackedHeap> pInfoPtr = fg_Explicit(pInfo);
 				pInfoPtr.f_Clear();
 				m_pNamespace->m_Namespace.f_Insert(this);
 			}
@@ -212,7 +212,7 @@ namespace NMib
 			DMibSafeCheck(m_bIsStatic,"If we have reached the destructor and have children left something has gone terribly wrong when we aren't static");
 			// Remove from pool
 
-			NPtr::TCUniquePointer<CRunTimeObjectInfoContainer, NMem::CAllocator_NonTrackedHeap> pNewTempConstruct = fg_Construct();
+			NStorage::TCUniquePointer<CRunTimeObjectInfoContainer, NMemory::CAllocator_NonTrackedHeap> pNewTempConstruct = fg_Construct();
 			auto *pNewTemp = pNewTempConstruct.f_Detach();
 			pNewTemp->m_pName = m_pName;
 			pNewTemp->m_pParent = m_pParent;
@@ -259,7 +259,7 @@ namespace NMib
 				m_pParent->m_Children.f_Remove(this);
 				if (!m_pParent->m_bIsStatic && m_pParent->m_Children.f_IsEmpty() && m_pParent->m_Namespace.f_IsEmpty())
 				{
-					NPtr::TCUniquePointer<CRunTimeObjectInfo, NMem::CAllocator_NonTrackedHeap> pTempDestruct = fg_Explicit(m_pParent);
+					NStorage::TCUniquePointer<CRunTimeObjectInfo, NMemory::CAllocator_NonTrackedHeap> pTempDestruct = fg_Explicit(m_pParent);
 					pTempDestruct.f_Clear();
 				}
 			}
@@ -269,7 +269,7 @@ namespace NMib
 				m_pNamespace->m_Namespace.f_Remove(this);
 				if (!m_pNamespace->m_bIsStatic && m_pNamespace->m_Children.f_IsEmpty() && m_pNamespace->m_Namespace.f_IsEmpty())
 				{
-					NPtr::TCUniquePointer<CRunTimeObjectInfo, NMem::CAllocator_NonTrackedHeap> pTempDestruct = fg_Explicit(m_pNamespace);
+					NStorage::TCUniquePointer<CRunTimeObjectInfo, NMemory::CAllocator_NonTrackedHeap> pTempDestruct = fg_Explicit(m_pNamespace);
 					pTempDestruct.f_Clear();
 				}
 			}

@@ -34,7 +34,7 @@ namespace
 						{
 							while (true)
 							{
-								NMib::NMem::CAllocator_NonTrackedHeap::f_Free(NMib::NMem::CAllocator_NonTrackedHeap::f_Alloc(1));
+								NMib::NMemory::CAllocator_NonTrackedHeap::f_Free(NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(1));
 							}
 
 							return 0;
@@ -52,7 +52,7 @@ namespace
 
 			DMibTestSuite("MemoryTrackWithoutDll")
 			{
-				DMibMemLightweightTrackAddFlagsScope(NMib::NMem::EMemoryReportLightweightScopeFlag_InCScope);
+				DMibMemLightweightTrackAddFlagsScope(NMib::NMemory::EMemoryReportLightweightScopeFlag_InCScope);
 				DMibMemLightweightTrackDisableScope;
 				delete (new int);
 			};
@@ -162,7 +162,7 @@ namespace
 
 				pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 
-				NMib::NContainer::TCVector<NMib::NPtr::TCUniquePointer<NMib::NThread::CThreadObject>> Threads;
+				NMib::NContainer::TCVector<NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject>> Threads;
 				Threads.f_SetLen(100);
 				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
 				
@@ -185,12 +185,12 @@ namespace
 								[&](NMib::NThread::CThreadObject *_pThread) -> aint
 								{
 									fl_ThreadProc(_pThread);
-									NMib::NContainer::TCVector<NMib::NPtr::TCUniquePointer<NMib::NThread::CThreadObject>> Threads2;
+									NMib::NContainer::TCVector<NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject>> Threads2;
 									Threads2.f_SetLen(10);
 
-									NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMem::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage;
+									NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage;
 									{
-										NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMem::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage2;
+										NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage2;
 
 										for (auto i = 0; i < 10; ++i)
 										{

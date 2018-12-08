@@ -26,17 +26,17 @@ private:
 
 		~CResolveRequest()
 		{
-			NMib::NSys::NNet::fg_FreeAddress(m_Address);
+			NMib::NSys::NNetwork::fg_FreeAddress(m_Address);
 		}
 
 		NStr::CStr m_Name;
 
 		NThread::CMutual m_Lock;
 			EFlag m_Flags;
-			NMib::NSys::NNet::CAddress m_Address;
+			NMib::NSys::NNetwork::CAddress m_Address;
 			NMib::NFunction::TCFunction<void ()> m_fOnFinish;
 			NMib::NStr::CStr m_ErrorString;
-			NMib::NNet::ENetAddressType m_PreferType;
+			NMib::NNetwork::ENetAddressType m_PreferType;
 
 		// Protected by CResolveThread::mp_Lock.
 		DMibListLinkS_Link(CResolveRequest, m_Link);
@@ -49,7 +49,9 @@ private:
 	NMib::NThread::CEventAutoResetReportable mp_TerminateEvent;
 	NMib::NThread::CEventAutoResetReportable mp_WakeEvent;
 
-	typedef NPtr::TCUniquePointer<NThread::CThreadObject, NMem::CDefaultAllocator, TCDynamicPtr<typename NMem::CDefaultAllocator::CPtrHolder, NThread::CThreadObject>, void>  CThreadPointer;
+	using CThreadPointer =
+		NStorage::TCUniquePointer<NThread::CThreadObject, NMemory::CDefaultAllocator, TCDynamicPtr<typename NMemory::CDefaultAllocator::CPtrHolder, NThread::CThreadObject>, void>
+	;
 
 	enum
 	{
@@ -64,8 +66,8 @@ public:
 	CAddressResolver();
 	~CAddressResolver();
 
-	void* f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNet::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()>&& _fOnFinish);
-	bint f_GetResult(void *_pResolver, NMib::NSys::NNet::CAddress& _oAddress, NMib::NStr::CStr &_Error);
+	void* f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish);
+	bint f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error);
 	void f_Close(void* _pResolver);
 
 	bint f_IsEmpty();
@@ -89,12 +91,12 @@ struct CUnixAddress
 struct CRuntimeNetAddress
 {
 private:
-	NMib::NNet::ENetAddressType mp_Type;
-	TCVector<uint8> mp_lData;
+	NMib::NNetwork::ENetAddressType mp_Type;
+	CByteVector mp_lData;
 
 public:
 	CRuntimeNetAddress()
-		: mp_Type(NMib::NNet::ENetAddressType_None)
+		: mp_Type(NMib::NNetwork::ENetAddressType_None)
 	{}
 
 	CRuntimeNetAddress(CRuntimeNetAddress const& _ToCopy)
@@ -103,43 +105,43 @@ public:
 	{
 	}
 
-	CRuntimeNetAddress(NMib::NNet::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
-		: mp_Type(NMib::NNet::ENetAddressType_None)
+	CRuntimeNetAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+		: mp_Type(NMib::NNetwork::ENetAddressType_None)
 	{
 		f_Set(_Type, _pData, _nDataBytes);
 	}
 
 	CRuntimeNetAddress(sockaddr_in const& _TCPv4)
-		: mp_Type(NMib::NNet::ENetAddressType_None)
+		: mp_Type(NMib::NNetwork::ENetAddressType_None)
 	{
 		f_Set(_TCPv4);
 	}
 
 	CRuntimeNetAddress(sockaddr_in6 const& _TCPv6)
-		: mp_Type(NMib::NNet::ENetAddressType_None)
+		: mp_Type(NMib::NNetwork::ENetAddressType_None)
 	{
 		f_Set(_TCPv6);
 	}
 
 	CRuntimeNetAddress(CUnixAddress const &_Unix)
-		: mp_Type(NMib::NNet::ENetAddressType_None)
+		: mp_Type(NMib::NNetwork::ENetAddressType_None)
 	{
 		f_Set(_Unix);
 	}
 
-	NMib::NNet::ENetAddressType f_GetType() const
+	NMib::NNetwork::ENetAddressType f_GetType() const
 	{
 		return mp_Type;
 	}
 
-	void f_Set(NMib::NNet::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+	void f_Set(NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
 	{
 		mp_Type = _Type;
 		mp_lData.f_SetLen(_nDataBytes);
 		fg_MemCopy(mp_lData.f_GetArray(), _pData, _nDataBytes);
 	}
 	
-	void *f_GetForWrite(NMib::NNet::ENetAddressType _Type, mint _nDataBytes)
+	void *f_GetForWrite(NMib::NNetwork::ENetAddressType _Type, mint _nDataBytes)
 	{
 		mp_Type = _Type;
 		mp_lData.f_SetLen(_nDataBytes);
@@ -148,23 +150,23 @@ public:
 
 	void f_Set(sockaddr_in const& _TCPv4)
 	{
-		f_Set(NMib::NNet::ENetAddressType_TCPv4, &_TCPv4, sizeof(sockaddr_in));
+		f_Set(NMib::NNetwork::ENetAddressType_TCPv4, &_TCPv4, sizeof(sockaddr_in));
 	}
 
 	void f_Set(sockaddr_in6 const& _TCPv6)
 	{
-		f_Set(NMib::NNet::ENetAddressType_TCPv6, &_TCPv6, sizeof(sockaddr_in6));
+		f_Set(NMib::NNetwork::ENetAddressType_TCPv6, &_TCPv6, sizeof(sockaddr_in6));
 	}
 
 	void f_Set(CUnixAddress const &_Unix)
 	{
-		f_Set(NMib::NNet::ENetAddressType_Unix, &_Unix, sizeof(CUnixAddress));
+		f_Set(NMib::NNetwork::ENetAddressType_Unix, &_Unix, sizeof(CUnixAddress));
 	}
 	
 	mint f_GetFullDataLen() const { return mp_lData.f_GetLen(); }
 	mint f_GetSockAddrLen() const 
 	{
-		using namespace NMib::NNet;
+		using namespace NMib::NNetwork;
 		switch (mp_Type)
 		{
 			case ENetAddressType_TCPv4: return sizeof(sockaddr_in);
@@ -186,7 +188,7 @@ public:
 	CUnixAddress &f_GetUnix()  { return *(CUnixAddress *)mp_lData.f_GetArray(); }
 
 	template<typename t_CAddrType>
-	t_CAddrType const& f_GetAsType(NMib::NNet::ENetAddressType _ExpectedType) const
+	t_CAddrType const& f_GetAsType(NMib::NNetwork::ENetAddressType _ExpectedType) const
 	{
 		DMibSafeCheck(mp_Type == _ExpectedType, "Address is not of the expected type.");
 		return *(t_CAddrType const*)mp_lData.f_GetArray();

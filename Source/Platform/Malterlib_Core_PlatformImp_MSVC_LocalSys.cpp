@@ -35,7 +35,7 @@ public:
 
 	bint m_bDestroying;
 
-	NAggregate::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
+	NStorage::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
 
 	class CFileChangeNoticationContext
 	{
@@ -268,7 +268,7 @@ public:
 			NThread::CEvent m_FirstReadDoneEvent;
 			TCLinkedList<CChange> m_Changes;
 
-			TCVector<uint8> m_ChangesBuffer;
+			CByteVector m_ChangesBuffer;
 			OVERLAPPED m_ChangesOverlapped;
 
 			NThread::CSemaphoreReportableAggregate *m_pReportTo;
@@ -455,7 +455,7 @@ public:
 
 				m_ChangesBuffer.f_SetLen(64*1024);
 				DWORD Dummy;
-				NMem::fg_MemClear(m_ChangesOverlapped);
+				NMemory::fg_MemClear(m_ChangesOverlapped);
 				m_ChangesOverlapped.hEvent = this;
 
 				if (ReadDirectoryChangesW(m_Handle, m_ChangesBuffer.f_GetArray(), m_ChangesBuffer.f_GetLen(), (m_Flags & EFileChange_Recursive) != 0, Flags, &Dummy, &m_ChangesOverlapped, &CompletionRoutine))
@@ -712,7 +712,7 @@ public:
 
 	};
 
-	NAggregate::TCAggregate<CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
+	NStorage::TCAggregate<CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
 
 
 	bool f_EnablePrivilege(TCHAR* pszPrivilege, BOOL bEnable)

@@ -8,7 +8,7 @@ DMibPMain;
 
 
 
-NMib::NThread::TCThreadLocal<NMib::NStr::CStr, NMib::NMem::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> g_ThreadLocal;
+NMib::NThread::TCThreadLocal<NMib::NStr::CStr, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> g_ThreadLocal;
 
 extern "C"
 {
@@ -16,7 +16,7 @@ extern "C"
 	{
 		*g_ThreadLocal = NMib::NStr::CStr::fs_ToStr(NMib::NSys::fg_Thread_GetCurrentUID());
 		{
-			DMibMemLightweightTrackAddFlagsScope(NMib::NMem::EMemoryReportLightweightScopeFlag_InCScope);
+			DMibMemLightweightTrackAddFlagsScope(NMib::NMemory::EMemoryReportLightweightScopeFlag_InCScope);
 			DMibMemLightweightTrackDisableScope;
 			delete (new int);
 		}
@@ -26,7 +26,7 @@ extern "C"
 	{
 		*g_ThreadLocal = NMib::NStr::CStr::fs_ToStr(NMib::NSys::fg_Thread_GetCurrentUID());
 		{
-			DMibMemLightweightTrackAddFlagsScope(NMib::NMem::EMemoryReportLightweightScopeFlag_InCScope);
+			DMibMemLightweightTrackAddFlagsScope(NMib::NMemory::EMemoryReportLightweightScopeFlag_InCScope);
 			DMibMemLightweightTrackDisableScope;
 			delete (new int);
 		}

@@ -12,7 +12,7 @@
 using namespace NMib;
 using namespace NMib::NStr;
 using namespace NMib::NTime;
-using namespace NMib::NMem;
+using namespace NMib::NMemory;
 using namespace NMib::NContainer;
 
 bint g_bIsSharedLibrary = false;
@@ -176,7 +176,7 @@ CSystem_POSIX *fg_GetSys_POSIX()
 
 typedef char uuid_string_t[256];
 
-void NSys::fg_System_GenerateUUID(NDataProcessing::CUniversallyUniqueIdentifier &_UUID)
+void NSys::fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_UUID)
 {
 	static_assert(sizeof(uuid_t) == sizeof(_UUID));
 	uuid_generate((unsigned char *)&_UUID);
@@ -188,7 +188,7 @@ void NSys::fg_System_GenerateUUID(NDataProcessing::CUniversallyUniqueIdentifier 
 	_UUID.m_TimeMid = fg_ByteSwapBE(_UUID.m_TimeMid);
 	_UUID.m_TimeHiAndVersion = fg_ByteSwapBE(_UUID.m_TimeHiAndVersion);
 #	if DMibEnableSafeCheck > 0
-	DMibFastCheck(_UUID.f_GetAsStaticString(NDataProcessing::EUniversallyUniqueIdentifierFormat_Bare).f_CmpNoCase(RetStr) == 0);
+	DMibFastCheck(_UUID.f_GetAsStaticString(NCryptography::EUniversallyUniqueIdentifierFormat_Bare).f_CmpNoCase(RetStr) == 0);
 #	endif
 }
 
@@ -221,7 +221,7 @@ struct CCodePageCache
 	
 };
 
-NMib::NAggregate::TCAggregate<CCodePageCache> g_CodePageCache = { DAggregateInit };
+NMib::NStorage::TCAggregate<CCodePageCache> g_CodePageCache = { DAggregateInit };
 
 void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, ch8 _ErrorChar)
 {
@@ -389,7 +389,11 @@ void NSys::fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NM
 	
 }
 
-void NSys:::fg_Debug_GenerateMemoryDump(NMib::NContainer::TCVector<void*, NMib::NMem::CAllocator_NonTrackedHeap> const& _Locations, NMib::NContainer::TCVector<mint, NMib::NMem::CAllocator_NonTrackedHeap> const& _Sizes)
+void NSys:::fg_Debug_GenerateMemoryDump
+	(
+	 	NMib::NContainer::TCVector<void*, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Locations
+	 	, NMib::NContainer::TCVector<mint, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Sizes
+	)
 {
 
 }
@@ -707,9 +711,9 @@ extern "C"
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_AllocDebug(__size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(__size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_Alloc(__size);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(__size);
 #		endif
 	}
 
@@ -718,9 +722,9 @@ extern "C"
 		DMibFastCheck(g_bCanUseSystemMalloc);
 		mint Size = __nmemb * __size;
 #		if DMibConfig_MalterlibMemoryManager_Debug
-			auto pMem = NMib::NMem::CAllocator_NonTrackedHeap::f_AllocDebug(Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+			auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
-			auto pMem = NMib::NMem::CAllocator_NonTrackedHeap::f_Alloc(Size);
+			auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(Size);
 #		endif
 		fg_MemClear(pMem, Size);
 		return pMem;
@@ -730,30 +734,30 @@ extern "C"
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_ResizeDebug(__ptr, __size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_ResizeDebug(__ptr, __size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_Resize(__ptr, __size, 0);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_Resize(__ptr, __size, 0);
 #		endif
 	}
 
 	void nontracked_free (void *__ptr)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMem::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
 	}
 
 	void nontracked_cfree (void *__ptr)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMem::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
 	}
 	void *nontracked_memalign (size_t __alignment, size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, __alignment, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, __alignment, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_AllocAligned(__size, __alignment);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, __alignment);
 #		endif
 	}
 	int nontracked_posix_memalign(void **_pOutput, size_t _Alignment, size_t _Size)
@@ -765,24 +769,24 @@ extern "C"
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
 #		endif
 	}
 	void * nontracked_pvalloc (size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
-			return NMib::NMem::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
 #		endif
 	}
 	size_t nontracked_malloc_usable_size (void *__ptr)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMem::CAllocator_NonTrackedHeap::f_Size(__ptr);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Size(__ptr);
 	}
 }
 
@@ -1383,130 +1387,130 @@ bool NSys::NFile::fg_ChangeNotification_Supported()
 // Net Implementation
 // *************************************************************************************************************************
 
-NSys::NNet::CAddress NSys::NNet::fg_CreateAddress(::NMib::NNet::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-NSys::NNet::CAddress NSys::NNet::fg_DuplicateAddress(NSys::NNet::CAddress _Address)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAddress _Address)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-::NMib::NNet::ENetAddressType NSys::NNet::fg_GetAddressType(NSys::NNet::CAddress _Address)
+::NMib::NNetwork::ENetAddressType NSys::NNetwork::fg_GetAddressType(NSys::NNetwork::CAddress _Address)
 {
 	DMibError("Not implemented");
-	return ::NMib::NNet::ENetAddressType_None;
+	return ::NMib::NNetwork::ENetAddressType_None;
 }
 
-bint NSys::NNet::fg_GetAddressRaw(NSys::NNet::CAddress _Address, ::NMib::NNet::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bint NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
 {
 	DMibError("Not implemented");
 	return false;
 }
 
-NSys::NNet::CAddress NSys::NNet::fg_SetAddressRaw(NSys::NNet::CAddress _Address, ::NMib::NNet::ENetAddressType _Type, void const* _pRawData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, mint _nDataBytes)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-NSys::NNet::CAddress NSys::NNet::fg_ResolveAddress(const NMib::NStr::CStr &_Address, ::NMib::NNet::ENetAddressType _PreferType)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_ResolveAddress(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void *NSys::NNet::fg_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNet::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()>&& _fOnFinish)
+void *NSys::NNetwork::fg_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-bint NSys::NNet::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNet::CAddress& _opAddress, NMib::NStr::CStr &_Error)
+bint NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress& _opAddress, NMib::NStr::CStr &_Error)
 {
 	DMibError("Not implemented");
 	return false;
 }
 
-void NSys::NNet::fg_AsyncResolveAddress_Close(void *_pResolver)
+void NSys::NNetwork::fg_AsyncResolveAddress_Close(void *_pResolver)
 {
 	DMibError("Not implemented");
 }
 
-int NSys::NNet::fg_CompareAddresses(NSys::NNet::CAddress _pFirst, NSys::NNet::CAddress _pSecond)
+int NSys::NNetwork::fg_CompareAddresses(NSys::NNetwork::CAddress _pFirst, NSys::NNetwork::CAddress _pSecond)
 {
 	DMibError("Not implemented");
 	return 0;
 }
 
-void NSys::NNet::fg_FreeAddress(NSys::NNet::CAddress _Address) // It is OK to free a nullptr address
+void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _Address) // It is OK to free a nullptr address
 {
 	DMibError("Not implemented");
 }
 
-NMib::NStr::CStr NSys::NNet::fg_GetAddressString(NSys::NNet::CAddress _Address, bint _bIncludeType)
+NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, bint _bIncludeType)
 {
 	DMibError("Not implemented");
 	return "";
 }
 
 // Connection Operations
-void *NSys::NNet::fg_Connect(NSys::NNet::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NSys::NNet::CAddress _BindAddress) // Report to the supplied event when new data is received or when we are ready to send new dat
+void *NSys::NNetwork::fg_Connect(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NSys::NNetwork::CAddress _BindAddress)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void *NSys::NNet::fg_AsyncConnect(NSys::NNet::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NSys::NNet::CAddress _BindAddress) // Report to the supplied event when new data is received or when we are ready to send new data and when the connection is connecte
+void *NSys::NNetwork::fg_AsyncConnect(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NSys::NNetwork::CAddress _BindAddress)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void *NSys::NNet::fg_Listen(NSys::NNet::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NMib::NNet::ENetFlag _Flags) // Report to the supplied event when a new connection has arrive
+void *NSys::NNetwork::fg_Listen(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NMib::NNetwork::ENetFlag _Flags)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
-void *NSys::NNet::fg_ListenDatagram(NSys::NNet::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NMib::NNet::ENetFlag _Flags)
-{
-	DMibError("Not implemented");
-	return nullptr;
-}
-
-void *NSys::NNet::fg_Accept(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo) // Report to the supplied event when new data is received or when we are ready to send new dat
+void *NSys::NNetwork::fg_ListenDatagram(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NMib::NNetwork::ENetFlag _Flags)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void NSys::NNet::fg_Close(void *_pSocket) // Closes the socket and connectio
+void *NSys::NNetwork::fg_Accept(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+{
+	DMibError("Not implemented");
+	return nullptr;
+}
+
+void NSys::NNetwork::fg_Close(void *_pSocket) // Closes the socket and connectio
 {
 	DMibError("Not implemented");
 }
 
-mint NSys::NNet::fg_Receive(void *_pSocket, void *_pData, mint _DataLen) // Returns bytes receive
+mint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, mint _DataLen) // Returns bytes receive
 {
 	DMibError("Not implemented");
 	return 0;
 }
 
-mint NSys::NNet::fg_Send(void *_pSocket, const void *_pData, mint _DataLen) // Returns bytes sen
+mint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, mint _DataLen) // Returns bytes sen
 {
 	DMibError("Not implemented");
 	return 0;
 }
 
-mint NSys::NNet::fg_SendDatagram(void *_pSocket, NSys::NNet::CAddress _Address, const void *_pData, mint _DataLen) // Returns bytes sen
+mint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, mint _DataLen) // Returns bytes sen
 {
 	DMibError("Not implemented");
 	return 0;
 }
 
-mint NSys::NNet::fg_ReceiveDatagram(void *_pSocket, NSys::NNet::CAddress _Address, void *_pData, mint _DataLen) // Returns bytes sen
+mint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, mint _DataLen) // Returns bytes sen
 {
 	DMibError("Not implemented");
 	return 0;
@@ -1514,54 +1518,54 @@ mint NSys::NNet::fg_ReceiveDatagram(void *_pSocket, NSys::NNet::CAddress _Addres
 
 // Socket Properties & State
 
-void NSys::NNet::fg_SetReportTo(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo) // Report to the supplied event when new data is received or when we are ready to send new data			
+void NSys::NNetwork::fg_SetReportTo(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo) // Report to the supplied event when new data is received or when we are ready to send new data			
 {
 	DMibError("Not implemented");
 }
 
-NMib::NNet::ENetTCPState NSys::NNet::fg_GetState(void *_pSocket) // Get the state of data availabl
+NMib::NNetwork::ENetTCPState NSys::NNetwork::fg_GetState(void *_pSocket) // Get the state of data availabl
 {
 	DMibError("Not implemented");
-	return NMib::NNet::ENetTCPState_None;
+	return NMib::NNetwork::ENetTCPState_None;
 }
 
-NMib::NStr::CStr NSys::NNet::fg_GetCloseReason(void *_pSocket)
+NMib::NStr::CStr NSys::NNetwork::fg_GetCloseReason(void *_pSocket)
 {
 	DMibError("Not implemented");
 	return "";
 }
 
-void *NSys::NNet::fg_InheritHandle(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+void *NSys::NNetwork::fg_InheritHandle(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void *NSys::NNet::fg_InheritHandle2(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void *NSys::NNet::fg_GiveUpForInherit(void *_pSocket)
+void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void *NSys::NNet::fg_GetOSSocket(void *_pSocket)
+void *NSys::NNetwork::fg_GetOSSocket(void *_pSocket)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-NSys::NNet::CAddress NSys::NNet::fg_GetPeerAddress(void *_pSocket)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_GetPeerAddress(void *_pSocket)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-uint32 NSys::NNet::fg_GetListenPort(void *_pSocket)
+uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 {
 	DMibError("Not implemented");
 	return 0;

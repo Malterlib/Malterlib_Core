@@ -413,7 +413,7 @@ public:
 	}
 	virtual void f_Delete() override
 	{
-		NPtr::TCUniquePointer<TCPOSIXFileImp, t_CAllocator> pPtr = fg_Explicit(this);
+		NStorage::TCUniquePointer<TCPOSIXFileImp, t_CAllocator> pPtr = fg_Explicit(this);
 	}
 };
 
@@ -731,7 +731,7 @@ void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags,
 	tf_CStr PosixFileName;
 	int iFile = fg_OpenHelperBSDFile<tf_CFileStr, tf_CStr>(_FileName, _OpenFlags, PosixFileName, _Attributes);
 	
-	NPtr::TCUniquePointer<TCPOSIXFileImp<tf_CFileStr, typename tf_CFileStr::CAllocator>, typename tf_CFileStr::CAllocator> pNewFile = fg_Construct(PosixFileName);
+	NStorage::TCUniquePointer<TCPOSIXFileImp<tf_CFileStr, typename tf_CFileStr::CAllocator>, typename tf_CFileStr::CAllocator> pNewFile = fg_Construct(PosixFileName);
 	pNewFile->m_BSDFile = iFile;
 	return pNewFile.f_Detach();
 }
@@ -807,7 +807,7 @@ TCVector<ch8> NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path)
 	return ::fg_ReadProcFS<NMib::NStr::CStr>(_Path);
 }
 
-TCVector<ch8, NMem::CAllocator_NonTrackedHeap> NMib::NPlatform::fg_ReadProcFSNonTracked(NMib::NStr::CFStr256 const &_Path)
+TCVector<ch8, NMemory::CAllocator_NonTrackedHeap> NMib::NPlatform::fg_ReadProcFSNonTracked(NMib::NStr::CFStr256 const &_Path)
 {
 	return ::fg_ReadProcFS<NMib::NStr::CStrNonTracked>(_Path);
 }

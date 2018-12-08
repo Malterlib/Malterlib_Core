@@ -30,7 +30,7 @@ namespace NMib
 
 	typedef aint (FThreadProc)(void *_pContext);
 	
-	namespace NDataProcessing
+	namespace NCryptography
 	{
 		struct CUniversallyUniqueIdentifier;
 	}
@@ -174,7 +174,12 @@ namespace NMib
 		CMibCodeAddress fg_System_GetStackTrace(aint _iDepth);
 		mint fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth);
 		void fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NMib::NStr::CStr &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bint _bDisplayGUI);
-		void fg_Debug_GenerateMemoryDump(NMib::NContainer::TCVector<void*, NMib::NMem::CAllocator_NonTrackedHeap> const& _Locations, NMib::NContainer::TCVector<mint, NMib::NMem::CAllocator_NonTrackedHeap> const& _Sizes);
+		void fg_Debug_GenerateMemoryDump
+			(
+			 	NMib::NContainer::TCVector<void*, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Locations
+			 	, NMib::NContainer::TCVector<mint, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Sizes
+			)
+		;
 
 		void fg_Debug_BlockingMessage(NMib::NStr::CStr const &_Heading, NMib::NStr::CStr const &_Message);
 
@@ -226,7 +231,7 @@ namespace NMib
 		NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> fg_Process_GetEnvironmentVariables_NonProtected();
 		
 		NMib::NStr::CStr fg_System_GenerateUUID();
-		void fg_System_GenerateUUID(NDataProcessing::CUniversallyUniqueIdentifier &_UUID);
+		void fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_UUID);
 
 		NMib::NStr::CStr fg_System_GetCPUName();
 

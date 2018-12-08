@@ -243,7 +243,7 @@ namespace NMib
 			// We are clearing all members of the derived class.
 			uint8* pAfterThis = (uint8*)(this + 1);
 			
-			NMem::fg_MemClear(pAfterThis, sizeof(t_CDerived) - sizeof(TDynamicLibraryUtilityAggregate));
+			NMemory::fg_MemClear(pAfterThis, sizeof(t_CDerived) - sizeof(TDynamicLibraryUtilityAggregate));
 		}
 	
 		void fp_Init() 

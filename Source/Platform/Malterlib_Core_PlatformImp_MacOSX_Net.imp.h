@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 //#define DKTrace(...) DMibTrace("***" __VA_ARGS__)
@@ -196,7 +196,7 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 	int const KQueue = mp_pD->m_KQueue;
 
 	timespec Timeout;
-	NMem::fg_MemClear(&Timeout, sizeof(Timeout)); // 0 == Poll
+	NMemory::fg_MemClear(&Timeout, sizeof(Timeout)); // 0 == Poll
 //	Timeout.tv_nsec = 1000000000 / 2000; // Half a millisecond
 
 	while (		mp_pD->m_bBreak.f_Load() == 0 
@@ -293,8 +293,8 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 						if (AddedState)
 						{
 							pSocket->m_State |= AddedState;
-							if (pSocket->m_OnStateChange)
-								pSocket->m_OnStateChange(AddedState);
+							if (pSocket->m_fOnStateChange)
+								pSocket->m_fOnStateChange(AddedState);
 						}
 					}
 				}
@@ -381,8 +381,8 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 					{
 						if (AddedState)
 						{
-							if (AddedState && pSocket->m_OnStateChange)
-								pSocket->m_OnStateChange(AddedState);
+							if (AddedState && pSocket->m_fOnStateChange)
+								pSocket->m_fOnStateChange(AddedState);
 						}
 					}
 				}
@@ -443,12 +443,12 @@ CPOSIXImpSpecificSocketContext::~CPOSIXImpSpecificSocketContext()
 {
 }
 
-bint CPOSIXImpSpecificSocketContext::f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNet::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+bint CPOSIXImpSpecificSocketContext::f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
 {
 	return false;
 }
 
-bool CPOSIXImpSpecificSocketContext::f_GetSocketCreateParams(::NMib::NNet::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams)
+bool CPOSIXImpSpecificSocketContext::f_GetSocketCreateParams(::NMib::NNetwork::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams)
 {
 	if ((uint32)_ExpectedType == 0x100)
 	{
@@ -468,7 +468,7 @@ bool CPOSIXImpSpecificSocketContext::f_GetSocketCreateParams(::NMib::NNet::ENetA
 	return false;
 }
 
-bint CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNet::ENetAddressType _PreferType)
+bint CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType)
 {
 	if (_Address.f_StartsWith("KERN_DGRAM:") || _Address.f_StartsWith("KERN_STREAM:"))
 	{
@@ -518,7 +518,7 @@ bint CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, con
 		SockAddr.sc_id = CtlInfo.ctl_id;
 		SockAddr.sc_unit = 0;
 	 
-		_oAddr.f_Set((NMib::NNet::ENetAddressType)MalterlibSocketType, &SockAddr, sizeof(SockAddr));
+		_oAddr.f_Set((NMib::NNetwork::ENetAddressType)MalterlibSocketType, &SockAddr, sizeof(SockAddr));
 		
 		return true;
 	}
@@ -526,19 +526,19 @@ bint CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, con
 	return false;
 }
 
-bint CPOSIXImpSpecificSocketContext::f_GetAddressRaw(CPOSIXAddress const& _Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bint CPOSIXImpSpecificSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
 {
 	return false;
 }
 
-CPOSIXAddress* CPOSIXImpSpecificSocketContext::f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNet::ENetAddressType _ExpectedType, void const* _pRawData, mint _nDataBytes)
+CPOSIXAddress* CPOSIXImpSpecificSocketContext::f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const* _pRawData, mint _nDataBytes)
 {
-	NMib::NSys::NNet::fg_FreeAddress(_Address);
+	NMib::NSys::NNetwork::fg_FreeAddress(_Address);
 	return nullptr;
 }
 
 
-int CPOSIXImpSpecificSocketContext::f_Connect(CPOSIXAddress const& _Address) // Returns a FD or -1
+int CPOSIXImpSpecificSocketContext::f_Connect(CPOSIXAddress const &_Address) // Returns a FD or -1
 {
 	return -1;
 }

@@ -19,7 +19,7 @@ namespace NMib
 			CFileChangeNoticationContext();
 			~CFileChangeNoticationContext();
 			
-			class CNotification : public NPtr::TCSharedPointerIntrusiveBase<>
+			class CNotification : public NStorage::TCSharedPointerIntrusiveBase<>
 			{
 			public:
 				CNotification(CFileChangeNoticationContext *_pContext);
@@ -36,7 +36,7 @@ namespace NMib
 					
 					bool operator < (CChange const &_Right) const
 					{
-						return NContainer::fg_TupleReferences(m_Notification, m_Path, m_PathFrom) < NContainer::fg_TupleReferences(_Right.m_Notification, _Right.m_Path, _Right.m_PathFrom);
+						return NStorage::fg_TupleReferences(m_Notification, m_Path, m_PathFrom) < NStorage::fg_TupleReferences(_Right.m_Notification, _Right.m_Path, _Right.m_PathFrom);
 					}
 				};
 				
@@ -99,11 +99,11 @@ namespace NMib
 					uint64 m_UpdateSequence = 0;
 					bool m_bDelete = false;
 					
-					DMibIntrusiveLink(CFileSnapshot, NMib::NIntrusive::TCAVLLink<>, m_Link);
+					NMib::NIntrusive::TCAVLLink<> m_Link;
 					DMibListLinkDS_Link(CFileSnapshot, m_LinkNode);
 					
 					NContainer::TCLinkedList<CFileSnapshot> m_Children;
-					NMib::NIntrusive::TCAVLTree<CLinkTraits_m_Link, CCompare> m_ChildrenByName;
+					NMib::NIntrusive::TCAVLTree<&CFileSnapshot::m_Link, CCompare> m_ChildrenByName;
 
 					CFileSnapshot
 						(
@@ -195,9 +195,9 @@ namespace NMib
 				NContainer::TCLinkedList<CChange> m_Changes;
 				NThread::CMutual m_ChangesLock;
 				
-				NContainer::TCLinkedList<NContainer::TCTuple<NStr::CStr, bool>> m_RenamedFromQueue;
+				NContainer::TCLinkedList<NStorage::TCTuple<NStr::CStr, bool>> m_RenamedFromQueue;
 
-				DMibRefcountDebuggingOnly(NPtr::CRefCountDebugReference m_DebugSelfRef);
+				DMibRefcountDebuggingOnly(NStorage::CRefCountDebugReference m_DebugSelfRef);
 
 				NMib::NThread::CSemaphoreReportableAggregate *m_pReportTo;
 				uint64 m_UpdateSequence = 0;
@@ -211,7 +211,7 @@ namespace NMib
 
 			DMibListLinkDS_List(CNotification, m_Link) m_OpenNotifications;
 			
-			NMib::NPtr::TCUniquePointer<NMib::NThread::CThreadObject> m_pProcessThread;
+			NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject> m_pProcessThread;
 			
 			static void fs_EventCallback
 				(
@@ -226,7 +226,7 @@ namespace NMib
 			
 			struct CInternal;
 			
-			NPtr::TCUniquePointer<CInternal> m_pInternal;
+			NStorage::TCUniquePointer<CInternal> m_pInternal;
 			
 			NMib::NThread::CMutual m_RunLoopLock;
 			zbool m_bDestroying;

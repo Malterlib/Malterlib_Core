@@ -58,7 +58,7 @@ struct CTestLinked
 struct CTestAVLTree
 {
 	NMib::NStr::CStr m_Data;
-	DMibIntrusiveLink(CTestAVLTree, NMib::NIntrusive::TCAVLLink<>, m_Link);
+	NMib::NIntrusive::TCAVLLink<> m_Link;
 
 	class CCompare
 	{
@@ -184,7 +184,7 @@ namespace
 
 
 			NMib::NContainer::TCLinkedList<CTestAVLTree> AVLList;
-			NMib::NIntrusive::TCAVLTree<CTestAVLTree::CLinkTraits_m_Link, CTestAVLTree::CCompare> AVLTree;
+			NMib::NIntrusive::TCAVLTree<&CTestAVLTree::m_Link, CTestAVLTree::CCompare> AVLTree;
 
 			{
 				auto &Insert0 = AVLList.f_Insert();
@@ -240,13 +240,13 @@ namespace
 			}
 
 
-			NMib::NAggregate::TCAggregateSimple<NMib::NStr::CStr> TestAggregateSimple = {DAggregateInit};
+			NMib::NStorage::TCAggregateSimple<NMib::NStr::CStr> TestAggregateSimple = {DAggregateInit};
 			TestAggregateSimple.f_Construct();
 			*TestAggregateSimple = "Test aggregate";
 			TestAggregateSimple.f_Destruct();
 
 			{
-				NMib::NAggregate::TCAggregate<NMib::NStr::CStr> TestAggregate = {DAggregateInit};
+				NMib::NStorage::TCAggregate<NMib::NStr::CStr> TestAggregate = {DAggregateInit};
 				*TestAggregate = "Test aggregate";
 				int x = 0;
 				TestAggregate.f_Clear();
@@ -255,14 +255,14 @@ namespace
 				int y = 0;
 			}
 
-			NMib::NContainer::TCStreamableVariant<EParam, void, EParam_void, int, EParam_int, NMib::NStr::CStr, EParam_CStr, NMib::NStr::CMStrDeprecated, EParam_CMStr> Variant0;
+			NMib::NStorage::TCStreamableVariant<EParam, void, EParam_void, int, EParam_int, NMib::NStr::CStr, EParam_CStr, NMib::NStr::CMStrDeprecated, EParam_CMStr> Variant0;
 
 			Variant0 = 5;
 			Variant0 = "Test 55";
 			Variant0 = NMib::NStr::CMStrDeprecated("Testing 66");
 
 #endif
-			NMib::NRegistry::CRegistry_CStr Registry;
+			NMib::NContainer::CRegistry_CStr Registry;
 			auto *pChild = Registry.f_CreateChild("RootChild");
 			pChild->f_SetValue("test", "Mega");
 			pChild->f_SetValue("test1", "Test ");

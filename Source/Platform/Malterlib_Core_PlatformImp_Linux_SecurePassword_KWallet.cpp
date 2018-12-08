@@ -89,7 +89,7 @@ namespace NMib
 		char const* CKWalletPasswordManager::mc_KWalletPath = "/modules/kwalletd";
 		char const* CKWalletPasswordManager::mc_KWalletInterface = "org.kde.KWallet";
 
-		NPtr::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem* _pDBus)
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem* _pDBus)
 		{
 			if (!_pDBus)
 				return nullptr;
@@ -97,7 +97,7 @@ namespace NMib
 			if (!_pDBus->f_ReadyForUse())
 				return nullptr;
 
-			NPtr::TCUniquePointer<CKWalletPasswordManager> pManager = fg_Construct(*_pDBus);
+			NStorage::TCUniquePointer<CKWalletPasswordManager> pManager = fg_Construct(*_pDBus);
 
 			if (!pManager->f_OK())
 				return nullptr;

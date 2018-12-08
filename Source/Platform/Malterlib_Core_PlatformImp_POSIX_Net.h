@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -14,9 +14,9 @@
 static const uint32 ENetAddressType_Kernel = 3;
 
 using namespace NMib;
-using namespace NMib::NMem;
+using namespace NMib::NMemory;
 using namespace NMib::NStr;
-using namespace NMib::NNet;
+using namespace NMib::NNetwork;
 
 enum EPOSIXSocketEvent
 {
@@ -46,15 +46,15 @@ struct CPOSIXSocket
 	// This is stull that will be changed or use by the poller etc...
 	NMib::NThread::CMutual m_Lock;
 		bint m_bInitialWriteNotification;
-		NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)> m_OnStateChange;
-		NMib::NNet::ENetTCPState m_State;
+		NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
+		NMib::NNetwork::ENetTCPState m_State;
 		int m_CloseError;
 
 	// This is set once, used and then cleared.
 	NMib::NAtomic::TCAtomic<NMib::NThread::CEvent*> m_pDestructionReportTo;
 
 	// This is protected by the context m_Lock.
-	DMibIntrusiveLink(CPOSIXSocket, NMib::NIntrusive::TCAVLLink<>, m_FDToSocketLink);
+	NMib::NIntrusive::TCAVLLink<> m_FDToSocketLink;
 
 	class CAVLCompare_CPOSIXSocket
 	{
@@ -65,15 +65,15 @@ struct CPOSIXSocket
 		}
 	};
 
-	CPOSIXSocket(int _FD, EPOSIXSocketMode _Mode, EPOSIXSocketEvent _Events, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange)
+	CPOSIXSocket(int _FD, EPOSIXSocketMode _Mode, EPOSIXSocketEvent _Events, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 		: m_FD(_FD)
 		, m_Mode(_Mode)
 		, m_RegisteredEvents(_Events)
 		, m_bInitialWriteNotification(true)
-		, m_State(NMib::NNet::ENetTCPState_Write)
+		, m_State(NMib::NNetwork::ENetTCPState_Write)
 		, m_CloseError(0)
 		, m_pDestructionReportTo(nullptr)
-		, m_OnStateChange(fg_Move(_OnStateChange))
+		, m_fOnStateChange(fg_Move(_fOnStateChange))
 	{}
 
 	~CPOSIXSocket()
@@ -89,7 +89,7 @@ class CPOSIXImpSpecificSocketPoller
 {
 private:
 	class CDetails;
-	NMib::NPtr::TCUniquePointer<CDetails> mp_pD;
+	NMib::NStorage::TCUniquePointer<CDetails> mp_pD;
 
 public:
 	CPOSIXImpSpecificSocketPoller();
@@ -110,16 +110,16 @@ class CPOSIXImpSpecificSocketContext
 {
 private:
 	class CDetails;
-	NMib::NPtr::TCUniquePointer<CDetails> mp_pD;
+	NMib::NStorage::TCUniquePointer<CDetails> mp_pD;
 
 public:
 	CPOSIXImpSpecificSocketContext();
 	~CPOSIXImpSpecificSocketContext();
 
-	bint f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNet::ENetAddressType _Type, void const* _pData, mint _nDataBytes);
-	bint f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNet::ENetAddressType _PreferType = NMib::NNet::ENetAddressType_None);
-	bint f_GetAddressRaw(CPOSIXAddress const& _Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
-	CPOSIXAddress* f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNet::ENetAddressType _ExpectedType, void const* _pRawData, mint _nDataBytes);
+	bint f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes);
+	bint f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
+	bint f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
+	CPOSIXAddress* f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const* _pRawData, mint _nDataBytes);
 
 	struct CSocketCreateParams
 	{
@@ -128,9 +128,9 @@ public:
 		int m_Protocol;
 	};
 	
-	bool f_GetSocketCreateParams(::NMib::NNet::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams);
+	bool f_GetSocketCreateParams(::NMib::NNetwork::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams);
 
-	int f_Connect(CPOSIXAddress const& _Address); // Returns a FD or -1
+	int f_Connect(CPOSIXAddress const &_Address); // Returns a FD or -1
 };
 
 class CPOSIXSocketContext
@@ -141,18 +141,18 @@ public:
 	~CPOSIXSocketContext();
 
 	// Address
-		CPOSIXAddress* f_CreateAddress(NMib::NNet::ENetAddressType _Type, void const* _pData, mint _nDataBytes);
+		CPOSIXAddress* f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes);
 
-		CPOSIXAddress* f_DuplicateAddress(CPOSIXAddress const& _Address);
+		CPOSIXAddress* f_DuplicateAddress(CPOSIXAddress const &_Address);
 
-		NMib::NNet::ENetAddressType f_GetAddressType(CPOSIXAddress const& _pAddress);
-		bint f_GetAddressRaw(CPOSIXAddress const& _Address, NMib::NNet::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
-		CPOSIXAddress* f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNet::ENetAddressType _ExpectedType, void const* _opRawData, mint _nDataBytes);
+		NMib::NNetwork::ENetAddressType f_GetAddressType(CPOSIXAddress const& _pAddress);
+		bint f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
+		CPOSIXAddress* f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const* _opRawData, mint _nDataBytes);
 
-		CPOSIXAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNet::ENetAddressType _PreferType, bint _bThrowOnError);
-		CPOSIXAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNet::ENetAddressType _PreferType = NMib::NNet::ENetAddressType_None);
+		CPOSIXAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bint _bThrowOnError);
+		CPOSIXAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
 
-		void *f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNet::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()>&& _fOnFinish);
+		void *f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish);
 		bint f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress*& _opAddress, NMib::NStr::CStr &_Error);
 		void f_AsyncResolveAddress_Close(void *_pResolver);
 
@@ -160,15 +160,39 @@ public:
 
 		void f_FreeAddress(CPOSIXAddress* _pAddress); // It is OK to free a nullptr address.
 
-		NMib::NStr::CStr f_GetAddressString(CPOSIXAddress const& _Address, bint _bIncludeType);
+		NMib::NStr::CStr f_GetAddressString(CPOSIXAddress const &_Address, bint _bIncludeType);
 
 	// Connection Operations	
-		CPOSIXSocket* f_Connect(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, CPOSIXAddress const *_pBindAddress);
-		CPOSIXSocket* f_AsyncConnect(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, CPOSIXAddress const *_pBindAddress);
+		CPOSIXSocket *f_Connect
+			(
+			 	CPOSIXAddress const &_Address
+			 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, CPOSIXAddress const *_pBindAddress
+			)
+		;
+		CPOSIXSocket *f_AsyncConnect
+			(
+			 	CPOSIXAddress const &_Address
+			 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, CPOSIXAddress const *_pBindAddress
+			)
+		;
 		
-		CPOSIXSocket* f_Listen(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags);
-		CPOSIXSocket* f_ListenDatagram(CPOSIXAddress const& _Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags);
-		CPOSIXSocket* f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
+		CPOSIXSocket *f_Listen
+			(
+			 	CPOSIXAddress const &_Address
+			 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, NMib::NNetwork::ENetFlag _Flags
+			)
+		;
+		CPOSIXSocket *f_ListenDatagram
+			(
+			 	CPOSIXAddress const &_Address
+			 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, NMib::NNetwork::ENetFlag _Flags
+			)
+		;
+		CPOSIXSocket *f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 
 		bint f_Close(CPOSIXSocket* _pSocket);
 		void f_Shutdown(CPOSIXSocket* _pSocket);
@@ -180,13 +204,13 @@ public:
 
 	// Socket Properties & State
 
-		void f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
+		void f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 
-		NMib::NNet::ENetTCPState f_GetState(CPOSIXSocket *_pSocket);
+		NMib::NNetwork::ENetTCPState f_GetState(CPOSIXSocket *_pSocket);
 
 		NMib::NStr::CStr f_GetCloseReason(CPOSIXSocket* _pSocket);
 
-		CPOSIXSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange);
+		CPOSIXSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 		void *f_GiveUpForInherit(CPOSIXSocket *_pSocket);
 		void *f_GetOSSocket(CPOSIXSocket *_pSocket);
 		
@@ -220,7 +244,7 @@ private:
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
 	
-	void fp_ToNative(NMib::NNet::CNetAddressTCPv4 const& _InAddr, sockaddr_in& _OutAddr) const
+	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv4 const& _InAddr, sockaddr_in& _OutAddr) const
 	{
 		fg_MemClear(_OutAddr);
 #ifdef DPlatformFamily_OSX
@@ -233,7 +257,7 @@ private:
 		_OutAddr.sin_port = htons(_InAddr.m_Port);
 	}
 
-	void fp_ToNative(NMib::NNet::CNetAddressTCPv6 const& _InAddr, sockaddr_in6& _OutAddr) const
+	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv6 const& _InAddr, sockaddr_in6& _OutAddr) const
 	{
 		fg_MemClear(_OutAddr);
 #ifdef DPlatformFamily_OSX
@@ -246,7 +270,7 @@ private:
 		_OutAddr.sin6_port = htons(_InAddr.m_Port);
 	}
 
-	void fp_FromNative(sockaddr_in const& _InAddr, NMib::NNet::CNetAddressTCPv4 & _OutAddr) const
+	void fp_FromNative(sockaddr_in const& _InAddr, NMib::NNetwork::CNetAddressTCPv4 & _OutAddr) const
 	{
 		uint32 IP = _InAddr.sin_addr.s_addr;
 		_OutAddr.m_IP[0] = 0xFF & (IP);
@@ -256,7 +280,7 @@ private:
 		_OutAddr.m_Port = ntohs(_InAddr.sin_port);
 	}
 
-	void fp_FromNative(sockaddr_in6 const& _InAddr, NMib::NNet::CNetAddressTCPv6 & _OutAddr) const
+	void fp_FromNative(sockaddr_in6 const& _InAddr, NMib::NNetwork::CNetAddressTCPv6 & _OutAddr) const
 	{
 		fg_MemCopy(&_OutAddr.m_IP, &_InAddr.sin6_addr.s6_addr, sizeof(uint8) * 16);
 		_OutAddr.m_Port = ntohs(_InAddr.sin6_port);
@@ -264,10 +288,25 @@ private:
 
 #pragma clang diagnostic pop
 
-	bool fp_GetSocketCreateParams(NMib::NNet::ENetAddressType _AddressType, CPOSIXImpSpecificSocketContext::CSocketCreateParams &o_Params);
+	bool fp_GetSocketCreateParams(NMib::NNetwork::ENetAddressType _AddressType, CPOSIXImpSpecificSocketContext::CSocketCreateParams &o_Params);
 	
-	CPOSIXSocket *fp_Connect(CPOSIXAddress const &_Address, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)> &&_OnStateChange, bint _bAsyncConnect, CPOSIXAddress const *_pBindAddress);
-	CPOSIXSocket *fp_CreateSocket(int _FD, EPOSIXSocketMode _Mode, EPOSIXSocketEvent _Events, NMib::NFunction::TCFunction<void (NMib::NNet::ENetTCPState _StateAdded)> &&_OnStateChange, bint _bFromInherit = false);
+	CPOSIXSocket *fp_Connect
+		(
+		 	CPOSIXAddress const &_Address
+		 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		 	, bint _bAsyncConnect
+		 	, CPOSIXAddress const *_pBindAddress
+		)
+	;
+	CPOSIXSocket *fp_CreateSocket
+		(
+		 	int _FD
+		 	, EPOSIXSocketMode _Mode
+		 	, EPOSIXSocketEvent _Events
+		 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		 	, bint _bFromInherit = false
+		)
+	;
 	void fp_PrepareUnixListen(CPOSIXAddress const &_Address); 
 	void fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address); 
 

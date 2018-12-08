@@ -25,13 +25,13 @@
 #include <TlHelp32.h>
 
 using namespace NMib;
-using namespace NMib::NMem;
+using namespace NMib::NMemory;
 using namespace NMib::NStr;
 using namespace NMib::NContainer;
 using namespace NMib::NIntrusive;
-using namespace NMib::NPtr;
+using namespace NMib::NStorage;
 using namespace NMib::NAtomic;
-using namespace NMib::NNet;
+using namespace NMib::NNetwork;
 using namespace NMib::NThread;
 using namespace NMib::NMisc;
 using namespace NMib::NSystem;
@@ -39,7 +39,7 @@ using namespace NMib::NFile;
 using namespace NMib::NException;
 using namespace NMib::NTime;
 using namespace NMib::NFunction;
-using namespace NMib::NAggregate;
+using namespace NMib::NStorage;
 
 HINSTANCE g_hDllInstance = 0;
 bint g_bIsDll = false;
@@ -959,7 +959,7 @@ void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Bu
 	while (Len)
 	{
 		mint ToCopy = fg_Min(Len, 2048u);
-		uint8 *pTemp = NMib::NMem::fg_MemCopy(Temp, pOut, ToCopy);
+		uint8 *pTemp = NMib::NMemory::fg_MemCopy(Temp, pOut, ToCopy);
 		if (!WriteFile(hCon, Temp, ToCopy, &Written, nullptr))
 		{
 			break;
@@ -2266,7 +2266,7 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (mint _ThreadID, HANDL
 			break;
 
 		NeededSize *= 2;
-		TCVector<uint8, NMem::CAllocator_VirtualNoTracking> Data;
+		TCVector<uint8, NMemory::CAllocator_VirtualNoTracking> Data;
 		Data.f_SetLen(NeededSize);
 		NLocal::SYSTEM_PROCESS_INFORMATION *pInfo = (NLocal::SYSTEM_PROCESS_INFORMATION *)Data.f_GetArray();
 
@@ -2384,7 +2384,7 @@ void fg_EnumProcessThreads(TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnT
 
 	struct CState
 	{
-		TCVector<CEnumThreadEntry, NMem::CAllocator_VirtualNoTracking> m_Threads;
+		TCVector<CEnumThreadEntry, NMemory::CAllocator_VirtualNoTracking> m_Threads;
 		mint m_nEnum = 0;
 		mint m_nSuspend = 0;
 		mint m_nReady = 0;
@@ -2838,7 +2838,7 @@ void fg_SetThreadName( DWORD _ThreadID, CHAR const *_pThreadName)
 
 DWORD WINAPI fg_MalterlibMSVC_ThreadProc(void *_pParameter)
 {
-	TCUniquePointer<CThreadParameters, NMem::CAllocator_NonTrackedHeap> pThreadParameters = fg_Explicit((CThreadParameters *)_pParameter);
+	TCUniquePointer<CThreadParameters, NMemory::CAllocator_NonTrackedHeap> pThreadParameters = fg_Explicit((CThreadParameters *)_pParameter);
 	FThreadProc *pProc = pThreadParameters->m_pProc;
 	void *pParam = pThreadParameters->m_pParam;
 	fg_SetThreadName(GetCurrentThreadId(), pThreadParameters->m_Name);
@@ -2904,7 +2904,7 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 
 void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bint _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
 {
-	TCUniquePointer<CThreadParameters, NMem::CAllocator_NonTrackedHeap> pThreadParameters = fg_Construct();
+	TCUniquePointer<CThreadParameters, NMemory::CAllocator_NonTrackedHeap> pThreadParameters = fg_Construct();
 
 	pThreadParameters->m_pProc = _pThreadProc;
 	pThreadParameters->m_pParam = _pParam;
@@ -3052,7 +3052,7 @@ void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
 #pragma comment(lib, "rpcrt4.lib")
 
 
-void NSys::fg_System_GenerateUUID(NDataProcessing::CUniversallyUniqueIdentifier &_UUID)
+void NSys::fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_UUID)
 {
 	
 	UUID Ret;
@@ -3288,7 +3288,7 @@ mint NSys::fg_Thread_GetPhysicalCores()
 		if (NLocal::g_fGetLogicalProcessorInformation)
 		{
 			DWORD BufferLength = 0;
-			TCVector<uint8> Buffer;
+			CByteVector Buffer;
 			bint bDone = false;
 			bint bError = false;
 			while (!bDone) 
@@ -3954,7 +3954,7 @@ void NSys::NFile::fg_Flush(void *_pFile)
 void NSys::NFile::fg_LockRange(void *_pFile, const CMibFilePos &_Offset, const CMibFilePos &_NumBytes, NMib::NFile::EFileLock _Flags)
 {
 	OVERLAPPED Overlapped;
-	NMib::NMem::fg_MemClear(Overlapped);
+	NMib::NMemory::fg_MemClear(Overlapped);
 	Overlapped.Offset = _Offset & 0xffffffffll;
 	Overlapped.OffsetHigh = (_Offset >> 32) & 0xffffffffll;
 	uint32 Flags = 0;
@@ -3971,7 +3971,7 @@ void NSys::NFile::fg_LockRange(void *_pFile, const CMibFilePos &_Offset, const C
 void NSys::NFile::fg_UnlockRange(void *_pFile, const CMibFilePos &_Offset, const CMibFilePos &_NumBytes)
 {
 	OVERLAPPED Overlapped;
-	NMib::NMem::fg_MemClear(Overlapped);
+	NMib::NMemory::fg_MemClear(Overlapped);
 	Overlapped.Offset = _Offset & 0xffffffffll;
 	Overlapped.OffsetHigh = (_Offset >> 32) & 0xffffffffll;
 	if (!UnlockFileEx(((CWin32File *)_pFile)->m_pFile, 0, _NumBytes & 0xffffffffll, (_NumBytes >> 32) & 0xffffffffll, &Overlapped))
@@ -4950,9 +4950,9 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 		mint nPathBytes = ToMount.f_GetLen() * sizeof(ch16);
 
 		mint Size = sizeof(REPARSE_DATA_BUFFER) + nPathBytes;
-		REPARSE_DATA_BUFFER *pReparseData = (REPARSE_DATA_BUFFER *)NMem::fg_Alloc(Size);
+		REPARSE_DATA_BUFFER *pReparseData = (REPARSE_DATA_BUFFER *)NMemory::fg_Alloc(Size);
 		fg_MemClear(pReparseData, Size);
-		auto Cleanup = fg_OnScopeExit([&]{NMem::fg_Free(pReparseData, Size);});
+		auto Cleanup = fg_OnScopeExit([&]{NMemory::fg_Free(pReparseData, Size);});
 
 		{
 			pReparseData->ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
@@ -5022,9 +5022,9 @@ NMib::NStr::CStr NSys::NFile::fg_ResolveSymbolicLink(const NMib::NStr::CStr &_Fi
 	TargetFile.f_Open(_FileFrom, TargetFileOpenFlags);
 
 	mint Size = sizeof(REPARSE_DATA_BUFFER) + 65536 * sizeof(ch16);
-	REPARSE_DATA_BUFFER *pReparseData = (REPARSE_DATA_BUFFER *)NMem::fg_Alloc(Size);
+	REPARSE_DATA_BUFFER *pReparseData = (REPARSE_DATA_BUFFER *)NMemory::fg_Alloc(Size);
 	fg_MemClear(pReparseData, Size);
-	auto Cleanup = fg_OnScopeExit([&]{NMem::fg_Free(pReparseData, Size);});
+	auto Cleanup = fg_OnScopeExit([&]{NMemory::fg_Free(pReparseData, Size);});
 
 	mint nIOControlBytes = Size;
 
@@ -5551,170 +5551,190 @@ CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 // Net Implementation
 // *************************************************************************************************************************
 
-NSys::NNet::CAddress NSys::NNet::fg_CreateAddress(::NMib::NNet::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
 {
-	return (NSys::NNet::CAddress)fg_GetLocalSys()->m_SocketContext->f_CreateAddress(_Type, _pData, _nDataBytes);
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_CreateAddress(_Type, _pData, _nDataBytes);
 }
 
-NSys::NNet::CAddress NSys::NNet::fg_DuplicateAddress(NSys::NNet::CAddress _ToCopy)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAddress _ToCopy)
 {
-	return (NSys::NNet::CAddress)fg_GetLocalSys()->m_SocketContext->f_DuplicateAddress((CWindowsAddress*)_ToCopy);
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_DuplicateAddress((CWindowsAddress*)_ToCopy);
 }
 
-::NMib::NNet::ENetAddressType NSys::NNet::fg_GetAddressType(NSys::NNet::CAddress _Address)
+::NMib::NNetwork::ENetAddressType NSys::NNetwork::fg_GetAddressType(NSys::NNetwork::CAddress _Address)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CWindowsAddress*)_Address);
 }
 
-bint NSys::NNet::fg_GetAddressRaw(NSys::NNet::CAddress _Address, ::NMib::NNet::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bint NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CWindowsAddress*)_Address, _ExpectedType, _opRawData, _nDataBytes);
 }
 
-NSys::NNet::CAddress NSys::NNet::fg_SetAddressRaw(NSys::NNet::CAddress _Address, ::NMib::NNet::ENetAddressType _Type, void const* _pRawData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, mint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return (NSys::NNet::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CWindowsAddress*)_Address, _Type, _pRawData, _nDataBytes);
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CWindowsAddress*)_Address, _Type, _pRawData, _nDataBytes);
 }
 
-NSys::NNet::CAddress NSys::NNet::fg_ResolveAddress(const NMib::NStr::CStr &_Address, ::NMib::NNet::ENetAddressType _PreferType)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_ResolveAddress(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_ResolveAddress(_Address, _PreferType);
 }
 
-void *NSys::NNet::fg_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNet::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()>&& _fOnFinish)
+void *NSys::NNetwork::fg_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bint NSys::NNet::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNet::CAddress& _opAddress, NMib::NStr::CStr &_Error)
+bint NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress& _opAddress, NMib::NStr::CStr &_Error)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CWindowsAddress*&)_opAddress, _Error);
 }
 
-void NSys::NNet::fg_AsyncResolveAddress_Close(void *_pResolver)
+void NSys::NNetwork::fg_AsyncResolveAddress_Close(void *_pResolver)
 {
 	fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_Close(_pResolver);
 }
 
-int NSys::NNet::fg_CompareAddresses(NSys::NNet::CAddress _pFirst, NSys::NNet::CAddress _pSecond)
+int NSys::NNetwork::fg_CompareAddresses(NSys::NNetwork::CAddress _pFirst, NSys::NNetwork::CAddress _pSecond)
 {
 	DMibSafeCheck(_pFirst != nullptr, "Address is null!");
 	DMibSafeCheck(_pSecond != nullptr, "Address is null!");
 	return fg_GetLocalSys()->m_SocketContext->f_CompareAddresses(*(CWindowsAddress*)_pFirst, *(CWindowsAddress*)_pSecond);
 }
 
-void NSys::NNet::fg_FreeAddress(NSys::NNet::CAddress _Address) // It is OK to free a nullptr address
+void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _Address) // It is OK to free a nullptr address
 {
 	return fg_GetLocalSys()->m_SocketContext->f_FreeAddress((CWindowsAddress*)_Address);
 }
 
-NMib::NStr::CStr NSys::NNet::fg_GetAddressString(NSys::NNet::CAddress _Address, bint _bIncludeType)
+NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, bint _bIncludeType)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CWindowsAddress*)_Address, _bIncludeType);
 }
 
 // Connection Operations
-void *NSys::NNet::fg_Connect(NSys::NNet::CAddress _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NSys::NNet::CAddress _BindAddress) // Report to the supplied event when new data is received or when we are ready to send new dat
+void *NSys::NNetwork::fg_Connect
+	(
+	 	NSys::NNetwork::CAddress _Address
+	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NSys::NNetwork::CAddress _BindAddress
+	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_Connect(*(CWindowsAddress*)_Address, fg_Move(_OnStateChange), (CWindowsAddress *)_BindAddress);
+	return fg_GetLocalSys()->m_SocketContext->f_Connect(*(CWindowsAddress*)_Address, fg_Move(_fOnStateChange), (CWindowsAddress *)_BindAddress);
 }
 
-void *NSys::NNet::fg_AsyncConnect(NSys::NNet::CAddress _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NSys::NNet::CAddress _BindAddress) // Report to the supplied event when new data is received or when we are ready to send new data and when the connection is connecte
+void *NSys::NNetwork::fg_AsyncConnect
+	(
+	 	NSys::NNetwork::CAddress _Address
+	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NSys::NNetwork::CAddress _BindAddress
+	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_AsyncConnect(*(CWindowsAddress*)_Address, fg_Move(_OnStateChange), (CWindowsAddress *)_BindAddress);
+	return fg_GetLocalSys()->m_SocketContext->f_AsyncConnect(*(CWindowsAddress*)_Address, fg_Move(_fOnStateChange), (CWindowsAddress *)_BindAddress);
 }
 
-void *NSys::NNet::fg_Listen(NSys::NNet::CAddress _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags) // Report to the supplied event when a new connection has arrive
+void *NSys::NNetwork::fg_Listen
+	(
+	 	NSys::NNetwork::CAddress _Address
+	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NNetwork::ENetFlag _Flags
+	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_Listen(*(CWindowsAddress*)_Address, fg_Move(_OnStateChange), _Flags);
+	return fg_GetLocalSys()->m_SocketContext->f_Listen(*(CWindowsAddress*)_Address, fg_Move(_fOnStateChange), _Flags);
 }
 
-void *NSys::NNet::fg_ListenDatagram(NSys::NNet::CAddress _Address, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange, NMib::NNet::ENetFlag _Flags)
+void *NSys::NNetwork::fg_ListenDatagram
+	(
+	 	NSys::NNetwork::CAddress _Address
+	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NNetwork::ENetFlag _Flags
+	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_ListenDatagram(*(CWindowsAddress*)_Address, fg_Move(_OnStateChange), _Flags);
+	return fg_GetLocalSys()->m_SocketContext->f_ListenDatagram(*(CWindowsAddress*)_Address, fg_Move(_fOnStateChange), _Flags);
 }
 
-void *NSys::NNet::fg_Accept(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange) // Report to the supplied event when new data is received or when we are ready to send new dat
+void *NSys::NNetwork::fg_Accept(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_Accept((CWindowsSocket*)_pSocket, fg_Move(_OnStateChange));
+	return fg_GetLocalSys()->m_SocketContext->f_Accept((CWindowsSocket*)_pSocket, fg_Move(_fOnStateChange));
 }
 
-void NSys::NNet::fg_Close(void *_pSocket) // Closes the socket and connectio
+void NSys::NNetwork::fg_Close(void *_pSocket) // Closes the socket and connectio
 {
 	fg_GetLocalSys()->m_SocketContext->f_Close((CWindowsSocket*)_pSocket);
 }
 
-void NSys::NNet::fg_Shutdown(void *_pSocket) // Closes the socket and connectio
+void NSys::NNetwork::fg_Shutdown(void *_pSocket) // Closes the socket and connectio
 {
 	fg_GetLocalSys()->m_SocketContext->f_Shutdown((CWindowsSocket*)_pSocket);
 }
 
-mint NSys::NNet::fg_Receive(void *_pSocket, void *_pData, mint _DataLen) // Returns bytes receive
+mint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, mint _DataLen) // Returns bytes receive
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Receive((CWindowsSocket*)_pSocket, _pData, _DataLen);
 }
 
-mint NSys::NNet::fg_Send(void *_pSocket, const void *_pData, mint _DataLen) // Returns bytes sen
+mint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, mint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Send((CWindowsSocket*)_pSocket, _pData, _DataLen);
 }
 
-mint NSys::NNet::fg_SendDatagram(void *_pSocket, NSys::NNet::CAddress _Address, const void *_pData, mint _DataLen) // Returns bytes sen
+mint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, mint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CWindowsSocket*)_pSocket, *((CWindowsAddress*)_Address), _pData, _DataLen);
 }
 
-mint NSys::NNet::fg_ReceiveDatagram(void *_pSocket, NSys::NNet::CAddress _Address, void *_pData, mint _DataLen) // Returns bytes sen
+mint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, mint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CWindowsSocket*)_pSocket, *((CWindowsAddress*)_Address), _pData, _DataLen);
 }
 
 // Socket Properties & State
 
-void NSys::NNet::fg_SetOnStateChange(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange) // Report to the supplied event when new data is received or when we are ready to send new data			
+void NSys::NNetwork::fg_SetOnStateChange(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	fg_GetLocalSys()->m_SocketContext->f_SetOnStateChange((CWindowsSocket*)_pSocket, fg_Move(_OnStateChange));
+	fg_GetLocalSys()->m_SocketContext->f_SetOnStateChange((CWindowsSocket*)_pSocket, fg_Move(_fOnStateChange));
 }
 
-NMib::NNet::ENetTCPState NSys::NNet::fg_GetState(void *_pSocket) // Get the state of data availabl
+NMib::NNetwork::ENetTCPState NSys::NNetwork::fg_GetState(void *_pSocket) // Get the state of data availabl
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetState((CWindowsSocket*)_pSocket);
 }
 
-NMib::NStr::CStr NSys::NNet::fg_GetCloseReason(void *_pSocket)
+NMib::NStr::CStr NSys::NNetwork::fg_GetCloseReason(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetCloseReason((CWindowsSocket*)_pSocket);
 }
 
-void *NSys::NNet::fg_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNet::ENetTCPState _StateAdded)>&& _OnStateChange)
+void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_InheritHandle2((CWindowsSocket*)_pSocket, fg_Move(_OnStateChange));
+	return fg_GetLocalSys()->m_SocketContext->f_InheritHandle2((CWindowsSocket*)_pSocket, fg_Move(_fOnStateChange));
 }
 
-void *NSys::NNet::fg_GiveUpForInherit(void *_pSocket)
+void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GiveUpForInherit((CWindowsSocket*)_pSocket);
 }
 
-void *NSys::NNet::fg_GetOSSocket(void *_pSocket)
+void *NSys::NNetwork::fg_GetOSSocket(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetOSSocket((CWindowsSocket*)_pSocket);
 }
 
-NSys::NNet::CAddress NSys::NNet::fg_GetPeerAddress(void *_pSocket)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_GetPeerAddress(void *_pSocket)
 {
-	return (NSys::NNet::CAddress)fg_GetLocalSys()->m_SocketContext->f_GetPeerAddress((CWindowsSocket*)_pSocket);
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_GetPeerAddress((CWindowsSocket*)_pSocket);
 }
 
-uint32 NSys::NNet::fg_GetListenPort(void *_pSocket)
+uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetListenPort((CWindowsSocket*)_pSocket);
 }

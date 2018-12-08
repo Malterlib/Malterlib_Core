@@ -196,7 +196,7 @@ void CFileChangeNotificationContext::f_Inotify_RemoveWatch(int _Descriptor)
 	}
 }
 
-ssize_t CFileChangeNotificationContext::f_Inotify_Read(TCVector<uint8> &_Buffer)
+ssize_t CFileChangeNotificationContext::f_Inotify_Read(CByteVector &_Buffer)
 {
 	ssize_t ReadResult = read(m_NotifyDescriptor, _Buffer.f_GetArray(), _Buffer.f_GetLen());
 	
@@ -230,7 +230,7 @@ ssize_t CFileChangeNotificationContext::f_Inotify_Read(TCVector<uint8> &_Buffer)
 
 CFileChangeNotificationContext::CWatch &CFileChangeNotificationContext::f_LinkWatch(int _WatchDescriptor, CStr const &_Path, CNotification *_pNotification, CWatch *_pParentWatch)
 {
-	NPtr::TCSharedPointer<CWatch> pWatch;
+	NStorage::TCSharedPointer<CWatch> pWatch;
 	
 	if (auto *pExistingWatch = m_Watches.f_FindEqual(_WatchDescriptor))
 	{
@@ -295,7 +295,7 @@ void *CFileChangeNotificationContext::f_Open(const CStr &_FileName, NMib::NFile:
 	{
 		DMibLock(m_ContextLock);
 
-		NMib::NPtr::TCUniquePointer<CNotification> pNot = fg_Construct(this, FileName);
+		NMib::NStorage::TCUniquePointer<CNotification> pNot = fg_Construct(this, FileName);
 		pNot->m_pReportTo = _pReportTo;
 		pNot->m_Flags = _OpenFlags;
 		pNot->m_SelfUniqueID = SelfUniqueID;

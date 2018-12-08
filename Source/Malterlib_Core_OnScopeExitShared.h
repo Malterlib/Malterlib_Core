@@ -8,7 +8,7 @@
 
 namespace NMib
 {
-	typedef NPtr::TCSharedPointer<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>> COnScopeExitShared;
+	typedef NStorage::TCSharedPointer<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>> COnScopeExitShared;
 
 	inline_always COnScopeExitShared fg_OnScopeExitShared(NFunction::TCFunctionMovable<void ()> &&_fOnExitFunctor) 
 	{ 

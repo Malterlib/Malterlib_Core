@@ -27,7 +27,7 @@ namespace NMib
 			}
 		};
 
-		NPtr::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem* _pDBus);
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem* _pDBus);
 
 	} // Namespace NSys
 

@@ -317,7 +317,7 @@ namespace NMib
 
 namespace NMib
 {
-	namespace NService
+	namespace NDaemon
 	{
 		class CMenuContext
 		{
@@ -328,7 +328,7 @@ namespace NMib
 			
 		};
 		
-		static void fgs_PauseService(id self, SEL cmd, id obj)
+		static void fsg_PauseDaemon(id self, SEL cmd, id obj)
 		{
 			CMenuContext *pContext;
 			object_getInstanceVariable(self, "m_pContext", (void **)&pContext);
@@ -337,7 +337,7 @@ namespace NMib
 				pContext->m_fPause();
 		}
 		
-		static void fgs_ResumeService(id self, SEL cmd, id obj)
+		static void fsg_ResumeDaemon(id self, SEL cmd, id obj)
 		{
 			CMenuContext *pContext;
 			object_getInstanceVariable(self, "m_pContext", (void **)&pContext);
@@ -346,18 +346,18 @@ namespace NMib
 				pContext->m_fResume();
 		}
 		
-		static void fgs_QuitService(id self, SEL cmd, id obj)
+		static void fsg_QuitDaemon(id self, SEL cmd, id obj)
 		{
 			[NSApp stop:self];
 		}
 		
-		static void fgs_CancelService(id self, SEL cmd, id obj)
+		static void fsg_CancelDaemon(id self, SEL cmd, id obj)
 		{
 			// Do nothing.
 		}
 
 		static NSApplication *gs_pSerivceApplication = nullptr; 
-		void fg_CancelRunServiceStatusApp()
+		void fg_CancelRunDaemonStatusApp()
 		{
 			if (!gs_pSerivceApplication)
 				return;
@@ -382,7 +382,7 @@ namespace NMib
 			;
 		}
 		
-		void fg_RunServiceStatusApp(NFunction::TCFunction<void ()> const& _fPause, NFunction::TCFunction<void ()> const& _fResume, NStr::CStr const &_ServiceName, NContainer::TCVector<uint8> const& _IconData)
+		void fg_RunDaemonStatusApp(NFunction::TCFunction<void ()> const& _fPause, NFunction::TCFunction<void ()> const& _fResume, NStr::CStr const &_DaemonName, NContainer::CByteVector const& _IconData)
 		{
 			CAutoReleasePool ARPool;
 			
@@ -392,9 +392,9 @@ namespace NMib
 			
 			NStr::CStr ClassName
 				= "MenuContext_" 
-				+ NDataProcessing::CUniversallyUniqueIdentifier(NDataProcessing::EUniversallyUniqueIdentifierGenerate_Random).f_GetAsString
+				+ NCryptography::CUniversallyUniqueIdentifier(NCryptography::EUniversallyUniqueIdentifierGenerate_Random).f_GetAsString
 				(
-					NDataProcessing::EUniversallyUniqueIdentifierFormat_AlphaNum
+					NCryptography::EUniversallyUniqueIdentifierFormat_AlphaNum
 				)
 			;
 			
@@ -402,10 +402,10 @@ namespace NMib
 			
 			CStr Types = CStr::CFormat("{}{}{}{}") << @encode(id) << @encode(id) << @encode(SEL) << @encode(id);
 			
-			class_addMethod(pMenuContextClass, @selector(doPauseService:), (IMP)fgs_PauseService, Types.f_GetStr());
-			class_addMethod(pMenuContextClass, @selector(doResumeService:), (IMP)fgs_ResumeService, Types.f_GetStr());
-			class_addMethod(pMenuContextClass, @selector(doQuitService:), (IMP)fgs_QuitService, Types.f_GetStr());
-			class_addMethod(pMenuContextClass, @selector(doCancelService:), (IMP)fgs_CancelService, Types.f_GetStr());
+			class_addMethod(pMenuContextClass, @selector(doPauseDaemon:), (IMP)fsg_PauseDaemon, Types.f_GetStr());
+			class_addMethod(pMenuContextClass, @selector(doResumeDaemon:), (IMP)fsg_ResumeDaemon, Types.f_GetStr());
+			class_addMethod(pMenuContextClass, @selector(doQuitDaemon:), (IMP)fsg_QuitDaemon, Types.f_GetStr());
+			class_addMethod(pMenuContextClass, @selector(doCancelDaemon:), (IMP)fsg_CancelDaemon, Types.f_GetStr());
 			
 			class_addIvar(pMenuContextClass, "m_pContext", sizeof(void *), rint(log2(sizeof(void *))), @encode(void *));
 			
@@ -424,7 +424,7 @@ namespace NMib
 			NSMenu* pMenu = [[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:@""];
 
 			{
-				NSMenuItem* pNameItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:NPlatform::fg_MaxOSX_GetString(_ServiceName) action:NULL keyEquivalent:@""];
+				NSMenuItem* pNameItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:NPlatform::fg_MaxOSX_GetString(_DaemonName) action:NULL keyEquivalent:@""];
 				[pNameItem setEnabled:false];
 				[pMenu addItem:pNameItem];
 			}
@@ -439,24 +439,24 @@ namespace NMib
 			
 			NSMenuItem* pPauseItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Pause" action:NULL keyEquivalent:@""];
 			[pPauseItem setTarget:(id)pMenuContextObject];
-			[pPauseItem setAction:@selector(doPauseService:)];
+			[pPauseItem setAction:@selector(doPauseDaemon:)];
 			[pMenu addItem:pPauseItem];
 			
 			NSMenuItem* pResumeItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Resume" action:NULL keyEquivalent:@""];
 			[pResumeItem setTarget:(id)pMenuContextObject];
-			[pResumeItem setAction:@selector(doResumeService:)];
+			[pResumeItem setAction:@selector(doResumeDaemon:)];
 			[pMenu addItem:pResumeItem];
 			
 			NSMenuItem* pQuitItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Quit" action:NULL keyEquivalent:@""];
 			[pQuitItem setTarget:(id)pMenuContextObject];
-			[pQuitItem setAction:@selector(doQuitService:)];
+			[pQuitItem setAction:@selector(doQuitDaemon:)];
 			[pMenu addItem:pQuitItem];
 			
 			[pMenu addItem:[NSMenuItem separatorItem]];
 			
 			NSMenuItem* pCancelItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Cancel" action:NULL keyEquivalent:@""];
 			[pCancelItem setTarget:(id)pMenuContextObject];
-			[pCancelItem setAction:@selector(doCancelService:)];
+			[pCancelItem setAction:@selector(doCancelDaemon:)];
 			[pMenu addItem:pCancelItem];
 			
 			NSStatusItem* pStatusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
@@ -524,7 +524,7 @@ namespace NMib
 			// Clean up any non-closed notifications
 			while (auto pPop = m_OpenNotifications.f_Pop())
 			{
-				NPtr::TCSharedPointer<CNotification> pNotification = fg_Explicit((CNotification *)pPop);
+				NStorage::TCSharedPointer<CNotification> pNotification = fg_Explicit((CNotification *)pPop);
 				pNotification->f_RefCountDecrease(DMibRefcountDebuggingOnly(pNotification->m_DebugSelfRef));
 			}
 		}
@@ -1038,7 +1038,7 @@ namespace NMib
 					}
 					pFindSnapshot->f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
 					if (lstat(CFile::fs_AppendPath(m_NotificationPath, pFindSnapshot->m_FullFileName).f_GetStr(), &pFindSnapshot->m_Stats))
-						NMem::fg_MemClear(pFindSnapshot->m_Stats);
+						NMemory::fg_MemClear(pFindSnapshot->m_Stats);
 					else
 						fg_LinkFileSnapshot(_UpdateContext, *pFindSnapshot);
 					fgr_UpdateFileSnapshot(_UpdateContext, *pFindSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
@@ -1064,7 +1064,7 @@ namespace NMib
 					// We have to do a full update
 					o_NewSnapshot.f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
 					if (lstat(m_NotificationPath.f_GetStr(), &o_NewSnapshot.m_Stats))
-						NMem::fg_MemClear(o_NewSnapshot.m_Stats);
+						NMemory::fg_MemClear(o_NewSnapshot.m_Stats);
 					else
 						fg_LinkFileSnapshot(_UpdateContext, o_NewSnapshot);
 					fgr_UpdateFileSnapshot(_UpdateContext, o_NewSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
@@ -1079,7 +1079,7 @@ namespace NMib
 			{
 				o_NewSnapshot.f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
 				if (lstat(m_NotificationPath.f_GetStr(), &o_NewSnapshot.m_Stats))
-					NMem::fg_MemClear(o_NewSnapshot.m_Stats);
+					NMemory::fg_MemClear(o_NewSnapshot.m_Stats);
 				else
 					fg_LinkFileSnapshot(_UpdateContext, o_NewSnapshot);
 				fgr_UpdateFileSnapshot(_UpdateContext, o_NewSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
@@ -1627,7 +1627,7 @@ namespace NMib
 				)
 			;
 			
-			NPtr::TCSharedPointer<CNotification> pNotification = fg_Construct(this);
+			NStorage::TCSharedPointer<CNotification> pNotification = fg_Construct(this);
 			pNotification->m_NotificationPath = NotificationPath;
 
 			FSEventStreamContext CallbackContext;
@@ -1701,7 +1701,7 @@ namespace NMib
 		void CFileChangeNoticationContext::f_Close(void *_pNotification)
 		{
 			DMibLock(m_Lock);
-			NPtr::TCSharedPointer<CNotification> pNotification = fg_Explicit((CNotification *)_pNotification);
+			NStorage::TCSharedPointer<CNotification> pNotification = fg_Explicit((CNotification *)_pNotification);
 			
 			pNotification->f_RefCountDecrease(DMibRefcountDebuggingOnly(pNotification->m_DebugSelfRef));
 			{

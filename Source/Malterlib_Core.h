@@ -125,15 +125,6 @@ namespace NMib
 
 #include <Mib/Bit/Static>
 
-
-#define DMibClassNoCopyAllowed(d_Class) d_Class(const d_Class &_Other) = delete;\
-			d_Class &operator = (const d_Class &_Other) = delete;
-
-#ifndef DMibPNoShortCuts
-#define DClassNoCopyAllowed(d_Class) DMibClassNoCopyAllowed(d_Class)
-#endif
-
-
 #include <Mib/Numeric/Integer>
 #include <Mib/Numeric/Float>
 #	include "../../Core/Source/Platform/Malterlib_Core_PlatformImp.h"

@@ -371,7 +371,7 @@ public:
 	}	
 };
 
-NMem::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
+NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
 void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
 {
@@ -431,7 +431,7 @@ void *fg_ThreadStartRoutine(void *_pParams)
 {
 	signal(SIGPIPE,SIG_IGN);
 
-	NPtr::TCUniquePointer<CThreadStartParams, CAllocator_NonTrackedHeap> pThreadParams = fg_Explicit((CThreadStartParams *)_pParams);
+	NStorage::TCUniquePointer<CThreadStartParams, CAllocator_NonTrackedHeap> pThreadParams = fg_Explicit((CThreadStartParams *)_pParams);
 	
 	CThreadStartParams StartParams = *pThreadParams;
 	
@@ -690,7 +690,7 @@ void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Pri
 		
 	}
 
-	NPtr::TCUniquePointer<CThreadStartParams, CAllocator_NonTrackedHeap> pThreadParams = fg_Construct();
+	NStorage::TCUniquePointer<CThreadStartParams, CAllocator_NonTrackedHeap> pThreadParams = fg_Construct();
 	pThreadParams->m_pThreadProc = _pThreadProc;
 	pThreadParams->m_pThreadParam = _pParam;
 	pThreadParams->m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();
@@ -926,7 +926,7 @@ public:
 };
 
 
-NMem::TCPoolAggregate<CEventEmulation, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_EventEmulationPool = {};
+NMemory::TCPoolAggregate<CEventEmulation, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_EventEmulationPool = {};
 
 void *NSys::fg_Event_Alloc(bint _bInitialSignal)
 {

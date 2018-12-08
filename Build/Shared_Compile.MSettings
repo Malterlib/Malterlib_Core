@@ -1482,11 +1482,6 @@ Compile
 		!MalterlibLinuxProgramIdentifier ""
 	}
 
-	PreprocessorDefines "DMalterlibUseLegacyServiceCode;@(Compile.PreprocessorDefines)"
-	{
-		!!MalterlibUseLegacyServiceCode "true"
-	}
-
 	PreprocessorDefines "DAOCCDisableSSL;@(Compile.PreprocessorDefines)"
 	{
 		!!AOCCDisableSSL "true"

@@ -139,10 +139,10 @@ namespace NMib
 				g_LaunchEnvironment = nullptr;
 			}
 					
-			NMib::NPtr::TCUniquePointer<google_breakpad::ExceptionHandler, NMib::NMem::CAllocator_NonTrackedHeap> m_pExceptionHandler;
+			NMib::NStorage::TCUniquePointer<google_breakpad::ExceptionHandler, NMib::NMemory::CAllocator_NonTrackedHeap> m_pExceptionHandler;
 		};
 		
-		NMib::NAggregate::TCAggregateSimple<CBreakpad> g_Breakpad = {DAggregateInit};
+		NMib::NStorage::TCAggregateSimple<CBreakpad> g_Breakpad = {DAggregateInit};
 		
 		void fg_InitBreakpad()
 		{

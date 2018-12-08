@@ -43,7 +43,7 @@ using namespace NMib;
 // *************************************************************************************************************************
 
 NThread::CMutualAggregate g_VirtualMapLock = {DAggregateInit};
-NMib::NAggregate::TCAggregateSimple<TCMapWithPool<mint, mint, NMib::CSort_Default, NMib::NMem::CAllocator_VirtualNoTracking>> g_VirtualMap = {DAggregateInit};
+NMib::NStorage::TCAggregateSimple<TCMapWithPool<mint, mint, NMib::CSort_Default, NMib::NMemory::CAllocator_VirtualNoTracking>> g_VirtualMap = {DAggregateInit};
 	
 #ifdef DMibDebuggerHelpers
 assure_used CMibCodeAddressType::CCodeAddressFunction* CMibCodeAddressType::ms_pFunction = nullptr;

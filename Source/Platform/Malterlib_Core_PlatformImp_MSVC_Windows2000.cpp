@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #ifndef NTDDI_VERSION
@@ -119,13 +119,13 @@ struct CFlsEmulator
 					m_fCallback(m_pValue);
 			}
 		};
-		NMib::NThread::TCThreadLocal<CThreadLocal, NMib::NMem::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> m_ThreadLocal;
+		NMib::NThread::TCThreadLocal<CThreadLocal, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> m_ThreadLocal;
 	};
 
-	NMib::NAggregate::TCAggregateSimple<CAllocator> m_Values[128];
+	NMib::NStorage::TCAggregateSimple<CAllocator> m_Values[128];
 };
 
-NMib::NAggregate::TCAggregate<CFlsEmulator, 0> g_FlsEmulator = {0};
+NMib::NStorage::TCAggregate<CFlsEmulator, 0> g_FlsEmulator = {0};
 
 extern "C"
 {
@@ -293,7 +293,7 @@ extern "C"
 		LOCALE_ENUMPROCEX lpLocaleEnumProcEx;
 		DWORD dwFlags;
 	};
-	NMib::NAggregate::TCAggregate<CTempParams> g_EnumSystemLocalesExParams = {0};
+	NMib::NStorage::TCAggregate<CTempParams> g_EnumSystemLocalesExParams = {0};
 	BOOL CALLBACK fg_LocaleEnum(LPWSTR _pLocale)
 	{
 		auto &Params = (*g_EnumSystemLocalesExParams);
