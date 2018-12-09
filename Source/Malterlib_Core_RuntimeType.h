@@ -9,6 +9,9 @@ namespace NMib
 {
 //	template <aint t_Dummy = 0>
 	class CRunTimeObjectInfo
+#ifdef DCompiler_MSVC_Workaround
+		: CVirtualDummy
+#endif
 	{		
 	public:
 		CRunTimeObjectInfo()

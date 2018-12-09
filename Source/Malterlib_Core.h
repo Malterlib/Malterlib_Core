@@ -13,6 +13,13 @@ namespace NMib
 	{
 		EAggregateInitialization_Force
 	};
+
+	struct CVirtualDummy
+	{
+		virtual void f_Dummy()
+		{
+		}
+	};
 }
 
 #ifndef DMalterlib
