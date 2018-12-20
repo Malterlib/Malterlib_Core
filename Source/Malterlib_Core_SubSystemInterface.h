@@ -17,7 +17,7 @@ namespace NMib
 	
 	struct CSubSystem
 	{
-		DMibListLinkD_Link(CSubSystemImpl, m_Link);
+		DMibListLinkD_Link(CSubSystem, m_Link);
 		ESubSystemDestruction m_DestructionOrder;
 
 		bool f_IsAfterMemoryManager() const
