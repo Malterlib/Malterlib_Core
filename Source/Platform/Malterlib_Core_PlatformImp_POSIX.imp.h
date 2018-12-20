@@ -46,9 +46,20 @@ NThread::CMutualAggregate g_VirtualMapLock = {DAggregateInit};
 NMib::NStorage::TCAggregateSimple<TCMapWithPool<mint, mint, NMib::CSort_Default, NMib::NMemory::CAllocator_VirtualNoTracking>> g_VirtualMap = {DAggregateInit};
 	
 #ifdef DMibDebuggerHelpers
-assure_used CMibCodeAddressType::CCodeAddressFunction* CMibCodeAddressType::ms_pFunction = nullptr;
-assure_used CMibCodeAddressType::CCodeAddressFile* CMibCodeAddressType::ms_pFile = nullptr;
-assure_used CMibCodeAddressType::CCodeAddressLine* CMibCodeAddressType::ms_pLine = nullptr;
+assure_used CMibCodeAddressType::CCodeAddressFunction *CMibCodeAddressType::fs_Debug_Function()
+{
+	return nullptr;
+}
+
+assure_used CMibCodeAddressType::CCodeAddressFile *CMibCodeAddressType::fs_Debug_File()
+{
+	return nullptr;
+}
+
+assure_used CMibCodeAddressType::CCodeAddressLine *CMibCodeAddressType::fs_Debug_Line()
+{
+	return nullptr;
+}
 #endif
 
 struct CSystem_POSIX
@@ -79,9 +90,9 @@ struct CSystem_POSIX
 	void f_Destruct()
 	{
 #ifdef DMibDebuggerHelpers
-		(void)&CMibCodeAddressType::ms_pFunction;
-		(void)&CMibCodeAddressType::ms_pFile;
-		(void)&CMibCodeAddressType::ms_pLine;
+		static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_Function>::mc_Value);
+		static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_File>::mc_Value);
+		static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_Line>::mc_Value);
 #endif
 	}
 };

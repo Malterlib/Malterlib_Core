@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -16,9 +16,9 @@
 		struct CCodeAddressLine
 		{
 		};
-		static CCodeAddressFunction* ms_pFunction;
-		static CCodeAddressFile* ms_pFile;
-		static CCodeAddressLine* ms_pLine;
+		static CCodeAddressFunction *fs_Debug_Function();
+		static CCodeAddressFile *fs_Debug_File();
+		static CCodeAddressLine *fs_Debug_Line();
 	};
 	typedef CMibCodeAddressType* CMibCodeAddress;
 #else
