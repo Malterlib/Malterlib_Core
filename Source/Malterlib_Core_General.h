@@ -1642,7 +1642,6 @@ namespace NMib
 
 	template <typename tf_CType>
 	ch8 const *fg_GetTypeName();
-	
 
 	struct CConstExprSubStr
 	{
@@ -1727,6 +1726,27 @@ namespace NMib
 		}
 		return CConstExprSubStr(pStartType, (pParse - pStartType));
 #endif
+	}
+
+	template <mint t_nCharacters>
+	struct TCConstExprSubStr : public CConstExprSubStr
+	{
+		constexpr TCConstExprSubStr(char const *_pString)
+			: CConstExprSubStr(m_String, t_nCharacters)
+		{
+			for (mint i = 0; i < t_nCharacters; ++i)
+				m_String[i] = _pString[i];
+			m_String[t_nCharacters] = 0;
+		}
+
+		char m_String[t_nCharacters + 1];
+	};
+
+	template <typename tf_CType>
+	static constexpr auto fg_GetTypeNameConstExprArray()
+	{
+		constexpr auto String = fg_GetTypeNameConstExpr<tf_CType>();
+		return TCConstExprSubStr<String.m_Len>{String.m_pString};
 	}
 
 	static constexpr uint32 fg_JenkinsHash(const char * const _pString)
