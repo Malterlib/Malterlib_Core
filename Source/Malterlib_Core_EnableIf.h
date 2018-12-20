@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -88,5 +88,11 @@ namespace NMib
 		{
 			mc_Value = t_Val1
 		};
+	};
+
+	template <auto t_fFunction>
+	struct TCInstantiateValue
+	{
+		static constexpr bool mc_Value = t_fFunction != nullptr;
 	};
 }
