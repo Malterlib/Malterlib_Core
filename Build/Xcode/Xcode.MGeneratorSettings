@@ -1364,7 +1364,7 @@
 			{
 				Property
 				{
-					Prefix "--ToolClass "
+					Prefix "--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89 "
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"
@@ -1418,53 +1418,6 @@
 				}
 			}
 			
-			%GeneratorSetting "DocumentationDocSetFeedName"
-			{
-				Property
-				{
-					Prefix "--documentation-docset-feed-name "
-					ConvertSeperator "1"
-					Seperator " "
-					OldSeperator ";"
-					QuoteSeperatedValues "1"
-				}
-			}
-			
-			%GeneratorSetting "DocumentationDocSetPublisherName"
-			{
-				Property
-				{
-					Prefix "--documentation-docset-publisher-name "
-					ConvertSeperator "1"
-					Seperator " "
-					OldSeperator ";"
-					QuoteSeperatedValues "1"
-				}
-			}
-			
-			%GeneratorSetting "DocumentationDocSetPublisherID"
-			{
-				Property
-				{
-					Prefix "--documentation-docset-publisher-id "
-					ConvertSeperator "1"
-					Seperator " "
-					OldSeperator ";"
-					QuoteSeperatedValues "1"
-				}
-			}
-			
-			%GeneratorSetting "DocumentationDocSetBundleID"
-			{
-				Property
-				{
-					Prefix "--documentation-docset-bundle-id "
-					ConvertSeperator "1"
-					Seperator " "
-					OldSeperator ";"
-					QuoteSeperatedValues "1"
-				}
-			}
 			%GeneratorSetting "SearchPath"
 			{
 				Property

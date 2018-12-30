@@ -81,7 +81,7 @@
 			Property
 			{
 				Name "AdditionalOptions"
-				Substitute "--ToolClass {} %(ClCompile.AdditionalOptions)"
+				Substitute "--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89 {} %(ClCompile.AdditionalOptions)"
 			}
 		}
 		%GeneratorSetting "ObjectFileName"

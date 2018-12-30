@@ -316,11 +316,11 @@ The correct way:
 	{
 	case 1:
 		break;
-	case 2: 
-		fg_FuncCall1(); 
+	case 2:
+		fg_FuncCall1();
 		break;
-	default: 
-		fg_FuncCall2(); 
+	default:
+		fg_FuncCall2();
 		break;
 	}
 ~~~
@@ -329,15 +329,15 @@ The correct way:
 
 A function declaration or prototype is defined as follows. Note that the ordering here is significant:
 \verbatim
-[static] [virtual] [inline] [other_attributes] <return type> f_FunctionName(<parameter list>) [const] [volatile] [abstract];
+[static] [virtual] [inline] [other_attributes] <return type> f_FunctionName(<parameter list>) [const] [volatile] [= 0];
  
-[static] [virtual] [inline] [other_attributes] auto f_FunctionName(<parameter list>) [const] [volatile] [abstract] -> <return type>;
+[static] [virtual] [inline] [other_attributes] auto f_FunctionName(<parameter list>) [const] [volatile] [= 0] -> <return type>;
 \endverbatim
  
 You can never split the function into several lines before the function name. If you need extra space before the function name, specify the function with trailing return type.
  
 \verbatim
-[static] [virtual] [inline] [other_attributes] auto f_FunctionName(<parameter list>) [const] [volatile] [abstract] 
+[static] [virtual] [inline] [other_attributes] auto f_FunctionName(<parameter list>) [const] [volatile] [= 0] 
 	-> <return type>
 ;
 \endverbatim
@@ -364,7 +364,7 @@ Examples:
 			int _Param0
 			, int _Param1
 		)
-		const volatile abstract
+		const volatile = 0
 	;
 
 	void fg_Function
@@ -452,7 +452,7 @@ Examples:
  
 		CProtectedRetValue fp_ProtectedFunction(CProtectedSubStruct const &_Param);
 
-		uint32 mp_PrivateMember;
+		uint32 mp_ProtectedMember;
  
 	private:
 		struct CPrivateSubStruct

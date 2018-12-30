@@ -40,7 +40,6 @@ The exception to the upper camel case rule is that features that are emulation o
 	align_cacheline
 	likely
 	unlikely
-	abstract
 	uint32
 	fp64
 	mint
@@ -570,7 +569,7 @@ Types, enumerators and namespaces are prefixed.
 ~~~
 	struct ICTest
 	{ 
-		virtual void f_Function() abstract; 
+		virtual void f_Function() = 0;
 	};
 ~~~
 	</td>
@@ -608,7 +607,7 @@ Types, enumerators and namespaces are prefixed.
 	template <typename t_CType>
 	struct TICTest
 	{
-		virtual void f_Function() abstract; 
+		virtual void f_Function() = 0; 
 	};
 ~~~
 	</td>

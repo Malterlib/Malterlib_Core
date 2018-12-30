@@ -593,7 +593,7 @@ Target
 	}
 
 
-	ExtraLinkerFlags "--ToolClass DoxygenLD --doxygen-executable /Development/Malterlib/Tools/stable_build/bin/doxygen @(Target.ExtraLinkerFlags)"
+	ExtraLinkerFlags "--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89 DoxygenLD --doxygen-executable /Development/Malterlib/Tools/stable_build/bin/doxygen @(Target.ExtraLinkerFlags)"
 	{
 		&
 		{
@@ -603,7 +603,7 @@ Target
 		}
 	}
 
-	ExtraLibFlags "--ToolClass DoxygenLibTool @(Target.LibToolFlags)"
+	ExtraLibFlags "--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89 DoxygenLibTool @(Target.LibToolFlags)"
 	{
 		&
 		{
@@ -1183,7 +1183,7 @@ Target
 		!!Documentation Doxygen
 	}
 
-	LibToolFlags "--ToolClass DoxygenLibTool @(Target.LibToolFlags)"
+	LibToolFlags "--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89 DoxygenLibTool @(Target.LibToolFlags)"
 	{
 		&
 		{
@@ -1194,7 +1194,7 @@ Target
 	}
 
 
-	LDFlags "--ToolClass DoxygenLD --doxygen-executable @(MalterlibDependenciesDirectory)/doxygen/build/bin/doxygen @(Target.LDFlags)"
+	LDFlags "--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89 DoxygenLD --doxygen-executable @(MalterlibDependenciesDirectory)/doxygen/build/bin/doxygen @(Target.LDFlags)"
 	{
 		&
 		{
