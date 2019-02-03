@@ -172,8 +172,7 @@
 
 namespace NMib
 {
-
-	DMibImpErrorClass(CDynamicLibraryException, NMib::NException::CException);
+	DMibImpErrorClassDefine(CDynamicLibraryException, NMib::NException::CException);
 
 	using CDLFlagUnderlaying = int32;
 	enum EDLFlag : int32 // EDynamicLibraryFlag, shortened for typing.
