@@ -274,12 +274,12 @@ Property
 				}
 				%Group Headers
 				{
-					%File "../../External/libcxx/include/*"
+					%File "../../External/libcxx/include/^*"
 					Compile.Type Header
 				}
 				%Group Source
 				{
-					%File "../../External/libcxx/src/*.cpp"
+					%File "../../External/libcxx/src/^*"
 					%File "../../External/libcxx/src/new.cpp"
 					{
 						Compile.PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE_DEFINITIONS;@(Compile.PreprocessorDefines)"
@@ -290,6 +290,26 @@ Property
 					%File "../../External/libcxx/src/debug.cpp"
 					{
 						Compile.Disabled true
+					}
+					%Group support
+					{
+						%Group solaris
+						{
+							%File "../../External/libcxx/src/support/solaris/*.cpp"
+							{
+								Compile.Disabled true
+							}
+						}
+						%Group win32
+						{
+							%File "../../External/libcxx/src/support/win32/*.cpp"
+							{
+								Compile.Disabled true
+								{
+									!PlatformFamily Windows
+								}
+							}
+						}
 					}
 				}
 			}
