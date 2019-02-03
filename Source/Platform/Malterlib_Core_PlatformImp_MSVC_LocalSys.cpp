@@ -1038,14 +1038,11 @@ public:
 	{
 		if (pExceptionInfo->ExceptionRecord && pExceptionInfo->ExceptionRecord->NumberParameters >= 3 && pExceptionInfo->ExceptionRecord->ExceptionInformation[0] == 0x19930520)
 		{
-			if (g_ExceptionFilter.f_IsConstructed() && (*g_ExceptionFilter).f_IsValid())
+			if (g_SystemThreadLocal.f_IsConstructed() && (*g_SystemThreadLocal).f_IsValid())
 			{
-				TCAutoClear<CExceptionFilter *> &pPtr = (**g_ExceptionFilter);
-
-				if (pPtr)
-				{
-					pPtr.f_Get()->f_Exception((void *)pExceptionInfo->ExceptionRecord->ExceptionInformation[1]);
-				}		
+				auto &ThreadLocal = **g_SystemThreadLocal;
+				if (ThreadLocal.m_pExceptionFilter)
+					ThreadLocal.m_pExceptionFilter->f_Exception((void *)pExceptionInfo->ExceptionRecord->ExceptionInformation[1]);
 			}
 		}
 		return 0;

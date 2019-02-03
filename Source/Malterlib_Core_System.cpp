@@ -65,22 +65,7 @@ namespace NMib
 
 	}
 
-	namespace NException
-	{
-		NStorage::TCAggregate<NThread::TCThreadLocal<TCAutoClear<CExceptionFilter *>>, 64> g_ExceptionFilter = {DAggregateInit};
-	}
-
-	namespace NMemory
-	{
-#ifdef DMibDebug
-		NAtomic::TCAtomic<smint> g_AllowDebugNewErrorGlobal;
-		NStorage::TCAggregate<NThread::TCThreadLocal<NAtomic::TCAtomic<smint>>, 64> g_AllowDebugNewError = {DAggregateInit};
-		NThread::TCThreadLocal<NAtomic::TCAtomic<smint>> & fg_AccessAllowDebugNewErrorGlobalSingleton()
-		{
-			return *g_AllowDebugNewError;
-		}
-#endif
-	}
+	NStorage::TCAggregate<NThread::TCThreadLocal<CSystemThreadLocal>, 64> g_SystemThreadLocal = {DAggregateInit};
 
 	/************************************************************************************************\
 	||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
@@ -666,31 +651,61 @@ namespace NMib
 		m_Aggregates.f_Destruct();
 
 	}
-	
+
 	void CSystemModule::f_Init(CSystem *_pSystem)
 	{
 		m_Aggregates.f_Construct();
 		m_Lock.f_Construct();
 		m_pSystem = _pSystem;
 	}
-	
+
 	void CSystemModule::f_AddAggregate(NStorage::CAggregate *_pAggregate)
 	{
 		DMibLock(m_Lock);
 		DMibFastCheck(m_pSystem); // System must exist
 		m_Aggregates.f_Insert(_pAggregate);
 	}
-	
+
 	void CSystemModule::f_RemoveAggregate(NStorage::CAggregate *_pAggregate)
 	{
 		DMibLock(m_Lock);
 		DMibFastCheck(m_pSystem); // System must exist
 		m_Aggregates.f_Remove(_pAggregate);
 	}
-	
 
-} // Namespace NMib
+	CCoroutineThreadLocalHandler::CCoroutineThreadLocalHandler()
+	{
+		if (!g_bCanStartThreads)
+			return;
 
-//NMib::NStr::CStr g_CStr;
-//NMib::NStr::CWStr g_CWStr;
+		auto &ThreadLocal = **g_SystemThreadLocal;
+		if (ThreadLocal.m_pCurrentCoroutineHandler)
+			ThreadLocal.m_pCurrentCoroutineHandler->m_ThreadLocalHandlers.f_Insert(this);
+	}
 
+	CCoroutineThreadLocalHandler::~CCoroutineThreadLocalHandler() = default;
+
+	CCoroutineHandler::~CCoroutineHandler()
+	{
+		DMibFastCheck(m_nThreadLocalScopes == 0); // Outstanding scope
+	}
+
+#if DMibEnableSafeCheck > 0
+	void fg_ThreadLocalScopeEnter()
+	{
+		auto &ThreadLocal = **g_SystemThreadLocal;
+		if (ThreadLocal.m_pCurrentCoroutineHandler)
+			++ThreadLocal.m_pCurrentCoroutineHandler->m_nThreadLocalScopes;
+	}
+
+	void fg_ThreadLocalScopeExit()
+	{
+		auto &ThreadLocal = **g_SystemThreadLocal;
+		if (ThreadLocal.m_pCurrentCoroutineHandler)
+		{
+			DMibFastCheck(ThreadLocal.m_pCurrentCoroutineHandler->m_nThreadLocalScopes > 0);
+			--ThreadLocal.m_pCurrentCoroutineHandler->m_nThreadLocalScopes;
+		}
+	}
+#endif
+}

@@ -811,6 +811,7 @@ Target
 		MalterlibDefaultXcode true
 	}
 
+	//IndexStoreEnable YES
 	Workaround_GCC_ENABLE_TRIGRAPHS ""
 	Workaround_GCC_ENABLE_PASCAL_STRINGS ""
 	Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS ""
@@ -965,6 +966,15 @@ Target
 				MalterlibDefaultCompiler true
 				!MalterlibCustomCompilerOptions true
 			}
+		}
+	}
+
+	LDFlags "-fdwarf-exceptions @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x86
 		}
 	}
 
@@ -1238,12 +1248,23 @@ Target
 		!!PlatformFamily Linux
 	}
 
-	LDFlags "-fuse-ld=gold @(Target.LDFlags)"
+	LDFlags "-fuse-ld=@(Malterlib_LinuxLinker) @(Target.LDFlags)"
 	{
 		&
 		{
 			PlatformFamily Linux
-			Malterlib_LinuxUseGoldLinker true
+			!Malterlib_LinuxLinker ""
+		}
+	}
+
+	LDFlags "-Xlinker --icf=all @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			Malterlib_LinuxLinker lld
+			DebugCompiler "false"
+			!Configuration "Release Debug"
 		}
 	}
 
@@ -1252,7 +1273,11 @@ Target
 		&
 		{
 			PlatformFamily Linux
-			Malterlib_LinuxUseGoldLinker true
+			|
+			{
+				Malterlib_LinuxLinker gold
+				Malterlib_LinuxLinker lld
+			}
 		}
 	}
 	
@@ -1260,7 +1285,11 @@ Target
 	{
 		&
 		{
-			Malterlib_LinuxUseGoldLinker true
+			|
+			{
+				Malterlib_LinuxLinker gold
+				Malterlib_LinuxLinker lld
+			}
 			PlatformFamily Linux
 			|
 			{
@@ -1276,7 +1305,11 @@ Target
 	{
 		&
 		{
-			Malterlib_LinuxUseGoldLinker true
+			|
+			{
+				Malterlib_LinuxLinker gold
+				Malterlib_LinuxLinker lld
+			}
 			MalterlibThread_LinuxUseStaticThreadLocal true
 			PlatformFamily Linux
 			|
@@ -1292,7 +1325,11 @@ Target
 	{
 		&
 		{
-			!Malterlib_LinuxUseGoldLinker true
+			|
+			{
+				Malterlib_LinuxLinker gold
+				Malterlib_LinuxLinker lld
+			}
 			MalterlibThread_LinuxUseStaticThreadLocal true
 			PlatformFamily Linux
 			|
@@ -1377,12 +1414,33 @@ Target
 		!Target.EmscriptenNode ""
 	}	
 
-	CxxLanguage "C++17"
+	CxxLanguage "C++20"
 	{
 		"!!Target.CxxLanguage" ""
 	}
+
 	CxxStandardLibrary "libc++"
-	
+
+	NativeOptimize "@(Compile.Optimize)"
+	{
+		!!GeneratorFamily Xcode
+	}
+	NoDeduplication false
+	{
+		&
+		{
+			GeneratorFamily Xcode
+			PlatformFamily Linux
+		}
+	}
+	LibtoolDeterministicMode false
+	{
+		&
+		{
+			GeneratorFamily Xcode
+			PlatformFamily Linux
+		}
+	}
 	HeadermapIncludeTarget false
 	HeadermapIncludeFrameworks false
 	HeadermapIncludeProject false

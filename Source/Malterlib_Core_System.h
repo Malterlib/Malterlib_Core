@@ -5,6 +5,7 @@
 
 #include <Mib/Core/Core>
 #include <Mib/Container/LinkedList>
+#include <Mib/Core/CoroutineHandler>
 
 #include "Malterlib_Core_PlatformInterface.h"
 #include "../../Log/Source/Malterlib_Log_Configuration.h"
@@ -16,13 +17,49 @@ namespace NMib
 {
 	namespace NException
 	{
+		class CExceptionFilter;
+	}
+
+	struct CCoroutineHandler
+	{
+		~CCoroutineHandler();
+
+		DMibListLinkDS_List(CCoroutineThreadLocalHandler, m_Link) m_ThreadLocalHandlers;
+#if DMibEnableSafeCheck > 0
+		mint m_nThreadLocalScopes = 0;
+#endif
+	};
+
+	struct CSystemThreadLocal
+	{
+		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
+		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
+#if DMibEnableSafeCheck > 0
+		NException::CCallstack m_LastUnsafeCoroutineCallstack;
+		CMibCodeAddress m_CurrentActorCallParent;
+		bool m_bExpectCoroutineCall = false;
+#endif
+	};
+
+	extern NStorage::TCAggregate<NThread::TCThreadLocal<CSystemThreadLocal>, 64> g_SystemThreadLocal;
+
+#if DMibEnableSafeCheck > 0
+	void fg_ThreadLocalScopeEnter();
+	void fg_ThreadLocalScopeExit();
+	#define DMibThreadLocalScopeEnter NMib::fg_ThreadLocalScopeEnter()
+	#define DMibThreadLocalScopeExit NMib::fg_ThreadLocalScopeExit()
+#else
+	#define DMibThreadLocalScopeEnter
+	#define DMibThreadLocalScopeExit
+#endif
+
+	namespace NException
+	{
 		class CExceptionFilter
 		{
 		public:
 			virtual void f_Exception(void *_pExceptionData) = 0;
 		};
-
-		extern NStorage::TCAggregate<NThread::TCThreadLocal<TCAutoClear<CExceptionFilter *>>, 64> g_ExceptionFilter;
 
 		class CExceptionFilterScope
 		{
@@ -31,13 +68,17 @@ namespace NMib
 
 			CExceptionFilterScope(CExceptionFilter &_Filter)
 			{
-				m_pOldFilter = **g_ExceptionFilter;
-				**g_ExceptionFilter = &_Filter;
+				DMibThreadLocalScopeEnter;
+				auto &ThreadLocal = **g_SystemThreadLocal;
+				m_pOldFilter = ThreadLocal.m_pExceptionFilter;
+				ThreadLocal.m_pExceptionFilter = &_Filter;
 			}
 
 			~CExceptionFilterScope()
 			{
-				**g_ExceptionFilter = m_pOldFilter;
+				auto &ThreadLocal = **g_SystemThreadLocal;
+				ThreadLocal.m_pExceptionFilter = m_pOldFilter;
+				DMibThreadLocalScopeExit;
 			}
 		};
 
@@ -59,38 +100,6 @@ namespace NMib
 		struct CLogFile;
 	};
 #endif
-
-	namespace NMemory
-	{
-#ifdef DMibDebug
-		extern NStorage::TCAggregate<NThread::TCThreadLocal<NAtomic::TCAtomic<smint>>, 64> g_AllowDebugNewError;
-		extern NAtomic::TCAtomic<smint> g_AllowDebugNewErrorGlobal;
-
-		NThread::TCThreadLocal<NAtomic::TCAtomic<smint>> & fg_AccessAllowDebugNewErrorGlobalSingleton();
-
-		class CAllowDebugNewErrorScope
-		{
-		public:
-			CAllowDebugNewErrorScope()
-			{
-				++(*fg_AccessAllowDebugNewErrorGlobalSingleton());
-			}
-			~CAllowDebugNewErrorScope()
-			{
-				--(*fg_AccessAllowDebugNewErrorGlobalSingleton());
-			}
-		};
-#define DMibMemAllowDebugNewError CAllowDebugNewErrorScope AllowDebugNewErrorScope
-#	ifndef DMibPNoShortCuts
-#		define DAllowDebugNewError DMibMemAllowDebugNewError
-#	endif
-#else
-#define DMibMemAllowDebugNewError 
-#	ifndef DMibPNoShortCuts
-#		define DAllowDebugNewError DMibMemAllowDebugNewError
-#	endif
-#endif
-	}
 
 	// The global system object... Can be overridden, its not recommended if you don't know what you are doing though
 	typedef void (calling_convention_c FConstruct)(void);

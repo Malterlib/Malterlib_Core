@@ -2,6 +2,7 @@
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Property.MalterlibBuildDependenciesContents	"@(MalterlibBuildDependenciesContents)"\
+			"export MalterlibUseCustomXcodeToolchain=@(MalterlibUseCustomXcodeToolchain)\r\n"\
 			"@('BuildLLVM.sh'->MakeAbsolute()) \"@(MalterlibClangVersion)\" \"@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)\" \"@(MalterlibMainMalterlibRepo)\"\r\n"\
 			"ErrorLevel=$?\n"\
 			"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\

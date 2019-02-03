@@ -175,6 +175,9 @@ namespace NMib
 
 #include <Mib/Intrusive/SinglyLinkedList>
 #include <Mib/Intrusive/DoublyLinkedList>
+#include <Mib/Core/CoroutineHandler>
+
+#include <Mib/Memory/MemoryReporter>
 
 #include <Mib/Storage/UniquePointer>
 

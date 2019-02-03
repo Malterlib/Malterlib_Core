@@ -129,7 +129,7 @@ easy to apply the highlighting without language specific parsing support.
 <tr><td></td><td>#8dd580</td><td style="background-color:#8dd580"></td><td style="color:#8dd580">fp_Test fsp_Test </td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Parameters</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
 <tr><td></td><td>#e6ff00</td><td style="background-color:#e6ff00"></td><td style="color:#e6ff00">_Test p_Test</td><td></td></tr>
-<tr><td></td><td>#fff54b</td><td style="background-color:#fff54b"></td><td style="color:#fff54b">p_Test po_Test</td><td></td></tr>
+<tr><td></td><td>#fff54b</td><td style="background-color:#fff54b"></td><td style="color:#fff54b">o_Test po_Test</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
 <tr><td></td><td>#ffd700</td><td style="background-color:#ffd700"></td><td style="color:#ffd700">Var</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Member variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>

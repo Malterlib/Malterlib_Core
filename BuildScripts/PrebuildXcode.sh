@@ -21,8 +21,10 @@ Extension=MBuildSystem
 shift
 
 if [[ "$MalterlibPlatform" == "OSX" ]] ; then
-	# Setting Xcode build location to legacy
+	# Set Xcode build location to legacy
 	defaults write com.apple.dt.Xcode IDEBuildLocationStyle DeterminedByTargets
+	# Set Xcode to use malterlib toolchain
+	defaults write com.apple.dt.xcode DVTDefaultToolchainOverrideIdentifer org.malterlib.1.0
 fi
 
 for Argument in "$@" ; do

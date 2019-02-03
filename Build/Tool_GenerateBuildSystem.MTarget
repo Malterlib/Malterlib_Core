@@ -243,9 +243,9 @@
 								"if ! [ -f \"@(LibToolCopy_UpdatedFile)\" ] || ! [ -f \"@(LibToolCopy_BinariesDirectory)/libtool\" ]; then\n"\
 								"	echo Updated of libtool needed\n"\
 								"	set -e\n"\
-								"	\"@(Builtin.MToolExe)\" DiffCopy \"${TOOLCHAIN_DIR}/usr/bin/libtool\" \"@(LibToolCopy_BinariesDirectory)\"\n"\
+								"	\"@(Builtin.MToolExe)\" DiffCopy \"${DT_TOOLCHAIN_DIR}/usr/bin/libtool\" \"@(LibToolCopy_BinariesDirectory)\"\n"\
 								"	\"@(Builtin.MToolExe)\" TouchOrCreate \"@(LibToolCopy_UpdatedFile)\"\n"\
-								"	\"@(Builtin.MToolExe)\" BuildDependencies \"OutputFile=@(LibToolCopy_DependencyFile)\" \"Output:@(LibToolCopy_UpdatedFile)\" \"Input:${TOOLCHAIN_DIR}/usr/bin/libtool\"\n"\
+								"	\"@(Builtin.MToolExe)\" BuildDependencies \"OutputFile=@(LibToolCopy_DependencyFile)\" \"Output:@(LibToolCopy_UpdatedFile)\" \"Input:${DT_TOOLCHAIN_DIR}/usr/bin/libtool\"\n"\
 								"	set +e\n"\
 								"fi\n"
 					{

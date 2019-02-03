@@ -295,6 +295,14 @@
 				}
 			}
 
+			%GeneratorSetting "IndexStoreEnable"
+			{
+				Property
+				{
+					Name "COMPILER_INDEX_STORE_ENABLE"
+				}
+			}
+
 			%GeneratorSetting "Workaround_GCC_ENABLE_TRIGRAPHS" { Property { Name "GCC_ENABLE_TRIGRAPHS" } }
 			%GeneratorSetting "Workaround_GCC_ENABLE_PASCAL_STRINGS" { Property { Name "GCC_ENABLE_PASCAL_STRINGS" } }
 			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS" { Property { Name "GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS" } }
@@ -642,7 +650,7 @@
 						OSX10.13 "10.13"
 						OSX10.14 "10.14"
 						iOS8.1 "8.1"
-						Linux2.6 ""
+						Linux2.6 "10.6"
 						Emscripten ""
 					}
 				}
@@ -903,13 +911,64 @@
 					{
 						GNU++11 "gnu++11"
 						GNU++14 "gnu++14"
-						GNU++17 "gnu++1z"
+						GNU++20 "gnu++17"
 						C++11 "c++11"
 						C++14 "c++14"
-						C++17 "c++1z"
+						C++17 "c++17"
+						C++20 "c++2a"
+
 					}
 				}
 			}
+			%GeneratorSetting "NativeOptimize"
+			{
+				Property
+				{
+					Name "GCC_OPTIMIZATION_LEVEL"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						Off "0"
+						Fast "3"
+						On "3"
+						Full "fast"
+					}
+				}
+			}
+			%GeneratorSetting "NoDeduplication"
+			{
+				Property
+				{
+					Name "LD_DONT_RUN_DEDUPLICATION"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+
+			%GeneratorSetting "LibtoolDeterministicMode"
+			{
+				Property
+				{
+					Name "LIBTOOL_DETERMINISTIC_MODE"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+
 			%GeneratorSetting "CLanguage"
 			{
 				Property
@@ -1224,7 +1283,7 @@
 					Property
 					{
 						FullForDebug "-gfull"
-						Full "-g -flimit-debug-info"
+						Full "-g"
 						Fast "-gline-tables-only"
 						None "-g0"
 						Default ""
@@ -1237,7 +1296,7 @@
 				{
 					Property
 					{
-						true "-gsplit-dwarf"
+						true "-gsplit-dwarf -ggnu-pubnames"
 						false ""
 					}
 				}
@@ -1492,7 +1551,7 @@
 					Property
 					{
 						false ""
-						true "-faligned-allocation"
+						true "-faligned-allocation -Wno-aligned-allocation-unavailable"
 					}
 				}
 			}
@@ -1648,6 +1707,17 @@
 					{
 						false ""
 						true "-fdata-sections"
+					}
+				}
+			}
+			%GeneratorSetting "Coroutines"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-fcoroutines-ts"
 					}
 				}
 			}
@@ -1968,6 +2038,19 @@
 					}
 				}
 			}
+			%GeneratorSetting "ForceDwarfExceptions"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fdwarf-exceptions"
+						false ""
+					}
+				}
+			}
+
+
 			%GeneratorSetting "PrecompilePrefixHeader"
 			{
 				Property
@@ -1996,6 +2079,7 @@
 					}
 				}
 			}
+
 			%GeneratorSetting "Optimize"
 			{
 				%GeneratorSetting "Value"
@@ -2006,7 +2090,7 @@
 						Fast "-O3"
 						On "-O3"
 						//Full "-O4 -flto"
-						Full "-O3"
+						Full "-Ofast"
 					}
 				}
 			}
