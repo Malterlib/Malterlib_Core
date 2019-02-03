@@ -42,14 +42,16 @@ namespace NLocal
 	
 	void fg_GetSymbols()
 	{
+		void *pLibGcc = dlopen("libgcc_s.so.1", RTLD_NOW | RTLD_LOCAL);
+
 		(void * &)g_f_pipe2 = dlsym(RTLD_DEFAULT, "pipe2");
 		(void * &)g_f_inotify_init1 = dlsym(RTLD_DEFAULT, "inotify_init1");
 		(void * &)g_f_inotify_init = dlsym(RTLD_DEFAULT, "inotify_init");
 		(void * &)g_f_inotify_add_watch = dlsym(RTLD_DEFAULT, "inotify_add_watch");
 		(void * &)g_f_inotify_rm_watch = dlsym(RTLD_DEFAULT, "inotify_rm_watch");
 		(void * &)g_f_pthread_setname_np = dlsym(RTLD_DEFAULT, "pthread_setname_np");
-		(void * &)g_f_unwind_backtrace = dlsym(RTLD_DEFAULT, "_Unwind_Backtrace");
-		(void * &)g_f_unwind_getip = dlsym(RTLD_DEFAULT, "_Unwind_GetIP");
+		(void * &)g_f_unwind_backtrace = NSys::fg_GetLibrarySymbol(pLibGcc, "_Unwind_Backtrace");
+		(void * &)g_f_unwind_getip = NSys::fg_GetLibrarySymbol(pLibGcc, "_Unwind_GetIP");
 		(void * &)g_f_memcpy = dlsym(RTLD_NEXT, "memcpy");
 		(void * &)g_f_utimensat = dlsym(RTLD_DEFAULT, "utimensat");
 		(void * &)g_f_futimens = dlsym(RTLD_DEFAULT, "futimens");
