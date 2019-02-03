@@ -25,7 +25,7 @@ else
 	fi
 fi
 
-DependenciesVersion=1
+DependenciesVersion=3
 DependenciesFile="$DependenciesDirectory/MalterlibDependencies.ver"
 
 Setting_Plugin_Malterlib=true
@@ -109,7 +109,7 @@ UpdatePorts()
 	sudo port -N -s install i386-elf-binutils x86_64-elf-binutils
 
 	# For meteor manager
-	sudo port -N uninstall installed and npm installed and npm-devel installed and nodejs installed and nodejs-devel installed and nodejs6 installed and npm3 installed and node8 || true
+	sudo port -N uninstall installed and npm installed and npm-devel installed and nodejs installed and nodejs-devel installed and nodejs6 installed and npm3 installed and npm5 installed and nodejs8 || true
 
 	sudo port -N install nodejs10
 

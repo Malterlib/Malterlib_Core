@@ -795,7 +795,11 @@ Compile
 	&
 	{
 		LanguageFamily Native
-		PlatformIsDarwin true
+		|
+		{
+			PlatformIsDarwin true
+			PlatformFamily Linux
+		}
 		|
 		{
 			CompileDialect C
@@ -1025,6 +1029,11 @@ Compile
 		!!PlatformFamily Linux
 	}
 
+	Coroutines true
+	{
+		!!Compile.Coroutines ""
+	}
+
 	Inline "Off"
 	{
 	}
@@ -1118,6 +1127,15 @@ Compile
 
 	Exceptions "C++"
 	{
+	}
+
+	ForceDwarfExceptions true
+	{
+		&
+		{
+			PlatformFamily Linux
+			Architecture x86
+		}
 	}
 
 	Exceptions "Off"
@@ -1385,7 +1403,7 @@ Compile
 		!!PlatformFamily Linux
 	}
 	
-	PreprocessorDefines "_LIBCPP_NO_ALWAYS_INLINE;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "_LIBCPP_HIDE_FROM_ABI_PER_TU_BY_DEFAULT;@(Compile.PreprocessorDefines)"
 	{
 		&
 		{
@@ -1531,7 +1549,11 @@ Compile
 		&
 		{
 			PlatformFamily Linux
-			Malterlib_LinuxUseGoldLinker true
+			|
+			{
+				Malterlib_LinuxLinker gold
+				Malterlib_LinuxLinker lld
+			}
 		}
 	}
 
@@ -1936,7 +1958,11 @@ Compile
 		&
 		{ 
 			PlatformFamily Linux
-			Malterlib_LinuxUseGoldLinker true
+			|
+			{
+				Malterlib_LinuxLinker gold
+				Malterlib_LinuxLinker lld
+			}
 			!MalterlibBuildServerBuild true
 		}
 	}

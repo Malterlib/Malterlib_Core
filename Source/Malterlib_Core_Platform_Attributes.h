@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -54,17 +54,6 @@
 #else
 #	error "Implement this"
 #endif
-
-// Disable unused warning for function
-#if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define allow_unused __attribute__((unused)) 
-#elif defined(DCompiler_MSVC)
-#	define allow_unused
-#else
-#	error "Implement this"
-#endif
-
-
 
 // Likely
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
@@ -147,6 +136,12 @@
 #	define inline_extralarge 
 #endif
 
+// Aliasing
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	 define mark_artificial [[gnu::artificial]]
+#else
+#	 define mark_artificial 
+#endif
 
 // Aliasing
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)

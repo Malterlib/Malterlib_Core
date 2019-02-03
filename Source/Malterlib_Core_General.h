@@ -79,13 +79,13 @@ namespace NMib
 #else
 
 	template <typename t_CType> 
-	constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &_ToForward) 
+	mark_artificial constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &_ToForward)
 	{
     	return static_cast<t_CType&&>(_ToForward);
 	}
 
 	template <typename t_CType> 
-	constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &&_ToForward) noexcept
+	mark_artificial constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &&_ToForward) noexcept
 	{
 		static_assert(!NTraits::TCIsLValueReference<t_CType>::mc_Value, "Cannot be a lvalue reference here");
     	return static_cast<t_CType&&>(_ToForward);
@@ -1819,6 +1819,12 @@ namespace NMib
 		auto ClassTypeName = fg_GetTypeNameConstExpr<tf_CType>();
 		return fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len, ']');
 	}
+
+	template <typename t_CType>
+	struct TCGetTypeHash
+	{
+		static constexpr uint32 mc_Value = fg_GetTypeHash<t_CType>();
+	};
 }
 
 typedef NMib::TCAutoClear<bint> zbint;

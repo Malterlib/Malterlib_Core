@@ -73,6 +73,23 @@
 			}
 		}
 
+		%GeneratorSetting "Coroutines"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(ClCompile.AdditionalOptions)"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true "/await"
+					false ""
+				}
+			}
+		}
+
 		%GeneratorSetting "LinkerInternalLinkageOpt"
 		{
 			Property

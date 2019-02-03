@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 // Malterlib
@@ -509,9 +509,9 @@ Property
 	{
 		!!Malterlib_LinuxInitInPreInitArray ""
 	}
-		Malterlib_LinuxUseGoldLinker true // User(Toolset)=false: Use gold linker
+	Malterlib_LinuxLinker lld // User(Toolset)=gold: Which linker to use on linux. Defaults to lld
 	{
-		!!Malterlib_LinuxUseGoldLinker ""
+		!!Malterlib_LinuxLinker ""
 	}
 }
 

@@ -55,10 +55,17 @@ while ! LockFile "${OutputDirectory}.lock"; do
 	LastSeconds=$ThisSeconds
 done
 
+unset TOOLCHAINS
+export PATH="/usr/local/bin:/opt/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 unset MACOSX_DEPLOYMENT_TARGET
 unset SDKROOT
 unset PRODUCT_SPECIFIC_LDFLAGS
 unset OTHER_CFLAGS_ONLY
+unset CC
+unset CLANG
+unset CPLUSPLUS
+unset LD
+unset LDPLUSPLUS
 
 if [ ! -e "$OutputDirectory" ]; then
 	mkdir -p "$OutputDirectory"
@@ -97,7 +104,29 @@ if [ -e "$BuildTimeFile" ]; then
 	BuildTime=`cat "$BuildTimeFile"`
 fi
 
+function UpdateToolChain()
+{
+	if [[ "$MalterlibUseCustomXcodeToolchain" != "true" ]]; then
+		return
+	fi
+
+	ToolchainVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.version"
+
+	if ! [ -d "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ] || ! [ -f "$ToolchainVersionFile" ] || (( `cat $ToolchainVersionFile` < $XCODE_VERSION_ACTUAL )); then
+		echo Updating tool chain
+		./Scripts/generatetoolchain.sh
+		echo $XCODE_VERSION_ACTUAL > "$ToolchainVersionFile"
+	fi
+
+	if [[ "$TOOLCHAIN_DIR" != "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ]]; then
+		echo "error: Toolchain not correctly setup"
+		echo "error: Go into Xcode Preferences->Components->Toolchains and select the 'Malterlib llvm' toolchain"
+		exit 1
+	fi
+}
+
 if [[ "$BuildTime" == "$VersionTime" ]]; then
+	UpdateToolChain
 	exit 0
 fi
 
@@ -105,7 +134,11 @@ export MalterlibRepositoryHardReset=true
 
 ./mib update_repos
 
+export TOOLCHAIN_DIR="$DT_TOOLCHAIN_DIR"
+
 pushd Scripts
 ./build.sh
 
 echo $VersionTime > "$BuildTimeFile"
+
+UpdateToolChain

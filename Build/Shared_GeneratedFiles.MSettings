@@ -226,9 +226,19 @@ Property
 			HostPlatformFamily "Linux"
 		}
 	}
-	
+
+	MalterlibUseCustomXcodeToolchain true // User(Toolset)=false: Use custom toolchain for Xcode to use same compiler as Malterlib when indexing
+	{
+		!!MalterlibUseCustomXcodeToolchain ""
+	}
+
+	XcodeBuildToolChain "-toolchain org.malterlib.1.0"
+	{
+		!!MalterlibUseCustomXcodeToolchain true
+	}
+
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
-										"export XCodeBuildTool=\"xcodebuild -jobs $NumCPUs\"\r\n"
+										"export XCodeBuildTool=\"xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs\"\r\n"
 	{
 		&
 		{
@@ -236,7 +246,7 @@ Property
 			HostPlatformFamily "OSX"
 		}
 	}
-	
+
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"function XCodeBuild_Pretty()\r\n"\
 										"{\r\n"\
@@ -245,7 +255,7 @@ Property
 										"	set -o pipefail\r\n"\
 										"	TempFile=`mktemp`\r\n"\
 										"	export LC_CTYPE=\"en_US.UTF-8\"\r\n"\
-										"	if ! xcodebuild -jobs $NumCPUs \"$@\" | tee \"$TempFile\" | xcpretty --color $MalterlibXCPrettyOptions; then\r\n"\
+										"	if ! xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs \"$@\" | tee \"$TempFile\" | xcpretty --color $MalterlibXCPrettyOptions; then\r\n"\
 										"		echo \"error: Build failed. See full log:\"\r\n"\
 										"		wc -c \"$TempFile\"\r\n"\
 										"		echo \"\"\r\n"\
