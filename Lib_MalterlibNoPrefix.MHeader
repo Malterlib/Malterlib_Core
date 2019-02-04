@@ -289,10 +289,6 @@ Compile
 				}
 				
 				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC.cpp // Uses Malterlib heap enablement
-				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Windows2000.cpp
-				{
-					Compile.RuntimeChecks "Off"
-				}
 				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_StructuredException.cpp
 				{
 					Compile

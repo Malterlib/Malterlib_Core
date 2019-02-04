@@ -169,7 +169,7 @@ namespace NLocal
 	NTSTATUS (WINAPI *g_fLdrDisableThreadCalloutsForDll)(IN PVOID BaseAddress);
 	NTSTATUS (WINAPI *g_fRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
 
-	BOOL (WINAPI *g_fGetFileInformationByHandleEx)(HANDLE hFile, FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
+	BOOL (WINAPI *g_fGetFileInformationByHandleEx)(HANDLE hFile, Undocumented_FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
 
 	BOOL (WINAPI *g_fPrivIsDllSynchronizationHeld)( PBOOL );
 }
@@ -1979,8 +1979,13 @@ NStr::CFStr256 fg_Win32_WineVersion()
 	return "";
 }
 
-void __cdecl fg_FixFunctionPointers();
-void __cdecl fg_FixFunctionPointers_Alloc();
+void __cdecl fg_FixFunctionPointers()
+{
+}
+
+void __cdecl fg_FixFunctionPointers_Alloc()
+{
+}
 
 void fg_LoadFunctionPointers()
 {
@@ -4236,7 +4241,7 @@ NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NSt
 	if (NLocal::g_fGetFileInformationByHandleEx)
 	{
 		Undocumented_FILE_ID_INFO FileIDInfo;
-		if (NLocal::g_fGetFileInformationByHandleEx(File.f_GetOSFile(), FileIdInfo, &FileIDInfo, sizeof(FileIDInfo)))
+		if (NLocal::g_fGetFileInformationByHandleEx(File.f_GetOSFile(), Undocumented_FileIdInfo, &FileIDInfo, sizeof(FileIDInfo)))
 		{
 			NMib::NFile::CUniqueFileIdentifier FileID;
 			FileID.m_VolumeID = FileIDInfo.VolumeSerialNumber;

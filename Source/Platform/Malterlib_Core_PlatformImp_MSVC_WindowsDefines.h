@@ -8,10 +8,11 @@
 #define WIN32_LEAN_AND_MEAN
 //#define _WIN32_WINNT 0x500
 //#include "sdkddkver.h"
+
 #ifndef NTDDI_VERSION
-#define _WIN32_WINNT _WIN32_WINNT_WS03
-#define NTDDI_VERSION NTDDI_WS03SP1
-#include "sdkddkver.h"
+#	define _WIN32_WINNT _WIN32_WINNT_VISTA
+#	define NTDDI_VERSION NTDDI_VISTA
+#	include "sdkddkver.h"
 #endif
 
 #include <winsock2.h>

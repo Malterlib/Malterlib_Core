@@ -4060,19 +4060,6 @@ Target
 	}
 
 	PostBuildScript "@(Target.PostBuildScript)"\
-					"MTool SetImageOsVersion \"@(MalterlibFinalModuleDestination)\" 5.01\r\n"\
-					"@(CheckErrors)\r\n"
-	{
-		&
-		{
-			TargetIsExecutable "true"
-			PlatformType "Windows"
-			LanguageFamily Native
-		}
-	}
-	
-
-	PostBuildScript "@(Target.PostBuildScript)"\
 					"@(MalterlibExtraPostBuildScript)\r\n"
 	{
 		&

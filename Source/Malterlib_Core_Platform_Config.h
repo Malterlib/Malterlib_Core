@@ -7,20 +7,15 @@
 
 #elif defined(DPlatformFamily_Linux)
 #elif defined(DPlatformFamily_Windows)
+#	ifndef NTDDI_VERSION
+#		define _WIN32_WINNT _WIN32_WINNT_VISTA
+#		define NTDDI_VERSION NTDDI_VISTA
+#	endif
 #	if DMibPPtrBits >= 64
 #		if !defined(_KERNEL32_)
 #			define WINBASEAPI DECLSPEC_IMPORT
 #		else
 #			define WINBASEAPI
-#		endif
-#		ifndef NTDDI_VERSION
-#			define _WIN32_WINNT _WIN32_WINNT_WS03
-#			define NTDDI_VERSION NTDDI_WS03SP2
-#		endif
-#	else
-#		ifndef NTDDI_VERSION
-#			define _WIN32_WINNT _WIN32_WINNT_WINXP
-#			define NTDDI_VERSION NTDDI_WINXPSP2
 #		endif
 #	endif
 #elif defined(DPlatformFamily_Emscripten)

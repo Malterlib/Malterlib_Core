@@ -540,35 +540,33 @@ inline_always UndocumentedPEB *fg_GetPEB(CUndocumentedTEB *_pTeb)
 	return _pTeb->Peb;
 }
 
-#if (_WIN32_WINNT < _WIN32_WINNT_LONGHORN)
-enum FILE_INFO_BY_HANDLE_CLASS
+enum Undocumented_FILE_INFO_BY_HANDLE_CLASS
 {
-    FileBasicInfo,
-    FileStandardInfo,
-    FileNameInfo,
-    FileRenameInfo,
-    FileDispositionInfo,
-    FileAllocationInfo,
-    FileEndOfFileInfo,
-    FileStreamInfo,
-    FileCompressionInfo,
-    FileAttributeTagInfo,
-    FileIdBothDirectoryInfo,
-    FileIdBothDirectoryRestartInfo,
-    FileIoPriorityHintInfo,
-    FileRemoteProtocolInfo,
-    FileFullDirectoryInfo,
-    FileFullDirectoryRestartInfo,
-    FileStorageInfo,
-    FileAlignmentInfo,
-    FileIdInfo,
-    FileIdExtdDirectoryInfo,
-    FileIdExtdDirectoryRestartInfo,
-    FileDispositionInfoEx,
-    FileRenameInfoEx,
-    MaximumFileInfoByHandleClass
+    Undocumented_FileBasicInfo,
+    Undocumented_FileStandardInfo,
+    Undocumented_FileNameInfo,
+    Undocumented_FileRenameInfo,
+    Undocumented_FileDispositionInfo,
+    Undocumented_FileAllocationInfo,
+    Undocumented_FileEndOfFileInfo,
+    Undocumented_FileStreamInfo,
+    Undocumented_FileCompressionInfo,
+    Undocumented_FileAttributeTagInfo,
+    Undocumented_FileIdBothDirectoryInfo,
+    Undocumented_FileIdBothDirectoryRestartInfo,
+    Undocumented_FileIoPriorityHintInfo,
+    Undocumented_FileRemoteProtocolInfo,
+    Undocumented_FileFullDirectoryInfo,
+    Undocumented_FileFullDirectoryRestartInfo,
+    Undocumented_FileStorageInfo,
+    Undocumented_FileAlignmentInfo,
+    Undocumented_FileIdInfo,
+    Undocumented_FileIdExtdDirectoryInfo,
+    Undocumented_FileIdExtdDirectoryRestartInfo,
+    Undocumented_FileDispositionInfoEx,
+    Undocumented_FileRenameInfoEx,
+    Undocumented_MaximumFileInfoByHandleClass
 };
-#endif
 
 struct Undocumented_FILE_ID_INFO 
 {

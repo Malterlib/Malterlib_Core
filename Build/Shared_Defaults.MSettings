@@ -434,37 +434,13 @@ Property
 
 	MalterlibBuildSpecifics ""
 	
-	MalterlibWindowsNtVersion "_WIN32_WINNT_WINXP"
+	MalterlibWindowsNtVersion "_WIN32_WINNT_VISTA"
 	{
-		&
-		{
-			PlatformFamily "Windows"
-			Architecture "x86"
-		}
+		!!PlatformFamily "Windows"
 	}
-	MalterlibWindowsVersion "NTDDI_WINXPSP3"
+	MalterlibWindowsVersion "NTDDI_VISTA"
 	{
-		&
-		{
-			PlatformFamily "Windows"
-			Architecture "x86"
-		}
-	}
-	MalterlibWindowsNtVersion "_WIN32_WINNT_WS03"
-	{
-		&
-		{
-			PlatformFamily "Windows"
-			Architecture "x64"
-		}
-	}
-	MalterlibWindowsVersion "NTDDI_WS03SP2"
-	{
-		&
-		{
-			PlatformFamily "Windows"
-			Architecture "x64"
-		}
+		!!PlatformFamily "Windows"
 	}
 	MalterlibDisableBuildSystemGeneration "true"
 	{
