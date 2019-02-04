@@ -1820,11 +1820,16 @@ namespace NMib
 		return fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len, ']');
 	}
 
+#ifdef DCompiler_MSVC_Workaround
+#	define DMibConstantTypeHash(d_Type) NMib::fg_GetTypeHash<d_Type>()
+#else
 	template <typename t_CType>
 	struct TCGetTypeHash
 	{
 		static constexpr uint32 mc_Value = fg_GetTypeHash<t_CType>();
 	};
+#	define DMibConstantTypeHash(d_Type) NMib::TCGetTypeHash<d_Type>::mc_Value
+#endif
 }
 
 typedef NMib::TCAutoClear<bint> zbint;
