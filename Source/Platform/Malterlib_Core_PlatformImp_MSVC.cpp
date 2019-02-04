@@ -2363,7 +2363,7 @@ namespace NPrivate
 		if (!pOtherTEB)
 			return false;
 
-		if (NLocal::g_VersionInfo.dwMajorVersion >= 10 && pOtherTEB->LoaderWorker)
+		if (NLocal::g_VersionInfo.dwMajorVersion >= 10 && (pOtherTEB->LoaderWorker || pOtherTEB->SkipThreadAttach))
 			o_bValid = false;
 
 		return true;
