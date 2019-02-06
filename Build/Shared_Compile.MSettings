@@ -2091,31 +2091,18 @@ Compile
 		}
 	}
 
-	ExtendedInstructionSet "Off"
+	ExtendedInstructionSet "SSE2"
 	{
-		&
+		|
 		{
-			PlatformType "Windows"
-			!Target:Target.PlatformToolset "v90"
-			|
-			{
-				Architecture x86
-			}
+			Architecture x86
 		}
 	}
 
-	ExtendedInstructionSet "AVX"
+	ExtendedInstructionSet "AVX2"
 	{
 		&
 		{
-			!
-			{
-				&
-				{
-					PlatformType "Windows"
-					Target:Target.PlatformToolset "v90"
-				}
-			}
 			RealConfiguration "Optimized"
 			|
 			{

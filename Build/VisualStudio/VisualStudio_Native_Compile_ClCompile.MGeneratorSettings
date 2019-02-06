@@ -396,6 +396,7 @@
 					SSE1 StreamingSIMDExtensions
 					SSE2 StreamingSIMDExtensions2
 					AVX AdvancedVectorExtensions
+					AVX2 AdvancedVectorExtensions2
 				}
 			}
 		}

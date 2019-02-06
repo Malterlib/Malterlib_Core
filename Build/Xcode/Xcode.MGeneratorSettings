@@ -1918,6 +1918,7 @@
 						SSE41 "-msse4.1"
 						SSE42 "-msse4.2"
 						AVX "-mavx -msse4.2"
+						AVX2 "-mavx2 -mavx -msse4.2"
 					}
 				}
 			}
