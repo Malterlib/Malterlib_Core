@@ -589,7 +589,7 @@ static mint fsg_GetStackTrace(mint *_pStack, mint _nMaxDepth, mint _StackFrame)
 
 #include "winnt.h"
 
-mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth)
+inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth)
 {
 #ifdef DArchitecture_x64
 
@@ -622,7 +622,7 @@ mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth)
 #endif
 }
 
-CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
+inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
 {
 #ifdef DArchitecture_x64
 	CMibCodeAddress StackTrace[1];

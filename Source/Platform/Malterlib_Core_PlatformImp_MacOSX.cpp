@@ -2378,7 +2378,7 @@ inline_never mint NMib::NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, 
 	return (mint)backtrace((void**)_pStack, (int)_nMaxDepth);
 }
 
-CMibCodeAddress NMib::NSys::fg_System_GetStackTrace(aint _iDepth)
+inline_never CMibCodeAddress NMib::NSys::fg_System_GetStackTrace(aint _iDepth)
 {
 	if (_iDepth > 255)
 		return 0;

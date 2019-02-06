@@ -830,7 +830,7 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 	return Context.m_nAdded;
 }
 
-CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
+inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
 {
 	if (_iDepth > 255)
 		return 0;
