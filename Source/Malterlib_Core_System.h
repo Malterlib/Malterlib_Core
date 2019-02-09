@@ -36,8 +36,8 @@ namespace NMib
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
 #if DMibEnableSafeCheck > 0
 		NException::CCallstack m_LastUnsafeCoroutineCallstack;
-		CMibCodeAddress m_CurrentActorCallParent;
 		bool m_bExpectCoroutineCall = false;
+		bool m_bDispatchWithReturnIsIndirection = false;
 #endif
 	};
 
