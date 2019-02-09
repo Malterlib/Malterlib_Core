@@ -2110,8 +2110,9 @@ Compile
 
 	ExtendedInstructionSet "SSE3"
 	{
-		|
+		&
 		{
+			!PlatformFamily Windows
 			Architecture x64
 		}
 	}
