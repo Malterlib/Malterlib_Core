@@ -212,6 +212,10 @@ fi
 
 ReportBootstrapDone
 
+export MalterlibBinariesPath
+export MalterlibScriptPath="$DIR"
+export MalterlibBashSourceFull="$BASH_SOURCE_FULL"
+
 ScriptsDir="$PWD/Malterlib/Core/Scripts"
 NumArguments=$#
 if (( $NumArguments >= 1 )); then
@@ -244,7 +248,11 @@ while true; do
 				ExcludePatterns="*/.git;*/.DS_Store"
 
 				if type MalterlibConvertPath > /dev/null; then
-					"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$DIR/$DependencyFile\"`" "Output:`MalterlibConvertPath \"$DIR/BuildSystem/SafeMib/SafeMib.updated\"`" "Input:`MalterlibConvertPath \"$BASH_SOURCE_FULL\"`" "Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;$ExcludePatterns" "Find:`MalterlibConvertPath \"$DIR/Malterlib/Core/Scripts\"`/*;RIF;33;$ExcludePatterns"
+					"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$MalterlibScriptPath/$DependencyFile\"`" \
+					"Output:`MalterlibConvertPath \"$MalterlibScriptPath/BuildSystem/SafeMib/SafeMib.updated\"`" \
+					"Input:`MalterlibConvertPath \"$MalterlibBashSourceFull\"`" \
+					"Find:`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*;RIF;33;$ExcludePatterns" \
+					"Find:`MalterlibConvertPath \"$MalterlibScriptPath/Malterlib/Core/Scripts\"`/*;RIF;33;$ExcludePatterns"
 				else
 					rm -f BuildSystem/SafeMib/SafeMib.updated
 				fi
