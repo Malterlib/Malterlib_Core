@@ -138,6 +138,7 @@ export TOOLCHAIN_DIR="$DT_TOOLCHAIN_DIR"
 
 pushd Scripts
 ./build.sh
+popd
 
 echo $VersionTime > "$BuildTimeFile"
 
