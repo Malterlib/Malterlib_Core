@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -264,7 +264,7 @@
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	ifdef DConfig_Optimized
 #		define DMibPNumBitsSet32(d_Value) __builtin_popcount(d_Value)
-#		if defined(DMibPPtrBits >= 64)
+#		if DMibPPtrBits >= 64
 #			define DMibPNumBitsSet64(d_Value) __builtin_popcountll(d_Value)
 #		endif
 #	endif

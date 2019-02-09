@@ -1912,13 +1912,13 @@
 					{
 						Off "-mno-sse"
 						SSE1 "-msse"
-						SSE2 "-msse2"
-						SSE3 "-msse3"
-						SSSE3 "-mssse3"
-						SSE41 "-msse4.1"
-						SSE42 "-msse4.2"
-						AVX "-mavx -msse4.2"
-						AVX2 "-mavx2 -mavx -msse4.2"
+						SSE2 "-msse -msse2"
+						SSE3 "-msse -msse2 -msse3"
+						SSSE3 "-msse -msse2 -msse3 -mssse3"
+						SSE41 "-msse -msse2 -msse3 -mssse3 -msse4.1"
+						SSE42 "-msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2"
+						AVX "-msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx"
+						AVX2 "-msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx -mavx2"
 					}
 				}
 			}

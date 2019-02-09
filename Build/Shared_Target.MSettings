@@ -880,11 +880,7 @@ Target
 	}
 	LTOObjectFile ""
 	{
-		&
-		{
-			PlatformFamily Linux
-			MalterlibEnableLinkTimeCodeGeneration false
-		}
+		!!PlatformFamily Linux
 	}
 
 	LDFlags "-env_EMCC_FAST_COMPILER 1 @(Target.LDFlags)"
@@ -1136,6 +1132,15 @@ Target
 		}
 	}
 
+	LDFlags "-flto=thin -Xlinker --thinlto-cache-dir=$(OBJROOT)/LTOCache @(Target.LDFlags)"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			MalterlibEnableLinkTimeCodeGeneration Fast
+		}
+	}
+
 	LDFlags "-Wno-unused-command-line-argument @(Target.LDFlags)"
 	{
 		&
@@ -1183,6 +1188,7 @@ Target
 		&
 		{
 			GeneratorFamily Xcode
+			!PlatformFamily Linux
 			!MalterlibEnableLinkTimeCodeGeneration false
 			!MalterlibDefaultCompiler true
 		}
@@ -1376,16 +1382,12 @@ Target
 	}
 	*/
 	
-	LibToolFlags "-crosspath /opt/local/@(MalterlibNativeClangArchitecture)-elf/bin"
+	LibToolFlags "-llvm-path @(PlatformToolsetCompiler->GetPath())"
 	{
 		&
 		{
+			!PlatformToolsetCompiler ""
 			PlatformFamily Linux
-			|
-			{
-				Architecture x86
-				Architecture x64
-			}
 		}
 	}
 	LibToolFlags "-crosspath /Development/Malterlib/llvm/unstable-emscripten/emscripten"
@@ -1774,6 +1776,20 @@ Property
 		}
 	}
 
+	MalterlibEnableLinkTimeCodeGeneration "Fast"
+	{
+		&
+		{
+			MalterlibEnableLinkTimeCodeGeneration ""
+			!PlatformFamily Windows
+			|
+			{
+				Compile.Optimize "On"
+				Compile.Optimize "Full"
+			}
+		}
+	}
+
 	MalterlibEnableLinkTimeCodeGeneration "false"
 	{
 		!!MalterlibEnableLinkTimeCodeGeneration ""
@@ -1790,6 +1806,9 @@ Target
 	}
 
 	LinkTimeCodeGeneration "@(MalterlibEnableLinkTimeCodeGeneration)"
+	{
+		!PlatformFamily Linux
+	}
 }
 
 Property.MalterlibEnableFastLink false // This is still too buggy when debugging

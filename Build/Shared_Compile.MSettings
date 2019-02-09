@@ -1300,6 +1300,7 @@ Compile
 		}
 	}
 
+
 	ExtraCompilerFlags "/Yl@(Target.Name) /bigobj @(Compile.ExtraCompilerFlags)"
 	{
 		&
@@ -1384,6 +1385,10 @@ Compile
 		!!PlatformType "Unix"
 	}
 
+	LinkTimeCodeGeneration "@(MalterlibEnableLinkTimeCodeGeneration)"
+	{
+		!!PlatformFamily "Linux"
+	}
 
 	PreprocessorDefines "@(Compile.PreprocessorDefines);@(Builtin.Inherit)"
 	
@@ -1476,7 +1481,6 @@ Compile
 			}
 		}
 	}
-	
 	PreprocessorDefines "_FILE_OFFSET_BITS=64;@(Compile.PreprocessorDefines)"
 	{
 		!!PlatformFamily "Linux"
@@ -1555,6 +1559,11 @@ Compile
 				Malterlib_LinuxLinker lld
 			}
 		}
+	}
+
+	PreprocessorDefines "DMibInlineEnabled;@(Compile.PreprocessorDefines)"
+	{
+		!Compile.Inline "Off"
 	}
 
 	PreprocessorDefines "DMibAssumeMalterlibHost;@(Compile.PreprocessorDefines)"
@@ -2096,6 +2105,14 @@ Compile
 		|
 		{
 			Architecture x86
+		}
+	}
+
+	ExtendedInstructionSet "SSE3"
+	{
+		|
+		{
+			Architecture x64
 		}
 	}
 

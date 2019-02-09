@@ -20,8 +20,6 @@
 #	error "Implement this"
 #endif
 
-
-
 // Compiler message
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define DMibCompilerMessage(d_Message) 

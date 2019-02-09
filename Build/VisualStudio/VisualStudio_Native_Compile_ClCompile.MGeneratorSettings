@@ -395,6 +395,7 @@
 					Off NoExtensions
 					SSE1 StreamingSIMDExtensions
 					SSE2 StreamingSIMDExtensions2
+					SSE3 StreamingSIMDExtensions2 // Only SSE2 is supported
 					AVX AdvancedVectorExtensions
 					AVX2 AdvancedVectorExtensions2
 				}

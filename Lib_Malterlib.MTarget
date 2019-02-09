@@ -173,7 +173,11 @@ Property
 
 			Compile.LinkTimeCodeGeneration "@(WorkaroundLTOValue)" // Exception handling breaks if this is enabled
 			{
-				!!CompileDialect "C"
+				&
+				{
+					CompileDialect "C"
+					!WorkaroundLTOValue ""
+				}
 			}
 
 			Compile
@@ -230,7 +234,11 @@ Property
 			{
 				Compile.LinkTimeCodeGeneration "@(WorkaroundLTOValue)" // Exception handling breaks if this is enabled
 				{
-					!!CompileDialect "C"
+					&
+					{
+						CompileDialect "C"
+						!WorkaroundLTOValue ""
+					}
 				}
 				Compile.Disabled true
 				{
