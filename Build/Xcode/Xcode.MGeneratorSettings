@@ -2089,9 +2089,8 @@
 					{
 						Off "-O0"
 						Fast "-O3"
-						On "-O3"
-						//Full "-O4 -flto"
-						Full "-Ofast"
+						On "-O3 -fno-fast-math"
+						Full "-O3 -fno-fast-math"
 					}
 				}
 			}
