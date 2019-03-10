@@ -691,16 +691,20 @@ namespace NMib
 	}
 
 #if DMibEnableSafeCheck > 0
-	void fg_ThreadLocalScopeEnter()
+	CDebugThreadLocalScope::CDebugThreadLocalScope()
 	{
 		auto &ThreadLocal = **g_SystemThreadLocal;
 		if (ThreadLocal.m_pCurrentCoroutineHandler)
 			++ThreadLocal.m_pCurrentCoroutineHandler->m_nThreadLocalScopes;
+		m_pCoroutineHandler = ThreadLocal.m_pCurrentCoroutineHandler;
 	}
 
-	void fg_ThreadLocalScopeExit()
+	CDebugThreadLocalScope::~CDebugThreadLocalScope()
 	{
 		auto &ThreadLocal = **g_SystemThreadLocal;
+
+		DMibFastCheck(m_pCoroutineHandler == ThreadLocal.m_pCurrentCoroutineHandler);
+
 		if (ThreadLocal.m_pCurrentCoroutineHandler)
 		{
 			DMibFastCheck(ThreadLocal.m_pCurrentCoroutineHandler->m_nThreadLocalScopes > 0);

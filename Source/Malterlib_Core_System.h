@@ -44,13 +44,17 @@ namespace NMib
 	extern NStorage::TCAggregate<NThread::TCThreadLocal<CSystemThreadLocal>, 64> g_SystemThreadLocal;
 
 #if DMibEnableSafeCheck > 0
-	void fg_ThreadLocalScopeEnter();
-	void fg_ThreadLocalScopeExit();
-	#define DMibThreadLocalScopeEnter NMib::fg_ThreadLocalScopeEnter()
-	#define DMibThreadLocalScopeExit NMib::fg_ThreadLocalScopeExit()
+	struct CDebugThreadLocalScope
+	{
+		CDebugThreadLocalScope();
+		~CDebugThreadLocalScope();
+
+		CCoroutineHandler *m_pCoroutineHandler;
+	};
+
+	#define DMibThreadLocalScopeDebugMember CDebugThreadLocalScope m_DebugThreadLocalScope
 #else
-	#define DMibThreadLocalScopeEnter
-	#define DMibThreadLocalScopeExit
+	#define DMibThreadLocalScopeDebugMember
 #endif
 
 	namespace NException
@@ -63,12 +67,10 @@ namespace NMib
 
 		class CExceptionFilterScope
 		{
-			CExceptionFilter *m_pOldFilter;
 		public:
 
 			CExceptionFilterScope(CExceptionFilter &_Filter)
 			{
-				DMibThreadLocalScopeEnter;
 				auto &ThreadLocal = **g_SystemThreadLocal;
 				m_pOldFilter = ThreadLocal.m_pExceptionFilter;
 				ThreadLocal.m_pExceptionFilter = &_Filter;
@@ -78,8 +80,10 @@ namespace NMib
 			{
 				auto &ThreadLocal = **g_SystemThreadLocal;
 				ThreadLocal.m_pExceptionFilter = m_pOldFilter;
-				DMibThreadLocalScopeExit;
 			}
+		private:
+			DMibThreadLocalScopeDebugMember;
+			CExceptionFilter *m_pOldFilter;
 		};
 
 #		define DMibExceptionFilter(_Filter) NMib::NException::CExceptionFilterScope ScopeExceptionFilter(_Filter)
