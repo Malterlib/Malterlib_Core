@@ -43,6 +43,48 @@ VersionLessThan() {
     [ "$1" = "$2" ] && return 1 || VersionLessThanEqual $1 $2
 }
 
+CreateXcodeCertificate()
+{
+	if security find-certificate -c MalterlibXcodeCert > /dev/null; then
+		return
+	fi
+	pushd "$TMPDIR"
+		cat > MalterlibXcodeCert.cnf << EOF
+[ req ]
+prompt             = no
+distinguished_name = my dn
+
+[ my dn ]
+# The bare minimum is probably a commonName
+commonName = MalterlibXcodeCert
+countryName = US
+localityName = MalterlibXcodeCert
+organizationName = MalterlibXcodeCert
+organizationalUnitName = MalterlibXcodeCert
+stateOrProvinceName = MalterlibXcodeCert
+emailAddress = MalterlibXcodeCert@example.com
+name = MalterlibXcodeCert
+surname = MalterlibXcodeCert
+givenName = MalterlibXcodeCert
+initials = MalterlibXcodeCert
+dnQualifier = some
+
+[ MalterlibXcodeCertExtensions ]
+keyUsage = digitalSignature
+extendedKeyUsage = codeSigning
+EOF
+		openssl genrsa -out MalterlibXcodeCert.key 2048
+		openssl req -new -key MalterlibXcodeCert.key -out MalterlibXcodeCert.csr -config MalterlibXcodeCert.cnf -extensions 'MalterlibXcodeCertExtensions'
+		openssl x509 -req -days 10000 -in MalterlibXcodeCert.csr -signkey MalterlibXcodeCert.key -out MalterlibXcodeCert.crt -extfile MalterlibXcodeCert.cnf -extensions 'MalterlibXcodeCertExtensions'
+		openssl pkcs12 -export -in MalterlibXcodeCert.crt -inkey MalterlibXcodeCert.key -out MalterlibXcodeCert.pfx -passout pass:Dummy
+
+		security import MalterlibXcodeCert.pfx -P Dummy
+		security add-trusted-cert -p codeSign MalterlibXcodeCert.crt
+
+		rm MalterlibXcodeCert.*
+	popd
+}
+
 SignXcode()
 {
 	XcodeLocation=$1
@@ -56,23 +98,14 @@ SignXcode()
 
 	XcodeVersion=`defaults read "$XcodeLocation/Contents/version.plist" CFBundleShortVersionString`
 	if VersionLessThan $XcodeVersion 8.0 ; then
-		echo "Skipping unsigning because only 8.0 or later needs it $XcodeLocation"
+		echo "Skipping re-signing because only 8.0 or later needs it $XcodeLocation"
 		return 0
 	fi
 
 	if [ ! -e "$XcodeLocation/Contents/unsigned" ] ; then
 		pwd
-		pushd "$TMPDIR"
-			echo Signing Xcode
-			sudo cp -f "$XcodeLocation/Contents/MacOS/Xcode" .
-			sudo codesign -s - -f --timestamp=none "Xcode"
-			sudo cp -f Xcode "$XcodeLocation/Contents/MacOS/"
-
-			echo Signing xcodebuild
-			sudo cp -f "$XcodeLocation/Contents/Developer/usr/bin/xcodebuild" .
-			sudo codesign -s - -f --timestamp=none "xcodebuild"
-			sudo cp -f xcodebuild "$XcodeLocation/Contents/Developer/usr/bin/"
-		popd
+		sudo codesign -f -s MalterlibXcodeCert "$XcodeLocation/Contents/Developer/usr/bin/xcodebuild"
+		sudo codesign -f -s MalterlibXcodeCert "$XcodeLocation"
 
 		echo Removivg xattrs
 		sudo xattr -rc "$XcodeLocation"
@@ -254,8 +287,10 @@ function UpdateAllXcode()
 	done
 }
 
-function UnsignAllXcode()
+function SignAllXcode()
 {
+	CreateXcodeCertificate;
+
 	for File in /Applications/Xcode*.app; do
 		SignXcode "$File"
 	done
@@ -364,7 +399,7 @@ function DoInstall()
 	#UpdateXCTool
 	InstallMeteor
 	if $Setting_Plugin_Malterlib || $Setting_Plugin_NavigationFixes || $Setting_Plugin_CustomizeAnnotations || $Setting_Plugin_HideDistractions || $Setting_Plugin_P4Checkout ; then
-		UnsignAllXcode
+		SignAllXcode
 	fi
 	UpdateAllXcode
 
