@@ -223,6 +223,8 @@ namespace NMib
 		
 		NMib::NStr::CStr fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName);
 		NMib::NStr::CStrNonTracked fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName);
+		NMib::NStr::CFStr256 fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CFStr256 const &_VariableName);
+
 		bint fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value);
 		bint fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value);
 		void fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr const &_Value);

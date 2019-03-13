@@ -44,6 +44,14 @@ NMib::NStr::CStrNonTracked NMib::NSys::fg_Process_GetEnvironmentVariable_NonProt
 	return CStrNonTracked(pEnv);
 }
 
+NMib::NStr::CFStr256 NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CFStr256 const &_VariableName)
+{
+	const char *pEnv = getenv(_VariableName);
+	if (!pEnv) // Not an error, NULL is returned if the env var does not exist.
+		return NMib::NStr::CFStr256();
+	return NMib::NStr::CFStr256(pEnv);
+}
+
 bint NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr& _Value)
 {
 	const char *pEnv = getenv(_VariableName);

@@ -3217,6 +3217,15 @@ bint NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTra
 	return true;
 }
 
+NMib::NStr::CFStr256 NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CFStr256 const &_VariableName)
+{
+	NMib::NStr::CFWStr256 Temp;
+	ch16 *pStr = Temp.f_GetStr(256);
+	pStr[0] = 0;
+	GetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows<NMib::NStr::CFWStr256>(_VariableName), pStr, 256);
+	return Temp;
+}
+
 void NMib::NSys::fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked const &_Value)
 {
 	if (!SetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows<NMib::NStr::CWStrNonTracked>(_VariableName), NMib::NStr::NPlatform::fg_StrToWindows<NMib::NStr::CWStrNonTracked>(_Value)))

@@ -152,7 +152,7 @@
 #	define variable_not_aliased __restrict__
 
 #elif defined(DCompiler_MSVC)
-#	define only_parameters_aliased __declspec(noalias)
+#	define only_parameters_aliased
 #	define return_not_aliased __declspec(restrict)
 #	define malloc_like __declspec(restrict)
 #	define function_does_not_return __declspec(noreturn)

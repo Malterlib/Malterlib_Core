@@ -38,8 +38,20 @@ namespace NMib
 {
 	namespace NSys
 	{
+		namespace
+		{
+			bool fg_OverrideHome()
+			{
+				static bool bOverrideHome = fg_GetSys()->f_GetEnvironmentVariable("MalterlibOverrideHome") == "true";
+				return bOverrideHome;
+			}
+		}
+
 		CStr fg_MacOSX_GetApplicationSupportDirectory()
 		{
+			if (fg_OverrideHome())
+				return fg_GetSys()->f_GetEnvironmentVariable("HOME") / "Library/Application Support";
+
 			CAutoReleasePool ARPool;
 
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
@@ -67,6 +79,9 @@ namespace NMib
 
 		CStrNonTracked fg_MacOSX_GetApplicationSupportDirectoryNonTracked()
 		{
+			if (fg_OverrideHome())
+				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME")) / "Library/Application Support";
+
 			CAutoReleasePool ARPool;
 
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
@@ -93,6 +108,9 @@ namespace NMib
 
 		CStr fg_MacOSX_GetCachesDirectory()
 		{
+			if (fg_OverrideHome())
+				return fg_GetSys()->f_GetEnvironmentVariable("HOME") / "Library/Caches";
+
 			CAutoReleasePool ARPool;
 
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
@@ -119,6 +137,9 @@ namespace NMib
 
 		CStrNonTracked fg_MacOSX_GetCachesDirectoryNonTracked()
 		{
+			if (fg_OverrideHome())
+				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME")) / "Library/Caches";
+
 			CAutoReleasePool ARPool;
 
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
@@ -146,6 +167,9 @@ namespace NMib
 
 		CStr fg_MacOSX_GetLogDirectory()
 		{
+			if (fg_OverrideHome())
+				return fg_GetSys()->f_GetEnvironmentVariable("HOME") / "Library/Logs";
+
 			CAutoReleasePool ARPool;
 			
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
@@ -173,6 +197,9 @@ namespace NMib
 		
 		CStrNonTracked fg_MacOSX_GetLogDirectoryNonTracked()
 		{
+			if (fg_OverrideHome())
+				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME")) / "Library/Logs";
+
 			CAutoReleasePool ARPool;
 			
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
@@ -201,6 +228,9 @@ namespace NMib
 		
         CStr fg_MacOSX_GetUserHomeDirectory()
 		{
+			if (fg_OverrideHome())
+				return fg_GetSys()->f_GetEnvironmentVariable("HOME");
+
 			CAutoReleasePool ARPool;
 
             NSString *pPath = NSHomeDirectory();
@@ -225,6 +255,9 @@ namespace NMib
         
 		CStrNonTracked fg_MacOSX_GetUserHomeDirectoryNonTracked()
 		{
+			if (fg_OverrideHome())
+				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME"));
+
 			CAutoReleasePool ARPool;
 
             NSString *pPath = NSHomeDirectory();
