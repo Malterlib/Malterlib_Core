@@ -5,7 +5,7 @@ Property
 {
 	MalterlibRemotePrefixesTemplate ";@(Explodee)/@(RepoName)"
 	{
-		!Explodee ""	
+		!Explodee ""
 	}
 }
 
@@ -106,6 +106,36 @@ Property
 		RepoPlatformFamily "@(this.Identity->ParseFormatString('{}_{}_{}', '{1}'))"
 		RepoArchitecture "@(this.Identity->ParseFormatString('{}_{}_{}', '{2}'))"
 		RepoDir "../../Binaries/Malterlib/@(RepoPlatformFamily)/@(RepoArchitecture)"
+	}
+	Repository
+	{
+		Type Malterlib
+		Location "@(RepoDir->MakeAbsolute())"
+		URL "@(Repository.MalterlibRoot)/@(RepoName)"
+		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
+		{
+			!MalterlibRemotePrefixes  ""
+		}
+		Remotes "malterlib=https://github.com/Malterlib/@(RepoName)@(MalterlibUpstreamWritableHelper);@(Repository.Remotes)"
+		{
+			&
+			{
+				MalterlibUpstreamAccess true
+				!Repository.URL "https://github.com/Malterlib/@(RepoName)"
+			}
+		}
+	}
+}
+
+%Repository "@(MalterlibBinaryTestRepositories)"
+{
+	Property
+	{
+		RepoName "MalterlibTestBinaries_@(this.Identity).git"
+		RepoModule "@(this.Identity->ParseFormatString('{}_{}_{}', '{0}'))"
+		RepoPlatformFamily "@(this.Identity->ParseFormatString('{}_{}_{}', '{1}'))"
+		RepoArchitecture "@(this.Identity->ParseFormatString('{}_{}_{}', '{2}'))"
+		RepoDir "../../Binaries/MalterlibTest/@(RepoModule)/@(RepoPlatformFamily)/@(RepoArchitecture)"
 	}
 	Repository
 	{

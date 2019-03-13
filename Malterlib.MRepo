@@ -3,12 +3,14 @@
 ../../Binaries/Malterlib/OSX/x64 a3e6104c92aa263652f6c2fa2b823f6390442bc5
 ../../Binaries/Malterlib/Windows/x64 59e4fad91909334bf7d2f9e2542f327e2fb91ea6
 ../../Binaries/Malterlib/Windows/x86 c65a2cbeac7b7ad8d542ba00242454eb61f64ad9
+../../Binaries/MalterlibTest/Cloud/Linux/x64 9be9929661466f8ba9c5611b1a6811f9a163af18
+../../Binaries/MalterlibTest/Cloud/OSX/x64 e5a4774cb2023f20364c4bd85130533dccea05bc
 ../../SDK 0e59e1723d15b401b182489d7694da20b8bb1b30
 ../Algorithm 0efbe869f2bfbabd69de6704f1d36558cd7e8500
 ../Atomic 465c647c03fac9b3d0a223d633c53e4680f8f694
 ../Bit b2921f5b723fd980ed45c09eb2f8a48095516a09
 ../BuildSystem 5ccd930efc4823038a1b351771a4b0f3935b980d
-../Cloud adc5a61dd5b2ed23d0a39c6ea0aafd2863dda6d0
+../Cloud 8fcf1b5a60037ec0f0b1a3d9c224415b94cea18a
 ../CommandLine 16bcee5ac23c405299a09b24907c4f6a46370964
 ../Compression b7831730faad2c784664ad4d0723f1d847fdf949
 ../Concurrency 314e82fa9e351e28cf8e0096e692622593049d9f
