@@ -274,15 +274,8 @@ namespace
 
 			*ThreadLocal = "Threaded!!!";
 
-			NMib::TCDynamicPtr<NMib::CDefaultPointerHolder,NMib::NStr::CStr> TestDynamicPointer;
-
-			TestDynamicPointer = &TestStr2;
-
 			auto Ref = NMib::fg_Reference(TestStr2);
 			auto UndefinedRef = NMib::fg_Reference(TestStr2);
-
-
-			int x = 0;
 		}
 			
 	};

@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_PlatformImp_MSVC_Net.h"
@@ -9,7 +9,6 @@
 
 CWindowsSocket::CWindowsSocket()
 {
-	m_StateAtomic = 0;
 	m_pSocket = nullptr;
 #ifdef DTCPDelayEmulation
 	m_DelayedData = 0;
@@ -108,22 +107,22 @@ CWindowsSocketContext::CWindowsSocketContext()
 	mp_hReportWnd = nullptr;
 	mp_ThreadID = -1;
 
-		{
+	{
 		WORD wVersionRequested;
 		WSADATA wsaData;
 		aint err;
-		
+
 		wVersionRequested = MAKEWORD( 2, 2 );
-		
+
 		err = WSAStartup( wVersionRequested, &wsaData );
 
-		if ( err != 0 ) 
+		if ( err != 0 )
 		{
 			mp_bInitFailed = true;
 		}
-		
+
 		if (LOBYTE( wsaData.wVersion ) != 2 ||
-			HIBYTE( wsaData.wVersion ) != 2 ) 
+			HIBYTE( wsaData.wVersion ) != 2 )
 		{
 			WSACleanup( );
 			mp_bInitFailed = true;
@@ -260,6 +259,24 @@ aint CWindowsSocketContext::f_Main()
 				}
 			}
 		}
+		else if (Message.message == WM_USER + 1)
+		{
+			void *hSocket = (void *)Message.wParam;
+			CWindowsSocket *pSocket;
+			{
+				DMibLockTyped(NThread::CMutual, mp_Lock);
+				pSocket = mp_SocketTree.f_FindEqual(hSocket);
+				if (pSocket)
+				{
+					pSocket->m_bReceiveEvents = true;
+					if (pSocket->m_fOnStateChange)
+					{
+						uint32 State = pSocket->m_StateAtomic.f_Load() & DMibBitRange(0, 30);
+						pSocket->m_fOnStateChange((ENetTCPState)State);
+					}
+				}
+			}
+		}
 		else if (Message.message == WM_USER)
 		{
 			void *hSocket = (void *)Message.wParam;
@@ -314,13 +331,13 @@ aint CWindowsSocketContext::f_Main()
 								if (Error)
 									pSocket->m_CloseReason = NMib::NPlatform::fg_Win32_GetLastErrorStr(Error);
 								else
-									pSocket->m_CloseReason = "Connection gracefully disconnected.";
+									pSocket->m_CloseReason = "Connection gracefully disconnected";
 							}
 
 							if (StateAdded)
 							{
 								pSocket->m_StateAtomic |= StateAdded;
-								if (pSocket->m_fOnStateChange)
+								if (pSocket->m_bReceiveEvents && pSocket->m_fOnStateChange)
 									pSocket->m_fOnStateChange(StateAdded);
 							}
 						}
@@ -331,8 +348,8 @@ aint CWindowsSocketContext::f_Main()
 		}
 		else
 		{
-			TranslateMessage(&Message); 
-			DispatchMessage(&Message); 
+			TranslateMessage(&Message);
+			DispatchMessage(&Message);
 		}
 	}
 
@@ -344,7 +361,7 @@ ExitThread:
 	}
 
 	UnregisterClassA(ClassName, g_hDllInstance);
-	
+
 	return 0;
 }
 
@@ -436,7 +453,7 @@ bint CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMi
 		case NMib::NNetwork::ENetAddressType_Unix:
 		default:
 			{
-				return false; 
+				return false;
 			}
 	}
 }
@@ -494,16 +511,16 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 	if (_Address.f_StartsWith("UNIX(") || _Address.f_StartsWith("UNIX:"))
 	{
 		using namespace NMib::NFile;
-		
+
 		EFileAttrib Permissions = EFileAttrib_None;
 		CStr Address;
-		
+
 		if (_Address.f_StartsWith("UNIX(") )
 		{
 			auto *pParse = _Address.f_GetStr() + 5;
 			bool bFailed = false;
 			uint32 UnixPermissions = fg_StrToIntParse(pParse, uint32(01000), "):", false, EStrToIntParseMode_Octal, &bFailed);
-			
+
 			if (bFailed || pParse[0] != ')' || pParse[1] != ':')
 			{
 				if (_bThrowOnError)
@@ -511,9 +528,9 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 				else
 					return nullptr;
 			}
-			
+
 			pParse += 2;
-			
+
 			if (UnixPermissions >= uint32(01000))
 			{
 				if (_bThrowOnError)
@@ -521,7 +538,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 				else
 					return nullptr;
 			}
-			
+
 			if (UnixPermissions & 0100)
 				Permissions |= EFileAttrib_UserExecute;
 			if (UnixPermissions & 0200)
@@ -542,7 +559,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 				Permissions |= EFileAttrib_EveryoneWrite;
 			if (UnixPermissions & 04)
 				Permissions |= EFileAttrib_EveryoneRead;
-			
+
 			Address = CStr{pParse};
 		}
 		else
@@ -555,7 +572,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 			else
 				return nullptr;
 		}
-			
+
 		CUnixAddress AddressWithPermissions;
 		AddressWithPermissions.m_Permissions = Permissions;
 
@@ -570,7 +587,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 	AddrHint.ai_family = AF_INET;
 
 	CStr AddressStr = _Address;
-	
+
 	if (_Address.f_StartsWith("IPv4:"))
 	{
 		_PreferType = ENetAddressType_TCPv4;
@@ -581,7 +598,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 		_PreferType = ENetAddressType_TCPv6;
 		AddressStr = _Address.f_Extract(fg_StrLen("IPv6:"));
 	}
-	
+
 	if (_PreferType == ENetAddressType_TCPv6)
 		AddrHint.ai_family = AF_INET6;
 	else
@@ -589,7 +606,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 
 	AddrHint.ai_socktype = SOCK_STREAM;
 
-	AddrHint.ai_flags = AI_ADDRCONFIG; 
+	AddrHint.ai_flags = AI_ADDRCONFIG;
 
 	ADDRINFOW* pAddresses = nullptr;
 
@@ -691,7 +708,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 			CNetAddressTCPv4 TCPv4;
 			f_GetAddressRaw(_Address, ENetAddressType_TCPv4, &TCPv4, sizeof(TCPv4));
 
-			AddressStr += NMib::NStr::CStr::CFormat("{}.{}.{}.{}:{}") << 
+			AddressStr += NMib::NStr::CStr::CFormat("{}.{}.{}.{}:{}") <<
 													TCPv4.m_IP[0] << TCPv4.m_IP[1] << TCPv4.m_IP[2] << TCPv4.m_IP[3] <<
 													TCPv4.m_Port;
 			break;
@@ -715,13 +732,13 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 	case NMib::NNetwork::ENetAddressType_Unix:
 		{
 			auto &Address = _Address.f_GetUnix();
-				
+
 			using namespace NMib::NFile;
-				
+
 			EFileAttrib Permissions = Address.m_Permissions;
-				
+
 			uint32 UnixPermissions = 0;
-				
+
 			if (Permissions & EFileAttrib_UserExecute)
 				UnixPermissions |= 0100;
 			if (Permissions & EFileAttrib_UserWrite)
@@ -742,7 +759,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 				UnixPermissions |= 02;
 			if (Permissions & EFileAttrib_EveryoneRead)
 				UnixPermissions |= 04;
-				
+
 			if (_bIncludeType)
 			{
 				if (UnixPermissions)
@@ -750,8 +767,8 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 				else
 					AddressStr += "UNIX:";
 			}
-				
-			AddressStr += Address.m_FilePath; 
+
+			AddressStr += Address.m_FilePath;
 			break;
 		}
 
@@ -771,8 +788,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 CWindowsSocket *CWindowsSocketContext::fp_Connect
 	(
 	 	CWindowsAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, bint _bAsyncConnect
+	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, CWindowsAddress const *_pBindAddress
 	)
 {
@@ -820,7 +836,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 		hSock = socket(Family, SOCK_STREAM, 0);
 
 		if (hSock == INVALID_SOCKET)
-		{	
+		{
 			uint32 Error = WSAGetLastError();
 			f_CheckDestroy();
 			DMibErrorNet((CStr::CFormat("Could not create a socket for connection, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
@@ -873,95 +889,51 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 
 		TCUniquePointer<CWindowsSocket> pSocket;
 
-		if (_bAsyncConnect)
-		{
-			pSocket = fg_Construct();
+		pSocket = fg_Construct();
 
-			pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
-			pSocket->m_pSocket = (void *)hSock;
-			SocketCleanup.f_Clear();
+		pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
+		pSocket->m_pSocket = (void *)hSock;
+		SocketCleanup.f_Clear();
+		{
+			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
+			mp_SocketTree.f_Insert(pSocket.f_Get());
+		}
+
+		pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write;
+
+		f_StartThread();
+		if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE | FD_CONNECT))
+		{
+			uint32 Error = WSAGetLastError();
 			{
 				DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-				mp_SocketTree.f_Insert(pSocket.f_Get());
+				mp_SocketTree.f_Remove(pSocket.f_Get());
 			}
-
-			f_StartThread();
-
-			if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE | FD_CONNECT))
-			{
-				uint32 Error = WSAGetLastError();
-				{
-					DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-					mp_SocketTree.f_Remove(pSocket.f_Get());
-				}
-				pSocket = nullptr;
-				DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-			}
+			pSocket = nullptr;
+			DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
 		int Result = connect(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
 		if (Result != 0)
-		{		
+		{
 			uint32 Error = WSAGetLastError();
 
-			if (_bAsyncConnect)
+			if (Error != WSAEWOULDBLOCK)
 			{
-				if (Error != WSAEWOULDBLOCK)
-				{
-					{
-						DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-						mp_SocketTree.f_Remove(pSocket.f_Get());
-					}
-					pSocket = nullptr;
-					DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());				
-				}
-			}
-			else
-			{
-				DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-			}
-		}
-		else
-		{
-			if (_bAsyncConnect)
-			{
-				pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Connection;
-
-				if (pSocket->m_fOnStateChange)
-					pSocket->m_fOnStateChange(NMib::NNetwork::ENetTCPState_Connection);
-			}
-		}
-
-		if (!_bAsyncConnect)
-		{
-			pSocket = fg_Construct();
-
-			pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
-			pSocket->m_pSocket = (void *)hSock;
-			SocketCleanup.f_Clear();
-			{
-				DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-				mp_SocketTree.f_Insert(pSocket.f_Get());
-			}
-
-			f_StartThread();
-
-			if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
-			{
-				uint32 Error = WSAGetLastError();
 				{
 					DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 					mp_SocketTree.f_Remove(pSocket.f_Get());
 				}
 				pSocket = nullptr;
-				DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
-
 		}
+		else
+			pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Connected;
+
 		Cleanup.f_Clear();
 
 		return pSocket.f_Detach();
-
 	}
 	else
 	{
@@ -970,32 +942,27 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 	}
 }
 
-CWindowsSocket *CWindowsSocketContext::f_Connect
-	(
-	 	CWindowsAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, CWindowsAddress const *_pBindAddress
-	)
-{
-	return fp_Connect(_Address, fg_Move(_fOnStateChange), false, _pBindAddress);
-}
-
 CWindowsSocket *CWindowsSocketContext::f_AsyncConnect
 	(
 	 	CWindowsAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, CWindowsAddress const *_pBindAddress
 	)
 {
-	return fp_Connect(_Address, fg_Move(_fOnStateChange), true, _pBindAddress);
+	return fp_Connect(_Address, fg_Move(_fOnStateChange), _pBindAddress);
+}
+
+void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
+{
+	PostThreadMessage(mp_ThreadID, WM_USER + 1, (WPARAM)_pSocket->m_pSocket, 0);
 }
 
 TCUniquePointer<CWindowsSocket::CUnixListenState> CWindowsSocketContext::fp_PrepareUnixListen(CWindowsAddress &o_Address)
 {
-	if (o_Address.f_GetType() == ENetAddressType_Unix) 
+	if (o_Address.f_GetType() == ENetAddressType_Unix)
 	{
 		CUnixAddress const &UnixAddress = o_Address.f_GetUnix();
-		
+
 		NStr::CStr UnixFilePath = UnixAddress.m_FilePath;
 		if (NFile::CFile::fs_FileExists(UnixFilePath))
 			NFile::CFile::fs_DeleteFile(UnixFilePath);
@@ -1024,7 +991,7 @@ TCUniquePointer<CWindowsSocket::CUnixListenState> CWindowsSocketContext::fp_Prep
 CWindowsSocket *CWindowsSocketContext::f_Listen
 	(
 	 	CWindowsAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, NNetwork::ENetFlag _Flags
 	)
 {
@@ -1058,7 +1025,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
-		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
+		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));
 	}
 
 	int Result = bind(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
@@ -1097,7 +1064,6 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 	}
 
 	f_StartThread();
-
 	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_ACCEPT | FD_CLOSE))
 	{
 		uint32 Error = WSAGetLastError();
@@ -1116,7 +1082,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 	(
 	 	CWindowsAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, NNetwork::ENetFlag _Flags
 	)
 {
@@ -1150,7 +1116,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
-		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));	
+		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));
 	}
 
 	int Result = bind(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
@@ -1184,7 +1150,6 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 	}
 
 	f_StartThread();
-
 	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
 	{
 		uint32 Error = WSAGetLastError();
@@ -1200,8 +1165,8 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 	return pSocket.f_Detach();
 }
 
-CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
-{			
+CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+{
 	f_CheckFailed();
 
 	SOCKET hSock = accept((SOCKET)_pSocket->m_pSocket, nullptr, 0);
@@ -1251,7 +1216,6 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 	}
 
 	f_StartThread();
-
 	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
 	{
 		uint32 Error = WSAGetLastError();
@@ -1263,6 +1227,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		f_CheckDestroy();
 		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
+
 	return pSocket.f_Detach();
 }
 
@@ -1401,15 +1366,14 @@ mint CWindowsSocketContext::f_ReceiveDatagram(CWindowsSocket *_pSocket, CWindows
 // WindowsSocketContext Socket Properties & State Methods
 // *************************************************************************************************************************
 
-void CWindowsSocketContext::f_SetOnStateChange(CWindowsSocket *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+void CWindowsSocketContext::f_SetOnStateChange(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	{
 		DMibLockTyped(NMib::NThread::CMutual, _pSocket->m_Lock);
 		_pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
 
 		// Signal once so the new report to gets to update
-		if (_pSocket->m_fOnStateChange)
-			_pSocket->m_fOnStateChange(::NMib::NNetwork::ENetTCPState_None);
+		PostThreadMessage(mp_ThreadID, WM_USER + 1, (WPARAM)_pSocket->m_pSocket, 0);
 	}
 }
 
@@ -1430,7 +1394,7 @@ NStr::CStr CWindowsSocketContext::f_GetCloseReason(CWindowsSocket *_pSocket)
 	return Ret;
 }
 
-CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	DMibRequire(!!_pSocket);
 	CWindowsSocket *pReturn = DMibNew CWindowsSocket;
@@ -1440,7 +1404,6 @@ CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pSocket, NMib::NF
 	pReturn->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write;
 
 	f_StartThread();
-
 	if (WSAAsyncSelect((SOCKET)pReturn->m_pSocket, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
 	{
 		uint32 Error = WSAGetLastError();
@@ -1452,15 +1415,13 @@ CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pSocket, NMib::NF
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 		CWindowsSocket *pSocket = mp_SocketTree.f_FindEqual(_pSocket);
-		if(pSocket) 
+		if (pSocket)
 		{
 			DMibCheck(pSocket->m_pSocket == _pSocket);
 			mp_SocketTree.f_Remove(pSocket);
 		}
 		mp_SocketTree.f_Insert(pReturn);
 	}
-	if (pReturn->m_fOnStateChange)
-		pReturn->m_fOnStateChange(::NMib::NNetwork::ENetTCPState_None);
 
 	return pReturn;
 }

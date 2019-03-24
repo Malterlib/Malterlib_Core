@@ -39,13 +39,15 @@ public:
 
 	NIntrusive::TCAVLLink<> m_TreeLink;
 
-	NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
+	NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
 
 	CStr m_CloseReason;
 
 	mint m_BindAddressSize = 0;
 	ENetAddressType m_BindAddressType = ENetAddressType_None;
 	TCUniquePointer<CUnixListenState> m_pUnixListen;
+	int m_AsyncSelectFlags = 0;
+	bool m_bReceiveEvents = false;
 
 #ifdef DTCPDelayEmulation
 
@@ -115,9 +117,7 @@ protected:
 		NMib::NThread::CEventAutoResetReportable mp_TerminateEvent;
 		NMib::NThread::CEventAutoResetReportable mp_WakeEvent;
 
-		using CThreadPointer =
-			NStorage::TCUniquePointer<NThread::CThreadObject, NMemory::CDefaultAllocator, TCDynamicPtr<typename NMemory::CDefaultAllocator::CPtrHolder, NThread::CThreadObject>, void>
-		;
+		using CThreadPointer = NStorage::TCUniquePointer<NThread::CThreadObject>;
 
 		enum
 		{
@@ -196,8 +196,7 @@ protected:
 	CWindowsSocket *fp_Connect
 		(
 		 	CWindowsAddress const &_Address
-		 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-		 	, bint _bAsyncConnect
+		 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 		 	, CWindowsAddress const *_pBindAddress
 		)
 	;
@@ -243,36 +242,31 @@ public:
 		NMib::NStr::CStr f_GetAddressString(CWindowsAddress const &_Address, bint _bIncludeType);
 
 	// Connection Operations	
-		CWindowsSocket *f_Connect
-			(
-			 	CWindowsAddress const &_Address
-			 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			 	, CWindowsAddress const *_pBindAddress
-			)
-		;
 		CWindowsSocket *f_AsyncConnect
 			(
 			 	CWindowsAddress const &_Address
-			 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 			 	, CWindowsAddress const *_pBindAddress
 			)
 		;
-		
+
+		void f_StartSocket(CWindowsSocket *_pSocket);
+
 		CWindowsSocket *f_Listen
 			(
 			 	CWindowsAddress const &_Address
-			 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 			 	, NMib::NNetwork::ENetFlag _Flags
 			)
 		;
 		CWindowsSocket *f_ListenDatagram
 			(
 			 	CWindowsAddress const &_Address
-			 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 			 	, NMib::NNetwork::ENetFlag _Flags
 			)
 		;
-		CWindowsSocket *f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
+		CWindowsSocket *f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 
 		bint f_Close(CWindowsSocket* _pSocket);
 		bint f_Shutdown(CWindowsSocket *_pSocket);
@@ -284,13 +278,13 @@ public:
 
 	// Socket Properties & State
 
-		void f_SetOnStateChange(CWindowsSocket* _pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
+		void f_SetOnStateChange(CWindowsSocket* _pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 
 		NMib::NNetwork::ENetTCPState f_GetState(CWindowsSocket *_pSocket);
 
 		NMib::NStr::CStr f_GetCloseReason(CWindowsSocket* _pSocket);
 
-		CWindowsSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
+		CWindowsSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 		void *f_GiveUpForInherit(CWindowsSocket *_pSocket);
 		void *f_GetOSSocket(CWindowsSocket *_pSocket);
 		

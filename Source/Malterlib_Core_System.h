@@ -35,7 +35,6 @@ namespace NMib
 		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
 #if DMibEnableSafeCheck > 0
-		NException::CCallstack m_LastUnsafeCoroutineCallstack;
 		bool m_bExpectCoroutineCall = false;
 		bool m_bDispatchWithReturnIsIndirection = false;
 #endif
@@ -52,7 +51,7 @@ namespace NMib
 		CCoroutineHandler *m_pCoroutineHandler;
 	};
 
-	#define DMibThreadLocalScopeDebugMember CDebugThreadLocalScope m_DebugThreadLocalScope
+	#define DMibThreadLocalScopeDebugMember NMib::CDebugThreadLocalScope m_DebugThreadLocalScope
 #else
 	#define DMibThreadLocalScopeDebugMember
 #endif

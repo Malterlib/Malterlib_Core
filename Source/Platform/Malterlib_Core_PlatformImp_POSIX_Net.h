@@ -45,10 +45,14 @@ struct CPOSIXSocket
 
 	// This is stull that will be changed or use by the poller etc...
 	NMib::NThread::CMutual m_Lock;
-		bint m_bInitialWriteNotification;
-		NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
-		NMib::NNetwork::ENetTCPState m_State;
-		int m_CloseError;
+	bint m_bInitialWriteNotification;
+	NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
+	NAtomic::TCAtomic<uint32> m_StateAtomic;
+	int m_CloseError;
+	bool m_bShutdownCalled = false;
+	bool m_bNonErrorClose = false;
+	bool m_bRemoteCloseSignalled = false;
+	bool m_bIsRegistered = false;
 
 	// This is set once, used and then cleared.
 	NMib::NAtomic::TCAtomic<NMib::NThread::CEvent*> m_pDestructionReportTo;
@@ -65,12 +69,12 @@ struct CPOSIXSocket
 		}
 	};
 
-	CPOSIXSocket(int _FD, EPOSIXSocketMode _Mode, EPOSIXSocketEvent _Events, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+	CPOSIXSocket(int _FD, EPOSIXSocketMode _Mode, EPOSIXSocketEvent _Events, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 		: m_FD(_FD)
 		, m_Mode(_Mode)
 		, m_RegisteredEvents(_Events)
 		, m_bInitialWriteNotification(true)
-		, m_State(NMib::NNetwork::ENetTCPState_Write)
+		, m_StateAtomic(NMib::NNetwork::ENetTCPState_Write)
 		, m_CloseError(0)
 		, m_pDestructionReportTo(nullptr)
 		, m_fOnStateChange(fg_Move(_fOnStateChange))
@@ -88,8 +92,8 @@ typedef CRuntimeNetAddress CPOSIXAddress;
 class CPOSIXImpSpecificSocketPoller
 {
 private:
-	class CDetails;
-	NMib::NStorage::TCUniquePointer<CDetails> mp_pD;
+	class CInternal;
+	NMib::NStorage::TCUniquePointer<CInternal> mp_pInternal;
 
 public:
 	CPOSIXImpSpecificSocketPoller();
@@ -109,8 +113,8 @@ public:
 class CPOSIXImpSpecificSocketContext
 {
 private:
-	class CDetails;
-	NMib::NStorage::TCUniquePointer<CDetails> mp_pD;
+	class CInternal;
+	NMib::NStorage::TCUniquePointer<CInternal> mp_pInternal;
 
 public:
 	CPOSIXImpSpecificSocketContext();
@@ -129,8 +133,6 @@ public:
 	};
 	
 	bool f_GetSocketCreateParams(::NMib::NNetwork::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams);
-
-	int f_Connect(CPOSIXAddress const &_Address); // Returns a FD or -1
 };
 
 class CPOSIXSocketContext
@@ -163,17 +165,10 @@ public:
 		NMib::NStr::CStr f_GetAddressString(CPOSIXAddress const &_Address, bint _bIncludeType);
 
 	// Connection Operations	
-		CPOSIXSocket *f_Connect
-			(
-			 	CPOSIXAddress const &_Address
-			 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			 	, CPOSIXAddress const *_pBindAddress
-			)
-		;
 		CPOSIXSocket *f_AsyncConnect
 			(
 			 	CPOSIXAddress const &_Address
-			 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 			 	, CPOSIXAddress const *_pBindAddress
 			)
 		;
@@ -181,18 +176,20 @@ public:
 		CPOSIXSocket *f_Listen
 			(
 			 	CPOSIXAddress const &_Address
-			 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 			 	, NMib::NNetwork::ENetFlag _Flags
 			)
 		;
 		CPOSIXSocket *f_ListenDatagram
 			(
 			 	CPOSIXAddress const &_Address
-			 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 			 	, NMib::NNetwork::ENetFlag _Flags
 			)
 		;
-		CPOSIXSocket *f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
+		CPOSIXSocket *f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
+
+		void f_StartSocket(CPOSIXSocket *_pSocket);
 
 		bint f_Close(CPOSIXSocket* _pSocket);
 		void f_Shutdown(CPOSIXSocket* _pSocket);
@@ -204,13 +201,13 @@ public:
 
 	// Socket Properties & State
 
-		void f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
+		void f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 
 		NMib::NNetwork::ENetTCPState f_GetState(CPOSIXSocket *_pSocket);
 
 		NMib::NStr::CStr f_GetCloseReason(CPOSIXSocket* _pSocket);
 
-		CPOSIXSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
+		CPOSIXSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 		void *f_GiveUpForInherit(CPOSIXSocket *_pSocket);
 		void *f_GetOSSocket(CPOSIXSocket *_pSocket);
 		
@@ -293,8 +290,7 @@ private:
 	CPOSIXSocket *fp_Connect
 		(
 		 	CPOSIXAddress const &_Address
-		 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-		 	, bint _bAsyncConnect
+		 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 		 	, CPOSIXAddress const *_pBindAddress
 		)
 	;
@@ -303,7 +299,7 @@ private:
 		 	int _FD
 		 	, EPOSIXSocketMode _Mode
 		 	, EPOSIXSocketEvent _Events
-		 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 		 	, bint _bFromInherit = false
 		)
 	;

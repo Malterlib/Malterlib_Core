@@ -2164,21 +2164,10 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _A
 }
 
 // Connection Operations
-void *NSys::NNetwork::fg_Connect
-	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NSys::NNetwork::CAddress _BindAddress
-	)
-{
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_Connect(*(CPOSIXAddress*)_Address, fg_Move(_fOnStateChange), (CPOSIXAddress *)_BindAddress);
-}
-
 void *NSys::NNetwork::fg_AsyncConnect
 	(
 	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, NSys::NNetwork::CAddress _BindAddress
 	)
 {
@@ -2186,10 +2175,15 @@ void *NSys::NNetwork::fg_AsyncConnect
 	return fg_GetLocalSys()->m_SocketContext->f_AsyncConnect(*(CPOSIXAddress*)_Address, fg_Move(_fOnStateChange), (CPOSIXAddress *)_BindAddress);
 }
 
+void NSys::NNetwork::fg_StartSocket(void *_pSocket)
+{
+	return fg_GetLocalSys()->m_SocketContext->f_StartSocket((CPOSIXSocket *)_pSocket);
+}
+
 void *NSys::NNetwork::fg_Listen
 	(
 	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, NMib::NNetwork::ENetFlag _Flags
 	)
 {
@@ -2200,7 +2194,7 @@ void *NSys::NNetwork::fg_Listen
 void *NSys::NNetwork::fg_ListenDatagram
 	(
 	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, NMib::NNetwork::ENetFlag _Flags
 	)
 {
@@ -2208,7 +2202,7 @@ void *NSys::NNetwork::fg_ListenDatagram
 	return fg_GetLocalSys()->m_SocketContext->f_ListenDatagram(*(CPOSIXAddress*)_Address, fg_Move(_fOnStateChange), _Flags);
 }
 
-void *NSys::NNetwork::fg_Accept(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+void *NSys::NNetwork::fg_Accept(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Accept((CPOSIXSocket*)_pSocket, fg_Move(_fOnStateChange));
 }
@@ -2245,7 +2239,7 @@ mint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress
 
 // Socket Properties & State
 
-void NSys::NNetwork::fg_SetOnStateChange(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+void NSys::NNetwork::fg_SetOnStateChange(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	fg_GetLocalSys()->m_SocketContext->f_SetOnStateChange((CPOSIXSocket*)_pSocket, fg_Move(_fOnStateChange));
 }
@@ -2260,7 +2254,7 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetCloseReason(void *_pSocket)
 	return fg_GetLocalSys()->m_SocketContext->f_GetCloseReason((CPOSIXSocket*)_pSocket);
 }
 
-void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunction<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_InheritHandle2((CPOSIXSocket*)_pSocket, fg_Move(_fOnStateChange));
 }

@@ -114,22 +114,37 @@ namespace NMib
 	void CSystem::fp_SubSystem_PreDestroyThreadSpecific()
 	{
 		DMibLock(mp_SubSystemsLock);
-		for (auto &SubSystem : mp_SubSystems)
+		for (auto iSubSystem = mp_SubSystems.f_GetIterator();iSubSystem;)
+		{
+			auto &SubSystem = *iSubSystem;
+			++iSubSystem;
+			DMibUnlock(mp_SubSystemsLock);
 			SubSystem.f_PreDestroyThreadSpecific();
+		}
 	}
 
 	void CSystem::fp_SubSystem_DestroyThreadSpecific()
 	{
 		DMibLock(mp_SubSystemsLock);
-		for (auto &SubSystem : mp_SubSystems)
+		for (auto iSubSystem = mp_SubSystems.f_GetIterator();iSubSystem;)
+		{
+			auto &SubSystem = *iSubSystem;
+			++iSubSystem;
+			DMibUnlock(mp_SubSystemsLock);
 			SubSystem.f_DestroyThreadSpecific();
+		}
 	}
 
 	void CSystem::fp_SubSystem_DestroyThreadLocal()
 	{
 		DMibLock(mp_SubSystemsLock);
-		for (auto &SubSystem : mp_SubSystems)
+		for (auto iSubSystem = mp_SubSystems.f_GetIterator();iSubSystem;)
+		{
+			auto &SubSystem = *iSubSystem;
+			++iSubSystem;
+			DMibUnlock(mp_SubSystemsLock);
 			SubSystem.f_DestroyThreadLocal();
+		}
 	}
 
 	void CSystem::fp_SubSystem_DestroySubsystems(ESubSystemDestruction _ToDestroy)
@@ -137,10 +152,10 @@ namespace NMib
 		DMibLock(mp_SubSystemsLock);
 		for (auto iSubSystem = mp_SubSystems.f_GetIterator(); iSubSystem;)
 		{
-			auto *pSubSystem = &*iSubSystem;
+			auto &SubSystem = *iSubSystem;
 			++iSubSystem;
-			if (pSubSystem->m_DestructionOrder == _ToDestroy)
-				pSubSystem->~CSubSystem();
+			if (SubSystem.m_DestructionOrder == _ToDestroy)
+				SubSystem.~CSubSystem();
 		}
 	}
 

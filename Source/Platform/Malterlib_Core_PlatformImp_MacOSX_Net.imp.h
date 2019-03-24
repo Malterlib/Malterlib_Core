@@ -37,7 +37,7 @@ public:
 };
 
 
-class CPOSIXImpSpecificSocketPoller::CDetails
+class CPOSIXImpSpecificSocketPoller::CInternal
 {
 public:
 	int m_KQueue;
@@ -52,7 +52,7 @@ public:
 
 };
 
-bint CPOSIXImpSpecificSocketPoller::CDetails::f_PushSocketEvents(CPOSIXSocket* _pSocket, bint _bForRemoval)
+bint CPOSIXImpSpecificSocketPoller::CInternal::f_PushSocketEvents(CPOSIXSocket *_pSocket, bint _bForRemoval)
 {
 	int nSocketEvents = 0;
 	struct kevent lSocketEvents[2];
@@ -116,9 +116,9 @@ bint CPOSIXImpSpecificSocketPoller::CDetails::f_PushSocketEvents(CPOSIXSocket* _
 
 CPOSIXImpSpecificSocketPoller::CPOSIXImpSpecificSocketPoller()
 {
-	mp_pD = fg_Construct();
+	mp_pInternal = fg_Construct();
 
-	mp_pD->m_bBreak.f_Store(0);
+	mp_pInternal->m_bBreak.f_Store(0);
 
 	{
 		// We use this pipe so we can wake up the kqueue when it is waiting.
@@ -129,15 +129,15 @@ CPOSIXImpSpecificSocketPoller::CPOSIXImpSpecificSocketPoller()
 			{
 				// We need to make sure that we protect the pipes against being included in other processes
 				DMibLock(fg_GetSys_POSIX()->m_ForkLock);
-				PipeRet = pipe(mp_pD->m_ReadWritePipe);
+				PipeRet = pipe(mp_pInternal->m_ReadWritePipe);
 				if (PipeRet)
 					break;
 				
-				fcntl(mp_pD->m_ReadWritePipe[0], F_SETFL, fcntl(mp_pD->m_ReadWritePipe[0], F_GETFL) | O_NONBLOCK);
-				fcntl(mp_pD->m_ReadWritePipe[1], F_SETFL, fcntl(mp_pD->m_ReadWritePipe[1], F_GETFL) | O_NONBLOCK);
+				fcntl(mp_pInternal->m_ReadWritePipe[0], F_SETFL, fcntl(mp_pInternal->m_ReadWritePipe[0], F_GETFL) | O_NONBLOCK);
+				fcntl(mp_pInternal->m_ReadWritePipe[1], F_SETFL, fcntl(mp_pInternal->m_ReadWritePipe[1], F_GETFL) | O_NONBLOCK);
 
-				fcntl(mp_pD->m_ReadWritePipe[0], F_SETFD, fcntl(mp_pD->m_ReadWritePipe[0], F_GETFD) | FD_CLOEXEC);
-				fcntl(mp_pD->m_ReadWritePipe[1], F_SETFD, fcntl(mp_pD->m_ReadWritePipe[1], F_GETFD) | FD_CLOEXEC);
+				fcntl(mp_pInternal->m_ReadWritePipe[0], F_SETFD, fcntl(mp_pInternal->m_ReadWritePipe[0], F_GETFD) | FD_CLOEXEC);
+				fcntl(mp_pInternal->m_ReadWritePipe[1], F_SETFD, fcntl(mp_pInternal->m_ReadWritePipe[1], F_GETFD) | FD_CLOEXEC);
 				
 			}
 		}
@@ -148,41 +148,48 @@ CPOSIXImpSpecificSocketPoller::CPOSIXImpSpecificSocketPoller()
 
 		struct kevent CurEvent;
 		fg_MemClear(&CurEvent, sizeof(struct kevent));
-		CurEvent.ident = mp_pD->m_ReadWritePipe[0];
+		CurEvent.ident = mp_pInternal->m_ReadWritePipe[0];
 		CurEvent.filter = EVFILT_READ;
 		CurEvent.flags = EV_CLEAR | EV_ADD;
 		CurEvent.udata = nullptr;
 
-		mp_pD->m_ChangeQueue.f_Push(&CurEvent, 1);
+		mp_pInternal->m_ChangeQueue.f_Push(&CurEvent, 1);
 	}
 
-	mp_pD->m_KQueue = kqueue();
+	mp_pInternal->m_KQueue = kqueue();
 
-	DMibSafeCheck(mp_pD->m_KQueue != -1, "Failed to create kqueue");
+	DMibSafeCheck(mp_pInternal->m_KQueue != -1, "Failed to create kqueue");
 }
 
 CPOSIXImpSpecificSocketPoller::~CPOSIXImpSpecificSocketPoller()
 {
-	close(mp_pD->m_ReadWritePipe[0]);
-	close(mp_pD->m_ReadWritePipe[1]);
-	close(mp_pD->m_KQueue);
+	close(mp_pInternal->m_ReadWritePipe[0]);
+	close(mp_pInternal->m_ReadWritePipe[1]);
+	close(mp_pInternal->m_KQueue);
 }
 
 void CPOSIXImpSpecificSocketPoller::f_RegisterSocket(CPOSIXSocket* _pSocket)
 {
-	if (!mp_pD->f_PushSocketEvents(_pSocket, false))
-	{
-		DMibErrorNet("Failed to register POSIX socket.");
-	}
+	if (_pSocket->m_bIsRegistered)
+		DMibErrorNet("POSIX socket already registered");
+	
+	_pSocket->m_bIsRegistered = true;
+
+	if (!mp_pInternal->f_PushSocketEvents(_pSocket, false))
+		DMibErrorNet("Failed to register POSIX socket");
 }
 
 void CPOSIXImpSpecificSocketPoller::f_DeregisterSocket(CPOSIXSocket* _pSocket)
 {
+	if (!_pSocket->m_bIsRegistered)
+		return;
+
 	NMib::NThread::CEvent DestroyEvent;
 	DestroyEvent.f_ResetSignaled();
 	_pSocket->m_pDestructionReportTo = &DestroyEvent;
+	_pSocket->m_bIsRegistered = false;
 
-	if (!mp_pD->f_PushSocketEvents(_pSocket, true))
+	if (!mp_pInternal->f_PushSocketEvents(_pSocket, true))
 		DMibErrorNet("Failed to register POSIX socket.");
 	else
 		DestroyEvent.f_Wait();
@@ -193,17 +200,17 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 	static const int nMaxEvents = 64;
 	struct kevent lIncomingEvents[nMaxEvents];
 	int nEvents;
-	int const KQueue = mp_pD->m_KQueue;
+	int const KQueue = mp_pInternal->m_KQueue;
 
 	timespec Timeout;
 	NMemory::fg_MemClear(&Timeout, sizeof(Timeout)); // 0 == Poll
 //	Timeout.tv_nsec = 1000000000 / 2000; // Half a millisecond
 
-	while (		mp_pD->m_bBreak.f_Load() == 0 
+	while (		mp_pInternal->m_bBreak.f_Load() == 0
 			&&	_pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
 	{
 		// Get changes
-		NContainer::TCVector<struct kevent> lChanges = fg_Move(mp_pD->m_ChangeQueue.f_Take());
+		NContainer::TCVector<struct kevent> lChanges = fg_Move(mp_pInternal->m_ChangeQueue.f_Take());
 
 		timespec *pTimeout = nullptr; // By default block
 		
@@ -211,11 +218,16 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 			pTimeout = &Timeout; // If we have changes, just poll to be able to finish delete changes
 		
 		// Query the kqueue
-		nEvents = kevent(		KQueue
-							,	lChanges.f_GetArray(), lChanges.f_GetLen()	// Changes
-							,	lIncomingEvents, nMaxEvents // Receive events
-							,	pTimeout // &Timeout (Block)
-							);
+		nEvents = kevent
+			(
+			 	KQueue
+				, lChanges.f_GetArray()
+			 	, lChanges.f_GetLen()
+				, lIncomingEvents
+				, nMaxEvents
+				, pTimeout
+			)
+		;
 
 		// Process any events that have occured.
 		bint bError;
@@ -227,16 +239,15 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 
 			bError = (CurEvent.flags & EV_ERROR) ? true : false;
 
-
 			if (CurEvent.filter == EVFILT_READ)
 			{
-				if (CurEvent.ident == mp_pD->m_ReadWritePipe[0])
+				if (CurEvent.ident == mp_pInternal->m_ReadWritePipe[0])
 				{ // This was just a wake up event.
 					char Buf[16];
 					int ReadRet;
 					do
 					{
-						ReadRet = read(mp_pD->m_ReadWritePipe[0], Buf, sizeof(Buf));
+						ReadRet = read(mp_pInternal->m_ReadWritePipe[0], Buf, sizeof(Buf));
 					} while(ReadRet > 0);					
 				}
 				else
@@ -253,46 +264,40 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 						if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
 						{
 							if (!bError)
-							{
 								AddedState |= ENetTCPState_Read;
-							}
-							else
+							else if (pSocket->m_CloseError == 0) // We may have already errored out.
 							{
-								// Read failed
-								if (pSocket->m_CloseError == 0) // We may have already errored out.
-								{
-									pSocket->m_CloseError = CurEvent.data;
-									AddedState |= ENetTCPState_Closed;
-								}
+								pSocket->m_CloseError = CurEvent.data;
+								if (!pSocket->m_CloseError)
+									pSocket->m_CloseError = -1;
+								AddedState |= ENetTCPState_Closed;
 							}
 						}
 						else if (pSocket->m_Mode == EPOSIXSocketMode_Listen)
 						{
 							if (!bError)							
-							{	
 								AddedState |= ENetTCPState_Connection;
-							}
-							else
+							else if (pSocket->m_CloseError == 0) // We may have already errored out.
 							{
-								// Listening failed.
-								if (pSocket->m_CloseError == 0) // We may have already errored out.
-								{
-									pSocket->m_CloseError = CurEvent.data;
-									AddedState |= ENetTCPState_Closed;								
-								}
+								pSocket->m_CloseError = CurEvent.data;
+								if (!pSocket->m_CloseError)
+									pSocket->m_CloseError = -1;
+								AddedState |= ENetTCPState_Closed;
 							}
 						}
 
-/*						if (	CurEvent.flags & EV_EOF
-							&& 	pSocket->m_CloseError == 0) // We may have already errored out.
+						if ((CurEvent.flags & EV_EOF) && pSocket->m_CloseError == 0) // We may have already errored out.
 						{
-							pSocket->m_CloseError = CurEvent.fflags;
-							AddedState |= ENetTCPState_Closed;
-						}*/
-						
+							if (!pSocket->m_bRemoteCloseSignalled)
+							{
+								pSocket->m_bRemoteCloseSignalled = true;
+								AddedState |= ENetTCPState_RemoteClosed;
+							}
+						}
+
 						if (AddedState)
 						{
-							pSocket->m_State |= AddedState;
+							pSocket->m_StateAtomic.f_FetchOr(AddedState);
 							if (pSocket->m_fOnStateChange)
 								pSocket->m_fOnStateChange(AddedState);
 						}
@@ -302,7 +307,6 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 			else if (CurEvent.filter == EVFILT_WRITE)
 			{
 				CPOSIXSocket* pSocket = (CPOSIXSocket*)CurEvent.udata;
-
 				{
 					DKTrace("KQueue: Write Event for {}, data: {}\n", pSocket->m_FD << CurEvent.data);
 
@@ -321,17 +325,11 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 							if (pSocket->m_CloseError == 0) // We may have already errored out.
 							{
 								pSocket->m_CloseError = CurEvent.data;
+								if (!pSocket->m_CloseError)
+									pSocket->m_CloseError = -1;
 								AddedState |= ENetTCPState_Closed;
 							}
 						}
-
-						if (	CurEvent.flags & EV_EOF
-							&& 	pSocket->m_CloseError == 0) // We may have already errored out.
-						{
-							pSocket->m_CloseError = CurEvent.fflags;
-							AddedState |= ENetTCPState_Closed;
-						}
-
 					}
 					else if (pSocket->m_Mode == EPOSIXSocketMode_Connecting)
 					{
@@ -366,24 +364,31 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 						{
 							// Async connect failed
 							pSocket->m_CloseError = CurEvent.data;
+							if (!pSocket->m_CloseError)
+								pSocket->m_CloseError = -1;
 							AddedState |= ENetTCPState_Closed;							
 						}
 
 					}
 
-					pSocket->m_State |= AddedState;
-					
-					if (pSocket->m_bInitialWriteNotification)
+					if ((CurEvent.flags & EV_EOF) && (pSocket->m_CloseError == 0)) // We may have already errored out.
 					{
-						pSocket->m_bInitialWriteNotification = false;
-					}
-					else
-					{
-						if (AddedState)
+						if (!pSocket->m_bNonErrorClose)
 						{
-							if (AddedState && pSocket->m_fOnStateChange)
-								pSocket->m_fOnStateChange(AddedState);
+							pSocket->m_bNonErrorClose = true;
+							AddedState |= ENetTCPState_Closed;
 						}
+					}
+
+
+					//if (pSocket->m_bInitialWriteNotification)
+					//	pSocket->m_bInitialWriteNotification = false;
+					//else
+					if (AddedState)
+					{
+						pSocket->m_StateAtomic.f_FetchOr(AddedState);
+						if (AddedState && pSocket->m_fOnStateChange)
+							pSocket->m_fOnStateChange(AddedState);
 					}
 				}
 			}
@@ -393,14 +398,9 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 		{
 			uintptr_t LastDeletedFD = -1;
 
-			for (auto CIter = lChanges.f_GetIterator()
-				;CIter
-				;++CIter)
+			for (auto const &CurEvent : lChanges)
 			{
-				struct kevent const& CurEvent = *CIter;
-
-				if (	CurEvent.filter == EVFILT_READ
-					||	CurEvent.filter == EVFILT_WRITE)
+				if (CurEvent.filter == EVFILT_READ || CurEvent.filter == EVFILT_WRITE)
 				{
 					if (CurEvent.flags & EV_DELETE)
 					{
@@ -414,6 +414,16 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 							LastDeletedFD = CurEvent.ident;
 						}
 					}
+					else
+					{
+						if (CurEvent.filter == EVFILT_READ && CurEvent.udata)
+						{
+							CPOSIXSocket* pSocket = (CPOSIXSocket*)CurEvent.udata;
+							DMibLock(pSocket->m_Lock);
+							if (pSocket->m_fOnStateChange)
+								pSocket->m_fOnStateChange((NMib::NNetwork::ENetTCPState)pSocket->m_StateAtomic.f_Load());
+						}
+					}
 				}
 			}
 		}		
@@ -422,13 +432,13 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 
 void CPOSIXImpSpecificSocketPoller::f_Break()
 {
-	mp_pD->m_bBreak.f_Store(1);
+	mp_pInternal->m_bBreak.f_Store(1);
 	
 	char Byte = 1;
-	write(mp_pD->m_ReadWritePipe[1], &Byte, 1);
+	write(mp_pInternal->m_ReadWritePipe[1], &Byte, 1);
 }
 
-class CPOSIXImpSpecificSocketContext::CDetails
+class CPOSIXImpSpecificSocketContext::CInternal
 {
 private:
 public:
@@ -436,7 +446,7 @@ public:
 
 CPOSIXImpSpecificSocketContext::CPOSIXImpSpecificSocketContext()
 {
-	mp_pD = fg_Construct();
+	mp_pInternal = fg_Construct();
 }
 
 CPOSIXImpSpecificSocketContext::~CPOSIXImpSpecificSocketContext()
@@ -535,10 +545,4 @@ CPOSIXAddress* CPOSIXImpSpecificSocketContext::f_SetAddressRaw(CPOSIXAddress* _A
 {
 	NMib::NSys::NNetwork::fg_FreeAddress(_Address);
 	return nullptr;
-}
-
-
-int CPOSIXImpSpecificSocketContext::f_Connect(CPOSIXAddress const &_Address) // Returns a FD or -1
-{
-	return -1;
 }

@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -53,7 +53,7 @@ void fg_ForkParentOrChild();
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #include <sys/param.h>
-#include <sys/mount.h>	
+#include <sys/mount.h>
 #include <sys/sysctl.h>
 #include <sys/epoll.h>
 #include <semaphore.h>
@@ -126,7 +126,7 @@ namespace NMib
 class CSystemEmscripten : public CSystem
 {
 public:
-	
+
 	CSystem_POSIX m_Posix;
 
 	CSystemEmscripten()
@@ -144,24 +144,24 @@ public:
 	void f_DestroyThreadSpecific()
 	{
 		CSystem::f_PreDestructThreadSpecific();
-		
+
 		m_Posix.f_DestroyThreadSpecific();
 
 		CSystem::f_DestructThreadSpecific();
 	}
-	
+
 	void f_Destruct()
 	{
 		m_Posix.f_Destruct();
-		
+
 		CSystem::f_Destruct();
 
 	}
-	
+
 	void f_LoadLibraries()
 	{
 	}
-	
+
 };
 
 static inline_small CSystemEmscripten *fg_GetLocalSys()
@@ -216,9 +216,9 @@ struct CCodePageCache
 			if (Char != 0xFFFF)
 				m_Cache[Char] = i;
 		}
-			
+
 	}
-	
+
 };
 
 NMib::NStorage::TCAggregate<CCodePageCache> g_CodePageCache = { DAggregateInit };
@@ -226,9 +226,9 @@ NMib::NStorage::TCAggregate<CCodePageCache> g_CodePageCache = { DAggregateInit }
 void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, ch8 _ErrorChar)
 {
 	CStr Utf8 = _In;
-	
+
 	auto &Cache = *g_CodePageCache;
-	
+
 	_Out.f_Clear();
 	auto Iter = Utf8.f_GetUnicodeIterator();
 	while (Iter)
@@ -248,9 +248,9 @@ void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, NMib:
 void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStrNonTracked const &_In, NMib::NStr::CAnsiStrNonTracked &_Out, ch8 _ErrorChar)
 {
 	CStrNonTracked Utf8 = _In;
-	
+
 	auto &Cache = *g_CodePageCache;
-	
+
 	_Out.f_Clear();
 	auto Iter = Utf8.f_GetUnicodeIterator();
 	while (Iter)
@@ -262,7 +262,7 @@ void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStrNonTracked const &
 		}
 		else
 			_Out.f_AddChar(_ErrorChar);
-		
+
 		++Iter;
 	}
 }
@@ -337,7 +337,7 @@ NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NMib::NSys::fg_Process_Get
 
 	CStr Key;
 
-	for 
+	for
 		(
 			char **pEnvironment = environ
 			; *pEnvironment
@@ -386,7 +386,7 @@ void NSys::fg_Debug_DiffStrings(const NMib::NStr::CStr &_FirstStr, const NMib::N
 
 void NSys::fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NMib::NStr::CStr &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bint _bDisplayGUI)
 {
-	
+
 }
 
 void NSys:::fg_Debug_GenerateMemoryDump
@@ -438,7 +438,7 @@ bint NSys::fg_Debug_IsDeadlocked()
 
 void NSys::fg_Debug_SetDeadlockNotifyFunction(FDeadlockUserNotify *_pCrashDumpUserNotify)
 {
-	
+
 }
 
 void NSys::fg_Debug_PauseDeadlockDetector()
@@ -504,10 +504,10 @@ namespace
 
 		tf_CStr CmdlinePath = typename tf_CStr::CFormat("/proc/{}/cmdline") << (mint)getpid();
 		auto FileData = fg_ReadProcFS<tf_CStr>(CmdlinePath);
-		
+
 		auto pParse = FileData.f_GetArray();
 		auto pParseEnd = pParse + FileData.f_GetLen() - 1;
-		
+
 		while (pParse < pParseEnd)
 		{
 			auto *pStart = pParse;
@@ -537,7 +537,7 @@ void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
 NMib::NStr::CStr NSys::fg_Process_GetCommandLine()
 {
 	NMib::NStr::CStr Return;
-	
+
 	TCVector<CStr> Parameters = fg_GetCommandLineParams<CStr>();
 
 	auto iParam = Parameters.f_GetIterator();
@@ -546,7 +546,7 @@ NMib::NStr::CStr NSys::fg_Process_GetCommandLine()
 		if (!iParam->f_StartsWith("--OutputPID"))
 			fg_AddStrSepEscaped(Return, *iParam, ' ');
 	}
-	
+
 	return Return;
 }
 
@@ -571,15 +571,15 @@ void NSys::fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> 
 		if (!iParam->f_StartsWith("--OutputPID"))
 			_List.f_Insert(*iParam);
 	}
-	
+
 }
 
 NMib::NStr::CStr NSys::fg_CommandLineParameters()
 {
 	NMib::NStr::CStr Return;
-	
+
 	TCVector<CStr> Parameters = fg_GetCommandLineParams<CStr>();
-	
+
 	auto iParam = Parameters.f_GetIterator();
 	if (iParam)
 		++iParam; // The first param should not be retured for this variant
@@ -588,7 +588,7 @@ NMib::NStr::CStr NSys::fg_CommandLineParameters()
 		if (!iParam->f_StartsWith("--OutputPID"))
 			fg_AddStrSepEscaped(Return, *iParam, ' ');
 	}
-	
+
 	return Return;
 }
 
@@ -624,7 +624,7 @@ void fg_ForkParentOrChild()
 
 namespace NMib
 {
-	
+
 	namespace NSys
 	{
 		// This allows
@@ -635,7 +635,7 @@ namespace NMib
 		{
 		}
 	}
-	
+
 } // Namespace NMib
 
 #include <link.h>
@@ -668,17 +668,17 @@ bint NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& 
 	}
 
 	g_OperatingSystemMajor = 0;
-	
+
 	utsname NameInfo;
 	if (uname(&NameInfo))
 	{
 		return false;
 	}
-	
+
 	(CStr::CParse("{}.{}.{}") >> g_OperatingSystemMajor >> g_OperatingSystemMinor >> g_OperatingSystemFix).f_Parse(NameInfo.release);
 
 	g_OperatingSystemArch = NProcess::EOperatingSystemArch_le32;
-	
+
 	return true;
 }
 
@@ -694,12 +694,12 @@ namespace NMib
 			{
 				Dl_info Info;
 				dladdr((void *)&fg_CreateSystem, &Info);
-				
+
 				g_MainModuleBase = (mint)((uint8 const *)Info.dli_fbase);
-				
+
 			}
 		#pragma clang diagnostic pop
-			
+
 		}
 	}
 }
@@ -728,7 +728,7 @@ extern "C"
 #		endif
 		fg_MemClear(pMem, Size);
 		return pMem;
-	}	
+	}
 
 	void *nontracked_realloc (void *__ptr, size_t __size)
 	{
@@ -801,7 +801,7 @@ void NSys::fg_CreateSystem()
 {
 	if (g_bCreatedSystem)
 		return;
-	
+
 #ifdef DMibConfig_OverrideSystemMalloc
 	g_bMemoryManagerNeededAfterDestroy = true;
 #endif
@@ -810,7 +810,7 @@ void NSys::fg_CreateSystem()
 	NMib::NSys::NPrivate::g_PageSize = getpagesize();
 
 	// Cannot use malloc here
-	
+
 #ifdef DMibDynamicLibrary
 	g_bIsSharedLibrary = true;
 #else
@@ -819,14 +819,14 @@ void NSys::fg_CreateSystem()
 
 	if (!g_bIsSharedLibrary)
 		signal(SIGPIPE,SIG_IGN);
-	
+
 	g_VirtualMap.f_Construct();
-	
+
 	if (g_OperatingSystemMajor < 0)
 	{
 		int Dummy;
 		EOperatingSystemArch Arch;
-		
+
 		if (!fg_System_GetOperatingSystemVersion(Dummy, Dummy, Dummy, Arch))
 			DMibPDebugBreak; // Not supported
 	}
@@ -834,68 +834,68 @@ void NSys::fg_CreateSystem()
 	g_bCreatingSystemDone = true;
 	auto pSystem = new(NMib::g_SystemMemory) CSystemEmscripten();
 	DMibFastCheck((void *)pSystem == (void *)&NMib::g_SystemMemory);
-	
+
 #ifndef DMibPAutomaticSystemCreation
 	NMib::g_pSys = pSystem;
 #endif
-	
+
 	g_bCanUseSystemMalloc = true;
 
 	g_bCanStackTrace = true;
-	
+
 	// Can use malloc from here on
-	
+
 	NPrivate::fg_InitBaseModuleAddress();
 	NPrivate::fg_SetupLimits();
-	
+
 	//atexit(&fg_DestroySystemAtExit);
 
 	static_assert(NTraits::TCAlignmentOf<CSystemEmscripten>::mc_Value <= sizeof(uint64), "Aligment error");
-	
+
 	fg_InitBreakpad();
-	
+
 //	setlinebuf(stdout); // Default to line buffered output
 //	setlinebuf(stderr); // Default to line buffered output
-	
+
 	{
 		TCVector<CStr> Parameters = fg_GetCommandLineParams<CStr>();
-		
+
 		auto iParam = Parameters.f_GetIterator();
 		for (; iParam; ++iParam)
-		{			
+		{
 			if (iParam->f_StartsWith("--OutputPID"))
-			{			
+			{
 				CStr Error;
 				if (iParam->f_StartsWith("--OutputPID "))
-				{				
-					CStr PipeNames = iParam->f_Extract(fg_StrLen("--OutputPID "));					
+				{
+					CStr PipeNames = iParam->f_Extract(fg_StrLen("--OutputPID "));
 					CStr StdErrPipeName = NMib::NFile::CFile::fs_GetPath(PipeNames) + "/NamePipeStdErr_" + NMib::NFile::CFile::fs_GetFile(PipeNames);
 					CStr StdInPipeName = NMib::NFile::CFile::fs_GetPath(PipeNames) + "/NamePipeStdIn_" + NMib::NFile::CFile::fs_GetFile(PipeNames);
 
 					// Std in pipe has to be opened first, otherwise it might hang
 					if (!StdErrPipeName.f_IsEmpty())
-					{					
+					{
 						int Pipe = open(StdErrPipeName.f_GetStr(), O_CLOEXEC|O_WRONLY, S_IWUSR);
-						
+
 						if (Pipe == -1)
 						{
 							Error = fg_FormatErrno("open (named stderr pipe)", errno);
 						}
 						else
-						{						
+						{
 							if (dup2(Pipe, 2) == -1)
 							{
 								Error = fg_FormatErrno("dup2 (named stderr pipe)", errno);
 							}
 						}
 					}
-					
+
 					DMibConOutRaw((CFStr256::CFormat("bdda0079-b6eb-41ac-88d0-01b50e8be939 {nfh} {}\n") << (mint)getpid() << Error.f_ReplaceChar('\n', '\r')).f_GetStr());
 
 					if (!StdInPipeName.f_IsEmpty())
 					{
 						int Pipe = open(StdInPipeName.f_GetStr(), O_CLOEXEC|O_RDONLY, S_IRUSR);
-							
+
 						if (Pipe == -1)
 						{
 							Error = fg_FormatErrno("open (named stdin pipe)", errno);
@@ -914,19 +914,19 @@ void NSys::fg_CreateSystem()
 				else
 					DMibConOutRaw((CFStr256::CFormat("bdda0079-b6eb-41ac-88d0-01b50e8be939 {nfh} {}\n") << (mint)getpid() << Error.f_ReplaceChar('\n', '\r')).f_GetStr());
 
-				
+
 				break;
 			}
 		}
 	}
-	
+
 	pSystem->f_LoadLibraries();
-	
+
 	pSystem->f_Init();
-	
+
 	pSystem->f_InitModule();
 	pSystem->f_InitModuleThreaded();
-	
+
 }
 
 bool g_bSysDeleted = false;
@@ -944,15 +944,15 @@ void NSys::fg_DestroySystem()
 		auto pSys = fg_GetLocalSys();
 
 		pSys->f_DestroyThreadSpecific();
-		
+
 		pSys->f_ExitModule();
-		
+
 		// We need to flush these before the buffer memory is deleted
 		fflush(stdout);
 		fflush(stderr);
-		
+
 		fg_DestroyBreakpad();
-		
+
 		pSys->f_Destruct();
 		pSys->~CSystemEmscripten();
 
@@ -966,9 +966,9 @@ bint NSys::fg_System_BeingDebugged()
 {
 	CStrNonTracked StatusPath = CStrNonTracked::CFormat("/proc/{}/status") << (mint)getpid();
 	auto FileData = fg_ReadProcFS<CStrNonTracked>(StatusPath);
-	
+
 	auto pParse = FileData.f_GetArray();
-	
+
 	while (*pParse)
 	{
 		auto *pStart = pParse;
@@ -982,9 +982,9 @@ bint NSys::fg_System_BeingDebugged()
 				if (fg_CharIsNumber(*pStart))
 				{
 					CFStr256 Str(pStart, pParse-pStart);
-					
+
 					uint32 PID = Str.f_ToInt(uint32(0));
-					
+
 					if (PID)
 						return true;
 				}
@@ -992,7 +992,7 @@ bint NSys::fg_System_BeingDebugged()
 		}
 		fg_ParseEndOfLine(pParse);
 	}
-	
+
 	return false;
 }
 
@@ -1006,25 +1006,25 @@ bool NSys::fg_Process_IsRunning(mint _ProcessID)
 			return false;
 
 		auto FileData = fg_ReadProcFS<CStrNonTracked>(FileName);
-		
+
 		NMib::NStr::CStrPtr Data;
 		Data.f_SetConstPtr(FileData.f_GetArray(), FileData.f_GetLen());
-		
+
 		aint nParsed;
 		int32 pid = 0;
 		CStr comm;
 		CStr state;
-		
+
 		(
-			NMib::NStr::CStrPtr::CParse("{} ({}) {} ") 
-			>> pid 
-			>> comm 
-			>> state 
+			NMib::NStr::CStrPtr::CParse("{} ({}) {} ")
+			>> pid
+			>> comm
+			>> state
 		).f_Parse(Data, nParsed);
-		
+
 		if (nParsed != 3)
 			return false;
-		
+
 		if (state == "Z")
 			return false;
 		return true;
@@ -1032,7 +1032,7 @@ bool NSys::fg_Process_IsRunning(mint _ProcessID)
 	catch (NException::CException const &)
 	{
 	}
-	
+
 	return false;
 }
 
@@ -1048,7 +1048,7 @@ namespace NMib
 			int Major, Minor, Fix;
 			NProcess::EOperatingSystemArch Arch;
 			fg_System_GetOperatingSystemVersion(Major, Minor, Fix, Arch);
-			
+
 			if (Major > _MajorMax || (Major == _MajorMax && Minor > _MinorMax))
 			{
 				Major = _MajorMax;
@@ -1077,7 +1077,7 @@ namespace
 		aint iFind = FileName.f_FindReverse("_x");
 		if (iFind >= 0)
 			FileName = FileName.f_Left(iFind);
-		
+
 		return "." + FileName;
 	}
 
@@ -1087,7 +1087,7 @@ namespace
 		aint iFind = FileName.f_FindReverse("_x");
 		if (iFind >= 0)
 			FileName = FileName.f_Left(iFind);
-		
+
 		return "." + FileName;
 	}
 }
@@ -1097,14 +1097,14 @@ namespace
 NMib::NStr::CStr NSys::NFile::fg_GetUserHomeDirectory()
 {
 	NMib::NStr::CStr HomeDir = fg_GetSys()->f_GetEnvironmentVariable("HOME");
-	
+
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
 
 	struct passwd *pPasswd = getpwuid(getuid());
 	if (pPasswd && pPasswd->pw_dir && pPasswd->pw_dir[0])
 		return CStr(pPasswd->pw_dir);
-	
+
 	return fg_GetProgramDirectory();
 }
 
@@ -1121,10 +1121,10 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetLogDirectoryNonTracked()
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserHomeDirectoryNonTracked()
 {
 	NMib::NStr::CStrNonTracked HomeDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME"));
-	
+
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
-	
+
 	struct passwd *pPasswd = getpwuid(getuid());
 	if (pPasswd && pPasswd->pw_dir && pPasswd->pw_dir[0])
 		return CStrNonTracked(pPasswd->pw_dir);
@@ -1324,7 +1324,7 @@ bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib:
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
 	NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo); // No good way to do this on Linux unless you have kernel 2.6.33 or later (sendfile)
-	
+
 	// Copy the attributes
 	{
 		NMib::NFile::EFileAttrib Attribs = NMib::NFile::CFile::fs_GetAttributes(_FileFrom);
@@ -1343,7 +1343,7 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
 	NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo); // No good way to do this on Linux unless you have kernel 2.6.33 or later (sendfile)
-	
+
 	// Copy the attributes
 	{
 		NMib::NFile::EFileAttrib Attribs = NMib::NFile::CFile::fs_GetAttributes(_FileFrom);
@@ -1365,7 +1365,7 @@ void *NSys::NFile::fg_ChangeNotification_Open(const CStr &_FileName, NMib::NFile
 
 void NSys::NFile::fg_ChangeNotification_Close(void *_pNotification)
 {
-	
+
 }
 
 bint NSys::NFile::fg_ChangeNotification_Changed(void *_pNotification)
@@ -1377,7 +1377,7 @@ bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NM
 {
 	return false;
 }
-	
+
 bool NSys::NFile::fg_ChangeNotification_Supported()
 {
 	return false;
@@ -1458,13 +1458,13 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _A
 }
 
 // Connection Operations
-void *NSys::NNetwork::fg_Connect(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NSys::NNetwork::CAddress _BindAddress)
+void *NSys::NNetwork::fg_AsyncConnect(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NSys::NNetwork::CAddress _BindAddress)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void *NSys::NNetwork::fg_AsyncConnect(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NSys::NNetwork::CAddress _BindAddress)
+void NSys::NNetwork::fg_StartSocket(void *_pSocket)
 {
 	DMibError("Not implemented");
 	return nullptr;
@@ -1518,7 +1518,7 @@ mint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress
 
 // Socket Properties & State
 
-void NSys::NNetwork::fg_SetReportTo(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo) // Report to the supplied event when new data is received or when we are ready to send new data			
+void NSys::NNetwork::fg_SetReportTo(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo) // Report to the supplied event when new data is received or when we are ready to send new data
 {
 	DMibError("Not implemented");
 }
@@ -1601,7 +1601,7 @@ uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
 void* NSys::fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned long long& _nDataBytes)
 {
 	DMibPDebugBreak;
-	
+
 	return nullptr;
 }
 
@@ -1640,18 +1640,18 @@ namespace NMib
 			DMibError("Not implemented");
 			return nullptr;
 		}
-		
+
 		void fg_System_CPUUsageMonitor_Close(void *_pHandle)
 		{
 			DMibError("Not implemented");
 		}
-		
+
 		NSystem::CSystemCPUUsage fg_System_CPUUsageMonitor_GetUsage(void *_pHandle, bool &_bChanged)
 		{
 			DMibError("Not implemented");
 			return NSystem::CSystemCPUUsage();
 		}
-		
+
 	}
 }
 
@@ -1779,40 +1779,40 @@ namespace NMib
 {
 	namespace NSys
 	{
-		
+
 		/*
 		 Basic interface for storing secure passwords on a per-user, per-application basis.
 		 */
-		
+
 		ESecurePassword fg_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location)
 		{
 			DMibError("Not implemented");
 			return ESecurePassword_Failure;
 		}
-		
+
 		ESecurePassword fg_SecurePassword_Store(CStr const& _Key, CStrSecure const& _Password)
 		{
 			DMibError("Not implemented");
 			return ESecurePassword_Failure;
 		}
-		
+
 		ESecurePassword fg_SecurePassword_Remove(CStr const& _Key)
 		{
 			DMibError("Not implemented");
 			return ESecurePassword_Failure;
 		}
-		
+
 		ESecurePassword fg_SecurePassword_Get(CStr const& _Key, CStrSecure& _oPassword)
 		{
 			DMibError("Not implemented");
 			return ESecurePassword_Failure;
 		}
-		
+
 		ESecurePassword fg_SecurePassword_Exists(CStr const& _Key)
 		{
 			DMibError("Not implemented");
 			return ESecurePassword_Failure;
-		}		
+		}
 
 		// Desktop environment
 		EDesktopEnvironment fg_DesktopEnvironment_Get()
@@ -1845,12 +1845,12 @@ void *NSys::fg_Process_GetCrossModuleMemoryManagerInterface()
 #ifdef DMibDynamicLibrary
 	void * ( *fMalterlibGetCrossModuleMemoryManagerInterface)();
 	(void * &)fMalterlibGetCrossModuleMemoryManagerInterface = dlsym(RTLD_DEFAULT, "fg_MalterlibGetCrossModuleMemoryManagerInterface");
-	
+
 	auto pRet = g_pCrossModuleMemoryManagerInterface;
-	
+
 	if (fMalterlibGetCrossModuleMemoryManagerInterface)
 		pRet = fMalterlibGetCrossModuleMemoryManagerInterface();
-	
+
 	return pRet;
 #else
 	return fg_MalterlibGetCrossModuleMemoryManagerInterface();
@@ -1860,9 +1860,9 @@ void *NSys::fg_Process_GetCrossModuleMemoryManagerInterface()
 void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 {
 	DMibFastCheck(!fg_GetSys()->f_IsDll());
-	
+
 	g_pCrossModuleMemoryManagerInterface = _pInterface;
-	
+
 	DMibFastCheck(fg_Process_GetCrossModuleMemoryManagerInterface() == _pInterface);
 }
 
@@ -1875,7 +1875,7 @@ namespace NMib
 		NContainer::TCVector<NProcess::CProcessInfo> fg_Process_Enum(NProcess::EProcessInfoFlag _ToGet, NContainer::TCVector<NProcess::CProcessInfo> * _pOldEnum)
 		{
 			return NContainer::TCVector<NProcess::CProcessInfo>();
-		}		
+		}
 	}
 }
 

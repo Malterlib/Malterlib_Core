@@ -49,9 +49,7 @@ private:
 	NMib::NThread::CEventAutoResetReportable mp_TerminateEvent;
 	NMib::NThread::CEventAutoResetReportable mp_WakeEvent;
 
-	using CThreadPointer =
-		NStorage::TCUniquePointer<NThread::CThreadObject, NMemory::CDefaultAllocator, TCDynamicPtr<typename NMemory::CDefaultAllocator::CPtrHolder, NThread::CThreadObject>, void>
-	;
+	using CThreadPointer = NStorage::TCUniquePointer<NThread::CThreadObject>;
 
 	enum
 	{

@@ -246,7 +246,7 @@ namespace NMib
 #if !defined(DConfig_Release)
 			bDebugOut = true;
 #endif
-			
+
 			bool bDisableSystemLog = NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("MalterlibDisableSystemLog")) == "true";
 			if (bDisableSystemLog)
 				bDebugOut = false;

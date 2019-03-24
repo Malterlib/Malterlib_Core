@@ -6,8 +6,6 @@
 
 namespace NMib
 {
-	class CSharedPointerHolder;
-
 	namespace NMemory
 	{
 		class CAllocator_Heap;
@@ -20,7 +18,7 @@ namespace NMib
 		>
 		class TCAllocator_Secure;
 
-		using CAllocator_HeapSecure = TCAllocator_Secure<CAllocator_Heap, true>;
+		struct CAllocator_HeapSecure;
 	}
 	
 	namespace NThread
@@ -41,8 +39,8 @@ namespace NMib
 		template <typename t_CData, typename t_CAllocator = NMib::NMemory::CAllocator_Heap, typename t_COptions = CVectorOptionsDefault>
 		class TCVector;
 
-		using CByteVector = TCVector<uint8>;
-		using CSecureByteVector = TCVector<uint8, NMemory::CAllocator_HeapSecure>;
+		struct CByteVector;
+		struct CSecureByteVector;
 	}
 
 	struct CVoidTag 

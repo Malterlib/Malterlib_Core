@@ -19,33 +19,30 @@ CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressT
 {
 	switch(_Type)
 	{
+	case NMib::NNetwork::ENetAddressType_TCPv4:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
+				return nullptr;
 
-		case NMib::NNetwork::ENetAddressType_TCPv4:
-			{
-				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
-					return nullptr;
+			sockaddr_in NativeAddr;
+			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv4*)_pData, NativeAddr);
 
-				sockaddr_in NativeAddr;
-				fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv4*)_pData, NativeAddr);
+			return DMibNew CPOSIXAddress(NativeAddr);
+		}
+		break;
+	case NMib::NNetwork::ENetAddressType_TCPv6:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
+				return nullptr;
 
-				return DMibNew CPOSIXAddress(NativeAddr);
-			}
-			break;
+			sockaddr_in6 NativeAddr;
+			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv6*)_pData, NativeAddr);
 
-		case NMib::NNetwork::ENetAddressType_TCPv6:
-			{
-				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
-					return nullptr;
-
-				sockaddr_in6 NativeAddr;
-				fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv6*)_pData, NativeAddr);
-
-				return DMibNew CPOSIXAddress(NativeAddr);
-			}
-			break;
-
-		case NMib::NNetwork::ENetAddressType_Unix:
-		default:
+			return DMibNew CPOSIXAddress(NativeAddr);
+		}
+		break;
+	case NMib::NNetwork::ENetAddressType_Unix:
+	default:
 		{
 			NMib::NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct();
 
@@ -535,8 +532,7 @@ void fg_SetUnixSocketOptions(int _File)
 CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 	(
 	 	CPOSIXAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, bint _bAsyncConnect
+	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, CPOSIXAddress const *_pBindAddress
 	)
 {
@@ -550,8 +546,8 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 
 		CPOSIXImpSpecificSocketContext::CSocketCreateParams SocketCreateParams;
 		if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
-			return nullptr;
-		
+			DMibErrorNet("Unsupported address type");
+
 		FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type, SocketCreateParams.m_Protocol);
 
 		if (FD == -1)
@@ -581,15 +577,13 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 			}
 		}
 
-		if (_bAsyncConnect)
+		int Flags;
+		if ((Flags = fcntl(FD, F_GETFL)) == -1 || fcntl(FD, F_SETFL, Flags | O_NONBLOCK) == -1) 
 		{
-			int Flags;
-			if ((Flags = fcntl(FD, F_GETFL)) == -1 || fcntl(FD, F_SETFL, Flags | O_NONBLOCK) == -1) 
-			{
-				int Error = errno;
-				DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (connect set async non blocking)", Error));
-			}
+			int Error = errno;
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (connect set async non blocking)", Error));
 		}
+
 		int Result = connect(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 		uint16 BindPort = 0;
@@ -626,19 +620,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 			}
 		}
 		else
-		{
 			bConnected = true;
-		}
-
-		if (!_bAsyncConnect)
-		{
-			int Flags;
-			if ((Flags = fcntl(FD, F_GETFL)) == -1 || fcntl(FD, F_SETFL, Flags | O_NONBLOCK) == -1) 
-			{
-				int Error = errno;
-				DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (connect set non blocking)", Error));
-			}
-		}
 
 		Cleanup.f_Clear();
 
@@ -695,30 +677,25 @@ void CPOSIXSocketContext::fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIX
 	}
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_Connect
-	(
-	 	CPOSIXAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, CPOSIXAddress const *_pBindAddress
-	)
-{
-	return fp_Connect(_Address, fg_Move(_fOnStateChange), false, _pBindAddress);
-}
-
 CPOSIXSocket* CPOSIXSocketContext::f_AsyncConnect
 	(
 	 	CPOSIXAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, CPOSIXAddress const *_pBindAddress
 	)
 {
-	return fp_Connect(_Address, fg_Move(_fOnStateChange), true, _pBindAddress);
+	return fp_Connect(_Address, fg_Move(_fOnStateChange), _pBindAddress);
+}
+
+void CPOSIXSocketContext::f_StartSocket(CPOSIXSocket *_pSocket)
+{
+	mp_PollerThread.mp_Poller.f_RegisterSocket(_pSocket);
 }
 
 CPOSIXSocket* CPOSIXSocketContext::f_Listen
 	(
 	 	CPOSIXAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, NMib::NNetwork::ENetFlag _Flags
 	)
 {
@@ -726,8 +703,8 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 
 	CPOSIXImpSpecificSocketContext::CSocketCreateParams SocketCreateParams;
 	if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
-		return nullptr;
-	
+		DMibErrorNet("Unsupported address type");
+
 	fp_PrepareUnixListen(_Address);
 	
 	int FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type, SocketCreateParams.m_Protocol);
@@ -808,7 +785,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 	(
 	 	CPOSIXAddress const &_Address
-	 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, NMib::NNetwork::ENetFlag _Flags
 	)
 {
@@ -816,7 +793,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 
 	CPOSIXImpSpecificSocketContext::CSocketCreateParams SocketCreateParams;
 	if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
-		return nullptr;
+		DMibErrorNet("Unsupported address type");
 
 	fp_PrepareUnixListen(_Address);
 	
@@ -884,7 +861,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 	return pSocket;
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	int ResultFD = accept(_pSocket->m_FD, NULL, NULL);
 
@@ -922,7 +899,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 	return pSocket;
 }
 
-void CPOSIXSocketContext::f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+void CPOSIXSocketContext::f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	{
 		DMibLock(_pSocket->m_Lock);
@@ -966,22 +943,18 @@ void CPOSIXSocketContext::f_Shutdown(CPOSIXSocket* _pSocket)
 	if (Result == -1)
 	{
 		if (errno != EAGAIN && errno != ENOTCONN)
-		{
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("shutdown", errno));
-		}
+	}
+
+	{
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_bShutdownCalled = true;
 	}
 }
 
 NMib::NNetwork::ENetTCPState CPOSIXSocketContext::f_GetState(CPOSIXSocket *_pSocket)
 {
-	NMib::NNetwork::ENetTCPState State;
-	{
-		DMibLock(_pSocket->m_Lock);
-		State = _pSocket->m_State;
-		_pSocket->m_State = NMib::NNetwork::ENetTCPState_None;
-	}
-
-	return State;
+	return (NMib::NNetwork::ENetTCPState)_pSocket->m_StateAtomic.f_Exchange(0);
 }
 
 mint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, mint _DataLen)
@@ -1072,18 +1045,26 @@ mint CPOSIXSocketContext::f_ReceiveDatagram(CPOSIXSocket *_pSocket, CPOSIXAddres
 NMib::NStr::CStr CPOSIXSocketContext::f_GetCloseReason(CPOSIXSocket* _pSocket)
 {
 	int CloseReason = 0;
+	bool bGracefulClose = false;
 
 	{
 		DMibLock(_pSocket->m_Lock);
 		CloseReason = _pSocket->m_CloseError;
+		bGracefulClose = _pSocket->m_bShutdownCalled && _pSocket->m_bNonErrorClose;
 	}
 
 	if (CloseReason == 0)
-		return NMib::NStr::CStr();
+	{
+		if (bGracefulClose)
+			return NMib::NStr::CStr("Connection gracefully disconnected");
+		else
+			return {};
+	}
+
 	return NMib::NPlatform::fg_FormatErrno("", CloseReason);
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_InheritHandle2(void* _pOSSocket, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+CPOSIXSocket* CPOSIXSocketContext::f_InheritHandle2(void* _pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	return fp_CreateSocket(int(aint(_pOSSocket)), EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange), true);
 }
@@ -1198,7 +1179,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 	 	int _FD
 	 	, EPOSIXSocketMode _Mode
 	 	, EPOSIXSocketEvent _Events
-	 	, NMib::NFunction::TCFunction<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 	 	, bint _bFromInherit
 	)
 {
@@ -1217,7 +1198,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 		pNewSocket->m_bInitialWriteNotification = false;
 	}
 	
-	NMib::NNetwork::ENetTCPState StateAdded = NMib::NNetwork::ENetTCPState_None;
+	NMib::NNetwork::ENetTCPState StateAdded = NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write; // Kickstart
 
 	if (_Mode == EPOSIXSocketMode_Datagram)
 		_Mode = EPOSIXSocketMode_Connect;
@@ -1228,18 +1209,9 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 		pNewSocket->m_bInitialWriteNotification = false;
 	}
 
-	CPOSIXSocket* pSocket = nullptr;
+	pNewSocket->m_StateAtomic.f_FetchOr(StateAdded);
 
-	mp_PollerThread.mp_Poller.f_RegisterSocket(pSocket = pNewSocket.f_Detach());
-
-	if (StateAdded)
-	{
-		pSocket->m_State |= StateAdded;
-		if (pSocket->m_fOnStateChange)
-			pSocket->m_fOnStateChange(StateAdded);
-	}
-
-	return (CPOSIXSocket*)pSocket;
+	return pNewSocket.f_Detach();
 }
 
 #include "Malterlib_Core_PlatformImp_Net.imp.h"
