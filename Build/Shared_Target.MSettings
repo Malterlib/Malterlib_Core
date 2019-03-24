@@ -3957,7 +3957,11 @@ Property
 		&
 		{
 			!DocumentationEnabled true
-			PlatformIsDarwin true
+			|
+			{
+				PlatformIsDarwin true
+				PlatformFamily Linux
+			}
 			TargetIsExecutable true
 			!MalterlibIsOSXBundle true
 			!MalterlibDisableMalterlib true
@@ -4046,7 +4050,11 @@ Target
 		&
 		{
 			!DocumentationEnabled true
-			PlatformIsDarwin true
+			|
+			{
+				PlatformIsDarwin true
+				PlatformFamily Linux
+			}
 			TargetIsExecutable true
 			!MalterlibIsOSXBundle true
 			!MalterlibDisableMalterlib "true"
