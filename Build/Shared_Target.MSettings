@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Dependency
@@ -39,7 +39,7 @@ Target
 	{
 		!!Target.Type ""
 	}
-	
+
 	FollowIndirectDependencies "true"
 	{
 		&
@@ -102,7 +102,7 @@ Target
 		!!Target:Target.Type "Executable"
 		!!Target:Target.Type "UIExecutable"
 	}
-		
+
 	Name "Drv_@(Target.BaseName)"
 	{
 		!!Target:Target.Type "Driver"
@@ -186,9 +186,9 @@ Property.MalterlibGenerateScheme true
 Target
 {
 	!!GeneratorFamily Xcode
-	
+
 	EnableModuleDebugging "false"
-	
+
 	GenerateScheme "@(MalterlibGenerateScheme)"
 	{
 		&
@@ -206,7 +206,7 @@ Target
 			}
 		}
 	}
-	
+
 	GenerateScheme false
 	{
 		!!Target.GenerateScheme ""
@@ -533,7 +533,19 @@ Target
 			Target.PlatformToolset ""
 		}
 	}
-	
+
+	PlatformToolset "v142"
+	{
+		&
+		{
+			Target.PlatformToolset ""
+			|
+			{
+				Generator "VisualStudio2019"
+			}
+		}
+	}
+
 	PlatformToolset "v141"
 	{
 		&
@@ -622,7 +634,7 @@ Target
 		}
 
 	}
-	
+
 	ExtraLibFlags "/ignore:4042 @(Target.ExtraLibFlags)"
 	{
 		&
@@ -677,7 +689,7 @@ Property
 	{
 		!!MalterlibLinkerDemangle ""
 	}
-	
+
 /*	PlatformToolsetCompiler "/Development/Malterlib/Tools/llvm/stable/build/make/bin/clang"
 	{
 		&
@@ -696,7 +708,7 @@ Property
 		}
 	}
 
-	MalterlibMSVCVersion "14.16.27023"
+	MalterlibMSVCVersion "14.20.27508"
 	{
 		!!MalterlibMSVCVersion ""
 	}
@@ -754,7 +766,7 @@ Target
 Target
 {
 	!!GeneratorFamily "Xcode"
-	
+
 	MToolPath "@(MToolPath)"
 }
 
@@ -865,7 +877,7 @@ Target
 		LanguageFamily Native
 		GeneratorFamily "Xcode"
 	}
-	
+
 	EnableLinkerGroups true
 	{
 		&
@@ -920,7 +932,7 @@ Target
 			!Compile.Optimize Off
 		}
 	}
-	
+
 	LDFlags "--closure 1 @(Target.LDFlags)"
 	{
 		&
@@ -937,7 +949,7 @@ Target
 			!Configuration Release
 		}
 	}
-	
+
 	LDFlags "-nostdlibc++ @(Target.LDFlags)"
 	{
 		&
@@ -1162,7 +1174,7 @@ Target
 			}
 		}
 	}
-	
+
 	PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
 	{
 		!!Target.PlatformToolset ""
@@ -1176,7 +1188,7 @@ Target
 	{
 		!!Documentation Doxygen
 	}
-	
+
 	PlatformToolsetLibTool "@(MalterlibBinariesDirectory->MakeAbsolute())/LinuxLibTool/libtool"
 	{
 		!!PlatformFamily Linux
@@ -1219,12 +1231,12 @@ Target
 			GeneratorFamily Xcode
 		}
 	}
-	
+
 	LDFlags "-Wno-warn-absolute-paths @(Target.LDFlags)"
 	{
 		!!PlatformFamily Emscripten
 	}
-	
+
 	LDFlags "-target @(MalterlibTargetTriple) @(Target.LDFlags)"
 	{
 		!MalterlibTargetTriple ""
@@ -1286,7 +1298,7 @@ Target
 			}
 		}
 	}
-	
+
 	LDFlags "-Xlinker --export-dynamic-symbol=fg_IdsGetCrossModuleMemoryManagerInterface @(Target.LDFlags)"
 	{
 		&
@@ -1305,7 +1317,7 @@ Target
 			}
 		}
 	}
-	
+
 	LDFlags "-Xlinker --export-dynamic-symbol=fg_Malterlib_Thread_AllocLocal "\
 			"-Xlinker --export-dynamic-symbol=fg_Malterlib_Thread_FreeLocal @(Target.LDFlags)"
 	{
@@ -1326,7 +1338,7 @@ Target
 			}
 		}
 	}
-	
+
 	LDFlags "-Xlinker --export-dynamic @(Target.LDFlags)"
 	{
 		&
@@ -1346,7 +1358,7 @@ Target
 			}
 		}
 	}
-	
+
 	LDFlags "-v @(Target.LDFlags)"
 	{
 		!!Compile.Verbose true
@@ -1381,7 +1393,7 @@ Target
 		}
 	}
 	*/
-	
+
 	LibToolFlags "-llvm-path @(PlatformToolsetCompiler->GetPath())"
 	{
 		&
@@ -1394,7 +1406,7 @@ Target
 	{
 		!!PlatformFamily Emscripten
 	}
-	
+
 	LibToolFlags "-env_EMCC_FAST_COMPILER 1 @(Target.LibToolFlags)"
 	{
 		!!Target.EmscriptenFastCompiler true
@@ -1414,7 +1426,7 @@ Target
 	LibToolFlags "-env_NODE \"@(Target.EmscriptenNode)\" @(Target.LibToolFlags)"
 	{
 		!Target.EmscriptenNode ""
-	}	
+	}
 
 	CxxLanguage "C++20"
 	{
@@ -1450,7 +1462,7 @@ Target
 
 	AlwaysSearchUserPaths "false"
 	CombineHiDPIImages "true" // to prevent Xcode upgrading warning
-	
+
 	StripDebugSymbolsDuringCopy "false"
 
 /*	StripLinkedProduct "true"
@@ -1464,7 +1476,7 @@ Target
 	}*/
 
 	FilePrefix ""
-	
+
 	CodeSigningReqired false
 	{
 		!!PlatformFamily iOS
@@ -1575,7 +1587,7 @@ Target
 	{
 		!!Target.Type "Tool"
 	}
-	
+
 	ExecutableFolder ""
 
 	ExecutableFolder "@(Target.FileName)@(Target.FileExtension)/Contents/MacOS"
@@ -1598,13 +1610,13 @@ Target
 
 	ProjectDerivedSourcesDir "@(Target:Target.IntermediateDirectory)DerivedSources"
 	ProjectSharedPrecompPrefixDir "@(Target:Target.IntermediateDirectory)PrefixHeaders"
-	
+
 	CompatibilityVersion ""
 	{
 		!!Target.Type "DynamicLibrary"
 		!!Target.Type "XcodeBundle"
 	}
-	
+
 	CurrentVersion ""
 	{
 		!!Target.Type "DynamicLibrary"
@@ -1615,7 +1627,7 @@ Target
 	{
 		!!Target.Type "SharedDynamicLibrary"
 	}
-	
+
 	CurrentVersion "1.1"
 	{
 		!!Target.Type "SharedDynamicLibrary"
@@ -1659,7 +1671,7 @@ Target
 	OnlyActiveArchitectures "true"
 	NativeArchitecture "@(MalterlibXcodeBuildArchitecture)"
 	NativeArchitectureActual "@(MalterlibXcodeBuildArchitecture)"
-	
+
 }
 
 // iOS
@@ -1713,7 +1725,7 @@ Target
 	ObjcLinkRuntime "false"
 
 	DebugInformationFormat ""
-	
+
 	ValidArchitectures "@(MalterlibXcodeBuildArchitecture)"
 	Architectures "@(MalterlibXcodeBuildArchitecture)"
 
@@ -1721,7 +1733,7 @@ Target
 	OnlyActiveArchitectures "true"
 	NativeArchitecture "@(MalterlibXcodeBuildArchitecture)"
 	NativeArchitectureActual "@(MalterlibXcodeBuildArchitecture)"
-	
+
 	DependencyInfoFile "" // Empty as the linker does not support it
 //	ValidArchitectures "none"
 //	Architectures "none"
@@ -1740,7 +1752,7 @@ Target
 	ObjcLinkRuntime "false"
 
 	DebugInformationFormat ""
-	
+
 	ValidArchitectures "@(MalterlibXcodeBuildArchitecture)"
 	Architectures "@(MalterlibXcodeBuildArchitecture)"
 
@@ -1748,7 +1760,7 @@ Target
 	OnlyActiveArchitectures "true"
 	NativeArchitecture "@(MalterlibXcodeBuildArchitecture)"
 	NativeArchitectureActual "@(MalterlibXcodeBuildArchitecture)"
-	
+
 	DependencyInfoFile "" // Empty as the linker does not support it
 //	ValidArchitectures "none"
 //	Architectures "none"
@@ -1859,7 +1871,7 @@ Property
 Property
 {
 	MalterlibOverrideMallocLibrary "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMalloc/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMalloc.dylib"
-	
+
 	MalterlibNeedsMallocOverrideLibrary true
 	{
 		&
@@ -1875,7 +1887,7 @@ Property
 			PlatformIsDarwin true
 			MalterlibMemoryManager_EnableOverrideSystemMalloc true
 		}
-	}	
+	}
 }
 
 // Executable native targets
@@ -1935,7 +1947,7 @@ Target
 			!Target.Type Driver
 		}
 	}
-	
+
 	LinkWithLibraries "-framework CoreServices @(Target.LinkWithLibraries)"
 	{
 		// Used for FSEvents API
@@ -1945,7 +1957,7 @@ Target
 			!Target.Type Driver
 		}
 	}
-	
+
 	LinkWithLibraries "-framework AppKit @(Target.LinkWithLibraries)"
 	{
 		&
@@ -1954,7 +1966,7 @@ Target
 			!Target.Type Driver
 		}
 	}
-	
+
 	LinkWithLibraries "-framework Security @(Target.LinkWithLibraries)"
 	{
 		&
@@ -2014,7 +2026,7 @@ Target
 			Target.Type "UIExecutable"
 		}
 	}
-	
+
 	LinkWithLibraries "-lc++abi @(Target.LinkWithLibraries)"
 	{
 		&
@@ -2029,7 +2041,7 @@ Target
 	{
 		!!GeneratorFamily Xcode
 	}
-	
+
 	RealLinkWithLibraries "\"@(MalterlibOverrideMallocLibrary)\" @(Target.RealLinkWithLibraries)"
 	{
 		!!MalterlibNeedsMallocOverrideLibrary true
@@ -2045,7 +2057,7 @@ Target
 			Target.Type "Driver"
 			Architecture "x86"
 		}
-	}	
+	}
 	SearchPath "@('../../../SDK'->MakeAbsolute())/WDK/lib/WNET/amd64;@(Target.SearchPath)"
 	{
 		&
@@ -2055,7 +2067,7 @@ Target
 			Architecture "x64"
 		}
 	}
-	
+
 	SearchPath "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName);@(Target.SearchPath)"
 	{
 		&
@@ -2066,7 +2078,7 @@ Target
 			!AOCCDisableSSL true
 		}
 	}
-	
+
 	LinkWithLibraries "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/libssl.a "\
 					  "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/libcrypto.a "\
 					  "@(Target.LinkWithLibraries)"
@@ -2079,7 +2091,7 @@ Target
 			!AOCCDisableSSL true
 		}
 	}
-	
+
 	LinkWithLibraries "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/ssleay32.lib;"\
 					  "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/libeay32.lib;"\
 					  "@(Target.LinkWithLibraries)"
@@ -2166,7 +2178,7 @@ Target
 			!Configuration "Fast Compile"
 		}
 	}
-	
+
 	SymbolFile "@(Builtin.OutputDirectory)@(Target.FileName).pdb"
 
 	SymbolFile ""
@@ -2457,7 +2469,7 @@ Property
 //		# TraceCondition,TraceEval
 	}
 	MalterlibFinalModuleDestinationPath "@(MalterlibFinalModuleDestination->GetPath())"
-	
+
 	MalterlibFinalModuleDestinationExecutable "@(MalterlibFinalModuleDestination)"
 	MalterlibFinalModuleDestinationExecutable "@(MalterlibFinalModuleDestination)/Contents/MacOS/@(Target:Target.FileName)"
 	{
@@ -2474,7 +2486,7 @@ Property
 Property
 {
 	GeneratedDirectory "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
-	
+
 	GeneratedDirectoryNoConfig	"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/"
 	GeneratedWorkspaceDirectory	"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/"
 	GeneratedWorkspaceDirectoryNoConfig	"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/NoConfig/"
@@ -2484,7 +2496,7 @@ Property
 	MalterlibUniqueConfig "@(MalterlibUniqueConfig->Replace('.', '_'))"
 
 }
-Property 
+Property
 {
 	MalterlibBinariesDirectory "@('../../../Binaries/Malterlib'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
 	MToolDirectory "@('../../../Binaries/Malterlib'->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)"
@@ -2502,7 +2514,7 @@ Property
 	{
 		!!MalterlibToolsRoot ""
 	}
-	
+
 }
 
 Property
@@ -2524,14 +2536,14 @@ Target
 	OutputDirectory			"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/"
 
 	ToolPath "@(Target.ToolPath);@(Builtin.Inherit)"
-	
+
 	ToolPath "/opt/local/bin;/usr/local/go/bin;/usr/local/bin;@(Target.ToolPath)"
 	{
 		!!GeneratorFamily Xcode
 	}
-	
+
 	ToolPath "@(MToolDirectory);@(Target.ToolPath)"
-	
+
 	ToolPath "@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(HostPlatformFamily);@(Target.ToolPath)"
 	{
 		&
@@ -2541,7 +2553,7 @@ Target
 			MalterlibDeploySymbols true
 		}
 	}
-	
+
 	ToolPath "@('../../../SDK'->MakeAbsolute())/BreakpadBin/Linux;@(Target.ToolPath)"
 	{
 		&
@@ -2553,7 +2565,7 @@ Target
 		}
 	}
 
-	
+
 	ToolPath "@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/HostX64/x64;@(Target.ToolPath)"
 	{
 		&
@@ -2586,7 +2598,7 @@ Target
 			WindowsNativeToolChain "false"
 		}
 	}
-	
+
 	ToolPath "@(MalterlibBinariesDirectory)/NoLib/x64;@(Target.ToolPath)"
 	{
 		&
@@ -2650,7 +2662,7 @@ Property
 		Compile
 		{
 			Type "None"
-		}		
+		}
 	}
 
 	!MalterlibBuildSpecifics ""
@@ -2689,7 +2701,7 @@ Property
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace(' ','_'))"
 	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('.','_'))"
 	MalterlibPythonDebugScriptFileName "@(MalterlibPythonDebugScriptName).py"
-	
+
 	MalterlibBundleIdentifier "@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())"
 	{
 		!!MalterlibBundleIdentifier ""
@@ -2709,10 +2721,10 @@ Property
 			!MalterlibExeIcon ""
 		}
 	}
-	
+
 	MalterlibBundleDebugLogation "@(MalterlibFinalModuleDestinationPath)"
 	{
-		!!MalterlibBundleDebugLogation ""		
+		!!MalterlibBundleDebugLogation ""
 	}
 
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
@@ -2735,9 +2747,9 @@ Property
 			!Target.Type "Driver"
 		}
 	}
-	
+
 	MalterlibPostBuildScriptPreSignMalterlibExeMainNibFilePath "@(MalterlibExeMainNibFile->GetLastPaths(2))"
-	
+
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
 									"MTool DiffCopy \"@(MalterlibExeMainNibFile)\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources/@(MalterlibPostBuildScriptPreSignMalterlibExeMainNibFilePath->GetPath())\" \"\" 0\r\n"
 	{
@@ -2749,12 +2761,12 @@ Property
 		}
 	}
 
-	
+
 	MalterlibBreakpadSourceSuffix "_cli"
 	{
 		"!Target:Target.Type" "UIExecutable"
 	}
-	
+
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
 					"MTool DiffCopy \"@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(PlatformFamily)@(MalterlibBreakpadSourceSuffix)/Breakpad.framework\" \"@(Target:Target.IntermediateDirectory)Breakpad\" \"\" 0 1\r\n"\
 					"MTool DiffReplace \"http://www.google.com/privacypolicy.html\" \"@(MalterlibBreakpadPrivacyPolicyURL)\" \"@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(PlatformFamily)@(MalterlibBreakpadSourceSuffix)/Breakpad.framework/Localizable.strings\" \"@(Target:Target.IntermediateDirectory)Breakpad/Breakpad.framework\" \"\" 1 1 1\r\n"
@@ -2766,7 +2778,7 @@ Property
 			Target.Type "UIExecutable"
 		}
 	}
-	
+
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
 					"MTool DiffCopy \"@(Target:Target.IntermediateDirectory)Breakpad/Breakpad.framework\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Frameworks\" \"\" 0\r\n"
 	{
@@ -2779,7 +2791,7 @@ Property
 	}
 
 
-	
+
 }
 
 // Out of process Specific
@@ -2813,8 +2825,8 @@ Property
 			PlatformFamily "Windows"
 		}
 	}
-	
-	
+
+
 }
 
 Target
@@ -2944,8 +2956,8 @@ Property
 						"		<string>@(Target:Target.Version)</string>\n"\
 						"	<key>BreakpadInProcess</key>\n"\
 						"		<string>YES</string>\n"
-			
-			
+
+
 			{
 				!!MalterlibEnableBreakpad "true"
 			}
@@ -2959,7 +2971,7 @@ Property
 					MalterlibEnableBreakpad "true"
 					MalterlibBreakpadRequestEmail "true"
 				}
-			}			
+			}
 
 			Contents 	"@(Contents)"\
 						"	<key>BreakpadRequestComments</key>\n"\
@@ -2986,8 +2998,8 @@ Property
 			{
 				!MalterlibExeMainNibFile ""
 			}
-			
-			
+
+
 			URLSchemeTemplateProtocol "					<string>@(Explodee)</string>\n"
 
 			URLSchemeTemplate 	"		<dict>\n"\
@@ -3013,7 +3025,7 @@ Property
 
 			Contents  	"@(Contents)"\
 						"	<key>CFBundleURLTypes</key>\n"\
-						"		<array>\n"\			
+						"		<array>\n"\
 						"@(Builtin.Function->ExplodeList('@(Target:MalterlibURLScheme)', ';', 'URLSchemeTemplateOuter'))\n"\
 						"		</array>\n"
 			{
@@ -3048,7 +3060,7 @@ Property
 		{
 			Type "None"
 		}
-		
+
 		"!Target:Target.MalterlibInfoPListFile" ""
 	}
 }
@@ -3086,14 +3098,14 @@ Property
 	%GenerateFile "Breakpad"
 	{
 		!!MalterlibEnableBreakpad true
-		
+
 		Property
 		{
 			!!Target.Type UIExecutable
 			Group "@(Platform) @(Architecture) @(FullConfiguration)"
-			
+
 			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
-			
+
 			Contents	"#include <Mib/Core/Core>\n\n"\
 						"namespace NMib\n"\
 						"{\n"\
@@ -3105,19 +3117,19 @@ Property
 						"\t\t}\n"\
 						"\t}\n"\
 						"}\n"
-			
+
 			UnicodeBOM "true"
-			
+
 		}
-		
+
 		Property
 		{
 			!!Target.Type Executable
 			!!Target.Type ConsoleExecutable
 			Group "@(Platform) @(Architecture) @(FullConfiguration)"
-			
+
 			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
-			
+
 			Contents	"#include <Mib/Core/Core>\n\n"\
 						"namespace NMib\n"\
 						"{\n"\
@@ -3129,7 +3141,7 @@ Property
 						"\t\t}\n"\
 						"\t}\n"\
 						"}\n"
-			
+
 			UnicodeBOM "true"
 		}
 	}
@@ -3156,7 +3168,7 @@ Target
 	%GenerateFile "Generate"
 	{
 		!MalterlibDisableMalterlib true
-		
+
 		Property
 		{
 			Group "@(Platform) @(Architecture) @(FullConfiguration)"
@@ -3171,7 +3183,7 @@ Target
 						"\"ProductVersionMajor=@(ProductVersionMajor)\\n\"\n"\
 						"\"ProductVersionMinor=@(ProductVersionMinor)\\n\"\n"\
 						"\"ProductVersionRevision=@(ProductVersionRevision)\\n\"\n"\
-						"\"ProductVersionExtra=@(ProductVersionExtra)\\n\";\n"							
+						"\"ProductVersionExtra=@(ProductVersionExtra)\\n\";\n"
 
 			UnicodeBOM "true"
 		}
@@ -3259,7 +3271,7 @@ Target
 						"[assembly: AssemblyVersion(\"@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0\")]\r\n"\
 						"@(MalterlibExtraAssemblyInfo)"\
 						"#endif\r\n"
-			
+
 			UnicodeBOM "true"
 		}
 	}
@@ -3303,7 +3315,7 @@ Target
 						"#pragma warning(disable:4947) // Request minimum deprecated in .NET 4.0\r\n"\
 						"[assembly:SecurityPermission(SecurityAction::RequestMinimum, UnmanagedCode = true)];\r\n"\
 						"@(MalterlibExtraAssemblyInfo)"
-			
+
 			UnicodeBOM "true"
 		}
 	}
@@ -3358,7 +3370,7 @@ Target
 				!!Target.Type "SharedDynamicLibrary"
 			}
 
-			
+
 			Backslash "\\"
 
 			PrivateBuildString "{\"MalterlibBranch\": \"@(MalterlibFullBranch)\", \"MalterlibGitBranch\": \"@(MalterlibGitBranch)\", \"MalterlibGitCommit\": \"@(MalterlibGitCommit)\"}"
@@ -3401,7 +3413,7 @@ Target
 						"	END\r\n"\
 						"END\r\n"
 
-			
+
 			UTF16 true
 			UnicodeBOM "true"
 		}
@@ -3438,16 +3450,16 @@ Property
 	{
 		!!PlatformIsDarwin true
 	}
-	
-	
+
+
 	MalterlibModuleDefinitionContents  	"@(MalterlibModuleDefinitionContents)"\
 										"@(Builtin.Function->ExplodeList('@(MalterlibDefinedSymbols)', ';', 'ModuleDefineTemplate'))"
-	
+
 	MalterlibStripOptions "-u -r @(MalterlibStripOptions)"
 	{
 		!!PlatformIsDarwin true
 	}
-										
+
 	MalterlibStripOptions "-s \"@(GeneratedDirectory)Module.def\" @(MalterlibStripOptions)"
 	{
 		&
@@ -3470,7 +3482,7 @@ Property
 			PlatformFamily Linux
 		}
 	}
-	
+
 }
 
 %Group "~Automatic/DLL Definition"
@@ -3508,7 +3520,7 @@ Target
 			"!MalterlibDefinedSymbols" ""
 			PlatformFamily Windows
 		}
-	}	
+	}
 }
 
 
@@ -3521,7 +3533,7 @@ Property
 	{
 		!"Expand0" "@(Expand0->Replace('^', ''))"
 	}
-  
+
 	MalterlibExeFSExtraFilesContentsTemplateExpand	"@(MalterlibExeFSSpecContents)"\
 													"Include\r\n"\
 													"{\r\n"\
@@ -3531,17 +3543,17 @@ Property
 													"}\r\n"
 													{
 													}
-	
+
 	MalterlibExeFSExtraFilesContentsTemplate	"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibExeFSExtraFilesContentsTemplateExpand'))"
 	{
 		!Explodee ""
 	}
-	
+
 	MalterlibExeFSExtraFilesContents	"@(Builtin.Function->ExplodeList('@(MalterlibExeFSExtraFiles)', ';', 'MalterlibExeFSExtraFilesContentsTemplate'))"
 	{
 		!MalterlibExeFSExtraFiles ""
 	}
-	
+
 	MalterlibExeFSSpecContents	"@(MalterlibExeFSSpecContents)"\
 								"Include\r\n"\
 								"{\r\n"\
@@ -3661,7 +3673,7 @@ Property
 Property
 {
 	MalterlibDumpSymsCommand "dump_syms"
-	
+
 	MalterlibPostBuildScriptShowEnv "false" // User(Build System)=true: Enable to show the environment variables of the build environment
 	{
 		!!MalterlibPostBuildScriptShowEnv ""
@@ -3683,25 +3695,25 @@ Property
 			!MalterlibIsOSXBundle true
 		}
 	}
-	
+
 	MalterlibBuildServerPutPathUploadTemplateExpand	"MTool BuildServerPut Recursive=0 \"Source=@(Expand0)\" \"DestinationDir=@(MalterlibBuildServerPutPath)@(Expand1)\"\r\n"\
 													"@(CheckErrors)\r\n"
-	
+
 	MalterlibBuildServerPutPathUploadTemplate	"@(Builtin.Function->ExpandList('@(Explodee)', '|', 'MalterlibBuildServerPutPathUploadTemplateExpand'))"
 	{
 		!Explodee ""
 	}
-	
+
 	MalterlibBuildServerPutPathUploadContents	"@(MalterlibBuildServerPutPathUploadContents)"\
 												"@(Builtin.Function->ExplodeList('@(MalterlibBuildServerPutSources)', ';', 'MalterlibBuildServerPutPathUploadTemplate'))"
-	
+
 
 	MalterlibTestPutSources "@(MalterlibFinalModuleDestination)"
 	MalterlibTestPutSources "@(Target:Target.SymbolFile);@(MalterlibTestPutSources)"
 	{
-		!!PlatformFamily Windows		
+		!!PlatformFamily Windows
 	}
-	
+
 	MalterlibTestPutSources "@(MalterlibOriginalModuleDestination).dSYM;@(MalterlibTestPutSources)"
 	{
 		&
@@ -3711,8 +3723,8 @@ Property
 			Target.DebugInformationFormat "dwarf-with-dsym"
 		}
 	}
-	
-	
+
+
 	MalterlibTestPutPathUploadTemplate	"MTool BuildServerPut Recursive=0 \"Source=@(Expand0)\" \"DestinationDir=@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
 											"@(CheckErrors)\r\n"
 	{
@@ -3732,7 +3744,7 @@ Property
 			MalterlibAutoBuild true
 		}
 	}
-	
+
 	MalterlibTestPutPathUploadTemplate	"echo mkdir \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
 											"mkdir \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
 											"echo MTool DiffCopy \"@(Expand0)\" \"@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(Expand1)\"\r\n"\
@@ -3741,7 +3753,7 @@ Property
 	{
 		&
 		{
-			PlatformFamily Windows		
+			PlatformFamily Windows
 			MalterlibAutoBuild true
 		}
 	}
@@ -3750,7 +3762,7 @@ Property
 	{
 		!Explodee ""
 	}
-	
+
 	MalterlibTestPutPathUploadContents	"@(MalterlibTestPutPathUploadContents)"\
 											"@(Builtin.Function->ExplodeList('@(MalterlibTestPutSources)', ';', 'MalterlibTestPutPathUploadInternalTemplate'))"
 
@@ -3765,12 +3777,12 @@ Property
 				MalterlibHelperTest true
 			}
 		}
-	}	
+	}
 
 	MalterlibTestPutSources "@(MalterlibFinalModuleDestination).MainTest;@(MalterlibTestPutSources)"
 	{
 		!!MalterlibMainTest true
-	}	
+	}
 
 
 	Win32SignTool "MTool BuildServerTool Tool=SignToolWin32"
@@ -3811,10 +3823,10 @@ Property
 	{
 		!Explodee ""
 	}
-	
+
 	PreBuildScriptDependencies	"@(PreBuildScriptDependencies)"\
 								"@(Builtin.Function->ExplodeList('@(Target.Dependencies)', ';', 'PreBuildScriptDependenciesTemplate'))"
-	
+
 	PreBuildOutputfile "@(Target.IntermediateDirectory)PreBuildOutput.c"
 }
 
@@ -3871,7 +3883,7 @@ Property
 			!MalterlibPostCopySources ""
 		}
 	}
-	
+
 	MalterlibPostBuildScriptInputsInternalTemplate	"@(Expand0);"
 	{
 		|
@@ -3904,7 +3916,7 @@ Property
 	{
 		!Target.Type Tool // Tool has no default executable
 	}
-	
+
 	MalterlibPostCopySources "@(MalterlibOriginalModuleDestination).dSYM|;@(MalterlibPostCopySources)"
 	{
 		&
@@ -3948,11 +3960,11 @@ Property
 		}
 	}
 
-	
+
 	MalterlibPostCopySources	"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptFileName)|../Python;"\
 								"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)_LLDBLib|../Python;"\
 								"@(MalterlibPostCopySources)"
-	
+
 	{
 		&
 		{
@@ -3987,10 +3999,10 @@ Property
 	}
 	MalterlibPostCopyContents2			"@(MalterlibPostCopyContents)"\
 										"@(Builtin.Function->ExplodeList('@(MalterlibPostCopySources)', ';', 'MalterlibPostCopyTemplate2'))"
-	
+
 	MalterlibLLDBDebuggerScript			"@('../../Debug/Source/Malterlib_LLDB.py'->MakeAbsolute())"
 	MalterlibLLDBDebuggerScriptLibDir	"@('../../Debug/Source/Malterlib_LLDB'->MakeAbsolute())"
-}	
+}
 
 Target
 {
@@ -4072,7 +4084,7 @@ Target
 			!DisableDiffCopy "true"
 		}
 	}
-	
+
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"MTool DiffCopy \"@(MalterlibOriginalModuleDestination).dSYM\" \"@(MalterlibFinalModuleDestinationPath)\" \"\" 0\r\n"\
 					"@(CheckErrors)\r\n"
@@ -4133,7 +4145,7 @@ Target
 			Target.DebugInformationFormat "dwarf-with-dsym"
 		}
 	}
-	
+
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"echo zip -qj \"@(MalterlibFinalModuleDestination)\" \"@(MalterlibFinalModuleDestination).zip\"\r\n"\
 					"if [ -f \"@(MalterlibFinalModuleDestination).zip\" ]\r\n"\
@@ -4178,7 +4190,7 @@ Target
 			}
 		}
 	}
-					
+
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"echo zip -qj \"@(MalterlibFinalModuleDestination).breakpad.zip\" \"@(MalterlibFinalModuleDestination).breakpad\"\r\n"\
 					"if [ -f \"@(MalterlibFinalModuleDestination).breakpad.zip\" ]\r\n"\
@@ -4312,7 +4324,7 @@ Target
 			!Configuration "Fast Compile"
 		}
 	}
-	
+
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"echo Sign:\r\n"\
 					"echo MTool BuildServerTool Tool=CodeSignOSX --force --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
@@ -4333,7 +4345,7 @@ Target
 					MalterlibDriverSigning "true"
 				}
 			}
-			
+
 		}
 	}
 
@@ -4357,7 +4369,7 @@ Target
 					MalterlibDriverSigning "true"
 				}
 			}
-			
+
 		}
 	}
 
@@ -4381,7 +4393,7 @@ Target
 					MalterlibDriverSigning "true"
 				}
 			}
-			
+
 		}
 	}
 
@@ -4405,7 +4417,7 @@ Target
 					MalterlibDriverSigning "true"
 				}
 			}
-			
+
 		}
 	}
 
@@ -4428,7 +4440,7 @@ Target
 					MalterlibDriverSigning "true"
 				}
 			}
-			
+
 		}
 	}
 
@@ -4445,8 +4457,8 @@ Target
 			PlatformFamily "Windows"
 		}
 	}
-	
-	
+
+
 
 
 	PostBuildScript "@(Target.PostBuildScript)"\
@@ -4486,8 +4498,8 @@ Target
 		}
 	}
 
-	
-	
+
+
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"@(MalterlibPostCopyContents)"
 	{
@@ -4535,7 +4547,7 @@ Target
 			!MalterlibBuildServerPutDisabled true
 		}
 	}
-	
+
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"@(MalterlibPostBuildScript_Last)"
 	{
@@ -4544,7 +4556,7 @@ Target
 			!MalterlibPostBuildScript_Last ""
 		}
 	}
-	
+
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"echo ***RESULT PROPERTY*** : ResultExecutable=@(MalterlibFinalModuleDestination->FullPath())\r\n"\
 					"\r\n"

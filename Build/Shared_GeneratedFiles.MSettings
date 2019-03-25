@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Property
@@ -24,7 +24,7 @@ Property
 										"@(ScriptExport) \"PATH=/Applications/Xcode.app/Contents/Developer/usr/bin:$PATH\"\r\n"
 	{
 		!!Generator "Xcode" // Use old xcode build for Xcode generator
-	}									
+	}
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"@(ScriptExport) \"MalterlibBaseDir=`cd \"${BASH_SOURCE%/*}/..\" && pwd`/\"\r\n"\
@@ -80,7 +80,7 @@ Property
 		!HostPlatformFamily Windows
 		!!ScriptWindowsBash true
 	}
-	
+
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"\r\n"\
 										"@(ScriptExport) \"MalterlibBranch=@(Property.MalterlibBranch)\"\r\n"\
@@ -157,10 +157,7 @@ Property
 	{
 	}
 
-	VisualstudioVSToolsDir "@(Builtin.Function->ReadWindowsRegistry('LocalMachine', 'SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\VisualStudio\\\\SxS\\\\VS7', '15.0'))Common7\\Tools"
-	{
-		!!Generator "VisualStudio2017"
-	}
+	VisualstudioVSToolsDir "@(Builtin.VisualStudioRoot->WindowsPath())\\Common7\\Tools"
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"IF EXIST \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\" call \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\"\r\n"\
@@ -204,7 +201,7 @@ Property
 		!!ScriptWindowsBash true
 	}
 
-	
+
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"\r\n"\
 										"export NumCPUs=`getconf _NPROCESSORS_ONLN`\r\n"
@@ -215,7 +212,7 @@ Property
 			HostPlatformFamily "OSX"
 		}
 	}
-	
+
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"\r\n"\
 										"export NumCPUs=`grep -c \"processor\" /proc/cpuinfo`\r\n"
@@ -498,7 +495,7 @@ Workspace
 
 Property
 {
-	
+
 	BuildServerHelpersPathContents	"@(ScriptExport) \"Output_@(ConfigName)=@(Target:Target.OutputDirectory->NativePath())\"\r\n"\
 									"@(ScriptExport) \"Product_@(ConfigName)=@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
 									"@(ScriptExport) \"Intermediate_@(ConfigName)=@(Target:Target.IntermediateDirectory->NativePath())\"\r\n"\
@@ -542,7 +539,7 @@ Target
 
 Property
 {
-	
+
 	MalterlibRunTestsParams "@(Target:Target.DebuggerCommandArguments)"
 	{
 		!!MalterlibRunTestsParams ""

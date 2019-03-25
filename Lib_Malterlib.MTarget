@@ -402,7 +402,7 @@ Property
 				{
 					!MalterlibOverrideMSVCVersion ""
 				}
-				MSVCRootPath "@(VisualStudioRoot)VC/Tools/MSVC"
+				MSVCRootPath "@(VisualStudioRoot)/VC/Tools/MSVC"
 				{
 					!!MSVCRootPath ""
 				}

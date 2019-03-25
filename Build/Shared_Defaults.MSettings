@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 // Malterlib
@@ -107,7 +107,7 @@ Property
 		}
 	}
 
-	MalterlibMaxSupportedWindowsVersion "10.0.17134.0" // User(Platform Version): Max supported Windows version.
+	MalterlibMaxSupportedWindowsVersion "10.0.17763.0" // User(Platform Version): Max supported Windows version.
 	{
 		!!MalterlibMaxSupportedWindowsVersion ""
 	}
@@ -125,17 +125,17 @@ Property
 	{
 		!!MalterlibMaxSupportedOSXVersion ""
 	}
-	
+
     MalterlibMaxSupportediOSVersion "8.1" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 	{
 		!!MalterlibMaxSupportediOSVersion ""
 	}
-	
+
     MalterlibAllSchemes "" // User(Build System)=true: Enable to generate schemes for all targets, even targets without debug commands
 	{
 		!!MalterlibAllSchemes ""
 	}
-	
+
 	MalterlibSharedDeployRoot "/Shared"
 	{
 		!!MalterlibSharedDeployRoot ""
@@ -167,8 +167,8 @@ Property
 	MalterlibSignCertOSX "-" // User(Signing)=SHA1OfCert: Set this to your Developer ID cert for driver development
 	{
 		!!MalterlibSignCertOSX ""
-	}    
-	
+	}
+
 	MalterlibBreakpadUploadServer "https://error-reports.malterlib.com"
 	{
 		!!MalterlibBreakpadUploadServer ""
@@ -327,7 +327,7 @@ Property
 	{
 		!!MalterlibUseStaticLibUnwind ""
 	}
-	
+
 	MalterlibUseStaticLibCxx true
 	{
 		&
@@ -370,7 +370,7 @@ Property
 			!DocumentationEnabled true
 		}
 	}
-	
+
 	MalterlibMemoryManager_Debug "" // User(Memory Manager)=true: Enable Enable debug memory manager that reports leaks and checks for overwrites. Toggling will recompile everything. (default true in debug configs, false otherwise)
 	{
 		!!MalterlibMemoryManager_Debug ""
@@ -380,17 +380,17 @@ Property
 	{
 		!!MalterlibMemoryManager_Debug_Features ""
 	}
-	
+
 	MalterlibMemoryManager_Debug_EnableFreeValidation false // User(Memory Manager)=true: Enable validation of freed blocks. Detects double frees and invalid frees. High impact on performance. (default false)
 	{
 		!!MalterlibMemoryManager_Debug_EnableFreeValidation ""
 	}
-	
+
 	MalterlibMemoryManager_Debug_EnableMemoryLeaks false // User(Memory Manager)=true: Enables listing of memory leaks. High impact on performance. (default false)
 	{
 		!!MalterlibMemoryManager_Debug_EnableMemoryLeaks ""
 	}
-	
+
 	MalterlibMemoryManager_Debug_EnableStackTrace false // User(Memory Manager)=true: Enable stack trace in debug heap (default false)
 	{
 		!!MalterlibMemoryManager_Debug_EnableStackTrace ""
@@ -400,7 +400,7 @@ Property
 	{
 		!!MalterlibMemoryManager_Debug_EnableFreedGuards ""
 	}
-	
+
 	MalterlibMemoryManager_Debug_EnableAllocatedFill true // User(Memory Manager)=false: Enable filling of allocated bytes in debug heap (0xCD pattern) (default true)
 	{
 		!!MalterlibMemoryManager_Debug_EnableAllocatedFill ""
@@ -433,7 +433,7 @@ Property
 
 
 	MalterlibBuildSpecifics ""
-	
+
 	MalterlibWindowsNtVersion "_WIN32_WINNT_VISTA"
 	{
 		!!PlatformFamily "Windows"
@@ -540,7 +540,7 @@ Property
 	}
     ProductContact "Malterlib <support@malterlib.com>"
 	{
-		!!ProductContact "" 
+		!!ProductContact ""
 	}
     ProductCopyright "Copyright © @(Builtin.Function->DateTime('{YYYY}')) @(ProductCompany). All rights reserved."
 	{

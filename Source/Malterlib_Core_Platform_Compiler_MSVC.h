@@ -1,14 +1,14 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
 
 #if defined(__EDG__)
 // This is the intellisense compiler
-#elif _MSC_VER == 1916
-#	if _MSC_FULL_VER < 191627027
+#elif _MSC_VER == 1920
+#	if _MSC_FULL_VER < 192027508
 #		pragma message("Current compiler version: " DMibStringize(_MSC_FULL_VER))
-#		error "Compiler version is not 191627027, please install the approprita service pack of Visual Studio 2017"
+#		error "Compiler version is not 192027508, please install the approprita service pack of Visual Studio 2019"
 #	endif
 #else
 #	pragma message("Compiler version " DMibStringize(_MSC_VER) "  not supported")
