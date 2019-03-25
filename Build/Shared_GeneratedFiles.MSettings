@@ -226,7 +226,12 @@ Property
 
 	MalterlibUseCustomXcodeToolchain true // User(Toolset)=false: Use custom toolchain for Xcode to use same compiler as Malterlib when indexing
 	{
-		!!MalterlibUseCustomXcodeToolchain ""
+		&
+		{
+			MalterlibUseCustomXcodeToolchain ""
+			!MalterlibBuildServerBuild true
+			!RunningCI true
+		}
 	}
 
 	XcodeBuildToolChain "-toolchain org.malterlib.1.0"
