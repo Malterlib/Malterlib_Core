@@ -1779,7 +1779,11 @@ Property
 		&
 		{
 			MalterlibEnableLinkTimeCodeGeneration ""
-			PlatformFamily Windows
+			|
+			{
+				PlatformFamily Windows
+				PlatformFamily OSX
+			}
 			|
 			{
 				Compile.Optimize "On"
@@ -1793,7 +1797,6 @@ Property
 		&
 		{
 			MalterlibEnableLinkTimeCodeGeneration ""
-			!PlatformFamily Windows
 			|
 			{
 				Compile.Optimize "On"
