@@ -111,11 +111,13 @@ function UpdateToolChain()
 	fi
 
 	ToolchainVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.version"
+	ToolchainLLVMVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.llvm.$ClangVersion.version"
 
-	if ! [ -d "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ] || ! [ -f "$ToolchainVersionFile" ] || (( `cat $ToolchainVersionFile` < $XCODE_VERSION_ACTUAL )); then
+	if ! [ -d "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ] || ! [ -f "$ToolchainVersionFile" ] || (( `cat $ToolchainVersionFile` < $XCODE_VERSION_ACTUAL )) || ! [ -f "$ToolchainLLVMVersionFile" ] || (( `cat $ToolchainLLVMVersionFile` < $VersionTime )); then
 		echo Updating tool chain
 		./Scripts/generatetoolchain.sh
 		echo $XCODE_VERSION_ACTUAL > "$ToolchainVersionFile"
+		echo $VersionTime > "$ToolchainLLVMVersionFile"
 	fi
 
 	if [[ "$TOOLCHAIN_DIR" != "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ]]; then

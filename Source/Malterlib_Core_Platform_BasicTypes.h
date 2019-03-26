@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -7,7 +7,7 @@
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define constant_int64(_Number) _Number##LL
 #	define constant_uint64(_Number) _Number##ULL
-#	define str_utf8(d_StringLiteral) u8##d_StringLiteral
+#	define str_utf8(d_StringLiteral) d_StringLiteral
 #	define str_utf16(d_StringLiteral) u##d_StringLiteral
 #	define str_utf32(d_StringLiteral) U##d_StringLiteral
 #elif defined(DCompiler_MSVC)
