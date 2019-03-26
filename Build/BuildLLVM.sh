@@ -67,42 +67,67 @@ unset CPLUSPLUS
 unset LD
 unset LDPLUSPLUS
 
-if [ ! -e "$OutputDirectory" ]; then
-	mkdir -p "$OutputDirectory"
-	git clone -b $ClangVersion https://github.com/Malterlib/llvm-malterlib.git "$OutputDirectory"
-fi
+function BuildClangVersion()
+{
+	Version=$1
+	Suffx=$2
+	BranchName="${Version}${Suffx}"
 
-pushd "$OutputDirectory" > /dev/null
-
-VersionTimeFile="$ScriptDir/llvm.$ClangVersion.versiontime"
-
-ExpectedVersionTime=""
-if [ -e "$VersionTimeFile" ]; then
-	ExpectedVersionTime=`cat "$VersionTimeFile"`
-fi
-
-VersionTime=`git for-each-ref --format='%(committerdate:unix)' refs/heads/$ClangVersion`
-
-if [[ $ExpectedVersionTime != "" ]] && [[ $VersionTime < $ExpectedVersionTime ]]; then
-	echo Fetching new llvm version
-	git fetch origin $ClangVersion
-	git reset --hard origin/$ClangVersion
-	git pull
-	VersionTime=`git for-each-ref --format='%(committerdate:unix)' refs/heads/$ClangVersion`
-fi
-
-if [[ "$ExpectedVersionTime" == "" ]] || [[ $VersionTime > $ExpectedVersionTime ]]; then
-	if [[ "$MalterlibMainMalterlibRepo" == "true" ]]; then
-		echo $VersionTime > "$VersionTimeFile"
+	if [ ! -e "$OutputDirectory$Suffx" ]; then
+		mkdir -p "$OutputDirectory$Suffx"
+		git clone -b $BranchName https://github.com/Malterlib/llvm-malterlib.git "$OutputDirectory$Suffx"
 	fi
-fi
 
-BuildTimeFile="$OutputDirectory/build/buildversiontime"
+	pushd "$OutputDirectory$Suffx" > /dev/null
 
-BuildTime=""
-if [ -e "$BuildTimeFile" ]; then
-	BuildTime=`cat "$BuildTimeFile"`
-fi
+	VersionTimeFile="$ScriptDir/llvm.$BranchName.versiontime"
+
+	ExpectedVersionTime=""
+	if [ -e "$VersionTimeFile" ]; then
+		ExpectedVersionTime=`cat "$VersionTimeFile"`
+	fi
+
+	VersionTime=`git for-each-ref --format='%(committerdate:unix)' refs/heads/$BranchName`
+
+	if [[ $ExpectedVersionTime != "" ]] && [[ $VersionTime < $ExpectedVersionTime ]]; then
+		echo Fetching new llvm version
+		git fetch origin $BranchName
+		git reset --hard origin/$BranchName
+		git pull
+		VersionTime=`git for-each-ref --format='%(committerdate:unix)' refs/heads/$BranchName`
+	fi
+
+	if [[ "$ExpectedVersionTime" == "" ]] || [[ $VersionTime > $ExpectedVersionTime ]]; then
+		if [[ "$MalterlibMainMalterlibRepo" == "true" ]]; then
+			echo $VersionTime > "$VersionTimeFile"
+		fi
+	fi
+
+	BuildTimeFile="$OutputDirectory$Suffx/build/buildversiontime"
+
+	BuildTime=""
+	if [ -e "$BuildTimeFile" ]; then
+		BuildTime=`cat "$BuildTimeFile"`
+	fi
+
+	if [[ "$BuildTime" == "$VersionTime" ]]; then
+		return 0
+	fi
+
+	export MalterlibRepositoryHardReset=true
+
+	./mib update_repos
+
+	export TOOLCHAIN_DIR="$DT_TOOLCHAIN_DIR"
+
+	pushd Scripts
+	./build.sh
+	popd
+
+	popd > /dev/null
+
+	echo $VersionTime > "$BuildTimeFile"
+}
 
 function UpdateToolChain()
 {
@@ -110,14 +135,28 @@ function UpdateToolChain()
 		return
 	fi
 
-	ToolchainVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.version"
-	ToolchainLLVMVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.llvm.$ClangVersion.version"
+	BuildClangVersion $ClangVersion -xcode
 
-	if ! [ -d "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ] || ! [ -f "$ToolchainVersionFile" ] || (( `cat $ToolchainVersionFile` < $XCODE_VERSION_ACTUAL )) || ! [ -f "$ToolchainLLVMVersionFile" ] || (( `cat $ToolchainLLVMVersionFile` < $VersionTime )); then
+	pushd "${OutputDirectory}-xcode" > /dev/null
+
+	ToolchainVersionTime=`cat build/buildversiontime`
+
+	ToolchainVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.version"
+	ToolchainLLVMVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.llvm.version"
+	ToolchainLLVMSpecificVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.llvm.$ClangVersion.version"
+
+	if ! [ -d "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ] \
+		|| ! [ -f "$ToolchainVersionFile" ] || (( `cat $ToolchainVersionFile` < $XCODE_VERSION_ACTUAL )) \
+		|| \
+		( \
+			( ! [ -f "$ToolchainLLVMVersionFile" ] || (( `cat $ToolchainLLVMVersionFile` < $ClangVersion ))) \
+			|| (( `cat $ToolchainLLVMVersionFile` == $ClangVersion )) && ( ! [ -f "$ToolchainLLVMSpecificVersionFile" ] || (( `cat $ToolchainLLVMSpecificVersionFile` < $ToolchainVersionTime ))) \
+		); then
 		echo Updating tool chain
 		./Scripts/generatetoolchain.sh
-		echo $XCODE_VERSION_ACTUAL > "$ToolchainVersionFile"
-		echo $VersionTime > "$ToolchainLLVMVersionFile"
+		echo "$XCODE_VERSION_ACTUAL" > "$ToolchainVersionFile"
+		echo "$ClangVersion" > "$ToolchainLLVMVersionFile"
+		echo "$ToolchainVersionTime" > "$ToolchainLLVMVersionFile"
 	fi
 
 	if [[ "$TOOLCHAIN_DIR" != "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ]]; then
@@ -125,23 +164,9 @@ function UpdateToolChain()
 		echo "error: Go into Xcode Preferences->Components->Toolchains and select the 'Malterlib llvm' toolchain"
 		exit 1
 	fi
+
+	popd > /dev/null
 }
 
-if [[ "$BuildTime" == "$VersionTime" ]]; then
-	UpdateToolChain
-	exit 0
-fi
-
-export MalterlibRepositoryHardReset=true
-
-./mib update_repos
-
-export TOOLCHAIN_DIR="$DT_TOOLCHAIN_DIR"
-
-pushd Scripts
-./build.sh
-popd
-
-echo $VersionTime > "$BuildTimeFile"
-
+BuildClangVersion $ClangVersion
 UpdateToolChain
