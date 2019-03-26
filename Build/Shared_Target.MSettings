@@ -823,7 +823,7 @@ Target
 		MalterlibDefaultXcode true
 	}
 
-	//IndexStoreEnable YES
+	IndexStoreEnable NO
 	Workaround_GCC_ENABLE_TRIGRAPHS ""
 	Workaround_GCC_ENABLE_PASCAL_STRINGS ""
 	Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS ""
