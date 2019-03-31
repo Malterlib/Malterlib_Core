@@ -547,13 +547,12 @@ namespace NMib
 
 		struct CIteratorEndSentinel
 		{
+			template <typename tf_CContainer>
+			friend inline_always bool operator == (tf_CContainer &_Container, CIteratorEndSentinel const &_EndSentinel)
+			{
+				return !_Container;
+			}
 		};
-		
-		template <typename tf_CContainer>
-		inline_always bool operator ==(tf_CContainer &_Container, CIteratorEndSentinel const &_EndSentinel)
-		{
-			return !_Container;
-		}
 		
 		template <typename tf_CContainer>
 		auto begin(tf_CContainer &&_Container) -> decltype(_Container.f_GetIterator())
