@@ -137,26 +137,28 @@ function UpdateToolChain()
 
 	BuildClangVersion $ClangVersion -xcode
 
+	IntegerClangVersion=${ClangVersion/./}
+
 	pushd "${OutputDirectory}-xcode" > /dev/null
 
 	ToolchainVersionTime=`cat build/buildversiontime`
 
-	ToolchainVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.version"
-	ToolchainLLVMVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.llvm.version"
-	ToolchainLLVMSpecificVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.llvm.$ClangVersion.version"
+	ToolchainVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.xcode_version"
+	ToolchainLLVMVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.llvm_version"
+	ToolchainLLVMSpecificVersionFile="$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain.llvm_${IntegerClangVersion}_versiontime"
 
 	if ! [ -d "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ] \
 		|| ! [ -f "$ToolchainVersionFile" ] || (( `cat $ToolchainVersionFile` < $XCODE_VERSION_ACTUAL )) \
 		|| \
 		( \
-			( ! [ -f "$ToolchainLLVMVersionFile" ] || (( `cat $ToolchainLLVMVersionFile` < $ClangVersion ))) \
-			|| (( `cat $ToolchainLLVMVersionFile` == $ClangVersion )) && ( ! [ -f "$ToolchainLLVMSpecificVersionFile" ] || (( `cat $ToolchainLLVMSpecificVersionFile` < $ToolchainVersionTime ))) \
+			( ! [ -f "$ToolchainLLVMVersionFile" ] || (( "`cat $ToolchainLLVMVersionFile`" < "$IntegerClangVersion" ))) \
+			|| (( "`cat $ToolchainLLVMVersionFile`" == "$IntegerClangVersion" )) && ( ! [ -f "$ToolchainLLVMSpecificVersionFile" ] || (( `cat $ToolchainLLVMSpecificVersionFile` < $ToolchainVersionTime ))) \
 		); then
 		echo Updating tool chain
 		./Scripts/generatetoolchain.sh
 		echo "$XCODE_VERSION_ACTUAL" > "$ToolchainVersionFile"
-		echo "$ClangVersion" > "$ToolchainLLVMVersionFile"
-		echo "$ToolchainVersionTime" > "$ToolchainLLVMVersionFile"
+		echo "$IntegerClangVersion" > "$ToolchainLLVMVersionFile"
+		echo "$ToolchainVersionTime" > "$ToolchainLLVMSpecificVersionFile"
 	fi
 
 	if [[ "$TOOLCHAIN_DIR" != "$HOME/Library/Developer/Toolchains/Malterlib.xctoolchain" ]]; then
