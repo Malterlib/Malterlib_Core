@@ -832,6 +832,12 @@ namespace NMib
 			return -fg_Forward<tf_CFirst>(_First);
 	}
 
+	template <typename tf_CFirst>
+	constexpr inline_small tf_CFirst fg_MinConstexpr(tf_CFirst _First)
+	{
+		return _First;
+	}
+
 	template <typename tf_CFirst, typename tf_CSecond>
 	constexpr inline_small tf_CFirst fg_MinConstexpr(tf_CFirst _First, tf_CSecond _Second)
 	{
@@ -842,6 +848,12 @@ namespace NMib
 	constexpr inline_small tf_CFirst fg_MinConstexpr(tf_CFirst _First, tf_CSecond _Second, tfp_CRest &&...p_Rest)
 	{
 		return fg_MinConstexpr((_First < _Second) ? _First : _Second, p_Rest...);
+	}
+
+	template <typename tf_CFirst>
+	constexpr inline_small tf_CFirst fg_MaxConstexpr(tf_CFirst _First)
+	{
+		return _First;
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond>
