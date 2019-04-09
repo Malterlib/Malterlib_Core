@@ -95,31 +95,61 @@ Target
 
 	Name "Com_@(Target.BaseName)"
 	{
-		!!Target:Target.Type "ConsoleExecutable"
+		&
+		{
+			Target:Target.Name ""
+			Target:Target.Type "ConsoleExecutable"
+		}
 	}
 	Name "Exe_@(Target.BaseName)"
 	{
-		!!Target:Target.Type "Executable"
-		!!Target:Target.Type "UIExecutable"
+		&
+		{
+			Target:Target.Name ""
+			|
+			{
+				Target:Target.Type "Executable"
+				Target:Target.Type "UIExecutable"
+			}
+		}
 	}
 
 	Name "Drv_@(Target.BaseName)"
 	{
-		!!Target:Target.Type "Driver"
+		&
+		{
+			Target:Target.Name ""
+			Target:Target.Type "Driver"
+		}
 	}
 	Name "Dll_@(Target.BaseName)"
 	{
-		!!Target:Target.Type "DynamicLibrary"
-		!!Target:Target.Type "XcodeBundle"
-		!!Target:Target.Type "SharedDynamicLibrary"
+		&
+		{
+			Target:Target.Name ""
+			|
+			{
+				Target:Target.Type "DynamicLibrary"
+				Target:Target.Type "XcodeBundle"
+				Target:Target.Type "SharedDynamicLibrary"
+			}
+		}
 	}
 	Name "Lib_@(Target.BaseName)"
 	{
-		!!Target:Target.Type "StaticLibrary"
+		&
+		{
+			Target:Target.Name ""
+			Target:Target.Type "StaticLibrary"
+		}
 	}
 	Name "Tool_@(Target.BaseName)"
 	{
-		!!Target:Target.Type "Tool"
+		&
+		{
+			Target:Target.Name ""
+			Target:Target.Type "Tool"
+		}
 	}
 
 	BaseFileName "@(Target.BaseName)"
