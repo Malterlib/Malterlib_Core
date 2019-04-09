@@ -255,7 +255,16 @@ namespace
 				int y = 0;
 			}
 
-			NMib::NStorage::TCStreamableVariant<EParam, void, EParam_void, int, EParam_int, NMib::NStr::CStr, EParam_CStr, NMib::NStr::CMStrDeprecated, EParam_CMStr> Variant0;
+			NMib::NStorage::TCStreamableVariant
+				<
+					EParam
+					, NMib::NStorage::TCMember<void, EParam_void>
+					, NMib::NStorage::TCMember<int, EParam_int>
+					, NMib::NStorage::TCMember<NMib::NStr::CStr, EParam_CStr>
+					, NMib::NStorage::TCMember<NMib::NStr::CMStrDeprecated, EParam_CMStr>
+				>
+				Variant0
+			;
 
 			Variant0 = 5;
 			Variant0 = "Test 55";
