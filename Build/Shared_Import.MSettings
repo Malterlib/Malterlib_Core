@@ -29,6 +29,11 @@ Import
 
 Import
 {
+	CMake_AlwaysFullRebuild true // User(Import)=false: Always do a full rebuild of cmake generation when the cache is outdated
+	{
+		!!CMake_AlwaysFullRebuild ""
+	}
+
 	CMake_VerboseHash false // User(Import)=true: Trace out the string used to determine the config hash for cmake imports
 	{
 		!!Import.CMake_VerboseHash ""
