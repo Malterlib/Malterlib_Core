@@ -1300,13 +1300,22 @@ Compile
 		}
 	}
 
-
-	ExtraCompilerFlags "/Yl@(Target.Name) /bigobj @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags "/bigobj @(Compile.ExtraCompilerFlags)"
 	{
 		&
 		{
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+
+	ExtraCompilerFlags "/Yl@(Target.Name) @(Compile.ExtraCompilerFlags)"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+			!Compile.PrecompilePrefixHeader false
 		}
 	}
 
