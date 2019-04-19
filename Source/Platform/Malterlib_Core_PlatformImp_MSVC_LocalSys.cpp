@@ -92,6 +92,8 @@ public:
 					if (!pChild)
 						return nullptr;
 
+					DMibFastCheck(pChild->m_pParent == this);
+
 					if (PathLeft.f_IsEmpty())
 						return pChild;
 					else
@@ -121,10 +123,12 @@ public:
 					{
 						auto pParent = m_pParent;
 						auto Temp = fg_Move(*this);
-						pParent->m_Children.f_Remove(m_FileName);
-						auto &Child = *pParent->m_Children(_FileName, fg_Move(Temp));
-						Child.m_FileName = _FileName;
-						Child.m_pParent = pParent;
+						pParent->m_Children.f_Remove(Temp.m_FileName);
+						auto &This = *pParent->m_Children(_FileName, fg_Move(Temp));
+						This.m_FileName = _FileName;
+						This.m_pParent = pParent;
+						for (auto &Child : This.m_Children)
+							Child.m_pParent = &This;
 					}
 				}
 
