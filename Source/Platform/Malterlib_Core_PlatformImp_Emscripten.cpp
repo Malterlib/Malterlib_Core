@@ -1721,6 +1721,15 @@ void NMib::NSys::fg_UserManagement_CreateUser
 	DMibError("Not implemented");
 }
 
+void NMib::NSys::fg_UserManagement_SetUserPassword
+	(
+		NMib::NStr::CStr const &_UserName
+		, NMib::NStr::CStrSecure const &_Password
+	)
+{
+	DMibError("Not implemented");
+}
+
 void NMib::NSys::fg_UserManagement_DeleteUser(NMib::NStr::CStr const &_UserName)
 {
 	DMibError("Not implemented");

@@ -287,6 +287,7 @@ namespace NMib
 		{
 			EUserManagementCreateUserFlag_None = 0
 			, EUserManagementCreateUserFlag_ShellAccess = DMibBit(0)
+			, EUserManagementCreateUserFlag_SupportUILogin = DMibBit(1)
 		};
 
 		NMib::NStr::CStr fg_UserManagement_GetProcessRealUser();
@@ -317,6 +318,12 @@ namespace NMib
 				, NMib::NStr::CStr const &_HomeDirectory
 				, NMib::NStr::CStr &_ReturnUID
 			 	, EUserManagementCreateUserFlag _Flags
+			)
+		;
+		void fg_UserManagement_SetUserPassword
+			(
+				NMib::NStr::CStr const &_UserName
+				, NMib::NStr::CStrSecure const &_Password
 			)
 		;
 		
