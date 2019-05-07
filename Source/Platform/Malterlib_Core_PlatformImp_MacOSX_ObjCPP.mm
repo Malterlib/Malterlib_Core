@@ -389,11 +389,16 @@ namespace NMib
 			// Do nothing.
 		}
 
-		static NSApplication *gs_pSerivceApplication = nullptr; 
+		static NSApplication *gs_pSerivceApplication = nullptr;
+		static bool gs_bPendingQuit = false;
 		void fg_CancelRunDaemonStatusApp()
 		{
 			if (!gs_pSerivceApplication)
+			{
+				gs_bPendingQuit = true;
 				return;
+			}
+
 			dispatch_async
 				(
 					dispatch_get_main_queue()
@@ -508,7 +513,8 @@ namespace NMib
 			[pStatusItem setHighlightMode:YES];
 			[pStatusItem setMenu:pMenu];
 			
-			[NSApp run];
+			if (!gs_bPendingQuit)
+				[NSApp run];
 			
 			objc_disposeClassPair(pMenuContextClass);
 		}
