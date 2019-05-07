@@ -52,5 +52,5 @@
 ../../External/boost/winapi f004b4753d6fee6f68c90cfc65b075fa0a33d092
 ../../External/compiler-rt c054b2528875e688a9d49b9ed0bd6b0ffb212ec2
 ../../External/libcxx 5f39c7a4c9fd4981ddc4a7463b8225dae6584044
-../../External/libcxxabi d7338a4113217b811b094f718da79fd92165a55d
+../../External/libcxxabi a89858127673a23cc5eb21978ca64f6a9ea57756
 ../../External/libunwind 699dc441c9251024ba6dbcabdb0e8b8ccd4ca481
