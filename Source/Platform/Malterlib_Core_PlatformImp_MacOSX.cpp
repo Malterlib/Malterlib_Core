@@ -1285,7 +1285,7 @@ void fg_ReportCurrentException()
 {
 	if (!__cxxabiv1::__cxa_current_primary_exception())
 		return;
-	
+
 	try
 	{
 		throw;
@@ -1293,11 +1293,10 @@ void fg_ReportCurrentException()
 	catch (NException::CExceptionBase const& _Exception)
 	{
 		CStrNonTracked ExceptionInfo;
-		ExceptionInfo += CStrNonTracked::CFormat("Uncaught exception of type: {}\n") << _Exception.f_GetClass();
-		ExceptionInfo += CStrNonTracked::CFormat("	File: {}\n") << _Exception.f_GetFile();
-		ExceptionInfo += CStrNonTracked::CFormat("	Line: {}\n") << _Exception.f_GetLine();
-		ExceptionInfo += CStrNonTracked::CFormat("	Error: {}\n") << _Exception.f_GetErrorStrNonTracked();
+		ExceptionInfo += CStrNonTracked::CFormat(DMibPFileLineFormat " Uncaught exception of type: {}\n") << _Exception.f_GetFile() << _Exception.f_GetLine() << _Exception.f_GetClass();
+		ExceptionInfo += CStrNonTracked::CFormat("\t{}\n") << _Exception.f_GetErrorStrNonTracked();
 		NMib::NSys::fg_System_ReportContractViolation(ExceptionInfo);
+		NSys::fg_ConsoleErrorOutput(ExceptionInfo);
 	}
 	catch (std::exception const& _Exception)
 	{
@@ -1305,25 +1304,36 @@ void fg_ReportCurrentException()
 		ExceptionInfo += "Uncaught exception of type inherited from: std::exception\n";
 		ExceptionInfo += CStrNonTracked::CFormat("	Error: {}\n") << _Exception.what();
 		NMib::NSys::fg_System_ReportContractViolation(ExceptionInfo);
+		NSys::fg_ConsoleErrorOutput(ExceptionInfo);
 	}
 	catch (...)
 	{
 		CStrNonTracked ExceptionInfo;
 		ExceptionInfo += "Uncaught exception of type: Unknown\n";
 		NMib::NSys::fg_System_ReportContractViolation(ExceptionInfo);
+		NSys::fg_ConsoleErrorOutput(ExceptionInfo);
 	}
 }
 
+static std::unexpected_handler g_DefaultUnexpectedHandler = nullptr;
 void fg_UnexpectedExceptionHandler()
 {
 	fg_ReportCurrentException();
-	abort();
+	if (g_DefaultUnexpectedHandler)
+		g_DefaultUnexpectedHandler();
+	else
+		abort();
 }
+
+static std::terminate_handler g_DefaultTerminateHandler = nullptr;
 
 void fg_TerminateHandler()
 {
 	fg_ReportCurrentException();
-	abort();
+	if (g_DefaultTerminateHandler)
+		g_DefaultTerminateHandler();
+	else
+		abort();
 }
 
 void NSys::fg_CreateSystemVersion()
@@ -1408,7 +1418,8 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 
 	pSystem->f_InitThreadLocal();
 	
-	std::set_terminate(&fg_TerminateHandler);
+	g_DefaultTerminateHandler = std::set_terminate(&fg_TerminateHandler);
+	g_DefaultUnexpectedHandler = std::set_unexpected(&fg_UnexpectedExceptionHandler);
 }
 
 extern "C" void fg_Malterlib_CreateSystem()
