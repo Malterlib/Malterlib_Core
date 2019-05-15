@@ -967,7 +967,7 @@ void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Bu
 		Len -= Written;
 		pOut += Written;
 	}
-	fg_MemClear(Temp);
+	fg_SecureMemClear(Temp);
 }
 
 void NSys::fg_ConsoleErrorOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str)

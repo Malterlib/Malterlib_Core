@@ -2101,43 +2101,6 @@ Target
 		}
 	}
 
-	SearchPath "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName);@(Target.SearchPath)"
-	{
-		&
-		{
-			MalterlibSSLLibrary OpenSSL
-			MalterlibLinkWithOpenSSL true
-			MalterlibUsesOpenSSL true
-			!AOCCDisableSSL true
-		}
-	}
-
-	LinkWithLibraries "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/libssl.a "\
-					  "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/libcrypto.a "\
-					  "@(Target.LinkWithLibraries)"
-	{
-		&
-		{
-			MalterlibLinkWithOpenSSL true
-			MalterlibSSLLibrary OpenSSL
-			PlatformType "Unix"
-			!AOCCDisableSSL true
-		}
-	}
-
-	LinkWithLibraries "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/ssleay32.lib;"\
-					  "@('../../../SDK'->MakeAbsolute())/OpenSSL/build/lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/libeay32.lib;"\
-					  "@(Target.LinkWithLibraries)"
-	{
-		&
-		{
-			MalterlibLinkWithOpenSSL true
-			MalterlibSSLLibrary OpenSSL
-			PlatformFamily Windows
-			!AOCCDisableSSL true
-		}
-	}
-
 	LinkWithLibraries "-framework Security @(Target.LinkWithLibraries)"
 	{
 		&

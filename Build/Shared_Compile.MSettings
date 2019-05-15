@@ -1244,16 +1244,6 @@ Compile
 
 	SearchPath "@(Target.IntermediateDirectory);@(GeneratedDirectory);@(Compile.SearchPath)"
 
-	SearchPath "@(Builtin.BasePathAbsolute)/SDK/OpenSSL/build/include/@(Platform)/@(Architecture);@(Compile.SearchPath)"
-	{
-		&
-		{
-			MalterlibSSLLibrary OpenSSL
-			!AOCCDisableSSL "true"
-		}
-	}
-
-
 	SearchPath "@(Builtin.BasePathAbsolute)/Projects;@(Compile.SearchPath)" // Project path is the most important
 	SearchPath "@(Builtin.BasePathAbsolute);@(Compile.SearchPath)"
 	SearchPath "@(MalterlibIncludeOutputDir);@(Compile.SearchPath)"
