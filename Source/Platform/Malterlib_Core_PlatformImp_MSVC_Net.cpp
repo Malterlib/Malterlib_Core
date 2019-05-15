@@ -568,7 +568,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 		if (Address.f_GetLen() > (CUnixAddress::mc_MaxLength - 1))
 		{
 			if (_bThrowOnError)
-				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters", (CUnixAddress::mc_MaxLength - 1)));
+				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters. Invalid path '{}'", (CUnixAddress::mc_MaxLength - 1), Address));
 			else
 				return nullptr;
 		}

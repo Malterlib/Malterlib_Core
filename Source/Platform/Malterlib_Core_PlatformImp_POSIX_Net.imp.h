@@ -231,7 +231,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 		if (Address.f_GetLen() > (sizeof(sockaddr_un::sun_path) - 1))
 		{
 			if (_bThrowOnError)
-				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters", (sizeof(sockaddr_un::sun_path) - 1)));
+				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters. Invalid path '{}'", (sizeof(sockaddr_un::sun_path) - 1), Address));
 			else
 				return nullptr;
 		}
