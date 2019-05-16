@@ -1821,7 +1821,6 @@ Property
 			|
 			{
 				PlatformFamily Windows
-				PlatformFamily OSX
 			}
 			|
 			{
