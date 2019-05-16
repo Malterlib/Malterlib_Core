@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 
@@ -274,7 +274,7 @@ Compile
 			Compile.Type ""
 			this.Identity "~*.settings"
 		}
-	}	
+	}
 }
 
 // Compile type deduction for C#
@@ -300,7 +300,7 @@ Compile
 		Documentation Doxygen
 		Compile.Type "C++"
 	}
-	
+
 	PreprocessorDefines "__cplusplus=201402L;@(Compile.PreprocessorDefines)"
 }
 
@@ -421,7 +421,7 @@ Compile
 		}
 	}
 
-	
+
 	Type "HTML"
 	{
 		&
@@ -436,7 +436,7 @@ Compile
 			}
 		}
 	}
-	
+
 	Type "CSS"
 	{
 		&
@@ -450,7 +450,7 @@ Compile
 			}
 		}
 	}
-	
+
 	Type "PNG"
 	{
 		&
@@ -463,7 +463,7 @@ Compile
 			}
 		}
 	}
-	
+
 	Type "SVG"
 	{
 		&
@@ -476,7 +476,7 @@ Compile
 			}
 		}
 	}
-	
+
 	Type "XML"
 	{
 		&
@@ -489,7 +489,7 @@ Compile
 			}
 		}
 	}
-		
+
 	Type "MacIcon"
 	{
 		&
@@ -528,7 +528,7 @@ Compile
 			}
 		}
 	}
-	
+
 	Type "JSON"
 	{
 		&
@@ -541,7 +541,7 @@ Compile
 			}
 		}
 	}
-	
+
 	// Malterlib build system types
 
 	Type "MalterlibBuildSystem"
@@ -561,7 +561,7 @@ Compile
 				this.Identity "~*.MGeneratorSettings*"
 				this.Identity "~*.MBuildOptions*"
 				this.Identity "~*.MConfig*"
-				
+
 				this.Identity "~*.MLBuildOptions"
 				this.Identity "~*.ir"
 				this.Identity "~*.irg"
@@ -631,7 +631,7 @@ Compile
 	Warnings "Pedantic"
 
 	PreprocessorDefines "DMibNewBuildSystem;@(Compile.PreprocessorDefines);@(Builtin.Inherit)"
-		
+
 	PreprocessorDefines "DEBUG;@(Compile.PreprocessorDefines)"
 	{
 		!!DebugCode "true"
@@ -660,7 +660,7 @@ Compile
 	PreprocessorDefines "DMibConfig_Contracts_Enable;@(Compile.PreprocessorDefines)"
 	{
 		!!Malterlib_Contracts_Enable "true"
-	}	
+	}
 	PreprocessorDefines "DMibConfig_Memory_Shims_Enable;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemory_Shims_Enable "true"
@@ -685,7 +685,7 @@ Property
 	{
 		!!Architecture "le32"
 	}
-	
+
 	MalterlibNativeClangArchitecture "i386"
 	{
 		!!Architecture "x86"
@@ -782,7 +782,7 @@ Property
 }
 
 
-Property 
+Property
 {
 	MalterlibFullSymbolsOnLinux "false" // User(Toolset)=true: Enable full symbol generation on Linux
 	{
@@ -851,7 +851,7 @@ Property
 					Compile.Type "StaticLibrary"
 					Compile.Type "DynamicLibrary"
 					Compile.Type "XcodeBundle"
-					
+
 	/*
 					// Text targets all get tab settings
 					Compile.Type "Assembler"
@@ -900,7 +900,7 @@ Compile
 			Compile.Type "C"
 		}
 	}
-	
+
 	CLanguage "GNU11"
 	{
 		&
@@ -992,12 +992,12 @@ Compile
 			}
 		}
 	}
-	
+
 	EmscriptenWarnings "On"
 	{
 		!!PlatformFamily Emscripten
 	}
-	
+
 	SysRoot "@(MalterlibSysRoot)"
 	{
 		!MalterlibSysRoot ""
@@ -1016,13 +1016,13 @@ Compile
 	{
 		!!Documentation Doxygen
 	}
-	
+
 	FunctionSections true
 	{
 		!!PlatformFamily OSX
 		!!PlatformFamily Linux
 	}
-	
+
 	DataSections true
 	{
 		!!PlatformFamily OSX
@@ -1049,7 +1049,7 @@ Compile
 	{
 		!!RealConfiguration "Debug Inlined"
 	}
-	
+
 	RuntimeLibrary "Static"
 	{
 		&
@@ -1101,7 +1101,7 @@ Compile
 			PlatformType "Windows"
 		}
 	}
-	
+
 	AppleKernelOptionsCxx "true"
 	{
 		&
@@ -1115,7 +1115,7 @@ Compile
 			}
 		}
 	}
-	
+
 	AppleKernelOptions "true"
 	{
 		&
@@ -1184,9 +1184,9 @@ Compile
 			Compile.PrefixHeader ""
 		}
 	}
-	
+
 	SearchPath "@(Compile.SearchPath);@(Builtin.Inherit)"
-	
+
 	Verbose false // User(Toolset)=true: Enables output of cc1 command line
 	{
 		&
@@ -1195,7 +1195,7 @@ Compile
 			Compile.Verbose ""
 		}
 	}
-	
+
 	MiniOSVersion "@(Platform->Replace('iOS',''))"
 	{
 		!!PlatformFamily iOS
@@ -1269,7 +1269,7 @@ Compile
 			Target:Target.Type "UIExecutable"
 		}
 	}
-	
+
 
 	MaxHeap "500"
 	{
@@ -1378,7 +1378,7 @@ Compile
 			!Target.PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
 		}
 	}
-	
+
 	DefaultVisibility "AllHidden"
 	{
 		!!PlatformType "Unix"
@@ -1390,7 +1390,7 @@ Compile
 	}
 
 	PreprocessorDefines "@(Compile.PreprocessorDefines);@(Builtin.Inherit)"
-	
+
 	PreprocessorDefines "DDocumentation_@(Documentation);DDocumentation=@(Documentation);@(Compile.PreprocessorDefines)"
 	{
 		!Documentation ""
@@ -1400,13 +1400,13 @@ Compile
 	{
 		!!MalterlibDefaultToolset true
 	}
-	
+
 	ProvidedNewAligment "1"
 	{
 		!!PlatformFamily OSX
 		!!PlatformFamily Linux
 	}
-	
+
 	PreprocessorDefines "_LIBCPP_HIDE_FROM_ABI_PER_TU_BY_DEFAULT;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1420,7 +1420,7 @@ Compile
 			}
 		}
 	}
-	
+
 	PreprocessorDefines "DMibPNoShortCuts;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibNoShortcuts true
@@ -1439,16 +1439,16 @@ Compile
 			!Configuration Optimized
 		}
 	}
-	
+
 	PreprocessorDefines "_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES;@(Compile.PreprocessorDefines)"
-	
+
 	PreprocessorDefines "BOOST_ALL_NO_LIB;BOOST_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
 
 	PreprocessorDefines "_HAS_AUTO_PTR_ETC=1;NOMINMAX;@(Compile.PreprocessorDefines)"
 	{
 		!!PlatformFamily Windows
 	}
-	
+
 	PreprocessorDefines "DMibAlwaysUseLongWindowsPaths;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1457,7 +1457,7 @@ Compile
 			MalterlibAlwaysUseLongWindowsPaths true
 		}
 	}
-	
+
 	PreprocessorDefines "DMibNoOSXCrossModuleExceptions;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1466,7 +1466,7 @@ Compile
 			MalterlibNoOSXCrossModuleExceptions true
 		}
 	}
-	
+
 	PreprocessorDefines "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1484,7 +1484,7 @@ Compile
 	{
 		!!PlatformFamily "Linux"
 	}
-	
+
 	PreprocessorDefines "_POSIX_C_SOURCE=199506L;_XOPEN_SOURCE=500;_SVID_SOURCE;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1497,7 +1497,7 @@ Compile
 			}
 		}
 	}
-	
+
 	PreprocessorDefines "DMalterlibLinuxProgramIdentifier=@(MalterlibLinuxProgramIdentifier);@(Compile.PreprocessorDefines)"
 	{
 		!MalterlibLinuxProgramIdentifier ""
@@ -1513,18 +1513,18 @@ Compile
 		!!MalterlibMaxSupportedOSXVersion "10.5"
 		!!MalterlibMaxSupportedOSXVersion "10.6"
 	}
-	
+
 	PreprocessorDefines "_WIN32_WINNT=@(MalterlibWindowsNtVersion);NTDDI_VERSION=@(MalterlibWindowsVersion);@(Compile.PreprocessorDefines)"
 	{
 		!!PlatformFamily "Windows"
 	}
-	
+
 	PreprocessorDefines "DMibNewBuildSystem;@(Compile.PreprocessorDefines)"
 
 	PreprocessorDefines "DDefaultToolArchitecture_@(Target:Target.DefaultToolArchitecture->Replace(' ', ''));DDefaultToolArchitecture=@(Target:Target.DefaultToolArchitecture->Replace(' ', ''));@(Compile.PreprocessorDefines)"
 	{
 		!Target:Target.DefaultToolArchitecture ""
-	}	
+	}
 
 	PreprocessorDefines "DMibSafeThreadLocals;@(Compile.PreprocessorDefines)"
 	{
@@ -1546,7 +1546,7 @@ Compile
 			MalterlibThread_LinuxAssumeGlibc true
 		}
 	}
-	
+
 	PreprocessorDefines "DMibUseGoldLinker;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1646,7 +1646,7 @@ Compile
 			MalterlibUseStaticLibCxx true
 		}
 	}
-	
+
 	PreprocessorDefines "LIBCXX_BUILDING_LIBCXXABI;_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1660,7 +1660,7 @@ Compile
 	{
 		!DoesNotUseMalterlib true
 	}
-	
+
 	PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1754,11 +1754,11 @@ Compile
 	PreprocessorDefines "DMibConfig_Contracts_Enable=1;@(Compile.PreprocessorDefines)"
 	{
 		!!Malterlib_Contracts_Enable "true"
-	}	
+	}
 	PreprocessorDefines "DMibConfig_Contracts_Enable=0;@(Compile.PreprocessorDefines)"
 	{
 		!Malterlib_Contracts_Enable "true"
-	}	
+	}
 
 	PreprocessorDefines "DMibConfig_Memory_Shims_Enable=1;@(Compile.PreprocessorDefines)"
 	{
@@ -1819,7 +1819,7 @@ Compile
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug=0;@(Compile.PreprocessorDefines)"
 	{
 		!MalterlibMemoryManager_Debug "true"
-	}	
+	}
 
 	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCategories=1;@(Compile.PreprocessorDefines)"
 	{
@@ -1883,24 +1883,7 @@ Compile
 	{
 		!!Compile.Symbols ""
 	}
-	
-	ToolPrefix "/opt/local/x86_64-elf/bin;@(Compile.ToolPrefix)"
-	{
-		&
-		{
-			PlatformFamily Linux
-			Architecture x64
-		}
-	}
-	ToolPrefix "/opt/local/i386-elf/bin;@(Compile.ToolPrefix)"
-	{
-		&
-		{
-			PlatformFamily Linux
-			Architecture x86
-		}
-	}
-	
+
 	ExtraCompilerFlags "/Zo @(Compile.ExtraCompilerFlags)"
 	{
 		&
@@ -1960,11 +1943,11 @@ Compile
 			Configuration "Fast Compile"
 		}
 	}
-	
+
 	SplitSymbols true
 	{
 		&
-		{ 
+		{
 			PlatformFamily Linux
 			|
 			{
@@ -2010,12 +1993,12 @@ Compile
 			!Target.VisualStudioPlatform "Clang"
 		}
 	}
-	
+
 	PositionIndependantCode "true"
 	{
 		!!PlatformFamily Linux
 	}
-	
+
 	DynamicTypeInfo false
 	{
 		!!Compile.DynamicTypeInfo ""
@@ -2203,7 +2186,7 @@ Compile
 			}
 		}
 	}
-	
+
 	PreprocessorDefines "DMibObjC_Arc;@(Compile.PreprocessorDefines)"
 	{
 		!!Compile.ObjectiveCARC "true"
@@ -2279,7 +2262,7 @@ Compile
 		!!PlatformFamily Linux
 		!!PlatformFamily OSX
 	}
-	
+
 	CppFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFSCPP.cpp"
 	//DependencyFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.d"
 	MalterlibDependencyFileName "@(Target:Target.IntermediateDirectory)MalterlibDependencies/@(Builtin.SourceFileName)_VirtualFS.MalterlibDependency"
@@ -2290,7 +2273,7 @@ Compile
 			!MalterlibDisableDependencyFiles true
 		}
 	}
-	
+
 	SymbolName "_gc_VFS_Bytes"
 	{
 		&
@@ -2387,7 +2370,7 @@ Compile
 	}
 }
 
-Compile 
+Compile
 {
 	!!Compile.Type Custom
 
@@ -2406,7 +2389,7 @@ Compile
 			this.Type File
 		}
 	}
-	
+
 	CustomCombined_CommandLine 	"@(Compile.Custom_WorkingDirectory->GetDrive())\r\n"\
 								"cd \"@(Compile.Custom_WorkingDirectory)\"\r\n"\
 								"@(Compile.Custom_CommandLine->Replace('\">\"', '>'))\r\n"

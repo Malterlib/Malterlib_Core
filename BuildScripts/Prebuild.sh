@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright © 2015 Hansoft AB 
+# Copyright © 2015 Hansoft AB
 # Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 # Usage: PrebuildVisualStudio.sh Buildsystem Workspace [Workspaces]
@@ -10,7 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 SysName=$(uname -s)
 if [[ $SysName ==  Darwin* ]] ; then
-	export PATH="/usr/local/bin:/opt/local/bin:$PATH"
+	export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
 fi
 
 pushd "$DIR/../../.." > /dev/null

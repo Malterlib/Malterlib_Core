@@ -703,10 +703,6 @@ Property
 	}
 
 	MalterlibToolsPrefix ""
-	MalterlibToolsPrefix "/opt/local/@(MalterlibNativeClangArchitecture)-elf/bin/"
-	{
-		!!PlatformFamily Linux
-	}
 	MalterlibToolsPrefix "/Development/Malterlib/llvm/unstable-emscripten/emscripten/"
 	{
 		!!PlatformFamily Emscripten
@@ -790,7 +786,7 @@ Target
 	EmscriptenEmscriptenRoot "/Development/Malterlib/llvm/unstable-emscripten/emscripten"
 	EmscriptenLLVMRoot "/Development/Malterlib/llvm/unstable-emscripten/build/make/bin"
 	EmscriptenPython "/usr/bin/python"
-	EmscriptenNode "/opt/local/bin/node"
+	EmscriptenNode "/usr/local/bin/node"
 }
 
 Target
@@ -2533,7 +2529,7 @@ Target
 
 	ToolPath "@(Target.ToolPath);@(Builtin.Inherit)"
 
-	ToolPath "/opt/local/bin;/usr/local/go/bin;/usr/local/bin;@(Target.ToolPath)"
+	ToolPath "/usr/local/go/bin;/usr/local/bin;@(Target.ToolPath)"
 	{
 		!!GeneratorFamily Xcode
 	}

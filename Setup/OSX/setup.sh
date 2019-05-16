@@ -119,80 +119,25 @@ SignXcode()
 	fi
 }
 
-UpdatePorts()
+UpdateDependencies()
 {
-	echo Updating ports
-
-	if ! which port ; then
-		Cannot find MacPorts, please install from https://www.macports.org/install.php
-	fi
-
-	sudo "$MToolExecutable" AddPortSource "Source=file://$ScriptDir/MacPorts/"
-
-	sudo port -N selfupdate
-
-	# To build clang
-	sudo port -N install cmake
-
-	if [ "`sudo port outdated`" != "No installed ports are outdated." ]; then
-		sudo port -N upgrade outdated
-	fi
-
-	# To run linux tools
-	sudo port -N -s install i386-elf-binutils x86_64-elf-binutils
-
-	# For meteor manager
-	sudo port -N uninstall installed and npm installed and npm-devel installed and nodejs installed and nodejs-devel installed and nodejs6 installed and npm3 installed and npm5 installed and nodejs8 || true
-
-	sudo port -N install nodejs10
-
-	# Bring in dependencies for our custom build of doxygen
-	sudo port -N install cmake perl5 python27 flex bison libpng libiconv graphviz
-
-	sudo port -N install ninja
-
-	if ! which go ; then
-		sudo port -N install go
-	fi
+	echo Updating dependencies
 
 	if ! which brew > /dev/null ; then
+		echo Installing brew
 		/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+	else
+		brew update
+		brew upgrade
 	fi
 
-	brew update
-	brew upgrade
-	brew install ruby
+	brew install cmake go graphviz ruby ninja
+
 	gem install -n /usr/local/bin rubygems-update
 	gem install -n /usr/local/bin xcpretty
+
 	update_rubygems --silent
 	gem update -n /usr/local/bin --system
-}
-
-UpdateXCTool()
-{
-	if [ ! -e "$DependenciesDirectory/xctool_versiontag" ] ; then
-		if [ -e "$DependenciesDirectory/xctool" ] ; then
-			echo Wrong version, removing old xctool
-			rm -rf "$DependenciesDirectory/xctool"
-		fi
-	fi
-
-	if [ ! -e "$DependenciesDirectory/xctool" ] ; then
-		mkdir -p "$DependenciesDirectory"
-		pushd "$DependenciesDirectory" > /dev/null
-		git clone https://github.com/facebook/xctool.git
-		popd > /dev/null
-	else
-		pushd "$DependenciesDirectory/XCTool" > /dev/null
-		git pull
-		popd > /dev/null
-	fi 
-
-	echo 1 > "$DependenciesDirectory/xctool_versiontag"
-
-	pushd "$DependenciesDirectory/xctool" > /dev/null
-	./xctool.sh -version
-	popd > /dev/null
 }
 
 UpdateXcodePlugins()
@@ -228,7 +173,7 @@ UpdateXcodePlugins()
 
 	pushd "$RepositoryDirectory/MalterlibXcodePatches/Plugins" > /dev/null
 
-	"$2/Contents/Developer/usr/bin/xcodebuild" -quiet -workspace "XcodePlugins.xcworkspace" -scheme "Release All" clean 
+	"$2/Contents/Developer/usr/bin/xcodebuild" -quiet -workspace "XcodePlugins.xcworkspace" -scheme "Release All" clean
 
 	if $Setting_Plugin_Malterlib; then
 		echo Installing Malterlib plugin
@@ -296,13 +241,6 @@ function SignAllXcode()
 	done
 }
 
-function InstallMeteor()
-{
-	if ! which meteor ; then
-		curl https://install.meteor.com/ | sh
-	fi
-}
-
 AskSettings=true
 
 if [ "$1" == "--all" ] ; then
@@ -348,23 +286,23 @@ function AskForSetting()
 	if [[ "$Answer" == "y" || "$Answer" == "Y" ]]; then
 		echo true
 		return
-	fi 
+	fi
 	echo false
 	return
 }
 
 function Divider()
 {
-	echo 
+	echo
 	echo -------------------------------------------------------------------------------------------------------------------------------------
 }
 
 function DoInstall()
 {
 	if $AskSettings; then
-		
+
 		Divider
-		echo 
+		echo
 		echo To install default plugins and highlighting specify --default to setup
 		echo To install all plugins and highlighting specify --all to setup
 		echo To install no plugins or highlighting specify --none to setup
@@ -377,27 +315,25 @@ function DoInstall()
 		Setting_Plugin_NavigationFixes=$(AskForSetting $Setting_Plugin_NavigationFixes $'The \e[38;5;39mNavigationFixes\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_NavigationFixes/README.md):\n   * Navigate the Xcode Navigators with ⌘-N / ⌘-Shift-N\n   * Visual Studio like keyboard navigation for whole word movements\n   * Disable unhelpful automatic format when pasting\n   * Navigate to file:line from execution output by double-clicking' $'Install \e[38;5;39mNavigationFixes\e[39m Xcode plugin?')
 
 		Divider
-		
+
 		Setting_SyntaxHighlight=$(AskForSetting $Setting_SyntaxHighlight $'\e[38;5;39mMalterlib Syntax Highlighting\e[39m (http://docs.malterlib.org/p__malterlib__core__code_standard__coloring.html):\n   * Use syntax highlighting taking advantage of the Malterlib code naming standard' $'Install \e[38;5;39mMalterlb Syntax Highlighting\e[39m for Xcode?')
 
 		Divider
-		
+
 		Setting_Plugin_CustomizeAnnotations=$(AskForSetting $Setting_Plugin_CustomizeAnnotations $'The \e[38;5;39mCustomizeAnnotations\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_CustomizeAnnotations/README.md):\n   * Color errors/warnings in editor to make them easier to read with a dark color scheme' $'Install \e[38;5;39mCustomizeAnnotations\e[39m Xcode plugin?')
 
 		Divider
-		
+
 		Setting_Plugin_HideDistractions=$(AskForSetting $Setting_Plugin_HideDistractions $'The \e[38;5;39mHideDistractions\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_HideDistractions/README.md):\n   * Toggle editor only mode with ⌘-Shift-G (default, can be remapped)' $'Install \e[38;5;39mHideDistractions\e[39m Xcode plugin?')
 
 		Divider
-		
+
 		Setting_Plugin_P4Checkout=$(AskForSetting $Setting_Plugin_P4Checkout $'The \e[38;5;39mP4Checkout\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_P4Checkout/README.md):\n   * Automatically check out files in Perfoce when editing them' $'Install \e[38;5;39mP4Checkout\e[39m Xcode plugin?')
 
 		Divider
 
 	fi
-	UpdatePorts
-	#UpdateXCTool
-	InstallMeteor
+	UpdateDependencies
 	if $Setting_Plugin_Malterlib || $Setting_Plugin_NavigationFixes || $Setting_Plugin_CustomizeAnnotations || $Setting_Plugin_HideDistractions || $Setting_Plugin_P4Checkout ; then
 		SignAllXcode
 	fi
@@ -416,11 +352,11 @@ function CheckSetup()
 		fi
 	fi
 
-	echo 
+	echo
 	echo To install/update dependencies needed to build in Xcode, you need to run:
-	echo 
-	echo ./mib setup 
-	echo 
+	echo
+	echo ./mib setup
+	echo
 	exit 1
 }
 

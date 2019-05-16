@@ -1,8 +1,8 @@
 #!/bin/bash
-# Copyright © 2015 Hansoft AB 
+# Copyright © 2015 Hansoft AB
 # Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-# Usage: BuildXcodeTarget.sh Workspace Target Platform Architecture Configuration 
+# Usage: BuildXcodeTarget.sh Workspace Target Platform Architecture Configuration
 
 set -e
 
@@ -12,7 +12,7 @@ source "$DIR/DetectSystem.sh"
 
 source ./BuildSystem/SharedBuildSettings.sh
 
-export "PATH=/opt/local/sbin:/usr/local/bin:/opt/local/bin:$PATH"
+export "PATH=/usr/local/sbin:/usr/local/bin:$PATH"
 
 $XCodeBuildTool -workspace "BuildSystem/Default/${1}.xcworkspace" -scheme "$2 $3 $4 $5"
 CheckErrors
