@@ -3460,7 +3460,7 @@ Property
 	MalterlibModuleDefinitionContents  	"@(MalterlibModuleDefinitionContents)"\
 										"@(Builtin.Function->ExplodeList('@(MalterlibDefinedSymbols)', ';', 'ModuleDefineTemplate'))"
 
-	MalterlibStripProgram "llvm-strip"
+	MalterlibStripProgram "@(MalterlibToolsPrefix)llvm-strip"
 
 	MalterlibStripProgram "strip"
 	{
@@ -4177,8 +4177,8 @@ Target
 	}
 
 	PostBuildScript "@(Target.PostBuildScript)"\
-					"echo @(MalterlibToolsPrefix)@(MalterlibStripProgram) @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
-					"@(MalterlibToolsPrefix)@(MalterlibStripProgram) @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
+					"echo @(MalterlibStripProgram) @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
+					"@(MalterlibStripProgram) @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
 					"@(CheckErrors)\r\n"
 	{
 		&
