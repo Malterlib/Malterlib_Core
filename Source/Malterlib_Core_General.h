@@ -139,6 +139,14 @@ namespace NMib
 	{
     	return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
 	}
+
+	template <typename tf_CDestination, typename t_CSetTo>
+	auto fg_Exchange(tf_CDestination &_Destination, t_CSetTo &&_SetTo)
+	{
+		auto Temp = fg_Move(_Destination);
+		_Destination = fg_Forward<t_CSetTo>(_SetTo);
+		return Temp;
+	}
 	
 	template <typename tf_CType>
 	tf_CType fg_TempCopy(tf_CType const &_Value)
