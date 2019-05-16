@@ -707,6 +707,15 @@ Property
 	{
 		!!PlatformFamily Emscripten
 	}
+
+	MalterlibToolsPrefix "@(PlatformToolsetCompilerBasePath)/bin/"
+	{
+		&
+		{
+			!PlatformToolsetCompilerBasePath ""
+			GeneratorFamily Xcode
+		}
+	}
 }
 
 Property
@@ -1392,7 +1401,11 @@ Target
 
 	LDFlags "-B@(MalterlibToolsPrefix) @(Target.LDFlags)"
 	{
-		!MalterlibToolsPrefix ""
+		&
+		{
+			!MalterlibToolsPrefix ""
+			!MalterlibToolsPrefix "@(PlatformToolsetCompilerBasePath)/bin/"
+		}
 	}
 
 	LDFlags "-shared @(Target.LDFlags)"
@@ -3461,7 +3474,7 @@ Property
 		}
 	}
 
-	MalterlibStripOptions "--strip-unneeded @(MalterlibStripOptions)"
+	MalterlibStripOptions "--strip-all-gnu @(MalterlibStripOptions)"
 	{
 		!!PlatformFamily Linux
 	}
@@ -4157,8 +4170,8 @@ Target
 	}
 
 	PostBuildScript "@(Target.PostBuildScript)"\
-					"echo @(MalterlibToolsPrefix)strip @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
-					"@(MalterlibToolsPrefix)strip @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
+					"echo @(MalterlibToolsPrefix)llvm-strip @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
+					"@(MalterlibToolsPrefix)llvm-strip @(MalterlibStripOptions) \"@(MalterlibFinalModuleDestinationExecutable)\"\r\n"\
 					"@(CheckErrors)\r\n"
 	{
 		&
