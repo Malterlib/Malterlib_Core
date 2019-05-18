@@ -1,8 +1,8 @@
-../../Binaries/Malterlib/Linux/x64 7a07d3e44d811235b35c850bbc33a8ba7c0badc1
-../../Binaries/Malterlib/Linux/x86 ab47272edb9e9eb9185d05457f6989c48bf458fe
-../../Binaries/Malterlib/OSX/x64 a72c026a28893b1017ce205c63a36fb0781ccf49
-../../Binaries/Malterlib/Windows/x64 9d62513ea841da3623f7dc21eb1e94ae4c682f14
-../../Binaries/Malterlib/Windows/x86 26ab90ceedefbd7608d70786de6759d6f7a9cb9c
+../../Binaries/Malterlib/Linux/x64 3672e0bddbc68ca681370f7a3c86c97b0f5e1c36
+../../Binaries/Malterlib/Linux/x86 18a80b8a4c9fd37f2eb91eac3d5ad003ab1de558
+../../Binaries/Malterlib/OSX/x64 e40422e270f18b2581ff3ff597ce66e9a86d0a2d
+../../Binaries/Malterlib/Windows/x64 597ad37233cb46c02f611c611c2fe8dc14377adf
+../../Binaries/Malterlib/Windows/x86 23e2ee54921c006853b0d07bce839c10790d0cd2
 ../../Binaries/MalterlibTest/Cloud/Linux/x64 149071f7e7e3456f4fb766f0db92587b11ba24f5
 ../../Binaries/MalterlibTest/Cloud/OSX/x64 a827fa6a6f918000c9362a333c76f49d3f3c81de
 ../../SDK 0e59e1723d15b401b182489d7694da20b8bb1b30
@@ -13,7 +13,7 @@
 ../Cloud 0d02ed74ccb3b612a36fe36b6aa02fe7a15865a7
 ../CommandLine 9c32571625f9aff42fc055ca4291451120dcfc38
 ../Compression a374b1897c6e294b927d0e39e2093928d4d552a2
-../Concurrency 746215be59943471c54e8ccbd1c5bc0691edf356
+../Concurrency bda92fb5788dfa5ef25fa0100944f4bb54c722d5
 ../Container 0a92bc14cea9ca5bb088c4de81728dd450771e12
 ../Contract d232d9b04d82bd925d0767943ee0e35d5851b36c
 ../CrashReport 85edc669e920d8e6f1b620bc3967d5000e8c010d
@@ -49,7 +49,7 @@
 ../Stream 9d2490066057dce38f115c4d362d76df30e0b2d4
 ../String 623546b6ec89fcf54f1f9295ea3eceb8574d0905
 ../System 93707b418055d6c6d8694e791f01485880bb1e25
-../Test 51d9dd17c6e4ba65fb963aa96f04d6a16edd663e
+../Test 4a6df992779abc0010970c1ec1ddf88fb81584a4
 ../Thread a3c46ad9d704601882072c58c157b76bd56842cd
 ../Time eeb8a066e8659b2a6ab5e1aa52e81545042676f4
 ../Tool b93388a240bb24f5c50dea171bc9a11baf75e9f8
