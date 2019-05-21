@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <string>
@@ -103,7 +103,7 @@ namespace
 #else
 			typedef std::u16string CStdUTF16String;
 #endif
-			
+
 			std::pair<std::string, CStdUTF16String> Test("Testing1", str_utf16("Testing2"));
 
 			std::tuple<std::string, CStdUTF16String> Test33("Testing1", str_utf16("Testing2"));
@@ -144,7 +144,7 @@ namespace
 			{
 				int y = 0;
 			}
-			
+
 
 			NMib::NContainer::TCVector<CTestLinked> Vector;
 			DMibListLinkD_List(CTestLinked, m_Link) LinkedList;
@@ -271,7 +271,7 @@ namespace
 			Variant0 = NMib::NStr::CMStrDeprecated("Testing 66");
 
 #endif
-			NMib::NContainer::CRegistry_CStr Registry;
+			NMib::NContainer::CRegistry Registry;
 			auto *pChild = Registry.f_CreateChild("RootChild");
 			pChild->f_SetValue("test", "Mega");
 			pChild->f_SetValue("test1", "Test ");
@@ -286,7 +286,7 @@ namespace
 			auto Ref = NMib::fg_Reference(TestStr2);
 			auto UndefinedRef = NMib::fg_Reference(TestStr2);
 		}
-			
+
 	};
 
 	DMibTestRegister(CMove_Tests, Malterlib::Core);
