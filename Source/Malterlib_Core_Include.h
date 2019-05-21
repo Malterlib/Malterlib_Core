@@ -98,19 +98,6 @@ namespace NMib
 
 	}
 	
-	namespace NStream
-	{
-		template <typename t_CKeyStr, typename t_CToStream>
-		class TCNamedStreamInfo;
-
-		template <typename t_CKeyStr, typename t_CToStream, typename t_CToStreamDefault>
-		TCNamedStreamInfo<t_CKeyStr, t_CToStream> fg_Named(t_CKeyStr const &_Key, t_CToStream &_ToStream, t_CToStreamDefault const &_Default);
-
-		template <typename t_CKeyStr, typename t_CToStream>
-		TCNamedStreamInfo<t_CKeyStr, t_CToStream const> fg_Named(t_CKeyStr const &_Key, t_CToStream const &_ToStream);
-		
-	}
-	
 	template <typename t_CIntType>
 	class TCLimitsInt;
 	template <typename t_CIntType>
@@ -213,8 +200,6 @@ namespace NMib
 
 #include <Mib/Container/LinkedList>
 #include <Mib/Stream/Streams/LinkedList>
-
-#include <Mib/Container/Registry>
 
 #include <Mib/Stream/Streams/Vector>
 
