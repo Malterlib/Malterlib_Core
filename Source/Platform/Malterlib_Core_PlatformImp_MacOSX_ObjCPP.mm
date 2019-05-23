@@ -389,14 +389,16 @@ namespace NMib
 			// Do nothing.
 		}
 
+		static NThread::CMutualSpin gs_QuitLock;
 		static NSApplication *gs_pSerivceApplication = nullptr;
 		static bool gs_bPendingQuit = false;
 		void fg_CancelRunDaemonStatusApp()
 		{
-			if (!gs_pSerivceApplication)
 			{
+				DMibLock(gs_QuitLock);
 				gs_bPendingQuit = true;
-				return;
+				if (!gs_pSerivceApplication)
+					return;
 			}
 
 			dispatch_async
@@ -422,6 +424,22 @@ namespace NMib
 		
 		void fg_RunDaemonStatusApp(NFunction::TCFunction<void ()> const& _fPause, NFunction::TCFunction<void ()> const& _fResume, NStr::CStr const &_DaemonName, NContainer::CByteVector const& _IconData)
 		{
+			bool bPendingQuit;
+			{
+				DMibLock(gs_QuitLock);
+				gs_pSerivceApplication = [NSApplication sharedApplication];
+				bPendingQuit = gs_bPendingQuit;
+			}
+			auto Cleanup = g_OnScopeExit > [&]
+				{
+					DMibLock(gs_QuitLock);
+					gs_pSerivceApplication = nullptr;
+				}
+			;
+
+			if (bPendingQuit)
+				return;
+
 			CAutoReleasePool ARPool;
 			
 			CMenuContext MenuContext;
@@ -435,7 +453,7 @@ namespace NMib
 					NCryptography::EUniversallyUniqueIdentifierFormat_AlphaNum
 				)
 			;
-			
+
 			Class pMenuContextClass = objc_allocateClassPair([NSObject class], ClassName.f_GetStr(), 0);
 			
 			CStr Types = CStr::CFormat("{}{}{}{}") << @encode(id) << @encode(id) << @encode(SEL) << @encode(id);
@@ -451,14 +469,7 @@ namespace NMib
 			
 			void* pMenuContextObject = [[pMenuContextClass alloc] init];
 			object_setInstanceVariable((id)pMenuContextObject, "m_pContext", &MenuContext);
-			
-			gs_pSerivceApplication = [NSApplication sharedApplication];
-			auto Cleanup = g_OnScopeExit > [&]
-				{
-					gs_pSerivceApplication = nullptr;
-				}
-			;
-			
+
 			NSMenu* pMenu = [[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:@""];
 
 			{
@@ -512,9 +523,13 @@ namespace NMib
 			
 			[pStatusItem setHighlightMode:YES];
 			[pStatusItem setMenu:pMenu];
-			
-			if (!gs_bPendingQuit)
-				[NSApp run];
+
+			{
+				DMibLock(gs_QuitLock);
+				if (gs_bPendingQuit)
+					return;
+			}
+			[NSApp run];
 			
 			objc_disposeClassPair(pMenuContextClass);
 		}
