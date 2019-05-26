@@ -1319,7 +1319,7 @@ Compile
 		}
 	}
 
-	ExtraCompilerFlags "/std:c++latest @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags "/std:c++17 @(Compile.ExtraCompilerFlags)"
 	{
 		&
 		{
