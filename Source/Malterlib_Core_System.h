@@ -20,16 +20,6 @@ namespace NMib
 		class CExceptionFilter;
 	}
 
-	struct CCoroutineHandler
-	{
-		~CCoroutineHandler();
-
-		DMibListLinkDS_List(CCoroutineThreadLocalHandler, m_Link) m_ThreadLocalHandlers;
-#if DMibEnableSafeCheck > 0
-		mint m_nThreadLocalScopes = 0;
-#endif
-	};
-
 	struct CSystemThreadLocal
 	{
 		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
@@ -41,20 +31,6 @@ namespace NMib
 	};
 
 	extern NStorage::TCAggregate<NThread::TCThreadLocal<CSystemThreadLocal>, 64> g_SystemThreadLocal;
-
-#if DMibEnableSafeCheck > 0
-	struct CDebugThreadLocalScope
-	{
-		CDebugThreadLocalScope();
-		~CDebugThreadLocalScope();
-
-		CCoroutineHandler *m_pCoroutineHandler;
-	};
-
-	#define DMibThreadLocalScopeDebugMember NMib::CDebugThreadLocalScope m_DebugThreadLocalScope
-#else
-	#define DMibThreadLocalScopeDebugMember
-#endif
 
 	namespace NException
 	{

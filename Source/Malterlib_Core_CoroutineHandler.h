@@ -15,4 +15,28 @@ namespace NMib
 
 		DMibListLinkDS_Link(CCoroutineThreadLocalHandler, m_Link);
 	};
+
+	struct CCoroutineHandler
+	{
+		~CCoroutineHandler();
+
+		DMibListLinkDS_List(CCoroutineThreadLocalHandler, m_Link) m_ThreadLocalHandlers;
+#if DMibEnableSafeCheck > 0
+		mint m_nThreadLocalScopes = 0;
+#endif
+	};
+
+#if DMibEnableSafeCheck > 0
+	struct CDebugThreadLocalScope
+	{
+		CDebugThreadLocalScope();
+		~CDebugThreadLocalScope();
+
+		CCoroutineHandler *m_pCoroutineHandler;
+	};
+
+	#define DMibThreadLocalScopeDebugMember NMib::CDebugThreadLocalScope m_DebugThreadLocalScope
+#else
+	#define DMibThreadLocalScopeDebugMember
+#endif
 }
