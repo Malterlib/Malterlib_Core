@@ -42,7 +42,7 @@ using namespace NMib::NFunction;
 using namespace NMib::NStorage;
 
 HINSTANCE g_hDllInstance = 0;
-bint g_bIsDll = false;
+bool g_bIsDll = false;
 
 static NAtomic::TCAtomicAggregate<smint> gs_LibraryRefCount = {mint(smint(-1))};
 static mint gs_ThreadLocalParentThread = 0xFFFFFFFF;
@@ -225,7 +225,7 @@ public:
 
 namespace
 {
-	inline_small bint fg_IsGoodStackPtr(void *_pAddr, mint _Len, mint _StackStart, mint _StackEnd)
+	inline_small bool fg_IsGoodStackPtr(void *_pAddr, mint _Len, mint _StackStart, mint _StackEnd)
 	{
 		mint StackStart = _StackStart;
 		mint StackEnd = _StackEnd;
@@ -418,20 +418,20 @@ void* NSys::fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned
 	return nullptr;
 }
 
-bint NSys::fg_System_BeingDebugged()
+bool NSys::fg_System_BeingDebugged()
 {
 	UndocumentedPEB *pPeb = fg_GetPEB(fg_GetTEB());
 	return pPeb->BeingDebugged != false;
 }
 
-inline_never bint NSys::fg_Compiler_AlwaysFalse()
+inline_never bool NSys::fg_Compiler_AlwaysFalse()
 {
 	return false;
 }
 
 void (* volatile g_pFuncMakeActive)(const void *_pReference) = nullptr;
 
-inline_never assure_used bint NSys::fg_Compiler_MakeActive(const void *_pReference)
+inline_never assure_used bool NSys::fg_Compiler_MakeActive(const void *_pReference)
 {
 	if (g_pFuncMakeActive)
 		g_pFuncMakeActive(_pReference);
@@ -847,7 +847,7 @@ namespace
 	}
 }
 
-bint NSys::fg_ConsoleOutputValid()
+bool NSys::fg_ConsoleOutputValid()
 {
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (hCon)
@@ -864,7 +864,7 @@ bint NSys::fg_ConsoleOutputValid()
 	return false;
 }
 
-bint NSys::fg_ConsoleInputValid()
+bool NSys::fg_ConsoleInputValid()
 {
 	HANDLE hCon = GetStdHandle(STD_INPUT_HANDLE);
 	if (hCon)
@@ -882,7 +882,7 @@ bint NSys::fg_ConsoleInputValid()
 }
 
 
-bint NSys::fg_ConsoleErrorOutputValid()
+bool NSys::fg_ConsoleErrorOutputValid()
 {
 	HANDLE hCon = GetStdHandle(STD_ERROR_HANDLE);
 	if (hCon)
@@ -1696,7 +1696,7 @@ void fg_SetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage, void *_pDat
 	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
 	if (hThread)
 	{
-		bint bSuccess = false;
+		bool bSuccess = false;
 		CFStr256 ErrorStr;
 		if (SuspendThread(hThread) != 0xFFFFFFFF)
 		{
@@ -1768,7 +1768,7 @@ void *fg_GetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage)
 	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
 	if (hThread)
 	{
-		bint bSuccess = false;
+		bool bSuccess = false;
 		CFStr256 ErrorStr;
 		if (SuspendThread(hThread) != 0xFFFFFFFF)
 		{
@@ -1822,7 +1822,7 @@ void *fg_GetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage)
 	return pRet;
 }
 
-DWORD WINAPI fg_TlsAllocInternal( bint _bFast)
+DWORD WINAPI fg_TlsAllocInternal( bool _bFast)
 {
 	CUndocumentedTEB *pTEB = fg_GetTEB();
 	UndocumentedPEB *pPEB = fg_GetPEB(pTEB);
@@ -1967,7 +1967,7 @@ void *NSys::fg_Thread_GetLocalAlwaysSetFast(mint _ThreadID, mint _iStorage)
 	return fg_GetThreadLocalForOtherThread(_ThreadID, _iStorage);
 }
 
-bint fg_Win32_RunningWine()
+bool fg_Win32_RunningWine()
 {
 	return NLocal::g_fWineGetVersion != nullptr;
 }
@@ -2707,7 +2707,7 @@ void __cdecl fg_MalterlibFreeNonTracked(void *_pMem)
 }
 
 
-extern bint g_bSysDeleted;
+extern bool g_bSysDeleted;
 
 extern "C" BOOL WINAPI fg_MalterlibDllMain(HANDLE _pInstance, DWORD _Reason, void *_pReserved)
 {
@@ -2907,7 +2907,7 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 		CloseHandle(_pThreadDestroyContext);
 }
 
-void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bint _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
+void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bool _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
 {
 	TCUniquePointer<CThreadParameters, NMemory::CAllocator_NonTrackedHeap> pThreadParameters = fg_Construct();
 
@@ -3175,7 +3175,7 @@ NMib::NStr::CStr NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr
 	return Temp;
 }
 
-bint NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value)
+bool NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value)
 {
 	NMib::NStr::CWStr Temp;
 	ch16 *pStr = Temp.f_GetStr(32768);
@@ -3204,7 +3204,7 @@ NMib::NStr::CStrNonTracked NSys::fg_Process_GetEnvironmentVariable_NonProtected(
 	return Temp;
 }
 
-bint NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
+bool NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
 {
 	NMib::NStr::CWStrNonTracked Temp;
 	ch16 *pStr = Temp.f_GetStr(32768);
@@ -3303,12 +3303,12 @@ mint NSys::fg_Thread_GetPhysicalCores()
 		{
 			DWORD BufferLength = 0;
 			CByteVector Buffer;
-			bint bDone = false;
-			bint bError = false;
+			bool bDone = false;
+			bool bError = false;
 			while (!bDone) 
 			{
 				BufferLength = Buffer.f_GetLen();
-				bint bRet = NLocal::g_fGetLogicalProcessorInformation((PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)Buffer.f_GetArray(), &BufferLength);
+				bool bRet = NLocal::g_fGetLogicalProcessorInformation((PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)Buffer.f_GetArray(), &BufferLength);
 
 				if (!bRet) 
 				{
@@ -3424,7 +3424,7 @@ void NSys::fg_Semaphore_Wait(void * _pSemaphore)
 	WaitForSingleObject(_pSemaphore, INFINITE);
 }
 
-bint NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
+bool NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
 {
 	if (_Timeout < 0)
 		return WaitForSingleObjectEx(_pSemaphore, ((-_Timeout) * 1000.0 / NTime::CSystem_Time::fs_GetTimeSpeed()).f_Ceil().f_ToInt(), true) != WAIT_OBJECT_0;
@@ -3432,13 +3432,13 @@ bint NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
 		return WaitForSingleObjectEx(_pSemaphore, (_Timeout * 1000.0 / NTime::CSystem_Time::fs_GetTimeSpeed()).f_Ceil().f_ToInt(), false) != WAIT_OBJECT_0;
 }
 
-bint NSys::fg_Semaphore_TryWait(void * _pSemaphore)
+bool NSys::fg_Semaphore_TryWait(void * _pSemaphore)
 {
 	return WaitForSingleObject(_pSemaphore, 0) == WAIT_OBJECT_0;
 }
 
 
-void *NSys::fg_Event_Alloc(bint _InitialSignal)
+void *NSys::fg_Event_Alloc(bool _InitialSignal)
 {
 	return CreateEventA(nullptr, true, _InitialSignal, nullptr);
 }
@@ -3475,12 +3475,12 @@ void NSys::fg_Event_Wait(void * _pEvent)
 	WaitForSingleObject(_pEvent, INFINITE);
 }
 
-bint NSys::fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout)
+bool NSys::fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout)
 {
 	return WaitForSingleObject(_pEvent, (_Timeout * 1000.0 / NTime::CSystem_Time::fs_GetTimeSpeed()).f_Ceil().f_ToInt()) != WAIT_OBJECT_0;
 }
 
-bint NSys::fg_Event_TryWait(void * _pEvent)
+bool NSys::fg_Event_TryWait(void * _pEvent)
 {
 	return WaitForSingleObject(_pEvent, 0) == WAIT_OBJECT_0;
 }
@@ -3505,7 +3505,7 @@ void NSys::fg_Message(const ch8 *_pMessageType, const ch8 *_pToOutput)
 	USEROBJECTFLAGS uof;
 	DWORD nDummy;
 
-	bint bCopy = !NMib::NStr::fg_StrCmpNoCase(_pMessageType, "Copy");
+	bool bCopy = !NMib::NStr::fg_StrCmpNoCase(_pMessageType, "Copy");
 
 	CStrVMem Message = _pToOutput;
 	CStrVMem Message2;
@@ -3634,7 +3634,7 @@ namespace
 	EFileAttrib fg_GetAttributesInternalWithAttribs(ch16 const *_pFileName, uint32 _FileAttribs);
 }
 
-bint NSys::NFile::fg_FileExists(const CStr &_FileName, EFileAttrib _AttribMask)
+bool NSys::NFile::fg_FileExists(const CStr &_FileName, EFileAttrib _AttribMask)
 {
 	if (_FileName.f_IsEmpty())
 		return false;
@@ -3661,7 +3661,7 @@ bint NSys::NFile::fg_FileExists(const CStr &_FileName, EFileAttrib _AttribMask)
 	}
 }
 
-bint NSys::NFile::fg_FileExists(const CStrNonTracked &_FileName, EFileAttrib _AttribMask)
+bool NSys::NFile::fg_FileExists(const CStrNonTracked &_FileName, EFileAttrib _AttribMask)
 {
 	if (_FileName.f_IsEmpty())
 		return false;
@@ -3699,7 +3699,7 @@ ECheckFileRights NSys::NFile::fg_CheckFileRights( const CStr & _File, NMib::NFil
 	CWStr Path;
 	Path = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal<CWStr, CWStr>(_File);
 
-	bint bRet = false;
+	bool bRet = false;
 	DWORD length = 0;
 	if (	!::GetFileSecurity( Path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, NULL, NULL, &length )
 		&&	ERROR_INSUFFICIENT_BUFFER == ::GetLastError()
@@ -4613,12 +4613,12 @@ void NSys::NFile::fg_ChangeNotification_Close(void *_pNotification)
 	fg_GetLocalSys()->m_FileChangeNoticationContext->f_Close(_pNotification);
 }
 
-bint NSys::NFile::fg_ChangeNotification_Changed(void *_pNotification)
+bool NSys::NFile::fg_ChangeNotification_Changed(void *_pNotification)
 {
 	return fg_GetLocalSys()->m_FileChangeNoticationContext->f_Changed(_pNotification);
 }
 
-bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom)
+bool NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom)
 {
 	return fg_GetLocalSys()->m_FileChangeNoticationContext->f_GetNotification(_pNotification, _Path, _Notification, _PathFrom);
 }
@@ -4818,7 +4818,7 @@ static DWORD CALLBACK fsg_CopyProgressRoutine
 	return PROGRESS_CONTINUE;
 }
 
-bint NMib::NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& _oFix, EOperatingSystemArch& _Arch)
+bool NMib::NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& _oFix, EOperatingSystemArch& _Arch)
 {
 	OSVERSIONINFOEXW VersionInfo;
 	fg_MemClear(VersionInfo);
@@ -5148,7 +5148,7 @@ NMib::NStream::CFilePos NSys::NFile::fg_GetUsedSpace(const NMib::NStr::CStr &_Pa
 
 namespace
 {
-	bint fg_DirectoryExists(const ch16 *_pFileDirectory)
+	bool fg_DirectoryExists(const ch16 *_pFileDirectory)
 	{
 		uint32 Attribs = GetFileAttributesW(_pFileDirectory);
 
@@ -5160,7 +5160,7 @@ namespace
 
 		return false;
 	}
-	bint fg_ReparsePointDirectoryExists(const ch16 *_pFileDirectory)
+	bool fg_ReparsePointDirectoryExists(const ch16 *_pFileDirectory)
 	{
 		uint32 Attribs = GetFileAttributesW(_pFileDirectory);
 
@@ -5183,7 +5183,7 @@ void fg_CreateDirectoryHelper(const tf_CStr &_FileDirectory)
 	ch16 *pDir = NewPath.f_GetStrUniqueWritable();
 
 	ch16 *pDirCheck;
-	bint bUNC = false;
+	bool bUNC = false;
 	if (fg_StrCmpNoCase(pDir, "\\\\?\\UNC\\", 8) == 0)
 	{
 		pDirCheck = pDir + 8;
@@ -5581,7 +5581,7 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAd
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CWindowsAddress*)_Address);
 }
 
-bint NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CWindowsAddress*)_Address, _ExpectedType, _opRawData, _nDataBytes);
@@ -5603,7 +5603,7 @@ void *NSys::NNetwork::fg_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Addre
 	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bint NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress& _opAddress, NMib::NStr::CStr &_Error)
+bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress& _opAddress, NMib::NStr::CStr &_Error)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CWindowsAddress*&)_opAddress, _Error);
 }
@@ -5625,7 +5625,7 @@ void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _Address) // It is 
 	return fg_GetLocalSys()->m_SocketContext->f_FreeAddress((CWindowsAddress*)_Address);
 }
 
-NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, bint _bIncludeType)
+NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, bool _bIncludeType)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CWindowsAddress*)_Address, _bIncludeType);
@@ -5813,13 +5813,13 @@ namespace NLocal
 	HMODULE g_hAdvAPI32 = nullptr;
 }
 
-bint g_bValidExitProcess = false;
+bool g_bValidExitProcess = false;
 void __cdecl fg_ValidExitProcess()
 {
 	g_bValidExitProcess = true;
 }
 
-bint g_bValidDestroyModule = false;
+bool g_bValidDestroyModule = false;
 void __cdecl fg_ValidDestroyModule()
 {
 	g_bValidDestroyModule = true;
@@ -5864,9 +5864,9 @@ BOOL WINAPI fg_HookTerminateProcess(__in  HANDLE _hProcess,__in  UINT _ExitCode)
 	return g_fOrgTerminateProcess(_hProcess, _ExitCode);
 }
 
-bint g_bPatchedExitProcess = false;
-bint g_bPatchedTerminateProcess = false;
-bint g_bSystemCreated = false;
+bool g_bPatchedExitProcess = false;
+bool g_bPatchedTerminateProcess = false;
+bool g_bSystemCreated = false;
 
 void NSys::fg_DestroySystem()
 {
@@ -5947,7 +5947,7 @@ void NSys::fg_CreateSystem()
 
 }
 
-bint g_bSysDeleted = false;
+bool g_bSysDeleted = false;
 bool g_bAggregatesDestroyed = false;
 
 void NSys::fg_Process_AllowInvalidExit(bool _bAllow)
@@ -6043,7 +6043,7 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 	_Info.m_Architecture = (sizeof(void*) == 4) ? EProcessorArchitecture_x86 : EProcessorArchitecture_x86_64;
 }
 
-bint NMib::NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
+bool NMib::NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
 {
 	_Info.m_bDetected = false;
 	_Info.m_pName = nullptr;

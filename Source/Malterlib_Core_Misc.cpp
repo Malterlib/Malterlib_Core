@@ -42,7 +42,7 @@ namespace NMib
 			return NStr::CStr::CFormat("{}-{sj2,sf0}-{sj2,sf0}_{sj2,sf0}.{sj2,sf0}.{sj2,sf0}.{sj3,sf0,fe3}") << DateTime.m_Year << DateTime.m_Month << DateTime.m_DayOfMonth << DateTime.m_Hour << DateTime.m_Minute << DateTime.m_Second << DateTime.m_Fraction * 1000.0;
 		}
 
-		bint fg_CheckFileAccessRights(NStr::CStr _Path)
+		bool fg_CheckFileAccessRights(NStr::CStr _Path)
 		{
 			try 
 			{
@@ -65,7 +65,7 @@ namespace NMib
 		}					   
 
 		template <typename tf_CStr>
-		bint fg_CheckAccessRightsTemplated(tf_CStr const& _Path, bool _bRandom)
+		bool fg_CheckAccessRightsTemplated(tf_CStr const& _Path, bool _bRandom)
 		{
 			try 
 			{
@@ -100,12 +100,12 @@ namespace NMib
 			}
 		}			
 		
-		bint fg_CheckAccessRights(NStr::CStrNonTracked const& _Path, bool _bRandom)
+		bool fg_CheckAccessRights(NStr::CStrNonTracked const& _Path, bool _bRandom)
 		{
 			return fg_CheckAccessRightsTemplated(_Path, _bRandom);
 		}
 		
-		bint fg_CheckAccessRights(NStr::CStr const& _Path, bool _bRandom)
+		bool fg_CheckAccessRights(NStr::CStr const& _Path, bool _bRandom)
 		{
 			return fg_CheckAccessRightsTemplated(_Path, _bRandom);
 		}

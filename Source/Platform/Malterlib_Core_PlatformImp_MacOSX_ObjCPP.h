@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -15,31 +15,31 @@ namespace NMib
 		class CFileChangeNoticationContext
 		{
 		public:
-			
+
 			CFileChangeNoticationContext();
 			~CFileChangeNoticationContext();
-			
+
 			class CNotification : public NStorage::TCSharedPointerIntrusiveBase<>
 			{
 			public:
 				CNotification(CFileChangeNoticationContext *_pContext);
 				~CNotification();
 				void f_Clear();
-				
-				
+
+
 				class CChange
 				{
 				public:
 					NFile::EFileChangeNotification m_Notification = NFile::EFileChangeNotification_Undefined;
 					NMib::NStr::CStr m_Path;
 					NMib::NStr::CStr m_PathFrom;
-					
+
 					bool operator < (CChange const &_Right) const
 					{
 						return NStorage::fg_TupleReferences(m_Notification, m_Path, m_PathFrom) < NStorage::fg_TupleReferences(_Right.m_Notification, _Right.m_Path, _Right.m_PathFrom);
 					}
 				};
-				
+
 				struct CFileKey
 				{
 					decltype(stat::st_dev) st_dev;
@@ -52,14 +52,14 @@ namespace NMib
 							return false;
 						return st_ino < _Right.st_ino;
 					}
-						
+
 					CFileKey(struct stat const &_Init)
 						: st_dev(_Init.st_dev)
 						, st_ino(_Init.st_ino)
 					{
 					}
 				};
-						
+
 				struct CFindChangesContext
 				{
 					NContainer::TCLinkedList<CChange> m_ChangesFileNameRename;
@@ -74,7 +74,7 @@ namespace NMib
 				struct CFileSnapshot
 				{
 					CFileSnapshot(CFileSnapshot *_pParent);
-					
+
 					class CCompare
 					{
 					public:
@@ -83,25 +83,25 @@ namespace NMib
 							return _Node.m_FileName;
 						}
 					};
-					
+
 					CFileKey f_GetKey() const
 					{
 						return CFileKey(m_Stats);
 					}
-					
-					// 
+
+					//
 					struct stat m_Stats;
-					
+
 					NMib::NStr::CStr m_FileName;
 					NMib::NStr::CStr m_FullFileName;
-					
+
 					CFileSnapshot *m_pParent;
 					uint64 m_UpdateSequence = 0;
 					bool m_bDelete = false;
-					
+
 					NMib::NIntrusive::TCAVLLink<> m_Link;
 					DMibListLinkDS_Link(CFileSnapshot, m_LinkNode);
-					
+
 					NContainer::TCLinkedList<CFileSnapshot> m_Children;
 					NMib::NIntrusive::TCAVLTree<&CFileSnapshot::m_Link, CCompare> m_ChildrenByName;
 
@@ -146,7 +146,7 @@ namespace NMib
 
 				CFileSnapshot m_RootSnapshot;
 				CSnapshotsByNode m_SnapshotsByNode;
-				
+
 				void f_AddNotification(CFindChangesContext &o_Context, EFileChangeNotification _Type, NStr::CStr const &_RelativePath, NStr::CStr const &_RenameFrom = {});
 				void fr_FindChanges
 					(
@@ -185,7 +185,7 @@ namespace NMib
 						, FSEventStreamEventId const _IDs[]
 					)
 				;
-				
+
 				DMibListLinkDS_Link(CNotification, m_Link);
 
 				FSEventStreamRef m_pEventStream;
@@ -194,7 +194,7 @@ namespace NMib
 				NMib::NStr::CStr m_NotificationPath;
 				NContainer::TCLinkedList<CChange> m_Changes;
 				NThread::CMutual m_ChangesLock;
-				
+
 				NContainer::TCLinkedList<NStorage::TCTuple<NStr::CStr, bool>> m_RenamedFromQueue;
 
 				DMibRefcountDebuggingOnly(NStorage::CRefCountDebugReference m_DebugSelfRef);
@@ -206,13 +206,13 @@ namespace NMib
 				bool m_bPerFileEvents = false;
 			};
 			typedef DMibListLinkDS_Iter(CNotification, m_Link)  CNotificationIter;
-			
+
 			NThread::CMutual m_Lock;
 
 			DMibListLinkDS_List(CNotification, m_Link) m_OpenNotifications;
-			
+
 			NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject> m_pProcessThread;
-			
+
 			static void fs_EventCallback
 				(
 					ConstFSEventStreamRef streamRef
@@ -223,24 +223,24 @@ namespace NMib
 					, const FSEventStreamEventId eventIDs[]
 				)
 			;
-			
+
 			struct CInternal;
-			
+
 			NStorage::TCUniquePointer<CInternal> m_pInternal;
-			
+
 			NMib::NThread::CMutual m_RunLoopLock;
-			zbool m_bDestroying;
-			
+			bool m_bDestroying = false;
+
 			NMib::NContainer::TCThreadSafeQueue<NMib::NFunction::TCFunctionMovable<void ()>> m_DispatchQueue;
 
 			void f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch);
 			void f_StartThread();
 			void *f_Open(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo);
-			
+
 			void f_Close(void *_pNotification);
-			bint f_Changed(void *_pNotification);
-			bint f_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom);
-			
+			bool f_Changed(void *_pNotification);
+			bool f_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom);
+
 		};
 	}
 

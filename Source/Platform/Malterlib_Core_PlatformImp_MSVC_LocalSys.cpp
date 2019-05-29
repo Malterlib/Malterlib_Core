@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 //#include "sal.h"
@@ -9,20 +9,20 @@
 
 #ifdef DTCPDelayEmulation
 	// These are vars so you can tweak them on the fly.
-	bint bDTCPDelayEmulation = false;
+	bool bDTCPDelayEmulation = false;
 	mint DTCPDelayEmulation_Rate = 200*1024;
 	double DTCPDelayEmulation_MinDelay = 0.1;
 	//#define DTCPDelayEmulation_Rate 200*1024
 	//#define DTCPDelayEmulation_MinDelay 0.1
 	#define DTCPDelayEmulation_MaxQueue (DTCPDelayEmulation_MinDelay * DTCPDelayEmulation_Rate)
-#endif 
+#endif
 
 #include "Malterlib_Core_PlatformImp_MSVC_Net.cpp"
 
 class CCPUUsageMonitorLink
 {
 public:
-	DMibListLinkDS_Link(CCPUUsageMonitorLink, m_Link);	
+	DMibListLinkDS_Link(CCPUUsageMonitorLink, m_Link);
 
 	virtual ~CCPUUsageMonitorLink()
 	{
@@ -33,7 +33,7 @@ class CSystemWindowsMSVC : public CSystem
 {
 public:
 
-	bint m_bDestroying;
+	bool m_bDestroying;
 
 	NStorage::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
 
@@ -66,7 +66,7 @@ public:
 				{
 					CStr PathLeft = _FileName;
 					CStr FileName = fg_GetStrSep(PathLeft, "/");
-					
+
 					auto &Child = *m_Children(FileName, this);
 					Child.m_FileName = FileName;
 
@@ -86,7 +86,7 @@ public:
 				{
 					CStr PathLeft = _FileName;
 					CStr FileName = fg_GetStrSep(PathLeft, "/");
-					
+
 					auto pChild = m_Children.f_FindEqual(FileName);
 
 					if (!pChild)
@@ -227,24 +227,24 @@ public:
 			HANDLE m_Handle;
 			CNotificationBundle *m_pBundle;
 			CStr m_RootDirectory;
-			bint m_bDoneRead;
-			bint m_bCancelled;
+			bool m_bDoneRead;
+			bool m_bCancelled;
 
 			EFileChange m_Flags;
-			
+
 			class CChange
 			{
 			public:
 				EFileChangeNotification m_Notification = EFileChangeNotification_Undefined;
 				CStr m_Path;
 				NStr::CStr m_PathFrom;
-			
+
 				bool operator < (CChange const &_Right) const
 				{
 					return fg_TupleReferences(m_Notification, m_Path, m_PathFrom) < fg_TupleReferences(_Right.m_Notification, _Right.m_Path, _Right.m_PathFrom);
 				}
 			};
-		
+
 			struct CFindChangesContext
 			{
 				TCLinkedList<CChange> m_ChangesFileName;
@@ -287,7 +287,7 @@ public:
 
 				auto &Context = pThis->m_ChangesContext;
 
-				
+
 				if (!pThis->m_LinkUpdated.f_IsInList())
 					pThis->m_pBundle->m_Updated.f_Insert(pThis);
 
@@ -305,7 +305,7 @@ public:
 									CWStr::fs_Create(pNotification->FileName, pNotification->FileNameLength/sizeof(pNotification->FileName[0]))
 								)
 							;
-							
+
 							auto fAdded = [&]
 								{
 									bool bRecursive = (pThis->m_Flags & EFileChange_Recursive) != 0;
@@ -321,7 +321,7 @@ public:
 										for (auto &File : CFile::fs_FindFilesEx(AbsolutePath + "/*", EFileAttrib_File | EFileAttrib_Directory, bRecursive, false))
 										{
 											CStr RelativePath = File.m_Path.f_Extract(pThis->m_RootDirectory.f_GetLen() + 1);
-											pThis->m_RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);	
+											pThis->m_RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);
 											Context.f_AddChange(EFileChangeNotification_Added, RelativePath);
 										}
 									}
@@ -419,7 +419,7 @@ public:
 									Context.f_AddChange(EFileChangeNotification_Unknown, {});
 								}
 							}
-							
+
 							if (pNotification->NextEntryOffset)
 								pNotification = (FILE_NOTIFY_INFORMATION *)((mint)pNotification + pNotification->NextEntryOffset);
 							else
@@ -480,7 +480,7 @@ public:
 			{
 				return "Malterlib_Core_PlatformImp_FileChangeNot";
 			}
-			enum 
+			enum
 			{
 				ENumNotifications = MAXIMUM_WAIT_OBJECTS - 1
 			};
@@ -511,7 +511,7 @@ public:
 
 			DMibListLinkDS_Link(CNotificationBundle, m_Link);
 			NThread::CEventAutoResetReportable m_Event;
-			
+
 			aint f_Main()
 			{
 				m_EventWantQuit.f_ReportTo(&m_Event);
@@ -601,12 +601,12 @@ public:
 					CloseHandle(Handle);
 				}
 			;
-			
+
 			BY_HANDLE_FILE_INFORMATION Info;
-			
+
 			if (!GetFileInformationByHandle(Handle, &Info))
 				DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-			
+
 			if (!(Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 				DMibErrorFile((CStr::CFormat("You can get notifications for file changes on directories, not files ({})") << WindowStr).f_GetStr());
 
@@ -617,9 +617,9 @@ public:
 			for (auto &File : CFile::fs_FindFilesEx(AbsolutePath + "/*", EFileAttrib_File | EFileAttrib_Directory, bRecursive, false))
 			{
 				CStr RelativePath = File.m_Path.f_Extract(AbsolutePath.f_GetLen() + 1);
-				RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);	
+				RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);
 			}
-			
+
 			CNotification *pNot;
 			{
 				DMibLock(m_Lock);
@@ -643,7 +643,7 @@ public:
 				pBundle->m_Used.f_Insert(pNot);
 
 				if (pBundle->m_Free.f_IsEmpty())
-					m_FullBundles.f_Insert(pBundle);				
+					m_FullBundles.f_Insert(pBundle);
 
 				{
 					DMibLock(pBundle->m_UpdateLock);
@@ -679,11 +679,11 @@ public:
 			}
 		}
 
-		bint f_Changed(void *_pNotification)
+		bool f_Changed(void *_pNotification)
 		{
 			DMibLock(m_Lock);
 			CNotification *pNotification = (CNotification *)_pNotification;
-			bint bChanged = false;
+			bool bChanged = false;
 			{
 				DMibLock(pNotification->m_ChangesLock);
 				bChanged = !pNotification->m_Changes.f_IsEmpty();
@@ -692,7 +692,7 @@ public:
 			return bChanged;
 		}
 
-		bint f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, NStr::CStr &_PathFrom)
+		bool f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, NStr::CStr &_PathFrom)
 		{
 			DMibLock(m_Lock);
 			CNotification *pNotification = (CNotification *)_pNotification;
@@ -702,7 +702,7 @@ public:
 				if (!pNotification->m_Changes.f_IsEmpty())
 				{
 					auto &Change = pNotification->m_Changes.f_GetFirst();
-					
+
 					_Path = Change.m_Path;
 					_Notification = Change.m_Notification;
 					_PathFrom = Change.m_PathFrom;
@@ -733,7 +733,7 @@ public:
 			DMibTrace("OpenProcessToken failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
 			return false;
 		}
-		auto Cleanup 
+		auto Cleanup
 			= fg_OnScopeExit
 			(
 				[&]()
@@ -782,8 +782,8 @@ public:
 
 
 	CMutual m_LargeMemorySupportLock;
-	zbint m_bEnabledLargeMemorySupport;
-	zbint m_bTriedEnableLargeMemorySupport;
+	bool m_bEnabledLargeMemorySupport = false;
+	bool m_bTriedEnableLargeMemorySupport = false;
 	bool f_EnableLargeMemorySupport()
 	{
 		if (m_bTriedEnableLargeMemorySupport)
@@ -800,8 +800,8 @@ public:
 
 
 	CMutual m_BackupSupportLock;
-	zbint m_bEnabledBackupSupport;
-	zbint m_bTriedEnableBackupSupport;
+	bool m_bEnabledBackupSupport = false;
+	bool m_bTriedEnableBackupSupport = false;
 	bool f_EnableBackupSupport()
 	{
 		if (m_bTriedEnableBackupSupport)
@@ -817,8 +817,8 @@ public:
 	}
 
 	CMutual m_SymLinkSupportLock;
-	zbint m_bEnabledSymLinkSupport;
-	zbint m_bTriedEnableSymLinkSupport;
+	bool m_bEnabledSymLinkSupport = false;
+	bool m_bTriedEnableSymLinkSupport = false;
 	bool f_EnableSymLinkSupport()
 	{
 		if (m_bTriedEnableSymLinkSupport)
@@ -891,7 +891,7 @@ public:
 		__super::f_InitModule();
 
 		if (gs_LibraryRefCount.f_Load() == -1)
-			f_InstallVistaExceptionHack();	
+			f_InstallVistaExceptionHack();
 	}
 
 	typedef void (DMibCrossmoduleAPI FSetAssertInfo)(int32 _AssertType, const ch8 *_pAssertMessage);
@@ -906,7 +906,7 @@ public:
 
 	void f_SetContractInfo(const ch8 *_pAssertMessage)
 	{
-		CStrNonTracked AssertInfo; 
+		CStrNonTracked AssertInfo;
 		AssertInfo.f_AddStr(_pAssertMessage);
 		{
 			DMibLock(m_ContractInfoLock);
@@ -956,7 +956,7 @@ public:
 					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << i)))
 					{
 						PausePointer |= (mint(1) << i);
-						
+
 					}
 				}
 				m_pSetAssertInfo = (FSetAssertInfo *)PausePointer;
@@ -973,7 +973,7 @@ public:
 					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << i)))
 					{
 						PausePointer |= (mint(1) << i);
-						
+
 					}
 				}
 				m_pSetAssertInfo = (FSetAssertInfo *)PausePointer;
@@ -1032,7 +1032,7 @@ public:
 	{
 		__asm
 		{
-			mov eax, [_pHandler]		
+			mov eax, [_pHandler]
 			mov dword ptr fs:[0h], eax
 		}
 	}
@@ -1060,7 +1060,7 @@ public:
 
 		if (!pNtDll)
 			return 0;
-		
+
 		// We can't get the address of KiUserCallbackDispatcherHandler without debug symbols, lets just assume it's between KiUserApcDispatcher and KiUserCallbackDispatcher
 		void *pStartNtDll = NLocal::g_pKiUserApcDispatcher;
 		void *pEndNtDll = NLocal::g_pKiUserCallbackDispatcher;
@@ -1167,7 +1167,7 @@ public:
 		while ((size_t)pExceptionHandler != size_t(-1) && iMaxRecurse > 0)
 		{
 			--iMaxRecurse;
-			if (pExceptionHandler->m_pExceptionHandlingFunction >= pStartNtDll && pExceptionHandler->m_pExceptionHandlingFunction <= pEndNtDll) 
+			if (pExceptionHandler->m_pExceptionHandlingFunction >= pStartNtDll && pExceptionHandler->m_pExceptionHandlingFunction <= pEndNtDll)
 			{
 				if (pLastExceptionHandler)
 				{
@@ -1194,14 +1194,14 @@ public:
 		m_pVistaExceptinoHackVectoredHandler = nullptr;
 		if (NLocal::g_fAddVectoredExceptionHandler && NLocal::g_fGetNativeSystemInfo)
 		{
-			bint bInstalled = false;
+			bool bInstalled = false;
 			if (NLocal::g_fGetProcessUserModeExceptionPolicy)
 			{
 				DWORD dwFlags;
-				if (NLocal::g_fGetProcessUserModeExceptionPolicy(&dwFlags)) 
+				if (NLocal::g_fGetProcessUserModeExceptionPolicy(&dwFlags))
 				{
 					dwFlags = dwFlags & ~PROCESS_CALLBACK_FILTER_ENABLED;
-					NLocal::g_fSetProcessUserModeExceptionPolicy(dwFlags); 
+					NLocal::g_fSetProcessUserModeExceptionPolicy(dwFlags);
 				}
 			}
 			else if (NLocal::g_fGetNativeSystemInfo)
@@ -1209,14 +1209,14 @@ public:
 				SYSTEM_INFO NativeSystemInfo;
 				NLocal::g_fGetNativeSystemInfo(&NativeSystemInfo);
 				// Check that we are running Vista SP1 or later
-				if 
+				if
 					(
-						NLocal::g_VersionInfo.dwMajorVersion == 6 
+						NLocal::g_VersionInfo.dwMajorVersion == 6
 						&& NLocal::g_VersionInfo.dwMinorVersion < 2 // Fixed in Windows 8
-						&& 
+						&&
 						(
-							NLocal::g_VersionInfo.wServicePackMajor >= 1 
-							|| NLocal::g_VersionInfo.dwMinorVersion > 0 
+							NLocal::g_VersionInfo.wServicePackMajor >= 1
+							|| NLocal::g_VersionInfo.dwMinorVersion > 0
 						)
 					)
 				{
@@ -1242,7 +1242,7 @@ public:
 			if (NLocal::g_fRemoveVectoredExceptionHandler)
 				NLocal::g_fRemoveVectoredExceptionHandler(m_pVistaExceptinoHackVectoredHandler);
 
-			m_pVistaExceptinoHackVectoredHandler = nullptr;			
+			m_pVistaExceptinoHackVectoredHandler = nullptr;
 		}
 	}
 

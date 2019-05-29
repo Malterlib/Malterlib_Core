@@ -66,7 +66,7 @@ public:
 	};
 	DMibListLinkDS_List(CDelayedPacket, m_Link) m_DelayedPackets;
 	mint m_DelayedData;
-	bint m_bDelayedStuffed;
+	bool m_bDelayedStuffed;
 
 	void f_UpdateDelayedSend(const NTime::CTime &_Now);
 #endif
@@ -134,7 +134,7 @@ protected:
 		~CResolver();
 
 		void* f_Open(NMib::NStr::CStr const& _Name, NMib::NThread::CSemaphoreReportableAggregate* _pReportTo);
-		bint f_GetResult(void *_pResolver, CWindowsAddress*& _opAddress, NMib::NStr::CStr &_Error);
+		bool f_GetResult(void *_pResolver, CWindowsAddress*& _opAddress, NMib::NStr::CStr &_Error);
 		void f_Close(void* _pResolver);
 	};
 
@@ -144,7 +144,7 @@ protected:
 	uint32 mp_ThreadID;
 	NMib::NThread::CEvent mp_ThreadStartEvent;
 	NMib::NThread::CMutual mp_ThreadStartLock;
-	bint mp_bInitFailed;
+	bool mp_bInitFailed;
 	HWND mp_hReportWnd;
 
 	NMib::NThread::CMutual mp_Lock;
@@ -218,28 +218,28 @@ public:
 	virtual NStr::CStr f_GetThreadName();
 	virtual aint f_Main();
 
-	bint f_IsEmpty();
+	bool f_IsEmpty();
 
 	// Address
 		CWindowsAddress* f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes);
 		CWindowsAddress* f_DuplicateAddress(CWindowsAddress* _Address);
 
 		NMib::NNetwork::ENetAddressType f_GetAddressType(CWindowsAddress const& _pAddress);
-		bint f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
+		bool f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
 		CWindowsAddress* f_SetAddressRaw(CWindowsAddress* _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const* _opRawData, mint _nDataBytes);
 
 		CWindowsAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
-		CWindowsAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bint _bThrowOnError);
+		CWindowsAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError);
 
 		void *f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish);
-		bint f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress*& _opAddress, NMib::NStr::CStr &_Error);
+		bool f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress*& _opAddress, NMib::NStr::CStr &_Error);
 		void f_AsyncResolveAddress_Close(void *_pResolver);
 
 		int f_CompareAddresses(CWindowsAddress const& _pFirst, CWindowsAddress const& _pSecond);
 
 		void f_FreeAddress(CWindowsAddress* _pAddress); // It is OK to free a nullptr address.
 
-		NMib::NStr::CStr f_GetAddressString(CWindowsAddress const &_Address, bint _bIncludeType);
+		NMib::NStr::CStr f_GetAddressString(CWindowsAddress const &_Address, bool _bIncludeType);
 
 	// Connection Operations	
 		CWindowsSocket *f_AsyncConnect
@@ -268,8 +268,8 @@ public:
 		;
 		CWindowsSocket *f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 
-		bint f_Close(CWindowsSocket* _pSocket);
-		bint f_Shutdown(CWindowsSocket *_pSocket);
+		bool f_Close(CWindowsSocket* _pSocket);
+		bool f_Shutdown(CWindowsSocket *_pSocket);
 
 		mint f_Receive(CWindowsSocket *_pSocket, void *_pData, mint _DataLen);
 		mint f_Send(CWindowsSocket *_pSocket, const void *_pData, mint _DataLen);

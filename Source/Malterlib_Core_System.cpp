@@ -23,17 +23,17 @@ namespace NMib
 	namespace NSys
 	{
 		
-		bint fg_Compiler_MakeActive(int _Dummy, ...)
+		bool fg_Compiler_MakeActive(int _Dummy, ...)
 		{
 			CMibArgList Args;
 			DMibPArgListStart(Args, _Dummy);
-			bint bRet = fg_Compiler_MakeActive(DMibPArgListNextArg(Args, void *));
+			bool bRet = fg_Compiler_MakeActive(DMibPArgListNextArg(Args, void *));
 			DMibPArgListEnd(Args);
 
 			return bRet;
 		}
 
-		bint fg_HW_MeetsMinimumRequirements()
+		bool fg_HW_MeetsMinimumRequirements()
 		{
 			NMib::CProcessorInfo CPUInfo;
 			fg_HW_GetProcessorInfo(CPUInfo);
@@ -241,7 +241,7 @@ namespace NMib
 
 		if (!m_pSystemLog->f_ReadConfig("Malterlib_Log_Config.txt"))
 		{
-			bint bDebugOut = false;
+			bool bDebugOut = false;
 
 #if !defined(DConfig_Release)
 			bDebugOut = true;
@@ -615,7 +615,7 @@ namespace NMib
 	// Make sure that our system module is aggregate
 	CSystemModule g_SystemModule = {DAggregateInit};
 
-	void CSystemModule::f_DestroyAggregates(bint _bDestroySystem)
+	void CSystemModule::f_DestroyAggregates(bool _bDestroySystem)
 	{
 		fg_GetSys()->fp_SubSystem_DestroyAggregates(_bDestroySystem);
 		// Destroy aggregates in reverse order of construction

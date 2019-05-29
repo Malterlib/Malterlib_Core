@@ -1004,7 +1004,7 @@ namespace NMib
 	{
 	public:
 		template <typename t_CKey0, typename t_CKey1>
-		inline_small bint operator()(t_CKey0 &&_Left, t_CKey1 &&_Right) const
+		inline_small bool operator()(t_CKey0 &&_Left, t_CKey1 &&_Right) const
 		{
 			return fg_Forward<t_CKey0>(_Left) < fg_Forward<t_CKey1>(_Right);
 		}
@@ -1023,7 +1023,7 @@ namespace NMib
 	#pragma warning(disable:4309)
 #endif
 		
-		template <typename t_CIntType, bint t_bSigned, bint t_bFundamental>
+		template <typename t_CIntType, bool t_bSigned, bool t_bFundamental>
 		class TCLimitsIntHelper
 		{
 		public:
@@ -1032,7 +1032,7 @@ namespace NMib
 		};
 
 
-		template <typename t_CIntType, bint t_bFundamental>
+		template <typename t_CIntType, bool t_bFundamental>
 		class TCLimitsIntHelper<t_CIntType, 1, t_bFundamental>
 		{
 		public:
@@ -1042,17 +1042,17 @@ namespace NMib
 		};
 
 		
-		template <typename t_CIntType, bint t_bSigned, bint t_bFundamental>
+		template <typename t_CIntType, bool t_bSigned, bool t_bFundamental>
 		const t_CIntType TCLimitsIntHelper<t_CIntType, t_bSigned, t_bFundamental>::mc_Min = t_CIntType(0);
 
-		template <typename t_CIntType, bint t_bSigned, bint t_bFundamental>
+		template <typename t_CIntType, bool t_bSigned, bool t_bFundamental>
 		const t_CIntType TCLimitsIntHelper<t_CIntType, t_bSigned, t_bFundamental>::mc_Max = (t_CIntType(0) - 1);
 
 
-		template <typename t_CIntType, bint t_bFundamental>
+		template <typename t_CIntType, bool t_bFundamental>
 		const t_CIntType TCLimitsIntHelper<t_CIntType, 1, t_bFundamental>::mc_Min = (t_CIntType(1) << ((sizeof(t_CIntType)*8)-1));
 
-		template <typename t_CIntType, bint t_bFundamental>
+		template <typename t_CIntType, bool t_bFundamental>
 		const t_CIntType TCLimitsIntHelper<t_CIntType, 1, t_bFundamental>::mc_Max = t_CIntType((CUnsigned(1) << ((sizeof(t_CIntType)*8)-1)) - CUnsigned(1));
 		
 
@@ -1132,7 +1132,7 @@ namespace NMib
 	
 	
 	template <typename t_CInt0, typename t_CInt1>
-	bint fg_SafeLargerThan(t_CInt0 const &_Left, t_CInt1 const &_Right)
+	bool fg_SafeLargerThan(t_CInt0 const &_Left, t_CInt1 const &_Right)
 	{
 		if (sizeof(t_CInt0) > sizeof(t_CInt1))
 		{
@@ -1624,8 +1624,6 @@ namespace NMib
 #	define DMibConstantTypeHash(d_Type) NMib::TCGetTypeHash<d_Type>::mc_Value
 #endif
 }
-
-typedef NMib::TCAutoClear<bint> zbint;
 
 typedef NMib::TCAutoClear<bool> zbool;
 

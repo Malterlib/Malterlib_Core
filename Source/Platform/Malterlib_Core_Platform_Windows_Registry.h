@@ -101,8 +101,8 @@ namespace NMib
 				return Temp;
 			}
 
-			bint f_KeyExists(const NStr::CStr &_SubKey);
-			bint f_ValueExists(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
+			bool f_KeyExists(const NStr::CStr &_SubKey);
+			bool f_ValueExists(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
 
 			uint32 f_Read_uint32(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
 			NStr::CStr f_Read_Str(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
@@ -114,7 +114,7 @@ namespace NMib
 			NContainer::TCVector<NStr::CStr> f_Read_StrMulti(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::TCVector<NStr::CStr> &_Default);
 			NContainer::CByteVector f_Read_Bin(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::CByteVector &_Default);
 	
-			bint f_IsBinary(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
+			bool f_IsBinary(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
 
 			void f_DeleteValue(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
 			void f_DeleteKey(const NStr::CStr &_SubKey);

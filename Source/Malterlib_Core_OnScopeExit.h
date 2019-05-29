@@ -18,7 +18,7 @@ namespace NMib
 	class TCOnScopeExit
 	{
 		t_FOnExitFunctor mp_fOnExitFunctor;
-		bint mp_bIsValid;
+		bool mp_bIsValid;
 	public:
 		TCOnScopeExit(t_FOnExitFunctor const &_fOnExitFunctor) 
 			: mp_fOnExitFunctor(_fOnExitFunctor)

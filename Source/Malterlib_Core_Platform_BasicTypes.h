@@ -69,8 +69,6 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		typedef unsigned __int128 uint128; // Nope msvs cant do this
 		#define DMibPCanDo_uint128
 
-		typedef int bint; // boolean integer (for better alignment)
-
 		typedef unsigned long int mint; // Memory size unsigned int
 		typedef signed long int smint; // Memory size unsigned int
 		typedef signed long long aint; // Architecture size int
@@ -118,8 +116,6 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 
 		typedef unsigned long long uint64; // Nope msvs cant do this
 		#define DMibPCanDo_uint64
-
-		typedef int bint; // boolean integer (for better alignment)
 
 		typedef unsigned long mint; // Memory size unsigned int
 		typedef signed long smint; // Memory size unsigned int
@@ -177,8 +173,6 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		typedef unsigned __int128 uint128;
 		#define DMibPCanDo_uint128
 
-		typedef int bint; // boolean integer (for better alignment)
-
 		typedef unsigned long int mint; // Memory size unsigned int
 		typedef signed long int smint; // Memory size unsigned int
 		typedef signed long long aint; // Architecture size int
@@ -226,8 +220,6 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 
 		typedef unsigned long long uint64; // Nope msvs cant do this
 		#define DMibPCanDo_uint64
-
-		typedef int bint; // boolean integer (for better alignment)
 
 		typedef unsigned int mint; // Memory size unsigned int
 		typedef signed int smint; // Memory size unsigned int
@@ -279,8 +271,6 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		typedef unsigned __int64 uint64; // Nope msvc cant do this
 		#define DMibPCanDo_uint64
 
-		typedef int bint; // boolean integer (for better alignment)
-
 		typedef __int64 smint; // Memory size unsigned int
 		typedef unsigned __int64 mint; // Memory size signed int
 		typedef __int64 aint; // Architecture size int
@@ -329,8 +319,6 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 
 		typedef unsigned __int64 uint64; // Nope msvc cant do this
 		#define DMibPCanDo_uint64
-
-		typedef int bint; // boolean integer (for better alignment)
 
 		typedef unsigned int mint; // Memory size unsigned int
 		typedef int smint; // Memory size signed int
@@ -381,8 +369,6 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 
 	typedef unsigned long long uint64; // Nope msvs cant do this
 	#define DMibPCanDo_uint64
-
-	typedef int bint; // boolean integer (for better alignment)
 
 	typedef unsigned int mint; // Memory size unsigned int
 	typedef signed int smint; // Memory size unsigned int

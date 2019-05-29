@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+﻿// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 //namespace NOperators
@@ -31,22 +31,22 @@ namespace
 			return m_Value != 0;
 		}
 
-		bint operator < (CTestVal const &_Other) const
+		bool operator < (CTestVal const &_Other) const
 		{
 			return m_Value < _Other.m_Value;
 		}
 
-		bint operator == (CTestVal const &_Other) const
+		bool operator == (CTestVal const &_Other) const
 		{
 			return m_Value == _Other.m_Value;
 		}
 
-		bint operator < (int _Other) const
+		bool operator < (int _Other) const
 		{
 			return m_Value < _Other;
 		}
 
-		bint operator == (int _Other) const
+		bool operator == (int _Other) const
 		{
 			return m_Value == _Other;
 		}
@@ -61,12 +61,12 @@ namespace
 		}
 	};
 
-	bint operator < (int _Left, const CTestVal &_Right)
+	bool operator < (int _Left, const CTestVal &_Right)
 	{
 		return _Left < _Right.f_GetVal();
 	}
 
-	[[maybe_unused]] bint operator == (int _Left, const CTestVal &_Right)
+	[[maybe_unused]] bool operator == (int _Left, const CTestVal &_Right)
 	{
 		return _Left == _Right.f_GetVal();
 	}
@@ -220,7 +220,7 @@ namespace
 
 			DMibTestSuite("Implicit Conversion")
 			{
-				bint bTest = fp64(10.0) < -1000000000.0f;
+				bool bTest = fp64(10.0) < -1000000000.0f;
 				bTest = fp64(10.0) < -1000000000.0;
 				bTest = 10.0f < fp64(-1000000000.0);
 				bTest = 10.0 < fp64(-1000000000.0);
@@ -238,11 +238,11 @@ namespace
 				fFloat = NMib::fg_Clamp(fp64(fp32(fFloat)), -1000000000.0, 1000000000.0);
 
 			};
-									
+
 
 		}
 	};
-	
+
 	DMibTestRegister(COperators_Tests, Malterlib::Core);
 }
 

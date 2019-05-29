@@ -324,7 +324,7 @@ public:
 				ProcessInfo.m_Iter = ProcessMap;
 				while (ProcessInfo.m_Iter)
 				{
-					bint bWasTimeout;
+					bool bWasTimeout;
 					{
 						DMibUnlock(ProcessInfo.m_Lock);
 						bWasTimeout = ProcessInfo.m_Event.f_WaitTimeout(0.05f);

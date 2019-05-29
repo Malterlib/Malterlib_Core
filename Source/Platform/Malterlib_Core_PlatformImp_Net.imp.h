@@ -59,7 +59,7 @@ void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::
 	return pRet;
 }
 
-bint CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error)
+bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error)
 {
 	CResolveRequest* pReq = (CResolveRequest*)_pResolver;
 
@@ -144,7 +144,7 @@ aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject* _pThread)
 	return 0;
 }
 
-bint CAddressResolver::f_IsEmpty()
+bool CAddressResolver::f_IsEmpty()
 {
 	DMibLock(mp_Lock);
 	return mp_PendingList.f_IsEmpty() && mp_DoneOrInProgressList.f_IsEmpty();

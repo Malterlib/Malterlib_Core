@@ -147,9 +147,9 @@ namespace NMib
 		NStr::CStr m_SupportEmail;
 		NStr::CStrNonTracked m_ProgramNameNonTracked;
 		NStr::CStrNonTracked m_SupportEmailNonTracked;
-		bint m_bRunningAsDaemon;
+		bool m_bRunningAsDaemon;
 
-		bint m_bInitDone;
+		bool m_bInitDone;
 		bool m_bIsDll;
 		
 #if DMibConfig_Memory_Shims_EnableGlobal
@@ -218,7 +218,7 @@ namespace NMib
 		void f_AddStdErrLogger();
 		void f_AddFileLogger();
 		
-		void f_RegisterProgram(const NStr::CStr &_ProgramName, const NStr::CStr &_SupportEmail, bint _bRunningAsDaemon)
+		void f_RegisterProgram(const NStr::CStr &_ProgramName, const NStr::CStr &_SupportEmail, bool _bRunningAsDaemon)
 		{
 			m_ProgramName = _ProgramName;
 			m_ProgramNameNonTracked = _ProgramName;
@@ -269,12 +269,12 @@ namespace NMib
 			return m_ProgramNameNonTracked;
 		}
 
-		bint f_GetRunningAsDaemon() const
+		bool f_GetRunningAsDaemon() const
 		{
 			return m_bRunningAsDaemon;
 		}
 
-		void f_SetRunningAsDaemon(bint _bRunningAsDaemon)
+		void f_SetRunningAsDaemon(bool _bRunningAsDaemon)
 		{
 			m_bRunningAsDaemon = _bRunningAsDaemon;
 		}
@@ -321,7 +321,7 @@ namespace NMib
 		void f_Exit(aint _ExitCode);
 		void f_Init();
 
-		bint f_InitDone()
+		bool f_InitDone()
 		{
 			return m_bInitDone;
 		}
@@ -481,7 +481,7 @@ namespace NMib
 #endif
 		
 		void f_Destroy();
-		void f_DestroyAggregates(bint _bDestroySystem);
+		void f_DestroyAggregates(bool _bDestroySystem);
 
 		void f_Init(CSystem *_pSystem);
 

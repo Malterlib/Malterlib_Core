@@ -112,7 +112,7 @@ namespace NMib
 		}
 	}
 
-	void CRunTimeObjectInfo::f_Construct(const ch8 *_pName, const ch8 *_pParent, bint _bIsStatic)
+	void CRunTimeObjectInfo::f_Construct(const ch8 *_pName, const ch8 *_pParent, bool _bIsStatic)
 	{
 //		NSys::fg_DebugOutput((NStr::CFStr256::CFormat("Constructing 0x{nfh,sj16,sf0} {} parent {}" DMibNewLine) << (mint)this << _pName << _pParent).f_GetStr());
 

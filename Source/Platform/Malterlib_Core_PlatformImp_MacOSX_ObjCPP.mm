@@ -330,7 +330,7 @@ namespace NMib
 			[[NSApp dockTile] setBadgeLabel:nil];
 		}
 		
-		bint fg_MacOSX_PlaySound(uint8 const* _pWaveform, mint _nBytes)
+		bool fg_MacOSX_PlaySound(uint8 const* _pWaveform, mint _nBytes)
 		{
 			CAutoReleasePool ARPool;
 			
@@ -1773,11 +1773,11 @@ namespace NMib
 			;
 		}
 		
-		bint CFileChangeNoticationContext::f_Changed(void *_pNotification)
+		bool CFileChangeNoticationContext::f_Changed(void *_pNotification)
 		{
 			DMibLock(m_Lock);
 			CNotification *pNotification = (CNotification *)_pNotification;
-			bint bChanged = false;
+			bool bChanged = false;
 			{
 				DMibLock(pNotification->m_ChangesLock);
 				bChanged = !pNotification->m_Changes.f_IsEmpty();
@@ -1786,7 +1786,7 @@ namespace NMib
 			return bChanged;
 		}
 
-		bint CFileChangeNoticationContext::f_GetNotification(void *_pNotification, CStr &_Path, NFile::EFileChangeNotification &_Notification, CStr &_PathFrom)
+		bool CFileChangeNoticationContext::f_GetNotification(void *_pNotification, CStr &_Path, NFile::EFileChangeNotification &_Notification, CStr &_PathFrom)
 		{
 			DMibLock(m_Lock);
 			CNotification *pNotification = (CNotification *)_pNotification;

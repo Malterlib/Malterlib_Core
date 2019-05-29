@@ -15,7 +15,7 @@ using namespace NMib::NTime;
 using namespace NMib::NMemory;
 using namespace NMib::NContainer;
 
-bint g_bIsSharedLibrary = false;
+bool g_bIsSharedLibrary = false;
 
 mint g_MainModuleBase = 0;
 
@@ -105,12 +105,12 @@ void NSys::fg_Semaphore_Wait(void * _pSemaphore)
 {
 }
 
-bint NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
+bool NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
 {
 	return true;
 }
 
-bint NSys::fg_Semaphore_TryWait(void * _pSemaphore)
+bool NSys::fg_Semaphore_TryWait(void * _pSemaphore)
 {
 	return true;
 }
@@ -353,12 +353,12 @@ NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NMib::NSys::fg_Process_Get
 	return fg_Move(Vars);
 }
 
-inline_never bint NSys::fg_Compiler_AlwaysFalse()
+inline_never bool NSys::fg_Compiler_AlwaysFalse()
 {
 	return false;
 }
 
-assure_used inline_never bint NSys::fg_Compiler_MakeActive(const void *_Reference)
+assure_used inline_never bool NSys::fg_Compiler_MakeActive(const void *_Reference)
 {
 	(void)_Reference;
 	return true;
@@ -384,7 +384,7 @@ void NSys::fg_Debug_DiffStrings(const NMib::NStr::CStr &_FirstStr, const NMib::N
 	DMibError("Not implemented - fg_Debug_DiffStrings");
 }
 
-void NSys::fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NMib::NStr::CStr &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bint _bDisplayGUI)
+void NSys::fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NMib::NStr::CStr &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bool _bDisplayGUI)
 {
 
 }
@@ -431,7 +431,7 @@ void NSys::fg_Debug_ReleaseStackTraceInfo(CStackTraceInfo *_pInfo)
 {
 }
 
-bint NSys::fg_Debug_IsDeadlocked()
+bool NSys::fg_Debug_IsDeadlocked()
 {
 	return false;
 }
@@ -551,7 +551,7 @@ NMib::NStr::CStr NSys::fg_Process_GetCommandLine()
 }
 
 
-bint NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
+bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
 {
 	_Info.m_bDetected = false;
 	_Info.m_pName = nullptr;
@@ -656,7 +656,7 @@ namespace NMib
 #include <sys/utsname.h>
 
 
-bint NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& _oFix, NProcess::EOperatingSystemArch& _Arch)
+bool NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& _oFix, NProcess::EOperatingSystemArch& _Arch)
 {
 	if (g_OperatingSystemMajor >= 0)
 	{
@@ -962,7 +962,7 @@ void NSys::fg_DestroySystem()
 	}
 }
 
-bint NSys::fg_System_BeingDebugged()
+bool NSys::fg_System_BeingDebugged()
 {
 	CStrNonTracked StatusPath = CStrNonTracked::CFormat("/proc/{}/status") << (mint)getpid();
 	auto FileData = fg_ReadProcFS<CStrNonTracked>(StatusPath);
@@ -1368,12 +1368,12 @@ void NSys::NFile::fg_ChangeNotification_Close(void *_pNotification)
 
 }
 
-bint NSys::NFile::fg_ChangeNotification_Changed(void *_pNotification)
+bool NSys::NFile::fg_ChangeNotification_Changed(void *_pNotification)
 {
 	return false;
 }
 
-bint NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom)
+bool NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NMib::NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom)
 {
 	return false;
 }
@@ -1405,7 +1405,7 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAd
 	return ::NMib::NNetwork::ENetAddressType_None;
 }
 
-bint NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
 {
 	DMibError("Not implemented");
 	return false;
@@ -1429,7 +1429,7 @@ void *NSys::NNetwork::fg_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Addre
 	return nullptr;
 }
 
-bint NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress& _opAddress, NMib::NStr::CStr &_Error)
+bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress& _opAddress, NMib::NStr::CStr &_Error)
 {
 	DMibError("Not implemented");
 	return false;
@@ -1451,7 +1451,7 @@ void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _Address) // It is 
 	DMibError("Not implemented");
 }
 
-NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, bint _bIncludeType)
+NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, bool _bIncludeType)
 {
 	DMibError("Not implemented");
 	return "";
@@ -1763,23 +1763,23 @@ void NMib::NSys::fg_UserManagement_RemoveUserFromGroup(NMib::NStr::CStr const &_
 	DMibError("Not implemented");
 }
 
-bint NMib::NSys::fg_UserManagement_IsValidName(NMib::NStr::CStr const &_Name)
+bool NMib::NSys::fg_UserManagement_IsValidName(NMib::NStr::CStr const &_Name)
 {
 	DMibError("Not implemented");
 	return true;
 }
 
-bint NMib::NSys::fg_ConsoleOutputValid()
+bool NMib::NSys::fg_ConsoleOutputValid()
 {
 	return true;
 }
 
-bint NMib::NSys::fg_ConsoleInputValid()
+bool NMib::NSys::fg_ConsoleInputValid()
 {
 	return true;
 }
 
-bint NMib::NSys::fg_ConsoleErrorOutputValid()
+bool NMib::NSys::fg_ConsoleErrorOutputValid()
 {
 	return true;
 }
@@ -1889,7 +1889,7 @@ namespace NMib
 }
 
 
-void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bint _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
+void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bool _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
 {
 	DMibPDebugBreak;
 	return nullptr;
@@ -1931,7 +1931,7 @@ void NSys::fg_Thread_Destroy(void *_pThread)
 	DMibPDebugBreak;
 }
 
-void *NSys::fg_Event_Alloc(bint _bInitialSignal)
+void *NSys::fg_Event_Alloc(bool _bInitialSignal)
 {
 	DMibPDebugBreak;
 	return nullptr;
@@ -1967,13 +1967,13 @@ void NSys::fg_Event_Wait(void * _pEvent)
 	DMibPDebugBreak;
 }
 
-bint NSys::fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout)
+bool NSys::fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout)
 {
 	DMibPDebugBreak;
 	return false;
 }
 
-bint NSys::fg_Event_TryWait(void * _pEvent)
+bool NSys::fg_Event_TryWait(void * _pEvent)
 {
 	DMibPDebugBreak;
 	return false;

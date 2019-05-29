@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 extern "C"
@@ -27,17 +27,17 @@ namespace NMib
 		{
 			extern mint g_PageSize;
 		}
-		inline_always mint fg_Mem_VirtualGranularityAlloc(bint _bLargePages)
+		inline_always mint fg_Mem_VirtualGranularityAlloc(bool _bLargePages)
 		{
 			return NPrivate::g_PageSize;
 		}
 		
-		inline_always mint fg_Mem_VirtualGranularityCommit(bint _bLargePages)
+		inline_always mint fg_Mem_VirtualGranularityCommit(bool _bLargePages)
 		{
 			return NPrivate::g_PageSize;
 		}
 		
-		inline_always mint fg_Mem_VirtualGranularityProtect(bint _bLargePages)
+		inline_always mint fg_Mem_VirtualGranularityProtect(bool _bLargePages)
 		{
 			return NPrivate::g_PageSize;
 		}
@@ -47,12 +47,12 @@ namespace NMib
 			return 0.0f;
 		}
 		
-		inline_always bint fg_Mem_VirtualCanCommit()
+		inline_always bool fg_Mem_VirtualCanCommit()
 		{
 			return true;
 		}
 		
-		inline_always bint fg_Mem_VirtualCanProtect()
+		inline_always bool fg_Mem_VirtualCanProtect()
 		{
 			return true;
 		}

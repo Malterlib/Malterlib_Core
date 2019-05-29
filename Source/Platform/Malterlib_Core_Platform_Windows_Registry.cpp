@@ -142,7 +142,7 @@ namespace NMib
 			return mp_Root;
 		}
 
-		bint CWin32_Registry::f_KeyExists(const NStr::CStr &_SubKey)
+		bool CWin32_Registry::f_KeyExists(const NStr::CStr &_SubKey)
 		{
 			HKEY PathKey = nullptr;
 			NStr::CWStr SubKey = NStr::NPlatform::fg_StrToWindows(_SubKey);
@@ -161,7 +161,7 @@ namespace NMib
 			return true;
 		}
 
-		bint CWin32_Registry::f_ValueExists(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
+		bool CWin32_Registry::f_ValueExists(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
 			HKEY PathKey = nullptr;
 			DWORD ValueType;
@@ -198,7 +198,7 @@ namespace NMib
 		}
 
 
-		bint CWin32_Registry::f_IsBinary(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
+		bool CWin32_Registry::f_IsBinary(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
 		{
 			HKEY PathKey = nullptr;
 			DWORD ValueType;

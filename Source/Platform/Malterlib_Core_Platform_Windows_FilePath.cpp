@@ -22,23 +22,23 @@ namespace NMib
 					return fg_ConvertToWindowsPath(_Path, true, _MAX_PATH, false);
 			}
 
-			NStr::CWStr fg_ConvertToShortWindowsPath(const NStr::CStr &_Path, bint _bAddCurrentDir)
+			NStr::CWStr fg_ConvertToShortWindowsPath(const NStr::CStr &_Path, bool _bAddCurrentDir)
 			{
 				return fg_ConvertToShortWindowsPath<NStr::CWStr, NStr::CWStr>(_Path, _bAddCurrentDir);
 			}
 
 
-			NStr::CWStr fg_ConvertToLongWindowsPath(const NStr::CStr &_Path, bint _bAddCurrentDir)
+			NStr::CWStr fg_ConvertToLongWindowsPath(const NStr::CStr &_Path, bool _bAddCurrentDir)
 			{
 				return fg_ConvertToLongWindowsPath<NStr::CWStr, NStr::CWStr>(_Path, _bAddCurrentDir);
 			}
 
-			NStr::CWStr fg_ConvertToWindowsPath(const NStr::CStr &_Path, bint _bAddCurrentDir, aint _MaxLen)
+			NStr::CWStr fg_ConvertToWindowsPath(const NStr::CStr &_Path, bool _bAddCurrentDir, aint _MaxLen)
 			{
 				return fg_ConvertToWindowsPath<NStr::CWStr, NStr::CWStr>(_Path, _bAddCurrentDir, _MaxLen, true);
 			}
 
-			NStr::CWStr fg_ConvertToWindowsPath(const NStr::CStr &_Path, bint _bAddCurrentDir, aint _MaxLen, bool _bTryShorten)
+			NStr::CWStr fg_ConvertToWindowsPath(const NStr::CStr &_Path, bool _bAddCurrentDir, aint _MaxLen, bool _bTryShorten)
 			{
 				return fg_ConvertToWindowsPath<NStr::CWStr, NStr::CWStr>(_Path, _bAddCurrentDir, _MaxLen, _bTryShorten);
 			}

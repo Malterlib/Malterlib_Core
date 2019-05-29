@@ -233,7 +233,7 @@ namespace NMib
 	{
 #ifdef DCompiler_MSVC
 		static ch8 s_ReturnName[sizeof(DMibPFunctionSignature)];
-		static bint s_bInit = false;
+		static bool s_bInit = false;
 		if (s_bInit)
 			return s_ReturnName;
 		ch8 const *pParseStart = DMibPFunctionSignature;
@@ -281,7 +281,7 @@ namespace NMib
 		return s_ReturnName;
 #else
 		static ch8 s_ReturnName[sizeof(DMibPFunctionSignature)];
-		static bint s_bInit = false;
+		static bool s_bInit = false;
 		if (s_bInit)
 			return s_ReturnName;
 		ch8 const *pParseStart = DMibPFunctionSignature;

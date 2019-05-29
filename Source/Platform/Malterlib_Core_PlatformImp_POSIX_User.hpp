@@ -101,7 +101,7 @@ NMib::NStr::CStr NSys::fg_UserManagement_GetProcessEffectiveGroupName()
 }
 
 
-bint NSys::fg_UserManagement_GroupExists(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr &_ReturnGID)
+bool NSys::fg_UserManagement_GroupExists(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr &_ReturnGID)
 {
 	errno = 0;
 	
@@ -116,7 +116,7 @@ bint NSys::fg_UserManagement_GroupExists(NMib::NStr::CStr const &_GroupName, NMi
 	return pGroup != nullptr;
 }
 
-bint NSys::fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib::NStr::CStr &_ReturnUID)
+bool NSys::fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib::NStr::CStr &_ReturnUID)
 {
 	errno = 0;
 	
@@ -176,7 +176,7 @@ NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemb
 	return Ret;
 }
 
-bint NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName)
+bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName)
 {
 	errno = 0;
 	

@@ -52,7 +52,7 @@ NMib::NStr::CFStr256 NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(
 	return NMib::NStr::CFStr256(pEnv);
 }
 
-bint NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr& _Value)
+bool NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr& _Value)
 {
 	const char *pEnv = getenv(_VariableName);
 	if (!pEnv)
@@ -60,7 +60,7 @@ bint NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr
 	_Value = CStr(pEnv);
 	return true;
 }
-bint NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
+bool NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
 {
 	const char *pEnv = getenv(_VariableName);
 	if (!pEnv)

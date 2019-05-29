@@ -50,7 +50,7 @@ void CWindowsSocket::f_UpdateDelayedSend(const NTime::CTime &_Now)
 {
 	mint LastDelayedData;
 	mint NewDelayedData;
-	bint bDelayedStuffed;
+	bool bDelayedStuffed;
 	{
 		DMibLock(m_DelayedLock);
 		LastDelayedData = m_DelayedData;
@@ -170,7 +170,7 @@ void CWindowsSocketContext::f_CheckFailed()
 
 void CWindowsSocketContext::f_CheckDestroy()
 {
-	bint bCanDestroy = true;
+	bool bCanDestroy = true;
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 		if (!mp_SocketTree.f_IsEmpty())
@@ -365,7 +365,7 @@ ExitThread:
 	return 0;
 }
 
-bint CWindowsSocketContext::f_IsEmpty()
+bool CWindowsSocketContext::f_IsEmpty()
 {
 	return mp_SocketTree.f_IsEmpty();
 }
@@ -422,7 +422,7 @@ NMib::NNetwork::ENetAddressType CWindowsSocketContext::f_GetAddressType(CWindows
 	return _Address.f_GetType();
 }
 
-bint CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
 {
 	NMib::NNetwork::ENetAddressType Type = _Address.f_GetType();
 
@@ -502,7 +502,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 	return f_ResolveAddress(_Address, _PreferType, true);
 }
 
-CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bint _bThrowOnError)
+CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError)
 {
 	f_CheckFailed();
 
@@ -674,7 +674,7 @@ void *CWindowsSocketContext::f_AsyncResolveAddress_Open(const NMib::NStr::CStr &
 	return mp_Resolver.f_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bint CWindowsSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress*& _opAddress, NMib::NStr::CStr &_Error)
+bool CWindowsSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress*& _opAddress, NMib::NStr::CStr &_Error)
 {
 	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress&)_opAddress, _Error);
 }
@@ -694,7 +694,7 @@ void CWindowsSocketContext::f_FreeAddress(CWindowsAddress* _pAddress) // It is O
 	delete _pAddress;
 }
 
-NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const &_Address, bint _bIncludeType)
+NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const &_Address, bool _bIncludeType)
 {
 	NMib::NStr::CStr AddressStr;
 
@@ -826,7 +826,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 
 	ENetAddressType AddressType = Address.f_GetType();
 	SOCKET hSock = INVALID_SOCKET;
-	bint bConnected = false;
+	bool bConnected = false;
 
 	if (	AddressType == ENetAddressType_TCPv4
 		||	AddressType == ENetAddressType_TCPv6)
@@ -1231,7 +1231,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 	return pSocket.f_Detach();
 }
 
-bint CWindowsSocketContext::f_Shutdown(CWindowsSocket *_pSocket)
+bool CWindowsSocketContext::f_Shutdown(CWindowsSocket *_pSocket)
 {
 	int Ret = shutdown((SOCKET)_pSocket->m_pSocket, SD_SEND);
 
@@ -1243,7 +1243,7 @@ bint CWindowsSocketContext::f_Shutdown(CWindowsSocket *_pSocket)
 	return true;
 }
 
-bint CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
+bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 {
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);

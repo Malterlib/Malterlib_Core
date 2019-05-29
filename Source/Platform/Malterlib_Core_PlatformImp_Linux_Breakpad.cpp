@@ -84,7 +84,7 @@ namespace NMib
 				{
 					try
 					{
-						bint bUseMalterlibCrashDumpDir = false;
+						bool bUseMalterlibCrashDumpDir = false;
 
 						NMib::NStr::CStrNonTracked MalterlibCrashDumpDir = NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibCrashDumpDir"));
 						if (!MalterlibCrashDumpDir.f_IsEmpty())

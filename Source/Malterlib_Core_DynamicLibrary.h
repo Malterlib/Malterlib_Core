@@ -202,10 +202,10 @@ namespace NMib
 		}
 #endif
 	
-		bint f_OK() const { return mp_bOK; }
+		bool f_OK() const { return mp_bOK; }
 		operator bool() const { return mp_bOK; }
 
-		bint f_Reload(ch8 const* _pFileName = nullptr)
+		bool f_Reload(ch8 const* _pFileName = nullptr)
 		{
 			if (_pFileName)
 			{
@@ -232,7 +232,7 @@ namespace NMib
 	protected:
 		t_CStr mp_Filename;
 		void* mp_pLibrary;
-		bint mp_bOK;
+		bool mp_bOK;
 
 	protected:
 
@@ -255,7 +255,7 @@ namespace NMib
 		}
 
 		template<typename tf_CStr>
-		bint fp_LoadLibrary(tf_CStr const& _Filename)
+		bool fp_LoadLibrary(tf_CStr const& _Filename)
 		{
 			t_CStrTemp Filename = _Filename;
 			t_CStrTemp CurFilename;
@@ -287,7 +287,7 @@ namespace NMib
 		}
 
 		template<typename t_CType>
-		bint fp_Fetch(t_CType* & _pPtr, char const* _pName)
+		bool fp_Fetch(t_CType* & _pPtr, char const* _pName)
 		{
 			if (!mp_bOK)
 			{

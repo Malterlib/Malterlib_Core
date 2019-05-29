@@ -46,10 +46,10 @@ public:
 	int m_EpollFd;
 	int m_ReadWritePipe[2];		// Used to wake the epoll thread up.
 
-	bint f_PushSocketEvents(CPOSIXSocket* _pSocket, bint _bForRemoval);
+	bool f_PushSocketEvents(CPOSIXSocket* _pSocket, bool _bForRemoval);
 };
 
-bint CPOSIXImpSpecificSocketPoller::CInternal::f_PushSocketEvents(CPOSIXSocket* _pSocket, bint _bForRemoval)
+bool CPOSIXImpSpecificSocketPoller::CInternal::f_PushSocketEvents(CPOSIXSocket* _pSocket, bool _bForRemoval)
 {
 	EPOSIXSocketEvent EventsToRegister = _pSocket->m_RegisteredEvents;
 	
@@ -348,17 +348,17 @@ CPOSIXImpSpecificSocketContext::~CPOSIXImpSpecificSocketContext()
 {
 }
 
-bint CPOSIXImpSpecificSocketContext::f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+bool CPOSIXImpSpecificSocketContext::f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
 {
 	return false;
 }
 
-bint CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType)
+bool CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType)
 {
 	return false;
 }
 
-bint CPOSIXImpSpecificSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool CPOSIXImpSpecificSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
 {
 	return false;
 }

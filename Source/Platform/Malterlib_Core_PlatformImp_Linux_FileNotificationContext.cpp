@@ -325,11 +325,11 @@ void CFileChangeNotificationContext::f_Close(void *_pNotification)
 	delete pNotification;
 }
 
-bint CFileChangeNotificationContext::f_Changed(void *_pNotification)
+bool CFileChangeNotificationContext::f_Changed(void *_pNotification)
 {
 	DMibLock(m_ContextLock);
 	CNotification *pNotification = (CNotification *)_pNotification;
-	bint bChanged = false;
+	bool bChanged = false;
 	{
 		DMibLock(pNotification->m_ChangesLock);
 		bChanged = !pNotification->m_Changes.f_IsEmpty();
@@ -338,7 +338,7 @@ bint CFileChangeNotificationContext::f_Changed(void *_pNotification)
 	return bChanged;
 }
 
-bint CFileChangeNotificationContext::f_GetNotification(void *_pNotification, CStr &_Path, NFile::EFileChangeNotification &_Notification, CStr &_PathFrom)
+bool CFileChangeNotificationContext::f_GetNotification(void *_pNotification, CStr &_Path, NFile::EFileChangeNotification &_Notification, CStr &_PathFrom)
 {
 	DMibLock(m_ContextLock);
 	CNotification *pNotification = (CNotification *)_pNotification;

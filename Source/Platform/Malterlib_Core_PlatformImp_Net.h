@@ -65,10 +65,10 @@ public:
 	~CAddressResolver();
 
 	void* f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish);
-	bint f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error);
+	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error);
 	void f_Close(void* _pResolver);
 
-	bint f_IsEmpty();
+	bool f_IsEmpty();
 };
 
 #ifndef DPlatformFamily_Windows

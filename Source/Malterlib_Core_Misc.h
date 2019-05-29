@@ -23,9 +23,9 @@ namespace NMib
 	{
 		NStr::CStr fg_FormatTime(NTime::CTime &_Time);
 		NStr::CStr fg_FormatTimeFileName(NTime::CTime &_Time);
-		bint fg_CheckAccessRights(NStr::CStr const& _Path, bool _bRandom = true);
-		bint fg_CheckAccessRights(NStr::CStrNonTracked const& _Path, bool _bRandom = true);
-		bint fg_CheckFileAccessRights(NStr::CStr _Path);
+		bool fg_CheckAccessRights(NStr::CStr const& _Path, bool _bRandom = true);
+		bool fg_CheckAccessRights(NStr::CStrNonTracked const& _Path, bool _bRandom = true);
+		bool fg_CheckFileAccessRights(NStr::CStr _Path);
 		
  
 		template <typename t_CContainer, typename t_CType>
@@ -57,7 +57,7 @@ namespace NMib
 				NTraits::TCIsCallableWith
 				<
 					typename NTraits::TCRemoveReference<t_CFunctor>::CType
-					, bint (void)
+					, bool (void)
 				>::mc_Value
 			>::CType*/
 		{
@@ -77,7 +77,7 @@ namespace NMib
 				!NTraits::TCIsCallableWith
 				<
 					typename NTraits::TCRemoveReference<t_CFunctor>::CType
-					, bint (decltype(*(*((typename t_CContainer::CIterator *)nullptr))))
+					, bool (decltype(*(*((typename t_CContainer::CIterator *)nullptr))))
 				>::mc_Value
 			>::CType*/
 		{
@@ -485,7 +485,7 @@ namespace NMib
 		// Don't quite know where to put this.
 		// Looks for the pattern "$(Identifier)" and replaces it with the result from the lookup func.
 		// If the lookup func returns false no substitution is made.
-		template <typename tf_CLookupFunc, typename tf_CString> // Of the form: bint Func(tf_CString const &_VarName, tf_CString &_Value)
+		template <typename tf_CLookupFunc, typename tf_CString> // Of the form: bool Func(tf_CString const &_VarName, tf_CString &_Value)
 		tf_CString fg_EvaluateStringWithVariables(tf_CString const &_Str, tf_CLookupFunc &&_LookupFunc)
 		{
 			int iDollarPos = _Str.f_FindChar('$');

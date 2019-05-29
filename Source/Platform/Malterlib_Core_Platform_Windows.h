@@ -10,7 +10,7 @@ extern VOID (WINAPI *g_fOrgExitProcess)(__in  UINT _ExitCode);
 extern BOOL (WINAPI *g_fOrgTerminateProcess)(__in  HANDLE _hProcess, __in  UINT _ExitCode);
 extern NMib::NAtomic::TCAtomicAggregate<smint> g_bDoneMalterlibInitAll;
 extern HINSTANCE g_hDllInstance;
-extern bint g_bIsDll;
+extern bool g_bIsDll;
 
 namespace NMib
 {
@@ -18,7 +18,7 @@ namespace NMib
 	{
 		void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
 
-		inline_small bint fg_IsGoodStackPtr(void *_pAddr, mint _Len, mint _StackStart, mint _StackEnd)
+		inline_small bool fg_IsGoodStackPtr(void *_pAddr, mint _Len, mint _StackStart, mint _StackEnd)
 		{
 			mint StackStart = _StackStart;
 			mint StackEnd = _StackEnd;
@@ -31,7 +31,7 @@ namespace NMib
 			return AddrEnd <= StackStart && AddrStart >= StackEnd;
 		}
 
-		bint fg_IsVista();
+		bool fg_IsVista();
 		bool fg_ThisThreadOwnsDllLock();
 
 	}

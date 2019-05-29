@@ -70,7 +70,7 @@ NMib::NNetwork::ENetAddressType CPOSIXSocketContext::f_GetAddressType(CPOSIXAddr
 	return _Address.f_GetType();
 }
 
-bint CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
 {
 	NMib::NNetwork::ENetAddressType Type = _Address.f_GetType();
 
@@ -167,7 +167,7 @@ tf_CStr fg_FormatGAI(typename tf_CStr::CFormat &_Desc, int _Err)
 	return Ret;
 }
 
-CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, ENetAddressType _PreferType, bint _bThrowOnError)
+CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, ENetAddressType _PreferType, bool _bThrowOnError)
 {
 	NMib::NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct();
 
@@ -357,7 +357,7 @@ void *CPOSIXSocketContext::f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_A
 	return mp_Resolver.f_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bint CPOSIXSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress*& _opAddress, NMib::NStr::CStr &_Error)
+bool CPOSIXSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress*& _opAddress, NMib::NStr::CStr &_Error)
 {
 	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress&)_opAddress, _Error);
 }
@@ -386,7 +386,7 @@ void CPOSIXSocketContext::f_FreeAddress(CPOSIXAddress* _pAddress) // It is OK to
 #	endif
 #endif
 
-NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_Address, bint _bIncludeType)
+NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_Address, bool _bIncludeType)
 {
 	NMib::NStr::CStr AddressStr;
 
@@ -538,7 +538,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 {
 	mint Retries = 32;
 	int FD;
-	bint bConnected;
+	bool bConnected;
 	while (Retries)
 	{
 		bConnected = false;
@@ -907,7 +907,7 @@ void CPOSIXSocketContext::f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunc
 	}
 }
 
-bint CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
+bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
 {
 	if (_pSocket->m_FD != -1)
 	{
@@ -1180,7 +1180,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 	 	, EPOSIXSocketMode _Mode
 	 	, EPOSIXSocketEvent _Events
 	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, bint _bFromInherit
+	 	, bool _bFromInherit
 	)
 {
 #ifdef DPlatformFamily_OSX

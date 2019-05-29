@@ -23,7 +23,7 @@ namespace NMib
 			}
 
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
-			tf_CRet fg_ConvertToWindowsPath(const tf_CSource &_Path, bint _bAddCurrentDir, aint _MaxLen, bool _bTryShorten)
+			tf_CRet fg_ConvertToWindowsPath(const tf_CSource &_Path, bool _bAddCurrentDir, aint _MaxLen, bool _bTryShorten)
 			{
 				if (_Path.f_IsEmpty())
 					return tf_CRet();
@@ -117,7 +117,7 @@ namespace NMib
 			}
 
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
-			tf_CRet fg_ConvertToShortWindowsPath(const tf_CSource &_Path, bint _bAddCurrentDir)
+			tf_CRet fg_ConvertToShortWindowsPath(const tf_CSource &_Path, bool _bAddCurrentDir)
 			{
 				if (_Path.f_IsEmpty())
 					return tf_CRet();
@@ -158,7 +158,7 @@ namespace NMib
 			}
 
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
-			tf_CRet fg_ConvertToLongWindowsPath(const tf_CSource &_Path, bint _bAddCurrentDir)
+			tf_CRet fg_ConvertToLongWindowsPath(const tf_CSource &_Path, bool _bAddCurrentDir)
 			{
 				if (_Path.f_IsEmpty())
 					return tf_CRet();

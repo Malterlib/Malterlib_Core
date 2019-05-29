@@ -111,7 +111,7 @@ namespace NMib
 
 	struct CVirtualMachineInfo
 	{
-		bint m_bDetected;
+		bool m_bDetected;
 		ch8 const* m_pName;		
 	};
 
@@ -133,8 +133,8 @@ namespace NMib
 		\***************************************************************************************************/
 
 		void fg_HW_GetProcessorInfo(CProcessorInfo& _Info);
-		bint fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info);
-		bint fg_HW_MeetsMinimumRequirements();
+		bool fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info);
+		bool fg_HW_MeetsMinimumRequirements();
 
 		/***************************************************************************************************\
 		|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|
@@ -153,9 +153,9 @@ namespace NMib
 		void *fg_Mem_VirtualAlloc(mint &_Size, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default, mint _Alignment = 0);
 		void *fg_Mem_VirtualRealloc(void *_pMem, mint &_Size, mint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default);
 		void *fg_Mem_VirtualResize(void *_pMem, mint &_Size, mint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default);
-		mint fg_Mem_VirtualGranularityAlloc(bint _bLargePages);
-		mint fg_Mem_VirtualGranularityCommit(bint _bLargePages);
-		mint fg_Mem_VirtualGranularityProtect(bint _bLargePages);
+		mint fg_Mem_VirtualGranularityAlloc(bool _bLargePages);
+		mint fg_Mem_VirtualGranularityCommit(bool _bLargePages);
+		mint fg_Mem_VirtualGranularityProtect(bool _bLargePages);
 		void fg_Mem_VirtualCommit(void *_pMem, mint _Size);
 		void fg_Mem_VirtualProtect(void *_pMem, mint _Size, uaint _Protect);
 		void fg_Mem_VirtualDecommit(void *_pMem, mint _Size);
@@ -163,8 +163,8 @@ namespace NMib
 		mint fg_Mem_VirtualSize(const void *_pMem);
 		mint fg_Mem_VirtualTrySize(const void *_pMem);
 		fp32 fg_Mem_VirtualOverhead(void const *_pMem);
-		bint fg_Mem_VirtualCanCommit();
-		bint fg_Mem_VirtualCanProtect();
+		bool fg_Mem_VirtualCanCommit();
+		bool fg_Mem_VirtualCanProtect();
 		void fg_Mem_VirtualFlushInstructionCache(void *_pMem, mint _Size);
 
 		/***************************************************************************************************\
@@ -179,10 +179,10 @@ namespace NMib
 		void fg_Semaphore_Free(void * _pSemaphore);
 		void fg_Semaphore_Increase(void * _pSemaphore, mint _Count);
 		void fg_Semaphore_Wait(void * _pSemaphore);
-		bint fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout);
-		bint fg_Semaphore_TryWait(void * _pSemaphore);
+		bool fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout);
+		bool fg_Semaphore_TryWait(void * _pSemaphore);
 
-		void *fg_Event_Alloc(bint _InitialSignal);
+		void *fg_Event_Alloc(bool _InitialSignal);
 		void fg_Event_Free(void *_pEvent);
 		void fg_Event_PrepareFork(void *_pEvent);
 		void fg_Event_ForkedChild(void *_pEvent);
@@ -190,8 +190,8 @@ namespace NMib
 		void fg_Event_SetSignaled(void * _pEvent);
 		void fg_Event_ResetSignaled(void * _pEvent);
 		void fg_Event_Wait(void * _pEvent);
-		bint fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout);
-		bint fg_Event_TryWait(void * _pEvent);
+		bool fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout);
+		bool fg_Event_TryWait(void * _pEvent);
 
 		void *fg_Thread_GetCurrent();
 		mint fg_Thread_GetCurrentUID();
@@ -244,11 +244,11 @@ namespace NMib
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
 
-		inline_never bint fg_Compiler_AlwaysFalse();
-		bint fg_Compiler_MakeActive(const void *_Reference);
-		bint fg_Compiler_MakeActive(int _Dummy, ...);
+		inline_never bool fg_Compiler_AlwaysFalse();
+		bool fg_Compiler_MakeActive(const void *_Reference);
+		bool fg_Compiler_MakeActive(int _Dummy, ...);
 /*		template <typename t_CAny>
-		static bint fg_Compiler_MakeActive(t_CAny &&_Other)
+		static bool fg_Compiler_MakeActive(t_CAny &&_Other)
 		{
 			return fg_Compiler_MakeActive((const void * &)_Other);
 		}*/

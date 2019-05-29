@@ -36,7 +36,7 @@ namespace NMib
 		CRunTimeObjectInfo *m_pParent; // 4 bytes
 		CRunTimeObjectInfo *m_pNamespace; // 4 bytes
 		const ch8 *m_pName;
-		bint m_bIsStatic;
+		bool m_bIsStatic;
 		// Total of 42 bytes + 4 bytes for virtual table = 46 bytes
 //		const ch8 *m_pNamespace;
 //		const ch8 *m_pParentName;
@@ -48,7 +48,7 @@ namespace NMib
 		static CRunTimeObjectInfo *f_GetObject(const ch8*_pName);
 
 		void f_ForEachLeafChild(NFunction::TCFunction<void (CRunTimeObjectInfo const &_RuntimeObjectInfo)> const &_fOnChild) const;
-		void f_Construct(const ch8 *_pName, const ch8 *_pParent, bint _bIsStatic = true);
+		void f_Construct(const ch8 *_pName, const ch8 *_pParent, bool _bIsStatic = true);
 		void f_Destruct();
 
 		virtual ~CRunTimeObjectInfo();

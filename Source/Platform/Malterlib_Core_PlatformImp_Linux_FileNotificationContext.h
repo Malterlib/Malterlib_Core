@@ -243,8 +243,8 @@ public:
 
 	void *f_Open(const CStr &_FileName, EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo);
 	void f_Close(void *_pNotification);
-	bint f_Changed(void *_pNotification);
-	bint f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, CStr &_PathFrom);
+	bool f_Changed(void *_pNotification);
+	bool f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, CStr &_PathFrom);
 	
 	int m_NotifyDescriptor;
 	int m_PollDescriptor;

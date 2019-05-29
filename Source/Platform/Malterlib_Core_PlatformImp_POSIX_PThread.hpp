@@ -284,10 +284,10 @@ public:
 			DMibError(NPlatform::fg_FormatErrno("pthread_mutex_unlock (semaphore signal)", ErrNo));
 	}
 
-	bint f_TryWait()
+	bool f_TryWait()
 	{
 		int ErrNo;
-		bint bRet = false;
+		bool bRet = false;
 		if ((ErrNo = pthread_mutex_lock(fp_GetMutex())) != 0)
 			DMibError(NPlatform::fg_FormatErrno("pthread_mutex_lock (semaphore try wait)", ErrNo));
 		if (m_Value > 0)
@@ -319,10 +319,10 @@ public:
 			DMibError(NPlatform::fg_FormatErrno("pthread_mutex_unlock (semaphore wait)", ErrNo));
 	}
 
-	bint f_WaitTimeout(fp32 _Timeout)
+	bool f_WaitTimeout(fp32 _Timeout)
 	{
 		int ErrNo;
-		bint bRet = true;
+		bool bRet = true;
 		CClockRaw TimeWait;
 		TimeWait.f_Start();
 		if ((ErrNo = pthread_mutex_lock(fp_GetMutex())) != 0)
@@ -403,13 +403,13 @@ void NSys::fg_Semaphore_Wait(void * _pSemaphore)
 	pSemaphore->f_Wait();
 }
 
-bint NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
+bool NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
 {
 	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
 	return pSemaphore->f_WaitTimeout(_Timeout * CSystem_Time::fs_GetTimeSpeedReciprocal());
 }
 
-bint NSys::fg_Semaphore_TryWait(void * _pSemaphore)
+bool NSys::fg_Semaphore_TryWait(void * _pSemaphore)
 {
 	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
 	return pSemaphore->f_TryWait();
@@ -587,14 +587,14 @@ bool fg_SetMachPriority(void *_pThread, mint _Priority)
 }
 #endif
 
-void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bint _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
+void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bool _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
 {
 	int Result;
 
 	struct CData
 	{
 	private:
-		bint mp_bThreadAttribsRequired = false;
+		bool mp_bThreadAttribsRequired = false;
 		pthread_attr_t mp_ThreadAttribs;
 
 	public:
@@ -806,7 +806,7 @@ public:
 	NMib::NThread::CSemaphore m_Semaphore;
 	NMib::NThread::CMutual m_Lock;
 
-	CEventEmulation(bint _bStartState)
+	CEventEmulation(bool _bStartState)
 		:
 		m_Semaphore(0, TCLimitsInt<aint>::mc_Max)
 	{
@@ -841,7 +841,7 @@ public:
 		m_Lock.f_Unlock();
 	}
 	
-	bint f_TryWait()
+	bool f_TryWait()
 	{
 		DMibLockTyped(NMib::NThread::CMutual, m_Lock);
 		
@@ -864,7 +864,7 @@ public:
 		m_Semaphore.f_Wait();		
 	}
 	
-	inline_small bint f_WaitTimeout(fp64 _Timeout)
+	inline_small bool f_WaitTimeout(fp64 _Timeout)
 	{
 		int LockSequence;
 		{
@@ -928,7 +928,7 @@ public:
 
 NMemory::TCPoolAggregate<CEventEmulation, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_EventEmulationPool = {};
 
-void *NSys::fg_Event_Alloc(bint _bInitialSignal)
+void *NSys::fg_Event_Alloc(bool _bInitialSignal)
 {
 	auto *pEvent = g_EventEmulationPool.f_New(_bInitialSignal);
 	return pEvent;
@@ -970,12 +970,12 @@ void NSys::fg_Event_Wait(void * _pEvent)
 	((CEventEmulation *)_pEvent)->f_Wait();
 }
 
-bint NSys::fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout)
+bool NSys::fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout)
 {
 	return ((CEventEmulation *)_pEvent)->f_WaitTimeout(_Timeout);
 }
 
-bint NSys::fg_Event_TryWait(void * _pEvent)
+bool NSys::fg_Event_TryWait(void * _pEvent)
 {
 	return ((CEventEmulation *)_pEvent)->f_TryWait();
 }

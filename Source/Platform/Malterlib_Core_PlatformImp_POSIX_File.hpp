@@ -60,7 +60,7 @@ namespace NMib
 		namespace NFile
 		{
 			template <typename tf_CStr>
-			bint fg_FileExistsGeneral(const tf_CStr &_FileName, uint32 _AttribMask)
+			bool fg_FileExistsGeneral(const tf_CStr &_FileName, uint32 _AttribMask)
 			{
 				tf_CStr File = fg_ConvertToPOSIXPath(_FileName);
 				struct stat Stats;
@@ -124,12 +124,12 @@ namespace NMib
 	}
 }
 
-bint NSys::NFile::fg_FileExists(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileAttrib _AttribMask)
+bool NSys::NFile::fg_FileExists(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileAttrib _AttribMask)
 {
 	return fg_FileExistsGeneral(CStr(_FileName), _AttribMask);
 }
 
-bint NSys::NFile::fg_FileExists(const NMib::NStr::CStrNonTracked &_FileName, NMib::NFile::EFileAttrib _AttribMask)
+bool NSys::NFile::fg_FileExists(const NMib::NStr::CStrNonTracked &_FileName, NMib::NFile::EFileAttrib _AttribMask)
 {
 	return fg_FileExistsGeneral(_FileName, _AttribMask);
 }
@@ -646,7 +646,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		OpenFlags |= O_SYNC;
 #endif
 
-	bint bExists = NSys::NFile::fg_FileExistsGeneral(_FileName, EFileAttrib_File|EFileAttrib_Directory);
+	bool bExists = NSys::NFile::fg_FileExistsGeneral(_FileName, EFileAttrib_File|EFileAttrib_Directory);
 	if (bExists)
 	{
 		struct stat Stats;
@@ -2075,14 +2075,14 @@ void *NSys::NFile::fg_FindOpen(const NMib::NStr::CStr &_FindPattern)
 	return pFind;
 }
 
-static bint fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
+static bool fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
 {
 	NStr::CStr Temp0 = NStr::CStr(_pStr).f_UpperCase();
 	NStr::CStr Temp1 = NStr::CStr(_pPattern).f_UpperCase();
 	const char *pParse = Temp0;
 	const char *pPattern = Temp1;
 	mint nWildCardAttempt = 0; // This ensures that e.g. *.hcl matches 0x0409.Estonian.hcl
-	bint bWildCardSearch = false;
+	bool bWildCardSearch = false;
 	
 	while (true)
 	{
@@ -2168,7 +2168,7 @@ const NMib::NStr::CStr *NSys::NFile::fg_FindNext(void *_pFindContext, NMib::NFil
 		
 		if (FileName != "." && FileName != "..")
 		{
-			bint bAccept = fsg_MatchPattern(FileName, pFind->m_SearchPattern);
+			bool bAccept = fsg_MatchPattern(FileName, pFind->m_SearchPattern);
 
 			if (bAccept)
 			{

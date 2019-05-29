@@ -9,7 +9,7 @@ namespace NMib
 {
 	namespace NPlatform
 	{
-		bint fg_IsVista()
+		bool fg_IsVista()
 		{
 			if (NLocal::g_VersionInfo.dwPlatformId == VER_PLATFORM_WIN32_NT && 
 					(NLocal::g_VersionInfo.dwMajorVersion >= 6 ) )

@@ -93,7 +93,7 @@ namespace NMib
 		void fg_System_ReportContractViolation(const NMib::NStr::CStrNonTracked &_Message);
 		NMib::NStr::CStrNonTracked fg_System_GetContractViolationMessage();
 		
-		bint fg_System_GetOperatingSystemVersion(int& o_Major, int& o_Minor, int& o_Fix, EOperatingSystemArch &o_Arch);
+		bool fg_System_GetOperatingSystemVersion(int& o_Major, int& o_Minor, int& o_Fix, EOperatingSystemArch &o_Arch);
 		
 		void fg_System_ExitProcess(aint _ExitCode);
 
@@ -105,9 +105,9 @@ namespace NMib
 		void fg_ConsoleErrorOutput(const NMib::NStr::CStrNonTracked &_Str);
 		void fg_ConsoleErrorOutputFlush();
 		void fg_ConsoleErrorOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str);
-		bint fg_ConsoleOutputValid();
-		bint fg_ConsoleErrorOutputValid();
-		bint fg_ConsoleInputValid();
+		bool fg_ConsoleOutputValid();
+		bool fg_ConsoleErrorOutputValid();
+		bool fg_ConsoleInputValid();
 		
 		struct CConsoleProperties
 		{
@@ -126,7 +126,7 @@ namespace NMib
 		void fg_InterProcess_MemFree(void *_pHandle, void *_pMemory);
 
 		void fg_Thread_Sleep(fp32 _Seconds);
-		void *fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bint _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID);
+		void *fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bool _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID);
 		void fg_Thread_SetPriority(void *_pThread, mint _Priority);
 		void fg_Thread_SetAffinity(void *_pThread, mint _Affinity);
 		void fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode);
@@ -144,7 +144,7 @@ namespace NMib
 		void fg_Thread_WillNotBlockUntilExit(void *_pThreadDestroyContext);
 		void fg_Thread_EndDestroy(void *_pThreadDestroyContext);
 
-		bint fg_System_BeingDebugged();
+		bool fg_System_BeingDebugged();
 
 		void fg_Debug_DiffStrings(const NMib::NStr::CStr &_FirstStr, const NMib::NStr::CStr &_SecondStr, const NMib::NStr::CStr &_FirstName = "", const NMib::NStr::CStr &_SecondName = "");
 
@@ -155,7 +155,7 @@ namespace NMib
 		|						deadlocked and that the user can decide to create a crash dump.				|
 		\*_________________________________________________________________________________________________*/
 		typedef 
-		bint // Return true if the user choose to create a crash dump.
+		bool // Return true if the user choose to create a crash dump.
 		(FDeadlockUserNotify)
 		(
 		);
@@ -165,7 +165,7 @@ namespace NMib
 		void fg_Debug_StartDeadlockDetector(fp64 _Timeout);
 		void fg_Debug_NotDeadlocked();
 		void fg_Debug_StopDeadlockDetector();
-		bint fg_Debug_IsDeadlocked();
+		bool fg_Debug_IsDeadlocked();
 		void fg_Debug_EnableCrashDumpCaches();
 		void fg_Debug_EnableCrashDumps();
 		EDebugCheckFailureAction fg_Debug_ReportContractFailure(const ch8 *_pFileName, int32 _Line, void *_pCodePointer, const NMib::NStr::CStrNonTracked &_ErrorMessage);
@@ -173,7 +173,7 @@ namespace NMib
 
 		CMibCodeAddress fg_System_GetStackTrace(aint _iDepth);
 		mint fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth);
-		void fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NMib::NStr::CStr &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bint _bDisplayGUI);
+		void fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NMib::NStr::CStr &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bool _bDisplayGUI);
 		void fg_Debug_GenerateMemoryDump
 			(
 			 	NMib::NContainer::TCVector<void*, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Locations
@@ -200,7 +200,7 @@ namespace NMib
 		|							false if execution should end	 										|
 		|																									|
 		\*_________________________________________________________________________________________________*/
-		typedef bint (FCrashDumpUserNotify)(const NMib::NStr::CStr &_CustomMessage,
+		typedef bool (FCrashDumpUserNotify)(const NMib::NStr::CStr &_CustomMessage,
 											const NMib::NStr::CStr &_ProgramName,
 											const NMib::NStr::CStr &_SupportEmail,
 											const NMib::NStr::CStr &_FileName,
@@ -225,8 +225,8 @@ namespace NMib
 		NMib::NStr::CStrNonTracked fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName);
 		NMib::NStr::CFStr256 fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CFStr256 const &_VariableName);
 
-		bint fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value);
-		bint fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value);
+		bool fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value);
+		bool fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value);
 		void fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr const &_Value);
 		void fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked const &_Value);
 
@@ -302,11 +302,11 @@ namespace NMib
 		NMib::NStr::CStr fg_UserManagement_GetProcessRealGroupName();
 		NMib::NStr::CStr fg_UserManagement_GetProcessEffectiveGroupName();
 		
-		bint fg_UserManagement_GroupExists(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr &_ReturnGID);
+		bool fg_UserManagement_GroupExists(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr &_ReturnGID);
 		void fg_UserManagement_CreateGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr &_ReturnGID);
 		void fg_UserManagement_DeleteGroup(NMib::NStr::CStr const &_GroupName);
 		
-		bint fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib::NStr::CStr &_ReturnUID);
+		bool fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib::NStr::CStr &_ReturnUID);
 		NMib::NStr::CStr fg_UserManagement_MakeValidUserName(NMib::NStr::CStr const &_UserName);
 		NMib::NStr::CStr fg_UserManagement_MakeValidGroupName(NMib::NStr::CStr const &_GroupName);
 		void fg_UserManagement_CreateUser
@@ -331,9 +331,9 @@ namespace NMib
 		
 		void fg_UserManagement_AddUserToGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName);
 		void fg_UserManagement_RemoveUserFromGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName);
-		bint fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName);
+		bool fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName);
 		NMib::NContainer::TCVector<NMib::NStr::CStr> fg_UserManagement_UserGetMemberOfGroups(NMib::NStr::CStr const &_UserName);
-		bint fg_UserManagement_IsValidName(NMib::NStr::CStr const &_Name);
+		bool fg_UserManagement_IsValidName(NMib::NStr::CStr const &_Name);
 		
 		/*
 		Desktop Environment

@@ -45,7 +45,7 @@ struct CPOSIXSocket
 
 	// This is stull that will be changed or use by the poller etc...
 	NMib::NThread::CMutual m_Lock;
-	bint m_bInitialWriteNotification;
+	bool m_bInitialWriteNotification;
 	NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
 	NAtomic::TCAtomic<uint32> m_StateAtomic;
 	int m_CloseError;
@@ -120,9 +120,9 @@ public:
 	CPOSIXImpSpecificSocketContext();
 	~CPOSIXImpSpecificSocketContext();
 
-	bint f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes);
-	bint f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
-	bint f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
+	bool f_CreateAddress(CPOSIXAddress& _oAddr, NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes);
+	bool f_ResolveAddress(CPOSIXAddress& _oAddr, const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
+	bool f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
 	CPOSIXAddress* f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const* _pRawData, mint _nDataBytes);
 
 	struct CSocketCreateParams
@@ -148,21 +148,21 @@ public:
 		CPOSIXAddress* f_DuplicateAddress(CPOSIXAddress const &_Address);
 
 		NMib::NNetwork::ENetAddressType f_GetAddressType(CPOSIXAddress const& _pAddress);
-		bint f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
+		bool f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
 		CPOSIXAddress* f_SetAddressRaw(CPOSIXAddress* _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const* _opRawData, mint _nDataBytes);
 
-		CPOSIXAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bint _bThrowOnError);
+		CPOSIXAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError);
 		CPOSIXAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
 
 		void *f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish);
-		bint f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress*& _opAddress, NMib::NStr::CStr &_Error);
+		bool f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress*& _opAddress, NMib::NStr::CStr &_Error);
 		void f_AsyncResolveAddress_Close(void *_pResolver);
 
 		int f_CompareAddresses(CPOSIXAddress const& _pFirst, CPOSIXAddress const& _pSecond);
 
 		void f_FreeAddress(CPOSIXAddress* _pAddress); // It is OK to free a nullptr address.
 
-		NMib::NStr::CStr f_GetAddressString(CPOSIXAddress const &_Address, bint _bIncludeType);
+		NMib::NStr::CStr f_GetAddressString(CPOSIXAddress const &_Address, bool _bIncludeType);
 
 	// Connection Operations	
 		CPOSIXSocket *f_AsyncConnect
@@ -191,7 +191,7 @@ public:
 
 		void f_StartSocket(CPOSIXSocket *_pSocket);
 
-		bint f_Close(CPOSIXSocket* _pSocket);
+		bool f_Close(CPOSIXSocket* _pSocket);
 		void f_Shutdown(CPOSIXSocket* _pSocket);
 
 		mint f_Receive(CPOSIXSocket *_pSocket, void *_pData, mint _DataLen);
@@ -231,7 +231,7 @@ private:
 			return 0;
 		}
 
-		mint f_Stop(bint _bBlock) override
+		mint f_Stop(bool _bBlock) override
 		{
 			mp_Poller.f_Break();
 			return NMib::NThread::CThread::f_Stop(_bBlock);
@@ -300,7 +300,7 @@ private:
 		 	, EPOSIXSocketMode _Mode
 		 	, EPOSIXSocketEvent _Events
 		 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-		 	, bint _bFromInherit = false
+		 	, bool _bFromInherit = false
 		)
 	;
 	void fp_PrepareUnixListen(CPOSIXAddress const &_Address); 
