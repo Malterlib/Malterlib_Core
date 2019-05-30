@@ -23,7 +23,7 @@ namespace NMib
 {
 	namespace NSys
 	{
-		int fg_Compiler_MakeActive(int _Dummy, ...);
+		bool fg_Compiler_MakeActive(int _Dummy, ...);
 	}
 }
 
