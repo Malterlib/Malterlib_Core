@@ -108,7 +108,7 @@ SignXcode()
 		sudo codesign -f -s MalterlibXcodeCert "$XcodeLocation"
 
 		echo Removivg xattrs
-		sudo xattr -rc "$XcodeLocation"
+		sudo xattr -rc "$XcodeLocation" || true
 		echo Adding Xcode with spctl
 		sudo spctl --add --label "Xcode" "$XcodeLocation"
 		sudo touch "$XcodeLocation/Contents/unsigned"
