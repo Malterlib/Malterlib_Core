@@ -131,7 +131,7 @@ UpdateDependencies()
 		brew upgrade
 	fi
 
-	brew install cmake go graphviz ruby ninja
+	brew install cmake go graphviz ruby ninja git git-lfs
 
 	gem install -n /usr/local/bin rubygems-update
 	gem install -n /usr/local/bin xcpretty
