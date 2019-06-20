@@ -296,6 +296,7 @@ Property
 			{
 				Target.PlatformToolset "v140"
 				Target.PlatformToolset "v141"
+				Target.PlatformToolset "v142"
 			}
 		}
 	}
