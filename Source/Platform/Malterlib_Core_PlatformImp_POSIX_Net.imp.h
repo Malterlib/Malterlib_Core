@@ -945,7 +945,7 @@ void CPOSIXSocketContext::f_Shutdown(CPOSIXSocket* _pSocket)
 		if (errno != EAGAIN && errno != ENOTCONN)
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("shutdown", errno));
 	}
-
+	else
 	{
 		DMibLock(_pSocket->m_Lock);
 		_pSocket->m_bShutdownCalled = true;
@@ -1056,9 +1056,9 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetCloseReason(CPOSIXSocket* _pSocket)
 	if (CloseReason == 0)
 	{
 		if (bGracefulClose)
-			return NMib::NStr::CStr("Connection gracefully disconnected");
+			return "Connection gracefully disconnected";
 		else
-			return {};
+			return "End of file encountered";
 	}
 
 	return NMib::NPlatform::fg_FormatErrno("", CloseReason);

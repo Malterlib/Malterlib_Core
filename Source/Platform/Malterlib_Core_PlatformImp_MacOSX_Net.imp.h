@@ -198,199 +198,143 @@ void CPOSIXImpSpecificSocketPoller::f_DeregisterSocket(CPOSIXSocket* _pSocket)
 void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 {
 	static const int nMaxEvents = 64;
-	struct kevent lIncomingEvents[nMaxEvents];
-	int nEvents;
-	int const KQueue = mp_pInternal->m_KQueue;
+	struct kevent IncomingEvents[nMaxEvents];
+	timespec PollTimeout = {0, 0};
 
-	timespec Timeout;
-	NMemory::fg_MemClear(&Timeout, sizeof(Timeout)); // 0 == Poll
-//	Timeout.tv_nsec = 1000000000 / 2000; // Half a millisecond
-
-	while (		mp_pInternal->m_bBreak.f_Load() == 0
-			&&	_pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
+	while (mp_pInternal->m_bBreak.f_Load() == 0 && _pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
 	{
-		// Get changes
-		NContainer::TCVector<struct kevent> lChanges = fg_Move(mp_pInternal->m_ChangeQueue.f_Take());
+		NContainer::TCVector<struct kevent> KQueueChanges = mp_pInternal->m_ChangeQueue.f_Take();
 
-		timespec *pTimeout = nullptr; // By default block
-		
-		if (!lChanges.f_IsEmpty())
-			pTimeout = &Timeout; // If we have changes, just poll to be able to finish delete changes
-		
-		// Query the kqueue
-		nEvents = kevent
+		int nEvents = kevent
 			(
-			 	KQueue
-				, lChanges.f_GetArray()
-			 	, lChanges.f_GetLen()
-				, lIncomingEvents
+			 	mp_pInternal->m_KQueue
+				, KQueueChanges.f_GetArray()
+			 	, KQueueChanges.f_GetLen()
+				, IncomingEvents
 				, nMaxEvents
-				, pTimeout
+				, KQueueChanges.f_IsEmpty() ? nullptr : &PollTimeout
 			)
 		;
 
-		// Process any events that have occured.
-		bool bError;
-		for (int iE = 0
-			;iE < nEvents
-			;++iE)
+		for (int iEvent = 0; iEvent < nEvents; ++iEvent)
 		{
-			struct kevent const& CurEvent = lIncomingEvents[iE];
+			auto const &Event = IncomingEvents[iEvent];
 
-			bError = (CurEvent.flags & EV_ERROR) ? true : false;
-
-			if (CurEvent.filter == EVFILT_READ)
+			if (Event.ident == mp_pInternal->m_ReadWritePipe[0])
 			{
-				if (CurEvent.ident == mp_pInternal->m_ReadWritePipe[0])
-				{ // This was just a wake up event.
+				// This was just a wake up event.
+				if (Event.filter == EVFILT_READ)
+				{
 					char Buf[16];
+
 					int ReadRet;
 					do
 					{
 						ReadRet = read(mp_pInternal->m_ReadWritePipe[0], Buf, sizeof(Buf));
-					} while(ReadRet > 0);					
+					}
+					while(ReadRet > 0)
+						;
+				}
+				continue;
+			}
+
+			CPOSIXSocket *pSocket = (CPOSIXSocket *)Event.udata;
+
+			DMibLock(pSocket->m_Lock);
+
+			if (pSocket->m_CloseError || pSocket->m_bNonErrorClose)
+				continue;
+
+			auto fAddState = [&](ENetTCPState _State)
+				{
+					pSocket->m_StateAtomic.f_FetchOr(_State);
+					if (pSocket->m_fOnStateChange)
+						pSocket->m_fOnStateChange(_State);
+				}
+			;
+
+			if (Event.flags & EV_ERROR)
+			{
+				pSocket->m_CloseError = Event.data;
+				if (!pSocket->m_CloseError)
+					pSocket->m_CloseError = -1;
+				fAddState(ENetTCPState_Closed);
+			}
+			else if (Event.flags & EV_EOF)
+			{
+				if (Event.filter == EVFILT_WRITE)
+				{
+					int ErrorCode = 0;
+					socklen_t ErrorCodeSize = sizeof(ErrorCode);
+					int GetRet = getsockopt(pSocket->m_FD, SOL_SOCKET, SO_ERROR, &ErrorCode, &ErrorCodeSize);
+
+					if (GetRet)
+						pSocket->m_CloseError = errno;
+					else if (ErrorCode)
+						pSocket->m_CloseError = ErrorCode;
+					else if (!pSocket->m_bNonErrorClose)
+						pSocket->m_bNonErrorClose = true;
+
+					fAddState(ENetTCPState_Closed);
+				}
+				else if (Event.filter == EVFILT_READ)
+				{
+					if (!pSocket->m_bRemoteCloseSignalled)
+					{
+						pSocket->m_bRemoteCloseSignalled = true;
+						fAddState(ENetTCPState_RemoteClosed);
+					}
 				}
 				else
-				{
-					CPOSIXSocket* pSocket = (CPOSIXSocket*)CurEvent.udata;
+					DMibFastCheck(false); // Never get here
 
-					{
-						DKTrace("KQueue: Read Event for {}\n", pSocket->m_FD);
-
-						DMibLock(pSocket->m_Lock);
-						
-						ENetTCPState AddedState = ENetTCPState_None;
-
-						if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
-						{
-							if (!bError)
-								AddedState |= ENetTCPState_Read;
-							else if (pSocket->m_CloseError == 0) // We may have already errored out.
-							{
-								pSocket->m_CloseError = CurEvent.data;
-								if (!pSocket->m_CloseError)
-									pSocket->m_CloseError = -1;
-								AddedState |= ENetTCPState_Closed;
-							}
-						}
-						else if (pSocket->m_Mode == EPOSIXSocketMode_Listen)
-						{
-							if (!bError)							
-								AddedState |= ENetTCPState_Connection;
-							else if (pSocket->m_CloseError == 0) // We may have already errored out.
-							{
-								pSocket->m_CloseError = CurEvent.data;
-								if (!pSocket->m_CloseError)
-									pSocket->m_CloseError = -1;
-								AddedState |= ENetTCPState_Closed;
-							}
-						}
-
-						if ((CurEvent.flags & EV_EOF) && pSocket->m_CloseError == 0) // We may have already errored out.
-						{
-							if (!pSocket->m_bRemoteCloseSignalled)
-							{
-								pSocket->m_bRemoteCloseSignalled = true;
-								AddedState |= ENetTCPState_RemoteClosed;
-							}
-						}
-
-						if (AddedState)
-						{
-							pSocket->m_StateAtomic.f_FetchOr(AddedState);
-							if (pSocket->m_fOnStateChange)
-								pSocket->m_fOnStateChange(AddedState);
-						}
-					}
-				}
 			}
-			else if (CurEvent.filter == EVFILT_WRITE)
+			else if (Event.filter == EVFILT_READ)
 			{
-				CPOSIXSocket* pSocket = (CPOSIXSocket*)CurEvent.udata;
+				if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
+					fAddState(ENetTCPState_Read);
+				else if (pSocket->m_Mode == EPOSIXSocketMode_Listen)
+					fAddState(ENetTCPState_Connection);
+				else if (pSocket->m_Mode == EPOSIXSocketMode_Connecting)
+					;
+				else
+					DMibFastCheck(false); // Never get here
+			}
+			else if (Event.filter == EVFILT_WRITE)
+			{
+				if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
+					fAddState(ENetTCPState_Write);
+				else if (pSocket->m_Mode == EPOSIXSocketMode_Connecting)
 				{
-					DKTrace("KQueue: Write Event for {}, data: {}\n", pSocket->m_FD << CurEvent.data);
-
-					DMibLock(pSocket->m_Lock);
-
-					ENetTCPState AddedState = ENetTCPState_None;
-					if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
+					if (Event.flags & EV_ADD)
 					{
-						if (!bError)
+						// At this point the connection may have been successful or not so we check the
+						// socket error code to find out which it is.
+
+						int ErrorCode = 0;
+						socklen_t ErrorCodeSize = sizeof(ErrorCode);
+						int GetRet = getsockopt(pSocket->m_FD, SOL_SOCKET, SO_ERROR, &ErrorCode, &ErrorCodeSize);
+
+						if (GetRet || ErrorCode)
 						{
-							AddedState |= ENetTCPState_Write;
+							if (GetRet)
+								pSocket->m_CloseError = errno;
+							else if (ErrorCode)
+								pSocket->m_CloseError = ErrorCode;
+
+							fAddState(ENetTCPState_Closed);
 						}
 						else
 						{
-							// Write failed.
-							if (pSocket->m_CloseError == 0) // We may have already errored out.
-							{
-								pSocket->m_CloseError = CurEvent.data;
-								if (!pSocket->m_CloseError)
-									pSocket->m_CloseError = -1;
-								AddedState |= ENetTCPState_Closed;
-							}
+							pSocket->m_Mode = EPOSIXSocketMode_Connect;
+							fAddState(ENetTCPState_Connected);
 						}
-					}
-					else if (pSocket->m_Mode == EPOSIXSocketMode_Connecting)
-					{
-						if (!bError)
-						{
-							if (CurEvent.flags & EV_ADD)
-							{
-								// At this point the connection may have been successful or not so we check the
-								// socket error code to find out which it is.
-								
-								int ErrorCode = 0;
-								socklen_t ErrorCodeSize = sizeof(ErrorCode);
-								int GetRet = getsockopt(pSocket->m_FD, SOL_SOCKET, SO_ERROR, &ErrorCode, &ErrorCodeSize);
-
-								if (GetRet || ErrorCode)
-								{ // Failure
-									if (pSocket->m_CloseError == 0)
-									{
-										pSocket->m_CloseError = GetRet ? errno : ErrorCode;
-										AddedState |= ENetTCPState_Closed;
-									}
-								}
-								else
-								{
-									AddedState |= ENetTCPState_Connected;
-									pSocket->m_Mode = EPOSIXSocketMode_Connect;
-								}
-
-							}
-						}
-						else
-						{
-							// Async connect failed
-							pSocket->m_CloseError = CurEvent.data;
-							if (!pSocket->m_CloseError)
-								pSocket->m_CloseError = -1;
-							AddedState |= ENetTCPState_Closed;							
-						}
-
-					}
-
-					if ((CurEvent.flags & EV_EOF) && (pSocket->m_CloseError == 0)) // We may have already errored out.
-					{
-						if (!pSocket->m_bNonErrorClose)
-						{
-							pSocket->m_bNonErrorClose = true;
-							AddedState |= ENetTCPState_Closed;
-						}
-					}
-
-
-					//if (pSocket->m_bInitialWriteNotification)
-					//	pSocket->m_bInitialWriteNotification = false;
-					//else
-					if (AddedState)
-					{
-						pSocket->m_StateAtomic.f_FetchOr(AddedState);
-						if (AddedState && pSocket->m_fOnStateChange)
-							pSocket->m_fOnStateChange(AddedState);
 					}
 				}
+				else if (pSocket->m_Mode == EPOSIXSocketMode_Listen)
+					;
+				else
+					DMibFastCheck(false); // Never get here
 			}
 		}
 
@@ -398,31 +342,31 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 		{
 			uintptr_t LastDeletedFD = -1;
 
-			for (auto const &CurEvent : lChanges)
+			for (auto const &Change : KQueueChanges)
 			{
-				if (CurEvent.filter == EVFILT_READ || CurEvent.filter == EVFILT_WRITE)
-				{
-					if (CurEvent.flags & EV_DELETE)
-					{
-						if (CurEvent.ident != LastDeletedFD)
-						{
-							CPOSIXSocket* pSocket = (CPOSIXSocket*)CurEvent.udata;
+				if (Change.filter != EVFILT_READ && Change.filter != EVFILT_WRITE)
+					continue;
 
-							auto pToSignal = pSocket->m_pDestructionReportTo.f_Exchange(nullptr);
-							if (pToSignal)
-								pToSignal->f_SetSignaled();
-							LastDeletedFD = CurEvent.ident;
-						}
-					}
-					else
+				if (Change.flags & EV_DELETE)
+				{
+					if (Change.ident != LastDeletedFD)
 					{
-						if (CurEvent.filter == EVFILT_READ && CurEvent.udata)
-						{
-							CPOSIXSocket* pSocket = (CPOSIXSocket*)CurEvent.udata;
-							DMibLock(pSocket->m_Lock);
-							if (pSocket->m_fOnStateChange)
-								pSocket->m_fOnStateChange((NMib::NNetwork::ENetTCPState)pSocket->m_StateAtomic.f_Load());
-						}
+						CPOSIXSocket* pSocket = (CPOSIXSocket*)Change.udata;
+
+						auto pToSignal = pSocket->m_pDestructionReportTo.f_Exchange(nullptr);
+						if (pToSignal)
+							pToSignal->f_SetSignaled();
+						LastDeletedFD = Change.ident;
+					}
+				}
+				else
+				{
+					if (Change.filter == EVFILT_READ && Change.udata)
+					{
+						CPOSIXSocket* pSocket = (CPOSIXSocket*)Change.udata;
+						DMibLock(pSocket->m_Lock);
+						if (pSocket->m_fOnStateChange)
+							pSocket->m_fOnStateChange((NMib::NNetwork::ENetTCPState)pSocket->m_StateAtomic.f_Load());
 					}
 				}
 			}

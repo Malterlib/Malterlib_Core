@@ -175,44 +175,41 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 	static const int nMaxEvents = 64;
 	struct epoll_event IncomingEvents[nMaxEvents];
 	int nEvents;
-	int const EpollFd = mp_pInternal->m_EpollFd;
-	
-	NContainer::TCVector<CEpollEvent> Changes;
-	
+
 	while (mp_pInternal->m_bBreak.f_Load() == 0 &&	_pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
 	{
-		Changes = fg_Move(mp_pInternal->m_ChangeQueue.f_Take());
 		{
 			int LastDeleteFD = -1;
-			for (auto &CurEvent : Changes)
+			auto Changes = fg_Move(mp_pInternal->m_ChangeQueue.f_Take());
+			for (auto &Change : Changes)
 			{
-				struct epoll_event Ev = CurEvent.m_EpollEvent;
-				[[maybe_unused]] int Return = epoll_ctl(EpollFd, CurEvent.m_Op, CurEvent.m_Fd, &Ev);
+				auto Ev = Change.m_EpollEvent;
+				[[maybe_unused]] int Return = epoll_ctl(mp_pInternal->m_EpollFd, Change.m_Op, Change.m_Fd, &Ev);
 				DMibFastCheck(Return != -1);
 
-				if ((CurEvent.m_EpollEvent.events & EPOLLIN) || (CurEvent.m_EpollEvent.events & EPOLLOUT))
-				{
-					if (CurEvent.m_Op == EPOLL_CTL_DEL)
-					{
-						if (CurEvent.m_Fd != LastDeleteFD)
-						{
-							CPOSIXSocket* pSocket = (CPOSIXSocket*)CurEvent.m_EpollEvent.data.ptr;
+				if (!(Change.m_EpollEvent.events & EPOLLIN) && !(Change.m_EpollEvent.events & EPOLLOUT))
+					continue;
 
-							auto pDestructionReportTo = pSocket->m_pDestructionReportTo.f_Exchange(nullptr);
-							if (pDestructionReportTo)
-								pDestructionReportTo->f_SetSignaled();
-							LastDeleteFD = CurEvent.m_Fd;
-						}
-					}
-					else
+				if (Change.m_Op == EPOLL_CTL_DEL)
+				{
+					if (Change.m_Fd != LastDeleteFD)
 					{
-						if ((CurEvent.m_EpollEvent.events & EPOLLIN) && CurEvent.m_bSocket)
-						{
-							CPOSIXSocket* pSocket = (CPOSIXSocket*)CurEvent.m_EpollEvent.data.ptr;
-							DMibLock(pSocket->m_Lock);
-							if (pSocket->m_fOnStateChange)
-								pSocket->m_fOnStateChange((ENetTCPState)pSocket->m_StateAtomic.f_Load());
-						}
+						CPOSIXSocket* pSocket = (CPOSIXSocket*)Change.m_EpollEvent.data.ptr;
+
+						auto pDestructionReportTo = pSocket->m_pDestructionReportTo.f_Exchange(nullptr);
+						if (pDestructionReportTo)
+							pDestructionReportTo->f_SetSignaled();
+						LastDeleteFD = Change.m_Fd;
+					}
+				}
+				else
+				{
+					if ((Change.m_EpollEvent.events & EPOLLIN) && Change.m_bSocket)
+					{
+						CPOSIXSocket* pSocket = (CPOSIXSocket*)Change.m_EpollEvent.data.ptr;
+						DMibLock(pSocket->m_Lock);
+						if (pSocket->m_fOnStateChange)
+							pSocket->m_fOnStateChange((ENetTCPState)pSocket->m_StateAtomic.f_Load());
 					}
 				}
 			}
@@ -221,7 +218,7 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 		// Wait for events
 		do
 		{
-			nEvents = epoll_wait(EpollFd, IncomingEvents, nMaxEvents, -1);
+			nEvents = epoll_wait(mp_pInternal->m_EpollFd, IncomingEvents, nMaxEvents, -1);
 		}
 		while (nEvents == -1 && errno == EINTR)
 			;
@@ -229,98 +226,103 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 		// Process any events that have occured.
 		for (int iIncomingEvent = 0; iIncomingEvent < nEvents; ++iIncomingEvent)
 		{
-			struct epoll_event const &CurEvent = IncomingEvents[iIncomingEvent];
+			struct epoll_event const &Event = IncomingEvents[iIncomingEvent];
 
-			if (CurEvent.events & (EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLHUP))
+			if (!(Event.events & (EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLHUP)))
+				continue;
+
+			if ((Event.events & EPOLLIN) && Event.data.fd == mp_pInternal->m_ReadWritePipe[0])
 			{
-				if ((CurEvent.events & EPOLLIN) && CurEvent.data.fd == mp_pInternal->m_ReadWritePipe[0])
+				char Buf[16];
+				int ReadRet;
+				do
 				{
-					char Buf[16];
-					int ReadRet;
-					do
-					{
-						ReadRet = read(mp_pInternal->m_ReadWritePipe[0], Buf, sizeof(Buf));
-					}
-					while(ReadRet > 0)
-						;
+					ReadRet = read(mp_pInternal->m_ReadWritePipe[0], Buf, sizeof(Buf));
+				}
+				while(ReadRet > 0)
+					;
 
+				continue;
+			}
+
+			CPOSIXSocket* pSocket = (CPOSIXSocket*)Event.data.ptr;
+			DMibLock(pSocket->m_Lock);
+
+			if (pSocket->m_CloseError || pSocket->m_bNonErrorClose)
+				continue;
+
+			ENetTCPState AddedState = ENetTCPState_None;
+
+			auto fAddState = [&]
+				{
+					if (AddedState)
+					{
+						pSocket->m_StateAtomic.f_FetchOr(AddedState);
+						if (pSocket->m_fOnStateChange)
+							pSocket->m_fOnStateChange(AddedState);
+					}
+				}
+			;
+
+			// Error occured.
+			if (Event.events & EPOLLERR)
+			{
+				int Error = 0;
+				socklen_t ErrorLen = sizeof(Error);
+				if (getsockopt(pSocket->m_FD, SOL_SOCKET, SO_ERROR, (void *)&Error, &ErrorLen) == 0)
+				{
+					pSocket->m_CloseError = Error;
+					if (!pSocket->m_CloseError)
+						pSocket->m_CloseError = -1;
+				}
+				else
+					pSocket->m_CloseError = errno;
+
+				AddedState |= ENetTCPState_Closed;
+				fAddState();
+				continue;
+			}
+
+			if ((Event.events & EPOLLHUP))
+			{
+				if (!pSocket->m_bNonErrorClose)
+				{
+					pSocket->m_bNonErrorClose = true;
+					AddedState |= ENetTCPState_Closed;
+					fAddState();
 					continue;
 				}
+			}
 
-				CPOSIXSocket* pSocket = (CPOSIXSocket*)CurEvent.data.ptr;
-				DMibLock(pSocket->m_Lock);
-
-				ENetTCPState AddedState = ENetTCPState_None;
-				// Error occured.
-				if (CurEvent.events & EPOLLERR)
+			if ((Event.events & EPOLLRDHUP))
+			{
+				if (!pSocket->m_bRemoteCloseSignalled)
 				{
-					int Error = 0;
-					socklen_t ErrorLen = sizeof(Error);
-					if (getsockopt(CurEvent.data.fd, SOL_SOCKET, SO_ERROR, (void *)&Error, &ErrorLen) == 0)
-					{
-					    pSocket->m_CloseError = Error;
-						if (!pSocket->m_CloseError)
-							pSocket->m_CloseError = -1;
-					}
-					else
-						pSocket->m_CloseError = -1;
-
-					AddedState |= ENetTCPState_Closed;
-				}
-
-				// If we are not closed.
-				if (!(AddedState & ENetTCPState_Closed) && !pSocket->m_CloseError && !pSocket->m_bNonErrorClose)
-				{
-					// Read even handling
-					if (CurEvent.events & EPOLLIN)
-					{							
-						if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
-							AddedState |= ENetTCPState_Read;
-						else if (pSocket->m_Mode == EPOSIXSocketMode_Listen)
-							AddedState |= ENetTCPState_Connection;
-					}
-
-					// Write event handling
-					if (CurEvent.events & EPOLLOUT)
-					{			
-						if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
-						{
-							AddedState |= ENetTCPState_Write;
-						}
-						else if (pSocket->m_Mode == EPOSIXSocketMode_Connecting)
-						{
-							AddedState |= ENetTCPState_Connected;
-							pSocket->m_Mode = EPOSIXSocketMode_Connect;
-						}				
-					}
-				}
-
-				if ((CurEvent.events & EPOLLRDHUP) && pSocket->m_CloseError == 0)
-				{
-					if (!pSocket->m_bRemoteCloseSignalled)
-					{
-						pSocket->m_bRemoteCloseSignalled = true;
-						AddedState |= ENetTCPState_RemoteClosed;
-					}
-				}
-
-				// Connection closed
-				if ((CurEvent.events & EPOLLHUP) && pSocket->m_CloseError == 0)
-				{
-					if (!pSocket->m_bNonErrorClose)
-					{
-						pSocket->m_bNonErrorClose = true;
-						AddedState |= ENetTCPState_Closed;
-					}
-				}
-
-				if (AddedState)
-				{ 
-					pSocket->m_StateAtomic.f_FetchOr(AddedState);
-					if (pSocket->m_fOnStateChange)
-						pSocket->m_fOnStateChange(AddedState);
+					pSocket->m_bRemoteCloseSignalled = true;
+					AddedState |= ENetTCPState_RemoteClosed;
 				}
 			}
+
+			if (Event.events & EPOLLIN)
+			{
+				if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
+					AddedState |= ENetTCPState_Read;
+				else if (pSocket->m_Mode == EPOSIXSocketMode_Listen)
+					AddedState |= ENetTCPState_Connection;
+			}
+
+			if (Event.events & EPOLLOUT)
+			{
+				if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
+					AddedState |= ENetTCPState_Write;
+				else if (pSocket->m_Mode == EPOSIXSocketMode_Connecting)
+				{
+					AddedState |= ENetTCPState_Connected;
+					pSocket->m_Mode = EPOSIXSocketMode_Connect;
+				}
+			}
+
+			fAddState();
 		}
 	}
 }
