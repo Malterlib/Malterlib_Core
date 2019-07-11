@@ -536,10 +536,7 @@ void fg_SetUnixHandleOptions(int _File)
 #	endif
 #elif defined(DPlatformFamily_Linux)
 	if (NMib::CSystem::ms_PlatformVersion >= 2'006'023)
-	{
-		DMibTraceSafe2("Skipping fg_SetUnixHandleOptions\n");
 		return;
-	}
 #endif
 
 	// Set CloseOnExec so that child processes do not get our open files.

@@ -1591,9 +1591,6 @@ void NSys::fg_CreateSystem()
 
 	pSystem->f_InitModule();
 	pSystem->f_InitModuleThreaded();
-
-	DMibTraceSafe("Version: {}\n", CSystem::ms_PlatformVersion);
-
 }
 
 bool g_bSysDeleted = false;

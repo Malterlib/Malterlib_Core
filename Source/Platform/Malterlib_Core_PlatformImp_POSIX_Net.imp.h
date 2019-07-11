@@ -522,10 +522,7 @@ void fg_SetUnixSocketOptions(int _File)
 {
 #if defined(DPlatformFamily_Linux)
 	if (NMib::CSystem::ms_PlatformVersion >= 2'006'027)
-	{
-		DMibTraceSafe2("Skipping fg_SetUnixSocketOptions\n");
 		return;
-	}
 #endif
 	// Set CloseOnExec so that child processes do not get our open files.
 	int FDFlags = fcntl(_File, F_GETFD);
