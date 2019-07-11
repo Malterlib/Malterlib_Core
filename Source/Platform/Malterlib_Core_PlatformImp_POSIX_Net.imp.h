@@ -508,24 +508,39 @@ bool CPOSIXSocketContext::fp_GetSocketCreateParams(NMib::NNetwork::ENetAddressTy
 	return true;
 }
 
+int fg_GetUnixSocketFlags()
+{
+	int OpenFlags = 0;
+#if defined(DPlatformFamily_Linux)
+	if (NMib::CSystem::ms_PlatformVersion >= 2'006'027)
+		OpenFlags |= SOCK_CLOEXEC;
+#endif
+	return OpenFlags;
+}
+
 void fg_SetUnixSocketOptions(int _File)
 {
-	// Set CloseOnExec so that child processes do not get our open files.
+#if defined(DPlatformFamily_Linux)
+	if (NMib::CSystem::ms_PlatformVersion >= 2'006'027)
 	{
-		int FDFlags = fcntl(_File, F_GETFD);
-		if (FDFlags != -1)
-		{
-			FDFlags |= FD_CLOEXEC;
-			
-			if (fcntl(_File, F_SETFD, FDFlags) == -1)
-			{
-				// We let this go deliberately. Nothing overly bad can happen.
-			}
-		}
-		else
+		DMibTraceSafe2("Skipping fg_SetUnixSocketOptions\n");
+		return;
+	}
+#endif
+	// Set CloseOnExec so that child processes do not get our open files.
+	int FDFlags = fcntl(_File, F_GETFD);
+	if (FDFlags != -1)
+	{
+		FDFlags |= FD_CLOEXEC;
+
+		if (fcntl(_File, F_SETFD, FDFlags) == -1)
 		{
 			// We let this go deliberately. Nothing overly bad can happen.
 		}
+	}
+	else
+	{
+		// We let this go deliberately. Nothing overly bad can happen.
 	}
 }
 
@@ -548,7 +563,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 		if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
 			DMibErrorNet("Unsupported address type");
 
-		FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type, SocketCreateParams.m_Protocol);
+		FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | fg_GetUnixSocketFlags(), SocketCreateParams.m_Protocol);
 
 		if (FD == -1)
 		{
@@ -707,7 +722,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 
 	fp_PrepareUnixListen(_Address);
 	
-	int FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type, SocketCreateParams.m_Protocol);
+	int FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | fg_GetUnixSocketFlags(), SocketCreateParams.m_Protocol);
 
 	if (FD == -1)
 	{
@@ -796,8 +811,8 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 		DMibErrorNet("Unsupported address type");
 
 	fp_PrepareUnixListen(_Address);
-	
-	int FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type, SocketCreateParams.m_Protocol);
+
+	int FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | fg_GetUnixSocketFlags(), SocketCreateParams.m_Protocol);
 
 	if (FD == -1)
 	{
@@ -863,11 +878,23 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 
 CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	int ResultFD = accept(_pSocket->m_FD, NULL, NULL);
+	int ResultFD;
+#ifdef DPlatformFamily_Linux
+	if (NLocal::g_f_accept4)
+	{
+		ResultFD = NLocal::g_f_accept4(_pSocket->m_FD, NULL, NULL, SOCK_CLOEXEC);
+	}
+	else
+#endif
+		ResultFD = accept(_pSocket->m_FD, NULL, NULL);
 
 	if (ResultFD == -1)
 	{
-		return nullptr;
+		int Error = errno;
+		if (Error == EAGAIN || Error == EWOULDBLOCK)
+			return nullptr;
+
+		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("accept", Error));
 	}
 
 	fg_SetUnixSocketOptions(ResultFD);

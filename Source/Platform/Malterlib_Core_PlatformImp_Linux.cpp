@@ -29,6 +29,7 @@ using namespace NMib::NContainer;
 namespace NLocal
 {
 	int (*g_f_pipe2)(int __pipedes[2], int __flags) __THROW __wur = nullptr;
+	int (*g_f_accept4)(int __fd, __SOCKADDR_ARG __addr, socklen_t *__restrict __addr_len, int __flags) = nullptr;
 	int (*g_f_inotify_init1)(int __flags) __THROW = nullptr;
 	int (*g_f_inotify_init)(void) __THROW = nullptr;
 	int (*g_f_inotify_add_watch)(int __fd, const char *__name, uint32_t __mask) __THROW = nullptr;
@@ -45,6 +46,7 @@ namespace NLocal
 		void *pLibGcc = dlopen("libgcc_s.so.1", RTLD_NOW | RTLD_LOCAL);
 
 		(void * &)g_f_pipe2 = dlsym(RTLD_DEFAULT, "pipe2");
+		(void * &)g_f_accept4 = dlsym(RTLD_DEFAULT, "accept4");
 		(void * &)g_f_inotify_init1 = dlsym(RTLD_DEFAULT, "inotify_init1");
 		(void * &)g_f_inotify_init = dlsym(RTLD_DEFAULT, "inotify_init");
 		(void * &)g_f_inotify_add_watch = dlsym(RTLD_DEFAULT, "inotify_add_watch");
@@ -64,6 +66,8 @@ mint g_MainModuleBase = 0;
 
 void fg_ForkPrepare();
 void fg_ForkParentOrChild();
+int fg_GetUnixOpenFlags();
+void fg_SetUnixHandleOptions(int _File);
 
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
 
@@ -1165,6 +1169,8 @@ namespace NMib
 		int g_OperatingSystemMinor = 0;
 		int g_OperatingSystemFix = 0;
 		EOperatingSystemArch g_OperatingSystemArch = EOperatingSystemArch_Unknown;
+
+		void fg_CreateSystemVersion();
 	}
 }
 
@@ -1206,6 +1212,23 @@ bool NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& 
 	}
 
 	return true;
+}
+
+void NSys::fg_CreateSystemVersion()
+{
+	if (CSystem::ms_PlatformVersion != 0)
+		return;
+
+	if (g_OperatingSystemMajor < 0)
+	{
+		int Dummy;
+		EOperatingSystemArch Arch;
+
+		if (!fg_System_GetOperatingSystemVersion(Dummy, Dummy, Dummy, Arch))
+			DMibPDebugBreak; // Not supported
+	}
+
+	CSystem::ms_PlatformVersion = g_OperatingSystemMajor * 1'000'000 + g_OperatingSystemMinor * 1'000 + g_OperatingSystemFix;
 }
 
 namespace NMib
@@ -1422,6 +1445,8 @@ void NSys::fg_CreateSystem()
 	if (g_bCreatedSystem)
 		return;
 
+	fg_CreateSystemVersion();
+
 #ifdef DMibConfig_OverrideSystemMalloc
 	g_bMemoryManagerNeededAfterDestroy = true;
 #endif
@@ -1511,7 +1536,7 @@ void NSys::fg_CreateSystem()
 					// Std in pipe has to be opened first, otherwise it might hang
 					if (!StdErrPipeName.f_IsEmpty())
 					{
-						int Pipe = open(StdErrPipeName.f_GetStr(), O_CLOEXEC|O_WRONLY, S_IWUSR);
+						int Pipe = open(StdErrPipeName.f_GetStr(), fg_GetUnixOpenFlags() | O_WRONLY, S_IWUSR);
 
 						if (Pipe == -1)
 						{
@@ -1519,6 +1544,8 @@ void NSys::fg_CreateSystem()
 						}
 						else
 						{
+							fg_SetUnixHandleOptions(Pipe);
+
 							if (dup2(Pipe, 2) == -1)
 							{
 								Error = NMib::NPlatform::fg_FormatErrno("dup2 (named stderr pipe)", errno);
@@ -1530,7 +1557,7 @@ void NSys::fg_CreateSystem()
 
 					if (!StdInPipeName.f_IsEmpty())
 					{
-						int Pipe = open(StdInPipeName.f_GetStr(), O_CLOEXEC|O_RDONLY, S_IRUSR);
+						int Pipe = open(StdInPipeName.f_GetStr(), fg_GetUnixOpenFlags() | O_RDONLY, S_IRUSR);
 
 						if (Pipe == -1)
 						{
@@ -1538,6 +1565,8 @@ void NSys::fg_CreateSystem()
 						}
 						else
 						{
+							fg_SetUnixHandleOptions(Pipe);
+
 							if (dup2(Pipe, 0) == -1)
 							{
 								Error = NMib::NPlatform::fg_FormatErrno("dup2 (named stdin pipe)", errno);
@@ -1562,6 +1591,8 @@ void NSys::fg_CreateSystem()
 
 	pSystem->f_InitModule();
 	pSystem->f_InitModuleThreaded();
+
+	DMibTraceSafe("Version: {}\n", CSystem::ms_PlatformVersion);
 
 }
 

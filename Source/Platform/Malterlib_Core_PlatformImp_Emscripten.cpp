@@ -21,6 +21,8 @@ mint g_MainModuleBase = 0;
 
 void fg_ForkPrepare();
 void fg_ForkParentOrChild();
+int fg_GetUnixOpenFlags();
+void fg_SetUnixHandleOptions(int _File);
 
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
 
@@ -875,7 +877,7 @@ void NSys::fg_CreateSystem()
 					// Std in pipe has to be opened first, otherwise it might hang
 					if (!StdErrPipeName.f_IsEmpty())
 					{
-						int Pipe = open(StdErrPipeName.f_GetStr(), O_CLOEXEC|O_WRONLY, S_IWUSR);
+						int Pipe = open(StdErrPipeName.f_GetStr(), fg_GetUnixOpenFlags() | O_WRONLY, S_IWUSR);
 
 						if (Pipe == -1)
 						{
@@ -883,6 +885,8 @@ void NSys::fg_CreateSystem()
 						}
 						else
 						{
+							fg_SetUnixHandleOptions(Pipe);
+
 							if (dup2(Pipe, 2) == -1)
 							{
 								Error = fg_FormatErrno("dup2 (named stderr pipe)", errno);
@@ -894,7 +898,7 @@ void NSys::fg_CreateSystem()
 
 					if (!StdInPipeName.f_IsEmpty())
 					{
-						int Pipe = open(StdInPipeName.f_GetStr(), O_CLOEXEC|O_RDONLY, S_IRUSR);
+						int Pipe = open(StdInPipeName.f_GetStr(), fg_GetUnixOpenFlags() | O_RDONLY, S_IRUSR);
 
 						if (Pipe == -1)
 						{
@@ -902,6 +906,8 @@ void NSys::fg_CreateSystem()
 						}
 						else
 						{
+							fg_SetUnixHandleOptions(Pipe);
+
 							if (dup2(Pipe, 0) == -1)
 							{
 								Error = fg_FormatErrno("dup2 (named stdin pipe)", errno);
