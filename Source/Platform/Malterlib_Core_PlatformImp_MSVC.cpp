@@ -940,12 +940,12 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 	CONSOLE_SCREEN_BUFFER_INFO ConsoleScreenBufferInfo;
 	fg_MemClear(ConsoleScreenBufferInfo);
 
-    if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &ConsoleScreenBufferInfo))
+    if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &ConsoleScreenBufferInfo) && !GetConsoleScreenBufferInfo(GetStdHandle(STD_ERROR_HANDLE), &ConsoleScreenBufferInfo))
 		return Return;
 	
 	Return.m_Width = ConsoleScreenBufferInfo.srWindow.Right - ConsoleScreenBufferInfo.srWindow.Left + 1;
 	Return.m_Height = ConsoleScreenBufferInfo.srWindow.Bottom - ConsoleScreenBufferInfo.srWindow.Top + 1;
-	
+
 	return Return;
 }
 
