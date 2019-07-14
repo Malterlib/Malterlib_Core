@@ -792,6 +792,24 @@ namespace
 	template <typename tf_CWinStr, typename tf_UTF8Str, typename tf_CStr>
 	void fg_ConsoleOutputHelper(NSys::EColor _Foreground, const tf_CStr &_Str, DWORD _StdHandle, bool _bRaw)
 	{
+		static bool bEnableTerminalProcessing = true;
+		if (bEnableTerminalProcessing)
+		{
+			bEnableTerminalProcessing = false;
+			uint32 Mode = 0;
+			auto fEnableVT = [&](HANDLE _File)
+				{
+					if (GetConsoleMode(_File, &Mode))
+					{
+						Mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+						SetConsoleMode(_File, Mode);
+					}
+				}
+			;
+			fEnableVT(GetStdHandle(STD_OUTPUT_HANDLE));
+			fEnableVT(GetStdHandle(STD_ERROR_HANDLE));
+		}
+
 		tf_CWinStr WideChar = NStr::NPlatform::fg_StrToWindows<tf_CWinStr>(_Str);
 	#if defined(DMibDebug) || DMibConfig_Tests_Enable || defined(DConfig_Profile)
 		if (!_bRaw && NSys::fg_System_BeingDebugged())
