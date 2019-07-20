@@ -10,7 +10,7 @@
 ../Atomic 22006dd715f399f49b640be5c63885bf98828ed6
 ../Bit 75df41a785edad1ca9ec01eb5f03ae860a400968
 ../BuildSystem 7793b1a342fcfa38c117ff0918082a3f7a7d324d
-../Cloud 092c9f9d44405ab0ae5051884d0cf66d7f1ef0e5
+../Cloud a9bd0d205b061d441bbfb2a089da22c67070e6cc
 ../CommandLine 75e0d44377ea2ef8b448d7c830489103469c50b6
 ../Compression 253a3a7dc08a43a5ccdbe63f6bab55c0ceafc9d9
 ../Concurrency 00144e46df3401ebb77f6195fa7ab46586389a43
@@ -19,7 +19,7 @@
 ../CrashReport 287fe369e3835634239bcfe499da2694c48d34f3
 ../Cryptography e7216fbbd30e1ddcbb2e245afa287ae2cd4d3f67
 ../Daemon 102fb42ed3eadd1acd0a23a4b283561b22448420
-../Database ef94798f1acd509e1ecbb0be867acfb39565e9e9
+../Database 7e2834feb4ee4ac04fe4af4bfac2df9db2750e07
 ../Debug bc0578e00232f7878530931a9fff3d2e441b494b
 ../Desktop 46b6df2b3abfc041f1497a45d13eee3428048888
 ../Documentation 21f53a91291f895d5a9a7826fccfa85a68953f1e
