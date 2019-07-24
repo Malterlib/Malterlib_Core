@@ -1031,7 +1031,11 @@ Compile
 
 	Coroutines true
 	{
-		!!Compile.Coroutines ""
+		&
+		{
+			Compile.Coroutines ""
+			!Target.CLRSupport true
+		}
 	}
 
 	Inline "Off"
