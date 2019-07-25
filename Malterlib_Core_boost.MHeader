@@ -41,7 +41,7 @@ Property
 	{
 		!!MalterlibAllBoostModules ""
 	}
-	MalterlibBoostModules "@(MalterlibBoostModules);align;beast;mp11;endian;algorithm;array;asio;assert;assign;bind;chrono;concept_check;config;container;container_hash;core;date_time;detail;exception;foreach;function;function_types;functional;fusion;integer;intrusive;io;iostreams;iterator;lexical_cast;logic;math;move;mpl;numeric_conversion;optional;phoenix;predef;preprocessor;proto;range;ratio;regex;smart_ptr;spirit;static_assert;system;thread;throw_exception;tuple;type_index;type_traits;typeof;utility;variant;winapi"
+	MalterlibBoostModules "@(MalterlibBoostModules);align;atomic;beast;mp11;endian;algorithm;array;asio;assert;assign;bind;chrono;concept_check;config;container;container_hash;core;date_time;detail;exception;foreach;function;function_types;functional;fusion;integer;intrusive;io;iostreams;iterator;lexical_cast;logic;math;move;mpl;numeric_conversion;optional;phoenix;predef;preprocessor;proto;range;ratio;regex;smart_ptr;spirit;static_assert;system;thread;throw_exception;tuple;type_index;type_traits;typeof;utility;variant;winapi"
 	{
 		!!MalterlibAllBoostModules true
 	}
