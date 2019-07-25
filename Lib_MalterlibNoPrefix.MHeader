@@ -175,7 +175,6 @@ Compile
 }	
 %Group "Source"
 {
-	%File Source/Platform/Malterlib_Core_PlatformImp_DisableDebuOperatorNew.cpp
 	%File Source/Platform/Malterlib_Core_PlatformImp_DisableStackTraceUnit.cpp
 	%Group Memory
 	{

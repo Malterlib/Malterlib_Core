@@ -6031,8 +6031,6 @@ void fg_DestroySystem()
 
 }
 
-extern int g_AllowDebugNewErrorGlobalStatic;
-
 void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 { // Should probably be moved to a file Malterlib_x86_MSVC.cpp or similar.
 	int CPUInfo[4];
