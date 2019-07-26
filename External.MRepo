@@ -4,6 +4,7 @@
 ../../External/boost/asio 6194807812b28a29d693538950e9220b283a5c9a
 ../../External/boost/assert 3b6b826e160a122de4575d0bd0a47b26238287d7
 ../../External/boost/assign 2d5f5f96de4a89367c73576c8ee731bcf020fb0a
+../../External/boost/atomic fc410975146a23e0513e8164009cc1eac2d9830b
 ../../External/boost/beast b701d72ddbed3b6cd39ea038e67c8dbf2e8e4e24
 ../../External/boost/bind 42fe00190ea2c9e0a10e699139a3a61542293543
 ../../External/boost/chrono 5df12496f52e00b1ea324df176a4a3199d3d8bfd
