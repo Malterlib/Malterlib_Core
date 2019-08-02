@@ -56,6 +56,7 @@ namespace NMib
 		}
 	};
 
+	extern CVoidTag const g_Void;
 
 	template <typename t_CReturn>
 	struct TCVoidFunctor
