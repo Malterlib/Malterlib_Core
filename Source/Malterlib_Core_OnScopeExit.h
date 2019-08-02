@@ -48,12 +48,14 @@ namespace NMib
 			if (mp_bIsValid)
 				mp_fOnExitFunctor();
 		}
-		void operator () ()
+
+		template <typename ...tfp_CParam>
+		void operator () (tfp_CParam &&...p_Params)
 		{
 			if (mp_bIsValid)
 			{
 				mp_bIsValid = false;
-				mp_fOnExitFunctor();
+				mp_fOnExitFunctor(fg_Forward<tfp_CParam>(p_Params)...);
 			}
 		}
 		void f_Clear()
