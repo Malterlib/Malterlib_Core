@@ -20,10 +20,22 @@ namespace NMib
 		class CExceptionFilter;
 	}
 
+	struct CPromiseThreadLocal
+	{
+		void *m_pOnResultSet = nullptr;
+#if DMibEnableSafeCheck > 0
+		void const *m_pOnResultSetConsumedBy = nullptr;
+		void const *m_pExpectCoroutineCallSetConsumedBy = nullptr;
+		uint32 m_OnResultSetTypeHash = 0;
+		bool m_bCaptureDebugException = false;
+#endif
+	};
+
 	struct CSystemThreadLocal
 	{
 		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
+		CPromiseThreadLocal m_PromiseThreadLocal;
 #if DMibEnableSafeCheck > 0
 		bool m_bExpectCoroutineCall = false;
 		bool m_bDispatchWithReturnIsIndirection = false;
