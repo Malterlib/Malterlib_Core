@@ -32,7 +32,7 @@
 						Nib wrapper.nib
 						MacIcon image.icns
 						ShellScript text.script.sh
-						MalterlibBuildSystem text.json
+						MalterlibBuildSystem sourcecode.cpp.cpp
 						JSON text.json
 						Python text.script.python
 						JavaScript sourcecode.javascript
