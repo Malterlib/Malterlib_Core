@@ -138,9 +138,15 @@
 
 // Aliasing
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	 define mark_artificial [[gnu::artificial]]
+#	if __has_cpp_attribute(clang::instrument_non_coroutine_function_enter_disable)
+#		define mark_no_coroutine_debug [[clang::instrument_non_coroutine_function_enter_disable]]
+#	else
+#		define mark_no_coroutine_debug
+#	endif
+#	define mark_artificial mark_no_coroutine_debug [[gnu::artificial]]
 #else
-#	 define mark_artificial 
+#	define mark_no_coroutine_debug
+#	define mark_artificial
 #endif
 
 // Aliasing

@@ -122,26 +122,25 @@ namespace NMib
 	}
 	
 	template <typename t_CType, typename t_CTypeToCopyTo> 
-	inline_always_debug typename NPrivate::TCForwardCopyEvalHelper<t_CType, t_CTypeToCopyTo>::CType fg_ForwardAs(t_CTypeToCopyTo &&_ToForward) 
+	mark_artificial inline_always_debug typename NPrivate::TCForwardCopyEvalHelper<t_CType, t_CTypeToCopyTo>::CType fg_ForwardAs(t_CTypeToCopyTo &&_ToForward)
 	{
     	return static_cast<typename NPrivate::TCForwardCopyEvalHelper<t_CType, t_CTypeToCopyTo>::CType>(_ToForward);
 	}
 	
-	template <typename t_CType> 
-	inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_Move(t_CType &&_ToMove) noexcept
+	template <typename t_CType>
+	mark_artificial inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_Move(t_CType &&_ToMove) noexcept
 	{
 		static_assert(!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value, "Trying to move const value");
     	return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
 	}
-	
-	template <typename t_CType> 
-	inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
+	template <typename t_CType>
+	mark_artificial inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
 	{
     	return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
 	}
 
 	template <typename tf_CDestination, typename t_CSetTo>
-	auto fg_Exchange(tf_CDestination &_Destination, t_CSetTo &&_SetTo)
+	mark_artificial constexpr inline_always_debug auto fg_Exchange(tf_CDestination &_Destination, t_CSetTo &&_SetTo)
 	{
 		auto Temp = fg_Move(_Destination);
 		_Destination = fg_Forward<t_CSetTo>(_SetTo);
@@ -149,32 +148,32 @@ namespace NMib
 	}
 	
 	template <typename tf_CType>
-	tf_CType fg_TempCopy(tf_CType const &_Value)
+	mark_artificial constexpr inline_always_debug tf_CType fg_TempCopy(tf_CType const &_Value)
 	{
 		return _Value;
 	}
 	
 	template <typename t_CType>
-	inline_always_debug t_CType volatile &fg_Volatile(t_CType &_In)
+	mark_artificial constexpr inline_always_debug t_CType volatile &fg_Volatile(t_CType &_In)
 	{
 		return (t_CType volatile &)_In;
 	}
 
 	template <typename t_CType>
-	inline_always_debug t_CType const &fg_Const(t_CType const&_In)
+	mark_artificial constexpr inline_always_debug t_CType const &fg_Const(t_CType const&_In)
 	{
 		return (t_CType const &)_In;
 	}
 
 	template <typename t_CType, TCEnableIfType<NTraits::TCIsRValueReference<t_CType>::mc_Value || !NTraits::TCIsReference<t_CType>::mc_Value> * = nullptr>
-	constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In)
+	mark_artificial constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In)
 	{
 		return fg_Move(_In);
 	}
 
 #ifndef DDocumentation_Doxygen
 	template <typename t_CType, TCEnableIfType<!NTraits::TCIsRValueReference<t_CType>::mc_Value && NTraits::TCIsReference<t_CType>::mc_Value> * = nullptr>
-	constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) -> typename NTraits::TCRemoveReference<t_CType>::CType const &
+	mark_artificial constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) -> typename NTraits::TCRemoveReference<t_CType>::CType const &
 	{
 		return static_cast<typename NTraits::TCRemoveReference<t_CType>::CType const &>(_In);
 	}
