@@ -187,6 +187,23 @@ namespace NMib
 	}
 #endif
 
+	template <typename t_CValue>
+	struct TCMoveValueFunctor
+	{
+		TCMoveValueFunctor(t_CValue &&_Value)
+			: mp_Value(fg_Move(_Value))
+		{
+		}
+
+		mark_artificial inline_always t_CValue operator()()
+		{
+			return fg_Move(mp_Value);
+		}
+
+	private:
+		t_CValue mp_Value;
+	};
+
 	template <typename t_CType>
 	class TCCopy
 	{
