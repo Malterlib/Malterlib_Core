@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 using namespace NMib;
@@ -62,63 +62,63 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 		{
 			if (ErrNo == ENOMEM)
 				DMibErrorMemory("The OS returned an error from mmap: Out of memory (ENOMEM)");
-			
+
 			DMibErrorMemory(NMib::NPlatform::fg_FormatErrno("mmap (alloc virtual memory)", ErrNo));
 		}
 	;
-	
+
 	auto fSetUncommited = [&](void *_pMemory)
 		{
 #ifdef DPlatformFamily_OSX
-#ifdef DMibOSX_UseMadvise
-			if ((_Flags & EAllocationFlag_NoCommit) && CSystem::ms_PlatformVersion >= 10'06'00)
+#	ifdef DMibOSX_UseMadvise
+/*			if ((_Flags & EAllocationFlag_NoCommit) && CSystem::ms_PlatformVersion >= 10'06'00)
 			{
-				if (madvise(_pMemory, _Size, MADV_FREE_REUSE))
+				if (madvise(_pMemory, _Size, MADV_FREE_REUSABLE))
 				{
 					int ErrNo = errno;
 					DMibErrorMemory(NMib::NPlatform::fg_FormatErrno("madvise (virtual decommit)", ErrNo));
 				}
-			}
-#endif
-#endif
-#ifdef DPlatformFamily_Linux
-#if DMibConfig_MemoryManager_HugePage_Enable
+			}*/
+#	endif
+#elif defined(DPlatformFamily_Linux)
+#	if DMibConfig_MemoryManager_HugePage_Enable
 			madvise(_pMemory, _Size, MADV_HUGEPAGE);
-#else
+#	else
 			madvise(_pMemory, _Size, MADV_NOHUGEPAGE);
-#endif
+#	endif
 			if ((_Flags & EAllocationFlag_NoCommit))
 				madvise(_pMemory, _Size, MADV_DONTNEED);
 #endif
 			return _pMemory;
 		}
 	;
-	
+
 	int Tag = 244;
-	
+
 	if (_Flags & EAllocationFlag_MainHeap)
 		Tag = 240;
 	if (_Flags & EAllocationFlag_NonTrackedMainHeap)
 		Tag = 250;
-	
+
+#ifdef DPlatformFamily_OSX
+#	define DVmTag(d_Tag) VM_MAKE_TAG(d_Tag)
+#else
+#	define DVmTag(d_Tag) 0
+#endif
+
+	int MapOptions = MAP_ANON | MAP_PRIVATE | MAP_NORESERVE;
 
 	_Size = fg_AlignUp(_Size, NMib::NSys::NPrivate::g_PageSize);
 	if (_Alignment > NMib::NSys::NPrivate::g_PageSize)
 	{
 		// First try anon with exact size
 		_Size = fg_AlignUp(_Size, _Alignment);
-		
-#ifdef DPlatformFamily_OSX
-#	define DVmTag(d_Tag) VM_MAKE_TAG(d_Tag)
-#else
-#	define DVmTag(d_Tag) 0
-#endif
-		
-		uint8 *pAddress = (uint8 *)mmap(nullptr, _Size, Protection, MAP_ANON | MAP_PRIVATE, DVmTag(Tag), 0);
-		
+
+		uint8 *pAddress = (uint8 *)mmap(nullptr, _Size, Protection, MapOptions, DVmTag(Tag), 0);
+
 		if (!pAddress || pAddress == MAP_FAILED)
 			fl_ReportError(errno);
-		
+
 		if (!((mint)pAddress & (_Alignment - 1)))
 		{
 			if (!(_Flags & EAllocationFlag_WillFreeWithSize))
@@ -137,13 +137,13 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 				DMibPDebugBreak; // Should not fail
 			}
 			mint AllocSize = _Size + _Alignment - NMib::NSys::NPrivate::g_PageSize;
-			pAddress = (uint8 *)mmap(nullptr, AllocSize, Protection, MAP_ANON | MAP_PRIVATE, DVmTag(Tag + 1), 0);
-			
+			pAddress = (uint8 *)mmap(nullptr, AllocSize, Protection, MapOptions, DVmTag(Tag + 1), 0);
+
 			if (!pAddress || pAddress == MAP_FAILED)
 				fl_ReportError(errno);
-			
+
 			uint8 *pEndAlignment = pAddress + AllocSize;
-			
+
 			uint8 *pStartAddress = fg_AlignUp(pAddress, _Alignment);
 			uint8 *pEndAddress = pStartAddress + _Size;
 			mint ToFreeStart = pStartAddress - pAddress;
@@ -175,7 +175,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 	}
 	else
 	{
-		void *pAddress = mmap(nullptr, _Size, Protection, MAP_ANON | MAP_PRIVATE, DVmTag(Tag + 2), 0);
+		void *pAddress = mmap(nullptr, _Size, Protection, MapOptions, DVmTag(Tag + 2), 0);
 
 		if (!pAddress || pAddress == MAP_FAILED)
 			fl_ReportError(errno);
@@ -186,7 +186,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 			DMibLock(g_VirtualMapLock);
 			(*g_VirtualMap)[((mint)pAddress)>>12] = _Size;
 		}
-		
+
 		return fSetUncommited(pAddress);
 	}
 }
@@ -203,10 +203,10 @@ void NSys::fg_Mem_VirtualProtect(void *_pMem, mint _Size, uaint _Protect)
 		| ( (_Protect & EProtect_Write) ? PROT_WRITE : 0 )
 		| ( (_Protect & EProtect_Exec) ? PROT_EXEC : 0 )
 	;
-	
+
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
-	
+
 	if (mprotect(pMemStart, pMemEnd - pMemStart, Protection))
 	{
 		int ErrNo = errno;
@@ -219,7 +219,7 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
 #ifdef DPlatformFamily_Emscripten
 	// Nop
 #else
-	
+
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
 
@@ -243,7 +243,7 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
 		}
 	}
 #else
-	
+
 	if (madvise(pMemStart, pMemEnd - pMemStart, MADV_WILLNEED))
 	{
 		int ErrNo = errno;
@@ -269,7 +269,7 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 #else
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
-	
+
 #if defined(DPlatformFamily_OSX)
 #ifdef DMibOSX_UseMadvise
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
@@ -290,13 +290,13 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 		}
 	}
 #else
-	
+
 #ifdef MADV_FREE
 	int Advice = MADV_FREE;
 #else
 	int Advice = MADV_DONTNEED;
 #endif
-	
+
 	if (madvise(pMemStart, pMemEnd - pMemStart, Advice))
 	{
 		int ErrNo = errno;
