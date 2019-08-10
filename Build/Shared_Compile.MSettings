@@ -1215,7 +1215,7 @@ Compile
 		!!PlatformToolsetFamily clang
 	}
 
-	SearchPath "@(Builtin.BasePathAbsolute)/External/libcxx/include;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/External/llvm-project/libcxx/include;@(Compile.SearchPath)"
 	{
 		&
 		{
@@ -1223,7 +1223,7 @@ Compile
 			MalterlibUseStaticLibCxx "true"
 		}
 	}
-	SearchPath "@(Builtin.BasePathAbsolute)/External/libcxxabi/include;@(Compile.SearchPath)"
+	SearchPath "@(Builtin.BasePathAbsolute)/External/llvm-project/libcxxabi/include;@(Compile.SearchPath)"
 	{
 		&
 		{

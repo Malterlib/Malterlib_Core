@@ -67,7 +67,7 @@ Property
 		{
 			!!PlatformFamily "Linux"
 		}
-		SearchPath "@('../../External/libunwind/include'->MakeAbsolute());@(Compile.SearchPath)"
+		SearchPath "@('../../External/llvm-project/libunwind/include'->MakeAbsolute());@(Compile.SearchPath)"
 		{
 			&
 			{
@@ -141,26 +141,26 @@ Property
 				!!CompileDialect "C"
 			}
 
-			%File "../../External/compiler-rt/lib/builtins/*.c"
-			%File "../../External/compiler-rt/lib/builtins/*.h"
+			%File "../../External/llvm-project/compiler-rt/lib/builtins/*.c"
+			%File "../../External/llvm-project/compiler-rt/lib/builtins/*.h"
 			%Group x86
 			{
 				!!Architecture x86
 				//%File "../../SDK/compiler-rt/lib/builtins/i386/*.c"
-				%File "../../External/compiler-rt/lib/builtins/i386/*.S"
+				%File "../../External/llvm-project/compiler-rt/lib/builtins/i386/*.S"
 			}
 			%Group x64
 			{
 				!!Architecture x64
-				%File "../../External/compiler-rt/lib/builtins/x86_64/*.c"
-				%File "../../External/compiler-rt/lib/builtins/x86_64/*.S"
+				%File "../../External/llvm-project/compiler-rt/lib/builtins/x86_64/*.c"
+				%File "../../External/llvm-project/compiler-rt/lib/builtins/x86_64/*.S"
 			}
 			%Group ppc
 			{
 				!!Architecture ppc32
 				!!Architecture ppc64
-				%File "../../External/compiler-rt/lib/builtins/ppc/*.c"
-				%File "../../External/compiler-rt/lib/builtins/ppc/*.S"
+				%File "../../External/llvm-project/compiler-rt/lib/builtins/ppc/*.c"
+				%File "../../External/llvm-project/compiler-rt/lib/builtins/ppc/*.S"
 			}
 		}
 		%Group libunwind
@@ -188,8 +188,8 @@ Property
 				AllCPUSubTypes true
 				PreprocessorDefines "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
 			}
-			%File "../../External/libunwind/include/^*"
-			%File "../../External/libunwind/src/*"
+			%File "../../External/llvm-project/libunwind/include/^*"
+			%File "../../External/llvm-project/libunwind/src/*"
 			{
 				Compile.Disabled true
 				{
@@ -213,24 +213,24 @@ Property
 				PreprocessorDefines "LIBCXXABI_NO_NEW_DELETE;@(Compile.PreprocessorDefines)"
 			}
 
-			%File "../../External/libcxxabi/src/*.cpp"
+			%File "../../External/llvm-project/libcxxabi/src/*.cpp"
 			{
 				Compile.Disabled true
 				{
 					!!PlatformFamily Emscripten
 				}
 			}
-			%File "../../External/libcxxabi/src/*.h"
-			%File "../../External/libcxxabi/include/*.h"
+			%File "../../External/llvm-project/libcxxabi/src/*.h"
+			%File "../../External/llvm-project/libcxxabi/include/*.h"
 			{
 				Compile.Disabled true
 			}
-			%File "../../External/libcxxabi/src/cxa_exception.cpp"
-			%File "../../External/libcxxabi/src/stdlib_stdexcept.cpp"
-			%File "../../External/libcxxabi/src/stdlib_typeinfo.cpp"
-			%File "../../External/libcxxabi/src/private_typeinfo.cpp"
-			%File "../../External/libcxxabi/src/private_typeinfo.cpp"
-			%File "../../External/libcxxabi/src/cxa_personality.cpp"
+			%File "../../External/llvm-project/libcxxabi/src/cxa_exception.cpp"
+			%File "../../External/llvm-project/libcxxabi/src/stdlib_stdexcept.cpp"
+			%File "../../External/llvm-project/libcxxabi/src/stdlib_typeinfo.cpp"
+			%File "../../External/llvm-project/libcxxabi/src/private_typeinfo.cpp"
+			%File "../../External/llvm-project/libcxxabi/src/private_typeinfo.cpp"
+			%File "../../External/llvm-project/libcxxabi/src/cxa_personality.cpp"
 			{
 				Compile.LinkTimeCodeGeneration "@(WorkaroundLTOValue)" // Exception handling breaks if this is enabled
 				{
@@ -282,20 +282,20 @@ Property
 				}
 				%Group Headers
 				{
-					%File "../../External/libcxx/include/^*"
+					%File "../../External/llvm-project/libcxx/include/^*"
 					Compile.Type Header
 				}
 				%Group Source
 				{
-					%File "../../External/libcxx/src/^*"
-					%File "../../External/libcxx/src/new.cpp"
+					%File "../../External/llvm-project/libcxx/src/^*"
+					%File "../../External/llvm-project/libcxx/src/new.cpp"
 					{
 						Compile.PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE_DEFINITIONS;@(Compile.PreprocessorDefines)"
 						{
 							!MalterlibDefaultToolset true
 						}
 					}
-					%File "../../External/libcxx/src/debug.cpp"
+					%File "../../External/llvm-project/libcxx/src/debug.cpp"
 					{
 						Compile.Disabled true
 					}
@@ -303,14 +303,14 @@ Property
 					{
 						%Group solaris
 						{
-							%File "../../External/libcxx/src/support/solaris/*.cpp"
+							%File "../../External/llvm-project/libcxx/src/support/solaris/*.cpp"
 							{
 								Compile.Disabled true
 							}
 						}
 						%Group win32
 						{
-							%File "../../External/libcxx/src/support/win32/*.cpp"
+							%File "../../External/llvm-project/libcxx/src/support/win32/*.cpp"
 							{
 								Compile.Disabled true
 								{

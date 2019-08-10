@@ -39,6 +39,7 @@ function LockFile
 ClangVersion="$1"
 OutputDirectory="$2"
 MalterlibMainMalterlibRepo="$3"
+BuildToolchain="$4"
 
 LockDir="$(dirname "$OutputDirectory")"
 mkdir -p "$LockDir"
@@ -131,10 +132,6 @@ function BuildClangVersion()
 
 function UpdateToolChain()
 {
-	if [[ "$MalterlibUseCustomXcodeToolchain" != "true" ]]; then
-		return
-	fi
-
 	BuildClangVersion $ClangVersion -xcode
 
 	IntegerClangVersion=${ClangVersion/./}
@@ -170,5 +167,8 @@ function UpdateToolChain()
 	popd > /dev/null
 }
 
-BuildClangVersion $ClangVersion
-UpdateToolChain
+if [[ "$BuildToolchain" == "true" ]]; then
+	UpdateToolChain
+else
+	BuildClangVersion $ClangVersion
+fi

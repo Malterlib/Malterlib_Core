@@ -1,47 +1,14 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-Property.MalterlibClangUpstreamBranch "release_@(MalterlibClangVersion->Replace('.', ''))"
+Property.MalterlibClangUpstreamBranch "release/@(MalterlibClangVersion->ParseFormatString('{}.{}', '{0}.x'))"
 
-%Repository "libcxx"
+%Repository "llvm-project"
 {
 	Repository
 	{
 		Type External
-		Remotes "upstream=https://github.com/llvm-mirror/libcxx;upstream2=https://git.llvm.org/git/libcxx;@(Repository.Remotes)"
-		DefaultUpstreamBranch "@(MalterlibClangUpstreamBranch)"
-		Tags "llvm"
-	}
-}
-
-%Repository "libcxxabi"
-{
-	Repository
-	{
-		Type External
-		Remotes "upstream=https://github.com/llvm-mirror/libcxxabi;upstream2=https://git.llvm.org/git/libcxxabi;@(Repository.Remotes)"
-		DefaultUpstreamBranch "@(MalterlibClangUpstreamBranch)"
-		Tags "llvm"
-	}
-}
-
-%Repository "libunwind"
-{
-	Repository
-	{
-		Type External
-		Remotes "upstream=https://github.com/llvm-mirror/libunwind;upstream2=https://git.llvm.org/git/libunwind;@(Repository.Remotes)"
-		DefaultUpstreamBranch "@(MalterlibClangUpstreamBranch)"
-		Tags "llvm"
-	}
-}
-
-%Repository "compiler-rt"
-{
-	Repository
-	{
-		Type External
-		Remotes "upstream=https://github.com/llvm-mirror/compiler-rt;upstream2=https://git.llvm.org/git/compiler-rt;@(Repository.Remotes)"
+		Remotes "upstream=https://github.com/llvm/llvm-project;@(Repository.Remotes)"
 		DefaultUpstreamBranch "@(MalterlibClangUpstreamBranch)"
 		Tags "llvm"
 	}

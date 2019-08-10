@@ -2,8 +2,7 @@
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Property.MalterlibBuildDependenciesContents	"@(MalterlibBuildDependenciesContents)"\
-			"export MalterlibUseCustomXcodeToolchain=@(MalterlibUseCustomXcodeToolchain)\r\n"\
-			"@('BuildLLVM.sh'->MakeAbsolute()) \"@(MalterlibClangVersion)\" \"@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)\" \"@(MalterlibMainMalterlibRepo)\"\r\n"\
+			"@('BuildLLVM.sh'->MakeAbsolute()) \"@(MalterlibClangVersion)\" \"@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)\" \"@(MalterlibMainMalterlibRepo)\" false\r\n"\
 			"ErrorLevel=$?\n"\
 			"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
 			"  echo error: Failed to update LLVM dependencies\n"\
@@ -11,4 +10,19 @@ Property.MalterlibBuildDependenciesContents	"@(MalterlibBuildDependenciesContent
 			"fi\n"
 {
 	!!PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang"
+}
+
+Property.MalterlibBuildDependenciesContents	"@(MalterlibBuildDependenciesContents)"\
+			"@('BuildLLVM.sh'->MakeAbsolute()) \"@(MalterlibCustomToolchainClangVersion)\" \"@(MalterlibDependenciesDirectory)/llvm/@(MalterlibCustomToolchainClangVersion)\" \"@(MalterlibMainMalterlibRepo)\" true\r\n"\
+			"ErrorLevel=$?\n"\
+			"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
+			"  echo error: Failed to update custom LLVM toolchain\n"\
+			"  exit 1\n"\
+			"fi\n"
+{
+	&
+	{
+		MalterlibUseCustomXcodeToolchain true
+		PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang"
+	}
 }

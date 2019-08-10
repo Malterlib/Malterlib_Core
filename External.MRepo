@@ -55,7 +55,4 @@
 ../../External/boost/utility f03b681d0110d0a0236c2cd2fa6cb333b6454935
 ../../External/boost/variant 7ecf721f2b20df142d73d0dc1fe0677abb05c9d1
 ../../External/boost/winapi 1c890b7c1a85535d88f0b6549af7c9e6b1a80239
-../../External/compiler-rt c054b2528875e688a9d49b9ed0bd6b0ffb212ec2
-../../External/libcxx 5f39c7a4c9fd4981ddc4a7463b8225dae6584044
-../../External/libcxxabi a89858127673a23cc5eb21978ca64f6a9ea57756
-../../External/libunwind 699dc441c9251024ba6dbcabdb0e8b8ccd4ca481
+../../External/llvm-project bec3b457ac35ad8d83cf25548a264b0811a0b26e
