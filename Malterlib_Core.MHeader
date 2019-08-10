@@ -258,7 +258,7 @@ Property
 
 Property
 {
-	MalterlibEnableThirdPartyComparisonTests false // User(Tests)=true: Enable thrird party comparison tests. Additional SDKs might be needed
+	MalterlibEnableThirdPartyComparisonTests false // User(Tests)=true: Enable thrird party comparison tests.
 	{
 		!!MalterlibEnableThirdPartyComparisonTests ""
 	}

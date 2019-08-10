@@ -334,9 +334,13 @@ Property
 		}
 	}
 */
-	EnableReleaseConfig "true" // User(Configs)=true: Enable 'Release' configuration
+	EnableReleaseConfig "true" // User(Configs)=false: Enable 'Release' configuration
 	{
 		!!EnableReleaseConfig ""
+	}
+	EnableReleaseTestingConfig "true" // User(Configs)=false: Enable 'Release Testing' configuration
+	{
+		!!EnableReleaseTestingConfig ""
 	}
 	EnableSafeThreadLocals "false" // User(Undocumented)=true: Enables use of safe thread locals so you can do tests against other versions of OSX
 	{
@@ -600,6 +604,9 @@ Property
 		!!EnableExtraDebuggingConfigs true
 	}
     "Release Testing" "Release code with optimizations, but with asserts and contracts enabled"
+	{
+		!!EnableReleaseTestingConfig true
+	}
     Release "Release code paths with full compiler optizations, but not latest CPU instructions"
 	{
 		!!EnableReleaseConfig true
