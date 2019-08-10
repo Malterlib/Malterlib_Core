@@ -357,7 +357,7 @@ Property
 		}
 	}
 
-	MalterlibMemoryManager "Malterlib" // User(Memory Manager)=OverwriteCheck: Choose the memory manager. Options: Malterlib, System, OverwriteCheck, DLMalloc, LLAlloc (default Malterlib)
+	MalterlibMemoryManager "Malterlib" // User(Memory Manager)=OverwriteCheck: Choose the memory manager. Options: Malterlib, System, OverwriteCheck, MiMalloc, TcMalloc (default Malterlib)
 	{
 		!!MalterlibMemoryManager ""
 	}
