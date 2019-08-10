@@ -4150,7 +4150,7 @@ namespace
 		uint32 MalterlibAttr = 0;
 		if (_FileAttribs & FILE_ATTRIBUTE_DIRECTORY)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_Directory;
-		else if (tf_bAddFileAttribute)
+		else if constexpr (tf_bAddFileAttribute)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_File;
 		if (_FileAttribs & FILE_ATTRIBUTE_REPARSE_POINT)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_Link;

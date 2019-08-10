@@ -773,11 +773,10 @@ namespace NMib
 	inline_small t_CInt fg_ByteSwap(t_CInt _In)
 	{
 		// Static branch
-		if (TCHelper_ByteSwap<t_CInt>::EDefaultImplementation)
+		if constexpr (TCHelper_ByteSwap<t_CInt>::EDefaultImplementation)
 		{
 			typedef typename TCHelper_ByteSwapChooseBySize<sizeof(t_CInt), t_CInt>::CSwapper CSwapper;
 			return CSwapper::fs_Swap((typename CSwapper::CType &)_In);
-
 		}
 		else
 			return TCHelper_ByteSwap<t_CInt>::fs_Swap(_In);
@@ -1158,11 +1157,11 @@ namespace NMib
 	template <typename t_CInt0, typename t_CInt1>
 	bool fg_SafeLargerThan(t_CInt0 const &_Left, t_CInt1 const &_Right)
 	{
-		if (sizeof(t_CInt0) > sizeof(t_CInt1))
+		if constexpr (sizeof(t_CInt0) > sizeof(t_CInt1))
 		{
-			if (NTraits::TCIsSigned<t_CInt0>::mc_Value)
+			if constexpr (NTraits::TCIsSigned<t_CInt0>::mc_Value)
 			{
-				if (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
 					return _Left > t_CInt0(_Right);
 				else
 				{
@@ -1174,7 +1173,7 @@ namespace NMib
 			}
 			else
 			{
-				if (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
 				{
 					t_CInt1 Zero(0);
 					if (_Right < Zero)
@@ -1185,11 +1184,11 @@ namespace NMib
 					return _Left > t_CInt0(_Right);
 			}
 		}
-		else if (sizeof(t_CInt0) < sizeof(t_CInt1))
+		else if constexpr (sizeof(t_CInt0) < sizeof(t_CInt1))
 		{
-			if (NTraits::TCIsSigned<t_CInt0>::mc_Value)
+			if constexpr (NTraits::TCIsSigned<t_CInt0>::mc_Value)
 			{
-				if (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
 					return t_CInt1(_Left) > _Right;
 				else
 				{
@@ -1201,7 +1200,7 @@ namespace NMib
 			}
 			else
 			{
-				if (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
 				{
 					t_CInt1 Zero(0);
 					if (_Right < Zero)
@@ -1214,9 +1213,9 @@ namespace NMib
 		}
 		else
 		{
-			if (NTraits::TCIsSigned<t_CInt0>::mc_Value)
+			if constexpr (NTraits::TCIsSigned<t_CInt0>::mc_Value)
 			{
-				if (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
 					return _Left > t_CInt0(_Right);
 				else
 				{
@@ -1228,7 +1227,7 @@ namespace NMib
 			}
 			else
 			{
-				if (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
 				{
 					t_CInt1 Zero(0);
 					if (_Right < Zero)

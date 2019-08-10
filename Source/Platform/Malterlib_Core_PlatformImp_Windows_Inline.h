@@ -44,7 +44,7 @@ namespace NMib
 			return 0.0f;
 		}
 		
-		inline_always bool fg_Mem_VirtualCanCommit()
+		constexpr inline_always bool fg_Mem_VirtualCanCommit()
 		{
 			return true;
 		}

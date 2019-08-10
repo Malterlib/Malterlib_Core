@@ -163,7 +163,7 @@ namespace NMib
 		mint fg_Mem_VirtualSize(const void *_pMem);
 		mint fg_Mem_VirtualTrySize(const void *_pMem);
 		fp32 fg_Mem_VirtualOverhead(void const *_pMem);
-		bool fg_Mem_VirtualCanCommit();
+		constexpr bool fg_Mem_VirtualCanCommit();
 		bool fg_Mem_VirtualCanProtect();
 		void fg_Mem_VirtualFlushInstructionCache(void *_pMem, mint _Size);
 
