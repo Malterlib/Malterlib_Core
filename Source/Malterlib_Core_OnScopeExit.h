@@ -20,12 +20,11 @@ namespace NMib
 		t_FOnExitFunctor mp_fOnExitFunctor;
 		bool mp_bIsValid;
 	public:
-		TCOnScopeExit(t_FOnExitFunctor const &_fOnExitFunctor) 
-			: mp_fOnExitFunctor(_fOnExitFunctor)
-			, mp_bIsValid(true)
-		{
-		}
-		TCOnScopeExit(t_FOnExitFunctor &&_fOnExitFunctor) 
+		TCOnScopeExit(TCOnScopeExit const&) = delete;
+		TCOnScopeExit operator=(TCOnScopeExit const&) = delete;
+		TCOnScopeExit(t_FOnExitFunctor const &_fOnExitFunctor) = delete;
+		
+		TCOnScopeExit(t_FOnExitFunctor &&_fOnExitFunctor)
 			: mp_fOnExitFunctor(fg_Move(_fOnExitFunctor))
 			, mp_bIsValid(true)
 		{
@@ -62,9 +61,6 @@ namespace NMib
 		{
 			mp_bIsValid = false;
 		}
-	private: // disable
-		TCOnScopeExit(TCOnScopeExit const&);
-		TCOnScopeExit operator=(TCOnScopeExit const&);
 	};
 	
 	template<typename tf_FOnExitFunctor>
@@ -82,6 +78,4 @@ namespace NMib
 		}
 	};
 	extern COnScopeExitHelper const &g_OnScopeExit;
-
 }
-
