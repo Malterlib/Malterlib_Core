@@ -5,8 +5,8 @@
 
 #if defined(__EDG__)
 // This is the intellisense compiler
-#elif _MSC_VER == 1921
-#	if _MSC_FULL_VER < 192127702
+#elif _MSC_VER == 1922
+#	if _MSC_FULL_VER < 192227905
 #		pragma message("Current compiler version: " DMibStringize(_MSC_FULL_VER))
 #		error "Compiler version is not 192027508, please install the approprita service pack of Visual Studio 2019"
 #	endif

@@ -107,7 +107,7 @@ Property
 		}
 	}
 
-	MalterlibMaxSupportedWindowsVersion "10.0.17763.0" // User(Platform Version): Max supported Windows version.
+	MalterlibMaxSupportedWindowsVersion "10.0.18362.0" // User(Platform Version): Max supported Windows version.
 	{
 		!!MalterlibMaxSupportedWindowsVersion ""
 	}

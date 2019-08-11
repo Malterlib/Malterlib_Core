@@ -1,6 +1,11 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+Target.ExtraGroups "{Malterlib}/{TCMalloc}"
+{
+	!!MalterlibMemoryManager TcMalloc
+}
+
 Compile
 {
 	!!CompileDialect "C"
@@ -20,11 +25,6 @@ Compile
 	SearchPath "@('../../External/mimalloc/include'->MakeAbsolute());@(Compile.SearchPath)"
 	{
 		!!MalterlibMemoryManager MiMalloc
-	}
-
-	SearchPath "@('../../External/gperftools/src'->MakeAbsolute());@('../../External/gperftools/src/windows'->MakeAbsolute());@(Compile.SearchPath)"
-	{
-		!!MalterlibMemoryManager TcMalloc
 	}
 
 	PreprocessorDefines "DMibDynamicLibrary;@(Compile.PreprocessorDefines)"
@@ -221,10 +221,6 @@ Compile
 			{
 				!!CompileDialect "C"
 				PreprocessorDefines "DMibConfig_MemoryManager_Use@(MalterlibMemoryManager);@(Compile.PreprocessorDefines)"
-				PreprocessorDefines "TCMALLOC_NO_REPLACE_SYSTEM_MALLOC;@(Compile.PreprocessorDefines)"
-				{
-					!!MalterlibMemoryManager TcMalloc
-				}
 			}
 
 			%File "../Memory/Source/Malterlib_Memory_SystemManager*"
@@ -274,66 +270,6 @@ Compile
 			}
 			
 			%File ../Memory/Source/Malterlib_Memory.cpp
-
-			%Group "TcMalloc"
-			{
-				!!MalterlibMemoryManager TcMalloc
-				Compile
-				{
-					!!GeneratorFamily Xcode
-					
-					Warnings_DeprecatedDeclarations false
-					Warnings_UnusedFunction false
-				}
-
-				%File "../Memory/Source/TCMalloc/^*"
-				%Group External
-				{
-					Property
-					{
-						ExcludeFiles "*/tests/*;@(ExcludeFiles)"
-						ExcludeFiles "*/solaris/*;@(ExcludeFiles)"
-					}
-					%Group TcMalloc
-					{
-						Compile
-						{
-							!!MalterlibCompileSupportTabSetings true
-							IndentWidth 2
-							TabWidth 2
-							UsesTabs false
-						}
-
-						!!MalterlibEnableThirdPartyComparisonTests true
-						%File "../../External/gperftools/src/^*.h"
-						%File "../../External/gperftools/src/^*.c"
-						%File "../../External/gperftools/src/^*.cc"
-						%File "../../External/gperftools/src/debugallocation.cc"
-						{
-							Compile.Disabled true
-						}
-						%File "../../External/gperftools/src/heap-profiler.cc"
-						{
-							Compile.Disabled true
-						}
-						%Group windows
-						{
-							Compile.Disabled true
-							{
-								!PlatformFamily "Windows"
-							}
-							%File "../../External/gperftools/src/windows/override_functions.cc"
-							{
-								Compile.Disabled true
-							}
-							%File "../../External/gperftools/src/windows/patch_functions.cc"
-							{
-								Compile.Disabled true
-							}
-						}
-					}
-				}
-			}
 		}
 		%File ../Memory/Source/Malterlib_Memory_Allocator_Heap.cpp
 		{

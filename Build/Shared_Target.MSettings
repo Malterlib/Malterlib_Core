@@ -743,7 +743,7 @@ Property
 		}
 	}
 
-	MalterlibMSVCVersion "14.21.27702"
+	MalterlibMSVCVersion "14.22.27905"
 	{
 		!!MalterlibMSVCVersion ""
 	}
@@ -1864,7 +1864,7 @@ Target
 	}
 }
 
-Property.MalterlibEnableFastLink false // This is still too buggy when debugging
+Property.MalterlibEnableFastLink true // This is still too buggy when debugging
 {
 	!!MalterlibEnableFastLink ""
 }
