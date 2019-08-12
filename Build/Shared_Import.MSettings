@@ -102,7 +102,33 @@ Import
 		}
 	}
 
-	CMake_Variables "CMAKE_EXE_LINKER_FLAGS_INIT=-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\";@(Import.CMake_Variables)"
+	CMake_Variables "CMAKE_LINKER=@(Malterlib_LinuxLinker);@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			!Malterlib_LinuxLinker ""
+		}
+	}
+	CMake_Variables "CMAKE_LINKER=@(Malterlib_LinuxLinker);@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			!Malterlib_LinuxLinker ""
+		}
+	}
+
+	CMake_Internal_LinkerFlags "-fuse-ld=@(Malterlib_LinuxLinker) -stdlib=libc++ @(Import.CMake_Internal_LinkerFlags)"
+	{
+		&
+		{
+			PlatformFamily Linux
+			!Malterlib_LinuxLinker ""
+		}
+	}
+
+	CMake_Internal_LinkerFlags "-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\" @(Import.CMake_Internal_LinkerFlags)"
 	{
 		&
 		{
@@ -111,22 +137,46 @@ Import
 		}
 	}
 
+	CMake_Variables "CMAKE_EXE_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags);@(Import.CMake_Variables)"
+	{
+		!Import.CMake_Internal_LinkerFlags ""
+	}
 
-	CMake_Variables "CMAKE_STATIC_LINKER_FLAGS_INIT=-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\";@(Import.CMake_Variables)"
+	CMake_Variables "CMAKE_STATIC_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags);@(Import.CMake_Variables)"
+	{
+		!Import.CMake_Internal_LinkerFlags ""
+	}
+
+	CMake_Variables "CMAKE_MODULE_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags);@(Import.CMake_Variables)"
+	{
+		!Import.CMake_Internal_LinkerFlags ""
+	}
+
+	CMake_Variables "CMAKE_SHARED_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags);@(Import.CMake_Variables)"
+	{
+		!Import.CMake_Internal_LinkerFlags ""
+	}
+
+	CMake_Variables "CMAKE_CXX_FLAGS_INIT=-stdlib=libc++;@(Import.CMake_Variables)"
 	{
 		&
 		{
 			PlatformFamily Linux
-			Architecture x86
+			!PlatformFamily "@(HostPlatformFamily)"
 		}
 	}
 
-	CMake_Variables "CMAKE_MODULE_LINKER_FLAGS_INIT=-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\";@(Import.CMake_Variables)"
+	CMake_Variables "CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY;@(Import.CMake_Variables)"
+	{
+		!PlatformFamily "@(HostPlatformFamily)"
+	}
+
+	CMake_Variables "CMAKE_RANLIB=@(PlatformToolsetCompiler->GetPath())/llvm-ranlib;@(Import.CMake_Variables)"
 	{
 		&
 		{
 			PlatformFamily Linux
-			Architecture x86
+			!PlatformFamily "@(HostPlatformFamily)"
 		}
 	}
 
