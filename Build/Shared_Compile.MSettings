@@ -557,6 +557,7 @@ Compile
 				this.Identity "~*.OldMBuildSystem"
 				this.Identity "~*.MWorkspace*"
 				this.Identity "~*.MHeader"
+				this.Identity "~*.MInclude"
 				this.Identity "~*.MSettings*"
 				this.Identity "~*.MGeneratorSettings*"
 				this.Identity "~*.MBuildOptions*"

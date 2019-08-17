@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 %Target "Tool_GenerateBuildSystem"
@@ -37,6 +37,10 @@
 			%Group "Headers"
 			{
 				%File "@(Builtin.Function->SourceFiles('*.MHeader*'))"
+			}
+			%Group "Include Headers"
+			{
+				%File "@(Builtin.Function->SourceFiles('*.MInclude*'))"
 			}
 			%Group "Settings"
 			{
@@ -92,7 +96,7 @@
 				TabWidth 2
 				UsesTabs false
 			}
-			
+
 			%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/*.py"
 			%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/em*"
 			%Group tools
@@ -129,10 +133,10 @@
 					{
 						!Explodee ""
 					}
-					
+
 					IntermediateDirectoriesContents	"@(IntermediateDirectoriesContents)"\
 													"@(Builtin.Function->ExplodeList('@(Workspace.AllTargets)', ';', 'IntermediateDirectoriesTemplate'))"
-					
+
 					Name "@(IntermediateDirectoriesFile)"
 					Contents "@(IntermediateDirectoriesContents)"
 					Executable false
@@ -189,7 +193,7 @@
 					{
 						&
 						{
-							
+
 							!MalterlibDisableBuildSystemGeneration true
 							HostPlatformFamily "Windows"
 							IsSafeMTool true
@@ -205,7 +209,7 @@
 							HostPlatformFamily "Windows"
 						}
 					}
-					
+
 					Contents	"@(Contents)"\
 								"if [ \"$DisableProjectGen\" == \"1\" ]; then\n"\
 								"  exit 0\n"\
@@ -266,7 +270,7 @@
 						&
 						{
 							!HostPlatformFamily "Windows"
-							!MalterlibAccurateDependencies true					
+							!MalterlibAccurateDependencies true
 						}
 					}
 					Contents	"@(Contents)"\

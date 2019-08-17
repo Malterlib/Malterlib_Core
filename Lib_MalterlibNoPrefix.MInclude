@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Target.ExtraGroups "{Malterlib}/{TCMalloc}"
@@ -38,15 +38,15 @@ Compile
 	}
 	PreprocessorDefines "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport;@(Compile.PreprocessorDefines)"
 	{
-		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true 
+		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 	}
-	
+
 	PreprocessorDefines "DMibConfig_CheckOverrideMemoryLeaks;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemoryManager_CheckOverrideMemoryLeaks true
 	}
-	
-	// We don't destroy the heap unless we are in debug mode, this speeds up system exit	
+
+	// We don't destroy the heap unless we are in debug mode, this speeds up system exit
 	PreprocessorDefines "DMibConfig_HeapNeverDestroyed;@(Compile.PreprocessorDefines)"
 	{
 		|
@@ -64,9 +64,9 @@ Compile
 	{
 		!MalterlibMemoryManager_AlwaysRelease true
 	}
-	
+
 	// Debug options
-	
+
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_Features=1;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemoryManager_Debug_Features true
@@ -83,7 +83,7 @@ Compile
 			!MalterlibMemoryManager_Debug_Features false
 		}
 	}
-	
+
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableStackTrace=1;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemoryManager_Debug_EnableStackTrace true
@@ -92,7 +92,7 @@ Compile
 	{
 		!MalterlibMemoryManager_Debug_EnableStackTrace true
 	}
-	
+
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreeValidation=1;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemoryManager_Debug_EnableFreeValidation true
@@ -100,9 +100,9 @@ Compile
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreeValidation=0;@(Compile.PreprocessorDefines)"
 	{
 		!MalterlibMemoryManager_Debug_EnableFreeValidation true
-	}	
+	}
 
-		
+
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableMemoryLeaks=1;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemoryManager_Debug_EnableMemoryLeaks true
@@ -110,7 +110,7 @@ Compile
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableMemoryLeaks=0;@(Compile.PreprocessorDefines)"
 	{
 		!MalterlibMemoryManager_Debug_EnableMemoryLeaks true
-	}	
+	}
 
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreedGuards=1;@(Compile.PreprocessorDefines)"
 	{
@@ -120,7 +120,7 @@ Compile
 	{
 		!MalterlibMemoryManager_Debug_EnableFreedGuards true
 	}
-	
+
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableAllocatedFill=1;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemoryManager_Debug_EnableAllocatedFill true
@@ -129,7 +129,7 @@ Compile
 	{
 		!MalterlibMemoryManager_Debug_EnableAllocatedFill true
 	}
-	
+
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableEdgeGuards=1;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemoryManager_Debug_EnableEdgeGuards true
@@ -215,7 +215,7 @@ Compile
 			{
 				!RealConfiguration "@(Configuration)"
 			}
-			
+
 			// Which heap to use
 			Compile
 			{
@@ -268,7 +268,7 @@ Compile
 					Compile.Disabled true
 				}
 			}
-			
+
 			%File ../Memory/Source/Malterlib_Memory.cpp
 		}
 		%File ../Memory/Source/Malterlib_Memory_Allocator_Heap.cpp
@@ -294,7 +294,7 @@ Compile
 					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Net.h
 					Compile.Disabled true
 				}
-				
+
 				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC.cpp // Uses Malterlib heap enablement
 				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_StructuredException.cpp
 				{

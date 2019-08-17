@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Property
@@ -13,13 +13,13 @@ Property
 {
 	!!MalterlibNeedsInitProject  true
 	Property.DocumentationModule Malterlib
-	Property.MalterlibNoShortcuts true	
+	Property.MalterlibNoShortcuts true
 
 	Property.MalterlibConcurrency_DistributedActors true
 	{
 		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
 	}
-	
+
 	Target
 	{
 		BaseName "Malterlib_Init"
@@ -327,7 +327,7 @@ Property
 				{
 					ThisFileName "@(this.Identity->GetFileNoExt())"
 					ElfToolchainRoot "@('../../External/elftoolchain'->MakeAbsolute())"
-					
+
 					Executable false
 					UnixLineEnds true
 					UnicodeBOM false
@@ -339,17 +339,17 @@ Property
 					%File "../../External/elftoolchain/libelf/*.c"
 					%File "../../External/elftoolchain/libelf/*.h"
 					%File "../../External/elftoolchain/libelf/*.m4"
-					
+
 					%Group Generated
 					{
 						Property
 						{
 							TypesFile "@('../../External/elftoolchain/libelf/elf_types.m4'->MakeAbsolute())"
-							
+
 							Name "@(GeneratedDirectory)libelf/@(ThisFileName).c"
 							Contents "@(ExecuteCommand('@(GeneratedDirectory)libelf/@(ThisFileName).state', '@(this.Identity->MakeAbsolute());@(TypesFile)', 'm4', '-E', '-d', '-DSRCDIR=@(ElfToolchainRoot)/libelf', '-I@(ElfToolchainRoot)/common', '@(this.Identity->MakeAbsolute())'))"
 						}
-						
+
 						%GenerateFile "../../External/elftoolchain/libelf/libelf_convert.m4"
 						%GenerateFile "../../External/elftoolchain/libelf/libelf_fsize.m4"
 						%GenerateFile "../../External/elftoolchain/libelf/libelf_msize.m4"
@@ -406,7 +406,7 @@ Property
 				{
 					!!MSVCRootPath ""
 				}
-				
+
 				VisualStudioCRTPath "@(MSVCRootPath)/@(MalterlibMSVCVersion)/crt/src"
 			}
 
@@ -477,7 +477,7 @@ Property
 
 %Target "Lib_MalterlibExecutable"
 {
-	Property.MalterlibNoShortcuts true	
+	Property.MalterlibNoShortcuts true
 	Property.DocumentationModule Malterlib
 	Target
 	{
@@ -494,7 +494,7 @@ Property
 		!!CompileDialect "C"
 		PrefixHeader ""
 	}
-	Include "Lib_MalterlibNoPrefix.MHeader"
+	Include "Lib_MalterlibNoPrefix.MInclude"
 
 	%Dependency "Lib_Malterlib_Instrumentation"
 	{
@@ -515,7 +515,7 @@ Property
 
 %Target "Lib_MalterlibDll"
 {
-	Property.MalterlibNoShortcuts true	
+	Property.MalterlibNoShortcuts true
 	Property.DocumentationModule Malterlib
 	Property
 	{
@@ -536,7 +536,7 @@ Property
 		!!CompileDialect "C"
 		PrefixHeader ""
 	}
-	Include "Lib_MalterlibNoPrefix.MHeader"
+	Include "Lib_MalterlibNoPrefix.MInclude"
 }
 
 Compile
@@ -565,7 +565,7 @@ Compile
 				!Target:Target.Type "UIExecutable"
 			}
 		}
-		
+
 	}
 	%File Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp
 	{
@@ -582,7 +582,7 @@ Compile
 
 			}
 		}
-	}	
+	}
 	!!MalterlibEnableBreakpad "true"
 }
 
@@ -629,7 +629,7 @@ Target
 %Group "~Automatic/Program Identifier"
 {
 	%File Source/Platform/Malterlib_Core_PlatformImp_Linux_ProgramIdentifier.cpp
-	
+
 	&
 	{
 		PlatformFamily Linux
@@ -670,7 +670,7 @@ Target
 		}
 		ExplodedContents "@(Builtin.Function->ExplodeList('@(MalterlibIncludeRoots)', ';', 'ExpandTemplate'))\n"
 	}
-	
+
 	%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibIncludeRoots)', ';', 'ExpandTemplate'))"
 	{
 		Compile.Type "Header"
@@ -699,7 +699,7 @@ Property
 	MalterlibLibrary_All true // Default to all functionality being included in the library
 	MalterlibIncludeLevel "Workspace" // These too will cause performance issues if changed
 	MalterlibIncludePerConfig false // These too will cause performance issues if changed
-	
+
 	MalterlibIncludeOutputDir "@(GeneratedDirectory)RootInclude"
 	{
 		&
@@ -707,7 +707,7 @@ Property
 			MalterlibIncludeLevel "Target"
 			MalterlibIncludePerConfig true
 		}
-		
+
 	}
 	MalterlibIncludeOutputDir "@(GeneratedDirectoryNoConfig)RootInclude"
 	{
@@ -716,7 +716,7 @@ Property
 			MalterlibIncludeLevel "Target"
 			!MalterlibIncludePerConfig true
 		}
-		
+
 	}
 	MalterlibIncludeOutputDir "@(GeneratedWorkspaceDirectory)RootInclude"
 	{
@@ -725,7 +725,7 @@ Property
 			MalterlibIncludeLevel "Workspace"
 			MalterlibIncludePerConfig true
 		}
-		
+
 	}
 	MalterlibIncludeOutputDir "@(GeneratedWorkspaceDirectoryNoConfig)RootInclude"
 	{
@@ -774,7 +774,7 @@ Target
 %Group "~Automatic/Malterlib Indirect Dependencies"
 {
 	Dependency.Indirect true
-	
+
 	%Dependency "Lib_Malterlib_Init"
 	{
 		!!MalterlibNeedsInitProject true
@@ -902,20 +902,20 @@ Target
 						&
 						{
 							MalterlibSubLibrarySeparate true
-							!false "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))" 
+							!false "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))"
 						}
 					}
 				}
 			}
 		}
-		
+
 		AllSubLibraryGroups "@(Builtin.Function->ExplodeList('@(MalterlibSubLibraries)', ';', 'AllSubLibraryGroupsTemplate'))"
 		{
 		}
 	}
-	
+
 	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(AllSubLibraryGroups);@(MalterlibLibraryGroups);@(Target.ExtraGroups)"
-	
+
 	%Group "Indirect Dependencies"
 	{
 		Property
@@ -935,26 +935,26 @@ Target
 						&
 						{
 							MalterlibSubLibrarySeparate true
-							!false "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))" 
+							!false "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))"
 						}
 					}
 				}
 			}
-			
+
 			AllDependencies "@(Builtin.Function->ExplodeList('@(MalterlibSubLibraries)', ';', 'AllDependenciesTemplate'))"
 			{
 			}
 		}
-		
+
 		%Dependency "@(AllDependencies)"
-		
-		Dependency.Indirect true		
+
+		Dependency.Indirect true
 	}
 }
 
 %Target "Dll_MalterlibOverrideMallocDummy"
 {
-	Property.MalterlibNoShortcuts true	
+	Property.MalterlibNoShortcuts true
 	Target
 	{
 		BaseName "MalterlibOverrideMallocDummy"
@@ -1007,7 +1007,7 @@ Property
 
 %Target "Dll_MalterlibOverrideMalloc"
 {
-	Property.MalterlibNoShortcuts true	
+	Property.MalterlibNoShortcuts true
 	Target
 	{
 		BaseName "MalterlibOverrideMalloc"
@@ -1045,7 +1045,7 @@ Property
 		}
 		PreprocessorDefines "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport;@(Compile.PreprocessorDefines)"
 		{
-			!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true 
+			!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 		}
 	}
 	Property
