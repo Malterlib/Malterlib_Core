@@ -964,6 +964,11 @@ void NSys::fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str)
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(EColor_Default, _Str, STD_OUTPUT_HANDLE, false);
 }
 
+void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
+{
+	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(EColor_Default, CStrNonTracked(_pStr, _Len), STD_OUTPUT_HANDLE, true);
+}
+
 void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer)
 {
 	uint32 Written = 0;

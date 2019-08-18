@@ -77,6 +77,12 @@ void fg_WriteStringToPipe(int _Handle, ch8 const *_pStr, mint _Len)
 		}			
 	}
 }
+
+void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
+{
+	fg_WriteStringToPipe(1, _pStr, _Len);
+}
+
 void NSys::fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str)
 {
 	NMib::NStr::CStrNonTracked const &Output = _Str;

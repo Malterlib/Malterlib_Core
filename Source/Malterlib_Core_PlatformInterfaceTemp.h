@@ -99,6 +99,7 @@ namespace NMib
 
 		void fg_ConsoleOutputRaw(const NMib::NStr::CStrNonTracked &_Str);
 		void fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer);
+		void fg_ConsoleOutput(ch8 const *_pStr, mint _Len);
 		void fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str);
 		void fg_ConsoleOutputFlush();
 		void fg_ConsoleOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str);
