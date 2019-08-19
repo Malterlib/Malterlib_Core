@@ -38,7 +38,7 @@ auto CFileChangeNotificationContext::CNotification::f_WatchPath(CWatch *_pParent
 		int WatchDescriptor = m_pContext->f_Inotify_AddWatch(_Path);
 		pWatch = &m_pContext->f_LinkWatch(WatchDescriptor, _Path, this, _pParentWatch);
 	}
-	catch (NException::CException const &_Exception)
+	catch ([[maybe_unused]] NException::CException const &_Exception)
 	{
 		if (_bThrow)
 			throw;
