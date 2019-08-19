@@ -1577,6 +1577,18 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_UnusedExceptionParameter"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false "-Wno-unused-exception-parameter"
+						true "-Wunused-exception-parameter"
+					}
+				}
+			}
+
 			%GeneratorSetting "Warnings_Cxx11Narrowing"
 			{
 				%GeneratorSetting "Value"

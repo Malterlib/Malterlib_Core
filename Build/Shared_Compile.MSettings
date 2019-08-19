@@ -980,7 +980,14 @@ Compile
 	}
 
 	Warnings "On"
+
+	Warnings_UnusedExceptionParameter true
+	{
+		!!GeneratorFamily Xcode
+	}
+
 	WarningsAsErrors "true"
+
 	ClangUnstableWarnings "On"
 	{
 		&

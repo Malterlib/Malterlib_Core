@@ -16,7 +16,7 @@ namespace NMib
 					{
 						_fOnExitFunctor();
 					}
-					catch (NException::CException const &_Exception)
+					catch (NException::CException const &)
 					{
 					}
 				}
@@ -37,7 +37,7 @@ namespace NMib
 						{
 							_fOnExitFunctor();
 						}
-						catch (NException::CException const &_Exception)
+						catch (NException::CException const &)
 						{
 						}
 					}
