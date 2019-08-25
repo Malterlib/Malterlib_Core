@@ -793,6 +793,10 @@ Property
 	{
 		!!MalterlibFullSymbolsOnLinux ""
 	}
+	MalterlibClangTimeTrace "false" // User(Debug)=true: Generate time traces for clang invocations
+	{
+		!!MalterlibClangTimeTrace ""
+	}
 }
 
 Compile
@@ -1894,6 +1898,15 @@ Compile
 	Symbols "Full"
 	{
 		!!Compile.Symbols ""
+	}
+
+	ClangTimeTrace "true"
+	{
+		&
+		{
+			GeneratorFamily Xcode
+			MalterlibClangTimeTrace true
+		}
 	}
 
 	ExtraCompilerFlags "/Zo @(Compile.ExtraCompilerFlags)"
