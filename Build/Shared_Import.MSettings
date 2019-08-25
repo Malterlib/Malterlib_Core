@@ -157,12 +157,17 @@ Import
 		!Import.CMake_Internal_LinkerFlags ""
 	}
 
+	CMake_Internal_LinkerFlags "-stdlib=libc++ @(Import.CMake_Internal_LinkerFlags)"
+	{
+		!!PlatformFamily OSX
+	}
+
 	CMake_Variables "CMAKE_CXX_FLAGS_INIT=-stdlib=libc++;@(Import.CMake_Variables)"
 	{
-		&
+		|
 		{
 			PlatformFamily Linux
-			!PlatformFamily "@(HostPlatformFamily)"
+			PlatformFamily OSX
 		}
 	}
 
