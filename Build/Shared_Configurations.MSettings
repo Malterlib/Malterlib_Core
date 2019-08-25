@@ -145,6 +145,15 @@ Property
 			DefaultOSXPlatform "10.14"
 		}
 	}
+	EnablePlatform_OSX10_15 "true" // User(Platform)=true: Enables 10.15 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX10_15 ""
+			GeneratorFamily "Xcode"
+			DefaultOSXPlatform "10.15"
+		}
+	}
 	EnablePlatform_OSX10_5 "false" // User(Platform)=true: Enables 10.5 support for OSX platform
 	{
 		&
@@ -452,6 +461,14 @@ Property
 			EnablePlatform_OSX10_14 "true"
 		}
 	}
+	OSX10.15 "Mac OSX 10.15"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			EnablePlatform_OSX10_15 "true"
+		}
+	}
 	iOS8.1 "iOS 8.1"
 	{
 		&
@@ -493,6 +510,7 @@ Property
 			!Platform OSX10.12
 			!Platform OSX10.13
 			!Platform OSX10.14
+			!Platform OSX10.15
 			!Platform Emscripten
 			!PlatformFamily iOS
 			EnableArchitecture_x86 true

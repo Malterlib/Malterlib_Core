@@ -516,10 +516,8 @@ int fg_GetUnixOpenFlags()
 {
 	int OpenFlags = 0;
 #ifdef DPlatformFamily_OSX
-#	if DPlatformVersionMax >= 1070
-		if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
-			OpenFlags |= O_CLOEXEC;
-#	endif
+	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
+		OpenFlags |= O_CLOEXEC;
 #elif defined(DPlatformFamily_Linux)
 	if (NMib::CSystem::ms_PlatformVersion >= 2'006'023)
 		OpenFlags |= O_CLOEXEC;
@@ -530,10 +528,8 @@ int fg_GetUnixOpenFlags()
 void fg_SetUnixHandleOptions(int _File)
 {
 #ifdef DPlatformFamily_OSX
-#	if DPlatformVersionMax >= 1070
-		if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
-			return;
-#	endif
+	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
+		return;
 #elif defined(DPlatformFamily_Linux)
 	if (NMib::CSystem::ms_PlatformVersion >= 2'006'023)
 		return;

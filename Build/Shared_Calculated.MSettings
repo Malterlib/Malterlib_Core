@@ -84,6 +84,10 @@ Property
 	{
 		!!Platform "OSX10.14"
 	}
+	PlatformVersion "10150" // OSX 10.15
+	{
+		!!Platform "OSX10.15"
+	}
 	PlatformVersion "260" // Linux kernel 2.6
 	{
 		!!Platform "Linux2.6"
@@ -111,6 +115,7 @@ Property
 		!!Platform "OSX10.12"
 		!!Platform "OSX10.13"
 		!!Platform "OSX10.14"
+		!!Platform "OSX10.15"
 	}
 	PlatformFamily "iOS"
 	{

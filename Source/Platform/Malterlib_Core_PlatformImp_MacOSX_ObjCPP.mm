@@ -407,7 +407,7 @@ namespace NMib
 					, ^
 					{
 						[NSApp stop:NSApp];
-						NSEvent* event = [NSEvent otherEventWithType: NSApplicationDefined
+						NSEvent* event = [NSEvent otherEventWithType: NSEventTypeApplicationDefined
 															location: NSMakePoint(0,0)
 													  modifierFlags: 0
 														  timestamp: 0.0
@@ -470,59 +470,59 @@ namespace NMib
 			void* pMenuContextObject = [[pMenuContextClass alloc] init];
 			object_setInstanceVariable((id)pMenuContextObject, "m_pContext", &MenuContext);
 
-			NSMenu* pMenu = [[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:@""];
+			NSMenu* pMenu = [[NSMenu alloc] initWithTitle:@""];
 
 			{
-				NSMenuItem* pNameItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:NPlatform::fg_MaxOSX_GetString(_DaemonName) action:NULL keyEquivalent:@""];
-				[pNameItem setEnabled:false];
+				NSMenuItem* pNameItem = [[NSMenuItem alloc] initWithTitle:NPlatform::fg_MaxOSX_GetString(_DaemonName) action:NULL keyEquivalent:@""];
+				pNameItem.enabled = false;
 				[pMenu addItem:pNameItem];
 			}
 			{
 				NStr::CStr ProgramPath = NFile::CFile::fs_GetProgramPath();
-				NSMenuItem* pNameItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:NPlatform::fg_MaxOSX_GetString(ProgramPath) action:NULL keyEquivalent:@""];
-				[pNameItem setEnabled:false];
+				NSMenuItem* pNameItem = [[NSMenuItem alloc] initWithTitle:NPlatform::fg_MaxOSX_GetString(ProgramPath) action:NULL keyEquivalent:@""];
+				pNameItem.enabled = false;
 				[pMenu addItem:pNameItem];
 			}
 			
 			[pMenu addItem:[NSMenuItem separatorItem]];
 			
-			NSMenuItem* pPauseItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Pause" action:NULL keyEquivalent:@""];
-			[pPauseItem setTarget:(id)pMenuContextObject];
-			[pPauseItem setAction:@selector(doPauseDaemon:)];
+			NSMenuItem* pPauseItem = [[NSMenuItem alloc] initWithTitle:@"Pause" action:NULL keyEquivalent:@""];
+			pPauseItem.target = (id)pMenuContextObject;
+			pPauseItem.action = @selector(doPauseDaemon:);
 			[pMenu addItem:pPauseItem];
 			
-			NSMenuItem* pResumeItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Resume" action:NULL keyEquivalent:@""];
-			[pResumeItem setTarget:(id)pMenuContextObject];
-			[pResumeItem setAction:@selector(doResumeDaemon:)];
+			NSMenuItem* pResumeItem = [[NSMenuItem alloc] initWithTitle:@"Resume" action:NULL keyEquivalent:@""];
+			pResumeItem.target = (id)pMenuContextObject;
+			pResumeItem.action = @selector(doResumeDaemon:);
 			[pMenu addItem:pResumeItem];
 			
-			NSMenuItem* pQuitItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Quit" action:NULL keyEquivalent:@""];
-			[pQuitItem setTarget:(id)pMenuContextObject];
-			[pQuitItem setAction:@selector(doQuitDaemon:)];
+			NSMenuItem* pQuitItem = [[NSMenuItem alloc] initWithTitle:@"Quit" action:NULL keyEquivalent:@""];
+			pQuitItem.target = (id)pMenuContextObject;
+			pQuitItem.action = @selector(doQuitDaemon:);
+
 			[pMenu addItem:pQuitItem];
-			
 			[pMenu addItem:[NSMenuItem separatorItem]];
 			
-			NSMenuItem* pCancelItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Cancel" action:NULL keyEquivalent:@""];
-			[pCancelItem setTarget:(id)pMenuContextObject];
-			[pCancelItem setAction:@selector(doCancelDaemon:)];
+			NSMenuItem* pCancelItem = [[NSMenuItem alloc] initWithTitle:@"Cancel" action:NULL keyEquivalent:@""];
+			pCancelItem.target = (id)pMenuContextObject;
+			pCancelItem.action = @selector(doCancelDaemon:);
 			[pMenu addItem:pCancelItem];
-			
+
 			NSStatusItem* pStatusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
 			
 			if (!_IconData.f_IsEmpty())
 			{
 				NSData* pImageData = [NSData dataWithBytes:_IconData.f_GetArray() length:_IconData.f_GetLen()];
 				NSImage* pImage = [[NSImage alloc] initWithData:pImageData];
-				
-				[pStatusItem setImage: pImage];
+
+				pStatusItem.button.image = pImage;
 			}
 			
-			if (![pStatusItem image])
-				[pStatusItem setTitle:@"MD"];
-			
-			[pStatusItem setHighlightMode:YES];
-			[pStatusItem setMenu:pMenu];
+			if (!pStatusItem.button.image)
+				pStatusItem.button.title = @"MD";
+
+			pStatusItem.button.cell.highlighted = true;
+			pStatusItem.menu = pMenu;
 
 			{
 				DMibLock(gs_QuitLock);

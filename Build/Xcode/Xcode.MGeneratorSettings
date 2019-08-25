@@ -387,6 +387,13 @@
 					}	
 				}
 			}
+			%GeneratorSetting "CodeSigningIdentity"
+			{
+				Property
+				{
+					Name "CODE_SIGN_IDENTITY"
+				}
+			}
 			%GeneratorSetting "CodeSigningReqired"
 			{
 				Property
@@ -649,6 +656,7 @@
 						OSX10.12 "10.12"
 						OSX10.13 "10.13"
 						OSX10.14 "10.14"
+						OSX10.15 "10.15"
 						iOS8.1 "8.1"
 						Linux2.6 "10.6"
 						Emscripten ""
@@ -1551,7 +1559,7 @@
 					Property
 					{
 						false ""
-						true "-faligned-allocation -Wno-aligned-allocation-unavailable"
+						true "-faligned-allocation"
 					}
 				}
 			}

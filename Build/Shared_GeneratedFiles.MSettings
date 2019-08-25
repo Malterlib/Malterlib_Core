@@ -224,7 +224,7 @@ Property
 		}
 	}
 
-	MalterlibUseCustomXcodeToolchain true // User(Toolset)=false: Use custom toolchain for Xcode to use same compiler as Malterlib when indexing
+	MalterlibUseCustomXcodeToolchain false // User(Toolset)=true: Use custom toolchain for Xcode to use same compiler as Malterlib when indexing
 	{
 		&
 		{

@@ -398,10 +398,6 @@ bool NSys::fg_Semaphore_TryWait(void * _pSemaphore)
 	return pSemaphore->f_TryWait();
 }
 
-#if DPlatformVersionMax <= 1060
-typedef char uuid_string_t[256];
-#endif
-
 void NSys::fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_UUID)
 {
 	static_assert(sizeof(uuid_t) == sizeof(_UUID));
@@ -1896,7 +1892,7 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 
 	return Result;
 }
-#if DPlatformVersionMax >= 1060
+
 struct CCopyFileContext
 {
 	NMib::NFile::CFileProgress* m_pProgress;
@@ -1943,7 +1939,6 @@ static int SingleFileCopyFileCallback(int _What, int _Stage, copyfile_state_t _S
 
 	return COPYFILE_CONTINUE;
 }
-#endif
 
 static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress& _Progress, bool _bRename)
 {
@@ -1960,7 +1955,6 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 		return errno;
 	}
 
-#if DPlatformVersionMax >= 1060
 	CCopyFileContext Context;
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
 	{
@@ -1970,7 +1964,6 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CB, (void*)&SingleFileCopyFileCallback);
 		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CTX, &Context);
 	}
-#endif
 
 	uint32_t Flags = COPYFILE_ALL;
 	if (_bRename)
@@ -1991,22 +1984,12 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 
 void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-#if DPlatformVersionMax < 10120
-	if (clonefile == nullptr)
-		DMibErrorFile("clonefile function not available in this version of macOS");
-#endif
-
 	if (clonefile(_FileFrom, _FileTo, 0))
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("clonefile('{}', '{}')") << _FileFrom << _FileTo, errno));
 }
 
 bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-#if DPlatformVersionMax < 10120
-	if (clonefile == nullptr)
-		return false;
-#endif
-
 	if (clonefile(_FileFrom, _FileTo, 0))
 		return false;
 
@@ -2584,7 +2567,7 @@ ch8 const *NSys::NFile::fg_GetDllExtension()
 //
 // Exists in Mac OS X 10.6 and later
 
-#if DPlatformVersionMax <= 1050 || DPlatformVersion <= 1050 || defined(DMibNoOSXCrossModuleExceptions)
+#if DPlatformVersion <= 1050 || defined(DMibNoOSXCrossModuleExceptions)
 
 struct dyld_unwind_sections
 {

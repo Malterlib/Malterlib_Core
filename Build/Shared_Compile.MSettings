@@ -768,6 +768,10 @@ Property
 	{
 		!!Platform "OSX10.14"
 	}
+	MalterlibNativeClangDarwinTarget "19"
+	{
+		!!Platform "OSX10.15"
+	}
 }
 
 Property
@@ -1700,10 +1704,6 @@ Compile
 
 	PreprocessorDefines "DConfigSuffix=\"@(MalterlibConfigSuffix)\";DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->ReplaceChars(' -', ''));DConfig_@(ConfigNoSpace);DArchitecture_@(Architecture);DPlatform_@(Platform->Replace('.', '_'));DTarget=@(Target:this.Identity);DConfig=@(Configuration);DRealConfig=@(RealConfiguration);DArchitecture=@(Architecture);DPlatform=@(Platform);DPlatformFamily=@(PlatformFamily);DPlatformFamily_@(PlatformFamily);@(Compile.PreprocessorDefines)"
 	{
-	}
-	PreprocessorDefines "DPlatformVersionMax=@(MaxSupportedPlatformVersion);@(Compile.PreprocessorDefines)"
-	{
-		!MaxSupportedPlatformVersion ""
 	}
 	PreprocessorDefines "DPlatformVersion=@(PlatformVersion);@(Compile.PreprocessorDefines)"
 	{

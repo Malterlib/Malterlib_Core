@@ -137,11 +137,8 @@
 #	error "Implement this"
 #endif
 
-
-// Extern templates
-#ifdef DCompiler_MSVC
-#	if !defined(DCompiler_MSVC_EDG)
-#		define DMibSupportExternTemplates
-#	endif
+#if defined(DCompiler_clang) && defined(__cpp_conditional_explicit)
+#	define DMibSupportPackExpansionsInUsingDeclarations 1
+#else
+#	define DMibSupportPackExpansionsInUsingDeclarations 0
 #endif
-

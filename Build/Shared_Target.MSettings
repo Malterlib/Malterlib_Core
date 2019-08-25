@@ -1521,6 +1521,11 @@ Target
 		!!PlatformFamily iOS
 	}
 
+	CodeSigningIdentity ""
+	{
+		!!PlatformFamily OSX
+	}
+
 	SDKRoot "OSX@(MalterlibMaxSupportedOSXVersion)"
 	{
 		!!PlatformFamily OSX
@@ -1551,6 +1556,15 @@ Target
 	RealSDKRoot "macosx10.12" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.12" } }
 	RealSDKRoot "macosx10.13" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.13" } }
 	RealSDKRoot "macosx10.14" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.14" } }
+	RealSDKRoot "macosx10.15" { & { Target.RealSDKRoot "" Target.SDKRoot "OSX10.15" } }
+	RealSDKRoot "macosx"
+	{
+		&
+		{
+			Target.RealSDKRoot ""
+			Target.SDKRoot "OSXLatest"
+		}
+	}
 	RealSDKRoot "iphoneos8.1" { & { Target.RealSDKRoot "" Target.SDKRoot "iOS8.1" } }
 
 	RealSDKRoot "@(MalterlibSharedBinariesRoot)/Malterlib_@(PlatformFamily)/SDKs/@(Target.SDKRoot).sdk"

@@ -271,17 +271,13 @@ namespace NMib
 		inline_always mint fg_Thread_GetCurrentUIDAlternate()
 		{
 #ifdef DPlatformFamily_OSX
-#if DPlatformVersionMax >= 1060
-#if DPlatformVersion < 1060
+#		if DPlatformVersion < 1060
 			if (CSystem::ms_PlatformVersion < 10'06'00)
 				return fg_Thread_GetCurrentUID();
-#endif
+#		endif
 DMibDeprecatedSupressStart;
 			return syscall(SYS_thread_selfid);
 DMibDeprecatedSupressStop;
-#else
-			return fg_Thread_GetCurrentUID();
-#endif
 #elif defined(DPlatformFamily_Linux)
 			return syscall(SYS_gettid);
 #elif defined(DPlatformFamily_Emscripten)
