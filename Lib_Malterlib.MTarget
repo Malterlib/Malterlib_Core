@@ -15,11 +15,6 @@ Property
 	Property.DocumentationModule Malterlib
 	Property.MalterlibNoShortcuts true
 
-	Property.MalterlibConcurrency_DistributedActors true
-	{
-		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
-	}
-
 	Target
 	{
 		BaseName "Malterlib_Init"
@@ -53,10 +48,6 @@ Property
 		MalterlibNoShortcuts true
 		DocumentationModule Malterlib
 		MalterlibGenerateLibrary true // Always generate library here so files can be excluded
-		MalterlibConcurrency_DistributedActors true
-		{
-			!MalterlibConcurrency_DistributedActorsInAnyTarget ""
-		}
 	}
 	Compile
 	{
@@ -485,10 +476,6 @@ Property
 		Type "StaticLibrary"
 		Group "Libraries/Malterlib"
 	}
-	Property.MalterlibConcurrency_DistributedActors true
-	{
-		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
-	}
 	Compile
 	{
 		!!CompileDialect "C"
@@ -526,10 +513,6 @@ Property
 		BaseName "MalterlibDll"
 		Type "StaticLibrary"
 		Group "Libraries/Malterlib"
-	}
-	Property.MalterlibConcurrency_DistributedActors true
-	{
-		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
 	}
 	Compile
 	{
@@ -853,10 +836,6 @@ Target
 		BaseName "Malterlib"
 		Type "StaticLibrary"
 		Group "Libraries/Malterlib"
-	}
-	Property.MalterlibConcurrency_DistributedActors true
-	{
-		!MalterlibConcurrency_DistributedActorsInAnyTarget ""
 	}
 	Compile
 	{

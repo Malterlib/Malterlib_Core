@@ -167,9 +167,7 @@ namespace NMib
 
 #include <Mib/Storage/UniquePointer>
 
-#ifdef DMibEnableDistributedActors
-#	include <Mib/Concurrency/RuntimeTypeRegistry>
-#endif
+#include <Mib/Concurrency/RuntimeTypeRegistry>
 
 #include <Mib/Exception/Exception>
 #include "../../Core/Source/Malterlib_Core_OnScopeExit.h"
@@ -230,9 +228,7 @@ namespace NMib
 #include "../../Container/Source/Vector/Malterlib_Container_Vector_Format.hpp"
 #include "../../Container/Source/Malterlib_Container_Map.hpp"
 
-#ifdef DMibEnableDistributedActors
 #include "../../Concurrency/Source/DistributedActor/Malterlib_Concurrency_RuntimeTypeRegistry.hpp"
-#endif
 
 #include "Platform/Malterlib_Core_PlatformImp.imp.h"
 
