@@ -1,11 +1,11 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Property
 {
 	ImportIdentityRelativeRootPath "@(Import:this.IdentityAsAbsolutePath->GetPath())"
 	ImportIdentityRelativeRootPath "@(ImportIdentityRelativeRootPath->MakeRelative(@(Builtin.BasePathAbsolute)))"
-	
+
 	IsMaintainedConfig "true"
 	{
 		&
@@ -55,14 +55,14 @@ Import
 	{
 		!IsMaintainedConfig true
 	}
-	
+
 	CMake_ReplacePrefixes "@(Import.TempDirectory)=@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@@(FullConfiguration);@(CMake_ReplacePrefixes)"
 
 	CMake_CacheExcludePatterns "*/CMakeFiles/*;*/cmake.tmp/*;*.cmake;*.ninja;*/CMakeCache.txt;*/MalterlibFullRebuildVersion;*/.NoDartCoverage;@(Import.CMake_CacheExcludePatterns)"
-	
+
 	CMake_CacheReplaceContents "/opt/local/bin/=;/usr/bin/=;/usr/local/bin/=;@(Import.CMake_CacheReplaceContents)"
 
-	
+
 	CMake_CacheReplaceContents "C:/Go/bin/=;C:/strawberry/perl/bin/=;@(Import.CMake_CacheReplaceContents)"
 	{
 		!!HostPlatformFamily "Windows"
@@ -180,6 +180,11 @@ Import
 		}
 	}
 
+	CMake_Variables "CMAKE_OSX_DEPLOYMENT_TARGET=@(Platform->ParseFormatString('OSX{}.{}', '{0}.{1}'));@(Import.CMake_Variables)"
+	{
+		!!PlatformFamily OSX
+	}
+
 	CMake_ExcludeFromHash "@(MalterlibSysRoot)/;@(Import.CMake_ExcludeFromHash)"
 	{
 		&
@@ -194,17 +199,17 @@ Import
 		&
 		{
 			Import.CMake_SystemName ""
-			!PlatformFamily "@(HostPlatformFamily)" 
+			!PlatformFamily "@(HostPlatformFamily)"
 			PlatformFamily "OSX"
 		}
 	}
-	
+
 	CMake_SystemName "@(PlatformFamily)"
 	{
 		&
 		{
 			Import.CMake_SystemName ""
-			!PlatformFamily "@(HostPlatformFamily)" 
+			!PlatformFamily "@(HostPlatformFamily)"
 		}
 	}
 
@@ -217,7 +222,7 @@ Import
 			Architecture x64
 		}
 	}
-	
+
 	CMake_SystemProcessor "@(Architecture)"
 	{
 		&
@@ -268,7 +273,7 @@ Import
 			!Documentation Doxygen
 		}
 	}
-	
+
 	CMake_CCompilerTarget "@(MalterlibTargetTriple)"
 	CMake_CxxCompilerTarget "@(MalterlibTargetTriple)"
 	CMake_CExternalToolChain "@(MalterlibToolsPrefix->Replace('/bin/', '/bin'))"
