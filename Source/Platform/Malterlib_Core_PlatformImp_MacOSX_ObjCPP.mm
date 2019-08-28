@@ -521,7 +521,6 @@ namespace NMib
 			if (!pStatusItem.button.image)
 				pStatusItem.button.title = @"MD";
 
-			pStatusItem.button.cell.highlighted = true;
 			pStatusItem.menu = pMenu;
 
 			{
