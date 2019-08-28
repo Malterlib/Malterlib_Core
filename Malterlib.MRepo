@@ -5,7 +5,7 @@
 ../../Binaries/Malterlib/Windows/x86 4f61e12caec69796809f515f8b79dd68c3b5c520
 ../../Binaries/MalterlibTest/Cloud/Linux/x64 183d3c494ca71b9b84677b6ae570fc9a0de1c552
 ../../Binaries/MalterlibTest/Cloud/OSX/x64 331f954a4a578e24df40bc4ca3aa07b5c9ca4631
-../../SDK 0bdceba03cb792c8d2ccb005a75ab41b40d6d14b
+../../SDK a9f039f864f99b253d6fb59f270b45e6c913a351
 ../Algorithm 0efbe869f2bfbabd69de6704f1d36558cd7e8500
 ../Atomic 714a0f16be1111d9f93b5cf56ba4b7ce6784dbf7
 ../Bit fd222629e8afc6d38998af59ed18b0f331b0ef84
@@ -39,7 +39,7 @@
 ../Mongo da18ede0d2445fdf9485c2755334dd2f8306cbd6
 ../Network 8a3711c38e8fdc5a9cc15ea5de131c8c767eb8ac
 ../Numeric c9af0ae2bf0e46e47b2d14f3cab56e45f8f81ee5
-../Perforce a7fec82521fab984c357aeb911a324c9c8f95725
+../Perforce 6b28330e76ce60f3f7693c2a6a20bd93c7a3b410
 ../Preprocessor b38be1011cf0185a64ad08e3b2c25dc340bbbf81
 ../Process 5738b2eb6f7098b612e34aa26c295d135ee83b59
 ../SQL 6c06cfd76d12133b871b864e32c23f00994f0487
@@ -54,6 +54,6 @@
 ../Time 76fff9d61bef58f0e6d9dfb1f385a93a66349eff
 ../Tool 37c3196d876af88ec2a771bbc73049912233f6b6
 ../Type a88caf7be850a9e9fc49f4a4d7ae3ad16d631b15
-../Web fa4b73c3904423692ccb63fbe20f843eb2e73b52
+../Web d27bf15c90f91d796a8bb8d2d40a7db61ea157ce
 ../XML def50a3581ff310c27b1bfc92de6c62aeb60672b
 ~MalterlibBinaries_Linux 99875bb05b79211fec6e93ada26da5ca2d2221ae
