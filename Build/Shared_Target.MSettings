@@ -2714,12 +2714,6 @@ Target
 
 Property
 {
-	MalterlibPythonDebugScriptName "@(Target:Target.FileName)"
-	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('-','_'))"
-	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace(' ','_'))"
-	MalterlibPythonDebugScriptName "@(MalterlibPythonDebugScriptName->Replace('.','_'))"
-	MalterlibPythonDebugScriptFileName "@(MalterlibPythonDebugScriptName).py"
-
 	MalterlibBundleIdentifier "@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())"
 	{
 		!!MalterlibBundleIdentifier ""
@@ -2743,27 +2737,6 @@ Property
 	MalterlibBundleDebugLogation "@(MalterlibFinalModuleDestinationPath)"
 	{
 		!!MalterlibBundleDebugLogation ""
-	}
-
-	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
-                                    "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python\"\r\n"\
-									"@(CheckErrors)\r\n"\
-                                    "mkdir -p \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptName)_LLDBLib\"\r\n"\
-									"@(CheckErrors)\r\n"\
-									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptFileName)\" \"\" 0 1 0 1\r\n"\
-									"@(CheckErrors)\r\n"\
-									"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibBundleDebugLogation)/@(Target.FileName)@(Target.FileExtension)/Contents/Python/@(MalterlibPythonDebugScriptName)_LLDBLib\"\r\n"\
-									"@(CheckErrors)\r\n"
-	{
-		&
-		{
-			!DocumentationEnabled true
-			!MalterlibBuildServerBuild true
-			PlatformIsDarwin true
-			MalterlibIsOSXBundle true
-			!MalterlibDisableMalterlib "true"
-			!Target.Type "Driver"
-		}
 	}
 
 	MalterlibPostBuildScriptPreSignMalterlibExeMainNibFilePath "@(MalterlibExeMainNibFile->GetLastPaths(2))"
@@ -3986,25 +3959,6 @@ Property
 	}
 
 
-	MalterlibPostCopySources	"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptFileName)|../Python;"\
-								"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)_LLDBLib|../Python;"\
-								"@(MalterlibPostCopySources)"
-
-	{
-		&
-		{
-			!DocumentationEnabled true
-			|
-			{
-				PlatformIsDarwin true
-				PlatformFamily Linux
-			}
-			TargetIsExecutable true
-			!MalterlibIsOSXBundle true
-			!MalterlibDisableMalterlib true
-		}
-	}
-
 	MalterlibPostCopyConfigFile "@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig"
 
 	MalterlibPostCopyInternalTemplate	"MTool PostCopy \"@(Expand0)\" \"Config=@(MalterlibPostCopyConfigFile)\" \"Project=@(MalterlibCalculatedPostCopyProject)\" \"OutFolder=@(MalterlibPostCopyDestination)@(Expand1)\" \"Hash=@(MalterlibPostCopyHash)\"\r\n"\
@@ -4025,8 +3979,6 @@ Property
 	MalterlibPostCopyContents2			"@(MalterlibPostCopyContents)"\
 										"@(Builtin.Function->ExplodeList('@(MalterlibPostCopySources)', ';', 'MalterlibPostCopyTemplate2'))"
 
-	MalterlibLLDBDebuggerScript			"@('../../Debug/Source/Malterlib_LLDB.py'->MakeAbsolute())"
-	MalterlibLLDBDebuggerScriptLibDir	"@('../../Debug/Source/Malterlib_LLDB'->MakeAbsolute())"
 }
 
 Target
@@ -4072,31 +4024,6 @@ Target
 		}
 	}
 	*/
-
-	PostBuildScript "@(Target.PostBuildScript)"\
-					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)\"\r\n"\
-					"@(CheckErrors)\r\n"\
-					"mkdir -p \"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)_LLDBLib\"\r\n"\
-					"@(CheckErrors)\r\n"\
-					"MTool DiffCopy \"@(MalterlibLLDBDebuggerScript)\" \"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptFileName)\" \"\" 0 1 0 1\r\n"\
-					"@(CheckErrors)\r\n"\
-					"MTool DiffCopy \"@(MalterlibLLDBDebuggerScriptLibDir)/*\" \"@(MalterlibFinalModuleDestinationPath)/@(MalterlibPythonDebugScriptName)_LLDBLib\"\r\n"\
-					"@(CheckErrors)\r\n"
-
-	{
-		&
-		{
-			!DocumentationEnabled true
-			|
-			{
-				PlatformIsDarwin true
-				PlatformFamily Linux
-			}
-			TargetIsExecutable true
-			!MalterlibIsOSXBundle true
-			!MalterlibDisableMalterlib "true"
-		}
-	}
 
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"MTool DiffCopy \"@(MalterlibOriginalModuleDestination)\" \"@(MalterlibFinalModuleDestinationPath)\" \"\" 0\r\n"\

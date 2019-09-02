@@ -1,6 +1,14 @@
 // Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+Property
+{
+	MalterlibDebugConfigureLLDBScript true // User(Debug)=false: Configure Malterlib lldb helpers in ~/.lldbinit automatically when building
+	{
+		!!MalterlibDebugConfigureLLDBScript ""
+	}
+}
+
 %Target "Tool_GenerateBuildSystem"
 {
 	Property
@@ -197,6 +205,24 @@
 							!MalterlibDisableBuildSystemGeneration true
 							HostPlatformFamily "Windows"
 							IsSafeMTool true
+						}
+					}
+
+					LLDBScriptLocation "@('../../Debug/Source/Malterlib_LLDB'->MakeAbsolute())"
+
+					Contents	"@(Contents)"\
+								"if ! grep ~/.lldbinit -qe '#StartMalterlibLLDB'; then\r\n"\
+								"	echo '#StartMalterlibLLDB' >> ~/.lldbinit\r\n"\
+								"	echo '#EndMalterlibLLDB' >> ~/.lldbinit\r\n"\
+								"fi\r\n"\
+								"sed -i '' $'/#StartMalterlibLLDB/,/#EndMalterlibLLDB/c\\\\\\n#StartMalterlibLLDB\\\\\\ncommand script import \"@(LLDBScriptLocation)\"\\\\\\n#EndMalterlibLLDB\\n' ~/.lldbinit\r\n"
+					{
+						&
+						{
+
+ 							MalterlibDebugConfigureLLDBScript true
+							!MalterlibDisableBuildSystemGeneration true
+							!HostPlatformFamily "Windows"
 						}
 					}
 
