@@ -151,7 +151,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 }
 
 template <typename tf_CStr>
-tf_CStr fg_FormatGAI(typename tf_CStr::CFormat &_Desc, int _Err)
+tf_CStr fg_FormatGAI(typename tf_CStr::CFormat &&_Desc, int _Err)
 {
 	auto pError = gai_strerror(_Err);
 

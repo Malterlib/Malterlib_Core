@@ -16,7 +16,7 @@ namespace NMib
 
 		NStr::CFStr256 fg_FormatOSStatus(const ch8 *_pDesc, int _Status);
 		template <typename tf_CStr>
-		tf_CStr fg_FormatOSStatus(typename tf_CStr::CFormat &_Desc, int _Status);
+		tf_CStr fg_FormatOSStatus(typename tf_CStr::CFormat &&_Desc, int _Status);
 	}
 }
 

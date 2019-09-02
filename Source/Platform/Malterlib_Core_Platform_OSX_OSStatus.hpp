@@ -12,7 +12,7 @@ namespace NMib
 	namespace NPlatform
 	{
 		template <typename tf_CStr>
-		tf_CStr fg_FormatOSStatus(typename tf_CStr::CFormat &_Desc, int _Status)
+		tf_CStr fg_FormatOSStatus(typename tf_CStr::CFormat &&_Desc, int _Status)
 		{
 			auto const *pError = fg_GetOSStatusError(_Status);
 			

@@ -12,19 +12,19 @@ namespace NMib
 			return fg_FormatErrno("", _Err);
 		}
 
-		NStr::CStr fg_FormatErrno(NStr::CStr::CFormat &_Desc, int _Err)
+		NStr::CStr fg_FormatErrno(NStr::CStr::CFormat &&_Desc, int _Err)
 		{
-			return fg_FormatErrno<NStr::CStr>(_Desc, _Err);
+			return fg_FormatErrno<NStr::CStr>(fg_Move(_Desc), _Err);
 		}
 
-		NStr::CStrNonTracked fg_FormatErrno(NStr::CStrNonTracked::CFormat &_Desc, int _Err)
+		NStr::CStrNonTracked fg_FormatErrno(NStr::CStrNonTracked::CFormat &&_Desc, int _Err)
 		{
-			return fg_FormatErrno<NStr::CStrNonTracked>(_Desc, _Err);
+			return fg_FormatErrno<NStr::CStrNonTracked>(fg_Move(_Desc), _Err);
 		}
 
-		NStr::CFStr256 fg_FormatErrno(NStr::CFStr256::CFormat &_Desc, int _Err)
+		NStr::CFStr256 fg_FormatErrno(NStr::CFStr256::CFormat &&_Desc, int _Err)
 		{
-			return fg_FormatErrno<NStr::CFStr256>(_Desc, _Err);
+			return fg_FormatErrno<NStr::CFStr256>(fg_Move(_Desc), _Err);
 		}
 
 #if defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
