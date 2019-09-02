@@ -103,51 +103,51 @@
 	{
 		namespace NPlatformHelpers
 		{
-			static inline_always int fg_GetHighestBitSet32(unsigned long _Value)
+			inline_always int fg_GetHighestBitSet32(unsigned long _Value)
 			{
 				if (!_Value)
 					return -1;
 				return 31 - __builtin_clz(_Value);
 			}
 			
-			static inline_always int fg_GetHighestBitSet32NoZero(unsigned long _Value)
+			inline_always int fg_GetHighestBitSet32NoZero(unsigned long _Value)
 			{
 				return 31 - __builtin_clz(_Value);
 			}
 			
-			static inline_always int fg_GetLowestBitSet32(unsigned long _Value)
+			inline_always int fg_GetLowestBitSet32(unsigned long _Value)
 			{
 				if (!_Value)
 					return -1;
 				return __builtin_ctz(_Value);
 			}
 			
-			static inline_always int fg_GetLowestBitSet32NoZero(unsigned long _Value)
+			inline_always int fg_GetLowestBitSet32NoZero(unsigned long _Value)
 			{
 				return __builtin_ctz(_Value);
 			}
 
 #			if DMibPPtrBits >= 64
-				static inline_always int fg_GetHighestBitSet64(unsigned long _Value)
+				inline_always int fg_GetHighestBitSet64(unsigned long _Value)
 				{
 					if (!_Value)
 						return -1;
 					return 63 - __builtin_clzll(_Value);
 				}
 				
-				static inline_always int fg_GetHighestBitSet64NoZero(unsigned long _Value)
+				inline_always int fg_GetHighestBitSet64NoZero(unsigned long _Value)
 				{
 					return 63 - __builtin_clzll(_Value);
 				}
 				
-				static inline_always int fg_GetLowestBitSet64(unsigned long _Value)
+				inline_always int fg_GetLowestBitSet64(unsigned long _Value)
 				{
 					if (!_Value)
 						return -1;
 					return __builtin_ctzll(_Value);
 				}
 				
-				static inline_always int fg_GetLowestBitSet64NoZero(unsigned long _Value)
+				inline_always int fg_GetLowestBitSet64NoZero(unsigned long _Value)
 				{
 					return __builtin_ctzll(_Value);
 				}
@@ -176,7 +176,7 @@
 	{
 		namespace NPlatformHelpers
 		{
-			static inline_always int fg_GetHighestBitSet32(unsigned long _Value)
+			inline_always int fg_GetHighestBitSet32(unsigned long _Value)
 			{
 				if (!_Value)
 					return -1;
@@ -185,14 +185,14 @@
 				return Ret;
 			}
 
-			static inline_always int fg_GetHighestBitSet32NoZero(unsigned long _Value)
+			inline_always int fg_GetHighestBitSet32NoZero(unsigned long _Value)
 			{
 				unsigned long Ret;
 				_BitScanReverse(&Ret, _Value);
 				return Ret;
 			}
 
-			static inline_always int fg_GetLowestBitSet32(unsigned long _Value)
+			inline_always int fg_GetLowestBitSet32(unsigned long _Value)
 			{
 				if (!_Value)
 					return -1;
@@ -201,14 +201,14 @@
 				return Ret;
 			}
 
-			static inline_always int fg_GetLowestBitSet32NoZero(unsigned long _Value)
+			inline_always int fg_GetLowestBitSet32NoZero(unsigned long _Value)
 			{
 				unsigned long Ret;
 				_BitScanForward(&Ret, _Value);
 				return Ret;
 			}
 #			if DMibPPtrBits >= 64
-				static inline_always int fg_GetHighestBitSet64(unsigned __int64 _Value)
+				inline_always int fg_GetHighestBitSet64(unsigned __int64 _Value)
 				{
 					if (!_Value)
 						return -1;
@@ -217,14 +217,14 @@
 					return Ret;
 				}
 
-				static inline_always int fg_GetHighestBitSet64NoZero(unsigned __int64 _Value)
+				inline_always int fg_GetHighestBitSet64NoZero(unsigned __int64 _Value)
 				{
 					unsigned long Ret;
 					_BitScanReverse64(&Ret, _Value);
 					return Ret;
 				}
 
-				static inline_always int fg_GetLowestBitSet64(unsigned __int64 _Value)
+				inline_always int fg_GetLowestBitSet64(unsigned __int64 _Value)
 				{
 					if (!_Value)
 						return -1;
@@ -233,7 +233,7 @@
 					return Ret;
 				}
 
-				static inline_always int fg_GetLowestBitSet64NoZero(unsigned __int64 _Value)
+				inline_always int fg_GetLowestBitSet64NoZero(unsigned __int64 _Value)
 				{
 					unsigned long Ret;
 					_BitScanForward64(&Ret, _Value);
