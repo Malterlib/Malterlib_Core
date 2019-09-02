@@ -1,20 +1,20 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 /** \page p_Malterlib_Core_CodeStandard_Coloring Coloring
 
 This is the syntax coloring applied to examples in the documentation. There are also a number of tools and plugins for IDEs available from Malterlib that applies this coloring standard to your editor.
- 
-The general design for this standard is to supply the reader with as many queues as possible to help quickly gain understanding of the source code. It works together with the code naming standard which makes it 
+
+The general design for this standard is to supply the reader with as many queues as possible to help quickly gain understanding of the source code. It works together with the code naming standard which makes it
 easy to apply the highlighting without language specific parsing support.
- 
+
 \code
 	#include <Mib/Core/Core>
 
 	// Comment
 	// http://example.com
- 
-	
+
+
 	/// Doc comment
 	/// ===========
 	/// @brief \brief
@@ -37,7 +37,7 @@ easy to apply the highlighting without language specific parsing support.
 			ETest_Value
 		};
 
-		template <typename t_CType, int t_NonType> 
+		template <typename t_CType, int t_NonType>
 		struct TCType
 		{
 			void f_FunctionPublic
@@ -53,9 +53,9 @@ easy to apply the highlighting without language specific parsing support.
 				for(;;)
 				{
 				}
-				
+
 				auto pAutoVar = nullptr;
-				
+
 				auto fFunctor = []
 					{
 					}
@@ -66,13 +66,13 @@ easy to apply the highlighting without language specific parsing support.
 				m_fFunctor();
 				mp_fFunctor();
 			}
-			
+
 			NMib::NFunction::TCFunction<void ()> m_fFunctor;
-			
+
 			uint32 m_VariablePublic;
 			uint32 ms_StaticVariablePublic;
 			uint32 mc_ConstantPublic;
-			
+
 		private:
 			NMib::NFunction::TCFunction<void ()> mp_fFunctor;
 
@@ -81,11 +81,11 @@ easy to apply the highlighting without language specific parsing support.
 			static uint32 const mcp_ConstantPrivate;
 
 			void fp_FunctionPrivate();
-			
+
 		};
 	}
 \endcode
- 
+
 \htmlonly
 
 <div class="code_table"><table border="0" cellspacing="0" style="margin-left:2px;border-spacing:5px"><tbody>
@@ -111,8 +111,8 @@ easy to apply the highlighting without language specific parsing support.
 <tr><th style="width:120px;background-color:black;color:white">Namespace</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
 <tr><td></td><td>#d785ff</td><td style="background-color:#d785ff"></td><td style="color:#d785ff">NTest</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Types</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#8269ff</td><td style="background-color:#8269ff"></td><td style="color:#8269ff">t_CTest t_TTest</td><td></td></tr>
-<tr><td></td><td>#cdc3ff</td><td style="background-color:#cdc3ff"></td><td style="color:#cdc3ff">tf_CTest tf_TTest</td><td></td></tr>
+<tr><td></td><td>#8269ff</td><td style="background-color:#8269ff"></td><td style="color:#8269ff">t_CTest t_TCTest</td><td></td></tr>
+<tr><td></td><td>#cdc3ff</td><td style="background-color:#cdc3ff"></td><td style="color:#cdc3ff">tf_CTest tf_TCTest</td><td></td></tr>
 <tr><td></td><td>#b8aaff</td><td style="background-color:#b8aaff"></td><td style="color:#b8aaff">CTest TCTest ETest</td><td></td></tr>
 <tr><td></td><td>#dbd3ff</td><td style="background-color:#dbd3ff"></td><td style="color:#dbd3ff">auto</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">String</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
@@ -133,8 +133,8 @@ easy to apply the highlighting without language specific parsing support.
 <tr><th style="width:120px;background-color:black;color:white">Variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
 <tr><td></td><td>#ffd700</td><td style="background-color:#ffd700"></td><td style="color:#ffd700">Var</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Member variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ffa600</td><td style="background-color:#ffa600"></td><td style="color:#ffa600">m_Test ms_Test</td><td></td></tr>
-<tr><td></td><td>#c59d53</td><td style="background-color:#c59d53"></td><td style="color:#c59d53">mp_Test msp_Test</td><td></td></tr>
+<tr><td></td><td>#ffa600</td><td style="background-color:#ffa600"></td><td style="color:#ffa600">m_Test</td><td></td></tr>
+<tr><td></td><td>#c59d53</td><td style="background-color:#c59d53"></td><td style="color:#c59d53">mp_Test</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Macros</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
 <tr><td></td><td>#ff7700</td><td style="background-color:#ff7700"></td><td style="color:#ff7700">DTest</td><td></td></tr>
 <tr><td></td><td>#ffbc81</td><td style="background-color:#ffbc81"></td><td style="color:#ffbc81">d_Test</td><td></td></tr>
@@ -150,7 +150,7 @@ easy to apply the highlighting without language specific parsing support.
 <tr><td></td><td>#003737</td><td>#f070b6</td><td style="background-color:#003737"></td><td style="background-color:#f070b6"></td><td style="background-color:#003737;color:#f070b6">@Keyword</td><td></td></tr>
 <tr><td></td><td>#003737</td><td>#9dff70</td><td style="background-color:#003737"></td><td style="background-color:#9dff70"></td><td style="background-color:#003737;color:#9dff70">http://example.com</td><td></td></tr>
 </tbody></table></div>
- 
+
 \endhtmlonly
 
 */
