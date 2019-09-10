@@ -2400,7 +2400,7 @@ Target
 			!Target.RemoteDebuggerCommand ""
 		}
 	}
-	DebuggerCommandArguments "--Tests"
+	DebuggerCommandArguments "--test"
 	{
 		&
 		{
@@ -2416,7 +2416,7 @@ Target
 			}
 		}
 	}
-	DebuggerCommandArguments "--Tests --TestGroups (Performance)"
+	DebuggerCommandArguments "--test --groups Performance"
 	{
 		&
 		{
