@@ -110,23 +110,12 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 }
 
 
-void NSys::fg_ConsoleOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str)
-{
-	return fg_ConsoleOutput(_Str);
-}
-
 void NSys::fg_ConsoleErrorOutput(const NMib::NStr::CStrNonTracked &_Str)
 {
 	NMib::NStr::CStrNonTracked const &Output = _Str;
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
 //	fprintf(stderr, "%s", Output.f_GetStr());
 }
-
-void NSys::fg_ConsoleErrorOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str)
-{
-	return fg_ConsoleErrorOutput(_Str);
-}
-
 
 void NSys::fg_DebugOutput(const ch8 *_pToOutput)
 {

@@ -743,54 +743,8 @@ NMib::NStr::CStrNonTracked NSys::fg_System_GetContractViolationMessage()
 
 namespace
 {
-	class CForegroundColour
-	{
-		HANDLE mp_hConsole;
-		WORD mp_OldCharAttr;
-		WORD fp_GetCharAttr() const
-		{
-			CONSOLE_SCREEN_BUFFER_INFO info;
-			GetConsoleScreenBufferInfo(mp_hConsole,&info);
-			return info.wAttributes;
-		}
-	public:
-		CForegroundColour(HANDLE _Console,NSys::EColor _Color)
-			: mp_hConsole(_Console)
-			, mp_OldCharAttr(fp_GetCharAttr())
-		{
-			WORD NewCharAttr = mp_OldCharAttr;
-			switch(_Color)
-			{
-			case NSys::EColor_Default: break;
-			case NSys::EColor_Green: 
-				NewCharAttr &= ~(FOREGROUND_BLUE 
-					| FOREGROUND_RED 
-					| FOREGROUND_INTENSITY);
-				NewCharAttr |= FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-				break;
-			case NSys::EColor_Red: 
-				NewCharAttr &= ~(FOREGROUND_GREEN
-					| FOREGROUND_BLUE 
-					| FOREGROUND_INTENSITY);
-				NewCharAttr |= FOREGROUND_RED | FOREGROUND_INTENSITY;
-				break;
-			case NSys::EColor_Yellow: 
-				NewCharAttr &= ~(FOREGROUND_BLUE 
-					| FOREGROUND_INTENSITY);
-				NewCharAttr |= FOREGROUND_GREEN
-					| FOREGROUND_RED | FOREGROUND_INTENSITY;
-				break;
-			}
-			SetConsoleTextAttribute(mp_hConsole, NewCharAttr);
-		}
-		~CForegroundColour()
-		{
-			SetConsoleTextAttribute(mp_hConsole, mp_OldCharAttr);
-		}
-	};
-
 	template <typename tf_CWinStr, typename tf_UTF8Str, typename tf_CStr>
-	void fg_ConsoleOutputHelper(NSys::EColor _Foreground, const tf_CStr &_Str, DWORD _StdHandle, bool _bRaw)
+	void fg_ConsoleOutputHelper(const tf_CStr &_Str, DWORD _StdHandle, bool _bRaw)
 	{
 		static bool bEnableTerminalProcessing = true;
 		if (bEnableTerminalProcessing)
@@ -832,7 +786,6 @@ namespace
 					mint nChars = pTemp - Temp;
 					Len -= nChars;
 					pOut += nChars;
-					CForegroundColour fc(hCon,_Foreground);
 					if (!WriteConsoleW(hCon, Temp, nChars, &Written, nullptr))
 					{
 	//					CFStr256 Error = NMib::NPlatform::fg_Win32_GetLastErrorStr();
@@ -949,24 +902,19 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 	return Return;
 }
 
-void NSys::fg_ConsoleOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str)
-{
-	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Foreground, _Str, STD_OUTPUT_HANDLE, false);
-}
-
 void NSys::fg_ConsoleOutputRaw(const NMib::NStr::CStrNonTracked &_Str)
 {
-	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(EColor_Default, _Str, STD_OUTPUT_HANDLE, true);
+	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Str, STD_OUTPUT_HANDLE, true);
 }
 
 void NSys::fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str)
 {
-	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(EColor_Default, _Str, STD_OUTPUT_HANDLE, false);
+	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Str, STD_OUTPUT_HANDLE, false);
 }
 
 void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
 {
-	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(EColor_Default, CStrNonTracked(_pStr, _Len), STD_OUTPUT_HANDLE, true);
+	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(_pStr, _Len), STD_OUTPUT_HANDLE, true);
 }
 
 void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer)
@@ -993,14 +941,9 @@ void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Bu
 	fg_SecureMemClear(Temp);
 }
 
-void NSys::fg_ConsoleErrorOutput(EColor _Foreground, const NMib::NStr::CStrNonTracked &_Str)
-{
-	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Foreground, _Str, STD_ERROR_HANDLE, false);
-}
-
 void NSys::fg_ConsoleErrorOutput(const NMib::NStr::CStrNonTracked &_Str)
 {
-	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(EColor_Default, _Str, STD_ERROR_HANDLE, false);
+	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Str, STD_ERROR_HANDLE, false);
 }
 
 void *fg_AllocVirtualMemory(mint &_Size, mint _Type, ENumaNode _NumaNode, mint _Alignment, EAllocationFlag _Flags)
@@ -2526,7 +2469,7 @@ void fg_CheckProcessStop()
 	uint32 ProcessID = Value.f_ToInt(uint32(0));
 	if (!ProcessID)
 	{
-		fg_ConsoleOutputHelper<CFWStr256, CFStr256>(NSys::EColor_Default, "Invalid process ID\n", STD_ERROR_HANDLE, true);
+		fg_ConsoleOutputHelper<CFWStr256, CFStr256>("Invalid process ID\n", STD_ERROR_HANDLE, true);
 		NMib::NSys::fg_TerminateProcess(1);
 		return;
 	}
@@ -2534,7 +2477,7 @@ void fg_CheckProcessStop()
     FreeConsole();
     if (!AttachConsole(ProcessID))
 	{
-		fg_ConsoleOutputHelper<CFWStr256, CFStr256>(NSys::EColor_Default, fg_Format<CFStr256>("Failed to attach to console: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr()), STD_ERROR_HANDLE, true);
+		fg_ConsoleOutputHelper<CFWStr256, CFStr256>(fg_Format<CFStr256>("Failed to attach to console: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr()), STD_ERROR_HANDLE, true);
 		NMib::NSys::fg_TerminateProcess(1);
 		return;
 	}
@@ -2544,7 +2487,7 @@ void fg_CheckProcessStop()
 
 	if (!GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, ProcessID))
 	{
-		fg_ConsoleOutputHelper<CFWStr256, CFStr256>(NSys::EColor_Default, fg_Format<CFStr256>("Failed to generate CTRL_BREAK_EVENT: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr()), STD_ERROR_HANDLE, true);
+		fg_ConsoleOutputHelper<CFWStr256, CFStr256>(fg_Format<CFStr256>("Failed to generate CTRL_BREAK_EVENT: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr()), STD_ERROR_HANDLE, true);
 		NMib::NSys::fg_TerminateProcess(1);
 		return;
 	}
