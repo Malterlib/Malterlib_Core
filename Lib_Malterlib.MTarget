@@ -489,8 +489,11 @@ Property
 		{
 			|
 			{
-				MalterlibMemoryManager_EnableOverrideSystemMalloc true
-				MalterlibMemoryManager_OverrideDll true
+				&
+				{
+					MalterlibMemoryManager_EnableOverrideSystemMalloc true
+					MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
+				}
 			}
 			PlatformFamily OSX
 			!DocumentationEnabled true
