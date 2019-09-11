@@ -18,6 +18,15 @@ Property
 			}
 		}
 	}
+
+	MalterlibImportUpdateCache true
+	{
+		&
+		{
+			MalterlibImportUpdateCache ""
+			!MalterlibBuildServerBuild true
+		}
+	}
 }
 
 
@@ -44,7 +53,7 @@ Import
 		&
 		{
 			Import.CMake_UpdateCache ""
-			!MalterlibBuildServerBuild true
+			MalterlibImportUpdateCache true
 		}
 	}
 	CMake_CacheDirectory "@(Import:this.IdentityPath->GetPath())/ImportCache/@(ImportIdentityRelativeRootPath->Replace('/', '_'))-@(Platform)-@(Architecture)-@(Import.CMake_Config)"
