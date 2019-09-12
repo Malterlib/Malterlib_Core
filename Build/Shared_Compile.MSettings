@@ -615,6 +615,13 @@ Compile
 	}
 }
 
+Property
+{
+	MalterlibDebugSymbolsEnable "true" // User(Debug)=false: Enable generation of debug symbols
+	{
+		!!MalterlibDebugSymbolsEnable ""
+	}
+}
 Compile
 {
 	!!LanguageFamily .NET
@@ -627,6 +634,7 @@ Compile
 	Symbols "None"
 	{
 		!!Configuration "Fast Compile"
+		!!MalterlibDebugSymbolsEnable false
 	}
 
 	Warnings "Pedantic"
@@ -1945,6 +1953,7 @@ Compile
 	Symbols "None"
 	{
 		!!Configuration "Fast Compile"
+		!!MalterlibDebugSymbolsEnable false
 	}
 	Symbols "Default"
 	{
