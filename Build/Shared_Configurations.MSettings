@@ -368,6 +368,10 @@ Property
 		!!EnablePlatform_OSX10_13 true
 		!!EnablePlatform_OSX10_14 true
 	}
+	EnablePlatformFamily_Linux true
+	{
+		!!EnablePlatform_Linux2_6 true
+	}
 }
 
 *Platform

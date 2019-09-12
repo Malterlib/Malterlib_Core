@@ -3,8 +3,16 @@
 
 Property.MalterlibClangUpstreamBranch "release/@(MalterlibClangVersion->ParseFormatString('{}.{}', '{0}.x'))"
 
+Property.HasLLVMRepository true
+{
+	!!EnablePlatformFamily_OSX true
+	!!EnablePlatformFamily_Linux true
+}
+
 %Repository "llvm-project"
 {
+	!!HasLLVMRepository true
+
 	Repository
 	{
 		Type External
