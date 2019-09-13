@@ -510,6 +510,21 @@
 				Name "PrecompiledHeaderOutputFile"
 			}
 		}
+		%GeneratorSetting "LinkTimeCodeGeneration"
+		{
+			Property
+			{
+				Name "WholeProgramOptimization"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					true "true"
+					false "false"
+				}
+			}
+		}
 		%GeneratorSetting "Optimize"
 		{
 			Property
@@ -527,7 +542,6 @@
 							Property
 							{
 								IntrinsicFunctions "false"
-								WholeProgramOptimization "false"
 								OmitFramePointers "false"
 								FavorSizeOrSpeed "Neither" // Neither, Speed, Size
 							}
@@ -543,7 +557,6 @@
 							Property
 							{
 								IntrinsicFunctions "true"
-								WholeProgramOptimization "false"
 								OmitFramePointers "false"
 								FavorSizeOrSpeed "Speed"
 							}
@@ -559,7 +572,6 @@
 							Property
 							{
 								IntrinsicFunctions "true"
-								WholeProgramOptimization "true"
 								OmitFramePointers "false"
 								FavorSizeOrSpeed "Speed"
 							}
@@ -575,7 +587,6 @@
 							Property
 							{
 								IntrinsicFunctions "true"
-								WholeProgramOptimization "true"
 								OmitFramePointers "true"
 								FavorSizeOrSpeed "Speed"
 							}

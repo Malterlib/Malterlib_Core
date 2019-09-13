@@ -1413,9 +1413,6 @@ Compile
 	}
 
 	LinkTimeCodeGeneration "@(MalterlibEnableLinkTimeCodeGeneration)"
-	{
-		!!PlatformFamily "Linux"
-	}
 
 	PreprocessorDefines "@(Compile.PreprocessorDefines);@(Builtin.Inherit)"
 
