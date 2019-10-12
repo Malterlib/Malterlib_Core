@@ -226,11 +226,19 @@ Property
 			GeneratorFamily "Xcode"
 		}
 	}
-	EnablePlatform_OSX10_14 "false" // User(Platform)=true: Enables 10.13 support for OSX platform
+	EnablePlatform_OSX10_14 "false" // User(Platform)=true: Enables 10.14 support for OSX platform
 	{
 		&
 		{
 			EnablePlatform_OSX10_14 ""
+			GeneratorFamily "Xcode"
+		}
+	}
+	EnablePlatform_OSX10_15 "false" // User(Platform)=true: Enables 10.15 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX10_15 ""
 			GeneratorFamily "Xcode"
 		}
 	}
@@ -367,6 +375,7 @@ Property
 		!!EnablePlatform_OSX10_12 true
 		!!EnablePlatform_OSX10_13 true
 		!!EnablePlatform_OSX10_14 true
+		!!EnablePlatform_OSX10_15 true
 	}
 	EnablePlatformFamily_Linux true
 	{
