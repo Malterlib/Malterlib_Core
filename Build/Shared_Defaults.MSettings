@@ -159,7 +159,51 @@ Property
 	{
 		!!MalterlibSignCertOSX ""
 	}
-
+	MalterlibNotarizeOSXUser "" // User(Signing)=email: Set this to your developer email login
+	{
+		!!MalterlibNotarizeOSXUser ""
+	}
+	MalterlibNotarizeOSXUser "{MalterlibNotarizationUser}"
+	{
+		&
+		{
+			MalterlibNotarizeOSXUser ""
+			MalterlibSigning true
+			MalterlibBuildServerBuild true
+		}
+	}
+	MalterlibNotarizeOSXPassword "@keychain:MalterlibNotarize-@(MalterlibNotarizeOSXUser)" // User(Signing)=: Set the password for your apple developer account. Can be an environment variable expansion or @keychain
+	{
+		&
+		{
+			MalterlibNotarizeOSXPassword ""
+			!MalterlibBuildServerBuild true
+		}
+	}
+	MalterlibNotarizeOSXPassword "{MalterlibNotarizationPassword}"
+	{
+		&
+		{
+			MalterlibNotarizeOSXPassword ""
+			MalterlibBuildServerBuild true
+		}
+	}
+	MalterlibNotarizeOSXProvider "" // User(Signing)=: The short name of your itunes organization. Find with: xcrun iTMSTransporter -m provider -u 'email' -p
+	{
+		&
+		{
+			MalterlibNotarizeOSXProvider ""
+			!MalterlibBuildServerBuild true
+		}
+	}
+	MalterlibNotarizeOSXProvider "{MalterlibNotarizationProvider}"
+	{
+		&
+		{
+			MalterlibNotarizeOSXProvider ""
+			MalterlibBuildServerBuild true
+		}
+	}
 	MalterlibBreakpadUploadServer "https://error-reports.malterlib.com"
 	{
 		!!MalterlibBreakpadUploadServer ""

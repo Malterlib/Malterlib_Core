@@ -3804,6 +3804,35 @@ Property
 		!!MalterlibSignIncludeCert "none"
 	}
 
+	MalterlibCodeSignOSXCommand "MTool BuildServerTool Tool=CodeSignOSX"
+	{
+		!!MalterlibBuildServerBuild true
+	}
+
+	MalterlibCodeSignOSXCommand "codesign"
+	{
+		!MalterlibBuildServerBuild true
+	}
+
+	MalterlibALToolOSXCommand "MTool BuildServerTool Tool=ALToolOSX"
+	{
+		!!MalterlibBuildServerBuild true
+	}
+
+	MalterlibALToolOSXCommand "xcrun altool"
+	{
+		!MalterlibBuildServerBuild true
+	}
+
+	MalterlibStaplerOSXCommand "MTool BuildServerTool Tool=StaplerOSX"
+	{
+		!!MalterlibBuildServerBuild true
+	}
+
+	MalterlibStaplerOSXCommand "xcrun stapler"
+	{
+		!MalterlibBuildServerBuild true
+	}
 }
 
 Property
@@ -3817,6 +3846,15 @@ Property
 								"@(Builtin.Function->ExplodeList('@(Target.Dependencies)', ';', 'PreBuildScriptDependenciesTemplate'))"
 
 	PreBuildOutputfile "@(Target.IntermediateDirectory)PreBuildOutput.c"
+}
+
+Target
+{
+	PreBuildScript "@(Target.PreBuildScript)"\
+					"set -eo pipefail\r\n"
+	{
+		!!PlatformType "Unix"
+	}
 }
 
 Target
@@ -3973,9 +4011,8 @@ Property
 
 Target
 {
-
 	PostBuildScript "@(Target.PostBuildScript)"\
-					"set -e\r\n"
+					"set -eo pipefail\r\n"
 	{
 		!!PlatformType "Unix"
 	}
@@ -4269,13 +4306,11 @@ Target
 
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"echo Sign:\r\n"\
-					"echo MTool BuildServerTool Tool=CodeSignOSX --force --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"MTool BuildServerTool Tool=CodeSignOSX --force --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"@(CheckErrors)\r\n"
+					"echo @(MalterlibCodeSignOSXCommand) --force --timestamp --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"@(MalterlibCodeSignOSXCommand) --force --timestamp --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"
 	{
 		&
 		{
-			MalterlibBuildServerBuild "true"
 			PlatformFamily OSX
 			TargetIsExecutable "true"
 			|
@@ -4287,79 +4322,41 @@ Target
 					MalterlibDriverSigning "true"
 				}
 			}
-
 		}
 	}
 
 	PostBuildScript "@(Target.PostBuildScript)"\
-					"echo Sign:\r\n"\
-					"echo MTool BuildServerTool Tool=CodeSignOSX --force --deep --sign @(MalterlibSignCertiOS) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"MTool BuildServerTool Tool=CodeSignOSX --force --deep --sign @(MalterlibSignCertiOS) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"@(CheckErrors)\r\n"
+					"echo Notarize:\r\n"\
+					"/usr/bin/ditto -c -k --keepParent \"@(MalterlibFinalModuleDestination->NativePath())\" \"@(MalterlibFinalModuleDestination->NativePath()).zip\"\r\n"\
+					"echo @(MalterlibALToolOSXCommand) --notarize-app --primary-bundle-id \"@(MalterlibBundleIdentifier)\" --asc-provider \"@(MalterlibNotarizeOSXProvider)\" --username \"@(MalterlibNotarizeOSXUser)\" --password \"@(MalterlibNotarizeOSXPassword)\" --file \"@(MalterlibFinalModuleDestination->NativePath()).zip\"\r\n"\
+					"@(MalterlibALToolOSXCommand) --notarize-app --primary-bundle-id \"@(MalterlibBundleIdentifier)\" --asc-provider \"@(MalterlibNotarizeOSXProvider)\" --username \"@(MalterlibNotarizeOSXUser)\" --password \"@(MalterlibNotarizeOSXPassword)\" --file \"@(MalterlibFinalModuleDestination->NativePath()).zip\" 2>&1 | tee \"@(MalterlibFinalModuleDestination->NativePath()).log\"\r\n"\
+					"NotarizationRequestUUID=$(awk -F ' = ' '/RequestUUID/ {print $2}' \"@(MalterlibFinalModuleDestination->NativePath()).log\")\r\n"\
+					"while true; do\r\n"\
+					"	@(MalterlibALToolOSXCommand) --notarization-info \"$NotarizationRequestUUID\" --asc-provider \"@(MalterlibNotarizeOSXProvider)\" --username \"@(MalterlibNotarizeOSXUser)\" --password \"@(MalterlibNotarizeOSXPassword)\" > \"@(MalterlibFinalModuleDestination->NativePath()).log\" 2>&1\r\n"\
+					"	if ! grep -q \"Status: in progress\" \"@(MalterlibFinalModuleDestination->NativePath()).log\"; then\r\n"\
+					"		break\r\n"\
+					"	fi\r\n"\
+					"	sleep 15\r\n"\
+					"done\r\n"\
+					"cat \"@(MalterlibFinalModuleDestination->NativePath()).log\"\r\n"\
+					"LogFileURL=$(awk -F ': ' '/LogFileURL/ {print $2}' \"@(MalterlibFinalModuleDestination->NativePath()).log\")\r\n"\
+					"if [[ \"$LogFileURL\" != \"\" ]]; then\r\n"\
+					"	curl -s \"$LogFileURL\"\r\n"\
+					"	echo \"\"\r\n"\
+					"fi\r\n"\
+					"if ! grep -q \"Status: success\" \"@(MalterlibFinalModuleDestination->NativePath()).log\"; then\r\n"\
+					"	echo \"Error: Notarization failed\"\r\n"\
+					"	exit 1\r\n"\
+					"fi\r\n"\
+					"echo @(MalterlibStaplerOSXCommand) staple \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"@(MalterlibStaplerOSXCommand) staple \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"
 	{
 		&
 		{
-			MalterlibBuildServerBuild "true"
-			PlatformFamily iOS
-			TargetIsExecutable "true"
-			|
-			{
-				MalterlibSigning "true"
-				&
-				{
-					Target.Type "Driver"
-					MalterlibDriverSigning "true"
-				}
-			}
-
-		}
-	}
-
-	PostBuildScript "@(Target.PostBuildScript)"\
-					"echo Sign:\r\n"\
-					"echo codesign --force --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"codesign --force --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"@(CheckErrors)\r\n"
-	{
-		&
-		{
-			!MalterlibBuildServerBuild "true"
-			PlatformFamily "OSX"
-			TargetIsExecutable "true"
-			|
-			{
-				MalterlibSigning "true"
-				&
-				{
-					Target.Type "Driver"
-					MalterlibDriverSigning "true"
-				}
-			}
-
-		}
-	}
-
-	PostBuildScript "@(Target.PostBuildScript)"\
-					"echo Sign:\r\n"\
-					"echo codesign --force --deep --sign @(MalterlibSignCertiOS) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"codesign --force --deep --sign @(MalterlibSignCertiOS) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"@(CheckErrors)\r\n"
-	{
-		&
-		{
-			!MalterlibBuildServerBuild "true"
-			PlatformFamily iOS
-			TargetIsExecutable "true"
-			|
-			{
-				MalterlibSigning "true"
-				&
-				{
-					Target.Type "Driver"
-					MalterlibDriverSigning "true"
-				}
-			}
-
+			PlatformFamily OSX
+			MalterlibSigning true
+			Target.Type "UIExecutable"
+			!MalterlibNotarizeOSXUser ""
 		}
 	}
 
