@@ -105,16 +105,16 @@ Property
 				UsesTabs false
 			}
 
-			%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/*.py"
-			%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/em*"
+			%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/*.py"
+			%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/em*"
 			%Group tools
 			{
-				%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/tools/*.py"
-				%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/tools/*.js"
+				%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/tools/*.py"
+				%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/tools/*.js"
 			}
 			%Group Library
 			{
-				%File "/Development/Malterlib/llvm/unstable-emscripten/emscripten/src/*"
+				%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/src/*"
 			}
 		}*/
 		%Group "MSBuild Targets"

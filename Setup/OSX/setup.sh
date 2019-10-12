@@ -18,7 +18,9 @@ if [[ "$MalterlibCompiledFiles" != "" ]]; then
 	DependenciesDirectory="$MalterlibCompiledFiles/Dependencies"
 else
 	DependenciesDirectory=
-	if [ -d /CompiledFiles ]; then
+	if [ -d /opt/CompiledFiles ]; then
+		DependenciesDirectory="/opt/CompiledFiles/Dependencies"
+	elif [ -d /CompiledFiles ]; then
 		DependenciesDirectory="/CompiledFiles/Dependencies"
 	else
 		DependenciesDirectory="$HOME/.CompiledFiles/Dependencies"

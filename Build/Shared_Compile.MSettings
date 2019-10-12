@@ -1008,7 +1008,7 @@ Compile
 	{
 		&
 		{
-			!Target.PlatformToolsetCompiler "/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc"
+			!Target.PlatformToolsetCompiler "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc"
 			|
 			{
 				!PlatformFamily Windows

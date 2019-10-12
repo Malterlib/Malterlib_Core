@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 // Windows paths
@@ -25,17 +25,12 @@ Property
 	}
 
 
-    MalterlibDeployRoot "X:\\Deploy"
+	MalterlibDeployRoot "X:\\Deploy"
 	{
 		!!MalterlibDeployRoot ""
 	}
 
-    MalterlibRemoteDeployRoot "R:\\Deploy"
-	{
-		!!MalterlibRemoteDeployRoot ""
-	}
-
-    MalterlibRemoteDeployDebugRoot "C:\\Deploy"
+	MalterlibRemoteDeployDebugRoot "C:\\Deploy"
 	{
 		!!MalterlibRemoteDeployDebugRoot ""
 	}
@@ -52,6 +47,15 @@ Property
 	!!HostPlatformFamily "OSX"
 	!!HostPlatformFamily "Linux"
 
+	MalterlibDependenciesDirectory "/opt/CompiledFiles/Dependencies"
+	{
+		&
+		{
+			MalterlibDependenciesDirectory ""
+			!Empty "@('/opt'->FindDirectoriesIn('CompiledFiles'))"
+		}
+	}
+
 	MalterlibDependenciesDirectory "/CompiledFiles/Dependencies"
 	{
 		&
@@ -61,9 +65,19 @@ Property
 		}
 	}
 
+
 	MalterlibDependenciesDirectory "@(HOME)/.CompiledFiles/Dependencies"
 	{
 		!!MalterlibDependenciesDirectory ""
+	}
+
+	MalterlibCompiledFiles "/opt/CompiledFiles/"
+	{
+		&
+		{
+			MalterlibCompiledFiles ""
+			!Empty "@('/opt'->FindDirectoriesIn('CompiledFiles'))"
+		}
 	}
 
 	MalterlibCompiledFiles "/CompiledFiles/"
@@ -80,12 +94,30 @@ Property
 		!!MalterlibCompiledFiles ""
 	}
 
+	MalterlibDevelopmentRoot "/opt/Development"
+	{
+		&
+		{
+			MalterlibDevelopmentRoot ""
+			!Empty "@('/opt'->FindDirectoriesIn('Development'))"
+		}
+	}
+
 	MalterlibDevelopmentRoot "/Development"
 	{
 		!!MalterlibDevelopmentRoot ""
 	}
 
-    MalterlibDeployRoot "/Deploy"
+	MalterlibDeployRoot "/opt/Deploy"
+	{
+		&
+		{
+			MalterlibDeployRoot ""
+			!Empty "@('/opt'->FindDirectoriesIn('Deploy'))"
+		}
+	}
+
+	MalterlibDeployRoot "/Deploy"
 	{
 		&
 		{
@@ -99,12 +131,7 @@ Property
 		!!MalterlibDeployRoot ""
 	}
 
-    MalterlibRemoteDeployRoot "/RemoteDeploy"
-	{
-		!!MalterlibRemoteDeployRoot ""
-	}
-
-    MalterlibRemoteDeployDebugRoot "/LocalDeploy"
+	MalterlibRemoteDeployDebugRoot "/opt/LocalDeploy"
 	{
 		!!MalterlibRemoteDeployDebugRoot ""
 	}
@@ -119,7 +146,7 @@ Property
 {
 	MaltelibBasePathAbsolute "@(Builtin.BasePathAbsolute)"
 	MaltelibBasePathName "@(MaltelibBasePathAbsolute->GetFile())"
-	
+
 	MalterlibCompiledFilesSourceBase "@(MalterlibCompiledFiles)@(MaltelibBasePathName)-@(Builtin.GeneratedBuildSystemDir->HashSHA256('8'))"
 	GeneratedGlobalDirectory "@(MalterlibCompiledFilesSourceBase)/Generated/"
 }
@@ -158,12 +185,12 @@ Property
 		}
 	}
 
-    MalterlibGenerateLibrary "true"
+	MalterlibGenerateLibrary "true"
 	{
 		!!MalterlibGenerateLibrary ""
 	}
 
-    MalterlibGenerateLibrary "false"
+	MalterlibGenerateLibrary "false"
 	{
 		&
 		{
@@ -171,7 +198,7 @@ Property
 			DebugCompiler "true"
 		}
 	}
-    MalterlibGenerateLibrary "true"
+	MalterlibGenerateLibrary "true"
 	{
 		&
 		{
