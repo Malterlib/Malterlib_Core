@@ -192,6 +192,7 @@ namespace NMib
 				CFileChangeNoticationContext *m_pContext;
 				NMib::NFile::EFileChange m_Flags;
 				NMib::NStr::CStr m_NotificationPath;
+				NMib::NStr::CStr m_NotificationPathCompare;
 				NContainer::TCLinkedList<CChange> m_Changes;
 				NThread::CMutual m_ChangesLock;
 
