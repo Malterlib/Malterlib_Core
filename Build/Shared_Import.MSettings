@@ -272,7 +272,7 @@ Import
 		}
 	}
 
-	CMake_Path "@(MToolDirectory);@(Import.CMake_Path)"
+	CMake_Path "@(MToolDirectory);;@(Import.CMake_Path)"
 }
 
 Import

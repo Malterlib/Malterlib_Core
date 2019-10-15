@@ -734,11 +734,10 @@ Property
 		}
 	}
 
-	MalterlibMSVCVersion "14.22.27905"
+	MalterlibMSVCVersion "14.23.28105"
 	{
 		!!MalterlibMSVCVersion ""
 	}
-
 
 	PlatformToolsetCompiler "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc" // User(Toolset): Change the clang compiler location
 	{
