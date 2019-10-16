@@ -5,21 +5,6 @@
 {
 	%GeneratorSetting "Compile"
 	{
-		%GeneratorSetting "Type"
-		{
-			Property
-			{
-				Name "CompileAs"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					C CompileAsC
-					C++ CompileAsCpp
-				}
-			}
-		}
 		%GeneratorSetting "ConcurrentCompile"
 		{
 			Property

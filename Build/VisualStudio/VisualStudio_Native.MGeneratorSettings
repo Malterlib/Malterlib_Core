@@ -178,6 +178,20 @@
 						}
 					}
 				}
+				%GeneratorSetting "C++"
+				{
+					%GeneratorSetting ""
+					{
+						%GeneratorSetting ""
+						{
+							Property
+							{
+								CompileAsManaged "false"
+								CompileAs "CompileAsCpp"
+							}
+						}
+					}
+				}
 				%GeneratorSetting "C++Managed"
 				{
 					%GeneratorSetting ""
