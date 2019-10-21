@@ -470,6 +470,7 @@ namespace NMib
 			void* pMenuContextObject = [[pMenuContextClass alloc] init];
 			object_setInstanceVariable((id)pMenuContextObject, "m_pContext", &MenuContext);
 
+
 			NSMenu* pMenu = [[NSMenu alloc] initWithTitle:@""];
 
 			{
