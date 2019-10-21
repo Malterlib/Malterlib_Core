@@ -894,6 +894,14 @@ Target
 	Workaround_CLANG_WARN_RANGE_LOOP_ANALYSIS ""
 }
 
+Property
+{
+	MalterlibUseAllLinkerGroup true
+	{
+		!!MalterlibUseAllLinkerGroup ""
+	}
+}
+
 // Xcode
 Target
 {
@@ -914,6 +922,10 @@ Target
 	EnableLinkerGroups false
 	{
 		!!Target.EnableLinkerGroups ""
+	}
+	LinkerGroup "All"
+	{
+		!!MalterlibUseAllLinkerGroup true
 	}
 	LTOObjectFile ""
 	{
