@@ -1525,7 +1525,7 @@ Target
 
 	CodeSigningIdentity ""
 	{
-		!!PlatformFamily OSX
+		!!GeneratorFamily Xcode
 	}
 
 	SDKRoot "OSX@(MalterlibMaxSupportedOSXVersion)"
