@@ -55,4 +55,4 @@
 ../../External/boost/utility 9eeb7f85c57b1c7a6d320594f2630c7514c71bed
 ../../External/boost/variant f34376e115329a3196dd19101398500423b72a21
 ../../External/boost/winapi 65b9c99a6772add56a24272d0b76b611fd92caf4
-../../External/llvm-project 21d6bf6c078092312eb6494a5496e5b7b1834fdb
+../../External/llvm-project 619e823ff26cbfe6e70639da5614cca8c147c5f4
