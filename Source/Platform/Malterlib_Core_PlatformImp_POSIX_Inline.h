@@ -66,7 +66,7 @@ namespace NMib
 		extern mint g_ThreadLocalOffset;
 #endif
 		
-		inline_always volatile mint fg_GetThreadSelf()
+		inline_always mint fg_GetThreadSelf()
 		{
 		#ifdef DMibSafeThreadLocals
 			return  (mint)pthread_self();
@@ -127,7 +127,7 @@ namespace NMib
 		#endif
 		}
 
-		inline_always volatile mint fg_GetThreadLocal(mint _iVariable)
+		inline_always mint fg_GetThreadLocal(mint _iVariable)
 		{
 		#ifdef DMibSafeThreadLocals
 			return (mint)pthread_getspecific((pthread_key_t)_iVariable);
