@@ -172,8 +172,8 @@ public:
 #ifndef DPlatformFamily_Windows
 			case ENetAddressType_Unix: return sizeof(sockaddr_un);
 #endif
+			default: return f_GetFullDataLen();
 		}
-		return f_GetFullDataLen(); 
 	}
 	void const* f_Get() const { return mp_lData.f_GetArray(); }
 
