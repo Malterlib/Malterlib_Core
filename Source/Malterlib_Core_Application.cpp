@@ -21,9 +21,7 @@ namespace NMib
 			}
 		};
 		
-		TCSubSystem<CSubSystem_Core_Application, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Application = {DAggregateInit};
-		
-		
+		constinit TCSubSystem<CSubSystem_Core_Application, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Application = {DAggregateInit};
 	}
 	
 	CApplication::CApplication()

@@ -354,7 +354,7 @@ public:
 	}
 };
 
-NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
+constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
 void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
 {
@@ -1253,7 +1253,7 @@ void fg_DestroySystemThreadsAtExit()
 
 //#if defined(DConfig_Release) && !defined(DConfig)
 
-NMib::NThread::CSpinLockAggregate g_CrashReporterLock = {DAggregateInit};
+constinit NMib::NThread::CSpinLockAggregate g_CrashReporterLock = {DAggregateInit};
 NMib::NStr::CStrNonTracked g_CrashReporterString;
 
 extern "C"

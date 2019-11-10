@@ -95,6 +95,9 @@
 #	error "Implement this"
 #endif
 
+#ifndef __cpp_constinit
+#	define constinit
+#endif
 
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	if __has_feature(cxx_rtti)

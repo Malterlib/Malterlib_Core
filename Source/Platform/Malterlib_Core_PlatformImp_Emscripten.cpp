@@ -223,7 +223,7 @@ struct CCodePageCache
 
 };
 
-NMib::NStorage::TCAggregate<CCodePageCache> g_CodePageCache = { DAggregateInit };
+constinit NMib::NStorage::TCAggregate<CCodePageCache> g_CodePageCache = { DAggregateInit };
 
 void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, ch8 _ErrorChar)
 {

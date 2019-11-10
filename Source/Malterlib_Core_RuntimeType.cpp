@@ -15,7 +15,7 @@ namespace NMib
 			CRunTimeObjectInfoContainer m_GlobalNamespace;
 		};
 		
-		TCSubSystem<CSubSystem_Core_RunTimeObject, ESubSystemDestruction_BeforeMemoryManager> g_DynamicObjectsSystem = {DAggregateInit};
+		constinit TCSubSystem<CSubSystem_Core_RunTimeObject, ESubSystemDestruction_BeforeMemoryManager> g_DynamicObjectsSystem = {DAggregateInit};
 	}
 
 	

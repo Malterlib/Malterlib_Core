@@ -38,7 +38,7 @@ namespace NMib
 			CSystemEnvironment m_ProtectedEnvironment;
 		};
 		
-		TCSubSystem<CSubSystem_Core_Environment, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Environment = {DAggregateInit};
+		constinit TCSubSystem<CSubSystem_Core_Environment, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Environment = {DAggregateInit};
 	}
 	
 	CSystemEnvironment CSystem::f_Environment() const

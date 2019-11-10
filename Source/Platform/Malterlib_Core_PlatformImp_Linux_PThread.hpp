@@ -16,8 +16,8 @@ using namespace NMib;
 
 constexpr mint gc_nMalterlibThreadLocals = 256; // 2 KB on 64 bit platforms
 
-NThread::CSpinLockAggregate gc_nMalterlibThreadLocalsAllocatedLock = {DAggregateInit};
-NContainer::TCBitArrayHierarchical<gc_nMalterlibThreadLocals> gc_nMalterlibThreadLocalsAllocated{};
+constinit NThread::CSpinLockAggregate gc_nMalterlibThreadLocalsAllocatedLock = {DAggregateInit};
+constinit NContainer::TCBitArrayHierarchical<gc_nMalterlibThreadLocals> gc_nMalterlibThreadLocalsAllocated{};
 
 #ifdef DMibDynamicLibrary
 	#ifndef DMibAssumeMalterlibHost

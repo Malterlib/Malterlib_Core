@@ -252,7 +252,7 @@ public:
 	}
 };
 
-NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
+constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
 void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
 {
@@ -366,7 +366,7 @@ DMibDefineDynamicLibraryClassAggregate(CUUIDLibrary, EDLFlag_NoThrow | EDLFlag_N
 								,	uuid_unparse
 							);
 
-CUUIDLibrary g_UUIDLibrary = { DAggregateInit };
+constinit CUUIDLibrary g_UUIDLibrary = { DAggregateInit };
 
 static void fg_LoadLibraries()
 {
@@ -381,7 +381,7 @@ public:
 
 	pthread_key_t m_ThreadDestructionHook;
 
-	NMib::NStorage::TCAggregate<CPOSIXSocketContext> m_SocketContext = { DAggregateInit };
+	constinit NMib::NStorage::TCAggregate<CPOSIXSocketContext> m_SocketContext = { DAggregateInit };
 
 	NMib::NStorage::TCUniquePointer<NMib::NDBus::CSystem> m_pDBus; // May be nullptr
 
@@ -554,7 +554,7 @@ public:
 		pthread_setspecific(m_ThreadDestructionHook, (void*)NSys::fg_Thread_GetCurrentUID());
 	}
 
-	NMib::NStorage::TCAggregate<CFileChangeNotificationContext> m_FileChangeNotificationContext = { DAggregateInit };
+	constinit NMib::NStorage::TCAggregate<CFileChangeNotificationContext> m_FileChangeNotificationContext = { DAggregateInit };
 
 
 	void f_LoadLibraries()
@@ -628,7 +628,7 @@ struct CCodePageCache
 
 };
 
-NMib::NStorage::TCAggregate<CCodePageCache> g_CodePageCache = { DAggregateInit };
+constinit NMib::NStorage::TCAggregate<CCodePageCache> g_CodePageCache = { DAggregateInit };
 
 void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, ch8 _ErrorChar)
 {
@@ -2242,7 +2242,7 @@ struct CCpuNameCache
 	CStr m_Name;
 };
 
-NStorage::TCAggregate<CCpuNameCache> g_CPUNameCache = {DAggregateInit};
+constinit NStorage::TCAggregate<CCpuNameCache> g_CPUNameCache = {DAggregateInit};
 
 NMib::NStr::CStr NSys::fg_System_GetCPUName()
 {

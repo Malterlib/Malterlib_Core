@@ -41,7 +41,7 @@ namespace NMib::NSys
 			static void fs_SignalHandler(int _Signal);
 		};
 		
-		TCSubSystem<CSubSystem_Core_Signal, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Signal = {DAggregateInit};
+		constinit TCSubSystem<CSubSystem_Core_Signal, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Signal = {DAggregateInit};
 
 		void CSubSystem_Core_Signal::fs_SignalHandler(int _Signal)
 		{

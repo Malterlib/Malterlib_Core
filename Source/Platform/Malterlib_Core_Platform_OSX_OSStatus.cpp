@@ -66,7 +66,7 @@ namespace NMib
 			}
 		};
 		
-		TCSubSystem<CSubSystem_Core_OSX_ErrorStore, ESubSystemDestruction_Last> g_SubSystem_Core_Platform_OSX_ErrorStore = {DAggregateInit};
+		constinit TCSubSystem<CSubSystem_Core_OSX_ErrorStore, ESubSystemDestruction_Last> g_SubSystem_Core_Platform_OSX_ErrorStore = {DAggregateInit};
 
 		COSXError const *fg_GetOSStatusError(int _Status)
 		{

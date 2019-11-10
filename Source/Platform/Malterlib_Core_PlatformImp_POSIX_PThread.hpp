@@ -371,7 +371,7 @@ public:
 	}	
 };
 
-NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
+constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
 void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
 {

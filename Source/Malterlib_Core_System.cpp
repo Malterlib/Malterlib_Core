@@ -65,7 +65,7 @@ namespace NMib
 
 	}
 
-	NStorage::TCAggregate<NThread::TCThreadLocal<CSystemThreadLocal>, 64> g_SystemThreadLocal = {DAggregateInit};
+	constinit NStorage::TCAggregate<NThread::TCThreadLocal<CSystemThreadLocal>, 64> g_SystemThreadLocal = {DAggregateInit};
 
 	/************************************************************************************************\
 	||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
@@ -613,7 +613,7 @@ namespace NMib
 #endif
 	
 	// Make sure that our system module is aggregate
-	CSystemModule g_SystemModule = {DAggregateInit};
+	constinit CSystemModule g_SystemModule = {DAggregateInit};
 
 	void CSystemModule::f_DestroyAggregates(bool _bDestroySystem)
 	{

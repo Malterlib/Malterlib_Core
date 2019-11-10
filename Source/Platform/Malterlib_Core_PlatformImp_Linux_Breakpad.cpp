@@ -142,7 +142,7 @@ namespace NMib
 			NMib::NStorage::TCUniquePointer<google_breakpad::ExceptionHandler, NMib::NMemory::CAllocator_NonTrackedHeap> m_pExceptionHandler;
 		};
 		
-		NMib::NStorage::TCAggregateSimple<CBreakpad> g_Breakpad = {DAggregateInit};
+		constinit NMib::NStorage::TCAggregateSimple<CBreakpad> g_Breakpad = {DAggregateInit};
 		
 		void fg_InitBreakpad()
 		{

@@ -10,7 +10,7 @@ namespace NMib
 
 	namespace NMisc
 	{
-		NStorage::TCAggregate<NThread::TCThreadLocal<CAutoRandom, NMemory::CAllocator_NonTrackedHeap>> g_Random = {DAggregateInit};
+		constinit NStorage::TCAggregate<NThread::TCThreadLocal<CAutoRandom, NMemory::CAllocator_NonTrackedHeap>> g_Random = {DAggregateInit};
 
 		CAutoRandom::CAutoRandom()
 			: CRandomShiftRNG(uint32(NTime::NPlatform::fg_Timer_Cycles() & uint64(0xffffffff)), uint32((NTime::NPlatform::fg_Timer_Cycles() >> 32) & uint64(0xffffffff)), uint32(NTime::NPlatform::fg_Timer_Cycles() & uint64(0xffffffff)))
