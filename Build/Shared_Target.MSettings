@@ -1269,6 +1269,11 @@ Target
 		}
 	}
 
+	LDFlags "-fprofile-instr-generate -fcoverage-mapping @(Target.LDFlags)"
+	{
+		!!MalterlibCodeCoverage true
+	}
+
 	LDFlags "-Wno-warn-absolute-paths @(Target.LDFlags)"
 	{
 		!!PlatformFamily Emscripten
@@ -2849,6 +2854,11 @@ Property
 	{
 		!!MalterlibTargetFriendlyName ""
 	}
+
+	MalterlibXcodePrincipalClass "NSApplication"
+	{
+		!!MalterlibXcodePrincipalClass ""
+	}
 }
 
 %Group "~Automatic/OSX Specific"
@@ -2890,7 +2900,7 @@ Property
 						"	<key>NSHumanReadableCopyright</key>\n"\
 						"		<string>@(ProductCopyright)</string>\n"\
 						"	<key>NSPrincipalClass</key>\n"\
-						"		<string>NSApplication</string>\n"\
+						"		<string>@(MalterlibXcodePrincipalClass)</string>\n"\
 						"	<key>LSMinimumSystemVersion</key>\n"\
 						"		<string>@(MalterlibOSXVersion)</string>\n"\
 						"	<key>MalterlibBranch</key>\n"\

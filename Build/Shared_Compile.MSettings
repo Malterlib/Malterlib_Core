@@ -850,6 +850,10 @@ Property
 	{
 		!!MalterlibVerboseTemplateErrors ""
 	}
+	MalterlibCodeCoverage "false" // User(Tests)=true: Set to true to enable code coverage
+	{
+		!!MalterlibCodeCoverage ""
+	}
 }
 
 Property
@@ -1287,8 +1291,7 @@ Compile
 		!!Compile.PrefixHeader "@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h"
 	}
 
-
-	FrameworkSearchPath "@(Builtin.BasePathAbsolute)/SDK/BreakpadBin/@(PlatformFamily) @(Target.FrameworkSearchPath)"
+	FrameworkSearchPath "@(Builtin.BasePathAbsolute)/SDK/BreakpadBin/@(PlatformFamily);@(Compile.FrameworkSearchPath)"
 	{
 		&
 		{
@@ -1298,6 +1301,10 @@ Compile
 		}
 	}
 
+	FrameworkSearchPath "$(PLATFORM_DIR)/Developer/Library/Frameworks;@(Compile.FrameworkSearchPath)"
+	{
+		!!PlatformFamily OSX
+	}
 
 	MaxHeap "500"
 	{
@@ -1360,6 +1367,11 @@ Compile
 			!Target.VisualStudioPlatform "Clang"
 			!Target.PlatformToolset "v90"
 		}
+	}
+
+	CodeCoverage true
+	{
+		!!MalterlibCodeCoverage true
 	}
 
 	VerboseTemplateErrors true

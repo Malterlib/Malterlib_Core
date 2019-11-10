@@ -406,7 +406,52 @@
 					{
 						true "YES"
 						false "NO"
-					}	
+					}
+				}
+			}
+			%GeneratorSetting "CodeCoverageMapping"
+			{
+				Property
+				{
+					Name "CLANG_ENABLE_CODE_COVERAGE"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "InstrumentForOptimization"
+			{
+				Property
+				{
+					Name "CLANG_INSTRUMENT_FOR_OPTIMIZATION_PROFILING"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
+				}
+			}
+			%GeneratorSetting "CodeCoverageLinkerMapping"
+			{
+				Property
+				{
+					Name "CLANG_COVERAGE_MAPPING_LINKER_ARGS"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "YES"
+						false "NO"
+					}
 				}
 			}
  			%GeneratorSetting "EmscriptenEmscriptenRoot"
@@ -1716,6 +1761,17 @@
 					{
 						false "-Wno-parentheses"
 						true "-Wparentheses"
+					}
+				}
+			}
+			%GeneratorSetting "CodeCoverage"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-fprofile-instr-generate -fcoverage-mapping"
 					}
 				}
 			}
