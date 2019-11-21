@@ -1169,7 +1169,11 @@ namespace NMib
 
 				if (NMib::CSystem::ms_PlatformVersion >= 10'15'00)
 				{
-					if ((!(Flags & kFSEventStreamEventFlagItemIsDir) && !(Flags & kFSEventStreamEventFlagMustScanSubDirs)) || (Flags & kFSEventStreamEventFlagItemRenamed))
+					if
+						(
+							(!(Flags & kFSEventStreamEventFlagItemIsDir) && !(Flags & kFSEventStreamEventFlagMustScanSubDirs))
+							|| (Flags & (kFSEventStreamEventFlagItemRenamed | kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved))
+						)
 					{
 						if (Path.f_StartsWith(m_NotificationPathCompare))
 							Path = CFile::fs_GetPath(Path);
@@ -1312,7 +1316,7 @@ namespace NMib
 						if (!FindChangesContext.m_UsedOld.f_FindEqual(PotentiallyRemoved))
 						{
 							auto *pSnapshots = m_SnapshotsByNode.f_FindEqual(PotentiallyRemoved);
-							if (!pSnapshots)
+							if (!pSnapshots || NewSnapshotsByNode.f_FindEqual(PotentiallyRemoved))
 								continue;
 							for (auto &Snapshot : *pSnapshots)
 								f_AddNotification(FindChangesContext, EFileChangeNotification_Removed, Snapshot.m_FullFileName);
@@ -1374,13 +1378,13 @@ namespace NMib
 
 				if (ProtectedDirs.f_FindEqual(EventPath))
 				{
-					//DMibConOut2("IGNORE Change: {} = {nfh} - {}\n", EventPath, Flags, _IDs[i]);
+					//DMibConErrOut2("IGNORE Change: {} = {nfh} - {}\n", EventPath, Flags, _IDs[i]);
 					continue;
 				}
 
 				CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(EventPath, m_NotificationPath);
 
-				//DMibConOut2("Change: {} = {nfh} - {}\n", EventPath, Flags, _IDs[i]);
+				//DMibConErrOut2("Change: {} = {nfh} - {}\n", EventPath, Flags, _IDs[i]);
 
 				bool bIsDir = (Flags & kFSEventStreamEventFlagItemIsDir) && !(Flags & kFSEventStreamEventFlagItemIsSymlink);
 
@@ -1455,7 +1459,7 @@ namespace NMib
 
 			}
 
-			//DMibConOut2("m_RenamedFromQueue {}\n", m_RenamedFromQueue.f_GetLen());
+			//DMibConErrOut2("m_RenamedFromQueue {}\n", m_RenamedFromQueue.f_GetLen());
 
 			for (auto &RenameTo : m_RenamedFromQueue)
 			{
@@ -1469,7 +1473,7 @@ namespace NMib
 
 			m_RenamedFromQueue.f_Clear();
 
-			//DMibConOut2("GENERATED {}\n", FindChangesContext.m_ChangesFileName.f_GetLen() + FindChangesContext.m_Changes.f_GetLen());
+			//DMibConErrOut2("GENERATED {}\n", FindChangesContext.m_ChangesFileName.f_GetLen() + FindChangesContext.m_Changes.f_GetLen());
 
 			if
 				(
