@@ -187,7 +187,7 @@ Property
 		ExtraGroups "{Malterlib}/{@(Target:this.Identity)};@(Target.ExtraGroups)"
 		Name "@(Target:this.Identity)"
 		Type StaticLibrary
-		Group "Libraries/Malterlib"
+		Group "Malterlib"
 	}
 }
 

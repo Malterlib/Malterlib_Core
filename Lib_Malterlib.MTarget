@@ -19,7 +19,7 @@ Property
 	{
 		BaseName "Malterlib_Init"
 		Type "StaticLibrary"
-		Group "Libraries/Malterlib"
+		Group "Malterlib"
 	}
 	Compile
 	{
@@ -104,7 +104,7 @@ Property
 	{
 		BaseName "Malterlib_RuntimeABI"
 		Type "StaticLibrary"
-		Group "Libraries/Malterlib"
+		Group "Malterlib"
 		LinkTimeCodeGeneration false
 		ExtraGroups "{Lib_Malterlib_Runtime}/{SharedSettings};@(Target.ExtraGroups)"
 	}
@@ -257,7 +257,7 @@ Property
 	{
 		BaseName "Malterlib_Runtime"
 		Type "StaticLibrary"
-		Group "Libraries/Malterlib"
+		Group "Malterlib"
 		ExtraGroups "{Lib_Malterlib_Runtime}/{SharedSettings};@(Target.ExtraGroups)"
 	}
 	%Group "Source"
@@ -485,7 +485,7 @@ Property
 	{
 		BaseName "MalterlibExecutable"
 		Type "StaticLibrary"
-		Group "Libraries/Malterlib"
+		Group "Malterlib"
 	}
 	Compile
 	{
@@ -526,7 +526,7 @@ Property
 	{
 		BaseName "MalterlibDll"
 		Type "StaticLibrary"
-		Group "Libraries/Malterlib"
+		Group "Malterlib"
 	}
 	Compile
 	{
@@ -849,7 +849,7 @@ Target
 	{
 		BaseName "Malterlib"
 		Type "StaticLibrary"
-		Group "Libraries/Malterlib"
+		Group "Malterlib"
 	}
 	Compile
 	{
@@ -952,7 +952,7 @@ Target
 	{
 		BaseName "MalterlibOverrideMallocDummy"
 		Type "SharedDynamicLibrary"
-		Group "Libraries/Malterlib"
+		Group "Malterlib"
 		LDFlags "-nostdlib @(Target.LDFlags)"
 		{
 			!!PlatformFamily OSX
@@ -1012,7 +1012,7 @@ Property
 	{
 		BaseName "MalterlibOverrideMalloc"
 		Type "SharedDynamicLibrary"
-		Group "Libraries/Malterlib"
+		Group "Malterlib"
 		LDFlags "-nostdlib @(Target.LDFlags)"
 		{
 			!!PlatformFamily OSX
