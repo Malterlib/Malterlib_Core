@@ -552,6 +552,27 @@ namespace NMib
 		CFileChangeNoticationContext::CFileChangeNoticationContext()
 			: m_pInternal(fg_Construct())
 		{
+			try
+			{
+				if (CFile::fs_FileExists(CStr("/etc/synthetic.conf")))
+				{
+					CStr Contents = CFile::fs_ReadStringFromFile(CStr("/etc/synthetic.conf"), true);
+					for (auto &Line : Contents.f_SplitLine())
+					{
+						if (Line.f_StartsWith("#"))
+							continue;
+						auto Mapping = Line.f_Split("\t");
+						if (Mapping.f_GetLen() != 2)
+							continue;
+						CStr To = "/" + Mapping[0];
+						CStr From = "/" + Mapping[1];
+						m_SyntheticPaths[To] = From;
+					}
+				}
+			}
+			catch (NFile::CExceptionFile const &)
+			{
+			}
 		}
 
 		CFileChangeNoticationContext::~CFileChangeNoticationContext()
@@ -669,7 +690,7 @@ namespace NMib
 			{
 				if (Snapshot.m_FullFileName.f_IsEmpty())
 					continue;
-				CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath / Snapshot.m_FullFileName);
+				CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath.m_UserPath / Snapshot.m_FullFileName);
 				if (_Context.m_DirsToUpdate(Directory).f_WasCreated())
 				{
 					DMibFileChangeNotificationsDebugOut("ADDED DIRECTORY '{}' from '{}' finding '{}'\n", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
@@ -682,7 +703,7 @@ namespace NMib
 				{
 					if (Snapshot.m_FullFileName.f_IsEmpty())
 						continue;
-					CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath / Snapshot.m_FullFileName);
+					CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath.m_UserPath / Snapshot.m_FullFileName);
 					if (_Context.m_DirsToUpdate(Directory).f_WasCreated())
 					{
 						DMibFileChangeNotificationsDebugOut("ADDED OLD DIRECTORY '{}' from '{}' finding '{}'\n", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
@@ -701,7 +722,7 @@ namespace NMib
 				, bool _bRecursiveInfoNeeded
 			)
 		{
-			CStr Path = _Context.m_NotificationPath / _Snapshot.m_FullFileName;
+			CStr Path = _Context.m_NotificationPath.m_UserPath / _Snapshot.m_FullFileName;
 
 			if (_Snapshot.m_Stats.st_dev == 0)
 			{
@@ -1044,20 +1065,20 @@ namespace NMib
 		{
 			bool bRecursive = (m_Flags & EFileChange_Recursive) != 0;
 
-			if (!_Path.f_StartsWith(m_NotificationPath))
+			if (!_Path.f_StartsWith(m_NotificationPath.m_UserPath))
 			{
-				DMibTrace("'{}' does not start with '{}'\n", _Path << m_NotificationPath);
+				DMibTrace("'{}' does not start with '{}'\n", _Path << m_NotificationPath.m_UserPath);
 				DMibSafeCheck(false, "File path not correct!!");
 				return; // Error
 			}
 
-			if (!bRecursive && _Path != m_NotificationPath)
+			if (!bRecursive && _Path != m_NotificationPath.m_UserPath)
 				return; // Drop this notification as we are not interested in it
 
 			if (!_bNeedSubDirs && bRecursive)
 				bRecursive = false;
 
-			CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(_Path, m_NotificationPath);
+			CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(_Path, m_NotificationPath.m_UserPath);
 
 			if (RelativePath == _Path)
 			{
@@ -1065,7 +1086,7 @@ namespace NMib
 				return; // Error
 			}
 
-			if (!_bInitial && (_Path != m_NotificationPath || (bRecursive != (m_Flags & EFileChange_Recursive) != 0)))
+			if (!_bInitial && (_Path != m_NotificationPath.m_UserPath || (bRecursive != (m_Flags & EFileChange_Recursive) != 0)))
 			{
 				CFileSnapshot *pFindSnapshot = &o_NewSnapshot;
 				{
@@ -1091,7 +1112,7 @@ namespace NMib
 							iSnap->m_bDelete = true;
 					}
 					pFindSnapshot->f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
-					if (lstat(CFile::fs_AppendPath(m_NotificationPath, pFindSnapshot->m_FullFileName).f_GetStr(), &pFindSnapshot->m_Stats))
+					if (lstat(CFile::fs_AppendPath(m_NotificationPath.m_UserPath, pFindSnapshot->m_FullFileName).f_GetStr(), &pFindSnapshot->m_Stats))
 						NMemory::fg_MemClear(pFindSnapshot->m_Stats);
 					else
 						fg_LinkFileSnapshot(_UpdateContext, *pFindSnapshot);
@@ -1117,7 +1138,7 @@ namespace NMib
 				{
 					// We have to do a full update
 					o_NewSnapshot.f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
-					if (lstat(m_NotificationPath.f_GetStr(), &o_NewSnapshot.m_Stats))
+					if (lstat(m_NotificationPath.m_UserPath.f_GetStr(), &o_NewSnapshot.m_Stats))
 						NMemory::fg_MemClear(o_NewSnapshot.m_Stats);
 					else
 						fg_LinkFileSnapshot(_UpdateContext, o_NewSnapshot);
@@ -1132,7 +1153,7 @@ namespace NMib
 			else
 			{
 				o_NewSnapshot.f_RemoveFromNodeMap(_UpdateContext.m_SnapshotsByNode);
-				if (lstat(m_NotificationPath.f_GetStr(), &o_NewSnapshot.m_Stats))
+				if (lstat(m_NotificationPath.m_UserPath.f_GetStr(), &o_NewSnapshot.m_Stats))
 					NMemory::fg_MemClear(o_NewSnapshot.m_Stats);
 				else
 					fg_LinkFileSnapshot(_UpdateContext, o_NewSnapshot);
@@ -1175,10 +1196,17 @@ namespace NMib
 							|| (Flags & (kFSEventStreamEventFlagItemRenamed | kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved))
 						)
 					{
-						if (Path.f_StartsWith(m_NotificationPathCompare))
+						if (Path.f_StartsWith(m_NotificationPathCompare.m_ResolvedPath) || Path.f_StartsWith(m_NotificationPathCompare.m_SyntheticPath))
 							Path = CFile::fs_GetPath(Path);
 					}
 				}
+
+				if (Path == m_NotificationPath.m_ResolvedPath || Path == m_NotificationPath.m_SyntheticPath)
+					Path = m_NotificationPath.m_UserPath;
+				else if (Path.f_StartsWith(m_NotificationPathCompare.m_ResolvedPath))
+					Path = m_NotificationPathCompare.m_UserPath + Path.f_Extract(m_NotificationPathCompare.m_ResolvedPath.f_GetLen());
+				else if (Path.f_StartsWith(m_NotificationPathCompare.m_SyntheticPath))
+					Path = m_NotificationPathCompare.m_UserPath + Path.f_Extract(m_NotificationPathCompare.m_SyntheticPath.f_GetLen());
 
 				UpdateContext.m_DirsToUpdate[Path] = (Flags & kFSEventStreamEventFlagMustScanSubDirs) != 0;
 			}
@@ -1382,7 +1410,7 @@ namespace NMib
 					continue;
 				}
 
-				CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(EventPath, m_NotificationPath);
+				CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(EventPath, m_NotificationPath.m_UserPath);
 
 				//DMibConErrOut2("Change: {} = {nfh} - {}\n", EventPath, Flags, _IDs[i]);
 
@@ -1395,7 +1423,7 @@ namespace NMib
 						CStr ToFind = fg_Format("{}/*", EventPath);
 						for (auto &File : NFile::CFile::fs_FindFilesEx(ToFind, NFile::EFileAttrib_File | NFile::EFileAttrib_Directory, true, false))
 						{
-							CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(File.m_Path, m_NotificationPath);
+							CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(File.m_Path, m_NotificationPath.m_UserPath);
 							bool bIsDir = (File.m_Attribs & NFile::EFileAttrib_Directory) && !(File.m_Attribs & NFile::EFileAttrib_Link);
 							if (((m_Flags & NFile::EFileChange_DirectoryName) && bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !bIsDir))
 								f_AddNotification(FindChangesContext, EFileChangeNotification_Added, RelativePath);
@@ -1495,7 +1523,7 @@ namespace NMib
 
 		void CFileChangeNoticationContext::CNotification::f_InitialScan()
 		{
-			ch8 const *Paths[1] = {m_NotificationPath.f_GetStr()};
+			ch8 const *Paths[1] = {m_NotificationPath.m_UserPath.f_GetStr()};
 			FSEventStreamEventFlags const Flags[1] = {kFSEventStreamEventFlagMustScanSubDirs};
 			FSEventStreamEventId const IDs[1] = {1};
 
@@ -1504,7 +1532,7 @@ namespace NMib
 
 		void CFileChangeNoticationContext::CNotification::f_FullRescan()
 		{
-			ch8 const *Paths[1] = {m_NotificationPath.f_GetStr()};
+			ch8 const *Paths[1] = {m_NotificationPath.m_UserPath.f_GetStr()};
 			FSEventStreamEventFlags const Flags[1] = {kFSEventStreamEventFlagMustScanSubDirs};
 			FSEventStreamEventId const IDs[1] = {1};
 
@@ -1663,6 +1691,7 @@ namespace NMib
 			if (!NMib::NFile::CFile::fs_FileExists(NotificationPath, EFileAttrib_Directory))
 				DMibErrorFile("Open file notification: Directory '{}' does not exist");
 
+			CStr UserPath = NotificationPath;
 			NotificationPath = fg_GetRealPathName(NotificationPath); // Account for lower/upper case
 
 			CFStringRef WatchPath = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)NotificationPath.f_GetStr(), NotificationPath.f_GetLen(), kCFStringEncodingUTF8, false);
@@ -1694,9 +1723,30 @@ namespace NMib
 				)
 			;
 
+			CStr SyntheticPath = NotificationPath;
+
+			for (auto &Source : m_SyntheticPaths)
+			{
+				auto &Destination = m_SyntheticPaths.fs_GetKey(Source);
+				if (NotificationPath == Source)
+				{
+					SyntheticPath = Destination;
+					break;
+				}
+				else if (NotificationPath.f_StartsWith(Source + "/"))
+				{
+					SyntheticPath = Destination / NotificationPath.f_Extract(Source.f_GetLen() + 1);
+					break;
+				}
+			}
+
 			NStorage::TCSharedPointer<CNotification> pNotification = fg_Construct(this);
-			pNotification->m_NotificationPath = NotificationPath;
-			pNotification->m_NotificationPathCompare = NotificationPath + "/";
+			pNotification->m_NotificationPath.m_UserPath = UserPath;
+			pNotification->m_NotificationPath.m_ResolvedPath = NotificationPath;
+			pNotification->m_NotificationPath.m_SyntheticPath = SyntheticPath;
+			pNotification->m_NotificationPathCompare.m_UserPath = UserPath + "/";
+			pNotification->m_NotificationPathCompare.m_ResolvedPath = NotificationPath + "/";
+			pNotification->m_NotificationPathCompare.m_SyntheticPath = SyntheticPath + "/";
 
 			FSEventStreamContext CallbackContext;
 			CallbackContext.version = 0;

@@ -119,6 +119,13 @@ namespace NMib
 
 				using CSnapshotsByNode = NContainer::TCMap<CFileKey, DMibListLinkDS_List(CFileSnapshot, m_LinkNode)>;
 
+				struct CNotificationPath
+				{
+					NStr::CStr m_UserPath;
+					NStr::CStr m_ResolvedPath;
+					NStr::CStr m_SyntheticPath;
+				};
+
 				struct CUpdateSnapshotContext
 				{
 					CUpdateSnapshotContext
@@ -126,7 +133,7 @@ namespace NMib
 							CSnapshotsByNode &_SnapshotsByNode
 							, CSnapshotsByNode &_OldSnapshotsByNode
 							, uint64 _UpdateSequence
-						 	, NStr::CStr const &_NotificationPath
+						 	, CNotificationPath const &_NotificationPath
 						)
 						: m_SnapshotsByNode(_SnapshotsByNode)
 						, m_OldSnapshotsByNode(_OldSnapshotsByNode)
@@ -138,7 +145,7 @@ namespace NMib
 					CSnapshotsByNode &m_SnapshotsByNode;
 					CSnapshotsByNode &m_OldSnapshotsByNode;
 					uint64 m_UpdateSequence;
-					NStr::CStr m_NotificationPath;
+					CNotificationPath const &m_NotificationPath;
 
 					NContainer::TCMap<NStr::CStr, zbool> m_DirsToUpdate;
 					NContainer::TCMap<NStr::CStr, zbool> m_ChangedPaths;
@@ -191,8 +198,8 @@ namespace NMib
 				FSEventStreamRef m_pEventStream;
 				CFileChangeNoticationContext *m_pContext;
 				NMib::NFile::EFileChange m_Flags;
-				NMib::NStr::CStr m_NotificationPath;
-				NMib::NStr::CStr m_NotificationPathCompare;
+				CNotificationPath m_NotificationPath;
+				CNotificationPath m_NotificationPathCompare;
 				NContainer::TCLinkedList<CChange> m_Changes;
 				NThread::CMutual m_ChangesLock;
 
@@ -233,6 +240,7 @@ namespace NMib
 			bool m_bDestroying = false;
 
 			NMib::NContainer::TCThreadSafeQueue<NMib::NFunction::TCFunctionMovable<void ()>> m_DispatchQueue;
+			NMib::NContainer::TCMap<NStr::CStr, NStr::CStr> m_SyntheticPaths;
 
 			void f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch);
 			void f_StartThread();
