@@ -78,7 +78,7 @@ Property
 		}
 		%Group "vs-tool"
 		{
-			!!GeneratorFamily VisualStudio
+			!!GeneratorFamily "VisualStudio"
 			/*
 			%File "c:/Program Files (x86)/MSBuild/Microsoft.Cpp/v4.0/V120/Platforms/Clang/*"
 			%Group "Props"
@@ -107,21 +107,21 @@ Property
 
 			%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/*.py"
 			%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/em*"
-			%Group tools
+			%Group "tools"
 			{
 				%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/tools/*.py"
 				%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/tools/*.js"
 			}
-			%Group Library
+			%Group "Library"
 			{
 				%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/src/*"
 			}
 		}*/
 		%Group "MSBuild Targets"
 		{
-			Compile.Type XML
+			Compile.Type "XML"
 			{
-				!GeneratorFamily VisualStudio
+				!GeneratorFamily "VisualStudio"
 			}
 			%File "VisualStudio/*.props"
 			%File "VisualStudio/*.targets"
@@ -133,7 +133,7 @@ Property
 			{
 				&
 				{
-					GeneratorFamily Xcode
+					GeneratorFamily "Xcode"
 				}
 				Property
 				{
@@ -148,7 +148,7 @@ Property
 					Name "@(IntermediateDirectoriesFile)"
 					Contents "@(IntermediateDirectoriesContents)"
 					Executable false
-					UnicodeBOM "true"
+					UnicodeBOM true
 				}
 				Compile
 				{
@@ -281,7 +281,7 @@ Property
 					{
 						&
 						{
-							GeneratorFamily Xcode
+							GeneratorFamily "Xcode"
 							!MalterlibDefaultCompiler true
 						}
 					}
@@ -306,7 +306,7 @@ Property
 					}
 					Executable true
 					UnixLineEnds "@(ScriptUnixLineEnds)"
-					UnicodeBOM "false"
+					UnicodeBOM false
 				}
 				Compile
 				{
@@ -326,7 +326,7 @@ Property
 
 %Group "~Automatic/Dependencies/Tool_GenerateBuildSystem"
 {
-	%Dependency Tool_GenerateBuildSystem
+	%Dependency "Tool_GenerateBuildSystem"
 	{
 		Dependency.Link false
 	}

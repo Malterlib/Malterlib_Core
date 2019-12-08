@@ -67,15 +67,15 @@
 			Property
 			{
 				Entity "Link"
-				Name LinkTimeCodeGeneration
+				Name "LinkTimeCodeGeneration"
 			}
 			%GeneratorSetting "Value"
 			{
 				Property
 				{
-					true UseLinkTimeCodeGeneration
-					Fast UseFastLinkTimeCodeGeneration
-					false Default
+					true "UseLinkTimeCodeGeneration"
+					Fast "UseFastLinkTimeCodeGeneration"
+					false "Default"
 				}
 			}
 		}
@@ -172,7 +172,7 @@
 			Property
 			{
 				Parent "PropertyGroup"
-				Name LocalDebuggerCommandArguments
+				Name "LocalDebuggerCommandArguments"
 			}
 			%GeneratorSetting "Properties"
 			{
@@ -190,7 +190,7 @@
 			Property
 			{
 				Parent "PropertyGroup"
-				Name LocalDebuggerCommand
+				Name "LocalDebuggerCommand"
 			}
 		}
 		%GeneratorSetting "RemoteDebuggerCommand"
@@ -198,7 +198,7 @@
 			Property
 			{
 				Parent "PropertyGroup"
-				Name RemoteDebuggerCommand
+				Name "RemoteDebuggerCommand"
 			}
 		}
 		%GeneratorSetting "LocalDebuggerWorkingDirectory"
@@ -206,7 +206,7 @@
 			Property
 			{
 				Parent "PropertyGroup"
-				Name LocalDebuggerWorkingDirectory
+				Name "LocalDebuggerWorkingDirectory"
 			}
 		}
 		%GeneratorSetting "RemoteDebuggerWorkingDirectory"
@@ -214,7 +214,7 @@
 			Property
 			{
 				Parent "PropertyGroup"
-				Name RemoteDebuggerWorkingDirectory
+				Name "RemoteDebuggerWorkingDirectory"
 			}
 		}
 	}
@@ -245,7 +245,7 @@
 			Property
 			{
 				Entity "Lib"
-				Name AdditionalOptions
+				Name "AdditionalOptions"
 				Substitute "{} %(Lib.AdditionalOptions)"
 			}
 		}
@@ -377,7 +377,7 @@
 			Property
 			{
 				Entity "Link"
-				Name AssemblyDebug
+				Name "AssemblyDebug"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -393,7 +393,7 @@
 			Property
 			{
 				Entity "Link"
-				Name EntryPointSymbol
+				Name "EntryPointSymbol"
 			}
 		}
 		%GeneratorSetting "DelaySign"
@@ -401,7 +401,7 @@
 			Property
 			{
 				Entity "Link"
-				Name DelaySign
+				Name "DelaySign"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -427,7 +427,7 @@
 			Property
 			{
 				Entity "Link"
-				Name IgnoreAllDefaultLibraries
+				Name "IgnoreAllDefaultLibraries"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -443,14 +443,14 @@
 			Property
 			{
 				Entity "Link"
-				Name GenerateDebugInformation
+				Name "GenerateDebugInformation"
 			}
 			%GeneratorSetting "Value"
 			{
 				Property
 				{
 					true true
-					DebugFastLink DebugFastLink
+					DebugFastLink "DebugFastLink"
 					false false
 				}
 			}
@@ -461,7 +461,7 @@
 			Property
 			{
 				Entity "Link"
-				Name DataExecutionPrevention
+				Name "DataExecutionPrevention"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -497,7 +497,7 @@
 			Property
 			{
 				Entity "Link"
-				Name RandomizedBaseAddress
+				Name "RandomizedBaseAddress"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -514,15 +514,15 @@
 			Property
 			{
 				Entity "Link"
-				Name Driver
+				Name "Driver"
 			}
 			%GeneratorSetting "Value"
 			{
 				Property
 				{
-					true Driver
-					UpOnly UpOnly
-					WDM WDM
+					true "Driver"
+					UpOnly "UpOnly"
+					WDM "WDM"
 				}
 			}
 		}
@@ -532,7 +532,7 @@
 			Property
 			{
 				Parent "PropertyGroup"
-				Name GenerateManifest
+				Name "GenerateManifest"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -548,7 +548,7 @@
 			Property
 			{
 				Parent "PropertyGroup"
-				Name IgnoreImportLibrary
+				Name "IgnoreImportLibrary"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -564,7 +564,7 @@
 			Property
 			{
 				Entity "Link"
-				Name AdditionalOptions
+				Name "AdditionalOptions"
 				Substitute "{} %(Link.AdditionalOptions)"
 			}
 		}
@@ -573,7 +573,7 @@
 			Property
 			{
 				Entity "Link"
-				Name LargeAddressAware
+				Name "LargeAddressAware"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -589,7 +589,7 @@
 			Property
 			{
 				Parent "PropertyGroup"
-				Name LinkIncremental
+				Name "LinkIncremental"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -613,7 +613,7 @@
 			Property
 			{
 				Entity "Link"
-				Name OptimizeReferences
+				Name "OptimizeReferences"
 			}
 			%GeneratorSetting "Value"
 			{

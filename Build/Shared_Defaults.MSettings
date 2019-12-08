@@ -12,15 +12,15 @@ Property
 	{
 		!!MalterlibTargetCustom ""
 	}
-    MalterlibDoExeFS "false"
+    MalterlibDoExeFS false
 	{
 		!!MalterlibDoExeFS ""
 	}
-    MalterlibUsesTranslation "false"
+    MalterlibUsesTranslation false
 	{
 		!!MalterlibUsesTranslation ""
 	}
-    MalterlibDoTranslationExeFS "false"
+    MalterlibDoTranslationExeFS false
 	{
 		!!MalterlibDoTranslationExeFS ""
 	}
@@ -28,7 +28,7 @@ Property
 	{
 		!!MalterlibStronglyNamedAssembly ""
 	}
-    MalterlibNotifyResult "false"
+    MalterlibNotifyResult false
 	{
 		!!MalterlibNotifyResult ""
 	}
@@ -64,23 +64,23 @@ Property
 	{
 		!!MalterlibPostCopyDestination3 ""
 	}
-    MalterlibConsoleApp "false"
+    MalterlibConsoleApp false
 	{
 		!!MalterlibConsoleApp ""
 	}
-    MalterlibQtSupport "false"
+    MalterlibQtSupport false
 	{
 		!!MalterlibQtSupport ""
 	}
-	MalterlibOutOfProcessSupport "false"
+	MalterlibOutOfProcessSupport false
 	{
 		!!MalterlibOutOfProcessSupport ""
 	}
-    MalterlibRWPropertyPages "false"
+    MalterlibRWPropertyPages false
 	{
 		!!MalterlibRWPropertyPages ""
 	}
-    MalterlibBuildSigning "true"
+    MalterlibBuildSigning true
 	{
 		&
 		{
@@ -88,7 +88,7 @@ Property
 			MalterlibBuildServerBuild true
 		}
 	}
-    MalterlibSigning "true"
+    MalterlibSigning true
 	{
 		&
 		{
@@ -98,7 +98,7 @@ Property
 		}
 	}
 
-	MalterlibNoOSXCrossModuleExceptions "true" // User(Undocumented)=false: Disables catching of exception across modules on OSX. This will bring in libunwind statically (default true)
+	MalterlibNoOSXCrossModuleExceptions true // User(Undocumented)=false: Disables catching of exception across modules on OSX. This will bring in libunwind statically (default true)
 	{
 		&
 		{
@@ -131,11 +131,11 @@ Property
 	{
 		!!MalterlibSharedDeployRoot ""
 	}
-    MalterlibSigning "false"
+    MalterlibSigning false
 	{
 		!!MalterlibSigning ""
 	}
-    MalterlibBuildSigning "false"
+    MalterlibBuildSigning false
 	{
 		!!MalterlibSigning ""
 	}
@@ -212,11 +212,11 @@ Property
 	{
 		!!MalterlibBreakpadReportInterval ""
 	}
-	MalterlibBreakpadRequestComments "true"
+	MalterlibBreakpadRequestComments true
 	{
 		!!MalterlibBreakpadRequestComments ""
 	}
-	MalterlibBreakpadRequestEmail "true"
+	MalterlibBreakpadRequestEmail true
 	{
 		!!MalterlibBreakpadRequestEmail ""
 	}
@@ -225,11 +225,11 @@ Property
 		!!MalterlibBreakpadPrivacyPolicyURL ""
 	}
 
-	MalterlibDriverSigning "true"
+	MalterlibDriverSigning true
 	{
 		!!MalterlibDriverSigning ""
 	}
-    MalterlibDeploySymbols "true"
+    MalterlibDeploySymbols true
 	{
 		&
 		{
@@ -247,7 +247,7 @@ Property
 			}
 		}
 	}
-    MalterlibDeploySymbols "false"
+    MalterlibDeploySymbols false
 	{
 		!!MalterlibDeploySymbols ""
 	}
@@ -255,44 +255,44 @@ Property
 	{
 		!!MalterlibLocalizationRoot ""
 	}
-	MalterlibBuildServerBuild "true"
+	MalterlibBuildServerBuild true
 	{
-		!!BUILDSERVER "TRUE"
+		!!BUILDSERVER true
 	}
-	MalterlibBuildServerBuild "false"
+	MalterlibBuildServerBuild false
 	{
 		!!MalterlibBuildServerBuild ""
 	}
 
-	MalterlibSupportSanitizers "false" // User(Debug): Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
+	MalterlibSupportSanitizers false // User(Debug): Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
 	{
 		!!MalterlibSupportSanitizers ""
 	}
 
-	MalterlibDefaultToolset "true"
+	MalterlibDefaultToolset true
 	{
 		&
 		{
 			MalterlibDefaultToolset ""
-			MalterlibSupportSanitizers "true"
+			MalterlibSupportSanitizers true
 		}
 	}
 
-	MalterlibDefaultToolset "false" // User(Undocumented)=true: Use default Xcode toolset with no custom modifications to libc++ or clang
+	MalterlibDefaultToolset false // User(Undocumented)=true: Use default Xcode toolset with no custom modifications to libc++ or clang
 	{
 		!!MalterlibDefaultToolset ""
 	}
 
-	MalterlibDefaultCompiler "false" // User(Undocumented)=true: Use default Xcode compiler
+	MalterlibDefaultCompiler false // User(Undocumented)=true: Use default Xcode compiler
 	{
 		&
 		{
 			MalterlibDefaultCompiler ""
-			PlatformFamily Linux
+			PlatformFamily "Linux"
 		}
 	}
 
-	MalterlibDefaultCompiler "true"
+	MalterlibDefaultCompiler true
 	{
 		&
 		{
@@ -301,26 +301,26 @@ Property
 		}
 	}
 
-	MalterlibDefaultCompiler "false"
+	MalterlibDefaultCompiler false
 	{
 		!!MalterlibDefaultCompiler ""
 	}
 
-	MalterlibCustomCompilerOptions "true"
+	MalterlibCustomCompilerOptions true
 	{
 		&
 		{
 			MalterlibCustomCompilerOptions ""
-			PlatformFamily Linux
+			PlatformFamily "Linux"
 		}
 	}
 
-	MalterlibCustomCompilerOptions "false" // User(Undocumented)=true: Use custom compiler options only available in patched compiler
+	MalterlibCustomCompilerOptions false // User(Undocumented)=true: Use custom compiler options only available in patched compiler
 	{
 		!!MalterlibCustomCompilerOptions ""
 	}
 
-	MalterlibDefaultXcode "true" // User(Undocumented)=false: Use default Xcode clang compiler specifications
+	MalterlibDefaultXcode true // User(Undocumented)=false: Use default Xcode clang compiler specifications
 	{
 		!!MalterlibDefaultXcode ""
 	}
@@ -397,7 +397,7 @@ Property
 		!!MalterlibMemoryManager ""
 	}
 
-	MalterlibMemoryManager_AlwaysRelease "true" // User(Memory Manager)=false: Enable memory manager to always be compile as if release config (default true)
+	MalterlibMemoryManager_AlwaysRelease true // User(Memory Manager)=false: Enable memory manager to always be compile as if release config (default true)
 	{
 		&
 		{
@@ -453,9 +453,9 @@ Property
 			MalterlibMemoryManager_OverrideSystemMalloc ""
 			|
 			{
-				PlatformFamily OSX
-				PlatformFamily Linux
-				PlatformFamily Windows
+				PlatformFamily "OSX"
+				PlatformFamily "Linux"
+				PlatformFamily "Windows"
 			}
 		}
 	}
@@ -477,15 +477,15 @@ Property
 	{
 		!!PlatformFamily "Windows"
 	}
-	MalterlibDisableBuildSystemGeneration "true"
+	MalterlibDisableBuildSystemGeneration true
 	{
 		&
 		{
 			MalterlibDisableBuildSystemGeneration ""
-			MalterlibBuildServerBuild "true"
+			MalterlibBuildServerBuild true
 		}
 	}
-	MalterlibEnableBreakpadUploader "false"
+	MalterlibEnableBreakpadUploader false
 	{
 		!!MalterlibEnableBreakpad ""
 	}
@@ -499,7 +499,7 @@ Property
 	}
 	/*
 	// TODO: Enable when supported
-	MalterlibEnableBreakpad "true"
+	MalterlibEnableBreakpad true
 	{
 		&
 		{
@@ -520,11 +520,11 @@ Property
 	{
 		!!Malterlib_AssumeMalterlibHost ""
 	}
-	Malterlib_LinuxInitInPreInitArray "false" // User: Init before other shared libraries has been initialized. This can cause problems in some GLIBC versions
+	Malterlib_LinuxInitInPreInitArray false // User: Init before other shared libraries has been initialized. This can cause problems in some GLIBC versions
 	{
 		!!Malterlib_LinuxInitInPreInitArray ""
 	}
-	Malterlib_LinuxLinker lld // User(Toolset)=gold: Which linker to use on linux. Defaults to lld
+	Malterlib_LinuxLinker "lld" // User(Toolset)="gold": Which linker to use on linux. Defaults to lld
 	{
 		!!Malterlib_LinuxLinker ""
 	}

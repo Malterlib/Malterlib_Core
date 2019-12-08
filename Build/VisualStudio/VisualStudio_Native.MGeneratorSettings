@@ -47,14 +47,14 @@
 			{
 				Property
 				{
-					Executable Application
-					ConsoleExecutable Application
-					UIExecutable Application
-					Driver Application
-					DynamicLibrary DynamicLibrary
-					SharedDynamicLibrary DynamicLibrary
-					StaticLibrary StaticLibrary
-					Tool Makefile
+					Executable "Application"
+					ConsoleExecutable "Application"
+					UIExecutable "Application"
+					Driver "Application"
+					DynamicLibrary "DynamicLibrary"
+					SharedDynamicLibrary "DynamicLibrary"
+					StaticLibrary "StaticLibrary"
+					Tool "Makefile"
 				}
 			}
 		}
@@ -224,23 +224,23 @@
 			{
 				Property
 				{
-					C++ ClCompile
-					C++Managed ClCompile
-					C ClCompile
-					Header ClInclude
-					None None
-					Assembler MASM
-					AssemblerNasm YASM
-					QtRcc QtRcc
-					QtMoc QtMoc
-					QtUic QtUic
-					MlTwk MlTwk
-					MalterlibFS MalterlibFS
-					WindowsResource ResourceCompile
-					MSBuildTargets None
-					ShellScript None
-					VisualStudioVisualizer Natvis
-					Custom CustomBuild
+					C++ "ClCompile"
+					C++Managed "ClCompile"
+					C "ClCompile"
+					Header "ClInclude"
+					None "None"
+					Assembler "MASM"
+					AssemblerNasm "YASM"
+					QtRcc "QtRcc"
+					QtMoc "QtMoc"
+					QtUic "QtUic"
+					MlTwk "MlTwk"
+					MalterlibFS "MalterlibFS"
+					WindowsResource "ResourceCompile"
+					MSBuildTargets "None"
+					ShellScript "None"
+					VisualStudioVisualizer "Natvis"
+					Custom "CustomBuild"
 				}
 			}
 		}

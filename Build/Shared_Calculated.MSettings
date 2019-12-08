@@ -26,7 +26,7 @@ Property
 		&
 		{
 			Property.true "@(Builtin.Function->HasParentEntity('Target'))"
-			Target:Target.Language C#
+			Target:Target.Language "C#"
 		}
 	}
 }
@@ -132,8 +132,8 @@ Property
 	
 	PlatformIsDarwin true
 	{
-		!!PlatformFamily OSX
-		!!PlatformFamily iOS
+		!!PlatformFamily "OSX"
+		!!PlatformFamily "iOS"
 	}
 	
 	RealConfiguration "@(Configuration)"
@@ -142,7 +142,7 @@ Property
 	
 	DocumentationEnabled true
 	{
-		!!Documentation Doxygen
+		!!Documentation "Doxygen"
 	}
 	
 	// Config
@@ -207,8 +207,8 @@ Property
 		!!PlatformType "Unix"
 	}
 	
-	ScriptUnixLineEnds "false"
-	ScriptUnixLineEnds "true"
+	ScriptUnixLineEnds false
+	ScriptUnixLineEnds true
 	{
 		!!PlatformType "Unix"
 	}
@@ -221,18 +221,18 @@ Property
 
 	BashScriptPrefix "\"C:/Program Files/Git/bin/bash.exe\" "
 	{
-		!!PlatformFamily Windows
+		!!PlatformFamily "Windows"
 	}
 }
 Property
 {
-	DebugCompiler "true"
+	DebugCompiler true
 	{
 		!!Configuration "Debug"
 		!!Configuration "Debug Inlined"
 		!!Configuration "Fast Compile"
 	}
-	DebugCompiler "false"
+	DebugCompiler false
 	{
 		!!Configuration "Debug Optimized"
 		!!Configuration "Profile"
@@ -242,13 +242,13 @@ Property
 		!!Configuration "Release Testing"
 		!!Configuration "Release Debug"
 	}
-	RealDebugCompiler "true"
+	RealDebugCompiler true
 	{
 		!!RealConfiguration "Debug"
 		!!RealConfiguration "Debug Inlined"
 		!!RealConfiguration "Fast Compile"
 	}
-	RealDebugCompiler "false"
+	RealDebugCompiler false
 	{
 		!!RealConfiguration "Debug Optimized"
 		!!RealConfiguration "Profile"
@@ -321,13 +321,13 @@ Property
 		!!PlatformToolsetFamily "clang"
 	}
 
-	WindowsNativeToolChain "true" // Visual Studio 2013 supports native toolchain for all targets
+	WindowsNativeToolChain true // Visual Studio 2013 supports native toolchain for all targets
 }
 
 Property
 {
-	ExplicitTests "false"
-	ExplicitTests "true"
+	ExplicitTests false
+	ExplicitTests true
 	{
 		!!Configuration "Profile"
 		!!Configuration "Release"
@@ -337,14 +337,14 @@ Property
 
 Property
 {
-	DebugCode "true"
+	DebugCode true
 	{
 		!!Configuration "Debug"
 		!!Configuration "Debug Inlined"
 		!!Configuration "Debug Optimized"
 		!!Configuration "Fast Compile"
 	}
-	DebugCode "false"
+	DebugCode false
 	{
 		!!DebugCode ""
 	}
@@ -477,30 +477,30 @@ Property
 Property
 {
 	
-	MalterlibIsOSXBundle "false"
-	MalterlibIsOSXBundle "true"
+	MalterlibIsOSXBundle false
+	MalterlibIsOSXBundle true
 	{
 		&
 		{
 			PlatformIsDarwin true
 			|
 			{
-				Target.Type UIExecutable
-				Target.Type XcodeBundle
-				Target.Type Driver
+				Target.Type "UIExecutable"
+				Target.Type "XcodeBundle"
+				Target.Type "Driver"
 			}
 		}
 		
 	}
-	MalterlibOSXHideDockTile "true"
+	MalterlibOSXHideDockTile true
 	{
 		&
 		{
 			MalterlibOSXHideDockTile ""
-			PlatformFamily OSX
+			PlatformFamily "OSX"
 			TargetIsExecutable true
-			!Target.Type UIExecutable
-			!Target.Type XcodeBundle
+			!Target.Type "UIExecutable"
+			!Target.Type "XcodeBundle"
 		}
 	}
 }
@@ -539,7 +539,7 @@ Property
 	{
 		&
 		{
-			PlatformFamily Windows
+			PlatformFamily "Windows"
 			MalterlibDebugLibrariesFolderName "Debug"
 		}
 	}
@@ -576,99 +576,99 @@ Property
 		!!DocumentationEnabled true
 	}
 
-	Malterlib_RefcountDebugging_Enable "false" // User(Debug)=true: Set to true to enable shared pointer reference debugging
+	Malterlib_RefcountDebugging_Enable false // User(Debug)=true: Set to true to enable shared pointer reference debugging
 	{
 		!!Malterlib_RefcountDebugging_Enable ""
 	}
 
-	Malterlib_Tests_Enable "false"
+	Malterlib_Tests_Enable false
 	{
 		&
 		{
 			Malterlib_Tests_Enable ""
-			DebugCode "false"
+			DebugCode false
 			!Tests "Tests"
 			!Tests "Perf Tests"
 		}
 	}
-	Malterlib_Tests_Enable "true" // User(Tests)=true: Force enable or disable of tests (set to true or false)
+	Malterlib_Tests_Enable true // User(Tests)=true: Force enable or disable of tests (set to true or false)
 	{
 		!!Malterlib_Tests_Enable ""
 	}
 
-	Malterlib_Contracts_Enable "false"
+	Malterlib_Contracts_Enable false
 	{
 		&
 		{
 			Malterlib_Contracts_Enable ""
-			DebugCode "false"
+			DebugCode false
 			!Configuration "Release Testing"
 			!Tests "Tests"
 		}
 	}
-	Malterlib_Contracts_Enable "true" // User(Debug)=false: Force enable or disable of contracts (set to true or false)
+	Malterlib_Contracts_Enable true // User(Debug)=false: Force enable or disable of contracts (set to true or false)
 	{
 		!!Malterlib_Contracts_Enable ""
 	}
-	MalterlibMemory_Shims_Enable "false"
+	MalterlibMemory_Shims_Enable false
 	{
 		&
 		{
 			MalterlibMemory_Shims_Enable ""
-			DebugCode "false"
+			DebugCode false
 		}
 	}
-	MalterlibMemory_Shims_Enable "true" // User(Debug): Force enable or disable of memory shims (set to true or false). Also used for enabling remote debugger support currently
+	MalterlibMemory_Shims_Enable true // User(Debug): Force enable or disable of memory shims (set to true or false). Also used for enabling remote debugger support currently
 	{
 		!!MalterlibMemory_Shims_Enable ""
 	}
 
-	MalterlibMemory_Shims_EnableLocal "false"
+	MalterlibMemory_Shims_EnableLocal false
 	{
 		&
 		{
 			MalterlibMemory_Shims_EnableLocal ""
-			DebugCode "false"
+			DebugCode false
 			!Tests "Tests"
 		}
 	}
-	MalterlibMemory_Shims_EnableLocal "true" // User(Debug)=false: Enable thread local memory reporters. Used in for example tests to track memory in local scopes
+	MalterlibMemory_Shims_EnableLocal true // User(Debug)=false: Enable thread local memory reporters. Used in for example tests to track memory in local scopes
 	{
 		!!MalterlibMemory_Shims_EnableLocal ""
 	}
 
-	MalterlibMemory_Shims_Lightweight "false" // User(Debug)=true: Enable lightweight thread local memory reporters for main memory manager only.
+	MalterlibMemory_Shims_Lightweight false // User(Debug)=true: Enable lightweight thread local memory reporters for main memory manager only.
 	{
 		!!MalterlibMemory_Shims_Lightweight ""
 	}
 
-	MalterlibMemory_Shims_EnableGlobal "true" // User(Debug)=false: Enable global memory reporter. Used for for example remote debugger support
+	MalterlibMemory_Shims_EnableGlobal true // User(Debug)=false: Enable global memory reporter. Used for for example remote debugger support
 	{
 		!!MalterlibMemory_Shims_EnableGlobal ""
 	}
 
-	MalterlibMemoryManager_Stats_Enable "false" // User(Memory Manager)=true: Report statistics about memory allocations at the end of the program
+	MalterlibMemoryManager_Stats_Enable false // User(Memory Manager)=true: Report statistics about memory allocations at the end of the program
 	{
 		!!MalterlibMemoryManager_Stats_Enable ""
 	}
 
-	MalterlibMemoryManager_CrossModule_Enable	"true" // User(Memory Manager)=false: Enables cross module memory manager that shares the memory manager in all dlls with the executables memory manager
+	MalterlibMemoryManager_CrossModule_Enable	true // User(Memory Manager)=false: Enables cross module memory manager that shares the memory manager in all dlls with the executables memory manager
 	{
 		!!MalterlibMemoryManager_CrossModule_Enable ""
 	}
 
-	MalterlibMemoryManager_HugePage_Enable	"false" // User(Memory Manager)=true: Enables transparent huge page support on Linux
+	MalterlibMemoryManager_HugePage_Enable	false // User(Memory Manager)=true: Enables transparent huge page support on Linux
 	{
 		!!MalterlibMemoryManager_HugePage_Enable ""
 	}
 
-	MalterlibMemoryManager_Stats_EnableCallstack "false" // User(Memory Manager)=true: Dump statistics about memory allocations callstacks
+	MalterlibMemoryManager_Stats_EnableCallstack false // User(Memory Manager)=true: Dump statistics about memory allocations callstacks
 	{
 		!!MalterlibMemoryManager_Stats_EnableCallstack ""
 	}
 
 
-	MalterlibMemoryManager_Debug "true"
+	MalterlibMemoryManager_Debug true
 	{
 		&
 		{
@@ -676,7 +676,7 @@ Property
 			DebugCode true
 		}
 	}
-	MalterlibMemoryManager_Stats_EnableCategories "false" // User(Memory Manager)=true: Dump statistics about memory allocations through categories
+	MalterlibMemoryManager_Stats_EnableCategories false // User(Memory Manager)=true: Dump statistics about memory allocations through categories
 	{
 		!!MalterlibMemoryManager_Stats_EnableCategories ""
 	}

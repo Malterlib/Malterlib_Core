@@ -11,7 +11,7 @@ Property.MalterlibModules "Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Co
 	Property.RepoName "@(this.Identity).git"
 	Repository
 	{
-		Type Malterlib
+		Type "Malterlib"
 		Location "@('../../SDK'->MakeAbsolute())"
 		URL "@(Repository.MalterlibRoot)/@(RepoName)"
 		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
@@ -45,7 +45,7 @@ Property
 	Property.RepoName "@(this.Identity).git"
 	Repository
 	{
-		Type Malterlib
+		Type "Malterlib"
 
 		Location "@(MalterlibSharedBinariesRoot)/Malterlib_Linux"
 		URL "@(Repository.MalterlibRoot)/@(RepoName)"

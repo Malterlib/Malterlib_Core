@@ -11,7 +11,7 @@ Property
 	Target
 	{
 		FileName "MalterlibExport"
-		Type StaticLibrary
+		Type "StaticLibrary"
 	}
 	%Dependency "Lib_zlib"
 	%Dependency "Lib_Malterlib"
@@ -35,43 +35,43 @@ Property
 			Documentation ""
 			|
 			{
-				PlatformFamily Windows
+				PlatformFamily "Windows"
 				MalterlibUseStaticLibCxx true
 			}
 		}
-		Dependency.LinkWithObjectFiles "false"
+		Dependency.LinkWithObjectFiles false
 	}
 
-	%Group Source
+	%Group "Source"
 	{
 		%Group "C"
 		{
 			%File "Export/Malterlib_Core_Export_C"
 			{
-				Compile.Type C
+				Compile.Type "C"
 			}
 		}
 		%Group "C++"
 		{
 			%File "Export/Malterlib_Core_Export_C++"
 			{
-				Compile.Type C++
+				Compile.Type "C++"
 			}
 		}
 		%Group "ObjC"
 		{
-			!!PlatformFamily OSX
+			!!PlatformFamily "OSX"
 			%File "Export/Malterlib_Core_Export_ObjC"
 			{
-				Compile.Type ObjC
+				Compile.Type "ObjC"
 			}
 		}
 		%Group "ObjC++"
 		{
-			!!PlatformFamily OSX
+			!!PlatformFamily "OSX"
 			%File "Export/Malterlib_Core_Export_ObjC++"
 			{
-				Compile.Type ObjC++
+				Compile.Type "ObjC++"
 			}
 		}
 	}
@@ -81,7 +81,7 @@ Property
 		MalterlibExportCompileFlagsTypes "C;C++;@(MalterlibExportCompileFlagsTypes)"
 		MalterlibExportCompileFlagsTypes "ObjC;ObjC++;@(MalterlibExportCompileFlagsTypes)"
 		{
-			!!PlatformFamily OSX
+			!!PlatformFamily "OSX"
 		}
 	}
 
@@ -234,9 +234,9 @@ Property
 {
 	Target
 	{
-		Name Lib_Malterlib_Export_Exe
+		Name "Lib_Malterlib_Export_Exe"
 		FileName "libc++"
-		Type StaticLibrary
+		Type "StaticLibrary"
 	}
 	%Dependency "Malterlib_Export=Lib_Malterlib_Export"
 	%Dependency "Lib_MalterlibExecutable"
@@ -249,9 +249,9 @@ Property
 {
 	Target
 	{
-		Name Lib_Malterlib_Export_Dll
+		Name "Lib_Malterlib_Export_Dll"
 		FileName "libc++"
-		Type StaticLibrary
+		Type "StaticLibrary"
 	}
 	%Dependency "Malterlib_Export=Lib_Malterlib_Export"
 	%Dependency "Lib_MalterlibDll"
@@ -264,16 +264,16 @@ Property
 {
 	Target
 	{
-		Name Exe_Malterlib_Export_Exe
-		Type ConsoleExecutable
+		Name "Exe_Malterlib_Export_Exe"
+		Type "ConsoleExecutable"
 		GenerateScheme true
 		{
-			!!GeneratorFamily Xcode
+			!!GeneratorFamily "Xcode"
 		}
 	}
 	%Dependency "Lib_Malterlib"
 
-	%Group Source
+	%Group "Source"
 	{
 		%File "Export/Malterlib_Core_Export_Executable.cpp"
 	}
@@ -283,16 +283,16 @@ Property
 {
 	Target
 	{
-		Name Exe_Malterlib_Export_NoExe
-		Type ConsoleExecutable
+		Name "Exe_Malterlib_Export_NoExe"
+		Type "ConsoleExecutable"
 		GenerateScheme true
 		{
-			!!GeneratorFamily Xcode
+			!!GeneratorFamily "Xcode"
 		}
 	}
 	%Dependency "Lib_Malterlib"
 
-	%Group Source
+	%Group "Source"
 	{
 		%File "Export/Malterlib_Core_Export_NoExecutable.cpp"
 		%File "Export/Malterlib_Core_Export_NoExecutableMain.cpp"
@@ -303,16 +303,16 @@ Property
 {
 	Target
 	{
-		Name Dll_Malterlib_Export_Dll
-		Type DynamicLibrary
+		Name "Dll_Malterlib_Export_Dll"
+		Type "DynamicLibrary"
 		GenerateScheme true
 		{
-			!!GeneratorFamily Xcode
+			!!GeneratorFamily "Xcode"
 		}
 	}
 	%Dependency "Lib_Malterlib"
 
-	%Group Source
+	%Group "Source"
 	{
 		%File "Export/Malterlib_Core_Export_Executable.cpp"
 	}

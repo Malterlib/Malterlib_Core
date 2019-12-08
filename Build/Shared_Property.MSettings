@@ -161,10 +161,10 @@ Property
 			Property.MalterlibTargetNameType ""
 			|
 			{
-				Target.Type StaticLibrary
-				Target.Type DynamicLibrary
-				Target.Type XcodeBundle
-				Target.Type SharedDynamicLibrary
+				Target.Type "StaticLibrary"
+				Target.Type "DynamicLibrary"
+				Target.Type "XcodeBundle"
+				Target.Type "SharedDynamicLibrary"
 			}
 		}
 	}
@@ -172,7 +172,7 @@ Property
 	{
 		&
 		{
-			PlatformFamily Windows
+			PlatformFamily "Windows"
 			Property.MalterlibTargetNameType ""
 		}
 	}
@@ -180,30 +180,30 @@ Property
 	{
 		&
 		{
-			!PlatformFamily Windows
+			!PlatformFamily "Windows"
 			Property.MalterlibTargetNameType ""
 		}
 	}
 
-	MalterlibGenerateLibrary "true"
+	MalterlibGenerateLibrary true
 	{
 		!!MalterlibGenerateLibrary ""
 	}
 
-	MalterlibGenerateLibrary "false"
+	MalterlibGenerateLibrary false
 	{
 		&
 		{
 			MalterlibGenerateLibrary ""
-			DebugCompiler "true"
+			DebugCompiler true
 		}
 	}
-	MalterlibGenerateLibrary "true"
+	MalterlibGenerateLibrary true
 	{
 		&
 		{
 			MalterlibGenerateLibrary ""
-			DebugCompiler "false"
+			DebugCompiler false
 		}
 	}
 }

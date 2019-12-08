@@ -62,17 +62,17 @@
 			{
 				Property
 				{
-					Off NotSet
-					MMX MMX
-					SSE1 SSE1
-					SSE2 SSE2
-					SSE3 SSE3
-					SSSE3 SSSE3
-					SSE4 SSE4
-					SSE4.1 SSE4.1
-					SSE4.2 SSE4.2
-					AVX AVX
-					AVX2 AVX2
+					Off "NotSet"
+					MMX "MMX"
+					SSE1 "SSE1"
+					SSE2 "SSE2"
+					SSE3 "SSE3"
+					SSSE3 "SSSE3"
+					SSE4 "SSE4"
+					SSE4.1 "SSE4.1"
+					SSE4.2 "SSE4.2"
+					AVX "AVX"
+					AVX2 "AVX2"
 				}
 			}
 		}
@@ -94,9 +94,9 @@
 			{
 				Property
 				{
-					Off Off
-					Explicit On
-					Automatic On
+					Off "Off"
+					Explicit "On"
+					Automatic "On"
 				}
 			}
 		}
@@ -184,10 +184,10 @@
 			{
 				Property
 				{
-					Off DisableAllWarnings
-					Minimal DisableAllWarnings
-					On NormalWarnings
-					Pedantic AllWarnings
+					Off "DisableAllWarnings"
+					Minimal "DisableAllWarnings"
+					On "NormalWarnings"
+					Pedantic "AllWarnings"
 				}
 			}
 		}
@@ -223,9 +223,9 @@
 			{
 				Property
 				{
-					true VerboseOutputMode
-					false NoVerboseOutput
-					"" NoVerboseOutput
+					true "VerboseOutputMode"
+					false "NoVerboseOutput"
+					"" "NoVerboseOutput"
 				}
 			}
 		}

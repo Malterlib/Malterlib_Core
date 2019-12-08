@@ -49,9 +49,9 @@
 			{
 				Property
 				{
-					Cdecl Cdecl
-					StdCall StdCall
-					FastCall FastCall
+					Cdecl "Cdecl"
+					StdCall "StdCall"
+					FastCall "FastCall"
 				}
 			}
 		}
@@ -141,10 +141,10 @@
 			{
 				Property
 				{
-					Off TurnOffAllWarnings
-					Minimal Level1
-					On Level3
-					Pedantic Level4
+					Off "TurnOffAllWarnings"
+					Minimal "Level1"
+					On "Level3"
+					Pedantic "Level4"
 				}
 			}
 		}
@@ -347,8 +347,8 @@
 			{
 				Property
 				{
-					Precise Precise
-					Strict Strict
+					Precise "Precise"
+					Strict "Strict"
 				}
 			}
 		}
@@ -392,12 +392,12 @@
 			{
 				Property
 				{
-					Off NoExtensions
-					SSE1 StreamingSIMDExtensions
-					SSE2 StreamingSIMDExtensions2
-					SSE3 StreamingSIMDExtensions2 // Only SSE2 is supported
-					AVX AdvancedVectorExtensions
-					AVX2 AdvancedVectorExtensions2
+					Off "NoExtensions"
+					SSE1 "StreamingSIMDExtensions"
+					SSE2 "StreamingSIMDExtensions2"
+					SSE3 "StreamingSIMDExtensions2" // Only SSE2 is supported
+					AVX "AdvancedVectorExtensions"
+					AVX2 "AdvancedVectorExtensions2"
 				}
 			}
 		}
@@ -411,10 +411,10 @@
 			{
 				Property
 				{
-					Static MultiThreaded
-					StaticDebug MultiThreadedDebug
-					Dynamic MultiThreadedDLL
-					DynamicDebug MultiThreadedDebugDLL
+					Static "MultiThreaded"
+					StaticDebug "MultiThreadedDebug"
+					Dynamic "MultiThreadedDLL"
+					DynamicDebug "MultiThreadedDebugDLL"
 				}
 			}
 		}
@@ -428,12 +428,12 @@
 			{
 				Property
 				{
-					Default Default
-					1 1Byte
-					2 2Bytes
-					4 4Bytes
-					8 8Bytes
-					16 16Bytes
+					Default "Default"
+					1 "1Byte"
+					2 "2Bytes"
+					4 "4Bytes"
+					8 "8Bytes"
+					16 "16Bytes"
 				}
 			}
 		}		
@@ -583,10 +583,10 @@
 			{
 				Property
 				{
-					Off Disabled
-					On Full
-					Fast Full
-					Full Full
+					Off "Disabled"
+					On "Full"
+					Fast "Full"
+					Full "Full"
 				}
 			}
 		}
@@ -674,9 +674,9 @@
 			{
 				Property
 				{
-					Off Disabled
-					Explicit OnlyExplicitInline
-					Automatic AnySuitable
+					Off "Disabled"
+					Explicit "OnlyExplicitInline"
+					Automatic "AnySuitable"
 				}
 			}
 		}

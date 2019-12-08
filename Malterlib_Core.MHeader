@@ -15,7 +15,7 @@ Property.HasLLVMRepository true
 
 	Repository
 	{
-		Type External
+		Type "External"
 		Remotes "upstream=https://github.com/llvm/llvm-project;@(Repository.Remotes)"
 		DefaultUpstreamBranch "@(MalterlibClangUpstreamBranch)"
 		Tags "llvm"
@@ -29,9 +29,9 @@ Import "Lib_Malterlib.MTarget"
 
 %Group "{Malterlib}/{Lib_Malterlib_Core}"
 {
-	%Group Core
+	%Group "Core"
 	{
-		%Group Include
+		%Group "Include"
 		{
 			Compile.Type "C++"
 			{
@@ -40,7 +40,7 @@ Import "Lib_Malterlib.MTarget"
 			%File "Include/Mib/Core/^*"
 		}
 		%File "Source/*"
-		%Group Platform
+		%Group "Platform"
 		{
 			%File "Source/Platform/*"
 			{
@@ -50,19 +50,19 @@ Import "Lib_Malterlib.MTarget"
 				}
 			}
 		}
-		%Group Documentation
+		%Group "Documentation"
 		{
 			%File "Documentation/*"
 		}
-		%Group Build
+		%Group "Build"
 		{
 			%File "Build/*.sh"
-			%Group XcodeSpecifications
+			%Group "XcodeSpecifications"
 			{
 				%File "Build/Xcode/Specifications/^*"
 			}
 		}
-		%Group BuildScripts
+		%Group "BuildScripts"
 		{
 			%File "BuildScripts/*"
 		}
@@ -85,7 +85,7 @@ Import "Lib_Malterlib.MTarget"
 	{
 		|
 		{
-			GeneratorFamily VisualStudio
+			GeneratorFamily "VisualStudio"
 			DebugCompiler true
 		}
 		!!MalterlibSubLibrarySeparate true
@@ -100,13 +100,13 @@ Import "Lib_Malterlib.MTarget"
 		&
 		{
 			!MalterlibIncludeRoots ""
-			MalterlibIncludeLevel Workspace
+			MalterlibIncludeLevel "Workspace"
 		}
 		ExtraGroups "~Automatic/Include Roots;@(Target.ExtraGroups)"
 	}
 	Target
 	{
-		!!GeneratorFamily Xcode
+		!!GeneratorFamily "Xcode"
 		ExtraGroups "~Automatic/Xcode Specifications;@(Target.ExtraGroups)"
 	}
 	Target
@@ -114,13 +114,13 @@ Import "Lib_Malterlib.MTarget"
 		&
 		{
 			!MalterlibBoostModules ""
-			MalterlibIncludeLevel Workspace
+			MalterlibIncludeLevel "Workspace"
 		}
 		ExtraGroups "~Automatic/Boost Include Roots;@(Target.ExtraGroups)"
 		|
 		{
 			MalterlibIncludePerConfig true
-			Config Debug
+			Config "Debug"
 		}
 	}
 }
@@ -148,7 +148,7 @@ Property
 	}
 	MalterlibSubLibrarySeparate true
 	{
-		!!Documentation Doxygen
+		!!Documentation "Doxygen"
 	}
 }
 
@@ -180,18 +180,18 @@ Property
 	}
 	Property
 	{
-		DocumentationModule Malterlib
+		DocumentationModule "Malterlib"
 	}
 	Target
 	{
 		ExtraGroups "{Malterlib}/{@(Target:this.Identity)};@(Target.ExtraGroups)"
 		Name "@(Target:this.Identity)"
-		Type StaticLibrary
+		Type "StaticLibrary"
 		Group "Malterlib"
 	}
 }
 
-%Target Dll_Test_Malterlib_Helper_Core
+%Target "Dll_Test_Malterlib_Helper_Core"
 {
 	Property
 	{
@@ -207,11 +207,11 @@ Property
 	}
 	Compile
 	{
-		!!CompileDialect C
+		!!CompileDialect "C"
 		PrefixHeader ""
 	}
-	%File Test/Test_Malterlib_Core_DllMain.cpp
-	%Dependency Lib_Malterlib
+	%File "Test/Test_Malterlib_Core_DllMain.cpp"
+	%Dependency "Lib_Malterlib"
 }
 
 %Group "{Test}/{Malterlib_Core}"

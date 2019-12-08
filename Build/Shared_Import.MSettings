@@ -6,7 +6,7 @@ Property
 	ImportIdentityRelativeRootPath "@(Import:this.IdentityAsAbsolutePath->GetPath())"
 	ImportIdentityRelativeRootPath "@(ImportIdentityRelativeRootPath->MakeRelative(@(Builtin.BasePathAbsolute)))"
 
-	IsMaintainedConfig "true"
+	IsMaintainedConfig true
 	{
 		&
 		{
@@ -48,7 +48,7 @@ Import
 		!!Import.CMake_VerboseHash ""
 	}
 
-	CMake_UpdateCache "true"
+	CMake_UpdateCache true
 	{
 		&
 		{
@@ -99,15 +99,15 @@ Import
 	CMake_Languages "C=C;CXX=C++;ASM=Assembler;@(Import.CMake_Languages)"
 	CMake_Languages "ASM_NASM=AssemblerNasm;ASM_MASM=Assembler;RC=WindowsResource;@(Import.CMake_Languages)"
 	{
-		!!GeneratorFamily VisualStudio
+		!!GeneratorFamily "VisualStudio"
 	}
 
 	CMake_Variables "CMAKE_TRY_COMPILE_PLATFORM_VARIABLES=CMAKE_EXE_LINKER_FLAGS_INIT;@(Import.CMake_Variables)"
 	{
 		&
 		{
-			PlatformFamily Linux
-			Architecture x86
+			PlatformFamily "Linux"
+			Architecture "x86"
 		}
 	}
 
@@ -115,7 +115,7 @@ Import
 	{
 		&
 		{
-			PlatformFamily Linux
+			PlatformFamily "Linux"
 			!Malterlib_LinuxLinker ""
 		}
 	}
@@ -123,7 +123,7 @@ Import
 	{
 		&
 		{
-			PlatformFamily Linux
+			PlatformFamily "Linux"
 			!Malterlib_LinuxLinker ""
 		}
 	}
@@ -132,7 +132,7 @@ Import
 	{
 		&
 		{
-			PlatformFamily Linux
+			PlatformFamily "Linux"
 			!Malterlib_LinuxLinker ""
 		}
 	}
@@ -141,8 +141,8 @@ Import
 	{
 		&
 		{
-			PlatformFamily Linux
-			Architecture x86
+			PlatformFamily "Linux"
+			Architecture "x86"
 		}
 	}
 
@@ -168,15 +168,15 @@ Import
 
 	CMake_Internal_LinkerFlags "-stdlib=libc++ @(Import.CMake_Internal_LinkerFlags)"
 	{
-		!!PlatformFamily OSX
+		!!PlatformFamily "OSX"
 	}
 
 	CMake_Variables "CMAKE_CXX_FLAGS_INIT=-stdlib=libc++;@(Import.CMake_Variables)"
 	{
 		|
 		{
-			PlatformFamily Linux
-			PlatformFamily OSX
+			PlatformFamily "Linux"
+			PlatformFamily "OSX"
 		}
 	}
 
@@ -189,14 +189,14 @@ Import
 	{
 		&
 		{
-			PlatformFamily Linux
+			PlatformFamily "Linux"
 			!PlatformFamily "@(HostPlatformFamily)"
 		}
 	}
 
 	CMake_Variables "CMAKE_OSX_DEPLOYMENT_TARGET=@(Platform->ParseFormatString('OSX{}.{}', '{0}.{1}'));@(Import.CMake_Variables)"
 	{
-		!!PlatformFamily OSX
+		!!PlatformFamily "OSX"
 	}
 
 	CMake_ExcludeFromHash "@(MalterlibCompiledFiles);@(Import.CMake_ExcludeFromHash)"
@@ -205,8 +205,8 @@ Import
 	{
 		&
 		{
-			PlatformFamily Linux
-			Architecture x86
+			PlatformFamily "Linux"
+			Architecture "x86"
 		}
 	}
 
@@ -235,7 +235,7 @@ Import
 		{
 			!Import.CMake_SystemName ""
 			Import.CMake_SystemProcessor ""
-			Architecture x64
+			Architecture "x64"
 		}
 	}
 
@@ -260,7 +260,7 @@ Import
 	{
 		&
 		{
-			HostPlatformFamily Windows
+			HostPlatformFamily "Windows"
 			!PlatformToolsetCompiler ""
 		}
 	}
@@ -269,7 +269,7 @@ Import
 	{
 		&
 		{
-			!HostPlatformFamily Windows
+			!HostPlatformFamily "Windows"
 			!PlatformToolsetCompiler ""
 		}
 	}
@@ -279,14 +279,14 @@ Import
 
 Import
 {
-	!PlatformFamily Windows
+	!PlatformFamily "Windows"
 
 	CMake_SysRoot "@(MalterlibSysRoot)"
 	{
 		&
 		{
 			!MalterlibSysRoot ""
-			!Documentation Doxygen
+			!Documentation "Doxygen"
 		}
 	}
 

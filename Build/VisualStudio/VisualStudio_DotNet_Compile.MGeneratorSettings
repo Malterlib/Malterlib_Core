@@ -16,8 +16,8 @@
 		{
 			Property
 			{
-				Name DebugType
-				Validity NotFile
+				Name "DebugType"
+				Validity "NotFile"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -36,7 +36,7 @@
 			Property
 			{
 				Name "Optimize"
-				Validity NotFile
+				Validity "NotFile"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -61,7 +61,7 @@
 			Property
 			{
 				Name "WarningLevel"
-				Validity NotFile
+				Validity "NotFile"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -79,14 +79,14 @@
 			Property
 			{
 				Name "AutoGen"
-				Validity File
+				Validity "File"
 			}
 			%GeneratorSetting "Value"
 			{
 				Property
 				{
-					true True
-					false False
+					true "True"
+					false "False"
 				}
 			}
 		}
@@ -95,14 +95,14 @@
 			Property
 			{
 				Name "DesignTimeSharedInput"
-				Validity File
+				Validity "File"
 			}
 			%GeneratorSetting "Value"
 			{
 				Property
 				{
-					true True
-					false False
+					true "True"
+					false "False"
 				}
 			}
 		}
@@ -111,7 +111,7 @@
 			Property
 			{
 				Name "DependentUpon"
-				Validity File
+				Validity "File"
 			}
 		}
 		%GeneratorSetting "LastGenOutput"
@@ -119,7 +119,7 @@
 			Property
 			{
 				Name "LastGenOutput"
-				Validity File
+				Validity "File"
 			}
 		}
 		

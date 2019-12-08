@@ -12,7 +12,7 @@ Property
 %Target "Lib_Malterlib_Init"
 {
 	!!MalterlibNeedsInitProject  true
-	Property.DocumentationModule Malterlib
+	Property.DocumentationModule "Malterlib"
 	Property.MalterlibNoShortcuts true
 
 	Target
@@ -26,15 +26,15 @@ Property
 		!!CompileDialect "C"
 		PrefixHeader ""
 	}
-	%Group Source
+	%Group "Source"
 	{
-		%Group Runtime
+		%Group "Runtime"
 		{
-			%Group Runtimes
+			%Group "Runtimes"
 			{
-				%Group Unix
+				%Group "Unix"
 				{
-					%File Source/Platform/Malterlib_Core_PlatformImp_Posix_Init.cpp
+					%File "Source/Platform/Malterlib_Core_PlatformImp_Posix_Init.cpp"
 				}
 			}
 		}
@@ -46,7 +46,7 @@ Property
 	Property
 	{
 		MalterlibNoShortcuts true
-		DocumentationModule Malterlib
+		DocumentationModule "Malterlib"
 		MalterlibGenerateLibrary true // Always generate library here so files can be excluded
 	}
 	Compile
@@ -118,16 +118,16 @@ Property
 			TabWidth 2
 			UsesTabs false
 		}
-		%Group compiler-rt
+		%Group "compiler-rt"
 		{
 			&
 			{
 				MalterlibUseStaticLibCxxABI true
 				|
 				{
-					PlatformFamily Linux
-					PlatformFamily OSX
-					PlatformFamily Emscripten
+					PlatformFamily "Linux"
+					PlatformFamily "OSX"
+					PlatformFamily "Emscripten"
 				}
 			}
 
@@ -136,32 +136,32 @@ Property
 				!!CompileDialect "C"
 			}
 
-			%Group Core
+			%Group "Core"
 			{
 				%File "../../External/llvm-project/compiler-rt/lib/builtins/*.c"
 				%File "../../External/llvm-project/compiler-rt/lib/builtins/*.h"
-				%Group x86
+				%Group "x86"
 				{
-					!!Architecture x86
+					!!Architecture "x86"
 					//%File "../../SDK/compiler-rt/lib/builtins/i386/*.c"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/i386/*.S"
 				}
-				%Group x64
+				%Group "x64"
 				{
-					!!Architecture x64
+					!!Architecture "x64"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/x86_64/*.c"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/x86_64/*.S"
 				}
-				%Group ppc
+				%Group "ppc"
 				{
-					!!Architecture ppc32
-					!!Architecture ppc64
+					!!Architecture "ppc32"
+					!!Architecture "ppc64"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/ppc/*.c"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/ppc/*.S"
 				}
 			}
 		}
-		%Group libunwind
+		%Group "libunwind"
 		{
 			&
 			{
@@ -191,11 +191,11 @@ Property
 			{
 				Compile.Disabled true
 				{
-					!!PlatformFamily Emscripten
+					!!PlatformFamily "Emscripten"
 				}
 			}
 		}
-		%Group libc++abi
+		%Group "libc++abi"
 		{
 			!!MalterlibUseStaticLibCxxABI true
 
@@ -215,7 +215,7 @@ Property
 			{
 				Compile.Disabled true
 				{
-					!!PlatformFamily Emscripten
+					!!PlatformFamily "Emscripten"
 				}
 			}
 			%File "../../External/llvm-project/libcxxabi/src/*.h"
@@ -244,7 +244,7 @@ Property
 				}
 				Compile.Disabled true
 				{
-					!!PlatformFamily Emscripten
+					!!PlatformFamily "Emscripten"
 				}
 			}
 		}
@@ -262,7 +262,7 @@ Property
 	}
 	%Group "Source"
 	{
-		%Group NonTracked
+		%Group "NonTracked"
 		{
 			Compile
 			{
@@ -271,9 +271,9 @@ Property
 				TabWidth 2
 				UsesTabs false
 			}
-			%Group libc++
+			%Group "libc++"
 			{
-				!!MalterlibUseStaticLibCxx "true"
+				!!MalterlibUseStaticLibCxx true
 				Compile
 				{
 					PreprocessorDefines "_LIBCPP_BUILDING_LIBRARY;_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED;@(Compile.PreprocessorDefines)"
@@ -282,12 +282,12 @@ Property
 						!!ForceEnableDynamicTypeInfoLibCXX true
 					}
 				}
-				%Group Headers
+				%Group "Headers"
 				{
 					%File "../../External/llvm-project/libcxx/include/^*"
-					Compile.Type Header
+					Compile.Type "Header"
 				}
-				%Group Source
+				%Group "Source"
 				{
 					%File "../../External/llvm-project/libcxx/src/^*"
 					%File "../../External/llvm-project/libcxx/src/new.cpp"
@@ -301,29 +301,29 @@ Property
 					{
 						Compile.Disabled true
 					}
-					%Group support
+					%Group "support"
 					{
-						%Group solaris
+						%Group "solaris"
 						{
 							%File "../../External/llvm-project/libcxx/src/support/solaris/*.cpp"
 							{
 								Compile.Disabled true
 							}
 						}
-						%Group win32
+						%Group "win32"
 						{
 							%File "../../External/llvm-project/libcxx/src/support/win32/*.cpp"
 							{
 								Compile.Disabled true
 								{
-									!PlatformFamily Windows
+									!PlatformFamily "Windows"
 								}
 							}
 						}
 					}
 				}
 			}
-			%Group elftoolchain
+			%Group "elftoolchain"
 			{
 				Property
 				{
@@ -335,14 +335,14 @@ Property
 					UnicodeBOM false
 					Group "@(Platform) @(Architecture) @(FullConfiguration)/@(RelativePath->GetPath())"
 				}
-				%Group libelf
+				%Group "libelf"
 				{
-					!!PlatformFamily Linux
+					!!PlatformFamily "Linux"
 					%File "../../External/elftoolchain/libelf/*.c"
 					%File "../../External/elftoolchain/libelf/*.h"
 					%File "../../External/elftoolchain/libelf/*.m4"
 
-					%Group Generated
+					%Group "Generated"
 					{
 						Property
 						{
@@ -357,14 +357,14 @@ Property
 						%GenerateFile "../../External/elftoolchain/libelf/libelf_msize.m4"
 					}
 				}
-				%Group libdwarf
+				%Group "libdwarf"
 				{
-					!!PlatformFamily Linux
+					!!PlatformFamily "Linux"
 					%File "../../External/elftoolchain/libdwarf/*.c"
 					%File "../../External/elftoolchain/libdwarf/*.h"
 					%File "../../External/elftoolchain/libdwarf/*.m4"
 
-					%Group Generated
+					%Group "Generated"
 					{
 						Property
 						{
@@ -414,9 +414,9 @@ Property
 
 			%Group "CDecl"
 			{
-				%Group CRT
+				%Group "CRT"
 				{
-					!!PlatformFamily Windows
+					!!PlatformFamily "Windows"
 
 					Compile.Disabled true
 					Compile
@@ -430,7 +430,7 @@ Property
 						}
 					}
 
-					%Group vcruntime
+					%Group "vcruntime"
 					{
 						Compile.Disabled false
 						{
@@ -480,7 +480,7 @@ Property
 %Target "Lib_MalterlibExecutable"
 {
 	Property.MalterlibNoShortcuts true
-	Property.DocumentationModule Malterlib
+	Property.DocumentationModule "Malterlib"
 	Target
 	{
 		BaseName "MalterlibExecutable"
@@ -506,7 +506,7 @@ Property
 					MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 				}
 			}
-			PlatformFamily OSX
+			PlatformFamily "OSX"
 			!DocumentationEnabled true
 		}
 
@@ -517,7 +517,7 @@ Property
 %Target "Lib_MalterlibDll"
 {
 	Property.MalterlibNoShortcuts true
-	Property.DocumentationModule Malterlib
+	Property.DocumentationModule "Malterlib"
 	Property
 	{
 		MalterlibDynamicLibrary true
@@ -552,9 +552,9 @@ Compile
 
 %Group "~Automatic/Breakpad Support"
 {
-	%File Source/Platform/Malterlib_Core_PlatformImp_MacOSX_Breakpad.mm
+	%File "Source/Platform/Malterlib_Core_PlatformImp_MacOSX_Breakpad.mm"
 	{
-		Compile.Disabled "true"
+		Compile.Disabled true
 		{
 			|
 			{
@@ -564,9 +564,9 @@ Compile
 		}
 
 	}
-	%File Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp
+	%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp"
 	{
-		Compile.Disabled "true"
+		Compile.Disabled true
 		{
 			|
 			{
@@ -580,14 +580,14 @@ Compile
 			}
 		}
 	}
-	!!MalterlibEnableBreakpad "true"
+	!!MalterlibEnableBreakpad true
 }
 
 Target
 {
 	ExtraGroups "~Automatic/Breakpad Support;@(Target.ExtraGroups)"
 	{
-		!!MalterlibEnableBreakpad "true"
+		!!MalterlibEnableBreakpad true
 	}
 }
 
@@ -606,30 +606,30 @@ Compile
 
 %Group "~Automatic/Breakpad Uploader Support"
 {
-	%File ../CrashReport/Source/Malterlib_CrashReport_BreakpadUploader.cpp
-	!!MalterlibEnableBreakpadUploader "true"
+	%File "../CrashReport/Source/Malterlib_CrashReport_BreakpadUploader.cpp"
+	!!MalterlibEnableBreakpadUploader true
 }
 
 Property.MalterlibUseCurl true
 {
-	!!MalterlibEnableBreakpadUploader "true"
+	!!MalterlibEnableBreakpadUploader true
 }
 
 Target
 {
 	ExtraGroups "~Automatic/Breakpad Uploader Support;@(Target.ExtraGroups)"
 	{
-		!!MalterlibEnableBreakpadUploader "true"
+		!!MalterlibEnableBreakpadUploader true
 	}
 }
 
 %Group "~Automatic/Program Identifier"
 {
-	%File Source/Platform/Malterlib_Core_PlatformImp_Linux_ProgramIdentifier.cpp
+	%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_ProgramIdentifier.cpp"
 
 	&
 	{
-		PlatformFamily Linux
+		PlatformFamily "Linux"
 		TargetIsExecutable true
 		!MalterlibDisableMalterlib true
 	}
@@ -641,7 +641,7 @@ Target
 	{
 		&
 		{
-			PlatformFamily Linux
+			PlatformFamily "Linux"
 			TargetIsExecutable true
 		}
 	}
@@ -741,7 +741,7 @@ Property
 		&
 		{
 			MalterlibMemoryManager_OverrideSystemMalloc true
-			!MalterlibMemoryManager System
+			!MalterlibMemoryManager "System"
 			!
 			{
 				&												// Disable for dynamic libraries on linux and OSX as only main executable should override malloc
@@ -749,8 +749,8 @@ Property
 					MalterlibDynamicLibrary true
 					|
 					{
-						PlatformFamily Linux
-						PlatformFamily OSX
+						PlatformFamily "Linux"
+						PlatformFamily "OSX"
 					}
 				}
 			}
@@ -763,7 +763,7 @@ Target
 	&
 	{
 		!MalterlibIncludeRoots ""
-		MalterlibIncludeLevel Target
+		MalterlibIncludeLevel "Target"
 	}
 	ExtraGroups "~Automatic/Include Roots;@(Target.ExtraGroups)"
 }
@@ -792,11 +792,11 @@ Target
 			Documentation ""
 			|
 			{
-				PlatformFamily Windows
+				PlatformFamily "Windows"
 				MalterlibUseStaticLibCxx true
 			}
 		}
-		Dependency.LinkWithObjectFiles "false"
+		Dependency.LinkWithObjectFiles false
 	}
 	%Dependency "Lib_MalterlibDll"
 	{
@@ -824,16 +824,16 @@ Target
 		&
 		{
 			!MalterlibMemoryManager_OverrideOSXSystemMalloc false
-			PlatformFamily OSX
+			PlatformFamily "OSX"
 			Documentation ""
 			TargetIsExecutable true
 			&
 			{
-				!Target.Type DynamicLibrary
-				!Target.Type XcodeBundle
-				!Target.Type SharedDynamicLibrary
+				!Target.Type "DynamicLibrary"
+				!Target.Type "XcodeBundle"
+				!Target.Type "SharedDynamicLibrary"
 			}
-			!MalterlibMemoryManager System
+			!MalterlibMemoryManager "System"
 		}
 	}
 }
@@ -843,7 +843,7 @@ Target
 	Property.MalterlibNoShortcuts true
 	Property
 	{
-		DocumentationModule Malterlib
+		DocumentationModule "Malterlib"
 	}
 	Target
 	{
@@ -874,9 +874,9 @@ Target
 	}
 	%Group "Source"
 	{
-		%Group !PreComp
+		%Group "!PreComp"
 		{
-			%File ../Core/Source/PrefixHeader/PCH.h
+			%File "../Core/Source/PrefixHeader/PCH.h"
 		}
 	}
 	Property
@@ -955,13 +955,13 @@ Target
 		Group "Malterlib"
 		LDFlags "-nostdlib @(Target.LDFlags)"
 		{
-			!!PlatformFamily OSX
-			!!PlatformFamily Linux
+			!!PlatformFamily "OSX"
+			!!PlatformFamily "Linux"
 		}
 	}
 	Target
 	{
-		!!PlatformFamily OSX
+		!!PlatformFamily "OSX"
 		LinkWithLibraries ""
 		LinkWithStandardLibraries false
 		CodeCoverageLinkerMapping false
@@ -984,15 +984,15 @@ Target
 		MalterlibStripSymbols false
 		MalterlibSigning false // Linker crashes if we sign this dylib
 	}
-	%Group Source
+	%Group "Source"
 	{
-		%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSXDyldDummy.cpp
+		%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXDyldDummy.cpp"
 		{
-			!!PlatformFamily OSX
+			!!PlatformFamily "OSX"
 		}
-		%File Source/Dummy/DummyMainRaw.cpp
+		%File "Source/Dummy/DummyMainRaw.cpp"
 		{
-			!PlatformFamily OSX
+			!PlatformFamily "OSX"
 		}
 	}
 }
@@ -1015,13 +1015,13 @@ Property
 		Group "Malterlib"
 		LDFlags "-nostdlib @(Target.LDFlags)"
 		{
-			!!PlatformFamily OSX
-			!!PlatformFamily Linux
+			!!PlatformFamily "OSX"
+			!!PlatformFamily "Linux"
 		}
 	}
 	Target
 	{
-		!!PlatformFamily OSX
+		!!PlatformFamily "OSX"
 
 		LinkWithLibraries "-undefined dynamic_lookup \"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib\""
 		LinkWithLibraries "/usr/lib/libSystem.B.dylib @(Target.LinkWithLibraries)"
@@ -1048,7 +1048,7 @@ Property
 		}
 		StackGuard false
 		{
-			!!PlatformFamily OSX
+			!!PlatformFamily "OSX"
 		}
 		PreprocessorDefines "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport;@(Compile.PreprocessorDefines)"
 		{
@@ -1060,15 +1060,15 @@ Property
 		MalterlibDisableMalterlib true
 		MalterlibStripSymbols false
 	}
-	%Group Source
+	%Group "Source"
 	{
-		%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSXLibSystem.cpp
+		%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXLibSystem.cpp"
 		{
-			!!PlatformFamily OSX
+			!!PlatformFamily "OSX"
 		}
-		%File Source/Dummy/DummyMainRaw.cpp
+		%File "Source/Dummy/DummyMainRaw.cpp"
 		{
-			!PlatformFamily OSX
+			!PlatformFamily "OSX"
 		}
 	}
 	%Dependency "Dll_MalterlibOverrideMallocDummy"

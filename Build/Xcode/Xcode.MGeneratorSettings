@@ -13,40 +13,40 @@
 				{
 					Property
 					{
-						C++ sourcecode.cpp.cpp
-						C sourcecode.c.c
-						Header sourcecode.c.h
-						ObjC++ sourcecode.cpp.objcpp
-						ObjC sourcecode.c.objc
-						None text
-						StaticLibrary archive.ar
-						DynamicLibrary archive.ar
-						XcodeBundle wrapper.cfbundle
-						QtRcc sourcecode.qt.rcc
-						QtMoc sourcecode.c.h
-						QtUic sourcecode.qt.uic
-						Assembler sourcecode.asm
-						MlTwk sourcecode.malterlib.twk
-						WindowsResource text
-						MalterlibFS sourcecode.malterlib.malterlibfs
-						Nib wrapper.nib
-						MacIcon image.icns
-						ShellScript text.script.sh
-						MalterlibBuildSystem sourcecode.cpp.cpp
-						JSON text.json
-						Python text.script.python
-						JavaScript sourcecode.javascript
-						HTML text.html
-						CSS	text.css
-						PNG image.png
-						SVG text.xml
-						Xib file.xib
-						XCodeStoryboard file.storyboard
-						XCodeAssets folder.assetcatalog
-						XML text.xml
-						MSBuildTargets text.xml
-						VisualStudioVisualizer text.xml
-						Custom text
+						C++ "sourcecode.cpp.cpp"
+						C "sourcecode.c.c"
+						Header "sourcecode.c.h"
+						ObjC++ "sourcecode.cpp.objcpp"
+						ObjC "sourcecode.c.objc"
+						None "text"
+						StaticLibrary "archive.ar"
+						DynamicLibrary "archive.ar"
+						XcodeBundle "wrapper.cfbundle"
+						QtRcc "sourcecode.qt.rcc"
+						QtMoc "sourcecode.c.h"
+						QtUic "sourcecode.qt.uic"
+						Assembler "sourcecode.asm"
+						MlTwk "sourcecode.malterlib.twk"
+						WindowsResource "text"
+						MalterlibFS "sourcecode.malterlib.malterlibfs"
+						Nib "wrapper.nib"
+						MacIcon "image.icns"
+						ShellScript "text.script.sh"
+						MalterlibBuildSystem "sourcecode.cpp.cpp"
+						JSON "text.json"
+						Python "text.script.python"
+						JavaScript "sourcecode.javascript"
+						HTML "text.html"
+						CSS	"text.css"
+						PNG "image.png"
+						SVG "text.xml"
+						Xib "file.xib"
+						XCodeStoryboard "file.storyboard"
+						XCodeAssets "folder.assetcatalog"
+						XML "text.xml"
+						MSBuildTargets "text.xml"
+						VisualStudioVisualizer "text.xml"
+						Custom "text"
 					}
 				}
 			}
@@ -59,15 +59,15 @@
 				{
 					Property
 					{
-						Executable Application
-						ConsoleExecutable Application
-						UIExecutable Application
-						DynamicLibrary DynamicLibrary
-						XcodeBundle DynamicLibrary
-						SharedDynamicLibrary DynamicLibrary
-						StaticLibrary StaticLibrary
-						Driver Driver
-						Tool Makefile
+						Executable "Application"
+						ConsoleExecutable "Application"
+						UIExecutable "Application"
+						DynamicLibrary "DynamicLibrary"
+						XcodeBundle "DynamicLibrary"
+						SharedDynamicLibrary "DynamicLibrary"
+						StaticLibrary "StaticLibrary"
+						Driver "Driver"
+						Tool "Makefile"
 					}
 				}
 			}
@@ -303,49 +303,307 @@
 				}
 			}
 
-			%GeneratorSetting "Workaround_GCC_ENABLE_TRIGRAPHS" { Property { Name "GCC_ENABLE_TRIGRAPHS" } }
-			%GeneratorSetting "Workaround_GCC_ENABLE_PASCAL_STRINGS" { Property { Name "GCC_ENABLE_PASCAL_STRINGS" } }
-			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS" { Property { Name "GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS" } }
-			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_MISSING_PROTOTYPES" { Property { Name "GCC_WARN_ABOUT_MISSING_PROTOTYPES" } }
-			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_RETURN_TYPE" { Property { Name "GCC_WARN_ABOUT_RETURN_TYPE" } }
-			%GeneratorSetting "Workaround_GCC_WARN_NON_VIRTUAL_DESTRUCTOR" { Property { Name "GCC_WARN_NON_VIRTUAL_DESTRUCTOR" } }
-			%GeneratorSetting "Workaround_GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS" { Property { Name "GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS" } }
-			%GeneratorSetting "Workaround_CLANG_WARN__EXIT_TIME_DESTRUCTORS" { Property { Name "CLANG_WARN__EXIT_TIME_DESTRUCTORS" } }
-			%GeneratorSetting "Workaround_GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED" { Property { Name "GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED" } }
-			%GeneratorSetting "Workaround_GCC_WARN_MISSING_PARENTHESES" { Property { Name "GCC_WARN_MISSING_PARENTHESES" } }
-			%GeneratorSetting "Workaround_GCC_WARN_CHECK_SWITCH_STATEMENTS" { Property { Name "GCC_WARN_CHECK_SWITCH_STATEMENTS" } }
-			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_FUNCTION" { Property { Name "GCC_WARN_UNUSED_FUNCTION" } }
-			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_LABEL" { Property { Name "GCC_WARN_UNUSED_LABEL" } }
-			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_PARAMETER" { Property { Name "GCC_WARN_UNUSED_PARAMETER" } }
-			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_VARIABLE" { Property { Name "GCC_WARN_UNUSED_VARIABLE" } }
-			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_VALUE" { Property { Name "GCC_WARN_UNUSED_VALUE" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_EMPTY_BODY" { Property { Name "CLANG_WARN_EMPTY_BODY" } }
-			%GeneratorSetting "Workaround_GCC_WARN_UNINITIALIZED_AUTOS" { Property { Name "GCC_WARN_UNINITIALIZED_AUTOS" } }
-			%GeneratorSetting "Workaround_GCC_WARN_UNKNOWN_PRAGMAS" { Property { Name "GCC_WARN_UNKNOWN_PRAGMAS" } }
-			%GeneratorSetting "Workaround_GCC_WARN_SHADOW" { Property { Name "GCC_WARN_SHADOW" } }
-			%GeneratorSetting "Workaround_GCC_WARN_FOUR_CHARACTER_CONSTANTS" { Property { Name "GCC_WARN_FOUR_CHARACTER_CONSTANTS" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION" { Property { Name "CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_CONSTANT_CONVERSION" { Property { Name "CLANG_WARN_CONSTANT_CONVERSION" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_INT_CONVERSION" { Property { Name "CLANG_WARN_INT_CONVERSION" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_BOOL_CONVERSION" { Property { Name "CLANG_WARN_BOOL_CONVERSION" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_ENUM_CONVERSION" { Property { Name "CLANG_WARN_ENUM_CONVERSION" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_FLOAT_CONVERSION" { Property { Name "CLANG_WARN_FLOAT_CONVERSION" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_NON_LITERAL_NULL_CONVERSION" { Property { Name "CLANG_WARN_NON_LITERAL_NULL_CONVERSION" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_OBJC_LITERAL_CONVERSION" { Property { Name "CLANG_WARN_OBJC_LITERAL_CONVERSION" } }
-			%GeneratorSetting "Workaround_GCC_WARN_64_TO_32_BIT_CONVERSION" { Property { Name "GCC_WARN_64_TO_32_BIT_CONVERSION" } }
-			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_MISSING_NEWLINE" { Property { Name "GCC_WARN_ABOUT_MISSING_NEWLINE" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_CXX0X_EXTENSIONS" { Property { Name "CLANG_WARN_CXX0X_EXTENSIONS" } }
-			%GeneratorSetting "Workaround_GCC_CW_ASM_SYNTAX" { Property { Name "GCC_CW_ASM_SYNTAX" } }
-			%GeneratorSetting "Workaround_GCC_STRICT_ALIASING" { Property { Name "GCC_STRICT_ALIASING" } }
-			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS" { Property { Name "GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS" } }
-			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO" { Property { Name "GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_IMPLICIT_SIGN_CONVERSION" { Property { Name "CLANG_WARN_IMPLICIT_SIGN_CONVERSION" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_INFINITE_RECURSION" { Property { Name "CLANG_WARN_INFINITE_RECURSION" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_SUSPICIOUS_MOVE" { Property { Name "CLANG_WARN_SUSPICIOUS_MOVE" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_COMMA" { Property { Name "CLANG_WARN_COMMA" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING" { Property { Name "CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_STRICT_PROTOTYPES" { Property { Name "CLANG_WARN_STRICT_PROTOTYPES" } }
-			%GeneratorSetting "Workaround_CLANG_WARN_RANGE_LOOP_ANALYSIS" { Property { Name "CLANG_WARN_RANGE_LOOP_ANALYSIS" } }
+			%GeneratorSetting "Workaround_GCC_ENABLE_TRIGRAPHS"
+			{
+				Property
+				{
+					Name "GCC_ENABLE_TRIGRAPHS"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_ENABLE_PASCAL_STRINGS"
+			{
+				Property
+				{
+					Name "GCC_ENABLE_PASCAL_STRINGS"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS"
+			{
+				Property
+				{
+					Name "GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_MISSING_PROTOTYPES"
+			{
+				Property
+				{
+					Name "GCC_WARN_ABOUT_MISSING_PROTOTYPES"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_RETURN_TYPE"
+			{
+				Property
+				{
+					Name "GCC_WARN_ABOUT_RETURN_TYPE"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_NON_VIRTUAL_DESTRUCTOR"
+			{
+				Property
+				{
+					Name "GCC_WARN_NON_VIRTUAL_DESTRUCTOR"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS"
+			{
+				Property
+				{
+					Name "GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN__EXIT_TIME_DESTRUCTORS"
+			{
+				Property
+				{
+					Name "CLANG_WARN__EXIT_TIME_DESTRUCTORS"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED"
+			{
+				Property
+				{
+					Name "GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_MISSING_PARENTHESES"
+			{
+				Property
+				{
+					Name "GCC_WARN_MISSING_PARENTHESES"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_CHECK_SWITCH_STATEMENTS"
+			{
+				Property
+				{
+					Name "GCC_WARN_CHECK_SWITCH_STATEMENTS"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_FUNCTION"
+			{
+				Property
+				{
+					Name "GCC_WARN_UNUSED_FUNCTION"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_LABEL"
+			{
+				Property
+				{
+					Name "GCC_WARN_UNUSED_LABEL"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_PARAMETER"
+			{
+				Property
+				{
+					Name "GCC_WARN_UNUSED_PARAMETER"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_VARIABLE"
+			{
+				Property
+				{
+					Name "GCC_WARN_UNUSED_VARIABLE"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_UNUSED_VALUE"
+			{
+				Property
+				{
+					Name "GCC_WARN_UNUSED_VALUE"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_EMPTY_BODY"
+			{
+				Property
+				{
+					Name "CLANG_WARN_EMPTY_BODY"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_UNINITIALIZED_AUTOS"
+			{
+				Property
+				{
+					Name "GCC_WARN_UNINITIALIZED_AUTOS"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_UNKNOWN_PRAGMAS"
+			{
+				Property
+				{
+					Name "GCC_WARN_UNKNOWN_PRAGMAS"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_SHADOW"
+			{
+				Property
+				{
+					Name "GCC_WARN_SHADOW"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_FOUR_CHARACTER_CONSTANTS"
+			{
+				Property
+				{
+					Name "GCC_WARN_FOUR_CHARACTER_CONSTANTS"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_CONSTANT_CONVERSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_CONSTANT_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_INT_CONVERSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_INT_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_BOOL_CONVERSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_BOOL_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_ENUM_CONVERSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_ENUM_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_FLOAT_CONVERSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_FLOAT_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_NON_LITERAL_NULL_CONVERSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_NON_LITERAL_NULL_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_OBJC_LITERAL_CONVERSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_OBJC_LITERAL_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_64_TO_32_BIT_CONVERSION"
+			{
+				Property
+				{
+					Name "GCC_WARN_64_TO_32_BIT_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_MISSING_NEWLINE"
+			{
+				Property
+				{
+					Name "GCC_WARN_ABOUT_MISSING_NEWLINE"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_CXX0X_EXTENSIONS"
+			{
+				Property
+				{
+					Name "CLANG_WARN_CXX0X_EXTENSIONS"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_CW_ASM_SYNTAX"
+			{
+				Property
+				{
+					Name "GCC_CW_ASM_SYNTAX"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_STRICT_ALIASING"
+			{
+				Property
+				{
+					Name "GCC_STRICT_ALIASING"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS"
+			{
+				Property
+				{
+					Name "GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS"
+				}
+			}
+			%GeneratorSetting "Workaround_GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO"
+			{
+				Property
+				{
+					Name "GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_IMPLICIT_SIGN_CONVERSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_IMPLICIT_SIGN_CONVERSION"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_INFINITE_RECURSION"
+			{
+				Property
+				{
+					Name "CLANG_WARN_INFINITE_RECURSION"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_SUSPICIOUS_MOVE"
+			{
+				Property
+				{
+					Name "CLANG_WARN_SUSPICIOUS_MOVE"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_COMMA"
+			{
+				Property
+				{
+					Name "CLANG_WARN_COMMA"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"
+			{
+				Property
+				{
+					Name "CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_STRICT_PROTOTYPES"
+			{
+				Property
+				{
+					Name "CLANG_WARN_STRICT_PROTOTYPES"
+				}
+			}
+			%GeneratorSetting "Workaround_CLANG_WARN_RANGE_LOOP_ANALYSIS"
+			{
+				Property
+				{
+					Name "CLANG_WARN_RANGE_LOOP_ANALYSIS"
+				}
+			}
 
 			%GeneratorSetting "LTOObjectFile"
 			{
@@ -365,9 +623,9 @@
 				{
 					Property
 					{
-						true YES
-						Fast YES_THIN
-						false NO
+						true "YES"
+						Fast "YES_THIN"
+						false "NO"
 					}
 				}
 			}
@@ -534,7 +792,7 @@
 					Property
 					{
 						true "true"
-						false "false"
+						false false
 					}
 				}
 			}
@@ -604,14 +862,14 @@
 					Name "EXECUTABLE_PREFIX"
 				}
 			}
-			%GeneratorSetting ProjectDerivedSourcesDir
+			%GeneratorSetting "ProjectDerivedSourcesDir"
 			{
 				Property
 				{
 					Name "PROJECT_DERIVED_FILE_DIR"
 				}
 			}
-			%GeneratorSetting ProjectSharedPrecompPrefixDir
+			%GeneratorSetting "ProjectSharedPrecompPrefixDir"
 			{
 				Property
 				{
@@ -625,7 +883,7 @@
 			{
 				Property
 				{
-					Name EXECUTABLE_FOLDER_PATH
+					Name "EXECUTABLE_FOLDER_PATH"
 				}
 			}
 
@@ -1300,7 +1558,7 @@
 			{
 				Property
 				{
-					Name HEADER_SEARCH_PATHS
+					Name "HEADER_SEARCH_PATHS"
 				}
 			}
 
@@ -1883,7 +2141,7 @@
 				{
 					Property
 					{
-						true -Werror
+						true "-Werror"
 						false ""
 					}
 				}
@@ -1917,7 +2175,7 @@
 				{
 					Property
 					{
-						true -fopenmp	
+						true "-fopenmp"
 						false ""
 					}
 				}
@@ -2353,13 +2611,13 @@
 			{
 				Property
 				{
-					Name FilesExcludedFromCompile
+					Name "FilesExcludedFromCompile"
 				}
 				%GeneratorSetting "Value"
 				{
 					Property
 					{
-						true "false"
+						true false
 						false "true"
 					}
 				}
@@ -2600,8 +2858,8 @@
 				{
 					Property
 					{
-						true YES
-						false NO
+						true "YES"
+						false "NO"
 					}
 				}
 			}
@@ -2615,7 +2873,7 @@
 				{
 					Property
 					{
-						true YES
+						true "YES"
 						false "NO"
 					}
 				}
@@ -2631,8 +2889,8 @@
 					Property
 					{
 						false "NO"
-						Elf32 Elf32
-						Elf64 Elf64
+						Elf32 "Elf32"
+						Elf64 "Elf64"
 					}
 				}
 			}

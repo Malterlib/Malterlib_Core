@@ -14,7 +14,7 @@ Property
 }
 Property
 {
-	!!HostPlatformFamily OSX
+	!!HostPlatformFamily "OSX"
 
 	MalterlibRepositoryEditor "/usr/local/bin/fork status"
 	{
@@ -35,7 +35,7 @@ Property
 }
 Property
 {
-	!!HostPlatformFamily Windows
+	!!HostPlatformFamily "Windows"
 
 /*	ForkDirectory "@(USERPROFILE)/AppData/Local/Fork"
 	MalterlibRepositoryEditor "@(ForkDirectory)/Fork.exe status"
@@ -162,12 +162,12 @@ Repository
 
 	ProtectedBranches "malterlib_*;@(Repository.ProtectedBranches)"
 	{
-		!!Repository.Type External
+		!!Repository.Type "External"
 	}
 
 	ProtectedTags "malterlib_*;@(Repository.ProtectedTags)"
 	{
-		!!Repository.Type External
+		!!Repository.Type "External"
 	}
 
 	URL "@(Repository.ExternalRoot)/@(this.Identity).git"
@@ -175,7 +175,7 @@ Repository
 		&
 		{
 			Repository.URL ""
-			Repository.Type External
+			Repository.Type "External"
 		}
 	}
 	URL "@(Repository.MalterlibRoot)/Malterlib_@(this.Identity).git"
@@ -183,7 +183,7 @@ Repository
 		&
 		{
 			Repository.URL ""
-			Repository.Type Malterlib
+			Repository.Type "Malterlib"
 		}
 	}
 	URL "@(Repository.DefaultRoot)/@(Repository.Prefix)@(this.Identity).git"
@@ -191,7 +191,7 @@ Repository
 		&
 		{
 			Repository.URL ""
-			Repository.Type Direct
+			Repository.Type "Direct"
 		}
 	}
 	Location "@('../../../External'->MakeAbsolute())/@(this.Identity->ParseFormatString('{}_{}', '{}/{}'))"
@@ -199,7 +199,7 @@ Repository
 		&
 		{
 			Repository.Location ""
-			Repository.Type External
+			Repository.Type "External"
 			Repository.ConvertUnderscoreToPath true
 		}
 	}
@@ -208,7 +208,7 @@ Repository
 		&
 		{
 			Repository.Location ""
-			Repository.Type External
+			Repository.Type "External"
 		}
 	}
 
@@ -217,7 +217,7 @@ Repository
 		&
 		{
 			Repository.Location ""
-			Repository.Type Malterlib
+			Repository.Type "Malterlib"
 		}
 	}
 
@@ -237,7 +237,7 @@ Repository
 		&
 		{
 			Repository.Location ""
-			Repository.Type Direct
+			Repository.Type "Direct"
 			!Repository.SubmodulePrefix "nthoenuth"
 		}
 	}
@@ -246,7 +246,7 @@ Repository
 		&
 		{
 			Repository.DefaultBranch ""
-			Repository.Type External
+			Repository.Type "External"
 		}
 	}
 
@@ -255,7 +255,7 @@ Repository
 		&
 		{
 			Repository.DefaultUpstreamBranch ""
-			Repository.Type External
+			Repository.Type "External"
 		}
 	}
 
@@ -268,7 +268,7 @@ Repository
 	{
 		!!Repository.DefaultBranch ""
 	}
-	Submodule "false"
+	Submodule false
 	{
 		!!Repository.Submodule ""
 	}
@@ -285,7 +285,7 @@ Repository
 		&
 		{
 			Repository.SubmoduleName ""
-			Repository.Type External
+			Repository.Type "External"
 		}
 	}
 	SubmoduleName "Malterlib_@(this.Identity)"
@@ -293,7 +293,7 @@ Repository
 		&
 		{
 			Repository.SubmoduleName ""
-			Repository.Type Malterlib
+			Repository.Type "Malterlib"
 		}
 	}
 	SubmoduleName "@(Repository.SubmodulePrefix)@(this.Identity)"
@@ -301,7 +301,7 @@ Repository
 		&
 		{
 			Repository.SubmoduleName ""
-			Repository.Type Direct
+			Repository.Type "Direct"
 		}
 	}
 }

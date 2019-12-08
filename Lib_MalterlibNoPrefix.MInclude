@@ -3,7 +3,7 @@
 
 Target.ExtraGroups "{Malterlib}/{TCMalloc}"
 {
-	!!MalterlibMemoryManager TcMalloc
+	!!MalterlibMemoryManager "TcMalloc"
 }
 
 Compile
@@ -24,7 +24,7 @@ Compile
 
 	SearchPath "@('../../External/mimalloc/include'->MakeAbsolute());@(Compile.SearchPath)"
 	{
-		!!MalterlibMemoryManager MiMalloc
+		!!MalterlibMemoryManager "MiMalloc"
 	}
 
 	PreprocessorDefines "DMibDynamicLibrary;@(Compile.PreprocessorDefines)"
@@ -52,7 +52,7 @@ Compile
 		|
 		{
 			MalterlibMemoryManager_Debug false	// Specifically disabled
-			!DebugCode "true"				// Implicitly disabled
+			!DebugCode true				// Implicitly disabled
 		}
 	}
 
@@ -186,19 +186,19 @@ Compile
 
 %Dependency "Lib_mimalloc-static"
 {
-	!!MalterlibMemoryManager MiMalloc
+	!!MalterlibMemoryManager "MiMalloc"
 
 	Dependency.Indirect true
 }
 
 %Group "Source"
 {
-	%File Source/Platform/Malterlib_Core_PlatformImp_DisableStackTraceUnit.cpp
-	%Group Memory
+	%File "Source/Platform/Malterlib_Core_PlatformImp_DisableStackTraceUnit.cpp"
+	%Group "Memory"
 	{
 		%Group "Memory"
 		{
-			Property.RealConfiguration Release
+			Property.RealConfiguration "Release"
 			{
 				!!MalterlibMemoryManager_AlwaysRelease true
 			}
@@ -207,8 +207,8 @@ Compile
 				&
 				{
 					!MalterlibMemoryManager_AlwaysRelease ""
-					!MalterlibMemoryManager_AlwaysRelease "false"
-					!MalterlibMemoryManager_AlwaysRelease "true"
+					!MalterlibMemoryManager_AlwaysRelease false
+					!MalterlibMemoryManager_AlwaysRelease true
 				}
 			}
 			Compile.FullEval true
@@ -228,50 +228,50 @@ Compile
 			{
 				Compile.StackGuard false
 				{
-					!!PlatformFamily OSX
+					!!PlatformFamily "OSX"
 				}
-				%File ../Memory/Source/Malterlib_Memory_SystemOverride*
-				%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSX.cpp
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride*"
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSX.cpp"
 				{
 					Compile.Disabled true
 					{
-						!PlatformFamily OSX
+						!PlatformFamily "OSX"
 					}
 				}
-				%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSXLowLevel.cpp
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXLowLevel.cpp"
 				{
 					Compile.Disabled true
 					{
-						!PlatformFamily OSX
+						!PlatformFamily "OSX"
 					}
 				}
-				%File ../Memory/Source/Malterlib_Memory_SystemOverride_Linux.cpp
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_Linux.cpp"
 				{
 					Compile.Disabled true
 					{
-						!PlatformFamily Linux
+						!PlatformFamily "Linux"
 					}
 				}
-				%File ../Memory/Source/Malterlib_Memory_SystemOverride_Windows.cpp
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_Windows.cpp"
 				{
 					Compile.Disabled true
 					{
-						!PlatformFamily Windows
+						!PlatformFamily "Windows"
 					}
 				}
-				%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSXLibSystem.cpp
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXLibSystem.cpp"
 				{
 					Compile.Disabled true
 				}
-				%File ../Memory/Source/Malterlib_Memory_SystemOverride_OSXDyldDummy.cpp
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXDyldDummy.cpp"
 				{
 					Compile.Disabled true
 				}
 			}
 
-			%File ../Memory/Source/Malterlib_Memory.cpp
+			%File "../Memory/Source/Malterlib_Memory.cpp"
 		}
-		%File ../Memory/Source/Malterlib_Memory_Allocator_Heap.cpp
+		%File "../Memory/Source/Malterlib_Memory_Allocator_Heap.cpp"
 		{
 			Compile.PreprocessorDefines "DMibNoInlineNew;@(Compile.PreprocessorDefines)"
 			{
@@ -279,33 +279,33 @@ Compile
 			}
 		}
 	}
-	%Group Runtime
+	%Group "Runtime"
 	{
-		%Group Runtimes
+		%Group "Runtimes"
 		{
-			%Group MSVC
+			%Group "MSVC"
 			{
 				%Group "Included"
 				{
 					%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_CPUUsageMonitor.*"
-					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_LocalSys.cpp
-					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_NTSpecific.cpp
-					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Net.cpp
-					%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_Net.h
+					%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_LocalSys.cpp"
+					%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_NTSpecific.cpp"
+					%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_Net.cpp"
+					%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_Net.h"
 					Compile.Disabled true
 				}
 
-				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC.cpp // Uses Malterlib heap enablement
-				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_StructuredException.cpp
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC.cpp" // Uses Malterlib heap enablement
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_StructuredException.cpp"
 				{
 					Compile
 					{
 						Exceptions "Full"
 					}
 				}
-				%File Source/Platform/Malterlib_Core_PlatformImp_Windows_Inline.h
-				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_WindowsDefines.h
-				%File Source/Platform/Malterlib_Core_PlatformImp_MSVC_x86_64.asm
+				%File "Source/Platform/Malterlib_Core_PlatformImp_Windows_Inline.h"
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_WindowsDefines.h"
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_x86_64.asm"
 				{
 					Compile.Disabled true
 					{
@@ -317,75 +317,75 @@ Compile
 					!PlatformType "Windows"
 				}
 			}
-			%Group MacOSX
+			%Group "MacOSX"
 			{
-				%File Source/Platform/Malterlib_Core_PlatformImp_MacOSX*
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOSX*"
 				{
 					Compile.Disabled true
 				}
-				%File Source/Platform/Malterlib_Core_PlatformImp_MacOSX.cpp
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOSX.cpp"
 				{
 					Compile.Disabled true
 					{
 						!PlatformFamily "OSX"
 					}
 				}
-				%File Source/Platform/Malterlib_Core_PlatformImp_MacOSX_ObjCPP.mm
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOSX_ObjCPP.mm"
 				{
 					Compile.Disabled true
 					{
-						!!Documentation Doxygen
+						!!Documentation "Doxygen"
 						!PlatformFamily "OSX"
 					}
 				}
 			}
-			%Group POSIX
+			%Group "POSIX"
 			{
 				Compile.Disabled true
-				%File Source/Platform/Malterlib_Core_PlatformImp_POSIX*
+				%File "Source/Platform/Malterlib_Core_PlatformImp_POSIX*"
 			}
-			%Group Emscripten
+			%Group "Emscripten"
 			{
 				Compile.Disabled true
 				{
-					!PlatformFamily Emscripten
+					!PlatformFamily "Emscripten"
 				}
-				%File Source/Platform/Malterlib_Core_PlatformImp_Emscripten*
+				%File "Source/Platform/Malterlib_Core_PlatformImp_Emscripten*"
 			}
-			%Group Linux
+			%Group "Linux"
 			{
-				%File Source/Platform/Malterlib_Core_PlatformImp_Linux*
+				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux*"
 				{
 					Compile.Disabled true
 				}
-				%File Source/Platform/Malterlib_Core_PlatformImp_Linux*.cpp
+				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux*.cpp"
 				{
 					Compile.Disabled true
 					{
 						!PlatformFamily "Linux"
 					}
 				}
-				%File Source/Platform/Malterlib_Core_PlatformImp_Linux_SecurePassword_GNOME.cpp
+				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_SecurePassword_GNOME.cpp"
 				{
 					Compile.Disabled true
 					{
 						!PlatformFamily "Linux"
 					}
 				}
-				%File Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp
+				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp"
 				{
 					Compile.Disabled true
 				}
 			}
 		}
-		%File Source/Malterlib_Core_PlatformInterfaceTemp.h
-		%File Source/Malterlib_Core_PlatformInterface.h
-		%Group Private
+		%File "Source/Malterlib_Core_PlatformInterfaceTemp.h"
+		%File "Source/Malterlib_Core_PlatformInterface.h"
+		%Group "Private"
 		{
 			Compile.Disabled true
-			%File Source/Platform/Malterlib_Core_PlatformImp.imp.h
-			%File Source/Platform/Malterlib_Core_PlatformImp.h
-			%File Source/Platform/Malterlib_Core_PlatformImp_Integration.h
+			%File "Source/Platform/Malterlib_Core_PlatformImp.imp.h"
+			%File "Source/Platform/Malterlib_Core_PlatformImp.h"
+			%File "Source/Platform/Malterlib_Core_PlatformImp_Integration.h"
 		}
 	}
 }

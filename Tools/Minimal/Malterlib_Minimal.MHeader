@@ -8,7 +8,7 @@
 		MalterlibPostCopyProject "Malterlib"
 	}
 	
-	%File Main.cpp
+	%File "Main.cpp"
 	%Dependency "Lib_Malterlib_Core"
 //	%Dependency "Lib_Malterlib"
 	//%Dependency "Lib_Malterlib_Override"

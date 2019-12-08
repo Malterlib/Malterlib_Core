@@ -18,7 +18,7 @@ Property
 	Repository
 	{
 		Submodule false
-		Type External
+		Type "External"
 		ConvertUnderscoreToPath true
 		Remotes "upstream=https://github.com/boostorg/@(MalterlibBoostModulesGetName).git;@(Repository.Remotes)"
 	}
@@ -37,7 +37,7 @@ Property
 
 Property
 {
-	MalterlibAllBoostModules "false" // User(Repository)=true: Sync all boost repositories
+	MalterlibAllBoostModules false // User(Repository)=true: Sync all boost repositories
 	{
 		!!MalterlibAllBoostModules ""
 	}
@@ -106,7 +106,7 @@ Property
 			!MalterlibIncludePerConfig true
 		}
 	}
-	%Group General
+	%Group "General"
 	{
 		Compile.Type "Header"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
@@ -116,9 +116,9 @@ Property
 			Property.SymlinkDirectory true
 		}
 	}
-	%Group detail
+	%Group "detail"
 	{
-		Property.SubDirectory /detail
+		Property.SubDirectory "/detail"
 		Compile.Type "Header"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
@@ -127,9 +127,9 @@ Property
 			Property.SymlinkDirectory true
 		}
 	}
-	%Group functional
+	%Group "functional"
 	{
-		Property.SubDirectory /functional
+		Property.SubDirectory "/functional"
 		Compile.Type "Header"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
@@ -138,9 +138,9 @@ Property
 			Property.SymlinkDirectory true
 		}
 	}
-	%Group pending
+	%Group "pending"
 	{
-		Property.SubDirectory /pending
+		Property.SubDirectory "/pending"
 		Compile.Type "Header"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
@@ -149,9 +149,9 @@ Property
 			Property.SymlinkDirectory true
 		}
 	}
-	%Group utility
+	%Group "utility"
 	{
-		Property.SubDirectory /utility
+		Property.SubDirectory "/utility"
 		Compile.Type "Header"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
@@ -160,9 +160,9 @@ Property
 			Property.SymlinkDirectory true
 		}
 	}
-	%Group chrono
+	%Group "chrono"
 	{
-		Property.SubDirectory /chrono
+		Property.SubDirectory "/chrono"
 		Compile.Type "Header"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
@@ -171,9 +171,9 @@ Property
 			Property.SymlinkDirectory true
 		}
 	}
-	%Group exception
+	%Group "exception"
 	{
-		Property.SubDirectory /exception
+		Property.SubDirectory "/exception"
 		Compile.Type "Header"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateFiles'))"
 		%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibBoostModules)', ';', 'ExpandTemplateDirectories'))"
@@ -189,7 +189,7 @@ Target
 	&
 	{
 		!MalterlibBoostModules ""
-		MalterlibIncludeLevel Target
+		MalterlibIncludeLevel "Target"
 	}
 	ExtraGroups "~Automatic/Boost Include Roots;@(Target.ExtraGroups)"
 	{
@@ -240,14 +240,14 @@ Compile
 {
 	&
 	{
-		CompileDialect C
+		CompileDialect "C"
 		!MalterlibBoostModules ""
 	}
 	
 	SystemSearchPath "@(MalterlibBoostIncludeOutputDir);@(Compile.SystemSearchPath)"
 }
 
-%Group BoostLibraries
+%Group "BoostLibraries"
 {
 	Target
 	{
@@ -256,18 +256,18 @@ Compile
 	}
 	Compile
 	{
-		!!CompileDialect C
+		!!CompileDialect "C"
 		Warnings_NoUnused true
 		{
-			!!PlatformFamily OSX
-			!!PlatformFamily Linux
+			!!PlatformFamily "OSX"
+			!!PlatformFamily "Linux"
 		}
 		PreprocessorDefines "BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;@(Compile.PreprocessorDefines)"
         {
-            !!PlatformFamily Windows
+            !!PlatformFamily "Windows"
         }
 	}
-	%Target Lib_boost_regex
+	%Target "Lib_boost_regex"
 	{
 		!!true "@(MalterlibBoostModules->ContainsListElement(';', 'regex'))"
 		
@@ -275,13 +275,13 @@ Compile
 		{
 			BaseName "boost_regex"
 		}
-		%Group Source
+		%Group "Source"
 		{
 			
 			%File "../../External/boost/regex/src/^*.cpp"
 		}
 	}
-	%Target Lib_boost_system
+	%Target "Lib_boost_system"
 	{
 		!!true "@(MalterlibBoostModules->ContainsListElement(';', 'system'))"
 		
@@ -289,12 +289,12 @@ Compile
 		{
 			BaseName "boost_system"
 		}
-		%Group Source
+		%Group "Source"
 		{
 			%File "../../External/boost/system/src/^*.cpp"
 		}
 	}
-	%Target Lib_boost_thread
+	%Target "Lib_boost_thread"
 	{
 		!!true "@(MalterlibBoostModules->ContainsListElement(';', 'thread'))"
 		
@@ -306,21 +306,21 @@ Compile
 		{
 			PreprocessorDefines "BOOST_THREAD_BUILD_LIB;@(Compile.PreprocessorDefines)"
 		}
-		%Group thread
+		%Group "thread"
 		{
-			%Group pthread
+			%Group "pthread"
 			{
 				Compile.Disabled true
 				{
-					!!PlatformFamily Windows
+					!!PlatformFamily "Windows"
 				}
 				%File "../../External/boost/thread/src/pthread/^*.cpp"
 			}
-			%Group win32
+			%Group "win32"
 			{
 				Compile.Disabled true
 				{
-					!PlatformFamily Windows
+					!PlatformFamily "Windows"
 				}
 				%File "../../External/boost/thread/src/win32/^*.cpp"
 			}

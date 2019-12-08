@@ -3,7 +3,7 @@
 
 Workspace
 {
-	Enabled "false"
+	Enabled false
 	{
 		&
 		{

@@ -44,7 +44,7 @@
 		{
 			Property
 			{
-				Name DebugSymbols
+				Name "DebugSymbols"
 			}
 			%GeneratorSetting "Value"
 			{
@@ -94,49 +94,49 @@
 		{
 			Property
 			{
-				Name ApplicationVersion
+				Name "ApplicationVersion"
 			}
 		}		
 		%GeneratorSetting "PlatformTarget"
 		{
 			Property
 			{
-				Name PlatformTarget
+				Name "PlatformTarget"
 			}
 		}	
 		%GeneratorSetting "ErrorReport"
 		{
 			Property
 			{
-				Name ErrorReport
+				Name "ErrorReport"
 			}
 		}
 		%GeneratorSetting "CodeAnalysisRuleSet"
 		{
 			Property
 			{
-				Name CodeAnalysisRuleSet
+				Name "CodeAnalysisRuleSet"
 			}
 		}
 		%GeneratorSetting "DebuggerCommandArguments"
 		{
 			Property
 			{
-				Name StartArguments
+				Name "StartArguments"
 			}
 		}
 		%GeneratorSetting "LocalDebuggerCommand"
 		{
 			Property
 			{
-				Name StartProgram
+				Name "StartProgram"
 			}
 		}
 		%GeneratorSetting "LocalDebuggerWorkingDirectory"
 		{
 			Property
 			{
-				Name StartWorkingDirectory
+				Name "StartWorkingDirectory"
 			}
 		}
 		

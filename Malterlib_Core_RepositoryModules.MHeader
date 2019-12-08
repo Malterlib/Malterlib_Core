@@ -41,7 +41,7 @@ Property
 	Property.RepoName "Malterlib_@(this.Identity).git"
 	Repository
 	{
-		Type Malterlib
+		Type "Malterlib"
 		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
 		{
 			!MalterlibRemotePrefixes  ""
@@ -109,7 +109,7 @@ Property
 	}
 	Repository
 	{
-		Type Malterlib
+		Type "Malterlib"
 		Location "@(RepoDir->MakeAbsolute())"
 		URL "@(Repository.MalterlibRoot)/@(RepoName)"
 		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
@@ -139,7 +139,7 @@ Property
 	}
 	Repository
 	{
-		Type Malterlib
+		Type "Malterlib"
 		Location "@(RepoDir->MakeAbsolute())"
 		URL "@(Repository.MalterlibRoot)/@(RepoName)"
 		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"

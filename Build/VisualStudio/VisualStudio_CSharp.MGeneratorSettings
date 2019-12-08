@@ -25,11 +25,11 @@
 			{
 				Property
 				{
-					Executable WinExe
-					ConsoleExecutable Exe
-					UIExecutable WinExe
-					DynamicLibrary Library
-					SharedDynamicLibrary Library
+					Executable "WinExe"
+					ConsoleExecutable "Exe"
+					UIExecutable "WinExe"
+					DynamicLibrary "Library"
+					SharedDynamicLibrary "Library"
 				}
 			}
 		}
@@ -37,7 +37,7 @@
 		{
 			Property
 			{
-				Name BaseIntermediateOutputPath
+				Name "BaseIntermediateOutputPath"
 			}
 			%GeneratorSetting "Properties"
 			{
@@ -114,7 +114,7 @@
 							Property
 							{
 								Generator "MSBuild:Compile"
-								SubType Designer
+								SubType "Designer"
 							}
 						}
 					}
@@ -128,7 +128,7 @@
 							Property
 							{
 								Generator "MSBuild:Compile"
-								SubType Designer
+								SubType "Designer"
 							}
 						}
 					}
@@ -141,7 +141,7 @@
 						{
 							Property
 							{
-								SubType Designer
+								SubType "Designer"
 							}
 						}
 					}
@@ -151,15 +151,15 @@
 			{
 				Property
 				{
-					C# Compile
-					C#Component Compile
-					ApplicationDefinition ApplicationDefinition
-					Page Page
-					EmbeddedResource_ResX EmbeddedResource
-					Settings None
-					None None
-					AppDesigner AppDesigner
-					AppxManifest AppxManifest
+					C# "Compile"
+					C#Component "Compile"
+					ApplicationDefinition "ApplicationDefinition"
+					Page "Page"
+					EmbeddedResource_ResX "EmbeddedResource"
+					Settings "None"
+					None "None"
+					AppDesigner "AppDesigner"
+					AppxManifest "AppxManifest"
 				}
 			}
 		}

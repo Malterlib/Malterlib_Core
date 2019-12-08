@@ -15,7 +15,7 @@ Property
 	{
 		&
 		{
-			HostPlatformFamily Windows
+			HostPlatformFamily "Windows"
 			!ScriptWindowsBash true
 		}
 	}
@@ -30,7 +30,7 @@ Property
 										"@(ScriptExport) \"MalterlibBaseDir=`cd \"${BASH_SOURCE%/*}/..\" && pwd`/\"\r\n"\
 										"@(ScriptExport) \"PATH=${MalterlibBaseDir}Binaries/Malterlib/@(HostPlatformFamily)/@(HostArchitecture):$PATH\"\r\n"
 	{
-		!HostPlatformFamily Windows
+		!HostPlatformFamily "Windows"
 	}
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
@@ -47,13 +47,13 @@ Property
 	SharedBuildSettingsScriptContents 	"@(SharedBuildSettingsScriptContents)"\
 										"@(ScriptExport) MalterlibSharedDeployRoot=@(MalterlibSharedDeployRoot)\r\n"
 	{
-		!!PlatformFamily Windows
+		!!PlatformFamily "Windows"
 	}
 
 	SharedBuildSettingsScriptContents 	"@(SharedBuildSettingsScriptContents)"\
 										"@(ScriptExport) \"MalterlibSharedDeployRoot=@(MalterlibSharedDeployRoot)\"\r\n"
 	{
-		!PlatformFamily Windows
+		!PlatformFamily "Windows"
 	}
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
@@ -63,7 +63,7 @@ Property
 										"}\r\n"
 	{
 		!!ScriptWindowsBash true
-		!HostPlatformFamily Windows
+		!HostPlatformFamily "Windows"
 	}
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
@@ -77,7 +77,7 @@ Property
 										"	TempDirectory=\"$TMPDIR\"\r\n"\
 										"fi\r\n"
 	{
-		!HostPlatformFamily Windows
+		!HostPlatformFamily "Windows"
 		!!ScriptWindowsBash true
 	}
 
@@ -343,7 +343,7 @@ Property
 
 %GenerateFile "LocalBuildSettingsWindowsBash"
 {
-	!!HostPlatformFamily Windows
+	!!HostPlatformFamily "Windows"
 	Property
 	{
 		ScriptExtension ".sh"
@@ -362,7 +362,7 @@ Property
 
 %GenerateFile "LocalBuildSettingsWindowsBashVCVarsBat"
 {
-	!!HostPlatformFamily Windows
+	!!HostPlatformFamily "Windows"
 	Property
 	{
 		Name "BuildSystem/SharedBuildSettingsVCVars@(ScriptExtension)"
@@ -379,7 +379,7 @@ Property
 
 %GenerateFile "LocalBuildSettingsWindowsBashVCVars"
 {
-	!!HostPlatformFamily Windows
+	!!HostPlatformFamily "Windows"
 	Property
 	{
 		ScriptExtension ".sh"
