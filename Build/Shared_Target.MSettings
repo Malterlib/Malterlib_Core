@@ -734,7 +734,13 @@ Property
 		}
 	}
 
-	MalterlibMSVCVersion "14.23.28105"
+	VisualStudioRootUnix "@(Builtin.VisualStudioRoot->UnixPath())"
+	VisualStudioMSVCRootPath "@(VisualStudioRootUnix)/VC/Tools/MSVC"
+
+	MalterlibMSVCVersionFromInstalled "@(VisualStudioMSVCRootPath->FindDirectoriesIn('*'))"
+	MalterlibMSVCVersionFromInstalled "@(MalterlibMSVCVersionFromInstalled->GetFile())"
+
+	MalterlibMSVCVersion "@(MalterlibMSVCVersionFromInstalled)"
 	{
 		!!MalterlibMSVCVersion ""
 	}
