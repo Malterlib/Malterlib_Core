@@ -257,7 +257,7 @@ Property
 	}
 	MalterlibBuildServerBuild true
 	{
-		!!BUILDSERVER true
+		!!BUILDSERVER "TRUE"
 	}
 	MalterlibBuildServerBuild false
 	{
