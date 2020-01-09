@@ -3596,7 +3596,7 @@ EFileSystemFeature NSys::NFile::fg_GetFileSystemFeatures()
 
 namespace
 {
-	template <typename tf_CWinStr, typename tf_CStr, bool tf_bThrow, bool tf_bAddFileAttribute>
+	template <typename tf_CWinStr, typename tf_CStr, bool tf_bThrow>
 	EFileAttrib fg_GetAttributesInternalWithAttribs(ch16 const *_pFileName, uint32 _FileAttribs);
 }
 
@@ -3621,7 +3621,7 @@ bool NSys::NFile::fg_FileExists(const CStr &_FileName, EFileAttrib _AttribMask)
 		if (Attribs == INVALID_FILE_ATTRIBUTES)
 			return false;
 
-		auto MalterlibAttribs = fg_GetAttributesInternalWithAttribs<CWStr, CStr, false, true>(Temp, Attribs);
+		auto MalterlibAttribs = fg_GetAttributesInternalWithAttribs<CWStr, CStr, false>(Temp, Attribs);
 
 		return (_AttribMask & MalterlibAttribs) != EFileAttrib_None;
 	}
@@ -3648,7 +3648,7 @@ bool NSys::NFile::fg_FileExists(const CStrNonTracked &_FileName, EFileAttrib _At
 		if (Attribs == INVALID_FILE_ATTRIBUTES)
 			return false;
 		
-		auto MalterlibAttribs = fg_GetAttributesInternalWithAttribs<CWStrNonTracked, CStrNonTracked, false, true>(Temp, Attribs);
+		auto MalterlibAttribs = fg_GetAttributesInternalWithAttribs<CWStrNonTracked, CStrNonTracked, false>(Temp, Attribs);
 
 		return (_AttribMask & MalterlibAttribs) != EFileAttrib_None;
 	}
@@ -4084,7 +4084,7 @@ namespace
 
 	}
 
-	template <typename tf_CWinStr, typename tf_CStr, bool tf_bThrow, bool tf_bAddFileAttribute>
+	template <typename tf_CWinStr, typename tf_CStr, bool tf_bThrow>
 	EFileAttrib fg_GetAttributesInternalWithAttribs(ch16 const *_pFileName, uint32 _FileAttribs)
 	{
 		if (_FileAttribs == INVALID_FILE_ATTRIBUTES)
@@ -4098,7 +4098,7 @@ namespace
 		uint32 MalterlibAttr = 0;
 		if (_FileAttribs & FILE_ATTRIBUTE_DIRECTORY)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_Directory;
-		else if constexpr (tf_bAddFileAttribute)
+		else
 			MalterlibAttr |= NMib::NFile::EFileAttrib_File;
 		if (_FileAttribs & FILE_ATTRIBUTE_REPARSE_POINT)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_Link;
@@ -4142,7 +4142,7 @@ namespace
 	template <typename tf_CWinStr, typename tf_CStr, bool tf_bThrow>
 	EFileAttrib fg_GetAttributesInternal(ch16 const *_pFileName)
 	{
-		return fg_GetAttributesInternalWithAttribs<tf_CWinStr, tf_CStr, tf_bThrow, false>(_pFileName, GetFileAttributesW(_pFileName));
+		return fg_GetAttributesInternalWithAttribs<tf_CWinStr, tf_CStr, tf_bThrow>(_pFileName, GetFileAttributesW(_pFileName));
 	}
 }
 
@@ -4659,7 +4659,7 @@ public:
 		uint32 FileAttribs = m_FindData.dwFileAttributes;
 		CWStr OriginalFileName = m_FullPath + m_FindData.cFileName;
 
-		EFileAttrib MalterlibAttr = fg_GetAttributesInternalWithAttribs<CWStr, CStr, false, true>(OriginalFileName, FileAttribs);
+		EFileAttrib MalterlibAttr = fg_GetAttributesInternalWithAttribs<CWStr, CStr, false>(OriginalFileName, FileAttribs);
 
 		return MalterlibAttr;
 	}

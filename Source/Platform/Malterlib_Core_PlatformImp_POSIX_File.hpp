@@ -655,8 +655,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		if (stat(FileName, &Stats))
 			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("fstat('{}') when opening file") << FileName,errno));
 		
-		// For historical reasons EFileAttrib_File is never returned by this.
-		EFileAttrib Attribs = fsg_StatsToAttribs(Stats) & (~EFileAttrib_File);
+		EFileAttrib Attribs = fsg_StatsToAttribs(Stats);
 		
 		if (!lstat(FileName, &Stats))
 		{
@@ -1011,8 +1010,7 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(void *_pFile)
 	if (fstat(pFile->m_BSDFile, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when getting file attributes") << pFile->f_GetFileName(), errno));
 
-	// For historical reasons EFileAttrib_File is never returned by this.
-	NMib::NFile::EFileAttrib Attribs = fsg_StatsToAttribs(Stats) & (~NMib::NFile::EFileAttrib_File);
+	NMib::NFile::EFileAttrib Attribs = fsg_StatsToAttribs(Stats);
 	return Attribs; 
 }
 
@@ -1158,8 +1156,7 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const& _
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when getting file attributes") << Canonical, ErrNo));
 	}
 
-	// For historical reasons EFileAttrib_File is never returned by this.
-	NMib::NFile::EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats) & (~NMib::NFile::EFileAttrib_File);
+	NMib::NFile::EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats);
 
 	if (!(LinkAttribs & NMib::NFile::EFileAttrib_Link))
 		return LinkAttribs;
@@ -1167,7 +1164,7 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const& _
 	if (stat(Canonical, &Stats))
 		return LinkAttribs;
 
-	return (fsg_StatsToAttribs(Stats) & (~NMib::NFile::EFileAttrib_File)) | NMib::NFile::EFileAttrib_Link;
+	return fsg_StatsToAttribs(Stats) | NMib::NFile::EFileAttrib_Link;
 }
 
 NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const& _Filename)
