@@ -1,4 +1,0 @@
-i386-elf-binutils 445
-portdir cross/i386-elf-binutils description {FSF Binutils for i386-elf cross development} homepage https://www.gnu.org/software/binutils/binutils.html epoch 0 platforms darwin name i386-elf-binutils depends_lib {port:gettext port:zlib} license GPL-3+ long_description {Free Software Foundation development toolchain (\"binutils\") for i386-elf cross development.} maintainers gmail.com:jinksys version 2.29.1 categories {cross devel} revision 0
-x86_64-elf-binutils 453
-portdir cross/x86_64-elf-binutils description {FSF Binutils for x86_64-elf cross development} homepage https://www.gnu.org/software/binutils/binutils.html epoch 0 platforms darwin name x86_64-elf-binutils depends_lib {port:gettext port:zlib} license GPL-3+ long_description {Free Software Foundation development toolchain (\"binutils\") for x86_64-elf cross development.} maintainers gmail.com:jinksys version 2.29.1 categories {cross devel} revision 1
