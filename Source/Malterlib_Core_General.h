@@ -160,7 +160,16 @@ namespace NMib
 	{
 		return _Value;
 	}
-	
+
+	template <typename tf_CType>
+	mark_artificial constexpr inline_always_debug typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType fg_CopyOrMove(tf_CType &&_Value)
+	{
+		if constexpr (NTraits::TCIsRValueReference<tf_CType>::mc_Value || !NTraits::TCIsLValueReference<tf_CType>::mc_Value)
+			return fg_Move(_Value);
+		else
+			return _Value;
+	}
+
 	template <typename t_CType>
 	mark_artificial constexpr inline_always_debug t_CType volatile &fg_Volatile(t_CType &_In)
 	{
