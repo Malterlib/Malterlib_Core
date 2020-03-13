@@ -112,6 +112,9 @@ namespace NMib
 			, typename... tp_COptions // Arguments, Can be function definition, option (CFunctionSupportCompareTag) or allocator 
 		>
 		class TCFunctionNoAlloc;
+
+		template <typename t_CSignature>
+		struct TCFunctionMovable;
 	}
 }
 

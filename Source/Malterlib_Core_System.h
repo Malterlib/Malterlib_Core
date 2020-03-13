@@ -36,6 +36,8 @@ namespace NMib
 		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
 		CPromiseThreadLocal m_PromiseThreadLocal;
+		DMibListLinkDS_List(CCrossActorCallStateScope, m_Link) m_CrossActorStateScopes;
+
 #if DMibEnableSafeCheck > 0
 		bool m_bExpectCoroutineCall = false;
 		bool m_bDispatchWithReturnIsIndirection = false;

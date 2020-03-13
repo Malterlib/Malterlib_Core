@@ -685,12 +685,40 @@ namespace NMib
 
 	CCoroutineThreadLocalHandler::~CCoroutineThreadLocalHandler() = default;
 
+	CCrossActorCallStateScope::CCrossActorCallStateScope()
+	{
+		if (!g_bCanStartThreads)
+			return;
+
+		auto &ThreadLocal = **g_SystemThreadLocal;
+		ThreadLocal.m_CrossActorStateScopes.f_Insert(this);
+	}
+
+	CCrossActorCallStateScope::~CCrossActorCallStateScope() = default;
+
+	void CCrossActorCallStateScope::f_Suspend()
+	{
+		m_Link.f_Unlink();
+	}
+
+	void CCrossActorCallStateScope::f_Resume()
+	{
+		auto &ThreadLocal = **g_SystemThreadLocal;
+		ThreadLocal.m_CrossActorStateScopes.f_Insert(this);
+	}
+
 	CCoroutineHandler::~CCoroutineHandler()
 	{
 		DMibFastCheck(m_nThreadLocalScopes == 0); // Outstanding scope
 	}
 
 #if DMibEnableSafeCheck > 0
+	CDebugThreadLocalScope::CDebugThreadLocalScope(CDebugThreadLocalScope &&_Other)
+		: m_pCoroutineHandler(fg_Exchange(_Other.m_pCoroutineHandler, nullptr))
+		, m_bValid(fg_Exchange(_Other.m_bValid, false))
+	{
+	}
+
 	CDebugThreadLocalScope::CDebugThreadLocalScope()
 	{
 		auto &ThreadLocal = **g_SystemThreadLocal;
@@ -701,6 +729,9 @@ namespace NMib
 
 	CDebugThreadLocalScope::~CDebugThreadLocalScope()
 	{
+		if (!m_bValid)
+			return;
+		
 		auto &ThreadLocal = **g_SystemThreadLocal;
 
 		DMibFastCheck(m_pCoroutineHandler == ThreadLocal.m_pCurrentCoroutineHandler);
