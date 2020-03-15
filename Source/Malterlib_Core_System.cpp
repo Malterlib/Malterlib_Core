@@ -673,9 +673,9 @@ namespace NMib
 		m_Aggregates.f_Remove(_pAggregate);
 	}
 
-	CCoroutineThreadLocalHandler::CCoroutineThreadLocalHandler()
+	CCoroutineThreadLocalHandler::CCoroutineThreadLocalHandler(bool _bAddToCoroutine)
 	{
-		if (!g_bCanStartThreads)
+		if (!g_bCanStartThreads || !_bAddToCoroutine)
 			return;
 
 		auto &ThreadLocal = **g_SystemThreadLocal;
@@ -685,7 +685,8 @@ namespace NMib
 
 	CCoroutineThreadLocalHandler::~CCoroutineThreadLocalHandler() = default;
 
-	CCrossActorCallStateScope::CCrossActorCallStateScope()
+	CCrossActorCallStateScope::CCrossActorCallStateScope(bool _bAddToCoroutine)
+		: CCoroutineThreadLocalHandler(_bAddToCoroutine)
 	{
 		if (!g_bCanStartThreads)
 			return;

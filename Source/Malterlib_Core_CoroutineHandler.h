@@ -7,7 +7,7 @@ namespace NMib
 {
 	struct CCoroutineThreadLocalHandler
 	{
-		CCoroutineThreadLocalHandler();
+		CCoroutineThreadLocalHandler(bool _bAddToCoroutine = true);
 		CCoroutineThreadLocalHandler(CCoroutineThreadLocalHandler &&_Other) = default;
 		~CCoroutineThreadLocalHandler();
 
@@ -45,7 +45,7 @@ namespace NMib
 
 	struct CCrossActorCallStateScope : public CCoroutineThreadLocalHandler
 	{
-		CCrossActorCallStateScope();
+		CCrossActorCallStateScope(bool _bAddToCoroutine = true);
 		CCrossActorCallStateScope(CCrossActorCallStateScope &&_Other) = default;
 		~CCrossActorCallStateScope();
 
