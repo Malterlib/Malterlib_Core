@@ -58,8 +58,8 @@ namespace NTest
 
 			fFunctor();
 			o_fFunctor();
-			m_fFunctor();
-			mp_fFunctor();
+			const_cast<TCType const *>(this)->m_fFunctor();
+			const_cast<TCType const *>(this)->mp_fFunctor();
 
 			fFunctor.f_Clear();
 		}

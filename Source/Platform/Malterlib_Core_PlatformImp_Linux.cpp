@@ -381,7 +381,7 @@ public:
 
 	pthread_key_t m_ThreadDestructionHook;
 
-	constinit NMib::NStorage::TCAggregate<CPOSIXSocketContext> m_SocketContext = { DAggregateInit };
+	NMib::NStorage::TCAggregate<CPOSIXSocketContext> m_SocketContext = { DAggregateInit };
 
 	NMib::NStorage::TCUniquePointer<NMib::NDBus::CSystem> m_pDBus; // May be nullptr
 
@@ -468,9 +468,7 @@ public:
 
 	CSystemLinux()
 		: CSystem(g_bIsSharedLibrary)
-#ifdef DCompiler_clang
 		, m_SocketContext{DAggregateInit}
-#endif
 		, m_PasswordManagerCreated(0)
 	{
 		fg_MemClear(m_SocketContext);
@@ -554,8 +552,7 @@ public:
 		pthread_setspecific(m_ThreadDestructionHook, (void*)NSys::fg_Thread_GetCurrentUID());
 	}
 
-	constinit NMib::NStorage::TCAggregate<CFileChangeNotificationContext> m_FileChangeNotificationContext = { DAggregateInit };
-
+	NMib::NStorage::TCAggregate<CFileChangeNotificationContext> m_FileChangeNotificationContext = { DAggregateInit };
 
 	void f_LoadLibraries()
 	{
