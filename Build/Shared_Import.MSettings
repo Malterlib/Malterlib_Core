@@ -72,7 +72,7 @@ Import
 	CMake_CacheReplaceContents "/opt/local/bin/=;/usr/bin/=;/usr/local/bin/=;@(Import.CMake_CacheReplaceContents)"
 
 
-	CMake_CacheReplaceContents "C:/Go/bin/=;C:/strawberry/perl/bin/=;@(Import.CMake_CacheReplaceContents)"
+	CMake_CacheReplaceContents "C:/Go/bin/=;C:/strawberry/perl/bin/=;c:/Program Files/Git/bin/=;c:/Program Files/Git/usr/bin/=;@(Import.CMake_CacheReplaceContents)"
 	{
 		!!HostPlatformFamily "Windows"
 	}
