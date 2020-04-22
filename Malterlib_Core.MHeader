@@ -16,7 +16,7 @@ Property.HasLLVMRepository true
 	Repository
 	{
 		Type "External"
-		Remotes "upstream=https://github.com/llvm/llvm-project;@(Repository.Remotes)"
+		Remotes "upstream=https://github.com/llvm/llvm-project.git;@(Repository.Remotes)"
 		DefaultUpstreamBranch "@(MalterlibClangUpstreamBranch)"
 		Tags "llvm"
 	}
