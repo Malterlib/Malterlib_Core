@@ -299,7 +299,7 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 				if (!pSocket->m_bRemoteCloseSignalled)
 				{
 					pSocket->m_bRemoteCloseSignalled = true;
-					AddedState |= ENetTCPState_RemoteClosed;
+					AddedState |= ENetTCPState_RemoteClosed | ENetTCPState_Read;
 				}
 			}
 
