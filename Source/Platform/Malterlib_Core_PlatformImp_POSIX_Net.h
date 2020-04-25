@@ -39,7 +39,7 @@ struct CPOSIXSocket
 	EPOSIXSocketMode m_Mode;
 	EPOSIXSocketEvent m_RegisteredEvents;
 	mint m_BindAddressSize = 0;
-	ENetAddressType m_BindAddressType = ENetAddressType_None;
+	ENetAddressType m_AddressType = ENetAddressType_None;
 	NStr::CStr m_UnixFilePath;
 	NStr::CStr m_PeerUnixFilePath;
 

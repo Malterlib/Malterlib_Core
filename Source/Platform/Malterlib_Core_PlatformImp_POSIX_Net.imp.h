@@ -4,6 +4,8 @@
 #include "Malterlib_Core_PlatformImp_POSIX_Net.h"
 #include <Mib/Process/Platform>
 
+#include <netinet/tcp.h>
+
 CPOSIXSocketContext::CPOSIXSocketContext()
 {
 	mp_PollerThread.f_Start(EThreadPriority_Highest);
@@ -577,6 +579,17 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 			}
 		;
 
+		if (AddressType == ENetAddressType_TCPv4 || AddressType == ENetAddressType_TCPv6)
+		{
+			int bNoDelay = 1;
+
+			if (setsockopt(FD, IPPROTO_TCP, TCP_NODELAY, &bNoDelay, sizeof(bNoDelay)) != 0)
+			{
+				int Error = errno;
+				DMibErrorNet(NMib::NPlatform::fg_FormatErrno("setsockopt (connect)", Error));
+			}
+		}
+
 		if (_pBindAddress)
 		{
 			int bReuse = 1;
@@ -643,6 +656,8 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 	auto *pSocket = fp_CreateSocket(FD, bConnected ? EPOSIXSocketMode_Connect : EPOSIXSocketMode_Connecting, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
 
 	ENetAddressType AddressType = _Address.f_GetType();
+	pSocket->m_AddressType = AddressType;
+
 	if (AddressType == ENetAddressType_Unix)
 	{
 		auto &Unix = _Address.f_GetUnix();
@@ -688,6 +703,7 @@ void CPOSIXSocketContext::fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIX
 		auto &Unix = _Address.f_GetUnix();
 		_pSocket->m_UnixFilePath = Unix.m_UnixAddress.sun_path;
 	}
+	_pSocket->m_AddressType = AddressType;
 }
 
 CPOSIXSocket* CPOSIXSocketContext::f_AsyncConnect
@@ -869,7 +885,6 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 	fp_SetUnixListenAddress(pSocket, _Address);
 
 	pSocket->m_BindAddressSize = _Address.f_GetSockAddrLen();
-	pSocket->m_BindAddressType = AddressType;
 
 	return pSocket;
 }
@@ -895,6 +910,17 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("accept", Error));
 	}
 
+	if (_pSocket->m_AddressType == ENetAddressType_TCPv4 || _pSocket->m_AddressType == ENetAddressType_TCPv6)
+	{
+		int bNoDelay = 1;
+
+		if (setsockopt(ResultFD, IPPROTO_TCP, TCP_NODELAY, &bNoDelay, sizeof(bNoDelay)) != 0)
+		{
+			int Error = errno;
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("setsockopt (accept)", Error));
+		}
+	}
+
 	fg_SetUnixSocketOptions(ResultFD);
 
 	{
@@ -909,6 +935,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 	}
 
 	auto *pSocket = fp_CreateSocket(ResultFD, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
+	pSocket->m_AddressType = _pSocket->m_AddressType;
 
 	{
 		sockaddr_storage SocketName;
@@ -1050,7 +1077,7 @@ mint CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress c
 mint CPOSIXSocketContext::f_ReceiveDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress &_Address, void *_pData, mint _DataLen)
 {
 	socklen_t Len = _pSocket->m_BindAddressSize;
-	int Result = recvfrom(_pSocket->m_FD, _pData, _DataLen, 0, (sockaddr *)_Address.f_GetForWrite(_pSocket->m_BindAddressType, Len), &Len);
+	int Result = recvfrom(_pSocket->m_FD, _pData, _DataLen, 0, (sockaddr *)_Address.f_GetForWrite(_pSocket->m_AddressType, Len), &Len);
 
 	if (Result == -1)
 	{
