@@ -6,6 +6,8 @@ Property
 	// Find base dir and export path
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
 										"chcp 65001\r\n"\
+										"SET \"RunVsDevCmd=true\"\r\n"\
+										"IF \"%1\"==\"false\" SET \"RunVsDevCmd=false\"\r\n"\
 										"@(ScriptExport) OriginalDirectory=%CD%\r\n"\
 										"cd %~dp0..\r\n"\
 										"@(ScriptExport) MalterlibBaseDir=%CD%\\\r\n"\
@@ -160,7 +162,9 @@ Property
 	VisualstudioVSToolsDir "@(Builtin.VisualStudioRoot->WindowsPath())\\Common7\\Tools"
 
 	SharedBuildSettingsScriptContents	"@(SharedBuildSettingsScriptContents)"\
+										"IF \"%RunVsDevCmd%\"==\"false\" GOTO NoVsCmd\r\n"\
 										"IF EXIST \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\" call \"@(VisualstudioVSToolsDir)\\VsDevCmd.bat\"\r\n"\
+										":NoVsCmd\r\n"\
 										"cd %OriginalDirectory%\r\n"\
 										"\r\n"
 	{
