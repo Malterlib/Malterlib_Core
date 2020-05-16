@@ -163,15 +163,6 @@ Property
 	{
 		!!MalterlibNotarizeOSXUser ""
 	}
-	MalterlibNotarizeOSXUser "{MalterlibNotarizationUser}"
-	{
-		&
-		{
-			MalterlibNotarizeOSXUser ""
-			MalterlibSigning true
-			MalterlibBuildServerBuild true
-		}
-	}
 	MalterlibNotarizeOSXPassword "@keychain:MalterlibNotarize-@(MalterlibNotarizeOSXUser)" // User(Signing)=: Set the password for your apple developer account. Can be an environment variable expansion or @keychain
 	{
 		&
