@@ -1612,8 +1612,6 @@
 					}
 				}
 			}
-			
-
 			%GeneratorSetting "CxxLanguage"
 			{
 				%GeneratorSetting "Value"
@@ -1775,7 +1773,7 @@
 					QuoteSeperatedValues "1"
 				}
 			}
-			
+		
 			%GeneratorSetting "DocumentationModule"
 			{
 				Property
@@ -3135,6 +3133,16 @@
 						false "-Wno-unused-command-line-argument"
 						true "-Wunused-command-line-argument"
 					}
+				}
+			}
+			%GeneratorSetting "MinOSXVersion"
+			{
+				Property
+				{
+					Prefix "-mmacosx-version-min="
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
 				}
 			}
 		}

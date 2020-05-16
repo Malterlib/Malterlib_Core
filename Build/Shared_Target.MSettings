@@ -975,6 +975,11 @@ Target
 			!Compile.Optimize "Off"
 		}
 	}
+	
+	LDFlags "-mmacosx-version-min=@(Platform->Replace('OSX', '')) @(Target.LDFlags)"
+	{
+		!!PlatformFamily "OSX"
+	}	
 
 	LDFlags "--closure 1 @(Target.LDFlags)"
 	{

@@ -811,6 +811,24 @@ Compile
 {
 	&
 	{
+		PlatformFamily "OSX"
+		|
+		{
+			CompileDialect "C"
+			Compile.Type "Assembler"
+		}
+	}
+	
+	MinOSXVersion "@(Platform->Replace('OSX', ''))"
+	{
+		!!Compile.MinOSXVersion ""
+	}
+}
+
+Compile
+{
+	&
+	{
 		LanguageFamily "Native"
 		|
 		{
@@ -1341,6 +1359,7 @@ Compile
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
 			!Compile.PrecompilePrefixHeader false
+			this.Type Target
 		}
 	}
 
