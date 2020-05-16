@@ -690,6 +690,23 @@
 					false ""
 				}
 			}
+		}
+
+		%GeneratorSetting "Warnings_DeprecatedDeclarations"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(ClCompile.AdditionalOptions)"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					false "/wd4996"
+					true ""
+				}
+			}
 		}		
 	}
 }
