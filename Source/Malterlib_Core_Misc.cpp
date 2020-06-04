@@ -10,13 +10,29 @@ namespace NMib
 
 	namespace NMisc
 	{
-		constinit NStorage::TCAggregate<NThread::TCThreadLocal<CAutoRandom, NMemory::CAllocator_NonTrackedHeap>> g_Random = {DAggregateInit};
+		struct CSubSystem_Misc_Random : public CSubSystem
+		{
+			void f_ForkedChild() override
+			{
+				// Reset random
+				m_Random.f_ReinitForThread();
+			}
+
+			NThread::TCThreadLocal<CAutoRandom, NMemory::CAllocator_NonTrackedHeap> m_Random;
+		};
+
+		constinit TCSubSystem<CSubSystem_Misc_Random, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Misc_Random = {DAggregateInit};
+
+		CRandomShiftRNG &fg_RandomThreadLocal()
+		{
+			return *(*g_SubSystem_Misc_Random).m_Random;
+		}
 
 		CAutoRandom::CAutoRandom()
 			: CRandomShiftRNG(uint32(NTime::NPlatform::fg_Timer_Cycles() & uint64(0xffffffff)), uint32((NTime::NPlatform::fg_Timer_Cycles() >> 32) & uint64(0xffffffff)), uint32(NTime::NPlatform::fg_Timer_Cycles() & uint64(0xffffffff)))
 		{
 		}
-		
+
 		NStr::CStr fg_FormatTime(const NTime::CTime &_Time)
 		{
 			NTime::CTimeConvert::CDateTime DateTime;
@@ -33,7 +49,7 @@ namespace NMib
 
 			return typename tf_CStr::CFormat("{}-{sj2,sf0}-{sj2,sf0}_{sj2,sf0}.{sj2,sf0}.{sj2,sf0}.{sj3,sf0,fe3}") << DateTime.m_Year << DateTime.m_Month << DateTime.m_DayOfMonth << DateTime.m_Hour << DateTime.m_Minute << DateTime.m_Second << DateTime.m_Fraction * 1000.0;
 		}
-		
+
 		NStr::CStr fg_FormatTimeFileName(const NTime::CTime &_Time)
 		{
 			NTime::CTimeConvert::CDateTime DateTime;
@@ -44,7 +60,7 @@ namespace NMib
 
 		bool fg_CheckFileAccessRights(NStr::CStr _Path)
 		{
-			try 
+			try
 			{
 
 				{
@@ -62,21 +78,21 @@ namespace NMib
 			{
 				return false;
 			}
-		}					   
+		}
 
 		template <typename tf_CStr>
 		bool fg_CheckAccessRightsTemplated(tf_CStr const& _Path, bool _bRandom)
 		{
-			try 
+			try
 			{
 				tf_CStr GUID;
-				
+
 				if (_bRandom)
 					GUID = typename tf_CStr::CFormat("TestAccessRights.{}.{}") << NMisc::fg_GetRandom() << fg_FormatTimeFileNameTemplated<tf_CStr>(NTime::CTime::fs_NowUTC());
 				else
 					GUID = typename tf_CStr::CFormat("TestAccessRights.{}") << fg_FormatTimeFileNameTemplated<tf_CStr>(NTime::CTime::fs_NowUTC());
-				
-				
+
+
 				NFile::CFile::fs_CreateDirectory(_Path);
 				NFile::CFile::fs_CreateDirectory(_Path + "/" + GUID);
 				NFile::CFile::fs_DeleteDirectory(_Path + "/" + GUID);
@@ -88,7 +104,7 @@ namespace NMib
 					uint32 Test = 1;
 					File.f_Write(&Test, sizeof(Test));
 				}
-				
+
 				NFile::CFile::fs_DeleteFile(_Path +"/"+ GUID + ".file");
 
 				return true;
@@ -98,13 +114,13 @@ namespace NMib
 			{
 				return false;
 			}
-		}			
-		
+		}
+
 		bool fg_CheckAccessRights(NStr::CStrNonTracked const& _Path, bool _bRandom)
 		{
 			return fg_CheckAccessRightsTemplated(_Path, _bRandom);
 		}
-		
+
 		bool fg_CheckAccessRights(NStr::CStr const& _Path, bool _bRandom)
 		{
 			return fg_CheckAccessRightsTemplated(_Path, _bRandom);

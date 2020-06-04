@@ -397,39 +397,37 @@ namespace NMib
 			uint32 mp_Z;
 		};
 
-
-
 		class CAutoRandom : public CRandomShiftRNG
 		{
 		public:
 			CAutoRandom();
 		};
 
-		extern NStorage::TCAggregate<NThread::TCThreadLocal<CAutoRandom, NMemory::CAllocator_NonTrackedHeap>> g_Random;
+		CRandomShiftRNG &fg_RandomThreadLocal();
 
 		static inline_small int32 fg_GetRandom()
 		{
-			return (*g_Random)->f_GetValue<int32>() & 0x7fffffff;
+			return fg_RandomThreadLocal().f_GetValue<int32>() & 0x7fffffff;
 		}
 
 		static inline_small uint32 fg_GetRandomUnsigned()
 		{
-			return (*g_Random)->f_GetValue<uint32>();
+			return fg_RandomThreadLocal().f_GetValue<uint32>();
 		}
 
 		static inline_small fp64 fg_GetRandomFloat()
 		{
-			return fp64((*g_Random)->f_GetValue<uint32>()) / fp64((*g_Random)->fs_Max());
+			return fp64(fg_RandomThreadLocal().f_GetValue<uint32>()) / fp64(fg_RandomThreadLocal().fs_Max());
 		}
 
 		static inline_small void fg_SetRanmomSeed(aint _Seed)
 		{
-			((CRandomShiftRNG &)*(*g_Random)) = CRandomShiftRNG(_Seed);
+			fg_RandomThreadLocal() = CRandomShiftRNG(_Seed);
 		}
 		
 		static inline_small CRandomShiftRNG &fg_Random()
 		{
-			return **g_Random;
+			return fg_RandomThreadLocal();
 		}
 
 		template <typename tf_CIntType>
