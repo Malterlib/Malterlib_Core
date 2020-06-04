@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 %GeneratorSetting "Native_ImportTargets"
@@ -9,7 +9,7 @@
 		{
 			A0 "$(VCTargetsPath)\\Microsoft.Cpp.Default.props"
 		}
-	}		
+	}
 	%GeneratorSetting "Props"
 	{
 		Property
@@ -18,9 +18,9 @@
 			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.props"
 			A2 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.props"
 			A3 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.props"
-			A4 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\vsyasm.props"
+			A4 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.props"
 		}
-	}		
+	}
 	%GeneratorSetting "Targets"
 	{
 		Property
@@ -29,9 +29,9 @@
 			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"
 			A2 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.targets"
 			A3 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.targets"
-			A4 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\vsyasm.targets"
+			A4 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.targets"
 		}
-	}		
+	}
 }
 %GeneratorSetting "Native_Root"
 {
@@ -126,7 +126,7 @@
 				}
 			}
 		}
-			
+
 		%GeneratorSetting "DefaultToolArchitecture"
 		{
 			Property
@@ -230,7 +230,7 @@
 					Header "ClInclude"
 					None "None"
 					Assembler "MASM"
-					AssemblerNasm "YASM"
+					AssemblerNasm "NASM"
 					QtRcc "QtRcc"
 					QtMoc "QtMoc"
 					QtUic "QtUic"

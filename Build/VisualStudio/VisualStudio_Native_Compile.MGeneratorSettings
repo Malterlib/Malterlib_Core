@@ -111,7 +111,7 @@
 		}
 	}
 }
-%GeneratorSetting "Native_YASM"
+%GeneratorSetting "Native_NASM"
 {
 	%GeneratorSetting "Compile"
 	{
@@ -119,7 +119,7 @@
 		{
 			Property
 			{
-				Name "Defines"
+				Name "PreprocessorDefinitions"
 			}
 		}
 		%GeneratorSetting "SearchPath"
@@ -131,7 +131,7 @@
 		}
 		%GeneratorSetting "ObjectFileName"
 		{
-			Property.Name "ObjectFile"
+			Property.Name "ObjectFileName"
 		}
 	}
 }
