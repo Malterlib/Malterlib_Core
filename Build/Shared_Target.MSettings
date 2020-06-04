@@ -433,7 +433,7 @@ Target
 		Target.Type "Tool"
 	}
 
-	Real_CommandLine_Build "@(Target.PreBuildScript)\r\n\r\n@(Target.CommandLine_Build)\r\n\r\n@(Target.PostBuildScript)"
+	Real_CommandLine_Build "rem\r\n@(Target.PreBuildScript)\r\n\r\n@(Target.CommandLine_Build)\r\n\r\n@(Target.PostBuildScript)"
 	Real_CommandLine_ReBuild "@(Target.CommandLine_ReBuild)"
 	Real_CommandLine_Clean "@(Target.CommandLine_Clean)"
 }
@@ -446,7 +446,7 @@ Target
 		Target.Type "Tool"
 	}
 
-	Real_CommandLine_Build "@(Target.PreBuildScript)\r\ncall \"@(MalterlibExportEnvironmentScript->WindowsPath())\"\r\n\r\n@(Target.CommandLine_Build)\r\n\r\n@(Target.PostBuildScript)"
+	Real_CommandLine_Build "rem\r\n@(Target.PreBuildScript)\r\ncall \"@(MalterlibExportEnvironmentScript->WindowsPath())\"\r\n\r\n@(Target.CommandLine_Build)\r\n\r\n@(Target.PostBuildScript)"
 	Real_CommandLine_ReBuild "call \"@(MalterlibExportEnvironmentScript->WindowsPath())\"\r\n@(Target.CommandLine_ReBuild)"
 	Real_CommandLine_Clean "call \"@(MalterlibExportEnvironmentScript->WindowsPath())\"\r\n@(Target.CommandLine_Clean)"
 }
