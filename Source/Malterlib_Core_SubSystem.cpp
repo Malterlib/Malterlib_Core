@@ -28,7 +28,15 @@ namespace NMib
 	void CSubSystem::f_ForkedChild()
 	{
 	}
-	
+
+	void CSubSystem::f_ForkedChildAfterThreadLocal()
+	{
+	}
+
+	void CSubSystem::f_ForkedParentAfterThreadLocal()
+	{
+	}
+
 	void CSubSystem::f_PreDestroyThreadSpecific()
 	{
 	}
@@ -71,6 +79,18 @@ namespace NMib
 		}
 		mp_SubSystemsLock.f_ForkedChild();
 		mp_SubSystemsLock.f_Unlock();
+	}
+
+	void CSystem::fp_SubSystem_ForkedChild_AfterThreadLocal()
+	{
+		for (auto &SubSystem : mp_SubSystems)
+			SubSystem.f_ForkedChildAfterThreadLocal();
+	}
+
+	void CSystem::fp_SubSystem_ForkedParent_AfterThreadLocal()
+	{
+		for (auto &SubSystem : mp_SubSystems)
+			SubSystem.f_ForkedParentAfterThreadLocal();
 	}
 
 	void CSystem::fp_SubSystem_ForkedParent_BeforeMemoryManager()

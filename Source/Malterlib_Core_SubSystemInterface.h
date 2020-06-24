@@ -32,8 +32,10 @@ namespace NMib
 
 		virtual void f_PrepareFork();
 		virtual void f_ForkedParent();
+		virtual void f_ForkedParentAfterThreadLocal();
 		virtual void f_ForkedChild();
-		
+		virtual void f_ForkedChildAfterThreadLocal();
+
 		virtual void f_PreDestroyThreadSpecific();
 		virtual void f_DestroyThreadSpecific();
 		virtual void f_DestroyThreadLocal();

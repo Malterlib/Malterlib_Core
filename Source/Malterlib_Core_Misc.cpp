@@ -1,6 +1,9 @@
 // Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+#include <Mib/Process/Platform>
+#include <Mib/Cryptography/Hashes/SHA>
+
 namespace NMib
 {
 	[[noreturn]] void fg_NoReturn()
@@ -12,10 +15,10 @@ namespace NMib
 	{
 		struct CSubSystem_Misc_Random : public CSubSystem
 		{
-			void f_ForkedChild() override
+			void f_ForkedChildAfterThreadLocal() override
 			{
 				// Reset random
-				m_Random.f_ReinitForThread();
+				m_Random.f_DestroyForThread();
 			}
 
 			NThread::TCThreadLocal<CAutoRandom, NMemory::CAllocator_NonTrackedHeap> m_Random;
@@ -28,8 +31,21 @@ namespace NMib
 			return *(*g_SubSystem_Misc_Random).m_Random;
 		}
 
+		static uint32 fg_IntegerFromCyclesAndRandom()
+		{
+			NCryptography::CHash_SHA512 Hash;
+			auto Cycles = NTime::NPlatform::fg_Timer_Cycles();
+			Hash.f_AddData(&Cycles, sizeof(Cycles));
+			auto RandomInteger = fg_GetHighEntropyRandomInteger<uint64>();
+			Hash.f_AddData(&RandomInteger, sizeof(RandomInteger));
+			auto Digest = Hash.f_GetDigest();
+			uint32 Return;
+			NMemory::fg_MemCopy(&Return, Digest.f_GetData(), sizeof(Return));
+			return Return;
+		}
+
 		CAutoRandom::CAutoRandom()
-			: CRandomShiftRNG(uint32(NTime::NPlatform::fg_Timer_Cycles() & uint64(0xffffffff)), uint32((NTime::NPlatform::fg_Timer_Cycles() >> 32) & uint64(0xffffffff)), uint32(NTime::NPlatform::fg_Timer_Cycles() & uint64(0xffffffff)))
+			: CRandomShiftRNG(fg_IntegerFromCyclesAndRandom(), fg_IntegerFromCyclesAndRandom(), fg_IntegerFromCyclesAndRandom())
 		{
 		}
 

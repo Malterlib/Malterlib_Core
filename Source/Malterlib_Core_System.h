@@ -183,6 +183,8 @@ namespace NMib
 		void fp_SubSystem_PrepareFork_AfterMemoryManager();
 		void fp_SubSystem_ForkedChild_AfterMemoryManager();
 		void fp_SubSystem_ForkedParent_AfterMemoryManager();
+		void fp_SubSystem_ForkedChild_AfterThreadLocal();
+		void fp_SubSystem_ForkedParent_AfterThreadLocal();
 
 		void fp_SubSystem_DestroyThreadLocal();
 		void fp_SubSystem_DestroyThreadSpecific();
@@ -403,6 +405,7 @@ namespace NMib
 		void f_ThreadLocalCreateThread(mint _ThreadID, mint _ParentThreadID);
 		void *f_ThreadLocalGet(void *_pStorageIndex);
 		void f_ThreadLocalReinitForThread(void *_pStorageIndex);
+		void f_ThreadLocalDestroyForThread(void *_pStorageIndex);
 		void f_ThreadLocalSet(void *_pStorageIndex, void *_pValue);
 		void f_OnThreadCreated(mint _ThreadID, mint _ParentID);
 		void f_OnThreadDestroyed();
