@@ -387,6 +387,7 @@ namespace NMib
 		f_MemoryManager_ForkedChild();
 		fp_SubSystem_ForkedChild_BeforeMemoryManager();
 		f_ThreadLocal_ForkedChild();
+		fp_SubSystem_ForkedChild_AfterThreadLocal();
 #if DMibSysLogSeverities
 		if (m_pSystemLog)
 			m_pSystemLog->f_ForkedChild();
@@ -403,6 +404,7 @@ namespace NMib
 		f_MemoryManager_ForkedParent();
 		fp_SubSystem_ForkedParent_BeforeMemoryManager();
 		f_ThreadLocal_ForkedParent();
+		fp_SubSystem_ForkedParent_AfterThreadLocal();
 #if DMibSysLogSeverities
 		if (m_pSystemLog)
 			m_pSystemLog->f_ForkedParent();
