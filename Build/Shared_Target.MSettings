@@ -1314,7 +1314,7 @@ Target
 		}
 	}
 
-	LDFlags "-Xlinker --wrap=memcpy -Xlinker -Bsymbolic -Xlinker -Bsymbolic-functions @(Target.LDFlags)"
+	LDFlags "-Xlinker -Bsymbolic -Xlinker -Bsymbolic-functions @(Target.LDFlags)"
 	{
 		!!PlatformFamily "Linux"
 	}

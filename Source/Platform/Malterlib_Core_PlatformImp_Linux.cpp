@@ -2496,43 +2496,11 @@ namespace NMib
 	}
 }
 
-#ifdef DMibUseGoldLinker
-#if 0
-	#ifdef __amd64__
-		#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver __real_" #d_Symbols ",__real_" #d_Symbols "@GLIBC_2.2.5")
-	#elif defined(__i386__)
-		#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver __real_" #d_Symbols ",__real_" #d_Symbols "@GLIBC_2.0")
-	#else
-		#error "Implement this"
-	#endif
-
-	extern "C" void *__real_memcpy (void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n);
-	DDefineGLibCSymbolCompatible(memcpy);
-#endif
-
-	extern "C" void *__wrap_memcpy (void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n)
-	{
-		return NLocal::g_f_memcpy(__dest, __src, __n); // Due to bug in gold linker we can't get correct version of memcpy
-		//return __real_memcpy(__dest, __src, __n);
-	}
-
-#else
-
-	#ifdef __amd64__
-		#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver " #d_Symbols "," #d_Symbols "@GLIBC_2.2.5")
-	#elif defined(__i386__)
-		#define DDefineGLibCSymbolCompatible(d_Symbols) __asm__(".symver " #d_Symbols "," #d_Symbols "@GLIBC_2.0")
-	#else
-		#error "Implement this"
-	#endif
-
-	DDefineGLibCSymbolCompatible(memcpy);
-
-	extern "C" void *__wrap_memcpy (void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n)
-	{
-		return memcpy(__dest, __src, __n);
-	}
-#endif
+// Make sure we can target glibc 2.3
+extern "C" void *memcpy(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n)
+{
+	return memmove(__dest, __src, __n);
+}
 
 namespace NMib
 {
