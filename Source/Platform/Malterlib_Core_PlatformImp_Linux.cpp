@@ -2497,7 +2497,7 @@ namespace NMib
 }
 
 // Make sure we can target glibc 2.3
-extern "C" void *memcpy(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n)
+extern "C" void *memcpy(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) __attribute__((no_builtin))
 {
 	return memmove(__dest, __src, __n);
 }
