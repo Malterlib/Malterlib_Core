@@ -139,7 +139,7 @@ NMib::NStream::CFilePos NSys::NFile::fg_GetFreeSpace(const NMib::NStr::CStr &_Pa
 	CStr Path = _Path;
 	struct statvfs Stats;
 	if (statvfs(Path, &Stats))
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("statvfs('{}')") << _Path,errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("statvfs('{}')") << _Path, errno));
 
 	return NMib::NStream::CFilePos(Stats.f_frsize) * NMib::NStream::CFilePos(Stats.f_bavail);
 }
@@ -149,9 +149,19 @@ NMib::NStream::CFilePos NSys::NFile::fg_GetUsedSpace(const NMib::NStr::CStr &_Pa
 	CStr Path = _Path;
 	struct statvfs Stats;
 	if (statvfs(Path, &Stats))
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("statvfs('{}')") << _Path,errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("statvfs('{}')") << _Path, errno));
 
 	return NMib::NStream::CFilePos(Stats.f_frsize) * NMib::NStream::CFilePos(Stats.f_blocks - Stats.f_bfree);
+}
+
+NMib::NStream::CFilePos NSys::NFile::fg_GetTotalSpace(const NMib::NStr::CStr &_Path)
+{
+	CStr Path = _Path;
+	struct statvfs Stats;
+	if (statvfs(Path, &Stats))
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("statvfs('{}')") << _Path, errno));
+
+	return NMib::NStream::CFilePos(Stats.f_frsize) * NMib::NStream::CFilePos(Stats.f_blocks);
 }
 
 

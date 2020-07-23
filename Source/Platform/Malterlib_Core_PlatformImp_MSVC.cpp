@@ -5111,6 +5111,18 @@ NMib::NStream::CFilePos NSys::NFile::fg_GetUsedSpace(const NMib::NStr::CStr &_Pa
 	return TotalSpace.QuadPart - FreeSpace.QuadPart;
 }
 
+NMib::NStream::CFilePos NSys::NFile::fg_GetTotalSpace(const NMib::NStr::CStr &_Path)
+{
+	ULARGE_INTEGER FreeSpace;
+	ULARGE_INTEGER TotalSpace;
+	CWStr Path = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_Path);
+	if (Path.f_GetAt(Path.f_GetLen() - 1) == ':')
+		Path += "\\";
+	if (!GetDiskFreeSpaceExW(Path, &FreeSpace, &TotalSpace, nullptr))
+		DMibErrorFile((CStr::CFormat("Windows returned an error from GetDiskFreeSpaceExW({}): {}") << Path << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+
+	return TotalSpace.QuadPart;
+}
 
 namespace
 {
