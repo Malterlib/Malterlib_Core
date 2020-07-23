@@ -210,6 +210,15 @@ namespace NMib
 				| EFileAttrib_EveryoneWrite
 		};
 
+		enum EFileMountType
+		{
+			EFileMountType_None = 0
+			, EFileMountType_Block = DMibBit(0)
+			, EFileMountType_Special = DMibBit(1)
+			, EFileMountType_Local = DMibBit(2)
+			, EFileMountType_Remote = DMibBit(3)
+		};
+
 		enum ESymbolicLinkFlag
 		{
 			ESymbolicLinkFlag_None					= 0

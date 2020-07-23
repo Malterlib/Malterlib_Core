@@ -5124,6 +5124,113 @@ NMib::NStream::CFilePos NSys::NFile::fg_GetTotalSpace(const NMib::NStr::CStr &_P
 	return TotalSpace.QuadPart;
 }
 
+NContainer::TCVector<NStr::CStr> NSys::NFile::fg_GetMounts(NMib::NFile::EFileMountType _Types)
+{
+	if (!(_Types & NMib::NFile::EFileMountType_Block))
+		return {}; // We don't support special devices on Windows
+
+	if ((_Types & (EFileMountType_Local | EFileMountType_Remote)) == EFileMountType_None)
+		return {};
+
+	using namespace NMib::NStr;
+
+
+	NContainer::TCVector<CWStr> Volumes;
+	CWStr VolumePath;
+	HANDLE pFind = FindFirstVolumeW(VolumePath.f_GetStr(NMib::NFile::NPlatform::gc_MaxWindowsPath), NMib::NFile::NPlatform::gc_MaxWindowsPath);
+	if (pFind == INVALID_HANDLE_VALUE)
+	{
+		auto LastError = GetLastError();
+		if (LastError == ERROR_NO_MORE_FILES)
+			return {};
+
+		DMibErrorFile((CStr::CFormat("Windows returned an error from FindFirstVolumeW(): {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
+	}
+	VolumePath.f_SetModified();
+
+	auto Cleanup = g_OnScopeExit > [&]
+		{
+			FindVolumeClose(pFind);
+		}
+	;
+
+	Volumes.f_Insert(VolumePath);
+
+	while (true)
+	{
+		if (!FindNextVolumeW(pFind, VolumePath.f_GetStr(NMib::NFile::NPlatform::gc_MaxWindowsPath), NMib::NFile::NPlatform::gc_MaxWindowsPath))
+		{
+			auto LastError = GetLastError();
+			if (LastError == ERROR_NO_MORE_FILES)
+				break;
+			DMibErrorFile((CStr::CFormat("Windows returned an error from FindNextVolumeW(): {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
+		}
+		VolumePath.f_SetModified();
+
+		Volumes.f_Insert(VolumePath);
+	}
+
+	NContainer::TCVector<CStr> Return;
+
+	auto fAddPath = [&](CWStr const &_Path)
+		{
+			uint32 DriveType = GetDriveTypeW(_Path.f_GetStr());
+			if (DriveType == DRIVE_REMOTE)
+			{
+				if (!(_Types & NMib::NFile::EFileMountType_Remote))
+					return;
+			}
+			else
+			{
+				if (!(_Types & NMib::NFile::EFileMountType_Local))
+					return;
+			}
+
+			Return.f_Insert(NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(_Path));
+		}
+	;
+
+	for (auto &Volume : Volumes)
+	{
+		fAddPath(Volume);
+
+		HANDLE pFindVolume = FindFirstVolumeMountPointW(Volume.f_GetStr(), VolumePath.f_GetStr(NMib::NFile::NPlatform::gc_MaxWindowsPath), NMib::NFile::NPlatform::gc_MaxWindowsPath);
+		if (pFindVolume == INVALID_HANDLE_VALUE)
+		{
+			auto LastError = GetLastError();
+			if (LastError == ERROR_NO_MORE_FILES)
+				continue;
+
+			DMibErrorFile((CStr::CFormat("Windows returned an error from FindFirstVolumeMountPointW({}): {}") << Volume << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+		}
+		VolumePath.f_SetModified();
+
+		auto Cleanup = g_OnScopeExit > [&]
+			{
+				FindVolumeMountPointClose(pFindVolume);
+			}
+		;
+
+		fAddPath(VolumePath);
+
+		while (true)
+		{
+			if (!FindNextVolumeMountPointW(pFindVolume, VolumePath.f_GetStr(NMib::NFile::NPlatform::gc_MaxWindowsPath), NMib::NFile::NPlatform::gc_MaxWindowsPath))
+			{
+				auto LastError = GetLastError();
+				if (LastError == ERROR_NO_MORE_FILES)
+					break;
+				DMibErrorFile((CStr::CFormat("Windows returned an error from FindNextVolumeW(): {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
+			}
+			VolumePath.f_SetModified();
+
+			fAddPath(VolumePath);
+		}
+	}
+
+	return Return;
+}
+
 namespace
 {
 	bool fg_DirectoryExists(const ch16 *_pFileDirectory)

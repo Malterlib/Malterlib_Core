@@ -12,6 +12,7 @@ using namespace NMib;
 #include <sys/types.h>
 #ifdef DPlatformFamily_OSX
 #	include <sys/attr.h>
+#	include <sys/mount.h>
 #endif
 #include <sys/stat.h>
 #include <sys/file.h>
@@ -164,6 +165,185 @@ NMib::NStream::CFilePos NSys::NFile::fg_GetTotalSpace(const NMib::NStr::CStr &_P
 	return NMib::NStream::CFilePos(Stats.f_frsize) * NMib::NStream::CFilePos(Stats.f_blocks);
 }
 
+namespace
+{
+#ifdef DPlatformFamily_Linux
+	NStr::CStr fg_ParseOctalCoded(NStr::CStr const &_String)
+	{
+		NStr::CStr Return;
+
+		for (ch8 const *pParse = _String.f_GetStr(); *pParse;)
+		{
+			if (pParse[0] == '\\' && fg_CharIsNumber(pParse[1]))
+			{
+				++pParse;
+				CStr OctalNumber;
+				OctalNumber.f_AddChar(*pParse);
+				++pParse;
+				if (fg_CharIsNumber(*pParse))
+				{
+					OctalNumber.f_AddChar(*pParse);
+					++pParse;
+				}
+				if (fg_CharIsNumber(*pParse))
+				{
+					OctalNumber.f_AddChar(*pParse);
+					++pParse;
+				}
+
+				ch8 const *pParseOctal = OctalNumber.f_GetStr();
+				Return.f_AddChar(fg_StrToIntParse(pParseOctal, 32, (ch8 const *)nullptr, false, EStrToIntParseMode_Octal));
+				continue;
+			}
+
+			Return.f_AddChar(*pParse);
+			++pParse;
+		}
+
+		return Return;
+	}
+#endif
+}
+
+NContainer::TCVector<NStr::CStr> NSys::NFile::fg_GetMounts(NMib::NFile::EFileMountType _Types)
+{
+#ifdef DPlatformFamily_Linux
+	NContainer::TCVector<NMib::NStr::CStr> Return;
+
+	bool bUseMountInfo = NMib::CSystem::ms_PlatformVersion >= 2'006'026;
+
+	NContainer::TCVector<ch8> FileData;
+	if (bUseMountInfo)
+		FileData = NPlatform::fg_ReadProcFS("/proc/self/mountinfo");
+	else
+		FileData = NPlatform::fg_ReadProcFS("/proc/mounts");
+
+	auto pParse = FileData.f_GetArray();
+
+	NContainer::TCSet<CStr> KnownDeviceIDs;
+
+	while (*pParse)
+	{
+		auto *pStart = pParse;
+		fg_ParseToEndOfLine(pParse);
+		CStr Str(pStart, pParse - pStart);
+		fg_ParseEndOfLine(pParse);
+		auto Components = Str.f_Split(" ");
+
+		CStr SourcePath;
+		CStr MountPath;
+		CStr DeviceID;
+
+		if (bUseMountInfo)
+		{
+			if (Components.f_GetLen() < 10)
+				continue;
+
+			DeviceID = fg_ParseOctalCoded(Components[2]);
+			MountPath = fg_ParseOctalCoded(Components[4]);
+			SourcePath = fg_ParseOctalCoded(Components[9]);
+		}
+		else
+		{
+			if (Components.f_GetLen() < 2)
+				continue;
+
+			SourcePath = fg_ParseOctalCoded(Components[0]);
+			MountPath = fg_ParseOctalCoded(Components[1]);
+		}
+
+		CStr Remote = "Remote";
+		if (SourcePath.f_FindChar(':') >= 0)
+		{
+			if (!(_Types & NMib::NFile::EFileMountType_Remote))
+				continue;
+		}
+		else
+		{
+			if (!(_Types & NMib::NFile::EFileMountType_Local))
+				continue;
+			Remote = "Local";
+		}
+
+		uint64 UsedSpace = 0;
+		try
+		{
+			UsedSpace = fg_GetUsedSpace(MountPath);
+		}
+		catch (NMib::NFile::CExceptionFile const &)
+		{
+		}
+
+		CStr Block = "Block";
+		if (UsedSpace > 0 && SourcePath != "tmpfs" && (!DeviceID || !KnownDeviceIDs.f_FindEqual(DeviceID)))
+		{
+			if (!(_Types & NMib::NFile::EFileMountType_Block))
+				continue;
+		}
+		else
+		{
+			if (!(_Types & NMib::NFile::EFileMountType_Special))
+				continue;;
+			Block = "Special";
+		}
+
+		if (DeviceID)
+			KnownDeviceIDs[DeviceID];
+
+		Return.f_Insert(fg_Move(MountPath));
+	}
+
+	return Return;
+#else
+	int nMounts = getfsstat(nullptr, 0, MNT_NOWAIT);
+
+	if (nMounts < 0)
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getfsstat(get count)"), errno));
+
+	NContainer::TCVector<struct statfs> SourceMounts;
+	SourceMounts.f_SetLen(nMounts);
+	nMounts = getfsstat(SourceMounts.f_GetArray(), nMounts * sizeof(struct statfs), MNT_NOWAIT);
+	if (nMounts < 0)
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getfsstat(get)"), errno));
+
+	SourceMounts.f_SetLen(nMounts);
+
+	NMib::NContainer::TCVector<NMib::NStr::CStr> Return;
+	for (auto &Mount : SourceMounts)
+	{
+		CStr MountLocation = Mount.f_mntonname;
+		CStr MountSource = Mount.f_mntfromname;
+
+		if (Mount.f_flags & MNT_LOCAL)
+		{
+			if (!(_Types & NMib::NFile::EFileMountType_Local))
+				continue;
+		}
+		else
+		{
+			if (!(_Types & NMib::NFile::EFileMountType_Remote))
+				continue;
+		}
+
+		CStr FsType = Mount.f_fstypename;
+
+		if (Mount.f_blocks && FsType != "devfs" && FsType != "autofs")
+		{
+			if (!(_Types & NMib::NFile::EFileMountType_Block))
+				continue;
+		}
+		else
+		{
+			if (!(_Types & NMib::NFile::EFileMountType_Special))
+				continue;;
+		}
+
+		Return.f_Insert(fg_Move(MountLocation));
+	}
+
+	return Return;
+#endif
+}
 
 NMib::NFile::EFileSystemFeature NSys::NFile::fg_GetFileSystemFeatures()
 {
