@@ -2300,6 +2300,7 @@
 				{
 					Property
 					{
+						Default "-fvisibility=default"
 						Hidden "-fvisibility=hidden"
 						InlineHidden "-fvisibility-inlines-hidden"
 						AllHidden "-fvisibility=hidden -fvisibility-inlines-hidden -fvisibility-global-new-delete-hidden"
