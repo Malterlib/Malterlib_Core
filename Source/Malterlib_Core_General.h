@@ -161,13 +161,20 @@ namespace NMib
 		return _Value;
 	}
 
-	template <typename tf_CType>
-	mark_artificial constexpr inline_always_debug typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType fg_CopyOrMove(tf_CType &&_Value)
+	template <typename tf_CToType, typename tf_CType>
+	mark_artificial constexpr inline_always_debug decltype(auto) fg_CopyOrMove(tf_CType &&_Value)
 	{
-		if constexpr (NTraits::TCIsRValueReference<tf_CType>::mc_Value || !NTraits::TCIsLValueReference<tf_CType>::mc_Value)
-			return fg_Move(_Value);
+		using CToType = typename NTraits::TCRemoveReferenceAndQualifiers<tf_CToType>::CType;
+
+		if constexpr (NTraits::TCIsSame<CToType, typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType>::mc_Value)
+		{
+			if constexpr (NTraits::TCIsRValueReference<tf_CType &&>::mc_Value)
+				return (fg_Forward<tf_CType>(_Value));
+			else
+				return CToType(fg_Forward<tf_CType>(_Value));
+		}
 		else
-			return _Value;
+			return CToType(fg_Forward<tf_CType>(_Value));
 	}
 
 	template <typename t_CType>
