@@ -1593,7 +1593,7 @@
 				{
 					Property
 					{
-						FullForDebug "-gfull"
+						FullForDebug "-gfull -fstandalone-debug"
 						Full "-g"
 						Fast "-gline-tables-only"
 						None "-g0"
