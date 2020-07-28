@@ -1,8 +1,8 @@
-../../Binaries/Malterlib/Linux/x64 2ea0797d26a1b69e499f6f3921d0bdad44e67471
-../../Binaries/Malterlib/Linux/x86 41b449a3b92337ff85b10adec9b6fdc1eb7d7cd9
-../../Binaries/Malterlib/OSX/x64 03ed98001834547d07fae7e998eb5afd8733d24e
-../../Binaries/Malterlib/Windows/x64 32d82e6d5835aaca5ec555ed2496e197eb48dfca
-../../Binaries/Malterlib/Windows/x86 e9908632b96cbea69ca01ca9270efb4e3bc8d8bd
+../../Binaries/Malterlib/Linux/x64 70c1562cd3a10181dbe48da663851e49bb3491bf
+../../Binaries/Malterlib/Linux/x86 8d80b10d7b0e8a54513de1cdb90fa00c28903225
+../../Binaries/Malterlib/OSX/x64 efcfb245b6bcb8a1d73173579d5cbf3d3c65bf28
+../../Binaries/Malterlib/Windows/x64 c3ef477ab81b89b3ba234296714bdd2a43c901d0
+../../Binaries/Malterlib/Windows/x86 622c25e8065f2c8f230112fb113dfe9a74c74a41
 ../../Binaries/MalterlibTest/Cloud/Linux/x64 e0d2af26ccf770d24dff5d9c0d9f404e5fd441a2
 ../../Binaries/MalterlibTest/Cloud/OSX/x64 e4fc28e909ae0c0d98dd5ae6b38609e769ebbbb3
 ../../SDK 24dcf4491deed0b88515b1e979d74e9535f5a970
@@ -53,7 +53,7 @@
 ../Time f95e27b4200a6a971bca7e40fac40b08c3aea852
 ../Tool c52200052ad0c932e95141587fc162500906074c
 ../Type fe4029bbc7bebfab9754de217687a333427d2c85
-../Web 3a956e8a36fb6589fa56d6ee84933f1dd32d57af
+../Web 2561e54adb015a2c5172faee52a458c2c884d505
 ../WebApp 86a8882c079d7f265fb793a178a20b11132e0b64
 ../XML 1bd09b19e8352edc7f6b31415a53d2c50cd7c1e6
 ~MalterlibBinaries_Linux 99875bb05b79211fec6e93ada26da5ca2d2221ae
