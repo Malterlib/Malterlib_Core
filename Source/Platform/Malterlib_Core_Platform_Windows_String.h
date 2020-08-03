@@ -17,6 +17,8 @@ namespace NMib
 			CWStr fg_StrToWindows(const CWStr &_Str);
 			CWStr fg_StrToWindows(const CUStr &_Str);
 			CStr fg_StrFromWindows(const CWStr &_Str);
+
+			static constexpr mint gc_MaxWindowsEnvVarLength = 32768;
 		}
 	}
 }

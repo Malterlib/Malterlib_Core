@@ -32,6 +32,8 @@ namespace NMib
 			void fg_RemoveDosDevice(NStr::CStr const &_Device);
 
 			NStr::CStr fg_ConvertToMinGWPath(NStr::CStr const &_In);
+
+			static constexpr mint gc_MaxWindowsPath = 32768;
 		}
 	}
 }

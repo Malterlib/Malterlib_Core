@@ -3134,9 +3134,9 @@ NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NSys::fg_Process_GetEnviro
 NMib::NStr::CStr NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName)
 {
 	NMib::NStr::CWStr Temp;
-	ch16 *pStr = Temp.f_GetStr(32768);
+	ch16 *pStr = Temp.f_GetStr(NMib::NStr::NPlatform::gc_MaxWindowsEnvVarLength);
 	pStr[0] = 0;
-	GetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows(_VariableName), pStr, 32768);
+	GetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows(_VariableName), pStr, NMib::NStr::NPlatform::gc_MaxWindowsEnvVarLength);
 	Temp.f_TrimSize();
 	return Temp;
 }
@@ -3144,9 +3144,9 @@ NMib::NStr::CStr NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr
 bool NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value)
 {
 	NMib::NStr::CWStr Temp;
-	ch16 *pStr = Temp.f_GetStr(32768);
+	ch16 *pStr = Temp.f_GetStr(NMib::NStr::NPlatform::gc_MaxWindowsEnvVarLength);
 	pStr[0] = 0;
-	if (!GetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows(_VariableName), pStr, 32768))
+	if (!GetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows(_VariableName), pStr, NMib::NStr::NPlatform::gc_MaxWindowsEnvVarLength))
 		return false;
 
 	Temp.f_TrimSize();
@@ -3163,9 +3163,9 @@ void NMib::NSys::fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStr const
 NMib::NStr::CStrNonTracked NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName)
 {
 	NMib::NStr::CWStrNonTracked Temp;
-	ch16 *pStr = Temp.f_GetStr(32768);
+	ch16 *pStr = Temp.f_GetStr(NMib::NStr::NPlatform::gc_MaxWindowsEnvVarLength);
 	pStr[0] = 0;
-	GetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows<NMib::NStr::CWStrNonTracked>(_VariableName), pStr, 32768);
+	GetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows<NMib::NStr::CWStrNonTracked>(_VariableName), pStr, NMib::NStr::NPlatform::gc_MaxWindowsEnvVarLength);
 	Temp.f_TrimSize();
 	return Temp;
 }
@@ -3173,9 +3173,9 @@ NMib::NStr::CStrNonTracked NSys::fg_Process_GetEnvironmentVariable_NonProtected(
 bool NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
 {
 	NMib::NStr::CWStrNonTracked Temp;
-	ch16 *pStr = Temp.f_GetStr(32768);
+	ch16 *pStr = Temp.f_GetStr(NMib::NStr::NPlatform::gc_MaxWindowsEnvVarLength);
 	pStr[0] = 0;
-	if (!GetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows<NMib::NStr::CWStrNonTracked>(_VariableName), pStr, 32768))
+	if (!GetEnvironmentVariableW(NMib::NStr::NPlatform::fg_StrToWindows<NMib::NStr::CWStrNonTracked>(_VariableName), pStr, NMib::NStr::NPlatform::gc_MaxWindowsEnvVarLength))
 		return false;
 
 	Temp.f_TrimSize();
@@ -5312,7 +5312,7 @@ CStr NSys::NFile::fg_GetProgramPath()
 CStr NSys::NFile::fg_GetCurrentDirectory()
 {
 	CWStr Ret;
-	if (!GetCurrentDirectoryW(65536, Ret.f_GetStr(65536)))
+	if (!GetCurrentDirectoryW(NMib::NFile::NPlatform::gc_MaxWindowsPath, Ret.f_GetStr(NMib::NFile::NPlatform::gc_MaxWindowsPath)))
 		DMibErrorFile((CStr::CFormat("Windows returned an error from GetCurrentDirectoryW: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(0)).f_GetStr());
 	Ret.f_SetModified();
 	return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(Ret);
@@ -5426,7 +5426,7 @@ CStrNonTracked NSys::NFile::fg_GetProgramDirectoryNonTracked()
 CStrNonTracked NSys::NFile::fg_GetCurrentDirectoryNonTracked()
 {
 	CWStrNonTracked Ret;
-	if (!GetCurrentDirectoryW(65536, Ret.f_GetStr(65536)))
+	if (!GetCurrentDirectoryW(NMib::NFile::NPlatform::gc_MaxWindowsPath, Ret.f_GetStr(NMib::NFile::NPlatform::gc_MaxWindowsPath)))
 		DMibErrorFile((CStr::CFormat("Windows returned an error from GetCurrentDirectoryW: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(0)).f_GetStr());
 	Ret.f_SetModified();
 	return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(Ret);

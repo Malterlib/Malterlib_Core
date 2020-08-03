@@ -846,15 +846,9 @@ public:
 		auto pPEB = fg_GetPEB(fg_GetTEB());
 
 		CWStr BaseName;
-		/*
-		if (!GetModuleFileName(nullptr, BaseName.f_GetStr(65536), 65536))
-		{
-			DMibPDebugBreak;
-		}*/
 
 		BaseName.f_AddStr(pPEB->ProcessParameters->ImagePathName.Buffer, pPEB->ProcessParameters->ImagePathName.Length);
 
-//		DConOut("BaseName: {}" DMibNewLine, BaseName);
 		m_ProgramPath_CStr = NFile::NPlatform::fg_ConvertFromWindowsPath(BaseName); // Make sure unicode conversion is correct
 
 		m_ProgramDir_CStr = CFile::fs_GetPath(m_ProgramPath_CStr);

@@ -657,9 +657,9 @@ namespace NMib
 					SIZE_T ReadBytes = 0;
 					if (ReadProcessMemory(hProcess, BasicInfo.PebBaseAddress, &Peb, sizeof(Peb), &ReadBytes) && ReadBytes == sizeof(Peb))
 					{
-						auto pData = ImageFileName.f_GetStr(32768);
+						auto pData = ImageFileName.f_GetStr(NMib::NFile::NPlatform::gc_MaxWindowsPath);
 						pData[0] = 0;
-						GetMappedFileNameW(hProcess, (HMODULE)Peb.ImageBaseAddress, pData, 32768);
+						GetMappedFileNameW(hProcess, (HMODULE)Peb.ImageBaseAddress, pData, NMib::NFile::NPlatform::gc_MaxWindowsPath);
 						ImageFileName.f_GetLen();
 					}
 				}
