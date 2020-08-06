@@ -45,6 +45,12 @@ namespace NMib
 			}
 		}
 
-		
+		template <typename tf_CStr>
+		tf_CStr fg_ErrnoString(int _Err)
+		{
+			return tf_CStr(strerror(_Err));
+		}
+
+		template NStr::CStr fg_ErrnoString<NStr::CStr>(int _Err);
 	}
 }
