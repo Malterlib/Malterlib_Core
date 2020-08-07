@@ -36,15 +36,11 @@ namespace NLocal
 	int (*g_f_inotify_rm_watch)(int __fd, int __wd) __THROW = nullptr;
 	int (*g_f_pthread_setname_np)(pthread_t __target_thread, __const char *__name) = nullptr;
 	void *(*g_f_memcpy)(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) = &memmove;
-	_Unwind_Reason_Code (*g_f_unwind_backtrace) (_Unwind_Trace_Fn, void *);
-	_Unwind_Ptr (*g_f_unwind_getip) (struct _Unwind_Context *);
 	int (*g_f_utimensat)(int dirfd, const char *pathname, const struct timespec times[2], int flags) = nullptr;
 	int (*g_f_futimens)(int fd, const struct timespec times[2]) = nullptr;
 
 	void fg_GetSymbols()
 	{
-		void *pLibGcc = dlopen("libgcc_s.so.1", RTLD_NOW | RTLD_LOCAL);
-
 		(void * &)g_f_pipe2 = dlsym(RTLD_DEFAULT, "pipe2");
 		(void * &)g_f_accept4 = dlsym(RTLD_DEFAULT, "accept4");
 		(void * &)g_f_inotify_init1 = dlsym(RTLD_DEFAULT, "inotify_init1");
@@ -52,8 +48,6 @@ namespace NLocal
 		(void * &)g_f_inotify_add_watch = dlsym(RTLD_DEFAULT, "inotify_add_watch");
 		(void * &)g_f_inotify_rm_watch = dlsym(RTLD_DEFAULT, "inotify_rm_watch");
 		(void * &)g_f_pthread_setname_np = dlsym(RTLD_DEFAULT, "pthread_setname_np");
-		(void * &)g_f_unwind_backtrace = NSys::fg_GetLibrarySymbol(pLibGcc, "_Unwind_Backtrace");
-		(void * &)g_f_unwind_getip = NSys::fg_GetLibrarySymbol(pLibGcc, "_Unwind_GetIP");
 		(void * &)g_f_memcpy = dlsym(RTLD_NEXT, "memcpy");
 		(void * &)g_f_utimensat = dlsym(RTLD_DEFAULT, "utimensat");
 		(void * &)g_f_futimens = dlsym(RTLD_DEFAULT, "futimens");
@@ -776,6 +770,9 @@ void NSys::fg_Thread_Resume(void *_pThread)
 	DMibError("Thread supension not available on linux");
 }
 
+extern "C" _Unwind_Reason_Code _Unwind_Backtrace(_Unwind_Trace_Fn, void *);
+extern "C" uintptr_t _Unwind_GetIP(struct _Unwind_Context *context);
+
 inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth)
 {
 	if (_nMaxDepth == 0)
@@ -783,20 +780,6 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 
 	if (!g_bCanStackTrace) // backtrace uses malloc in pthread_once, and _Unwind_Backtrace can deadlock on __GI___dl_iterate_phdr lock
 		return 0;
-
-	if (!NLocal::g_f_unwind_backtrace || !NLocal::g_f_unwind_getip)
-	{
-#ifdef DArchitecture_x86
-		// It's not safe to backtrace on x86 as we are using non-stackframe exception handling
-		return 0;
-#endif
-		int nReturned = backtrace((void**)_pStack, (int)_nMaxDepth);
-
-		if (nReturned < 0)
-			return 0;
-
-		return nReturned;
-	}
 
 	struct CContext
 	{
@@ -809,12 +792,12 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 	Context.m_pStack = _pStack;
 	Context.m_nMaxDepth = _nMaxDepth;
 
-	NLocal::g_f_unwind_backtrace
+	_Unwind_Backtrace
 		(
 			[](_Unwind_Context *_pUnwindContext, void *_pContext) -> _Unwind_Reason_Code
 			{
 				CContext &Context = *((CContext *)_pContext);
-				Context.m_pStack[Context.m_nAdded] = (CMibCodeAddressType *)NLocal::g_f_unwind_getip(_pUnwindContext);
+				Context.m_pStack[Context.m_nAdded] = (CMibCodeAddressType *)_Unwind_GetIP(_pUnwindContext);
 				++Context.m_nAdded;
 				if (Context.m_nAdded == Context.m_nMaxDepth)
 					return _URC_END_OF_STACK;
@@ -1491,10 +1474,6 @@ void NSys::fg_CreateSystem()
 #endif
 
 	g_bCanUseSystemMalloc = true;
-
-	// Do stack trace to init pthread_once for backtrace
-	mint Trace[2];
-	backtrace((void**)Trace, 2);
 	g_bCanStackTrace = true;
 
 	// Can use malloc from here on
