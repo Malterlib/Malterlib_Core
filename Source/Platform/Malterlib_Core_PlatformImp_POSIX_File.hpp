@@ -357,13 +357,13 @@ namespace NMib
 		namespace NFile
 		{
 			template <typename tf_CStr>
-			tf_CStr fg_ResolveSymbolicLink(const tf_CStr &_FileFrom)
+			tf_CStr fg_ResolveSymbolicLink(tf_CStr const &_FileFrom)
 			{
 				static_assert(tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1);
-				
+
 				tf_CStr FileFrom = fg_ConvertToPOSIXPath(_FileFrom);
 				tf_CStr NewString;
-				auto nChars = readlink(FileFrom, NewString.f_GetStr(2048+1), 2048);
+				auto nChars = readlink(FileFrom, NewString.f_GetStr(PATH_MAX + 1), PATH_MAX);
 				if (nChars < 0)
 				{
 					int ErrNo = errno;
@@ -696,7 +696,12 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetValidAttributes()
 	return NMib::NFile::EFileAttrib_UnixAttributesValid;
 }
 
-namespace 
+mint NSys::NFile::fg_MaximumPathLength()
+{
+	return PATH_MAX;
+}
+
+namespace
 {
 	void fg_SetBSDFileAttributes(int _iFile, mode_t DefaultMode, NMib::NFile::EFileAttrib _Attributes, ch8 const *_pFileName);
 }

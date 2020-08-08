@@ -3864,7 +3864,6 @@ CMibFilePos NMib::NSys::NFile::fg_GetSize(const NMib::NStr::CStr &_FileName)
 	DMibErrorFile((CStr::CFormat("Windows returned an error from FindFirstFile({}): {}") << _FileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 }
 
-
 void *NSys::NFile::fg_GetOSFile(void *_pFile)
 {
 	return ((CWin32File *)_pFile)->m_pFile;
@@ -4160,10 +4159,14 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetSupportedAttributes()
 	;
 }
 
-
 NMib::NFile::EFileAttrib NSys::NFile::fg_GetValidAttributes()
 {
 	return NMib::NFile::EFileAttrib_None;
+}
+
+mint NSys::NFile::fg_MaximumPathLength()
+{
+	return NMib::NFile::NPlatform::gc_MaxWindowsPath;
 }
 
 void NSys::NFile::fg_SetAttributes(void *_pFile, EFileAttrib _Attributes)
