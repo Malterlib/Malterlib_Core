@@ -374,6 +374,15 @@ Property
 		!!MalterlibUseStaticLibCxx ""
 	}
 
+	MalterlibRuntime_AlwaysRelease true // User(Toolset)=false: Enable runtime (libc++ etc) to always be compile as if release config (default true)
+	{
+		&
+		{
+			MalterlibRuntime_AlwaysRelease ""
+			!DocumentationEnabled true
+		}
+	}
+
 	MalterlibMemoryManager "System"
 	{
 		&

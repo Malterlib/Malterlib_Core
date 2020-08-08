@@ -100,6 +100,27 @@ Property
 
 %Target "Lib_Malterlib_RuntimeABI"
 {
+	Property
+	{
+		RealConfiguration "Release"
+		{
+			!!MalterlibRuntime_AlwaysRelease true
+		}
+		RealConfiguration "@(MalterlibRuntime_AlwaysRelease)"
+		{
+			&
+			{
+				!MalterlibRuntime_AlwaysRelease ""
+				!MalterlibRuntime_AlwaysRelease false
+				!MalterlibRuntime_AlwaysRelease true
+			}
+		}
+		DebugCodeAlwaysRelease true
+		{
+			!RealConfiguration "@(Configuration)"
+		}
+	}
+
 	Target
 	{
 		BaseName "Malterlib_RuntimeABI"
@@ -253,6 +274,26 @@ Property
 
 %Target "Lib_Malterlib_Runtime"
 {
+	Property
+	{
+		RealConfiguration "Release"
+		{
+			!!MalterlibRuntime_AlwaysRelease true
+		}
+		RealConfiguration "@(MalterlibRuntime_AlwaysRelease)"
+		{
+			&
+			{
+				!MalterlibRuntime_AlwaysRelease ""
+				!MalterlibRuntime_AlwaysRelease false
+				!MalterlibRuntime_AlwaysRelease true
+			}
+		}
+		DebugCodeAlwaysRelease true
+		{
+			!RealConfiguration "@(Configuration)"
+		}
+	}
 	Target
 	{
 		BaseName "Malterlib_Runtime"

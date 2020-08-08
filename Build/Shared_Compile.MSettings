@@ -643,11 +643,19 @@ Compile
 
 	PreprocessorDefines "DEBUG;@(Compile.PreprocessorDefines)"
 	{
-		!!DebugCode true
+		&
+		{
+			DebugCode true
+			!DebugCodeAlwaysRelease true
+		}
 	}
 	PreprocessorDefines "TRACE;@(Compile.PreprocessorDefines)"
 	{
-		!!DebugCode true
+		&
+		{
+			DebugCode true
+			!DebugCodeAlwaysRelease true
+		}
 	}
 
 	PreprocessorDefines "@(MalterlibUniqueConfig);DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->ReplaceChars(' -', ''));DConfig_@(ConfigNoSpace);@(Compile.PreprocessorDefines)"
@@ -1647,7 +1655,11 @@ Compile
 	}
 	PreprocessorDefines "_DEBUG;@(Compile.PreprocessorDefines)"
 	{
-		!!DebugCode true
+		&
+		{
+			DebugCode true
+			!DebugCodeAlwaysRelease true
+		}
 	}
 	PreprocessorDefines "DBG=1;@(Compile.PreprocessorDefines)"
 	{
@@ -1659,7 +1671,11 @@ Compile
 	}
 	PreprocessorDefines "DBUG_OFF;NDEBUG;_NDEBUG;@(Compile.PreprocessorDefines)"
 	{
-		!!DebugCode false
+		|
+		{
+			DebugCode false
+			DebugCodeAlwaysRelease true
+		}
 	}
 	PreprocessorDefines "DBG=0;@(Compile.PreprocessorDefines)"
 	{
