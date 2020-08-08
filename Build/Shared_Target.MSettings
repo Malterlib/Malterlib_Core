@@ -2035,6 +2035,24 @@ Property
 	}
 }
 
+Property
+{
+	MalterlibHelperExecutable "@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Com_MalterlibHelper/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibHelper"
+
+	MalterlibNeedsMalterlibHelper true
+	{
+		&
+		{
+			MalterlibNeedsMalterlibHelper ""
+			TargetIsLaunchableExecutable true
+			!DocumentationEnabled true
+			!MalterlibDisableMalterlib true
+			!PlatformFamily Windows
+			MalterlibMemoryManager_EnableOverrideSystemMalloc true
+		}
+	}
+}
+
 // Executable native targets
 Target
 {
@@ -2888,6 +2906,16 @@ Property
 			MalterlibIsOSXBundle true
 		}
 	}
+	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
+									"MTool DiffCopy \"@(MalterlibHelperExecutable)\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS\" \"\" 0\r\n"
+	{
+		&
+		{
+			MalterlibNeedsMalterlibHelper true
+			MalterlibIsOSXBundle true
+		}
+	}
+
 	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
 									"MTool DiffCopy \"@(Builtin.Function->GetProperty('Property', 'MalterlibFinalModuleDestination', 'Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess'))\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS\" \"\" 0\r\n"
 	{
@@ -3788,6 +3816,14 @@ Property
 			!MalterlibIsOSXBundle true
 		}
 	}
+	MalterlibBuildServerPutSources "@(MalterlibHelperExecutable);@(MalterlibBuildServerPutSources)"
+	{
+		&
+		{
+			MalterlibNeedsMalterlibHelper true
+			!MalterlibIsOSXBundle true
+		}
+	}
 
 	MalterlibBuildServerPutPathUploadTemplateExpand	"MTool BuildServerPut Recursive=0 \"Source=@(Expand0)\" \"DestinationDir=@(MalterlibBuildServerPutPath)@(Expand1)\"\r\n"\
 													"@(CheckErrors)\r\n"
@@ -4087,6 +4123,15 @@ Property
 		&
 		{
 			MalterlibNeedsMallocOverrideLibrary true
+			!MalterlibIsOSXBundle true
+		}
+	}
+
+	MalterlibPostCopySources "@(MalterlibHelperExecutable)|;@(MalterlibPostCopySources)"
+	{
+		&
+		{
+			MalterlibNeedsMalterlibHelper true
 			!MalterlibIsOSXBundle true
 		}
 	}

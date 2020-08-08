@@ -836,6 +836,10 @@ Target
 			!MalterlibMemoryManager "System"
 		}
 	}
+	%Dependency "Com_MalterlibHelper"
+	{
+		!!MalterlibNeedsMalterlibHelper true
+	}
 }
 
 %Target "Lib_Malterlib"
@@ -1073,4 +1077,59 @@ Property
 		}
 	}
 	%Dependency "Dll_MalterlibOverrideMallocDummy"
+}
+
+%Target "Com_MalterlibHelper"
+{
+	Property
+	{
+		MalterlibNoShortcuts true
+		MalterlibTargetNameType "BaseName"
+		MalterlibPostCopyProject "Tests"
+	}
+	Target
+	{
+		BaseName "MalterlibHelper"
+		Type "ConsoleExecutable"
+		Group "Malterlib"
+	}
+	Target
+	{
+		!!PlatformFamily "Linux"
+		LDFlags "-nostdlib++ @(Target.LDFlags)"
+	}
+	Target
+	{
+		!!PlatformFamily "OSX"
+
+		LinkWithLibraries "-lSystem.B"
+		LinkWithLibraries "-lcrt1.o @(Target.LinkWithLibraries)"
+		LDFlags "-nostdlib @(Target.LDFlags)"
+		LinkWithStandardLibraries false
+		CodeCoverageLinkerMapping false
+		CodeCoverageMapping false
+		InstrumentForOptimization false
+	}
+	Compile
+	{
+		!!CompileDialect "C"
+		PrefixHeader ""
+		CodeCoverage false
+		{
+			!!MalterlibCodeCoverage true
+		}
+		StackGuard false
+		{
+			!!PlatformFamily "OSX"
+		}
+	}
+	Property
+	{
+		MalterlibDisableMalterlib true
+		MalterlibStripSymbols false
+	}
+	%Group "Source"
+	{
+		%File "Tools/Helper/Malterlib_Core_Helper.cpp"
+	}
 }
