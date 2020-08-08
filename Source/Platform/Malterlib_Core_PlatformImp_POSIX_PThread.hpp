@@ -13,6 +13,10 @@ using namespace NMib;
 	#include <mach/thread_policy.h>
 #endif // DMibPMachKernel
 
+#ifdef DPlatformFamily_OSX
+	#include <Mib/Core/PlatformSpecific/OSXQualityOfService>
+#endif
+
 #include "Malterlib_Core_PlatformImp_POSIX.h"
 
 // *************************************************************************************************************************
@@ -640,7 +644,18 @@ void *NSys::fg_Thread_Create
 		0x10000	_RT_Highest (SCHED_FIFO)
 */
 
-	//if (_Priority != EThreadPriority_Normal)
+	bool bAlreadySetPriority = false;
+#ifdef DPlatformFamily_OSX
+	if (pthread_attr_set_qos_class_np)
+	{
+		int RelativePriority;
+		auto QosClass = NMib::NPlatform::fg_PriorityToQualityOfService(_Priority, RelativePriority);
+		if (!pthread_attr_set_qos_class_np(Data.f_UseThreadAttribs(), QosClass, RelativePriority))
+			bAlreadySetPriority = true;
+	}
+#endif
+
+	if (!bAlreadySetPriority)
 	{
 		int Scheduler = SCHED_OTHER;
 		sched_param ScheduleParams;
@@ -651,7 +666,7 @@ void *NSys::fg_Thread_Create
 		pthread_attr_setschedpolicy(Data.f_UseThreadAttribs(), Scheduler);
 		pthread_attr_setschedparam(Data.f_UseThreadAttribs(), &ScheduleParams);
 	}
-	
+
 	if (_StackSize != 0)
 		pthread_attr_setstacksize (Data.f_UseThreadAttribs(), _StackSize);
 
@@ -678,7 +693,7 @@ void *NSys::fg_Thread_Create
 			DMibError(NPlatform::fg_FormatErrno("pthread_attr_setaffinity_np (create thread)", Result));
 	}
 #endif // DMibPLinuxKernel
-	
+
 	if (_bSuspended)
 	{
 		// Implement by waiting for a event in thread
@@ -700,13 +715,14 @@ void *NSys::fg_Thread_Create
 	pThreadParams.f_Detach();	
 	
 #if defined(DMibPMachKernel)
-	fg_SetMachPriority(ThreadID, _Priority);
+	if (!bAlreadySetPriority)
+		fg_SetMachPriority(ThreadID, _Priority);
 	if (_Affinity)
 	{
-			mach_port_t MachThread = pthread_mach_thread_np(ThreadID);		
-			thread_affinity_policy Policy;
-			Policy.affinity_tag = _Affinity;
-			thread_policy_set(MachThread, THREAD_AFFINITY_POLICY, (integer_t *)&Policy, THREAD_AFFINITY_POLICY_COUNT);
+		mach_port_t MachThread = pthread_mach_thread_np(ThreadID);
+		thread_affinity_policy Policy;
+		Policy.affinity_tag = _Affinity;
+		thread_policy_set(MachThread, THREAD_AFFINITY_POLICY, (integer_t *)&Policy, THREAD_AFFINITY_POLICY_COUNT);
 	}	
 #endif // DMibPMachKernel
 
@@ -771,6 +787,18 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 
 void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 {
+#ifdef DPlatformFamily_OSX
+	if (pthread_set_qos_class_self_np && _pThread == NSys::fg_Thread_GetCurrent())
+	{
+		int RelativePriority;
+		auto QosClass = NMib::NPlatform::fg_PriorityToQualityOfService(_Priority, RelativePriority);
+		int ErrNo = pthread_set_qos_class_self_np(QosClass, RelativePriority);
+		if (ErrNo)
+			DMibError(NPlatform::fg_FormatErrno("pthread_set_qos_class_self_np (set thread priority)", ErrNo));
+		return;
+	}
+#endif
+
 #if defined(DMibPMachKernel)
 	if (fg_SetMachPriority(_pThread, _Priority))
 		return;
