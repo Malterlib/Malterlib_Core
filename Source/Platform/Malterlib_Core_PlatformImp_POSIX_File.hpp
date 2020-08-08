@@ -1,4 +1,4 @@
-		// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 using namespace NMib;
@@ -77,6 +77,7 @@ namespace NMib
 							|| Error == ENAMETOOLONG 	// Path is too long
 							|| Error == ENOMEM 			// Ran out of kernel memory
 							|| Error == EINVAL			// Seen this happen os MacOS if you delete a symlink in the parent path while checking stats
+							|| Error == ESRCH			// Can happen on Linux when checking procfs
 						)
 					{
 						return false;
@@ -389,11 +390,11 @@ bool NSys::NFile::fg_CanCreateSymbolicLink(NMib::NFile::EFileAttrib _Type, NMib:
 void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::EFileAttrib _Type, NMib::NFile::ESymbolicLinkFlag _Flags)
 {
 	CStr FileFrom = _FileFrom;
-	
+
 	CStr FileTo = fg_ConvertToPOSIXPath(_FileTo);
-	
+
 	int ErrNo = symlink(FileFrom.f_GetStr(), FileTo.f_GetStr());
-	
+
 	if (ErrNo)
 	{
 		ErrNo = errno;
@@ -405,9 +406,9 @@ void NSys::NFile::fg_CreateHardLink(const NMib::NStr::CStr &_FileFrom, const NMi
 {
 	CStr FileFrom = fg_ConvertToPOSIXPath(_FileFrom);
 	CStr FileTo = fg_ConvertToPOSIXPath(_FileTo);
-	
+
 	int ErrNo = link(FileFrom.f_GetStr(), FileTo.f_GetStr());
-	
+
 	if (ErrNo)
 	{
 		ErrNo = errno;
@@ -423,7 +424,7 @@ void NSys::NFile::fg_DeleteDirectory(const NMib::NStr::CStr &_File)
 	CStr File = fg_ConvertToPOSIXPath(_File);
 
 	int ErrNo = rmdir(File.f_GetStr());
-	
+
 	if (ErrNo)
 	{
 		ErrNo = errno;
@@ -435,11 +436,11 @@ void NSys::NFile::fg_DeleteDirectory(const NMib::NStr::CStrNonTracked &_File)
 {
 	if (fg_FileExists(_File, NMib::NFile::EFileAttrib_File))
 		DMibErrorFile("Cannot delete directory, it's a file");
-	
+
 	CStrNonTracked File = fg_ConvertToPOSIXPath(_File);
-	
+
 	int ErrNo = rmdir(File.f_GetStr());
-	
+
 	if (ErrNo)
 	{
 		ErrNo = errno;
@@ -451,11 +452,11 @@ void NSys::NFile::fg_Delete(const NMib::NStr::CStr &_File)
 {
 //	if (fg_FileExists(_File, NMib::NFile::EFileAttrib_Directory))
 //		DMibErrorFile("Cannot delete directory as file");
-	
+
 	CStr File = fg_ConvertToPOSIXPath(_File);
 
 	int ErrNo = unlink(File.f_GetStr());
-	
+
 	if (ErrNo)
 	{
 		ErrNo = errno;
@@ -467,11 +468,11 @@ void NSys::NFile::fg_Delete(const NMib::NStr::CStrNonTracked &_File)
 {
 	if (fg_FileExists(_File, NMib::NFile::EFileAttrib_Directory))
 		DMibErrorFile("Cannot delete directory as file");
-	
+
 	CStrNonTracked File = fg_ConvertToPOSIXPath(_File);
-	
+
 	int ErrNo = unlink(File.f_GetStr());
-	
+
 	if (ErrNo)
 	{
 		ErrNo = errno;
@@ -483,10 +484,10 @@ void NSys::NFile::fg_Delete(const NMib::NStr::CStrNonTracked &_File)
 CStr NSys::NFile::fg_GetCurrentDirectory()
 {
 	char *pRet = getcwd(nullptr, 0);
-	
+
 	if (!pRet)
 		DMibErrorFile(NPlatform::fg_FormatErrno("getcwd when getting current directory", errno));
-	
+
 	auto Cleanup
 		= fg_OnScopeExit
 		(
@@ -496,16 +497,16 @@ CStr NSys::NFile::fg_GetCurrentDirectory()
 			}
 		)
 	;
-	
+
 	CStr Ret = pRet;
-	
+
 	return Ret;
 }
 
 NStr::CStrNonTracked NSys::NFile::fg_GetCurrentDirectoryNonTracked()
 {
 	char *pRet = getcwd(nullptr, 0);
-	
+
 	if (!pRet)
 		DMibErrorFile(NPlatform::fg_FormatErrno("getcwd when getting current directory", errno));
 
@@ -518,9 +519,9 @@ NStr::CStrNonTracked NSys::NFile::fg_GetCurrentDirectoryNonTracked()
 			}
 		)
 	;
-	
+
 	CStrNonTracked Ret = pRet;
-	
+
 	return Ret;
 }
 
@@ -548,7 +549,7 @@ void fg_CreateDirectoryHelper(const tf_CStr &_FileDirectory)
 		tf_CStr Current;
 		Current = NMib::NStr::fg_GetStrSepNoTrim(NewPath, "/");
 		CurrentPath += Current;
-		
+
 		if (!NSys::NFile::fg_FileExistsGeneral(CurrentPath, NMib::NFile::EFileAttrib_Directory))
 		{
 			tf_CStr Canon = CurrentPath;
@@ -627,7 +628,7 @@ static NMib::NFile::EFileAttrib fsg_StatsToAttribs(t_CStats &_Stats)
 		MalterlibAttr |= NMib::NFile::EFileAttrib_File;
 		break;
 	};
-	
+
 	if (_Stats.st_mode & S_IXUSR)
 		MalterlibAttr |= NMib::NFile::EFileAttrib_Executable;
 
@@ -664,7 +665,7 @@ static NMib::NFile::EFileAttrib fsg_StatsToAttribs(t_CStats &_Stats)
 		MalterlibAttr |= NMib::NFile::EFileAttrib_EveryoneWrite;
 	if (_Stats.st_mode & S_IXOTH)
 		MalterlibAttr |= NMib::NFile::EFileAttrib_EveryoneExecute;
-	
+
 	return MalterlibAttr;
 }
 
@@ -747,23 +748,38 @@ void fg_SetUnixHandleOptions(int _File)
 	}
 }
 
-template <typename tf_CFileStr, typename tf_CStr>
+template <typename tf_CFileStr, bool tf_bException, typename tf_CStr>
 int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, tf_CStr &_oPosixFileName, NMib::NFile::EFileAttrib _Attributes)
 {
 	using namespace NMib::NFile;
 	if ((_OpenFlags & (EFileOpen_Read | EFileOpen_Write | EFileOpen_ReadAttribs | EFileOpen_WriteAttribs)) == 0)
-		DMibErrorFile("Open flags contain neither read or write flags, one of them must be specified");
+	{
+		if constexpr (tf_bException)
+			DMibErrorFile("Open flags contain neither read or write flags, one of them must be specified");
+		else
+			return -1;
+	}
 
 	if ((_OpenFlags & (EFileOpen_DontCreate | EFileOpen_DontOpenExisting)) == (EFileOpen_DontCreate | EFileOpen_DontOpenExisting))
-		DMibErrorFile("Conflicting open flags (both don't open existing and don't create)");
+	{
+		if constexpr (tf_bException)
+			DMibErrorFile("Conflicting open flags (both don't open existing and don't create)");
+		else
+			return -1;
+	}
 
 	if ((_OpenFlags & (EFileOpen_DontOpenExisting | EFileOpen_Read | EFileOpen_Write)) == (EFileOpen_DontOpenExisting | EFileOpen_Read))
-		DMibErrorFile("You are trying to open a file that does not exist for read access only, this makes no sense)");
+	{
+		if constexpr (tf_bException)
+			DMibErrorFile("You are trying to open a file that does not exist for read access only, this makes no sense)");
+		else
+			return -1;
+	}
 
 	_oPosixFileName = fg_ConvertToPOSIXPath(_FileName);
-	
+
 	auto & FileName = _oPosixFileName;
-	
+
 	uint32 CreateDisposition = 0;
 	enum
 	{
@@ -776,7 +792,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 	if (_OpenFlags & EFileOpen_DontOpenExisting)
 	{
 		CreateDisposition = EDisp_CreateNew;
-	}		
+	}
 	else if (_OpenFlags & EFileOpen_DontCreate)
 	{
 		if (_OpenFlags & EFileOpen_DontTruncate)
@@ -796,7 +812,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		else
 			CreateDisposition = EDisp_OpenExisting;
 	}
-	
+
 	bool bRead = (_OpenFlags & EFileOpen_Read) != 0;
 	bool bWrite = (_OpenFlags & EFileOpen_Write) != 0;
 
@@ -807,7 +823,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		OpenFlags |= O_RDONLY;
 	else if (bWrite)
 		OpenFlags |= O_WRONLY;
-	
+
 	switch (CreateDisposition)
 	{
 		case EDisp_CreateNew:
@@ -833,7 +849,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			{
 				OpenFlags |= O_CREAT | O_TRUNC;
 			}
-			break;			
+			break;
 	}
 
 #ifdef DPlatformFamily_Linux
@@ -843,39 +859,53 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		OpenFlags |= O_SYNC;
 #endif
 
-	bool bExists = NSys::NFile::fg_FileExistsGeneral(_FileName, EFileAttrib_File|EFileAttrib_Directory);
+	bool bExists = NSys::NFile::fg_FileExistsGeneral(_FileName, EFileAttrib_File | EFileAttrib_Directory);
 	if (bExists)
 	{
 		struct stat Stats;
 		if (stat(FileName, &Stats))
-			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("fstat('{}') when opening file") << FileName,errno));
-		
-		EFileAttrib Attribs = fsg_StatsToAttribs(Stats);
-		
-		if (!lstat(FileName, &Stats))
 		{
-			EFileAttrib LinkAttribs = fsg_StatsToAttribs(Stats);
-			Attribs |= LinkAttribs & EFileAttrib_Link;
+			if constexpr (tf_bException)
+				DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("stat('{}') when opening file") << FileName,errno));
+			else
+				return -1;
 		}
-		
+
+		EFileAttrib Attribs = fsg_StatsToAttribs(Stats);
+
 		if (Attribs & EFileAttrib_Directory)
 		{
 			if (!(_OpenFlags & EFileOpen_Directory))
-				DMibErrorFile(tf_CFileStr(typename tf_CFileStr::CFormat("Directory '{}' cannot be openened as file") << FileName));
+			{
+				if constexpr (tf_bException)
+					DMibErrorFile(tf_CFileStr(typename tf_CFileStr::CFormat("Directory '{}' cannot be openened as file") << FileName));
+				else
+					return -1;
+			}
 		}
 		else
 		{
 			if (_OpenFlags & EFileOpen_Directory)
-				DMibErrorFile(tf_CFileStr(typename tf_CFileStr::CFormat("File '{}' cannot be openened as directory") << FileName));
+			{
+				if constexpr (tf_bException)
+					DMibErrorFile(tf_CFileStr(typename tf_CFileStr::CFormat("File '{}' cannot be openened as directory") << FileName));
+				else
+					return -1;
+			}
 		}
 	}
 
 //	umask(0);
-	
+
 	int iFile = open(FileName, OpenFlags, fg_MalterlibAttributesToMode(_Attributes));
 	if (iFile < 0)
-		DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("open('{}') when opening file") << FileName, errno));
-	
+	{
+		if constexpr (tf_bException)
+			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("open('{}') when opening file") << FileName, errno));
+		else
+			return -1;
+	}
+
 	auto Cleanup = g_OnScopeExit > [&]
 		{
 			close(iFile);
@@ -888,7 +918,12 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 	if (_OpenFlags & NMib::NFile::EFileOpen_NoCache)
 	{
 		if (fcntl(iFile, F_NOCACHE, 1))
-			DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("fcntl('{}', F_NOCACHE, 1) when opening file") << FileName, errno));
+		{
+			if constexpr (tf_bException)
+				DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("fcntl('{}', F_NOCACHE, 1) when opening file") << FileName, errno));
+			else
+				return -1;
+		}
 	}
 #endif
 
@@ -904,29 +939,54 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		{
 			int FlockErr = errno;
 
-			if (FlockErr == EWOULDBLOCK)
-				DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}', {nfh}) when opening file. The file is probably locked by another program") << FileName << LockFlags, errno));
+			if constexpr (tf_bException)
+			{
+				if (FlockErr == EWOULDBLOCK)
+				{
+					DMibErrorFile
+						(
+							NMib::NPlatform::fg_FormatErrno<tf_CFileStr>
+							(
+								typename tf_CFileStr::CFormat("flock('{}', {nfh}) when opening file. The file is probably locked by another program") << FileName << LockFlags
+								, errno
+							)
+						)
+					;
+				}
+				else
+					DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}', {nfh}) when opening file") << FileName << LockFlags, errno));
+			}
 			else
-				DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("flock('{}', {nfh}) when opening file") << FileName << LockFlags, errno));
+				return -1;
 		}
 	}
 
 	if (OpenFlags & (O_WRONLY | O_RDWR))
 		fg_SetBSDFileAttributes(iFile, 0644, _Attributes, _FileName);
 	else if (_Attributes != EFileAttrib_None)
-		DMibErrorFile("You cannot specify attributes without opening the file for write");
+	{
+		if constexpr (tf_bException)
+			DMibErrorFile("You cannot specify attributes without opening the file for write");
+		else
+			return -1;
+	}
 
 	Cleanup.f_Clear();
 	return iFile;
 }
 
-template <typename tf_CFileStr, typename tf_CStr>
+template <typename tf_CFileStr, bool tf_bExcption, typename tf_CStr>
 void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
-	
 	tf_CStr PosixFileName;
-	int iFile = fg_OpenHelperBSDFile<tf_CFileStr, tf_CStr>(_FileName, _OpenFlags, PosixFileName, _Attributes);
-	
+	int iFile = fg_OpenHelperBSDFile<tf_CFileStr, tf_bExcption, tf_CStr>(_FileName, _OpenFlags, PosixFileName, _Attributes);
+
+	if constexpr (!tf_bExcption)
+	{
+		if (iFile < 0)
+			return nullptr;
+	}
+
 	NStorage::TCUniquePointer<TCPOSIXFileImp<tf_CFileStr, typename tf_CFileStr::CAllocator>, typename tf_CFileStr::CAllocator> pNewFile = fg_Construct(PosixFileName);
 	pNewFile->m_BSDFile = iFile;
 	return pNewFile.f_Detach();
@@ -939,8 +999,8 @@ namespace
 	{
 		using namespace NMib::NFile;
 		auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache;
-		
-		void *pFileHandle = fg_OpenHelper<NMib::NStr::CFStr256>(_Path, Flags, EFileAttrib_None);
+
+		void *pFileHandle = fg_OpenHelper<NMib::NStr::CFStr256, true>(_Path, Flags, EFileAttrib_None);
 		auto Cleanup
 			= fg_OnScopeExit
 			(
@@ -950,26 +1010,76 @@ namespace
 				}
 			)
 		;
-		
+
 		TCVector<ch8, typename tf_CStr::CAllocator> FileData;
 
 		CPOSIXFile *pFile = (CPOSIXFile *)pFileHandle;
-		
+
 		ch8 Temp[256];
 		while (1)
 		{
-			
+
 			ssize_t ReadBytes = read(pFile->m_BSDFile, Temp, 256);
-			
+
 			if (ReadBytes > 0)
 				FileData.f_Insert(Temp, ReadBytes);
 			if (ReadBytes < 256)
 				break;
 		}
-		
+
 		FileData.f_Insert(ch8(0)); // Insert null terminator
-		
+
 		return FileData;
+	}
+
+	template <typename tf_CStr>
+	bool fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, TCVector<ch8, typename tf_CStr::CAllocator> &o_Data)
+	{
+		using namespace NMib::NFile;
+		auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache;
+
+		void *pFileHandle = fg_OpenHelper<NMib::NStr::CFStr256, false>(_Path, Flags, EFileAttrib_None);
+		if (!pFileHandle)
+			return false;
+
+		auto Cleanup
+			= fg_OnScopeExit
+			(
+				[&]()
+				{
+					NSys::NFile::fg_Close(pFileHandle);
+				}
+			)
+		;
+
+		TCVector<ch8, typename tf_CStr::CAllocator> FileData;
+
+		CPOSIXFile *pFile = (CPOSIXFile *)pFileHandle;
+
+		try
+		{
+			ch8 Temp[256];
+			while (1)
+			{
+
+				ssize_t ReadBytes = read(pFile->m_BSDFile, Temp, 256);
+
+				if (ReadBytes > 0)
+					FileData.f_Insert(Temp, ReadBytes);
+				if (ReadBytes < 256)
+					break;
+			}
+
+			FileData.f_Insert(ch8(0)); // Insert null terminator
+		}
+		catch (NMib::NFile::CExceptionFile const &)
+		{
+			return false;
+		}
+
+		o_Data = fg_Move(FileData);
+
+		return true;
 	}
 }
 
@@ -977,9 +1087,9 @@ mint NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, uint8 *_p
 {
 	using namespace NMib::NFile;
 	auto Flags = EFileOpen_Read | EFileOpen_ShareBypass | EFileOpen_NoLocalCache;
-	
+
 	CFStr256 PosixFileName;
-	int BSDFile = fg_OpenHelperBSDFile<NMib::NStr::CFStr256>(_Path, Flags, PosixFileName, EFileAttrib_None);
+	int BSDFile = fg_OpenHelperBSDFile<NMib::NStr::CFStr256, true>(_Path, Flags, PosixFileName, EFileAttrib_None);
 	auto Cleanup
 		= fg_OnScopeExit
 		(
@@ -989,18 +1099,23 @@ mint NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, uint8 *_p
 			}
 		)
 	;
-	
+
 	ssize_t ReadBytes = read(BSDFile, _pData, _nBytes);
-		
+
 	if (ReadBytes < 0)
 		DMibPDebugBreak;
-	
-	return ReadBytes;		
+
+	return ReadBytes;
 }
 
 TCVector<ch8> NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path)
 {
 	return ::fg_ReadProcFS<NMib::NStr::CStr>(_Path);
+}
+
+bool NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, NContainer::TCVector<ch8> &o_Output)
+{
+	return ::fg_ReadProcFS<NMib::NStr::CStr>(_Path, o_Output);
 }
 
 TCVector<ch8, NMemory::CAllocator_NonTrackedHeap> NMib::NPlatform::fg_ReadProcFSNonTracked(NMib::NStr::CFStr256 const &_Path)
@@ -1010,12 +1125,12 @@ TCVector<ch8, NMemory::CAllocator_NonTrackedHeap> NMib::NPlatform::fg_ReadProcFS
 
 void *NSys::NFile::fg_Open(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
-	return fg_OpenHelper<NMib::NStr::CStr>(CStr(_FileName), _OpenFlags, _Attributes);
+	return fg_OpenHelper<NMib::NStr::CStr, true>(CStr(_FileName), _OpenFlags, _Attributes);
 }
 
 void *NSys::NFile::fg_Open(const NMib::NStr::CStrNonTracked &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
-	return fg_OpenHelper<NMib::NStr::CStrNonTracked>(_FileName, _OpenFlags, _Attributes);
+	return fg_OpenHelper<NMib::NStr::CStrNonTracked, true>(_FileName, _OpenFlags, _Attributes);
 }
 
 void *NSys::NFile::fg_GetOSFile(void *_pFile)
@@ -1031,21 +1146,21 @@ void NSys::NFile::fg_Close(void *_pFile)
 	int ErrNo = close(pFile->m_BSDFile);
 	if (ErrNo)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("close('{}') when closing file") << pFile->f_GetFileName(), errno));
-	
+
 	pFile->f_Delete();
 }
 
 mint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset, mint _NumBytes)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
-	
+
 	if (_NumBytes > mint(1) * 1024 * 1024 * 1024)
 	{
 		mint ReturnBytes = 0;
 		mint nBytesLeft = _NumBytes;
 		CMibFilePos Offset = _Offset;
 		uint8 *pData = (uint8 *)_pData;
-		
+
 		while (nBytesLeft)
 		{
 			mint ThisTime = fg_Min(nBytesLeft, mint(1) * 1024 * 1024 * 1024);
@@ -1056,20 +1171,20 @@ mint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset
 			pData += ReadBytes;
 			Offset += ReadBytes;
 			nBytesLeft -= ReadBytes;
-			
+
 			if (ReadBytes != ThisTime)
-				break; // 			
+				break; //
 		}
-		
+
 		return ReturnBytes;
 	}
 	else
 	{
 		ssize_t ReadBytes = pread(pFile->m_BSDFile, _pData, _NumBytes, _Offset);
-		
+
 		if (ReadBytes < 0)
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pread('{}') when reading file") << pFile->f_GetFileName(), errno));
-		
+
 		return ReadBytes;
 	}
 }
@@ -1084,7 +1199,7 @@ mint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos &
 		mint nBytesLeft = _NumBytes;
 		CMibFilePos Offset = _Offset;
 		uint8 const *pData = (uint8 const *)_pData;
-		
+
 		while (nBytesLeft)
 		{
 			mint ThisTime = fg_Min(nBytesLeft, mint(1) * 1024 * 1024 * 1024);
@@ -1095,17 +1210,17 @@ mint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos &
 			pData += WrittenBytes;
 			Offset += WrittenBytes;
 			nBytesLeft -= WrittenBytes;
-			
+
 			if (WrittenBytes != ThisTime)
-				break; // 			
+				break; //
 		}
-		
+
 		return ReturnBytes;
 	}
 	else
 	{
 		ssize_t WrittenBytes = pwrite(pFile->m_BSDFile, _pData, _NumBytes, _Offset);
-		
+
 		if (WrittenBytes < 0)
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pwrite('{}') when writing file") << pFile->f_GetFileName(), errno));
 		return WrittenBytes;
@@ -1118,7 +1233,7 @@ void NSys::NFile::fg_SetSize(void *_pFile, const CMibFilePos &_Size)
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
 	int iRet = ftruncate(pFile->m_BSDFile, _Size);
-	
+
 	if (iRet < 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("ftruncate('{}') when setting file length") << pFile->f_GetFileName(), errno));
 }
@@ -1164,16 +1279,16 @@ void NSys::NFile::fg_LockRange(void *_pFile, const CMibFilePos &_Offset, const C
 	ToLock.l_pid = 0;
 	ToLock.l_type = 0;
 	ToLock.l_whence = SEEK_SET;
-	
+
 	int Opr = F_SETLK;
 	if (_Flags & NMib::NFile::EFileLock_PreventRead)
 		ToLock.l_type = F_RDLCK;
 	else
 		ToLock.l_type = F_WRLCK;
-		
+
 	if (_Flags & NMib::NFile::EFileLock_Block)
 		Opr = F_SETLKW;
-	
+
 	int iRet = fcntl(pFile->m_BSDFile, Opr, &ToLock);
 	if (iRet < 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fcntl('{}', {}, {}) when locking file range") << pFile->f_GetFileName() << _Offset << _NumBytes, errno));
@@ -1206,7 +1321,7 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(void *_pFile)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when getting file attributes") << pFile->f_GetFileName(), errno));
 
 	NMib::NFile::EFileAttrib Attribs = fsg_StatsToAttribs(Stats);
-	return Attribs; 
+	return Attribs;
 }
 
 uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32 _Mode)
@@ -1216,7 +1331,7 @@ uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32
 	if (_Attributes & NMib::NFile::EFileAttrib_UnixAttributesValid)
 	{
 		Mode &= ~uint32(S_IRWXU | S_IRWXG | S_IRWXO);
-		
+
 		if (_Attributes & NMib::NFile::EFileAttrib_UserRead)
 			Mode |= S_IRUSR;
 		if (_Attributes & NMib::NFile::EFileAttrib_UserWrite)
@@ -1255,7 +1370,7 @@ uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32
 #endif
 	}
 
-	
+
 	return Mode;
 }
 
@@ -1278,14 +1393,14 @@ namespace
 #endif
 }
 
-namespace 
+namespace
 {
 	void fg_SetBSDFileAttributes(int _iFile, mode_t _DefaultMode, NMib::NFile::EFileAttrib _Attributes, ch8 const *_pFileName)
 	{
 		struct stat Stats;
 		if (fstat(_iFile, &Stats))
 			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when setting file attributes") << _pFileName, errno));
-		
+
 		if (!_DefaultMode)
 			_DefaultMode = Stats.st_mode;
 
@@ -1307,7 +1422,7 @@ namespace
 			}
 		;
 	#endif
-		
+
 		// Set the mode...
 		{
 			uint32 Mode = fg_MalterlibAttributesToMode(_Attributes, _DefaultMode);
@@ -1320,7 +1435,7 @@ namespace
 			}
 		}
 
-		
+
 	#ifdef DMibPMachKernel
 		{
 			uint32 Flags = fg_MalterlibAttributesToFlags(Stats.st_flags, _Attributes);
@@ -1384,7 +1499,7 @@ NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NSt
 		auto ErrNo = errno;
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("stat('{}') when getting unique file ID") << Canonical, ErrNo));
 	}
-	
+
 	return {static_cast<uint64>(Stats.st_dev), Stats.st_ino};
 }
 
@@ -1397,7 +1512,7 @@ NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifierOnLink(NMi
 		auto ErrNo = errno;
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when getting unique file ID on link") << Canonical, ErrNo));
 	}
-	
+
 	return {static_cast<uint64>(Stats.st_dev), Stats.st_ino};
 }
 
@@ -1407,11 +1522,11 @@ void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _Filename, NMib::NFil
 	CStr Filename = fg_ConvertToPOSIXPath(_Filename);
 	if (stat(Filename, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("stat('{}') when setting file attributes") << Filename,errno));
-	
+
 	// Set the mode...
 	{
 		uint32 Mode = fg_MalterlibAttributesToMode(_Attributes, Stats.st_mode);
-		
+
 		if (Mode != Stats.st_mode)
 		{
 			if (chmod(Filename, Mode))
@@ -1438,11 +1553,11 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _Filename, NMib
 	CStr Filename = fg_ConvertToPOSIXPath(_Filename);
 	if (lstat(Filename, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when setting file attributes") << Filename,errno));
-	
+
 	// Set the mode...
 	{
 		uint32 Mode = fg_MalterlibAttributesToMode(_Attributes, Stats.st_mode);
-		
+
 		if (Mode != Stats.st_mode)
 		{
 			if (lchmod(Filename, Mode))
@@ -1474,7 +1589,7 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _Filename, NMib
 }
 
 static NTime::CTime fsg_TimespecToCTime(timespec const &_DateTime)
-{	
+{
 	static CTime EpochStart = NTime::CTimeConvert::fs_CreateTime(1970, 1, 1);
 	fp64 Fraction = fp64(_DateTime.tv_nsec) / fp64(1000000000.0);
 	return EpochStart + CTimeSpanConvert_BabylonianCommon::fs_CreateSpanFromSeconds(_DateTime.tv_sec, Fraction);
@@ -1513,7 +1628,7 @@ NTime::CTime NSys::NFile::fg_GetAccessTime(void *_pFile)
 	return fsg_TimespecToCTime(Stats.st_atim);
 #else
 	return fsg_TimespecToCTime(Stats.st_atimespec);
-#endif	
+#endif
 }
 
 NTime::CTime NSys::NFile::fg_GetWriteTime(void *_pFile)
@@ -1559,7 +1674,7 @@ NTime::CTime NSys::NFile::fg_GetAccessTime(NMib::NStr::CStr const& _FileName)
 	return fsg_TimespecToCTime(Stats.st_atim);
 #else
 	return fsg_TimespecToCTime(Stats.st_atimespec);
-#endif	
+#endif
 }
 
 NTime::CTime NSys::NFile::fg_GetWriteTime(NMib::NStr::CStr const& _FileName)
@@ -1604,7 +1719,7 @@ NTime::CTime NSys::NFile::fg_GetAccessTimeOnLink(NMib::NStr::CStr const& _FileNa
 	return fsg_TimespecToCTime(Stats.st_atim);
 #else
 	return fsg_TimespecToCTime(Stats.st_atimespec);
-#endif	
+#endif
 }
 
 NTime::CTime NSys::NFile::fg_GetWriteTimeOnLink(NMib::NStr::CStr const& _FileName)
@@ -2016,15 +2131,15 @@ void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, const
 NMib::NStr::CStr NSys::NFile::fg_GetOwnerOnLink(const NMib::NStr::CStr &_Path)
 {
 	CStr UserName;
-	
+
 	CStr Canonical = fg_ConvertToPOSIXPath(_Path);
 	struct stat Stats;
 	if (lstat(Canonical, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when getting link owner") << Canonical, errno));
-	
+
 	errno = 0;
 	passwd *pPasswd = getpwuid(Stats.st_uid);
-	
+
 	if (pPasswd)
 		UserName = CStr(pPasswd->pw_name);
 	else
@@ -2033,21 +2148,21 @@ NMib::NStr::CStr NSys::NFile::fg_GetOwnerOnLink(const NMib::NStr::CStr &_Path)
 			return CStr::fs_ToStr(Stats.st_uid);
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwuid({}) when getting link owner for '{}'") << Stats.st_uid << Canonical, errno));
 	}
-	
+
 	return UserName;
 }
 NMib::NStr::CStr NSys::NFile::fg_GetGroupOnLink(const NMib::NStr::CStr &_Path)
 {
 	CStr GroupName;
-	
+
 	CStr Canonical = fg_ConvertToPOSIXPath(_Path);
 	struct stat Stats;
 	if (lstat(Canonical, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when getting link group") << Canonical, errno));
-	
+
 	errno = 0;
 	group *pGroup = getgrgid(Stats.st_gid);
-	
+
 	if (pGroup)
 		GroupName = CStr(pGroup->gr_name);
 	else
@@ -2056,7 +2171,7 @@ NMib::NStr::CStr NSys::NFile::fg_GetGroupOnLink(const NMib::NStr::CStr &_Path)
 			return CStr::fs_ToStr(Stats.st_gid);
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrgid({}) when getting link group for '{}'") << Stats.st_gid << Canonical, errno));
 	}
-	
+
 	return GroupName;
 }
 
@@ -2071,7 +2186,7 @@ CStr NSys::NFile::fg_GetOwner(CStr const &_Path)
 
 	errno = 0;
 	passwd *pPasswd = getpwuid(Stats.st_uid);
-	
+
 	if (pPasswd)
 		UserName = CStr(pPasswd->pw_name);
 	else
@@ -2087,7 +2202,7 @@ CStr NSys::NFile::fg_GetOwner(CStr const &_Path)
 CStr NSys::NFile::fg_GetGroup(CStr const &_Path)
 {
 	CStr GroupName;
-	
+
 	CStr Canonical = fg_ConvertToPOSIXPath(_Path);
 	struct stat Stats;
 	if (stat(Canonical, &Stats))
@@ -2095,7 +2210,7 @@ CStr NSys::NFile::fg_GetGroup(CStr const &_Path)
 
 	errno = 0;
 	group *pGroup = getgrgid(Stats.st_gid);
-	
+
 	if (pGroup)
 		GroupName = CStr(pGroup->gr_name);
 	else
@@ -2104,7 +2219,7 @@ CStr NSys::NFile::fg_GetGroup(CStr const &_Path)
 			return CStr::fs_ToStr(Stats.st_gid);
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrgid({}) when getting file group for '{}'") << Stats.st_gid << Canonical, errno));
 	}
-	
+
 	return GroupName;
 }
 
@@ -2114,10 +2229,10 @@ void NSys::NFile::fg_SetOwner(CStr const &_Path, CStr const &_Owner)
 	CStr Name = _Owner;
 
 	passwd *pPasswd = getpwnam(Name.f_GetStr());
-	
+
 	if (!pPasswd)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam('{}') when setting owner on file '{}'") << Name << Canonical, errno));
-	
+
 	if (chown(Canonical.f_GetStr(), pPasswd->pw_uid, -1) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chown('{}', {}) when setting owner on file") << Canonical << pPasswd->pw_uid, errno));
 }
@@ -2126,12 +2241,12 @@ void NSys::NFile::fg_SetGroup(CStr const &_Path, CStr const &_Group)
 {
 	CStr Canonical = fg_ConvertToPOSIXPath(_Path);
 	CStr Name = _Group;
-	
+
 	group *pGroup = getgrnam(Name.f_GetStr());
-	
+
 	if (!pGroup)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam('{}') when setting group on file '{}'") << Name << Canonical, errno));
-	
+
 	if (chown(Canonical.f_GetStr(), -1, pGroup->gr_gid) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chown('{}', {}) when setting group on file") << Canonical << pGroup->gr_gid, errno));
 }
@@ -2142,10 +2257,10 @@ void NSys::NFile::fg_SetOwner(void *_pFile, const NMib::NStr::CStr &_Owner)
 	CStr Name = _Owner;
 
 	passwd *pPasswd = getpwnam(Name.f_GetStr());
-	
+
 	if (!pPasswd)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam('{}') when setting owner on file '{}'") << Name << pFile->f_GetFileName(), errno));
-	
+
 	if (fchown(pFile->m_BSDFile, pPasswd->pw_uid, -1) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("fchown('{}', {}) when setting owner on file") << pFile->f_GetFileName() << pPasswd->pw_uid, errno));
 }
@@ -2154,12 +2269,12 @@ void NSys::NFile::fg_SetGroup(void *_pFile, const NMib::NStr::CStr &_Group)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 	CStr Name = _Group;
-	
+
 	group *pGroup = getgrnam(Name.f_GetStr());
-	
+
 	if (!pGroup)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam('{}') when setting group on file '{}'") << Name << pFile->f_GetFileName(), errno));
-	
+
 	if (fchown(pFile->m_BSDFile, -1, pGroup->gr_gid) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("fchown('{}', {}) when setting group on file") << pFile->f_GetFileName() << pGroup->gr_gid, errno));
 }
@@ -2188,7 +2303,7 @@ void NSys::NFile::fg_SetOwnerOnLink(CStr const &_Path, CStr const &_Owner)
 void NSys::NFile::fg_SetGroupOnLink(CStr const &_Path, CStr const &_Group)
 {
 	CStr Canonical = fg_ConvertToPOSIXPath(_Path);
-	CStr Name = _Group;	
+	CStr Name = _Group;
 
 	struct stat Stats;
 	if (lstat(Canonical.f_GetStr(), &Stats))
@@ -2242,7 +2357,7 @@ uint64 CPOSIXFileFind::f_ParseAttrib()
 }
 
 void *NSys::NFile::fg_FindOpen(const NMib::NStr::CStr &_FindPattern)
-{	
+{
 //	DMibTrace("fg_FindOpen({})\n", _FindPattern);
 	CStr FileName = fg_ConvertToPOSIXPath(_FindPattern);
 	CStr Path = NMib::NFile::CFile::fs_GetPath(FileName);
@@ -2250,9 +2365,9 @@ void *NSys::NFile::fg_FindOpen(const NMib::NStr::CStr &_FindPattern)
 
 	if (Path.f_IsEmpty())
 		Path = "/";
-	
+
 	CStr DirFileName = Path;
-	
+
 	DIR *pDir = opendir(DirFileName);
 	if (!pDir)
 	{
@@ -2260,9 +2375,9 @@ void *NSys::NFile::fg_FindOpen(const NMib::NStr::CStr &_FindPattern)
 		if (ErrNo != ENOENT) // No such file just means that the find returns empty result set
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("opendir('{}') when finding files") << Path, ErrNo));
 	}
-	
+
 	CPOSIXFileFind *pFind = DMibNew CPOSIXFileFind;
-	
+
 	pFind->m_FullPath = Path;
 	pFind->m_SearchPattern = MatchStr;
 	pFind->m_pDir = pDir;
@@ -2277,7 +2392,7 @@ static bool fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
 	const char *pPattern = Temp1;
 	mint nWildCardAttempt = 0; // This ensures that e.g. *.hcl matches 0x0409.Estonian.hcl
 	bool bWildCardSearch = false;
-	
+
 	while (true)
 	{
 		while (*pParse && *pPattern)
@@ -2315,7 +2430,7 @@ static bool fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
 				++pParse;
 			}
 		}
-		
+
 		if (*pParse == *pPattern)
 		{
 			return true;
@@ -2341,15 +2456,15 @@ const NMib::NStr::CStr *NSys::NFile::fg_FindNext(void *_pFindContext, NMib::NFil
 		return nullptr;
 
 	CPOSIXFileFind *pFind = (CPOSIXFileFind*)_pFindContext;
-	
+
 	if (!pFind->m_pDir)
 		return nullptr;
-	
+
 	while (1)
 	{
 		errno = 0;
 		dirent *pEntry = readdir(pFind->m_pDir);
-		
+
 		if (!pEntry)
 		{
 			if (errno)
@@ -2357,9 +2472,9 @@ const NMib::NStr::CStr *NSys::NFile::fg_FindNext(void *_pFindContext, NMib::NFil
 			else
 				return nullptr;
 		}
-		
+
 		CStr FileName = pEntry->d_name;
-		
+
 		if (FileName != "." && FileName != "..")
 		{
 			bool bAccept = fsg_MatchPattern(FileName, pFind->m_SearchPattern);
@@ -2372,8 +2487,8 @@ const NMib::NStr::CStr *NSys::NFile::fg_FindNext(void *_pFindContext, NMib::NFil
 			}
 		}
 	}
-	
-	return nullptr;	
+
+	return nullptr;
 }
 
 void NSys::NFile::fg_FindClose(void *_pFindContext)
