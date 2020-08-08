@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -66,12 +66,11 @@ typedef struct _Uncodumented_RTL_USER_PROCESS_PARAMETERS
 	UNICODE_STRING ShellInfo;
 	UNICODE_STRING RuntimeData;
 	RTL_DRIVE_LETTER_CURDIR CurrentDirectories[RTL_MAX_DRIVE_LETTERS];
-#if (NTDDI_VERSION >= NTDDI_LONGHORN)
 	SIZE_T EnvironmentSize;
-#endif
-#if (NTDDI_VERSION >= NTDDI_WIN7)
 	SIZE_T EnvironmentVersion;
-#endif
+	PVOID PackageDependencyData;
+	ULONG32 ProcessGroupId;
+	ULONG32 LoaderThreads;
 } Uncodumented_RTL_USER_PROCESS_PARAMETERS, *PUncodumented_RTL_USER_PROCESS_PARAMETERS;
 
 typedef struct _UndocumentedPEB
