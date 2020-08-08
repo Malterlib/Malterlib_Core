@@ -125,8 +125,19 @@ namespace NMib
 		void fg_InterProcess_MemFree(void *_pHandle, void *_pMemory);
 
 		void fg_Thread_Sleep(fp32 _Seconds);
-		void *fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bool _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID);
-		void fg_Thread_SetPriority(void *_pThread, mint _Priority);
+		void *fg_Thread_Create
+			(
+				FThreadProc *_pThreadProc
+				, void *_pParam
+				, EExecutionPriority _Priority
+				, mint _StackSize
+				, bool _bSuspended
+				, const ch8 *_pThreadName
+				, mint _Affinity
+				, mint &_ThreadID
+			)
+		;
+		void fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority);
 		void fg_Thread_SetAffinity(void *_pThread, mint _Affinity);
 		void fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode);
 		void fg_Thread_Destroy(void *_pThread);

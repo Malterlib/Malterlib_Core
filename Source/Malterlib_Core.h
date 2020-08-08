@@ -57,6 +57,18 @@ namespace NMib
 	static const EEndian gc_MachineEndian = EEndian_Big;
 #endif
 
+	enum EExecutionPriority
+	{
+		 EExecutionPriority_Lowest			= 0
+		, EExecutionPriority_Low			= 0x2AAA
+		, EExecutionPriority_BelowNormal	= 0x5555
+		, EExecutionPriority_Normal			= 0x8000
+		, EExecutionPriority_AboveNormal	= 0xAAAA
+		, EExecutionPriority_High			= 0xD555
+		, EExecutionPriority_Highest		= 0xFFFF
+		, EExecutionPriority_Default		= -1
+	};
+
 	template <typename t_CType>
 	using TCInitializerList = std::initializer_list<t_CType>;
 	
@@ -127,7 +139,6 @@ namespace NMib
 	{
 		return _From;
 	}
-
 }
 
 #include <Mib/Bit/Static>

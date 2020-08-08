@@ -446,18 +446,6 @@ namespace NMib
 		static uint32 ms_PlatformVersion;
 	};
 
-	enum EExecutionPriority
-	{
-		 EExecutionPriority_Lowest		= 0
-		,EExecutionPriority_Low			= 0x2AAA
-		,EExecutionPriority_BelowNormal	= 0x5555
-		,EExecutionPriority_Normal		= 0x8000
-		,EExecutionPriority_AboveNormal	= 0xAAAA
-		,EExecutionPriority_High		= 0xD555
-		,EExecutionPriority_Highest		= 0xFFFF
-		,EExecutionPriority_Default		= -1
-	};
-
 #ifdef DMibPAutomaticSystemCreation
 	extern mint g_SystemMemory[];
 #else

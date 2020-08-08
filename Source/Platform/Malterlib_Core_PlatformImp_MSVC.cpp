@@ -2819,20 +2819,20 @@ DWORD WINAPI fg_MalterlibMSVC_ThreadProc(void *_pParameter)
 
 namespace
 {
-	int fg_TranslateThreadPrio(mint _Priority)
+	int fg_TranslateThreadPrio(EExecutionPriority _Priority)
 	{
 		int Prio = THREAD_PRIORITY_NORMAL;
-		if (_Priority < EThreadPriority_Low)
+		if (_Priority < EExecutionPriority_Low)
 			Prio = THREAD_PRIORITY_IDLE;
-		else if (_Priority < EThreadPriority_BelowNormal)
+		else if (_Priority < EExecutionPriority_BelowNormal)
 			Prio = THREAD_PRIORITY_LOWEST;
-		else if (_Priority < EThreadPriority_Normal)
+		else if (_Priority < EExecutionPriority_Normal)
 			Prio = THREAD_PRIORITY_BELOW_NORMAL;
-		else if (_Priority < EThreadPriority_AboveNormal)
+		else if (_Priority < EExecutionPriority_AboveNormal)
 			Prio = THREAD_PRIORITY_NORMAL;
-		else if (_Priority < EThreadPriority_High)
+		else if (_Priority < EExecutionPriority_High)
 			Prio = THREAD_PRIORITY_ABOVE_NORMAL;
-		else if (_Priority < EThreadPriority_Highest)
+		else if (_Priority < EExecutionPriority_Highest)
 			Prio = THREAD_PRIORITY_HIGHEST;
 		else
 			Prio = THREAD_PRIORITY_TIME_CRITICAL;
@@ -2873,7 +2873,17 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 		CloseHandle(_pThreadDestroyContext);
 }
 
-void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bool _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
+void *NSys::fg_Thread_Create
+	(
+		FThreadProc *_pThreadProc
+		, void *_pParam
+		, EExecutionPriority _Priority
+		, mint _StackSize
+		, bool _bSuspended
+		, const ch8 *_pThreadName
+		, mint _Affinity
+		, mint &_ThreadID
+	)
 {
 	TCUniquePointer<CThreadParameters, NMemory::CAllocator_NonTrackedHeap> pThreadParameters = fg_Construct();
 
@@ -2936,7 +2946,7 @@ void NSys::fg_Thread_Resume(void *_pThread)
 	}
 }
 
-void NSys::fg_Thread_SetPriority(void *_pThread, mint _Priority)
+void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 {
 	if (!SetThreadPriority(_pThread, fg_TranslateThreadPrio(_Priority)))
 	{

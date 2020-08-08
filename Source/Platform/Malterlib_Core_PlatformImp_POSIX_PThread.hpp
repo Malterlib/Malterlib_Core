@@ -484,20 +484,7 @@ namespace
 	};
 };
 
-#if 0
-enum EThreadPriority
-{
-	EThreadPriority_Lowest			= 0x0000
-	,EThreadPriority_Low			= 0x2000
-	,EThreadPriority_BelowNormal	= 0x4000
-	,EThreadPriority_Normal			= 0x8000
-	,EThreadPriority_AboveNormal	= 0xc000
-	,EThreadPriority_High			= 0xe000
-	,EThreadPriority_Highest		= 0x10000
-}
-#endif
-
-static void fg_POSIX_MapThreadPriority(mint _Priority, int& _oSched, int& _oPrio)
+static void fg_POSIX_MapThreadPriority(EExecutionPriority _Priority, int& _oSched, int& _oPrio)
 {
 	CPrioMap const* pCurEntry = & gc_MalterlibToPOSIXPriorityMap[0];
 	CPrioMap const* pNextEntry;
@@ -518,7 +505,7 @@ static void fg_POSIX_MapThreadPriority(mint _Priority, int& _oSched, int& _oPrio
 				_oPrio 
 					= MinPrio 
 					+ (
-						(fp64(_Priority) / fp64(EThreadPriority_Highest))
+						(fp64(_Priority) / fp64(EExecutionPriority_Highest))
 						* fp64(MaxPrio - MinPrio)
 					).f_ToInt()
 				;
@@ -542,9 +529,9 @@ static void fg_POSIX_MapThreadPriority(mint _Priority, int& _oSched, int& _oPrio
 
 #if defined(DMibPMachKernel)
 #include <mach/mach_time.h>
-bool fg_SetMachPriority(void *_pThread, mint _Priority)
+bool fg_SetMachPriority(void *_pThread, EExecutionPriority _Priority)
 {
-	if (_Priority == EThreadPriority_Lowest)
+	if (_Priority == EExecutionPriority_Lowest)
 	{
 		thread_precedence_policy Policy;
 		Policy.importance = 0;
@@ -559,7 +546,7 @@ bool fg_SetMachPriority(void *_pThread, mint _Priority)
 			DMibDTrace("thread_policy_set failed: {}\n", Ret);
 		}
 	}
-	if (_Priority == EThreadPriority_Highest)
+	if (_Priority == EExecutionPriority_Highest)
 	{
 		thread_time_constraint_policy Policy;
 		fg_MemClear(Policy);
@@ -585,7 +572,17 @@ bool fg_SetMachPriority(void *_pThread, mint _Priority)
 }
 #endif
 
-void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bool _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
+void *NSys::fg_Thread_Create
+	(
+		FThreadProc *_pThreadProc
+		, void *_pParam
+		, EExecutionPriority _Priority
+		, mint _StackSize
+		, bool _bSuspended
+		, const ch8 *_pThreadName
+		, mint _Affinity
+		, mint &_ThreadID
+	)
 {
 	int Result;
 
@@ -771,7 +768,8 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 {
 	
 }
-void NSys::fg_Thread_SetPriority(void *_pThread, mint _Priority)
+
+void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 {
 #if defined(DMibPMachKernel)
 	if (fg_SetMachPriority(_pThread, _Priority))

@@ -8,7 +8,7 @@
 
 CPOSIXSocketContext::CPOSIXSocketContext()
 {
-	mp_PollerThread.f_Start(EThreadPriority_Highest);
+	mp_PollerThread.f_Start(EExecutionPriority_Highest);
 	signal(SIGPIPE, SIG_IGN);
 }
 

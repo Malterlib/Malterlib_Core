@@ -152,7 +152,7 @@ void CWindowsSocketContext::f_StartThread()
 	DMibLock(mp_ThreadStartLock);
 	if (NMib::NThread::CThread::f_GetState() != EThreadState_Running)
 	{
-		f_Start(EThreadPriority_High);
+		f_Start(EExecutionPriority_High);
 		mp_ThreadStartEvent.f_Wait();
 	}
 }

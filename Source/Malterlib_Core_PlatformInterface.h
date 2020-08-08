@@ -33,19 +33,6 @@ namespace NMib
 		ENumaNode_Default = -1
 	};
 
-	enum EThreadPriority
-	{
-		 EThreadPriority_Lowest			= 0x0000
-		,EThreadPriority_Low			= 0x2000
-		,EThreadPriority_BelowNormal	= 0x4000
-		,EThreadPriority_Normal			= 0x8000
-		,EThreadPriority_AboveNormal	= 0xc000
-		,EThreadPriority_High			= 0xe000
-		,EThreadPriority_Highest		= 0x10000
-
-		,EThreadPriority_Count			= 7
-	};
-
 	class CStackTraceInfo
 	{
 	public:

@@ -1895,7 +1895,17 @@ namespace NMib
 }
 
 
-void *NSys::fg_Thread_Create(FThreadProc *_pThreadProc, void *_pParam, mint _Priority, mint _StackSize, bool _bSuspended, const ch8 *_pThreadName, mint _Affinity, mint &_ThreadID)
+void *NSys::fg_Thread_Create
+	(
+		FThreadProc *_pThreadProc
+		, void *_pParam
+		, EExecutionPriority _Priority
+		, mint _StackSize
+		, bool _bSuspended
+		, const ch8 *_pThreadName
+		, mint _Affinity
+		, mint &_ThreadID
+	)
 {
 	DMibPDebugBreak;
 	return nullptr;
@@ -1927,7 +1937,7 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 {
 	DMibPDebugBreak;
 }
-void NSys::fg_Thread_SetPriority(void *_pThread, mint _Priority)
+void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 {
 	DMibPDebugBreak;
 }
