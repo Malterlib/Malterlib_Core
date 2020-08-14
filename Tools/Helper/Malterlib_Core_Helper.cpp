@@ -95,9 +95,9 @@ namespace
 	void fg_Process_SetPriority(EExecutionPriority _Priority)
 	{
 		// Best effort for setting priority
-		for (int NiceProirity = fg_Process_GetNice(_Priority); NiceProirity <= 20; ++NiceProirity)
+		for (int NicePriority = fg_Process_GetNice(_Priority); NicePriority <= 20; ++NicePriority)
 		{
-			if (!setpriority(PRIO_PROCESS, getpid(), NiceProirity))
+			if (!setpriority(PRIO_PROCESS, getpid(), NicePriority))
 				break;
 		}
 
