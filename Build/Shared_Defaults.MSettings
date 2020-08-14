@@ -98,6 +98,11 @@ Property
 		}
 	}
 
+	MalterlibXcodeNewBuildSystem false  // User(Build System)=true: Use Xcode new build system
+	{
+		!!MalterlibXcodeNewBuildSystem ""
+	}
+
 	MalterlibNoOSXCrossModuleExceptions true // User(Undocumented)=false: Disables catching of exception across modules on OSX. This will bring in libunwind statically (default true)
 	{
 		&

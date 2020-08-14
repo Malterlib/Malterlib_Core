@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Property
@@ -9,6 +9,15 @@ Property
 		{
 			DefaultOSXPlatform ""
 			MalterlibDefaultToolset true
+			HostPlatformFamily "OSX"
+		}
+	}
+	DefaultOSXPlatform "10.9"
+	{
+		&
+		{
+			DefaultOSXPlatform ""
+			MalterlibXcodeNewBuildSystem true
 			HostPlatformFamily "OSX"
 		}
 	}
@@ -392,7 +401,7 @@ Property
 			GeneratorFamily "VisualStudio"
 			EnablePlatform_Windows true
 		}
-		
+
 	}
 	OSX10.5 "Mac OSX 10.5"
 	{

@@ -805,14 +805,14 @@
 				}
 			}
 
-
 			%GeneratorSetting "BundleIdentifier"
 			{
 				Property
 				{
-                    Disabled "1"
+					Name "PRODUCT_BUNDLE_IDENTIFIER"
 				}
 			}
+
 			%GeneratorSetting "FileExtension"
 			{
 				Property
@@ -843,6 +843,7 @@
 							%GeneratorSetting "OBJROOT"
 							%GeneratorSetting "SYMROOT"
 							%GeneratorSetting "TEMP_ROOT"
+							%GeneratorSetting "MODULE_CACHE_DIR"
 						}
 					}
 				}

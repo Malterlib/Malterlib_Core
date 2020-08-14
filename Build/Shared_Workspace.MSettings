@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Workspace
@@ -9,6 +9,15 @@ Workspace
 		{
 			Workspace.Enabled ""
 			DocumentationEnabled true
+		}
+	}
+
+	XcodeNewBuildSystem true
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			MalterlibXcodeNewBuildSystem true
 		}
 	}
 }

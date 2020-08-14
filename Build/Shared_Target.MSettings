@@ -975,11 +975,11 @@ Target
 			!Compile.Optimize "Off"
 		}
 	}
-	
+
 	LDFlags "-mmacosx-version-min=@(Platform->Replace('OSX', '')) @(Target.LDFlags)"
 	{
 		!!PlatformFamily "OSX"
-	}	
+	}
 
 	LDFlags "--closure 1 @(Target.LDFlags)"
 	{
@@ -2804,9 +2804,24 @@ Target
 %Group "~Automatic/Target Dependencies Linker"
 {
 	!!GeneratorFamily "Xcode"
-	%File "@(XcodeGeneratorDependencyFiles)"
+
+	Property
 	{
-		Compile.AllowNonExisting true
+		ExpandDependenciesTemplate "#include \"@(Explodee)\"\n"
+		{
+			!Explodee ""
+		}
+	}
+
+	%GenerateFile "Generate"
+	{
+		Property
+		{
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
+			Name "@(GeneratedDirectory)Dependencies.cpp"
+
+			Contents "@(ExplodeList('@(XcodeGeneratorDependencyFiles);@(PreBuildOutputfile)', ';', 'ExpandDependenciesTemplate'))\n"
+		}
 	}
 }
 
@@ -2956,6 +2971,11 @@ Target
 				Target.Type "SharedDynamicLibrary"
 			}
 		}
+	}
+
+	BundleIdentifier "@(MalterlibBundleIdentifier)"
+	{
+		!!PlatformFamily "OSX"
 	}
 }
 
@@ -3985,7 +4005,7 @@ Property
 	PreBuildScriptDependencies	"@(PreBuildScriptDependencies)"\
 								"@(Builtin.Function->ExplodeList('@(Target.Dependencies)', ';', 'PreBuildScriptDependenciesTemplate'))"
 
-	PreBuildOutputfile "@(Target.IntermediateDirectory)PreBuildOutput.c"
+	PreBuildOutputfile "@(Target.IntermediateDirectory)PreBuildOutput.h"
 }
 
 Target
@@ -4009,7 +4029,7 @@ Target
 {
 	!!GeneratorFamily "Xcode"
 
-	PreBuildScriptInputs "@(PreBuildScriptDependencies)"
+	PreBuildScriptInputs "@(Builtin.MToolExe);@(PreBuildScriptDependencies)"
 	PreBuildScriptOutputs "@(PreBuildOutputfile)"
 	PreBuildScript	"@(Target.PreBuildScript)\n"\
 					"\"@(Builtin.MToolExe)\" CheckDependencies \"Directory=@(Target.IntermediateDirectory)MalterlibDependencies\"\n"\
@@ -4065,7 +4085,7 @@ Property
 	}
 	MalterlibPostBuildScriptInputsContents "@(Builtin.Function->ExplodeList('@(MalterlibPostBuildScriptInputs)', ';', 'MalterlibPostBuildScriptInputsTemplate'))"
 
-	PostBuildOutputfile "@(Target.IntermediateDirectory)PostBuildOutput.cpp"
+	PostBuildOutputfile "@(Target.IntermediateDirectory)PostBuildOutput.h"
 }
 
 Target
@@ -4073,7 +4093,15 @@ Target
 	!!GeneratorFamily "Xcode"
 
 	PostBuildScriptInputs "@(MalterlibPostBuildScriptInputsContents)"
-	PostBuildScriptOutputs "@(PostBuildOutputfile)"
+	PostBuildScriptOutputs "@(PostBuildOutputfile);@(Target.PostBuildScriptOutputs)"
+	PostBuildScriptOutputs "@(Target:Target.DependencyFile);@(Target.PostBuildScriptOutputs)"
+	{
+		&
+		{
+			!Target:Target.DependencyFile ""
+			!Target:Target.Type "Tool"
+		}
+	}
 }
 
 Property
@@ -4663,7 +4691,7 @@ Target
 		}
 	}
 
-	DependencyFile "@(Target.OutputDirectory)@(Target.Name).cpp"
+	DependencyFile "@(Target.OutputDirectory)@(Target.Name).h"
 	{
 		&
 		{

@@ -149,6 +149,7 @@ Property
 					Contents "@(IntermediateDirectoriesContents)"
 					Executable false
 					UnicodeBOM true
+					UnixLineEnds true
 				}
 				Compile
 				{
