@@ -4,7 +4,6 @@
 #pragma once
 
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-
 #	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 #		include <stdint.h>
 #		include <x86intrin.h>
@@ -16,8 +15,6 @@
 #else
 #	error "Implement this"
 #endif
-
-
 
 // Memory intrinsics
 #if defined(DPlatformFamily_OSX)
@@ -57,7 +54,6 @@
 #	error "Implement this"
 #endif
 
-
 // Prefetch
 #if DArchitectureExtension_SSE
 #	if defined(DCompiler_clang) || defined(DCompiler_gcc)
@@ -74,7 +70,6 @@
 #	define DMibPPrefetch(d_ToPrefetch) (void)0
 #	define DMibPPrefetchOneTimeUse(d_ToPrefetch) (void)0
 #endif
-
 
 // Yield
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
@@ -93,61 +88,57 @@
 #	error "Implement this"
 #endif
 
-
-
-
 // Highest bit set
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-
 	namespace NMib
 	{
 		namespace NPlatformHelpers
 		{
-			inline_always int fg_GetHighestBitSet32(unsigned long _Value)
+			constexpr inline_always int fg_GetHighestBitSet32(unsigned long _Value)
 			{
 				if (!_Value)
 					return -1;
 				return 31 - __builtin_clz(_Value);
 			}
 			
-			inline_always int fg_GetHighestBitSet32NoZero(unsigned long _Value)
+			constexpr inline_always int fg_GetHighestBitSet32NoZero(unsigned long _Value)
 			{
 				return 31 - __builtin_clz(_Value);
 			}
 			
-			inline_always int fg_GetLowestBitSet32(unsigned long _Value)
+			constexpr inline_always int fg_GetLowestBitSet32(unsigned long _Value)
 			{
 				if (!_Value)
 					return -1;
 				return __builtin_ctz(_Value);
 			}
 			
-			inline_always int fg_GetLowestBitSet32NoZero(unsigned long _Value)
+			constexpr inline_always int fg_GetLowestBitSet32NoZero(unsigned long _Value)
 			{
 				return __builtin_ctz(_Value);
 			}
 
 #			if DMibPPtrBits >= 64
-				inline_always int fg_GetHighestBitSet64(unsigned long _Value)
+				constexpr inline_always int fg_GetHighestBitSet64(unsigned long _Value)
 				{
 					if (!_Value)
 						return -1;
 					return 63 - __builtin_clzll(_Value);
 				}
 				
-				inline_always int fg_GetHighestBitSet64NoZero(unsigned long _Value)
+				constexpr inline_always int fg_GetHighestBitSet64NoZero(unsigned long _Value)
 				{
 					return 63 - __builtin_clzll(_Value);
 				}
 				
-				inline_always int fg_GetLowestBitSet64(unsigned long _Value)
+				constexpr inline_always int fg_GetLowestBitSet64(unsigned long _Value)
 				{
 					if (!_Value)
 						return -1;
 					return __builtin_ctzll(_Value);
 				}
 				
-				inline_always int fg_GetLowestBitSet64NoZero(unsigned long _Value)
+				constexpr inline_always int fg_GetLowestBitSet64NoZero(unsigned long _Value)
 				{
 					return __builtin_ctzll(_Value);
 				}
@@ -242,7 +233,6 @@
 #			endif
 		}
 	}
-
 
 #	define DMibPGetHighestBitSet32(d_Value) NMib::NPlatformHelpers::fg_GetHighestBitSet32(d_Value)
 #	define DMibPGetHighestBitSet32NoZero(d_Value) NMib::NPlatformHelpers::fg_GetHighestBitSet32NoZero(d_Value)
