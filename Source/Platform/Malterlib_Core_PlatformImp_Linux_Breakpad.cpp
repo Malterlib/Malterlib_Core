@@ -24,7 +24,15 @@ namespace NMib
 #else
 		static bool fsg_DumpCallback(const char* _pDumpDir, const char* _pMiniDumpID, void* _pContext, bool _bSucceeded)
 #endif
-		{		
+		{
+#if defined(DPlatformFamily_Linux)
+			ch8 const *pDumpPath = _Descriptor.path();
+#else
+			NMib::NStr::CFStr1024 DumpPath = NMib::NStr::CFStr1024::CFormat("{}/{}.dmp") << _pDumpDir << _pMiniDumpID;
+			ch8 const *pDumpPath = DumpPath;
+#endif
+			NMib::NSys::fg_DebugOutput((NMib::NStr::CFStr1024::CFormat("Application crashed. Saving crash dump to: {}\n") << pDumpPath).f_GetStr().f_GetStr());
+
 			if (!_bSucceeded || NMib::fg_GetSys()->f_GetCrashHandlerPath().f_IsEmpty())
 				return _bSucceeded; // Failed to generate minidump or we specifically don't want to spawn a reporter (eg when running the server)
 
@@ -36,21 +44,12 @@ namespace NMib
 				
 				NMib::NStr::CStrNonTracked const& ProgramName = NMib::fg_GetSys()->f_GetProgramNameNonTracked();
 				
-#if defined(DPlatformFamily_OSX)
-				char MiniDumpPath[1024];
-				snprintf(MiniDumpPath, sizeof(MiniDumpPath), "%s/%s.dmp", _pDumpDir, _pMiniDumpID);
-#endif
-			
 				const char* pArgs[] =
 					{
 						NMib::fg_GetSys()->f_GetCrashHandlerPath().f_GetStr()
 						, ProgramName.f_IsEmpty() ? "application" : ProgramName.f_GetStr()
 						, "ErrorReporter"
-#if defined(DPlatformFamily_Linux)
-						, _Descriptor.path()
-#else
-						, MiniDumpPath
-#endif
+						, pDumpPath
 						, NMib::fg_GetSys()->f_GetCrashHandlerExePath()
 						, NMib::fg_GetSys()->f_GetCrashHandlerServer()
 						, NULL
