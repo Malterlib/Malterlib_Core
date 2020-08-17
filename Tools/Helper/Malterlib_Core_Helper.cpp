@@ -55,6 +55,10 @@ namespace
 
 	bool fg_StartsWith(char const *_pToCheck, char const *_pStartsWith)
 	{
+		auto StartsWithLen = strlen(_pStartsWith);
+		if (strlen(_pToCheck) < StartsWithLen)
+			return false;
+
 		return strncmp(_pToCheck, _pStartsWith, strlen(_pStartsWith)) == 0;
 	}
 
@@ -141,8 +145,10 @@ namespace
 	long long int fg_StrToInt(char const *_pParse, size_t _nChars)
 	{
 		char Temp[65];
+		memset(Temp, 0, 65);
 		if (_nChars > 64)
 			_nChars = 64;
+
 		strncpy(Temp, _pParse, _nChars);
 		return atoll(Temp);
 	}
@@ -238,7 +244,7 @@ int main(int _nArgs, char *_Arguments[])
 					rlimit Limits;
 					if (getrlimit(RLimit, &Limits))
 					{
-						fg_OutputError(errno, "The OS returned an error from getrlimit(%d) when setting process user in forked process: %s", RLimit);
+						fg_OutputError(errno, "The OS returned an error from getrlimit(%d) when setting process limits in forked process: %s", RLimit);
 						return 67;
 					}
 
