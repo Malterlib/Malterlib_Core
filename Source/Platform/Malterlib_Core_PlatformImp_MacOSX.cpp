@@ -268,6 +268,16 @@ public:
 		}
 	}
 
+	void f_ForkedChild()
+	{
+		kern_return_t Result = semaphore_create(mach_task_self(), &m_Semaphore, SYNC_POLICY_FIFO, 0);
+
+		m_Lock.f_ForkedChildUnlocked();
+
+		if (Result != KERN_SUCCESS)
+			DMibError((CFStr256::CFormat("semaphore_create failed: 0x{nfh}") << Result).f_GetStr().f_GetStr());
+	}
+
 	void f_Init()
 	{
 		kern_return_t Result = semaphore_create(mach_task_self(), &m_Semaphore, SYNC_POLICY_FIFO, 0);
@@ -365,7 +375,7 @@ void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
 void NSys::fg_Semaphore_ForkedChild(void * _pSemaphore)
 {
 	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	pSemaphore->f_Init();
+	pSemaphore->f_ForkedChild();
 }
 
 void NSys::fg_Semaphore_Free(void *_pSemaphore)
@@ -477,7 +487,11 @@ public:
 		{
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
 			if (Current != (void *)(mint)getpid())
+			{
+				g_ImpSemaphorePool.f_ForkedChildLocked();
+				g_EventEmulationPool.f_ForkedChildLocked();
 				Sys.m_bForkedChild = true;
+			}
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
 			if (Current == (void *)(mint)getpid())
@@ -515,6 +529,8 @@ public:
 		{
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
 			Sys.m_bForkedChild = true;
+			g_ImpSemaphorePool.f_ForkedChildLocked();
+			g_EventEmulationPool.f_ForkedChildLocked();
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
 			Sys.f_ForkedChild();

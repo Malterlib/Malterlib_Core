@@ -152,13 +152,20 @@ public:
 		}
 	}
 
+	void f_ForkedChild()
+	{
+		m_Lock.f_ForkedChildUnlocked();
+		if (sem_init(&m_Semaphore, false, 0))
+			DMibError(NMib::NPlatform::fg_FormatErrno("sem_init (semaphore init)", errno));
+		m_bSemaphoreInit = true;
+	}
+
 	void f_Init()
 	{
 		m_Lock.f_Construct();
 		if (sem_init(&m_Semaphore, false, 0))
 			DMibError(NMib::NPlatform::fg_FormatErrno("sem_init (semaphore init)", errno));
 		m_bSemaphoreInit = true;
-
 	}
 
 	void f_Signal(mint _Count)
@@ -257,7 +264,7 @@ void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
 void NSys::fg_Semaphore_ForkedChild(void * _pSemaphore)
 {
 	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	pSemaphore->f_Init();
+	pSemaphore->f_ForkedChild();
 }
 
 void NSys::fg_Semaphore_Free(void *_pSemaphore)
@@ -413,6 +420,8 @@ public:
 			{
 				Sys.m_bForkedChild = true;
 				g_bCanStackTrace = false;
+				g_ImpSemaphorePool.f_ForkedChildLocked();
+				g_EventEmulationPool.f_ForkedChildLocked();
 			}
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
@@ -452,6 +461,8 @@ public:
 			pthread_setspecific(Sys.m_ThreadDestructionHook, 0);
 			Sys.m_bForkedChild = true;
 			g_bCanStackTrace = false;
+			g_ImpSemaphorePool.f_ForkedChildLocked();
+			g_EventEmulationPool.f_ForkedChildLocked();
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
 			Sys.f_ForkedChild();
