@@ -9,9 +9,9 @@ namespace NMib
 {
 	namespace NPlatform
 	{
-		HRESULT fg_PatchIAT(HMODULE _hMod, CHAR *_pImportedModuleName, CHAR *_pImportedProcName, void *_pHookingProc, void **_pOriginalProc);
+		HRESULT fg_PatchIAT(HMODULE _hMod, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, void *_pHookingProc, void **_pOriginalProc);
 		HRESULT fg_DumpIATs(HMODULE _hMod);
-		HRESULT fg_PatchDIAT(HMODULE _hMod, CHAR *_pImportedModuleName, CHAR *_pImportedProcName, void *_pHookingProc, void **_pOriginalProc);
+		HRESULT fg_PatchDIAT(HMODULE _hMod, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, void *_pHookingProc, void **_pOriginalProc);
 		enum EInjectDllResult
 		{
 			EInjectDllResult_Failed = 0

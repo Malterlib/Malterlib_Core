@@ -2266,13 +2266,15 @@ Target
 	{
 		!!Configuration "Fast Compile"
 	}
-	LinkIncremental true
-	{
-		!!DebugCompiler true
-	}
+	// Currently slower than full linking in most cases
+	//
+	//LinkIncremental true
+	//{
+	//	!!DebugCompiler true
+	//}
 	LinkIncremental false
 	{
-		!!DebugCompiler false
+		!!LinkIncremental ""
 	}
 	LinkKeyFile "@(MalterlibStronglyNamedAssembly)"
 	{

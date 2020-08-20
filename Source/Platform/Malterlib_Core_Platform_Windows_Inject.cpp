@@ -32,7 +32,7 @@ namespace NMib
 		S_OK on success.
 		(any HRESULT) on failure.
 		--*/
-		HRESULT fg_PatchIAT(HMODULE _hMod, PSTR _pImportedModuleName, PSTR _pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
+		HRESULT fg_PatchIAT(HMODULE _hMod, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
 		{
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;
@@ -187,7 +187,7 @@ namespace NMib
 			return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
 		}
 
-		HRESULT fg_PatchDIAT(HMODULE _hMod, PSTR _pImportedModuleName, PSTR _pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
+		HRESULT fg_PatchDIAT(HMODULE _hMod, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
 		{
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;

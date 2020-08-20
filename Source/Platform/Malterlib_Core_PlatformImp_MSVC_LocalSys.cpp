@@ -719,7 +719,7 @@ public:
 	NStorage::TCAggregate<CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
 
 
-	bool f_EnablePrivilege(TCHAR* pszPrivilege, BOOL bEnable)
+	bool f_EnablePrivilege(TCHAR const* pszPrivilege, BOOL bEnable)
 	{
 		HANDLE           hToken;
 		TOKEN_PRIVILEGES tp;

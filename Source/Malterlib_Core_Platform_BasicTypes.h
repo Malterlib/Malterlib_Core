@@ -13,7 +13,7 @@
 #elif defined(DCompiler_MSVC)
 #	define constant_int64(_Number) _Number##i64
 #	define constant_uint64(_Number) _Number##ui64
-#	define str_utf8(d_StringLiteral) u8##d_StringLiteral
+#	define str_utf8(d_StringLiteral) d_StringLiteral
 #	define str_utf16(d_StringLiteral) L##d_StringLiteral
 #	define str_utf32(d_StringLiteral) U##d_StringLiteral
 #else
