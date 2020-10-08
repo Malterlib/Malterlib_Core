@@ -607,7 +607,6 @@ Property
 			Malterlib_Contracts_Enable ""
 			DebugCode false
 			!Configuration "Release Testing"
-			!Tests "Tests"
 		}
 	}
 	Malterlib_Contracts_Enable true // User(Debug)=false: Force enable or disable of contracts (set to true or false)
