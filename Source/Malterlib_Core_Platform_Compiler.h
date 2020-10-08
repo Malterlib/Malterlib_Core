@@ -32,13 +32,13 @@
 // Deprecation
 #if defined(DCompiler_clang)
 #	define DMibDeprecated __attribute__((deprecated))
-#	define DMibDeprecatedSupressStart	_Pragma("clang diagnostic push") \
+#	define DMibDeprecatedSuppressStart	_Pragma("clang diagnostic push") \
 										_Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-#	define DMibDeprecatedSupressStop	_Pragma("clang diagnostic pop")
+#	define DMibDeprecatedSuppressStop	_Pragma("clang diagnostic pop")
 #else
 #	define DMibDeprecated
-#	define DMibDeprecatedSupressStart
-#	define DMibDeprecatedSupressStop
+#	define DMibDeprecatedSuppressStart
+#	define DMibDeprecatedSuppressStop
 #endif
 
 // Type traits

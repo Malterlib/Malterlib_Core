@@ -25,7 +25,7 @@ namespace NMib
 	{
 		class CNoLock;
 		template <typename t_CEvent, bool t_bAllowRecursive>
-		class TMutual;
+		class TCMutual;
 		class CEventAutoResetAggregate;
 	}
 
@@ -107,8 +107,6 @@ namespace NMib
 	
 	template <typename t_CIntType>
 	class TCLimitsInt;
-	template <typename t_CIntType>
-	class TCLimitsIntDyn;
 
 	namespace NFunction
 	{
