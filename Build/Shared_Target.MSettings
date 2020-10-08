@@ -998,7 +998,7 @@ Target
 		}
 	}
 
-	LDFlags "-nostdlibc++ @(Target.LDFlags)"
+	LDFlags "-nostdlib++ @(Target.LDFlags)"
 	{
 		&
 		{
