@@ -606,7 +606,7 @@ namespace NMib
 	}
 
 	template <typename t_CType>
-	static inline_small t_CType fg_PowerOfTwoMinusOne(uaint _Power)
+	static constexpr inline_small t_CType fg_PowerOfTwoMinusOne(uaint _Power)
 	{
 		return ((t_CType(1)) << (_Power - 1)) + (((t_CType(1)) << (_Power - 1)) - t_CType(1));
 	}
@@ -827,7 +827,7 @@ namespace NMib
 
 
 	template <typename tf_CFirst, typename tf_CSecond>
-	inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second)
 	{
 		if (fg_Forward<tf_CFirst>(_First) < fg_Forward<tf_CSecond>(_Second))
 			return fg_Forward<tf_CFirst>(_First);
@@ -836,7 +836,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
 	{
 		if (fg_Forward<tf_CFirst>(_First) < fg_Forward<tf_CSecond>(_Second))
 			return fg_Min(fg_Forward<tf_CFirst>(_First), fg_Forward<tfp_CRest>(p_Rest)...);
@@ -845,7 +845,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond>
-	inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second)
 	{
 		if (fg_Forward<tf_CSecond>(_Second) < fg_Forward<tf_CFirst>(_First))
 			return fg_Forward<tf_CFirst>(_First);
@@ -854,7 +854,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
 	{
 		if (fg_Forward<tf_CSecond>(_Second) < fg_Forward<tf_CFirst>(_First))
 			return fg_Max(fg_Forward<tf_CFirst>(_First), fg_Forward<tfp_CRest>(p_Rest)...);
@@ -863,13 +863,13 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CMin, typename tf_CMax>
-	inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Clamp(tf_CFirst &&_First, tf_CMin &&_Min, tf_CMax &&_Max)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Clamp(tf_CFirst &&_First, tf_CMin &&_Min, tf_CMax &&_Max)
 	{
 		return fg_Max(fg_Min(fg_Forward<tf_CFirst>(_First), fg_Forward<tf_CMax>(_Max)), fg_Forward<tf_CMin>(_Min));
 	}
 
 	template <typename tf_CFirst>
-	inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Abs(tf_CFirst &&_First)
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Abs(tf_CFirst &&_First)
 	{
 		if (fg_Forward<tf_CFirst>(_First) >= typename NTraits::TCRemoveReference<tf_CFirst>::CType(0))
 			return fg_Forward<tf_CFirst>(_First);
@@ -1060,81 +1060,32 @@ namespace NMib
 	#pragma warning(disable:4309)
 #endif
 		
-		template <typename t_CIntType, bool t_bSigned, bool t_bFundamental>
-		class TCLimitsIntHelper
+		template <typename t_CIntType, bool t_bSigned>
+		struct TCLimitsIntHelper
 		{
-		public:
-			const static t_CIntType mc_Min;
-			const static t_CIntType mc_Max;
-		};
-
-
-		template <typename t_CIntType, bool t_bFundamental>
-		class TCLimitsIntHelper<t_CIntType, 1, t_bFundamental>
-		{
-		public:
-			typedef typename NMib::NTraits::TCUnsigned<t_CIntType>::CType CUnsigned;
-			const static t_CIntType mc_Min;
-			const static t_CIntType mc_Max;
-		};
-
-		
-		template <typename t_CIntType, bool t_bSigned, bool t_bFundamental>
-		const t_CIntType TCLimitsIntHelper<t_CIntType, t_bSigned, t_bFundamental>::mc_Min = t_CIntType(0);
-
-		template <typename t_CIntType, bool t_bSigned, bool t_bFundamental>
-		const t_CIntType TCLimitsIntHelper<t_CIntType, t_bSigned, t_bFundamental>::mc_Max = (t_CIntType(0) - 1);
-
-
-		template <typename t_CIntType, bool t_bFundamental>
-		const t_CIntType TCLimitsIntHelper<t_CIntType, 1, t_bFundamental>::mc_Min = (t_CIntType(1) << ((sizeof(t_CIntType)*8)-1));
-
-		template <typename t_CIntType, bool t_bFundamental>
-		const t_CIntType TCLimitsIntHelper<t_CIntType, 1, t_bFundamental>::mc_Max = t_CIntType((CUnsigned(1) << ((sizeof(t_CIntType)*8)-1)) - CUnsigned(1));
-		
-
-		template <typename t_CIntType>
-		class TCLimitsIntHelper<t_CIntType, 0, 1>
-		{
-		public:
-			const static t_CIntType mc_Min = t_CIntType(0);
-			const static t_CIntType mc_Max = (t_CIntType(0) - 1);
+			constexpr static t_CIntType mc_Min = 0;
+			constexpr static t_CIntType mc_Max = t_CIntType(0) - 1;
+			constexpr static t_CIntType mc_AllBits = mc_Max;
 		};
 
 
 		template <typename t_CIntType>
-		const t_CIntType TCLimitsIntHelper<t_CIntType, 0, 1>::mc_Min;
-		template <typename t_CIntType>
-		const t_CIntType TCLimitsIntHelper<t_CIntType, 0, 1>::mc_Max;
-
-		template <typename t_CIntType>
-		class TCLimitsIntHelper<t_CIntType, 1, 1>
+		struct TCLimitsIntHelper<t_CIntType, 1>
 		{
 			typedef typename NMib::NTraits::TCUnsigned<t_CIntType>::CType CUnsigned;
-		public:
-			const static t_CIntType mc_Min = (t_CIntType(1) << ((sizeof(t_CIntType)*8)-1));
-			const static t_CIntType mc_Max = t_CIntType((CUnsigned(1) << ((sizeof(t_CIntType)*8)-1)) - CUnsigned(1));
+
+			constexpr static t_CIntType mc_Min = (t_CIntType(1) << ((sizeof(t_CIntType)*8)-1));
+			constexpr static t_CIntType mc_Max = t_CIntType((CUnsigned(1) << ((sizeof(t_CIntType)*8)-1)) - CUnsigned(1));
+			constexpr static t_CIntType mc_AllBits = t_CIntType(CUnsigned(0) - 1);
 		};
 
-    
-		template <typename t_CIntType>
-		const t_CIntType TCLimitsIntHelper<t_CIntType, 1, 1>::mc_Min;
-		template <typename t_CIntType>
-		const t_CIntType TCLimitsIntHelper<t_CIntType, 1, 1>::mc_Max;
-     
 #ifdef DCompiler_MSVC
 	#pragma warning(pop)
 #endif
 	}
 
 	template <typename t_CIntType>
-	class TCLimitsInt : public NMib::NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::TCIsSigned<t_CIntType>::mc_Value, NTraits::TCIsFundamental<t_CIntType>::mc_Value>
-	{
-	public:
-	};
-
-	template <typename t_CIntType>
-	class TCLimitsIntDyn : public NMib::NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::TCIsSigned<t_CIntType>::mc_Value, false>
+	class TCLimitsInt : public NMib::NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::TCIsSigned<t_CIntType>::mc_Value>
 	{
 	public:
 	};
