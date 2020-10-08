@@ -80,6 +80,7 @@ Property
 	!!MalterlibAllBinaryRepositories true
 
 	MalterlibBinaryRepositories "MalterlibBinaries_OSX_x64;@(MalterlibBinaryRepositories)"
+	MalterlibBinaryRepositories "MalterlibBinaries_OSX_arm64;@(MalterlibBinaryRepositories)"
 	MalterlibBinaryRepositories "MalterlibBinaries_Linux_x64;@(MalterlibBinaryRepositories)"
 	MalterlibBinaryRepositories "MalterlibBinaries_Linux_x86;@(MalterlibBinaryRepositories)"
 	MalterlibBinaryRepositories "MalterlibBinaries_Windows_x64;@(MalterlibBinaryRepositories)"

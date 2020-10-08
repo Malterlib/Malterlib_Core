@@ -135,6 +135,7 @@ UpdateDependencies()
 
 	brew install cmake go graphviz ruby ninja git git-lfs
 
+	sudo chown "$USER" /Library/Ruby/Gems/2.6.0
 	gem install -n /usr/local/bin xcpretty
 	gem update -n /usr/local/bin --system
 }

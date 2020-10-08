@@ -87,7 +87,7 @@ void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_p
 
 	#else
 		#if DPlatformVersion >= 1070
-			#if defined(__i386__) || defined(__x86_64__)
+			#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__)
 				NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
 			#else
 				#error "Not Implemented"
@@ -152,7 +152,7 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 
 	#else
 		#if DPlatformVersion >= 1070
-			#if defined(__i386__) || defined(__x86_64__)
+			#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__)
 				NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
 			#else
 				#error "Not Implemented"

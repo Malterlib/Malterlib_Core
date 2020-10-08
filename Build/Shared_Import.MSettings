@@ -69,8 +69,11 @@ Import
 
 	CMake_CacheExcludePatterns "*/CMakeFiles/*;*/cmake.tmp/*;*.cmake;*.ninja;*/CMakeCache.txt;*/MalterlibFullRebuildVersion;*/.NoDartCoverage;@(Import.CMake_CacheExcludePatterns)"
 
-	CMake_CacheReplaceContents "/opt/local/bin/=;/usr/bin/=;/usr/local/bin/=;@(Import.CMake_CacheReplaceContents)"
+	MToolCMakePath "@(MToolDirectory->MakeRelative('.'->MakeAbsolute()))/MToolCMake"
 
+	CMake_ExcludeFromHash "@@('@(Import.MToolCMakePath)'->MakeAbsolute())=MToolCMake;@(Import.CMake_ExcludeFromHash)"
+
+	CMake_CacheReplaceContents "@@('@(Import.MToolCMakePath)'->MakeAbsolute())=MToolCMake;/opt/local/bin/=;/usr/bin/=;/opt/homebrew/bin/=;/usr/local/bin/=;/usr/local/go/bin/=;@(Import.CMake_CacheReplaceContents)"
 
 	CMake_CacheReplaceContents "C:/Go/bin/=;C:/strawberry/perl/bin/=;c:/Program Files/Git/bin/=;c:/Program Files/Git/usr/bin/=;@(Import.CMake_CacheReplaceContents)"
 	{
@@ -199,6 +202,31 @@ Import
 		!!PlatformFamily "OSX"
 	}
 
+	CMake_Variables "CMAKE_OSX_ARCHITECTURES=x86_64;@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily "OSX"
+			Architecture x64
+		}
+	}
+	CMake_Variables "CMAKE_OSX_ARCHITECTURES=arm64;@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily "OSX"
+			Architecture arm64
+		}
+	}
+	CMake_Variables "CMAKE_OSX_ARCHITECTURES=arm64e;@(Import.CMake_Variables)"
+	{
+		&
+		{
+			PlatformFamily "OSX"
+			Architecture arm64e
+		}
+	}
+
 	CMake_ExcludeFromHash "@(MalterlibCompiledFiles);@(Import.CMake_ExcludeFromHash)"
 	CMake_ExcludeFromHash "@(MalterlibDependenciesDirectory)/;@(Import.CMake_ExcludeFromHash)"
 	CMake_ExcludeFromHash "@(MalterlibSysRoot)/;@(Import.CMake_ExcludeFromHash)"
@@ -236,6 +264,7 @@ Import
 			!Import.CMake_SystemName ""
 			Import.CMake_SystemProcessor ""
 			Architecture "x64"
+			!PlatformFamily "OSX"
 		}
 	}
 
@@ -245,6 +274,7 @@ Import
 		{
 			!Import.CMake_SystemName ""
 			Import.CMake_SystemProcessor ""
+			!PlatformFamily "OSX"
 		}
 	}
 

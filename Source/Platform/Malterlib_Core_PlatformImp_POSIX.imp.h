@@ -176,7 +176,7 @@ namespace NMib
 void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 { // Should probably be moved to a file Malterlib_x86_MacOSX.cpp or similar.
 	
-#if (__x86_64__ || __i386__)
+#if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 	unsigned int CPUInfo[4];
 
 	_Info.m_Architecture = NMib::EProcessorArchitecture_Unknown;
@@ -205,17 +205,18 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 	}
 
 	_Info.m_Architecture = (sizeof(void*) == 4) ? EProcessorArchitecture_x86 : EProcessorArchitecture_x86_64;
-
-#else
-#ifdef DArchitecture_ppc32
+#elif defined(DArchitecture_ppc32)
 	_Info.m_Architecture = EProcessorArchitecture_ppc32;
 #elif defined(DArchitecture_ppc64)
 	_Info.m_Architecture = EProcessorArchitecture_ppc64;
 #elif defined(DArchitecture_le32)
 	_Info.m_Architecture = EProcessorArchitecture_le32;
+#elif defined(DArchitecture_arm64)
+	_Info.m_Architecture = EProcessorArchitecture_arm64;
+#elif defined(DArchitecture_arm64e)
+	_Info.m_Architecture = EProcessorArchitecture_arm64e;
 #else
 #error "Not implemented"
-#endif
 #endif
 }
 

@@ -112,6 +112,26 @@ Compile
 		!MalterlibMemoryManager_Debug_EnableMemoryLeaks true
 	}
 
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_NeedDualPageSize=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			PlatformFamily OSX
+			MalterlibMemoryManager Malterlib
+		}
+	}
+	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_NeedDualPageSize=0;@(Compile.PreprocessorDefines)"
+	{
+		!
+		{
+			&
+			{
+				PlatformFamily OSX
+				MalterlibMemoryManager Malterlib
+			}
+		}
+	}
+
 	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreedGuards=1;@(Compile.PreprocessorDefines)"
 	{
 		!!MalterlibMemoryManager_Debug_EnableFreedGuards true

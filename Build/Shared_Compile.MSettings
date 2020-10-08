@@ -726,7 +726,11 @@ Property
 	}
 	MalterlibNativeClangArchitecture "arm64"
 	{
-		!!Architecture "Arm64"
+		!!Architecture "arm64"
+	}
+	MalterlibNativeClangArchitecture "arm64e"
+	{
+		!!Architecture "arm64e"
 	}
 }
 
@@ -1315,16 +1319,6 @@ Compile
 	SearchPath "@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt;@(Compile.SearchPath)"
 	{
 		!!Compile.PrefixHeader "@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h"
-	}
-
-	FrameworkSearchPath "@(Builtin.BasePathAbsolute)/SDK/BreakpadBin/@(PlatformFamily);@(Compile.FrameworkSearchPath)"
-	{
-		&
-		{
-			PlatformFamily "OSX"
-			MalterlibEnableBreakpad true
-			Target:Target.Type "UIExecutable"
-		}
 	}
 
 	FrameworkSearchPath "$(PLATFORM_DIR)/Developer/Library/Frameworks;@(Compile.FrameworkSearchPath)"

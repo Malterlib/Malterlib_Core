@@ -1057,6 +1057,11 @@ Target
 				Platform "OSX10.6"
 				Platform "OSX10.7"
 			}
+			|
+			{
+				Architecture "x86"
+				Architecture "x64"
+			}
 		}
 	}
 
@@ -2171,25 +2176,6 @@ Target
 		}
 	}
 
-	LinkWithLibraries "\"-F@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(PlatformFamily)\" @(Target.LinkWithLibraries)"
-	{
-		&
-		{
-			PlatformIsDarwin true
-			MalterlibEnableBreakpad true
-			Target.Type "UIExecutable"
-		}
-	}
-	LinkWithLibraries "-framework Breakpad @(Target.LinkWithLibraries)"
-	{
-		&
-		{
-			PlatformIsDarwin true
-			MalterlibEnableBreakpad true
-			Target.Type "UIExecutable"
-		}
-	}
-
 	LinkWithLibraries "-lc++abi @(Target.LinkWithLibraries)"
 	{
 		&
@@ -2880,32 +2866,6 @@ Property
 	{
 		"!Target:Target.Type" "UIExecutable"
 	}
-
-	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
-					"MTool DiffCopy \"@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(PlatformFamily)@(MalterlibBreakpadSourceSuffix)/Breakpad.framework\" \"@(Target:Target.IntermediateDirectory)Breakpad\" \"\" 0 1\r\n"\
-					"MTool DiffReplace \"http://www.google.com/privacypolicy.html\" \"@(MalterlibBreakpadPrivacyPolicyURL)\" \"@('../../../SDK'->MakeAbsolute())/BreakpadBin/@(PlatformFamily)@(MalterlibBreakpadSourceSuffix)/Breakpad.framework/Localizable.strings\" \"@(Target:Target.IntermediateDirectory)Breakpad/Breakpad.framework\" \"\" 1 1 1\r\n"
-	{
-		&
-		{
-			MalterlibEnableBreakpad true
-			PlatformIsDarwin true
-			Target.Type "UIExecutable"
-		}
-	}
-
-	MalterlibPostBuildScriptPreSign "@(MalterlibPostBuildScriptPreSign)"\
-					"MTool DiffCopy \"@(Target:Target.IntermediateDirectory)Breakpad/Breakpad.framework\" \"@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Frameworks\" \"\" 0\r\n"
-	{
-		&
-		{
-			MalterlibEnableBreakpad true
-			PlatformIsDarwin true
-			Target.Type "UIExecutable"
-		}
-	}
-
-
-
 }
 
 // Out of process Specific
@@ -3223,76 +3183,6 @@ Property
 			PlatformFamily "Linux"
 			Target.Type "UIExecutable"
 			!MalterlibBuildServerBuild true
-		}
-	}
-}
-
-%Group "~Automatic/Posix Specific"
-{
-	%GenerateFile "Breakpad"
-	{
-		!!MalterlibEnableBreakpad true
-
-		Property
-		{
-			!!Target.Type "UIExecutable"
-			Group "@(Platform) @(Architecture) @(FullConfiguration)"
-
-			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
-
-			Contents	"#include <Mib/Core/Core>\n\n"\
-						"namespace NMib\n"\
-						"{\n"\
-						"\tnamespace NSys\n"\
-						"\t{\n"\
-						"\t\tvoid fg_InitialiseCrashReporter()\n"\
-						"\t\t{\n"\
-						"\t\t\tNMib::fg_GetSys()->f_SetCrashHandler(NMib::NFile::CFile::fs_GetProgramDirectory() + \"/OutOfProcess@(MalterlibConfigSuffix)\", \"@(MalterlibBreakpadUploadServer)\");\n"\
-						"\t\t}\n"\
-						"\t}\n"\
-						"}\n"
-
-			UnicodeBOM true
-
-		}
-
-		Property
-		{
-			!!Target.Type "Executable"
-			!!Target.Type "ConsoleExecutable"
-			Group "@(Platform) @(Architecture) @(FullConfiguration)"
-
-			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
-
-			Contents	"#include <Mib/Core/Core>\n\n"\
-						"namespace NMib\n"\
-						"{\n"\
-						"\tnamespace NSys\n"\
-						"\t{\n"\
-						"\t\tvoid fg_InitialiseCrashReporter()\n"\
-						"\t\t{\n"\
-						"\t\t\tNMib::fg_GetSys()->f_SetCrashHandler(\"\", \"@(MalterlibBreakpadUploadServer)\");\n"\
-						"\t\t}\n"\
-						"\t}\n"\
-						"}\n"
-
-			UnicodeBOM true
-		}
-	}
-}
-
-Target
-{
-	ExtraGroups "~Automatic/Posix Specific;@(Target.ExtraGroups)"
-	{
-		&
-		{
-			|
-			{
-				PlatformIsDarwin true
-				PlatformFamily "Linux"
-			}
-			TargetIsExecutable true
 		}
 	}
 }
@@ -4121,15 +4011,6 @@ Property
 		}
 	}
 
-	MalterlibPostCopySources "@(Target:Target.IntermediateDirectory)Breakpad/Breakpad.framework|;@(MalterlibPostCopySources)"
-	{
-		&
-		{
-			MalterlibEnableBreakpad true
-			PlatformIsDarwin true
-			Target.Type "UIExecutable"
-		}
-	}
 	MalterlibPostCopySources "@(MalterlibLinuxDesktopFile)|;@(MalterlibPostCopySources)"
 	{
 		&

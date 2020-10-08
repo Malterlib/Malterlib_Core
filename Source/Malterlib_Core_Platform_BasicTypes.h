@@ -31,7 +31,7 @@ typedef double pfp64;
 #define DMibPCanDo_fp64
 static_assert(sizeof(pfp64)*8 == 64, "fp64 not supported");
 
-#ifndef DCompiler_MSVC
+#if !defined(DCompiler_MSVC) && (defined(DArchitecture_x86) || defined(DArchitecture_x64))
 typedef long double pfp80;
 #define DMibPCanDo_fp80
 static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
@@ -93,13 +93,13 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		//#define DMibPSignedType_ch16
 		//#define DMibPSignedType_ch32
 #	else
-		typedef char int8;
+		typedef signed char int8;
 		#define DMibPCanDo_int8
 
-		typedef short int16;
+		typedef signed short int16;
 		#define DMibPCanDo_int16
 
-		typedef int int32;
+		typedef signed int int32;
 		#define DMibPCanDo_int32
 
 		typedef signed long long int64;
@@ -133,7 +133,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		#define DMibPUniqueType_smint
 		//#define DMibPUniqueType_aint
 		//#define DMibPUniqueType_uaint
-		//#define DMibPUniqueType_ch8
+		#define DMibPUniqueType_ch8
 		#define DMibPUniqueType_ch16
 		#define DMibPUniqueType_ch32
 
@@ -197,13 +197,13 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		//#define DMibPSignedType_ch16
 		//#define DMibPSignedType_ch32
 #	else
-		typedef char int8;
+		typedef signed char int8;
 		#define DMibPCanDo_int8
 
-		typedef short int16;
+		typedef signed short int16;
 		#define DMibPCanDo_int16
 
-		typedef long int32;
+		typedef signed long int32;
 		#define DMibPCanDo_int32
 
 		typedef signed long long int64;
@@ -237,7 +237,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		#define DMibPUniqueType_smint
 		//#define DMibPUniqueType_aint
 		//#define DMibPUniqueType_uaint
-		//#define DMibPUniqueType_ch8
+		#define DMibPUniqueType_ch8
 		#define DMibPUniqueType_ch16
 		#define DMibPUniqueType_ch32
 
@@ -346,13 +346,13 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		//#define DMibPSignedType_ch32
 #	endif
 #elif defined(DPlatformFamily_Emscripten)
-	typedef char int8;
+	typedef signed char int8;
 	#define DMibPCanDo_int8
 
-	typedef short int16;
+	typedef signed short int16;
 	#define DMibPCanDo_int16
 
-	typedef long int32;
+	typedef signed long int32;
 	#define DMibPCanDo_int32
 
 	typedef signed long long int64;
@@ -386,7 +386,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 	#define DMibPUniqueType_smint
 	//#define DMibPUniqueType_aint
 	//#define DMibPUniqueType_uaint
-	//#define DMibPUniqueType_ch8
+	#define DMibPUniqueType_ch8
 	#define DMibPUniqueType_ch16
 	#define DMibPUniqueType_ch32
 

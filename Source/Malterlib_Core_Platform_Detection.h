@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -100,29 +100,35 @@
 #	define DMibPBits_int 32
 #	define DMibPBits_uint 32
 #	define DMibPBits_mint 32
-#elif  defined(DArchitecture_x64) || defined(DArchitecture_ppc64)
+#elif  defined(DArchitecture_x64) || defined(DArchitecture_ppc64) || defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
 #	define DMibPPtrBits 64
 #	define DMibPBits_int 64
 #	define DMibPBits_uint 64
 #	define DMibPBits_mint 64
+#else
+#	error "Implement this"
 #endif
 
 
 // Endian
-#if defined(DArchitecture_x64)  || defined(DArchitecture_x86) || defined(DArchitecture_armv6) || defined(DArchitecture_le32)
+#if defined(DArchitecture_x64)  || defined(DArchitecture_x86) || defined(DArchitecture_armv6) || defined(DArchitecture_le32) || defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
 #	define DMibPLittleEndian
 #elif defined(DArchitecture_ppc64) || defined(DArchitecture_ppc32)
 	// Big endian
+#else
+#	error "Implement this"
 #endif
 
 
 // Cacheline size
-#if defined(DArchitecture_x64)  || defined(DArchitecture_x86) || defined(DArchitecture_armv6) || defined(DArchitecture_le32)
+#if defined(DArchitecture_x64)  || defined(DArchitecture_x86) || defined(DArchitecture_armv6) || defined(DArchitecture_le32) || defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
 #	define DMibPMemoryCacheLineSize 64
 #elif defined(DArchitecture_ppc32)
 #	define DMibPMemoryCacheLineSize 32
 #elif defined(DArchitecture_ppc64)
 #	define DMibPMemoryCacheLineSize 128
+#else
+#	error "Implement this"
 #endif
 
 

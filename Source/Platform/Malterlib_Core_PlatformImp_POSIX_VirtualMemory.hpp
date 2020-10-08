@@ -399,3 +399,7 @@ mint NSys::fg_Mem_VirtualTrySize(const void *_pMem)
 	return 0;
 }
 
+mint NSys::fg_Mem_PageSize()
+{
+	return sysconf(_SC_PAGE_SIZE);
+}

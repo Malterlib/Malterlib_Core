@@ -172,11 +172,9 @@ extern "C"
 	#include <netinet/in.h>
 	#include <sys/ioctl.h>
 	//#include <time.h>
-	#if !TARGET_OS_ASPEN
-		#include <crt_externs.h>
-		#include <sys/kern_control.h>
-		#include <sys/sys_domain.h>
-	#endif
+	#include <crt_externs.h>
+	#include <sys/kern_control.h>
+	#include <sys/sys_domain.h>
 	#include <sys/param.h>
 	#include <sys/mount.h>
 	#include <libkern/OSAtomic.h>
@@ -200,13 +198,17 @@ extern "C"
 //#include <files.h>
 
 #include "Malterlib_Core_PlatformImp_MacOSX_ObjCPP.h"
+#if defined(DArchitecture_x64) || defined(DArchitecture_x64)
 #include <xmmintrin.h>
+#endif
 
 static inline_small class CSystemMacOSX *fg_GetLocalSys();
 
 void NSys::fg_System_EnableFloatingPointExceptions()
 {
+#if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 	_MM_SET_EXCEPTION_MASK(_MM_MASK_INEXACT);
+#endif
 }
 
 void calling_convention_c fg_Malterlib_MakeActive()
@@ -1007,8 +1009,6 @@ NMib::NStr::CStr NSys::fg_Process_GetCommandLine()
 {
 	NMib::NStr::CStr Return;
 
-#if !TARGET_OS_ASPEN
-
 	int NumArgs = *_NSGetArgc();
 	ch8** pArgs = *_NSGetArgv();
 	if (pArgs)
@@ -1019,7 +1019,7 @@ NMib::NStr::CStr NSys::fg_Process_GetCommandLine()
                 Return += CStr("\"") + CStr(pArgs[i]) + CStr("\"");
 		}
 	}
-#endif
+
 	return Return;
 }
 
@@ -1027,7 +1027,6 @@ void NSys::fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> 
 {
 	_List.f_SetLen(0);
 
-#if !TARGET_OS_ASPEN
 	int NumArgs = *_NSGetArgc();
 	ch8** pArgs = *_NSGetArgv();
 	if (pArgs)
@@ -1040,7 +1039,6 @@ void NSys::fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> 
             }
 		}
 	}
-#endif
 }
 
 
@@ -1048,7 +1046,6 @@ NMib::NStr::CStr NSys::fg_CommandLineParameters()
 {
 	NMib::NStr::CStr Return;
 
-#if !TARGET_OS_ASPEN
 	int NumArgs = *_NSGetArgc();
 	ch8** pArgs = *_NSGetArgv();
 	if (pArgs)
@@ -1064,7 +1061,6 @@ NMib::NStr::CStr NSys::fg_CommandLineParameters()
             }
 		}
 	}
-#endif
 	return Return;
 }
 
@@ -1366,6 +1362,8 @@ void NSys::fg_CreateSystemVersion()
 	g_ThreadLocalOffsetPThread = 0x48;
 #elif defined(__x86_64__)
 	g_ThreadLocalOffsetPThread = 0x60;
+#elif defined(__arm64__)
+	g_ThreadLocalOffsetPThread = 0x60;
 #else
 	#error "Not Implemented"
 #endif
@@ -1384,6 +1382,9 @@ void NSys::fg_CreateSystemVersion()
 		g_ThreadSelfOffset = 0x48;
 
 #elif defined(__x86_64__)
+		g_ThreadLocalOffset = 0x60;
+		g_ThreadSelfOffset = 0x60;
+#elif defined(__arm64__)
 		g_ThreadLocalOffset = 0x60;
 		g_ThreadSelfOffset = 0x60;
 #else
@@ -1465,12 +1466,9 @@ void NSys::fg_CreateSystem()
 
 	//atexit(&fg_DestroySystemAtExit);
 
-	fg_InitBreakpad();
 	// fg_MalterlibMallocOverrideInit_ReinstallHandler(); Breakpad does not use signal handlers on OSX, so we don't need to install handlers here
 
 	{
-#if !TARGET_OS_ASPEN
-
 		int NumArgs = *_NSGetArgc();
 		ch8** pArgs = *_NSGetArgv();
 		if (pArgs)
@@ -1494,13 +1492,13 @@ void NSys::fg_CreateSystem()
 				}
 			}
 		}
-#endif
 	}
 
 	auto pSystem = fg_GetLocalSys();
 
 	pSystem->f_Init();
 	pSystem->f_InitModule();
+	fg_InitBreakpad();
 	pSystem->f_InitModuleThreaded();
 
 	setlinebuf(stdout); // Default to line buffered output

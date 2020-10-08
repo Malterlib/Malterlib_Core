@@ -77,10 +77,14 @@ namespace NMib
 					asm ("mov %%gs:0x0,%0" : "=r"(Return) : );
 				#elif defined(__x86_64__)
 					asm ("mov %%gs:0x0,%0" : "=r"(Return) : );
+				#elif defined(__aarch64__)
+					asm volatile ("mrs %0, tpidrro_el0" : "=r" (Return));
+					Return &= 0xfffffffffffffff8ul;
+					Return -= sizeof(void *) * 28;
 				#else
 					#error "Not Implemented"
 				#endif
-				
+
 				DMibFastCheck(Return == (mint)pthread_self());
 				return Return;
 				
@@ -138,6 +142,12 @@ namespace NMib
 					asm ("mov %%gs:0x0(,%1,4),%0" : "=r"(Return) : "r"(_iVariable));
 				#elif defined(__x86_64__)
 					asm ("mov %%gs:0x0(,%1,8),%0" : "=r"(Return) : "r"(_iVariable));
+				#elif defined(__aarch64__)
+					mint ThreadLocals;
+					asm volatile ("mrs %0, tpidrro_el0" : "=r" (ThreadLocals));
+					ThreadLocals &= 0xfffffffffffffff8ul;
+					Return = ((mint *)ThreadLocals)[_iVariable];
+					//asm ("mrs %0, tpidr_el0" : "=r" (Return) : );
 				#else
 					#error "Not Implemented"
 				#endif

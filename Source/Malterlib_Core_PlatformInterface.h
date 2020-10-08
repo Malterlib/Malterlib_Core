@@ -49,15 +49,15 @@ namespace NMib
 		,EProcessorArchitecture_x86
 		,EProcessorArchitecture_x86_64
 		,EProcessorArchitecture_Itanium
-		,EProcessorArchitecture_ARMv5
-		,EProcessorArchitecture_ARMv6
-		,EProcessorArchitecture_ARMv7
-		,EProcessorArchitecture_ARMv8
+		,EProcessorArchitecture_armv5
+		,EProcessorArchitecture_armv6
+		,EProcessorArchitecture_armv7
+		,EProcessorArchitecture_armv8
 		,EProcessorArchitecture_ppc32
 		,EProcessorArchitecture_ppc64
 		,EProcessorArchitecture_le32 // General purpose 32 bit little endian
-		// MIPS ?
-		// MIPS64 ?
+		,EProcessorArchitecture_arm64
+		,EProcessorArchitecture_arm64e
 	};
 
 	enum EProcessorFeature
@@ -144,6 +144,7 @@ namespace NMib
 		constexpr bool fg_Mem_VirtualCanCommit();
 		bool fg_Mem_VirtualCanProtect();
 		void fg_Mem_VirtualFlushInstructionCache(void *_pMem, mint _Size);
+		mint fg_Mem_PageSize();
 
 		/***************************************************************************************************\
 		|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|

@@ -167,6 +167,8 @@ Property
 		!!Architecture "x64"
 		!!Architecture "Itanium"
 		!!Architecture "ppc64"
+		!!Architecture "arm64"
+		!!Architecture "arm64e"
 	}
 	ArchitectureEndian "Little"
 	{
@@ -174,6 +176,8 @@ Property
 		!!Architecture "Arm"
 		!!Architecture "x64"
 		!!Architecture "Itanium"
+		!!Architecture "arm64"
+		!!Architecture "arm64e"
 	}
 	ArchitectureEndian "Big"
 	{

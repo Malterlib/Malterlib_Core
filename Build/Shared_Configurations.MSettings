@@ -284,9 +284,13 @@ Property
 	{
 		!!EnableArchitecture_Arm ""
 	}
-	EnableArchitecture_Arm64 true // User(Platform)=true: Enables generation of arm arm64 architecture
+	EnableArchitecture_arm64 true // User(Platform)=true: Enables generation of arm arm64 architecture
 	{
-		!!EnableArchitecture_Arm ""
+		!!EnableArchitecture_arm64 ""
+	}
+	EnableArchitecture_arm64e true // User(Platform)=true: Enables generation of arm arm64 architecture
+	{
+		!!EnableArchitecture_arm64e ""
 	}
 	EnableArchitecture_Itanium false // User(Platform)=true: Enables generation of itanium architecture
 	{
@@ -571,12 +575,28 @@ Property
 			EnableArchitecture_ArmV7s true
 		}
 	}
-	Arm64 "Arm 64" // Maps to Itanium Platform in Visual tudio
+	arm64 "Arm 64"
 	{
 		&
 		{
-			PlatformFamily "iOS"
-			EnableArchitecture_Arm64 true
+			|
+			{
+				PlatformFamily "iOS"
+				PlatformFamily "OSX"
+			}
+			EnableArchitecture_arm64 true
+		}
+	}
+	arm64e "Arm 64 Extended"
+	{
+		&
+		{
+			|
+			{
+				PlatformFamily "iOS"
+				//PlatformFamily "OSX"
+			}
+			EnableArchitecture_arm64e true
 		}
 	}
 	ppc32 "Power PC"

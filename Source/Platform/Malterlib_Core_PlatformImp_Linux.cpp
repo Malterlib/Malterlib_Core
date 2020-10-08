@@ -1500,8 +1500,6 @@ void NSys::fg_CreateSystem()
 
 	fg_LoadLibraries();
 
-	fg_InitBreakpad();
-
 	setlinebuf(stdout); // Default to line buffered output
 	setlinebuf(stderr); // Default to line buffered output
 
@@ -1577,6 +1575,7 @@ void NSys::fg_CreateSystem()
 	pSystem->f_Init();
 
 	pSystem->f_InitModule();
+	fg_InitBreakpad();
 	pSystem->f_InitModuleThreaded();
 }
 

@@ -1438,6 +1438,10 @@ mint NSys::fg_Mem_VirtualTrySize(const void *_pMem)
 	return 0;
 }
 
+mint NSys::fg_Mem_PageSize()
+{
+	return gs_SysInfo.dwPageSize;
+}
 
 void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, uint32 _CodePage, ch8 _ErrorChar)
 {
@@ -3325,16 +3329,13 @@ mint NSys::fg_Thread_GetPhysicalCores()
 			}
 		}
 	}
-	SYSTEM_INFO Info;
-	GetSystemInfo(&Info);
-	return Info.dwNumberOfProcessors;
+
+	return gs_SysInfo.dwNumberOfProcessors;
 }
 
 mint NSys::fg_Thread_GetVirtualCores()
 {
-	SYSTEM_INFO Info;
-	GetSystemInfo(&Info);
-	return Info.dwNumberOfProcessors;
+	return gs_SysInfo.dwNumberOfProcessors;
 }
 
 void NSys::fg_Thread_SmallestSleep()
@@ -4809,10 +4810,7 @@ bool NMib::NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor,
 	_oMinor = VersionInfo.dwMinorVersion;
 	_oFix = VersionInfo.dwBuildNumber;
 
-	SYSTEM_INFO SystemInfo;
-	GetSystemInfo(&SystemInfo);
-
-	switch (SystemInfo.dwProcessorType)
+	switch (gs_SysInfo.dwProcessorType)
 	{
 	case PROCESSOR_ARCHITECTURE_INTEL:
 		_Arch = EOperatingSystemArch_x86;

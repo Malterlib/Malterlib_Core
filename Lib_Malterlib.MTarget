@@ -173,6 +173,12 @@ Property
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/x86_64/*.c"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/x86_64/*.S"
 				}
+				%Group "aarch64"
+				{
+					!!Architecture "arm64"
+					!!Architecture "arm64e"
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/fp_mode.c"
+				}
 				%Group "ppc"
 				{
 					!!Architecture "ppc32"
@@ -593,18 +599,6 @@ Compile
 
 %Group "~Automatic/Breakpad Support"
 {
-	%File "Source/Platform/Malterlib_Core_PlatformImp_MacOSX_Breakpad.mm"
-	{
-		Compile.Disabled true
-		{
-			|
-			{
-				!PlatformFamily "OSX"
-				!Target:Target.Type "UIExecutable"
-			}
-		}
-
-	}
 	%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp"
 	{
 		Compile.Disabled true
@@ -612,43 +606,75 @@ Compile
 			|
 			{
 				PlatformFamily "Windows"
-				&
-				{
-					PlatformFamily "OSX"
-					Target:Target.Type "UIExecutable"
-				}
-
 			}
 		}
 	}
-	!!MalterlibEnableBreakpad true
+	%GenerateFile "Breakpad"
+	{
+		!!MalterlibEnableBreakpad true
+
+		Property
+		{
+			!!Target.Type "Executable"
+			!!Target.Type "ConsoleExecutable"
+			!!Target.Type "UIExecutable"
+			Group "@(Platform) @(Architecture) @(FullConfiguration)"
+
+			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
+
+			Contents	"#include <Mib/Core/Core>\n\n"\
+						"namespace NMib\n"\
+						"{\n"\
+						"\tnamespace NSys\n"\
+						"\t{\n"\
+						"\t\tvoid fg_InitialiseCrashReporter()\n"\
+						"\t\t{\n"\
+						"\t\t\tNMib::fg_GetSys()->f_SetCrashHandler(\"\", \"@(MalterlibBreakpadUploadServer)\");\n"\
+						"\t\t}\n"\
+						"\t}\n"\
+						"}\n"
+
+			UnicodeBOM true
+		}
+	}
+
+	%Dependency "Lib_Breakpad_Common"
+	{
+		!!MalterlibEnableBreakpad true
+	}
+	%Dependency "Lib_Breakpad_Client"
+	{
+		!!MalterlibEnableBreakpad true
+	}
 }
 
 Target
 {
 	ExtraGroups "~Automatic/Breakpad Support;@(Target.ExtraGroups)"
 	{
-		!!MalterlibEnableBreakpad true
+		&
+		{
+			MalterlibEnableBreakpad true
+			TargetIsLaunchableExecutable true
+		}
 	}
 }
 
-Compile
-{
-	&
-	{
-		MalterlibEnableBreakpadUploader true
-		|
-		{
-			CompileDialect "C"
-		}
-	}
-	PreprocessorDefines "DMibBreakpadUploadServer=\"@(MalterlibBreakpadUploadServer)\";@(Compile.PreprocessorDefines)"
-}
 
 %Group "~Automatic/Breakpad Uploader Support"
 {
+	Compile
+	{
+		&
+		{
+			|
+			{
+				CompileDialect "C"
+			}
+		}
+		PreprocessorDefines "DMibBreakpadUploadServer=\"@(MalterlibBreakpadUploadServer)\";@(Compile.PreprocessorDefines)"
+	}
 	%File "../CrashReport/Source/Malterlib_CrashReport_BreakpadUploader.cpp"
-	!!MalterlibEnableBreakpadUploader true
 }
 
 Property.MalterlibUseCurl true
@@ -660,7 +686,11 @@ Target
 {
 	ExtraGroups "~Automatic/Breakpad Uploader Support;@(Target.ExtraGroups)"
 	{
-		!!MalterlibEnableBreakpadUploader true
+		&
+		{
+			MalterlibEnableBreakpadUploader true
+			TargetIsLaunchableExecutable true
+		}
 	}
 }
 
@@ -1070,7 +1100,7 @@ Property
 		!!PlatformFamily "OSX"
 
 		LinkWithLibraries "-undefined dynamic_lookup \"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib\""
-		LinkWithLibraries "/usr/lib/libSystem.B.dylib @(Target.LinkWithLibraries)"
+		LinkWithLibraries "-lSystem.B @(Target.LinkWithLibraries)"
 		{
 			!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 		}
@@ -1145,6 +1175,10 @@ Property
 
 		LinkWithLibraries "-lSystem.B"
 		LinkWithLibraries "-lcrt1.o @(Target.LinkWithLibraries)"
+		{
+			!!Architecture "x64"
+			!!Architecture "x86"
+		}
 		LDFlags "-nostdlib @(Target.LDFlags)"
 		LinkWithStandardLibraries false
 		CodeCoverageLinkerMapping false
