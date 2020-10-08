@@ -15,10 +15,13 @@
 #define DMibAllowCodeStandardViolations 1
 
 #include <Mib/Concurrency/ThreadSafeQueue>
+#include <Mib/Core/PlatformSpecific/PosixUser>
 
 #include <malloc.h>
 #include <unwind.h>
-
+#include <linux/futex.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 using namespace NMib;
 using namespace NMib::NStr;
@@ -62,6 +65,7 @@ void fg_ForkPrepare();
 void fg_ForkParentOrChild();
 int fg_GetUnixOpenFlags();
 void fg_SetUnixHandleOptions(int _File);
+void fg_MalterlibMallocOverride_CanStartThreads();
 
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
 
@@ -123,27 +127,24 @@ CStr fg_EscapeString(CStr _In)
 class CImpSemaphore
 {
 public:
+	NMib::NThread::CLowLevelLock m_Lock;
 
-	NMib::NThread::CSpinLock m_Lock;
-
-	sem_t m_Semaphore;
+	sem_t m_Semaphore = {0};
 	bool m_bSemaphoreInit = false;
 
 	mint m_Value;
 	mint m_Maximum;
 
 	CImpSemaphore(mint _Value, mint _Maximum)
+		: m_Value(_Value)
+		, m_Maximum(_Maximum)
 	{
 		f_Init();
-		m_Value = _Value;
-		m_Maximum = _Maximum;
 	}
 
 	~CImpSemaphore() noexcept(false)
 	{
-		{
-			DMibLock(m_Lock);
-		}
+		DMibLock(m_Lock);
 
 		if (m_bSemaphoreInit)
 		{
@@ -163,9 +164,12 @@ public:
 	void f_Init()
 	{
 		m_Lock.f_Construct();
-		if (sem_init(&m_Semaphore, false, 0))
-			DMibError(NMib::NPlatform::fg_FormatErrno("sem_init (semaphore init)", errno));
-		m_bSemaphoreInit = true;
+		{
+			DMibLock(m_Lock);
+			if (sem_init(&m_Semaphore, false, 0))
+				DMibError(NMib::NPlatform::fg_FormatErrno("sem_init (semaphore init)", errno));
+			m_bSemaphoreInit = true;
+		}
 	}
 
 	void f_Signal(mint _Count)
@@ -253,7 +257,7 @@ public:
 	}
 };
 
-constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
+constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CLowLevelLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
 void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
 {
@@ -269,8 +273,13 @@ void NSys::fg_Semaphore_ForkedChild(void * _pSemaphore)
 
 void NSys::fg_Semaphore_Free(void *_pSemaphore)
 {
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
+	[[maybe_unused]] CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
+#ifdef DMibSanitizerEnabled_Thread
+	DMibLock(g_ImpSemaphorePool);
+	pSemaphore->~CImpSemaphore();
+#else
 	g_ImpSemaphorePool.f_Delete(pSemaphore);
+#endif
 }
 
 void NSys::fg_Semaphore_Increase(void * _pSemaphore, mint _Count)
@@ -415,6 +424,12 @@ public:
 		void *Current = pthread_getspecific(Sys.m_ThreadDestructionHook);
 		if (Current)
 		{
+#ifdef DMibSanitizerEnabled_Thread
+			if (Current == (void *)(mint)getpid())
+				__tsan_forked_parent();
+			else
+				__tsan_forked_child();
+#endif
 			pthread_setspecific(Sys.m_ThreadDestructionHook, nullptr);
 			if (Current != (void *)(mint)getpid())
 			{
@@ -444,6 +459,9 @@ public:
 		auto &Sys = *fg_GetLocalSys();
 		if (pthread_getspecific(Sys.m_ThreadDestructionHook))
 		{
+#ifdef DMibSanitizerEnabled_Thread
+			__tsan_forked_parent();
+#endif
 			pthread_setspecific(Sys.m_ThreadDestructionHook, 0);
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
@@ -458,8 +476,12 @@ public:
 		auto &Sys = *fg_GetLocalSys();
 		if (pthread_getspecific(Sys.m_ThreadDestructionHook))
 		{
+#ifdef DMibSanitizerEnabled_Thread
+			__tsan_forked_child();
+#endif
 			pthread_setspecific(Sys.m_ThreadDestructionHook, 0);
 			Sys.m_bForkedChild = true;
+			g_bCanStartThreads = false;
 			g_bCanStackTrace = false;
 			g_ImpSemaphorePool.f_ForkedChildLocked();
 			g_EventEmulationPool.f_ForkedChildLocked();
@@ -468,6 +490,9 @@ public:
 			Sys.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
+			g_bCanStartThreads = true;
+			Sys.f_MemoryManager_CanStartThreads();
+			fg_MalterlibMallocOverride_CanStartThreads();
 		}
 	}
 
@@ -521,7 +546,7 @@ public:
 
 		m_Posix.f_DestroyThreadSpecific();
 
-		if (m_FileChangeNotificationContext.m_bConstructed)
+		if (m_FileChangeNotificationContext.f_IsConstructed())
 			m_FileChangeNotificationContext.f_Destruct();
 
 		CSystem::f_DestructThreadSpecific();
@@ -531,7 +556,7 @@ public:
 	{
 		m_Posix.f_Destruct();
 
-		if (m_SocketContext.m_bConstructed)
+		if (m_SocketContext.f_IsConstructed())
 			m_SocketContext.f_Destruct();
 
 
@@ -1110,7 +1135,7 @@ namespace NMib
 	mint align_cacheline g_SystemMemory[sizeof(CSystemLinux) / sizeof(mint)];
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = false;
-	mint g_bCanStartThreads = false;
+	constinit NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads = {DAggregateInit};
 }
 
 void fg_ForkPrepare()
@@ -1431,10 +1456,17 @@ namespace NMib::NSys
 #endif
 }
 
+namespace NMib::NSys::NPrivate
+{
+	constinit mint g_PageSize = 0;
+}
+
 void NSys::fg_CreateSystem()
 {
 	if (g_bCreatedSystem)
 		return;
+
+	NPrivate::g_PageSize = sysconf(_SC_PAGE_SIZE);
 
 	fg_CreateSystemVersion();
 
@@ -1685,7 +1717,8 @@ NMib::NStr::CStr NSys::NFile::fg_GetUserHomeDirectory()
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
 
-	struct passwd *pPasswd = getpwuid(getuid());
+	NMib::NPlatform::CGetPwUidState State;
+	auto *pPasswd = fg_Helper_GetPwUid(getuid(), State);
 	if (pPasswd && pPasswd->pw_dir && pPasswd->pw_dir[0])
 		return CStr(pPasswd->pw_dir);
 
@@ -1709,7 +1742,8 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserHomeDirectoryNonTracked()
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
 
-	struct passwd *pPasswd = getpwuid(getuid());
+	NMib::NPlatform::CGetPwUidState State;
+	auto *pPasswd = fg_Helper_GetPwUid(getuid(), State);
 	if (pPasswd && pPasswd->pw_dir && pPasswd->pw_dir[0])
 		return CStrNonTracked(pPasswd->pw_dir);
 
@@ -2192,6 +2226,148 @@ void NSys::fg_Thread_Yield()
 	sched_yield();
 }
 
+pid_t fg_Malterlib_Thread_GetTID_Local();
+
+namespace NMib::NThread
+{
+	static_assert(sizeof(int) == sizeof(CLowLevelLockAggregate::m_Lock));
+
+	namespace
+	{
+		constexpr uint32 gc_FutexThreadMask = uint32(FUTEX_TID_MASK);
+	}
+
+	uint32 call_futex(NAtomic::TCAtomicAggregate<CLowLevelLockAggregateLockType> &_Value, int _Operation)
+	{
+		return syscall(SYS_futex, (int *)&_Value, _Operation, 0, nullptr, nullptr, 0);
+	}
+
+	void CLowLevelLockAggregate::f_ForkedChildUnlocked()
+	{
+		m_Lock = 0;
+	}
+
+	void CLowLevelLockAggregate::f_ForkedChildLocked()
+	{
+		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+			m_Lock = fg_Malterlib_Thread_GetTID_Local();
+		else
+			m_Lock = 1;
+
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+	}
+
+	void CLowLevelLockAggregate::f_Construct()
+	{
+		DMibSanitizerAnnotate_MutexCreate(this, __tsan_mutex_not_static);
+		m_Lock = 0;
+	}
+
+	void CLowLevelLockAggregate::f_Destruct()
+	{
+		DMibSanitizerAnnotate_MutexDestroy(this, 0);
+	}
+
+	namespace
+	{
+		inline_never void fg_AbortFutex()
+		{
+			DMibPDebugBreak;
+		}
+	}
+
+	void CLowLevelLockAggregate::f_Lock()
+	{
+		DMibSanitizerAnnotate_MutexPreLock(this, 0);
+		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+		{
+			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+
+			while (true)
+			{
+				uint32 OldValue = 0;
+				if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
+					break;
+
+				if ((OldValue & gc_FutexThreadMask) == ThreadID)
+					fg_AbortFutex(); // Recursive lock not supported
+
+				if (OldValue & FUTEX_OWNER_DIED)
+					fg_AbortFutex(); // Killing threads in not supported
+
+				if (OldValue & gc_FutexThreadMask)
+				{
+					if (!call_futex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
+						break;
+
+					auto Error = errno;
+					switch (Error)
+					{
+					case EAGAIN: break;
+					default: fg_AbortFutex(); // Broken
+					}
+				}
+			}
+		}
+		else
+		{
+			uint32 Expected = 0;
+			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			{
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				Expected = 0;
+			}
+		}
+
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+		DMibSanitizerAnnotate_MutexPostLock(this, 0, 1);
+	}
+
+	void CLowLevelLockAggregate::f_Unlock()
+	{
+		DMibSanitizerAnnotate_MutexPreUnlock(this, 0);
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = 0;
+		m_AlternateThreadID = 0;
+#endif
+		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+		{
+			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+
+			uint32 OldValue = ThreadID;
+
+			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
+			{
+				// Contended
+				if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
+				{
+					[[maybe_unused]] auto Error = errno;
+					fg_AbortFutex();
+				}
+			}
+		}
+		else
+			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+
+		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
+	}
+}
+
 #include <locale.h>
 
 uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
@@ -2549,3 +2725,13 @@ extern "C" int __isoc99_sscanf(const char *s, const char *format, ...)
 	return done;
 }
 
+#ifdef DMibSanitizerEnabled_Address
+
+#include <sanitizer/lsan_interface.h>
+
+extern "C" int __attribute__((used)) __lsan_is_turned_off(void)
+{
+    return 1;
+}
+
+#endif

@@ -1227,7 +1227,7 @@
 						C++11 "c++11"
 						C++14 "c++14"
 						C++17 "c++17"
-						C++20 "c++2a"
+						C++20 "c++20"
 
 					}
 				}
@@ -1545,7 +1545,7 @@
 			
 			%GeneratorSetting "Sanitize"
 			{
-				
+
 				%GeneratorSetting "Value"
 				{
 					Property
@@ -1554,6 +1554,21 @@
 					}
 				}
 			}
+
+			%GeneratorSetting "OmitFramePointer"
+			{
+
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						true "-fomit-frame-pointer"
+						false "-fno-omit-frame-pointer"
+					}
+				}
+			}
+
+
 
 			%GeneratorSetting "BuiltinSearchPath"
 			{
@@ -1854,9 +1869,9 @@
 					Property
 					{
 						Off "-w"
-						Minimal "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-pointer-sign -Wno-tautological-compare -Wno-incompatible-pointer-types -Wno-unused-local-typedef"
-						On "-Wall -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration"
-						Pedantic "-Weverything"
+						Minimal "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-pointer-sign -Wno-tautological-compare -Wno-incompatible-pointer-types -Wno-unused-local-typedef -Wno-invalid-offsetof"
+						On "-Wall -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-invalid-offsetof"
+						Pedantic "-Weverything -Wno-invalid-offsetof"
 /*
 						Minimal "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"
 						On "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"
@@ -2304,7 +2319,19 @@
 						Default "-fvisibility=default"
 						Hidden "-fvisibility=hidden"
 						InlineHidden "-fvisibility-inlines-hidden"
-						AllHidden "-fvisibility=hidden -fvisibility-inlines-hidden -fvisibility-global-new-delete-hidden"
+						AllHidden "-fvisibility=hidden -fvisibility-inlines-hidden"
+					}
+				}
+			}
+
+			%GeneratorSetting "NewDeleteVisibilityHidden"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-fvisibility-global-new-delete-hidden"
 					}
 				}
 			}
@@ -2449,11 +2476,39 @@
 						Fast ""
 						On ""
 						Full ""
-/*
-						Fast "-fsanitize=undefined"
-						On "-fsanitize=undefined"
-						Full "-fsanitize=integer,address"
-*/					
+					}
+				}
+			}
+			%GeneratorSetting "Sanitize_Thread"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-fsanitize=thread"
+					}
+				}
+			}
+			%GeneratorSetting "Sanitize_Address"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-fsanitize=address -fsanitize-address-use-after-scope"
+					}
+				}
+			}
+			%GeneratorSetting "Sanitize_UndefinedBehavior"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						false ""
+						true "-fsanitize=undefined"
 					}
 				}
 			}

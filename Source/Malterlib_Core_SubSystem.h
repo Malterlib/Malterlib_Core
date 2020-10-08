@@ -40,8 +40,8 @@ namespace NMib
 		inline_never t_CSubSystem *fp_Create(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
 		
 		CTypeAligned mp_ObjectSpace;
-		NThread::CSpinLockAggregate mp_Lock;
-		bool mp_bWasCreated;
+		NThread::CLowLevelLockAggregate mp_Lock;
+		NAtomic::TCAtomic<bool> mp_bWasCreated;
 	};
 };
 

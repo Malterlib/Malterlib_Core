@@ -19,6 +19,8 @@ namespace
 
 		void f_DoTests()
 		{
+#ifndef DMibSanitizerEnabled_Thread
+			// tsan does not currently support unloading dlls
 			CStr DllPath = CStr("Test_Malterlib_Helper_Core") + NMib::NFile::CFile::fs_GetDllExtension();
 #ifdef DPlatformFamily_Linux
 			DllPath = NMib::NFile::CFile::fs_AppendPath(NMib::NFile::CFile::fs_GetProgramDirectory(), DllPath);
@@ -49,7 +51,6 @@ namespace
 				NMib::NSys::fg_System_ExitProcess(2);
 			};
 #endif
-
 			DMibTestSuite("MemoryTrackWithoutDll")
 			{
 				DMibMemLightweightTrackAddFlagsScope(NMib::NMemory::EMemoryReportLightweightScopeFlag_InCScope);
@@ -231,10 +232,10 @@ namespace
 					DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop)(ETestFlag_Aggregated);
 					for (int i = 0; i < 2; ++i)
 						pTestFunc();
+
 					NMib::NSys::fg_FreeLibrary(pDll);
 				}
 			};
-
 			DMibTestSuite(CTestCategory("Performance") << CTestGroup("Performance"))
 			{
 				CTestPerformanceMeasure MalterlibTime("Malterlib");
@@ -264,9 +265,8 @@ namespace
 				DMibTest(DMibExpr(PerfTest));
 
 			};
-
+#endif
 		}
-
 	};
 }
 DMibTestRegister(CDll_Tests, Malterlib::Core);

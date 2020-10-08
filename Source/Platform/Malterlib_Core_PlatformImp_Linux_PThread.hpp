@@ -7,6 +7,9 @@
 
 using namespace NMib;
 
+#include <unistd.h>
+#include <sys/types.h>
+
 #include <Mib/Container/BitArrayHierarchical>
 
 // *************************************************************************************************************************
@@ -16,17 +19,20 @@ using namespace NMib;
 
 constexpr mint gc_nMalterlibThreadLocals = 256; // 2 KB on 64 bit platforms
 
-constinit NThread::CSpinLockAggregate gc_nMalterlibThreadLocalsAllocatedLock = {DAggregateInit};
+constinit NThread::CLowLevelLockAggregate gc_nMalterlibThreadLocalsAllocatedLock = {DAggregateInit};
 constinit NContainer::TCBitArrayHierarchical<gc_nMalterlibThreadLocals> gc_nMalterlibThreadLocalsAllocated{};
 
 #ifdef DMibDynamicLibrary
 	#ifndef DMibAssumeMalterlibHost
 		__thread mint __attribute__((tls_model("initial-exec"))) g_MalterlibThreadLocals[256] = {0};
+		__thread pid_t __attribute__((tls_model("initial-exec"))) g_MalterlibCurrentTID = 0;
 	#endif
 #else
 __thread mint __attribute__((tls_model("local-exec"))) g_MalterlibThreadLocals[256] = {0};
+__thread pid_t __attribute__((tls_model("local-exec"))) g_MalterlibCurrentTID = 0;
 #endif
 
+pid_t fg_Malterlib_Thread_GetTID_Local();
 
 #if !defined(DMibDynamicLibrary)
 extern "C" assure_used module_export mint fg_Malterlib_Thread_AllocLocal()
@@ -37,11 +43,16 @@ extern "C" assure_used module_export void fg_Malterlib_Thread_FreeLocal(mint _iS
 {
 	NSys::fg_Thread_FreeLocal(_iStorage);
 }
+extern "C" assure_used module_export pid_t fg_Malterlib_Thread_GetTID()
+{
+	return fg_Malterlib_Thread_GetTID_Local();
+}
 #endif
 
 #if defined(DMibDynamicLibrary) && defined(DMibAssumeMalterlibHost)
 extern "C" mint fg_Malterlib_Thread_AllocLocal();
 extern "C" void fg_Malterlib_Thread_FreeLocal(mint _iStorage);
+extern "C" pid_t fg_Malterlib_Thread_GetTID();
 
 mint NSys::fg_Thread_AllocLocal()
 {
@@ -52,7 +63,22 @@ void NSys::fg_Thread_FreeLocal(mint _iStorage)
 {
 	return fg_Malterlib_Thread_FreeLocal(_iStorage);
 }
+
+pid_t fg_Malterlib_Thread_GetTID_Local()
+{
+	return fg_Malterlib_Thread_GetTID();
+}
+
 #else
+
+pid_t fg_Malterlib_Thread_GetTID_Local()
+{
+	pid_t ThreadID = g_MalterlibCurrentTID;
+	if (unlikely(!ThreadID))
+		g_MalterlibCurrentTID = ThreadID = syscall(SYS_gettid);
+	return ThreadID;
+}
+
 mint NSys::fg_Thread_AllocLocal()
 {
 	aint iThreadLocal;
@@ -86,7 +112,7 @@ void NSys::fg_Thread_FreeLocal(mint _iStorage)
 
 void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
 {
-	auto pAlloc = (void **)((uint8 *)NMib::NSys::fg_GetThreadSelf() + _iStorage);
+	auto pAlloc = (void **)((uint8 *)NMib::NSys::fg_GetThreadSelf() + smint(_iStorage));
 	*pAlloc = _pData;
 }
 
@@ -98,7 +124,7 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 		fg_Thread_SetLocal(_iStorage, _pData);
 		return;
 	}
-	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID + _iStorage);
+	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID + smint(_iStorage));
 	pThreadLocal->f_Exchange((mint)_pData);
 }
 
@@ -106,7 +132,7 @@ void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocal(_iStorage);
-	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID + _iStorage);
+	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID + smint(_iStorage));
 	return (void *)pThreadLocal->f_Load();
 }
 

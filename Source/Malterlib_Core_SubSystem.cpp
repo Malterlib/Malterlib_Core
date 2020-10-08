@@ -61,8 +61,6 @@ namespace NMib
 
 	void CSystem::fp_SubSystem_PrepareFork_BeforeMemoryManager()
 	{
-		mp_SubSystemsLock.f_Lock();
-		mp_SubSystemsLock.f_PrepareFork();
 		for (auto &SubSystem : mp_SubSystems)
 		{
 			if (!SubSystem.f_IsAfterMemoryManager())
@@ -77,8 +75,6 @@ namespace NMib
 			if (!SubSystem.f_IsAfterMemoryManager())
 				SubSystem.f_ForkedChild();
 		}
-		mp_SubSystemsLock.f_ForkedChild();
-		mp_SubSystemsLock.f_Unlock();
 	}
 
 	void CSystem::fp_SubSystem_ForkedChild_AfterThreadLocal()
@@ -100,8 +96,6 @@ namespace NMib
 			if (!SubSystem.f_IsAfterMemoryManager())
 				SubSystem.f_ForkedParent();
 		}
-		mp_SubSystemsLock.f_ForkedParent();
-		mp_SubSystemsLock.f_Unlock();
 	}
 
 	void CSystem::fp_SubSystem_PrepareFork_AfterMemoryManager()

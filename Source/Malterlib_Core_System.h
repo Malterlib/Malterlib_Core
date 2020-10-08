@@ -453,7 +453,7 @@ namespace NMib
 #endif
 	extern mint g_bCreatingSystemDone;
 	extern mint g_bCanUseSystemMalloc;
-	extern mint g_bCanStartThreads;
+	extern NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads;
 	extern mint g_bMemoryManagerNeededAfterDestroy;
 	extern mint g_bCreatedSystem;
 							

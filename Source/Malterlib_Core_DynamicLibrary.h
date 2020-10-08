@@ -174,7 +174,7 @@ namespace NMib
 {
 	DMibImpErrorClassDefine(CDynamicLibraryException, NMib::NException::CException);
 
-	using CDLFlagUnderlaying = int32;
+	using CDLFlagUnderlying = int32;
 	enum EDLFlag : int32 // EDynamicLibraryFlag, shortened for typing.
 	{
 		EDLFlag_None			= 0,
@@ -183,7 +183,7 @@ namespace NMib
 		EDLFlag_AllowMissing	= DMibBit(2),	// Allow symbols to be missing without making the whole object bad.
 	};
 
-	template<typename t_CDerived, CDLFlagUnderlaying _Flags, typename t_CStr = NStr::CStrNonTracked, typename t_CStrTemp = NStr::CStrNonTracked>
+	template<typename t_CDerived, CDLFlagUnderlying _Flags, typename t_CStr = NStr::CStrNonTracked, typename t_CStrTemp = NStr::CStrNonTracked>
 	class TDynamicLibraryUtilityAggregate
 	{
 	public:
@@ -310,7 +310,7 @@ namespace NMib
 		}
 	};
 	
-	template<typename t_CDerived, CDLFlagUnderlaying _Flags, typename t_CStr = NStr::CStrNonTracked, typename t_CStrTemp = NStr::CStrNonTracked>
+	template<typename t_CDerived, CDLFlagUnderlying _Flags, typename t_CStr = NStr::CStrNonTracked, typename t_CStrTemp = NStr::CStrNonTracked>
 	class TDynamicLibraryUtility : public TDynamicLibraryUtilityAggregate<t_CDerived, _Flags, t_CStr, t_CStrTemp>
 	{
 	public:

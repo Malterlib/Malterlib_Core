@@ -7,6 +7,17 @@ using namespace NMib;
 #include <errno.h>
 #include <signal.h>
 
+#include <pthread.h>
+
+#ifdef DPlatformFamily_OSX
+	#include <sys/syscall.h>
+	#include <unistd.h>
+#endif
+#ifdef DPlatformFamily_Linux
+	#include <sys/syscall.h>
+	#include <unistd.h>
+#endif
+
 #if defined(DMibPMachKernel)
 	#include <mach/mach.h>
 	#include <mach/mach_init.h>
@@ -375,7 +386,7 @@ public:
 	}	
 };
 
-constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
+constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CLowLevelLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
 void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
 {
@@ -391,8 +402,13 @@ void NSys::fg_Semaphore_ForkedChild(void * _pSemaphore)
 
 void NSys::fg_Semaphore_Free(void *_pSemaphore)
 {
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
+	[[maybe_unused]] CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
+#ifdef DMibSanitizerEnabled_Thread
+	DMibLock(g_ImpSemaphorePool);
+	pSemaphore->~CImpSemaphore();
+#else
 	g_ImpSemaphorePool.f_Delete(pSemaphore);
+#endif
 }
 
 void NSys::fg_Semaphore_Increase(void * _pSemaphore, mint _Count)
@@ -646,7 +662,7 @@ void *NSys::fg_Thread_Create
 
 	bool bAlreadySetPriority = false;
 #ifdef DPlatformFamily_OSX
-	if (pthread_attr_set_qos_class_np)
+	if (&pthread_attr_set_qos_class_np)
 	{
 		int RelativePriority;
 		auto QosClass = NMib::NPlatform::fg_PriorityToQualityOfService(_Priority, RelativePriority);
@@ -788,7 +804,7 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 {
 #ifdef DPlatformFamily_OSX
-	if (pthread_set_qos_class_self_np && _pThread == NSys::fg_Thread_GetCurrent())
+	if (&pthread_set_qos_class_self_np && _pThread == NSys::fg_Thread_GetCurrent())
 	{
 		int RelativePriority;
 		auto QosClass = NMib::NPlatform::fg_PriorityToQualityOfService(_Priority, RelativePriority);
@@ -950,7 +966,7 @@ public:
 };
 
 
-NMemory::TCPoolAggregate<CEventEmulation, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_EventEmulationPool = {};
+NMemory::TCPoolAggregate<CEventEmulation, 128, NThread::CLowLevelLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_EventEmulationPool = {};
 
 void *NSys::fg_Event_Alloc(bool _bInitialSignal)
 {
@@ -1002,6 +1018,38 @@ bool NSys::fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout)
 bool NSys::fg_Event_TryWait(void * _pEvent)
 {
 	return ((CEventEmulation *)_pEvent)->f_TryWait();
+}
+
+mint NSys::fg_Thread_GetCurrentUIDAlternate()
+{
+#ifdef DPlatformFamily_OSX
+	if (&pthread_threadid_np)
+	{
+		uint64_t ThreadID;
+		pthread_threadid_np(pthread_self(), &ThreadID);
+		return ThreadID;
+	}
+#if DPlatformVersion < 1060
+	else
+		return fg_Thread_GetCurrentUID();
+#endif
+#elif defined(DPlatformFamily_Linux)
+	return syscall(SYS_gettid);
+#elif defined(DPlatformFamily_Emscripten)
+	return fg_Thread_GetCurrentUID();
+#else
+	#error "Implement this";
+#endif
+}
+
+mint NSys::fg_GetThreadSelf_Safe()
+{
+	return (mint)pthread_self();
+}
+
+mint NSys::fg_GetThreadLocal_Safe(mint _iVariable)
+{
+	return (mint)pthread_getspecific((pthread_key_t)_iVariable);
 }
 
 #endif

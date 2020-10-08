@@ -3,13 +3,21 @@
 
 Property
 {
-	DefaultOSXPlatform "10.13"
+	DefaultOSXPlatform "10.15"
 	{
 		&
 		{
 			DefaultOSXPlatform ""
 			MalterlibDefaultToolset true
 			HostPlatformFamily "OSX"
+		}
+	}
+	DefaultOSXPlatform "10.13"
+	{
+		&
+		{
+			DefaultOSXPlatform ""
+			!MalterlibUseStaticLibCxxABI true
 		}
 	}
 	DefaultOSXPlatform "10.9"
@@ -28,11 +36,6 @@ Property
 			DefaultOSXPlatform ""
 			HostPlatformFamily "OSX"
 		}
-	}
-
-	DefaultOSXPlatform "10.13"
-	{
-		!!MalterlibSupportSanitizers true
 	}
 
 	EnablePlatform_Windows true // User(Platform)=true: Enables Windows platform

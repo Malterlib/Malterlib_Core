@@ -981,9 +981,9 @@ public:
 
 		m_pMemoryToucher.f_Clear();
 
-		if (m_FileChangeNoticationContext.m_bConstructed)
+		if (m_FileChangeNoticationContext.f_IsConstructed())
 			m_FileChangeNoticationContext.f_Destruct();
-		if (m_SocketContext.m_bConstructed)
+		if (m_SocketContext.f_IsConstructed())
 			m_SocketContext.f_Destruct();
 
 		CSystem::f_DestructThreadSpecific();

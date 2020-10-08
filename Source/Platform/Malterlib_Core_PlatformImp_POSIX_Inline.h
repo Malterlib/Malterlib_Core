@@ -1,20 +1,6 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-extern "C"
-{
-	#include <pthread.h>
-
-#ifdef DPlatformFamily_OSX
-	#include <sys/syscall.h>
-	#include <unistd.h>
-#endif
-#ifdef DPlatformFamily_Linux
-	#include <sys/syscall.h>
-	#include <unistd.h>
-#endif
-}
-
 namespace NMib
 {
 	namespace NSys
@@ -66,10 +52,12 @@ namespace NMib
 		extern mint g_ThreadLocalOffset;
 #endif
 		
+		mint fg_GetThreadSelf_Safe();
+
 		inline_always mint fg_GetThreadSelf()
 		{
 		#ifdef DMibSafeThreadLocals
-			return  (mint)pthread_self();
+			return fg_GetThreadSelf_Safe();
 		#elif defined(DPlatformFamily_OSX)
 			#if DPlatformVersion >= 1070
 				mint Return;
@@ -85,7 +73,7 @@ namespace NMib
 					#error "Not Implemented"
 				#endif
 
-				DMibFastCheck(Return == (mint)pthread_self());
+				DMibFastCheck(Return == (mint)fg_GetThreadSelf_Safe());
 				return Return;
 				
 			#elif DPlatformVersion >= 1050
@@ -96,16 +84,16 @@ namespace NMib
 				#elif defined(__x86_64__)
 					asm ("mov %%gs:0x0(%1),%0" : "=r"(Return) : "r"(g_ThreadSelfOffset) );
 				#elif defined(__ppc__) || defined(__ppc64__)
-					return  (mint)pthread_self();
+					return fg_GetThreadSelf_Safe();
 				#else
 					#error "Not Implemented"
 				#endif
 				
-				DMibFastCheck(Return == (mint)pthread_self());
+				DMibFastCheck(Return == fg_GetThreadSelf_Safe());
 				return Return;
 			#else
 				#warning "Should be implemented"
-				return  (mint)pthread_self();
+				return  fg_GetThreadSelf_Safe();
 			#endif
 		#elif defined(DPlatformFamily_Linux)
 			#ifdef DMibAssumeGlibc
@@ -118,23 +106,25 @@ namespace NMib
 					#error "Not Implemented"
 				#endif
 				
-				DMibFastCheck(Return == (mint)pthread_self());
+				DMibFastCheck(Return == fg_GetThreadSelf_Safe());
 				return Return;
 			#else
-				return (mint)pthread_self();
+				return fg_GetThreadSelf_Safe();
 			#endif
 		#elif defined(DPlatformFamily_Emscripten)
-			return  (mint)pthread_self();
+			return  fg_GetThreadSelf_Safe();
 		#else
 			#warning "Should be implemented"
-			return  (mint)pthread_self();
+			return  fg_GetThreadSelf_Safe();
 		#endif
 		}
+
+		mint fg_GetThreadLocal_Safe(mint _iVariable);
 
 		inline_always mint fg_GetThreadLocal(mint _iVariable)
 		{
 		#ifdef DMibSafeThreadLocals
-			return (mint)pthread_getspecific((pthread_key_t)_iVariable);
+			return fg_GetThreadLocal_Safe(_iVariable);
 		#elif defined(DPlatformFamily_OSX)
 			#if DPlatformVersion >= 1070
 				mint Return;
@@ -151,7 +141,7 @@ namespace NMib
 				#else
 					#error "Not Implemented"
 				#endif
-				DMibFastCheck(Return == (mint)pthread_getspecific((pthread_key_t)_iVariable));
+				DMibFastCheck(Return == fg_GetThreadLocal_Safe(_iVariable));
 				return Return;
 			#elif DPlatformVersion >= 1050
 				mint Return;
@@ -160,15 +150,15 @@ namespace NMib
 				#elif defined(__x86_64__)
 					asm ("mov %%gs:0x0(%2,%1,8),%0" : "=r"(Return) : "r"(_iVariable), "r"(g_ThreadLocalOffset) );
 				#elif defined(__ppc__) || defined(__ppc64__)
-					return (mint)pthread_getspecific((pthread_key_t)_iVariable);
+					return fg_GetThreadLocal_Safe(_iVariable);
 				#else
 					#error "Not Implemented"
 				#endif
-				DMibFastCheck(Return == (mint)pthread_getspecific((pthread_key_t)_iVariable));
+				DMibFastCheck(Return == fg_GetThreadLocal_Safe(_iVariable));
 				return Return;
 			#else
 				#warning "Should be implemented"
-				return (mint)pthread_getspecific((pthread_key_t)_iVariable);
+				return fg_GetThreadLocal_Safe(_iVariable);
 			#endif
 		#elif defined(DPlatformFamily_Linux)
 			#ifdef DMibStaticThreadLocals
@@ -190,16 +180,16 @@ namespace NMib
 				#else
 					#error "Not Implemented"
 				#endif
-				DMibFastCheck(Return == (mint)pthread_getspecific((pthread_key_t)_iVariable));
+				DMibFastCheck(Return == fg_GetThreadLocal_Safe(_iVariable));
 				return Return;*/
 			#else
-				return (mint)pthread_getspecific((pthread_key_t)_iVariable);
+				return fg_GetThreadLocal_Safe(_iVariable);
 			#endif
 		#elif defined(DPlatformFamily_Emscripten)
-			return (mint)pthread_getspecific((pthread_key_t)_iVariable);
+			return fg_GetThreadLocal_Safe(_iVariable);
 		#else
 			#warning "Should be implemented"
-			return (mint)pthread_getspecific((pthread_key_t)_iVariable);
+			return fg_GetThreadLocal_Safe(_iVariable);
 		#endif
 		}
 
@@ -254,7 +244,7 @@ namespace NMib
 				#else
 					#error "Not Implemented"
 				#endif
-				DMibFastCheck(Return == (mint)pthread_getspecific((pthread_key_t)_iVariable));*/
+				DMibFastCheck(Return == fg_GetThreadLocal_Safe(_iVariable));*/
 			#else
 				return fg_Thread_GetLocal(_iVariable);
 			#endif
@@ -278,21 +268,7 @@ namespace NMib
 		{	
 			return fg_GetThreadSelf();
 		}
-		inline_always mint fg_Thread_GetCurrentUIDAlternate()
-		{
-#ifdef DPlatformFamily_OSX
-#		if DPlatformVersion < 1060
-			if (CSystem::ms_PlatformVersion < 10'06'00)
-				return fg_Thread_GetCurrentUID();
-#		endif
-DMibDeprecatedSupressStart;
-			return syscall(SYS_thread_selfid);
-DMibDeprecatedSupressStop;
-#elif defined(DPlatformFamily_Linux)
-			return syscall(SYS_gettid);
-#elif defined(DPlatformFamily_Emscripten)
-			return fg_Thread_GetCurrentUID();
-#endif
-		}		
+
+		mint fg_Thread_GetCurrentUIDAlternate();
 	}
 }

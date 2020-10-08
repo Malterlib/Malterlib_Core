@@ -658,7 +658,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "@(MalterlibUniqueConfig);DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->ReplaceChars(' -', ''));DConfig_@(ConfigNoSpace);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "@(MalterlibUniqueConfig);DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->ReplaceChars(' -.', ''));DConfig_@(ConfigNoSpace);@(Compile.PreprocessorDefines)"
 	{
 	}
 	PreprocessorDefines "DPConsole;@(Compile.PreprocessorDefines)"
@@ -830,7 +830,7 @@ Compile
 			Compile.Type "Assembler"
 		}
 	}
-	
+
 	MinOSXVersion "@(Platform->Replace('OSX', ''))"
 	{
 		!!Compile.MinOSXVersion ""
@@ -1345,6 +1345,11 @@ Compile
 		}
 	}
 
+	OmitFramePointer false
+	{
+		!!MalterlibSupportSanitizers true
+	}
+
 	ExtraCompilerFlags "/bigobj @(Compile.ExtraCompilerFlags)"
 	{
 		&
@@ -1375,7 +1380,7 @@ Compile
 		}
 	}
 
-	ExtraCompilerFlags "/std:c++latest @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags "/std:c++latest /constexpr:steps2097152 @(Compile.ExtraCompilerFlags)"
 	{
 		&
 		{
@@ -1445,6 +1450,16 @@ Compile
 		&
 		{
 			Compile.DefaultVisibility ""
+			PlatformType "Unix"
+		}
+	}
+
+	NewDeleteVisibilityHidden true
+	{
+		&
+		{
+			Compile.NewDeleteVisibilityHidden ""
+			MalterlibUseStaticLibCxx true
 			PlatformType "Unix"
 		}
 	}
@@ -1708,6 +1723,15 @@ Compile
 		}
 	}
 
+	PreprocessorDefines "DMalterlibUseStaticLibCxx=1;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseStaticLibCxx true
+		}
+	}
+
 	PreprocessorDefines "_LIBCPP_DISABLE_AVAILABILITY;_LIBCPP_BUILD_STATIC;_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1731,6 +1755,15 @@ Compile
 		!DoesNotUseMalterlib true
 	}
 
+	PreprocessorDefines "_LIBCPP_OVERRIDABLE_FUNC_VIS=;@(Compile.PreprocessorDefines)"
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			!MalterlibDisableMalterlib true
+		}
+	}
+
 	PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE;@(Compile.PreprocessorDefines)"
 	{
 		&
@@ -1739,6 +1772,7 @@ Compile
 			MalterlibQtSupport true
 			!DoesNotUseMalterlib true
 			!MalterlibDefaultToolset true
+			MalterlibUseStaticLibCxx true
 		}
 	}
 
@@ -1756,7 +1790,7 @@ Compile
 	PreprocessorDefines "DProductLocality=\"@(ProductLocality)\";@(Compile.PreprocessorDefines)"
 	PreprocessorDefines "DProductOrganizationalUnit=\"@(ProductOrganizationalUnit)\";@(Compile.PreprocessorDefines)"
 
-	PreprocessorDefines "DConfigSuffix=\"@(MalterlibConfigSuffix)\";DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->ReplaceChars(' -', ''));DConfig_@(ConfigNoSpace);DArchitecture_@(Architecture);DPlatform_@(Platform->Replace('.', '_'));DTarget=@(Target:this.Identity);DConfig=@(Configuration);DRealConfig=@(RealConfiguration);DArchitecture=@(Architecture);DPlatform=@(Platform);DPlatformFamily=@(PlatformFamily);DPlatformFamily_@(PlatformFamily);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "DConfigSuffix=\"@(MalterlibConfigSuffix)\";DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->ReplaceChars(' -.', ''));DConfig_@(ConfigNoSpace);DArchitecture_@(Architecture);DPlatform_@(Platform->Replace('.', '_'));DTarget=@(Target:this.Identity);DConfig=@(Configuration);DRealConfig=@(RealConfiguration);DArchitecture=@(Architecture);DPlatform=@(Platform);DPlatformFamily=@(PlatformFamily);DPlatformFamily_@(PlatformFamily);@(Compile.PreprocessorDefines)"
 	{
 	}
 	PreprocessorDefines "DPlatformVersion=@(PlatformVersion);@(Compile.PreprocessorDefines)"
@@ -2135,6 +2169,18 @@ Compile
 			!Compile.Type "C++Managed"
 			!Target:Target.Type "Driver"
 		}
+	}
+	Sanitize_Thread true
+	{
+		!!MalterlibSupportSanitizerEnable_Thread true
+	}
+	Sanitize_Address true
+	{
+		!!MalterlibSupportSanitizerEnable_Address true
+	}
+	Sanitize_UndefinedBehavior true
+	{
+		!!MalterlibSupportSanitizerEnable_UndefinedBehavior true
 	}
 	FunctionLevelLinking false
 	{

@@ -1025,12 +1025,77 @@ Target
 		}
 	}
 
+	LDFlags "-lunwind @(Target.LDFlags)"
+	{
+		&
+		{
+			!MalterlibUseStaticLibCxx true
+			!Target.Type "Driver"
+			!MalterlibDisableMalterlib true
+			PlatformFamily Linux
+		}
+	}
+
 	LDFlags "-fdwarf-exceptions @(Target.LDFlags)"
 	{
 		&
 		{
 			PlatformFamily "Linux"
 			Architecture "x86"
+		}
+	}
+
+	LDFlags "-fsanitize=thread @(Target.LDFlags)"
+	{
+		!!MalterlibSupportSanitizerEnable_Thread true
+	}
+
+	LDFlags "-fsanitize=address -fsanitize-address-use-after-scope @(Target.LDFlags)"
+	{
+		!!MalterlibSupportSanitizerEnable_Address true
+	}
+
+	LDFlags "-fsanitize=undefined @(Target.LDFlags)"
+	{
+		!!MalterlibSupportSanitizerEnable_UndefinedBehavior true
+	}
+
+	LDFlags "-w @(Target.LDFlags)"
+	{
+		!!MalterlibSupportSanitizers true
+	}
+
+	LDFlags "-Wl,--wrap=_ZdlPvSt11align_val_tRKSt9nothrow_t -Wl,--wrap=_ZdlPvSt11align_val_t -Wl,--wrap=_ZdlPv -Wl,--wrap=_ZdlPvRKSt9nothrow_t -Wl,--wrap=_ZdaPv -Wl,--wrap=_ZdaPvRKSt9nothrow_t -Wl,--wrap=_ZdaPvSt11align_val_t -Wl,--wrap=_ZdaPvSt11align_val_tRKSt9nothrow_t @(Target.LDFlags)"
+	{
+		&
+		{
+			MalterlibSupportSanitizers true
+			!PlatformFamily OSX
+		}
+	}
+	LDFlags "-Wl,--wrap=_ZdaPvmSt11align_val_t -Wl,--wrap=_ZnamSt11align_val_tRKSt9nothrow_t -Wl,--wrap=_ZnamSt11align_val_t -Wl,--wrap=_ZnwmSt11align_val_tRKSt9nothrow_t -Wl,--wrap=_ZnwmSt11align_val_t -Wl,--wrap=_ZdaPvm -Wl,--wrap=_ZnamRKSt9nothrow_t -Wl,--wrap=_Znam -Wl,--wrap=_ZdlPvm -Wl,--wrap=_ZnwmRKSt9nothrow_t -Wl,--wrap=_Znwm -Wl,--wrap=_ZdlPvmSt11align_val_t @(Target.LDFlags)"
+	{
+		&
+		{
+			MalterlibSupportSanitizers true
+			!PlatformFamily OSX
+			|
+			{
+				Architecture "x64"
+				Architecture "arm64"
+			}
+		}
+	}
+	LDFlags "-Wl,--wrap=_ZdaPvjSt11align_val_t -Wl,--wrap=_ZnajSt11align_val_tRKSt9nothrow_t -Wl,--wrap=_ZnajSt11align_val_t -Wl,--wrap=_ZnwjSt11align_val_tRKSt9nothrow_t -Wl,--wrap=_ZnwjSt11align_val_t -Wl,--wrap=_ZdaPvj -Wl,--wrap=_ZnajRKSt9nothrow_t -Wl,--wrap=_Znaj -Wl,--wrap=_ZdlPvj -Wl,--wrap=_ZnwjRKSt9nothrow_t -Wl,--wrap=_Znwj -Wl,--wrap=_ZdlPvjSt11align_val_t @(Target.LDFlags)"
+	{
+		&
+		{
+			MalterlibSupportSanitizers true
+			!PlatformFamily OSX
+			|
+			{
+				Architecture "x86"
+			}
 		}
 	}
 
@@ -2053,7 +2118,6 @@ Property
 			!DocumentationEnabled true
 			!MalterlibDisableMalterlib true
 			!PlatformFamily Windows
-			MalterlibMemoryManager_EnableOverrideSystemMalloc true
 		}
 	}
 }

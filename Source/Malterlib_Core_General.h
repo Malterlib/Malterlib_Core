@@ -32,10 +32,8 @@ namespace NMib
 
 #if DMibConfig_MalterlibMemoryManager_Debug
 #define DMibNew new(DMibPFile, NMib::CLineNumber(DMibPLine))
-#define DMibNewAligned(d_Type) new(CNewAligned(NMib::NTraits::TCAlignmentOf<d_Type>::mc_Value), DMibPFile, NMib::CLineNumber(DMibPLine)) d_Type
 #else
 #define DMibNew new
-#define DMibNewAligned(d_Type) new(CNewAligned(NMib::NTraits::TCAlignmentOf<d_Type>::mc_Value)) d_Type
 #endif
 
 namespace NMib
@@ -1664,46 +1662,6 @@ namespace NMib
 #endif
 }
 
-typedef NMib::TCAutoClear<bool> zbool;
-
-typedef NMib::TCAutoClear<mint> zmint;
-typedef NMib::TCAutoClear<smint> zsmint;
-
-typedef NMib::TCAutoClear<aint> zamint;
-typedef NMib::TCAutoClear<uaint> zuamint;
-
-typedef NMib::TCAutoClear<int8> zint8;
-typedef NMib::TCAutoClear<uint8> zuint8;
-typedef NMib::TCAutoClear<int16> zint16;
-typedef NMib::TCAutoClear<uint16> zuint16;
-typedef NMib::TCAutoClear<int32> zint32;
-typedef NMib::TCAutoClear<uint32> zuint32;
-typedef NMib::TCAutoClear<int64> zint64;
-typedef NMib::TCAutoClear<uint64> zuint64;
-typedef NMib::TCAutoClear<int80> zint80;
-typedef NMib::TCAutoClear<uint80> zuint80;
-typedef NMib::TCAutoClear<int128> zint128;
-typedef NMib::TCAutoClear<uint128> zuint128;
-typedef NMib::TCAutoClear<int160> zint160;
-typedef NMib::TCAutoClear<uint160> zuint160;
-typedef NMib::TCAutoClear<int256> zint256;
-typedef NMib::TCAutoClear<uint256> zuint256;
-typedef NMib::TCAutoClear<int320> zint320;
-typedef NMib::TCAutoClear<uint320> zuint320;
-typedef NMib::TCAutoClear<int512> zint512;
-typedef NMib::TCAutoClear<uint512> zuint512;
-typedef NMib::TCAutoClear<int1024> zint1024;
-typedef NMib::TCAutoClear<uint1024> zuint1024;
-typedef NMib::TCAutoClear<int2048> zint2048;
-typedef NMib::TCAutoClear<uint2048> zuint2048;
-typedef NMib::TCAutoClear<int4096> zint4096;
-typedef NMib::TCAutoClear<uint4096> zuint4096;
-typedef NMib::TCAutoClear<int8192> zint8192;
-typedef NMib::TCAutoClear<uint8192> zuint8192;
-typedef NMib::TCAutoClear<ch8> zch8;
-typedef NMib::TCAutoClear<ch16> zch16;
-typedef NMib::TCAutoClear<ch32> zch32;
-
 #include <Mib/Bit/Bit>
 
 // Gets a pointer to a class wich member is contained in from a pointer to that member
@@ -1717,6 +1675,5 @@ typedef NMib::TCAutoClear<ch32> zch32;
 #	define DBitRange(_BitStart, _BitEnd) DMibBitRange(_BitStart, _BitEnd)
 #	define DGetHighestBitSet(_Number) DMibGetHighestBitSet(_Number)
 #	define DNew DMibNew
-#	define DNewAligned DMibNewAligned
 #endif
 

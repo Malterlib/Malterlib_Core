@@ -21,6 +21,7 @@
 #include <sys/utsname.h>
 #include <crt_externs.h>
 #include <sys/clonefile.h>
+#include <os/lock.h>
 
 using namespace NMib;
 using namespace NMib::NStr;
@@ -41,6 +42,7 @@ bool g_bRegisteredAtFork = false;
 
 void fg_ForkPrepare();
 void fg_ForkParentOrChild();
+void fg_MalterlibMallocOverride_CanStartThreads();
 
 namespace NMib
 {
@@ -236,12 +238,11 @@ CStr fg_EscapeString(CStr _In)
 	return Ret;*/
 }
 
-
-class CImpSemaphore
+class align_cacheline CImpSemaphore
 {
 public:
 
-	NMib::NThread::CSpinLock m_Lock;
+	NMib::NThread::CLowLevelLock m_Lock;
 
 	semaphore_t m_Semaphore;
 
@@ -266,7 +267,7 @@ public:
 		{
 			kern_return_t Result = semaphore_destroy(mach_task_self(), m_Semaphore);
 			if (Result != KERN_SUCCESS)
-				DMibError((CFStr256::CFormat("semaphore_destroy failed: {}") << Result).f_GetStr().f_GetStr());
+				DMibError((CFStr256::CFormat("semaphore_destroy failed: 0x{nfh} {}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
 		}
 	}
 
@@ -277,7 +278,7 @@ public:
 		m_Lock.f_ForkedChildUnlocked();
 
 		if (Result != KERN_SUCCESS)
-			DMibError((CFStr256::CFormat("semaphore_create failed: 0x{nfh}") << Result).f_GetStr().f_GetStr());
+			DMibError((CFStr256::CFormat("semaphore_create failed: 0x{nfh} {}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
 	}
 
 	void f_Init()
@@ -287,7 +288,7 @@ public:
 		m_Lock.f_Construct();
 
 		if (Result != KERN_SUCCESS)
-			DMibError((CFStr256::CFormat("semaphore_create failed: 0x{nfh}") << Result).f_GetStr().f_GetStr());
+			DMibError((CFStr256::CFormat("semaphore_create failed: 0x{nfh} {}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
 	}
 
 	void f_Signal(mint _Count)
@@ -322,7 +323,7 @@ public:
 				DMibUnlock(m_Lock);
 				kern_return_t Result = semaphore_wait(m_Semaphore);
 				if (Result != KERN_SUCCESS && Result != KERN_ABORTED)
-					DMibError((CFStr256::CFormat("semaphore_wait failed: {}") << Result).f_GetStr().f_GetStr());
+					DMibError((CFStr256::CFormat("semaphore_wait failed: 0x{nfh} {}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
 			}
 		}
 		--m_Value;
@@ -351,7 +352,7 @@ public:
 					if (Result == KERN_OPERATION_TIMED_OUT)
 						;
 					else if (Result != KERN_SUCCESS && Result != KERN_ABORTED)
-						DMibError((CFStr256::CFormat("semaphore_timedwait failed: {}") << Result).f_GetStr().f_GetStr());
+						DMibError((CFStr256::CFormat("semaphore_timedwait failed: 0x{nfh}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
 				}
 			}
 			else
@@ -366,7 +367,7 @@ public:
 	}
 };
 
-constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CSpinLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
+constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CLowLevelLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
 void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
 {
@@ -382,8 +383,13 @@ void NSys::fg_Semaphore_ForkedChild(void * _pSemaphore)
 
 void NSys::fg_Semaphore_Free(void *_pSemaphore)
 {
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
+	[[maybe_unused]] CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
+#ifdef DMibSanitizerEnabled_Thread
+	DMibLock(g_ImpSemaphorePool);
+	pSemaphore->~CImpSemaphore();
+#else
 	g_ImpSemaphorePool.f_Delete(pSemaphore);
+#endif
 }
 
 void NSys::fg_Semaphore_Increase(void * _pSemaphore, mint _Count)
@@ -487,6 +493,13 @@ public:
 		void *Current = pthread_getspecific(Sys.m_ForkThreadLocal);
 		if (Current)
 		{
+#ifdef DMibSanitizerEnabled_Thread
+			if (Current == (void *)(mint)getpid())
+				__tsan_forked_parent();
+			else
+				__tsan_forked_child();
+#endif
+
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
 			if (Current != (void *)(mint)getpid())
 			{
@@ -515,6 +528,9 @@ public:
 		auto &Sys = *fg_GetLocalSys();
 		if (pthread_getspecific(Sys.m_ForkThreadLocal))
 		{
+#ifdef DMibSanitizerEnabled_Thread
+			__tsan_forked_parent();
+#endif
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
@@ -529,8 +545,12 @@ public:
 		auto &Sys = *fg_GetLocalSys();
 		if (pthread_getspecific(Sys.m_ForkThreadLocal))
 		{
+#ifdef DMibSanitizerEnabled_Thread
+			__tsan_forked_child();
+#endif
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
 			Sys.m_bForkedChild = true;
+			g_bCanStartThreads = false;
 			g_ImpSemaphorePool.f_ForkedChildLocked();
 			g_EventEmulationPool.f_ForkedChildLocked();
 			g_ImpSemaphorePool.f_Unlock();
@@ -538,6 +558,9 @@ public:
 			Sys.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
+			g_bCanStartThreads = true;
+			Sys.f_MemoryManager_CanStartThreads();
+			fg_MalterlibMallocOverride_CanStartThreads();
 		}
 	}
 
@@ -573,7 +596,7 @@ public:
 
 		m_Posix.f_DestroyThreadSpecific();
 
-		if (m_FileChangeNoticationContext.m_bConstructed)
+		if (m_FileChangeNoticationContext.f_IsConstructed())
 			m_FileChangeNoticationContext.f_Destruct();
 
 		CSystem::f_DestructThreadSpecific();
@@ -583,7 +606,7 @@ public:
 	{
 		m_Posix.f_Destruct();
 
-		if (m_SocketContext.m_bConstructed)
+		if (m_SocketContext.f_IsConstructed())
 			m_SocketContext.f_Destruct();
 
 		CSystem::f_Destruct();
@@ -1115,7 +1138,7 @@ namespace NMib
 	mint align_cacheline g_SystemMemory[sizeof(CSystemMacOSX) / sizeof(mint)];
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = false;
-	mint g_bCanStartThreads = false;
+	constinit NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads = {DAggregateInit};
 	mint g_bCreatedSystem = false;
 }
 
@@ -1265,7 +1288,7 @@ void fg_DestroySystemThreadsAtExit()
 
 //#if defined(DConfig_Release) && !defined(DConfig)
 
-constinit NMib::NThread::CSpinLockAggregate g_CrashReporterLock = {DAggregateInit};
+constinit NMib::NThread::CLowLevelLockAggregate g_CrashReporterLock = {DAggregateInit};
 NMib::NStr::CStrNonTracked g_CrashReporterString;
 
 extern "C"
@@ -1397,10 +1420,17 @@ void NSys::fg_CreateSystemVersion()
 	CSystem::ms_PlatformVersion = g_OperatingSystemMajor * 10000 + g_OperatingSystemMinor * 100 + g_OperatingSystemFix;
 }
 
+namespace NMib::NSys::NPrivate
+{
+	constinit mint g_PageSize = 0;
+}
+
 void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 {
 	if (g_bCreatedSystemMalloc)
 		return;
+
+	NPrivate::g_PageSize = sysconf(_SC_PAGE_SIZE);
 
 	fg_CreateSystemVersion();
 
@@ -1998,7 +2028,7 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 
 void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-	if (!clonefile)
+	if (!&clonefile)
 		DMibErrorFile("clonefile function not available in this version of macOS");
 
 	if (clonefile(_FileFrom, _FileTo, 0))
@@ -2007,7 +2037,7 @@ void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NS
 
 bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-	if (!clonefile)
+	if (!&clonefile)
 		return false;
 
 	if (clonefile(_FileFrom, _FileTo, 0))
@@ -2323,6 +2353,99 @@ void NSys::fg_Thread_Yield()
 	sched_yield();
 }
 
+namespace NMib::NThread
+{
+	static_assert(sizeof(os_unfair_lock) == sizeof(CLowLevelLockAggregate::m_Lock));
+	static_assert(os_unfair_lock(OS_UNFAIR_LOCK_INIT)._os_unfair_lock_opaque == 0);
+
+	void CLowLevelLockAggregate::f_ForkedChildUnlocked()
+	{
+		m_Lock = 0;
+	}
+
+	void CLowLevelLockAggregate::f_ForkedChildLocked()
+	{
+#if DPlatformVersion < 10120
+		if (&os_unfair_lock_lock)
+		{
+#endif
+			m_Lock = 0;
+			os_unfair_lock_lock((os_unfair_lock_t)&m_Lock);
+#if DPlatformVersion < 10120
+		}
+		else
+			m_Lock = 1;
+#endif
+	}
+
+	void CLowLevelLockAggregate::f_Construct()
+	{
+		DMibSanitizerAnnotate_MutexCreate(this, __tsan_mutex_not_static);
+		m_Lock = 0;
+	}
+
+	void CLowLevelLockAggregate::f_Destruct()
+	{
+		DMibSanitizerAnnotate_MutexDestroy(this, 0);
+	}
+
+	void CLowLevelLockAggregate::f_Lock()
+	{
+		DMibSanitizerAnnotate_MutexPreLock(this, 0);
+#if DPlatformVersion < 10120
+		if (&os_unfair_lock_lock)
+		{
+#endif
+			os_unfair_lock_lock((os_unfair_lock_t)&m_Lock);
+#if DPlatformVersion < 10120
+		}
+		else
+		{
+			uint32 Expected = 0;
+			while (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			{
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				Expected = 0;
+			}
+		}
+#endif
+
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+		DMibSanitizerAnnotate_MutexPostLock(this, 0, 1);
+	}
+
+	void CLowLevelLockAggregate::f_Unlock()
+	{
+		DMibSanitizerAnnotate_MutexPreUnlock(this, 0);
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = 0;
+		m_AlternateThreadID = 0;
+#endif
+#if DPlatformVersion < 10120
+		if (&os_unfair_lock_lock)
+#endif
+			os_unfair_lock_unlock((os_unfair_lock_t)&m_Lock);
+#if DPlatformVersion < 10120
+		else
+			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+#endif
+
+		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
+	}
+}
+
 uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
 {
 	_Language = fg_MacOSX_GetSystemLanguage();
@@ -2628,7 +2751,7 @@ extern const char*                 _dyld_get_image_name(uint32_t image_index)   
 #ifdef DMibNoOSXCrossModuleExceptions
 namespace
 {
-	const struct mach_header *g_ThisModuleImage = nullptr;
+	constinit NAtomic::TCAtomic<struct mach_header const *> g_ThisModuleImage = nullptr;
 }
 #endif
 
@@ -2637,8 +2760,8 @@ extern "C" bool _dyld_find_unwind_sections(void* addr, struct dyld_unwind_sectio
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #ifdef DMibNoOSXCrossModuleExceptions
-	if (!g_ThisModuleImage)
-		g_ThisModuleImage = _dyld_get_image_header_containing_address((void *)&_dyld_find_unwind_sections);
+	if (!g_ThisModuleImage.f_Load(NAtomic::EMemoryOrder_Acquire))
+		g_ThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)&_dyld_find_unwind_sections));
 #endif
 	auto pHeader = _dyld_get_image_header_containing_address(addr);
 #pragma clang diagnostic pop

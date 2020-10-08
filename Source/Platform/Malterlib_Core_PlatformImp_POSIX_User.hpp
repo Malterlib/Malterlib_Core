@@ -26,36 +26,38 @@ using namespace NMib;
 #include "Malterlib_Core_PlatformImp_POSIX.h"
 
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
+#include <Mib/Core/PlatformSpecific/PosixUser>
 
 namespace
 {
 	CStr fg_Helper_GetGroupName(gid_t _GroupID)
 	{
-		errno = 0;
-		group *pGroup = getgrgid(_GroupID);
-		
+		NMib::NPlatform::CGetGrGidState State;
+		group *pGroup = fg_Helper_GetGrGid(_GroupID, State);
+
 		if (pGroup)
 			return CStr(pGroup->gr_name);
 		else
 		{
-			if (errno == 0) // Does not exist
+			if (State.m_Error == 0) // Does not exist
 				return CStr::fs_ToStr(_GroupID);
-			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("getgrgid({}) when getting group name") << _GroupID,errno));
+			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("getgrgid_r({}) when getting group name") << _GroupID, State.m_Error));
 		}
 	}
 
 	CStr fg_Helper_GetUserName(uid_t _UserID)
 	{
-		errno = 0;
-		auto *pUser = getpwuid(_UserID);
-		
+		NMib::NPlatform::CGetPwUidState State;
+
+		auto *pUser = fg_Helper_GetPwUid(_UserID, State);
 		if (pUser)
 			return CStr(pUser->pw_name);
 		else
 		{
-			if (errno == 0) // Does not exist
+			if (State.m_Error == 0) // Does not exist
 				return CStr::fs_ToStr(_UserID);
-			DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("getpwuid({}) when getting user name") << _UserID,errno));
+			else
+				DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("getpwuid_r({}) when getting user name") << _UserID, State.m_Error));
 		}
 	}
 }
@@ -105,12 +107,13 @@ bool NSys::fg_UserManagement_GroupExists(NMib::NStr::CStr const &_GroupName, NMi
 {
 	errno = 0;
 	
-	group * pGroup = getgrnam(_GroupName.f_GetStr());
-	
+	NMib::NPlatform::CGetGrGidState State;
+	group *pGroup = NMib::NPlatform::fg_Helper_GetGrNam(_GroupName.f_GetStr(), State);
+
 	if (pGroup)
 		_ReturnGID = NMib::NStr::CStr::CFormat("{}") << pGroup->gr_gid;
 	else if (errno != 0)
-		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam('{}') when checking if group exists") << _GroupName, errno));
+		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam_r('{}') when checking if group exists") << _GroupName, State.m_Error));
 	
 
 	return pGroup != nullptr;
@@ -120,12 +123,13 @@ bool NSys::fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib:
 {
 	errno = 0;
 	
-	passwd * pPassword = getpwnam(_UserName.f_GetStr());
-	
+	NMib::NPlatform::CGetPwUidState State;
+	passwd *pPassword = NMib::NPlatform::fg_Helper_GetPwNam(_UserName.f_GetStr(), State);
+
 	if (pPassword != nullptr)
 		_ReturnUID = NMib::NStr::CStr::CFormat("{}") << pPassword->pw_uid;
-	else if (errno != 0)
-		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam('{}') when checking if user exists") << _UserName, errno));
+	else if (State.m_Error != 0)
+		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when checking if user exists") << _UserName, State.m_Error));
 	
 	return pPassword != nullptr;
 }
@@ -136,14 +140,15 @@ NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemb
 	
 	CStr UserName = _UserName;
 	
-	passwd * pPassword = getpwnam(UserName.f_GetStr());
-	
+	NMib::NPlatform::CGetPwUidState State;
+	passwd *pPassword = NMib::NPlatform::fg_Helper_GetPwNam(_UserName.f_GetStr(), State);
+
 	if (pPassword == nullptr)
 	{
-		if (errno == 0)
+		if (State.m_Error == 0)
 			DMibError(CStr::CFormat("User does not exists: {}") << _UserName);
 		else
-			DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam('{}') when getting user group members") << _UserName, errno));
+			DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when getting user group members") << _UserName, State.m_Error));
 	}
 	
 #ifdef DPlatformFamily_OSX
@@ -180,14 +185,15 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 {
 	errno = 0;
 	
-	passwd * pPassword = getpwnam(_UserName.f_GetStr());
-	
+	NMib::NPlatform::CGetPwUidState State;
+	passwd *pPassword = NMib::NPlatform::fg_Helper_GetPwNam(_UserName.f_GetStr(), State);
+
 	if (pPassword == nullptr)
 	{
-		if (errno == 0)
+		if (State.m_Error == 0)
 			DMibError(CStr::CFormat("User does not exists: {}") << _UserName);
 		else
-			DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam('{}') when checking if user is member of group") << _UserName, errno));
+			DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when checking if user is member of group") << _UserName, State.m_Error));
 	}
 	
 	short int lp;
@@ -202,7 +208,7 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 	
 	if (tempGrpPtr == nullptr)
 		DMibError(CStr::CFormat("Group does not exists: {}") << _GroupName);
-	
+
 	if (grp.gr_gid == pPassword->pw_gid)
 		return true;
 

@@ -171,10 +171,11 @@ namespace NLocal
 
 	BOOL (WINAPI *g_fGetFileInformationByHandleEx)(HANDLE hFile, Undocumented_FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
 
-	BOOL (WINAPI *g_fPrivIsDllSynchronizationHeld)( PBOOL );
+	BOOL (WINAPI *g_fPrivIsDllSynchronizationHeld)(PBOOL);
+
+	BOOL (WINAPI *g_fWaitOnAddress)(volatile VOID *Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds);
+	void (WINAPI *g_fWakeByAddressSingle)(PVOID Address);
 }
-
-
 
 static inline_small class CSystemWindowsMSVC *fg_GetLocalSys();
 //static inline_small class CSharedSystemWindowsMSVC &GetLocalSharedSys();
@@ -2023,6 +2024,11 @@ void fg_LoadFunctionPointers()
 
 		(FARPROC &)g_fPrivIsDllSynchronizationHeld = GetProcAddress(g_hKernel32, "PrivIsDllSynchronizationHeld");
 
+		(FARPROC &)g_fWaitOnAddress = GetProcAddress(g_hKernel32, "WaitOnAddress");
+		(FARPROC &)g_fWakeByAddressSingle = GetProcAddress(g_hKernel32, "WakeByAddressSingle");
+		if (!g_fWakeByAddressSingle)
+			(FARPROC &)g_fWaitOnAddress = nullptr;
+
 		g_VersionInfo.dwOSVersionInfoSize = sizeof(g_VersionInfo);
 		if (g_fRtlGetVersion)
 			g_fRtlGetVersion((PRTL_OSVERSIONINFOW)&g_VersionInfo);
@@ -3356,6 +3362,105 @@ void NSys::fg_Thread_Yield()
 //	return 0.015;
 }
 
+namespace NMib::NThread
+{
+	static_assert(sizeof(uint32) == sizeof(CLowLevelLockAggregate::m_Lock));
+
+	void CLowLevelLockAggregate::f_ForkedChildUnlocked()
+	{
+		m_Lock = 0;
+	}
+
+	void CLowLevelLockAggregate::f_ForkedChildLocked()
+	{
+		m_Lock = NSys::fg_Thread_GetCurrentUID();
+
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+	}
+
+	void CLowLevelLockAggregate::f_Construct()
+	{
+		DMibSanitizerAnnotate_MutexCreate(this, __tsan_mutex_not_static);
+		m_Lock = 0;
+	}
+
+	void CLowLevelLockAggregate::f_Destruct()
+	{
+		DMibSanitizerAnnotate_MutexDestroy(this, 0);
+	}
+
+	namespace
+	{
+		inline_never void fg_AbortFutex()
+		{
+			DMibPDebugBreak;
+		}
+	}
+
+	void CLowLevelLockAggregate::f_Lock()
+	{
+		DMibSanitizerAnnotate_MutexPreLock(this, 0);
+		if (NLocal::g_fWaitOnAddress)
+		{
+			uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
+			while (true) 
+			{
+				uint32 PrevioustThreadID = 0;
+				if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, EMemoryOrder_Acquire, EMemoryOrder_Acquire))
+					break;
+
+				NLocal::g_fWaitOnAddress(&m_Lock, &PrevioustThreadID, sizeof(PrevioustThreadID), INFINITE);
+			}
+		}
+		else
+		{
+			uint32 Expected = 0;
+			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			{
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				yield_cpu;
+				Expected = 0;
+			}
+		}
+
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+		DMibSanitizerAnnotate_MutexPostLock(this, 0, 1);
+	}
+
+	void CLowLevelLockAggregate::f_Unlock()
+	{
+		DMibSanitizerAnnotate_MutexPreUnlock(this, 0);
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = 0;
+		m_AlternateThreadID = 0;
+#endif
+		if (NLocal::g_fWaitOnAddress)
+		{
+			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);;
+
+			NLocal::g_fWakeByAddressSingle(&m_Lock);
+		}
+		else
+			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+
+		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
+	}
+}
+
 void *NSys::fg_Thread_GetCurrent()
 {
 	return (void *)(mint)GetCurrentThread();	
@@ -4651,6 +4756,7 @@ void NSys::NFile::fg_SetOwnerOnLink(CStr const &_Path, CStr const &_Owner)
 void NSys::NFile::fg_SetGroupOnLink(CStr const &_Path, CStr const &_Group)
 {
 }
+
 class CWin32FileFind
 {
 public:
@@ -5979,7 +6085,7 @@ namespace NMib
 	static_assert(__alignof(g_SystemMemory) >= mint(DMibPMemoryCacheLineSize), "Alignment didn't work");
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = true;
-	mint g_bCanStartThreads = false;
+	constinit NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads = {DAggregateInit};
 	mint g_bCreatedSystem = false;
 	namespace NSys
 	{

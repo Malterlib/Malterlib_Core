@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -25,11 +25,10 @@
 #endif
 
 #if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux)
-#	if !defined(_LIBCPP_DISABLE_NEW_DELETE) && !defined(DMibDefaultToolset)
+#	if !defined(_LIBCPP_DISABLE_NEW_DELETE) && !defined(DMibDefaultToolset) && defined(DMalterlibUseStaticLibCxx)
 #		define _LIBCPP_DISABLE_NEW_DELETE
 #	endif
 #endif
-
 
 // Optimal char size
 #if defined(DPlatformFamily_OSX)
@@ -99,9 +98,7 @@
 // New override
 #if defined(DPlatformFamily_OSX)
 #	include <new>
-#	ifndef DMibDefaultToolset
-#		define DMibPOverrideOperatorNew
-#	endif
+#	define DMibPOverrideOperatorNew
 #elif defined(DPlatformFamily_Linux)
 #	include <new>
 #	define DMibPOverrideOperatorNew

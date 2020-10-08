@@ -196,6 +196,13 @@ Property
 				MalterlibUseStaticLibUnwind true
 			}
 
+			Property
+			{
+				MalterlibSupportSanitizerEnable_Thread false
+				MalterlibSupportSanitizerEnable_Address false
+				MalterlibSupportSanitizerEnable_UndefinedBehavior false
+			}
+			
 			Compile.LinkTimeCodeGeneration "@(WorkaroundLTOValue)" // Exception handling breaks if this is enabled
 			{
 				&
@@ -207,8 +214,16 @@ Property
 
 			Compile
 			{
-				!!Compile.Type "Assembler"
+				!!CompileDialect "C"
 
+				Sanitize_Thread false
+				Sanitize_Address false
+				Sanitize_UndefinedBehavior false
+			}
+
+			Compile
+			{
+				!!Compile.Type "Assembler"
 
 				AllCPUSubTypes true
 				PreprocessorDefines "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
@@ -864,6 +879,7 @@ Target
 			|
 			{
 				PlatformFamily "Windows"
+				PlatformFamily "Linux"
 				MalterlibUseStaticLibCxx true
 			}
 		}
@@ -1030,15 +1046,30 @@ Target
 		Group "Malterlib"
 		LDFlags "-nostdlib @(Target.LDFlags)"
 		{
-			!!PlatformFamily "OSX"
-			!!PlatformFamily "Linux"
+			&
+			{
+				!MalterlibSupportSanitizers true
+				|
+				{
+					PlatformFamily "OSX"
+					PlatformFamily "Linux"
+				}
+			}
 		}
+	}
+	Target
+	{
+		&
+		{
+			!MalterlibSupportSanitizers true
+			PlatformFamily "OSX"
+		}
+		LinkWithStandardLibraries false
 	}
 	Target
 	{
 		!!PlatformFamily "OSX"
 		LinkWithLibraries ""
-		LinkWithStandardLibraries false
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
 		InstrumentForOptimization false
@@ -1091,28 +1122,39 @@ Property
 		Group "Malterlib"
 		LDFlags "-nostdlib @(Target.LDFlags)"
 		{
-			!!PlatformFamily "OSX"
-			!!PlatformFamily "Linux"
+			&
+			{
+				!MalterlibSupportSanitizers true
+				|
+				{
+					PlatformFamily "OSX"
+					PlatformFamily "Linux"
+				}
+			}
 		}
 	}
 	Target
 	{
 		!!PlatformFamily "OSX"
 
-		LinkWithLibraries "-undefined dynamic_lookup \"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib\""
-		LinkWithLibraries "-lSystem.B @(Target.LinkWithLibraries)"
+		LinkWithLibraries "-lSystem.B -undefined dynamic_lookup \"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib\""
+		CodeCoverageLinkerMapping false
+		CodeCoverageMapping false
+		InstrumentForOptimization false
+		SharedLibraryInstallPath "@executable_path/MalterlibOverrideMalloc.dylib"
+	}
+	Target
+	{
+		&
 		{
-			!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
+			!MalterlibSupportSanitizers true
+			PlatformFamily "OSX"
 		}
 		LinkWithLibraries "/usr/lib/dylib1.o @(Target.LinkWithLibraries)"
 		{
 			!!Platform "OSX10.5"
 		}
 		LinkWithStandardLibraries false
-		CodeCoverageLinkerMapping false
-		CodeCoverageMapping false
-		InstrumentForOptimization false
-		SharedLibraryInstallPath "@executable_path/MalterlibOverrideMalloc.dylib"
 	}
 	Compile
 	{
@@ -1168,11 +1210,17 @@ Property
 	{
 		!!PlatformFamily "Linux"
 		LDFlags "-nostdlib++ @(Target.LDFlags)"
+		{
+			!MalterlibSupportSanitizers true
+		}
 	}
 	Target
 	{
-		!!PlatformFamily "OSX"
-
+		&
+		{
+			!MalterlibSupportSanitizers true
+			PlatformFamily "OSX"
+		}
 		LinkWithLibraries "-lSystem.B"
 		LinkWithLibraries "-lcrt1.o @(Target.LinkWithLibraries)"
 		{
@@ -1181,6 +1229,11 @@ Property
 		}
 		LDFlags "-nostdlib @(Target.LDFlags)"
 		LinkWithStandardLibraries false
+	}
+	Target
+	{
+		!!PlatformFamily "OSX"
+
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
 		InstrumentForOptimization false

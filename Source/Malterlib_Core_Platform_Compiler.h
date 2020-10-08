@@ -202,12 +202,100 @@
 #	error "Implement this"
 #endif
 
-// Offset
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define DMibPOffsetOf(_Type, _Member) ((aint)(&((_Type *)4)->_Member)-4)
+#	define DMibSuppressUndefinedSanitizer __attribute__((no_sanitize("undefined")))
 #elif defined(DCompiler_MSVC)
-#	define DMibPOffsetOf(_Type, _Member) ((aint)(&((_Type *)0)->_Member))
+#	define DMibSuppressUndefinedSanitizer
 #else
 #	error "Implement this"
 #endif
 
+// Used for working around bugs in UBSAN
+#if (defined(DCompiler_clang) || defined(DCompiler_gcc)) && defined(DPlatformFamily_Linux)
+#	define DMibSuppressUndefinedSanitizerLinux __attribute__((no_sanitize("undefined")))
+#else
+#	define DMibSuppressUndefinedSanitizerLinux
+#endif
+
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	define DMibSuppressThreadSanitizer __attribute__((no_sanitize("thread")))
+#elif defined(DCompiler_MSVC)
+#	define DMibSuppressThreadSanitizer
+#else
+#	error "Implement this"
+#endif
+
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	define DMibRelaxConstexpr(d_Expression) __builtin_constant_p(d_Expression) ? d_Expression : d_Expression
+#elif defined(DCompiler_MSVC)
+#	define DMibRelaxConstexpr(d_Expression) d_Expression
+#else
+#	error "Implement this"
+#endif
+
+// Offset
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	define DMibPOffsetOf(_Type, _Member) __builtin_offsetof(_Type, _Member)
+#elif defined(DCompiler_MSVC)
+#	define DMibPOffsetOf(_Type, _Member) __builtin_offsetof(_Type, _Member)
+//#	define DMibPOffsetOf(_Type, _Member) ((aint)(&((_Type *)0)->_Member))
+#else
+#	error "Implement this"
+#endif
+
+#if defined(__has_feature)
+#	if __has_feature(undefined_behavior_sanitizer)
+#		define DMibSanitizerEnabled_UndefinedBehavior
+#		define DMibSanitizerEnabled
+#	endif
+#	if __has_feature(address_sanitizer)
+#		define DMibSanitizerEnabled_Address
+#		define DMibSanitizerEnabled
+#	endif
+#	if __has_feature(thread_sanitizer)
+#		define DMibSanitizerEnabled_Thread
+#		define DMibSanitizerEnabled
+#	endif
+#endif
+
+#ifdef DMibSanitizerEnabled_Thread
+	#include <sanitizer/tsan_interface.h>
+
+	#define DMibSanitizerAnnotate_MutexCreate(...) __tsan_mutex_create(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_MutexDestroy(...) __tsan_mutex_destroy(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_MutexPreLock(...) __tsan_mutex_pre_lock(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_MutexPostLock(...) __tsan_mutex_post_lock(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_MutexPreUnlock(...) __tsan_mutex_pre_unlock(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_MutexPostUnlock(...) __tsan_mutex_post_unlock(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_MutexPreSignal(...) __tsan_mutex_pre_signal(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_MutexPostSignal(...) __tsan_mutex_post_signal(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_MutexPreDivert(...) __tsan_mutex_pre_divert(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_MutexPostDivert(...) __tsan_mutex_post_divert(__VA_ARGS__)
+
+	#define DMibSanitizerAnnotate_Acquire(...) __tsan_acquire(__VA_ARGS__)
+	#define DMibSanitizerAnnotate_Release(...) __tsan_release(__VA_ARGS__)
+#else
+	#define DMibSanitizerAnnotate_MutexCreate(...)
+	#define DMibSanitizerAnnotate_MutexDestroy(...)
+	#define DMibSanitizerAnnotate_MutexPreLock(...)
+	#define DMibSanitizerAnnotate_MutexPostLock(...)
+	#define DMibSanitizerAnnotate_MutexPreUnlock(...)
+	#define DMibSanitizerAnnotate_MutexPostUnlock(...)
+	#define DMibSanitizerAnnotate_MutexPreSignal(...)
+	#define DMibSanitizerAnnotate_MutexPostSignal(...)
+	#define DMibSanitizerAnnotate_MutexPreDivert(...)
+	#define DMibSanitizerAnnotate_MutexPostDivert(...)
+
+	#define DMibSanitizerAnnotate_Acquire(...)
+	#define DMibSanitizerAnnotate_Release(...)
+#endif
+
+#ifdef DMibSanitizerEnabled_Address
+	#include <sanitizer/asan_interface.h>
+
+	#define DMibSanitizerAnnotate_PoisonMemoryRegion(...) __asan_poison_memory_region(__VA_ARGS__);
+	#define DMibSanitizerAnnotate_UnpoisonMemoryRegion(...) __asan_unpoison_memory_region(__VA_ARGS__);
+#else
+	#define DMibSanitizerAnnotate_PoisonMemoryRegion(...) (void)0
+	#define DMibSanitizerAnnotate_UnpoisonMemoryRegion(...) (void)0
+#endif

@@ -64,13 +64,13 @@ assure_used CMibCodeAddressType::CCodeAddressLine *CMibCodeAddressType::fs_Debug
 
 struct CSystem_POSIX
 {
-	zuint32 m_MalterlibDisableStdErrLog;
+	NMib::NAtomic::TCAtomicAggregate<uint32> m_MalterlibDisableStdErrLog = {DAggregateInit};
 	
 	NThread::CMutual m_ForkLock;
 	
 	bool f_GetMalterlibDisableStdErrLog()
 	{
-		if (m_MalterlibDisableStdErrLog == 0)
+		if (m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::EMemoryOrder_Relaxed) == 0)
 		{
 			const char *pEnv = getenv("MalterlibDisableStdErrLog");
 
@@ -80,7 +80,7 @@ struct CSystem_POSIX
 				m_MalterlibDisableStdErrLog = 1;
 		}
 		
-		return m_MalterlibDisableStdErrLog == 2;
+		return m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::EMemoryOrder_Relaxed) == 2;
 	}
 	
 	void f_DestroyThreadSpecific()

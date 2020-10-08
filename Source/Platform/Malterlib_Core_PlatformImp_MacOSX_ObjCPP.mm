@@ -664,10 +664,10 @@ namespace NMib
 
 			m_Changes.f_Clear();
 
-			if (m_Link.f_IsInList())
 			{
 				DMibLock(m_pContext->m_Lock);
-				m_pContext->m_OpenNotifications.f_Remove(this);
+				if (m_Link.f_IsInList())
+					m_pContext->m_OpenNotifications.f_Remove(this);
 			}
 
 			m_RootSnapshot.f_Clear(m_SnapshotsByNode);

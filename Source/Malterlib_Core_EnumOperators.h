@@ -8,73 +8,84 @@
 #include <Mib/Core/EnableIf>
 
 template <typename t_CEnum>
-constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator | ( t_CEnum _Left, t_CEnum _Right)
+DMibSuppressUndefinedSanitizer constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator | ( t_CEnum _Left, t_CEnum _Right)
 {
-	return (t_CEnum)(uint32(_Left) | uint32(_Right));
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) | static_cast<CUnderlyingType>(_Right));
 }
 
 template <typename t_CEnum>
-inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator |= (t_CEnum &_Left, const t_CEnum &_Right)
+DMibSuppressUndefinedSanitizer inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator |= (t_CEnum &_Left, t_CEnum _Right)
 {
-	_Left = _Left | _Right;
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	_Left = static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) | static_cast<CUnderlyingType>(_Right));
 	return _Left;
 }
 
 template <typename t_CEnum>
-constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator & (t_CEnum _Left, t_CEnum _Right)
+DMibSuppressUndefinedSanitizer constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator & (t_CEnum _Left, t_CEnum _Right)
 {
-	return (t_CEnum)(uint32(_Left) & uint32(_Right));
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) & static_cast<CUnderlyingType>(_Right));
 }
 
 template <typename t_CEnum>
-inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator &= (t_CEnum &_Left, const t_CEnum &_Right)
+DMibSuppressUndefinedSanitizer inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator &= (t_CEnum &_Left, t_CEnum _Right)
 {
-	_Left = _Left & _Right;
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	_Left = static_cast<t_CEnum>((static_cast<CUnderlyingType>(_Left) & static_cast<CUnderlyingType>(_Right)));
 	return _Left;
 }
 
 template <typename t_CEnum>
-constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator ^ (t_CEnum _Left, t_CEnum _Right)
+DMibSuppressUndefinedSanitizer constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator ^ (t_CEnum _Left, t_CEnum _Right)
 {
-	return (t_CEnum)(uint32(_Left) ^ uint32(_Right));
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) ^ static_cast<CUnderlyingType>(_Right));
 }
 
 template <typename t_CEnum>
-inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator ^= (t_CEnum &_Left, const t_CEnum &_Right)
+DMibSuppressUndefinedSanitizer inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator ^= (t_CEnum &_Left, t_CEnum _Right)
 {
-	_Left = _Left ^ _Right;
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	_Left = static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) ^ static_cast<CUnderlyingType>(_Right));
 	return _Left;
 }
 
 template <typename t_CEnum>
-constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator ~ (t_CEnum _Left)
+DMibSuppressUndefinedSanitizer constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator ~ (t_CEnum _Left)
 {
-	return (t_CEnum)(~uint32(_Left));
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	return static_cast<t_CEnum>(~static_cast<CUnderlyingType>(_Left));
 }
 
 template <typename t_CEnum, typename t_CShift>
-constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator << (t_CEnum _Left, t_CShift _nPlaces)
+DMibSuppressUndefinedSanitizer constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator << (t_CEnum _Left, t_CShift _nPlaces)
 {
-	return (t_CEnum)(uint32(_Left) << _nPlaces);
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) << _nPlaces);
 }
 
 template <typename t_CEnum, typename t_CShift>
-constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator >> (t_CEnum _Left, t_CShift _nPlaces)
+DMibSuppressUndefinedSanitizer constexpr inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType operator >> (t_CEnum _Left, t_CShift _nPlaces)
 {
-	return (t_CEnum)(uint32(_Left) >> _nPlaces);
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) >> _nPlaces);
 }
 
 template <typename t_CEnum, typename t_CShift>
-inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator <<= (t_CEnum &_Left, const t_CShift &_nPlaces)
+DMibSuppressUndefinedSanitizer inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator <<= (t_CEnum &_Left, t_CShift _nPlaces)
 {
-	_Left = (t_CEnum)(uint32(_Left) << _nPlaces);
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	_Left = static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) << _nPlaces);
 	return _Left;
 }
 
 template <typename t_CEnum, typename t_CShift>
-inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator >>= (t_CEnum &_Left, const t_CShift &_nPlaces)
+DMibSuppressUndefinedSanitizer inline_small typename NMib::TCEnableIf<NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value, t_CEnum>::CType &operator >>= (t_CEnum &_Left, t_CShift _nPlaces)
 {
-	_Left = (t_CEnum)(uint32(_Left) >> _nPlaces);
+	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
+	_Left = static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) >> _nPlaces);
 	return _Left;
 }
 

@@ -25,6 +25,7 @@ int fg_GetUnixOpenFlags();
 void fg_SetUnixHandleOptions(int _File);
 
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
+#include <Mib/Core/PlatformSpecific/PosixUser>
 
 // *************************************************************************************************************************
 // POSIX Implementation
@@ -613,7 +614,7 @@ namespace NMib
 	mint align_cacheline g_SystemMemory[sizeof(CSystemEmscripten) / sizeof(uint64)];
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = false;
-	mint g_bCanStartThreads = false;
+	constinit NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads = {DAggregateInit};
 }
 
 void fg_ForkPrepare()
@@ -1107,7 +1108,8 @@ NMib::NStr::CStr NSys::NFile::fg_GetUserHomeDirectory()
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
 
-	struct passwd *pPasswd = getpwuid(getuid());
+	NMib::NPlatform::CGetPwUidState State;
+	auto *pPasswd = fg_Helper_GetPwUid(getuid(), State);
 	if (pPasswd && pPasswd->pw_dir && pPasswd->pw_dir[0])
 		return CStr(pPasswd->pw_dir);
 
@@ -1131,7 +1133,8 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserHomeDirectoryNonTracked()
 	if (!HomeDir.f_IsEmpty())
 		return HomeDir;
 
-	struct passwd *pPasswd = getpwuid(getuid());
+	NMib::NPlatform::CGetPwUidState State;
+	auto *pPasswd = fg_Helper_GetPwUid(getuid(), State);
 	if (pPasswd && pPasswd->pw_dir && pPasswd->pw_dir[0])
 		return CStrNonTracked(pPasswd->pw_dir);
 

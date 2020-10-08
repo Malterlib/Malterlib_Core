@@ -402,6 +402,3 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 #else
 #	error "Implement this"
 #endif
-
-
-//#define DMibPAlignedDataAccess

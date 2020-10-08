@@ -281,37 +281,43 @@ namespace NMib
 		return s_ReturnName;
 #else
 		static ch8 s_ReturnName[sizeof(DMibPFunctionSignature)];
-		static bool s_bInit = false;
-		if (s_bInit)
+		static constinit NAtomic::TCAtomic<uint32> s_bInit = 0;
+		if (s_bInit.f_Load(NAtomic::EMemoryOrder_Acquire) == 2)
 			return s_ReturnName;
-		ch8 const *pParseStart = DMibPFunctionSignature;
-		ch8 const *pParse = pParseStart;
-		while (*pParse && *pParse != '=')
-			++pParse;
-		if (*pParse == '=')
-			++pParse;
-		if (*pParse == ' ')
-			++pParse;
-		ch8 const *pStartType = pParse;
-		mint nStart = 1;
 
-		while (*pParse)
+		uint32 Expected = 0;
+		if (s_bInit.f_CompareExchangeStrong(Expected, 1))
 		{
-			if (*pParse == '[')
+			ch8 const *pParseStart = DMibPFunctionSignature;
+			ch8 const *pParse = pParseStart;
+			while (*pParse && *pParse != '=')
+				++pParse;
+			if (*pParse == '=')
+				++pParse;
+			if (*pParse == ' ')
+				++pParse;
+			ch8 const *pStartType = pParse;
+			mint nStart = 1;
+
+			while (*pParse)
 			{
-				++nStart;
+				if (*pParse == '[')
+				{
+					++nStart;
+				}
+				else if (*pParse == ']')
+				{
+					if (--nStart == 0)
+						break;
+				}
+				++pParse;
 			}
-			else if (*pParse == ']')
-			{
-				if (--nStart == 0)
-					break;
-			}
-			++pParse;
+			NStr::fg_StrCopy(s_ReturnName, pStartType, (pParse - pStartType) + 1);
+			s_bInit.f_Store(2, NAtomic::EMemoryOrder_Release);
 		}
-		NStr::fg_StrCopy(s_ReturnName, pStartType, (pParse - pStartType) + 1);
-		NMib::NAtomic::fg_MemoryFence();
-		s_bInit = true;
-		NMib::NAtomic::fg_MemoryFence();
+		else while (s_bInit.f_Load(NAtomic::EMemoryOrder_Acquire) < 2)
+			NSys::fg_Thread_SmallestSleep();
+
 		return s_ReturnName;
 
 #endif

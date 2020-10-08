@@ -87,14 +87,14 @@ namespace NMib
 
 	namespace NStorage
 	{
-		using CSharedPointerOptionUnderlaying = int32;
+		using CSharedPointerOptionUnderlying = int32;
 		enum ESharedPointerOption : int32
 		{
 			ESharedPointerOption_None = 0
 			, ESharedPointerOption_SupportWeakPointer = DMibBit(0)
 		};
 
-		template <CSharedPointerOptionUnderlaying t_Options = ESharedPointerOption_None> 
+		template <CSharedPointerOptionUnderlying t_Options = ESharedPointerOption_None> 
 		class TCSharedPointerIntrusiveBase;
 
 		template <>
@@ -126,6 +126,49 @@ namespace NMib
 
 
 #include "Malterlib_Core_General.h"
+#include <Mib/Numeric/Integer>
+
+typedef NMib::TCAutoClear<bool> zbool;
+
+typedef NMib::TCAutoClear<mint> zmint;
+typedef NMib::TCAutoClear<smint> zsmint;
+
+typedef NMib::TCAutoClear<aint> zamint;
+typedef NMib::TCAutoClear<uaint> zuamint;
+
+typedef NMib::TCAutoClear<int8> zint8;
+typedef NMib::TCAutoClear<uint8> zuint8;
+typedef NMib::TCAutoClear<int16> zint16;
+typedef NMib::TCAutoClear<uint16> zuint16;
+typedef NMib::TCAutoClear<int32> zint32;
+typedef NMib::TCAutoClear<uint32> zuint32;
+typedef NMib::TCAutoClear<int64> zint64;
+typedef NMib::TCAutoClear<uint64> zuint64;
+typedef NMib::TCAutoClear<int80> zint80;
+typedef NMib::TCAutoClear<uint80> zuint80;
+typedef NMib::TCAutoClear<int128> zint128;
+typedef NMib::TCAutoClear<uint128> zuint128;
+typedef NMib::TCAutoClear<int160> zint160;
+typedef NMib::TCAutoClear<uint160> zuint160;
+typedef NMib::TCAutoClear<int256> zint256;
+typedef NMib::TCAutoClear<uint256> zuint256;
+typedef NMib::TCAutoClear<int320> zint320;
+typedef NMib::TCAutoClear<uint320> zuint320;
+typedef NMib::TCAutoClear<int512> zint512;
+typedef NMib::TCAutoClear<uint512> zuint512;
+typedef NMib::TCAutoClear<int1024> zint1024;
+typedef NMib::TCAutoClear<uint1024> zuint1024;
+typedef NMib::TCAutoClear<int2048> zint2048;
+typedef NMib::TCAutoClear<uint2048> zuint2048;
+typedef NMib::TCAutoClear<int4096> zint4096;
+typedef NMib::TCAutoClear<uint4096> zuint4096;
+typedef NMib::TCAutoClear<int8192> zint8192;
+typedef NMib::TCAutoClear<uint8192> zuint8192;
+typedef NMib::TCAutoClear<ch8> zch8;
+typedef NMib::TCAutoClear<ch16> zch16;
+typedef NMib::TCAutoClear<ch32> zch32;
+
+#include <Mib/Numeric/Float>
 
 #include <Mib/Memory/Construct>
 
@@ -185,6 +228,8 @@ namespace NMib
 #include <Mib/Storage/Pointer>
 
 #include <Mib/Thread/Thread>
+
+#include "../../Storage/Source/Malterlib_Storage_LazyInit.hpp"
 
 #include <Mib/Stream/Binary>
 

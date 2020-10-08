@@ -35,6 +35,7 @@ using namespace NMib;
 #include "Malterlib_Core_Platform_Linux_ProcFS.h"
 
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
+#include <Mib/Core/PlatformSpecific/PosixUser>
 
 // *************************************************************************************************************************
 // POSIX File Implementation
@@ -2137,16 +2138,16 @@ NMib::NStr::CStr NSys::NFile::fg_GetOwnerOnLink(const NMib::NStr::CStr &_Path)
 	if (lstat(Canonical, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when getting link owner") << Canonical, errno));
 
-	errno = 0;
-	passwd *pPasswd = getpwuid(Stats.st_uid);
+	NMib::NPlatform::CGetPwUidState State;
+	auto *pPasswd = fg_Helper_GetPwUid(Stats.st_uid, State);
 
 	if (pPasswd)
 		UserName = CStr(pPasswd->pw_name);
 	else
 	{
-		if (errno == 0) // Does not exist
+		if (State.m_Error == 0) // Does not exist
 			return CStr::fs_ToStr(Stats.st_uid);
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwuid({}) when getting link owner for '{}'") << Stats.st_uid << Canonical, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwuid_r({}) when getting link owner for '{}'") << Stats.st_uid << Canonical, State.m_Error));
 	}
 
 	return UserName;
@@ -2160,16 +2161,16 @@ NMib::NStr::CStr NSys::NFile::fg_GetGroupOnLink(const NMib::NStr::CStr &_Path)
 	if (lstat(Canonical, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when getting link group") << Canonical, errno));
 
-	errno = 0;
-	group *pGroup = getgrgid(Stats.st_gid);
+	NMib::NPlatform::CGetGrGidState State;
+	group *pGroup = fg_Helper_GetGrGid(Stats.st_gid, State);
 
 	if (pGroup)
 		GroupName = CStr(pGroup->gr_name);
 	else
 	{
-		if (errno == 0) // Does not exist
+		if (State.m_Error == 0) // Does not exist
 			return CStr::fs_ToStr(Stats.st_gid);
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrgid({}) when getting link group for '{}'") << Stats.st_gid << Canonical, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrgid_r({}) when getting link group for '{}'") << Stats.st_gid << Canonical, State.m_Error));
 	}
 
 	return GroupName;
@@ -2184,16 +2185,16 @@ CStr NSys::NFile::fg_GetOwner(CStr const &_Path)
 	if (stat(Canonical, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("stat('{}') when getting file owner") << Canonical, errno));
 
-	errno = 0;
-	passwd *pPasswd = getpwuid(Stats.st_uid);
+	NMib::NPlatform::CGetPwUidState State;
+	auto *pPasswd = fg_Helper_GetPwUid(Stats.st_uid, State);
 
 	if (pPasswd)
 		UserName = CStr(pPasswd->pw_name);
 	else
 	{
-		if (errno == 0) // Does not exist
+		if (State.m_Error == 0) // Does not exist
 			return CStr::fs_ToStr(Stats.st_uid);
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwuid({}) when getting file owner for '{}'") << Stats.st_uid << Canonical, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwuid_r({}) when getting file owner for '{}'") << Stats.st_uid << Canonical, State.m_Error));
 	}
 
 	return UserName;
@@ -2208,16 +2209,16 @@ CStr NSys::NFile::fg_GetGroup(CStr const &_Path)
 	if (stat(Canonical, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("stat('{}') when getting file group") << Canonical, errno));
 
-	errno = 0;
-	group *pGroup = getgrgid(Stats.st_gid);
+	NMib::NPlatform::CGetGrGidState State;
+	group *pGroup = fg_Helper_GetGrGid(Stats.st_gid, State);
 
 	if (pGroup)
 		GroupName = CStr(pGroup->gr_name);
 	else
 	{
-		if (errno == 0) // Does not exist
+		if (State.m_Error == 0) // Does not exist
 			return CStr::fs_ToStr(Stats.st_gid);
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrgid({}) when getting file group for '{}'") << Stats.st_gid << Canonical, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrgid_r({}) when getting file group for '{}'") << Stats.st_gid << Canonical, State.m_Error));
 	}
 
 	return GroupName;
@@ -2228,10 +2229,11 @@ void NSys::NFile::fg_SetOwner(CStr const &_Path, CStr const &_Owner)
 	CStr Canonical = fg_ConvertToPOSIXPath(_Path);
 	CStr Name = _Owner;
 
-	passwd *pPasswd = getpwnam(Name.f_GetStr());
+	NMib::NPlatform::CGetPwUidState State;
+	passwd *pPasswd = NMib::NPlatform::fg_Helper_GetPwNam(Name.f_GetStr(), State);
 
 	if (!pPasswd)
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam('{}') when setting owner on file '{}'") << Name << Canonical, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when setting owner on file '{}'") << Name << Canonical, State.m_Error));
 
 	if (chown(Canonical.f_GetStr(), pPasswd->pw_uid, -1) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chown('{}', {}) when setting owner on file") << Canonical << pPasswd->pw_uid, errno));
@@ -2242,10 +2244,11 @@ void NSys::NFile::fg_SetGroup(CStr const &_Path, CStr const &_Group)
 	CStr Canonical = fg_ConvertToPOSIXPath(_Path);
 	CStr Name = _Group;
 
-	group *pGroup = getgrnam(Name.f_GetStr());
+	NMib::NPlatform::CGetGrGidState State;
+	group *pGroup = NMib::NPlatform::fg_Helper_GetGrNam(Name.f_GetStr(), State);
 
 	if (!pGroup)
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam('{}') when setting group on file '{}'") << Name << Canonical, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam_r('{}') when setting group on file '{}'") << Name << Canonical, State.m_Error));
 
 	if (chown(Canonical.f_GetStr(), -1, pGroup->gr_gid) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chown('{}', {}) when setting group on file") << Canonical << pGroup->gr_gid, errno));
@@ -2256,10 +2259,11 @@ void NSys::NFile::fg_SetOwner(void *_pFile, const NMib::NStr::CStr &_Owner)
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 	CStr Name = _Owner;
 
-	passwd *pPasswd = getpwnam(Name.f_GetStr());
+	NMib::NPlatform::CGetPwUidState State;
+	passwd *pPasswd = NMib::NPlatform::fg_Helper_GetPwNam(Name.f_GetStr(), State);
 
 	if (!pPasswd)
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam('{}') when setting owner on file '{}'") << Name << pFile->f_GetFileName(), errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when setting owner on file '{}'") << Name << pFile->f_GetFileName(), State.m_Error));
 
 	if (fchown(pFile->m_BSDFile, pPasswd->pw_uid, -1) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("fchown('{}', {}) when setting owner on file") << pFile->f_GetFileName() << pPasswd->pw_uid, errno));
@@ -2270,10 +2274,11 @@ void NSys::NFile::fg_SetGroup(void *_pFile, const NMib::NStr::CStr &_Group)
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 	CStr Name = _Group;
 
-	group *pGroup = getgrnam(Name.f_GetStr());
+	NMib::NPlatform::CGetGrGidState State;
+	group *pGroup = NMib::NPlatform::fg_Helper_GetGrNam(Name.f_GetStr(), State);
 
 	if (!pGroup)
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam('{}') when setting group on file '{}'") << Name << pFile->f_GetFileName(), errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam_r('{}') when setting group on file '{}'") << Name << pFile->f_GetFileName(), State.m_Error));
 
 	if (fchown(pFile->m_BSDFile, -1, pGroup->gr_gid) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("fchown('{}', {}) when setting group on file") << pFile->f_GetFileName() << pGroup->gr_gid, errno));
@@ -2291,10 +2296,11 @@ void NSys::NFile::fg_SetOwnerOnLink(CStr const &_Path, CStr const &_Owner)
 	if ((Stats.st_mode & S_IFLNK) == 0)
 		DMibErrorFile(CStr::CFormat("Cannot set owner on link when file is not a link ({})") << Canonical);
 
-	passwd *pPasswd = getpwnam(Name.f_GetStr());
+	NMib::NPlatform::CGetPwUidState State;
+	passwd *pPasswd = NMib::NPlatform::fg_Helper_GetPwNam(Name.f_GetStr(), State);
 
 	if (!pPasswd)
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam('{}') when setting owner on link '{}'") << Name << Canonical, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when setting owner on link '{}'") << Name << Canonical, State.m_Error));
 
 	if (lchown(Canonical.f_GetStr(), pPasswd->pw_uid, -1) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lchown('{}', {}) when setting owner on link") << Canonical << pPasswd->pw_uid, errno));
@@ -2312,10 +2318,11 @@ void NSys::NFile::fg_SetGroupOnLink(CStr const &_Path, CStr const &_Group)
 	if ((Stats.st_mode & S_IFLNK) == 0)
 		DMibErrorFile(CStr::CFormat("Cannot set group on link when file is not a link ({})") << Canonical);
 
-	group *pGroup = getgrnam(Name.f_GetStr());
+	NMib::NPlatform::CGetGrGidState State;
+	group *pGroup = NMib::NPlatform::fg_Helper_GetGrNam(Name.f_GetStr(), State);
 
 	if (!pGroup)
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam('{}') when setting group on link '{}'") << Name << Canonical, errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam_r('{}') when setting group on link '{}'") << Name << Canonical, State.m_Error));
 
 	if (lchown(Canonical.f_GetStr(), -1, pGroup->gr_gid) != 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lchown('{}', {}) when setting group on link") << Canonical << pGroup->gr_gid, errno));

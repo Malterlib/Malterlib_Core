@@ -260,18 +260,38 @@ Property
 		!!MalterlibBuildServerBuild ""
 	}
 
-	MalterlibSupportSanitizers false // User(Debug): Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
+	MalterlibSupportSanitizerEnable_Thread false // User(Debug)=true: Enable thread sanitizer
 	{
-		!!MalterlibSupportSanitizers ""
+		!!MalterlibSupportSanitizerEnable_Thread ""
 	}
 
-	MalterlibDefaultToolset true
+	MalterlibSupportSanitizerEnable_Address false // User(Debug)=true: Enable address sanitizer
+	{
+		!!MalterlibSupportSanitizerEnable_Address ""
+	}
+
+	MalterlibSupportSanitizerEnable_UndefinedBehavior false // User(Debug)=true: Enable undefined behavior sanitizer
+	{
+		!!MalterlibSupportSanitizerEnable_UndefinedBehavior ""
+	}
+
+	MalterlibSupportSanitizers true
 	{
 		&
 		{
-			MalterlibDefaultToolset ""
-			MalterlibSupportSanitizers true
+			MalterlibSupportSanitizers ""
+			|
+			{
+				MalterlibSupportSanitizerEnable_Thread true
+				MalterlibSupportSanitizerEnable_Address true
+				MalterlibSupportSanitizerEnable_UndefinedBehavior true
+			}
 		}
+	}
+
+	MalterlibSupportSanitizers false // User(Debug)=true: Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
+	{
+		!!MalterlibSupportSanitizers ""
 	}
 
 	MalterlibDefaultToolset false // User(Undocumented)=true: Use default Xcode toolset with no custom modifications to libc++ or clang
@@ -307,7 +327,11 @@ Property
 		&
 		{
 			MalterlibCustomCompilerOptions ""
-			PlatformFamily "Linux"
+			|
+			{
+				MalterlibSupportSanitizers true
+				PlatformFamily "Linux"
+			}
 		}
 	}
 
@@ -393,7 +417,7 @@ Property
 		&
 		{
 			MalterlibMemoryManager ""
-			MalterlibSupportSanitizers true
+			MalterlibSupportSanitizerEnable_Address true
 		}
 	}
 
@@ -456,6 +480,7 @@ Property
 		&
 		{
 			MalterlibMemoryManager_OverrideSystemMalloc ""
+			!MalterlibSupportSanitizers true
 			|
 			{
 				PlatformFamily "OSX"

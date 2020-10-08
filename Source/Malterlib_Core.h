@@ -14,6 +14,11 @@ namespace NMib
 		EAggregateInitialization_Force
 	};
 
+	enum EConstexprInitialization
+	{
+		EConstexprInitialization_Force
+	};
+
 	struct CVirtualDummy
 	{
 		virtual void f_Dummy()
@@ -143,9 +148,7 @@ namespace NMib
 
 #include <Mib/Bit/Static>
 
-#include <Mib/Numeric/Integer>
-#include <Mib/Numeric/Float>
-#	include "../../Core/Source/Platform/Malterlib_Core_PlatformImp.h"
+#include "../../Core/Source/Platform/Malterlib_Core_PlatformImp.h"
 
 #	include "../../Core/Source/Malterlib_Core_Include.h"
 #include <Mib/Numeric/FloatImp>

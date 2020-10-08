@@ -43,6 +43,7 @@ __attribute__((section(".preinit_array"), used)) static decltype(fg_InitMalterli
 
 #else
 
+#ifdef DMalterlibUseStaticLibCxx
 extern "C" void __umodti3();
 extern "C" void __udivmodti4();
 extern "C" void __fixunsxfti();
@@ -50,9 +51,11 @@ extern "C" void __fixxfti();
 extern "C" void __divti3();
 extern "C" void __modti3();
 extern "C" void __udivti3();
+#endif
 
 extern "C" void __attribute__ ((constructor(-1111111111))) fg_InitMalterlib()
 {
+#ifdef DMalterlibUseStaticLibCxx
 	__attribute__((used)) static volatile unsigned long long WorkaroundSum
 		= (unsigned long long)&__umodti3
 		+ (unsigned long long)&__udivmodti4
@@ -62,6 +65,7 @@ extern "C" void __attribute__ ((constructor(-1111111111))) fg_InitMalterlib()
 		+ (unsigned long long)&__modti3
 		+ (unsigned long long)&__udivti3
 	;
+#endif
 
 	NMib::NSys::fg_CreateSystem();
 }

@@ -18,8 +18,12 @@ namespace NMib
 		void fg_Mem_InitSubsystem();
 	}
 
+#if defined(DMibPOverrideOperatorNew) && (defined(DPlatformFamily_Linux) || defined(DPlatformFamily_OSX))
+	mint g_bMemoryManagerNeededAfterDestroy = true;
+#else
 	mint g_bMemoryManagerNeededAfterDestroy = false;
-	
+#endif
+
 	namespace NSys
 	{
 		
@@ -374,6 +378,8 @@ namespace NMib
 		if (m_pDefaultLogFile)
 			m_pDefaultLogFile->f_PrepareFork();
 #endif
+		mp_SubSystemsLock.f_Lock();
+		mp_SubSystemsLock.f_PrepareFork();
 		f_ThreadLocal_PrepareFork();
 		fp_SubSystem_PrepareFork_BeforeMemoryManager();
 		f_MemoryManager_PrepareFork();
@@ -390,12 +396,14 @@ namespace NMib
 		fp_SubSystem_ForkedChild_BeforeMemoryManager();
 		f_ThreadLocal_ForkedChild();
 		fp_SubSystem_ForkedChild_AfterThreadLocal();
+		mp_SubSystemsLock.f_ForkedChild();
+		mp_SubSystemsLock.f_Unlock();
 #if DMibSysLogSeverities
-		if (m_pSystemLog)
-			m_pSystemLog->f_ForkedChild();
-
 		if (m_pDefaultLogFile)
 			m_pDefaultLogFile->f_ForkedChild();
+
+		if (m_pSystemLog)
+			m_pSystemLog->f_ForkedChild();
 #endif
 	}
 	void CSystem::f_ForkedParent()
@@ -407,12 +415,14 @@ namespace NMib
 		fp_SubSystem_ForkedParent_BeforeMemoryManager();
 		f_ThreadLocal_ForkedParent();
 		fp_SubSystem_ForkedParent_AfterThreadLocal();
+		mp_SubSystemsLock.f_ForkedParent();
+		mp_SubSystemsLock.f_Unlock();
 #if DMibSysLogSeverities
-		if (m_pSystemLog)
-			m_pSystemLog->f_ForkedParent();
-
 		if (m_pDefaultLogFile)
 			m_pDefaultLogFile->f_ForkedParent();
+
+		if (m_pSystemLog)
+			m_pSystemLog->f_ForkedParent();
 #endif
 	}
 	
@@ -679,7 +689,7 @@ namespace NMib
 
 	CCoroutineThreadLocalHandler::CCoroutineThreadLocalHandler(bool _bAddToCoroutine)
 	{
-		if (!g_bCanStartThreads || !_bAddToCoroutine)
+		if (!g_bCanStartThreads.f_Load(NAtomic::EMemoryOrder_Relaxed) || !_bAddToCoroutine)
 			return;
 
 		auto &ThreadLocal = **g_SystemThreadLocal;
@@ -692,7 +702,7 @@ namespace NMib
 	CCrossActorCallStateScope::CCrossActorCallStateScope(bool _bAddToCoroutine)
 		: CCoroutineThreadLocalHandler(_bAddToCoroutine)
 	{
-		if (!g_bCanStartThreads)
+		if (!g_bCanStartThreads.f_Load(NAtomic::EMemoryOrder_Relaxed))
 			return;
 
 		auto &ThreadLocal = **g_SystemThreadLocal;

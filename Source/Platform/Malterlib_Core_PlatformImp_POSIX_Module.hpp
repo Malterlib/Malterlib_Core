@@ -32,12 +32,21 @@ using namespace NMib;
 
 typedef calling_convention_c void (FMalterlibLibraryFunc)();
 
+namespace
+{
+#if defined(DMibSanitizerEnabled_Address)
+	static constexpr int g_ExtraDlOpenFlags = RTLD_NODELETE;
+#else
+	static constexpr int g_ExtraDlOpenFlags = 0;
+#endif
+}
+
 void * NSys::fg_LoadLibrary(CFStr256 const& _Library)
 {
 	if (!_Library.f_IsEmpty())
 	{
 		auto Library = _Library;
-		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL);
+		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | g_ExtraDlOpenFlags);
 		if (pRet)
 		{
 			void (*pMalterlibLoadLibraryExternal)();
@@ -60,7 +69,7 @@ void *NSys::fg_LoadLibrary(const CStr& _Library)
 	if (!_Library.f_IsEmpty())
 	{
 		auto Library = _Library;
-		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL);
+		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | g_ExtraDlOpenFlags);
 		if (pRet)
 		{
 			void (*pMalterlibLoadLibraryExternal)();
@@ -83,7 +92,7 @@ void *NSys::fg_LoadLibrary(const CStrNonTracked &_Library)
 	if (!_Library.f_IsEmpty())
 	{
 		auto Library = _Library;
-		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL);
+		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | g_ExtraDlOpenFlags);
 		if (pRet)
 		{
 			void (*pMalterlibLoadLibraryExternal)();
