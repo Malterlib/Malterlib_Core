@@ -241,6 +241,7 @@
 					ShellScript "None"
 					VisualStudioVisualizer "Natvis"
 					Custom "CustomBuild"
+					WindowsManifest "Manifest"
 				}
 			}
 		}

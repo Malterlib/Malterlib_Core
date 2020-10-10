@@ -45,6 +45,7 @@
 						XCodeAssets "folder.assetcatalog"
 						XML "text.xml"
 						MSBuildTargets "text.xml"
+						WindowsManifest "text.xml"
 						VisualStudioVisualizer "text.xml"
 						Custom "text"
 					}

@@ -211,6 +211,19 @@ Compile
 		}
 	}
 
+	Type "WindowsManifest"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.manifest"
+			}
+		}
+	}
+
 	Type "VisualStudioVisualizer"
 	{
 		&
