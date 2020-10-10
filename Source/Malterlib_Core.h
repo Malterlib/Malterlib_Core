@@ -31,11 +31,7 @@ namespace NMib
 #define DMalterlib 1
 #endif
 
-#ifndef DMibNoAggregateConstexpr
-#	define DAggregateInit ::NMib::EAggregateInitialization_Force
-#else
-#	define DAggregateInit 0
-#endif
+#define DAggregateInit ::NMib::EAggregateInitialization_Force
 
 #ifdef DMibDebug
 #define inline_never_debug inline_never

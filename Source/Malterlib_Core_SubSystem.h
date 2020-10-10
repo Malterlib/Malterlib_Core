@@ -23,7 +23,6 @@ namespace NMib
 		void f_Construct(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
 
 	public:
-#ifndef DMibNoAggregateConstexpr
 		TCSubSystem() = delete;
 		constexpr TCSubSystem(EAggregateInitialization _Init)
 			: mp_ObjectSpace{}
@@ -31,7 +30,6 @@ namespace NMib
 			, mp_bWasCreated{false}
 		{
 		}
-#endif
 		
 	public: // check if we can use private on MSVC and still get static initialization
 		typedef uint8 CObjectType[sizeof(t_CSubSystem)];

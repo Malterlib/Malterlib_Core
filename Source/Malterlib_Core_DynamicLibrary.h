@@ -132,7 +132,6 @@
 	e.g. You include the header file for a library and then use DMibDefineDynamicLibraryClass
 	to create a class to load the library and access each function.
 */
-#ifndef DMibNoAggregateConstexpr
 #define DMibDefineDynamicLibraryClassAggregate(_ClassName, _Flags, _LibraryFile, ...)	\
 	struct _ClassName : public NMib::TDynamicLibraryUtilityAggregate<_ClassName, (NMib::EDLFlag)(_Flags), NMib::NStr::CFStrAggregate256, NMib::NStr::CFStr256> 	\
 	{																		\
@@ -151,7 +150,6 @@
 			BOOST_PP_SEQ_FOR_EACH( _DMibDefineDynamicLibraryClass_Fetch, 0, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__) ) \
 		} \
 	};
-#endif
 
 #define DMibDefineDynamicLibraryClass(_ClassName, _Flags, _LibraryFile, ...)	\
 	struct _ClassName : public NMib::TDynamicLibraryUtility<_ClassName, (NMib::EDLFlag)(_Flags)> 	\
@@ -188,7 +186,6 @@ namespace NMib
 	{
 	public:
 
-#ifndef DMibNoAggregateConstexpr
 		constexpr TDynamicLibraryUtilityAggregate(EAggregateInitialization _Init)
 			: mp_Filename{_Init}
 			, mp_pLibrary(nullptr)
@@ -200,7 +197,6 @@ namespace NMib
 			, mp_bOK(false)
 		{
 		}
-#endif
 	
 		bool f_OK() const { return mp_bOK; }
 		operator bool() const { return mp_bOK; }

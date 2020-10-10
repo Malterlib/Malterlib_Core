@@ -617,14 +617,12 @@ namespace NMib
 	||______________________________________________________________________________________________||
 	\************************************************************************************************/
 	
-#ifndef DMibNoAggregateConstexpr
 	constexpr CSystemModule::CSystemModule(EAggregateInitialization _Init)
 		: m_pSystem{nullptr}
 		, m_Aggregates{_Init}
 		, m_Lock{_Init}
 	{
 	}
-#endif
 	
 	// Make sure that our system module is aggregate
 	constinit CSystemModule g_SystemModule = {DAggregateInit};

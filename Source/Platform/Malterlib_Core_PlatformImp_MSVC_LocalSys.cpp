@@ -868,6 +868,8 @@ public:
 
 	CSystemWindowsMSVC()
 		: CSystem(g_bIsDll)
+		, m_SocketContext(EAggregateInitialization_Force)
+		, m_FileChangeNoticationContext(EAggregateInitialization_Force)
 	{
 
 		fg_MemClear(m_SocketContext);

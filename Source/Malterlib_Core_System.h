@@ -481,9 +481,7 @@ namespace NMib
 
 		NThread::CMutualAggregate m_Lock;
 
-#ifndef DMibNoAggregateConstexpr
 		constexpr CSystemModule(EAggregateInitialization _Init);
-#endif
 		
 		void f_Destroy();
 		void f_DestroyAggregates(bool _bDestroySystem);

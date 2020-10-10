@@ -32,8 +32,6 @@
 
 #define _XKEYCHECK_H
 
-#define DMibNoAggregateConstexpr
-
 #define DCompiler_MSVC_Workaround 1
 
 #ifdef _DEBUG
