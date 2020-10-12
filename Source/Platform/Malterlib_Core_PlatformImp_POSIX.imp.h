@@ -119,7 +119,9 @@ namespace NMib
 }
 
 
+#ifdef DPlatformFamily_OSX
 #include <sys/sysctl.h>
+#endif
 
 namespace NMib
 {
