@@ -259,18 +259,29 @@ Property
 										"	oldstate=\"$(shopt -po; shopt -p)\"\r\n"\
 										"	set -e\r\n"\
 										"	set -o pipefail\r\n"\
-										"	TempFile=`mktemp`\r\n"\
+										"	if [[ \"MalterlibBuildLogFile\" == \"\" ]]; then\r\n"\
+										"		TempFile=`mktemp`\r\n"\
+										"	else\r\n"\
+										"		TempFile=\"$MalterlibBaseDir/$MalterlibBuildLogFile\"\r\n"\
+										"		mkdir -p `dirname \"$TempFile\"`\r\n"\
+										"	fi\r\n"\
 										"	export LC_CTYPE=\"en_US.UTF-8\"\r\n"\
 										"	if ! xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs \"$@\" | tee \"$TempFile\" | xcpretty --color $MalterlibXCPrettyOptions; then\r\n"\
-										"		echo \"error: Build failed. See full log:\"\r\n"\
-										"		wc -c \"$TempFile\"\r\n"\
-										"		echo \"\"\r\n"\
-										"		cat \"$TempFile\"\r\n"\
-										"		echo \"Full log output done\"\r\n"\
-										"		rm -f \"$TempFile\"\r\n"\
+										"		if [[ \"$MalterlibBuildLogFile\" != \"\" ]]; then\r\n"\
+										"			echo \"error: Build failed. See log file: $MalterlibBuildLogFile\"\r\n"\
+										"		else\r\n"\
+										"			echo \"error: Build failed. See full log:\"\r\n"\
+										"			wc -c \"$TempFile\"\r\n"\
+										"			echo \"\"\r\n"\
+										"			cat \"$TempFile\"\r\n"\
+										"			echo \"Full log output done\"\r\n"\
+										"			rm -f \"$TempFile\"\r\n"\
+										"		fi\r\n"\
 										"		exit 1\r\n"\
 										"	fi\r\n"\
-										"	rm -f \"$TempFile\"\r\n"\
+										"	if [[ \"$MalterlibBuildLogFile\" == \"\" ]]; then\r\n"\
+										"		rm -f \"$TempFile\"\r\n"\
+										"	fi\r\n"\
 										"	eval \"$oldstate\"\r\n"\
 										"}\r\n"\
 										"export XCodeBuild_Pretty\r\n"\
