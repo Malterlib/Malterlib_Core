@@ -384,13 +384,9 @@ namespace NMib
 		fp_SubSystem_PrepareFork_BeforeMemoryManager();
 		f_MemoryManager_PrepareFork();
 		fp_SubSystem_PrepareFork_AfterMemoryManager();
-		m_EventMember_Lock.f_Lock();
-		m_EventMember_Lock.f_PrepareFork();
 	}
 	void CSystem::f_ForkedChild()
 	{
-		m_EventMember_Lock.f_ForkedChild();
-		m_EventMember_Lock.f_Unlock();
 		fp_SubSystem_ForkedChild_AfterMemoryManager();
 		f_MemoryManager_ForkedChild();
 		fp_SubSystem_ForkedChild_BeforeMemoryManager();
@@ -408,8 +404,6 @@ namespace NMib
 	}
 	void CSystem::f_ForkedParent()
 	{
-		m_EventMember_Lock.f_ForkedParent();
-		m_EventMember_Lock.f_Unlock();
 		fp_SubSystem_ForkedParent_AfterMemoryManager();
 		f_MemoryManager_ForkedParent();
 		fp_SubSystem_ForkedParent_BeforeMemoryManager();

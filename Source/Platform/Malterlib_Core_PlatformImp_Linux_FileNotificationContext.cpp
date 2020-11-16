@@ -274,7 +274,7 @@ void CFileChangeNotificationContext::f_UnlinkWatch(TCSharedPointer<CWatch> _pWat
 	}
 }
 
-void *CFileChangeNotificationContext::f_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+void *CFileChangeNotificationContext::f_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 {
 
 	CStr FileName = _FileName;

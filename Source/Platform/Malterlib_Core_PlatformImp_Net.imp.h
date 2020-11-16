@@ -7,34 +7,30 @@
 
 CAddressResolver::CAddressResolver()
 {
-
-	mp_lThreads.f_SetLen(nWorkerThreads);
-	for (auto TIter = mp_lThreads.f_GetIterator()
-		;TIter
-		;++TIter)
-	{
-		(*TIter) = NThread::CThreadObject::fs_StartThread(
-				[&](NThread::CThreadObject* _pThread) -> aint
-				{
-					return fp_ResolveWorker(_pThread);
-				}
-				, "Async Resolver Worker"
-			);
-	}
+	mp_pThread = NThread::CThreadObject::fs_StartThread
+		(
+			[this](NThread::CThreadObject* _pThread) -> aint
+			{
+				return fp_ResolveWorker(_pThread);
+			}
+			, "Async Resolver Worker"
+		)
+	;
 }
 
 CAddressResolver::~CAddressResolver()
 {
-	for (auto TIter = mp_lThreads.f_GetIterator()
-		;TIter
-		;++TIter)
+	if (mp_pThread)
 	{
-		(*TIter)->f_Stop(true);
+		mp_pThread->f_Stop(true);
+		mp_pThread.f_Clear();
 	}
 
-	DMibLock(mp_Lock);
+	{
+		DMibLock(mp_Lock);
 		mp_PendingList.f_DeleteAllDefiniteType();
 		mp_DoneOrInProgressList.f_DeleteAllDefiniteType();
+	}
 }
 
 void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish)
@@ -54,7 +50,7 @@ void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::
 		mp_PendingList.f_Push(pRet = pReq.f_Detach());
 	}
 
-	mp_WakeEvent.f_Signal();
+	mp_pThread->m_EventWantQuit.f_Signal();
 
 	return pRet;
 }
@@ -100,8 +96,6 @@ void CAddressResolver::f_Close(void* _pResolver)
 
 aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject* _pThread)
 {
-	mp_WakeEvent.f_ReportTo(&_pThread->m_EventWantQuit);
-
 	while(_pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
 	{		
 		CResolveRequest* pReq;

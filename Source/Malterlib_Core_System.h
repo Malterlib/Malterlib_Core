@@ -127,7 +127,7 @@ namespace NMib
 	class CSystem
 	{	
 		friend class CRunTimeObjectInfo;
-		friend class NThread::CSemaphoreReportableAggregate;
+		friend class NThread::CSemaphoreAggregate;
 		friend class CSystemModule;
 
 	private:
@@ -150,8 +150,6 @@ namespace NMib
 
 		NThread::CMutual m_Lock;
 
-		NThread::CMutual m_EventMember_Lock;
-		
 		NStr::CStr m_ProgramName;
 		
 		NStr::CStr m_CrashHandlerPath;

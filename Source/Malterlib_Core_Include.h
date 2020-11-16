@@ -26,7 +26,7 @@ namespace NMib
 		class CNoLock;
 		template <typename t_CEvent, bool t_bAllowRecursive>
 		class TCMutual;
-		class CEventAutoResetAggregate;
+		struct CEventAutoResetAggregate;
 	}
 
 	namespace NContainer

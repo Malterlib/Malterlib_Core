@@ -1682,7 +1682,7 @@ namespace NMib
 			return Ret;
 		}
 
-		void *CFileChangeNoticationContext::f_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+		void *CFileChangeNoticationContext::f_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 		{
 			CStr NotificationPath = _FileName;
 			if (NMib::NFile::CFile::fs_FileExists(NotificationPath, EFileAttrib_File))

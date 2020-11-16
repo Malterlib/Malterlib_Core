@@ -46,17 +46,7 @@ private:
 		DMibListLinkS_List(CResolveRequest, m_Link) mp_PendingList;
 		DMibListLinkS_List(CResolveRequest, m_Link) mp_DoneOrInProgressList;
 
-	NMib::NThread::CEventAutoResetReportable mp_TerminateEvent;
-	NMib::NThread::CEventAutoResetReportable mp_WakeEvent;
-
-	using CThreadPointer = NStorage::TCUniquePointer<NThread::CThreadObject>;
-
-	enum
-	{
-		nWorkerThreads = 2, // TODO
-	};
-
-	NContainer::TCVector<CThreadPointer> mp_lThreads;
+	NStorage::TCUniquePointer<NThread::CThreadObject> mp_pThread;
 
 	aint fp_ResolveWorker(NThread::CThreadObject* _pThread);
 

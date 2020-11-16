@@ -101,7 +101,7 @@ protected:
 			NThread::CMutual m_Lock;
 				EFlag m_Flags;
 				NStorage::TCUniquePointer<CWindowsAddress> m_pAddress;
-				NMib::NThread::CSemaphoreReportableAggregate* m_pReportTo;
+				NMib::NThread::CSemaphoreAggregate* m_pReportTo;
 				NMib::NStr::CStr m_ErrorString;
 
 			// Protected by CResolveThread::mp_Lock.
@@ -113,18 +113,8 @@ protected:
 		NThread::CMutual mp_Lock;
 			CResolveRequest* mp_pHead;	// Take from here.
 			CResolveRequest* mp_pTail; 	// Add Here
-	
-		NMib::NThread::CEventAutoResetReportable mp_TerminateEvent;
-		NMib::NThread::CEventAutoResetReportable mp_WakeEvent;
 
-		using CThreadPointer = NStorage::TCUniquePointer<NThread::CThreadObject>;
-
-		enum
-		{
-			nWorkerThreads = 2,
-		};
-
-		NContainer::TCVector<CThreadPointer> mp_lThreads;
+		NStorage::TCUniquePointer<NThread::CThreadObject> mp_pThread;
 
 		CResolveRequest* fp_Pop();
 		aint fp_ResolveWorker(NThread::CThreadObject* _pThread);
@@ -133,7 +123,7 @@ protected:
 		CResolver(CWindowsSocketContext* _pContext);
 		~CResolver();
 
-		void* f_Open(NMib::NStr::CStr const& _Name, NMib::NThread::CSemaphoreReportableAggregate* _pReportTo);
+		void* f_Open(NMib::NStr::CStr const& _Name, NMib::NThread::CSemaphoreAggregate* _pReportTo);
 		bool f_GetResult(void *_pResolver, CWindowsAddress*& _opAddress, NMib::NStr::CStr &_Error);
 		void f_Close(void* _pResolver);
 	};

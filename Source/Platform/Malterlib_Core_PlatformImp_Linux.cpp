@@ -2141,7 +2141,7 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 	return fg_Rename(_FileFrom, _FileTo);
 }
 
-void *NSys::NFile::fg_ChangeNotification_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+void *NSys::NFile::fg_ChangeNotification_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 {
 	return fg_GetLocalSys()->m_FileChangeNotificationContext->f_Open(_FileName, _OpenFlags, _pReportTo);
 }

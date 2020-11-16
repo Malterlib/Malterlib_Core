@@ -181,7 +181,7 @@ public:
 					{
 						{
 							m_pBundle->m_ToCancel.f_Insert(this);
-							m_pBundle->m_Event.f_Signal();
+							m_pBundle->m_EventWantQuit.f_Signal();
 						}
 
 						if (m_pBundle)
@@ -275,7 +275,7 @@ public:
 			CByteVector m_ChangesBuffer;
 			OVERLAPPED m_ChangesOverlapped;
 
-			NThread::CSemaphoreReportableAggregate *m_pReportTo;
+			NThread::CSemaphoreAggregate *m_pReportTo;
 
 			CFindChangesContext m_ChangesContext;
 
@@ -510,12 +510,9 @@ public:
 			DMibListLinkDS_List(CNotification, m_LinkUpdated) m_Updated;
 
 			DMibListLinkDS_Link(CNotificationBundle, m_Link);
-			NThread::CEventAutoResetReportable m_Event;
 
 			aint f_Main()
 			{
-				m_EventWantQuit.f_ReportTo(&m_Event);
-
 				while (f_GetState() != NThread::EThreadState_EventWantQuit)
 				{
 					{
@@ -546,7 +543,7 @@ public:
 						}
 					}
 
-					auto Ret = WaitForSingleObjectEx(m_Event.m_pSemaphore, INFINITE, true);
+					auto Ret = WaitForSingleObjectEx(m_EventWantQuit.m_pSemaphore, INFINITE, true);
 					{
 						CNotification *pPop;
 						{
@@ -584,7 +581,7 @@ public:
 
 		NThread::CMutual m_Lock;
 
-		void *f_Open(const CStr &_FileName, EFileChange _OpenFlags, NThread::CSemaphoreReportableAggregate *_pReportTo)
+		void *f_Open(const CStr &_FileName, EFileChange _OpenFlags, NThread::CSemaphoreAggregate *_pReportTo)
 		{
 			CStr AbsolutePath = CFile::fs_GetExpandedPath(_FileName);
 			CWStr WindowStr = NFile::NPlatform::fg_ConvertToWindowsPathLocal(AbsolutePath);
@@ -650,7 +647,7 @@ public:
 					pBundle->m_ToRead.f_Insert(pNot);
 				}
 
-				pBundle->m_Event.f_Signal();
+				pBundle->m_EventWantQuit.f_Signal();
 			}
 			pNot->m_FirstReadDoneEvent.f_Wait();
 			return pNot;
@@ -663,7 +660,7 @@ public:
 			pNotification->f_Clear();
 			CNotificationBundle *pBundle = pNotification->m_pBundle;
 			pBundle->m_Free.f_Insert(pNotification);
-			pBundle->m_Event.f_Signal();
+			pBundle->m_EventWantQuit.f_Signal();
 			if (pBundle->m_Used.f_IsEmpty())
 			{
 				pBundle->m_Link.f_Unlink();

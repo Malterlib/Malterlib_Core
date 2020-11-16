@@ -207,7 +207,7 @@ namespace NMib
 
 				DMibRefcountDebuggingOnly(NStorage::CRefCountDebugReference m_DebugSelfRef);
 
-				NMib::NThread::CSemaphoreReportableAggregate *m_pReportTo;
+				NMib::NThread::CSemaphoreAggregate *m_pReportTo;
 				uint64 m_UpdateSequence = 0;
 				bool m_bAddedToRunLoop = false;
 				bool m_bStreamStarted = false;
@@ -244,7 +244,7 @@ namespace NMib
 
 			void f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch);
 			void f_StartThread();
-			void *f_Open(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo);
+			void *f_Open(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo);
 
 			void f_Close(void *_pNotification);
 			bool f_Changed(void *_pNotification);

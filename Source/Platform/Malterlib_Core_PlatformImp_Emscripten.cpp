@@ -1366,7 +1366,7 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 		DMibErrorFile(fg_FormatErrno(CStr::CFormat("rename('{}', '{}')") << _FileFrom << _FileTo, errno));
 }
 
-void *NSys::NFile::fg_ChangeNotification_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+void *NSys::NFile::fg_ChangeNotification_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 {
 	DMibError("Not implemented");
 	return nullptr;
@@ -1467,7 +1467,7 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _A
 }
 
 // Connection Operations
-void *NSys::NNetwork::fg_AsyncConnect(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NSys::NNetwork::CAddress _BindAddress)
+void *NSys::NNetwork::fg_AsyncConnect(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreAggregate *_pReportTo, NSys::NNetwork::CAddress _BindAddress)
 {
 	DMibError("Not implemented");
 	return nullptr;
@@ -1479,18 +1479,18 @@ void NSys::NNetwork::fg_StartSocket(void *_pSocket)
 	return nullptr;
 }
 
-void *NSys::NNetwork::fg_Listen(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NMib::NNetwork::ENetFlag _Flags)
+void *NSys::NNetwork::fg_Listen(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreAggregate *_pReportTo, NMib::NNetwork::ENetFlag _Flags)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
-void *NSys::NNetwork::fg_ListenDatagram(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo, NMib::NNetwork::ENetFlag _Flags)
+void *NSys::NNetwork::fg_ListenDatagram(NSys::NNetwork::CAddress _Address, NMib::NThread::CSemaphoreAggregate *_pReportTo, NMib::NNetwork::ENetFlag _Flags)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void *NSys::NNetwork::fg_Accept(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+void *NSys::NNetwork::fg_Accept(void *_pSocket, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 {
 	DMibError("Not implemented");
 	return nullptr;
@@ -1527,11 +1527,6 @@ mint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress
 
 // Socket Properties & State
 
-void NSys::NNetwork::fg_SetReportTo(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo) // Report to the supplied event when new data is received or when we are ready to send new data
-{
-	DMibError("Not implemented");
-}
-
 NMib::NNetwork::ENetTCPState NSys::NNetwork::fg_GetState(void *_pSocket) // Get the state of data availabl
 {
 	DMibError("Not implemented");
@@ -1544,13 +1539,13 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetCloseReason(void *_pSocket)
 	return "";
 }
 
-void *NSys::NNetwork::fg_InheritHandle(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+void *NSys::NNetwork::fg_InheritHandle(void *_pSocket, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 {
 	DMibError("Not implemented");
 	return nullptr;
 }
 
-void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NThread::CSemaphoreReportableAggregate *_pReportTo)
+void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 {
 	DMibError("Not implemented");
 	return nullptr;
