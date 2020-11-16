@@ -410,6 +410,33 @@ namespace NMib
 		return NInternal::TCAutoStaticCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
 	}
 
+	namespace NInternal
+	{
+		template <typename t_CFrom>
+		struct TCAutoConstCast
+		{
+			t_CFrom m_From;
+
+			template<typename ft_CFrom>
+			TCAutoConstCast(ft_CFrom &&_From)
+				: m_From(fg_Forward<ft_CFrom>(_From))
+			{
+			}
+
+			template <typename ft_CTo>
+			operator ft_CTo()
+			{
+				return const_cast<ft_CTo>(m_From);
+			}
+		};
+
+	}
+	template <typename ft_CFrom>
+	NInternal::TCAutoConstCast<ft_CFrom> fg_AutoConstCast(ft_CFrom &&_From)
+	{
+		return NInternal::TCAutoConstCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
+	}
+
 
 	namespace NInternal
 	{
