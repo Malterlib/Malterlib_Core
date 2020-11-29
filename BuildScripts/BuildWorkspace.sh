@@ -1,8 +1,8 @@
 #!/bin/bash
-# Copyright © 2015 Hansoft AB 
+# Copyright © 2015 Hansoft AB
 # Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-# Usage: BuildWorkspace.sh Workspace Platform Architecture Configuration 
+# Usage: BuildWorkspace.sh Workspace Platform Architecture Configuration
 
 set -e
 

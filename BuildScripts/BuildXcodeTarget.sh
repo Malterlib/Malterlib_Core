@@ -14,7 +14,33 @@ source ./BuildSystem/SharedBuildSettings.sh
 
 export "PATH=/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:$PATH"
 
-$XCodeBuildTool -workspace "BuildSystem/Default/${1}.xcworkspace" -scheme "$2 $3 $4 $5"
+Workspace="$1"
+Target="$2"
+Platform="$3"
+Architecture="$4"
+Config="$5"
+
+if [[ "$Workspace" == "" ]]; then
+	Workspace="Tests"
+fi
+
+if [[ "$Target" == "" ]]; then
+	Target="Build All"
+fi
+
+if [[ "$Platform" == "" ]]; then
+	Platform="$HostPlatform"
+fi
+
+if [[ "$Architecture" == "" ]]; then
+	Architecture="$HostArchitecture"
+fi
+
+if [[ "$Config" == "" ]]; then
+	Config="Debug"
+fi
+
+$XCodeBuildTool -workspace "BuildSystem/Default/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
 CheckErrors
 
 exit 0

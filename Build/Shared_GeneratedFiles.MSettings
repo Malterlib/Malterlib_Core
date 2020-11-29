@@ -259,7 +259,7 @@ Property
 										"	oldstate=\"$(shopt -po; shopt -p)\"\r\n"\
 										"	set -e\r\n"\
 										"	set -o pipefail\r\n"\
-										"	if [[ \"MalterlibBuildLogFile\" == \"\" ]]; then\r\n"\
+										"	if [[ \"$MalterlibBuildLogFile\" == \"\" ]]; then\r\n"\
 										"		TempFile=`mktemp`\r\n"\
 										"	else\r\n"\
 										"		TempFile=\"$MalterlibBaseDir/$MalterlibBuildLogFile\"\r\n"\
