@@ -17,10 +17,19 @@ Compile
 	{
 		!!PlatformFamily "Linux"
 	}
-	SearchPath "@(MalterlibSysRoot)/usr/include/glib-2.0;@(Compile.SearchPath)"
+	SearchPath "@(MalterlibSysRoot)/usr/include/glib-2.0;@(MalterlibSysRoot)/usr/lib/@(MalterlibNativeClangArchitecture)-linux-gnu/glib-2.0/include;@(Compile.SearchPath)"
 	{
 		!!PlatformFamily "Linux"
 	}
+	SearchPath "@(MalterlibSysRoot)/usr/include/dbus-1.0;@(MalterlibSysRoot)/usr/lib/@(MalterlibNativeClangArchitecture)-linux-gnu/dbus-1.0/include;@(Compile.SearchPath)"
+	{
+		!!PlatformFamily "Linux"
+	}
+	SearchPath "@(MalterlibSysRoot)/usr/include/libsecret-1;@(Compile.SearchPath)"
+	{
+		!!PlatformFamily "Linux"
+	}
+
 
 	SearchPath "@('../../External/mimalloc/include'->MakeAbsolute());@(Compile.SearchPath)"
 	{

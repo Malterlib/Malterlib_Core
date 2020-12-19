@@ -1393,6 +1393,11 @@ Compile
 		}
 	}
 
+	ConstexprSteps "4000000"
+	{
+		!!GeneratorFamily "Xcode"
+	}
+
 	ExtraCompilerFlags "/std:c++latest /constexpr:steps2097152 @(Compile.ExtraCompilerFlags)"
 	{
 		&
@@ -1575,15 +1580,19 @@ Compile
 		!!PlatformFamily "Linux"
 	}
 
-	PreprocessorDefines "_POSIX_C_SOURCE=199506L;_XOPEN_SOURCE=500;_SVID_SOURCE;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines "_POSIX_C_SOURCE=200809L;_XOPEN_SOURCE=700;_DEFAULT_SOURCE=1;@(Compile.PreprocessorDefines)"
 	{
 		&
 		{
 			PlatformFamily "Linux"
 			|
 			{
+				Compile.CLanguage "C99"
+				Compile.CLanguage "C11"
+				Compile.CLanguage "GNU99"
 				Compile.CLanguage "C89"
 				Compile.CLanguage "GNU89"
+				Compile.CLanguage "GNU11"
 			}
 		}
 	}

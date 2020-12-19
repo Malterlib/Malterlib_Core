@@ -677,28 +677,12 @@ Target
 
 Property
 {
-	MalterlibSysRoot "@(MalterlibSharedBinariesRoot)/Malterlib_@(PlatformFamily)/SDKs/@(Platform).sdk"
+	MalterlibSysRoot "@('../../../Binaries/MalterlibSDK'->MakeAbsolute())/@(PlatformFamily)/@(Architecture)/Linux.sdk"
 	{
-		&
+		|
 		{
-	 		!MalterlibUseGitRepo false
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformFamily "Emscripten"
-			}
-		}
-	}
-	MalterlibSysRoot "@(MalterlibDevelopmentRoot)/Malterlib/Tools/SDKs/@(Platform).sdk"
-	{
-		&
-		{
-	 		MalterlibUseGitRepo false
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformFamily "Emscripten"
-			}
+			PlatformFamily "Linux"
+			PlatformFamily "Emscripten"
 		}
 	}
 
@@ -1727,25 +1711,11 @@ Target
 		}
 	}
 
-	RealSDKRoot "@(MalterlibSharedBinariesRoot)/Malterlib_@(PlatformFamily)/SDKs/@(Target.SDKRoot).sdk"
+	RealSDKRoot "@(MalterlibSysRoot)"
 	{
 		&
 		{
 			Target.RealSDKRoot ""
-	 		!MalterlibUseGitRepo false
-			|
-			{
-				Target.SDKRoot "Emscripten"
-				Target.SDKRoot "Linux2.6"
-			}
-		}
-	}
-	RealSDKRoot "@(MalterlibDevelopmentRoot)/Malterlib/Tools/SDKs/@(Target.SDKRoot).sdk"
-	{
-		&
-		{
-			Target.RealSDKRoot ""
-	 		MalterlibUseGitRepo false
 			|
 			{
 				Target.SDKRoot "Emscripten"

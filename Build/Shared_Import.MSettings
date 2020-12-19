@@ -48,6 +48,8 @@ Import
 		!!Import.CMake_VerboseHash ""
 	}
 
+	CMake_FullRebuildVersion "2"
+
 	CMake_UpdateCache true
 	{
 		&

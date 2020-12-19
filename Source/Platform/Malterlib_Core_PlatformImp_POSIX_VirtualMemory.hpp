@@ -287,10 +287,10 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 	}
 #else
 
-#ifdef MADV_FREE
 	int Advice = MADV_FREE;
-#else
-	int Advice = MADV_DONTNEED;
+#ifdef DPlatformFamily_Linux
+	if (NMib::CSystem::ms_PlatformVersion < 4'005'000)
+		Advice = MADV_DONTNEED;
 #endif
 
 	if (madvise(pMemStart, pMemEnd - pMemStart, Advice))
