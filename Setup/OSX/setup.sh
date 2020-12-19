@@ -136,8 +136,12 @@ UpdateDependencies()
 	brew install cmake go graphviz ruby ninja git git-lfs
 
 	sudo chown "$USER" /Library/Ruby/Gems/2.6.0
-	gem install -n /usr/local/bin xcpretty
-	gem update -n /usr/local/bin --system
+	InstallPath=/usr/local/bin
+	if [ -d /opt/homebrew/bin ]; then
+		InstallPath=/opt/homebrew/bin
+	fi
+	gem install -n $InstallPath xcpretty
+	gem update -n $InstallPath --system
 }
 
 UpdateXcodePlugins()

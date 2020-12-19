@@ -10,7 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 SysName=$(uname -s)
 if [[ $SysName ==  Darwin* ]] ; then
-	export PATH="/usr/local/sbin:/usr/local/bin:$PATH"
+	export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:$PATH"
 fi
 
 pushd "$DIR/../../.." > /dev/null

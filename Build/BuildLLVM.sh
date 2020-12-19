@@ -57,7 +57,7 @@ while ! LockFile "${OutputDirectory}.lock"; do
 done
 
 unset TOOLCHAINS
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 unset MACOSX_DEPLOYMENT_TARGET
 unset SDKROOT
 unset PRODUCT_SPECIFIC_LDFLAGS

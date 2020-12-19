@@ -12,7 +12,7 @@ source "$DIR/DetectSystem.sh"
 
 source ./BuildSystem/SharedBuildSettings.sh
 
-export "PATH=/usr/local/sbin:/usr/local/bin:$PATH"
+export "PATH=/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:$PATH"
 
 $XCodeBuildTool -workspace "BuildSystem/Default/${1}.xcworkspace" -scheme "$2 $3 $4 $5"
 CheckErrors
