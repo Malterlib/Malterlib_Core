@@ -12,7 +12,7 @@ namespace NMib
 	namespace NSys
 	{	
 
-		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateGNOMEPasswordManager();
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLibSecretPasswordManager();
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem* _pDBus);
 
 		struct CNullPasswordManager : public CLinuxPasswordManager
@@ -61,31 +61,12 @@ namespace NMib
 
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem* _pDBus)
 		{
-			NMib::NSys::EDesktopEnvironment Desktop = NMib::NSys::fg_DesktopEnvironment_Get();
-
 			NStorage::TCUniquePointer<CLinuxPasswordManager> pManager;
 
-			switch(Desktop)
-			{
-				case EDesktopEnvironment_KDE3:
-					// OK with KWallet?
-				case EDesktopEnvironment_KDE4:
-					pManager = fg_CreateKWalletPasswordManager(_pDBus);
-					break;
+			pManager = fg_CreateLibSecretPasswordManager();
 
-				case EDesktopEnvironment_GNOME:
-				case EDesktopEnvironment_Unity:
-				case EDesktopEnvironment_XCFE:
-					pManager = fg_CreateGNOMEPasswordManager();
-					break;
-
-				default:
-					{
-						pManager = fg_CreateGNOMEPasswordManager();
-						if (!pManager)
-							pManager = fg_CreateKWalletPasswordManager(_pDBus);
-					}
-			}
+			if (!pManager)
+				pManager = fg_CreateKWalletPasswordManager(_pDBus);
 
 			if (!pManager)
 				pManager = fg_Construct<CNullPasswordManager>();
