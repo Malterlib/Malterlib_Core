@@ -1598,6 +1598,11 @@ Target
 		!!GeneratorFamily "Xcode"
 	}
 
+	HardenedRuntime true
+	{
+		!MalterlibNotarizeOSXUser ""
+	}
+
 	SDKRoot "OSX@(MalterlibMaxSupportedOSXVersion)"
 	{
 		!!PlatformFamily "OSX"
@@ -1693,6 +1698,13 @@ Target
 		&
 		{
 			Target.RealSDKRoot "" Target.SDKRoot "OSX10.15"
+		}
+	}
+	RealSDKRoot "macosx11.0"
+	{
+		&
+		{
+ 			Target.RealSDKRoot "" Target.SDKRoot "OSX11"
 		}
 	}
 	RealSDKRoot "macosx"
@@ -3890,6 +3902,15 @@ Property
 		!!MalterlibSignIncludeCert "none"
 	}
 
+	MalterlibCodeSignOSXHardened "--options runtime"
+	{
+		!MalterlibNotarizeOSXUser ""
+	}
+	MalterlibCodeSignOSXHardened ""
+	{
+		!!MalterlibNotarizeOSXUser ""
+	}
+
 	MalterlibCodeSignOSXCommand "MTool BuildServerTool Tool=CodeSignOSX"
 	{
 		!!MalterlibBuildServerBuild true
@@ -4400,8 +4421,8 @@ Target
 
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"echo Sign:\r\n"\
-					"echo @(MalterlibCodeSignOSXCommand) --force --timestamp --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"@(MalterlibCodeSignOSXCommand) --force --timestamp --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"
+					"echo @(MalterlibCodeSignOSXCommand) --force @(MalterlibCodeSignOSXHardened) --timestamp --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"@(MalterlibCodeSignOSXCommand) --force @(MalterlibCodeSignOSXHardened) --timestamp --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"
 	{
 		&
 		{

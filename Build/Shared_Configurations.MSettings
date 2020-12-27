@@ -166,6 +166,15 @@ Property
 			DefaultOSXPlatform "10.15"
 		}
 	}
+	EnablePlatform_OSX11 true // User(Platform)=true: Enables 11 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX11 ""
+			GeneratorFamily "Xcode"
+			DefaultOSXPlatform "11"
+		}
+	}
 	EnablePlatform_OSX10_5 false // User(Platform)=true: Enables 10.5 support for OSX platform
 	{
 		&
@@ -251,6 +260,14 @@ Property
 		&
 		{
 			EnablePlatform_OSX10_15 ""
+			GeneratorFamily "Xcode"
+		}
+	}
+	EnablePlatform_OSX11 false // User(Platform)=true: Enables 11 support for OSX platform
+	{
+		&
+		{
+			EnablePlatform_OSX11 ""
 			GeneratorFamily "Xcode"
 		}
 	}
@@ -392,6 +409,7 @@ Property
 		!!EnablePlatform_OSX10_13 true
 		!!EnablePlatform_OSX10_14 true
 		!!EnablePlatform_OSX10_15 true
+		!!EnablePlatform_OSX11 true
 	}
 	EnablePlatformFamily_Linux true
 	{
@@ -498,6 +516,14 @@ Property
 			EnablePlatform_OSX10_15 true
 		}
 	}
+	OSX11 "Mac OSX 11"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			EnablePlatform_OSX11 true
+		}
+	}
 	iOS8.1 "iOS 8.1"
 	{
 		&
@@ -540,6 +566,7 @@ Property
 			!Platform "OSX10.13"
 			!Platform "OSX10.14"
 			!Platform "OSX10.15"
+			!Platform "OSX11"
 			!Platform "Emscripten"
 			!PlatformFamily "iOS"
 			EnableArchitecture_x86 true

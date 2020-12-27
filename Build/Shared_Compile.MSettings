@@ -743,7 +743,15 @@ Property
 	}
 	MalterlibNativeClangArchitecture "arm64e"
 	{
-		!!Architecture "arm64e"
+		|
+		{
+			Architecture "arm64e"
+			&
+			{
+				Architecture "arm64"
+				Target.Type "Driver"
+			}
+		}
 	}
 }
 
@@ -804,6 +812,10 @@ Property
 	MalterlibNativeClangDarwinTarget "19"
 	{
 		!!Platform "OSX10.15"
+	}
+	MalterlibNativeClangDarwinTarget "20"
+	{
+		!!Platform "OSX11"
 	}
 }
 
