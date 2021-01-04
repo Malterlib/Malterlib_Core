@@ -2373,15 +2373,6 @@ Compile
 		}
 	}
 
-	//ObjectiveCARC true
-	ObjectiveCARC true
-	{
-		!!PlatformFamily "iOS"
-	}
-	ObjectiveCARC false
-	{
-		!!Compile.ObjectiveCARC ""
-	}
 	ObjectiveCARC false
 	{
 		&
@@ -2392,6 +2383,14 @@ Compile
 				Platform "OSX10.5"
 				Platform "OSX10.6"
 			}
+		}
+	}
+	ObjectiveCARC true
+	{
+		&
+		{
+			Compile.ObjectiveCARC ""
+			!Target.DriverType "DriverKit"
 		}
 	}
 

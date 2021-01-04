@@ -314,7 +314,7 @@ namespace NMib
 	{
 		void fg_MacOSX_NativeHideMainWindow(void * _pNativeWindowHandle)
 		{
-			[NSApp hide:(NSView*)_pNativeWindowHandle];
+			[NSApp hide:(__bridge NSView*)_pNativeWindowHandle];
 		}
 
 		void fg_MacOSX_SetBadgeLabel(NStr::CStr const& _Label)
@@ -361,20 +361,24 @@ namespace NMib
 
 		};
 
+		static CMenuContext *fsg_GetContext(id self)
+		{
+			auto Class = object_getClass(self);
+			auto pContextIvar = class_getInstanceVariable(Class, "m_pContext");
+			void *(*fGetIvarVoidStar)(id, Ivar) = (void *(*)(id, Ivar))object_getIvar;
+			return (CMenuContext *)fGetIvarVoidStar(self, pContextIvar);
+		}
+
 		static void fsg_PauseDaemon(id self, SEL cmd, id obj)
 		{
-			CMenuContext *pContext;
-			object_getInstanceVariable(self, "m_pContext", (void **)&pContext);
-
+			CMenuContext *pContext = fsg_GetContext(self);
 			if (pContext && pContext->m_fPause)
 				pContext->m_fPause();
 		}
 
 		static void fsg_ResumeDaemon(id self, SEL cmd, id obj)
 		{
-			CMenuContext *pContext;
-			object_getInstanceVariable(self, "m_pContext", (void **)&pContext);
-
+			CMenuContext *pContext = fsg_GetContext(self);
 			if (pContext && pContext->m_fResume)
 				pContext->m_fResume();
 		}
@@ -422,7 +426,14 @@ namespace NMib
 			;
 		}
 
-		void fg_RunDaemonStatusApp(NFunction::TCFunction<void ()> const& _fPause, NFunction::TCFunction<void ()> const& _fResume, NStr::CStr const &_DaemonName, NContainer::CByteVector const& _IconData)
+		void fg_RunDaemonStatusApp
+			(
+				NFunction::TCFunction<void ()> const &_fPause
+				, NFunction::TCFunction<void ()> const &_fResume
+				, NStr::CStr const &_DaemonName
+				, NContainer::CByteVector const& _IconData
+				, bool _bRunningAsDaemon
+			)
 		{
 			bool bPendingQuit;
 			{
@@ -446,6 +457,8 @@ namespace NMib
 			MenuContext.m_fPause = _fPause;
 			MenuContext.m_fResume = _fResume;
 
+			bool bCanPause = _fPause && _fResume;
+
 			NStr::CStr ClassName
 				= "MenuContext_"
 				+ NCryptography::CUniversallyUniqueIdentifier(NCryptography::EUniversallyUniqueIdentifierGenerate_Random).f_GetAsString
@@ -456,20 +469,31 @@ namespace NMib
 
 			Class pMenuContextClass = objc_allocateClassPair([NSObject class], ClassName.f_GetStr(), 0);
 
+			auto Cleanup2 = g_OnScopeExit > [&]
+				{
+					objc_disposeClassPair(pMenuContextClass);
+				}
+			;
+
 			CStr Types = CStr::CFormat("{}{}{}{}") << @encode(id) << @encode(id) << @encode(SEL) << @encode(id);
 
-			class_addMethod(pMenuContextClass, @selector(doPauseDaemon:), (IMP)fsg_PauseDaemon, Types.f_GetStr());
-			class_addMethod(pMenuContextClass, @selector(doResumeDaemon:), (IMP)fsg_ResumeDaemon, Types.f_GetStr());
+			if (bCanPause)
+			{
+				class_addMethod(pMenuContextClass, @selector(doPauseDaemon:), (IMP)fsg_PauseDaemon, Types.f_GetStr());
+				class_addMethod(pMenuContextClass, @selector(doResumeDaemon:), (IMP)fsg_ResumeDaemon, Types.f_GetStr());
+			}
 			class_addMethod(pMenuContextClass, @selector(doQuitDaemon:), (IMP)fsg_QuitDaemon, Types.f_GetStr());
 			class_addMethod(pMenuContextClass, @selector(doCancelDaemon:), (IMP)fsg_CancelDaemon, Types.f_GetStr());
 
 			class_addIvar(pMenuContextClass, "m_pContext", sizeof(void *), rint(log2(sizeof(void *))), @encode(void *));
+			auto pContextIvar = class_getInstanceVariable(pMenuContextClass, "m_pContext");
 
 			objc_registerClassPair(pMenuContextClass);
 
-			void* pMenuContextObject = [[pMenuContextClass alloc] init];
-			object_setInstanceVariable((id)pMenuContextObject, "m_pContext", &MenuContext);
+			id pMenuContextObject = [[pMenuContextClass alloc] init];
 
+			void (*fSetIvarVoidStar)(id, Ivar, void *) = (void (*)(id, Ivar, void *))object_setIvar;
+			fSetIvarVoidStar(pMenuContextObject, pContextIvar, &MenuContext);
 
 			NSMenu* pMenu = [[NSMenu alloc] initWithTitle:@""];
 
@@ -478,6 +502,8 @@ namespace NMib
 				pNameItem.enabled = false;
 				[pMenu addItem:pNameItem];
 			}
+
+			if (!_bRunningAsDaemon)
 			{
 				NStr::CStr ProgramPath = NFile::CFile::fs_GetProgramPath();
 				NSMenuItem* pNameItem = [[NSMenuItem alloc] initWithTitle:NPlatform::fg_MaxOSX_GetString(ProgramPath) action:NULL keyEquivalent:@""];
@@ -487,17 +513,20 @@ namespace NMib
 
 			[pMenu addItem:[NSMenuItem separatorItem]];
 
-			NSMenuItem* pPauseItem = [[NSMenuItem alloc] initWithTitle:@"Pause" action:NULL keyEquivalent:@""];
-			pPauseItem.target = (id)pMenuContextObject;
-			pPauseItem.action = @selector(doPauseDaemon:);
-			[pMenu addItem:pPauseItem];
+			if (bCanPause)
+			{
+				NSMenuItem* pPauseItem = [[NSMenuItem alloc] initWithTitle:@"Pause" action:NULL keyEquivalent:@""];
+				pPauseItem.target = (id)pMenuContextObject;
+				pPauseItem.action = @selector(doPauseDaemon:);
+				[pMenu addItem:pPauseItem];
 
-			NSMenuItem* pResumeItem = [[NSMenuItem alloc] initWithTitle:@"Resume" action:NULL keyEquivalent:@""];
-			pResumeItem.target = (id)pMenuContextObject;
-			pResumeItem.action = @selector(doResumeDaemon:);
-			[pMenu addItem:pResumeItem];
+				NSMenuItem* pResumeItem = [[NSMenuItem alloc] initWithTitle:@"Resume" action:NULL keyEquivalent:@""];
+				pResumeItem.target = (id)pMenuContextObject;
+				pResumeItem.action = @selector(doResumeDaemon:);
+				[pMenu addItem:pResumeItem];
+			}
 
-			NSMenuItem* pQuitItem = [[NSMenuItem alloc] initWithTitle:@"Quit" action:NULL keyEquivalent:@""];
+			NSMenuItem* pQuitItem = [[NSMenuItem alloc] initWithTitle: (_bRunningAsDaemon ? @"Restart" : @"Quit") action:NULL keyEquivalent:@""];
 			pQuitItem.target = (id)pMenuContextObject;
 			pQuitItem.action = @selector(doQuitDaemon:);
 
@@ -509,12 +538,17 @@ namespace NMib
 			pCancelItem.action = @selector(doCancelDaemon:);
 			[pMenu addItem:pCancelItem];
 
-			NSStatusItem* pStatusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+			auto *pSystemStatusBar = [NSStatusBar systemStatusBar];
+
+			NSStatusItem* pStatusItem = [pSystemStatusBar statusItemWithLength:NSVariableStatusItemLength];
 
 			if (!_IconData.f_IsEmpty())
 			{
 				NSData* pImageData = [NSData dataWithBytes:_IconData.f_GetArray() length:_IconData.f_GetLen()];
 				NSImage* pImage = [[NSImage alloc] initWithData:pImageData];
+				double ExpectedHeight = pSystemStatusBar.thickness - 2.0;
+				double Scaling = ExpectedHeight / pImage.size.height;
+				pImage.size = {pImage.size.width * Scaling, pImage.size.height * Scaling};
 
 				pStatusItem.button.image = pImage;
 			}
@@ -530,8 +564,6 @@ namespace NMib
 					return;
 			}
 			[NSApp run];
-
-			objc_disposeClassPair(pMenuContextClass);
 		}
 	}
 }

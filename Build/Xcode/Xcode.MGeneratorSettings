@@ -773,6 +773,7 @@
 					Name "PRODUCT_NAME"
 				}
 			}
+
 			%GeneratorSetting "Name"
 			{
 			}
