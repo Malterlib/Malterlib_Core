@@ -329,7 +329,19 @@ Target
 	}
 	FileExtension ".kext"
 	{
-		!!Target.Type "Driver"
+		&
+		{
+			Target.Type "Driver"
+			Target.DriverType "IoKit"
+ 		}
+	}
+	FileExtension ".dext"
+	{
+		&
+		{
+			Target.Type "Driver"
+			Target.DriverType "DriverKit"
+ 		}
 	}
 	FileExtension ".a"
 	{
@@ -962,7 +974,11 @@ Target
 
 	LDFlags "-mmacosx-version-min=@(Platform->Replace('OSX', '')) @(Target.LDFlags)"
 	{
-		!!PlatformFamily "OSX"
+		&
+		{
+			PlatformFamily "OSX"
+			!Target.DriverType "DriverKit"
+		}
 	}
 
 	LDFlags "--closure 1 @(Target.LDFlags)"
@@ -1707,6 +1723,16 @@ Target
  			Target.RealSDKRoot "" Target.SDKRoot "OSX11"
 		}
 	}
+	RealSDKRoot "driverkit"
+	{
+		&
+		{
+			Target.RealSDKRoot ""
+			Target.SDKRoot "OSXLatest"
+			Target.Type "Driver"
+			Target.DriverType "DriverKit"
+		}
+	}
 	RealSDKRoot "macosx"
 	{
 		&
@@ -1776,8 +1802,25 @@ Target
 	}
 	ProductType "com.apple.product-type.kernel-extension.iokit"
 	{
-		!!Target.Type "Driver"
+		&
+		{
+			Target.Type "Driver"
+			|
+			{
+				Target.DriverType "IoKit"
+				Target.DriverType ""
+			}
+		}
 	}
+	ProductType "com.apple.product-type.driver-extension"
+	{
+		&
+		{
+			Target.Type "Driver"
+			Target.DriverType "DriverKit"
+		}
+	}
+
 	ProductType ""
 	{
 		!!Target.Type "Tool"
@@ -1790,6 +1833,7 @@ Target
 		&
 		{
 			PlatformFamily "OSX"
+			!Target.DriverType "DriverKit"
 			MalterlibIsOSXBundle true
 		}
 	}
@@ -1798,7 +1842,15 @@ Target
 	{
 		&
 		{
-			PlatformFamily "iOS"
+			|
+			{
+				PlatformFamily "iOS"
+				&
+				{
+					PlatformFamily "OSX"
+					Target.DriverType "DriverKit"
+				}
+			}
 			MalterlibIsOSXBundle true
 		}
 	}
@@ -2633,13 +2685,37 @@ Property
 	MalterlibFinalModuleDestinationExecutable "@(MalterlibFinalModuleDestination)"
 	MalterlibFinalModuleDestinationExecutable "@(MalterlibFinalModuleDestination)/Contents/MacOS/@(Target:Target.FileName)"
 	{
-		!!MalterlibIsOSXBundle true
+		&
+		{
+			MalterlibIsOSXBundle true
+			!Target.DriverType "DriverKit"
+		}
+	}
+	MalterlibFinalModuleDestinationExecutable "@(MalterlibFinalModuleDestination)/@(Target:Target.FileName)"
+	{
+		&
+		{
+			MalterlibIsOSXBundle true
+			Target.DriverType "DriverKit"
+		}
 	}
 
 	MalterlibOriginalModuleDestinationExecutable "@(MalterlibOriginalModuleDestination)"
 	MalterlibOriginalModuleDestinationExecutable "@(MalterlibOriginalModuleDestination)/Contents/MacOS/@(Target:Target.FileName)"
 	{
-		!!MalterlibIsOSXBundle true
+		&
+		{
+			MalterlibIsOSXBundle true
+			!Target.DriverType "DriverKit"
+		}
+	}
+	MalterlibOriginalModuleDestinationExecutable "@(MalterlibOriginalModuleDestination)/@(Target:Target.FileName)"
+	{
+		&
+		{
+			MalterlibIsOSXBundle true
+			Target.DriverType "DriverKit"
+		}
 	}
 }
 
@@ -3026,16 +3102,14 @@ Property
 						"		<string>@(MalterlibBundleIdentifier)</string>\n"\
 						"	<key>CFBundleInfoDictionaryVersion</key>\n"\
 						"		<string>6.0</string>\n"\
-						"	<key>CFBundleSignature</key>\n"\
-						"		<string>????</string>\n"\
 						"	<key>CFBundleVersion</key>\n"\
-						"		<string>@(ProductVersionMajor->FormatInt('{}')).@(ProductVersionMinor->FormatInt('{}')).@(ProductVersionRevision->FormatInt('{}'))</string>\n"
+						"		<string>@(ProductVersionMajor->FormatInt('{}')).@(ProductVersionMinor->FormatInt('{}')).@(ProductVersionRevision->FormatInt('{}'))</string>\n"\
+						"	<key>CFBundleShortVersionString</key>\n"\
+						"		<string>@(ProductVersionMajor->FormatInt('{}')).@(ProductVersionMinor->FormatInt('{}')).@(ProductVersionRevision->FormatInt('{}'))</string>\n"\
+						"	<key>CFBundleName</key>\n"\
+						"		<string>@(MalterlibTargetFriendlyName)</string>\n"
 
 			Contents 	"@(Contents)"\
-						"	<key>CFBundleName</key>\n"\
-						"		<string>@(MalterlibTargetFriendlyName)</string>\n"\
-						"	<key>CFBundleShortVersionString</key>\n"\
-						"		<string>@(Target:Target.Version)</string>\n"\
 						"	<key>NSHumanReadableCopyright</key>\n"\
 						"		<string>@(ProductCopyright)</string>\n"\
 						"	<key>NSPrincipalClass</key>\n"\
@@ -3070,7 +3144,22 @@ Property
 						"	<key>CFBundlePackageType</key>\n"\
 						"		<string>KEXT</string>\n"
 			{
-				!!Target.Type "Driver"
+				&
+				{
+					Target.Type "Driver"
+					Target.DriverType "IoKit"
+				}
+			}
+
+			Contents 	"@(Contents)"\
+						"	<key>CFBundlePackageType</key>\n"\
+						"		<string>DEXT</string>\n"
+			{
+				&
+				{
+					Target.Type "Driver"
+					Target.DriverType "DriverKit"
+				}
 			}
 
 			Contents 	"@(Contents)"\
@@ -3081,7 +3170,6 @@ Property
 			{
 				!!PlatformFamily "OSX"
 			}
-
 
 			Contents 	"@(Contents)"\
 						"	<key>BreakpadProduct</key>\n"\
@@ -3178,7 +3266,11 @@ Property
 						"	<key>LSUIElement</key>\n"\
 						"		<string>1</string>\n"
 			{
-				!!Property.MalterlibOSXHideDockTile true
+				&
+				{
+					Property.MalterlibOSXHideDockTile true
+					!Target.Type "Driver"
+				}
 			}
 
 			Contents	"@(Contents)"\

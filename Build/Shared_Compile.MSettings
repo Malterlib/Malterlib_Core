@@ -11,6 +11,7 @@ Compile
 	{
 		&
 		{
+			!GeneratorFamily "Xcode"
 			this.Type "File"
 			Compile.Type ""
 			!Compile.Custom_CommandLine ""
@@ -236,6 +237,32 @@ Compile
 			}
 		}
 	}
+
+	Type "PList"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.plist"
+			}
+		}
+	}
+
+	Type "DriverKitInterface"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type ""
+			|
+			{
+				this.Identity "~*.iig"
+			}
+		}
+	}
 }
 
 // Compile type deduction for .NET shared
@@ -328,6 +355,12 @@ Compile
 			GeneratorFamily "Xcode" // Needed because the file type cannot be different per config
 		}
 	}
+
+	GenericCompileType "GenericCompile"
+	{
+		!!Compile.Type "DriverKitInterface"
+	}
+
 
 	Type "ObjC++"
 	{
@@ -750,6 +783,7 @@ Property
 			{
 				Architecture "arm64"
 				Target.Type "Driver"
+				!Target.DriverType "DriverKit"
 			}
 		}
 	}
@@ -823,7 +857,11 @@ Property
 {
 	MalterlibTargetTriple "@(MalterlibNativeClangArchitecture)-apple-darwin@(MalterlibNativeClangDarwinTarget)"
 	{
-		!!PlatformIsDarwin true
+		&
+		{
+			PlatformIsDarwin true
+			!Target.DriverType "DriverKit"
+		}
 	}
 	MalterlibTargetTriple "@(MalterlibNativeClangArchitecture)-pc-linux-gnu"
 	{
@@ -858,7 +896,11 @@ Compile
 
 	MinOSXVersion "@(Platform->Replace('OSX', ''))"
 	{
-		!!Compile.MinOSXVersion ""
+		&
+		{
+			Compile.MinOSXVersion ""
+			!Target.DriverType "DriverKit"
+		}
 	}
 }
 
@@ -879,6 +921,9 @@ Compile
 	}
 
 	TargetTriple "@(MalterlibTargetTriple)"
+	{
+		!MalterlibTargetTriple ""
+	}
 	AsyncUnwindTables true
 }
 
@@ -896,6 +941,9 @@ Compile
 	}
 
 	TargetTriple "@(MalterlibTargetTriple)"
+	{
+		!MalterlibTargetTriple ""
+	}
 //	AsyncUnwindTables true
 }
 
@@ -1194,7 +1242,11 @@ Compile
 		&
 		{
 			PlatformIsDarwin true
-			Target.Type "Driver"
+			&
+			{
+				Target.Type "Driver"
+				Target.DriverType "IoKit"
+			}
 			|
 			{
 				Compile.Type "C++"

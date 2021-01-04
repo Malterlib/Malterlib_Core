@@ -47,7 +47,9 @@
 						MSBuildTargets "text.xml"
 						WindowsManifest "text.xml"
 						VisualStudioVisualizer "text.xml"
+						PList "text.plist.xml"
 						Custom "text"
+						DriverKitInterface "sourcecode.iig"
 					}
 				}
 			}
@@ -228,8 +230,15 @@
 				{
 					Name "MToolPath"
 				}
+			}
+
+			%GeneratorSetting "DriverType"
+			{
+				Property
+				{
+					Disabled "1"
+				}
 			}			
-			
 			%GeneratorSetting "Group"
 			{
 				Property
@@ -954,6 +963,13 @@
 				Property
 				{
 					Name "SDKROOT"
+				}
+			}
+			%GeneratorSetting "DriverkitDeploymentTarget"
+			{
+				Property
+				{
+					Name "DRIVERKIT_DEPLOYMENT_TARGET"
 				}
 			}
 			%GeneratorSetting "DeploymentTarget"
@@ -2598,6 +2614,9 @@
 		{
 		}
 	}
+	%GeneratorSetting "DriverKitInterface"
+	{
+	}
 	%GeneratorSetting "Header"
 	{
 		Property
@@ -3091,6 +3110,13 @@
 		%GeneratorSetting "Compile"
 		{
 			// Disabled
+			%GeneratorSetting "GenericCompileType"
+			{
+				Property
+				{
+					Disabled "1"
+				}
+			}
 			%GeneratorSetting "Custom_CommandLine"
 			{
 				Property
