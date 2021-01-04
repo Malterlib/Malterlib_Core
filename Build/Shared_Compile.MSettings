@@ -2438,6 +2438,72 @@ Compile
 	}
 }
 
+Compile
+{
+	&
+	{
+		Compile.Type "MalterlibFS"
+		LanguageFamily "Native"
+		|
+		{
+			PlatformIsDarwin true
+			GeneratorFamily "Xcode" // Needed because the file type cannot be different per config
+		}
+	}
+
+	GenericCompileType "GenericCustom"
+
+	Custom_WorkingDirectory "@(Target:Target.IntermediateDirectory->MakeAbsolute())"
+	Custom_Outputs "@(Compile.ObjectFileName);@(Compile.CppFileName)"
+
+	Custom_Inputs "$(InputFilePath)"
+	Custom_CommandLine "@(Builtin.MToolExe) VirtualFS -o \"@(Compile.ObjectFileName)\" -ocpp \"@(Compile.CppFileName)\""
+	Custom_CommandLine "@(Compile.Custom_CommandLine) -odepend \"@(Compile.MalterlibDependencyFileName)\" "
+	{
+		!Compile.MalterlibDependencyFileName ""
+	}
+	Custom_CommandLine "@(Compile.Custom_CommandLine) -platform \"@(Compile.Platform)\" "
+	{
+		!Compile.Platform ""
+	}
+	Custom_CommandLine "@(Compile.Custom_CommandLine) -verbose "
+	{
+		!!Compile.VerboseLogging true
+	}
+	Custom_CommandLine "@(Compile.Custom_CommandLine) -elf32 "
+	{
+		!!Compile.OutputAsObjectFile "Elf32"
+	}
+	Custom_CommandLine "@(Compile.Custom_CommandLine) -elf64 "
+	{
+		!!Compile.OutputAsObjectFile "Elf64"
+	}
+	Custom_CommandLine "@(Compile.Custom_CommandLine) -asm "
+	{
+		!!Compile.OutputAsAssembly true
+	}
+	Custom_CommandLine "@(Compile.Custom_CommandLine) @(Compile.ExtraCompilerFlags) "
+	{
+		!Compile.ExtraCompilerFlags ""
+	}
+	Custom_CommandLine "@(Compile.Custom_CommandLine) -dest \"@(Compile.MalterlibFSPathPrefix)\" "
+	{
+		!Compile.MalterlibFSPathPrefix ""
+	}
+	Custom_CommandLine "@(Compile.Custom_CommandLine) \"$(InputFilePath)\" "
+}
+
+Compile
+{
+	&
+	{
+		GeneratorFamily "Xcode"
+		GenericCompileType ""
+		!Custom_CommandLine ""
+	}
+
+	GenericCompileType "GenericCustom"
+}
 
 // MalterlibFS
 Compile
