@@ -202,7 +202,7 @@ Property
 				MalterlibSupportSanitizerEnable_Address false
 				MalterlibSupportSanitizerEnable_UndefinedBehavior false
 			}
-			
+
 			Compile.LinkTimeCodeGeneration "@(WorkaroundLTOValue)" // Exception handling breaks if this is enabled
 			{
 				&
@@ -1089,6 +1089,7 @@ Target
 		MalterlibDisableMalterlib true
 		MalterlibStripSymbols false
 		PostCopyProject ""
+		MalterlibPostCopyProject ""
 	}
 	%Group "Source"
 	{
@@ -1176,6 +1177,7 @@ Property
 	{
 		MalterlibDisableMalterlib true
 		MalterlibStripSymbols false
+		MalterlibPostCopyProject ""
 	}
 	%Group "Source"
 	{
