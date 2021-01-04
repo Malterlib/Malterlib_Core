@@ -1225,8 +1225,20 @@ Property
 		LinkWithLibraries "-lSystem.B"
 		LinkWithLibraries "-lcrt1.o @(Target.LinkWithLibraries)"
 		{
-			!!Architecture "x64"
-			!!Architecture "x86"
+			&
+			{
+				|
+				{
+					Platform OSX10.5
+					Platform OSX10.6
+					Platform OSX10.7
+				}
+				|
+				{
+					Architecture "x64"
+					Architecture "x86"
+				}
+			}
 		}
 		LDFlags "-nostdlib @(Target.LDFlags)"
 		LinkWithStandardLibraries false
