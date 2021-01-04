@@ -1024,6 +1024,8 @@ namespace
 			return true;
 		if (fg_StrCmp(_pArg, "--NoStdErr") == 0)
 			return true;
+		if (fg_StrCmp(_pArg, "--OutputStdErrToStdOut") == 0)
+			return true;
 		return false;
 	}
 }
@@ -1509,6 +1511,8 @@ void NSys::fg_CreateSystem()
 				{
 					if (fg_StrCmp(pArgs[i], "--OutputPID") == 0)
 						NSys::fg_ConsoleOutput((CFStr256::CFormat("{nfh,sj16,sf0}") << (mint)getpid()).f_GetStr());
+					else if (fg_StrCmp(pArgs[i], "--OutputStdErrToStdOut") == 0)
+						dup2(1, 2);
 					else if (fg_StrCmp(pArgs[i], "--NoStdErr") == 0)
 					{
 						int DevNull = open("/dev/null", O_WRONLY);
