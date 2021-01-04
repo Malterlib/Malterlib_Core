@@ -1088,7 +1088,6 @@ Target
 	{
 		MalterlibDisableMalterlib true
 		MalterlibStripSymbols false
-		MalterlibSigning false // Linker crashes if we sign this dylib
 		PostCopyProject ""
 	}
 	%Group "Source"

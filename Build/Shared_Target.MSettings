@@ -3994,13 +3994,25 @@ Property
 		!!MalterlibSignIncludeCert "none"
 	}
 
-	MalterlibCodeSignOSXHardened "--options runtime"
+	MalterlibSignOSXDeep true
+	{
+		!!MalterlibSignOSXDeep ""
+	}
+
+	MalterlibCodeSignOSXExtraOptions "--options runtime @(MalterlibCodeSignOSXExtraOptions)"
 	{
 		!MalterlibNotarizeOSXUser ""
+		!!MalterlibSignOSXHardened true
 	}
-	MalterlibCodeSignOSXHardened ""
+
+	MalterlibCodeSignOSXExtraOptions "--deep @(MalterlibCodeSignOSXExtraOptions)"
 	{
-		!!MalterlibNotarizeOSXUser ""
+		!!MalterlibSignOSXDeep true
+	}
+
+	MalterlibCodeSignOSXExtraOptions "--entitlements \"@(MalterlibSignOSXEntitlements)\" @(MalterlibCodeSignOSXExtraOptions)"
+	{
+		!MalterlibSignOSXEntitlements ""
 	}
 
 	MalterlibCodeSignOSXCommand "MTool BuildServerTool Tool=CodeSignOSX"
@@ -4511,10 +4523,19 @@ Target
 		}
 	}
 
+	CodeSignEntitlements "@(MalterlibSignOSXEntitlements)"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			!MalterlibSignOSXEntitlements ""
+		}
+	}
+
 	PostBuildScript "@(Target.PostBuildScript)"\
 					"echo Sign:\r\n"\
-					"echo @(MalterlibCodeSignOSXCommand) --force @(MalterlibCodeSignOSXHardened) --timestamp --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
-					"@(MalterlibCodeSignOSXCommand) --force @(MalterlibCodeSignOSXHardened) --timestamp --deep --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"
+					"echo @(MalterlibCodeSignOSXCommand) --force @(MalterlibCodeSignOSXExtraOptions) --timestamp --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"\
+					"@(MalterlibCodeSignOSXCommand) --force @(MalterlibCodeSignOSXExtraOptions) --timestamp --sign @(MalterlibSignCertOSX) \"@(MalterlibFinalModuleDestination->NativePath())\"\r\n"
 	{
 		&
 		{
