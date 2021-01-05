@@ -60,11 +60,13 @@ extern NAtomic::TCAtomicAggregate<smint> g_bDoneMalterlibInitAll;
 
 HINSTANCE fg_Win32_GetInstance(const void *_pCode);
 
-namespace NMib
+namespace NMib::NPlatform
 {
-	namespace NPlatform
+	extern void fg_GenerateExcetionHandler(void *_pData, LONG (*_fCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
+
+	void *fg_GetWindowsDllInstance()
 	{
-		extern void fg_GenerateExcetionHandler(void *_pData, LONG (*_fCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
+		return g_hDllInstance;
 	}
 }
 
