@@ -229,6 +229,7 @@ Import
 		}
 	}
 
+	CMake_ExcludeFromHash "@(Builtin.BasePathAbsolute)/;@(Import.CMake_ExcludeFromHash)"
 	CMake_ExcludeFromHash "@(MalterlibCompiledFiles);@(Import.CMake_ExcludeFromHash)"
 	CMake_ExcludeFromHash "@(MalterlibDependenciesDirectory)/;@(Import.CMake_ExcludeFromHash)"
 	CMake_ExcludeFromHash "@(MalterlibSysRoot)/;@(Import.CMake_ExcludeFromHash)"
