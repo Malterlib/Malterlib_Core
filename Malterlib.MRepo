@@ -1,6 +1,6 @@
 ../../Binaries/Malterlib/Linux/x64 96c0fc67e27a4cb61fabcc396d6ca8264563d9c7
 ../../Binaries/Malterlib/Linux/x86 db44ee7aa1df3c0f8557973c89d943f74e4a9145
-../../Binaries/Malterlib/OSX/arm64 8b0d4fd94322dc9db53af9abc37c7e4cb7de00f8
+../../Binaries/Malterlib/OSX/arm64 5d1320ccc0ac122b26294d9606ea3ec8d6a6d73f
 ../../Binaries/Malterlib/OSX/x64 fee876ad2134e59f6deaf2065996d4941867f63a
 ../../Binaries/Malterlib/Windows/x64 e1d54291b39feafa8bbbc02448343ae5321f9a78
 ../../Binaries/Malterlib/Windows/x86 4eb0b789cc19fa2cd944c67cd839d45f760132f9
@@ -16,7 +16,7 @@
 ../Cloud ff58daaae321fee151ebbd8c755a3553b0f89068
 ../CommandLine a580bd3911475cfab8087a4cdf651cd694fce4a5
 ../Compression 53b2c9a5355046bc7b50fd39eacaf94ce4850801
-../Concurrency 006e8295aaccf1e1e2cee1a30724b61705905946
+../Concurrency abfb6f63534ff5bd0ba649e9b418507d20fc9cf7
 ../Container 616e1bacc54ee718640fe956ef32d66d007f2496
 ../Contract f24676f0b2f831c253d68a978293ab61ff15a79f
 ../CrashReport b6392a18d998fc540b0b8e91752a654c4620ec07
