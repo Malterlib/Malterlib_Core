@@ -249,7 +249,7 @@ CFileChangeNotificationContext::CWatch &CFileChangeNotificationContext::f_LinkWa
 			for (auto &File : NFile::CFile::fs_FindFilesEx(_Path + "/*", NFile::EFileAttrib_Directory | NFile::EFileAttrib_File, false, false))
 				pWatch->m_ChildFiles[File.m_Path.f_Extract(_Path.f_GetLen() + 1)] = (File.m_Attribs & (NFile::EFileAttrib_Directory | NFile::EFileAttrib_Link)) == NFile::EFileAttrib_Directory;
 		}
-		catch (NException::CException const &_Exception)
+		catch ([[maybe_unused]] NException::CException const &_Exception)
 		{
 			DMibTrace("Failed to find files in sub watch {} ({})", _Path << _Exception.f_GetErrorStr());
 		}
