@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright © 2015 Hansoft AB 
+# Copyright © 2015 Hansoft AB
 # Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 # Usage: PrebuildXcode.sh Buildsystem Workspace [Workspaces]
@@ -38,7 +38,7 @@ for Argument in "$@" ; do
 		echo Generating $Argument
 		which MTool
 		set +e
-		"$BuildSystemRoot/mib" generate --build-system "$BuildSystem.$Extension" --generator "$Generator" --no-use-user-settings "$Argument"
+		"$BuildSystemRoot/mib" generate --build-system "$BuildSystem.$Extension" --generator "$Generator" --no-use-user-settings  --action ReBuild "$Argument"
 		GenError="$?"
 		set -e
 		if [[ $GenError -ne 0 ]] && [[ $GenError -ne 2 ]] ; then
@@ -63,7 +63,7 @@ if [ "$MalterlibPreBuildNoClean" != "true" ] ; then
 			echo Cleaning workspace: $Argument
 			CleanPath=${MalterlibCompiledFilesSourceBase}/${Argument}
 			echo CleanPath: ${CleanPath}
-			if [ -d "$CleanPath/Intermediate" ] ; then 
+			if [ -d "$CleanPath/Intermediate" ] ; then
 				MTool DeleteDirectoryRecursive "$CleanPath/Intermediate"
 			fi
 			if [ -d "$CleanPath/Output" ] ; then
