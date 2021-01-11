@@ -136,4 +136,13 @@ void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 	return (void *)pThreadLocal->f_Load();
 }
 
+#else
+__thread pid_t g_MalterlibCurrentTID = 0;
+pid_t fg_Malterlib_Thread_GetTID_Local()
+{
+	pid_t ThreadID = g_MalterlibCurrentTID;
+	if (unlikely(!ThreadID))
+		g_MalterlibCurrentTID = ThreadID = syscall(SYS_gettid);
+	return ThreadID;
+}
 #endif
