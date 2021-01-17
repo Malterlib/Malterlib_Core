@@ -19,6 +19,7 @@
 ../../External/boost/iostreams bc868902b0e42a0ff7440d52c584a14a04d0fad3
 ../../External/boost/iterator 72f0ebe8d06991968c6f792c0a846519a795cac1
 ../../External/boost/lexical_cast 9fdbf5ce67d9a9302cf16de4760d99090da97f44
+../../External/boost/logic 1a0a89c5bdd096777c59a7e43dc4cdfb8f6b1cc7
 ../../External/boost/math 692077bf1647c87117929ec111788e67a8bbf68a
 ../../External/boost/move fa3aa147b4b0a8e02edb0ac516acc21b4b139b78
 ../../External/boost/mpl 9c0f98f088bbed5943382ebfcfd1b0159aaa7462
@@ -34,6 +35,7 @@
 ../../External/boost/spirit a1ace8d8eb614785c6f619a46af13c1f032b8cd0
 ../../External/boost/static_assert ba846a309164183757683b64df4b88f2d72cb0ff
 ../../External/boost/throw_exception da6f5420fe7e96f673ee185c2ff37cbaa3f95b84
+../../External/boost/tuple a4dff52f676679d07a7ed74621fd4c0a371c0e21
 ../../External/boost/type_index 9862011b6b5e900eee31d32684766c15d3506adf
 ../../External/boost/type_traits 5588bb1ab7ba1809aaa492c4f6c6620dc2aaa927
 ../../External/boost/typeof 27890f7ec1a1f25432474cb73abfc5bc4bafc0c7
