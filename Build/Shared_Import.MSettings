@@ -73,7 +73,10 @@ Import
 	CMake_CacheExcludePatterns =+ [
 		"*/CMakeFiles/*"
 		, "*/cmake.tmp/*"
-		, "*.cmake"
+		, "*/cmake_install.cmake"
+		, "*/CPackConfig.cmake"
+		, "*/CPackSourceConfig.cmake"
+		, "*/CTestTestfile.cmake"
 		, "*.ninja"
 		, "*/CMakeCache.txt"
 		, "*/MalterlibFullRebuildVersion"
@@ -126,6 +129,7 @@ Import
 	CMake_Languages =+ [
 		{CMakeLanguage: "C", MalterlibLanguage: "C"},
 		{CMakeLanguage: "CXX", MalterlibLanguage: "C++"},
+		{CMakeLanguage: "OBJCXX", MalterlibLanguage: "ObjC++"},
 		{CMakeLanguage: "ASM", MalterlibLanguage: "Assembler"}
 	]
 

@@ -110,7 +110,7 @@ Compile
 	}
 }
 
-%Dependency "Lib_mimalloc-static"
+%Dependency "Lib_libmimalloc_mimalloc-static"
 {
 	!!MalterlibMemoryManager "MiMalloc"
 

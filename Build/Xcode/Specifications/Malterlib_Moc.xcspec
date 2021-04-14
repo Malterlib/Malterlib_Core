@@ -8,7 +8,7 @@
     Vendor = "Malterlib";
     Description = "Moc a header file containing a Qt object.";
 	ProgressDescription = "Compiling $(CommandProgressByType) source files";
-    CommandLine = "$(MLSRCROOT)/SDK/Qt/bin/OSX/moc $(InputFile) [options]";   
+    CommandLine = "$(QT_TOOLS_ROOT)/moc $(InputFile) [options]";
     RuleName = "Moc $(InputFile)";
     ExecDescription = "Moc $(InputFile)";
     InputFileTypes = (
@@ -94,7 +94,7 @@
 	},
 	{   Name = MOC_HEADER_SEARCH_PATHS;
 	    Type = PathList;
-	    DefaultValue = "$(MLSRCROOT)/SDK/Qt/include";
+	    DefaultValue = "$(QT_INCLUDE_ROOT)";
 	    Category = BuildOptions;
 	    CommandLinePrefixFlag = "-I";
 	},

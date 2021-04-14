@@ -97,7 +97,7 @@ Property
 			}
 		}
 	}
-	MalterlibLocalizationRoot define string = `@(Builtin.BasePathAbsolute)/Projects/Localization`
+	MalterlibLocalizationRoot define string = `@(Builtin.BasePathAbsolute)/MalterlibLegacy/Localization`
 
 	MalterlibSupportSanitizerEnable_Thread define bool = false // User(Debug)=true: Enable thread sanitizer
 	MalterlibSupportSanitizerEnable_Address define bool = false // User(Debug)=true: Enable address sanitizer

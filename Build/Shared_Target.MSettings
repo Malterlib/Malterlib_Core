@@ -3907,6 +3907,24 @@ Target
 			UnicodeBOM true
 		}
 	}
+
+	Property
+	{
+		BaseFileName "@(Workspace:Workspace.Name)_@(Target:Target.Name)"
+		ObjectFileName "@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFS.obj"
+		{
+			!!PlatformFamily "Windows"
+		}
+		ObjectFileName "@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFS.s"
+		{
+			!PlatformFamily "Windows"
+		}
+		CppFileName "@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFSCPP.cpp"
+	}
+	%File "@(ObjectFileName);@(CppFileName)"
+	{
+		Compile.AllowNonExisting true
+	}
 }
 
 Property

@@ -1294,17 +1294,6 @@ Compile
 			!Target.Type "Driver"
 		}
 	}
-	PrefixHeader `@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h`
-	{
-		&
-		{
-			Compile.PrefixHeader undefined
-			!DocumentationEnabled true
-			MalterlibQtSupport true
-			!Target.Type "Driver"
-		}
-	}
-
 	PrecompilePrefixHeader true
 	{
 		&
@@ -1398,11 +1387,6 @@ Compile
 	SearchPath += `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader`
 	{
 		!!Compile.PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h`
-	}
-
-	SearchPath += `@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt`
-	{
-		!!Compile.PrefixHeader `@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h`
 	}
 
 	FrameworkSearchPath define [string]?
@@ -1855,6 +1839,7 @@ Compile
 		, "COMPILER_RT_NODEFAULTVISIBILITY"
 		, "LIBCXXABI_NODEFAULTVISIBILITY"
 		, "LIBUNWIND_NODEFAULTVISIBILITY"
+		, "DMalterlibNontrackedFree"
 	]
 	{
 		&
@@ -1937,30 +1922,6 @@ Compile
 	PreprocessorDefines += `DPlatformVersion=@(PlatformVersion)`
 	{
 		!PlatformVersion undefined
-	}
-	PreprocessorDefines += [
-		`DQConfigCppInclude="../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.cpp"`
-		, `DQConfigInclude="../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.h"`
-		, `DQtCoreConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtcore-config.h"`
-		, `DQtCoreConfigPInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtcore-config_p.h"`
-		, `DQConfigPInclude="../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig_p.h"`
-		, `DQtGuiConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtgui-config.h"`
-		, `DQtGuiConfigPInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtgui-config_p.h"`
-		, `DQtMultimediaConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtmultimedia-config.h"`
-		, `DQtWidgetsConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtwidgets-config.h"`
-		, `DQtWidgetsConfigPInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtwidgets-config_p.h"`
-		, `DQtPrintSupportConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtprintsupport-config.h"`
-		, `DQtNetworkConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtnetwork-config.h"`
-		, `DQtXmlConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtxml-config.h"`
-		, `DQtQmlConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtqml-config.h"`
-		, `DQtQuickConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtquick-config.h"`
-		, "DPQTSupport"
-		, "QT_STATICPLUGIN"
-		, "Q_DECL_IMPORT="
-		, "Q_DECL_EXPORT="
-	]
-	{
-		!!MalterlibQtSupport true
 	}
 	PreprocessorDefines += ["_CONSOLE", "DPConsole"]
 	{
