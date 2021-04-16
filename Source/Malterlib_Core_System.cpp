@@ -155,6 +155,7 @@ namespace NMib
 
 	void CSystem::f_PreDestructThreadSpecific()
 	{
+		m_bDestroyingThreadSpecific = true;
 		fp_SubSystem_PreDestroyThreadSpecific();
 	}
 

@@ -163,6 +163,8 @@ namespace NMib
 
 		bool m_bInitDone;
 		bool m_bIsDll;
+
+		NAtomic::TCAtomic<bool> m_bDestroyingThreadSpecific = false;
 		
 #if DMibConfig_Memory_Shims_EnableGlobal
 		void fp_CreateGlobalMemoryReporter();
@@ -338,6 +340,11 @@ namespace NMib
 		bool f_InitDone()
 		{
 			return m_bInitDone;
+		}
+
+		bool f_DestroyingThreadSpecific()
+		{
+			return m_bDestroyingThreadSpecific.f_Load();
 		}
 
 		void f_InitModule(FConstruct **_pCConstructorsStart, FConstruct **_pCConstructorsEnd, FConstruct **_pCppConstructors, FConstruct **_pCppConstructorsEnd);
