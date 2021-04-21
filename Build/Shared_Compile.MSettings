@@ -2458,7 +2458,7 @@ Compile
 
 	Custom_Inputs "$(InputFilePath)"
 	Custom_CommandLine "@(Builtin.MToolExe) VirtualFS -o \"@(Compile.ObjectFileName)\" -ocpp \"@(Compile.CppFileName)\""
-	Custom_CommandLine "@(Compile.Custom_CommandLine) -odepend \"@(Compile.MalterlibDependencyFileName)\" "
+	Custom_CommandLine "@(Compile.Custom_CommandLine) -oidsdepend \"@(Compile.MalterlibDependencyFileName)\" "
 	{
 		!Compile.MalterlibDependencyFileName ""
 	}
