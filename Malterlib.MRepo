@@ -12,7 +12,7 @@
 ../Algorithm 692f73925b837de327a8b1d025730f8c8164b384
 ../Atomic 0ee855f8b3d88c52524a29e4ef584af6c611d2a9
 ../Bit 63c9c00c3b260b33dd09897fd6c9ae14f8ec9749
-../BuildSystem 40d5f7c4b5ef558b88a2b192e59e5ccf477a5daa
+../BuildSystem 61b55e48bd0fef34a16720f7324cf1852c3f4c41
 ../Cloud 6a03eacec0e67c6b42658d6ec393fabfed4f9091
 ../CommandLine a580bd3911475cfab8087a4cdf651cd694fce4a5
 ../Compression 53b2c9a5355046bc7b50fd39eacaf94ce4850801
@@ -26,7 +26,7 @@
 ../Debug 2d270fd440f3454d3a48fde5842039a9d4f4597d
 ../Desktop 550ce55d44ff665bafd3cae90035ca34f4a0debc
 ../Documentation 93908b79ccd76720a1bdf805e424e0bddb3c4fba
-../Encoding b8acc717a1b09c6479b44a5a402664de4e0147dc
+../Encoding f0b2a69fd856992fe0dae41504ed0fa144741747
 ../Exception 3e0af6e1b1079dfd4fb2b4f96cf6907826774230
 ../File ac04bf681c2ed6fb9dc9e2bd59e5ad2763e9846b
 ../Function 954177ae421df1072430ce716acac4da3b52f0cd
