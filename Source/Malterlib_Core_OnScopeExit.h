@@ -14,7 +14,7 @@ namespace NMib
 	//   ... Do stuff
 	// } // CloseThinie called here
 
-	template<typename t_FOnExitFunctor>
+	template <typename t_FOnExitFunctor, bool t_bNoExcept = true>
 	class TCOnScopeExit
 	{
 		t_FOnExitFunctor mp_fOnExitFunctor;
@@ -42,10 +42,13 @@ namespace NMib
 			_Other.mp_bIsValid = false;
 			return *this;
 		}
-		~TCOnScopeExit() 
+		~TCOnScopeExit() noexcept(t_bNoExcept)
 		{ 
 			if (mp_bIsValid)
+			{
+				mp_bIsValid = false;
 				mp_fOnExitFunctor();
+			}
 		}
 
 		template <typename ...tfp_CParam>
@@ -72,10 +75,20 @@ namespace NMib
 	struct COnScopeExitHelper
 	{
 		template<typename tf_FOnExitFunctor>
-		TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType> operator >(tf_FOnExitFunctor &&_fOnExitFunctor) const 
-		{ 
-			return TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor)); 
+		TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType> operator >(tf_FOnExitFunctor &&_fOnExitFunctor) const
+		{
+			return TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
 		}
 	};
 	extern COnScopeExitHelper const &g_OnScopeExit;
+
+	struct COnScopeExitHelperWithException
+	{
+		template<typename tf_FOnExitFunctor>
+		TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType, false> operator >(tf_FOnExitFunctor &&_fOnExitFunctor) const
+		{
+			return TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType, false>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
+		}
+	};
+	extern COnScopeExitHelperWithException const &g_OnScopeExitWithException;
 }

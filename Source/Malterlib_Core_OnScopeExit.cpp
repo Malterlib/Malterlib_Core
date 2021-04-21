@@ -10,10 +10,16 @@ namespace NMib
 	constexpr COnScopeExitHelper g_OnScopeExitInit{};
 	COnScopeExitHelper const &g_OnScopeExit = g_OnScopeExitInit;
 
+	constexpr COnScopeExitHelperWithException g_OnScopeExitWithExceptionInit{};
+	COnScopeExitHelperWithException const &g_OnScopeExitWithException = g_OnScopeExitWithExceptionInit;
+
 	constexpr COnScopeExitCatchHelper g_OnScopeExitCatchInit{};
 	COnScopeExitCatchHelper const &g_OnScopeExitCatch = g_OnScopeExitCatchInit;
 
 	constexpr COnScopeExitSharedHelper g_OnScopeExitSharedInit{};
 	COnScopeExitSharedHelper const &g_OnScopeExitShared = g_OnScopeExitSharedInit;
+
+	constexpr COnScopeExitSharedWithExceptionHelper g_OnScopeExitSharedWithExceptionInit{};
+	COnScopeExitSharedWithExceptionHelper const &g_OnScopeExitSharedWithException = g_OnScopeExitSharedWithExceptionInit;
 }
 
