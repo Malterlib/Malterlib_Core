@@ -7,6 +7,9 @@ Include "Xcode/Xcode.MGeneratorSettings"
 // Configurations
 Include "Shared_Configurations.MSettings"
 
+Include "Shared_Types.MSettings"
+Include "Shared_Functions.MHeader"
+
 // Properties
 Include "Shared_Defaults.MSettings"
 Include "Shared_Calculated.MSettings"
@@ -26,24 +29,13 @@ Include "Shared_Dependencies.MSettings"
 Include "Tool_GenerateBuildSystem.MTarget"
 
 // Error checking
-Target.CheckErrors ""
-{
-	!CheckError ""
-}
-
-Workspace.CheckErrors ""
-{
-	!CheckError ""
-}
-
-Compile.CheckErrors ""
-{
-	!CheckError ""
-}
+Target.CheckErrors define string?
+Workspace.CheckErrors define string?
+Compile.CheckErrors define string?
 
 // Misc small settings
 
 Workspace
 {
-	Name "@(this.Identity)"
+	Name this.Identity
 }

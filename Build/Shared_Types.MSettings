@@ -1,0 +1,12 @@
+// Copyright © 2020 Favro Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Type
+{
+	CEntity define one_of(string, {
+		Name: string
+		, Properties: {
+			...: any
+		}
+	})
+}

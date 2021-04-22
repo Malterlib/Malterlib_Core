@@ -15,8 +15,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}		
@@ -34,7 +34,7 @@
 					Full "ProgramDatabase"
 					Fast "OldStyle"
 					None "None"
-					"" ""
+					\ ""
 				}
 			}
 		}		
@@ -84,8 +84,8 @@
 			{
 				Property
 				{
-					true "/await"
-					false ""
+					\true "/await"
+					\false ""
 				}
 			}
 		}
@@ -106,6 +106,7 @@
 			{
 				Name "AdditionalOptions"
 				Substitute "{} %(ClCompile.AdditionalOptions)"
+				Separator " "
 			}
 		}		
 		%GeneratorSetting "PreprocessorDefines"
@@ -128,7 +129,7 @@
 			Property
 			{
 				Name "AdditionalIncludeDirectories"
-				Substitute "{} %(ClCompile.AdditionalIncludeDirectories)"
+				Substitute "{};%(ClCompile.AdditionalIncludeDirectories)"
 			}
 		}
 		%GeneratorSetting "Warnings"
@@ -158,8 +159,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -174,8 +175,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -190,8 +191,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -206,8 +207,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -222,8 +223,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -237,8 +238,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -253,8 +254,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -268,8 +269,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -284,8 +285,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -300,8 +301,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -316,8 +317,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -332,8 +333,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -362,8 +363,8 @@
 			{
 				Property
 				{
-					true false
-					false true
+					\true "false"
+					\false "true"
 				}
 			}
 		}
@@ -377,8 +378,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -429,11 +430,11 @@
 				Property
 				{
 					Default "Default"
-					1 "1Byte"
-					2 "2Bytes"
-					4 "4Bytes"
-					8 "8Bytes"
-					16 "16Bytes"
+					\1 "1Byte"
+					\2 "2Bytes"
+					\4 "4Bytes"
+					\8 "8Bytes"
+					\16 "16Bytes"
 				}
 			}
 		}		
@@ -466,8 +467,8 @@
 				Property
 				{
 					Full "Async"
-					C++ "Sync"
-					ExternCandC++ "SyncCThrow"
+					C\+\+ "Sync"
+					ExternCandC\+\+ "SyncCThrow"
 					Off "false"
 				}
 			}
@@ -482,8 +483,8 @@
 			{
 				Property
 				{
-					true "Use"
-					false "NotUsing"
+					\true "Use"
+					\false "NotUsing"
 					XInternalCreate "Create" // Only used internally
 				}
 			}
@@ -505,8 +506,8 @@
 			{
 				Property
 				{
-					true "true"
-					false "false"
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -686,8 +687,8 @@
 			{
 				Property
 				{
-					true ""
-					false ""
+					\true ""
+					\false ""
 				}
 			}
 		}
@@ -703,8 +704,8 @@
 			{
 				Property
 				{
-					false "/wd4996"
-					true ""
+					\false "/wd4996"
+					\true ""
 				}
 			}
 		}		

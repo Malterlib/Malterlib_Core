@@ -13,8 +13,8 @@ Compile
 		{
 			!GeneratorFamily "Xcode"
 			this.Type "File"
-			Compile.Type ""
-			!Compile.Custom_CommandLine ""
+			Compile.Type undefined
+			!Compile.Custom_CommandLine undefined
 		}
 	}
 
@@ -23,10 +23,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.a"
+				this.Identity ~"*.a"
 			}
 		}
 	}
@@ -36,10 +36,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.dylib"
+				this.Identity ~"*.dylib"
 			}
 		}
 	}
@@ -49,11 +49,11 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.framework"
-				this.Identity "~*.xctest"
+				this.Identity ~"*.framework"
+				this.Identity ~"*.xctest"
 			}
 		}
 	}
@@ -63,12 +63,12 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*/mib"
-				this.Identity "~*.sh"
-				this.Identity "~*.conf"
+				this.Identity ~"*/mib"
+				this.Identity ~"*.sh"
+				this.Identity ~"*.conf"
 			}
  		}
 	}
@@ -78,13 +78,13 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.li"
-				this.Identity "~*.asm"
-				this.Identity "~*.s"
-				this.Identity "~*.S"
+				this.Identity ~"*.li"
+				this.Identity ~"*.asm"
+				this.Identity ~"*.s"
+				this.Identity ~"*.S"
 			}
 		}
 	}
@@ -96,24 +96,24 @@ Compile
 			&
 			{
 				this.Type "File"
-				Compile.Type ""
+				Compile.Type undefined
 				|
 				{
-					this.Identity "~*.cpp"
-					this.Identity "~*.cxx"
-					this.Identity "~*.cc"
+					this.Identity ~"*.cpp"
+					this.Identity ~"*.cxx"
+					this.Identity ~"*.cc"
 				}
 			}
 			&
 			{
 				this.Type "File"
 				DocumentationEnabled true
-				Compile.Type ""
+				Compile.Type undefined
 				|
 				{
-					this.Identity "~*.h"
-					this.Identity "~*.hpp"
-					this.Identity "~*.dox" // For doxygen
+					this.Identity ~"*.h"
+					this.Identity ~"*.hpp"
+					this.Identity ~"*.dox" // For doxygen
 				}
 			}
 		}
@@ -124,10 +124,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.c"
+				this.Identity ~"*.c"
 			}
 		}
 	}
@@ -137,13 +137,13 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.h"
-				this.Identity "~*.hpp"
-				this.Identity "~*.dox" // For doxygen
-				!this.Identity "~*.*"
+				this.Identity ~"*.h"
+				this.Identity ~"*.hpp"
+				this.Identity ~"*.dox" // For doxygen
+				!this.Identity ~"*.*"
 			}
 		}
 	}
@@ -153,8 +153,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*.qrc"
+			Compile.Type undefined
+			this.Identity ~"*.qrc"
 		}
 	}
 
@@ -163,8 +163,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*.ui"
+			Compile.Type undefined
+			this.Identity ~"*.ui"
 		}
 	}
 
@@ -173,8 +173,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*.twk"
+			Compile.Type undefined
+			this.Identity ~"*.twk"
 		}
 	}
 
@@ -183,8 +183,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*.MalterlibFSSpec"
+			Compile.Type undefined
+			this.Identity ~"*.MalterlibFSSpec"
 		}
 	}
 
@@ -193,8 +193,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-            this.Identity "~*.rc"
+			Compile.Type undefined
+            this.Identity ~"*.rc"
 		}
 	}
 
@@ -203,11 +203,11 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.targets"
-				this.Identity "~*.props"
+				this.Identity ~"*.targets"
+				this.Identity ~"*.props"
 			}
 		}
 	}
@@ -217,7 +217,7 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
 				this.Identity "~*.manifest"
@@ -230,10 +230,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.natvis"
+				this.Identity ~"*.natvis"
 			}
 		}
 	}
@@ -243,7 +243,7 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
 				this.Identity "~*.plist"
@@ -256,7 +256,7 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
 				this.Identity "~*.iig"
@@ -275,8 +275,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*.appxmanifest"
+			Compile.Type undefined
+			this.Identity ~"*.appxmanifest"
 		}
 	}
 	Type "ApplicationDefinition"
@@ -284,8 +284,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*App.xaml"
+			Compile.Type undefined
+			this.Identity ~"*App.xaml"
 		}
 	}
 	Type "Page"
@@ -293,8 +293,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*.xaml"
+			Compile.Type undefined
+			this.Identity ~"*.xaml"
 		}
 	}
 	Type "EmbeddedResource_ResX"
@@ -302,8 +302,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*.resx"
+			Compile.Type undefined
+			this.Identity ~"*.resx"
 		}
 	}
 	Type "Settings"
@@ -311,8 +311,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*.settings"
+			Compile.Type undefined
+			this.Identity ~"*.settings"
 		}
 	}
 }
@@ -327,8 +327,8 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
-			this.Identity "~*.cs"
+			Compile.Type undefined
+			this.Identity ~"*.cs"
 		}
 	}
 }
@@ -341,7 +341,7 @@ Compile
 		Compile.Type "C++"
 	}
 
-	PreprocessorDefines "__cplusplus=201402L;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "__cplusplus=201402L"
 }
 
 Compile
@@ -356,6 +356,8 @@ Compile
 		}
 	}
 
+	GenericCompileType define string?
+
 	GenericCompileType "GenericCompile"
 	{
 		!!Compile.Type "DriverKitInterface"
@@ -367,10 +369,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.mm"
+				this.Identity ~"*.mm"
 			}
 		}
 	}
@@ -380,10 +382,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.m"
+				this.Identity ~"*.m"
 			}
 		}
 	}
@@ -393,10 +395,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.nib"
+				this.Identity ~"*.nib"
 			}
 		}
 	}
@@ -406,10 +408,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.xib"
+				this.Identity ~"*.xib"
 			}
 		}
 	}
@@ -419,10 +421,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.storyboard"
+				this.Identity ~"*.storyboard"
 			}
 		}
 	}
@@ -432,10 +434,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.xcassets"
+				this.Identity ~"*.xcassets"
 			}
 		}
 	}
@@ -445,10 +447,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.py"
+				this.Identity ~"*.py"
 			}
 		}
 	}
@@ -458,11 +460,11 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.js"
-				this.Identity "~*.ts" // Typescript
+				this.Identity ~"*.js"
+				this.Identity ~"*.ts" // Typescript
 			}
 		}
 	}
@@ -473,12 +475,12 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.html"
-				this.Identity "~*.xhtml"
-				this.Identity "~*.htm"
+				this.Identity ~"*.html"
+				this.Identity ~"*.xhtml"
+				this.Identity ~"*.htm"
 			}
 		}
 	}
@@ -488,11 +490,11 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.css"
-				this.Identity "~*.less"
+				this.Identity ~"*.css"
+				this.Identity ~"*.less"
 			}
 		}
 	}
@@ -502,10 +504,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.png"
+				this.Identity ~"*.png"
 			}
 		}
 	}
@@ -515,10 +517,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.svg"
+				this.Identity ~"*.svg"
 			}
 		}
 	}
@@ -528,10 +530,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.xml"
+				this.Identity ~"*.xml"
 			}
 		}
 	}
@@ -541,10 +543,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.icns"
+				this.Identity ~"*.icns"
 			}
 		}
 	}
@@ -554,10 +556,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.a"
+				this.Identity ~"*.a"
 			}
 		}
 	}
@@ -567,10 +569,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.dylib"
+				this.Identity ~"*.dylib"
 			}
 		}
 	}
@@ -580,10 +582,10 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.json"
+				this.Identity ~"*.json"
 			}
 		}
 	}
@@ -595,23 +597,22 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.MTarget*"
-				this.Identity "~*.MBuildSystem*"
-				this.Identity "~*.OldMBuildSystem"
-				this.Identity "~*.MWorkspace*"
-				this.Identity "~*.MHeader"
-				this.Identity "~*.MInclude"
-				this.Identity "~*.MSettings*"
-				this.Identity "~*.MGeneratorSettings*"
-				this.Identity "~*.MBuildOptions*"
-				this.Identity "~*.MConfig*"
-
-				this.Identity "~*.MLBuildOptions"
-				this.Identity "~*.ir"
-				this.Identity "~*.irg"
+				this.Identity ~"*.MTarget*"
+				this.Identity ~"*.MBuildSystem*"
+				this.Identity ~"*.OldMBuildSystem"
+				this.Identity ~"*.MWorkspace*"
+				this.Identity ~"*.MHeader"
+				this.Identity ~"*.MInclude"
+				this.Identity ~"*.MSettings*"
+				this.Identity ~"*.MGeneratorSettings*"
+				this.Identity ~"*.MBuildOptions*"
+				this.Identity ~"*.MConfig*"
+				this.Identity ~"*.MLBuildOptions"
+				this.Identity ~"*.ir"
+				this.Identity ~"*.irg"
 			}
 		}
 	}
@@ -630,7 +631,7 @@ Compile
 		&
 		{
 			this.Type "File"
-			Compile.Type ""
+			Compile.Type undefined
 		}
 	}
 }
@@ -638,9 +639,8 @@ Compile
 // Optimization needs to be available for all types
 Compile
 {
-	Optimize "Off"
-	{
-	}
+	Optimize define one_of("Off", "Fast", "On", "Full")? = "Off"
+
 	Optimize "Fast"
 	{
 		&
@@ -655,6 +655,7 @@ Compile
 	{
 		!!Configuration "Release"
 	}
+
 	Optimize "Full"
 	{
 		!!Configuration "Optimized"
@@ -663,11 +664,11 @@ Compile
 
 Property
 {
-	MalterlibDebugSymbolsEnable true // User(Debug)=false: Enable generation of debug symbols
-	{
-		!!MalterlibDebugSymbolsEnable ""
-	}
+	MalterlibDebugSymbolsEnable define bool = true // User(Debug)=false: Enable generation of debug symbols
+	BuildArch_x86 define bool = true
+	DebugCodeAlwaysRelease define bool = false
 }
+
 Compile
 {
 	!!LanguageFamily ".NET"
@@ -685,17 +686,7 @@ Compile
 
 	Warnings "Pedantic"
 
-	PreprocessorDefines "DMibNewBuildSystem;@(Compile.PreprocessorDefines);@(Builtin.Inherit)"
-
-	PreprocessorDefines "DEBUG;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			DebugCode true
-			!DebugCodeAlwaysRelease true
-		}
-	}
-	PreprocessorDefines "TRACE;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += ["DEBUG", "TRACE"]
 	{
 		&
 		{
@@ -704,45 +695,48 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "@(MalterlibUniqueConfig);DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->ReplaceChars(' -.', ''));DConfig_@(ConfigNoSpace);@(Compile.PreprocessorDefines)"
-	{
-	}
-	PreprocessorDefines "DPConsole;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += [
+		MalterlibUniqueConfig
+		, `DWorkspace_@(Workspace:this.Identity->Replace(' ', ''))`
+		, `DTarget_@(Target:this.Identity->ReplaceChars(' -', ''))`, `DConfig_@(ConfigNoSpace)`
+	]
+
+	PreprocessorDefines += "DPConsole"
 	{
 		!!Target.Type "ConsoleExecutable"
 	}
-	PreprocessorDefines "DMibConfig_RefcountDebugging;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibConfig_RefcountDebugging"
 	{
 		!!Malterlib_RefcountDebugging_Enable true
 	}
 
-	PreprocessorDefines "DMibConfig_Tests_Enable;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibConfig_Tests_Enable"
 	{
 		!!Malterlib_Tests_Enable true
 	}
-	PreprocessorDefines "DMibConfig_Contracts_Enable;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibConfig_Contracts_Enable"
 	{
 		!!Malterlib_Contracts_Enable true
 	}
-	PreprocessorDefines "DMibConfig_Memory_Shims_Enable;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibConfig_Memory_Shims_Enable"
 	{
 		!!MalterlibMemory_Shims_Enable true
 	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibConfig_MalterlibMemoryManager_Debug"
 	{
 		!!MalterlibMemoryManager_Debug true
 	}
-	PreprocessorDefines "DMalterlibEnable32Bit;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMalterlibEnable32Bit"
 	{
-		!!BuildArch_x86 "1"
+		!!BuildArch_x86 true
 	}
 }
 
 Property
 {
-	MalterlibPrefixHeaderWorkaround true
+	MalterlibPrefixHeaderWorkaround define bool = true
 
-	MalterlibNativeClangArchitecture "@(Architecture)"
+	MalterlibNativeClangArchitecture define string
 
 	MalterlibNativeClangArchitecture "i386" // Figure a way to include proper arch in Xcode
 	{
@@ -791,7 +785,7 @@ Property
 
 Property
 {
-	MalterlibXcodeBuildArchitecture "@(MalterlibNativeClangArchitecture)"
+	MalterlibXcodeBuildArchitecture define string = MalterlibNativeClangArchitecture
 	MalterlibXcodeBuildArchitecture "x86_64"
 	{
 		!!PlatformFamily "Linux"
@@ -802,50 +796,15 @@ Property
 {
 	!!PlatformIsDarwin true
 
-	MalterlibNativeClangDarwinTarget "9"
+	MalterlibNativeClangDarwinTarget define string
+
+	MalterlibNativeClangDarwinTarget Format("{1,xpr($+4)}", Platform->Parse("OSX{}.{}", "int", "int")...)
 	{
-		!!Platform "OSX10.5"
+		!!Platform ~"OSX*"
 	}
-	MalterlibNativeClangDarwinTarget "10"
+	MalterlibNativeClangDarwinTarget Format("{1,xpr($+6)}", Platform->Parse("iOS{}.{}", "int", "int")...)
 	{
-		!!Platform "OSX10.6"
-	}
-	MalterlibNativeClangDarwinTarget "11"
-	{
-		!!Platform "OSX10.7"
-	}
-	MalterlibNativeClangDarwinTarget "12"
-	{
-		!!Platform "OSX10.8"
-	}
-	MalterlibNativeClangDarwinTarget "13"
-	{
-		!!Platform "OSX10.9"
-	}
-	MalterlibNativeClangDarwinTarget "14"
-	{
-		!!Platform "OSX10.10"
-		!!Platform "iOS8.1"
-	}
-	MalterlibNativeClangDarwinTarget "15"
-	{
-		!!Platform "OSX10.11"
-	}
-	MalterlibNativeClangDarwinTarget "16"
-	{
-		!!Platform "OSX10.12"
-	}
-	MalterlibNativeClangDarwinTarget "17"
-	{
-		!!Platform "OSX10.13"
-	}
-	MalterlibNativeClangDarwinTarget "18"
-	{
-		!!Platform "OSX10.14"
-	}
-	MalterlibNativeClangDarwinTarget "19"
-	{
-		!!Platform "OSX10.15"
+		!!Platform ~"iOS*"
 	}
 	MalterlibNativeClangDarwinTarget "20"
 	{
@@ -855,7 +814,8 @@ Property
 
 Property
 {
-	MalterlibTargetTriple "@(MalterlibNativeClangArchitecture)-apple-darwin@(MalterlibNativeClangDarwinTarget)"
+	MalterlibTargetTriple define string
+	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-apple-darwin@(MalterlibNativeClangDarwinTarget)`
 	{
 		&
 		{
@@ -863,23 +823,16 @@ Property
 			!Target.DriverType "DriverKit"
 		}
 	}
-	MalterlibTargetTriple "@(MalterlibNativeClangArchitecture)-pc-linux-gnu"
+	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-pc-linux-gnu`
 	{
 		!!PlatformFamily "Linux"
 	}
 }
 
-
 Property
 {
-	MalterlibFullSymbolsOnLinux false // User(Toolset)=true: Enable full symbol generation on Linux
-	{
-		!!MalterlibFullSymbolsOnLinux ""
-	}
-	MalterlibClangTimeTrace false // User(Debug)=true: Generate time traces for clang invocations
-	{
-		!!MalterlibClangTimeTrace ""
-	}
+	MalterlibFullSymbolsOnLinux define bool = false // User(Toolset)=true: Enable full symbol generation on Linux
+	MalterlibClangTimeTrace define bool = false // User(Debug)=true: Generate time traces for clang invocations
 }
 
 Compile
@@ -894,11 +847,12 @@ Compile
 		}
 	}
 
-	MinOSXVersion "@(Platform->Replace('OSX', ''))"
+	MinOSXVersion define string?
+	MinOSXVersion Platform->Replace('OSX', '')
 	{
 		&
 		{
-			Compile.MinOSXVersion ""
+			Compile.MinOSXVersion undefined
 			!Target.DriverType "DriverKit"
 		}
 	}
@@ -906,23 +860,26 @@ Compile
 
 Compile
 {
+	TargetTriple define string?
+	AsyncUnwindTables define bool?
+}
+
+Compile
+{
 	&
 	{
 		LanguageFamily "Native"
+		CompileDialect "C"
 		|
 		{
 			PlatformIsDarwin true
 			PlatformFamily "Linux"
 		}
-		|
-		{
-			CompileDialect "C"
-		}
 	}
 
-	TargetTriple "@(MalterlibTargetTriple)"
+	TargetTriple MalterlibTargetTriple
 	{
-		!MalterlibTargetTriple ""
+		!MalterlibTargetTriple undefined
 	}
 	AsyncUnwindTables true
 }
@@ -940,27 +897,22 @@ Compile
 		}
 	}
 
-	TargetTriple "@(MalterlibTargetTriple)"
+	TargetTriple MalterlibTargetTriple
 	{
-		!MalterlibTargetTriple ""
+		!MalterlibTargetTriple undefined
 	}
 //	AsyncUnwindTables true
 }
 
 Property
 {
-	MalterlibVerboseTemplateErrors false // User(Toolset)=true: Enabled more verbose template errors for clang
-	{
-		!!MalterlibVerboseTemplateErrors ""
-	}
-	MalterlibCodeCoverage false // User(Tests)=true: Set to true to enable code coverage
-	{
-		!!MalterlibCodeCoverage ""
-	}
+	MalterlibVerboseTemplateErrors define bool = false // User(Toolset)=true: Enabled more verbose template errors for clang
+	MalterlibCodeCoverage define bool = false // User(Tests)=true: Set to true to enable code coverage
 }
 
 Property
 {
+	MalterlibCompileSupportTabSetings define bool = false
 	MalterlibCompileSupportTabSetings true
 	{
 		&
@@ -1025,12 +977,13 @@ Compile
 		}
 	}
 
+	CLanguage define string?
 	CLanguage "GNU11"
 	{
 		&
 		{
 			PlatformFamily "Linux"
-			Compile.CLanguage ""
+			Compile.CLanguage undefined
 		}
 	}
 }
@@ -1038,37 +991,61 @@ Compile
 Property
 {
 	!!PlatformFamily "OSX"
-	MaxSupportedPlatformVersion "@(MalterlibMaxSupportedOSXVersion->Replace('.',''))0"
+
+	MaxSupportedPlatformVersion `@(MalterlibMaxSupportedOSXVersion->Replace('.',''))0`
 	{
-		!!MaxSupportedPlatformVersion ""
+		!!MaxSupportedPlatformVersion undefined
 	}
-	PlatformVersion "@(Platform->Replace('.',''))0"
-	PlatformVersion "@(PlatformVersion->Replace('OSX',''))"
+	PlatformVersion `@(Platform->Replace('.',''))0`->Replace('OSX','')
 }
+
 Property
 {
 	!!PlatformFamily "iOS"
-	MaxSupportedPlatformVersion "@(MalterlibMaxSupportediOSVersion->Replace('.',''))0"
-	{
-		!!MaxSupportedPlatformVersion ""
-	}
-	PlatformVersion "@(Platform->Replace('.',''))0"
-	PlatformVersion "@(PlatformVersion->Replace('iOS',''))"
 
+	MaxSupportedPlatformVersion `@(MalterlibMaxSupportediOSVersion->Replace('.',''))0`
+	{
+		!!MaxSupportedPlatformVersion undefined
+	}
+	PlatformVersion `@(Platform->Replace('.',''))0`->Replace('iOS','')
 }
 
 Property
 {
 	!!PlatformFamily "Emscripten"
+
 	PlatformVersion "1000"
 }
 
 Property
 {
-	MalterlibMSVCEnableUTF8 true
-	{
-		!!MalterlibMSVCEnableUTF8 ""
-	}
+	MalterlibMSVCEnableUTF8 define bool = true
+	MalterlibNoShortcuts define bool = false
+	DoesNotUseMalterlib define bool = false
+	AOCCDisableSSL define bool = false
+	MalterlibDisableMalterlib define bool = false
+	MalterlibDynamicCRT define bool = false
+	MalterlibAlwaysUseLongWindowsPaths define bool = false
+	MalterlibCustomConcurrentCompile define int?
+}
+
+Compile
+{
+	Warnings_UnusedCommandLineArgument define bool?
+	Warnings_TautolagicalPointerCompare define bool?
+	Warnings_UnusedFunction define bool?
+	Warnings_UnusedValue define bool?
+	Warnings_VarArgs define bool?
+	Warnings_CharSubscripts define bool?
+	Warnings_Cxx11Narrowing define bool?
+	Warnings_OverloadedVirtual define bool?
+	Warnings_Parentheses define bool?
+	Warnings_UnusedLabel define bool?
+	Warnings_NoUnused define bool?
+	Warnings_NoVirtualOverride define bool?
+
+	AllCPUSubTypes define bool?
+	StackGuard define bool?
 }
 
 // Assembler settings
@@ -1102,15 +1079,22 @@ Compile
 		}
 	}
 
+	Warnings define string?
 	Warnings "On"
 
+	Warnings_DeprecatedDeclarations define bool?
+	Warnings_UnusedVariable define bool?
+
+	Warnings_UnusedExceptionParameter define bool?
 	Warnings_UnusedExceptionParameter true
 	{
 		!!GeneratorFamily "Xcode"
 	}
 
+	WarningsAsErrors define bool?
 	WarningsAsErrors true
 
+	ClangUnstableWarnings define string?
 	ClangUnstableWarnings "On"
 	{
 		&
@@ -1124,16 +1108,19 @@ Compile
 		}
 	}
 
+	EmscriptenWarnings define string?
 	EmscriptenWarnings "On"
 	{
 		!!PlatformFamily "Emscripten"
 	}
 
-	SysRoot "@(MalterlibSysRoot)"
+	SysRoot define string?
+	SysRoot MalterlibSysRoot
 	{
-		!MalterlibSysRoot ""
+		!MalterlibSysRoot undefined
 	}
 
+	LinkerInternalLinkageOpt define string?
 	LinkerInternalLinkageOpt "inline"
 	{
 		&
@@ -1143,32 +1130,37 @@ Compile
 		}
 	}
 
+	ToolClass define string?
 	ToolClass "DoxygenCompile"
 	{
 		!!Documentation "Doxygen"
 	}
 
+	FunctionSections define bool?
 	FunctionSections true
 	{
 		!!PlatformFamily "OSX"
 		!!PlatformFamily "Linux"
 	}
 
+	DataSections define bool?
 	DataSections true
 	{
 		!!PlatformFamily "OSX"
 		!!PlatformFamily "Linux"
 	}
 
+	Coroutines define bool?
 	Coroutines true
 	{
 		&
 		{
-			Compile.Coroutines ""
+			Compile.Coroutines undefined
 			!Target.CLRSupport true
 		}
 	}
 
+	Inline define string?
 	Inline "Off"
 	{
 	}
@@ -1185,6 +1177,7 @@ Compile
 		!!RealConfiguration "Debug Inlined"
 	}
 
+	RuntimeLibrary define string?
 	RuntimeLibrary "Static"
 	{
 		&
@@ -1228,6 +1221,7 @@ Compile
 		}
 	}
 
+	StructMemberAlignment define string?
 	StructMemberAlignment "Default"
 	{
 		&
@@ -1237,6 +1231,7 @@ Compile
 		}
 	}
 
+	AppleKernelOptionsCxx define bool?
 	AppleKernelOptionsCxx true
 	{
 		&
@@ -1255,6 +1250,7 @@ Compile
 		}
 	}
 
+	AppleKernelOptions define bool?
 	AppleKernelOptions true
 	{
 		&
@@ -1264,10 +1260,21 @@ Compile
 		}
 	}
 
+	Exceptions define string?
+	Exceptions "Off"
+	{
+		&
+		{
+			Compile.Exceptions undefined
+			Target.Type "Driver"
+		}
+	}
 	Exceptions "C++"
 	{
+		!!Compile.Exceptions undefined
 	}
 
+	ForceDwarfExceptions define bool?
 	ForceDwarfExceptions true
 	{
 		&
@@ -1277,26 +1284,21 @@ Compile
 		}
 	}
 
-	Exceptions "Off"
-	{
-		!!Target.Type "Driver"
-	}
-
-	PrefixHeader "@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h"
+	PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h`
 	{
 		&
 		{
-			Compile.PrefixHeader ""
+			Compile.PrefixHeader undefined
 			!DocumentationEnabled true
 			!MalterlibQtSupport true
 			!Target.Type "Driver"
 		}
 	}
-	PrefixHeader "@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h"
+	PrefixHeader `@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h`
 	{
 		&
 		{
-			Compile.PrefixHeader ""
+			Compile.PrefixHeader undefined
 			!DocumentationEnabled true
 			MalterlibQtSupport true
 			!Target.Type "Driver"
@@ -1307,7 +1309,7 @@ Compile
 	{
 		&
 		{
-			Compile.PrecompilePrefixHeader ""
+			Compile.PrecompilePrefixHeader undefined
 			!DocumentationEnabled true
 		}
 	}
@@ -1320,37 +1322,42 @@ Compile
 				this.Type "File"
 				!this.Type "File"
 			}
-			Compile.PrefixHeader ""
+			Compile.PrefixHeader undefined
 		}
 	}
 
-	SearchPath "@(Compile.SearchPath);@(Builtin.Inherit)"
+	SearchPath [Builtin.Inherit]
+	SystemSearchPath [Builtin.Inherit]
 
+	Verbose define bool?
 	Verbose false // User(Toolset)=true: Enables output of cc1 command line
 	{
 		&
 		{
 			PlatformToolsetFamily "clang"
-			Compile.Verbose ""
+			Compile.Verbose undefined
 		}
 	}
 
-	MiniOSVersion "@(Platform->Replace('iOS',''))"
+	MiniOSVersion define string?
+	MiniOSVersion Platform->Replace('iOS','')
 	{
 		!!PlatformFamily "iOS"
 	}
 
+	SizedDeallocation define bool?
 	SizedDeallocation true
 	{
 		!!PlatformToolsetFamily "clang"
 	}
 
-	BuiltinSearchPath ""
+	BuiltinSearchPath define [string]?
+	BuiltinSearchPath []
 	{
 		!!PlatformToolsetFamily "clang"
 	}
 
-	SearchPath "@(Builtin.BasePathAbsolute)/External/llvm-project/libcxx/include;@(Compile.SearchPath)"
+	SearchPath += `@(Builtin.BasePathAbsolute)/External/llvm-project/libcxx/include`
 	{
 		&
 		{
@@ -1358,7 +1365,7 @@ Compile
 			MalterlibUseStaticLibCxx true
 		}
 	}
-	SearchPath "@(Builtin.BasePathAbsolute)/External/llvm-project/libcxxabi/include;@(Compile.SearchPath)"
+	SearchPath += `@(Builtin.BasePathAbsolute)/External/llvm-project/libcxxabi/include`
 	{
 		&
 		{
@@ -1367,7 +1374,7 @@ Compile
 		}
 	}
 
-	SearchPath "@(Builtin.BasePathAbsolute)/SDK/WDK/inc/ddk;@(Builtin.BasePathAbsolute)/SDK/WDK/inc/api;@(Builtin.BasePathAbsolute)/SDK/WDK/inc/crt;@(Compile.SearchPath)"
+	SearchPath += [`@(Builtin.BasePathAbsolute)/SDK/WDK/inc/ddk`, `@(Builtin.BasePathAbsolute)/SDK/WDK/inc/api`, `@(Builtin.BasePathAbsolute)/SDK/WDK/inc/crt`]
 	{
 		&
 		{
@@ -1376,33 +1383,35 @@ Compile
 		}
 	}
 
-	SearchPath "@(MalterlibLocalizationTranslationHeadersPath);@(Compile.SearchPath)"
+	SearchPath += MalterlibLocalizationTranslationHeadersPath
 	{
 		!!MalterlibUsesTranslation true
 	}
 
-	SearchPath "@(Target.IntermediateDirectory);@(GeneratedDirectory);@(Compile.SearchPath)"
+	SearchPath += [Target.IntermediateDirectory, GeneratedDirectory]
 
-	SearchPath "@(Builtin.BasePathAbsolute)/Projects;@(Compile.SearchPath)" // Project path is the most important
-	SearchPath "@(Builtin.BasePathAbsolute);@(Compile.SearchPath)"
-	SearchPath "@(MalterlibIncludeOutputDir);@(Compile.SearchPath)"
-	SearchPath "@(Builtin.BasePathAbsolute)/Malterlib/Core/Include;@(Compile.SearchPath)"
+	SearchPath += `@(Builtin.BasePathAbsolute)/Projects`
+	SearchPath += Builtin.BasePathAbsolute
+	SearchPath += MalterlibIncludeOutputDir
+	SearchPath += `@(Builtin.BasePathAbsolute)/Malterlib/Core/Include`
 
-	SearchPath "@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader;@(Compile.SearchPath)"
+	SearchPath += `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader`
 	{
-		!!Compile.PrefixHeader "@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h"
+		!!Compile.PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h`
 	}
 
-	SearchPath "@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt;@(Compile.SearchPath)"
+	SearchPath += `@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt`
 	{
-		!!Compile.PrefixHeader "@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h"
+		!!Compile.PrefixHeader `@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h`
 	}
 
-	FrameworkSearchPath "$(PLATFORM_DIR)/Developer/Library/Frameworks;@(Compile.FrameworkSearchPath)"
+	FrameworkSearchPath define [string]?
+	FrameworkSearchPath += `$(PLATFORM_DIR)/Developer/Library/Frameworks`
 	{
 		!!PlatformFamily "OSX"
 	}
 
+	MaxHeap define string?
 	MaxHeap "500"
 	{
 		&
@@ -1413,6 +1422,7 @@ Compile
 		}
 	}
 
+	CallingConvention define string?
 	CallingConvention "StdCall"
 	{
 		&
@@ -1422,12 +1432,14 @@ Compile
 		}
 	}
 
+	OmitFramePointer define bool?
 	OmitFramePointer false
 	{
 		!!MalterlibSupportSanitizers true
 	}
 
-	ExtraCompilerFlags "/bigobj @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags define [one_of(string, [string])]?
+	ExtraCompilerFlags =+ "/bigobj"
 	{
 		&
 		{
@@ -1436,33 +1448,43 @@ Compile
 		}
 	}
 
-	ExtraCompilerFlags "/Yl@(Target.Name) @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags =+ `/Yl@(Target.Name)`
 	{
 		&
 		{
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
 			!Compile.PrecompilePrefixHeader false
-			this.Type Target
+			this.Type "Target"
 		}
 	}
 
-	ExtraCompilerFlags "/MP@(MalterlibCustomConcurrentCompile) @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags =+ `/MP@(MalterlibCustomConcurrentCompile->ToString())`
 	{
 		&
 		{
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
-			!MalterlibCustomConcurrentCompile ""
+			!MalterlibCustomConcurrentCompile undefined
 		}
 	}
 
-	ConstexprSteps "4000000"
+	ExtraCompilerFlags =+ "/constexpr:steps4000000"
+	{
+		&
+		{
+			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
+		}
+	}
+
+	ConstexprSteps define int?
+	ConstexprSteps 4000000
 	{
 		!!GeneratorFamily "Xcode"
 	}
 
-	ExtraCompilerFlags "/std:c++latest /constexpr:steps2097152 @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags += "/std:c++latest"
 	{
 		&
 		{
@@ -1477,18 +1499,20 @@ Compile
 		}
 	}
 
+	CodeCoverage define bool?
 	CodeCoverage true
 	{
 		!!MalterlibCodeCoverage true
 	}
 
+	VerboseTemplateErrors define bool?
 	VerboseTemplateErrors true
 	{
 		&
 		{
 			MalterlibVerboseTemplateErrors true
 			PlatformToolsetFamily "clang"
-			Compile.VerboseTemplateErrors ""
+			Compile.VerboseTemplateErrors undefined
 		}
 	}
 
@@ -1498,10 +1522,11 @@ Compile
 		&
 		{
 			PlatformToolsetFamily "clang"
-			Compile.VerboseTemplateErrors ""
+			Compile.VerboseTemplateErrors undefined
 		}
 	}
 
+	DefaultHeaders define string?
 	DefaultHeaders "NoStdIncludeCxx"
 	{
 		&
@@ -1513,6 +1538,7 @@ Compile
 		}
 	}
 
+	AlignedAllocationProvided define bool?
 	AlignedAllocationProvided true
 	{
 		!!GeneratorFamily "Xcode"
@@ -1527,46 +1553,50 @@ Compile
 		}
 	}
 
+	DefaultVisibility define string?
 	DefaultVisibility "AllHidden"
 	{
 		&
 		{
-			Compile.DefaultVisibility ""
+			Compile.DefaultVisibility undefined
 			PlatformType "Unix"
 		}
 	}
 
+	NewDeleteVisibilityHidden define bool?
 	NewDeleteVisibilityHidden true
 	{
 		&
 		{
-			Compile.NewDeleteVisibilityHidden ""
+			Compile.NewDeleteVisibilityHidden undefined
 			MalterlibUseStaticLibCxx true
 			PlatformType "Unix"
 		}
 	}
 
-	LinkTimeCodeGeneration "@(MalterlibEnableLinkTimeCodeGeneration)"
+	LinkTimeCodeGeneration define one_of(bool, "Fast")?
+	LinkTimeCodeGeneration MalterlibEnableLinkTimeCodeGeneration
 
-	PreprocessorDefines "@(Compile.PreprocessorDefines);@(Builtin.Inherit)"
+	PreprocessorDefines =+ Builtin.Inherit
 
-	PreprocessorDefines "DDocumentation_@(Documentation);DDocumentation=@(Documentation);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += [`DDocumentation_@(Documentation)`, `DDocumentation=@(Documentation)`]
 	{
-		!Documentation ""
+		!Documentation undefined
 	}
 
-	PreprocessorDefines "DMibDefaultToolset;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibDefaultToolset"
 	{
 		!!MalterlibDefaultToolset true
 	}
 
+	ProvidedNewAligment define string?
 	ProvidedNewAligment "1"
 	{
 		!!PlatformFamily "OSX"
 		!!PlatformFamily "Linux"
 	}
 
-	PreprocessorDefines "_LIBCPP_HIDE_FROM_ABI_PER_TU_BY_DEFAULT;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_LIBCPP_HIDE_FROM_ABI_PER_TU_BY_DEFAULT"
 	{
 		&
 		{
@@ -1580,12 +1610,12 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "DMibPNoShortCuts;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibPNoShortCuts"
 	{
 		!!MalterlibNoShortcuts true
 	}
 
-	PreprocessorDefines "DMibDebuggerHelpers;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibDebuggerHelpers"
 	{
 		&
 		{
@@ -1599,16 +1629,16 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES"
 
-	PreprocessorDefines "BOOST_ALL_NO_LIB;BOOST_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += ["BOOST_ALL_NO_LIB", "BOOST_NODEFAULTVISIBILITY"]
 
-	PreprocessorDefines "_HAS_AUTO_PTR_ETC=1;NOMINMAX;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += ["_HAS_AUTO_PTR_ETC=1", "NOMINMAX"]
 	{
 		!!PlatformFamily "Windows"
 	}
 
-	PreprocessorDefines "DMibAlwaysUseLongWindowsPaths;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibAlwaysUseLongWindowsPaths"
 	{
 		&
 		{
@@ -1617,7 +1647,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "DMibNoOSXCrossModuleExceptions;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibNoOSXCrossModuleExceptions"
 	{
 		&
 		{
@@ -1626,7 +1656,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED"
 	{
 		&
 		{
@@ -1639,12 +1669,12 @@ Compile
 			}
 		}
 	}
-	PreprocessorDefines "_FILE_OFFSET_BITS=64;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_FILE_OFFSET_BITS=64"
 	{
 		!!PlatformFamily "Linux"
 	}
 
-	PreprocessorDefines "_POSIX_C_SOURCE=200809L;_XOPEN_SOURCE=700;_DEFAULT_SOURCE=1;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += ["_POSIX_C_SOURCE=200809L", "_XOPEN_SOURCE=700", "_DEFAULT_SOURCE=1"]
 	{
 		&
 		{
@@ -1661,39 +1691,40 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "DMalterlibLinuxProgramIdentifier=@(MalterlibLinuxProgramIdentifier);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += `DMalterlibLinuxProgramIdentifier=@(MalterlibLinuxProgramIdentifier)`
 	{
-		!MalterlibLinuxProgramIdentifier ""
+		!MalterlibLinuxProgramIdentifier undefined
 	}
 
-	PreprocessorDefines "DAOCCDisableSSL;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DAOCCDisableSSL"
 	{
 		!!AOCCDisableSSL true
 	}
 
-	PreprocessorDefines "__STDC_VERSION__=199901L;__restrict=;restrict=;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += ["__STDC_VERSION__=199901L", "__restrict=", "restrict="]
 	{
 		!!MalterlibMaxSupportedOSXVersion "10.5"
 		!!MalterlibMaxSupportedOSXVersion "10.6"
 	}
 
-	PreprocessorDefines "_WIN32_WINNT=@(MalterlibWindowsNtVersion);NTDDI_VERSION=@(MalterlibWindowsVersion);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += [`_WIN32_WINNT=@(MalterlibWindowsNtVersion)`, `NTDDI_VERSION=@(MalterlibWindowsVersion)`]
 	{
 		!!PlatformFamily "Windows"
 	}
 
-	PreprocessorDefines "DMibNewBuildSystem;@(Compile.PreprocessorDefines)"
-
-	PreprocessorDefines "DDefaultToolArchitecture_@(Target:Target.DefaultToolArchitecture->Replace(' ', ''));DDefaultToolArchitecture=@(Target:Target.DefaultToolArchitecture->Replace(' ', ''));@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += [
+		`DDefaultToolArchitecture_@(Target:Target.DefaultToolArchitecture->Replace(' ', ''))`
+		, `DDefaultToolArchitecture=@(Target:Target.DefaultToolArchitecture->Replace(' ', ''))`
+	]
 	{
-		!Target:Target.DefaultToolArchitecture ""
+		!Target:Target.DefaultToolArchitecture undefined
 	}
 
-	PreprocessorDefines "DMibSafeThreadLocals;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibSafeThreadLocals"
 	{
 		!!EnableSafeThreadLocals true
 	}
-	PreprocessorDefines "DMibStaticThreadLocals;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibStaticThreadLocals"
 	{
 		&
 		{
@@ -1701,7 +1732,7 @@ Compile
 			MalterlibThread_LinuxUseStaticThreadLocal true
 		}
 	}
-	PreprocessorDefines "DMibAssumeGlibc;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibAssumeGlibc"
 	{
 		&
 		{
@@ -1710,7 +1741,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "DMibUseGoldLinker;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibUseGoldLinker"
 	{
 		&
 		{
@@ -1723,32 +1754,32 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "DMibInlineEnabled;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibInlineEnabled"
 	{
 		!Compile.Inline "Off"
 	}
 
-	PreprocessorDefines "DMibAssumeMalterlibHost;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibAssumeMalterlibHost"
 	{
 		!!Malterlib_AssumeMalterlibHost true
 	}
 
-	PreprocessorDefines "DMibInitInPreInitArray;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibInitInPreInitArray"
 	{
 		!!Malterlib_LinuxInitInPreInitArray true
 	}
 
-	PreprocessorDefines "DMibRuntimeInline0=Malterlib_Core_PlatformImp_Windows_Inline.h;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibRuntimeInline0=Malterlib_Core_PlatformImp_Windows_Inline.h"
 	{
 		!!PlatformFamily "Windows"
 	}
-	PreprocessorDefines "DMibRuntimeInline1=Malterlib_Core_PlatformImp_POSIX_Inline.h;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibRuntimeInline1=Malterlib_Core_PlatformImp_POSIX_Inline.h"
 	{
 		!!PlatformIsDarwin true
 		!!PlatformFamily "Linux"
 		!!PlatformFamily "Emscripten"
 	}
-	PreprocessorDefines "_DEBUG;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_DEBUG"
 	{
 		&
 		{
@@ -1756,7 +1787,7 @@ Compile
 			!DebugCodeAlwaysRelease true
 		}
 	}
-	PreprocessorDefines "DBG=1;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DBG=1"
 	{
 		&
 		{
@@ -1764,7 +1795,7 @@ Compile
 			DebugCode true
 		}
 	}
-	PreprocessorDefines "DBUG_OFF;NDEBUG;_NDEBUG;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += ["DBUG_OFF", "NDEBUG", "_NDEBUG"]
 	{
 		|
 		{
@@ -1772,7 +1803,7 @@ Compile
 			DebugCodeAlwaysRelease true
 		}
 	}
-	PreprocessorDefines "DBG=0;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DBG=0"
 	{
 		&
 		{
@@ -1781,7 +1812,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "_X86_;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_X86_"
 	{
 		&
 		{
@@ -1790,7 +1821,7 @@ Compile
 			Architecture "x86"
 		}
 	}
-	PreprocessorDefines "WIN64;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "WIN64"
 	{
 		&
 		{
@@ -1799,7 +1830,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "_AMD64_;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_AMD64_"
 	{
 		&
 		{
@@ -1809,7 +1840,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "DMalterlibUseStaticLibCxx=1;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += ["DMalterlibUseStaticLibCxx=1", "_LIBCPP_DISABLE_AVAILABILITY", "_LIBCPP_BUILD_STATIC", "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS"]
 	{
 		&
 		{
@@ -1818,16 +1849,13 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "_LIBCPP_DISABLE_AVAILABILITY;_LIBCPP_BUILD_STATIC;_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			!MalterlibDisableMalterlib true
-			MalterlibUseStaticLibCxx true
-		}
-	}
-
-	PreprocessorDefines "LIBCXX_BUILDING_LIBCXXABI;_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += [
+		"LIBCXX_BUILDING_LIBCXXABI"
+		, "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
+		, "COMPILER_RT_NODEFAULTVISIBILITY"
+		, "LIBCXXABI_NODEFAULTVISIBILITY"
+		, "LIBUNWIND_NODEFAULTVISIBILITY"
+	]
 	{
 		&
 		{
@@ -1836,12 +1864,12 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "DMalterlib=1;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMalterlib=1"
 	{
 		!DoesNotUseMalterlib true
 	}
 
-	PreprocessorDefines "_LIBCPP_OVERRIDABLE_FUNC_VIS=;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_LIBCPP_OVERRIDABLE_FUNC_VIS="
 	{
 		&
 		{
@@ -1850,7 +1878,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_LIBCPP_DISABLE_NEW_DELETE"
 	{
 		&
 		{
@@ -1862,40 +1890,87 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "_ENABLE_EXTENDED_ALIGNED_STORAGE=1;_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH=1;_SECURE_SCL=0;_HAS_ITERATOR_DEBUGGING=0;_CRT_SECURE_NO_WARNINGS=1;_WINDOWS;WIN32;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += [
+		"_ENABLE_EXTENDED_ALIGNED_STORAGE=1"
+		, "_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH=1"
+		, "_SECURE_SCL=0"
+		, "_HAS_ITERATOR_DEBUGGING=0"
+		, "_CRT_SECURE_NO_WARNINGS=1"
+		, "_WINDOWS"
+		, "WIN32"
+	]
 	{
 		!!PlatformType "Windows"
 	}
-	PreprocessorDefines "DMalterlibBranch=\"@(MalterlibFullBranch)\";DProductVersion=0x@(ProductVersionMajor)@(ProductVersionMinor)@(ProductVersionRevision);DProductVersionSuffix=\"@(ProductVersionExtra)\";DProductSuffix_@(ProductVersionExtra);@(Compile.PreprocessorDefines)"
-	PreprocessorDefines "DProductVersionMajor=@(ProductVersionMajor);DProductVersionMinor=@(ProductVersionMinor);DProductVersionRevision=@(ProductVersionRevision);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += [
+		`DMalterlibBranch=@(MalterlibFullBranch->Escape())`
+		, `DProductVersion=0x@(ProductVersionMajor)@(ProductVersionMinor)@(ProductVersionRevision)`
+		, `DProductVersionSuffix=@(ProductVersionExtra->Escape())`
+		, `DProductSuffix_@(ProductVersionExtra)`
+	]
+	PreprocessorDefines += [`DProductVersionMajor=@(ProductVersionMajor)`, `DProductVersionMinor=@(ProductVersionMinor)`, `DProductVersionRevision=@(ProductVersionRevision)`]
 
-	PreprocessorDefines "DProductCompanyUniqueIdentifier=@(ProductCompanyUniqueIdentifier);@(Compile.PreprocessorDefines)"
-	PreprocessorDefines "DProductContact=@(ProductContact);@(Compile.PreprocessorDefines)"
-	PreprocessorDefines "DProductCompany=\"@(ProductCompany)\";@(Compile.PreprocessorDefines)"
-	PreprocessorDefines "DProductCountry=\"@(ProductCountry)\";@(Compile.PreprocessorDefines)"
-	PreprocessorDefines "DProductLocality=\"@(ProductLocality)\";@(Compile.PreprocessorDefines)"
-	PreprocessorDefines "DProductOrganizationalUnit=\"@(ProductOrganizationalUnit)\";@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += `DProductCompanyUniqueIdentifier=@(ProductCompanyUniqueIdentifier)`
+	PreprocessorDefines += `DProductContact=@(ProductContact)`
+	PreprocessorDefines += `DProductCompany=@(ProductCompany->Escape())`
+	PreprocessorDefines += `DProductCountry=@(ProductCountry->Escape())`
+	PreprocessorDefines += `DProductLocality=@(ProductLocality->Escape())`
+	PreprocessorDefines += `DProductOrganizationalUnit=@(ProductOrganizationalUnit->Escape())`
 
-	PreprocessorDefines "DConfigSuffix=\"@(MalterlibConfigSuffix)\";DWorkspace_@(Workspace:this.Identity->Replace(' ', ''));DTarget_@(Target:this.Identity->ReplaceChars(' -.', ''));DConfig_@(ConfigNoSpace);DArchitecture_@(Architecture);DPlatform_@(Platform->Replace('.', '_'));DTarget=@(Target:this.Identity);DConfig=@(Configuration);DRealConfig=@(RealConfiguration);DArchitecture=@(Architecture);DPlatform=@(Platform);DPlatformFamily=@(PlatformFamily);DPlatformFamily_@(PlatformFamily);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += [
+		`DConfigSuffix=@(MalterlibConfigSuffix->Escape())`
+		, `DWorkspace_@(Workspace:this.Identity->Replace(' ', ''))`
+		, `DTarget_@(Target:this.Identity->ReplaceChars(' -.', ''))`
+		, `DConfig_@(ConfigNoSpace)`
+		, `DArchitecture_@(Architecture)`
+		, `DPlatform_@(Platform->Replace('.', '_'))`
+		, `DTarget=@(Target:this.Identity)`
+		, `DConfig=@(Configuration)`
+		, `DRealConfig=@(RealConfiguration)`
+		, `DArchitecture=@(Architecture)`
+		, `DPlatform=@(Platform)`
+		, `DPlatformFamily=@(PlatformFamily)`
+		, `DPlatformFamily_@(PlatformFamily)`
+	]
 	{
 	}
-	PreprocessorDefines "DPlatformVersion=@(PlatformVersion);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += `DPlatformVersion=@(PlatformVersion)`
 	{
-		!PlatformVersion ""
+		!PlatformVersion undefined
 	}
-	PreprocessorDefines "DQConfigCppInclude=\"../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.cpp\";DQConfigInclude=\"../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.h\";DQtCoreConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtcore-config.h\";DQtCoreConfigPInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtcore-config_p.h\";DQConfigPInclude=\"../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig_p.h\";DQtGuiConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtgui-config.h\";DQtGuiConfigPInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtgui-config_p.h\";DQtMultimediaConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtmultimedia-config.h\";DQtWidgetsConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtwidgets-config.h\";DQtWidgetsConfigPInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtwidgets-config_p.h\";DQtPrintSupportConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtprintsupport-config.h\";DQtNetworkConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtnetwork-config.h\";DQtXmlConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtxml-config.h\";DQtQmlConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtqml-config.h\";DQtQuickConfigInclude=\"../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtquick-config.h\";DPQTSupport;QT_STATICPLUGIN;Q_DECL_IMPORT=;Q_DECL_EXPORT=;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += [
+		`DQConfigCppInclude="../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.cpp"`
+		, `DQConfigInclude="../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.h"`
+		, `DQtCoreConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtcore-config.h"`
+		, `DQtCoreConfigPInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtcore-config_p.h"`
+		, `DQConfigPInclude="../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig_p.h"`
+		, `DQtGuiConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtgui-config.h"`
+		, `DQtGuiConfigPInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtgui-config_p.h"`
+		, `DQtMultimediaConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtmultimedia-config.h"`
+		, `DQtWidgetsConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtwidgets-config.h"`
+		, `DQtWidgetsConfigPInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtwidgets-config_p.h"`
+		, `DQtPrintSupportConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtprintsupport-config.h"`
+		, `DQtNetworkConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtnetwork-config.h"`
+		, `DQtXmlConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtxml-config.h"`
+		, `DQtQmlConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtqml-config.h"`
+		, `DQtQuickConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtquick-config.h"`
+		, "DPQTSupport"
+		, "QT_STATICPLUGIN"
+		, "Q_DECL_IMPORT="
+		, "Q_DECL_EXPORT="
+	]
 	{
 		!!MalterlibQtSupport true
 	}
-	PreprocessorDefines "_CONSOLE;DPConsole;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += ["_CONSOLE", "DPConsole"]
 	{
 		!!Target.Type "ConsoleExecutable"
 	}
-	PreprocessorDefines "DPlatformVersion=@(PlatformVersion);@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += `DPlatformVersion=@(PlatformVersion)`
 	{
-		!PlatformVersion ""
+		!PlatformVersion undefined
 	}
-	PreprocessorDefines "_DDK_;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_DDK_"
 	{
 		&
 		{
@@ -1903,7 +1978,7 @@ Compile
 			Target.Type "Driver"
 		}
 	}
-	PreprocessorDefines "_LIB;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_LIB"
 	{
 		&
 		{
@@ -1911,7 +1986,7 @@ Compile
 			Target.Type "StaticLibrary"
 		}
 	}
-	PreprocessorDefines "_USRDLL;_WINDLL;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += ["_USRDLL", "_WINDLL"]
 	{
 		&
 		{
@@ -1919,140 +1994,41 @@ Compile
 			Target.Type "DynamicLibrary"
 		}
 	}
-	PreprocessorDefines "DMibConfig_RefcountDebugging=1;@(Compile.PreprocessorDefines)"
-	{
-		!!Malterlib_RefcountDebugging_Enable true
-	}
-	PreprocessorDefines "DMibConfig_RefcountDebugging=0;@(Compile.PreprocessorDefines)"
-	{
-		!Malterlib_RefcountDebugging_Enable true
-	}
 
-	PreprocessorDefines "DMibConfig_Tests_Enable=1;@(Compile.PreprocessorDefines)"
-	{
-		!!Malterlib_Tests_Enable true
-	}
-	PreprocessorDefines "DMibConfig_Tests_Enable=0;@(Compile.PreprocessorDefines)"
-	{
-		!Malterlib_Tests_Enable true
-	}
-
-	PreprocessorDefines "DMibConfig_Contracts_Enable=1;@(Compile.PreprocessorDefines)"
-	{
-		!!Malterlib_Contracts_Enable true
-	}
-	PreprocessorDefines "DMibConfig_Contracts_Enable=0;@(Compile.PreprocessorDefines)"
-	{
-		!Malterlib_Contracts_Enable true
-	}
-
-	PreprocessorDefines "DMibConfig_Memory_Shims_Enable=1;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += `DMibConfig_RefcountDebugging=@(Malterlib_RefcountDebugging_Enable ? "1" : "0")`
+	PreprocessorDefines += `DMibConfig_Tests_Enable=@(Malterlib_Tests_Enable ? "1" : "0")`
+	PreprocessorDefines += `DMibConfig_Contracts_Enable=@(Malterlib_Contracts_Enable ? "1" : "0")`
+	PreprocessorDefines += `DMibConfig_MalterlibMemoryManager_Debug=@(MalterlibMemoryManager_Debug ? "1" : "0")`
+	PreprocessorDefines += `DMibConfig_Memory_Shims_Lightweight=@(MalterlibMemory_Shims_Lightweight ? "1" : "0")`
+	PreprocessorDefines += `DMibConfig_Memory_Shims_Enable=@(MalterlibMemory_Shims_Enable ? "1" : "0")`
+	PreprocessorDefines += `DMibConfig_Memory_Shims_EnableLocal=@(MalterlibMemory_Shims_EnableLocal? "1" : "0")`
 	{
 		!!MalterlibMemory_Shims_Enable true
 	}
-	PreprocessorDefines "DMibConfig_Memory_Shims_Enable=0;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += `DMibConfig_Memory_Shims_EnableGlobal=@(MalterlibMemory_Shims_EnableGlobal ? "1" : "0")`
 	{
-		!MalterlibMemory_Shims_Enable true
+		!!MalterlibMemory_Shims_Enable true
+	}
+	PreprocessorDefines += `DMibConfig_MemoryManager_Stats_EnableCategories=@(MalterlibMemoryManager_Stats_EnableCategories ? "1" : "0")`
+	{
+		!!MalterlibMemory_Shims_Enable true
+	}
+	PreprocessorDefines += `DMibConfig_MemoryManager_Stats_EnableCallstack=@(MalterlibMemoryManager_Stats_EnableCallstack ? "1" : "0")`
+	{
+		!!MalterlibMemory_Shims_Enable true
 	}
 
-	PreprocessorDefines "DMibConfig_Memory_Shims_EnableLocal=1;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += `DMalterlibEnable32Bit=@(BuildArch_x86 ? "1" : "0")`
 	{
-		&
-		{
-			MalterlibMemory_Shims_Enable true
-			MalterlibMemory_Shims_EnableLocal true
-		}
-	}
-	PreprocessorDefines "DMibConfig_Memory_Shims_EnableLocal=0;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemory_Shims_Enable true
-			!MalterlibMemory_Shims_EnableLocal true
-		}
+		!BuildArch_x86 undefined
 	}
 
-	PreprocessorDefines "DMibConfig_Memory_Shims_Lightweight=1;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibLinkTimeCodeGeneration"
 	{
-		!!MalterlibMemory_Shims_Lightweight true
-	}
-	PreprocessorDefines "DMibConfig_Memory_Shims_Lightweight=0;@(Compile.PreprocessorDefines)"
-	{
-		!MalterlibMemory_Shims_Lightweight true
+		!Target:Target.LinkTimeCodeGeneration false
 	}
 
-	PreprocessorDefines "DMibConfig_Memory_Shims_EnableGlobal=1;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemory_Shims_Enable true
-			MalterlibMemory_Shims_EnableGlobal true
-		}
-	}
-	PreprocessorDefines "DMibConfig_Memory_Shims_EnableGlobal=0;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemory_Shims_Enable true
-			!MalterlibMemory_Shims_EnableGlobal true
-		}
-	}
-
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug=1;@(Compile.PreprocessorDefines)"
-	{
-		!!MalterlibMemoryManager_Debug true
-	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug=0;@(Compile.PreprocessorDefines)"
-	{
-		!MalterlibMemoryManager_Debug true
-	}
-
-	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCategories=1;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemoryManager_Stats_EnableCategories true
-			MalterlibMemory_Shims_Enable true
-		}
-	}
-	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCategories=0;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			!MalterlibMemoryManager_Stats_EnableCategories true
-			MalterlibMemory_Shims_Enable true
-		}
-	}
-	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCallstack=1;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemoryManager_Stats_EnableCallstack true
-			MalterlibMemory_Shims_Enable true
-		}
-	}
-	PreprocessorDefines "DMibConfig_MemoryManager_Stats_EnableCallstack=0;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			!MalterlibMemoryManager_Stats_EnableCallstack true
-			MalterlibMemory_Shims_Enable true
-		}
-	}
-	PreprocessorDefines "DMalterlibEnable32Bit=@(BuildArch_x86);@(Compile.PreprocessorDefines)"
-	{
-		!BuildArch_x86 ""
-	}
-	PreprocessorDefines "DMalterlibEnable32Bit=1;@(Compile.PreprocessorDefines)"
-	{
-		!!BuildArch_x86 ""
-	}
-
-	PreprocessorDefines "DMibLinkTimeCodeGeneration;@(Compile.PreprocessorDefines)"
-	{
-		"!Target:Target.LinkTimeCodeGeneration" false
-	}
-
+	Symbols define string?
 //	Symbols "None"
 //	Symbols "Fast"
 //	Symbols "FullForDebug"
@@ -2067,9 +2043,10 @@ Compile
 	}
 	Symbols "Full"
 	{
-		!!Compile.Symbols ""
+		!!Compile.Symbols undefined
 	}
 
+	ClangTimeTrace define bool?
 	ClangTimeTrace true
 	{
 		&
@@ -2079,7 +2056,7 @@ Compile
 		}
 	}
 
-	ExtraCompilerFlags "/Zo @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags =+ "/Zo"
 	{
 		&
 		{
@@ -2093,7 +2070,7 @@ Compile
 		}
 	}
 
-	ExtraCompilerFlags "/Zc:threadSafeInit- @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags =+ "/Zc:threadSafeInit-"
 	{
 		&
 		{
@@ -2102,7 +2079,7 @@ Compile
 		}
 	}
 
-	ExtraCompilerFlags "/utf-8 @(Compile.ExtraCompilerFlags)"
+	ExtraCompilerFlags =+ "/utf-8"
 	{
 		&
 		{
@@ -2140,6 +2117,7 @@ Compile
 		}
 	}
 
+	SplitSymbols define bool?
 	SplitSymbols true
 	{
 		&
@@ -2154,24 +2132,26 @@ Compile
 		}
 	}
 
-/*	SymbolFile "@(Builtin.IntermediateDirectory)@(Target.FileName).pdb"
+/*	SymbolFile `@(Builtin.IntermediateDirectory)@(Target.FileName).pdb`
 
 	SymbolFile ""
 	{
 		!!Configuration "Fast Compile"
 	}*/
 
+	ConcurrentCompile define bool?
 	ConcurrentCompile true
 	{
 		&
 		{
-			Compile.ConcurrentCompile ""
+			Compile.ConcurrentCompile undefined
 			PlatformType "Windows"
 			!Compile.PrecompilePrefixHeader "XInternalCreate"
 			!Target.VisualStudioPlatform "Clang"
 		}
 	}
 
+	SeparateWCharType define bool?
 	SeparateWCharType true
 	{
 		&
@@ -2181,6 +2161,7 @@ Compile
 		}
 	}
 
+	ForceConformanceInForLoopScope define bool?
 	ForceConformanceInForLoopScope true
 	{
 		&
@@ -2190,32 +2171,39 @@ Compile
 		}
 	}
 
+	PositionIndependantCode define bool?
 	PositionIndependantCode true
 	{
 		!!PlatformFamily "Linux"
 	}
 
+	DynamicTypeInfo define bool?
 	DynamicTypeInfo true
 	{
 		&
 		{
-			Compile.DynamicTypeInfo ""
+			Compile.DynamicTypeInfo undefined
 			MalterlibSupportSanitizerEnable_UndefinedBehavior true
 		}
 	}
-
 	DynamicTypeInfo false
 	{
-		!!Compile.DynamicTypeInfo ""
+		!!Compile.DynamicTypeInfo undefined
 	}
+
+	OpenMP define bool?
 	OpenMP false
 	{
 		!Target.VisualStudioPlatform "Clang"
 	}
+
+	UseFullPaths define bool?
 	UseFullPaths true
 	{
 		!Target.VisualStudioPlatform "Clang"
 	}
+
+	StringPooling define bool?
 	StringPooling false
 	{
 		&
@@ -2238,6 +2226,7 @@ Compile
 		}
 	}
 
+	MinimalRebuild define bool?
 	MinimalRebuild false
 	{
 		&
@@ -2246,6 +2235,8 @@ Compile
 			PlatformType "Windows"
 		}
 	}
+
+	RuntimeChecks define string?
 	RuntimeChecks "Off"
 	RuntimeChecks "On"
 	{
@@ -2265,18 +2256,26 @@ Compile
 			!Target:Target.Type "Driver"
 		}
 	}
+
+	Sanitize_Thread define bool?
 	Sanitize_Thread true
 	{
 		!!MalterlibSupportSanitizerEnable_Thread true
 	}
+
+	Sanitize_Address define bool?
 	Sanitize_Address true
 	{
 		!!MalterlibSupportSanitizerEnable_Address true
 	}
+
+	Sanitize_UndefinedBehavior define bool?
 	Sanitize_UndefinedBehavior true
 	{
 		!!MalterlibSupportSanitizerEnable_UndefinedBehavior true
 	}
+
+	FunctionLevelLinking define bool?
 	FunctionLevelLinking false
 	{
 		&
@@ -2299,6 +2298,7 @@ Compile
 		}
 	}
 
+	ExtendedInstructionSet define string?
 	ExtendedInstructionSet "SSE2"
 	{
 		|
@@ -2329,6 +2329,7 @@ Compile
 		}
 	}
 
+	FloatingPointModel define string?
 	FloatingPointModel "Precise"
 	{
 		&
@@ -2337,11 +2338,17 @@ Compile
 			!Target.VisualStudioPlatform "Clang"
 		}
 	}
+
+	FloatingPointExceptions define bool?
 	FloatingPointExceptions false
 	{
 		!Target.VisualStudioPlatform "Clang"
 	}
+
+	EnableLanguageExtensions define bool?
 	EnableLanguageExtensions true
+
+	EnableFiberSafeOptimizations define bool?
 	EnableFiberSafeOptimizations false
 	{
 		&
@@ -2350,6 +2357,8 @@ Compile
 			!Target.VisualStudioPlatform "Clang"
 		}
 	}
+
+	CreateHotpatchableImage define bool?
 	CreateHotpatchableImage false
 	{
 		&
@@ -2358,6 +2367,8 @@ Compile
 			!Target.VisualStudioPlatform "Clang"
 		}
 	}
+
+	IgnoreStandardIncludePath define bool?
 	IgnoreStandardIncludePath true
 	{
 		&
@@ -2382,11 +2393,12 @@ Compile
 		}
 	}
 
+	ObjectiveCARC define bool?
 	ObjectiveCARC false
 	{
 		&
 		{
-			Compile.ObjectiveCARC ""
+			Compile.ObjectiveCARC undefined
 			|
 			{
 				Platform "OSX10.5"
@@ -2398,12 +2410,12 @@ Compile
 	{
 		&
 		{
-			Compile.ObjectiveCARC ""
+			Compile.ObjectiveCARC undefined
 			!Target.DriverType "DriverKit"
 		}
 	}
 
-	PreprocessorDefines "DMibObjC_Arc;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DMibObjC_Arc"
 	{
 		!!Compile.ObjectiveCARC true
 	}
@@ -2418,14 +2430,16 @@ Compile
 		Compile.Type "WindowsResource"
 	}
 
+	Culture define string?
 	Culture "0x0409"
-	PreprocessorDefines "@(Compile.PreprocessorDefines);@(Builtin.Inherit)"
 
-	PreprocessorDefines "NDEBUG;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines =+ Builtin.Inherit
+
+	PreprocessorDefines += "NDEBUG"
 	{
 		!!DebugCode false
 	}
-	PreprocessorDefines "DBG=0;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DBG=0"
 	{
 		&
 		{
@@ -2433,11 +2447,11 @@ Compile
 			Target.Type "Driver"
 		}
 	}
-	PreprocessorDefines "_DEBUG;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "_DEBUG"
 	{
 		!!DebugCode true
 	}
-	PreprocessorDefines "DBG=1;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines += "DBG=1"
 	{
 		&
 		{
@@ -2462,44 +2476,44 @@ Compile
 
 	GenericCompileType "GenericCustom"
 
-	Custom_WorkingDirectory "@(Target:Target.IntermediateDirectory->MakeAbsolute())"
-	Custom_Outputs "@(Compile.ObjectFileName);@(Compile.CppFileName)"
+	Custom_WorkingDirectory Target:Target.IntermediateDirectory->MakeAbsolute()
+	Custom_Outputs [Compile.ObjectFileName, Compile.CppFileName]
 
-	Custom_Inputs "$(InputFilePath)"
-	Custom_CommandLine "@(Builtin.MToolExe) VirtualFS -o \"@(Compile.ObjectFileName)\" -ocpp \"@(Compile.CppFileName)\""
-	Custom_CommandLine "@(Compile.Custom_CommandLine) -oidsdepend \"@(Compile.MalterlibDependencyFileName)\" "
+	Custom_Inputs =+ "$(InputFilePath)"
+	Custom_CommandLine `@(Builtin.MToolExe) VirtualFS -o @(Compile.ObjectFileName->Escape()) -ocpp @(Compile.CppFileName->Escape())`
+	Custom_CommandLine `@(Compile.Custom_CommandLine) -oidsdepend @(Compile.MalterlibDependencyFileName->Escape()) `
 	{
-		!Compile.MalterlibDependencyFileName ""
+		!Compile.MalterlibDependencyFileName undefined
 	}
-	Custom_CommandLine "@(Compile.Custom_CommandLine) -platform \"@(Compile.Platform)\" "
+	Custom_CommandLine `@(Compile.Custom_CommandLine) -platform @(Compile.Platform->Escape()) `
 	{
-		!Compile.Platform ""
+		!Compile.Platform undefined
 	}
-	Custom_CommandLine "@(Compile.Custom_CommandLine) -verbose "
+	Custom_CommandLine `@(Compile.Custom_CommandLine) -verbose `
 	{
 		!!Compile.VerboseLogging true
 	}
-	Custom_CommandLine "@(Compile.Custom_CommandLine) -elf32 "
+	Custom_CommandLine `@(Compile.Custom_CommandLine) -elf32 `
 	{
 		!!Compile.OutputAsObjectFile "Elf32"
 	}
-	Custom_CommandLine "@(Compile.Custom_CommandLine) -elf64 "
+	Custom_CommandLine `@(Compile.Custom_CommandLine) -elf64 `
 	{
 		!!Compile.OutputAsObjectFile "Elf64"
 	}
-	Custom_CommandLine "@(Compile.Custom_CommandLine) -asm "
+	Custom_CommandLine `@(Compile.Custom_CommandLine) -asm `
 	{
 		!!Compile.OutputAsAssembly true
 	}
-	Custom_CommandLine "@(Compile.Custom_CommandLine) @(Compile.ExtraCompilerFlags) "
+	Custom_CommandLine `@(Compile.Custom_CommandLine) @(fg_RecursiveStringArrayToCommandLine(Compile.ExtraCompilerFlags)) `
 	{
-		!Compile.ExtraCompilerFlags ""
+		!Compile.ExtraCompilerFlags undefined
 	}
-	Custom_CommandLine "@(Compile.Custom_CommandLine) -dest \"@(Compile.MalterlibFSPathPrefix)\" "
+	Custom_CommandLine `@(Compile.Custom_CommandLine) -dest @(Compile.MalterlibFSPathPrefix->Escape()) `
 	{
-		!Compile.MalterlibFSPathPrefix ""
+		!Compile.MalterlibFSPathPrefix undefined
 	}
-	Custom_CommandLine "@(Compile.Custom_CommandLine) \"$(InputFilePath)\" "
+	Custom_CommandLine `@(Compile.Custom_CommandLine) "$(InputFilePath)" `
 }
 
 Compile
@@ -2507,11 +2521,22 @@ Compile
 	&
 	{
 		GeneratorFamily "Xcode"
-		GenericCompileType ""
-		!Custom_CommandLine ""
+		Compile.GenericCompileType undefined
+		!Compile.Custom_CommandLine undefined
 	}
 
 	GenericCompileType "GenericCustom"
+}
+
+Compile
+{
+	DoCompileAndLink define bool?
+	ObjectFileName define string?
+}
+
+Property
+{
+	MalterlibDisableDependencyFiles define bool = false
 }
 
 // MalterlibFS
@@ -2524,30 +2549,42 @@ Compile
 	}
 
 	DoCompileAndLink true
-	VerboseLogging false
-	MalterlibFSPathPrefix ""
+	{
+		!!Compile.DoCompileAndLink undefined
+	}
 
-	ObjectFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.obj"
+	VerboseLogging define bool?
+	VerboseLogging false
+
+	MalterlibFSPathPrefix define string?
+
+	ObjectFileName `@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.obj`
 	{
 		!!PlatformFamily "Windows"
 	}
-	ObjectFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.s"
+	ObjectFileName `@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.s`
 	{
 		!PlatformFamily "Windows"
 	}
-	ASMFileName "@(Compile.ObjectFileName)"
+	ASMFileName define string?
+	ASMFileName Compile.ObjectFileName
 	{
 		!PlatformFamily "Windows"
 	}
-	Platform "@(PlatformFamily)"
+
+	Platform define string?
+	Platform PlatformFamily
 	{
 		!!PlatformFamily "Linux"
 		!!PlatformFamily "OSX"
 	}
 
-	CppFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFSCPP.cpp"
-	//DependencyFileName "@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.d"
-	MalterlibDependencyFileName "@(Target:Target.IntermediateDirectory)MalterlibDependencies/@(Builtin.SourceFileName)_VirtualFS.MalterlibDependency"
+	CppFileName define string?
+	CppFileName `@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFSCPP.cpp`
+	//DependencyFileName `@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.d`
+
+	MalterlibDependencyFileName define string?
+	MalterlibDependencyFileName `@(Target:Target.IntermediateDirectory)MalterlibDependencies/@(Builtin.SourceFileName)_VirtualFS.MalterlibDependency`
 	{
 		&
 		{
@@ -2556,6 +2593,7 @@ Compile
 		}
 	}
 
+	SymbolName define string?
 	SymbolName "_gc_VFS_Bytes"
 	{
 		&
@@ -2564,15 +2602,39 @@ Compile
 			Architecture "x86"
 		}
 	}
+
+	OutputAsObjectFile define one_of(bool, string)?
 	OutputAsObjectFile true
 	{
-		!!PlatformFamily "Windows"
+		&
+		{
+			Compile.OutputAsObjectFile undefined
+			PlatformFamily "Windows"
+		}
 	}
+	OutputAsObjectFile false
+	{
+		!!Compile.OutputAsObjectFile undefined
+	}
+
+	OutputAsAssembly define bool?
 	OutputAsAssembly true
 	{
-		!!PlatformFamily "Linux"
-		!!PlatformFamily "OSX"
+		&
+		{
+			Compile.OutputAsAssembly undefined
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformFamily "OSX"
+			}
+		}
 	}
+	OutputAsAssembly false
+	{
+		!!Compile.OutputAsAssembly undefined
+	}
+
 	/*OutputAsObjectFile Elf32
 	{
 		&
@@ -2604,7 +2666,7 @@ Compile
 	{
 		&
 		{
-			Compile.DoCompileAndLink ""
+			Compile.DoCompileAndLink undefined
 			!DebugCode true
             !GeneratorFamily "Xcode" // Due to limitations in Xcode we always compile and link
 		}
@@ -2613,17 +2675,19 @@ Compile
 	{
 		&
 		{
-			Compile.DoCompileAndLink ""
+			Compile.DoCompileAndLink undefined
 			DebugCode true
             !GeneratorFamily "Xcode" // Due to limitations in Xcode we always compile and link
 		}
 	}
+
+	GenerateDebugInformation define bool?
 	GenerateDebugInformation true
 	{
-		!!Compile.GenerateDebugInformation ""
+		!!Compile.GenerateDebugInformation undefined
 	}
 
-	ObjectFileName "@(MalterlibQtTweakPath)/@(Builtin.SourceFileName)_Twk.cpp"
+	ObjectFileName `@(MalterlibQtTweakPath)/@(Builtin.SourceFileName)_Twk.cpp`
 }
 
 
@@ -2637,6 +2701,7 @@ Compile
 		PlatformType "Windows"
 	}
 
+	PreserveIdentifierCase define bool?
 	PreserveIdentifierCase true
 	{
 	}
@@ -2656,14 +2721,14 @@ Compile
 {
 	!!Compile.Type "Custom"
 
-	Custom_WorkingDirectory "@(this.Identity->GetPath())"
+	Custom_WorkingDirectory `@(this.Identity->GetPath())`
 	{
-		!!Compile.Custom_WorkingDirectory ""
+		!!Compile.Custom_WorkingDirectory undefined
 	}
 
 	FullEval true
 
-	Custom_Message "Generating @(File:this.Identity->GetFile())"
+	Custom_Message `Generating @(File:this.Identity->GetFile())`
 	{
 		&
 		{
@@ -2672,9 +2737,10 @@ Compile
 		}
 	}
 
-	CustomCombined_CommandLine 	"@(Compile.Custom_WorkingDirectory->GetDrive())\r\n"\
-								"cd \"@(Compile.Custom_WorkingDirectory)\"\r\n"\
-								"@(Compile.Custom_CommandLine->Replace('\">\"', '>'))\r\n"
+	CustomCombined_CommandLine define string?
+	CustomCombined_CommandLine 	`@(Compile.Custom_WorkingDirectory->GetDrive())\r\n`\
+								`cd @(Compile.Custom_WorkingDirectory->Escape())\r\n`\
+								`@((Compile.Custom_CommandLine || "")->Replace('">"', ">"))\r\n`
 	{
 		!!GeneratorFamily "VisualStudio"
 	}

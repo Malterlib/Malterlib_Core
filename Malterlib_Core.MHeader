@@ -1,12 +1,21 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-Property.MalterlibClangUpstreamBranch "release/@(MalterlibClangVersion->ParseFormatString('{}.{}', '{0}.x'))"
-
-Property.HasLLVMRepository true
+Property
 {
-	!!EnablePlatformFamily_OSX true
-	!!EnablePlatformFamily_Linux true
+	MalterlibEnableThirdPartyComparisonTests define bool = false // User(Tests)=true: Enable thrird party comparison tests.
+	MalterlibClangUpstreamBranch define string = `release/@(MalterlibClangVersion->ParseFormatString("{}.{}", "{0}.x"))`
+
+	HasLLVMRepository define bool = false
+	HasLLVMRepository true
+	{
+		!!EnablePlatformFamily_OSX true
+		!!EnablePlatformFamily_Linux true
+	}
+
+	MalterlibUseGitRepo define bool = true
+
+	MalterlibSubLibrarySeparate define bool = false
 }
 
 %Repository "llvm-project"
@@ -16,9 +25,9 @@ Property.HasLLVMRepository true
 	Repository
 	{
 		Type "External"
-		Remotes "upstream=https://github.com/llvm/llvm-project.git;@(Repository.Remotes)"
-		DefaultUpstreamBranch "@(MalterlibClangUpstreamBranch)"
-		Tags "llvm"
+		Remotes =+ {Name: "upstream", URL: "https://github.com/llvm/llvm-project.git"}
+		DefaultUpstreamBranch MalterlibClangUpstreamBranch
+		Tags ["llvm"]
 	}
 }
 
@@ -46,7 +55,7 @@ Import "Lib_Malterlib.MTarget"
 			{
 				Compile.Disabled true
 				{
-					!PlatformFamily "@(PlatformFamilyFromFile)"
+					!PlatformFamily PlatformFamilyFromFile
 				}
 			}
 		}
@@ -67,28 +76,36 @@ Import "Lib_Malterlib.MTarget"
 			%File "BuildScripts/*"
 		}
 	}
-	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(Target.ExtraGroups)"
+	Target.ExtraGroups =+ "~Automatic/Malterlib Indirect Dependencies"
 	{
 		!!MalterlibSubLibrarySeparate true
 	}
 	Property
 	{
-		Malterlib_Core_Dependencies "Lib_Malterlib_File;Lib_Malterlib_Exception;Lib_Malterlib_Contract;Lib_Malterlib_Memory;Lib_Malterlib_Thread;Lib_Malterlib_Atomic;Lib_Malterlib_Time;Lib_Malterlib_CrashReport;Lib_Malterlib_String;@(Malterlib_Core_Dependencies)"
-		Malterlib_Core_DebugDependencies "Lib_Malterlib_Debug;Lib_Malterlib_Contract;Lib_Malterlib_Log;Lib_Malterlib_Process;@(Malterlib_Core_DebugDependencies)"
+		Malterlib_Core_Dependencies define [type(CEntity)] = []
+		Malterlib_Core_Dependencies =+ ["Lib_Malterlib_File", "Lib_Malterlib_Exception", "Lib_Malterlib_Contract", "Lib_Malterlib_Memory", "Lib_Malterlib_Thread", "Lib_Malterlib_Atomic", "Lib_Malterlib_Time", "Lib_Malterlib_CrashReport", "Lib_Malterlib_String"]
+
+		Malterlib_Core_DebugDependencies define [type(CEntity)] = []
+		Malterlib_Core_DebugDependencies =+ ["Lib_Malterlib_Debug", "Lib_Malterlib_Contract", "Lib_Malterlib_Log", "Lib_Malterlib_Process"]
 	}
-	%Dependency "@(Malterlib_Core_Dependencies)"
+	%Dependency Malterlib_Core_Dependencies
 	{
 		!!MalterlibSubLibrarySeparate true
+
 		Dependency.Indirect true
 	}
-	%Dependency "@(Malterlib_Core_DebugDependencies)"
+	%Dependency Malterlib_Core_DebugDependencies
 	{
-		|
+		&
 		{
-			GeneratorFamily "VisualStudio"
-			DebugCompiler true
+			MalterlibSubLibrarySeparate true
+			|
+			{
+				GeneratorFamily "VisualStudio"
+				DebugCompiler true
+			}
 		}
-		!!MalterlibSubLibrarySeparate true
+
 		Dependency.Indirect true
 		Dependency.Link false
 		{
@@ -99,50 +116,38 @@ Import "Lib_Malterlib.MTarget"
 	{
 		&
 		{
-			!MalterlibIncludeRoots ""
+			!MalterlibIncludeRoots undefined
 			MalterlibIncludeLevel "Workspace"
 		}
-		ExtraGroups "~Automatic/Include Roots;@(Target.ExtraGroups)"
+		ExtraGroups =+ "~Automatic/Include Roots"
 	}
 	Target
 	{
 		!!GeneratorFamily "Xcode"
-		ExtraGroups "~Automatic/Xcode Specifications;@(Target.ExtraGroups)"
+		ExtraGroups =+ "~Automatic/Xcode Specifications"
 	}
 	Target
 	{
 		&
 		{
-			!MalterlibBoostModules ""
+			!MalterlibBoostModules undefined
 			MalterlibIncludeLevel "Workspace"
 		}
-		ExtraGroups "~Automatic/Boost Include Roots;@(Target.ExtraGroups)"
-		|
-		{
-			MalterlibIncludePerConfig true
-			Config "Debug"
-		}
+		ExtraGroups =+ "~Automatic/Boost Include Roots"
 	}
 }
 
-//	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(AllSubLibraryGroups);@(MalterlibLibraryGroups);@(Target.ExtraGroups)"
+//	Target.ExtraGroups =+ "~Automatic/Malterlib Indirect Dependencies;@(AllSubLibraryGroups);@(MalterlibLibraryGroups)"
 
 Property
 {
-	MalterlibLibrary_Core true
-	{
-		&
-		{
-			MalterlibLibrary_Core ""
-			MalterlibLibrary_All true
-		}
-	}
-	MalterlibSubLibraries "Core;@(MalterlibSubLibraries)"
+	MalterlibLibrary_Core define bool = MalterlibLibrary_All
+	MalterlibSubLibraries =+ "Core"
 	{
 		!!MalterlibLibrary_Core true
 	}
-//	MalterlibSubLibrarySeparate_Lib_Malterlib_Core true
-	MalterlibIncludeRoots "@('Include'->MakeAbsolute());@(MalterlibIncludeRoots)"
+//	MalterlibSubLibrarySeparate_Lib_Malterlib_Core define bool = true
+	MalterlibIncludeRoots =+ "Include"->MakeAbsolute()
 	{
 		!!MalterlibLibrary_Core true
 	}
@@ -154,38 +159,46 @@ Property
 
 Property
 {
-	AllMalterlibLibrariesTemplate "Lib_Malterlib_@(Explodee);"
-	{
-		!Explodee ""
-	}
-	
-	AllMalterlibLibraries "@(Builtin.Function->ExplodeList('@(MalterlibSubLibraries)', ';', 'AllMalterlibLibrariesTemplate'))"
-	{
-	}
+	AllMalterlibLibrariesTemplate function(string _Library) [type(CEntity)]
+	AllMalterlibLibrariesTemplate =+ `Lib_Malterlib_@(_Library)`
+
+	AllMalterlibLibraries define [type(CEntity)] = MalterlibSubLibraries->ForEach("AllMalterlibLibrariesTemplate")
 }
 
-%Target "@(AllMalterlibLibraries)"
+%Target AllMalterlibLibraries
 {
-	Property.MalterlibNoShortcuts true	
-	
 	|
 	{
-		true "@(MalterlibSubLibrarySeparate_@(Target:this.Identity))"
-		true "@(MalterlibLibrarySeparate_@(Target:this.Identity))"
+		&
+		{
+			true IsDefined(`MalterlibSubLibrarySeparate_@(Target:this.Identity)`)
+			true MalterlibSubLibrarySeparate_@(Target:this.Identity)
+		}
+		&
+		{
+			true IsDefined(`MalterlibLibrarySeparate_@(Target:this.Identity)`)
+			true MalterlibLibrarySeparate_@(Target:this.Identity)
+		}
 		&
 		{
 			MalterlibSubLibrarySeparate true
-			!false "@(MalterlibSubLibrarySeparate_@(Target:this.Identity))" 
+			|
+			{
+				!true IsDefined(`MalterlibSubLibrarySeparate_@(Target:this.Identity)`)
+				!false MalterlibSubLibrarySeparate_@(Target:this.Identity)
+			}
 		}
 	}
+
 	Property
 	{
+		MalterlibNoShortcuts true	
 		DocumentationModule "Malterlib"
 	}
 	Target
 	{
-		ExtraGroups "{Malterlib}/{@(Target:this.Identity)};@(Target.ExtraGroups)"
-		Name "@(Target:this.Identity)"
+		ExtraGroups =+ `{Malterlib}/{@(Target:this.Identity)}`
+		Name Target:this.Identity
 		Type "StaticLibrary"
 		Group "Malterlib"
 	}
@@ -208,7 +221,7 @@ Property
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader ""
+		PrefixHeader undefined
 	}
 	%File "Test/Test_Malterlib_Core_DllMain.cpp"
 	%Dependency "Lib_Malterlib"
@@ -229,18 +242,10 @@ Property
 
 Property
 {
-	MalterlibEnableThirdPartyComparisonTests false // User(Tests)=true: Enable thrird party comparison tests.
-	{
-		!!MalterlibEnableThirdPartyComparisonTests ""
-	}
-}
-
-Property
-{
 	!!MalterlibEnableInternalTests true
 	
-	MalterlibTests "Malterlib_Core;@(MalterlibTests)"
-	MalterlibTestExtraGroups_Malterlib_Core "{Test}/{Malterlib_Core}"
+	MalterlibTests =+ "Malterlib_Core"
+	MalterlibTestExtraGroups_Malterlib_Core define [string] = ["{Test}/{Malterlib_Core}"]
 }
 
 Import "Tools/*/*.MHeader"

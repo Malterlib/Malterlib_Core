@@ -3,10 +3,13 @@
 
 Property
 {
+	MalterlibNeedsInitProject define bool = false
 	MalterlibNeedsInitProject true
 	{
 		!!PlatformType "Unix"
 	}
+
+	ForceEnableDynamicTypeInfoLibCXX define bool = false
 }
 
 %Target "Lib_Malterlib_Init"
@@ -24,7 +27,7 @@ Property
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader ""
+		PrefixHeader undefined
 	}
 	%Group "Source"
 	{
@@ -52,13 +55,17 @@ Property
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader ""
+		PrefixHeader undefined
 		PrecompilePrefixHeader false
-		SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf;@(Builtin.BasePathAbsolute)/External/elftoolchain/common;@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
+		SearchPath += [
+			`@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`
+			, `@(Builtin.BasePathAbsolute)/External/elftoolchain/common`
+			, `@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf`
+		]
 		{
 			!!PlatformFamily "Linux"
 		}
-		SearchPath "@('../../External/llvm-project/libunwind/include'->MakeAbsolute());@(Compile.SearchPath)"
+		SearchPath += "../../External/llvm-project/libunwind/include"->MakeAbsolute()
 		{
 			&
 			{
@@ -66,8 +73,8 @@ Property
 				MalterlibUseStaticLibUnwind true
 			}
 		}
-		PreprocessorDefines "COMPILER_RT_HAS_ATOMICS=1;_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "COMPILER_RT_HAS_UNAME=1;COMPILER_RT_HAS_FCNTL_LCK=1;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines =+ ["COMPILER_RT_HAS_ATOMICS=1", "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED"]
+		PreprocessorDefines =+ ["COMPILER_RT_HAS_UNAME=1", "COMPILER_RT_HAS_FCNTL_LCK=1"]
 		{
 			!!PlatformType "Unix"
 		}
@@ -85,16 +92,16 @@ Property
 			}
 			!DocumentationEnabled true
 		}
-		PreprocessorDefines "malloc=nontracked_malloc;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "free=nontracked_free;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "calloc=nontracked_calloc;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "realloc=nontracked_realloc;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "cfree=nontracked_cfree;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "memalign=nontracked_memalign;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "posix_memalign=nontracked_posix_memalign;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "valloc=nontracked_valloc;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "pvalloc=nontracked_pvalloc;@(Compile.PreprocessorDefines)"
-		PreprocessorDefines "malloc_usable_size=nontracked_malloc_usable_size;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines =+ "malloc=nontracked_malloc"
+		PreprocessorDefines =+ "free=nontracked_free"
+		PreprocessorDefines =+ "calloc=nontracked_calloc"
+		PreprocessorDefines =+ "realloc=nontracked_realloc"
+		PreprocessorDefines =+ "cfree=nontracked_cfree"
+		PreprocessorDefines =+ "memalign=nontracked_memalign"
+		PreprocessorDefines =+ "posix_memalign=nontracked_posix_memalign"
+		PreprocessorDefines =+ "valloc=nontracked_valloc"
+		PreprocessorDefines =+ "pvalloc=nontracked_pvalloc"
+		PreprocessorDefines =+ "malloc_usable_size=nontracked_malloc_usable_size"
 	}
 }
 
@@ -106,18 +113,18 @@ Property
 		{
 			!!MalterlibRuntime_AlwaysRelease true
 		}
-		RealConfiguration "@(MalterlibRuntime_AlwaysRelease)"
+		RealConfiguration MalterlibRuntime_AlwaysRelease
 		{
 			&
 			{
-				!MalterlibRuntime_AlwaysRelease ""
+				!MalterlibRuntime_AlwaysRelease undefined
 				!MalterlibRuntime_AlwaysRelease false
 				!MalterlibRuntime_AlwaysRelease true
 			}
 		}
 		DebugCodeAlwaysRelease true
 		{
-			!RealConfiguration "@(Configuration)"
+			!RealConfiguration Configuration
 		}
 	}
 
@@ -127,9 +134,9 @@ Property
 		Type "StaticLibrary"
 		Group "Malterlib"
 		LinkTimeCodeGeneration false
-		ExtraGroups "{Lib_Malterlib_Runtime}/{SharedSettings};@(Target.ExtraGroups)"
+		ExtraGroups =+ "{Lib_Malterlib_Runtime}/{SharedSettings}"
 	}
-	Property.WorkaroundLTOValue false
+	Property.WorkaroundLTOValue define bool = false
 	%Group "Source"
 	{
 		Compile
@@ -152,7 +159,7 @@ Property
 				}
 			}
 
-			Compile.LinkTimeCodeGeneration "@(MalterlibEnableLinkTimeCodeGeneration)"
+			Compile.LinkTimeCodeGeneration MalterlibEnableLinkTimeCodeGeneration
 			{
 				!!CompileDialect "C"
 			}
@@ -203,12 +210,12 @@ Property
 				MalterlibSupportSanitizerEnable_UndefinedBehavior false
 			}
 
-			Compile.LinkTimeCodeGeneration "@(WorkaroundLTOValue)" // Exception handling breaks if this is enabled
+			Compile.LinkTimeCodeGeneration WorkaroundLTOValue // Exception handling breaks if this is enabled
 			{
 				&
 				{
 					CompileDialect "C"
-					!WorkaroundLTOValue ""
+					!WorkaroundLTOValue undefined
 				}
 			}
 
@@ -226,7 +233,7 @@ Property
 				!!Compile.Type "Assembler"
 
 				AllCPUSubTypes true
-				PreprocessorDefines "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS;COMPILER_RT_NODEFAULTVISIBILITY;LIBCXXABI_NODEFAULTVISIBILITY;LIBUNWIND_NODEFAULTVISIBILITY;@(Compile.PreprocessorDefines)"
+				PreprocessorDefines =+ ["_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS", "COMPILER_RT_NODEFAULTVISIBILITY", "LIBCXXABI_NODEFAULTVISIBILITY", "LIBUNWIND_NODEFAULTVISIBILITY"]
 			}
 			%File "../../External/llvm-project/libunwind/include/^*"
 			%File "../../External/llvm-project/libunwind/src/*"
@@ -241,7 +248,7 @@ Property
 		{
 			!!MalterlibUseStaticLibCxxABI true
 
-			Compile.LinkTimeCodeGeneration "@(MalterlibEnableLinkTimeCodeGeneration)"
+			Compile.LinkTimeCodeGeneration MalterlibEnableLinkTimeCodeGeneration
 			{
 				!!CompileDialect "C"
 			}
@@ -250,7 +257,7 @@ Property
 			{
 				!!CompileDialect "C"
 				DynamicTypeInfo true
-				PreprocessorDefines "LIBCXXABI_NO_NEW_DELETE;@(Compile.PreprocessorDefines)"
+				PreprocessorDefines =+ "LIBCXXABI_NO_NEW_DELETE"
 			}
 
 			%File "../../External/llvm-project/libcxxabi/src/*.cpp"
@@ -276,12 +283,12 @@ Property
 			%File "../../External/llvm-project/libcxxabi/src/private_typeinfo.cpp"
 			%File "../../External/llvm-project/libcxxabi/src/cxa_personality.cpp"
 			{
-				Compile.LinkTimeCodeGeneration "@(WorkaroundLTOValue)" // Exception handling breaks if this is enabled
+				Compile.LinkTimeCodeGeneration WorkaroundLTOValue // Exception handling breaks if this is enabled
 				{
 					&
 					{
 						CompileDialect "C"
-						!WorkaroundLTOValue ""
+						!WorkaroundLTOValue undefined
 					}
 				}
 				Compile.Disabled true
@@ -301,18 +308,18 @@ Property
 		{
 			!!MalterlibRuntime_AlwaysRelease true
 		}
-		RealConfiguration "@(MalterlibRuntime_AlwaysRelease)"
+		RealConfiguration MalterlibRuntime_AlwaysRelease
 		{
 			&
 			{
-				!MalterlibRuntime_AlwaysRelease ""
+				!MalterlibRuntime_AlwaysRelease undefined
 				!MalterlibRuntime_AlwaysRelease false
 				!MalterlibRuntime_AlwaysRelease true
 			}
 		}
 		DebugCodeAlwaysRelease true
 		{
-			!RealConfiguration "@(Configuration)"
+			!RealConfiguration Configuration
 		}
 	}
 	Target
@@ -320,7 +327,7 @@ Property
 		BaseName "Malterlib_Runtime"
 		Type "StaticLibrary"
 		Group "Malterlib"
-		ExtraGroups "{Lib_Malterlib_Runtime}/{SharedSettings};@(Target.ExtraGroups)"
+		ExtraGroups =+ "{Lib_Malterlib_Runtime}/{SharedSettings}"
 	}
 	%Group "Source"
 	{
@@ -338,7 +345,7 @@ Property
 				!!MalterlibUseStaticLibCxx true
 				Compile
 				{
-					PreprocessorDefines "_LIBCPP_BUILDING_LIBRARY;_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED;@(Compile.PreprocessorDefines)"
+					PreprocessorDefines =+ ["_LIBCPP_BUILDING_LIBRARY", "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED"]
 					DynamicTypeInfo true
 					{
 						!!ForceEnableDynamicTypeInfoLibCXX true
@@ -354,7 +361,7 @@ Property
 					%File "../../External/llvm-project/libcxx/src/^*"
 					%File "../../External/llvm-project/libcxx/src/new.cpp"
 					{
-						Compile.PreprocessorDefines "_LIBCPP_DISABLE_NEW_DELETE_DEFINITIONS;@(Compile.PreprocessorDefines)"
+						Compile.PreprocessorDefines =+ "_LIBCPP_DISABLE_NEW_DELETE_DEFINITIONS"
 						{
 							!MalterlibDefaultToolset true
 						}
@@ -389,13 +396,16 @@ Property
 			{
 				Property
 				{
-					ThisFileName "@(this.Identity->GetFileNoExt())"
-					ElfToolchainRoot "@('../../External/elftoolchain'->MakeAbsolute())"
+					ThisFileName define string = this.Identity->GetFileNoExt()
+					ElfToolchainRoot define string = "../../External/elftoolchain"->MakeAbsolute()
 
+				}
+				GenerateFile
+				{
 					Executable false
 					UnixLineEnds true
 					UnicodeBOM false
-					Group "@(Platform) @(Architecture) @(FullConfiguration)/@(RelativePath->GetPath())"
+					Group `@(Platform) @(Architecture) @(FullConfiguration)`
 				}
 				%Group "libelf"
 				{
@@ -408,10 +418,21 @@ Property
 					{
 						Property
 						{
-							TypesFile "@('../../External/elftoolchain/libelf/elf_types.m4'->MakeAbsolute())"
-
-							Name "@(GeneratedDirectory)libelf/@(ThisFileName).c"
-							Contents "@(ExecuteCommand('@(GeneratedDirectory)libelf/@(ThisFileName).state', '@(this.Identity->MakeAbsolute());@(TypesFile)', 'm4', '-E', '-d', '-DSRCDIR=@(ElfToolchainRoot)/libelf', '-I@(ElfToolchainRoot)/common', '@(this.Identity->MakeAbsolute())'))"
+							TypesFile define string = "../../External/elftoolchain/libelf/elf_types.m4"->MakeAbsolute()
+						}
+						GenerateFile
+						{
+							Name `@(GeneratedDirectory)libelf/@(ThisFileName).c`
+							Contents ExecuteCommand(
+								`@(GeneratedDirectory)libelf/@(ThisFileName).state`
+								, [this.Identity->MakeAbsolute(), TypesFile]
+								, "m4"
+								, "-E"
+								, "-d"
+								, `-DSRCDIR=@(ElfToolchainRoot)/libelf`
+								, `-I@(ElfToolchainRoot)/common`
+								, this.Identity->MakeAbsolute()
+							)
 						}
 
 						%GenerateFile "../../External/elftoolchain/libelf/libelf_convert.m4"
@@ -430,10 +451,21 @@ Property
 					{
 						Property
 						{
-							NameTable "@('../../External/elftoolchain/libdwarf/dwarf_nametbl.m4'->MakeAbsolute())"
-
-							Name "@(GeneratedDirectory)libdwarf/@(ThisFileName).c"
-							Contents "@(ExecuteCommand('@(GeneratedDirectory)libdwarf/@(ThisFileName).state', '@(this.Identity->MakeAbsolute());@(TypesFile)', 'm4', '-E', '-d', '-DSRCDIR=@(ElfToolchainRoot)/libdwarf', '-I@(ElfToolchainRoot)/common', '@(this.Identity->MakeAbsolute())'))"
+							NameTable define string = `@("../../External/elftoolchain/libdwarf/dwarf_nametbl.m4"->MakeAbsolute())`
+						}
+						GenerateFile
+						{
+							Name `@(GeneratedDirectory)libdwarf/@(ThisFileName).c`
+							Contents ExecuteCommand(
+								`@(GeneratedDirectory)libdwarf/@(ThisFileName).state`
+								, [this.Identity->MakeAbsolute(), NameTable]
+								, "m4"
+								, "-E"
+								, "-d"
+								, `-DSRCDIR=@(ElfToolchainRoot)/libdwarf`
+								, `-I@(ElfToolchainRoot)/common`
+								, this.Identity->MakeAbsolute()
+							)
 						}
 
 						%GenerateFile "../../External/elftoolchain/libdwarf/dwarf_pubnames.m4"
@@ -460,18 +492,19 @@ Property
 
 			Property
 			{
-				VisualStudioRoot "@(Builtin.VisualStudioRoot->UnixPath())"
+				VisualStudioRoot define string = Builtin.VisualStudioRoot->UnixPath()
 
-				MSVCRootPath "@(MalterlibToolsRoot)/MSVC"
+				MSVCRootPath define string
+				MSVCRootPath `@(MalterlibToolsRoot)/MSVC`
 				{
-					!MalterlibOverrideMSVCVersion ""
+					!MalterlibOverrideMSVCVersion undefined
 				}
-				MSVCRootPath "@(VisualStudioRoot)/VC/Tools/MSVC"
+				MSVCRootPath `@(VisualStudioRoot)/VC/Tools/MSVC`
 				{
-					!!MSVCRootPath ""
+					!!MSVCRootPath undefined
 				}
 
-				VisualStudioCRTPath "@(MSVCRootPath)/@(MalterlibMSVCVersion)/crt/src"
+				VisualStudioCRTPath define string = `@(MSVCRootPath)/@(MalterlibMSVCVersion)/crt/src`
 			}
 
 			%Group "CDecl"
@@ -484,9 +517,10 @@ Property
 					Compile
 					{
 						!!CompileDialect "C"
-						SearchPath "@(VisualStudioCRTPath->MakeAbsolute())/vcruntime;@(Compile.SearchPath)"
-						PreprocessorDefines "_VCRT_BUILD;@(Compile.PreprocessorDefines)"
-						PrefixHeader "@('Source/Platform/Malterlib_Core_PlatformImp_MSVC_CRTPatches.h'->MakeAbsolute())"
+						SearchPath += `@(VisualStudioCRTPath->MakeAbsolute())/vcruntime`
+						PreprocessorDefines =+ "_VCRT_BUILD"
+
+						PrefixHeader "Source/Platform/Malterlib_Core_PlatformImp_MSVC_CRTPatches.h"->MakeAbsolute()
 						{
 							!!PlatformType "Windows"
 						}
@@ -500,33 +534,35 @@ Property
 						}
 						Property
 						{
-							FilesToPatch "exe_common.inl;utility.cpp;dll_dllmain.cpp"
-							FilesToCopy "exe_main.cpp;exe_winmain.cpp;exe_wmain.cpp;exe_wwinmain.cpp"
-
-							ThisFileName "@(this.Identity->GetFileNoExt())"
-							ThisSourceFile "@(VisualStudioCRTPath)/vcruntime/@(this.Identity)"
-							PatchFile "@('Patches'->MakeAbsolute())/@(MalterlibMSVCVersion)/VCCrt_@(this.Identity).patch"
-
-							ThisSourceFileBash "@(ThisSourceFile->ParseFormatString('{}:/{}', '/mnt/{0,cl}/{1}'))"
-							PatchFileBash "@(PatchFile->ParseFormatString('{}:/{}', '/mnt/{0,cl}/{1}'))"
+							ThisFileName define string = this.Identity->GetFileNoExt()
+							ThisSourceFile define string = `@(VisualStudioCRTPath)/vcruntime/@(this.Identity)`
+							PatchFile define string = `@("Patches"->MakeAbsolute())/@(MalterlibMSVCVersion)/VCCrt_@(this.Identity).patch`
 						}
-						%GenerateFile "@(FilesToPatch)"
+						%GenerateFile ["exe_common.inl", "utility.cpp", "dll_dllmain.cpp"]
 						{
-							Property
+							GenerateFile
 							{
-								Name "@(GeneratedDirectoryNoConfig)vcruntime/@(this.Identity)"
-								Contents "@(ExecuteCommand('@(GeneratedDirectoryNoConfig)vcruntime_@(ThisFileName).state', '@(ThisSourceFile)', '@(MToolPath)', 'BinaryPatch', '@(ThisSourceFile)', '@(PatchFile)', '-'))"
+								Name `@(GeneratedDirectoryNoConfig)vcruntime/@(this.Identity)`
+								Contents ExecuteCommand(
+									`@(GeneratedDirectoryNoConfig)vcruntime_@(ThisFileName).state`
+									, [ThisSourceFile]
+									, MToolPath
+									, "BinaryPatch"
+									, ThisSourceFile
+									, PatchFile
+									, "-"
+								)
 								Executable false
 								UnixLineEnds false
 								UnicodeBOM false
 							}
 						}
-						%GenerateFile "@(FilesToCopy)"
+						%GenerateFile ["exe_main.cpp", "exe_winmain.cpp", "exe_wmain.cpp", "exe_wwinmain.cpp"]
 						{
-							Property
+							GenerateFile
 							{
-								Name "@(GeneratedDirectoryNoConfig)/vcruntime/@(this.Identity)"
-								Contents "@(ExecuteCommand('@(GeneratedDirectoryNoConfig)vcruntime_@(ThisFileName).state', '@(ThisSourceFile)', '@(MToolPath)', 'Cat', '@(ThisSourceFile)'))"
+								Name `@(GeneratedDirectoryNoConfig)/vcruntime/@(this.Identity)`
+								Contents ExecuteCommand(`@(GeneratedDirectoryNoConfig)vcruntime_@(ThisFileName).state`, [ThisSourceFile], MToolPath, "Cat", ThisSourceFile)
 								Executable false
 								UnixLineEnds false
 								UnicodeBOM false
@@ -552,7 +588,7 @@ Property
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader ""
+		PrefixHeader undefined
 	}
 	Include "Lib_MalterlibNoPrefix.MInclude"
 
@@ -576,6 +612,11 @@ Property
 	}
 }
 
+Property
+{
+	MalterlibDynamicLibrary define bool = false
+}
+
 %Target "Lib_MalterlibDll"
 {
 	Property.MalterlibNoShortcuts true
@@ -593,7 +634,7 @@ Property
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader ""
+		PrefixHeader undefined
 	}
 	Include "Lib_MalterlibNoPrefix.MInclude"
 }
@@ -608,8 +649,8 @@ Compile
 			CompileDialect "C"
 		}
 	}
-	SearchPath "@(Builtin.BasePathAbsolute)/SDK/breakpad/src;@(Compile.SearchPath)"
-	PreprocessorDefines "typeof=__typeof__;@(Compile.PreprocessorDefines)"
+	SearchPath += `@(Builtin.BasePathAbsolute)/SDK/breakpad/src`
+	PreprocessorDefines =+ "typeof=__typeof__"
 }
 
 %Group "~Automatic/Breakpad Support"
@@ -626,28 +667,33 @@ Compile
 	}
 	%GenerateFile "Breakpad"
 	{
-		!!MalterlibEnableBreakpad true
-
-		Property
+		&
 		{
-			!!Target.Type "Executable"
-			!!Target.Type "ConsoleExecutable"
-			!!Target.Type "UIExecutable"
-			Group "@(Platform) @(Architecture) @(FullConfiguration)"
+			MalterlibEnableBreakpad true
+			|
+			{
+				Target.Type "Executable"
+				Target.Type "ConsoleExecutable"
+				Target.Type "UIExecutable"
+			}
+		}
 
-			Name "@(GeneratedDirectory)BreakpadInfo.cpp"
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name `@(GeneratedDirectory)BreakpadInfo.cpp`
 
-			Contents	"#include <Mib/Core/Core>\n\n"\
-						"namespace NMib\n"\
-						"{\n"\
-						"\tnamespace NSys\n"\
-						"\t{\n"\
-						"\t\tvoid fg_InitialiseCrashReporter()\n"\
-						"\t\t{\n"\
-						"\t\t\tNMib::fg_GetSys()->f_SetCrashHandler(\"\", \"@(MalterlibBreakpadUploadServer)\");\n"\
-						"\t\t}\n"\
-						"\t}\n"\
-						"}\n"
+			Contents	`#include <Mib/Core/Core>\n\n`\
+						`namespace NMib\n`\
+						`{\n`\
+						`	namespace NSys\n`\
+						`	{\n`\
+						`		void fg_InitialiseCrashReporter()\n`\
+						`		{\n`\
+						`			NMib::fg_GetSys()->f_SetCrashHandler("", @(MalterlibBreakpadUploadServer->Escape()));\n`\
+						`		}\n`\
+						`	}\n`\
+						`}\n`
 
 			UnicodeBOM true
 		}
@@ -665,7 +711,7 @@ Compile
 
 Target
 {
-	ExtraGroups "~Automatic/Breakpad Support;@(Target.ExtraGroups)"
+	ExtraGroups =+ "~Automatic/Breakpad Support"
 	{
 		&
 		{
@@ -687,7 +733,7 @@ Target
 				CompileDialect "C"
 			}
 		}
-		PreprocessorDefines "DMibBreakpadUploadServer=\"@(MalterlibBreakpadUploadServer)\";@(Compile.PreprocessorDefines)"
+		PreprocessorDefines =+ `DMibBreakpadUploadServer=@(MalterlibBreakpadUploadServer->Escape())`
 	}
 	%File "../CrashReport/Source/Malterlib_CrashReport_BreakpadUploader.cpp"
 }
@@ -699,7 +745,7 @@ Property.MalterlibUseCurl true
 
 Target
 {
-	ExtraGroups "~Automatic/Breakpad Uploader Support;@(Target.ExtraGroups)"
+	ExtraGroups =+ "~Automatic/Breakpad Uploader Support"
 	{
 		&
 		{
@@ -711,19 +757,19 @@ Target
 
 %Group "~Automatic/Program Identifier"
 {
-	%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_ProgramIdentifier.cpp"
-
 	&
 	{
 		PlatformFamily "Linux"
 		TargetIsExecutable true
 		!MalterlibDisableMalterlib true
 	}
+
+	%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_ProgramIdentifier.cpp"
 }
 
 Target
 {
-	ExtraGroups "~Automatic/Program Identifier;@(Target.ExtraGroups)"
+	ExtraGroups =+ "~Automatic/Program Identifier"
 	{
 		&
 		{
@@ -737,62 +783,60 @@ Target
 {
 	Property
 	{
-		EvalFile "@(Explodee->GetFile())"
-		RelativePath "@(Explodee->MakeRelative(@(Explodee1)))"
-		ExpandTemplate2	"@(MalterlibIncludeOutputDir)/@(RelativePath)|RelativePath=@(RelativePath)|FullPath=@(Explodee);"
+		g_DSStoreName define string = ".DS_Store"
+		Root define string
+		ExpandTemplate2 function(string _Path) [type(CEntity)] = []
+		ExpandTemplate2	=+ {
+			Name: `@(MalterlibIncludeOutputDir)/@(_Path->MakeRelative(Root))`
+			, Properties: {
+				RelativePath: _Path->MakeRelative(Root)
+				, FullPath: _Path
+			}
+		}
 		{
 			&
 			{
-				!EvalFile ""
-				!EvalFile ".DS_Store"
+				!undefined _Path
+				!g_DSStoreName _Path->GetFile()
 			}
 		}
-		ExpandTemplate	"@(Builtin.Function->ExplodeList('@(Explodee->FindFilesRecursiveIn('*'))', ';', 'ExpandTemplate2'))"
+		ExpandTemplate function(string _Root) [type(CEntity)] = []
+		ExpandTemplate =+ _Root->FindFilesRecursiveIn("*")->ForEach("ExpandTemplate2", {Root: _Root})
 		{
-			!Explodee ""
+			!_Root undefined
 		}
-		ExplodedContents "@(Builtin.Function->ExplodeList('@(MalterlibIncludeRoots)', ';', 'ExpandTemplate'))\n"
 	}
 
-	%GenerateFile "@(Builtin.Function->ExplodeList('@(MalterlibIncludeRoots)', ';', 'ExpandTemplate'))"
+	%GenerateFile MalterlibIncludeRoots->ForEach("ExpandTemplate")
 	{
 		Compile.Type "Header"
-		Property
+		GenerateFile
 		{
-			Name "@(this.Identity)"
-			Contents "#include \"@(FullPath)\"\n"
+			Name this.Identity
+			Contents `#include @(FullPath->Escape())\n`
 			Executable false
 			UnixLineEnds true
 			UnicodeBOM true
-			Group "@(Platform) @(Architecture) @(FullConfiguration)/@(RelativePath->GetPath())"
+			Group `@(Platform) @(Architecture) @(FullConfiguration)/@(RelativePath->GetPath())`
 			{
 				!!MalterlibIncludePerConfig true
 			}
-			Group "@(RelativePath->GetPath())"
+			Group RelativePath->GetPath()
 			{
 				!MalterlibIncludePerConfig true
 			}
 		}
-		//!!MalterlibIncludeRoots ""
 	}
 }
 
 Property
 {
-	MalterlibLibrary_All true // Default to all functionality being included in the library
-	MalterlibIncludeLevel "Workspace" // These too will cause performance issues if changed
-	MalterlibIncludePerConfig false // These too will cause performance issues if changed
+	MalterlibLibrary_All define bool = true // Default to all functionality being included in the library
+	MalterlibIncludeLevel define one_of("Workspace", "Target") = "Workspace" // These too will cause performance issues if changed
+	MalterlibIncludePerConfig define bool = false // These too will cause performance issues if changed
 
-	MalterlibIncludeOutputDir "@(GeneratedDirectory)RootInclude"
-	{
-		&
-		{
-			MalterlibIncludeLevel "Target"
-			MalterlibIncludePerConfig true
-		}
-
-	}
-	MalterlibIncludeOutputDir "@(GeneratedDirectoryNoConfig)RootInclude"
+	MalterlibIncludeOutputDir define string = `@(GeneratedDirectory)RootInclude`
+	MalterlibIncludeOutputDir `@(GeneratedDirectoryNoConfig)RootInclude`
 	{
 		&
 		{
@@ -801,16 +845,15 @@ Property
 		}
 
 	}
-	MalterlibIncludeOutputDir "@(GeneratedWorkspaceDirectory)RootInclude"
+	MalterlibIncludeOutputDir `@(GeneratedWorkspaceDirectory)RootInclude`
 	{
 		&
 		{
 			MalterlibIncludeLevel "Workspace"
 			MalterlibIncludePerConfig true
 		}
-
 	}
-	MalterlibIncludeOutputDir "@(GeneratedWorkspaceDirectoryNoConfig)RootInclude"
+	MalterlibIncludeOutputDir `@(GeneratedWorkspaceDirectoryNoConfig)RootInclude`
 	{
 		&
 		{
@@ -822,6 +865,7 @@ Property
 
 Property
 {
+	MalterlibMemoryManager_EnableOverrideSystemMalloc define bool = false
 	MalterlibMemoryManager_EnableOverrideSystemMalloc true
 	{
 		&
@@ -844,14 +888,20 @@ Property
 	}
 }
 
+Property
+{
+	MalterlibSubLibraries define [string]?
+	MalterlibIncludeRoots define [string]?
+}
+
 Target
 {
 	&
 	{
-		!MalterlibIncludeRoots ""
+		!MalterlibIncludeRoots undefined
 		MalterlibIncludeLevel "Target"
 	}
-	ExtraGroups "~Automatic/Include Roots;@(Target.ExtraGroups)"
+	ExtraGroups =+ "~Automatic/Include Roots"
 }
 
 %Group "~Automatic/Malterlib Indirect Dependencies"
@@ -868,14 +918,14 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxxABI true
-			Documentation ""
+			Documentation undefined
 		}
 	}
 	%Dependency "Lib_Malterlib_Runtime"
 	{
 		&
 		{
-			Documentation ""
+			Documentation undefined
 			|
 			{
 				PlatformFamily "Windows"
@@ -885,6 +935,10 @@ Target
 		}
 		Dependency.LinkWithObjectFiles false
 	}
+}
+
+%Group "~Automatic/Malterlib Dependencies"
+{
 	%Dependency "Lib_MalterlibDll"
 	{
 		&
@@ -910,9 +964,9 @@ Target
 	{
 		&
 		{
-			!MalterlibMemoryManager_OverrideOSXSystemMalloc false
+			MalterlibMemoryManager_OverrideSystemMalloc true
 			PlatformFamily "OSX"
-			Documentation ""
+			Documentation undefined
 			TargetIsExecutable true
 			&
 			{
@@ -927,6 +981,16 @@ Target
 	{
 		!!MalterlibNeedsMalterlibHelper true
 	}
+}
+
+Target.ExtraGroups =+ "~Automatic/Malterlib Dependencies"
+{
+	!MalterlibDisableMalterlib true
+}
+
+Property
+{
+	MalterlibLibraryGroups define [string] = []
 }
 
 %Target "Lib_Malterlib"
@@ -945,20 +1009,20 @@ Target
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader "@('../Core/Source/PrefixHeader/PCH.h'->MakeAbsolute())"
+		PrefixHeader "../Core/Source/PrefixHeader/PCH.h"->MakeAbsolute()
 		{
 			!DocumentationEnabled true
 		}
-		SearchPath "@('../PCH'->MakeAbsolute());@(Compile.SearchPath)"
-		SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/common;@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf;@(Compile.SearchPath)"
+		SearchPath += "../PCH"->MakeAbsolute()
+		SearchPath += [`@(Builtin.BasePathAbsolute)/External/elftoolchain/common`, `@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`]
 		{
 			!!PlatformFamily "Linux"
 		}
-		SearchPath "@(MalterlibSysRoot)/usr/include/glib-2.0;@(Compile.SearchPath)"
+		SearchPath += `@(MalterlibSysRoot)/usr/include/glib-2.0`
 		{
 			!!PlatformFamily "Linux"
 		}
-		SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
+		SearchPath += `@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf`
 		{
 			!!PlatformFamily "Linux"
 		}
@@ -972,65 +1036,59 @@ Target
 	}
 	Property
 	{
-		AllSubLibraryGroupsTemplate "{Malterlib}/{Lib_Malterlib_@(Explodee)};"
+		AllSubLibraryGroupsTemplate function(string _Library) [string] = []
+		AllSubLibraryGroupsTemplate += `{Malterlib}/{Lib_Malterlib_@(_Library)}`
 		{
 			&
 			{
-				!Explodee ""
+				!_Library ""
 				!
 				{
 					|
 					{
-						true "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))"
-						true "@(MalterlibLibrarySeparate_Lib_Malterlib_@(Explodee))"
+						true IsDefined(`MalterlibSubLibrarySeparate_Lib_Malterlib_@(_Library)`) ? MalterlibSubLibrarySeparate_Lib_Malterlib_@(_Library) : false
+						true IsDefined(`MalterlibLibrarySeparate_Lib_Malterlib_@(_Library)`) ? MalterlibLibrarySeparate_Lib_Malterlib_@(_Library) : false
 						&
 						{
 							MalterlibSubLibrarySeparate true
-							!false "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))"
+							!false IsDefined(`MalterlibSubLibrarySeparate_Lib_Malterlib_@(_Library)`) ? MalterlibSubLibrarySeparate_Lib_Malterlib_@(_Library) : false
 						}
 					}
 				}
 			}
 		}
-
-		AllSubLibraryGroups "@(Builtin.Function->ExplodeList('@(MalterlibSubLibraries)', ';', 'AllSubLibraryGroupsTemplate'))"
-		{
-		}
 	}
 
-	Target.ExtraGroups "~Automatic/Malterlib Indirect Dependencies;@(AllSubLibraryGroups);@(MalterlibLibraryGroups);@(Target.ExtraGroups)"
+	Target.ExtraGroups =+ ["~Automatic/Malterlib Indirect Dependencies", MalterlibSubLibraries->ForEach("AllSubLibraryGroupsTemplate")..., MalterlibLibraryGroups...]
 
 	%Group "Indirect Dependencies"
 	{
 		Property
 		{
-			AllDependenciesTemplate "Lib_Malterlib_@(Explodee);"
+			AllDependenciesTemplate function(string _Library) [string] = []
+			AllDependenciesTemplate += `Lib_Malterlib_@(_Library)`
 			{
 				&
 				{
-					!Explodee ""
+					!_Library ""
 					|
 					{
 						&
 						{
-							true "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))"
-							!true "@(MalterlibLibrarySeparate_Lib_Malterlib_@(Explodee))"
+							true IsDefined(`MalterlibSubLibrarySeparate_Lib_Malterlib_@(_Library)`) ? MalterlibSubLibrarySeparate_Lib_Malterlib_@(_Library) : false
+							!true IsDefined(`MalterlibLibrarySeparate_Lib_Malterlib_@(_Library)`) ? MalterlibLibrarySeparate_Lib_Malterlib_@(_Library) : false
 						}
 						&
 						{
 							MalterlibSubLibrarySeparate true
-							!false "@(MalterlibSubLibrarySeparate_Lib_Malterlib_@(Explodee))"
+							!false IsDefined(`MalterlibSubLibrarySeparate_Lib_Malterlib_@(_Library)`) ? MalterlibSubLibrarySeparate_Lib_Malterlib_@(_Library) : false
 						}
 					}
 				}
 			}
-
-			AllDependencies "@(Builtin.Function->ExplodeList('@(MalterlibSubLibraries)', ';', 'AllDependenciesTemplate'))"
-			{
-			}
 		}
 
-		%Dependency "@(AllDependencies)"
+		%Dependency MalterlibSubLibraries->ForEach("AllDependenciesTemplate")
 
 		Dependency.Indirect true
 	}
@@ -1044,7 +1102,7 @@ Target
 		BaseName "MalterlibOverrideMallocDummy"
 		Type "SharedDynamicLibrary"
 		Group "Malterlib"
-		LDFlags "-nostdlib @(Target.LDFlags)"
+		LDFlags =+ "-nostdlib"
 		{
 			&
 			{
@@ -1069,7 +1127,7 @@ Target
 	Target
 	{
 		!!PlatformFamily "OSX"
-		LinkWithLibraries ""
+		LinkWithLibraries []
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
 		InstrumentForOptimization false
@@ -1078,7 +1136,7 @@ Target
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader ""
+		PrefixHeader undefined
 		CodeCoverage false
 		{
 			!!MalterlibCodeCoverage true
@@ -1088,8 +1146,7 @@ Target
 	{
 		MalterlibDisableMalterlib true
 		MalterlibStripSymbols false
-		PostCopyProject ""
-		MalterlibPostCopyProject ""
+		MalterlibPostCopyProject undefined
 	}
 	%Group "Source"
 	{
@@ -1106,10 +1163,8 @@ Target
 
 Property
 {
-	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem "" // User(Undocumented)=true: Init early support. Currently breaks OSX 10.12
-	{
-		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem ""
-	}
+	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem define bool = false // User(Undocumented)=true: Init early support. Currently breaks OSX 10.12
+	MalterlibMemoryManager_CheckOverrideMemoryLeaks define bool = false
 }
 
 %Target "Dll_MalterlibOverrideMalloc"
@@ -1120,7 +1175,7 @@ Property
 		BaseName "MalterlibOverrideMalloc"
 		Type "SharedDynamicLibrary"
 		Group "Malterlib"
-		LDFlags "-nostdlib @(Target.LDFlags)"
+		LDFlags =+ "-nostdlib"
 		{
 			&
 			{
@@ -1137,7 +1192,7 @@ Property
 	{
 		!!PlatformFamily "OSX"
 
-		LinkWithLibraries "-lSystem.B -undefined dynamic_lookup \"@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib\""
+		LinkWithLibraries ["-lSystem.B", ["-undefined", "dynamic_lookup"], `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`]
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
 		InstrumentForOptimization false
@@ -1150,7 +1205,7 @@ Property
 			!MalterlibSupportSanitizers true
 			PlatformFamily "OSX"
 		}
-		LinkWithLibraries "/usr/lib/dylib1.o @(Target.LinkWithLibraries)"
+		LinkWithLibraries += "/usr/lib/dylib1.o"
 		{
 			!!Platform "OSX10.5"
 		}
@@ -1159,7 +1214,7 @@ Property
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader ""
+		PrefixHeader undefined
 		CodeCoverage false
 		{
 			!!MalterlibCodeCoverage true
@@ -1168,7 +1223,7 @@ Property
 		{
 			!!PlatformFamily "OSX"
 		}
-		PreprocessorDefines "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport;@(Compile.PreprocessorDefines)"
+		PreprocessorDefines =+ "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport"
 		{
 			!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 		}
@@ -1177,7 +1232,7 @@ Property
 	{
 		MalterlibDisableMalterlib true
 		MalterlibStripSymbols false
-		MalterlibPostCopyProject ""
+		MalterlibPostCopyProject undefined
 	}
 	%Group "Source"
 	{
@@ -1210,7 +1265,7 @@ Property
 	Target
 	{
 		!!PlatformFamily "Linux"
-		LDFlags "-nostdlib++ @(Target.LDFlags)"
+		LDFlags += "-nostdlib++"
 		{
 			!MalterlibSupportSanitizers true
 		}
@@ -1223,15 +1278,15 @@ Property
 			PlatformFamily "OSX"
 		}
 		LinkWithLibraries "-lSystem.B"
-		LinkWithLibraries "-lcrt1.o @(Target.LinkWithLibraries)"
+		LinkWithLibraries += "-lcrt1.o"
 		{
 			&
 			{
 				|
 				{
-					Platform OSX10.5
-					Platform OSX10.6
-					Platform OSX10.7
+					Platform "OSX10.5"
+					Platform "OSX10.6"
+					Platform "OSX10.7"
 				}
 				|
 				{
@@ -1240,7 +1295,7 @@ Property
 				}
 			}
 		}
-		LDFlags "-nostdlib @(Target.LDFlags)"
+		LDFlags += "-nostdlib"
 		LinkWithStandardLibraries false
 	}
 	Target
@@ -1254,7 +1309,7 @@ Property
 	Compile
 	{
 		!!CompileDialect "C"
-		PrefixHeader ""
+		PrefixHeader undefined
 		CodeCoverage false
 		{
 			!!MalterlibCodeCoverage true

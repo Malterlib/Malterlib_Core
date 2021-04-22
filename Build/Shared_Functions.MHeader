@@ -1,0 +1,48 @@
+// Copyright © 2020 Favro Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	HasTargetIdentityHelper_Identity define string
+	fg_HasTargetIdentity function(string _Target) bool = false
+	fg_HasTargetIdentity true
+	{
+		!!HasTargetIdentityHelper_Identity GetProperty("Property", "TargetIdentity", _Target)
+	}
+
+	fg_IsTargetInDependencies function(string _Target) bool = Target:Target.DependenciesNames->ContainsListElement(_Target)
+
+	fg_IsTargetInWorkspace function(string _Target) bool = false
+	fg_IsTargetInWorkspace Workspace:Workspace.AllTargets->ForEach("fg_HasTargetIdentity", {HasTargetIdentityHelper_Identity: _Target})
+
+	fg_ExpandRecursiveStringArray function(one_of(string, [string]) _Flag) [string] = []
+	fg_ExpandRecursiveStringArray += _Flag
+	{
+		!!true IsString(_Flag)
+	}
+	fg_ExpandRecursiveStringArray += _Flag
+	{
+		!!true IsArray(_Flag)
+	}
+	fg_ExpandRecursiveStringArray Error("Expected string arrays")
+	{
+		&
+		{
+			!true IsArray(_Flag)
+			!true IsString(_Flag)
+		}
+	}
+
+	fg_StringArrayToCommandLine function(string _Flag) string = ""
+	fg_StringArrayToCommandLine =+ `@(_Flag->Escape())`
+	{
+		!!fg_StringArrayToCommandLine undefined
+	}
+	fg_StringArrayToCommandLine =+ ` @(_Flag->Escape())`
+	{
+		!fg_StringArrayToCommandLine undefined
+	}
+
+	fg_RecursiveStringArrayToCommandLine function([one_of(string, [string])] _Commands) string = ""
+	fg_RecursiveStringArrayToCommandLine _Commands->ForEach("fg_ExpandRecursiveStringArray")->ForEach("fg_StringArrayToCommandLine")
+}

@@ -151,8 +151,8 @@
 			{
 				Property
 				{
-					C# "Compile"
-					C#Component "Compile"
+					C\# "Compile"
+					C\#Component "Compile"
 					ApplicationDefinition "ApplicationDefinition"
 					Page "Page"
 					EmbeddedResource_ResX "EmbeddedResource"

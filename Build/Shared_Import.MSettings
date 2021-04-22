@@ -3,14 +3,15 @@
 
 Property
 {
-	ImportIdentityRelativeRootPath "@(Import:this.IdentityAsAbsolutePath->GetPath())"
-	ImportIdentityRelativeRootPath "@(ImportIdentityRelativeRootPath->MakeRelative(@(Builtin.BasePathAbsolute)))"
+	ImportIdentityRelativeRootPath define string
+	ImportIdentityRelativeRootPath Import:this.IdentityAsAbsolutePath->GetPath()->MakeRelative(Builtin.BasePathAbsolute)
 
+	IsMaintainedConfig define bool
 	IsMaintainedConfig true
 	{
 		&
 		{
-			IsMaintainedConfig ""
+			IsMaintainedConfig undefined
 			|
 			{
 				Import.CMake_Config "Debug"
@@ -19,74 +20,94 @@ Property
 		}
 	}
 
+	MalterlibImportUpdateCache define bool
 	MalterlibImportUpdateCache true
 	{
 		&
 		{
-			MalterlibImportUpdateCache ""
+			MalterlibImportUpdateCache undefined
 			!MalterlibBuildServerBuild true
 		}
 	}
 }
 
-
 Import
 {
-	SharedTempDirectory "@(MalterlibCompiledFilesSourceBase)/@(BuildSystemName)/Generated/@(ImportIdentityRelativeRootPath->Replace('/', '_'))"
-	TempDirectory "@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@(Import.CMake_Config)"
+	SharedTempDirectory `@(MalterlibCompiledFilesSourceBase)/@(BuildSystemName)/Generated/@(ImportIdentityRelativeRootPath->Replace("/", "_"))`
+	TempDirectory `@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@(Import.CMake_Config)`
+}
+
+Property
+{
+	MToolCMakePath define string
+	MToolCMakePath MToolDirectory / ("MToolCMake" + (Builtin.MToolExe->GetExtension() && ("." + Builtin.MToolExe->GetExtension())))
 }
 
 Import
 {
-	CMake_AlwaysFullRebuild true // User(Import)=false: Always do a full rebuild of cmake generation when the cache is outdated
-	{
-		!!CMake_AlwaysFullRebuild ""
-	}
+	CMake_AlwaysFullRebuild define bool = true // User(Import)=false: Always do a full rebuild of cmake generation when the cache is outdated
+	CMake_VerboseHash define bool = false // User(Import)=true: Trace out the string used to determine the config hash for cmake imports
+	CMake_DiffHash define bool = false // User(Import)=true: Run diff program with differences between hashes
 
-	CMake_VerboseHash false // User(Import)=true: Trace out the string used to determine the config hash for cmake imports
-	{
-		!!Import.CMake_VerboseHash ""
-	}
-
-	CMake_FullRebuildVersion "2"
+	CMake_FullRebuildVersion "3"
 
 	CMake_UpdateCache true
 	{
 		&
 		{
-			Import.CMake_UpdateCache ""
+			Import.CMake_UpdateCache undefined
 			MalterlibImportUpdateCache true
 		}
 	}
-	CMake_CacheDirectory "@(Import:this.IdentityPath->GetPath())/ImportCache/@(ImportIdentityRelativeRootPath->Replace('/', '_'))-@(Platform)-@(Architecture)-@(Import.CMake_Config)"
+	CMake_CacheDirectory `@(Import:this.IdentityPath->GetPath())/ImportCache/@(ImportIdentityRelativeRootPath->Replace("/", "_"))-@(Platform)-@(Architecture)-@(Import.CMake_Config)`
 	{
 		!!IsMaintainedConfig true
 	}
-	CMake_CacheDirectory "@(Builtin.BasePathAbsolute)/ImportCache/@(ImportIdentityRelativeRootPath->Replace('/', '_'))-@(Platform)-@(Architecture)-@(Import.CMake_Config)"
+	CMake_CacheDirectory `@(Builtin.BasePathAbsolute)/ImportCache/@(ImportIdentityRelativeRootPath->Replace("/", "_"))-@(Platform)-@(Architecture)-@(Import.CMake_Config)`
 	{
 		!IsMaintainedConfig true
 	}
 
-	CMake_ReplacePrefixes "@(Import.TempDirectory)=@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/@@(FullConfiguration);@(CMake_ReplacePrefixes)"
+	CMake_ReplacePrefixes =+ { Find: `@(Import.TempDirectory)`, Replace: `@(Import.SharedTempDirectory)/@(Platform)/@(Architecture)/\`@@(FullConfiguration)\`` }
 
-	CMake_CacheExcludePatterns "*/CMakeFiles/*;*/cmake.tmp/*;*.cmake;*.ninja;*/CMakeCache.txt;*/MalterlibFullRebuildVersion;*/.NoDartCoverage;@(Import.CMake_CacheExcludePatterns)"
+	CMake_CacheExcludePatterns =+ [
+		"*/CMakeFiles/*"
+		, "*/cmake.tmp/*"
+		, "*.cmake"
+		, "*.ninja"
+		, "*/CMakeCache.txt"
+		, "*/MalterlibFullRebuildVersion"
+		, "*/.NoDartCoverage"
+		, "*/compile_commands.json"
+	]
 
-	MToolCMakePath "@(MToolDirectory->MakeRelative('.'->MakeAbsolute()))/MToolCMake"
+	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
+	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
 
-	CMake_ExcludeFromHash "@@('@(Import.MToolCMakePath)'->MakeAbsolute())=MToolCMake;@(Import.CMake_ExcludeFromHash)"
-
-	CMake_CacheReplaceContents "@@('@(Import.MToolCMakePath)'->MakeAbsolute())=MToolCMake;/opt/local/bin/=;/usr/bin/=;/opt/homebrew/bin/=;/usr/local/bin/=;/usr/local/go/bin/=;@(Import.CMake_CacheReplaceContents)"
-
-	CMake_CacheReplaceContents "C:/Go/bin/=;C:/strawberry/perl/bin/=;c:/Program Files/Git/bin/=;c:/Program Files/Git/usr/bin/=;@(Import.CMake_CacheReplaceContents)"
+	CMake_CacheReplaceContents =+ [
+		{Find: "C:/Go/bin/", Replace: ""}
+		, {Find: "C:/strawberry/perl/bin/", Replace: ""}
+		, {Find: "c:/Program Files/Git/bin/", Replace: ""}
+		, {Find: "c:/Program Files/Git/usr/bin/", Replace: ""}
+	]
 	{
 		!!HostPlatformFamily "Windows"
 	}
+
+	CMake_CacheReplaceContents =+ [
+		{Find: `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`, Replace: "MToolCMake"}
+		, {Find: `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`, Replace: "MToolCMake"}
+		, {Find: "/opt/local/bin/", Replace: ""}
+		, {Find: "/usr/bin/", Replace: ""}
+		, {Find: "/opt/homebrew/bin/", Replace: ""}
+		, {Find: "/usr/local/go/bin/", Replace: ""}
+	]
 
 	CMake_Config "Release"
 	{
 		&
 		{
-			Import.CMake_Config ""
+			Import.CMake_Config undefined
 			|
 			{
 				Configuration "Release"
@@ -99,15 +120,25 @@ Import
 	}
 	CMake_Config "Debug"
 	{
-		!!Import.CMake_Config ""
+		!!Import.CMake_Config undefined
 	}
-	CMake_Languages "C=C;CXX=C++;ASM=Assembler;@(Import.CMake_Languages)"
-	CMake_Languages "ASM_NASM=AssemblerNasm;ASM_MASM=Assembler;RC=WindowsResource;@(Import.CMake_Languages)"
+
+	CMake_Languages =+ [
+		{CMakeLanguage: "C", MalterlibLanguage: "C"},
+		{CMakeLanguage: "CXX", MalterlibLanguage: "C++"},
+		{CMakeLanguage: "ASM", MalterlibLanguage: "Assembler"}
+	]
+
+	CMake_Languages =+ [
+		{CMakeLanguage: "ASM_NASM", MalterlibLanguage: "AssemblerNasm"},
+		{CMakeLanguage: "ASM_MASM", MalterlibLanguage: "Assembler"},
+		{CMakeLanguage: "RC", MalterlibLanguage: "WindowsResource"},
+	]
 	{
 		!!GeneratorFamily "VisualStudio"
 	}
 
-	CMake_Variables "CMAKE_TRY_COMPILE_PLATFORM_VARIABLES=CMAKE_EXE_LINKER_FLAGS_INIT;@(Import.CMake_Variables)"
+	CMake_Variables =+ ["CMAKE_TRY_COMPILE_PLATFORM_VARIABLES=CMAKE_EXE_LINKER_FLAGS_INIT"]
 	{
 		&
 		{
@@ -116,67 +147,61 @@ Import
 		}
 	}
 
-	CMake_Variables "CMAKE_LINKER=@(Malterlib_LinuxLinker);@(Import.CMake_Variables)"
+	CMake_Variables =+ [`CMAKE_LINKER=@(Malterlib_LinuxLinker)`]
 	{
 		&
 		{
 			PlatformFamily "Linux"
-			!Malterlib_LinuxLinker ""
-		}
-	}
-	CMake_Variables "CMAKE_LINKER=@(Malterlib_LinuxLinker);@(Import.CMake_Variables)"
-	{
-		&
-		{
-			PlatformFamily "Linux"
-			!Malterlib_LinuxLinker ""
+			!Malterlib_LinuxLinker undefined
 		}
 	}
 
-	CMake_Internal_LinkerFlags "-fuse-ld=@(Malterlib_LinuxLinker) -stdlib=libc++ @(Import.CMake_Internal_LinkerFlags)"
-	{
-		&
-		{
-			PlatformFamily "Linux"
-			!Malterlib_LinuxLinker ""
-		}
-	}
+	CMake_Internal_LinkerFlags define string?
 
-	CMake_Internal_LinkerFlags "-Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/lib32\" -Xlinker -rpath-link -Xlinker \"@(MalterlibSysRoot)/usr/lib32\" @(Import.CMake_Internal_LinkerFlags)"
-	{
-		&
-		{
-			PlatformFamily "Linux"
-			Architecture "x86"
-		}
-	}
-
-	CMake_Variables "CMAKE_EXE_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags);@(Import.CMake_Variables)"
-	{
-		!Import.CMake_Internal_LinkerFlags ""
-	}
-
-	CMake_Variables "CMAKE_STATIC_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags);@(Import.CMake_Variables)"
-	{
-		!Import.CMake_Internal_LinkerFlags ""
-	}
-
-	CMake_Variables "CMAKE_MODULE_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags);@(Import.CMake_Variables)"
-	{
-		!Import.CMake_Internal_LinkerFlags ""
-	}
-
-	CMake_Variables "CMAKE_SHARED_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags);@(Import.CMake_Variables)"
-	{
-		!Import.CMake_Internal_LinkerFlags ""
-	}
-
-	CMake_Internal_LinkerFlags "-stdlib=libc++ @(Import.CMake_Internal_LinkerFlags)"
+	CMake_Internal_LinkerFlags =+ ` -stdlib=libc++`
 	{
 		!!PlatformFamily "OSX"
 	}
 
-	CMake_Variables "CMAKE_CXX_FLAGS_INIT=-stdlib=libc++;@(Import.CMake_Variables)"
+	CMake_Internal_LinkerFlags =+ ` -fuse-ld=@(Malterlib_LinuxLinker) -stdlib=libc++`
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			!Malterlib_LinuxLinker undefined
+		}
+	}
+
+	CMake_Internal_LinkerFlags =+ ` -Xlinker -rpath-link -Xlinker @(`@(MalterlibSysRoot)/lib32`->EscapeHost()) -Xlinker -rpath-link -Xlinker @(`@(MalterlibSysRoot)/usr/lib32`->EscapeHost())`
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Architecture "x86"
+		}
+	}
+
+	CMake_Variables =+ [`CMAKE_EXE_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags)`]
+	{
+		!Import.CMake_Internal_LinkerFlags undefined
+	}
+
+	CMake_Variables =+ [`CMAKE_STATIC_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags)`]
+	{
+		!Import.CMake_Internal_LinkerFlags undefined
+	}
+
+	CMake_Variables =+ [`CMAKE_MODULE_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags)`]
+	{
+		!Import.CMake_Internal_LinkerFlags undefined
+	}
+
+	CMake_Variables =+ [`CMAKE_SHARED_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags)`]
+	{
+		!Import.CMake_Internal_LinkerFlags undefined
+	}
+
+	CMake_Variables =+ ["CMAKE_CXX_FLAGS_INIT=-stdlib=libc++"]
 	{
 		|
 		{
@@ -185,54 +210,54 @@ Import
 		}
 	}
 
-	CMake_Variables "CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY;@(Import.CMake_Variables)"
+	CMake_Variables =+ ["CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"]
 	{
-		!PlatformFamily "@(HostPlatformFamily)"
+		!PlatformFamily HostPlatformFamily
 	}
 
-	CMake_Variables "CMAKE_RANLIB=@(PlatformToolsetCompiler->GetPath())/llvm-ranlib;@(Import.CMake_Variables)"
+	CMake_Variables =+ [`CMAKE_RANLIB=@(PlatformToolsetCompiler->GetPath())/llvm-ranlib`]
 	{
 		&
 		{
 			PlatformFamily "Linux"
-			!PlatformFamily "@(HostPlatformFamily)"
+			!PlatformFamily HostPlatformFamily
 		}
 	}
 
-	CMake_Variables "CMAKE_OSX_DEPLOYMENT_TARGET=@(Platform->ParseFormatString('OSX{}.{}', '{0}.{1}'));@(Import.CMake_Variables)"
+	CMake_Variables =+ [`CMAKE_OSX_DEPLOYMENT_TARGET=@(Platform->ParseFormatString("OSX{}.{}", "{0}.{1}"))`]
 	{
 		!!PlatformFamily "OSX"
 	}
 
-	CMake_Variables "CMAKE_OSX_ARCHITECTURES=x86_64;@(Import.CMake_Variables)"
+	CMake_Variables =+ "CMAKE_OSX_ARCHITECTURES=x86_64"
 	{
 		&
 		{
 			PlatformFamily "OSX"
-			Architecture x64
+			Architecture "x64"
 		}
 	}
-	CMake_Variables "CMAKE_OSX_ARCHITECTURES=arm64;@(Import.CMake_Variables)"
+	CMake_Variables =+ "CMAKE_OSX_ARCHITECTURES=arm64"
 	{
 		&
 		{
 			PlatformFamily "OSX"
-			Architecture arm64
+			Architecture "arm64"
 		}
 	}
-	CMake_Variables "CMAKE_OSX_ARCHITECTURES=arm64e;@(Import.CMake_Variables)"
+	CMake_Variables =+ "CMAKE_OSX_ARCHITECTURES=arm64e"
 	{
 		&
 		{
 			PlatformFamily "OSX"
-			Architecture arm64e
+			Architecture "arm64e"
 		}
 	}
 
-	CMake_ExcludeFromHash "@(Builtin.BasePathAbsolute)/;@(Import.CMake_ExcludeFromHash)"
-	CMake_ExcludeFromHash "@(MalterlibCompiledFiles);@(Import.CMake_ExcludeFromHash)"
-	CMake_ExcludeFromHash "@(MalterlibDependenciesDirectory)/;@(Import.CMake_ExcludeFromHash)"
-	CMake_ExcludeFromHash "@(MalterlibSysRoot)/;@(Import.CMake_ExcludeFromHash)"
+	CMake_ExcludeFromHash =+ Builtin.BasePathAbsolute
+	CMake_ExcludeFromHash =+ [MalterlibCompiledFiles]
+	CMake_ExcludeFromHash =+ [`@(MalterlibDependenciesDirectory)/`]
+	CMake_ExcludeFromHash =+ [`@(MalterlibSysRoot)/`]
 	{
 		&
 		{
@@ -245,18 +270,18 @@ Import
 	{
 		&
 		{
-			Import.CMake_SystemName ""
-			!PlatformFamily "@(HostPlatformFamily)"
+			Import.CMake_SystemName undefined
+			!PlatformFamily HostPlatformFamily
 			PlatformFamily "OSX"
 		}
 	}
 
-	CMake_SystemName "@(PlatformFamily)"
+	CMake_SystemName PlatformFamily
 	{
 		&
 		{
-			Import.CMake_SystemName ""
-			!PlatformFamily "@(HostPlatformFamily)"
+			Import.CMake_SystemName undefined
+			!PlatformFamily HostPlatformFamily
 		}
 	}
 
@@ -264,67 +289,67 @@ Import
 	{
 		&
 		{
-			!Import.CMake_SystemName ""
-			Import.CMake_SystemProcessor ""
+			!Import.CMake_SystemName undefined
+			Import.CMake_SystemProcessor undefined
 			Architecture "x64"
 			!PlatformFamily "OSX"
 		}
 	}
 
-	CMake_SystemProcessor "@(Architecture)"
+	CMake_SystemProcessor Architecture
 	{
 		&
 		{
-			!Import.CMake_SystemName ""
-			Import.CMake_SystemProcessor ""
+			!Import.CMake_SystemName undefined
+			Import.CMake_SystemProcessor undefined
 			!PlatformFamily "OSX"
 		}
 	}
 
-	CMake_CCompiler "@(PlatformToolsetCompiler->UnixPath())"
+	CMake_CCompiler PlatformToolsetCompiler->UnixPath()
 	{
 		&
 		{
-			!PlatformToolsetCompiler ""
+			!PlatformToolsetCompiler undefined
 		}
 	}
 
-	CMake_CxxCompiler "@(PlatformToolsetCompiler->UnixPath())"
+	CMake_CxxCompiler PlatformToolsetCompiler->UnixPath()
 	{
 		&
 		{
 			HostPlatformFamily "Windows"
-			!PlatformToolsetCompiler ""
+			!PlatformToolsetCompiler undefined
 		}
 	}
 
-	CMake_CxxCompiler "@(PlatformToolsetCompiler->UnixPath())++"
+	CMake_CxxCompiler `@(PlatformToolsetCompiler->UnixPath())++`
 	{
 		&
 		{
 			!HostPlatformFamily "Windows"
-			!PlatformToolsetCompiler ""
+			!PlatformToolsetCompiler undefined
 		}
 	}
 
-	CMake_Path "@(MToolDirectory);;@(Import.CMake_Path)"
+	CMake_Path += [MToolDirectory]
 }
 
 Import
 {
 	!PlatformFamily "Windows"
 
-	CMake_SysRoot "@(MalterlibSysRoot)"
+	CMake_SysRoot MalterlibSysRoot
 	{
 		&
 		{
-			!MalterlibSysRoot ""
+			!MalterlibSysRoot undefined
 			!Documentation "Doxygen"
 		}
 	}
 
-	CMake_CCompilerTarget "@(MalterlibTargetTriple)"
-	CMake_CxxCompilerTarget "@(MalterlibTargetTriple)"
-	CMake_CExternalToolChain "@(MalterlibToolsPrefix->Replace('/bin/', '/bin'))"
-	CMake_CxxExternalToolChain "@(MalterlibToolsPrefix->Replace('/bin/', '/bin'))"
+	CMake_CCompilerTarget MalterlibTargetTriple
+	CMake_CxxCompilerTarget MalterlibTargetTriple
+	CMake_CExternalToolChain MalterlibToolsPrefix->Replace("/bin/", "/bin")
+	CMake_CxxExternalToolChain MalterlibToolsPrefix->Replace("/bin/", "/bin")
 }

@@ -13,10 +13,10 @@
 				{
 					Property
 					{
-						C++ "sourcecode.cpp.cpp"
+						C\+\+ "sourcecode.cpp.cpp"
 						C "sourcecode.c.c"
 						Header "sourcecode.c.h"
-						ObjC++ "sourcecode.cpp.objcpp"
+						ObjC\+\+ "sourcecode.cpp.objcpp"
 						ObjC "sourcecode.c.objc"
 						None "text"
 						StaticLibrary "archive.ar"
@@ -87,14 +87,14 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Indirect"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 		}
@@ -113,8 +113,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -128,8 +128,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -144,7 +144,7 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "RealLinkWithLibraries"
@@ -152,6 +152,12 @@
 				Property
 				{
 					Name "OTHER_LDFLAGS"
+
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					IgnoreEmpty "1"
+					DisableValueSet "1"
 				}
 			}
 
@@ -160,21 +166,21 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "EntryPointSymbol"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "ModuleDefinitionFile"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 		}
@@ -186,7 +192,7 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "RealLinkWithLibraries"
@@ -194,6 +200,11 @@
 			Property
 			{
 				Name "OTHER_LIBTOOLFLAGS"
+				ConvertSeperator "1"
+				Seperator " "
+				OldSeperator ";"
+				IgnoreEmpty "1"
+				DisableValueSet "1"
 			}
 		}
 	}
@@ -243,56 +254,56 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "BaseName"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "BaseFileName"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "FileNameBase"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Output"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "CharacterSet"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
             %GeneratorSetting "Disabled"
             {
                 Property
                 {
-                    Disabled "1"
+                    Disabled true
                 }
             }
             %GeneratorSetting "FollowIndirectDependencies"
             {
                 Property
                 {
-                    Disabled "1"
+                    Disabled true
                 }
             }
 
@@ -330,8 +341,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -664,9 +675,9 @@
 				{
 					Property
 					{
-						true "YES"
+						\true "YES"
 						Fast "YES_THIN"
-						false "NO"
+						\false "NO"
 					}
 				}
 			}
@@ -681,8 +692,8 @@
 				{
 					Property
 					{
-						true "1"
-						false "0"
+						\true "1"
+						\false "0"
 					}	
 				}
 			}
@@ -703,8 +714,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -718,8 +729,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -733,8 +744,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -748,8 +759,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -763,8 +774,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -848,8 +859,8 @@
 				{
 					Property
 					{
-						true "true"
-						false false
+						\true "true"
+						\false "false"
 					}
 				}
 			}
@@ -963,8 +974,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -978,8 +989,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}	
 				}
 			}
@@ -987,7 +998,7 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "RealSDKRoot"
@@ -1014,20 +1025,20 @@
 				{
 					Property
 					{
-						OSX10.5 "10.5"
-						OSX10.6 "10.6"
-						OSX10.7 "10.7"
-						OSX10.8 "10.8"
-						OSX10.9 "10.9"
-						OSX10.10 "10.10"
-						OSX10.11 "10.11"
-						OSX10.12 "10.12"
-						OSX10.13 "10.13"
-						OSX10.14 "10.14"
-						OSX10.15 "10.15"
+						OSX10\.5 "10.5"
+						OSX10\.6 "10.6"
+						OSX10\.7 "10.7"
+						OSX10\.8 "10.8"
+						OSX10\.9 "10.9"
+						OSX10\.10 "10.10"
+						OSX10\.11 "10.11"
+						OSX10\.12 "10.12"
+						OSX10\.13 "10.13"
+						OSX10\.14 "10.14"
+						OSX10\.15 "10.15"
 						OSX11 "11.0"
-						iOS8.1 "8.1"
-						Linux2.6 "10.6"
+						iOS8\.1 "8.1"
+						Linux2\.6 "10.6"
 						Emscripten ""
 					}
 				}
@@ -1042,7 +1053,7 @@
 				{
 					Property
 					{
-						iOS8.1 "8.1"
+						iOS8\.1 "8.1"
 					}
 				}
 			}
@@ -1103,8 +1114,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1127,6 +1138,11 @@
 				Property
 				{
 					Name "PRODUCT_SPECIFIC_LIBTOOLFLAGS"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					IgnoreEmpty "1"
+					DisableValueSet "1"
 				}
 			}
 			%GeneratorSetting "LDFlags"
@@ -1134,6 +1150,11 @@
 				Property
 				{
 					Name "PRODUCT_SPECIFIC_LDFLAGS"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					IgnoreEmpty "1"
+					DisableValueSet "1"
 				}
 			}
 			%GeneratorSetting "LDFlagsFirst"
@@ -1141,6 +1162,11 @@
 				Property
 				{
 					Name "LDFlagsFirst"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					IgnoreEmpty "1"
+					DisableValueSet "1"
 				}
 			}
 			%GeneratorSetting "PlatformToolsetCompiler"
@@ -1160,8 +1186,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1176,8 +1202,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1192,8 +1218,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1209,8 +1235,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1225,8 +1251,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1240,8 +1266,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1271,8 +1297,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1286,13 +1312,13 @@
 				{
 					Property
 					{
-						GNU++11 "gnu++11"
-						GNU++14 "gnu++14"
-						GNU++20 "gnu++17"
-						C++11 "c++11"
-						C++14 "c++14"
-						C++17 "c++17"
-						C++20 "c++2a"
+						GNU\+\+11 "gnu++11"
+						GNU\+\+14 "gnu++14"
+						GNU\+\+20 "gnu++17"
+						C\+\+11 "c++11"
+						C\+\+14 "c++14"
+						C\+\+17 "c++17"
+						C\+\+20 "c++2a"
 					}
 				}
 			}
@@ -1323,8 +1349,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1339,8 +1365,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1375,8 +1401,8 @@
 					Property
 					{
 						none "none"
-						libc++ "libc++"
-						libstdc++ "libstdc++"
+						libc\+\+ "libc++"
+						libstdc\+\+ "libstdc++"
 					}
 				}
 			}
@@ -1390,8 +1416,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1413,8 +1439,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1436,7 +1462,7 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "ToolPath"
@@ -1529,8 +1555,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -1540,14 +1566,14 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "RemoteDebuggerWorkingDirectory"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
             
@@ -1556,21 +1582,21 @@
 			{
             	Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "CommandLine_Clean"
 			{
             	Property
 				{
-					Disabled "1"
+					Disabled true
                 }
 			}
 			%GeneratorSetting "CommandLine_ReBuild"
 			{
 				Property
 				{
-					Disabled "1" // Xcode does not have a rebuild action
+					Disabled true // Xcode does not have a rebuild action
 				}
 			}
 			%GeneratorSetting "ExportScriptEnvironmentContents"
@@ -1584,7 +1610,7 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 		}
@@ -1601,8 +1627,8 @@
 				{
 					Property
 					{
-						true "-claim_xcode"
-						false ""
+						\true "-claim_xcode"
+						\false ""
 					}
 				}
 			}
@@ -1626,8 +1652,8 @@
 				{
 					Property
 					{
-						true "-fomit-frame-pointer"
-						false "-fno-omit-frame-pointer"
+						\true "-fomit-frame-pointer"
+						\false "-fno-omit-frame-pointer"
 					}
 				}
 			}
@@ -1648,8 +1674,8 @@
 				{
 					Property
 					{
-						true "-fobjc-arc"
-						false "-fno-objc-arc"
+						\true "-fobjc-arc"
+						\false "-fno-objc-arc"
 					}
 				}
 			}			
@@ -1660,8 +1686,8 @@
 				{
 					Property
 					{
-						true "-fsized-deallocation"
-						false "-fnosized-deallocation"
+						\true "-fsized-deallocation"
+						\false "-fnosized-deallocation"
 					}
 				}
 			}
@@ -1687,8 +1713,8 @@
 				{
 					Property
 					{
-						true "-gsplit-dwarf -ggnu-pubnames"
-						false ""
+						\true "-gsplit-dwarf -ggnu-pubnames"
+						\false ""
 					}
 				}
 			}
@@ -1698,13 +1724,13 @@
 				{
 					Property
 					{
-						GNU++11 "-std=gnu++11"
-						GNU++14 "-std=gnu++14"
-						GNU++17 "-std=gnu++1z"
-						C++11 "-std=c++11"
-						C++14 "-std=c++14"
-						C++17 "-std=c++1z"
-						"" ""
+						GNU\+\+11 "-std=gnu++11"
+						GNU\+\+14 "-std=gnu++14"
+						GNU\+\+17 "-std=gnu++1z"
+						C\+\+11 "-std=c++11"
+						C\+\+14 "-std=c++14"
+						C\+\+17 "-std=c++1z"
+						\ ""
 					}
 				}
 			}
@@ -1720,7 +1746,7 @@
 						GNU89 "-std=gnu89"
 						GNU99 "-std=gnu99"
 						GNU11 "-std=gnu11"
-						"" ""
+						\ ""
 					}
 				}
 			}
@@ -1730,8 +1756,8 @@
 				{
 					Property
 					{
-						true "-fasynchronous-unwind-tables"
-						false ""
+						\true "-fasynchronous-unwind-tables"
+						\false ""
 					}
 				}
 			}
@@ -1742,8 +1768,8 @@
 				{
 					Property
 					{
-						true "-v"
-						false ""
+						\true "-v"
+						\false ""
 					}
 				}
 			}
@@ -1754,8 +1780,8 @@
 				{
 					Property
 					{
-						true "-fdiagnostics-show-template-tree -fno-elide-type -ftemplate-backtrace-limit=0"
-						false ""
+						\true "-fdiagnostics-show-template-tree -fno-elide-type -ftemplate-backtrace-limit=0"
+						\false ""
 					}
 				}
 			}
@@ -1766,8 +1792,8 @@
 				{
 					Property
 					{
-						true "-flimit-debug-info"
-						false ""
+						\true "-flimit-debug-info"
+						\false ""
 					}
 				}
 			}
@@ -1931,8 +1957,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-ftime-trace"
+						\false ""
+						\true "-ftime-trace"
 					}
 				}
 			}
@@ -1961,8 +1987,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-faligned-allocation"
+						\false ""
+						\true "-faligned-allocation"
 					}
 				}
 			}
@@ -1972,8 +1998,8 @@
 				{
 					Property
 					{
-						false "-Wno-deprecated-declarations"
-						true "-Wdeprecated-declarations"
+						\false "-Wno-deprecated-declarations"
+						\true "-Wdeprecated-declarations"
 					}
 				}
 			}
@@ -1983,8 +2009,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-Wno-pessimizing-move"
+						\false ""
+						\true "-Wno-pessimizing-move"
 					}
 				}
 			}
@@ -1994,8 +2020,8 @@
 				{
 					Property
 					{
-						false "-Wno-unused-exception-parameter"
-						true "-Wunused-exception-parameter"
+						\false "-Wno-unused-exception-parameter"
+						\true "-Wunused-exception-parameter"
 					}
 				}
 			}
@@ -2006,8 +2032,8 @@
 				{
 					Property
 					{
-						false "-Wno-c++11-narrowing"
-						true "-Wc++11-narrowing"
+						\false "-Wno-c++11-narrowing"
+						\true "-Wc++11-narrowing"
 					}
 				}
 			}
@@ -2017,8 +2043,8 @@
 				{
 					Property
 					{
-						false "-Wno-tautological-pointer-compare"
-						true "-Wtautological-pointer-compare"
+						\false "-Wno-tautological-pointer-compare"
+						\true "-Wtautological-pointer-compare"
 					}
 				}
 			}
@@ -2028,8 +2054,8 @@
 				{
 					Property
 					{
-						false "-Wno-unused-variable"
-						true "-Wunused-variable"
+						\false "-Wno-unused-variable"
+						\true "-Wunused-variable"
 					}
 				}
 			}
@@ -2039,8 +2065,8 @@
 				{
 					Property
 					{
-						false "-Wno-unused-function"
-						true "-Wunused-function"
+						\false "-Wno-unused-function"
+						\true "-Wunused-function"
 					}
 				}
 			}
@@ -2050,8 +2076,8 @@
 				{
 					Property
 					{
-						false "-Wno-unused-value"
-						true "-Wunused-value"
+						\false "-Wno-unused-value"
+						\true "-Wunused-value"
 					}
 				}
 			}
@@ -2061,8 +2087,8 @@
 				{
 					Property
 					{
-						false "-Wno-varargs"
-						true "-Wvarargs"
+						\false "-Wno-varargs"
+						\true "-Wvarargs"
 					}
 				}
 			}
@@ -2073,8 +2099,8 @@
 				{
 					Property
 					{
-						false "-Wno-unused-label"
-						true "-Wunused-label"
+						\false "-Wno-unused-label"
+						\true "-Wunused-label"
 					}
 				}
 			}
@@ -2084,8 +2110,8 @@
 				{
 					Property
 					{
-						false "-Wno-overloaded-virtual"
-						true "-Woverloaded-virtual"
+						\false "-Wno-overloaded-virtual"
+						\true "-Woverloaded-virtual"
 					}
 				}
 			}
@@ -2095,8 +2121,8 @@
 				{
 					Property
 					{
-						false "-Wno-char-subscripts"
-						true "-Wchar-subscripts"
+						\false "-Wno-char-subscripts"
+						\true "-Wchar-subscripts"
 					}
 				}
 			}
@@ -2106,8 +2132,8 @@
 				{
 					Property
 					{
-						false "-Wno-parentheses"
-						true "-Wparentheses"
+						\false "-Wno-parentheses"
+						\true "-Wparentheses"
 					}
 				}
 			}
@@ -2117,8 +2143,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-fprofile-instr-generate -fcoverage-mapping"
+						\false ""
+						\true "-fprofile-instr-generate -fcoverage-mapping"
 					}
 				}
 			}
@@ -2128,8 +2154,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-ffunction-sections"
+						\false ""
+						\true "-ffunction-sections"
 					}
 				}
 			}
@@ -2139,8 +2165,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-fdata-sections"
+						\false ""
+						\true "-fdata-sections"
 					}
 				}
 			}
@@ -2150,8 +2176,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-fcoroutines-ts"
+						\false ""
+						\true "-fcoroutines-ts"
 					}
 				}
 			}
@@ -2161,8 +2187,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-Wno-unused"
+						\false ""
+						\true "-Wno-unused"
 					}
 				}
 			}
@@ -2172,8 +2198,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-Wno-unknown-pragmas"
+						\false ""
+						\true "-Wno-unknown-pragmas"
 					}
 				}
 			}
@@ -2183,8 +2209,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-Wno-inconsistent-missing-override"
+						\false ""
+						\true "-Wno-inconsistent-missing-override"
 					}
 				}
 			}
@@ -2218,8 +2244,8 @@
 				{
 					Property
 					{
-						true "-fstack-protector"
-						false "-fno-stack-protector"
+						\true "-fstack-protector"
+						\false "-fno-stack-protector"
 					}
 				}
 			}			
@@ -2230,8 +2256,8 @@
 				{
 					Property
 					{
-						true "-Werror"
-						false ""
+						\true "-Werror"
+						\false ""
 					}
 				}
 			}
@@ -2241,8 +2267,8 @@
 				{
 					Property
 					{
-						true ""
-						false "-fno-rtti" // -fno-rtti"
+						\true ""
+						\false "-fno-rtti" // -fno-rtti"
 					}
 				}
 			}
@@ -2252,8 +2278,8 @@
 				{
 					Property
 					{
-						true "-fPIC"
-						false ""
+						\true "-fPIC"
+						\false ""
 					}
 				}
 			}
@@ -2264,8 +2290,8 @@
 				{
 					Property
 					{
-						true "-fopenmp"
-						false ""
+						\true "-fopenmp"
+						\false ""
 					}
 				}
 			}
@@ -2276,8 +2302,8 @@
 				{
 					Property
 					{
-						true ""
-						false ""
+						\true ""
+						\false ""
 					}
 				}
 			}
@@ -2289,8 +2315,8 @@
 				{
 					Property
 					{
-						true ""
-						false ""
+						\true ""
+						\false ""
 					}
 				}
 			}
@@ -2304,8 +2330,8 @@
 				{
 					Property
 					{
-						true ""
-						false ""
+						\true ""
+						\false ""
 					}
 				}
 			}
@@ -2332,8 +2358,8 @@
 				{
 					Property
 					{
-						true ""
-						false ""
+						\true ""
+						\false ""
 					}
 				}
 			}
@@ -2405,8 +2431,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-fvisibility-global-new-delete-hidden"
+						\false ""
+						\true "-fvisibility-global-new-delete-hidden"
 					}
 				}
 			}
@@ -2449,7 +2475,7 @@
 				{
 					Property
 					{
-						true "-fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -Wno-deprecated -Wno-overloaded-virtual"
+						\true "-fasm-blocks -fstrict-aliasing -Wdeprecated-declarations -Winvalid-offsetof -Wno-deprecated -Wno-overloaded-virtual"
 					}
 				}
 			}
@@ -2460,7 +2486,7 @@
 				{
 					Property
 					{
-						true "-fapple-kext"
+						\true "-fapple-kext"
 					}
 				}
 			}
@@ -2480,8 +2506,8 @@
 					Property
 					{
 						Full ""
-						C++ ""
-						ExternCandC++ ""
+						C\+\+ ""
+						ExternCandC\+\+ ""
 						Off "-fno-exceptions"
 					}
 				}
@@ -2492,8 +2518,8 @@
 				{
 					Property
 					{
-						true "-fdwarf-exceptions"
-						false ""
+						\true "-fdwarf-exceptions"
+						\false ""
 					}
 				}
 			}
@@ -2509,8 +2535,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 						XInternalCreate "" // Only used internally
 					}
 				}
@@ -2521,9 +2547,9 @@
 				{
 					Property
 					{
-						true "-flto"
+						\true "-flto"
 						Fast "-flto=thin"
-						false ""
+						\false ""
 					}
 				}
 			}
@@ -2560,8 +2586,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-fsanitize=thread"
+						\false ""
+						\true "-fsanitize=thread"
 					}
 				}
 			}
@@ -2571,8 +2597,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-fsanitize=address -fsanitize-address-use-after-scope"
+						\false ""
+						\true "-fsanitize=address -fsanitize-address-use-after-scope"
 					}
 				}
 			}
@@ -2582,8 +2608,8 @@
 				{
 					Property
 					{
-						false ""
-						true "-fsanitize=undefined"
+						\false ""
+						\true "-fsanitize=undefined"
 					}
 				}
 			}
@@ -2605,8 +2631,8 @@
 				{
 					Property
 					{
-						true "-fshort-wchar"
-						false ""
+						\true "-fshort-wchar"
+						\false ""
 					}
 				}
 			}
@@ -2616,8 +2642,8 @@
 				{
 					Property
 					{
-						true "-Wno-format-security"
-						false ""
+						\true "-Wno-format-security"
+						\false ""
 					}
 				}
 			}	
@@ -2627,8 +2653,8 @@
 				{
 					Property
 					{
-						true "-Wno-deprecated"
-						false ""
+						\true "-Wno-deprecated"
+						\false ""
 					}
 				}
 			}	
@@ -2653,7 +2679,7 @@
 	{
 		Property
 		{
-			Disabled "1"
+			Disabled true
 		}
 	}
 	%GeneratorSetting "ObjC++"
@@ -2666,7 +2692,7 @@
 	{
 		Property
 		{
-			Disabled "1"
+			Disabled true
 		}
 	}
 	%GeneratorSetting "QtMoc"
@@ -2735,8 +2761,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -2750,8 +2776,8 @@
 				{
 					Property
 					{
-						true false
-						false "true"
+						\true "false"
+						\false "true"
 					}
 				}
 			}
@@ -2761,35 +2787,35 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "PreprocessorUnDefinitions"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "DoNotGenerateInclude"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "GenerateDebugInformation"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Optimize"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 		}
@@ -2815,8 +2841,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -2826,28 +2852,28 @@
 			{
 				Property
 				{
-					Disabled "1" 
+					Disabled true 
 				}
 			}
 			%GeneratorSetting "DisplayDependencies"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "NoImplicitIncludes"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Optimize"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 		}
@@ -2888,8 +2914,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -2903,8 +2929,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -2914,14 +2940,14 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Optimize"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 		}
@@ -2944,14 +2970,14 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Optimize"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 		}
@@ -2971,14 +2997,14 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "DoCompileAndLink"
 			{
 				Property
 				{
-					Disabled "1" // We don't support this yet on OSX
+					Disabled true // We don't support this yet on OSX
 				}
 			}
 			%GeneratorSetting "VerboseLogging"
@@ -2991,8 +3017,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -3006,8 +3032,8 @@
 				{
 					Property
 					{
-						true "YES"
-						false "NO"
+						\true "YES"
+						\false "NO"
 					}
 				}
 			}
@@ -3021,7 +3047,7 @@
 				{
 					Property
 					{
-						false "NO"
+						\false "NO"
 						Elf32 "Elf32"
 						Elf64 "Elf64"
 					}
@@ -3108,7 +3134,7 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "AllCPUSubTypes"
@@ -3117,8 +3143,8 @@
 				{
 					Property
 					{
-						true "-force_cpusubtype_ALL"
-						false ""
+						\true "-force_cpusubtype_ALL"
+						\false ""
 					}
 				}
 			}
@@ -3153,70 +3179,70 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Custom_Outputs"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Custom_WorkingDirectory"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Custom_Inputs"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Optimize"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Type"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "FullEval"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "AllowNonExisting"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "CallingConvention"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "SymbolFile"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			
@@ -3224,7 +3250,7 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			
@@ -3232,7 +3258,7 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			
@@ -3240,7 +3266,7 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			
@@ -3248,7 +3274,7 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			
@@ -3256,14 +3282,14 @@
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Disabled"
 			{
 				Property
 				{
-					Disabled "1"
+					Disabled true
 				}
 			}
 			%GeneratorSetting "Warnings_UnusedCommandLineArgument"
@@ -3272,8 +3298,8 @@
 				{
 					Property
 					{
-						false "-Wno-unused-command-line-argument"
-						true "-Wunused-command-line-argument"
+						\false "-Wno-unused-command-line-argument"
+						\true "-Wunused-command-line-argument"
 					}
 				}
 			}

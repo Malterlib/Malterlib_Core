@@ -5,14 +5,14 @@
 {
 	/*Property
 	{
-		Disabled "1"
+		Disabled true
 	}*/
 }
 %GeneratorSetting "Native_None"
 {
 /*	Property
 	{
-		Disabled "1"
+		Disabled true
 	}*/
 	%GeneratorSetting "Compile"
 	{
@@ -21,7 +21,7 @@
 			Property
 			{
 				Name "AdditionalIncludeDirectories"
-				Disabled "1"
+				Disabled true
 			}
 		}
 	}
@@ -40,8 +40,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -49,7 +49,7 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Verbose"
@@ -62,9 +62,9 @@
 			{
 				Property
 				{
-					true ""
-					false "true"
-					"" "true"
+					\true ""
+					\false "true"
+					\ "true"
 				}
 			}
 		}
@@ -104,8 +104,8 @@
 			{
 				Property
 				{
-					true 1
-					false 0
+					\true "1"
+					\false "0"
 				}
 			}
 		}
@@ -151,14 +151,14 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Custom_WorkingDirectory"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "CustomCombined_CommandLine"
@@ -201,13 +201,14 @@
 			{
 				Name "AdditionalOptions"
 				Substitute "{} %(QtMoc.AdditionalOptions)"
+				Separator " "
 			}
 		}
 		%GeneratorSetting "Optimize"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "SearchPath"
@@ -223,8 +224,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -234,8 +235,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -245,8 +246,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -256,8 +257,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -267,8 +268,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -295,6 +296,7 @@
 			{
 				Name "AdditionalOptions"
 				Substitute "{} %(QtUic.AdditionalOptions)"
+				Separator " "
 			}
 		}
 		
@@ -302,7 +304,7 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "SearchPath"
@@ -318,8 +320,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -329,8 +331,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -340,8 +342,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -359,6 +361,7 @@
 			{
 				Name "AdditionalOptions"
 				Substitute "{} %(QtRcc.AdditionalOptions)"
+				Separator " "
 			}
 		}
 		
@@ -366,7 +369,7 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Namespace"
@@ -375,8 +378,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -386,8 +389,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -397,8 +400,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -415,7 +418,7 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Culture"
@@ -436,9 +439,9 @@
 			{
 				Property
 				{
-					true ""
-					false "true"
-					"" ""
+					\true ""
+					\false "true"
+					\ ""
 				}
 			}
 		}		
@@ -461,13 +464,14 @@
 			{
 				Name "AdditionalOptions"
 				Substitute "{} %(MlTwk.AdditionalOptions)"
+				Separator " "
 			}
 		}
 		%GeneratorSetting "Optimize"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "DoCompileAndLink"
@@ -476,8 +480,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -487,8 +491,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -506,13 +510,14 @@
 			{
 				Name "AdditionalOptions"
 				Substitute "{} %(MalterlibFS.AdditionalOptions)"
+				Separator " "
 			}
 		}
 		%GeneratorSetting "Optimize"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "DoCompileAndLink"
@@ -521,8 +526,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -532,8 +537,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -543,8 +548,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -552,5 +557,6 @@
 		%GeneratorSetting "ObjectFileName"
 		%GeneratorSetting "MalterlibFSPathPrefix"
 		%GeneratorSetting "CppFileName"
+		%GeneratorSetting "OutputAsAssembly"
 	}
 }

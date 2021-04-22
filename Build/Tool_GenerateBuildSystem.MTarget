@@ -3,33 +3,30 @@
 
 Property
 {
-	MalterlibDebugConfigureLLDBScript true // User(Debug)=false: Configure Malterlib lldb helpers in ~/.lldbinit automatically when building
-	{
-		!!MalterlibDebugConfigureLLDBScript ""
-	}
+	MalterlibDebugConfigureLLDBScript define bool = true // User(Debug)=false: Configure Malterlib lldb helpers in ~/.lldbinit automatically when building
 }
 
 %Target "Tool_GenerateBuildSystem"
 {
 	Property
 	{
-		IntermediateDirectoriesFile "@(GeneratedDirectory)IntermediateDirectories.txt"
+		IntermediateDirectoriesFile define string = GeneratedDirectory / "IntermediateDirectories.txt"
 	}
 	Target
 	{
 		BaseName "GenerateBuildSystem"
 		Type "Tool"
-		CommandLine_Build "\"@(Builtin.Function->GetProperty('Property', 'Name', 'Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate'))\" Build \"@(IntermediateDirectoriesFile)\""
-		CommandLine_ReBuild "\"@(Builtin.Function->GetProperty('Property', 'Name', 'Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate'))\" ReBuild \"@(IntermediateDirectoriesFile)\""
-		CommandLine_Clean "\"@(Builtin.Function->GetProperty('Property', 'Name', 'Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate'))\" Clean \"@(IntermediateDirectoriesFile)\""
-		Output "@(Builtin.GeneratorStateFile)"
+		CommandLine_Build `"@(GetProperty("GenerateFile", "Name", "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Build "@(IntermediateDirectoriesFile)"`
+		CommandLine_ReBuild `"@(GetProperty("GenerateFile", "Name", "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" ReBuild "@(IntermediateDirectoriesFile)"`
+		CommandLine_Clean `"@(GetProperty("GenerateFile", "Name", "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Clean "@(IntermediateDirectoriesFile)"`
+		Output Builtin.GeneratorStateFile
 		Group "Tools/Malterlib"
 	}
 	%Group "Source"
 	{
 		%Group "Post Copy"
 		{
-			%File "@(MalterlibPostCopyConfigFile)"
+			%File MalterlibPostCopyConfigFile
 			{
 				Compile.AllowNonExisting true
 			}
@@ -39,41 +36,41 @@ Property
 			Compile.AllowNonExisting true
 			%Group "Build System"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MBuildSystem*'))"
-				%File "@(Builtin.Function->SourceFiles('*.OldMBuildSystem'))"
+				%File SourceFiles("*.MBuildSystem*")
+				%File SourceFiles("*.OldMBuildSystem")
 			}
 			%Group "Headers"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MHeader*'))"
+				%File SourceFiles("*.MHeader*")
 			}
 			%Group "Include Headers"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MInclude*'))"
+				%File SourceFiles("*.MInclude*")
 			}
 			%Group "Settings"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MSettings*'))"
+				%File SourceFiles("*.MSettings*")
 			}
 			%Group "Targets"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MTarget*'))"
+				%File SourceFiles("*.MTarget*")
 			}
 			%Group "Generator Settings"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MGeneratorSettings*'))"
+				%File SourceFiles("*.MGeneratorSettings*")
 			}
 			%Group "Dependency"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MDependency*'))"
+				%File SourceFiles("*.MDependency*")
 			}
 			%Group "Workspace"
 			{
-				%File "@(Builtin.Function->SourceFiles('*.MWorkspace*'))"
+				%File SourceFiles("*.MWorkspace*")
 			}
 			%Group "CMake"
 			{
-				%File "@(Builtin.Function->SourceFiles('*/CMakeLists.txt'))"
-				%File "@(Builtin.Function->SourceFiles('*.cmake'))"
+				%File SourceFiles("*/CMakeLists.txt")
+				%File SourceFiles("*.cmake")
 			}
 		}
 		%Group "vs-tool"
@@ -137,16 +134,13 @@ Property
 				}
 				Property
 				{
-					IntermediateDirectoriesTemplate "@(Builtin.Function->GetProperty('Target', 'IntermediateDirectory', '@(Explodee)'))MalterlibDependencies\n"
-					{
-						!Explodee ""
-					}
-
-					IntermediateDirectoriesContents	"@(IntermediateDirectoriesContents)"\
-													"@(Builtin.Function->ExplodeList('@(Workspace.AllTargets)', ';', 'IntermediateDirectoriesTemplate'))"
-
-					Name "@(IntermediateDirectoriesFile)"
-					Contents "@(IntermediateDirectoriesContents)"
+					IntermediateDirectoriesTemplate function(string _Target) string
+					IntermediateDirectoriesTemplate =+ `@(GetProperty("Target", "IntermediateDirectory", _Target))MalterlibDependencies\n`
+				}
+				GenerateFile
+				{
+					Name IntermediateDirectoriesFile
+					Contents Workspace.AllTargets->ForEach("IntermediateDirectoriesTemplate")
 					Executable false
 					UnicodeBOM true
 					UnixLineEnds true
@@ -160,14 +154,39 @@ Property
 			{
 				Property
 				{
-					Name "@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/GenerateBuildSystem_@(Workspace:Workspace.Name)_@(Platform)_@(Architecture)@(ScriptExtension)"
+					BuiltinMToolDirectory define string = Builtin.MToolExe->GetPath()
 
-					Contents	"@(Contents)"\
-								"IF \"%DisableProjectGen%\" == \"1\" GOTO Skip\r\n"\
-								":RetryGeneration\r\n"\
-								"cd @(Builtin.BasePathAbsolute->WindowsPath())\r\n"\
-								"\"@(Builtin.MalterlibExe)\" generate --build-system \"@(Builtin.BuildSystemSource)\" --generator \"@(Generator)\" --output-directory \"@(Builtin.GeneratedBuildSystemDir)\" --use-cached-environment --action \"%1\" \"@(Workspace:Workspace.Name)\"\r\n"\
-								"IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n"
+					IsSafeMTool define bool = false
+					IsSafeMTool true
+					{
+						!!BuiltinMToolDirectory `@(Builtin.BasePathAbsolute)/BuildSystem/Binaries/General/Windows`
+					}
+
+					BuildSystemOutputBasePath define string = `@(Builtin.BasePathAbsolute)/BuildSystem`
+					BinariesPath define string = `@(Builtin.BasePathAbsolute)/Binaries/Malterlib`
+					DependencyFile define string = `@(BuildSystemOutputBasePath)/Binaries/Binaries.MalterlibDependency`
+					UpdatedFile define string = `@(BuildSystemOutputBasePath)/Binaries.updated`
+					ExcludePatterns define string = "*/.git;*/.DS_Store"
+					LLDBScriptLocation define string = "../../Debug/Source/Malterlib_LLDB"->MakeAbsolute()
+
+					LibToolCopy_BinariesDirectory define string = `@(PlatformToolsetCompilerBasePath)/bin`
+					LibToolCopy_UpdatedFile define string = `@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.updated`
+					LibToolCopy_DependencyFile define string = `@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.MalterlibDependency`
+				}
+				GenerateFile
+				{
+					Name `@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/GenerateBuildSystem_@(Workspace:Workspace.Name)_@(Platform)_@(Architecture)@(ScriptExtension)`
+
+					Contents =+	"set -eo pipefail\r\n"
+					{
+						!HostPlatformFamily "Windows"
+					}
+
+					Contents =+	`IF "%DisableProjectGen%" == "1" GOTO Skip\r\n`\
+								`:RetryGeneration\r\n`\
+								`cd @(Builtin.BasePathAbsolute->WindowsPath())\r\n`\
+								`"@(Builtin.MalterlibExe)" generate --build-system "@(Builtin.BuildSystemSource)" --generator "@(Generator)" --output-directory "@(Builtin.GeneratedBuildSystemDir)" --use-cached-environment --action "%1" "@(Workspace:Workspace.Name)"\r\n`\
+								`IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n`
 					{
 						&
 						{
@@ -177,28 +196,15 @@ Property
 					}
 
 
-					MToolDirectory "@(Builtin.MToolExe->GetPath())"
-					IsSafeMTool true
-					{
-						!!MToolDirectory "@(Builtin.BasePathAbsolute)/BuildSystem/Binaries/General/Windows"
-					}
-
-					BuildSystemBasePath "@(Builtin.BasePathAbsolute)/BuildSystem"
-					BinariesPath "@(Builtin.BasePathAbsolute)/Binaries/Malterlib"
-					DependencyFile "@(BuildSystemBasePath)/Binaries/Binaries.MalterlibDependency"
-					UpdatedFile "@(BuildSystemBasePath)/Binaries.updated"
-					ExcludePatterns "*/.git;*/.DS_Store"
-
-					Contents	"@(Contents)"\
-								"if exist \"@(DependencyFile)\" \"@(Builtin.MToolExe)\" CheckDependencies Verbose=true \"Directory=@(BuildSystemBasePath)/Binaries\"\r\n"\
-								"if not exist \"@(UpdatedFile)\" (\r\n"\
-								"	echo Updated needed\r\n"\
-								"	\"@(Builtin.MToolExe)\" DiffCopy \"@(BinariesPath)/General/Windows\" \"@(BuildSystemBasePath)/Binaries/General\"\r\n"\
-								"	\"@(Builtin.MToolExe)\" DiffCopy \"@(BinariesPath)/*.sh\" \"@(BuildSystemBasePath)/Binaries\" \"\" 0\r\n"\
-								"	\"@(Builtin.MToolExe)\" TouchOrCreate \"@(UpdatedFile)\"\r\n"\
-								"	\"@(Builtin.MToolExe)\" BuildDependencies \"OutputFile=@(DependencyFile)\" \"Output:@(UpdatedFile)\" \"Input:@(Builtin.BasePathAbsolute)/mib\" \"Find:@(BinariesPath)/*;RIF;33;@(ExcludePatterns)\"\r\n"\
-								"	if exist \"@(UpdatedFile)\" GOTO RetryGeneration\r\n"\
-								")\r\n"
+					Contents =+	`if exist "@(DependencyFile)" "@(Builtin.MToolExe)" CheckDependencies Verbose=true "Directory=@(BuildSystemOutputBasePath)/Binaries"\r\n`\
+								`if not exist "@(UpdatedFile)" (\r\n`\
+								`	echo Updated needed\r\n`\
+								`	"@(Builtin.MToolExe)" DiffCopy "@(BinariesPath)/General/Windows" "@(BuildSystemOutputBasePath)/Binaries/General"\r\n`\
+								`	"@(Builtin.MToolExe)" DiffCopy "@(BinariesPath)/*.sh" "@(BuildSystemOutputBasePath)/Binaries" "" 0\r\n`\
+								`	"@(Builtin.MToolExe)" TouchOrCreate "@(UpdatedFile)"\r\n`\
+								`	"@(Builtin.MToolExe)" BuildDependencies "OutputFile=@(DependencyFile)" "Output:@(UpdatedFile)" "Input:@(Builtin.BasePathAbsolute)/mib" "Find:@(BinariesPath)/*;RIF;33;@(ExcludePatterns)"\r\n`\
+								`	if exist "@(UpdatedFile)" GOTO RetryGeneration\r\n`\
+								`)\r\n`
 					{
 						&
 						{
@@ -209,14 +215,11 @@ Property
 						}
 					}
 
-					LLDBScriptLocation "@('../../Debug/Source/Malterlib_LLDB'->MakeAbsolute())"
-
-					Contents	"@(Contents)"\
-								"if ! grep ~/.lldbinit -qe '#StartMalterlibLLDB'; then\r\n"\
-								"	echo '#StartMalterlibLLDB' >> ~/.lldbinit\r\n"\
-								"	echo '#EndMalterlibLLDB' >> ~/.lldbinit\r\n"\
-								"fi\r\n"\
-								"sed -i '' $'/#StartMalterlibLLDB/,/#EndMalterlibLLDB/c\\\\\\n#StartMalterlibLLDB\\\\\\ncommand script import \"@(LLDBScriptLocation)\"\\\\\\n#EndMalterlibLLDB\\n' ~/.lldbinit\r\n"
+					Contents =+	`if ! grep ~/.lldbinit -qe '#StartMalterlibLLDB'; then\r\n`\
+								`	echo '#StartMalterlibLLDB' >> ~/.lldbinit\r\n`\
+								`	echo '#EndMalterlibLLDB' >> ~/.lldbinit\r\n`\
+								`fi\r\n`\
+								`sed -i '' $'/#StartMalterlibLLDB/,/#EndMalterlibLLDB/c\\\\\\n#StartMalterlibLLDB\\\\\\ncommand script import "@(LLDBScriptLocation)"\\\\\\n#EndMalterlibLLDB\\n' ~/.lldbinit\r\n`
 					{
 						&
 						{
@@ -227,8 +230,7 @@ Property
 						}
 					}
 
-					Contents	"@(Contents)"\
-								":Skip\r\n"
+					Contents =+ ":Skip\r\n"
 					{
 						&
 						{
@@ -237,21 +239,20 @@ Property
 						}
 					}
 
-					Contents	"@(Contents)"\
-								"if [ \"$DisableProjectGen\" == \"1\" ]; then\n"\
-								"  exit 0\n"\
-								"fi\n"\
-								"cd @(Builtin.BasePathRelativeProject)/..\n"\
-								"\"@(Builtin.MalterlibExe)\" generate --build-system \"@(Builtin.BuildSystemSource)\" --generator \"@(Generator)\" --output-directory \"@(Builtin.GeneratedBuildSystemDir)\" --action \"$1\" --use-cached-environment \"@(Workspace:Workspace.Name)\"\n"\
-								"ErrorLevel=$?\n"\
-								"if [ \"$ErrorLevel\" == \"2\" ]; then\n"\
-								"  echo error: Build system changed, aborting build\n"\
-								"  exit 1\n"\
-								"fi\n"\
-								"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
-								"  echo error: Build system generation failed\n"\
-								"  exit 1\n"\
-								"fi\n"
+					Contents =+	`if [ "$DisableProjectGen" == "1" ]; then\n`\
+								`  exit 0\n`\
+								`fi\n`\
+								`cd @(Builtin.BasePathRelativeProject)/..\n`\
+								`"@(Builtin.MalterlibExe)" generate --build-system "@(Builtin.BuildSystemSource)" --generator "@(Generator)" --output-directory "@(Builtin.GeneratedBuildSystemDir)" --action "$1" --use-cached-environment "@(Workspace:Workspace.Name)"\n`\
+								`ErrorLevel=$?\n`\
+								`if [ "$ErrorLevel" == "2" ]; then\n`\
+								`  echo error: Build system changed, aborting build\n`\
+								`  exit 1\n`\
+								`fi\n`\
+								`if [ "$ErrorLevel" != "0" ]; then\n`\
+								`  echo error: Build system generation failed\n`\
+								`  exit 1\n`\
+								`fi\n`
 					{
 						&
 						{
@@ -260,25 +261,17 @@ Property
 						}
 					}
 
-					Contents	"@(Contents)"\
-								"@(MalterlibBuildDependenciesContents)"
+					Contents =+ MalterlibBuildDependenciesContents
 
-					LibToolCopy_BinariesDirectory "@(PlatformToolsetCompilerBasePath)/bin"
-					LibToolCopy_UpdatedFile "@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.updated"
-					LibToolCopy_DependencyFile "@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.MalterlibDependency"
-
-					Contents	"@(Contents)"\
-								"if [ -f \"@(LibToolCopy_DependencyFile)\" ]; then\n"\
-								"	\"@(Builtin.MToolExe)\" CheckDependencies Verbose=true \"Directory=@(LibToolCopy_BinariesDirectory)\"\n"\
-								"fi\n"\
-								"if ! [ -f \"@(LibToolCopy_UpdatedFile)\" ] || ! [ -f \"@(LibToolCopy_BinariesDirectory)/libtool\" ]; then\n"\
-								"	echo Updated of libtool needed\n"\
-								"	set -e\n"\
-								"	\"@(Builtin.MToolExe)\" DiffCopy \"${DT_TOOLCHAIN_DIR}/usr/bin/libtool\" \"@(LibToolCopy_BinariesDirectory)\"\n"\
-								"	\"@(Builtin.MToolExe)\" TouchOrCreate \"@(LibToolCopy_UpdatedFile)\"\n"\
-								"	\"@(Builtin.MToolExe)\" BuildDependencies \"OutputFile=@(LibToolCopy_DependencyFile)\" \"Output:@(LibToolCopy_UpdatedFile)\" \"Input:${DT_TOOLCHAIN_DIR}/usr/bin/libtool\"\n"\
-								"	set +e\n"\
-								"fi\n"
+					Contents =+ `if [ -f "@(LibToolCopy_DependencyFile)" ]; then\n`\
+								`	"@(Builtin.MToolExe)" CheckDependencies Verbose=true "Directory=@(LibToolCopy_BinariesDirectory)"\n`\
+								`fi\n`\
+								`if ! [ -f "@(LibToolCopy_UpdatedFile)" ] || ! [ -f "@(LibToolCopy_BinariesDirectory)/libtool" ]; then\n`\
+								`	echo Updated of libtool needed\n`\
+								`	"@(Builtin.MToolExe)" DiffCopy "${DT_TOOLCHAIN_DIR}/usr/bin/libtool" "@(LibToolCopy_BinariesDirectory)"\n`\
+								`	"@(Builtin.MToolExe)" TouchOrCreate "@(LibToolCopy_UpdatedFile)"\n`\
+								`	"@(Builtin.MToolExe)" BuildDependencies "OutputFile=@(LibToolCopy_DependencyFile)" "Output:@(LibToolCopy_UpdatedFile)" "Input:${DT_TOOLCHAIN_DIR}/usr/bin/libtool"\n`\
+								`fi\n`
 					{
 						&
 						{
@@ -287,26 +280,23 @@ Property
 						}
 					}
 
-					Contents	"@(Contents)"\
-								"\"@(Builtin.MToolExe)\" CheckDependencies \"$2\"\n"\
-								"if [ \"$?\" != \"0\" ]; then\n"\
-								"  echo error: Dependency checking failed\n"\
-								"  exit 1\n"\
-								"fi\n"
+					Contents =+	`"@(Builtin.MToolExe)" CheckDependencies "$2"\n`\
+								`if [ "$?" != "0" ]; then\n`\
+								`  echo error: Dependency checking failed\n`\
+								`  exit 1\n`\
+								`fi\n`
 					{
 						&
 						{
 							!HostPlatformFamily "Windows"
-							!MalterlibAccurateDependencies true
 						}
 					}
-					Contents	"@(Contents)"\
-								"exit 0\n"
+					Contents =+ "exit 0\n"
 					{
 						!!MalterlibDisableBuildSystemGeneration true
 					}
 					Executable true
-					UnixLineEnds "@(ScriptUnixLineEnds)"
+					UnixLineEnds ScriptUnixLineEnds
 					UnicodeBOM false
 				}
 				Compile
@@ -314,7 +304,7 @@ Property
 					Type "None"
 				}
 			}
-/*			%File "@(Builtin.Function->GeneratedFiles('*'))"
+/*			%File "@(GeneratedFiles("*"))"
 			{
 				Compile
 				{
@@ -333,7 +323,7 @@ Property
 	}
 }
 
-Target.ExtraGroups "~Automatic/Dependencies/Tool_GenerateBuildSystem;@(Target.ExtraGroups)"
+Target.ExtraGroups =+ "~Automatic/Dependencies/Tool_GenerateBuildSystem"
 {
 	!Target:Target.Name "Tool_GenerateBuildSystem"
 }

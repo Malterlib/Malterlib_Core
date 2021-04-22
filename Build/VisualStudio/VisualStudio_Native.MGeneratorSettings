@@ -16,9 +16,9 @@
 		{
 			A0 "$(VCTargetsPath)\\Microsoft.Cpp.props"
 			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.props"
-			A2 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.props"
-			A3 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.props"
-			A4 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.props"
+			A2 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.props`
+			A3 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.props`
+			A4 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.props`
 		}
 	}
 	%GeneratorSetting "Targets"
@@ -27,9 +27,9 @@
 		{
 			A0 "$(VCTargetsPath)\\Microsoft.Cpp.targets"
 			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"
-			A2 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.targets"
-			A3 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.targets"
-			A4 "$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.targets"
+			A2 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.targets`
+			A3 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.targets`
+			A4 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.targets`
 		}
 	}
 }
@@ -104,9 +104,9 @@
 			{
 				Property
 				{
-					true true
-					false false
-					"" false
+					\true "true"
+					\false "false"
+					\ "false"
 				}
 			}
 		}
@@ -120,9 +120,9 @@
 			{
 				Property
 				{
-					true true
-					false false
-					"" false
+					\true "true"
+					\false "false"
+					\ "false"
 				}
 			}
 		}
@@ -137,8 +137,8 @@
 			{
 				Property
 				{
-					Native64Bit true
-					"" ""
+					Native64Bit "true"
+					\ ""
 				}
 			}
 		}
@@ -173,7 +173,7 @@
 							Property
 							{
 								CompileAs "CompileAsC"
-								CompileAsManaged false
+								CompileAsManaged "false"
 							}
 						}
 					}
@@ -224,8 +224,8 @@
 			{
 				Property
 				{
-					C++ "ClCompile"
-					C++Managed "ClCompile"
+					C\+\+ "ClCompile"
+					C\+\+Managed "ClCompile"
 					C "ClCompile"
 					Header "ClInclude"
 					None "None"
@@ -261,8 +261,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}

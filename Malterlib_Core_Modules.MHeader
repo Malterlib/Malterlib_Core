@@ -3,27 +3,77 @@
 
 Import "Malterlib_Core_RepositoryModules.MHeader"
 
-Property.MalterlibModules "Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Compression;Concurrency;Container;Contract;CrashReport;Cryptography;Daemon;Database;Debug;Desktop;Documentation;Encoding;Exception;File;Function;Graphics;Instrumentation;InterProcess;Intrusive;Iterator;Log;Memory;Meta;Mongo;Network;Numeric;Perforce;Preprocessor;Process;SQL;STL;Security;Storage;Stream;String;System;Test;Thread;Time;Type;Web;WebApp;XML;@(Property.MalterlibModules)"
+Property.MalterlibModules =+ [
+	"Atomic"
+	, "Algorithm"
+	, "Bit"
+	, "BuildSystem"
+	, "Cloud"
+	, "CommandLine"
+	, "Compression"
+	, "Concurrency"
+	, "Container"
+	, "Contract"
+	, "CrashReport"
+	, "Cryptography"
+	, "Daemon"
+	, "Database"
+	, "Debug"
+	, "Desktop"
+	, "Documentation"
+	, "Encoding"
+	, "Exception"
+	, "File"
+	, "Function"
+	, "Graphics"
+	, "Instrumentation"
+	, "InterProcess"
+	, "Intrusive"
+	, "Iterator"
+	, "Log"
+	, "Memory"
+	, "Meta"
+	, "WebApp"
+	, "Mongo"
+	, "Network"
+	, "Numeric"
+	, "Perforce"
+	, "Preprocessor"
+	, "Process"
+	, "SQL"
+	, "STL"
+	, "Security"
+	, "Storage"
+	, "Stream"
+	, "String"
+	, "System"
+	, "Test"
+	, "Thread"
+	, "Time"
+	, "Type"
+	, "Web"
+	, "XML"
+]
 
 %Repository "MalterlibSDK"
 {
 	!MalterlibUseGitRepo false
-	Property.RepoName "@(this.Identity).git"
+	Property.RepoName define string = `@(this.Identity).git`
 	Repository
 	{
 		Type "Malterlib"
-		Location "@('../../SDK'->MakeAbsolute())"
-		URL "@(Repository.MalterlibRoot)/@(RepoName)"
-		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
+		Location "../../SDK"->MakeAbsolute()
+		URL `@(Repository.MalterlibRoot)/@(RepoName)`
+		Remotes =+ MalterlibRemotePrefixes->ForEach("f_MalterlibRemotePrefixesTemplate")
 		{
-			!MalterlibRemotePrefixes  ""
+			!MalterlibRemotePrefixes undefined
 		}
-		Remotes "malterlib=https://github.com/Malterlib/MalterlibSDK.git@(MalterlibUpstreamWritableHelper);@(Repository.Remotes)"
+		Remotes =+ {Name: "malterlib", URL: `https://github.com/Malterlib/@(RepoName)`, Write: MalterlibUpstreamWriteAccess}
 		{
 			&
 			{
 				MalterlibUpstreamAccess true
-				!Repository.URL "https://github.com/Malterlib/@(RepoName)"
+				!Repository.URL `https://github.com/Malterlib/@(RepoName)`
 			}
 		}
 	}
@@ -31,12 +81,12 @@ Property.MalterlibModules "Atomic;Algorithm;Bit;BuildSystem;Cloud;CommandLine;Co
 
 Property
 {
-	MalterlibSharedBinariesRoot "@(MalterlibDependenciesDirectory)/Binaries"
+	MalterlibBinarySDKRepositories define [string] = []
 }
 
 Property
 {
-	MalterlibBinarySDKRepositories "MalterlibBinariesSDK_Linux_x64;@(MalterlibBinarySDKRepositories)"
+	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_x64"
 	{
 		&
 		{
@@ -44,7 +94,7 @@ Property
 			EnableArchitecture_x64 true
 		}
 	}
-	MalterlibBinarySDKRepositories "MalterlibBinariesSDK_Linux_x86;@(MalterlibBinarySDKRepositories)"
+	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_x86"
 	{
 		&
 		{
@@ -53,44 +103,41 @@ Property
 		}
 	}
 
-	MalterlibAllBinarySDKRepositories false // User(Repository)=true: Set to true to sync all binary SDK repositories.
-	{
-		!!MalterlibAllBinarySDKRepositories ""
-	}
+	MalterlibAllBinarySDKRepositories define bool = false // User(Repository)=true: Set to true to sync all binary SDK repositories.
 }
 
 Property
 {
 	!!MalterlibAllBinarySDKRepositories true
 
-	MalterlibBinarySDKRepositories "MalterlibBinariesSDK_Linux_x64;@(MalterlibBinarySDKRepositories)"
-	MalterlibBinarySDKRepositories "MalterlibBinariesSDK_Linux_x86;@(MalterlibBinarySDKRepositories)"
+	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_x64"
+	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_x86"
 }
 
-%Repository "@(MalterlibBinarySDKRepositories)"
+%Repository MalterlibBinarySDKRepositories->Unique()
 {
 	Property
 	{
-		RepoName "@(this.Identity).git"
-		RepoPlatformFamily "@(this.Identity->ParseFormatString('{}_{}_{}', '{1}'))"
-		RepoArchitecture "@(this.Identity->ParseFormatString('{}_{}_{}', '{2}'))"
-		RepoDir "../../Binaries/MalterlibSDK/@(RepoPlatformFamily)/@(RepoArchitecture)"
+		RepoName define string = `@(this.Identity).git`
+		RepoPlatformFamily define string = `@(this.Identity->ParseFormatString("{}_{}_{}", "{1}"))`
+		RepoArchitecture define string = `@(this.Identity->ParseFormatString("{}_{}_{}", "{2}"))`
+		RepoDir define string = `../../Binaries/MalterlibSDK/@(RepoPlatformFamily)/@(RepoArchitecture)`
 	}
 	Repository
 	{
 		Type "Malterlib"
-		Location "@(RepoDir->MakeAbsolute())"
-		URL "@(Repository.MalterlibRoot)/@(RepoName)"
-		Remotes "@(ExplodeList('@(MalterlibRemotePrefixes)', ';', 'MalterlibRemotePrefixesTemplate'));@(Repository.Remotes)"
+		Location RepoDir->MakeAbsolute()
+		URL `@(Repository.MalterlibRoot)/@(RepoName)`
+		Remotes =+ MalterlibRemotePrefixes->ForEach("f_MalterlibRemotePrefixesTemplate")
 		{
-			!MalterlibRemotePrefixes  ""
+			!MalterlibRemotePrefixes undefined
 		}
-		Remotes "malterlib=https://github.com/Malterlib/@(RepoName)@(MalterlibUpstreamWritableHelper);@(Repository.Remotes)"
+		Remotes =+ {Name: "malterlib", URL: `https://github.com/Malterlib/@(RepoName)`, Write: MalterlibUpstreamWriteAccess}
 		{
 			&
 			{
 				MalterlibUpstreamAccess true
-				!Repository.URL "https://github.com/Malterlib/@(RepoName)"
+				!Repository.URL `https://github.com/Malterlib/@(RepoName)`
 			}
 		}
 	}

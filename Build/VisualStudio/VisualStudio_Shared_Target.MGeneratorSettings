@@ -10,119 +10,119 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "PlatformToolsetCompiler"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "FollowIndirectDependencies"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "ExportScriptEnvironmentContents"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Type"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Group"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Name"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "BaseName"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "BaseFileName"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "IntermediateDirectory"
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 		%GeneratorSetting "OutputDirectory"
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Disabled"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Language"
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 		%GeneratorSetting "TargetFrameworkVersion"
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 		%GeneratorSetting "ExternalDependencies"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "ExtraGroups"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "LinkerGroup"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 

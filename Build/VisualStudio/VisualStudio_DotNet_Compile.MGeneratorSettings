@@ -9,7 +9,7 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Symbols"
@@ -42,10 +42,10 @@
 			{
 				Property
 				{
-					Off false
-					On true
-					Fast true
-					Full true
+					Off "false"
+					On "true"
+					Fast "true"
+					Full "true"
 				}
 			}
 		}
@@ -67,10 +67,10 @@
 			{
 				Property
 				{
-					Off 0
-					Minimal 1
-					On 3
-					Pedantic 4
+					Off "0"
+					Minimal "1"
+					On "3"
+					Pedantic "4"
 				}
 			}
 		}
@@ -85,8 +85,8 @@
 			{
 				Property
 				{
-					true "True"
-					false "False"
+					\true "True"
+					\false "False"
 				}
 			}
 		}
@@ -101,8 +101,8 @@
 			{
 				Property
 				{
-					true "True"
-					false "False"
+					\true "True"
+					\false "False"
 				}
 			}
 		}

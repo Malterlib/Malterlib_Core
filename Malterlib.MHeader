@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 // Must start with the settings
@@ -8,6 +8,11 @@ Import "Build/Shared.MSettings"
 }
 
 // Import all sub projects
+Import "Malterlib_Core.MHeader"
+{
+	!MalterlibOnlyRepositoryManagement "true"
+}
+
 Import "../*/*.MHeader"
 {
 	!MalterlibOnlyRepositoryManagement "true"

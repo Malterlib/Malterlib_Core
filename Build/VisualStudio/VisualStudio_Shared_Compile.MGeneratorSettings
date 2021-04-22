@@ -9,21 +9,21 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "AllowNonExisting"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "FullEval"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 	}

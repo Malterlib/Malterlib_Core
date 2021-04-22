@@ -5,32 +5,44 @@
 {
 	Property
 	{
-		XcodeSpecificationsDir "@(HOME)/Library/Application Support/Developer/Shared/Xcode/Specifications"
-		SpecificationsRoot "@('Build/Xcode/Specifications'->MakeAbsolute())"
-		EvalFile "@(Explodee->GetFile())"
-		RelativePath "@(Explodee->MakeRelative(@(SpecificationsRoot)))"
-		ExpandTemplate2	"@(XcodeSpecificationsDir)/@(RelativePath)|RelativePath=@(RelativePath)|FullPath=@(Explodee);"
+		FullPath define string
+		HOME define string
+		
+		g_DSStoreName define string = ".DS_Store"
+
+		XcodeSpecificationsDir define string = `@(HOME)/Library/Application Support/Developer/Shared/Xcode/Specifications`
+		SpecificationsRoot define string = "Build/Xcode/Specifications"->MakeAbsolute()
+
+		RelativePath function(string _File) string
+		RelativePath _File->MakeRelative(SpecificationsRoot)
+
+		ConvertToEntity function(string _File) [type(CEntity)]
+		ConvertToEntity	=+ {
+			Name: `@(XcodeSpecificationsDir)/@(RelativePath(_File))`
+			, Properties: {
+				RelativePath: RelativePath(_File)
+				, FullPath: _File
+			}
+		}
 		{
 			&
 			{
-				!EvalFile ""
-				!EvalFile ".DS_Store"
+				!g_DSStoreName _File->GetFile()
 			}
 		}
 	}
 
-	%GenerateFile "@(Builtin.Function->ExplodeList('@(Explodee->FindFilesRecursiveIn('@(SpecificationsRoot)/*'))', ';', 'ExpandTemplate2'))"
+	%GenerateFile SpecificationsRoot->FindFilesRecursiveIn("*")->ForEach("ConvertToEntity")
 	{
 		Compile.Type "None"
-		Property
+		GenerateFile
 		{
-			Name "@(this.Identity)"
-			Contents "@(ReadFile('@(FullPath)'))"
+			Name this.Identity
+			Contents ReadFile(FullPath)
 			Executable false
 			UnixLineEnds true
 			UnicodeBOM false
-			Group "@(RelativePath->GetPath())"
+			Group RelativePath->GetPath()
 		}
 	}
 }
-

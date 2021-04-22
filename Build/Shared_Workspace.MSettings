@@ -7,11 +7,12 @@ Workspace
 	{
 		&
 		{
-			Workspace.Enabled ""
+			Workspace.Enabled undefined
 			DocumentationEnabled true
 		}
 	}
 
+	XcodeNewBuildSystem define bool?
 	XcodeNewBuildSystem true
 	{
 		&

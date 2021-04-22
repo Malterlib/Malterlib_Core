@@ -10,56 +10,56 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "PlatformToolset"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "ClCompileSuffix"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "IgnoreWarnCompileDuplicatedFilename"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "ExportScriptEnvironment"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "CharacterSet"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "UseOfMfc"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "UseOfAtl"
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "LinkTimeCodeGeneration"
@@ -73,9 +73,9 @@
 			{
 				Property
 				{
-					true "UseLinkTimeCodeGeneration"
+					\true "UseLinkTimeCodeGeneration"
 					Fast "UseFastLinkTimeCodeGeneration"
-					false "Default"
+					\false "Default"
 				}
 			}
 		}
@@ -83,14 +83,14 @@
 		{
 			Property
 			{
-				Disabled "1"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "CLRSupport"
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 
@@ -273,28 +273,28 @@
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 		%GeneratorSetting "CommandLine_Build"
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 		%GeneratorSetting "CommandLine_ReBuild"
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 		%GeneratorSetting "CommandLine_Clean"
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 
@@ -383,8 +383,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -407,8 +407,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 			%GeneratorSetting "Properties"
@@ -433,8 +433,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -449,9 +449,9 @@
 			{
 				Property
 				{
-					true true
+					\true "true"
 					DebugFastLink "DebugFastLink"
-					false false
+					\false "false"
 				}
 			}
 		}
@@ -467,8 +467,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -484,9 +484,9 @@
 			{
 				Property
 				{
-					true ""
-					false "true"
-					"" "true"
+					\true ""
+					\false "true"
+					\ "true"
 				}
 			}
 		}
@@ -503,8 +503,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -520,7 +520,7 @@
 			{
 				Property
 				{
-					true "Driver"
+					\true "Driver"
 					UpOnly "UpOnly"
 					WDM "WDM"
 				}
@@ -538,8 +538,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -554,8 +554,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -579,8 +579,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -595,8 +595,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -619,8 +619,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}

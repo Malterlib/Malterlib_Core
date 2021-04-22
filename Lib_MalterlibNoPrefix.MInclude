@@ -9,54 +9,53 @@ Target.ExtraGroups "{Malterlib}/{TCMalloc}"
 Compile
 {
 	!!CompileDialect "C"
-	SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf;@(Builtin.BasePathAbsolute)/External/elftoolchain/common;@(Compile.SearchPath)"
+	SearchPath += [`@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`, `@(Builtin.BasePathAbsolute)/External/elftoolchain/common`]
 	{
 		!!PlatformFamily "Linux"
 	}
-	SearchPath "@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf;@(Compile.SearchPath)"
+	SearchPath += `@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf`
 	{
 		!!PlatformFamily "Linux"
 	}
-	SearchPath "@(MalterlibSysRoot)/usr/include/glib-2.0;@(MalterlibSysRoot)/usr/lib/@(MalterlibNativeClangArchitecture)-linux-gnu/glib-2.0/include;@(Compile.SearchPath)"
+	SearchPath += [`@(MalterlibSysRoot)/usr/include/glib-2.0`, `@(MalterlibSysRoot)/usr/lib/@(MalterlibNativeClangArchitecture)-linux-gnu/glib-2.0/include`]
 	{
 		!!PlatformFamily "Linux"
 	}
-	SearchPath "@(MalterlibSysRoot)/usr/include/dbus-1.0;@(MalterlibSysRoot)/usr/lib/@(MalterlibNativeClangArchitecture)-linux-gnu/dbus-1.0/include;@(Compile.SearchPath)"
+	SearchPath += [`@(MalterlibSysRoot)/usr/include/dbus-1.0`, `@(MalterlibSysRoot)/usr/lib/@(MalterlibNativeClangArchitecture)-linux-gnu/dbus-1.0/include`]
 	{
 		!!PlatformFamily "Linux"
 	}
-	SearchPath "@(MalterlibSysRoot)/usr/include/libsecret-1;@(Compile.SearchPath)"
+	SearchPath += `@(MalterlibSysRoot)/usr/include/libsecret-1`
 	{
 		!!PlatformFamily "Linux"
 	}
 
-
-	SearchPath "@('../../External/mimalloc/include'->MakeAbsolute());@(Compile.SearchPath)"
+	SearchPath += "../../External/mimalloc/include"->MakeAbsolute()
 	{
 		!!MalterlibMemoryManager "MiMalloc"
 	}
 
-	PreprocessorDefines "DMibDynamicLibrary;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines =+ "DMibDynamicLibrary"
 	{
 		!!MalterlibDynamicLibrary true
 	}
 
-	PreprocessorDefines "DMibConfig_OverrideSystemMalloc;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines =+ "DMibConfig_OverrideSystemMalloc"
 	{
 		!!MalterlibMemoryManager_EnableOverrideSystemMalloc true
 	}
-	PreprocessorDefines "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines =+ "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport"
 	{
 		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 	}
 
-	PreprocessorDefines "DMibConfig_CheckOverrideMemoryLeaks;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines =+ "DMibConfig_CheckOverrideMemoryLeaks"
 	{
 		!!MalterlibMemoryManager_CheckOverrideMemoryLeaks true
 	}
 
 	// We don't destroy the heap unless we are in debug mode, this speeds up system exit
-	PreprocessorDefines "DMibConfig_HeapNeverDestroyed;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines =+ "DMibConfig_HeapNeverDestroyed"
 	{
 		|
 		{
@@ -65,150 +64,48 @@ Compile
 		}
 	}
 
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_AlwaysRelease=1;@(Compile.PreprocessorDefines)"
-	{
-		!!MalterlibMemoryManager_AlwaysRelease true
-	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_AlwaysRelease=0;@(Compile.PreprocessorDefines)"
-	{
-		!MalterlibMemoryManager_AlwaysRelease true
-	}
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_AlwaysRelease=@(MalterlibMemoryManager_AlwaysRelease ? "1" : "0")`
 
 	// Debug options
 
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_Features=1;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_Features=@(MalterlibMemoryManager_Debug_Features ? "1" : "0")`
 	{
-		!!MalterlibMemoryManager_Debug_Features true
+		!MalterlibMemoryManager_Debug_Features undefined
 	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_Features=0;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines =+ "DMibConfig_MalterlibMemoryManager_Debug_Features=2"
 	{
-		!!MalterlibMemoryManager_Debug_Features false
+		!!MalterlibMemoryManager_Debug_Features undefined
 	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_Features=2;@(Compile.PreprocessorDefines)"
+
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableStackTrace=@(MalterlibMemoryManager_Debug_EnableStackTrace ? "1" : "0")`
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableFreeValidation=@(MalterlibMemoryManager_Debug_EnableFreeValidation ? "1" : "0")`
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableMemoryLeaks=@(MalterlibMemoryManager_Debug_EnableMemoryLeaks ? "1" : "0")`
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableFreedGuards=@(MalterlibMemoryManager_Debug_EnableFreedGuards ? "1" : "0")`
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableAllocatedFill=@(MalterlibMemoryManager_Debug_EnableAllocatedFill ? "1" : "0")`
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableEdgeGuards=@(MalterlibMemoryManager_Debug_EnableEdgeGuards ? "1" : "0")`
+	PreprocessorDefines =+ `DMibConfig_MemoryManager_Stats_Enable=@(MalterlibMemoryManager_Stats_Enable? "1" : "0")`
+	{
+		!!MalterlibMemory_Shims_Enable true
+	}
+	PreprocessorDefines =+ `DMibConfig_MemoryManager_CrossModule_Enable=@(MalterlibMemoryManager_CrossModule_Enable ? "1" : "0")`
+	PreprocessorDefines =+ `DMibConfig_MemoryManager_HugePage_Enable=@(MalterlibMemoryManager_HugePage_Enable ? "1" : "0")`
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_NeedDualPageSize=1`
 	{
 		&
 		{
-			!MalterlibMemoryManager_Debug_Features true
-			!MalterlibMemoryManager_Debug_Features false
+			PlatformFamily "OSX"
+			MalterlibMemoryManager "Malterlib"
 		}
 	}
-
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableStackTrace=1;@(Compile.PreprocessorDefines)"
-	{
-		!!MalterlibMemoryManager_Debug_EnableStackTrace true
-	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableStackTrace=0;@(Compile.PreprocessorDefines)"
-	{
-		!MalterlibMemoryManager_Debug_EnableStackTrace true
-	}
-
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreeValidation=1;@(Compile.PreprocessorDefines)"
-	{
-		!!MalterlibMemoryManager_Debug_EnableFreeValidation true
-	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreeValidation=0;@(Compile.PreprocessorDefines)"
-	{
-		!MalterlibMemoryManager_Debug_EnableFreeValidation true
-	}
-
-
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableMemoryLeaks=1;@(Compile.PreprocessorDefines)"
-	{
-		!!MalterlibMemoryManager_Debug_EnableMemoryLeaks true
-	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableMemoryLeaks=0;@(Compile.PreprocessorDefines)"
-	{
-		!MalterlibMemoryManager_Debug_EnableMemoryLeaks true
-	}
-
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_NeedDualPageSize=1;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			PlatformFamily OSX
-			MalterlibMemoryManager Malterlib
-		}
-	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_NeedDualPageSize=0;@(Compile.PreprocessorDefines)"
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_NeedDualPageSize=0`
 	{
 		!
 		{
 			&
 			{
-				PlatformFamily OSX
-				MalterlibMemoryManager Malterlib
+				PlatformFamily "OSX"
+				MalterlibMemoryManager "Malterlib"
 			}
-		}
-	}
-
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreedGuards=1;@(Compile.PreprocessorDefines)"
-	{
-		!!MalterlibMemoryManager_Debug_EnableFreedGuards true
-	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableFreedGuards=0;@(Compile.PreprocessorDefines)"
-	{
-		!MalterlibMemoryManager_Debug_EnableFreedGuards true
-	}
-
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableAllocatedFill=1;@(Compile.PreprocessorDefines)"
-	{
-		!!MalterlibMemoryManager_Debug_EnableAllocatedFill true
-	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableAllocatedFill=0;@(Compile.PreprocessorDefines)"
-	{
-		!MalterlibMemoryManager_Debug_EnableAllocatedFill true
-	}
-
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableEdgeGuards=1;@(Compile.PreprocessorDefines)"
-	{
-		!!MalterlibMemoryManager_Debug_EnableEdgeGuards true
-	}
-	PreprocessorDefines "DMibConfig_MalterlibMemoryManager_Debug_EnableEdgeGuards=0;@(Compile.PreprocessorDefines)"
-	{
-		!MalterlibMemoryManager_Debug_EnableEdgeGuards true
-	}
-	PreprocessorDefines "DMibConfig_MemoryManager_Stats_Enable=1;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemoryManager_Stats_Enable true
-			MalterlibMemory_Shims_Enable true
-		}
-	}
-	PreprocessorDefines "DMibConfig_MemoryManager_Stats_Enable=0;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			!MalterlibMemoryManager_Stats_Enable true
-			MalterlibMemory_Shims_Enable true
-		}
-	}
-	PreprocessorDefines "DMibConfig_MemoryManager_CrossModule_Enable=1;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemoryManager_CrossModule_Enable true
-		}
-	}
-	PreprocessorDefines "DMibConfig_MemoryManager_CrossModule_Enable=0;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			!MalterlibMemoryManager_CrossModule_Enable true
-		}
-	}
-	PreprocessorDefines "DMibConfig_MemoryManager_HugePage_Enable=1;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			MalterlibMemoryManager_HugePage_Enable true
-		}
-	}
-	PreprocessorDefines "DMibConfig_MemoryManager_HugePage_Enable=0;@(Compile.PreprocessorDefines)"
-	{
-		&
-		{
-			!MalterlibMemoryManager_HugePage_Enable true
 		}
 	}
 }
@@ -231,25 +128,16 @@ Compile
 			{
 				!!MalterlibMemoryManager_AlwaysRelease true
 			}
-			Property.RealConfiguration "@(MalterlibMemoryManager_AlwaysRelease)"
-			{
-				&
-				{
-					!MalterlibMemoryManager_AlwaysRelease ""
-					!MalterlibMemoryManager_AlwaysRelease false
-					!MalterlibMemoryManager_AlwaysRelease true
-				}
-			}
 			Compile.FullEval true
 			{
-				!RealConfiguration "@(Configuration)"
+				!RealConfiguration Configuration
 			}
 
 			// Which heap to use
 			Compile
 			{
 				!!CompileDialect "C"
-				PreprocessorDefines "DMibConfig_MemoryManager_Use@(MalterlibMemoryManager);@(Compile.PreprocessorDefines)"
+				PreprocessorDefines =+ `DMibConfig_MemoryManager_Use@(MalterlibMemoryManager)`
 			}
 
 			%File "../Memory/Source/Malterlib_Memory_SystemManager*"
@@ -302,7 +190,7 @@ Compile
 		}
 		%File "../Memory/Source/Malterlib_Memory_Allocator_Heap.cpp"
 		{
-			Compile.PreprocessorDefines "DMibNoInlineNew;@(Compile.PreprocessorDefines)"
+			Compile.PreprocessorDefines =+ "DMibNoInlineNew"
 			{
 				!!CompileDialect "C"
 			}

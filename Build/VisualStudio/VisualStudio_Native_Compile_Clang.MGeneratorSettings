@@ -15,8 +15,8 @@
 			{
 				Property
 				{
-					true false
-					false true
+					\true "false"
+					\false "true"
 				}
 			}
 		}
@@ -30,8 +30,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -46,8 +46,8 @@
 				Property
 				{
 					Full "true"
-					C++ "true"
-					ExternCandC++ "true"
+					C\+\+ "true"
+					ExternCandC\+\+ "true"
 					Off "false"
 				}
 			}
@@ -69,8 +69,8 @@
 					SSE3 "SSE3"
 					SSSE3 "SSSE3"
 					SSE4 "SSE4"
-					SSE4.1 "SSE4.1"
-					SSE4.2 "SSE4.2"
+					SSE4\.1 "SSE4.1"
+					SSE4\.2 "SSE4.2"
 					AVX "AVX"
 					AVX2 "AVX2"
 				}
@@ -82,6 +82,7 @@
 			{
 				Name "AdditionalOptions"
 				Substitute "{} %(ClCompile.AdditionalOptions)"
+				Separator " "
 			}
 		}		
 		%GeneratorSetting "Inline"
@@ -110,8 +111,8 @@
 			{
 				Property
 				{
-					true "Use"
-					false "NotUsing"
+					\true "Use"
+					\false "NotUsing"
 					XInternalCreate "Create" // Only used internally
 				}
 			}
@@ -153,7 +154,7 @@
 		{
 			Property
 			{
-				Disabled 1
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Symbols"
@@ -170,7 +171,7 @@
 					Full "FullDebugInfo"
 					Fast "LimitedDebugInfo"
 					None "NoDebugInfo"
-					"" ""
+					\ ""
 				}
 			}
 		}		
@@ -201,8 +202,8 @@
 			{
 				Property
 				{
-					true true
-					false false
+					\true "true"
+					\false "false"
 				}
 			}
 		}
@@ -223,9 +224,9 @@
 			{
 				Property
 				{
-					true "VerboseOutputMode"
-					false "NoVerboseOutput"
-					"" "NoVerboseOutput"
+					\true "VerboseOutputMode"
+					\false "NoVerboseOutput"
+					\ "NoVerboseOutput"
 				}
 			}
 		}

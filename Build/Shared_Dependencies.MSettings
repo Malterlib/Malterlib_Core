@@ -1,28 +1,32 @@
 // Copyright © 2017 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-Property.MalterlibBuildDependenciesContents	"@(MalterlibBuildDependenciesContents)"\
-			"@('BuildLLVM.sh'->MakeAbsolute()) \"@(MalterlibClangVersion)\" \"@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)\" \"@(MalterlibMainMalterlibRepo)\" false\r\n"\
-			"ErrorLevel=$?\n"\
-			"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
-			"  echo error: Failed to update LLVM dependencies\n"\
-			"  exit 1\n"\
-			"fi\n"
+Property
 {
-	!!PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang"
-}
+	MalterlibMainMalterlibRepo define bool = false
 
-Property.MalterlibBuildDependenciesContents	"@(MalterlibBuildDependenciesContents)"\
-			"@('BuildLLVM.sh'->MakeAbsolute()) \"@(MalterlibCustomToolchainClangVersion)\" \"@(MalterlibDependenciesDirectory)/llvm/@(MalterlibCustomToolchainClangVersion)\" \"@(MalterlibMainMalterlibRepo)\" true\r\n"\
-			"ErrorLevel=$?\n"\
-			"if [ \"$ErrorLevel\" != \"0\" ]; then\n"\
-			"  echo error: Failed to update custom LLVM toolchain\n"\
-			"  exit 1\n"\
-			"fi\n"
-{
-	&
+	MalterlibBuildDependenciesContents define string = ""
+	MalterlibBuildDependenciesContents	=+ `@("BuildLLVM.sh"->MakeAbsolute()) "@(MalterlibClangVersion)" "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)" @(MalterlibMainMalterlibRepo->EJSONToString("")) false\r\n`\
+		`ErrorLevel=$?\n`\
+		`if [ "$ErrorLevel" != "0" ]; then\n`\
+		`  echo error: Failed to update LLVM dependencies\n`\
+		`  exit 1\n`\
+		`fi\n`
 	{
-		MalterlibUseCustomXcodeToolchain true
-		PlatformToolsetCompiler "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang"
+		!!PlatformToolsetCompiler `@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang`
+	}
+
+	MalterlibBuildDependenciesContents	=+ `@("BuildLLVM.sh"->MakeAbsolute()) "@(MalterlibCustomToolchainClangVersion)" "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibCustomToolchainClangVersion)" @(MalterlibMainMalterlibRepo->EJSONToString("")) true\r\n`\
+		`ErrorLevel=$?\n`\
+		`if [ "$ErrorLevel" != "0" ]; then\n`\
+		`  echo error: Failed to update custom LLVM toolchain\n`\
+		`  exit 1\n`\
+		`fi\n`
+	{
+		&
+		{
+			MalterlibUseCustomXcodeToolchain true
+			PlatformToolsetCompiler `@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang`
+		}
 	}
 }
