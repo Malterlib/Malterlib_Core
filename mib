@@ -136,7 +136,7 @@ function GetMalterlibCoreHash()
 }
 
 MalterlibChangingBootstrapVersion="false"
-BootstrapVersion="2"
+BootstrapVersion="3"
 MalterlibCoreBootstrapVersion="2"
 
 function BootstrapCore()
