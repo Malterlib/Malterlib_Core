@@ -428,7 +428,11 @@ Property
 	}
 	MalterlibIsGitRepository true
 	{
-		!Empty "@(Builtin.BasePathAbsolute->FindDirectoriesIn('.git'))"
+		&
+		{
+			!MalterlibChangingBootstrapVersion true
+			!Empty "@(Builtin.BasePathAbsolute->FindDirectoriesIn('.git'))"
+		}
 	}
 
 	MalterlibGitRepoGitDir "@(Builtin.BasePathAbsolute)/.git"
