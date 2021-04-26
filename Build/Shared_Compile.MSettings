@@ -2195,6 +2195,15 @@ Compile
 		!!PlatformFamily "Linux"
 	}
 
+	DynamicTypeInfo true
+	{
+		&
+		{
+			Compile.DynamicTypeInfo ""
+			MalterlibSupportSanitizerEnable_UndefinedBehavior true
+		}
+	}
+
 	DynamicTypeInfo false
 	{
 		!!Compile.DynamicTypeInfo ""

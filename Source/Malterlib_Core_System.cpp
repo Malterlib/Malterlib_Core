@@ -120,6 +120,11 @@ namespace NMib
 		fp_CreateMemoryManager();
 
 		NMemory::fg_Mem_InitSubsystem();
+
+#if defined(DPlatformFamily_OSX) && (defined(DArchitecture_arm64) || defined(DArchitecture_arm64e))
+		// Init cycles frequency before any threads.
+		NTime::CSystem_Time::fs_CyclesFrequency();
+#endif
 	}
 	
 	CSystem::~CSystem()
