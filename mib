@@ -213,10 +213,12 @@ function BootstrapCore()
 
 	if [[ "$MalterlibChangingBootstrapVersion" == "true" ]]; then
 		export Malterlib_UseCachedEnvironment=false
-		while read a; do
-		    echo ${a//\"\"\: 1\,/}
-		done < BuildSystem/Default/RepositoryState.json > BuildSystem/Default/RepositoryState.json.new
-		mv BuildSystem/Default/RepositoryState.json{.new,}
+		if [ -e "$BuildSystem/Default/RepositoryState.json" ]; then
+			while read a; do
+			    echo ${a//\"\"\: 1\,/}
+			done < BuildSystem/Default/RepositoryState.json > BuildSystem/Default/RepositoryState.json.new
+			mv BuildSystem/Default/RepositoryState.json{.new,}
+		fi
 	fi
 
 	if ! [ -e "$MalterlibBinariesPath" ]; then
