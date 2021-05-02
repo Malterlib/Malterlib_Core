@@ -3835,7 +3835,7 @@ Property
 	MalterlibExeFSExtraFilesContentsTemplate =+	`Include\r\n`\
 												`{\r\n`\
 												`	Pattern @(_CopyOptions<Pattern>->Escape())\r\n`\
-												`	Destination @(_CopyOptions<Destination>)\r\n`\
+												`	Destination @(_CopyOptions<Destination>->Escape())\r\n`\
 												`	Recurse @(_CopyOptions<Recursive> ? "1" : "0")\r\n`\
 												`}\r\n`
 
