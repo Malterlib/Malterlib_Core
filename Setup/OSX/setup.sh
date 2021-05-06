@@ -135,7 +135,7 @@ UpdateDependencies()
 
 	brew install cmake go graphviz ruby ninja git git-lfs
 
-	sudo chown "$USER" /Library/Ruby/Gems/2.6.0
+	sudo chown -R "$USER" /Library/Ruby/Gems/2.6.0
 	InstallPath=/usr/local/bin
 	if [ -d /opt/homebrew/bin ]; then
 		InstallPath=/opt/homebrew/bin
