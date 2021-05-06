@@ -1102,7 +1102,7 @@ Property
 		BaseName "MalterlibOverrideMallocDummy"
 		Type "SharedDynamicLibrary"
 		Group "Malterlib"
-		LDFlags =+ "-nostdlib"
+		LDFlags =+ "-nostdlib++"
 		{
 			&
 			{
@@ -1114,15 +1114,6 @@ Property
 				}
 			}
 		}
-	}
-	Target
-	{
-		&
-		{
-			!MalterlibSupportSanitizers true
-			PlatformFamily "OSX"
-		}
-		LinkWithStandardLibraries false
 	}
 	Target
 	{
@@ -1141,6 +1132,8 @@ Property
 		{
 			!!MalterlibCodeCoverage true
 		}
+		DefaultHeaders "NoStdIncludeCxx"
+		DefaultLibraries "NoStdLibCxx"
 	}
 	Property
 	{
@@ -1175,7 +1168,17 @@ Property
 		BaseName "MalterlibOverrideMalloc"
 		Type "SharedDynamicLibrary"
 		Group "Malterlib"
-		LDFlags =+ "-nostdlib"
+	}
+	Target
+	{
+		!!PlatformFamily "OSX"
+
+		LinkWithLibraries [["-undefined", "dynamic_lookup"], `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`]
+		CodeCoverageLinkerMapping false
+		CodeCoverageMapping false
+		InstrumentForOptimization false
+		SharedLibraryInstallPath "@executable_path/MalterlibOverrideMalloc.dylib"
+		LDFlags =+ "-nostdlib++"
 		{
 			&
 			{
@@ -1190,30 +1193,17 @@ Property
 	}
 	Target
 	{
-		!!PlatformFamily "OSX"
-
-		LinkWithLibraries ["-lSystem.B", ["-undefined", "dynamic_lookup"], `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`]
-		CodeCoverageLinkerMapping false
-		CodeCoverageMapping false
-		InstrumentForOptimization false
-		SharedLibraryInstallPath "@executable_path/MalterlibOverrideMalloc.dylib"
-	}
-	Target
-	{
 		&
 		{
 			!MalterlibSupportSanitizers true
 			PlatformFamily "OSX"
 		}
-		LinkWithLibraries += "/usr/lib/dylib1.o"
-		{
-			!!Platform "OSX10.5"
-		}
-		LinkWithStandardLibraries false
 	}
 	Compile
 	{
 		!!CompileDialect "C"
+		DefaultHeaders "NoStdIncludeCxx"
+		DefaultLibraries "NoStdLibCxx"
 		PrefixHeader undefined
 		CodeCoverage false
 		{
@@ -1261,14 +1251,22 @@ Property
 		BaseName "MalterlibHelper"
 		Type "ConsoleExecutable"
 		Group "Malterlib"
+		LDFlags =+ "-nostdlib++"
+		{
+			&
+			{
+				!MalterlibSupportSanitizers true
+				|
+				{
+					PlatformFamily "OSX"
+					PlatformFamily "Linux"
+				}
+			}
+		}
 	}
 	Target
 	{
 		!!PlatformFamily "Linux"
-		LDFlags += "-nostdlib++"
-		{
-			!MalterlibSupportSanitizers true
-		}
 	}
 	Target
 	{
@@ -1277,26 +1275,6 @@ Property
 			!MalterlibSupportSanitizers true
 			PlatformFamily "OSX"
 		}
-		LinkWithLibraries "-lSystem.B"
-		LinkWithLibraries += "-lcrt1.o"
-		{
-			&
-			{
-				|
-				{
-					Platform "OSX10.5"
-					Platform "OSX10.6"
-					Platform "OSX10.7"
-				}
-				|
-				{
-					Architecture "x64"
-					Architecture "x86"
-				}
-			}
-		}
-		LDFlags += "-nostdlib"
-		LinkWithStandardLibraries false
 	}
 	Target
 	{
@@ -1318,6 +1296,8 @@ Property
 		{
 			!!PlatformFamily "OSX"
 		}
+		DefaultHeaders "NoStdIncludeCxx"
+		DefaultLibraries "NoStdLibCxx"
 	}
 	Property
 	{

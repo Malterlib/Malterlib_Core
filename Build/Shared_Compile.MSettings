@@ -1525,6 +1525,8 @@ Compile
 		}
 	}
 
+	DefaultLibraries define string?
+
 	DefaultHeaders define string?
 	DefaultHeaders "NoStdIncludeCxx"
 	{
