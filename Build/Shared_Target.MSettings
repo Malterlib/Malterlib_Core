@@ -3281,7 +3281,7 @@ Property
 						`	<key>MalterlibBranch</key>\n`\
 						`		<string>@(MalterlibFullBranch)</string>\n`\
 						`	<key>MalterlibGitBranch</key>\n`\
-						`		<string>@(MalterlibGitBranch)</string>\n`\
+						`		<string>@(MalterlibGitBranch || "")</string>\n`\
 						`	<key>MalterlibGitCommit</key>\n`\
 						`		<string>@(MalterlibGitCommit)</string>\n`\
 						`	<key>BuildTime</key>\n`\
@@ -3730,7 +3730,7 @@ Property
 		!!PlatformIsDarwin true
 	}
 
-	MalterlibDefinedSymbols define string?
+	MalterlibDefinedSymbols define [string]?
 
 	MalterlibModuleDefinitionContents =+ MalterlibDefinedSymbols->ForEach("ModuleDefineTemplate")
 

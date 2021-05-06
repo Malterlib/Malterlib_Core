@@ -184,8 +184,8 @@ Property
 
 					Contents =+	`IF "%DisableProjectGen%" == "1" GOTO Skip\r\n`\
 								`:RetryGeneration\r\n`\
-								`cd @(Builtin.BasePathAbsolute->WindowsPath())\r\n`\
-								`"@(Builtin.MalterlibExe)" generate --build-system "@(Builtin.BuildSystemSource)" --generator "@(Generator)" --output-directory "@(Builtin.GeneratedBuildSystemDir)" --use-cached-environment --action "%1" "@(Workspace:Workspace.Name)"\r\n`\
+								`cd @(Builtin.BasePathAbsolute->WindowsPath()->EscapeHost())\r\n`\
+								`"@(Builtin.MalterlibExe)" generate --build-system "@(Builtin.BuildSystemSourceAbsolute)" --generator "@(Generator)" --output-directory "@(Builtin.GeneratedBuildSystemDir)" --use-cached-environment --action "%1" "@(Workspace:Workspace.Name)"\r\n`\
 								`IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n`
 					{
 						&
@@ -242,8 +242,8 @@ Property
 					Contents =+	`if [ "$DisableProjectGen" == "1" ]; then\n`\
 								`  exit 0\n`\
 								`fi\n`\
-								`cd @(Builtin.BasePathRelativeProject)/..\n`\
-								`"@(Builtin.MalterlibExe)" generate --build-system "@(Builtin.BuildSystemSource)" --generator "@(Generator)" --output-directory "@(Builtin.GeneratedBuildSystemDir)" --action "$1" --use-cached-environment "@(Workspace:Workspace.Name)"\n`\
+								`cd @(Builtin.BasePathAbsolute->EscapeHost())\n`\
+								`@(Builtin.MalterlibExe->EscapeHost()) generate --build-system @(Builtin.BuildSystemSourceAbsolute->EscapeHost()) --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->EscapeHost()) --action "$1" --use-cached-environment "@(Workspace:Workspace.Name)"\n`\
 								`ErrorLevel=$?\n`\
 								`if [ "$ErrorLevel" == "2" ]; then\n`\
 								`  echo error: Build system changed, aborting build\n`\
@@ -298,10 +298,6 @@ Property
 					Executable true
 					UnixLineEnds ScriptUnixLineEnds
 					UnicodeBOM false
-				}
-				Compile
-				{
-					Type "None"
 				}
 			}
 /*			%File "@(GeneratedFiles("*"))"

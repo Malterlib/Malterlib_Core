@@ -3303,6 +3303,17 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_DeprecatedEnumConversion"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						\false "-Wno-deprecated-anon-enum-enum-conversion -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion"
+						\true "-Wdeprecated-anon-enum-enum-conversion -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion"
+					}
+				}
+			}
 			%GeneratorSetting "MinOSXVersion"
 			{
 				Property

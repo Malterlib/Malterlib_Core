@@ -220,7 +220,7 @@ Compile
 			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.manifest"
+				this.Identity ~"*.manifest"
 			}
 		}
 	}
@@ -246,7 +246,7 @@ Compile
 			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.plist"
+				this.Identity ~"*.plist"
 			}
 		}
 	}
@@ -259,7 +259,7 @@ Compile
 			Compile.Type undefined
 			|
 			{
-				this.Identity "~*.iig"
+				this.Identity ~"*.iig"
 			}
 		}
 	}
@@ -734,8 +734,6 @@ Compile
 
 Property
 {
-	MalterlibPrefixHeaderWorkaround define bool = true
-
 	MalterlibNativeClangArchitecture define string
 
 	MalterlibNativeClangArchitecture "i386" // Figure a way to include proper arch in Xcode
@@ -1043,6 +1041,8 @@ Compile
 	Warnings_UnusedLabel define bool?
 	Warnings_NoUnused define bool?
 	Warnings_NoVirtualOverride define bool?
+	Warnings_DeprecatedEnumConversion define bool?
+	Warnings_NoPessimizingMove define bool?
 
 	AllCPUSubTypes define bool?
 	StackGuard define bool?
@@ -1390,7 +1390,6 @@ Compile
 
 	SearchPath += [Target.IntermediateDirectory, GeneratedDirectory]
 
-	SearchPath += `@(Builtin.BasePathAbsolute)/Projects`
 	SearchPath += Builtin.BasePathAbsolute
 	SearchPath += MalterlibIncludeOutputDir
 	SearchPath += `@(Builtin.BasePathAbsolute)/Malterlib/Core/Include`
@@ -1855,6 +1854,7 @@ Compile
 		, "COMPILER_RT_NODEFAULTVISIBILITY"
 		, "LIBCXXABI_NODEFAULTVISIBILITY"
 		, "LIBUNWIND_NODEFAULTVISIBILITY"
+		, "DMalterlibNontrackedFree"
 	]
 	{
 		&

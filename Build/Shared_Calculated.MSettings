@@ -380,6 +380,8 @@ Property
 {
 	ConfigNoSpace define string = Configuration->Replace(" ", "")
 
+	MalterlibPerforceStreamName define string?
+
 	MalterlibBaseSourcePath define string = "Development"
 	MalterlibCalcBranch define string
 	MalterlibCalcBranch Builtin.BasePathAbsolute->GetLastPaths(4)
@@ -420,9 +422,14 @@ Property
 	{
 		!!MalterlibBranch undefined
 	}
+	MalterlibTaskStreamName define string?
 	MalterlibTaskStreamName MalterlibPerforceStreamName->ParseFormatString("{}({})", "{1}")
 	{
-		!!MalterlibPerforceStreamName ~"*(*)"
+		&
+		{
+			!MalterlibPerforceStreamName undefined
+			MalterlibPerforceStreamName ~"*(*)"
+		}
 	}
 
 	MalterlibCalcFullBranch define string = MalterlibBranch
