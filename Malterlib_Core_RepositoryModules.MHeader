@@ -6,6 +6,7 @@ Type
 	CRemotePrefix define {
 		Name: string
 		, UrlPrefix: string
+		, Write: bool = false
 	}
 
 	CRemote define {
@@ -18,7 +19,7 @@ Type
 Property
 {
 	f_MalterlibRemotePrefixesTemplate function(type(CRemotePrefix) _Element) [type(CRemote)] = []
-	f_MalterlibRemotePrefixesTemplate =+ {Name: _Element<Name>, URL: `@(_Element<UrlPrefix>)/@(RepoName)`}
+	f_MalterlibRemotePrefixesTemplate =+ {Name: _Element<Name>, URL: `@(_Element<UrlPrefix>)/@(RepoName)`, Write: _Element<Write>}
 	{
 		!_Element undefined
 	}
@@ -38,10 +39,6 @@ Property
 	}
 
 	MalterlibUpstreamWriteAccess define bool = false // User(Repository)=true: Set to true if you have write access to https://github.com/Malterlib
-	MalterlibUpstreamWriteAccess undefined
-	{
-		!!MalterlibUpstreamWriteAccess undefined
-	}
 }
 
 %Repository MalterlibModules->Unique()

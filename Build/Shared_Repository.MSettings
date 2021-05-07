@@ -287,6 +287,10 @@ Repository
 			Repository.Type "External"
 		}
 	}
+	DefaultBranch "master"
+	{
+		!!Repository.DefaultBranch undefined
+	}
 
 	DefaultUpstreamBranch "master"
 	{
@@ -302,10 +306,6 @@ Repository
 		!!Repository.DefaultUpstreamBranch undefined
 	}
 
-	DefaultBranch "master"
-	{
-		!!Repository.DefaultBranch undefined
-	}
 	Submodule false
 	{
 		!!Repository.Submodule undefined
