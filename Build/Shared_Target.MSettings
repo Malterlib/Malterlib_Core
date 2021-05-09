@@ -60,6 +60,8 @@ Target
 // Properties derived from target type
 Property
 {
+	MalterlibExportEnvironmentMinGW define bool?
+
 	TargetIsExecutable define bool = false
 	TargetIsExecutable true
 	{
@@ -793,7 +795,7 @@ Property
 		!!MalterlibMSVCVersion undefined
 	}
 
-	PlatformToolsetCompiler define string? // User(Toolset): Change the clang compiler location
+	PlatformToolsetCompiler define string? // User(Toolset)="/opt/Source/llvm-malterlib/build/main/bin/clang": Change the clang compiler location
 
 	PlatformToolsetCompiler "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc"
 	{
@@ -879,7 +881,7 @@ Property
 		!!fg_ExportScriptEnvironmentContents_MaybeMinGW ~"?:*"
 	}
 
-	fg_ExportScriptEnvironmentContents_Template =+ `set "@(_EnvVar)=@(fg_ExportScriptEnvironmentContents_MaybeMinGW(_EnvVar)->Escape())"\r\n`
+	fg_ExportScriptEnvironmentContents_Template =+ `set @(`@(_EnvVar)=@(fg_ExportScriptEnvironmentContents_MaybeMinGW(_EnvVar))`->EscapeHost())\r\n`
 	{
 		&
 		{

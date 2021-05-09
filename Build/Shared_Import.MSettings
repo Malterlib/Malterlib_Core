@@ -84,6 +84,11 @@ Import
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
 
+	CMake_ExcludeFromHash =+ PlatformToolsetCompiler->GetPath()
+	{
+		!PlatformToolsetCompiler undefined
+	}
+
 	CMake_CacheReplaceContents =+ [
 		{Find: "C:/Go/bin/", Replace: ""}
 		, {Find: "C:/strawberry/perl/bin/", Replace: ""}

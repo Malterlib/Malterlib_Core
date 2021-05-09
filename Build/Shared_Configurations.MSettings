@@ -3,7 +3,7 @@
 
 Property
 {
-	DefaultOSXPlatform define string
+	DefaultOSXPlatform define string = "10.7"
 	DefaultOSXPlatform "10.15"
 	{
 		&
