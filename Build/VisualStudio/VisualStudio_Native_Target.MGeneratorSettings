@@ -247,6 +247,7 @@
 				Entity "Lib"
 				Name "AdditionalOptions"
 				Substitute "{} %(Lib.AdditionalOptions)"
+				Separator " "
 			}
 		}
 	}
@@ -566,6 +567,7 @@
 				Entity "Link"
 				Name "AdditionalOptions"
 				Substitute "{} %(Link.AdditionalOptions)"
+				Separator " "
 			}
 		}
 		%GeneratorSetting "LargeAddressAware"
