@@ -28,6 +28,7 @@
 ../../External/boost/iostreams bc868902b0e42a0ff7440d52c584a14a04d0fad3
 ../../External/boost/iterator 72f0ebe8d06991968c6f792c0a846519a795cac1
 ../../External/boost/lexical_cast 9fdbf5ce67d9a9302cf16de4760d99090da97f44
+../../External/boost/lockfree 8779eb9a17ebb390fba2155dd5a03be4993aa05c
 ../../External/boost/logic 1a0a89c5bdd096777c59a7e43dc4cdfb8f6b1cc7
 ../../External/boost/math 692077bf1647c87117929ec111788e67a8bbf68a
 ../../External/boost/move fa3aa147b4b0a8e02edb0ac516acc21b4b139b78
@@ -35,6 +36,7 @@
 ../../External/boost/mpl 9c0f98f088bbed5943382ebfcfd1b0159aaa7462
 ../../External/boost/numeric_conversion de922921408bc7116a3c7c67b2fcfbe3e3214f3b
 ../../External/boost/optional c486bb724c087b18a1f9a6397408213219a4f3e2
+../../External/boost/parameter 672ae1c0cec1eb16cf2613d53c483554244a251b
 ../../External/boost/phoenix ba414c01c82bed1d4ff22a0c155098d94691f8e2
 ../../External/boost/predef 133ae86ef5a7811321b2dae92455ba609418885e
 ../../External/boost/preprocessor e4fb5f4866f69a917b7eeb522a3257d4625e52c1
