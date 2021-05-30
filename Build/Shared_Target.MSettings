@@ -3471,8 +3471,8 @@ Property
 			Contents 	`#include <Mib/Core/Core>\n`\
 						`assure_used static char fileid[] __attribute__ ((section("IDSVERSIONINFO"))) = "$Id: VersionInfo.cpp,v @(Target:Target.Version) @(DateTime("{YYYY}/{MM}/{DD} {HH}:{MNMN}:{SS}")) $\\n"\n`\
 						`@(`MalterlibBranch=@(MalterlibFullBranch)\n`->EJSONToString())\n`\
-						`@(`MalterlibGitBranch=@(MalterlibGitBranch)\n`->EJSONToString())\n`\
-						`@(`MalterlibGitCommit=@(MalterlibGitCommit)\n`->EJSONToString())\n`\
+						`@(`MalterlibGitBranch=@(MalterlibGitBranch || "")\n`->EJSONToString())\n`\
+						`@(`MalterlibGitCommit=@(MalterlibGitCommit || "")\n`->EJSONToString())\n`\
 						`@(`BuildTime=@(MalterlibTime("{}:{}"))\n`->EJSONToString())\n`\
 						`@(`ProductVersionMajor=@(ProductVersionMajor)\n`->EJSONToString())\n`\
 						`@(`ProductVersionMinor=@(ProductVersionMinor)\n`->EJSONToString())\n`\
@@ -3997,7 +3997,7 @@ Property
 
 Property
 {
-	MalterlibBuildServerPutSources define [type(CFileCopyOptions)]
+	MalterlibBuildServerPutSources define [type(CFileCopyOptions)] = []
 	MalterlibBuildServerPutSources =+ MalterlibFinalModuleDestination
 	{
 		!Target.Type "Tool"
@@ -4021,7 +4021,7 @@ Property
 
 	MalterlibBuildServerPutPath define string?
 
-	MalterlibBuildServerPutPathUploadTemplate function(type(CFileCopyOptionsDetailed) _CopyOptions) string
+	MalterlibBuildServerPutPathUploadTemplate function(type(CFileCopyOptionsDetailed) _CopyOptions) string = ""
 	MalterlibBuildServerPutPathUploadTemplate Error("FindDirectory not supported for build server put")
 	{
 		!!true _CopyOptions<FindDirectory>
@@ -4030,9 +4030,10 @@ Property
 	{
 		!!true _CopyOptions<AbsoluteDestination>
 	}
-	MalterlibBuildServerPutPathUploadTemplate =+ 	`MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())"\r\n`\
+	MalterlibBuildServerPutPathUploadTemplate =+ 	`MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())\r\n`\
 													`@(CheckErrors)\r\n`
 
+	MalterlibBuildServerPutPathUploadContents define string
 	MalterlibBuildServerPutPathUploadContents =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach("MalterlibBuildServerPutPathUploadTemplate")
 
 
@@ -4646,7 +4647,7 @@ Target
 			MalterlibBuildServerBuild true
 		}
 	}
-	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n"`\
+	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
 						`MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
 		&

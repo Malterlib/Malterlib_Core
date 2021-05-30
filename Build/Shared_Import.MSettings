@@ -20,7 +20,7 @@ Property
 		}
 	}
 
-	MalterlibImportUpdateCache define bool
+	MalterlibImportUpdateCache define bool = false
 	MalterlibImportUpdateCache true
 	{
 		&

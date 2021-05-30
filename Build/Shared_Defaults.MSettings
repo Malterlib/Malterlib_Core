@@ -78,6 +78,8 @@ Property
 
 	MalterlibDriverSigning define bool = true
 
+	MalterlibForceDeploySymbols define bool = false
+
 	MalterlibDeploySymbols define bool = false
     MalterlibDeploySymbols true
 	{

@@ -513,14 +513,16 @@ Workspace
 
 Property
 {
-	BuildServerHelpersPathContents define string
-	BuildServerHelpersPathContents	`@(ScriptExport) "Output_@(ConfigName)=@(Target:Target.OutputDirectory->NativePath())"\r\n`\
-									`@(ScriptExport) "Product_@(ConfigName)=@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
-									`@(ScriptExport) "Intermediate_@(ConfigName)=@(Target:Target.IntermediateDirectory->NativePath())"\r\n`\
+	BuildServerHelpers_ConfigName define string
+
+	BuildServerHelpersPathContents define string?
+	BuildServerHelpersPathContents	`@(ScriptExport) "Output_@(BuildServerHelpers_ConfigName)=@(Target:Target.OutputDirectory->NativePath())"\r\n`\
+									`@(ScriptExport) "Product_@(BuildServerHelpers_ConfigName)=@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
+									`@(ScriptExport) "Intermediate_@(BuildServerHelpers_ConfigName)=@(Target:Target.IntermediateDirectory->NativePath())"\r\n`\
 									`@(ScriptExport) "MalterlibSharedIntermediateDirectory=@(Target:Property.MalterlibSharedIntermediateDirectory->NativePath())"\r\n`\
-									`@(ScriptExport) "Output_@(Target:Target.Name)_@(ConfigName)=@(Target:Target.OutputDirectory->NativePath())"\r\n`\
-									`@(ScriptExport) "Product_@(Target:Target.Name)_@(ConfigName)=@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
-									`@(ScriptExport) "Intermediate_@(Target:Target.Name)_@(ConfigName)=@(Target:Target.IntermediateDirectory->NativePath())"\r\n`\
+									`@(ScriptExport) "Output_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)=@(Target:Target.OutputDirectory->NativePath())"\r\n`\
+									`@(ScriptExport) "Product_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)=@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
+									`@(ScriptExport) "Intermediate_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)=@(Target:Target.IntermediateDirectory->NativePath())"\r\n`\
 									`@(ScriptExport) "MalterlibSharedIntermediateDirectory_@(Target:Target.Name)=@(Target:Property.MalterlibSharedIntermediateDirectory->NativePath())"\r\n`
 	{
 		!!Property.TargetIsExecutable true
@@ -530,17 +532,17 @@ Property
 %Group "~Automatic/Build Server Helpers"
 {
 	!Property.BuildServerHelpersPathContents undefined
+	Property
+	{
+		BuildServerHelpers_ConfigName `@(FullConfiguration)_@(Platform->Replace('.', '_'))_@(Architecture)`
+	}
 
 	%GenerateFile "Paths"
 	{
 		//!!Tests undefined
-		Property
-		{
-			ConfigName `@(FullConfiguration)_@(Platform->Replace('.', '_'))_@(Architecture)`
-		}
 		GenerateFile
 		{
-			Name `@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/Paths_@(ConfigName)@(ScriptExtension)`
+			Name `@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/@(Target:Target.Name)/Paths_@(BuildServerHelpers_ConfigName)@(ScriptExtension)`
 			Contents `@(ScriptPreamble)@(BuildServerHelpersPathContents)`
 			Executable true
 			UnixLineEnds ScriptUnixLineEnds

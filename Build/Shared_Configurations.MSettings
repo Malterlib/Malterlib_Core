@@ -81,6 +81,7 @@ Property
 			EnablePlatform_OSX10_5 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.5"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_5 false
@@ -96,6 +97,7 @@ Property
 			EnablePlatform_OSX10_6 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.6"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_6 false
@@ -111,6 +113,7 @@ Property
 			EnablePlatform_OSX10_7 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.7"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_7 false
@@ -126,6 +129,7 @@ Property
 			EnablePlatform_OSX10_8 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.8"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_8 false
@@ -141,6 +145,7 @@ Property
 			EnablePlatform_OSX10_9 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.9"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_9 false
@@ -156,6 +161,7 @@ Property
 			EnablePlatform_OSX10_10 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.10"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_10 false
@@ -171,6 +177,7 @@ Property
 			EnablePlatform_OSX10_11 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.11"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_11 false
@@ -186,6 +193,7 @@ Property
 			EnablePlatform_OSX10_12 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.12"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_12 false
@@ -201,6 +209,7 @@ Property
 			EnablePlatform_OSX10_13 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.13"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_13 false
@@ -216,6 +225,7 @@ Property
 			EnablePlatform_OSX10_14 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.14"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_14 false
@@ -231,6 +241,7 @@ Property
 			EnablePlatform_OSX10_15 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "10.15"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX10_15 false
@@ -246,6 +257,7 @@ Property
 			EnablePlatform_OSX11 undefined
 			GeneratorFamily "Xcode"
 			DefaultOSXPlatform "11"
+			HostPlatformFamily "OSX"
 		}
 	}
 	EnablePlatform_OSX11 false
