@@ -9,6 +9,7 @@ Property
 	MalterlibDeployRoot define string
 	MalterlibRemoteDeployDebugRoot define string
 	MalterlibDeploySymbolsPath define string
+	HOME define string
 }
 
 // Windows paths

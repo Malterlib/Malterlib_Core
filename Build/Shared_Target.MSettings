@@ -387,6 +387,23 @@ Target
 	}
 }
 
+	// File extensions OSX
+Target
+{
+	&
+	{
+		LanguageFamily "Native"
+		GeneratorFamily "Xcode"
+		!PlatformIsDarwin true
+		Target.FileExtension undefined
+	}
+
+	FileExtension ""
+	{
+		!!Target.Type "UIExecutable"
+	}
+}
+
 // File extensions Emscripten
 Target
 {
@@ -1981,6 +1998,11 @@ Target
 			}
 			MalterlibIsOSXBundle true
 		}
+	}
+
+	ExecutableFolder ""
+	{
+		!!PlatformFamily "Linux"
 	}
 
 	ProjectDerivedSourcesDir define string = `@(Target:Target.IntermediateDirectory)DerivedSources`

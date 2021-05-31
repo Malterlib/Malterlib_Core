@@ -6,7 +6,6 @@
 	Property
 	{
 		FullPath define string
-		HOME define string
 		
 		g_DSStoreName define string = ".DS_Store"
 
