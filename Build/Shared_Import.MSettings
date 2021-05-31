@@ -106,6 +106,7 @@ Import
 		, {Find: "/usr/bin/", Replace: ""}
 		, {Find: "/opt/homebrew/bin/", Replace: ""}
 		, {Find: "/usr/local/go/bin/", Replace: ""}
+		, {Find: "/usr/local/bin/", Replace: ""}
 	]
 
 	CMake_Config "Release"
@@ -143,21 +144,12 @@ Import
 		!!GeneratorFamily "VisualStudio"
 	}
 
-	CMake_Variables =+ ["CMAKE_TRY_COMPILE_PLATFORM_VARIABLES=CMAKE_EXE_LINKER_FLAGS_INIT"]
+	CMake_Variables =+ [`CMAKE_TRY_COMPILE_PLATFORM_VARIABLES=CMAKE_EXE_LINKER_FLAGS_INIT;CMAKE_STATIC_LINKER_FLAGS_INIT;CMAKE_MODULE_LINKER_FLAGS_INIT;CMAKE_SHARED_LINKER_FLAGS_INIT;CMAKE_RANLIB;CMAKE_AR;CMAKE_C_COMPILER;CMAKE_CXX_COMPILER;CMAKE_CXX_COMPILER_TARGET;CMAKE_C_COMPILER_TARGET;CMAKE_TOOLCHAIN_NO_PREFIX;CMAKE_FIND_ROOT_PATH;CMAKE_SYSROOT;CMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN;CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN;CMAKE_SYSTEM_NAME;CMAKE_SYSTEM_PROCESSOR;CMAKE_LINKER`]
 	{
-		&
+		|
 		{
 			PlatformFamily "Linux"
-			Architecture "x86"
-		}
-	}
-
-	CMake_Variables =+ [`CMAKE_LINKER=@(Malterlib_LinuxLinker)`]
-	{
-		&
-		{
-			PlatformFamily "Linux"
-			!Malterlib_LinuxLinker undefined
+			PlatformFamily "OSX"
 		}
 	}
 
@@ -191,11 +183,6 @@ Import
 		!Import.CMake_Internal_LinkerFlags undefined
 	}
 
-	CMake_Variables =+ [`CMAKE_STATIC_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags)`]
-	{
-		!Import.CMake_Internal_LinkerFlags undefined
-	}
-
 	CMake_Variables =+ [`CMAKE_MODULE_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags)`]
 	{
 		!Import.CMake_Internal_LinkerFlags undefined
@@ -215,17 +202,74 @@ Import
 		}
 	}
 
-	CMake_Variables =+ ["CMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY"]
-	{
-		!PlatformFamily HostPlatformFamily
-	}
-
-	CMake_Variables =+ [`CMAKE_RANLIB=@(PlatformToolsetCompiler->GetPath())/llvm-ranlib`]
+	CMake_Variables =+ [`CMAKE_LINKER=@(Malterlib_LinuxLinker)`]
 	{
 		&
 		{
 			PlatformFamily "Linux"
-			!PlatformFamily HostPlatformFamily
+			!Malterlib_LinuxLinker undefined
+		}
+	}
+
+	CMake_Variables =+ ["CMAKE_LINKER=ld"]
+	{
+		&
+		{
+			PlatformFamily "OSX"
+		}
+	}
+
+	CMake_Variables =+ [`CMAKE_INSTALL_NAME_TOOL=@(PlatformToolsetCompiler->GetPath())/llvm-install-name-tool`]
+	{
+		|
+		{
+			PlatformFamily "Linux"
+			PlatformFamily "OSX"
+		}
+	}
+
+	CMake_Variables =+ [`CMAKE_NM=@(PlatformToolsetCompiler->GetPath())/llvm-nm`]
+	{
+		|
+		{
+			PlatformFamily "Linux"
+			PlatformFamily "OSX"
+		}
+	}
+
+	CMake_Variables =+ [`CMAKE_OBJDUMP=@(PlatformToolsetCompiler->GetPath())/llvm-objdump`]
+	{
+		|
+		{
+			PlatformFamily "Linux"
+			PlatformFamily "OSX"
+		}
+	}
+
+	CMake_Variables =+ [`CMAKE_STRIP=@(PlatformToolsetCompiler->GetPath())/llvm-strip`]
+	{
+		|
+		{
+			PlatformFamily "Linux"
+			PlatformFamily "OSX"
+		}
+	}
+
+	CMake_Variables =+ [`CMAKE_RANLIB=@(PlatformToolsetCompiler->GetPath())/llvm-ranlib`]
+	{
+		|
+		{
+			PlatformFamily "Linux"
+			PlatformFamily "OSX"
+		}
+	}
+
+	CMake_Variables =+ [`CMAKE_AR=@(PlatformToolsetCompiler->GetPath())/llvm-ar`]
+	{
+		|
+		{
+			PlatformFamily "Linux"
+			PlatformFamily "OSX"
 		}
 	}
 
