@@ -2235,7 +2235,7 @@ Target
 
 Property
 {
-	MalterlibEnableFastLink define bool = true // This is still too buggy when debugging
+	MalterlibEnableFastLink define bool = false // This is still too buggy when debugging
 }
 
 Target.Version define string?
