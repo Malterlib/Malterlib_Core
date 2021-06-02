@@ -75,6 +75,27 @@ namespace NMib
 			CExceptionFilter *m_pOldFilter;
 		};
 
+		class CDisableExceptionFilterScope
+		{
+		public:
+
+			CDisableExceptionFilterScope()
+			{
+				auto &ThreadLocal = **g_SystemThreadLocal;
+				m_pOldFilter = ThreadLocal.m_pExceptionFilter;
+				ThreadLocal.m_pExceptionFilter = nullptr;
+			}
+
+			~CDisableExceptionFilterScope()
+			{
+				auto &ThreadLocal = **g_SystemThreadLocal;
+				ThreadLocal.m_pExceptionFilter = m_pOldFilter;
+			}
+		private:
+			DMibThreadLocalScopeDebugMember;
+			CExceptionFilter *m_pOldFilter;
+		};
+
 #		define DMibExceptionFilter(_Filter) NMib::NException::CExceptionFilterScope ScopeExceptionFilter(_Filter)
 	}
 }
