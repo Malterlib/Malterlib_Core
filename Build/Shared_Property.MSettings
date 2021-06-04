@@ -17,18 +17,55 @@ Property
 {
 	!!HostPlatformFamily "Windows"
 
-	MalterlibDependenciesDirectory "X:/CompiledFiles/Dependencies"
-	{
-		!!MalterlibDependenciesDirectory undefined
-	}
-
 	MalterlibCompiledFiles "X:/CompiledFiles/"
+	{
+		&
+		{
+			MalterlibCompiledFiles undefined
+			![] "X:/"->FindDirectoriesIn("CompiledFiles")
+		}
+	}
+	MalterlibCompiledFiles "C:/CompiledFiles/"
+	{
+		&
+		{
+			MalterlibCompiledFiles undefined
+			![] "C:/"->FindDirectoriesIn("CompiledFiles")
+		}
+	}
+	MalterlibCompiledFiles `@(HOME)/.CompiledFiles/`
 	{
 		!!MalterlibCompiledFiles undefined
 	}
 	MalterlibCompiledFiles MalterlibCompiledFiles->UnixPath()
+
+
+	MalterlibDependenciesDirectory MalterlibCompiledFiles / "Dependencies"
 	{
-		!MalterlibCompiledFiles undefined
+		!!MalterlibDependenciesDirectory undefined
+	}
+
+	MalterlibDevelopmentRoot "X:/Development"
+	{
+		&
+		{
+			MalterlibDevelopmentRoot undefined
+			![] "X:/"->FindDirectoriesIn("Development")
+		}
+	}
+
+	MalterlibDevelopmentRoot "C:/Development"
+	{
+		&
+		{
+			MalterlibDevelopmentRoot undefined
+			![] "C:/"->FindDirectoriesIn("Development")
+		}
+	}
+
+	MalterlibDevelopmentRoot `@(HOME)/.Development/`
+	{
+		!!MalterlibDevelopmentRoot undefined
 	}
 
 	MalterlibDevelopmentRoot "X:/Development"
@@ -36,7 +73,25 @@ Property
 		!!MalterlibDevelopmentRoot undefined
 	}
 
-	MalterlibDeployRoot "X:\\Deploy"
+	MalterlibDeployRoot "X:/Deploy"
+	{
+		&
+		{
+			MalterlibDeployRoot undefined
+			![] "X:/"->FindDirectoriesIn("Deploy")
+		}
+	}
+
+	MalterlibDeployRoot "C:/Deploy"
+	{
+		&
+		{
+			MalterlibDeployRoot undefined
+			![] "C:/"->FindDirectoriesIn("Deploy")
+		}
+	}
+
+	MalterlibDeployRoot `@(HOME)/.Deploy`
 	{
 		!!MalterlibDeployRoot undefined
 	}
