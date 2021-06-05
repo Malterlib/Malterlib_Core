@@ -1013,6 +1013,18 @@ Property
 		{
 			!DocumentationEnabled true
 		}
+		PrefixHeader "../Core/Source/PrefixHeader/PCH_C.h"->MakeAbsolute()
+		{
+			&
+			{
+				|
+				{
+					Compile.Type "C"
+					Compile.Type "ObjC"
+				}
+				!DocumentationEnabled true
+			}
+		}
 		SearchPath += "../PCH"->MakeAbsolute()
 		SearchPath += [`@(Builtin.BasePathAbsolute)/External/elftoolchain/common`, `@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`]
 		{
@@ -1032,6 +1044,7 @@ Property
 		%Group "!PreComp"
 		{
 			%File "../Core/Source/PrefixHeader/PCH.h"
+			%File "../Core/Source/PrefixHeader/PCH_C.h"
 		}
 	}
 	Property

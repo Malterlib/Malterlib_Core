@@ -1284,6 +1284,22 @@ Compile
 		}
 	}
 
+	PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH_C.h`
+	{
+		&
+		{
+			Compile.PrefixHeader undefined
+			|
+			{
+				Compile.Type "C"
+				Compile.Type "ObjC"
+			}
+			!DocumentationEnabled true
+			!MalterlibQtSupport true
+			!Target.Type "Driver"
+		}
+	}
+
 	PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h`
 	{
 		&
