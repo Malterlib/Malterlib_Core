@@ -524,6 +524,9 @@ Target
 		GeneratorFamily "VisualStudio"
 	}
 
+	UseMultiToolTask define bool = true
+	EnforceProcessCountAcrossBuilds define bool = true
+
 	VisualStudioPlatform define string?
 	VisualStudioPlatform "Clang"
 	{

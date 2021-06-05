@@ -2169,6 +2169,25 @@ Compile
 		}
 	}
 
+	FullEval true
+	{
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			Compile.PrecompilePrefixHeader "XInternalCreate"
+		}
+	}
+
+	ForceSynchronousPDBWrites define bool?
+	ForceSynchronousPDBWrites true
+	{
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			Compile.PrecompilePrefixHeader "XInternalCreate"
+		}
+	}
+
 	SeparateWCharType define bool?
 	SeparateWCharType true
 	{

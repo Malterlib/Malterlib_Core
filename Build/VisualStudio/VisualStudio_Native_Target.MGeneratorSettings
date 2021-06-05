@@ -114,6 +114,38 @@
 				Name "TargetExt"
 			}
 		}
+		%GeneratorSetting "UseMultiToolTask"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "UseMultiToolTask"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\true "true"
+					\false "false"
+				}
+			}
+		}
+		%GeneratorSetting "EnforceProcessCountAcrossBuilds"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "EnforceProcessCountAcrossBuilds"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\true "true"
+					\false "false"
+				}
+			}
+		}
 		%GeneratorSetting "FileName"
 		{
 			Property

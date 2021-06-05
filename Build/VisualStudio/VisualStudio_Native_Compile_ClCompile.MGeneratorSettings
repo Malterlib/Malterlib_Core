@@ -20,6 +20,21 @@
 				}
 			}
 		}		
+		%GeneratorSetting "ForceSynchronousPDBWrites"
+		{
+			Property
+			{
+				Name "ForceSynchronousPDBWrites"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\true "true"
+					\false "false"
+				}
+			}
+		}		
 		%GeneratorSetting "Symbols"
 		{
 			Property
