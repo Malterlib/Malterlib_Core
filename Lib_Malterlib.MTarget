@@ -1017,6 +1017,7 @@ Property
 		{
 			&
 			{
+				GeneratorFamily "VisualStudio"
 				|
 				{
 					Compile.Type "C"

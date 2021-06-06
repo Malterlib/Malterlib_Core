@@ -1288,6 +1288,7 @@ Compile
 	{
 		&
 		{
+			GeneratorFamily "VisualStudio"
 			Compile.PrefixHeader undefined
 			|
 			{
