@@ -238,6 +238,7 @@
 					MalterlibFS "MalterlibFS"
 					WindowsResource "ResourceCompile"
 					MSBuildTargets "None"
+					PList "None"
 					ShellScript "None"
 					VisualStudioVisualizer "Natvis"
 					Custom "CustomBuild"
