@@ -4182,17 +4182,18 @@ Property
 		!!MalterlibSignIncludeCert "none"
 	}
 
-	MalterlibSignOSXDeep define bool
-	MalterlibSignOSXDeep true
-	{
-		!!MalterlibSignOSXDeep ""
-	}
+	MalterlibSignOSXDeep define bool = true
+
+	MalterlibSignOSXHardened define bool?
 
 	MalterlibCodeSignOSXExtraOptions define string = ""
 	MalterlibCodeSignOSXExtraOptions += "--options runtime "
 	{
-		!MalterlibNotarizeOSXUser ""
-		!!MalterlibSignOSXHardened true
+		|
+		{
+			!MalterlibNotarizeOSXUser undefined
+			MalterlibSignOSXHardened true
+		}
 	}
 
 	MalterlibCodeSignOSXExtraOptions += "--deep "
