@@ -517,6 +517,9 @@ Property
 					Compile
 					{
 						!!CompileDialect "C"
+						
+						FullEval true
+
 						SearchPath += `@(VisualStudioCRTPath->MakeAbsolute())/vcruntime`
 						PreprocessorDefines =+ "_VCRT_BUILD"
 

@@ -125,6 +125,44 @@
 				Disabled true
 			}
 		}
-
+		%GeneratorSetting "ExportScriptEnvironment"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+		%GeneratorSetting "UseMultiToolTask"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "UseMultiToolTask"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\true "true"
+					\false "false"
+				}
+			}
+		}
+		%GeneratorSetting "EnforceProcessCountAcrossBuilds"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "EnforceProcessCountAcrossBuilds"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\true "true"
+					\false "false"
+				}
+			}
+		}
 	}
 }

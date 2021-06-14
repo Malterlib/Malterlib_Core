@@ -68,7 +68,7 @@
 		"ChangesCauseDependencyGraphInvalidation" = YES;
 	},
 	{
-		Identifier = "sourcecode.c.qt.h.nolink";
+		Identifier = "sourcecode.c.h.nolink";
 		BasedOn = sourcecode;
 		Name = "C++ Header (not linked)";
 		IsTextFile = YES;

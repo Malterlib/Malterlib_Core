@@ -45,6 +45,13 @@
 				}
 			}
 		}
+		%GeneratorSetting "Custom_VerifyInputsAndOutputsExist"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}		
 		%GeneratorSetting "Optimize"
 		{
 			Property
@@ -175,6 +182,13 @@
 				Name "Outputs"
 			}
 		}
+		%GeneratorSetting "Custom_VerifyInputsAndOutputsExist"
+		{
+			Property
+			{
+				Name "VerifyInputsAndOutputsExist"
+			}
+		}		
 		%GeneratorSetting "Custom_Inputs"
 		{
 			Property

@@ -34,13 +34,6 @@
 				Disabled true
 			}
 		}
-		%GeneratorSetting "ExportScriptEnvironment"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
 		%GeneratorSetting "CharacterSet"
 		{
 			Property
@@ -112,38 +105,6 @@
 			{
 				Parent "PropertyGroup"
 				Name "TargetExt"
-			}
-		}
-		%GeneratorSetting "UseMultiToolTask"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "UseMultiToolTask"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "EnforceProcessCountAcrossBuilds"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "EnforceProcessCountAcrossBuilds"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
 			}
 		}
 		%GeneratorSetting "FileName"
@@ -298,7 +259,7 @@
 		}			
 	}
 }
-%GeneratorSetting "Native_Makefile"
+%GeneratorSetting "Native_Utility"
 {
 	%GeneratorSetting "Target"
 	{
@@ -331,36 +292,49 @@
 			}
 		}
 
+		%GeneratorSetting "CommandLine_Inputs"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+
+		%GeneratorSetting "CommandLine_Outputs"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+
 		%GeneratorSetting "Real_CommandLine_Build"
 		{
 			Property
 			{
-				Parent "PropertyGroup"
-				Name "NMakeBuildCommandLine"
+				Disabled true
 			}
 		}
+
 		%GeneratorSetting "Real_CommandLine_ReBuild"
 		{
 			Property
 			{
-				Parent "PropertyGroup"
-				Name "NMakeReBuildCommandLine"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Real_CommandLine_Clean"
 		{
 			Property
 			{
-				Parent "PropertyGroup"
-				Name "NMakeCleanCommandLine"
+				Disabled true
 			}
 		}
-		%GeneratorSetting "Output"
+		%GeneratorSetting "CommandLine_VerifyInputsAndOutputsExist"
 		{
 			Property
 			{
-				Parent "PropertyGroup"
-				Name "NMakeOutput"
+				Disabled true
 			}
 		}
 	}

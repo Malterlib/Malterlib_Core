@@ -131,20 +131,27 @@
 				Name "PreprocessorDefinitions"
 			}
 		}		
-		
-		%GeneratorSetting "SearchPath"
+
+		%GeneratorSetting "Real_SearchPath"
 		{
 			Property
 			{
 				Name "AdditionalIncludeDirectories"
 			}
 		}
+		
+		%GeneratorSetting "SearchPath"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
 		%GeneratorSetting "SystemSearchPath"
 		{
 			Property
 			{
-				Name "AdditionalIncludeDirectories"
-				Substitute "{};%(ClCompile.AdditionalIncludeDirectories)"
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Warnings"

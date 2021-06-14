@@ -27,5 +27,12 @@
 				Disabled true
 			}
 		}
+		%GeneratorSetting "IndirectOrdered"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}		
 	}
 }

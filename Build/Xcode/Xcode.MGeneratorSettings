@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 %GeneratorSetting "Xcode"
@@ -19,6 +19,7 @@
 						ObjC\+\+ "sourcecode.cpp.objcpp"
 						ObjC "sourcecode.c.objc"
 						None "text"
+						Object "archive.ar"
 						StaticLibrary "archive.ar"
 						DynamicLibrary "archive.ar"
 						XcodeBundle "wrapper.cfbundle"
@@ -97,6 +98,13 @@
 					Disabled true
 				}
 			}
+			%GeneratorSetting "IndirectOrdered"
+			{
+				Property
+				{
+					Disabled true
+				}
+			}		
 		}
 	}
 	%GeneratorSetting "SharedApplication"
@@ -185,7 +193,7 @@
 			}
 		}
 	}
-			
+
 	%GeneratorSetting "StaticLibrary6"
 	{
 		%GeneratorSetting "LinkWithLibraries"
@@ -208,16 +216,46 @@
 			}
 		}
 	}
-	
+
 	%GeneratorSetting "SharedMakefile"
 	{
 		%GeneratorSetting "Target"
 		{
 			%GeneratorSetting "CommandLine_Build"
 			{
+				Property
+				{
+					Name "ToolBuildScript"
+					Substitute "#!/bin/bash\r\nexport PATH=$MalterlibBuildSystemExecutablePath:$PATH\r\n{}"
+				}
+			}
+			%GeneratorSetting "CommandLine_Inputs"
+			{
+				Property
+				{
+					Name "ToolBuildScriptInputs"
+				}
+			}
+			%GeneratorSetting "CommandLine_Outputs"
+			{
+				Property
+				{
+					Name "ToolBuildScriptOutputs"
+				}
+			}
+			%GeneratorSetting "CommandLine_ReBuild"
+			{
+				Property
+				{
+					Disabled "1" // Xcode does not have a rebuild action
+				}
 			}
 			%GeneratorSetting "CommandLine_Clean"
 			{
+				Property
+				{
+					Disabled "1"
+				}
 			}
 		}
 	}
@@ -249,7 +287,7 @@
 				{
 					Disabled "1"
 				}
-			}			
+			}
 			%GeneratorSetting "Group"
 			{
 				Property
@@ -352,6 +390,22 @@
 				Property
 				{
 					Name "COMPILER_INDEX_STORE_ENABLE"
+				}
+			}
+
+			%GeneratorSetting "QtToolsRoot"
+			{
+				Property
+				{
+					Name "QT_TOOLS_ROOT"
+				}
+			}
+
+			%GeneratorSetting "QtIncludeRoot"
+			{
+				Property
+				{
+					Name "QT_INCLUDE_ROOT"
 				}
 			}
 
@@ -694,7 +748,7 @@
 					{
 						\true "1"
 						\false "0"
-					}	
+					}
 				}
 			}
 			%GeneratorSetting "CodeSigningIdentity"
@@ -807,7 +861,7 @@
 					Name "EMCC_NODE"
 				}
 			}
-			
+
 			%GeneratorSetting "FileName"
 			{
 				Property
@@ -838,7 +892,7 @@
 						Tool "mh_execute"
 						ConsoleExecutable "mh_execute"
 						UIExecutable "mh_execute"
-					}	
+					}
 				}
 			}
 			%GeneratorSetting "MalterlibInfoPListFile"
@@ -878,6 +932,14 @@
 				Property
 				{
 					Name "PRODUCT_BUNDLE_IDENTIFIER"
+				}
+			}
+
+			%GeneratorSetting "ExcludedSourceFileNames"
+			{
+				Property
+				{
+					Name "EXCLUDED_SOURCE_FILE_NAMES"
 				}
 			}
 
@@ -991,7 +1053,7 @@
 					{
 						\true "YES"
 						\false "NO"
-					}	
+					}
 				}
 			}
 			%GeneratorSetting "SDKRoot"
@@ -1087,7 +1149,7 @@
 					Name "VALID_ARCHS"
 				}
 			}
-			
+
 			%GeneratorSetting "NativeArchitecture"
 			{
 				Property
@@ -1095,7 +1157,7 @@
 					Name "NATIVE_ARCH"
 				}
 			}
-			
+
 			%GeneratorSetting "NativeArchitectureActual"
 			{
 				Property
@@ -1103,7 +1165,7 @@
 					Name "NATIVE_ARCH_ACTUAL"
 				}
 			}
-			
+
 			%GeneratorSetting "CombineHiDPIImages"
 			{
 				Property
@@ -1240,7 +1302,7 @@
 					}
 				}
 			}
-			
+
 			%GeneratorSetting "StripDebugSymbolsDuringCopy"
 			{
 				Property
@@ -1428,7 +1490,7 @@
 					Name "LD_DYLIB_INSTALL_NAME"
 				}
 			}
-			
+
 			%GeneratorSetting "LinkWithStandardLibraries"
 			{
 				Property
@@ -1544,7 +1606,7 @@
 					Name "GenerateScheme"
 				}
 			}
-			
+
             %GeneratorSetting "EnableModuleDebugging"
 			{
 				Property
@@ -1560,7 +1622,7 @@
 					}
 				}
 			}
-            
+
             // Remote debugging
 			%GeneratorSetting "RemoteDebuggerCommand"
 			{
@@ -1576,29 +1638,7 @@
 					Disabled true
 				}
 			}
-            
-            // Todo
-            %GeneratorSetting "CommandLine_Build"
-			{
-            	Property
-				{
-					Disabled true
-				}
-			}
-			%GeneratorSetting "CommandLine_Clean"
-			{
-            	Property
-				{
-					Disabled true
-                }
-			}
-			%GeneratorSetting "CommandLine_ReBuild"
-			{
-				Property
-				{
-					Disabled true // Xcode does not have a rebuild action
-				}
-			}
+
 			%GeneratorSetting "ExportScriptEnvironmentContents"
 			{
 				Property
@@ -1632,7 +1672,7 @@
 					}
 				}
 			}
-			
+
 			%GeneratorSetting "Sanitize"
 			{
 
@@ -1678,7 +1718,7 @@
 						\false "-fno-objc-arc"
 					}
 				}
-			}			
+			}
 
 			%GeneratorSetting "SizedDeallocation"
 			{
@@ -1761,7 +1801,7 @@
 					}
 				}
 			}
-			
+
 			%GeneratorSetting "Verbose"
 			{
 				%GeneratorSetting "Value"
@@ -1878,7 +1918,7 @@
 					IgnoreEmpty "1"
 				}
 			}
-			
+
 			%GeneratorSetting "SysRoot"
 			{
 				Property
@@ -1890,7 +1930,7 @@
 					QuoteSeperatedValues "1"
 				}
 			}
-		
+
 			%GeneratorSetting "DocumentationModule"
 			{
 				Property
@@ -1902,7 +1942,7 @@
 					QuoteSeperatedValues "1"
 				}
 			}
-			
+
 			%GeneratorSetting "SearchPath"
 			{
 				Property
@@ -1971,13 +2011,13 @@
 					{
 						Off "-w"
 						Minimal "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-pointer-sign -Wno-tautological-compare -Wno-incompatible-pointer-types -Wno-unused-local-typedef -Wno-invalid-offsetof"
-						On "-Wall -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-invalid-offsetof"
+						On "-Wall -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-invalid-offsetof -Wno-switch"
 						Pedantic "-Weverything -Wno-invalid-offsetof"
 /*
 						Minimal "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"
 						On "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"
-						Pedantic "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"						
-*/						
+						Pedantic "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"
+*/
 					}
 				}
 			}
@@ -2092,7 +2132,7 @@
 					}
 				}
 			}
-			
+
 			%GeneratorSetting "Warnings_UnusedLabel"
 			{
 				%GeneratorSetting "Value"
@@ -2214,7 +2254,7 @@
 					}
 				}
 			}
-			
+
 
 			%GeneratorSetting "ClangUnstableWarnings"
 			{
@@ -2226,7 +2266,7 @@
 					}
 				}
 			}
-			
+
 			%GeneratorSetting "EmscriptenWarnings"
 			{
 				%GeneratorSetting "Value"
@@ -2236,7 +2276,7 @@
 						On "-Wno-warn-absolute-paths -v"
 					}
 				}
-			}			
+			}
 
 			%GeneratorSetting "StackGuard"
 			{
@@ -2248,8 +2288,8 @@
 						\false "-fno-stack-protector"
 					}
 				}
-			}			
-			
+			}
+
 			%GeneratorSetting "WarningsAsErrors"
 			{
 				%GeneratorSetting "Value"
@@ -2324,7 +2364,7 @@
 
 			%GeneratorSetting "FloatingPointExceptions"
 			{
-				// Clang has no -ffast-math flag (as GCC does), but possibly 
+				// Clang has no -ffast-math flag (as GCC does), but possibly
 				// something can be found.
 				%GeneratorSetting "Value"
 				{
@@ -2382,7 +2422,7 @@
 					}
 				}
 			}
-			
+
 			%GeneratorSetting "DefaultHeaders"
 			{
 				%GeneratorSetting "Value"
@@ -2397,7 +2437,7 @@
 					}
 				}
 			}
-			
+
 			%GeneratorSetting "DefaultLibraries"
 			{
 				%GeneratorSetting "Value"
@@ -2410,7 +2450,7 @@
 					}
 				}
 			}
-			
+
 			%GeneratorSetting "DefaultVisibility"
 			{
 				%GeneratorSetting "Value"
@@ -2646,7 +2686,7 @@
 						\false ""
 					}
 				}
-			}	
+			}
 			%GeneratorSetting "DisableDeprecationWarnings"
 			{
 				%GeneratorSetting "Value"
@@ -2657,7 +2697,7 @@
 						\false ""
 					}
 				}
-			}	
+			}
 		}
 	}
 	%GeneratorSetting "C++"
@@ -2852,7 +2892,7 @@
 			{
 				Property
 				{
-					Disabled true 
+					Disabled true
 				}
 			}
 			%GeneratorSetting "DisplayDependencies"
@@ -2903,7 +2943,7 @@
 					Name "RCC_MALTERLIB_DEPENDENCY"
 				}
 			}
-			
+
 			%GeneratorSetting "NoCompress"
 			{
 				Property
@@ -2963,8 +3003,8 @@
 					Name "TWK_OUTPUT_PATTERN"
 				}
 			}
-            
-			
+
+
 			// Disabled
 			%GeneratorSetting "GenerateDebugInformation"
 			{
@@ -3245,7 +3285,7 @@
 					Disabled true
 				}
 			}
-			
+
 			%GeneratorSetting "Verbose"
 			{
 				Property
@@ -3253,7 +3293,7 @@
 					Disabled true
 				}
 			}
-			
+
 			%GeneratorSetting "IndentWidth"
 			{
 				Property
@@ -3261,7 +3301,7 @@
 					Disabled true
 				}
 			}
-			
+
 			%GeneratorSetting "TabWidth"
 			{
 				Property
@@ -3269,7 +3309,7 @@
 					Disabled true
 				}
 			}
-			
+
 			%GeneratorSetting "InitEarly"
 			{
 				Property
@@ -3277,7 +3317,7 @@
 					Disabled true
 				}
 			}
-			
+
 			%GeneratorSetting "UsesTabs"
 			{
 				Property

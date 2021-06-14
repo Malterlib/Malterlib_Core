@@ -8,7 +8,7 @@
     Vendor = "Malterlib";
     Description = "Compile a Qt resource file.";
 	ProgressDescription = "Compiling $(CommandProgressByType) source files";
-    CommandLine = "$(MLSRCROOT)/SDK/Qt/bin/OSX/rcc [options] -name $(RCC_INIT_NAME) -o $(RCC_OUTPUT_PATTERN) $(InputFile) ";
+    CommandLine = "$(QT_TOOLS_ROOT)/rcc [options] -name $(RCC_INIT_NAME) -o $(RCC_OUTPUT_PATTERN) $(InputFile) ";
     RuleName = "Rcc $(InputFile)";
     ExecDescription = "Rcc $(InputFile)";
     InputFileTypes = (
@@ -26,7 +26,7 @@
         	Type = string;
             	DefaultValue = "$(InputFileBase)$(InputFileBaseUniquefier).cpp";
             	Category = BuildOptions;
-    	}, 
+    	},
         {   Name = RCC_IDS_DEPENDENCY;
             Type = string;
             DefaultValue = "";
@@ -61,7 +61,7 @@
             DefaultValue = "";
             Category = BuildOptions;
             CommandLinePrefixFlag = "-threshold ";
-    	},   
+    	},
         {   Name = RCC_COMPRESS;
             Type = bool;
             DefaultValue = YES;

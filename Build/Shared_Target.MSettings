@@ -479,15 +479,28 @@ Target
 
 Target
 {
-	Output define string?
 	CommandLine_Build define string?
 	CommandLine_ReBuild define string?
 	CommandLine_Clean define string?
 
-	Real_CommandLine_Build define string?
-	Real_CommandLine_ReBuild define string?
-	Real_CommandLine_Clean define string?
+	CommandLine_Inputs define [string]?
+	CommandLine_Outputs define [string]?
+}
 
+Target
+{
+	&
+	{
+		LanguageFamily "Native"
+		Target.Type "Tool"
+		GeneratorFamily "VisualStudio"
+	}
+
+	Real_CommandLine_Build define string = "rem\r\n"
+	Real_CommandLine_ReBuild define string = "rem\r\n"
+	Real_CommandLine_Clean define string = "rem\r\n"
+
+	CommandLine_VerifyInputsAndOutputsExist define bool = false
 }
 
 Target
@@ -500,8 +513,17 @@ Target
 	}
 
 	Real_CommandLine_Build `rem\r\n@(Target.PreBuildScript)\r\n\r\n@(Target.CommandLine_Build)\r\n\r\n@(Target.PostBuildScript)`
+	{
+		!Target.CommandLine_Build undefined
+	}
 	Real_CommandLine_ReBuild Target.CommandLine_ReBuild
+	{
+		!Target.CommandLine_ReBuild undefined
+	}
 	Real_CommandLine_Clean Target.CommandLine_Clean
+	{
+		!Target.CommandLine_Clean undefined
+	}
 }
 Target
 {
@@ -513,8 +535,17 @@ Target
 	}
 
 	Real_CommandLine_Build `rem\r\n@(Target.PreBuildScript)\r\ncall "@(MalterlibExportEnvironmentScript->WindowsPath())"\r\n\r\n@(Target.CommandLine_Build)\r\n\r\n@(Target.PostBuildScript)`
+	{
+		!Target.CommandLine_Build undefined
+	}
 	Real_CommandLine_ReBuild `call "@(MalterlibExportEnvironmentScript->WindowsPath())"\r\n@(Target.CommandLine_ReBuild)`
+	{
+		!Target.CommandLine_ReBuild undefined
+	}
 	Real_CommandLine_Clean `call "@(MalterlibExportEnvironmentScript->WindowsPath())"\r\n@(Target.CommandLine_Clean)`
+	{
+		!Target.CommandLine_Clean undefined
+	}
 }
 
 Target
@@ -884,7 +915,7 @@ Property
 			!GetProperty("Property", _EnvVar, "Target:*") undefined
 		}
 	}
-	fg_ExportScriptEnvironmentContents_Template =+ `set @(_EnvVar)=@(GetProperty("Property", _EnvVar, "Target:*")->ToStringCompact()->Escape())\r\n`
+	fg_ExportScriptEnvironmentContents_Template =+ `set @(_EnvVar)=@(GetProperty("Property", _EnvVar, "Target:*")->ToStringCompact())\r\n`
 	{
 		&
 		{
@@ -3123,7 +3154,7 @@ Property
 	MalterlibBundleIdentifier define string = `@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())`
 
 	MalterlibPostBuildScriptPreSign define string?
-	MalterlibPostBuildScriptPreSign =+	`mkdir -p @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`->Escape())\r\n`\
+	MalterlibPostBuildScriptPreSign =+	`@(ScriptMkDir(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`))\r\n`\
 										`@(CheckErrors)\r\n`\
 										`MTool DiffCopy @(MalterlibExeIcon->Escape()) @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`->Escape()) "" 0\r\n`\
 										`@(CheckErrors)\r\n`
@@ -3557,6 +3588,7 @@ Property
 {
 	MalterlibWindowsSettings_SegmentHeap define bool = false
 	MalterlibWindowsSettings_LongPathAware define bool = true
+	MalterlibExtraAssemblyInfo define string = ""
 }
 
 %Group "~Automatic/Windows Specific"
@@ -3564,12 +3596,14 @@ Property
 	%GenerateFile "Generate .NET Assembly Info"
 	{
 		!!LanguageFamily ".NET"
+		Property
+		{
+			CalcGUID define string = MalterlibFinalModuleDestination->HashUUID("Bare")
+		}
 		GenerateFile
 		{
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)AssemblyInfo.cs`
-
-			CalcGUID MalterlibFinalModuleDestination->HashUUID("Bare")
 
 			Contents 	`\n`\
 						`#if (@(MalterlibUniqueConfig))\r\n`\
@@ -3603,13 +3637,14 @@ Property
 			Target.CLRSupport true
 		}
 
+		Property
+		{
+			CalcGUID define string = MalterlibFinalModuleDestination->HashUUID("Bare")
+		}
 		GenerateFile
 		{
-
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)AssemblyInfo.cpp`
-
-			CalcGUID MalterlibFinalModuleDestination->HashUUID("Bare")
 
 			Contents 	`\n`\
 						`using namespace System;\r\n`\
@@ -3664,7 +3699,7 @@ Property
 
 			PrivateBuildString define string = {
 				MalterlibBranch: MalterlibFullBranch
-				, MalterlibGitBranch: MalterlibGitBranch
+				, MalterlibGitBranch: (MalterlibGitBranch || "")
 				, MalterlibGitCommit: MalterlibGitCommit
 			}->EJSONToString("")
 		}
@@ -3965,6 +4000,8 @@ Target
 {
 	%GenerateFile "Generate"
 	{
+		Compile.DoCompileAndLink false
+		
 		GenerateFile
 		{
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
@@ -3972,6 +4009,25 @@ Target
 			Contents MalterlibExeFSSpecContents
 			UnicodeBOM true
 		}
+	}
+
+	Property
+	{
+		BaseFileName define string = `@(Workspace:Workspace.Name)_@(Target:Target.Name)`
+		ObjectFileName define string
+		ObjectFileName `@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFS.obj`
+		{
+			!!PlatformFamily "Windows"
+		}
+		ObjectFileName `@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFS.s`
+		{
+			!PlatformFamily "Windows"
+		}
+		CppFileName define string = `@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFSCPP.cpp`
+	}
+	%File [ObjectFileName, CppFileName]
+	{
+		Compile.AllowNonExisting true
 	}
 }
 
@@ -3996,6 +4052,48 @@ Target
 		!MalterlibExeFSSpecContents undefined
 	}
 
+}
+
+Compile
+{
+	Custom_VerifyInputsAndOutputsExist define bool?
+}
+
+%Group "~Automatic/Utility Build"
+{
+	%GenerateFile "Generate"
+	{
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name `@(GeneratedDirectory)/@(Workspace:Workspace.Name)_@(Target:Target.Name).build`
+			Contents ""
+			UnicodeBOM false
+		}
+		Compile
+		{
+			Custom_CommandLine Target.Real_CommandLine_Build
+			Custom_WorkingDirectory '.'->MakeAbsolute()
+			Custom_Outputs [Target.CommandLine_Outputs..., `@(GeneratedDirectory)/@(Workspace:Workspace.Name)_@(Target:Target.Name).never.generated`]
+			Custom_Inputs Target.CommandLine_Inputs
+			Custom_VerifyInputsAndOutputsExist Target.CommandLine_VerifyInputsAndOutputsExist
+			{
+				!Target.CommandLine_VerifyInputsAndOutputsExist undefined
+			}
+		}
+	}
+}
+
+Target
+{
+	ExtraGroups =+ "~Automatic/Utility Build"
+	{
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			Target.Type "Tool"
+		}
+	}
 }
 
 // Post build step
@@ -4139,8 +4237,8 @@ Property
 	}
 
 	// AB Copy
-	MalterlibTestPutPathUploadTemplate =+	`echo mkdir -p @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`\
-											`mkdir -p @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`\
+	MalterlibTestPutPathUploadTemplate =+	`echo @(ScriptMkDir(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`))\r\n`\
+											`@(ScriptMkDir(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`))\r\n`\
 											`echo cp -fr @(_CopyOptions<Pattern>->Escape()) @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)/`->Escape())\r\n`\
 											`cp -fr @(_CopyOptions<Pattern>->Escape()) @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)/`->Escape())\r\n`\
 											`@(CheckErrors)\r\n`
@@ -4897,7 +4995,7 @@ Target
 		}
 	}
 
-	PostBuildScript =+ `@(ScriptExport) "MalterlibDeployRoot=@(MalterlibDeployRoot)"\r\n`
+	PostBuildScript =+ `@(ScriptExport("MalterlibDeployRoot", MalterlibDeployRoot))\r\n`
 	{
 		!MalterlibBuildServerBuild true
 	}
@@ -4988,7 +5086,11 @@ Target
 	PostBuildScript =+ 	`MTool TouchOrCreate "@(PostBuildOutputfile)"\r\n`\
 						`@(CheckErrors)\r\n`
 	{
-		!Target:Target.Type "Tool"
+		|
+		{
+			!Target:Target.Type "Tool"
+			GeneratorFamily "Xcode"
+		}
 	}
 }
 

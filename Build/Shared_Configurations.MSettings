@@ -286,6 +286,8 @@ Property
 	EnableExtraDebuggingConfigs define bool = false // User(Configs)=true: Enable 'Debug Optimized', 'Fast Compile', 'Release Debug' configs
 	EnableReleaseConfig define bool = true // User(Configs)=false: Enable 'Release' configuration
 	EnableReleaseTestingConfig define bool = true // User(Configs)=false: Enable 'Release Testing' configuration
+	EnableDebugInlinedConfig define bool? // User(Configs)=false: Enable 'Debug Inlined' configuration
+	EnableDebugConfig define bool? // User(Configs)=false: Enable 'Debug' configuration
 	EnableSafeThreadLocals define bool = false // User(Undocumented)=true: Enables use of safe thread locals so you can do tests against other versions of OSX
 	EnablePlatformFamily_OSX define bool = false
 	EnablePlatformFamily_OSX true
@@ -550,19 +552,27 @@ Property
 *Configuration
 {
 	Debug "Maximum Debuggability"
+	{
+		!EnableDebugConfig false
+	}
     Fast\ Compile "Minimize compiler time"
 	{
 		!!EnableExtraDebuggingConfigs true
 	}
     Debug\ Inlined "High debuggability with compiler optimizations that does not hurt debuggability"
 	{
-		&
+		|
 		{
-			!MalterlibBuildServerBuild true
-			|
+			EnableDebugInlinedConfig true
+			&
 			{
-				PlatformFamily "Windows"
-				EnableExtraDebuggingConfigs true
+				!EnableDebugInlinedConfig false
+				!MalterlibBuildServerBuild true
+				|
+				{
+					PlatformFamily "Windows"
+					EnableExtraDebuggingConfigs true
+				}
 			}
 		}
 	}

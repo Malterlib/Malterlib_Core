@@ -6,13 +6,13 @@ Property
 	SharedBuildSettingsScriptContents define string = ""
 	// Find base dir and export path
 	SharedBuildSettingsScriptContents =+	`chcp 65001\r\n`\
-											`SET "RunVsDevCmd=true"\r\n`\
-											`IF "%1"=="false" SET "RunVsDevCmd=false"\r\n`\
-											`@(ScriptExport) OriginalDirectory=%CD%\r\n`\
+											`SET RunVsDevCmd=true\r\n`\
+											`IF "%1"=="false" SET RunVsDevCmd=false\r\n`\
+											`set OriginalDirectory=%CD%\r\n`\
 											`cd %~dp0..\r\n`\
-											`@(ScriptExport) MalterlibBaseDir=%CD%\\\r\n`\
+											`set MalterlibBaseDir=%CD%\\\r\n`\
 											`cd %OriginalDirectory%\r\n`\
-											`@(ScriptExport) PATH=%MalterlibBaseDir%Binaries\\Malterlib\\@(HostPlatformFamily)\\@(HostArchitecture);%PATH%\r\n`\
+											`set PATH=%MalterlibBaseDir%Binaries\\Malterlib\\@(HostPlatformFamily)\\@(HostArchitecture);%PATH%\r\n`\
 											`\r\n`
 	{
 		&
@@ -22,19 +22,19 @@ Property
 		}
 	}
 
-	SharedBuildSettingsScriptContents =+ `@(ScriptExport) "PATH=/Applications/Xcode.app/Contents/Developer/usr/bin:$PATH"\r\n`
+	SharedBuildSettingsScriptContents =+ `export "PATH=/Applications/Xcode.app/Contents/Developer/usr/bin:$PATH"\r\n`
 	{
 		!!Generator "Xcode" // Use old xcode build for Xcode generator
 	}
 
-	SharedBuildSettingsScriptContents =+ 	`@(ScriptExport) "MalterlibBaseDir=\`cd "${BASH_SOURCE%/*}/.." && pwd\`/"\r\n`\
-											`@(ScriptExport) "PATH=${MalterlibBaseDir}Binaries/Malterlib/@(HostPlatformFamily)/@(HostArchitecture):$PATH"\r\n`
+	SharedBuildSettingsScriptContents =+ 	`export "MalterlibBaseDir=\`cd "${BASH_SOURCE%/*}/.." && pwd\`/"\r\n`\
+											`export "PATH=${MalterlibBaseDir}Binaries/Malterlib/@(HostPlatformFamily)/@(HostArchitecture):$PATH"\r\n`
 	{
 		!HostPlatformFamily "Windows"
 	}
 
-	SharedBuildSettingsScriptContents =+	`@(ScriptExport) "MalterlibBaseDir=\`cd "${BASH_SOURCE%/*}/.." && pwd\`/"\r\n`\
-											`@(ScriptExport) "PATH=${MalterlibBaseDir}Binaries/Malterlib/@(HostPlatformFamily)/@(HostArchitecture):$PATH"\r\n`\
+	SharedBuildSettingsScriptContents =+	`export "MalterlibBaseDir=\`cd "${BASH_SOURCE%/*}/.." && pwd\`/"\r\n`\
+											`export "PATH=${MalterlibBaseDir}Binaries/Malterlib/@(HostPlatformFamily)/@(HostArchitecture):$PATH"\r\n`\
 											`function MTool()\r\n`\
 											`{\r\n`\
 											`	MTool.exe "$@@"\r\n`\
@@ -43,15 +43,7 @@ Property
 		!!ScriptWindowsBash true
 	}
 
-	SharedBuildSettingsScriptContents =+ `@(ScriptExport) MalterlibSharedDeployRoot=@(MalterlibSharedDeployRoot)\r\n`
-	{
-		!!PlatformFamily "Windows"
-	}
-
-	SharedBuildSettingsScriptContents =+ `@(ScriptExport) "MalterlibSharedDeployRoot=@(MalterlibSharedDeployRoot)"\r\n`
-	{
-		!PlatformFamily "Windows"
-	}
+	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibSharedDeployRoot", MalterlibSharedDeployRoot))\r\n`
 
 	SharedBuildSettingsScriptContents =+	`function ZMTool()\r\n`\
 											`{\r\n`\
@@ -77,40 +69,40 @@ Property
 	}
 
 	SharedBuildSettingsScriptContents =+	`\r\n`\
-											`@(ScriptExport) "MalterlibBranch=@(Property.MalterlibBranch)"\r\n`\
-											`@(ScriptExport) "MalterlibBranchWindows=@(Property.MalterlibBranch->WindowsPath())"\r\n`\
-											`@(ScriptExport) "MalterlibFullBranch=@(Property.MalterlibFullBranch)"\r\n`\
-											`@(ScriptExport) "MalterlibFullBranchWindows=@(Property.MalterlibFullBranch->WindowsPath())"\r\n`\
-											`@(ScriptExport) "MalterlibGitBranch=@(Property.MalterlibGitBranch || "")"\r\n`\
-											`@(ScriptExport) "MalterlibGitCommit=@(Property.MalterlibGitCommit)"\r\n`\
-											`@(ScriptExport) "MalterlibGenerator=@(Generator)"\r\n`\
-											`@(ScriptExport) "MalterlibBranchOnlyLast=@(Property.MalterlibBranch->RemoveStartPaths(1))"\r\n`\
-											`@(ScriptExport) "MalterlibFullBranchOnlyLast=@(Property.MalterlibFullBranch->RemoveStartPaths(1))"\r\n`\
-											`@(ScriptExport) "MalterlibSigning=@(MalterlibBuildSigning->ToString())"\r\n`\
-											`@(ScriptExport) "MalterlibSignIncludeCert=@(MalterlibSignIncludeCert->MakeAbsolute())"\r\n`\
-											`@(ScriptExport) "MalterlibSignTimestampServer=@(MalterlibSignTimestampServer)"\r\n`\
-											`@(ScriptExport) "MalterlibSignTimestampServerRFC3161=@(MalterlibSignTimestampServerRFC3161)"\r\n`\
-											`@(ScriptExport) "Win32SignToolTimestampServerOptions=@(Win32SignToolTimestampServerOptions)"\r\n`\
-											`@(ScriptExport) "MalterlibSignCertOSX=@(MalterlibSignCertOSX)"\r\n`\
-											`@(ScriptExport) "MalterlibSignCertWindows=@(MalterlibSignCertWindows)"\r\n`\
+											`@(ScriptExport("MalterlibBranch", MalterlibBranch))\r\n`\
+											`@(ScriptExport("MalterlibBranchWindows", MalterlibBranch->WindowsPath()))\r\n`\
+											`@(ScriptExport("MalterlibFullBranch", MalterlibFullBranch))\r\n`\
+											`@(ScriptExport("MalterlibFullBranchWindows", MalterlibFullBranch->WindowsPath()))\r\n`\
+											`@(ScriptExport("MalterlibGitBranch", (MalterlibGitBranch || "")))\r\n`\
+											`@(ScriptExport("MalterlibGitCommit", MalterlibGitCommit))\r\n`\
+											`@(ScriptExport("MalterlibGenerator", Generator))\r\n`\
+											`@(ScriptExport("MalterlibBranchOnlyLast", MalterlibBranch->RemoveStartPaths(1)))\r\n`\
+											`@(ScriptExport("MalterlibFullBranchOnlyLast", MalterlibFullBranch->RemoveStartPaths(1)))\r\n`\
+											`@(ScriptExport("MalterlibSigning", MalterlibBuildSigning->ToString()))\r\n`\
+											`@(ScriptExport("MalterlibSignIncludeCert", MalterlibSignIncludeCert->MakeAbsolute()))\r\n`\
+											`@(ScriptExport("MalterlibSignTimestampServer", MalterlibSignTimestampServer))\r\n`\
+											`@(ScriptExport("MalterlibSignTimestampServerRFC3161", MalterlibSignTimestampServerRFC3161))\r\n`\
+											`@(ScriptExport("Win32SignToolTimestampServerOptions", Win32SignToolTimestampServerOptions))\r\n`\
+											`@(ScriptExport("MalterlibSignCertOSX", MalterlibSignCertOSX))\r\n`\
+											`@(ScriptExport("MalterlibSignCertWindows", MalterlibSignCertWindows))\r\n`\
 											`\r\n`\
-											`@(ScriptExport) "HostPlatformFamily=@(HostPlatformFamily)"\r\n`\
-											`@(ScriptExport) "HostPlatform=@(HostPlatform)"\r\n`\
-											`@(ScriptExport) "HostArchitecture=@(HostArchitecture)"\r\n`\
-											`@(ScriptExport) "MalterlibDeployRoot=@(MalterlibDeployRoot)"\r\n`\
-											`@(ScriptExport) "MalterlibCompiledFiles=@(MalterlibCompiledFiles)"\r\n`\
-											`@(ScriptExport) "MalterlibCompiledFilesSourceBase=@(MalterlibCompiledFilesSourceBase)"\r\n`\
-											`@(ScriptExport) "MalterlibDoingProductBuild=@(MalterlibDoingProductBuild->ToString())"\r\n`\
+											`@(ScriptExport("HostPlatformFamily", HostPlatformFamily))\r\n`\
+											`@(ScriptExport("HostPlatform", HostPlatform))\r\n`\
+											`@(ScriptExport("HostArchitecture", HostArchitecture))\r\n`\
+											`@(ScriptExport("MalterlibDeployRoot", MalterlibDeployRoot))\r\n`\
+											`@(ScriptExport("MalterlibCompiledFiles", MalterlibCompiledFiles))\r\n`\
+											`@(ScriptExport("MalterlibCompiledFilesSourceBase", MalterlibCompiledFilesSourceBase))\r\n`\
+											`@(ScriptExport("MalterlibDoingProductBuild", MalterlibDoingProductBuild->ToString()))\r\n`\
 											`\r\n`\
-											`@(ScriptExport) "ProductVersionMajor=@(ProductVersionMajor->ToString())"\r\n`\
-											`@(ScriptExport) "ProductVersionMinor=@(ProductVersionMinor)"\r\n`\
-											`@(ScriptExport) "ProductVersionRevision=@(ProductVersionRevision)"\r\n`\
-											`@(ScriptExport) "ProductVersionRevisionNumber=@(ProductVersionRevision->Format("{}"))"\r\n`\
-											`@(ScriptExport) "ProductVersionExtra=@(ProductVersionExtra)"\r\n`\
-											`@(ScriptExport) "ProductName=@(ProductName)"\r\n`\
-											`@(ScriptExport) "ProductCompany=@(ProductCompany)"\r\n`\
-											`@(ScriptExport) "ProductCopyright=@(ProductCopyright)"\r\n`\
-											`@(ScriptExport) "ProductVersionHex=@(ProductVersionHex)"\r\n`\
+											`@(ScriptExport("ProductVersionMajor", ProductVersionMajor->ToString()))\r\n`\
+											`@(ScriptExport("ProductVersionMinor", ProductVersionMinor))\r\n`\
+											`@(ScriptExport("ProductVersionRevision", ProductVersionRevision))\r\n`\
+											`@(ScriptExport("ProductVersionRevisionNumber", ProductVersionRevision->Format("{}")))\r\n`\
+											`@(ScriptExport("ProductVersionExtra", ProductVersionExtra))\r\n`\
+											`@(ScriptExport("ProductName", ProductName))\r\n`\
+											`@(ScriptExport("ProductCompany", ProductCompany))\r\n`\
+											`@(ScriptExport("ProductCopyright", ProductCopyright))\r\n`\
+											`@(ScriptExport("ProductVersionHex", ProductVersionHex))\r\n`\
 											`\r\n`
 
 	ProductVersionString define string = `@(ProductVersionMajor)_@(ProductVersionMinor)@(ProductVersionRevision)`
@@ -146,17 +138,16 @@ Property
 		!VersionStringSuffix ""
 	}
 
-	SharedBuildSettingsScriptContents =+	`@(ScriptExport) "ProductVersionString=@(ProductVersionString)"\r\n`\
-											`@(ScriptExport) "ProductVersionStringDotted=@(ProductVersionStringDotted)"\r\n`\
-											`@(ScriptExport) "ProductVersionStringReadable=@(ProductVersionStringReadable)"\r\n`\
+	SharedBuildSettingsScriptContents =+	`@(ScriptExport("ProductVersionString", ProductVersionString))\r\n`\
+											`@(ScriptExport("ProductVersionStringDotted", ProductVersionStringDotted))\r\n`\
+											`@(ScriptExport("ProductVersionStringReadable", ProductVersionStringReadable))\r\n`\
 											`\r\n`
 	{
 	}
 
 	VisualstudioVSToolsDir define string = `@(Builtin.VisualStudioRoot->WindowsPath())\\Common7\\Tools`
 
-	SharedBuildSettingsScriptContents =+	`@(SharedBuildSettingsScriptContents)`\
-											`IF "%RunVsDevCmd%"=="false" GOTO NoVsCmd\r\n`\
+	SharedBuildSettingsScriptContents =+	`IF "%RunVsDevCmd%"=="false" GOTO NoVsCmd\r\n`\
 											`IF EXIST "@(VisualstudioVSToolsDir)\\VsDevCmd.bat" call "@(VisualstudioVSToolsDir)\\VsDevCmd.bat"\r\n`\
 											`:NoVsCmd\r\n`\
 											`cd %OriginalDirectory%\r\n`\
@@ -356,10 +347,6 @@ Property
 	!!HostPlatformFamily "Windows"
 	Property
 	{
-		ScriptExtension ".sh"
-		ScriptExport "export"
-		ScriptPreamble "#!/bin/bash\n\n"
-		ScriptUnixLineEnds true
 		ScriptWindowsBash true
 	}
 	GenerateFile
@@ -394,10 +381,6 @@ Property
 	!!HostPlatformFamily "Windows"
 	Property
 	{
-		ScriptExtension ".sh"
-		ScriptExport "export"
-		ScriptPreamble "#!/bin/bash\n\n"
-		ScriptUnixLineEnds true
 		ScriptWindowsBash true
 	}
 	GenerateFile
@@ -516,14 +499,14 @@ Property
 	BuildServerHelpers_ConfigName define string
 
 	BuildServerHelpersPathContents define string?
-	BuildServerHelpersPathContents	`@(ScriptExport) "Output_@(BuildServerHelpers_ConfigName)=@(Target:Target.OutputDirectory->NativePath())"\r\n`\
-									`@(ScriptExport) "Product_@(BuildServerHelpers_ConfigName)=@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
-									`@(ScriptExport) "Intermediate_@(BuildServerHelpers_ConfigName)=@(Target:Target.IntermediateDirectory->NativePath())"\r\n`\
-									`@(ScriptExport) "MalterlibSharedIntermediateDirectory=@(Target:Property.MalterlibSharedIntermediateDirectory->NativePath())"\r\n`\
-									`@(ScriptExport) "Output_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)=@(Target:Target.OutputDirectory->NativePath())"\r\n`\
-									`@(ScriptExport) "Product_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)=@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
-									`@(ScriptExport) "Intermediate_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)=@(Target:Target.IntermediateDirectory->NativePath())"\r\n`\
-									`@(ScriptExport) "MalterlibSharedIntermediateDirectory_@(Target:Target.Name)=@(Target:Property.MalterlibSharedIntermediateDirectory->NativePath())"\r\n`
+	BuildServerHelpersPathContents	`@(ScriptExport(`Output_@(BuildServerHelpers_ConfigName)`, Target:Target.OutputDirectory->NativePath()))\r\n`\
+									`@(ScriptExport(`Product_@(BuildServerHelpers_ConfigName)`, MalterlibFinalModuleDestination->NativePath()))\r\n`\
+									`@(ScriptExport(`Intermediate_@(BuildServerHelpers_ConfigName)`, Target:Target.IntermediateDirectory->NativePath()))\r\n`\
+									`@(ScriptExport("MalterlibSharedIntermediateDirectory", Target:Property.MalterlibSharedIntermediateDirectory->NativePath()))\r\n`\
+									`@(ScriptExport(`Output_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)`, Target:Target.OutputDirectory->NativePath()))\r\n`\
+									`@(ScriptExport(`Product_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)`, MalterlibFinalModuleDestination->NativePath()))\r\n`\
+									`@(ScriptExport(`Intermediate_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)`, Target:Target.IntermediateDirectory->NativePath()))\r\n`\
+									`@(ScriptExport(`MalterlibSharedIntermediateDirectory_@(Target:Target.Name)`, Target:Property.MalterlibSharedIntermediateDirectory->NativePath()))\r\n`
 	{
 		!!Property.TargetIsExecutable true
 	}

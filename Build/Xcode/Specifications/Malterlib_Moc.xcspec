@@ -8,13 +8,13 @@
     Vendor = "Malterlib";
     Description = "Moc a header file containing a Qt object.";
 	ProgressDescription = "Compiling $(CommandProgressByType) source files";
-    CommandLine = "$(MLSRCROOT)/SDK/Qt/bin/OSX/moc $(InputFile) [options]";   
+    CommandLine = "$(QT_TOOLS_ROOT)/moc $(InputFile) [options]";
     RuleName = "Moc $(InputFile)";
     ExecDescription = "Moc $(InputFile)";
     InputFileTypes = (
 		sourcecode.c.h,
 		sourcecode.c.qt.moc.cpp,
-		sourcecode.c.qt.h.nolink,
+		sourcecode.c.h.nolink,
 		sourcecode.c.qt.moc.cpp.nolink,
     );
 
@@ -55,7 +55,7 @@
 		DefaultValue = "$(InputFileBase)$(InputFileBaseUniquefier).cpp";
 		CommandLineArgs = "-o$(value)";
 		Outputs = ( "$(MOC_OUTPUT_PATTERN_NOLINK).h" );
-		InputFileTypes = ( sourcecode.c.qt.h.nolink );
+		InputFileTypes = ( sourcecode.c.h.nolink );
 	},
 	{   Name = MOC_OUTPUT_PATTERN_CPP;
 		Type = StringList;
@@ -84,7 +84,7 @@
 		Category = BuildOptions;
 		DefaultValue = "$(InputFile)";
 		CommandLinePrefixFlag = "-f";
-		InputFileTypes = ( sourcecode.c.h, sourcecode.c.qt.h.nolink );
+		InputFileTypes = ( sourcecode.c.h, sourcecode.c.h.nolink );
 	},
 	{   Name = MOC_NO_INCLUDES;
 	    Type = bool;
@@ -94,7 +94,7 @@
 	},
 	{   Name = MOC_HEADER_SEARCH_PATHS;
 	    Type = PathList;
-	    DefaultValue = "$(MLSRCROOT)/SDK/Qt/include";
+	    DefaultValue = "$(QT_INCLUDE_ROOT)";
 	    Category = BuildOptions;
 	    CommandLinePrefixFlag = "-I";
 	},

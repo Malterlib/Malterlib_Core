@@ -95,7 +95,7 @@ Property
 					PlatformIsDarwin true
 					!Configuration "Release Testing" // Only deploy in Release/Debug builds, not Release testing
 				}
-				MalterlibForceDeploySymbols 1
+				MalterlibForceDeploySymbols true
 			}
 		}
 	}
@@ -281,12 +281,20 @@ Property
 	MalterlibWindowsNtVersion define string
 	MalterlibWindowsNtVersion "_WIN32_WINNT_VISTA"
 	{
-		!!PlatformFamily "Windows"
+		&
+		{
+			MalterlibWindowsNtVersion undefined
+			PlatformFamily "Windows"			
+		}
 	}
 	MalterlibWindowsVersion define string
 	MalterlibWindowsVersion "NTDDI_VISTA"
 	{
-		!!PlatformFamily "Windows"
+		&
+		{
+			MalterlibWindowsVersion undefined
+			PlatformFamily "Windows"
+		}
 	}
 	MalterlibDisableBuildSystemGeneration define bool = MalterlibBuildServerBuild
 	MalterlibEnableBreakpadUploader define bool = false

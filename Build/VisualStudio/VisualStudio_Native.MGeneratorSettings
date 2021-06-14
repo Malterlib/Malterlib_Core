@@ -54,7 +54,7 @@
 					DynamicLibrary "DynamicLibrary"
 					SharedDynamicLibrary "DynamicLibrary"
 					StaticLibrary "StaticLibrary"
-					Tool "Makefile"
+					Tool "Utility"
 				}
 			}
 		}
@@ -229,6 +229,7 @@
 					C "ClCompile"
 					Header "ClInclude"
 					None "None"
+					Object "Object"
 					Assembler "MASM"
 					AssemblerNasm "NASM"
 					QtRcc "QtRcc"
@@ -239,6 +240,7 @@
 					WindowsResource "ResourceCompile"
 					MSBuildTargets "None"
 					PList "None"
+					XML "None"
 					ShellScript "None"
 					VisualStudioVisualizer "Natvis"
 					Custom "CustomBuild"

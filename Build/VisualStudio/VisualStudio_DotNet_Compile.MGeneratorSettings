@@ -36,7 +36,6 @@
 			Property
 			{
 				Name "Optimize"
-				Validity "NotFile"
 			}
 			%GeneratorSetting "Value"
 			{

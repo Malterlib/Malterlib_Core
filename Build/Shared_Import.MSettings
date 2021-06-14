@@ -41,6 +41,20 @@ Property
 {
 	MToolCMakePath define string
 	MToolCMakePath MToolDirectory / ("MToolCMake" + (Builtin.MToolExe->GetExtension() && ("." + Builtin.MToolExe->GetExtension())))
+
+	CMakeIntermediateDirectory define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/SharedCMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
+}
+
+Compile
+{
+	&
+	{
+		CompileDialect "C"
+		HasParentEntity("Import") true
+	}
+
+	SearchPath += CMakeIntermediateDirectory / Import.CMake_IntermediateName
+	SearchPath += Import.CMake_CacheDirectory
 }
 
 Import
@@ -49,7 +63,7 @@ Import
 	CMake_VerboseHash define bool = false // User(Import)=true: Trace out the string used to determine the config hash for cmake imports
 	CMake_DiffHash define bool = false // User(Import)=true: Run diff program with differences between hashes
 
-	CMake_FullRebuildVersion "3"
+	CMake_FullRebuildVersion "4"
 
 	CMake_UpdateCache true
 	{
@@ -59,6 +73,7 @@ Import
 			MalterlibImportUpdateCache true
 		}
 	}
+	CMake_IntermediateName ImportIdentityRelativeRootPath->Replace("/", "_")
 	CMake_CacheDirectory `@(Import:this.IdentityPath->GetPath())/ImportCache/@(ImportIdentityRelativeRootPath->Replace("/", "_"))-@(Platform)-@(Architecture)-@(Import.CMake_Config)`
 	{
 		!!IsMaintainedConfig true
@@ -73,7 +88,10 @@ Import
 	CMake_CacheExcludePatterns =+ [
 		"*/CMakeFiles/*"
 		, "*/cmake.tmp/*"
-		, "*.cmake"
+		, "*/cmake_install.cmake"
+		, "*/CPackConfig.cmake"
+		, "*/CPackSourceConfig.cmake"
+		, "*/CTestTestfile.cmake"
 		, "*.ninja"
 		, "*/CMakeCache.txt"
 		, "*/MalterlibFullRebuildVersion"
@@ -91,6 +109,12 @@ Import
 
 	CMake_CacheReplaceContents =+ [
 		{Find: "C:/Go/bin/", Replace: ""}
+		, {Find: "C:/Program Files/Go/bin/", Replace: ""}
+		, {Find: "C:/Python39/", Replace: ""}
+		, {Find: "C:\\Program Files\\Go\\bin\\", Replace: ""}
+		, {Find: "C:\\Python39\\", Replace: ""}
+		, {Find: "C:\\\\Program Files\\\\Go\\\\bin\\\\", Replace: ""}
+		, {Find: "C:\\\\Python39\\\\", Replace: ""}
 		, {Find: "C:/strawberry/perl/bin/", Replace: ""}
 		, {Find: "c:/Program Files/Git/bin/", Replace: ""}
 		, {Find: "c:/Program Files/Git/usr/bin/", Replace: ""}
@@ -132,6 +156,7 @@ Import
 	CMake_Languages =+ [
 		{CMakeLanguage: "C", MalterlibLanguage: "C"},
 		{CMakeLanguage: "CXX", MalterlibLanguage: "C++"},
+		{CMakeLanguage: "OBJCXX", MalterlibLanguage: "ObjC++"},
 		{CMakeLanguage: "ASM", MalterlibLanguage: "Assembler"}
 	]
 
@@ -177,6 +202,8 @@ Import
 			Architecture "x86"
 		}
 	}
+
+	CMake_Variables =+ "CMAKE_OBJECT_PATH_MAX=4096"
 
 	CMake_Variables =+ [`CMAKE_EXE_LINKER_FLAGS_INIT=@(Import.CMake_Internal_LinkerFlags)`]
 	{
@@ -304,6 +331,8 @@ Import
 	}
 
 	CMake_ExcludeFromHash =+ Builtin.BasePathAbsolute
+	CMake_ExcludeFromHash =+ Import.TempDirectory
+	CMake_ExcludeFromHash =+ Builtin.CMakeRoot
 	CMake_ExcludeFromHash =+ [MalterlibCompiledFiles]
 	CMake_ExcludeFromHash =+ [`@(MalterlibDependenciesDirectory)/`]
 	CMake_ExcludeFromHash =+ [`@(MalterlibSysRoot)/`]

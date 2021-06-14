@@ -263,6 +263,20 @@ Compile
 			}
 		}
 	}
+
+	Type "Object"
+	{
+		&
+		{
+			this.Type "File"
+			Compile.Type undefined
+			|
+			{
+				this.Identity ~"*.obj"
+				this.Identity ~"*.o"
+			}
+		}
+	}
 }
 
 // Compile type deduction for .NET shared
@@ -1067,6 +1081,36 @@ Compile
 	}
 }
 
+Property
+{
+	DefaultPrefixHeader define string?
+	DefaultPrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH_C.h`
+	{
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			DefaultPrefixHeader undefined
+			|
+			{
+				Compile.Type "C"
+				Compile.Type "ObjC"
+			}
+			!DocumentationEnabled true
+			!Target.Type "Driver"
+		}
+	}
+
+	DefaultPrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h`
+	{
+		&
+		{
+			DefaultPrefixHeader undefined
+			!DocumentationEnabled true
+			!Target.Type "Driver"
+		}
+	}
+}
+
 // C and C++ Settings
 Compile
 {
@@ -1284,41 +1328,12 @@ Compile
 		}
 	}
 
-	PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH_C.h`
+	PrefixHeader DefaultPrefixHeader
 	{
 		&
 		{
-			GeneratorFamily "VisualStudio"
 			Compile.PrefixHeader undefined
-			|
-			{
-				Compile.Type "C"
-				Compile.Type "ObjC"
-			}
-			!DocumentationEnabled true
 			!MalterlibQtSupport true
-			!Target.Type "Driver"
-		}
-	}
-
-	PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h`
-	{
-		&
-		{
-			Compile.PrefixHeader undefined
-			!DocumentationEnabled true
-			!MalterlibQtSupport true
-			!Target.Type "Driver"
-		}
-	}
-	PrefixHeader `@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h`
-	{
-		&
-		{
-			Compile.PrefixHeader undefined
-			!DocumentationEnabled true
-			MalterlibQtSupport true
-			!Target.Type "Driver"
 		}
 	}
 
@@ -1345,6 +1360,12 @@ Compile
 
 	SearchPath [Builtin.Inherit]
 	SystemSearchPath [Builtin.Inherit]
+
+	Real_SearchPath define [string]?
+	Real_SearchPath [Compile.SearchPath..., Compile.SystemSearchPath...]
+	{
+		!!GeneratorFamily "VisualStudio"
+	}
 
 	Verbose define bool?
 	Verbose false // User(Toolset)=true: Enables output of cc1 command line
@@ -1414,11 +1435,6 @@ Compile
 	SearchPath += `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader`
 	{
 		!!Compile.PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h`
-	}
-
-	SearchPath += `@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt`
-	{
-		!!Compile.PrefixHeader `@(Builtin.BasePathAbsolute)/Projects/Shared/PCHQt/PCH.h`
 	}
 
 	FrameworkSearchPath define [string]?
@@ -1508,6 +1524,19 @@ Compile
 			|
 			{
 				Compile.Type "C++"
+			}
+			!Target.VisualStudioPlatform "Clang"
+			!Target.PlatformToolset "v90"
+		}
+	}
+
+	ExtraCompilerFlags += "/std:c++17"
+	{
+		&
+		{
+			PlatformType "Windows"
+			|
+			{
 				Compile.Type "C++Managed"
 			}
 			!Target.VisualStudioPlatform "Clang"
@@ -1897,18 +1926,6 @@ Compile
 		}
 	}
 
-	PreprocessorDefines += "_LIBCPP_DISABLE_NEW_DELETE"
-	{
-		&
-		{
-			PlatformIsDarwin true
-			MalterlibQtSupport true
-			!DoesNotUseMalterlib true
-			!MalterlibDefaultToolset true
-			MalterlibUseStaticLibCxx true
-		}
-	}
-
 	PreprocessorDefines += [
 		"_ENABLE_EXTENDED_ALIGNED_STORAGE=1"
 		, "_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH=1"
@@ -1956,30 +1973,6 @@ Compile
 	PreprocessorDefines += `DPlatformVersion=@(PlatformVersion)`
 	{
 		!PlatformVersion undefined
-	}
-	PreprocessorDefines += [
-		`DQConfigCppInclude="../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.cpp"`
-		, `DQConfigInclude="../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig.h"`
-		, `DQtCoreConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtcore-config.h"`
-		, `DQtCoreConfigPInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtcore-config_p.h"`
-		, `DQConfigPInclude="../../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qconfig_p.h"`
-		, `DQtGuiConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtgui-config.h"`
-		, `DQtGuiConfigPInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtgui-config_p.h"`
-		, `DQtMultimediaConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtmultimedia-config.h"`
-		, `DQtWidgetsConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtwidgets-config.h"`
-		, `DQtWidgetsConfigPInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtwidgets-config_p.h"`
-		, `DQtPrintSupportConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtprintsupport-config.h"`
-		, `DQtNetworkConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtnetwork-config.h"`
-		, `DQtXmlConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtxml-config.h"`
-		, `DQtQmlConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtqml-config.h"`
-		, `DQtQuickConfigInclude="../../../lib/@(Platform)/@(ToolsetDir)/@(Architecture)/@(MalterlibDebugLibrariesFolderName)/config/qtquick-config.h"`
-		, "DPQTSupport"
-		, "QT_STATICPLUGIN"
-		, "Q_DECL_IMPORT="
-		, "Q_DECL_EXPORT="
-	]
-	{
-		!!MalterlibQtSupport true
 	}
 	PreprocessorDefines += ["_CONSOLE", "DPConsole"]
 	{
@@ -2755,6 +2748,12 @@ Compile
 	}
 }
 
+Property
+{
+	f_ExpandCustomCommandOutputs function (string _Output) string = ""
+	f_ExpandCustomCommandOutputs =+ `if exist @(_Output->EscapeHost()) MTool TouchOrCreate @(_Output->EscapeHost())\r\n`
+}
+
 Compile
 {
 	!!Compile.Type "Custom"
@@ -2765,8 +2764,12 @@ Compile
 	}
 
 	FullEval true
+	Custom_VerifyInputsAndOutputsExist false
+	{
+		!!GeneratorFamily "VisualStudio"
+	}
 
-	Custom_Message `Generating @(File:this.Identity->GetFile())`
+	Custom_Message `Custom @(File:this.Identity->GetFile())`
 	{
 		&
 		{
@@ -2778,10 +2781,10 @@ Compile
 	CustomCombined_CommandLine define string?
 	CustomCombined_CommandLine 	`@(Compile.Custom_WorkingDirectory->GetDrive())\r\n`\
 								`cd @(Compile.Custom_WorkingDirectory->Escape())\r\n`\
-								`@((Compile.Custom_CommandLine || "")->Replace('">"', ">"))\r\n`
+								`call @(MalterlibExportEnvironmentScript->EscapeHost())\r\n`\
+								`@((Compile.Custom_CommandLine || "")->Replace('">"', ">")->Replace("&& ", "&& ^\r\n"))\r\n`\
+								`@((Compile.Custom_Outputs || [])->ForEach("f_ExpandCustomCommandOutputs"))\r\n`
 	{
 		!!GeneratorFamily "VisualStudio"
 	}
 }
-
-

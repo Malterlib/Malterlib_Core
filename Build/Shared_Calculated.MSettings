@@ -209,29 +209,61 @@ Property
 	}
 	ScriptExtension ".sh"
 	{
-		!!PlatformType "Unix"
+		|
+		{
+			PlatformType "Unix"
+			ScriptWindowsBash true
+		}
 	}
 
-	ScriptExport define string
-	ScriptExport "set"
+	ScriptExport function(string _Name, string _Value) string
+	ScriptExport `set @(_Name)=@(_Value)`
 	{
 		!!PlatformType "Windows"
 	}
-	ScriptExport "export"
+	ScriptExport `export @(`@(_Name)=@(_Value)`->EscapeHost())`
 	{
-		!!PlatformType "Unix"
+		|
+		{
+			PlatformType "Unix"
+			ScriptWindowsBash true
+		}
+	}
+
+	ScriptMkDir function(string _Directory) string
+	ScriptMkDir `if not exist @(_Directory->WindowsPath()->EscapeHost()) md @(_Directory->WindowsPath()->EscapeHost())\r\n`\
+				`@(CheckErrors)\r\n`
+	{
+		!!PlatformType "Windows"
+	}
+
+	ScriptMkDir `mkdir -p @(_Directory->EscapeHost())`
+	{
+		|
+		{
+			PlatformType "Unix"
+			ScriptWindowsBash true
+		}
 	}
 
 	ScriptPreamble define string = ""
 	ScriptPreamble "#!/bin/bash\n\n"
 	{
-		!!PlatformType "Unix"
+		|
+		{
+			PlatformType "Unix"
+			ScriptWindowsBash true
+		}
 	}
 
 	ScriptUnixLineEnds define bool = false
 	ScriptUnixLineEnds true
 	{
-		!!PlatformType "Unix"
+		|
+		{
+			PlatformType "Unix"
+			ScriptWindowsBash true
+		}
 	}
 
 	NativeLineEnding define string = "\r\n"

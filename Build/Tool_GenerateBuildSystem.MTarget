@@ -19,7 +19,7 @@ Property
 		CommandLine_Build `"@(GetProperty("GenerateFile", "Name", "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Build "@(IntermediateDirectoriesFile)"`
 		CommandLine_ReBuild `"@(GetProperty("GenerateFile", "Name", "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" ReBuild "@(IntermediateDirectoriesFile)"`
 		CommandLine_Clean `"@(GetProperty("GenerateFile", "Name", "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Clean "@(IntermediateDirectoriesFile)"`
-		Output Builtin.GeneratorStateFile
+		CommandLine_Outputs [Builtin.GeneratorStateFile]
 		Group "Tools/Malterlib"
 	}
 	%Group "Source"
