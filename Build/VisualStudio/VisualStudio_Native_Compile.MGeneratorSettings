@@ -189,11 +189,18 @@
 				Name "VerifyInputsAndOutputsExist"
 			}
 		}		
-		%GeneratorSetting "Custom_Inputs"
+		%GeneratorSetting "RealCustom_Inputs"
 		{
 			Property
 			{
 				Name "AdditionalInputs"
+			}
+		}
+		%GeneratorSetting "Custom_Inputs"
+		{
+			Property
+			{
+				Disabled true
 			}
 		}
 		%GeneratorSetting "Custom_CompileOutput"

@@ -2752,6 +2752,26 @@ Property
 {
 	f_ExpandCustomCommandOutputs function (string _Output) string = ""
 	f_ExpandCustomCommandOutputs =+ `if exist @(_Output->EscapeHost()) MTool TouchOrCreate @(_Output->EscapeHost())\r\n`
+
+	MalterlibIntermediateDirectoryBase define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/`
+
+	f_ConvertCustomCommandInputs function (string _Input) [string] = []
+	f_ConvertCustomCommandInputs =+ _Input->FindFilesRecursiveIn("*")
+	{
+		&
+		{
+			!_Input->StartsWith(MalterlibIntermediateDirectoryBase) true
+			_Input->DirectoryExists() true
+		}
+	}
+	f_ConvertCustomCommandInputs =+ _Input
+	{
+		|
+		{
+			_Input->StartsWith(MalterlibIntermediateDirectoryBase) true
+			!_Input->DirectoryExists() true
+		}
+	}
 }
 
 Compile
@@ -2777,6 +2797,10 @@ Compile
 			this.Type "File"
 		}
 	}
+
+	RealCustom_Inputs define [string] = []
+
+	RealCustom_Inputs (Compile.Custom_Inputs || [])->ForEach("f_ConvertCustomCommandInputs")
 
 	CustomCombined_CommandLine define string?
 	CustomCombined_CommandLine 	`@(Compile.Custom_WorkingDirectory->GetDrive())\r\n`\
