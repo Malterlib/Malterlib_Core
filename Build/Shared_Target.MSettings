@@ -4581,7 +4581,7 @@ Property
 	MalterlibPostBuildScript_Last define string?
 	MalterlibTestDeployPath define string?
 	MalterlibExtraPostBuildScript define string?
-	MalterlibStripSymbols define bool = false
+	MalterlibStripSymbols define bool?
 }
 
 Target
