@@ -11,7 +11,6 @@ export MalterlibDoingProductBuild=true
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/DetectSystem.sh"
-source "$DIR/MSysFixup.sh"
 
 echo "CurrentDir=$PWD"
 echo "Path=$PATH"
