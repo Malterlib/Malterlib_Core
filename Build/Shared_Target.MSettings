@@ -2311,14 +2311,14 @@ Property
 
 Property
 {
-	MalterlibHelperExecutable `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Com_MalterlibHelper/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibHelper`
+	MalterlibHelperExecutable define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Com_MalterlibHelper/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibHelper`
 
 	MalterlibNeedsMalterlibHelper define bool = false
 	MalterlibNeedsMalterlibHelper true
 	{
 		&
 		{
-			MalterlibNeedsMalterlibHelper ""
+			MalterlibNeedsMalterlibHelper undefined
 			TargetIsLaunchableExecutable true
 			!DocumentationEnabled true
 			!MalterlibDisableMalterlib true
