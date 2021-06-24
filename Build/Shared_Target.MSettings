@@ -3553,6 +3553,11 @@ Target
 	}
 }
 
+Property
+{
+	MalterlibWindowsSettings_SegmentHeap define bool = false
+	MalterlibWindowsSettings_LongPathAware define bool = true
+}
 
 %Group "~Automatic/Windows Specific"
 {
@@ -3721,6 +3726,40 @@ Target
 						`END\r\n`
 
 			UTF16 true
+			UnicodeBOM true
+		}
+	}
+
+	%GenerateFile "Manifest"
+	{
+		!!LanguageFamily "Native"
+
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name `@(GeneratedDirectory)WindowsManifest.manifest`
+
+			Contents 	'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'\
+						'<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">\r\n'\
+						'	<asmv3:application>\r\n'\
+						'		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings" xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">\r\n'
+
+			Contents =+ '			<heapType>SegmentHeap</heapType>\r\n'
+			{
+				!!MalterlibWindowsSettings_SegmentHeap true
+			}
+
+			Contents =+ '			<ws2:longPathAware>true</ws2:longPathAware>\r\n'
+			{
+				!!MalterlibWindowsSettings_LongPathAware true
+			}
+
+			Contents =+ '		</asmv3:windowsSettings>\r\n'\
+						'	</asmv3:application>\r\n'\
+						'</assembly>\r\n'
+
+
+			UTF16 false
 			UnicodeBOM true
 		}
 	}
