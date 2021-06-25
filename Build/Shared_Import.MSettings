@@ -102,7 +102,7 @@ Import
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
 
-	CMake_ExcludeFromHash =+ PlatformToolsetCompiler->GetPath()
+	CMake_ExcludeFromHash =+ PlatformToolsetCompiler->GetPath() + "/"
 	{
 		!PlatformToolsetCompiler undefined
 	}
@@ -330,11 +330,11 @@ Import
 		}
 	}
 
+	CMake_ExcludeFromHash =+ [`@(MalterlibDependenciesDirectory)/`]
 	CMake_ExcludeFromHash =+ Builtin.BasePathAbsolute
 	CMake_ExcludeFromHash =+ Import.TempDirectory
 	CMake_ExcludeFromHash =+ Builtin.CMakeRoot
 	CMake_ExcludeFromHash =+ [MalterlibCompiledFiles]
-	CMake_ExcludeFromHash =+ [`@(MalterlibDependenciesDirectory)/`]
 	CMake_ExcludeFromHash =+ [`@(MalterlibSysRoot)/`]
 	{
 		&
