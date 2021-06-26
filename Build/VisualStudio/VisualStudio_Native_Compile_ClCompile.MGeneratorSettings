@@ -137,6 +137,7 @@
 			Property
 			{
 				Name "AdditionalIncludeDirectories"
+				ShortenFilenames true
 			}
 		}
 		
