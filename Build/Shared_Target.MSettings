@@ -4192,7 +4192,7 @@ Property
 	{
 		!!true _CopyOptions<AbsoluteDestination>
 	}
-	MalterlibBuildServerPutPathUploadTemplate =+ 	`MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())\r\n`\
+	MalterlibBuildServerPutPathUploadTemplate =+ 	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())\r\n`\
 													`@(CheckErrors)\r\n`
 
 	MalterlibBuildServerPutPathUploadContents define string
@@ -4230,7 +4230,7 @@ Property
 	{
 		!!true _CopyOptions<Recursive>
 	}
-	MalterlibTestPutPathUploadTemplate =+	`MTool BuildServerPut Recursive=0 @(`Source=@(_CopyOptions<Pattern>)`->Escape()) @(`DestinationDir=@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`\
+	MalterlibTestPutPathUploadTemplate =+	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=0 @(`Source=@(_CopyOptions<Pattern>)`->Escape()) @(`DestinationDir=@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`\
 											`@(CheckErrors)\r\n`
 	{
 		!MalterlibAutoBuild true
@@ -4287,7 +4287,7 @@ Property
 	}
 
 	Win32SignTool define string
-	Win32SignTool "MTool BuildServerTool Tool=SignToolWin32"
+	Win32SignTool `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=SignToolWin32`
 	{
 		&
 		{
@@ -4346,7 +4346,7 @@ Property
 	}
 
 	MalterlibCodeSignOSXCommand define string
-	MalterlibCodeSignOSXCommand "MTool BuildServerTool Tool=CodeSignOSX"
+	MalterlibCodeSignOSXCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=CodeSignOSX`
 	{
 		!!MalterlibBuildServerBuild true
 	}
@@ -4357,7 +4357,7 @@ Property
 	}
 
 	MalterlibALToolOSXCommand define string
-	MalterlibALToolOSXCommand "MTool BuildServerTool Tool=ALToolOSX"
+	MalterlibALToolOSXCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ALToolOSX`
 	{
 		!!MalterlibBuildServerBuild true
 	}
@@ -4368,7 +4368,7 @@ Property
 	}
 
 	MalterlibStaplerOSXCommand define string
-	MalterlibStaplerOSXCommand "MTool BuildServerTool Tool=StaplerOSX"
+	MalterlibStaplerOSXCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=StaplerOSX`
 	{
 		!!MalterlibBuildServerBuild true
 	}
@@ -4796,7 +4796,7 @@ Target
 
 
 	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
+						`@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
 		&
 		{
@@ -4811,7 +4811,7 @@ Target
 		}
 	}
 	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
+						`@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
 		&
 		{
@@ -4823,7 +4823,7 @@ Target
 		}
 	}
 	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.zip" "$BrekapadOutputPath" "" 0\r\n`
+						`@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
 		&
 		{
@@ -4835,7 +4835,7 @@ Target
 		}
 	}
 	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).zip" "$BrekapadOutputPath" "" 0\r\n`
+						`@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
 		&
 		{

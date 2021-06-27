@@ -31,6 +31,8 @@ Property
     MalterlibBuildSigning define bool = MalterlibBuildServerBuild
 	MalterlibBuildServerTest define bool = false
 
+	MalterlibBuildServerCommandPrefix define string = ""
+
     MalterlibSigning define bool
 	MalterlibSigning true
 	{
