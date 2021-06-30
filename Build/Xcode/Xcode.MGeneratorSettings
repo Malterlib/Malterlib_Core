@@ -2177,6 +2177,42 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_ConversionToSmallerInt"
+			{
+				Property
+				{
+					Disabled true
+				}
+			}
+
+			%GeneratorSetting "Warnings_ConversionToSmallerType"
+			{
+				Property
+				{
+					Disabled true
+				}
+			}
+
+			%GeneratorSetting "Warnings_IncompatibleTypes"
+			{
+				Property
+				{
+					Disabled true
+				}
+			}
+
+			%GeneratorSetting "Warnings_UnknownPragma"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						\false "-Wno-unknown-pragmas"
+						\true "-Wunknown-pragmas"
+					}
+				}
+			}
+
 			%GeneratorSetting "CodeCoverage"
 			{
 				%GeneratorSetting "Value"

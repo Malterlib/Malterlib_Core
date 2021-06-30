@@ -731,6 +731,74 @@
 					\true ""
 				}
 			}
-		}		
+		}
+		
+		%GeneratorSetting "Warnings_ConversionToSmallerInt"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(ClCompile.AdditionalOptions)"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\false "/wd4244"
+					\true ""
+				}
+			}
+		}
+
+		%GeneratorSetting "Warnings_ConversionToSmallerType"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(ClCompile.AdditionalOptions)"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\false "/wd4267"
+					\true ""
+				}
+			}
+		}
+
+		%GeneratorSetting "Warnings_IncompatibleTypes"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(ClCompile.AdditionalOptions)"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\false "/wd4133"
+					\true ""
+				}
+			}
+		}
+
+		%GeneratorSetting "Warnings_UnknownPragma"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(ClCompile.AdditionalOptions)"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\false "/wd4068"
+					\true ""
+				}
+			}
+		}
 	}
 }
