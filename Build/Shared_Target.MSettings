@@ -4204,7 +4204,11 @@ Property
 	MalterlibTestPutSources =+ {Pattern: MalterlibFinalModuleDestination}
 	MalterlibTestPutSources =+ {Pattern: Target:Target.SymbolFile}
 	{
-		!!PlatformFamily "Windows"
+		&
+		{
+			!Target:Target.SymbolFile undefined
+			PlatformFamily "Windows"
+		}
 	}
 
 	MalterlibTestPutSources =+ {Pattern: `@(MalterlibOriginalModuleDestination).dSYM`}
@@ -4953,13 +4957,11 @@ Target
 		&
 		{
 			TargetIsExecutable true
+			!Target:Target.SymbolFile undefined
 			MalterlibDeploySymbols true
 			PlatformFamily "Windows"
 		}
 	}
-
-
-
 
 	PostBuildScript =+	`MTool DiffCopy "@(MalterlibFinalModuleDestination)" "@(MalterlibTestDeployPath)" "" 0\r\n`\
 						`@(CheckErrors)\r\n`
