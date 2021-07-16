@@ -4343,6 +4343,8 @@ NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NSt
 			FileID.m_VolumeID = FileIDInfo.VolumeSerialNumber;
 			FileID.m_FileID = 0;
 			fg_MemCopy(&FileID.m_FileID, &FileIDInfo.FileId, fg_Min(sizeof(FileID.m_FileID), sizeof(FileIDInfo.FileId)));
+
+			return FileID;
 		}
 	}
 
