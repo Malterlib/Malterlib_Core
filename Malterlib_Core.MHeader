@@ -13,8 +13,6 @@ Property
 		!!EnablePlatformFamily_Linux true
 	}
 
-	MalterlibUseGitRepo define bool = true
-
 	MalterlibSubLibrarySeparate define bool = false
 }
 

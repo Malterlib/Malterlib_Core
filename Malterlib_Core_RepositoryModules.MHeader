@@ -27,6 +27,8 @@ Property
 
 Property
 {
+	MalterlibUseGitRepo define bool = true
+
 	MalterlibModules define [string] = []
 	MalterlibModules =+ "Core"
 

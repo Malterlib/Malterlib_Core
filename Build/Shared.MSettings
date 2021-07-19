@@ -1,32 +1,32 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-Include "VisualStudio/VisualStudio.MGeneratorSettings"
-Include "Xcode/Xcode.MGeneratorSettings"
+Import "VisualStudio/VisualStudio.MGeneratorSettings"
+Import "Xcode/Xcode.MGeneratorSettings"
 
 // Configurations
-Include "Shared_Configurations.MSettings"
+Import "Shared_Configurations.MSettings"
 
-Include "Shared_Types.MSettings"
-Include "Shared_Functions.MHeader"
+Import "Shared_Types.MSettings"
+Import "Shared_Functions.MHeader"
 
 // Properties
-Include "Shared_Defaults.MSettings"
-Include "Shared_Calculated.MSettings"
-Include "Shared_Property.MSettings"
-Include "Shared_Compile.MSettings"
-Include "Shared_Workspace.MSettings"
-Include "Shared_Target.MSettings"
-Include "Shared_Repository.MSettings"
-Include "Shared_Import.MSettings"
+Import "Shared_Defaults.MSettings"
+Import "Shared_Calculated.MSettings"
+Import "Shared_Property.MSettings"
+Import "Shared_Compile.MSettings"
+Import "Shared_Workspace.MSettings"
+Import "Shared_Target.MSettings"
+Import "Shared_Repository.MSettings"
+Import "Shared_Import.MSettings"
 
 // Files generated such as exporting vars to external build system
-Include "Shared_GeneratedFiles.MSettings"
+Import "Shared_GeneratedFiles.MSettings"
 
-Include "Shared_Dependencies.MSettings"
+Import "Shared_Dependencies.MSettings"
 
 // Generate build system target automatically included in all workspaces
-Include "Tool_GenerateBuildSystem.MTarget"
+Import "Tool_GenerateBuildSystem.MTarget"
 
 // Error checking
 Target.CheckErrors define string?
