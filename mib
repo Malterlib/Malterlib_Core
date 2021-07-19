@@ -177,7 +177,7 @@ function BootstrapCore()
 		# Upgrade path
 		export MalterlibChangingBootstrapVersion=true
 
-		git -C Malterlib/Core fetch
+		git -C Malterlib/Core fetch --all --tags
 
 		GitHash=`GetMalterlibCoreHash`
 		if [[ "$GitHash" == "" ]]; then
@@ -213,7 +213,7 @@ function BootstrapCore()
 
 	if [[ "$MalterlibChangingBootstrapVersion" == "true" ]]; then
 		export Malterlib_UseCachedEnvironment=false
-		if [ -e "$BuildSystem/Default/RepositoryState.json" ]; then
+		if [ -e "BuildSystem/Default/RepositoryState.json" ]; then
 			while read a; do
 			    echo ${a//\"\"\: 1\,/}
 			done < BuildSystem/Default/RepositoryState.json > BuildSystem/Default/RepositoryState.json.new
