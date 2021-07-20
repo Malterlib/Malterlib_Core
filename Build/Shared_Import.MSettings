@@ -116,8 +116,14 @@ Import
 		, {Find: "C:\\\\Program Files\\\\Go\\\\bin\\\\", Replace: ""}
 		, {Find: "C:\\\\Python39\\\\", Replace: ""}
 		, {Find: "C:/strawberry/perl/bin/", Replace: ""}
+		, {Find: "C:\\strawberry\\perl\\bin\\", Replace: ""}
+		, {Find: "C:\\\\strawberry\\\\perl\\\\bin\\\\", Replace: ""}
 		, {Find: "c:/Program Files/Git/bin/", Replace: ""}
+		, {Find: "c:\\Program Files\\Git\\bin\\", Replace: ""}
+		, {Find: "c:\\\\Program Files\\\\Git\\\\bin\\\\", Replace: ""}
 		, {Find: "c:/Program Files/Git/usr/bin/", Replace: ""}
+		, {Find: "c:\\Program Files\\Git\\usr\\bin\\", Replace: ""}
+		, {Find: "c:\\\\Program Files\\\\Git\\\\usr\\\\bin\\\\", Replace: ""}
 	]
 	{
 		!!HostPlatformFamily "Windows"
