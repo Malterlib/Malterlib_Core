@@ -221,7 +221,7 @@ Property
 	{
 		!!PlatformType "Windows"
 	}
-	ScriptExport `export @(`@(_Name)=@(_Value)`->EscapeHost())`
+	ScriptExport `export @(`@(_Name)=@(_Value)`->EscapeBash())`
 	{
 		|
 		{
@@ -237,7 +237,7 @@ Property
 		!!PlatformType "Windows"
 	}
 
-	ScriptMkDir `mkdir -p @(_Directory->EscapeHost())`
+	ScriptMkDir `mkdir -p @(_Directory->EscapeBash())`
 	{
 		|
 		{
