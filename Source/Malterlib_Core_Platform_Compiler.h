@@ -146,13 +146,6 @@
 #	error "Implement this"
 #endif
 
-// [[no_unique_address]]
-#ifdef DCompiler_MSVC
-#define no_unique_address_workaround
-#else
-#define no_unique_address_workaround [[no_unique_address]]
-#endif
-
 // Arglist
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	include <stdarg.h>
