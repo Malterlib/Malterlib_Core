@@ -42,7 +42,7 @@ namespace NMib
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
 	inline_always t_CSubSystem &TCSubSystem<t_CSubSystem, t_DestructionOrder>::operator *()
 	{
-		if (likely(mp_bWasCreated.f_Load(NAtomic::EMemoryOrder_Acquire)))
+		if (mp_bWasCreated.f_Load(NAtomic::EMemoryOrder_Acquire)) [[likely]]
 			return *((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
 
 		return *fp_Create(nullptr);
@@ -51,7 +51,7 @@ namespace NMib
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
 	inline_always t_CSubSystem *TCSubSystem<t_CSubSystem, t_DestructionOrder>::operator ->()
 	{
-		if (likely(mp_bWasCreated.f_Load(NAtomic::EMemoryOrder_Acquire)))
+		if (mp_bWasCreated.f_Load(NAtomic::EMemoryOrder_Acquire)) [[likely]]
 			return ((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
 
 		return fp_Create(nullptr);

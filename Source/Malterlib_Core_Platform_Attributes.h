@@ -55,17 +55,6 @@
 #	error "Implement this"
 #endif
 
-// Likely
-#if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define likely(d_Expression) __builtin_expect(!!(d_Expression), 1)
-#	define unlikely(d_Expression) __builtin_expect(!!(d_Expression), 0)
-#elif defined(DCompiler_MSVC)
-#	define likely(d_Expression) d_Expression
-#	define unlikely(d_Expression) d_Expression
-#else
-#	error "Implement this"
-#endif
-
 // Inline always
 #if !defined(_DEBUG) || defined(DConfig_DebugInlined)
 #	define DMibPInlineActive 1

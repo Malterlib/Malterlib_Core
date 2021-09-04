@@ -74,7 +74,7 @@ pid_t fg_Malterlib_Thread_GetTID_Local()
 pid_t fg_Malterlib_Thread_GetTID_Local()
 {
 	pid_t ThreadID = g_MalterlibCurrentTID;
-	if (unlikely(!ThreadID))
+	if (!ThreadID) [[unlikely]]
 		g_MalterlibCurrentTID = ThreadID = syscall(SYS_gettid);
 	return ThreadID;
 }
@@ -103,7 +103,7 @@ void NSys::fg_Thread_FreeLocal(mint _iStorage)
 	{
 		DMibLock(gc_nMalterlibThreadLocalsAllocatedLock);
 		bAllocated = gc_nMalterlibThreadLocalsAllocated.f_GetBit(iStorage);
-		if (unlikely(!bAllocated))
+		if (!bAllocated) [[unlikely]]
 			DMibErrorSystemImp("Thread local index has not been allocated");
 		gc_nMalterlibThreadLocalsAllocated.f_SetBit(iStorage, false);
 	}
@@ -141,7 +141,7 @@ __thread pid_t g_MalterlibCurrentTID = 0;
 pid_t fg_Malterlib_Thread_GetTID_Local()
 {
 	pid_t ThreadID = g_MalterlibCurrentTID;
-	if (unlikely(!ThreadID))
+	if (!ThreadID) [[unlikely]]
 		g_MalterlibCurrentTID = ThreadID = syscall(SYS_gettid);
 	return ThreadID;
 }
