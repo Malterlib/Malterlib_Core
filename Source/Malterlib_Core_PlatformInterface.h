@@ -8,13 +8,6 @@
 
 namespace NMib
 {
-	enum EHeapDebugFlag : uint32
-	{
-		EHeapDebugFlag_None = 0
-		, EHeapDebugFlag_Ignore		= DMibBit(0)
-		, EHeapDebugFlag_Internal	= DMibBit(1)
-	};
-
 	enum EAllocationFlag : uint32
 	{
 		EAllocationFlag_None = 0
