@@ -39,7 +39,6 @@ namespace NMib
 #define inline_never_debug
 #endif
 
-#include "../../Core/Source/Malterlib_Core_Operators.h"
 #include "../../Core/Source/Malterlib_Core_EnumOperators.h"
 
 #include <Mib/Core/EnableIf>
@@ -52,6 +51,10 @@ namespace NMib
 
 namespace NMib
 {
+	using COrdering_Partial = std::partial_ordering;
+	using COrdering_Weak = std::weak_ordering;
+	using COrdering_Strong = std::strong_ordering;
+
 #ifdef DMibPLittleEndian
 	static const EEndian gc_MachineEndian = EEndian_Little;
 #else

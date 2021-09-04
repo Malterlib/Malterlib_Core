@@ -1055,9 +1055,11 @@ namespace NMib
 		template <typename t_CContext, typename t_CKey0, typename t_CKey1>
 		static inline_small CRet fs_Compare(t_CContext && _Context, t_CKey0 *const _pLeft, t_CKey1 *const _pRight)
 		{
-			if (*_pLeft < *_pRight)
+			auto Result = *_pLeft <=> *_pRight;
+
+			if (Result < 0)
 				return -1;
-			if (*_pLeft > *_pRight)
+			if (Result > 0)
 				return 1;
 			return 0;
 		}
@@ -1315,9 +1317,9 @@ namespace NMib
 			_Stream >> m_Int;
 		}
 
-		bool operator < (TCAutoClearInt const &_Right) const
+		auto operator <=> (TCAutoClearInt const &_Right) const
 		{
-			return f_Get() < _Right.f_Get();
+			return f_Get() <=> _Right.f_Get();
 		}
 
 		bool operator == (TCAutoClearInt const &_Right) const
@@ -1326,51 +1328,27 @@ namespace NMib
 		}
 
 		template <typename tf_CRight>
-		friend bool operator < (TCAutoClearInt const &_Left, tf_CRight const &_Right)
+		auto operator <=> (tf_CRight const &_Right) const
 		{
-			return _Left.f_Get() < _Right;
-		}
-
-		template <typename tf_CLeft>
-		friend bool operator < (tf_CLeft const &_Left, TCAutoClearInt const &_Right)
-		{
-			return _Left < _Right.f_Get();
+			return f_Get() <=> _Right;
 		}
 
 		template <typename tf_CRight, tf_CRight tf_RightValue>
-		friend bool operator < (TCAutoClearInt const &_Left, TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right)
+		auto operator <=> (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const
 		{
-			return _Left.f_Get() < _Right.f_Get();
-		}
-
-		template <typename tf_CLeft, tf_CLeft tf_LeftValue>
-		friend bool operator < (TCAutoClearInt<tf_CLeft, tf_LeftValue> const &_Left, TCAutoClearInt const &_Right)
-		{
-			return _Left.f_Get() < _Right.f_Get();
+			return f_Get() <=> _Right.f_Get();
 		}
 
 		template <typename tf_CRight>
-		friend bool operator == (TCAutoClearInt const &_Left, tf_CRight const &_Right)
+		bool operator == (tf_CRight const &_Right) const
 		{
-			return _Left.f_Get() == _Right;
-		}
-
-		template <typename tf_CLeft>
-		friend bool operator == (tf_CLeft const &_Left, TCAutoClearInt const &_Right)
-		{
-			return _Left == _Right.f_Get();
+			return f_Get() == _Right;
 		}
 
 		template <typename tf_CRight, tf_CRight tf_RightValue>
-		friend bool operator == (TCAutoClearInt const &_Left, TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right)
+		bool operator == (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const
 		{
-			return _Left.f_Get() == _Right.f_Get();
-		}
-
-		template <typename tf_CLeft, tf_CLeft tf_LeftValue>
-		friend bool operator == (TCAutoClearInt<tf_CLeft, tf_LeftValue> const &_Left, TCAutoClearInt const &_Right)
-		{
-			return _Left.f_Get() == _Right.f_Get();
+			return f_Get() == _Right.f_Get();
 		}
 	};
 
@@ -1443,9 +1421,9 @@ namespace NMib
 			_Stream >> m_Value;
 		}
 
-		bool operator < (TCAutoClear const &_Right) const
+		auto operator <=> (TCAutoClear const &_Right) const
 		{
-			return f_Get() < _Right.f_Get();
+			return f_Get() <=> _Right.f_Get();
 		}
 
 		bool operator == (TCAutoClear const &_Right) const
@@ -1454,75 +1432,39 @@ namespace NMib
 		}
 
 		template <typename tf_CRight>
-		friend bool operator < (TCAutoClear const &_Left, tf_CRight const &_Right)
+		auto operator <=> (tf_CRight const &_Right) const
 		{
-			return _Left.f_Get() < _Right;
-		}
-
-		template <typename tf_CLeft>
-		friend bool operator < (tf_CLeft const &_Left, TCAutoClear const &_Right)
-		{
-			return _Left < _Right.f_Get();
-		}
-
-		template <typename tf_CLeft>
-		friend bool operator < (TCAutoClear<tf_CLeft> const &_Left, TCAutoClear const &_Right)
-		{
-			return _Left.f_Get() < _Right.f_Get();
+			return f_Get() <=> _Right;
 		}
 
 		template <typename tf_CRight>
-		friend bool operator < (TCAutoClear const &_Left, TCAutoClear<tf_CRight> const &_Right)
+		auto operator <=> (TCAutoClear<tf_CRight> const &_Right) const
 		{
-			return _Left.f_Get() < _Right.f_Get();
+			return f_Get() <=> _Right.f_Get();
 		}
 
 		template <typename tf_CRight>
-		friend bool operator == (TCAutoClear const &_Left, tf_CRight const &_Right)
+		bool operator == (tf_CRight const &_Right) const
 		{
-			return _Left.f_Get() == _Right;
-		}
-
-		template <typename tf_CLeft>
-		friend bool operator == (tf_CLeft const &_Left, TCAutoClear const &_Right)
-		{
-			return _Left == _Right.f_Get();
+			return f_Get() == _Right;
 		}
 
 		template <typename tf_CRight>
-		friend bool operator == (TCAutoClear const &_Left, TCAutoClear<tf_CRight> const &_Right)
+		bool operator == (TCAutoClear<tf_CRight> const &_Right) const
 		{
-			return _Left.f_Get() == _Right.f_Get();
-		}
-
-		template <typename tf_CLeft>
-		friend bool operator == (TCAutoClear<tf_CLeft> const &_Left, TCAutoClear const &_Right)
-		{
-			return _Left.f_Get() == _Right.f_Get();
-		}
-
-		template <typename tf_CLeft, tf_CLeft tf_LeftValue>
-		friend bool operator < (TCAutoClearInt<tf_CLeft, tf_LeftValue> const &_Left, TCAutoClear const &_Right)
-		{
-			return _Left.f_Get() < _Right.f_Get();
+			return f_Get() == _Right.f_Get();
 		}
 
 		template <typename tf_CRight, tf_CRight tf_RightValue>
-		friend bool operator < (TCAutoClear const &_Left, TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right)
+		auto operator <=> (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const
 		{
-			return _Left.f_Get() < _Right.f_Get();
-		}
-
-		template <typename tf_CLeft, tf_CLeft tf_LeftValue>
-		friend bool operator == (TCAutoClearInt<tf_CLeft, tf_LeftValue> const &_Left, TCAutoClear const &_Right)
-		{
-			return _Left.f_Get() == _Right.f_Get();
+			return f_Get() <=> _Right.f_Get();
 		}
 
 		template <typename tf_CRight, tf_CRight tf_RightValue>
-		friend bool operator == (TCAutoClear const &_Left, TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right)
+		bool operator == (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const
 		{
-			return _Left.f_Get() == _Right.f_Get();
+			return f_Get() == _Right.f_Get();
 		}
 	};
 

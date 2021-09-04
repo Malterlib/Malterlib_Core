@@ -34,24 +34,15 @@ namespace NMib
 					NMib::NStr::CStr m_Path;
 					NMib::NStr::CStr m_PathFrom;
 
-					bool operator < (CChange const &_Right) const
-					{
-						return NStorage::fg_TupleReferences(m_Notification, m_Path, m_PathFrom) < NStorage::fg_TupleReferences(_Right.m_Notification, _Right.m_Path, _Right.m_PathFrom);
-					}
+					auto operator <=> (CChange const &_Right) const = default;
 				};
 
 				struct CFileKey
 				{
 					decltype(stat::st_dev) st_dev;
 					decltype(stat::st_ino) st_ino;
-					bool operator < (CFileKey const &_Right) const
-					{
-						if (st_dev < _Right.st_dev)
-							return true;
-						else if (st_dev > _Right.st_dev)
-							return false;
-						return st_ino < _Right.st_ino;
-					}
+
+					auto operator <=> (CFileKey const &_Right) const = default;
 
 					CFileKey(struct stat const &_Init)
 						: st_dev(_Init.st_dev)

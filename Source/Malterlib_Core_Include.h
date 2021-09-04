@@ -43,26 +43,7 @@ namespace NMib
 		struct CSecureByteVector;
 	}
 
-	struct CVoidTag 
-	{
-		bool operator == (CVoidTag const &_Right) const
-		{
-			return true;
-		}
-
-		bool operator < (CVoidTag const &_Right) const
-		{
-			return false;
-		}
-
-		template <typename tf_CStr>
-		void f_Format(tf_CStr &o_Str) const
-		{
-			o_Str += "void";
-		}
-	};
-
-	extern CVoidTag const g_Void;
+	struct CVoidTag;
 
 	template <typename t_CReturn>
 	struct TCVoidFunctor
@@ -113,7 +94,7 @@ namespace NMib
 		template 
 		<
 			typename t_CFunction // The function definition to contain
-			, typename... tp_COptions // Arguments, Can be function definition, option (CFunctionSupportCompareTag) or allocator 
+			, typename... tp_COptions // Arguments, Can be function definition, option (CFunctionSupportEqualityCompareTag, CFunctionSupportOrderedCompareTag) or allocator 
 		>
 		class TCFunctionNoAlloc;
 
@@ -124,6 +105,28 @@ namespace NMib
 
 
 #include "Malterlib_Core_General.h"
+#include "../../Memory/Source/Malterlib_Memory_Allocator_New.h"
+#include <compare>
+
+namespace NMib
+{
+	template <typename ...tp_CType>
+	using TCCommonOrderingType = std::common_comparison_category_t<tp_CType...>;
+
+	struct CVoidTag
+	{
+		auto operator <=> (CVoidTag const &_Right) const = default;
+
+		template <typename tf_CStr>
+		void f_Format(tf_CStr &o_Str) const
+		{
+			o_Str += "void";
+		}
+	};
+	extern CVoidTag const g_Void;
+
+}
+
 #include <Mib/Numeric/Integer>
 
 typedef NMib::TCAutoClear<bool> zbool;
@@ -181,6 +184,8 @@ typedef NMib::TCAutoClear<ch32> zch32;
 #include <Mib/Memory/Allocators/Virtual>
 #include <Mib/Memory/Allocators/Default>
 #include <Mib/Memory/Allocators/Secure>
+
+#include "../../Numeric/Source/Malterlib_Numeric_Float_StdLib.hpp"
 
 namespace NMib
 {

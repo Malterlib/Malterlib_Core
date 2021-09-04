@@ -98,6 +98,15 @@
 #endif
 
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+	class weak_equality;
+	class strong_equality;
+	class partial_ordering;
+	class weak_ordering;
+	class strong_ordering;
+_LIBCPP_END_NAMESPACE_STD
+
 #	if __has_feature(cxx_rtti)
 #		define DMibPTypeName(x) (typeid(x).name())
 #		include <typeinfo>
@@ -113,6 +122,15 @@
 		}
 #	endif
 #elif defined(DCompiler_MSVC)
+
+namespace std
+{
+	struct weak_equality;
+	struct strong_equality;
+	struct partial_ordering;
+	struct weak_ordering;
+	struct strong_ordering;
+}
 
 #	if DMibPSupportExceptions
 #		include <exception>

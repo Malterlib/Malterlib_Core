@@ -239,10 +239,7 @@ public:
 				CStr m_Path;
 				NStr::CStr m_PathFrom;
 
-				bool operator < (CChange const &_Right) const
-				{
-					return fg_TupleReferences(m_Notification, m_Path, m_PathFrom) < fg_TupleReferences(_Right.m_Notification, _Right.m_Path, _Right.m_PathFrom);
-				}
+				auto operator <=> (CChange const &_Right) const = default;
 			};
 
 			struct CFindChangesContext

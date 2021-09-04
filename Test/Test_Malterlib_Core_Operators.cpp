@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 //namespace NOperators
@@ -31,9 +31,9 @@ namespace
 			return m_Value != 0;
 		}
 
-		bool operator < (CTestVal const &_Other) const
+		auto operator <=> (CTestVal const &_Other) const
 		{
-			return m_Value < _Other.m_Value;
+			return m_Value <=> _Other.m_Value;
 		}
 
 		bool operator == (CTestVal const &_Other) const
@@ -41,9 +41,9 @@ namespace
 			return m_Value == _Other.m_Value;
 		}
 
-		bool operator < (int _Other) const
+		auto operator <=> (int _Other) const
 		{
-			return m_Value < _Other;
+			return m_Value <=> _Other;
 		}
 
 		bool operator == (int _Other) const
@@ -61,9 +61,9 @@ namespace
 		}
 	};
 
-	bool operator < (int _Left, const CTestVal &_Right)
+	auto operator <=> (int _Left, const CTestVal &_Right)
 	{
-		return _Left < _Right.f_GetVal();
+		return _Left <=> _Right.f_GetVal();
 	}
 
 	[[maybe_unused]] bool operator == (int _Left, const CTestVal &_Right)
