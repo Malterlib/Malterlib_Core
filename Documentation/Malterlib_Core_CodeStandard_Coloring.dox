@@ -43,7 +43,7 @@ easy to apply the highlighting without language specific parsing support.
 			void f_FunctionPublic
 			(
 				uint32 _FunctionParameter
-				, uint32 & o_OutputFunctionParameter
+				, uint32 &o_OutputFunctionParameter
 				, NMib::NFunction::TCFunction<void ()> _fFunctor
 				, NMib::NFunction::TCFunction<void ()> &o_fFunctor
 			) const volatile
@@ -62,6 +62,7 @@ easy to apply the highlighting without language specific parsing support.
 				;
 
 				fFunctor();
+				_fFunctor();
 				o_fFunctor();
 				m_fFunctor();
 				mp_fFunctor();
