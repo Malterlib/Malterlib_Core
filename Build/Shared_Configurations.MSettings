@@ -606,7 +606,11 @@ Property
 	}
 }
 
-Property.Tests define string?
+Property
+{
+	Tests define string?
+	MalterlibEnablePrefTestConfig define bool = true // User(Tests)=false: Enable sanitizers as separate configurations
+}
 
 *Tests
 {
@@ -629,6 +633,7 @@ Property.Tests define string?
 	{
 		&
 		{
+			MalterlibEnablePrefTestConfig true
 			|
 			{
 				Configuration "Profile"
@@ -681,5 +686,81 @@ Property.Documentation define string?
 			Platform HostPlatform
 			Configuration "Debug"
 		}
+	}
+}
+
+Property
+{
+	Sanitizer_Thread define string = ""
+	Sanitizer_Address define string = ""
+	Sanitizer_UndefinedBehavior define string = ""
+	MalterlibEnableSanitizerReleaseConfigs define bool = false // User(Debug)=true: Enable sanitizers as separate configurations
+}
+
+*Sanitizer_Thread
+{
+	\ "Empty"
+	TSan "Enable TSan sanitizer"
+	{
+		&
+		{
+			MalterlibEnableSanitizerReleaseConfigs true
+			Configuration "Release"
+			!Tests "Perf Tests"
+			Sanitizer_Address undefined
+			Sanitizer_UndefinedBehavior undefined
+		}
+	}
+}
+
+*Sanitizer_Address
+{
+	\ "Empty"
+	ASan "Enable ASan sanitizer"
+	{
+		&
+		{
+			MalterlibEnableSanitizerReleaseConfigs true
+			Configuration "Release"
+			!Tests "Perf Tests"
+			Sanitizer_Thread undefined
+			Sanitizer_UndefinedBehavior undefined
+		}
+	}
+}
+
+*Sanitizer_UndefinedBehavior
+{
+	\ "Empty"
+	UBSan "Enable UBSan sanitizer"
+	{
+		&
+		{
+			MalterlibEnableSanitizerReleaseConfigs true
+			Configuration "Release"
+			!Tests "Perf Tests"
+			Sanitizer_Thread undefined
+			Sanitizer_Address undefined
+		}
+	}
+}
+
+Property
+{
+	FullConfiguration =+ `@(Configuration->Replace(" ",""))@((Tests || "")->Replace(" ",""))@((Documentation || "")->Replace(" ",""))`
+
+	FullConfiguration =+ Sanitizer_UndefinedBehavior
+	{
+		!Sanitizer_UndefinedBehavior undefined
+	}
+
+	FullConfiguration =+ Sanitizer_Address
+	{
+		!Sanitizer_Address undefined
+	}
+
+	FullConfiguration =+ Sanitizer_Thread
+	{
+		!Sanitizer_Thread undefined
 	}
 }

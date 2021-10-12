@@ -156,13 +156,6 @@ Property
 	{
 		!!Documentation "Doxygen"
 	}
-
-	// Config
-
-	FullConfiguration `@(Configuration->Replace(" ",""))@((Tests || "")->Replace(" ",""))@((Documentation || "")->Replace(" ",""))`
-	{
-		!!FullConfiguration undefined
-	}
 }
 
 Property
