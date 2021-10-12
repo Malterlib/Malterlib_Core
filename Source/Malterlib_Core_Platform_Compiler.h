@@ -267,6 +267,12 @@ namespace std
 #	endif
 #endif
 
+#if defined(DArchitecture_arm64) || defined(DArchitecture_arm64e) || !defined(DPlatformFamily_Linux) || !defined(DMibSanitizerEnabled_UndefinedBehavior)
+	#define DMibWorkaroundUBSanSectionErrors
+#else
+	#define DMibWorkaroundUBSanSectionErrors __attribute__ ((section("ubsan_broken_section")))
+#endif
+
 #ifdef DMibSanitizerEnabled_Thread
 	#include <sanitizer/tsan_interface.h>
 
