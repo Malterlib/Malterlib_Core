@@ -109,11 +109,13 @@ Import
 
 	CMake_CacheReplaceContents =+ [
 		{Find: "C:/Go/bin/", Replace: ""}
+		, {Find: "C:\\Go\\bin\\", Replace: ""}
+		, {Find: "C:\\\\Go\\\\bin\\\\", Replace: ""}
 		, {Find: "C:/Program Files/Go/bin/", Replace: ""}
-		, {Find: "C:/Python39/", Replace: ""}
 		, {Find: "C:\\Program Files\\Go\\bin\\", Replace: ""}
-		, {Find: "C:\\Python39\\", Replace: ""}
 		, {Find: "C:\\\\Program Files\\\\Go\\\\bin\\\\", Replace: ""}
+		, {Find: "C:/Python39/", Replace: ""}
+		, {Find: "C:\\Python39\\", Replace: ""}
 		, {Find: "C:\\\\Python39\\\\", Replace: ""}
 		, {Find: "C:/strawberry/perl/bin/", Replace: ""}
 		, {Find: "C:\\strawberry\\perl\\bin\\", Replace: ""}
