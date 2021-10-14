@@ -1268,6 +1268,10 @@ Property
 		BaseName "MalterlibHelper"
 		Type "ConsoleExecutable"
 		Group "Malterlib"
+		GenerateScheme false
+		{
+			!!GeneratorFamily "Xcode"
+		}
 		LDFlags =+ "-nostdlib++"
 		{
 			&
