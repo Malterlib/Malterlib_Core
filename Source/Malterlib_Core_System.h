@@ -250,6 +250,7 @@ namespace NMib
 
 		void f_SetDefaultLogFileName(NLog::CLogStr const &_Name);
 		void f_SetDefaultLogFileDirectory(NLog::CLogStr const &_Directory);
+		bool f_HasTraceLogger() const;
 		void f_RemoveTraceLogger();
 		void f_RemoveAllLoggers();
 		void f_AddStdErrLogger();
