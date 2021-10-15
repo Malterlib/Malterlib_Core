@@ -219,7 +219,11 @@ namespace NMib
 	
 	bool CSystem::f_HasTraceLogger() const
 	{
+#if DMibEnableTrace > 0
 		return m_TraceLoggerDestination != 0;
+#else
+		return false;
+#endif
 	}
 
 	void CSystem::f_RemoveTraceLogger()
