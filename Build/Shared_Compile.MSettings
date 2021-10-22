@@ -2424,6 +2424,23 @@ Compile
 		PlatformIsDarwin true
 		|
 		{
+			Compile.Type "ObjC"
+			Compile.Type "ObjC++"
+		}
+	}
+
+	PreprocessorDefines += "NS_FORMAT_ARGUMENT(A)="
+}
+
+// ObjC and ObjC++ Settings
+Compile
+{
+	&
+	{
+		LanguageFamily "Native"
+		PlatformIsDarwin true
+		|
+		{
 			CompileDialect "C"
 		}
 	}
