@@ -36,7 +36,6 @@ using namespace NMib;
 namespace NMib::NSys::NPrivate
 {
 	extern mint g_PageSize;
-	constinit NAtomic::TCAtomic<mint> g_ForceMmapSequence = 0;
 }
 
 void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, EAllocationFlag _Flags)
@@ -84,7 +83,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 			if ((_Flags & EAllocationFlag_NoCommit))
 				madvise(_pMemory, _Size, MADV_DONTNEED);
 #endif
-			NSys::NPrivate::g_ForceMmapSequence.f_FetchAdd(1);
+			g_ForceMmapSequence.f_FetchAdd(1);
 			return _pMemory;
 		}
 	;
@@ -324,7 +323,7 @@ void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
 			{
 				//DMibDTraceSafe("pSize found\n", 0);
 				_Size = *pSize;
-				NSys::NPrivate::g_ForceMmapSequence.f_FetchAdd(1);
+				g_ForceMmapSequence.f_FetchAdd(1);
 				if (munmap(pMemStart, _Size))
 				{
 					int ErrNo = errno;
@@ -345,7 +344,7 @@ void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
 	}
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
 	_Size = pMemEnd - pMemStart;
-	NSys::NPrivate::g_ForceMmapSequence.f_FetchAdd(1);
+	g_ForceMmapSequence.f_FetchAdd(1);
 	if (munmap(pMemStart, _Size))
 	{
 		int ErrNo = errno;

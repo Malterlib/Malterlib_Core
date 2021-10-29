@@ -34,6 +34,8 @@ using namespace NContainer;
 
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
 
+extern NAtomic::TCAtomicAggregate<mint> g_ForceMmapSequence;
+
 namespace NMib
 {
 	namespace NSys
@@ -1583,6 +1585,9 @@ namespace NMib
 		{
 			if (!numEvents)
 				return;
+
+			// Syncronize with previously returned virtual memory
+			g_ForceMmapSequence.f_FetchAdd(1);
 
 			CNotification *pNotification = (CNotification *)clientCallBackInfo;
 

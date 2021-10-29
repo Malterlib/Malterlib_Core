@@ -44,7 +44,9 @@ using namespace NMib;
 
 constinit NThread::CMutualAggregate g_VirtualMapLock = {DAggregateInit};
 constinit NMib::NStorage::TCAggregateSimple<TCMapWithPool<mint, mint, NMib::CSort_Default, NMib::NMemory::CAllocator_VirtualNoTracking>> g_VirtualMap = {DAggregateInit};
-	
+
+constinit NAtomic::TCAtomicAggregate<mint> g_ForceMmapSequence = {DAggregateInit};
+
 #ifdef DMibDebuggerHelpers
 assure_used CMibCodeAddressType::CCodeAddressFunction *CMibCodeAddressType::fs_Debug_Function()
 {
