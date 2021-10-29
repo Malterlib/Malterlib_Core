@@ -2685,7 +2685,7 @@
 					Property
 					{
 						\false ""
-						\true "-fsanitize=undefined"
+						\true "-fsanitize=undefined -fno-sanitize=vptr"
 					}
 				}
 			}
