@@ -1471,12 +1471,22 @@ extern "C" void fg_Malterlib_CreateSystem()
 {
 	NSys::fg_CreateSystem();
 }
+
+#if defined(DMibLinkTimeCodeGeneration)
+extern "C" void __clear_cache(void *start, void *end);
+#endif
+
 void NSys::fg_CreateSystem()
 {
 	if (g_bCreatedSystem)
 		return;
 
 	g_bCreatedSystem = true;
+
+#if defined(DMibLinkTimeCodeGeneration)
+	int Temp = 0;
+	__clear_cache(&Temp, &Temp);
+#endif
 
 	fg_CreateSystemMalloc(false);
 
