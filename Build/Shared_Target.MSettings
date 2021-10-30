@@ -1176,6 +1176,15 @@ Target
 		!!MalterlibSupportSanitizerEnable_UndefinedBehavior true
 	}
 
+	LDFlags =+ "-fno-sanitize-recover=all"
+	{
+		&
+		{
+			MalterlibSupportSanitizers true
+			MalterlibSupportSanitizerEnable_NoRecover true
+		}
+	}
+
 	LDFlags =+ "-w"
 	{
 		!!MalterlibSupportSanitizers true

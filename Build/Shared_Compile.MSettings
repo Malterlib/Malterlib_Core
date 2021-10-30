@@ -2310,6 +2310,16 @@ Compile
 		!!MalterlibSupportSanitizerEnable_UndefinedBehavior true
 	}
 
+	Sanitize_NoRecover define bool?
+	Sanitize_NoRecover true
+	{
+		&
+		{
+			MalterlibSupportSanitizers true
+			MalterlibSupportSanitizerEnable_NoRecover true
+		}
+	}
+
 	FunctionLevelLinking define bool?
 	FunctionLevelLinking false
 	{
