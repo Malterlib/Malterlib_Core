@@ -2996,27 +2996,6 @@ Target
 
 	ToolPath += [MToolDirectory]
 
-	ToolPath += `@("../../../SDK"->MakeAbsolute())/BreakpadBin/@(HostPlatformFamily)`
-	{
-		&
-		{
-			HostPlatformFamily "OSX"
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-		}
-	}
-
-	ToolPath += `@("../../../SDK"->MakeAbsolute())/BreakpadBin/Linux`
-	{
-		&
-		{
-			HostPlatformFamily "OSX"
-			PlatformFamily "Linux"
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-		}
-	}
-
 	ToolPath += `@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/HostX64/x64`
 	{
 		&
