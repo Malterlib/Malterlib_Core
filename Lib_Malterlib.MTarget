@@ -1330,3 +1330,18 @@ Property
 		%File "Tools/Helper/Malterlib_Core_Helper.cpp"
 	}
 }
+
+%Group "!Automatic/!WindowsHeap"
+{
+	%File "Source/Platform/Malterlib_Core_Platform_Windows_Heap.cpp"
+}
+
+Target.ExtraGroups =+ "!Automatic/!WindowsHeap"
+{
+	&
+	{
+		PlatformFamily "Windows"
+		TargetIsExecutable true
+		fg_IsTargetInDependencies("Lib_Malterlib") true
+	}
+}
