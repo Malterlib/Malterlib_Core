@@ -392,7 +392,6 @@ Import
 		&
 		{
 			Import.CMake_SystemName undefined
-			!PlatformFamily HostPlatformFamily
 			PlatformFamily "OSX"
 		}
 	}
@@ -402,7 +401,6 @@ Import
 		&
 		{
 			Import.CMake_SystemName undefined
-			!PlatformFamily HostPlatformFamily
 		}
 	}
 
@@ -413,7 +411,6 @@ Import
 			!Import.CMake_SystemName undefined
 			Import.CMake_SystemProcessor undefined
 			Architecture "x64"
-			!PlatformFamily "OSX"
 		}
 	}
 
@@ -423,9 +420,12 @@ Import
 		{
 			!Import.CMake_SystemName undefined
 			Import.CMake_SystemProcessor undefined
-			!PlatformFamily "OSX"
 		}
 	}
+
+	CMake_CrossCompileValue define string = `CMAKE_CROSSCOMPILING=@((PlatformFamily == HostPlatformFamily && Architecture == HostArchitecture) ? "OFF" : "ON")`
+	CMake_Variables =+ Import.CMake_CrossCompileValue
+	CMake_ExcludeFromHash =+ Import.CMake_CrossCompileValue
 
 	CMake_CCompiler PlatformToolsetCompiler->UnixPath()
 	{
