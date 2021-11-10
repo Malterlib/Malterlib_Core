@@ -652,8 +652,7 @@ Compile
 			CompileDialect "C"
 		}
 	}
-	SearchPath += `@(Builtin.BasePathAbsolute)/SDK/breakpad/src`
-	PreprocessorDefines =+ "typeof=__typeof__"
+	SearchPath += `@(Builtin.BasePathAbsolute)/External/breakpad/src`
 }
 
 %Group "~Automatic/Breakpad Support"
