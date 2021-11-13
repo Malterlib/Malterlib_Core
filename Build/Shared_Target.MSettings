@@ -876,7 +876,12 @@ Property
 			HostPlatformFamily "Windows"
 		}
 	}
-	PlatformToolsetCompilerBasePath define string = PlatformToolsetCompiler->GetPath()->GetPath()
+	PlatformToolsetCompilerBasePath define string?
+	PlatformToolsetCompilerBasePath PlatformToolsetCompiler->GetPath()->GetPath()
+	{
+		!PlatformToolsetCompiler undefined
+	}
+
 }
 
 // Emscripten
@@ -1049,6 +1054,8 @@ Target
 	EmscriptenLLVMRoot define string?
 	EmscriptenPython define string?
 	EmscriptenNode define string?
+
+	DriverkitDeploymentTarget define string?
 
 	LDFlags =+ [["-env_EMCC_FAST_COMPILER", "1"]]
 	{
@@ -1658,7 +1665,11 @@ Target
 		&
 		{
 			!MalterlibToolsPrefix undefined
-			!MalterlibToolsPrefix `@(PlatformToolsetCompilerBasePath)/bin/`
+			|
+			{
+				PlatformToolsetCompilerBasePath undefined
+				!MalterlibToolsPrefix `@(PlatformToolsetCompilerBasePath)/bin/`
+			}
 		}
 	}
 
@@ -4111,6 +4122,7 @@ Property
 {
 	MalterlibDumpSymsCommand define string = "dump_syms"
 	MalterlibPostBuildScriptShowEnv define bool = false // User(Build System)=true: Enable to show the environment variables of the build environment
+	MalterlibSignOSXHardened define bool = false
 }
 
 Type
@@ -4312,8 +4324,6 @@ Property
 	}
 
 	MalterlibSignOSXDeep define bool = true
-
-	MalterlibSignOSXHardened define bool?
 
 	MalterlibCodeSignOSXExtraOptions define string = ""
 	MalterlibCodeSignOSXExtraOptions += "--options runtime "
