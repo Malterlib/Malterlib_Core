@@ -1089,6 +1089,8 @@ Target
 	EmscriptenPython define string?
 	EmscriptenNode define string?
 
+	DriverkitDeploymentTarget define string?
+
 	LDFlags =+ [["-env_EMCC_FAST_COMPILER", "1"]]
 	{
 		!!Target.EmscriptenFastCompiler true
@@ -2102,6 +2104,11 @@ Target
 
 	SupportedPlatforms define string?
 	SupportedPlatforms "macosx"
+
+	SupportedPlatforms "driverkit"
+	{
+		!!Target.Type "Driver"
+	}
 
 	OnlyActiveArchitectures define bool = true
 
@@ -4935,8 +4942,8 @@ Target
 	}
 
 	PostBuildScript =+	`echo Sign:\r\n`\
-						`echo @(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
-						`@(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`
+						`echo @(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->EscapeHost()) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
+						`@(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->EscapeHost()) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`
 	{
 		&
 		{

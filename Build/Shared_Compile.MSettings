@@ -838,7 +838,7 @@ Property
 
 Property
 {
-	MalterlibTargetTriple define string
+	MalterlibTargetTriple define string?
 	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-apple-darwin@(MalterlibNativeClangDarwinTarget)`
 	{
 		&
