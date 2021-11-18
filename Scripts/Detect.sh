@@ -66,7 +66,7 @@ function DoDetect()
 		}
 	fi
 
-	if [[ "$MalterlibBinariesDir" != "" ]]; then
+	if [[ "${MalterlibBinariesDir-}" != "" ]]; then
 		export MToolDirectory="$MalterlibBinariesDir"
 	else
 		RootDir="$( cd "$DIR/../../.." && pwd )"
