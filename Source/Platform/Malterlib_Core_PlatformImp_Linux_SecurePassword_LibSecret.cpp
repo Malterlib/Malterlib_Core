@@ -83,7 +83,7 @@ namespace NMib::NSys
 
 	bool CLibSecretPasswordManager::f_OK() const
 	{
-#ifdef DMibSuppressThreadSanitizer
+#ifdef DMibSanitizerEnabled_Thread
 		return false;
 #endif
 		DMibLock(mp_Lock);
