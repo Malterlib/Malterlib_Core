@@ -2098,6 +2098,26 @@ Compile
 		!!Compile.Symbols undefined
 	}
 
+	DwarfVersion define int?
+
+	DwarfVersion 4
+	{
+		&
+		{
+			Compile.DwarfVersion undefined
+			PlatformFamily "OSX"
+		}
+	}
+
+	DwarfVersion 5
+	{
+		&
+		{
+			Compile.DwarfVersion undefined
+			PlatformFamily "Linux"
+		}
+	}
+
 	ClangTimeTrace define bool?
 	ClangTimeTrace true
 	{
