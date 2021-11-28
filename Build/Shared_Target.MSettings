@@ -828,6 +828,8 @@ Property
 
 	MalterlibDisableAutomaticResources define bool = false
 
+	MalterlibUseLocalCompilerBuild define bool = false // User(Toolset)=true: Build llvm locally and use that for building
+
 	MalterlibMSVCVersion define string?
 	MalterlibMSVCVersion MalterlibOverrideMSVCVersion
 	{
@@ -848,6 +850,17 @@ Property
 
 	PlatformToolsetCompiler define string? // User(Toolset)="/opt/Source/llvm-malterlib/build/main/bin/clang": Change the clang compiler location
 
+	PlatformToolsetCompiler MalterlibLLVMBinariesDirectory / "bin/clang"
+	{
+		&
+		{
+			PlatformToolsetCompiler undefined
+			!MalterlibUseLocalCompilerBuild true
+			!MalterlibDefaultCompiler true
+			!HostPlatformFamily "Windows"
+		}
+	}
+
 	PlatformToolsetCompiler "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc"
 	{
 		&
@@ -862,6 +875,7 @@ Property
 		&
 		{
 			PlatformToolsetCompiler undefined
+			MalterlibUseLocalCompilerBuild true
 			!MalterlibDefaultCompiler true
 			!HostPlatformFamily "Windows"
 		}
@@ -2946,6 +2960,7 @@ Property
 Property
 {
 	MalterlibBinariesDirectory define string = `@("../../../Binaries/Malterlib"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
+	MalterlibLLVMBinariesDirectory define string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
 	MToolDirectory define string = Builtin.MToolExe->GetPath()
 
 	MToolPath define string

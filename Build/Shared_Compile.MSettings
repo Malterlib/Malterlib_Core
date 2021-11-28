@@ -835,7 +835,7 @@ Property
 			!Target.DriverType "DriverKit"
 		}
 	}
-	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-pc-linux-gnu`
+	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-unknown-linux-gnu`
 	{
 		!!PlatformFamily "Linux"
 	}

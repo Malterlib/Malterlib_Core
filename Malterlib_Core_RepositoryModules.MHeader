@@ -138,6 +138,73 @@ Property
 
 Property
 {
+	MalterlibBinaryLLVMRepositories define [string] = []
+
+	MalterlibBinaryLLVMRepositories =+ `MalterlibLLVMBinaries_@(HostPlatformFamily)_@(HostArchitecture)`
+	{
+		!!HostPlatformFamily "Linux"
+		!!HostPlatformFamily "OSX"
+	}
+
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_x64"
+	{
+		&
+		{
+			EnablePlatformFamily_Linux true
+			EnableArchitecture_x64 true
+		}
+	}
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_x86"
+	{
+		&
+		{
+			EnablePlatformFamily_Linux true
+			EnableArchitecture_x86 true
+		}
+	}
+}
+
+Property
+{
+	!!MalterlibAllBinaryRepositories true
+
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_OSX_x64"
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_OSX_arm64"
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_x64"
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_x86"
+}
+
+%Repository MalterlibBinaryLLVMRepositories->Unique()
+{
+	Property
+	{
+		RepoName define string = `@(this.Identity).git`
+		RepoPlatformFamily define string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
+		RepoArchitecture define string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
+		RepoDir define string = `../../Binaries/MalterlibLLVM/@(RepoPlatformFamily)/@(RepoArchitecture)`
+	}
+	Repository
+	{
+		Type "Malterlib"
+		Location RepoDir->MakeAbsolute()
+		URL `@(Repository.MalterlibRoot)/@(RepoName)`
+		Remotes =+ MalterlibRemotePrefixes->ForEach("f_MalterlibRemotePrefixesTemplate")
+		{
+			!MalterlibRemotePrefixes undefined
+		}
+		Remotes =+ {Name: "malterlib", URL: `https://github.com/Malterlib/@(RepoName)`, Write: MalterlibUpstreamWriteAccess}
+		{
+			&
+			{
+				MalterlibUpstreamAccess true
+				!Repository.URL `https://github.com/Malterlib/@(RepoName)`
+			}
+		}
+	}
+}
+
+Property
+{
 	MalterlibBinaryTestRepositories define [string] = []
 }
 
