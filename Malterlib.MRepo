@@ -1,9 +1,10 @@
-../../Binaries/Malterlib/Linux/x64 53704164f9d436d2abae979709c6d46a8c260295
-../../Binaries/Malterlib/Linux/x86 58a92d1683726dac721e04ae9327de47bb23ebf5
-../../Binaries/Malterlib/OSX/arm64 5f5e70e43f3041e3fe6de8b638d247b14234956b
-../../Binaries/Malterlib/OSX/x64 9325a13d5a4543be9e573140a5d629f91182ec9a
-../../Binaries/Malterlib/Windows/x64 a21a45e9a61c566384875a422edc4b930ed63f31
-../../Binaries/Malterlib/Windows/x86 8b4fa28441f1f28ddcdc0c8878c40de62bb2eeac
+../../Binaries/Malterlib/Linux/arm64 a30071dca2a02ea2db2036df1b042767c26aa838
+../../Binaries/Malterlib/Linux/x64 61a57a92f370d17e323ae0d86b2924e237efa231
+../../Binaries/Malterlib/Linux/x86 8788f60206ffeee3e6c520a49a12b0447eb4078c
+../../Binaries/Malterlib/OSX/arm64 06341e8a382757d8fad07a147b70f4fe3e163447
+../../Binaries/Malterlib/OSX/x64 46153bfa5f477d11eaab74bd66d70624f5d25fd9
+../../Binaries/Malterlib/Windows/x64 dba33224c09a6c3bcf7fd8c9bb171976c4957042
+../../Binaries/Malterlib/Windows/x86 549f7f32400b35b9ac68f743fd2d4e4d76f617c7
 ../../Binaries/MalterlibLLVM/Linux/arm64 e737c9a95094b5924352b26c4a8722c91ccf9969
 ../../Binaries/MalterlibLLVM/Linux/x64 9097c6849a5e706434a398a91a51367c51f0224b
 ../../Binaries/MalterlibLLVM/Linux/x86 f1cdf5a65af1dfbd556c0b2ffedbe9595559623f
