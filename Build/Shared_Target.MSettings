@@ -1057,6 +1057,14 @@ Target
 	}
 
 	LDFlags define [one_of(string, [string])] = []
+	LDFlags =+ `-mlinker-version=@(MalterlibMacOSLinkerVersion->ToString())`
+	{
+		&
+		{
+			PlatformFamily "OSX"
+			HostPlatformFamily "OSX"
+		}
+	}
 
 	EmscriptenFastCompiler define bool?
 	EmscriptenEmscriptenRoot define string?
@@ -2964,6 +2972,9 @@ Property
 
 	MalterlibUniqueConfig define string = GeneratedDirectory->Sanitize()->Replace('-', '_')->Replace('.', '_')
 
+
+	MalterlibMacOSLinkerVersion define int
+	MalterlibMacOSLinkerVersion ExecuteCommand(`@(GeneratedGlobalDirectory)MacOSLinkerVersion.MState`, ["/usr/bin/ld"], "bash", "-c", "/usr/bin/ld -v 2>&1")->Trim()->Split("\n")<[0]>->Split("ld64-")<[1]>->AsInteger()
 }
 
 Property
