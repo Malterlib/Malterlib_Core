@@ -13,6 +13,7 @@ namespace NMib
 		{
 			extern mint g_PageSize;
 		}
+
 		inline_always mint fg_Mem_VirtualGranularityAlloc(bool _bLargePages)
 		{
 			return NPrivate::g_PageSize;
@@ -50,6 +51,8 @@ namespace NMib
 #ifdef DPlatformFamily_OSX
 		extern mint g_ThreadSelfOffset;
 		extern mint g_ThreadLocalOffset;
+#elif defined(DPlatformFamily_Linux) && defined(DArchitecture_arm64)
+		extern mint g_ThreadSelfOffset;
 #endif
 		
 		mint fg_GetThreadSelf_Safe();
@@ -102,10 +105,13 @@ namespace NMib
 					asm ("mov %%gs:0x8,%0" : "=r"(Return) : );
 				#elif defined(__x86_64__)
 					asm ("mov %%fs:0x10,%0" : "=r"(Return) : );
+				#elif defined(__aarch64__)
+					asm volatile ("mrs %0, TPIDR_EL0" : "=r" (Return));
+					Return -= g_ThreadSelfOffset;
 				#else
 					#error "Not Implemented"
 				#endif
-				
+
 				DMibFastCheck(Return == fg_GetThreadSelf_Safe());
 				return Return;
 			#else
@@ -167,6 +173,10 @@ namespace NMib
 					asm ("mov %%gs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
 				#elif defined(__x86_64__)
 					asm ("mov %%fs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+				#elif defined(__aarch64__)
+					mint ThreadLocals;
+					asm volatile ("mrs %0, TPIDR_EL0" : "=r" (ThreadLocals));
+					Return = *((mint *)(ThreadLocals + _iVariable));
 				#else
 					#error "Not Implemented"
 				#endif
@@ -232,6 +242,10 @@ namespace NMib
 					asm ("mov %%gs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
 				#elif defined(__x86_64__)
 					asm ("mov %%fs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+				#elif defined(__aarch64__)
+					mint ThreadLocals;
+					asm volatile ("mrs %0, TPIDR_EL0" : "=r" (ThreadLocals));
+					Return = *((mint *)(ThreadLocals + _iVariable));
 				#else
 					#error "Not Implemented"
 				#endif

@@ -793,6 +793,14 @@ Property
 			}
 		}
 	}
+	MalterlibNativeClangArchitecture "aarch64"
+	{
+		&
+		{
+			Architecture "arm64"
+			PlatformFamily "Linux"
+		}
+	}
 }
 
 Property

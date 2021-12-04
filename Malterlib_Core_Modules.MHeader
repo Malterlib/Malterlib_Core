@@ -94,6 +94,14 @@ Property
 			EnableArchitecture_x64 true
 		}
 	}
+	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_arm64"
+	{
+		&
+		{
+			EnablePlatform_Linux2_6 true
+			EnableArchitecture_arm64 true
+		}
+	}
 	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_x86"
 	{
 		&
@@ -112,6 +120,7 @@ Property
 
 	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_x64"
 	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_x86"
+	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_arm64"
 }
 
 %Repository MalterlibBinarySDKRepositories->Unique()

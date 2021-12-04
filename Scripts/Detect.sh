@@ -39,6 +39,8 @@ function DoDetect()
 		MalterlibPlatform=Linux
 		if [[ $ProcessorArch == i*86 ]] ; then
 			MalterlibArch=x86
+		elif [[ $ProcessorArch == aarch64 ]] ; then
+			MalterlibArch=arm64
 		elif [[ $ProcessorArch == x86_64 ]] ; then
 			if [[ `getconf LONG_BIT` == "32" ]] ; then
 				MalterlibArch=x86

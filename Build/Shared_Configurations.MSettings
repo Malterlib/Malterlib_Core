@@ -508,6 +508,7 @@ Property
 			{
 				PlatformFamily "iOS"
 				PlatformFamily "OSX"
+				PlatformFamily "Linux"
 			}
 			EnableArchitecture_arm64 true
 		}

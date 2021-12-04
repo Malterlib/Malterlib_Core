@@ -330,7 +330,7 @@
 #	elif defined(DArchitecture_x64) || defined(DArchitecture_x86)
 #		define DMibPDebugBreak __asm__ ("int $3")
 #	else
-#		define DMibPDebugBreak __builtin_trap()
+#		define DMibPDebugBreak __builtin_debugtrap()
 #	endif
 #elif defined(DCompiler_MSVC)
 #	pragma intrinsic(__debugbreak)

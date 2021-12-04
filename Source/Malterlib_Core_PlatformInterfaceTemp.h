@@ -79,6 +79,7 @@ namespace NMib
 		EOperatingSystemArch_PPC,
 		EOperatingSystemArch_PPC64,
 		EOperatingSystemArch_le32,
+		EOperatingSystemArch_arm64,
 	};
 	
 	namespace NSys

@@ -193,7 +193,9 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		#define DMibPUniqueType_ch16
 		#define DMibPUniqueType_ch32
 
+#if !defined(DArchitecture_arm64)
 		#define DMibPSignedType_ch8
+#endif
 		//#define DMibPSignedType_ch16
 		//#define DMibPSignedType_ch32
 #	else

@@ -1370,6 +1370,8 @@ bool NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& 
 		g_OperatingSystemArch = EOperatingSystemArch_x86;
 	else if (Machine == "x86_64")
 		g_OperatingSystemArch = EOperatingSystemArch_x64;
+	else if (Machine == "aarch64")
+		g_OperatingSystemArch = EOperatingSystemArch_arm64;
 	else
 	{
 		DMibFastCheck(false);
@@ -1379,10 +1381,25 @@ bool NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& 
 	return true;
 }
 
+#if defined(DArchitecture_arm64)
+namespace NMib::NSys
+{
+	mint g_ThreadSelfOffset = 0;
+}
+#endif
+
 void NSys::fg_CreateSystemVersion()
 {
 	if (CSystem::ms_PlatformVersion != 0)
 		return;
+
+#if defined(DArchitecture_arm64)
+	{
+		mint ThreadLocal;
+		asm volatile ("mrs %0, TPIDR_EL0" : "=r" (ThreadLocal));
+		g_ThreadSelfOffset = ThreadLocal - pthread_self();
+	}
+#endif
 
 	if (g_OperatingSystemMajor < 0)
 	{
@@ -2811,7 +2828,7 @@ namespace NMib
 }
 
 // Make sure we can target glibc 2.3
-#if !defined(DMibSanitizerEnabled) && !defined(DArchitecture_x86)
+#if !defined(DMibSanitizerEnabled) && defined(DArchitecture_x64)
 __asm__(".symver __real_versioned_memcpy,memcpy@GLIBC_2.2.5");
 
 extern "C" void *__real_versioned_memcpy(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n);
@@ -3054,7 +3071,7 @@ extern "C" int fcntl64(int _FileDescriptor, int _Command, ...)
 	return 1;
 }
 
-#ifndef DArchitecture_x86
+#ifdef DArchitecture_x64
 __asm__(".symver __real_versioned___strtok_r_1c,__strtok_r_1c@GLIBC_2.2.5");
 
 extern "C" char *__real_versioned___strtok_r_1c(char *__s, char __sep, char **__nextp);

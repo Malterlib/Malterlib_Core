@@ -850,7 +850,7 @@ Property
 
 	PlatformToolsetCompiler define string? // User(Toolset)="/opt/Source/llvm-malterlib/build/main/bin/clang": Change the clang compiler location
 
-	PlatformToolsetCompiler MalterlibLLVMBinariesDirectory / "bin/clang"
+	PlatformToolsetCompiler MalterlibLLVMHostBinariesDirectory / "bin/clang"
 	{
 		&
 		{
@@ -1270,6 +1270,15 @@ Target
 			{
 				Architecture "x86"
 			}
+		}
+	}
+
+	SearchPath =+ MalterlibLLVMBinariesDirectory / "lib" / MalterlibTargetTriple / "c++"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			TargetIsExecutable true
 		}
 	}
 
@@ -2960,7 +2969,8 @@ Property
 Property
 {
 	MalterlibBinariesDirectory define string = `@("../../../Binaries/Malterlib"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
-	MalterlibLLVMBinariesDirectory define string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
+	MalterlibLLVMHostBinariesDirectory define string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
+	MalterlibLLVMBinariesDirectory define string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(PlatformFamily)/@(Architecture)`
 	MToolDirectory define string = Builtin.MToolExe->GetPath()
 
 	MToolPath define string

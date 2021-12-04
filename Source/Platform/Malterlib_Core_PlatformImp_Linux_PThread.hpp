@@ -5,6 +5,12 @@
 
 #ifdef DMibStaticThreadLocals
 
+#ifdef DArchitecture_arm64
+#define DAddThreadSelfOffset + g_ThreadSelfOffset
+#else
+#define DAddThreadSelfOffset
+#endif
+
 using namespace NMib;
 
 #include <unistd.h>
@@ -89,14 +95,14 @@ mint NSys::fg_Thread_AllocLocal()
 	if (iThreadLocal < 0)
 		DMibErrorSystemImp("Out of thread local indices");
 
-	smint Offset = (smint)&g_MalterlibThreadLocals[iThreadLocal] - (smint)NMib::NSys::fg_GetThreadSelf();
+	smint Offset = (smint)&g_MalterlibThreadLocals[iThreadLocal] - (smint)(NMib::NSys::fg_GetThreadSelf() DAddThreadSelfOffset);
 	return (mint)Offset;
 }
 
 void NSys::fg_Thread_FreeLocal(mint _iStorage)
 {
-	smint StartOffset = (smint)&g_MalterlibThreadLocals[0] - (smint)NMib::NSys::fg_GetThreadSelf();
-	smint iStorage = (_iStorage - StartOffset) / sizeof(mint); 
+	smint StartOffset = (smint)&g_MalterlibThreadLocals[0] - (smint)(NMib::NSys::fg_GetThreadSelf() DAddThreadSelfOffset);
+	smint iStorage = (_iStorage - StartOffset) / sizeof(mint);
 	if (iStorage < 0 || iStorage >= gc_nMalterlibThreadLocals)
 		DMibErrorSystemImp("Thread local index out of range");
 	bool bAllocated;
@@ -112,7 +118,7 @@ void NSys::fg_Thread_FreeLocal(mint _iStorage)
 
 void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
 {
-	auto pAlloc = (void **)((uint8 *)NMib::NSys::fg_GetThreadSelf() + smint(_iStorage));
+	auto pAlloc = (void **)((uint8 *)NMib::NSys::fg_GetThreadSelf() DAddThreadSelfOffset + smint(_iStorage));
 	*pAlloc = _pData;
 }
 
@@ -124,7 +130,7 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 		fg_Thread_SetLocal(_iStorage, _pData);
 		return;
 	}
-	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID + smint(_iStorage));
+	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID DAddThreadSelfOffset + smint(_iStorage));
 	pThreadLocal->f_Exchange((mint)_pData);
 }
 
@@ -132,7 +138,7 @@ void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocal(_iStorage);
-	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID + smint(_iStorage));
+	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((uint8 *)_ThreadID DAddThreadSelfOffset + smint(_iStorage));
 	return (void *)pThreadLocal->f_Load();
 }
 

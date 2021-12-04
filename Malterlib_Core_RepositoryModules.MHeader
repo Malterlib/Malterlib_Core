@@ -172,6 +172,7 @@ Property
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_OSX_arm64"
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_x64"
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_x86"
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_arm64"
 }
 
 %Repository MalterlibBinaryLLVMRepositories->Unique()
