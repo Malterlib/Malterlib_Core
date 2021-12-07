@@ -121,6 +121,7 @@ namespace NMib
 		void fg_Mem_GetNumaNodes(ENumaNode *_pNodens, mint _nNodes);
 
 		NMib::COnScopeExitShared fg_System_RegisterForSignal(int _Signal, NFunction::TCFunctionMutable<void ()> &&_fOnSignal);
+		NMib::COnScopeExitShared fg_System_RegisterForThreadSignal(int _Signal, NFunction::TCFunctionMutable<void ()> &&_fOnSignal);
 
 		void *fg_InterProcess_MemAlloc(ch8 const *_pName, mint _Size, void * &_pMemory);
 		void fg_InterProcess_MemFree(void *_pHandle, void *_pMemory);
