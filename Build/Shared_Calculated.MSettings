@@ -457,7 +457,8 @@ Property
 		}
 	}
 
-	MalterlibCalcFullBranch define string = MalterlibBranch
+	MalterlibCalcFullBranch define string
+	MalterlibCalcFullBranch MalterlibBranch
 	MalterlibCalcFullBranch `@(MalterlibCalcFullBranch) (@(MalterlibTaskStreamName))`
 	{
 		!MalterlibTaskStreamName undefined
