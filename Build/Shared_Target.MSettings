@@ -2972,9 +2972,8 @@ Property
 
 	MalterlibUniqueConfig define string = GeneratedDirectory->Sanitize()->Replace('-', '_')->Replace('.', '_')
 
-
 	MalterlibMacOSLinkerVersion define int
-	MalterlibMacOSLinkerVersion ExecuteCommand(`@(GeneratedGlobalDirectory)MacOSLinkerVersion.MState`, ["/usr/bin/ld"], "bash", "-c", "/usr/bin/ld -v 2>&1")->Trim()->Split("\n")<[0]>->Split("ld64-")<[1]>->AsInteger()
+	MalterlibMacOSLinkerVersion ExecuteCommand(`@(GeneratedGlobalDirectory)MacOSLinkerVersion.MState`, ["/usr/bin/ld"], "bash", "-c", "/usr/bin/ld -v 2>&1")->Trim()->Split("PROJECT:")<[1]>->Split("\n")<[0]>->Split("ld64-")<[0]>->AsInteger()
 }
 
 Property
