@@ -4120,6 +4120,9 @@ namespace
 	void fg_SetAttributesInternal(ch16 const *_pFileName, EFileAttrib _Attributes)
 	{
 		EFileAttrib ExtraAttributes = _Attributes;
+
+		ExtraAttributes &= ~NMib::NFile::EFileAttrib_File;
+
 		if (!(_Attributes & EFileAttrib_EmulatedLink))
 		{
 			ExtraAttributes &= ~NMib::NFile::EFileAttrib_Directory;
