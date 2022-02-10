@@ -9,7 +9,7 @@ Target.ExtraGroups "{Malterlib}/{TCMalloc}"
 Compile
 {
 	!!CompileDialect "C"
-	SearchPath += [`@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`, `@(Builtin.BasePathAbsolute)/External/elftoolchain/common`]
+	SearchPath += [`@(GeneratedWorkspaceDirectory)elftoolchain`, `@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`, `@(Builtin.BasePathAbsolute)/External/elftoolchain/common`]
 	{
 		!!PlatformFamily "Linux"
 	}

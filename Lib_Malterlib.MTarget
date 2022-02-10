@@ -58,7 +58,8 @@ Property
 		PrefixHeader undefined
 		PrecompilePrefixHeader false
 		SearchPath += [
-			`@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`
+			`@(GeneratedWorkspaceDirectory)elftoolchain`
+			, `@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`
 			, `@(Builtin.BasePathAbsolute)/External/elftoolchain/common`
 			, `@(Builtin.BasePathAbsolute)/External/elftoolchain/libdwarf`
 		]
@@ -398,7 +399,6 @@ Property
 				{
 					ThisFileName define string = this.Identity->GetFileNoExt()
 					ElfToolchainRoot define string = "../../External/elftoolchain"->MakeAbsolute()
-
 				}
 				GenerateFile
 				{
@@ -406,6 +406,34 @@ Property
 					UnixLineEnds true
 					UnicodeBOM false
 					Group `@(Platform) @(Architecture) @(FullConfiguration)`
+				}
+				%Group "common"
+				{
+					!!PlatformFamily "Linux"
+					%Group "sys"
+					{
+						%File "../../External/elftoolchain/libelf/*.c"
+						%File "../../External/elftoolchain/libelf/*.h"
+						%File "../../External/elftoolchain/libelf/*.m4"
+
+						%Group "Generated"
+						{
+							GenerateFile
+							{
+								Name `@(GeneratedWorkspaceDirectory)elftoolchain/sys/@(ThisFileName).h`
+								Contents ExecuteCommand(
+									`@(GeneratedWorkspaceDirectory)elftoolchain/sys/@(ThisFileName).state`
+									, [this.Identity->MakeAbsolute(), "../../External/elftoolchain/common/sys/elfconstants.m4"->MakeAbsolute()]
+									, "m4"
+									, `-DSRCDIR=@(ElfToolchainRoot)/common/sys`
+									, `-I@(ElfToolchainRoot)/common/sys`
+									, this.Identity->MakeAbsolute()
+								)
+							}
+
+							%GenerateFile "../../External/elftoolchain/common/sys/elfdefinitions.m4"
+						}
+					}
 				}
 				%Group "libelf"
 				{
@@ -1029,7 +1057,7 @@ Property
 			}
 		}
 		SearchPath += "../PCH"->MakeAbsolute()
-		SearchPath += [`@(Builtin.BasePathAbsolute)/External/elftoolchain/common`, `@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`]
+		SearchPath += [`@(GeneratedWorkspaceDirectory)elftoolchain`, `@(Builtin.BasePathAbsolute)/External/elftoolchain/common`, `@(Builtin.BasePathAbsolute)/External/elftoolchain/libelf`]
 		{
 			!!PlatformFamily "Linux"
 		}
