@@ -1,6 +1,11 @@
 // Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+Property
+{
+	MalterlibOnlyRepositoryManagement define bool = false
+}
+
 // Must start with the settings
 Import "Build/Shared.MSettings"
 {

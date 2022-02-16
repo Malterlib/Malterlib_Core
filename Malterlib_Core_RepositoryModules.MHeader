@@ -140,6 +140,11 @@ Property
 Property
 {
 	MalterlibBinaryLLVMRepositories define [string] = []
+}
+
+Property
+{
+	!MalterlibOnlyRepositoryManagement true
 
 	MalterlibBinaryLLVMRepositories =+ `MalterlibLLVMBinaries_@(HostPlatformFamily)_@(HostArchitecture)`
 	{
@@ -167,7 +172,11 @@ Property
 
 Property
 {
-	!!MalterlibAllBinaryRepositories true
+	&
+	{
+		MalterlibAllBinaryRepositories true
+		!MalterlibOnlyRepositoryManagement true
+	}
 
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_OSX_x64"
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_OSX_arm64"
