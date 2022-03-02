@@ -4178,6 +4178,24 @@ Property
 
 	fg_ExpandCopyOptions function([type(CFileCopyOptions)] _CopyOptions) [type(CFileCopyOptionsDetailed)]
 	fg_ExpandCopyOptions _CopyOptions->ForEach("fg_ExpandCopyOptionsHelper")
+
+	f_AddDestinationPrefixToCopyOptions_AppendDestination function(type(CFileCopyOptionsDetailed) _Options) type(CFileCopyOptionsDetailed)
+	f_AddDestinationPrefixToCopyOptions_AppendDestination _Options
+	f_AddDestinationPrefixToCopyOptions_AppendDestination =+ {Destination: DestinationPrefix / _Options<Destination>}
+	{
+		!!_Options->HasMember("Destination") true
+	}
+	f_AddDestinationPrefixToCopyOptions_AppendDestination =+ {Destination: _Options<Destination>}
+	{
+		!_Options->HasMember("Destination") true
+	}
+
+	f_AddDestinationPrefixToCopyOptions_AddDestination function(type(CFileCopyOptionsDetailed) _Options) [type(CFileCopyOptionsDetailed)] = []
+	f_AddDestinationPrefixToCopyOptions_AddDestination =+ f_AddDestinationPrefixToCopyOptions_AppendDestination(_Options)
+
+	f_AddDestinationPrefixToCopyOptions function([type(CFileCopyOptions)] _Options, string _DestinationPrefix) [type(CFileCopyOptions)] = []
+
+	f_AddDestinationPrefixToCopyOptions _Options->fg_ExpandCopyOptions()->ForEach("f_AddDestinationPrefixToCopyOptions_AddDestination", {DestinationPrefix: _DestinationPrefix})
 }
 
 Property
