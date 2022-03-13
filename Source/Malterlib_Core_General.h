@@ -120,9 +120,9 @@ namespace NMib
 	}
 	
 	template <typename t_CType, typename t_CTypeToCopyTo> 
-	mark_artificial inline_always_debug typename NPrivate::TCForwardCopyEvalHelper<t_CType, t_CTypeToCopyTo>::CType fg_ForwardAs(t_CTypeToCopyTo &&_ToForward)
+	mark_artificial inline_always_debug decltype(auto) fg_ForwardAs(t_CTypeToCopyTo &&_ToForward)
 	{
-    	return static_cast<typename NPrivate::TCForwardCopyEvalHelper<t_CType, t_CTypeToCopyTo>::CType>(_ToForward);
+    	return static_cast<typename NPrivate::TCForwardCopyEvalHelper<t_CType &&, t_CTypeToCopyTo>::CType>(_ToForward);
 	}
 	
 	template <typename t_CType>
