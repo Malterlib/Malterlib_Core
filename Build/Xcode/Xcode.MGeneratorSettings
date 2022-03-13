@@ -2011,7 +2011,7 @@
 					{
 						Off "-w"
 						Minimal "-Wall -Wno-switch -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-pointer-sign -Wno-tautological-compare -Wno-incompatible-pointer-types -Wno-unused-local-typedef -Wno-invalid-offsetof"
-						On "-Wall -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-invalid-offsetof -Wno-switch"
+						On "-Wall -Wno-unused-private-field -Wno-missing-braces -Wno-reorder -Wno-unneeded-internal-declaration -Wno-invalid-offsetof"
 						Pedantic "-Weverything -Wno-invalid-offsetof"
 /*
 						Minimal "-Wno-switch -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-non-virtual-dtor -Wno-overloaded-virtual -Wno-exit-time-destructors -Wformat -Wno-missing-braces -Wparentheses -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wunused-value -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wno-newline-eof -Wc++11-extensions"
