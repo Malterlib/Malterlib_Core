@@ -193,13 +193,11 @@ namespace NMib
 		return fg_Move(_In);
 	}
 
-#ifndef DDocumentation_Doxygen
 	template <typename t_CType, TCEnableIfType<!NTraits::TCIsRValueReference<t_CType>::mc_Value && NTraits::TCIsReference<t_CType>::mc_Value> * = nullptr>
 	mark_artificial constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) -> typename NTraits::TCRemoveReference<t_CType>::CType const &
 	{
 		return static_cast<typename NTraits::TCRemoveReference<t_CType>::CType const &>(_In);
 	}
-#endif
 
 	template <typename t_CValue>
 	struct TCMoveValueFunctor

@@ -66,7 +66,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	<td>
 ~~~
 	void f_Test()
-	void f_rTest()
 ~~~
 	</td>
 	<td></td>
@@ -77,7 +76,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	<td>
 ~~~
 	void fp_Test()
-	void fp_rTest()
 ~~~
 	</td>
 	<td></td>
@@ -88,7 +86,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	<td>
 ~~~
 	static void fs_Test()
-	static void fs_rTest()
 ~~~
 	</td>
 	<td></td>
@@ -99,7 +96,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	<td>
 ~~~
 	static void fsp_Test()
-	static void fsp_rTest()
 ~~~
 	</td>
 	<td></td>
@@ -110,7 +106,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	<td>
 ~~~
 	void fg_Test()
-	void fg_rTest()
 ~~~
 	</td>
 	<td></td>
@@ -121,7 +116,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	<td>
 ~~~
 	static void fsg_Test()
-	static void fsg_rTest()
 ~~~
 	</td>
 	<td></td>
@@ -141,7 +135,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	void f_Func(int _Test)
 	void f_Func(bool _bTest)
-	void f_Func(TCSet<int> _cTest)
 	void f_Func(mint _iTest)
 	void f_Func(mint _nTest)
 	void f_Func(int *_pTest)
@@ -157,7 +150,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	void f_Func(t_CInt ...p_Test)
 	void f_Func(t_CBool ...p_bTest)
-	void f_Func(t_CContainer ...p_cTest)
 	void f_Func(t_CIndex ...p_iTest)
 	void f_Func(t_CNum ...p_nTest)
 	void f_Func(t_CPointer ...p_pTest)
@@ -173,7 +165,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	void f_Func(int &o_Test)
 	void f_Func(bool &o_bTest)
-	void f_Func(TCSet<int> &o_cTest)
 	void f_Func(mint &o_iTest)
 	void f_Func(mint &o_nTest)
 	void f_Func(int *&o_pTest)
@@ -189,7 +180,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	void f_Func(t_CInt &...po_Test)
 	void f_Func(t_CBool &...po_bTest)
-	void f_Func(t_CContainer &...po_cTest)
 	void f_Func(t_CIndex &...po_iTest)
 	void f_Func(t_CNum &...po_nTest)
 	void f_Func(t_CPointer &...po_pTest)
@@ -272,7 +262,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	#define DTest(d_Test)
 	#define DTest(d_bTest)
-	#define DTest(d_cTest)
 	#define DTest(d_iTest)
 	#define DTest(d_nTest)
 	#define DTest(d_pTest)
@@ -332,7 +321,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	static uint32 s_Test = 0;
 	static bool s_bTest = true;
-	static TCSet<int> s_cTest;
 	static mint s_iTest = 0;
 	static mint s_nTest = 0;
 	static int *s_pTest = nullptr;
@@ -356,7 +344,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	uint32 g_Test = 0;
 	bool g_bTest = true;
-	TCSet<int> g_cTest;
 	mint g_iTest = 0;
 	mint g_nTest = 0;
 	int *g_pTest = nullptr;
@@ -386,7 +373,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	static uint32 gs_Test = 0;
 	static bool gs_bTest = true;
-	static TCSet<int> gs_cTest;
 	static mint gs_iTest = 0;
 	static mint gs_nTest = 0;
 	static int *gs_pTest = nullptr;
@@ -412,7 +398,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		uint32 m_Test;
 		bool m_bTest;
-		TCSet<int> m_cTest;
 		mint m_iTest;
 		mint m_nTest;
 		int *m_pTest;
@@ -448,7 +433,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		static uint32 ms_Test;
 		static bool ms_bTest;
-		static TCSet<int> ms_cTest;
 		static mint ms_iTest;
 		static mint ms_nTest;
 		static int *ms_pTest;
@@ -468,7 +452,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		uint32 mp_Test;
 		bool mp_bTest;
-		TCSet<int> mp_cTest;
 		mint mp_iTest;
 		mint mp_nTest;
 		int *mp_pTest;
@@ -504,7 +487,6 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		static uint32 msp_Test;
 		static bool msp_bTest;
-		static TCSet<int> msp_cTest;
 		static mint msp_iTest;
 		static mint msp_nTest;
 		static int *msp_pTest;
@@ -614,11 +596,29 @@ Types, enumerators and namespaces are prefixed.
 	<td></td>
 </tr>
 </table>
- 
 
-\section s_Malterlib_Core_CodeStandard_Naming_ConceptPrefixes Concept prefixes
+\section s_Malterlib_Core_CodeStandard_Naming_Concepts Concepts
 
-The concept prefix is intended to gives us information about a variable or parameter at a glance. Only a few highly used concepts have prefixes. The prefix goes after the storage prefix and before the name.
+All concepts are prefixed with 'c'.
+
+<table>
+<tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
+<tr>
+	<td>c</td>
+	<td>Concepts</td>
+	<td>
+~~~
+	template <typename t_CType>
+	concept cComparable = true;
+~~~
+	</td>
+	<td></td>
+</tr>
+</table>
+
+\section s_Malterlib_Core_CodeStandard_Naming_ConceptualPrefixes Conceptual prefixes
+
+The conceptual prefix is intended to gives us information about a variable or parameter at a glance. Only a few highly used concepts have prefixes. The prefix goes after the storage prefix and before the name.
 
 Keep in mind that the concept is not necessarily a reflection of the type of the variable, but actually what concept the variable represents.
 
@@ -722,20 +722,6 @@ Function return values should not be concept prefixed.
 ~~~
 	</td>
 	<td>When applied to a variable the r concept prefix means a iterator range, not to be confused with the r prefix for a function.</td>
-</tr>
-<tr>
-	<td>r</td>
-	<td>Recursive function</td>
-	<td>
-~~~
-	void fg_rTest(uint32 _Value)
-	{
-		if (_Value > 0)
-			fg_rTest(_Value - 1);
-	}
-~~~
-	</td>
-	<td>When applied to a function the r concept prefix means recursive, not to be confused with the r prefix for a variable.</td>
 </tr>
 </table>
  

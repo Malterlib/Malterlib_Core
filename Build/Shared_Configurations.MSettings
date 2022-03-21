@@ -684,7 +684,7 @@ Property.Documentation define string?
 		&
 		{
 			!HostPlatformFamily "Windows"
-			Platform HostPlatform
+			PlatformFamily HostPlatformFamily
 			Configuration "Debug"
 		}
 	}

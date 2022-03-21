@@ -335,9 +335,9 @@ A function declaration or prototype is defined as follows. Note that the orderin
 \endverbatim
  
 You can never split the function into several lines before the function name. If you need extra space before the function name, specify the function with trailing return type.
- 
+
 \verbatim
-[static] [virtual] [inline] [other_attributes] auto f_FunctionName(<parameter list>) [const] [volatile] [= 0] 
+[static] [virtual] [inline] [other_attributes] auto f_FunctionName(<parameter list>) [const] [volatile] [= 0]
 	-> <return type>
 ;
 \endverbatim
@@ -466,7 +466,22 @@ Examples:
 		uint32 mp_PrivateMember;
 	};
 ~~~
- 
+
+\subsection s_Malterlib_Core_CodeStandard_Formatting_Concepts Concepts
+
+Require clauses always go on their own line indented
+
+~~~
+template <typename tf_CType>
+void f_FunctionName(tf_CType &&_Variable) const
+	requires cIsCompatible<tf_CType>
+;
+
+template <typename tf_CType>
+	requires cIsCompatible<tf_CType>
+struct TCTestClass
+~~~
+
 */
 
 

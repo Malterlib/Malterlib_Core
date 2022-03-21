@@ -2,16 +2,21 @@
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
-#	include <Mib/Core/Core>
 
 // Comment
 // http://example.com
 
-///
 /// Doc comment
 /// ===========
 /// @brief \brief
 /// http://example.com
+
+/**
+	Doc comment
+	===========
+	@brief \brief
+	http://example.com
+*/
 
 #define DMacro(d_MacroParameter) \
 	d_MacroParameter
@@ -22,17 +27,20 @@ auto g_Char = 'C';
 [[maybe_unused]] static int gs_ThousandsSeparator = 10'000'000;
 double g_Double = 5.655 + 7.66e10;
 
+template <typename t_CType>
+concept cComparable = true;
+
 namespace NTest
 {
 	template <typename tf_CType, int tf_NonType, int ...tfp_Values>
 	void inline fg_FunctionGlobal();
-	
+
 	enum ETest
 	{
 		ETest_Value
 	};
-	
-	template <typename t_CType, int t_NonType> 
+
+	template <typename t_CType, int t_NonType>
 	struct TCType
 	{
 		void f_FunctionPublic
@@ -44,13 +52,13 @@ namespace NTest
 		) const volatile
 		{
 			[[maybe_unused]] ETest EnumValue = ETest_Value;
-			
+
 			for (;;)
 			{
 			}
 
 			[[maybe_unused]] auto pAutoVar = nullptr;
-			
+
 			auto fFunctor = []
 				{
 				}
@@ -63,21 +71,21 @@ namespace NTest
 
 			fFunctor.f_Clear();
 		}
-		
+
 		NMib::NFunction::TCFunction<void ()> m_fFunctor;
-		
+
 		uint32 m_VariablePublic;
 		uint32 ms_StaticVariablePublic;
 		uint32 mc_ConstantPublic;
-		
+
 	private:
 		NMib::NFunction::TCFunction<void ()> mp_fFunctor;
 
 		uint32 mp_VariablePrivate;
 		static uint32 msp_StaticVariablePrivate;
-		static const uint32 mcp_ConstantPrivate;
+		static uint32 const mcp_ConstantPrivate;
 
 		void fp_FunctionPrivate();
-		
+
 	};
 }

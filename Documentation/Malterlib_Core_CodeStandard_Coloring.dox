@@ -14,7 +14,6 @@ easy to apply the highlighting without language specific parsing support.
 	// Comment
 	// http://example.com
 
-
 	/// Doc comment
 	/// ===========
 	/// @brief \brief
@@ -25,11 +24,16 @@ easy to apply the highlighting without language specific parsing support.
 
 	auto g_String = "String";
 	auto g_Char = 'C';
-	const static uint32 gc_GlobalConstant = 55;
+	[[maybe_unused]] const static uint32 gc_GlobalConstant = (55 + 5 * 6 % ((67 | 77) & 88));
+	[[maybe_unused]] static int gs_ThousandsSeparator = 10'000'000;
+	double g_Double = 5.655 + 7.66e10;
+
+	template <typename t_CType>
+	concept cComparable = true;
 
 	namespace NTest
 	{
-		template <typename tf_CType, int tf_NonType>
+		template <typename tf_CType, int tf_NonType, int ...tfp_Values>
 		void inline fg_FunctionGlobal();
 
 		enum ETest
@@ -44,17 +48,17 @@ easy to apply the highlighting without language specific parsing support.
 			(
 				uint32 _FunctionParameter
 				, uint32 &o_OutputFunctionParameter
-				, NMib::NFunction::TCFunction<void ()> _fFunctor
+				, NMib::NFunction::TCFunction<void ()> const &_fFunctor
 				, NMib::NFunction::TCFunction<void ()> &o_fFunctor
 			) const volatile
 			{
-				ETest EnumValue = ETest_Value;
+				[[maybe_unused]] ETest EnumValue = ETest_Value;
 
-				for(;;)
+				for (;;)
 				{
 				}
 
-				auto pAutoVar = nullptr;
+				[[maybe_unused]] auto pAutoVar = nullptr;
 
 				auto fFunctor = []
 					{
@@ -62,10 +66,11 @@ easy to apply the highlighting without language specific parsing support.
 				;
 
 				fFunctor();
-				_fFunctor();
 				o_fFunctor();
-				m_fFunctor();
-				mp_fFunctor();
+				const_cast<TCType const *>(this)->m_fFunctor();
+				const_cast<TCType const *>(this)->mp_fFunctor();
+
+				fFunctor.f_Clear();
 			}
 
 			NMib::NFunction::TCFunction<void ()> m_fFunctor;
@@ -133,6 +138,8 @@ easy to apply the highlighting without language specific parsing support.
 <tr><td></td><td>#fff54b</td><td style="background-color:#fff54b"></td><td style="color:#fff54b">o_Test po_Test</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
 <tr><td></td><td>#ffd700</td><td style="background-color:#ffd700"></td><td style="color:#ffd700">Var</td><td></td></tr>
+<tr><th style="width:120px;background-color:black;color:white">Concepts</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
+<tr><td></td><td>#ffd700</td><td style="background-color:#ffb680"></td><td style="color:#ffb680">cComparable</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Member variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
 <tr><td></td><td>#ffa600</td><td style="background-color:#ffa600"></td><td style="color:#ffa600">m_Test</td><td></td></tr>
 <tr><td></td><td>#c59d53</td><td style="background-color:#c59d53"></td><td style="color:#c59d53">mp_Test</td><td></td></tr>
@@ -155,4 +162,3 @@ easy to apply the highlighting without language specific parsing support.
 \endhtmlonly
 
 */
-
