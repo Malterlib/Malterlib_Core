@@ -46,8 +46,8 @@ namespace
 	template <typename tf_CStr>
 	auto fg_ConvertToPOSIXPath(tf_CStr const &_Path, bool _bAddCurrentDir = true)
 		-> typename TCEnableIf<sizeof(typename tf_CStr::CChar) == 1, tf_CStr>::CType
+		requires (sizeof(typename tf_CStr::CChar) == 1) // Incorrect string type
 	{
-		static_assert(sizeof(typename tf_CStr::CChar) == 1, "Incorrect string type");
 		return NFile::CFile::fs_GetExpandedPath(_Path, _bAddCurrentDir);
 	}
 }
@@ -360,9 +360,8 @@ namespace NMib
 		{
 			template <typename tf_CStr>
 			tf_CStr fg_ResolveSymbolicLink(tf_CStr const &_FileFrom)
+				requires (tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1)
 			{
-				static_assert(tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1);
-
 				tf_CStr FileFrom = fg_ConvertToPOSIXPath(_FileFrom);
 				tf_CStr NewString;
 				auto nChars = readlink(FileFrom, NewString.f_GetStr(PATH_MAX + 1), PATH_MAX);

@@ -10,8 +10,8 @@ namespace NMib
 			template <typename tf_CStr>
 			auto fg_ConvertToPOSIXPath(tf_CStr const &_Path, bool _bAddCurrentDir = true)
 				-> typename TCEnableIf<sizeof(typename tf_CStr::CChar) == 1, tf_CStr>::CType
+				requires (sizeof(typename tf_CStr::CChar) == 1) // Incorrect string type
 			{
-				static_assert(sizeof(typename tf_CStr::CChar) == 1, "Incorrect string type");
 				return NFile::CFile::fs_GetExpandedPath(_Path, _bAddCurrentDir);
 			}
 		}

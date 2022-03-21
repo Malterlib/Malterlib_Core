@@ -127,15 +127,15 @@ namespace NMib
 	
 	template <typename t_CType>
 	mark_artificial inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_Move(t_CType &&_ToMove) noexcept
+		requires (!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value) // Trying to move const value
 	{
-		static_assert(!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value, "Trying to move const value");
     	return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
 	}
 
 	template <typename t_CType>
 	mark_artificial inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType fg_ExchangeMove(t_CType &&_ToMove) noexcept
+		requires (!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value) // Trying to move const value
 	{
-		static_assert(!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value, "Trying to move const value");
     	return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
 	}
 
