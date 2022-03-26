@@ -6,6 +6,7 @@
 #include <Mib/Core/Core>
 #include <Mib/Container/LinkedList>
 #include <Mib/Core/CoroutineHandler>
+#include <Mib/Core/CoroutineFlags>
 
 #include "Malterlib_Core_PlatformInterface.h"
 #include "../../Log/Source/Malterlib_Log_Configuration.h"
@@ -35,6 +36,7 @@ namespace NMib
 	{
 		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
+		NConcurrency::ECoroutineFlag m_ExtraCoroutineFlags = NConcurrency::ECoroutineFlag_None;
 		CPromiseThreadLocal m_PromiseThreadLocal;
 		DMibListLinkDS_List(CCrossActorCallStateScope, m_Link) m_CrossActorStateScopes;
 
