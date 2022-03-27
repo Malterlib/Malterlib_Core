@@ -162,7 +162,12 @@ namespace NLocal
 			(void * &)__real_versioned_powf_new = dlsym(RTLD_DEFAULT, "powf");
 
 		(void * &)__real_getauxval = dlvsym(RTLD_DEFAULT, "getauxval", "GLIBC_2.16");
+		if (!__real_getauxval)
+			(void * &)__real_getauxval = dlsym(RTLD_DEFAULT, "getauxval");
+
 		(void * &)__real_versioned___sched_cpucount = dlvsym(RTLD_DEFAULT, "__sched_cpucount", "GLIBC_2.6");
+		if (!__real_versioned___sched_cpucount)
+			(void * &)__real_versioned___sched_cpucount = dlsym(RTLD_DEFAULT, "__sched_cpucount");
 
 		(void * &)__real_versioned_memcpy_new = dlvsym(RTLD_DEFAULT, "memcpy", "GLIBC_2.14");
 		if (!__real_versioned_memcpy_new)
@@ -3081,6 +3086,7 @@ extern "C" char *__strtok_r_1c(char *__s, char __sep, char **__nextp) __attribut
 }
 #endif
 
+#if !defined(DMibSanitizerEnabled_Address) && !defined(DMibSanitizerEnabled_Thread)
 extern "C" unsigned long getauxval(unsigned long _Type)
 {
 #ifdef DMibSanitizerEnabled
@@ -3119,6 +3125,7 @@ extern "C" unsigned long getauxval(unsigned long _Type)
 
 	return 0;
 }
+#endif
 
 extern "C" int __sched_cpucount(size_t _SetSize, cpu_set_t const *_pSet)
 {
