@@ -1135,11 +1135,13 @@ Compile
 	Warnings "On"
 
 	Warnings_DeprecatedDeclarations define bool?
+	Warnings_AlignMismatch define bool?
 	Warnings_ConversionToSmallerInt define bool?
 	Warnings_ConversionToSmallerType define bool?
 	Warnings_IncompatibleTypes define bool?
 	Warnings_UnknownPragma define bool?
 	Warnings_UnusedVariable define bool?
+	Warnings_UnusedButSetVariable define bool?
 
 	Warnings_UnusedExceptionParameter define bool?
 	Warnings_UnusedExceptionParameter true
@@ -1653,6 +1655,20 @@ Compile
 	{
 		!!PlatformFamily "OSX"
 		!!PlatformFamily "Linux"
+	}
+
+	InstrumentNonCoroFunctions define bool?
+	InstrumentNonCoroFunctions true
+	{
+		&
+		{
+			|
+			{
+				DebugCode true
+				Configuration "Release Testing"
+			}
+			GeneratorFamily "Xcode"
+		}
 	}
 
 	PreprocessorDefines += "_LIBCPP_HIDE_FROM_ABI_PER_TU_BY_DEFAULT"

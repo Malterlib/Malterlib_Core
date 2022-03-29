@@ -33,7 +33,7 @@ namespace NMib
 		
 	public: // check if we can use private on MSVC and still get static initialization
 		typedef uint8 CObjectType[sizeof(t_CSubSystem)];
-		typedef typename NTraits::TCAlign<CObjectType, NTraits::TCAlignmentOf<t_CSubSystem>::mc_Value>::CType CTypeAligned;
+		typedef typename NTraits::TCAlign<CObjectType, alignof(t_CSubSystem)>::CType CTypeAligned;
 		
 		inline_never t_CSubSystem *fp_Create(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
 		

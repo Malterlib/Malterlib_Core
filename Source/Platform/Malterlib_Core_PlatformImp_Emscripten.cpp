@@ -853,7 +853,7 @@ void NSys::fg_CreateSystem()
 
 	//atexit(&fg_DestroySystemAtExit);
 
-	static_assert(NTraits::TCAlignmentOf<CSystemEmscripten>::mc_Value <= sizeof(uint64), "Aligment error");
+	static_assert(alignof(CSystemEmscripten) <= sizeof(uint64), "Aligment error");
 
 	fg_InitBreakpad();
 

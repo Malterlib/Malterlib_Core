@@ -88,14 +88,13 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 		}
 	;
 
+#ifdef DPlatformFamily_OSX
 	int Tag = 244;
 
 	if (_Flags & EAllocationFlag_MainHeap)
 		Tag = 240;
 	if (_Flags & EAllocationFlag_NonTrackedMainHeap)
 		Tag = 250;
-
-#ifdef DPlatformFamily_OSX
 #	define DVmTag(d_Tag) VM_MAKE_TAG(d_Tag)
 #else
 #	define DVmTag(d_Tag) 0

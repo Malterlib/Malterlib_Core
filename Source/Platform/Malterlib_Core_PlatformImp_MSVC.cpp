@@ -6145,7 +6145,7 @@ void NSys::fg_CreateSystem()
 
 	CSystemWindowsMSVC *pLocalSys;
 	{
-		static_assert(NTraits::TCAlignmentOf<CSystemWindowsMSVC>::mc_Value == DMibPMemoryCacheLineSize, "Aligment error");
+		static_assert(alignof(CSystemWindowsMSVC) == DMibPMemoryCacheLineSize, "Aligment error");
 		g_bCreatingSystemDone = true;
 		pLocalSys = new(NMib::g_SystemMemory) CSystemWindowsMSVC();
 		pLocalSys->f_Init();

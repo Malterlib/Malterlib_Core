@@ -66,8 +66,6 @@
 #	define DMibPIsPolymorphicType(d_Type) __is_polymorphic(d_Type)
 #	define DMibPIsUnionType(d_Type) __is_union(d_Type)
 
-#	define DMibPAlignmentOf(d_Type) __alignof__(d_Type)
-
 #elif defined(DCompiler_MSVC)
 #	define DMibPHasAssignmentOperator(d_Type) __has_assign(d_Type)
 #	define DMibPHasCopyConstructor(d_Type) __has_copy(d_Type)
@@ -92,7 +90,6 @@
 #	define DMibPIsPolymorphicType(d_Type) __is_polymorphic(d_Type)
 #	define DMibPIsUnionType(d_Type) __is_union(d_Type)
 
-#	define DMibPAlignmentOf(d_Type) __alignof(d_Type)
 #else
 #	error "Implement this"
 #endif

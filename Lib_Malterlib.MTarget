@@ -137,6 +137,18 @@ Property
 		LinkTimeCodeGeneration false
 		ExtraGroups =+ "{Lib_Malterlib_Runtime}/{SharedSettings}"
 	}
+	Compile
+	{
+		!!CompileDialect "C"
+
+		SearchPath += "../../External/llvm-project/libcxx/src"->MakeAbsolute()
+		{
+			&
+			{
+				MalterlibUseStaticLibCxxABI true
+			}
+		}
+	}
 	Property.WorkaroundLTOValue define bool = false
 	%Group "Source"
 	{
@@ -330,6 +342,18 @@ Property
 		Group "Malterlib"
 		ExtraGroups =+ "{Lib_Malterlib_Runtime}/{SharedSettings}"
 	}
+	Compile
+	{
+		!!CompileDialect "C"
+
+		SearchPath += "../../External/llvm-project/libcxx/src"->MakeAbsolute()
+		{
+			&
+			{
+				MalterlibUseStaticLibCxx true
+			}
+		}
+	}
 	%Group "Source"
 	{
 		%Group "NonTracked"
@@ -373,6 +397,13 @@ Property
 					}
 					%Group "support"
 					{
+						%Group "ibm"
+						{
+							%File "../../External/llvm-project/libcxx/src/support/ibm/*.cpp"
+							{
+								Compile.Disabled true
+							}
+						}
 						%Group "solaris"
 						{
 							%File "../../External/llvm-project/libcxx/src/support/solaris/*.cpp"

@@ -1281,7 +1281,7 @@ Target
 		}
 	}
 
-	SearchPath =+ MalterlibLLVMBinariesDirectory / "lib" / MalterlibTargetTriple / "c++"
+	SearchPath =+ MalterlibLLVMBinariesDirectory / "lib" / MalterlibTargetTriple
 	{
 		&
 		{

@@ -220,7 +220,7 @@ namespace
 
 			DMibTestSuite("Implicit Conversion")
 			{
-				bool bTest = fp64(10.0) < -1000000000.0f;
+				[[maybe_unused]] bool bTest = fp64(10.0) < -1000000000.0f;
 				bTest = fp64(10.0) < -1000000000.0;
 				bTest = 10.0f < fp64(-1000000000.0);
 				bTest = 10.0 < fp64(-1000000000.0);

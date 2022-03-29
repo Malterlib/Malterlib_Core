@@ -3401,6 +3401,40 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_AlignMismatch"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						\false "-Wno-align-mismatch"
+						\true "-Walign-mismatch"
+					}
+				}
+			}
+			%GeneratorSetting "Warnings_UnusedButSetVariable"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						\false "-Wno-unused-but-set-variable"
+						\true "-Wunused-but-set-variable"
+					}
+				}
+			}
+			%GeneratorSetting "InstrumentNonCoroFunctions"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						\false ""
+						\true "-finstrument-non-coro-functions"
+					}
+				}
+			}
+
 			%GeneratorSetting "MinOSXVersion"
 			{
 				Property

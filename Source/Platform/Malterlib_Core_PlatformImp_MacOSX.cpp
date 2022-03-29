@@ -1235,11 +1235,11 @@ namespace NMib
 
 			int Major = 0;
 			int Minor = 0;
-			int Fix = 0;
+			//int Fix = 0;
 
 			Major = fg_GetStrSep(VersionString, ".").f_ToInt(0);
 			Minor = fg_GetStrSep(VersionString, ".").f_ToInt(0);
-			Fix = fg_GetStrSep(VersionString, ".").f_ToInt(0);
+			//Fix = fg_GetStrSep(VersionString, ".").f_ToInt(0);
 
 			// Try to convert from darwin version to OSX version
 			g_OperatingSystemMajor = 10;
@@ -1448,7 +1448,7 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 
 	auto pSystemMemory = (void *)NMib::g_SystemMemory;
 	auto pSystem = new(pSystemMemory) CSystemMacOSX();
-	static_assert(NTraits::TCAlignmentOf<CSystemMacOSX>::mc_Value <= mint(DMibPMemoryCacheLineSize), "Aligment error");
+	static_assert(alignof(CSystemMacOSX) <= mint(DMibPMemoryCacheLineSize), "Aligment error");
 
 	NSys::fg_Compiler_MakeActive(&pSystemMemory);
 	NSys::fg_Compiler_MakeActive(&pSystem);
@@ -1653,7 +1653,6 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 
 bool NSys::fg_System_BeingDebugged()
 {
-	int                 junk;
 	int                 mib[4];
 	struct kinfo_proc   info;
 	size_t              size;
@@ -1674,8 +1673,7 @@ bool NSys::fg_System_BeingDebugged()
 	// Call sysctl.
 
 	size = sizeof(info);
-	junk = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
-	assert(junk == 0);
+	sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
 
 	// We're being debugged if the P_TRACED flag is set.
 
