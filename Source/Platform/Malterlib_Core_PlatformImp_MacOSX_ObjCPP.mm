@@ -551,6 +551,7 @@ namespace NMib
 				double ExpectedHeight = pSystemStatusBar.thickness - 2.0;
 				double Scaling = ExpectedHeight / pImage.size.height;
 				pImage.size = {pImage.size.width * Scaling, pImage.size.height * Scaling};
+				[pImage setTemplate: YES];
 
 				pStatusItem.button.image = pImage;
 			}
