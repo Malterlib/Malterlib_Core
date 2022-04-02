@@ -22,12 +22,39 @@ namespace NMib::NSys
 			, secret_password_lookup_sync
 			, secret_password_clear_sync
 			, secret_password_free
+			, secret_service_get_sync
+			, secret_service_get_collections
+			, secret_service_ensure_session_sync
+		 	, secret_collection_get_label
+			, secret_collection_get_locked
 		)
 	;
+
+	DMibDefineDynamicLibraryClass
+		(
+			CGnomeLib
+			, EDLFlag_NoThrow | EDLFlag_NoAutoLoad
+			, "libglib-2.0.so.0"
+			, g_list_free_full
+			, g_free
+		)
+	;
+	DMibDefineDynamicLibraryClass
+		(
+			CGnomeObjectLib
+			, EDLFlag_NoThrow | EDLFlag_NoAutoLoad
+			, "libgobject-2.0.so.0"
+			, g_object_unref
+		)
+	;
+
+
 
 	struct CLibSecretPasswordManager : public CLinuxPasswordManager
 	{
 	private:
+		CGnomeLib mp_GnomeLibrary;
+		CGnomeObjectLib mp_GnomeObjectLibrary;
 		CGNOMEKeychainLibrary mp_KeychainLibrary;
 		NMib::NStr::CStr mp_Location;
 		mutable NThread::CMutual mp_Lock;
@@ -37,13 +64,14 @@ namespace NMib::NSys
 		CLibSecretPasswordManager();
 		~CLibSecretPasswordManager();
 
-		bool f_OK() const;
+		bool f_OK() const override;
 
-		ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location);
-		ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure const& _Password);
-		ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const& _Key);
-		ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure& _oPassword);
-		ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const& _Key);
+		bool f_SecurePassword_IsLocked() override;
+		ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location) override;
+		ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure const& _Password) override;
+		ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const& _Key) override;
+		ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure& _oPassword) override;
+		ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const& _Key) override;
 	};
 
 	NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLibSecretPasswordManager()
@@ -75,34 +103,12 @@ namespace NMib::NSys
 	CLibSecretPasswordManager::CLibSecretPasswordManager()
 	{
 		mp_KeychainLibrary.f_Reload();
+		mp_GnomeLibrary.f_Reload();
+		mp_GnomeObjectLibrary.f_Reload();
 	}
 
 	CLibSecretPasswordManager::~CLibSecretPasswordManager()
 	{
-	}
-
-	bool CLibSecretPasswordManager::f_OK() const
-	{
-#ifdef DMibSanitizerEnabled_Thread
-		return false;
-#endif
-		DMibLock(mp_Lock);
-
-		if (!mp_KeychainLibrary.f_OK())
-			return false;
-
-		if (fg_GetSys()->f_GetEnvironmentVariable("DBUS_SESSION_BUS_ADDRESS").f_IsEmpty())
-			return false;
-
-		return true;
-	}
-
-	static ESecurePassword fg_SecurePassword_Decode_Result(bool _bSuccess, GError const *_pResult)
-	{
-		if (_bSuccess)
-			return ESecurePassword_OK;
-
-		return ESecurePassword_Failure;
 	}
 
 	[[maybe_unused]] static char const *fg_SecurePassword_Decode_Result_ToString(GError const *_pResult)
@@ -121,12 +127,103 @@ namespace NMib::NSys
 		DMibLog(Error, "GNOMEKeychain: {} = {}", _pFunc, fg_SecurePassword_Decode_Result_ToString(_pResult));
 	}
 
+	bool CLibSecretPasswordManager::f_OK() const
+	{
+#ifdef DMibSanitizerEnabled_Thread
+		return false;
+#endif
+		DMibLock(mp_Lock);
+
+		if (!mp_KeychainLibrary.f_OK())
+			return false;
+
+		if (!mp_GnomeLibrary.f_OK())
+			return false;
+
+		if (!mp_GnomeObjectLibrary.f_OK())
+			return false;
+
+		if (fg_GetSys()->f_GetEnvironmentVariable("DBUS_SESSION_BUS_ADDRESS").f_IsEmpty())
+			return false;
+
+		return true;
+	}
+
+	static ESecurePassword fg_SecurePassword_Decode_Result(bool _bSuccess, GError const *_pResult)
+	{
+		if (_bSuccess)
+			return ESecurePassword_OK;
+
+		return ESecurePassword_Failure;
+	}
+
 	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location)
 	{
 		DMibLock(mp_Lock);
 
 		mp_Location = _Location;
 		return ESecurePassword_OK;
+	}
+
+	bool CLibSecretPasswordManager::f_SecurePassword_IsLocked()
+	{
+		DMibLock(mp_Lock);
+
+		GError *pResult = nullptr;
+
+		auto *pService = mp_KeychainLibrary.secret_service_get_sync
+			(
+				SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS
+				, nullptr
+				, &pResult
+			)
+		;
+
+		if (!pService)
+			return false;
+
+		auto CleanupService = g_OnScopeExit / [&]
+			{
+				mp_GnomeObjectLibrary.g_object_unref(pService);
+			}
+		;
+
+		bool bSuccess = mp_KeychainLibrary.secret_service_ensure_session_sync(pService, nullptr, &pResult);
+
+		if (!bSuccess)
+			return false;
+
+		auto *pCollections = mp_KeychainLibrary.secret_service_get_collections(pService);
+		if (!pCollections)
+			return false;
+
+		auto CleanupCollections = g_OnScopeExit / [&]
+			{
+				mp_GnomeLibrary.g_list_free_full(pCollections, mp_GnomeObjectLibrary.g_object_unref);
+			}
+		;
+
+		bool bAnyUnlocked = false;
+
+		for(auto pListIter = pCollections; pListIter; pListIter = pListIter->next)
+		{
+			SecretCollection *pSecetService = fg_AutoStaticCast(pListIter->data);
+			auto pLabel = mp_KeychainLibrary.secret_collection_get_label(pSecetService);
+			if (!pLabel)
+				continue;
+			auto Cleanup = g_OnScopeExit / [&]
+				{
+					mp_GnomeLibrary.g_free(pLabel);
+				}
+			;
+			if (!NMib::NStr::CStr(pLabel))
+				continue;
+			bool bLocked = mp_KeychainLibrary.secret_collection_get_locked(pSecetService);
+			if (!bLocked)
+				bAnyUnlocked = true;
+		}
+
+		return !bAnyUnlocked;
 	}
 
 	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const& _Password)

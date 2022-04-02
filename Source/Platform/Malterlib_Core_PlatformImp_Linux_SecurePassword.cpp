@@ -27,6 +27,11 @@ namespace NMib
 				return true;
 			}
 
+			bool f_SecurePassword_IsLocked() override
+			{
+				return true;
+			}
+
 			ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location) override
 			{
 				return ESecurePassword_Failure;

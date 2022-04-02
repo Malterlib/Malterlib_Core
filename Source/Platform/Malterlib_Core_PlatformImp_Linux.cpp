@@ -2791,6 +2791,10 @@ namespace NMib
 		/*
 		 Basic interface for storing secure passwords on a per-user, per-application basis.
 		 */
+		bool fg_SecurePassword_IsLocked()
+		{
+			return fg_GetLocalSys()->f_GetPasswordManager()->f_SecurePassword_IsLocked();
+		}
 
 		ESecurePassword fg_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location)
 		{

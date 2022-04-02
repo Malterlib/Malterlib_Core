@@ -78,6 +78,7 @@ namespace NMib
 
 			bool f_OK() const;
 
+			bool f_SecurePassword_IsLocked();
 			ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location);
 			ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure const& _Password);
 			ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const& _Key);
@@ -196,6 +197,11 @@ namespace NMib
 		bool CKWalletPasswordManager::f_OK() const
 		{
 			return mp_bOK;
+		}
+
+		bool CKWalletPasswordManager::f_SecurePassword_IsLocked()
+		{
+			return false;
 		}
 
 		ESecurePassword CKWalletPasswordManager::f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location)

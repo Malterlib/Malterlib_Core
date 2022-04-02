@@ -1797,6 +1797,11 @@ namespace NMib
 		 Basic interface for storing secure passwords on a per-user, per-application basis.
 		 */
 
+		bool fg_SecurePassword_IsLocked()
+		{
+			return false;
+		}
+
 		ESecurePassword fg_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location)
 		{
 			DMibError("Not implemented");

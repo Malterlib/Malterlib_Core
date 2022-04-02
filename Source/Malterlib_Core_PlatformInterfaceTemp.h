@@ -284,6 +284,7 @@ namespace NMib
 			On OSX Location defaults to Sys ProgramName and is used to name keychain entries.
 			On W
 		*/
+		bool fg_SecurePassword_IsLocked();
 		ESecurePassword fg_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location);
 		ESecurePassword fg_SecurePassword_Store(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure const& _Password);
 		ESecurePassword fg_SecurePassword_Remove(NMib::NStr::CStr const& _Key);
