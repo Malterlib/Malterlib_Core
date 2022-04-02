@@ -179,12 +179,13 @@ namespace NMib
 
 void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 { // Should probably be moved to a file Malterlib_x86_MacOSX.cpp or similar.
-	
+
+	_Info.m_Features = NMib::EProcessorFeature_None;
+
 #if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 	unsigned int CPUInfo[4];
 
 	_Info.m_Architecture = NMib::EProcessorArchitecture_Unknown;
-	_Info.m_Features = NMib::EProcessorFeature_None;	
 
 	__get_cpuid(	0
 				, 	&CPUInfo[0], &CPUInfo[1]
