@@ -1635,6 +1635,16 @@ Compile
 		}
 	}
 
+	AlignDouble define bool?
+	AlignDouble true
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Architecture "x86"
+		}
+	}
+
 	LinkTimeCodeGeneration define one_of(bool, "Fast")?
 	LinkTimeCodeGeneration MalterlibEnableLinkTimeCodeGeneration
 
