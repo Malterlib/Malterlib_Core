@@ -1208,16 +1208,6 @@ Compile
 		!!PlatformFamily "Linux"
 	}
 
-	Coroutines define bool?
-	Coroutines true
-	{
-		&
-		{
-			Compile.Coroutines undefined
-			!Target.CLRSupport true
-		}
-	}
-
 	Inline define string?
 	Inline "Off"
 	{
