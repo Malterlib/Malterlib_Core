@@ -3436,18 +3436,6 @@
 					}
 				}
 			}
-			%GeneratorSetting "InstrumentNonCoroFunctions"
-			{
-				%GeneratorSetting "Value"
-				{
-					Property
-					{
-						\false ""
-						\true "-finstrument-non-coro-functions"
-					}
-				}
-			}
-
 			%GeneratorSetting "MinOSXVersion"
 			{
 				Property

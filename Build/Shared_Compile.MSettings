@@ -1667,20 +1667,6 @@ Compile
 		!!PlatformFamily "Linux"
 	}
 
-	InstrumentNonCoroFunctions define bool?
-	InstrumentNonCoroFunctions true
-	{
-		&
-		{
-			|
-			{
-				DebugCode true
-				Configuration "Release Testing"
-			}
-			GeneratorFamily "Xcode"
-		}
-	}
-
 	PreprocessorDefines += "_LIBCPP_HIDE_FROM_ABI_PER_TU_BY_DEFAULT"
 	{
 		&
