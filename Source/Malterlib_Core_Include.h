@@ -288,6 +288,7 @@ namespace NMib
 #include "../../Concurrency/Source/DistributedActor/Malterlib_Concurrency_RuntimeTypeRegistry.hpp"
 
 #include "Platform/Malterlib_Core_PlatformImp.imp.h"
+#include "../../Debug/Source/Malterlib_Debug.hpp"
 
 namespace NMib
 {
