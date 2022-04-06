@@ -289,11 +289,17 @@ Property
 			{
 				Compile.Disabled true
 			}
-			%File "../../External/llvm-project/libcxxabi/src/cxa_exception.cpp"
-			%File "../../External/llvm-project/libcxxabi/src/stdlib_stdexcept.cpp"
-			%File "../../External/llvm-project/libcxxabi/src/stdlib_typeinfo.cpp"
-			%File "../../External/llvm-project/libcxxabi/src/private_typeinfo.cpp"
-			%File "../../External/llvm-project/libcxxabi/src/private_typeinfo.cpp"
+			%File "../../External/llvm-project/libcxxabi/src/cxa_guard.cpp"
+			{
+				Compile.LinkTimeCodeGeneration WorkaroundLTOValue // Exception handling breaks if this is enabled
+				{
+					&
+					{
+						CompileDialect "C"
+						!WorkaroundLTOValue undefined
+					}
+				}
+			}
 			%File "../../External/llvm-project/libcxxabi/src/cxa_personality.cpp"
 			{
 				Compile.LinkTimeCodeGeneration WorkaroundLTOValue // Exception handling breaks if this is enabled
