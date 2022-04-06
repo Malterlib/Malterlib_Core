@@ -696,7 +696,7 @@ void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_In, N
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (encode code page str)", errno));
 
-	auto Cleanup0 = g_OnScopeExit > [&]
+	auto Cleanup0 = g_OnScopeExit / [&]
 		{
 			CFRelease(pStringRef);
 		}
@@ -706,7 +706,7 @@ void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_In, N
 	if (!pData)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (encode code page str)", errno));
 
-	auto Cleanup1 = g_OnScopeExit > [&]
+	auto Cleanup1 = g_OnScopeExit / [&]
 		{
 			CFRelease(pData);
 		}
@@ -726,7 +726,7 @@ void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracked con
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (encode code page str)", errno));
 
-	auto Cleanup0 = g_OnScopeExit > [&]
+	auto Cleanup0 = g_OnScopeExit / [&]
 		{
 			CFRelease(pStringRef);
 		}
@@ -736,7 +736,7 @@ void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracked con
 	if (!pData)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (encode code page str)", errno));
 
-	auto Cleanup1 = g_OnScopeExit > [&]
+	auto Cleanup1 = g_OnScopeExit / [&]
 		{
 			CFRelease(pData);
 		}
@@ -756,7 +756,7 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr const &_I
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
 
-	auto Cleanup0 = g_OnScopeExit > [&]
+	auto Cleanup0 = g_OnScopeExit / [&]
 		{
 			CFRelease(pStringRef);
 		}
@@ -802,7 +802,7 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::C
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
 
-	auto Cleanup0 = g_OnScopeExit > [&]
+	auto Cleanup0 = g_OnScopeExit / [&]
 		{
 			CFRelease(pStringRef);
 		}
@@ -848,7 +848,7 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTracked
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
 
-	auto Cleanup0 = g_OnScopeExit > [&]
+	auto Cleanup0 = g_OnScopeExit / [&]
 		{
 			CFRelease(pStringRef);
 		}
@@ -893,7 +893,7 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::C
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
 
-	auto Cleanup0 = g_OnScopeExit > [&]
+	auto Cleanup0 = g_OnScopeExit / [&]
 		{
 			CFRelease(pStringRef);
 		}

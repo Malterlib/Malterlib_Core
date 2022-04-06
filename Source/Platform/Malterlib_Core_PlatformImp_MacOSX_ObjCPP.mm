@@ -67,7 +67,7 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get application support diretory)", errno));
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CFRelease(pData);
 				}
@@ -96,7 +96,7 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get application support diretory)", errno));
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CFRelease(pData);
 				}
@@ -125,7 +125,7 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get caches diretory)", errno));
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CFRelease(pData);
 				}
@@ -155,7 +155,7 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get caches diretory)", errno));
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CFRelease(pData);
 				}
@@ -184,7 +184,7 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get log diretory)", errno));
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CFRelease(pData);
 				}
@@ -214,7 +214,7 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get log diretory)", errno));
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CFRelease(pData);
 				}
@@ -243,7 +243,7 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get home diretory)", errno));
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CFRelease(pData);
 				}
@@ -270,7 +270,7 @@ namespace NMib
 			if (!pData)
 				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get home diretory)", errno));
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CFRelease(pData);
 				}
@@ -300,7 +300,7 @@ namespace NMib
 			if (!pData)
 				DMibError(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get system language)", ErrNo));
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CFRelease(pData);
 				}
@@ -443,7 +443,7 @@ namespace NMib
 				gs_pSerivceApplication = [NSApplication sharedApplication];
 				bPendingQuit = gs_bPendingQuit;
 			}
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					DMibLock(gs_QuitLock);
 					gs_pSerivceApplication = nullptr;
@@ -471,7 +471,7 @@ namespace NMib
 
 			Class pMenuContextClass = objc_allocateClassPair([NSObject class], ClassName.f_GetStr(), 0);
 
-			auto Cleanup2 = g_OnScopeExit > [&]
+			auto Cleanup2 = g_OnScopeExit / [&]
 				{
 					objc_disposeClassPair(pMenuContextClass);
 				}
@@ -1669,7 +1669,7 @@ namespace NMib
 							Internal.m_RunLoopRef = CFRunLoopGetCurrent();
 							CFRunLoopAddSource(Internal.m_RunLoopRef, pDummyRunLoopSource, kCFRunLoopDefaultMode);
 						}
-						auto Cleanup = g_OnScopeExit > [&]
+						auto Cleanup = g_OnScopeExit / [&]
 							{
 								CFRelease(pDummyRunLoopSource);
 								CFRunLoopRemoveSource(Internal.m_RunLoopRef, pDummyRunLoopSource, kCFRunLoopDefaultMode);

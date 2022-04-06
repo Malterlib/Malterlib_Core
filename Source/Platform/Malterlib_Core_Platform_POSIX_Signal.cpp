@@ -76,7 +76,7 @@ namespace NMib::NSys
 				sigaddset(&BlockSet, _Signal);
 				pthread_sigmask(SIG_BLOCK, &BlockSet, &OldSet);
 
-				auto Cleanup = g_OnScopeExit > [&]
+				auto Cleanup = g_OnScopeExit / [&]
 					{
 						pthread_sigmask(SIG_SETMASK, &OldSet, nullptr);
 					}
@@ -85,7 +85,7 @@ namespace NMib::NSys
 				(*pThreadHandler)();
 			}
 
-			auto CallOld = g_OnScopeExit > [&]
+			auto CallOld = g_OnScopeExit / [&]
 				{
 					auto fOld = SubSystem.m_SignalHandlers[_Signal].m_fOldSignal;
 					if (!fOld)
@@ -128,7 +128,7 @@ namespace NMib::NSys
 			}
 		}
 
-		auto pOnExit = g_OnScopeExitShared > [_Signal]() mutable
+		auto pOnExit = g_OnScopeExitShared / [_Signal]() mutable
 			{
 				auto &SubSystem = *g_SubSystem_Core_Signal;
 				if (SubSystem.m_bWasDestroyed.f_Load())
@@ -200,7 +200,7 @@ namespace NMib::NSys
 			}
 		}
 
-		auto pOnExit = g_OnScopeExitShared > [pFunction, _Signal]() mutable
+		auto pOnExit = g_OnScopeExitShared / [pFunction, _Signal]() mutable
 			{
 				auto &SubSystem = *g_SubSystem_Core_Signal;
 				if (SubSystem.m_bWasDestroyed.f_Load())

@@ -906,7 +906,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 			return -1;
 	}
 
-	auto Cleanup = g_OnScopeExit > [&]
+	auto Cleanup = g_OnScopeExit / [&]
 		{
 			close(iFile);
 		}

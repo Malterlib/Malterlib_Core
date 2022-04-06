@@ -5272,7 +5272,7 @@ NContainer::TCVector<NStr::CStr> NSys::NFile::fg_GetMounts(NMib::NFile::EFileMou
 	}
 	VolumePath.f_SetModified();
 
-	auto Cleanup = g_OnScopeExit > [&]
+	auto Cleanup = g_OnScopeExit / [&]
 		{
 			FindVolumeClose(pFind);
 		}
@@ -5329,7 +5329,7 @@ NContainer::TCVector<NStr::CStr> NSys::NFile::fg_GetMounts(NMib::NFile::EFileMou
 		}
 		VolumePath.f_SetModified();
 
-		auto Cleanup = g_OnScopeExit > [&]
+		auto Cleanup = g_OnScopeExit / [&]
 			{
 				FindVolumeMountPointClose(pFindVolume);
 			}

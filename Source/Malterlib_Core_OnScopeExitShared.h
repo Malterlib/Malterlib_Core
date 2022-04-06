@@ -19,7 +19,7 @@ namespace NMib
 	struct COnScopeExitSharedHelper
 	{
 		template <typename tf_FOnScopeExit>
-		COnScopeExitShared operator >(tf_FOnScopeExit &&_fOnExitFunctor) const
+		COnScopeExitShared operator / (tf_FOnScopeExit &&_fOnExitFunctor) const
 		{
 			return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>(fg_Move(_fOnExitFunctor));
 		}
@@ -29,7 +29,7 @@ namespace NMib
 	struct COnScopeExitSharedWithExceptionHelper
 	{
 		template <typename tf_FOnScopeExit>
-		COnScopeExitSharedWithException operator >(tf_FOnScopeExit &&_fOnExitFunctor) const
+		COnScopeExitSharedWithException operator / (tf_FOnScopeExit &&_fOnExitFunctor) const
 		{
 			return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>, false>(fg_Move(_fOnExitFunctor));
 		}

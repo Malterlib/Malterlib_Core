@@ -590,7 +590,7 @@ public:
 				DMibErrorFile((CStr::CFormat("Windows returned an error from CreateFile({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 			}
 
-			auto Cleanup = g_OnScopeExit > [&]
+			auto Cleanup = g_OnScopeExit / [&]
 				{
 					CloseHandle(Handle);
 				}

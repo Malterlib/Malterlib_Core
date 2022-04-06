@@ -842,13 +842,13 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 			DMibErrorNet((CStr::CFormat("Could not create a socket for connection, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
-		auto Cleanup = g_OnScopeExit > [&]
+		auto Cleanup = g_OnScopeExit / [&]
 			{
 				f_CheckDestroy();
 			}
 		;
 
-		auto SocketCleanup = g_OnScopeExit > [&]
+		auto SocketCleanup = g_OnScopeExit / [&]
 			{
 				closesocket(hSock);
 			}
@@ -1015,7 +1015,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		DMibErrorNet("Could not create a socket for listening");
 	}
 
-	auto Cleanup = g_OnScopeExit > [&]
+	auto Cleanup = g_OnScopeExit / [&]
 		{
 			closesocket(hSock);
 			f_CheckDestroy();
@@ -1106,7 +1106,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 		DMibErrorNet("Could not create a socket for listening");
 	}
 
-	auto Cleanup = g_OnScopeExit > [&]
+	auto Cleanup = g_OnScopeExit / [&]
 		{
 			closesocket(hSock);
 			f_CheckDestroy();

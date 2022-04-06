@@ -75,12 +75,6 @@ namespace NMib
 	struct COnScopeExitHelper
 	{
 		template<typename tf_FOnExitFunctor>
-		TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType> operator > (tf_FOnExitFunctor &&_fOnExitFunctor) const
-		{
-			return TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
-		}
-
-		template<typename tf_FOnExitFunctor>
 		TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
 		{
 			return TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
@@ -90,12 +84,6 @@ namespace NMib
 
 	struct COnScopeExitHelperWithException
 	{
-		template<typename tf_FOnExitFunctor>
-		TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType, false> operator > (tf_FOnExitFunctor &&_fOnExitFunctor) const
-		{
-			return TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType, false>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
-		}
-
 		template<typename tf_FOnExitFunctor>
 		TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType, false> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
 		{

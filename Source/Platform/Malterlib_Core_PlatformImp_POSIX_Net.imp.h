@@ -573,7 +573,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 
 		fg_SetUnixSocketOptions(FD);
 
-		auto Cleanup = g_OnScopeExit > [&]
+		auto Cleanup = g_OnScopeExit / [&]
 			{
 				close(FD);
 			}
@@ -746,7 +746,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 
 	fg_SetUnixSocketOptions(FD);
 
-	auto Cleanup = g_OnScopeExit > [&]
+	auto Cleanup = g_OnScopeExit / [&]
 		{
 			close(FD);
 		}
@@ -836,7 +836,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 
 	fg_SetUnixSocketOptions(FD);
 
-	auto Cleanup = g_OnScopeExit > [&]
+	auto Cleanup = g_OnScopeExit / [&]
 		{
 			close(FD);
 		}
