@@ -662,6 +662,18 @@ Target
 		}
 	}
 
+	PlatformToolset "v143"
+	{
+		&
+		{
+			Target.PlatformToolset undefined
+			|
+			{
+				Generator "VisualStudio2022"
+			}
+		}
+	}
+
 	PlatformToolset "v142"
 	{
 		&

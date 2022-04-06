@@ -52,7 +52,7 @@ Property
 
 	MalterlibNoOSXCrossModuleExceptions define bool = PlatformIsDarwin // User(Undocumented)=false: Disables catching of exception across modules on OSX. This will bring in libunwind statically (default true)
 
-	MalterlibMaxSupportedWindowsVersion define string = "10.0.18362.0" // User(Platform Version): Max supported Windows version.
+	MalterlibMaxSupportedWindowsVersion define string = "10.0.22000.0" // User(Platform Version): Max supported Windows version.
 
 	MalterlibMaxSupportedOSXVersion define string = "Latest" // User(Platform Version): Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 

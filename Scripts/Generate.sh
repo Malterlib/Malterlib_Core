@@ -109,7 +109,7 @@ if [[ "$MalterlibPlatform" == "Windows" ]]; then
 	if [ ! "$Conf_Version" == "" ] ; then
 		GenerateForVersion "VisualStudio$Conf_Version" "$@"
 	else
-		WindowsGenerator="VisualStudio2017"
+		WindowsGenerator="VisualStudio2022"
 		if [ -f "Repo.conf" ] ; then
 		{
 			OLDIFS="$IFS"
