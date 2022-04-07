@@ -398,6 +398,13 @@ namespace NMib
 		static NThread::CMutualSpin gs_QuitLock;
 		static NSApplication *gs_pSerivceApplication = nullptr;
 		static bool gs_bPendingQuit = false;
+
+		inline_never void fg_CancelRunDaemonStatusAppDoCancel(void *)
+		{
+			[NSApp stop:NSApp];
+			[NSApp abortModal];
+		}
+
 		void fg_CancelRunDaemonStatusApp()
 		{
 			{
@@ -407,23 +414,11 @@ namespace NMib
 					return;
 			}
 
-			dispatch_async
+			dispatch_async_f
 				(
 					dispatch_get_main_queue()
-					, ^
-					{
-						[NSApp stop:NSApp];
-						NSEvent* event = [NSEvent otherEventWithType: NSEventTypeApplicationDefined
-															location: NSMakePoint(0,0)
-													  modifierFlags: 0
-														  timestamp: 0.0
-														windowNumber: 0
-															context: nil
-															subtype: 0
-															  data1: 0
-															  data2: 0];
-						[NSApp postEvent: event atStart: true];
-					}
+					, nullptr
+					, &fg_CancelRunDaemonStatusAppDoCancel
 				)
 			;
 		}
