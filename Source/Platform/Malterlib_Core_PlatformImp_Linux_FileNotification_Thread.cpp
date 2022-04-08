@@ -1,7 +1,7 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-#include "Malterlib_Core_PlatformImp_Linux_FileNotificationContext.h"
+#include "Malterlib_Core_PlatformImp_Linux_FileNotification.h"
 
 NStr::CStr CFileChangeNotificationContext::CNotificationThread::f_GetThreadName()
 {
