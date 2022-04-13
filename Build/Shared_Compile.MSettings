@@ -1967,6 +1967,11 @@ Compile
 	PreprocessorDefines += `DProductLocality=@(ProductLocality->Escape())`
 	PreprocessorDefines += `DProductOrganizationalUnit=@(ProductOrganizationalUnit->Escape())`
 
+	PreprocessorDefines += `DMibLLVMSanitizerRuntime=@(MalterlibLLVMSanitizerRuntime->GetFile()->Escape())`
+	{
+		!MalterlibLLVMSanitizerRuntime undefined
+	}
+
 	PreprocessorDefines += [
 		`DConfigSuffix=@(MalterlibConfigSuffix->Escape())`
 		, `DWorkspace_@(Workspace:this.Identity->Replace(' ', ''))`
