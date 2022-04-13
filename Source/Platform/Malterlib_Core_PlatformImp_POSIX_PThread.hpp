@@ -450,6 +450,7 @@ struct CThreadStartParams
 void *fg_ThreadStartRoutine(void *_pParams)
 {
 	signal(SIGPIPE,SIG_IGN);
+	signal(SIGHUP,SIG_IGN);
 
 	NStorage::TCUniquePointer<CThreadStartParams, CAllocator_NonTrackedHeap> pThreadParams = fg_Explicit((CThreadStartParams *)_pParams);
 	
