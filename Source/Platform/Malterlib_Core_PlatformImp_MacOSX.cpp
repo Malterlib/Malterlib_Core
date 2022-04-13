@@ -1504,6 +1504,7 @@ void NSys::fg_CreateSystem()
 			g_bRegisteredAtFork = true;
 			pthread_atfork(&CSystemMacOSX::fs_ForkPrepare, &CSystemMacOSX::fs_ForkParent, &CSystemMacOSX::fs_ForkChild);
 		}
+		signal(SIGHUP,SIG_IGN);
 	}
 
 	//atexit(&fg_DestroySystemAtExit);
