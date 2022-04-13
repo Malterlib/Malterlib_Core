@@ -2993,6 +2993,47 @@ Property
 	MalterlibBinariesDirectory define string = `@("../../../Binaries/Malterlib"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
 	MalterlibLLVMHostBinariesDirectory define string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
 	MalterlibLLVMBinariesDirectory define string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(PlatformFamily)/@(Architecture)`
+
+	MalterlibLLVMSanitizerRuntime define string?
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib`
+	{
+		&
+		{
+			PlatformFamily "OSX"
+			MalterlibSupportSanitizerEnable_Address true
+		}
+	}
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).0/lib/darwin/libclang_rt.tsan_osx_dynamic.dylib`
+	{
+		&
+		{
+			PlatformFamily "OSX"
+			MalterlibSupportSanitizerEnable_Thread true
+		}
+	}
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).0/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib`
+	{
+		&
+		{
+			PlatformFamily "OSX"
+			MalterlibSupportSanitizerEnable_UndefinedBehavior true
+		}
+	}
+
+	MalterlibNeedsLLVMSanitizerRuntime define bool = false
+	MalterlibNeedsLLVMSanitizerRuntime true
+	{
+		&
+		{
+			MalterlibNeedsLLVMSanitizerRuntime undefined
+			!MalterlibLLVMSanitizerRuntime undefined
+			PlatformFamily "OSX"
+			TargetIsLaunchableExecutable true
+			!DocumentationEnabled true
+			!MalterlibDisableMalterlib true
+		}
+	}
+
 	MToolDirectory define string = Builtin.MToolExe->GetPath()
 
 	MToolPath define string
@@ -3244,6 +3285,15 @@ Property
 			MalterlibIsOSXBundle true
 		}
 	}
+	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy @(MalterlibLLVMSanitizerRuntime->Escape()) @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS`->Escape()) "" 0\r\n`
+	{
+		&
+		{
+			MalterlibNeedsLLVMSanitizerRuntime true
+			MalterlibIsOSXBundle true
+		}
+	}
+
 
 	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy "@(GetProperty("Property", "MalterlibFinalModuleDestination", "Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess"))" @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS`->Escape()) "" 0\r\n`
 	{
@@ -4233,6 +4283,14 @@ Property
 			!MalterlibIsOSXBundle true
 		}
 	}
+	MalterlibBuildServerPutSources =+ MalterlibLLVMSanitizerRuntime
+	{
+		&
+		{
+			MalterlibNeedsLLVMSanitizerRuntime true
+			!MalterlibIsOSXBundle true
+		}
+	}
 
 	MalterlibBuildServerPutPath define string?
 
@@ -4598,6 +4656,14 @@ Property
 		&
 		{
 			MalterlibNeedsMalterlibHelper true
+			!MalterlibIsOSXBundle true
+		}
+	}
+	MalterlibPostCopySources =+ MalterlibLLVMSanitizerRuntime
+	{
+		&
+		{
+			MalterlibNeedsLLVMSanitizerRuntime true
 			!MalterlibIsOSXBundle true
 		}
 	}
