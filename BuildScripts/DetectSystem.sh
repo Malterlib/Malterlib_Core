@@ -13,7 +13,7 @@ function CallDirect()
 	$0 "$@"
 }
 
-if [[ $SysName ==  MINGW* ]] ; then
+if [[ $SysName ==  MSYS* ]] || [[ $SysName ==  MINGW* ]] ; then
 	function CallDirect()
 	{
 		local ProgramToCall=$1

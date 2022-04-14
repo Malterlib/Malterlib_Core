@@ -11,8 +11,8 @@ function DoDetect()
 	local SysName=$(uname -s)
 	local ProcessorArch=$(uname -m)
 
-	if [[ $SysName ==  MINGW* ]] || [[ $SysName ==  CYGWIN* ]] || [[ $SysName ==  windows* ]] ; then
-		if ([[ $SysName ==  MINGW* ]] || [[ $SysName ==  CYGWIN* ]]) && [[ "$TERM" != "dumb" ]] ; then
+	if [[ $SysName ==  MSYS* ]] || [[ $SysName ==  MINGW* ]] || [[ $SysName ==  CYGWIN* ]] || [[ $SysName ==  windows* ]] ; then
+		if ([[ $SysName ==  MSYS* ]] || [[ $SysName ==  MINGW* ]] || [[ $SysName ==  CYGWIN* ]]) && [[ "$TERM" != "dumb" ]] ; then
 			export MalterlibTerminalWidth=`tput cols`
 			export MalterlibTerminalHeight=`tput lines`
 		fi
