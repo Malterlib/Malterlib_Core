@@ -3837,7 +3837,7 @@ ECheckFileRights NSys::NFile::fg_CheckFileRights( const CStr & _File, NMib::NFil
 
 namespace
 {
-	template <typename tf_CWinStr, typename tf_CStr>
+	template <typename tf_CWinStr, typename tf_CStr, bool tf_bOnLink = false>
 	void fg_SetAttributesInternal(ch16 const *_pFileName, EFileAttrib _Attributes);
 }
 
@@ -4116,7 +4116,7 @@ struct CMalterlibExtendedAttributes
 
 namespace
 {
-	template <typename tf_CWinStr, typename tf_CStr>
+	template <typename tf_CWinStr, typename tf_CStr, bool tf_bOnLink>
 	void fg_SetAttributesInternal(ch16 const *_pFileName, EFileAttrib _Attributes)
 	{
 		EFileAttrib ExtraAttributes = _Attributes;
@@ -4165,6 +4165,9 @@ namespace
 		if (!SetFileAttributesW(_pFileName, FileAttribs))
 			DMibErrorFile((tf_CStr::CFormat("Windows returned an error from SetFileAttributesW({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
+		if constexpr (tf_bOnLink)
+			return;
+
 		tf_CWinStr OriginalFileName(_pFileName);
 		// This needs to be named exactly like this to be compatible with old version of library (when Malterlib was named Ids)
 		auto ExtendedAttribName = OriginalFileName + ":IdsExtAttribs:$DATA";
@@ -4200,8 +4203,6 @@ namespace
 					DMibErrorFile((CStr::CFormat("Windows returned an error from DeleteFile({}): {}") << ExtendedAttribName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 			}
 		}
-
-
 	}
 
 	template <typename tf_CWinStr, typename tf_CStr, bool tf_bThrow>
@@ -4306,7 +4307,7 @@ void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _FileName, EFileAttri
 
 void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _FileName, EFileAttrib _Attributes)
 {
-	return fg_SetAttributes(_FileName, _Attributes); 
+	fg_SetAttributesInternal<CWStr, CStr, true>(NMib::NFile::NPlatform::fg_ConvertToWindowsPath(_FileName, false), _Attributes);
 }
 
 EFileAttrib NSys::NFile::fg_GetAttributes(void *_pFile)
