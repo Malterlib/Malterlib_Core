@@ -723,7 +723,7 @@ namespace NMib
 				CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath.m_UserPath / Snapshot.m_FullFileName);
 				if (_Context.m_DirsToUpdate(Directory).f_WasCreated())
 				{
-					DMibFileChangeNotificationsDebugOut("ADDED DIRECTORY '{}' from '{}' finding '{}'\n", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
+					DMibFileChangeNotificationsDebugOut("ADDED DIRECTORY '{}' from '{}' finding '{}'", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
 				}
 			}
 
@@ -736,7 +736,7 @@ namespace NMib
 					CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath.m_UserPath / Snapshot.m_FullFileName);
 					if (_Context.m_DirsToUpdate(Directory).f_WasCreated())
 					{
-						DMibFileChangeNotificationsDebugOut("ADDED OLD DIRECTORY '{}' from '{}' finding '{}'\n", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
+						DMibFileChangeNotificationsDebugOut("ADDED OLD DIRECTORY '{}' from '{}' finding '{}'", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
 					}
 				}
 			}
