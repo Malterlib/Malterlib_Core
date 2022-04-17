@@ -42,7 +42,7 @@ auto CFileChangeNotificationContext::CNotification::f_WatchPath(CWatch *_pParent
 	{
 		if (_bThrow)
 			throw;
-		DMibFileChangeNotificationsDebugOut("Error add watch on sub path {} ({})\n", _Path, _Exception.f_GetErrorStr());
+		DMibFileChangeNotificationsDebugOut("Error add watch on sub path {} ({})", _Path, _Exception.f_GetErrorStr());
 		return nullptr;
 	}
 
@@ -246,7 +246,7 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 		if (pRename)
 		{
 			auto &Rename = *pRename;
-			DMibFileChangeNotificationsDebugOut("HasRename {} -> {}\n", Rename.m_RelativePath, RelativePath);
+			DMibFileChangeNotificationsDebugOut("HasRename {} -> {}", Rename.m_RelativePath, RelativePath);
 
 			if (((m_Flags & NFile::EFileChange_DirectoryName) && bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !bIsDir))
 				f_RegisterChange(o_Context, RelativePath, NMib::NFile::EFileChangeNotification_Renamed, Rename.m_RelativePath);
@@ -272,12 +272,12 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 
 			if (Rename.m_pWatch)
 			{
-				DMibFileChangeNotificationsDebugOut("SetParent {} -> {}\n", Rename.m_RelativePath, RelativePath);
+				DMibFileChangeNotificationsDebugOut("SetParent {} -> {}", Rename.m_RelativePath, RelativePath);
 				Rename.m_pWatch->f_SetParent(_pWatch.f_Get(), RelativePath);
 			}
 			else if (!Rename.m_pWatch && bIsDir && (m_Flags & NFile::EFileChange_Recursive))
 			{
-				DMibFileChangeNotificationsDebugOut("Adding watch {} -> {}\n", Rename.m_RelativePath, RelativePath);
+				DMibFileChangeNotificationsDebugOut("Adding watch {} -> {}", Rename.m_RelativePath, RelativePath);
 				if (CWatch *pWatch = f_WatchPath(_pWatch.f_Get(), CFile::fs_AppendPath(m_BasePath, RelativePath), false))
 				{
 					if ((m_Flags & (NFile::EFileChange_DirectoryName | NFile::EFileChange_FileName)))
@@ -301,7 +301,7 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 		}
 		else
 		{
-			DMibFileChangeNotificationsDebugOut("Adding rename {}\n", RelativePath);
+			DMibFileChangeNotificationsDebugOut("Adding rename {}", RelativePath);
 			f_OnAdded(o_Context, RelativePath, bIsDir, _pWatch.f_Get());
 		}
 	}
