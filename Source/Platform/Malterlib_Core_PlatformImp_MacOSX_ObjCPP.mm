@@ -915,25 +915,6 @@ namespace NMib
 				, bool _bFirstRecursive
 			)
 		{
-			if (_NewSnapshot.m_Stats.st_dev == 0)
-			{
-				if (_NewSnapshot.m_FullFileName.f_IsEmpty())
-					m_RootSnapshot.f_PotentiallyRemoved(o_Context);
-				else
-				{
-					auto *pSnapshot = &m_RootSnapshot;
-					for (auto &File : _NewSnapshot.m_FullFileName.f_Split("/"))
-					{
-						pSnapshot = pSnapshot->m_ChildrenByName.f_FindEqual(File);
-						if (!pSnapshot)
-							break;
-					}
-					if (pSnapshot)
-						pSnapshot->f_PotentiallyRemoved(o_Context);
-				}
-				return;
-			}
-
 			CFileSnapshot const *pOldSnapshot = nullptr;
 
 			if (auto const *pOldSnapshots = m_SnapshotsByNode.f_FindEqual(_NewSnapshot.f_GetKey()))
@@ -1243,7 +1224,7 @@ namespace NMib
 				else if (Path.f_StartsWith(m_NotificationPathCompare.m_SyntheticPath))
 					Path = m_NotificationPathCompare.m_UserPath + Path.f_Extract(m_NotificationPathCompare.m_SyntheticPath.f_GetLen());
 
-				UpdateContext.m_DirsToUpdate[Path] = (Flags & kFSEventStreamEventFlagMustScanSubDirs) != 0;
+				UpdateContext.m_DirsToUpdate[Path] = (Flags & (kFSEventStreamEventFlagMustScanSubDirs | kFSEventStreamEventFlagRootChanged)) != 0;
 			}
 
 			TCSet<NStr::CStr> UpdatedDirectories;
@@ -1300,18 +1281,36 @@ namespace NMib
 					CStr const &ChangedPath = UpdateContext.m_ChangedPaths.fs_GetKey(bChangedPathRecursive);
 					CFileSnapshot *pFindSnapshot = &NewSnapshot;
 					bool bRecursiveSetting = (m_Flags & EFileChange_Recursive) != 0;
+
+					auto ChangedPathComponents = ChangedPath.f_Split<true>("/");
 					{
-						CStr FindPath = ChangedPath;
-						while (pFindSnapshot && !FindPath.f_IsEmpty())
+						for (auto &File : ChangedPathComponents)
 						{
-							CStr Path = fg_GetStrSep(FindPath, "/");
-							pFindSnapshot = pFindSnapshot->m_ChildrenByName.f_FindEqual(Path);
+							pFindSnapshot = pFindSnapshot->m_ChildrenByName.f_FindEqual(File);
+							if (!pFindSnapshot)
+								break;
 						}
 					}
-					if (pFindSnapshot)
+
+					if (pFindSnapshot && pFindSnapshot->m_Stats.st_dev != 0)
 						fr_FindChanges(FindChangesContext, *pFindSnapshot, bChangedPathRecursive, bRecursiveSetting, true);
 					else
-						fr_FindChanges(FindChangesContext, NewSnapshot, bRecursiveSetting, bRecursiveSetting, true);
+					{
+						if (ChangedPathComponents.f_IsEmpty())
+							m_RootSnapshot.f_PotentiallyRemoved(FindChangesContext);
+						else
+						{
+							auto *pSnapshot = &m_RootSnapshot;
+							for (auto &File : ChangedPathComponents)
+							{
+								pSnapshot = pSnapshot->m_ChildrenByName.f_FindEqual(File);
+								if (!pSnapshot)
+									break;
+							}
+							if (pSnapshot)
+								pSnapshot->f_PotentiallyRemoved(FindChangesContext);
+						}
+					}
 				}
 
 				if (m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
@@ -1793,6 +1792,7 @@ namespace NMib
 			CallbackContext.release = nullptr;
 			CallbackContext.copyDescription = nullptr;
 
+			// This doesn't work because all events are accumelated, so if one file get's a flag set, that flag will be set forever in subsequent events
 			pNotification->m_bPerFileEvents = false; //= CSystem::ms_PlatformVersion >= 10'07'00;
 
 			FSEventStreamRef pStream;
