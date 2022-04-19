@@ -2384,11 +2384,13 @@ uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 
 void NSys::NFile::fg_FileEnumOtherHandles(const NMib::NStr::CStr &_FileName, NContainer::TCVector<NMib::NFile::CFileHandle> &_HandleInfo)
 {
+	[[maybe_unused]] volatile int Line = DMibPLine;
 	DMibPDebugBreak; // Not implemented
 }
 
 void NSys::NFile::fg_FileEnumOtherHandles(void *_pFile, NContainer::TCVector<NMib::NFile::CFileHandle> &_HandleInfo)
 {
+	[[maybe_unused]] volatile int Line = DMibPLine;
 	DMibPDebugBreak; // Not implemented
 }
 
@@ -2446,6 +2448,7 @@ namespace NMib::NThread
 	{
 		inline_never void fg_AbortFutex()
 		{
+			[[maybe_unused]] volatile int Line = DMibPLine;
 			DMibPDebugBreak;
 		}
 	}
@@ -2522,7 +2525,7 @@ namespace NMib::NThread
 
 			uint32 OldValue = ThreadID;
 
-			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
+			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::EMemoryOrder_Release, NAtomic::EMemoryOrder_Relaxed))
 			{
 				// Contended
 				if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
