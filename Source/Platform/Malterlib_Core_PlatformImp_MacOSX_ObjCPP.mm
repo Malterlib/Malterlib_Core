@@ -587,6 +587,7 @@ namespace NMib
 		CFileChangeNoticationContext::CFileChangeNoticationContext()
 			: m_pInternal(fg_Construct())
 		{
+			DMibLock(m_Lock);
 			try
 			{
 				if (CFile::fs_FileExists(CStr("/etc/synthetic.conf")))
