@@ -180,7 +180,7 @@ namespace NMib::NSys
 		;
 
 		if (!pService)
-			return false;
+			return true;
 
 		auto CleanupService = g_OnScopeExit / [&]
 			{
@@ -191,11 +191,11 @@ namespace NMib::NSys
 		bool bSuccess = mp_KeychainLibrary.secret_service_ensure_session_sync(pService, nullptr, &pResult);
 
 		if (!bSuccess)
-			return false;
+			return true;
 
 		auto *pCollections = mp_KeychainLibrary.secret_service_get_collections(pService);
 		if (!pCollections)
-			return false;
+			return true;
 
 		auto CleanupCollections = g_OnScopeExit / [&]
 			{
