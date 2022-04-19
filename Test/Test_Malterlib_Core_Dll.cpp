@@ -19,7 +19,6 @@ namespace
 
 		void f_DoTests()
 		{
-#ifndef DMibSanitizerEnabled_Thread
 			// tsan does not currently support unloading dlls
 			CStr DllPath = CStr("Test_Malterlib_Helper_Core") + NMib::NFile::CFile::fs_GetDllExtension();
 #ifdef DPlatformFamily_Linux
@@ -140,7 +139,9 @@ namespace
 
 				pThread2.f_Clear();
 				
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_OSX))
 				NMib::NSys::fg_FreeLibrary(pDll);
+#endif
 
 			};
 			DMibTestSuite("Thread stress")
@@ -214,7 +215,9 @@ namespace
 
 				Threads.f_Clear();
 
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_OSX))
 				NMib::NSys::fg_FreeLibrary(pDll);
+#endif
 			};
 			DMibTestSuite("Dll stress")
 			{
@@ -233,7 +236,9 @@ namespace
 					for (int i = 0; i < 2; ++i)
 						pTestFunc();
 
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_OSX))
 					NMib::NSys::fg_FreeLibrary(pDll);
+#endif
 				}
 			};
 			DMibTestSuite(CTestCategory("Performance") << CTestGroup("Performance"))
@@ -255,7 +260,9 @@ namespace
 					{
 						auto pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 						DMibTest(DMibExpr(pDll))(ETestFlag_Aggregated);
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_OSX))
 						NMib::NSys::fg_FreeLibrary(pDll);
+#endif
 					}
 					MalterlibTime.f_Stop(nLoops);
 				}
@@ -265,7 +272,6 @@ namespace
 				DMibTest(DMibExpr(PerfTest));
 
 			};
-#endif
 		}
 	};
 }
