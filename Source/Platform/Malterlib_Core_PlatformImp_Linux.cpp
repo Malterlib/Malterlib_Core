@@ -971,6 +971,10 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 	if (!g_bCanStackTrace) // backtrace uses malloc in pthread_once, and _Unwind_Backtrace can deadlock on __GI___dl_iterate_phdr lock
 		return 0;
 
+#if DArchitecture_arm64
+	// This seems to be faster
+	return (mint)backtrace((void**)_pStack, (int)_nMaxDepth);
+#else
 	struct CContext
 	{
 		CMibCodeAddress *m_pStack;
@@ -1001,6 +1005,7 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 		--Context.m_nAdded;
 
 	return Context.m_nAdded;
+#endif
 }
 
 inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
