@@ -2488,19 +2488,11 @@ namespace NMib::NThread
 		}
 		else
 		{
+			NMib::NThread::CThreadSpinWaiter SpinWaiter;
 			uint32 Expected = 0;
 			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
 			{
-				yield_cpu;
-				yield_cpu;
-				yield_cpu;
-				yield_cpu;
-				yield_cpu;
-				yield_cpu;
-				yield_cpu;
-				yield_cpu;
-				yield_cpu;
-				yield_cpu;
+				SpinWaiter.f_Wait();
 				Expected = 0;
 			}
 		}

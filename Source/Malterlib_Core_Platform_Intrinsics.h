@@ -75,14 +75,18 @@
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 #		define yield_cpu _mm_pause()
+#	elif defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
+#		define yield_cpu asm volatile("yield" ::: "memory")
 #	else
-#		define yield_cpu
+#		error "Implement this"
 #	endif
 #elif defined(DCompiler_MSVC)
 #	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 #		define yield_cpu _mm_pause()
+#	elif defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
+#		define yield_cpu __yield()
 #	else
-#		define yield_cpu
+#		error "Implement this"
 #	endif
 #else
 #	error "Implement this"
