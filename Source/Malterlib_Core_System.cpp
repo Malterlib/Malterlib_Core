@@ -18,11 +18,7 @@ namespace NMib
 		void fg_Mem_InitSubsystem();
 	}
 
-#if defined(DMibPOverrideOperatorNew) && (defined(DPlatformFamily_Linux) || defined(DPlatformFamily_OSX))
-	mint g_bMemoryManagerNeededAfterDestroy = true;
-#else
 	mint g_bMemoryManagerNeededAfterDestroy = false;
-#endif
 
 	namespace NSys
 	{
@@ -91,6 +87,10 @@ namespace NMib
 #endif
 
 	{
+#if defined(DMibPOverrideOperatorNew) && (defined(DPlatformFamily_Linux) || defined(DPlatformFamily_OSX))
+		if (!_bIsDll)
+			g_bMemoryManagerNeededAfterDestroy = true;
+#endif
 		// Things set in motion might need the g_pSys pointer
 		m_bInitDone = false;
 		g_pSys = this;
