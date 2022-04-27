@@ -284,11 +284,6 @@ namespace NMib
 	class TCExplicit
 	{
 		t_CType m_Data;
-
-//		TCExplicit(TCExplicit const &_Other);
-//		TCExplicit(TCExplicit &&_Other);
-//		static_assert(NTraits::TCIsReference<t_CType>::mc_Value, "Should always be a reference here");
-
 	public:
 
 		template <typename tf_CType>
@@ -348,7 +343,54 @@ namespace NMib
 	};
 	
 	extern CExplicitHelper const &g_Explicit;
-	
+
+	template <typename t_CType>
+	class TCAttach
+	{
+		t_CType m_Data;
+	public:
+
+		template <typename tf_CType>
+		TCAttach(tf_CType &&_Data)
+			: m_Data(fg_Forward<tf_CType>(_Data))
+		{
+		}
+
+		t_CType operator *()
+		{
+			return fg_Forward<t_CType>(m_Data);
+		}
+	};
+
+	template <>
+	class TCAttach<void>
+	{
+	public:
+	};
+
+	template <typename tf_CType, TCEnableIfType<NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
+	inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
+	{
+		return TCAttach<tf_CType>(_In);
+	}
+
+	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && !NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
+	inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
+	{
+		return TCAttach<tf_CType>(fg_Move(_In));
+	}
+
+	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
+	inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
+	{
+		return TCAttach<tf_CType>(_In);
+	}
+
+	inline_always_debug TCAttach<void> fg_Attach()
+	{
+		return TCAttach<void>();
+	}
+
 	namespace NInternal
 	{
 		struct CDefault
