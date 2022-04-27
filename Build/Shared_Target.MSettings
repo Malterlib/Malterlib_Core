@@ -557,6 +557,7 @@ Target
 
 	UseMultiToolTask define bool = true
 	EnforceProcessCountAcrossBuilds define bool = true
+	UseMsbuildResourceManager define bool = false
 
 	VisualStudioPlatform define string?
 	VisualStudioPlatform "Clang"

@@ -164,5 +164,21 @@
 				}
 			}
 		}
+		%GeneratorSetting "UseMsbuildResourceManager"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "UseMsbuildResourceManager"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\true "true"
+					\false "false"
+				}
+			}
+		}		
 	}
 }
