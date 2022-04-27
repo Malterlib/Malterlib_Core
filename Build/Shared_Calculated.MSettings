@@ -634,7 +634,7 @@ Property
 		!!DocumentationEnabled true
 	}
 
-	Malterlib_RefcountDebugging_Enable define bool = false // User(Debug)=true: Set to true to enable shared pointer reference debugging
+	Malterlib_RefCountDebugging_Enable define bool = false // User(Debug)=true: Set to true to enable shared pointer reference debugging
 
 	Malterlib_Tests_Enable define bool // User(Tests)=true: Force enable or disable of tests (set to true or false)
 	Malterlib_Tests_Enable false

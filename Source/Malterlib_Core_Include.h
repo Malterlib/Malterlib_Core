@@ -66,6 +66,10 @@ namespace NMib
 
 	typedef TCVoidFunctor<void> CVoidFunctor;
 
+	struct CEmpty
+	{
+	};
+
 	namespace NStorage
 	{
 		using CSharedPointerOptionUnderlying = int32;
@@ -75,15 +79,14 @@ namespace NMib
 			, ESharedPointerOption_SupportWeakPointer = DMibBit(0)
 		};
 
-		template <CSharedPointerOptionUnderlying t_Options = ESharedPointerOption_None> 
-		class TCSharedPointerIntrusiveBase;
+		template <CSharedPointerOptionUnderlying t_Options = ESharedPointerOption_None>
+		struct TCIntrusiveRefCount;
 
 		template <>
-		class TCSharedPointerIntrusiveBase<ESharedPointerOption_None>;
+		struct TCIntrusiveRefCount<ESharedPointerOption_None>;
 
 		template <>
-		class TCSharedPointerIntrusiveBase<ESharedPointerOption_SupportWeakPointer>;
-
+		struct TCIntrusiveRefCount<ESharedPointerOption_SupportWeakPointer>;
 	}
 	
 	template <typename t_CIntType>

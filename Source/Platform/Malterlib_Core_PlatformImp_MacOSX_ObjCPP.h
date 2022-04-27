@@ -19,7 +19,7 @@ namespace NMib
 			CFileChangeNoticationContext();
 			~CFileChangeNoticationContext();
 
-			class CNotification : public NStorage::TCSharedPointerIntrusiveBase<>
+			class CNotification
 			{
 			public:
 				CNotification(CFileChangeNoticationContext *_pContext);
@@ -142,6 +142,8 @@ namespace NMib
 					NContainer::TCMap<NStr::CStr, zbool> m_ChangedPaths;
 				};
 
+				NStorage::CIntrusiveRefCount m_RefCount;
+
 				CFileSnapshot m_RootSnapshot;
 				CSnapshotsByNode m_SnapshotsByNode;
 
@@ -196,7 +198,7 @@ namespace NMib
 
 				NContainer::TCLinkedList<NStorage::TCTuple<NStr::CStr, bool>> m_RenamedFromQueue;
 
-				DMibRefcountDebuggingOnly(NStorage::CRefCountDebugReference m_DebugSelfRef);
+				DMibRefCountDebuggingOnly(NStorage::CRefCountDebugReference m_DebugSelfRef);
 
 				NMib::NThread::CSemaphoreAggregate *m_pReportTo;
 				uint64 m_UpdateSequence = 0;

@@ -316,9 +316,7 @@ void CFileChangeNotificationContext::f_Close(void *_pNotification)
 
 #if DMibEnableSafeCheck > 0
 	for (auto &pWatch : m_Watches)
-	{
-		DMibFastCheck(!pWatch->mp_References.f_FindEqual(pNotification));
-	}
+		DMibFastCheck(!pWatch->f_HasNotification(pNotification));
 #endif
 	
 	m_Notifications.f_Remove(pNotification);

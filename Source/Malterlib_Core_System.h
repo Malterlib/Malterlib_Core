@@ -134,6 +134,13 @@ namespace NMib
 		{
 		}
 	};
+
+#ifdef DCompiler_MSVC
+#define DWorkaroundVirtualLayout : CVirtualDestructor
+#else
+#define DWorkaroundVirtualLayout
+#endif
+
 	
 //	#ifdef DPlatformFamily_OSX
 //		typedef NMemory::CAllocator_VirtualNoCommit CMainHeapVirtualAllocator;

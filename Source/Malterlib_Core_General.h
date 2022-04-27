@@ -1116,11 +1116,6 @@ namespace NMib
 		}
 	};
 
-	class CEmpty
-	{
-	public:
-	};
-
 	namespace NPrivate
 	{
 #ifdef DCompiler_MSVC

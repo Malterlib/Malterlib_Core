@@ -719,9 +719,9 @@ Compile
 	{
 		!!Target.Type "ConsoleExecutable"
 	}
-	PreprocessorDefines += "DMibConfig_RefcountDebugging"
+	PreprocessorDefines += "DMibConfig_RefCountDebugging"
 	{
-		!!Malterlib_RefcountDebugging_Enable true
+		!!Malterlib_RefCountDebugging_Enable true
 	}
 
 	PreprocessorDefines += "DMibConfig_Tests_Enable"
@@ -2026,7 +2026,7 @@ Compile
 		}
 	}
 
-	PreprocessorDefines += `DMibConfig_RefcountDebugging=@(Malterlib_RefcountDebugging_Enable ? "1" : "0")`
+	PreprocessorDefines += `DMibConfig_RefCountDebugging=@(Malterlib_RefCountDebugging_Enable ? "1" : "0")`
 	PreprocessorDefines += `DMibConfig_Tests_Enable=@(Malterlib_Tests_Enable ? "1" : "0")`
 	PreprocessorDefines += `DMibConfig_Contracts_Enable=@(Malterlib_Contracts_Enable ? "1" : "0")`
 	PreprocessorDefines += `DMibConfig_MalterlibMemoryManager_Debug=@(MalterlibMemoryManager_Debug ? "1" : "0")`

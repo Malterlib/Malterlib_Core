@@ -33,8 +33,9 @@ public:
 	~CFileChangeNotificationContext();
 		
 	class CNotification;
-	class CWatch : public TCSharedPointerIntrusiveBase<>
+	class CWatch
 	{
+		friend class CFileChangeNotificationContext;
 	public:
 		CWatch(int _Descriptor, CStr const &_Path, CWatch *_pParent)
 			: mp_Descriptor(_Descriptor)
@@ -117,7 +118,10 @@ public:
 			return nullptr;
 		}
 
-		TCMap<CStr, bool> m_ChildFiles;
+		bool f_HasNotification(CNotification *_pNotification)
+		{
+			return mp_References.f_FindEqual(_pNotification);
+		}
 
 		template <typename tf_FOnFile>
 		void fr_ForEachChildFile(CStr const &_BasePath, tf_FOnFile &&_fOnFile, bool _bRecursive)
@@ -137,14 +141,17 @@ public:
 		{
 			fr_ForEachChildFile("", _fOnFile, _bRecursive);
 		}
-		
-	public:
+
+		CIntrusiveRefCount m_RefCount;
+
+	private:
+		TCMap<CStr, bool> m_ChildFiles;
 		DMibListLinkDS_Link(CWatch, mp_Link);
 		DMibListLinkDS_List(CWatch, mp_Link) mp_Children;
 		CWatch *mp_pParent;
 		CStr mp_FileName;
 		CStr mp_Path;
-		TCSet<CNotification*> mp_References;
+		TCSet<CNotification *> mp_References;
 		int mp_Descriptor;
 	};
 
