@@ -576,6 +576,7 @@ namespace NMib
 			{
 			}
 			CFRunLoopRef m_RunLoopRef = nullptr;
+			CFRunLoopSourceRef m_RunLoopSourceRef = nullptr;
 		};
 
 		using namespace NFile;
@@ -614,8 +615,12 @@ namespace NMib
 				m_pProcessThread->f_Stop(false);
 				{
 					DMibLock(m_RunLoopLock);
-					if (Internal.m_RunLoopRef)
-						CFRunLoopStop(Internal.m_RunLoopRef);
+					if (Internal.m_RunLoopSourceRef)
+					{
+						CFRunLoopSourceSignal(Internal.m_RunLoopSourceRef);
+						CFRunLoopWakeUp(Internal.m_RunLoopRef);
+					}
+
 				}
 				m_pProcessThread.f_Clear();
 			}
@@ -1637,6 +1642,7 @@ namespace NMib
 						CFRunLoopSourceContext RunLoopSourceContext
 							{
 								0
+								, &Internal
 								, nullptr
 								, nullptr
 								, nullptr
@@ -1644,14 +1650,15 @@ namespace NMib
 								, nullptr
 								, nullptr
 								, nullptr
-								, nullptr
-								, [](void *info)
+								, [](void *_pInternal)
 								{
+									CInternal &Internal = *((CInternal *)_pInternal);
+									CFRunLoopStop(Internal.m_RunLoopRef);
 								}
 							}
 						;
 
-						CFRunLoopSourceRef pDummyRunLoopSource = CFRunLoopSourceCreate
+						CFRunLoopSourceRef pRunLoopSource = CFRunLoopSourceCreate
 							(
 							 	nullptr
 							 	, 0
@@ -1662,19 +1669,21 @@ namespace NMib
 						{
 							DMibLock(m_RunLoopLock);
 							Internal.m_RunLoopRef = CFRunLoopGetCurrent();
-							CFRunLoopAddSource(Internal.m_RunLoopRef, pDummyRunLoopSource, kCFRunLoopDefaultMode);
+							Internal.m_RunLoopSourceRef = pRunLoopSource;
+							CFRunLoopAddSource(Internal.m_RunLoopRef, pRunLoopSource, kCFRunLoopDefaultMode);
 						}
+
 						auto Cleanup = g_OnScopeExit / [&]
 							{
-								CFRelease(pDummyRunLoopSource);
-								CFRunLoopRemoveSource(Internal.m_RunLoopRef, pDummyRunLoopSource, kCFRunLoopDefaultMode);
 								{
 									DMibLock(m_RunLoopLock);
+									CFRunLoopRemoveSource(Internal.m_RunLoopRef, pRunLoopSource, kCFRunLoopDefaultMode);
+									CFRelease(pRunLoopSource);
 									Internal.m_RunLoopRef = nullptr;
+									Internal.m_RunLoopSourceRef = nullptr;
 								}
 							}
 						;
-
 
 						while (auto ToDispatch = m_DispatchQueue.f_Pop())
 							(*ToDispatch)();
