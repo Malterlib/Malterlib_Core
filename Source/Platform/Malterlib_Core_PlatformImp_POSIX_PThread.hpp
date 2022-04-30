@@ -845,11 +845,10 @@ public:
 	int m_State:1;
 	int m_LockSequence;
 	NMib::NThread::CSemaphore m_Semaphore;
-	NMib::NThread::CMutual m_Lock;
+	NMib::NThread::CLowLevelLock m_Lock;
 
 	CEventEmulation(bool _bStartState)
-		:
-		m_Semaphore(0, TCLimitsInt<aint>::mc_Max)
+		: m_Semaphore(0, TCLimitsInt<aint>::mc_Max)
 	{
 		m_State = _bStartState;
 		m_LockSequence = 0;
@@ -858,33 +857,31 @@ public:
 
 	~CEventEmulation()
 	{
-		DMibLockTyped(NMib::NThread::CMutual, m_Lock);
+		DMibLock(m_Lock);
 	}
 	
 	void f_PrepareFork()
 	{
 		m_Lock.f_Lock();
-		m_Lock.f_PrepareFork();
 		m_Semaphore.f_PrepareFork();
 	}
 
 	void f_ForkedChild()
 	{
 		m_Semaphore.f_ForkedChild();
-		m_Lock.f_ForkedChild();
+		m_Lock.f_ForkedChildLocked();
 		m_Lock.f_Unlock();
 	}
 	
 	void f_ForkedParent()
 	{
 		m_Semaphore.f_ForkedParent();
-		m_Lock.f_ForkedParent();
 		m_Lock.f_Unlock();
 	}
 	
 	bool f_TryWait()
 	{
-		DMibLockTyped(NMib::NThread::CMutual, m_Lock);
+		DMibLock(m_Lock);
 		
 		if (m_State)
 			return true;
@@ -894,7 +891,7 @@ public:
 	void f_Wait()
 	{
 		{
-			DMibLockTyped(NMib::NThread::CMutual, m_Lock);
+			DMibLock(m_Lock);
 
 			if (m_State)
 				return;
@@ -909,7 +906,7 @@ public:
 	{
 		int LockSequence;
 		{
-			DMibLockTyped(NMib::NThread::CMutual, m_Lock);
+			DMibLock(m_Lock);
 
 			if (m_State)
 				return false;
@@ -923,7 +920,7 @@ public:
 			return true;
 		
 		{
-			DMibLockTyped(NMib::NThread::CMutual, m_Lock);
+			DMibLock(m_Lock);
 			
 			if (m_State)
 				return false;
@@ -938,7 +935,7 @@ public:
 	void f_Signal()
 	{
 		{
-			DMibLockTyped(NMib::NThread::CMutual, m_Lock);
+			DMibLock(m_Lock);
 
 			if (m_State)
 				return;
@@ -956,7 +953,7 @@ public:
 	void f_Reset()
 	{
 		{
-			DMibLockTyped(NMib::NThread::CMutual, m_Lock);
+			DMibLock(m_Lock);
 
 			if (!m_State)
 				return;
