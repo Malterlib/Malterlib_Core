@@ -171,13 +171,7 @@ namespace
 				DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop);
 				pTestFunc();
 				
-
-#ifdef DMibDebug
-				mint AllThreads = 656/64;
-#else
-				mint AllThreads = 6554/64;
-#endif
-				for (mint i = 0; i < AllThreads; ++i)
+				for (mint i = 0; i < 10; ++i)
 				{
 					for (auto i = 0; i < 64; ++i)
 					{
