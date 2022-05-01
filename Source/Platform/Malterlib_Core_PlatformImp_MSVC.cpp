@@ -5177,14 +5177,36 @@ void NSys::NFile::fg_CreateHardLink(const NMib::NStr::CStr &_FileFrom, const NMi
 
 void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
-	if (!MoveFileWithProgressW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom), NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo), fsg_CopyProgressRoutine, &_Progress, MOVEFILE_WRITE_THROUGH | MOVEFILE_COPY_ALLOWED))
+	if
+		(
+			!MoveFileWithProgressW
+			(
+				NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom)
+				, NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo)
+				, fsg_CopyProgressRoutine
+				, &_Progress
+				, MOVEFILE_WRITE_THROUGH | MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING
+			)
+		)
+	{
 		DMibErrorFile((CStr::CFormat("Windows returned an error from MoveFile({}, {}): {}") << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	}
 }
 
 void NSys::NFile::fg_Rename(const CStr &_FileFrom, const CStr &_FileTo)
 {
-	if (!MoveFileW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom), NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo)))
+	if
+		(
+			!MoveFileExW
+			(
+				NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom)
+				, NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo)
+				, MOVEFILE_WRITE_THROUGH | MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING
+			)
+		)
+	{
 		DMibErrorFile((CStr::CFormat("Windows returned an error from MoveFile({}, {}): {}") << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	}
 }
  
 #ifndef REPLACEFILE_IGNORE_ACL_ERRORS
