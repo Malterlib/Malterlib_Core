@@ -262,12 +262,11 @@ namespace NMib
 
 		if (!m_pSystemLog->f_ReadConfig("Malterlib_Log_Config.txt"))
 		{
-			bool bDebugOut = false;
+			[[maybe_unused]] bool bDebugOut = false;
 
 #if !defined(DConfig_Release)
 			bDebugOut = true;
 #endif
-
 			bool bDisableSystemLog = NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("MalterlibDisableSystemLog")) == "true";
 			if (bDisableSystemLog)
 				bDebugOut = false;
@@ -276,11 +275,9 @@ namespace NMib
 			if (bDebugOut)
 				m_TraceLoggerDestination = m_pSystemLog->f_PushGlobalDestination(&NLog::fg_LogTo_DebugOut);
 #endif
-
 #if DMibSysLogStdErr
 			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(&NLog::fg_LogTo_StdErr);
 #endif
-
 			if (!bDisableSystemLog)
 				f_AddFileLogger();
 		}
