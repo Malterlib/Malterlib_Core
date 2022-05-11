@@ -1549,6 +1549,9 @@ extern "C"
 	}
 	size_t nontracked_malloc_usable_size (void *__ptr) __THROW
 	{
+		if (!__ptr)
+			return 0;
+
 		DMibFastCheck(g_bCanUseSystemMalloc);
 		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Size(__ptr);
 	}
