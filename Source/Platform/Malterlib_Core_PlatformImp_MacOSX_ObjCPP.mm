@@ -1728,10 +1728,10 @@ namespace NMib
 		{
 			CStr NotificationPath = _FileName;
 			if (NMib::NFile::CFile::fs_FileExists(NotificationPath, EFileAttrib_File))
-				DMibErrorFile("Open file notification: '{}' is not a directory");
+				DMibErrorFile("Open file notification: '{}' is not a directory"_f << NotificationPath);
 
 			if (!NMib::NFile::CFile::fs_FileExists(NotificationPath, EFileAttrib_Directory))
-				DMibErrorFile("Open file notification: Directory '{}' does not exist");
+				DMibErrorFile("Open file notification: Directory '{}' does not exist"_f << NotificationPath);
 
 			CStr UserPath = NotificationPath;
 			NotificationPath = fg_GetRealPathName(NotificationPath); // Account for lower/upper case
