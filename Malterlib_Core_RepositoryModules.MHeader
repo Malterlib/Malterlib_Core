@@ -80,20 +80,32 @@ Property
 	MalterlibBinaryRepositories =+ `MalterlibBinaries_@(HostPlatformFamily)_@(HostArchitecture)`
 
 	MalterlibAllBinaryRepositories define bool = false // User(Repository)=true: Set to true to sync all binary repositories.
+	MalterlibAllBinaryRepositories_OSX define bool = false
 }
 
 Property
 {
 	!!MalterlibAllBinaryRepositories true
 
-	MalterlibBinaryRepositories =+ "MalterlibBinaries_OSX_x64"
-	MalterlibBinaryRepositories =+ "MalterlibBinaries_OSX_arm64"
 	MalterlibBinaryRepositories =+ "MalterlibBinaries_Linux_x64"
 	MalterlibBinaryRepositories =+ "MalterlibBinaries_Linux_x86"
 	MalterlibBinaryRepositories =+ "MalterlibBinaries_Linux_arm64"
 	MalterlibBinaryRepositories =+ "MalterlibBinaries_Windows_x64"
 	MalterlibBinaryRepositories =+ "MalterlibBinaries_Windows_x86"
 }
+
+Property
+{
+	|
+	{
+		MalterlibAllBinaryRepositories true
+		MalterlibAllBinaryRepositories_OSX true
+	}
+
+	MalterlibBinaryRepositories =+ "MalterlibBinaries_OSX_x64"
+	MalterlibBinaryRepositories =+ "MalterlibBinaries_OSX_arm64"
+}
+
 
 %Repository "."
 {
