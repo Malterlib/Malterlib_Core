@@ -45,6 +45,11 @@ if [[ "$MLBuildGit" != "" && "$MLBuildUseGit" == "1" ]]; then
 		Branch=${Parts[1]}
 		pushd $Folder > /dev/null
 		echo "Checking out $Branch in $Folder"
+
+		if [[ `git branch -r --list "origin/$Branch" --format="%(refname:lstrip=-2)"` != "origin/$Branch" ]]; then
+			echo "Branch does not exist on remote: $Branch"
+		fi
+
 		git checkout -f -B "$Branch" "origin/$Branch"
 		git clean -fd
 		if [ -x mib ]; then
