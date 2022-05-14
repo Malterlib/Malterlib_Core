@@ -1006,6 +1006,15 @@ Compile
 			Compile.CLanguage undefined
 		}
 	}
+	CLanguage "C11"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			!PlatformFamily "Linux"
+			Compile.CLanguage undefined
+		}
+	}
 }
 
 Property
