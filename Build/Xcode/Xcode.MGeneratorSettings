@@ -3436,6 +3436,17 @@
 					}
 				}
 			}
+			%GeneratorSetting "Warnings_Switch"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						\false "-Wno-switch"
+						\true "-Wswitch"
+					}
+				}
+			}
 			%GeneratorSetting "MinOSXVersion"
 			{
 				Property

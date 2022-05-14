@@ -1142,6 +1142,7 @@ Compile
 	Warnings_UnknownPragma define bool?
 	Warnings_UnusedVariable define bool?
 	Warnings_UnusedButSetVariable define bool?
+	Warnings_Switch define bool?
 
 	Warnings_UnusedExceptionParameter define bool?
 	Warnings_UnusedExceptionParameter true
