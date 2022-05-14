@@ -232,7 +232,7 @@ Import
 		}
 	}
 
-	CMake_Internal_LinkerFlags =+ ` -L@(`@(MalterlibLLVMBinariesDirectory)/lib/@(MalterlibTargetTriple)/c++`->EscapeHost())`
+	CMake_Internal_LinkerFlags =+ ` -L@(`@(MalterlibLLVMBinariesDirectory)/lib/@(MalterlibTargetTriple)`->EscapeHost())`
 	{
 		!!PlatformFamily "Linux"
 	}
