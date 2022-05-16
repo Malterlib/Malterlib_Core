@@ -1325,7 +1325,7 @@ Property
 	{
 		MalterlibNoShortcuts true
 		MalterlibTargetNameType "BaseName"
-		MalterlibPostCopyProject "Tests"
+		MalterlibPostCopyProject undefined
 	}
 	Target
 	{
