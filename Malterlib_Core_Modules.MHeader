@@ -55,30 +55,6 @@ Property.MalterlibModules =+ [
 	, "XML"
 ]
 
-%Repository "MalterlibSDK"
-{
-	!MalterlibUseGitRepo false
-	Property.RepoName define string = `@(this.Identity).git`
-	Repository
-	{
-		Type "Malterlib"
-		Location "../../SDK"->MakeAbsolute()
-		URL `@(Repository.MalterlibRoot)/@(RepoName)`
-		Remotes =+ MalterlibRemotePrefixes->ForEach("f_MalterlibRemotePrefixesTemplate")
-		{
-			!MalterlibRemotePrefixes undefined
-		}
-		Remotes =+ {Name: "malterlib", URL: `https://github.com/Malterlib/@(RepoName)`, Write: MalterlibUpstreamWriteAccess}
-		{
-			&
-			{
-				MalterlibUpstreamAccess true
-				!Repository.URL `https://github.com/Malterlib/@(RepoName)`
-			}
-		}
-	}
-}
-
 Property
 {
 	MalterlibBinarySDKRepositories define [string] = []
