@@ -1541,7 +1541,7 @@ namespace NMib
 	};
 
 	template <typename tf_CType>
-	static constexpr CConstExprSubStr fg_GetTypeNameConstExpr();
+	static consteval CConstExprSubStr fg_GetTypeNameConstExpr();
 
 	template <mint t_nCharacters>
 	struct TCConstExprSubStr : public CConstExprSubStr
@@ -1567,11 +1567,11 @@ namespace NMib
 	static constexpr uint32 fg_JenkinsHash(const char * const _pString);
 	static constexpr uint32 fg_JenkinsHash(const char * const _pString, mint _Len, char _ExtraChar);
 
-	static constexpr void fg_ParseTypeIdentifierConstexpr(char const *&_pParse);
-	static constexpr void fg_ParseUntilCallingConvention(char const *&_pParse);
+	static consteval void fg_ParseTypeIdentifierConstexpr(char const *&_pParse);
+	static consteval void fg_ParseUntilCallingConvention(char const *&_pParse);
 
 	template <auto tf_pMemberPointer>
-	static constexpr CConstExprSubStr fg_GetMemberPointerNameConstExpr();
+	static consteval CConstExprSubStr fg_GetMemberPointerNameConstExpr();
 
 #ifdef DCompiler_MSVC_Workaround
 #	define DMibSupportMemberNameFromMemberPointer 0
@@ -1582,17 +1582,17 @@ namespace NMib
 #if DMibSupportMemberNameFromMemberPointer
 
 	template <auto tf_pMemberFunction>
-	static constexpr uint32 fg_GetMemberFunctionHash();
+	static consteval uint32 fg_GetMemberFunctionHash();
 
 #define DMibPointerToMemberFunctionForHash(d_FunctionName) d_FunctionName
 #define DMibIfNotSupportMemberNameFromMemberPointer(...)
 
 #else
 
-	static constexpr uint32 fg_GetMemberFunctionNameHash(const char * const _pFunctionName);
+	static consteval uint32 fg_GetMemberFunctionNameHash(const char * const _pFunctionName);
 
 	template <auto tf_pMemberFunction>
-	static constexpr uint32 fg_GetMemberFunctionHash(uint32 _NameHash);
+	static consteval uint32 fg_GetMemberFunctionHash(uint32 _NameHash);
 
 #define DMibPointerToMemberFunctionForHash(d_FunctionName) d_FunctionName, fg_GetMemberFunctionNameHash(DMibStringize(d_FunctionName))
 #define DMibIfNotSupportMemberNameFromMemberPointer(...) __VA_ARGS__
@@ -1600,10 +1600,10 @@ namespace NMib
 #endif
 
 	template <typename tf_CClass>
-	static constexpr uint32 fg_GetMemberFunctionHash(const char * const _pFunctionName);
+	static consteval uint32 fg_GetMemberFunctionHash(const char * const _pFunctionName);
 
 	template <typename tf_CType>
-	static constexpr uint32 fg_GetTypeHash();
+	static consteval uint32 fg_GetTypeHash();
 
 #ifdef DCompiler_MSVC_Workaround
 #	define DMibConstantTypeHash(d_Type) NMib::fg_GetTypeHash<d_Type>()

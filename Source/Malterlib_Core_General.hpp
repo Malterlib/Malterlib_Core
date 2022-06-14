@@ -43,7 +43,7 @@ namespace NMib
 		return Hash;
 	}
 	
-	static constexpr void fg_ParseUntilCallingConvention(char const *&_pParse)
+	static consteval void fg_ParseUntilCallingConvention(char const *&_pParse)
 	{
 		mint nStart = 0;
 
@@ -110,7 +110,7 @@ namespace NMib
 		}
 	}
 
-	static constexpr void fg_ParseTypeIdentifierConstexpr(char const *&_pParse)
+	static consteval void fg_ParseTypeIdentifierConstexpr(char const *&_pParse)
 	{
 		mint nStart = 0;
 
@@ -148,7 +148,7 @@ namespace NMib
 	}
 
 	template <typename tf_CType>
-	static constexpr CConstExprSubStr fg_GetTypeNameConstExpr()
+	static consteval CConstExprSubStr fg_GetTypeNameConstExpr()
 	{
 #if defined(DCompiler_MSVC)
 		char const *pParseStart = DMibPFunctionSignature;
@@ -191,9 +191,9 @@ namespace NMib
 			++pParse;
 		}
 
-		if (NStr::fg_StrStartsWith(pStartType, "`anonymous-namespace'::"))
-			throw "Not portable";
-
+		if (pStartType[0] == '`' && pStartType[1] == 'a')
+			throw "Not portable"; // `anonymous-namespace'::
+		
 		return CConstExprSubStr(pStartType, (pParse - pStartType));
 #else
 		char const *pParseStart = DMibPFunctionSignature;
@@ -221,8 +221,8 @@ namespace NMib
 			++pParse;
 		}
 
-		if (NStr::fg_StrStartsWith(pStartType, "(anonymous namespace)::"))
-			throw "Not portable";
+		if (pStartType[0] == '(' && pStartType[1] == 'a')
+			throw "Not portable"; // (anonymous namespace)::
 
 		return CConstExprSubStr(pStartType, (pParse - pStartType));
 #endif
@@ -324,7 +324,7 @@ namespace NMib
 	}
 
 	template <auto tf_pMemberPointer>
-	static constexpr CConstExprSubStr fg_GetMemberPointerNameConstExpr()
+	static consteval CConstExprSubStr fg_GetMemberPointerNameConstExpr()
 	{
 #if defined(DCompiler_MSVC)
 		char const *pParse = DMibPFunctionSignature;
@@ -374,7 +374,7 @@ namespace NMib
 #if DMibSupportMemberNameFromMemberPointer
 
 	template <auto tf_pMemberFunction>
-	static constexpr uint32 fg_GetMemberFunctionHash()
+	static consteval uint32 fg_GetMemberFunctionHash()
 	{
 		using CMemberFunction = decltype(tf_pMemberFunction);
 		auto FunctionName = fg_GetMemberPointerNameConstExpr<tf_pMemberFunction>();
@@ -405,7 +405,7 @@ namespace NMib
 
 #else
 
-	static constexpr uint32 fg_GetMemberFunctionNameHash(const char * const _pFunctionName)
+	static consteval uint32 fg_GetMemberFunctionNameHash(const char * const _pFunctionName)
 	{
 		char const *pStartName = nullptr;
 		char const *pEnd = _pFunctionName + NStr::fg_StrLen(_pFunctionName) - 1;
@@ -429,7 +429,7 @@ namespace NMib
 	}
 
 	template <auto tf_pMemberFunction>
-	static constexpr uint32 fg_GetMemberFunctionHash(uint32 _NameHash)
+	static consteval uint32 fg_GetMemberFunctionHash(uint32 _NameHash)
 	{
 		using CMemberFunction = decltype(tf_pMemberFunction);
 		auto ClassTypeName = fg_GetTypeNameConstExpr<typename NTraits::TCMemberFunctionPointerTraits<CMemberFunction>::CClass>();
@@ -437,7 +437,7 @@ namespace NMib
 	}
 
 	template <auto tf_pMemberFunction, uint32 t_NameHash>
-	static constexpr uint32 fg_GetMemberFunctionHash()
+	static consteval uint32 fg_GetMemberFunctionHash()
 	{
 		return fg_GetMemberFunctionHash<tf_pMemberFunction>(t_NameHash);
 	}
@@ -445,14 +445,14 @@ namespace NMib
 #endif
 
 	template <typename tf_CClass>
-	static constexpr uint32 fg_GetMemberFunctionHash(const char * const _pFunctionName)
+	static consteval uint32 fg_GetMemberFunctionHash(const char * const _pFunctionName)
 	{
 		auto ClassTypeName = fg_GetTypeNameConstExpr<tf_CClass>();
 		return fg_JenkinsHash(_pFunctionName) ^ fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len, ']');
 	}
 
 	template <typename tf_CType>
-	static constexpr uint32 fg_GetTypeHash()
+	static consteval uint32 fg_GetTypeHash()
 	{
 		auto ClassTypeName = fg_GetTypeNameConstExpr<tf_CType>();
 		return fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len, ']');

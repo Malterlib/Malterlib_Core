@@ -1773,7 +1773,7 @@ Target
 		!Target.EmscriptenNode undefined
 	}
 
-	CxxLanguage define string = "C++20"
+	CxxLanguage define string = "C++23"
 
 	CxxStandardLibrary define string = "libc++"
 
