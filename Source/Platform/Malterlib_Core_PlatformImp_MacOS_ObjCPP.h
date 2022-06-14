@@ -9,7 +9,7 @@
 
 namespace NMib
 {
-	namespace NOSXRuntime
+	namespace NMacOSRuntime
 	{
 		using namespace NFile;
 		class CFileChangeNoticationContext

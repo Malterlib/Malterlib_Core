@@ -41,66 +41,22 @@ Property
 		!!Platform "Windows"
 	}
 
-	PlatformVersion define string
+	PlatformVersion define int
 	// Version
-	PlatformVersion "510" // Windows XP
+	PlatformVersion 510 // Windows XP
 	{
 		!!Platform "Windows"
 	}
-	PlatformVersion "1050" // OSX 10.5
+	PlatformVersion `@(MalterlibMinSupportedMacOSVersion->Replace(".", "0"))0`->AsInteger()
 	{
-		!!Platform "OSX10.5"
+		!!Platform "macOS"
 	}
-	PlatformVersion "1060" // OSX 10.6
+	PlatformVersion 260 // Linux Kernel 2.6
 	{
-		!!Platform "OSX10.6"
-	}
-	PlatformVersion "1070" // OSX 10.7
-	{
-		!!Platform "OSX10.7"
-	}
-	PlatformVersion "1080" // OSX 10.8
-	{
-		!!Platform "OSX10.8"
-	}
-	PlatformVersion "1090" // OSX 10.9
-	{
-		!!Platform "OSX10.9"
-	}
-	PlatformVersion "10100" // OSX 10.10
-	{
-		!!Platform "OSX10.10"
-	}
-	PlatformVersion "10110" // OSX 10.11
-	{
-		!!Platform "OSX10.11"
-	}
-	PlatformVersion "10120" // OSX 10.12
-	{
-		!!Platform "OSX10.12"
-	}
-	PlatformVersion "10130" // OSX 10.13
-	{
-		!!Platform "OSX10.13"
-	}
-	PlatformVersion "10140" // OSX 10.14
-	{
-		!!Platform "OSX10.14"
-	}
-	PlatformVersion "10150" // OSX 10.15
-	{
-		!!Platform "OSX10.15"
-	}
-	PlatformVersion "11000" // OSX 11
-	{
-		!!Platform "OSX11"
-	}
-	PlatformVersion "260" // Linux kernel 2.6
-	{
-		!!Platform "Linux2.6"
+		!!Platform "Linux"
 	}
 
-	PlatformVersion "810" // iOS 8.1
+	PlatformVersion `@(MalterlibMinSupportediOSVersion->Replace(".", "0"))0`->AsInteger()
 	{
 		!!Platform "iOS8.1"
 	}
@@ -112,20 +68,9 @@ Property
 	{
 		!!Platform "Windows"
 	}
-	PlatformFamily "OSX"
+	PlatformFamily "macOS"
 	{
-		!!Platform "OSX10.5"
-		!!Platform "OSX10.6"
-		!!Platform "OSX10.7"
-		!!Platform "OSX10.8"
-		!!Platform "OSX10.9"
-		!!Platform "OSX10.10"
-		!!Platform "OSX10.11"
-		!!Platform "OSX10.12"
-		!!Platform "OSX10.13"
-		!!Platform "OSX10.14"
-		!!Platform "OSX10.15"
-		!!Platform "OSX11"
+		!!Platform "macOS"
 	}
 	PlatformFamily "iOS"
 	{
@@ -133,7 +78,7 @@ Property
 	}
 	PlatformFamily "Linux"
 	{
-		!!Platform "Linux2.6"
+		!!Platform "Linux"
 	}
 	PlatformFamily "Emscripten"
 	{
@@ -143,7 +88,7 @@ Property
 	PlatformIsDarwin define bool = false
 	PlatformIsDarwin true
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 		!!PlatformFamily "iOS"
 	}
 
@@ -536,8 +481,8 @@ Property
 
 Property
 {
-	MalterlibIsOSXBundle define bool = false
-	MalterlibIsOSXBundle true
+	MalterlibIsMacOSBundle define bool = false
+	MalterlibIsMacOSBundle true
 	{
 		&
 		{
@@ -551,19 +496,19 @@ Property
 		}
 
 	}
-	MalterlibOSXHideDockTile define bool = false
-	MalterlibOSXHideDockTile true
+	MalterlibMacOSHideDockTile define bool = false
+	MalterlibMacOSHideDockTile true
 	{
 		&
 		{
-			MalterlibOSXHideDockTile undefined
-			PlatformFamily "OSX"
+			MalterlibMacOSHideDockTile undefined
+			PlatformFamily "macOS"
 			TargetIsExecutable true
 			!Target.Type "UIExecutable"
 			!Target.Type "XcodeBundle"
 		}
 	}
-	MalterlibOSXNoDarkMode define bool = false
+	MalterlibMacOSNoDarkMode define bool = false
 }
 
 Property
@@ -705,7 +650,7 @@ Property
 	MalterlibMemoryManager_Stats_Enable define bool = false // User(Memory Manager)=true: Report statistics about memory allocations at the end of the program
 	MalterlibMemoryManager_Stats_EnableCategories define bool = false // User(Memory Manager)=true: Dump statistics about memory allocations through categories
 	MalterlibMemoryManager_Stats_EnableCallstack define bool = false // User(Memory Manager)=true: Dump statistics about memory allocations callstacks
-	MalterlibMemoryManager_System_UseLibC define bool = false // User(Memory Manager)=true: Use LibC for system memory manager. Useful on OSX to track allocs in Instruments
+	MalterlibMemoryManager_System_UseLibC define bool = false // User(Memory Manager)=true: Use LibC for system memory manager. Useful on macOS to track allocs in Instruments
 }
 
 Property
@@ -729,7 +674,13 @@ Property
 
 Property
 {
-	PlatformFamilyFromImpFile define string = this.Identity->ParseFormatString("{}PlatformImp_{}_", "{1}")->ParseFormatString("{}.", "{0}")
+	PlatformFamilyFromImpFile define string
+	PlatformFamilyFromImpFile this.Identity->ParseFormatString("{}PlatformImp_{}_", "{1}")->ParseFormatString("{}.", "{0}")
+
+	PlatformFamilyFromImpFile "macOS"
+	{
+		!!PlatformFamilyFromImpFile "MacOS"
+	}
 }
 
 Property
@@ -740,9 +691,10 @@ Property
 
 Property
 {
-	!!PlatformFamily "OSX"
-	PlatformFamilyFromFile "OSX"
+	!!PlatformFamily "macOS"
+	PlatformFamilyFromFile "macOS"
 	{
+		!!PlatformFamilyFromFile "MacOS"
 		!!PlatformFamilyFromFile "Unix"
 		!!PlatformFamilyFromFile "POSIX"
 	}

@@ -50,13 +50,37 @@ Property
 
 	MalterlibXcodeNewBuildSystem define bool = false  // User(Build System)=true: Use Xcode new build system
 
-	MalterlibNoOSXCrossModuleExceptions define bool = PlatformIsDarwin // User(Undocumented)=false: Disables catching of exception across modules on OSX. This will bring in libunwind statically (default true)
+	MalterlibXcodeNewBuildSystem true
+	{
+		&
+		{
+			MalterlibXcodeNewBuildSystem undefined
+			Generator "Xcode14"
+		}
+	}
+
+	MalterlibNoMacOSCrossModuleExceptions define bool = PlatformIsDarwin // User(Undocumented)=false: Disables catching of exception across modules on macOS. This will bring in libunwind statically (default true)
 
 	MalterlibMaxSupportedWindowsVersion define string = "10.0.22000.0" // User(Platform Version): Max supported Windows version.
 
-	MalterlibMaxSupportedOSXVersion define string = "Latest" // User(Platform Version): Max supported OSX version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMinSupportedMacOSVersion define string = "10.9" // User(Platform Version): Max supported macOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMaxSupportedMacOSVersion define string = "Latest" // User(Platform Version): Max supported macOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 
-    MalterlibMaxSupportediOSVersion define string = "8.1" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMinSupportedMacOSVersion "13.0"
+	{
+		&
+		{
+			MalterlibMinSupportedMacOSVersion undefined
+			&
+			{
+				PlatformFamily "macOS"
+				Architecture "arm64e"
+			}
+		}
+	}
+
+    MalterlibMinSupportediOSVersion define string = "8.1" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+    MalterlibMaxSupportediOSVersion define string = "Latest" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 
     MalterlibAllSchemes define bool = false // User(Build System)=true: Enable to generate schemes for all targets, even targets without debug commands
 
@@ -66,11 +90,11 @@ Property
 	MalterlibSignTimestampServer define string = "http://timestamp.globalsign.com/scripts/timestamp.dll" // User(Signing): Timestamp server to use when signing windows executables
 	MalterlibSignTimestampServerRFC3161 define string = "" // User(Signing): RFC 3161 Timestamp server to use when signing windows executables. This will override any setting in MalterlibSignTimestampServer
 	MalterlibSignCertWindows define string = "Unknown Company" // User(Signing)="Name of cert": Set this to your local certificate for driver development
-	MalterlibSignCertOSX define string = "-" // User(Signing)=SHA1OfCert: Set this to your Developer ID cert for driver development
+	MalterlibSignCertMacOS define string = "-" // User(Signing)=SHA1OfCert: Set this to your Developer ID cert for driver development
 
-	MalterlibNotarizeOSXUser define string = "" // User(Signing)=email: Set this to your developer email login
-	MalterlibNotarizeOSXPassword define string = MalterlibBuildServerBuild ? "{MalterlibNotarizationPassword}" : `@@keychain:MalterlibNotarize-@(MalterlibNotarizeOSXUser)` // User(Signing)=: Set the password for your apple developer account. Can be an environment variable expansion or @keychain
-	MalterlibNotarizeOSXProvider define string = MalterlibBuildServerBuild ? "{MalterlibNotarizationProvider}" : "" // User(Signing)=: The short name of your itunes organization. Find with: xcrun iTMSTransporter -m provider -u 'email' -p
+	MalterlibNotarizeMacOSUser define string = "" // User(Signing)=email: Set this to your developer email login
+	MalterlibNotarizeMacOSPassword define string = MalterlibBuildServerBuild ? "{MalterlibNotarizationPassword}" : `@@keychain:MalterlibNotarize-@(MalterlibNotarizeMacOSUser)` // User(Signing)=: Set the password for your apple developer account. Can be an environment variable expansion or @keychain
+	MalterlibNotarizeMacOSProvider define string = MalterlibBuildServerBuild ? "{MalterlibNotarizationProvider}" : "" // User(Signing)=: The short name of your itunes organization. Find with: xcrun iTMSTransporter -m provider -u 'email' -p
 
 	MalterlibBreakpadUploadServer define string = "https://error-reports.malterlib.org"
 	MalterlibBreakpadReportInterval define int = 0
@@ -124,6 +148,19 @@ Property
 	}
 
 	MalterlibDefaultToolset define bool = false // User(Undocumented)=true: Use default Xcode toolset with no custom modifications to libc++ or clang
+
+	MalterlibDefaultToolset true
+	{
+		&
+		{
+			MalterlibDefaultToolset undefined
+			&
+			{
+				PlatformFamily "macOS"
+				Architecture "arm64e"
+			}
+		}
+	}
 
 	MalterlibDefaultCompiler define bool // User(Undocumented)=true: Use default Xcode compiler
 	MalterlibDefaultCompiler false
@@ -269,7 +306,7 @@ Property
 			!MalterlibSupportSanitizers true
 			|
 			{
-				PlatformFamily "OSX"
+				PlatformFamily "macOS"
 				PlatformFamily "Linux"
 				PlatformFamily "Windows"
 			}
@@ -309,7 +346,7 @@ Property
 		&
 		{
 			MalterlibEnableBreakpad undefined
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			Target:Target.Type "UIExecutable"
 		}
 	}

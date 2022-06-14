@@ -380,7 +380,7 @@ void CPOSIXSocketContext::f_FreeAddress(CPOSIXAddress* _pAddress) // It is OK to
 	delete _pAddress;
 }
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 #	ifndef s6_addr16
 #		define s6_addr16 __u6_addr.__u6_addr16
 #	endif
@@ -773,7 +773,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
 	}
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
@@ -855,7 +855,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
 	}
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
@@ -1235,7 +1235,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 	 	, bool _bFromInherit
 	)
 {
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	{
 		// Disable sigpipe from being sent to program. We handle this in exceptions
 		int set = 1;

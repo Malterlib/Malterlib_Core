@@ -17,7 +17,7 @@
 #endif
 
 // Memory intrinsics
-#if defined(DPlatformFamily_OSX)
+#if defined(DPlatformFamily_macOS)
 	extern "C" void	*memcpy(void *, const void *, __SIZE_TYPE__);
 	extern "C" int memcmp(const void *__s1, const void *__s2, size_t __n);
 	extern "C" void	*memset(void *, int, __SIZE_TYPE__);

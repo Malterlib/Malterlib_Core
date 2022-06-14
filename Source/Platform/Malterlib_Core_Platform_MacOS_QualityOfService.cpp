@@ -1,7 +1,7 @@
 // Copyright © 2020 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-#include "Malterlib_Core_Platform_OSX_QualityOfService.h"
+#include "Malterlib_Core_Platform_MacOS_QualityOfService.h"
 
 namespace NMib
 {

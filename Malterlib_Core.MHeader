@@ -9,7 +9,7 @@ Property
 	HasLLVMRepository define bool = false
 	HasLLVMRepository true
 	{
-		!!EnablePlatformFamily_OSX true
+		!!EnablePlatformFamily_macOS true
 		!!EnablePlatformFamily_Linux true
 	}
 

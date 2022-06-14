@@ -4,6 +4,6 @@
 #pragma once
 #include <Mib/Core/Core>
 
-#ifdef DPlatformFamily_OSX
-	#include "Malterlib_Core_PlatformImp_MacOSX_Integration.h"
+#ifdef DPlatformFamily_macOS
+	#include "Malterlib_Core_PlatformImp_MacOS_Integration.h"
 #endif

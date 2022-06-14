@@ -3,7 +3,7 @@
 
 #pragma once
 
-#if defined(DPlatformFamily_OSX)
+#if defined(DPlatformFamily_macOS)
 
 #elif defined(DPlatformFamily_Linux)
 #elif defined(DPlatformFamily_Windows)
@@ -24,14 +24,14 @@
 #	error "Implement this"
 #endif
 
-#if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux)
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
 #	if !defined(_LIBCPP_DISABLE_NEW_DELETE) && !defined(DMibDefaultToolset) && defined(DMalterlibUseStaticLibCxx)
 #		define _LIBCPP_DISABLE_NEW_DELETE
 #	endif
 #endif
 
 // Optimal char size
-#if defined(DPlatformFamily_OSX)
+#if defined(DPlatformFamily_macOS)
 #	define DMibOptimalSystemCharSize 1
 #elif defined(DPlatformFamily_Emscripten)
 #	define DMibOptimalSystemCharSize 1
@@ -45,7 +45,7 @@
 
 
 // System creation
-#if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Windows)
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Windows)
 #	define DMibPAutomaticSystemCreation
 #else
 #	error "Implement this"
@@ -53,7 +53,7 @@
 
 
 // Safe timer
-#if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
 	// Not supported or needed
 #elif defined(DPlatformFamily_Windows)
 #	define DMibSafeTimerAvailable
@@ -96,7 +96,7 @@
 
 
 // New override
-#if defined(DPlatformFamily_OSX)
+#if defined(DPlatformFamily_macOS)
 #	include <new>
 #	define DMibPOverrideOperatorNew
 #elif defined(DPlatformFamily_Linux)

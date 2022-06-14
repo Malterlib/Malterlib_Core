@@ -244,7 +244,7 @@ private:
 	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv4 const& _InAddr, sockaddr_in& _OutAddr) const
 	{
 		fg_MemClear(_OutAddr);
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 		_OutAddr.sin_len = sizeof(_OutAddr);
 #endif
 		_OutAddr.sin_family = AF_INET;
@@ -257,7 +257,7 @@ private:
 	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv6 const& _InAddr, sockaddr_in6& _OutAddr) const
 	{
 		fg_MemClear(_OutAddr);
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 		_OutAddr.sin6_len = sizeof(_OutAddr);
 #endif
 		_OutAddr.sin6_family = AF_INET6;

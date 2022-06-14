@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 #include <mach/task_policy.h>
 #include <mach/task.h>
 #include <mach/mach_init.h>
@@ -30,9 +30,9 @@ namespace
 		char const *pError = nullptr;
 
 #if defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
-		pError = strerror_r(_Err, Buffer, 256); // IMPORTANT: This function has different semantics on OSX and Linux
-#elif defined(DPlatformFamily_OSX)
-		if (!strerror_r(_Err, Buffer, 256)) // IMPORTANT: This function has different semantics on OSX and Linux
+		pError = strerror_r(_Err, Buffer, 256); // IMPORTANT: This function has different semantics on macOS and Linux
+#elif defined(DPlatformFamily_macOS)
+		if (!strerror_r(_Err, Buffer, 256)) // IMPORTANT: This function has different semantics on macOS and Linux
 			pError = Buffer;
 #else
 	#error "Not implemented"
@@ -105,7 +105,7 @@ namespace
 				break;
 		}
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 		{
 			struct task_category_policy TaskCategoryPolity;
 			if (_Priority > EExecutionPriority_Normal)

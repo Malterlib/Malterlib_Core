@@ -27,7 +27,7 @@
 
 
 // Error line formatting
-#if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux)
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
 #	define DMibPFileLineFormat "{}:{}:"
 #	define DMibPFileLineFormatIndent ""
 #	define DMibPFileLineColumnFormat "{}:{}:{}:"
@@ -48,7 +48,7 @@
 
 
 // Main
-#if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
 #	define DMibPMain int main(){return NMib::fg_GetSys()->f_RunApplication();}
 #elif defined(DPlatformFamily_Windows)
 #	ifdef DPConsole
@@ -62,7 +62,7 @@
 
 
 // New line
-#if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
 #	define DMibNewLine "\n"
 #elif defined(DPlatformFamily_Windows)
 #	define DMibNewLine "\r\n"

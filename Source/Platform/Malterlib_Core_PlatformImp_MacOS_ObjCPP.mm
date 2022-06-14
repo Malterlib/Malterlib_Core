@@ -4,8 +4,8 @@
 #include <Mib/Core/Core>
 #include <sys/utsname.h>
 
-#include "Malterlib_Core_PlatformImp_MacOSX_ObjCPP.h"
-#include "Malterlib_Core_Platform_OSX_ObjC.h"
+#include "Malterlib_Core_PlatformImp_MacOS_ObjCPP.h"
+#include "Malterlib_Core_Platform_MacOS_ObjC.h"
 
 #import <Cocoa/Cocoa.h>
 #import <AppKit/NSApplication.h>
@@ -49,7 +49,7 @@ namespace NMib
 			}
 		}
 
-		CStr fg_MacOSX_GetApplicationSupportDirectory()
+		CStr fg_MacOS_GetApplicationSupportDirectory()
 		{
 			if (fg_OverrideHome())
 				return fg_GetSys()->f_GetEnvironmentVariable("HOME") / "Library/Application Support";
@@ -79,7 +79,7 @@ namespace NMib
 			return Out;
 		}
 
-		CStrNonTracked fg_MacOSX_GetApplicationSupportDirectoryNonTracked()
+		CStrNonTracked fg_MacOS_GetApplicationSupportDirectoryNonTracked()
 		{
 			if (fg_OverrideHome())
 				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME")) / "Library/Application Support";
@@ -108,7 +108,7 @@ namespace NMib
 			return Out;
 		}
 
-		CStr fg_MacOSX_GetCachesDirectory()
+		CStr fg_MacOS_GetCachesDirectory()
 		{
 			if (fg_OverrideHome())
 				return fg_GetSys()->f_GetEnvironmentVariable("HOME") / "Library/Caches";
@@ -137,7 +137,7 @@ namespace NMib
 			return Out;
 		}
 
-		CStrNonTracked fg_MacOSX_GetCachesDirectoryNonTracked()
+		CStrNonTracked fg_MacOS_GetCachesDirectoryNonTracked()
 		{
 			if (fg_OverrideHome())
 				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME")) / "Library/Caches";
@@ -167,7 +167,7 @@ namespace NMib
 			return Out;
 		}
 
-		CStr fg_MacOSX_GetLogDirectory()
+		CStr fg_MacOS_GetLogDirectory()
 		{
 			if (fg_OverrideHome())
 				return fg_GetSys()->f_GetEnvironmentVariable("HOME") / "Library/Logs";
@@ -197,7 +197,7 @@ namespace NMib
 			return Out;
 		}
 
-		CStrNonTracked fg_MacOSX_GetLogDirectoryNonTracked()
+		CStrNonTracked fg_MacOS_GetLogDirectoryNonTracked()
 		{
 			if (fg_OverrideHome())
 				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME")) / "Library/Logs";
@@ -228,7 +228,7 @@ namespace NMib
 		}
 
 
-        CStr fg_MacOSX_GetUserHomeDirectory()
+        CStr fg_MacOS_GetUserHomeDirectory()
 		{
 			if (fg_OverrideHome())
 				return fg_GetSys()->f_GetEnvironmentVariable("HOME");
@@ -255,7 +255,7 @@ namespace NMib
 			return Out;
 		}
 
-		CStrNonTracked fg_MacOSX_GetUserHomeDirectoryNonTracked()
+		CStrNonTracked fg_MacOS_GetUserHomeDirectoryNonTracked()
 		{
 			if (fg_OverrideHome())
 				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME"));
@@ -282,7 +282,7 @@ namespace NMib
 			return Out;
 		}
 
-		NMib::NStr::CStr fg_MacOSX_GetSystemLanguage()
+		NMib::NStr::CStr fg_MacOS_GetSystemLanguage()
 		{
 			CFArrayRef lLanguages = CFLocaleCopyPreferredLanguages();
 
@@ -314,25 +314,25 @@ namespace NMib
 
 	namespace NRuntime
 	{
-		void fg_MacOSX_NativeHideMainWindow(void * _pNativeWindowHandle)
+		void fg_MacOS_NativeHideMainWindow(void * _pNativeWindowHandle)
 		{
 			[NSApp hide:(__bridge NSView*)_pNativeWindowHandle];
 		}
 
-		void fg_MacOSX_SetBadgeLabel(NStr::CStr const& _Label)
+		void fg_MacOS_SetBadgeLabel(NStr::CStr const& _Label)
 		{
 			CAutoReleasePool ARPool;
 
-			NSString* pLabel = NPlatform::fg_MaxOSX_GetString(_Label);
+			NSString* pLabel = NPlatform::fg_MacOS_GetString(_Label);
 			[[NSApp dockTile] setBadgeLabel:pLabel];
 		}
 
-		void fg_MacOSX_ClearBadgeLabel()
+		void fg_MacOS_ClearBadgeLabel()
 		{
 			[[NSApp dockTile] setBadgeLabel:nil];
 		}
 
-		bool fg_MacOSX_PlaySound(uint8 const* _pWaveform, mint _nBytes)
+		bool fg_MacOS_PlaySound(uint8 const* _pWaveform, mint _nBytes)
 		{
 			CAutoReleasePool ARPool;
 
@@ -495,7 +495,7 @@ namespace NMib
 			NSMenu* pMenu = [[NSMenu alloc] initWithTitle:@""];
 
 			{
-				NSMenuItem* pNameItem = [[NSMenuItem alloc] initWithTitle:NPlatform::fg_MaxOSX_GetString(_DaemonName) action:NULL keyEquivalent:@""];
+				NSMenuItem* pNameItem = [[NSMenuItem alloc] initWithTitle:NPlatform::fg_MacOS_GetString(_DaemonName) action:NULL keyEquivalent:@""];
 				pNameItem.enabled = false;
 				[pMenu addItem:pNameItem];
 			}
@@ -503,7 +503,7 @@ namespace NMib
 			if (!_bRunningAsDaemon)
 			{
 				NStr::CStr ProgramPath = NFile::CFile::fs_GetProgramPath();
-				NSMenuItem* pNameItem = [[NSMenuItem alloc] initWithTitle:NPlatform::fg_MaxOSX_GetString(ProgramPath) action:NULL keyEquivalent:@""];
+				NSMenuItem* pNameItem = [[NSMenuItem alloc] initWithTitle:NPlatform::fg_MacOS_GetString(ProgramPath) action:NULL keyEquivalent:@""];
 				pNameItem.enabled = false;
 				[pMenu addItem:pNameItem];
 			}
@@ -568,7 +568,7 @@ namespace NMib
 
 namespace NMib
 {
-	namespace NOSXRuntime
+	namespace NMacOSRuntime
 	{
 		struct CFileChangeNoticationContext::CInternal
 		{

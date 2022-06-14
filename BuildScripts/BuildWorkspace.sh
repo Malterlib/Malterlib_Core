@@ -13,7 +13,7 @@ source "$DIR/DetectSystem.sh"
 if [[ "$MalterlibPlatform" == "Windows" ]] ; then
 	"$DIR/BuildVisualStudioWorkspace.sh" "$@"
 	exit $?
-elif [[ "$MalterlibPlatform" == "OSX" ]] ; then
+elif [[ "$MalterlibPlatform" == "macOS" ]] ; then
 	"$DIR/BuildXcodeWorkspace.sh" "$@"
 	exit $?
 else

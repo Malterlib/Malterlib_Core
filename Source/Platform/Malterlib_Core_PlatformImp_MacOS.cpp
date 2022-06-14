@@ -23,6 +23,10 @@
 #include <sys/clonefile.h>
 #include <os/lock.h>
 
+#if __has_feature(ptrauth_calls)
+#include <ptrauth.h>
+#endif
+
 using namespace NMib;
 using namespace NMib::NStr;
 using namespace NMib::NTime;
@@ -30,7 +34,7 @@ using namespace NMib::NMemory;
 using namespace NMib::NContainer;
 
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
-#include <Mib/Core/PlatformSpecific/OSXOSStatus>
+#include <Mib/Core/PlatformSpecific/MacOSOSStatus>
 
 #ifdef DMibDynamicLibrary
 bool g_bIsSharedLibrary = true;
@@ -160,7 +164,7 @@ extern "C"
 #include "Malterlib_Core_PlatformImp_POSIX_Net.imp.h"
 
 // *************************************************************************************************************************
-// OSX Implementation
+// macOS Implementation
 // *************************************************************************************************************************
 
 //#if !TARGET_OS_ASPEN
@@ -202,12 +206,12 @@ extern "C"
 
 //#include <files.h>
 
-#include "Malterlib_Core_PlatformImp_MacOSX_ObjCPP.h"
+#include "Malterlib_Core_PlatformImp_MacOS_ObjCPP.h"
 #if defined(DArchitecture_x64) || defined(DArchitecture_x64)
 #include <xmmintrin.h>
 #endif
 
-static inline_small class CSystemMacOSX *fg_GetLocalSys();
+static inline_small class CSystemMacOS *fg_GetLocalSys();
 
 void NSys::fg_System_EnableFloatingPointExceptions()
 {
@@ -456,10 +460,10 @@ void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
 
 NMib::NSys::EDesktopEnvironment NMib::NSys::fg_DesktopEnvironment_Get()
 {
-	return EDesktopEnvironment_OSX;
+	return EDesktopEnvironment_MacOS;
 }
 
-class CSystemMacOSX : public CSystem
+class CSystemMacOS : public CSystem
 {
 public:
 	CSystem_POSIX m_Posix;
@@ -567,7 +571,7 @@ public:
 		}
 	}
 
-	CSystemMacOSX()
+	CSystemMacOS()
 		: CSystem(g_bIsSharedLibrary)
 		, m_SocketContext{DAggregateInit}
 		, m_FileChangeNoticationContext{DAggregateInit}
@@ -579,7 +583,7 @@ public:
 		fp_InitComplete();
 	}
 
-	~CSystemMacOSX()
+	~CSystemMacOS()
 	{
 	}
 
@@ -628,14 +632,14 @@ public:
 
 	}
 
-	NMib::NStorage::TCAggregate<NMib::NOSXRuntime::CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
+	NMib::NStorage::TCAggregate<NMib::NMacOSRuntime::CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
 
 
 };
 
-static inline_small CSystemMacOSX *fg_GetLocalSys()
+static inline_small CSystemMacOS *fg_GetLocalSys()
 {
-	return (CSystemMacOSX *)fg_GetSys();
+	return (CSystemMacOS *)fg_GetSys();
 }
 
 CSystem_POSIX *fg_GetSys_POSIX()
@@ -983,7 +987,7 @@ void NSys::fg_Thread_Resume(void *_pThread)
 		DMibError("Failed to resume thread.");
 }
 
-//NStorage::TCAggregate<NThread::TCThreadLocal<zint32, NOSXDebug::CAllocator_NonTrackedHeap, NThread::EThreadLocalFlag_None>> g_DisableHeapOverride;
+//NStorage::TCAggregate<NThread::TCThreadLocal<zint32, NMacOSDebug::CAllocator_NonTrackedHeap, NThread::EThreadLocalFlag_None>> g_DisableHeapOverride;
 
 void NSys::fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode)
 {
@@ -1140,7 +1144,7 @@ void NSys::fg_Message(const ch16 *_pMessageType, const ch16 *_pToOutput)
 
 namespace NMib
 {
-	mint align_cacheline g_SystemMemory[sizeof(CSystemMacOSX) / sizeof(mint)];
+	mint align_cacheline g_SystemMemory[sizeof(CSystemMacOS) / sizeof(mint)];
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = false;
 	constinit NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads = {DAggregateInit};
@@ -1151,12 +1155,12 @@ namespace NMib
 
 void fg_ForkPrepare()
 {
-	CSystemMacOSX::fs_ForkPrepare();
+	CSystemMacOS::fs_ForkPrepare();
 }
 
 void fg_ForkParentOrChild()
 {
-	CSystemMacOSX::fs_ForkParentOrChild();
+	CSystemMacOS::fs_ForkParentOrChild();
 }
 
 namespace NMib
@@ -1244,7 +1248,7 @@ namespace NMib
 			Minor = fg_GetStrSep(VersionString, ".").f_ToInt(0);
 			//Fix = fg_GetStrSep(VersionString, ".").f_ToInt(0);
 
-			// Try to convert from darwin version to OSX version
+			// Try to convert from darwin version to macOS version
 			g_OperatingSystemMajor = 10;
 			g_OperatingSystemMinor = Major - 4;
 			g_OperatingSystemFix = Minor;
@@ -1291,7 +1295,7 @@ void fg_DestroySystemThreadsAtExit()
 	fg_MalterlibMallocOverride_AtExitCalled();
 }
 
-//#if defined(DConfig_Release) && !defined(DConfig)
+//#ifs defined(DConfig_Release) && !defined(DConfig)
 
 constinit NMib::NThread::CLowLevelLockAggregate g_CrashReporterLock = {DAggregateInit};
 NMib::NStr::CStrNonTracked g_CrashReporterString;
@@ -1428,6 +1432,14 @@ void NSys::fg_CreateSystemVersion()
 namespace NMib::NSys::NPrivate
 {
 	constinit mint g_PageSize = 0;
+
+	void (* g_pDestroyAtExit)(void) = nullptr;
+}
+
+extern "C" void fg_MalterlibDestroySystem_MacOS()
+{
+	if (NMib::NSys::NPrivate::g_pDestroyAtExit)
+		NMib::NSys::NPrivate::g_pDestroyAtExit();
 }
 
 void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
@@ -1450,8 +1462,8 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 	g_bCreatingSystemDone = true;
 
 	auto pSystemMemory = (void *)NMib::g_SystemMemory;
-	auto pSystem = new(pSystemMemory) CSystemMacOSX();
-	static_assert(alignof(CSystemMacOSX) <= mint(DMibPMemoryCacheLineSize), "Aligment error");
+	auto pSystem = new(pSystemMemory) CSystemMacOS();
+	static_assert(alignof(CSystemMacOS) <= mint(DMibPMemoryCacheLineSize), "Aligment error");
 
 	NSys::fg_Compiler_MakeActive(&pSystemMemory);
 	NSys::fg_Compiler_MakeActive(&pSystem);
@@ -1460,9 +1472,9 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 	g_bCanUseSystemMalloc = true;
 
 	if (!_bProvideDestroySystem)
-		atexit(&fg_DestroySystemAtExit);
+		NPrivate::g_pDestroyAtExit = &fg_DestroySystemAtExit;
 	else
-		atexit(&fg_DestroySystemThreadsAtExit);
+		NPrivate::g_pDestroyAtExit = &fg_DestroySystemThreadsAtExit;
 
 	pSystem->f_InitThreadLocal();
 
@@ -1505,14 +1517,14 @@ void NSys::fg_CreateSystem()
 		if (!g_bRegisteredAtFork)
 		{
 			g_bRegisteredAtFork = true;
-			pthread_atfork(&CSystemMacOSX::fs_ForkPrepare, &CSystemMacOSX::fs_ForkParent, &CSystemMacOSX::fs_ForkChild);
+			pthread_atfork(&CSystemMacOS::fs_ForkPrepare, &CSystemMacOS::fs_ForkParent, &CSystemMacOS::fs_ForkChild);
 		}
 		signal(SIGHUP,SIG_IGN);
 	}
 
 	//atexit(&fg_DestroySystemAtExit);
 
-	// fg_MalterlibMallocOverrideInit_ReinstallHandler(); Breakpad does not use signal handlers on OSX, so we don't need to install handlers here
+	// fg_MalterlibMallocOverrideInit_ReinstallHandler(); Breakpad does not use signal handlers on macOS, so we don't need to install handlers here
 
 	{
 		int NumArgs = *_NSGetArgc();
@@ -1579,7 +1591,7 @@ void NSys::fg_DestroySystem()
 		pSys->f_Destruct();
 		if (pSys->m_bForkedChild)
 			return; // Forked children have several problems with invalid semaphores etc, so lets just not destroy anything here
-		pSys->~CSystemMacOSX();
+		pSys->~CSystemMacOS();
 
 		g_VirtualMap.f_Destruct();
 		g_VirtualMapLock.f_Destruct();
@@ -1598,15 +1610,15 @@ namespace NMib
 	{
 		void fg_MalterlibSystem_ForkPrepare()
 		{
-			CSystemMacOSX::fs_ForkPrepare();
+			CSystemMacOS::fs_ForkPrepare();
 		}
 		void fg_MalterlibSystem_ForkParent()
 		{
-			CSystemMacOSX::fs_ForkParent();
+			CSystemMacOS::fs_ForkParent();
 		}
 		void fg_MalterlibSystem_ForkChild()
 		{
-			CSystemMacOSX::fs_ForkChild();
+			CSystemMacOS::fs_ForkChild();
 		}
 	}
 }
@@ -1692,17 +1704,17 @@ namespace NMib
 	namespace NSys
 	{
 
-		NMib::NStr::CStr fg_MacOSX_GetApplicationSupportDirectory();
-		NMib::NStr::CStr fg_MacOSX_GetCachesDirectory();
-        NMib::NStr::CStr fg_MacOSX_GetUserHomeDirectory();
-		NMib::NStr::CStr fg_MacOSX_GetLogDirectory();
+		NMib::NStr::CStr fg_MacOS_GetApplicationSupportDirectory();
+		NMib::NStr::CStr fg_MacOS_GetCachesDirectory();
+        NMib::NStr::CStr fg_MacOS_GetUserHomeDirectory();
+		NMib::NStr::CStr fg_MacOS_GetLogDirectory();
 
-		NMib::NStr::CStrNonTracked fg_MacOSX_GetApplicationSupportDirectoryNonTracked();
-		NMib::NStr::CStrNonTracked fg_MacOSX_GetCachesDirectoryNonTracked();
-        NMib::NStr::CStrNonTracked fg_MacOSX_GetUserHomeDirectoryNonTracked();
-		NMib::NStr::CStrNonTracked fg_MacOSX_GetLogDirectoryNonTracked();
+		NMib::NStr::CStrNonTracked fg_MacOS_GetApplicationSupportDirectoryNonTracked();
+		NMib::NStr::CStrNonTracked fg_MacOS_GetCachesDirectoryNonTracked();
+        NMib::NStr::CStrNonTracked fg_MacOS_GetUserHomeDirectoryNonTracked();
+		NMib::NStr::CStrNonTracked fg_MacOS_GetLogDirectoryNonTracked();
 
-		NMib::NStr::CStr fg_MacOSX_GetSystemLanguage();
+		NMib::NStr::CStr fg_MacOS_GetSystemLanguage();
 
 	} // Namespace NSys
 
@@ -1733,22 +1745,22 @@ namespace
 
 NMib::NStr::CStr NSys::NFile::fg_GetUserLocalProgramDirectory()
 {
-	return NMib::NFile::CFile::fs_AppendPath(NMib::NSys::fg_MacOSX_GetApplicationSupportDirectory(), fg_GetProgramUserName());
+	return NMib::NFile::CFile::fs_AppendPath(NMib::NSys::fg_MacOS_GetApplicationSupportDirectory(), fg_GetProgramUserName());
 }
 
 NMib::NStr::CStr NSys::NFile::fg_GetUserLocalProgramCacheDirectory()
 {
-	return NMib::NFile::CFile::fs_AppendPath(NMib::NSys::fg_MacOSX_GetCachesDirectory(), fg_GetProgramUserName());
+	return NMib::NFile::CFile::fs_AppendPath(NMib::NSys::fg_MacOS_GetCachesDirectory(), fg_GetProgramUserName());
 }
 
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserLocalProgramDirectoryNonTracked()
 {
-	return NMib::NFile::CFile::fs_AppendPath(NMib::NSys::fg_MacOSX_GetApplicationSupportDirectoryNonTracked(), fg_GetProgramUserNameNonTracked());
+	return NMib::NFile::CFile::fs_AppendPath(NMib::NSys::fg_MacOS_GetApplicationSupportDirectoryNonTracked(), fg_GetProgramUserNameNonTracked());
 }
 
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserLocalProgramCacheDirectoryNonTracked()
 {
-	return NMib::NFile::CFile::fs_AppendPath(NMib::NSys::fg_MacOSX_GetCachesDirectoryNonTracked(), fg_GetProgramUserNameNonTracked());
+	return NMib::NFile::CFile::fs_AppendPath(NMib::NSys::fg_MacOS_GetCachesDirectoryNonTracked(), fg_GetProgramUserNameNonTracked());
 }
 
 NStr::CStr NSys::NFile::fg_GetUserProgramDirectory()
@@ -1898,24 +1910,24 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 
 NMib::NStr::CStr NSys::NFile::fg_GetUserHomeDirectory()
 {
-    return fg_MacOSX_GetUserHomeDirectory();
+    return fg_MacOS_GetUserHomeDirectory();
 }
 
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserHomeDirectoryNonTracked()
 {
-    return fg_MacOSX_GetUserHomeDirectoryNonTracked();
+    return fg_MacOS_GetUserHomeDirectoryNonTracked();
 }
 
 
 NMib::NStr::CStr NSys::NFile::fg_GetLogDirectory()
 {
-	return NMib::NFile::CFile::fs_AppendPath(fg_MacOSX_GetLogDirectory(), fg_GetProgramUserName());
+	return NMib::NFile::CFile::fs_AppendPath(fg_MacOS_GetLogDirectory(), fg_GetProgramUserName());
 }
 
 
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetLogDirectoryNonTracked()
 {
-	return NMib::NFile::CFile::fs_AppendPath(fg_MacOSX_GetLogDirectoryNonTracked(), fg_GetProgramUserNameNonTracked());
+	return NMib::NFile::CFile::fs_AppendPath(fg_MacOS_GetLogDirectoryNonTracked(), fg_GetProgramUserNameNonTracked());
 }
 
 
@@ -2149,7 +2161,7 @@ bool NSys::NFile::fg_ChangeNotification_Supported()
 // Net Implementation
 // *************************************************************************************************************************
 
-#include "Malterlib_Core_PlatformImp_MacOSX_Net.imp.h"
+#include "Malterlib_Core_PlatformImp_MacOS_Net.imp.h"
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
 {
@@ -2456,7 +2468,7 @@ namespace NMib::NThread
 
 uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
 {
-	_Language = fg_MacOSX_GetSystemLanguage();
+	_Language = fg_MacOS_GetSystemLanguage();
 	return 0;
 }
 
@@ -2718,7 +2730,7 @@ ch8 const *NSys::NFile::fg_GetDllExtension()
 //
 // Exists in Mac OS X 10.6 and later
 
-#if DPlatformVersion <= 1050 || defined(DMibNoOSXCrossModuleExceptions)
+#if DPlatformVersion <= 1050 || defined(DMibNoMacOSCrossModuleExceptions)
 
 struct dyld_unwind_sections
 {
@@ -2756,7 +2768,7 @@ extern const struct mach_header*   _dyld_get_image_header(uint32_t image_index) 
 extern intptr_t                    _dyld_get_image_vmaddr_slide(uint32_t image_index)   AVAILABLE_MAC_OS_X_VERSION_10_1_AND_LATER;
 extern const char*                 _dyld_get_image_name(uint32_t image_index)           AVAILABLE_MAC_OS_X_VERSION_10_1_AND_LATER;
 */
-#ifdef DMibNoOSXCrossModuleExceptions
+#ifdef DMibNoMacOSCrossModuleExceptions
 namespace
 {
 	constinit NAtomic::TCAtomic<struct mach_header const *> g_ThisModuleImage = nullptr;
@@ -2767,15 +2779,19 @@ extern "C" bool _dyld_find_unwind_sections(void* addr, struct dyld_unwind_sectio
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#ifdef DMibNoOSXCrossModuleExceptions
+#ifdef DMibNoMacOSCrossModuleExceptions
 	if (!g_ThisModuleImage.f_Load(NAtomic::EMemoryOrder_Acquire))
+#if __has_feature(ptrauth_calls)
+		g_ThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)ptrauth_strip(&_dyld_find_unwind_sections, ptrauth_key_function_pointer)));
+#else
 		g_ThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)&_dyld_find_unwind_sections));
+#endif
 #endif
 	auto pHeader = _dyld_get_image_header_containing_address(addr);
 #pragma clang diagnostic pop
 	if (!pHeader)
 		return false;
-#ifdef DMibNoOSXCrossModuleExceptions
+#ifdef DMibNoMacOSCrossModuleExceptions
 	if (pHeader != g_ThisModuleImage)
 		return false; // Just return unwind sections for this module, because we don't want exceptions to travel across module boundraries
 #endif

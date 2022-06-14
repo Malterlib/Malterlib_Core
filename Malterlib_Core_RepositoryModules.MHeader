@@ -80,7 +80,7 @@ Property
 	MalterlibBinaryRepositories =+ `MalterlibBinaries_@(HostPlatformFamily)_@(HostArchitecture)`
 
 	MalterlibAllBinaryRepositories define bool = false // User(Repository)=true: Set to true to sync all binary repositories.
-	MalterlibAllBinaryRepositories_OSX define bool = false
+	MalterlibAllBinaryRepositories_MacOS define bool = false
 }
 
 Property
@@ -99,11 +99,11 @@ Property
 	|
 	{
 		MalterlibAllBinaryRepositories true
-		MalterlibAllBinaryRepositories_OSX true
+		MalterlibAllBinaryRepositories_MacOS true
 	}
 
-	MalterlibBinaryRepositories =+ "MalterlibBinaries_OSX_x64"
-	MalterlibBinaryRepositories =+ "MalterlibBinaries_OSX_arm64"
+	MalterlibBinaryRepositories =+ "MalterlibBinaries_macOS_x64"
+	MalterlibBinaryRepositories =+ "MalterlibBinaries_macOS_arm64"
 }
 
 
@@ -161,7 +161,7 @@ Property
 	MalterlibBinaryLLVMRepositories =+ `MalterlibLLVMBinaries_@(HostPlatformFamily)_@(HostArchitecture)`
 	{
 		!!HostPlatformFamily "Linux"
-		!!HostPlatformFamily "OSX"
+		!!HostPlatformFamily "macOS"
 	}
 
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_x64"
@@ -190,8 +190,8 @@ Property
 		!MalterlibOnlyRepositoryManagement true
 	}
 
-	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_OSX_x64"
-	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_OSX_arm64"
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_macOS_x64"
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_macOS_arm64"
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_x64"
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_x86"
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_arm64"

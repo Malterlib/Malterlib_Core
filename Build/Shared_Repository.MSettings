@@ -11,7 +11,7 @@ Property
 }
 Property
 {
-	!!HostPlatformFamily "OSX"
+	!!HostPlatformFamily "macOS"
 
 	MalterlibRepositoryEditor "open -a \"Sublime Merge\" {}"
 	{

@@ -44,7 +44,7 @@ Compile
 	{
 		!!MalterlibMemoryManager_EnableOverrideSystemMalloc true
 	}
-	PreprocessorDefines =+ "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport"
+	PreprocessorDefines =+ "DMalterlibMemoryOverrideMacOSInitBeforeLibSystemSupport"
 	{
 		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 	}
@@ -90,7 +90,7 @@ Compile
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			MalterlibMemoryManager "Malterlib"
 		}
 	}
@@ -100,7 +100,7 @@ Compile
 		{
 			&
 			{
-				PlatformFamily "OSX"
+				PlatformFamily "macOS"
 				MalterlibMemoryManager "Malterlib"
 			}
 		}
@@ -142,21 +142,21 @@ Compile
 			{
 				Compile.StackGuard false
 				{
-					!!PlatformFamily "OSX"
+					!!PlatformFamily "macOS"
 				}
 				%File "../Memory/Source/Malterlib_Memory_SystemOverride*"
-				%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSX.cpp"
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_MacOS.cpp"
 				{
 					Compile.Disabled true
 					{
-						!PlatformFamily "OSX"
+						!PlatformFamily "macOS"
 					}
 				}
-				%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXLowLevel.cpp"
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_MacOSLowLevel.cpp"
 				{
 					Compile.Disabled true
 					{
-						!PlatformFamily "OSX"
+						!PlatformFamily "macOS"
 					}
 				}
 				%File "../Memory/Source/Malterlib_Memory_SystemOverride_Linux.cpp"
@@ -173,11 +173,11 @@ Compile
 						!PlatformFamily "Windows"
 					}
 				}
-				%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXLibSystem.cpp"
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_MacOSLibSystem.cpp"
 				{
 					Compile.Disabled true
 				}
-				%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXDyldDummy.cpp"
+				%File "../Memory/Source/Malterlib_Memory_SystemOverride_MacOSDyldDummy.cpp"
 				{
 					Compile.Disabled true
 				}
@@ -231,25 +231,25 @@ Compile
 					!PlatformType "Windows"
 				}
 			}
-			%Group "MacOSX"
+			%Group "macOS"
 			{
-				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOSX*"
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOS*"
 				{
 					Compile.Disabled true
 				}
-				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOSX.cpp"
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOS.cpp"
 				{
 					Compile.Disabled true
 					{
-						!PlatformFamily "OSX"
+						!PlatformFamily "macOS"
 					}
 				}
-				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOSX_ObjCPP.mm"
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOS_ObjCPP.mm"
 				{
 					Compile.Disabled true
 					{
 						!!Documentation "Doxygen"
-						!PlatformFamily "OSX"
+						!PlatformFamily "macOS"
 					}
 				}
 			}

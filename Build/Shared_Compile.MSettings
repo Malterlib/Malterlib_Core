@@ -818,17 +818,21 @@ Property
 
 	MalterlibNativeClangDarwinTarget define string
 
-	MalterlibNativeClangDarwinTarget Format("{1,xpr($+4)}", Platform->Parse("OSX{}.{}", "int", "int")...)
+	MalterlibNativeClangDarwinTarget Format("{1,xpr($+4)}", MalterlibMinSupportedMacOSVersion->Parse("{}.{}", "int", "int")...)
 	{
-		!!Platform ~"OSX*"
+		!!PlatformFamily "macOS"
 	}
-	MalterlibNativeClangDarwinTarget Format("{1,xpr($+6)}", Platform->Parse("iOS{}.{}", "int", "int")...)
+	MalterlibNativeClangDarwinTarget Format("{1,xpr($+6)}", MalterlibMinSupportediOSVersion->Parse("{}.{}", "int", "int")...)
 	{
-		!!Platform ~"iOS*"
+		!!PlatformFamily "iOS"
 	}
-	MalterlibNativeClangDarwinTarget "20"
+	MalterlibNativeClangDarwinTarget Format("{0,xpr($+9)}", MalterlibMinSupportedMacOSVersion->Parse("{}.{}", "int", "int")...)
 	{
-		!!Platform "OSX11"
+		&
+		{
+			PlatformFamily "macOS"
+			MalterlibMinSupportedMacOSVersion >= "11.0"
+		}
 	}
 }
 
@@ -859,7 +863,7 @@ Compile
 {
 	&
 	{
-		PlatformFamily "OSX"
+		PlatformFamily "macOS"
 		|
 		{
 			CompileDialect "C"
@@ -867,12 +871,12 @@ Compile
 		}
 	}
 
-	MinOSXVersion define string?
-	MinOSXVersion Platform->Replace('OSX', '')
+	MinMacOSVersion define string?
+	MinMacOSVersion MalterlibMinSupportedMacOSVersion
 	{
 		&
 		{
-			Compile.MinOSXVersion undefined
+			Compile.MinMacOSVersion undefined
 			!Target.DriverType "DriverKit"
 		}
 	}
@@ -889,7 +893,11 @@ Compile
 	&
 	{
 		LanguageFamily "Native"
-		CompileDialect "C"
+		|
+		{
+			CompileDialect "C"
+			Compile.Type "Assembler"
+		}
 		|
 		{
 			PlatformIsDarwin true
@@ -902,6 +910,9 @@ Compile
 		!MalterlibTargetTriple undefined
 	}
 	AsyncUnwindTables true
+	{
+		!Compile.Type "Assembler"
+	}
 }
 
 Compile
@@ -1019,13 +1030,12 @@ Compile
 
 Property
 {
-	!!PlatformFamily "OSX"
+	!!PlatformFamily "macOS"
 
-	MaxSupportedPlatformVersion `@(MalterlibMaxSupportedOSXVersion->Replace('.',''))0`
+	MaxSupportedPlatformVersion `@(MalterlibMaxSupportedMacOSVersion->Replace('.',''))0`
 	{
 		!!MaxSupportedPlatformVersion undefined
 	}
-	PlatformVersion `@(Platform->Replace('.',''))0`->Replace('OSX','')
 }
 
 Property
@@ -1043,7 +1053,7 @@ Property
 {
 	!!PlatformFamily "Emscripten"
 
-	PlatformVersion "1000"
+	PlatformVersion 1000
 }
 
 Property
@@ -1207,14 +1217,14 @@ Compile
 	FunctionSections define bool?
 	FunctionSections true
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 		!!PlatformFamily "Linux"
 	}
 
 	DataSections define bool?
 	DataSections true
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 		!!PlatformFamily "Linux"
 	}
 
@@ -1454,7 +1464,7 @@ Compile
 	FrameworkSearchPath define [string]?
 	FrameworkSearchPath += `$(PLATFORM_DIR)/Developer/Library/Frameworks`
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 	}
 
 	MaxHeap define string?
@@ -1663,7 +1673,7 @@ Compile
 	ProvidedNewAligment define string?
 	ProvidedNewAligment "1"
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 		!!PlatformFamily "Linux"
 	}
 
@@ -1718,12 +1728,12 @@ Compile
 		}
 	}
 
-	PreprocessorDefines += "DMibNoOSXCrossModuleExceptions"
+	PreprocessorDefines += "DMibNoMacOSCrossModuleExceptions"
 	{
 		&
 		{
 			PlatformIsDarwin true
-			MalterlibNoOSXCrossModuleExceptions true
+			MalterlibNoMacOSCrossModuleExceptions true
 		}
 	}
 
@@ -1734,8 +1744,8 @@ Compile
 			PlatformIsDarwin true
 			|
 			{
-				MalterlibNoOSXCrossModuleExceptions true
-				Platform "OSX10.5"
+				MalterlibNoMacOSCrossModuleExceptions true
+				PlatformVersion 1050
 				MaxSupportedPlatformVersion "10.5"
 			}
 		}
@@ -1774,8 +1784,8 @@ Compile
 
 	PreprocessorDefines += ["__STDC_VERSION__=199901L", "__restrict=", "restrict="]
 	{
-		!!MalterlibMaxSupportedOSXVersion "10.5"
-		!!MalterlibMaxSupportedOSXVersion "10.6"
+		!!MalterlibMaxSupportedMacOSVersion "10.5"
+		!!MalterlibMaxSupportedMacOSVersion "10.6"
 	}
 
 	PreprocessorDefines += [`_WIN32_WINNT=@(MalterlibWindowsNtVersion)`, `NTDDI_VERSION=@(MalterlibWindowsVersion)`]
@@ -1926,6 +1936,7 @@ Compile
 		, "COMPILER_RT_NODEFAULTVISIBILITY"
 		, "LIBCXXABI_NODEFAULTVISIBILITY"
 		, "LIBUNWIND_NODEFAULTVISIBILITY"
+		, "_LIBUNWIND_HIDE_SYMBOLS"
 		, "DMalterlibNontrackedFree"
 	]
 	{
@@ -1999,7 +2010,7 @@ Compile
 	]
 	{
 	}
-	PreprocessorDefines += `DPlatformVersion=@(PlatformVersion)`
+	PreprocessorDefines += `DPlatformVersion=@(PlatformVersion->ToString())`
 	{
 		!PlatformVersion undefined
 	}
@@ -2007,7 +2018,7 @@ Compile
 	{
 		!!Target.Type "ConsoleExecutable"
 	}
-	PreprocessorDefines += `DPlatformVersion=@(PlatformVersion)`
+	PreprocessorDefines += `DPlatformVersion=@(PlatformVersion->ToString())`
 	{
 		!PlatformVersion undefined
 	}
@@ -2488,8 +2499,8 @@ Compile
 			Compile.ObjectiveCARC undefined
 			|
 			{
-				Platform "OSX10.5"
-				Platform "OSX10.6"
+				PlatformVersion 1050
+				PlatformVersion 1060
 			}
 		}
 	}
@@ -2663,7 +2674,7 @@ Compile
 	Platform PlatformFamily
 	{
 		!!PlatformFamily "Linux"
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 	}
 
 	CppFileName define string?
@@ -2713,7 +2724,7 @@ Compile
 			|
 			{
 				PlatformFamily "Linux"
-				PlatformFamily "OSX"
+				PlatformFamily "macOS"
 			}
 		}
 	}

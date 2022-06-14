@@ -12,7 +12,7 @@ namespace NMib
 		tf_CStr fg_FormatErrno(typename tf_CStr::CFormat &&_Desc, int _Err)
 		{
 			tf_CStr ErrorFormat;
-			auto pError = strerror_r(_Err, ErrorFormat.f_GetStr(256), 256); // IMPORTANT: This function has different semantics on OSX and Linux
+			auto pError = strerror_r(_Err, ErrorFormat.f_GetStr(256), 256); // IMPORTANT: This function has different semantics on macOS and Linux
 
 			tf_CStr Ret;
 
@@ -30,7 +30,7 @@ namespace NMib
 		tf_CStr fg_ErrnoString(int _Err)
 		{
 			tf_CStr ErrorFormat;
-			auto pError = strerror_r(_Err, ErrorFormat.f_GetStr(256), 256); // IMPORTANT: This function has different semantics on OSX and Linux
+			auto pError = strerror_r(_Err, ErrorFormat.f_GetStr(256), 256); // IMPORTANT: This function has different semantics on macOS and Linux
 
 			tf_CStr Ret;
 
@@ -40,13 +40,13 @@ namespace NMib
 				Ret = typename tf_CStr::CFormat("{} ({})") << pError << _Err;
 			return Ret;
 		}
-#elif defined(DPlatformFamily_OSX)
+#elif defined(DPlatformFamily_macOS)
 		template <typename tf_CStr>
 		tf_CStr fg_FormatErrno(typename tf_CStr::CFormat &&_Desc, int _Err)
 		{
 			tf_CStr ErrorFormat;
 			auto pError = ErrorFormat.f_GetStr();
-			if (!strerror_r(_Err, ErrorFormat.f_GetStr(256), 256)) // IMPORTANT: This function has different semantics on OSX and Linux
+			if (!strerror_r(_Err, ErrorFormat.f_GetStr(256), 256)) // IMPORTANT: This function has different semantics on macOS and Linux
 				pError = ErrorFormat.f_GetStr();
 			else
 				pError = nullptr;
@@ -68,7 +68,7 @@ namespace NMib
 		{
 			tf_CStr ErrorFormat;
 			auto pError = ErrorFormat.f_GetStr();
-			if (!strerror_r(_Err, ErrorFormat.f_GetStr(256), 256)) // IMPORTANT: This function has different semantics on OSX and Linux
+			if (!strerror_r(_Err, ErrorFormat.f_GetStr(256), 256)) // IMPORTANT: This function has different semantics on macOS and Linux
 				pError = ErrorFormat.f_GetStr();
 			else
 				pError = nullptr;

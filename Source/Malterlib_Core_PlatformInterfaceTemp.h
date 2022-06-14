@@ -89,7 +89,7 @@ namespace NMib
 		void* fg_LoadLibrary(NMib::NStr::CStrNonTracked const& _Library);
 		void* fg_LoadLibrary(NMib::NStr::CFStr256 const& _Library);
 		void* fg_GetLibrarySymbol(void* _pModule, char const* _pSymbol);
-		void* fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned long long& _nDataBytes); // Currently only implemented on OSX, a NOP returning nullptr on all others,
+		void* fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned long long& _nDataBytes); // Currently only implemented on macOS, a NOP returning nullptr on all others,
 
 		void fg_System_ReportContractViolation(const NMib::NStr::CStrNonTracked &_Message);
 		NMib::NStr::CStrNonTracked fg_System_GetContractViolationMessage();
@@ -283,8 +283,7 @@ namespace NMib
 		};
 
 		/*
-			On OSX Location defaults to Sys ProgramName and is used to name keychain entries.
-			On W
+			On macOS Location defaults to Sys ProgramName and is used to name keychain entries.
 		*/
 		bool fg_SecurePassword_IsLocked();
 		ESecurePassword fg_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location);
@@ -357,7 +356,7 @@ namespace NMib
 		{
 				// TODO: Extend these non-linux enums maybe?
 				EDesktopEnvironment_Windows
-			,	EDesktopEnvironment_OSX
+			,	EDesktopEnvironment_MacOS
 
 			,	EDesktopEnvironment_Unity
 			,	EDesktopEnvironment_KDE3

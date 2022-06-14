@@ -9,7 +9,7 @@ using namespace NMib;
 
 #include <pthread.h>
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	#include <sys/syscall.h>
 	#include <unistd.h>
 #endif
@@ -24,8 +24,8 @@ using namespace NMib;
 	#include <mach/thread_policy.h>
 #endif // DMibPMachKernel
 
-#ifdef DPlatformFamily_OSX
-	#include <Mib/Core/PlatformSpecific/OSXQualityOfService>
+#ifdef DPlatformFamily_macOS
+	#include <Mib/Core/PlatformSpecific/MacOSQualityOfService>
 #endif
 
 #include "Malterlib_Core_PlatformImp_POSIX.h"
@@ -68,7 +68,7 @@ void NSys::fg_Thread_FreeLocalWithDestructor(mint _iStorage)
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_delete (thread local free)", errno));
 }
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 mint NSys::g_ThreadSelfOffset = 0;
 mint NSys::g_ThreadLocalOffset = 0;
 namespace NMib
@@ -90,7 +90,7 @@ void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_p
 			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", errno));
 		return;
 	}
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
 		
 		NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
@@ -156,7 +156,7 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 		fg_Thread_SetLocal(_iStorage, _pData);
 		return;
 	}
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
 		NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
 		pThreadLocal->f_Exchange((mint)_pData)
@@ -186,7 +186,7 @@ void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocal(_iStorage);
   
-#if defined(DPlatformFamily_OSX)
+#if defined(DPlatformFamily_macOS)
 	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffsetPThread) + _iStorage * sizeof(mint));
 	return (void *)pThreadLocal->f_Load();
 #else
@@ -349,7 +349,7 @@ public:
 			{
 				timespec ToWait;
 				
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 				struct timeval TimeVal;
 				gettimeofday(&TimeVal, NULL);
 				ToWait.tv_sec = TimeVal.tv_sec + 0;
@@ -463,7 +463,7 @@ void *fg_ThreadStartRoutine(void *_pParams)
 #ifdef DPlatformFamily_Linux
 	if (NLocal::g_f_pthread_setname_np)
 		NLocal::g_f_pthread_setname_np(pthread_self(), StartParams.m_ThreadName.f_GetStr());
-#elif defined(DPlatformFamily_OSX)
+#elif defined(DPlatformFamily_macOS)
 #if DPlatformVersion < 1060
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
 #endif
@@ -662,7 +662,7 @@ void *NSys::fg_Thread_Create
 */
 
 	bool bAlreadySetPriority = false;
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	if (&pthread_attr_set_qos_class_np)
 	{
 		int RelativePriority;
@@ -804,7 +804,7 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 
 void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 {
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	if (&pthread_set_qos_class_self_np && _pThread == NSys::fg_Thread_GetCurrent())
 	{
 		int RelativePriority;
@@ -1020,7 +1020,7 @@ bool NSys::fg_Event_TryWait(void * _pEvent)
 
 mint NSys::fg_Thread_GetCurrentUIDAlternate()
 {
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	if (&pthread_threadid_np)
 	{
 		uint64_t ThreadID;

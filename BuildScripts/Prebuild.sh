@@ -70,7 +70,7 @@ fi
 if [[ "$MalterlibPlatform" == "Windows" ]] ; then
 	"$DIR/PrebuildVisualStudio.sh" "$@"
 	exit $?
-elif [[ "$MalterlibPlatform" == "OSX" ]] || [[ "$MalterlibPlatform" == "Linux" ]]; then
+elif [[ "$MalterlibPlatform" == "macOS" ]] || [[ "$MalterlibPlatform" == "Linux" ]]; then
 	"$DIR/PrebuildXcode.sh" "$@"
 	exit $?
 else

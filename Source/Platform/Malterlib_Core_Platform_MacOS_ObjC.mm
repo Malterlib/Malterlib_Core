@@ -3,7 +3,7 @@
 
 #include <Mib/Core/Core>
 
-#include "Malterlib_Core_Platform_OSX_ObjC.h"
+#include "Malterlib_Core_Platform_MacOS_ObjC.h"
 
 namespace NMib
 {
@@ -30,12 +30,12 @@ namespace NMib
 
 	namespace NPlatform
 	{
-		NSString* fg_MaxOSX_GetString(NStr::CStr const& _Str)
+		NSString* fg_MacOS_GetString(NStr::CStr const& _Str)
 		{
 			return [[NSString alloc] initWithUTF8String:_Str.f_GetStr()];
 		}
 
-		NStr::CStr fg_MaxOSX_GetString(NSString *_pStr)
+		NStr::CStr fg_MacOS_GetString(NSString *_pStr)
 		{
 			if (!_pStr)
 				return NStr::CStr();

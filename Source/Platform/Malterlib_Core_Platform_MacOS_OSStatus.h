@@ -5,14 +5,14 @@ namespace NMib
 {
 	namespace NPlatform
 	{
-		struct COSXError
+		struct CMacOSError
 		{
 			int m_Code;
 			const ch8 *m_pShort;
 			const ch8 *m_pLong;
 		};
 		
-		COSXError const *fg_GetOSStatusError(int _Status);
+		CMacOSError const *fg_GetOSStatusError(int _Status);
 
 		NStr::CFStr256 fg_FormatOSStatus(const ch8 *_pDesc, int _Status);
 		template <typename tf_CStr>
@@ -20,4 +20,4 @@ namespace NMib
 	}
 }
 
-#include "Malterlib_Core_Platform_OSX_OSStatus.hpp"
+#include "Malterlib_Core_Platform_MacOS_OSStatus.hpp"

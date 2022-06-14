@@ -83,7 +83,7 @@ Property
 											`@(ScriptExport("MalterlibSignTimestampServer", MalterlibSignTimestampServer))\r\n`\
 											`@(ScriptExport("MalterlibSignTimestampServerRFC3161", MalterlibSignTimestampServerRFC3161))\r\n`\
 											`@(ScriptExport("Win32SignToolTimestampServerOptions", Win32SignToolTimestampServerOptions))\r\n`\
-											`@(ScriptExport("MalterlibSignCertOSX", MalterlibSignCertOSX))\r\n`\
+											`@(ScriptExport("MalterlibSignCertMacOS", MalterlibSignCertMacOS))\r\n`\
 											`@(ScriptExport("MalterlibSignCertWindows", MalterlibSignCertWindows))\r\n`\
 											`\r\n`\
 											`@(ScriptExport("HostPlatformFamily", HostPlatformFamily))\r\n`\
@@ -195,7 +195,7 @@ Property
 		&
 		{
 			GeneratorFamily "Xcode"
-			HostPlatformFamily "OSX"
+			HostPlatformFamily "macOS"
 		}
 	}
 
@@ -237,7 +237,7 @@ Property
 		&
 		{
 			MalterlibUseXCodeBuild true
-			HostPlatformFamily "OSX"
+			HostPlatformFamily "macOS"
 		}
 	}
 
@@ -277,7 +277,7 @@ Property
 		&
 		{
 			!MalterlibUseXCodeBuild true
-			HostPlatformFamily "OSX"
+			HostPlatformFamily "macOS"
 		}
 	}
 
@@ -299,9 +299,9 @@ Property
 											`\r\n`\
 											`function CleanWorkspace()\r\n`\
 											`{\r\n`\
-											`	CleanWorkspaceForConfig "$1" OSX@(DefaultOSXPlatform) x64 "$2"\r\n`\
-											`	CleanWorkspaceForConfig "$1" Linux2.6 x64 "$2"\r\n`\
-											`	CleanWorkspaceForConfig "$1" Linux2.6 x86 "$2"\r\n`\
+											`	CleanWorkspaceForConfig "$1" macOS x64 "$2"\r\n`\
+											`	CleanWorkspaceForConfig "$1" Linux x64 "$2"\r\n`\
+											`	CleanWorkspaceForConfig "$1" Linux x86 "$2"\r\n`\
 											`}\r\n`\
 											`\r\n`\
 											`function CheckBuildPlatform()\r\n`\

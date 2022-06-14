@@ -24,7 +24,7 @@ namespace NMib
 	
 	namespace NPlatform
 	{
-		NSString* fg_MaxOSX_GetString(NStr::CStr const& _Str);
-		NStr::CStr fg_MaxOSX_GetString(NSString *_pStr);
+		NSString* fg_MacOS_GetString(NStr::CStr const& _Str);
+		NStr::CStr fg_MacOS_GetString(NSString *_pStr);
 	} 
 }

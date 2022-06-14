@@ -48,7 +48,7 @@ namespace NMib
 		// POSIX Thread Implementation
 		// *************************************************************************************************************************
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 		extern mint g_ThreadSelfOffset;
 		extern mint g_ThreadLocalOffset;
 #elif defined(DPlatformFamily_Linux) && defined(DArchitecture_arm64)
@@ -61,7 +61,7 @@ namespace NMib
 		{
 		#ifdef DMibSafeThreadLocals
 			return fg_GetThreadSelf_Safe();
-		#elif defined(DPlatformFamily_OSX)
+		#elif defined(DPlatformFamily_macOS)
 			#if DPlatformVersion >= 1070
 				mint Return;
 				#if defined(__i386__)
@@ -69,8 +69,7 @@ namespace NMib
 				#elif defined(__x86_64__)
 					asm ("mov %%gs:0x0,%0" : "=r"(Return) : );
 				#elif defined(__aarch64__)
-					asm volatile ("mrs %0, tpidrro_el0" : "=r" (Return));
-					Return &= 0xfffffffffffffff8ul;
+					asm ("mrs %0, tpidrro_el0\nbic %0, %0, #7" : "=r" (Return));
 					Return -= sizeof(void *) * 28;
 				#else
 					#error "Not Implemented"
@@ -131,7 +130,7 @@ namespace NMib
 		{
 		#ifdef DMibSafeThreadLocals
 			return fg_GetThreadLocal_Safe(_iVariable);
-		#elif defined(DPlatformFamily_OSX)
+		#elif defined(DPlatformFamily_macOS)
 			#if DPlatformVersion >= 1070
 				mint Return;
 				#if defined(__i386__)

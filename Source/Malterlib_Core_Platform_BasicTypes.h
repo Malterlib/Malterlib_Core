@@ -37,7 +37,7 @@ typedef long double pfp80;
 static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 #endif
 
-#if defined(DPlatformFamily_OSX)
+#if defined(DPlatformFamily_macOS)
 #	if DMibPPtrBits >= 64
 		typedef signed char int8;
 		#define DMibPCanDo_int8
@@ -399,7 +399,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 #	error "Implement this"
 #endif
 
-#if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Windows) || defined(DPlatformFamily_Emscripten)
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Windows) || defined(DPlatformFamily_Emscripten)
 	typedef int64 CMibFilePos;
 #else
 #	error "Implement this"

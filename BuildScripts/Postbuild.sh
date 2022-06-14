@@ -13,7 +13,7 @@ source "$DIR/DetectSystem.sh"
 if [[ "$MalterlibPlatform" == "Windows" ]] ; then
 	"$DIR/PostbuildVisualStudio.sh" "$@"
 	exit $?
-elif [[ "$MalterlibPlatform" == "OSX" ]] || [[ "$MalterlibPlatform" == "Linux" ]] ; then
+elif [[ "$MalterlibPlatform" == "macOS" ]] || [[ "$MalterlibPlatform" == "Linux" ]] ; then
 	"$DIR/PostbuildXcode.sh" "$@"
 	exit $?
 else

@@ -393,6 +393,14 @@
 				}
 			}
 
+			%GeneratorSetting "RetainCommentsFromSystemHeaders"
+			{
+				Property
+				{
+					Name "CLANG_RETAIN_COMMENTS_FROM_SYSTEM_HEADERS"
+				}
+			}
+
 			%GeneratorSetting "QtToolsRoot"
 			{
 				Property
@@ -758,7 +766,7 @@
 					Name "CODE_SIGN_IDENTITY"
 				}
 			}
-			%GeneratorSetting "CodeSigningReqired"
+			%GeneratorSetting "CodeSigningRequired"
 			{
 				Property
 				{
@@ -773,6 +781,22 @@
 					}
 				}
 			}
+			%GeneratorSetting "CodeSigningAllowed"
+			{
+				Property
+				{
+					Name "CODE_SIGNING_ALLOWED"
+				}
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						\true "YES"
+						\false "NO"
+					}
+				}
+			}
+
 			%GeneratorSetting "HardenedRuntime"
 			{
 				Property
@@ -974,6 +998,7 @@
 							%GeneratorSetting "SYMROOT"
 							%GeneratorSetting "TEMP_ROOT"
 							%GeneratorSetting "MODULE_CACHE_DIR"
+							%GeneratorSetting "LOCSYMROOT"
 						}
 					}
 				}
@@ -1060,13 +1085,6 @@
 			{
 				Property
 				{
-					Disabled true
-				}
-			}
-			%GeneratorSetting "RealSDKRoot"
-			{
-				Property
-				{
 					Name "SDKROOT"
 				}
 			}
@@ -1083,40 +1101,12 @@
 				{
 					Name "MACOSX_DEPLOYMENT_TARGET"
 				}
-				%GeneratorSetting "Value"
-				{
-					Property
-					{
-						OSX10\.5 "10.5"
-						OSX10\.6 "10.6"
-						OSX10\.7 "10.7"
-						OSX10\.8 "10.8"
-						OSX10\.9 "10.9"
-						OSX10\.10 "10.10"
-						OSX10\.11 "10.11"
-						OSX10\.12 "10.12"
-						OSX10\.13 "10.13"
-						OSX10\.14 "10.14"
-						OSX10\.15 "10.15"
-						OSX11 "11.0"
-						iOS8\.1 "8.1"
-						Linux2\.6 "10.6"
-						Emscripten ""
-					}
-				}
 			}
 			%GeneratorSetting "iOSDeploymentTarget"
 			{
 				Property
 				{
 					Name "IPHONEOS_DEPLOYMENT_TARGET"
-				}
-				%GeneratorSetting "Value"
-				{
-					Property
-					{
-						iOS8\.1 "8.1"
-					}
 				}
 			}
 			%GeneratorSetting "DebugInformationFormat"
@@ -3104,7 +3094,7 @@
 			{
 				Property
 				{
-					Disabled true // We don't support this yet on OSX
+					Disabled true // We don't support this yet on macOS
 				}
 			}
 			%GeneratorSetting "VerboseLogging"
@@ -3447,7 +3437,7 @@
 					}
 				}
 			}
-			%GeneratorSetting "MinOSXVersion"
+			%GeneratorSetting "MinMacOSVersion"
 			{
 				Property
 				{

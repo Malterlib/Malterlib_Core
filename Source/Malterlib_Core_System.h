@@ -142,7 +142,7 @@ namespace NMib
 #endif
 
 	
-//	#ifdef DPlatformFamily_OSX
+//	#ifdef DPlatformFamily_macOS
 //		typedef NMemory::CAllocator_VirtualNoCommit CMainHeapVirtualAllocator;
 //	#else
 		typedef NMemory::CAllocator_Virtual CMainHeapVirtualAllocator;

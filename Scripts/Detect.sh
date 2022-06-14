@@ -26,7 +26,7 @@ function DoDetect()
 			exit 1
 		fi
 	elif [[ $SysName ==  Darwin* ]] ; then
-		MalterlibPlatform=OSX
+		MalterlibPlatform=macOS
 		if [[ $ProcessorArch == x86_64 ]] ; then
 			MalterlibArch=x64
 		elif [[ $ProcessorArch == arm64 ]] ; then

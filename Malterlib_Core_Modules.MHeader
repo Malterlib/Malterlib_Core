@@ -66,7 +66,7 @@ Property
 	{
 		&
 		{
-			EnablePlatform_Linux2_6 true
+			EnablePlatform_Linux true
 			EnableArchitecture_x64 true
 		}
 	}
@@ -74,7 +74,7 @@ Property
 	{
 		&
 		{
-			EnablePlatform_Linux2_6 true
+			EnablePlatform_Linux true
 			EnableArchitecture_arm64 true
 		}
 	}
@@ -82,7 +82,7 @@ Property
 	{
 		&
 		{
-			EnablePlatform_Linux2_6 true
+			EnablePlatform_Linux true
 			EnableArchitecture_x86 true
 		}
 	}

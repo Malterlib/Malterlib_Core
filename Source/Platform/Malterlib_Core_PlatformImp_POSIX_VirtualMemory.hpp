@@ -31,7 +31,7 @@ using namespace NMib;
 // POSIX virtual memory allocation
 // *************************************************************************************************************************
 
-#define DMibOSX_UseMadvise
+#define DMibMacOS_UseMadvise
 
 namespace NMib::NSys::NPrivate
 {
@@ -41,8 +41,8 @@ namespace NMib::NSys::NPrivate
 void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, EAllocationFlag _Flags)
 {
 	int Protection = PROT_READ | PROT_WRITE;
-#ifdef DPlatformFamily_OSX
-#ifdef DMibOSX_UseMadvise
+#ifdef DPlatformFamily_macOS
+#ifdef DMibMacOS_UseMadvise
 	if ((_Flags & EAllocationFlag_NoCommit) && CSystem::ms_PlatformVersion < 10'06'00)
 		Protection = PROT_NONE;
 #else
@@ -63,8 +63,8 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 
 	auto fSetUncommited = [&](void *_pMemory)
 		{
-#ifdef DPlatformFamily_OSX
-#	ifdef DMibOSX_UseMadvise
+#ifdef DPlatformFamily_macOS
+#	ifdef DMibMacOS_UseMadvise
 /*			if ((_Flags & EAllocationFlag_NoCommit) && CSystem::ms_PlatformVersion >= 10'06'00)
 			{
 				if (madvise(_pMemory, _Size, MADV_FREE_REUSABLE))
@@ -88,7 +88,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 		}
 	;
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	int Tag = 244;
 
 	if (_Flags & EAllocationFlag_MainHeap)
@@ -217,8 +217,8 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
 
-#if defined(DPlatformFamily_OSX)
-#ifdef DMibOSX_UseMadvise
+#if defined(DPlatformFamily_macOS)
+#ifdef DMibMacOS_UseMadvise
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
 	{
 		if (madvise(pMemStart, pMemEnd - pMemStart, MADV_FREE_REUSE))
@@ -242,8 +242,8 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
 	{
 		int ErrNo = errno;
 
-#ifdef DPlatformFamily_OSX
-		if (CSystem::ms_PlatformVersion >= 10'06'00 || ErrNo != EINVAL) // This is a bug in OSX...
+#ifdef DPlatformFamily_macOS
+		if (CSystem::ms_PlatformVersion >= 10'06'00 || ErrNo != EINVAL) // This is a bug in macOS...
 #endif
 #ifdef DPlatformFamily_Linux
 		if (ErrNo != EBADF) // Seems that this does not work on Linux because it only works on memory mapped files?
@@ -264,8 +264,8 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
 
-#if defined(DPlatformFamily_OSX)
-#ifdef DMibOSX_UseMadvise
+#if defined(DPlatformFamily_macOS)
+#ifdef DMibMacOS_UseMadvise
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
 	{
 		if (madvise(pMemStart, pMemEnd - pMemStart, MADV_FREE_REUSABLE))
@@ -294,8 +294,8 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 	if (madvise(pMemStart, pMemEnd - pMemStart, Advice))
 	{
 		int ErrNo = errno;
-#ifdef DPlatformFamily_OSX
-		if (CSystem::ms_PlatformVersion >= 10'06'00 || ErrNo != EINVAL) // This is a bug in OSX...
+#ifdef DPlatformFamily_macOS
+		if (CSystem::ms_PlatformVersion >= 10'06'00 || ErrNo != EINVAL) // This is a bug in macOS...
 #endif
 		{
 			DMibErrorMemory(NPlatform::fg_FormatErrno("madvise (virtual decommit)", ErrNo));

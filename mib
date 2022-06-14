@@ -342,9 +342,9 @@ while true; do
 	case "$Command" in
 		generate)
 			MissingSetup=false
-			if [[ "$MalterlibPlatform" ==  OSX ]] ; then
-				if [ -e ./Malterlib/Core/Setup/OSX/setup.sh ]; then
-					./Malterlib/Core/Setup/OSX/setup.sh CheckSetup
+			if [[ "$MalterlibPlatform" == macOS ]] ; then
+				if [ -e ./Malterlib/Core/Setup/macOS/setup.sh ]; then
+					./Malterlib/Core/Setup/macOS/setup.sh CheckSetup
 				else
 					MissingSetup=true
 				fi
@@ -370,8 +370,8 @@ while true; do
 				exit $MToolExit
 			fi
 
-			if $MissingSetup && [[ "$MalterlibPlatform" == OSX ]] && [ -e ./Malterlib/Core/Setup/OSX/setup.sh ]; then
-				./Malterlib/Core/Setup/OSX/setup.sh CheckSetup
+			if $MissingSetup && [[ "$MalterlibPlatform" == macOS ]] && [ -e ./Malterlib/Core/Setup/macOS/setup.sh ]; then
+				./Malterlib/Core/Setup/macOS/setup.sh CheckSetup
 			fi
 		;;
 		setup_only)
@@ -382,8 +382,8 @@ while true; do
 			exit 0
 		;;
 		setup)
-			if [[ "$MalterlibPlatform" ==  OSX ]] ; then
-				./Malterlib/Core/Setup/OSX/setup.sh "$@"
+			if [[ "$MalterlibPlatform" == macOS ]] ; then
+				./Malterlib/Core/Setup/macOS/setup.sh "$@"
 			fi
 		;;
 		build)

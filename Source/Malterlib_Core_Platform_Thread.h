@@ -9,7 +9,7 @@
 // DMibPSupportThreadDestroyNotification
 // DMibPSupportThreadLocalDestructors
 
-#if defined(DPlatformFamily_OSX) || defined(DPlatformFamily_Linux)
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
 #	define DMibPSupportThreadDestroyNotification
 #	define DMibPSupportThreadLocalDestructors
 #elif defined(DPlatformFamily_Windows)

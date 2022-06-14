@@ -344,7 +344,7 @@ Target
 
 Target.DriverType define string?
 
-// File extensions OSX
+// File extensions macOS
 Target
 {
 	&
@@ -387,7 +387,7 @@ Target
 	}
 }
 
-	// File extensions OSX
+	// File extensions macOS
 Target
 {
 	&
@@ -817,8 +817,7 @@ Property
 		}
 	}
 
-	MalterlibToolsPrefix define string
-	MalterlibToolsPrefix ""
+	MalterlibToolsPrefix define string?
 	MalterlibToolsPrefix "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/"
 	{
 		!!PlatformFamily "Emscripten"
@@ -903,7 +902,11 @@ Property
 			HostPlatformFamily "Windows"
 		}
 	}
-	PlatformToolsetCompilerBasePath define string = PlatformToolsetCompiler->GetPath()->GetPath()
+	PlatformToolsetCompilerBasePath define string?
+	PlatformToolsetCompilerBasePath PlatformToolsetCompiler->GetPath()->GetPath()
+	{
+		!PlatformToolsetCompiler undefined
+	}
 }
 
 // Emscripten
@@ -987,6 +990,7 @@ Target
 	}
 
 	IndexStoreEnable define string = "NO"
+	RetainCommentsFromSystemHeaders define string = "YES"
 	Workaround_GCC_ENABLE_TRIGRAPHS define string = ""
 	Workaround_GCC_ENABLE_PASCAL_STRINGS define string = ""
 	Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS define string = ""
@@ -1074,8 +1078,8 @@ Target
 	{
 		&
 		{
-			PlatformFamily "OSX"
-			HostPlatformFamily "OSX"
+			PlatformFamily "macOS"
+			HostPlatformFamily "macOS"
 		}
 	}
 
@@ -1123,11 +1127,11 @@ Target
 		}
 	}
 
-	LDFlags =+ `-mmacosx-version-min=@(Platform->Replace("OSX", ""))`
+	LDFlags =+ `-mmacosx-version-min=@(MalterlibMinSupportedMacOSVersion)`
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			!Target.DriverType "DriverKit"
 		}
 	}
@@ -1156,7 +1160,6 @@ Target
 			MalterlibUseStaticLibCxx true
 			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
-			!MalterlibDefaultCompiler true
 			MalterlibCustomCompilerOptions true
 		}
 	}
@@ -1239,7 +1242,7 @@ Target
 		&
 		{
 			MalterlibSupportSanitizers true
-			!PlatformFamily "OSX"
+			!PlatformFamily "macOS"
 		}
 	}
 	LDFlags =+ [
@@ -1260,7 +1263,7 @@ Target
 		&
 		{
 			MalterlibSupportSanitizers true
-			!PlatformFamily "OSX"
+			!PlatformFamily "macOS"
 			|
 			{
 				Architecture "x64"
@@ -1286,7 +1289,7 @@ Target
 		&
 		{
 			MalterlibSupportSanitizers true
-			!PlatformFamily "OSX"
+			!PlatformFamily "macOS"
 			|
 			{
 				Architecture "x86"
@@ -1323,10 +1326,10 @@ Target
 				Target.Type "Executable"
 				Target.Type "UIExecutable"
 			}
-			|
+			&
 			{
-				Platform "OSX10.6"
-				Platform "OSX10.7"
+				PlatformVersion >= 1060
+				PlatformVersion < 1080
 			}
 			|
 			{
@@ -1354,7 +1357,7 @@ Target
 				Target.Type "Executable"
 				Target.Type "UIExecutable"
 			}
-			Platform "OSX10.5"
+			PlatformVersion 1050
 		}
 	}
 
@@ -1375,7 +1378,7 @@ Target
 				Target.Type "XcodeBundle"
 				Target.Type "DynamicLibrary"
 			}
-			Platform "OSX10.5"
+			PlatformVersion 1050
 		}
 	}
 
@@ -1395,7 +1398,7 @@ Target
 			{
 				Target.Type "SharedDynamicLibrary"
 			}
-			Platform "OSX10.5"
+			PlatformVersion 1050
 		}
 	}
 
@@ -1412,7 +1415,7 @@ Target
 				!MalterlibCustomCompilerOptions true
 			}
 			TargetIsExecutable true
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 		}
 	}
 
@@ -1429,7 +1432,7 @@ Target
 				!MalterlibCustomCompilerOptions true
 			}
 			TargetIsExecutable true
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			Target.ObjcLinkRuntime true
 		}
 	}
@@ -1442,7 +1445,7 @@ Target
 			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			!MalterlibPosixInitFileName undefined
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			|
 			{
 				MalterlibDefaultCompiler true
@@ -1459,7 +1462,7 @@ Target
 			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			!MalterlibPosixInitFileName undefined
-			!PlatformFamily "OSX"
+			!PlatformFamily "macOS"
 			|
 			{
 				MalterlibDefaultCompiler true
@@ -1526,6 +1529,7 @@ Target
 	{
 		&
 		{
+			!PlatformToolsetCompilerBasePath undefined
 			GeneratorFamily "Xcode"
 			!PlatformFamily "Linux"
 			!MalterlibEnableLinkTimeCodeGeneration false
@@ -1702,7 +1706,11 @@ Target
 		&
 		{
 			!MalterlibToolsPrefix undefined
-			!MalterlibToolsPrefix `@(PlatformToolsetCompilerBasePath)/bin/`
+			|
+			{
+				PlatformToolsetCompilerBasePath undefined
+				!MalterlibToolsPrefix `@(PlatformToolsetCompilerBasePath)/bin/`
+			}
 		}
 	}
 
@@ -1816,38 +1824,98 @@ Target
 
 	FilePrefix define string = ""
 
-	CodeSigningReqired define bool?
-	CodeSigningReqired false
+	CodeSigningRequired define bool?
+	CodeSigningRequired false
 	{
-		!!PlatformFamily "iOS"
+		&
+		{
+			Target.CodeSigningRequired undefined
+			Target.CodeSigningIdentity undefined
+		}
+	}
+
+	CodeSigningAllowed define bool?
+	CodeSigningAllowed false
+	{
+		&
+		{
+			Target.CodeSigningAllowed undefined
+			Target.CodeSigningIdentity undefined
+		}
 	}
 
 	CodeSigningIdentity define string?
-	CodeSigningIdentity ""
-	{
-		!!GeneratorFamily "Xcode"
-	}
 
 	HardenedRuntime define bool?
 	HardenedRuntime true
 	{
-		!MalterlibNotarizeOSXUser undefined
+		&
+		{
+			!Target.CodeSigningIdentity undefined
+			Target.HardenedRuntime undefined
+			PlatformFamily "macOS"
+			!MalterlibNotarizeMacOSUser undefined
+		}
+	}
+
+	HardenedRuntime false
+	{
+		&
+		{
+			Target.HardenedRuntime undefined
+		}
 	}
 
 	SDKRoot define string?
-	SDKRoot `OSX@(MalterlibMaxSupportedOSXVersion)`
+
+	SDKRoot `driverkit@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
 	{
-		!!PlatformFamily "OSX"
+		&
+		{
+			Target.SDKRoot undefined
+			PlatformFamily "macOS"
+			Target.Type "Driver"
+			Target.DriverType "DriverKit"
+		}
 	}
 
-	SDKRoot `iOS@(MalterlibMaxSupportediOSVersion)`
+	SDKRoot `macosx@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
 	{
-		!!PlatformFamily "iOS"
+		&
+		{
+			Target.SDKRoot undefined
+			PlatformFamily "macOS"
+		}
+	}
+	SDKRoot `macosx@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
+	{
+		&
+		{
+			Target.SDKRoot undefined
+			PlatformFamily "macOS"
+		}
 	}
 
-	SDKRoot Platform
+	SDKRoot `iphoneos@(MalterlibMaxSupportediOSVersion)`
 	{
-		!!PlatformFamily "Emscripten"
+		&
+		{
+			Target.SDKRoot undefined
+			PlatformFamily "iOS"
+		}
+	}
+
+	SDKRoot MalterlibSysRoot
+	{
+		&
+		{
+			Target.SDKRoot undefined
+			|
+			{
+				PlatformFamily "Emscripten"
+				PlatformFamily "Linux"
+			}
+		}
 	}
 
 	SDKRoot Platform
@@ -1855,150 +1923,22 @@ Target
 		!!Target.SDKRoot undefined
 	}
 
-	RealSDKRoot define string?
-	RealSDKRoot "macosx10.5"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.5"
-		}
-	}
-	RealSDKRoot "macosx10.6"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.6"
-		}
-	}
-	RealSDKRoot "macosx10.7"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.7"
-		}
-	}
-	RealSDKRoot "macosx10.8"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.8"
-		}
-	}
-	RealSDKRoot "macosx10.9"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.9"
-		}
-	}
-	RealSDKRoot "macosx10.10"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.10"
-		}
-	}
-	RealSDKRoot "macosx10.11"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.11"
-		}
-	}
-	RealSDKRoot "macosx10.12"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.12"
-		}
-	}
-	RealSDKRoot "macosx10.13"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.13"
-		}
-	}
-	RealSDKRoot "macosx10.14"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.14"
-		}
-	}
-	RealSDKRoot "macosx10.15"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSX10.15"
-		}
-	}
-	RealSDKRoot "macosx11.0"
-	{
-		&
-		{
- 			Target.RealSDKRoot undefined
- 			Target.SDKRoot "OSX11"
-		}
-	}
-	RealSDKRoot "driverkit"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSXLatest"
-			Target.Type "Driver"
-			Target.DriverType "DriverKit"
-		}
-	}
-	RealSDKRoot "macosx"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "OSXLatest"
-		}
-	}
-	RealSDKRoot "iphoneos8.1"
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			Target.SDKRoot "iOS8.1"
-		}
-	}
-
-	RealSDKRoot MalterlibSysRoot
-	{
-		&
-		{
-			Target.RealSDKRoot undefined
-			|
-			{
-				Target.SDKRoot "Emscripten"
-				Target.SDKRoot "Linux2.6"
-			}
-		}
-	}
 
 	DeploymentTarget define string?
-	DeploymentTarget Platform
+	DeploymentTarget "10.9"
 	{
 		&
 		{
 			Target.DeploymentTarget undefined
-			!PlatformFamily "iOS"
+			PlatformFamily "Linux"
+		}
+	}
+	DeploymentTarget MalterlibMinSupportedMacOSVersion
+	{
+		&
+		{
+			Target.DeploymentTarget undefined
+			PlatformFamily "macOS"
 		}
 	}
 
@@ -2064,9 +2004,9 @@ Target
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			!Target.DriverType "DriverKit"
-			MalterlibIsOSXBundle true
+			MalterlibIsMacOSBundle true
 		}
 	}
 
@@ -2079,11 +2019,11 @@ Target
 				PlatformFamily "iOS"
 				&
 				{
-					PlatformFamily "OSX"
+					PlatformFamily "macOS"
 					Target.DriverType "DriverKit"
 				}
 			}
-			MalterlibIsOSXBundle true
+			MalterlibIsMacOSBundle true
 		}
 	}
 
@@ -2123,13 +2063,13 @@ Target
 
 Target.ObjcLinkRuntime define bool?
 
-// OSX
+// macOS
 Target
 {
 	&
 	{
 		LanguageFamily "Native"
-		PlatformFamily "OSX"
+		PlatformFamily "macOS"
 		!Target.Type "Tool"
 	}
 	ObjcLinkRuntime false
@@ -2444,7 +2384,7 @@ Target
 		&
 		{
 			!Target:Target.MalterlibInfoPListFile undefined
-			!MalterlibIsOSXBundle true
+			!MalterlibIsMacOSBundle true
 		}
 	}
 
@@ -2462,7 +2402,7 @@ Target
 		// Used for FSEvents API
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			!Target.Type "Driver"
 		}
 	}
@@ -2471,7 +2411,7 @@ Target
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			!Target.Type "Driver"
 		}
 	}
@@ -2489,7 +2429,7 @@ Target
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			!Target.Type "Driver"
 		}
 	}
@@ -2943,7 +2883,7 @@ Property
 	{
 		&
 		{
-			MalterlibIsOSXBundle true
+			MalterlibIsMacOSBundle true
 			!Target.DriverType "DriverKit"
 		}
 	}
@@ -2951,7 +2891,7 @@ Property
 	{
 		&
 		{
-			MalterlibIsOSXBundle true
+			MalterlibIsMacOSBundle true
 			Target.DriverType "DriverKit"
 		}
 	}
@@ -2961,7 +2901,7 @@ Property
 	{
 		&
 		{
-			MalterlibIsOSXBundle true
+			MalterlibIsMacOSBundle true
 			!Target.DriverType "DriverKit"
 		}
 	}
@@ -2969,7 +2909,7 @@ Property
 	{
 		&
 		{
-			MalterlibIsOSXBundle true
+			MalterlibIsMacOSBundle true
 			Target.DriverType "DriverKit"
 		}
 	}
@@ -3000,7 +2940,7 @@ Property
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			MalterlibSupportSanitizerEnable_Address true
 		}
 	}
@@ -3008,7 +2948,7 @@ Property
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			MalterlibSupportSanitizerEnable_Thread true
 		}
 	}
@@ -3016,7 +2956,7 @@ Property
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			MalterlibSupportSanitizerEnable_UndefinedBehavior true
 		}
 	}
@@ -3028,7 +2968,7 @@ Property
 		{
 			MalterlibNeedsLLVMSanitizerRuntime undefined
 			!MalterlibLLVMSanitizerRuntime undefined
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			TargetIsLaunchableExecutable true
 			!DocumentationEnabled true
 			!MalterlibDisableMalterlib true
@@ -3160,7 +3100,7 @@ Property
 {
 	MalterlibBuildSpecifics =+ `#define DMalterlibBundleIdentifier @(MalterlibBundleIdentifier->Escape())\r\n`
 	{
-		!!MalterlibIsOSXBundle true
+		!!MalterlibIsMacOSBundle true
 	}
 }
 
@@ -3224,7 +3164,7 @@ Target
 	}
 }
 
-// OSX Specific
+// macOS Specific
 
 Property
 {
@@ -3274,7 +3214,7 @@ Property
 		&
 		{
 			MalterlibNeedsMallocOverrideLibrary true
-			MalterlibIsOSXBundle true
+			MalterlibIsMacOSBundle true
 		}
 	}
 
@@ -3283,7 +3223,7 @@ Property
 		&
 		{
 			MalterlibNeedsMalterlibHelper true
-			MalterlibIsOSXBundle true
+			MalterlibIsMacOSBundle true
 		}
 	}
 	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy @(MalterlibLLVMSanitizerRuntime->Escape()) @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS`->Escape()) "" 0\r\n`
@@ -3291,7 +3231,7 @@ Property
 		&
 		{
 			MalterlibNeedsLLVMSanitizerRuntime true
-			MalterlibIsOSXBundle true
+			MalterlibIsMacOSBundle true
 		}
 	}
 
@@ -3301,7 +3241,7 @@ Property
 		&
 		{
 			MalterlibOutOfProcessSupport true
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 		}
 	}
 
@@ -3339,7 +3279,7 @@ Target
 	BundleIdentifier define string?
 	BundleIdentifier MalterlibBundleIdentifier
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 	}
 }
 
@@ -3365,7 +3305,7 @@ Property
 	MalterlibURLScheme define [type(CMalterlibURLScheme)]?
 }
 
-%Group "~Automatic/OSX Specific"
+%Group "~Automatic/MacOS Specific"
 {
 	%GenerateFile "Generate"
 	{
@@ -3373,8 +3313,6 @@ Property
 
 		Property
 		{
-			MalterlibOSXVersion define string = Platform->Replace("OSX", "")
-
 			URLSchemeTemplateProtocol function(string _Protocol) string
 			URLSchemeTemplateProtocol =+ `					<string>@(_Protocol)</string>\n`
 
@@ -3421,7 +3359,7 @@ Property
 						`	<key>NSPrincipalClass</key>\n`\
 						`		<string>@(MalterlibXcodePrincipalClass)</string>\n`\
 						`	<key>LSMinimumSystemVersion</key>\n`\
-						`		<string>@(MalterlibOSXVersion)</string>\n`\
+						`		<string>@(MalterlibMinSupportedMacOSVersion)</string>\n`\
 						`	<key>MalterlibBranch</key>\n`\
 						`		<string>@(MalterlibFullBranch)</string>\n`\
 						`	<key>MalterlibGitBranch</key>\n`\
@@ -3471,7 +3409,7 @@ Property
 						` 		<string>MacOSX</string>\n`\
 						`	</array>\n`
 			{
-				!!PlatformFamily "OSX"
+				!!PlatformFamily "macOS"
 			}
 
 
@@ -3542,7 +3480,7 @@ Property
 			{
 				&
 				{
-					Property.MalterlibOSXHideDockTile true
+					Property.MalterlibMacOSHideDockTile true
 					!Target.Type "Driver"
 				}
 			}
@@ -3550,7 +3488,7 @@ Property
 			Contents =+	`	<key>NSRequiresAquaSystemAppearance</key>\n`\
 						`		<string>YES</string>\n`
 			{
-				!!Property.MalterlibOSXNoDarkMode true
+				!!Property.MalterlibMacOSNoDarkMode true
 			}
 
 			Contents =+	MalterlibExtraPListContents
@@ -3570,7 +3508,7 @@ Property
 }
 Target
 {
-	ExtraGroups =+ "~Automatic/OSX Specific"
+	ExtraGroups =+ "~Automatic/MacOS Specific"
 	{
 		!Target:Target.MalterlibInfoPListFile undefined
 	}
@@ -3923,6 +3861,9 @@ Property
 
 	MalterlibStripProgram define string
 	MalterlibStripProgram `@(MalterlibToolsPrefix)llvm-strip`
+	{
+		!MalterlibToolsPrefix undefined
+	}
 	MalterlibStripProgram "strip"
 	{
 		!!PlatformIsDarwin true
@@ -4201,7 +4142,7 @@ Property
 	TarOptions define string = ""
 	TarOptions "--disable-copyfile"
 	{
-		!!HostPlatformFamily "OSX"
+		!!HostPlatformFamily "macOS"
 	}
 }
 
@@ -4273,7 +4214,7 @@ Property
 		&
 		{
 			MalterlibNeedsMallocOverrideLibrary true
-			!MalterlibIsOSXBundle true
+			!MalterlibIsMacOSBundle true
 		}
 	}
 	MalterlibBuildServerPutSources =+ MalterlibHelperExecutable
@@ -4281,7 +4222,7 @@ Property
 		&
 		{
 			MalterlibNeedsMalterlibHelper true
-			!MalterlibIsOSXBundle true
+			!MalterlibIsMacOSBundle true
 		}
 	}
 	MalterlibBuildServerPutSources =+ MalterlibLLVMSanitizerRuntime
@@ -4289,7 +4230,7 @@ Property
 		&
 		{
 			MalterlibNeedsLLVMSanitizerRuntime true
-			!MalterlibIsOSXBundle true
+			!MalterlibIsMacOSBundle true
 		}
 	}
 
@@ -4435,61 +4376,61 @@ Property
 		!!MalterlibSignIncludeCert "none"
 	}
 
-	MalterlibSignOSXDeep define bool = true
+	MalterlibSignMacOSDeep define bool = true
 
-	MalterlibSignOSXHardened define bool?
+	MalterlibSignMacOSHardened define bool?
 
-	MalterlibCodeSignOSXExtraOptions define string = ""
-	MalterlibCodeSignOSXExtraOptions += "--options runtime "
+	MalterlibCodeSignMacOSExtraOptions define string = ""
+	MalterlibCodeSignMacOSExtraOptions += "--options runtime "
 	{
 		|
 		{
-			!MalterlibNotarizeOSXUser undefined
-			MalterlibSignOSXHardened true
+			!MalterlibNotarizeMacOSUser undefined
+			MalterlibSignMacOSHardened true
 		}
 	}
 
-	MalterlibCodeSignOSXExtraOptions += "--deep "
+	MalterlibCodeSignMacOSExtraOptions += "--deep "
 	{
-		!!MalterlibSignOSXDeep true
+		!!MalterlibSignMacOSDeep true
 	}
 
-	MalterlibSignOSXEntitlements define string?
+	MalterlibSignMacOSEntitlements define string?
 
-	MalterlibCodeSignOSXExtraOptions += `--entitlements @(MalterlibSignOSXEntitlements->Escape()) `
+	MalterlibCodeSignMacOSExtraOptions += `--entitlements @(MalterlibSignMacOSEntitlements->Escape()) `
 	{
-		!MalterlibSignOSXEntitlements undefined
+		!MalterlibSignMacOSEntitlements undefined
 	}
 
-	MalterlibCodeSignOSXCommand define string
-	MalterlibCodeSignOSXCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=CodeSignOSX`
+	MalterlibCodeSignMacOSCommand define string
+	MalterlibCodeSignMacOSCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=CodeSignMacOS`
 	{
 		!!MalterlibBuildServerBuild true
 	}
 
-	MalterlibCodeSignOSXCommand "codesign"
+	MalterlibCodeSignMacOSCommand "codesign"
 	{
 		!MalterlibBuildServerBuild true
 	}
 
-	MalterlibALToolOSXCommand define string
-	MalterlibALToolOSXCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ALToolOSX`
+	MalterlibALToolMacOSCommand define string
+	MalterlibALToolMacOSCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ALToolMacOS`
 	{
 		!!MalterlibBuildServerBuild true
 	}
 
-	MalterlibALToolOSXCommand "xcrun altool"
+	MalterlibALToolMacOSCommand "xcrun altool"
 	{
 		!MalterlibBuildServerBuild true
 	}
 
-	MalterlibStaplerOSXCommand define string
-	MalterlibStaplerOSXCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=StaplerOSX`
+	MalterlibStaplerMacOSCommand define string
+	MalterlibStaplerMacOSCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=StaplerMacOS`
 	{
 		!!MalterlibBuildServerBuild true
 	}
 
-	MalterlibStaplerOSXCommand "xcrun stapler"
+	MalterlibStaplerMacOSCommand "xcrun stapler"
 	{
 		!MalterlibBuildServerBuild true
 	}
@@ -4648,7 +4589,7 @@ Property
 		&
 		{
 			MalterlibNeedsMallocOverrideLibrary true
-			!MalterlibIsOSXBundle true
+			!MalterlibIsMacOSBundle true
 		}
 	}
 
@@ -4657,7 +4598,7 @@ Property
 		&
 		{
 			MalterlibNeedsMalterlibHelper true
-			!MalterlibIsOSXBundle true
+			!MalterlibIsMacOSBundle true
 		}
 	}
 	MalterlibPostCopySources =+ MalterlibLLVMSanitizerRuntime
@@ -4665,7 +4606,7 @@ Property
 		&
 		{
 			MalterlibNeedsLLVMSanitizerRuntime true
-			!MalterlibIsOSXBundle true
+			!MalterlibIsMacOSBundle true
 		}
 	}
 
@@ -4984,22 +4925,22 @@ Target
 	}
 
 	CodeSignEntitlements define string?
-	CodeSignEntitlements MalterlibSignOSXEntitlements
+	CodeSignEntitlements MalterlibSignMacOSEntitlements
 	{
 		&
 		{
 			GeneratorFamily "Xcode"
-			!MalterlibSignOSXEntitlements undefined
+			!MalterlibSignMacOSEntitlements undefined
 		}
 	}
 
 	PostBuildScript =+	`echo Sign:\r\n`\
-						`echo @(MalterlibCodeSignOSXCommand) --force @(MalterlibCodeSignOSXExtraOptions) --timestamp --sign @(MalterlibSignCertOSX) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
-						`@(MalterlibCodeSignOSXCommand) --force @(MalterlibCodeSignOSXExtraOptions) --timestamp --sign @(MalterlibSignCertOSX) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`
+						`echo @(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
+						`@(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			TargetIsExecutable true
 			|
 			{
@@ -5015,11 +4956,11 @@ Target
 
 	PostBuildScript =+	`echo Notarize:\r\n`\
 						`/usr/bin/ditto -c -k --keepParent "@(MalterlibFinalModuleDestination->NativePath())" "@(MalterlibFinalModuleDestination->NativePath()).zip"\r\n`\
-						`echo @(MalterlibALToolOSXCommand) --notarize-app --primary-bundle-id "@(MalterlibBundleIdentifier)" --asc-provider "@(MalterlibNotarizeOSXProvider)" --username "@(MalterlibNotarizeOSXUser)" --password "@(MalterlibNotarizeOSXPassword)" --file "@(MalterlibFinalModuleDestination->NativePath()).zip"\r\n`\
-						`@(MalterlibALToolOSXCommand) --notarize-app --primary-bundle-id "@(MalterlibBundleIdentifier)" --asc-provider "@(MalterlibNotarizeOSXProvider)" --username "@(MalterlibNotarizeOSXUser)" --password "@(MalterlibNotarizeOSXPassword)" --file "@(MalterlibFinalModuleDestination->NativePath()).zip" 2>&1 | tee "@(MalterlibFinalModuleDestination->NativePath()).log"\r\n`\
+						`echo @(MalterlibALToolMacOSCommand) --notarize-app --primary-bundle-id "@(MalterlibBundleIdentifier)" --asc-provider "@(MalterlibNotarizeMacOSProvider)" --username "@(MalterlibNotarizeMacOSUser)" --password "@(MalterlibNotarizeMacOSPassword)" --file "@(MalterlibFinalModuleDestination->NativePath()).zip"\r\n`\
+						`@(MalterlibALToolMacOSCommand) --notarize-app --primary-bundle-id "@(MalterlibBundleIdentifier)" --asc-provider "@(MalterlibNotarizeMacOSProvider)" --username "@(MalterlibNotarizeMacOSUser)" --password "@(MalterlibNotarizeMacOSPassword)" --file "@(MalterlibFinalModuleDestination->NativePath()).zip" 2>&1 | tee "@(MalterlibFinalModuleDestination->NativePath()).log"\r\n`\
 						`NotarizationRequestUUID=$(awk -F ' = ' '/RequestUUID/ {print $2}' "@(MalterlibFinalModuleDestination->NativePath()).log")\r\n`\
 						`while true; do\r\n`\
-						`	@(MalterlibALToolOSXCommand) --notarization-info "$NotarizationRequestUUID" --asc-provider "@(MalterlibNotarizeOSXProvider)" --username "@(MalterlibNotarizeOSXUser)" --password "@(MalterlibNotarizeOSXPassword)" > "@(MalterlibFinalModuleDestination->NativePath()).log" 2>&1\r\n`\
+						`	@(MalterlibALToolMacOSCommand) --notarization-info "$NotarizationRequestUUID" --asc-provider "@(MalterlibNotarizeMacOSProvider)" --username "@(MalterlibNotarizeMacOSUser)" --password "@(MalterlibNotarizeMacOSPassword)" > "@(MalterlibFinalModuleDestination->NativePath()).log" 2>&1\r\n`\
 						`	if ! grep -q "Status: in progress" "@(MalterlibFinalModuleDestination->NativePath()).log"; then\r\n`\
 						`		break\r\n`\
 						`	fi\r\n`\
@@ -5035,15 +4976,15 @@ Target
 						`	echo "Error: Notarization failed"\r\n`\
 						`	exit 1\r\n`\
 						`fi\r\n`\
-						`echo @(MalterlibStaplerOSXCommand) staple "@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
-						`@(MalterlibStaplerOSXCommand) staple "@(MalterlibFinalModuleDestination->NativePath())"\r\n`
+						`echo @(MalterlibStaplerMacOSCommand) staple "@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
+						`@(MalterlibStaplerMacOSCommand) staple "@(MalterlibFinalModuleDestination->NativePath())"\r\n`
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			MalterlibSigning true
 			Target.Type "UIExecutable"
-			!MalterlibNotarizeOSXUser ""
+			!MalterlibNotarizeMacOSUser ""
 		}
 	}
 

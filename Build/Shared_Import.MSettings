@@ -202,13 +202,13 @@ Import
 		|
 		{
 			PlatformFamily "Linux"
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 		}
 	}
 
 	CMake_TryCompilePlatformVariables =+ "CMAKE_OSX_SYSROOT"
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 	}
 
 	CMake_Variables =+ [`CMAKE_TRY_COMPILE_PLATFORM_VARIABLES=@(Import.CMake_TryCompilePlatformVariables->Join(";"))`]
@@ -220,7 +220,7 @@ Import
 
 	CMake_Internal_LinkerFlags =+ ` -stdlib=libc++`
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 	}
 
 	CMake_Internal_LinkerFlags =+ ` -fuse-ld=@(Malterlib_LinuxLinker) -stdlib=libc++`
@@ -268,7 +268,7 @@ Import
 		|
 		{
 			PlatformFamily "Linux"
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 		}
 	}
 
@@ -285,97 +285,122 @@ Import
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 		}
 	}
 
 	CMake_Variables =+ [`CMAKE_INSTALL_NAME_TOOL=@(PlatformToolsetCompiler->GetPath())/llvm-install-name-tool`]
 	{
-		|
+		&
 		{
-			PlatformFamily "Linux"
-			PlatformFamily "OSX"
+			!PlatformToolsetCompiler undefined
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformFamily "macOS"
+			}
 		}
 	}
 
 	CMake_Variables =+ [`CMAKE_NM=@(PlatformToolsetCompiler->GetPath())/llvm-nm`]
 	{
-		|
+		&
 		{
-			PlatformFamily "Linux"
-			PlatformFamily "OSX"
+			!PlatformToolsetCompiler undefined
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformFamily "macOS"
+			}
 		}
 	}
 
 	CMake_Variables =+ [`CMAKE_OBJDUMP=@(PlatformToolsetCompiler->GetPath())/llvm-objdump`]
 	{
-		|
+		&
 		{
-			PlatformFamily "Linux"
-			PlatformFamily "OSX"
+			!PlatformToolsetCompiler undefined
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformFamily "macOS"
+			}
 		}
 	}
 
 	CMake_Variables =+ [`CMAKE_STRIP=@(PlatformToolsetCompiler->GetPath())/llvm-strip`]
 	{
-		|
+		&
 		{
-			PlatformFamily "Linux"
-			PlatformFamily "OSX"
+			!PlatformToolsetCompiler undefined
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformFamily "macOS"
+			}
 		}
 	}
 
 	CMake_Variables =+ [`CMAKE_RANLIB=@(PlatformToolsetCompiler->GetPath())/llvm-ranlib`]
 	{
-		|
+		&
 		{
-			PlatformFamily "Linux"
-			PlatformFamily "OSX"
+			!PlatformToolsetCompiler undefined
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformFamily "macOS"
+			}
 		}
 	}
 
 	CMake_Variables =+ [`CMAKE_AR=@(PlatformToolsetCompiler->GetPath())/llvm-ar`]
 	{
-		|
+		&
 		{
-			PlatformFamily "Linux"
-			PlatformFamily "OSX"
+			!PlatformToolsetCompiler undefined
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformFamily "macOS"
+			}
 		}
 	}
 
 	CMake_Variables =+ [
-		`CMAKE_OSX_DEPLOYMENT_TARGET=@(Platform->ParseFormatString("OSX{}.{}", "{0}.{1}"))`
-		, `CMAKE_OSX_SYSROOT=@((MalterlibMaxSupportedOSXVersion == "Latest") ?
+		`CMAKE_OSX_DEPLOYMENT_TARGET=@(MalterlibMinSupportedMacOSVersion)`
+		, `CMAKE_OSX_SYSROOT=@((MalterlibMaxSupportedMacOSVersion == "Latest") ?
 		"/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" :
-		`/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX@(MalterlibMaxSupportedOSXVersion).sdk`)`
+		`/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX@(MalterlibMaxSupportedMacOSVersion).sdk`)`
 	]
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 	}
 
 	CMake_Variables =+ "CMAKE_OSX_ARCHITECTURES=x86_64"
 	{
 		&
 		{
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			Architecture "x64"
 		}
 	}
-	CMake_Variables =+ "CMAKE_OSX_ARCHITECTURES=arm64"
+	CMake_Variables =+ `CMAKE_OSX_ARCHITECTURES=@(Architecture)`
 	{
 		&
 		{
-			PlatformFamily "OSX"
-			Architecture "arm64"
+			PlatformFamily "macOS"
+			|
+			{
+				Architecture "arm64"
+				Architecture "arm64e"
+			}
 		}
 	}
-	CMake_Variables =+ "CMAKE_OSX_ARCHITECTURES=arm64e"
+
+	CMake_ExcludeFromHash =+ [`CMAKE_OSX_DEPLOYMENT_TARGET=@(MalterlibMinSupportedMacOSVersion)`]
 	{
-		&
-		{
-			PlatformFamily "OSX"
-			Architecture "arm64e"
-		}
+		!!PlatformFamily "macOS"
 	}
 
 	CMake_ExcludeFromHash =+ [`@(MalterlibDependenciesDirectory)/`]
@@ -397,7 +422,7 @@ Import
 		&
 		{
 			Import.CMake_SystemName undefined
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 		}
 	}
 
@@ -477,5 +502,11 @@ Import
 	CMake_CCompilerTarget MalterlibTargetTriple
 	CMake_CxxCompilerTarget MalterlibTargetTriple
 	CMake_CExternalToolChain MalterlibToolsPrefix->Replace("/bin/", "/bin")
+	{
+		!MalterlibToolsPrefix undefined
+	}
 	CMake_CxxExternalToolChain MalterlibToolsPrefix->Replace("/bin/", "/bin")
+	{
+		!MalterlibToolsPrefix undefined
+	}
 }

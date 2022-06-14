@@ -193,7 +193,7 @@ namespace NMib
 			, EFileAttrib_Directory	= DMibBit(0)
 			, EFileAttrib_Link		= DMibBit(1)
 			, EFileAttrib_Hidden		= DMibBit(2)
-			, EFileAttrib_ReadOnly	= DMibBit(3)		// Available on Windows and OSX. On Linux this maps to EFileAttrib_UserWrite. If any of them are set the attribute is set on Linux
+			, EFileAttrib_ReadOnly	= DMibBit(3)		// Available on Windows and macOS. On Linux this maps to EFileAttrib_UserWrite. If any of them are set the attribute is set on Linux
 			, EFileAttrib_System		= DMibBit(4)
 			, EFileAttrib_File		= DMibBit(5) // Used for finding files			
 			, EFileAttrib_BackedUp	= DMibBit(6) // Bit that is reset when a file is written to (opened with write access). Only supporte by virtual FS.

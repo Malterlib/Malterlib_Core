@@ -1,19 +1,19 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-#include "Malterlib_Core_Platform_OSX_OSStatus.h"
+#include "Malterlib_Core_Platform_MacOS_OSStatus.h"
 
 namespace NMib
 {
 	namespace NPlatform
 	{
-		#include "Malterlib_Core_Platform_OSX_OSStatuses.hpp"
+		#include "Malterlib_Core_Platform_MacOS_OSStatuses.hpp"
 		
-		class CSubSystem_Core_OSX_ErrorStore : public CSubSystem
+		class CSubSystem_Core_MacOS_ErrorStore : public CSubSystem
 		{
 			public:
 			
-			struct CError : public COSXError
+			struct CError : public CMacOSError
 			{
 				class CCompare
 				{
@@ -27,16 +27,16 @@ namespace NMib
 				NIntrusive::TCAVLLink<> m_TreeLink;
 			};
 			
-			CError m_Errors[sizeof(gs_OSXErrors)/sizeof(COSXError)];
+			CError m_Errors[sizeof(gs_MacOSErrors)/sizeof(CMacOSError)];
 			NIntrusive::TCAVLTree<&CError::m_TreeLink, CError::CCompare> m_Tree;
 			
-			CSubSystem_Core_OSX_ErrorStore()
+			CSubSystem_Core_MacOS_ErrorStore()
 			{
-				int nErrors = sizeof(gs_OSXErrors)/sizeof(COSXError);
+				int nErrors = sizeof(gs_MacOSErrors)/sizeof(CMacOSError);
 				for	(int i = 0; i < nErrors; ++i)
 				{
 					CError &Err = m_Errors[i];
-					auto &OSErr = gs_OSXErrors[i];
+					auto &OSErr = gs_MacOSErrors[i];
 					
 					CError *pErr = m_Tree.f_FindEqual(OSErr.m_Code);
 					
@@ -45,7 +45,7 @@ namespace NMib
 						NStr::CFStr256 Short = NStr::CFStr256((OSErr.m_pShort ? OSErr.m_pShort : "")).f_TrimLeft().f_TrimRight();
 						NStr::CFStr256 Long = NStr::CFStr256((OSErr.m_pLong ? OSErr.m_pLong : "")).f_TrimLeft().f_TrimRight();
 						
-						DMibTrace("OSXErrorStor: Error {} ({}, {}) already in strore as ({}, {})\n",
+						DMibTrace("MacOSErrorStor: Error {} ({}, {}) already in strore as ({}, {})\n",
 								   OSErr.m_Code << Short << Long
 								   << (pErr->m_pShort ? pErr->m_pShort : "") << (pErr->m_pLong ? pErr->m_pLong : ""));
 					}
@@ -66,11 +66,11 @@ namespace NMib
 			}
 		};
 		
-		constinit TCSubSystem<CSubSystem_Core_OSX_ErrorStore, ESubSystemDestruction_Last> g_SubSystem_Core_Platform_OSX_ErrorStore = {DAggregateInit};
+		constinit TCSubSystem<CSubSystem_Core_MacOS_ErrorStore, ESubSystemDestruction_Last> g_SubSystem_Core_Platform_MacOS_ErrorStore = {DAggregateInit};
 
-		COSXError const *fg_GetOSStatusError(int _Status)
+		CMacOSError const *fg_GetOSStatusError(int _Status)
 		{
-			return g_SubSystem_Core_Platform_OSX_ErrorStore->f_GetError(_Status);
+			return g_SubSystem_Core_Platform_MacOS_ErrorStore->f_GetError(_Status);
 		}
 
 		NStr::CFStr256 fg_FormatOSStatus(const ch8 *_pDesc, int _Status)

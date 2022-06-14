@@ -10,7 +10,7 @@ using namespace NMib;
 #include <unistd.h>
 #include <dlfcn.h>
 #include <sys/types.h>
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 #	include <sys/attr.h>
 #	include <sys/mount.h>
 #endif
@@ -711,7 +711,7 @@ uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32
 int fg_GetUnixOpenFlags()
 {
 	int OpenFlags = 0;
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
 		OpenFlags |= O_CLOEXEC;
 #elif defined(DPlatformFamily_Linux)
@@ -723,7 +723,7 @@ int fg_GetUnixOpenFlags()
 
 void fg_SetUnixHandleOptions(int _File)
 {
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
 		return;
 #elif defined(DPlatformFamily_Linux)
@@ -914,7 +914,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 
 	fg_SetUnixHandleOptions(iFile);
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	if (_OpenFlags & NMib::NFile::EFileOpen_NoCache)
 	{
 		if (fcntl(iFile, F_NOCACHE, 1))
@@ -1734,7 +1734,7 @@ NTime::CTime NSys::NFile::fg_GetWriteTimeOnLink(NMib::NStr::CStr const& _FileNam
 #endif
 }
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 
 void NSys::NFile::fg_SetCreationTime(void *_pFile, const NTime::CTime &_Time)
 {

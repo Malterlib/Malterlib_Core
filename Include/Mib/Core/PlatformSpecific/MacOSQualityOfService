@@ -2,4 +2,4 @@
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
-#include "../../../../Source/Platform/Malterlib_Core_Platform_OSX_QualityOfService.h"
+#include "../../../../Source/Platform/Malterlib_Core_Platform_MacOS_QualityOfService.h"

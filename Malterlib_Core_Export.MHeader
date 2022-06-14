@@ -65,7 +65,7 @@ Property
 		}
 		%Group "ObjC"
 		{
-			!!PlatformFamily "OSX"
+			!!PlatformFamily "macOS"
 			%File "Export/Malterlib_Core_Export_ObjC"
 			{
 				Compile.Type "ObjC"
@@ -73,7 +73,7 @@ Property
 		}
 		%Group "ObjC++"
 		{
-			!!PlatformFamily "OSX"
+			!!PlatformFamily "macOS"
 			%File "Export/Malterlib_Core_Export_ObjC++"
 			{
 				Compile.Type "ObjC++"
@@ -87,7 +87,7 @@ Property
 		MalterlibExportCompileFlagsTypes =+ ["C", "C++"]
 		MalterlibExportCompileFlagsTypes =+ ["ObjC", "ObjC++"]
 		{
-			!!PlatformFamily "OSX"
+			!!PlatformFamily "macOS"
 		}
 	}
 

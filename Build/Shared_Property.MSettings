@@ -110,7 +110,7 @@ Property
 // Unix paths
 Property
 {
-	!!HostPlatformFamily "OSX"
+	!!HostPlatformFamily "macOS"
 	!!HostPlatformFamily "Linux"
 
 	MalterlibDependenciesDirectory "/opt/CompiledFiles/Dependencies"

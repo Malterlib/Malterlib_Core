@@ -89,7 +89,7 @@ Property
 			{
 				PlatformFamily "Emscripten"
 				PlatformFamily "Linux"
-				PlatformFamily "OSX"
+				PlatformFamily "macOS"
 			}
 			!DocumentationEnabled true
 		}
@@ -167,7 +167,7 @@ Property
 				|
 				{
 					PlatformFamily "Linux"
-					PlatformFamily "OSX"
+					PlatformFamily "macOS"
 					PlatformFamily "Emscripten"
 				}
 			}
@@ -246,7 +246,7 @@ Property
 				!!Compile.Type "Assembler"
 
 				AllCPUSubTypes true
-				PreprocessorDefines =+ ["_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS", "COMPILER_RT_NODEFAULTVISIBILITY", "LIBCXXABI_NODEFAULTVISIBILITY", "LIBUNWIND_NODEFAULTVISIBILITY"]
+				PreprocessorDefines =+ ["_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS", "COMPILER_RT_NODEFAULTVISIBILITY", "LIBCXXABI_NODEFAULTVISIBILITY", "LIBUNWIND_NODEFAULTVISIBILITY", "_LIBUNWIND_HIDE_SYMBOLS"]
 			}
 			%File "../../External/llvm-project/libunwind/include/^*"
 			%File "../../External/llvm-project/libunwind/src/*"
@@ -449,10 +449,6 @@ Property
 					!!PlatformFamily "Linux"
 					%Group "sys"
 					{
-						%File "../../External/elftoolchain/libelf/*.c"
-						%File "../../External/elftoolchain/libelf/*.h"
-						%File "../../External/elftoolchain/libelf/*.m4"
-
 						%Group "Generated"
 						{
 							GenerateFile
@@ -672,7 +668,7 @@ Property
 					MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 				}
 			}
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			!DocumentationEnabled true
 		}
 
@@ -941,13 +937,13 @@ Property
 			!MalterlibMemoryManager "System"
 			!
 			{
-				&												// Disable for dynamic libraries on linux and OSX as only main executable should override malloc
+				&												// Disable for dynamic libraries on Linux and macOS as only main executable should override malloc
 				{
 					MalterlibDynamicLibrary true
 					|
 					{
 						PlatformFamily "Linux"
-						PlatformFamily "OSX"
+						PlatformFamily "macOS"
 					}
 				}
 			}
@@ -1032,7 +1028,7 @@ Target
 		&
 		{
 			MalterlibMemoryManager_OverrideSystemMalloc true
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 			Documentation undefined
 			TargetIsExecutable true
 			&
@@ -1190,7 +1186,7 @@ Property
 				!MalterlibSupportSanitizers true
 				|
 				{
-					PlatformFamily "OSX"
+					PlatformFamily "macOS"
 					PlatformFamily "Linux"
 				}
 			}
@@ -1198,7 +1194,7 @@ Property
 	}
 	Target
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 		LinkWithLibraries []
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
@@ -1224,20 +1220,20 @@ Property
 	}
 	%Group "Source"
 	{
-		%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXDyldDummy.cpp"
+		%File "../Memory/Source/Malterlib_Memory_SystemOverride_MacOSDyldDummy.cpp"
 		{
-			!!PlatformFamily "OSX"
+			!!PlatformFamily "macOS"
 		}
 		%File "Source/Dummy/DummyMainRaw.cpp"
 		{
-			!PlatformFamily "OSX"
+			!PlatformFamily "macOS"
 		}
 	}
 }
 
 Property
 {
-	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem define bool = false // User(Undocumented)=true: Init early support. Currently breaks OSX 10.12
+	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem define bool = false // User(Undocumented)=true: Init early support. Currently breaks macOS 10.12
 	MalterlibMemoryManager_CheckOverrideMemoryLeaks define bool = false
 }
 
@@ -1252,7 +1248,7 @@ Property
 	}
 	Target
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 
 		LinkWithLibraries [["-undefined", "dynamic_lookup"], `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`]
 		CodeCoverageLinkerMapping false
@@ -1266,7 +1262,7 @@ Property
 				!MalterlibSupportSanitizers true
 				|
 				{
-					PlatformFamily "OSX"
+					PlatformFamily "macOS"
 					PlatformFamily "Linux"
 				}
 			}
@@ -1277,7 +1273,7 @@ Property
 		&
 		{
 			!MalterlibSupportSanitizers true
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 		}
 	}
 	Compile
@@ -1292,9 +1288,9 @@ Property
 		}
 		StackGuard false
 		{
-			!!PlatformFamily "OSX"
+			!!PlatformFamily "macOS"
 		}
-		PreprocessorDefines =+ "DMalterlibMemoryOverrideOSXInitBeforeLibSystemSupport"
+		PreprocessorDefines =+ "DMalterlibMemoryOverrideMacOSInitBeforeLibSystemSupport"
 		{
 			!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 		}
@@ -1307,13 +1303,13 @@ Property
 	}
 	%Group "Source"
 	{
-		%File "../Memory/Source/Malterlib_Memory_SystemOverride_OSXLibSystem.cpp"
+		%File "../Memory/Source/Malterlib_Memory_SystemOverride_MacOSLibSystem.cpp"
 		{
-			!!PlatformFamily "OSX"
+			!!PlatformFamily "macOS"
 		}
 		%File "Source/Dummy/DummyMainRaw.cpp"
 		{
-			!PlatformFamily "OSX"
+			!PlatformFamily "macOS"
 		}
 	}
 	%Dependency "Dll_MalterlibOverrideMallocDummy"
@@ -1343,7 +1339,7 @@ Property
 				!MalterlibSupportSanitizers true
 				|
 				{
-					PlatformFamily "OSX"
+					PlatformFamily "macOS"
 					PlatformFamily "Linux"
 				}
 			}
@@ -1358,12 +1354,12 @@ Property
 		&
 		{
 			!MalterlibSupportSanitizers true
-			PlatformFamily "OSX"
+			PlatformFamily "macOS"
 		}
 	}
 	Target
 	{
-		!!PlatformFamily "OSX"
+		!!PlatformFamily "macOS"
 
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
@@ -1379,7 +1375,7 @@ Property
 		}
 		StackGuard false
 		{
-			!!PlatformFamily "OSX"
+			!!PlatformFamily "macOS"
 		}
 		DefaultHeaders "NoStdIncludeCxx"
 		DefaultLibraries "NoStdLibCxx"

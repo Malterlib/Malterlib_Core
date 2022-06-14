@@ -1,7 +1,7 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-class CRawOSXError
+class CRawMacOSError
 {
 	public:
 	int m_Code;
@@ -9,7 +9,7 @@ class CRawOSXError
 	const char *m_pLong;
 };
 
-static CRawOSXError gs_OSXErrors[] = 
+static CRawMacOSError gs_MacOSErrors[] =
 	{
 		-50, "paramErr", "error in user parameter list",
 		-200, "noHardwareErr", "Sound Manager Error Returns",

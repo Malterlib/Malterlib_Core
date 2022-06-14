@@ -34,7 +34,7 @@ MalterlibVisualStudioVersion=
 	IFS="$OLDIFS"
 }
 
-if [[ "$MalterlibPlatform" == "OSX" ]] ; then
+if [[ "$MalterlibPlatform" == "macOS" ]] ; then
 	if [ ! "$MalterlibXcodeVersion" == "" ]; then
 		Conf_Version=$MalterlibXcodeVersion
 	else

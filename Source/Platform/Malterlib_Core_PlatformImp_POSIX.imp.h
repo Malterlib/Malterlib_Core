@@ -121,7 +121,7 @@ namespace NMib
 }
 
 
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 #include <sys/sysctl.h>
 #endif
 
@@ -136,7 +136,7 @@ namespace NMib
 				rlimit Limits;
 				if (!getrlimit(RLIMIT_NOFILE, &Limits))
 				{
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 					Limits.rlim_cur = fg_Min(fg_Max(Limits.rlim_cur, OPEN_MAX), Limits.rlim_max);
 					{
 						int SysCtl[2];
@@ -178,7 +178,7 @@ namespace NMib
 // *************************************************************************************************************************
 
 void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
-{ // Should probably be moved to a file Malterlib_x86_MacOSX.cpp or similar.
+{ // Should probably be moved to a file Malterlib_x86_MacOS.cpp or similar.
 
 	_Info.m_Features = NMib::EProcessorFeature_None;
 

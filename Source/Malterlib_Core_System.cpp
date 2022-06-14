@@ -87,7 +87,7 @@ namespace NMib
 #endif
 
 	{
-#if defined(DMibPOverrideOperatorNew) && (defined(DPlatformFamily_Linux) || defined(DPlatformFamily_OSX))
+#if defined(DMibPOverrideOperatorNew) && (defined(DPlatformFamily_Linux) || defined(DPlatformFamily_macOS))
 		if (!_bIsDll)
 			g_bMemoryManagerNeededAfterDestroy = true;
 #endif
@@ -121,7 +121,7 @@ namespace NMib
 
 		NMemory::fg_Mem_InitSubsystem();
 
-#if defined(DPlatformFamily_OSX) && (defined(DArchitecture_arm64) || defined(DArchitecture_arm64e))
+#if defined(DPlatformFamily_macOS) && (defined(DArchitecture_arm64) || defined(DArchitecture_arm64e))
 		// Init cycles frequency before any threads.
 		NTime::CSystem_Time::fs_CyclesFrequency();
 #endif

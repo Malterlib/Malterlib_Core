@@ -70,4 +70,11 @@ extern "C" void __attribute__ ((constructor(-1111111111))) fg_InitMalterlib()
 	NMib::NSys::fg_CreateSystem();
 }
 
+extern "C" void fg_MalterlibDestroySystem_MacOS();
+
+extern "C" void __attribute__ ((destructor(-1111111111))) fg_DestroyMalterlib()
+{
+	fg_MalterlibDestroySystem_MacOS();
+}
+
 #endif

@@ -3,43 +3,6 @@
 
 Property
 {
-	DefaultOSXPlatform define string = "10.7"
-	DefaultOSXPlatform "10.15"
-	{
-		&
-		{
-			DefaultOSXPlatform undefined
-			MalterlibDefaultToolset true
-			HostPlatformFamily "OSX"
-		}
-	}
-	DefaultOSXPlatform "10.13"
-	{
-		&
-		{
-			DefaultOSXPlatform undefined
-			!MalterlibUseStaticLibCxxABI true
-			HostPlatformFamily "OSX"
-		}
-	}
-	DefaultOSXPlatform "10.9"
-	{
-		&
-		{
-			DefaultOSXPlatform undefined
-			MalterlibXcodeNewBuildSystem true
-			HostPlatformFamily "OSX"
-		}
-	}
-	DefaultOSXPlatform "10.7"
-	{
-		&
-		{
-			DefaultOSXPlatform undefined
-			HostPlatformFamily "OSX"
-		}
-	}
-
 	EnablePlatform_Windows define bool // User(Platform)=true: Enables Windows platform
 	EnablePlatform_Windows true
 	{
@@ -54,12 +17,12 @@ Property
 		!!EnablePlatform_Windows undefined
 	}
 
-	EnablePlatform_Linux2_6 define bool // User(Platform)=true: Enables 2.6 support for Linux platform
-	EnablePlatform_Linux2_6 true
+	EnablePlatform_Linux define bool // User(Platform)=true: Enables Linux platform
+	EnablePlatform_Linux true
 	{
 		&
 		{
-  			EnablePlatform_Linux2_6 undefined
+  			EnablePlatform_Linux undefined
 			GeneratorFamily "Xcode"
 			|
 			{
@@ -68,201 +31,24 @@ Property
 			}
 		}
 	}
-	EnablePlatform_Linux2_6 false // User(Platform)=true: Enables 2.6 support for Linux platform
+	EnablePlatform_Linux false // User(Platform)=true: Enables Linux platform
 	{
-		!!EnablePlatform_Linux2_6 undefined
+		!!EnablePlatform_Linux undefined
 	}
 
-	EnablePlatform_OSX10_5 define bool // User(Platform)=true: Enables 10.5 support for OSX platform
-	EnablePlatform_OSX10_5 true
+	EnablePlatform_macOS define bool // User(Platform)=true: Enables macOS platform
+	EnablePlatform_macOS true
 	{
 		&
 		{
-			EnablePlatform_OSX10_5 undefined
+			EnablePlatform_macOS undefined
 			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.5"
-			HostPlatformFamily "OSX"
+			HostPlatformFamily "macOS"
 		}
 	}
-	EnablePlatform_OSX10_5 false
+	EnablePlatform_macOS false
 	{
-		!!EnablePlatform_OSX10_5 undefined
-	}
-
-	EnablePlatform_OSX10_6 define bool // User(Platform)=true: Enables 10.6 support for OSX platform
-	EnablePlatform_OSX10_6 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_6 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.6"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_6 false
-	{
-		!!EnablePlatform_OSX10_6 undefined
-	}
-
-	EnablePlatform_OSX10_7 define bool // User(Platform)=true: Enables 10.7 support for OSX platform
-	EnablePlatform_OSX10_7 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_7 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.7"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_7 false
-	{
-		!!EnablePlatform_OSX10_7 undefined
-	}
-
-	EnablePlatform_OSX10_8 define bool // User(Platform)=true: Enables 10.8 support for OSX platform
-	EnablePlatform_OSX10_8 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_8 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.8"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_8 false
-	{
-		!!EnablePlatform_OSX10_8 undefined
-	}
-
-	EnablePlatform_OSX10_9 define bool // User(Platform)=true: Enables 10.9 support for OSX platform
-	EnablePlatform_OSX10_9 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_9 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.9"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_9 false
-	{
-		!!EnablePlatform_OSX10_9 undefined
-	}
-
-	EnablePlatform_OSX10_10 define bool // User(Platform)=true: Enables 10.10 support for OSX platform
-	EnablePlatform_OSX10_10 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_10 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.10"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_10 false
-	{
-		!!EnablePlatform_OSX10_10 undefined
-	}
-
-	EnablePlatform_OSX10_11 define bool // User(Platform)=true: Enables 10.11 support for OSX platform
-	EnablePlatform_OSX10_11 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_11 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.11"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_11 false
-	{
-		!!EnablePlatform_OSX10_11 undefined
-	}
-
-	EnablePlatform_OSX10_12 define bool // User(Platform)=true: Enables 10.12 support for OSX platform
-	EnablePlatform_OSX10_12 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_12 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.12"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_12 false
-	{
-		!!EnablePlatform_OSX10_12 undefined
-	}
-
-	EnablePlatform_OSX10_13 define bool // User(Platform)=true: Enables 10.13 support for OSX platform
-	EnablePlatform_OSX10_13 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_13 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.13"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_13 false
-	{
-		!!EnablePlatform_OSX10_13 undefined
-	}
-
-	EnablePlatform_OSX10_14 define bool // User(Platform)=true: Enables 10.14 support for OSX platform
-	EnablePlatform_OSX10_14 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_14 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.14"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_14 false
-	{
-		!!EnablePlatform_OSX10_14 undefined
-	}
-
-	EnablePlatform_OSX10_15 define bool // User(Platform)=true: Enables 10.15 support for OSX platform
-	EnablePlatform_OSX10_15 true
-	{
-		&
-		{
-			EnablePlatform_OSX10_15 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "10.15"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX10_15 false
-	{
-		!!EnablePlatform_OSX10_15 undefined
-	}
-
-	EnablePlatform_OSX11 define bool // User(Platform)=true: Enables 11 support for OSX platform
-	EnablePlatform_OSX11 true
-	{
-		&
-		{
-			EnablePlatform_OSX11 undefined
-			GeneratorFamily "Xcode"
-			DefaultOSXPlatform "11"
-			HostPlatformFamily "OSX"
-		}
-	}
-	EnablePlatform_OSX11 false
-	{
-		!!EnablePlatform_OSX11 undefined
+		!!EnablePlatform_macOS undefined
 	}
 
 	EnablePlatform_iOS8_1 define bool = false
@@ -270,10 +56,10 @@ Property
 	EnableArchitecture_x64 define bool = true // User(Platform)=false: Enables generation of x64 architecture
 	EnableArchitecture_x86 define bool = true // User(Platform)=false: Enables generation of x86 architecture
 
-	EnableArchitecture_ArmV7 define bool = true // User(Platform)=true: Enables generation of arm V7 architecture
-	EnableArchitecture_ArmV7s define bool = true // User(Platform)=true: Enables generation of arm V7s architecture
-	EnableArchitecture_arm64 define bool = true // User(Platform)=true: Enables generation of arm arm64 architecture
-	EnableArchitecture_arm64e define bool = true // User(Platform)=true: Enables generation of arm arm64e architecture
+	EnableArchitecture_ArmV7 define bool = true // User(Platform)=false: Enables generation of arm V7 architecture
+	EnableArchitecture_ArmV7s define bool = true // User(Platform)=false: Enables generation of arm V7s architecture
+	EnableArchitecture_arm64 define bool = true // User(Platform)=false: Enables generation of arm arm64 architecture
+	EnableArchitecture_arm64e define bool = false // User(Platform)=true: Enables generation of arm arm64e architecture
 	EnableArchitecture_Itanium define bool = false // User(Platform)=true: Enables generation of itanium architecture
 	EnableArchitecture_ppc64 define bool = false // User(Platform)=true: Enables generation of ppc64 architecture
 	EnableArchitecture_ppc32 define bool = false // User(Platform)=true: Enables generation of ppc32 architecture
@@ -288,27 +74,16 @@ Property
 	EnableReleaseTestingConfig define bool = true // User(Configs)=false: Enable 'Release Testing' configuration
 	EnableDebugInlinedConfig define bool? // User(Configs)=false: Enable 'Debug Inlined' configuration
 	EnableDebugConfig define bool? // User(Configs)=false: Enable 'Debug' configuration
-	EnableSafeThreadLocals define bool = false // User(Undocumented)=true: Enables use of safe thread locals so you can do tests against other versions of OSX
-	EnablePlatformFamily_OSX define bool = false
-	EnablePlatformFamily_OSX true
+	EnableSafeThreadLocals define bool = false // User(Undocumented)=true: Enables use of safe thread locals so you can do tests against other versions of macOS
+	EnablePlatformFamily_macOS define bool = false
+	EnablePlatformFamily_macOS true
 	{
-		!!EnablePlatform_OSX10_5 true
-		!!EnablePlatform_OSX10_6 true
-		!!EnablePlatform_OSX10_7 true
-		!!EnablePlatform_OSX10_8 true
-		!!EnablePlatform_OSX10_9 true
-		!!EnablePlatform_OSX10_10 true
-		!!EnablePlatform_OSX10_11 true
-		!!EnablePlatform_OSX10_12 true
-		!!EnablePlatform_OSX10_13 true
-		!!EnablePlatform_OSX10_14 true
-		!!EnablePlatform_OSX10_15 true
-		!!EnablePlatform_OSX11 true
+		!!EnablePlatform_macOS true
 	}
 	EnablePlatformFamily_Linux define bool = false
 	EnablePlatformFamily_Linux true
 	{
-		!!EnablePlatform_Linux2_6 true
+		!!EnablePlatform_Linux true
 	}
 }
 
@@ -323,103 +98,15 @@ Property
 		}
 
 	}
-	OSX10\.5 "Mac OSX 10.5"
+	macOS "macOS plattform"
 	{
 		&
 		{
 			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_5 true
+			EnablePlatform_macOS true
 		}
 	}
-	OSX10\.6 "Mac OSX 10.6"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_6 true
-		}
-	}
-	OSX10\.7 "Mac OSX 10.7"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_7 true
-		}
-	}
-	OSX10\.8 "Mac OSX 10.8"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_8 true
-		}
-	}
-	OSX10\.9 "Mac OSX 10.9"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_9 true
-		}
-	}
-	OSX10\.10 "Mac OSX 10.10"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_10 true
-		}
-	}
-	OSX10\.11 "Mac OSX 10.11"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_11 true
-		}
-	}
-	OSX10\.12 "Mac OSX 10.12"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_12 true
-		}
-	}
-	OSX10\.13 "Mac OSX 10.13"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_13 true
-		}
-	}
-	OSX10\.14 "Mac OSX 10.14"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_14 true
-		}
-	}
-	OSX10\.15 "Mac OSX 10.15"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX10_15 true
-		}
-	}
-	OSX11 "Mac OSX 11"
-	{
-		&
-		{
-			GeneratorFamily "Xcode"
-			EnablePlatform_OSX11 true
-		}
-	}
-	iOS8\.1 "iOS 8.1"
+	iOS "iOS platfgorm"
 	{
 		&
 		{
@@ -427,12 +114,12 @@ Property
 			EnablePlatform_iOS8_1 true
 		}
 	}
-	Linux2\.6 "Linux 2.6 platform"
+	Linux "Linux platform"
 	{
 		&
 		{
 			GeneratorFamily "Xcode"
-			EnablePlatform_Linux2_6 true
+			EnablePlatform_Linux true
 		}
 	}
 	Emscripten "Emscripten platform"
@@ -451,17 +138,7 @@ Property
 	{
 		&
 		{
-			!Platform "OSX10.6" // OSX 10.6 is disabled for now
-			!Platform "OSX10.7" // OSX 10.7 and 10.8 does not require 32 bit Applications
-			!Platform "OSX10.8"
-			!Platform "OSX10.9"
-			!Platform "OSX10.10"
-			!Platform "OSX10.11"
-			!Platform "OSX10.12"
-			!Platform "OSX10.13"
-			!Platform "OSX10.14"
-			!Platform "OSX10.15"
-			!Platform "OSX11"
+			!Platform "macOS"
 			!Platform "Emscripten"
 			!PlatformFamily "iOS"
 			EnableArchitecture_x86 true
@@ -507,7 +184,7 @@ Property
 			|
 			{
 				PlatformFamily "iOS"
-				PlatformFamily "OSX"
+				PlatformFamily "macOS"
 				PlatformFamily "Linux"
 			}
 			EnableArchitecture_arm64 true
@@ -520,7 +197,7 @@ Property
 			|
 			{
 				PlatformFamily "iOS"
-				//PlatformFamily "OSX"
+				PlatformFamily "macOS"
 			}
 			EnableArchitecture_arm64e true
 		}
@@ -529,16 +206,16 @@ Property
 	{
 		&
 		{
-			Platform "OSX10.5"
 			EnableArchitecture_ppc32 true
+			PlatformVersion 1050
 		}
 	}
 	ppc64 "Power PC 64 bit"
 	{
 		&
 		{
-			Platform "OSX10.5"
 			EnableArchitecture_ppc64 true
+			PlatformVersion 1050
 		}
 	}
 	le32 "Generic 32 bit Little endian"

@@ -3,7 +3,7 @@
 
 #if defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
 //#	include "string.h"
-#elif defined(DPlatformFamily_OSX)
+#elif defined(DPlatformFamily_macOS)
 #	include "string.h"
 #endif
 

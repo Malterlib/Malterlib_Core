@@ -151,7 +151,7 @@ NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemb
 			DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when getting user group members") << _UserName, State.m_Error));
 	}
 	
-#ifdef DPlatformFamily_OSX
+#ifdef DPlatformFamily_macOS
 	TCVector<int> Groups;
 #else
 	TCVector<gid_t> Groups;

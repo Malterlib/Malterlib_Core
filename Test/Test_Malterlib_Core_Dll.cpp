@@ -139,7 +139,7 @@ namespace
 
 				pThread2.f_Clear();
 				
-#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_OSX))
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
 				NMib::NSys::fg_FreeLibrary(pDll);
 #endif
 			};
@@ -208,7 +208,7 @@ namespace
 
 				Threads.f_Clear();
 
-#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_OSX))
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
 				NMib::NSys::fg_FreeLibrary(pDll);
 #endif
 			};
@@ -229,7 +229,7 @@ namespace
 					for (int i = 0; i < 2; ++i)
 						pTestFunc();
 
-#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_OSX))
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
 					NMib::NSys::fg_FreeLibrary(pDll);
 #endif
 				}
@@ -253,7 +253,7 @@ namespace
 					{
 						auto pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 						DMibTest(DMibExpr(pDll))(ETestFlag_Aggregated);
-#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_OSX))
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
 						NMib::NSys::fg_FreeLibrary(pDll);
 #endif
 					}

@@ -24,8 +24,8 @@
 
 #ifndef DPlatformFamily
 #	if defined(__APPLE__)
-#		define DPlatformFamily OSX
-#		define DPlatformFamily_OSX
+#		define DPlatformFamily macOS
+#		define DPlatformFamily_macOS
 #	elif defined(__linux__)
 #		define DPlatformFamily Linux
 #		define DPlatformFamily_Linux
