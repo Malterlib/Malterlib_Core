@@ -121,7 +121,9 @@
 
 
 // Cacheline size
-#if defined(DArchitecture_x64)  || defined(DArchitecture_x86) || defined(DArchitecture_armv6) || defined(DArchitecture_le32) || defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
+#if defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
+#	define DMibPMemoryCacheLineSize 128
+#elif defined(DArchitecture_x64) || defined(DArchitecture_x86) || defined(DArchitecture_armv6) || defined(DArchitecture_le32)
 #	define DMibPMemoryCacheLineSize 64
 #elif defined(DArchitecture_ppc32)
 #	define DMibPMemoryCacheLineSize 32
