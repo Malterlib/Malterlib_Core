@@ -28,14 +28,15 @@ namespace NMib
 		bool fg_CheckFileAccessRights(NStr::CStr _Path);
 		
  
-		template <typename t_CContainer, typename t_CType>
-		auto fg_FindEqual(t_CContainer &&_Container, const t_CType &_ToFind) -> decltype(fg_Forward<t_CContainer>(_Container).f_FindEqual(_ToFind))
+		template <typename tf_CContainer, typename tf_CType>
+		auto fg_FindEqual(tf_CContainer &&_Container, const tf_CType &_ToFind) -> decltype(fg_Forward<tf_CContainer>(_Container).f_FindEqual(_ToFind))
 		{
 			return _Container.f_FindEqual(_ToFind);
 		}
 
-		template <typename t_CContainer, typename t_CType, typename t_CDefault>
-		auto fg_FindEqual(t_CContainer &&_Container, const t_CType &_ToFind, const t_CDefault &_Default) -> typename NTraits::TCRemoveReference<decltype(*fg_Forward<t_CContainer>(_Container).f_FindEqual(_ToFind))>::CType
+		template <typename tf_CContainer, typename tf_CType, typename tf_CDefault>
+		auto fg_FindEqual(tf_CContainer &&_Container, const tf_CType &_ToFind, const tf_CDefault &_Default)
+			-> typename NTraits::TCRemoveReference<decltype(*fg_Forward<tf_CContainer>(_Container).f_FindEqual(_ToFind))>::CType
 		{
 			auto *pFind = _Container.f_FindEqual(_ToFind);
 			if (pFind)
@@ -43,49 +44,44 @@ namespace NMib
 			return _Default;
 		}
 
-		template <typename t_CFunction>
-		void *fg_FunctionPtrToVoidPtr(t_CFunction _Function)
+		template <typename tf_CFunction>
+		void *fg_FunctionPtrToVoidPtr(tf_CFunction _Function)
 		{
 			void *pRet = (void * &)_Function;
 			return pRet;
 		}
 
-		template <typename t_CContainer, typename t_CFunctor>
-		void fg_ForEachAbortable(t_CContainer &&_Container, t_CFunctor &&_Functor) 
-/*			-> typename TCEnableIf
-			<
-				NTraits::TCIsCallableWith
-				<
-					typename NTraits::TCRemoveReference<t_CFunctor>::CType
-					, bool (void)
-				>::mc_Value
-			>::CType*/
+		template <typename tf_CContainer, typename tf_CFunctor>
+		void fg_ForEachAbortable(tf_CContainer &&_Container, tf_CFunctor &&_Functor)
 		{
 			auto Iter = _Container.f_GetIterator();
 			while (Iter)
 			{
-				if (!fg_Forward<t_CFunctor>(_Functor)(*Iter))
+				if (!fg_Forward<tf_CFunctor>(_Functor)(*Iter))
 					break;
 				++Iter;
 			}
 		}
 
-		template <typename t_CContainer, typename t_CFunctor>
-		void fg_ForEach(t_CContainer &&_Container, t_CFunctor &&_Functor) 
-/*			-> typename TCEnableIf
-			<
-				!NTraits::TCIsCallableWith
-				<
-					typename NTraits::TCRemoveReference<t_CFunctor>::CType
-					, bool (decltype(*(*((typename t_CContainer::CIterator *)nullptr))))
-				>::mc_Value
-			>::CType*/
+		template <typename tf_CContainer, typename tf_CFunctor>
+		void fg_ForEach(tf_CContainer &&_Container, tf_CFunctor &&_Functor)
 		{
 			auto Iter = _Container.f_GetIterator();
 			while (Iter)
 			{
-				fg_Forward<t_CFunctor>(_Functor)(*Iter);
+				fg_Forward<tf_CFunctor>(_Functor)(*Iter);
 				++Iter;
+			}
+		}
+
+		template <typename tf_CInteger, typename tf_FOnCheck>
+		void fg_ChunkRange(tf_CInteger _Start, tf_CInteger _End, tf_CInteger _ChunkSize, tf_FOnCheck &&_fOnChunk)
+		{
+			for (tf_CInteger iOutput = _Start; iOutput < _End;)
+			{
+				auto ThisTime = fg_Min(_ChunkSize, _End - iOutput);
+				_fOnChunk(iOutput, ThisTime);
+				iOutput += ThisTime;
 			}
 		}
 
@@ -425,7 +421,6 @@ namespace NMib
 				return Result;
 			}
 		}
-
 	}
 
 	namespace NContainer
