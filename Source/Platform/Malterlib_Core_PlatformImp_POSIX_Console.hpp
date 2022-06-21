@@ -39,7 +39,7 @@ void NSys::fg_ConsoleOutputFlush()
 	fsync(1);
 }
 
-void NSys::fg_ConsoleOutputRaw(const NMib::NStr::CStrNonTracked &_Str)
+void NSys::fg_ConsoleOutputRaw(NMib::NStr::CStrNonTracked const &_Str)
 {
 	fg_ConsoleOutput(_Str);
 }
@@ -83,12 +83,14 @@ void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
 	fg_WriteStringToPipe(1, _pStr, _Len);
 }
 
-void NSys::fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str)
+void NSys::fg_ConsoleOutput(NMib::NStr::CStrNonTracked const &_Str)
 {
-	NMib::NStr::CStrNonTracked const &Output = _Str;
+	fg_WriteStringToPipe(1, _Str.f_GetStr(), _Str.f_GetLen());
+}
 
-	fg_WriteStringToPipe(1, Output.f_GetStr(), Output.f_GetLen());
-//	printf("%s", Output.f_GetStr());
+void NSys::fg_ConsoleOutput(NMib::NStr::CStrSecure const &_Str)
+{
+	fg_WriteStringToPipe(1, _Str.f_GetStr(), _Str.f_GetLen());
 }
 
 void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer)
@@ -109,12 +111,14 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 	return Return;
 }
 
-
-void NSys::fg_ConsoleErrorOutput(const NMib::NStr::CStrNonTracked &_Str)
+void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSecure const &_Str)
 {
-	NMib::NStr::CStrNonTracked const &Output = _Str;
-	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
-//	fprintf(stderr, "%s", Output.f_GetStr());
+	fg_WriteStringToPipe(2, _Str.f_GetStr(), _Str.f_GetLen());
+}
+
+void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrNonTracked const &_Str)
+{
+	fg_WriteStringToPipe(2, _Str.f_GetStr(), _Str.f_GetLen());
 }
 
 void NSys::fg_DebugOutput(const ch8 *_pToOutput)
@@ -123,7 +127,6 @@ void NSys::fg_DebugOutput(const ch8 *_pToOutput)
 		return;
 	
 	fg_WriteStringToPipe(2, _pToOutput, fg_StrLen(_pToOutput));
-//	fprintf(stderr, "%s", _pToOutput);
 }
 
 void NSys::fg_DebugOutput(const ch16 *_pToOutput)
@@ -131,9 +134,8 @@ void NSys::fg_DebugOutput(const ch16 *_pToOutput)
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
 	
-	CStrNonTracked const &Output = CWStrNonTracked(_pToOutput);
+	CStrNonTracked Output = CWStrNonTracked(_pToOutput);
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
-//	fprintf(stderr, "%s", Output.f_GetStr());
 }
 
 void NSys::fg_DebugOutput(const ch32 *_pToOutput)
@@ -141,9 +143,8 @@ void NSys::fg_DebugOutput(const ch32 *_pToOutput)
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
 	
-	CStrNonTracked const &Output = CWStrNonTracked(_pToOutput);
+	CStrNonTracked Output = CUStrNonTracked(_pToOutput);
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
-//	fprintf(stderr, "%s", Output.f_GetStr());
 }
 
 void NSys::fg_DebugOutput(const NMib::NStr::CStrNonTracked &_Output)
@@ -151,9 +152,7 @@ void NSys::fg_DebugOutput(const NMib::NStr::CStrNonTracked &_Output)
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
 	
-	CStrNonTracked const &Output = _Output;
-	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
-//	fprintf(stderr, "%s", Output.f_GetStr());
+	fg_WriteStringToPipe(2, _Output.f_GetStr(), _Output.f_GetLen());
 }
 
 void NSys::fg_DebugOutput(const NMib::NStr::CWStrNonTracked &_Output)
@@ -161,9 +160,8 @@ void NSys::fg_DebugOutput(const NMib::NStr::CWStrNonTracked &_Output)
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
 	
-	CStrNonTracked const &Output = _Output;
+	CStrNonTracked Output = _Output;
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
-//	fprintf(stderr, "%s", Output.f_GetStr());
 }
 
 void NSys::fg_DebugOutput(const NMib::NStr::CUStrNonTracked &_Output)
@@ -171,8 +169,7 @@ void NSys::fg_DebugOutput(const NMib::NStr::CUStrNonTracked &_Output)
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
 	
-	CStrNonTracked const &Output = _Output;
+	CStrNonTracked Output = _Output;
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
-//	fprintf(stderr, "%s", Output.f_GetStr());
 }
 

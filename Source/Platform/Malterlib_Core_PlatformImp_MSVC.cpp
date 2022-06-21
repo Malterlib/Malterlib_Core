@@ -905,14 +905,19 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 	return Return;
 }
 
-void NSys::fg_ConsoleOutputRaw(const NMib::NStr::CStrNonTracked &_Str)
+void NSys::fg_ConsoleOutputRaw(CStrNonTracked const &_Str)
 {
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Str, STD_OUTPUT_HANDLE, true);
 }
 
-void NSys::fg_ConsoleOutput(const NMib::NStr::CStrNonTracked &_Str)
+void NSys::fg_ConsoleOutput(CStrNonTracked const &_Str)
 {
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Str, STD_OUTPUT_HANDLE, false);
+}
+
+void NSys::fg_ConsoleOutput(CStrSecure const &_Str)
+{
+	fg_ConsoleOutputHelper<CWStrSecure, CStrSecure>(_Str, STD_OUTPUT_HANDLE, false);
 }
 
 void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
@@ -947,6 +952,11 @@ void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Bu
 void NSys::fg_ConsoleErrorOutput(const NMib::NStr::CStrNonTracked &_Str)
 {
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Str, STD_ERROR_HANDLE, false);
+}
+
+void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSecure const &_Str)
+{
+	fg_ConsoleOutputHelper<CWStrSecure, CStrSecure>(_Str, STD_ERROR_HANDLE, false);
 }
 
 void *fg_AllocVirtualMemory(mint &_Size, mint _Type, ENumaNode _NumaNode, mint _Alignment, EAllocationFlag _Flags)
