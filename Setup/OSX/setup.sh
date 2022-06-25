@@ -37,6 +37,12 @@ Setting_Plugin_HideDistractions=true
 Setting_Plugin_P4Checkout=false
 Setting_SyntaxHighlight=true
 
+HasLibraryValidation=true
+
+if [[ "$(defaults read /Library/Preferences/com.apple.security.libraryvalidation.plist DisableLibraryValidation -bool || true)" == "1" ]]; then
+	HasLibraryValidation=false
+fi
+
 VersionLessThanEqual() {
     [  "$1" = "`printf "$1\n$2" | sort -V | head -n1`" ]
 }
@@ -177,7 +183,7 @@ UpdateXcodePlugins()
 
 	pushd "$RepositoryDirectory/MalterlibXcodePatches/Plugins" > /dev/null
 
-	"$2/Contents/Developer/usr/bin/xcodebuild" -quiet -workspace "XcodePlugins.xcworkspace" -scheme "Release All" clean
+	"$2/Contents/Developer/usr/bin/xcodebuild" -quiet -workspace "XcodePlugins.xcworkspace" -scheme "Release All" clean || true
 
 	if $Setting_Plugin_Malterlib; then
 		echo Installing Malterlib plugin
@@ -205,6 +211,21 @@ UpdateXcodePlugins()
 	fi
 
 	popd > /dev/null
+
+
+	if VersionLessThanEqual 14.0 $XcodeVersion ; then
+		pushd "$RepositoryDirectory/MalterlibXcodePatches/llbuild" > /dev/null
+
+		if [[ "$HasLibraryValidation" == "false" ]]; then
+			echo "Patching llbuild"
+			rm -rf "$2/Contents/SharedFrameworks/llbuild.framework"
+			cp -a "llbuild.framework" "$2/Contents/SharedFrameworks/"
+		fi
+
+		popd > /dev/null
+	fi
+
+
 
 	if $Setting_SyntaxHighlight; then
 		echo Installing Malterlib systax highligting
@@ -238,6 +259,15 @@ function UpdateAllXcode()
 
 function SignAllXcode()
 {
+	if [[ "$HasLibraryValidation" == "false" ]]; then
+		# Signing not needed
+		echo "Signing xcode not needed"
+		return 0
+	fi
+
+	echo "WHAT?" "$HasLibraryValidation"
+	exit 1
+
 	CreateXcodeCertificate;
 
 	for File in /Applications/Xcode*.app; do
