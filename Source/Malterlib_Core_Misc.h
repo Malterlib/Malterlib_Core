@@ -305,6 +305,23 @@ namespace NMib
 			return fp64(fg_RandomThreadLocal().f_GetValue<uint32>()) / fp64(fg_RandomThreadLocal().fs_Max());
 		}
 
+		static inline_small fp64 fg_GetRandomFloatFullPrecision()
+		{
+			union
+			{
+				uint64 m_RandomInt64;
+				uint32 m_Random[2];
+			} Random;
+
+			auto &ThreadLocal = fg_RandomThreadLocal();
+
+			Random.m_Random[0] = ThreadLocal.f_GetValue<uint32>();
+			Random.m_Random[1] = ThreadLocal.f_GetValue<uint32>();
+
+			return fp64(pfp64(Random.m_RandomInt64)) / fp64(pfp64(TCLimitsInt<uint64>::mc_Max));
+		}
+
+
 		static inline_small void fg_SetRanmomSeed(aint _Seed)
 		{
 			fg_RandomThreadLocal() = CRandomShiftRNG(_Seed);
