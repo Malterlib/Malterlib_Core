@@ -230,10 +230,10 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 		else
 			Address = _Address.f_Extract(fg_StrLen("UNIX:"));
 
-		if (Address.f_GetLen() > (sizeof(sockaddr_un::sun_path) - 1))
+		if (Address.f_GetLen() > CUnixAddress::mc_MaxAddressLength)
 		{
 			if (_bThrowOnError)
-				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters. Invalid path '{}'", (sizeof(sockaddr_un::sun_path) - 1), Address));
+				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters. Invalid path '{}'", CUnixAddress::mc_MaxAddressLength, Address));
 			else
 				return nullptr;
 		}
@@ -243,7 +243,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 		sockaddr_un &AddressUn = AddressWithPermissions.m_UnixAddress;
 
 		AddressUn.sun_family = AF_UNIX;
-		NMib::NStr::fg_StrCopy(AddressUn.sun_path, Address, sizeof(sockaddr_un::sun_path));
+		NMib::NStr::fg_StrCopy(AddressUn.sun_path, Address, CUnixAddress::mc_MaxAddressLength + 1);
 #if !defined(DPlatformFamily_Linux)
 		AddressUn.sun_len = sizeof(AddressUn);
 #endif
@@ -468,7 +468,7 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 						AddressStr += "UNIX:";
 				}
 
-				AddressStr += Address.m_UnixAddress.sun_path;
+				AddressStr += Address.f_GetPath();
 			}
 			break;
 /*
@@ -639,7 +639,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 				if (AddressType == ENetAddressType_Unix)
 				{
 					auto &Unix = _Address.f_GetUnix();
-					DMibErrorNet(NMib::NPlatform::fg_FormatErrno(fg_Format("connect ({}, connect)", Unix.m_UnixAddress.sun_path), Error));
+					DMibErrorNet(NMib::NPlatform::fg_FormatErrno(fg_Format("connect ({}, connect)", Unix.f_GetPath()), Error));
 				}
 				else
 					DMibErrorNet(NMib::NPlatform::fg_FormatErrno("connect (connect)", Error));
@@ -661,7 +661,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 	if (AddressType == ENetAddressType_Unix)
 	{
 		auto &Unix = _Address.f_GetUnix();
-		pSocket->m_PeerUnixFilePath = Unix.m_UnixAddress.sun_path;
+		pSocket->m_PeerUnixFilePath = Unix.f_GetPath();
 	}
 
 	return pSocket;
@@ -673,8 +673,7 @@ void CPOSIXSocketContext::fp_PrepareUnixListen(CPOSIXAddress const &_Address)
 	{
 		CUnixAddress const &UnixAddress = _Address.f_GetUnix();
 
-		auto &Unix = UnixAddress.m_UnixAddress;
-		NStr::CStr UnixFilePath = Unix.sun_path;
+		NStr::CStr UnixFilePath = UnixAddress.f_GetPath();
 		if (NFile::CFile::fs_FileExists(UnixFilePath))
 			NFile::CFile::fs_DeleteFile(UnixFilePath);
 		auto Directory = NFile::CFile::fs_GetPath(UnixFilePath);
@@ -701,7 +700,7 @@ void CPOSIXSocketContext::fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIX
 	if (AddressType == ENetAddressType_Unix)
 	{
 		auto &Unix = _Address.f_GetUnix();
-		_pSocket->m_UnixFilePath = Unix.m_UnixAddress.sun_path;
+		_pSocket->m_UnixFilePath = Unix.f_GetPath();
 	}
 	_pSocket->m_AddressType = AddressType;
 }
@@ -793,7 +792,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 	{
 		auto &UnixAddress = _Address.f_GetUnix();
 		if (UnixAddress.m_Permissions)
-			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.m_UnixAddress.sun_path, UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
+			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
 	}
 
 	Result = listen(FD, SOMAXCONN);
@@ -875,7 +874,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 	{
 		auto &UnixAddress = _Address.f_GetUnix();
 		if (UnixAddress.m_Permissions)
-			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.m_UnixAddress.sun_path, UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
+			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
 	}
 
 	Cleanup.f_Clear();
@@ -944,7 +943,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 		if (Ret == 0 && SocketName.ss_family == AF_UNIX)
 		{
 			auto &Unix = *((sockaddr_un *)&SocketName);
-			pSocket->m_PeerUnixFilePath = Unix.sun_path;
+			pSocket->m_PeerUnixFilePath = (ch8 const *)Unix.sun_path;
 		}
 	}
 
@@ -1171,7 +1170,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 		auto UnixAddress = *(sockaddr_un const*)&PeerAddr;
 		if (nAddrBytes <= sizeof(UnixAddress.sun_family))
 			UnixAddress.sun_path[0] = 0;
-		if (fg_StrLen(UnixAddress.sun_path) == 0 && !_pSocket->m_PeerUnixFilePath.f_IsEmpty())
+		if (fg_StrLen((ch8 const *)UnixAddress.sun_path) == 0 && !_pSocket->m_PeerUnixFilePath.f_IsEmpty())
 		{
 
 			CUnixAddress Address;
@@ -1179,7 +1178,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 #if !defined(DPlatformFamily_Linux)
 			Address.m_UnixAddress.sun_len = sizeof(Address.m_UnixAddress);
 #endif
-			fg_StrCopy(Address.m_UnixAddress.sun_path, _pSocket->m_PeerUnixFilePath, sizeof(Address.m_UnixAddress.sun_path));
+			fg_StrCopy(Address.m_UnixAddress.sun_path, _pSocket->m_PeerUnixFilePath, CUnixAddress::mc_MaxAddressLength + 1);
 
 			NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(Address);
 			return pAddress.f_Detach();

@@ -5,6 +5,8 @@
 
 #include <Mib/Core/Core>
 
+#include <afunix.h>
+
 #include "Malterlib_Core_PlatformImp_Net.h"
 
 typedef CRuntimeNetAddress CWindowsAddress;

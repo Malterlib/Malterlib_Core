@@ -565,18 +565,19 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 		else
 			Address = _Address.f_Extract(fg_StrLen("UNIX:"));
 
-		if (Address.f_GetLen() > (CUnixAddress::mc_MaxLength - 1))
+		if (Address.f_GetLen() > CUnixAddress::mc_MaxAddressLength)
 		{
 			if (_bThrowOnError)
-				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters. Invalid path '{}'", (CUnixAddress::mc_MaxLength - 1), Address));
+				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters. Invalid path '{}'", CUnixAddress::mc_MaxAddressLength, Address));
 			else
 				return nullptr;
 		}
 
 		CUnixAddress AddressWithPermissions;
 		AddressWithPermissions.m_Permissions = Permissions;
+		AddressWithPermissions.m_UnixAddress.sun_family = AF_UNIX;
+		NMib::NStr::fg_StrCopy(AddressWithPermissions.m_UnixAddress.sun_path, Address, CUnixAddress::mc_MaxAddressLength + 1);
 
-		NMib::NStr::fg_StrCopy(AddressWithPermissions.m_FilePath, Address, CUnixAddress::mc_MaxLength);
 		pAddress->f_Set(AddressWithPermissions);
 		return pAddress.f_Detach();
 	}
@@ -768,7 +769,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 					AddressStr += "UNIX:";
 			}
 
-			AddressStr += Address.m_FilePath;
+			AddressStr += Address.f_GetPath();
 			break;
 		}
 
@@ -785,6 +786,11 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 // WindowsSocketContext Connection Operations
 // *************************************************************************************************************************
 
+static bool fg_UnixSocketsSupported()
+{
+	return CSystem::ms_PlatformVersion >= 10'0'017063;
+}
+
 CWindowsSocket *CWindowsSocketContext::fp_Connect
 	(
 	 	CWindowsAddress const &_Address
@@ -800,146 +806,162 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 	{
 		CUnixAddress const &UnixAddress = Address.f_GetUnix();
 
-		CStr UnixFileName = UnixAddress.m_FilePath;
-		if (!CFile::fs_FileExists(UnixFileName))
-			DMibErrorNet(fg_Format("Unix socket '{}' does not exist", UnixFileName));
-
-		uint16 Port;
-
-		try
+		if (!fg_UnixSocketsSupported())
 		{
-			TCBinaryStreamFile<> UnixFile;
-			UnixFile.f_Open(UnixFileName, EFileOpen_Read | EFileOpen_NoLocalCache | EFileOpen_ShareRead | EFileOpen_ShareWrite);
-			UnixFile >> Port;
+			CStr UnixFileName = UnixAddress.f_GetPath();
+			if (!CFile::fs_FileExists(UnixFileName))
+				DMibErrorNet(fg_Format("Unix socket '{}' does not exist", UnixFileName));
+
+			uint16 Port;
+
+			try
+			{
+				TCBinaryStreamFile<> UnixFile;
+				UnixFile.f_Open(UnixFileName, EFileOpen_Read | EFileOpen_NoLocalCache | EFileOpen_ShareRead | EFileOpen_ShareWrite);
+				UnixFile >> Port;
+			}
+			catch (CException const &_Exception)
+			{
+				DMibErrorNet(fg_Format("Failed to get port for unix socket: {}", _Exception.f_GetErrorStr()));
+			}
+
+			CNetAddressTCPv4 ConnectAddress{{127, 0, 0, 1}, Port};
+
+			NNetwork::CNetAddress NetAddress{ConnectAddress};
+
+			Address = *((CWindowsAddress *)NetAddress.f_AccessRaw());
 		}
-		catch (CException const &_Exception)
-		{
-			DMibErrorNet(fg_Format("Failed to get port for unix socket: {}", _Exception.f_GetErrorStr()));
-		}
-
-		CNetAddressTCPv4 ConnectAddress{{127, 0, 0, 1}, Port};
-
-		NNetwork::CNetAddress NetAddress{ConnectAddress};
-
-		Address = *((CWindowsAddress *)NetAddress.f_AccessRaw());
 	}
 
 	ENetAddressType AddressType = Address.f_GetType();
 	SOCKET hSock = INVALID_SOCKET;
 	bool bConnected = false;
 
-	if (	AddressType == ENetAddressType_TCPv4
-		||	AddressType == ENetAddressType_TCPv6)
+	if
+		(
+			AddressType != ENetAddressType_TCPv4
+			&& AddressType != ENetAddressType_TCPv6
+			&& AddressType != ENetAddressType_Unix
+		)
 	{
-		int Family = (AddressType == ENetAddressType_TCPv4) ? PF_INET : PF_INET6;
+		DMibErrorNet("Invalid address type.");
+	}
 
-		hSock = socket(Family, SOCK_STREAM, 0);
+	int Family = (AddressType == ENetAddressType_TCPv4) ? PF_INET : PF_INET6;
+	if (AddressType == ENetAddressType_Unix)
+		Family = PF_UNIX;
 
-		if (hSock == INVALID_SOCKET)
+	hSock = socket(Family, SOCK_STREAM, 0);
+
+	if (hSock == INVALID_SOCKET)
+	{
+		uint32 Error = WSAGetLastError();
+		f_CheckDestroy();
+		DMibErrorNet((CStr::CFormat("Could not create a socket for connection, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+	}
+
+	auto Cleanup = g_OnScopeExit / [&]
+		{
+			f_CheckDestroy();
+		}
+	;
+
+	auto SocketCleanup = g_OnScopeExit / [&]
+		{
+			closesocket(hSock);
+		}
+	;
+
+	int Buf = EDefaultSocketBufSize;
+	if (Buf > 0)
+	{
+		if (setsockopt(hSock, SOL_SOCKET, SO_RCVBUF, (char *)&Buf, sizeof(Buf)))
 		{
 			uint32 Error = WSAGetLastError();
-			f_CheckDestroy();
-			DMibErrorNet((CStr::CFormat("Could not create a socket for connection, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not set connect socket receive buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
-		auto Cleanup = g_OnScopeExit / [&]
-			{
-				f_CheckDestroy();
-			}
-		;
-
-		auto SocketCleanup = g_OnScopeExit / [&]
-			{
-				closesocket(hSock);
-			}
-		;
-
-		int Buf = EDefaultSocketBufSize;
-		if (Buf > 0)
+		if (setsockopt(hSock, SOL_SOCKET, SO_SNDBUF, (char *)&Buf, sizeof(Buf)))
 		{
-			if (setsockopt(hSock, SOL_SOCKET, SO_RCVBUF, (char *)&Buf, sizeof(Buf)))
-			{
-				uint32 Error = WSAGetLastError();
-				DMibErrorNet((CStr::CFormat("Could not set connect socket receive buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-			}
-
-			if (setsockopt(hSock, SOL_SOCKET, SO_SNDBUF, (char *)&Buf, sizeof(Buf)))
-			{
-				uint32 Error = WSAGetLastError();
-				DMibErrorNet((CStr::CFormat("Could not set connect socket send buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-			}
+			uint32 Error = WSAGetLastError();
+			DMibErrorNet((CStr::CFormat("Could not set connect socket send buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
+	}
 
+	if (AddressType != ENetAddressType_Unix)
+	{
 		BOOL NoDelay = true;
 		if (setsockopt(hSock, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
 		{
 			uint32 Error = WSAGetLastError();
 			DMibErrorNet((CStr::CFormat("Could not set connect socket NoDelay setting, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
+	}
 
-		if (_pBindAddress)
-		{
-			int Result = bind(hSock, (sockaddr const*)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
-			if (Result != 0)
-			{
-				uint32 Error = WSAGetLastError();
-				DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-			}
-		}
-
-		TCUniquePointer<CWindowsSocket> pSocket;
-
-		pSocket = fg_Construct();
-
-		pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
-		pSocket->m_pSocket = (void *)hSock;
-		SocketCleanup.f_Clear();
-		{
-			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-			mp_SocketTree.f_Insert(pSocket.f_Get());
-		}
-
-		pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write;
-
-		f_StartThread();
-		if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE | FD_CONNECT))
+	if (_pBindAddress)
+	{
+		int Result = bind(hSock, (sockaddr const*)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
+		if (Result != 0)
 		{
 			uint32 Error = WSAGetLastError();
+			DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
+	}
+
+	TCUniquePointer<CWindowsSocket> pSocket;
+
+	pSocket = fg_Construct();
+
+	pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
+	pSocket->m_pSocket = (void *)hSock;
+	SocketCleanup.f_Clear();
+	{
+		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
+		mp_SocketTree.f_Insert(pSocket.f_Get());
+	}
+
+	pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write;
+
+	f_StartThread();
+	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE | FD_CONNECT))
+	{
+		uint32 Error = WSAGetLastError();
+		{
+			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
+			mp_SocketTree.f_Remove(pSocket.f_Get());
+		}
+		pSocket = nullptr;
+		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+	}
+
+	int Result = connect(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
+	if (Result != 0)
+	{
+		uint32 Error = WSAGetLastError();
+
+		if (Error != WSAEWOULDBLOCK)
+		{
 			{
 				DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 				mp_SocketTree.f_Remove(pSocket.f_Get());
 			}
 			pSocket = nullptr;
-			DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
 
-		int Result = connect(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
-		if (Result != 0)
-		{
-			uint32 Error = WSAGetLastError();
-
-			if (Error != WSAEWOULDBLOCK)
+			if (_Address.f_GetType() == ENetAddressType_Unix)
 			{
-				{
-					DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-					mp_SocketTree.f_Remove(pSocket.f_Get());
-				}
-				pSocket = nullptr;
-				DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				auto &Unix = _Address.f_GetUnix();
+				DMibErrorNet((CStr::CFormat("Could not connect socket ('{}'), windows returned: {}") << Unix.f_GetPath() << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
+			else
+				DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
-		else
-			pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Connected;
-
-		Cleanup.f_Clear();
-
-		return pSocket.f_Detach();
 	}
 	else
-	{
-		DMibErrorNet("Invalid address type.");
-//		return nullptr;
-	}
+		pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Connected;
+
+	Cleanup.f_Clear();
+
+	return pSocket.f_Detach();
 }
 
 CWindowsSocket *CWindowsSocketContext::f_AsyncConnect
@@ -963,26 +985,29 @@ TCUniquePointer<CWindowsSocket::CUnixListenState> CWindowsSocketContext::fp_Prep
 	{
 		CUnixAddress const &UnixAddress = o_Address.f_GetUnix();
 
-		NStr::CStr UnixFilePath = UnixAddress.m_FilePath;
+		NStr::CStr UnixFilePath = UnixAddress.f_GetPath();
 		if (NFile::CFile::fs_FileExists(UnixFilePath))
 			NFile::CFile::fs_DeleteFile(UnixFilePath);
 		auto Directory = NFile::CFile::fs_GetPath(UnixFilePath);
 		if (!NFile::CFile::fs_FileExists(Directory))
 			NFile::CFile::fs_CreateDirectory(Directory);
 
-		TCUniquePointer<CWindowsSocket::CUnixListenState> pListenState = fg_Construct();
+		if (!fg_UnixSocketsSupported())
+		{
+			TCUniquePointer<CWindowsSocket::CUnixListenState> pListenState = fg_Construct();
 
-		pListenState->m_Address = UnixAddress;
-		pListenState->m_UnixFileName = UnixFilePath;
-		pListenState->m_UnixFile.f_Open(pListenState->m_UnixFileName, EFileOpen_Write | EFileOpen_NoLocalCache | EFileOpen_ShareRead);
+			pListenState->m_Address = UnixAddress;
+			pListenState->m_UnixFileName = UnixFilePath;
+			pListenState->m_UnixFile.f_Open(pListenState->m_UnixFileName, EFileOpen_Write | EFileOpen_NoLocalCache | EFileOpen_ShareRead);
 
-		CNetAddressTCPv4 ListenAddress{{127, 0, 0, 1}, 0};
+			CNetAddressTCPv4 ListenAddress{ {127, 0, 0, 1}, 0 };
 
-		NNetwork::CNetAddress NetAddress{ListenAddress};
+			NNetwork::CNetAddress NetAddress{ ListenAddress };
 
-		o_Address = *((CWindowsAddress *)NetAddress.f_AccessRaw());
+			o_Address = *((CWindowsAddress*)NetAddress.f_AccessRaw());
 
-		return pListenState;
+			return pListenState;
+		}
 	}
 
 	return {};
@@ -1000,20 +1025,24 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 
 	ENetAddressType AddressType = Address.f_GetType();
 
-	if (	AddressType != ENetAddressType_TCPv4
-		&&	AddressType != ENetAddressType_TCPv6)
+	if 
+		(
+			AddressType != ENetAddressType_TCPv4
+			&& AddressType != ENetAddressType_TCPv6
+			&& AddressType != ENetAddressType_Unix
+		)
 	{
 		DMibErrorNet("Invalid address type for listening");
 	}
 
 	int Family = (AddressType == ENetAddressType_TCPv4) ? AF_INET : AF_INET6;
+	if (AddressType == ENetAddressType_Unix)
+		Family = AF_UNIX;
 
 	SOCKET hSock = socket(Family, SOCK_STREAM, 0);
 
-	if (hSock == INVALID_SOCKET )
-	{
+	if (hSock == INVALID_SOCKET)
 		DMibErrorNet("Could not create a socket for listening");
-	}
 
 	auto Cleanup = g_OnScopeExit / [&]
 		{
@@ -1061,6 +1090,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 		mp_SocketTree.f_Insert(pSocket.f_Get());
+		pSocket->m_BindAddressType = AddressType;
 	}
 
 	f_StartThread();
@@ -1073,7 +1103,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		}
 		pSocket = nullptr;
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not listen on socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	return pSocket.f_Detach();
@@ -1091,20 +1121,24 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 
 	ENetAddressType AddressType = Address.f_GetType();
 
-	if (	AddressType != ENetAddressType_TCPv4
-		&&	AddressType != ENetAddressType_TCPv6)
+	if
+		(
+			AddressType != ENetAddressType_TCPv4
+			&& AddressType != ENetAddressType_TCPv6
+			&& AddressType != ENetAddressType_Unix
+		)
 	{
 		DMibErrorNet("Invalid address type for listening");
 	}
 
 	int Family = (AddressType == ENetAddressType_TCPv4) ? AF_INET : AF_INET6;
+	if (AddressType == ENetAddressType_Unix)
+		Family = AF_UNIX;
 
 	SOCKET hSock = socket(Family, SOCK_DGRAM, 0);
 
-	if (hSock == INVALID_SOCKET )
-	{
+	if (hSock == INVALID_SOCKET)
 		DMibErrorNet("Could not create a socket for listening");
-	}
 
 	auto Cleanup = g_OnScopeExit / [&]
 		{
@@ -1159,7 +1193,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 		}
 		pSocket = nullptr;
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not bind socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	return pSocket.f_Detach();
@@ -1176,7 +1210,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		if (LastError == WSAEWOULDBLOCK)
 			return nullptr;
 
-		DMibErrorNet((CStr::CFormat("Could not accpept socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not accept socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
 	}
 
 	int Buf = EDefaultSocketBufSize;
@@ -1186,24 +1220,26 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		{
 			uint32 Error = WSAGetLastError();
 			closesocket(hSock);
-			DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not accept socket (SO_RCVBUF), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
 		if (setsockopt(hSock, SOL_SOCKET, SO_SNDBUF, (char *)&Buf, sizeof(Buf)))
 		{
 			uint32 Error = WSAGetLastError();
 			closesocket(hSock);
-			DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not accept socket (SO_SNDBUF), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 	}
-
-	BOOL NoDelay = true;
-
-	if (setsockopt(hSock, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
+	
+	if (_pSocket->m_BindAddressType != ENetAddressType_Unix)
 	{
-		uint32 Error = WSAGetLastError();
-		closesocket(hSock);
-		DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		BOOL NoDelay = true;
+		if (setsockopt(hSock, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
+		{
+			uint32 Error = WSAGetLastError();
+			closesocket(hSock);
+			DMibErrorNet((CStr::CFormat("Could not accept socket (TCP_NODELAY), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
 	}
 
 	TCUniquePointer<CWindowsSocket> pSocket = fg_Construct();
@@ -1225,7 +1261,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		}
 		pSocket = nullptr;
 		f_CheckDestroy();
-		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet((CStr::CFormat("Could not accept socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
 	return pSocket.f_Detach();
@@ -1494,6 +1530,17 @@ CWindowsAddress* CWindowsSocketContext::f_GetPeerAddress(CWindowsSocket *_pSocke
 		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(*(sockaddr_in6 const*)&PeerAddr);
 		return pAddress.f_Detach();
 	}
+	else if (PeerAddr.ss_family == AF_UNIX)
+	{
+		auto UnixAddress = *(sockaddr_un const*)&PeerAddr;
+		if (nAddrBytes <= sizeof(UnixAddress.sun_family))
+			UnixAddress.sun_path[0] = 0;
+
+		CUnixAddress Address;
+		Address.m_UnixAddress = UnixAddress;
+		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(Address);
+		return pAddress.f_Detach();
+	}
 	else
 	{
 		return nullptr;
@@ -1532,7 +1579,7 @@ uint32 CWindowsSocketContext::f_GetListenPort(CWindowsSocket *_pSocket)
 
 mint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
 {
-	return CUnixAddress::mc_MaxLength - 1;
+	return CUnixAddress::mc_MaxAddressLength;
 }
 
 #include "Malterlib_Core_PlatformImp_Net.imp.h"

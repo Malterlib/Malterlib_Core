@@ -61,20 +61,18 @@ public:
 	bool f_IsEmpty();
 };
 
-#ifndef DPlatformFamily_Windows
 struct CUnixAddress
 {
+	static constexpr mint mc_MaxAddressLength = sizeof(sockaddr_un::sun_path) - 1;
+
+	ch8 const *f_GetPath() const
+	{
+		return m_UnixAddress.sun_path;
+	}
+
 	sockaddr_un m_UnixAddress;
 	NFile::EFileAttrib m_Permissions = NFile::EFileAttrib_None;
 };
-#else
-struct CUnixAddress
-{
-	constexpr static const mint mc_MaxLength = 2048;
-	ch8 m_FilePath[mc_MaxLength] = {0};
-	NFile::EFileAttrib m_Permissions = NFile::EFileAttrib_None;
-};
-#endif
 
 struct CRuntimeNetAddress
 {
@@ -159,9 +157,7 @@ public:
 		{
 			case ENetAddressType_TCPv4: return sizeof(sockaddr_in);
 			case ENetAddressType_TCPv6: return sizeof(sockaddr_in6);
-#ifndef DPlatformFamily_Windows
 			case ENetAddressType_Unix: return sizeof(sockaddr_un);
-#endif
 			default: return f_GetFullDataLen();
 		}
 	}

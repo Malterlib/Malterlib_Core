@@ -2199,7 +2199,7 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_ResolveAddress(const NMib::NStr::CSt
 
 mint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
 {
-	return sizeof(sockaddr_un::sun_path) - 1;
+	return CUnixAddress::mc_MaxAddressLength;
 }
 
 void *NSys::NNetwork::fg_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish)
