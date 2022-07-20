@@ -6,7 +6,7 @@
 
 # EnvVar: MalterlibPreBuildNoClean
 
-set -e
+set -ex
 
 export MalterlibDoingProductBuild=true
 

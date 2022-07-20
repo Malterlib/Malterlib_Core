@@ -4,7 +4,7 @@
 
 # Usage: PrebuildVisualStudio.sh Buildsystem Workspace [Workspaces]
 
-set -e
+set -ex
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -14,6 +14,8 @@ if [[ $SysName ==  Darwin* ]] ; then
 fi
 
 pushd "$DIR/../../.." > /dev/null
+
+env
 
 if [[ "$MLBuildGit" != "" && "$MLBuildUseGit" == "1" ]]; then
 	GitFolders=(${MLBuildGit//;/ })
@@ -53,11 +55,15 @@ if [[ "$MLBuildGit" != "" && "$MLBuildUseGit" == "1" ]]; then
 		git checkout -f -B "$Branch" "origin/$Branch"
 		git clean -fd
 		if [ -x mib ]; then
+			git status
+			./mib status --skip-update
 			./mib update_repos
 		fi
 		popd > /dev/null
 	done
 else
+	git status
+	./mib status --skip-update
 	./mib update_repos
 fi
 

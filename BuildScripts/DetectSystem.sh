@@ -2,7 +2,7 @@
 # Copyright © 2015 Hansoft AB 
 # Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-set -e
+set -ex
 
 SysName=$(uname -s)
 ProcessorArch=$(uname -m)
