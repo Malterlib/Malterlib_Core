@@ -80,7 +80,7 @@ Property
 	MalterlibBinaryRepositories =+ `MalterlibBinaries_@(HostPlatformFamily)_@(HostArchitecture)`
 
 	MalterlibAllBinaryRepositories define bool = false // User(Repository)=true: Set to true to sync all binary repositories.
-	MalterlibAllBinaryRepositories_MacOS define bool = false
+	MalterlibAllBinaryRepositories_macOS define bool = false
 }
 
 Property
@@ -99,7 +99,7 @@ Property
 	|
 	{
 		MalterlibAllBinaryRepositories true
-		MalterlibAllBinaryRepositories_MacOS true
+		MalterlibAllBinaryRepositories_macOS true
 	}
 
 	MalterlibBinaryRepositories =+ "MalterlibBinaries_macOS_x64"
