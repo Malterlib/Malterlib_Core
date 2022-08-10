@@ -1085,7 +1085,6 @@ void NSys::fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode)
 			GROUP_AFFINITY OldAffinity;
 			fg_MemClear(OldAffinity);
 			NLocal::g_fSetThreadGroupAffinity(_pThread, &Affinity, &OldAffinity);
-			int x = 0;
 		}
 	}
 	else
