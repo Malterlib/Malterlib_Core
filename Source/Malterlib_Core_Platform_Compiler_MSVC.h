@@ -5,8 +5,8 @@
 
 #if defined(__EDG__)
 // This is the intellisense compiler
-#elif _MSC_VER == 1931
-#	if _MSC_FULL_VER < 193131105
+#elif _MSC_VER == 1933
+#	if _MSC_FULL_VER < 193331629
 #		pragma message("Current compiler version: " DMibStringize(_MSC_FULL_VER))
 #		error "Compiler version is not newer than 193131105, please install the approprita update for Visual Studio 2022"
 #	endif
