@@ -2212,7 +2212,7 @@ Compile
 	}*/
 
 	ConcurrentCompile define bool?
-	ConcurrentCompile true
+	ConcurrentCompile false
 	{
 		&
 		{

@@ -148,6 +148,22 @@
 				}
 			}
 		}
+		%GeneratorSetting "MultiProcCL"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "MultiProcCL"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\true "true"
+					\false "false"
+				}
+			}
+		}		
 		%GeneratorSetting "EnforceProcessCountAcrossBuilds"
 		{
 			Property
