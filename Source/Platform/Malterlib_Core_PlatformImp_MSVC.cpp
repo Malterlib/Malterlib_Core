@@ -4169,39 +4169,42 @@ namespace
 		if constexpr (tf_bOnLink)
 			return;
 
-		tf_CWinStr OriginalFileName(_pFileName);
-		// This needs to be named exactly like this to be compatible with old version of library (when Malterlib was named Ids)
-		auto ExtendedAttribName = OriginalFileName + ":IdsExtAttribs:$DATA";
-		if (OriginalFileName.f_GetLen() < 260 && ExtendedAttribName.f_GetLen() >= 260)
-			ExtendedAttribName = NFile::NPlatform::fg_ConvertToWindowsPathLocal(NFile::NPlatform::fg_ConvertFromWindowsPathInternal<tf_CWinStr>(ExtendedAttribName));
+		if (CFile::CSetAttributeEmulationScope::fs_IsEmulationEnabled())
+		{
+			tf_CWinStr OriginalFileName(_pFileName);
+			// This needs to be named exactly like this to be compatible with old version of library (when Malterlib was named Ids)
+			auto ExtendedAttribName = OriginalFileName + ":IdsExtAttribs:$DATA";
+			if (OriginalFileName.f_GetLen() < 260 && ExtendedAttribName.f_GetLen() >= 260)
+				ExtendedAttribName = NFile::NPlatform::fg_ConvertToWindowsPathLocal(NFile::NPlatform::fg_ConvertFromWindowsPathInternal<tf_CWinStr>(ExtendedAttribName));
 
-		if (ExtraAttributes)
-		{
+			if (ExtraAttributes)
 			{
-				CMalterlibExtendedAttributes NewAttribs;
-				NewAttribs.m_ExtendedAttributes = ExtraAttributes;
-				TCBinaryStreamFile<> Stream;
-				Stream.f_Open(tf_CStr(ExtendedAttribName), EFileOpen_Write | EFileOpen_ShareAll | EFileOpen_RawFileName);
-				Stream << NewAttribs;
-			}
-			if (bReadOnly)
-			{
-				if (FileAttribs == FILE_ATTRIBUTE_NORMAL)
 				{
-					FileAttribs = 0;
+					CMalterlibExtendedAttributes NewAttribs;
+					NewAttribs.m_ExtendedAttributes = ExtraAttributes;
+					TCBinaryStreamFile<> Stream;
+					Stream.f_Open(tf_CStr(ExtendedAttribName), EFileOpen_Write | EFileOpen_ShareAll | EFileOpen_RawFileName);
+					Stream << NewAttribs;
 				}
-				FileAttribs |= FILE_ATTRIBUTE_READONLY;
-				if (!SetFileAttributesW(_pFileName, FileAttribs))
-					DMibErrorFile((tf_CStr::CFormat("Windows returned an error from SetFileAttributesW({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+				if (bReadOnly)
+				{
+					if (FileAttribs == FILE_ATTRIBUTE_NORMAL)
+					{
+						FileAttribs = 0;
+					}
+					FileAttribs |= FILE_ATTRIBUTE_READONLY;
+					if (!SetFileAttributesW(_pFileName, FileAttribs))
+						DMibErrorFile((tf_CStr::CFormat("Windows returned an error from SetFileAttributesW({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+				}
 			}
-		}
-		else
-		{
-			uint32 Attribs = GetFileAttributesW(ExtendedAttribName);
-			if (Attribs != INVALID_FILE_ATTRIBUTES)
+			else
 			{
-				if (!DeleteFileW(NFile::NPlatform::fg_ConvertToWindowsPathLocal(ExtendedAttribName)))
-					DMibErrorFile((CStr::CFormat("Windows returned an error from DeleteFile({}): {}") << ExtendedAttribName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+				uint32 Attribs = GetFileAttributesW(ExtendedAttribName);
+				if (Attribs != INVALID_FILE_ATTRIBUTES)
+				{
+					if (!DeleteFileW(NFile::NPlatform::fg_ConvertToWindowsPathLocal(ExtendedAttribName)))
+						DMibErrorFile((CStr::CFormat("Windows returned an error from DeleteFile({}): {}") << ExtendedAttribName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+				}
 			}
 		}
 	}
@@ -4233,28 +4236,31 @@ namespace
 		if (_FileAttribs & FILE_ATTRIBUTE_ARCHIVE)
 			MalterlibAttr |= NMib::NFile::EFileAttrib_Archive;
 
-		tf_CWinStr OriginalFileName(_pFileName);
-		auto ExtendedAttribName = OriginalFileName + ":IdsExtAttribs:$DATA";
-		if (OriginalFileName.f_GetLen() < 260 && ExtendedAttribName.f_GetLen() >= 260)
-			ExtendedAttribName = NFile::NPlatform::fg_ConvertToWindowsPathLocal(NFile::NPlatform::fg_ConvertFromWindowsPathInternal<tf_CWinStr>(ExtendedAttribName));
-
-		uint32 Attribs = GetFileAttributesW(ExtendedAttribName);
-		if (Attribs != INVALID_FILE_ATTRIBUTES)
+		if (CFile::CSetAttributeEmulationScope::fs_IsEmulationEnabled())
 		{
-			try
-			{
-				TCBinaryStreamFile<> Stream;
-				Stream.f_Open(tf_CStr(ExtendedAttribName), EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_RawFileName);
-				if (Stream.f_GetLength())
-				{
-					CMalterlibExtendedAttributes OldAttribs;
-					Stream >> OldAttribs;
+			tf_CWinStr OriginalFileName(_pFileName);
+			auto ExtendedAttribName = OriginalFileName + ":IdsExtAttribs:$DATA";
+			if (OriginalFileName.f_GetLen() < 260 && ExtendedAttribName.f_GetLen() >= 260)
+				ExtendedAttribName = NFile::NPlatform::fg_ConvertToWindowsPathLocal(NFile::NPlatform::fg_ConvertFromWindowsPathInternal<tf_CWinStr>(ExtendedAttribName));
 
-					MalterlibAttr |= OldAttribs.m_ExtendedAttributes;
-				}
-			}
-			catch (CExceptionFile const &)
+			uint32 Attribs = GetFileAttributesW(ExtendedAttribName);
+			if (Attribs != INVALID_FILE_ATTRIBUTES)
 			{
+				try
+				{
+					TCBinaryStreamFile<> Stream;
+					Stream.f_Open(tf_CStr(ExtendedAttribName), EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_RawFileName);
+					if (Stream.f_GetLength())
+					{
+						CMalterlibExtendedAttributes OldAttribs;
+						Stream >> OldAttribs;
+
+						MalterlibAttr |= OldAttribs.m_ExtendedAttributes;
+					}
+				}
+				catch (CExceptionFile const &)
+				{
+				}
 			}
 		}
 
