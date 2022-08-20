@@ -209,7 +209,7 @@ namespace NMib
 
 		inline_always void *fg_Thread_GetLocalAlwaysSet(mint _iStorage)
 		{
-			return fg_Thread_GetLocal(_iStorage);
+			return (void *)fg_GetThreadLocal(_iStorage);
 		}
 
 		inline_always mint fg_Thread_AllocLocalFast()
@@ -259,11 +259,11 @@ namespace NMib
 				#endif
 				DMibFastCheck(Return == fg_GetThreadLocal_Safe(_iVariable));*/
 			#else
-				return fg_Thread_GetLocal(_iVariable);
+				return (void *)fg_GetThreadLocal(_iVariable);
 			#endif
 			return (void *)Return;
 #else
-			return fg_Thread_GetLocal(_iVariable);
+			return (void *)fg_GetThreadLocal(_iVariable);
 #endif
 		}
 
