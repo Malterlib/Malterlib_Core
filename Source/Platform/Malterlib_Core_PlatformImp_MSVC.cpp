@@ -5419,6 +5419,9 @@ void fg_CreateDirectoryHelper(const tf_CStr &_FileDirectory)
 	// CreateDirectoryW has a special 248 character limit...
 	tf_CWinStr NewPath = NFile::NPlatform::fg_ConvertToWindowsPath<tf_CWinStr, tf_CWinStr>(_FileDirectory, true, -1, false);
 
+	if (fg_DirectoryExists(NewPath))
+		return;
+
 	ch16 *pDir = NewPath.f_GetStrUniqueWritable();
 
 	ch16 *pDirCheck;
