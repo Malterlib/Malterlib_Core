@@ -2332,17 +2332,17 @@ namespace NPrivate
 
 	struct CEnumThreadEntrySort
 	{
-		bool operator ()(CEnumThreadEntry const &_Left, CEnumThreadEntry const &_Right) const
+		COrdering_Partial operator ()(CEnumThreadEntry const &_Left, CEnumThreadEntry const &_Right) const
 		{
-			return _Left.m_ThreadID < _Right.m_ThreadID;
+			return _Left.m_ThreadID <=> _Right.m_ThreadID;
 		}
-		bool operator ()(CEnumThreadEntry const &_Left, mint _Right) const
+		COrdering_Partial operator ()(CEnumThreadEntry const &_Left, mint _Right) const
 		{
-			return _Left.m_ThreadID < _Right;
+			return _Left.m_ThreadID <=> _Right;
 		}
-		bool operator ()(mint _Left, CEnumThreadEntry const &_Right) const
+		COrdering_Partial operator ()(mint _Left, CEnumThreadEntry const &_Right) const
 		{
-			return _Left < _Right.m_ThreadID;
+			return _Left <=> _Right.m_ThreadID;
 		}
 	};
 
