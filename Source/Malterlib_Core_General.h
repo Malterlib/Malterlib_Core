@@ -1087,32 +1087,13 @@ namespace NMib
 		}
 	}
 	
-	class CCompare_Default
-	{
-	public:
-		typedef aint CRet;
-
-		template <typename t_CContext, typename t_CKey0, typename t_CKey1>
-		static inline_small CRet fs_Compare(t_CContext && _Context, t_CKey0 *const _pLeft, t_CKey1 *const _pRight)
-		{
-			auto Result = *_pLeft <=> *_pRight;
-
-			if (Result < 0)
-				return -1;
-			if (Result > 0)
-				return 1;
-			return 0;
-		}
-
-	};
-
 	class CSort_Default
 	{
 	public:
 		template <typename t_CKey0, typename t_CKey1>
-		inline_small bool operator()(t_CKey0 &&_Left, t_CKey1 &&_Right) const
+		inline_small auto operator() (t_CKey0 &&_Left, t_CKey1 &&_Right) const
 		{
-			return fg_Forward<t_CKey0>(_Left) < fg_Forward<t_CKey1>(_Right);
+			return _Left <=> _Right;
 		}
 	};
 

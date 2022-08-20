@@ -640,17 +640,12 @@ namespace NMib
 		class CSort
 		{
 		public:
-			typedef aint CRet;
-			static inline_small CRet fs_Compare(void *_pContext, NStorage::CAggregate *_pFirst, NStorage::CAggregate *_pSecond)
+			inline_small auto operator () (NStorage::CAggregate const &_Left, NStorage::CAggregate const &_Right)
 			{
-				if (_pFirst->m_Priority < _pSecond->m_Priority)
-					return -1;
-				else if (_pFirst->m_Priority > _pSecond->m_Priority)
-					return 1;
-				return 0;
+				return _Left.m_Priority <=> _Right.m_Priority;
 			}
 		};
-		m_Aggregates.f_MergeSort<CSort>();
+		m_Aggregates.f_MergeSort(CSort());
 		NStorage::CAggregate * pAggregate = m_Aggregates.f_GetLast();
 		while (pAggregate)
 		{
