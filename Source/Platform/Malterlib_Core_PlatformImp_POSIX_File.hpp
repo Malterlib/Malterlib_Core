@@ -537,7 +537,11 @@ template <typename tf_CStr>
 void fg_CreateDirectoryHelper(const tf_CStr &_FileDirectory)
 {
 	tf_CStr FileDirectory = fg_ConvertToPOSIXPath(_FileDirectory);
-	tf_CStr NewPath = 	NMib::NStr::fg_StrReplaceChar(FileDirectory, '\\', '/');
+
+	if (NSys::NFile::fg_FileExistsGeneral(FileDirectory, NMib::NFile::EFileAttrib_Directory))
+		return;
+
+	tf_CStr NewPath = NMib::NStr::fg_StrReplaceChar(FileDirectory, '\\', '/');
 	tf_CStr CurrentPath;
 	if (!NewPath.f_IsEmpty() && NewPath[0] == '/')
 	{
