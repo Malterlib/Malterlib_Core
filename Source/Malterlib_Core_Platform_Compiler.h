@@ -216,13 +216,6 @@ namespace std
 #	error "Implement this"
 #endif
 
-// Used for working around bugs in UBSAN
-#if (defined(DCompiler_clang) || defined(DCompiler_gcc)) && defined(DPlatformFamily_Linux)
-#	define DMibSuppressUndefinedSanitizerLinux __attribute__((no_sanitize("undefined")))
-#else
-#	define DMibSuppressUndefinedSanitizerLinux
-#endif
-
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define DMibSuppressThreadSanitizer __attribute__((no_sanitize("thread")))
 #elif defined(DCompiler_MSVC)
@@ -264,10 +257,13 @@ namespace std
 #	endif
 #endif
 
+// Used for working around bugs in UBSAN
 #if defined(DArchitecture_arm64) || defined(DArchitecture_arm64e) || !defined(DPlatformFamily_Linux) || !defined(DMibSanitizerEnabled_UndefinedBehavior)
 	#define DMibWorkaroundUBSanSectionErrors
+	#define DMibWorkaroundUBSanSectionErrorsDisable
 #else
 	#define DMibWorkaroundUBSanSectionErrors __attribute__ ((section("ubsan_broken_section")))
+	#define DMibWorkaroundUBSanSectionErrorsDisable __attribute__((no_sanitize("undefined")))
 #endif
 
 #ifdef DMibSanitizerEnabled_Thread
