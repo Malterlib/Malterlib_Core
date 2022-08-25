@@ -257,6 +257,12 @@ namespace std
 #	endif
 #endif
 
+#ifdef DCompiler_MSVC
+#	define DMibNoUniqueAddress [[msvc::no_unique_address]]
+#else
+#	define DMibNoUniqueAddress [[no_unique_address]]
+#endif
+
 // Used for working around bugs in UBSAN
 #if defined(DArchitecture_arm64) || defined(DArchitecture_arm64e) || !defined(DPlatformFamily_Linux) || !defined(DMibSanitizerEnabled_UndefinedBehavior)
 	#define DMibWorkaroundUBSanSectionErrors
