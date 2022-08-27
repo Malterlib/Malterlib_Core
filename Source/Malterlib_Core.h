@@ -39,7 +39,7 @@ namespace NMib
 #define inline_never_debug
 #endif
 
-#include "../../Core/Source/Malterlib_Core_EnumOperators.h"
+#include "Malterlib_Core_EnumOperators.h"
 
 #include <Mib/Core/EnableIf>
 #include <Mib/Type/Traits>

@@ -306,7 +306,7 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 }
 
 extern bool g_bSysDeleted;
-void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
+inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
 {
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	if (_Size == 0)

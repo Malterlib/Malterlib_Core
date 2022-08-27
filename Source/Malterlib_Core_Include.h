@@ -108,6 +108,8 @@ namespace NMib
 
 
 #include "Malterlib_Core_General.h"
+#include "Malterlib_Core_Literals.h"
+
 #include "../../Memory/Source/Malterlib_Memory_Allocator_New.h"
 #include <compare>
 
