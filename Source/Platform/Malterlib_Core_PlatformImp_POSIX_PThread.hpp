@@ -684,6 +684,12 @@ void *NSys::fg_Thread_Create
 		pthread_attr_setschedparam(Data.f_UseThreadAttribs(), &ScheduleParams);
 	}
 
+#if defined DMibSanitizerEnabled_Address
+	if (_StackSize == 0)
+		_StackSize = 512 * 1024;
+	_StackSize *= 4;
+#endif
+
 	if (_StackSize != 0)
 		pthread_attr_setstacksize (Data.f_UseThreadAttribs(), _StackSize);
 
