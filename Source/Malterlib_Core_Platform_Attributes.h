@@ -65,14 +65,18 @@
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	if DMibPInlineActive
 #		define inline_always inline __attribute__((always_inline))
+#		define inline_always_lambda __attribute__((always_inline))
 #	else
 #		define inline_always inline
+#		define inline_always_lambda
 #	endif
 #elif defined(DCompiler_MSVC)
 #	if DMibPInlineActive
 #		define inline_always __forceinline
+#		define inline_always_lambda [[msvc::forceinline]]
 #	else
 #		define inline_always inline
+#		define inline_always_lambda
 #	endif
 #else
 #	error "Implement this"
