@@ -1199,7 +1199,7 @@ Property
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
 		InstrumentForOptimization false
-		SharedLibraryInstallPath "/usr/lib/system/MalterlibMallocOverrideDummy.dylib"
+		SharedLibraryInstallPath "@executable_path/MalterlibMallocOverrideDummy.dylib"
 	}
 	Compile
 	{
