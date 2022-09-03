@@ -43,6 +43,16 @@ Property
 	MToolCMakePath MToolDirectory / ("MToolCMake" + (Builtin.MToolExe->GetExtension() && ("." + Builtin.MToolExe->GetExtension())))
 
 	CMakeIntermediateDirectory define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/SharedCMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
+	CMakeGetToolSetTool function(string _Tool) string
+
+	CMakeGetToolSetTool PlatformToolsetCompiler->GetPath() / _Tool
+	{
+		!PlatformToolsetCompiler undefined
+	}
+	CMakeGetToolSetTool _Tool
+	{
+		!!PlatformToolsetCompiler undefined
+	}
 }
 
 Compile
@@ -289,81 +299,57 @@ Import
 		}
 	}
 
-	CMake_Variables =+ [`CMAKE_INSTALL_NAME_TOOL=@(PlatformToolsetCompiler->GetPath())/llvm-install-name-tool`]
+	CMake_Variables =+ [`CMAKE_INSTALL_NAME_TOOL=@(CMakeGetToolSetTool("llvm-install-name-tool"))`]
 	{
-		&
+		|
 		{
-			!PlatformToolsetCompiler undefined
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformFamily "macOS"
-			}
+			PlatformFamily "Linux"
+			PlatformFamily "macOS"
 		}
 	}
 
-	CMake_Variables =+ [`CMAKE_NM=@(PlatformToolsetCompiler->GetPath())/llvm-nm`]
+	CMake_Variables =+ [`CMAKE_NM=@(CMakeGetToolSetTool("llvm-nm"))`]
 	{
-		&
+		|
 		{
-			!PlatformToolsetCompiler undefined
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformFamily "macOS"
-			}
+			PlatformFamily "Linux"
+			PlatformFamily "macOS"
 		}
 	}
 
-	CMake_Variables =+ [`CMAKE_OBJDUMP=@(PlatformToolsetCompiler->GetPath())/llvm-objdump`]
+	CMake_Variables =+ [`CMAKE_OBJDUMP=@(CMakeGetToolSetTool("llvm-objdump"))`]
 	{
-		&
+		|
 		{
-			!PlatformToolsetCompiler undefined
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformFamily "macOS"
-			}
+			PlatformFamily "Linux"
+			PlatformFamily "macOS"
 		}
 	}
 
-	CMake_Variables =+ [`CMAKE_STRIP=@(PlatformToolsetCompiler->GetPath())/llvm-strip`]
+	CMake_Variables =+ [`CMAKE_STRIP=@(CMakeGetToolSetTool("llvm-strip"))`]
 	{
-		&
+		|
 		{
-			!PlatformToolsetCompiler undefined
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformFamily "macOS"
-			}
+			PlatformFamily "Linux"
+			PlatformFamily "macOS"
 		}
 	}
 
-	CMake_Variables =+ [`CMAKE_RANLIB=@(PlatformToolsetCompiler->GetPath())/llvm-ranlib`]
+	CMake_Variables =+ [`CMAKE_RANLIB=@(CMakeGetToolSetTool("llvm-ranlib"))`]
 	{
-		&
+		|
 		{
-			!PlatformToolsetCompiler undefined
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformFamily "macOS"
-			}
+			PlatformFamily "Linux"
+			PlatformFamily "macOS"
 		}
 	}
 
-	CMake_Variables =+ [`CMAKE_AR=@(PlatformToolsetCompiler->GetPath())/llvm-ar`]
+	CMake_Variables =+ [`CMAKE_AR=@(CMakeGetToolSetTool("llvm-ar"))`]
 	{
-		&
+		|
 		{
-			!PlatformToolsetCompiler undefined
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformFamily "macOS"
-			}
+			PlatformFamily "Linux"
+			PlatformFamily "macOS"
 		}
 	}
 
