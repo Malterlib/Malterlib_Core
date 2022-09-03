@@ -1857,7 +1857,7 @@ Target
 			!Target.CodeSigningIdentity undefined
 			Target.HardenedRuntime undefined
 			PlatformFamily "macOS"
-			!MalterlibNotarizeMacOSUser undefined
+			!MalterlibNotarizeMacOSProfile undefined
 		}
 	}
 
@@ -4393,7 +4393,7 @@ Property
 	{
 		|
 		{
-			!MalterlibNotarizeMacOSUser undefined
+			!MalterlibNotarizeMacOSProfile undefined
 			MalterlibSignMacOSHardened true
 		}
 	}
@@ -4421,13 +4421,13 @@ Property
 		!MalterlibBuildServerBuild true
 	}
 
-	MalterlibALToolMacOSCommand define string
-	MalterlibALToolMacOSCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ALToolMacOS`
+	MalterlibNotaryToolMacOSCommand define string
+	MalterlibNotaryToolMacOSCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=NotaryToolMacOS`
 	{
 		!!MalterlibBuildServerBuild true
 	}
 
-	MalterlibALToolMacOSCommand "xcrun altool"
+	MalterlibNotaryToolMacOSCommand "xcrun notarytool"
 	{
 		!MalterlibBuildServerBuild true
 	}
@@ -4964,23 +4964,13 @@ Target
 
 	PostBuildScript =+	`echo Notarize:\r\n`\
 						`/usr/bin/ditto -c -k --keepParent "@(MalterlibFinalModuleDestination->NativePath())" "@(MalterlibFinalModuleDestination->NativePath()).zip"\r\n`\
-						`echo @(MalterlibALToolMacOSCommand) --notarize-app --primary-bundle-id "@(MalterlibBundleIdentifier)" --asc-provider "@(MalterlibNotarizeMacOSProvider)" --username "@(MalterlibNotarizeMacOSUser)" --password "@(MalterlibNotarizeMacOSPassword)" --file "@(MalterlibFinalModuleDestination->NativePath()).zip"\r\n`\
-						`@(MalterlibALToolMacOSCommand) --notarize-app --primary-bundle-id "@(MalterlibBundleIdentifier)" --asc-provider "@(MalterlibNotarizeMacOSProvider)" --username "@(MalterlibNotarizeMacOSUser)" --password "@(MalterlibNotarizeMacOSPassword)" --file "@(MalterlibFinalModuleDestination->NativePath()).zip" 2>&1 | tee "@(MalterlibFinalModuleDestination->NativePath()).log"\r\n`\
-						`NotarizationRequestUUID=$(awk -F ' = ' '/RequestUUID/ {print $2}' "@(MalterlibFinalModuleDestination->NativePath()).log")\r\n`\
-						`while true; do\r\n`\
-						`	@(MalterlibALToolMacOSCommand) --notarization-info "$NotarizationRequestUUID" --asc-provider "@(MalterlibNotarizeMacOSProvider)" --username "@(MalterlibNotarizeMacOSUser)" --password "@(MalterlibNotarizeMacOSPassword)" > "@(MalterlibFinalModuleDestination->NativePath()).log" 2>&1\r\n`\
-						`	if ! grep -q "Status: in progress" "@(MalterlibFinalModuleDestination->NativePath()).log"; then\r\n`\
-						`		break\r\n`\
-						`	fi\r\n`\
-						`	sleep 15\r\n`\
-						`done\r\n`\
-						`cat "@(MalterlibFinalModuleDestination->NativePath()).log"\r\n`\
-						`LogFileURL=$(awk -F ': ' '/LogFileURL/ {print $2}' "@(MalterlibFinalModuleDestination->NativePath()).log")\r\n`\
-						`if [[ "$LogFileURL" != "" ]]; then\r\n`\
-						`	curl -s "$LogFileURL"\r\n`\
-						`	echo ""\r\n`\
-						`fi\r\n`\
-						`if ! grep -q "Status: success" "@(MalterlibFinalModuleDestination->NativePath()).log"; then\r\n`\
+						`echo @(MalterlibNotaryToolMacOSCommand) submit "@(MalterlibFinalModuleDestination->NativePath()).zip" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash()) \r\n`\
+						`@(MalterlibNotaryToolMacOSCommand) submit "@(MalterlibFinalModuleDestination->NativePath()).zip" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash()) 2>&1 | tee "@(MalterlibFinalModuleDestination->NativePath()).log"\r\n`\
+						`SubmissionID=\`grep "@(MalterlibFinalModuleDestination->NativePath()).log" -e "id:" | head -n 1 | awk -F 'id: ' '{print $2}'\`\r\n`\
+						`echo SubmissionID=$SubmissionID\r\n`\
+						`@(MalterlibNotaryToolMacOSCommand) wait "$SubmissionID" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash())\r\n`\
+						`@(MalterlibNotaryToolMacOSCommand) log "$SubmissionID" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash()) | tee "@(MalterlibFinalModuleDestination->NativePath()).log"\r\n`\
+						`if ! grep -q "\\"status\\": \\"Accepted\\"" "@(MalterlibFinalModuleDestination->NativePath()).log"; then\r\n`\
 						`	echo "Error: Notarization failed"\r\n`\
 						`	exit 1\r\n`\
 						`fi\r\n`\
@@ -4992,7 +4982,7 @@ Target
 			PlatformFamily "macOS"
 			MalterlibSigning true
 			Target.Type "UIExecutable"
-			!MalterlibNotarizeMacOSUser ""
+			!MalterlibNotarizeMacOSProfile undefined
 		}
 	}
 

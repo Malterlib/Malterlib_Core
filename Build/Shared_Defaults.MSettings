@@ -92,9 +92,7 @@ Property
 	MalterlibSignCertWindows define string = "Unknown Company" // User(Signing)="Name of cert": Set this to your local certificate for driver development
 	MalterlibSignCertMacOS define string = "-" // User(Signing)=SHA1OfCert: Set this to your Developer ID cert for driver development
 
-	MalterlibNotarizeMacOSUser define string = "" // User(Signing)=email: Set this to your developer email login
-	MalterlibNotarizeMacOSPassword define string = MalterlibBuildServerBuild ? "{MalterlibNotarizationPassword}" : `@@keychain:MalterlibNotarize-@(MalterlibNotarizeMacOSUser)` // User(Signing)=: Set the password for your apple developer account. Can be an environment variable expansion or @keychain
-	MalterlibNotarizeMacOSProvider define string = MalterlibBuildServerBuild ? "{MalterlibNotarizationProvider}" : "" // User(Signing)=: The short name of your itunes organization. Find with: xcrun iTMSTransporter -m provider -u 'email' -p
+	MalterlibNotarizeMacOSProfile define string? // User(Signing)="ProfileName": Set this to keychain profile used for notarization. Previously stored with xcrun notarytool store-credentials --apple-id "email" --team-id "team"
 
 	MalterlibBreakpadUploadServer define string = "https://error-reports.malterlib.org"
 	MalterlibBreakpadReportInterval define int = 0
