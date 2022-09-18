@@ -2417,6 +2417,40 @@ namespace NMib::NThread
 		DMibSanitizerAnnotate_MutexDestroy(this, 0);
 	}
 
+	bool CLowLevelLockAggregate::f_TryLock()
+	{
+		DMibSanitizerAnnotate_MutexPreLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock);
+
+#if DPlatformVersion < 10120
+		if (&os_unfair_lock_lock)
+		{
+#endif
+			if (!os_unfair_lock_trylock((os_unfair_lock_t)&m_Lock))
+			{
+				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
+				return false;
+			}
+#if DPlatformVersion < 10120
+		}
+		else
+		{
+			uint32 Expected = 0;
+			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			{
+				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
+				return false;
+			}
+		}
+#endif
+
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+		DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock, 1);
+		return true;
+	}
+
 	void CLowLevelLockAggregate::f_Lock()
 	{
 		DMibSanitizerAnnotate_MutexPreLock(this, 0);
