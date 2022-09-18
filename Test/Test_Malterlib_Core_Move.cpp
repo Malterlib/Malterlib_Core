@@ -227,19 +227,6 @@ namespace
 				int y = 0;
 			}
 
-
-			NMib::NContainer::TCMap<NMib::NStr::CStr> EmuSet;
-
-			EmuSet["Test 1"];
-			EmuSet["Test 2"];
-			EmuSet["Test 3"];
-
-			for (auto Iter = EmuSet.f_GetIterator(); Iter; ++Iter)
-			{
-				int y = 0;
-			}
-
-
 			NMib::NStorage::TCAggregateSimple<NMib::NStr::CStr> TestAggregateSimple = {DAggregateInit};
 			TestAggregateSimple.f_Construct();
 			*TestAggregateSimple = "Test aggregate";
