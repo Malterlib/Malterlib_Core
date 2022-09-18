@@ -148,6 +148,20 @@ Property
 				MalterlibUseStaticLibCxxABI true
 			}
 		}
+		SearchPath += "../../External/llvm-project/compiler-rt/lib/builtins"->MakeAbsolute()
+		{
+			&
+			{
+				MalterlibUseStaticLibCxxABI true
+				|
+				{
+					PlatformFamily "Linux"
+					PlatformFamily "macOS"
+					PlatformFamily "Emscripten"
+				}
+			}
+		}
+
 	}
 	Property.WorkaroundLTOValue define bool = false
 	%Group "Source"
@@ -177,6 +191,87 @@ Property
 				!!CompileDialect "C"
 			}
 
+			%Group "LSE"
+			{
+				&
+				{
+					PlatformFamily "Linux"
+					|
+					{
+						Architecture "arm64"
+						Architecture "arm64e"
+					}
+				}
+
+				Property
+				{
+					_Name define string
+					_Size define string
+					_Model define string
+
+					LseFilesToGenerate_Names define [string] = ["cas", "swp", "ldadd", "ldclr", "ldeor" , "ldset"]
+					LseFilesToGenerate_Sizes define [string] = ["1", "2", "4", "8", "16"]
+					LseFilesToGenerate_Models define [string] = ["1", "2", "3", "4"]
+
+					fg_IterateNames function(string _Name) [type(CEntity)] = []
+					fg_IterateNames =+ LseFilesToGenerate_Sizes->ForEach("fg_IterateSizes", {_Name: _Name})
+
+					fg_IterateSizes function(string _Size) [type(CEntity)] = []
+					fg_IterateSizes =+ LseFilesToGenerate_Models->ForEach("fg_IterateModels", {_Size: _Size, _Name: _Name})
+
+					fg_IterateModels function(string _Model) [type(CEntity)] = []
+					fg_IterateModels =+ {
+						Name: `outline_atomic_@(_Name)_@(_Size)_@(_Model).S`
+						, Properties: {
+							LseName: _Name
+							, LseSize: _Size
+							, LseModel: _Model
+						}
+					}
+					{
+						|
+						{
+							_Name "cas"
+							!_Size "16"
+						}
+					}
+				}
+				%GenerateFile LseFilesToGenerate_Names->ForEach("fg_IterateNames")
+				{
+					GenerateFile
+					{
+						Name `@(GeneratedDirectory)LSE/@(this.Identity)`
+
+						Symlink true
+						SymlinkBasePath `@(GeneratedDirectory)LSE`
+						Contents "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/lse.S"->MakeAbsolute()
+						Executable false
+						UnixLineEnds true
+						UnicodeBOM false
+					}
+
+					Property
+					{
+						LseName define string = this.Identity->ParseFormatString("{}/outline_atomic_{}_{}_{}.S", "{1}")
+						LseSize define string = this.Identity->ParseFormatString("{}/outline_atomic_{}_{}_{}.S", "{2}")
+						LseModel define string = this.Identity->ParseFormatString("{}/outline_atomic_{}_{}_{}.S", "{3}")
+					}
+
+					Compile
+					{
+						!!Compile.Type "Assembler"
+
+						SearchPath += "../../External/llvm-project/compiler-rt/lib/builtins"->MakeAbsolute()
+
+						PreprocessorDefines =+ ["HAS_ASM_LSE", `L_@(LseName)`, `SIZE=@(LseSize)`, `MODEL=@(LseModel)`]
+						{
+							!!Architecture "arm64"
+							!!Architecture "arm64e"
+						}
+					}
+				}
+			}
+
 			%Group "Core"
 			{
 				%File "../../External/llvm-project/compiler-rt/lib/builtins/*.c"
@@ -197,7 +292,12 @@ Property
 				{
 					!!Architecture "arm64"
 					!!Architecture "arm64e"
-					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/fp_mode.c"
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/*.c"
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/*.S"
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/lse.S"
+					{
+						Compile.Disabled true
+					}
 				}
 				%Group "ppc"
 				{
