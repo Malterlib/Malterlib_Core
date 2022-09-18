@@ -1540,6 +1540,21 @@ Compile
 		!!GeneratorFamily "Xcode"
 	}
 
+	ProcessorArchitecture define string?
+	ProcessorArchitecture "armv8.2-a"
+	{
+		&
+		{
+			Compile.ProcessorArchitecture undefined
+			PlatformFamily "Linux"
+			|
+			{
+				Architecture "arm64"
+				Architecture "arm64e"
+			}
+		}
+	}
+
 	ExtraCompilerFlags += "/std:c++latest"
 	{
 		&

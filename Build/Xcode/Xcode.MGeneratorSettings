@@ -2644,6 +2644,16 @@
 				}
 			}
 
+			%GeneratorSetting "ProcessorArchitecture"
+			{
+				Property
+				{
+					Prefix "-march="
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+				}
+			}
 			%GeneratorSetting "Optimize"
 			{
 				%GeneratorSetting "Value"
