@@ -1136,6 +1136,8 @@ Property
 			!Target.Type "Driver"
 		}
 	}
+
+	MalterlibProfileGuidedOptimization define string? // User(Toolset)="generate": Generate or use profile guided optimization
 }
 
 // C and C++ Settings
@@ -1587,6 +1589,27 @@ Compile
 	CodeCoverage true
 	{
 		!!MalterlibCodeCoverage true
+	}
+
+	ProfileGuidedOptimizationGenerate define bool?
+	ProfileGuidedOptimizationGenerate true
+	{
+		&
+		{
+			MalterlibProfileGuidedOptimization "generate"
+			!MalterlibEnableLinkTimeCodeGeneration false
+		}
+	}
+
+	ProfileGuidedOptimizationUse define string?
+	ProfileGuidedOptimizationUse MalterlibProfileGuidedOptimization
+	{
+		&
+		{
+			!MalterlibProfileGuidedOptimization undefined
+			!MalterlibProfileGuidedOptimization "generate"
+			!MalterlibEnableLinkTimeCodeGeneration false
+		}
 	}
 
 	VerboseTemplateErrors define bool?

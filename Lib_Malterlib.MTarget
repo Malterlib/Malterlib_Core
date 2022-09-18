@@ -1274,6 +1274,7 @@ Property
 %Target "Dll_MalterlibOverrideMallocDummy"
 {
 	Property.MalterlibNoShortcuts true
+	Property.MalterlibProfileGuidedOptimization undefined
 	Target
 	{
 		BaseName "MalterlibOverrideMallocDummy"
@@ -1340,6 +1341,7 @@ Property
 %Target "Dll_MalterlibOverrideMalloc"
 {
 	Property.MalterlibNoShortcuts true
+	Property.MalterlibProfileGuidedOptimization undefined
 	Target
 	{
 		BaseName "MalterlibOverrideMalloc"
@@ -1422,6 +1424,7 @@ Property
 		MalterlibNoShortcuts true
 		MalterlibTargetNameType "BaseName"
 		MalterlibPostCopyProject undefined
+		MalterlibProfileGuidedOptimization undefined
 	}
 	Target
 	{

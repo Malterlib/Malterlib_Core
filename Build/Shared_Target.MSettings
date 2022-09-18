@@ -1492,6 +1492,27 @@ Target
 		}
 	}
 
+	LDFlags =+ "-fprofile-generate"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			MalterlibProfileGuidedOptimization "generate"
+			!MalterlibEnableLinkTimeCodeGeneration false
+		}
+	}
+
+	LDFlags =+ `-fprofile-use=@(MalterlibProfileGuidedOptimization)`
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			!MalterlibProfileGuidedOptimization undefined
+			!MalterlibProfileGuidedOptimization "generate"
+			!MalterlibEnableLinkTimeCodeGeneration false
+		}
+	}
+
 	PlatformToolset define string?
 
 	PlatformToolset "com.apple.compilers.llvm.clang.1_0"

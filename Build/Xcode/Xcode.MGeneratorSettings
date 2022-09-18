@@ -2225,6 +2225,28 @@
 					}
 				}
 			}
+			%GeneratorSetting "ProfileGuidedOptimizationGenerate"
+			{
+				%GeneratorSetting "Value"
+				{
+					Property
+					{
+						\false ""
+						\true "-fprofile-instr-generate"
+					}
+				}
+			}
+			%GeneratorSetting "ProfileGuidedOptimizationUse"
+			{
+				Property
+				{
+					Prefix "-Wno-profile-instr-unprofiled -Wno-profile-instr-out-of-date -Wno-backend-plugin -fprofile-use="
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					IgnoreEmpty "1"
+				}
+			}
 			%GeneratorSetting "FunctionSections"
 			{
 				%GeneratorSetting "Value"
