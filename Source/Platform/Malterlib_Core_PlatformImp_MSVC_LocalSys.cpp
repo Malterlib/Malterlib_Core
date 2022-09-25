@@ -1052,8 +1052,8 @@ public:
 			return 0;
 
 		// We can't get the address of KiUserCallbackDispatcherHandler without debug symbols, lets just assume it's between KiUserApcDispatcher and KiUserCallbackDispatcher
-		void *pStartNtDll = NLocal::g_pKiUserApcDispatcher;
-		void *pEndNtDll = NLocal::g_pKiUserCallbackDispatcher;
+		void *pStartNtDll = NLocal::g_OptionalFunctions.m_pKiUserApcDispatcher;
+		void *pEndNtDll = NLocal::g_OptionalFunctions.m_pKiUserCallbackDispatcher;
 		if (!pStartNtDll || !pEndNtDll)
 			return 0;
 
@@ -1182,22 +1182,22 @@ public:
 	void f_InstallVistaExceptionHack()
 	{
 		m_pVistaExceptinoHackVectoredHandler = nullptr;
-		if (NLocal::g_fAddVectoredExceptionHandler && NLocal::g_fGetNativeSystemInfo)
+		if (NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler && NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo)
 		{
 			bool bInstalled = false;
-			if (NLocal::g_fGetProcessUserModeExceptionPolicy)
+			if (NLocal::g_OptionalFunctions.m_fGetProcessUserModeExceptionPolicy)
 			{
 				DWORD dwFlags;
-				if (NLocal::g_fGetProcessUserModeExceptionPolicy(&dwFlags))
+				if (NLocal::g_OptionalFunctions.m_fGetProcessUserModeExceptionPolicy(&dwFlags))
 				{
 					dwFlags = dwFlags & ~PROCESS_CALLBACK_FILTER_ENABLED;
-					NLocal::g_fSetProcessUserModeExceptionPolicy(dwFlags);
+					NLocal::g_OptionalFunctions.m_fSetProcessUserModeExceptionPolicy(dwFlags);
 				}
 			}
-			else if (NLocal::g_fGetNativeSystemInfo)
+			else if (NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo)
 			{
 				SYSTEM_INFO NativeSystemInfo;
-				NLocal::g_fGetNativeSystemInfo(&NativeSystemInfo);
+				NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo(&NativeSystemInfo);
 				// Check that we are running Vista SP1 or later
 				if
 					(
@@ -1214,14 +1214,14 @@ public:
 					if (NativeSystemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
 					{
 						// We need to add our hack
-						m_pVistaExceptinoHackVectoredHandler = NLocal::g_fAddVectoredExceptionHandler(1,VectoredHandler2);
+						m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1,VectoredHandler2);
 						bInstalled = true;
 					}
 				}
 			}
 			if (!bInstalled)
 			{
-				m_pVistaExceptinoHackVectoredHandler = NLocal::g_fAddVectoredExceptionHandler(1,VectoredHandler3);
+				m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1,VectoredHandler3);
 			}
 		}
 	}
@@ -1229,8 +1229,8 @@ public:
 	{
 		if (m_pVistaExceptinoHackVectoredHandler)
 		{
-			if (NLocal::g_fRemoveVectoredExceptionHandler)
-				NLocal::g_fRemoveVectoredExceptionHandler(m_pVistaExceptinoHackVectoredHandler);
+			if (NLocal::g_OptionalFunctions.m_fRemoveVectoredExceptionHandler)
+				NLocal::g_OptionalFunctions.m_fRemoveVectoredExceptionHandler(m_pVistaExceptinoHackVectoredHandler);
 
 			m_pVistaExceptinoHackVectoredHandler = nullptr;
 		}

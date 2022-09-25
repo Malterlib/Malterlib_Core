@@ -11,71 +11,81 @@ namespace NLocal
 	extern HMODULE g_hNtDll;
 	extern HMODULE g_hKernel32;
 	extern HMODULE g_hAdvAPI32;
+	extern HMODULE g_hAPIMSWinCoreSynchl120;
 
-	extern NTSTATUS (NTAPI *g_fNtQueryInformationThread)(
-		IN HANDLE _ThreadHandle,
-		IN THREADINFOCLASS _ThreadInformationClass,
-		OUT PVOID _ThreadInformation,
-		IN ULONG _ThreadInformationLength,
-		OUT PULONG _ReturnLength OPTIONAL
-		);
+	struct COptionalFunctions
+	{
+		NTSTATUS (NTAPI *m_fNtQueryInformationThread)
+			(
+				IN HANDLE _ThreadHandle,
+				IN THREADINFOCLASS _ThreadInformationClass,
+				OUT PVOID _ThreadInformation,
+				IN ULONG _ThreadInformationLength,
+				OUT PULONG _ReturnLength OPTIONAL
+			)
+		;
 
-	extern BOOL (WINAPI *g_fGetLogicalProcessorInformation)(PSYSTEM_LOGICAL_PROCESSOR_INFORMATION _pBuffer, PDWORD _pReturnLength);
-	extern VOID (WINAPI *g_fRtlAcquirePebLock)(void);
-	extern VOID (WINAPI *g_fRtlReleasePebLock)(void);
-	extern ULONG  (WINAPI *g_fRtlFindClearBitsAndSet)(IN PRTL_BITMAP  _pBitMapHeader, IN ULONG  _NumberToFind, IN ULONG  _HintIndex);
-	extern VOID (WINAPI *g_fRtlClearBits)(IN PRTL_BITMAP  _pBitMapHeader, IN ULONG  _StartingIndex, IN ULONG  _NumberToClear);
+		BOOL (WINAPI *m_fGetLogicalProcessorInformation)(PSYSTEM_LOGICAL_PROCESSOR_INFORMATION _pBuffer, PDWORD _pReturnLength);
+		VOID (WINAPI *m_fRtlAcquirePebLock)(void);
+		VOID (WINAPI *m_fRtlReleasePebLock)(void);
+		ULONG  (WINAPI *m_fRtlFindClearBitsAndSet)(IN PRTL_BITMAP  _pBitMapHeader, IN ULONG  _NumberToFind, IN ULONG  _HintIndex);
+		VOID (WINAPI *m_fRtlClearBits)(IN PRTL_BITMAP  _pBitMapHeader, IN ULONG  _StartingIndex, IN ULONG  _NumberToClear);
 
-	extern void (WINAPI *g_fGetNativeSystemInfo)(__out LPSYSTEM_INFO _pSystemInfo);
-	extern PVOID (WINAPI *g_fAddVectoredExceptionHandler)(ULONG _First, PVECTORED_EXCEPTION_HANDLER _pHandler);
-	extern ULONG (WINAPI *g_fRemoveVectoredExceptionHandler)(PVOID _pHandler);
+		void (WINAPI *m_fGetNativeSystemInfo)(__out LPSYSTEM_INFO _pSystemInfo);
+		PVOID (WINAPI *m_fAddVectoredExceptionHandler)(ULONG _First, PVECTORED_EXCEPTION_HANDLER _pHandler);
+		ULONG (WINAPI *m_fRemoveVectoredExceptionHandler)(PVOID _pHandler);
 	
+		SIZE_T (WINAPI *m_fLargePageMinimum)();
+
+		char *(WINAPI *m_fWineGetVersion)();
+
+		void *m_pKiUserApcDispatcher;
+		void *m_pKiUserCallbackDispatcher;
+
+		// Numa functions
+		LPVOID (WINAPI *m_fVirtualAllocExNuma)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD  flAllocationType, DWORD  flProtect, DWORD  nndPreferred);
+		BOOL (WINAPI *m_fGetNumaNodeProcessorMaskEx)(USHORT Node, PGROUP_AFFINITY ProcessorMask);
+		BOOL (WINAPI *m_fSetThreadGroupAffinity)(HANDLE hThread, const GROUP_AFFINITY *GroupAffinity, PGROUP_AFFINITY PreviousGroupAffinity);
+
+		BOOL (WINAPI *m_fSetProcessUserModeExceptionPolicy)(DWORD dwFlags);
+		BOOL (WINAPI *m_fGetProcessUserModeExceptionPolicy)(LPDWORD lpFlags);
+
+		DWORD (WINAPI *m_fWTSGetActiveConsoleSessionId)();
+
+		BOOL (WINAPI *m_fCreateProcessWithTokenW)(HANDLE hToken, DWORD dwLogonFlags, LPCWSTR lpApplicationName, LPWSTR lpCommandLine, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCWSTR lpCurrentDirectory, LPSTARTUPINFOW lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation );
+
+		BOOLEAN (APIENTRY *m_fCreateSymbolicLinkW)(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
+
+		BOOL (WINAPI *m_fCreateHardLinkW)(LPCWSTR lpFileName, LPCWSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 	
-	extern SIZE_T (WINAPI *g_fLargePageMinimum)();
+		BOOL (WINAPI *m_fWow64DisableWow64FsRedirection)(PVOID * OldValue);
+		BOOL (WINAPI *m_fWow64RevertWow64FsRedirection)(PVOID OlValue);
 
-	extern char *(WINAPI *g_fWineGetVersion)();
+		NTSTATUS (NTAPI *m_fNtSetInformationProcess)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID pProcessInformation, ULONG ProcessInformationLength);
 
-	extern void *g_pKiUserApcDispatcher;
-	extern void *g_pKiUserCallbackDispatcher;
+		BOOL (WINAPI *m_fSetProcessInformation)(HANDLE hProcess, PROCESS_INFORMATION_CLASS ProcessInformationClass, LPVOID ProcessInformation, DWORD ProcessInformationSize);
 
-	// Numa functions
-	extern LPVOID (WINAPI *g_fVirtualAllocExNuma)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD  flAllocationType, DWORD  flProtect, DWORD  nndPreferred);
-	extern BOOL (WINAPI *g_fGetNumaNodeProcessorMaskEx)(USHORT Node, PGROUP_AFFINITY ProcessorMask);
-	extern BOOL (WINAPI *g_fSetThreadGroupAffinity)(HANDLE hThread, const GROUP_AFFINITY *GroupAffinity, PGROUP_AFFINITY PreviousGroupAffinity);
+		BOOL (WINAPI *m_fCancelSynchronousIo)(HANDLE hThread);
+		BOOL (WINAPI *m_fCancelIoEx)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
 
-	extern BOOL (WINAPI *g_fSetProcessUserModeExceptionPolicy)(DWORD dwFlags);
-	extern BOOL (WINAPI *g_fGetProcessUserModeExceptionPolicy)(LPDWORD lpFlags);
+		NTSTATUS (WINAPI *m_fNtQuerySystemInformation)(DWORD SystemInformationClass, PVOID SystemInformation, DWORD SystemInformationLength, PDWORD ReturnLength);
 
-	extern DWORD (WINAPI *g_fWTSGetActiveConsoleSessionId)();
+		NTSTATUS (WINAPI *m_fNtGetNextThread)(HANDLE ProcessHandle, HANDLE ThreadHandle, ACCESS_MASK DesiredAccess, ULONG HandleAttributes, ULONG Flags, PHANDLE NewThreadHandle);
 
-	extern BOOL (WINAPI *g_fCreateProcessWithTokenW)(HANDLE hToken, DWORD dwLogonFlags, LPCWSTR lpApplicationName, LPWSTR lpCommandLine, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCWSTR lpCurrentDirectory, LPSTARTUPINFOW lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation );
+		DWORD (WINAPI *m_fGetThreadId)(HANDLE Thread);
 
-	extern BOOLEAN (APIENTRY *g_fCreateSymbolicLinkW)(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
+		NTSTATUS (WINAPI *m_fNtQueryInformationProcess)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
 
-	extern BOOL (WINAPI *g_fCreateHardLinkW)(LPCWSTR lpFileName, LPCWSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
-	
+		NTSTATUS (WINAPI *m_fLdrDisableThreadCalloutsForDll)(IN PVOID BaseAddress);
+		NTSTATUS (WINAPI *m_fRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
+		BOOL (WINAPI *m_fPrivIsDllSynchronizationHeld)(PBOOL);
+
+		BOOL (WINAPI *m_fGetFileInformationByHandleEx)(HANDLE hFile, Undocumented_FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
+
+		BOOL (WINAPI *m_fWaitOnAddress)(volatile VOID *Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds);
+		void (WINAPI *m_fWakeByAddressSingle)(PVOID Address);
+	};
+
 	extern OSVERSIONINFOEX g_VersionInfo;
-
-	extern BOOL (WINAPI *g_fWow64DisableWow64FsRedirection)(PVOID * OldValue);
-	extern BOOL (WINAPI *g_fWow64RevertWow64FsRedirection)(PVOID OlValue);
-
-	extern NTSTATUS (NTAPI *g_fNtSetInformationProcess)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID pProcessInformation, ULONG ProcessInformationLength);
-
-	extern BOOL (WINAPI *g_fSetProcessInformation)(HANDLE hProcess, PROCESS_INFORMATION_CLASS ProcessInformationClass, LPVOID ProcessInformation, DWORD ProcessInformationSize);
-
-	extern BOOL (WINAPI *g_fCancelSynchronousIo)(HANDLE hThread);
-	extern BOOL (WINAPI *g_fCancelIoEx)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
-
-	extern NTSTATUS (WINAPI *g_fNtQuerySystemInformation)(DWORD SystemInformationClass, PVOID SystemInformation, DWORD SystemInformationLength, PDWORD ReturnLength);
-
-	extern NTSTATUS (WINAPI *g_fNtGetNextThread)(HANDLE ProcessHandle, HANDLE ThreadHandle, ACCESS_MASK DesiredAccess, ULONG HandleAttributes, ULONG Flags, PHANDLE NewThreadHandle);
-
-	extern DWORD (WINAPI *g_fGetThreadId)(HANDLE Thread);
-
-	extern NTSTATUS (WINAPI *g_fNtQueryInformationProcess)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
-
-	extern NTSTATUS (WINAPI *g_fLdrDisableThreadCalloutsForDll)(IN PVOID BaseAddress);
-
-	extern BOOL (WINAPI *g_fGetFileInformationByHandleEx)(HANDLE hFile, Undocumented_FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
-
+	extern COptionalFunctions g_OptionalFunctions;
 }
