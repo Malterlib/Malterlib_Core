@@ -2579,6 +2579,120 @@ namespace NMib::NThread
 
 		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
 	}
+
+	bool CLowLevelLockAggregate::f_TryLockNoSanitize()
+	{
+		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+		{
+			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+
+			uint32 OldValue = 0;
+			if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
+			{
+				if ((OldValue & gc_FutexThreadMask) == ThreadID)
+					fg_AbortFutex(); // Recursive lock not supported
+
+				if (OldValue & FUTEX_OWNER_DIED)
+					fg_AbortFutex(); // Killing threads in not supported
+
+				return false;
+			}
+		}
+		else
+		{
+			uint32 Expected = 0;
+			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+				return false;
+		}
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_acquire(&m_Lock);
+#endif
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+		return true;
+	}
+
+	void CLowLevelLockAggregate::f_LockNoSanitize()
+	{
+		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+		{
+			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+
+			while (true)
+			{
+				uint32 OldValue = 0;
+				if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
+					break;
+
+				if ((OldValue & gc_FutexThreadMask) == ThreadID)
+					fg_AbortFutex(); // Recursive lock not supported
+
+				if (OldValue & FUTEX_OWNER_DIED)
+					fg_AbortFutex(); // Killing threads in not supported
+
+				if (OldValue & gc_FutexThreadMask)
+				{
+					if (!call_futex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
+						break;
+
+					auto Error = errno;
+					switch (Error)
+					{
+					case EAGAIN: break;
+					default: fg_AbortFutex(); // Broken
+					}
+				}
+			}
+		}
+		else
+		{
+			NMib::NThread::CThreadSpinWaiter SpinWaiter;
+			uint32 Expected = 0;
+			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			{
+				SpinWaiter.f_Wait();
+				Expected = 0;
+			}
+		}
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_acquire(&m_Lock);
+#endif
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+	}
+
+	void CLowLevelLockAggregate::f_UnlockNoSanitize()
+	{
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = 0;
+		m_AlternateThreadID = 0;
+#endif
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_release(&m_Lock);
+#endif
+		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+		{
+			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+
+			uint32 OldValue = ThreadID;
+
+			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::EMemoryOrder_Release, NAtomic::EMemoryOrder_Relaxed))
+			{
+				// Contended
+				if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
+				{
+					[[maybe_unused]] auto Error = errno;
+					fg_AbortFutex();
+				}
+			}
+		}
+		else
+			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+	}
 }
 
 #include <locale.h>

@@ -3431,6 +3431,82 @@ namespace NMib::NThread
 
 		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
 	}
+
+	bool CLowLevelLockAggregate::f_TryLockNoSanitize()
+	{
+		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
+		{
+			uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
+			uint32 PrevioustThreadID = 0;
+			if (!m_Lock.f_CompareExchangeStrong(PrevioustThreadID, CurrentThreadID, EMemoryOrder_Acquire, EMemoryOrder_Acquire))
+				return false;
+		}
+		else
+		{
+			uint32 Expected = 0;
+			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+				return false;
+		}
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_acquire(&m_Lock);
+#endif
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+		return true;
+	}
+
+	void CLowLevelLockAggregate::f_LockNoSanitize()
+	{
+		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
+		{
+			uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
+			while (true)
+			{
+				uint32 PrevioustThreadID = 0;
+				if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, EMemoryOrder_Acquire, EMemoryOrder_Acquire))
+					break;
+
+				NLocal::g_OptionalFunctions.m_fWaitOnAddress(&m_Lock, &PrevioustThreadID, sizeof(PrevioustThreadID), INFINITE);
+			}
+		}
+		else
+		{
+			NMib::NThread::CThreadSpinWaiter SpinWaiter;
+			uint32 Expected = 0;
+			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			{
+				SpinWaiter.f_Wait();
+				Expected = 0;
+			}
+		}
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_acquire(&m_Lock);
+#endif
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
+#endif
+	}
+
+	void CLowLevelLockAggregate::f_UnlockNoSanitize()
+	{
+#if DMibEnableSafeCheck > 0
+		m_ThreadID = 0;
+		m_AlternateThreadID = 0;
+#endif
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_release(&m_Lock);
+#endif
+		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
+		{
+			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);;
+			NLocal::g_OptionalFunctions.m_fWakeByAddressSingle(&m_Lock);
+		}
+		else
+			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+	}
 }
 
 void *NSys::fg_Thread_GetCurrent()
