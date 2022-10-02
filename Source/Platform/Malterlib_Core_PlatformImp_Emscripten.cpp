@@ -739,7 +739,7 @@ extern "C"
 #		if DMibConfig_MalterlibMemoryManager_Debug
 			return NMib::NMemory::CAllocator_NonTrackedHeap::f_ResizeDebug(__ptr, __size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_Resize(__ptr, __size, 0);
+			return NMib::NMemory::CAllocator_NonTrackedHeap::f_Resize(__ptr, __size, 0, EAllocationFlag_SizeNotNeeded);
 #		endif
 	}
 
