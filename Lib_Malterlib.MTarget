@@ -1034,7 +1034,11 @@ Property
 		&
 		{
 			MalterlibMemoryManager_OverrideSystemMalloc true
-			!MalterlibMemoryManager "System"
+			|
+			{
+				!MalterlibMemoryManager "System"
+				PlatformFamily "Windows"
+			}
 			!
 			{
 				&												// Disable for dynamic libraries on Linux and macOS as only main executable should override malloc
