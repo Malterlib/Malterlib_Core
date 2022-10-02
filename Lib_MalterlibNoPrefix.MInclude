@@ -1,7 +1,7 @@
 // Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-Target.ExtraGroups "{Malterlib}/{TCMalloc}"
+Target.ExtraGroups =+ "{Malterlib}/{TCMalloc}"
 {
 	!!MalterlibMemoryManager "TcMalloc"
 }
@@ -33,6 +33,11 @@ Compile
 	SearchPath += "../../External/mimalloc/include"->MakeAbsolute()
 	{
 		!!MalterlibMemoryManager "MiMalloc"
+	}
+
+	PreprocessorDefines += "PERFTOOLS_DLL_DECL="
+	{
+		!!MalterlibMemoryManager "TcMalloc"
 	}
 
 	PreprocessorDefines =+ "DMibDynamicLibrary"
