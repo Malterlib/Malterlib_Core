@@ -1596,6 +1596,7 @@ Compile
 	{
 		&
 		{
+			!GeneratorFamily "VisualStudio"
 			MalterlibProfileGuidedOptimization "generate"
 			!MalterlibEnableLinkTimeCodeGeneration false
 		}
@@ -1606,6 +1607,7 @@ Compile
 	{
 		&
 		{
+			!GeneratorFamily "VisualStudio"
 			!MalterlibProfileGuidedOptimization undefined
 			!MalterlibProfileGuidedOptimization "generate"
 			!MalterlibEnableLinkTimeCodeGeneration false

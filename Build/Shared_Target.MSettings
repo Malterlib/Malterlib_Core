@@ -804,6 +804,28 @@ Target
 			GeneratorFamily "VisualStudio"
 		}
 	}
+
+
+	ExtraLinkerFlags =+ "/GENPROFILE"
+	{
+		&
+		{
+			TargetIsExecutable true
+			MalterlibProfileGuidedOptimization "generate"
+			!MalterlibEnableLinkTimeCodeGeneration false
+		}
+	}
+
+	ExtraLinkerFlags =+ `/USEPROFILE:PGD=@(MalterlibProfileGuidedOptimization)`
+	{
+		&
+		{
+			TargetIsExecutable true
+			!MalterlibProfileGuidedOptimization undefined
+			!MalterlibProfileGuidedOptimization "generate"
+			!MalterlibEnableLinkTimeCodeGeneration false
+		}
+	}
 }
 
 Property
