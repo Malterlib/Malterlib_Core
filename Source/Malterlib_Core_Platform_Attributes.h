@@ -66,17 +66,21 @@
 #	if DMibPInlineActive
 #		define inline_always inline __attribute__((always_inline))
 #		define inline_always_lambda __attribute__((always_inline))
+#		define inline_always_lto __attribute__((always_inline))
 #	else
 #		define inline_always inline
 #		define inline_always_lambda
+#		define inline_always_lto
 #	endif
 #elif defined(DCompiler_MSVC)
 #	if DMibPInlineActive
 #		define inline_always __forceinline
 #		define inline_always_lambda [[msvc::forceinline]]
+#		define inline_always_lto [[msvc::forceinline]]
 #	else
 #		define inline_always inline
 #		define inline_always_lambda
+#		define inline_always_lto
 #	endif
 #else
 #	error "Implement this"
