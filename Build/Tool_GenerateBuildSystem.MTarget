@@ -182,6 +182,15 @@ Property
 						!HostPlatformFamily "Windows"
 					}
 
+					Contents =+	"path\r\n"
+					{
+						!!HostPlatformFamily "Windows"
+					}
+					Contents =+	"env\r\n"
+					{
+						!!HostPlatformFamily "Windows"
+					}
+
 					Contents =+	`IF "%DisableProjectGen%" == "1" GOTO Skip\r\n`\
 								`:RetryGeneration\r\n`\
 								`cd @(Builtin.BasePathAbsolute->WindowsPath()->EscapeHost())\r\n`\
