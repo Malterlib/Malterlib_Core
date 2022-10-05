@@ -186,10 +186,6 @@ Property
 					{
 						!!HostPlatformFamily "Windows"
 					}
-					Contents =+	"set\r\n"
-					{
-						!!HostPlatformFamily "Windows"
-					}
 
 					Contents =+	`IF "%DisableProjectGen%" == "1" GOTO Skip\r\n`\
 								`:RetryGeneration\r\n`\
