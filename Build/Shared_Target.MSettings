@@ -1064,6 +1064,20 @@ Property
 	MalterlibUseAllLinkerGroup define bool = true
 }
 
+Property
+{
+	MalterlibDeploySymbolsTool function(string? _ProtectedDirs, string? _ExtraUploads) string
+
+	MalterlibDeploySymbolsTool `MTool`
+	{
+		!MalterlibBuildServerBuild true
+	}
+	MalterlibDeploySymbolsTool `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ZMTool "ProtectedDirs=@(_ProtectedDirs || "")" ExtraUploads="@(_ExtraUploads || "")"`
+	{
+		!!MalterlibBuildServerBuild true
+	}
+}
+
 // Xcode
 Target
 {
@@ -4911,8 +4925,8 @@ Target
 	}
 
 
-	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
+	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
+						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
 		&
 		{
@@ -4923,42 +4937,38 @@ Target
 			}
 			TargetIsExecutable true
 			MalterlibDeploySymbols true
-			MalterlibBuildServerBuild true
 		}
 	}
-	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
+	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
+						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
 		&
 		{
 			PlatformIsDarwin true
 			TargetIsExecutable true
 			MalterlibDeploySymbols true
-			MalterlibBuildServerBuild true
 			Target.DebugInformationFormat "dwarf-with-dsym"
 		}
 	}
-	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).dSYM.zip" "$BrekapadOutputPath" "" 0\r\n`
+	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).dSYM.zip" "$BrekapadOutputPath" "" 0\r\n`\
+						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).dSYM.zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
 		&
 		{
 			PlatformIsDarwin true
 			TargetIsExecutable true
 			MalterlibDeploySymbols true
-			MalterlibBuildServerBuild true
 			Target.DebugInformationFormat "dwarf-with-dsym"
 		}
 	}
-	PostBuildScript =+	`echo MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=ZMTool "ProtectedDirs=$BrekapadOutputPath" DiffCopy "@(MalterlibFinalModuleDestination).zip" "$BrekapadOutputPath" "" 0\r\n`
+	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).zip" "$BrekapadOutputPath" "" 0\r\n`\
+						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
 		&
 		{
 			PlatformFamily "Linux"
 			TargetIsExecutable true
 			MalterlibDeploySymbols true
-			MalterlibBuildServerBuild true
 		}
 	}
 
@@ -5052,8 +5062,8 @@ Target
 	}
 
 	PostBuildScript =+	`echo Deploy Symbols:\r\n`\
-						`echo MTool BuildServerTool Tool=ZMTool ExtraUploads="@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)" "ProtectedDirs=@(MalterlibDeploySymbolsPath)" Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`\
-						`MTool BuildServerTool Tool=ZMTool ExtraUploads="@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)" "ProtectedDirs=@(MalterlibDeploySymbolsPath)" Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`\
+						`echo @(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`\
+						`@(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`\
 						`@(CheckErrors)\r\n`
 	{
 		&
