@@ -186,7 +186,7 @@ Property
 					{
 						!!HostPlatformFamily "Windows"
 					}
-					Contents =+	"env\r\n"
+					Contents =+	"set\r\n"
 					{
 						!!HostPlatformFamily "Windows"
 					}

@@ -18,6 +18,7 @@ if [[ $SysName ==  MSYS* ]] || [[ $SysName ==  MINGW* ]] ; then
 	{
 		local ProgramToCall=$1
 		shift
+		cmd //C "set"
 		DirectMinGWCallParams="$@" cmd.exe //C "$ProgramToCall %DirectMinGWCallParams%"
 	}
 fi
