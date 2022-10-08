@@ -36,7 +36,7 @@
 #	define DMibPFormatIDELocation(d_Value) DMibPFile "(" DMibPFormatIDELocation_Helper0(DMibPLine) "): " d_Value
 #elif defined(DPlatformFamily_Windows)
 #	define DMibPFileLineFormat "{}({}):"
-#	define DMibPFileLineFormatIndent "\t"
+#	define DMibPFileLineFormatIndent "    "
 #	define DMibPFileLineColumnFormat "{}({},{}):"
 #	define DMibPFormatIDELocation_Helper1(d_Value) #d_Value
 #	define DMibPFormatIDELocation_Helper0(d_Value) DMibPFormatIDELocation_Helper1(d_Value)
