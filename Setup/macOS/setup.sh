@@ -37,9 +37,14 @@ Setting_Plugin_HideDistractions=true
 Setting_Plugin_P4Checkout=false
 Setting_SyntaxHighlight=true
 
+HasSystemIntegrityProtection=true
+if (csrutil status | grep "disabled"); then
+	HasSystemIntegrityProtection=false
+fi
+
 HasLibraryValidation=true
 
-if [[ "$(defaults read /Library/Preferences/com.apple.security.libraryvalidation.plist DisableLibraryValidation -bool || true)" == "1" ]]; then
+if [[ "$(defaults read /Library/Preferences/com.apple.security.libraryvalidation.plist DisableLibraryValidation -bool || true)" == "1" ]] && [[ "$HasSystemIntegrityProtection" == "false" ]]; then
 	HasLibraryValidation=false
 fi
 
@@ -141,13 +146,12 @@ UpdateDependencies()
 
 	brew install cmake go graphviz ruby ninja git git-lfs
 
-	sudo chown -R "$USER" /Library/Ruby/Gems/2.6.0
-	InstallPath=/usr/local/bin
-	if [ -d /opt/homebrew/bin ]; then
-		InstallPath=/opt/homebrew/bin
-	fi
-	gem install -n $InstallPath xcpretty
-	gem update -n $InstallPath --system
+	export PATH="`brew --prefix ruby`/bin:$PATH"
+
+	gem install xcpretty
+	gem update --system
+
+	ln -f -s `brew --prefix ruby`/bin/xcpretty `brew --prefix`/bin/xcpretty
 }
 
 UpdateXcodePlugins()
@@ -212,21 +216,6 @@ UpdateXcodePlugins()
 
 	popd > /dev/null
 
-
-	if VersionLessThanEqual 14.0 $XcodeVersion ; then
-		pushd "$RepositoryDirectory/MalterlibXcodePatches/llbuild" > /dev/null
-
-		if [[ "$HasLibraryValidation" == "false" ]]; then
-			echo "Patching llbuild"
-			rm -rf "$2/Contents/SharedFrameworks/llbuild.framework"
-			cp -a "llbuild.framework" "$2/Contents/SharedFrameworks/"
-		fi
-
-		popd > /dev/null
-	fi
-
-
-
 	if $Setting_SyntaxHighlight; then
 		echo Installing Malterlib systax highligting
 		pushd "$RepositoryDirectory/MalterlibXcodePatches/SyntaxColoring" > /dev/null
@@ -252,6 +241,11 @@ UpdateXcode()
 
 function UpdateAllXcode()
 {
+	if [[ "$HasSystemIntegrityProtection" == "true" ]]; then
+		echo "Installing Xcode plugins not possible. Disable features or reboot into recovery mode and disable system integrity protection: csrutil disable"
+		return 1
+	fi
+
 	for File in /Applications/Xcode*.app; do
 		UpdateXcode "$File"
 	done
@@ -260,13 +254,14 @@ function UpdateAllXcode()
 function SignAllXcode()
 {
 	if [[ "$HasLibraryValidation" == "false" ]]; then
-		# Signing not needed
-		echo "Signing xcode not needed"
+		echo "Signing Xcode not needed"
 		return 0
 	fi
 
-	echo "WHAT?" "$HasLibraryValidation"
-	exit 1
+	if [[ "$HasSystemIntegrityProtection" == "true" ]]; then
+		echo "Signing Xcode not possible. Disable features or reboot into recovery mode and disable system integrity protection: csrutil disable"
+		return 1
+	fi
 
 	CreateXcodeCertificate;
 
@@ -342,15 +337,15 @@ function DoInstall()
 		echo To install no plugins or highlighting specify --none to setup
 		Divider
 
+		Setting_SyntaxHighlight=$(AskForSetting $Setting_SyntaxHighlight $'\e[38;5;39mMalterlib Syntax Highlighting\e[39m (http://docs.malterlib.org/p__malterlib__core__code_standard__coloring.html):\n   * Use syntax highlighting taking advantage of the Malterlib code naming standard' $'Install \e[38;5;39mMalterlb Syntax Highlighting\e[39m for Xcode?')
+
+		Divider
+
 		Setting_Plugin_Malterlib=$(AskForSetting $Setting_Plugin_Malterlib $'The \e[38;5;39mMalterlib\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_Malterlib/README.md):\n   * Allow Xcode to automatically reload without prompts after build system generation\n   * Run multiple executables with ⌘-G\n   * Configure extra debug settings with Ctrl+O\n   * Disables buggy build queue throttling' $'Install \e[38;5;39mMalterlb\e[39m Xcode plugin?')
 
 		Divider
 
 		Setting_Plugin_NavigationFixes=$(AskForSetting $Setting_Plugin_NavigationFixes $'The \e[38;5;39mNavigationFixes\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_NavigationFixes/README.md):\n   * Navigate the Xcode Navigators with ⌘-N / ⌘-Shift-N\n   * Visual Studio like keyboard navigation for whole word movements\n   * Disable unhelpful automatic format when pasting\n   * Navigate to file:line from execution output by double-clicking' $'Install \e[38;5;39mNavigationFixes\e[39m Xcode plugin?')
-
-		Divider
-
-		Setting_SyntaxHighlight=$(AskForSetting $Setting_SyntaxHighlight $'\e[38;5;39mMalterlib Syntax Highlighting\e[39m (http://docs.malterlib.org/p__malterlib__core__code_standard__coloring.html):\n   * Use syntax highlighting taking advantage of the Malterlib code naming standard' $'Install \e[38;5;39mMalterlb Syntax Highlighting\e[39m for Xcode?')
 
 		Divider
 
@@ -365,13 +360,17 @@ function DoInstall()
 		Setting_Plugin_P4Checkout=$(AskForSetting $Setting_Plugin_P4Checkout $'The \e[38;5;39mP4Checkout\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_P4Checkout/README.md):\n   * Automatically check out files in Perfoce when editing them' $'Install \e[38;5;39mP4Checkout\e[39m Xcode plugin?')
 
 		Divider
-
 	fi
+
 	UpdateDependencies
+
 	if $Setting_Plugin_Malterlib || $Setting_Plugin_NavigationFixes || $Setting_Plugin_CustomizeAnnotations || $Setting_Plugin_HideDistractions || $Setting_Plugin_P4Checkout ; then
 		SignAllXcode
 	fi
-	UpdateAllXcode
+
+	if $Setting_Plugin_Malterlib || $Setting_Plugin_NavigationFixes || $Setting_Plugin_CustomizeAnnotations || $Setting_Plugin_HideDistractions || $Setting_Plugin_P4Checkout || $Setting_SyntaxHighlight ; then
+		UpdateAllXcode
+	fi
 
 	mkdir -p "$DependenciesDirectory"
 	echo $DependenciesVersion > "$DependenciesFile"
