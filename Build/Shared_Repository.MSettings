@@ -129,6 +129,8 @@ Repository
 	DefaultPrefix: string?
 	DefaultLocationPrefix: string?
 
+	Identity: string? = this.Identity
+
 	NoPushRemotes ["upstream*"]
 	{
 		!!Repository.NoPushRemotes undefined
@@ -226,7 +228,7 @@ Repository
 		!!Repository.Type "External"
 	}
 
-	URL `@(Repository.ExternalRoot)/@(this.Identity).git`
+	URL `@(Repository.ExternalRoot)/@(Repository.Identity).git`
 	{
 		&
 		{
@@ -234,7 +236,7 @@ Repository
 			Repository.Type "External"
 		}
 	}
-	URL `@(Repository.MalterlibRoot)/Malterlib_@(this.Identity).git`
+	URL `@(Repository.MalterlibRoot)/Malterlib_@(Repository.Identity).git`
 	{
 		&
 		{
@@ -242,7 +244,7 @@ Repository
 			Repository.Type "Malterlib"
 		}
 	}
-	URL `@(Repository.DefaultRoot)/@(Repository.Prefix)@(this.Identity).git`
+	URL `@(Repository.DefaultRoot)/@(Repository.Prefix)@(Repository.Identity).git`
 	{
 		&
 		{
@@ -250,7 +252,7 @@ Repository
 			Repository.Type "Direct"
 		}
 	}
-	Location `@("../../../External"->MakeAbsolute())/@(this.Identity->ParseFormatString("{}_{}", "{}/{}"))`
+	Location `@("../../../External"->MakeAbsolute())/@(Repository.Identity->ParseFormatString("{}_{}", "{}/{}"))`
 	{
 		&
 		{
@@ -259,7 +261,7 @@ Repository
 			Repository.ConvertUnderscoreToPath true
 		}
 	}
-	Location `@("../../../External"->MakeAbsolute())/@(this.Identity)`
+	Location `@("../../../External"->MakeAbsolute())/@(Repository.Identity)`
 	{
 		&
 		{
@@ -268,7 +270,7 @@ Repository
 		}
 	}
 
-	Location `@("../../../Malterlib"->MakeAbsolute())/@(this.Identity)`
+	Location `@("../../../Malterlib"->MakeAbsolute())/@(Repository.Identity)`
 	{
 		&
 		{
@@ -286,7 +288,7 @@ Repository
 			!Repository.DefaultLocationPrefix undefined
 		}
 	}
-	Location `../../../@(Repository.LocationPrefix)@(this.Identity)`->MakeAbsolute()
+	Location `../../../@(Repository.LocationPrefix)@(Repository.Identity)`->MakeAbsolute()
 	{
 		&
 		{
@@ -335,7 +337,7 @@ Repository
 			!Repository.DefaultPrefix undefined
 		}
 	}
-	SubmoduleName `External_@(this.Identity)`
+	SubmoduleName `External_@(Repository.Identity)`
 	{
 		&
 		{
@@ -343,7 +345,7 @@ Repository
 			Repository.Type "External"
 		}
 	}
-	SubmoduleName `Malterlib_@(this.Identity)`
+	SubmoduleName `Malterlib_@(Repository.Identity)`
 	{
 		&
 		{
@@ -351,7 +353,7 @@ Repository
 			Repository.Type "Malterlib"
 		}
 	}
-	SubmoduleName `@(Repository.SubmodulePrefix)@(this.Identity)`
+	SubmoduleName `@(Repository.SubmodulePrefix)@(Repository.Identity)`
 	{
 		&
 		{
