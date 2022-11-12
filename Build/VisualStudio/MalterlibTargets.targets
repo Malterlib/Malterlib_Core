@@ -3,8 +3,7 @@
 		Distributed under the MIT license, see license text in LICENSE.Malterlib
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Condition="'$(UseDefaultPropertyPageSchemas)' != 'false'">
-	  
+  <ItemGroup Condition="'$(UseDefaultPropertyPageSchemas)' != 'false'">	  
     <PropertyPageSchema Condition="'$(ConfigurationType)' != 'Utility'" Include="$(MalterlibBaseDir)Malterlib\Core\Build\VisualStudio\$(MSBuildThisFileName).xml"/>
   </ItemGroup>
   <UsingTask

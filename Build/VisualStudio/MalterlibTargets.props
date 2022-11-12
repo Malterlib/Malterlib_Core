@@ -3,11 +3,12 @@
 		Distributed under the MIT license, see license text in LICENSE.Malterlib
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="SetEnv" AssemblyFile="$(VCTargetsPath)Microsoft.Build.CppTasks.Common.Base.dll"/>	
   <PropertyGroup
     Condition="'$(MLTwkBeforeTargets)' == '' and '$(MLTwkAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
     <MLTwkBeforeTargets>ClCompile</MLTwkBeforeTargets>
     <MLTwkAfterTargets>CustomBuild</MLTwkAfterTargets>
- </PropertyGroup>
+  </PropertyGroup>
 
   <PropertyGroup
     Condition="'$(MalterlibFSBeforeTargets)' == '' and '$(MalterlibFSAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">

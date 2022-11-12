@@ -5,10 +5,15 @@
 
 #if defined(__EDG__)
 // This is the intellisense compiler
+#elif _MSC_VER == 1934
+#	if _MSC_FULL_VER < 193431933
+#		pragma message("Current compiler version: " DMibStringize(_MSC_FULL_VER))
+#		error "Compiler version is not newer than 193431933, please install the approprita update for Visual Studio 2022"
+#	endif
 #elif _MSC_VER == 1933
 #	if _MSC_FULL_VER < 193331629
 #		pragma message("Current compiler version: " DMibStringize(_MSC_FULL_VER))
-#		error "Compiler version is not newer than 193131105, please install the approprita update for Visual Studio 2022"
+#		error "Compiler version is not newer than 193331629, please install the approprita update for Visual Studio 2022"
 #	endif
 #else
 #	pragma message("Compiler version " DMibStringize(_MSC_VER) "  not supported")
@@ -26,9 +31,9 @@
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
 
-
-#define __has_feature(d_Feature) 0
-
+#if !defined(__has_feature)
+#	define __has_feature(d_Feature) 0
+#endif
 
 #define _XKEYCHECK_H
 
