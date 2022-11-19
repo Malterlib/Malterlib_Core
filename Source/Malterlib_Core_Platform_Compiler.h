@@ -258,6 +258,13 @@ namespace std
 #endif
 
 #ifdef DCompiler_MSVC
+#	ifdef __SANITIZE_ADDRESS__
+#		define DMibSanitizerEnabled_Address
+#		define DMibSanitizerEnabled
+#	endif
+#endif
+
+#ifdef DCompiler_MSVC
 #	define DMibNoUniqueAddress [[msvc::no_unique_address]]
 #else
 #	define DMibNoUniqueAddress [[no_unique_address]]
@@ -305,7 +312,9 @@ namespace std
 #endif
 
 #ifdef DMibSanitizerEnabled_Address
-	#include <sanitizer/asan_interface.h>
+	#ifndef DCompiler_MSVC
+		#include <sanitizer/asan_interface.h>
+	#endif
 
 	#define DMibSanitizerAnnotate_PoisonMemoryRegion(...) __asan_poison_memory_region(__VA_ARGS__);
 	#define DMibSanitizerAnnotate_UnpoisonMemoryRegion(...) __asan_unpoison_memory_region(__VA_ARGS__);

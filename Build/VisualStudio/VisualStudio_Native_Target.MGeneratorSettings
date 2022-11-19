@@ -48,6 +48,14 @@
 				Disabled true
 			}
 		}
+		%GeneratorSetting "EnableASAN"
+		{
+			Property
+			{
+				Parent "PropertyGroup"
+				Name "EnableASAN"
+			}
+		}
 		%GeneratorSetting "UseOfAtl"
 		{
 			Property

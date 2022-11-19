@@ -880,8 +880,10 @@ public:
 
 		__super::f_InitModule();
 
+#ifndef DMibSanitizerEnabled_Address
 		if (gs_LibraryRefCount.f_Load() == -1)
 			f_InstallVistaExceptionHack();
+#endif
 	}
 
 	typedef void (DMibCrossmoduleAPI FSetAssertInfo)(int32 _AssertType, const ch8 *_pAssertMessage);

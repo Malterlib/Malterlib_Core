@@ -66,6 +66,13 @@
 				Name "PlatformToolset"
 			}
 		}
+		%GeneratorSetting "EnableASAN"
+		{
+			Property
+			{
+				Name "EnableASAN"
+			}
+		}
 		%GeneratorSetting "CharacterSet"
 		{
 			Property

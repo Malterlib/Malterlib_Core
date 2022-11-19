@@ -1084,6 +1084,7 @@ Compile
 	Warnings_NoVirtualOverride define bool?
 	Warnings_DeprecatedEnumConversion define bool?
 	Warnings_NoPessimizingMove define bool?
+	Warnings_ASANWithoutDebugInfo define bool?
 
 	AllCPUSubTypes define bool?
 	StackGuard define bool?
@@ -1493,7 +1494,11 @@ Compile
 	OmitFramePointer define bool?
 	OmitFramePointer false
 	{
-		!!MalterlibSupportSanitizers true
+		&
+		{
+			MalterlibSupportSanitizers true
+			!PlatformFamily "Windows"
+		}
 	}
 
 	ExtraCompilerFlags define [one_of(string, [string])]?
@@ -2397,7 +2402,28 @@ Compile
 	Sanitize_Address define bool?
 	Sanitize_Address true
 	{
-		!!MalterlibSupportSanitizerEnable_Address true
+		&
+		{
+			MalterlibSupportSanitizerEnable_Address true
+			!PlatformFamily "Windows"
+		}
+	}
+
+	Warnings_ASANWithoutDebugInfo false
+	{
+		&
+		{
+			MalterlibSupportSanitizerEnable_Address true
+			PlatformFamily "Windows"
+		}
+	}
+	PreprocessorDefines += ["_DISABLE_VECTOR_ANNOTATION=1", "_DISABLE_STRING_ANNOTATION=1"]
+	{
+		&
+		{
+			MalterlibSupportSanitizerEnable_Address true
+			PlatformFamily "Windows"
+		}
 	}
 
 	Sanitize_UndefinedBehavior define bool?

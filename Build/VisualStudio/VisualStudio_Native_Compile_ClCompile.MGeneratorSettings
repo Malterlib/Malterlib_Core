@@ -699,6 +699,23 @@
 			}
 		}
 
+		%GeneratorSetting "Warnings_ASANWithoutDebugInfo"
+		{
+			Property
+			{
+				Name "AdditionalOptions"
+				Substitute "{} %(ClCompile.AdditionalOptions)"
+			}
+			%GeneratorSetting "Value"
+			{
+				Property
+				{
+					\false "/wd5072"
+					\true ""
+				}
+			}
+		}
+
 		%GeneratorSetting "Warnings_DeprecatedDeclarations"
 		{
 			Property

@@ -387,6 +387,7 @@ Property
 			!Tests "Perf Tests"
 			Sanitizer_Address undefined
 			Sanitizer_UndefinedBehavior undefined
+			!PlatformFamily "Windows"
 		}
 	}
 }
@@ -419,6 +420,7 @@ Property
 			!Tests "Perf Tests"
 			Sanitizer_Thread undefined
 			Sanitizer_Address undefined
+			!PlatformFamily "Windows"
 		}
 	}
 }

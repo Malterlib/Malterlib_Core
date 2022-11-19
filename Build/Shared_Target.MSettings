@@ -655,6 +655,12 @@ Target
 		}
 	}
 
+	EnableASAN define bool?
+	EnableASAN true
+	{
+		!!MalterlibSupportSanitizerEnable_Address true
+	}
+
 	PlatformToolset MalterlibVisualStudioToolset
 	{
 		&
