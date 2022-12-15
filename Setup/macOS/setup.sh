@@ -216,6 +216,22 @@ UpdateXcodePlugins()
 
 	popd > /dev/null
 
+	if [[ "$XcodeVersion" == "14.2" ]] ; then
+		pushd "$RepositoryDirectory/MalterlibXcodePatches/llbuild" > /dev/null
+
+		if [[ "$HasLibraryValidation" == "false" ]]; then
+			echo "Patching llbuild"
+			if ! [ -f "$2/Contents/SharedFrameworks/llbuild.framework-old" ]; then
+				mv "$2/Contents/SharedFrameworks/llbuild.framework" "$2/Contents/SharedFrameworks/llbuild.framework-old"
+			else
+				rm -rf "$2/Contents/SharedFrameworks/llbuild.framework"
+			fi
+			cp -a "llbuild.framework" "$2/Contents/SharedFrameworks/"
+		fi
+
+		popd > /dev/null
+	fi
+
 	if $Setting_SyntaxHighlight; then
 		echo Installing Malterlib systax highligting
 		pushd "$RepositoryDirectory/MalterlibXcodePatches/SyntaxColoring" > /dev/null
