@@ -37,3 +37,17 @@
 		}
 	}
 }
+
+%GeneratorSetting "DotNet_Dependency"
+{
+	%GeneratorSetting "Dependency"
+	{
+		%GeneratorSetting "LinkWithObjectFiles"
+		{
+			Property
+			{
+				Disabled true
+			}
+		}
+	}
+}
