@@ -252,6 +252,7 @@ namespace NMib
 #include "../../String/Source/Malterlib_String.h"
 
 #include <Mib/Container/Map>
+#include <Mib/Container/Set>
 
 #include <Mib/Time/Time>
 
@@ -288,7 +289,10 @@ namespace NMib
 #include "../../Memory/Source/Malterlib_Memory_Allocator_Heap.hpp"
 #include "../../Memory/Source/Malterlib_Memory_Allocator_Secure.hpp"
 #include "../../Container/Source/Vector/Malterlib_Container_Vector_Format.hpp"
-#include "../../Container/Source/Malterlib_Container_Map.hpp"
+#include "../../Container/Source/Map/Malterlib_Container_Map_Format.hpp"
+#include "../../Container/Source/Map/Malterlib_Container_Map_IsContainer.hpp"
+#include "../../Container/Source/Set/Malterlib_Container_Set_Format.hpp"
+#include "../../Container/Source/Set/Malterlib_Container_Set_IsContainer.hpp"
 
 #include "../../Concurrency/Source/DistributedActor/Malterlib_Concurrency_RuntimeTypeRegistry.hpp"
 

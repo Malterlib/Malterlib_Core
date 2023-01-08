@@ -36,6 +36,8 @@ using namespace NMib;
 
 #include <sys/param.h>
 
+#include <Mib/Container/MapWithPool>
+
 #include "Malterlib_Core_PlatformImp_POSIX.h"
 
 // *************************************************************************************************************************
