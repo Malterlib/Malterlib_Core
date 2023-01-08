@@ -51,7 +51,9 @@ Property
 {
 	!!HostPlatformFamily "Windows"
 
-	MalterlibRepositoryEditor EscapeHost(`@(PROGRAMFILES)/Sublime Merge/smerge.exe`, "{}")
+	SmergeEditor define string = EscapeHost(`@(PROGRAMFILES)/Sublime Merge/smerge.exe`, "{}")
+
+	MalterlibRepositoryEditor SmergeEditor
 	{
 		&
  		{
@@ -82,7 +84,11 @@ Property
 		&
 		{
 			MalterlibRepositoryEditorSequential undefined
-			MalterlibRepositoryEditor SourceTreeEditor
+			|
+			{
+				MalterlibRepositoryEditor SourceTreeEditor
+				MalterlibRepositoryEditor SmergeEditor
+			}
 		}
 	}
 	MalterlibRepositoryEditorWorkingDir SourceTreeDirectory
@@ -93,11 +99,19 @@ Property
 			MalterlibRepositoryEditor SourceTreeEditor
 		}
 	}
+	MalterlibRepositoryEditorSleep 0.1
+	{
+		&
+		{
+			MalterlibRepositoryEditorSleep undefined
+			MalterlibRepositoryEditor SmergeEditor
+		}
+	}
 	MalterlibRepositoryEditorSleep 1.0
 	{
 		&
 		{
-			MalterlibRepositoryEditorWorkingDir undefined
+			MalterlibRepositoryEditorSleep undefined
 			MalterlibRepositoryEditor SourceTreeEditor
 		}
 	}
