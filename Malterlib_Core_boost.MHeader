@@ -39,6 +39,7 @@ Property
 		, "container_hash"
 		, "core"
 		, "date_time"
+		, "describe"
 		, "detail"
 		, "endian"
 		, "exception"
