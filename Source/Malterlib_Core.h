@@ -2,7 +2,6 @@
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
-
 #include <Mib/Preprocessor/Preprocessor>
 #include <Mib/Core/Platform>
 #include <initializer_list>

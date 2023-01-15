@@ -183,6 +183,11 @@ typedef NMib::TCAutoClear<ch32> zch32;
 #include "Malterlib_Core_PlatformInterface.h"
 
 #include <Mib/Debug/Debug>
+
+#if defined(DMibContract_AnyEnabled) || DMibEnableSafeCheck > 0
+	#define DMibNeedDebugException
+#endif
+
 #include <Mib/CommandLine/Console>
 #include <Mib/Memory/Memory>
 
