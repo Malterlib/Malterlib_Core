@@ -1,0 +1,38 @@
+Malterlib Build System
+    filter call_regexp_common C++
+    filter remove_inline //.*$
+    extension MTarget
+    extension MBuildSystem
+    extension OldMBuildSystem
+    extension MSettings
+    extension MHeader
+    extension MInclude
+    extension MGeneratorSettings
+    extension MDependency
+    extension MWorkspace
+    extension MWorkspaceHeader
+    extension MSettingsHeader
+    extension MRepo
+    3rd_gen_scale 1.51
+    end_of_line_continuation \\$
+
+Nginx Config
+    filter call_regexp_common C++
+    filter remove_inline //.*$
+    extension conf
+    3rd_gen_scale 1.51
+    end_of_line_continuation \\$
+
+Doxygen
+    filter call_regexp_common C++
+    filter remove_inline //.*$
+    extension dox
+    3rd_gen_scale 1.51
+    end_of_line_continuation \\$
+
+Xcode Build Spec
+    filter call_regexp_common C++
+    filter remove_inline //.*$
+    extension xcspec
+    3rd_gen_scale 1.51
+    end_of_line_continuation \\$
