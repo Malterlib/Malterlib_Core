@@ -1,804 +1,346 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "Native_ClCompile"
+GeneratorSetting
 {
-	%GeneratorSetting "Compile"
+	&
 	{
-		%GeneratorSetting "ConcurrentCompile"
-		{
-			Property
-			{
-				Name "MultiProcessorCompilation"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}		
-		%GeneratorSetting "ForceSynchronousPDBWrites"
-		{
-			Property
-			{
-				Name "ForceSynchronousPDBWrites"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}		
-		%GeneratorSetting "Symbols"
-		{
-			Property
-			{
-				Name "DebugInformationFormat"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					FullForDebug "EditAndContinue"
-					Full "ProgramDatabase"
-					Fast "OldStyle"
-					None "None"
-					\ ""
-				}
-			}
-		}		
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "ClCompile"
+	}
 
-		%GeneratorSetting "CallingConvention"
-		{
-			Property
-			{
-				Name "CallingConvention"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Cdecl "Cdecl"
-					StdCall "StdCall"
-					FastCall "FastCall"
-				}
-			}
-		}
-
-		%GeneratorSetting "SymbolFile"
-		{
-			Property
-			{
-				Name "ProgramDataBaseFileName"
-			}
-		}
-
-		%GeneratorSetting "MaxHeap"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "-Zm{} %(ClCompile.AdditionalOptions)"
-			}
-		}
-
-		%GeneratorSetting "LinkerInternalLinkageOpt"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "-Zc:{} %(ClCompile.AdditionalOptions)"
-			}
-		}
-		
-
-		%GeneratorSetting "ExtraCompilerFlags"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(ClCompile.AdditionalOptions)"
-				Separator " "
-			}
-		}		
-		%GeneratorSetting "PreprocessorDefines"
-		{
-			Property
-			{
-				Name "PreprocessorDefinitions"
-			}
-		}		
-
-		%GeneratorSetting "Real_SearchPath"
-		{
-			Property
-			{
-				Name "AdditionalIncludeDirectories"
-				ShortenFilenames true
-			}
-		}
-		
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "SystemSearchPath"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Warnings"
-		{
-			Property
-			{
-				Name "WarningLevel"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Off "TurnOffAllWarnings"
-					Minimal "Level1"
-					On "Level3"
-					Pedantic "Level4"
-				}
-			}
-		}
-		%GeneratorSetting "WarningsAsErrors"
-		{
-			Property
-			{
-				Name "TreatWarningAsError"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-
-		%GeneratorSetting "IgnoreStandardIncludePath"
-		{
-			Property
-			{
-				Name "IgnoreStandardIncludePath"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		
-		%GeneratorSetting "SeparateWCharType"
-		{
-			Property
-			{
-				Name "TreatWChar_tAsBuiltInType"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-			
-		%GeneratorSetting "ForceConformanceInForLoopScope"
-		{
-			Property
-			{
-				Name "ForceConformanceInForLoopScope"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-
-		%GeneratorSetting "DynamicTypeInfo"
-		{
-			Property
-			{
-				Name "RuntimeTypeInfo"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "OpenMP"
-		{
-			Property
-			{
-				Name "OpenMPSupport"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-
-		%GeneratorSetting "UseFullPaths"
-		{
-			Property
-			{
-				Name "UseFullPaths"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "FunctionLevelLinking"
-		{
-			Property
-			{
-				Name "FunctionLevelLinking"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-			
-		%GeneratorSetting "StringPooling"
-		{
-			Property
-			{
-				Name "StringPooling"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-
-		%GeneratorSetting "CreateHotpatchableImage"
-		{
-			Property
-			{
-				Name "CreateHotpatchableImage"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-
-		%GeneratorSetting "EnableFiberSafeOptimizations"
-		{
-			Property
-			{
-				Name "EnableFiberSafeOptimizations"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-			
-		%GeneratorSetting "FloatingPointExceptions"
-		{
-			Property
-			{
-				Name "FloatingPointExceptions"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "FloatingPointModel"
-		{
-			Property
-			{
-				Name "FloatingPointModel"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Precise "Precise"
-					Strict "Strict"
-				}
-			}
-		}
-		%GeneratorSetting "EnableLanguageExtensions"
-		{
-			Property
-			{
-				Name "DisableLanguageExtensions"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "false"
-					\false "true"
-				}
-			}
-		}
-		%GeneratorSetting "MinimalRebuild"
-		{
-			Property
-			{
-				Name "MinimalRebuild"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "ExtendedInstructionSet"
-		{
-			Property
-			{
-				Name "EnableEnhancedInstructionSet"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Off "NoExtensions"
-					SSE1 "StreamingSIMDExtensions"
-					SSE2 "StreamingSIMDExtensions2"
-					SSE3 "StreamingSIMDExtensions2" // Only SSE2 is supported
-					AVX "AdvancedVectorExtensions"
-					AVX2 "AdvancedVectorExtensions2"
-				}
-			}
-		}
-		%GeneratorSetting "RuntimeLibrary"
-		{
-			Property
-			{
-				Name "RuntimeLibrary"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Static "MultiThreaded"
-					StaticDebug "MultiThreadedDebug"
-					Dynamic "MultiThreadedDLL"
-					DynamicDebug "MultiThreadedDebugDLL"
-				}
-			}
-		}
-		%GeneratorSetting "StructMemberAlignment"
-		{
-			Property
-			{
-				Name "StructMemberAlignment"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Default "Default"
-					\1 "1Byte"
-					\2 "2Bytes"
-					\4 "4Bytes"
-					\8 "8Bytes"
-					\16 "16Bytes"
-				}
-			}
-		}		
-		%GeneratorSetting "PrefixHeader"
-		{
-			Property
-			{
-				Name "ForcedIncludeFiles"
-				ConvertPath "true"
-			}
-			%GeneratorSetting "Properties"
-			{
-				%GeneratorSetting ""
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting "PrecompiledHeaderFile"
-					}
-				}
-			}
-		}
-		%GeneratorSetting "Exceptions"
-		{
-			Property
-			{
-				Name "ExceptionHandling"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Full "Async"
-					C\+\+ "Sync"
-					ExternCandC\+\+ "SyncCThrow"
-					Off "false"
-				}
-			}
-		}
-		%GeneratorSetting "PrecompilePrefixHeader"
-		{
-			Property
-			{
-				Name "PrecompiledHeader"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "Use"
-					\false "NotUsing"
-					XInternalCreate "Create" // Only used internally
-				}
-			}
-		}
-		%GeneratorSetting "XInternalPrecompiledHeaderOutputFile"
-		{
-			Property
-			{
-				Name "PrecompiledHeaderOutputFile"
-			}
-		}
-		%GeneratorSetting "LinkTimeCodeGeneration"
-		{
-			Property
-			{
-				Name "WholeProgramOptimization"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "Optimize"
-		{
-			Property
-			{
-				Name "Optimization"
-			}
-			%GeneratorSetting "ValueSet"
-			{
-				%GeneratorSetting "Off"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								IntrinsicFunctions "false"
-								OmitFramePointers "false"
-								FavorSizeOrSpeed "Neither" // Neither, Speed, Size
-							}
-						}
-					}
-				}
-				%GeneratorSetting "Fast"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								IntrinsicFunctions "true"
-								OmitFramePointers "false"
-								FavorSizeOrSpeed "Speed"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "On"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								IntrinsicFunctions "true"
-								OmitFramePointers "false"
-								FavorSizeOrSpeed "Speed"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "Full"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								IntrinsicFunctions "true"
-								OmitFramePointers "true"
-								FavorSizeOrSpeed "Speed"
-							}
-						}
-					}
-				}
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Off "Disabled"
-					On "Full"
-					Fast "Full"
-					Full "Full"
-				}
-			}
-		}
-		%GeneratorSetting "RuntimeChecks"
-		{
-			Property
-			{
-				Name ""
-			}
-			%GeneratorSetting "ValueSet"
-			{
-				%GeneratorSetting "Off"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								BasicRuntimeChecks "Default"
-								SmallerTypeCheck "false"
-								BufferSecurityCheck "false"
-								//SDLCheck "false"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "Fast"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								BasicRuntimeChecks "Default"
-								SmallerTypeCheck "false"
-								BufferSecurityCheck "true"
-								//SDLCheck "true"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "On"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								BasicRuntimeChecks "EnableFastChecks"
-								SmallerTypeCheck "false"
-								BufferSecurityCheck "true"
-								//SDLCheck "true"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "Full"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								BasicRuntimeChecks "EnableFastChecks"
-								SmallerTypeCheck "true"
-								BufferSecurityCheck "true"
-								//SDLCheck "true"
-							}
-						}
-					}
-				}
-			}
-		}
-		%GeneratorSetting "Inline"
-		{
-			Property
-			{
-				Name "InlineFunctionExpansion"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Off "Disabled"
-					Explicit "OnlyExplicitInline"
-					Automatic "AnySuitable"
-				}
-			}
-		}
-		%GeneratorSetting "DisableSecurityWarnings"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true ""
-					\false ""
-				}
-			}
-		}
-
-		%GeneratorSetting "Warnings_ASANWithoutDebugInfo"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(ClCompile.AdditionalOptions)"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\false "/wd5072"
-					\true ""
-				}
-			}
-		}
-
-		%GeneratorSetting "Warnings_DeprecatedDeclarations"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(ClCompile.AdditionalOptions)"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\false "/wd4996"
-					\true ""
-				}
-			}
-		}
-		
-		%GeneratorSetting "Warnings_ConversionToSmallerInt"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(ClCompile.AdditionalOptions)"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\false "/wd4244"
-					\true ""
-				}
-			}
-		}
-
-		%GeneratorSetting "Warnings_ConversionToSmallerType"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(ClCompile.AdditionalOptions)"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\false "/wd4267"
-					\true ""
-				}
-			}
-		}
-
-		%GeneratorSetting "Warnings_IncompatibleTypes"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(ClCompile.AdditionalOptions)"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\false "/wd4133"
-					\true ""
-				}
-			}
-		}
-
-		%GeneratorSetting "Warnings_UnknownPragma"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(ClCompile.AdditionalOptions)"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\false "/wd4068"
-					\true ""
-				}
-			}
+	Compile_ConcurrentCompile =+ {
+		VSSettings: {
+			MultiProcessorCompilation: Compile.ConcurrentCompile->f_BoolToString()
 		}
 	}
+
+	Compile_ForceSynchronousPDBWrites =+ {
+		VSSettings: {
+			ForceSynchronousPDBWrites: Compile.ForceSynchronousPDBWrites->f_BoolToString()
+		}
+	}
+
+	Compile_Symbols =+ {
+		VSSettings: {
+			DebugInformationFormat: Compile.Symbols->SwitchWithError("Unsupported option: "
+				, "FullForDebug", "EditAndContinue"
+				, "Full", "ProgramDatabase"
+				, "Fast", "OldStyle"
+				, "None", "None"
+				, "", ""
+			)
+		}
+	}
+
+	Compile_CallingConvention =+ {
+		VSSettings: {
+			CallingConvention: Compile.CallingConvention->SwitchWithError("Unsupported option: "
+				, "Cdecl", "Cdecl"
+				, "StdCall", "StdCall"
+				, "FastCall", "FastCall"
+			)
+		}
+	}
+
+	Compile_SymbolFile =+ {
+		VSSettings: {
+			ProgramDataBaseFileName: Compile.SymbolFile->EscapeMSBuild()
+		}
+	}
+
+	Compile_MaxHeap =+ {
+		VSSettings: {
+			AdditionalOptions: `-Zm@(Compile.MaxHeap->ToString()) @(Builtin.Inherit)`
+		}
+	}
+
+	Compile_LinkerInternalLinkageOpt =+ {
+		VSSettings: {
+			AdditionalOptions: `-Zc:@(Compile.LinkerInternalLinkageOpt->ToString()) @(Builtin.Inherit)`
+		}
+	}
+
+	Compile_ExtraCompilerFlags =+ {
+		VSSettings: {
+			AdditionalOptions: `@(Compile.ExtraCompilerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
+		}
+	}
+
+	Compile_PreprocessorDefines =+ {
+		VSSettings: {
+			PreprocessorDefinitions: Compile.PreprocessorDefines->f_JoinMSBuild()
+		}
+	}
+
+	Compile_SearchPath =+ {
+		VSSettings: {
+			AdditionalIncludeDirectories: [Compile.SearchPath..., Compile.SystemSearchPath...]->RemoveDuplicates(Builtin.Inherit)->ForEach(&f_Helper_ShortenAllPaths)->f_JoinMSBuild()
+		}
+	}
+
+	Compile_SystemSearchPath {}
+
+	Compile_Warnings =+ {
+		VSSettings: {
+			WarningLevel: Compile.Warnings->SwitchWithError("Unsupported option: "
+				, "Off", "TurnOffAllWarnings"
+				, "Minimal", "Level1"
+				, "On", "Level3"
+				, "Pedantic", "Level4"
+			)
+		}
+	}
+
+	Compile_WarningsAsErrors =+ {
+		VSSettings: {
+			TreatWarningAsError: Compile.WarningsAsErrors->f_BoolToString()
+		}
+	}
+
+	Compile_IgnoreStandardIncludePath =+ {
+		VSSettings: {
+			IgnoreStandardIncludePath: Compile.IgnoreStandardIncludePath->f_BoolToString()
+		}
+	}
+
+	Compile_SeparateWCharType =+ {
+		VSSettings: {
+			TreatWChar_tAsBuiltInType: Compile.SeparateWCharType->f_BoolToString()
+		}
+	}
+
+	Compile_ForceConformanceInForLoopScope =+ {
+		VSSettings: {
+			ForceConformanceInForLoopScope: Compile.ForceConformanceInForLoopScope->f_BoolToString()
+		}
+	}
+
+	Compile_DynamicTypeInfo =+ {
+		VSSettings: {
+			RuntimeTypeInfo: Compile.DynamicTypeInfo->f_BoolToString()
+		}
+	}
+
+	Compile_OpenMP =+ {
+		VSSettings: {
+			OpenMPSupport: Compile.OpenMP->f_BoolToString()
+		}
+	}
+
+	Compile_UseFullPaths =+ {
+		VSSettings: {
+			UseFullPaths: Compile.UseFullPaths->f_BoolToString()
+		}
+	}
+
+	Compile_FunctionLevelLinking =+ {
+		VSSettings: {
+			FunctionLevelLinking: Compile.FunctionLevelLinking->f_BoolToString()
+		}
+	}
+
+	Compile_StringPooling =+ {
+		VSSettings: {
+			StringPooling: Compile.StringPooling->f_BoolToString()
+		}
+	}
+
+	Compile_CreateHotpatchableImage =+ {
+		VSSettings: {
+			CreateHotpatchableImage: Compile.CreateHotpatchableImage->f_BoolToString()
+		}
+	}
+
+	Compile_EnableFiberSafeOptimizations =+ {
+		VSSettings: {
+			EnableFiberSafeOptimizations: Compile.EnableFiberSafeOptimizations->f_BoolToString()
+		}
+	}
+
+	Compile_FloatingPointExceptions =+ {
+		VSSettings: {
+			FloatingPointExceptions: Compile.FloatingPointExceptions->f_BoolToString()
+		}
+	}
+
+	Compile_FloatingPointModel =+ {
+		VSSettings: {
+			FloatingPointModel: Compile.FloatingPointModel->SwitchWithError("Unsupported option: "
+				, "Precise", "Precise"
+				, "Strict", "Strict"
+			)
+		}
+	}
+
+	Compile_EnableLanguageExtensions =+ {
+		VSSettings: {
+			DisableLanguageExtensions: (!Compile.EnableLanguageExtensions)->f_BoolToString()
+		}
+	}
+
+	Compile_MinimalRebuild =+ {
+		VSSettings: {
+			MinimalRebuild: Compile.MinimalRebuild->f_BoolToString()
+		}
+	}
+
+	Compile_ExtendedInstructionSet =+ {
+		VSSettings: {
+			EnableEnhancedInstructionSet: Compile.ExtendedInstructionSet->SwitchWithError("Unsupported option: "
+				, "Off", "NoExtensions"
+				, "SSE1", "StreamingSIMDExtensions"
+				, "SSE2", "StreamingSIMDExtensions2"
+				, "SSE3", "StreamingSIMDExtensions2"
+				, "AVX", "AdvancedVectorExtensions"
+				, "AVX2", "AdvancedVectorExtensions2"
+			)
+		}
+	}
+
+	Compile_RuntimeLibrary =+ {
+		VSSettings: {
+			RuntimeLibrary: Compile.RuntimeLibrary->SwitchWithError("Unsupported option: "
+				, "Static", "MultiThreaded"
+				, "StaticDebug", "MultiThreadedDebug"
+				, "Dynamic", "MultiThreadedDLL"
+				, "DynamicDebug", "MultiThreadedDebugDLL"
+			)
+		}
+	}
+
+	Compile_StructMemberAlignment =+ {
+		VSSettings: {
+			StructMemberAlignment: Compile.StructMemberAlignment->SwitchWithError("Unsupported option: "
+				, "Default", "Default"
+				, "1", "1Byte"
+				, "2", "2Bytes"
+				, "4", "4Bytes"
+				, "8", "8Bytes"
+				, "16", "16Bytes"
+			)
+		}
+	}
+
+	Compile_PrefixHeader =+ {
+		VSSettings: {
+			ForcedIncludeFiles: Compile.PrefixHeader->WindowsPath()->EscapeMSBuild()
+			, PrecompiledHeaderFile: Compile.PrefixHeader->WindowsPath()->EscapeMSBuild()
+		}
+	}
+
+	Compile_Exceptions =+ {
+		VSSettings: {
+			ExceptionHandling: Compile.Exceptions->SwitchWithError("Unsupported option: "
+				, "Full", "Async"
+				, "C++", "Sync"
+				, "ExternCandC++", "SyncCThrow"
+				, "Off", "false"
+			)
+		}
+	}
+
+	Compile_PrecompilePrefixHeader =+ {
+		VSSettings: {
+			PrecompiledHeader: Compile.PrecompilePrefixHeader->SwitchWithError("Unsupported option: "
+				, true, "Use"
+				, false, "NotUsing"
+				, "XInternalCreate", "Create"
+			)
+		}
+	}
+
+	Compile_XInternalPrecompiledHeaderOutputFile =+ {
+		VSSettings: {
+			PrecompiledHeaderOutputFile: Compile.XInternalPrecompiledHeaderOutputFile->EscapeMSBuild()
+		}
+	}
+
+	Compile_LinkTimeCodeGeneration =+ {
+		VSSettings: {
+			WholeProgramOptimization: Compile.LinkTimeCodeGeneration->f_BoolToString()
+		}
+	}
+
+	Compile_Optimize =+ {
+		VSSettings: Compile.Optimize->SwitchWithError("Unsupported option: "
+			, "Off", {
+				Optimization: "Disabled"
+				, IntrinsicFunctions: "false"
+				, OmitFramePointers: "false"
+				, FavorSizeOrSpeed: "Neither"
+			}, "On", {
+				Optimization: "Full"
+				, IntrinsicFunctions: "true"
+				, OmitFramePointers: "false"
+				, FavorSizeOrSpeed: "Speed"
+			}, "Fast", {
+				Optimization: "Full"
+				, IntrinsicFunctions: "true"
+				, OmitFramePointers: "false"
+				, FavorSizeOrSpeed: "Speed"
+			}, "Full", {
+				Optimization: "Full"
+				, IntrinsicFunctions: "true"
+				, OmitFramePointers: "true"
+				, FavorSizeOrSpeed: "Speed"
+			}
+		)
+	}
+
+	Compile_RuntimeChecks =+ {
+		VSSettings: Compile.RuntimeChecks->SwitchWithError("Unsupported option: "
+			, "Off", {
+				BasicRuntimeChecks: "Default"
+				, SmallerTypeCheck: "false"
+				, BufferSecurityCheck: "false"
+			}, "Fast", {
+				BasicRuntimeChecks: "Default"
+				, SmallerTypeCheck: "false"
+				, BufferSecurityCheck: "true"
+			}, "On", {
+				BasicRuntimeChecks: "EnableFastChecks"
+				, SmallerTypeCheck: "false"
+				, BufferSecurityCheck: "true"
+			}, "Full", {
+				BasicRuntimeChecks: "EnableFastChecks"
+				, SmallerTypeCheck: "true"
+				, BufferSecurityCheck: "true"
+			}
+		)
+	}
+
+	Compile_Inline =+ {
+		VSSettings: {
+			InlineFunctionExpansion: Compile.Inline->SwitchWithError("Unsupported option: "
+				, "Off", "Disabled"
+				, "Explicit", "OnlyExplicitInline"
+				, "Automatic", "AnySuitable"
+			)
+		}
+	}
+
+	Compile_DisableSecurityWarnings {}
+
+	f_Helper_SetVSWarning function(string _Warning, bool _Enable) type(CCompileSettings)
+
+	f_Helper_SetVSWarning =+ {
+		VSSettings: {
+			AdditionalOptions: `/@(_Enable ? "w1" : "wd")@(_Warning) @(Builtin.Inherit)`
+		}
+	}
+
+	f_Helper_SetVSWarning =+ {
+		Flags: `/@(_Enable ? "w1" : "wd")@(_Warning)`
+	}
+	{
+		!!Compiler "MSVC"
+	}
+
+	Compile_Warnings_DeprecatedDeclarations =+ GeneratorSetting.f_Helper_SetVSWarning("4996", Compile.Warnings_DeprecatedDeclarations)
+	Compile_Warnings_ConversionToSmallerInt =+ GeneratorSetting.f_Helper_SetVSWarning("4244", Compile.Warnings_ConversionToSmallerInt)
+	Compile_Warnings_ConversionToSmallerType =+ GeneratorSetting.f_Helper_SetVSWarning("4267", Compile.Warnings_ConversionToSmallerType)
+	Compile_Warnings_IncompatibleTypes =+ GeneratorSetting.f_Helper_SetVSWarning("4133", Compile.Warnings_IncompatibleTypes)
+	Compile_Warnings_UnknownPragma =+ GeneratorSetting.f_Helper_SetVSWarning("4068", Compile.Warnings_UnknownPragma)
+	Compile_Warnings_ASANWithoutDebugInfo =+ GeneratorSetting.f_Helper_SetVSWarning("5072", Compile.Warnings_ASANWithoutDebugInfo)
 }

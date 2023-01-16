@@ -3,9 +3,9 @@
 
 Property
 {
-	MalterlibMainMalterlibRepo define bool = false
+	MalterlibMainMalterlibRepo: bool = false
 
-	MalterlibBuildDependenciesContents define string = ""
+	MalterlibBuildDependenciesContents: string = ""
 	MalterlibBuildDependenciesContents	=+ `@("BuildLLVM.sh"->MakeAbsolute()) "@(MalterlibClangVersion)" "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)" @(MalterlibMainMalterlibRepo->EJSONToString("")) false\r\n`\
 		`ErrorLevel=$?\n`\
 		`if [ "$ErrorLevel" != "0" ]; then\n`\
@@ -28,5 +28,13 @@ Property
 			MalterlibUseCustomXcodeToolchain true
 			PlatformToolsetCompiler `@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang`
 		}
+	}
+}
+
+Dependency
+{
+	Name Dependency:this.Identity
+	{
+		!!Dependency.Name undefined
 	}
 }

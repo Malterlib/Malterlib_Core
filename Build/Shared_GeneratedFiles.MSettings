@@ -3,7 +3,7 @@
 
 Property
 {
-	SharedBuildSettingsScriptContents define string = ""
+	SharedBuildSettingsScriptContents: string = ""
 	// Find base dir and export path
 	SharedBuildSettingsScriptContents =+	`chcp 65001\r\n`\
 											`SET RunVsDevCmd=true\r\n`\
@@ -105,7 +105,7 @@ Property
 											`@(ScriptExport("ProductVersionHex", ProductVersionHex))\r\n`\
 											`\r\n`
 
-	ProductVersionString define string = `@(ProductVersionMajor)_@(ProductVersionMinor)@(ProductVersionRevision)`
+	ProductVersionString: string = `@(ProductVersionMajor)_@(ProductVersionMinor)@(ProductVersionRevision)`
 
 	ProductVersionString `@(ProductVersionString)_@(ProductVersionExtra)`
 	{
@@ -116,7 +116,7 @@ Property
 		!VersionStringSuffix ""
 	}
 
-	ProductVersionStringDotted define string
+	ProductVersionStringDotted: string
 	ProductVersionStringDotted `@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision)`
 	ProductVersionStringDotted `@(ProductVersionStringDotted).@(ProductVersionExtra)`
 	{
@@ -127,7 +127,7 @@ Property
 		!VersionStringSuffix ""
 	}
 
-	ProductVersionStringReadable define string
+	ProductVersionStringReadable: string
 	ProductVersionStringReadable `@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision)`
 	ProductVersionStringReadable `@(ProductVersionStringReadable) @(ProductVersionExtra)`
 	{
@@ -145,7 +145,7 @@ Property
 	{
 	}
 
-	VisualstudioVSToolsDir define string = `@(Builtin.VisualStudioRoot->WindowsPath())\\Common7\\Tools`
+	VisualstudioVSToolsDir: string = `@(Builtin.VisualStudioRoot->WindowsPath())\\Common7\\Tools`
 
 	SharedBuildSettingsScriptContents =+	`IF "%RunVsDevCmd%"=="false" GOTO NoVsCmd\r\n`\
 											`IF EXIST "@(VisualstudioVSToolsDir)\\VsDevCmd.bat" call "@(VisualstudioVSToolsDir)\\VsDevCmd.bat"\r\n`\
@@ -209,7 +209,7 @@ Property
 		}
 	}
 
-	MalterlibUseCustomXcodeToolchain define bool // User(Toolset)=true: Use custom toolchain for Xcode to use same compiler as Malterlib when indexing
+	MalterlibUseCustomXcodeToolchain: bool // User(Toolset)=true: Use custom toolchain for Xcode to use same compiler as Malterlib when indexing
 	/*MalterlibUseCustomXcodeToolchain true
 	{
 		&
@@ -224,13 +224,13 @@ Property
 		!!MalterlibUseCustomXcodeToolchain undefined
 	}
 
-	XcodeBuildToolChain define string = ""
+	XcodeBuildToolChain: string = ""
 	XcodeBuildToolChain "-toolchain org.malterlib.1.0"
 	{
 		!!MalterlibUseCustomXcodeToolchain true
 	}
 
-	MalterlibUseXCodeBuild define bool = false
+	MalterlibUseXCodeBuild: bool = false
 
 	SharedBuildSettingsScriptContents =+	`export XCodeBuildTool="xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs"\r\n`
 	{
@@ -497,9 +497,9 @@ Workspace
 
 Property
 {
-	BuildServerHelpers_ConfigName define string
+	BuildServerHelpers_ConfigName: string
 
-	BuildServerHelpersPathContents define string?
+	BuildServerHelpersPathContents: string?
 	BuildServerHelpersPathContents	`@(ScriptExport(`Output_@(BuildServerHelpers_ConfigName)`, Target:Target.OutputDirectory->NativePath()))\r\n`\
 									`@(ScriptExport(`Product_@(BuildServerHelpers_ConfigName)`, MalterlibFinalModuleDestination->NativePath()))\r\n`\
 									`@(ScriptExport(`Intermediate_@(BuildServerHelpers_ConfigName)`, Target:Target.IntermediateDirectory->NativePath()))\r\n`\

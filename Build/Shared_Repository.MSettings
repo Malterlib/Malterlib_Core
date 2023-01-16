@@ -3,11 +3,11 @@
 
 Property
 {
-	MalterlibRepositoryEditor define string // User(Tools)="open -a SourceTree {}": Specify the editor to use for repositories. {} is replaced with the repository directory. The tool is launched from the repository directory.
-	MalterlibRepositoryEditorSequential define bool = false // User(Tools)=true: Set to true if your repository editor does not support launching concurrently
-	MalterlibRepositoryEditorSleep define float = 0.0
-	MalterlibRepoRoot define string?
-	MalterlibRepositoryEditorWorkingDir define string = ""
+	MalterlibRepositoryEditor: string // User(Tools)="open -a SourceTree {}": Specify the editor to use for repositories. {} is replaced with the repository directory. The tool is launched from the repository directory.
+	MalterlibRepositoryEditorSequential: bool = false // User(Tools)=true: Set to true if your repository editor does not support launching concurrently
+	MalterlibRepositoryEditorSleep: float = 0.0
+	MalterlibRepoRoot: string?
+	MalterlibRepositoryEditorWorkingDir: string = ""
 }
 Property
 {
@@ -51,7 +51,7 @@ Property
 {
 	!!HostPlatformFamily "Windows"
 
-	SmergeEditor define string = EscapeHost(`@(PROGRAMFILES)/Sublime Merge/smerge.exe`, "{}")
+	SmergeEditor: string = EscapeHost(`@(PROGRAMFILES)/Sublime Merge/smerge.exe`, "{}")
 
 	MalterlibRepositoryEditor SmergeEditor
 	{
@@ -62,13 +62,13 @@ Property
  		}
 	}
 
-	SourceTreeDirectory define string
+	SourceTreeDirectory: string
 	SourceTreeDirectory `@(USERPROFILE)/AppData/Local/SourceTree`
 	{
 		!!SourceTreeDirectory undefined
 	}
 
-	SourceTreeEditor define string
+	SourceTreeEditor: string
 	SourceTreeEditor EscapeHost(`@(SourceTreeDirectory)/SourceTree.exe`, "-f", "{}", "status")
 
 	MalterlibRepositoryEditor SourceTreeEditor
@@ -79,6 +79,7 @@ Property
 			![] SourceTreeDirectory->FindFilesIn("SourceTree.exe")
 		}
 	}
+	MalterlibRepositoryEditorSequential true
 	MalterlibRepositoryEditorSequential true
 	{
 		&
@@ -99,7 +100,7 @@ Property
 			MalterlibRepositoryEditor SourceTreeEditor
 		}
 	}
-	MalterlibRepositoryEditorSleep 0.1
+	MalterlibRepositoryEditorSleep 0.15
 	{
 		&
 		{
@@ -119,21 +120,21 @@ Property
 
 Repository
 {
-	ConvertUnderscoreToPath define bool = false
+	ConvertUnderscoreToPath: bool = false
 
-	UserEmail define string = "" // User(Repository)=email@example.com: Specify user.email to configure for repositories
-	UserName define string = "" // User(Repository)="Example Name": Specify user.name to configure for repositories
+	UserEmail: string = "" // User(Repository)=email@example.com: Specify user.email to configure for repositories
+	UserName: string = "" // User(Repository)="Example Name": Specify user.name to configure for repositories
 
-	GithubCompany define string?
-	DefaultPrefix define string?
-	DefaultLocationPrefix define string?
+	GithubCompany: string?
+	DefaultPrefix: string?
+	DefaultLocationPrefix: string?
 
 	NoPushRemotes ["upstream*"]
 	{
 		!!Repository.NoPushRemotes undefined
 	}
 
-	DefaultRoot define string = "Whata"
+	DefaultRoot: string = "Whata"
 	DefaultRoot `https://github.com/@(Repository.GithubCompany)`
 	{
 		&
@@ -166,7 +167,7 @@ Repository
 		!!Repository.Type undefined
 	}
 
-	MalterlibRoot define string
+	MalterlibRoot: string
 	MalterlibRoot MalterlibRepoRoot
 	{
 		&
@@ -181,7 +182,7 @@ Repository
 		!!Repository.MalterlibRoot undefined
 	}
 
-	ExternalRoot define string
+	ExternalRoot: string
 	ExternalRoot "https://github.com/Malterlib"
 	{
 		!!Repository.ExternalRoot undefined
@@ -203,7 +204,7 @@ Repository
 			!Repository.Type "Root"
 		}
 	}
-	Prefix define string = ""
+	Prefix: string = ""
 	Prefix Repository.DefaultPrefix
 	{
 		&
@@ -276,7 +277,7 @@ Repository
 		}
 	}
 
-	LocationPrefix define string = ""
+	LocationPrefix: string = ""
 	LocationPrefix Repository.DefaultLocationPrefix
 	{
 		&
@@ -325,7 +326,7 @@ Repository
 		!!Repository.Submodule undefined
 	}
 
-	SubmodulePrefix define string = ""
+	SubmodulePrefix: string = ""
 	SubmodulePrefix Repository.DefaultPrefix
 	{
 		&

@@ -370,7 +370,7 @@ Compile
 		}
 	}
 
-	GenericCompileType define string?
+	GenericCompileType: string?
 
 	GenericCompileType "GenericCompile"
 	{
@@ -653,7 +653,7 @@ Compile
 // Optimization needs to be available for all types
 Compile
 {
-	Optimize define one_of("Off", "Fast", "On", "Full")? = "Off"
+	Optimize: one_of("Off", "Fast", "On", "Full")? = "Off"
 
 	Optimize "Fast"
 	{
@@ -678,9 +678,9 @@ Compile
 
 Property
 {
-	MalterlibDebugSymbolsEnable define bool = true // User(Debug)=false: Enable generation of debug symbols
-	BuildArch_x86 define bool = true
-	DebugCodeAlwaysRelease define bool = false
+	MalterlibDebugSymbolsEnable: bool = true // User(Debug)=false: Enable generation of debug symbols
+	BuildArch_x86: bool = true
+	DebugCodeAlwaysRelease: bool = false
 }
 
 Compile
@@ -748,7 +748,7 @@ Compile
 
 Property
 {
-	MalterlibNativeClangArchitecture define string
+	MalterlibNativeClangArchitecture: string
 
 	MalterlibNativeClangArchitecture "i386" // Figure a way to include proper arch in Xcode
 	{
@@ -805,7 +805,7 @@ Property
 
 Property
 {
-	MalterlibXcodeBuildArchitecture define string = MalterlibNativeClangArchitecture
+	MalterlibXcodeBuildArchitecture: string = MalterlibNativeClangArchitecture
 	MalterlibXcodeBuildArchitecture "x86_64"
 	{
 		!!PlatformFamily "Linux"
@@ -816,7 +816,7 @@ Property
 {
 	!!PlatformIsDarwin true
 
-	MalterlibNativeClangDarwinTarget define string
+	MalterlibNativeClangDarwinTarget: string
 
 	MalterlibNativeClangDarwinTarget Format("{1,xpr($+4)}", MalterlibMinSupportedMacOSVersion->Parse("{}.{}", "int", "int")...)
 	{
@@ -838,7 +838,7 @@ Property
 
 Property
 {
-	MalterlibTargetTriple define string?
+	MalterlibTargetTriple: string?
 	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-apple-darwin@(MalterlibNativeClangDarwinTarget)`
 	{
 		&
@@ -855,8 +855,8 @@ Property
 
 Property
 {
-	MalterlibFullSymbolsOnLinux define bool = false // User(Toolset)=true: Enable full symbol generation on Linux
-	MalterlibClangTimeTrace define bool = false // User(Debug)=true: Generate time traces for clang invocations
+	MalterlibFullSymbolsOnLinux: bool = false // User(Toolset)=true: Enable full symbol generation on Linux
+	MalterlibClangTimeTrace: bool = false // User(Debug)=true: Generate time traces for clang invocations
 }
 
 Compile
@@ -871,7 +871,7 @@ Compile
 		}
 	}
 
-	MinMacOSVersion define string?
+	MinMacOSVersion: string?
 	MinMacOSVersion MalterlibMinSupportedMacOSVersion
 	{
 		&
@@ -884,8 +884,8 @@ Compile
 
 Compile
 {
-	TargetTriple define string?
-	AsyncUnwindTables define bool?
+	TargetTriple: string?
+	AsyncUnwindTables: bool?
 }
 
 Compile
@@ -937,13 +937,13 @@ Compile
 
 Property
 {
-	MalterlibVerboseTemplateErrors define bool = false // User(Toolset)=true: Enabled more verbose template errors for clang
-	MalterlibCodeCoverage define bool = false // User(Tests)=true: Set to true to enable code coverage
+	MalterlibVerboseTemplateErrors: bool = false // User(Toolset)=true: Enabled more verbose template errors for clang
+	MalterlibCodeCoverage: bool = false // User(Tests)=true: Set to true to enable code coverage
 }
 
 Property
 {
-	MalterlibCompileSupportTabSetings define bool = false
+	MalterlibCompileSupportTabSetings: bool = false
 	MalterlibCompileSupportTabSetings true
 	{
 		&
@@ -999,6 +999,17 @@ Compile
 
 Compile
 {
+	|
+	{
+		GeneratorFamily "Xcode"
+		Compiler "Clang"
+	}
+
+	CLanguage: string?
+}
+
+Compile
+{
 	&
 	{
 		LanguageFamily "Native"
@@ -1008,7 +1019,6 @@ Compile
 		}
 	}
 
-	CLanguage define string?
 	CLanguage "GNU11"
 	{
 		&
@@ -1058,36 +1068,59 @@ Property
 
 Property
 {
-	MalterlibMSVCEnableUTF8 define bool = true
-	MalterlibNoShortcuts define bool = false
-	DoesNotUseMalterlib define bool = false
-	AOCCDisableSSL define bool = false
-	MalterlibDisableMalterlib define bool = false
-	MalterlibDynamicCRT define bool = false
-	MalterlibAlwaysUseLongWindowsPaths define bool = false
-	MalterlibCustomConcurrentCompile define int?
+	MalterlibMSVCEnableUTF8: bool = true
+	MalterlibNoShortcuts: bool = false
+	DoesNotUseMalterlib: bool = false
+	AOCCDisableSSL: bool = false
+
+	MalterlibDisableMalterlib: bool = false
+	MalterlibDisableMalterlib true
+	{
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			|
+			{
+				!Target.CLRSupport false
+				LanguageFamily ".NET"
+			}
+		}
+	}
+
+	MalterlibDynamicCRT: bool = false
+	MalterlibDynamicCRT true
+	{
+		&
+		{
+			MalterlibDynamicCRT undefined
+			Target.CLRSupport true
+		}
+	}
+	
+	MalterlibAlwaysUseLongWindowsPaths: bool = false
+	MalterlibCustomConcurrentCompile: int?
 }
 
 Compile
 {
-	Warnings_UnusedCommandLineArgument define bool?
-	Warnings_TautolagicalPointerCompare define bool?
-	Warnings_UnusedFunction define bool?
-	Warnings_UnusedValue define bool?
-	Warnings_VarArgs define bool?
-	Warnings_CharSubscripts define bool?
-	Warnings_Cxx11Narrowing define bool?
-	Warnings_OverloadedVirtual define bool?
-	Warnings_Parentheses define bool?
-	Warnings_UnusedLabel define bool?
-	Warnings_NoUnused define bool?
-	Warnings_NoVirtualOverride define bool?
-	Warnings_DeprecatedEnumConversion define bool?
-	Warnings_NoPessimizingMove define bool?
-	Warnings_ASANWithoutDebugInfo define bool?
+	Warnings_UnusedCommandLineArgument: bool?
+	Warnings_TautolagicalPointerCompare: bool?
+	Warnings_UnusedFunction: bool?
+	Warnings_UnusedValue: bool?
+	Warnings_VarArgs: bool?
+	Warnings_CharSubscripts: bool?
+	Warnings_Cxx11Narrowing: bool?
+	Warnings_OverloadedVirtual: bool?
+	Warnings_Parentheses: bool?
+	Warnings_UnusedLabel: bool?
+	Warnings_NoUnused: bool?
+	Warnings_NoVirtualOverride: bool?
+	Warnings_DeprecatedEnumConversion: bool?
+	Warnings_NoPessimizingMove: bool?
+	Warnings_ASANWithoutDebugInfo: bool?
 
-	AllCPUSubTypes define bool?
-	StackGuard define bool?
+	AllCPUSubTypes: bool?
+	StackGuard: bool?
 }
 
 // Assembler settings
@@ -1111,7 +1144,7 @@ Compile
 
 Property
 {
-	DefaultPrefixHeader define string?
+	DefaultPrefixHeader: string?
 	DefaultPrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH_C.h`
 	{
 		&
@@ -1125,6 +1158,7 @@ Property
 			}
 			!DocumentationEnabled true
 			!Target.Type "Driver"
+			!Target.CLRSupport true
 		}
 	}
 
@@ -1135,10 +1169,34 @@ Property
 			DefaultPrefixHeader undefined
 			!DocumentationEnabled true
 			!Target.Type "Driver"
+			!Target.CLRSupport true
 		}
 	}
 
-	MalterlibProfileGuidedOptimization define string? // User(Toolset)="generate": Generate or use profile guided optimization
+	MalterlibProfileGuidedOptimization: string? // User(Toolset)="generate": Generate or use profile guided optimization
+}
+
+Compile
+{
+	&
+	{
+		LanguageFamily "Native"
+	}
+
+	Verbose: bool?
+	Verbose false // User(Toolset)=true: Enables output of cc1 command line
+	{
+		&
+		{
+			PlatformToolsetFamily "clang"
+			Compile.Verbose undefined
+		}
+	}
+}
+
+Compile
+{
+	ExtraCompilerFlags: [one_of(string, [string])]?
 }
 
 // C and C++ Settings
@@ -1153,29 +1211,29 @@ Compile
 		}
 	}
 
-	Warnings define string?
+	Warnings: string?
 	Warnings "On"
 
-	Warnings_DeprecatedDeclarations define bool?
-	Warnings_AlignMismatch define bool?
-	Warnings_ConversionToSmallerInt define bool?
-	Warnings_ConversionToSmallerType define bool?
-	Warnings_IncompatibleTypes define bool?
-	Warnings_UnknownPragma define bool?
-	Warnings_UnusedVariable define bool?
-	Warnings_UnusedButSetVariable define bool?
-	Warnings_Switch define bool?
+	Warnings_DeprecatedDeclarations: bool?
+	Warnings_AlignMismatch: bool?
+	Warnings_ConversionToSmallerInt: bool?
+	Warnings_ConversionToSmallerType: bool?
+	Warnings_IncompatibleTypes: bool?
+	Warnings_UnknownPragma: bool?
+	Warnings_UnusedVariable: bool?
+	Warnings_UnusedButSetVariable: bool?
+	Warnings_Switch: bool?
 
-	Warnings_UnusedExceptionParameter define bool?
+	Warnings_UnusedExceptionParameter: bool?
 	Warnings_UnusedExceptionParameter true
 	{
 		!!GeneratorFamily "Xcode"
 	}
 
-	WarningsAsErrors define bool?
+	WarningsAsErrors: bool?
 	WarningsAsErrors true
 
-	ClangUnstableWarnings define string?
+	ClangUnstableWarnings: string?
 	ClangUnstableWarnings "On"
 	{
 		&
@@ -1189,19 +1247,19 @@ Compile
 		}
 	}
 
-	EmscriptenWarnings define string?
+	EmscriptenWarnings: string?
 	EmscriptenWarnings "On"
 	{
 		!!PlatformFamily "Emscripten"
 	}
 
-	SysRoot define string?
+	SysRoot: string?
 	SysRoot MalterlibSysRoot
 	{
 		!MalterlibSysRoot undefined
 	}
 
-	LinkerInternalLinkageOpt define string?
+	LinkerInternalLinkageOpt: string?
 	LinkerInternalLinkageOpt "inline"
 	{
 		&
@@ -1211,27 +1269,27 @@ Compile
 		}
 	}
 
-	ToolClass define string?
+	ToolClass: string?
 	ToolClass "DoxygenCompile"
 	{
 		!!Documentation "Doxygen"
 	}
 
-	FunctionSections define bool?
+	FunctionSections: bool?
 	FunctionSections true
 	{
 		!!PlatformFamily "macOS"
 		!!PlatformFamily "Linux"
 	}
 
-	DataSections define bool?
+	DataSections: bool?
 	DataSections true
 	{
 		!!PlatformFamily "macOS"
 		!!PlatformFamily "Linux"
 	}
 
-	Inline define string?
+	Inline: string?
 	Inline "Off"
 	{
 	}
@@ -1248,11 +1306,12 @@ Compile
 		!!RealConfiguration "Debug Inlined"
 	}
 
-	RuntimeLibrary define string?
+	RuntimeLibrary: string?
 	RuntimeLibrary "Static"
 	{
 		&
 		{
+			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
 			!MalterlibDynamicCRT true
 		}
@@ -1261,6 +1320,7 @@ Compile
 	{
 		&
 		{
+			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
 			!MalterlibDynamicCRT true
 			|
@@ -1274,6 +1334,7 @@ Compile
 	{
 		&
 		{
+			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
 			MalterlibDynamicCRT true
 		}
@@ -1282,6 +1343,7 @@ Compile
 	{
 		&
 		{
+			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
 			MalterlibDynamicCRT true
 			|
@@ -1292,17 +1354,17 @@ Compile
 		}
 	}
 
-	StructMemberAlignment define string?
+	StructMemberAlignment: string?
 	StructMemberAlignment "Default"
 	{
 		&
 		{
-			!Target.VisualStudioPlatform "Clang"
 			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
 		}
 	}
 
-	AppleKernelOptionsCxx define bool?
+	AppleKernelOptionsCxx: bool?
 	AppleKernelOptionsCxx true
 	{
 		&
@@ -1321,7 +1383,7 @@ Compile
 		}
 	}
 
-	AppleKernelOptions define bool?
+	AppleKernelOptions: bool?
 	AppleKernelOptions true
 	{
 		&
@@ -1331,21 +1393,26 @@ Compile
 		}
 	}
 
-	Exceptions define string?
+	Exceptions: string?
 	Exceptions "Off"
 	{
 		&
 		{
 			Compile.Exceptions undefined
+			!Target.CLRSupport true
 			Target.Type "Driver"
 		}
 	}
 	Exceptions "C++"
 	{
-		!!Compile.Exceptions undefined
+		&
+		{
+			Compile.Exceptions undefined
+			!Target.CLRSupport true
+		}
 	}
 
-	ForceDwarfExceptions define bool?
+	ForceDwarfExceptions: bool?
 	ForceDwarfExceptions true
 	{
 		&
@@ -1385,38 +1452,22 @@ Compile
 		}
 	}
 
-	SearchPath [Builtin.Inherit]
-	SystemSearchPath [Builtin.Inherit]
+	SearchPath ((Builtin.Inherit == "") ? [] : [Builtin.Inherit])
+	SystemSearchPath ((Builtin.Inherit == "") ? [] : [Builtin.Inherit])
 
-	Real_SearchPath define [string]?
-	Real_SearchPath [Compile.SearchPath..., Compile.SystemSearchPath...]
-	{
-		!!GeneratorFamily "VisualStudio"
-	}
-
-	Verbose define bool?
-	Verbose false // User(Toolset)=true: Enables output of cc1 command line
-	{
-		&
-		{
-			PlatformToolsetFamily "clang"
-			Compile.Verbose undefined
-		}
-	}
-
-	MiniOSVersion define string?
+	MiniOSVersion: string?
 	MiniOSVersion Platform->Replace('iOS','')
 	{
 		!!PlatformFamily "iOS"
 	}
 
-	SizedDeallocation define bool?
+	SizedDeallocation: bool?
 	SizedDeallocation true
 	{
 		!!PlatformToolsetFamily "clang"
 	}
 
-	BuiltinSearchPath define [string]?
+	BuiltinSearchPath: [string]?
 	BuiltinSearchPath []
 	{
 		!!PlatformToolsetFamily "clang"
@@ -1464,13 +1515,13 @@ Compile
 		!!Compile.PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h`
 	}
 
-	FrameworkSearchPath define [string]?
+	FrameworkSearchPath: [string]?
 	FrameworkSearchPath += `$(PLATFORM_DIR)/Developer/Library/Frameworks`
 	{
 		!!PlatformFamily "macOS"
 	}
 
-	MaxHeap define string?
+	MaxHeap: string?
 	MaxHeap "500"
 	{
 		&
@@ -1481,7 +1532,7 @@ Compile
 		}
 	}
 
-	CallingConvention define string?
+	CallingConvention: string?
 	CallingConvention "StdCall"
 	{
 		&
@@ -1491,7 +1542,7 @@ Compile
 		}
 	}
 
-	OmitFramePointer define bool?
+	OmitFramePointer: bool?
 	OmitFramePointer false
 	{
 		&
@@ -1501,7 +1552,6 @@ Compile
 		}
 	}
 
-	ExtraCompilerFlags define [one_of(string, [string])]?
 	ExtraCompilerFlags =+ "/bigobj"
 	{
 		&
@@ -1511,14 +1561,13 @@ Compile
 		}
 	}
 
-	ExtraCompilerFlags =+ `/Yl@(Target.Name)`
+	ExtraCompilerFlags =+ `/Yl@(Target:Target.Name)`
 	{
 		&
 		{
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
 			!Compile.PrecompilePrefixHeader false
-			this.Type "Target"
 		}
 	}
 
@@ -1541,13 +1590,13 @@ Compile
 		}
 	}
 
-	ConstexprSteps define int?
+	ConstexprSteps: int?
 	ConstexprSteps 4000000
 	{
 		!!GeneratorFamily "Xcode"
 	}
 
-	ProcessorArchitecture define string?
+	ProcessorArchitecture: string?
 	ProcessorArchitecture "armv8.2-a"
 	{
 		&
@@ -1590,13 +1639,13 @@ Compile
 		}
 	}
 
-	CodeCoverage define bool?
+	CodeCoverage: bool?
 	CodeCoverage true
 	{
 		!!MalterlibCodeCoverage true
 	}
 
-	ProfileGuidedOptimizationGenerate define bool?
+	ProfileGuidedOptimizationGenerate: bool?
 	ProfileGuidedOptimizationGenerate true
 	{
 		&
@@ -1607,7 +1656,7 @@ Compile
 		}
 	}
 
-	ProfileGuidedOptimizationUse define string?
+	ProfileGuidedOptimizationUse: string?
 	ProfileGuidedOptimizationUse MalterlibProfileGuidedOptimization
 	{
 		&
@@ -1619,7 +1668,7 @@ Compile
 		}
 	}
 
-	VerboseTemplateErrors define bool?
+	VerboseTemplateErrors: bool?
 	VerboseTemplateErrors true
 	{
 		&
@@ -1640,9 +1689,9 @@ Compile
 		}
 	}
 
-	DefaultLibraries define string?
+	DefaultLibraries: string?
 
-	DefaultHeaders define string?
+	DefaultHeaders: string?
 	DefaultHeaders "NoStdIncludeCxx"
 	{
 		&
@@ -1654,7 +1703,7 @@ Compile
 		}
 	}
 
-	AlignedAllocationProvided define bool?
+	AlignedAllocationProvided: bool?
 	AlignedAllocationProvided true
 	{
 		!!GeneratorFamily "Xcode"
@@ -1669,7 +1718,7 @@ Compile
 		}
 	}
 
-	DefaultVisibility define string?
+	DefaultVisibility: string?
 	DefaultVisibility "AllHidden"
 	{
 		&
@@ -1679,7 +1728,7 @@ Compile
 		}
 	}
 
-	NewDeleteVisibilityHidden define bool?
+	NewDeleteVisibilityHidden: bool?
 	NewDeleteVisibilityHidden true
 	{
 		&
@@ -1690,7 +1739,7 @@ Compile
 		}
 	}
 
-	AlignDouble define bool?
+	AlignDouble: bool?
 	AlignDouble true
 	{
 		&
@@ -1700,10 +1749,13 @@ Compile
 		}
 	}
 
-	LinkTimeCodeGeneration define one_of(bool, "Fast")?
+	LinkTimeCodeGeneration: one_of(bool, "Fast")
 	LinkTimeCodeGeneration MalterlibEnableLinkTimeCodeGeneration
 
 	PreprocessorDefines =+ Builtin.Inherit
+	{
+		!Builtin.Inherit ""
+	}
 
 	PreprocessorDefines += [`DDocumentation_@(Documentation)`, `DDocumentation=@(Documentation)`]
 	{
@@ -1715,7 +1767,7 @@ Compile
 		!!MalterlibDefaultToolset true
 	}
 
-	ProvidedNewAligment define string?
+	ProvidedNewAligment: string?
 	ProvidedNewAligment "1"
 	{
 		!!PlatformFamily "macOS"
@@ -1843,7 +1895,11 @@ Compile
 		, `DDefaultToolArchitecture=@(Target:Target.DefaultToolArchitecture->Replace(' ', ''))`
 	]
 	{
-		!Target:Target.DefaultToolArchitecture undefined
+		&
+		{
+			PlatformType "Windows"
+			!Target:Target.DefaultToolArchitecture undefined
+		}
 	}
 
 	PreprocessorDefines += "DMibSafeThreadLocals"
@@ -2125,7 +2181,7 @@ Compile
 		!Target:Target.LinkTimeCodeGeneration false
 	}
 
-	Symbols define string?
+	Symbols: string?
 //	Symbols "None"
 //	Symbols "Fast"
 //	Symbols "FullForDebug"
@@ -2143,7 +2199,7 @@ Compile
 		!!Compile.Symbols undefined
 	}
 
-	DwarfVersion define int?
+	DwarfVersion: int?
 
 	DwarfVersion 4
 	{
@@ -2163,7 +2219,7 @@ Compile
 		}
 	}
 
-	ClangTimeTrace define bool?
+	ClangTimeTrace: bool?
 	ClangTimeTrace true
 	{
 		&
@@ -2234,7 +2290,7 @@ Compile
 		}
 	}
 
-	SplitSymbols define bool?
+	SplitSymbols: bool?
 	SplitSymbols true
 	{
 		&
@@ -2256,7 +2312,7 @@ Compile
 		!!Configuration "Fast Compile"
 	}*/
 
-	ConcurrentCompile define bool?
+	ConcurrentCompile: bool?
 	ConcurrentCompile false
 	{
 		&
@@ -2277,7 +2333,7 @@ Compile
 		}
 	}
 
-	ForceSynchronousPDBWrites define bool?
+	ForceSynchronousPDBWrites: bool?
 	ForceSynchronousPDBWrites true
 	{
 		&
@@ -2287,17 +2343,17 @@ Compile
 		}
 	}
 
-	SeparateWCharType define bool?
+	SeparateWCharType: bool?
 	SeparateWCharType true
 	{
 		&
 		{
-			!Target.VisualStudioPlatform "Clang"
 			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
 		}
 	}
 
-	ForceConformanceInForLoopScope define bool?
+	ForceConformanceInForLoopScope: bool?
 	ForceConformanceInForLoopScope true
 	{
 		&
@@ -2307,13 +2363,13 @@ Compile
 		}
 	}
 
-	PositionIndependantCode define bool?
+	PositionIndependantCode: bool?
 	PositionIndependantCode true
 	{
 		!!PlatformFamily "Linux"
 	}
 
-	DynamicTypeInfo define bool?
+	DynamicTypeInfo: bool?
 	DynamicTypeInfo true
 	{
 		&
@@ -2324,36 +2380,48 @@ Compile
 	}
 	DynamicTypeInfo false
 	{
-		!!Compile.DynamicTypeInfo undefined
+		&
+		{
+			Compile.DynamicTypeInfo undefined
+			!Target.CLRSupport true
+		}
 	}
 
-	OpenMP define bool?
+	OpenMP: bool?
 	OpenMP false
 	{
-		!Target.VisualStudioPlatform "Clang"
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			!Target.VisualStudioPlatform "Clang"
+		}
 	}
 
-	UseFullPaths define bool?
+	UseFullPaths: bool?
 	UseFullPaths true
 	{
-		!Target.VisualStudioPlatform "Clang"
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			!Target.VisualStudioPlatform "Clang"
+		}
 	}
 
-	StringPooling define bool?
+	StringPooling: bool?
 	StringPooling false
 	{
 		&
 		{
+ 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
-			PlatformType "Windows"
 		}
 	}
 	StringPooling true
 	{
 		&
 		{
-			!Target.VisualStudioPlatform "Clang"
 			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
 			|
 			{
 				Compile.Optimize "On"
@@ -2362,17 +2430,17 @@ Compile
 		}
 	}
 
-	MinimalRebuild define bool?
+	MinimalRebuild: bool?
 	MinimalRebuild false
 	{
 		&
 		{
-			!Target.VisualStudioPlatform "Clang"
 			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
 		}
 	}
 
-	RuntimeChecks define string?
+	RuntimeChecks: string?
 	RuntimeChecks "Off"
 	RuntimeChecks "On"
 	{
@@ -2381,6 +2449,7 @@ Compile
 			RealDebugCompiler true
 			!Compile.Type "C++Managed"
 			!Target:Target.Type "Driver"
+			!Target.CLRSupport true
 		}
 	}
 	RuntimeChecks "Fast"
@@ -2390,16 +2459,17 @@ Compile
 			RealConfiguration "Release Testing"
 			!Compile.Type "C++Managed"
 			!Target:Target.Type "Driver"
+			!Target.CLRSupport true
 		}
 	}
 
-	Sanitize_Thread define bool?
+	Sanitize_Thread: bool?
 	Sanitize_Thread true
 	{
 		!!MalterlibSupportSanitizerEnable_Thread true
 	}
 
-	Sanitize_Address define bool?
+	Sanitize_Address: bool?
 	Sanitize_Address true
 	{
 		&
@@ -2426,13 +2496,13 @@ Compile
 		}
 	}
 
-	Sanitize_UndefinedBehavior define bool?
+	Sanitize_UndefinedBehavior: bool?
 	Sanitize_UndefinedBehavior true
 	{
 		!!MalterlibSupportSanitizerEnable_UndefinedBehavior true
 	}
 
-	Sanitize_NoRecover define bool?
+	Sanitize_NoRecover: bool?
 	Sanitize_NoRecover true
 	{
 		&
@@ -2442,7 +2512,7 @@ Compile
 		}
 	}
 
-	FunctionLevelLinking define bool?
+	FunctionLevelLinking: bool?
 	FunctionLevelLinking false
 	{
 		&
@@ -2455,8 +2525,8 @@ Compile
 	{
 		&
 		{
-			!Target.VisualStudioPlatform "Clang"
 			PlatformType "Windows"
+			!Target.VisualStudioPlatform "Clang"
 			|
 			{
 				RealDebugCompiler false
@@ -2465,7 +2535,7 @@ Compile
 		}
 	}
 
-	ExtendedInstructionSet define string?
+	ExtendedInstructionSet: string?
 	ExtendedInstructionSet "SSE2"
 	{
 		|
@@ -2496,7 +2566,7 @@ Compile
 		}
 	}
 
-	FloatingPointModel define string?
+	FloatingPointModel: string?
 	FloatingPointModel "Precise"
 	{
 		&
@@ -2506,16 +2576,20 @@ Compile
 		}
 	}
 
-	FloatingPointExceptions define bool?
+	FloatingPointExceptions: bool?
 	FloatingPointExceptions false
 	{
-		!Target.VisualStudioPlatform "Clang"
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			!Target.VisualStudioPlatform "Clang"
+		}
 	}
 
-	EnableLanguageExtensions define bool?
+	EnableLanguageExtensions: bool?
 	EnableLanguageExtensions true
 
-	EnableFiberSafeOptimizations define bool?
+	EnableFiberSafeOptimizations: bool?
 	EnableFiberSafeOptimizations false
 	{
 		&
@@ -2525,7 +2599,7 @@ Compile
 		}
 	}
 
-	CreateHotpatchableImage define bool?
+	CreateHotpatchableImage: bool?
 	CreateHotpatchableImage false
 	{
 		&
@@ -2535,7 +2609,7 @@ Compile
 		}
 	}
 
-	IgnoreStandardIncludePath define bool?
+	IgnoreStandardIncludePath: bool?
 	IgnoreStandardIncludePath true
 	{
 		&
@@ -2577,7 +2651,7 @@ Compile
 		}
 	}
 
-	ObjectiveCARC define bool?
+	ObjectiveCARC: bool?
 	ObjectiveCARC false
 	{
 		&
@@ -2611,13 +2685,17 @@ Compile
 	&
 	{
 		LanguageFamily "Native"
+		PlatformFamily "Windows"
 		Compile.Type "WindowsResource"
 	}
 
-	Culture define string?
+	Culture: string?
 	Culture "0x0409"
 
 	PreprocessorDefines =+ Builtin.Inherit
+	{
+		!Builtin.Inherit ""
+	}
 
 	PreprocessorDefines += "NDEBUG"
 	{
@@ -2714,13 +2792,13 @@ Compile
 
 Compile
 {
-	DoCompileAndLink define bool?
-	ObjectFileName define string?
+	DoCompileAndLink: bool?
+	ObjectFileName: string?
 }
 
 Property
 {
-	MalterlibDisableDependencyFiles define bool = false
+	MalterlibDisableDependencyFiles: bool = false
 }
 
 // MalterlibFS
@@ -2737,47 +2815,70 @@ Compile
 		!!Compile.DoCompileAndLink undefined
 	}
 
-	VerboseLogging define bool?
+	VerboseLogging: bool?
 	VerboseLogging false
 
-	MalterlibFSPathPrefix define string?
+	MalterlibFSPathPrefix: string?
 
-	ObjectFileName `@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.obj`
+	ObjectFileName `@(Target:Target.IntermediateDirectory)@(File:this.Identity->GetFileNoExt())_VirtualFS.obj`
 	{
-		!!PlatformFamily "Windows"
+		&
+		{
+			PlatformFamily "Windows"
+			this.Type "File"
+		}
 	}
-	ObjectFileName `@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.s`
+	ObjectFileName `@(Target:Target.IntermediateDirectory)@(File:this.Identity->GetFileNoExt())_VirtualFS.s`
 	{
-		!PlatformFamily "Windows"
+		&
+		{
+			!PlatformFamily "Windows"
+			this.Type "File"
+		}
 	}
-	ASMFileName define string?
+	ObjectFileName "dummy"
+	{
+		!!Compile.ObjectFileName undefined
+	}
+	ASMFileName: string?
 	ASMFileName Compile.ObjectFileName
 	{
 		!PlatformFamily "Windows"
 	}
 
-	Platform define string?
+	Platform: string?
 	Platform PlatformFamily
 	{
 		!!PlatformFamily "Linux"
 		!!PlatformFamily "macOS"
 	}
 
-	CppFileName define string?
-	CppFileName `@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFSCPP.cpp`
+	CppFileName: string?
+	CppFileName `@(Target:Target.IntermediateDirectory)@(File:this.Identity->GetFileNoExt())_VirtualFSCPP.cpp`
+	{
+		!!this.Type "File"
+	}
+	CppFileName "dummy"
+	{
+		!!Compile.CppFileName undefined
+	}
+
+	FullEval true
+
 	//DependencyFileName `@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.d`
 
-	MalterlibDependencyFileName define string?
-	MalterlibDependencyFileName `@(Target:Target.IntermediateDirectory)MalterlibDependencies/@(Builtin.SourceFileName)_VirtualFS.MalterlibDependency`
+	MalterlibDependencyFileName: string?
+	MalterlibDependencyFileName `@(Target:Target.IntermediateDirectory)MalterlibDependencies/@(File:this.Identity->GetFileNoExt())_VirtualFS.MalterlibDependency`
 	{
 		&
 		{
+			this.Type "File"
 			GeneratorFamily "Xcode"
 			!MalterlibDisableDependencyFiles true
 		}
 	}
 
-	SymbolName define string?
+	SymbolName: string?
 	SymbolName "_gc_VFS_Bytes"
 	{
 		&
@@ -2787,7 +2888,7 @@ Compile
 		}
 	}
 
-	OutputAsObjectFile define one_of(bool, string)?
+	OutputAsObjectFile: one_of(bool, string)?
 	OutputAsObjectFile true
 	{
 		&
@@ -2801,7 +2902,7 @@ Compile
 		!!Compile.OutputAsObjectFile undefined
 	}
 
-	OutputAsAssembly define bool?
+	OutputAsAssembly: bool?
 	OutputAsAssembly true
 	{
 		&
@@ -2865,7 +2966,7 @@ Compile
 		}
 	}
 
-	GenerateDebugInformation define bool?
+	GenerateDebugInformation: bool?
 	GenerateDebugInformation true
 	{
 		!!Compile.GenerateDebugInformation undefined
@@ -2885,7 +2986,7 @@ Compile
 		PlatformType "Windows"
 	}
 
-	PreserveIdentifierCase define bool?
+	PreserveIdentifierCase: bool?
 	PreserveIdentifierCase true
 	{
 	}
@@ -2906,7 +3007,7 @@ Property
 	f_ExpandCustomCommandOutputs function (string _Output) string = ""
 	f_ExpandCustomCommandOutputs =+ `if exist @(_Output->EscapeHost()) MTool TouchOrCreate @(_Output->EscapeHost())\r\n`
 
-	MalterlibIntermediateDirectoryBase define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/`
+	MalterlibIntermediateDirectoryBase: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/`
 
 	f_ConvertCustomCommandInputs function (string _Input) [string] = []
 	f_ConvertCustomCommandInputs =+ _Input->FindFilesRecursiveIn("*")
@@ -2951,16 +3052,16 @@ Compile
 		}
 	}
 
-	RealCustom_Inputs define [string] = []
+	RealCustom_Inputs: [string] = []
 
-	RealCustom_Inputs (Compile.Custom_Inputs || [])->ForEach("f_ConvertCustomCommandInputs")
+	RealCustom_Inputs (Compile.Custom_Inputs || [])->ForEach(&f_ConvertCustomCommandInputs)
 
-	CustomCombined_CommandLine define string?
+	CustomCombined_CommandLine: string?
 	CustomCombined_CommandLine 	`@(Compile.Custom_WorkingDirectory->GetDrive())\r\n`\
 								`cd @(Compile.Custom_WorkingDirectory->Escape())\r\n`\
 								`call @(MalterlibExportEnvironmentScript->EscapeHost())\r\n`\
 								`@((Compile.Custom_CommandLine || "")->Replace('">"', ">")->Replace("&& ", "&& ^\r\n"))\r\n`\
-								`@((Compile.Custom_Outputs || [])->ForEach("f_ExpandCustomCommandOutputs"))\r\n`
+								`@((Compile.Custom_Outputs || [])->ForEach(&f_ExpandCustomCommandOutputs))\r\n`
 	{
 		!!GeneratorFamily "VisualStudio"
 	}

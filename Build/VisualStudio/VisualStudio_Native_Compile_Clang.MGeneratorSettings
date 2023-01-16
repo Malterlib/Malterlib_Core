@@ -1,236 +1,150 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "Native_ClCompile_Clang"
+GeneratorSetting
 {
-	%GeneratorSetting "Compile"
+	&
 	{
-		%GeneratorSetting "DynamicTypeInfo"
-		{
-			Property
-			{
-				Name "NoRTTI"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "false"
-					\false "true"
-				}
-			}
-		}
-		%GeneratorSetting "EnableLanguageExtensions"
-		{
-			Property
-			{
-				Name "EnableMicrosoftExtensions"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "Exceptions"
-		{
-			Property
-			{
-				Name "ExceptionHandling"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Full "true"
-					C\+\+ "true"
-					ExternCandC\+\+ "true"
-					Off "false"
-				}
-			}
-		}
-		%GeneratorSetting "ExtendedInstructionSet"
-		{
-			Property
-			{
-				Name "InstructionSet"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Off "NotSet"
-					MMX "MMX"
-					SSE1 "SSE1"
-					SSE2 "SSE2"
-					SSE3 "SSE3"
-					SSSE3 "SSSE3"
-					SSE4 "SSE4"
-					SSE4\.1 "SSE4.1"
-					SSE4\.2 "SSE4.2"
-					AVX "AVX"
-					AVX2 "AVX2"
-				}
-			}
-		}
-		%GeneratorSetting "ExtraCompilerFlags"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(ClCompile.AdditionalOptions)"
-				Separator " "
-			}
-		}		
-		%GeneratorSetting "Inline"
-		{
-			Property
-			{
-				Name "Inlining"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Off "Off"
-					Explicit "On"
-					Automatic "On"
-				}
-			}
-		}
-		%GeneratorSetting "PrecompilePrefixHeader"
-		{
-			Property
-			{
-				Name "PrecompiledHeader"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "Use"
-					\false "NotUsing"
-					XInternalCreate "Create" // Only used internally
-				}
-			}
-		}
-		%GeneratorSetting "PrefixHeader"
-		{
-			Property
-			{
-				Name "ForcedIncludeFiles"
-				ConvertPath "true"
-			}
-			%GeneratorSetting "Properties"
-			{
-				%GeneratorSetting ""
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting "PrecompiledHeaderFile"
-					}
-				}
-			}
-		}
-		%GeneratorSetting "PreprocessorDefines"
-		{
-			Property
-			{
-				Name "PreprocessorDefinitions"
-				EscapeSeparated true
-			}
-		}		
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Name "AdditionalIncludeDirectories"
-			}
-		}
-		%GeneratorSetting "RuntimeChecks"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Symbols"
-		{
-			Property
-			{
-				Name "GenerateDebugInformation"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					FullForDebug "FullDebugInfo"
-					Full "FullDebugInfo"
-					Fast "LimitedDebugInfo"
-					None "NoDebugInfo"
-					\ ""
-				}
-			}
-		}		
-		%GeneratorSetting "Warnings"
-		{
-			Property
-			{
-				Name "WarningLevel"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Off "DisableAllWarnings"
-					Minimal "DisableAllWarnings"
-					On "NormalWarnings"
-					Pedantic "AllWarnings"
-				}
-			}
-		}
-		%GeneratorSetting "WarningsAsErrors"
-		{
-			Property
-			{
-				Name "WarningsAsErrors"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "XInternalPrecompiledHeaderOutputFile"
-		{
-			Property
-			{
-				Name "PrecompiledHeaderOutputFile"
-			}
-		}
-		%GeneratorSetting "Verbose"
-		{
-			Property
-			{
-				Name "VerboseOutput"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "VerboseOutputMode"
-					\false "NoVerboseOutput"
-					\ "NoVerboseOutput"
-				}
-			}
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "ClCompile"
+		Compiler "Clang"
+	}
+
+	Compile_DynamicTypeInfo =+ {
+		VSSettings: {
+			NoRTTI: (!Compile.DynamicTypeInfo)->f_BoolToString()
 		}
 	}
 
+	Compile_EnableLanguageExtensions =+ {
+		VSSettings: {
+			EnableMicrosoftExtensions: Compile.EnableLanguageExtensions->f_BoolToString()
+		}
+	}
+
+	Compile_Exceptions =+ {
+		VSSettings: {
+			ExceptionHandling: Compile.Exceptions->SwitchWithError("Unsupported option: "
+				, "Full", "true"
+				, "C++", "true"
+				, "ExternCandC++", "true"
+				, "Off", "false"
+			)
+		}
+	}
+
+	Compile_ExtendedInstructionSet =+ {
+		VSSettings: {
+			InstructionSet: Compile.ExtendedInstructionSet->SwitchWithError("Unsupported option: "
+				, "Off", "NotSet"
+				, "MMX", "MMX"
+				, "SSE1", "SSE1"
+				, "SSE2", "SSE2"
+				, "SSE3", "SSE3"
+				, "SSSE3", "SSSE3"
+				, "SSE4", "SSE4"
+				, "SSE4.1", "SSE4.1"
+				, "SSE4.2", "SSE4.2"
+				, "AVX", "AVX"
+				, "AVX2", "AVX2"
+			)
+		}
+	}
+
+	Compile_ExtraCompilerFlags =+ {
+		VSSettings: {
+			AdditionalOptions: `@(Compile.ExtraCompilerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
+		}
+	}
+
+	Compile_Inline =+ {
+		VSSettings: {
+			Inlining: Compile.Inline->SwitchWithError("Unsupported option: "
+				, "Off", "Off"
+				, "Explicit", "On"
+				, "Automatic", "On"
+			)
+		}
+	}
+
+	Compile_PrecompilePrefixHeader =+ {
+		VSSettings: {
+			PrecompiledHeader: Compile.PrecompilePrefixHeader->SwitchWithError("Unsupported option: "
+				, true, "Use"
+				, false, "NotUsing"
+				, "XInternalCreate", "Create"
+			)
+		}
+	}
+
+	Compile_PrefixHeader =+ {
+		VSSettings: {
+			ForcedIncludeFiles: Compile.PrefixHeader->WindowsPath()->EscapeMSBuild()
+			, PrecompiledHeaderFile: Compile.PrefixHeader->WindowsPath()->EscapeMSBuild()
+		}
+	}
+
+	f_Helper_EscapeEach function(string _Path) [string] = []
+	f_Helper_EscapeEach =+ _Path->Escape()
+
+	Compile_PreprocessorDefines =+ {
+		VSSettings: {
+			PreprocessorDefinitions: Compile.PreprocessorDefines->ForEach(&GeneratorSetting.f_Helper_EscapeEach)->f_JoinMSBuild()
+		}
+	}
+
+	Compile_SearchPath =+ {
+		VSSettings: {
+			AdditionalIncludeDirectories: [Compile.SearchPath..., Compile.SystemSearchPath...]->RemoveDuplicates(Builtin.Inherit)->ForEach(&f_Helper_ShortenAllPaths)->f_JoinMSBuild()
+		}
+	}
+	Compile_SystemSearchPath {}
+
+	Compile_RuntimeChecks {}
+
+	Compile_Symbols =+ {
+		VSSettings: {
+			GenerateDebugInformation: Compile.Symbols->SwitchWithError("Unsupported option: "
+				, "FullForDebug", "FullDebugInfo"
+				, "Full", "FullDebugInfo"
+				, "Fast", "LimitedDebugInfo"
+				, "None", "NoDebugInfo"
+				, "", ""
+			)
+		}
+	}
+
+	Compile_Warnings =+ {
+		VSSettings: {
+			WarningLevel: Compile.Warnings->SwitchWithError("Unsupported option: "
+				, "Off", "DisableAllWarnings"
+				, "Minimal", "DisableAllWarnings"
+				, "On", "NormalWarnings"
+				, "Pedantic", "AllWarnings"
+			)
+		}
+	}
+
+	Compile_WarningsAsErrors =+ {
+		VSSettings: {
+			WarningsAsErrors: Compile.WarningsAsErrors->f_BoolToString()
+		}
+	}
+
+	Compile_XInternalPrecompiledHeaderOutputFile =+ {
+		VSSettings: {
+			PrecompiledHeaderOutputFile: Compile.XInternalPrecompiledHeaderOutputFile->EscapeMSBuild()
+		}
+	}
+
+	Compile_Verbose =+ {
+		VSSettings: {
+			VerboseOutput: Compile.Verbose->SwitchWithError("Unsupported option: "
+				, true, "VerboseOutputMode"
+				, false, "NoVerboseOutput"
+				, "", "NoVerboseOutput"
+			)
+		}
+	}
 }
 

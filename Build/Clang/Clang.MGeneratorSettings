@@ -1,0 +1,799 @@
+// Copyright © 2022 Favro Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+GeneratorSetting
+{
+	!!Compiler "Clang"
+
+	Compile_EnableLanguageExtensions {}
+
+	Compile_DoCompileAndLink {
+	}
+
+	Compile_AlignedAllocationProvided =+ {
+		Flags: Compile.AlignedAllocationProvided ? "-faligned-allocation" : "-fno-aligned-allocation"
+		, Type: "unique"
+	}
+	{
+		//#Debug "TraceEval"
+	}
+
+	Compile_AlignDouble =+ {
+		Flags: Compile.AlignDouble ? "-malign-double" : "-mno-align-double"
+		, Type: "unique"
+	}
+
+	Compile_AsyncUnwindTables =+ {
+		Flags: Compile.AsyncUnwindTables ? "-fasynchronous-unwind-tables" : "-fno-asynchronous-unwind-tables"
+		, Type: "unique"
+	}
+
+	Compile_ClangUnstableWarnings =+ {
+		Flags: Compile.ClangUnstableWarnings->SwitchWithError(
+			"Unsupported option: "
+			, "On", ["-Wno-header-guard", "-Wno-inline-new-delete"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_ConstexprSteps =+ {
+		Flags: `-fconstexpr-steps=@(Compile.ConstexprSteps->ToString())`
+		, Type: "unique"
+	}
+
+	Compile_Coroutines =+ {
+		Flags: Compile.Coroutines->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fcoroutines-ts"
+		)
+		, Type: "unique"
+	}
+
+	Compile_DataSections =+ {
+		Flags: Compile.DataSections->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fdata-sections"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_DefaultHeaders =+ {
+		Flags: Compile.DefaultHeaders->SwitchWithError(
+			"Unsupported option: "
+			, "None", "-nostdinc"
+			, "NoStdLib", "-nostdlibinc"
+			, "NoCompiler", "-nobuiltininc"
+			, "NoStdIncludeCxx", "-nostdinc++"
+			, "All", []
+		)
+		, Type: "unique"
+	}
+
+	Compile_DefaultVisibility =+ {
+		Flags: Compile.DefaultVisibility->SwitchWithError(
+			"Unsupported option: "
+			, "Default", "-fvisibility=default"
+			, "Hidden", "-fvisibility=hidden"
+			, "InlineHidden", "-fvisibility-inlines-hidden"
+			, "AllHidden", ["-fvisibility=hidden", "-fvisibility-inlines-hidden"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_DynamicTypeInfo =+ {
+		Flags: Compile.DynamicTypeInfo->SwitchWithError(
+			"Unsupported option: "
+			, true, []
+			, false, "-fno-rtti"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Exceptions =+ {
+		Flags: Compile.Exceptions->SwitchWithError(
+			"Unsupported option: "
+			, "Full", []
+			, "C++", []
+			, "ExternCandC++", []
+			, "Off", "-fno-exceptions"
+		)
+		, Type: "unique"
+	}
+
+	Compile_FrameworkSearchPath =+ {
+		Flags: Compile.FrameworkSearchPath->f_PrefixFlags("-F")
+		, Type: "unique"
+	}
+
+	Compile_ProfileGuidedOptimizationGenerate =+ {
+		Flags: Compile.ProfileGuidedOptimizationGenerate->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fprofile-instr-generate"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_ProfileGuidedOptimizationUse =+ {
+		Flags: [`-fprofile-use==@(Compile.ProfileGuidedOptimizationUse)`, "Wno-profile-instr-unprofiled", "-Wno-profile-instr-out-of-date", "-Wno-backend-plugin"]
+		, Type: "unique"
+	}
+
+	Compile_FunctionSections =+ {
+		Flags: Compile.FunctionSections->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, "-ffunction-sections"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Inline =+ {
+		Flags: Compile.Inline->SwitchWithError(
+			"Unsupported option: "
+			, "Off", "-fno-inline"
+			, "Explicit", "-fno-inline-functions"
+			, "Automatic", []
+		)
+		, Type: "unique"
+	}
+
+	Compile_LinkTimeCodeGeneration =+ {
+		Flags: Compile.LinkTimeCodeGeneration->SwitchWithError(
+			"Unsupported option: "
+			, true, "-flto"
+			, "Fast", "-flto=thin"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_MinMacOSVersion =+ {
+		Flags: `-mmacosx-version-min=@(Compile.MinMacOSVersion->ToString())`
+		, Type: "unique"
+	}
+
+	Compile_NewDeleteVisibilityHidden =+ {
+		Flags: Compile.NewDeleteVisibilityHidden->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, "-fvisibility-global-new-delete-hidden"
+		)
+		, Type: "unique"
+	}
+
+	Compile_ObjectiveCARC =+ {
+		Flags: Compile.ObjectiveCARC->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fobjc-arc"
+			, false, "-fno-objc-arc"
+		)
+		, Type: "unique"
+	}
+
+	Compile_ProvidedNewAligment =+ {
+		Flags: `-fnew-alignment=@(Compile.ProvidedNewAligment->ToString())`
+		, Type: "unique"
+	}
+
+	Compile_RuntimeChecks =+ {
+		Flags: Compile.RuntimeChecks->SwitchWithError(
+			"Unsupported option: "
+			, "Off", []
+			, "Fast", []
+			, "On", []
+			, "Full", []
+		)
+		, Type: "unique"
+	}
+
+	Compile_SizedDeallocation =+ {
+		Flags: Compile.SizedDeallocation->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fsized-deallocation"
+			, false, "-fnosized-deallocation"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Symbols =+ {
+		Flags: Compile.Symbols->SwitchWithError(
+			"Unsupported option: "
+			, "FullForDebug", ["-gfull", "-fstandalone-debug"]
+			, "Full", "-g"
+			, "Fast", "-gline-tables-only"
+			, "None", "-g0"
+			, "Default", []
+		)
+		, Type: "unique"
+	}
+
+	Compile_TargetTriple =+ {
+		Flags: [["-target", Compile.TargetTriple], ["-target", Compile.TargetTriple]]
+		, Type: "unique"
+	}
+
+	Compile_ToolClass =+ {
+		Flags: [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", Compile.ToolClass]]
+		, Type: "unique"
+	}
+
+	Compile_Verbose =+ {
+		Flags: Compile.Verbose->SwitchWithError(
+			"Unsupported option: "
+			, true, "-v"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_LinuxXcodeCompatibility =+ {
+		Flags: Compile.LinuxXcodeCompatibility->SwitchWithError(
+			"Unsupported option: "
+			, true, "-claim_xcode"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_Sanitize =+ {
+		Flags: Compile.Sanitize->SwitchWithError(
+			"Unsupported option: "
+			, true, ["-fsanitize=address", "-fno-omit-frame-pointer"]
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_OmitFramePointer =+ {
+		Flags: Compile.OmitFramePointer->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fomit-frame-pointer"
+			, false, "-fno-omit-frame-pointer"
+		)
+		, Type: "unique"
+	}
+
+	Compile_SplitSymbols =+ {
+		Flags: Compile.SplitSymbols->SwitchWithError(
+			"Unsupported option: "
+			, true, ["-gsplit-dwarf", "-ggnu-pubnames"]
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_CxxLanguage =+ {
+		Flags: Compile.CxxLanguage->SwitchWithError(
+			"Unsupported option: "
+			, "GNU++11", "-std=gnu++11"
+			, "GNU++14", "-std=gnu++14"
+			, "GNU++17", "-std=gnu++17"
+			, "GNU++20", "-std=gnu++20"
+			, "GNU++23", "-std=gnu++2b"
+			, "C++11", "-std=c++11"
+			, "C++14", "-std=c++14"
+			, "C++17", "-std=c++17"
+			, "C++20", "-std=c++20"
+			, "C++23", "-std=c++2b"
+			, "", []
+		)
+		, Type: "unique"
+	}
+
+	Compile_CLanguage =+ {
+		Flags: Compile.CLanguage->SwitchWithError(
+			"Unsupported option: "
+			, "C89", "-std=c89"
+			, "C99", "-std=c99"
+			, "C11", "-std=c11"
+			, "C17", "-std=c17"
+			, "C2x", "-std=c2x"
+			, "GNU89", "-std=gnu89"
+			, "GNU99", "-std=gnu99"
+			, "GNU11", "-std=gnu11"
+			, "GNU17", "-std=gnu17"
+			, "GNU2x", "-std=gnu2x"
+			, "", []
+		)
+		, Type: "unique"
+	}
+
+	Compile_VerboseTemplateErrors =+ {
+		Flags: Compile.VerboseTemplateErrors->SwitchWithError(
+			"Unsupported option: "
+			, true, ["-fdiagnostics-show-template-tree", "-fno-elide-type", "-ftemplate-backtrace-limit=0"]
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_LimitedDebugInfo =+ {
+		Flags: Compile.LimitedDebugInfo->SwitchWithError(
+			"Unsupported option: "
+			, true, "-flimit-debug-info"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_PreprocessorDefines =+ {
+		Flags: Compile.PreprocessorDefines->f_PrefixFlags("-D")
+		, Type: "unique"
+	}
+
+	Compile_AdditionalOptions =+ {
+		Flags: Compile.AdditionalOptions
+		, Type: "multiple"
+	}
+
+	Compile_MiniOSVersion =+ {
+		Flags: `-miphoneos-version-min=@(Compile.MiniOSVersion->ToString())`
+		, Type: "unique"
+	}
+
+	Compile_SysRoot =+ {
+		Flags: ["--sysroot", Compile.SysRoot]
+		, Type: "unique"
+	}
+
+	Compile_DocumentationModule =+ {
+		Flags: [["--documentation-module", Compile.DocumentationModule]]
+		, Type: "unique"
+	}
+
+	Compile_SearchPath =+ {
+		Flags: Compile.SearchPath->f_PrefixFlags("-I")
+		, Type: "unique"
+	}
+
+	Compile_ToolPrefix =+ {
+		Flags: Compile.ToolPrefix->f_PrefixFlags("-B")
+		, Type: "unique"
+	}
+
+	Compile_SystemSearchPath =+ {
+		Flags: Compile.SystemSearchPath->f_PrefixFlags("-isystem")
+		, Type: "unique"
+	}
+
+	Compile_ClangTimeTrace =+ {
+		Flags: Compile.ClangTimeTrace->SwitchWithError(
+			"Unsupported option: "
+			, true, "-ftime-trace"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings =+ {
+		Flags: Compile.Warnings->SwitchWithError(
+			"Unsupported option: "
+			, "Off", "-w"
+			, "Minimal", [
+				"-Wall"
+				, "-Wno-switch"
+				, "-Wno-unused-private-field"
+				, "-Wno-missing-braces"
+				, "-Wno-reorder"
+				, "-Wno-unneeded-internal-declaration"
+				, "-Wno-pointer-sign"
+				, "-Wno-tautological-compare"
+				, "-Wno-incompatible-pointer-types"
+				, "-Wno-unused-local-typedef"
+				, "-Wno-invalid-offsetof"
+			]
+			, "On", [
+				"-Wall"
+				, "-Wno-unused-private-field"
+				, "-Wno-missing-braces"
+				, "-Wno-reorder"
+				, "-Wno-unneeded-internal-declaration"
+				, "-Wno-invalid-offsetof"
+			]
+			, "Pedantic", [
+				"-Weverything"
+				, "-Wno-invalid-offsetof"
+			]
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_DeprecatedDeclarations =+ {
+		Flags: Compile.Warnings_DeprecatedDeclarations->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-deprecated-declarations"
+			, true, "-Wdeprecated-declarations"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_NoPessimizingMove =+ {
+		Flags: Compile.Warnings_NoPessimizingMove->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, "-Wno-pessimizing-move"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_UnusedExceptionParameter =+ {
+		Flags: Compile.Warnings_UnusedExceptionParameter->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-unused-exception-parameter"
+			, true, "-Wunused-exception-parameter"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_Cxx11Narrowing =+ {
+		Flags: Compile.Warnings_Cxx11Narrowing->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-c++11-narrowing"
+			, true, "-Wc++11-narrowing"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_TautolagicalPointerCompare =+ {
+		Flags: Compile.Warnings_TautolagicalPointerCompare->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-tautological-pointer-compare"
+			, true, "-Wtautological-pointer-compare"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_UnusedVariable =+ {
+		Flags: Compile.Warnings_UnusedVariable->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-unused-variable"
+			, true, "-Wunused-variable"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_UnusedFunction =+ {
+		Flags: Compile.Warnings_UnusedFunction->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-unused-function"
+			, true, "-Wunused-function"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_UnusedValue =+ {
+		Flags: Compile.Warnings_UnusedValue->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-unused-value"
+			, true, "-Wunused-value"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_VarArgs =+ {
+		Flags: Compile.Warnings_VarArgs->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-varargs"
+			, true, "-Wvarargs"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_UnusedLabel =+ {
+		Flags: Compile.Warnings_UnusedLabel->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-unused-label"
+			, true, "-Wunused-label"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_OverloadedVirtual =+ {
+		Flags: Compile.Warnings_OverloadedVirtual->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-overloaded-virtual"
+			, true, "-Woverloaded-virtual"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_CharSubscripts =+ {
+		Flags: Compile.Warnings_CharSubscripts->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-char-subscripts"
+			, true, "-Wchar-subscripts"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_Parentheses =+ {
+		Flags: Compile.Warnings_Parentheses->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-parentheses"
+			, true, "-Wparentheses"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_UnusedButSetVariable =+ {
+		Flags: Compile.Warnings_UnusedButSetVariable->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-unused-but-set-variable"
+			, true, "-Wunused-but-set-variable"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_AlignMismatch =+ {
+		Flags: Compile.Warnings_AlignMismatch->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-align-mismatch"
+			, true, "-Walign-mismatch"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_ConversionToSmallerInt {}
+	Compile_Warnings_ConversionToSmallerType {}
+	Compile_Warnings_IncompatibleTypes {}
+
+	Compile_Warnings_Switch =+ {
+		Flags: Compile.Warnings_Switch->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-switch"
+			, true, "-Wswitch"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_UnknownPragma =+ {
+		Flags: Compile.Warnings_UnknownPragma->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-unknown-pragmas"
+			, true, "-Wunknown-pragmas"
+		)
+		, Type: "unique"
+	}
+
+	Compile_CodeCoverage =+ {
+		Flags: Compile.CodeCoverage->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, ["-fprofile-instr-generate", "-fcoverage-mapping"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_NoUnused =+ {
+		Flags: Compile.Warnings_NoUnused->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, "-Wno-unused"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_NoUnknownPragmas =+ {
+		Flags: Compile.Warnings_NoUnknownPragmas->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, "-Wno-unknown-pragmas"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_NoVirtualOverride =+ {
+		Flags: Compile.Warnings_NoVirtualOverride->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, "-Wno-inconsistent-missing-override"
+		)
+		, Type: "unique"
+	}
+
+	Compile_EmscriptenWarnings =+ {
+		Flags: Compile.EmscriptenWarnings->SwitchWithError(
+			"Unsupported option: "
+			, "On", ["-Wno-warn-absolute-paths", "-v"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_StackGuard =+ {
+		Flags: Compile.StackGuard->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fstack-protector"
+			, false, "-fno-stack-protector"
+		)
+		, Type: "unique"
+	}
+
+	Compile_WarningsAsErrors =+ {
+		Flags: Compile.WarningsAsErrors->SwitchWithError(
+			"Unsupported option: "
+			, true, "-Werror"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_PositionIndependantCode =+ {
+		Flags: Compile.PositionIndependantCode->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fPIC"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_OpenMP =+ {
+		Flags: Compile.OpenMP->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fopenmp"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_UseFullPaths {}
+	Compile_FloatingPointExceptions {}
+
+	Compile_ExtendedInstructionSet =+ {
+		Flags: Compile.ExtendedInstructionSet->SwitchWithError(
+			"Unsupported option: "
+			, "Off", ["-mno-sse"]
+			, "SSE1", ["-msse"]
+			, "SSE2", ["-msse", "-msse2"]
+			, "SSE3", ["-msse", "-msse2", "-msse3"]
+			, "SSSE3", ["-msse", "-msse2", "-msse3", "-mssse3"]
+			, "SSE41", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1"]
+			, "SSE42", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2"]
+			, "AVX", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-mavx"]
+			, "AVX2", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-mavx", "-mavx2"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_DefaultLibraries =+ {
+		Flags: Compile.DefaultLibraries->SwitchWithError(
+			"Unsupported option: "
+			, "NoStdLibCxx", "-nostdlib++"
+			, "NoStdLib", "-nostdlib"
+			, "All", []
+		)
+		, Type: "unique"
+	}
+
+	Compile_RuntimeLibrary {}
+
+	Compile_AppleKernelOptions =+ {
+		Flags: Compile.AppleKernelOptions->SwitchWithError(
+			"Unsupported option: "
+			, true, ["-fasm-blocks", "-fstrict-aliasing", "-Wdeprecated-declarations", "-Winvalid-offsetof", "-Wno-deprecated", "-Wno-overloaded-virtual"]
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_AppleKernelOptionsCxx =+ {
+		Flags: Compile.AppleKernelOptionsCxx->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fapple-kext"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_ForceDwarfExceptions =+ {
+		Flags: Compile.ForceDwarfExceptions->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fdwarf-exceptions"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_ProcessorArchitecture =+ {
+		Flags: `-march=@(Compile.ProcessorArchitecture)`
+		, Type: "unique"
+	}
+
+	Compile_Optimize =+ {
+		Flags: Compile.Optimize->SwitchWithError(
+			"Unsupported option: "
+			, "Off", "-O0"
+			, "Fast", "-O3"
+			, "On", ["-O3", "-fno-fast-math"]
+			, "Full", ["-O3", "-fno-fast-math"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_Sanitize_Thread =+ {
+		Flags: Compile.Sanitize_Thread->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, "-fsanitize=thread"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Sanitize_Address =+ {
+		Flags: Compile.Sanitize_Address->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, ["-fsanitize=address", "-fsanitize-address-use-after-scope"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_Sanitize_UndefinedBehavior =+ {
+		Flags: Compile.Sanitize_UndefinedBehavior->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, ["-fsanitize=undefined", "-fno-sanitize=vptr"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_Sanitize_NoRecover =+ {
+		Flags: Compile.Sanitize_NoRecover->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, "-fno-sanitize-recover=all"
+		)
+		, Type: "unique"
+	}
+
+	Compile_DwarfVersion =+ {
+		Flags: `-gdwarf-@(Compile.DwarfVersion->ToString())`
+		, Type: "unique"
+	}
+
+	Compile_ShortWChar =+ {
+		Flags: Compile.ShortWChar->SwitchWithError(
+			"Unsupported option: "
+			, true, "-fshort-wchar"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_DisableSecurityWarnings =+ {
+		Flags: Compile.DisableSecurityWarnings->SwitchWithError(
+			"Unsupported option: "
+			, true, "-Wno-format-security"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_DisableDeprecationWarnings =+ {
+		Flags: Compile.DisableDeprecationWarnings->SwitchWithError(
+			"Unsupported option: "
+			, true, "-Wno-deprecated"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_UnusedCommandLineArgument =+ {
+		Flags: Compile.Warnings_UnusedCommandLineArgument->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-unused-command-line-argument"
+			, true, "-Wunused-command-line-argument"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_DeprecatedEnumConversion =+ {
+		Flags: Compile.Warnings_DeprecatedEnumConversion->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-deprecated-anon-enum-enum-conversion", "-Wno-deprecated-enum-enum-conversion", "-Wno-deprecated-enum-float-conversion"]
+			, true, ["-Wdeprecated-anon-enum-enum-conversion", "-Wdeprecated-enum-enum-conversion", "-Wdeprecated-enum-float-conversion"]
+		)
+		, Type: "unique"
+	}
+}

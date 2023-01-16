@@ -12,7 +12,7 @@ Workspace
 		}
 	}
 
-	XcodeNewBuildSystem define bool?
+	XcodeNewBuildSystem: bool?
 	XcodeNewBuildSystem true
 	{
 		&
@@ -21,4 +21,7 @@ Workspace
 			MalterlibXcodeNewBuildSystem true
 		}
 	}
+
+	IntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate`
+	OutputDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output`
 }

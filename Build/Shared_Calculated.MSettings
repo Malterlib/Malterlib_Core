@@ -3,14 +3,14 @@
 
 Property
 {
-/*	true define bool = true
-	false define bool = false
-	null define any = null
-	undefined define any = undefined*/
+/*	true: bool = true
+	false: bool = false
+	null: any = null
+	undefined: any = undefined*/
 }
 Property
 {
-	LanguageFamily define string
+	LanguageFamily: string = "Native"
 	LanguageFamily "Native"
 	{
 		&
@@ -35,13 +35,13 @@ Property
 
 Property
 {
-	PlatformType define string = "Unix"
+	PlatformType: string = "Unix"
 	PlatformType "Windows"
 	{
 		!!Platform "Windows"
 	}
 
-	PlatformVersion define int
+	PlatformVersion: int
 	// Version
 	PlatformVersion 510 // Windows XP
 	{
@@ -62,7 +62,7 @@ Property
 	}
 
 	// Family
-	PlatformFamily define one_of(string, undefined)
+	PlatformFamily: one_of(string, undefined)
 
 	PlatformFamily "Windows"
 	{
@@ -85,18 +85,18 @@ Property
 		!!Platform "Emscripten"
 	}
 
-	PlatformIsDarwin define bool = false
+	PlatformIsDarwin: bool = false
 	PlatformIsDarwin true
 	{
 		!!PlatformFamily "macOS"
 		!!PlatformFamily "iOS"
 	}
 
-	RealConfiguration define string = Configuration
+	RealConfiguration: string = Configuration
 
 	// Documentation
 
-	DocumentationEnabled define bool = false
+	DocumentationEnabled: bool = false
 	DocumentationEnabled true
 	{
 		!!Documentation "Doxygen"
@@ -105,7 +105,7 @@ Property
 
 Property
 {
-	ArchitectureBitness define int
+	ArchitectureBitness: int
 	ArchitectureBitness 32
 	{
 		!!Architecture "x86"
@@ -121,7 +121,7 @@ Property
 		!!Architecture "arm64e"
 	}
 
-	ArchitectureEndian define string
+	ArchitectureEndian: string
 	ArchitectureEndian "Little"
 	{
 		!!Architecture "x86"
@@ -140,7 +140,7 @@ Property
 
 Property
 {
-	ScriptExtension define string
+	ScriptExtension: string
 	ScriptExtension ".bat"
 	{
 		!!PlatformType "Windows"
@@ -184,7 +184,7 @@ Property
 		}
 	}
 
-	ScriptPreamble define string = ""
+	ScriptPreamble: string = ""
 	ScriptPreamble "#!/bin/bash\n\n"
 	{
 		|
@@ -194,7 +194,7 @@ Property
 		}
 	}
 
-	ScriptUnixLineEnds define bool = false
+	ScriptUnixLineEnds: bool = false
 	ScriptUnixLineEnds true
 	{
 		|
@@ -204,23 +204,23 @@ Property
 		}
 	}
 
-	NativeLineEnding define string = "\r\n"
+	NativeLineEnding: string = "\r\n"
 	NativeLineEnding "\n"
 	{
 		!!ScriptUnixLineEnds true
 	}
 
-	BashScriptPrefix define string = ""
+	BashScriptPrefix: string = ""
 	BashScriptPrefix "\"C:/Program Files/Git/bin/bash.exe\" "
 	{
 		!!PlatformFamily "Windows"
 	}
 
-	ScriptWindowsBash define bool = false
+	ScriptWindowsBash: bool = false
 }
 Property
 {
-	DebugCompiler define bool
+	DebugCompiler: bool
 	DebugCompiler true
 	{
 		!!Configuration "Debug"
@@ -238,7 +238,7 @@ Property
 		!!Configuration "Release Debug"
 	}
 
-	RealDebugCompiler define bool
+	RealDebugCompiler: bool
 	RealDebugCompiler true
 	{
 		!!RealConfiguration "Debug"
@@ -259,14 +259,14 @@ Property
 
 Property
 {
-	PlatformToolsetFamily define string = ""
+	PlatformToolsetFamily: string = ""
 	PlatformToolsetFamily "clang"
 	{
 		!!Target.PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
 		!!Target.PlatformToolset "com.apple.compilers.llvm.clang.1_0"
 	}
 
-	ToolsetDir define string
+	ToolsetDir: string
 	ToolsetDir Target.PlatformToolset
 	ToolsetDir "VC17"
 	{
@@ -320,12 +320,12 @@ Property
 		!!PlatformToolsetFamily "clang"
 	}
 
-	WindowsNativeToolChain define bool = true // Visual Studio 2013 supports native toolchain for all targets
+	WindowsNativeToolChain: bool = true // Visual Studio 2013 supports native toolchain for all targets
 }
 
 Property
 {
-	ExplicitTests define bool = false
+	ExplicitTests: bool = false
 	ExplicitTests true
 	{
 		!!Configuration "Profile"
@@ -336,7 +336,7 @@ Property
 
 Property
 {
-	DebugCode define bool = false
+	DebugCode: bool = false
 	DebugCode true
 	{
 		!!Configuration "Debug"
@@ -348,12 +348,12 @@ Property
 
 Property
 {
-	ConfigNoSpace define string = Configuration->Replace(" ", "")
+	ConfigNoSpace: string = Configuration->Replace(" ", "")
 
-	MalterlibPerforceStreamName define string?
+	MalterlibPerforceStreamName: string?
 
-	MalterlibBaseSourcePath define string = "Development"
-	MalterlibCalcBranch define string
+	MalterlibBaseSourcePath: string = "Development"
+	MalterlibCalcBranch: string
 	MalterlibCalcBranch Builtin.BasePathAbsolute->GetLastPaths(4)
 	MalterlibCalcBranch Builtin.BasePathAbsolute->GetLastPaths(3)
 	{
@@ -379,7 +379,7 @@ Property
 			MalterlibCalcBranch ~`@(MalterlibBaseSourcePath)/*`
 		}
 	}
-	MalterlibBranch define string
+	MalterlibBranch: string
 	MalterlibBranch MalterlibGitBranch
 	{
 		&
@@ -392,7 +392,7 @@ Property
 	{
 		!!MalterlibBranch undefined
 	}
-	MalterlibTaskStreamName define string?
+	MalterlibTaskStreamName: string?
 	MalterlibTaskStreamName MalterlibPerforceStreamName->ParseFormatString("{}({})", "{1}")
 	{
 		&
@@ -402,14 +402,14 @@ Property
 		}
 	}
 
-	MalterlibCalcFullBranch define string
+	MalterlibCalcFullBranch: string
 	MalterlibCalcFullBranch MalterlibBranch
 	MalterlibCalcFullBranch `@(MalterlibCalcFullBranch) (@(MalterlibTaskStreamName))`
 	{
 		!MalterlibTaskStreamName undefined
 	}
 
-	MalterlibFullBranch define string
+	MalterlibFullBranch: string
 	MalterlibFullBranch MalterlibGitBranch
 	{
 		&
@@ -424,9 +424,9 @@ Property
 		!!MalterlibFullBranch undefined
 	}
 
-	MalterlibChangingBootstrapVersion define bool?
+	MalterlibChangingBootstrapVersion: bool?
 
-	MalterlibIsGitRepository define bool = false
+	MalterlibIsGitRepository: bool = false
 	MalterlibIsGitRepository true
 	{
 		&
@@ -436,9 +436,9 @@ Property
 		}
 	}
 
-	MalterlibGitRepoGitDir define string = `@(Builtin.BasePathAbsolute)/.git`
+	MalterlibGitRepoGitDir: string = `@(Builtin.BasePathAbsolute)/.git`
 
-	MalterlibGitRepoInputFiles define [string] = []
+	MalterlibGitRepoInputFiles: [string] = []
 
 	MalterlibGitRepoInputFiles =+ `@(MalterlibGitRepoGitDir)/HEAD`
 	MalterlibGitRepoInputFiles =+ `@(MalterlibGitRepoGitDir)/packed-refs`
@@ -446,17 +446,17 @@ Property
 		![] MalterlibGitRepoGitDir->FindFilesIn("packed-refs")
 	}
 
-	MalterlibGitHeadRef define string = `@(ReadFile(`@(MalterlibGitRepoGitDir)/HEAD`)->ParseFormatString("ref: {}\n", "{0}"))`
-	MalterlibGitHeadRefPath define string = `@(MalterlibGitRepoGitDir)/@(MalterlibGitHeadRef)`
-	MalterlibGitHeadRefFile define string = MalterlibGitHeadRefPath->GetFile()
-	MalterlibGitHeadRefDir define string = MalterlibGitHeadRefPath->GetPath()
+	MalterlibGitHeadRef: string = `@(ReadFile(`@(MalterlibGitRepoGitDir)/HEAD`)->ParseFormatString("ref: {}\n", "{0}"))`
+	MalterlibGitHeadRefPath: string = `@(MalterlibGitRepoGitDir)/@(MalterlibGitHeadRef)`
+	MalterlibGitHeadRefFile: string = MalterlibGitHeadRefPath->GetFile()
+	MalterlibGitHeadRefDir: string = MalterlibGitHeadRefPath->GetPath()
 
 	MalterlibGitRepoInputFiles =+ `@(MalterlibGitRepoGitDir)/@(MalterlibGitHeadRef)`
 	{
 		![] MalterlibGitHeadRefDir->FindFilesIn(MalterlibGitHeadRefFile)
 	}
 
-	MalterlibGitOriginRemote define string = ""
+	MalterlibGitOriginRemote: string = ""
 	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, [`@(MalterlibGitRepoGitDir)/config`], "git", "remote", "get-url", "origin")
 	{
 		!!MalterlibIsGitRepository true
@@ -465,14 +465,18 @@ Property
 	{
 		!!MalterlibIsGitRepository true
 	}
+	MalterlibGitOriginRemote Error(`Your root git repository at '@(Builtin.BasePathAbsolute)' remote 'origin' doesn't have a proper remote URL, please set it`)
+	{
+		!!MalterlibGitOriginRemote ""
+	}
 
-	MalterlibGitBranch define string?
+	MalterlibGitBranch: string?
 	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, MalterlibGitRepoInputFiles, "git", "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
 	{
 		!!MalterlibIsGitRepository true
 	}
 
-	MalterlibGitCommit define string = ""
+	MalterlibGitCommit: string = ""
 	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, MalterlibGitRepoInputFiles, "git", "rev-parse", "HEAD")->Trim()
 	{
 		!!MalterlibIsGitRepository true
@@ -481,7 +485,7 @@ Property
 
 Property
 {
-	MalterlibIsMacOSBundle define bool = false
+	MalterlibIsMacOSBundle: bool = false
 	MalterlibIsMacOSBundle true
 	{
 		&
@@ -496,7 +500,7 @@ Property
 		}
 
 	}
-	MalterlibMacOSHideDockTile define bool = false
+	MalterlibMacOSHideDockTile: bool = false
 	MalterlibMacOSHideDockTile true
 	{
 		&
@@ -508,12 +512,12 @@ Property
 			!Target.Type "XcodeBundle"
 		}
 	}
-	MalterlibMacOSNoDarkMode define bool = false
+	MalterlibMacOSNoDarkMode: bool = false
 }
 
 Property
 {
-	MalterlibDebugPrefix define string = ""
+	MalterlibDebugPrefix: string = ""
 	MalterlibDebugPrefix "D"
 	{
 		|
@@ -525,7 +529,7 @@ Property
 		}
 	}
 
-	MalterlibDebugLibrariesFolderName define string = "Release"
+	MalterlibDebugLibrariesFolderName: string = "Release"
 	MalterlibDebugLibrariesFolderName "Debug"
 	{
 		|
@@ -537,7 +541,7 @@ Property
 		}
 	}
 
-	MalterlibQtLibrarySuffix define string = ""
+	MalterlibQtLibrarySuffix: string = ""
 	MalterlibQtLibrarySuffix "D"
 	{
 		&
@@ -555,9 +559,9 @@ Property
 		}
 	}
 
-	MalterlibArchitectureSuffix define string = Architecture
+	MalterlibArchitectureSuffix: string = Architecture
 
-	MalterlibConfigSuffix define string = ""
+	MalterlibConfigSuffix: string = ""
 	MalterlibConfigSuffix "D"
 	{
 		!!Configuration "Debug"
@@ -579,9 +583,9 @@ Property
 		!!DocumentationEnabled true
 	}
 
-	Malterlib_RefCountDebugging_Enable define bool = false // User(Debug)=true: Set to true to enable shared pointer reference debugging
+	Malterlib_RefCountDebugging_Enable: bool = false // User(Debug)=true: Set to true to enable shared pointer reference debugging
 
-	Malterlib_Tests_Enable define bool // User(Tests)=true: Force enable or disable of tests (set to true or false)
+	Malterlib_Tests_Enable: bool // User(Tests)=true: Force enable or disable of tests (set to true or false)
 	Malterlib_Tests_Enable false
 	{
 		&
@@ -597,7 +601,7 @@ Property
 		!!Malterlib_Tests_Enable undefined
 	}
 
-	Malterlib_Contracts_Enable define bool // User(Debug)=false: Force enable or disable of contracts (set to true or false)
+	Malterlib_Contracts_Enable: bool // User(Debug)=false: Force enable or disable of contracts (set to true or false)
 	Malterlib_Contracts_Enable false
 	{
 		&
@@ -612,7 +616,7 @@ Property
 		!!Malterlib_Contracts_Enable undefined
 	}
 
-	MalterlibMemory_Shims_Enable define bool // User(Debug)=true: Force enable or disable of memory shims (set to true or false). Also used for enabling remote debugger support currently
+	MalterlibMemory_Shims_Enable: bool // User(Debug)=true: Force enable or disable of memory shims (set to true or false). Also used for enabling remote debugger support currently
 	MalterlibMemory_Shims_Enable false
 	{
 		&
@@ -626,7 +630,7 @@ Property
 		!!MalterlibMemory_Shims_Enable undefined
 	}
 
-	MalterlibMemory_Shims_EnableLocal define bool // User(Debug)=false: Enable thread local memory reporters. Used in for example tests to track memory in local scopes
+	MalterlibMemory_Shims_EnableLocal: bool // User(Debug)=false: Enable thread local memory reporters. Used in for example tests to track memory in local scopes
 	MalterlibMemory_Shims_EnableLocal false
 	{
 		&
@@ -641,26 +645,26 @@ Property
 		!!MalterlibMemory_Shims_EnableLocal undefined
 	}
 
-	MalterlibMemory_Shims_Lightweight define bool = false // User(Debug)=true: Enable lightweight thread local memory reporters for main memory manager only.
-	MalterlibMemory_Shims_EnableGlobal define bool = true // User(Debug)=false: Enable global memory reporter. Used for for example remote debugger support
+	MalterlibMemory_Shims_Lightweight: bool = false // User(Debug)=true: Enable lightweight thread local memory reporters for main memory manager only.
+	MalterlibMemory_Shims_EnableGlobal: bool = true // User(Debug)=false: Enable global memory reporter. Used for for example remote debugger support
 
-	MalterlibMemoryManager_Debug define bool = DebugCode // User(Memory Manager)=true: Enable Enable debug memory manager that reports leaks and checks for overwrites. Toggling will recompile everything. (default true in debug configs, false otherwise)
-	MalterlibMemoryManager_CrossModule_Enable define bool = true // User(Memory Manager)=false: Enables cross module memory manager that shares the memory manager in all dlls with the executables memory manager
-	MalterlibMemoryManager_HugePage_Enable define bool = false // User(Memory Manager)=true: Enables transparent huge page support on Linux
-	MalterlibMemoryManager_Stats_Enable define bool = false // User(Memory Manager)=true: Report statistics about memory allocations at the end of the program
-	MalterlibMemoryManager_Stats_EnableCategories define bool = false // User(Memory Manager)=true: Dump statistics about memory allocations through categories
-	MalterlibMemoryManager_Stats_EnableCallstack define bool = false // User(Memory Manager)=true: Dump statistics about memory allocations callstacks
-	MalterlibMemoryManager_System_UseLibC define bool = false // User(Memory Manager)=true: Use LibC for system memory manager. Useful on macOS to track allocs in Instruments
+	MalterlibMemoryManager_Debug: bool = DebugCode // User(Memory Manager)=true: Enable Enable debug memory manager that reports leaks and checks for overwrites. Toggling will recompile everything. (default true in debug configs, false otherwise)
+	MalterlibMemoryManager_CrossModule_Enable: bool = true // User(Memory Manager)=false: Enables cross module memory manager that shares the memory manager in all dlls with the executables memory manager
+	MalterlibMemoryManager_HugePage_Enable: bool = false // User(Memory Manager)=true: Enables transparent huge page support on Linux
+	MalterlibMemoryManager_Stats_Enable: bool = false // User(Memory Manager)=true: Report statistics about memory allocations at the end of the program
+	MalterlibMemoryManager_Stats_EnableCategories: bool = false // User(Memory Manager)=true: Dump statistics about memory allocations through categories
+	MalterlibMemoryManager_Stats_EnableCallstack: bool = false // User(Memory Manager)=true: Dump statistics about memory allocations callstacks
+	MalterlibMemoryManager_System_UseLibC: bool = false // User(Memory Manager)=true: Use LibC for system memory manager. Useful on macOS to track allocs in Instruments
 }
 
 Property
 {
-	VersionStringSuffix define string = ""
+	VersionStringSuffix: string = ""
 }
 
 Property
 {
-	CompileDialect define string = ""
+	CompileDialect: string = ""
 
 	CompileDialect "C"
 	{
@@ -674,7 +678,7 @@ Property
 
 Property
 {
-	PlatformFamilyFromImpFile define string
+	PlatformFamilyFromImpFile: string
 	PlatformFamilyFromImpFile this.Identity->ParseFormatString("{}PlatformImp_{}_", "{1}")->ParseFormatString("{}.", "{0}")
 
 	PlatformFamilyFromImpFile "macOS"
@@ -685,7 +689,7 @@ Property
 
 Property
 {
-	PlatformFamilyFromFile define string
+	PlatformFamilyFromFile: string
 	PlatformFamilyFromFile this.Identity->ParseFormatString("{}Platform_{}_", "{1}")->ParseFormatString("{}.", "{0}")
 }
 

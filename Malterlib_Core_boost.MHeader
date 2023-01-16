@@ -7,7 +7,7 @@ Property
 	MalterlibBoostModulesCalcTemplate =+ `boost_@(_Module)`
 }
 
-%Repository MalterlibBoostModules->Unique()->ForEach("MalterlibBoostModulesCalcTemplate")
+%Repository MalterlibBoostModules->Unique()->ForEach(&MalterlibBoostModulesCalcTemplate)
 {
 	Repository
 	{
@@ -20,8 +20,8 @@ Property
 
 Property
 {
-	MalterlibAllBoostModules define bool = false // User(Repository)=true: Sync all boost repositories
-	MalterlibBoostModules define [string] = []
+	MalterlibAllBoostModules: bool = false // User(Repository)=true: Sync all boost repositories
+	MalterlibBoostModules: [string] = []
 	MalterlibBoostModules =+ [
 		"align"
 		, "atomic"
@@ -91,18 +91,18 @@ Property
 {
 	Property
 	{
-		SubDirectory define string
-		FullPath define string
-		RelativePath define string
-		Module define string
-		DirectoryModules define [string] = ["chrono", "detail", "exception", "functional", "pending", "utility"]
+		SubDirectory: string
+		FullPath: string
+		RelativePath: string
+		Module: string
+		DirectoryModules: [string] = ["chrono", "detail", "exception", "functional", "pending", "utility"]
 	}
 
 	Property
 	{
-		g_DSStoreName define string = ".DS_Store"
+		g_DSStoreName: string = ".DS_Store"
 
-		BoostRootPath define string = `../../External/boost/@(Module)/include/boost`->MakeAbsolute()
+		BoostRootPath: string = `../../External/boost/@(Module)/include/boost`->MakeAbsolute()
 
 		RelativeBoostPath function(string _File) string
 		RelativeBoostPath _File->MakeRelative(BoostRootPath)
@@ -131,10 +131,10 @@ Property
 		GetBoostIncludePath `@(`../../External/boost/@(_Module)/include`->MakeAbsolute())/boost@(SubDirectory)`
 
 		ExpandTemplateFiles function(string _Module) [type(CEntity)]
-		ExpandTemplateFiles	=+ GetBoostIncludePath(_Module)->FindFilesIn('*')->ForEach("ExpandTemplate2", {Module: _Module})
+		ExpandTemplateFiles	=+ GetBoostIncludePath(_Module)->FindFilesIn('*')->ForEach(&ExpandTemplate2, {Module: _Module})
 
 		ExpandTemplateDirectories function(string _Module) [type(CEntity)]
-		ExpandTemplateDirectories =+ GetBoostIncludePath(_Module)->FindDirectoriesIn('*')->ForEach("ExpandTemplate2", {Module: _Module})
+		ExpandTemplateDirectories =+ GetBoostIncludePath(_Module)->FindDirectoriesIn('*')->ForEach(&ExpandTemplate2, {Module: _Module})
 	}
 
 	GenerateFile
@@ -159,8 +159,8 @@ Property
 	{
 		Property.SubDirectory ""
 		Compile.Type "Header"
-		%GenerateFile MalterlibBoostModules->ForEach("ExpandTemplateFiles")
-		%GenerateFile MalterlibBoostModules->ForEach("ExpandTemplateDirectories")
+		%GenerateFile MalterlibBoostModules->ForEach(&ExpandTemplateFiles)
+		%GenerateFile MalterlibBoostModules->ForEach(&ExpandTemplateDirectories)
 		{
 			Compile.Type "Header"
 			GenerateFile.SymlinkDirectory true
@@ -170,8 +170,8 @@ Property
 	{
 		Property.SubDirectory `/@(Group:this.Identity)`
 		Compile.Type "Header"
-		%GenerateFile MalterlibBoostModules->ForEach("ExpandTemplateFiles")
-		%GenerateFile MalterlibBoostModules->ForEach("ExpandTemplateDirectories")
+		%GenerateFile MalterlibBoostModules->ForEach(&ExpandTemplateFiles)
+		%GenerateFile MalterlibBoostModules->ForEach(&ExpandTemplateDirectories)
 		{
 			Compile.Type "Header"
 			GenerateFile.SymlinkDirectory true
@@ -194,7 +194,7 @@ Target
 
 Property
 {
-	MalterlibBoostIncludeOutputDir define string
+	MalterlibBoostIncludeOutputDir: string
 	MalterlibBoostIncludeOutputDir `@(GeneratedDirectory)BoostRootInclude`
 	{
 		&

@@ -1,0 +1,1086 @@
+// Copyright © 2023 Favro Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+GeneratorSetting
+{
+	Xcode_TargetType: string
+	Xcode_TargetType SwitchWithError(
+		Target.Type, `Unknown target type: @(Target.Type)`
+		, "Executable", "Application"
+		, "ConsoleExecutable", "Application"
+		, "UIExecutable", "Application"
+		, "DynamicLibrary", "DynamicLibrary"
+		, "XcodeBundle", "DynamicLibrary"
+		, "SharedDynamicLibrary", "DynamicLibrary"
+		, "StaticLibrary", "StaticLibrary"
+		, "Driver", "Driver"
+		, "Tool", "Makefile"
+	)
+
+	Target {
+		Type: &GeneratorSetting.Xcode_TargetType->WithPosition()
+		, ProductType: &Target.ProductType->WithPosition()
+		, Name: &Target.Name->WithPosition()
+		, XCConfigs: GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetSettings)->ForEach(&GeneratorSetting.f_GetXCConfigs)
+	}
+}
+
+GeneratorSetting
+{
+	TargetIsExecutable true
+
+	Target_EntryPointSymbol {}
+	Target_ModuleDefinitionFile {}
+
+	Target_RemoveUnreferencedSymbols =+ {
+		XCConfigs: {
+			"DEAD_CODE_STRIPPING": Target.RemoveUnreferencedSymbols
+		}
+	}
+
+	Target_SearchPath =+ {
+		XCConfigs: {
+			"LIBRARY_SEARCH_PATHS": Target.SearchPath
+		}
+	}
+}
+
+GeneratorSetting
+{
+	!!Target.Type "Tool"
+
+	Target_CommandLine_Build =+ {
+		XCConfigs: {
+			"ToolBuildScript": "#!/bin/bash\nexport PATH=$MalterlibBuildSystemExecutablePath:$PATH\n" + Target.CommandLine_Build
+		}
+	}
+
+	Target_CommandLine_Inputs =+ {
+		XCConfigs: {
+			"ToolBuildScriptInputs": Target.CommandLine_Inputs
+		}
+	}
+
+	Target_CommandLine_Outputs =+ {
+		XCConfigs: {
+			"ToolBuildScriptOutputs": Target.CommandLine_Outputs
+		}
+	}
+
+	Target_CommandLine_ReBuild {}
+	Target_CommandLine_Clean {}
+}
+
+GeneratorSetting
+{
+	Target_LinkWithLibraries {}
+	{
+		!!GeneratorSetting.Target_LinkWithLibraries undefined
+	}
+	Target_BaseName {}
+	{
+		!!GeneratorSetting.Target_BaseName undefined
+	}
+	Target_ExportScriptEnvironmentContents {}
+	{
+		!!GeneratorSetting.Target_ExportScriptEnvironmentContents undefined
+	}
+	Target_GenerateScheme {}
+	{
+		!!GeneratorSetting.Target_GenerateScheme undefined
+	}
+	Target_ProductType {}
+	{
+		!!GeneratorSetting.Target_ProductType undefined
+	}
+	Target_RemoteDebuggerCommand {}
+	{
+		!!GeneratorSetting.Target_RemoteDebuggerCommand undefined
+	}
+	Target_RemoteDebuggerWorkingDirectory {}
+	{
+		!!GeneratorSetting.Target_RemoteDebuggerWorkingDirectory undefined
+	}
+	Target_Version {}
+	{
+		!!GeneratorSetting.Target_Version undefined
+	}
+	Target_DriverType {}
+	{
+		!!GeneratorSetting.Target_DriverType undefined
+	}
+	Target_Group {}
+	{
+		!!GeneratorSetting.Target_Group undefined
+	}
+	Target_BaseFileName {}
+	{
+		!!GeneratorSetting.Target_BaseFileName undefined
+	}
+	Target_FileNameBase {}
+	{
+		!!GeneratorSetting.Target_FileNameBase undefined
+	}
+	Target_Output {}
+	{
+		!!GeneratorSetting.Target_Output undefined
+	}
+	Target_CharacterSet {}
+	{
+		!!GeneratorSetting.Target_CharacterSet undefined
+	}
+	Target_Disabled {}
+	{
+		!!GeneratorSetting.Target_Disabled undefined
+	}
+	Target_FollowIndirectDependencies {}
+	{
+		!!GeneratorSetting.Target_FollowIndirectDependencies undefined
+	}
+	Target_Name {}
+	{
+		!!GeneratorSetting.Target_Name undefined
+	}
+	Target_ExtraGroups {}
+	{
+		!!GeneratorSetting.Target_ExtraGroups undefined
+	}
+	Target_ExportScriptEnvironment {}
+	{
+		!!GeneratorSetting.Target_ExportScriptEnvironment undefined
+	}
+	Target_EnableLinkerGroups {}
+	{
+		!!GeneratorSetting.Target_EnableLinkerGroups undefined
+	}
+	Target_InjectedExtraGroups {}
+	{
+		!!GeneratorSetting.Target_InjectedExtraGroups undefined
+	}
+	Target_DependencyInjectionGroups {}
+	{
+		!!GeneratorSetting.Target_DependencyInjectionGroups undefined
+	}
+
+	Target_SDKRoot =+ {
+		XCConfigs: {
+			"SDKROOT": Target.SDKRoot
+		}
+	}
+
+	Target_BundleIdentifier =+ {
+		XCConfigs: {
+			"PRODUCT_BUNDLE_IDENTIFIER": Target.BundleIdentifier
+		}
+	}
+
+	Target_CodeSigningIdentity =+ {
+		XCConfigs: {
+			"CODE_SIGN_IDENTITY": Target.CodeSigningIdentity
+		}
+	}
+
+	Target_DebugInformationFormat =+ {
+		XCConfigs: {
+			"DEBUG_INFORMATION_FORMAT": Target.DebugInformationFormat
+		}
+	}
+
+	Target_DeploymentTarget =+ {
+		XCConfigs: {
+			"MACOSX_DEPLOYMENT_TARGET": Target.DeploymentTarget
+		}
+	}
+
+	Target_EnableModuleDebugging =+ {
+		XCConfigs: {
+			"CLANG_ENABLE_MODULE_DEBUGGING": Target.EnableModuleDebugging
+		}
+	}
+
+	Target_GenerateDebugInformation =+ {
+		XCConfigs: {
+			"GCC_GENERATE_DEBUGGING_SYMBOLS": Target.GenerateDebugInformation
+		}
+	}
+
+	Target_HardenedRuntime =+ {
+		XCConfigs: {
+			"ENABLE_HARDENED_RUNTIME": Target.HardenedRuntime
+		}
+	}
+	Target_LDFlags =+ {
+		XCConfigs: {
+			"PRODUCT_SPECIFIC_LDFLAGS": Target.LDFlags
+		}
+	}
+
+	Target_LDFlagsFirst =+ {
+		XCConfigs: {
+			"LDFlagsFirst": Target.LDFlagsFirst
+		}
+	}
+
+	Target_LinkTimeCodeGeneration =+ {
+		XCConfigs: {
+			"LLVM_LTO": Target.LinkTimeCodeGeneration->SwitchWithError(
+				"Unsupported LTO option: "
+				, true, true
+				, false, false
+				, "Fast", "YES_THIN"
+			)
+		}
+	}
+
+	Target_LocalDebuggerCommand =+ {
+		XCConfigs: {
+			"LocalDebuggerCommand": Target.LocalDebuggerCommand
+		}
+	}
+
+	Target_DebuggerCommandArguments =+ {
+		XCConfigs: {
+			"CommandLineArgument": Target.DebuggerCommandArguments
+		}
+	}
+
+	Target_LocalDebuggerWorkingDirectory =+ {
+		XCConfigs: {
+			"customWorkingDirectory": Target.LocalDebuggerWorkingDirectory
+		}
+	}
+
+	Target_MToolPath =+ {
+		XCConfigs: {
+			"MToolPath": Target.MToolPath
+		}
+	}
+
+	Target_MalterlibInfoPListFile =+ {
+		XCConfigs: {
+			"INFOPLIST_FILE": Target.MalterlibInfoPListFile
+		}
+	}
+
+	Target_NativeOptimize =+ {
+		XCConfigs: {
+			"GCC_OPTIMIZATION_LEVEL": Target.NativeOptimize->SwitchWithError(
+				"Unsupported optimize option: "
+				, "Off", "0"
+				, "Fast", "3"
+				, "On", "3"
+				, "Full", "fast"
+			)
+		}
+	}
+
+	Target_ObjcLinkRuntime =+ {
+		XCConfigs: {
+			"CLANG_LINK_OBJC_RUNTIME": Target.ObjcLinkRuntime
+		}
+	}
+
+	Target_PlatformToolset =+ {
+		XCConfigs: {
+			"GCC_VERSION": Target.PlatformToolset
+		}
+	}
+
+	Target_PlatformToolsetCompiler =+ {
+		XCConfigs: {
+			"MALTERLIB_GENERATOR_CLANG": Target.PlatformToolsetCompiler
+		}
+	}
+
+	Target_PlatformToolsetLibTool =+ {
+		XCConfigs: {
+			"LIBTOOL": Target.PlatformToolsetLibTool
+		}
+	}
+
+	Target_PostBuildScript =+ {
+		XCConfigs: {
+			"PostBuildScript": "#!/bin/bash\nexport PATH=$MalterlibBuildSystemExecutablePath:$PATH\n" + Target.PostBuildScript
+		}
+	}
+
+	Target_PreBuildScript =+ {
+		XCConfigs: {
+			"PreBuildScript": "#!/bin/bash\nexport PATH=$MalterlibBuildSystemExecutablePath:$PATH\n" + Target.PreBuildScript
+		}
+	}
+
+	f_ExtractLibraryDependencies function(string _ExternalDependency) [one_of([string], string)] = []
+
+	f_FlagOrAbsolute function(string _Library) string
+	f_FlagOrAbsolute _Library
+	{
+		!!_Library->IsAbsolute() true
+	}
+	f_FlagOrAbsolute `-l@(_Library)`
+	{
+		!_Library->IsAbsolute() true
+	}
+
+	f_ExtractLibraryDependencies =+ (&Dependency.Name->GetProperty(_ExternalDependency))->GeneratorSetting.f_FlagOrAbsolute()
+	{
+		&
+		{
+			|
+			{
+				TargetIsExecutable true
+				!(&Dependency.Indirect->GetProperty(_ExternalDependency)) true
+			}
+			(&Dependency.Type->GetProperty(_ExternalDependency)) "Library"
+		}
+	}
+
+	f_FrameworkOrAbsolute function(string _Library) [one_of(string, [string])]
+	f_FrameworkOrAbsolute [_Library]
+	{
+		!!_Library->IsAbsolute() true
+	}
+	f_FrameworkOrAbsolute [["-framework", _Library]]
+	{
+		!_Library->IsAbsolute() true
+	}
+
+	f_ExtractLibraryDependencies =+ (&Dependency.Name->GetProperty(_ExternalDependency))->GeneratorSetting.f_FrameworkOrAbsolute()
+	{
+		&
+		{
+			|
+			{
+				TargetIsExecutable true
+				!(&Dependency.Indirect->GetProperty(_ExternalDependency)) true
+			}
+			(&Dependency.Type->GetProperty(_ExternalDependency)) "Framework"
+		}
+	}
+
+	Helper_LinkWithLibraries: [one_of([string], string)]?
+
+	Helper_LinkWithLibraries =+ MalterlibOverrideMallocLibrary
+	{
+		!!MalterlibNeedsMallocOverrideLibrary true
+	}
+	Helper_LinkWithLibraries =+ Target.ExternalDependencies->ForEach(&GeneratorSetting.f_ExtractLibraryDependencies)->Unique()
+	Helper_LinkWithLibraries =+ Target.LinkWithLibraries
+
+	Target_LinkWithLibraries =+ {
+		XCConfigs: {
+			"OTHER_LDFLAGS": GeneratorSetting.Helper_LinkWithLibraries
+		}
+	}
+	{
+		!!TargetIsExecutable true
+	}
+
+	Target_LinkWithLibraries =+ {
+		XCConfigs: {
+			"OTHER_LIBTOOLFLAGS": GeneratorSetting.Helper_LinkWithLibraries
+		}
+	}
+	{
+		!!Target.Type "StaticLibrary"
+	}
+
+	Target_CodeCoverageLinkerMapping =+ {
+		XCConfigs: {
+			"CLANG_COVERAGE_MAPPING_LINKER_ARGS": Target.CodeCoverageLinkerMapping
+		}
+	}
+
+	Target_SupportedPlatforms =+ {
+		XCConfigs: {
+			"SUPPORTED_PLATFORMS": Target.SupportedPlatforms
+		}
+	}
+
+	Target_Architectures =+ {
+		XCConfigs: {
+			"ARCHS": Target.Architectures
+		}
+	}
+
+	Target_ValidArchitectures =+ {
+		XCConfigs: {
+			"VALID_ARCHS": Target.ValidArchitectures
+		}
+	}
+
+	Target_ToolPath =+ {
+		XCConfigs: {
+			"MalterlibBuildSystemExecutablePath": Target.ToolPath->Join(":")
+		}
+	}
+
+	Target_DependencyFile =+ {
+		XCConfigs: {
+			"DependencyFile": Target.DependencyFile
+		}
+	}
+
+	Target_DependencyInfoFile =+ {
+		XCConfigs: {
+			"LD_DEPENDENCY_INFO_FILE": Target.DependencyInfoFile
+		}
+	}
+
+	Target_CodeSignEntitlements =+ {
+		XCConfigs: {
+			"CODE_SIGN_ENTITLEMENTS": Target.CodeSignEntitlements
+		}
+	}
+
+	Target_CodeSignStyle =+ {
+		XCConfigs: {
+			"CODE_SIGN_STYLE": Target.CodeSignStyle
+		}
+	}
+
+	Target_CodeSignInjectBaseEntitlements =+ {
+		XCConfigs: {
+			"CODE_SIGN_INJECT_BASE_ENTITLEMENTS": Target.CodeSignInjectBaseEntitlements
+		}
+	}
+
+	Target_IndexStoreEnable =+ {
+		XCConfigs: {
+			"COMPILER_INDEX_STORE_ENABLE": Target.IndexStoreEnable
+		}
+	}
+
+	Target_QtToolsRoot =+ {
+		XCConfigs: {
+			"QT_TOOLS_ROOT": Target.QtToolsRoot
+		}
+	}
+
+	Target_QtIncludeRoot =+ {
+		XCConfigs: {
+			"QT_INCLUDE_ROOT": Target.QtIncludeRoot
+		}
+	}
+
+	Target_Workaround_GCC_ENABLE_TRIGRAPHS =+ {
+		XCConfigs: {
+			"GCC_ENABLE_TRIGRAPHS": Target.Workaround_GCC_ENABLE_TRIGRAPHS
+		}
+	}
+
+	Target_Workaround_GCC_ENABLE_PASCAL_STRINGS =+ {
+		XCConfigs: {
+			"GCC_ENABLE_PASCAL_STRINGS": Target.Workaround_GCC_ENABLE_PASCAL_STRINGS
+		}
+	}
+
+	Target_Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS =+ {
+		XCConfigs: {
+			"GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS": Target.Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS
+		}
+	}
+
+	Target_Workaround_GCC_WARN_ABOUT_MISSING_PROTOTYPES =+ {
+		XCConfigs: {
+			"GCC_WARN_ABOUT_MISSING_PROTOTYPES": Target.Workaround_GCC_WARN_ABOUT_MISSING_PROTOTYPES
+		}
+	}
+
+	Target_Workaround_GCC_WARN_ABOUT_RETURN_TYPE =+ {
+		XCConfigs: {
+			"GCC_WARN_ABOUT_RETURN_TYPE": Target.Workaround_GCC_WARN_ABOUT_RETURN_TYPE
+		}
+	}
+
+	Target_Workaround_GCC_WARN_NON_VIRTUAL_DESTRUCTOR =+ {
+		XCConfigs: {
+			"GCC_WARN_NON_VIRTUAL_DESTRUCTOR": Target.Workaround_GCC_WARN_NON_VIRTUAL_DESTRUCTOR
+		}
+	}
+
+	Target_Workaround_GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS =+ {
+		XCConfigs: {
+			"GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS": Target.Workaround_GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS
+		}
+	}
+
+	Target_Workaround_CLANG_WARN__EXIT_TIME_DESTRUCTORS =+ {
+		XCConfigs: {
+			"CLANG_WARN__EXIT_TIME_DESTRUCTORS": Target.Workaround_CLANG_WARN__EXIT_TIME_DESTRUCTORS
+		}
+	}
+
+	Target_Workaround_GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED =+ {
+		XCConfigs: {
+			"GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED": Target.Workaround_GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED
+		}
+	}
+
+	Target_Workaround_GCC_WARN_MISSING_PARENTHESES =+ {
+		XCConfigs: {
+			"GCC_WARN_MISSING_PARENTHESES": Target.Workaround_GCC_WARN_MISSING_PARENTHESES
+		}
+	}
+
+	Target_Workaround_GCC_WARN_CHECK_SWITCH_STATEMENTS =+ {
+		XCConfigs: {
+			"GCC_WARN_CHECK_SWITCH_STATEMENTS": Target.Workaround_GCC_WARN_CHECK_SWITCH_STATEMENTS
+		}
+	}
+
+	Target_Workaround_GCC_WARN_UNUSED_FUNCTION =+ {
+		XCConfigs: {
+			"GCC_WARN_UNUSED_FUNCTION": Target.Workaround_GCC_WARN_UNUSED_FUNCTION
+		}
+	}
+
+	Target_Workaround_GCC_WARN_UNUSED_LABEL =+ {
+		XCConfigs: {
+			"GCC_WARN_UNUSED_LABEL": Target.Workaround_GCC_WARN_UNUSED_LABEL
+		}
+	}
+
+	Target_Workaround_GCC_WARN_UNUSED_PARAMETER =+ {
+		XCConfigs: {
+			"GCC_WARN_UNUSED_PARAMETER": Target.Workaround_GCC_WARN_UNUSED_PARAMETER
+		}
+	}
+
+	Target_Workaround_GCC_WARN_UNUSED_VARIABLE =+ {
+		XCConfigs: {
+			"GCC_WARN_UNUSED_VARIABLE": Target.Workaround_GCC_WARN_UNUSED_VARIABLE
+		}
+	}
+
+	Target_Workaround_GCC_WARN_UNUSED_VALUE =+ {
+		XCConfigs: {
+			"GCC_WARN_UNUSED_VALUE": Target.Workaround_GCC_WARN_UNUSED_VALUE
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_EMPTY_BODY =+ {
+		XCConfigs: {
+			"CLANG_WARN_EMPTY_BODY": Target.Workaround_CLANG_WARN_EMPTY_BODY
+		}
+	}
+
+	Target_Workaround_GCC_WARN_UNINITIALIZED_AUTOS =+ {
+		XCConfigs: {
+			"GCC_WARN_UNINITIALIZED_AUTOS": Target.Workaround_GCC_WARN_UNINITIALIZED_AUTOS
+		}
+	}
+
+	Target_Workaround_GCC_WARN_UNKNOWN_PRAGMAS =+ {
+		XCConfigs: {
+			"GCC_WARN_UNKNOWN_PRAGMAS": Target.Workaround_GCC_WARN_UNKNOWN_PRAGMAS
+		}
+	}
+
+	Target_Workaround_GCC_WARN_SHADOW =+ {
+		XCConfigs: {
+			"GCC_WARN_SHADOW": Target.Workaround_GCC_WARN_SHADOW
+		}
+	}
+
+	Target_Workaround_GCC_WARN_FOUR_CHARACTER_CONSTANTS =+ {
+		XCConfigs: {
+			"GCC_WARN_FOUR_CHARACTER_CONSTANTS": Target.Workaround_GCC_WARN_FOUR_CHARACTER_CONSTANTS
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION": Target.Workaround_CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_CONSTANT_CONVERSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_CONSTANT_CONVERSION": Target.Workaround_CLANG_WARN_CONSTANT_CONVERSION
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_INT_CONVERSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_INT_CONVERSION": Target.Workaround_CLANG_WARN_INT_CONVERSION
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_BOOL_CONVERSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_BOOL_CONVERSION": Target.Workaround_CLANG_WARN_BOOL_CONVERSION
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_ENUM_CONVERSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_ENUM_CONVERSION": Target.Workaround_CLANG_WARN_ENUM_CONVERSION
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_FLOAT_CONVERSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_FLOAT_CONVERSION": Target.Workaround_CLANG_WARN_FLOAT_CONVERSION
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_NON_LITERAL_NULL_CONVERSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_NON_LITERAL_NULL_CONVERSION": Target.Workaround_CLANG_WARN_NON_LITERAL_NULL_CONVERSION
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_OBJC_LITERAL_CONVERSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_OBJC_LITERAL_CONVERSION": Target.Workaround_CLANG_WARN_OBJC_LITERAL_CONVERSION
+		}
+	}
+
+	Target_Workaround_GCC_WARN_64_TO_32_BIT_CONVERSION =+ {
+		XCConfigs: {
+			"GCC_WARN_64_TO_32_BIT_CONVERSION": Target.Workaround_GCC_WARN_64_TO_32_BIT_CONVERSION
+		}
+	}
+
+	Target_Workaround_GCC_WARN_ABOUT_MISSING_NEWLINE =+ {
+		XCConfigs: {
+			"GCC_WARN_ABOUT_MISSING_NEWLINE": Target.Workaround_GCC_WARN_ABOUT_MISSING_NEWLINE
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_CXX0X_EXTENSIONS =+ {
+		XCConfigs: {
+			"CLANG_WARN_CXX0X_EXTENSIONS": Target.Workaround_CLANG_WARN_CXX0X_EXTENSIONS
+		}
+	}
+
+	Target_Workaround_GCC_CW_ASM_SYNTAX =+ {
+		XCConfigs: {
+			"GCC_CW_ASM_SYNTAX": Target.Workaround_GCC_CW_ASM_SYNTAX
+		}
+	}
+
+	Target_Workaround_GCC_STRICT_ALIASING =+ {
+		XCConfigs: {
+			"GCC_STRICT_ALIASING": Target.Workaround_GCC_STRICT_ALIASING
+		}
+	}
+
+	Target_Workaround_GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS =+ {
+		XCConfigs: {
+			"GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS": Target.Workaround_GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS
+		}
+	}
+
+	Target_Workaround_GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO =+ {
+		XCConfigs: {
+			"GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO": Target.Workaround_GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_IMPLICIT_SIGN_CONVERSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_IMPLICIT_SIGN_CONVERSION": Target.Workaround_CLANG_WARN_IMPLICIT_SIGN_CONVERSION
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_INFINITE_RECURSION =+ {
+		XCConfigs: {
+			"CLANG_WARN_INFINITE_RECURSION": Target.Workaround_CLANG_WARN_INFINITE_RECURSION
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_SUSPICIOUS_MOVE =+ {
+		XCConfigs: {
+			"CLANG_WARN_SUSPICIOUS_MOVE": Target.Workaround_CLANG_WARN_SUSPICIOUS_MOVE
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_COMMA =+ {
+		XCConfigs: {
+			"CLANG_WARN_COMMA": Target.Workaround_CLANG_WARN_COMMA
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING =+ {
+		XCConfigs: {
+			"CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING": Target.Workaround_CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_STRICT_PROTOTYPES =+ {
+		XCConfigs: {
+			"CLANG_WARN_STRICT_PROTOTYPES": Target.Workaround_CLANG_WARN_STRICT_PROTOTYPES
+		}
+	}
+
+	Target_Workaround_CLANG_WARN_RANGE_LOOP_ANALYSIS =+ {
+		XCConfigs: {
+			"CLANG_WARN_RANGE_LOOP_ANALYSIS": Target.Workaround_CLANG_WARN_RANGE_LOOP_ANALYSIS
+		}
+	}
+
+	Target_LTOObjectFile =+ {
+		XCConfigs: {
+			"LD_LTO_OBJECT_FILE": Target.LTOObjectFile
+		}
+	}
+
+	Target_EmscriptenFastCompiler =+ {
+		XCConfigs: {
+			"EMCC_FAST_COMPILER": Target.EmscriptenFastCompiler->SwitchWithError(
+				"Unknown option: "
+				, false, "0"
+				, true, "1"
+			)
+		}
+	}
+
+	Target_CodeSigningRequired =+ {
+		XCConfigs: {
+			"CODE_SIGNING_REQUIRED": Target.CodeSigningRequired
+		}
+	}
+
+	Target_CodeSigningAllowed =+ {
+		XCConfigs: {
+			"CODE_SIGNING_ALLOWED": Target.CodeSigningAllowed
+		}
+	}
+
+	Target_InstrumentForOptimization =+ {
+		XCConfigs: {
+			"CLANG_INSTRUMENT_FOR_OPTIMIZATION_PROFILING": Target.InstrumentForOptimization
+		}
+	}
+
+	Target_EmscriptenEmscriptenRoot =+ {
+		XCConfigs: {
+			"EMCC_EMSCRIPTEN": Target.EmscriptenEmscriptenRoot
+		}
+	}
+
+	Target_EmscriptenLLVMRoot =+ {
+		XCConfigs: {
+			"EMCC_LLVM": Target.EmscriptenLLVMRoot
+		}
+	}
+
+	Target_EmscriptenPython =+ {
+		XCConfigs: {
+			"EMCC_PYTHON": Target.EmscriptenPython
+		}
+	}
+
+	Target_EmscriptenNode =+ {
+		XCConfigs: {
+			"EMCC_NODE": Target.EmscriptenNode
+		}
+	}
+
+	Target_FileName =+ {
+		XCConfigs: {
+			"PRODUCT_NAME": Target.FileName
+		}
+	}
+
+	Target_Type =+ {
+		XCConfigs: {
+			"MACH_O_TYPE": Target.Type->SwitchWithError(
+				"Unknown option: "
+				, "StaticLibrary", "staticlib"
+				, "DynamicLibrary", "mh_bundle"
+				, "XcodeBundle", "mh_bundle"
+				, "SharedDynamicLibrary", "mh_dylib"
+				, "Executable", "mh_execute"
+				, "Driver", "mh_execute"
+				, "Tool", "mh_execute"
+				, "ConsoleExecutable", "mh_execute"
+				, "UIExecutable", "mh_execute"
+			)
+		}
+	}
+
+	Target_LinkerGroup =+ {
+		XCConfigs: {
+			"MALTERLIB_LINKER_GROUP": Target.LinkerGroup
+		}
+	}
+
+	Target_ExcludedSourceFileNames =+ {
+		XCConfigs: {
+			"EXCLUDED_SOURCE_FILE_NAMES": Target.ExcludedSourceFileNames
+		}
+	}
+
+	Target_FileExtension =+ {
+		XCConfigs: {
+			"EXECUTABLE_EXTENSION": Target.FileExtension->RemovePrefix(".")
+		}
+	}
+
+	Target_IntermediateDirectory =+ {
+		XCConfigs: {
+			"CONFIGURATION_TEMP_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "TARGET_TEMP_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "TEMP_FILES_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "TEMP_FILE_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "PROJECT_TEMP_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "PROJECT_TEMP_ROOT": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "BUILD_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "BUILD_ROOT": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "OBJROOT": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "SYMROOT": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "TEMP_ROOT": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "MODULE_CACHE_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
+			, "LOCSYMROOT": Target.IntermediateDirectory->RemoveSuffix("/")
+		}
+	}
+
+	Target_OutputDirectory =+ {
+		XCConfigs: {
+			"CONFIGURATION_BUILD_DIR": Target.OutputDirectory->RemoveSuffix("/")
+		}
+	}
+
+	Target_FilePrefix =+ {
+		XCConfigs: {
+			"EXECUTABLE_PREFIX": Target.FilePrefix
+		}
+	}
+
+	Target_ProjectDerivedSourcesDir =+ {
+		XCConfigs: {
+			"PROJECT_DERIVED_FILE_DIR": Target.ProjectDerivedSourcesDir
+		}
+	}
+
+	Target_ProjectSharedPrecompPrefixDir =+ {
+		XCConfigs: {
+			"SHARED_PRECOMPS_DIR": Target.ProjectSharedPrecompPrefixDir
+		}
+	}
+
+	Target_ExecutableFolder =+ {
+		XCConfigs: {
+			"EXECUTABLE_FOLDER_PATH": Target.ExecutableFolder
+		}
+	}
+
+	Target_OnlyActiveArchitectures =+ {
+		XCConfigs: {
+			"ONLY_ACTIVE_ARCH": Target.OnlyActiveArchitectures
+		}
+	}
+
+	Target_AlwaysSearchUserPaths =+ {
+		XCConfigs: {
+			"ALWAYS_SEARCH_USER_PATHS": Target.AlwaysSearchUserPaths
+		}
+	}
+
+	Target_DriverkitDeploymentTarget =+ {
+		XCConfigs: {
+			"DRIVERKIT_DEPLOYMENT_TARGET": Target.DriverkitDeploymentTarget
+		}
+	}
+
+	Target_iOSDeploymentTarget =+ {
+		XCConfigs: {
+			"IPHONEOS_DEPLOYMENT_TARGET": Target.iOSDeploymentTarget
+		}
+	}
+
+	Target_NativeArchitecture =+ {
+		XCConfigs: {
+			"NATIVE_ARCH": Target.NativeArchitecture
+		}
+	}
+
+	Target_NativeArchitectureActual =+ {
+		XCConfigs: {
+			"NATIVE_ARCH_ACTUAL": Target.NativeArchitectureActual
+		}
+	}
+
+	Target_CombineHiDPIImages =+ {
+		XCConfigs: {
+			"COMBINE_HIDPI_IMAGES": Target.CombineHiDPIImages
+		}
+	}
+
+	Target_LibToolFlags =+ {
+		XCConfigs: {
+			"PRODUCT_SPECIFIC_LIBTOOLFLAGS": Target.LibToolFlags
+		}
+	}
+
+	Target_HeadermapIncludeTarget =+ {
+		XCConfigs: {
+			"HEADERMAP_INCLUDES_FLAT_ENTRIES_FOR_TARGET_BEING_BUILT": Target.HeadermapIncludeTarget
+		}
+	}
+
+	Target_HeadermapEnable =+ {
+		XCConfigs: {
+			"USE_HEADERMAP": Target.HeadermapEnable
+		}
+	}
+
+	Target_HeadermapIncludeFrameworks =+ {
+		XCConfigs: {
+			"HEADERMAP_INCLUDES_FRAMEWORK_ENTRIES_FOR_ALL_PRODUCT_TYPES": Target.HeadermapIncludeFrameworks
+		}
+	}
+
+	Target_HeadermapIncludeProject =+ {
+		XCConfigs: {
+			"HEADERMAP_INCLUDES_PROJECT_HEADERS": Target.HeadermapIncludeProject
+		}
+	}
+
+	Target_StripDebugSymbolsDuringCopy =+ {
+		XCConfigs: {
+			"COPY_PHASE_STRIP": Target.StripDebugSymbolsDuringCopy
+		}
+	}
+
+	Target_StripLinkedProduct =+ {
+		XCConfigs: {
+			"STRIP_INSTALLED_PRODUCT": Target.StripLinkedProduct
+		}
+	}
+
+	Target_StripStyle =+ {
+		XCConfigs: {
+			"STRIP_STYLE": Target.StripStyle->SwitchWithError(
+				"Unknown option: "
+				, "All", "all"
+				, "Debugging", "debugging"
+				, "NonGlobal", "non-global"
+			)
+		}
+	}
+
+	Target_UseSeperateStrip =+ {
+		XCConfigs: {
+			"SEPARATE_STRIP": Target.UseSeperateStrip
+		}
+	}
+
+	Target_RetainCommentsFromSystemHeaders =+ {
+		XCConfigs: {
+			"CLANG_RETAIN_COMMENTS_FROM_SYSTEM_HEADERS": Target.RetainCommentsFromSystemHeaders
+		}
+	}
+
+	Target_CxxLanguage =+ {
+		XCConfigs: {
+			"CLANG_CXX_LANGUAGE_STANDARD": Target.CxxLanguage->SwitchWithError(
+				"Unknown option: "
+				, "GNU++11", "gnu++11"
+				, "GNU++14", "gnu++14"
+				, "GNU++17", "gnu++17"
+				, "GNU++20", "gnu++20"
+				, "GNU++23", "gnu++2b"
+				, "C++11", "c++11"
+				, "C++14", "c++14"
+				, "C++17", "c++17"
+				, "C++20", "c++20"
+				, "C++23", "c++2b"
+			)
+		}
+	}
+
+	Target_NoDeduplication =+ {
+		XCConfigs: {
+			"LD_DONT_RUN_DEDUPLICATION": Target.NoDeduplication
+		}
+	}
+
+	Target_LibtoolDeterministicMode =+ {
+		XCConfigs: {
+			"LIBTOOL_DETERMINISTIC_MODE": Target.LibtoolDeterministicMode
+		}
+	}
+
+	Target_CLanguage =+ {
+		XCConfigs: {
+			"GCC_C_LANGUAGE_STANDARD": Target.CLanguage->SwitchWithError(
+				"Unknown option: "
+				, "C89", "c89"
+				, "C99", "c99"
+				, "C11", "c11"
+				, "GNU89", "GNU89"
+				, "GNU99", "GNU99"
+				, "GNU11", "GNU11"
+			)
+		}
+	}
+
+	Target_CxxStandardLibrary =+ {
+		XCConfigs: {
+			"CLANG_CXX_LIBRARY": Target.CxxStandardLibrary->SwitchWithError(
+				"Unknown option: "
+				, "none", "none"
+				, "libc++", "libc++"
+				, "libstdc++", "libstdc++"
+			)
+		}
+	}
+
+	Target_SharedLibraryInstallPath =+ {
+		XCConfigs: {
+			"LD_DYLIB_INSTALL_NAME": Target.SharedLibraryInstallPath
+		}
+	}
+
+	Target_LinkWithStandardLibraries =+ {
+		XCConfigs: {
+			"LINK_WITH_STANDARD_LIBRARIES": Target.LinkWithStandardLibraries
+		}
+	}
+
+	Target_CompatibilityVersion =+ {
+		XCConfigs: {
+			"DYLIB_COMPATIBILITY_VERSION": Target.CompatibilityVersion
+		}
+	}
+
+	Target_CurrentVersion =+ {
+		XCConfigs: {
+			"DYLIB_CURRENT_VERSION": Target.CurrentVersion
+		}
+	}
+
+	Target_PostBuildScriptInputs =+ {
+		XCConfigs: {
+			"PostBuildScriptInputs": Target.PostBuildScriptInputs
+		}
+	}
+
+	Target_PostBuildScriptOutputs =+ {
+		XCConfigs: {
+			"PostBuildScriptOutputs": Target.PostBuildScriptOutputs
+		}
+	}
+
+	Target_PreBuildScriptInputs =+ {
+		XCConfigs: {
+			"PreBuildScriptInputs": Target.PreBuildScriptInputs
+		}
+	}
+
+	Target_PreBuildScriptOutputs =+ {
+		XCConfigs: {
+			"PreBuildScriptOutputs": Target.PreBuildScriptOutputs
+		}
+	}
+
+	Target_CodeCoverageMapping =+ {
+		XCConfigs: {
+			"CLANG_ENABLE_CODE_COVERAGE": Target.CodeCoverageMapping
+		}
+	}
+}

@@ -3,28 +3,28 @@
 
 Property
 {
-	HasTargetIdentityHelper_Identity define string
+	HasTargetIdentityHelper_Identity: string
 	fg_HasTargetIdentity function(string _Target) bool = false
 	fg_HasTargetIdentity true
 	{
-		!!HasTargetIdentityHelper_Identity GetProperty("Property", "TargetIdentity", _Target)
+		!!HasTargetIdentityHelper_Identity GetProperty(&TargetIdentity, _Target)
 	}
 
 	fg_IsTargetInDependencies function(string _Target) bool = Target:Target.DependenciesNames->ContainsListElement(_Target)
 
 	fg_IsTargetInWorkspace function(string _Target) bool = false
-	fg_IsTargetInWorkspace Workspace:Workspace.AllTargets->ForEach("fg_HasTargetIdentity", {HasTargetIdentityHelper_Identity: _Target})
+	fg_IsTargetInWorkspace Workspace:Workspace.AllTargets->ForEach(&fg_HasTargetIdentity, {HasTargetIdentityHelper_Identity: _Target})
 
-	fg_ExpandRecursiveStringArray function(one_of(string, [string]) _Flag) [string] = []
-	fg_ExpandRecursiveStringArray += _Flag
+	fg_ExpandRecursiveStringArrayHelper function(one_of(string, [string]) _Flag) [string] = []
+	fg_ExpandRecursiveStringArrayHelper =+ _Flag
 	{
 		!!true IsString(_Flag)
 	}
-	fg_ExpandRecursiveStringArray += _Flag
+	fg_ExpandRecursiveStringArrayHelper =+ _Flag
 	{
 		!!true IsArray(_Flag)
 	}
-	fg_ExpandRecursiveStringArray Error("Expected string arrays")
+	fg_ExpandRecursiveStringArrayHelper Error("Expected string arrays")
 	{
 		&
 		{
@@ -32,6 +32,8 @@ Property
 			!true IsString(_Flag)
 		}
 	}
+
+	fg_ExpandRecursiveStringArray function([one_of(string, [string])] _Strings) [string] = _Strings->ForEach(&fg_ExpandRecursiveStringArrayHelper)
 
 	fg_StringArrayToCommandLine function(string _Flag) string = ""
 	fg_StringArrayToCommandLine =+ `@(_Flag->Escape())`
@@ -44,5 +46,5 @@ Property
 	}
 
 	fg_RecursiveStringArrayToCommandLine function([one_of(string, [string])] _Commands) string = ""
-	fg_RecursiveStringArrayToCommandLine _Commands->ForEach("fg_ExpandRecursiveStringArray")->ForEach("fg_StringArrayToCommandLine")
+	fg_RecursiveStringArrayToCommandLine _Commands->ForEach(&fg_ExpandRecursiveStringArrayHelper)->ForEach(&fg_StringArrayToCommandLine)
 }

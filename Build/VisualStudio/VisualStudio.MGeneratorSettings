@@ -1,20 +1,190 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "VisualStudio2012"
+Type
 {
-	Include "VisualStudio_CSharp.MGeneratorSettings"
-	Include "VisualStudio_CSharp_Compile.MGeneratorSettings"
-	Include "VisualStudio_CSharp_Target.MGeneratorSettings"
-	Include "VisualStudio_DotNet.MGeneratorSettings"
-	Include "VisualStudio_DotNet_Compile.MGeneratorSettings"
-	Include "VisualStudio_DotNet_Target.MGeneratorSettings"
-	Include "VisualStudio_Native.MGeneratorSettings"
-	Include "VisualStudio_Native_Compile.MGeneratorSettings"
-	Include "VisualStudio_Native_Compile_ClCompile.MGeneratorSettings"
-	Include "VisualStudio_Native_Compile_Clang.MGeneratorSettings"
-	Include "VisualStudio_Native_Target.MGeneratorSettings"
-	Include "VisualStudio_Shared.MGeneratorSettings"
-	Include "VisualStudio_Shared_Compile.MGeneratorSettings"
-	Include "VisualStudio_Shared_Target.MGeneratorSettings"
+	CVS_Setting_PropertyGroup: {
+		Type: one_of("PropertyGroup")
+		, Label?: string
+		, Key: string
+		, Value: string
+	}
+
+	CVS_Setting_ItemDefinitionGroup: {
+		Type: one_of("ItemDefinitionGroup")
+		, Name: string
+		, Key: string
+		, Value: string
+	}
+
+	CVS_Setting: one_of(type(CVS_Setting_PropertyGroup), type(CVS_Setting_ItemDefinitionGroup))
+
+	CVS_SettingWithPositions: {
+		Positions: [type(CPosition)]
+		, Settings: [type(CVS_Setting)]
+	}
+
+	CVS_SettingItem: {
+		...: string
+	}
+
+	CVS_SettingItemWithPositions: {
+		Positions: [type(CPosition)]
+		, Settings: {
+			...: string
+		}
+	}
+	//one_of(string, [one_of(string, [string])], bool)
+
+	CCompileSettings: {
+		Flags?: one_of(string, [string], [[string]])
+		, Type?: one_of("unique", "multiple")
+		, VSSettings?: {
+			...: string
+		}
+	}
+
+	CTargetSettings: {
+		Flags?: one_of(string, [string], [[string]])
+		, Type?: one_of("unique", "multiple")
+		, VSSettings?: [type(CVS_Setting)]
+	}
+
+	CCompile: {
+		Type: type(CStringWithPosition)
+		, VSType: type(CStringWithPosition)
+		, PrecompilePrefixHeader: bool
+		, Disabled: bool
+		, PrefixHeader: type(COptionalStringWithPosition)
+		, VSSettings: {...: type(CVS_SettingItemWithPositions)}
+	}
+	//Type: string
+	//, Settings?: [type(CCompileSettings)]
+
+	CDependency: {
+		Type: type(CStringWithPosition)
+		, VSType: type(CStringWithPosition)
+		, VSSettings: {...: type(CVS_SettingItemWithPositions)}
+	}
+
+	CWorkspace: {
+	}
+
+	CTarget: {
+		Language: type(CStringWithPosition)
+		, PlatformVersion: type(COptionalStringWithPosition)
+		, ClCompileSuffix: type(COptionalStringWithPosition)
+		, TargetFrameworkVersion: type(COptionalStringWithPosition)
+		, ImportTargets?: [string]
+		, ImportTargets_Defaults?: [string]
+		, ImportTargets_Properties?: [string]
+		, VSSettings: {...: type(CVS_SettingWithPositions)}
+	}
+//		Type: type(CStringWithPosition)
+//		, Name: type(CStringWithPosition)
+//		, Settings?: [type(CCompileSettings)]
 }
+
+GeneratorSetting
+{
+	f_GetTargetVSSettings function(type(CTargetSettingsWithPosition) _CompileSettings) {...: type(CVS_SettingWithPositions)} = {}
+	f_GetTargetVSSettings =+ Error(`Flags not allowed for target settings: @(_CompileSettings->ToString())`)
+	{
+		!!_CompileSettings<Value>->HasMember("Flags") true
+	}
+	f_GetTargetVSSettings #<@(_CompileSettings<Property.Name>)> {
+		Positions: _CompileSettings<Positions>
+		, Settings: _CompileSettings<Value.VSSettings>
+	}
+	{
+		!!_CompileSettings<Value>->HasMember("VSSettings") true
+	}
+
+	f_GetCompileVSSettings function(type(CCompileSettingsWithPosition) _CompileSettings) {...: type(CVS_SettingItemWithPositions)} = {}
+	f_GetCompileVSSettings #<@(_CompileSettings<Property.Name>)> {
+		Positions: _CompileSettings<Positions>
+		, Settings: _CompileSettings<Value.VSSettings>
+	}
+	{
+		!!_CompileSettings<Value>->HasMember("VSSettings") true
+	}
+
+	f_GetDependencyVSSettings function(type(CCompileSettingsWithPosition) _CompileSettings) {...: type(CVS_SettingItemWithPositions)} = {}
+	f_GetDependencyVSSettings #<@(_CompileSettings<Property.Name>)> {
+		Positions: _CompileSettings<Positions>
+		, Settings: _CompileSettings<Value.VSSettings>
+	}
+	{
+		!!_CompileSettings<Value>->HasMember("VSSettings") true
+	}
+
+	VisualStudio_FileType: string
+	VisualStudio_DependencyType: string?
+
+	f_BoolToStringDotNet function(bool _bValue) string = (_bValue ? "True" : "False")
+}
+
+Target
+{
+	Language "Native"
+	{
+		!!Target.Language undefined
+	}
+
+	Language2: string
+	Language2 "What"
+	Language2 "What2"
+	{
+		!!Configuration "Debug"
+	}
+}
+
+Property
+{
+	TargetPlatformVersionString: string?
+	TargetPlatformVersionString Target.PlatformVersion->ToString()
+	{
+		!Target.PlatformVersion undefined
+	}
+}
+
+GeneratorSetting
+{
+	Target {
+		Language: &Target.Language->WithPosition()
+		, PlatformVersion: &TargetPlatformVersionString->WithPosition()
+		, ClCompileSuffix: &Target.ClCompileSuffix->WithPosition()
+		, TargetFrameworkVersion: &Target.TargetFrameworkVersion->WithPosition()
+		, VSSettings: GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetTargetSettings)->ForEach(&GeneratorSetting.f_GetTargetVSSettings)
+	}
+
+	Dependency {
+		Type: &Dependency.Type->WithPosition()
+		, VSType: &GeneratorSetting.VisualStudio_DependencyType->WithPosition()
+		, VSSettings: GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetSettings)->ForEach(&GeneratorSetting.f_GetDependencyVSSettings)
+	}
+
+	Compile {
+		Type: &Compile.Type->WithPosition()
+		, VSType: &GeneratorSetting.VisualStudio_FileType->WithPosition()
+		, PrecompilePrefixHeader: Compile.PrecompilePrefixHeader <==> true
+		, PrefixHeader: &Compile.PrefixHeader->WithPosition()
+		, Disabled: Compile.Disabled
+		, VSSettings: GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetSettings)->ForEach(&GeneratorSetting.f_GetCompileVSSettings)
+	}
+}
+
+Import "VisualStudio_CSharp.MGeneratorSettings"
+Import "VisualStudio_CSharp_Compile.MGeneratorSettings"
+Import "VisualStudio_CSharp_Target.MGeneratorSettings"
+Import "VisualStudio_DotNet.MGeneratorSettings"
+Import "VisualStudio_DotNet_Compile.MGeneratorSettings"
+Import "VisualStudio_DotNet_Target.MGeneratorSettings"
+Import "VisualStudio_Native.MGeneratorSettings"
+Import "VisualStudio_Native_Compile.MGeneratorSettings"
+Import "VisualStudio_Native_Compile_ClCompile.MGeneratorSettings"
+Import "VisualStudio_Native_Compile_Clang.MGeneratorSettings"
+Import "VisualStudio_Native_Target.MGeneratorSettings"
+Import "VisualStudio_Shared.MGeneratorSettings"
+Import "VisualStudio_Shared_Compile.MGeneratorSettings"
+Import "VisualStudio_Shared_Target.MGeneratorSettings"

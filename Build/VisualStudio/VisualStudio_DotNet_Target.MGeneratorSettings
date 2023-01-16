@@ -1,159 +1,271 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "DotNet_SharedTarget"
+Target
 {
-	%GeneratorSetting "Target"
+	!!LanguageFamily ".NET"
+
+	AppDesignerFolder: string = "Properties"
+}
+
+GeneratorSetting
+{
+	!!LanguageFamily ".NET"
+
+	Target_FileExtension {}
 	{
-		%GeneratorSetting "FileName"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "FileExtension"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "DefaultNamespace"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "ToolPath"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "GenerateDebugInformation"
-		{
-			Property
-			{
-				Name "DebugSymbols"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}		
+		!!GeneratorSetting.Target_FileExtension undefined
+	}
+	Target_DefaultNamespace {}
+	{
+		!!GeneratorSetting.Target_DefaultNamespace undefined
+	}
+	Target_ToolPath {}
+	{
+		!!GeneratorSetting.Target_ToolPath undefined
+	}
+	Target_SearchPath {}
+	{
+		!!GeneratorSetting.Target_SearchPath undefined
+	}
+	Target_RemoteDebuggerCommand {}
+	{
+		!!GeneratorSetting.Target_RemoteDebuggerCommand undefined
+	}
+	Target_RemoteDebuggerWorkingDirectory {}
+	{
+		!!GeneratorSetting.Target_RemoteDebuggerWorkingDirectory undefined
+	}
 
-		%GeneratorSetting "Real_PostBuildScript"
-		{
-			Property
+	Target_IntermediateDirectory =+ {
+		VSSettings: [
 			{
-				Name "PostBuildEvent"
-				Substitute "set PATH=$(MalterlibBuildSystemExecutablePath);%PATH%\r\n{}"
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "BaseIntermediateOutputPath"
+				, Value: Target.IntermediateDirectory->EscapeMSBuild()
+			}, {
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "_InitialBaseIntermediateOutputPath"
+				, Value: Target.IntermediateDirectory->EscapeMSBuild()
+			}, {
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "MSBuildProjectExtensionsPath"
+				, Value: Target.IntermediateDirectory->EscapeMSBuild()
+			}, {
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "_InitialMSBuildProjectExtensionsPath"
+				, Value: Target.IntermediateDirectory->EscapeMSBuild()
+			}, {
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "IntermediateOutputPath"
+				, Value: Target.IntermediateDirectory->EscapeMSBuild()
+			}, {
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "IntDir"
+				, Value: Target.IntermediateDirectory->EscapeMSBuild()
 			}
-		}
+		]
+	}
 
-		%GeneratorSetting "Real_PreBuildScript"
-		{
-			Property
+	Target_OutputDirectory =+ {
+		VSSettings: [
 			{
-				Name "PreBuildEvent"
-				Substitute "set PATH=$(MalterlibBuildSystemExecutablePath);%PATH%\r\n{}"
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "BaseOutputPath"
+				, Value: Target.OutputDirectory->EscapeMSBuild()
+			}, {
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "OutputPath"
+				, Value: Target.OutputDirectory->EscapeMSBuild()
+			}, {
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "OutDir"
+				, Value: Target.OutputDirectory->EscapeMSBuild()
 			}
-		}
+		]
+	}
 
-		%GeneratorSetting "PostBuildScript"
-		{
-			Property
+	Target_FileName =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "AssemblyName"
+				, Value: Target.FileName->EscapeMSBuild()
 			}
-		}
+		]
+	}
 
-		%GeneratorSetting "PreBuildScript"
-		{
-			Property
+	Target_DefaultNamespace =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "RootNamespace"
+				, Value: Target.DefaultNamespace->EscapeMSBuild()
 			}
-		}
+		]
+	}
 
-		%GeneratorSetting "Version"
-		{
-			Property
+	Target_ToolPath =+ {
+		VSSettings: [
 			{
-				Name "ApplicationVersion"
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "MalterlibBuildSystemExecutablePath"
+				, Value: Target.ToolPath->ForEach(&f_Helper_AllWindowsPath)->f_JoinMSBuild()
 			}
-		}		
-		%GeneratorSetting "PlatformTarget"
-		{
-			Property
+		]
+	}
+
+	Target_ProjectDir =+ {
+		VSSettings: [
 			{
-				Name "PlatformTarget"
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "ProjectDir"
+				, Value: `$([System.IO.Path]::GetFullPath(@(`$(MSBuildProjectDirectory)@(Target.ProjectDir->WindowsPath())\\`->Escape())))`
 			}
-		}	
-		%GeneratorSetting "ErrorReport"
-		{
-			Property
+		]
+	}
+
+	Target_GenerateAssemblyInfo =+ {
+		VSSettings: [
 			{
-				Name "ErrorReport"
+				Type: "PropertyGroup"
+				, Key: "GenerateAssemblyInfo"
+				, Value: Target.GenerateAssemblyInfo->f_BoolToString()
 			}
-		}
-		%GeneratorSetting "CodeAnalysisRuleSet"
-		{
-			Property
+		]
+	}
+
+	Target_AppDesignerFolder =+ {
+		VSSettings: [
 			{
-				Name "CodeAnalysisRuleSet"
+				Type: "PropertyGroup"
+				, Label: "PreProject"
+				, Key: "AppDesignerFolder"
+				, Value: Target.AppDesignerFolder->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "DebuggerCommandArguments"
-		{
-			Property
+		]
+	}
+
+	Target_GenerateDebugInformation =+ {
+		VSSettings: [
 			{
-				Name "StartArguments"
+				Type: "PropertyGroup"
+				, Key: "DebugSymbols"
+				, Value: Target.GenerateDebugInformation->f_BoolToString()
 			}
-		}
-		%GeneratorSetting "LocalDebuggerCommand"
-		{
-			Property
+		]
+	}
+
+	Target_PostBuildScript =+ {
+		VSSettings: [
 			{
-				Name "StartProgram"
+				Type: "PropertyGroup"
+				, Key: "PostBuildEvent"
+				, Value: `set PATH=$(MalterlibBuildSystemExecutablePath);%PATH%\r\n@(Target.PostBuildScript->EscapeMSBuild())`
 			}
-		}
-		%GeneratorSetting "LocalDebuggerWorkingDirectory"
-		{
-			Property
+		]
+	}
+
+	Target_PreBuildScript =+ {
+		VSSettings: [
 			{
-				Name "StartWorkingDirectory"
+				Type: "PropertyGroup"
+				, Key: "PreBuildEvent"
+				, Value: `set PATH=$(MalterlibBuildSystemExecutablePath);%PATH%\r\n@(Target.PreBuildScript->EscapeMSBuild())`
 			}
-		}
-		
-		%GeneratorSetting "RemoteDebuggerCommand"
-		{
-			Property
+		]
+	}
+
+	Target_Version =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Key: "ApplicationVersion"
+				, Value: Target.Version->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "RemoteDebuggerWorkingDirectory"
-		{
-			Property
+		]
+	}
+
+	Target_PlatformTarget =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Key: "PlatformTarget"
+				, Value: Target.PlatformTarget->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "StartAction"
+		]
+	}
+
+	Target_ErrorReport =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Key: "ErrorReport"
+				, Value: Target.ErrorReport->EscapeMSBuild()
+			}
+		]
+	}
+
+	Target_CodeAnalysisRuleSet =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Key: "CodeAnalysisRuleSet"
+				, Value: Target.CodeAnalysisRuleSet->EscapeMSBuild()
+			}
+		]
+	}
+
+	Target_DebuggerCommandArguments =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Key: "StartArguments"
+				, Value: Target.DebuggerCommandArguments->EscapeMSBuild()
+			}
+		]
+	}
+
+	Target_LocalDebuggerCommand =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Key: "StartProgram"
+				, Value: Target.LocalDebuggerCommand->EscapeMSBuild()
+			}
+		]
+	}
+
+	Target_LocalDebuggerWorkingDirectory =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Key: "StartWorkingDirectory"
+				, Value: Target.LocalDebuggerWorkingDirectory->EscapeMSBuild()
+			}
+		]
+	}
+
+	Target_StartAction =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Key: "StartAction"
+				, Value: Target.StartAction->EscapeMSBuild()
+			}
+		]
 	}
 }

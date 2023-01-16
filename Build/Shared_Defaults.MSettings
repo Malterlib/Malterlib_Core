@@ -5,35 +5,35 @@
 
 Property
 {
-    MalterlibTargetExtraSuffix define string = ""
-    MalterlibTargetCustom define string = ""
-    MalterlibDoExeFS define bool = false
-    MalterlibUsesTranslation define bool = false
-    MalterlibDoTranslationExeFS define bool = false
-    MalterlibStronglyNamedAssembly define string?
-    MalterlibNotifyResult define bool = false
-    MalterlibExeFSPath define string = `@(Target:this.IdentityPath->GetPath())/ExeFS/*`
-    MalterlibPostCopyProject define string?
-	MalterlibPostCopyHash define bool = false
-    MalterlibPostCopyDestination define string = ""
-    MalterlibPostCopyProject2 define string?
-	MalterlibPostCopyHash2 define bool = false
-    MalterlibPostCopyDestination2 define string = ""
-    MalterlibConsoleApp define bool = false
-    MalterlibQtSupport define bool = false
-	MalterlibOutOfProcessSupport define bool = false
-    MalterlibRWPropertyPages define bool = false
-	MalterlibEnableInternalWorkspaces define bool = false
-	MalterlibDoingProductBuild define bool = false
+    MalterlibTargetExtraSuffix: string = ""
+    MalterlibTargetCustom: string = ""
+    MalterlibDoExeFS: bool = false
+    MalterlibUsesTranslation: bool = false
+    MalterlibDoTranslationExeFS: bool = false
+    MalterlibStronglyNamedAssembly: string?
+    MalterlibNotifyResult: bool = false
+    MalterlibExeFSPath: string = `@(Target:this.IdentityPath->GetPath())/ExeFS/*`
+    MalterlibPostCopyProject: string?
+	MalterlibPostCopyHash: bool = false
+    MalterlibPostCopyDestination: string = ""
+    MalterlibPostCopyProject2: string?
+	MalterlibPostCopyHash2: bool = false
+    MalterlibPostCopyDestination2: string = ""
+    MalterlibConsoleApp: bool = false
+    MalterlibQtSupport: bool = false
+	MalterlibOutOfProcessSupport: bool = false
+    MalterlibRWPropertyPages: bool = false
+	MalterlibEnableInternalWorkspaces: bool = false
+	MalterlibDoingProductBuild: bool = false
 
-	BUILDSERVER define bool = false
-	MalterlibBuildServerBuild define bool = BUILDSERVER
-    MalterlibBuildSigning define bool = MalterlibBuildServerBuild
-	MalterlibBuildServerTest define bool = false
+	BUILDSERVER: bool = false
+	MalterlibBuildServerBuild: bool = BUILDSERVER
+    MalterlibBuildSigning: bool = MalterlibBuildServerBuild
+	MalterlibBuildServerTest: bool = false
 
-	MalterlibBuildServerCommandPrefix define string = ""
+	MalterlibBuildServerCommandPrefix: string = ""
 
-    MalterlibSigning define bool
+    MalterlibSigning: bool
 	MalterlibSigning true
 	{
 		&
@@ -48,7 +48,7 @@ Property
 		!!MalterlibSigning undefined
 	}
 
-	MalterlibXcodeNewBuildSystem define bool = false  // User(Build System)=true: Use Xcode new build system
+	MalterlibXcodeNewBuildSystem: bool = false  // User(Build System)=true: Use Xcode new build system
 
 	MalterlibXcodeNewBuildSystem true
 	{
@@ -59,12 +59,12 @@ Property
 		}
 	}
 
-	MalterlibNoMacOSCrossModuleExceptions define bool = PlatformIsDarwin // User(Undocumented)=false: Disables catching of exception across modules on macOS. This will bring in libunwind statically (default true)
+	MalterlibNoMacOSCrossModuleExceptions: bool = PlatformIsDarwin // User(Undocumented)=false: Disables catching of exception across modules on macOS. This will bring in libunwind statically (default true)
 
-	MalterlibMaxSupportedWindowsVersion define string = "10.0.22000.0" // User(Platform Version): Max supported Windows version.
+	MalterlibMaxSupportedWindowsVersion: string = "10.0.22000.0" // User(Platform Version): Max supported Windows version.
 
-	MalterlibMinSupportedMacOSVersion define string = "10.13" // User(Platform Version): Max supported macOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
-	MalterlibMaxSupportedMacOSVersion define string = "Latest" // User(Platform Version): Max supported macOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMinSupportedMacOSVersion: string = "10.13" // User(Platform Version): Max supported macOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMaxSupportedMacOSVersion: string = "Latest" // User(Platform Version): Max supported macOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 
 	MalterlibMinSupportedMacOSVersion "13.0"
 	{
@@ -79,32 +79,32 @@ Property
 		}
 	}
 
-    MalterlibMinSupportediOSVersion define string = "8.1" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
-    MalterlibMaxSupportediOSVersion define string = "Latest" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+    MalterlibMinSupportediOSVersion: string = "8.1" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+    MalterlibMaxSupportediOSVersion: string = "Latest" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 
-    MalterlibAllSchemes define bool = false // User(Build System)=true: Enable to generate schemes for all targets, even targets without debug commands
+    MalterlibAllSchemes: bool = false // User(Build System)=true: Enable to generate schemes for all targets, even targets without debug commands
 
-	MalterlibSharedDeployRoot define string = "/Shared"
+	MalterlibSharedDeployRoot: string = "/Shared"
 
-	MalterlibSignIncludeCert define string = `@(Builtin.BasePathAbsolute)/Settings/Certificates/MSCV-GlobalSign.cer` // User(Signing): Set this to 'none' to disable incude cert for development
-	MalterlibSignTimestampServer define string = "http://timestamp.globalsign.com/scripts/timestamp.dll" // User(Signing): Timestamp server to use when signing windows executables
-	MalterlibSignTimestampServerRFC3161 define string = "" // User(Signing): RFC 3161 Timestamp server to use when signing windows executables. This will override any setting in MalterlibSignTimestampServer
-	MalterlibSignCertWindows define string = "Unknown Company" // User(Signing)="Name of cert": Set this to your local certificate for driver development
-	MalterlibSignCertMacOS define string = "-" // User(Signing)=SHA1OfCert: Set this to your Developer ID cert for driver development
+	MalterlibSignIncludeCert: string = `@(Builtin.BasePathAbsolute)/Settings/Certificates/MSCV-GlobalSign.cer` // User(Signing): Set this to 'none' to disable incude cert for development
+	MalterlibSignTimestampServer: string = "http://timestamp.globalsign.com/scripts/timestamp.dll" // User(Signing): Timestamp server to use when signing windows executables
+	MalterlibSignTimestampServerRFC3161: string = "" // User(Signing): RFC 3161 Timestamp server to use when signing windows executables. This will override any setting in MalterlibSignTimestampServer
+	MalterlibSignCertWindows: string = "Unknown Company" // User(Signing)="Name of cert": Set this to your local certificate for driver development
+	MalterlibSignCertMacOS: string = "-" // User(Signing)=SHA1OfCert: Set this to your Developer ID cert for driver development
 
-	MalterlibNotarizeMacOSProfile define string? // User(Signing)="ProfileName": Set this to keychain profile used for notarization. Previously stored with xcrun notarytool store-credentials --apple-id "email" --team-id "team"
+	MalterlibNotarizeMacOSProfile: string? // User(Signing)="ProfileName": Set this to keychain profile used for notarization. Previously stored with xcrun notarytool store-credentials --apple-id "email" --team-id "team"
 
-	MalterlibBreakpadUploadServer define string = "https://error-reports.malterlib.org"
-	MalterlibBreakpadReportInterval define int = 0
-	MalterlibBreakpadRequestComments define bool = true
-	MalterlibBreakpadRequestEmail define bool = true
-	MalterlibBreakpadPrivacyPolicyURL define string = ""
+	MalterlibBreakpadUploadServer: string = "https://error-reports.malterlib.org"
+	MalterlibBreakpadReportInterval: int = 0
+	MalterlibBreakpadRequestComments: bool = true
+	MalterlibBreakpadRequestEmail: bool = true
+	MalterlibBreakpadPrivacyPolicyURL: string = ""
 
-	MalterlibDriverSigning define bool = true
+	MalterlibDriverSigning: bool = true
 
-	MalterlibForceDeploySymbols define bool = false
+	MalterlibForceDeploySymbols: bool = false
 
-	MalterlibDeploySymbols define bool = false
+	MalterlibDeploySymbols: bool = false
     MalterlibDeploySymbols true
 	{
 		&
@@ -123,14 +123,14 @@ Property
 			}
 		}
 	}
-	MalterlibLocalizationRoot define string = `@(Builtin.BasePathAbsolute)/MalterlibLegacy/Localization`
+	MalterlibLocalizationRoot: string = `@(Builtin.BasePathAbsolute)/MalterlibLegacy/Localization`
 
-	MalterlibSupportSanitizerEnable_Thread define bool = (Sanitizer_Thread == "TSan") // User(Debug)=true: Enable thread sanitizer
-	MalterlibSupportSanitizerEnable_Address define bool = (Sanitizer_Address == "ASan") // User(Debug)=true: Enable address sanitizer
-	MalterlibSupportSanitizerEnable_UndefinedBehavior define bool = (Sanitizer_UndefinedBehavior == "UBSan") // User(Debug)=true: Enable undefined behavior sanitizer
-	MalterlibSupportSanitizerEnable_NoRecover define bool = false // User(Debug)=true: Don't recover from sanitizer errors. Useful for running automated tests.
+	MalterlibSupportSanitizerEnable_Thread: bool = (Sanitizer_Thread == "TSan") // User(Debug)=true: Enable thread sanitizer
+	MalterlibSupportSanitizerEnable_Address: bool = (Sanitizer_Address == "ASan") // User(Debug)=true: Enable address sanitizer
+	MalterlibSupportSanitizerEnable_UndefinedBehavior: bool = (Sanitizer_UndefinedBehavior == "UBSan") // User(Debug)=true: Enable undefined behavior sanitizer
+	MalterlibSupportSanitizerEnable_NoRecover: bool = false // User(Debug)=true: Don't recover from sanitizer errors. Useful for running automated tests.
 
-	MalterlibSupportSanitizers define bool = false // User(Debug)=true: Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
+	MalterlibSupportSanitizers: bool = false // User(Debug)=true: Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
 	MalterlibSupportSanitizers true
 	{
 		&
@@ -145,7 +145,7 @@ Property
 		}
 	}
 
-	MalterlibDefaultToolset define bool = false // User(Undocumented)=true: Use default Xcode toolset with no custom modifications to libc++ or clang
+	MalterlibDefaultToolset: bool = false // User(Undocumented)=true: Use default Xcode toolset with no custom modifications to libc++ or clang
 
 	MalterlibDefaultToolset true
 	{
@@ -160,7 +160,7 @@ Property
 		}
 	}
 
-	MalterlibDefaultCompiler define bool // User(Undocumented)=true: Use default Xcode compiler
+	MalterlibDefaultCompiler: bool // User(Undocumented)=true: Use default Xcode compiler
 	MalterlibDefaultCompiler false
 	{
 		&
@@ -182,7 +182,7 @@ Property
 		!!MalterlibDefaultCompiler undefined
 	}
 
-	MalterlibCustomCompilerOptions define bool // User(Undocumented)=true: Use custom compiler options only available in patched compiler
+	MalterlibCustomCompilerOptions: bool // User(Undocumented)=true: Use custom compiler options only available in patched compiler
 	MalterlibCustomCompilerOptions true
 	{
 		&
@@ -200,9 +200,9 @@ Property
 		!!MalterlibCustomCompilerOptions undefined
 	}
 
-	MalterlibDefaultXcode define bool = true // User(Undocumented)=false: Use default Xcode clang compiler specifications
+	MalterlibDefaultXcode: bool = true // User(Undocumented)=false: Use default Xcode clang compiler specifications
 
-	MalterlibUseStaticLibCxxABI define bool // User(Toolset)=false: Enables static libc++abi
+	MalterlibUseStaticLibCxxABI: bool // User(Toolset)=false: Enables static libc++abi
 	MalterlibUseStaticLibCxxABI true
 	{
 		&
@@ -222,7 +222,7 @@ Property
 		!!MalterlibUseStaticLibCxxABI undefined
 	}
 
-	MalterlibUseStaticLibUnwind define bool
+	MalterlibUseStaticLibUnwind: bool
 	MalterlibUseStaticLibUnwind true
 	{
 		&
@@ -242,7 +242,7 @@ Property
 		!!MalterlibUseStaticLibUnwind undefined
 	}
 
-	MalterlibUseStaticLibCxx define bool // User(Toolset)=false: Enables static libc++
+	MalterlibUseStaticLibCxx: bool // User(Toolset)=false: Enables static libc++
 	MalterlibUseStaticLibCxx true
 	{
 		&
@@ -264,7 +264,7 @@ Property
 	}
 
 
-	MalterlibRuntime_AlwaysRelease define bool? // User(Toolset)=false: Enable runtime (libc++ etc) to always be compile as if release config (default true)
+	MalterlibRuntime_AlwaysRelease: bool? // User(Toolset)=false: Enable runtime (libc++ etc) to always be compile as if release config (default true)
 	MalterlibRuntime_AlwaysRelease true
 	{
 		&
@@ -274,7 +274,7 @@ Property
 		}
 	}
 
-	MalterlibMemoryManager define one_of("Malterlib", "System", "OverwriteCheck", "MiMalloc", "TcMalloc") = "Malterlib" // User(Memory Manager)=OverwriteCheck: Choose the memory manager. Options: Malterlib, System, OverwriteCheck, MiMalloc, TcMalloc (default Malterlib)
+	MalterlibMemoryManager: one_of("Malterlib", "System", "OverwriteCheck", "MiMalloc", "TcMalloc") = "Malterlib" // User(Memory Manager)=OverwriteCheck: Choose the memory manager. Options: Malterlib, System, OverwriteCheck, MiMalloc, TcMalloc (default Malterlib)
 	MalterlibMemoryManager "System"
 	{
 		&
@@ -284,18 +284,18 @@ Property
 		}
 	}
 
-	MalterlibMemoryManager_AlwaysRelease define bool = Not(DocumentationEnabled) // User(Memory Manager)=false: Enable memory manager to always be compile as if release config (default true)
+	MalterlibMemoryManager_AlwaysRelease: bool = Not(DocumentationEnabled) // User(Memory Manager)=false: Enable memory manager to always be compile as if release config (default true)
 
-	MalterlibMemoryManager_Debug_Features define one_of(bool, undefined) // User(Memory Manager)=false: Global toggle for debug memory manager. Can be toggled without recompiling everything.
+	MalterlibMemoryManager_Debug_Features: one_of(bool, undefined) // User(Memory Manager)=false: Global toggle for debug memory manager. Can be toggled without recompiling everything.
 
-	MalterlibMemoryManager_Debug_EnableFreeValidation define bool = false // User(Memory Manager)=true: Enable validation of freed blocks. Detects double frees and invalid frees. High impact on performance. (default false)
-	MalterlibMemoryManager_Debug_EnableMemoryLeaks define bool = false // User(Memory Manager)=true: Enables listing of memory leaks. High impact on performance. (default false)
-	MalterlibMemoryManager_Debug_EnableStackTrace define bool = false // User(Memory Manager)=true: Enable stack trace in debug heap (default false)
-	MalterlibMemoryManager_Debug_EnableFreedGuards define bool = true // User(Memory Manager)=false: Enable checks for overwritten freed memory in debug heap (0xDD pattern) (default true)
-	MalterlibMemoryManager_Debug_EnableAllocatedFill define bool = true // User(Memory Manager)=false: Enable filling of allocated bytes in debug heap (0xCD pattern) (default true)
-	MalterlibMemoryManager_Debug_EnableEdgeGuards define bool = true // User(Memory Manager)=false: Enable checks for overwritten memory before and after allocated blocks (0xFD pattern) (default true). If disabled, also disables stack traces, leak checks
+	MalterlibMemoryManager_Debug_EnableFreeValidation: bool = false // User(Memory Manager)=true: Enable validation of freed blocks. Detects double frees and invalid frees. High impact on performance. (default false)
+	MalterlibMemoryManager_Debug_EnableMemoryLeaks: bool = false // User(Memory Manager)=true: Enables listing of memory leaks. High impact on performance. (default false)
+	MalterlibMemoryManager_Debug_EnableStackTrace: bool = false // User(Memory Manager)=true: Enable stack trace in debug heap (default false)
+	MalterlibMemoryManager_Debug_EnableFreedGuards: bool = true // User(Memory Manager)=false: Enable checks for overwritten freed memory in debug heap (0xDD pattern) (default true)
+	MalterlibMemoryManager_Debug_EnableAllocatedFill: bool = true // User(Memory Manager)=false: Enable filling of allocated bytes in debug heap (0xCD pattern) (default true)
+	MalterlibMemoryManager_Debug_EnableEdgeGuards: bool = true // User(Memory Manager)=false: Enable checks for overwritten memory before and after allocated blocks (0xFD pattern) (default true). If disabled, also disables stack traces, leak checks
 
-	MalterlibMemoryManager_OverrideSystemMalloc define bool = false // User(Memory Manager)=true: Override the default malloc
+	MalterlibMemoryManager_OverrideSystemMalloc: bool = false // User(Memory Manager)=true: Override the default malloc
 	MalterlibMemoryManager_OverrideSystemMalloc true
 	{
 		&
@@ -311,12 +311,12 @@ Property
 		}
 	}
 
-	MalterlibExeIcon define string?
-	MalterlibExeMainNibFile define string?
+	MalterlibExeIcon: string?
+	MalterlibExeMainNibFile: string?
 
-	MalterlibBuildSpecifics define string?
+	MalterlibBuildSpecifics: string?
 
-	MalterlibWindowsNtVersion define string
+	MalterlibWindowsNtVersion: string
 	MalterlibWindowsNtVersion "_WIN32_WINNT_VISTA"
 	{
 		&
@@ -325,7 +325,7 @@ Property
 			PlatformFamily "Windows"			
 		}
 	}
-	MalterlibWindowsVersion define string
+	MalterlibWindowsVersion: string
 	MalterlibWindowsVersion "NTDDI_VISTA"
 	{
 		&
@@ -334,11 +334,11 @@ Property
 			PlatformFamily "Windows"
 		}
 	}
-	MalterlibDisableBuildSystemGeneration define bool = MalterlibBuildServerBuild
-	MalterlibEnableBreakpadUploader define bool = false
-	MalterlibClangVersion define string = "14.0"
-	MalterlibCustomToolchainClangVersion define string = "8.0"
-	MalterlibEnableBreakpad define bool = false
+	MalterlibDisableBuildSystemGeneration: bool = MalterlibBuildServerBuild
+	MalterlibEnableBreakpadUploader: bool = false
+	MalterlibClangVersion: string = "14.0"
+	MalterlibCustomToolchainClangVersion: string = "8.0"
+	MalterlibEnableBreakpad: bool = false
 	MalterlibEnableBreakpad true
 	{
 		&
@@ -349,17 +349,17 @@ Property
 		}
 	}
 
-	MalterlibThread_LinuxUseStaticThreadLocal define bool = false // User(Undocumented)=true: Use static thread locals on Linux. WARNING: This only works for executables, or load time dynamic libraries. Dynamic libraries loaded with dlopen() will not work, unless Malterlib_AssumeMalterlibHost is also specified.
-	MalterlibThread_LinuxAssumeGlibc define bool = true // User(Undocumented)=false: Executable will only work on glibc system. Speeds up thread self access.
-	Malterlib_AssumeMalterlibHost define bool = false // User(Undocumented)=true: Dynamic libraries will only work when loaded from a process that uses Malterlib. Speeds up thread local access.
-	Malterlib_LinuxInitInPreInitArray define bool = false // User: Init before other shared libraries has been initialized. This can cause problems in some GLIBC versions
-	Malterlib_LinuxLinker define string = "lld" // User(Toolset)="gold": Which linker to use on linux. Defaults to lld
+	MalterlibThread_LinuxUseStaticThreadLocal: bool = false // User(Undocumented)=true: Use static thread locals on Linux. WARNING: This only works for executables, or load time dynamic libraries. Dynamic libraries loaded with dlopen() will not work, unless Malterlib_AssumeMalterlibHost is also specified.
+	MalterlibThread_LinuxAssumeGlibc: bool = true // User(Undocumented)=false: Executable will only work on glibc system. Speeds up thread self access.
+	Malterlib_AssumeMalterlibHost: bool = false // User(Undocumented)=true: Dynamic libraries will only work when loaded from a process that uses Malterlib. Speeds up thread local access.
+	Malterlib_LinuxInitInPreInitArray: bool = false // User: Init before other shared libraries has been initialized. This can cause problems in some GLIBC versions
+	Malterlib_LinuxLinker: string = "lld" // User(Toolset)="gold": Which linker to use on linux. Defaults to lld
 }
 
 // Product version
 Property
 {
-	ProductVersionExtra define string
+	ProductVersionExtra: string
     ProductVersionExtra "D"
 	{
 		&
@@ -373,19 +373,19 @@ Property
 		!!ProductVersionExtra undefined
 	}
 
-    ProductVersionMajor define string = "1"
-    ProductVersionMinor define string = "0"
-    ProductVersionRevision define string = "001"
+    ProductVersionMajor: string = "1"
+    ProductVersionMinor: string = "0"
+    ProductVersionRevision: string = "001"
 
-    ProductName define string = "Unnamed Product"
-    ProductCompanyUniqueIdentifier define string = "com.example"
-    ProductCompany define string = "Unknown company"
-    ProductCountry define string = "XX"
-    ProductLocality define string = "Unknown"
-    ProductOrganizationalUnit define string = "Unknown"
-    ProductContact define string = "Malterlib <support@malterlib.com>"
-    ProductCopyright define string = `Copyright © @(DateTime('{YYYY}')) @(ProductCompany). All rights reserved.`
-	ProductDescription define string = ProductName
-    ProductFileName define string = Workspace:Workspace.Name
-	ProductVersionHex define string = `000@(ProductVersionMajor)@(ProductVersionMinor)@(ProductVersionRevision)`
+    ProductName: string = "Unnamed Product"
+    ProductCompanyUniqueIdentifier: string = "com.example"
+    ProductCompany: string = "Unknown company"
+    ProductCountry: string = "XX"
+    ProductLocality: string = "Unknown"
+    ProductOrganizationalUnit: string = "Unknown"
+    ProductContact: string = "Malterlib <support@malterlib.com>"
+    ProductCopyright: string = `Copyright © @(DateTime('{YYYY}')) @(ProductCompany). All rights reserved.`
+	ProductDescription: string = ProductName
+    ProductFileName: string = Workspace:Workspace.Name
+	ProductVersionHex: string = `000@(ProductVersionMajor)@(ProductVersionMinor)@(ProductVersionRevision)`
 }

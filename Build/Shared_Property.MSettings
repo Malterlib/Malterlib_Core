@@ -3,13 +3,13 @@
 
 Property
 {
-	MalterlibDependenciesDirectory define string
-	MalterlibCompiledFiles define string
-	MalterlibDevelopmentRoot define string
-	MalterlibDeployRoot define string
-	MalterlibRemoteDeployDebugRoot define string
-	MalterlibDeploySymbolsPath define string
-	HOME define string
+	MalterlibDependenciesDirectory: string
+	MalterlibCompiledFiles: string
+	MalterlibDevelopmentRoot: string
+	MalterlibDeployRoot: string
+	MalterlibRemoteDeployDebugRoot: string
+	MalterlibDeploySymbolsPath: string
+	HOME: string
 }
 
 // Windows paths
@@ -210,11 +210,11 @@ Property
 
 Property
 {
-	MaltelibBasePathAbsolute define string = Builtin.BasePathAbsolute
-	MaltelibBasePathName define string = MaltelibBasePathAbsolute->GetFile()
+	MaltelibBasePathAbsolute: string = Builtin.BasePathAbsolute
+	MaltelibBasePathName: string = MaltelibBasePathAbsolute->GetFile()
 
-	MalterlibCompiledFilesSourceBase define string = `@(MalterlibCompiledFiles)@(MaltelibBasePathName)-@(Builtin.GeneratedBuildSystemDir->HashSHA256(8))`
-	GeneratedGlobalDirectory define string = `@(MalterlibCompiledFilesSourceBase)/Generated/`
+	MalterlibCompiledFilesSourceBase: string = `@(MalterlibCompiledFiles)@(MaltelibBasePathName)-@(Builtin.GeneratedBuildSystemDir->HashSHA256(8))`
+	GeneratedGlobalDirectory: string = `@(MalterlibCompiledFilesSourceBase)/Generated/`
 }
 
 // Calculated properties
@@ -251,7 +251,7 @@ Property
 		}
 	}
 
-	MalterlibGenerateLibrary define bool = true
+	MalterlibGenerateLibrary: bool = true
 
 /*	MalterlibGenerateLibrary false
 	{

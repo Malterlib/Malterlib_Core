@@ -1,0 +1,225 @@
+// Copyright © 2022 Favro Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Type
+{
+	CProperty: {
+		Type: string
+		, Name: string
+	}
+}
+
+Type
+{
+	CPosition: {
+		File: string
+		, Line: int
+		, Column: int
+		, Message: string
+		, Identifier: string
+	}
+}
+
+Property
+{
+	Compiler: string?
+
+	Compiler "Clang"
+	{
+		&
+		{
+			Compiler undefined
+			GeneratorFamily "Xcode"
+			|
+			{
+				CompileDialect "C"
+				Compile.Type "Assembler"
+			}
+		}
+	}
+	Compiler "MSVC"
+	{
+		&
+		{
+			Compiler undefined
+			GeneratorFamily "VisualStudio"
+			|
+			{
+				CompileDialect "C"
+			}
+		}
+	}
+
+	f_PrefixFlagsHelper function (string _Flags) [string] = []
+	f_PrefixFlagsHelper =+ `@(Prefix)@(_Flags)`
+
+	f_PrefixFlags function (one_of(string, [string], [[string]], undefined) _Flags, string _Prefix) one_of(string, [string]) = []
+	f_PrefixFlags `@(_Prefix)@(_Flags)`
+	{
+		!!_Flags->IsString() true
+	}
+	f_PrefixFlags _Flags->fg_ExpandRecursiveStringArray()->ForEach(&f_PrefixFlagsHelper, {Prefix: _Prefix})
+	{
+		!_Flags->IsString() true
+	}
+
+	f_ExpandFlagsHelper function (string _Flags) [string] = []
+	f_ExpandFlagsHelper =+ _Flags
+
+	f_ExpandFlags function (one_of(string, [string], [[string]], undefined) _Flags) one_of(string, [string], [[string]]) = []
+	f_ExpandFlags [_Flags]
+	{
+		!!_Flags->IsString() true
+	}
+	f_ExpandFlags _Flags
+	{
+		!_Flags->IsString() true
+	}
+
+	f_BoolToString function(bool _Value) string = _Value->ToString()
+
+	f_Helper_ShortenAllPaths function(string _Path) [string] = []
+	f_Helper_ShortenAllPaths =+ _Path->ShortenPath()
+
+	f_Helper_AllWindowsPath function(string _Path) [string] = []
+	f_Helper_AllWindowsPath =+ _Path->WindowsPath()
+
+	f_EscapeMSBuild function(string _String) [string] = []
+	f_EscapeMSBuild =+ _String->EscapeMSBuild()
+
+	f_JoinMSBuild function([string] _Array, string? _Separator = ";") string
+	f_JoinMSBuild _Array->ForEach(&f_EscapeMSBuild)->Join(_Separator)
+}
+
+GeneratorSetting
+{
+	Workspace: type(CWorkspace)
+	Target: type(CTarget)
+	Compile: type(CCompile)
+	Dependency: type(CDependency)
+	DefinedProperties: [type(CProperty)]
+	FileLevel: bool = false
+}
+
+Type
+{
+	CCompileSettingsWithPosition: {
+		Value: type(CCompileSettings)
+		, Positions: [type(CPosition)]
+		, Property: type(CProperty)
+	}
+
+	CTargetSettingsWithPosition: {
+		Value: type(CTargetSettings)
+		, Positions: [type(CPosition)]
+		, Property: type(CProperty)
+	}
+
+	CStringWithPosition: {
+		Value: string
+		, Positions: [type(CPosition)]
+	}
+
+	COptionalStringWithPosition: {
+		Value: string?
+		, Positions: [type(CPosition)]
+	}
+
+	CStringArrayWithPosition: {
+		Value: [string]
+		, Positions: [type(CPosition)]
+	}
+
+	COptionalStringArrayWithPosition: {
+		Value: [string]?
+		, Positions: [type(CPosition)]
+	}
+
+	CIntWithPosition: {
+		Value: int
+		, Positions: [type(CPosition)]
+	}
+
+	COptionalIntWithPosition: {
+		Value: int?
+		, Positions: [type(CPosition)]
+	}
+}
+
+GeneratorSetting
+{
+	GetCompileSettingType: one_of(type(CCompileSettings), undefined)
+	GetTargetSettingType: one_of(type(CTargetSettings), undefined)
+
+	f_GetSetting function(type(CProperty) _Property) one_of(type(CCompileSettingsWithPosition), [any])
+	f_GetSetting &GeneratorSetting.@(_Property<Type>)_@(_Property<Name>)->WithPositionOverridingType(&GeneratorSetting.GetCompileSettingType)
+
+/*
+	TODO: Implement built in switch expression
+	f_GetSetting switch(GeneratorSetting.f_GetSetting<Value>) {
+		undefined: ErrorWithPositions(&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : "")`)
+		, {}: []
+		, default: GeneratorSetting.f_GetSetting + {
+			Property: _Property
+		}
+	}
+*/
+
+	f_GetSetting ErrorWithPositions(&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : "")`)
+	{
+		!!GeneratorSetting.f_GetSetting<Value> undefined
+	}
+
+	f_GetSetting =+ {
+		Property: _Property
+	}
+	{
+		GeneratorSetting.f_GetSetting<Value> != {}
+	}
+
+	f_GetSetting []
+	{
+		!!GeneratorSetting.f_GetSetting<Value> {}
+	}
+
+	f_GetSettings function(type(CProperty) _Property) [type(CCompileSettingsWithPosition)] = []
+	f_GetSettings =+ GeneratorSetting.f_GetSetting(_Property)
+
+
+
+	f_GetTargetSetting function(type(CProperty) _Property) one_of(type(CTargetSettingsWithPosition), [any])
+	f_GetTargetSetting &GeneratorSetting.@(_Property<Type>)_@(_Property<Name>)->WithPositionOverridingType(&GeneratorSetting.GetTargetSettingType)
+
+/*
+	TODO: Implement built in switch expression
+	f_GetTargetSetting switch(GeneratorSetting.f_GetTargetSetting<Value>) {
+		undefined: ErrorWithPositions(&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : "")`)
+		, {}: []
+		, default: GeneratorSetting.f_GetTargetSetting + {
+			Property: _Property
+		}
+	}
+*/
+
+	f_GetTargetSetting ErrorWithPositions(&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : "")`)
+	{
+		!!GeneratorSetting.f_GetTargetSetting<Value> undefined
+	}
+
+	f_GetTargetSetting =+ {
+		Property: _Property
+	}
+	{
+		GeneratorSetting.f_GetTargetSetting<Value> != {}
+	}
+
+	f_GetTargetSetting []
+	{
+		!!GeneratorSetting.f_GetTargetSetting<Value> {}
+	}
+
+	f_GetTargetSettings function(type(CProperty) _Property) [type(CTargetSettingsWithPosition)] = []
+	f_GetTargetSettings =+ GeneratorSetting.f_GetTargetSetting(_Property)
+
+
+}

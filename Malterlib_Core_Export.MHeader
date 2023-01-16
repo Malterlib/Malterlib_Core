@@ -3,12 +3,12 @@
 
 Property
 {
-	MalterlibExportDirectory define string
+	MalterlibExportDirectory: string
 	MalterlibExportDirectory `@(Builtin.GeneratedBuildSystemDir)/Export/@(Platform)/@(Architecture)/@(FullConfiguration)`
 	{
 		!!MalterlibExportDirectory undefined
 	}
-	MalterlibExportSupportQuotes define bool = true
+	MalterlibExportSupportQuotes: bool = true
 }
 
 %Target "Malterlib_Export"
@@ -83,7 +83,7 @@ Property
 
 	Property
 	{
-		MalterlibExportCompileFlagsTypes define [type(CEntity)] = []
+		MalterlibExportCompileFlagsTypes: [type(CEntity)] = []
 		MalterlibExportCompileFlagsTypes =+ ["C", "C++"]
 		MalterlibExportCompileFlagsTypes =+ ["ObjC", "ObjC++"]
 		{
@@ -95,8 +95,8 @@ Property
 	{
 		Property
 		{
-			FileFullPath define string = `Export/Malterlib_Core_Export_@(this.Identity)`->MakeAbsolute()
-  			EntityPath define string = `Target:*.Group:Source.Group:@(this.Identity)."File:@(FileFullPath)"`
+			FileFullPath: string = `Export/Malterlib_Core_Export_@(this.Identity)`->MakeAbsolute()
+  			EntityPath: string = `Target:*.Group:Source.Group:@(this.Identity)."File:@(FileFullPath)"`
  		}
 		Property
 		{
@@ -130,14 +130,14 @@ Property
 				}
 			}
 
-			CompileFlags_PreprocessorDefines define string = GetProperty("Compile", "PreprocessorDefines", EntityPath, {Compile.Type: "C++"})->ForEach("CompileFlags_PreprocessorDefines_Template")
+			CompileFlags_PreprocessorDefines: string = GetProperty(&Compile.PreprocessorDefines, EntityPath, {Compile.Type: "C++"})->ForEach(&CompileFlags_PreprocessorDefines_Template)
 		}
 		Property
 		{
 			CompileFlags_IncludePaths_Template function(string _Path) string
 			CompileFlags_IncludePaths_Template += `@(`-I@(_Path)`->Escape()) `
 
-			CompileFlags_IncludePaths define string = GetProperty("Compile", "SearchPath", EntityPath, {Compile.Type: "C++"})->ForEach("CompileFlags_IncludePaths_Template")
+			CompileFlags_IncludePaths: string = GetProperty(&Compile.SearchPath, EntityPath, {Compile.Type: "C++"})->ForEach(&CompileFlags_IncludePaths_Template)
 		}
 
 		GenerateFile
@@ -154,26 +154,34 @@ Property
 	{
 		Property
 		{
-			LDFlags_EntityPath define string = "Workspace:*.Target:Dll_Malterlib_Export_Dll.Target:Dll_Malterlib_Export_Dll"
-			LDFlags_Contents define string = fg_RecursiveStringArrayToCommandLine(
+			LDFlags_EntityPath: string = "Workspace:*.Target:Dll_Malterlib_Export_Dll.Target:Dll_Malterlib_Export_Dll"
+			LDFlags_Contents: string = ""
+			LDFlags_Contents fg_RecursiveStringArrayToCommandLine(
 				Concat(
-					GetProperty("Target", "LDFlagsFirst", LDFlags_EntityPath, {Compile.Type: "C++"})
-					, GetProperty("Target", "LDFlags", LDFlags_EntityPath, {Compile.Type: "C++"})
-				)
-			)
-			
-			LinkWithLibraries_Contents define string?
-			LinkWithLibraries_Contents fg_RecursiveStringArrayToCommandLine(
-				Concat(
-					GetProperty("Target", "RealLinkWithLibraries", LDFlags_EntityPath, {Compile.Type: "C++"})
+					GetProperty(&Target.LDFlagsFirst, LDFlags_EntityPath, {Compile.Type: "C++"})
+					, GetProperty(&Target.LDFlags, LDFlags_EntityPath, {Compile.Type: "C++"})
 				)
 			)
 			{
-				!GetProperty("Target", "RealLinkWithLibraries", LDFlags_EntityPath, {Compile.Type: "C++"}) undefined
+				|
+				{
+					PlatformFamily "macOS"
+					PlatformFamily "Linux"
+				}
+			}
+			
+			LinkWithLibraries_Contents: string?
+			LinkWithLibraries_Contents fg_RecursiveStringArrayToCommandLine(
+				Concat(
+					GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"})
+				)
+			)
+			{
+				!GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"}) undefined
 			}
 
-			NeedsOverrideLibrary define bool = GetProperty("Property", "MalterlibNeedsMallocOverrideLibrary", LDFlags_EntityPath, {Compile.Type: "C++"})
-			OverrideLibrary define string = GetProperty("Property", "MalterlibOverrideMallocLibrary", LDFlags_EntityPath, {Compile.Type: "C++"})
+			NeedsOverrideLibrary: bool = GetProperty(&MalterlibNeedsMallocOverrideLibrary, LDFlags_EntityPath, {Compile.Type: "C++"})
+			OverrideLibrary: string = GetProperty(&MalterlibOverrideMallocLibrary, LDFlags_EntityPath, {Compile.Type: "C++"})
 		}
 		GenerateFile
 		{
@@ -183,7 +191,7 @@ Property
 			{
 				!LinkWithLibraries_Contents undefined
 			}
-			Contents =+ ` "@(OverrideLibrary)"`
+			Contents += `"@(OverrideLibrary)" `
 			{
 				!!NeedsOverrideLibrary true
 			}
@@ -197,28 +205,37 @@ Property
 	{
 		Property
 		{
-			LDFlags_EntityPath define string = "Workspace:*.Target:Exe_Malterlib_Export_Exe.Target:Exe_Malterlib_Export_Exe"
-			LDFlags_Contents define string = fg_RecursiveStringArrayToCommandLine(
+			LDFlags_EntityPath: string = "Workspace:*.Target:Exe_Malterlib_Export_Exe.Target:Exe_Malterlib_Export_Exe"
+			LDFlags_Contents: string = ""
+			LDFlags_Contents fg_RecursiveStringArrayToCommandLine(
 				Concat(
-					GetProperty("Target", "LDFlagsFirst", LDFlags_EntityPath, {Compile.Type: "C++"})
-					, GetProperty("Target", "LDFlags", LDFlags_EntityPath, {Compile.Type: "C++"})
-				)
-			)
-			LinkWithLibraries_Contents define string?
-			LinkWithLibraries_Contents fg_RecursiveStringArrayToCommandLine(
-				Concat(
-					GetProperty("Target", "RealLinkWithLibraries", LDFlags_EntityPath, {Compile.Type: "C++"})
+					GetProperty(&Target.LDFlagsFirst, LDFlags_EntityPath, {Compile.Type: "C++"})
+					, GetProperty(&Target.LDFlags, LDFlags_EntityPath, {Compile.Type: "C++"})
 				)
 			)
 			{
-				!GetProperty("Target", "RealLinkWithLibraries", LDFlags_EntityPath, {Compile.Type: "C++"}) undefined
+				|
+				{
+					PlatformFamily "macOS"
+					PlatformFamily "Linux"
+				}
 			}
-			NeedsOverrideLibrary define bool = GetProperty("Property", "MalterlibNeedsMallocOverrideLibrary", LDFlags_EntityPath, {Compile.Type: "C++"})
-			OverrideLibrary define string = GetProperty("Property", "MalterlibOverrideMallocLibrary", LDFlags_EntityPath, {Compile.Type: "C++"})
+
+			LinkWithLibraries_Contents: string?
+			LinkWithLibraries_Contents fg_RecursiveStringArrayToCommandLine(
+				Concat(
+					GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"})
+				)
+			)
+			{
+				!GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"}) undefined
+			}
+			NeedsOverrideLibrary: bool = GetProperty(&MalterlibNeedsMallocOverrideLibrary, LDFlags_EntityPath, {Compile.Type: "C++"})
+			OverrideLibrary: string = GetProperty(&MalterlibOverrideMallocLibrary, LDFlags_EntityPath, {Compile.Type: "C++"})
 		}
 		Property
 		{
-			NoApp_Object define string =`@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/Exe_Malterlib_Export_NoExe/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_Export_NoExecutable.o`
+			NoApp_Object: string =`@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/Exe_Malterlib_Export_NoExe/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_Export_NoExecutable.o`
 		}
 		GenerateFile
 		{
@@ -228,7 +245,7 @@ Property
 			{
 				!LinkWithLibraries_Contents undefined
 			}
-			Contents =+ ` "@(OverrideLibrary)"`
+			Contents += ` "@(OverrideLibrary)"`
 			{
 				!!NeedsOverrideLibrary true
 			}

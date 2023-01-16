@@ -147,7 +147,11 @@ Compile
 			{
 				Compile.StackGuard false
 				{
-					!!PlatformFamily "macOS"
+					&
+					{
+						CompileDialect "C"
+						PlatformFamily "macOS"
+					}
 				}
 				%File "../Memory/Source/Malterlib_Memory_SystemOverride*"
 				%File "../Memory/Source/Malterlib_Memory_SystemOverride_MacOS.cpp"

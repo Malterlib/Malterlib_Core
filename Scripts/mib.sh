@@ -16,7 +16,11 @@ while true; do
 	export MToolIsMalterlib="true"
 
 	set +e
-	"$MalterlibExecutable" "$@" $ExtraOptions
+	(
+		unset MToolDirectory
+		unset MToolPath
+		"$MalterlibExecutable" "$@" $ExtraOptions
+	)
 	MToolExit=$?
 	set -e
 

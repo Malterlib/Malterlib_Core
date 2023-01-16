@@ -1,0 +1,280 @@
+// Copyright © 2023 Favro Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+GeneratorSetting
+{
+	!!Compiler "Clang"
+
+	Compile_BuiltinSearchPath =+ {
+		Flags: Compile.BuiltinSearchPath->f_PrefixFlags("-I")
+		, Type: "unique"
+		, XCConfigs: {
+			"HEADER_SEARCH_PATHS": Compile.BuiltinSearchPath
+		}
+	}
+
+	Compile_PrefixHeader =+ {
+		XCConfigs: {
+			"GCC_PREFIX_HEADER": Compile.PrefixHeader
+		}
+	}
+
+	Compile_PrecompilePrefixHeader =+ {
+		XCConfigs: {
+			"GCC_PRECOMPILE_PREFIX_HEADER": Compile.PrecompilePrefixHeader->SwitchWithError(
+				"Unsupported option: "
+				, true, "YES"
+				, false, "NO"
+				, "XInternalCreate", []
+			)
+		}
+	}
+}
+
+GeneratorSetting
+{
+	!!Compile.Type "QtMoc"
+
+	Compile_DoCompileAndLink {
+		XCConfigs: {
+			"FilesExcludedFromCompile": !Compile.DoCompileAndLink
+		}
+	}
+
+	Compile_ObjectFileName =+ {
+		XCConfigs: {
+			"MOC_OUTPUT_PATTERN": Compile.ObjectFileName
+		}
+	}
+
+	Compile_MalterlibDependencyFileName =+ {
+		XCConfigs: {
+			"MOC_MALTERLIB_DEPENDENCY": Compile.MalterlibDependencyFileName
+		}
+	}
+
+	Compile_SearchPath =+ {
+		XCConfigs: {
+			"MOC_HEADER_SEARCH_PATHS": Compile.SearchPath
+		}
+	}
+
+	Compile_IncludePathPrefix =+ {
+		XCConfigs: {
+			"MOC_INCLUDE_PREFIX": Compile.IncludePathPrefix
+		}
+	}
+
+	Compile_PreprocessorDefines =+ {
+		XCConfigs: {
+			"MOC_DEFINES": Compile.PreprocessorDefines
+		}
+	}
+
+	Compile_PrefixHeader =+ {
+		XCConfigs: {
+			"MOC_FORCE_INCLUDE": Compile.PrefixHeader
+		}
+	}
+
+	Compile_DoNotDisplayWarnings =+ {
+		XCConfigs: {
+			"MOC_NO_WARNINGS": Compile.DoNotDisplayWarnings
+		}
+	}
+
+	Compile_DoCompileAndLink =+ {
+		XCConfigs: {
+			"FilesExcludedFromCompile": Compile.DoCompileAndLink->SwitchWithError(
+				"Unsupported option: "
+				, true, false
+				, false, true
+			)
+		}
+	}
+
+	Compile_PreprocessOnly {}
+	Compile_PreprocessorUnDefinitions {}
+	Compile_DoNotGenerateInclude {}
+	Compile_GenerateDebugInformation {}
+	Compile_Optimize {}
+}
+
+GeneratorSetting
+{
+	!!Compile.Type "QtUic"
+
+	Compile_ObjectFileName =+ {
+		XCConfigs: {
+			"UIC_OUTPUT_PATTERN": Compile.ObjectFileName
+		}
+	}
+
+	Compile_NoProtection =+ {
+		XCConfigs: {
+			"UIC_GUARDS": Compile.NoProtection
+		}
+	}
+
+	Compile_SearchPath {}
+	Compile_DisplayDependencies {}
+	Compile_NoImplicitIncludes {}
+	Compile_Optimize {}
+}
+
+GeneratorSetting
+{
+	!!Compile.Type "QtRcc"
+
+	Compile_ObjectFileName =+ {
+		XCConfigs: {
+			"RCC_OUTPUT_PATTERN": Compile.ObjectFileName
+		}
+	}
+
+	Compile_InitFunc =+ {
+		XCConfigs: {
+			"RCC_INIT_FUNC": Compile.InitFunc
+		}
+	}
+
+	Compile_MalterlibDependencyFileName =+ {
+		XCConfigs: {
+			"RCC_MALTERLIB_DEPENDENCY": Compile.MalterlibDependencyFileName
+		}
+	}
+
+	Compile_NoCompress =+ {
+		XCConfigs: {
+			"RCC_COMPRESS": Compile.NoCompress
+		}
+	}
+
+	Compile_Namespace =+ {
+		XCConfigs: {
+			"RCC_DISABLE_NAMESPACE": Compile.Namespace
+		}
+	}
+
+	Compile_DoCompileAndLink {}
+	Compile_Optimize {}
+}
+
+GeneratorSetting
+{
+	!!Compile.Type "MlTwk"
+
+	Compile_ObjectFileName =+ {
+		XCConfigs: {
+			"TWK_OUTPUT_PATTERN": Compile.ObjectFileName
+		}
+	}
+
+	Compile_GenerateDebugInformation {}
+	Compile_Optimize {}
+}
+
+GeneratorSetting
+{
+	!!Compile.Type "MalterlibFS"
+
+	Compile_ExtraCompilerFlags =+ {
+		XCConfigs: {
+			"VFS_ADDITIONAL_OPTIONS": Compile.ExtraCompilerFlags
+		}
+	}
+
+	Compile_VerboseLogging =+ {
+		XCConfigs: {
+			"VFS_VERBOSE": Compile.VerboseLogging
+		}
+	}
+
+	Compile_OutputAsAssembly =+ {
+		XCConfigs: {
+			"VFS_OUTPUTASASSEMBLY": Compile.OutputAsAssembly
+		}
+	}
+
+	Compile_OutputAsObjectFile =+ {
+		XCConfigs: {
+			"VFS_OUTPUTASOBJECT": Compile.OutputAsObjectFile->SwitchWithError(
+				"Unsupported option: "
+				, false, false
+				, "Elf32", "Elf32"
+				, "Elf64", "Elf64"
+			)
+		}
+	}
+
+	Compile_ObjectFileName =+ {
+		XCConfigs: {
+			"VFS_OUTPUT_PATTERN": Compile.ObjectFileName
+		}
+	}
+
+	Compile_ASMFileName =+ {
+		XCConfigs: {
+			"VFS_OUTPUT_PATTERN_ASM": Compile.ASMFileName
+		}
+	}
+
+	Compile_Platform =+ {
+		XCConfigs: {
+			"VFS_PLATFORM": Compile.Platform
+		}
+	}
+
+	Compile_CppFileName =+ {
+		XCConfigs: {
+			"VFS_OUTPUT_PATTERN_CPP": Compile.CppFileName
+		}
+	}
+
+	Compile_DependencyFileName =+ {
+		XCConfigs: {
+			"VFS_DEPENDENCY_FILE": Compile.DependencyFileName
+		}
+	}
+
+	Compile_MalterlibDependencyFileName =+ {
+		XCConfigs: {
+			"VFS_MALTERLIB_DEPENDENCY_FILE": Compile.MalterlibDependencyFileName
+		}
+	}
+
+	Compile_MalterlibFSPathPrefix =+ {
+		XCConfigs: {
+			"VFS_PATH_PREFIX": Compile.MalterlibFSPathPrefix
+		}
+	}
+
+	Compile_Optimize {}
+	Compile_DoCompileAndLink {}  // We don't support this yet on MacOS
+}
+
+GeneratorSetting
+{
+	!!Compile.Type "Assembler"
+
+	Compile_SearchPath =+ {
+		Flags: Compile.SearchPath->f_PrefixFlags("-I")
+		, Type: "unique"
+	}
+
+	Compile_PreprocessorDefines =+ {
+		Flags: Compile.PreprocessorDefines->f_PrefixFlags("-D")
+		, Type: "unique"
+	}
+
+	Compile_AllCPUSubTypes =+ {
+		Flags: Compile.AllCPUSubTypes->SwitchWithError(
+			"Unsupported option: "
+			, true, "-force_cpusubtype_ALL"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_Optimize {}
+}

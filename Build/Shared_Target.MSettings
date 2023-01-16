@@ -26,21 +26,30 @@ Dependency
 		}
 	}
 	*/
-	LinkWithObjectFiles define bool = false
+	LinkWithObjectFiles: bool = false
 }
 
 Target
 {
-	Language define string?
-	TargetFrameworkVersion define string?
-	CLRSupport define bool?
-	ProjectDir define string?
-	ExternalDependencies define [string]?
-	CodeCoverageLinkerMapping define bool?
-	CodeCoverageMapping define bool?
-	InstrumentForOptimization define bool?
-	LinkWithStandardLibraries define bool?
-	SharedLibraryInstallPath define string?
+	Language: string?
+	TargetFrameworkVersion: string?
+	CLRSupport: one_of(bool, "NetCore")?
+	ProjectDir: string?
+	CodeCoverageLinkerMapping: bool?
+	CodeCoverageMapping: bool?
+	InstrumentForOptimization: bool?
+	LinkWithStandardLibraries: bool?
+	SharedLibraryInstallPath: string?
+}
+
+Target
+{
+	!!GeneratorFamily "VisualStudio"
+
+	CLRSupport false
+	{
+		!!Target.CLRSupport undefined
+	}
 }
 
 // Target type
@@ -60,9 +69,9 @@ Target
 // Properties derived from target type
 Property
 {
-	MalterlibExportEnvironmentMinGW define bool?
+	MalterlibExportEnvironmentMinGW: bool?
 
-	TargetIsExecutable define bool = false
+	TargetIsExecutable: bool = false
 	TargetIsExecutable true
 	{
 		&
@@ -81,7 +90,7 @@ Property
 		}
 	}
 
-	TargetIsLaunchableExecutable define bool = false
+	TargetIsLaunchableExecutable: bool = false
 	TargetIsLaunchableExecutable true
 	{
 		&
@@ -96,20 +105,20 @@ Property
 		}
 	}
 
-	TargetExecutable define string = `@(Target.FileName)@(Target.FileExtension)`
-	TargetIdentity define string
+	TargetExecutable: string = `@(Target.FileName)@(Target.FileExtension)`
+	TargetIdentity: string
 	TargetIdentity Target:this.Identity
 
-	WorkspaceIdentity define string
+	WorkspaceIdentity: string
 	WorkspaceIdentity Workspace:this.Identity
 
-	MalterlibTargetNameType define one_of("Suffixed", "Normal", "BaseName", "Launcher", "Config", "Architectured") = "Normal"
+	MalterlibTargetNameType: one_of("Suffixed", "Normal", "BaseName", "Launcher", "Config", "Architectured") = "Normal"
 }
 
 // Name / Filename
 Target
 {
-	BaseName define string = this.Identity
+	BaseName: string = this.Identity
 
 	Name `Com_@(Target.BaseName)`
 	{
@@ -170,7 +179,7 @@ Target
 		}
 	}
 
-	BaseFileName define string = Target.BaseName
+	BaseFileName: string = Target.BaseName
 
 	// Filename
 	FileName `@(Target.BaseFileName)@(MalterlibConfigSuffix)_@(MalterlibArchitectureSuffix)@(MalterlibTargetExtraSuffix)`
@@ -226,16 +235,16 @@ Target
 	}
 }
 
-Property.MalterlibGenerateScheme define bool = true
+Property.MalterlibGenerateScheme: bool = true
 
 Target
 {
 	!!GeneratorFamily "Xcode"
 
-	EnableModuleDebugging define bool?
+	EnableModuleDebugging: bool?
 	EnableModuleDebugging false
 
-	GenerateScheme define bool?
+	GenerateScheme: bool
 
 	GenerateScheme MalterlibGenerateScheme
 	{
@@ -265,19 +274,21 @@ Target
 {
 	!!LanguageFamily ".NET"
 
-	DefaultNamespace define string?
+	GenerateAssemblyInfo: bool = false
+
+	DefaultNamespace: string?
 	DefaultNamespace Target:Target.BaseFileName
 	{
 		!!Target.DefaultNamespace undefined
 	}
 
-	PlatformTarget define string?
+	PlatformTarget: string?
 	PlatformTarget Architecture
 
-	ErrorReport define string?
+	ErrorReport: string?
 	ErrorReport "prompt"
 
-	CodeAnalysisRuleSet define string?
+	CodeAnalysisRuleSet: string?
 	CodeAnalysisRuleSet "AllRules.ruleset"
 }
 
@@ -342,7 +353,7 @@ Target
 	}
 }
 
-Target.DriverType define string?
+Target.DriverType: string?
 
 // File extensions macOS
 Target
@@ -431,12 +442,12 @@ Target
 
 Property
 {
-	MalterlibUseClangForWindows define bool = false // User(Toolset)=true: Enable clang compilation for Windows platform
+	MalterlibUseClangForWindows: bool = false // User(Toolset)=true: Enable clang compilation for Windows platform
 }
 
 Target
 {
-	ExportScriptEnvironment define [string] = []
+	ExportScriptEnvironment: [string] = []
 }
 
 Property
@@ -446,7 +457,7 @@ Property
 		GeneratorFamily "VisualStudio"
 	}
 
-	MalterlibExportEnvironmentScript define string? = `@(GeneratedDirectory)ExportEnvironment.bat`
+	MalterlibExportEnvironmentScript: string? = `@(GeneratedDirectory)ExportEnvironment.bat`
 }
 
 %Group "~Automatic/Export Environment"
@@ -479,12 +490,25 @@ Target
 
 Target
 {
-	CommandLine_Build define string?
-	CommandLine_ReBuild define string?
-	CommandLine_Clean define string?
+	CommandLine_Build: string?
+	CommandLine_ReBuild: string?
+	CommandLine_Clean: string?
 
-	CommandLine_Inputs define [string]?
-	CommandLine_Outputs define [string]?
+	CommandLine_Inputs: [string]?
+	CommandLine_Outputs: [string]?
+}
+
+Target
+{
+	CommandLine_Build ""
+	{
+		&
+		{
+			Target.Type "Tool"
+			Target.CommandLine_Build undefined
+			GeneratorFamily "Xcode"
+		}
+	}
 }
 
 Target
@@ -496,11 +520,11 @@ Target
 		GeneratorFamily "VisualStudio"
 	}
 
-	Real_CommandLine_Build define string = "rem\r\n"
-	Real_CommandLine_ReBuild define string = "rem\r\n"
-	Real_CommandLine_Clean define string = "rem\r\n"
+	Real_CommandLine_Build: string = "rem\r\n"
+	Real_CommandLine_ReBuild: string = "rem\r\n"
+	Real_CommandLine_Clean: string = "rem\r\n"
 
-	CommandLine_VerifyInputsAndOutputsExist define bool = false
+	CommandLine_VerifyInputsAndOutputsExist: bool = false
 }
 
 Target
@@ -555,12 +579,12 @@ Target
 		GeneratorFamily "VisualStudio"
 	}
 
-	UseMultiToolTask define bool = true
-	EnforceProcessCountAcrossBuilds define bool = true
-	UseMsbuildResourceManager define bool = false
-	MultiProcCL define bool = true
+	UseMultiToolTask: bool = true
+	EnforceProcessCountAcrossBuilds: bool = true
+	UseMsbuildResourceManager: bool = false
+	MultiProcCL: bool = true
 
-	VisualStudioPlatform define string?
+	VisualStudioPlatform: string?
 	VisualStudioPlatform "Clang"
 	{
 		&
@@ -610,7 +634,7 @@ Target
 		}
 	}
 
-	ClCompileSuffix define string?
+	ClCompileSuffix: string?
 	ClCompileSuffix "_Clang"
 	{
 		!!Target.VisualStudioPlatform "Clang"
@@ -619,7 +643,12 @@ Target
 
 Property
 {
-	MalterlibVisualStudioToolset define string? // User(Toolset)=: Manually set another visual studio toolset
+	MalterlibVisualStudioToolset: string? // User(Toolset)=: Manually set another visual studio toolset
+}
+
+Target
+{
+	PlatformToolsetCompiler: string?
 }
 
 // Windows
@@ -630,6 +659,8 @@ Target
 		PlatformType "Windows"
 		LanguageFamily "Native"
 	}
+
+	PlatformToolset: string?
 
 	// Toolset
 	PlatformToolset "clang"
@@ -655,7 +686,7 @@ Target
 		}
 	}
 
-	EnableASAN define bool?
+	EnableASAN: bool?
 	EnableASAN true
 	{
 		!!MalterlibSupportSanitizerEnable_Address true
@@ -711,42 +742,41 @@ Target
 		!!Target.PlatformToolset undefined
 	}
 
-	PlatformToolsetCompiler define string?
 	PlatformToolsetCompiler "x:/Development/Malterlib/llvm/unstable/build/VisualStudio2012/bin/RelWithDebInfo/clang.exe"
 	{
 		!!Target.PlatformToolset "clang"
 	}
 
-	PlatformVersion define string?
+	PlatformVersion: string?
 	PlatformVersion MalterlibMaxSupportedWindowsVersion
 	{
 		!!Target.PlatformVersion undefined
 	}
 
-	IgnoreWarnCompileDuplicatedFilename define bool?
+	IgnoreWarnCompileDuplicatedFilename: bool?
 	IgnoreWarnCompileDuplicatedFilename true
 	{
 		!!Generator "VisualStudio2013"
 	}
 
-	CharacterSet define string?
+	CharacterSet: string?
 	CharacterSet "Unicode"
 	{
 		!!Target.CharacterSet undefined
 	}
 
-	UseOfMfc define bool?
+	UseOfMfc: bool?
 	UseOfMfc false
 	{
 		!!Target.UseOfMfc undefined
 	}
-	UseOfAtl define bool?
+	UseOfAtl: bool?
 	UseOfAtl false
 	{
 		!!Target.UseOfAtl undefined
 	}
 
-	TargetMachine define string?
+	TargetMachine: string?
 	TargetMachine "MachineX86"
 	{
 		&
@@ -764,13 +794,13 @@ Target
 		}
 	}
 
-	DefaultToolArchitecture define string?
+	DefaultToolArchitecture: string?
 	DefaultToolArchitecture "Native64Bit"
 	{
 		!!WindowsNativeToolChain true
 	}
 
-	ExtraLinkerFlags define [one_of(string, [string])]?
+	ExtraLinkerFlags: [one_of(string, [string])]?
 	ExtraLinkerFlags += [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", "DoxygenLD"], ["--doxygen-executable", "/Development/Malterlib/Tools/stable_build/bin/doxygen"]]
 	{
 		&
@@ -781,7 +811,7 @@ Target
 		}
 	}
 
-	ExtraLibFlags define [one_of(string, [string])]?
+	ExtraLibFlags: [one_of(string, [string])]?
 	ExtraLibFlags += [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", "DoxygenLibTool"]]
 	{
 		&
@@ -836,7 +866,7 @@ Target
 
 Property
 {
-	MalterlibSysRoot define string?
+	MalterlibSysRoot: string?
 	MalterlibSysRoot `@("../../../Binaries/MalterlibSDK"->MakeAbsolute())/@(PlatformFamily)/@(Architecture)/Linux.sdk`
 	{
 		|
@@ -846,7 +876,7 @@ Property
 		}
 	}
 
-	MalterlibToolsPrefix define string?
+	MalterlibToolsPrefix: string?
 	MalterlibToolsPrefix "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/"
 	{
 		!!PlatformFamily "Emscripten"
@@ -864,14 +894,14 @@ Property
 
 Property
 {
-	MalterlibLinkerDemangle define bool = true // User(Toolset)=false: Set to false to display mangled names in linker messages
-	MalterlibOverrideMSVCVersion define string?
+	MalterlibLinkerDemangle: bool = true // User(Toolset)=false: Set to false to display mangled names in linker messages
+	MalterlibOverrideMSVCVersion: string?
 
-	MalterlibDisableAutomaticResources define bool = false
+	MalterlibDisableAutomaticResources: bool = false
 
-	MalterlibUseLocalCompilerBuild define bool = false // User(Toolset)=true: Build llvm locally and use that for building
+	MalterlibUseLocalCompilerBuild: bool = false // User(Toolset)=true: Build llvm locally and use that for building
 
-	MalterlibMSVCVersion define string?
+	MalterlibMSVCVersion: string?
 	MalterlibMSVCVersion MalterlibOverrideMSVCVersion
 	{
 		&
@@ -881,15 +911,20 @@ Property
 		}
 	}
 
-	VisualStudioRootUnix define string = `@(Builtin.VisualStudioRoot->UnixPath())`
-	VisualStudioMSVCRootPath define string = `@(VisualStudioRootUnix)/VC/Tools/MSVC`
+	VisualStudioRootUnix: string = `@(Builtin.VisualStudioRoot->UnixPath())`
+	VisualStudioMSVCRootPath: string = `@(VisualStudioRootUnix)/VC/Tools/MSVC`
+
+	MalterlibMSVCVersion "14.34.31933"
+	{
+		!HostPlatformFamily "Windows"
+	}
 
 	MalterlibMSVCVersion VisualStudioMSVCRootPath->FindDirectoriesIn('*')<[0]>->GetFile()
 	{
 		!!MalterlibMSVCVersion undefined
 	}
 
-	PlatformToolsetCompiler define string? // User(Toolset)="/opt/Source/llvm-malterlib/build/main/bin/clang": Change the clang compiler location
+	PlatformToolsetCompiler: string? // User(Toolset)="/opt/Source/llvm-malterlib/build/main/bin/clang": Change the clang compiler location
 
 	PlatformToolsetCompiler MalterlibLLVMHostBinariesDirectory / "bin/clang"
 	{
@@ -931,7 +966,7 @@ Property
 			HostPlatformFamily "Windows"
 		}
 	}
-	PlatformToolsetCompilerBasePath define string?
+	PlatformToolsetCompilerBasePath: string?
 	PlatformToolsetCompilerBasePath PlatformToolsetCompiler->GetPath()->GetPath()
 	{
 		!PlatformToolsetCompiler undefined
@@ -959,33 +994,33 @@ Target
 {
 	!!GeneratorFamily "Xcode"
 
-	MToolPath define string?
+	MToolPath: string?
 	MToolPath MToolPath
 }
 
 Property
 {
 	fg_ExportScriptEnvironmentContents_Template function(string _EnvVar) string = ""
-	fg_ExportScriptEnvironmentContents_Template =+ `export @(_EnvVar)=@(GetProperty("Property", _EnvVar, "Target:*")->ToStringCompact()->Escape())\n`
+	fg_ExportScriptEnvironmentContents_Template =+ `export @(_EnvVar)=@(GetProperty(&@(_EnvVar), "Target:*")->ToStringCompact()->Escape())\n`
 	{
 		&
 		{
 			!PlatformFamily "Windows"
-			!GetProperty("Property", _EnvVar, "Target:*") undefined
+			!GetProperty(&@(_EnvVar), "Target:*") undefined
 		}
 	}
-	fg_ExportScriptEnvironmentContents_Template =+ `set @(_EnvVar)=@(GetProperty("Property", _EnvVar, "Target:*")->ToStringCompact())\r\n`
+	fg_ExportScriptEnvironmentContents_Template =+ `set @(_EnvVar)=@(GetProperty(&@(_EnvVar), "Target:*")->ToStringCompact())\r\n`
 	{
 		&
 		{
 			PlatformFamily "Windows"
 			!MalterlibExportEnvironmentMinGW true
-			!GetProperty("Property", _EnvVar, "Target:*") undefined
+			!GetProperty(&@(_EnvVar), "Target:*") undefined
 		}
 	}
 
 	fg_ExportScriptEnvironmentContents_MaybeMinGW function(string _EnvVar) string
-	fg_ExportScriptEnvironmentContents_MaybeMinGW GetProperty("Property", _EnvVar, "Target:*")->ToStringCompact()->UnixPath()
+	fg_ExportScriptEnvironmentContents_MaybeMinGW GetProperty(&@(_EnvVar), "Target:*")->ToStringCompact()->UnixPath()
 	fg_ExportScriptEnvironmentContents_MaybeMinGW fg_ExportScriptEnvironmentContents_MaybeMinGW->ParseFormatString("{}:/{}", "/{0,cl}/{1}")
 	{
 		!!fg_ExportScriptEnvironmentContents_MaybeMinGW ~"?:*"
@@ -997,15 +1032,15 @@ Property
 		{
 			PlatformFamily "Windows"
 			MalterlibExportEnvironmentMinGW true
-			!GetProperty("Property", _EnvVar, "Target:*") undefined
+			!GetProperty(&@(_EnvVar), "Target:*") undefined
 		}
 	}
 }
 
 Target
 {
-	ExportScriptEnvironmentContents define string ?
-	ExportScriptEnvironmentContents Target.ExportScriptEnvironment->ForEach("fg_ExportScriptEnvironmentContents_Template")
+	ExportScriptEnvironmentContents: string ?
+	ExportScriptEnvironmentContents Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContents_Template)
 }
 
 // Xcode workarounds
@@ -1018,56 +1053,56 @@ Target
 		MalterlibDefaultXcode true
 	}
 
-	IndexStoreEnable define string = "NO"
-	RetainCommentsFromSystemHeaders define string = "YES"
-	Workaround_GCC_ENABLE_TRIGRAPHS define string = ""
-	Workaround_GCC_ENABLE_PASCAL_STRINGS define string = ""
-	Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS define string = ""
-	Workaround_GCC_WARN_ABOUT_MISSING_PROTOTYPES define string = ""
-	Workaround_GCC_WARN_ABOUT_RETURN_TYPE define string = ""
-	Workaround_GCC_WARN_NON_VIRTUAL_DESTRUCTOR define string = ""
-	Workaround_GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS define string = ""
-	Workaround_CLANG_WARN__EXIT_TIME_DESTRUCTORS define string = ""
-	Workaround_GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED define string = ""
-	Workaround_GCC_WARN_MISSING_PARENTHESES define string = ""
-	Workaround_GCC_WARN_CHECK_SWITCH_STATEMENTS define string = ""
-	Workaround_GCC_WARN_UNUSED_FUNCTION define string = ""
-	Workaround_GCC_WARN_UNUSED_LABEL define string = ""
-	Workaround_GCC_WARN_UNUSED_PARAMETER define string = ""
-	Workaround_GCC_WARN_UNUSED_VARIABLE define string = ""
-	Workaround_GCC_WARN_UNUSED_VALUE define string = ""
-	Workaround_CLANG_WARN_EMPTY_BODY define string = ""
-	Workaround_GCC_WARN_UNINITIALIZED_AUTOS define string = ""
-	Workaround_GCC_WARN_UNKNOWN_PRAGMAS define string = ""
-	Workaround_GCC_WARN_SHADOW define string = ""
-	Workaround_GCC_WARN_FOUR_CHARACTER_CONSTANTS define string = ""
-	Workaround_CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION define string = ""
-	Workaround_CLANG_WARN_CONSTANT_CONVERSION define string = ""
-	Workaround_CLANG_WARN_INT_CONVERSION define string = ""
-	Workaround_CLANG_WARN_BOOL_CONVERSION define string = ""
-	Workaround_CLANG_WARN_ENUM_CONVERSION define string = ""
-	Workaround_CLANG_WARN_FLOAT_CONVERSION define string = ""
-	Workaround_CLANG_WARN_NON_LITERAL_NULL_CONVERSION define string = ""
-	Workaround_CLANG_WARN_OBJC_LITERAL_CONVERSION define string = ""
-	Workaround_GCC_WARN_64_TO_32_BIT_CONVERSION define string = ""
-	Workaround_GCC_WARN_ABOUT_MISSING_NEWLINE define string = ""
-	Workaround_CLANG_WARN_CXX0X_EXTENSIONS define string = ""
-	Workaround_GCC_CW_ASM_SYNTAX define string = ""
-	Workaround_GCC_STRICT_ALIASING define string = ""
-	Workaround_GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS define string = ""
-	Workaround_GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO define string = ""
-	Workaround_CLANG_WARN_IMPLICIT_SIGN_CONVERSION define string = ""
-	Workaround_CLANG_WARN_INFINITE_RECURSION define string = ""
-	Workaround_CLANG_WARN_SUSPICIOUS_MOVE define string = ""
-	Workaround_CLANG_WARN_COMMA define string = ""
-	Workaround_CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING define string = ""
-	Workaround_CLANG_WARN_STRICT_PROTOTYPES define string = ""
-	Workaround_CLANG_WARN_RANGE_LOOP_ANALYSIS define string = ""
+	IndexStoreEnable: string = "NO"
+	RetainCommentsFromSystemHeaders: string = "YES"
+	Workaround_GCC_ENABLE_TRIGRAPHS: string = ""
+	Workaround_GCC_ENABLE_PASCAL_STRINGS: string = ""
+	Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS: string = ""
+	Workaround_GCC_WARN_ABOUT_MISSING_PROTOTYPES: string = ""
+	Workaround_GCC_WARN_ABOUT_RETURN_TYPE: string = ""
+	Workaround_GCC_WARN_NON_VIRTUAL_DESTRUCTOR: string = ""
+	Workaround_GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS: string = ""
+	Workaround_CLANG_WARN__EXIT_TIME_DESTRUCTORS: string = ""
+	Workaround_GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED: string = ""
+	Workaround_GCC_WARN_MISSING_PARENTHESES: string = ""
+	Workaround_GCC_WARN_CHECK_SWITCH_STATEMENTS: string = ""
+	Workaround_GCC_WARN_UNUSED_FUNCTION: string = ""
+	Workaround_GCC_WARN_UNUSED_LABEL: string = ""
+	Workaround_GCC_WARN_UNUSED_PARAMETER: string = ""
+	Workaround_GCC_WARN_UNUSED_VARIABLE: string = ""
+	Workaround_GCC_WARN_UNUSED_VALUE: string = ""
+	Workaround_CLANG_WARN_EMPTY_BODY: string = ""
+	Workaround_GCC_WARN_UNINITIALIZED_AUTOS: string = ""
+	Workaround_GCC_WARN_UNKNOWN_PRAGMAS: string = ""
+	Workaround_GCC_WARN_SHADOW: string = ""
+	Workaround_GCC_WARN_FOUR_CHARACTER_CONSTANTS: string = ""
+	Workaround_CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION: string = ""
+	Workaround_CLANG_WARN_CONSTANT_CONVERSION: string = ""
+	Workaround_CLANG_WARN_INT_CONVERSION: string = ""
+	Workaround_CLANG_WARN_BOOL_CONVERSION: string = ""
+	Workaround_CLANG_WARN_ENUM_CONVERSION: string = ""
+	Workaround_CLANG_WARN_FLOAT_CONVERSION: string = ""
+	Workaround_CLANG_WARN_NON_LITERAL_NULL_CONVERSION: string = ""
+	Workaround_CLANG_WARN_OBJC_LITERAL_CONVERSION: string = ""
+	Workaround_GCC_WARN_64_TO_32_BIT_CONVERSION: string = ""
+	Workaround_GCC_WARN_ABOUT_MISSING_NEWLINE: string = ""
+	Workaround_CLANG_WARN_CXX0X_EXTENSIONS: string = ""
+	Workaround_GCC_CW_ASM_SYNTAX: string = ""
+	Workaround_GCC_STRICT_ALIASING: string = ""
+	Workaround_GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS: string = ""
+	Workaround_GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO: string = ""
+	Workaround_CLANG_WARN_IMPLICIT_SIGN_CONVERSION: string = ""
+	Workaround_CLANG_WARN_INFINITE_RECURSION: string = ""
+	Workaround_CLANG_WARN_SUSPICIOUS_MOVE: string = ""
+	Workaround_CLANG_WARN_COMMA: string = ""
+	Workaround_CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING: string = ""
+	Workaround_CLANG_WARN_STRICT_PROTOTYPES: string = ""
+	Workaround_CLANG_WARN_RANGE_LOOP_ANALYSIS: string = ""
 }
 
 Property
 {
-	MalterlibUseAllLinkerGroup define bool = true
+	MalterlibUseAllLinkerGroup: bool = true
 }
 
 Property
@@ -1110,13 +1145,13 @@ Target
 		!!MalterlibUseAllLinkerGroup true
 	}
 
-	LTOObjectFile define string?
+	LTOObjectFile: string?
 	LTOObjectFile ""
 	{
 		!!PlatformFamily "Linux"
 	}
 
-	LDFlags define [one_of(string, [string])] = []
+	LDFlags: [one_of(string, [string])] = []
 	LDFlags =+ `-mlinker-version=@(MalterlibMacOSLinkerVersion->ToString())`
 	{
 		&
@@ -1126,13 +1161,13 @@ Target
 		}
 	}
 
-	EmscriptenFastCompiler define bool?
-	EmscriptenEmscriptenRoot define string?
-	EmscriptenLLVMRoot define string?
-	EmscriptenPython define string?
-	EmscriptenNode define string?
+	EmscriptenFastCompiler: bool?
+	EmscriptenEmscriptenRoot: string?
+	EmscriptenLLVMRoot: string?
+	EmscriptenPython: string?
+	EmscriptenNode: string?
 
-	DriverkitDeploymentTarget define string?
+	DriverkitDeploymentTarget: string?
 
 	LDFlags =+ [["-env_EMCC_FAST_COMPILER", "1"]]
 	{
@@ -1351,7 +1386,7 @@ Target
 		}
 	}
 
-	LDFlagsFirst define [one_of(string, [string])] = []
+	LDFlagsFirst: [one_of(string, [string])] = []
 
 	LDFlagsFirst =+ "-lcrt1.10.6.o"
 	{
@@ -1555,7 +1590,7 @@ Target
 		}
 	}
 
-	PlatformToolset define string?
+	PlatformToolset: string?
 
 	PlatformToolset "com.apple.compilers.llvm.clang.1_0"
 	{
@@ -1584,7 +1619,7 @@ Target
 		!!Documentation "Doxygen"
 	}
 
-	PlatformToolsetLibTool define string?
+	PlatformToolsetLibTool: string?
 	PlatformToolsetLibTool `@(MalterlibBinariesDirectory->MakeAbsolute())/LinuxLibTool/libtool`
 	{
 		!!PlatformFamily "Linux"
@@ -1608,7 +1643,7 @@ Target
 		!!Documentation "Doxygen"
 	}
 
-	LibToolFlags define [one_of(string, [string])] = []
+	LibToolFlags: [one_of(string, [string])] = []
 
 	LibToolFlags =+ [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", "DoxygenLibTool"]]
 	{
@@ -1690,7 +1725,7 @@ Target
 		}
 	}
 
-	LDFlags =+ ["-static-libgcc", "-Xlinker", "--gdb-index"]
+	LDFlags =+ ["-static-libgcc", ["-Xlinker", "--gdb-index"]]
 	{
 		&
 		{
@@ -1703,7 +1738,7 @@ Target
 		}
 	}
 
-	LDFlags =+ ["-Xlinker", "--export-dynamic-symbol=fg_IdsGetCrossModuleMemoryManagerInterface"]
+	LDFlags =+ [["-Xlinker", "--export-dynamic-symbol=fg_IdsGetCrossModuleMemoryManagerInterface"]]
 	{
 		&
 		{
@@ -1839,17 +1874,17 @@ Target
 		!Target.EmscriptenNode undefined
 	}
 
-	CxxLanguage define string = "C++23"
+	CxxLanguage: string = "C++23"
 
-	CxxStandardLibrary define string = "libc++"
+	CxxStandardLibrary: string = "libc++"
 
-	NativeOptimize define one_of("Off", "Fast", "On", "Full")?
+	NativeOptimize: one_of("Off", "Fast", "On", "Full")?
 	NativeOptimize Compile.Optimize
 	{
 		!!GeneratorFamily "Xcode"
 	}
 
-	NoDeduplication define bool?
+	NoDeduplication: bool?
 	NoDeduplication false
 	{
 		&
@@ -1859,7 +1894,7 @@ Target
 		}
 	}
 
-	LibtoolDeterministicMode define bool?
+	LibtoolDeterministicMode: bool?
 	LibtoolDeterministicMode false
 	{
 		&
@@ -1868,15 +1903,15 @@ Target
 			PlatformFamily "Linux"
 		}
 	}
-	HeadermapIncludeTarget define bool = false
-	HeadermapIncludeFrameworks define bool = false
-	HeadermapIncludeProject define bool = false
-	HeadermapEnable define bool = false
+	HeadermapIncludeTarget: bool = false
+	HeadermapIncludeFrameworks: bool = false
+	HeadermapIncludeProject: bool = false
+	HeadermapEnable: bool = false
 
-	AlwaysSearchUserPaths define bool = false
-	CombineHiDPIImages define bool = true // to prevent Xcode upgrading warning
+	AlwaysSearchUserPaths: bool = false
+	CombineHiDPIImages: bool = true // to prevent Xcode upgrading warning
 
-	StripDebugSymbolsDuringCopy define bool = false
+	StripDebugSymbolsDuringCopy: bool = false
 
 /*	StripLinkedProduct true
 	{
@@ -1888,9 +1923,9 @@ Target
 		!!MalterlibDeploySymbols true
 	}*/
 
-	FilePrefix define string = ""
+	FilePrefix: string = ""
 
-	CodeSigningRequired define bool?
+	CodeSigningRequired: bool?
 	CodeSigningRequired false
 	{
 		&
@@ -1900,7 +1935,7 @@ Target
 		}
 	}
 
-	CodeSigningAllowed define bool?
+	CodeSigningAllowed: bool?
 	CodeSigningAllowed false
 	{
 		&
@@ -1910,9 +1945,9 @@ Target
 		}
 	}
 
-	CodeSigningIdentity define string?
+	CodeSigningIdentity: string?
 
-	HardenedRuntime define bool?
+	HardenedRuntime: bool?
 	HardenedRuntime true
 	{
 		&
@@ -1932,7 +1967,7 @@ Target
 		}
 	}
 
-	SDKRoot define string?
+	SDKRoot: string?
 
 	SDKRoot `driverkit@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
 	{
@@ -1990,7 +2025,7 @@ Target
 	}
 
 
-	DeploymentTarget define string?
+	DeploymentTarget: string?
 	DeploymentTarget "10.13"
 	{
 		&
@@ -2008,7 +2043,7 @@ Target
 		}
 	}
 
-	iOSDeploymentTarget define string?
+	iOSDeploymentTarget: string?
 	iOSDeploymentTarget Platform
 	{
 		&
@@ -2018,7 +2053,7 @@ Target
 		}
 	}
 
-	ProductType define string?
+	ProductType: string?
 	ProductType "com.apple.product-type.library.static"
 	{
 		!!Target.Type "StaticLibrary"
@@ -2065,7 +2100,7 @@ Target
 		!!Target.Type "Tool"
 	}
 
-	ExecutableFolder define string?
+	ExecutableFolder: string?
 	ExecutableFolder `@(Target.FileName)@(Target.FileExtension)/Contents/MacOS`
 	{
 		&
@@ -2098,18 +2133,18 @@ Target
 		!!PlatformFamily "Linux"
 	}
 
-	ProjectDerivedSourcesDir define string = `@(Target:Target.IntermediateDirectory)DerivedSources`
+	ProjectDerivedSourcesDir: string = `@(Target:Target.IntermediateDirectory)DerivedSources`
 
-	ProjectSharedPrecompPrefixDir define string = `@(Target:Target.IntermediateDirectory)PrefixHeaders`
+	ProjectSharedPrecompPrefixDir: string = `@(Target:Target.IntermediateDirectory)PrefixHeaders`
 
-	CompatibilityVersion define string?
+	CompatibilityVersion: string?
 	CompatibilityVersion ""
 	{
 		!!Target.Type "DynamicLibrary"
 		!!Target.Type "XcodeBundle"
 	}
 
-	CurrentVersion define string?
+	CurrentVersion: string?
 	CurrentVersion ""
 	{
 		!!Target.Type "DynamicLibrary"
@@ -2127,7 +2162,20 @@ Target
 	}
 }
 
-Target.ObjcLinkRuntime define bool?
+Target.ObjcLinkRuntime: bool?
+
+Target
+{
+	!!GeneratorFamily "Xcode"
+
+	ValidArchitectures: string?
+	DebugInformationFormat: string?
+	Architectures: string?
+	SupportedPlatforms: string?
+	OnlyActiveArchitectures: bool = true
+	NativeArchitecture: string = MalterlibXcodeBuildArchitecture
+	NativeArchitectureActual: string = MalterlibXcodeBuildArchitecture
+}
 
 // macOS
 Target
@@ -2140,7 +2188,6 @@ Target
 	}
 	ObjcLinkRuntime false
 
-	DebugInformationFormat define string?
 	DebugInformationFormat "dwarf"
 	DebugInformationFormat "dwarf-with-dsym"
 	{
@@ -2160,24 +2207,15 @@ Target
 		}
 	}
 
-	ValidArchitectures define string?
 	ValidArchitectures MalterlibXcodeBuildArchitecture
 
-	Architectures define string?
 	Architectures MalterlibXcodeBuildArchitecture
 
-	SupportedPlatforms define string?
 	SupportedPlatforms "macosx"
-
 	SupportedPlatforms "driverkit"
 	{
 		!!Target.Type "Driver"
 	}
-
-	OnlyActiveArchitectures define bool = true
-
-	NativeArchitecture define string = MalterlibXcodeBuildArchitecture
-	NativeArchitectureActual define string = MalterlibXcodeBuildArchitecture
 }
 
 // iOS
@@ -2240,7 +2278,7 @@ Target
 	NativeArchitecture MalterlibXcodeBuildArchitecture
 	NativeArchitectureActual MalterlibXcodeBuildArchitecture
 
-	DependencyInfoFile define string?
+	DependencyInfoFile: string?
 	DependencyInfoFile "" // Empty as the linker does not support it
 //	ValidArchitectures "none"
 //	Architectures "none"
@@ -2276,13 +2314,13 @@ Target
 
 Property
 {
-	TargetIsCodeGen define bool = false
+	TargetIsCodeGen: bool = false
 	TargetIsCodeGen true
 	{
 		!Target.Type "Tool"
 	}
 
-	MalterlibEnableLinkTimeCodeGeneration define one_of(bool, "Fast") = false
+	MalterlibEnableLinkTimeCodeGeneration: one_of(bool, "Fast") = false
 	MalterlibEnableLinkTimeCodeGeneration true
 	{
 		&
@@ -2320,11 +2358,11 @@ Target
 {
 	&
 	{
-		TargetIsCodeGen true
+		//TargetIsCodeGen true
 		LanguageFamily "Native"
 	}
 
-	LinkTimeCodeGeneration define one_of(bool, "Fast")? = false
+	LinkTimeCodeGeneration: one_of(bool, "Fast") = false
 	LinkTimeCodeGeneration MalterlibEnableLinkTimeCodeGeneration
 	{
 		!PlatformFamily "Linux"
@@ -2333,10 +2371,10 @@ Target
 
 Property
 {
-	MalterlibEnableFastLink define bool = false // This is still too buggy when debugging
+	MalterlibEnableFastLink: bool = false // This is still too buggy when debugging
 }
 
-Target.Version define string?
+Target.Version: string?
 
 // Executable targets
 Target
@@ -2344,7 +2382,7 @@ Target
 	!!TargetIsExecutable true
 	Version `@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision)`
 
-	GenerateDebugInformation define one_of(bool, "DebugFastLink")?
+	GenerateDebugInformation: one_of(bool, "DebugFastLink")?
 	GenerateDebugInformation true
 	GenerateDebugInformation "DebugFastLink"
 	{
@@ -2367,8 +2405,8 @@ Target
 
 Property
 {
-	MalterlibXcodeObjectsDirectory define string = "$(OBJECT_FILE_DIR_$CURRENT_VARIANT:file)"
-	MalterlibPosixInitFileName define string?
+	MalterlibXcodeObjectsDirectory: string = "$(OBJECT_FILE_DIR_$CURRENT_VARIANT:file)"
+	MalterlibPosixInitFileName: string?
 
 	MalterlibPosixInitFileName `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o`
 	{
@@ -2382,10 +2420,10 @@ Property
 
 Property
 {
-	MalterlibOverrideMallocLibrary define string
+	MalterlibOverrideMallocLibrary: string
 	MalterlibOverrideMallocLibrary `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMalloc/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMalloc.dylib`
 
-	MalterlibNeedsMallocOverrideLibrary define bool = false
+	MalterlibNeedsMallocOverrideLibrary: bool = false
 	MalterlibNeedsMallocOverrideLibrary true
 	{
 		&
@@ -2406,9 +2444,9 @@ Property
 
 Property
 {
-	MalterlibHelperExecutable define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Com_MalterlibHelper/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibHelper`
+	MalterlibHelperExecutable: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Com_MalterlibHelper/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibHelper`
 
-	MalterlibNeedsMalterlibHelper define bool = false
+	MalterlibNeedsMalterlibHelper: bool = false
 	MalterlibNeedsMalterlibHelper true
 	{
 		&
@@ -2431,12 +2469,19 @@ Target
 		TargetIsExecutable true
 	}
 
+	// Force evaluation to extract dependencies
+	LinkWithLibraries =+ []
+
 	LinkWithLibraries =+ Builtin.Inherit
 	{
-		!Target.Type "Driver"
+		&
+		{
+			!Builtin.Inherit ""
+			!Target.Type "Driver"
+		}
 	}
 
-	LinkWithLibraries += ["-first_object", MalterlibPosixInitFileName]
+	LinkWithLibraries += [["-first_object", MalterlibPosixInitFileName]]
 	{
 		&
 		{
@@ -2449,7 +2494,7 @@ Target
 		}
 	}
 
-	LinkWithLibraries += ["-sectcreate", "__TEXT", "__info_plist", Target:Target.MalterlibInfoPListFile]
+	LinkWithLibraries += [["-sectcreate", "__TEXT", "__info_plist", Target:Target.MalterlibInfoPListFile]]
 	{
 
 		&
@@ -2459,98 +2504,16 @@ Target
 		}
 	}
 
-	LinkWithLibraries += ["-framework", "CoreFoundation"]
-	{
-		&
-		{
-			PlatformIsDarwin true
-			!Target.Type "Driver"
-		}
-	}
-
-	LinkWithLibraries += ["-framework", "CoreServices"]
-	{
-		// Used for FSEvents API
-		&
-		{
-			PlatformFamily "macOS"
-			!Target.Type "Driver"
-		}
-	}
-
-	LinkWithLibraries += ["-framework", "AppKit"]
-	{
-		&
-		{
-			PlatformFamily "macOS"
-			!Target.Type "Driver"
-		}
-	}
-
-	LinkWithLibraries += ["-framework", "Security"]
-	{
-		&
-		{
-			PlatformIsDarwin true
-			!Target.Type "Driver"
-		}
-	}
-
-	LinkWithLibraries += ["-framework", "Cocoa", "-framework", "IOKit", "-framework", "OpenGL"]
-	{
-		&
-		{
-			PlatformFamily "macOS"
-			!Target.Type "Driver"
-		}
-	}
-
-	LinkWithLibraries += ["-framework", "UIKit"]
-	{
-		&
-		{
-			PlatformFamily "iOS"
-			!Target.Type "Driver"
-		}
-	}
-
-	LinkWithLibraries += ["-pthread", "-ldl", "-luuid", "-lrt"]
+	LinkWithLibraries += ["-pthread"]
 	{
 		!!PlatformFamily "Linux"
 	}
 
-	LinkWithLibraries += "-lasound"
-	{
-		&
-		{
-			PlatformFamily "Linux"
-			Target.Type "UIExecutable"
-		}
-	}
-
-	LinkWithLibraries += "-lc++abi"
-	{
-		&
-		{
-			PlatformIsDarwin true
-			!MalterlibUseStaticLibCxxABI true
-			!Target.Type "Driver"
-		}
-	}
-
-	RealLinkWithLibraries define [one_of(string, [string])]?
-	RealLinkWithLibraries Target.LinkWithLibraries
-	{
-		!!GeneratorFamily "Xcode"
-	}
-
-	RealLinkWithLibraries += MalterlibOverrideMallocLibrary
-	{
-		!!MalterlibNeedsMallocOverrideLibrary true
-	}
-
-	SearchPath define [string]?
+	SearchPath: [string]?
 	SearchPath =+ Builtin.Inherit
+	{
+		!Builtin.Inherit ""
+	}
 
 	SearchPath += `@("../../../SDK"->MakeAbsolute())/WDK/lib/WXP/i386`
 	{
@@ -2571,7 +2534,7 @@ Target
 		}
 	}
 
-	RemoveUnreferencedSymbols define bool?
+	RemoveUnreferencedSymbols: bool?
 	RemoveUnreferencedSymbols true // OptimizeReferences
 	{
 		&
@@ -2597,7 +2560,7 @@ Target
 		TargetIsExecutable true
 	}
 
-	StartAction define string?
+	StartAction: string?
 	StartAction "Program"
 }
 
@@ -2611,17 +2574,17 @@ Target
 		PlatformType "Windows"
 	}
 
-	IgnoreImportLibrary define bool?
+	IgnoreImportLibrary: bool?
 	IgnoreImportLibrary true
 
-	GenerateManifest define bool?
+	GenerateManifest: bool?
 	GenerateManifest true
 	GenerateManifest false
 	{
 		!!Configuration "Fast Compile"
 	}
 
-	LinkIncremental define bool?
+	LinkIncremental: bool?
 	// Currently slower than full linking in most cases
 	//
 	//LinkIncremental true
@@ -2633,7 +2596,7 @@ Target
 		!!Target.LinkIncremental undefined
 	}
 
-	LinkKeyFile define string?
+	LinkKeyFile: string?
 	LinkKeyFile MalterlibStronglyNamedAssembly
 	{
 		&
@@ -2643,7 +2606,7 @@ Target
 		}
 	}
 
-	DelaySign define bool?
+	DelaySign: bool?
 	DelaySign true
 	{
 		&
@@ -2653,7 +2616,7 @@ Target
 		}
 	}
 
-	SymbolFile define string?
+	SymbolFile: string?
 	SymbolFile ""
 	{
 		&
@@ -2663,12 +2626,12 @@ Target
 		}
 	}
 
-	SymbolFile `@(Builtin.OutputDirectory)@(Target.FileName).pdb`
+	SymbolFile `@(Target.OutputDirectory)@(Target.FileName).pdb`
 	{
 		!!Target.SymbolFile undefined
 	}
 
-	SubSystem define string?
+	SubSystem: string?
 	SubSystem "Windows"
 	{
 	}
@@ -2677,13 +2640,13 @@ Target
 		!!Target.Type "ConsoleExecutable"
 	}
 
-	LargeAddressAware define bool?
+	LargeAddressAware: bool?
 	LargeAddressAware true
 
-	MinimumRequiredVersion define string?
+	MinimumRequiredVersion: string?
 	MinimumRequiredVersion "6.0"
 
-	EntryPointSymbol define string?
+	EntryPointSymbol: string?
 	EntryPointSymbol "wWinMainCRTStartup"
 	{
 		&
@@ -2734,7 +2697,7 @@ Target
 		}
 	}
 
-	AssemblyDebug define bool?
+	AssemblyDebug: bool?
 	AssemblyDebug true
 	{
 		!!DebugCompiler true
@@ -2756,12 +2719,12 @@ Target
 
 	SubSystem "Native"
 
-	Driver define bool?
+	Driver: bool?
 	Driver true
 
 	EntryPointSymbol "DriverEntry"
 
-	IgnoreAllDefaultLibraries define bool?
+	IgnoreAllDefaultLibraries: bool?
 	IgnoreAllDefaultLibraries true
 
 	LinkWithLibraries += ["BufferOverflowK.lib", "Wdmsec.lib", "ntoskrnl.lib", "hal.lib", "ntstrsafe.lib"]
@@ -2771,9 +2734,9 @@ Target
 
 Property
 {
-	MalterlibSeparatePostCopyPerPlatfrom define bool = true // User(Build System)=false: Enable separate post copy projects when building for non-host platforms
+	MalterlibSeparatePostCopyPerPlatfrom: bool = true // User(Build System)=false: Enable separate post copy projects when building for non-host platforms
 
-	MalterlibCalculatedPostCopyProject define string?
+	MalterlibCalculatedPostCopyProject: string?
 	MalterlibCalculatedPostCopyProject `@(MalterlibPostCopyProject)_@(PlatformFamily)_@(Architecture)`
 	{
 		&
@@ -2792,7 +2755,7 @@ Property
 		!!MalterlibCalculatedPostCopyProject undefined
 	}
 
-	MalterlibCalculatedPostCopyProject2 define string?
+	MalterlibCalculatedPostCopyProject2: string?
 	MalterlibCalculatedPostCopyProject2 `@(MalterlibPostCopyProject2)_@(PlatformFamily)_@(Architecture)`
 	{
 		&
@@ -2812,6 +2775,12 @@ Property
 	}
 }
 
+Target
+{
+	LocalDebuggerCommand: string?
+	RemoteDebuggerCommand: string?
+}
+
 // Debugger settings
 Target
 {
@@ -2823,7 +2792,6 @@ Target
 		!Target.Type "SharedDynamicLibrary"
 	}
 
-	LocalDebuggerCommand define string?
 	LocalDebuggerCommand `@(MalterlibDeployRoot)/@(MalterlibCalculatedPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)`
 	{
 		&
@@ -2843,7 +2811,6 @@ Target
 		}
 	}
 
-	RemoteDebuggerCommand define string?
 	RemoteDebuggerCommand `@(MalterlibRemoteDeployDebugRoot)/@(MalterlibCalculatedPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)`
 	{
 		&
@@ -2866,7 +2833,7 @@ Target
 
 Target
 {
-	LocalDebuggerWorkingDirectory define string?
+	LocalDebuggerWorkingDirectory: string?
 	LocalDebuggerWorkingDirectory Target.LocalDebuggerCommand->GetPath()
 	{
 		&
@@ -2876,7 +2843,7 @@ Target
 		}
 	}
 
-	RemoteDebuggerWorkingDirectory define string?
+	RemoteDebuggerWorkingDirectory: string?
 	RemoteDebuggerWorkingDirectory Target.RemoteDebuggerCommand->GetPath()
 	{
 		&
@@ -2886,7 +2853,7 @@ Target
 		}
 	}
 
-	DebuggerCommandArguments define [string]?
+	DebuggerCommandArguments: [string]?
 	DebuggerCommandArguments ["--test", "--groups", "Performance"]
 	{
 		&
@@ -2923,21 +2890,21 @@ Target
 Property
 {
 
-	MalterlibLocalizationTranslationsPath define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)`
-	MalterlibLocalizationExeFSPath define string = `@(MalterlibLocalizationTranslationsPath)/TranslationsExeFS/*`
-	MalterlibLocalizationTranslationHeadersPath define string = `@(MalterlibLocalizationTranslationsPath)/TranslationHeaders`
-	MalterlibQtTweakPath define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTweaks/@(Platform)/@(Architecture)/@(FullConfiguration)`
+	MalterlibLocalizationTranslationsPath: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)`
+	MalterlibLocalizationExeFSPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationsExeFS/*`
+	MalterlibLocalizationTranslationHeadersPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationHeaders`
+	MalterlibQtTweakPath: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTweaks/@(Platform)/@(Architecture)/@(FullConfiguration)`
 
-	MalterlibTempExeFSPath define string = `@(Target.IntermediateDirectory)ExeFS/*`
+	MalterlibTempExeFSPath: string = `@(Target.IntermediateDirectory)ExeFS/*`
 
-	MalterlibSharedIntermediateDirectory define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/Shared`
+	MalterlibSharedIntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/Shared`
 
-	MalterlibSharedTempExeFSPath define string = `@(MalterlibSharedIntermediateDirectory)/ExeFS/*`
+	MalterlibSharedTempExeFSPath: string = `@(MalterlibSharedIntermediateDirectory)/ExeFS/*`
 
-	MalterlibOriginalModuleDestination define string = `@(Target.OutputDirectory)@(Target.FileName)@(Target.FileExtension)`
-	MalterlibOriginalModulePath define string = MalterlibOriginalModuleDestination->GetPath()
+	MalterlibOriginalModuleDestination: string = `@(Target.OutputDirectory)@(Target.FileName)@(Target.FileExtension)`
+	MalterlibOriginalModulePath: string = MalterlibOriginalModuleDestination->GetPath()
 
-	MalterlibFinalModuleDestination define string = MalterlibOriginalModuleDestination
+	MalterlibFinalModuleDestination: string = MalterlibOriginalModuleDestination
 	MalterlibFinalModuleDestination `@(Target.OutputDirectory)Deployed/@(Target.FileName)@(Target.FileExtension)`
 	{
 		&
@@ -2947,9 +2914,9 @@ Property
 		}
 	}
 
-	MalterlibFinalModuleDestinationPath define string = MalterlibFinalModuleDestination->GetPath()
+	MalterlibFinalModuleDestinationPath: string = MalterlibFinalModuleDestination->GetPath()
 
-	MalterlibFinalModuleDestinationExecutable define string = MalterlibFinalModuleDestination
+	MalterlibFinalModuleDestinationExecutable: string = MalterlibFinalModuleDestination
 	MalterlibFinalModuleDestinationExecutable `@(MalterlibFinalModuleDestination)/Contents/MacOS/@(Target:Target.FileName)`
 	{
 		&
@@ -2967,7 +2934,7 @@ Property
 		}
 	}
 
-	MalterlibOriginalModuleDestinationExecutable define string = MalterlibOriginalModuleDestination
+	MalterlibOriginalModuleDestinationExecutable: string = MalterlibOriginalModuleDestination
 	MalterlibOriginalModuleDestinationExecutable `@(MalterlibOriginalModuleDestination)/Contents/MacOS/@(Target:Target.FileName)`
 	{
 		&
@@ -2988,25 +2955,25 @@ Property
 
 Property
 {
-	GeneratedDirectory define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
+	GeneratedDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
 
-	GeneratedDirectoryNoConfig define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/`
-	GeneratedWorkspaceDirectory	define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/`
-	GeneratedWorkspaceDirectoryNoConfig	define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/NoConfig/`
+	GeneratedDirectoryNoConfig: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/`
+	GeneratedWorkspaceDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/`
+	GeneratedWorkspaceDirectoryNoConfig: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/NoConfig/`
 
-	MalterlibUniqueConfig define string = GeneratedDirectory->Sanitize()->Replace('-', '_')->Replace('.', '_')
+	MalterlibUniqueConfig: string = GeneratedDirectory->Sanitize()->Replace('-', '_')->Replace('.', '_')
 
-	MalterlibMacOSLinkerVersion define int
+	MalterlibMacOSLinkerVersion: int
 	MalterlibMacOSLinkerVersion ExecuteCommand(`@(GeneratedGlobalDirectory)MacOSLinkerVersion.MState`, ["/usr/bin/ld"], "bash", "-c", "/usr/bin/ld -v 2>&1")->Trim()->Split("PROJECT:")<[1]>->Split("\n")<[0]>->Split("ld64-")<[0]>->AsInteger()
 }
 
 Property
 {
-	MalterlibBinariesDirectory define string = `@("../../../Binaries/Malterlib"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
-	MalterlibLLVMHostBinariesDirectory define string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
-	MalterlibLLVMBinariesDirectory define string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(PlatformFamily)/@(Architecture)`
+	MalterlibBinariesDirectory: string = `@("../../../Binaries/Malterlib"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
+	MalterlibLLVMHostBinariesDirectory: string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
+	MalterlibLLVMBinariesDirectory: string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(PlatformFamily)/@(Architecture)`
 
-	MalterlibLLVMSanitizerRuntime define string?
+	MalterlibLLVMSanitizerRuntime: string?
 	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib`
 	{
 		&
@@ -3032,7 +2999,7 @@ Property
 		}
 	}
 
-	MalterlibNeedsLLVMSanitizerRuntime define bool = false
+	MalterlibNeedsLLVMSanitizerRuntime: bool = false
 	MalterlibNeedsLLVMSanitizerRuntime true
 	{
 		&
@@ -3046,9 +3013,9 @@ Property
 		}
 	}
 
-	MToolDirectory define string = Builtin.MToolExe->GetPath()
+	MToolDirectory: string = Builtin.MToolExe->GetPath()
 
-	MToolPath define string
+	MToolPath: string
 	MToolPath `@(MToolDirectory)/MTool.exe`
 	{
 		!!PlatformFamily "Windows"
@@ -3058,12 +3025,12 @@ Property
 		!PlatformFamily "Windows"
 	}
 
-	MalterlibToolsRoot define string = "x:/Development/Malterlib/Tools"
+	MalterlibToolsRoot: string = "x:/Development/Malterlib/Tools"
 }
 
 Property
 {
-	MSVCToolChainArchitecture define string
+	MSVCToolChainArchitecture: string
 	MSVCToolChainArchitecture "HostX64/x64"
 	{
 		!!Architecture "x64"
@@ -3086,8 +3053,11 @@ Target
 		!!Target.OutputDirectory undefined
 	}
 
-	ToolPath define [string]?
+	ToolPath: [string]?
 	ToolPath =+ Builtin.Inherit
+	{
+		!Builtin.Inherit ""
+	}
 
 	ToolPath += ["/usr/local/go/bin", "/usr/local/bin", "/opt/homebrew/bin"]
 	{
@@ -3222,7 +3192,7 @@ Target
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)Dependencies.cpp`
 
-			Contents [XcodeGeneratorDependencyFiles..., PreBuildOutputFile]->ForEach("fg_ExpandDependenciesTemplate")
+			Contents [XcodeGeneratorDependencyFiles..., PreBuildOutputFile]->ForEach(&fg_ExpandDependenciesTemplate)
 		}
 	}
 }
@@ -3239,9 +3209,9 @@ Target
 
 Property
 {
-	MalterlibBundleIdentifier define string = `@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())`
+	MalterlibBundleIdentifier: string = `@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())`
 
-	MalterlibPostBuildScriptPreSign define string?
+	MalterlibPostBuildScriptPreSign: string?
 	MalterlibPostBuildScriptPreSign =+	`@(ScriptMkDir(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`))\r\n`\
 										`@(CheckErrors)\r\n`\
 										`MTool DiffCopy @(MalterlibExeIcon->Escape()) @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`->Escape()) "" 0\r\n`\
@@ -3255,9 +3225,9 @@ Property
 		}
 	}
 
-	MalterlibBundleDebugLogation define string = MalterlibFinalModuleDestinationPath
+	MalterlibBundleDebugLogation: string = MalterlibFinalModuleDestinationPath
 
-	MalterlibPostBuildScriptPreSignMalterlibExeMainNibFilePath define string = MalterlibExeMainNibFile->GetLastPaths(2)
+	MalterlibPostBuildScriptPreSignMalterlibExeMainNibFilePath: string = MalterlibExeMainNibFile->GetLastPaths(2)
 
 	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy @(MalterlibExeMainNibFile->Escape()) @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources/@(MalterlibPostBuildScriptPreSignMalterlibExeMainNibFilePath->GetPath())`->Escape()) "" 0\r\n`
 	{
@@ -3269,7 +3239,7 @@ Property
 		}
 	}
 
-	MalterlibBreakpadSourceSuffix define string = ""
+	MalterlibBreakpadSourceSuffix: string = ""
 	MalterlibBreakpadSourceSuffix "_cli"
 	{
 		!Target:Target.Type "UIExecutable"
@@ -3307,7 +3277,7 @@ Property
 	}
 
 
-	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy "@(GetProperty("Property", "MalterlibFinalModuleDestination", "Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess"))" @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS`->Escape()) "" 0\r\n`
+	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy "@(GetProperty(&MalterlibFinalModuleDestination, "Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess"))" @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS`->Escape()) "" 0\r\n`
 	{
 		&
 		{
@@ -3316,7 +3286,7 @@ Property
 		}
 	}
 
-	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy "@(GetProperty("Property", "MalterlibFinalModuleDestination", "Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess"))" @(MalterlibFinalModuleDestinationPath->Escape()) "" 0\r\n`
+	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy "@(GetProperty(&MalterlibFinalModuleDestination, "Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess"))" @(MalterlibFinalModuleDestinationPath->Escape()) "" 0\r\n`
 	{
 		&
 		{
@@ -3328,7 +3298,7 @@ Property
 
 Target
 {
-	MalterlibInfoPListFile define string?
+	MalterlibInfoPListFile: string?
 	MalterlibInfoPListFile `@(GeneratedDirectory)Info.plist`
 	{
 		&
@@ -3347,7 +3317,7 @@ Target
 		}
 	}
 
-	BundleIdentifier define string?
+	BundleIdentifier: string?
 	BundleIdentifier MalterlibBundleIdentifier
 	{
 		!!PlatformFamily "macOS"
@@ -3356,14 +3326,14 @@ Target
 
 Property
 {
-	MalterlibTargetFriendlyName define string = Target:Target.Name
-	MalterlibXcodePrincipalClass define string = "NSApplication"
-	MalterlibExtraPListContents define string?
+	MalterlibTargetFriendlyName: string = Target:Target.Name
+	MalterlibXcodePrincipalClass: string = "NSApplication"
+	MalterlibExtraPListContents: string?
 }
 
 Type
 {
-	CMalterlibURLScheme define {
+	CMalterlibURLScheme: {
 		Protocols: [string]
 		, Role: string
 		, Name: string
@@ -3373,7 +3343,7 @@ Type
 
 Property
 {
-	MalterlibURLScheme define [type(CMalterlibURLScheme)]?
+	MalterlibURLScheme: [type(CMalterlibURLScheme)]?
 }
 
 %Group "~Automatic/MacOS Specific"
@@ -3397,7 +3367,7 @@ Property
 									`				<string>@(_Scheme<IconFile>)</string>\n`\
 									`				<key>CFBundleURLSchemes</key>\n`\
 									`				<array>\n`\
-									`@(_Scheme<Protocols>->ForEach("URLSchemeTemplateProtocol"))`\
+									`@(_Scheme<Protocols>->ForEach(&URLSchemeTemplateProtocol))`\
 									`				</array>\n`\
 									`		</dict>\n`
 		}
@@ -3540,7 +3510,7 @@ Property
 
 			Contents =+	`	<key>CFBundleURLTypes</key>\n`\
 						`		<array>\n`\
-						`@(Target:MalterlibURLScheme->ForEach("URLSchemeTemplate"))\n`\
+						`@(Target:MalterlibURLScheme->ForEach(&URLSchemeTemplate))\n`\
 						`		</array>\n`
 			{
 				!Target:MalterlibURLScheme undefined
@@ -3586,7 +3556,7 @@ Target
 }
 Property
 {
-	MalterlibLinuxProgramIdentifier define string?
+	MalterlibLinuxProgramIdentifier: string?
 	MalterlibLinuxProgramIdentifier `@(ProductCompanyUniqueIdentifier->Sanitize()).@(Target:Target.Name->Sanitize())`
 	{
 		&
@@ -3596,7 +3566,7 @@ Property
 		}
 	}
 
-	MalterlibLinuxDesktopFile define string?
+	MalterlibLinuxDesktopFile: string?
 	MalterlibLinuxDesktopFile `@(GeneratedDirectory)@(MalterlibLinuxProgramIdentifier).desktop`
 	{
 		&
@@ -3681,9 +3651,9 @@ Target
 
 Property
 {
-	MalterlibWindowsSettings_SegmentHeap define bool = false
-	MalterlibWindowsSettings_LongPathAware define bool = true
-	MalterlibExtraAssemblyInfo define string = ""
+	MalterlibWindowsSettings_SegmentHeap: bool = false
+	MalterlibWindowsSettings_LongPathAware: bool = true
+	MalterlibExtraAssemblyInfo: string = ""
 }
 
 %Group "~Automatic/Windows Specific"
@@ -3693,7 +3663,7 @@ Property
 		!!LanguageFamily ".NET"
 		Property
 		{
-			CalcGUID define string = MalterlibFinalModuleDestination->HashUUID("Bare")
+			CalcGUID: string = MalterlibFinalModuleDestination->HashUUID("Bare")
 		}
 		GenerateFile
 		{
@@ -3734,7 +3704,7 @@ Property
 
 		Property
 		{
-			CalcGUID define string = MalterlibFinalModuleDestination->HashUUID("Bare")
+			CalcGUID: string = MalterlibFinalModuleDestination->HashUUID("Bare")
 		}
 		GenerateFile
 		{
@@ -3774,7 +3744,7 @@ Property
 
 		Property
 		{
-			ResourceFileType define string = "VFT_UNKNOWN"
+			ResourceFileType: string = "VFT_UNKNOWN"
 
 			ResourceFileType "VFT_APP"
 			{
@@ -3792,7 +3762,7 @@ Property
 				!!Target.Type "SharedDynamicLibrary"
 			}
 
-			PrivateBuildString define string = {
+			PrivateBuildString: string = {
 				MalterlibBranch: MalterlibFullBranch
 				, MalterlibGitBranch: (MalterlibGitBranch || "")
 				, MalterlibGitCommit: MalterlibGitCommit
@@ -3909,7 +3879,7 @@ Target
 
 Property
 {
-	MalterlibModuleDefinitionContents define string = ""
+	MalterlibModuleDefinitionContents: string = ""
 	MalterlibModuleDefinitionContents `EXPORTS@(NativeLineEnding)`
 	{
 		!!PlatformFamily "Windows"
@@ -3926,11 +3896,11 @@ Property
 		!!PlatformIsDarwin true
 	}
 
-	MalterlibDefinedSymbols define [string]?
+	MalterlibDefinedSymbols: [string]?
 
-	MalterlibModuleDefinitionContents =+ MalterlibDefinedSymbols->ForEach("ModuleDefineTemplate")
+	MalterlibModuleDefinitionContents =+ MalterlibDefinedSymbols->ForEach(&ModuleDefineTemplate)
 
-	MalterlibStripProgram define string
+	MalterlibStripProgram: string
 	MalterlibStripProgram `@(MalterlibToolsPrefix)llvm-strip`
 	{
 		!MalterlibToolsPrefix undefined
@@ -3940,7 +3910,7 @@ Property
 		!!PlatformIsDarwin true
 	}
 
-	MalterlibStripOptions define [string] = []
+	MalterlibStripOptions: [string] = []
 
 	MalterlibStripOptions += ["-u", "-r"]
 	{
@@ -3964,7 +3934,7 @@ Property
 	ModuleDefineTemplateLinux function(string _Symbol) [string]
 	ModuleDefineTemplateLinux =+ `--keep-symbol=_@(_Symbol)`
 
-	MalterlibStripOptions += MalterlibDefinedSymbols->ForEach("ModuleDefineTemplateLinux")
+	MalterlibStripOptions += MalterlibDefinedSymbols->ForEach(&ModuleDefineTemplateLinux)
 	{
 		&
 		{
@@ -4004,7 +3974,7 @@ Target
 		}
 	}
 
-	ModuleDefinitionFile define string?
+	ModuleDefinitionFile: string?
 	ModuleDefinitionFile `@(GeneratedDirectory)Module.def`
 	{
 		&
@@ -4020,7 +3990,7 @@ Target
 
 Property
 {
-	MalterlibExeFSExtraFiles define [type(CFileCopyOptions)] = []
+	MalterlibExeFSExtraFiles: [type(CFileCopyOptions)] = []
 
 	MalterlibExeFSExtraFilesContentsTemplate function(type(CFileCopyOptionsDetailed) _CopyOptions) string = ""
 	MalterlibExeFSExtraFilesContentsTemplate Error("FindDirectory not supported for ExeFS")
@@ -4038,7 +4008,7 @@ Property
 												`	Recurse @(_CopyOptions<Recursive> ? "1" : "0")\r\n`\
 												`}\r\n`
 
-	MalterlibExeFSSpecContents define string?
+	MalterlibExeFSSpecContents: string?
 
 	MalterlibExeFSSpecContents =+ `Include\r\n`\
 								`{\r\n`\
@@ -4052,7 +4022,7 @@ Property
 								`{\r\n`\
 								`	Pattern @(MalterlibSharedTempExeFSPath->UnixPath()->Escape())\r\n`\
 								`}\r\n`\
-								`@(fg_ExpandCopyOptions(MalterlibExeFSExtraFiles)->ForEach("MalterlibExeFSExtraFilesContentsTemplate"))`
+								`@(fg_ExpandCopyOptions(MalterlibExeFSExtraFiles)->ForEach(&MalterlibExeFSExtraFilesContentsTemplate))`
 	{
 		&
 		{
@@ -4111,8 +4081,8 @@ Target
 
 	Property
 	{
-		BaseFileName define string = `@(Workspace:Workspace.Name)_@(Target:Target.Name)`
-		ObjectFileName define string
+		BaseFileName: string = `@(Workspace:Workspace.Name)_@(Target:Target.Name)`
+		ObjectFileName: string
 		ObjectFileName `@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFS.obj`
 		{
 			!!PlatformFamily "Windows"
@@ -4121,7 +4091,7 @@ Target
 		{
 			!PlatformFamily "Windows"
 		}
-		CppFileName define string = `@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFSCPP.cpp`
+		CppFileName: string = `@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFSCPP.cpp`
 	}
 	%File [ObjectFileName, CppFileName]
 	{
@@ -4131,9 +4101,9 @@ Target
 
 Property
 {
-	MalterlibNeedLanguage_C define bool = false
+	MalterlibNeedLanguage_C: bool = false
 
-	MalterlibNeedLanguage_Cxx define bool = false
+	MalterlibNeedLanguage_Cxx: bool = false
 	MalterlibNeedLanguage_Cxx true
 	{
 		|
@@ -4154,7 +4124,7 @@ Target
 
 Compile
 {
-	Custom_VerifyInputsAndOutputsExist define bool?
+	Custom_VerifyInputsAndOutputsExist: bool?
 }
 
 %Group "~Automatic/Utility Build"
@@ -4198,19 +4168,19 @@ Target
 
 Property
 {
-	MalterlibOriginalModuleDestinationExpLib define string = `@(MalterlibOriginalModuleDestination->GetPath())/@(MalterlibOriginalModuleDestination->GetFileNoExt()).exp`
-	MalterlibOriginalModuleDestinationLib define string = `@(MalterlibOriginalModuleDestination->GetPath())/@(MalterlibOriginalModuleDestination->GetFileNoExt()).lib`
+	MalterlibOriginalModuleDestinationExpLib: string = `@(MalterlibOriginalModuleDestination->GetPath())/@(MalterlibOriginalModuleDestination->GetFileNoExt()).exp`
+	MalterlibOriginalModuleDestinationLib: string = `@(MalterlibOriginalModuleDestination->GetPath())/@(MalterlibOriginalModuleDestination->GetFileNoExt()).lib`
 }
 
 Property
 {
-	CheckErrors define string = ""
+	CheckErrors: string = ""
 	CheckErrors ""
 	{
 		!!PlatformType "Unix"
 	}
 
-	TarOptions define string = ""
+	TarOptions: string = ""
 	TarOptions "--disable-copyfile"
 	{
 		!!HostPlatformFamily "macOS"
@@ -4219,13 +4189,13 @@ Property
 
 Property
 {
-	MalterlibDumpSymsCommand define string = "dump_syms"
-	MalterlibPostBuildScriptShowEnv define bool = false // User(Build System)=true: Enable to show the environment variables of the build environment
+	MalterlibDumpSymsCommand: string = "dump_syms"
+	MalterlibPostBuildScriptShowEnv: bool = false // User(Build System)=true: Enable to show the environment variables of the build environment
 }
 
 Type
 {
-	CFileCopyOptionsDetailed define {
+	CFileCopyOptionsDetailed: {
 		Pattern: string
 		, Destination?: string = ""
 		, Recursive?: bool = false
@@ -4236,7 +4206,7 @@ Type
 	// FindDirectory		Source ~
 	// AbsoluteDestination	Destination ~
 
-	CFileCopyOptions define one_of(string, type(CFileCopyOptionsDetailed))
+	CFileCopyOptions: one_of(string, type(CFileCopyOptionsDetailed))
 }
 
 Property
@@ -4252,7 +4222,7 @@ Property
 	}
 
 	fg_ExpandCopyOptions function([type(CFileCopyOptions)] _CopyOptions) [type(CFileCopyOptionsDetailed)]
-	fg_ExpandCopyOptions _CopyOptions->ForEach("fg_ExpandCopyOptionsHelper")
+	fg_ExpandCopyOptions _CopyOptions->ForEach(&fg_ExpandCopyOptionsHelper)
 
 	f_AddDestinationPrefixToCopyOptions_AppendDestination function(type(CFileCopyOptionsDetailed) _Options) type(CFileCopyOptionsDetailed)
 	f_AddDestinationPrefixToCopyOptions_AppendDestination _Options
@@ -4270,12 +4240,12 @@ Property
 
 	f_AddDestinationPrefixToCopyOptions function([type(CFileCopyOptions)] _Options, string _DestinationPrefix) [type(CFileCopyOptions)] = []
 
-	f_AddDestinationPrefixToCopyOptions _Options->fg_ExpandCopyOptions()->ForEach("f_AddDestinationPrefixToCopyOptions_AddDestination", {DestinationPrefix: _DestinationPrefix})
+	f_AddDestinationPrefixToCopyOptions _Options->fg_ExpandCopyOptions()->ForEach(&f_AddDestinationPrefixToCopyOptions_AddDestination, {DestinationPrefix: _DestinationPrefix})
 }
 
 Property
 {
-	MalterlibBuildServerPutSources define [type(CFileCopyOptions)] = []
+	MalterlibBuildServerPutSources: [type(CFileCopyOptions)] = []
 	MalterlibBuildServerPutSources =+ MalterlibFinalModuleDestination
 	{
 		!Target.Type "Tool"
@@ -4305,7 +4275,7 @@ Property
 		}
 	}
 
-	MalterlibBuildServerPutPath define string?
+	MalterlibBuildServerPutPath: string?
 
 	MalterlibBuildServerPutPathUploadTemplate function(type(CFileCopyOptionsDetailed) _CopyOptions) string = ""
 	MalterlibBuildServerPutPathUploadTemplate Error("FindDirectory not supported for build server put")
@@ -4319,11 +4289,11 @@ Property
 	MalterlibBuildServerPutPathUploadTemplate =+ 	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())\r\n`\
 													`@(CheckErrors)\r\n`
 
-	MalterlibBuildServerPutPathUploadContents define string
-	MalterlibBuildServerPutPathUploadContents =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach("MalterlibBuildServerPutPathUploadTemplate")
+	MalterlibBuildServerPutPathUploadContents: string
+	MalterlibBuildServerPutPathUploadContents =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach(&MalterlibBuildServerPutPathUploadTemplate)
 
 
-	MalterlibTestPutSources define [type(CFileCopyOptions)]
+	MalterlibTestPutSources: [type(CFileCopyOptions)]
 
 	MalterlibTestPutSources =+ {Pattern: MalterlibFinalModuleDestination}
 	MalterlibTestPutSources =+ {Pattern: Target:Target.SymbolFile}
@@ -4392,10 +4362,10 @@ Property
 		}
 	}
 
-	MalterlibTestPutPathUploadContents define string = ""
-	MalterlibTestPutPathUploadContents =+ MalterlibTestPutSources->ForEach("MalterlibTestPutPathUploadTemplate")
+	MalterlibTestPutPathUploadContents: string = ""
+	MalterlibTestPutPathUploadContents =+ MalterlibTestPutSources->ForEach(&MalterlibTestPutPathUploadTemplate)
 
-	MalterlibTestPutPath define string?
+	MalterlibTestPutPath: string?
 	MalterlibTestPutPath `Test/@(Workspace:Workspace.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)`
 	{
 		&
@@ -4414,7 +4384,7 @@ Property
 		!!MalterlibMainTest true
 	}
 
-	Win32SignTool define string
+	Win32SignTool: string
 	Win32SignTool `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=SignToolWin32`
 	{
 		&
@@ -4429,7 +4399,7 @@ Property
 		!!Win32SignTool undefined
 	}
 
-	Win32SignToolTimestampServerOptions define string
+	Win32SignToolTimestampServerOptions: string
 	Win32SignToolTimestampServerOptions `/td SHA256 /tr @(MalterlibSignTimestampServerRFC3161)`
 	{
 		!MalterlibSignTimestampServerRFC3161 ""
@@ -4439,7 +4409,7 @@ Property
 		!!Win32SignToolTimestampServerOptions undefined
 	}
 
-	MalterlibWindowsSignCommandLine define string
+	MalterlibWindowsSignCommandLine: string
 	MalterlibWindowsSignCommandLine `@(Win32SignTool) sign /fd SHA256 /ac @(MalterlibSignIncludeCert->WindowsPath()->Escape()) /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(MalterlibFinalModuleDestination->WindowsPath()->Escape())`
 
 	MalterlibWindowsSignCommandLine `@(Win32SignTool) sign /fd SHA256 /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(MalterlibFinalModuleDestination->WindowsPath()->Escape())`
@@ -4447,11 +4417,11 @@ Property
 		!!MalterlibSignIncludeCert "none"
 	}
 
-	MalterlibSignMacOSDeep define bool = true
+	MalterlibSignMacOSDeep: bool = true
 
-	MalterlibSignMacOSHardened define bool?
+	MalterlibSignMacOSHardened: bool?
 
-	MalterlibCodeSignMacOSExtraOptions define string = ""
+	MalterlibCodeSignMacOSExtraOptions: string = ""
 	MalterlibCodeSignMacOSExtraOptions += "--options runtime "
 	{
 		|
@@ -4466,14 +4436,14 @@ Property
 		!!MalterlibSignMacOSDeep true
 	}
 
-	MalterlibSignMacOSEntitlements define string?
+	MalterlibSignMacOSEntitlements: string?
 
 	MalterlibCodeSignMacOSExtraOptions += `--entitlements @(MalterlibSignMacOSEntitlements->Escape()) `
 	{
 		!MalterlibSignMacOSEntitlements undefined
 	}
 
-	MalterlibCodeSignMacOSCommand define string
+	MalterlibCodeSignMacOSCommand: string
 	MalterlibCodeSignMacOSCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=CodeSignMacOS`
 	{
 		!!MalterlibBuildServerBuild true
@@ -4484,7 +4454,7 @@ Property
 		!MalterlibBuildServerBuild true
 	}
 
-	MalterlibNotaryToolMacOSCommand define string
+	MalterlibNotaryToolMacOSCommand: string
 	MalterlibNotaryToolMacOSCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=NotaryToolMacOS`
 	{
 		!!MalterlibBuildServerBuild true
@@ -4495,7 +4465,7 @@ Property
 		!MalterlibBuildServerBuild true
 	}
 
-	MalterlibStaplerMacOSCommand define string
+	MalterlibStaplerMacOSCommand: string
 	MalterlibStaplerMacOSCommand `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=StaplerMacOS`
 	{
 		!!MalterlibBuildServerBuild true
@@ -4510,32 +4480,21 @@ Property
 Property
 {
 	PreBuildScriptDependenciesTemplate function(string _Dependency) [string] = []
-	PreBuildScriptDependenciesTemplate =+ GetProperty("Target", "DependencyFile", _Dependency)
+	PreBuildScriptDependenciesTemplate =+ GetProperty(&Target.DependencyFile, _Dependency)
 
-	PreBuildScriptDependencies define [string] = []
-	PreBuildScriptDependencies =+ Target.Dependencies->ForEach("PreBuildScriptDependenciesTemplate")
+	PreBuildScriptDependencies: [string] = []
+	PreBuildScriptDependencies =+ Target.Dependencies->ForEach(&PreBuildScriptDependenciesTemplate)
 
-	PreBuildOutputFile define string = `@(Target.IntermediateDirectory)PreBuildOutput.h`
+	PreBuildOutputFile: string = `@(Target.IntermediateDirectory)PreBuildOutput.h`
 }
 
 Target
 {
-	PreBuildScript define string = ""
+	PreBuildScript: string = ""
 	PreBuildScript += "set -eo pipefail\r\n"
 	{
 		!!PlatformType "Unix"
 	}
-}
-
-Target
-{
-	!!GeneratorFamily "VisualStudio"
-
-	Real_PreBuildScript define string?
-	Real_PostBuildScript define string?
-
-	Real_PreBuildScript `@(Target.ExportScriptEnvironmentContents)\r\n@(Target.PreBuildScript)`
-	Real_PostBuildScript `@(Target.ExportScriptEnvironmentContents)\r\n@(Target.PostBuildScript)`
 }
 
 Target
@@ -4555,9 +4514,9 @@ Target
 
 Property
 {
-	MalterlibExecutableInput define string = MalterlibOriginalModuleDestinationExecutable
+	MalterlibExecutableInput: string = MalterlibOriginalModuleDestinationExecutable
 
-	MalterlibPostBuildScriptInputs define [string]?
+	MalterlibPostBuildScriptInputs: [string]?
 	MalterlibPostBuildScriptInputs =+ MalterlibExecutableInput
 	MalterlibPostBuildScriptInputs =+ MalterlibPostCopyConfigFile
 	{
@@ -4578,7 +4537,7 @@ Property
 		!_CopyOptions<Pattern>->Find("*") true // Don't support wildcards
 	}
 
-	MalterlibPostBuildScriptInputs =+ fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach("fg_ExpartPostBuildScriptInputsPostCopy")
+	MalterlibPostBuildScriptInputs =+ fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(&fg_ExpartPostBuildScriptInputsPostCopy)
 	{
 		&
 		{
@@ -4600,9 +4559,9 @@ Property
 			MalterlibFinalModuleDestinationExecutable MalterlibOriginalModuleDestinationExecutable
 		}
 	}
-	MalterlibPostBuildScriptInputsContents define [string] = MalterlibPostBuildScriptInputs->ForEach("MalterlibPostBuildScriptInputsInternalTemplate")
+	MalterlibPostBuildScriptInputsContents: [string] = MalterlibPostBuildScriptInputs->ForEach(&MalterlibPostBuildScriptInputsInternalTemplate)
 
-	PostBuildOutputfile define string
+	PostBuildOutputfile: string
 	PostBuildOutputfile `@(Target.IntermediateDirectory)PostBuildOutput.h`
 }
 
@@ -4624,7 +4583,7 @@ Target
 
 Property
 {
-	MalterlibPostCopySources define [type(CFileCopyOptions)] = []
+	MalterlibPostCopySources: [type(CFileCopyOptions)] = []
 	MalterlibPostCopySources =+ MalterlibFinalModuleDestination
 	{
 		!Target.Type "Tool" // Tool has no default executable
@@ -4634,6 +4593,7 @@ Property
 	{
 		&
 		{
+			IsDefined("Target.DebugInformationFormat") true
 			Target.DebugInformationFormat "dwarf-with-dsym"
 			Target.Type "Driver"
 		}
@@ -4681,7 +4641,7 @@ Property
 		}
 	}
 
-	MalterlibPostCopyConfigFile define string = `@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig`
+	MalterlibPostCopyConfigFile: string = `@(Builtin.GeneratedBuildSystemDir)/PostCopy.MConfig`
 
 	MalterlibPostCopyInternalTemplate function(type(CFileCopyOptionsDetailed) _CopyOptions) string = ""
 	MalterlibPostCopyInternalTemplate Error("Turning on AbsoluteDestination is not supported for post copy")
@@ -4691,8 +4651,8 @@ Property
 	MalterlibPostCopyInternalTemplate =+	`MTool PostCopy @(`@(_CopyOptions<Pattern>)`->EscapeHost()) @(`Config=@(MalterlibPostCopyConfigFile)`->EscapeHost()) @(`Project=@(MalterlibCalculatedPostCopyProject)`->EscapeHost()) @(`OutFolder=@(MalterlibPostCopyDestination->AppendPath(_CopyOptions<Destination>))`->EscapeHost()) Hash=@(MalterlibPostCopyHash->ToString()) FindDirectory=@(_CopyOptions<FindDirectory>->ToString()) Recursive=@(_CopyOptions<Recursive>->ToString())\r\n`\
 											`@(CheckErrors)\r\n`
 
-	MalterlibPostCopyContents define string?
-	MalterlibPostCopyContents fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach("MalterlibPostCopyInternalTemplate")
+	MalterlibPostCopyContents: string?
+	MalterlibPostCopyContents fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(&MalterlibPostCopyInternalTemplate)
 	{
 		&
 		{
@@ -4701,8 +4661,8 @@ Property
 		}
 	}
 
-	MalterlibPostCopyContents2 define string?
-	MalterlibPostCopyContents2 fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach("MalterlibPostCopyInternalTemplate", {MalterlibCalculatedPostCopyProject: MalterlibCalculatedPostCopyProject2, MalterlibPostCopyDestination: MalterlibPostCopyDestination2, MalterlibPostCopyHash: MalterlibPostCopyHash2})
+	MalterlibPostCopyContents2: string?
+	MalterlibPostCopyContents2 fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(&MalterlibPostCopyInternalTemplate, {MalterlibCalculatedPostCopyProject: MalterlibCalculatedPostCopyProject2, MalterlibPostCopyDestination: MalterlibPostCopyDestination2, MalterlibPostCopyHash: MalterlibPostCopyHash2})
 	{
 		&
 		{
@@ -4714,15 +4674,15 @@ Property
 
 Property
 {
-	MalterlibPostBuildScript_Last define string?
-	MalterlibTestDeployPath define string?
-	MalterlibExtraPostBuildScript define string?
-	MalterlibStripSymbols define bool?
+	MalterlibPostBuildScript_Last: string?
+	MalterlibTestDeployPath: string?
+	MalterlibExtraPostBuildScript: string?
+	MalterlibStripSymbols: bool?
 }
 
 Target
 {
-	PostBuildScript define string = ""
+	PostBuildScript: string = ""
 	PostBuildScript += "set -eo pipefail\r\n"
 	{
 		!!PlatformType "Unix"
@@ -4777,8 +4737,8 @@ Target
 		{
 			!MalterlibFinalModuleDestination MalterlibOriginalModuleDestination
 			!DisableDiffCopy true
-			Target.DebugInformationFormat "dwarf-with-dsym"
 			PlatformIsDarwin true
+			Target.DebugInformationFormat "dwarf-with-dsym"
 		}
 	}
 
@@ -4991,7 +4951,7 @@ Target
 		}
 	}
 
-	CodeSignEntitlements define string?
+	CodeSignEntitlements: string?
 	CodeSignEntitlements MalterlibSignMacOSEntitlements
 	{
 		&
@@ -5074,10 +5034,10 @@ Target
 	{
 		&
 		{
+			PlatformFamily "Windows"
 			TargetIsExecutable true
 			!Target:Target.SymbolFile undefined
 			MalterlibDeploySymbols true
-			PlatformFamily "Windows"
 		}
 	}
 

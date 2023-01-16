@@ -5,12 +5,12 @@
 {
 	Property
 	{
-		FullPath define string
+		FullPath: string
 		
-		g_DSStoreName define string = ".DS_Store"
+		g_DSStoreName: string = ".DS_Store"
 
-		XcodeSpecificationsDir define string = `@(HOME)/Library/Application Support/Developer/Shared/Xcode/Specifications`
-		SpecificationsRoot define string = "Build/Xcode/Specifications"->MakeAbsolute()
+		XcodeSpecificationsDir: string = `@(HOME)/Library/Application Support/Developer/Shared/Xcode/Specifications`
+		SpecificationsRoot: string = "Build/Xcode/Specifications"->MakeAbsolute()
 
 		RelativePath function(string _File) string
 		RelativePath _File->MakeRelative(SpecificationsRoot)
@@ -31,7 +31,7 @@
 		}
 	}
 
-	%GenerateFile SpecificationsRoot->FindFilesRecursiveIn("*")->ForEach("ConvertToEntity")
+	%GenerateFile SpecificationsRoot->FindFilesRecursiveIn("*")->ForEach(&ConvertToEntity)
 	{
 		Compile.Type "None"
 		GenerateFile

@@ -1,167 +1,71 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "CSharp_ImportTargets"
+GeneratorSetting
 {
-	%GeneratorSetting "Targets"
-	{
-		Property
-		{
-			A0 "$(MSBuildToolsPath)\\Microsoft.CSharp.targets"
-		}
-	}		
-}
-%GeneratorSetting "CSharp_Root"
-{
-	%GeneratorSetting "Target"
-	{
-		%GeneratorSetting "Type"
-		{
-			Property
+	!!Target.Language "C#"
+
+	Target_Type =+ {
+		VSSettings: [
 			{
-				Name "OutputType"
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "OutputType"
+				, Value: Target.Type->SwitchWithError(
+					"Unsupported target type: "
+					, "Executable", "WinExe"
+					, "ConsoleExecutable", "Exe"
+					, "UIExecutable", "WinExe"
+					, "DynamicLibrary", "Library"
+					, "SharedDynamicLibrary", "Library"
+				)
 			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Executable "WinExe"
-					ConsoleExecutable "Exe"
-					UIExecutable "WinExe"
-					DynamicLibrary "Library"
-					SharedDynamicLibrary "Library"
-				}
-			}
-		}
-		%GeneratorSetting "IntermediateDirectory"
-		{
-			Property
-			{
-				Name "BaseIntermediateOutputPath"
-			}
-			%GeneratorSetting "Properties"
-			{
-				%GeneratorSetting ""
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting "IntermediateOutputPath"
-					}
-				}
-			}
-		}
-		%GeneratorSetting "OutputDirectory"
-		{
-			Property
-			{
-				Name "OutputPath"
-			}
-		}
+		]
 	}
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "Type"
-		{
-			%GeneratorSetting "ValueSet"
-			{
-				%GeneratorSetting "EmbeddedResource_ResX"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								Generator "ResXFileCodeGenerator"
-								SubType "Designer"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "Settings"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								Generator "SettingsSingleFileGenerator"
-								SubType "Designer"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "C#Component"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								SubType "Component"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "ApplicationDefinition"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								Generator "MSBuild:Compile"
-								SubType "Designer"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "Page"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								Generator "MSBuild:Compile"
-								SubType "Designer"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "AppxManifest"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								SubType "Designer"
-							}
-						}
-					}
-				}
+}
+
+GeneratorSetting
+{
+	!!Target.Language "C#"
+
+	VisualStudio_FileType SwitchWithError(
+		Compile.Type, "Unknown compile type: "
+		, "C#", "Compile"
+		, "C#Component", "Compile"
+		, "ApplicationDefinition", "ApplicationDefinition"
+		, "Page", "Page"
+		, "EmbeddedResource_ResX", "EmbeddedResource"
+		, "Settings", "None"
+		, "None", "None"
+		, "AppDesigner", "AppDesigner"
+		, "AppxManifest", "AppxManifest"
+	)
+
+	Compile_Type =+ {
+		VSSettings: Compile.Type->SwitchWithDefault(
+			{}
+			, "EmbeddedResource_ResX", {
+				Generator: "ResXFileCodeGenerator"
+				, SubType: "Designer"
 			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					C\# "Compile"
-					C\#Component "Compile"
-					ApplicationDefinition "ApplicationDefinition"
-					Page "Page"
-					EmbeddedResource_ResX "EmbeddedResource"
-					Settings "None"
-					None "None"
-					AppDesigner "AppDesigner"
-					AppxManifest "AppxManifest"
-				}
+			, "Settings", {
+				Generator: "SettingsSingleFileGenerator"
+				, SubType: "Designer"
 			}
-		}
+			, "C#Component", {
+				SubType: "Component"
+			}
+			, "ApplicationDefinition", {
+				Generator: "MSBuild:Compile"
+				, SubType: "Designer"
+			}
+			, "Page", {
+				Generator: "MSBuild:Compile"
+				, SubType: "Designer"
+			}
+			, "AppxManifest", {
+				SubType: "Designer"
+			}
+		)
 	}
 }

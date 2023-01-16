@@ -1,53 +1,20 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
-
-%GeneratorSetting "DotNet_Root"
+/*
+GeneratorSetting
 {
-	%GeneratorSetting "Target"
-	{
-		%GeneratorSetting "FileName"
-		{
-			Property
-			{
-				Name "AssemblyName"
-			}
-		}
-		%GeneratorSetting "DefaultNamespace"
-		{
-			Property
-			{
-				Name "RootNamespace"
-			}
-		}
-		%GeneratorSetting "ToolPath"
-		{
-			Property
-			{
-				Name "MalterlibBuildSystemExecutablePath"
-				ConvertPath true
-			}
-		}
-		%GeneratorSetting "ProjectDir"
-		{
-			Property
-			{
-				Name "ProjectDir"
-				Substitute "$([System.IO.Path]::GetFullPath(\"$(MSBuildProjectDirectory){}\\\"))"
-			}
-		}
-	}
+	!!LanguageFamily ".NET"
+
+	Target #<ImportTargets_Defaults> =+ ["$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props"]
 }
+*/
 
-%GeneratorSetting "DotNet_Dependency"
+GeneratorSetting
 {
-	%GeneratorSetting "Dependency"
+	!!LanguageFamily ".NET"
+
+	Dependency_LinkWithObjectFiles {}
 	{
-		%GeneratorSetting "LinkWithObjectFiles"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
+		!!GeneratorSetting.Dependency_LinkWithObjectFiles undefined
 	}
 }

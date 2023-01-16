@@ -3,22 +3,22 @@
 
 Property
 {
-	MalterlibDebugConfigureLLDBScript define bool = true // User(Debug)=false: Configure Malterlib lldb helpers in ~/.lldbinit automatically when building
+	MalterlibDebugConfigureLLDBScript: bool = true // User(Debug)=false: Configure Malterlib lldb helpers in ~/.lldbinit automatically when building
 }
 
 %Target "Tool_GenerateBuildSystem"
 {
 	Property
 	{
-		IntermediateDirectoriesFile define string = GeneratedDirectory / "IntermediateDirectories.txt"
+		IntermediateDirectoriesFile: string = GeneratedDirectory / "IntermediateDirectories.txt"
 	}
 	Target
 	{
 		BaseName "GenerateBuildSystem"
 		Type "Tool"
-		CommandLine_Build `"@(GetProperty("GenerateFile", "Name", "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Build "@(IntermediateDirectoriesFile)"`
-		CommandLine_ReBuild `"@(GetProperty("GenerateFile", "Name", "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" ReBuild "@(IntermediateDirectoriesFile)"`
-		CommandLine_Clean `"@(GetProperty("GenerateFile", "Name", "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Clean "@(IntermediateDirectoriesFile)"`
+		CommandLine_Build `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Build "@(IntermediateDirectoriesFile)"`
+		CommandLine_ReBuild `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" ReBuild "@(IntermediateDirectoriesFile)"`
+		CommandLine_Clean `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Clean "@(IntermediateDirectoriesFile)"`
 		CommandLine_Outputs [Builtin.GeneratorStateFile]
 		Group "Tools/Malterlib"
 	}
@@ -135,12 +135,12 @@ Property
 				Property
 				{
 					IntermediateDirectoriesTemplate function(string _Target) string
-					IntermediateDirectoriesTemplate =+ `@(GetProperty("Target", "IntermediateDirectory", _Target))MalterlibDependencies\n`
+					IntermediateDirectoriesTemplate =+ `@(GetProperty(&Target.IntermediateDirectory, _Target))MalterlibDependencies\n`
 				}
 				GenerateFile
 				{
 					Name IntermediateDirectoriesFile
-					Contents Workspace.AllTargets->ForEach("IntermediateDirectoriesTemplate")
+					Contents Workspace.AllTargets->ForEach(&IntermediateDirectoriesTemplate)
 					Executable false
 					UnicodeBOM true
 					UnixLineEnds true
@@ -154,24 +154,24 @@ Property
 			{
 				Property
 				{
-					BuiltinMToolDirectory define string = Builtin.MToolExe->GetPath()
+					BuiltinMToolDirectory: string = Builtin.MToolExe->GetPath()
 
-					IsSafeMTool define bool = false
+					IsSafeMTool: bool = false
 					IsSafeMTool true
 					{
 						!!BuiltinMToolDirectory `@(Builtin.BasePathAbsolute)/BuildSystem/Binaries/General/Windows`
 					}
 
-					BuildSystemOutputBasePath define string = `@(Builtin.BasePathAbsolute)/BuildSystem`
-					BinariesPath define string = `@(Builtin.BasePathAbsolute)/Binaries/Malterlib`
-					DependencyFile define string = `@(BuildSystemOutputBasePath)/Binaries/Binaries.MalterlibDependency`
-					UpdatedFile define string = `@(BuildSystemOutputBasePath)/Binaries.updated`
-					ExcludePatterns define string = "*/.git;*/.DS_Store"
-					LLDBScriptLocation define string = "../../Debug/Source/Malterlib_LLDB"->MakeAbsolute()
+					BuildSystemOutputBasePath: string = `@(Builtin.BasePathAbsolute)/BuildSystem`
+					BinariesPath: string = `@(Builtin.BasePathAbsolute)/Binaries/Malterlib`
+					DependencyFile: string = `@(BuildSystemOutputBasePath)/Binaries/Binaries.MalterlibDependency`
+					UpdatedFile: string = `@(BuildSystemOutputBasePath)/Binaries.updated`
+					ExcludePatterns: string = "*/.git;*/.DS_Store"
+					LLDBScriptLocation: string = "../../Debug/Source/Malterlib_LLDB"->MakeAbsolute()
 
-					LibToolCopy_BinariesDirectory define string = `@(PlatformToolsetCompilerBasePath)/bin`
-					LibToolCopy_UpdatedFile define string = `@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.updated`
-					LibToolCopy_DependencyFile define string = `@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.MalterlibDependency`
+					LibToolCopy_BinariesDirectory: string = `@(PlatformToolsetCompilerBasePath)/bin`
+					LibToolCopy_UpdatedFile: string = `@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.updated`
+					LibToolCopy_DependencyFile: string = `@(LibToolCopy_BinariesDirectory)/Malterlib_libtool.MalterlibDependency`
 				}
 				GenerateFile
 				{

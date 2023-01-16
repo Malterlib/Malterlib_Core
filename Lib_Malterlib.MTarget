@@ -3,13 +3,13 @@
 
 Property
 {
-	MalterlibNeedsInitProject define bool = false
+	MalterlibNeedsInitProject: bool = false
 	MalterlibNeedsInitProject true
 	{
 		!!PlatformType "Unix"
 	}
 
-	ForceEnableDynamicTypeInfoLibCXX define bool = false
+	ForceEnableDynamicTypeInfoLibCXX: bool = false
 }
 
 %Target "Lib_Malterlib_Init"
@@ -163,7 +163,7 @@ Property
 		}
 
 	}
-	Property.WorkaroundLTOValue define bool = false
+	Property.WorkaroundLTOValue: bool = false
 	%Group "Source"
 	{
 		Compile
@@ -205,19 +205,19 @@ Property
 
 				Property
 				{
-					_Name define string
-					_Size define string
-					_Model define string
+					_Name: string
+					_Size: string
+					_Model: string
 
-					LseFilesToGenerate_Names define [string] = ["cas", "swp", "ldadd", "ldclr", "ldeor" , "ldset"]
-					LseFilesToGenerate_Sizes define [string] = ["1", "2", "4", "8", "16"]
-					LseFilesToGenerate_Models define [string] = ["1", "2", "3", "4"]
+					LseFilesToGenerate_Names: [string] = ["cas", "swp", "ldadd", "ldclr", "ldeor" , "ldset"]
+					LseFilesToGenerate_Sizes: [string] = ["1", "2", "4", "8", "16"]
+					LseFilesToGenerate_Models: [string] = ["1", "2", "3", "4"]
 
 					fg_IterateNames function(string _Name) [type(CEntity)] = []
-					fg_IterateNames =+ LseFilesToGenerate_Sizes->ForEach("fg_IterateSizes", {_Name: _Name})
+					fg_IterateNames =+ LseFilesToGenerate_Sizes->ForEach(&fg_IterateSizes, {_Name: _Name})
 
 					fg_IterateSizes function(string _Size) [type(CEntity)] = []
-					fg_IterateSizes =+ LseFilesToGenerate_Models->ForEach("fg_IterateModels", {_Size: _Size, _Name: _Name})
+					fg_IterateSizes =+ LseFilesToGenerate_Models->ForEach(&fg_IterateModels, {_Size: _Size, _Name: _Name})
 
 					fg_IterateModels function(string _Model) [type(CEntity)] = []
 					fg_IterateModels =+ {
@@ -236,7 +236,7 @@ Property
 						}
 					}
 				}
-				%GenerateFile LseFilesToGenerate_Names->ForEach("fg_IterateNames")
+				%GenerateFile LseFilesToGenerate_Names->ForEach(&fg_IterateNames)
 				{
 					GenerateFile
 					{
@@ -252,9 +252,9 @@ Property
 
 					Property
 					{
-						LseName define string = this.Identity->ParseFormatString("{}/outline_atomic_{}_{}_{}.S", "{1}")
-						LseSize define string = this.Identity->ParseFormatString("{}/outline_atomic_{}_{}_{}.S", "{2}")
-						LseModel define string = this.Identity->ParseFormatString("{}/outline_atomic_{}_{}_{}.S", "{3}")
+						LseName: string = this.Identity->ParseFormatString("{}/outline_atomic_{}_{}_{}.S", "{1}")
+						LseSize: string = this.Identity->ParseFormatString("{}/outline_atomic_{}_{}_{}.S", "{2}")
+						LseModel: string = this.Identity->ParseFormatString("{}/outline_atomic_{}_{}_{}.S", "{3}")
 					}
 
 					Compile
@@ -476,6 +476,9 @@ Property
 				!!MalterlibUseStaticLibCxx true
 				Compile
 				{
+					!!CompileDialect "C"
+					!!Compile.Type "Assmebler"
+
 					PreprocessorDefines =+ ["_LIBCPP_BUILDING_LIBRARY", "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED"]
 					DynamicTypeInfo true
 					{
@@ -534,8 +537,8 @@ Property
 			{
 				Property
 				{
-					ThisFileName define string = this.Identity->GetFileNoExt()
-					ElfToolchainRoot define string = "../../External/elftoolchain"->MakeAbsolute()
+					ThisFileName: string = this.Identity->GetFileNoExt()
+					ElfToolchainRoot: string = "../../External/elftoolchain"->MakeAbsolute()
 				}
 				GenerateFile
 				{
@@ -579,7 +582,7 @@ Property
 					{
 						Property
 						{
-							TypesFile define string = "../../External/elftoolchain/libelf/elf_types.m4"->MakeAbsolute()
+							TypesFile: string = "../../External/elftoolchain/libelf/elf_types.m4"->MakeAbsolute()
 						}
 						GenerateFile
 						{
@@ -612,7 +615,7 @@ Property
 					{
 						Property
 						{
-							NameTable define string = `@("../../External/elftoolchain/libdwarf/dwarf_nametbl.m4"->MakeAbsolute())`
+							NameTable: string = `@("../../External/elftoolchain/libdwarf/dwarf_nametbl.m4"->MakeAbsolute())`
 						}
 						GenerateFile
 						{
@@ -653,9 +656,9 @@ Property
 
 			Property
 			{
-				VisualStudioRoot define string = Builtin.VisualStudioRoot->UnixPath()
+				VisualStudioRoot: string = Builtin.VisualStudioRoot->UnixPath()
 
-				MSVCRootPath define string
+				MSVCRootPath: string
 				MSVCRootPath `@(MalterlibToolsRoot)/MSVC`
 				{
 					!MalterlibOverrideMSVCVersion undefined
@@ -665,14 +668,18 @@ Property
 					!!MSVCRootPath undefined
 				}
 
-				VisualStudioCRTPath define string = `@(MSVCRootPath)/@(MalterlibMSVCVersion)/crt/src`
+				VisualStudioCRTPath: string = `@(MSVCRootPath)/@(MalterlibMSVCVersion)/crt/src`
 			}
 
 			%Group "CDecl"
 			{
 				%Group "CRT"
 				{
-					!!PlatformFamily "Windows"
+					&
+					{
+						PlatformFamily "Windows"
+						HostPlatformFamily "Windows"
+					}
 
 					Compile.Disabled true
 					Compile
@@ -698,9 +705,9 @@ Property
 						}
 						Property
 						{
-							ThisFileName define string = this.Identity->GetFileNoExt()
-							ThisSourceFile define string = `@(VisualStudioCRTPath)/vcruntime/@(this.Identity)`
-							PatchFile define string = `@("Patches"->MakeAbsolute())/@(MalterlibMSVCVersion)/VCCrt_@(this.Identity).patch`
+							ThisFileName: string = this.Identity->GetFileNoExt()
+							ThisSourceFile: string = `@(VisualStudioCRTPath)/vcruntime/@(this.Identity)`
+							PatchFile: string = `@("Patches"->MakeAbsolute())/@(MalterlibMSVCVersion)/VCCrt_@(this.Identity).patch`
 						}
 						%GenerateFile ["exe_common.inl", "utility.cpp", "dll_dllmain.cpp"]
 						{
@@ -778,7 +785,7 @@ Property
 
 Property
 {
-	MalterlibDynamicLibrary define bool = false
+	MalterlibDynamicLibrary: bool = false
 }
 
 %Target "Lib_MalterlibDll"
@@ -884,7 +891,6 @@ Target
 	}
 }
 
-
 %Group "~Automatic/Breakpad Uploader Support"
 {
 	Compile
@@ -898,12 +904,16 @@ Target
 		}
 		PreprocessorDefines =+ `DMibBreakpadUploadServer=@(MalterlibBreakpadUploadServer->Escape())`
 	}
-	%File "../CrashReport/Source/Malterlib_CrashReport_BreakpadUploader.cpp"
-}
 
-Property.MalterlibUseCurl true
-{
-	!!MalterlibEnableBreakpadUploader true
+	%File "../CrashReport/Source/Malterlib_CrashReport_BreakpadUploader.cpp"
+
+	%Dependency "Lib_Curl"
+	{
+		Dependency.Indirect true
+		{
+			!TargetIsExecutable true
+		}
+	}
 }
 
 Target
@@ -946,8 +956,8 @@ Target
 {
 	Property
 	{
-		g_DSStoreName define string = ".DS_Store"
-		Root define string
+		g_DSStoreName: string = ".DS_Store"
+		Root: string
 		ExpandTemplate2 function(string _Path) [type(CEntity)] = []
 		ExpandTemplate2	=+ {
 			Name: `@(MalterlibIncludeOutputDir)/@(_Path->MakeRelative(Root))`
@@ -964,13 +974,13 @@ Target
 			}
 		}
 		ExpandTemplate function(string _Root) [type(CEntity)] = []
-		ExpandTemplate =+ _Root->FindFilesRecursiveIn("*")->ForEach("ExpandTemplate2", {Root: _Root})
+		ExpandTemplate =+ _Root->FindFilesRecursiveIn("*")->ForEach(&ExpandTemplate2, {Root: _Root})
 		{
 			!_Root undefined
 		}
 	}
 
-	%GenerateFile MalterlibIncludeRoots->ForEach("ExpandTemplate")
+	%GenerateFile MalterlibIncludeRoots->ForEach(&ExpandTemplate)
 	{
 		Compile.Type "Header"
 		GenerateFile
@@ -994,11 +1004,11 @@ Target
 
 Property
 {
-	MalterlibLibrary_All define bool = true // Default to all functionality being included in the library
-	MalterlibIncludeLevel define one_of("Workspace", "Target") = "Workspace" // These too will cause performance issues if changed
-	MalterlibIncludePerConfig define bool = false // These too will cause performance issues if changed
+	MalterlibLibrary_All: bool = true // Default to all functionality being included in the library
+	MalterlibIncludeLevel: one_of("Workspace", "Target") = "Workspace" // These too will cause performance issues if changed
+	MalterlibIncludePerConfig: bool = false // These too will cause performance issues if changed
 
-	MalterlibIncludeOutputDir define string = `@(GeneratedDirectory)RootInclude`
+	MalterlibIncludeOutputDir: string = `@(GeneratedDirectory)RootInclude`
 	MalterlibIncludeOutputDir `@(GeneratedDirectoryNoConfig)RootInclude`
 	{
 		&
@@ -1028,7 +1038,7 @@ Property
 
 Property
 {
-	MalterlibMemoryManager_EnableOverrideSystemMalloc define bool = false
+	MalterlibMemoryManager_EnableOverrideSystemMalloc: bool = false
 	MalterlibMemoryManager_EnableOverrideSystemMalloc true
 	{
 		&
@@ -1057,8 +1067,8 @@ Property
 
 Property
 {
-	MalterlibSubLibraries define [string]?
-	MalterlibIncludeRoots define [string]?
+	MalterlibSubLibraries: [string]?
+	MalterlibIncludeRoots: [string]?
 }
 
 Target
@@ -1157,7 +1167,24 @@ Target.ExtraGroups =+ "~Automatic/Malterlib Dependencies"
 
 Property
 {
-	MalterlibLibraryGroups define [string] = []
+	MalterlibLibraryGroups: [string] = []
+}
+
+%Group "!Automatic/!WindowsHeap"
+{
+	%File "Source/Platform/Malterlib_Core_Platform_Windows_Heap.cpp"
+}
+
+%Group "{Malterlib}/{Lib_Malterlib}/{TargetInjection}"
+{
+	Target.ExtraGroups =+ "!Automatic/!WindowsHeap"
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			TargetIsExecutable true
+		}
+	}
 }
 
 %Target "Lib_Malterlib"
@@ -1172,6 +1199,7 @@ Property
 		BaseName "Malterlib"
 		Type "StaticLibrary"
 		Group "Malterlib"
+		DependencyInjectionGroups =+ "{Malterlib}/{Lib_Malterlib}/{TargetInjection}"
 	}
 	Compile
 	{
@@ -1240,7 +1268,7 @@ Property
 		}
 	}
 
-	Target.ExtraGroups =+ ["~Automatic/Malterlib Indirect Dependencies", MalterlibSubLibraries->ForEach("AllSubLibraryGroupsTemplate")..., MalterlibLibraryGroups...]
+	Target.ExtraGroups =+ ["~Automatic/Malterlib Indirect Dependencies", MalterlibSubLibraries->ForEach(&AllSubLibraryGroupsTemplate)..., MalterlibLibraryGroups...]
 
 	%Group "Indirect Dependencies"
 	{
@@ -1269,7 +1297,7 @@ Property
 			}
 		}
 
-		%Dependency MalterlibSubLibraries->ForEach("AllDependenciesTemplate")
+		%Dependency MalterlibSubLibraries->ForEach(&AllDependenciesTemplate)
 
 		Dependency.Indirect true
 	}
@@ -1338,8 +1366,8 @@ Property
 
 Property
 {
-	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem define bool = false // User(Undocumented)=true: Init early support. Currently breaks macOS 10.12
-	MalterlibMemoryManager_CheckOverrideMemoryLeaks define bool = false
+	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem: bool = false // User(Undocumented)=true: Init early support. Currently breaks macOS 10.12
+	MalterlibMemoryManager_CheckOverrideMemoryLeaks: bool = false
 }
 
 %Target "Dll_MalterlibOverrideMalloc"
@@ -1498,17 +1526,3 @@ Property
 	}
 }
 
-%Group "!Automatic/!WindowsHeap"
-{
-	%File "Source/Platform/Malterlib_Core_Platform_Windows_Heap.cpp"
-}
-
-Target.ExtraGroups =+ "!Automatic/!WindowsHeap"
-{
-	&
-	{
-		PlatformFamily "Windows"
-		TargetIsExecutable true
-		fg_IsTargetInDependencies("Lib_Malterlib") true
-	}
-}

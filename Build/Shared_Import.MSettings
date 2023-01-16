@@ -3,10 +3,10 @@
 
 Property
 {
-	ImportIdentityRelativeRootPath define string
+	ImportIdentityRelativeRootPath: string
 	ImportIdentityRelativeRootPath Import:this.IdentityAsAbsolutePath->GetPath()->MakeRelative(Builtin.BasePathAbsolute)
 
-	IsMaintainedConfig define bool
+	IsMaintainedConfig: bool
 	IsMaintainedConfig true
 	{
 		&
@@ -20,7 +20,7 @@ Property
 		}
 	}
 
-	MalterlibImportUpdateCache define bool = false
+	MalterlibImportUpdateCache: bool = false
 	MalterlibImportUpdateCache true
 	{
 		&
@@ -39,10 +39,10 @@ Import
 
 Property
 {
-	MToolCMakePath define string
+	MToolCMakePath: string
 	MToolCMakePath MToolDirectory / ("MToolCMake" + (Builtin.MToolExe->GetExtension() && ("." + Builtin.MToolExe->GetExtension())))
 
-	CMakeIntermediateDirectory define string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/SharedCMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
+	CMakeIntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/SharedCMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
 	CMakeGetToolSetTool function(string _Tool) string
 
 	CMakeGetToolSetTool PlatformToolsetCompiler->GetPath() / _Tool
@@ -69,9 +69,9 @@ Compile
 
 Import
 {
-	CMake_AlwaysFullRebuild define bool = true // User(Import)=false: Always do a full rebuild of cmake generation when the cache is outdated
-	CMake_VerboseHash define bool = false // User(Import)=true: Trace out the string used to determine the config hash for cmake imports
-	CMake_DiffHash define bool = false // User(Import)=true: Run diff program with differences between hashes
+	CMake_AlwaysFullRebuild: bool = true // User(Import)=false: Always do a full rebuild of cmake generation when the cache is outdated
+	CMake_VerboseHash: bool = false // User(Import)=true: Trace out the string used to determine the config hash for cmake imports
+	CMake_DiffHash: bool = false // User(Import)=true: Run diff program with differences between hashes
 
 	CMake_FullRebuildVersion "4"
 
@@ -187,7 +187,7 @@ Import
 		!!GeneratorFamily "VisualStudio"
 	}
 
-	CMake_TryCompilePlatformVariables define [string] = []
+	CMake_TryCompilePlatformVariables: [string] = []
 
 	CMake_TryCompilePlatformVariables =+ [
 		"CMAKE_EXE_LINKER_FLAGS_INIT"
@@ -226,7 +226,7 @@ Import
 		!Import.CMake_TryCompilePlatformVariables []
 	}
 
-	CMake_Internal_LinkerFlags define string?
+	CMake_Internal_LinkerFlags: string?
 
 	CMake_Internal_LinkerFlags =+ ` -stdlib=libc++`
 	{
@@ -439,7 +439,7 @@ Import
 		}
 	}
 
-	CMake_CrossCompileValue define string = `CMAKE_CROSSCOMPILING=@((PlatformFamily == HostPlatformFamily && Architecture == HostArchitecture) ? "OFF" : "ON")`
+	CMake_CrossCompileValue: string = `CMAKE_CROSSCOMPILING=@((PlatformFamily == HostPlatformFamily && Architecture == HostArchitecture) ? "OFF" : "ON")`
 	CMake_Variables =+ Import.CMake_CrossCompileValue
 	CMake_ExcludeFromHash =+ Import.CMake_CrossCompileValue
 

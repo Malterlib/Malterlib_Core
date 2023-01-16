@@ -3,17 +3,17 @@
 
 Property
 {
-	MalterlibEnableThirdPartyComparisonTests define bool = false // User(Tests)=true: Enable thrird party comparison tests.
-	MalterlibClangUpstreamBranch define string = `release/@(MalterlibClangVersion->ParseFormatString("{}.{}", "{0}.x"))`
+	MalterlibEnableThirdPartyComparisonTests: bool = false // User(Tests)=true: Enable thrird party comparison tests.
+	MalterlibClangUpstreamBranch: string = `release/@(MalterlibClangVersion->ParseFormatString("{}.{}", "{0}.x"))`
 
-	HasLLVMRepository define bool = false
+	HasLLVMRepository: bool = false
 	HasLLVMRepository true
 	{
 		!!EnablePlatformFamily_macOS true
 		!!EnablePlatformFamily_Linux true
 	}
 
-	MalterlibSubLibrarySeparate define bool = false
+	MalterlibSubLibrarySeparate: bool = false
 }
 
 %Repository "llvm-project"
@@ -80,10 +80,10 @@ Import "Lib_Malterlib.MTarget"
 	}
 	Property
 	{
-		Malterlib_Core_Dependencies define [type(CEntity)] = []
+		Malterlib_Core_Dependencies: [type(CEntity)] = []
 		Malterlib_Core_Dependencies =+ ["Lib_Malterlib_File", "Lib_Malterlib_Exception", "Lib_Malterlib_Contract", "Lib_Malterlib_Memory", "Lib_Malterlib_Thread", "Lib_Malterlib_Atomic", "Lib_Malterlib_Time", "Lib_Malterlib_CrashReport", "Lib_Malterlib_String"]
 
-		Malterlib_Core_DebugDependencies define [type(CEntity)] = []
+		Malterlib_Core_DebugDependencies: [type(CEntity)] = []
 		Malterlib_Core_DebugDependencies =+ ["Lib_Malterlib_Debug", "Lib_Malterlib_Contract", "Lib_Malterlib_Log", "Lib_Malterlib_Process"]
 	}
 	%Dependency Malterlib_Core_Dependencies
@@ -133,18 +133,105 @@ Import "Lib_Malterlib.MTarget"
 		}
 		ExtraGroups =+ "~Automatic/Boost Include Roots"
 	}
+
+	%Dependency ["CoreFoundation", "Security"]
+	{
+		&
+		{
+			PlatformIsDarwin true
+			!Target.Type "Driver"
+		}
+
+		Dependency
+		{
+			Type "Framework"
+			Indirect true
+		}
+	}
+
+	%Dependency ["AppKit", "Cocoa", "IOKit", "OpenGL"]
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			!Target.Type "Driver"
+		}
+
+		Dependency
+		{
+			Type "Framework"
+			Indirect true
+		}
+	}
+
+	%Dependency ["UIKit"]
+	{
+		&
+		{
+			PlatformFamily "iOS"
+			!Target.Type "Driver"
+		}
+
+		Dependency
+		{
+			Type "Framework"
+			Indirect true
+		}
+	}
+
+	%Dependency ["dl", "uuid", "rt"]
+	{
+		!!PlatformFamily "Linux"
+
+		Dependency
+		{
+			Type "Library"
+			Indirect true
+		}
+	}
+
+	%Dependency ["asound"]
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Target.Type "UIExecutable"
+		}
+
+		Dependency
+		{
+			Type "Library"
+			Indirect true
+		}
+	}
+
+	%Dependency ["c++abi"]
+	{
+		&
+		{
+			PlatformIsDarwin true
+			!MalterlibUseStaticLibCxxABI true
+			!Target.Type "Driver"
+		}
+
+		Dependency
+		{
+			Type "Library"
+			Indirect true
+		}
+	}
 }
 
 //	Target.ExtraGroups =+ "~Automatic/Malterlib Indirect Dependencies;@(AllSubLibraryGroups);@(MalterlibLibraryGroups)"
 
 Property
 {
-	MalterlibLibrary_Core define bool = MalterlibLibrary_All
+	MalterlibLibrary_Core: bool = MalterlibLibrary_All
 	MalterlibSubLibraries =+ "Core"
 	{
 		!!MalterlibLibrary_Core true
 	}
-//	MalterlibSubLibrarySeparate_Lib_Malterlib_Core define bool = true
+//	MalterlibSubLibrarySeparate_Lib_Malterlib_Core: bool = true
 	MalterlibIncludeRoots =+ "Include"->MakeAbsolute()
 	{
 		!!MalterlibLibrary_Core true
@@ -160,7 +247,7 @@ Property
 	AllMalterlibLibrariesTemplate function(string _Library) [type(CEntity)]
 	AllMalterlibLibrariesTemplate =+ `Lib_Malterlib_@(_Library)`
 
-	AllMalterlibLibraries define [type(CEntity)] = MalterlibSubLibraries->ForEach("AllMalterlibLibrariesTemplate")
+	AllMalterlibLibraries: [type(CEntity)] = MalterlibSubLibraries->ForEach(&AllMalterlibLibrariesTemplate)
 }
 
 %Target AllMalterlibLibraries
@@ -243,7 +330,7 @@ Property
 	!!MalterlibEnableInternalTests true
 	
 	MalterlibTests =+ "Malterlib_Core"
-	MalterlibTestExtraGroups_Malterlib_Core define [string] = ["{Test}/{Malterlib_Core}"]
+	MalterlibTestExtraGroups_Malterlib_Core: [string] = ["{Test}/{Malterlib_Core}"]
 }
 
 Import "Tools/*/*.MHeader"

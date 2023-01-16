@@ -1,677 +1,565 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "Native_SharedTarget"
+GeneratorSetting
 {
-	%GeneratorSetting "Target"
+	!!Target.Language "Native"
+
+	Target_PlatformToolset {}
 	{
-		// Handled elsewhere
-		%GeneratorSetting "PlatformVersion"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "PlatformToolset"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "ClCompileSuffix"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "IgnoreWarnCompileDuplicatedFilename"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "CharacterSet"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "UseOfMfc"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "EnableASAN"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "EnableASAN"
-			}
-		}
-		%GeneratorSetting "UseOfAtl"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "LinkTimeCodeGeneration"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "LinkTimeCodeGeneration"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "UseLinkTimeCodeGeneration"
-					Fast "UseFastLinkTimeCodeGeneration"
-					\false "Default"
-				}
-			}
-		}
-		%GeneratorSetting "DefaultToolArchitecture"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "CLRSupport"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
+		!!GeneratorSetting.Target_PlatformToolset undefined
+	}
+	Target_ClCompileSuffix {}
+	{
+		!!GeneratorSetting.Target_ClCompileSuffix undefined
+	}
+	Target_IgnoreWarnCompileDuplicatedFilename {}
+	{
+		!!GeneratorSetting.Target_IgnoreWarnCompileDuplicatedFilename undefined
+	}
+	Target_CharacterSet {}
+	{
+		!!GeneratorSetting.Target_CharacterSet undefined
+	}
+	Target_UseOfMfc {}
+	{
+		!!GeneratorSetting.Target_UseOfMfc undefined
+	}
+	Target_UseOfAtl {}
+	{
+		!!GeneratorSetting.Target_UseOfAtl undefined
+	}
+	Target_DefaultToolArchitecture {}
+	{
+		!!GeneratorSetting.Target_DefaultToolArchitecture undefined
+	}
+	Target_CLRSupport {}
+	{
+		!!GeneratorSetting.Target_CLRSupport undefined
+	}
 
-		// Basics
+	Target_LinkTimeCodeGeneration =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "LinkTimeCodeGeneration"
+				, Value: Target.LinkTimeCodeGeneration->SwitchWithError(
+					"Unsupported option: "
+					, true, "UseLinkTimeCodeGeneration"
+					, false, "Default"
+					, "Fast", "UseFastLinkTimeCodeGeneration"
+				)
+			}, {
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "WholeProgramOptimization"
+				, Value: Target.LinkTimeCodeGeneration->SwitchWithError(
+					"Unsupported option: "
+					, true, "true"
+					, false, "false"
+					, "", "false"
+				)
+			}
+		]
+	}
 
-		%GeneratorSetting "PlatformToolsetCompiler"
-		{
-			Property
+/*	Target_PlatformToolsetCompiler =+ {
+		VSSettings: [
 			{
-				Parent "PropertyGroup"
-				Name "GccCompiler"
-				ConvertPath true
+				Type: "PropertyGroup"
+				, Key: "GccCompiler"
+				, Value: Target.PlatformToolsetCompiler->WindowsPath()
 			}
-		}
+		]
+	}*/
 
-		%GeneratorSetting "FileExtension"
-		{
-			Property
+	Target_FileExtension =+ {
+		VSSettings: [
 			{
-				Parent "PropertyGroup"
-				Name "TargetExt"
+				Type: "PropertyGroup"
+				, Key: "TargetExt"
+				, Value: Target.FileExtension->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "FileName"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "TargetName"
-			}
-		}
-		%GeneratorSetting "ToolPath"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "ExecutablePath"
-				ConvertPath true
-			}
-		}
+		]
+	}
 
-		%GeneratorSetting "Real_PostBuildScript"
-		{
-			Property
+	Target_FileName =+ {
+		VSSettings: [
 			{
-				Entity "PostBuildEvent"
-				Name "Command"
+				Type: "PropertyGroup"
+				, Key: "TargetName"
+				, Value: Target.FileName->EscapeMSBuild()
 			}
-		}
+		]
+	}
 
+	Target_ToolPath =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Key: "ExecutablePath"
+				, Value: Target.ToolPath->f_ExpandFlags()->f_JoinMSBuild()
+			}
+		]
+	}
 
-		%GeneratorSetting "Real_PreBuildScript"
-		{
-			Property
+	Target_PostBuildScript =+ {
+		VSSettings: [
 			{
-				Entity "PreBuildEvent"
-				Name "Command"
+				Type: "ItemDefinitionGroup"
+				, Name: "PostBuildEvent"
+				, Key: "Command"
+				, Value: `@(Target.ExportScriptEnvironmentContents->EscapeMSBuild())\r\n@(Target.PostBuildScript->EscapeMSBuild())`
 			}
-		}
+		]
+	}
 
-		%GeneratorSetting "PostBuildScript"
-		{
-			Property
+	Target_PreBuildScript =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "ItemDefinitionGroup"
+				, Name: "PreBuildEvent"
+				, Key: "Command"
+				, Value: `@(Target.ExportScriptEnvironmentContents->EscapeMSBuild())\r\n@(Target.PreBuildScript->EscapeMSBuild())`
 			}
-		}
+		]
+	}
 
-		%GeneratorSetting "PreBuildScript"
-		{
-			Property
+	Target_DebuggerCommandArguments =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Key: "LocalDebuggerCommandArguments"
+				, Value: EscapeHost(Target.DebuggerCommandArguments...)->EscapeMSBuild()
+			},  {
+				Type: "PropertyGroup"
+				, Key: "RemoteDebuggerCommandArguments"
+				, Value: EscapeHost(Target.DebuggerCommandArguments...)->EscapeMSBuild()
 			}
-		}
+		]
+	}
 
-		%GeneratorSetting "DebuggerCommandArguments"
-		{
-			Property
+	Target_LocalDebuggerCommand =+ {
+		VSSettings: [
 			{
-				Parent "PropertyGroup"
-				Name "LocalDebuggerCommandArguments"
+				Type: "PropertyGroup"
+				, Key: "LocalDebuggerCommand"
+				, Value: Target.LocalDebuggerCommand->EscapeMSBuild()
 			}
-			%GeneratorSetting "Properties"
+		]
+	}
+
+	Target_RemoteDebuggerCommand =+ {
+		VSSettings: [
 			{
-				%GeneratorSetting "PropertyGroup"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting "RemoteDebuggerCommandArguments"
-					}
-				}
+				Type: "PropertyGroup"
+				, Key: "RemoteDebuggerCommand"
+				, Value: Target.RemoteDebuggerCommand->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "LocalDebuggerCommand"
-		{
-			Property
+		]
+	}
+
+	Target_LocalDebuggerWorkingDirectory =+ {
+		VSSettings: [
 			{
-				Parent "PropertyGroup"
-				Name "LocalDebuggerCommand"
+				Type: "PropertyGroup"
+				, Key: "LocalDebuggerWorkingDirectory"
+				, Value: Target.LocalDebuggerWorkingDirectory->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "RemoteDebuggerCommand"
-		{
-			Property
+		]
+	}
+
+	Target_RemoteDebuggerWorkingDirectory =+ {
+		VSSettings: [
 			{
-				Parent "PropertyGroup"
-				Name "RemoteDebuggerCommand"
+				Type: "PropertyGroup"
+				, Key: "RemoteDebuggerWorkingDirectory"
+				, Value: Target.RemoteDebuggerWorkingDirectory->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "LocalDebuggerWorkingDirectory"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "LocalDebuggerWorkingDirectory"
-			}
-		}
-		%GeneratorSetting "RemoteDebuggerWorkingDirectory"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "RemoteDebuggerWorkingDirectory"
-			}
-		}
+		]
 	}
 }
-%GeneratorSetting "Native_StaticLibrary"
-{
-	%GeneratorSetting "Target"
-	{
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Entity "Lib"
-				Name "AdditionalLibraryDirectories"
-			}
-		}
 
-		%GeneratorSetting "TargetMachine"
-		{
-			Property
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "Native"
+		Target.Type "StaticLibrary"
+	}
+
+	Target_SearchPath =+ {
+		VSSettings: [
 			{
-				Entity "Lib"
-				Name "TargetMachine"
+				Type: "ItemDefinitionGroup"
+				, Name: "Lib"
+				, Key: "AdditionalLibraryDirectories"
+				, Value: Target.SearchPath->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "ExtraLibFlags"
-		{
-			Property
+		]
+	}
+
+	Target_TargetMachine =+ {
+		VSSettings: [
 			{
-				Entity "Lib"
-				Name "AdditionalOptions"
-				Substitute "{} %(Lib.AdditionalOptions)"
-				Separator " "
+				Type: "ItemDefinitionGroup"
+				, Name: "Lib"
+				, Key: "TargetMachine"
+				, Value: Target.TargetMachine->EscapeMSBuild()
 			}
-		}
+		]
+	}
+
+	Target_ExtraLibFlags =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Lib"
+				, Key: "AdditionalOptions"
+				, Value: `@(Target.ExtraLibFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
+			}
+		]
 	}
 }
-%GeneratorSetting "Native_DynamicLibrary"
+
+GeneratorSetting
 {
-	%GeneratorSetting "Target"
+	&
 	{
-		%GeneratorSetting "ModuleDefinitionFile"
-		{
-			Property
+		Target.Language "Native"
+		Target.Type "DynamicLibrary"
+	}
+
+	Target_ModuleDefinitionFile =+ {
+		VSSettings: [
 			{
-				Entity "Link"
-				Name "ModuleDefinitionFile"
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "ModuleDefinitionFile"
+				, Value: Target.ModuleDefinitionFile->EscapeMSBuild()
 			}
-		}			
+		]
 	}
 }
-%GeneratorSetting "Native_Utility"
+
+GeneratorSetting
 {
-	%GeneratorSetting "Target"
+	&
 	{
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "CommandLine_Build"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "CommandLine_ReBuild"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "CommandLine_Clean"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
+		Target.Language "Native"
+		Target.Type "Tool"
+	}
 
-		%GeneratorSetting "CommandLine_Inputs"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
+	Target_SearchPath {}
+	Target_CommandLine_Build {}
+	Target_CommandLine_ReBuild {}
+	Target_CommandLine_Clean {}
+	Target_CommandLine_Inputs {}
+	Target_CommandLine_Outputs {}
+	Target_Real_CommandLine_Build {}
+	Target_Real_CommandLine_ReBuild {}
+	Target_Real_CommandLine_Clean {}
+	Target_CommandLine_VerifyInputsAndOutputsExist {}
+}
 
-		%GeneratorSetting "CommandLine_Outputs"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "Native"
+		TargetIsExecutable true
+	}
 
-		%GeneratorSetting "Real_CommandLine_Build"
-		{
-			Property
+	Target_SearchPath =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "AdditionalLibraryDirectories"
+				, Value: Target.SearchPath->f_ExpandFlags()->f_JoinMSBuild()
 			}
-		}
+		]
+	}
 
-		%GeneratorSetting "Real_CommandLine_ReBuild"
-		{
-			Property
+	Target_LinkKeyFile =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "KeyFile"
+				, Value: Target.LinkKeyFile->EscapeMSBuild()
+			}, {
+				Type: "PropertyGroup"
+				, Key: "LinkKeyFile"
+				, Value: Target.LinkKeyFile->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "Real_CommandLine_Clean"
-		{
-			Property
+		]
+	}
+
+	Target_TargetMachine =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "TargetMachine"
+				, Value: Target.TargetMachine->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "CommandLine_VerifyInputsAndOutputsExist"
-		{
-			Property
+		]
+	}
+
+	Target_AssemblyDebug =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "AssemblyDebug"
+				, Value: Target.AssemblyDebug->f_BoolToString()
 			}
+		]
+	}
+
+	Target_EntryPointSymbol =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "EntryPointSymbol"
+				, Value: Target.EntryPointSymbol->EscapeMSBuild()
+			}
+		]
+	}
+
+	Target_DelaySign =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "DelaySign"
+				, Value: Target.DelaySign->f_BoolToString()
+			}, {
+				Type: "PropertyGroup"
+				, Key: "LinkDelaySign"
+				, Value: Target.DelaySign->f_BoolToString()
+			}
+		]
+	}
+
+	Target_IgnoreAllDefaultLibraries =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "IgnoreAllDefaultLibraries"
+				, Value: Target.IgnoreAllDefaultLibraries->f_BoolToString()
+			}
+		]
+	}
+
+	Target_GenerateDebugInformation =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "GenerateDebugInformation"
+				, Value: Target.GenerateDebugInformation->SwitchWithError(
+					"Unsupported option: "
+					, true, "true"
+					, false, "false"
+					, "DebugFastLink", "DebugFastLink"
+				)
+			}
+		]
+	}
+
+	Target_DataExecutionPrevention =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "DataExecutionPrevention"
+				, Value: Target.DataExecutionPrevention->f_BoolToString()
+			}
+		]
+	}
+
+	Target_Verbose =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "SuppressStartupBanner"
+				, Value: Target.Verbose->SwitchWithError(
+					"Unsupported option: "
+					, true, ""
+					, false, "true"
+					, "", "true"
+				)
+			}
+		]
+	}
+
+	Target_RandomizedBaseAddress =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "RandomizedBaseAddress"
+				, Value: Target.DataExecutionPrevention->f_BoolToString()
+			}
+		]
+	}
+
+	Target_Driver =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "Driver"
+				, Value: Target.Driver->SwitchWithError(
+					"Unsupported option: "
+					, true, "Driver"
+					, "UpOnly", "UpOnly"
+					, "WDM", "WDM"
+				)
+			}
+		]
+	}
+
+	Target_GenerateManifest =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "GenerateManifest"
+				, Value: Target.GenerateManifest->f_BoolToString()
+			}
+		]
+	}
+
+	Target_IgnoreImportLibrary =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "IgnoreImportLibrary"
+				, Value: Target.IgnoreImportLibrary->f_BoolToString()
+			}
+		]
+	}
+
+	Target_ExtraLinkerFlags =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "AdditionalOptions"
+				, Value: `@(Target.ExtraLinkerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
+			}
+		]
+	}
+
+	Target_LargeAddressAware =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "LargeAddressAware"
+				, Value: Target.LargeAddressAware->f_BoolToString()
+			}
+		]
+	}
+
+	Target_LinkIncremental =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Key: "LinkIncremental"
+				, Value: Target.LinkIncremental->f_BoolToString()
+			}
+		]
+	}
+
+	f_ExtractLibraryDependencies function(string _ExternalDependency) [string] = []
+	f_ExtractLibraryDependencies =+ (&Dependency.Name->GetProperty(_ExternalDependency))
+	{
+		&
+		{
+			|
+			{
+				TargetIsExecutable true
+				!(&Dependency.Indirect->GetProperty(_ExternalDependency)) true
+			}
+			(&Dependency.Type->GetProperty(_ExternalDependency)) "Library"
 		}
 	}
-}
-%GeneratorSetting "Native_SharedExecutable"
-{
-	%GeneratorSetting "Target"
-	{
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "AdditionalLibraryDirectories"
-			}
-		}
 
-		%GeneratorSetting "LinkKeyFile"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "KeyFile"
-			}
-			%GeneratorSetting "Properties"
-			{
-				%GeneratorSetting "PropertyGroup"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting "LinkKeyFile"
-					}
-				}
-			}
-		}
-			
-		%GeneratorSetting "TargetMachine"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "TargetMachine"
-			}
-		}
-		%GeneratorSetting "AssemblyDebug"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "AssemblyDebug"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "EntryPointSymbol"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "EntryPointSymbol"
-			}
-		}
-		%GeneratorSetting "DelaySign"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "DelaySign"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-			%GeneratorSetting "Properties"
-			{
-				%GeneratorSetting "PropertyGroup"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting "LinkDelaySign"
-					}
-				}
-			}
-		}
-		%GeneratorSetting "IgnoreAllDefaultLibraries"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "IgnoreAllDefaultLibraries"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "GenerateDebugInformation"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "GenerateDebugInformation"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					DebugFastLink "DebugFastLink"
-					\false "false"
-				}
-			}
-		}
+	ExtractLibraryDependencies: [string] = []
+	ExtractLibraryDependencies Target.ExternalDependencies->ForEach(&GeneratorSetting.f_ExtractLibraryDependencies)->Unique()
 
-		%GeneratorSetting "DataExecutionPrevention"
-		{
-			Property
+	Target_LinkWithLibraries =+ {
+		VSSettings: [
 			{
-				Entity "Link"
-				Name "DataExecutionPrevention"
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "AdditionalDependencies"
+				, Value: [GeneratorSetting.ExtractLibraryDependencies..., Target.LinkWithLibraries...]->f_ExpandFlags()->f_JoinMSBuild()
 			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
+		]
+	}
 
-		%GeneratorSetting "Verbose"
-		{
-			Property
+	Target_RemoveUnreferencedSymbols =+ {
+		VSSettings: [
 			{
-				Entity "Link"
-				Name "SuppressStartupBanner"
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "OptimizeReferences"
+				, Value: Target.RemoveUnreferencedSymbols->f_BoolToString()
 			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true ""
-					\false "true"
-					\ "true"
-				}
-			}
-		}
+		]
+	}
 
+	Target_SubSystem =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "SubSystem"
+				, Value: Target.SubSystem->EscapeMSBuild()
+			}
+		]
+	}
 
-		%GeneratorSetting "RandomizedBaseAddress"
-		{
-			Property
+	Target_SymbolFile =+ {
+		VSSettings: [
 			{
-				Entity "Link"
-				Name "RandomizedBaseAddress"
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "ProgramDatabaseFile"
+				, Value: Target.SymbolFile->EscapeMSBuild()
 			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
+		]
+	}
 
-		%GeneratorSetting "Driver"
-		{
-			Property
+	Target_Version =+ {
+		VSSettings: [
 			{
-				Entity "Link"
-				Name "Driver"
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "Version"
+				, Value: Target.Version->EscapeMSBuild()
 			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "Driver"
-					UpOnly "UpOnly"
-					WDM "WDM"
-				}
-			}
-		}
+		]
+	}
 
-		%GeneratorSetting "GenerateManifest"
-		{
-			Property
+	Target_MinimumRequiredVersion =+ {
+		VSSettings: [
 			{
-				Parent "PropertyGroup"
-				Name "GenerateManifest"
+				Type: "ItemDefinitionGroup"
+				, Name: "Link"
+				, Key: "MinimumRequiredVersion"
+				, Value: Target.MinimumRequiredVersion->EscapeMSBuild()
 			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "IgnoreImportLibrary"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "IgnoreImportLibrary"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "ExtraLinkerFlags"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "AdditionalOptions"
-				Substitute "{} %(Link.AdditionalOptions)"
-				Separator " "
-			}
-		}
-		%GeneratorSetting "LargeAddressAware"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "LargeAddressAware"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "LinkIncremental"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "LinkIncremental"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "LinkWithLibraries"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "AdditionalDependencies"
-			}
-		}
-		%GeneratorSetting "RemoveUnreferencedSymbols"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "OptimizeReferences"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "SubSystem"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "SubSystem"
-			}
-		}
-		%GeneratorSetting "SymbolFile"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "ProgramDatabaseFile"
-			}
-		}
-		%GeneratorSetting "Version"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "Version"
-			}
-		}
-						
-		%GeneratorSetting "MinimumRequiredVersion"
-		{
-			Property
-			{
-				Entity "Link"
-				Name "MinimumRequiredVersion"
-			}
-		}
+		]
 	}
 }

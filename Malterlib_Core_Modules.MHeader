@@ -57,7 +57,7 @@ Property.MalterlibModules =+ [
 
 Property
 {
-	MalterlibBinarySDKRepositories define [string] = []
+	MalterlibBinarySDKRepositories: [string] = []
 }
 
 Property
@@ -87,7 +87,7 @@ Property
 		}
 	}
 
-	MalterlibAllBinarySDKRepositories define bool = false // User(Repository)=true: Set to true to sync all binary SDK repositories.
+	MalterlibAllBinarySDKRepositories: bool = false // User(Repository)=true: Set to true to sync all binary SDK repositories.
 }
 
 Property
@@ -103,17 +103,17 @@ Property
 {
 	Property
 	{
-		RepoName define string = `@(this.Identity).git`
-		RepoPlatformFamily define string = `@(this.Identity->ParseFormatString("{}_{}_{}", "{1}"))`
-		RepoArchitecture define string = `@(this.Identity->ParseFormatString("{}_{}_{}", "{2}"))`
-		RepoDir define string = `../../Binaries/MalterlibSDK/@(RepoPlatformFamily)/@(RepoArchitecture)`
+		RepoName: string = `@(this.Identity).git`
+		RepoPlatformFamily: string = `@(this.Identity->ParseFormatString("{}_{}_{}", "{1}"))`
+		RepoArchitecture: string = `@(this.Identity->ParseFormatString("{}_{}_{}", "{2}"))`
+		RepoDir: string = `../../Binaries/MalterlibSDK/@(RepoPlatformFamily)/@(RepoArchitecture)`
 	}
 	Repository
 	{
 		Type "Malterlib"
 		Location RepoDir->MakeAbsolute()
 		URL `@(Repository.MalterlibRoot)/@(RepoName)`
-		Remotes =+ MalterlibRemotePrefixes->ForEach("f_MalterlibRemotePrefixesTemplate")
+		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
 		{
 			!MalterlibRemotePrefixes undefined
 		}

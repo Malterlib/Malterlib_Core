@@ -132,11 +132,11 @@ function DetectRepoRoot()
 
 function GetMalterlibCoreHash()
 {
-	cat *.MRepo | grep 'Malterlib/Core ' | cut '-d ' -f 2 || true
+	cat *.MRepo | grep -A2 '"Malterlib/Core"' | grep '"Hash":' | cut '-d ' -f 2 | tr -d '"' || true
 }
 
 MalterlibChangingBootstrapVersion="false"
-BootstrapVersion="3"
+BootstrapVersion="4"
 MalterlibCoreBootstrapVersion="2"
 
 function BootstrapCore()
@@ -230,7 +230,7 @@ function BootstrapCore()
 			OutputInfo "Cloning $MalterlibBinariesPath"
 
 			RepoFolder="Malterlib/Core/"
-			GitHash=`cat Malterlib/Core/*.MRepo | grep "\\.\\./\\.\\./$MalterlibBinariesPath " | cut '-d ' -f 2 || true`
+			GitHash=`cat Malterlib/Core/*.MRepo | grep -A2 "\"\\.\\./\\.\\./$MalterlibBinariesPath\"" | grep '"Hash":' | cut '-d ' -f 2 | tr -d '"' || true`
 
 			if [[ "$GitHash" != "" ]]; then
 				echo "Found commit hash in ${RepoFolder}*.MRepo files: `OutputNote "$GitHash"`"
@@ -281,10 +281,11 @@ while true; do
 			if ! [ -e BuildSystem/SafeMib/SafeMib.updated ]; then
 				echo Updating safe binaries
 
-				"$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*" "BuildSystem/SafeMib/Binaries" "" 1 1
-				"$MToolExecutable" DiffCopy "Malterlib/Core/Scripts/*" "BuildSystem/SafeMib/Scripts" "" 1 1
+				ExcludePatterns="*/.git;*/.DS_Store;*.TMP"
+
+				MalterlibDiffCopyExcludePatterns="$ExcludePatterns" "$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*" "BuildSystem/SafeMib/Binaries" "" 1 1
+				MalterlibDiffCopyExcludePatterns="$ExcludePatterns" "$MToolExecutable" DiffCopy "Malterlib/Core/Scripts/*" "BuildSystem/SafeMib/Scripts" "" 1 1
 				"$MToolExecutable" TouchOrCreate "BuildSystem/SafeMib/SafeMib.updated"
-				ExcludePatterns="*/.git;*/.DS_Store"
 
 				if type MalterlibConvertPath > /dev/null; then
 					"$MToolExecutable" BuildDependencies "OutputFile=`MalterlibConvertPath \"$MalterlibScriptPath/$DependencyFile\"`" \

@@ -1,126 +1,105 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "DotNet_CompileShared"
+GeneratorSetting
 {
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "Verbose"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Symbols"
-		{
-			Property
-			{
-				Name "DebugType"
-				Validity "NotFile"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					FullForDebug "full"
-					Full "pdbonly"
-					Fast "pdbonly"
-					None "none"
-				}
-			}
-		}	
+	!!LanguageFamily ".NET"
 
-		%GeneratorSetting "Optimize"
-		{
-			Property
-			{
-				Name "Optimize"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Off "false"
-					On "true"
-					Fast "true"
-					Full "true"
-				}
-			}
+	Compile_Verbose {}
+	{
+		!!GeneratorSetting.Compile_Verbose undefined
+	}
+
+	// Generic
+	Compile_Optimize =+ {
+		VSSettings: {
+			Optimize: Compile.Optimize->SwitchWithError(
+				"Unsupported option: "
+				"Off", "false"
+				"On", "true"
+				"Fast", "true"
+				"Full", "true"
+			)
 		}
-		%GeneratorSetting "PreprocessorDefines"
-		{
-			Property
-			{
-				Name "DefineConstants"
-			}
-		}		
-		%GeneratorSetting "Warnings"
-		{
-			Property
-			{
-				Name "WarningLevel"
-				Validity "NotFile"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Off "0"
-					Minimal "1"
-					On "3"
-					Pedantic "4"
-				}
-			}
+	}
+	{
+		!GeneratorSetting.IsFile true
+	}
+
+	Compile_PreprocessorDefines =+ {
+		VSSettings: {
+			DefineConstants: Compile.PreprocessorDefines->f_JoinMSBuild()
 		}
-		%GeneratorSetting "AutoGen"
-		{
-			Property
-			{
-				Name "AutoGen"
-				Validity "File"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "True"
-					\false "False"
-				}
-			}
+	}
+	{
+		!GeneratorSetting.IsFile true
+	}
+
+	// Non-files
+	Compile_Symbols =+ {
+		VSSettings: {
+			DebugType: Compile.Symbols->SwitchWithError(
+				"Unsupported option: "
+				, "FullForDebug", "full"
+				, "Full", "pdbonly"
+				, "Fast", "pdbonly"
+				, "None", "none"
+			)
 		}
-		%GeneratorSetting "DesignTimeSharedInput"
-		{
-			Property
-			{
-				Name "DesignTimeSharedInput"
-				Validity "File"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "True"
-					\false "False"
-				}
-			}
+	}
+	{
+		!GeneratorSetting.IsFile true
+	}
+
+	Compile_Warnings =+ {
+		VSSettings: {
+			WarningLevel: Compile.Warnings->SwitchWithError(
+				"Unsupported option: "
+				"Off", "0"
+				"Minimal", "1"
+				"On", "3"
+				"Pedantic", "4"
+			)
 		}
-		%GeneratorSetting "DependentUpon"
-		{
-			Property
-			{
-				Name "DependentUpon"
-				Validity "File"
-			}
+	}
+	{
+		!GeneratorSetting.IsFile true
+	}
+
+	// Files only
+	Compile_AutoGen =+ {
+		VSSettings: {
+			AutoGen: Compile.AutoGen->f_BoolToStringDotNet()
 		}
-		%GeneratorSetting "LastGenOutput"
-		{
-			Property
-			{
-				Name "LastGenOutput"
-				Validity "File"
-			}
+	}
+	{
+		!!GeneratorSetting.IsFile true
+	}
+
+	Compile_DesignTimeSharedInput =+ {
+		VSSettings: {
+			DesignTimeSharedInput: Compile.DesignTimeSharedInput->f_BoolToStringDotNet()
 		}
-		
+	}
+	{
+		!!GeneratorSetting.IsFile true
+	}
+
+	Compile_DependentUpon =+ {
+		VSSettings: {
+			DependentUpon: Compile.DependentUpon->EscapeMSBuild()
+		}
+	}
+	{
+		!!GeneratorSetting.IsFile true
+	}
+
+	Compile_LastGenOutput =+ {
+		VSSettings: {
+			LastGenOutput: Compile.LastGenOutput->EscapeMSBuild()
+		}
+	}
+	{
+		!!GeneratorSetting.IsFile true
 	}
 }

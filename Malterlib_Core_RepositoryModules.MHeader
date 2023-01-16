@@ -3,13 +3,13 @@
 
 Type
 {
-	CRemotePrefix define {
+	CRemotePrefix: {
 		Name: string
 		, UrlPrefix: string
 		, Write: bool = false
 	}
 
-	CRemote define {
+	CRemote: {
 		Name: string
 		, URL: string
 		, Write: bool = false
@@ -27,31 +27,31 @@ Property
 
 Property
 {
-	MalterlibUseGitRepo define bool = true
+	MalterlibUseGitRepo: bool = true
 
-	MalterlibModules define [string] = []
+	MalterlibModules: [string] = []
 	MalterlibModules =+ "Core"
 
-	MalterlibRemotePrefixes define [type(CRemotePrefix)]? // User(Repository)= += [{Name: "remoteexample", UrlPrefix: "https://gitlab.example.com/Malterlib"}]: Specify extra Malterlib remotes
+	MalterlibRemotePrefixes: [type(CRemotePrefix)]? // User(Repository)= += [{Name: "remoteexample", UrlPrefix: "https://gitlab.example.com/Malterlib"}]: Specify extra Malterlib remotes
 
-	MalterlibUpstreamAccess define bool = false // User(Repository)=true: Set to true if you have access to https://github.com/Malterlib
+	MalterlibUpstreamAccess: bool = false // User(Repository)=true: Set to true if you have access to https://github.com/Malterlib
 	MalterlibUpstreamAccess undefined
 	{
 		!!MalterlibUpstreamAccess undefined
 	}
 
-	MalterlibUpstreamWriteAccess define bool = false // User(Repository)=true: Set to true if you have write access to https://github.com/Malterlib
+	MalterlibUpstreamWriteAccess: bool = false // User(Repository)=true: Set to true if you have write access to https://github.com/Malterlib
 }
 
 %Repository MalterlibModules->Unique()
 {
 	!MalterlibUseGitRepo false
-	Property.RepoName define string = `Malterlib_@(this.Identity).git`
+	Property.RepoName: string = `Malterlib_@(this.Identity).git`
 
 	Repository
 	{
 		Type "Malterlib"
-		Remotes =+ MalterlibRemotePrefixes->ForEach("f_MalterlibRemotePrefixesTemplate")
+		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
 		{
 			!MalterlibRemotePrefixes undefined
 		}
@@ -76,11 +76,11 @@ Property
 
 Property
 {
-	MalterlibBinaryRepositories define [string] = []
+	MalterlibBinaryRepositories: [string] = []
 	MalterlibBinaryRepositories =+ `MalterlibBinaries_@(HostPlatformFamily)_@(HostArchitecture)`
 
-	MalterlibAllBinaryRepositories define bool = false // User(Repository)=true: Set to true to sync all binary repositories.
-	MalterlibAllBinaryRepositories_macOS define bool = false
+	MalterlibAllBinaryRepositories: bool = false // User(Repository)=true: Set to true to sync all binary repositories.
+	MalterlibAllBinaryRepositories_macOS: bool = false
 }
 
 Property
@@ -124,17 +124,17 @@ Property
 {
 	Property
 	{
-		RepoName define string = `@(this.Identity).git`
-		RepoPlatformFamily define string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
-		RepoArchitecture define string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
-		RepoDir define string = `../../Binaries/Malterlib/@(RepoPlatformFamily)/@(RepoArchitecture)`
+		RepoName: string = `@(this.Identity).git`
+		RepoPlatformFamily: string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
+		RepoArchitecture: string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
+		RepoDir: string = `../../Binaries/Malterlib/@(RepoPlatformFamily)/@(RepoArchitecture)`
 	}
 	Repository
 	{
 		Type "Malterlib"
 		Location RepoDir->MakeAbsolute()
 		URL `@(Repository.MalterlibRoot)/@(RepoName)`
-		Remotes =+ MalterlibRemotePrefixes->ForEach("f_MalterlibRemotePrefixesTemplate")
+		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
 		{
 			!MalterlibRemotePrefixes undefined
 		}
@@ -151,7 +151,7 @@ Property
 
 Property
 {
-	MalterlibBinaryLLVMRepositories define [string] = []
+	MalterlibBinaryLLVMRepositories: [string] = []
 }
 
 Property
@@ -201,17 +201,17 @@ Property
 {
 	Property
 	{
-		RepoName define string = `@(this.Identity).git`
-		RepoPlatformFamily define string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
-		RepoArchitecture define string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
-		RepoDir define string = `../../Binaries/MalterlibLLVM/@(RepoPlatformFamily)/@(RepoArchitecture)`
+		RepoName: string = `@(this.Identity).git`
+		RepoPlatformFamily: string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
+		RepoArchitecture: string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
+		RepoDir: string = `../../Binaries/MalterlibLLVM/@(RepoPlatformFamily)/@(RepoArchitecture)`
 	}
 	Repository
 	{
 		Type "Malterlib"
 		Location RepoDir->MakeAbsolute()
 		URL `@(Repository.MalterlibRoot)/@(RepoName)`
-		Remotes =+ MalterlibRemotePrefixes->ForEach("f_MalterlibRemotePrefixesTemplate")
+		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
 		{
 			!MalterlibRemotePrefixes undefined
 		}
@@ -228,25 +228,25 @@ Property
 
 Property
 {
-	MalterlibBinaryTestRepositories define [string] = []
+	MalterlibBinaryTestRepositories: [string] = []
 }
 
 %Repository MalterlibBinaryTestRepositories
 {
 	Property
 	{
-		RepoName define string = `MalterlibTestBinaries_@(this.Identity).git`
-		RepoModule define string = this.Identity->ParseFormatString("{}_{}_{}", "{0}")
-		RepoPlatformFamily define string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
-		RepoArchitecture define string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
-		RepoDir define string = `../../Binaries/MalterlibTest/@(RepoModule)/@(RepoPlatformFamily)/@(RepoArchitecture)`
+		RepoName: string = `MalterlibTestBinaries_@(this.Identity).git`
+		RepoModule: string = this.Identity->ParseFormatString("{}_{}_{}", "{0}")
+		RepoPlatformFamily: string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
+		RepoArchitecture: string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
+		RepoDir: string = `../../Binaries/MalterlibTest/@(RepoModule)/@(RepoPlatformFamily)/@(RepoArchitecture)`
 	}
 	Repository
 	{
 		Type "Malterlib"
 		Location RepoDir->MakeAbsolute()
 		URL `@(Repository.MalterlibRoot)/@(RepoName)`
-		Remotes =+ MalterlibRemotePrefixes->ForEach("f_MalterlibRemotePrefixesTemplate")
+		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
 		{
 			!MalterlibRemotePrefixes undefined
 		}
@@ -267,8 +267,8 @@ Property
 
 	Property
 	{
-		MibScriptFile define string = `@(Builtin.BasePathAbsolute)/mib`
-		SourceScriptFile define string = "mib"->MakeAbsolute()
+		MibScriptFile: string = `@(Builtin.BasePathAbsolute)/mib`
+		SourceScriptFile: string = "mib"->MakeAbsolute()
 	}
 
 	GenerateFile
@@ -278,5 +278,6 @@ Property
 		Executable true
 		UnixLineEnds true
 		UnicodeBOM false
+		KeepGeneratedFile true
 	}
 }

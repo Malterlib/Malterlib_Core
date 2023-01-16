@@ -1,280 +1,245 @@
-// Copyright © 2015 Hansoft AB
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "Native_ImportTargets"
+GeneratorSetting
 {
-	%GeneratorSetting "Defaults"
+	Target #<ImportTargets> =+ [
+		"$(VCTargetsPath)\\Microsoft.Cpp.targets"
+		, "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"
+		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.targets`
+		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.targets`
+		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.targets`
+	]
 	{
-		Property
-		{
-			A0 "$(VCTargetsPath)\\Microsoft.Cpp.Default.props"
-		}
+		!!Target.Language "Native"
 	}
-	%GeneratorSetting "Props"
+
+	Target #<ImportTargets_Defaults> =+ ["$(VCTargetsPath)\\Microsoft.Cpp.Default.props"]
 	{
-		Property
-		{
-			A0 "$(VCTargetsPath)\\Microsoft.Cpp.props"
-			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.props"
-			A2 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.props`
-			A3 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.props`
-			A4 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.props`
-		}
+		!!Target.Language "Native"
 	}
-	%GeneratorSetting "Targets"
+
+	Target #<ImportTargets_Properties> =+ [
+		"$(VCTargetsPath)\\Microsoft.Cpp.props"
+		, "$(VCTargetsPath)\\BuildCustomizations\\masm.props"
+		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.props`
+		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.props`
+		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.props`
+	]
 	{
-		Property
-		{
-			A0 "$(VCTargetsPath)\\Microsoft.Cpp.targets"
-			A1 "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"
-			A2 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.targets`
-			A3 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.targets`
-			A4 `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.targets`
-		}
+		!!Target.Language "Native"
 	}
 }
-%GeneratorSetting "Native_Root"
+
+GeneratorSetting
 {
-	%GeneratorSetting "Target"
-	{
-		%GeneratorSetting "Type"
-		{
-			Property
-			{
-				Name "ConfigurationType"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Executable "Application"
-					ConsoleExecutable "Application"
-					UIExecutable "Application"
-					Driver "Application"
-					DynamicLibrary "DynamicLibrary"
-					SharedDynamicLibrary "DynamicLibrary"
-					StaticLibrary "StaticLibrary"
-					Tool "Utility"
-				}
-			}
-		}
+	!!Target.Language "Native"
 
-		%GeneratorSetting "PlatformToolset"
-		{
-			Property
+	Target_Type =+ {
+		VSSettings: [
 			{
-				Name "PlatformToolset"
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "ConfigurationType"
+				, Value: Target.Type->SwitchWithError(
+					"Unsupported target type: "
+					, "Executable", "Application"
+					, "ConsoleExecutable", "Application"
+					, "UIExecutable", "Application"
+					, "Driver", "Application"
+					, "DynamicLibrary", "DynamicLibrary"
+					, "SharedDynamicLibrary", "DynamicLibrary"
+					, "StaticLibrary", "StaticLibrary"
+					, "Tool", "Utility"
+				)
 			}
-		}
-		%GeneratorSetting "EnableASAN"
-		{
-			Property
-			{
-				Name "EnableASAN"
-			}
-		}
-		%GeneratorSetting "CharacterSet"
-		{
-			Property
-			{
-				Name "CharacterSet"
-			}
-		}
-		%GeneratorSetting "IgnoreWarnCompileDuplicatedFilename"
-		{
-			Property
-			{
-				Name "IgnoreWarnCompileDuplicatedFilename"
-			}
-		}
-		%GeneratorSetting "UseOfMfc"
-		{
-			Property
-			{
-				Name "UseOfMfc"
-			}
-		}
-		%GeneratorSetting "UseOfAtl"
-		{
-			Property
-			{
-				Name "UseOfAtl"
-			}
-		}
-		%GeneratorSetting "LinkTimeCodeGeneration"
-		{
-			Property
-			{
-				Name "WholeProgramOptimization"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-					\ "false"
-				}
-			}
-		}
-		%GeneratorSetting "CLRSupport"
-		{
-			Property
-			{
-				Name "CLRSupport"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-					\ "false"
-				}
-			}
-		}
-
-		%GeneratorSetting "DefaultToolArchitecture"
-		{
-			Property
-			{
-				Name "UseNativeEnvironment"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					Native64Bit "true"
-					\ ""
-				}
-			}
-		}
-		%GeneratorSetting "IntermediateDirectory"
-		{
-			Property
-			{
-				Name "IntDir"
-			}
-		}
-		%GeneratorSetting "OutputDirectory"
-		{
-			Property
-			{
-				Name "OutDir"
-			}
-		}
-
+		]
 	}
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "Type"
-		{
-			%GeneratorSetting "ValueSet"
+
+	Target_PlatformToolset =+ {
+		VSSettings: [
 			{
-				%GeneratorSetting "C"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								CompileAs "CompileAsC"
-								CompileAsManaged "false"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "C++"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								CompileAsManaged "false"
-								CompileAs "CompileAsCpp"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "C++Managed"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								CompileAsManaged "true"
-								CompileAs "CompileAsCpp"
-							}
-						}
-					}
-				}
-				%GeneratorSetting "MSBuildTargets"
-				{
-					%GeneratorSetting ""
-					{
-						%GeneratorSetting ""
-						{
-							Property
-							{
-								SubType "Designer"
-							}
-						}
-					}
-				}
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "PlatformToolset"
+				, Value: Target.PlatformToolset->EscapeMSBuild()
 			}
-			%GeneratorSetting "Value"
+		]
+	}
+
+	Target_CharacterSet =+ {
+		VSSettings: [
 			{
-				Property
-				{
-					C\+\+ "ClCompile"
-					C\+\+Managed "ClCompile"
-					C "ClCompile"
-					Header "ClInclude"
-					None "None"
-					Object "Object"
-					Assembler "MASM"
-					AssemblerNasm "NASM"
-					QtRcc "QtRcc"
-					QtMoc "QtMoc"
-					QtUic "QtUic"
-					MlTwk "MlTwk"
-					MalterlibFS "MalterlibFS"
-					WindowsResource "ResourceCompile"
-					MSBuildTargets "None"
-					PList "None"
-					XML "None"
-					ShellScript "None"
-					VisualStudioVisualizer "Natvis"
-					Custom "CustomBuild"
-					WindowsManifest "Manifest"
-				}
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "CharacterSet"
+				, Value: Target.CharacterSet->EscapeMSBuild()
 			}
-		}
+		]
+	}
+
+	Target_UseOfMfc =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "UseOfMfc"
+				, Value: Target.UseOfMfc->f_BoolToString()
+			}
+		]
+	}
+
+	Target_UseOfAtl =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "UseOfAtl"
+				, Value: Target.UseOfAtl->f_BoolToString()
+			}
+		]
+	}
+
+	Target_DefaultToolArchitecture =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "UseNativeEnvironment"
+				, Value: Target.DefaultToolArchitecture->SwitchWithError(
+					"Unsupported option: "
+					, "Native64Bit", "true"
+					, "", "false"
+				)
+			}
+		]
+	}
+
+	Target_CLRSupport =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "CLRSupport"
+				, Value: Target.CLRSupport->SwitchWithError(
+					"Unsupported option: "
+					, true, "true"
+					, false, "false"
+					, "NetCore", "NetCore"
+					, "", "false"
+				)
+			}
+		]
+	}
+
+	Target_IgnoreWarnCompileDuplicatedFilename =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "IgnoreWarnCompileDuplicatedFilename"
+				, Value: Target.IgnoreWarnCompileDuplicatedFilename->f_BoolToString()
+			}
+		]
+	}
+
+	Target_EnableASAN =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "EnableASAN"
+				, Value: Target.EnableASAN->f_BoolToString()
+			}
+		]
+	}
+
+	Target_IntermediateDirectory =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "IntDir"
+				, Value: Target.IntermediateDirectory->EscapeMSBuild()
+			}
+		]
+	}
+
+	Target_OutputDirectory =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "OutDir"
+				, Value: Target.OutputDirectory->EscapeMSBuild()
+			}
+		]
 	}
 }
-%GeneratorSetting "Native_Dependency"
+
+GeneratorSetting
 {
-	%GeneratorSetting "Dependency"
-	{
-		%GeneratorSetting "LinkWithObjectFiles"
-		{
-			Property
-			{
-				Name "UseLibraryDependencyInputs"
+	!!Target.Language "Native"
+
+	VisualStudio_FileType SwitchWithError(
+		Compile.Type, "Unknown compile type: "
+		, "C++", "ClCompile"
+		, "C++Managed", "ClCompile"
+		, "C", "ClCompile"
+		, "Header", "ClInclude"
+		, "None", "None"
+		, "Object", "Object"
+		, "Assembler", "MASM"
+		, "AssemblerNasm", "NASM"
+		, "QtRcc", "QtRcc"
+		, "QtMoc", "QtMoc"
+		, "QtUic", "QtUic"
+		, "MlTwk", "MlTwk"
+		, "MalterlibFS", "MalterlibFS"
+		, "WindowsResource", "ResourceCompile"
+		, "MSBuildTargets", "None"
+		, "PList", "None"
+		, "XML", "None"
+		, "ShellScript", "None"
+		, "VisualStudioVisualizer", "Natvis"
+		, "Custom", "CustomBuild"
+		, "WindowsManifest", "Manifest"
+	)
+
+	Compile_Type =+ {
+		VSSettings: Compile.Type->SwitchWithDefault(
+			{}
+			, "C", {
+				CompileAs: "CompileAsC"
+				, CompileAsManaged: "false"
 			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
+			, "C++", {
+				CompileAs: "CompileAsCpp"
+				, CompileAsManaged: "false"
 			}
+			, "C++Managed", {
+				CompileAs: "CompileAsCpp"
+				, CompileAsManaged: "true"
+			}
+			, "MSBuildTargets", {
+				SubType: "Designer"
+			}
+		)
+	}
+}
+
+GeneratorSetting
+{
+	!!Target.Language "Native"
+
+	Dependency_LinkWithObjectFiles =+ {
+		VSSettings: {
+			UseLibraryDependencyInputs: Dependency.LinkWithObjectFiles->f_BoolToString()
 		}
+	}
+
+	Dependency_TargetProperties {}
+	{
+		!!GeneratorSetting.Dependency_TargetProperties undefined
 	}
 }

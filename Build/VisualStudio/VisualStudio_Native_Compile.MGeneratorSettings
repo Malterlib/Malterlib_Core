@@ -1,583 +1,425 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "Native_ClInclude"
+GeneratorSetting
 {
-	/*Property
+	!!Target.Language "Native"
+
+	Compile_Custom_VerifyInputsAndOutputsExist {}
 	{
-		Disabled true
+		!!GeneratorSetting.Compile_Custom_VerifyInputsAndOutputsExist undefined
+	}
+	Compile_Custom_Optimize {}
+	{
+		!!GeneratorSetting.Compile_Custom_Optimize undefined
+	}
+
+	Compile_Disabled =+ {
+		VSSettings: {
+			ExcludedFromBuild: Compile.Disabled->f_BoolToString()
+		}
+	}
+
+	Compile_Verbose =+ {
+		VSSettings: {
+			SuppressStartupBanner: Compile.Verbose->SwitchWithError("Unsupported option: "
+				, true, ""
+				, false, "true"
+				, "", "true"
+			)
+		}
+	}
+
+	Compile_DocumentationModule =+ {
+		VSSettings: {
+			AdditionalOptions: `--documentation-module @(Compile.DocumentationModule->Escape()->EscapeMSBuild()) @(Builtin.Inherit)`
+		}
+	}
+
+	Compile_ToolClass =+ {
+		VSSettings: {
+			AdditionalOptions: `--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89 @(Compile.ToolClass->Escape()->EscapeMSBuild()) @(Builtin.Inherit)`
+		}
+	}
+
+	Compile_ObjectFileName =+ {
+		VSSettings: {
+			ObjectFileName: Compile.ObjectFileName->EscapeMSBuild()
+		}
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "None"
+	}
+
+	Compile_SearchPath {}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "MASM"
+	}
+
+	Compile_PreserveIdentifierCase =+ {
+		VSSettings: {
+			PreserveIdentifierCase: Compile.PreserveIdentifierCase->SwitchWithError("Unsupported option: "
+				, true, "1"
+				, false, "0"
+			)
+		}
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "NASM"
+	}
+
+	Compile_PreprocessorDefines =+ {
+		VSSettings: {
+			PreprocessorDefinitions: Compile.PreprocessorDefines->f_JoinMSBuild()
+		}
+	}
+
+	Compile_SearchPath =+ {
+		VSSettings: {
+			IncludePaths: Compile.SearchPath->f_JoinMSBuild()
+		}
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "CustomBuild"
+	}
+
+	Compile_Custom_CommandLine {}
+	Compile_Custom_WorkingDirectory {}
+	Compile_Custom_Inputs {}
+
+	Compile_Custom_Message =+ {
+		VSSettings: {
+			Message: Compile.Custom_Message->EscapeMSBuild()
+		}
+	}
+
+	Compile_CustomCombined_CommandLine =+ {
+		VSSettings: {
+			Command: Compile.CustomCombined_CommandLine->EscapeMSBuild()
+		}
+	}
+
+	Compile_Custom_Outputs =+ {
+		VSSettings: {
+			Outputs: Compile.Custom_Outputs->f_JoinMSBuild()
+		}
+	}
+
+	Compile_Custom_VerifyInputsAndOutputsExist =+ {
+		VSSettings: {
+			VerifyInputsAndOutputsExist: Compile.Custom_VerifyInputsAndOutputsExist->f_BoolToString()
+		}
+	}
+
+	Compile_RealCustom_Inputs =+ {
+		VSSettings: {
+			AdditionalInputs: Compile.RealCustom_Inputs->f_JoinMSBuild()
+		}
+	}
+
+	Compile_Custom_CompileOutput =+ {
+		VSSettings: {
+			LinkObjects: Compile.Custom_CompileOutput->f_JoinMSBuild()
+		}
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "QtMoc"
+	}
+
+	Compile_Optimize {}
+
+	Compile_ExtraCompilerFlags =+ {
+		VSSettings: {
+			AdditionalOptions: `@(Compile.ExtraCompilerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
+		}
+	}
+
+	Compile_SearchPath =+ {
+		VSSettings: {
+			AdditionalIncludeDirectories: Compile.SearchPath->f_JoinMSBuild()
+		}
+	}
+
+	Compile_PreprocessOnly =+ {
+		VSSettings: {
+			PreprocessOnly: Compile.PreprocessOnly->f_BoolToString()
+		}
+	}
+
+	Compile_DoNotGenerateInclude =+ {
+		VSSettings: {
+			DoNotGenerateInclude: Compile.DoNotGenerateInclude->f_BoolToString()
+		}
+	}
+
+	Compile_DoNotDisplayWarnings =+ {
+		VSSettings: {
+			DoNotDisplayWarnings: Compile.DoNotDisplayWarnings->f_BoolToString()
+		}
+	}
+
+	Compile_GenerateDebugInformation =+ {
+		VSSettings: {
+			GenerateDebugInformation: Compile.GenerateDebugInformation->f_BoolToString()
+		}
+	}
+
+	Compile_DoCompileAndLink =+ {
+		VSSettings: {
+			DoCompileAndLink: Compile.DoCompileAndLink->f_BoolToString()
+		}
+	}
+
+	Compile_IncludePathPrefix =+ {
+		VSSettings: {
+			IncludePathPrefix: Compile.IncludePathPrefix->EscapeMSBuild()
+		}
+	}
+
+	Compile_PreprocessorDefines =+ {
+		VSSettings: {
+			PreprocessorDefinitions: Compile.PreprocessorDefines->f_JoinMSBuild()
+		}
+	}
+
+	Compile_PreprocessorUnDefinitions =+ {
+		VSSettings: {
+			PreprocessorUnDefinitions: Compile.PreprocessorUnDefinitions->f_JoinMSBuild()
+		}
+	}
+/*
+	Compile_AdditionalIncludeDirectories =+ {
+		VSSettings: {
+			AdditionalIncludeDirectories: Compile.AdditionalIncludeDirectories->f_JoinMSBuild()
+		}
 	}*/
 }
-%GeneratorSetting "Native_None"
+
+GeneratorSetting
 {
-/*	Property
+	&
 	{
-		Disabled true
-	}*/
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Name "AdditionalIncludeDirectories"
-				Disabled true
-			}
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "QtUic"
+	}
+
+	Compile_Optimize {}
+
+	Compile_ExtraCompilerFlags =+ {
+		VSSettings: {
+			AdditionalOptions: `@(Compile.ExtraCompilerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
 		}
 	}
-}
-%GeneratorSetting "Native_CompileShared"
-{
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "Disabled"
-		{
-			Property
-			{
-				Name "ExcludedFromBuild"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "Custom_VerifyInputsAndOutputsExist"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}		
-		%GeneratorSetting "Optimize"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Verbose"
-		{
-			Property
-			{
-				Name "SuppressStartupBanner"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true ""
-					\false "true"
-					\ "true"
-				}
-			}
-		}
-		%GeneratorSetting "DocumentationModule"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "--documentation-module {} %(ClCompile.AdditionalOptions)"
-			}
-		}
-		%GeneratorSetting "ToolClass"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89 {} %(ClCompile.AdditionalOptions)"
-			}
-		}
-		%GeneratorSetting "ObjectFileName"
-		{
-			Property.Name "ObjectFileName"
+
+	Compile_SearchPath =+ {
+		VSSettings: {
+			AdditionalIncludeDirectories: Compile.SearchPath->f_JoinMSBuild()
 		}
 	}
-}
-%GeneratorSetting "Native_MASM"
-{
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "PreserveIdentifierCase"
-		{
-			Property
-			{
-				Name "PreserveIdentifierCase"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "1"
-					\false "0"
-				}
-			}
+
+	Compile_DisplayDependencies =+ {
+		VSSettings: {
+			DisplayDependencies: Compile.DisplayDependencies->f_BoolToString()
 		}
 	}
-}
-%GeneratorSetting "Native_NASM"
-{
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "PreprocessorDefines"
-		{
-			Property
-			{
-				Name "PreprocessorDefinitions"
-			}
+
+	Compile_NoProtection =+ {
+		VSSettings: {
+			NoProtection: Compile.NoProtection->f_BoolToString()
 		}
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Name "IncludePaths"
-			}
-		}
-		%GeneratorSetting "ObjectFileName"
-		{
-			Property.Name "ObjectFileName"
+	}
+
+	Compile_NoImplicitIncludes =+ {
+		VSSettings: {
+			NoImplicitIncludes: Compile.NoImplicitIncludes->f_BoolToString()
 		}
 	}
 }
 
-%GeneratorSetting "Native_CustomBuild"
+GeneratorSetting
 {
-	%GeneratorSetting "Compile"
+	&
 	{
-		%GeneratorSetting "Custom_Message"
-		{
-			Property
-			{
-				Name "Message"
-			}
-		}
-		%GeneratorSetting "Custom_CommandLine"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Custom_WorkingDirectory"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "CustomCombined_CommandLine"
-		{
-			Property
-			{
-				Name "Command"
-			}
-		}
-		%GeneratorSetting "Custom_Outputs"
-		{
-			Property
-			{
-				Name "Outputs"
-			}
-		}
-		%GeneratorSetting "Custom_VerifyInputsAndOutputsExist"
-		{
-			Property
-			{
-				Name "VerifyInputsAndOutputsExist"
-			}
-		}		
-		%GeneratorSetting "RealCustom_Inputs"
-		{
-			Property
-			{
-				Name "AdditionalInputs"
-			}
-		}
-		%GeneratorSetting "Custom_Inputs"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Custom_CompileOutput"
-		{
-			Property
-			{
-				Name "LinkObjects"
-			}
-		}
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "QtRcc"
 	}
-}
-%GeneratorSetting "Native_QtMoc"
-{
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "ExtraCompilerFlags"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(QtMoc.AdditionalOptions)"
-				Separator " "
-			}
-		}
-		%GeneratorSetting "Optimize"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Name "AdditionalIncludeDirectories"
-			}
-		}
-		%GeneratorSetting "PreprocessOnly"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "DoNotGenerateInclude"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "DoNotDisplayWarnings"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "GenerateDebugInformation"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "DoCompileAndLink"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "ObjectFileName"
-		%GeneratorSetting "IncludePathPrefix"
-		%GeneratorSetting "PreprocessorDefines"
-		{
-			Property
-			{
-				Name "PreprocessorDefinitions"
-			}
-		}
-		%GeneratorSetting "PreprocessorUnDefinitions"
-		%GeneratorSetting "AdditionalIncludeDirectories"
-	}
-}
-%GeneratorSetting "Native_QtUic"
-{
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "ExtraCompilerFlags"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(QtUic.AdditionalOptions)"
-				Separator " "
-			}
-		}
-		
-		%GeneratorSetting "Optimize"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Name "AdditionalIncludeDirectories"
-			}
-		}
-		%GeneratorSetting "DisplayDependencies"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "NoProtection"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "NoImplicitIncludes"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-			
-		%GeneratorSetting "ObjectFileName"
-	}
-}
-%GeneratorSetting "Native_QtRcc"
-{
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "ExtraCompilerFlags"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(QtRcc.AdditionalOptions)"
-				Separator " "
-			}
-		}
-		
-		%GeneratorSetting "Optimize"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Namespace"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "NoCompress"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "DoCompileAndLink"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
 
-		%GeneratorSetting "ObjectFileName"
-		%GeneratorSetting "InitFunc"
-	}
-}
-%GeneratorSetting "Native_ResourceCompile"
-{
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "Optimize"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Culture"
-		%GeneratorSetting "PreprocessorDefines"
-		{
-			Property
-			{
-				Name "PreprocessorDefinitions"
-			}
-		}
-		%GeneratorSetting "Verbose"
-		{
-			Property
-			{
-				Name "SuppressStartupBanner"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true ""
-					\false "true"
-					\ ""
-				}
-			}
-		}		
-		%GeneratorSetting "SearchPath"
-		{
-			Property
-			{
-				Name "AdditionalIncludeDirectories"
-			}
+	Compile_Optimize {}
+
+	Compile_ExtraCompilerFlags =+ {
+		VSSettings: {
+			AdditionalOptions: `@(Compile.ExtraCompilerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
 		}
 	}
-}
-%GeneratorSetting "Native_MlTwk"
-{
-	%GeneratorSetting "Compile"
-	{
-		%GeneratorSetting "ExtraCompilerFlags"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(MlTwk.AdditionalOptions)"
-				Separator " "
-			}
+
+	Compile_Namespace =+ {
+		VSSettings: {
+			Namespace: Compile.Namespace->f_BoolToString()
 		}
-		%GeneratorSetting "Optimize"
-		{
-			Property
-			{
-				Disabled true
-			}
+	}
+
+	Compile_NoCompress =+ {
+		VSSettings: {
+			NoCompress: Compile.NoCompress->f_BoolToString()
 		}
-		%GeneratorSetting "DoCompileAndLink"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
+	}
+
+	Compile_DoCompileAndLink =+ {
+		VSSettings: {
+			DoCompileAndLink: Compile.DoCompileAndLink->f_BoolToString()
 		}
-		%GeneratorSetting "GenerateDebugInformation"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
+	}
+
+	Compile_InitFunc =+ {
+		VSSettings: {
+			InitFunc: Compile.InitFunc->EscapeMSBuild()
 		}
-		%GeneratorSetting "ObjectFileName"
 	}
 }
 
-%GeneratorSetting "Native_MalterlibFS"
+GeneratorSetting
 {
-	%GeneratorSetting "Compile"
+	&
 	{
-		%GeneratorSetting "ExtraCompilerFlags"
-		{
-			Property
-			{
-				Name "AdditionalOptions"
-				Substitute "{} %(MalterlibFS.AdditionalOptions)"
-				Separator " "
-			}
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "ResourceCompile"
+	}
+
+	Compile_Optimize {}
+
+	Compile_Culture =+ {
+		VSSettings: {
+			Culture: Compile.Culture->EscapeMSBuild()
 		}
-		%GeneratorSetting "Optimize"
-		{
-			Property
-			{
-				Disabled true
-			}
+	}
+
+	Compile_PreprocessorDefines =+ {
+		VSSettings: {
+			PreprocessorDefinitions: Compile.PreprocessorDefines->f_JoinMSBuild()
 		}
-		%GeneratorSetting "DoCompileAndLink"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
+	}
+
+	Compile_SearchPath =+ {
+		VSSettings: {
+			AdditionalIncludeDirectories: Compile.SearchPath->f_JoinMSBuild()
 		}
-		%GeneratorSetting "VerboseLogging"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "MlTwk"
+	}
+
+	Compile_Optimize {}
+
+	Compile_ExtraCompilerFlags =+ {
+		VSSettings: {
+			AdditionalOptions: `@(Compile.ExtraCompilerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
 		}
-		%GeneratorSetting "OutputAsObjectFile"
-		{
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
+	}
+
+	Compile_DoCompileAndLink =+ {
+		VSSettings: {
+			DoCompileAndLink: Compile.DoCompileAndLink->f_BoolToString()
 		}
-		%GeneratorSetting "SymbolName"
-		%GeneratorSetting "ObjectFileName"
-		%GeneratorSetting "MalterlibFSPathPrefix"
-		%GeneratorSetting "CppFileName"
-		%GeneratorSetting "OutputAsAssembly"
+	}
+
+	Compile_GenerateDebugInformation =+ {
+		VSSettings: {
+			GenerateDebugInformation: Compile.GenerateDebugInformation->f_BoolToString()
+		}
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "Native"
+		GeneratorSetting.VisualStudio_FileType "MalterlibFS"
+	}
+
+	Compile_Optimize {}
+
+	Compile_ExtraCompilerFlags =+ {
+		VSSettings: {
+			AdditionalOptions: `@(Compile.ExtraCompilerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
+		}
+	}
+
+	Compile_DoCompileAndLink =+ {
+		VSSettings: {
+			DoCompileAndLink: Compile.DoCompileAndLink->f_BoolToString()
+		}
+	}
+
+	Compile_VerboseLogging =+ {
+		VSSettings: {
+			VerboseLogging: Compile.VerboseLogging->f_BoolToString()
+		}
+	}
+
+	Compile_OutputAsObjectFile =+ {
+		VSSettings: {
+			OutputAsObjectFile: Compile.OutputAsObjectFile->f_BoolToString()
+		}
+	}
+
+	Compile_SymbolName =+ {
+		VSSettings: {
+			SymbolName: Compile.SymbolName->EscapeMSBuild()
+		}
+	}
+
+	Compile_MalterlibFSPathPrefix =+ {
+		VSSettings: {
+			MalterlibFSPathPrefix: Compile.MalterlibFSPathPrefix->EscapeMSBuild()
+		}
+	}
+
+	Compile_CppFileName =+ {
+		VSSettings: {
+			CppFileName: Compile.CppFileName->EscapeMSBuild()
+		}
+	}
+
+	Compile_OutputAsAssembly =+ {
+		VSSettings: {
+			OutputAsAssembly: Compile.OutputAsAssembly->f_BoolToString()
+		}
 	}
 }

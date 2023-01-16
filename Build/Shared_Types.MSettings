@@ -3,7 +3,7 @@
 
 Type
 {
-	CEntity define one_of(string, {
+	CEntity: one_of(string, {
 		Name: string
 		, Properties: {
 			...: any

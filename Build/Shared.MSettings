@@ -1,8 +1,20 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-Import "VisualStudio/VisualStudio.MGeneratorSettings"
+Import "Shared.MGeneratorSettings"
+
 Import "Xcode/Xcode.MGeneratorSettings"
+{
+	!!GeneratorFamily "Xcode"
+}
+Import "Clang/Clang.MGeneratorSettings"
+{
+	!!GeneratorFamily "Xcode"
+}
+Import "VisualStudio/VisualStudio.MGeneratorSettings"
+{
+	!!GeneratorFamily "VisualStudio"
+}
 
 // Configurations
 Import "Shared_Configurations.MSettings"
@@ -29,9 +41,9 @@ Import "Shared_Dependencies.MSettings"
 Import "Tool_GenerateBuildSystem.MTarget"
 
 // Error checking
-Target.CheckErrors define string?
-Workspace.CheckErrors define string?
-Compile.CheckErrors define string?
+Target.CheckErrors: string?
+Workspace.CheckErrors: string?
+Compile.CheckErrors: string?
 
 // Misc small settings
 

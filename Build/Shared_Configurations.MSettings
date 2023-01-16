@@ -3,7 +3,7 @@
 
 Property
 {
-	EnablePlatform_Windows define bool // User(Platform)=true: Enables Windows platform
+	EnablePlatform_Windows: bool // User(- Platform)=true: Enables Windows platform
 	EnablePlatform_Windows true
 	{
 		&
@@ -17,7 +17,7 @@ Property
 		!!EnablePlatform_Windows undefined
 	}
 
-	EnablePlatform_Linux define bool // User(Platform)=true: Enables Linux platform
+	EnablePlatform_Linux: bool // User(- Platform)=true: Enables Linux platform
 	EnablePlatform_Linux true
 	{
 		&
@@ -31,12 +31,12 @@ Property
 			}
 		}
 	}
-	EnablePlatform_Linux false // User(Platform)=true: Enables Linux platform
+	EnablePlatform_Linux false // User(- Platform)=true: Enables Linux platform
 	{
 		!!EnablePlatform_Linux undefined
 	}
 
-	EnablePlatform_macOS define bool // User(Platform)=true: Enables macOS platform
+	EnablePlatform_macOS: bool // User(- Platform)=true: Enables macOS platform
 	EnablePlatform_macOS true
 	{
 		&
@@ -51,36 +51,37 @@ Property
 		!!EnablePlatform_macOS undefined
 	}
 
-	EnablePlatform_iOS8_1 define bool = false
-	EnablePlatform_Emscripten define bool = false // User(Platform)=true: Enables emscripten support
-	EnableArchitecture_x64 define bool = true // User(Platform)=false: Enables generation of x64 architecture
-	EnableArchitecture_x86 define bool = true // User(Platform)=false: Enables generation of x86 architecture
+	EnablePlatform_iOS8_1: bool = false
+	EnablePlatform_Emscripten: bool = false // User(- Platform)=true: Enables emscripten support
+	EnableArchitecture_x64: bool = true // User(- Platform)=false: Enables generation of x64 architecture
+	EnableArchitecture_x86: bool = true // User(- Platform)=false: Enables generation of x86 architecture
 
-	EnableArchitecture_ArmV7 define bool = true // User(Platform)=false: Enables generation of arm V7 architecture
-	EnableArchitecture_ArmV7s define bool = true // User(Platform)=false: Enables generation of arm V7s architecture
-	EnableArchitecture_arm64 define bool = true // User(Platform)=false: Enables generation of arm arm64 architecture
-	EnableArchitecture_arm64e define bool = false // User(Platform)=true: Enables generation of arm arm64e architecture
-	EnableArchitecture_Itanium define bool = false // User(Platform)=true: Enables generation of itanium architecture
-	EnableArchitecture_ppc64 define bool = false // User(Platform)=true: Enables generation of ppc64 architecture
-	EnableArchitecture_ppc32 define bool = false // User(Platform)=true: Enables generation of ppc32 architecture
+	EnableArchitecture_ArmV7: bool = true // User(- Platform)=false: Enables generation of arm V7 architecture
+	EnableArchitecture_ArmV7s: bool = true // User(- Platform)=false: Enables generation of arm V7s architecture
+	EnableArchitecture_arm64: bool = true // User(- Platform)=false: Enables generation of arm arm64 architecture
+	EnableArchitecture_arm64e: bool = false // User(- Platform)=true: Enables generation of arm arm64e architecture
+	EnableArchitecture_Itanium: bool = false // User(- Platform)=true: Enables generation of itanium architecture
+	EnableArchitecture_ppc64: bool = false // User(- Platform)=true: Enables generation of ppc64 architecture
+	EnableArchitecture_ppc32: bool = false // User(- Platform)=true: Enables generation of ppc32 architecture
 
-	DisablePostCopy define bool = false // User(Build System)=true: Disables post copy
-	DisableDiffCopy define bool = false // User(Build System)=true: Disables diff copy
-	EnableTestConfigs define bool = false // User(Configs)=true: Enable test configs
-	OnlyTestConfigs define bool = false // User(Configs)=true: Only test configs enabled
-	EnableProfileConfigs define bool = false // User(Configs)=true: Enable 'Optimized' and 'Profile' configs
-	EnableExtraDebuggingConfigs define bool = false // User(Configs)=true: Enable 'Debug Optimized', 'Fast Compile', 'Release Debug' configs
-	EnableReleaseConfig define bool = true // User(Configs)=false: Enable 'Release' configuration
-	EnableReleaseTestingConfig define bool = true // User(Configs)=false: Enable 'Release Testing' configuration
-	EnableDebugInlinedConfig define bool? // User(Configs)=false: Enable 'Debug Inlined' configuration
-	EnableDebugConfig define bool? // User(Configs)=false: Enable 'Debug' configuration
-	EnableSafeThreadLocals define bool = false // User(Undocumented)=true: Enables use of safe thread locals so you can do tests against other versions of macOS
-	EnablePlatformFamily_macOS define bool = false
+	DisablePostCopy: bool = false // User(Build System)=true: Disables post copy
+	DisableDiffCopy: bool = false // User(Build System)=true: Disables diff copy
+	EnableTestConfigs: bool = false // User(- Configs)=true: Enable test configs
+	EnableDocumentationConfigs: bool = false // User(- Configs)=true: Enable documenattion configs
+	OnlyTestConfigs: bool = false // User(- Configs)=true: Only test configs enabled
+	EnableProfileConfigs: bool = false // User(- Configs)=true: Enable 'Optimized' and 'Profile' configs
+	EnableExtraDebuggingConfigs: bool = false // User(- Configs)=true: Enable 'Debug Optimized', 'Fast Compile', 'Release Debug' configs
+	EnableReleaseConfig: bool = true // User(- Configs)=false: Enable 'Release' configuration
+	EnableReleaseTestingConfig: bool = true // User(- Configs)=false: Enable 'Release Testing' configuration
+	EnableDebugInlinedConfig: bool? // User(- Configs)=false: Enable 'Debug Inlined' configuration
+	EnableDebugConfig: bool? // User(- Configs)=false: Enable 'Debug' configuration
+	EnableSafeThreadLocals: bool = false // User(Undocumented)=true: Enables use of safe thread locals so you can do tests against other versions of macOS
+	EnablePlatformFamily_macOS: bool = false
 	EnablePlatformFamily_macOS true
 	{
 		!!EnablePlatform_macOS true
 	}
-	EnablePlatformFamily_Linux define bool = false
+	EnablePlatformFamily_Linux: bool = false
 	EnablePlatformFamily_Linux true
 	{
 		!!EnablePlatform_Linux true
@@ -286,8 +287,8 @@ Property
 
 Property
 {
-	Tests define string?
-	MalterlibEnablePrefTestConfig define bool = true // User(Tests)=false: Enable sanitizers as separate configurations
+	Tests: string?
+	MalterlibEnablePrefTestConfig: bool = true // User(Tests)=false: Enable sanitizers as separate configurations
 }
 
 *Tests
@@ -351,7 +352,7 @@ Workspace.Enabled false
 	}
 }
 
-Property.Documentation define string?
+Property.Documentation: string?
 
 *Documentation
 {
@@ -360,6 +361,7 @@ Property.Documentation define string?
 	{
 		&
 		{
+			EnableDocumentationConfigs true
 			!HostPlatformFamily "Windows"
 			PlatformFamily HostPlatformFamily
 			Configuration "Debug"
@@ -369,10 +371,10 @@ Property.Documentation define string?
 
 Property
 {
-	Sanitizer_Thread define string = ""
-	Sanitizer_Address define string = ""
-	Sanitizer_UndefinedBehavior define string = ""
-	MalterlibEnableSanitizerReleaseConfigs define bool = false // User(Debug)=true: Enable sanitizers as separate configurations
+	Sanitizer_Thread: string = ""
+	Sanitizer_Address: string = ""
+	Sanitizer_UndefinedBehavior: string = ""
+	MalterlibEnableSanitizerReleaseConfigs: bool = false // User(Debug)=true: Enable sanitizers as separate configurations
 }
 
 *Sanitizer_Thread

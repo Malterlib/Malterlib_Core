@@ -3,7 +3,7 @@
 
 Property
 {
-	MalterlibOnlyRepositoryManagement define bool = false
+	MalterlibOnlyRepositoryManagement: bool = false
 }
 
 // Must start with the settings

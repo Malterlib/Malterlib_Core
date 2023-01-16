@@ -1,0 +1,199 @@
+// Copyright © 2023 Favro Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+GeneratorSetting
+{
+	Xcode_PBXFileReference: type(CXcode_PBXFileReference) = {}
+
+	Xcode_PBXFileReference =+ {
+		tabWidth: &Compile.TabWidth->WithPosition()
+	}
+	{
+		!Compile.TabWidth undefined
+	}
+
+	Xcode_PBXFileReference =+ {
+		indentWidth: &Compile.IndentWidth->WithPosition()
+	}
+	{
+		!Compile.IndentWidth undefined
+	}
+
+	Xcode_PBXFileReference_UsesTabs: int = (Compile.UsesTabs ? 1 : 0)
+
+	Xcode_PBXFileReference =+ {
+		usesTabs: &GeneratorSetting.Xcode_PBXFileReference_UsesTabs->WithPosition()
+	}
+	{
+		!Compile.UsesTabs undefined
+	}
+
+	Xcode_PBXFileReference =+ {
+		lastKnownFileType: &GeneratorSetting.Xcode_FileType->WithPosition()
+	}
+	{
+		|
+		{
+			GeneratorSetting.Xcode_FileType->StartsWith("file.") true
+			GeneratorSetting.Xcode_FileType->StartsWith("wrapper.") true
+		}
+	}
+
+	Xcode_PBXFileReference =+ {
+		explicitFileType: &GeneratorSetting.Xcode_FileType->WithPosition()
+	}
+	{
+		&
+		{
+			GeneratorSetting.Xcode_PBXFileReference<lastKnownFileType> undefined
+			GeneratorSetting.Xcode_FileType "image.png"
+		}
+	}
+
+	Xcode_PBXFileReference_FileEncoding: int = 4
+
+	Xcode_PBXFileReference =+ {
+		explicitFileType: &GeneratorSetting.Xcode_FileType->WithPosition()
+		, fileEncoding: &GeneratorSetting.Xcode_PBXFileReference_FileEncoding->WithPosition()
+	}
+	{
+		&
+		{
+			GeneratorSetting.Xcode_PBXFileReference<lastKnownFileType> undefined
+			GeneratorSetting.Xcode_PBXFileReference<explicitFileType> undefined
+		}
+	}
+
+	Xcode_FileType: string
+	Xcode_FileType SwitchWithError(
+		Compile.Type, "Unknown compile type: "
+		, "C++", "sourcecode.cpp.cpp"
+		, "C", "sourcecode.c.c"
+		, "Header", "sourcecode.c.h"
+		, "ObjC++", "sourcecode.cpp.objcpp"
+		, "ObjC", "sourcecode.c.objc"
+		, "None", "text"
+		, "Object", "archive.ar"
+		, "StaticLibrary", "archive.ar"
+		, "DynamicLibrary", "archive.ar"
+		, "XcodeBundle", "wrapper.cfbundle"
+		, "QtRcc", "sourcecode.qt.rcc"
+		, "QtMoc", (this.Identity <==> ~"*.cpp") ? "sourcecode.c.cppmoc" : "sourcecode.c.h"
+		, "QtUic", "sourcecode.qt.uic"
+		, "Assembler", "sourcecode.asm"
+		, "MlTwk", "sourcecode.malterlib.twk"
+		, "WindowsResource", "text"
+		, "MalterlibFS", "sourcecode.malterlib.malterlibfs"
+		, "Nib", "wrapper.nib"
+		, "MacIcon", "image.icns"
+		, "ShellScript", "text.script.sh"
+		, "MalterlibBuildSystem", "sourcecode.cpp.cpp"
+		, "JSON", "text.json"
+		, "Python", "text.script.python"
+		, "JavaScript", "sourcecode.javascript"
+		, "HTML", "text.html"
+		, "CSS", "text.css"
+		, "PNG", "image.png"
+		, "SVG", "text.xml"
+		, "Xib", "file.xib"
+		, "XCodeStoryboard", "file.storyboard"
+		, "XCodeAssets", "folder.assetcatalog"
+		, "XML", "text.xml"
+		, "MSBuildTargets", "text.xml"
+		, "WindowsManifest", "text.xml"
+		, "VisualStudioVisualizer", "text.xml"
+		, "PList", "text.plist.xml"
+		, "Custom", "text"
+		, "DriverKitInterface", "sourcecode.iig"
+	)
+
+	Compile {
+		Type: &GeneratorSetting.Xcode_FileType->WithPosition()
+		, PBXFileReference: GeneratorSetting.Xcode_PBXFileReference
+	}
+
+	Compile =+ GeneratorSetting.f_ExtractSettings(
+		(Compile.Type == "Header" || Compile.Type == "None" || Compile.Disabled) ?
+		[] :
+		GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetSettings)
+	)
+	{
+		//#Debug "TraceEval"
+	}
+}
+
+Import "Xcode_Compile_Types.MGeneratorSettings"
+
+GeneratorSetting
+{
+	Compile_Optimize {}
+	{
+		!!GeneratorSetting.Compile_Optimize undefined
+	}
+
+	Compile_Verbose {}
+	{
+		!!GeneratorSetting.Compile_Verbose undefined
+	}
+
+	Compile_GenericCompileType {}
+	{
+		!!GeneratorSetting.Compile_GenericCompileType undefined
+	}
+	Compile_Custom_CommandLine {}
+	{
+		!!GeneratorSetting.Compile_Custom_CommandLine undefined
+	}
+	Compile_Custom_Outputs {}
+	{
+		!!GeneratorSetting.Compile_Custom_Outputs undefined
+	}
+	Compile_Custom_WorkingDirectory {}
+	{
+		!!GeneratorSetting.Compile_Custom_WorkingDirectory undefined
+	}
+	Compile_Custom_Inputs {}
+	{
+		!!GeneratorSetting.Compile_Custom_Inputs undefined
+	}
+	Compile_CallingConvention {}
+	{
+		!!GeneratorSetting.Compile_CallingConvention undefined
+	}
+	Compile_SymbolFile {}
+	{
+		!!GeneratorSetting.Compile_SymbolFile undefined
+	}
+	Compile_IndentWidth {}
+	{
+		!!GeneratorSetting.Compile_IndentWidth undefined
+	}
+	Compile_TabWidth {}
+	{
+		!!GeneratorSetting.Compile_TabWidth undefined
+	}
+	Compile_InitEarly {}
+	{
+		!!GeneratorSetting.Compile_InitEarly undefined
+	}
+	Compile_UsesTabs {}
+	{
+		!!GeneratorSetting.Compile_UsesTabs undefined
+	}
+	Compile_Disabled {}
+	{
+		!!GeneratorSetting.Compile_Disabled undefined
+	}
+	Compile_Type {}
+	{
+		!!GeneratorSetting.Compile_Type undefined
+	}
+	Compile_AllowNonExisting {}
+	{
+		!!GeneratorSetting.Compile_AllowNonExisting undefined
+	}
+	Compile_FullEval {}
+	{
+		!!GeneratorSetting.Compile_FullEval undefined
+	}
+}

@@ -1,200 +1,182 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "SharedTarget"
+GeneratorSetting
 {
-	%GeneratorSetting "Target"
+	Target_Group {}
 	{
-		// Handled elsewhere
-		%GeneratorSetting "VisualStudioPlatform"
-		{
-			Property
+		!!GeneratorSetting.Target_Group undefined
+	}
+	Target_VisualStudioPlatform {}
+	{
+		!!GeneratorSetting.Target_VisualStudioPlatform undefined
+	}
+	Target_PlatformToolsetCompiler {}
+	{
+		!!GeneratorSetting.Target_PlatformToolsetCompiler undefined
+	}
+	Target_FollowIndirectDependencies {}
+	{
+		!!GeneratorSetting.Target_FollowIndirectDependencies undefined
+	}
+	Target_ExportScriptEnvironmentContents {}
+	{
+		!!GeneratorSetting.Target_ExportScriptEnvironmentContents undefined
+	}
+	Target_Type {}
+	{
+		!!GeneratorSetting.Target_Type undefined
+	}
+	Target_Group {}
+	{
+		!!GeneratorSetting.Target_Group undefined
+	}
+	Target_Name {}
+	{
+		!!GeneratorSetting.Target_Name undefined
+	}
+	Target_BaseName {}
+	{
+		!!GeneratorSetting.Target_BaseName undefined
+	}
+	Target_BaseFileName {}
+	{
+		!!GeneratorSetting.Target_BaseFileName undefined
+	}
+	Target_IntermediateDirectory {}
+	{
+		!!GeneratorSetting.Target_IntermediateDirectory undefined
+	}
+	Target_OutputDirectory {}
+	{
+		!!GeneratorSetting.Target_OutputDirectory undefined
+	}
+	Target_Disabled {}
+	{
+		!!GeneratorSetting.Target_Disabled undefined
+	}
+	Target_Language {}
+	{
+		!!GeneratorSetting.Target_Language undefined
+	}
+	Target_Language2 {}
+	{
+		!!GeneratorSetting.Target_Language2 undefined
+	}
+	Target_ExternalDependencies {}
+	{
+		!!GeneratorSetting.Target_ExternalDependencies undefined
+	}
+	Target_ExtraGroups {}
+	{
+		!!GeneratorSetting.Target_ExtraGroups undefined
+	}
+	Target_LinkerGroup {}
+	{
+		!!GeneratorSetting.Target_LinkerGroup undefined
+	}
+	Target_ExportScriptEnvironment {}
+	{
+		!!GeneratorSetting.Target_ExportScriptEnvironment undefined
+	}
+	Target_CLRSupport {}
+	{
+		!!GeneratorSetting.Target_CLRSupport undefined
+	}
+	Target_InjectedExtraGroups {}
+	{
+		!!GeneratorSetting.Target_InjectedExtraGroups undefined
+	}
+	Target_DependencyInjectionGroups {}
+	{
+		!!GeneratorSetting.Target_DependencyInjectionGroups undefined
+	}
+
+
+	Target_TargetFrameworkVersion =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Label: "PreProject"
+				, Key: "TargetFrameworkVersion"
+				, Value: Target.TargetFrameworkVersion->EscapeMSBuild()
 			}
+		]
+	}
+	{
+		&
+		{
+			!LanguageFamily ".NET"
+			!Target.CLRSupport "NetCore"
 		}
-		%GeneratorSetting "PlatformToolsetCompiler"
-		{
-			Property
+	}
+
+	Target_TargetFrameworkVersion =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Label: "PreProject"
+				, Key: "TargetFramework"
+				, Value: Target.TargetFrameworkVersion->EscapeMSBuild()
 			}
+		]
+	}
+	{
+		|
+		{
+			LanguageFamily ".NET"
+			Target.CLRSupport "NetCore"
 		}
-		%GeneratorSetting "FollowIndirectDependencies"
-		{
-			Property
+	}
+
+	Target_PlatformVersion =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Label: "Globals"
+				, Key: "WindowsTargetPlatformVersion"
+				, Value: Target.PlatformVersion->EscapeMSBuild()
 			}
-		}
-		%GeneratorSetting "ExportScriptEnvironmentContents"
-		{
-			Property
+		]
+	}
+
+	Target_UseMultiToolTask =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Key: "UseMultiToolTask"
+				, Value: Target.UseMultiToolTask->f_BoolToString()
 			}
-		}
-		%GeneratorSetting "Type"
-		{
-			Property
+		]
+	}
+
+	Target_MultiProcCL =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Key: "MultiProcCL"
+				, Value: Target.MultiProcCL->f_BoolToString()
 			}
-		}
-		%GeneratorSetting "Group"
-		{
-			Property
+		]
+	}
+
+	Target_EnforceProcessCountAcrossBuilds =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Key: "EnforceProcessCountAcrossBuilds"
+				, Value: Target.EnforceProcessCountAcrossBuilds->f_BoolToString()
 			}
-		}
-		%GeneratorSetting "Name"
-		{
-			Property
+		]
+	}
+
+	Target_UseMsbuildResourceManager =+ {
+		VSSettings: [
 			{
-				Disabled true
+				Type: "PropertyGroup"
+				, Key: "UseMsbuildResourceManager"
+				, Value: Target.UseMsbuildResourceManager->f_BoolToString()
 			}
-		}
-		%GeneratorSetting "BaseName"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "BaseFileName"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "IntermediateDirectory"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "OutputDirectory"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Disabled"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "Language"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "TargetFrameworkVersion"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "ExternalDependencies"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "ExtraGroups"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "LinkerGroup"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "ExportScriptEnvironment"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}
-		%GeneratorSetting "UseMultiToolTask"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "UseMultiToolTask"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "MultiProcCL"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "MultiProcCL"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}		
-		%GeneratorSetting "EnforceProcessCountAcrossBuilds"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "EnforceProcessCountAcrossBuilds"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}
-		%GeneratorSetting "UseMsbuildResourceManager"
-		{
-			Property
-			{
-				Parent "PropertyGroup"
-				Name "UseMsbuildResourceManager"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
-		}		
+		]
 	}
 }

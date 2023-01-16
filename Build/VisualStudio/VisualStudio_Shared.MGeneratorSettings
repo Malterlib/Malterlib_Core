@@ -1,38 +1,71 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-%GeneratorSetting "Dependency"
+GeneratorSetting
 {
-	%GeneratorSetting "Dependency"
+	Dependency_Link {
+		VSSettings: {
+			ReferenceOutputAssembly: Dependency.Link->f_BoolToString()
+		}
+	}
+
+	Dependency_Indirect {}
 	{
-		%GeneratorSetting "Link"
-		{
-			Property
-			{
-				Name "ReferenceOutputAssembly"
-			}
-			%GeneratorSetting "Value"
-			{
-				Property
-				{
-					\true "true"
-					\false "false"
-				}
-			}
+		!!GeneratorSetting.Dependency_Indirect undefined
+	}
+	Dependency_IndirectOrdered {}
+	{
+		!!GeneratorSetting.Dependency_IndirectOrdered undefined
+	}
+	Dependency_Name {}
+	{
+		!!GeneratorSetting.Dependency_Name undefined
+	}
+
+	Dependency_Type {
+		VSSettings: {
+			"@Include": Dependency.Name
 		}
-		%GeneratorSetting "Indirect"
-		{
-			Property
-			{
-				Disabled true
-			}
+	}
+	{
+		!!GeneratorSetting.Dependency_Type undefined
+	}
+
+	VisualStudio_DependencyType SwitchWithError(
+		Dependency.Type, "Unknown dependency type: "
+		, "", "ProjectReference"
+		, "AssemblyReference", "Reference"
+		, "Library", ""
+	)
+	{
+		!!Target.Language "Native"
+	}
+
+	VisualStudio_DependencyType SwitchWithError(
+		Dependency.Type, "Unknown dependency type: "
+		, "", "ProjectReference"
+		, "AssemblyReference", "Reference"
+		, "Package", "PackageReference"
+	)
+	{
+		!!LanguageFamily ".NET"
+	}
+
+	Dependency_Version {
+		VSSettings: {
+			"@Version": Dependency.Version
 		}
-		%GeneratorSetting "IndirectOrdered"
-		{
-			Property
-			{
-				Disabled true
-			}
-		}		
+	}
+	{
+		!!Dependency.Type "Package"
+	}
+
+	Dependency_Version {
+		VSSettings: {
+			"SpecificVersion": Dependency.Version
+		}
+	}
+	{
+		!!Dependency.Type "AssemblyReference"
 	}
 }
