@@ -1,70 +1,212 @@
-../../Binaries/Malterlib/Linux/arm64 c55bad211476a7f1b63ef3ca47cfba1e1b49ecc4
-../../Binaries/Malterlib/Linux/x64 6bc0c521b436719f1e994a59ca9bc1a208d121c5
-../../Binaries/Malterlib/Linux/x86 091f0fc80d131b838ad094f018e46c70ced55bb9
-../../Binaries/Malterlib/Windows/x64 597344ebc5b7900758bafec1a588a4bc0e0383a6
-../../Binaries/Malterlib/Windows/x86 0353c55b5437597da14886a8d25d102deb278ba3
-../../Binaries/Malterlib/macOS/arm64 12a274560d2d069134acd5b213b7f4849af1e1e5
-../../Binaries/Malterlib/macOS/x64 a9dc7e838016e8e037d1a3d4ae1d75cd51820be4
-../../Binaries/MalterlibLLVM/Linux/arm64 b51c1b6dbabddad0fa93b5a3fce9a786c5125354
-../../Binaries/MalterlibLLVM/Linux/x64 d52ad653d2c3dbcaffea7ee548ad55e14bee6f59
-../../Binaries/MalterlibLLVM/Linux/x86 e11a035095d6705fa67027623de917c5f2a8a54e
-../../Binaries/MalterlibLLVM/macOS/arm64 95e1ecd9e483ee7295709b5dd57ec10b401a7b60
-../../Binaries/MalterlibLLVM/macOS/x64 cfe5975fd3f1a578bc07586d7ee4e78b641e6d88
-../../Binaries/MalterlibSDK/Linux/arm64 df462964ee938b691142f78355840addeed7236d
-../../Binaries/MalterlibSDK/Linux/x64 a9186caa36d8fa7d56ce46e5f834be95fd8974e8
-../../Binaries/MalterlibSDK/Linux/x86 dbcb7fd4d32be9e1c34cc0867ec235206f00f139
-../../Binaries/MalterlibTest/Cloud/Linux/x64 4b9f5718e85bf3c958b0120114d3c33849ff85dd
-../../Binaries/MalterlibTest/Cloud/OSX/x64 618764e80ec78a8056b4ae69575e0803191e04e4
-../../SDK 619e3098502c3d4cb08b59f907f9b5425c1afb36
-../Algorithm b8e7f0340838ba2a52611cff6ae04b8d718198c0
-../Atomic 1cf8d25198221d21b4acf70ac0881301f807b0e1
-../Bit ef100d177a5a8b2bbe7db824b2b33806378e6ce3
-../BuildSystem 15b5f367e482ed29a98777de4bcd294008c44962
-../Cloud 038b089c937e42aca40fb21a14a4cd538e89c965
-../CommandLine 4b501bc695d34aa4ade51818b1a8d1455c605cd8
-../Compression 5673c6434fe0bb631259016329bb427ecea44ad8
-../Concurrency 0a4aa8d830a919b20080a95ace7959ee98ab7a81
-../Container 655ca98bcaead38a3217a8d302a52e8d605c13a1
-../Contract 39dc0026b0f5685d36d765a50f9ea2f08f324520
-../CrashReport c54fe2523ce84dc93705d354a2a9cc87cdda8f50
-../Cryptography f38accc243fe57c8015598e4897f33a2e577f296
-../Daemon 462e5297f217950da3f18f5643abb5059a1a40f8
-../Database d34034f3eb14e9b348acba9b2a7b40a6d0fe1238
-../Debug 88f36fe2273130d507e62971f47b4a48c24efc01
-../Desktop b485aa413981d8b0187da2d09689c31a69e873eb
-../Documentation a55c3e7c107bc41c9caaacd7ce3e9c312762d6bb
-../Encoding 3aa7822957c829e1a9d8468151c6c42ab853819a
-../Exception ba4f76c0123295156146fc4fecaeef3988134e0c
-../File 5be5e92653dcf59049324f7ba64f824d86828d9f
-../Function ea79531dc819a0e9edaa7b20324139e438854b79
-../Git 70c0eaf3199b6ca893525e46f5166ebe01f07fa9
-../Graphics e9466987c47df45e51532e18d76518bc89efe5df
-../Instrumentation cdbaf3e65e499eeacc001a201fc36d1da5f94211
-../InterProcess bbb1ac111c43a7ae231640fddf6ba050a11120bf
-../Intrusive fcb1b23622bf79af960a4d34f08ad5ce18c91917
-../Iterator e4e31ca142d00e4769291be8d33a45c91e7bc172
-../Log 7ab8bb7fbbe06adc7caaecc7412e3d2e5bbbc12a
-../Memory 7286471d536deb192754e9e3f31207a26d6b89a5
-../Meta 5bb5834519522ddde67030933f80351ecbcda61e
-../Mongo a38c49d3026eae4424d821475206cca191700ba9
-../Network 271cba50d1177c977168074ca3444dd066b05c95
-../Numeric dd10b4b2e888ca7cb5d7a10e7915be2d75b83cfc
-../Perforce 26709546f077a993dcfac7db58b85b6f47587596
-../Preprocessor 77bda6dffaa412448578f928450f7ebf961105e8
-../Process 2ac6cd10249e87b05dfdadf1b0cd7aebd674f60b
-../Qt 3534f26da375ac79d09ab80a1d216f2c41f2534e
-../SQL 74f0fc85f3aecd4a80a1b8bfb11d2b5478b11521
-../STL 3184748ed908322cf8e0c65bb64c370e48dfe232
-../Security 3e90feba605e88fcad5af68c0d4a38e2a92a88ee
-../Storage 26653abb7a0ba26db45102c460e5c1c47f066a3f
-../Stream 64161bedf91dd215b03b4d7820aeedee93ba3691
-../String 5abcc2b13093dd6a412c41f4c0bfa2052f1e7b9a
-../System e689ecb3ff4a9bee40205935cfdda858b534767b
-../Test 7cfb0c752e4afa9be617a0fa7a2e35e8242fb185
-../Thread 8594356ff1a364196c43ee7836a3d991e30a48f8
-../Time a0413127e59fdc4bb71a15b454b626512c9b5010
-../Tool c92b17d963b819cf24116111044f9f30d177681e
-../Type 5efb078f59518daeb625bef07a3bfdb97fbc6b4b
-../Web e06ba4166e39aba29b15576b82016a7eab300be7
-../WebApp effab68114fff186f97ab1e75d599f5a83ec9894
-../XML 44257e458a61301186919fa6ab851ba89fad8646
+{
+	"../../Binaries/Malterlib/Linux/arm64": {
+		"Hash": "71184f6a3bea66ede9da656c366c501ae04d3aec"
+	},
+	"../../Binaries/Malterlib/Linux/x64": {
+		"Hash": "4fc1a19c114c7266c41324fa3ce4404c2f09e13e"
+	},
+	"../../Binaries/Malterlib/Linux/x86": {
+		"Hash": "9942da4c90e4760bf7e66fe9f71eed399b50d6a3"
+	},
+	"../../Binaries/Malterlib/Windows/x64": {
+		"Hash": "57df634ad5940c64ba4dedf54511989a8d5018d6"
+	},
+	"../../Binaries/Malterlib/Windows/x86": {
+		"Hash": "f67e6e2a518ef8e8ecc8c30a38be010b79949c61"
+	},
+	"../../Binaries/Malterlib/macOS/arm64": {
+		"Hash": "2927cb184e323ed7c14121e57f7c506a29be2d71"
+	},
+	"../../Binaries/Malterlib/macOS/x64": {
+		"Hash": "32ebd795ff7a7944abf159dae7a31b37787ecc62"
+	},
+	"../../Binaries/MalterlibLLVM/Linux/arm64": {
+		"Hash": "b51c1b6dbabddad0fa93b5a3fce9a786c5125354"
+	},
+	"../../Binaries/MalterlibLLVM/Linux/x64": {
+		"Hash": "d52ad653d2c3dbcaffea7ee548ad55e14bee6f59"
+	},
+	"../../Binaries/MalterlibLLVM/Linux/x86": {
+		"Hash": "e11a035095d6705fa67027623de917c5f2a8a54e"
+	},
+	"../../Binaries/MalterlibLLVM/macOS/arm64": {
+		"Hash": "95e1ecd9e483ee7295709b5dd57ec10b401a7b60"
+	},
+	"../../Binaries/MalterlibLLVM/macOS/x64": {
+		"Hash": "cfe5975fd3f1a578bc07586d7ee4e78b641e6d88"
+	},
+	"../../Binaries/MalterlibSDK/Linux/arm64": {
+		"Hash": "df462964ee938b691142f78355840addeed7236d"
+	},
+	"../../Binaries/MalterlibSDK/Linux/x64": {
+		"Hash": "a9186caa36d8fa7d56ce46e5f834be95fd8974e8"
+	},
+	"../../Binaries/MalterlibSDK/Linux/x86": {
+		"Hash": "dbcb7fd4d32be9e1c34cc0867ec235206f00f139"
+	},
+	"../../Binaries/MalterlibTest/Cloud/Linux/x64": {
+		"Hash": "4b9f5718e85bf3c958b0120114d3c33849ff85dd"
+	},
+	"../../Binaries/MalterlibTest/Cloud/OSX/x64": {
+		"Hash": "618764e80ec78a8056b4ae69575e0803191e04e4"
+	},
+	"../../SDK": {
+		"Hash": "619e3098502c3d4cb08b59f907f9b5425c1afb36"
+	},
+	"../Algorithm": {
+		"Hash": "504e3e037ead88e90279811c536244c048b05634"
+	},
+	"../Atomic": {
+		"Hash": "62875f92b7da293710d4fc70f3da853a1ba520d0"
+	},
+	"../Bit": {
+		"Hash": "4dfcc6322d7c19dcd7213982491e6293a6983343"
+	},
+	"../BuildSystem": {
+		"Hash": "ecb2002a957f4d3203b471cbe9de15f24f2a1d63"
+	},
+	"../Cloud": {
+		"Hash": "fdbd1cf7abe1cfe4bb2ea199ebaeaec03531f39c"
+	},
+	"../CommandLine": {
+		"Hash": "ce7bc1831f785fced1bda95f0269e1acdddaed22"
+	},
+	"../Compression": {
+		"Hash": "e6f734d76b2c2e038b92edefaa8eaefb0d84b393"
+	},
+	"../Concurrency": {
+		"Hash": "f2d6cebe1c0b5657f4c5b4ccf331e584d04b6025"
+	},
+	"../Container": {
+		"Hash": "a02973265c5ca9f6310c2e069fe7578b16799b3b"
+	},
+	"../Contract": {
+		"Hash": "213dda8780eeb6b413aa0a1614690592b56a8399"
+	},
+	"../CrashReport": {
+		"Hash": "bd6cd0c3b6a1a457bfd1398861475db30180cde1"
+	},
+	"../Cryptography": {
+		"Hash": "0968c8033198763a6330e2c07dbc697249f09180"
+	},
+	"../Daemon": {
+		"Hash": "18da391cedd6beebee791d53f57ee5562f4a077f"
+	},
+	"../Database": {
+		"Hash": "f6a36cb9561ee51037b6b7b2b89ac98910110e6a"
+	},
+	"../Debug": {
+		"Hash": "b7fffb732dedf55ed2958cd45a0a8349d72957e5"
+	},
+	"../Desktop": {
+		"Hash": "ba4771c168b9c98da8080e9bcaa567af9b5e82a6"
+	},
+	"../Documentation": {
+		"Hash": "2a7268cce8508c091940ab1e54956c938a50df8d"
+	},
+	"../Encoding": {
+		"Hash": "085169c875f93616482722aabdb19ce0239dda3f"
+	},
+	"../Exception": {
+		"Hash": "d68bb173d260acd56e8976ef04890ad67b7cb4ca"
+	},
+	"../File": {
+		"Hash": "9840bc58e94c384048a5f0790feec1100cdc0840"
+	},
+	"../Function": {
+		"Hash": "2d564f646a5438f3f235d3765406785b433bbab1"
+	},
+	"../Git": {
+		"Hash": "f3e7e6c4f46e1f07ec9e04f9bb9449a875382dd8"
+	},
+	"../Graphics": {
+		"Hash": "c38f1ed7ed719c20c789ce1701862d5360381f5f"
+	},
+	"../Instrumentation": {
+		"Hash": "60ed0b07a61bf54959a9ac4780dbed923c1b5cea"
+	},
+	"../InterProcess": {
+		"Hash": "90aecb4aebb4aa7d98c06251d3a68a7d88d8521f"
+	},
+	"../Intrusive": {
+		"Hash": "de5020973d706d5876a346b214c103d20798d851"
+	},
+	"../Iterator": {
+		"Hash": "affd4afa0e0d85472ef97324467ba80c8a46e45d"
+	},
+	"../Log": {
+		"Hash": "d495daf6ba468480be7e096b9f59d933bc7fd975"
+	},
+	"../Memory": {
+		"Hash": "c8601ec79180177c266424ccfbe897a3331127e3"
+	},
+	"../Meta": {
+		"Hash": "8e42af7df0ea80e385c5c3f76c8a58d972a60ec4"
+	},
+	"../Mongo": {
+		"Hash": "9b78642b329dde7744aed16e30426a4fb0cb61f8"
+	},
+	"../Network": {
+		"Hash": "2a04b8b2153ee9292a1d169821c2631774bc6023"
+	},
+	"../Numeric": {
+		"Hash": "2f003144f2262de59d6dc275d18ec571e0fb05e3"
+	},
+	"../Perforce": {
+		"Hash": "e948d26d6c5d9ebe494619072f09e8acab3029e1"
+	},
+	"../Preprocessor": {
+		"Hash": "e89671fe90aaf8f983c8f780bf0599bc0ff5a96b"
+	},
+	"../Process": {
+		"Hash": "6282e40fa8c013a3e882eac8ee44a3fab612d616"
+	},
+	"../Qt": {
+		"Hash": "3534f26da375ac79d09ab80a1d216f2c41f2534e"
+	},
+	"../SQL": {
+		"Hash": "56cc2d6ba15dc19d69e3d03ff37f79f7b808a5a4"
+	},
+	"../STL": {
+		"Hash": "6dacc946d6b42e5cbcea09ec2703dae6e315375f"
+	},
+	"../Security": {
+		"Hash": "b144f8a6fc16d948984a6cc5e211157b9786db99"
+	},
+	"../Storage": {
+		"Hash": "9274bfd5cd42c6a4ece780de74b78cc81176fe7b"
+	},
+	"../Stream": {
+		"Hash": "5468c4acaa3243ec764c5570e0956459af20fb5e"
+	},
+	"../String": {
+		"Hash": "a81939cdc5b670fb47b53ff166849701a4d2ebd7"
+	},
+	"../System": {
+		"Hash": "a09289500150a31a07cd77506dc41ffc1caf8e4a"
+	},
+	"../Test": {
+		"Hash": "c7e04e6e0a1013e66b7a51482916d4c9d56eb730"
+	},
+	"../Thread": {
+		"Hash": "43b16c9be18409a896d37cc8c2ec133642326601"
+	},
+	"../Time": {
+		"Hash": "2a57cb6db07b5b31052067cad07f3621dd77193b"
+	},
+	"../Tool": {
+		"Hash": "9321cf2316c58fdb6d3024d5b048dd7e0f142973"
+	},
+	"../Type": {
+		"Hash": "f95cca867751ccbfeb687af2b82780267d3aa5a9"
+	},
+	"../Web": {
+		"Hash": "90c3828c9e7feaa394eba7eedb1e3585c4cbb821"
+	},
+	"../WebApp": {
+		"Hash": "88f9927295ea66a3b456aa500ba276df02be1016"
+	},
+	"../XML": {
+		"Hash": "bfca531e0c6f41476073c484ddcb2cec7f46037d"
+	}
+}
