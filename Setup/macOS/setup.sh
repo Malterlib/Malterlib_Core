@@ -38,7 +38,8 @@ Setting_Plugin_P4Checkout=false
 Setting_SyntaxHighlight=true
 
 HasSystemIntegrityProtection=true
-if (csrutil status | grep "disabled"); then
+CsrStatus=`csrutil status 2>/dev/null | head -n 1`
+if (echo "$CsrStatus" | grep "disabled" > /dev/null) || (echo "$CsrStatus" | grep "unknown" > /dev/null); then
 	HasSystemIntegrityProtection=false
 fi
 
