@@ -2972,7 +2972,16 @@ Compile
 		!!Compile.GenerateDebugInformation undefined
 	}
 
-	ObjectFileName `@(MalterlibQtTweakPath)/@(Builtin.SourceFileName)_Twk.cpp`
+	ObjectFileName `@(Target:Target.IntermediateDirectory)@(File:this.Identity->GetFileNoExt())_Twk.cpp`
+	{
+		!!this.Type "File"
+	}
+	ObjectFileName "dummy"
+	{
+		!!Compile.ObjectFileName undefined
+	}
+
+	FullEval true
 }
 
 
