@@ -116,7 +116,7 @@ GeneratorSetting
 	}
 
 	Compile_ProfileGuidedOptimizationUse =+ {
-		Flags: [`-fprofile-use==@(Compile.ProfileGuidedOptimizationUse)`, "-Wno-profile-instr-unprofiled", "-Wno-profile-instr-out-of-date", "-Wno-backend-plugin"]
+		Flags: [`-fprofile-use=@(Compile.ProfileGuidedOptimizationUse)`, "-Wno-profile-instr-unprofiled", "-Wno-profile-instr-out-of-date", "-Wno-backend-plugin"]
 		, Type: "unique"
 	}
 
