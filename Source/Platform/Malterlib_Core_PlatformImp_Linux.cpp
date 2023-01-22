@@ -3376,7 +3376,7 @@ extern "C" int posix_spawnp
 extern "C" int utimensat(int dirfd, const char *pathname, const struct timespec times[2], int flags)
 {
 	if (NLocal::g_f_utimensat)
-		NLocal::g_f_utimensat(dirfd, pathname, times, flags);
+		return NLocal::g_f_utimensat(dirfd, pathname, times, flags);
 
 	timeval Vals[2];
 
@@ -3419,7 +3419,7 @@ extern "C" int utimensat(int dirfd, const char *pathname, const struct timespec 
 extern "C" int futimens(int fd, const struct timespec times[2])
 {
 	if (NLocal::g_f_futimens)
-		NLocal::g_f_futimens(fd, times);
+		return NLocal::g_f_futimens(fd, times);
 
 	timeval Vals[2];
 
