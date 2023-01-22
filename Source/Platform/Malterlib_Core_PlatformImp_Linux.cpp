@@ -44,6 +44,7 @@ namespace NLocal
 	void *(*g_f_memcpy)(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) = &memmove;
 	int (*g_f_utimensat)(int dirfd, const char *pathname, const struct timespec times[2], int flags) = nullptr;
 	int (*g_f_futimens)(int fd, const struct timespec times[2]) = nullptr;
+	ssize_t (*g_f_getrandom)(void *buf, size_t buflen, unsigned int flags);
 
 	void *(*__real_versioned_memcpy_new)(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) = nullptr;
 
@@ -118,8 +119,7 @@ namespace NLocal
 		(void * &)g_f_memcpy = dlsym(RTLD_NEXT, "memcpy");
 		(void * &)g_f_utimensat = dlsym(RTLD_DEFAULT, "utimensat");
 		(void * &)g_f_futimens = dlsym(RTLD_DEFAULT, "futimens");
-
-		(void * &)g_f_futimens = dlsym(RTLD_DEFAULT, "futimens");
+		(void * &)g_f_getrandom = dlsym(RTLD_DEFAULT, "getrandom");
 
 		(void * &)__real_versioned_exp_new = dlvsym(RTLD_DEFAULT, "exp", "GLIBC_2.29");
 		if (!__real_versioned_exp_new)
@@ -1091,6 +1091,29 @@ namespace
 
 void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
 {
+	if (NLocal::g_f_getrandom)
+	{
+		while (_nBytes)
+		{
+			auto nBytes = NLocal::g_f_getrandom(_pData, _nBytes, 0);
+			if (nBytes < 0)
+			{
+				int Error = errno;
+				if (Error == EINTR)
+					continue;
+				else if (Error == ENOSYS)
+					break;
+				else
+					DMibPDebugBreak;
+			}
+			_pData += nBytes;
+			_nBytes -= nBytes;
+			
+			if (_nBytes == 0)
+				return;
+		}
+	}
+
 	if (NMib::NPlatform::fg_ReadProcFS("/dev/urandom", _pData, _nBytes) != _nBytes)
 		DMibPDebugBreak;
 }

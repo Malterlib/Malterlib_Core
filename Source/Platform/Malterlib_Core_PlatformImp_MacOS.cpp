@@ -22,6 +22,7 @@
 #include <crt_externs.h>
 #include <sys/clonefile.h>
 #include <os/lock.h>
+#include <sys/random.h>
 
 #if __has_feature(ptrauth_calls)
 #include <ptrauth.h>
@@ -453,6 +454,19 @@ NStr::CStr NSys::fg_System_GenerateUUID()
 
 void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
 {
+	if (&getentropy)
+	{
+		while (_nBytes)
+		{
+			mint ThisTime = fg_Min(_nBytes, 256);
+			if (getentropy(_pData, ThisTime))
+				DMibPDebugBreak;
+			_nBytes -= ThisTime;
+			_pData += ThisTime;
+		}
+		return;
+	}
+
 	if (NMib::NPlatform::fg_ReadProcFS("/dev/urandom", _pData, _nBytes) != _nBytes)
 		DMibPDebugBreak;
 }
