@@ -139,6 +139,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_Analyzer =+ {
+		Flags: Compile.Analyzer->SwitchWithError(
+			"Unsupported option: "
+			, false, [["-Xanalyzer", "-analyzer-disable-all-checks"]]
+			, true, []
+		)
+		, Type: "unique"
+	}
+
 	Compile_LinkTimeCodeGeneration =+ {
 		Flags: Compile.LinkTimeCodeGeneration->SwitchWithError(
 			"Unsupported option: "

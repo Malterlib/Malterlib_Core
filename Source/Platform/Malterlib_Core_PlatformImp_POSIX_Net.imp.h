@@ -1251,14 +1251,10 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 
 	NMib::NNetwork::ENetTCPState StateAdded = NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write; // Kickstart
 
-	if (_Mode == EPOSIXSocketMode_Datagram)
-		_Mode = EPOSIXSocketMode_Connect;
-	else if (_Mode == EPOSIXSocketMode_Connect)
+	if (_Mode == EPOSIXSocketMode_Connect)
 		StateAdded |= NMib::NNetwork::ENetTCPState_Connected;
 	else if (_Mode == EPOSIXSocketMode_Connecting)
-	{
 		pNewSocket->m_bInitialWriteNotification = false;
-	}
 
 	pNewSocket->m_StateAtomic.f_FetchOr(StateAdded);
 

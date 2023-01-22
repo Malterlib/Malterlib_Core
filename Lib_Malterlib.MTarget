@@ -141,6 +141,8 @@ Property
 	{
 		!!CompileDialect "C"
 
+		Analyzer false
+
 		SearchPath += "../../External/llvm-project/libcxx/src"->MakeAbsolute()
 		{
 			&
@@ -459,6 +461,8 @@ Property
 				MalterlibUseStaticLibCxx true
 			}
 		}
+
+		Analyzer false
 	}
 	%Group "Source"
 	{
@@ -503,6 +507,17 @@ Property
 					%File "../../External/llvm-project/libcxx/src/debug.cpp"
 					{
 						Compile.Disabled true
+						{
+							!
+							{
+								&
+								{
+									!MalterlibDisableMalterlib true
+									MalterlibUseStaticLibCxx true
+									Malterlib_Contracts_Enable true
+								}
+							}
+						}
 					}
 					%Group "support"
 					{

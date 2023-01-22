@@ -51,7 +51,7 @@ namespace NMib
 		NStr::CFStr256 fg_FormatErrno(const ch8 *_pDesc, int _Err)
 		{
 			NStr::CFStr256 ErrorFormat;
-			auto pError = ErrorFormat.f_GetStr();
+			ch8 const *pError;
 			if (!strerror_r(_Err, ErrorFormat.f_GetStr(256), 256)) // IMPORTANT: This function has different semantics on macOS and Linux
 				pError = ErrorFormat.f_GetStr();
 			else

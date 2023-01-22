@@ -320,8 +320,6 @@ GeneratorSetting
 		}
 	}
 
-	Compile_DisableSecurityWarnings {}
-
 	f_Helper_SetVSWarning function(string _Warning, bool _Enable) type(CCompileSettings)
 
 	f_Helper_SetVSWarning =+ {

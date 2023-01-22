@@ -13,6 +13,14 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Compile_Custom_Optimize undefined
 	}
+	Compile_DisableSecurityWarnings {}
+	{
+	 	!!GeneratorSetting.Compile_DisableSecurityWarnings undefined
+	}
+	Compile_Analyzer {}
+	{
+	 	!!GeneratorSetting.Compile_Analyzer undefined
+	}
 
 	Compile_Disabled =+ {
 		VSSettings: {

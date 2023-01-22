@@ -153,6 +153,8 @@
 #	define return_not_aliased 
 #	define function_does_not_return __attribute__((noreturn))
 #	define variable_not_aliased __restrict__
+#	define function_does_not_return_analyzer __attribute__((analyzer_noreturn))
+#	define expect_analyzer(d_Expression) __builtin_expect(d_Expression, 0)
 
 #elif defined(DCompiler_MSVC)
 #	define only_parameters_aliased
@@ -160,6 +162,8 @@
 #	define malloc_like __declspec(restrict)
 #	define function_does_not_return __declspec(noreturn)
 #	define variable_not_aliased __restrict
+#	define function_does_not_return_analyzer
+#	define expect_analyzer(d_Expression) d_Expression
 #else
 #	error "Implement this"
 #endif

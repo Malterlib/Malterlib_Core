@@ -56,30 +56,29 @@ namespace NMib
 		return ToReturn;
 	}
 
-	CRunTimeObjectInfo *CRunTimeObjectInfo::f_GetObject(const ch8*_pName)
+	CRunTimeObjectInfo *CRunTimeObjectInfo::f_GetObject(const ch8 *_pName, mint _NameLen)
 	{
 		CRunTimeObjectInfo *pNamespace = &g_DynamicObjectsSystem->m_GlobalNamespace;
 		NStr::CStr Namespace;
 		const ch8 *pNamespaceStr = _pName;
 		while (1)
 		{
+			DMibFastCheck(mint(pNamespaceStr - _pName) < _NameLen);
 			NStr::CStr String;
 			aint iSub = NStr::fg_StrFind(pNamespaceStr, "::");
 			if (iSub >= 0)
 			{
 				String.f_AddStr(pNamespaceStr, iSub);
+				pNamespaceStr += iSub + 2;
 			}
 			else
 				String.f_AddStr(pNamespaceStr);
 
-			const ch8 *pFind = String;
-			CRunTimeObjectInfo *pInfo = pNamespace->m_Namespace.f_FindEqual(pFind);
+			CRunTimeObjectInfo *pInfo = pNamespace->m_Namespace.f_FindEqual(String);
 
 			if (Namespace.f_GetLen())
-			{
 				Namespace.f_AddStr("::");
-			}
-			Namespace.f_AddStr(pFind);
+			Namespace.f_AddStr(String);
 
 			if (!pInfo)
 			{
@@ -92,9 +91,7 @@ namespace NMib
 
 			pNamespace = pInfo;
 
-			if (iSub >= 0)
-				pNamespaceStr = pNamespaceStr + iSub + 2;
-			else 
+			if (iSub < 0)
 				break;
 		}
 
@@ -124,7 +121,7 @@ namespace NMib
 			NStr::CStr Namespace;
 			Namespace.f_AddStr(_pName, pNamespace - _pName);
 			pName = pNamespace + 2;
-			m_pNamespace = f_GetObject(Namespace);
+			m_pNamespace = f_GetObject(Namespace.f_GetStr(), Namespace.f_GetLen());
 		}
 		else
 		{
@@ -137,7 +134,7 @@ namespace NMib
 		
 		CRunTimeObjectInfo *pInfo = m_pNamespace->m_Namespace.f_FindEqual(pName);
 		if (_pParent)
-			m_pParent = f_GetObject(_pParent);
+			m_pParent = f_GetObject(_pParent, NStr::fg_StrLen(_pParent));
 		else
 			m_pParent = nullptr;
 
@@ -321,7 +318,6 @@ namespace NMib
 			else
 				return nullptr;
 		}
-
 	}
 
 	void *fg_CreateRuntimeType(const ch8 *_pObjectName)

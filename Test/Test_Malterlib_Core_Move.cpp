@@ -126,9 +126,9 @@ namespace
 			NMib::NStr::CFWStr128 TestStr6 = Source;
 			NMib::NStr::CFUStr128 TestStr7 = Source;
 
-			NMib::NTime::CTime Time = NMib::NTime::CTime::fs_NowUTC();
+			[[maybe_unused]] NMib::NTime::CTime Time = NMib::NTime::CTime::fs_NowUTC();
 
-			NMib::NTime::CTimeSpan TimeSpan = NMib::NTime::CTimeSpanConvert	::fs_CreateSpan(1,1,1,1,1,0.5);
+			[[maybe_unused]] NMib::NTime::CTimeSpan TimeSpan = NMib::NTime::CTimeSpanConvert	::fs_CreateSpan(1,1,1,1,1,0.5);
 
 			fp32 Test0 = 3.55f;
 			fp64 Test1 = 3.55;
@@ -270,8 +270,8 @@ namespace
 
 			*ThreadLocal = "Threaded!!!";
 
-			auto Ref = NMib::fg_Reference(TestStr2);
-			auto UndefinedRef = NMib::fg_Reference(TestStr2);
+			[[maybe_unused]] auto Ref = NMib::fg_Reference(TestStr2);
+			[[maybe_unused]] auto UndefinedRef = NMib::fg_Reference(TestStr2);
 		}
 
 	};

@@ -2171,6 +2171,16 @@ Compile
 		!!MalterlibMemory_Shims_Enable true
 	}
 
+	PreprocessorDefines += "_LIBCPP_DEBUG=0"
+	{
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseStaticLibCxx true
+			Malterlib_Contracts_Enable true
+		}
+	}
+
 	PreprocessorDefines += `DMalterlibEnable32Bit=@(BuildArch_x86 ? "1" : "0")`
 	{
 		!BuildArch_x86 undefined

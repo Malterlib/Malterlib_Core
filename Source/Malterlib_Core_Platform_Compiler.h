@@ -322,3 +322,16 @@ namespace std
 	#define DMibSanitizerAnnotate_PoisonMemoryRegion(...) (void)0
 	#define DMibSanitizerAnnotate_UnpoisonMemoryRegion(...) (void)0
 #endif
+
+#ifdef __clang_analyzer__
+	void fg_UnconsumeUndefined(void *);
+	template <typename tf_CObject>
+	void fg_Unconsume(tf_CObject &o_Value)
+	{
+		fg_UnconsumeUndefined(&o_Value);
+	}
+	#define DMibMovedFromValid(d_Value) fg_Unconsume(d_Value)
+	#define DMibClangAnalyzerWorkaround
+#else
+	#define DMibMovedFromValid(d_Value)
+#endif

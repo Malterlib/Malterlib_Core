@@ -286,7 +286,14 @@ namespace NMib
 		{
 			CFArrayRef lLanguages = CFLocaleCopyPreferredLanguages();
 
-			if ( CFArrayGetCount(lLanguages) == 0 )
+			auto CleanupLanguages = g_OnScopeExit / [&]
+				{
+					if (lLanguages)
+						CFRelease(lLanguages);
+				}
+			;
+
+			if (!lLanguages || CFArrayGetCount(lLanguages) == 0)
 				return "en";
 
 			CFStringRef pCode = (CFStringRef)CFArrayGetValueAtIndex(lLanguages, 0);
@@ -294,8 +301,6 @@ namespace NMib
 			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, pCode, kCFStringEncodingUTF8, '?');
 
 			int ErrNo = errno;
-
-			CFRelease(lLanguages);
 
 			if (!pData)
 				DMibError(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get system language)", ErrNo));
@@ -1200,8 +1205,9 @@ namespace NMib
 			for (mint i = 0; i < _nEvents; ++i)
 			{
 				CStr Path(_pPaths[i]);
-				if (Path.f_GetAt(Path.f_GetLen() - 1) == '/')
-					Path = Path.f_Left(Path.f_GetLen() - 1);
+				auto PathLen = Path.f_GetLen();
+				if (PathLen > 0 && Path.f_GetAt(PathLen - 1) == '/')
+					Path = Path.f_Left(PathLen - 1);
 
 				FSEventStreamEventFlags Flags = _Flags[i];
 
@@ -1434,7 +1440,7 @@ namespace NMib
 			for (mint i = 0; i < _nEvents; ++i)
 			{
 				CStr EventPath(_pPaths[i]);
-				if (EventPath.f_GetAt(EventPath.f_GetLen() - 1) == '/')
+				if (EventPath.f_EndsWith("/"))
 					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
 
 				FSEventStreamEventFlags Flags = _Flags[i];
