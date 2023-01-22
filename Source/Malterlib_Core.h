@@ -54,6 +54,20 @@ namespace NMib
 	using COrdering_Weak = std::weak_ordering;
 	using COrdering_Strong = std::strong_ordering;
 
+	template <typename tf_CType>
+	concept cIsOrderType
+		= NTraits::TCIsSame<typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType, COrdering_Partial>::mc_Value
+		|| NTraits::TCIsSame<typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType, COrdering_Weak>::mc_Value
+		|| NTraits::TCIsSame<typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType, COrdering_Strong>::mc_Value
+	;
+
+	template <typename tf_CType>
+	tf_CType fg_CheckOrdering(tf_CType _Order)
+	{
+		static_assert(cIsOrderType<tf_CType>);
+		return _Order;
+	}
+
 #ifdef DMibPLittleEndian
 	static const EEndian gc_MachineEndian = EEndian_Little;
 #else
