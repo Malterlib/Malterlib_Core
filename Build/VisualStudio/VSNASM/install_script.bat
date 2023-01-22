@@ -3,9 +3,9 @@ setlocal
 
 REM Defined cript variables
 set NASMDL=http://www.nasm.us/pub/nasm/releasebuilds
-set NASMVERSION=2.14.02
+set NASMVERSION=2.16
 set VSWHEREDL=https://github.com/Microsoft/vswhere/releases/download
-set VSWHEREVERSION=2.6.7
+set VSWHEREVERSION=2.8.4
 
 REM Store current directory and ensure working directory is the location of current .bat
 set CALLDIR=%CD%
@@ -16,8 +16,8 @@ set ERROR=0
 REM Check if being called from another instance
 if not "%~1"=="" (
     set MSVC_VER=%~1
-    set VSINSTANCEDIR=%2
     set ISINSTANCE=1
+    echo Installing VS%~1 customisations into %2
     goto MSVCCALL
 )
 
@@ -41,17 +41,24 @@ if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
 REM Check if already running in an environment with VS setup
 if defined VCINSTALLDIR (
     if defined VisualStudioVersion (
-        echo Existing Visual Studio environment detected...
-        if "%VisualStudioVersion%"=="16.0" (
+        if "%VisualStudioVersion%"=="17.0" (
+            echo Existing Visual Studio 2022 environment detected...
+            set MSVC_VER=17
+            goto MSVCVarsDone
+        ) else if "%VisualStudioVersion%"=="16.0" (
+            echo Existing Visual Studio 2019 environment detected...
             set MSVC_VER=16
             goto MSVCVarsDone
         ) else if "%VisualStudioVersion%"=="15.0" (
+            echo Existing Visual Studio 2017 environment detected...
             set MSVC_VER=15
             goto MSVCVarsDone
         ) else if "%VisualStudioVersion%"=="14.0" (
+            echo Existing Visual Studio 2015 environment detected...
             set MSVC_VER=14
             goto MSVCVarsDone
         ) else if "%VisualStudioVersion%"=="12.0" (
+            echo Existing Visual Studio 2013 environment detected...
             set MSVC_VER=12
             goto MSVCVarsDone
         ) else (
@@ -77,21 +84,31 @@ if not exist "%SCRIPTDIR%\vswhere.exe" (
 
 :VSwhereDetection
 REM Use vswhere to list detected installs
-for /f "usebackq tokens=1* delims=: " %%i in (`"%SCRIPTDIR%\vswhere.exe" -prerelease -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
-    for /f "delims=" %%a in ('echo %%j ^| find "2019"') do (
+for /f "usebackq tokens=* delims=" %%i in (`"%SCRIPTDIR%\vswhere.exe" -prerelease -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
+    for /f "delims=" %%a in ('echo %%i ^| find "2022"') do (
+        if not "%%a"=="" (
+            echo Visual Studio 2022 environment detected...
+            call "%~0" "17" "%%i"
+            if not ERRORLEVEL 1 (
+                set MSVC17=1
+                set MSVCFOUND=1
+            )
+        )
+    )
+    for /f "delims=" %%a in ('echo %%i ^| find "2019"') do (
         if not "%%a"=="" (
             echo Visual Studio 2019 environment detected...
-            call "%~0" "16" "%%j"
+            call "%~0" "16" "%%i"
             if not ERRORLEVEL 1 (
                 set MSVC16=1
                 set MSVCFOUND=1
             )
         )
     )
-    for /f "delims=" %%a in ('echo %%j ^| find "2017"') do (
+    for /f "delims=" %%a in ('echo %%i ^| find "2017"') do (
         if not "%%a"=="" (
             echo Visual Studio 2017 environment detected...
-            call "%~0" "15" "%%j"
+            call "%~0" "15" "%%i"
             if not ERRORLEVEL 1 (
                 set MSVC15=1
                 set MSVCFOUND=1
@@ -101,26 +118,24 @@ for /f "usebackq tokens=1* delims=: " %%i in (`"%SCRIPTDIR%\vswhere.exe" -prerel
 )
 
 REM Try and use vswhere to detect legacy installs
-for /f "usebackq tokens=1* delims=: " %%i in (`"%SCRIPTDIR%\vswhere.exe" -legacy`) do (
-    if /i "%%i"=="installationPath" (
-        for /f "delims=" %%a in ('echo %%j ^| find "2015"') do (
-            if not "%%a"=="" (
-                echo Visual Studio 2015 environment detected...
-                call "%~0" "13" "%%j"
-                if not ERRORLEVEL 1 (
-                    set MSVC13=1
-                    set MSVCFOUND=1
-                )
+for /f "usebackq tokens=* delims=" %%i in (`"%SCRIPTDIR%\vswhere.exe" -legacy -property installationPath`) do (
+    for /f "delims=" %%a in ('echo %%i ^| find "2015"') do (
+        if not "%%a"=="" (
+            echo Visual Studio 2015 environment detected...
+            call "%~0" "13" "%%i"
+            if not ERRORLEVEL 1 (
+                set MSVC13=1
+                set MSVCFOUND=1
             )
         )
-        for /f "delims=" %%a in ('echo %%j ^| find "2013"') do (
-            if not "%%a"=="" (
-                echo Visual Studio 2013 environment detected...
-                call "%~0" "12" "%%j"
-                if not ERRORLEVEL 1 (
-                    set MSVC12=1
-                    set MSVCFOUND=1
-                )
+    )
+    for /f "delims=" %%a in ('echo %%i ^| find "2013"') do (
+        if not "%%a"=="" (
+            echo Visual Studio 2013 environment detected...
+            call "%~0" "12" "%%i"
+            if not ERRORLEVEL 1 (
+                set MSVC12=1
+                set MSVCFOUND=1
             )
         )
     )
@@ -219,14 +234,16 @@ if "%SYSARCH%"=="32" (
     goto Terminate
 )
 REM Call the required vcvars file in order to setup up build locations
-if "%MSVC_VER%"=="16" (
-    set VCVARS=%VSINSTANCEDIR%\VC\Auxiliary\Build\vcvars%SYSARCH%.bat
+if "%MSVC_VER%"=="17" (
+    set VCVARS=%2\VC\Auxiliary\Build\vcvars%SYSARCH%.bat
+) else if "%MSVC_VER%"=="16" (
+    set VCVARS=%2\VC\Auxiliary\Build\vcvars%SYSARCH%.bat
 ) else if "%MSVC_VER%"=="15" (
-    set VCVARS=%VSINSTANCEDIR%\VC\Auxiliary\Build\vcvars%SYSARCH%.bat
+    set VCVARS=%2\VC\Auxiliary\Build\vcvars%SYSARCH%.bat
 ) else if "%MSVC_VER%"=="14" (
-    set VCVARS=%VSINSTANCEDIR%\VC\bin%MSVCVARSDIR%\vcvars%SYSARCH%.bat
+    set VCVARS=%2\VC\bin%MSVCVARSDIR%\vcvars%SYSARCH%.bat
 ) else if "%MSVC_VER%"=="12" (
-    set VCVARS=%VSINSTANCEDIR%\VC\bin%MSVCVARSDIR%\vcvars%SYSARCH%.bat
+    set VCVARS=%2\VC\bin%MSVCVARSDIR%\vcvars%SYSARCH%.bat
 ) else (
     echo Error: Invalid MSVC version!
     goto Terminate
@@ -249,7 +266,9 @@ if not ERRORLEVEL 1 (
 )
 set /p MSBUILDDIR=<"%SCRIPTDIR%\msbuild.txt"
 del /F /Q "%SCRIPTDIR%\msbuild.txt" >nul 2>&1
-if "%MSVC_VER%"=="16" (
+if "%MSVC_VER%"=="17" (
+    set VCTargetsPath="..\..\..\Microsoft\VC\v170\BuildCustomizations"
+) else if "%MSVC_VER%"=="16" (
     set VCTargetsPath="..\..\Microsoft\VC\v160\BuildCustomizations"
 ) else if "%MSVC_VER%"=="15" (
     set VCTargetsPath="..\..\..\Common7\IDE\VC\VCTargets\BuildCustomizations"
@@ -263,8 +282,16 @@ if "%MSVC_VER%"=="16" (
 
 REM Convert the relative targets path to an absolute one
 set CURRDIR=%CD%
-pushd %MSBUILDDIR%
-pushd %VCTargetsPath%
+pushd %MSBUILDDIR% 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo Error: Failed to get correct msbuild path!
+    goto Terminate
+)
+pushd %VCTargetsPath% 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo Error: Unknown VCTargetsPath path!
+    goto Terminate
+)
 set VCTargetsPath=%CD%
 popd
 popd

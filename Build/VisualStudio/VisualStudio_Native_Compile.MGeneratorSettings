@@ -97,6 +97,12 @@ GeneratorSetting
 			IncludePaths: Compile.SearchPath->f_JoinMSBuild()
 		}
 	}
+
+	Compile_ExtraCompilerFlags =+ {
+		VSSettings: {
+			AdditionalOptions: `@(Compile.ExtraCompilerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
+		}
+	}
 }
 
 GeneratorSetting

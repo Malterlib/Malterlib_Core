@@ -67,6 +67,17 @@ GeneratorSetting
 		]
 	}
 
+	Target_NasmPath =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "NasmPath"
+				, Value: Target.NasmPath->EscapeMSBuild()
+			}
+		]
+	}
+
 	Target_CharacterSet =+ {
 		VSSettings: [
 			{

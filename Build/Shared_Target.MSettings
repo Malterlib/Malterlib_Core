@@ -50,6 +50,9 @@ Target
 	{
 		!!Target.CLRSupport undefined
 	}
+
+	NasmPath: string
+	NasmPath `@(MalterlibBinariesDirectory->WindowsPath())\\`
 }
 
 // Target type
