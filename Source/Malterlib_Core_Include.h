@@ -287,6 +287,7 @@ namespace NMib
 #include "Malterlib_Core_General.hpp"
 #include "../../Memory/Source/Malterlib_Memory_Pool_Implementation.h"
 #include "../../Exception/Source/Malterlib_Exception.hpp"
+#include "../../Exception/Source/Malterlib_Exception_FastExceptions.hpp"
 #include "../../Thread/Source/Malterlib_Thread.hpp"
 #include "../../Storage/Source/Malterlib_Storage_Aggregate.hpp"
 

@@ -93,9 +93,9 @@ GeneratorSetting
 	Compile_Exceptions =+ {
 		Flags: Compile.Exceptions->SwitchWithError(
 			"Unsupported option: "
-			, "Full", []
-			, "C++", []
-			, "ExternCandC++", []
+			, "Full", [["-fexceptions", "-fasynchronous-unwind-tables"]]
+			, "C++", [["-fexceptions", "-fno-asynchronous-unwind-tables"]]
+			, "ExternCandC++", [["-fexceptions", "-fno-asynchronous-unwind-tables"]]
 			, "Off", "-fno-exceptions"
 		)
 		, Type: "unique"

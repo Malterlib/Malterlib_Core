@@ -909,10 +909,10 @@ Compile
 	{
 		!MalterlibTargetTriple undefined
 	}
-	AsyncUnwindTables true
+	/*AsyncUnwindTables false
 	{
 		!Compile.Type "Assembler"
-	}
+	}*/
 }
 
 Compile
@@ -932,7 +932,6 @@ Compile
 	{
 		!MalterlibTargetTriple undefined
 	}
-//	AsyncUnwindTables true
 }
 
 Property
@@ -2031,6 +2030,7 @@ Compile
 		, "LIBUNWIND_NODEFAULTVISIBILITY"
 		, "_LIBUNWIND_HIDE_SYMBOLS"
 		, "DMalterlibNontrackedFree"
+		, "DMalterlibLibCxxABI"
 	]
 	{
 		&
@@ -2377,7 +2377,11 @@ Compile
 		&
 		{
 			Compile.DynamicTypeInfo undefined
-			MalterlibSupportSanitizerEnable_UndefinedBehavior true
+			|
+			{
+				MalterlibSupportSanitizerEnable_UndefinedBehavior true
+				MalterlibUseStaticLibCxxABI true // Needed for fast exceptions to work
+			}
 		}
 	}
 	DynamicTypeInfo false
