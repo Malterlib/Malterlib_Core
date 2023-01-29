@@ -1214,6 +1214,13 @@ Compile
 	Warnings "On"
 
 	Warnings_DeprecatedDeclarations: bool?
+	Warnings_DeprecatedNonPrototype: bool?
+	Warnings_DeprecatedBuiltins: bool?
+
+	Warnings_ShiftCountNegative: bool?
+	Warnings_ConstantConversion: bool?
+	Warnings_ShiftOverflow: bool?
+
 	Warnings_AlignMismatch: bool?
 	Warnings_ConversionToSmallerInt: bool?
 	Warnings_ConversionToSmallerType: bool?
@@ -1779,6 +1786,15 @@ Compile
 		}
 	}
 
+	PreprocessorDefines += ["_LIBCPP_ABI_VERSION=2", "_LIBCPP_ABI_NO_NAMESPACE", "_LIBCPP_HAS_NO_VENDOR_AVAILABILITY_ANNOTATIONS", "_LIBCPP_ENABLE_ASSERTIONS_DEFAULT=0"]
+	{
+		&
+		{
+			!DoesNotUseMalterlib true
+			MalterlibUseStaticLibCxx true
+		}
+	}
+
 	PreprocessorDefines += "DMibPNoShortCuts"
 	{
 		!!MalterlibNoShortcuts true
@@ -2013,7 +2029,24 @@ Compile
 		}
 	}
 
-	PreprocessorDefines += ["DMalterlibUseStaticLibCxx=1", "_LIBCPP_DISABLE_AVAILABILITY", "_LIBCPP_BUILD_STATIC", "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS"]
+	PreprocessorDefines += [
+		"DMalterlibUseStaticLibCxx=1"
+		, "_LIBCPP_BUILD_STATIC"
+		, "_LIBCPP_NO_ABI_TAG"
+		, "_LIBCPP_REMOVE_TRANSITIVE_INCLUDES"
+	]
+	{
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseStaticLibCxx true
+		}
+	}
+
+	PreprocessorDefines += [
+		"_LIBCPP_DISABLE_AVAILABILITY"
+		, "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS"
+	]
 	{
 		&
 		{
@@ -2024,13 +2057,23 @@ Compile
 
 	PreprocessorDefines += [
 		"LIBCXX_BUILDING_LIBCXXABI"
-		, "_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
+		, "DMalterlibNontrackedFree"
+		, "DMalterlibLibCxxABI"
+	]
+	{
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseStaticLibCxxABI true
+		}
+	}
+
+	PreprocessorDefines += [
+		"_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
 		, "COMPILER_RT_NODEFAULTVISIBILITY"
 		, "LIBCXXABI_NODEFAULTVISIBILITY"
 		, "LIBUNWIND_NODEFAULTVISIBILITY"
 		, "_LIBUNWIND_HIDE_SYMBOLS"
-		, "DMalterlibNontrackedFree"
-		, "DMalterlibLibCxxABI"
 	]
 	{
 		&

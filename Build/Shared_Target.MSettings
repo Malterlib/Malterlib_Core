@@ -1717,6 +1717,11 @@ Target
 		}
 	}
 
+	LDFlags =+ `-fuse-ld=lld`
+	{
+		!!PlatformFamily "macOS"
+	}
+
 	LDFlags =+ [["-Xlinker", "--icf=all"]]
 	{
 		&
@@ -2977,7 +2982,7 @@ Property
 	MalterlibLLVMBinariesDirectory: string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(PlatformFamily)/@(Architecture)`
 
 	MalterlibLLVMSanitizerRuntime: string?
-	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib`
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).@(MalterlibClangPatchVersion)/lib/darwin/libclang_rt.asan_osx_dynamic.dylib`
 	{
 		&
 		{
@@ -2985,7 +2990,7 @@ Property
 			MalterlibSupportSanitizerEnable_Address true
 		}
 	}
-	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).0/lib/darwin/libclang_rt.tsan_osx_dynamic.dylib`
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).@(MalterlibClangPatchVersion)/lib/darwin/libclang_rt.tsan_osx_dynamic.dylib`
 	{
 		&
 		{
@@ -2993,7 +2998,7 @@ Property
 			MalterlibSupportSanitizerEnable_Thread true
 		}
 	}
-	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).0/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib`
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion).@(MalterlibClangPatchVersion)/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib`
 	{
 		&
 		{

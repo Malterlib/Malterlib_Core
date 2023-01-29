@@ -188,9 +188,22 @@ Property
 				}
 			}
 
-			Compile.LinkTimeCodeGeneration MalterlibEnableLinkTimeCodeGeneration
+			Compile
 			{
 				!!CompileDialect "C"
+				LinkTimeCodeGeneration MalterlibEnableLinkTimeCodeGeneration
+				Warnings_ShiftCountNegative false
+				{
+					!!Compiler "Clang"
+				}
+				Warnings_ConstantConversion false
+				{
+					!!Compiler "Clang"
+				}
+				Warnings_ShiftOverflow false
+				{
+					!!Compiler "Clang"
+				}
 			}
 
 			%Group "LSE"
@@ -278,6 +291,10 @@ Property
 			{
 				%File "../../External/llvm-project/compiler-rt/lib/builtins/*.c"
 				%File "../../External/llvm-project/compiler-rt/lib/builtins/*.h"
+				%File "../../External/llvm-project/compiler-rt/lib/builtins/*bf2.c"
+				{
+					Compile.Disabled true
+				}
 				%Group "x86"
 				{
 					!!Architecture "x86"
@@ -373,6 +390,11 @@ Property
 				!!CompileDialect "C"
 				DynamicTypeInfo true
 				PreprocessorDefines =+ "LIBCXXABI_NO_NEW_DELETE"
+				PreprocessorDefines =+ "_LIBCXXABI_BUILDING_LIBRARY"
+				PreprocessorDefines =+ "_LIBCXXABI_UBSAN_HELPERS"
+				{
+					!!MalterlibSupportSanitizerEnable_UndefinedBehavior true
+				}
 			}
 
 			%File "../../External/llvm-project/libcxxabi/src/*.cpp"
@@ -1472,6 +1494,9 @@ Property
 		MalterlibTargetNameType "BaseName"
 		MalterlibPostCopyProject undefined
 		MalterlibProfileGuidedOptimization undefined
+		MalterlibSupportSanitizerEnable_UndefinedBehavior false
+		MalterlibSupportSanitizerEnable_Thread false
+		MalterlibSupportSanitizerEnable_Address false
 	}
 	Target
 	{

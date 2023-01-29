@@ -418,6 +418,51 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_Warnings_DeprecatedNonPrototype =+ {
+		Flags: Compile.Warnings_DeprecatedNonPrototype->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-deprecated-non-prototype"
+			, true, "-Wdeprecated-non-prototype"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_ShiftCountNegative =+ {
+		Flags: Compile.Warnings_ShiftCountNegative->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-shift-count-negative"
+			, true, "-Wshift-count-negative"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_ShiftOverflow =+ {
+		Flags: Compile.Warnings_ShiftOverflow->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-shift-count-overflow"
+			, true, "-Wshift-count-overflow"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_ConstantConversion =+ {
+		Flags: Compile.Warnings_ConstantConversion->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-constant-conversion"
+			, true, "-Wconstant-conversion"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_DeprecatedBuiltins =+ {
+		Flags: Compile.Warnings_DeprecatedBuiltins->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-deprecated-builtins"
+			, true, "-Wdeprecated-builtins"
+		)
+		, Type: "unique"
+	}
+
 	Compile_Warnings_NoPessimizingMove =+ {
 		Flags: Compile.Warnings_NoPessimizingMove->SwitchWithError(
 			"Unsupported option: "
@@ -733,7 +778,7 @@ GeneratorSetting
 		Flags: Compile.Sanitize_Address->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, ["-fsanitize=address", "-fsanitize-address-use-after-scope"]
+			, true, [["-fsanitize=address", "-fsanitize-address-use-after-scope"]]
 		)
 		, Type: "unique"
 	}
@@ -742,7 +787,7 @@ GeneratorSetting
 		Flags: Compile.Sanitize_UndefinedBehavior->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, ["-fsanitize=undefined", "-fno-sanitize=vptr"]
+			, true, [["-fsanitize=undefined", "-fno-sanitize=vptr"]]
 		)
 		, Type: "unique"
 	}

@@ -144,3 +144,26 @@
 #else
 #	error "Implement this"
 #endif
+
+// Sanitizers
+#if defined(__has_feature)
+#	if __has_feature(undefined_behavior_sanitizer)
+#		define DMibSanitizerEnabled_UndefinedBehavior
+#		define DMibSanitizerEnabled
+#	endif
+#	if __has_feature(address_sanitizer)
+#		define DMibSanitizerEnabled_Address
+#		define DMibSanitizerEnabled
+#	endif
+#	if __has_feature(thread_sanitizer)
+#		define DMibSanitizerEnabled_Thread
+#		define DMibSanitizerEnabled
+#	endif
+#endif
+
+#ifdef DCompiler_MSVC
+#	ifdef __SANITIZE_ADDRESS__
+#		define DMibSanitizerEnabled_Address
+#		define DMibSanitizerEnabled
+#	endif
+#endif

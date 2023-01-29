@@ -43,6 +43,11 @@
 
 // Type traits
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
+
+#if __has_warning("-Wdeprecated-builtins")
+	#pragma clang diagnostic ignored "-Wdeprecated-builtins"
+#endif
+
 #	define DMibPHasAssignmentOperator(d_Type) __has_assign(d_Type)
 #	define DMibPHasCopyConstructor(d_Type) __has_copy(d_Type)
 #	define DMibPHasNothrowAssignmentOperator(d_Type) __has_nothrow_assign(d_Type)
@@ -92,6 +97,19 @@
 
 #else
 #	error "Implement this"
+#endif
+
+#ifdef DCompiler_clang
+#define if_consteval if consteval
+#define if_not_consteval if !consteval
+#else
+#ifdef DMalterlibUseStaticLibCxx
+#	include <__type_traits/is_constant_evaluated.h>
+#else
+#	include <type_traits>
+#endif
+#define if_consteval if (std::is_constant_evaluated())
+#define if_not_consteval if (!std::is_constant_evaluated())
 #endif
 
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
@@ -164,7 +182,7 @@ namespace std
 // Arglist
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	include <stdarg.h>
-	typedef va_list CMibArgList;
+	using CMibArgList = __builtin_va_list;
 #	define DMibPArgListStart(_ArgList, _PrevArg) va_start(_ArgList, _PrevArg)
 #	define DMibPArgListNextArg(_ArgList, _ArgType) va_arg(_ArgList, _ArgType)
 #	define DMibPArgListEnd(_ArgList) va_end(_ArgList)
@@ -240,28 +258,6 @@ namespace std
 //#	define DMibPOffsetOf(_Type, _Member) ((aint)(&((_Type *)0)->_Member))
 #else
 #	error "Implement this"
-#endif
-
-#if defined(__has_feature)
-#	if __has_feature(undefined_behavior_sanitizer)
-#		define DMibSanitizerEnabled_UndefinedBehavior
-#		define DMibSanitizerEnabled
-#	endif
-#	if __has_feature(address_sanitizer)
-#		define DMibSanitizerEnabled_Address
-#		define DMibSanitizerEnabled
-#	endif
-#	if __has_feature(thread_sanitizer)
-#		define DMibSanitizerEnabled_Thread
-#		define DMibSanitizerEnabled
-#	endif
-#endif
-
-#ifdef DCompiler_MSVC
-#	ifdef __SANITIZE_ADDRESS__
-#		define DMibSanitizerEnabled_Address
-#		define DMibSanitizerEnabled
-#	endif
 #endif
 
 #ifdef DCompiler_MSVC
