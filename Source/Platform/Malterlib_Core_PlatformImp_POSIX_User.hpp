@@ -196,11 +196,10 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 			DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when checking if user is member of group") << _UserName, State.m_Error));
 	}
 	
-	short int lp;
 	struct group grp;
 	struct group * grpptr=&grp;
 	struct group * tempGrpPtr;
-	char grpbuffer[200];
+	char grpbuffer[4096];
 	int  grplinelen = sizeof(grpbuffer);
 	
 	if ((getgrnam_r(_GroupName.f_GetStr(), grpptr, grpbuffer, grplinelen, &tempGrpPtr)) != 0)
@@ -212,7 +211,7 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 	if (grp.gr_gid == pPassword->pw_gid)
 		return true;
 
-	for (lp = 1; NULL != *(grp.gr_mem); lp++, (grp.gr_mem)++)
+	for (; *(grp.gr_mem) != nullptr; (grp.gr_mem)++)
 	{
 		CStrPtr Ptr;
 		Ptr.f_SetConstPtr(*(grp.gr_mem), fg_StrLen(*(grp.gr_mem)));
