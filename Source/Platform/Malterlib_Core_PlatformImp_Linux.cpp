@@ -25,6 +25,7 @@
 #include <spawn.h>
 #include <glob.h>
 #include <sys/syscall.h>
+#include <exception>
 
 using namespace NMib;
 using namespace NMib::NStr;

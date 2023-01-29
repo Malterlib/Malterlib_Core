@@ -112,6 +112,15 @@
 #define if_not_consteval if (!std::is_constant_evaluated())
 #endif
 
+
+#if DMibPSupportExceptions
+#	ifdef DMalterlibUseStaticLibCxx
+#		include <__exception/exception.h>
+#	else
+#		include <exception>
+#	endif
+#endif
+
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 
 _LIBCPP_BEGIN_NAMESPACE_STD
@@ -123,16 +132,19 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 _LIBCPP_END_NAMESPACE_STD
 
 #	if __has_feature(cxx_rtti)
-#		define DMibPTypeName(x) (typeid(x).name())
-#		include <typeinfo>
+#		ifdef DMalterlibUseStaticLibCxx
+		namespace std
+		{
+			class _LIBCPP_EXCEPTION_ABI type_info;
+		}
+#		else
+#			include <typeinfo>
+#		endif
 		namespace NMib
 		{
 			namespace NTypeInfo
 			{
-				
 				typedef std::type_info CTypeInfo;
-				typedef std::bad_cast CExceptionBadCast;
- 				typedef std::bad_typeid CExceptionTypeId;
 			}
 		}
 #	endif
@@ -147,10 +159,6 @@ namespace std
 	struct strong_ordering;
 }
 
-#	if DMibPSupportExceptions
-#		include <exception>
-#	endif
-
 #	if DMibPSupportTypeinfo
 #		include <typeinfo>
 		namespace NMib
@@ -158,10 +166,6 @@ namespace std
 			namespace NTypeInfo
 			{
 				typedef type_info CTypeInfo;
-#		if DMibPSupportExceptions
-				typedef std::bad_typeid CExceptionTypeId;
-				typedef std::bad_cast CExceptionBadCast;
-#		endif
 			}
 		}
 #	endif

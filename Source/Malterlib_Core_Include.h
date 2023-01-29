@@ -111,7 +111,13 @@ namespace NMib
 #include "Malterlib_Core_Literals.h"
 
 #include "../../Memory/Source/Malterlib_Memory_Allocator_New.h"
+
+#ifdef DMalterlibUseStaticLibCxx
+#include <__compare/ordering.h>
+#include <__compare/common_comparison_category.h>
+#else
 #include <compare>
+#endif
 
 namespace NMib
 {

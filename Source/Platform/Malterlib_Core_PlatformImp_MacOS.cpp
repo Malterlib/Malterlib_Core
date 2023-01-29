@@ -23,6 +23,7 @@
 #include <sys/clonefile.h>
 #include <os/lock.h>
 #include <sys/random.h>
+#include <exception>
 
 #if __has_feature(ptrauth_calls)
 #include <ptrauth.h>

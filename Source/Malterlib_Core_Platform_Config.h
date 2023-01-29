@@ -93,14 +93,13 @@
 // Float implementation
 #define DMibPFloat_StdLib
 
-
-
 // New override
-#if defined(DPlatformFamily_macOS)
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
+#ifdef DMalterlibUseStaticLibCxx
+#	include <stddef.h>
+#else
 #	include <new>
-#	define DMibPOverrideOperatorNew
-#elif defined(DPlatformFamily_Linux)
-#	include <new>
+#endif
 #	define DMibPOverrideOperatorNew
 #elif defined(DPlatformFamily_Windows)
 #	define DMibPOverrideOperatorNew
