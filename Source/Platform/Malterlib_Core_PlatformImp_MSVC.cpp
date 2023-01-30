@@ -3341,14 +3341,6 @@ namespace NMib::NThread
 		DMibSanitizerAnnotate_MutexDestroy(this, 0);
 	}
 
-	namespace
-	{
-		inline_never void fg_AbortFutex()
-		{
-			DMibPDebugBreak;
-		}
-	}
-
 	bool CLowLevelLockAggregate::f_TryLock()
 	{
 		DMibSanitizerAnnotate_MutexPreLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock);

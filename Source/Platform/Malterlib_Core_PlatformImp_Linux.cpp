@@ -2478,10 +2478,12 @@ namespace NMib::NThread
 
 	namespace
 	{
-		inline_never void fg_AbortFutex()
+		[[noreturn]] inline_never void fg_AbortFutex(int _Error)
 		{
 			[[maybe_unused]] volatile int Line = DMibPLine;
+			[[maybe_unused]] volatile int Error = _Error;
 			DMibPDebugBreak;
+			std::abort();
 		}
 	}
 
@@ -2497,10 +2499,10 @@ namespace NMib::NThread
 			if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
 			{
 				if ((OldValue & gc_FutexThreadMask) == ThreadID)
-					fg_AbortFutex(); // Recursive lock not supported
+					fg_AbortFutex(-1); // Recursive lock not supported
 
 				if (OldValue & FUTEX_OWNER_DIED)
-					fg_AbortFutex(); // Killing threads in not supported
+					fg_AbortFutex(-2); // Killing threads in not supported
 
 				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
 				return false;
@@ -2538,10 +2540,10 @@ namespace NMib::NThread
 					break;
 
 				if ((OldValue & gc_FutexThreadMask) == ThreadID)
-					fg_AbortFutex(); // Recursive lock not supported
+					fg_AbortFutex(-1); // Recursive lock not supported
 
 				if (OldValue & FUTEX_OWNER_DIED)
-					fg_AbortFutex(); // Killing threads in not supported
+					fg_AbortFutex(-2); // Killing threads in not supported
 
 				if (OldValue & gc_FutexThreadMask)
 				{
@@ -2552,7 +2554,7 @@ namespace NMib::NThread
 					switch (Error)
 					{
 					case EAGAIN: break;
-					default: fg_AbortFutex(); // Broken
+					default: fg_AbortFutex(Error); // Broken
 					}
 				}
 			}
@@ -2592,10 +2594,7 @@ namespace NMib::NThread
 			{
 				// Contended
 				if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
-				{
-					[[maybe_unused]] auto Error = errno;
-					fg_AbortFutex();
-				}
+					fg_AbortFutex(errno);
 			}
 		}
 		else
@@ -2614,10 +2613,10 @@ namespace NMib::NThread
 			if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
 			{
 				if ((OldValue & gc_FutexThreadMask) == ThreadID)
-					fg_AbortFutex(); // Recursive lock not supported
+					fg_AbortFutex(-1); // Recursive lock not supported
 
 				if (OldValue & FUTEX_OWNER_DIED)
-					fg_AbortFutex(); // Killing threads in not supported
+					fg_AbortFutex(-2); // Killing threads in not supported
 
 				return false;
 			}
@@ -2651,10 +2650,10 @@ namespace NMib::NThread
 					break;
 
 				if ((OldValue & gc_FutexThreadMask) == ThreadID)
-					fg_AbortFutex(); // Recursive lock not supported
+					fg_AbortFutex(-1); // Recursive lock not supported
 
 				if (OldValue & FUTEX_OWNER_DIED)
-					fg_AbortFutex(); // Killing threads in not supported
+					fg_AbortFutex(-2); // Killing threads in not supported
 
 				if (OldValue & gc_FutexThreadMask)
 				{
@@ -2665,7 +2664,7 @@ namespace NMib::NThread
 					switch (Error)
 					{
 					case EAGAIN: break;
-					default: fg_AbortFutex(); // Broken
+					default: fg_AbortFutex(Error); // Broken
 					}
 				}
 			}
@@ -2708,10 +2707,7 @@ namespace NMib::NThread
 			{
 				// Contended
 				if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
-				{
-					[[maybe_unused]] auto Error = errno;
-					fg_AbortFutex();
-				}
+					fg_AbortFutex(errno);
 			}
 		}
 		else
