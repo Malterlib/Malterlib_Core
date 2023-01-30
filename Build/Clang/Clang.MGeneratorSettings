@@ -19,7 +19,7 @@ GeneratorSetting
 	}
 
 	Compile_AlignDouble =+ {
-		Flags: Compile.AlignDouble ? "-malign-double" : "-mno-align-double"
+		Flags: Compile.AlignDouble ? "-malign-double" : []
 		, Type: "unique"
 	}
 
