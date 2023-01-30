@@ -50,6 +50,9 @@
 	"../../Binaries/MalterlibTest/Cloud/OSX/x64": {
 		"Hash": "618764e80ec78a8056b4ae69575e0803191e04e4"
 	},
+	"../../Binaries/MalterlibTest/Cloud/macOS/x64": {
+		"Hash": "bccc6cf6b5c88db8dac8f42f00dfe55cdc768ba0"
+	},
 	"../../SDK": {
 		"Hash": "619e3098502c3d4cb08b59f907f9b5425c1afb36"
 	},
@@ -138,7 +141,7 @@
 		"Hash": "d495daf6ba468480be7e096b9f59d933bc7fd975"
 	},
 	"../Memory": {
-		"Hash": "d482a538c5ec7f1ae9441211bc742d8032f253a9"
+		"Hash": "cb4268e678437203e5557a10b31e533017afb6ae"
 	},
 	"../Meta": {
 		"Hash": "8e42af7df0ea80e385c5c3f76c8a58d972a60ec4"
@@ -150,7 +153,7 @@
 		"Hash": "745683808bd4e5972179a5e5ee9a3a591848e0f8"
 	},
 	"../Numeric": {
-		"Hash": "c6273e22c53dc4cc27d50f3bb4f8ce5d821d256a"
+		"Hash": "316fdee993ca7e51f6210bc422d91c3e1e488a55"
 	},
 	"../Perforce": {
 		"Hash": "10408031ea62dbab9b01c7c7910715266c0dcacc"
