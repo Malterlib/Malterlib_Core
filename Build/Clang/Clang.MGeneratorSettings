@@ -353,17 +353,17 @@ GeneratorSetting
 	}
 
 	Compile_SearchPath =+ {
-		Flags: Compile.SearchPath->f_PrefixFlags("-I")
+		Flags: [Compile.SearchPath->f_PrefixFlags("-I")]
 		, Type: "unique"
 	}
 
 	Compile_ToolPrefix =+ {
-		Flags: Compile.ToolPrefix->f_PrefixFlags("-B")
+		Flags: [Compile.ToolPrefix->f_PrefixFlags("-B")]
 		, Type: "unique"
 	}
 
 	Compile_SystemSearchPath =+ {
-		Flags: Compile.SystemSearchPath->f_PrefixFlags("-isystem")
+		Flags: [Compile.SystemSearchPath->f_PrefixFlags("-isystem")]
 		, Type: "unique"
 	}
 
