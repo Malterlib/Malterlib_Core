@@ -34,7 +34,10 @@ namespace NMib
 			NMib::NSys::fg_DebugOutput((NMib::NStr::CFStr1024::CFormat("Application crashed. Saving crash dump to: {}\n") << pDumpPath).f_GetStr().f_GetStr());
 
 			if (!_bSucceeded || NMib::fg_GetSys()->f_GetCrashHandlerPath().f_IsEmpty())
+			{
+				_exit(1);
 				return _bSucceeded; // Failed to generate minidump or we specifically don't want to spawn a reporter (eg when running the server)
+			}
 
 			pid_t Child = fork();
 			
@@ -63,7 +66,9 @@ namespace NMib
 			{
 				waitpid(Child, nullptr, WNOHANG);
 			}
-					
+
+			_exit(1);
+
 			return _bSucceeded;
 		}
 		
