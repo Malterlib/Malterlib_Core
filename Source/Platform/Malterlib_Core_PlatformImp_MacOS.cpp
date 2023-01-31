@@ -1462,7 +1462,7 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 	if (g_bCreatedSystemMalloc)
 		return;
 
-	NPrivate::g_PageSize = sysconf(_SC_PAGE_SIZE);
+	NPrivate::g_PageSize = NSys::fg_Mem_PageSize();
 
 	fg_CreateSystemVersion();
 
@@ -1471,8 +1471,6 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 	g_bCreatedSystemMalloc = true;
 
 	g_VirtualMap.f_Construct();
-
-	host_page_size(mach_host_self(), (vm_size_t *)&NMib::NSys::NPrivate::g_PageSize);
 
 	g_bCreatingSystemDone = true;
 
