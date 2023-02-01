@@ -2402,6 +2402,12 @@ namespace NMib::NThread
 	void CLowLevelLockAggregate::f_ForkedChildUnlocked()
 	{
 		m_Lock = 0;
+
+#if DMibEnableSafeCheck > 0
+		++m_nForked;
+		m_ThreadID = 0;
+		m_AlternateThreadID = 0;
+#endif
 	}
 
 	void CLowLevelLockAggregate::f_ForkedChildLocked()
@@ -2416,6 +2422,12 @@ namespace NMib::NThread
 		}
 		else
 			m_Lock = 1;
+#endif
+
+#if DMibEnableSafeCheck > 0
+		++m_nForked;
+		m_ThreadID = NSys::fg_Thread_GetCurrentUID();
+		m_AlternateThreadID = NSys::fg_Thread_GetCurrentUIDAlternate();
 #endif
 	}
 
