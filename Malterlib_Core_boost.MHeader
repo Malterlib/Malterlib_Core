@@ -130,10 +130,10 @@ Property
 		GetBoostIncludePath function(string _Module) string
 		GetBoostIncludePath `@(`../../External/boost/@(_Module)/include`->MakeAbsolute())/boost@(SubDirectory)`
 
-		ExpandTemplateFiles function(string _Module) [type(CEntity)]
+		ExpandTemplateFiles function(string _Module) [type(CEntity)] = []
 		ExpandTemplateFiles	=+ GetBoostIncludePath(_Module)->FindFilesIn('*')->ForEach(&ExpandTemplate2, {Module: _Module})
 
-		ExpandTemplateDirectories function(string _Module) [type(CEntity)]
+		ExpandTemplateDirectories function(string _Module) [type(CEntity)] = []
 		ExpandTemplateDirectories =+ GetBoostIncludePath(_Module)->FindDirectoriesIn('*')->ForEach(&ExpandTemplate2, {Module: _Module})
 	}
 

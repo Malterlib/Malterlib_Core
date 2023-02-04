@@ -526,16 +526,36 @@ NMib::NSys::EDesktopEnvironment fg_DeduceDesktopEnvironment()
 
 typedef char uuid_string_t[256];
 
-DMibDefineDynamicLibraryClassAggregate(CUUIDLibrary, EDLFlag_NoThrow | EDLFlag_NoAutoLoad, "libuuid.so.1"
-								,	uuid_generate
-								,	uuid_unparse
-							);
+struct CUUIDLibrary final : public NMib::CDynamicLibraryUtility
+{
+	constexpr CUUIDLibrary()
+		: NMib::CDynamicLibraryUtility(gc_Str<"libuuid.so.1">, EDLFlag_NoThrow)
+	{
+	}
 
-constinit CUUIDLibrary g_UUIDLibrary = { DAggregateInit };
+	decltype(&::uuid_generate) uuid_generate = nullptr;
+	decltype(&::uuid_unparse) uuid_unparse = nullptr;
+
+protected:
+	void fp_ClearSymbols() override
+	{
+		uuid_generate = nullptr;
+		uuid_unparse = nullptr;
+	}
+
+	void fp_FetchSymbols() override
+	{
+		fp_Fetch(uuid_generate, "uuid_generate");
+		fp_Fetch(uuid_unparse, "uuid_unparse");
+	}
+};
+
+constinit TCAggregateSimple<CUUIDLibrary> g_UUIDLibrary = { DAggregateInit };
 
 static void fg_LoadLibraries()
 {
-	g_UUIDLibrary.f_Reload("libuuid.so.1");
+	g_UUIDLibrary.f_Construct();
+	(*g_UUIDLibrary).f_Reload();
 }
 
 class CSystemLinux : public CSystem
@@ -714,8 +734,8 @@ public:
 		if (m_SocketContext.f_IsConstructed())
 			m_SocketContext.f_Destruct();
 
-
-		g_UUIDLibrary.f_Unload();
+		(*g_UUIDLibrary).f_Unload();
+		g_UUIDLibrary.f_Destruct();
 
 		m_pPasswordManager = nullptr;
 		m_pDBus = nullptr;
@@ -758,12 +778,13 @@ CSystem_POSIX *fg_GetSys_POSIX()
 void NSys::fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_UUID)
 {
 	static_assert(sizeof(uuid_t) == sizeof(_UUID));
-	if (g_UUIDLibrary.f_OK())
+	auto &Library = *g_UUIDLibrary;
+	if (Library.f_OK())
 	{
-		g_UUIDLibrary.uuid_generate((unsigned char *)&_UUID);
+		Library.uuid_generate((unsigned char *)&_UUID);
 #		if DMibEnableSafeCheck > 0
 			uuid_string_t RetStr;
-			g_UUIDLibrary.uuid_unparse((unsigned char *)&_UUID, RetStr);
+			Library.uuid_unparse((unsigned char *)&_UUID, RetStr);
 #		endif
 		_UUID.m_TimeLow = fg_ByteSwapBE(_UUID.m_TimeLow);
 		_UUID.m_TimeMid = fg_ByteSwapBE(_UUID.m_TimeMid);
@@ -779,12 +800,13 @@ void NSys::fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_
 
 NStr::CStr NSys::fg_System_GenerateUUID()
 {
-	if (g_UUIDLibrary.f_OK())
+	auto &Library = *g_UUIDLibrary;
+	if (Library.f_OK())
 	{
 		uuid_t Ret;
-		g_UUIDLibrary.uuid_generate(Ret);
+		Library.uuid_generate(Ret);
 		uuid_string_t RetStr;
-		g_UUIDLibrary.uuid_unparse(Ret, RetStr);
+		Library.uuid_unparse(Ret, RetStr);
 
 		// {7EE072A7-458D-491f-ACCF-447AD4BE8DBF}
 		return CStr(CStr::CFormat("{{{}}") << RetStr);
