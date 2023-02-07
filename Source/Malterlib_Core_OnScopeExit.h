@@ -15,11 +15,8 @@ namespace NMib
 	// } // CloseThinie called here
 
 	template <typename t_FOnExitFunctor, bool t_bNoExcept = true>
-	class TCOnScopeExit
+	struct [[nodiscard]] TCOnScopeExit
 	{
-		t_FOnExitFunctor mp_fOnExitFunctor;
-		bool mp_bIsValid;
-	public:
 		TCOnScopeExit(TCOnScopeExit const&) = delete;
 		TCOnScopeExit operator=(TCOnScopeExit const&) = delete;
 		TCOnScopeExit(t_FOnExitFunctor const &_fOnExitFunctor) = delete;
@@ -29,12 +26,14 @@ namespace NMib
 			, mp_bIsValid(true)
 		{
 		}
+
 		inline_always TCOnScopeExit(TCOnScopeExit &&_Other)
 			: mp_fOnExitFunctor(fg_Move(_Other.mp_fOnExitFunctor))
 			, mp_bIsValid(_Other.mp_bIsValid)
 		{
 			_Other.mp_bIsValid = false;
 		}
+
 		TCOnScopeExit &operator = (TCOnScopeExit &&_Other) 
 		{
 			mp_fOnExitFunctor = fg_Move(_Other.mp_fOnExitFunctor);
@@ -42,6 +41,7 @@ namespace NMib
 			_Other.mp_bIsValid = false;
 			return *this;
 		}
+
 		inline_always ~TCOnScopeExit() noexcept(t_bNoExcept)
 		{ 
 			if (mp_bIsValid)
@@ -60,10 +60,15 @@ namespace NMib
 				mp_fOnExitFunctor(fg_Forward<tfp_CParam>(p_Params)...);
 			}
 		}
+
 		inline_always void f_Clear()
 		{
 			mp_bIsValid = false;
 		}
+
+	private:
+		t_FOnExitFunctor mp_fOnExitFunctor;
+		bool mp_bIsValid;
 	};
 	
 	template<typename tf_FOnExitFunctor>
