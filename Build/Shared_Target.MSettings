@@ -1058,6 +1058,7 @@ Target
 
 	IndexStoreEnable: string = "NO"
 	RetainCommentsFromSystemHeaders: string = "YES"
+	Workaround_LD_DETERMINISTIC_MODE: string = "NO"
 	Workaround_GCC_ENABLE_TRIGRAPHS: string = ""
 	Workaround_GCC_ENABLE_PASCAL_STRINGS: string = ""
 	Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS: string = ""

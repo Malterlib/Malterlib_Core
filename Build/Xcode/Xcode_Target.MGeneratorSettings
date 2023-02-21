@@ -463,6 +463,12 @@ GeneratorSetting
 		}
 	}
 
+	Target_Workaround_LD_DETERMINISTIC_MODE =+ {
+		XCConfigs: {
+			"LD_DETERMINISTIC_MODE": Target.Workaround_LD_DETERMINISTIC_MODE
+		}
+	}
+
 	Target_Workaround_GCC_ENABLE_TRIGRAPHS =+ {
 		XCConfigs: {
 			"GCC_ENABLE_TRIGRAPHS": Target.Workaround_GCC_ENABLE_TRIGRAPHS
