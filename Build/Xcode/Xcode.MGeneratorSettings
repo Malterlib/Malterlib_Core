@@ -417,6 +417,13 @@
 				}
 			}
 
+			%GeneratorSetting "Workaround_LD_DETERMINISTIC_MODE"
+			{
+				Property
+				{
+					Name "LD_DETERMINISTIC_MODE"
+				}
+			}
 			%GeneratorSetting "Workaround_GCC_ENABLE_TRIGRAPHS"
 			{
 				Property

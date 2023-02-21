@@ -992,6 +992,7 @@ Target
 
 	IndexStoreEnable define string = "NO"
 	RetainCommentsFromSystemHeaders define string = "YES"
+	Workaround_LD_DETERMINISTIC_MODE define string = "NO"
 	Workaround_GCC_ENABLE_TRIGRAPHS define string = ""
 	Workaround_GCC_ENABLE_PASCAL_STRINGS define string = ""
 	Workaround_GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS define string = ""
