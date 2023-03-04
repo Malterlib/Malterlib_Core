@@ -217,7 +217,7 @@ UpdateXcodePlugins()
 
 	popd > /dev/null
 
-	if [[ "$XcodeVersion" == "14.2" ]] ; then
+	if [[ "$XcodeVersion" == "14.2" ]] || [[ "$XcodeVersion" == "14.3" ]] ; then
 		pushd "$RepositoryDirectory/MalterlibXcodePatches/llbuild" > /dev/null
 
 		if [[ "$HasLibraryValidation" == "false" ]]; then
