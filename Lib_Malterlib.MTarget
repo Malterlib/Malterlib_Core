@@ -1205,16 +1205,21 @@ Target.ExtraGroups =+ "~Automatic/Malterlib Dependencies"
 Property
 {
 	MalterlibLibraryGroups: [string] = []
+	MalterlibAllowInvalidExit: bool = false
 }
 
-%Group "!Automatic/!WindowsHeap"
+%Group "!Automatic/!MalterlibWindows"
 {
 	%File "Source/Platform/Malterlib_Core_Platform_Windows_Heap.cpp"
+	%File "Source/Platform/Malterlib_Core_Platform_Windows_AllowInvalidExit.cpp"
+	{
+		!!MalterlibAllowInvalidExit true
+	}
 }
 
 %Group "{Malterlib}/{Lib_Malterlib}/{TargetInjection}"
 {
-	Target.ExtraGroups =+ "!Automatic/!WindowsHeap"
+	Target.ExtraGroups =+ "!Automatic/!MalterlibWindows"
 	{
 		&
 		{

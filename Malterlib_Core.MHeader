@@ -56,6 +56,11 @@ Import "Lib_Malterlib.MTarget"
 					!PlatformFamily PlatformFamilyFromFile
 				}
 			}
+
+			%File ["Source/Platform/Malterlib_Core_Platform_Windows_AllowInvalidExit.cpp", "Source/Platform/Malterlib_Core_Platform_Windows_Heap.cpp"]
+			{
+				Compile.Disabled true
+			}
 		}
 		%Group "Documentation"
 		{
