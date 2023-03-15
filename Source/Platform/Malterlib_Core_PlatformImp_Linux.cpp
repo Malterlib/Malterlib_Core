@@ -47,6 +47,8 @@ namespace NLocal
 	int (*g_f_futimens)(int fd, const struct timespec times[2]) = nullptr;
 	ssize_t (*g_f_getrandom)(void *buf, size_t buflen, unsigned int flags);
 
+	int (*g_f_posix_spawn_file_actions_addchdir_np)(posix_spawn_file_actions_t *__restrict __actions, const char *__restrict __path) = nullptr;
+
 	void *(*__real_versioned_memcpy_new)(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) = nullptr;
 
 	pfp64 (*__real_versioned_exp_new)(pfp64 _Value) = nullptr;
@@ -189,6 +191,8 @@ namespace NLocal
 		(void * &)__real_versioned_posix_spawnp = dlvsym(RTLD_DEFAULT, "posix_spawnp", "GLIBC_2.15");
 		if (!__real_versioned_posix_spawnp)
 			(void * &)__real_versioned_posix_spawnp = dlsym(RTLD_DEFAULT, "posix_spawnp");
+
+		(void * &)g_f_posix_spawn_file_actions_addchdir_np = dlsym(RTLD_DEFAULT, "posix_spawn_file_actions_addchdir_np");
 
 		(void * &)__real_versioned_glob64 = dlvsym(RTLD_DEFAULT, "glob64", "GLIBC_2.27");
 		if (!__real_versioned_glob64)
