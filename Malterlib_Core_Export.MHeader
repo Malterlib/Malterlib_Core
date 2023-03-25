@@ -96,8 +96,8 @@ Property
 		Property
 		{
 			FileFullPath: string = `Export/Malterlib_Core_Export_@(this.Identity)`->MakeAbsolute()
-  			EntityPath: string = `Target:*.Group:Source.Group:@(this.Identity)."File:@(FileFullPath)"`
- 		}
+			EntityPath: string = `Target:*.Group:Source.Group:@(this.Identity)."File:@(FileFullPath)"`
+		}
 		Property
 		{
 			CompileFlags_PreprocessorDefines_Template function(string _Define) string

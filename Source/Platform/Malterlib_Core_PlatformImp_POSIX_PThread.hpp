@@ -225,9 +225,9 @@ void NSys::fg_Thread_Sleep(fp32 _Seconds)
 	struct timespec Timeout;
 	Timeout.tv_sec = _Seconds.f_ToInt();
 	Timeout.tv_nsec = ((_Seconds - (fp32)Timeout.tv_sec) * 1000000000.0).f_ToInt();
-	while (		nanosleep(&Timeout, &Timeout) != 0
-			&& 	errno == EINTR)
-	{};
+
+	while (nanosleep(&Timeout, &Timeout) != 0 && errno == EINTR)
+		;
 }
 
 #ifndef DMibConfig_SemaphoreImplemented
@@ -652,7 +652,7 @@ void *NSys::fg_Thread_Create
 		0x0000	Lowest		(SCHED_IDLE)
 		0x0001				(SCHED_OTHER, Min Prio)
 
-		0x8000	Normal 		(SCHED_OTHER, ? Prio)
+		0x8000	Normal		(SCHED_OTHER, ? Prio)
 
 		0x8001				(SCHED_RR, normal prio)
 		0xe000	_RT_High	(SCHED_RR, high prio)

@@ -16,10 +16,10 @@ Property
 	MalterlibRepositoryEditor "open -a \"Sublime Merge\" {}"
 	{
 		&
- 		{
+		{
 			MalterlibRepositoryEditor undefined
 			![] "/Applications"->FindDirectoriesIn("Sublime Merge.app")
- 		}
+		}
 	}
 	MalterlibRepositoryEditorSequential true
 	{
@@ -56,10 +56,10 @@ Property
 	MalterlibRepositoryEditor SmergeEditor
 	{
 		&
- 		{
+		{
 			MalterlibRepositoryEditor undefined
 			![] `@(PROGRAMFILES)/Sublime Merge`->FindFilesIn("smerge.exe")
- 		}
+		}
 	}
 
 	SourceTreeDirectory: string

@@ -190,8 +190,8 @@ namespace NMib
 		void fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NMib::NStr::CStr &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bool _bDisplayGUI);
 		void fg_Debug_GenerateMemoryDump
 			(
-			 	NMib::NContainer::TCVector<void*, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Locations
-			 	, NMib::NContainer::TCVector<mint, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Sizes
+				NMib::NContainer::TCVector<void*, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Locations
+				, NMib::NContainer::TCVector<mint, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Sizes
 			)
 		;
 
@@ -210,8 +210,8 @@ namespace NMib
 		|						if not.																		|
 		|																									|
 		|						Returns:																	|
-		|							true if execution should continue 										|
-		|							false if execution should end	 										|
+		|							true if execution should continue										|
+		|							false if execution should end											|
 		|																									|
 		\*_________________________________________________________________________________________________*/
 		typedef bool (FCrashDumpUserNotify)(const NMib::NStr::CStr &_CustomMessage,
@@ -331,7 +331,7 @@ namespace NMib
 				, NMib::NStr::CStr const &_FullName
 				, NMib::NStr::CStr const &_HomeDirectory
 				, NMib::NStr::CStr &_ReturnUID
-			 	, EUserManagementCreateUserFlag _Flags
+				, EUserManagementCreateUserFlag _Flags
 			)
 		;
 		void fg_UserManagement_SetUserPassword

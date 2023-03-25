@@ -2327,9 +2327,9 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _A
 // Connection Operations
 void *NSys::NNetwork::fg_AsyncConnect
 	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NSys::NNetwork::CAddress _BindAddress
+		NSys::NNetwork::CAddress _Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NSys::NNetwork::CAddress _BindAddress
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -2343,9 +2343,9 @@ void NSys::NNetwork::fg_StartSocket(void *_pSocket)
 
 void *NSys::NNetwork::fg_Listen
 	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NMib::NNetwork::ENetFlag _Flags
+		NSys::NNetwork::CAddress _Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NMib::NNetwork::ENetFlag _Flags
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -2354,9 +2354,9 @@ void *NSys::NNetwork::fg_Listen
 
 void *NSys::NNetwork::fg_ListenDatagram
 	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NMib::NNetwork::ENetFlag _Flags
+		NSys::NNetwork::CAddress _Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NMib::NNetwork::ENetFlag _Flags
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");

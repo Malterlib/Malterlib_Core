@@ -376,7 +376,7 @@ Target
 		{
 			Target.Type "Driver"
 			Target.DriverType "IoKit"
- 		}
+		}
 	}
 	FileExtension ".dext"
 	{
@@ -384,7 +384,7 @@ Target
 		{
 			Target.Type "Driver"
 			Target.DriverType "DriverKit"
- 		}
+		}
 	}
 	FileExtension ".a"
 	{
@@ -3385,7 +3385,7 @@ Property
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)Info.plist`
 
-			Contents 	`<?xml version="1.0" encoding="UTF-8"?>\n`\
+			Contents	`<?xml version="1.0" encoding="UTF-8"?>\n`\
 						`<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n`\
 						`<plist version="1.0">\n`\
 						`<dict>\n`\
@@ -3456,7 +3456,7 @@ Property
 
 			Contents =+	`	<key>CFBundleSupportedPlatforms</key>\n`\
 						`	<array>\n`\
-						` 		<string>MacOSX</string>\n`\
+						`		<string>MacOSX</string>\n`\
 						`	</array>\n`
 			{
 				!!PlatformFamily "macOS"
@@ -3598,7 +3598,7 @@ Property
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)VersionInfo.cpp`
 
-			Contents 	`#include <Mib/Core/Core>\n`\
+			Contents	`#include <Mib/Core/Core>\n`\
 						`assure_used static char fileid[] __attribute__ ((section("IDSVERSIONINFO"))) = "$Id: VersionInfo.cpp,v @(Target:Target.Version) @(DateTime("{YYYY}/{MM}/{DD} {HH}:{MNMN}:{SS}")) $\\n"\n`\
 						`@(`MalterlibBranch=@(MalterlibFullBranch)\n`->EJSONToString())\n`\
 						`@(`MalterlibGitBranch=@(MalterlibGitBranch || "")\n`->EJSONToString())\n`\
@@ -3621,7 +3621,7 @@ Property
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name MalterlibLinuxDesktopFile
 
-			Contents 	`[Desktop Entry]\n`\
+			Contents	`[Desktop Entry]\n`\
 						`Name=@(MalterlibTargetFriendlyName)\n`\
 						`Version=@(ProductVersionMajor->ToString()).@(ProductVersionMinor->ToString()).@(ProductVersionRevision->ToString())\n`\
 						`Type=Application\n`
@@ -3679,7 +3679,7 @@ Property
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)AssemblyInfo.cs`
 
-			Contents 	`\n`\
+			Contents	`\n`\
 						`#if (@(MalterlibUniqueConfig))\r\n`\
 						`using System.Reflection;\r\n`\
 						`using System.Runtime.CompilerServices;\r\n`\
@@ -3720,7 +3720,7 @@ Property
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)AssemblyInfo.cpp`
 
-			Contents 	`\n`\
+			Contents	`\n`\
 						`using namespace System;\r\n`\
 						`using namespace System::Reflection;\r\n`\
 						`using namespace System::Runtime::CompilerServices;\r\n`\
@@ -3782,7 +3782,7 @@ Property
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)Resources.rc`
 
-			Contents 	`\n`\
+			Contents	`\n`\
 						`#define IDI_ICON1                       101\r\n`\
 						`// Next default values for new objects\r\n`\
 						`// \r\n`\
@@ -3828,7 +3828,7 @@ Property
 						`			VALUE "PrivateBuild", @(PrivateBuildString->Escape()->Replace("\\\"", "\\x22"))\r\n`\
 						`		END\r\n`\
 						`	END\r\n`\
-						` 	BLOCK "VarFileInfo"\r\n`\
+						`	BLOCK "VarFileInfo"\r\n`\
 						`	BEGIN\r\n`\
 						`		VALUE "Translation", 0x0409, 1200\r\n`\
 						`	END\r\n`\
@@ -3848,7 +3848,7 @@ Property
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)WindowsManifest.manifest`
 
-			Contents 	'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'\
+			Contents	'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'\
 						'<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">\r\n'\
 						'	<asmv3:application>\r\n'\
 						'		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings" xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">\r\n'
@@ -4295,7 +4295,7 @@ Property
 	{
 		!!true _CopyOptions<AbsoluteDestination>
 	}
-	MalterlibBuildServerPutPathUploadTemplate =+ 	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())\r\n`\
+	MalterlibBuildServerPutPathUploadTemplate =+	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())\r\n`\
 													`@(CheckErrors)\r\n`
 
 	MalterlibBuildServerPutPathUploadContents: string
@@ -5139,7 +5139,7 @@ Target
 		}
 	}
 
-	PostBuildScript =+ 	`echo ***RESULT PROPERTY*** : ResultExecutable=@(MalterlibFinalModuleDestination->FullPath())\r\n`\
+	PostBuildScript =+	`echo ***RESULT PROPERTY*** : ResultExecutable=@(MalterlibFinalModuleDestination->FullPath())\r\n`\
 						`\r\n`
 	{
 		!!MalterlibNotifyResult true
@@ -5172,7 +5172,7 @@ Target
 		}
 	}
 
-	PostBuildScript =+ 	`MTool TouchOrCreate "@(PostBuildOutputfile)"\r\n`\
+	PostBuildScript =+	`MTool TouchOrCreate "@(PostBuildOutputfile)"\r\n`\
 						`@(CheckErrors)\r\n`
 	{
 		|

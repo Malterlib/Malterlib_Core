@@ -27,7 +27,7 @@ Property
 		!!Generator "Xcode" // Use old xcode build for Xcode generator
 	}
 
-	SharedBuildSettingsScriptContents =+ 	`export "MalterlibBaseDir=\`cd "${BASH_SOURCE%/*}/.." && pwd\`/"\r\n`\
+	SharedBuildSettingsScriptContents =+	`export "MalterlibBaseDir=\`cd "${BASH_SOURCE%/*}/.." && pwd\`/"\r\n`\
 											`export "PATH=${MalterlibBaseDir}Binaries/Malterlib/@(HostPlatformFamily)/@(HostArchitecture):$PATH"\r\n`
 	{
 		!HostPlatformFamily "Windows"
@@ -438,7 +438,7 @@ Property
 	GenerateFile
 	{
 		Name `@(MalterlibCompiledFilesSourceBase)/source-info`
-		Contents 	`BaseDir @(MaltelibBasePathAbsolute)\n`\
+		Contents	`BaseDir @(MaltelibBasePathAbsolute)\n`\
 					`BuildSystemDir @(Builtin.GeneratedBuildSystemDir)\n`
 		UnicodeBOM false
 		UnixLineEnds true

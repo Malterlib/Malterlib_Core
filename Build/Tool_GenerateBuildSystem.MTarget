@@ -223,8 +223,7 @@ Property
 					{
 						&
 						{
-
- 							MalterlibDebugConfigureLLDBScript true
+							MalterlibDebugConfigureLLDBScript true
 							!MalterlibDisableBuildSystemGeneration true
 							!HostPlatformFamily "Windows"
 						}

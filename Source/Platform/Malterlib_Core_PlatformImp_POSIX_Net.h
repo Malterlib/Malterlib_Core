@@ -167,24 +167,24 @@ public:
 	// Connection Operations	
 		CPOSIXSocket *f_AsyncConnect
 			(
-			 	CPOSIXAddress const &_Address
-			 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			 	, CPOSIXAddress const *_pBindAddress
+				CPOSIXAddress const &_Address
+				, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+				, CPOSIXAddress const *_pBindAddress
 			)
 		;
 		
 		CPOSIXSocket *f_Listen
 			(
-			 	CPOSIXAddress const &_Address
-			 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			 	, NMib::NNetwork::ENetFlag _Flags
+				CPOSIXAddress const &_Address
+				, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+				, NMib::NNetwork::ENetFlag _Flags
 			)
 		;
 		CPOSIXSocket *f_ListenDatagram
 			(
-			 	CPOSIXAddress const &_Address
-			 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			 	, NMib::NNetwork::ENetFlag _Flags
+				CPOSIXAddress const &_Address
+				, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+				, NMib::NNetwork::ENetFlag _Flags
 			)
 		;
 		CPOSIXSocket *f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
@@ -289,18 +289,18 @@ private:
 	
 	CPOSIXSocket *fp_Connect
 		(
-		 	CPOSIXAddress const &_Address
-		 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-		 	, CPOSIXAddress const *_pBindAddress
+			CPOSIXAddress const &_Address
+			, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			, CPOSIXAddress const *_pBindAddress
 		)
 	;
 	CPOSIXSocket *fp_CreateSocket
 		(
-		 	int _FD
-		 	, EPOSIXSocketMode _Mode
-		 	, EPOSIXSocketEvent _Events
-		 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-		 	, bool _bFromInherit = false
+			int _FD
+			, EPOSIXSocketMode _Mode
+			, EPOSIXSocketEvent _Events
+			, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			, bool _bFromInherit = false
 		)
 	;
 	void fp_PrepareUnixListen(CPOSIXAddress const &_Address); 

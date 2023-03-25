@@ -793,9 +793,9 @@ static bool fg_UnixSocketsSupported()
 
 CWindowsSocket *CWindowsSocketContext::fp_Connect
 	(
-	 	CWindowsAddress const &_Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, CWindowsAddress const *_pBindAddress
+		CWindowsAddress const &_Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, CWindowsAddress const *_pBindAddress
 	)
 {
 	f_CheckFailed();
@@ -966,9 +966,9 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 
 CWindowsSocket *CWindowsSocketContext::f_AsyncConnect
 	(
-	 	CWindowsAddress const &_Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, CWindowsAddress const *_pBindAddress
+		CWindowsAddress const &_Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, CWindowsAddress const *_pBindAddress
 	)
 {
 	return fp_Connect(_Address, fg_Move(_fOnStateChange), _pBindAddress);
@@ -1015,9 +1015,9 @@ TCUniquePointer<CWindowsSocket::CUnixListenState> CWindowsSocketContext::fp_Prep
 
 CWindowsSocket *CWindowsSocketContext::f_Listen
 	(
-	 	CWindowsAddress const &_Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NNetwork::ENetFlag _Flags
+		CWindowsAddress const &_Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NNetwork::ENetFlag _Flags
 	)
 {
 	CWindowsAddress Address = _Address;
@@ -1111,9 +1111,9 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 
 CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 	(
-	 	CWindowsAddress const &_Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NNetwork::ENetFlag _Flags
+		CWindowsAddress const &_Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NNetwork::ENetFlag _Flags
 	)
 {
 	CWindowsAddress Address = _Address;

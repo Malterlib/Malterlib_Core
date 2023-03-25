@@ -42,7 +42,7 @@ class CPOSIXImpSpecificSocketPoller::CInternal
 {
 public:
 	CEpollQueue m_ChangeQueue;
- 	NAtomic::TCAtomic<smint> m_bBreak;
+	NAtomic::TCAtomic<smint> m_bBreak;
 	int m_EpollFd;
 	int m_ReadWritePipe[2];		// Used to wake the epoll thread up.
 

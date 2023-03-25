@@ -189,29 +189,44 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 
 	_Info.m_Architecture = NMib::EProcessorArchitecture_Unknown;
 
-	__get_cpuid(	0
-				, 	&CPUInfo[0], &CPUInfo[1]
-				, 	&CPUInfo[2], &CPUInfo[3]);
+	__get_cpuid
+		(
+			0
+			, &CPUInfo[0]
+			, &CPUInfo[1]
+			, &CPUInfo[2]
+			, &CPUInfo[3]
+		)
+	;
 
 	int MaxInfoType = CPUInfo[0];
 
 	if (MaxInfoType >= 1)
 	{
-		__get_cpuid(	1
-					, 	&CPUInfo[0], &CPUInfo[1]
-					, 	&CPUInfo[2], &CPUInfo[3]);
+		__get_cpuid
+			(
+				1
+				, &CPUInfo[0]
+				, &CPUInfo[1]
+				, &CPUInfo[2]
+				, &CPUInfo[3]
+			)
+		;
 
-		_Info.m_Features |= 	( (CPUInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None) 
-							|	( (CPUInfo[3] & DMibBit(25)) ? EProcessorFeature_SSE : EProcessorFeature_None) 
-							|	( (CPUInfo[3] & DMibBit(26)) ? EProcessorFeature_SSE2 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(0)) ? EProcessorFeature_SSE3 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(9)) ? EProcessorFeature_SSSE3 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(19)) ? EProcessorFeature_SSE4_1 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(20)) ? EProcessorFeature_SSE4_2 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(31)) ? EProcessorFeature_HyperVisor : EProcessorFeature_None);
+		_Info.m_Features |=
+			((CPUInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None)
+			| ((CPUInfo[3] & DMibBit(25)) ? EProcessorFeature_SSE : EProcessorFeature_None)
+			| ((CPUInfo[3] & DMibBit(26)) ? EProcessorFeature_SSE2 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(0)) ? EProcessorFeature_SSE3 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(9)) ? EProcessorFeature_SSSE3 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(19)) ? EProcessorFeature_SSE4_1 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(20)) ? EProcessorFeature_SSE4_2 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(31)) ? EProcessorFeature_HyperVisor : EProcessorFeature_None)
+		;
 	}
 
 	_Info.m_Architecture = (sizeof(void*) == 4) ? EProcessorArchitecture_x86 : EProcessorArchitecture_x86_64;
+
 #elif defined(DArchitecture_ppc32)
 	_Info.m_Architecture = EProcessorArchitecture_ppc32;
 #elif defined(DArchitecture_ppc64)

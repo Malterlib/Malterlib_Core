@@ -758,7 +758,7 @@ namespace NMib
 		void fgr_UpdateFileSnapshot
 			(
 				CUpdateSnapshotContext &_Context
-			 	, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot
+				, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot
 				, bool _bRecursive
 				, bool _bRecursiveInfoNeeded
 			)
@@ -1081,7 +1081,7 @@ namespace NMib
 				CStr const &_Path
 				, bool _bInitial
 				, bool _bNeedSubDirs
-			 	, CUpdateSnapshotContext &_UpdateContext
+				, CUpdateSnapshotContext &_UpdateContext
 				, CFileSnapshot &o_NewSnapshot
 			)
 		{
@@ -1395,10 +1395,10 @@ namespace NMib
 
 				if
 					(
-					 	!FindChangesContext.m_ChangesFileNameRename.f_IsEmpty()
-					 	|| !FindChangesContext.m_ChangesFileNameRemove.f_IsEmpty()
-					 	|| !FindChangesContext.m_ChangesFileNameAdd.f_IsEmpty()
-					 	|| !FindChangesContext.m_Changes.f_IsEmpty()
+						!FindChangesContext.m_ChangesFileNameRename.f_IsEmpty()
+						|| !FindChangesContext.m_ChangesFileNameRemove.f_IsEmpty()
+						|| !FindChangesContext.m_ChangesFileNameAdd.f_IsEmpty()
+						|| !FindChangesContext.m_Changes.f_IsEmpty()
 					)
 				{
 					DMibLock(m_ChangesLock);
@@ -1614,10 +1614,10 @@ namespace NMib
 					auto pThis = this;
 					CFRunLoopPerformBlock
 						(
-						 	Internal.m_RunLoopRef
-						 	, kCFRunLoopDefaultMode
-						 	, ^()
-						 	{
+							Internal.m_RunLoopRef
+							, kCFRunLoopDefaultMode
+							, ^()
+							{
 								while (auto ToDispatch = pThis->m_DispatchQueue.f_Pop())
 									(*ToDispatch)();
 							}
@@ -1666,9 +1666,9 @@ namespace NMib
 
 						CFRunLoopSourceRef pRunLoopSource = CFRunLoopSourceCreate
 							(
-							 	nullptr
-							 	, 0
-							 	, &RunLoopSourceContext
+								nullptr
+								, 0
+								, &RunLoopSourceContext
 							)
 						;
 

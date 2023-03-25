@@ -46,7 +46,7 @@ public:
 
 	int m_ReadWritePipe[2];		// Used to wake the kqueue thread up.
 
- 	NAtomic::TCAtomic<smint> m_bBreak;
+	NAtomic::TCAtomic<smint> m_bBreak;
 
 	bool f_PushSocketEvents(CPOSIXSocket* _pSocket, bool _bForRemoval);
 
@@ -207,9 +207,9 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 
 		int nEvents = kevent
 			(
-			 	mp_pInternal->m_KQueue
+				mp_pInternal->m_KQueue
 				, KQueueChanges.f_GetArray()
-			 	, KQueueChanges.f_GetLen()
+				, KQueueChanges.f_GetLen()
 				, IncomingEvents
 				, nMaxEvents
 				, KQueueChanges.f_IsEmpty() ? nullptr : &PollTimeout

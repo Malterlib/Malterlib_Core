@@ -3,7 +3,7 @@
 
 #include "Malterlib_Core_PlatformImp_Net.h"
 
-// NOTE: 	The order in which the locks are taken is critical to avoiding deadlocks!
+// NOTE:	The order in which the locks are taken is critical to avoiding deadlocks!
 
 CAddressResolver::CAddressResolver()
 {

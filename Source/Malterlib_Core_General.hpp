@@ -334,7 +334,7 @@ namespace NMib
 			++pParse;
 
 		// Return type
- 		fg_ParseUntilCallingConvention(pParse);
+		fg_ParseUntilCallingConvention(pParse);
 
 		char const *pStartType = pParse;
 

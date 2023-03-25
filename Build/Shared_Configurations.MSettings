@@ -22,7 +22,7 @@ Property
 	{
 		&
 		{
-  			EnablePlatform_Linux undefined
+			EnablePlatform_Linux undefined
 			GeneratorFamily "Xcode"
 			|
 			{

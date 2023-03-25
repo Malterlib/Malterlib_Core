@@ -394,8 +394,8 @@ void NSys::fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NM
 
 void NSys:::fg_Debug_GenerateMemoryDump
 	(
-	 	NMib::NContainer::TCVector<void*, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Locations
-	 	, NMib::NContainer::TCVector<mint, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Sizes
+		NMib::NContainer::TCVector<void*, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Locations
+		, NMib::NContainer::TCVector<mint, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Sizes
 	)
 {
 
@@ -1722,7 +1722,7 @@ void NMib::NSys::fg_UserManagement_CreateUser
 		, NMib::NStr::CStr const &_FullName
 		, NMib::NStr::CStr const &_HomeDirectory
 		, NMib::NStr::CStr &_ReturnUID
-	 	, EUserManagementCreateUserFlag _Flags
+		, EUserManagementCreateUserFlag _Flags
 	)
 {
 	DMibError("Not implemented");

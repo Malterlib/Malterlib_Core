@@ -546,9 +546,9 @@ void fg_SetUnixSocketOptions(int _File)
 
 CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 	(
-	 	CPOSIXAddress const &_Address
-	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, CPOSIXAddress const *_pBindAddress
+		CPOSIXAddress const &_Address
+		, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, CPOSIXAddress const *_pBindAddress
 	)
 {
 	mint Retries = 32;
@@ -707,9 +707,9 @@ void CPOSIXSocketContext::fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIX
 
 CPOSIXSocket* CPOSIXSocketContext::f_AsyncConnect
 	(
-	 	CPOSIXAddress const &_Address
-	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, CPOSIXAddress const *_pBindAddress
+		CPOSIXAddress const &_Address
+		, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, CPOSIXAddress const *_pBindAddress
 	)
 {
 	return fp_Connect(_Address, fg_Move(_fOnStateChange), _pBindAddress);
@@ -722,9 +722,9 @@ void CPOSIXSocketContext::f_StartSocket(CPOSIXSocket *_pSocket)
 
 CPOSIXSocket* CPOSIXSocketContext::f_Listen
 	(
-	 	CPOSIXAddress const &_Address
-	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NMib::NNetwork::ENetFlag _Flags
+		CPOSIXAddress const &_Address
+		, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NMib::NNetwork::ENetFlag _Flags
 	)
 {
 	ENetAddressType AddressType = _Address.f_GetType();
@@ -812,9 +812,9 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 
 CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 	(
-	 	CPOSIXAddress const &_Address
-	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NMib::NNetwork::ENetFlag _Flags
+		CPOSIXAddress const &_Address
+		, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NMib::NNetwork::ENetFlag _Flags
 	)
 {
 	ENetAddressType AddressType = _Address.f_GetType();
@@ -1227,11 +1227,11 @@ uint32 CPOSIXSocketContext::f_GetListenPort(CPOSIXSocket *_pSocket)
 
 CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 	(
-	 	int _FD
-	 	, EPOSIXSocketMode _Mode
-	 	, EPOSIXSocketEvent _Events
-	 	, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, bool _bFromInherit
+		int _FD
+		, EPOSIXSocketMode _Mode
+		, EPOSIXSocketEvent _Events
+		, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, bool _bFromInherit
 	)
 {
 #ifdef DPlatformFamily_macOS

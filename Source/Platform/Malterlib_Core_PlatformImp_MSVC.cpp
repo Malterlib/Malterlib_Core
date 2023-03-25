@@ -3119,7 +3119,7 @@ bool NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const
 		return false;
 
 	Temp.f_TrimSize();
- 	_Value = fg_Move(Temp);
+	_Value = fg_Move(Temp);
 	return true;
 }
 
@@ -3820,9 +3820,11 @@ bool NSys::NFile::fg_FileExists(const CStrNonTracked &_FileName, EFileAttrib _At
 // From: http://blog.aaronballman.com/2011/08/how-to-check-access-rights/
 ECheckFileRights NSys::NFile::fg_CheckFileRights( const CStr & _File, NMib::NFile::EFileRight _Rights)
 {
-	DWORD GenericRights = 		((_Rights & EFileRight_Read) ? GENERIC_READ : 0)
-							|	((_Rights & EFileRight_Write) ? GENERIC_WRITE : 0)
-							|	((_Rights & EFileRight_Execute) ? GENERIC_EXECUTE : 0);
+	DWORD GenericRights
+		= ((_Rights & EFileRight_Read) ? GENERIC_READ : 0)
+		| ((_Rights & EFileRight_Write) ? GENERIC_WRITE : 0)
+		| ((_Rights & EFileRight_Execute) ? GENERIC_EXECUTE : 0)
+	;
 
 	CWStr Path;
 	Path = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal<CWStr, CWStr>(_File);
@@ -5919,9 +5921,9 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _A
 // Connection Operations
 void *NSys::NNetwork::fg_AsyncConnect
 	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NSys::NNetwork::CAddress _BindAddress
+		NSys::NNetwork::CAddress _Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NSys::NNetwork::CAddress _BindAddress
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -5935,9 +5937,9 @@ void NSys::NNetwork::fg_StartSocket(void *_pSocket)
 
 void *NSys::NNetwork::fg_Listen
 	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NMib::NNetwork::ENetFlag _Flags
+		NSys::NNetwork::CAddress _Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NMib::NNetwork::ENetFlag _Flags
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -5946,9 +5948,9 @@ void *NSys::NNetwork::fg_Listen
 
 void *NSys::NNetwork::fg_ListenDatagram
 	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NMib::NNetwork::ENetFlag _Flags
+		NSys::NNetwork::CAddress _Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NMib::NNetwork::ENetFlag _Flags
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -6314,14 +6316,16 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 	{
 		__cpuid(CPUInfo, 1);
 
-		_Info.m_Features |= 	( (CPUInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None) 
-							|	( (CPUInfo[3] & DMibBit(25)) ? EProcessorFeature_SSE : EProcessorFeature_None) 
-							|	( (CPUInfo[3] & DMibBit(26)) ? EProcessorFeature_SSE2 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(0)) ? EProcessorFeature_SSE3 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(9)) ? EProcessorFeature_SSSE3 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(19)) ? EProcessorFeature_SSE4_1 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(20)) ? EProcessorFeature_SSE4_2 : EProcessorFeature_None)
-							|	( (CPUInfo[2] & DMibBit(31)) ? EProcessorFeature_HyperVisor : EProcessorFeature_None);
+		_Info.m_Features |=
+			((CPUInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None)
+			| ((CPUInfo[3] & DMibBit(25)) ? EProcessorFeature_SSE : EProcessorFeature_None)
+			| ((CPUInfo[3] & DMibBit(26)) ? EProcessorFeature_SSE2 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(0)) ? EProcessorFeature_SSE3 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(9)) ? EProcessorFeature_SSSE3 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(19)) ? EProcessorFeature_SSE4_1 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(20)) ? EProcessorFeature_SSE4_2 : EProcessorFeature_None)
+			| ((CPUInfo[2] & DMibBit(31)) ? EProcessorFeature_HyperVisor : EProcessorFeature_None)
+		;
 	}
 
 	_Info.m_Architecture = (sizeof(void*) == 4) ? EProcessorArchitecture_x86 : EProcessorArchitecture_x86_64;

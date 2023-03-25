@@ -70,7 +70,7 @@ Compile
 				this.Identity ~"*.sh"
 				this.Identity ~"*.conf"
 			}
- 		}
+		}
 	}
 
 	Type "Assembler"
@@ -2461,7 +2461,7 @@ Compile
 	{
 		&
 		{
- 			PlatformType "Windows"
+			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
 		}
 	}
@@ -3115,7 +3115,7 @@ Compile
 	RealCustom_Inputs (Compile.Custom_Inputs || [])->ForEach(&f_ConvertCustomCommandInputs)
 
 	CustomCombined_CommandLine: string?
-	CustomCombined_CommandLine 	`@(Compile.Custom_WorkingDirectory->GetDrive())\r\n`\
+	CustomCombined_CommandLine	`@(Compile.Custom_WorkingDirectory->GetDrive())\r\n`\
 								`cd @(Compile.Custom_WorkingDirectory->Escape())\r\n`\
 								`call @(MalterlibExportEnvironmentScript->EscapeHost())\r\n`\
 								`@((Compile.Custom_CommandLine || "")->Replace('">"', ">")->Replace("&& ", "&& ^\r\n"))\r\n`\

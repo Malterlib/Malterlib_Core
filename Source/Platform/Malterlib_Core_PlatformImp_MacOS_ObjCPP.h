@@ -124,7 +124,7 @@ namespace NMib
 							CSnapshotsByNode &_SnapshotsByNode
 							, CSnapshotsByNode &_OldSnapshotsByNode
 							, uint64 _UpdateSequence
-						 	, CNotificationPath const &_NotificationPath
+							, CNotificationPath const &_NotificationPath
 						)
 						: m_SnapshotsByNode(_SnapshotsByNode)
 						, m_OldSnapshotsByNode(_OldSnapshotsByNode)

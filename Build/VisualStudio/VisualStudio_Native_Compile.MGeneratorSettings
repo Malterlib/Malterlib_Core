@@ -15,11 +15,11 @@ GeneratorSetting
 	}
 	Compile_DisableSecurityWarnings {}
 	{
-	 	!!GeneratorSetting.Compile_DisableSecurityWarnings undefined
+		!!GeneratorSetting.Compile_DisableSecurityWarnings undefined
 	}
 	Compile_Analyzer {}
 	{
-	 	!!GeneratorSetting.Compile_Analyzer undefined
+		!!GeneratorSetting.Compile_Analyzer undefined
 	}
 
 	Compile_Disabled =+ {

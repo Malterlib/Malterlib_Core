@@ -114,7 +114,7 @@ protected:
 
 		NThread::CMutual mp_Lock;
 			CResolveRequest* mp_pHead;	// Take from here.
-			CResolveRequest* mp_pTail; 	// Add Here
+			CResolveRequest* mp_pTail;	// Add Here
 
 		NStorage::TCUniquePointer<NThread::CThreadObject> mp_pThread;
 
@@ -187,9 +187,9 @@ protected:
 
 	CWindowsSocket *fp_Connect
 		(
-		 	CWindowsAddress const &_Address
-		 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-		 	, CWindowsAddress const *_pBindAddress
+			CWindowsAddress const &_Address
+			, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			, CWindowsAddress const *_pBindAddress
 		)
 	;
 
@@ -236,9 +236,9 @@ public:
 	// Connection Operations	
 		CWindowsSocket *f_AsyncConnect
 			(
-			 	CWindowsAddress const &_Address
-			 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			 	, CWindowsAddress const *_pBindAddress
+				CWindowsAddress const &_Address
+				, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+				, CWindowsAddress const *_pBindAddress
 			)
 		;
 
@@ -246,16 +246,16 @@ public:
 
 		CWindowsSocket *f_Listen
 			(
-			 	CWindowsAddress const &_Address
-			 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			 	, NMib::NNetwork::ENetFlag _Flags
+				CWindowsAddress const &_Address
+				, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+				, NMib::NNetwork::ENetFlag _Flags
 			)
 		;
 		CWindowsSocket *f_ListenDatagram
 			(
-			 	CWindowsAddress const &_Address
-			 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			 	, NMib::NNetwork::ENetFlag _Flags
+				CWindowsAddress const &_Address
+				, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+				, NMib::NNetwork::ENetFlag _Flags
 			)
 		;
 		CWindowsSocket *f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);

@@ -7,8 +7,8 @@
 
 #define DMibInterfaceSingle(_InterfaceName, _Implementation) class _Implementation; typedef _Implementation CIImp ## _InterfaceName;
 #define DMibInterfaceVirtual(_InterfaceName) typedef NMib::CEmpty CIImp ## _InterfaceName;
-#define DMibInterfaceImp(_InterfaceName) 	typedef NMib::TCChooseType<NMib::NTraits::TCIsSame<CIImp ## _InterfaceName, NMib::CEmpty>::mc_Value, IImp ## _InterfaceName, CIImp ## _InterfaceName>::CType CImp;\
-													typedef NMib::TCChooseType<NMib::NTraits::TCIsSame<CIImp ## _InterfaceName, NMib::CEmpty>::mc_Value, IImp ## _InterfaceName, NMib::CEmpty>::CType CBase;
+#define DMibInterfaceImp(_InterfaceName) typedef NMib::TCChooseType<NMib::NTraits::TCIsSame<CIImp ## _InterfaceName, NMib::CEmpty>::mc_Value, IImp ## _InterfaceName, CIImp ## _InterfaceName>::CType CImp;\
+	typedef NMib::TCChooseType<NMib::NTraits::TCIsSame<CIImp ## _InterfaceName, NMib::CEmpty>::mc_Value, IImp ## _InterfaceName, NMib::CEmpty>::CType CBase;
 #ifndef DMibPNoShortCuts
 
 #define DInterfaceSingle DMibInterfaceSingle

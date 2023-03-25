@@ -457,12 +457,16 @@ namespace NMib
 
 			NDBus::CMessage LaunchReply(mp_DBus);
 
-			NDBus::CMessage Call(	NDBus::EMessageType_Method
-								, 	"org.kde.klauncher"
-								,	"/KLauncher"
-								,	"org.kde.KLauncher"
-								,	"start_service_by_desktop_name"
-								,	mp_DBus);
+			NDBus::CMessage Call
+				(
+					NDBus::EMessageType_Method
+					, "org.kde.klauncher"
+					, "/KLauncher"
+					, "org.kde.KLauncher"
+					, "start_service_by_desktop_name"
+					, mp_DBus
+				)
+			;
 
 			{
 				NDBus::CMessageWriter Writer(Call);
@@ -471,15 +475,20 @@ namespace NMib
 
 				static char const* pKWalletService = "kwalletd";
 
-				if (!Writer.f_AppendArgs(
-									pKWalletService
-								,	lEmptyStrList
-								,	lEmptyStrList
-								,	NMib::NStr::CStr()
-								,	false
-
-					))
+				if
+					(
+						!Writer.f_AppendArgs
+						(
+							pKWalletService
+							, lEmptyStrList
+							, lEmptyStrList
+							, NMib::NStr::CStr()
+							, false
+						)
+					)
+				{
 					return false;
+				}
 			}
 
 			if (!mp_Connection.f_BlockingSendWithReply(Call, LaunchReply))
@@ -493,11 +502,17 @@ namespace NMib
 			NMib::NStr::CStr ErrorString;
 			int32 PID;
 
-			if (!fp_ParseSimpleMessage(LaunchReply
-										,	Result
-										,	DubsName
-										,	ErrorString
-										,	PID ))
+			if
+				(
+					!fp_ParseSimpleMessage
+					(
+						LaunchReply
+						, Result
+						, DubsName
+						, ErrorString
+						, PID
+					)
+				)
 			{
 				DMibLog(Error, "KWallet: start_service_by_desktop_name returned an unexpected reply.", 0);
 				return false;

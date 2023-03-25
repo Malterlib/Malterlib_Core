@@ -110,14 +110,14 @@ function DetectRepoRoot()
 
 		ToMatch='[ \t]*MalterlibRepoRoot[ \t]+(.*)'
 		while [[ $BuildSystemContents =~ $ToMatch ]]; do
-	  		BuildSystemContents=${BASH_REMATCH[1]}
-	  		break
+			BuildSystemContents=${BASH_REMATCH[1]}
+			break
 		done
 
 		ToMatch='^"(.*)"$'
 		while [[ $BuildSystemContents =~ $ToMatch ]]; do
-	  		BuildSystemContents=${BASH_REMATCH[1]}
-	  		break
+			BuildSystemContents=${BASH_REMATCH[1]}
+			break
 		done
 		if [[ "$BuildSystemContents" != "" ]]; then
 			MalterlibRepoRoot="$BuildSystemContents"

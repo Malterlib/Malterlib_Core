@@ -664,16 +664,13 @@ CSystem_POSIX *fg_GetSys_POSIX()
 
 uint32 fg_CodepageToCFStringEncoding(uint32 _Codepage)
 {
-  switch (_Codepage)
-  {
-    case 1252:
-      return kCFStringEncodingWindowsLatin1;
+	switch (_Codepage)
+	{
+	case 1252: return kCFStringEncodingWindowsLatin1;
+	case 10000: return kCFStringEncodingMacRoman;
+	}
 
-    case 10000:
-    	return kCFStringEncodingMacRoman;
-  }
-
-  return kCFStringEncodingInvalidId;
+	return kCFStringEncodingInvalidId;
 }
 
 void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, ch8 _ErrorChar)
@@ -1273,7 +1270,7 @@ namespace NMib
 			_oFix = g_OperatingSystemFix;
 
 			return g_OperatingSystemMajor != 0;
-    	}
+		}
 	}
 }
 
@@ -2251,9 +2248,9 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _A
 // Connection Operations
 void *NSys::NNetwork::fg_AsyncConnect
 	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NSys::NNetwork::CAddress _BindAddress
+		NSys::NNetwork::CAddress _Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NSys::NNetwork::CAddress _BindAddress
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -2267,9 +2264,9 @@ void NSys::NNetwork::fg_StartSocket(void *_pSocket)
 
 void *NSys::NNetwork::fg_Listen
 	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NMib::NNetwork::ENetFlag _Flags
+		NSys::NNetwork::CAddress _Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NMib::NNetwork::ENetFlag _Flags
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -2278,9 +2275,9 @@ void *NSys::NNetwork::fg_Listen
 
 void *NSys::NNetwork::fg_ListenDatagram
 	(
-	 	NSys::NNetwork::CAddress _Address
-	 	, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-	 	, NMib::NNetwork::ENetFlag _Flags
+		NSys::NNetwork::CAddress _Address
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, NMib::NNetwork::ENetFlag _Flags
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -2622,8 +2619,8 @@ void* NSys::fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned
 
 mint NSys::fg_Thread_GetVirtualCores()
 {
- 	int nCPUs = 0;
- 	size_t DataSize = sizeof(nCPUs);
+	int nCPUs = 0;
+	size_t DataSize = sizeof(nCPUs);
 	int Ret = sysctlbyname("hw.logicalcpu", &nCPUs, &DataSize, nullptr, 0);
 
 	if (Ret == 0)
@@ -2633,8 +2630,8 @@ mint NSys::fg_Thread_GetVirtualCores()
 
 mint NSys::fg_Thread_GetPhysicalCores()
 {
- 	int nCPUs = 0;
- 	size_t DataSize = sizeof(nCPUs);
+	int nCPUs = 0;
+	size_t DataSize = sizeof(nCPUs);
 	int Ret = sysctlbyname("hw.physicalcpu", &nCPUs, &DataSize, nullptr, 0);
 
 	if (Ret == 0)
@@ -2646,7 +2643,7 @@ NMib::NStr::CStr NSys::fg_System_GetCPUName()
 {
 
 	CStr Name;
- 	size_t DataSize = 1024;
+	size_t DataSize = 1024;
 	int Ret = sysctlbyname("machdep.cpu.brand_string", Name.f_GetStr(1024), &DataSize, nullptr, 0);
 
 	if (Ret == 0)
