@@ -26,6 +26,7 @@
 #include <glob.h>
 #include <sys/syscall.h>
 #include <exception>
+#include <utility>
 
 using namespace NMib;
 using namespace NMib::NStr;
@@ -281,6 +282,11 @@ void calling_convention_c fg_Malterlib_MakeActive()
 CStr fg_EscapeString(CStr _In)
 {
 	return _In.f_Replace("\"","\\\"");
+}
+
+[[noreturn]] void NMib::fg_NoReturn()
+{
+	std::unreachable();
 }
 
 class CImpSemaphore

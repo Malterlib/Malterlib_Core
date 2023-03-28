@@ -6,11 +6,6 @@
 
 namespace NMib
 {
-	[[noreturn]] void fg_NoReturn()
-	{
-		throw 1;
-	}
-
 	namespace NMisc
 	{
 		struct CSubSystem_Misc_Random : public CSubSystem

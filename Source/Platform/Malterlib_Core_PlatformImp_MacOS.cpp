@@ -29,6 +29,8 @@
 #include <ptrauth.h>
 #endif
 
+#include <utility>
+
 using namespace NMib;
 using namespace NMib::NStr;
 using namespace NMib::NTime;
@@ -245,6 +247,11 @@ CStr fg_EscapeString(CStr _In)
 		++pStr;
 	}
 	return Ret;*/
+}
+
+[[noreturn]] void NMib::fg_NoReturn()
+{
+	std::unreachable();
 }
 
 class align_cacheline CImpSemaphore

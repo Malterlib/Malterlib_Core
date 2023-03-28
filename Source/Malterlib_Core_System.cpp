@@ -698,6 +698,18 @@ namespace NMib
 
 	CCoroutineThreadLocalHandler::~CCoroutineThreadLocalHandler() = default;
 
+	void CCoroutineThreadLocalHandler::f_ResumeNoExcept() noexcept
+	{
+		// You need to override either f_Resume or f_ResumeNoExcept
+		DMibPDebugBreak;
+	}
+
+	[[nodiscard]] NException::CExceptionPointer CCoroutineThreadLocalHandler::f_Resume() noexcept
+	{
+		f_ResumeNoExcept();
+		return {};
+	}
+
 	CCrossActorCallStateScope::CCrossActorCallStateScope(bool _bAddToCoroutine)
 		: CCoroutineThreadLocalHandler(_bAddToCoroutine)
 	{
@@ -710,12 +722,12 @@ namespace NMib
 
 	CCrossActorCallStateScope::~CCrossActorCallStateScope() = default;
 
-	void CCrossActorCallStateScope::f_Suspend()
+	void CCrossActorCallStateScope::f_Suspend() noexcept
 	{
 		m_Link.f_Unlink();
 	}
 
-	void CCrossActorCallStateScope::f_Resume()
+	void CCrossActorCallStateScope::f_ResumeNoExcept() noexcept
 	{
 		auto &ThreadLocal = **g_SystemThreadLocal;
 		ThreadLocal.m_CrossActorStateScopes.f_Insert(this);

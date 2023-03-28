@@ -3,6 +3,11 @@
 
 #pragma once
 
+namespace NMib::NException
+{
+	using CExceptionPointer = std::exception_ptr;
+}
+
 namespace NMib
 {
 	struct CCoroutineThreadLocalHandler
@@ -11,8 +16,9 @@ namespace NMib
 		CCoroutineThreadLocalHandler(CCoroutineThreadLocalHandler &&_Other) = default;
 		~CCoroutineThreadLocalHandler();
 
-		virtual void f_Suspend() = 0;
-		virtual void f_Resume() = 0;
+		virtual void f_Suspend() noexcept = 0;
+		[[nodiscard]] virtual NException::CExceptionPointer f_Resume() noexcept;
+		virtual void f_ResumeNoExcept() noexcept;
 
 		DMibListLinkDS_Link(CCoroutineThreadLocalHandler, m_Link);
 	};
@@ -49,11 +55,11 @@ namespace NMib
 		CCrossActorCallStateScope(CCrossActorCallStateScope &&_Other) = default;
 		~CCrossActorCallStateScope();
 
-		void f_Suspend() override;
-		void f_Resume() override;
+		void f_Suspend() noexcept override;
+		void f_ResumeNoExcept() noexcept override;
 
 		virtual void f_InitialSuspend() = 0;
-		virtual NFunction::TCFunctionMovable<void (bool _bException)> f_StoreState(bool _bFromSuspend) = 0;
+		virtual NFunction::TCFunctionMovable<void (bool _bException) noexcept> f_StoreState(bool _bFromSuspend) = 0;
 
 		DMibListLinkDS_Link(CCrossActorCallStateScope, m_Link);
 	};

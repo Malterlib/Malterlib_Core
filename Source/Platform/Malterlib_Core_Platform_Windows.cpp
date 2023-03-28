@@ -5,6 +5,13 @@
 #include <Windows.h>
 #include <Mib/Core/PlatformSpecific/WindowsOptional>
 
+#include <utility>
+
+[[noreturn]] void NMib::fg_NoReturn()
+{
+	std::unreachable();
+}
+
 namespace NMib
 {
 	namespace NPlatform
