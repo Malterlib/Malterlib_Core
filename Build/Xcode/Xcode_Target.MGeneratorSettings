@@ -448,6 +448,7 @@ GeneratorSetting
 	Target_IndexStoreEnable =+ {
 		XCConfigs: {
 			"COMPILER_INDEX_STORE_ENABLE": Target.IndexStoreEnable
+			, "CLANG_INDEX_STORE_ENABLE": Target.IndexStoreEnable
 		}
 	}
 
