@@ -59,7 +59,7 @@ namespace NMib
 		void f_ResumeNoExcept() noexcept override;
 
 		virtual void f_InitialSuspend() = 0;
-		virtual NFunction::TCFunctionMovable<void (bool _bException) noexcept> f_StoreState(bool _bFromSuspend) = 0;
+		virtual NFunction::TCFunctionMovable<void () noexcept> f_StoreState(bool _bFromSuspend) = 0;
 
 		DMibListLinkDS_Link(CCrossActorCallStateScope, m_Link);
 	};
