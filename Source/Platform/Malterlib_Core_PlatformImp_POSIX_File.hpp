@@ -979,13 +979,13 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 	return iFile;
 }
 
-template <typename tf_CFileStr, bool tf_bExcption, typename tf_CStr>
+template <typename tf_CFileStr, bool tf_bException, typename tf_CStr>
 void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
 	tf_CStr PosixFileName;
-	int iFile = fg_OpenHelperBSDFile<tf_CFileStr, tf_bExcption, tf_CStr>(_FileName, _OpenFlags, PosixFileName, _Attributes);
+	int iFile = fg_OpenHelperBSDFile<tf_CFileStr, tf_bException, tf_CStr>(_FileName, _OpenFlags, PosixFileName, _Attributes);
 
-	if constexpr (!tf_bExcption)
+	if constexpr (!tf_bException)
 	{
 		if (iFile < 0)
 			return nullptr;
