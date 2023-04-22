@@ -1208,18 +1208,32 @@ namespace NMib
 		int g_OperatingSystemFix = -1;
 		EOperatingSystemArch g_OperatingSystemArch = EOperatingSystemArch_Unknown;
 
-		bool fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& _oFix, EOperatingSystemArch& _Arch)
+		bool fg_System_GetOperatingSystemVersion(int &o_Major, int &o_Minor, int &o_Fix, EOperatingSystemArch &o_Arch, bool _bForceUpdate)
 		{
 			if (g_OperatingSystemMajor >= 0)
 			{
-				_oMajor = g_OperatingSystemMajor;
-				_oMinor = g_OperatingSystemMinor;
-				_oFix = g_OperatingSystemFix;
-				_Arch = g_OperatingSystemArch;
+				o_Major = g_OperatingSystemMajor;
+				o_Minor = g_OperatingSystemMinor;
+				o_Fix = g_OperatingSystemFix;
+				o_Arch = g_OperatingSystemArch;
 				return g_OperatingSystemMajor != 0;
 			}
 
 			CFStr256 VersionString;
+			bool bDarwinVersion = true;
+			{
+				size_t DataSize = 255;
+				int Ret = sysctlbyname("kern.osproductversion", VersionString.f_GetStr(256), &DataSize, nullptr, 0);
+
+				if (Ret == 0)
+				{
+					VersionString.f_SetAt(DataSize, 0);
+					VersionString.f_GetLen();
+					bDarwinVersion = false;
+				}
+				else
+					VersionString.f_Clear();
+			}
 
 			// Arch
 			{
@@ -1227,28 +1241,35 @@ namespace NMib
 				int Res = uname(&un);
 				if (Res >= 0)
 				{
-					VersionString = un.release;
-					int b64bitCPU = false;
+					if (VersionString.f_IsEmpty())
+						VersionString = un.release;
 
-					size_t DataSize = sizeof(b64bitCPU);
-					sysctlbyname("hw.cpu64bit_capable", &b64bitCPU, &DataSize, nullptr, 0);
-
-					if (fg_StrCmpNoCase(un.machine, "i386") == 0 || fg_StrCmpNoCase(un.machine, "x86_64") == 0)
-					{
-						if (b64bitCPU)
-							g_OperatingSystemArch = EOperatingSystemArch_x64;
-						else
-							g_OperatingSystemArch = EOperatingSystemArch_x86;
-					}
-					else if (fg_StrCmpNoCase(un.machine, "powerpc") == 0 || fg_StrCmpNoCase(un.machine, "ppc64") == 0)
-					{
-						if (b64bitCPU)
-							g_OperatingSystemArch = EOperatingSystemArch_PPC64;
-						else
-							g_OperatingSystemArch = EOperatingSystemArch_PPC;
-					}
+					if (fg_StrCmpNoCase(un.machine, "arm64") == 0)
+						g_OperatingSystemArch = EOperatingSystemArch_arm64;
 					else
-						g_OperatingSystemArch = EOperatingSystemArch_Unknown;
+					{
+						int b64bitCPU = false;
+
+						size_t DataSize = sizeof(b64bitCPU);
+						sysctlbyname("hw.cpu64bit_capable", &b64bitCPU, &DataSize, nullptr, 0);
+
+						if (fg_StrCmpNoCase(un.machine, "i386") == 0 || fg_StrCmpNoCase(un.machine, "x86_64") == 0)
+						{
+							if (b64bitCPU)
+								g_OperatingSystemArch = EOperatingSystemArch_x64;
+							else
+								g_OperatingSystemArch = EOperatingSystemArch_x86;
+						}
+						else if (fg_StrCmpNoCase(un.machine, "powerpc") == 0 || fg_StrCmpNoCase(un.machine, "ppc64") == 0)
+						{
+							if (b64bitCPU)
+								g_OperatingSystemArch = EOperatingSystemArch_PPC64;
+							else
+								g_OperatingSystemArch = EOperatingSystemArch_PPC;
+						}
+						else
+							g_OperatingSystemArch = EOperatingSystemArch_Unknown;
+					}
 				}
 				else
 				{
@@ -1256,25 +1277,43 @@ namespace NMib
 					return false;
 				}
 
-				_Arch = g_OperatingSystemArch;
+				o_Arch = g_OperatingSystemArch;
 			}
 
 			int Major = 0;
 			int Minor = 0;
-			//int Fix = 0;
+			int Fix = 0;
 
 			Major = fg_GetStrSep(VersionString, ".").f_ToInt(0);
 			Minor = fg_GetStrSep(VersionString, ".").f_ToInt(0);
-			//Fix = fg_GetStrSep(VersionString, ".").f_ToInt(0);
+			Fix = fg_GetStrSep(VersionString, ".").f_ToInt(0);
 
-			// Try to convert from darwin version to macOS version
-			g_OperatingSystemMajor = 10;
-			g_OperatingSystemMinor = Major - 4;
-			g_OperatingSystemFix = Minor;
+			if (bDarwinVersion)
+			{
+				// Try to convert from darwin version to macOS version
+				if (Major >= 20)
+				{
+					g_OperatingSystemMajor = Major - 9;
+					g_OperatingSystemMinor = Minor;
+					g_OperatingSystemFix = Fix;
+				}
+				else
+				{
+					g_OperatingSystemMajor = 10;
+					g_OperatingSystemMinor = Major - 4;
+					g_OperatingSystemFix = Minor;
+				}
+			}
+			else
+			{
+				g_OperatingSystemMajor = Major;
+				g_OperatingSystemMinor = Minor;
+				g_OperatingSystemFix = Fix;
+			}
 
-			_oMajor = g_OperatingSystemMajor;
-			_oMinor = g_OperatingSystemMinor;
-			_oFix = g_OperatingSystemFix;
+			o_Major = g_OperatingSystemMajor;
+			o_Minor = g_OperatingSystemMinor;
+			o_Fix = g_OperatingSystemFix;
 
 			return g_OperatingSystemMajor != 0;
 		}
@@ -1419,13 +1458,10 @@ void NSys::fg_CreateSystemVersion()
 	#error "Not Implemented"
 #endif
 
-	if (g_OperatingSystemMajor == 10 && g_OperatingSystemMinor >= 9)
-	{
+	if (g_OperatingSystemMajor > 10 || (g_OperatingSystemMajor == 10 && g_OperatingSystemMinor >= 9))
 		g_ThreadLocalOffsetPThread += 16 * sizeof(void *);
-	}
 	else if (g_OperatingSystemMajor == 10 && g_OperatingSystemMinor >= 7)
-	{
-	}
+		;
 	else if (g_OperatingSystemMajor == 10 && (g_OperatingSystemMinor == 5 || g_OperatingSystemMinor == 6))
 	{
 #if defined(__i386__)

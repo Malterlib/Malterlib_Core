@@ -1407,15 +1407,14 @@ namespace NMib
 
 #include <sys/utsname.h>
 
-
-bool NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& _oFix, EOperatingSystemArch& _Arch)
+bool NSys::fg_System_GetOperatingSystemVersion(int &o_Major, int &o_Minor, int &o_Fix, EOperatingSystemArch &o_Arch, bool _bForceUpdate)
 {
 	if (g_OperatingSystemMajor >= 0)
 	{
-		_oMajor = g_OperatingSystemMajor;
-		_oMinor = g_OperatingSystemMinor;
-		_oFix = g_OperatingSystemFix;
-		_Arch = g_OperatingSystemArch;
+		o_Major = g_OperatingSystemMajor;
+		o_Minor = g_OperatingSystemMinor;
+		o_Fix = g_OperatingSystemFix;
+		o_Arch = g_OperatingSystemArch;
 		return g_OperatingSystemMajor != 0;
 	}
 
@@ -1423,9 +1422,7 @@ bool NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& 
 
 	utsname NameInfo;
 	if (uname(&NameInfo))
-	{
 		return false;
-	}
 
 	(CStr::CParse("{}.{}.{}") >> g_OperatingSystemMajor >> g_OperatingSystemMinor >> g_OperatingSystemFix).f_Parse(NameInfo.release);
 
@@ -1443,6 +1440,11 @@ bool NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& 
 		DMibFastCheck(false);
 		g_OperatingSystemArch = EOperatingSystemArch_Unknown;
 	}
+
+	o_Major = g_OperatingSystemMajor;
+	o_Minor = g_OperatingSystemMinor;
+	o_Fix = g_OperatingSystemFix;
+	o_Arch = g_OperatingSystemArch;
 
 	return true;
 }

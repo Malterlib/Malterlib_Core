@@ -4964,7 +4964,7 @@ static DWORD CALLBACK fsg_CopyProgressRoutine
 	return PROGRESS_CONTINUE;
 }
 
-bool NMib::NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor, int& _oFix, EOperatingSystemArch& _Arch)
+bool NMib::NSys::fg_System_GetOperatingSystemVersion(int &o_Major, int &o_Minor, int &o_Fix, EOperatingSystemArch &o_Arch, bool _bForceUpdate)
 {
 	OSVERSIONINFOEXW VersionInfo;
 	fg_MemClear(VersionInfo);
@@ -4972,21 +4972,23 @@ bool NMib::NSys::fg_System_GetOperatingSystemVersion(int& _oMajor, int& _oMinor,
 	if (!GetVersionExW((OSVERSIONINFO *)&VersionInfo))
 		return false;
 
-	_oMajor = VersionInfo.dwMajorVersion;
-	_oMinor = VersionInfo.dwMinorVersion;
-	_oFix = VersionInfo.dwBuildNumber;
+	o_Major = VersionInfo.dwMajorVersion;
+	o_Minor = VersionInfo.dwMinorVersion;
+	o_Fix = VersionInfo.dwBuildNumber;
 
 	switch (gs_SysInfo.dwProcessorType)
 	{
 	case PROCESSOR_ARCHITECTURE_INTEL:
-		_Arch = EOperatingSystemArch_x86;
+		o_Arch = EOperatingSystemArch_x86;
 		break;
 	case PROCESSOR_ARCHITECTURE_AMD64:
-	case PROCESSOR_ARCHITECTURE_IA64:
-		_Arch = EOperatingSystemArch_x64;
+		o_Arch = EOperatingSystemArch_x64;
 		break;
+	case PROCESSOR_ARCHITECTURE_ARM64:
+		o_Arch = EOperatingSystemArch_arm64;
+		break;		
 	default:
-		_Arch = EOperatingSystemArch_Unknown;
+		o_Arch = EOperatingSystemArch_Unknown;
 		break;
 	}
 

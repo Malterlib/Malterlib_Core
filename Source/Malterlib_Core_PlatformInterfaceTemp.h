@@ -94,7 +94,7 @@ namespace NMib
 		void fg_System_ReportContractViolation(const NMib::NStr::CStrNonTracked &_Message);
 		NMib::NStr::CStrNonTracked fg_System_GetContractViolationMessage();
 		
-		bool fg_System_GetOperatingSystemVersion(int& o_Major, int& o_Minor, int& o_Fix, EOperatingSystemArch &o_Arch);
+		bool fg_System_GetOperatingSystemVersion(int& o_Major, int& o_Minor, int& o_Fix, EOperatingSystemArch &o_Arch, bool _bForceUpdate = false);
 		
 		void fg_System_ExitProcess(aint _ExitCode);
 
