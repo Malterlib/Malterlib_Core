@@ -10,6 +10,20 @@
 #include "Malterlib_Core_PlatformImp_Net.h"
 
 typedef CRuntimeNetAddress CWindowsAddress;
+class CWindowsSocketContext;
+
+struct [[nodiscard]] CWindowsSocketContextThreadUseScope
+{
+	CWindowsSocketContextThreadUseScope() = default;
+	CWindowsSocketContextThreadUseScope(CWindowsSocketContext *_pContext);
+	~CWindowsSocketContextThreadUseScope();
+	CWindowsSocketContextThreadUseScope(CWindowsSocketContextThreadUseScope &&_Other);
+	CWindowsSocketContextThreadUseScope &operator = (CWindowsSocketContextThreadUseScope &&_Other);
+
+private:
+	CWindowsSocketContext *mp_pContext = nullptr;
+	NStorage::TCSharedPointer<bool> mp_pDestroyed;
+};
 
 class CWindowsSocket
 {
@@ -51,6 +65,8 @@ public:
 	int m_AsyncSelectFlags = 0;
 	bool m_bReceiveEvents = false;
 
+	CWindowsSocketContextThreadUseScope m_ThreadUseScope;
+
 #ifdef DTCPDelayEmulation
 
 	NMib::NThread::CMutual m_DelayedLock;
@@ -82,6 +98,7 @@ public:
 class CWindowsSocketContext : public NMib::NThread::CThread
 {
 protected:
+	friend struct CWindowsSocketContextThreadUseScope;
 
 	// A simple async name resolver.
 	class CResolver
@@ -131,16 +148,18 @@ protected:
 	};
 
 protected:
-
 	void *mp_hThread;
 	uint32 mp_ThreadID;
+	mint mp_ThreadRefcount = 0;
 	NMib::NThread::CEvent mp_ThreadStartEvent;
 	NMib::NThread::CMutual mp_ThreadStartLock;
 	bool mp_bInitFailed;
 	HWND mp_hReportWnd;
 
 	NMib::NThread::CMutual mp_Lock;
-		NIntrusive::TCAVLTree<&CWindowsSocket::m_TreeLink, CWindowsSocket::CAVLCompare_CTCPSocket> mp_SocketTree;
+	NIntrusive::TCAVLTree<&CWindowsSocket::m_TreeLink, CWindowsSocket::CAVLCompare_CTCPSocket> mp_SocketTree;
+
+	NStorage::TCSharedPointer<bool> mp_pDestroyed = fg_Construct(false);
 
 	CAddressResolver mp_Resolver;
 
@@ -195,15 +214,15 @@ protected:
 
 	TCUniquePointer<CWindowsSocket::CUnixListenState> fp_PrepareUnixListen(CWindowsAddress &o_Address);
 
+	void fp_StopThread(bool _bForce);
+
 public:
 	CWindowsSocketContext();
 	~CWindowsSocketContext();
 
-	void f_StopThread();
-	void f_StartThread();
+	CWindowsSocketContextThreadUseScope f_StartThread();
 
 	void f_CheckFailed();
-	void f_CheckDestroy();
 
 	static LRESULT WINAPI fsp_SocketWindowProc(HWND _hWnd, UINT _Message, WPARAM _wParam, LPARAM _lParam);
 
@@ -282,6 +301,5 @@ public:
 		
 		CWindowsAddress* f_GetPeerAddress(CWindowsSocket *_pSocket);	
 		uint32 f_GetListenPort(CWindowsSocket *_pSocket);	
-
 };
 

@@ -132,13 +132,45 @@ CWindowsSocketContext::CWindowsSocketContext()
 
 CWindowsSocketContext::~CWindowsSocketContext()
 {
-	f_StopThread();
+	DMibFastCheck(mp_ThreadRefcount == 0);
+	fp_StopThread(true);
+	*mp_pDestroyed = true;
 }
 
+CWindowsSocketContextThreadUseScope::CWindowsSocketContextThreadUseScope(CWindowsSocketContext *_pContext)
+	: mp_pContext(_pContext)
+	, mp_pDestroyed(_pContext->mp_pDestroyed)
+{
+}
 
-void CWindowsSocketContext::f_StopThread()
+CWindowsSocketContextThreadUseScope::CWindowsSocketContextThreadUseScope(CWindowsSocketContextThreadUseScope &&_Other)
+	: mp_pContext(fg_Exchange(_Other.mp_pContext, nullptr))
+	, mp_pDestroyed(fg_Move(_Other.mp_pDestroyed))
+{
+}
+
+CWindowsSocketContextThreadUseScope &CWindowsSocketContextThreadUseScope::operator = (CWindowsSocketContextThreadUseScope &&_Other)
+{
+ 	mp_pContext = fg_Exchange(_Other.mp_pContext, nullptr);
+	mp_pDestroyed = fg_Move(_Other.mp_pDestroyed);
+
+	return *this;
+}
+
+CWindowsSocketContextThreadUseScope::~CWindowsSocketContextThreadUseScope()
+{
+	if (!mp_pContext || *mp_pDestroyed)
+		return;
+
+	mp_pContext->fp_StopThread(false);
+}
+
+void CWindowsSocketContext::fp_StopThread(bool _bForce)
 {
 	DMibLock(mp_ThreadStartLock);
+	if (--mp_ThreadRefcount > 0 && !_bForce)
+		return;
+
 	if (NMib::NThread::CThread::f_GetState() == EThreadState_Running)
 	{
 		PostThreadMessage(mp_ThreadID, WM_QUIT, 0, 0);
@@ -147,14 +179,20 @@ void CWindowsSocketContext::f_StopThread()
 	}
 }
 
-void CWindowsSocketContext::f_StartThread()
+CWindowsSocketContextThreadUseScope CWindowsSocketContext::f_StartThread()
 {
 	DMibLock(mp_ThreadStartLock);
+	if (++mp_ThreadRefcount != 1)
+		return {this};
+
+	DMibFastCheck(NMib::NThread::CThread::f_GetState() != EThreadState_Running);
 	if (NMib::NThread::CThread::f_GetState() != EThreadState_Running)
 	{
 		f_Start(EExecutionPriority_High);
 		mp_ThreadStartEvent.f_Wait();
 	}
+
+	return {this};
 }
 
 NStr::CStr CWindowsSocketContext::f_GetThreadName()
@@ -166,23 +204,6 @@ void CWindowsSocketContext::f_CheckFailed()
 {
 	if (mp_bInitFailed)
 		DMibErrorNet("Initziation of WinSock has faild, cannot use net");
-}
-
-void CWindowsSocketContext::f_CheckDestroy()
-{
-	bool bCanDestroy = true;
-	{
-		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-		if (!mp_SocketTree.f_IsEmpty())
-			bCanDestroy = false;
-	}
-	{
-		if (!mp_Resolver.f_IsEmpty())
-			bCanDestroy = false;
-	}
-
-	if (bCanDestroy)
-		f_StopThread();
 }
 
 LRESULT WINAPI CWindowsSocketContext::fsp_SocketWindowProc(HWND _hWnd, UINT _Message, WPARAM _wParam, LPARAM _lParam)
@@ -856,15 +877,8 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 	if (hSock == INVALID_SOCKET)
 	{
 		uint32 Error = WSAGetLastError();
-		f_CheckDestroy();
 		DMibErrorNet((CStr::CFormat("Could not create a socket for connection, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
-
-	auto Cleanup = g_OnScopeExit / [&]
-		{
-			f_CheckDestroy();
-		}
-	;
 
 	auto SocketCleanup = g_OnScopeExit / [&]
 		{
@@ -921,8 +935,8 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 	}
 
 	pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write;
+	pSocket->m_ThreadUseScope = f_StartThread();
 
-	f_StartThread();
 	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE | FD_CONNECT))
 	{
 		uint32 Error = WSAGetLastError();
@@ -958,8 +972,6 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 	}
 	else
 		pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Connected;
-
-	Cleanup.f_Clear();
 
 	return pSocket.f_Detach();
 }
@@ -1047,7 +1059,6 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 	auto Cleanup = g_OnScopeExit / [&]
 		{
 			closesocket(hSock);
-			f_CheckDestroy();
 		}
 	;
 
@@ -1093,7 +1104,8 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		pSocket->m_BindAddressType = AddressType;
 	}
 
-	f_StartThread();
+	pSocket->m_ThreadUseScope = f_StartThread();
+
 	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_ACCEPT | FD_CLOSE))
 	{
 		uint32 Error = WSAGetLastError();
@@ -1101,8 +1113,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 			mp_SocketTree.f_Remove(pSocket.f_Get());
 		}
-		pSocket = nullptr;
-		f_CheckDestroy();
+		pSocket.f_Clear();
 		DMibErrorNet((CStr::CFormat("Could not listen on socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
@@ -1143,7 +1154,6 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 	auto Cleanup = g_OnScopeExit / [&]
 		{
 			closesocket(hSock);
-			f_CheckDestroy();
 		}
 	;
 
@@ -1165,6 +1175,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 
 	pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
 	pSocket->m_pSocket = (void *)hSock;
+	Cleanup.f_Clear();
 
 	pSocket->m_pUnixListen = fg_Move(pUnixListen);
 
@@ -1175,7 +1186,6 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 		UnixListen.m_UnixFile << ListenPort;
 	}
 
-	Cleanup.f_Clear();
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 		mp_SocketTree.f_Insert(pSocket.f_Get());
@@ -1183,7 +1193,8 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 		pSocket->m_BindAddressType = AddressType;
 	}
 
-	f_StartThread();
+	pSocket->m_ThreadUseScope = f_StartThread();
+
 	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
 	{
 		uint32 Error = WSAGetLastError();
@@ -1191,8 +1202,7 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 			mp_SocketTree.f_Remove(pSocket.f_Get());
 		}
-		pSocket = nullptr;
-		f_CheckDestroy();
+		pSocket.f_Clear();
 		DMibErrorNet((CStr::CFormat("Could not bind socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
@@ -1213,20 +1223,24 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		DMibErrorNet((CStr::CFormat("Could not accept socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
 	}
 
+	auto Cleanup = g_OnScopeExit / [&]
+		{
+			closesocket(hSock);
+		}
+	;
+
 	int Buf = EDefaultSocketBufSize;
 	if (Buf > 0)
 	{
 		if (setsockopt(hSock, SOL_SOCKET, SO_RCVBUF, (char *)&Buf, sizeof(Buf)))
 		{
 			uint32 Error = WSAGetLastError();
-			closesocket(hSock);
 			DMibErrorNet((CStr::CFormat("Could not accept socket (SO_RCVBUF), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
 		if (setsockopt(hSock, SOL_SOCKET, SO_SNDBUF, (char *)&Buf, sizeof(Buf)))
 		{
 			uint32 Error = WSAGetLastError();
-			closesocket(hSock);
 			DMibErrorNet((CStr::CFormat("Could not accept socket (SO_SNDBUF), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 	}
@@ -1237,7 +1251,6 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		if (setsockopt(hSock, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
 		{
 			uint32 Error = WSAGetLastError();
-			closesocket(hSock);
 			DMibErrorNet((CStr::CFormat("Could not accept socket (TCP_NODELAY), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 	}
@@ -1246,12 +1259,14 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 
 	pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
 	pSocket->m_pSocket = (void *)hSock;
+	Cleanup.f_Clear();
 	{
 		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 		mp_SocketTree.f_Insert(pSocket.f_Get());
 	}
 
-	f_StartThread();
+	pSocket->m_ThreadUseScope = f_StartThread();
+
 	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
 	{
 		uint32 Error = WSAGetLastError();
@@ -1259,8 +1274,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 			mp_SocketTree.f_Remove(pSocket.f_Get());
 		}
-		pSocket = nullptr;
-		f_CheckDestroy();
+		pSocket.f_Clear();
 		DMibErrorNet((CStr::CFormat("Could not accept socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
@@ -1293,8 +1307,6 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 	}
 
 	delete _pSocket;
-
-	f_CheckDestroy();
 
 	return true;
 }
@@ -1438,13 +1450,12 @@ CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pSocket, NMib::NF
 	pReturn->m_fOnStateChange = fg_Move(_fOnStateChange);
 	pReturn->m_pSocket = (void *)_pSocket;
 	pReturn->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write;
+	pReturn->m_ThreadUseScope = f_StartThread();
 
-	f_StartThread();
 	if (WSAAsyncSelect((SOCKET)pReturn->m_pSocket, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
 	{
 		uint32 Error = WSAGetLastError();
 		delete pReturn;
-		f_CheckDestroy();
 		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
