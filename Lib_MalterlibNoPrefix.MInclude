@@ -96,6 +96,7 @@ Compile
 		&
 		{
 			PlatformFamily "macOS"
+			Architecture "x64"
 			MalterlibMemoryManager "Malterlib"
 		}
 	}
