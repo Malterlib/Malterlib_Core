@@ -69,8 +69,15 @@ namespace NMib
 				#elif defined(__x86_64__)
 					asm ("mov %%gs:0x0,%0" : "=r"(Return) : );
 				#elif defined(__aarch64__)
-					asm ("mrs %0, tpidrro_el0\nbic %0, %0, #7" : "=r" (Return));
-					Return -= sizeof(void *) * 28;
+					asm
+						(
+							"mrs %0, tpidrro_el0\n"
+							"bic %0, %0, #7\n"
+							"sub %0, %0, %1"
+							: "=&r"(Return)
+							: "i"(sizeof(void *) * 28)
+						)
+					;
 				#else
 					#error "Not Implemented"
 				#endif
@@ -105,8 +112,14 @@ namespace NMib
 				#elif defined(__x86_64__)
 					asm ("mov %%fs:0x10,%0" : "=r"(Return) : );
 				#elif defined(__aarch64__)
-					asm volatile ("mrs %0, TPIDR_EL0" : "=r" (Return));
-					Return -= g_ThreadSelfOffset;
+					asm
+						(
+							"mrs %0, TPIDR_EL0\n"
+							"sub %0, %0, %1"
+							: "=&r"(Return)
+							: "r"(g_ThreadSelfOffset)
+						)
+					;
 				#else
 					#error "Not Implemented"
 				#endif
@@ -138,11 +151,15 @@ namespace NMib
 				#elif defined(__x86_64__)
 					asm ("mov %%gs:0x0(,%1,8),%0" : "=r"(Return) : "r"(_iVariable));
 				#elif defined(__aarch64__)
-					mint ThreadLocals;
-					asm volatile ("mrs %0, tpidrro_el0" : "=r" (ThreadLocals));
-					ThreadLocals &= 0xfffffffffffffff8ul;
-					Return = ((mint *)ThreadLocals)[_iVariable];
-					//asm ("mrs %0, tpidr_el0" : "=r" (Return) : );
+					mint *pThreadLocals;
+					asm
+						(
+							"mrs %0, tpidrro_el0\n"
+							"bic %0, %0, #7\n"
+							: "=r" (pThreadLocals)
+						)
+					;
+					Return = pThreadLocals[_iVariable];
 				#else
 					#error "Not Implemented"
 				#endif
@@ -173,9 +190,15 @@ namespace NMib
 				#elif defined(__x86_64__)
 					asm ("mov %%fs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
 				#elif defined(__aarch64__)
-					mint ThreadLocals;
-					asm volatile ("mrs %0, TPIDR_EL0" : "=r" (ThreadLocals));
-					Return = *((mint *)(ThreadLocals + _iVariable));
+					mint Temp;
+					asm
+						(
+							"mrs %[Temp], TPIDR_EL0\n"
+							"ldr %[Return], [%[Temp], %[_iVariable]]"
+							: [Temp] "=&r"(Temp), [Return] "=r"(Return)
+							: [_iVariable] "r"(_iVariable)
+						)
+					;
 				#else
 					#error "Not Implemented"
 				#endif
