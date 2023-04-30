@@ -67,8 +67,34 @@ namespace NMib
 
 	}
 
-	constinit NStorage::TCAggregate<NThread::TCThreadLocal<CSystemThreadLocal>, 64> g_SystemThreadLocal = {DAggregateInit};
+	namespace NPrivate
+	{
+		struct CSubSystem_SystemThreadLocal : public CSubSystem
+		{
+			NThread::TCThreadLocal<CSystemThreadLocal, NMemory::CAllocator_Heap, NThread::EThreadLocalFlag_AlwaysCreated> m_ThreadLocal;
+		};
 
+		constinit TCSubSystem<CSubSystem_SystemThreadLocal, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_SystemThreadLocal = {DAggregateInit};
+	}
+
+	bool fg_SystemThreadLocalWasCreated()
+	{
+		return NPrivate::g_SubSystem_SystemThreadLocal.f_WasCreated() && NPrivate::g_SubSystem_SystemThreadLocal.f_GetUnsafe()->m_ThreadLocal.f_TryGet();
+	}
+
+	void fg_SystemThreadInit()
+	{
+		[[maybe_unused]] auto &Local = *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal;
+	}
+
+	inline_always_lto CSystemThreadLocal &fg_SystemThreadLocal()
+	{
+		DMibFastCheck(NPrivate::g_SubSystem_SystemThreadLocal.f_WasCreated() && NPrivate::g_SubSystem_SystemThreadLocal.f_GetUnsafe()->m_ThreadLocal.f_TryGet());
+		// Make sure to call fg_SystemThreadInit() on non-Malterlib threads.
+
+		return *NPrivate::g_SubSystem_SystemThreadLocal.f_GetUnsafe()->m_ThreadLocal.f_TryGet();
+	}
+	
 	/************************************************************************************************\
 	||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
 	|| CSystem
@@ -118,6 +144,8 @@ namespace NMib
 		}
 #endif
 		fp_CreateMemoryManager();
+
+		fg_SystemThreadInit();
 
 		NMemory::fg_Mem_InitSubsystem();
 
@@ -691,7 +719,7 @@ namespace NMib
 		if (!g_bCanStartThreads.f_Load(NAtomic::EMemoryOrder_Relaxed) || !_bAddToCoroutine)
 			return;
 
-		auto &ThreadLocal = **g_SystemThreadLocal;
+		auto &ThreadLocal = fg_SystemThreadLocal();
 		if (ThreadLocal.m_pCurrentCoroutineHandler)
 			ThreadLocal.m_pCurrentCoroutineHandler->m_ThreadLocalHandlers.f_Insert(this);
 	}
@@ -716,7 +744,7 @@ namespace NMib
 		if (!g_bCanStartThreads.f_Load(NAtomic::EMemoryOrder_Relaxed))
 			return;
 
-		auto &ThreadLocal = **g_SystemThreadLocal;
+		auto &ThreadLocal = fg_SystemThreadLocal();
 		ThreadLocal.m_CrossActorStateScopes.f_Insert(this);
 	}
 
@@ -729,7 +757,7 @@ namespace NMib
 
 	void CCrossActorCallStateScope::f_ResumeNoExcept() noexcept
 	{
-		auto &ThreadLocal = **g_SystemThreadLocal;
+		auto &ThreadLocal = fg_SystemThreadLocal();
 		ThreadLocal.m_CrossActorStateScopes.f_Insert(this);
 	}
 
@@ -747,7 +775,7 @@ namespace NMib
 
 	CDebugThreadLocalScope::CDebugThreadLocalScope()
 	{
-		auto &ThreadLocal = **g_SystemThreadLocal;
+		auto &ThreadLocal = fg_SystemThreadLocal();
 		if (ThreadLocal.m_pCurrentCoroutineHandler)
 			++ThreadLocal.m_pCurrentCoroutineHandler->m_nThreadLocalScopes;
 		m_pCoroutineHandler = ThreadLocal.m_pCurrentCoroutineHandler;
@@ -758,7 +786,7 @@ namespace NMib
 		if (!m_bValid)
 			return;
 		
-		auto &ThreadLocal = **g_SystemThreadLocal;
+		auto &ThreadLocal = fg_SystemThreadLocal();
 
 		DMibFastCheck(m_pCoroutineHandler == ThreadLocal.m_pCurrentCoroutineHandler);
 

@@ -1034,9 +1034,9 @@ public:
 	{
 		if (pExceptionInfo->ExceptionRecord && pExceptionInfo->ExceptionRecord->NumberParameters >= 3 && pExceptionInfo->ExceptionRecord->ExceptionInformation[0] == 0x19930520)
 		{
-			if (g_SystemThreadLocal.f_IsConstructed() && (*g_SystemThreadLocal).f_IsValid())
+			if (fg_SystemThreadLocalWasCreated())
 			{
-				auto &ThreadLocal = **g_SystemThreadLocal;
+				auto &ThreadLocal = fg_SystemThreadLocal();
 				if (ThreadLocal.m_pExceptionFilter)
 					ThreadLocal.m_pExceptionFilter->f_Exception((void *)pExceptionInfo->ExceptionRecord->ExceptionInformation[1]);
 			}

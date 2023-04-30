@@ -46,7 +46,9 @@ namespace NMib
 #endif
 	};
 
-	extern NStorage::TCAggregate<NThread::TCThreadLocal<CSystemThreadLocal>, 64> g_SystemThreadLocal;
+	bool fg_SystemThreadLocalWasCreated();
+	inline_always_lto CSystemThreadLocal &fg_SystemThreadLocal();
+	void fg_SystemThreadInit();
 
 	namespace NException
 	{
@@ -62,14 +64,14 @@ namespace NMib
 
 			CExceptionFilterScope(CExceptionFilter &_Filter)
 			{
-				auto &ThreadLocal = **g_SystemThreadLocal;
+				auto &ThreadLocal = fg_SystemThreadLocal();
 				m_pOldFilter = ThreadLocal.m_pExceptionFilter;
 				ThreadLocal.m_pExceptionFilter = &_Filter;
 			}
 
 			~CExceptionFilterScope()
 			{
-				auto &ThreadLocal = **g_SystemThreadLocal;
+				auto &ThreadLocal = fg_SystemThreadLocal();
 				ThreadLocal.m_pExceptionFilter = m_pOldFilter;
 			}
 		private:
@@ -83,14 +85,14 @@ namespace NMib
 
 			CDisableExceptionFilterScope()
 			{
-				auto &ThreadLocal = **g_SystemThreadLocal;
+				auto &ThreadLocal = fg_SystemThreadLocal();
 				m_pOldFilter = ThreadLocal.m_pExceptionFilter;
 				ThreadLocal.m_pExceptionFilter = nullptr;
 			}
 
 			~CDisableExceptionFilterScope()
 			{
-				auto &ThreadLocal = **g_SystemThreadLocal;
+				auto &ThreadLocal = fg_SystemThreadLocal();
 				ThreadLocal.m_pExceptionFilter = m_pOldFilter;
 			}
 		private:
