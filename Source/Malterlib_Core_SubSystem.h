@@ -19,7 +19,8 @@ namespace NMib
 		bool f_WasCreated() const;
 		t_CSubSystem &operator *();
 		t_CSubSystem *operator ->();
-		
+		t_CSubSystem *f_GetUnsafe();
+
 		void f_Construct(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
 
 	public:

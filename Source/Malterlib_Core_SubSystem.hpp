@@ -56,5 +56,11 @@ namespace NMib
 
 		return fp_Create(nullptr);
 	}
+
+	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
+	t_CSubSystem *TCSubSystem<t_CSubSystem, t_DestructionOrder>::f_GetUnsafe()
+	{
+		return ((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
+	}
 };
 
