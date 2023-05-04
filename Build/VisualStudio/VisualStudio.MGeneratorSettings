@@ -130,13 +130,6 @@ Target
 	{
 		!!Target.Language undefined
 	}
-
-	Language2: string
-	Language2 "What"
-	Language2 "What2"
-	{
-		!!Configuration "Debug"
-	}
 }
 
 Property

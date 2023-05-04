@@ -33,6 +33,32 @@ GeneratorSetting
 
 GeneratorSetting
 {
+	Compile_Custom_Shell += {}
+	{
+		!!GeneratorSetting.Compile_Custom_Shell undefined
+	}
+
+	Compile_RealCustom_Inputs += {}
+	{
+		!!GeneratorSetting.Compile_RealCustom_Inputs undefined
+	}
+}
+
+GeneratorSetting
+{
+	Compile_Custom_Shell += {}
+	{
+		!!GeneratorSetting.Compile_Custom_Shell undefined
+	}
+
+	Compile_RealCustom_Inputs += {}
+	{
+		!!GeneratorSetting.Compile_RealCustom_Inputs undefined
+	}
+}
+
+GeneratorSetting
+{
 	!!Compile.Type "QtMoc"
 
 	Compile_DoCompileAndLink {

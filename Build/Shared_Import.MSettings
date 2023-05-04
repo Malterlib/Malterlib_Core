@@ -353,6 +353,16 @@ Import
 		}
 	}
 
+	CMake_Variables Error(`'/private/var/db/xcode_select_link' does not exist. @(ColorStatusError())Please run:@(ColorDefault()) sudo xcode-select -s \`xcode-select -p\``)
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			HostPlatformFamily "macOS"
+			("/private/var/db/xcode_select_link"->LinkExists()) false
+		}
+	}
+
 	CMake_Variables =+ [
 		`CMAKE_OSX_DEPLOYMENT_TARGET=@(MalterlibMinSupportedMacOSVersion)`
 		, `CMAKE_OSX_SYSROOT=@((MalterlibMaxSupportedMacOSVersion == "Latest") ?

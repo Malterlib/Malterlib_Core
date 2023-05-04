@@ -7,17 +7,6 @@ Compile
 {
 	!!LanguageFamily "Native"
 
-	Type "Custom"
-	{
-		&
-		{
-			!GeneratorFamily "Xcode"
-			this.Type "File"
-			Compile.Type undefined
-			!Compile.Custom_CommandLine undefined
-		}
-	}
-
 	Type "StaticLibrary"
 	{
 		&
@@ -360,6 +349,11 @@ Compile
 
 Compile
 {
+	GenericCompileType: string?
+}
+
+Compile
+{
 	&
 	{
 		LanguageFamily "Native"
@@ -369,8 +363,6 @@ Compile
 			GeneratorFamily "Xcode" // Needed because the file type cannot be different per config
 		}
 	}
-
-	GenericCompileType: string?
 
 	GenericCompileType "GenericCompile"
 	{
@@ -632,6 +624,20 @@ Compile
 	}
 
 
+}
+
+Compile
+{
+	Type "Custom"
+	{
+		&
+		{
+			//!GeneratorFamily "Xcode"
+			this.Type "File"
+			Compile.GenericCompileType undefined
+			!Compile.Custom_CommandLine undefined
+		}
+	}
 }
 
 Compile
@@ -2774,6 +2780,19 @@ Compile
 
 Compile
 {
+	Custom_Shell: string?
+	Custom_Shell "/bin/bash -c"
+	{
+		&
+		{
+			Compile.Custom_Shell undefined
+			!PlatformFamily "Windows"
+		}
+	}
+}
+
+Compile
+{
 	&
 	{
 		Compile.Type "MalterlibFS"
@@ -2786,6 +2805,8 @@ Compile
 	}
 
 	GenericCompileType "GenericCustom"
+
+	Custom_Shell undefined
 
 	Custom_WorkingDirectory Target:Target.IntermediateDirectory->MakeAbsolute()
 	Custom_Outputs [Compile.ObjectFileName, Compile.CppFileName]

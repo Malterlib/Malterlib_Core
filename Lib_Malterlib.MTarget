@@ -503,7 +503,7 @@ Property
 				Compile
 				{
 					!!CompileDialect "C"
-					!!Compile.Type "Assmebler"
+					!!Compile.Type "Assembler"
 
 					PreprocessorDefines =+ ["_LIBCPP_BUILDING_LIBRARY", "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED"]
 					DynamicTypeInfo true
