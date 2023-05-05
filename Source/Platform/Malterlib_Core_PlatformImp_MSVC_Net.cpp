@@ -455,6 +455,9 @@ bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMi
 
 		case NMib::NNetwork::ENetAddressType_TCPv4:
 			{
+				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
+					return false;
+
 				NMib::NNetwork::CNetAddressTCPv4& Addr = *(NMib::NNetwork::CNetAddressTCPv4*)_opRawData;
 				fp_FromNative(_Address.f_GetTCPv4(), Addr);
 
@@ -464,6 +467,9 @@ bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMi
 
 		case NMib::NNetwork::ENetAddressType_TCPv6:
 			{
+				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
+					return false;
+
 				NMib::NNetwork::CNetAddressTCPv6& Addr = *(NMib::NNetwork::CNetAddressTCPv6*)_opRawData;
 				fp_FromNative(_Address.f_GetTCPv6(), Addr);
 

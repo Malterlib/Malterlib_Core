@@ -84,6 +84,9 @@ bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::N
 
 		case NMib::NNetwork::ENetAddressType_TCPv4:
 			{
+				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
+					return false;
+
 				NMib::NNetwork::CNetAddressTCPv4& Addr = *(NMib::NNetwork::CNetAddressTCPv4*)_opRawData;
 				fp_FromNative(_Address.f_GetTCPv4(), Addr);
 
@@ -93,6 +96,9 @@ bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::N
 
 		case NMib::NNetwork::ENetAddressType_TCPv6:
 			{
+				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
+					return false;
+
 				NMib::NNetwork::CNetAddressTCPv6& Addr = *(NMib::NNetwork::CNetAddressTCPv6*)_opRawData;
 				fp_FromNative(_Address.f_GetTCPv6(), Addr);
 
