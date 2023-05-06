@@ -83,7 +83,7 @@ GeneratorSetting
 		, "Assembler", "sourcecode.asm"
 		, "MlTwk", "sourcecode.malterlib.twk"
 		, "WindowsResource", "text"
-		, "MalterlibFS", "sourcecode.malterlib.malterlibfs"
+		, "MalterlibFS", "sourcecode.cpp.cpp"
 		, "Nib", "wrapper.nib"
 		, "MacIcon", "image.icns"
 		, "ShellScript", "text.script.sh"

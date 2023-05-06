@@ -124,6 +124,11 @@ GeneratorSetting
 	Compile_Custom_CommandLine {}
 	Compile_Custom_WorkingDirectory {}
 	Compile_Custom_Inputs {}
+	Compile_Custom_BuildInParallel {
+		VSSettings: {
+			BuildInParallel: Compile.Custom_BuildInParallel->f_BoolToString()
+		}
+	}
 
 	Compile_Custom_Message =+ {
 		VSSettings: {
@@ -375,65 +380,6 @@ GeneratorSetting
 	Compile_GenerateDebugInformation =+ {
 		VSSettings: {
 			GenerateDebugInformation: Compile.GenerateDebugInformation->f_BoolToString()
-		}
-	}
-}
-
-GeneratorSetting
-{
-	&
-	{
-		Target.Language "Native"
-		GeneratorSetting.VisualStudio_FileType "MalterlibFS"
-	}
-
-	Compile_Optimize {}
-
-	Compile_ExtraCompilerFlags =+ {
-		VSSettings: {
-			AdditionalOptions: `@(Compile.ExtraCompilerFlags->f_ExpandFlags()->f_JoinMSBuild(" ")) @(Builtin.Inherit)`
-		}
-	}
-
-	Compile_DoCompileAndLink =+ {
-		VSSettings: {
-			DoCompileAndLink: Compile.DoCompileAndLink->f_BoolToString()
-		}
-	}
-
-	Compile_VerboseLogging =+ {
-		VSSettings: {
-			VerboseLogging: Compile.VerboseLogging->f_BoolToString()
-		}
-	}
-
-	Compile_OutputAsObjectFile =+ {
-		VSSettings: {
-			OutputAsObjectFile: Compile.OutputAsObjectFile->f_BoolToString()
-		}
-	}
-
-	Compile_SymbolName =+ {
-		VSSettings: {
-			SymbolName: Compile.SymbolName->EscapeMSBuild()
-		}
-	}
-
-	Compile_MalterlibFSPathPrefix =+ {
-		VSSettings: {
-			MalterlibFSPathPrefix: Compile.MalterlibFSPathPrefix->EscapeMSBuild()
-		}
-	}
-
-	Compile_CppFileName =+ {
-		VSSettings: {
-			CppFileName: Compile.CppFileName->EscapeMSBuild()
-		}
-	}
-
-	Compile_OutputAsAssembly =+ {
-		VSSettings: {
-			OutputAsAssembly: Compile.OutputAsAssembly->f_BoolToString()
 		}
 	}
 }

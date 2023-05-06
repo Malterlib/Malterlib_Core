@@ -190,10 +190,14 @@ GeneratorSetting
 
 GeneratorSetting
 {
+	Compile_GenericCompileType {}
+}
+
+GeneratorSetting
+{
 	!!Target.Language "Native"
 
-	VisualStudio_FileType SwitchWithError(
-		Compile.Type, "Unknown compile type: "
+	VisualStudio_FileType (Compile.GenericCompileType <==> "GenericCustom") ? "CustomBuild" : SwitchWithError(Compile.Type, "Unknown compile type: "
 		, "C++", "ClCompile"
 		, "C++Managed", "ClCompile"
 		, "C", "ClCompile"
@@ -206,7 +210,6 @@ GeneratorSetting
 		, "QtMoc", "QtMoc"
 		, "QtUic", "QtUic"
 		, "MlTwk", "MlTwk"
-		, "MalterlibFS", "MalterlibFS"
 		, "WindowsResource", "ResourceCompile"
 		, "MSBuildTargets", "None"
 		, "PList", "None"

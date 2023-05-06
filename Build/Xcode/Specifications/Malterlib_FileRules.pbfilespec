@@ -1,17 +1,5 @@
 (
 	{
-		Identifier = "sourcecode.malterlib.malterlibfs";
-		BasedOn = sourcecode;
-		Name = MalterlibFS;
-		Extensions = (
-			MalterlibFSSpec,
-		);
-		IsTextFile = YES;
-		IsSourceCode = YES;
-		AppliesToBuildRules = YES;
-		"ChangesCauseDependencyGraphInvalidation" = YES;
-	},
-	{
 		Identifier = "sourcecode.malterlib.twk";
 		BasedOn = sourcecode;
 		Name = "Malterlib Tweak File";

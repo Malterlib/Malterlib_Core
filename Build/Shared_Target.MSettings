@@ -4092,8 +4092,6 @@ Target
 {
 	%GenerateFile "Generate"
 	{
-		Compile.DoCompileAndLink false
-		
 		GenerateFile
 		{
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
@@ -4101,25 +4099,6 @@ Target
 			Contents MalterlibExeFSSpecContents
 			UnicodeBOM true
 		}
-	}
-
-	Property
-	{
-		BaseFileName: string = `@(Workspace:Workspace.Name)_@(Target:Target.Name)`
-		ObjectFileName: string
-		ObjectFileName `@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFS.obj`
-		{
-			!!PlatformFamily "Windows"
-		}
-		ObjectFileName `@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFS.s`
-		{
-			!PlatformFamily "Windows"
-		}
-		CppFileName: string = `@(Target:Target.IntermediateDirectory)@(BaseFileName)_VirtualFSCPP.cpp`
-	}
-	%File [ObjectFileName, CppFileName]
-	{
-		Compile.AllowNonExisting true
 	}
 }
 

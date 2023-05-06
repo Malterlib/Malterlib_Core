@@ -17,11 +17,6 @@
       <LibCompiled>$(LibCompiled)</LibCompiled>
       <ImpLibCompiled>$(ImpLibCompiled)</ImpLibCompiled>
     </MlTwk>
-    <MalterlibFS>
-      <LinkCompiled>$(LinkCompiled)</LinkCompiled>
-      <LibCompiled>$(LibCompiled)</LibCompiled>
-      <ImpLibCompiled>$(ImpLibCompiled)</ImpLibCompiled>
-    </MalterlibFS>
   </ItemDefinitionGroup>
 
   <Target
@@ -78,85 +73,5 @@
       ComputeMlTwkGeneratedCompileInputs;
     </ComputeCompileInputsTargets>
   </PropertyGroup>
-
-  <Target
-  Name="MalterlibFS"
-  BeforeTargets="$(MalterlibFSBeforeTargets)"
-  AfterTargets="$(MalterlibFSAfterTargets)"
-  Condition="'@(MalterlibFS)' != ''"
-  DependsOnTargets="_SelectedFiles;ComputeMalterlibFSGeneratedCompileInputs"
-  >
-    <ItemGroup Condition="'@(SelectedFiles)' != ''">
-      <MalterlibFS Remove="@(MalterlibFS)" Condition="'%(Identity)' != '@(SelectedFiles)'" />
-    </ItemGroup>
-    <ItemGroup>
-      <MalterlibFS Condition="'@(MalterlibFS)' != ''">
-        <MinimalRebuildFromTracking Condition="'$(BuildType)' != 'Build' or '$(ForceRebuild)' == 'true'">false</MinimalRebuildFromTracking>
-        <AdditionalOptions0 Condition="'%(MalterlibFS.OutputAsObjectFile)' == 'true'"> -obj</AdditionalOptions0>
-        <AdditionalOptions1 Condition="'%(MalterlibFS.VerboseLogging)' == 'true'"> -verbose</AdditionalOptions1>
-        <AdditionalOptions2 Condition="'%(MalterlibFS.MalterlibFSPathPrefix)' != ''"> -dest "%(MalterlibFS.MalterlibFSPathPrefix)"</AdditionalOptions2>
-        <AdditionalOptions3 Condition="'%(MalterlibFS.ObjectFileName)' != ''"> -o "%(MalterlibFS.ObjectFileName)"</AdditionalOptions3>
-        <AdditionalOptions4 Condition="'%(MalterlibFS.CppFileName)' != ''"> -ocpp "%(MalterlibFS.CppFileName)"</AdditionalOptions4>
-        <AdditionalOptions5 Condition="'%(MalterlibFS.SymbolName)' != ''"> -symbol "%(MalterlibFS.SymbolName)"</AdditionalOptions5>
-      </MalterlibFS>
-    </ItemGroup>
-
-    <!--    
-      VerboseLogging="%(MalterlibFS.VerboseLogging)"
-      TrackerFrameworkPath            ="$(MalterlibFSTrackerFrameworkPath)"
-      TrackerSdkPath                  ="$(MalterlibFSTrackerSdkPath)"
-
-      TLogReadFiles                   ="@(MalterlibFSTLogReadFiles)"
-      TLogWriteFiles                  ="@(MalterlibFSTLogWriteFiles)"
-      ToolExe                         ="$(MalterlibFSToolExe)"
-      ToolPath                        ="$(MalterlibFSToolPath)"
-      
-      -->
-    <MTool
-      Condition="'@(MalterlibFS)' != '' and '%(MalterlibFS.ExcludedFromBuild)' != 'true'"
-
-      ToolCommand="VirtualFS"
-
-      Source="%(MalterlibFS.FullPath)"
-      AdditionalOptions="%(MalterlibFS.AdditionalOptions)%(MalterlibFS.AdditionalOptions0)%(MalterlibFS.AdditionalOptions1)%(MalterlibFS.AdditionalOptions2)%(MalterlibFS.AdditionalOptions3)%(MalterlibFS.AdditionalOptions4)%(MalterlibFS.AdditionalOptions5)"
-      
-      MinimalRebuildFromTracking="%(MalterlibFS.MinimalRebuildFromTracking)"
-      TrackerLogDirectory="$(TLogLocation)"
-
-      StandardOutputImportance="High"
-      StandardErrorImportance="High"
-      
-      EchoOff="true"
-      
-      ToolArchitecture                ="Native64Bit"
-      TrackFileAccess                 ="$(TrackFileAccess)"
-      />
-  </Target>
-
-  <Target Name="ComputeMalterlibFSGeneratedCompileInputs"
-          DependsOnTargets="$(ComputeMalterlibFSGeneratedCompileInputsDependsOn)"
-          Outputs="%(MalterlibFS.OutputDirectory)">
-    <ItemGroup Condition="'@(MalterlibFS)' != ''">
-      <Obj Include="%(MalterlibFS.ObjectFileName)" Condition="'%(MalterlibFS.DoCompileAndLink)' == 'true' and '%(MalterlibFS.ExcludedFromBuild)' != 'true' and '%(MalterlibFS.OutputAsObjectFile)' == 'true'" >
-        <LinkCompiled>%(MalterlibFS.LinkCompiled)</LinkCompiled>
-        <LibCompiled>%(MalterlibFS.LibCompiled)</LibCompiled>
-        <ImpLibCompiled>%(MalterlibFS.ImpLibCompiled)</ImpLibCompiled>
-      </Obj>
-      <ClCompile Include="%(MalterlibFS.CppFileName)" Condition="'%(MalterlibFS.DoCompileAndLink)' == 'true' and '%(MalterlibFS.ExcludedFromBuild)' != 'true'" >
-        <LinkCompiled   Condition="'%(MalterlibFS.LinkCompiled)'   == '' and '%(MalterlibFS.LinkCompiledInterface)'   != ''">%(MalterlibFS.LinkCompiledInterface)</LinkCompiled>
-        <LibCompiled    Condition="'%(MalterlibFS.LibCompiled)'    == '' and '%(MalterlibFS.LibCompiledInterface)'    != ''">%(MalterlibFS.LibCompiledInterface)</LibCompiled>
-        <ImpLibCompiled Condition="'%(MalterlibFS.ImpLibCompiled)' == '' and '%(MalterlibFS.ImpLibCompiledInterface)' != ''">%(MalterlibFS.ImpLibCompiledInterface)</ImpLibCompiled>
-      </ClCompile>
-    
-  </ItemGroup>
-  </Target>
-
-  <PropertyGroup>
-    <ComputeCompileInputsTargets>
-      $(ComputeCompileInputsTargets);
-      ComputeMalterlibFSGeneratedCompileInputs;
-    </ComputeCompileInputsTargets>
-  </PropertyGroup>
-
 
 </Project>
