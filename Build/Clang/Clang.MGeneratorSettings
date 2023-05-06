@@ -436,6 +436,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_Warnings_DeprecatedPragma =+ {
+		Flags: Compile.Warnings_DeprecatedPragma->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-deprecated-pragma"
+			, true, "-Wdeprecated-pragma"
+		)
+		, Type: "unique"
+	}
+
 	Compile_Warnings_ShiftOverflow =+ {
 		Flags: Compile.Warnings_ShiftOverflow->SwitchWithError(
 			"Unsupported option: "
@@ -585,6 +594,15 @@ GeneratorSetting
 			"Unsupported option: "
 			, false, "-Wno-align-mismatch"
 			, true, "-Walign-mismatch"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_BitwiseInsteadOfLogical =+ {
+		Flags: Compile.Warnings_BitwiseInsteadOfLogical->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-bitwise-instead-of-logical"
+			, true, "-Wbitwise-instead-of-logical"
 		)
 		, Type: "unique"
 	}

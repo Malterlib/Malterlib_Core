@@ -1222,10 +1222,12 @@ Compile
 	Warnings_DeprecatedDeclarations: bool?
 	Warnings_DeprecatedNonPrototype: bool?
 	Warnings_DeprecatedBuiltins: bool?
+	Warnings_DeprecatedPragma: bool?
 
 	Warnings_ShiftCountNegative: bool?
 	Warnings_ConstantConversion: bool?
 	Warnings_ShiftOverflow: bool?
+	Warnings_BitwiseInsteadOfLogical: bool?
 
 	Warnings_AlignMismatch: bool?
 	Warnings_ConversionToSmallerInt: bool?
