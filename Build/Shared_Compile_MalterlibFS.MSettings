@@ -1,0 +1,292 @@
+// Copyright © 2023 Favro Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+// MalterlibFS
+Compile
+{
+	&
+	{
+		LanguageFamily "Native"
+		Compile.Type "MalterlibFS"
+	}
+
+	DoCompileAndLink true
+	{
+		!!Compile.DoCompileAndLink undefined
+	}
+
+	VerboseLogging: bool?
+	VerboseLogging false
+
+	MalterlibFSPathPrefix: string?
+
+	ObjectFileName `@(Target:Target.IntermediateDirectory)@(File:this.Identity->GetFileNoExt())_VirtualFS.obj`
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			this.Type "File"
+		}
+	}
+	ObjectFileName `@(Target:Target.IntermediateDirectory)@(File:this.Identity->GetFileNoExt())_VirtualFS.s`
+	{
+		&
+		{
+			!PlatformFamily "Windows"
+			this.Type "File"
+		}
+	}
+	ObjectFileName "dummy"
+	{
+		!!Compile.ObjectFileName undefined
+	}
+	ASMFileName: string?
+	ASMFileName Compile.ObjectFileName
+	{
+		!PlatformFamily "Windows"
+	}
+
+	Platform: string?
+	Platform PlatformFamily
+	{
+		!!PlatformFamily "Linux"
+		!!PlatformFamily "macOS"
+	}
+
+	CppFileName: string?
+	CppFileName `@(Target:Target.IntermediateDirectory)@(File:this.Identity->GetFileNoExt())_VirtualFSCPP.cpp`
+	{
+		!!this.Type "File"
+	}
+	CppFileName "dummy"
+	{
+		!!Compile.CppFileName undefined
+	}
+
+	FullEval true
+
+	//DependencyFileName `@(Target:Target.IntermediateDirectory)@(Builtin.SourceFileName)_VirtualFS.d`
+
+	MalterlibDependencyFileName: string?
+	MalterlibDependencyFileName `@(Target:Target.IntermediateDirectory)MalterlibDependencies/@(File:this.Identity->GetFileNoExt())_VirtualFS.MalterlibDependency`
+	{
+		&
+		{
+			this.Type "File"
+			GeneratorFamily "Xcode"
+			!MalterlibDisableDependencyFiles true
+		}
+	}
+
+	SymbolName: string?
+	SymbolName "_gc_VFS_Bytes"
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			Architecture "x86"
+		}
+	}
+
+	OutputAsObjectFile: one_of(bool, string)?
+	OutputAsObjectFile true
+	{
+		&
+		{
+			Compile.OutputAsObjectFile undefined
+			PlatformFamily "Windows"
+		}
+	}
+	OutputAsObjectFile false
+	{
+		!!Compile.OutputAsObjectFile undefined
+	}
+
+	OutputAsAssembly: bool?
+	OutputAsAssembly true
+	{
+		&
+		{
+			Compile.OutputAsAssembly undefined
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformFamily "macOS"
+			}
+		}
+	}
+	OutputAsAssembly false
+	{
+		!!Compile.OutputAsAssembly undefined
+	}
+
+	/*OutputAsObjectFile Elf32
+	{
+		&
+		{
+			!PlatformFamily "Windows"
+			ArchitectureBitness 32
+		}
+	}
+	OutputAsObjectFile Elf64
+	{
+		&
+		{
+			!PlatformFamily "Windows"
+			ArchitectureBitness 64
+		}
+	}*/
+}
+
+GeneratorSetting
+{
+	!!Compile.Type "MalterlibFS"
+
+	Compile_ExtraCompilerFlags =+ {}
+	Compile_VerboseLogging =+ {}
+	Compile_OutputAsAssembly =+ {}
+	Compile_OutputAsObjectFile =+ {}
+	Compile_ObjectFileName =+ {}
+	Compile_ASMFileName =+ {}
+	Compile_Platform =+ {}
+	Compile_CppFileName =+ {}
+	Compile_DependencyFileName =+ {}
+	Compile_MalterlibDependencyFileName =+ {}
+	Compile_MalterlibFSPathPrefix =+ {}
+	Compile_Optimize =+ {}
+	Compile_DoCompileAndLink =+ {}
+	Compile_SymbolName =+ {}
+}
+
+Target
+{
+	AllFiles_MalterlibFS: [string] = []
+}
+
+GeneratorSetting
+{
+	Target_AllFiles_MalterlibFS {}
+}
+
+Property
+{
+	MalterlibFS_GeneratedFile_Cpp: one_of(type(CEntity), [any]) = []
+
+	MalterlibFS_GeneratedFile_Cpp {
+		Name: Compile.CppFileName
+		, Properties: {
+		}
+	}
+	{
+		!Compile.CppFileName undefined
+	}
+}
+
+Property
+{
+	MalterlibFS_GeneratedFile_Output: one_of(type(CEntity), [any]) = []
+
+	MalterlibFS_GeneratedFile_Output {
+		Name: Compile.ObjectFileName
+		, Properties: {
+		}
+	}
+	{
+		&
+		{
+			!Compile.ObjectFileName undefined
+			Compile.DoCompileAndLink true
+		}
+	}
+}
+
+%Group "~Automatic/Generated/MalterlibFS"
+{
+	Property
+	{
+		f_GetGeneratedFiles_Cpp function(string _File) [type(CEntity)] = []
+		f_GetGeneratedFiles_Cpp =+ &MalterlibFS_GeneratedFile_Cpp->GetProperty(_File)
+	}
+
+	Property
+	{
+
+		f_GetGeneratedFiles_Output function(string _File) [type(CEntity)] = []
+		f_GetGeneratedFiles_Output =+ &MalterlibFS_GeneratedFile_Output->GetProperty(_File)
+	}
+
+	Compile.AllowNonExisting true
+
+	%Group "Cpp"
+	{
+		%File Target.AllFiles_MalterlibFS->ForEach(&f_GetGeneratedFiles_Cpp)->Unique()
+	}
+	%Group "Output"
+	{
+		%File Target.AllFiles_MalterlibFS->ForEach(&f_GetGeneratedFiles_Output)->Unique()
+	}
+}
+
+Target
+{
+	ExtraGroups =+ "~Automatic/Generated/MalterlibFS"
+	{
+		!!LanguageFamily "Native"
+	}
+}
+
+Compile
+{
+	&
+	{
+		Compile.Type "MalterlibFS"
+		LanguageFamily "Native"
+	}
+
+	GenericCompileType "GenericCustom"
+
+	Custom_Shell undefined
+
+	Custom_WorkingDirectory Target:Target.IntermediateDirectory->MakeAbsolute()
+	Custom_Outputs [Compile.ObjectFileName, Compile.CppFileName]
+
+	Custom_Inputs =+ this.Identity
+
+	Custom_CommandLine `@(Builtin.MToolExe) VirtualFS -o @(Compile.ObjectFileName->Escape()) -ocpp @(Compile.CppFileName->Escape())`
+	Custom_CommandLine =+ ` -oidsdepend @(Compile.MalterlibDependencyFileName->Escape())`
+	{
+		!Compile.MalterlibDependencyFileName undefined
+	}
+	Custom_CommandLine =+ ` -symbol @(Compile.SymbolName->Escape())`
+	{
+		!Compile.SymbolName undefined
+	}
+
+	Custom_CommandLine =+ ` -platform @(Compile.Platform->Escape())`
+	{
+		!Compile.Platform undefined
+	}
+	Custom_CommandLine =+ " -verbose"
+	{
+		!!Compile.VerboseLogging true
+	}
+	Custom_CommandLine =+ Compile.OutputAsObjectFile->SwitchWithError("Unknown object file format"
+		, false, ""
+		, true, " -obj"
+		, "Elf32", " -elf32"
+		, "Elf64", " -elf64"
+	)
+	Custom_CommandLine =+ " -asm"
+	{
+		!!Compile.OutputAsAssembly true
+	}
+	Custom_CommandLine =+ ` @(fg_RecursiveStringArrayToCommandLine(Compile.ExtraCompilerFlags))`
+	{
+		!Compile.ExtraCompilerFlags undefined
+	}
+	Custom_CommandLine =+ ` -dest @(Compile.MalterlibFSPathPrefix->Escape())`
+	{
+		!Compile.MalterlibFSPathPrefix undefined
+	}
+	Custom_CommandLine =+ ` @(this.Identity->EscapeBash())`
+}
