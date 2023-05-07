@@ -255,7 +255,7 @@ struct CTest
 	uint32 m_bTest2:2;
 };
 
-TCMap<uint32> Indices;
+TCSet<uint32> Indices;
 TCVector<uint32> Indices;
 
 CByteVector ByteBuffer;
