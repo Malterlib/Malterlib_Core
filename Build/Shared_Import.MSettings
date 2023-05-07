@@ -363,11 +363,18 @@ Import
 		}
 	}
 
+	SdkRoot_macOS: string = (
+		(MalterlibMaxSupportedMacOSVersion == "Latest")
+		? "/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+		: `/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX@(MalterlibMaxSupportedMacOSVersion).sdk`
+	)
+	{
+		!!PlatformFamily "macOS"
+	}
+
 	CMake_Variables =+ [
 		`CMAKE_OSX_DEPLOYMENT_TARGET=@(MalterlibMinSupportedMacOSVersion)`
-		, `CMAKE_OSX_SYSROOT=@((MalterlibMaxSupportedMacOSVersion == "Latest") ?
-		"/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" :
-		`/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX@(MalterlibMaxSupportedMacOSVersion).sdk`)`
+		, `CMAKE_OSX_SYSROOT=@(Import.SdkRoot_macOS)`
 	]
 	{
 		!!PlatformFamily "macOS"
