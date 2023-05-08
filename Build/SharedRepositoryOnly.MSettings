@@ -1,8 +1,20 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-Include "VisualStudio/VisualStudio.MGeneratorSettings"
-Include "Xcode/Xcode.MGeneratorSettings"
+Import "Shared.MGeneratorSettings"
+
+Import "Xcode/Xcode.MGeneratorSettings"
+{
+	!!GeneratorFamily "Xcode"
+}
+Import "Clang/Clang.MGeneratorSettings"
+{
+	!!GeneratorFamily "Xcode"
+}
+Import "VisualStudio/VisualStudio.MGeneratorSettings"
+{
+	!!GeneratorFamily "VisualStudio"
+}
 
 // Configurations
 Include "Shared_Configurations.MSettings"
