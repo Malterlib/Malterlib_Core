@@ -503,19 +503,6 @@ Target
 
 Target
 {
-	CommandLine_Build ""
-	{
-		&
-		{
-			Target.Type "Tool"
-			Target.CommandLine_Build undefined
-			GeneratorFamily "Xcode"
-		}
-	}
-}
-
-Target
-{
 	&
 	{
 		LanguageFamily "Native"
