@@ -178,7 +178,11 @@ Property
 		}
 	}
 	{
-		!Compile.CppFileName undefined
+		&
+		{
+			!Compile.Disabled true
+			!Compile.CppFileName undefined
+		}
 	}
 }
 
@@ -194,6 +198,7 @@ Property
 	{
 		&
 		{
+			!Compile.Disabled true
 			!Compile.ObjectFileName undefined
 			Compile.DoCompileAndLink true
 		}
