@@ -47,4 +47,12 @@ Property
 
 	fg_RecursiveStringArrayToCommandLine function([one_of(string, [string])] _Commands) string = ""
 	fg_RecursiveStringArrayToCommandLine _Commands->ForEach(&fg_ExpandRecursiveStringArrayHelper)->ForEach(&fg_StringArrayToCommandLine)
+
+	fg_RemoveEmptyStringsFromArrayHelper function(string _String) [string] = []
+	fg_RemoveEmptyStringsFromArrayHelper =+ _String
+	{
+		!_String->IsEmpty() true
+	}
+
+	fg_RemoveEmptyStringsFromArray function([string] _Strings) [string] = _Strings->ForEach(&fg_RemoveEmptyStringsFromArrayHelper)
 }
