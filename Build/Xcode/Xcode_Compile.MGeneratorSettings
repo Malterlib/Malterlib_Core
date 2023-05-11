@@ -64,8 +64,7 @@ GeneratorSetting
 		}
 	}
 
-	Xcode_FileType: string
-	Xcode_FileType SwitchWithError(
+	Xcode_FileType: string = SwitchWithError(
 		Compile.Type, "Unknown compile type: "
 		, "C++", "sourcecode.cpp.cpp"
 		, "C", "sourcecode.c.c"
@@ -77,11 +76,7 @@ GeneratorSetting
 		, "StaticLibrary", "archive.ar"
 		, "DynamicLibrary", "archive.ar"
 		, "XcodeBundle", "wrapper.cfbundle"
-		, "QtRcc", "sourcecode.qt.rcc"
-		, "QtMoc", (this.Identity <==> ~"*.cpp") ? "sourcecode.c.cppmoc" : "sourcecode.c.h"
-		, "QtUic", "sourcecode.qt.uic"
 		, "Assembler", "sourcecode.asm"
-		, "MlTwk", "sourcecode.malterlib.twk"
 		, "WindowsResource", "text"
 		, "MalterlibFS", "sourcecode.cpp.cpp"
 		, "Nib", "wrapper.nib"

@@ -114,16 +114,6 @@ Property
 				%File "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/src/*"
 			}
 		}*/
-		%Group "MSBuild Targets"
-		{
-			Compile.Type "XML"
-			{
-				!GeneratorFamily "VisualStudio"
-			}
-			%File "VisualStudio/*.props"
-			%File "VisualStudio/*.targets"
-			%File "VisualStudio/*.xml"
-		}
 		%Group "Build System Generated Files"
 		{
 			%GenerateFile "IntermediateDirectories"

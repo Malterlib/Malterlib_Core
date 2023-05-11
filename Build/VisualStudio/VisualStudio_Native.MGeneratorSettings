@@ -6,8 +6,6 @@ GeneratorSetting
 	Target #<ImportTargets> =+ [
 		"$(VCTargetsPath)\\Microsoft.Cpp.targets"
 		, "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"
-		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.targets`
-		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.targets`
 		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.targets`
 	]
 	{
@@ -22,8 +20,6 @@ GeneratorSetting
 	Target #<ImportTargets_Properties> =+ [
 		"$(VCTargetsPath)\\Microsoft.Cpp.props"
 		, "$(VCTargetsPath)\\BuildCustomizations\\masm.props"
-		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\QtMoc.props`
-		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\MalterlibTargets.props`
 		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.props`
 	]
 	{
@@ -206,10 +202,6 @@ GeneratorSetting
 		, "Object", "Object"
 		, "Assembler", "MASM"
 		, "AssemblerNasm", "NASM"
-		, "QtRcc", "QtRcc"
-		, "QtMoc", "QtMoc"
-		, "QtUic", "QtUic"
-		, "MlTwk", "MlTwk"
 		, "WindowsResource", "ResourceCompile"
 		, "MSBuildTargets", "None"
 		, "PList", "None"

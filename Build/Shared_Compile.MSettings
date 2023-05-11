@@ -1,11 +1,21 @@
 // Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+Property
+{
+	CompileType: string?
+}
 
 // Compile type deduction for native language
 Compile
 {
 	!!LanguageFamily "Native"
+
+	// Afford custom compile types a chance to set compile type first
+	Type CompileType
+	{
+		!CompileType undefined
+	}
 
 	Type "StaticLibrary"
 	{
@@ -134,36 +144,6 @@ Compile
 				this.Identity ~"*.dox" // For doxygen
 				!this.Identity ~"*.*"
 			}
-		}
-	}
-
-	Type "QtRcc"
-	{
-		&
-		{
-			this.Type "File"
-			Compile.Type undefined
-			this.Identity ~"*.qrc"
-		}
-	}
-
-	Type "QtUic"
-	{
-		&
-		{
-			this.Type "File"
-			Compile.Type undefined
-			this.Identity ~"*.ui"
-		}
-	}
-
-	Type "MlTwk"
-	{
-		&
-		{
-			this.Type "File"
-			Compile.Type undefined
-			this.Identity ~"*.twk"
 		}
 	}
 
@@ -970,9 +950,6 @@ Property
 					Compile.Type "C++"
 					Compile.Type "C"
 					Compile.Type "Header"
-					Compile.Type "QtRcc"
-					Compile.Type "QtUic"
-					Compile.Type "MlTwk"
 					Compile.Type "MalterlibFS"
 					Compile.Type "WindowsResource"
 					Compile.Type "MSBuildTargets"
@@ -2803,53 +2780,6 @@ Property
 {
 	MalterlibDisableDependencyFiles: bool = false
 }
-
-// MlTwk
-Compile
-{
-	&
-	{
-		LanguageFamily "Native"
-		Compile.Type "MlTwk"
-	}
-
-	DoCompileAndLink true
-	{
-		&
-		{
-			Compile.DoCompileAndLink undefined
-			!DebugCode true
-            !GeneratorFamily "Xcode" // Due to limitations in Xcode we always compile and link
-		}
-	}
-	DoCompileAndLink false
-	{
-		&
-		{
-			Compile.DoCompileAndLink undefined
-			DebugCode true
-            !GeneratorFamily "Xcode" // Due to limitations in Xcode we always compile and link
-		}
-	}
-
-	GenerateDebugInformation: bool?
-	GenerateDebugInformation true
-	{
-		!!Compile.GenerateDebugInformation undefined
-	}
-
-	ObjectFileName `@(Target:Target.IntermediateDirectory)@(File:this.Identity->GetFileNoExt())_Twk.cpp`
-	{
-		!!this.Type "File"
-	}
-	ObjectFileName "dummy"
-	{
-		!!Compile.ObjectFileName undefined
-	}
-
-	FullEval true
-}
-
 
 // Windows assembler settings
 Compile
