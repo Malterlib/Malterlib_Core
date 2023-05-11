@@ -154,6 +154,12 @@ Property
 		}
 	}
 
+	HostExecutableExtension: string = ""
+	HostExecutableExtension ".exe"
+	{
+		!!HostPlatformFamily "Windows"
+	}
+
 	ScriptExport function(string _Name, string _Value) string
 	ScriptExport `set @(_Name)=@(_Value)`
 	{
