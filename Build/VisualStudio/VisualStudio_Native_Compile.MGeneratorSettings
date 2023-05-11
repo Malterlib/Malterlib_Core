@@ -130,6 +130,12 @@ GeneratorSetting
 		}
 	}
 
+	Compile_Custom_MinimalRebuildFromTracking {
+		VSSettings: {
+			MinimalRebuildFromTracking: Compile.Custom_MinimalRebuildFromTracking->f_BoolToString()
+		}
+	}
+
 	Compile_Custom_Message =+ {
 		VSSettings: {
 			Message: Compile.Custom_Message->EscapeMSBuild()

@@ -2852,7 +2852,14 @@ Compile
 		!!GeneratorFamily "VisualStudio"
 	}
 
+	Custom_BuildInParallel: bool?
 	Custom_BuildInParallel true
+	{
+		!!GeneratorFamily "VisualStudio"
+	}
+
+	Custom_MinimalRebuildFromTracking: bool?
+	Custom_MinimalRebuildFromTracking true
 	{
 		!!GeneratorFamily "VisualStudio"
 	}
