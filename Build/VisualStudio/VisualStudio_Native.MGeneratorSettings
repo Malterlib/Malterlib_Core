@@ -193,7 +193,7 @@ GeneratorSetting
 {
 	!!Target.Language "Native"
 
-	VisualStudio_FileType (Compile.GenericCompileType <==> "GenericCustom") ? "CustomBuild" : SwitchWithError(Compile.Type, "Unknown compile type: "
+	VisualStudio_FileType: string = (Compile.GenericCompileType <==> "GenericCustom") ? "CustomBuild" : SwitchWithError(Compile.Type, "Unknown compile type: "
 		, "C++", "ClCompile"
 		, "C++Managed", "ClCompile"
 		, "C", "ClCompile"

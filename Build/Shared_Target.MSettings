@@ -51,8 +51,10 @@ Target
 		!!Target.CLRSupport undefined
 	}
 
-	NasmPath: string
-	NasmPath `@(MalterlibBinariesDirectory->WindowsPath())\\`
+	NasmPath: string? = `@(MalterlibBinariesDirectory->WindowsPath())\\`
+	{
+		!!Target.Language "Native"
+	}
 }
 
 // Target type

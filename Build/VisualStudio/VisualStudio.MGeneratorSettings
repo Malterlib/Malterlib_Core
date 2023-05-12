@@ -118,7 +118,6 @@ GeneratorSetting
 		!!_CompileSettings<Value>->HasMember("VSSettings") true
 	}
 
-	VisualStudio_FileType: string
 	VisualStudio_DependencyType: string?
 
 	f_BoolToStringDotNet function(bool _bValue) string = (_bValue ? "True" : "False")

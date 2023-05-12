@@ -28,7 +28,7 @@ GeneratorSetting
 {
 	!!Target.Language "C#"
 
-	VisualStudio_FileType SwitchWithError(
+	VisualStudio_FileType: string = SwitchWithError(
 		Compile.Type, "Unknown compile type: "
 		, "C#", "Compile"
 		, "C#Component", "Compile"
