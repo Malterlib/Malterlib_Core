@@ -66,7 +66,7 @@
 		"Hash": "89b1b1e17d4f22a41880ecdc8a020cb0bff5a412"
 	},
 	"../BuildSystem": {
-		"Hash": "8a0b24c0b65c0cc70fdd35cf93ad0e8677f8f94c"
+		"Hash": "885db8006f5dfb035068bcaf5f81b3ba5f744962"
 	},
 	"../Cloud": {
 		"Hash": "901b34dc8509bc113b2dea9777b502dae3a8fb98"
@@ -156,7 +156,7 @@
 		"Hash": "0f2edfd088b37c89fc1d2f054bbb5d6721a844c8"
 	},
 	"../Perforce": {
-		"Hash": "974e93aa2ceaa5edf6f5c9d5149a43b3c68faa53"
+		"Hash": "8ef6e94209be1cacd23efa748bd530b0629092be"
 	},
 	"../Preprocessor": {
 		"Hash": "04e82f4a2053e87f5c36b74d2a04df7c67a66db2"
