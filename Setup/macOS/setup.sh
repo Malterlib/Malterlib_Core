@@ -36,6 +36,7 @@ Setting_Plugin_CustomizeAnnotations=true
 Setting_Plugin_HideDistractions=true
 Setting_Plugin_P4Checkout=false
 Setting_SyntaxHighlight=true
+Setting_PatchedLLBuild=true
 
 HasSystemIntegrityProtection=true
 CsrStatus=`csrutil status 2>/dev/null | head -n 1`
@@ -50,53 +51,11 @@ if [[ "$(defaults read /Library/Preferences/com.apple.security.libraryvalidation
 fi
 
 VersionLessThanEqual() {
-    [  "$1" = "`printf "$1\n$2" | sort -V | head -n1`" ]
+	[  "$1" = "`printf "$1\n$2" | sort -V | head -n1`" ]
 }
 
 VersionLessThan() {
-    [ "$1" = "$2" ] && return 1 || VersionLessThanEqual $1 $2
-}
-
-CreateXcodeCertificate()
-{
-	if security find-certificate -c MalterlibXcodeCert > /dev/null; then
-		return
-	fi
-	pushd "$TMPDIR"
-		cat > MalterlibXcodeCert.cnf << EOF
-[ req ]
-prompt             = no
-distinguished_name = my dn
-
-[ my dn ]
-# The bare minimum is probably a commonName
-commonName = MalterlibXcodeCert
-countryName = US
-localityName = MalterlibXcodeCert
-organizationName = MalterlibXcodeCert
-organizationalUnitName = MalterlibXcodeCert
-stateOrProvinceName = MalterlibXcodeCert
-emailAddress = MalterlibXcodeCert@example.com
-name = MalterlibXcodeCert
-surname = MalterlibXcodeCert
-givenName = MalterlibXcodeCert
-initials = MalterlibXcodeCert
-dnQualifier = some
-
-[ MalterlibXcodeCertExtensions ]
-keyUsage = digitalSignature
-extendedKeyUsage = codeSigning
-EOF
-		openssl genrsa -out MalterlibXcodeCert.key 2048
-		openssl req -new -key MalterlibXcodeCert.key -out MalterlibXcodeCert.csr -config MalterlibXcodeCert.cnf -extensions 'MalterlibXcodeCertExtensions'
-		openssl x509 -req -days 10000 -in MalterlibXcodeCert.csr -signkey MalterlibXcodeCert.key -out MalterlibXcodeCert.crt -extfile MalterlibXcodeCert.cnf -extensions 'MalterlibXcodeCertExtensions'
-		openssl pkcs12 -export -in MalterlibXcodeCert.crt -inkey MalterlibXcodeCert.key -out MalterlibXcodeCert.pfx -passout pass:Dummy
-
-		security import MalterlibXcodeCert.pfx -P Dummy
-		security add-trusted-cert -p codeSign MalterlibXcodeCert.crt
-
-		rm MalterlibXcodeCert.*
-	popd
+	[ "$1" = "$2" ] && return 1 || VersionLessThanEqual $1 $2
 }
 
 SignXcode()
@@ -116,16 +75,30 @@ SignXcode()
 		return 0
 	fi
 
-	if [ ! -e "$XcodeLocation/Contents/unsigned" ] ; then
+	if [ ! -e "$XcodeLocation/Contents/SignState.json" ] ; then
 		pwd
-		sudo codesign -f -s MalterlibXcodeCert "$XcodeLocation/Contents/Developer/usr/bin/xcodebuild"
-		sudo codesign -f -s MalterlibXcodeCert "$XcodeLocation"
 
-		echo Removivg xattrs
-		sudo xattr -rc "$XcodeLocation" || true
+		XcodeDir=$(dirname -- "$XcodeLocation")
+		XcodeFile=$(basename -- "$XcodeLocation")
+		XcodeExtension="${XcodeFile##*.}"
+		XcodeFile="${XcodeFile%.*}"
+		XcodeTempLocation="${XcodeDir}/${XcodeFile}-Temp-${XcodeVersion}.app"
+		if [ -e "$XcodeTempLocation" ]; then
+			rm -rf "$XcodeTempLocation"
+		fi
+
+		"$MToolExecutable" ResignXcode --source "$XcodeLocation" --destination "$XcodeTempLocation"
+
+		XcodeOriginalDestination="${XcodeDir}/${XcodeFile}-Original-${XcodeVersion}.app"
+		if [ -e "$XcodeOriginalDestination" ]; then
+			rm -rf "$XcodeOriginalDestination"
+		fi
+
+		mv "$XcodeLocation" "$XcodeOriginalDestination"
+		mv "$XcodeTempLocation" "$XcodeLocation"
+
 		echo Adding Xcode with spctl
 		sudo spctl --add --label "Xcode" "$XcodeLocation"
-		sudo touch "$XcodeLocation/Contents/unsigned"
 	fi
 
 	if ! "$XcodeLocation/Contents/Developer/usr/bin/xcodebuild" -version ; then
@@ -217,20 +190,22 @@ UpdateXcodePlugins()
 
 	popd > /dev/null
 
-	if [[ "$XcodeVersion" == "14.2" ]] || [[ "$XcodeVersion" == "14.3" ]] ; then
-		pushd "$RepositoryDirectory/MalterlibXcodePatches/llbuild" > /dev/null
+	if $Setting_PatchedLLBuild; then
+		if [[ "$XcodeVersion" == "14.2" ]] || [[ "$XcodeVersion" == "14.3" ]] ; then
+			pushd "$RepositoryDirectory/MalterlibXcodePatches/llbuild" > /dev/null
 
-		if [[ "$HasLibraryValidation" == "false" ]]; then
-			echo "Patching llbuild"
-			if ! [ -f "$2/Contents/SharedFrameworks/llbuild.framework-old" ]; then
-				mv "$2/Contents/SharedFrameworks/llbuild.framework" "$2/Contents/SharedFrameworks/llbuild.framework-old"
-			else
-				rm -rf "$2/Contents/SharedFrameworks/llbuild.framework"
+			if [[ "$HasLibraryValidation" == "false" ]] || [ -e "$2/Contents/SignState.json" ]; then
+				echo "Patching llbuild"
+				if ! [ -f "$2/Contents/SharedFrameworks/llbuild.framework-old" ]; then
+					mv "$2/Contents/SharedFrameworks/llbuild.framework" "$2/Contents/SharedFrameworks/llbuild.framework-old"
+				else
+					rm -rf "$2/Contents/SharedFrameworks/llbuild.framework"
+				fi
+				cp -a "llbuild.framework" "$2/Contents/SharedFrameworks/"
 			fi
-			cp -a "llbuild.framework" "$2/Contents/SharedFrameworks/"
-		fi
 
-		popd > /dev/null
+			popd > /dev/null
+		fi
 	fi
 
 	if $Setting_SyntaxHighlight; then
@@ -258,12 +233,11 @@ UpdateXcode()
 
 function UpdateAllXcode()
 {
-	if [[ "$HasSystemIntegrityProtection" == "true" ]]; then
-		echo "Installing Xcode plugins not possible. Disable features or reboot into recovery mode and disable system integrity protection: csrutil disable"
-		return 1
-	fi
-
 	for File in /Applications/Xcode*.app; do
+		if [[ $File == *"Original"* ]]; then
+			continue;
+		fi
+
 		UpdateXcode "$File"
 	done
 }
@@ -275,14 +249,11 @@ function SignAllXcode()
 		return 0
 	fi
 
-	if [[ "$HasSystemIntegrityProtection" == "true" ]]; then
-		echo "Signing Xcode not possible. Disable features or reboot into recovery mode and disable system integrity protection: csrutil disable"
-		return 1
-	fi
-
-	CreateXcodeCertificate;
-
 	for File in /Applications/Xcode*.app; do
+		if [[ $File == *"Original"* ]]; then
+			continue;
+		fi
+
 		SignXcode "$File"
 	done
 }
@@ -297,6 +268,7 @@ if [ "$1" == "--all" ] ; then
 	Setting_Plugin_HideDistractions=true
 	Setting_Plugin_P4Checkout=true
 	Setting_SyntaxHighlight=true
+	Setting_PatchedLLBuild=true
 	AskSettings=false
 elif [ "$1" == "--default" ] ; then
 	shift
@@ -310,6 +282,7 @@ elif [ "$1" == "--none" ] ; then
 	Setting_Plugin_HideDistractions=false
 	Setting_Plugin_P4Checkout=false
 	Setting_SyntaxHighlight=false
+	Setting_PatchedLLBuild=false
 fi
 
 function AskForSetting()
@@ -358,34 +331,35 @@ function DoInstall()
 
 		Divider
 
-		Setting_Plugin_Malterlib=$(AskForSetting $Setting_Plugin_Malterlib $'The \e[38;5;39mMalterlib\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_Malterlib/README.md):\n   * Allow Xcode to automatically reload without prompts after build system generation\n   * Run multiple executables with ⌘-G\n   * Configure extra debug settings with Ctrl+O\n   * Disables buggy build queue throttling' $'Install \e[38;5;39mMalterlb\e[39m Xcode plugin?')
+		Setting_PatchedLLBuild=$(AskForSetting $Setting_PatchedLLBuild $'\e[38;5;39mPatched LLBuild\e[39m:\n   * Patch LLBuild to allow incremental builds to build in parallel' $'Install \e[38;5;39mpatched LLBuild\e[39m for Xcode?')
 
 		Divider
 
-		Setting_Plugin_NavigationFixes=$(AskForSetting $Setting_Plugin_NavigationFixes $'The \e[38;5;39mNavigationFixes\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_NavigationFixes/README.md):\n   * Navigate the Xcode Navigators with ⌘-N / ⌘-Shift-N\n   * Visual Studio like keyboard navigation for whole word movements\n   * Disable unhelpful automatic format when pasting\n   * Navigate to file:line from execution output by double-clicking' $'Install \e[38;5;39mNavigationFixes\e[39m Xcode plugin?')
+		Setting_Plugin_Malterlib=$(AskForSetting $Setting_Plugin_Malterlib $'The \e[38;5;39mMalterlib\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode143/Plugins/Plugin_Malterlib/README.md):\n   * Allow Xcode to automatically reload without prompts after build system generation\n   * Run multiple executables with ⌘-G\n   * Configure extra debug settings with Ctrl+O\n   * Disables buggy build queue throttling' $'Install \e[38;5;39mMalterlb\e[39m Xcode plugin?')
 
 		Divider
 
-		Setting_Plugin_CustomizeAnnotations=$(AskForSetting $Setting_Plugin_CustomizeAnnotations $'The \e[38;5;39mCustomizeAnnotations\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_CustomizeAnnotations/README.md):\n   * Color errors/warnings in editor to make them easier to read with a dark color scheme' $'Install \e[38;5;39mCustomizeAnnotations\e[39m Xcode plugin?')
+		Setting_Plugin_NavigationFixes=$(AskForSetting $Setting_Plugin_NavigationFixes $'The \e[38;5;39mNavigationFixes\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode143/Plugins/Plugin_NavigationFixes/README.md):\n   * Navigate the Xcode Navigators with ⌘-N / ⌘-Shift-N\n   * Visual Studio like keyboard navigation for whole word movements\n   * Disable unhelpful automatic format when pasting\n   * Navigate to file:line from execution output by double-clicking' $'Install \e[38;5;39mNavigationFixes\e[39m Xcode plugin?')
 
 		Divider
 
-		Setting_Plugin_HideDistractions=$(AskForSetting $Setting_Plugin_HideDistractions $'The \e[38;5;39mHideDistractions\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_HideDistractions/README.md):\n   * Toggle editor only mode with ⌘-Shift-G (default, can be remapped)' $'Install \e[38;5;39mHideDistractions\e[39m Xcode plugin?')
+		Setting_Plugin_CustomizeAnnotations=$(AskForSetting $Setting_Plugin_CustomizeAnnotations $'The \e[38;5;39mCustomizeAnnotations\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode143/Plugins/Plugin_CustomizeAnnotations/README.md):\n   * Color errors/warnings in editor to make them easier to read with a dark color scheme' $'Install \e[38;5;39mCustomizeAnnotations\e[39m Xcode plugin?')
 
 		Divider
 
-		Setting_Plugin_P4Checkout=$(AskForSetting $Setting_Plugin_P4Checkout $'The \e[38;5;39mP4Checkout\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode92/Plugins/Plugin_P4Checkout/README.md):\n   * Automatically check out files in Perfoce when editing them' $'Install \e[38;5;39mP4Checkout\e[39m Xcode plugin?')
+		Setting_Plugin_HideDistractions=$(AskForSetting $Setting_Plugin_HideDistractions $'The \e[38;5;39mHideDistractions\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode143/Plugins/Plugin_HideDistractions/README.md):\n   * Toggle editor only mode with ⌘-Shift-G (default, can be remapped)' $'Install \e[38;5;39mHideDistractions\e[39m Xcode plugin?')
+
+		Divider
+
+		Setting_Plugin_P4Checkout=$(AskForSetting $Setting_Plugin_P4Checkout $'The \e[38;5;39mP4Checkout\e[39m plugin (https://github.com/Malterlib/MalterlibXcodePatches/blob/xcode143/Plugins/Plugin_P4Checkout/README.md):\n   * Automatically check out files in Perfoce when editing them' $'Install \e[38;5;39mP4Checkout\e[39m Xcode plugin?')
 
 		Divider
 	fi
 
 	UpdateDependencies
 
-	if $Setting_Plugin_Malterlib || $Setting_Plugin_NavigationFixes || $Setting_Plugin_CustomizeAnnotations || $Setting_Plugin_HideDistractions || $Setting_Plugin_P4Checkout ; then
+	if $Setting_Plugin_Malterlib || $Setting_Plugin_NavigationFixes || $Setting_Plugin_CustomizeAnnotations || $Setting_Plugin_HideDistractions || $Setting_Plugin_P4Checkout || $Setting_SyntaxHighlight || $Setting_PatchedLLBuild; then
 		SignAllXcode
-	fi
-
-	if $Setting_Plugin_Malterlib || $Setting_Plugin_NavigationFixes || $Setting_Plugin_CustomizeAnnotations || $Setting_Plugin_HideDistractions || $Setting_Plugin_P4Checkout || $Setting_SyntaxHighlight ; then
 		UpdateAllXcode
 	fi
 
