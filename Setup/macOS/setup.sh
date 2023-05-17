@@ -96,9 +96,6 @@ SignXcode()
 
 		mv "$XcodeLocation" "$XcodeOriginalDestination"
 		mv "$XcodeTempLocation" "$XcodeLocation"
-
-		echo Adding Xcode with spctl
-		sudo spctl --add --label "Xcode" "$XcodeLocation"
 	fi
 
 	if ! "$XcodeLocation/Contents/Developer/usr/bin/xcodebuild" -version ; then
@@ -191,7 +188,7 @@ UpdateXcodePlugins()
 	popd > /dev/null
 
 	if $Setting_PatchedLLBuild; then
-		if [[ "$XcodeVersion" == "14.2" ]] || [[ "$XcodeVersion" == "14.3" ]] ; then
+		if [[ "$XcodeVersion" == "14.2" ]] || [[ "$XcodeVersion" == "14.3" ]] || [[ "$XcodeVersion" == "14.3.1" ]] ; then
 			pushd "$RepositoryDirectory/MalterlibXcodePatches/llbuild" > /dev/null
 
 			if [[ "$HasLibraryValidation" == "false" ]] || [ -e "$2/Contents/SignState.json" ]; then
