@@ -880,7 +880,7 @@ public:
 
 		__super::f_InitModule();
 
-#ifndef DMibSanitizerEnabled_Address
+#if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
 		if (gs_LibraryRefCount.f_Load() == -1)
 			f_InstallVistaExceptionHack();
 #endif
@@ -995,9 +995,12 @@ public:
 		CSystem::f_Destruct();
 		m_bDestroying = true;
 
+#if !defined(DArchitecture_arm64)
 		f_UninstallVistaExceptionHack();
+#endif
 	}
 
+#ifndef DArchitecture_arm64
 
 #ifdef _M_IX86
 
@@ -1237,7 +1240,7 @@ public:
 			m_pVistaExceptinoHackVectoredHandler = nullptr;
 		}
 	}
-
+#endif
 };
 
 static inline_small CSystemWindowsMSVC *fg_GetLocalSys()

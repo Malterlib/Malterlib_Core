@@ -597,6 +597,16 @@ Target
 		}
 	}
 
+	VisualStudioPlatform "ARM64"
+	{
+		&
+		{
+			Target.VisualStudioPlatform undefined
+			Platform "Windows"
+			Architecture "arm64"
+		}
+	}
+
 	VisualStudioPlatform "Win32"
 	{
 		&
@@ -789,7 +799,11 @@ Target
 	DefaultToolArchitecture: string?
 	DefaultToolArchitecture "Native64Bit"
 	{
-		!!WindowsNativeToolChain true
+		&
+		{
+			WindowsNativeToolChain true
+			!HostArchitecture "arm64"
+		}
 	}
 
 	ExtraLinkerFlags: [one_of(string, [string])]?
@@ -2658,6 +2672,10 @@ Target
 
 	MinimumRequiredVersion: string?
 	MinimumRequiredVersion "6.0"
+	MinimumRequiredVersion "6.02"
+	{
+		!!Architecture "arm64"
+	}
 
 	EntryPointSymbol: string?
 	EntryPointSymbol "wWinMainCRTStartup"

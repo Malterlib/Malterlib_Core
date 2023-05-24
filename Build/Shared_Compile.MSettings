@@ -1882,18 +1882,6 @@ Compile
 		!!PlatformFamily "Windows"
 	}
 
-	PreprocessorDefines += [
-		`DDefaultToolArchitecture_@(Target:Target.DefaultToolArchitecture->Replace(' ', ''))`
-		, `DDefaultToolArchitecture=@(Target:Target.DefaultToolArchitecture->Replace(' ', ''))`
-	]
-	{
-		&
-		{
-			PlatformType "Windows"
-			!Target:Target.DefaultToolArchitecture undefined
-		}
-	}
-
 	PreprocessorDefines += "DMibSafeThreadLocals"
 	{
 		!!EnableSafeThreadLocals true

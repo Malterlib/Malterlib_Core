@@ -16,6 +16,34 @@
 #	error "Implement this"
 #endif
 
+#if defined(DCompiler_MSVC) && defined(DArchitecture_arm64)
+// ARM64
+
+#define DMibHelperArm64SysReg(op0, op1, crn, crm, op2) \
+        ( ((op0 & 1) << 14) | \
+          ((op1 & 7) << 11) | \
+          ((crn & 15) << 7) | \
+          ((crm & 15) << 3) | \
+          ((op2 & 7) << 0) )
+
+#define DMibHelperArm64SysReg_OP1(_Reg_) (((_Reg_) >> 11) & 7)
+#define DMibHelperArm64SysReg_CRN(_Reg_) (((_Reg_) >> 7) & 15)
+#define DMibHelperArm64SysReg_CRM(_Reg_) (((_Reg_) >> 3) & 15)
+#define DMibHelperArm64SysReg_OP2(_Reg_) ((_Reg_) & 7)
+
+#define DMibArm64_CNTVCT_EL0        DMibHelperArm64SysReg(3,3,14, 0,2)  // Generic Timer counter register
+#define DMibArm64_CNTFRQ_EL0        DMibHelperArm64SysReg(3,3,14, 0,0)  // Generic Timer counter frequency register
+#define DMibArm64_PMCCNTR_EL0       DMibHelperArm64SysReg(3,3, 9,13,0)  // Cycle Count Register [CP15_PMCCNTR]
+#define DMibArm64_PMSELR_EL0        DMibHelperArm64SysReg(3,3, 9,12,5)  // Event Counter Selection Register [CP15_PMSELR]
+#define DMibArm64_PMXEVCNTR_EL0     DMibHelperArm64SysReg(3,3, 9,13,2)  // Event Count Register [CP15_PMXEVCNTR]
+#define DMibArm64_PMXEVCNTRn_EL0(n) DMibHelperArm64SysReg(3,3,14, 8+((n)/8), (n)%8)    // Direct Event Count Register [n/a]
+#define DMibArm64_TPIDR_EL0         DMibHelperArm64SysReg(3,3,13, 0,2)  // Thread ID Register, User Read/Write [CP15_TPIDRURW]
+#define DMibArm64_TPIDRRO_EL0       DMibHelperArm64SysReg(3,3,13, 0,3)  // Thread ID Register, User Read Only [CP15_TPIDRURO]
+#define DMibArm64_TPIDR_EL1         DMibHelperArm64SysReg(3,0,13, 0,4)  // Thread ID Register, Privileged Only [CP15_TPIDRPRW]
+
+#endif
+
+
 // Memory intrinsics
 #if defined(DPlatformFamily_macOS)
 	extern "C" void	*memcpy(void *, const void *, __SIZE_TYPE__);
@@ -256,22 +284,26 @@
 
 // Num bits set
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	ifdef DConfig_Optimized
+#	ifndef DConfig_NoNewInstructions
 #		define DMibPNumBitsSet32(d_Value) __builtin_popcount(d_Value)
 #		if DMibPPtrBits >= 64
 #			define DMibPNumBitsSet64(d_Value) __builtin_popcountll(d_Value)
 #		endif
 #	endif
 #elif defined(DCompiler_MSVC)
-#	ifdef DConfig_Optimized
-#		if defined(DArchitecture_x86) || defined(DArchitecture_x64)
-#			include <nmmintrin.h>
-#			define DMibPNumBitsSet32(d_Value) _mm_popcnt_u32(d_Value)
-#			if defined(DArchitecture_x64)
-#				define DMibPNumBitsSet64(_x) _mm_popcnt_u64(_x)
+#	if defined(DArchitecture_arm64)
+#		define DMibPNumBitsSet32(d_Value) _CountOneBits(d_Value)
+#		define DMibPNumBitsSet64(d_Value) _CountOneBits64(d_Value)
+#	else
+#		ifndef DConfig_NoNewInstructions
+#			if defined(DArchitecture_x86) || defined(DArchitecture_x64)
+#				define DMibPNumBitsSet32(d_Value) __popcnt(d_Value)
+#				if defined(DArchitecture_x64)
+#					define DMibPNumBitsSet64(_x) __popcnt64(_x)
+#				endif
+#			else
+#				error "Implement this"
 #			endif
-#		else
-#			error "Implement this"
 #		endif
 #	endif
 #else

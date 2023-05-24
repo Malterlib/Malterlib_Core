@@ -17,7 +17,9 @@ function DoDetect()
 			export MalterlibTerminalHeight=`tput lines`
 		fi
 		MalterlibPlatform=Windows
-		if [[ $ProcessorArch == i*86 ]] ; then
+		if [[ "$PROCESSOR_IDENTIFIER" == ARMv8\ \(64-bit\)* ]]; then
+			MalterlibArch=arm64
+		elif [[ $ProcessorArch == i*86 ]] ; then
 			MalterlibArch=x86
 		elif [[ $ProcessorArch == x86_64 ]] ; then
 			MalterlibArch=x64

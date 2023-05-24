@@ -180,7 +180,7 @@ namespace
 #include "Malterlib_Core_PlatformImp_MSVC_CPUUsageMonitor.cpp"
 
 // Note: These needs to be nade exactly like this to be compatible with old version of library (when Malterlib was named Ids)
-#ifdef DArchitecture_x64
+#if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
 	#pragma comment(linker, "/export:IdsFreeLibraryExternal=fg_IdsFreeLibraryExternal")
 	#pragma comment(linker, "/export:IdsLoadLibraryExternal=fg_IdsLoadLibraryExternal")
 #else
@@ -526,7 +526,7 @@ static mint fsg_GetStackTrace(mint *_pStack, mint _nMaxDepth, mint _StackFrame)
 
 inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth)
 {
-#ifdef DArchitecture_x64
+#if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
 
 	if (NLocal::g_VersionInfo.dwMajorVersion < 0x06)
 		_nMaxDepth = fg_Min(_nMaxDepth, 63);
@@ -559,7 +559,7 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 
 inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
 {
-#ifdef DArchitecture_x64
+#if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
 	CMibCodeAddress StackTrace[1];
 	if (RtlCaptureStackBackTrace(_iDepth+1, 1, (void **)StackTrace, nullptr) > 0)
 		return StackTrace[0];
@@ -1618,7 +1618,7 @@ void fg_SetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage, void *_pDat
 			if (NT_SUCCESS(NLocal::g_OptionalFunctions.m_fNtQueryInformationThread(hThread, (::THREADINFOCLASS)NLocal::ThreadBasicInformation, &ThreadInfo, sizeof( NLocal::THREAD_BASIC_INFORMATION ), 0)))
 			{
 				mint *pTIB = (mint *)ThreadInfo.TebBaseAddress;
-	#if defined(_M_X64)
+	#if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
 				if (_iStorage < 0x40)
 					pTIB[_iStorage + 0x290] = (mint)_pData;
 				else if (_iStorage < 0x440)
@@ -1690,7 +1690,7 @@ void *fg_GetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage)
 			if (NT_SUCCESS(NLocal::g_OptionalFunctions.m_fNtQueryInformationThread(hThread, (::THREADINFOCLASS)NLocal::ThreadBasicInformation, &ThreadInfo, sizeof( NLocal::THREAD_BASIC_INFORMATION ), 0)))
 			{
 				mint *pTIB = (mint *)ThreadInfo.TebBaseAddress;
-	#if defined(_M_X64)
+	#if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
 				if (_iStorage < 0x40)
 					pRet = (void *)pTIB[_iStorage + 0x290];
 				else if (_iStorage < 0x440)
@@ -1809,7 +1809,7 @@ void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
 	}
 }
 
-#if defined(_M_X64)
+#if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
 mint g_OffsetThreadLocalOffset = 0x1780;
 #else
 mint g_OffsetThreadLocalOffset = 0xf94;
@@ -6305,11 +6305,13 @@ void fg_DestroySystem()
 
 void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 { // Should probably be moved to a file Malterlib_x86_MSVC.cpp or similar.
-	int CPUInfo[4];
-
 	_Info.m_Architecture = NMib::EProcessorArchitecture_Unknown;
 	_Info.m_Features = NMib::EProcessorFeature_None;	
-
+#if defined(DArchitecture_arm64)
+	_Info.m_Architecture = EProcessorArchitecture_arm64;
+	_Info.m_Features |= EProcessorFeature_NEON;
+#else
+	int CPUInfo[4];
 	__cpuid(CPUInfo, 0);
 
 	int MaxInfoType = CPUInfo[0];
@@ -6331,6 +6333,7 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 	}
 
 	_Info.m_Architecture = (sizeof(void*) == 4) ? EProcessorArchitecture_x86 : EProcessorArchitecture_x86_64;
+#endif
 }
 
 bool NMib::NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)

@@ -187,6 +187,7 @@ Property
 				PlatformFamily "iOS"
 				PlatformFamily "macOS"
 				PlatformFamily "Linux"
+				PlatformFamily "Windows"
 			}
 			EnableArchitecture_arm64 true
 		}

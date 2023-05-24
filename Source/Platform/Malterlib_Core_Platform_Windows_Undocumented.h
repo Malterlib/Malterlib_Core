@@ -234,7 +234,7 @@ struct CUndocumentedTEB
 	ULONG                        HeapVirtualAffinity;               /* fa8/17a0 */
 	PVOID                        CurrentTransactionHandle;          /* fac/17a8 */
 	PVOID                        ActiveFrame;                       /* fb0/17b0 */
-#if defined(_M_X64)
+#if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
 	PVOID                        unknown[2];                        /*     17b8 */
 #endif
 	PVOID                       *FlsSlots;                          /* fb4/17c8 */
@@ -515,10 +515,12 @@ enum Undocumented_PROCESSINFOCLASS
 
 inline_always CUndocumentedTEB *fg_GetTEB()
 {
-#if defined(_M_X64)
-	return (CUndocumentedTEB *)__readgsqword(6*sizeof(void*));
+#if defined(DArchitecture_arm64)
+	return (CUndocumentedTEB *)__readx18qword(6 * sizeof(void*));
+#elif defined(DArchitecture_x64)
+	return (CUndocumentedTEB *)__readgsqword(6 * sizeof(void*));
 #else
-	return (CUndocumentedTEB *)__readfsdword(6*sizeof(void*));
+	return (CUndocumentedTEB *)__readfsdword(6 * sizeof(void*));
 #endif
 
 }
@@ -526,7 +528,9 @@ inline_always CUndocumentedTEB *fg_GetTEB()
 template <typename tf_CType>
 inline_always tf_CType fg_GetTebData(mint _iIndex)
 {
-#if defined(_M_X64)
+#if defined(DArchitecture_arm64)
+	return (tf_CType)__readx18qword(_iIndex);
+#elif defined(DArchitecture_x64)
 	return (tf_CType)__readgsqword(_iIndex);
 #else
 	return (tf_CType)__readfsdword(_iIndex);

@@ -64,7 +64,9 @@ namespace NMib
 			template <typename tf_CType>
 			inline_always tf_CType fg_GetTebData(mint _iIndex)
 			{
-#				if defined(_M_X64)
+#				if defined(DArchitecture_arm64)
+					return (tf_CType)__readx18qword(_iIndex);
+#				elif defined(DArchitecture_x64)
 					return (tf_CType)__readgsqword(_iIndex);
 #				else
 					return (tf_CType)__readfsdword(_iIndex);
@@ -76,7 +78,9 @@ namespace NMib
 		inline_always void *fg_Thread_GetLocal(mint _iStorage)
 		{
 			DMibFastCheck(_iStorage <= 0x400);
-#			if defined(_M_X64)
+#			if defined(DArchitecture_arm64)
+				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0x1780);
+#			elif defined(DArchitecture_x64)
 				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0x1780);
 #			else
 				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0xf94);
@@ -89,7 +93,9 @@ namespace NMib
 		inline_always void *fg_Thread_GetLocalAlwaysSet(mint _iStorage)
 		{
 			DMibFastCheck(_iStorage <= 0x400);
-#			if defined(_M_X64)
+#			if defined(DArchitecture_arm64)
+				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0x1780);
+#			elif defined(DArchitecture_x64)
 				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0x1780);
 #			else
 				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0xf94);
@@ -102,7 +108,9 @@ namespace NMib
 
 		inline_always void *fg_Thread_GetLocalFast(mint _iStorage)
 		{
-#			if defined(_M_X64)
+#			if defined(DArchitecture_arm64)
+				return NPrivate::fg_GetTebData<void *>(_iStorage*8 + 0x1480);
+#			elif defined(DArchitecture_x64)
 				return NPrivate::fg_GetTebData<void *>(_iStorage*8 + 0x1480);
 #			else
 				return NPrivate::fg_GetTebData<void *>(_iStorage*4 + 900*4);
@@ -112,7 +120,9 @@ namespace NMib
 		inline_always void *fg_Thread_GetLocalAlwaysSetFast(mint _iStorage)
 		{
 			void *pRet =
-#			if defined(_M_X64)
+#			if defined(DArchitecture_arm64)
+				NPrivate::fg_GetTebData<void *>(_iStorage*8 + 0x1480);
+#			elif defined(DArchitecture_x64)
 				NPrivate::fg_GetTebData<void *>(_iStorage*8 + 0x1480);
 #			else
 				NPrivate::fg_GetTebData<void *>(_iStorage*4 + 900*4);
@@ -125,7 +135,9 @@ namespace NMib
 		inline_always mint fg_Thread_GetCurrentUID()
 		{	
 			// Read directly from TIB (Thread Information Block)
-#			if defined(_M_X64)
+#			if defined(DArchitecture_arm64)
+				return NPrivate::fg_GetTebData<mint>(0x48);
+#			elif defined(DArchitecture_x64)
 				return NPrivate::fg_GetTebData<mint>(0x48);
 #			else
 				return NPrivate::fg_GetTebData<mint>(0x24);

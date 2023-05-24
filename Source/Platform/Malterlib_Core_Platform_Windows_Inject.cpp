@@ -12,7 +12,6 @@ namespace NMib
 {
 	namespace NPlatform
 	{
-
 		#define RVA2PTR(base, rva) (((PBYTE) base) + rva)
 
 		//http://jpassing.wordpress.com/2008/01/06/using-import-address-table-hooking-for-testing/
@@ -253,6 +252,7 @@ namespace NMib
 			return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
 		}
 
+#if !defined(DArchitecture_arm64)
 		namespace
 		{
 
@@ -952,7 +952,7 @@ namespace NMib
 
 			return fg_InjectDLL(hProcess, hThread, _pDLLName, _Error);
 		}
-
-
+#endif
 	}
 }
+
