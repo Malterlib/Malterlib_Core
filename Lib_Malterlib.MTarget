@@ -744,7 +744,12 @@ Property
 						{
 							ThisFileName: string = this.Identity->GetFileNoExt()
 							ThisSourceFile: string = `@(VisualStudioCRTPath)/vcruntime/@(this.Identity)`
-							PatchFile: string = `@("Patches"->MakeAbsolute())/@(MalterlibMSVCVersion)/VCCrt_@(this.Identity).patch`
+							PatchFile: string
+							PatchFile `@("Patches"->MakeAbsolute())/@(MalterlibMSVCVersion)/VCCrt_@(this.Identity).patch`
+							PatchFile `@("Patches"->MakeAbsolute())/Latest/VCCrt_@(this.Identity).patch`
+							{
+								!PatchFile->FileExists() true
+							}
 						}
 						%GenerateFile ["exe_common.inl", "utility.cpp", "dll_dllmain.cpp"]
 						{
