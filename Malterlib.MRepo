@@ -1,24 +1,27 @@
 {
 	"../../Binaries/Malterlib/Linux/arm64": {
-		"Hash": "35dd9d3563d8db43fafc91745f823b2452159531"
+		"Hash": "30acbabb6bebebbd63142aa8e1735d84be8a7f0c"
 	},
 	"../../Binaries/Malterlib/Linux/x64": {
-		"Hash": "9749cbcdf95e85dd63b201bcbead53cde42c43b4"
+		"Hash": "1c6b78a15a6cb20a193201ec62ba0d7756c73791"
 	},
 	"../../Binaries/Malterlib/Linux/x86": {
-		"Hash": "61c3ff774ef9e3ca4dab8ac75d8f14555a023808"
+		"Hash": "0f94ea615fb1f8f44ab3ca771111457b3020ef60"
+	},
+	"../../Binaries/Malterlib/Windows/arm64": {
+		"Hash": "7ff7117a5dd39c8f92292665149ca375dcf0c7c4"
 	},
 	"../../Binaries/Malterlib/Windows/x64": {
-		"Hash": "24b4858c208ffbf9f37f36d40b899e76ea86262c"
+		"Hash": "62e90f9f2b9a2e7285b6c6f688babd7ae74f0fab"
 	},
 	"../../Binaries/Malterlib/Windows/x86": {
-		"Hash": "b91247631341af5a6830a3018e0527c83529a97b"
+		"Hash": "b893439aa9e39772231f6bb1cf4e86168b5e85aa"
 	},
 	"../../Binaries/Malterlib/macOS/arm64": {
-		"Hash": "674f221d2a66ca1a77fdc273be0c6a32adc33abe"
+		"Hash": "cb33d715765745af9777a91472b8e07eb8b7eaf7"
 	},
 	"../../Binaries/Malterlib/macOS/x64": {
-		"Hash": "4cc4b46ebda9f7d8fe87799a4deaa4e4a87a1fb1"
+		"Hash": "b7f94592ab9721f65e7aa8a8ab158cb008a402a7"
 	},
 	"../../Binaries/MalterlibLLVM/Linux/arm64": {
 		"Hash": "9660a574b20de52fbecb6cf26906b5885d2b1d34"
@@ -66,7 +69,7 @@
 		"Hash": "89b1b1e17d4f22a41880ecdc8a020cb0bff5a412"
 	},
 	"../BuildSystem": {
-		"Hash": "885db8006f5dfb035068bcaf5f81b3ba5f744962"
+		"Hash": "ed4df1213d189c041796833a070a9f4e33aa4f23"
 	},
 	"../Cloud": {
 		"Hash": "4b29ae7f1886612ececead34b71e5e661840dacf"
@@ -75,13 +78,13 @@
 		"Hash": "e0cc0e1bd49da012abde9bd54f76da36e7672eb3"
 	},
 	"../Compression": {
-		"Hash": "4fb5644fee1f677f536320d825b381cf825863fd"
+		"Hash": "6c9e542f7f515890ad85c78ad100e1b7aad2d657"
 	},
 	"../Concurrency": {
 		"Hash": "61b9479139780dcf7a591facb88720cdf9d805d2"
 	},
 	"../Container": {
-		"Hash": "e2bf5e762175c3d52e7ca63fa2c805e68df0c900"
+		"Hash": "bf2a8a115e38ede20fda45ed1c4e1bc32446e570"
 	},
 	"../Contract": {
 		"Hash": "719f65a74e01ce6ca80693e6a460511faacdb5fe"
@@ -90,7 +93,7 @@
 		"Hash": "11f2d352c2e30756c89bad8663e2fd044bd2bf16"
 	},
 	"../Cryptography": {
-		"Hash": "b1346ba5311f63be1b86e4f6dc1077b47cebd937"
+		"Hash": "f9d1ea158a1efbcc060e63a51ef83a47965f7d96"
 	},
 	"../Daemon": {
 		"Hash": "9409d753fcaf9c93e3aa4bde3ead7c65224faebf"
@@ -99,7 +102,7 @@
 		"Hash": "9f33a78cd7ecab5c1c7bd756223bc59c0627b45c"
 	},
 	"../Debug": {
-		"Hash": "ffa38bc216c0a94efb345385cb53534676c3a456"
+		"Hash": "642c5211197cc698055476f68e971bb8fbc31ce6"
 	},
 	"../Desktop": {
 		"Hash": "5878133d5c666cf94896acc81bfab35a9f3ac433"
@@ -141,13 +144,13 @@
 		"Hash": "b33acc812e43a49b01e31c2c64e9f60181bc9521"
 	},
 	"../Memory": {
-		"Hash": "131314b5f4e39dc41ebbd0a6bf7256b7f706ea6d"
+		"Hash": "736a3c05fe87de32eb5f6c77c8676a300cdb4f31"
 	},
 	"../Meta": {
 		"Hash": "bb604b261174a05cd923d5e393f488667ad720f1"
 	},
 	"../Mongo": {
-		"Hash": "9547381f36440360d8890ef6a90a2db8a3ec406e"
+		"Hash": "1884653eab53d053e83c490933618272e3a8cbb9"
 	},
 	"../Network": {
 		"Hash": "07a5f3f63a8401687efb14ddec309aec821b8d03"
@@ -162,13 +165,13 @@
 		"Hash": "04e82f4a2053e87f5c36b74d2a04df7c67a66db2"
 	},
 	"../Process": {
-		"Hash": "fcdc97fd882f43d0a87f81da7e8a3ed094ca82b7"
+		"Hash": "0849fb2f2efc7162a124e5f386c68db5fd178220"
 	},
 	"../Qt": {
-		"Hash": "3534f26da375ac79d09ab80a1d216f2c41f2534e"
+		"Hash": "8d1eb5f824d83d0d0d8da95f98fdd030f6b76e84"
 	},
 	"../SQL": {
-		"Hash": "281b9c27f8c47dbfc5e2db00d2e82ab207371591"
+		"Hash": "63fe96a6d79503c5b9b666523f7b81693964f3ce"
 	},
 	"../STL": {
 		"Hash": "6dacc946d6b42e5cbcea09ec2703dae6e315375f"
@@ -195,16 +198,16 @@
 		"Hash": "00d47084c0307c075458178b37346fbd8f15ba2a"
 	},
 	"../Time": {
-		"Hash": "74a48a29d6f32660e8fc3c76dcc1f02d1ff7faec"
+		"Hash": "9dbf916966def955e1958fe6c9bc5ca458d90b85"
 	},
 	"../Tool": {
-		"Hash": "70dfb0977597af67a4a616b55cd948ccbc471117"
+		"Hash": "ae70752239eca879161afa5344ec9cb9e429425a"
 	},
 	"../Type": {
 		"Hash": "bee130862ade8211a9e6a1d00f76b78c83127bee"
 	},
 	"../Web": {
-		"Hash": "4ed254600b273f0c26596c053dfbd2e319c35d1d"
+		"Hash": "688343289070aa14f3003eae7bd1b122b804401f"
 	},
 	"../WebApp": {
 		"Hash": "d3ada964291ae8e45ff955f12c5518828f5557cc"
