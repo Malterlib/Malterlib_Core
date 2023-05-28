@@ -3684,6 +3684,7 @@ Property
 	MalterlibWindowsSettings_SegmentHeap: bool = false
 	MalterlibWindowsSettings_LongPathAware: bool = true
 	MalterlibExtraAssemblyInfo: string = ""
+	MalterlibGenerateWindowsVersion: bool = true
 }
 
 %Group "~Automatic/Windows Specific"
@@ -3770,7 +3771,11 @@ Property
 
 	%GenerateFile "Generate Resource"
 	{
-		!!LanguageFamily "Native"
+		&
+		{
+			LanguageFamily "Native"
+			MalterlibGenerateWindowsVersion true
+		}
 
 		Property
 		{
