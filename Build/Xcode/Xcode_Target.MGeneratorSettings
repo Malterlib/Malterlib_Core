@@ -211,7 +211,8 @@ GeneratorSetting
 	}
 	Target_LDFlags =+ {
 		XCConfigs: {
-			"PRODUCT_SPECIFIC_LDFLAGS": Target.LDFlags
+			"LDFLAGS": ""
+			, "PRODUCT_SPECIFIC_LDFLAGS": ["$(inherited)", Target.LDFlags...]
 		}
 	}
 
@@ -919,7 +920,8 @@ GeneratorSetting
 
 	Target_LibToolFlags =+ {
 		XCConfigs: {
-			"PRODUCT_SPECIFIC_LIBTOOLFLAGS": Target.LibToolFlags
+			"LIBTOOLFLAGS": ""
+			, "PRODUCT_SPECIFIC_LIBTOOLFLAGS": ["$(inherited)", Target.LibToolFlags...]
 		}
 	}
 

@@ -188,7 +188,7 @@ UpdateXcodePlugins()
 	popd > /dev/null
 
 	if $Setting_PatchedLLBuild; then
-		if [[ "$XcodeVersion" == "14.2" ]] || [[ "$XcodeVersion" == "14.3" ]] || [[ "$XcodeVersion" == "14.3.1" ]] ; then
+		if [[ "$XcodeVersion" == "14.2" ]] || [[ "$XcodeVersion" == "14.3" ]] || [[ "$XcodeVersion" == "14.3.1" ]] || [[ "$XcodeVersion" == "15.0" ]] ; then
 			pushd "$RepositoryDirectory/MalterlibXcodePatches/llbuild" > /dev/null
 
 			if [[ "$HasLibraryValidation" == "false" ]] || [ -e "$2/Contents/SignState.json" ]; then
