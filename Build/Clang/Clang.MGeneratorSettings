@@ -620,6 +620,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_Warnings_SingleBitBitfieldConstantConversion =+ {
+		Flags: Compile.Warnings_SingleBitBitfieldConstantConversion->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-single-bit-bitfield-constant-conversion"
+			, true, "-Wsingle-bit-bitfield-constant-conversion"
+		)
+		, Type: "unique"
+	}
+
 	Compile_Warnings_UnknownPragma =+ {
 		Flags: Compile.Warnings_UnknownPragma->SwitchWithError(
 			"Unsupported option: "

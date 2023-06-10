@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -32,3 +32,12 @@ namespace NMib
 	}
 }
 
+struct CSystem_POSIX
+{
+	bool f_GetMalterlibDisableStdErrLog();
+	void f_DestroyThreadSpecific();
+	void f_Destruct();
+
+	NMib::NAtomic::TCAtomicAggregate<uint32> m_MalterlibDisableStdErrLog = {DAggregateInit};
+	NMib::NThread::CMutual m_ForkLock;
+};

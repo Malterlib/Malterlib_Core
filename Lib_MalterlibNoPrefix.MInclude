@@ -293,6 +293,22 @@ Compile
 				{
 					Compile.Disabled true
 				}
+				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_TSan.cpp"
+				{
+					Compile.Sanitize_Thread false
+					{
+						!!Compile.Sanitize_Thread true
+					}
+
+					Compile.Disabled true
+					{
+						|
+						{
+							!PlatformFamily "Linux"
+							!MalterlibSupportSanitizerEnable_Thread true
+						}
+					}
+				}
 			}
 		}
 		%File "Source/Malterlib_Core_PlatformInterfaceTemp.h"

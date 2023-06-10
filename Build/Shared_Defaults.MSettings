@@ -336,7 +336,7 @@ Property
 	}
 	MalterlibDisableBuildSystemGeneration: bool = MalterlibBuildServerBuild
 	MalterlibEnableBreakpadUploader: bool = false
-	MalterlibClangVersion: string = "15.0"
+	MalterlibClangVersion: string = "16.0"
 	MalterlibClangPatchVersion: string = "7"
 	MalterlibCustomToolchainClangVersion: string = "8.0"
 	MalterlibEnableBreakpad: bool = false

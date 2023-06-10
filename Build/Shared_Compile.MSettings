@@ -825,11 +825,11 @@ Property
 Property
 {
 	MalterlibTargetTriple: string?
-	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-apple-darwin@(MalterlibNativeClangDarwinTarget)`
+	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-apple-macos@(MalterlibMinSupportedMacOSVersion)`
 	{
 		&
 		{
-			PlatformIsDarwin true
+			PlatformFamily "macOS"
 			!Target.DriverType "DriverKit"
 		}
 	}
@@ -1214,6 +1214,7 @@ Compile
 	Warnings_UnusedVariable: bool?
 	Warnings_UnusedButSetVariable: bool?
 	Warnings_Switch: bool?
+	Warnings_SingleBitBitfieldConstantConversion: bool?
 
 	Warnings_UnusedExceptionParameter: bool?
 	Warnings_UnusedExceptionParameter true
@@ -2179,7 +2180,7 @@ Compile
 		!!MalterlibMemory_Shims_Enable true
 	}
 
-	PreprocessorDefines += "_LIBCPP_DEBUG=0"
+	PreprocessorDefines += "_LIBCPP_ENABLE_ASSERTIONS=1"
 	{
 		&
 		{

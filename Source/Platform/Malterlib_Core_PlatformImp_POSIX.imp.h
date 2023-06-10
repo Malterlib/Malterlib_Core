@@ -66,40 +66,33 @@ assure_used CMibCodeAddressType::CCodeAddressLine *CMibCodeAddressType::fs_Debug
 }
 #endif
 
-struct CSystem_POSIX
+bool CSystem_POSIX::f_GetMalterlibDisableStdErrLog()
 {
-	NMib::NAtomic::TCAtomicAggregate<uint32> m_MalterlibDisableStdErrLog = {DAggregateInit};
-	
-	NThread::CMutual m_ForkLock;
-	
-	bool f_GetMalterlibDisableStdErrLog()
+	if (m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::EMemoryOrder_Relaxed) == 0)
 	{
-		if (m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::EMemoryOrder_Relaxed) == 0)
-		{
-			const char *pEnv = getenv("MalterlibDisableStdErrLog");
+		const char *pEnv = getenv("MalterlibDisableStdErrLog");
 
-			if (pEnv && fg_StrCmp(pEnv, "true") == 0)
-				m_MalterlibDisableStdErrLog = 2;
-			else
-				m_MalterlibDisableStdErrLog = 1;
-		}
-		
-		return m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::EMemoryOrder_Relaxed) == 2;
+		if (pEnv && fg_StrCmp(pEnv, "true") == 0)
+			m_MalterlibDisableStdErrLog = 2;
+		else
+			m_MalterlibDisableStdErrLog = 1;
 	}
-	
-	void f_DestroyThreadSpecific()
-	{
-	}
-	
-	void f_Destruct()
-	{
+
+	return m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::EMemoryOrder_Relaxed) == 2;
+}
+
+void CSystem_POSIX::f_DestroyThreadSpecific()
+{
+}
+
+void CSystem_POSIX::f_Destruct()
+{
 #ifdef DMibDebuggerHelpers
-		static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_Function>::mc_Value);
-		static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_File>::mc_Value);
-		static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_Line>::mc_Value);
+	static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_Function>::mc_Value);
+	static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_File>::mc_Value);
+	static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_Line>::mc_Value);
 #endif
-	}
-};
+}
 
 CSystem_POSIX *fg_GetSys_POSIX();
 

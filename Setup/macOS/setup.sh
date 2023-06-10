@@ -115,7 +115,7 @@ UpdateDependencies()
 		brew upgrade
 	fi
 
-	brew install cmake go graphviz ruby ninja git git-lfs
+	brew install cmake go graphviz ruby ninja git git-lfs zstd
 
 	export PATH="`brew --prefix ruby`/bin:$PATH"
 

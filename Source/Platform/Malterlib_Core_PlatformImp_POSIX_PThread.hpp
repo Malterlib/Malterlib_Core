@@ -847,9 +847,9 @@ class CEventEmulation
 {
 public:
 		
-	int m_nWantLock;
-	int m_State:1;
-	int m_LockSequence;
+	uint32 m_nWantLock;
+	uint32 m_State:1;
+	uint32 m_LockSequence;
 	NMib::NThread::CSemaphore m_Semaphore;
 	NMib::NThread::CLowLevelLock m_Lock;
 

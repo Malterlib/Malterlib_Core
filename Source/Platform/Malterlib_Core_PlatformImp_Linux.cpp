@@ -9,6 +9,7 @@
 #include <Mib/Cryptography/UUID>
 #include <Mib/String/AnsiConversion>
 
+#include "Malterlib_Core_PlatformImp_Linux.h"
 #include "Malterlib_Core_PlatformImp_Linux_FileNotification.h"
 #include "Malterlib_Core_PlatformImp_Linux_SecurePassword.h"
 
@@ -568,212 +569,189 @@ static void fg_LoadLibraries()
 	(*g_UUIDLibrary).f_Reload();
 }
 
-class CSystemLinux : public CSystem
+void CSystemLinux::fs_ForkPrepare()
 {
-public:
-
-	CSystem_POSIX m_Posix;
-
-	pthread_key_t m_ThreadDestructionHook;
-
-	NMib::NStorage::TCAggregate<CPOSIXSocketContext> m_SocketContext = { DAggregateInit };
-
-	NMib::NStorage::TCUniquePointer<NMib::NDBus::CSystem> m_pDBus; // May be nullptr
-
-	NMib::NAtomic::TCAtomic<mint> m_PasswordManagerCreated;
-	NMib::NStorage::TCUniquePointer<NMib::NSys::CLinuxPasswordManager> m_pPasswordManager;
-
-	NMib::NSys::EDesktopEnvironment m_DesktopEnvironment;
-
-	bool m_bForkedChild = false;
-
-	static void fs_ForkPrepare()
+	auto &Sys = *fg_GetLocalSys();
+	if (!pthread_getspecific(Sys.m_ThreadDestructionHook))
 	{
-		auto &Sys = *fg_GetLocalSys();
-		if (!pthread_getspecific(Sys.m_ThreadDestructionHook))
-		{
-			pthread_setspecific(Sys.m_ThreadDestructionHook, (void *)(mint)getpid());
-			Sys.m_Posix.f_GetMalterlibDisableStdErrLog(); // getenv fails on forked process, to workaround this here
+		pthread_setspecific(Sys.m_ThreadDestructionHook, (void *)(mint)getpid());
+		Sys.m_Posix.f_GetMalterlibDisableStdErrLog(); // getenv fails on forked process, to workaround this here
 
-			Sys.m_Posix.m_ForkLock.f_Lock();
-			Sys.m_Posix.m_ForkLock.f_PrepareFork();
-			Sys.f_PrepareFork();
-			g_EventEmulationPool.f_Lock();
-			g_ImpSemaphorePool.f_Lock();
-		}
+		Sys.m_Posix.m_ForkLock.f_Lock();
+		Sys.m_Posix.m_ForkLock.f_PrepareFork();
+		Sys.f_PrepareFork();
+		g_EventEmulationPool.f_Lock();
+		g_ImpSemaphorePool.f_Lock();
 	}
+}
 
-	static void fs_ForkParentOrChild()
+void CSystemLinux::fs_ForkParentOrChild()
+{
+	auto &Sys = *fg_GetLocalSys();
+	void *Current = pthread_getspecific(Sys.m_ThreadDestructionHook);
+	if (Current)
 	{
-		auto &Sys = *fg_GetLocalSys();
-		void *Current = pthread_getspecific(Sys.m_ThreadDestructionHook);
-		if (Current)
-		{
 #ifdef DMibSanitizerEnabled_Thread
-			if (Current == (void *)(mint)getpid())
-				__tsan_forked_parent();
-			else
-				__tsan_forked_child();
-#endif
-			pthread_setspecific(Sys.m_ThreadDestructionHook, nullptr);
-			if (Current != (void *)(mint)getpid())
-			{
-				Sys.m_bForkedChild = true;
-				g_bCanStackTrace = false;
-				g_ImpSemaphorePool.f_ForkedChildLocked();
-				g_EventEmulationPool.f_ForkedChildLocked();
-			}
-			g_ImpSemaphorePool.f_Unlock();
-			g_EventEmulationPool.f_Unlock();
-			if (Current == (void *)(mint)getpid())
-			{
-				Sys.f_ForkedParent(); // Parent
-				Sys.m_Posix.m_ForkLock.f_ForkedParent();
-				Sys.m_Posix.m_ForkLock.f_Unlock();
-			}
-			else
-			{
-				Sys.f_ForkedChild(); // Child
-				Sys.m_Posix.m_ForkLock.f_ForkedChild();
-				Sys.m_Posix.m_ForkLock.f_Unlock();
-			}
-		}
-	}
-	static void fs_ForkParent()
-	{
-		auto &Sys = *fg_GetLocalSys();
-		if (pthread_getspecific(Sys.m_ThreadDestructionHook))
-		{
-#ifdef DMibSanitizerEnabled_Thread
+		if (Current == (void *)(mint)getpid())
 			__tsan_forked_parent();
-#endif
-			pthread_setspecific(Sys.m_ThreadDestructionHook, 0);
-			g_ImpSemaphorePool.f_Unlock();
-			g_EventEmulationPool.f_Unlock();
-			Sys.f_ForkedParent();
-			Sys.m_Posix.m_ForkLock.f_ForkedParent();
-			Sys.m_Posix.m_ForkLock.f_Unlock();
-		}
-	}
-
-	static void fs_ForkChild()
-	{
-		auto &Sys = *fg_GetLocalSys();
-		if (pthread_getspecific(Sys.m_ThreadDestructionHook))
-		{
-#ifdef DMibSanitizerEnabled_Thread
+		else
 			__tsan_forked_child();
 #endif
-			pthread_setspecific(Sys.m_ThreadDestructionHook, 0);
+		pthread_setspecific(Sys.m_ThreadDestructionHook, nullptr);
+		if (Current != (void *)(mint)getpid())
+		{
 			Sys.m_bForkedChild = true;
-			g_bCanStartThreads = false;
 			g_bCanStackTrace = false;
 			g_ImpSemaphorePool.f_ForkedChildLocked();
 			g_EventEmulationPool.f_ForkedChildLocked();
-			g_ImpSemaphorePool.f_Unlock();
-			g_EventEmulationPool.f_Unlock();
-			Sys.f_ForkedChild();
+		}
+		g_ImpSemaphorePool.f_Unlock();
+		g_EventEmulationPool.f_Unlock();
+		if (Current == (void *)(mint)getpid())
+		{
+			Sys.f_ForkedParent(); // Parent
+			Sys.m_Posix.m_ForkLock.f_ForkedParent();
+			Sys.m_Posix.m_ForkLock.f_Unlock();
+		}
+		else
+		{
+			Sys.f_ForkedChild(); // Child
 			Sys.m_Posix.m_ForkLock.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
-			g_bCanStartThreads = true;
-			Sys.f_MemoryManager_CanStartThreads();
-			fg_MalterlibMallocOverride_CanStartThreads();
 		}
 	}
+}
 
-	CSystemLinux()
-		: CSystem(g_bIsSharedLibrary)
-		, m_SocketContext{DAggregateInit}
-		, m_PasswordManagerCreated(0)
+void CSystemLinux::fs_ForkParent()
+{
+	auto &Sys = *fg_GetLocalSys();
+	if (pthread_getspecific(Sys.m_ThreadDestructionHook))
 	{
-		fg_MemClear(m_SocketContext);
-
-		pthread_key_create(&m_ThreadDestructionHook, fs_ThreadDestructionHook);
-
-		m_DesktopEnvironment = fg_DeduceDesktopEnvironment();
-
-		fp_InitComplete();
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_forked_parent();
+#endif
+		pthread_setspecific(Sys.m_ThreadDestructionHook, 0);
+		g_ImpSemaphorePool.f_Unlock();
+		g_EventEmulationPool.f_Unlock();
+		Sys.f_ForkedParent();
+		Sys.m_Posix.m_ForkLock.f_ForkedParent();
+		Sys.m_Posix.m_ForkLock.f_Unlock();
 	}
+}
 
-	NMib::NSys::CLinuxPasswordManager* f_GetPasswordManager()
+void CSystemLinux::fs_ForkChild()
+{
+	auto &Sys = *fg_GetLocalSys();
+	if (pthread_getspecific(Sys.m_ThreadDestructionHook))
 	{
-		if (m_PasswordManagerCreated.f_Load() != 2)
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_forked_child();
+#endif
+		pthread_setspecific(Sys.m_ThreadDestructionHook, 0);
+		Sys.m_bForkedChild = true;
+		g_bCanStartThreads = false;
+		g_bCanStackTrace = false;
+		g_ImpSemaphorePool.f_ForkedChildLocked();
+		g_EventEmulationPool.f_ForkedChildLocked();
+		g_ImpSemaphorePool.f_Unlock();
+		g_EventEmulationPool.f_Unlock();
+		Sys.f_ForkedChild();
+		Sys.m_Posix.m_ForkLock.f_ForkedChild();
+		Sys.m_Posix.m_ForkLock.f_Unlock();
+		g_bCanStartThreads = true;
+		Sys.f_MemoryManager_CanStartThreads();
+		fg_MalterlibMallocOverride_CanStartThreads();
+	}
+}
+
+CSystemLinux::CSystemLinux()
+	: CSystem(g_bIsSharedLibrary)
+	, m_SocketContext{DAggregateInit}
+	, m_PasswordManagerCreated(0)
+{
+	fg_MemClear(m_SocketContext);
+
+	pthread_key_create(&m_ThreadDestructionHook, fs_ThreadDestructionHook);
+
+	m_DesktopEnvironment = fg_DeduceDesktopEnvironment();
+
+	fp_InitComplete();
+}
+
+NMib::NSys::CLinuxPasswordManager* CSystemLinux::f_GetPasswordManager()
+{
+	if (m_PasswordManagerCreated.f_Load() != 2)
+	{
+		mint Expected = 0;
+		if (m_PasswordManagerCreated.f_CompareExchangeStrong(Expected, 1))
 		{
-			mint Expected = 0;
-			if (m_PasswordManagerCreated.f_CompareExchangeStrong(Expected, 1))
+			m_pPasswordManager = NMib::NSys::fg_CreateLinuxPasswordManager(m_pDBus.f_Get());
+			m_PasswordManagerCreated.f_Exchange(2);
+		}
+		else
+		{
+			while (m_PasswordManagerCreated.f_Load() != 2)
 			{
-				m_pPasswordManager = NMib::NSys::fg_CreateLinuxPasswordManager(m_pDBus.f_Get());
-				m_PasswordManagerCreated.f_Exchange(2);
-			}
-			else
-			{
-				while (m_PasswordManagerCreated.f_Load() != 2)
-				{
-					NSys::fg_Thread_SmallestSleep();
-				}
+				NSys::fg_Thread_SmallestSleep();
 			}
 		}
-
-		return m_pPasswordManager.f_Get();
 	}
 
-	void f_InitModule()
-	{
-		CSystem::f_InitModule();
+	return m_pPasswordManager.f_Get();
+}
 
-		m_pDBus = fg_Construct();
+void CSystemLinux::f_InitModule()
+{
+	CSystem::f_InitModule();
 
-	}
+	m_pDBus = fg_Construct();
 
-	void f_DestroyThreadSpecific()
-	{
-		CSystem::f_PreDestructThreadSpecific();
+}
 
-		m_Posix.f_DestroyThreadSpecific();
+void CSystemLinux::f_DestroyThreadSpecific()
+{
+	CSystem::f_PreDestructThreadSpecific();
 
-		if (m_FileChangeNotificationContext.f_IsConstructed())
-			m_FileChangeNotificationContext.f_Destruct();
+	m_Posix.f_DestroyThreadSpecific();
 
-		CSystem::f_DestructThreadSpecific();
-	}
+	if (m_FileChangeNotificationContext.f_IsConstructed())
+		m_FileChangeNotificationContext.f_Destruct();
 
-	void f_Destruct()
-	{
-		m_Posix.f_Destruct();
+	CSystem::f_DestructThreadSpecific();
+}
 
-		if (m_SocketContext.f_IsConstructed())
-			m_SocketContext.f_Destruct();
+void CSystemLinux::f_Destruct()
+{
+	m_Posix.f_Destruct();
 
-		(*g_UUIDLibrary).f_Unload();
-		g_UUIDLibrary.f_Destruct();
+	if (m_SocketContext.f_IsConstructed())
+		m_SocketContext.f_Destruct();
 
-		m_pPasswordManager = nullptr;
-		m_pDBus = nullptr;
+	(*g_UUIDLibrary).f_Unload();
+	g_UUIDLibrary.f_Destruct();
 
-		CSystem::f_Destruct();
+	m_pPasswordManager = nullptr;
+	m_pDBus = nullptr;
 
-		pthread_key_delete(m_ThreadDestructionHook);
+	CSystem::f_Destruct();
 
-	}
+	pthread_key_delete(m_ThreadDestructionHook);
 
-	static void fs_ThreadDestructionHook(void* _ThreadID)
-	{
+}
 
-		fg_GetSys()->f_ThreadLocalFreeThread();
-	}
+void CSystemLinux::fs_ThreadDestructionHook(void* _ThreadID)
+{
+	fg_GetSys()->f_ThreadLocalFreeThread();
+}
 
-	void f_RegisterDestructionHookForThread()
-	{
-		pthread_setspecific(m_ThreadDestructionHook, (void*)NSys::fg_Thread_GetCurrentUID());
-	}
+void CSystemLinux::f_RegisterDestructionHookForThread()
+{
+	pthread_setspecific(m_ThreadDestructionHook, (void*)NSys::fg_Thread_GetCurrentUID());
+}
 
-	NMib::NStorage::TCAggregate<CFileChangeNotificationContext> m_FileChangeNotificationContext = { DAggregateInit };
-
-	void f_LoadLibraries()
-	{
-	}
-
-};
+void CSystemLinux::f_LoadLibraries()
+{
+}
 
 static inline_small CSystemLinux *fg_GetLocalSys()
 {
@@ -1587,6 +1565,10 @@ extern "C"
 		*_pOutput = nontracked_memalign(_Alignment, _Size);
 		return 0;
 	}
+	void *nontracked_aligned_alloc(size_t _Alignment, size_t _Size)
+	{
+		return nontracked_memalign(_Alignment, _Size);
+	}
 	void *nontracked_valloc (size_t __size) __THROW __wur
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
@@ -1620,6 +1602,10 @@ void NSys::fg_Process_AllowInvalidExit(bool _bAllow)
 }
 
 extern "C" void fg_InitMalterlib();
+
+#ifdef DMibSanitizerEnabled_Thread
+	void fg_Malterlib_MakeActive_TSan();
+#endif
 
 namespace NMib
 {
@@ -1846,6 +1832,10 @@ void NSys::fg_CreateSystem()
 	pSystem->f_InitModule();
 	fg_InitBreakpad();
 	pSystem->f_InitModuleThreaded();
+
+	#ifdef DMibSanitizerEnabled_Thread
+		fg_Malterlib_MakeActive_TSan();
+	#endif
 }
 
 bool g_bSysDeleted = false;

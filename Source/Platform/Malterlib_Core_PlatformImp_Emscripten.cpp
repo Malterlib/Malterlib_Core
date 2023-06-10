@@ -768,6 +768,12 @@ extern "C"
 		*_pOutput = nontracked_memalign(_Alignment, _Size);
 		return 0;
 	}
+
+	void *nontracked_aligned_alloc(size_t _Alignment, size_t _Size)
+	{
+		return nontracked_memalign(_Alignment, _Size);
+	}
+
 	void *nontracked_valloc (size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
