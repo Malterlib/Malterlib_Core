@@ -161,10 +161,6 @@ namespace NMib
 		m_SupportEmailNonTracked.f_Clear();
 		m_ProgramRootNonTracked.f_Clear();
 
-#if DMibRemoteDebugger_Enabled
-		NDebug::NRemoteDebugger::fg_RD_DeinitializeClient();
-#endif
-		
 		fp_SubSystem_DestroyThreadLocal();
 
 #if DMibConfig_Memory_Shims_EnableGlobal
@@ -195,7 +191,11 @@ namespace NMib
 	void CSystem::f_DestructThreadSpecific()
 	{
 		g_bCanStartThreads = false;
-		
+
+#if DMibRemoteDebugger_Enabled
+		NDebug::NRemoteDebugger::fg_RD_DeinitializeClient();
+#endif
+
 #if DMibSysLogSeverities
 		m_pSystemLog->f_SetDispatcher(nullptr);
 #endif

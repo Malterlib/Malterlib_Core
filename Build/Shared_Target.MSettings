@@ -2204,6 +2204,11 @@ Target
 	NativeArchitectureActual: string = MalterlibXcodeBuildArchitecture
 }
 
+Property
+{
+	MalterlibSupportAtos: bool = false // User(Debug)=true: Enable dsym symbols to support file and line tracing with atos
+}
+
 // macOS
 Target
 {
@@ -2221,6 +2226,7 @@ Target
 		|
 		{
 			MalterlibDeploySymbols true
+			MalterlibSupportAtos true
 			Target.Type "Driver"
 			&
 			{
@@ -4599,7 +4605,6 @@ Property
 		{
 			IsDefined("Target.DebugInformationFormat") true
 			Target.DebugInformationFormat "dwarf-with-dsym"
-			Target.Type "Driver"
 		}
 	}
 
@@ -4682,6 +4687,18 @@ Property
 	MalterlibTestDeployPath: string?
 	MalterlibExtraPostBuildScript: string?
 	MalterlibStripSymbols: bool?
+}
+
+Property
+{
+	MalterlibPostBuildScriptInputs =+ `@(MalterlibOriginalModuleDestination).dSYM/Contents/Resources/DWARF/@(Target:Target.FileName)`
+	{
+		&
+		{
+			PlatformIsDarwin true
+			Target.DebugInformationFormat "dwarf-with-dsym"
+		}
+	}
 }
 
 Target
