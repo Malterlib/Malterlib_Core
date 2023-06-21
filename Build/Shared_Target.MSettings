@@ -4493,7 +4493,7 @@ Property
 	PreBuildScriptDependenciesTemplate =+ GetProperty(&Target.DependencyFile, _Dependency)
 
 	PreBuildScriptDependencies: [string] = []
-	PreBuildScriptDependencies =+ Target.Dependencies->ForEach(&PreBuildScriptDependenciesTemplate)
+	PreBuildScriptDependencies =+ Target.DependencyTargets->ForEach(&PreBuildScriptDependenciesTemplate)
 
 	PreBuildOutputFile: string = `@(Target.IntermediateDirectory)PreBuildOutput.h`
 }
