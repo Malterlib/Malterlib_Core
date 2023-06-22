@@ -425,6 +425,17 @@ Property
 					}
 				}
 			}
+			%File "../../External/llvm-project/libcxxabi/src/cxa_exception.cpp"
+			{
+				Compile.LinkTimeCodeGeneration WorkaroundLTOValue // Exception handling breaks if this is enabled
+				{
+					&
+					{
+						CompileDialect "C"
+						!WorkaroundLTOValue undefined
+					}
+				}
+			}
 			%File "../../External/llvm-project/libcxxabi/src/cxa_personality.cpp"
 			{
 				Compile.LinkTimeCodeGeneration WorkaroundLTOValue // Exception handling breaks if this is enabled
