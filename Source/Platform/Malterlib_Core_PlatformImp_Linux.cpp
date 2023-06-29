@@ -600,6 +600,7 @@ void CSystemLinux::fs_ForkParentOrChild()
 		pthread_setspecific(Sys.m_ThreadDestructionHook, nullptr);
 		if (Current != (void *)(mint)getpid())
 		{
+			g_MalterlibCurrentTID = syscall(SYS_gettid);
 			Sys.m_bForkedChild = true;
 			g_bCanStackTrace = false;
 			g_ImpSemaphorePool.f_ForkedChildLocked();
@@ -644,6 +645,8 @@ void CSystemLinux::fs_ForkChild()
 	auto &Sys = *fg_GetLocalSys();
 	if (pthread_getspecific(Sys.m_ThreadDestructionHook))
 	{
+		g_MalterlibCurrentTID = syscall(SYS_gettid);
+
 #ifdef DMibSanitizerEnabled_Thread
 		__tsan_forked_child();
 #endif
