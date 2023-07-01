@@ -3,8 +3,12 @@
 
 Property
 {
+	SinglePlatform: string? // User(-  Single Config)="macOS": Enable only a single Platform
+	SingleArchitecture: string? // User(-  Single Config)="arm64": Enable only a single Architecture
+	SingleConfiguration: string? // User(-  Single Config)="Debug": Enable only a single Configuration
+
 	EnablePlatform_Windows: bool // User(- Platform)=true: Enables Windows platform
-	EnablePlatform_Windows true
+	EnablePlatform_Windows ((SinglePlatform <!=> undefined) ? SinglePlatform == "Windows" : true)
 	{
 		&
 		{
@@ -12,13 +16,13 @@ Property
 			GeneratorFamily "VisualStudio"
 		}
 	}
-	EnablePlatform_Windows false
+	EnablePlatform_Windows ((SinglePlatform <!=> undefined) ? SinglePlatform == "Windows" : false)
 	{
 		!!EnablePlatform_Windows undefined
 	}
 
 	EnablePlatform_Linux: bool // User(- Platform)=true: Enables Linux platform
-	EnablePlatform_Linux true
+	EnablePlatform_Linux ((SinglePlatform <!=> undefined) ? SinglePlatform == "Linux" : true)
 	{
 		&
 		{
@@ -31,13 +35,13 @@ Property
 			}
 		}
 	}
-	EnablePlatform_Linux false // User(- Platform)=true: Enables Linux platform
+	EnablePlatform_Linux ((SinglePlatform <!=> undefined) ? SinglePlatform == "Linux" : false)
 	{
 		!!EnablePlatform_Linux undefined
 	}
 
 	EnablePlatform_macOS: bool // User(- Platform)=true: Enables macOS platform
-	EnablePlatform_macOS true
+	EnablePlatform_macOS ((SinglePlatform <!=> undefined) ? SinglePlatform == "macOS" : true)
 	{
 		&
 		{
@@ -46,35 +50,55 @@ Property
 			HostPlatformFamily "macOS"
 		}
 	}
-	EnablePlatform_macOS false
+	EnablePlatform_macOS ((SinglePlatform <!=> undefined) ? SinglePlatform == "macOS" : false)
 	{
 		!!EnablePlatform_macOS undefined
 	}
 
-	EnablePlatform_iOS8_1: bool = false
-	EnablePlatform_Emscripten: bool = false // User(- Platform)=true: Enables emscripten support
-	EnableArchitecture_x64: bool = true // User(- Platform)=false: Enables generation of x64 architecture
-	EnableArchitecture_x86: bool = true // User(- Platform)=false: Enables generation of x86 architecture
+	EnablePlatform_iOS: bool = ((SinglePlatform <!=> undefined) ? SinglePlatform == "iOS" : false)
+	EnablePlatform_Emscripten: bool = ((SinglePlatform <!=> undefined) ? SinglePlatform == "Emscripten" : false) // User(- Platform)=true: Enables emscripten support
 
-	EnableArchitecture_ArmV7: bool = true // User(- Platform)=false: Enables generation of arm V7 architecture
-	EnableArchitecture_ArmV7s: bool = true // User(- Platform)=false: Enables generation of arm V7s architecture
-	EnableArchitecture_arm64: bool = true // User(- Platform)=false: Enables generation of arm arm64 architecture
-	EnableArchitecture_arm64e: bool = false // User(- Platform)=true: Enables generation of arm arm64e architecture
-	EnableArchitecture_Itanium: bool = false // User(- Platform)=true: Enables generation of itanium architecture
-	EnableArchitecture_ppc64: bool = false // User(- Platform)=true: Enables generation of ppc64 architecture
-	EnableArchitecture_ppc32: bool = false // User(- Platform)=true: Enables generation of ppc32 architecture
+	// Supported
+	EnableArchitecture_x64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x64" : true) // User(- Platform)=false: Enables generation of x64 architecture
+	EnableArchitecture_x86: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x86" : true) // User(- Platform)=false: Enables generation of x86 architecture
+	EnableArchitecture_arm64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "arm64" : true) // User(- Platform)=false: Enables generation of arm arm64 architecture
+
+	// Unsupported
+	EnableArchitecture_ArmV7: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ArmV7" : false) // User(- Platform)=false: Enables generation of arm V7 architecture
+	EnableArchitecture_ArmV7s: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ArmV7s" : false) // User(- Platform)=false: Enables generation of arm V7s architecture
+	EnableArchitecture_arm64e: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "arm64e" : false) // User(- Platform)=true: Enables generation of arm arm64e architecture
+	EnableArchitecture_Itanium: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "Itanium" : false) // User(- Platform)=true: Enables generation of itanium architecture
+	EnableArchitecture_ppc64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ppc64" : false) // User(- Platform)=true: Enables generation of ppc64 architecture
+	EnableArchitecture_ppc32: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ppc32" : false ) // User(- Platform)=true: Enables generation of ppc32 architecture
 
 	DisablePostCopy: bool = false // User(Build System)=true: Disables post copy
 	DisableDiffCopy: bool = false // User(Build System)=true: Disables diff copy
+
 	EnableTestConfigs: bool = false // User(- Configs)=true: Enable test configs
 	EnableDocumentationConfigs: bool = false // User(- Configs)=true: Enable documenattion configs
 	OnlyTestConfigs: bool = false // User(- Configs)=true: Only test configs enabled
 	EnableProfileConfigs: bool = false // User(- Configs)=true: Enable 'Optimized' and 'Profile' configs
 	EnableExtraDebuggingConfigs: bool = false // User(- Configs)=true: Enable 'Debug Optimized', 'Fast Compile', 'Release Debug' configs
-	EnableReleaseConfig: bool = true // User(- Configs)=false: Enable 'Release' configuration
-	EnableReleaseTestingConfig: bool = true // User(- Configs)=false: Enable 'Release Testing' configuration
-	EnableDebugInlinedConfig: bool? // User(- Configs)=false: Enable 'Debug Inlined' configuration
-	EnableDebugConfig: bool? // User(- Configs)=false: Enable 'Debug' configuration
+
+	EnableReleaseConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Release" : true) // User(- Configs)=false: Enable 'Release' configuration
+	EnableReleaseTestingConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Release Testing" : true) // User(- Configs)=false: Enable 'Release Testing' configuration
+	EnableDebugInlinedConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Debug Inlined" : false) // User(- Configs)=false: Enable 'Debug Inlined' configuration
+	EnableDebugInlinedConfig ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Debug Inlined" : true)
+	{
+		&
+		{
+			EnableDebugInlinedConfig undefined
+			!MalterlibBuildServerBuild true
+			|
+			{
+				PlatformFamily "Windows"
+				EnableExtraDebuggingConfigs true
+			}
+		}
+	}
+
+	EnableDebugConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Debug" : true) // User(- Configs)=false: Enable 'Debug' configuration
+
 	EnableSafeThreadLocals: bool = false // User(Undocumented)=true: Enables use of safe thread locals so you can do tests against other versions of macOS
 	EnablePlatformFamily_macOS: bool = false
 	EnablePlatformFamily_macOS true
@@ -112,7 +136,7 @@ Property
 		&
 		{
 			GeneratorFamily "Xcode"
-			EnablePlatform_iOS8_1 true
+			EnablePlatform_iOS true
 		}
 	}
 	Linux "Linux platform"
@@ -233,48 +257,51 @@ Property
 {
 	Debug "Maximum Debuggability"
 	{
-		!EnableDebugConfig false
+		!!EnableDebugConfig true
 	}
     Fast\ Compile "Minimize compiler time"
 	{
-		!!EnableExtraDebuggingConfigs true
+		|
+		{
+			EnableExtraDebuggingConfigs true
+			SingleConfiguration "Fast Compile"
+		}
 	}
     Debug\ Inlined "High debuggability with compiler optimizations that does not hurt debuggability"
 	{
-		|
-		{
-			EnableDebugInlinedConfig true
-			&
-			{
-				!EnableDebugInlinedConfig false
-				!MalterlibBuildServerBuild true
-				|
-				{
-					PlatformFamily "Windows"
-					EnableExtraDebuggingConfigs true
-				}
-			}
-		}
+		!!EnableDebugInlinedConfig true
 	}
     Debug\ Optimized "All debug code paths, but with optimizations"
 	{
 		|
 		{
 			EnableExtraDebuggingConfigs true
-			MalterlibBuildServerTest true
+			SingleConfiguration "Debug Optimized"
 		}
 	}
     Optimized "Fully optimized using latest CPU instructions"
 	{
-		!!EnableProfileConfigs true
+		|
+		{
+			EnableProfileConfigs true
+			SingleConfiguration "Optimized"
+		}
 	}
     Profile "High performance, but good compile time"
 	{
-		!!EnableProfileConfigs true
+		|
+		{
+			EnableProfileConfigs true
+			SingleConfiguration "Profile"
+		}
 	}
     Release\ Debug "Release code paths, but no compiler optimizations"
 	{
-		!!EnableExtraDebuggingConfigs true
+		|
+		{
+			EnableExtraDebuggingConfigs true
+			SingleConfiguration "Release Debug"
+		}
 	}
     Release\ Testing "Release code with optimizations, but with asserts and contracts enabled"
 	{
