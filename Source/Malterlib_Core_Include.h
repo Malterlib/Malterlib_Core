@@ -252,6 +252,8 @@ namespace NMib
 
 #include <Mib/Stream/Binary>
 
+#include <Mib/Container/Map>
+#include <Mib/Container/Set>
 #include <Mib/Container/Vector>
 
 #include <Mib/Storage/Aggregate>
@@ -262,8 +264,6 @@ namespace NMib
 
 #include "../../String/Source/Malterlib_String.h"
 
-#include <Mib/Container/Map>
-#include <Mib/Container/Set>
 
 #include <Mib/Time/Time>
 
