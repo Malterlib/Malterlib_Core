@@ -75,7 +75,7 @@ public:
 		
 		void f_AddReference(CNotification *_pReference)
 		{
-			mp_References[_pReference] = _pReference;
+			mp_References[_pReference];
 		}
 		
 		void f_RemoveReference(CNotification *_pReference)
