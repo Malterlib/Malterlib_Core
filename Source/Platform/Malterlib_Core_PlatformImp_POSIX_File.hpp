@@ -1002,7 +1002,7 @@ namespace
 	TCVector<ch8, typename tf_CStr::CAllocator> fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path)
 	{
 		using namespace NMib::NFile;
-		auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache;
+		auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache | EFileOpen_ShareBypass;
 
 		void *pFileHandle = fg_OpenHelper<NMib::NStr::CFStr256, true>(_Path, Flags, EFileAttrib_None);
 		auto Cleanup
@@ -1040,7 +1040,7 @@ namespace
 	bool fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, TCVector<ch8, typename tf_CStr::CAllocator> &o_Data)
 	{
 		using namespace NMib::NFile;
-		auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache;
+		auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache | EFileOpen_ShareBypass;
 
 		void *pFileHandle = fg_OpenHelper<NMib::NStr::CFStr256, false>(_Path, Flags, EFileAttrib_None);
 		if (!pFileHandle)
@@ -1090,7 +1090,7 @@ namespace
 mint NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, uint8 *_pData, mint _nBytes)
 {
 	using namespace NMib::NFile;
-	auto Flags = EFileOpen_Read | EFileOpen_ShareBypass | EFileOpen_NoLocalCache;
+	auto Flags = EFileOpen_Read | EFileOpen_ShareBypass | EFileOpen_NoLocalCache | EFileOpen_ShareBypass;
 
 	CFStr256 PosixFileName;
 	int BSDFile = fg_OpenHelperBSDFile<NMib::NStr::CFStr256, true>(_Path, Flags, PosixFileName, EFileAttrib_None);
