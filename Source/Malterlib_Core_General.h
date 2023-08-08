@@ -935,6 +935,62 @@ namespace NMib
 		return fg_Max(fg_Min(fg_Forward<tf_CFirst>(_First), fg_Forward<tf_CMax>(_Max)), fg_Forward<tf_CMin>(_Min));
 	}
 
+	template <typename tf_CLeft, typename tf_CRight>
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CLeft>::CType fg_MaxValidFloat(tf_CLeft &&_Left, tf_CRight &&_Right)
+	{
+		if (_Left.f_IsNan())
+		{
+			if (_Right.f_IsNan())
+				return _Left;
+			else
+				return _Right;
+		}
+		else
+		{
+			if (_Right.f_IsNan())
+				return _Left;
+
+			if (_Left < _Right)
+				return fg_Forward<tf_CRight>(_Right);
+			else
+				return fg_Forward<tf_CLeft>(_Left);
+		}
+	}
+
+	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_MaxValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	{
+		return fg_MaxValidFloat(fg_MaxValidFloat(fg_Forward<tf_CFirst>(_First), fg_Forward<tf_CSecond>(_Second)), fg_Forward<tfp_CRest>(p_Rest)...);
+	}
+
+	template <typename tf_CLeft, typename tf_CRight>
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CLeft>::CType fg_MinValidFloat(tf_CLeft &&_Left, tf_CRight &&_Right)
+	{
+		if (_Left.f_IsNan())
+		{
+			if (_Right.f_IsNan())
+				return _Left;
+			else
+				return _Right;
+		}
+		else
+		{
+			if (_Right.f_IsNan())
+				return _Left;
+
+			if (_Left < _Right)
+				return fg_Forward<tf_CLeft>(_Left);
+			else
+				return fg_Forward<tf_CRight>(_Right);
+		}
+	}
+
+	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
+	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_MinValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	{
+		return fg_MinValidFloat(fg_MinValidFloat(fg_Forward<tf_CFirst>(_First), fg_Forward<tf_CSecond>(_Second)), fg_Forward<tfp_CRest>(p_Rest)...);
+	}
+
 	template <typename tf_CFirst>
 	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Abs(tf_CFirst &&_First)
 	{
