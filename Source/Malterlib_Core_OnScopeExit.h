@@ -66,6 +66,11 @@ namespace NMib
 			mp_bIsValid = false;
 		}
 
+		inline_always bool f_IsValid() const
+		{
+			return mp_bIsValid;
+		}
+
 	private:
 		t_FOnExitFunctor mp_fOnExitFunctor;
 		bool mp_bIsValid;
