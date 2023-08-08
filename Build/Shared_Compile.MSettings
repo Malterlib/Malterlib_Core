@@ -1740,14 +1740,6 @@ Compile
 	{
 		!Builtin.Inherit ""
 	}
-	PreprocessorDefines =+ "__ENVIRONMENT_OS_VERSION_MIN_REQUIRED__=__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__"
-	{
-		&
-		{
-			PlatformFamily "macOS"
-			!MalterlibDefaultCompiler true
-		}
-	}
 
 	PreprocessorDefines += [`DDocumentation_@(Documentation)`, `DDocumentation=@(Documentation)`]
 	{
