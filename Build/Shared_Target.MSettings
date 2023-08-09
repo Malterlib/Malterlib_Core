@@ -3938,15 +3938,32 @@ Property
 	}
 	MalterlibStripProgram "strip"
 	{
-		!!PlatformIsDarwin true
+		&
+		{
+			MalterlibDefaultCompiler true
+			PlatformIsDarwin true
+		}
 	}
 
 	MalterlibStripOptions: [string] = []
 
 	MalterlibStripOptions += ["-u", "-r"]
 	{
-		!!PlatformIsDarwin true
+		&
+		{
+			MalterlibDefaultCompiler true
+			PlatformIsDarwin true
+		}
 	}
+	MalterlibStripOptions += ["--discard-all"]
+	{
+		&
+		{
+			!MalterlibDefaultCompiler true
+			PlatformIsDarwin true
+		}
+	}
+
 
 	MalterlibStripOptions += ["-s", `@(GeneratedDirectory)Module.def`]
 	{
