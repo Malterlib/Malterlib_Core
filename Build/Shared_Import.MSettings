@@ -228,12 +228,12 @@ Import
 
 	CMake_Internal_LinkerFlags: string?
 
-	CMake_Internal_LinkerFlags =+ ` -stdlib=libc++`
+	CMake_Internal_LinkerFlags =+ ` -stdlib=libc++ -Wno-unused-command-line-argument`
 	{
 		!!PlatformFamily "macOS"
 	}
 
-	CMake_Internal_LinkerFlags =+ ` -fuse-ld=@(Malterlib_LinuxLinker) -stdlib=libc++`
+	CMake_Internal_LinkerFlags =+ ` -fuse-ld=@(Malterlib_LinuxLinker) -stdlib=libc++ -Wno-unused-command-line-argument`
 	{
 		&
 		{
