@@ -175,7 +175,7 @@ GeneratorSetting
 	Compile_ObjectiveCARC =+ {
 		Flags: Compile.ObjectiveCARC->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fobjc-arc"
+			, true, ["-fobjc-arc", "-fobjc-arc-exceptions"]
 			, false, "-fno-objc-arc"
 		)
 		, Type: "unique"

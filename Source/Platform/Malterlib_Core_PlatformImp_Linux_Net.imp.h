@@ -162,7 +162,7 @@ void CPOSIXImpSpecificSocketPoller::f_DeregisterSocket(CPOSIXSocket* _pSocket)
 	NMib::NThread::CEvent DestroyEvent;
 	DestroyEvent.f_ResetSignaled();
 	_pSocket->m_pDestructionReportTo = &DestroyEvent;
-	_pSocket->m_bIsRegistered = true;
+	_pSocket->m_bIsRegistered = false;
 
 	if (!mp_pInternal->f_PushSocketEvents(_pSocket, true))
 		DMibErrorNet("Failed to register POSIX socket.");

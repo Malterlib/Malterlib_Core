@@ -33,6 +33,7 @@ using namespace NStr;
 using namespace NContainer;
 
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
+#include "Malterlib_Core_Platform_POSIX_User.h"
 
 extern NAtomic::TCAtomicAggregate<mint> g_ForceMmapSequence;
 
@@ -61,20 +62,8 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get application support diretory)", errno));
 
 			NSString *pAppSupport = [pPaths objectAtIndex:0];
-
-			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)pAppSupport, kCFStringEncodingUTF8, '?');
-
-			if (!pData)
-				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get application support diretory)", errno));
-
-			auto Cleanup = g_OnScopeExit / [&]
-				{
-					CFRelease(pData);
-				}
-			;
-
 			CStr Out;
-			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
+			Out.f_AddStr(pAppSupport.UTF8String);
 
 			return Out;
 		}
@@ -91,19 +80,8 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get application support diretory)", errno));
 			NSString *pAppSupport = [pPaths objectAtIndex:0];
 
-			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)pAppSupport, kCFStringEncodingUTF8, '?');
-
-			if (!pData)
-				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get application support diretory)", errno));
-
-			auto Cleanup = g_OnScopeExit / [&]
-				{
-					CFRelease(pData);
-				}
-			;
-
-			CWStrNonTracked Out;
-			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
+			CStrNonTracked Out;
+			Out.f_AddStr(pAppSupport.UTF8String);
 
 			return Out;
 		}
@@ -120,19 +98,8 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get caches diretory)", errno));
 			NSString *pCaches = [pPaths objectAtIndex:0];
 
-			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)pCaches, kCFStringEncodingUTF8, '?');
-
-			if (!pData)
-				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get caches diretory)", errno));
-
-			auto Cleanup = g_OnScopeExit / [&]
-				{
-					CFRelease(pData);
-				}
-			;
-
 			CStr Out;
-			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
+			Out.f_AddStr(pCaches.UTF8String);
 
 			return Out;
 		}
@@ -150,19 +117,8 @@ namespace NMib
 
 			NSString *pCaches = [pPaths objectAtIndex:0];
 
-			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)pCaches, kCFStringEncodingUTF8, '?');
-
-			if (!pData)
-				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get caches diretory)", errno));
-
-			auto Cleanup = g_OnScopeExit / [&]
-				{
-					CFRelease(pData);
-				}
-			;
-
-			CWStrNonTracked Out;
-			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
+			CStrNonTracked Out;
+			Out.f_AddStr(pCaches.UTF8String);
 
 			return Out;
 		}
@@ -179,19 +135,8 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get log diretory)", errno));
 			NSString *pCaches = [pPaths objectAtIndex:0];
 
-			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)pCaches, kCFStringEncodingUTF8, '?');
-
-			if (!pData)
-				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get log diretory)", errno));
-
-			auto Cleanup = g_OnScopeExit / [&]
-				{
-					CFRelease(pData);
-				}
-			;
-
 			CStr Out;
-			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
+			Out.f_AddStr(pCaches.UTF8String);
 			Out += "/Logs";
 
 			return Out;
@@ -209,50 +154,25 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get log diretory)", errno));
 			NSString *pCaches = [pPaths objectAtIndex:0];
 
-			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)pCaches, kCFStringEncodingUTF8, '?');
-
-			if (!pData)
-				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get log diretory)", errno));
-
-			auto Cleanup = g_OnScopeExit / [&]
-				{
-					CFRelease(pData);
-				}
-			;
-
-			CWStrNonTracked Out;
-			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
+			CStrNonTracked Out;
+			Out.f_AddStr(pCaches.UTF8String);
 			Out += "/Logs";
 
 			return Out;
 		}
 
 
-        CStr fg_MacOS_GetUserHomeDirectory()
+		CStr fg_MacOS_GetUserHomeDirectory()
 		{
 			if (fg_OverrideHome())
 				return fg_GetSys()->f_GetEnvironmentVariable("HOME");
 
-			CAutoReleasePool ARPool;
+			NMib::NPlatform::CGetPwUidState State;
+			auto *pPasswd = fg_Helper_GetPwUid(getuid(), State);
+			if (pPasswd && pPasswd->pw_dir && pPasswd->pw_dir[0])
+				return CStr(pPasswd->pw_dir);
 
-            NSString *pPath = NSHomeDirectory();
-			if (!pPath)
-				DMibErrorFile(NPlatform::fg_FormatErrno("NSHomeDirectory (get home diretory)", errno));
-			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)pPath, kCFStringEncodingUTF8, '?');
-
-			if (!pData)
-				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get home diretory)", errno));
-
-			auto Cleanup = g_OnScopeExit / [&]
-				{
-					CFRelease(pData);
-				}
-			;
-
-			CStr Out;
-			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
-
-			return Out;
+			DMibErrorFile(NPlatform::fg_FormatErrno("getpwuid_r (get home diretory)", State.m_Error));
 		}
 
 		CStrNonTracked fg_MacOS_GetUserHomeDirectoryNonTracked()
@@ -260,26 +180,12 @@ namespace NMib
 			if (fg_OverrideHome())
 				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("HOME"));
 
-			CAutoReleasePool ARPool;
+			NMib::NPlatform::CGetPwUidState State;
+			auto *pPasswd = fg_Helper_GetPwUid(getuid(), State);
+			if (pPasswd && pPasswd->pw_dir && pPasswd->pw_dir[0])
+				return CStrNonTracked(pPasswd->pw_dir);
 
-            NSString *pPath = NSHomeDirectory();
-			if (!pPath)
-				DMibErrorFile(NPlatform::fg_FormatErrno("NSHomeDirectory (get home diretory)", errno));
-			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)pPath, kCFStringEncodingUTF8, '?');
-
-			if (!pData)
-				DMibErrorFile(NPlatform::fg_FormatErrno("CFStringCreateExternalRepresentation (get home diretory)", errno));
-
-			auto Cleanup = g_OnScopeExit / [&]
-				{
-					CFRelease(pData);
-				}
-			;
-
-			CWStrNonTracked Out;
-			Out.f_AddStr(CFDataGetBytePtr(pData), CFDataGetLength(pData));
-
-			return Out;
+			DMibErrorFile(NPlatform::fg_FormatErrno("getpwuid_r (get home diretory)", State.m_Error));
 		}
 
 		NMib::NStr::CStr fg_MacOS_GetSystemLanguage()

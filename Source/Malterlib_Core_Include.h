@@ -222,9 +222,7 @@ namespace NMib
 		class TCWeakPointer;
 		
 	}
-}	
-
-
+}
 
 #include "../../String/Source/Malterlib_String_Types.h"
 
