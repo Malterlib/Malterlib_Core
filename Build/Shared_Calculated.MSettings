@@ -662,6 +662,20 @@ Property
 	MalterlibMemoryManager_Stats_EnableCategories: bool = false // User(Memory Manager)=true: Dump statistics about memory allocations through categories
 	MalterlibMemoryManager_Stats_EnableCallstack: bool = false // User(Memory Manager)=true: Dump statistics about memory allocations callstacks
 	MalterlibMemoryManager_System_UseLibC: bool = false // User(Memory Manager)=true: Use LibC for system memory manager. Useful on macOS to track allocs in Instruments
+
+	Malterlib_DummmyLibrary: string = "/dev/null"
+	Malterlib_DummmyLibrary "/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/libSystem.B.tbd"
+	{
+		!!PlatformFamily "macOS"
+	}
+	Malterlib_DummmyLibrary `@(MalterlibSysRoot)/lib/libc.so`
+	{
+		!!PlatformFamily "Linux"
+	}
+	Malterlib_DummmyLibrary "kernel32.lib"
+	{
+		!!PlatformFamily "Windows"
+	}
 }
 
 Property
