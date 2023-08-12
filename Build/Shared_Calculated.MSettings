@@ -590,6 +590,7 @@ Property
 	}
 
 	Malterlib_RefCountDebugging_Enable: bool = false // User(Debug)=true: Set to true to enable shared pointer reference debugging
+	Malterlib_RefCountLeakDebugging_Enable: bool = false // User(Debug)=true: Set to true to enable tracing information about shared pointer references when displaying memory leaks. Requires Malterlib_RefCountDebugging_Enable to be enabled as well
 
 	Malterlib_Tests_Enable: bool // User(Tests)=true: Force enable or disable of tests (set to true or false)
 	Malterlib_Tests_Enable false

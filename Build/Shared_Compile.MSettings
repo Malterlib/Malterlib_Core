@@ -709,6 +709,10 @@ Compile
 	{
 		!!Malterlib_RefCountDebugging_Enable true
 	}
+	PreprocessorDefines += "DMibConfig_RefCountLeakDebugging"
+	{
+		!!Malterlib_RefCountLeakDebugging_Enable true
+	}
 
 	PreprocessorDefines += "DMibConfig_Tests_Enable"
 	{
@@ -2158,6 +2162,7 @@ Compile
 	}
 
 	PreprocessorDefines += `DMibConfig_RefCountDebugging=@(Malterlib_RefCountDebugging_Enable ? "1" : "0")`
+	PreprocessorDefines += `DMibConfig_RefCountLeakDebugging=@(Malterlib_RefCountLeakDebugging_Enable ? "1" : "0")`
 	PreprocessorDefines += `DMibConfig_Tests_Enable=@(Malterlib_Tests_Enable ? "1" : "0")`
 	PreprocessorDefines += `DMibConfig_Contracts_Enable=@(Malterlib_Contracts_Enable ? "1" : "0")`
 	PreprocessorDefines += `DMibConfig_MalterlibMemoryManager_Debug=@(MalterlibMemoryManager_Debug ? "1" : "0")`
