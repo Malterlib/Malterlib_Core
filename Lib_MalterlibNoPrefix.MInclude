@@ -88,6 +88,7 @@ Compile
 	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableFreedGuards=@(MalterlibMemoryManager_Debug_EnableFreedGuards ? "1" : "0")`
 	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableAllocatedFill=@(MalterlibMemoryManager_Debug_EnableAllocatedFill ? "1" : "0")`
 	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableEdgeGuards=@(MalterlibMemoryManager_Debug_EnableEdgeGuards ? "1" : "0")`
+	PreprocessorDefines =+ `DMibConfig_MalterlibMemoryManager_Debug_EnableAssertOnMemoryLeak=@(MalterlibMemoryManager_Debug_EnableAssertOnMemoryLeak ? "1" : "0")`
 	PreprocessorDefines =+ `DMibConfig_MemoryManager_CrossModule_Enable=@(MalterlibMemoryManager_CrossModule_Enable ? "1" : "0")`
 	PreprocessorDefines =+ `DMibConfig_MemoryManager_HugePage_Enable=@(MalterlibMemoryManager_HugePage_Enable ? "1" : "0")`
 	PreprocessorDefines =+ `DMibConfig_MemoryManager_System_UseLibC=@(MalterlibMemoryManager_System_UseLibC ? "1" : "0")`

@@ -294,6 +294,7 @@ Property
 	MalterlibMemoryManager_Debug_EnableFreedGuards: bool = true // User(Memory Manager)=false: Enable checks for overwritten freed memory in debug heap (0xDD pattern) (default true)
 	MalterlibMemoryManager_Debug_EnableAllocatedFill: bool = true // User(Memory Manager)=false: Enable filling of allocated bytes in debug heap (0xCD pattern) (default true)
 	MalterlibMemoryManager_Debug_EnableEdgeGuards: bool = true // User(Memory Manager)=false: Enable checks for overwritten memory before and after allocated blocks (0xFD pattern) (default true). If disabled, also disables stack traces, leak checks
+	MalterlibMemoryManager_Debug_EnableAssertOnMemoryLeak: bool = false // User(Memory Manager)=true: Assert at exit if any memory leak is detected
 
 	MalterlibMemoryManager_OverrideSystemMalloc: bool = false // User(Memory Manager)=true: Override the default malloc
 	MalterlibMemoryManager_OverrideSystemMalloc true
