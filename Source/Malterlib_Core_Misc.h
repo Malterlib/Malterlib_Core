@@ -223,8 +223,8 @@ namespace NMib
 		{
 		public:
 
-			CRandomShiftRNG(uint32 _Seed0 = 123456789, uint32 _Seed1 = 362436069, uint32 _Seed2 = 2521288629)
-			{ 
+			constexpr CRandomShiftRNG(uint32 _Seed0 = 123456789, uint32 _Seed1 = 362436069, uint32 _Seed2 = 2521288629)
+			{
 				if (_Seed0 != 0)
 					mp_X = _Seed0;
 				else
@@ -244,7 +244,7 @@ namespace NMib
 			}
 
 			template <typename tf_CInt>
-			inline_small tf_CInt f_GetValue()
+			constexpr inline_small tf_CInt f_GetValue()
 			{
 				uint32 t;
 				mp_X ^= mp_X << 16;
@@ -256,22 +256,34 @@ namespace NMib
 				mp_Y = mp_Z;
 				mp_Z = t ^ mp_X ^ mp_Y;
 
-				return (tf_CInt)mp_Z;
+				if constexpr (sizeof(tf_CInt) > 4)
+				{
+					tf_CInt Return = mp_Z;
+					for (mint i = 1; i < (sizeof(tf_CInt) + 3) / 4; ++i)
+					{
+						Return <<= 32;
+						Return |= f_GetValue<uint32>();
+					}
+
+					return Return;
+				}
+				else
+					return (tf_CInt)mp_Z;
 			}
 
 			template <typename tf_CInt>
-			inline_small tf_CInt f_GetValue(tf_CInt _Max)
-			{ 
-				return f_GetValue<tf_CInt>() % _Max; 
+			constexpr inline_small tf_CInt f_GetValue(tf_CInt _Max)
+			{
+				return f_GetValue<tf_CInt>() % _Max;
 			}
 
 			template <typename tf_CInt>
-			inline_small tf_CInt f_GetValue(tf_CInt _Min, tf_CInt _Max)
+			constexpr inline_small tf_CInt f_GetValue(tf_CInt _Min, tf_CInt _Max)
 			{ 
 				return _Min + f_GetValue<tf_CInt>() % (_Max - _Min); 
 			}
 
-			inline_small static uint32 fs_Max()
+			constexpr inline_small static uint32 fs_Max()
 			{
 				return TCLimitsInt<uint32>::mc_Max;
 			}
