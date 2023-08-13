@@ -600,7 +600,7 @@ void CSystemLinux::fs_ForkParentOrChild()
 		pthread_setspecific(Sys.m_ThreadDestructionHook, nullptr);
 		if (Current != (void *)(mint)getpid())
 		{
-#if defined(DMibDynamicLibrary) && !defined(DMibAssumeMalterlibHost)
+#if !defined(DMibDynamicLibrary) || (defined(DMibDynamicLibrary) && !defined(DMibAssumeMalterlibHost))
 			g_MalterlibCurrentTID = syscall(SYS_gettid);
 #endif
 			Sys.m_bForkedChild = true;
@@ -647,7 +647,7 @@ void CSystemLinux::fs_ForkChild()
 	auto &Sys = *fg_GetLocalSys();
 	if (pthread_getspecific(Sys.m_ThreadDestructionHook))
 	{
-#if defined(DMibDynamicLibrary) && !defined(DMibAssumeMalterlibHost)
+#if !defined(DMibDynamicLibrary) || (defined(DMibDynamicLibrary) && !defined(DMibAssumeMalterlibHost))
 		g_MalterlibCurrentTID = syscall(SYS_gettid);
 #endif
 
