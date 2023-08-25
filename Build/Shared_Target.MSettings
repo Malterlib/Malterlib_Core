@@ -3264,12 +3264,6 @@ Property
 			!MalterlibExeMainNibFile undefined
 		}
 	}
-
-	MalterlibBreakpadSourceSuffix: string = ""
-	MalterlibBreakpadSourceSuffix "_cli"
-	{
-		!Target:Target.Type "UIExecutable"
-	}
 }
 
 // Out of process Specific
