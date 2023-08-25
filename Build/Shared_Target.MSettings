@@ -1412,6 +1412,7 @@ Target
 		{
 			MalterlibUseStaticLibCxx true
 			!Target.Type "Driver"
+			PlatformFamily "macOS"
 			!MalterlibDisableMalterlib true
 			|
 			{
@@ -1442,6 +1443,7 @@ Target
 		&
 		{
 			MalterlibUseStaticLibCxx true
+			PlatformFamily "macOS"
 			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
 			|
@@ -2096,10 +2098,19 @@ Target
 	{
 		!!Target.Type "ConsoleExecutable"
 		!!Target.Type "Executable"
+		&
+		{
+			!PlatformIsDarwin true
+			Target.Type "UIExecutable"
+		}
 	}
 	ProductType "com.apple.product-type.application"
 	{
-		!!Target.Type "UIExecutable"
+		&
+		{
+			PlatformIsDarwin true
+			Target.Type "UIExecutable"
+		}
 	}
 	ProductType "com.apple.product-type.kernel-extension.iokit"
 	{
