@@ -42,7 +42,7 @@ Property
 	MToolCMakePath: string
 	MToolCMakePath MToolDirectory / ("MToolCMake" + (Builtin.MToolExe->GetExtension() && ("." + Builtin.MToolExe->GetExtension())))
 
-	CMakeIntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/SharedCMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
+	CMakeIntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/CMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
 	CMakeGetToolSetTool function(string _Tool) string
 
 	CMakeGetToolSetTool PlatformToolsetCompiler->GetPath() / _Tool

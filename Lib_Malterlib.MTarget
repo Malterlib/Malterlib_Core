@@ -1443,7 +1443,7 @@ Property
 	{
 		!!PlatformFamily "macOS"
 
-		LinkWithLibraries [["-undefined", "dynamic_lookup"], `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`]
+		LinkWithLibraries [["-undefined", "dynamic_lookup"], `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Out/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`]
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
 		InstrumentForOptimization false

@@ -2814,7 +2814,7 @@ Property
 	f_ExpandCustomCommandOutputs function (string _Output) string = ""
 	f_ExpandCustomCommandOutputs =+ `if exist @(_Output->EscapeHost()) MTool TouchOrCreate @(_Output->EscapeHost())\r\n`
 
-	MalterlibIntermediateDirectoryBase: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/`
+	MalterlibIntermediateDirectoryBase: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/`
 
 	f_ConvertCustomCommandInputs function (string _Input) [string] = []
 	f_ConvertCustomCommandInputs =+ _Input->FindFilesRecursiveIn("*")

@@ -2452,7 +2452,7 @@ Property
 	MalterlibXcodeObjectsDirectory: string = "$(OBJECT_FILE_DIR_$CURRENT_VARIANT:file)"
 	MalterlibPosixInitFileName: string?
 
-	MalterlibPosixInitFileName `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o`
+	MalterlibPosixInitFileName `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o`
 	{
 		&
 		{
@@ -2465,7 +2465,7 @@ Property
 Property
 {
 	MalterlibOverrideMallocLibrary: string
-	MalterlibOverrideMallocLibrary `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Dll_MalterlibOverrideMalloc/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMalloc.dylib`
+	MalterlibOverrideMallocLibrary `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Out/Dll_MalterlibOverrideMalloc/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMalloc.dylib`
 
 	MalterlibNeedsMallocOverrideLibrary: bool = false
 	MalterlibNeedsMallocOverrideLibrary true
@@ -2488,7 +2488,7 @@ Property
 
 Property
 {
-	MalterlibHelperExecutable: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/Com_MalterlibHelper/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibHelper`
+	MalterlibHelperExecutable: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Out/Com_MalterlibHelper/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibHelper`
 
 	MalterlibNeedsMalterlibHelper: bool = false
 	MalterlibNeedsMalterlibHelper true
@@ -2928,13 +2928,13 @@ Target
 Property
 {
 
-	MalterlibLocalizationTranslationsPath: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)`
+	MalterlibLocalizationTranslationsPath: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)`
 	MalterlibLocalizationExeFSPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationsExeFS/*`
 	MalterlibLocalizationTranslationHeadersPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationHeaders`
 
 	MalterlibTempExeFSPath: string = `@(Target.IntermediateDirectory)ExeFS/*`
 
-	MalterlibSharedIntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/Shared`
+	MalterlibSharedIntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/@(Target:Target.Name)/Shared`
 
 	MalterlibSharedTempExeFSPath: string = `@(MalterlibSharedIntermediateDirectory)/ExeFS/*`
 
@@ -3081,11 +3081,11 @@ Property
 // Misc
 Target
 {
-	IntermediateDirectory `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Intermediate/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
+	IntermediateDirectory `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
 	{
 		!!Target.IntermediateDirectory undefined
 	}
-	OutputDirectory	`@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Output/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
+	OutputDirectory	`@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Out/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
 	{
 		!!Target.OutputDirectory undefined
 	}
