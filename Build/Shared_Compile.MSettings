@@ -1201,6 +1201,15 @@ Compile
 	Warnings "On"
 
 	Warnings_DeprecatedDeclarations: bool?
+	Warnings_DeprecatedDeclarations true
+	{
+		&
+		{
+			Compile.Warnings_DeprecatedDeclarations undefined
+			GeneratorFamily "Xcode"
+		}
+	}
+
 	Warnings_DeprecatedNonPrototype: bool?
 	Warnings_DeprecatedBuiltins: bool?
 	Warnings_DeprecatedPragma: bool?
