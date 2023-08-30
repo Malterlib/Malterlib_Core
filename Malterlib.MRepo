@@ -1,8 +1,8 @@
 ../../Binaries/Malterlib/Linux/arm64 8f05893ae0ba9cf97ef03a34cc6e61db7af91801
 ../../Binaries/Malterlib/Linux/x64 79a7ba1b72c542b2a8a6623eeae8147abbdc52cc
 ../../Binaries/Malterlib/Linux/x86 a1ffe3d64bb0ed1ac7ce3d8142b64d39ada19d0f
-../../Binaries/Malterlib/OSX/arm64 885fb15cbc9b299a858651f411b4174c629539ed
-../../Binaries/Malterlib/OSX/x64 2b631edfdbc63c91233f9ccdecb86e89d44d99f6
+../../Binaries/Malterlib/OSX/arm64 0bb4cb27dca8376c5a0fe80dc5177d8f352f705c
+../../Binaries/Malterlib/OSX/x64 d563be736893d419aaca785d3727a78c8ad0b194
 ../../Binaries/Malterlib/Windows/x64 38329169027ebd3651de250878717fb91cf0a40b
 ../../Binaries/Malterlib/Windows/x86 d9aed72c62a561801d7a287ec40a6e628dff303b
 ../../Binaries/MalterlibLLVM/Linux/arm64 e737c9a95094b5924352b26c4a8722c91ccf9969
@@ -51,7 +51,7 @@
 ../Perforce 02547f46145729708b933ff10c65bb36b596857f
 ../Preprocessor 77bda6dffaa412448578f928450f7ebf961105e8
 ../Process e1ef41cc39144deee11424d644e1b48626230c5b
-../Qt faa31445b26fbbc9693160fc4d11d92f2cb47418
+../Qt 9c73d259ca9718d65b07e2ba4251ee3ccb2c0460
 ../SQL 46aece652347111abfcfac7a97855d3931f77c65
 ../STL 3184748ed908322cf8e0c65bb64c370e48dfe232
 ../Security 820f28255b4b62ac4eff1e3921f7756bed62cb4b
