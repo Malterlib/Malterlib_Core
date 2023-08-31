@@ -158,7 +158,7 @@ function BootstrapCore()
 				git checkout -B master $GitHash
 				popd > /dev/null
 			else
-				OutputError "Cloud not find commit hash in *.MRepo files using latest default branch"
+				OutputError "Could not find commit hash in *.MRepo files using latest default branch"
 
 				git clone "$MalterlibRepoRoot/Malterlib_Core.git" Malterlib/Core
 			fi
@@ -181,7 +181,7 @@ function BootstrapCore()
 
 		GitHash=`GetMalterlibCoreHash`
 		if [[ "$GitHash" == "" ]]; then
-			OutputError "Cloud not find commit hash in *.MRepo, cannot upgrade"
+			OutputError "Could not find commit hash in *.MRepo, cannot upgrade"
 			exit 1
 		fi
 
@@ -240,7 +240,7 @@ function BootstrapCore()
 				git checkout -B master $GitHash
 				popd > /dev/null
 			else
-				OutputError "Cloud not find commit hash in ${RepoFolder}*.MRepo files using latest default branch"
+				OutputError "Could not find commit hash in ${RepoFolder}*.MRepo files using latest default branch"
 
 				git clone "$MalterlibRepoRoot/$MalterlibBinariesRepo.git" $MalterlibBinariesPath
 			fi
