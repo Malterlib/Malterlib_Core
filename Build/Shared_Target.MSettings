@@ -3036,6 +3036,33 @@ Property
 		}
 	}
 
+	MSVCSanitizerArchitecture: string = Architecture
+
+	MSVCSanitizerArchitecture "x86_64"
+	{
+		!!Architecture "x64"
+	}
+
+	MSVCSanitizerArchitecture "i386"
+	{
+		!!Architecture "x86"
+	}
+
+	MSVCDebugType: string = ""
+	MSVCDebugType "_dbg"
+	{
+		!!DebugCode true
+	}
+	
+	MalterlibLLVMSanitizerRuntime VisualStudioMSVCRootPath / MalterlibMSVCVersion / `bin/Host@(Architecture)/@(Architecture)/clang_rt.asan@(MSVCDebugType)_dynamic-@(MSVCSanitizerArchitecture).dll`
+	{
+		&
+		{
+			MalterlibSupportSanitizerEnable_Address true
+			PlatformFamily "Windows"
+		}
+	}
+
 	MalterlibNeedsLLVMSanitizerRuntime: bool = false
 	MalterlibNeedsLLVMSanitizerRuntime true
 	{
@@ -3043,7 +3070,11 @@ Property
 		{
 			MalterlibNeedsLLVMSanitizerRuntime undefined
 			!MalterlibLLVMSanitizerRuntime undefined
-			PlatformFamily "macOS"
+			|
+			{
+				PlatformFamily "macOS"
+				PlatformFamily "Windows"
+			}
 			TargetIsLaunchableExecutable true
 			!DocumentationEnabled true
 			!MalterlibDisableMalterlib true
