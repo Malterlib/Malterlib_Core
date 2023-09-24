@@ -234,21 +234,9 @@ Property
 			}
 		}
 	}
-	MalterlibTargetNameType "Suffixed"
-	{
-		&
-		{
-			PlatformFamily "Windows"
-			Property.MalterlibTargetNameType undefined
-		}
-	}
 	MalterlibTargetNameType "Config"
 	{
-		&
-		{
-			!PlatformFamily "Windows"
-			Property.MalterlibTargetNameType undefined
-		}
+		!!Property.MalterlibTargetNameType undefined
 	}
 
 	MalterlibGenerateLibrary: bool = true
