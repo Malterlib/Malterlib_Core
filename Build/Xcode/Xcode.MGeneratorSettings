@@ -1204,11 +1204,35 @@
 					DisableValueSet "1"
 				}
 			}
+			%GeneratorSetting "LibToolFlagsCompat"
+			{
+				Property
+				{
+					Name "LIBTOOLFLAGS"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					IgnoreEmpty "1"
+					DisableValueSet "1"
+				}
+			}
 			%GeneratorSetting "LDFlags"
 			{
 				Property
 				{
 					Name "PRODUCT_SPECIFIC_LDFLAGS"
+					ConvertSeperator "1"
+					Seperator " "
+					OldSeperator ";"
+					IgnoreEmpty "1"
+					DisableValueSet "1"
+				}
+			}
+			%GeneratorSetting "LDFlagsCompat"
+			{
+				Property
+				{
+					Name "LDFLAGS"
 					ConvertSeperator "1"
 					Seperator " "
 					OldSeperator ";"

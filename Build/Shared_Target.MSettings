@@ -1075,7 +1075,11 @@ Target
 		!!PlatformFamily "Linux"
 	}
 
+	LDFlagsCompat define [one_of(string, [string])] = []
+
 	LDFlags define [one_of(string, [string])] = []
+	LDFlags =+ "$(inherited)"
+
 	LDFlags =+ `-mlinker-version=@(MalterlibMacOSLinkerVersion->ToString())`
 	{
 		&
@@ -1546,7 +1550,10 @@ Target
 		!!Documentation "Doxygen"
 	}
 
+	LibToolFlagsCompat define [one_of(string, [string])] = []
+
 	LibToolFlags define [one_of(string, [string])] = []
+	LibToolFlags =+ "$(inherited)"
 
 	LibToolFlags =+ [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", "DoxygenLibTool"]]
 	{
