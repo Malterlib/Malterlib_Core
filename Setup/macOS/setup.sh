@@ -193,7 +193,7 @@ UpdateXcodePlugins()
 
 			if [[ "$HasLibraryValidation" == "false" ]] || [ -e "$2/Contents/SignState.json" ]; then
 				echo "Patching llbuild"
-				if ! [ -f "$2/Contents/SharedFrameworks/llbuild.framework-old" ]; then
+				if ! [ -d "$2/Contents/SharedFrameworks/llbuild.framework-old" ]; then
 					mv "$2/Contents/SharedFrameworks/llbuild.framework" "$2/Contents/SharedFrameworks/llbuild.framework-old"
 				else
 					rm -rf "$2/Contents/SharedFrameworks/llbuild.framework"
