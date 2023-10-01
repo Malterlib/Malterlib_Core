@@ -46,7 +46,7 @@ fi
 
 HasLibraryValidation=true
 
-if [[ "$(defaults read /Library/Preferences/com.apple.security.libraryvalidation.plist DisableLibraryValidation -bool || true)" == "1" ]] && [[ "$HasSystemIntegrityProtection" == "false" ]]; then
+if [ -f /Library/Preferences/com.apple.security.libraryvalidation.plist ] && [[ "$(defaults read /Library/Preferences/com.apple.security.libraryvalidation.plist DisableLibraryValidation -bool || true)" == "1" ]] && [[ "$HasSystemIntegrityProtection" == "false" ]]; then
 	HasLibraryValidation=false
 fi
 
