@@ -33,6 +33,8 @@ Property
 
 	MalterlibBuildServerCommandPrefix: string = ""
 
+	MalterlibManualForeignThreadInitialization: bool = true
+
     MalterlibSigning: bool
 	MalterlibSigning true
 	{

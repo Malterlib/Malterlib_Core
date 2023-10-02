@@ -89,10 +89,14 @@ namespace NMib
 
 	inline_always_lto CSystemThreadLocal &fg_SystemThreadLocal()
 	{
+#ifdef DMibConfig_ManualForeignThreadInitialization
 		DMibFastCheck(NPrivate::g_SubSystem_SystemThreadLocal.f_WasCreated() && NPrivate::g_SubSystem_SystemThreadLocal.f_GetUnsafe()->m_ThreadLocal.f_TryGet());
 		// Make sure to call fg_SystemThreadInit() on non-Malterlib threads.
 
 		return *NPrivate::g_SubSystem_SystemThreadLocal.f_GetUnsafe()->m_ThreadLocal.f_TryGet();
+#else
+		return *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal;
+#endif
 	}
 	
 	/************************************************************************************************\

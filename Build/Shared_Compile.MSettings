@@ -2202,6 +2202,11 @@ Compile
 		!!MalterlibMemory_Shims_Enable true
 	}
 
+	PreprocessorDefines =+ "DMibConfig_ManualForeignThreadInitialization"
+	{
+		!!MalterlibManualForeignThreadInitialization true
+	}
+
 	PreprocessorDefines += "_LIBCPP_ENABLE_ASSERTIONS=1"
 	{
 		&
