@@ -49,6 +49,7 @@ namespace NMib
 	bool fg_SystemThreadLocalWasCreated();
 	inline_always_lto CSystemThreadLocal &fg_SystemThreadLocal();
 	void fg_SystemThreadInit();
+	void fg_MaybeSystemThreadInit();
 
 	namespace NException
 	{

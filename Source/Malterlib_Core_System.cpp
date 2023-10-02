@@ -104,6 +104,13 @@ namespace NMib
 	// Main System object. Created at start of 
 	CSystem *g_pSys = nullptr;
 
+	void fg_MaybeSystemThreadInit()
+	{
+		if (!g_pSys || !NPrivate::g_SubSystem_SystemThreadLocal.f_WasCreated() || fg_GetSys()->f_ThreadDestroyed())
+			return;
+		[[maybe_unused]] auto &Local = *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal;
+	}
+
 	uint32 CSystem::ms_PlatformVersion = 0;
 
 	CSystem::CSystem(bool _bIsDll)
