@@ -1903,7 +1903,7 @@ Target
 		!Target.EmscriptenNode undefined
 	}
 
-	CxxLanguage: string = "C++23"
+	CxxLanguage: string = "C++26"
 
 	CxxStandardLibrary: string = "libc++"
 
@@ -3011,7 +3011,7 @@ Property
 	MalterlibLLVMBinariesDirectory: string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(PlatformFamily)/@(Architecture)`
 
 	MalterlibLLVMSanitizerRuntime: string?
-	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion->ParseFormatString("{}.{}", "{0}"))/lib/darwin/libclang_rt.asan_osx_dynamic.dylib`
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersionMajor)/lib/darwin/libclang_rt.asan_osx_dynamic.dylib`
 	{
 		&
 		{
@@ -3019,7 +3019,7 @@ Property
 			MalterlibSupportSanitizerEnable_Address true
 		}
 	}
-	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion->ParseFormatString("{}.{}", "{0}"))/lib/darwin/libclang_rt.tsan_osx_dynamic.dylib`
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersionMajor)/lib/darwin/libclang_rt.tsan_osx_dynamic.dylib`
 	{
 		&
 		{
@@ -3027,7 +3027,7 @@ Property
 			MalterlibSupportSanitizerEnable_Thread true
 		}
 	}
-	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersion->ParseFormatString("{}.{}", "{0}"))/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib`
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersionMajor)/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib`
 	{
 		&
 		{

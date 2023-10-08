@@ -135,7 +135,7 @@ _LIBCPP_END_NAMESPACE_STD
 #		ifdef DMalterlibUseStaticLibCxx
 		namespace std
 		{
-			class _LIBCPP_EXCEPTION_ABI type_info;
+			class _LIBCPP_EXPORTED_FROM_ABI type_info;
 		}
 #		else
 #			include <typeinfo>

@@ -41,10 +41,11 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
-	Compile_Coroutines =+ {
-		Flags: Compile.Coroutines->SwitchWithError(
+	Compile_CoroutineAlignedAllocation =+ {
+		Flags: Compile.CoroutineAlignedAllocation->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fcoroutines-ts"
+			, false, "-fno-coro-aligned-allocation"
+			, true, "-fcoro-aligned-allocation"
 		)
 		, Type: "unique"
 	}
@@ -285,7 +286,8 @@ GeneratorSetting
 			, "C++14", "-std=c++14"
 			, "C++17", "-std=c++17"
 			, "C++20", "-std=c++20"
-			, "C++23", "-std=c++2b"
+			, "C++23", "-std=c++23"
+			, "C++26", "-std=c++2c"
 			, "", []
 		)
 		, Type: "unique"
@@ -810,11 +812,12 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	// We use interfaces across interface boundraries which results in different typeinfo for the same type
 	Compile_Sanitize_UndefinedBehavior =+ {
 		Flags: Compile.Sanitize_UndefinedBehavior->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, [["-fsanitize=undefined", "-fno-sanitize=vptr"]]
+			, true, [["-fsanitize=undefined", "-fno-sanitize=vptr,function"]]
 		)
 		, Type: "unique"
 	}

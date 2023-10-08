@@ -291,6 +291,14 @@ Property
 			%Group "Core"
 			{
 				%File "../../External/llvm-project/compiler-rt/lib/builtins/*.c"
+				{
+					Compile.Disabled (
+						this.Identity->GetFile() == "crtbegin.c"
+						|| this.Identity->GetFile() == "crtend.c"
+						|| this.Identity->GetFile() == "ctor_dtor.c"
+						|| this.Identity->GetFile() == "dso_handle.c"
+					)
+				}
 				%File "../../External/llvm-project/compiler-rt/lib/builtins/*.h"
 				%File "../../External/llvm-project/compiler-rt/lib/builtins/*bf2.c"
 				{
@@ -538,18 +546,13 @@ Property
 							!MalterlibDefaultToolset true
 						}
 					}
-					%File "../../External/llvm-project/libcxx/src/debug.cpp"
+					%Group "pstl"
 					{
-						Compile.Disabled true
+						%File "../../External/llvm-project/libcxx/src/pstl/libdispatch.cpp"
 						{
-							!
+							Compile.Disabled true
 							{
-								&
-								{
-									!MalterlibDisableMalterlib true
-									MalterlibUseStaticLibCxx true
-									Malterlib_Contracts_Enable true
-								}
+								!PlatformFamily "macOS"
 							}
 						}
 					}
@@ -558,13 +561,6 @@ Property
 						%Group "ibm"
 						{
 							%File "../../External/llvm-project/libcxx/src/support/ibm/*.cpp"
-							{
-								Compile.Disabled true
-							}
-						}
-						%Group "solaris"
-						{
-							%File "../../External/llvm-project/libcxx/src/support/solaris/*.cpp"
 							{
 								Compile.Disabled true
 							}
