@@ -353,20 +353,10 @@ Import
 		}
 	}
 
-	CMake_Variables Error(`'/private/var/db/xcode_select_link' does not exist. @(ColorStatusError())Please run:@(ColorDefault()) sudo xcode-select -s \`xcode-select -p\``)
-	{
-		&
-		{
-			PlatformFamily "macOS"
-			HostPlatformFamily "macOS"
-			("/private/var/db/xcode_select_link"->LinkExists()) false
-		}
-	}
-
 	SdkRoot_macOS: string = (
 		(MalterlibMaxSupportedMacOSVersion == "Latest")
-		? "/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
-		: `/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX@(MalterlibMaxSupportedMacOSVersion).sdk`
+		? `@(Malterlib_MacOSDeveloperLocaction)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk`
+		: `@(Malterlib_MacOSDeveloperLocaction)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX@(MalterlibMaxSupportedMacOSVersion).sdk`
 	)
 	{
 		!!PlatformFamily "macOS"
@@ -418,6 +408,10 @@ Import
 			PlatformFamily "Linux"
 			Architecture "x86"
 		}
+	}
+	CMake_ExcludeFromHash =+ [`@(Malterlib_MacOSDeveloperLocaction)/`]
+	{
+		!!PlatformFamily "macOS"
 	}
 
 	CMake_SystemName "Darwin"

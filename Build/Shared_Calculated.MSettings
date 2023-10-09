@@ -663,8 +663,42 @@ Property
 	MalterlibMemoryManager_Stats_EnableCallstack: bool = false // User(Memory Manager)=true: Dump statistics about memory allocations callstacks
 	MalterlibMemoryManager_System_UseLibC: bool = false // User(Memory Manager)=true: Use LibC for system memory manager. Useful on macOS to track allocs in Instruments
 
+	Malterlib_MacOSDeveloperLocaction: string = "/Applications/Xcode.app/Contents/Developer"
+	Malterlib_MacOSDeveloperLocaction "/var/select/developer_dir"->ResolveSymbolicLink()
+	{
+		&
+		{
+			Malterlib_MacOSDeveloperLocaction undefined
+			"/var/select/developer_dir"->LinkExists() true
+		}
+	}
+	Malterlib_MacOSDeveloperLocaction "/var/db/xcode_select_link"->ResolveSymbolicLink()
+	{
+		&
+		{
+			Malterlib_MacOSDeveloperLocaction undefined
+			"/var/db/xcode_select_link"->LinkExists() true
+		}
+	}
+	Malterlib_MacOSDeveloperLocaction "/usr/share/xcode-select/xcode_dir_link"->ResolveSymbolicLink()
+	{
+		&
+		{
+			Malterlib_MacOSDeveloperLocaction undefined
+			"/usr/share/xcode-select/xcode_dir_link"->LinkExists() true
+		}
+	}
+	Malterlib_MacOSDeveloperLocaction "/usr/share/xcode-select/xcode_dir_path"->ResolveSymbolicLink()
+	{
+		&
+		{
+			Malterlib_MacOSDeveloperLocaction undefined
+			"/usr/share/xcode-select/xcode_dir_path"->LinkExists() true
+		}
+	}
+
 	Malterlib_DummmyLibrary: string = "/dev/null"
-	Malterlib_DummmyLibrary "/private/var/db/xcode_select_link/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/libSystem.B.tbd"
+	Malterlib_DummmyLibrary `@(Malterlib_MacOSDeveloperLocaction)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/libSystem.B.tbd`
 	{
 		!!PlatformFamily "macOS"
 	}
