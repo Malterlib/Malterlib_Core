@@ -70,6 +70,8 @@ struct CUnixAddress
 		return m_UnixAddress.sun_path;
 	}
 
+	static NStorage::TCOptional<CUnixAddress> fs_Parse(NMib::NStr::CStr const &_Address, bool _bThrowOnError);
+
 	sockaddr_un m_UnixAddress;
 	NFile::EFileAttrib m_Permissions = NFile::EFileAttrib_None;
 };

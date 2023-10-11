@@ -537,75 +537,11 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 
 	if (_Address.f_StartsWith("UNIX(") || _Address.f_StartsWith("UNIX:"))
 	{
-		using namespace NMib::NFile;
-
-		EFileAttrib Permissions = EFileAttrib_None;
-		CStr Address;
-
-		if (_Address.f_StartsWith("UNIX(") )
-		{
-			auto *pParse = _Address.f_GetStr() + 5;
-			bool bFailed = false;
-			uint32 UnixPermissions = fg_StrToIntParse(pParse, uint32(01000), "):", false, EStrToIntParseMode_Octal, &bFailed);
-
-			if (bFailed || pParse[0] != ')' || pParse[1] != ':')
-			{
-				if (_bThrowOnError)
-					DMibErrorNet("Failed to parse unix permissions");
-				else
-					return nullptr;
-			}
-
-			pParse += 2;
-
-			if (UnixPermissions >= uint32(01000))
-			{
-				if (_bThrowOnError)
-					DMibErrorNet("Invalid permissions specified");
-				else
-					return nullptr;
-			}
-
-			if (UnixPermissions & 0100)
-				Permissions |= EFileAttrib_UserExecute;
-			if (UnixPermissions & 0200)
-				Permissions |= EFileAttrib_UserWrite;
-			if (UnixPermissions & 0400)
-				Permissions |= EFileAttrib_UserRead;
-
-			if (UnixPermissions & 010)
-				Permissions |= EFileAttrib_GroupExecute;
-			if (UnixPermissions & 020)
-				Permissions |= EFileAttrib_GroupWrite;
-			if (UnixPermissions & 040)
-				Permissions |= EFileAttrib_GroupRead;
-
-			if (UnixPermissions & 01)
-				Permissions |= EFileAttrib_EveryoneExecute;
-			if (UnixPermissions & 02)
-				Permissions |= EFileAttrib_EveryoneWrite;
-			if (UnixPermissions & 04)
-				Permissions |= EFileAttrib_EveryoneRead;
-
-			Address = CStr{pParse};
-		}
-		else
-			Address = _Address.f_Extract(fg_StrLen("UNIX:"));
-
-		if (Address.f_GetLen() > CUnixAddress::mc_MaxAddressLength)
-		{
-			if (_bThrowOnError)
-				DMibErrorNet(fg_Format("Unix sockets support a maximum path length of {} characters. Invalid path '{}'", CUnixAddress::mc_MaxAddressLength, Address));
-			else
-				return nullptr;
-		}
-
-		CUnixAddress AddressWithPermissions;
-		AddressWithPermissions.m_Permissions = Permissions;
-		AddressWithPermissions.m_UnixAddress.sun_family = AF_UNIX;
-		NMib::NStr::fg_StrCopy(AddressWithPermissions.m_UnixAddress.sun_path, Address, CUnixAddress::mc_MaxAddressLength + 1);
-
-		pAddress->f_Set(AddressWithPermissions);
+		auto Address = CUnixAddress::fs_Parse(_Address, _bThrowOnError);
+		if (!Address)
+			return nullptr;
+		
+		pAddress->f_Set(fg_Move(*Address));
 		return pAddress.f_Detach();
 	}
 
