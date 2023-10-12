@@ -1780,7 +1780,6 @@ Compile
 	{
 		&
 		{
-			!DoesNotUseMalterlib true
 			DebugCode true
 			|
 			{
@@ -1794,7 +1793,6 @@ Compile
 	{
 		&
 		{
-			!DoesNotUseMalterlib true
 			MalterlibUseStaticLibCxx true
 		}
 	}
@@ -1804,7 +1802,6 @@ Compile
 		&
 		{
 			PlatformFamily "macOS"
-			!DoesNotUseMalterlib true
 			MalterlibUseStaticLibCxx true
 		}
 	}
@@ -1814,7 +1811,6 @@ Compile
 		&
 		{
 			!PlatformFamily "macOS"
-			!DoesNotUseMalterlib true
 			MalterlibUseStaticLibCxx true
 		}
 	}
