@@ -1179,6 +1179,11 @@ Target
 		}
 	}
 
+	LDFlags =+ "-Wl,-no_warn_duplicate_libraries"
+	{
+		!!MalterlibDefaultCompiler true
+	}
+
 	EmscriptenFastCompiler: bool?
 	EmscriptenEmscriptenRoot: string?
 	EmscriptenLLVMRoot: string?
@@ -1904,6 +1909,15 @@ Target
 	}
 
 	CxxLanguage: string = "C++26"
+	CxxLanguage "C++23"
+	{
+		&
+		{
+			Compile.CxxLanguage undefined
+			MalterlibDefaultCompiler true
+		}
+	}
+
 
 	CxxStandardLibrary: string = "libc++"
 
