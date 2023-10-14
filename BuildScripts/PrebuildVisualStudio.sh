@@ -56,11 +56,11 @@ if [ "$MalterlibPreBuildNoClean" != "true" ] ; then
 			echo Cleaning workspace: $Argument
 			CleanPath=${MalterlibCompiledFilesSourceBase}/${Argument}
 			echo CleanPath: ${CleanPath}
-			if [ -d "$CleanPath/Intermediate" ] ; then
-				MTool DeleteDirectoryRecursive "$CleanPath/Intermediate"
+			if [ -d "$CleanPath/Int" ] ; then
+				MTool DeleteDirectoryRecursive "$CleanPath/Int"
 			fi
-			if [ -d "$CleanPath/Output" ] ; then
-				MTool DeleteDirectoryRecursive "$CleanPath/Output"
+			if [ -d "$CleanPath/Out" ] ; then
+				MTool DeleteDirectoryRecursive "$CleanPath/Out"
 			fi
 		fi
 	done
