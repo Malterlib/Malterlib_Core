@@ -3990,49 +3990,39 @@ Property
 	{
 		&
 		{
-			MalterlibDefaultCompiler true
 			PlatformIsDarwin true
+			MalterlibDefaultCompiler true
 		}
 	}
 
 	MalterlibStripOptions: [string] = []
 
-	MalterlibStripOptions += ["-u", "-r"]
+	MalterlibStripOptions =+ ["-u", "-r"]
 	{
 		&
 		{
+			PlatformIsDarwin true
 			MalterlibDefaultCompiler true
-			PlatformIsDarwin true
 		}
 	}
-	MalterlibStripOptions += ["--discard-all"]
+	MalterlibStripOptions =+ ["--discard-all"]
 	{
 		&
 		{
+			PlatformIsDarwin true
 			!MalterlibDefaultCompiler true
-			PlatformIsDarwin true
 		}
 	}
 
-
-	MalterlibStripOptions += ["-s", `@(GeneratedDirectory)Module.def`]
-	{
-		&
-		{
-			!MalterlibDefinedSymbols undefined
-			PlatformIsDarwin true
-		}
-	}
-
-	MalterlibStripOptions += ["--strip-all-gnu"]
+	MalterlibStripOptions =+ ["--strip-all-gnu"]
 	{
 		!!PlatformFamily "Linux"
 	}
 
-	ModuleDefineTemplateLinux function(string _Symbol) [string]
-	ModuleDefineTemplateLinux =+ `--keep-symbol=_@(_Symbol)`
+	ModuleDefineTemplateLLVMStrip function(string _Symbol) [string]
+	ModuleDefineTemplateLLVMStrip =+ `--keep-symbol=_@(_Symbol)`
 
-	MalterlibStripOptions += MalterlibDefinedSymbols->ForEach(&ModuleDefineTemplateLinux)
+	MalterlibStripOptions =+ MalterlibDefinedSymbols->ForEach(&ModuleDefineTemplateLLVMStrip)
 	{
 		&
 		{
@@ -4040,7 +4030,6 @@ Property
 			PlatformFamily "Linux"
 		}
 	}
-
 }
 
 %Group "~Automatic/DLL Definition"
@@ -4068,17 +4057,25 @@ Target
 		&
 		{
 			!MalterlibDefinedSymbols undefined
-			!PlatformFamily "Linux"
+			|
+			{
+				PlatformFamily "Windows"
+				PlatformFamily "macOS"
+			}
 		}
 	}
 
 	ModuleDefinitionFile: string?
-	ModuleDefinitionFile `@(GeneratedDirectory)Module.def`
+	ModuleDefinitionFile GeneratedDirectory / "Module.def"
 	{
 		&
 		{
 			!MalterlibDefinedSymbols undefined
-			PlatformFamily "Windows"
+			|
+			{
+				PlatformFamily "Windows"
+				PlatformFamily "macOS"
+			}
 		}
 	}
 }

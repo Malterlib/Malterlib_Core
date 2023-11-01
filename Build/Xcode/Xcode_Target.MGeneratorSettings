@@ -368,6 +368,11 @@ GeneratorSetting
 	Helper_LinkWithLibraries =+ Target.ExternalDependencies->ForEach(&GeneratorSetting.f_ExtractLibraryDependencies)->Unique()
 	Helper_LinkWithLibraries =+ Target.LinkWithLibraries
 
+	Helper_LinkWithLibraries =+ [["-exported_symbols_list", Target.ModuleDefinitionFile]]
+	{
+		!Target.ModuleDefinitionFile undefined
+	}
+
 	Target_LinkWithLibraries =+ {
 		XCConfigs: {
 			"OTHER_LDFLAGS": GeneratorSetting.Helper_LinkWithLibraries
