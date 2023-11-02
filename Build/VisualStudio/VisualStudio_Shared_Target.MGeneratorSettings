@@ -122,11 +122,24 @@ GeneratorSetting
 		]
 	}
 	{
-		|
+		&
 		{
-			LanguageFamily ".NET"
+			!LanguageFamily ".NET"
 			Target.CLRSupport "NetCore"
 		}
+	}
+
+	Target_TargetFrameworkVersion =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Key: "TargetFramework"
+				, Value: Target.TargetFrameworkVersion->EscapeMSBuild()
+			}
+		]
+	}
+	{
+		!!LanguageFamily ".NET"
 	}
 
 	Target_PlatformVersion =+ {
