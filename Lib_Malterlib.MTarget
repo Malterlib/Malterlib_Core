@@ -761,6 +761,7 @@ Property
 						}
 						%GenerateFile ["exe_common.inl", "utility.cpp", "dll_dllmain.cpp"]
 						{
+							// ./Binaries/Malterlib/Windows/x64/MTool BinaryDiff "/c/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.38.33130/crt/src/vcruntime/utility.cpp" /c/CompiledFiles/Malterlib4-590ae979/Tests/Generated/Lib_Malterlib_Runtime/NoConfig/vcruntime/utility.cpp Malterlib/Core/Patches/14.38.33130/VCCrt_utility.cpp.patch
 							GenerateFile
 							{
 								Name `@(GeneratedDirectoryNoConfig)vcruntime/@(this.Identity)`
