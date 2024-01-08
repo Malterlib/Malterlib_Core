@@ -447,6 +447,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_Warnings_DeprecatedThisCapture =+ {
+		Flags: Compile.Warnings_DeprecatedPragma->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-deprecated-this-capture"
+			, true, "-Wdeprecated-this-capture"
+		)
+		, Type: "unique"
+	}
+
 	Compile_Warnings_ShiftOverflow =+ {
 		Flags: Compile.Warnings_ShiftOverflow->SwitchWithError(
 			"Unsupported option: "

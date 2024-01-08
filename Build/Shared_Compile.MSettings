@@ -1213,6 +1213,7 @@ Compile
 	Warnings_DeprecatedNonPrototype: bool?
 	Warnings_DeprecatedBuiltins: bool?
 	Warnings_DeprecatedPragma: bool?
+	Warnings_DeprecatedThisCapture: bool?
 
 	Warnings_ShiftCountNegative: bool?
 	Warnings_ConstantConversion: bool?
