@@ -73,6 +73,8 @@ Import
 	CMake_VerboseHash: bool = false // User(Import)=true: Trace out the string used to determine the config hash for cmake imports
 	CMake_DiffHash: bool = false // User(Import)=true: Run diff program with differences between hashes
 
+	CMake_OutputFilesParseTerminators: string = "/\"' ,\t\r\n"
+
 	CMake_FullRebuildVersion "4"
 
 	CMake_UpdateCache true
