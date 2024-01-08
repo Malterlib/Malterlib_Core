@@ -240,12 +240,28 @@ GeneratorSetting
 
 	Dependency_LinkWithObjectFiles =+ {
 		VSSettings: {
-			UseLibraryDependencyInputs: Dependency.LinkWithObjectFiles->f_BoolToString()
+			UseLibraryDependencyInputs: (Dependency.LinkWithObjectFiles || Dependency.ObjectLibrary)->f_BoolToString()
+		}
+	}
+
+	Dependency_ObjectLibrary =+ {
+		VSSettings: {
+			UseLibraryDependencyInputs: (Dependency.LinkWithObjectFiles || Dependency.ObjectLibrary)->f_BoolToString()
 		}
 	}
 
 	Dependency_TargetProperties {}
 	{
 		!!GeneratorSetting.Dependency_TargetProperties undefined
+	}
+}
+
+GeneratorSetting
+{
+	!Target.Language "Native"
+
+	Dependency_ObjectLibrary =+ {}
+	{
+		!!GeneratorSetting.Dependency_ObjectLibrary undefined
 	}
 }

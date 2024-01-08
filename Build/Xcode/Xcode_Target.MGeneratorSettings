@@ -73,6 +73,10 @@ GeneratorSetting
 
 GeneratorSetting
 {
+	Target_ObjectLibrary {}
+	{
+		!!GeneratorSetting.Target_ObjectLibrary undefined
+	}
 	Target_LinkWithLibraries {}
 	{
 		!!GeneratorSetting.Target_LinkWithLibraries undefined

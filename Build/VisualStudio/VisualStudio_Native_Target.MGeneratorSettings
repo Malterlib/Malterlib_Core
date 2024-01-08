@@ -37,6 +37,10 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Target_CLRSupport undefined
 	}
+	Target_ObjectLibrary {}
+	{
+		!!GeneratorSetting.Target_ObjectLibrary undefined
+	}
 
 	Target_LinkTimeCodeGeneration =+ {
 		VSSettings: [
