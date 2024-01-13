@@ -483,5 +483,10 @@ namespace NMib
 		using NContainer::begin;
 		using NContainer::end;
 	}
-
+	namespace NStr
+	{
+		using NContainer::CIteratorEndSentinel;
+		using NContainer::begin;
+		using NContainer::end;
+	}
 }
