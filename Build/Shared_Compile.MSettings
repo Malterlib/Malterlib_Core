@@ -2312,6 +2312,11 @@ Compile
 		}
 	}
 
+	ExtraCompilerFlags =+ "/Zc:__cplusplus"
+	{
+		!!PlatformFamily "Windows"
+	}	
+
 	ExtraCompilerFlags =+ "/utf-8"
 	{
 		&
