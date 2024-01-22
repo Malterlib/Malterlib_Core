@@ -212,9 +212,20 @@ Property
 {
 	MaltelibBasePathAbsolute: string = Builtin.BasePathAbsolute
 	MaltelibBasePathName: string = MaltelibBasePathAbsolute->GetFile()
+	MalterlibShortenPaths: bool = false
 
 	MalterlibCompiledFilesSourceBase: string = `@(MalterlibCompiledFiles)@(MaltelibBasePathName)-@(Builtin.GeneratedBuildSystemDir->HashSHA256(8))`
+	MalterlibCompiledFilesSourceBase `@(MalterlibCompiledFiles)@(MaltelibBasePathName->ParseFormatString("{}", "{sj3,a-}"))@(Builtin.GeneratedBuildSystemDir->HashSHA256(3))`
+	{
+		!!MalterlibShortenPaths true
+	}
+
 	MalterlibCompiledFilesWarkspaceBase: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)`
+	MalterlibCompiledFilesWarkspaceBase `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name->ParseFormatString("{}", "{sj3,a-}"))@(Workspace:Workspace.Name->HashSHA256(3))`
+	{
+		!!MalterlibShortenPaths true
+	}
+
 	GeneratedGlobalDirectory: string = `@(MalterlibCompiledFilesSourceBase)/Generated/`
 }
 

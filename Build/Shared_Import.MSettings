@@ -43,6 +43,16 @@ Property
 	MToolCMakePath MToolDirectory / ("MToolCMake" + (Builtin.MToolExe->GetExtension() && ("." + Builtin.MToolExe->GetExtension())))
 
 	CMakeIntermediateDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Int/CMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
+
+	CMakeIntermediateDirectory `@(MalterlibCompiledFilesWarkspaceBase)/Int/C/W@(Architecture->Replace("arm", "a"))@(FullConfiguration->HashSHA256(4))`
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			MalterlibShortenPaths true
+		}
+	}
+
 	CMakeGetToolSetTool function(string _Tool) string
 
 	CMakeGetToolSetTool PlatformToolsetCompiler->GetPath() / _Tool
