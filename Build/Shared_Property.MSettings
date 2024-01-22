@@ -214,6 +214,7 @@ Property
 	MaltelibBasePathName: string = MaltelibBasePathAbsolute->GetFile()
 
 	MalterlibCompiledFilesSourceBase: string = `@(MalterlibCompiledFiles)@(MaltelibBasePathName)-@(Builtin.GeneratedBuildSystemDir->HashSHA256(8))`
+	MalterlibCompiledFilesWarkspaceBase: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)`
 	GeneratedGlobalDirectory: string = `@(MalterlibCompiledFilesSourceBase)/Generated/`
 }
 

@@ -235,7 +235,7 @@ Property
 		}
 		Property
 		{
-			NoApp_Object: string =`@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/Exe_Malterlib_Export_NoExe/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_Export_NoExecutable.o`
+			NoApp_Object: string =`@(MalterlibCompiledFilesWarkspaceBase)/Int/Exe_Malterlib_Export_NoExe/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_Export_NoExecutable.o`
 		}
 		GenerateFile
 		{

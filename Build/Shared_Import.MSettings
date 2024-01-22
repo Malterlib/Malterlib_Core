@@ -42,7 +42,7 @@ Property
 	MToolCMakePath: string
 	MToolCMakePath MToolDirectory / ("MToolCMake" + (Builtin.MToolExe->GetExtension() && ("." + Builtin.MToolExe->GetExtension())))
 
-	CMakeIntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/CMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
+	CMakeIntermediateDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Int/CMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
 	CMakeGetToolSetTool function(string _Tool) string
 
 	CMakeGetToolSetTool PlatformToolsetCompiler->GetPath() / _Tool
@@ -85,7 +85,12 @@ Import
 			MalterlibImportUpdateCache true
 		}
 	}
+
 	CMake_IntermediateName ImportIdentityRelativeRootPath->Replace("/", "_")
+	{
+		!!Import.CMake_IntermediateName undefined
+	}
+
 	CMake_CacheDirectory `@(Import:this.IdentityPath->GetPath())/ImportCache/@(ImportIdentityRelativeRootPath->Replace("/", "_"))-@(Platform)-@(Architecture)-@(Import.CMake_Config)`
 	{
 		!!IsMaintainedConfig true

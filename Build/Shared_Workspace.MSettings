@@ -22,6 +22,6 @@ Workspace
 		}
 	}
 
-	IntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int`
-	OutputDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Out`
+	IntermediateDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Int`
+	OutputDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Out`
 }

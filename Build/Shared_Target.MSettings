@@ -2466,7 +2466,7 @@ Property
 	MalterlibXcodeObjectsDirectory: string = "$(OBJECT_FILE_DIR_$CURRENT_VARIANT:file)"
 	MalterlibPosixInitFileName: string?
 
-	MalterlibPosixInitFileName `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o`
+	MalterlibPosixInitFileName `@(MalterlibCompiledFilesWarkspaceBase)/Int/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_PlatformImp_Posix_Init.o`
 	{
 		&
 		{
@@ -2479,7 +2479,7 @@ Property
 Property
 {
 	MalterlibOverrideMallocLibrary: string
-	MalterlibOverrideMallocLibrary `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Out/Dll_MalterlibOverrideMalloc/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMalloc.dylib`
+	MalterlibOverrideMallocLibrary `@(MalterlibCompiledFilesWarkspaceBase)/Out/Dll_MalterlibOverrideMalloc/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMalloc.dylib`
 
 	MalterlibNeedsMallocOverrideLibrary: bool = false
 	MalterlibNeedsMallocOverrideLibrary true
@@ -2502,7 +2502,7 @@ Property
 
 Property
 {
-	MalterlibHelperExecutable: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Out/Com_MalterlibHelper/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibHelper`
+	MalterlibHelperExecutable: string = `@(MalterlibCompiledFilesWarkspaceBase)/Out/Com_MalterlibHelper/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibHelper`
 
 	MalterlibNeedsMalterlibHelper: bool = false
 	MalterlibNeedsMalterlibHelper true
@@ -2942,13 +2942,13 @@ Target
 Property
 {
 
-	MalterlibLocalizationTranslationsPath: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)`
+	MalterlibLocalizationTranslationsPath: string = `@(MalterlibCompiledFilesWarkspaceBase)/Int/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)`
 	MalterlibLocalizationExeFSPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationsExeFS/*`
 	MalterlibLocalizationTranslationHeadersPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationHeaders`
 
 	MalterlibTempExeFSPath: string = `@(Target.IntermediateDirectory)ExeFS/*`
 
-	MalterlibSharedIntermediateDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/@(Target:Target.Name)/Shared`
+	MalterlibSharedIntermediateDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Int/@(Target:Target.Name)/Shared`
 
 	MalterlibSharedTempExeFSPath: string = `@(MalterlibSharedIntermediateDirectory)/ExeFS/*`
 
@@ -3006,11 +3006,11 @@ Property
 
 Property
 {
-	GeneratedDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
+	GeneratedDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Generated/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
 
-	GeneratedDirectoryNoConfig: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Target:Target.Name)/NoConfig/`
-	GeneratedWorkspaceDirectory: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/`
-	GeneratedWorkspaceDirectoryNoConfig: string = `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Generated/NoConfig/`
+	GeneratedDirectoryNoConfig: string = `@(MalterlibCompiledFilesWarkspaceBase)/Generated/@(Target:Target.Name)/NoConfig/`
+	GeneratedWorkspaceDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Generated/@(Platform)/@(Architecture)/@(FullConfiguration)/`
+	GeneratedWorkspaceDirectoryNoConfig: string = `@(MalterlibCompiledFilesWarkspaceBase)/Generated/NoConfig/`
 
 	MalterlibUniqueConfig: string = GeneratedDirectory->Sanitize()->Replace('-', '_')->Replace('.', '_')
 
@@ -3126,11 +3126,11 @@ Property
 // Misc
 Target
 {
-	IntermediateDirectory `@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Int/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
+	IntermediateDirectory `@(MalterlibCompiledFilesWarkspaceBase)/Int/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
 	{
 		!!Target.IntermediateDirectory undefined
 	}
-	OutputDirectory	`@(MalterlibCompiledFilesSourceBase)/@(Workspace:Workspace.Name)/Out/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
+	OutputDirectory	`@(MalterlibCompiledFilesWarkspaceBase)/Out/@(Target:Target.Name)/@(Platform)/@(Architecture)/@(FullConfiguration)/`
 	{
 		!!Target.OutputDirectory undefined
 	}
