@@ -17,12 +17,28 @@ Property
 {
 	!!HostPlatformFamily "Windows"
 
+	MalterlibCompiledFiles "X:/CF/"
+	{
+		&
+		{
+			MalterlibCompiledFiles undefined
+			![] "X:/"->FindDirectoriesIn("CF")
+		}
+	}
 	MalterlibCompiledFiles "X:/CompiledFiles/"
 	{
 		&
 		{
 			MalterlibCompiledFiles undefined
 			![] "X:/"->FindDirectoriesIn("CompiledFiles")
+		}
+	}
+	MalterlibCompiledFiles "C:/CF/"
+	{
+		&
+		{
+			MalterlibCompiledFiles undefined
+			![] "C:/"->FindDirectoriesIn("CF")
 		}
 	}
 	MalterlibCompiledFiles "C:/CompiledFiles/"
@@ -45,6 +61,15 @@ Property
 		!!MalterlibDependenciesDirectory undefined
 	}
 
+	MalterlibDevelopmentRoot "X:/Dev"
+	{
+		&
+		{
+			MalterlibDevelopmentRoot undefined
+			![] "X:/"->FindDirectoriesIn("Dev")
+		}
+	}
+
 	MalterlibDevelopmentRoot "X:/Development"
 	{
 		&
@@ -54,6 +79,14 @@ Property
 		}
 	}
 
+	MalterlibDevelopmentRoot "C:/Dev"
+	{
+		&
+		{
+			MalterlibDevelopmentRoot undefined
+			![] "C:/"->FindDirectoriesIn("Dev")
+		}
+	}
 	MalterlibDevelopmentRoot "C:/Development"
 	{
 		&
