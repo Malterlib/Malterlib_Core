@@ -55,6 +55,16 @@ Target
 	{
 		!!Target.Language "Native"
 	}
+
+	CustomBuildAfterTargets: string?
+	{
+		!!LanguageFamily "Native"
+	}
+	//= "ClCompile"
+	CustomBuildBeforeTargets: string?
+	{
+		!!LanguageFamily "Native"
+	}
 }
 
 // Target type

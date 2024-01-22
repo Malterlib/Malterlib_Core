@@ -182,6 +182,26 @@ GeneratorSetting
 			}
 		]
 	}
+	Target_CustomBuildAfterTargets =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "CustomBuildAfterTargets"
+				, Value: Target.CustomBuildAfterTargets->EscapeMSBuild()
+			}
+		]
+	}
+	Target_CustomBuildBeforeTargets =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "CustomBuildBeforeTargets"
+				, Value: Target.CustomBuildBeforeTargets->EscapeMSBuild()
+			}
+		]
+	}
 }
 
 GeneratorSetting
