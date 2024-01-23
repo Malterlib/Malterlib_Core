@@ -2882,7 +2882,7 @@ Compile
 	}
 
 	FullEval true
-	Custom_VerifyInputsAndOutputsExist false
+	Custom_VerifyInputsAndOutputsExist true
 	{
 		!!GeneratorFamily "VisualStudio"
 	}
