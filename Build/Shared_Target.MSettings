@@ -2234,6 +2234,7 @@ Target
 	DebugInformationFormat: string?
 	Architectures: string?
 	SupportedPlatforms: string?
+	ClangUseResponseFile: bool = false
 	OnlyActiveArchitectures: bool = true
 	NativeArchitecture: string = MalterlibXcodeBuildArchitecture
 	NativeArchitectureActual: string = MalterlibXcodeBuildArchitecture

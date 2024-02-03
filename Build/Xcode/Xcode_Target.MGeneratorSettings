@@ -407,6 +407,12 @@ GeneratorSetting
 		}
 	}
 
+	Target_ClangUseResponseFile =+ {
+		XCConfigs: {
+			"CLANG_USE_RESPONSE_FILE": Target.ClangUseResponseFile
+		}
+	}
+
 	Target_Architectures =+ {
 		XCConfigs: {
 			"ARCHS": Target.Architectures
