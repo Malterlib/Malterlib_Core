@@ -1918,7 +1918,7 @@ Target
 		!Target.EmscriptenNode undefined
 	}
 
-	CxxLanguage: string = "C++26"
+	CxxLanguage: string = "C++23"
 	CxxLanguage "C++23"
 	{
 		&
