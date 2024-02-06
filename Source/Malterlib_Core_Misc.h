@@ -476,7 +476,47 @@ namespace NMib
 		{
 			return CIteratorEndSentinel();
 		}
+
+		template <typename tf_CType>
+		tf_CType *begin(TCVector<tf_CType> &_Container)
+		{
+			return _Container.f_GetArray();
+		}
+
+		template <typename tf_CType>
+		tf_CType const *begin(TCVector<tf_CType> const &_Container)
+		{
+			return _Container.f_GetArray();
+		}
+
+		template <typename tf_CType>
+		tf_CType *end(TCVector<tf_CType>& _Container)
+		{
+			return _Container.f_GetArray() + _Container.f_GetLen();
+		}
+
+		template <typename tf_CType>
+		tf_CType const *end(TCVector<tf_CType> const &_Container)
+		{
+			return _Container.f_GetArray() + _Container.f_GetLen();
+		}
 	}
+
+	namespace NStr
+	{
+		template <typename tf_CType>
+		typename TCStr<tf_CType>::CChar const *begin(TCStr<tf_CType> const &_String)
+		{
+			return _String.f_GetStr(); 
+		}
+
+		template <typename tf_CType>
+		typename TCStr<tf_CType>::CChar const *end(TCStr<tf_CType> const &_String)
+		{
+			return _String.f_GetStr() + _String.f_GetLen(); 
+		}
+	}
+	
 	namespace NIntrusive
 	{
 		using NContainer::CIteratorEndSentinel;
