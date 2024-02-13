@@ -854,6 +854,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 			}
 		;
 
+#ifdef DMibNetworkLimitBufferSize
 		int Buf = EDefaultSocketBufSize;
 		if (Buf > 0)
 		{
@@ -869,6 +870,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 				DMibErrorNet((CStr::CFormat("Could not set connect socket send buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
+#endif
 
 		BOOL NoDelay = true;
 		if (setsockopt(hSock, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
@@ -1179,6 +1181,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		DMibErrorNet((CStr::CFormat("Could not accpept socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
 	}
 
+#ifdef DMibNetworkLimitBufferSize
 	int Buf = EDefaultSocketBufSize;
 	if (Buf > 0)
 	{
@@ -1196,6 +1199,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 			DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 	}
+#endif
 
 	BOOL NoDelay = true;
 
