@@ -828,6 +828,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 		}
 	;
 
+#ifdef DMibNetworkLimitBufferSize
 	int Buf = EDefaultSocketBufSize;
 	if (Buf > 0)
 	{
@@ -843,6 +844,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 			DMibErrorNet((CStr::CFormat("Could not set connect socket send buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 	}
+#endif
 
 	if (AddressType != ENetAddressType_Unix)
 	{
@@ -1171,6 +1173,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		}
 	;
 
+#ifdef DMibNetworkLimitBufferSize
 	int Buf = EDefaultSocketBufSize;
 	if (Buf > 0)
 	{
@@ -1186,6 +1189,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 			DMibErrorNet((CStr::CFormat("Could not accept socket (SO_SNDBUF), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 	}
+#endif
 	
 	if (_pSocket->m_BindAddressType != ENetAddressType_Unix)
 	{
