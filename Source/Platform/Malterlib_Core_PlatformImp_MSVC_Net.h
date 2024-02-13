@@ -142,10 +142,12 @@ protected:
 
 	CAddressResolver mp_Resolver;
 
+#ifdef DMibNetworkLimitBufferSize
 	enum
 	{
 		EDefaultSocketBufSize = 32*1024
 	};
+#endif
 
 	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv4 const& _InAddr, sockaddr_in& _OutAddr) const
 	{
