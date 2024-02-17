@@ -153,4 +153,15 @@ constexpr inline_small bool operator >= (t_CEnum0 const &_Left, t_CEnum1 const &
 	static_assert(NMib::NTraits::TCIsSame<t_CEnum0, t_CEnum1>::mc_Value, "Comparison of two different enum types is unsafe");
 	return _Left >= _Right;
 }
+
 //#endif
+
+namespace NMib
+{
+	template <typename tf_CType>
+	inline_always bool fg_IsSet(tf_CType _Value, tf_CType _Flags)
+		requires (NTraits::cIsScopedEnum<tf_CType>)
+	{
+		return (_Value & _Flags) != tf_CType(0);
+	}
+}
