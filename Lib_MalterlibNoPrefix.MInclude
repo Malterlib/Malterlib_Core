@@ -17,11 +17,11 @@ Compile
 	{
 		!!PlatformFamily "Linux"
 	}
-	SearchPath += [`@(MalterlibSysRoot)/usr/include/glib-2.0`, `@(MalterlibSysRoot)/usr/lib/@(MalterlibNativeClangArchitecture)-linux-gnu/glib-2.0/include`]
+	SearchPath += [`@(MalterlibSysRoot)/usr/include/glib-2.0`, `@(MalterlibSysRoot)/usr/lib/glib-2.0/include`]
 	{
 		!!PlatformFamily "Linux"
 	}
-	SearchPath += [`@(MalterlibSysRoot)/usr/include/dbus-1.0`, `@(MalterlibSysRoot)/usr/lib/@(MalterlibNativeClangArchitecture)-linux-gnu/dbus-1.0/include`]
+	SearchPath += [`@(MalterlibSysRoot)/usr/include/dbus-1.0`, `@(MalterlibSysRoot)/usr/lib/dbus-1.0/include`]
 	{
 		!!PlatformFamily "Linux"
 	}
