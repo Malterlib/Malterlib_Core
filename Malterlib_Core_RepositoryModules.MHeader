@@ -275,6 +275,47 @@ Property
 	}
 }
 
+%GenerateFile [MalterlibBinaryLLVMRepositories->Unique()...]
+{
+	&
+	{
+		HostPlatformFamily "macOS"
+		RepoPlatformFamily "Linux"
+		RepoArchitecture "x86"
+	}
+
+	Property
+	{
+		RepoPlatformFamily: string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
+		RepoArchitecture: string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
+		RepoDir: string = `../../Binaries/MalterlibLLVM/@(RepoPlatformFamily)/@(RepoArchitecture)`
+
+		PlatformSuffix: string
+		PlatformSuffix "unknown-linux-gnu"
+		{
+			!!RepoPlatformFamily "Linux"
+		}
+
+		PlatformName: string
+		PlatformName `i386-@(PlatformSuffix)`
+		{
+			!!RepoArchitecture "x86"
+		}
+	}
+	GenerateFile
+	{
+		SymlinkBasePath `../../Binaries/MalterlibLLVM/@(HostPlatformFamily)/@(HostArchitecture)/lib/clang/@(MalterlibClangVersionMajor)/lib`->MakeAbsolute()
+		Name `@(GenerateFile.SymlinkBasePath)/i686-@(PlatformSuffix)`
+		Contents `../../../../../../@(RepoPlatformFamily)/@(RepoArchitecture)/lib/clang/@(MalterlibClangVersionMajor)/lib/@(PlatformName)`
+		Executable false
+		UnixLineEnds true
+		UnicodeBOM false
+		Symlink true
+		BeforeImports true
+		SymlinkDirectory true
+	}
+}
+
 Property
 {
 	MalterlibBinaryTestRepositories: [string] = []

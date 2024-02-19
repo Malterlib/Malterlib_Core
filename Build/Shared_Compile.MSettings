@@ -740,15 +740,32 @@ Property
 {
 	MalterlibNativeClangArchitecture: string
 
-	MalterlibNativeClangArchitecture "i386" // Figure a way to include proper arch in Xcode
+	MalterlibNativeClangArchitecture "i686"
 	{
-		!!Architecture "le32"
+		&
+		{
+			|
+			{
+				Architecture "x86"
+				Architecture "le32"
+			}
+			PlatformFamily "Linux"
+		}
 	}
 
 	MalterlibNativeClangArchitecture "i386"
 	{
-		!!Architecture "x86"
+		&
+		{
+			|
+			{
+				Architecture "x86"
+				Architecture "le32"
+			}
+			!PlatformFamily "Linux"
+		}
 	}
+
 	MalterlibNativeClangArchitecture "x86_64"
 	{
 		!!Architecture "x64"
@@ -788,6 +805,21 @@ Property
 		&
 		{
 			Architecture "arm64"
+			PlatformFamily "Linux"
+		}
+	}
+
+	MalterlibNativeClangLibraryArchitecture: string = MalterlibNativeClangArchitecture
+
+	MalterlibNativeClangLibraryArchitecture "i686"
+	{
+		&
+		{
+			|
+			{
+				Architecture "x86"
+				Architecture "le32"
+			}
 			PlatformFamily "Linux"
 		}
 	}
@@ -838,6 +870,16 @@ Property
 		}
 	}
 	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-unknown-linux-gnu`
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	MalterlibClangLibraryTargetTriple: string?
+	MalterlibClangLibraryTargetTriple `@(MalterlibNativeClangLibraryArchitecture)-apple-macos@(MalterlibMinSupportedMacOSVersion)`
+	{
+		!!PlatformFamily "macOS"
+	}
+	MalterlibClangLibraryTargetTriple `@(MalterlibNativeClangLibraryArchitecture)-unknown-linux-gnu`
 	{
 		!!PlatformFamily "Linux"
 	}

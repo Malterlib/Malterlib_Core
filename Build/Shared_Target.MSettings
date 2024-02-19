@@ -1410,7 +1410,7 @@ Target
 		}
 	}
 
-	SearchPath =+ MalterlibLLVMBinariesDirectory / "lib" / MalterlibTargetTriple
+	SearchPath =+ MalterlibLLVMBinariesDirectory / "lib" / MalterlibClangLibraryTargetTriple
 	{
 		&
 		{
