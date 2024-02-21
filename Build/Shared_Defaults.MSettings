@@ -45,6 +45,14 @@ Property
 			!Configuration "Release Testing" // Only default to signing if building release builds (Release Testing will not be signed)
 		}
 	}
+	MalterlibSigning true
+	{
+		&
+		{
+			MalterlibSigning undefined
+			PlatformFamily "macOS"
+		}
+	}
 	MalterlibSigning false
 	{
 		!!MalterlibSigning undefined

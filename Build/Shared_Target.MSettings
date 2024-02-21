@@ -4560,6 +4560,8 @@ Property
 	{
 		!MalterlibBuildServerBuild true
 	}
+
+	MalterlibSignEntitlements: string = "../Resources/macOS/Default.entitlements"->MakeAbsolute()
 }
 
 Property
@@ -5057,9 +5059,28 @@ Target
 		}
 	}
 
+	LDFlags =+ "-Wl,-no_adhoc_codesign"
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			!MalterlibDefaultCompiler true
+			TargetIsExecutable true
+			|
+			{
+				MalterlibSigning true
+				&
+				{
+					Target.Type "Driver"
+					MalterlibDriverSigning true
+				}
+			}
+		}
+	}
+
 	PostBuildScript =+	`echo Sign:\r\n`\
-						`echo @(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->EscapeHost()) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
-						`@(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->EscapeHost()) "@(MalterlibFinalModuleDestination->NativePath())"\r\n`
+						`echo @(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->EscapeHost()) --entitlements @(MalterlibSignEntitlements->EscapeHost()) @(MalterlibFinalModuleDestination->EscapeHost())\r\n`\
+						`@(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->EscapeHost()) --entitlements "@(MalterlibSignEntitlements->NativePath())" @(MalterlibFinalModuleDestination->EscapeHost())\r\n`
 	{
 		&
 		{
