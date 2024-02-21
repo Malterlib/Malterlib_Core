@@ -1127,6 +1127,8 @@ Property
 	
 	MalterlibAlwaysUseLongWindowsPaths: bool = false
 	MalterlibCustomConcurrentCompile: int?
+
+	MalterlibFileLineOnDebugBreak: bool = false // User(Debug)=true: Output file and line when debug break is encountered
 }
 
 Compile
@@ -1893,6 +1895,11 @@ Compile
 			PlatformFamily "Windows"
 			MalterlibAlwaysUseLongWindowsPaths true
 		}
+	}
+
+	PreprocessorDefines += "DMibFileLineOnDebugBreak=1"
+	{
+		!!MalterlibFileLineOnDebugBreak true
 	}
 
 	PreprocessorDefines += "DMibNoMacOSCrossModuleExceptions"

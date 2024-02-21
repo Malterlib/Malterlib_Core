@@ -83,6 +83,11 @@ void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
 	fg_WriteStringToPipe(1, _pStr, _Len);
 }
 
+void NSys::fg_ConsoleOutput(NMib::NStr::CStrSpan const &_Str)
+{
+	fg_WriteStringToPipe(1, _Str.f_GetStr(), _Str.f_GetLen());
+}
+
 void NSys::fg_ConsoleOutput(NMib::NStr::CStrNonTracked const &_Str)
 {
 	fg_WriteStringToPipe(1, _Str.f_GetStr(), _Str.f_GetLen());
@@ -109,6 +114,11 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 	Return.m_Height = WindowSize.ws_row;
 	
 	return Return;
+}
+
+void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSpan const &_Str)
+{
+	fg_WriteStringToPipe(2, _Str.f_GetStr(), _Str.f_GetLen());
 }
 
 void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSecure const &_Str)

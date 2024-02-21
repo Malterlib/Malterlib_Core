@@ -357,21 +357,28 @@
 #	error "Implement this"
 #endif
 
-
-
 // Debug break
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	if DPlatformFamily_Emscripten
-#		define DMibPDebugBreak EM_ASM(debugger();)
+#		define DMibPDebugBreakImpl EM_ASM(debugger();)
 #	elif defined(DArchitecture_x64) || defined(DArchitecture_x86)
-#		define DMibPDebugBreak __asm__ ("int $3")
+#		define DMibPDebugBreakImpl __asm__ ("int $3")
 #	else
-#		define DMibPDebugBreak __builtin_debugtrap()
+#		define DMibPDebugBreakImpl __builtin_debugtrap()
 #	endif
 #elif defined(DCompiler_MSVC)
 #	pragma intrinsic(__debugbreak)
-#	define DMibPDebugBreak __debugbreak()
+#	define DMibPDebugBreakImpl __debugbreak()
 #else
 #	error "Implement this"
 #endif
 
+#ifdef DMibFileLineOnDebugBreak
+namespace NMib
+{
+	void fg_OutputDebugBreakFileLine(ch8 const *_pFile, int _Line);
+}
+#	define DMibPDebugBreak { ::NMib::fg_OutputDebugBreakFileLine(DMibPFile, DMibPLine); DMibPDebugBreakImpl; }
+#else
+#	define DMibPDebugBreak DMibPDebugBreakImpl
+#endif

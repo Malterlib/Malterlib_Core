@@ -857,6 +857,16 @@ void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(_pStr, _Len), STD_OUTPUT_HANDLE, true);
 }
 
+void NSys::fg_ConsoleOutput(NMib::NStr::CStrSpan const &_Str)
+{
+	fg_ConsoleOutputHelper<CFWStr1024, CFStr1024>(CFStr1024(_Str.f_GetStr(), _Str.f_GetLen()), STD_OUTPUT_HANDLE, true);
+}
+
+void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSpan const &_Str)
+{
+	fg_ConsoleOutputHelper<CFWStr1024, CFStr1024>(CFStr1024(_Str.f_GetStr(), _Str.f_GetLen()), STD_ERROR_HANDLE, true);
+}
+
 void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer)
 {
 	uint32 Written = 0;

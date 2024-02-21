@@ -1593,7 +1593,7 @@ void NSys::fg_CreateSystem()
 				if (pArgs[i])
 				{
 					if (fg_StrCmp(pArgs[i], "--OutputPID") == 0)
-						NSys::fg_ConsoleOutput(CStrNonTracked((CFStr256::CFormat("{nfh,sj16,sf0}") << (mint)getpid()).f_GetStr()));
+						NSys::fg_ConsoleOutput((CFStr256::CFormat("{nfh,sj16,sf0}") << (mint)getpid()).f_GetStr().f_Span());
 					else if (fg_StrCmp(pArgs[i], "--OutputStdErrToStdOut") == 0)
 						dup2(1, 2);
 					else if (fg_StrCmp(pArgs[i], "--NoStdErr") == 0)
