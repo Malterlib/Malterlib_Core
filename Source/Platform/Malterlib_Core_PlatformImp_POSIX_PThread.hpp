@@ -221,6 +221,11 @@ void *NSys::fg_Thread_GetLocalAlwaysSetFast(mint _ThreadID, mint _iStorage)
 
 void NSys::fg_Thread_Sleep(fp32 _Seconds)
 {
+#ifdef DPlatformFamily_macOS
+	if (g_bForking)
+		return; // System needs to handle atfork before this works
+#endif
+
 	// Sleeping may be interrupted via EINTR so we ensure we sleep the whole time period.
 	struct timespec Timeout;
 	Timeout.tv_sec = _Seconds.f_ToInt();

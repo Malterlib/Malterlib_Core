@@ -47,6 +47,7 @@ bool g_bIsSharedLibrary = false;
 #endif
 
 bool g_bRegisteredAtFork = false;
+bool g_bForking = false;
 
 void fg_ForkPrepare();
 void fg_ForkParentOrChild();
@@ -59,6 +60,8 @@ namespace NMib
 		extern int g_OperatingSystemMajor;
 		extern int g_OperatingSystemMinor;
 		extern int g_OperatingSystemFix;
+
+		void fg_MalterlibSystem_ForkChildFinished();
 	}
 }
 
@@ -578,6 +581,7 @@ public:
 		auto &Sys = *fg_GetLocalSys();
 		if (pthread_getspecific(Sys.m_ForkThreadLocal))
 		{
+			g_bForking = true;
 #ifdef DMibSanitizerEnabled_Thread
 			__tsan_forked_child();
 #endif
@@ -594,6 +598,9 @@ public:
 			g_bCanStartThreads = true;
 			Sys.f_MemoryManager_CanStartThreads();
 			fg_MalterlibMallocOverride_CanStartThreads();
+
+			if (!g_bRegisteredAtFork)
+				g_bForking = false;
 		}
 	}
 
@@ -1574,7 +1581,7 @@ void NSys::fg_CreateSystem()
 		if (!g_bRegisteredAtFork)
 		{
 			g_bRegisteredAtFork = true;
-			pthread_atfork(&CSystemMacOS::fs_ForkPrepare, &CSystemMacOS::fs_ForkParent, &CSystemMacOS::fs_ForkChild);
+			pthread_atfork(&CSystemMacOS::fs_ForkPrepare, &CSystemMacOS::fs_ForkParent, &fg_MalterlibSystem_ForkChildFinished);
 		}
 		signal(SIGHUP,SIG_IGN);
 	}
@@ -1676,6 +1683,13 @@ namespace NMib
 		void fg_MalterlibSystem_ForkChild()
 		{
 			CSystemMacOS::fs_ForkChild();
+		}
+
+		void fg_MalterlibSystem_ForkChildFinished()
+		{
+			CSystemMacOS::fs_ForkChild();
+
+			g_bForking = false;
 		}
 	}
 }
