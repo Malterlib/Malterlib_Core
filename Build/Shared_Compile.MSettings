@@ -2202,8 +2202,16 @@ Compile
 		, `DPlatformFamily=@(PlatformFamily)`
 		, `DPlatformFamily_@(PlatformFamily)`
 	]
+
+	PreprocessorDefines += `DTests_@(Tests->Replace(' ', ''))`
 	{
+		&
+		{
+			!Tests undefined
+			!Tests ""
+		}
 	}
+
 	PreprocessorDefines += `DPlatformVersion=@(PlatformVersion->ToString())`
 	{
 		!PlatformVersion undefined
