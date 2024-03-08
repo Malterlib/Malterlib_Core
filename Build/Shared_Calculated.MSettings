@@ -476,16 +476,39 @@ Property
 		!!MalterlibGitOriginRemote ""
 	}
 
-	MalterlibGitBranch: string?
-	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, MalterlibGitRepoInputFiles, "git", "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
+	MalterlibReproducibleBuild: bool = false // User(Tests)=true: Set to true to enable shared pointer reference debugging
+
+	CurrentTimeVersionString: string = DateTime("{YYYY}/{MM}/{DD} {HH}:{MNMN}:{SS}")
+
+	CurrentTimeVersionString "2024/03/08 18:00:00"
 	{
-		!!MalterlibIsGitRepository true
+		!!MalterlibReproducibleBuild true
 	}
 
-	MalterlibGitCommit: string = ""
+	CurrentMalterlibTime: string = MalterlibTime("{}:{}")
+	CurrentMalterlibTime "237148623877035302:9203263159192756512"
+	{
+		!!MalterlibReproducibleBuild true
+	}
+
+	MalterlibGitBranch: string? = "default"
+	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, MalterlibGitRepoInputFiles, "git", "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
+	{
+		&
+		{
+			MalterlibReproducibleBuild false
+			MalterlibIsGitRepository true
+		}
+	}
+
+	MalterlibGitCommit: string = "default"
 	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, MalterlibGitRepoInputFiles, "git", "rev-parse", "HEAD")->Trim()
 	{
-		!!MalterlibIsGitRepository true
+		&
+		{
+			MalterlibReproducibleBuild false
+			MalterlibIsGitRepository true
+		}
 	}
 }
 

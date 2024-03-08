@@ -3495,7 +3495,7 @@ Property
 						`	<key>MalterlibGitCommit</key>\n`\
 						`		<string>@(MalterlibGitCommit)</string>\n`\
 						`	<key>BuildTime</key>\n`\
-						`		<string>@(MalterlibTime("{}:{}"))</string>\n`\
+						`		<string>@(CurrentMalterlibTime)</string>\n`\
 						`	<key>ProductVersionMajor</key>\n`\
 						`		<string>@(ProductVersionMajor)</string>\n`\
 						`	<key>ProductVersionMinor</key>\n`\
@@ -3677,11 +3677,11 @@ Property
 			Name `@(GeneratedDirectory)VersionInfo.cpp`
 
 			Contents	`#include <Mib/Core/Core>\n`\
-						`assure_used static char fileid[] __attribute__ ((section("IDSVERSIONINFO"))) = "$Id: VersionInfo.cpp,v @(Target:Target.Version) @(DateTime("{YYYY}/{MM}/{DD} {HH}:{MNMN}:{SS}")) $\\n"\n`\
+						`assure_used static char fileid[] __attribute__ ((section("IDSVERSIONINFO"))) = "$Id: VersionInfo.cpp,v @(Target:Target.Version) @(CurrentTimeVersionString) $\\n"\n`\
 						`@(`MalterlibBranch=@(MalterlibFullBranch)\n`->EJSONToString())\n`\
 						`@(`MalterlibGitBranch=@(MalterlibGitBranch || "")\n`->EJSONToString())\n`\
 						`@(`MalterlibGitCommit=@(MalterlibGitCommit || "")\n`->EJSONToString())\n`\
-						`@(`BuildTime=@(MalterlibTime("{}:{}"))\n`->EJSONToString())\n`\
+						`@(`BuildTime=@(CurrentMalterlibTime)\n`->EJSONToString())\n`\
 						`@(`ProductVersionMajor=@(ProductVersionMajor)\n`->EJSONToString())\n`\
 						`@(`ProductVersionMinor=@(ProductVersionMinor)\n`->EJSONToString())\n`\
 						`@(`ProductVersionRevision=@(ProductVersionRevision)\n`->EJSONToString())\n`\
