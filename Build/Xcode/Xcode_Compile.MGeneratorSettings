@@ -45,6 +45,7 @@ GeneratorSetting
 	{
 		&
 		{
+			!GeneratorSetting.Xcode_PBXFileReference undefined
 			GeneratorSetting.Xcode_PBXFileReference<lastKnownFileType> undefined
 			GeneratorSetting.Xcode_FileType "image.png"
 		}
@@ -59,6 +60,7 @@ GeneratorSetting
 	{
 		&
 		{
+			!GeneratorSetting.Xcode_PBXFileReference undefined
 			GeneratorSetting.Xcode_PBXFileReference<lastKnownFileType> undefined
 			GeneratorSetting.Xcode_PBXFileReference<explicitFileType> undefined
 		}
