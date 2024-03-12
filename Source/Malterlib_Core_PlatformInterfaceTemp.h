@@ -117,6 +117,8 @@ namespace NMib
 		{
 			uint32 m_Width = 0;
 			uint32 m_Height = 0;
+			uint32 m_GlyphWidth = 0;
+			uint32 m_GlyphHeight = 0;
 		};
 
 		CConsoleProperties fg_GetConsoleProperties();

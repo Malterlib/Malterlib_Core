@@ -107,11 +107,19 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 {
 	NSys::CConsoleProperties Return;
 	winsize WindowSize;
+
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &WindowSize))
 		return Return;
 
 	Return.m_Width = WindowSize.ws_col;
 	Return.m_Height = WindowSize.ws_row;
+
+	// Detached or not-yet-sized pseudo terminals can report zero cell dimensions
+	if (Return.m_Width && Return.m_Height)
+	{
+		Return.m_GlyphWidth = uint32(WindowSize.ws_xpixel) / Return.m_Width;
+		Return.m_GlyphHeight = uint32(WindowSize.ws_ypixel) / Return.m_Height;
+	}
 
 	return Return;
 }

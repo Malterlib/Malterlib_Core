@@ -805,11 +805,25 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 	CONSOLE_SCREEN_BUFFER_INFO ConsoleScreenBufferInfo;
 	fg_MemClear(ConsoleScreenBufferInfo);
 
-    if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &ConsoleScreenBufferInfo) && !GetConsoleScreenBufferInfo(GetStdHandle(STD_ERROR_HANDLE), &ConsoleScreenBufferInfo))
-		return Return;
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (!GetConsoleScreenBufferInfo(hConsole, &ConsoleScreenBufferInfo))
+	{
+		hConsole = GetStdHandle(STD_ERROR_HANDLE);
+		if (!GetConsoleScreenBufferInfo(hConsole, &ConsoleScreenBufferInfo))
+			return Return;
+	}
 
 	Return.m_Width = ConsoleScreenBufferInfo.srWindow.Right - ConsoleScreenBufferInfo.srWindow.Left + 1;
 	Return.m_Height = ConsoleScreenBufferInfo.srWindow.Bottom - ConsoleScreenBufferInfo.srWindow.Top + 1;
+
+	CONSOLE_FONT_INFOEX FontInfo;
+	fg_MemClear(FontInfo);
+	FontInfo.cbSize = sizeof(FontInfo);
+	if (GetCurrentConsoleFontEx(hConsole, FALSE, &FontInfo))
+	{
+		Return.m_GlyphWidth = uint32(FontInfo.dwFontSize.X);
+		Return.m_GlyphHeight = uint32(FontInfo.dwFontSize.Y);
+	}
 
 	return Return;
 }
