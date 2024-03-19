@@ -399,5 +399,5 @@ Property
     ProductCopyright: string = `Copyright © @(DateTime('{YYYY}')) @(ProductCompany). All rights reserved.`
 	ProductDescription: string = ProductName
     ProductFileName: string = Workspace:Workspace.Name
-	ProductVersionHex: string = `000@(ProductVersionMajor)@(ProductVersionMinor)@(ProductVersionRevision)`
+	ProductVersionHex: string = `@(ProductVersionMajor->ParseFormatString("{}", "{sj4,sf0}"))@(ProductVersionMinor)@(ProductVersionRevision)`
 }
