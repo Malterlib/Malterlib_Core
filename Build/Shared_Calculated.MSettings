@@ -491,7 +491,7 @@ Property
 		!!MalterlibReproducibleBuild true
 	}
 
-	MalterlibGitBranch: string? = "default"
+	MalterlibGitBranch: string?
 	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, MalterlibGitRepoInputFiles, "git", "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
 	{
 		&
@@ -500,13 +500,29 @@ Property
 			MalterlibIsGitRepository true
 		}
 	}
+	MalterlibGitBranch "default"
+	{
+		&
+		{
+			MalterlibGitBranch undefined
+			MalterlibIsGitRepository true
+		}
+	}
 
-	MalterlibGitCommit: string = "default"
+	MalterlibGitCommit: string = ""
 	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, MalterlibGitRepoInputFiles, "git", "rev-parse", "HEAD")->Trim()
 	{
 		&
 		{
 			MalterlibReproducibleBuild false
+			MalterlibIsGitRepository true
+		}
+	}
+	MalterlibGitCommit "default"
+	{
+		&
+		{
+			MalterlibGitCommit undefined
 			MalterlibIsGitRepository true
 		}
 	}
