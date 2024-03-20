@@ -888,6 +888,10 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 			mp_SocketTree.f_Remove(pSocket.f_Get());
 		}
+		// Make sure that the report thread isn't using our socket
+		{
+			DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
+		}
 		pSocket = nullptr;
 		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
@@ -902,6 +906,10 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 			{
 				DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 				mp_SocketTree.f_Remove(pSocket.f_Get());
+			}
+			// Make sure that the report thread isn't using our socket
+			{
+				DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
 			}
 			pSocket = nullptr;
 
@@ -1057,6 +1065,10 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 			mp_SocketTree.f_Remove(pSocket.f_Get());
 		}
+		// Make sure that the report thread isn't using our socket
+		{
+			DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
+		}
 		pSocket.f_Clear();
 		DMibErrorNet((CStr::CFormat("Could not listen on socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
@@ -1146,6 +1158,10 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 			mp_SocketTree.f_Remove(pSocket.f_Get());
 		}
+		// Make sure that the report thread isn't using our socket
+		{
+			DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
+		}
 		pSocket.f_Clear();
 		DMibErrorNet((CStr::CFormat("Could not bind socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
@@ -1219,6 +1235,10 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		{
 			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
 			mp_SocketTree.f_Remove(pSocket.f_Get());
+		}
+		// Make sure that the report thread isn't using our socket
+		{
+			DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
 		}
 		pSocket.f_Clear();
 		DMibErrorNet((CStr::CFormat("Could not accept socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
