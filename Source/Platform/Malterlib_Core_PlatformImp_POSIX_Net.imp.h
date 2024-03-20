@@ -501,16 +501,27 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 		if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
 			DMibErrorNet("Unsupported address type");
 
-		FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | fg_GetUnixSocketFlags(), SocketCreateParams.m_Protocol);
-
-		if (FD == -1)
 		{
-			int Error = errno;
-			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (connect)", Error));
+			auto SocketFlags = fg_GetUnixSocketFlags();
+			if (!SocketFlags)
+				NMib::NPlatform::fg_ForkLock().f_Lock();
+			auto CleanupLock = g_OnScopeExit / [SocketFlags]
+				{
+					if (!SocketFlags)
+						NMib::NPlatform::fg_ForkLock().f_Unlock();
+				}
+			;
+
+			FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | SocketFlags, SocketCreateParams.m_Protocol);
+
+			if (FD == -1)
+			{
+				int Error = errno;
+				DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (connect)", Error));
+			}
+
+			fg_SetUnixSocketOptions(FD);
 		}
-
-		fg_SetUnixSocketOptions(FD);
-
 		auto Cleanup = g_OnScopeExit / [&]
 			{
 				close(FD);
@@ -673,15 +684,28 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 
 	fp_PrepareUnixListen(_Address);
 
-	int FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | fg_GetUnixSocketFlags(), SocketCreateParams.m_Protocol);
-
-	if (FD == -1)
+	int FD;
 	{
-		int Error = errno;
-		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (listen)", Error));
-	}
+		auto SocketFlags = fg_GetUnixSocketFlags();
+		if (!SocketFlags)
+			NMib::NPlatform::fg_ForkLock().f_Lock();
+		auto CleanupLock = g_OnScopeExit / [SocketFlags]
+			{
+				if (!SocketFlags)
+					NMib::NPlatform::fg_ForkLock().f_Unlock();
+			}
+		;
 
-	fg_SetUnixSocketOptions(FD);
+		FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | SocketFlags, SocketCreateParams.m_Protocol);
+
+		if (FD == -1)
+		{
+			int Error = errno;
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (listen)", Error));
+		}
+
+		fg_SetUnixSocketOptions(FD);
+	}
 
 	auto Cleanup = g_OnScopeExit / [&]
 		{
@@ -763,15 +787,28 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 
 	fp_PrepareUnixListen(_Address);
 
-	int FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | fg_GetUnixSocketFlags(), SocketCreateParams.m_Protocol);
-
-	if (FD == -1)
+	int FD;
 	{
-		int Error = errno;
-		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (listen)", Error));
-	}
+		auto SocketFlags = fg_GetUnixSocketFlags();
+		if (!SocketFlags)
+			NMib::NPlatform::fg_ForkLock().f_Lock();
+		auto CleanupLock = g_OnScopeExit / [SocketFlags]
+			{
+				if (!SocketFlags)
+					NMib::NPlatform::fg_ForkLock().f_Unlock();
+			}
+		;
 
-	fg_SetUnixSocketOptions(FD);
+		FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | SocketFlags, SocketCreateParams.m_Protocol);
+
+		if (FD == -1)
+		{
+			int Error = errno;
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (listen)", Error));
+		}
+
+		fg_SetUnixSocketOptions(FD);
+	}
 
 	auto Cleanup = g_OnScopeExit / [&]
 		{
@@ -833,19 +870,40 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 	if (NLocal::g_f_accept4)
 	{
 		ResultFD = NLocal::g_f_accept4(_pSocket->m_FD, NULL, NULL, SOCK_CLOEXEC);
+
+		if (ResultFD == -1)
+		{
+			int Error = errno;
+			if (Error == EAGAIN || Error == EWOULDBLOCK)
+				return nullptr;
+
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("accept", Error));
+		}
 	}
 	else
 #endif
+	{
+		DMibLock(NMib::NPlatform::fg_ForkLock());
+		
 		ResultFD = accept(_pSocket->m_FD, NULL, NULL);
 
-	if (ResultFD == -1)
-	{
-		int Error = errno;
-		if (Error == EAGAIN || Error == EWOULDBLOCK)
-			return nullptr;
+		if (ResultFD == -1)
+		{
+			int Error = errno;
+			if (Error == EAGAIN || Error == EWOULDBLOCK)
+				return nullptr;
 
-		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("accept", Error));
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("accept", Error));
+		}
+
+		fg_SetUnixSocketOptions(ResultFD);
 	}
+
+	auto Cleanup = g_OnScopeExit / [&]
+		{
+			close(ResultFD);
+		}
+	;
 
 	if (_pSocket->m_AddressType == ENetAddressType_TCPv4 || _pSocket->m_AddressType == ENetAddressType_TCPv6)
 	{
@@ -858,18 +916,16 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 		}
 	}
 
-	fg_SetUnixSocketOptions(ResultFD);
-
 	{
 		int Flags;
 		if ((Flags = fcntl(ResultFD, F_GETFL)) == -1 || fcntl(ResultFD, F_SETFL, Flags | O_NONBLOCK) == -1)
 		{
-			close(ResultFD);
-
 			int Error = errno;
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (accept set non blocking)", Error));
 		}
 	}
+
+	Cleanup.f_Clear();
 
 	auto *pSocket = fp_CreateSocket(ResultFD, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = _pSocket->m_AddressType;
