@@ -5280,20 +5280,108 @@ void NSys::NFile::fg_Rename(const CStr &_FileFrom, const CStr &_FileTo)
 		DMibErrorFile((CStr::CFormat("Windows returned an error from MoveFile({}, {}): {}") << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 	}
 }
- 
+
+namespace
+{
+	struct CWindowsHandle
+	{
+		CWindowsHandle() = default;
+
+		CWindowsHandle(HANDLE _pHandle)
+			: m_pHandle(_pHandle)
+		{
+		}
+
+		CWindowsHandle(CWindowsHandle &&_Other)
+			: m_pHandle(fg_Exchange(_Other.m_pHandle, nullptr))
+		{
+		}
+
+		~CWindowsHandle()
+		{
+			if (m_pHandle)
+				CloseHandle(m_pHandle);
+		}
+
+		operator bool () const
+		{
+			return !!m_pHandle;
+		}
+
+		HANDLE m_pHandle = nullptr;
+	};
+
+	template <typename tf_CStr, typename tf_CWStr>
+	static CWindowsHandle fg_PreparePosixSemanticsRenameOrDelete(tf_CStr const &_File, tf_CWStr const &_WindowsFile, ch8 const *_pErrorDescription)
+	{
+		if (NLocal::g_VersionInfo.dwBuildNumber < 14393) // Windows 10 RS1
+			return {};
+
+		CWindowsHandle FileHandle = CreateFileW
+			(
+				_WindowsFile
+				, DELETE
+				, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+				, nullptr
+				, OPEN_EXISTING
+				, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT
+				, nullptr
+			)
+		;
+
+		if (FileHandle.m_pHandle == INVALID_HANDLE_VALUE)
+			DMibErrorFile("Windows returned an error from CreateFileW({})({}): {}"_f << _pErrorDescription << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr());
+
+		return FileHandle;
+	}
+}
+
 #ifndef REPLACEFILE_IGNORE_ACL_ERRORS
 #define REPLACEFILE_IGNORE_ACL_ERRORS 0x00000004
 #endif
 
-void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+#ifndef FILE_RENAME_IGNORE_READONLY_ATTRIBUTE
+#define FILE_RENAME_IGNORE_READONLY_ATTRIBUTE 0x00000040
+#endif
+
+void NSys::NFile::fg_AtomicReplace(CStr const &_FileFrom, CStr const &_FileTo)
 {
+	auto FileFrom = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom);
+	if (auto FileHandle = fg_PreparePosixSemanticsRenameOrDelete(_FileFrom, FileFrom, "AtomicReplace"))
+	{
+		auto FileTo = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo);
+
+		mint SizeNeeded = sizeof(FILE_RENAME_INFO) + (FileTo.f_GetLen() + 1) * sizeof(ch16);
+
+		TCVector<mint> Buffer;
+		Buffer.f_SetLen((SizeNeeded + sizeof(mint) - 1) / sizeof(mint));
+
+		FILE_RENAME_INFO *pRenameInfo = (FILE_RENAME_INFO *)Buffer.f_GetArray();
+
+		pRenameInfo->RootDirectory = NULL;
+		pRenameInfo->FileNameLength = FileTo.f_GetLen();
+		pRenameInfo->Flags = FILE_RENAME_FLAG_POSIX_SEMANTICS | FILE_RENAME_FLAG_REPLACE_IF_EXISTS;
+		if (NLocal::g_VersionInfo.dwBuildNumber >= 17763) // Windows 10 RS5
+			pRenameInfo->Flags |= FILE_RENAME_IGNORE_READONLY_ATTRIBUTE;
+		
+		fg_StrCopy(pRenameInfo->FileName, FileTo.f_GetStr());
+
+		if (!SetFileInformationByHandle(FileHandle.m_pHandle, FILE_INFO_BY_HANDLE_CLASS(22) /*FileRenameInfoEx*/, pRenameInfo, SizeNeeded))
+			DMibErrorFile("Windows returned an error from SetFileInformationByHandle(AtomicReplace)({}, {}): {}"_f << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr());
+
+		return;
+	}
+
+	if (!CFile::fs_FileExists(_FileTo))
+		return CFile::fs_RenameFile(_FileFrom, _FileTo);
+
 	DWORD Flags = REPLACEFILE_IGNORE_MERGE_ERRORS;
 #ifdef REPLACEFILE_IGNORE_ACL_ERRORS
 	if (NLocal::g_VersionInfo.dwMajorVersion >= 6)
 		Flags |= REPLACEFILE_IGNORE_ACL_ERRORS;
 #endif
 	
-	if (!ReplaceFileW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo), NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom), nullptr, Flags, nullptr, nullptr))
+	if (!ReplaceFileW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo), FileFrom, nullptr, Flags, nullptr, nullptr))
 		DMibErrorFile((CStr::CFormat("Windows returned an error from ReplaceFile({}, {}): {}") << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 }
 
@@ -5524,27 +5612,61 @@ void fg_CreateDirectoryHelper(const tf_CStr &_FileDirectory)
 
 		pCurrentPath = fg_StrAdd(pCurrentPath+1,NMib::NStr::fg_StrFindChar(pCurrentPath+1, '\\'));
 	}
-
 }
 
 void NSys::NFile::fg_CreateDirectory(const CStr &_FileDirectory)
 {
 	fg_CreateDirectoryHelper<CWStr, CStr>(_FileDirectory);
 }
+
 void NSys::NFile::fg_CreateDirectory(const CStrNonTracked &_FileDirectory)
 {
 	fg_CreateDirectoryHelper<CWStrNonTracked, CStrNonTracked>(_FileDirectory);
 }
 
-void NSys::NFile::fg_Delete(const CStr &_File)
+
+void NSys::NFile::fg_DeleteDirectory(const CStr &_File);
+void NSys::NFile::fg_DeleteDirectory(const CStrNonTracked &_File);
+
+#ifndef FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE
+#define FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE  0x00000010
+#endif
+
+template <typename tf_CWStr, typename tf_CStr>
+static void fg_DeleteGeneric(tf_CStr &_File)
 {
-	auto FileName = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_File);
+	auto FileName = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal<tf_CWStr>(_File);
+
+	if (auto FileHandle = fg_PreparePosixSemanticsRenameOrDelete(_File, FileName, "Delete"))
+	{
+		FILE_DISPOSITION_INFO_EX FileDispositoinInfo;
+
+		FileDispositoinInfo.Flags = FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS;
+		if (NLocal::g_VersionInfo.dwBuildNumber >= 17763) // Windows 10 RS5
+			FileDispositoinInfo.Flags |= FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE;
+		
+		if (!SetFileInformationByHandle(FileHandle.m_pHandle, FILE_INFO_BY_HANDLE_CLASS(21) /*FileDispositionInfoEx*/, &FileDispositoinInfo, sizeof(FileDispositoinInfo)))
+			DMibErrorFile((CStr::CFormat("Windows returned an error from SetFileInformationByHandle(Delete)({}): {}") << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+
+		return;
+	}
+
 	if (!DeleteFileW(FileName))
 	{
 		if (fg_ReparsePointDirectoryExists(FileName))
-			return fg_DeleteDirectory(_File);
+			return NSys::NFile::fg_DeleteDirectory(_File);
 		DMibErrorFile((CStr::CFormat("Windows returned an error from DeleteFile({}): {}") << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 	}
+}
+
+void NSys::NFile::fg_Delete(const CStr &_File)
+{
+	fg_DeleteGeneric<CWStr>(_File);
+}
+
+void NSys::NFile::fg_Delete(const CStrNonTracked &_File)
+{
+	fg_DeleteGeneric<CWStrNonTracked>(_File);
 }
 
 void NSys::NFile::fg_DeleteDirectory(const CStr &_File)
@@ -5571,17 +5693,6 @@ l_Retry:
 	}
 }
 
-
-void NSys::NFile::fg_Delete(const CStrNonTracked &_File)
-{
-	auto FileName = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal<CWStrNonTracked, CWStrNonTracked>(_File);
-	if (!DeleteFileW(FileName))
-	{
-		if (fg_ReparsePointDirectoryExists(FileName))
-			return fg_DeleteDirectory(_File);
-		DMibErrorFile((CStrNonTracked::CFormat("Windows returned an error from DeleteFile({}): {}") << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-	}
-}
 
 void NSys::NFile::fg_DeleteDirectory(const CStrNonTracked &_File)
 {
