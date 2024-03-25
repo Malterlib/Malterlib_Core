@@ -109,7 +109,8 @@ UpdateDependencies()
 
 	if ! which brew > /dev/null ; then
 		echo Installing brew
-		/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+		sudo ls
+		NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 	else
 		brew update
 		brew upgrade
