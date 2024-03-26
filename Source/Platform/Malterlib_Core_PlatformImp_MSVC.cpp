@@ -14,6 +14,7 @@
 #include <wincrypt.h>
 
 #include <Mib/Cryptography/UUID>
+#include <Mib/Cryptography/RandomID>
 #include <Mib/Cryptography/Hashes/SHA>
 #include <Mib/Core/PlatformSpecific/WindowsFilePath>
 #include <Mib/Core/PlatformSpecific/WindowsError>
@@ -5303,6 +5304,12 @@ namespace
 				CloseHandle(m_pHandle);
 		}
 
+		void f_Clear()
+		{
+			if (m_pHandle)
+				CloseHandle(fg_Exchange(m_pHandle, nullptr));
+		}
+
 		operator bool () const
 		{
 			return !!m_pHandle;
@@ -5344,7 +5351,10 @@ namespace
 #define FILE_RENAME_IGNORE_READONLY_ATTRIBUTE 0x00000040
 #endif
 
-void NSys::NFile::fg_AtomicReplace(CStr const &_FileFrom, CStr const &_FileTo)
+template <typename tf_CWStr, bool t_bThrowError, typename tf_CStr>
+static void fg_DeleteGeneric(tf_CStr &_File);
+
+static void fg_AtomicReplaceImplementation(CStr const &_FileFrom, CStr const &_FileTo, bool _bTryNonAtomic)
 {
 	auto FileFrom = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileFrom);
 	if (auto FileHandle = fg_PreparePosixSemanticsRenameOrDelete(_FileFrom, FileFrom, "AtomicReplace"))
@@ -5367,7 +5377,20 @@ void NSys::NFile::fg_AtomicReplace(CStr const &_FileFrom, CStr const &_FileTo)
 		fg_StrCopy(pRenameInfo->FileName, FileTo.f_GetStr());
 
 		if (!SetFileInformationByHandle(FileHandle.m_pHandle, FILE_INFO_BY_HANDLE_CLASS(22) /*FileRenameInfoEx*/, pRenameInfo, SizeNeeded))
-			DMibErrorFile("Windows returned an error from SetFileInformationByHandle(AtomicReplace)({}, {}): {}"_f << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr());
+		{
+			auto Error = GetLastError();
+			if (Error != ERROR_ACCESS_DENIED || !_bTryNonAtomic)
+				DMibErrorFile("Windows returned an error from SetFileInformationByHandle(AtomicReplace)({}, {}): {} {}"_f << _FileFrom << _FileTo << Error << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
+
+			// Handle deletion of running executables
+
+			FileHandle.f_Clear();
+			CStr TempName = "{}~{}.TMP"_f << _FileTo << NCryptography::fg_RandomID();
+			fg_AtomicReplaceImplementation(_FileTo, TempName, false);
+			fg_AtomicReplaceImplementation(_FileFrom, _FileTo, false);
+
+			fg_DeleteGeneric<CWStr, false>(TempName); // Try to delete if possible, but don't throw on failure
+		}
 
 		return;
 	}
@@ -5383,6 +5406,11 @@ void NSys::NFile::fg_AtomicReplace(CStr const &_FileFrom, CStr const &_FileTo)
 	
 	if (!ReplaceFileW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo), FileFrom, nullptr, Flags, nullptr, nullptr))
 		DMibErrorFile((CStr::CFormat("Windows returned an error from ReplaceFile({}, {}): {}") << _FileFrom << _FileTo << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+}
+
+void NSys::NFile::fg_AtomicReplace(CStr const &_FileFrom, CStr const &_FileTo)
+{
+	fg_AtomicReplaceImplementation(_FileFrom, _FileTo, true);
 }
 
 NMib::NStream::CFilePos NSys::NFile::fg_GetFreeSpace(const NMib::NStr::CStr &_Path)
@@ -5632,7 +5660,7 @@ void NSys::NFile::fg_DeleteDirectory(const CStrNonTracked &_File);
 #define FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE  0x00000010
 #endif
 
-template <typename tf_CWStr, typename tf_CStr>
+template <typename tf_CWStr, bool t_bThrowError, typename tf_CStr>
 static void fg_DeleteGeneric(tf_CStr &_File)
 {
 	auto FileName = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal<tf_CWStr>(_File);
@@ -5646,7 +5674,10 @@ static void fg_DeleteGeneric(tf_CStr &_File)
 			FileDispositoinInfo.Flags |= FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE;
 		
 		if (!SetFileInformationByHandle(FileHandle.m_pHandle, FILE_INFO_BY_HANDLE_CLASS(21) /*FileDispositionInfoEx*/, &FileDispositoinInfo, sizeof(FileDispositoinInfo)))
-			DMibErrorFile((CStr::CFormat("Windows returned an error from SetFileInformationByHandle(Delete)({}): {}") << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+		{
+			if constexpr (t_bThrowError)
+				DMibErrorFile((CStr::CFormat("Windows returned an error from SetFileInformationByHandle(Delete)({}): {}") << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+		}
 
 		return;
 	}
@@ -5655,18 +5686,20 @@ static void fg_DeleteGeneric(tf_CStr &_File)
 	{
 		if (fg_ReparsePointDirectoryExists(FileName))
 			return NSys::NFile::fg_DeleteDirectory(_File);
-		DMibErrorFile((CStr::CFormat("Windows returned an error from DeleteFile({}): {}") << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+
+		if constexpr (t_bThrowError)
+			DMibErrorFile((CStr::CFormat("Windows returned an error from DeleteFile({}): {}") << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 	}
 }
 
 void NSys::NFile::fg_Delete(const CStr &_File)
 {
-	fg_DeleteGeneric<CWStr>(_File);
+	fg_DeleteGeneric<CWStr, true>(_File);
 }
 
 void NSys::NFile::fg_Delete(const CStrNonTracked &_File)
 {
-	fg_DeleteGeneric<CWStrNonTracked>(_File);
+	fg_DeleteGeneric<CWStrNonTracked, true>(_File);
 }
 
 void NSys::NFile::fg_DeleteDirectory(const CStr &_File)
