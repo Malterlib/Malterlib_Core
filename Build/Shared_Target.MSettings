@@ -3307,9 +3307,7 @@ Property
 
 	MalterlibPostBuildScriptPreSign: string?
 	MalterlibPostBuildScriptPreSign =+	`@(ScriptMkDir(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`))\r\n`\
-										`@(CheckErrors)\r\n`\
-										`MTool DiffCopy @(MalterlibExeIcon->Escape()) @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`->Escape()) "" 0\r\n`\
-										`@(CheckErrors)\r\n`
+										`MTool DiffCopy @(MalterlibExeIcon->Escape()) @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`->Escape()) "" 0\r\n`
 	{
 		&
 		{
@@ -4260,12 +4258,6 @@ Property
 
 Property
 {
-	CheckErrors: string = ""
-	CheckErrors ""
-	{
-		!!PlatformType "Unix"
-	}
-
 	TarOptions: string = ""
 	TarOptions "--disable-copyfile"
 	{
@@ -4372,8 +4364,7 @@ Property
 	{
 		!!true _CopyOptions<AbsoluteDestination>
 	}
-	MalterlibBuildServerPutPathUploadTemplate =+	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())\r\n`\
-													`@(CheckErrors)\r\n`
+	MalterlibBuildServerPutPathUploadTemplate =+	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())\r\n`
 
 	MalterlibBuildServerPutPathUploadContents: string
 	MalterlibBuildServerPutPathUploadContents =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach(&MalterlibBuildServerPutPathUploadTemplate)
@@ -4414,8 +4405,7 @@ Property
 	{
 		!!true _CopyOptions<Recursive>
 	}
-	MalterlibTestPutPathUploadTemplate =+	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=0 @(`Source=@(_CopyOptions<Pattern>)`->Escape()) @(`DestinationDir=@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`\
-											`@(CheckErrors)\r\n`
+	MalterlibTestPutPathUploadTemplate =+	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=0 @(`Source=@(_CopyOptions<Pattern>)`->Escape()) @(`DestinationDir=@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`
 	{
 		!MalterlibAutoBuild true
 	}
@@ -4424,8 +4414,7 @@ Property
 	MalterlibTestPutPathUploadTemplate =+	`echo @(ScriptMkDir(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`))\r\n`\
 											`@(ScriptMkDir(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`))\r\n`\
 											`echo cp -fr @(_CopyOptions<Pattern>->Escape()) @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)/`->Escape())\r\n`\
-											`cp -fr @(_CopyOptions<Pattern>->Escape()) @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)/`->Escape())\r\n`\
-											`@(CheckErrors)\r\n`
+											`cp -fr @(_CopyOptions<Pattern>->Escape()) @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)/`->Escape())\r\n`
 	{
 		&
 		{
@@ -4436,10 +4425,8 @@ Property
 
 	MalterlibTestPutPathUploadTemplate =+	`echo mkdir @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`\
 											`mkdir @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`\
-											`@(CheckErrors)\r\n`\
 											`echo MTool DiffCopy @(_CopyOptions<Pattern>->Escape()) @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`\
-											`MTool DiffCopy @(_CopyOptions<Pattern>->Escape()) @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`\
-											`@(CheckErrors)\r\n`
+											`MTool DiffCopy @(_CopyOptions<Pattern>->Escape()) @(`@(MalterlibAutoBuildTestPutPath)/@(MalterlibTestPutPath)@(_CopyOptions<Destination>)`->Escape())\r\n`
 	{
 		&
 		{
@@ -4744,8 +4731,7 @@ Property
 	{
 		!!true _CopyOptions<AbsoluteDestination>
 	}
-	MalterlibPostCopyInternalTemplate =+	`MTool PostCopy @(`@(_CopyOptions<Pattern>)`->EscapeHost()) @(`Config=@(MalterlibPostCopyConfigFile)`->EscapeHost()) @(`Project=@(MalterlibCalculatedPostCopyProject)`->EscapeHost()) @(`OutFolder=@(MalterlibPostCopyDestination->AppendPath(_CopyOptions<Destination>))`->EscapeHost()) Hash=@(MalterlibPostCopyHash->ToString()) FindDirectory=@(_CopyOptions<FindDirectory>->ToString()) Recursive=@(_CopyOptions<Recursive>->ToString())\r\n`\
-											`@(CheckErrors)\r\n`
+	MalterlibPostCopyInternalTemplate =+	`MTool PostCopy @(`@(_CopyOptions<Pattern>)`->EscapeHost()) @(`Config=@(MalterlibPostCopyConfigFile)`->EscapeHost()) @(`Project=@(MalterlibCalculatedPostCopyProject)`->EscapeHost()) @(`OutFolder=@(MalterlibPostCopyDestination->AppendPath(_CopyOptions<Destination>))`->EscapeHost()) Hash=@(MalterlibPostCopyHash->ToString()) FindDirectory=@(_CopyOptions<FindDirectory>->ToString()) Recursive=@(_CopyOptions<Recursive>->ToString())\r\n`
 
 	MalterlibPostCopyContents: string?
 	MalterlibPostCopyContents fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(&MalterlibPostCopyInternalTemplate)
@@ -4801,18 +4787,6 @@ Target
 		!!MalterlibPostBuildScriptShowEnv true
 	}
 
-	PostBuildScript =+ "function CheckErrors {\r\n"\
-						"	if [[ $? -ne 0 ]]\r\n"\
-						"	then\r\n"\
-						"		echo ERROR: Command in post build script failed, aborting\r\n"\
-						"		exit 1\r\n"\
-						"	fi\r\n"\
-						"}\r\n"\
-						"\r\n"
-	{
-		!!PlatformType "Unix"
-	}
-
 /*
 	// This breaks the dependency checking in MSBuild
 	PostBuildScript =+	`IF EXIST "@(MalterlibOriginalModuleDestinationExpLib->WindowsPath())" del "@(MalterlibOriginalModuleDestinationExpLib->WindowsPath())"\r\n`\
@@ -4827,9 +4801,7 @@ Target
 	}
 	*/
 
-	PostBuildScript =+	`MTool DiffCopy @(MalterlibOriginalModuleDestination->Escape()) @(MalterlibFinalModuleDestinationPath->Escape()) "" 0\r\n`\
-						`@(CheckErrors)\r\n`
-
+	PostBuildScript =+	`MTool DiffCopy @(MalterlibOriginalModuleDestination->Escape()) @(MalterlibFinalModuleDestinationPath->Escape()) "" 0\r\n`
 	{
 		&
 		{
@@ -4838,8 +4810,7 @@ Target
 		}
 	}
 
-	PostBuildScript =+	`MTool DiffCopy @(`@(MalterlibOriginalModuleDestination).dSYM`->Escape()) @(MalterlibFinalModuleDestinationPath->Escape()) "" 0\r\n`\
-						`@(CheckErrors)\r\n`
+	PostBuildScript =+	`MTool DiffCopy @(`@(MalterlibOriginalModuleDestination).dSYM`->Escape()) @(MalterlibFinalModuleDestinationPath->Escape()) "" 0\r\n`
 	{
 		&
 		{
@@ -4867,8 +4838,7 @@ Target
 	// Do this before signing as we want to strip the executable
 	PostBuildScript =+ `echo Deploy Symbols:\r\n`\
 					`echo @(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) \\> @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
-					`@(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
-					`@(CheckErrors)\r\n`
+					`@(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`
 	{
 		&
 		{
@@ -4882,8 +4852,7 @@ Target
 		}
 	}
 	PostBuildScript =+	`echo @(MalterlibDumpSymsCommand) @(`@(MalterlibFinalModuleDestination).dSYM`->Escape()) \\> @(`@(MalterlibFinalModuleDestination).dSYM.breakpad`->Escape())\r\n`\
-						`@(MalterlibDumpSymsCommand) @(`@(MalterlibFinalModuleDestination).dSYM`->Escape()) > @(`@(MalterlibFinalModuleDestination).dSYM.breakpad`->Escape())\r\n`\
-						`@(CheckErrors)\r\n`
+						`@(MalterlibDumpSymsCommand) @(`@(MalterlibFinalModuleDestination).dSYM`->Escape()) > @(`@(MalterlibFinalModuleDestination).dSYM.breakpad`->Escape())\r\n`
 	{
 		&
 		{
@@ -4898,10 +4867,8 @@ Target
 						`if [ -f @(`@(MalterlibFinalModuleDestination).zip`->Escape()) ]\r\n`\
 						`then\r\n`\
 						`	rm @(`@(MalterlibFinalModuleDestination).zip`->Escape())\r\n`\
-						`	@(CheckErrors)\r\n`\
 						`fi\r\n`\
-						`zip -qj @(`@(MalterlibFinalModuleDestination).zip`->Escape()) @(MalterlibFinalModuleDestination->Escape())\r\n`\
-						`@(CheckErrors)\r\n`
+						`zip -qj @(`@(MalterlibFinalModuleDestination).zip`->Escape()) @(MalterlibFinalModuleDestination->Escape())\r\n`
 	{
 		&
 		{
@@ -4912,8 +4879,7 @@ Target
 	}
 
 	PostBuildScript =+	`echo @(MalterlibStripProgram) @(EscapeHost(MalterlibStripOptions...)) @(MalterlibFinalModuleDestinationExecutable->EscapeHost())\r\n`\
-						`@(MalterlibStripProgram) @(EscapeHost(MalterlibStripOptions...)) @(MalterlibFinalModuleDestinationExecutable->EscapeHost())\r\n`\
-						`@(CheckErrors)\r\n`
+						`@(MalterlibStripProgram) @(EscapeHost(MalterlibStripOptions...)) @(MalterlibFinalModuleDestinationExecutable->EscapeHost())\r\n`
 	{
 		&
 		{
@@ -4941,13 +4907,10 @@ Target
 						`if [ -f @(`@(MalterlibFinalModuleDestination).breakpad.zip`->Escape()) ]\r\n`\
 						`then\r\n`\
 						`	rm @(`@(MalterlibFinalModuleDestination).breakpad.zip`->Escape())\r\n`\
-						`	@(CheckErrors)\r\n`\
 						`fi\r\n`\
 						`zip -qj @(`@(MalterlibFinalModuleDestination).breakpad.zip`->Escape()) @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
-						`@(CheckErrors)\r\n`\
 						`echo MTool SymbolBreakpad "/Temp/SymbolTest" @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
 						`export BrekapadOutputPath=\`MTool SymbolBreakpad @(MalterlibDeploySymbolsPath->Escape()) @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\`\r\n`\
-						`@(CheckErrors)\r\n`\
 						`echo Deploying symbols to: $BrekapadOutputPath\r\n`
 	{
 		&
@@ -4966,10 +4929,8 @@ Target
 						`if [ -f "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" ]\r\n`\
 						`then\r\n`\
 						`	rm "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip"\r\n`\
-						`	@(CheckErrors)\r\n`\
 						`fi\r\n`\
-						`zip -qj "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "@(MalterlibFinalModuleDestination).dSYM.breakpad"\r\n`\
-						`@(CheckErrors)\r\n`
+						`zip -qj "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "@(MalterlibFinalModuleDestination).dSYM.breakpad"\r\n`
 	{
 		&
 		{
@@ -4984,10 +4945,8 @@ Target
 						`if [ -f "@(MalterlibFinalModuleDestination).dSYM.zip" ]\r\n`\
 						`then\r\n`\
 						`	rm "@(MalterlibFinalModuleDestination).dSYM.zip"\r\n`\
-						`	@(CheckErrors)\r\n`\
 						`fi\r\n`\
-						`zip -qrj "@(MalterlibFinalModuleDestination).dSYM.zip" "@(MalterlibFinalModuleDestination).dSYM"\r\n`\
-						`@(CheckErrors)\r\n`
+						`zip -qrj "@(MalterlibFinalModuleDestination).dSYM.zip" "@(MalterlibFinalModuleDestination).dSYM"\r\n`
 	{
 		&
 		{
@@ -5047,8 +5006,7 @@ Target
 	}
 
 
-	PostBuildScript =+	`sn -Ra "@(MalterlibFinalModuleDestination->WindowsPath())" "@(MalterlibStronglyNamedAssembly->WindowsPath())"\r\n`\
-						`@(CheckErrors)\r\n`
+	PostBuildScript =+	`sn -Ra "@(MalterlibFinalModuleDestination->WindowsPath())" "@(MalterlibStronglyNamedAssembly->WindowsPath())"\r\n`
 	{
 		&
 		{
@@ -5134,8 +5092,7 @@ Target
 
 	PostBuildScript =+	`echo Sign:\r\n`\
 						`echo @(MalterlibWindowsSignCommandLine)\r\n`\
-						`@(MalterlibWindowsSignCommandLine)\r\n`\
-						`@(CheckErrors)\r\n`
+						`@(MalterlibWindowsSignCommandLine)\r\n`
 	{
 		&
 		{
@@ -5156,8 +5113,7 @@ Target
 
 	PostBuildScript =+	`echo Deploy Symbols:\r\n`\
 						`echo @(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`\
-						`@(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`\
-						`@(CheckErrors)\r\n`
+						`@(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`
 	{
 		&
 		{
@@ -5168,8 +5124,7 @@ Target
 		}
 	}
 
-	PostBuildScript =+	`MTool DiffCopy "@(MalterlibFinalModuleDestination)" "@(MalterlibTestDeployPath)" "" 0\r\n`\
-						`@(CheckErrors)\r\n`
+	PostBuildScript =+	`MTool DiffCopy "@(MalterlibFinalModuleDestination)" "@(MalterlibTestDeployPath)" "" 0\r\n`
 	{
 		&
 		{
@@ -5179,8 +5134,7 @@ Target
 	}
 
 
-	PostBuildScript =+	`MTool TouchOrCreate "@(MalterlibTestDeployPath)/@(MalterlibFinalModuleDestination->GetFile()).MainTest"\r\n`\
-						`@(CheckErrors)\r\n`
+	PostBuildScript =+	`MTool TouchOrCreate "@(MalterlibTestDeployPath)/@(MalterlibFinalModuleDestination->GetFile()).MainTest"\r\n`
 	{
 		&
 		{
@@ -5190,8 +5144,7 @@ Target
 		}
 	}
 
-	PostBuildScript =+	`MTool TouchOrCreate "@(MalterlibFinalModuleDestination).MainTest"\r\n`\
-						`@(CheckErrors)\r\n`
+	PostBuildScript =+	`MTool TouchOrCreate "@(MalterlibFinalModuleDestination).MainTest"\r\n`
 	{
 		&
 		{
@@ -5280,8 +5233,7 @@ Target
 		}
 	}
 
-	PostBuildScript =+	`MTool CopyWriteTime "@(MalterlibOriginalModuleDestinationExecutable)" "@(Target:Target.DependencyFile)"\r\n`\
-						`@(CheckErrors)\r\n`
+	PostBuildScript =+	`MTool CopyWriteTime "@(MalterlibOriginalModuleDestinationExecutable)" "@(Target:Target.DependencyFile)"\r\n`
 	{
 		&
 		{
@@ -5290,8 +5242,7 @@ Target
 		}
 	}
 
-	PostBuildScript =+	`MTool TouchOrCreate "@(PostBuildOutputfile)"\r\n`\
-						`@(CheckErrors)\r\n`
+	PostBuildScript =+	`MTool TouchOrCreate "@(PostBuildOutputfile)"\r\n`
 	{
 		|
 		{

@@ -175,8 +175,7 @@ Property
 	}
 
 	ScriptMkDir function(string _Directory) string
-	ScriptMkDir `if not exist @(_Directory->WindowsPath()->EscapeHost()) md @(_Directory->WindowsPath()->EscapeHost())\r\n`\
-				`@(CheckErrors)\r\n`
+	ScriptMkDir `if not exist @(_Directory->WindowsPath()->EscapeHost()) md @(_Directory->WindowsPath()->EscapeHost())\r\n`
 	{
 		!!PlatformType "Windows"
 	}

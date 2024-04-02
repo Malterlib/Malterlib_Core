@@ -23,7 +23,6 @@ else
 fi
 
 MTool BuildServerGet "Source=$1" "DestinationDir=$DestinationDir"
-CheckErrors
 
 echo VeryImportant: Build now available at:
 echo VeryImportant: $DestinationDir

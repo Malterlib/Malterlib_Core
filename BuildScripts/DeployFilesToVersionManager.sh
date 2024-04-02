@@ -16,7 +16,6 @@ echo Copying files
 PackageDirectory="$TempDirectory/Package"
 
 MTool BuildServerGet "Source=$1" "DestinationDir=$PackageDirectory"
-CheckErrors
 
 pushd "$PackageDirectory"
 

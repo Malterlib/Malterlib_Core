@@ -38,6 +38,5 @@ fi
 
 echo CallDirect msbuild.exe "\"BuildSystem/Default/${Workspace}.sln"\" /nodereuse:false /m /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
 CallDirect msbuild.exe "\"BuildSystem/Default/${Workspace}.sln"\" /nodereuse:false /m /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
-CheckErrors
 
 exit 0

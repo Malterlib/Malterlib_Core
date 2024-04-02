@@ -42,6 +42,5 @@ if [[ "$Config" == "" ]]; then
 fi
 
 CallDirect msbuild.exe "\"BuildSystem/Default/${Workspace}.sln\"" /nodereuse:false /m /v:m "\"/target:$Target\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\""
-CheckErrors
 
 exit 0

@@ -41,7 +41,6 @@ if [[ "$Config" == "" ]]; then
 fi
 
 $XCodeBuildTool -workspace "BuildSystem/Default/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
-CheckErrors
 
 exit 0
 

@@ -40,11 +40,6 @@ Import "Shared_Dependencies.MSettings"
 // Generate build system target automatically included in all workspaces
 Import "Tool_GenerateBuildSystem.MTarget"
 
-// Error checking
-Target.CheckErrors: string?
-Workspace.CheckErrors: string?
-Compile.CheckErrors: string?
-
 // Misc small settings
 
 Workspace
