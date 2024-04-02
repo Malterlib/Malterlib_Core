@@ -302,8 +302,12 @@ Property
 											`	CleanWorkspaceForConfig "$1" macOS x64 "$2"\r\n`\
 											`	CleanWorkspaceForConfig "$1" Linux x64 "$2"\r\n`\
 											`	CleanWorkspaceForConfig "$1" Linux x86 "$2"\r\n`\
-											`}\r\n`\
-											`\r\n`\
+											`}\r\n`
+	{
+		!!GeneratorFamily "Xcode"
+	}
+
+	SharedBuildSettingsScriptContents =+	`\r\n`\
 											`function CheckBuildPlatform()\r\n`\
 											`{\r\n`\
 											`	BuildPlatform=$1\r\n`\
@@ -324,9 +328,10 @@ Property
 											`		exit 0\r\n`\
 											`	fi\r\n`\
 											`}\r\n`
-
 	{
-		!!GeneratorFamily "Xcode"
+
+		!!PlatformType "Unix"
+		!!ScriptWindowsBash true
 	}
 }
 
