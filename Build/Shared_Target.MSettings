@@ -4353,9 +4353,11 @@ Property
 		}
 	}
 
-	MalterlibBuildServerPutPath: string?
+	MalterlibBuildServerPutPath: one_of(string, [string])?
 
-	MalterlibBuildServerPutPathUploadTemplate function(type(CFileCopyOptionsDetailed) _CopyOptions) string = ""
+	MalterlibBuildServerPutPathUploadTemplateCopyOptions: type(CFileCopyOptionsDetailed)
+
+	MalterlibBuildServerPutPathUploadTemplate function(string _DestinationDir) [string] = []
 	MalterlibBuildServerPutPathUploadTemplate Error("FindDirectory not supported for build server put")
 	{
 		!!true _CopyOptions<FindDirectory>
@@ -4364,10 +4366,16 @@ Property
 	{
 		!!true _CopyOptions<AbsoluteDestination>
 	}
-	MalterlibBuildServerPutPathUploadTemplate =+	`@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPath->AppendPath(_CopyOptions<Destination>))`->EscapeHost())\r\n`
+	MalterlibBuildServerPutPathUploadTemplate =+ `@(_DestinationDir->AppendPath(MalterlibBuildServerPutPathUploadTemplateCopyOptions<Destination>))`
+
+	MalterlibBuildServerPutPathUploadDestinationDirs function(type(CFileCopyOptionsDetailed) _CopyOptions) string
+	MalterlibBuildServerPutPathUploadDestinationDirs MalterlibBuildServerPutPath->f_ToStringArray()->ForEach(&MalterlibBuildServerPutPathUploadTemplate, {MalterlibBuildServerPutPathUploadTemplateCopyOptions: _CopyOptions})->Join(";")
+
+	MalterlibBuildServerPutPathUploadTemplateOuter function(type(CFileCopyOptionsDetailed) _CopyOptions) string = ""
+	MalterlibBuildServerPutPathUploadTemplateOuter =+ `@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPathUploadDestinationDirs(_CopyOptions))`->EscapeHost())\r\n`
 
 	MalterlibBuildServerPutPathUploadContents: string
-	MalterlibBuildServerPutPathUploadContents =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach(&MalterlibBuildServerPutPathUploadTemplate)
+	MalterlibBuildServerPutPathUploadContents =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach(&MalterlibBuildServerPutPathUploadTemplateOuter)
 
 
 	MalterlibTestPutSources: [type(CFileCopyOptions)]
