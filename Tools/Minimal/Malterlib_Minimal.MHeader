@@ -1,6 +1,11 @@
 // Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+Property
+{
+	MalterlibMinimalEnable: bool = false // User(Malterlib)=true: Enable malterlib minimal workspace
+}
+
 %Target "Malterlib_Minimal"
 {
 	Property
@@ -16,6 +21,8 @@
 
 %Workspace "Malterlib_Minimal"
 {
+	!!MalterlibMinimalEnable true
+	
 	//Property.MalterlibLibrary_All true
 	Property.MalterlibSubLibrarySeparate true
 	Property.MalterlibMemoryManager "System"
