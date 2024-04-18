@@ -9,6 +9,7 @@ Property
 		!!MalterlibExportDirectory undefined
 	}
 	MalterlibExportSupportQuotes: bool = true
+	MalterlibExportEnable: bool = false // User(Malterlib)=true: Enable malterlib export workspace
 }
 
 %Target "Malterlib_Export"
@@ -349,6 +350,8 @@ Property
 
 %Workspace "Malterlib_Export"
 {
+	!!MalterlibExportEnable true
+	
 	Property.MalterlibXcodeObjectsDirectory "Objects-normal"
 
 	%Target "Lib_Malterlib_Export_Exe"
