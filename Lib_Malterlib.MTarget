@@ -958,7 +958,7 @@ Target
 
 	%File "../CrashReport/Source/Malterlib_CrashReport_BreakpadUploader.cpp"
 
-	%Dependency "Lib_Curl"
+	%Dependency "Lib_CURL_libcurl_static"
 	{
 		Dependency.Indirect true
 		{
