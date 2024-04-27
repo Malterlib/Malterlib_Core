@@ -282,7 +282,7 @@ namespace NMib
 	{
 #if DMibSysLogSeverities
 		if (!m_StdErrLoggerDestination)
-			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(&NLog::fg_LogTo_StdErr);
+			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr());
 #endif
 	}
 
@@ -312,10 +312,10 @@ namespace NMib
 
 #if DMibEnableTrace > 0
 			if (bDebugOut)
-				m_TraceLoggerDestination = m_pSystemLog->f_PushGlobalDestination(&NLog::fg_LogTo_DebugOut);
+				m_TraceLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_DebugOut());
 #endif
 #if DMibSysLogStdErr
-			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(&NLog::fg_LogTo_StdErr);
+			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr());
 #endif
 			if (!bDisableSystemLog)
 				f_AddFileLogger();
