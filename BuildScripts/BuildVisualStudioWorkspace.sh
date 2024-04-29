@@ -36,7 +36,14 @@ if [[ "$Config" == "" ]]; then
 	Config="Debug"
 fi
 
-echo CallDirect msbuild.exe "\"BuildSystem/Default/${Workspace}.sln"\" /nodereuse:false /m /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
-CallDirect msbuild.exe "\"BuildSystem/Default/${Workspace}.sln"\" /nodereuse:false /m /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
+ExtraParams=
+if [[ "$MalterlibMSBuildBuildMaxParallelProjects" != "" ]]; then
+	ExtraParams="-maxcpucount:$MalterlibMSBuildBuildMaxParallelProjects"
+else
+	ExtraParams="-m"
+fi
+
+echo CallDirect msbuild.exe "\"BuildSystem/Default/${Workspace}.sln"\" /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
+CallDirect msbuild.exe "\"BuildSystem/Default/${Workspace}.sln"\" /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
 
 exit 0
