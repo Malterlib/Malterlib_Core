@@ -2624,6 +2624,11 @@ Target
 	StartAction "Program"
 }
 
+Property
+{
+	MSVCLinkTimeCodeGenerationThreads: int = 8
+}
+
 // Windows native executable targets
 Target
 {
@@ -2752,7 +2757,7 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags += ["/CGTHREADS:8", "/OPT:ICF=16"]
+	ExtraLinkerFlags += [`/CGTHREADS:@(MSVCLinkTimeCodeGenerationThreads)`, "/OPT:ICF=16"]
 	{
 		&
 		{
