@@ -1,0 +1,35 @@
+// Copyright © 2024 Favro Holding AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	Malterlib_All_App_Targets: [type(CEntity)] = []
+}
+
+%Workspace "Apps_Malterlib_All"
+{
+	!!MalterlibEnableInternalWorkspaces true
+
+	Property
+	{
+		MalterlibCloud_EnableVersionUpload true
+		{
+			!!TargetIsExecutable true
+		}
+
+		MalterlibLog_Severities ["Error", "Critical", "Warning", "Info"]
+		{
+			!!MalterlibLog_EnableVerboseDebugLog false
+		}
+	}
+
+	%Group "Apps"
+	{
+		Property.MalterlibPostCopyProject "Malterlib_All"
+		{
+			!!TargetIsExecutable true
+		}
+
+		%Target Malterlib_All_App_Targets
+	}
+}
