@@ -2757,7 +2757,7 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags += [`/CGTHREADS:@(MSVCLinkTimeCodeGenerationThreads)`, "/OPT:ICF=16"]
+	ExtraLinkerFlags += [`/CGTHREADS:@(MSVCLinkTimeCodeGenerationThreads->ToString())`, "/OPT:ICF=16"]
 	{
 		&
 		{
