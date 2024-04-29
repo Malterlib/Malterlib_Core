@@ -213,6 +213,7 @@ namespace NMib
 			DMibListLinkDS_List(CNotification, m_Link) m_OpenNotifications;
 
 			NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject> m_pProcessThread;
+			NMib::NAtomic::TCAtomic<bool> m_bProcessThreadStarted = false;
 
 			static void fs_EventCallback
 				(
