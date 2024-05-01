@@ -171,7 +171,7 @@
 		"Hash": "ae5cc9db216a7f8498fa3af45b85a0dc31a6bdeb"
 	},
 	"../SQL": {
-		"Hash": "c565b56a919d96fa2e5aec53b55d137327306b0c"
+		"Hash": "d1da108f2ed128a4030cdcd382ee77d72f05ea5a"
 	},
 	"../STL": {
 		"Hash": "2f1724779da31c9051ade3c8a5fff21f19f1609e"
@@ -186,7 +186,7 @@
 		"Hash": "f750e8b2eb0c754256fa7f48bcfa8786047b0fa7"
 	},
 	"../String": {
-		"Hash": "422eb83aa1a14fe03b30b0bdb5685dcf7ebdfecb"
+		"Hash": "c3e6e76979009e60efe39fbe6b99c825fab0fd38"
 	},
 	"../System": {
 		"Hash": "a09289500150a31a07cd77506dc41ffc1caf8e4a"
