@@ -273,6 +273,16 @@ Property
 		!!MalterlibUseStaticLibCxx undefined
 	}
 
+	MalterlibUseLibCxx: bool = false // User(Toolset)=false: Enables static libc++
+
+	MalterlibUseLibCxx true
+	{
+		|
+		{
+			PlatformFamily "macOS"
+			PlatformFamily "Linux"
+		}
+	}	
 
 	MalterlibRuntime_AlwaysRelease: bool? // User(Toolset)=false: Enable runtime (libc++ etc) to always be compile as if release config (default true)
 	MalterlibRuntime_AlwaysRelease true
@@ -347,7 +357,7 @@ Property
 	}
 	MalterlibDisableBuildSystemGeneration: bool = MalterlibBuildServerBuild
 	MalterlibEnableBreakpadUploader: bool = false
-	MalterlibClangVersion: string = "17.0"
+	MalterlibClangVersion: string = "18.1"
 	MalterlibClangVersionMajor: string = MalterlibClangVersion->ParseFormatString("{}.{}", "{0}")
 	MalterlibCustomToolchainClangVersion: string = "8.0"
 	MalterlibEnableBreakpad: bool = false

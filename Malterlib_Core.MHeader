@@ -5,12 +5,21 @@ Property
 {
 	MalterlibEnableThirdPartyComparisonTests: bool = false // User(Tests)=true: Enable thrird party comparison tests.
 	MalterlibClangUpstreamBranch: string = `release/@(MalterlibClangVersion->ParseFormatString("{}.{}", "{0}.x"))`
+	MalterlibUseClangForWindowsSupported: bool = true
 
 	HasLLVMRepository: bool = false
 	HasLLVMRepository true
 	{
-		!!EnablePlatformFamily_macOS true
-		!!EnablePlatformFamily_Linux true
+		|
+		{
+			EnablePlatformFamily_macOS true
+			EnablePlatformFamily_Linux true
+			&
+			{
+				MalterlibUseClangForWindowsSupported true
+				EnablePlatformFamily_Windows true
+			}
+		}
 	}
 
 	MalterlibSubLibrarySeparate: bool = false
@@ -54,6 +63,22 @@ Import "Lib_Malterlib.MTarget"
 				Compile.Disabled true
 				{
 					!PlatformFamily PlatformFamilyFromFile
+				}
+			}
+
+			%File "Source/Platform/*.mm"
+			{
+				Compile
+				{
+					Disabled true
+					{
+						!PlatformFamily PlatformFamilyFromFile
+					}
+
+					CxxLanguage "C++23"
+					{
+						!!Compiler "Clang"
+					}
 				}
 			}
 

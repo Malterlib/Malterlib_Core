@@ -7,8 +7,8 @@
 #pragma warning(disable:4091)
 #define PSAPI_VERSION 1
 
-#include <Mib/Core/Core>
 
+#include <Mib/Core/Core>
 
 #include "Malterlib_Core_PlatformImp_MSVC_WindowsDefines.h"
 #include <wincrypt.h>
@@ -153,7 +153,7 @@ public:
 	{
 		TCUniquePointer<TCWin32File, t_CAllocator> pPtr = fg_Explicit(this);
 	}
-	virtual bool f_IsNonTracked()
+	virtual bool f_IsNonTracked() override
 	{
 		return !t_CAllocator::mc_Reporting;
 	}
@@ -464,36 +464,9 @@ namespace
 		}
 		return Ret;
 	}
-
-	CStr fg_ExpandEnvironmentVars(CStr const &_Path)
-	{
-		CStr Path = _Path.f_ReplaceChar('\\', '/');
-		CStr RetPath;
-		while (!Path.f_IsEmpty())
-		{
-			CStr SubPath = fg_GetStrSep(Path, "/");
-			if (SubPath.f_IsEmpty())
-			{
-				RetPath += "/";
-			}
-			else
-			{
-				if (SubPath[0] == '%')
-				{
-					SubPath = fg_GetSys()->f_GetEnvironmentVariable(SubPath.f_Replace("%", ""));
-				}
-				if (!RetPath.f_IsEmpty() && RetPath[RetPath.f_GetLen() - 1] == '/')
-					RetPath += SubPath;
-				else
-					fg_AddStrSep(RetPath, SubPath, "/");
-			}
-		}
-		return RetPath;
-	}
 }
 
-
-static mint fsg_GetStackTrace(mint *_pStack, mint _nMaxDepth, mint _StackFrame)
+[[maybe_unused]] static mint fsg_GetStackTrace(mint *_pStack, mint _nMaxDepth, mint _StackFrame)
 {
 	CUndocumentedTEB *pTEB = fg_GetTEB();
 	mint StackStart = (mint)pTEB->Tib.StackBase;
@@ -881,7 +854,7 @@ void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Bu
 	while (Len)
 	{
 		mint ToCopy = fg_Min(Len, 2048u);
-		uint8 *pTemp = NMib::NMemory::fg_MemCopy(Temp, pOut, ToCopy);
+		NMib::NMemory::fg_MemCopy(Temp, pOut, ToCopy);
 		if (!WriteFile(hCon, Temp, ToCopy, &Written, nullptr))
 		{
 			break;
@@ -1621,7 +1594,7 @@ void fg_SetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage, void *_pDat
 	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
 	if (hThread)
 	{
-		bool bSuccess = false;
+		[[maybe_unused]] bool bSuccess = false;
 		CFStr256 ErrorStr;
 		if (SuspendThread(hThread) != 0xFFFFFFFF)
 		{
@@ -3223,11 +3196,6 @@ void NSys::fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> 
 #endif
 }
 
-static inline_always void fg_MakeFunctionInline()
-{
-}
-
-
 NMib::NStr::CStr NSys::fg_System_GetCPUName()
 {
 	NMib::NPlatform::CWin32_Registry Registry(NMib::NPlatform::CWin32_Registry::ERegRoot_LocalMachine);
@@ -3984,7 +3952,7 @@ void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags,
 		DMibErrorFile
 			(
 				(
-					tf_CErrorStr::CFormat("Windows returned an error from CreateFile({}, 0x{nfh,sf0,sj8}, 0x{nfh,sf0,sj8}, {}, 0x{nfh,sf0,sj8}): {}") 
+					typename tf_CErrorStr::CFormat("Windows returned an error from CreateFile({}, 0x{nfh,sf0,sj8}, 0x{nfh,sf0,sj8}, {}, 0x{nfh,sf0,sj8}): {}") 
 					<< FileName 
 					<< OpenFlags 
 					<< ShareFlags
@@ -4220,7 +4188,7 @@ namespace
 
 
 		if (!SetFileAttributesW(_pFileName, FileAttribs))
-			DMibErrorFile((tf_CStr::CFormat("Windows returned an error from SetFileAttributesW({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+			DMibErrorFile((typename tf_CStr::CFormat("Windows returned an error from SetFileAttributesW({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
 		if constexpr (tf_bOnLink)
 			return;
@@ -4250,7 +4218,7 @@ namespace
 					}
 					FileAttribs |= FILE_ATTRIBUTE_READONLY;
 					if (!SetFileAttributesW(_pFileName, FileAttribs))
-						DMibErrorFile((tf_CStr::CFormat("Windows returned an error from SetFileAttributesW({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+						DMibErrorFile((typename tf_CStr::CFormat("Windows returned an error from SetFileAttributesW({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 				}
 			}
 			else
@@ -4259,7 +4227,7 @@ namespace
 				if (Attribs != INVALID_FILE_ATTRIBUTES)
 				{
 					if (!DeleteFileW(NFile::NPlatform::fg_ConvertToWindowsPathLocal(ExtendedAttribName)))
-						DMibErrorFile((CStr::CFormat("Windows returned an error from DeleteFile({}): {}") << ExtendedAttribName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+						DMibErrorFile((typename tf_CStr::CFormat("Windows returned an error from DeleteFile({}): {}") << ExtendedAttribName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 				}
 			}
 		}
@@ -4271,7 +4239,7 @@ namespace
 		if (_FileAttribs == INVALID_FILE_ATTRIBUTES)
 		{
 			if constexpr (tf_bThrow)
-				DMibErrorFile((tf_CStr::CFormat("Windows returned an error from GetFileAttributes({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+				DMibErrorFile((typename tf_CStr::CFormat("Windows returned an error from GetFileAttributes({}): {}") << _pFileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 			else 
 				return EFileAttrib_None;
 		}
@@ -5071,9 +5039,9 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 
 		if 
 			(
-				NLocal::g_VersionInfo.dwMajorVersion > 10 
-				|| NLocal::g_VersionInfo.dwMajorVersion == 10 && NLocal::g_VersionInfo.dwMinorVersion > 0
-				|| NLocal::g_VersionInfo.dwMajorVersion == 10 && NLocal::g_VersionInfo.dwBuildNumber >= 14972 
+				(NLocal::g_VersionInfo.dwMajorVersion > 10)
+				|| (NLocal::g_VersionInfo.dwMajorVersion == 10 && NLocal::g_VersionInfo.dwMinorVersion > 0)
+				|| (NLocal::g_VersionInfo.dwMajorVersion == 10 && NLocal::g_VersionInfo.dwBuildNumber >= 14972)
 			)
 		{
 			Flags |= 2; // SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE
@@ -5598,12 +5566,8 @@ void fg_CreateDirectoryHelper(const tf_CStr &_FileDirectory)
 	ch16 *pDir = NewPath.f_GetStrUniqueWritable();
 
 	ch16 *pDirCheck;
-	bool bUNC = false;
 	if (fg_StrCmpNoCase(pDir, "\\\\?\\UNC\\", 8) == 0)
-	{
 		pDirCheck = pDir + 8;
-		bUNC = true;
-	}
 	else if (fg_StrStartsWith(pDir, "\\\\?\\"))
 		pDirCheck = pDir + 4;
 	else
@@ -5632,7 +5596,7 @@ void fg_CreateDirectoryHelper(const tf_CStr &_FileDirectory)
 				if (Error == ERROR_ALREADY_EXISTS)
 					Error = 0;
 				if (Error)
-					DMibErrorFile((tf_CErrorStr::CFormat("Windows returned an error from CreateDirectory({}, {}): {}") << Current << _FileDirectory << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+					DMibErrorFile((typename tf_CErrorStr::CFormat("Windows returned an error from CreateDirectory({}, {}): {}") << Current << _FileDirectory << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 			}
 		}
 		if (!pCurrentPath)

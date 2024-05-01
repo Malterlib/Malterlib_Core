@@ -4,17 +4,17 @@
 #pragma once
 
 // Constant
-#if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define constant_int64(_Number) _Number##LL
-#	define constant_uint64(_Number) _Number##ULL
-#	define str_utf8(d_StringLiteral) d_StringLiteral
-#	define str_utf16(d_StringLiteral) u##d_StringLiteral
-#	define str_utf32(d_StringLiteral) U##d_StringLiteral
-#elif defined(DCompiler_MSVC)
+#if defined(DCompiler_MSVC) || defined(DCompiler_clang_cl)
 #	define constant_int64(_Number) _Number##i64
 #	define constant_uint64(_Number) _Number##ui64
 #	define str_utf8(d_StringLiteral) d_StringLiteral
 #	define str_utf16(d_StringLiteral) L##d_StringLiteral
+#	define str_utf32(d_StringLiteral) U##d_StringLiteral
+#elif defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	define constant_int64(_Number) _Number##LL
+#	define constant_uint64(_Number) _Number##ULL
+#	define str_utf8(d_StringLiteral) d_StringLiteral
+#	define str_utf16(d_StringLiteral) u##d_StringLiteral
 #	define str_utf32(d_StringLiteral) U##d_StringLiteral
 #else
 #	error "Implement this"
@@ -31,7 +31,7 @@ typedef double pfp64;
 #define DMibPCanDo_fp64
 static_assert(sizeof(pfp64)*8 == 64, "fp64 not supported");
 
-#if !defined(DCompiler_MSVC) && (defined(DArchitecture_x86) || defined(DArchitecture_x64))
+#if !defined(DCompiler_MSVC) && !defined(DCompiler_clang_cl) && (defined(DArchitecture_x86) || defined(DArchitecture_x64))
 typedef long double pfp80;
 #define DMibPCanDo_fp80
 static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");

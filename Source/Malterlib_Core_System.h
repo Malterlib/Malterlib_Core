@@ -138,7 +138,7 @@ namespace NMib
 		}
 	};
 
-#ifdef DCompiler_MSVC
+#if defined(DCompiler_MSVC) || defined(DCompiler_clang_cl)
 #define DWorkaroundVirtualLayout : CVirtualDestructor
 #else
 #define DWorkaroundVirtualLayout
@@ -159,7 +159,7 @@ namespace NMib
 			
 	class CSystem
 	{	
-		friend class CRunTimeObjectInfo;
+		friend struct CRunTimeObjectInfo;
 		friend class NThread::CSemaphoreAggregate;
 		friend class CSystemModule;
 

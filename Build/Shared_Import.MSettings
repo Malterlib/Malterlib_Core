@@ -85,7 +85,7 @@ Import
 
 	CMake_OutputFilesParseTerminators: string = "/\"' ,\t\r\n"
 
-	CMake_FullRebuildVersion "4"
+	CMake_FullRebuildVersion "5"
 
 	CMake_UpdateCache true
 	{
@@ -248,6 +248,15 @@ Import
 	CMake_Internal_LinkerFlags =+ ` -stdlib=libc++ -Wno-unused-command-line-argument`
 	{
 		!!PlatformFamily "macOS"
+	}
+
+	CMake_Internal_LinkerFlags =+ ` -fuse-ld=lld`
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			!MalterlibDefaultCompiler true
+		}
 	}
 
 	CMake_Internal_LinkerFlags =+ ` -fuse-ld=@(Malterlib_LinuxLinker) -stdlib=libc++ -Wno-unused-command-line-argument`

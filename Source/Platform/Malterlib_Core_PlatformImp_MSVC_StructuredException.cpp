@@ -10,13 +10,17 @@ namespace NMib
 	{
 		void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData))
 		{
+#if !defined(DCompiler_clang_cl) // clang-cl-workaround
 			__try
 			{
-				*((int *)0) = 0;
+				*((int volatile *)0) = 0;
 			}
 			__except(_pCallback(GetExceptionInformation(), _pData))
 			{
 			}
+#else
+			*((int volatile *)0) = 0;
+#endif
 		}
 	}
 }
@@ -47,7 +51,7 @@ private:
 		try
 		{
 			volatile uint8 *pAddress = (uint8 *)_pAddress;
-			volatile uint8 ReadTo;
+			[[maybe_unused]] volatile uint8 ReadTo;
 			volatile uint8 *pEndAddress = pAddress + _Size;
 			for (; pAddress < pEndAddress; pAddress += 4096)
 			{
@@ -62,10 +66,9 @@ private:
 	aint f_Main() override
 	{
 		mint StartAddress = NMib::TCLimitsInt<mint>::mc_Min;
-		mint EndAddress = NMib::TCLimitsInt<mint>::mc_Max;
 		mint CurrentAddress = StartAddress;
 		mint MaxPerTime = 1*1024*1024;
-		mint TotalScannedMemory = 0;
+		[[maybe_unused]] mint TotalScannedMemory = 0;
 		bool bUseRunTime = m_CPUUsage != 0.0;
 		fp64 RunTime = 0.0;
 		if (bUseRunTime)

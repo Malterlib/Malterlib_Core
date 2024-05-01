@@ -248,19 +248,44 @@ Compile
 				{
 					Compile.Disabled true
 				}
+				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOS*.mm"
+				{
+					Compile
+					{
+						Disabled true
+						CxxLanguage "C++23"
+						{
+							!!Compiler "Clang"
+						}
+					}
+				}
 				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOS.cpp"
 				{
-					Compile.Disabled true
+					Compile
 					{
-						!PlatformFamily "macOS"
+						Disabled true
+						{
+							!PlatformFamily "macOS"
+						}
+						CxxLanguage "C++23"
+						{
+							!!Compiler "Clang"
+						}
 					}
 				}
 				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOS_ObjCPP.mm"
 				{
-					Compile.Disabled true
+					Compile
 					{
-						!!Documentation "Doxygen"
-						!PlatformFamily "macOS"
+						Disabled true
+						{
+							!!Documentation "Doxygen"
+							!PlatformFamily "macOS"
+						}
+						CxxLanguage "C++23"
+						{
+							!!Compiler "Clang"
+						}
 					}
 				}
 			}

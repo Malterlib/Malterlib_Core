@@ -172,6 +172,7 @@ GeneratorSetting
 		)
 		, Type: "unique"
 	}
+	// Switch to when Xcode clang supports it: "-fvisibility-global-new-delete=force-hidden"
 
 	Compile_ObjectiveCARC =+ {
 		Flags: Compile.ObjectiveCARC->SwitchWithError(
@@ -448,7 +449,7 @@ GeneratorSetting
 	}
 
 	Compile_Warnings_DeprecatedThisCapture =+ {
-		Flags: Compile.Warnings_DeprecatedPragma->SwitchWithError(
+		Flags: Compile.Warnings_DeprecatedThisCapture->SwitchWithError(
 			"Unsupported option: "
 			, false, "-Wno-deprecated-this-capture"
 			, true, "-Wdeprecated-this-capture"
@@ -888,6 +889,15 @@ GeneratorSetting
 			"Unsupported option: "
 			, false, ["-Wno-deprecated-anon-enum-enum-conversion", "-Wno-deprecated-enum-enum-conversion", "-Wno-deprecated-enum-float-conversion"]
 			, true, ["-Wdeprecated-anon-enum-enum-conversion", "-Wdeprecated-enum-enum-conversion", "-Wdeprecated-enum-float-conversion"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_InlineNewDelete =+ {
+		Flags: Compile.Warnings_InlineNewDelete->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-inline-new-delete"]
+			, true, ["-Winline-new-delete"]
 		)
 		, Type: "unique"
 	}

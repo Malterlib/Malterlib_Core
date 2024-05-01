@@ -61,6 +61,7 @@ GeneratorSetting
 				, Value: Target.LinkTimeCodeGeneration->SwitchWithError(
 					"Unsupported option: "
 					, true, "true"
+					, "Fast", "true"
 					, false, "false"
 					, "", "false"
 				)

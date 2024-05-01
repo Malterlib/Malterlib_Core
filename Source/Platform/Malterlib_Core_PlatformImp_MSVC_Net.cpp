@@ -264,6 +264,7 @@ aint CWindowsSocketContext::f_Main()
 		}
 		else if (Message.message == WM_TIMER)
 		{
+#ifdef DTCPDelayEmulation
 			// Kickstart buggy drivers
 			CWindowsSocket *pSocket;
 			NTime::CTime Now = NTime::CTime::fs_NowUTC();
@@ -273,12 +274,11 @@ aint CWindowsSocketContext::f_Main()
 				while (Iter)
 				{
 					pSocket = Iter;
-#ifdef DTCPDelayEmulation
 					pSocket->f_UpdateDelayedSend(Now);
-#endif
 					++Iter;
 				}
 			}
+#endif
 		}
 		else if (Message.message == WM_USER + 1)
 		{
@@ -798,7 +798,6 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 
 	ENetAddressType AddressType = Address.f_GetType();
 	SOCKET hSock = INVALID_SOCKET;
-	bool bConnected = false;
 
 	if
 		(

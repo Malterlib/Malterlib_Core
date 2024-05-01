@@ -121,7 +121,7 @@
 #	endif
 #endif
 
-#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#if DMalterlibUseLibCxx
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 	class weak_equality;
@@ -148,7 +148,7 @@ _LIBCPP_END_NAMESPACE_STD
 			}
 		}
 #	endif
-#elif defined(DCompiler_MSVC)
+#elif defined(DCompiler_MSVC) || defined(DCompiler_clang_cl)
 
 namespace std
 {
@@ -264,7 +264,9 @@ namespace std
 #	error "Implement this"
 #endif
 
-#ifdef DCompiler_MSVC
+#if defined(DCompiler_clang_cl)
+#	define DMibNoUniqueAddress [[msvc::no_unique_address]]
+#elif defined(DCompiler_MSVC)
 #	define DMibNoUniqueAddress [[msvc::no_unique_address]]
 #else
 #	define DMibNoUniqueAddress [[no_unique_address]]

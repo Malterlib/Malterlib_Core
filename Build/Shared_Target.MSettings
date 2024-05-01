@@ -27,6 +27,16 @@ Dependency
 	}
 	*/
 	LinkWithObjectFiles: bool = false
+
+	LinkWithObjectFiles true
+	{
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			Dependency.LinkWithObjectFiles undefined
+			Dependency.ObjectLibrary true
+		}
+	}
 }
 
 Target
@@ -457,7 +467,7 @@ Target
 
 Property
 {
-	MalterlibUseClangForWindows: bool = false // User(Toolset)=true: Enable clang compilation for Windows platform
+	MalterlibUseClangForWindows: bool = (ClangForWindows_Enabled == "Clang") // User(Toolset)=true: Enable clang compilation for Windows platform
 }
 
 Target
@@ -587,15 +597,6 @@ Target
 	MultiProcCL: bool = true
 
 	VisualStudioPlatform: string?
-	VisualStudioPlatform "Clang"
-	{
-		&
-		{
-			Target.VisualStudioPlatform undefined
-			LanguageFamily "Native"
-			MalterlibUseClangForWindows true
-		}
-	}
 
 	VisualStudioPlatform "x64"
 	{
@@ -637,14 +638,6 @@ Target
 			Architecture "x86"
 		}
 	}
-	VisualStudioPlatform "Clang"
-	{
-		&
-		{
-			Target.VisualStudioPlatform undefined
-			LanguageFamily "Native"
-		}
-	}
 
 	ClCompileSuffix: string?
 	ClCompileSuffix "_Clang"
@@ -672,36 +665,62 @@ Target
 		LanguageFamily "Native"
 	}
 
+	ExtraLinkerFlags: [one_of(string, [string])]?
+	ExtraLibFlags: [one_of(string, [string])]?
 	PlatformToolset: string?
 
 	// Toolset
-	PlatformToolset "clang"
+	PlatformToolset "ClangCL"
 	{
 		&
 		{
 			Target.PlatformToolset undefined
-			Target.VisualStudioPlatform "Clang"
+			MalterlibUseClangForWindows true
 		}
 	}
 
-	PlatformToolset "v90"
+	LLVMInstallDir: string?
+
+	LLVMInstallDir MalterlibLLVMHostBinariesDirectory
+	{
+		!!Target.PlatformToolset "ClangCL"
+	}
+
+	LLVMToolsVersion: string?
+	LLVMToolsVersion `@(MalterlibClangVersion).0`
+	{
+		!!Target.PlatformToolset "ClangCL"
+	}
+
+	UseDebugLibraries: bool?
+
+	UseDebugLibraries true
 	{
 		&
 		{
-			Target.PlatformToolset undefined
-			|
-			{
-				Target:Target.TargetFrameworkVersion "v2.0"
-				Target:Target.TargetFrameworkVersion "v3.0"
-				Target:Target.TargetFrameworkVersion "v3.5"
-			}
+			DebugCompiler true
+			PlatformFamily "Windows"
 		}
 	}
 
 	EnableASAN: bool?
 	EnableASAN true
 	{
-		!!MalterlibSupportSanitizerEnable_Address true
+		&
+		{
+			MalterlibSupportSanitizerEnable_Address true
+			!Target.PlatformToolset "ClangCL"
+		}
+	}
+
+	ExtraLinkerFlags =+ ["clang_rt.asan-x86_64.lib"]
+	{
+		&
+		{
+			TargetIsExecutable true
+			MalterlibSupportSanitizerEnable_Address true
+			Target.PlatformToolset "ClangCL"
+		}
 	}
 
 	PlatformToolset MalterlibVisualStudioToolset
@@ -725,31 +744,7 @@ Target
 		}
 	}
 
-	PlatformToolset "v142"
-	{
-		&
-		{
-			Target.PlatformToolset undefined
-			|
-			{
-				Generator "VisualStudio2019"
-			}
-		}
-	}
-
-	PlatformToolset "v141"
-	{
-		&
-		{
-			Target.PlatformToolset undefined
-			|
-			{
-				Generator "VisualStudio2017"
-			}
-		}
-	}
-
-	PlatformToolset "v110"
+	PlatformToolset Error("Could not find suitable PlatformToolset")
 	{
 		!!Target.PlatformToolset undefined
 	}
@@ -816,7 +811,6 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags: [one_of(string, [string])]?
 	ExtraLinkerFlags += [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", "DoxygenLD"], ["--doxygen-executable", "/Development/Malterlib/Tools/stable_build/bin/doxygen"]]
 	{
 		&
@@ -827,7 +821,6 @@ Target
 		}
 	}
 
-	ExtraLibFlags: [one_of(string, [string])]?
 	ExtraLibFlags += [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", "DoxygenLibTool"]]
 	{
 		&
@@ -1175,6 +1168,31 @@ Target
 
 	LTOObjectFile: string?
 	LTOObjectFile ""
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	TargetTripleArchitecture: string?
+	TargetTripleVendor: string?
+	TargetTripleOsVersion: string?
+	TargetTripleSuffix: string?
+
+	TargetTripleArchitecture MalterlibNativeClangArchitecture
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	TargetTripleVendor "unknown-linux"
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	TargetTripleOsVersion ""
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	TargetTripleSuffix "gnu"
 	{
 		!!PlatformFamily "Linux"
 	}
@@ -1929,7 +1947,6 @@ Target
 		}
 	}
 
-
 	CxxStandardLibrary: string = "libc++"
 
 	NativeOptimize: one_of("Off", "Fast", "On", "Full")?
@@ -2396,9 +2413,10 @@ Property
 		&
 		{
 			MalterlibEnableLinkTimeCodeGeneration undefined
-			|
+			&
 			{
 				PlatformFamily "Windows"
+				!MalterlibUseClangForWindows true
 			}
 			|
 			{
@@ -2461,7 +2479,6 @@ Target
 			LanguageFamily "Native"
 			!MalterlibDeploySymbols true
 			GeneratorFamily "VisualStudio"
-			!Target.PlatformToolset "v90"
 			!Target.CLRSupport true
 			!MalterlibMemoryManager_Debug_EnableStackTrace true // Currently crashes in DIA if enabled
 			!MalterlibEnableFastLink false
@@ -2757,11 +2774,21 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags += [`/CGTHREADS:@(MSVCLinkTimeCodeGenerationThreads->ToString())`, "/OPT:ICF=16"]
+	ExtraLinkerFlags += ["/OPT:ICF=16"]
 	{
 		&
 		{
 			DebugCompiler false
+			!Configuration "Release Debug"
+		}
+	}
+
+	ExtraLinkerFlags += [`/CGTHREADS:@(MSVCLinkTimeCodeGenerationThreads->ToString())`]
+	{
+		&
+		{
+			DebugCompiler false
+			!Target.PlatformToolset "ClangCL"
 			!Configuration "Release Debug"
 		}
 	}
@@ -3091,6 +3118,7 @@ Property
 		{
 			MalterlibSupportSanitizerEnable_Address true
 			PlatformFamily "Windows"
+			!Target.PlatformToolset "ClangCL"
 		}
 	}
 
@@ -3172,7 +3200,6 @@ Target
 			!MalterlibOverrideMSVCVersion undefined
 			HostPlatformFamily "Windows"
 			WindowsNativeToolChain true
-			!Target.PlatformToolset "v90"
 			MSVCToolChainArchitecture "HostX64/x86"
 		}
 	}
@@ -3184,7 +3211,6 @@ Target
 			!MalterlibOverrideMSVCVersion undefined
 			HostPlatformFamily "Windows"
 			WindowsNativeToolChain true
-			!Target.PlatformToolset "v90"
 		}
 	}
 
@@ -3218,7 +3244,6 @@ Compile
 			!MalterlibOverrideMSVCVersion undefined
 			CompileDialect "C"
 			HostPlatformFamily "Windows"
-			!Target.PlatformToolset "v90"
 		}
 	}
 }
@@ -3231,7 +3256,6 @@ Target
 		{
 			!MalterlibOverrideMSVCVersion undefined
 			HostPlatformFamily "Windows"
-			!Target.PlatformToolset "v90"
 		}
 	}
 }

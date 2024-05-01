@@ -1018,6 +1018,30 @@ GeneratorSetting
 		}
 	}
 
+	Target_TargetTripleArchitecture =+ {
+		XCConfigs: {
+			"CLANG_TARGET_TRIPLE_ARCHS": Target.TargetTripleArchitecture
+		}
+	}
+
+	Target_TargetTripleVendor =+ {
+		XCConfigs: {
+			"LLVM_TARGET_TRIPLE_VENDOR": Target.TargetTripleVendor
+		}
+	}
+
+	Target_TargetTripleOsVersion =+ {
+		XCConfigs: {
+			"LLVM_TARGET_TRIPLE_OS_VERSION": Target.TargetTripleOsVersion
+		}
+	}
+
+	Target_TargetTripleSuffix =+ {
+		XCConfigs: {
+			"LLVM_TARGET_TRIPLE_SUFFIX": Target.TargetTripleSuffix
+		}
+	}
+
 	Target_NoDeduplication =+ {
 		XCConfigs: {
 			"LD_DONT_RUN_DEDUPLICATION": Target.NoDeduplication

@@ -27,6 +27,11 @@ if [[ "$MalterlibPlatform" == "macOS" ]] ; then
 	#defaults write com.apple.dt.xcode DVTDefaultToolchainOverrideIdentifer org.malterlib.1.0
 fi
 
+GenerateAction="ReBuild"
+if [ "$MalterlibPreBuildNoReBuild" == "true" ] ; then
+	GenerateAction="Build"
+fi
+
 for Argument in "$@" ; do
 	if [[ $Argument = Generator\=* ]] ; then
 		Generator="${Argument/Generator\=/}"
@@ -38,7 +43,7 @@ for Argument in "$@" ; do
 		echo Generating $Argument
 		which MTool
 		set +e
-		"$BuildSystemRoot/mib" generate --build-system "$BuildSystem.$Extension" --generator "$Generator" --no-use-user-settings  --action ReBuild "$Argument"
+		"$BuildSystemRoot/mib" generate --build-system "$BuildSystem.$Extension" --generator "$Generator" --no-use-user-settings  --action $GenerateAction "$Argument"
 		GenError="$?"
 		set -e
 		if [[ $GenError -ne 0 ]] && [[ $GenError -ne 2 ]] ; then

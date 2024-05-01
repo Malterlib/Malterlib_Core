@@ -63,6 +63,39 @@ GeneratorSetting
 		]
 	}
 
+	Target_LLVMInstallDir =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "LLVMInstallDir"
+				, Value: Target.LLVMInstallDir->EscapeMSBuild()
+			}
+		]
+	}
+
+	Target_LLVMToolsVersion =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "LLVMToolsVersion"
+				, Value: Target.LLVMToolsVersion->EscapeMSBuild()
+			}
+		]
+	}
+
+	Target_UseDebugLibraries =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "UseDebugLibraries"
+				, Value: Target.UseDebugLibraries->f_BoolToString()
+			}
+		]
+	}	
+
 	Target_NasmPath =+ {
 		VSSettings: [
 			{
@@ -260,15 +293,11 @@ GeneratorSetting
 
 	Dependency_LinkWithObjectFiles =+ {
 		VSSettings: {
-			UseLibraryDependencyInputs: (Dependency.LinkWithObjectFiles || Dependency.ObjectLibrary)->f_BoolToString()
+			UseLibraryDependencyInputs: (Dependency.LinkWithObjectFiles)->f_BoolToString()
 		}
 	}
 
-	Dependency_ObjectLibrary =+ {
-		VSSettings: {
-			UseLibraryDependencyInputs: (Dependency.LinkWithObjectFiles || Dependency.ObjectLibrary)->f_BoolToString()
-		}
-	}
+	Dependency_ObjectLibrary {}
 
 	Dependency_TargetProperties {}
 	{

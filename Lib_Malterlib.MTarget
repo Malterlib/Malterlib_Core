@@ -326,6 +326,13 @@ Property
 					{
 						Compile.Disabled true
 					}
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/sme-*"
+					{
+						Compile.Disabled true
+						{
+							!!PlatformFamily "macOS"
+						}
+					}
 				}
 				%Group "ppc"
 				{
@@ -546,6 +553,14 @@ Property
 							!MalterlibDefaultToolset true
 						}
 					}
+					%File "../../External/llvm-project/libcxx/src/tz.cpp"
+					{
+						Compile.Disabled true
+					}
+					%File "../../External/llvm-project/libcxx/src/tzdb_list.cpp"
+					{
+						Compile.Disabled true
+					}					
 					%Group "pstl"
 					{
 						%File "../../External/llvm-project/libcxx/src/pstl/libdispatch.cpp"
@@ -735,6 +750,14 @@ Property
 
 						SearchPath += `@(VisualStudioCRTPath->MakeAbsolute())/vcruntime`
 						PreprocessorDefines =+ "_VCRT_BUILD"
+						PreprocessorDefines =+ ["__load_acquire32(x)=__atomic_load_n(x,__ATOMIC_SEQ_CST)", "__load_acquire64(x)=__atomic_load_n(x,__ATOMIC_SEQ_CST)"]
+						{
+							&
+							{
+								Compiler "Clang"
+								Architecture "arm64"
+							}
+						}
 
 						PrefixHeader "Source/Platform/Malterlib_Core_PlatformImp_MSVC_CRTPatches.h"->MakeAbsolute()
 						{

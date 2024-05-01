@@ -52,9 +52,9 @@
 #	define DMibPMain int main(){return NMib::fg_GetSys()->f_RunApplication();}
 #elif defined(DPlatformFamily_Windows)
 #	ifdef DPConsole
-#		define DMibPMain int __cdecl wmain(int argc, wchar_t *argv[], wchar_t *envp[]){return NMib::fg_GetSys()->f_RunApplication();} int __stdcall wWinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, wchar_t *lpCmdLine,int nShowCmd){;} int __cdecl main(int argc, wchar_t *argv[]){} int __stdcall WinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, char *lpCmdLine,int nShowCmd){;}
+#		define DMibPMain int __cdecl wmain(int argc, wchar_t *argv[], wchar_t *envp[]){return NMib::fg_GetSys()->f_RunApplication();} int __stdcall wWinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, wchar_t *lpCmdLine,int nShowCmd){;} int __cdecl main(int argc, char *argv[]){} int __stdcall WinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, char *lpCmdLine,int nShowCmd){;}
 #	else
-#		define DMibPMain int __stdcall wWinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, wchar_t *lpCmdLine,int nShowCmd){return NMib::fg_GetSys()->f_RunApplication();} int __cdecl wmain(int argc, wchar_t *argv[], wchar_t *envp[]){} int __cdecl main(int argc, wchar_t *argv[]){} int __stdcall WinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, char *lpCmdLine,int nShowCmd){;}
+#		define DMibPMain int __stdcall wWinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, wchar_t *lpCmdLine,int nShowCmd){return NMib::fg_GetSys()->f_RunApplication();} int __cdecl wmain(int argc, wchar_t *argv[], wchar_t *envp[]){} int __cdecl main(int argc, char *argv[]){} int __stdcall WinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, char *lpCmdLine,int nShowCmd){;}
 #	endif
 #else
 #	error "Implement this"

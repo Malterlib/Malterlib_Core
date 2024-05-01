@@ -133,8 +133,8 @@ namespace NMib
 			{
 				PIMAGE_THUNK_DATA pFirstThunkIter;
 				PIMAGE_THUNK_DATA pOriginalFirstThunkIter;
-				PSTR psDLLName;
-				PIMAGE_IMPORT_BY_NAME pImportByName;
+				[[maybe_unused]] PSTR psDLLName;
+				[[maybe_unused]] PIMAGE_IMPORT_BY_NAME pImportByName;
 
 				psDLLName = (PSTR) RVA2PTR(pDOSHeader, pImportDescriptor[uiIter].Name);
 				DMibDTraceSafe("{}\r\n", psDLLName);
@@ -162,8 +162,8 @@ namespace NMib
 			{
 				PIMAGE_THUNK_DATA pFirstThunkIter;
 				PIMAGE_THUNK_DATA pOriginalFirstThunkIter;
-				PSTR psDLLName;
-				PIMAGE_IMPORT_BY_NAME pImportByName;
+				[[maybe_unused]] PSTR psDLLName;
+				[[maybe_unused]] PIMAGE_IMPORT_BY_NAME pImportByName;
 
 				psDLLName = (PSTR) RVA2PTR(pDOSHeader, pDelayImportDescriptor[uiIter].szName);
 				DMibDTraceSafe("{}\r\n", psDLLName);
@@ -669,7 +669,6 @@ namespace NMib
 			HMODULE hRemoteNtDll = 0;
 			{
 				mint StartAddress = TCLimitsInt<mint>::mc_Min;
-				mint EndAddress = TCLimitsInt<mint>::mc_Max;
 				mint CurrentAddress = StartAddress;
 				while (true)
 				{
@@ -807,7 +806,6 @@ namespace NMib
 			InjectData.m_pModuleHandle = nullptr;
 
 			uint8 *pRemoteFunction;
-			mint RemoteFunctionSize;
 			{
 
 				mint Size = 256; // Guess maximum of dummy function
@@ -822,7 +820,6 @@ namespace NMib
 				}
 
 				pRemoteFunction = lpRemoteMemoryOut;
-				RemoteFunctionSize = dwBytes;
 				lpRemoteMemoryOut += dwBytes;
 				lpRemoteMemoryOut = fg_AlignUp(lpRemoteMemoryOut, 16);
 				// Flush cache needed as we are writing code here

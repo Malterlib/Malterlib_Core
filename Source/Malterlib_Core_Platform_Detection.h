@@ -7,6 +7,9 @@
 #	if defined(__clang__)
 #		define DCompiler clang
 #		define DCompiler_clang
+#		if defined (_MSC_VER)
+#			define DCompiler_clang_cl
+#		endif
 #	elif defined (_MSC_VER)
 #		define DCompiler MSVC
 #		define DCompiler_MSVC
@@ -75,12 +78,12 @@
 
 // Default debugger if not defined
 #ifndef DDebugger
-#	if defined(DCompiler_clang)
-#		define DDebugger lldb
-#		define DDebugger_lldb
-#	elif defined(DCompiler_MSVC)
+#	if defined(DCompiler_MSVC) || defined(DCompiler_clang_cl)
 #		define DDebugger VisualStudio
 #		define DDebugger_VisualStudio
+#	elif defined(DCompiler_clang)
+#		define DDebugger lldb
+#		define DDebugger_lldb
 #	endif
 #endif
 

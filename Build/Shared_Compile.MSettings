@@ -1027,11 +1027,7 @@ Compile
 
 Compile
 {
-	|
-	{
-		GeneratorFamily "Xcode"
-		Compiler "Clang"
-	}
+	!!Compiler "Clang"
 
 	CLanguage: string?
 }
@@ -1051,6 +1047,7 @@ Compile
 	{
 		&
 		{
+			Compiler "Clang"
 			PlatformFamily "Linux"
 			Compile.CLanguage undefined
 		}
@@ -1059,7 +1056,7 @@ Compile
 	{
 		&
 		{
-			GeneratorFamily "Xcode"
+			Compiler "Clang"
 			!PlatformFamily "Linux"
 			Compile.CLanguage undefined
 		}
@@ -1148,9 +1145,27 @@ Compile
 	Warnings_DeprecatedEnumConversion: bool?
 	Warnings_NoPessimizingMove: bool?
 	Warnings_ASANWithoutDebugInfo: bool?
+	Warnings_InlineNewDelete: bool?
 
 	AllCPUSubTypes: bool?
 	StackGuard: bool?
+
+	Warnings_CharSubscripts false
+	{
+		&
+		{
+			Compiler "Clang"
+			CompileDialect "C"
+		}
+	}
+	Warnings_InlineNewDelete false
+	{
+		&
+		{
+			Compiler "Clang"
+			CompileDialect "C"
+		}
+	}
 }
 
 // Assembler settings
@@ -1166,7 +1181,8 @@ Compile
 	{
 		&
 		{
-			GeneratorFamily "Xcode"
+			Compiler "Clang"
+			!PlatformFamily "Windows"
 			!Target.PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
 		}
 	}
@@ -1250,7 +1266,7 @@ Compile
 		&
 		{
 			Compile.Warnings_DeprecatedDeclarations undefined
-			GeneratorFamily "Xcode"
+			Compiler "Clang"
 		}
 	}
 
@@ -1277,25 +1293,11 @@ Compile
 	Warnings_UnusedExceptionParameter: bool?
 	Warnings_UnusedExceptionParameter true
 	{
-		!!GeneratorFamily "Xcode"
+		!!Compiler "Clang"
 	}
 
 	WarningsAsErrors: bool?
 	WarningsAsErrors true
-
-	ClangUnstableWarnings: string?
-	ClangUnstableWarnings "On"
-	{
-		&
-		{
-			!Target.PlatformToolsetCompiler "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc"
-			|
-			{
-				!PlatformFamily "Windows"
-				MalterlibUseClangForWindows true
-			}
-		}
-	}
 
 	EmscriptenWarnings: string?
 	EmscriptenWarnings "On"
@@ -1312,11 +1314,7 @@ Compile
 	LinkerInternalLinkageOpt: string?
 	LinkerInternalLinkageOpt "inline"
 	{
-		&
-		{
-			PlatformFamily "Windows"
-			!Target.PlatformToolset "v90"
-		}
+		!!PlatformFamily "Windows"
 	}
 
 	ToolClass: string?
@@ -1531,6 +1529,14 @@ Compile
 			MalterlibUseStaticLibCxx true
 		}
 	}
+	SearchPath += "../LLVMGenerated"->MakeAbsolute()
+	{
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseStaticLibCxx true
+		}
+	}
 	SearchPath += `@(Builtin.BasePathAbsolute)/External/llvm-project/libcxxabi/include`
 	{
 		&
@@ -1617,6 +1623,7 @@ Compile
 		{
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
+			!Target.PlatformToolset "ClangCL"
 			!Compile.PrecompilePrefixHeader false
 		}
 	}
@@ -1627,6 +1634,7 @@ Compile
 		{
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
+			!Target.PlatformToolset "ClangCL"
 			!MalterlibCustomConcurrentCompile undefined
 		}
 	}
@@ -1637,13 +1645,14 @@ Compile
 		{
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
+			!Target.PlatformToolset "ClangCL"
 		}
 	}
 
 	ConstexprSteps: int?
 	ConstexprSteps 4000000
 	{
-		!!GeneratorFamily "Xcode"
+		!!Compiler "Clang"
 	}
 
 	CoroutineAlignedAllocation true
@@ -1676,7 +1685,7 @@ Compile
 				Compile.Type "C++"
 			}
 			!Target.VisualStudioPlatform "Clang"
-			!Target.PlatformToolset "v90"
+			!Target.PlatformToolset "ClangCL"
 		}
 	}
 
@@ -1690,7 +1699,34 @@ Compile
 				Compile.Type "C++Managed"
 			}
 			!Target.VisualStudioPlatform "Clang"
-			!Target.PlatformToolset "v90"
+			!Target.PlatformToolset "ClangCL"
+		}
+	}
+
+	ExtraCompilerFlags += ["-Wno-invalid-offsetof", "-Wno-reorder-ctor", "-Wno-missing-declarations", "-Wno-unused-value", "-Wno-unused-private-field", "-Wno-microsoft-cast", "-Wno-duplicate-decl-specifier"]
+	{
+		!!Target.PlatformToolset "ClangCL"
+	}
+
+	ExtraCompilerFlags += ["-Xclang", "-O0"]
+	{
+		&
+		{
+			Target.PlatformToolset "ClangCL"
+			Compile.Optimize "Off"
+		}
+	}
+
+	CxxLanguage: string = "C++23"
+	{
+		&
+		{
+			|
+			{
+				Compile.Type "C++"
+				Compile.Type "ObjC++"
+			}
+			Target.PlatformToolset "ClangCL"
 		}
 	}
 
@@ -1761,14 +1797,14 @@ Compile
 	AlignedAllocationProvided: bool?
 	AlignedAllocationProvided true
 	{
-		!!GeneratorFamily "Xcode"
+		!!Compiler "Clang"
 	}
 
 	Warnings_UnusedCommandLineArgument false
 	{
 		&
 		{
-			GeneratorFamily "Xcode"
+			Compiler "Clang"
 			!Target.PlatformToolset "com.apple.compilers.llvm.clang.malterlib_generator"
 		}
 	}
@@ -1817,8 +1853,7 @@ Compile
 	ProvidedNewAligment: string?
 	ProvidedNewAligment "1"
 	{
-		!!PlatformFamily "macOS"
-		!!PlatformFamily "Linux"
+		!!Compiler "Clang"
 	}
 
 	PreprocessorDefines += "_LIBCPP_HIDE_FROM_ABI_PER_TU_BY_DEFAULT"
@@ -1834,13 +1869,34 @@ Compile
 		}
 	}
 
-	PreprocessorDefines += ["_LIBCPP_ABI_VERSION=2", "_LIBCPP_ABI_NO_NAMESPACE", "_LIBCPP_HAS_NO_VENDOR_AVAILABILITY_ANNOTATIONS", "_LIBCPP_ENABLE_ASSERTIONS_DEFAULT=0"]
+	PreprocessorDefines += [
+		"_LIBCPP_ABI_VERSION=2"
+		, "_LIBCPP_ABI_NO_NAMESPACE"
+		, "_LIBCPP_HAS_NO_VENDOR_AVAILABILITY_ANNOTATIONS"
+		, "_LIBCPP_TYPEINFO_COMPARISON_IMPLEMENTATION=1"
+		, "_LIBCPP_HAS_NO_STD_MODULES"
+		, "_LIBCPP_HAS_NO_TIME_ZONE_DATABASE"
+		, "_LIBCPP_HARDENING_MODE_DEFAULT=_LIBCPP_HARDENING_MODE_NONE"
+	]
 	{
 		&
 		{
 			MalterlibUseStaticLibCxx true
 		}
 	}
+
+	PreprocessorDefines += [
+		"_LIBCPP_INSTRUMENTED_WITH_ASAN"
+	]
+	{
+		&
+		{
+			MalterlibUseStaticLibCxx true
+			MalterlibSupportSanitizerEnable_Address true
+		}
+	}
+
+
 
 	PreprocessorDefines += ["_LIBCPP_PSTL_CPU_BACKEND_LIBDISPATCH=1"]
 	{
@@ -2101,6 +2157,15 @@ Compile
 		}
 	}
 
+	PreprocessorDefines += "DMalterlibUseLibCxx=1"
+	{
+		&
+		{
+			!MalterlibDisableMalterlib true
+			MalterlibUseLibCxx true
+		}
+	}
+
 	PreprocessorDefines += [
 		"_LIBCPP_DISABLE_AVAILABILITY"
 		, "_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS"
@@ -2341,7 +2406,7 @@ Compile
 	{
 		&
 		{
-			GeneratorFamily "Xcode"
+			Compiler "Clang"
 			MalterlibClangTimeTrace true
 		}
 	}
@@ -2351,7 +2416,6 @@ Compile
 		&
 		{
 			PlatformFamily "Windows"
-			!Target.PlatformToolset "v90"
 			|
 			{
 				Compile.Symbols "Full"
@@ -2365,7 +2429,6 @@ Compile
 		&
 		{
 			PlatformFamily "Windows"
-			!Target.PlatformToolset "v90"
 		}
 	}
 
@@ -2380,7 +2443,6 @@ Compile
 		{
 			MalterlibMSVCEnableUTF8 true
 			PlatformFamily "Windows"
-			!Target.PlatformToolset "v90"
 		}
 	}
 
@@ -2399,16 +2461,6 @@ Compile
 				Configuration "Fast Compile"
 			}
 			PlatformFamily "Emscripten"
-		}
-	}
-	Symbols ""
-	{
-		&
-		{
-			PlatformType "Windows"
-			LanguageFamily "Native"
-			Target:Target.PlatformToolset "v90"
-			Configuration "Fast Compile"
 		}
 	}
 
@@ -2474,6 +2526,11 @@ Compile
 			!Target.VisualStudioPlatform "Clang"
 		}
 	}
+	
+	SupportJustMyCode: bool = false
+	{
+		!!PlatformFamily "Windows"
+	}
 
 	ForceConformanceInForLoopScope: bool?
 	ForceConformanceInForLoopScope true
@@ -2482,6 +2539,7 @@ Compile
 		{
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
+			!Target.PlatformToolset "ClangCL"
 		}
 	}
 
@@ -2540,6 +2598,7 @@ Compile
 		{
 			PlatformType "Windows"
 			!Target.VisualStudioPlatform "Clang"
+			!Target.PlatformToolset "ClangCL"
 		}
 	}
 	StringPooling true
@@ -2547,9 +2606,9 @@ Compile
 		&
 		{
 			PlatformType "Windows"
-			!Target.VisualStudioPlatform "Clang"
 			|
 			{
+				Target.PlatformToolset "ClangCL"
 				Compile.Optimize "On"
 				Compile.Optimize "Full"
 			}
@@ -2601,7 +2660,7 @@ Compile
 		&
 		{
 			MalterlibSupportSanitizerEnable_Address true
-			!PlatformFamily "Windows"
+			Compiler "Clang"
 		}
 	}
 
@@ -2611,6 +2670,7 @@ Compile
 		{
 			MalterlibSupportSanitizerEnable_Address true
 			PlatformFamily "Windows"
+			!Target.PlatformToolset "ClangCL"
 		}
 	}
 	PreprocessorDefines += ["_DISABLE_VECTOR_ANNOTATION=1", "_DISABLE_STRING_ANNOTATION=1"]
@@ -2670,11 +2730,15 @@ Compile
 		}
 	}
 
-	ExtendedInstructionSet "SSE3"
+	ExtendedInstructionSet "X86_64_v3"
 	{
 		&
 		{
-			!PlatformFamily "Windows"
+			|
+			{
+				!PlatformFamily "Windows"
+				Target.PlatformToolset "ClangCL"
+			}
 			Architecture "x64"
 		}
 	}
@@ -2683,10 +2747,10 @@ Compile
 	{
 		&
 		{
-			RealConfiguration "Optimized"
+			PlatformFamily "Windows"
+			!Target.PlatformToolset "ClangCL"
 			|
 			{
-				Architecture "x86"
 				Architecture "x64"
 			}
 		}

@@ -145,10 +145,10 @@ Property
 	{
 	}
 
-	VisualstudioVSToolsDir: string = `@(Builtin.VisualStudioRoot->WindowsPath())\\Common7\\Tools`
+	VisualstudioVCDir: string = `@(Builtin.VisualStudioRoot->WindowsPath())\\VC`
 
 	SharedBuildSettingsScriptContents =+	`IF "%RunVsDevCmd%"=="false" GOTO NoVsCmd\r\n`\
-											`IF EXIST "@(VisualstudioVSToolsDir)\\VsDevCmd.bat" call "@(VisualstudioVSToolsDir)\\VsDevCmd.bat"\r\n`\
+											`IF EXIST "@(VisualstudioVCDir)\\Auxiliary\\Build\\vcvarsall.bat" call "@(VisualstudioVCDir)\\Auxiliary\\Build\\vcvarsall.bat" @(HostArchitecture)\r\n`\
 											`:NoVsCmd\r\n`\
 											`cd %OriginalDirectory%\r\n`\
 											`\r\n`
@@ -376,8 +376,8 @@ Property
 
 		Contents	`@(ScriptPreamble)`\
 					`@@echo off\r\n`\
-					`IF EXIST "@(VisualstudioVSToolsDir)\\VsDevCmd.bat" call "@(VisualstudioVSToolsDir)\\VsDevCmd.bat"\r\n`\
-					`echo %PATH%\r\n`
+					`IF EXIST "@(VisualstudioVCDir)\\Auxiliary\\Build\\vcvarsall.bat" call "@(VisualstudioVCDir)\\Auxiliary\\Build\\vcvarsall.bat" @(HostArchitecture) > nul\r\n`\
+					`env\r\n`
 	}
 }
 
@@ -399,19 +399,41 @@ Property
 					`if [[ "$MalterlibImportedVCPath" == "true" ]]; then\n`\
 					`	return 0\n`\
 					`fi\n`\
+					`function ArrayContainsValue()\n`\
+					`{\n`\
+					`	local SearchFor="$1"\n`\
+					`	shift\n`\
+					`	local Array=("$@@")\n`\
+					`\n`\
+					`	for ArrayEntry in "${Array[@@]}"; do\n`\
+					`		if [[ "$ArrayEntry" == "$SearchFor" ]]; then\n`\
+					`			return 0\n`\
+					`		fi\n`\
+					`	done\n`\
+					`	return 1\n`\
+					`}\n`\
+					`\n`\
 					`function UpdatePath()\n`\
 					`{\n`\
-					`	local OLDIFS=$IFS\n`\
-					`	local IFS=$'\\n'\n`\
-					`	local OldPath=$(cmd.exe //C echo %PATH%)\n`\
-					`	local NewPath=$(cmd.exe //C SharedBuildSettingsVCVars.bat | grep -v '^\\*\\*')\n`\
-					`	local DiffPath="${NewPath/"$OldPath"/REPLATE_OLD_HERE}"\n`\
-					`	local IFS=$OLDIFS\n`\
+					`	OldVars=()\n`\
+					`	while read -r line; do\n`\
+					`		key="${line%%=*}"\n`\
+					`		OldVars+=("$key")\n`\
+					`	done < <(env)\n`\
 					`\n`\
-					`	local NewPath=${DiffPath//\\\\/\\/}\n`\
-					`	local NewPath=$(echo $NewPath | sed -e 's/\\(.\\):/\\/\\L\\1/g' -e 's/;/:/g')\n`\
-					`	local NewPath="${NewPath/REPLATE_OLD_HERE/"$PATH"}"\n`\
-					`	export "PATH=$NewPath"\n`\
+					`	InvalidKeyRegex=".*[!\\\\(\\\\)]"\n`\
+					`	while read -r Line; do\n`\
+					`		Key="${Line%%=*}"\n`\
+					`		Value="${Line#*=}"\n`\
+					`		if ArrayContainsValue "$Key" "${OldVars[@@]}" && [[ "$Key" != "PATH" ]]; then\n`\
+					`			continue\n`\
+					`		fi\n`\
+					`		if [[ "$Key" =~ $InvalidKeyRegex ]]; then\n`\
+					`			continue\n`\
+					`		fi\n`\
+					`		export "$Key"="$Value"\n`\
+					`	done < <(cmd.exe //C SharedBuildSettingsVCVars.bat)\n`\
+					`\n`\
 					`	export "MalterlibImportedVCPath=true"\n`\
 					`}\n`\
 					`\n`\

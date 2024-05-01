@@ -110,6 +110,11 @@ Property
 	{
 		!!EnablePlatform_Linux true
 	}
+	EnablePlatformFamily_Windows: bool = false
+	EnablePlatformFamily_Windows true
+	{
+		!!EnablePlatform_Windows true
+	}
 }
 
 *Platform
@@ -316,7 +321,7 @@ Property
 Property
 {
 	Tests: string?
-	MalterlibEnablePrefTestConfig: bool = true // User(Tests)=false: Enable sanitizers as separate configurations
+	MalterlibEnablePerfTestConfig: bool = true // User(Tests)=false: Enable sanitizers as separate configurations
 }
 
 *Tests
@@ -340,7 +345,7 @@ Property
 	{
 		&
 		{
-			MalterlibEnablePrefTestConfig true
+			MalterlibEnablePerfTestConfig true
 			|
 			{
 				Configuration "Profile"
@@ -457,6 +462,29 @@ Property
 
 Property
 {
+	ClangForWindows_Enabled: string = ""
+	MalterlibUseClangForWindowsConfigs: bool = false // User(Debug)=true: Enable clang-cl as separate configuration
+}
+
+*ClangForWindows_Enabled
+{
+	\ "Empty"
+	Clang "Enable clang-cl"
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			MalterlibUseClangForWindowsConfigs true
+			!Tests "Perf Tests"
+			Sanitizer_Thread undefined
+			Sanitizer_Address undefined
+			Sanitizer_UndefinedBehavior undefined
+		}
+	}
+}
+
+Property
+{
 	FullConfiguration =+ `@(Configuration->Replace(" ",""))@((Tests || "")->Replace(" ",""))@((Documentation || "")->Replace(" ",""))`
 
 	FullConfiguration =+ Sanitizer_UndefinedBehavior
@@ -472,5 +500,10 @@ Property
 	FullConfiguration =+ Sanitizer_Thread
 	{
 		!Sanitizer_Thread undefined
+	}
+
+	FullConfiguration =+ ClangForWindows_Enabled
+	{
+		!ClangForWindows_Enabled undefined
 	}
 }

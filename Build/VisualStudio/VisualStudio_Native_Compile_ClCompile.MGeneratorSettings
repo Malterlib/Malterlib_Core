@@ -116,6 +116,12 @@ GeneratorSetting
 		}
 	}
 
+	Compile_SupportJustMyCode =+ {
+		VSSettings: {
+			SupportJustMyCode: Compile.SupportJustMyCode->f_BoolToString()
+		}
+	}
+
 	Compile_DynamicTypeInfo =+ {
 		VSSettings: {
 			RuntimeTypeInfo: Compile.DynamicTypeInfo->f_BoolToString()
@@ -197,6 +203,28 @@ GeneratorSetting
 			)
 		}
 	}
+	{
+		!Compiler "Clang"
+	}
+
+	Compile_ExtendedInstructionSet =+ {
+		VSSettings: Compile.ExtendedInstructionSet->SwitchWithError(
+			"Unsupported option: "
+			, "Off", { AdditionalOptions: `-mno-sse @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "NoExtensions" }
+			, "SSE1", { AdditionalOptions: `-msse @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "StreamingSIMDExtensions" }
+			, "SSE2", { AdditionalOptions: `-msse -msse2 @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "StreamingSIMDExtensions2" }
+			, "SSE3", { AdditionalOptions: `-msse -msse2 -msse3 @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "StreamingSIMDExtensions2" }
+			, "SSSE3", { AdditionalOptions: `-msse -msse2 -msse3 -mssse3 @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "StreamingSIMDExtensions2" }
+			, "SSE41", { AdditionalOptions: `-msse -msse2 -msse3 -mssse3 -msse4.1 @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "StreamingSIMDExtensions2" }
+			, "SSE42", { AdditionalOptions: `-msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "StreamingSIMDExtensions2" }
+			, "AVX", { AdditionalOptions: `-msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "AdvancedVectorExtensions" }
+			, "AVX2", { AdditionalOptions: `-msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx -mavx2 @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "AdvancedVectorExtensions2" }
+			, "X86_64_v3", { AdditionalOptions: `-march=x86-64-v3 @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
 
 	Compile_RuntimeLibrary =+ {
 		VSSettings: {
@@ -261,6 +289,21 @@ GeneratorSetting
 			WholeProgramOptimization: Compile.LinkTimeCodeGeneration->f_BoolToString()
 		}
 	}
+	{
+		!Compiler "Clang"
+	}
+
+	Compile_LinkTimeCodeGeneration =+ {
+		VSSettings: Compile.LinkTimeCodeGeneration->SwitchWithError(
+			"Unsupported option: "
+			, false, { }
+			, true, { AdditionalOptions: `-flto @(Builtin.Inherit)` }
+			, "Fast", { AdditionalOptions: `-flto=thin @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
 
 	Compile_Optimize =+ {
 		VSSettings: Compile.Optimize->SwitchWithError("Unsupported option: "
@@ -320,11 +363,18 @@ GeneratorSetting
 		}
 	}
 
-	f_Helper_SetVSWarning function(string _Warning, bool _Enable) type(CCompileSettings)
+	f_Helper_SetVSWarning function(string _Warning, string _ClangWarning, bool _Enable) type(CCompileSettings)
 
 	f_Helper_SetVSWarning =+ {
 		VSSettings: {
 			AdditionalOptions: `/@(_Enable ? "w1" : "wd")@(_Warning) @(Builtin.Inherit)`
+		}
+	}
+	{
+		&
+		{
+			Compiler "MSVC"
+			!_Warning ""
 		}
 	}
 
@@ -332,13 +382,178 @@ GeneratorSetting
 		Flags: `/@(_Enable ? "w1" : "wd")@(_Warning)`
 	}
 	{
-		!!Compiler "MSVC"
+		&
+		{
+			Compiler "MSVC"
+			!_Warning ""
+		}
 	}
 
-	Compile_Warnings_DeprecatedDeclarations =+ GeneratorSetting.f_Helper_SetVSWarning("4996", Compile.Warnings_DeprecatedDeclarations)
-	Compile_Warnings_ConversionToSmallerInt =+ GeneratorSetting.f_Helper_SetVSWarning("4244", Compile.Warnings_ConversionToSmallerInt)
-	Compile_Warnings_ConversionToSmallerType =+ GeneratorSetting.f_Helper_SetVSWarning("4267", Compile.Warnings_ConversionToSmallerType)
-	Compile_Warnings_IncompatibleTypes =+ GeneratorSetting.f_Helper_SetVSWarning("4133", Compile.Warnings_IncompatibleTypes)
-	Compile_Warnings_UnknownPragma =+ GeneratorSetting.f_Helper_SetVSWarning("4068", Compile.Warnings_UnknownPragma)
-	Compile_Warnings_ASANWithoutDebugInfo =+ GeneratorSetting.f_Helper_SetVSWarning("5072", Compile.Warnings_ASANWithoutDebugInfo)
+	f_Helper_SetVSWarning =+ {
+		VSSettings: {
+			AdditionalOptions: `@(_Enable ? "-W" : "-Wno-")@(_ClangWarning) @(Builtin.Inherit)`
+		}
+	}
+	{
+		&
+		{
+			Compiler "Clang"
+			!_ClangWarning ""
+		}
+	}
+
+	f_Helper_SetVSWarning =+ {
+		Flags: `@(_Enable ? "-W" : "-Wno-")@(_ClangWarning)`
+	}
+	{
+		&
+		{
+			Compiler "Clang"
+			!_ClangWarning ""
+		}
+	}
+
+	Compile_Warnings_DeprecatedDeclarations =+ GeneratorSetting.f_Helper_SetVSWarning("4996", "deprecated-declarations", Compile.Warnings_DeprecatedDeclarations)
+	Compile_Warnings_ConversionToSmallerInt =+ GeneratorSetting.f_Helper_SetVSWarning("4244", "", Compile.Warnings_ConversionToSmallerInt)
+	Compile_Warnings_ConversionToSmallerType =+ GeneratorSetting.f_Helper_SetVSWarning("4267", "", Compile.Warnings_ConversionToSmallerType)
+	Compile_Warnings_IncompatibleTypes =+ GeneratorSetting.f_Helper_SetVSWarning("4133", "", Compile.Warnings_IncompatibleTypes)
+	Compile_Warnings_UnknownPragma =+ GeneratorSetting.f_Helper_SetVSWarning("4068", "", Compile.Warnings_UnknownPragma)
+	Compile_Warnings_ASANWithoutDebugInfo =+ GeneratorSetting.f_Helper_SetVSWarning("5072", "", Compile.Warnings_ASANWithoutDebugInfo)
+
+	Compile_Warnings_DeprecatedNonPrototype =+ GeneratorSetting.f_Helper_SetVSWarning("", "deprecated-non-prototype", Compile.Warnings_DeprecatedNonPrototype)
+
+	Compile_Warnings_UnusedButSetVariable =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-but-set-variable", Compile.Warnings_UnusedButSetVariable)
+	Compile_Warnings_UnusedVariable =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-variable", Compile.Warnings_UnusedVariable)
+	Compile_Warnings_UnusedFunction =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-function", Compile.Warnings_UnusedFunction)
+	Compile_Warnings_UnusedExceptionParameter =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-exception-parameter", Compile.Warnings_UnusedExceptionParameter)
+
+	Compile_Warnings_AlignMismatch =+ GeneratorSetting.f_Helper_SetVSWarning("", "align-mismatch", Compile.Warnings_AlignMismatch)
+
+	Compile_Warnings_CharSubscripts =+ GeneratorSetting.f_Helper_SetVSWarning("", "char-subscripts", Compile.Warnings_CharSubscripts)
+
+	Compile_Warnings_OverloadedVirtual =+ GeneratorSetting.f_Helper_SetVSWarning("", "overloaded-virtual", Compile.Warnings_OverloadedVirtual)
+	Compile_Warnings_Parentheses =+ GeneratorSetting.f_Helper_SetVSWarning("", "parentheses", Compile.Warnings_Parentheses)
+	Compile_Warnings_UnusedLabel =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-label", Compile.Warnings_UnusedLabel)
+	Compile_Warnings_Cxx11Narrowing =+ GeneratorSetting.f_Helper_SetVSWarning("", "c++11-narrowing", Compile.Warnings_Cxx11Narrowing)
+	Compile_Warnings_SingleBitBitfieldConstantConversion =+ GeneratorSetting.f_Helper_SetVSWarning("", "single-bit-bitfield-constant-conversion", Compile.Warnings_SingleBitBitfieldConstantConversion)
+	Compile_Warnings_UnusedCommandLineArgument =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-command-line-argument", Compile.Warnings_UnusedCommandLineArgument)
+	Compile_Warnings_VarArgs =+ GeneratorSetting.f_Helper_SetVSWarning("", "varargs", Compile.Warnings_VarArgs)
+	Compile_Warnings_TautolagicalPointerCompare =+ GeneratorSetting.f_Helper_SetVSWarning("", "tautological-pointer-compare", Compile.Warnings_TautolagicalPointerCompare)
+	Compile_Warnings_UnusedValue =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-value", Compile.Warnings_UnusedValue)
+	Compile_Warnings_DeprecatedEnumConversion =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-value", Compile.Warnings_DeprecatedEnumConversion)
+	Compile_Warnings_BitwiseInsteadOfLogical =+ GeneratorSetting.f_Helper_SetVSWarning("", "bitwise-instead-of-logical", Compile.Warnings_BitwiseInsteadOfLogical)
+	Compile_Warnings_DeprecatedThisCapture =+ GeneratorSetting.f_Helper_SetVSWarning("", "deprecated-this-capture", Compile.Warnings_DeprecatedThisCapture)
+	Compile_Warnings_DeprecatedPragma =+ GeneratorSetting.f_Helper_SetVSWarning("", "deprecated-pragma", Compile.Warnings_DeprecatedPragma)
+	Compile_Warnings_InlineNewDelete =+ GeneratorSetting.f_Helper_SetVSWarning("", "inline-new-delete", Compile.Warnings_InlineNewDelete)
+
+	Compile_Warnings_DeprecatedEnumConversion =+ {
+		VSSettings: Compile.Warnings_DeprecatedEnumConversion->SwitchWithError(
+			"Unsupported option: "
+			, false, { AdditionalOptions: `-Wno-deprecated-anon-enum-enum-conversion -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `-Wdeprecated-anon-enum-enum-conversion -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_CoroutineAlignedAllocation =+ {
+		VSSettings: Compile.CoroutineAlignedAllocation->SwitchWithError(
+			"Unsupported option: "
+			, false, { AdditionalOptions: `-Xclang -fno-coro-aligned-allocation @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `-Xclang -fcoro-aligned-allocation @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_Sanitize_Address =+ {
+		VSSettings: Compile.Sanitize_Address->SwitchWithError(
+			"Unsupported option: "
+			, false, { }
+			, true, { AdditionalOptions: `-fsanitize=address -fsanitize-address-use-after-scope -fno-sanitize-address-use-odr-indicator @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_Sanitize_Thread =+ {
+		VSSettings: Compile.Sanitize_Thread->SwitchWithError(
+			"Unsupported option: "
+			, false, { }
+			, true, { AdditionalOptions: `-fsanitize=thread @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_Sanitize_UndefinedBehavior =+ {
+		VSSettings: Compile.Sanitize_UndefinedBehavior->SwitchWithError(
+			"Unsupported option: "
+			, false, { }
+			, true, { AdditionalOptions: `-fsanitize=undefined -fno-sanitize=vptr,function @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_CxxLanguage =+ {
+		VSSettings: { AdditionalOptions: `-Xclang @(Compile.CxxLanguage->SwitchWithError(
+			"Unsupported option: "
+			, "GNU++11", "-std=gnu++11"
+			, "GNU++14", "-std=gnu++14"
+			, "GNU++17", "-std=gnu++17"
+			, "GNU++20", "-std=gnu++20"
+			, "GNU++23", "-std=gnu++2b"
+			, "C++11", "-std=c++11"
+			, "C++14", "-std=c++14"
+			, "C++17", "-std=c++17"
+			, "C++20", "-std=c++20"
+			, "C++23", "-std=c++23"
+			, "C++26", "-std=c++2c"
+			, "", []
+		)) @(Builtin.Inherit)` }
+	}
+
+	Compile_CLanguage =+ {
+		VSSettings: { AdditionalOptions: `-Xclang @(Compile.CLanguage->SwitchWithError(
+			"Unsupported option: "
+			, "C89", "-std=c89"
+			, "C99", "-std=c99"
+			, "C11", "-std=c11"
+			, "C17", "-std=c17"
+			, "C2x", "-std=c2x"
+			, "GNU89", "-std=gnu89"
+			, "GNU99", "-std=gnu99"
+			, "GNU11", "-std=gnu11"
+			, "GNU17", "-std=gnu17"
+			, "GNU2x", "-std=gnu2x"
+			, "", []
+		)) @(Builtin.Inherit)` }
+	}
+
+	Compile_ConstexprSteps =+ {
+		VSSettings: { AdditionalOptions: `-Xclang -fconstexpr-steps=@(Compile.ConstexprSteps->ToString()) @(Builtin.Inherit)` }
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_AlignedAllocationProvided =+ {
+		VSSettings: { AdditionalOptions: `@(Compile.AlignedAllocationProvided ? "-Xclang -faligned-allocation" : "-Xclang -fno-aligned-allocation") @(Builtin.Inherit)` }
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_ProvidedNewAligment =+ {
+		VSSettings: { AdditionalOptions: `-Xclang -fnew-alignment=@(Compile.ProvidedNewAligment->ToString()) @(Builtin.Inherit)` }
+	}
+	{
+		!!Compiler "Clang"
+	}
 }

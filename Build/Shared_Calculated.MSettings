@@ -273,29 +273,6 @@ Property
 
 	ToolsetDir: string
 	ToolsetDir Target.PlatformToolset
-	ToolsetDir "VC17"
-	{
-		&
-		{
-			PlatformType "Windows"
-			|
-			{
-				Target.PlatformToolset "v110"
-				Target.PlatformToolset "v120_CTP_Nov2012"
-			}
-		}
-	}
-	ToolsetDir "VC18"
-	{
-		&
-		{
-			PlatformType "Windows"
-			|
-			{
-				Target.PlatformToolset "v120"
-			}
-		}
-	}
 	ToolsetDir "VC19"
 	{
 		&
@@ -303,8 +280,6 @@ Property
 			PlatformType "Windows"
 			|
 			{
-				Target.PlatformToolset "v140"
-				Target.PlatformToolset "v141"
 				Target.PlatformToolset "v142"
 			}
 		}

@@ -36,7 +36,10 @@
 #endif
 
 // Module export
-#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#if defined(DCompiler_clang_cl)
+#	define module_export __declspec(dllexport)
+#	define module_import __declspec(dllimport)
+#elif defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define module_export __attribute__ ((__visibility__("default")))
 #	define module_import
 #elif defined(DCompiler_MSVC)

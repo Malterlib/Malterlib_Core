@@ -29,11 +29,27 @@ Property
 		&
 		{
 			Compiler undefined
-			GeneratorFamily "Xcode"
 			|
 			{
-				CompileDialect "C"
-				Compile.Type "Assembler"
+				&
+				{
+					GeneratorFamily "Xcode"
+					|
+					{
+						CompileDialect "C"
+						Compile.Type "Assembler"
+					}
+				}
+				&
+				{
+					GeneratorFamily "VisualStudio"
+					Target.PlatformToolset "ClangCL"
+					|
+					{
+						CompileDialect "C"
+						Compile.Type "Assembler"
+					}
+				}
 			}
 		}
 	}

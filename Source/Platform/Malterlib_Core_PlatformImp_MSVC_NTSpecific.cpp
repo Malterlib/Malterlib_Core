@@ -193,7 +193,7 @@ private:
 					if (SysHandle.ObjectType != _pProcessInfo->m_FileTypeID)
 						continue;
 					_pProcessInfo->m_hObject = nullptr;
-					if(DuplicateHandle(_pProcessInfo->m_hProcess, (HANDLE)SysHandle.Handle, GetCurrentProcess(), &_pProcessInfo->m_hObject, STANDARD_RIGHTS_REQUIRED, FALSE, DUPLICATE_SAME_ACCESS) != FALSE)
+					if(DuplicateHandle(_pProcessInfo->m_hProcess, (HANDLE)(mint)SysHandle.Handle, GetCurrentProcess(), &_pProcessInfo->m_hObject, STANDARD_RIGHTS_REQUIRED, FALSE, DUPLICATE_SAME_ACCESS) != FALSE)
 					{
 						CStr Name = _pProcessInfo->m_pThis->fp_GetObjectInfo(_pProcessInfo->m_hObject, NLocalWindows::ObjectNameInformation, *_pProcessInfo);
 						

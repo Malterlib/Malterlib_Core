@@ -540,7 +540,7 @@ public:
 						}
 					}
 
-					auto Ret = WaitForSingleObjectEx(m_EventWantQuit.m_pSemaphore, INFINITE, true);
+					WaitForSingleObjectEx(m_EventWantQuit.m_pSemaphore, INFINITE, true);
 					{
 						CNotification *pPop;
 						{
@@ -1078,7 +1078,7 @@ public:
 
 			RtlZeroMemory(&UnwindHistoryTable, sizeof(UNWIND_HISTORY_TABLE));
 
-			for (ULONG Frame = 0;;Frame++)
+			for ([[maybe_unused]] ULONG Frame = 0;;Frame++)
 			{
 				//
 				// Try to look up unwind metadata for the current function.

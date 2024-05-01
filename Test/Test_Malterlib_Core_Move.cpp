@@ -98,10 +98,10 @@ namespace
 
 			CTestStruct2 Struct2(NMib::fg_Move(Struct));
 
-#ifdef DCompiler_MSVC
-			typedef std::wstring CStdUTF16String;
-#else
+#ifdef DMalterlibUseLibCxx
 			typedef std::u16string CStdUTF16String;
+#else
+			typedef std::wstring CStdUTF16String;
 #endif
 
 			std::pair<std::string, CStdUTF16String> Test("Testing1", str_utf16("Testing2"));

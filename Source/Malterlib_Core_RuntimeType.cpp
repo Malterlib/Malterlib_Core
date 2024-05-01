@@ -18,7 +18,6 @@ namespace NMib
 		constinit TCSubSystem<CSubSystem_Core_RunTimeObject, ESubSystemDestruction_BeforeMemoryManager> g_DynamicObjectsSystem = {DAggregateInit};
 	}
 
-	
 	NStr::CStr CRunTimeObjectInfo::f_GetName()
 	{
 		NStr::CStr ToReturn = m_pName;
@@ -59,6 +58,7 @@ namespace NMib
 	CRunTimeObjectInfo *CRunTimeObjectInfo::f_GetObject(const ch8 *_pName, mint _NameLen)
 	{
 		CRunTimeObjectInfo *pNamespace = &g_DynamicObjectsSystem->m_GlobalNamespace;
+
 		NStr::CStr Namespace;
 		const ch8 *pNamespaceStr = _pName;
 		while (1)
@@ -74,7 +74,7 @@ namespace NMib
 			else
 				String.f_AddStr(pNamespaceStr);
 
-			CRunTimeObjectInfo *pInfo = pNamespace->m_Namespace.f_FindEqual(String);
+			auto *pInfo = pNamespace->m_Namespace.f_FindEqual(String);
 
 			if (Namespace.f_GetLen())
 				Namespace.f_AddStr("::");
@@ -132,7 +132,7 @@ namespace NMib
 
 		m_bIsStatic = _bIsStatic;
 		
-		CRunTimeObjectInfo *pInfo = m_pNamespace->m_Namespace.f_FindEqual(pName);
+		auto *pInfo = m_pNamespace->m_Namespace.f_FindEqual(pName);
 		if (_pParent)
 			m_pParent = f_GetObject(_pParent, NStr::fg_StrLen(_pParent));
 		else
@@ -289,6 +289,7 @@ namespace NMib
 				Str.f_AddStr(pNamespaceStart, (pNamespace - pNamespaceStart));
 
 				const ch8 *pFind = Str;
+
 				pRuntimeObject = pRuntimeObject->m_Namespace.f_FindEqual(pFind);
 
 				if (!pRuntimeObject)
@@ -299,71 +300,21 @@ namespace NMib
 				iNamespace = NStr::fg_StrFind(pNamespaceStart, "::");
 
 				if (iNamespace < 0)
-				{
-					pRuntimeObject = pRuntimeObject->m_Namespace.f_FindEqual(pNamespaceStart);
-					if (pRuntimeObject)
-						return pRuntimeObject;
-					else
-						return nullptr;
-				}
+					return pRuntimeObject->m_Namespace.f_FindEqual(pNamespaceStart);
 				else
 					pNamespace = pNamespaceStart + iNamespace;
 			}
 		}
 		else
-		{
-			CRunTimeObjectInfo *pRuntimeObject = g_DynamicObjectsSystem->m_GlobalNamespace.m_Namespace.f_FindEqual(_pObjectName);
-			if (pRuntimeObject)
-				return pRuntimeObject;
-			else
-				return nullptr;
-		}
+			return g_DynamicObjectsSystem->m_GlobalNamespace.m_Namespace.f_FindEqual(_pObjectName);
 	}
 
-	void *fg_CreateRuntimeType(const ch8 *_pObjectName)
+	void *fg_CreateRuntimeTypeRawPtr(const ch8 *_pObjectName)
 	{
-		aint iNamespace = NStr::fg_StrFind(_pObjectName, "::");
-		if (iNamespace >= 0)
-		{
-			const ch8 *pNamespace = _pObjectName + iNamespace;				
-			const ch8 *pNamespaceStart = _pObjectName;
-
-			CRunTimeObjectInfo *pRuntimeObject = &g_DynamicObjectsSystem->m_GlobalNamespace;
-
-			while (1)
-			{
-				NStr::CStr Str;
-				Str.f_AddStr(pNamespaceStart, (pNamespace - pNamespaceStart));
-
-				const ch8 *pFind = Str;
-				pRuntimeObject = pRuntimeObject->m_Namespace.f_FindEqual(pFind);
-
-				if (!pRuntimeObject)
-					return nullptr;
-
-				pNamespaceStart = pNamespace + 2;
-				iNamespace = NStr::fg_StrFind(pNamespaceStart, "::");
-
-				if (iNamespace < 0)
-				{
-					pRuntimeObject = pRuntimeObject->m_Namespace.f_FindEqual(pNamespaceStart);
-					if (pRuntimeObject)
-						return pRuntimeObject->f_CreateObject();
-					else
-						return nullptr;
-				}
-				else
-					pNamespace = pNamespaceStart + iNamespace;
-			}
-		}
-		else
-		{
-			CRunTimeObjectInfo *pRuntimeObject = g_DynamicObjectsSystem->m_GlobalNamespace.m_Namespace.f_FindEqual(_pObjectName);
-			if (pRuntimeObject)
-				return pRuntimeObject->f_CreateObject();
-			else
-				return nullptr;
-		}
+		auto pInfo = fg_GetRuntimeTypeInfo(_pObjectName);
+		if (!pInfo)
+			return nullptr;
+		return pInfo->f_CreateObject();
 	}
 }
 
