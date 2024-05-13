@@ -6311,7 +6311,6 @@ void NSys::fg_CreateSystem()
 		return;
 	g_bSystemCreated = true;
 	g_bCreatedSystem = true;
-	CFStr256 EnvironName;
 
 	GetSystemInfo(&gs_SysInfo);     // Get the system info structure. Used by various functions. Let it reside in every module for speed of access.
 
