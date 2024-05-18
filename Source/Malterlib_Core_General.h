@@ -38,7 +38,6 @@ namespace NMib
 
 namespace NMib
 {
-
 	struct CHideNull
 	{
 		typedef decltype(nullptr) CNullPtr;
@@ -46,6 +45,13 @@ namespace NMib
 
 	typedef CHideNull::CNullPtr CNullPtr;
 
+	struct CCompareConstructTag
+	{
+	};
+
+	struct CAllocatorConstructTag
+	{
+	};
 
 #	define DMibStaticCheck( _Expression ) static_assert(_Expression, "Static assert failed: " DMibStringize(_Expression))
 		
