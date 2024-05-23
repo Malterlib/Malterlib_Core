@@ -821,16 +821,6 @@ Target
 		}
 	}
 
-	ExtraLibFlags += [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", "DoxygenLibTool"]]
-	{
-		&
-		{
-			Target:Target.Type "StaticLibrary"
-			Documentation "Doxygen"
-			GeneratorFamily "VisualStudio"
-		}
-	}
-
 	ExtraLinkerFlags += "/ignore:4042"
 	{
 		&
@@ -1692,23 +1682,12 @@ Target
 		}
 	}
 
-	PlatformToolsetLibTool MToolPath
+	PlatformToolsetLibTool Builtin.MToolExe->GetPath() / "DoxygenLibTool/libtool"
 	{
 		!!Documentation "Doxygen"
 	}
 
 	LibToolFlags: [one_of(string, [string])] = []
-
-	LibToolFlags =+ [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", "DoxygenLibTool"]]
-	{
-		&
-		{
-			Target:Target.Type "StaticLibrary"
-			Documentation "Doxygen"
-			GeneratorFamily "Xcode"
-		}
-	}
-
 
 	LDFlags =+ [["--malterlib-command-BA49ADC8-6CAA-4E8C-BA13-3A9273859D89", "DoxygenLD"], ["--doxygen-executable", `@(MalterlibDependenciesDirectory)/doxygen/build/bin/doxygen`]]
 	{
@@ -5091,6 +5070,7 @@ Target
 		{
 			PlatformFamily "macOS"
 			TargetIsExecutable true
+			!DocumentationEnabled true
 			|
 			{
 				MalterlibSigning true
@@ -5122,6 +5102,7 @@ Target
 		{
 			PlatformFamily "macOS"
 			MalterlibSigning true
+			!DocumentationEnabled true
 			Target.Type "UIExecutable"
 			!MalterlibNotarizeMacOSProfile undefined
 		}
