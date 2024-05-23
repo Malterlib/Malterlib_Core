@@ -3,9 +3,9 @@
 
 /** \page p_Malterlib_Core_CodeStandard_Coloring Coloring
 
-This is the syntax coloring applied to examples in the documentation. There are also a number of tools and plugins for IDEs available from Malterlib that applies this coloring standard to your editor.
+This is the syntax coloring applied to examples in the documentation. There are also a number of tools and plugins for IDEs available from Malterlib that apply this coloring standard to your editor.
 
-The general design for this standard is to supply the reader with as many queues as possible to help quickly gain understanding of the source code. It works together with the code naming standard which makes it
+The general design for this standard is to supply the reader with as many cues as possible to help quickly gain understanding of the source code. It works together with the code naming standard which makes it
 easy to apply the highlighting without language specific parsing support.
 
 \code
