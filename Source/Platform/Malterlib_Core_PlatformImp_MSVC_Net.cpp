@@ -563,6 +563,30 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 		AddressStr = _Address.f_Extract(fg_StrLen("IPv6:"));
 	}
 
+	CWStr Service;
+
+	bool bCanParsePort;
+	if (_PreferType == ENetAddressType_TCPv6)
+	{
+		if (AddressStr.f_StartsWith("["))
+			bCanParsePort = true;
+		else if (AddressStr.f_FindChar(':') == AddressStr.f_FindCharReverse(':'))
+			bCanParsePort = true;
+		else
+			bCanParsePort = false;
+	}
+	else
+		bCanParsePort = true;
+
+	if (auto iService = AddressStr.f_FindCharReverse(':'); bCanParsePort && iService >= 0)
+	{
+		Service = AddressStr.f_Extract(iService + 1);
+		AddressStr = AddressStr.f_Left(iService);
+	}
+
+	if (_PreferType == ENetAddressType_TCPv6)
+		AddressStr = AddressStr.f_RemovePrefix("[").f_RemoveSuffix("]");
+
 	if (_PreferType == ENetAddressType_TCPv6)
 		AddrHint.ai_family = AF_INET6;
 	else
@@ -576,13 +600,13 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 
 	CWStr AddressStrWin = NStr::NPlatform::fg_StrToWindows(AddressStr);
 
-	int Result = GetAddrInfoW(AddressStrWin.f_GetStr(), nullptr, &AddrHint, &pAddresses);
+	int Result = GetAddrInfoW(AddressStrWin.f_GetStr(), Service.f_GetStr(), &AddrHint, &pAddresses);
 
 	// Try TCPv4 first, then v6.
 	if (_PreferType == ENetAddressType_None && Result != 0)
 	{
 		AddrHint.ai_family = AF_INET6;
-		Result = GetAddrInfoW(AddressStrWin.f_GetStr(), nullptr, &AddrHint, &pAddresses);
+		Result = GetAddrInfoW(AddressStrWin.f_GetStr(), Service.f_GetStr(), &AddrHint, &pAddresses);
 	}
 
 	if (Result != 0)
