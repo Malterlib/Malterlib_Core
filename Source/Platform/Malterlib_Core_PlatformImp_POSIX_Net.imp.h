@@ -279,7 +279,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 	if (Result != 0)
 	{
 		if (_bThrowOnError)
-			DMibErrorNet(::fg_FormatGAI<CStr>(CStr::CFormat("getaddrinfo('{}', '{}')") << AddressStr << Service, Result));
+			DMibErrorNet(::fg_FormatGAI<CStr>("getaddrinfo('{}', '{}')"_f << AddressStr << Service, Result));
 		else
 			return nullptr;
 	}
@@ -351,35 +351,42 @@ void CPOSIXSocketContext::f_FreeAddress(CPOSIXAddress* _pAddress) // It is OK to
 #	endif
 #endif
 
-NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_Address, bool _bIncludeType)
+NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_Address, ENetAddressStringFlag _Flags)
 {
-	NMib::NStr::CStr AddressStr;
+	using namespace NMib::NStr;
+
+	CStr AddressStr;
 
 	switch(_Address.f_GetType())
 	{
 		case NMib::NNetwork::ENetAddressType_TCPv4:
 			{
 				auto &Address = _Address.f_GetTCPv4();
-				if (_bIncludeType)
+				
+				if (_Flags & ENetAddressStringFlag_IncludeType)
 					AddressStr += "TCPv4:";
+
 				AddressStr
-					+= CStr::CFormat("{}.{}.{}.{}")
+					+= "{}.{}.{}.{}"_f
 					<< ((ntohl(Address.sin_addr.s_addr) >> 24) & 0xFF)
 					<< ((ntohl(Address.sin_addr.s_addr) >> 16) & 0xFF)
 					<< ((ntohl(Address.sin_addr.s_addr) >> 8) & 0xFF)
 					<< ((ntohl(Address.sin_addr.s_addr) >> 0) & 0xFF)
 				;
+				
+				if (_Flags & ENetAddressStringFlag_IncludePort)
+					AddressStr += ":{}"_f << ntohs(Address.sin_port);
 			}
 			break;
 
 		case NMib::NNetwork::ENetAddressType_TCPv6:
 			{
 				auto &Address = _Address.f_GetTCPv6();
-				if (_bIncludeType)
+				if (_Flags & ENetAddressStringFlag_IncludeType)
 					AddressStr += "TCPv6:";
 
 				AddressStr
-					+= CStr::CFormat("{}:{}:{}:{}:{}:{}:{}:{}")
+					+= "[{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}]"_f
 					<< ntohs(Address.sin6_addr.s6_addr16[0])
 					<< ntohs(Address.sin6_addr.s6_addr16[1])
 					<< ntohs(Address.sin6_addr.s6_addr16[2])
@@ -389,6 +396,9 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 					<< ntohs(Address.sin6_addr.s6_addr16[6])
 					<< ntohs(Address.sin6_addr.s6_addr16[7])
 				;
+
+				if (_Flags & ENetAddressStringFlag_IncludePort)
+					AddressStr += ":{}"_f << ntohs(Address.sin6_port);
 			}
 			break;
 		case NMib::NNetwork::ENetAddressType_Unix:
@@ -422,7 +432,7 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 				if (Permissions & EFileAttrib_EveryoneRead)
 					UnixPermissions |= 04;
 
-				if (_bIncludeType)
+				if (_Flags & ENetAddressStringFlag_IncludeType)
 				{
 					if (UnixPermissions)
 						AddressStr += fg_Format("UNIX({nfo,sj3,sf0}):", UnixPermissions);
@@ -437,10 +447,10 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 		case ENetAddressType_Kernel:
 			{
 				auto &Address = _Address.f_GetKernel();
-				if (_bIncludeType)
+				if (_Flags & ENetAddressStringFlag_IncludeType)
 					AddressStr += "Kernel:";
 
-				AddressStr += CStr::CFormat("{}.{}.{}.{}") << (Address.sin_addr.s_addr & 0xFF);
+				AddressStr += "{}.{}.{}.{}"_f << (Address.sin_addr.s_addr & 0xFF);
 			}*/
 		default:
 			AddressStr = "Unknown or invalid address";

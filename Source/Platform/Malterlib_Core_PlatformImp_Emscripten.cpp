@@ -1469,7 +1469,7 @@ void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _Address) // It is 
 	DMibError("Not implemented");
 }
 
-NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, bool _bIncludeType)
+NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, ENetAddressStringFlag _Flags)
 {
 	DMibError("Not implemented");
 	return "";

@@ -2300,10 +2300,10 @@ void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _Address) // It is 
 	return fg_GetLocalSys()->m_SocketContext->f_FreeAddress((CPOSIXAddress*)_Address);
 }
 
-NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, bool _bIncludeType)
+NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, ENetAddressStringFlag _Flags)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CPOSIXAddress*)_Address, _bIncludeType);
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CPOSIXAddress*)_Address, _Flags);
 }
 
 // Connection Operations

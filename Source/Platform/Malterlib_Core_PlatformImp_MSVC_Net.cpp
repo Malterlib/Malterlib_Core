@@ -682,39 +682,60 @@ void CWindowsSocketContext::f_FreeAddress(CWindowsAddress* _pAddress) // It is O
 	delete _pAddress;
 }
 
-NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const &_Address, bool _bIncludeType)
+NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const &_Address, ENetAddressStringFlag _Flags)
 {
-	NMib::NStr::CStr AddressStr;
+	using namespace NMib::NStr;
+
+	CStr AddressStr;
 
 	switch(_Address.f_GetType())
 	{
 	case ENetAddressType_TCPv4:
 		{
-			if (_bIncludeType)
+			if (_Flags & ENetAddressStringFlag_IncludeType)
 				AddressStr += "TCPv4:";
 
 			CNetAddressTCPv4 TCPv4;
 			f_GetAddressRaw(_Address, ENetAddressType_TCPv4, &TCPv4, sizeof(TCPv4));
 
-			AddressStr += NMib::NStr::CStr::CFormat("{}.{}.{}.{}:{}") <<
-													TCPv4.m_IP[0] << TCPv4.m_IP[1] << TCPv4.m_IP[2] << TCPv4.m_IP[3] <<
-													TCPv4.m_Port;
+			AddressStr += "{}.{}.{}.{}:{}"_f << TCPv4.m_IP[0] << TCPv4.m_IP[1] << TCPv4.m_IP[2] << TCPv4.m_IP[3];
+
+			if (_Flags & ENetAddressStringFlag_IncludePort)
+				AddressStr += ":{}"_f << TCPv4.m_Port;
+
 			break;
 		}
 	case ENetAddressType_TCPv6:
 		{
-			if (_bIncludeType)
+			if (_Flags & ENetAddressStringFlag_IncludeType)
 				AddressStr += "TCPv6:";
 
 			CNetAddressTCPv6 TCPv6;
 			f_GetAddressRaw(_Address, ENetAddressType_TCPv6, &TCPv6, sizeof(TCPv6));
 
-			AddressStr += NMib::NStr::CStr::CFormat("{nfh}{nfh}:{nfh}{nfh}:{nfh}{nfh}:{nfh}{nfh}:{nfh}{nfh}:{nfh}{nfh}:{nfh}{nfh}:{nfh}{nfh}:{}") <<
-													TCPv6.m_IP[0] << TCPv6.m_IP[1] << TCPv6.m_IP[2] << TCPv6.m_IP[3] <<
-													TCPv6.m_IP[4] << TCPv6.m_IP[5] << TCPv6.m_IP[6] << TCPv6.m_IP[7] <<
-													TCPv6.m_IP[8] << TCPv6.m_IP[9] << TCPv6.m_IP[10] << TCPv6.m_IP[11] <<
-													TCPv6.m_IP[12] << TCPv6.m_IP[13] << TCPv6.m_IP[14] << TCPv6.m_IP[15] <<
-													TCPv6.m_Port;
+			AddressStr += "[{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:"
+				"{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}]"_f
+				<< TCPv6.m_IP[0]
+				<< TCPv6.m_IP[1]
+				<< TCPv6.m_IP[2]
+				<< TCPv6.m_IP[3]
+				<< TCPv6.m_IP[4]
+				<< TCPv6.m_IP[5]
+				<< TCPv6.m_IP[6]
+				<< TCPv6.m_IP[7]
+				<< TCPv6.m_IP[8]
+				<< TCPv6.m_IP[9]
+				<< TCPv6.m_IP[10]
+				<< TCPv6.m_IP[11]
+				<< TCPv6.m_IP[12]
+				<< TCPv6.m_IP[13]
+				<< TCPv6.m_IP[14]
+				<< TCPv6.m_IP[15]
+			;
+
+			if (_Flags & ENetAddressStringFlag_IncludePort)
+				AddressStr += ":{}"_f << TCPv6.m_Port;
+
 			break;
 		}
 	case NMib::NNetwork::ENetAddressType_Unix:
@@ -748,10 +769,10 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 			if (Permissions & EFileAttrib_EveryoneRead)
 				UnixPermissions |= 04;
 
-			if (_bIncludeType)
+			if (_Flags & ENetAddressStringFlag_IncludeType)
 			{
 				if (UnixPermissions)
-					AddressStr += fg_Format("UNIX({nfo,sj3,sf0}):", UnixPermissions);
+					AddressStr += "UNIX({nfo,sj3,sf0}):"_f << UnixPermissions;
 				else
 					AddressStr += "UNIX:";
 			}

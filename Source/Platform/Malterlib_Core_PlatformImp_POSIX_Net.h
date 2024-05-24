@@ -162,7 +162,7 @@ public:
 
 		void f_FreeAddress(CPOSIXAddress* _pAddress); // It is OK to free a nullptr address.
 
-		NMib::NStr::CStr f_GetAddressString(CPOSIXAddress const &_Address, bool _bIncludeType);
+		NMib::NStr::CStr f_GetAddressString(CPOSIXAddress const &_Address, ENetAddressStringFlag _Flags);
 
 	// Connection Operations	
 		CPOSIXSocket *f_AsyncConnect

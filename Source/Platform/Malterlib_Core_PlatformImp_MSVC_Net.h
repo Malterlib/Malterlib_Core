@@ -252,7 +252,7 @@ public:
 
 		void f_FreeAddress(CWindowsAddress* _pAddress); // It is OK to free a nullptr address.
 
-		NMib::NStr::CStr f_GetAddressString(CWindowsAddress const &_Address, bool _bIncludeType);
+		NMib::NStr::CStr f_GetAddressString(CWindowsAddress const &_Address, ENetAddressStringFlag _Flags);
 
 	// Connection Operations	
 		CWindowsSocket *f_AsyncConnect
