@@ -1,0 +1,474 @@
+// Copyright © 2024 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Type
+{
+	namespace NRepositoryPolicy
+	{
+		namespace NRepositorySettings
+		{
+			CSquashMergeCommitTitle: one_of("PrTitle", "CommitOrPrTitle")
+			CSquashMergeCommitMessage: one_of("PrBody", "CommitMessages", "Blank")
+			CMergeCommitTitle: one_of("PrTitle", "MergeMessage")
+			CMergeCommitMessage: one_of("PrBody", "PrTitle", "Blank")
+		}
+
+		CRepositorySettings: {
+			Name?: string
+			, Description?: string
+			, Homepage?: string
+			, DefaultBranch?: string
+			, IsPrivate?: bool
+			, IsTemplate?: bool
+			, HasIssues?: bool
+			, HasProjects?: bool
+			, HasWiki?: bool
+			, HasDiscussions?: bool
+			, HasDownloads?: bool
+			, AllowForking?: bool
+			, AllowSquashMerge?: bool
+			, AllowMergeCommit?: bool
+			, AllowRebaseMerge?: bool
+			, AllowAutoMerge?: bool
+			, AllowUpdateBranch?: bool
+			, WebCommitSignoffRequired?: bool
+			, DeleteBranchOnMerge?: bool
+			, UseSquashPrTitleAsDefault?: bool
+			, Archived?: bool
+			, SquashMergeCommitTitle?: type(NRepositorySettings::CSquashMergeCommitTitle)
+			, SquashMergeCommitMessage?: type(NRepositorySettings::CSquashMergeCommitMessage)
+			, MergeCommitTitle?: type(NRepositorySettings::CMergeCommitTitle)
+			, MergeCommitMessage?: type(NRepositorySettings::CMergeCommitMessage)
+			, Security_AdvancedEnable?: bool
+			, Security_SecretScanning?: bool
+			, Security_SecretScanningPushProtection?: bool
+			, CustomProperties?: {
+				...: one_of(string, null)
+			}
+		}
+
+		CPermissions: {
+			RemoveOther?: bool
+			, Teams?: {
+				...: string
+			}
+			, Users?: {
+				...: string
+			}
+		}
+
+		CApp: {
+			Type: one_of("App")
+			, Value: string
+		}
+
+		CTeam: {
+			Type: one_of("Team")
+			, Value: string
+		}
+
+		CUser: {
+			Type: one_of("User")
+			, Value: string
+		}
+
+		CRepositoryRole: {
+			Type: one_of("RepositoryRole")
+			, Value: string
+		}
+
+		COrganizationAdmin: {
+			Type: one_of("OrganizationAdmin")
+		}
+
+		CRequiredStatusCheck: {
+			Context: string
+			, App?: string
+		}
+
+		namespace NBranchProtection
+		{
+			CActor: one_of(type(CUser), type(CTeam), type(CApp))
+		}
+
+		CBranchProtection: {
+			Creator?: string
+			, PushAllowances?: [type(NBranchProtection::CActor)]
+			, ReviewDismissalAllowances?: [type(NBranchProtection::CActor)]
+			, BypassForcePushAllowances?: [type(NBranchProtection::CActor)]
+			, BypassPullRequestAllowances?: [type(NBranchProtection::CActor)]
+			, RequiredStatusCheckContexts?: [string]
+			, RequiredStatusChecks?: [type(CRequiredStatusCheck)]
+			, RequiredApprovingReviewCount?: int
+			, AllowsForcePushes?: bool
+			, AllowsDeletions?: bool
+			, BlocksCreations?: bool
+			, DismissesStaleReviews?: bool
+			, IsAdminEnforced?: bool
+			, RequiresApprovingReviews?: bool
+			, RequiresCodeOwnerReviews?: bool
+			, RequiresCommitSignatures?: bool
+			, RequiresConversationResolution?: bool
+			, RequiresLinearHistory?: bool
+			, RequiresStatusChecks?: bool
+			, RequiresStrictStatusChecks?: bool
+			, RestrictsPushes?: bool
+			, RestrictsReviewDismissals?: bool
+		}
+
+		namespace NGenericRule
+		{
+			ETarget: one_of("Branch", "Tag")
+			EEnforcement: one_of("Disabled", "Active", "Evaluate")
+			EBypassActorMode: one_of("Always", "PullRequest")
+			EStringMatchOperator: one_of("StartsWith", "EndsWith", "Contains", "Regex")
+
+			CActor: one_of(type(CTeam), type(CApp), type(CRepositoryRole), type(COrganizationAdmin))
+
+			CBypassActor: {
+				Actor: type(CActor)
+				, Mode: type(EBypassActorMode)
+			}
+
+			CRule_Creation: {
+				Type: one_of("Creation")
+			}
+
+			CRule_Update: {
+				Type: one_of("Update")
+				, AllowFetchAndMerge: bool
+			}
+
+			CRule_Deletion: {
+				Type: one_of("Deletion")
+			}
+
+			CRule_LinearHistory: {
+				Type: one_of("LinearHistory")
+			}
+
+			CRule_Deployments: {
+				Type: one_of("Deployments")
+				, RequiredDeploymentEnvironments: [string]
+			}
+
+			CRule_Signatures: {
+				Type: one_of("Signatures")
+			}
+
+			CRule_PullRequest: {
+				Type: one_of("PullRequest")
+				, RequiredApprovingReviewCount: int
+				, DismissStaleReviewsOnPush: bool
+				, RequireCodeOwnerReview: bool
+				, RequireLastPushApproval: bool
+				, RequireReviewThreadResolution: bool
+			}
+
+			CRule_StatusChecks: {
+				Type: one_of("StatusChecks")
+				, RequiredStatusChecks: [type(CRequiredStatusCheck)]
+				, PullRequestsMustBeTestedWithLatestCode: bool
+			}
+
+			CRule_FastForwardOnly: {
+				Type: one_of("FastForwardOnly")
+			}
+
+			CRule_CommitMessage: {
+				Type: one_of("CommitMessage")
+				, Pattern: string
+				, Operator: type(EStringMatchOperator)
+				, Name?: string
+				, Negate?: bool
+			}
+
+			CRule_CommitAuthorEmail: {
+				Type: one_of("CommitAuthorEmail")
+				, Pattern: string
+				, Operator: type(EStringMatchOperator)
+				, Name?: string
+				, Negate?: bool
+			}
+
+			CRule_CommitterEmail: {
+				Type: one_of("CommitterEmail")
+				, Pattern: string
+				, Operator: type(EStringMatchOperator)
+				, Name?: string
+				, Negate?: bool
+			}
+
+			CRule_BranchName: {
+				Type: one_of("BranchName")
+				, Pattern: string
+				, Operator: type(EStringMatchOperator)
+				, Name?: string
+				, Negate?: bool
+			}
+
+			CRule_TagName: {
+				Type: one_of("TagName")
+				, Pattern: string
+				, Operator: type(EStringMatchOperator)
+				, Name?: string
+				, Negate?: bool
+			}
+
+			CRequiredWorkflow: {
+				Path: string
+				, WorkflowRepository: string
+				, Ref?: string
+				, Sha?: string
+			}
+
+			CRule_Workflow: {
+				Type: one_of("Workflow")
+				, Workflows: [type(CRequiredWorkflow)]
+			}
+
+			CRule: one_of(
+				type(CRule_Creation)
+				, type(CRule_Update)
+				, type(CRule_Deletion)
+				, type(CRule_LinearHistory)
+				, type(CRule_Deployments)
+				, type(CRule_Signatures)
+				, type(CRule_PullRequest)
+				, type(CRule_StatusChecks)
+				, type(CRule_FastForwardOnly)
+				, type(CRule_CommitMessage)
+				, type(CRule_CommitAuthorEmail)
+				, type(CRule_CommitterEmail)
+				, type(CRule_BranchName)
+				, type(CRule_TagName)
+				, type(CRule_Workflow)
+			)
+		}
+
+		CGenericRule: {
+			Target?: type(NGenericRule::ETarget)
+			, IncludeRefNames?: [string]
+			, ExcludeRefNames?: [string]
+			, BypassActors?: [type(NGenericRule::CBypassActor)]
+			, Rules?: [type(NGenericRule::CRule)]
+			, Enforcement?: type(NGenericRule::EEnforcement)
+		}
+
+		namespace NActions
+		{
+			EWorkflowPermissions: one_of("Read", "Write")
+			EAccessOutsideOfRepository: one_of("None", "User", "Organization")
+
+			CAllowedAction_All: {
+				Type: one_of("All")
+			}
+
+			CAllowedAction_LocalOnly: {
+				Type: one_of("LocalOnly")
+			}
+
+			CAllowedAction_Selected: {
+				Type: one_of("Selected")
+				, GithubOwnedAllowed: bool
+				, VerifiedAllowed: bool
+				, PatternsAllowed: [string]
+			}
+
+			CAllowedActions: one_of(type(CAllowedAction_All), type(CAllowedAction_LocalOnly), type(CAllowedAction_Selected))
+		}
+
+		CActions: {
+			ActionsEnabled?: bool
+			, AllowedActions?: type(NActions::CAllowedActions)
+			, AccessOutsideOfRepository?: type(NActions::EAccessOutsideOfRepository)
+			, DefaultPermissions?: type(NActions::EWorkflowPermissions)
+			, CanApprovePullRequestReviews?: bool
+		}
+	}
+
+	CRepositoryPolicy: {
+		RepositorySettings?: type(NRepositoryPolicy::CRepositorySettings)
+		, Permissions?: type(NRepositoryPolicy::CPermissions)
+		, BranchProtection?: {
+			...: type(NRepositoryPolicy::CBranchProtection)
+		}
+		, GenericRules?: {
+			...: type(NRepositoryPolicy::CGenericRule)
+		}
+		, ActionsSettings?: type(NRepositoryPolicy::CActions)
+	}
+}
+
+Repository
+{
+	Policy: type(CRepositoryPolicy)?
+	ApplyPolicy: bool = false
+	ApplyPolicyPretend: bool = false
+}
+
+Repository
+{
+	!!Repository.Type "Malterlib"
+
+	Policy #<RepositorySettings> {
+		Name: `@(Repository.MalterlibRoot->GetFile())/@(Repository.URL->GetFileNoExt())`
+		, DefaultBranch: "master"
+		, IsPrivate: true
+		, HasIssues: false
+		, HasProjects: false
+		, HasWiki: false
+		, HasDiscussions: false
+		, HasDownloads: false
+		, AllowSquashMerge: false
+		, AllowMergeCommit: false
+		, AllowRebaseMerge: true
+		, AllowAutoMerge: false
+		, AllowUpdateBranch: false
+		, DeleteBranchOnMerge: true
+	}
+	{
+		|
+		{
+			Repository.Policy undefined
+			Repository.Policy<RepositorySettings> undefined
+		}
+	}
+
+	Policy #<Permissions> {
+		Teams: {
+			"reviewers": "read"
+			, "coders": "write"
+			, "hansoft-coders": "write"
+			, "hansoft-testers": "write"
+			, "pushers": "maintain"
+		}
+		, RemoveOther: true
+	}
+	{
+		|
+		{
+			Repository.Policy undefined
+			Repository.Policy<Permissions> undefined
+		}
+	}
+
+	Policy #<BranchProtection> {
+		"*": {
+			AllowsForcePushes: true
+			, RequiresLinearHistory: true
+			, IsAdminEnforced: true
+			, AllowsDeletions: true
+		}
+		, "master": {
+			RequiresApprovingReviews: true
+			, RequiredApprovingReviewCount: 1
+			, DismissesStaleReviews: true
+			, BypassPullRequestAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}
+			]
+			, RequiresConversationResolution: true
+			, RequiresLinearHistory: true
+			, RestrictsPushes: true
+			, PushAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}
+			]
+			, IsAdminEnforced: true
+			, AllowsForcePushes: false
+			, AllowsDeletions: false
+			, BypassForcePushAllowances: []
+		}
+		, "hansoft": {
+			RequiresApprovingReviews: true
+			, RequiredApprovingReviewCount: 1
+			, DismissesStaleReviews: true
+			, BypassPullRequestAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}
+			]
+			, RequiresConversationResolution: true
+			, RequiresLinearHistory: true
+			, RestrictsPushes: true
+			, PushAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}, {
+					Type: "Team"
+					, Value: "hansoft-coders"
+				}, {
+					Type: "Team"
+					, Value: "hansoft-testers"
+				}
+			]
+			, IsAdminEnforced: true
+			, AllowsForcePushes: false
+			, AllowsDeletions: false
+			, BypassForcePushAllowances: [
+				{
+					Type: "User"
+					, Value: "erikolofsson"
+				}
+			]
+		}
+	}
+	{
+		|
+		{
+			Repository.Policy undefined
+			Repository.Policy<BranchProtection> undefined
+		}
+	}
+
+	Policy #<ActionsSettings> {
+		ActionsEnabled: false
+	}
+	{
+		|
+		{
+			Repository.Policy undefined
+			Repository.Policy<ActionsSettings> undefined
+		}
+	}
+
+	Policy #<GenericRules> {
+		"LFS Create": {
+			Target: "Tag"
+			, IncludeRefNames: ["refs/tags/lfs/*"]
+			, BypassActors: [{Actor: {Type: "OrganizationAdmin"}, Mode: "Always"}]
+			, Rules: [{Type: "Creation"}, {Type: "Update", AllowFetchAndMerge: false}, {Type: "FastForwardOnly"}]
+			, Enforcement: "Active"
+		}, "LFS NoDelete": {
+			Target: "Tag"
+			, IncludeRefNames: ["refs/tags/lfs/*"]
+			, BypassActors: []
+			, Rules: [{Type: "Deletion"}, {Type: "FastForwardOnly"}]
+			, Enforcement: "Active"
+		}
+	}
+
+	{
+		&
+		{
+			Repository.LfsReleaseStore true
+			|
+			{
+				Repository.Policy undefined
+				Repository.Policy<GenericRules> undefined
+			}
+		}
+	}
+
+	ApplyPolicy true
+	{
+		!!Repository.ApplyPolicy undefined
+	}
+}

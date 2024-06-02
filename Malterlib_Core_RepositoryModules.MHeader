@@ -81,6 +81,8 @@ Property
 
 	MalterlibAllBinaryRepositories: bool = false // User(Repository)=true: Set to true to sync all binary repositories.
 	MalterlibAllBinaryRepositories_macOS: bool = false
+
+	MalterlibBinaryRepositoriesUseReleaseLFSStore: bool = false // User(Repository)=true: Use binary LFS store for repositories.
 }
 
 Property
@@ -126,6 +128,10 @@ Property
 	Property
 	{
 		RepoName: string = `@(this.Identity).git`
+		RepoName `@(this.Identity)_rLFS.git`
+		{
+			!!MalterlibBinaryRepositoriesUseReleaseLFSStore true
+		}
 		RepoPlatformFamily: string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
 		RepoArchitecture: string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
 		RepoDir: string = `../../Binaries/Malterlib/@(RepoPlatformFamily)/@(RepoArchitecture)`
@@ -147,6 +153,7 @@ Property
 				!Repository.URL `https://github.com/Malterlib/@(RepoName)`
 			}
 		}
+		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
 	}
 }
 
@@ -213,6 +220,10 @@ Property
 	Property
 	{
 		RepoName: string = `@(this.Identity).git`
+		RepoName `@(this.Identity)_rLFS.git`
+		{
+			!!MalterlibBinaryRepositoriesUseReleaseLFSStore true
+		}
 		RepoPlatformFamily: string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
 		RepoArchitecture: string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
 		RepoDir: string = `../../Binaries/MalterlibLLVM/@(RepoPlatformFamily)/@(RepoArchitecture)`
@@ -234,6 +245,7 @@ Property
 				!Repository.URL `https://github.com/Malterlib/@(RepoName)`
 			}
 		}
+		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
 	}
 }
 
@@ -337,6 +349,11 @@ Property
 	Property
 	{
 		RepoName: string = `MalterlibTestBinaries_@(this.Identity).git`
+		RepoName `MalterlibTestBinaries_@(this.Identity)_rLFS.git`
+		{
+			!!MalterlibBinaryRepositoriesUseReleaseLFSStore true
+		}
+
 		RepoModule: string = this.Identity->ParseFormatString("{}_{}_{}", "{0}")
 		RepoPlatformFamily: string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
 		RepoArchitecture: string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
@@ -359,6 +376,7 @@ Property
 				!Repository.URL `https://github.com/Malterlib/@(RepoName)`
 			}
 		}
+		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
 	}
 }
 
