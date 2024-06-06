@@ -329,6 +329,7 @@ Property
 Property
 {
 	MalterlibBinaryTestRepositories: [string] = []
+	MalterlibAllBinaryTestRepositories: bool = false // User(Repository)=true: Set to true to sync all binary test repositories.
 }
 
 %Repository MalterlibBinaryTestRepositories
