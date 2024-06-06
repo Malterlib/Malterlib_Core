@@ -1149,11 +1149,10 @@ namespace NMib
 		}
 	}
 	
-	class CSort_Default
+	struct CSort_Default
 	{
-	public:
 		template <typename t_CKey0, typename t_CKey1>
-		inline_small auto operator() (t_CKey0 &&_Left, t_CKey1 &&_Right) const
+		constexpr inline_small auto operator() (t_CKey0 &&_Left, t_CKey1 &&_Right) const
 		{
 			return _Left <=> _Right;
 		}

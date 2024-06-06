@@ -62,7 +62,7 @@ namespace NMib
 	;
 
 	template <typename tf_CType>
-	tf_CType fg_CheckOrdering(tf_CType _Order)
+	constexpr tf_CType fg_CheckOrdering(tf_CType _Order)
 	{
 		static_assert(cIsOrderType<tf_CType>);
 		return _Order;

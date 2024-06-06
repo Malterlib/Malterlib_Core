@@ -450,6 +450,83 @@ namespace NMib
 				return Result;
 			}
 		}
+
+		template <typename tf_CType, typename tf_FCompare, typename tf_CFind>
+		constexpr aint fg_BinarySearch(tf_CType const *_pArray, mint _Len, tf_CFind const &_ToFind, tf_FCompare &&_fCompare)
+		{
+			mint Low = 0;
+			mint High = _Len;
+
+			tf_CType const *pArray = _pArray;
+
+			while (Low < High)
+			{
+				mint Mid = (Low + High) >> 1;
+				if (fg_CheckOrdering(_fCompare(pArray[Mid], _ToFind)) < 0)
+					Low = Mid + 1;
+				else
+					High = Mid;
+			}
+
+			if (Low < _Len && fg_CheckOrdering(_fCompare(pArray[Low], _ToFind)) == 0)
+				return Low;
+			else
+				return -1;
+		}
+
+		template <typename tf_CType, typename tf_CFind>
+		constexpr aint fg_BinarySearch(tf_CType const *_pArray, mint _Len, tf_CFind const &_ToFind)
+		{
+			return fg_BinarySearch(_pArray, _Len, _ToFind, CSort_Default());
+		}
+
+		template <typename tf_CType, typename tf_FCompare>
+		constexpr bool fg_IsSorted(tf_CType const *_pArray, mint _Len, tf_FCompare &&_fCompare)
+		{
+			tf_CType const *pArray = _pArray;
+			for (mint i = 0, j = 1; j != _Len; ++i, ++j)
+			{
+				if (fg_CheckOrdering(_fCompare(pArray[j], pArray[i])) < 0)
+					return false;
+			}
+
+			return true;
+		}
+
+		template <typename tf_CType>
+		constexpr bool fg_IsSorted(tf_CType const *_pArray, mint _Len)
+		{
+			return fg_IsSorted(_pArray, _Len, CSort_Default());
+		}
+
+		template <typename tf_CType, typename tf_FCompare, typename tf_CFind>
+		constexpr aint fg_BinarySearchLowerBound(tf_CType const *_pArray, mint _Len, tf_CFind const &_ToFind, tf_FCompare &&_fCompare)
+		{
+			mint Low = 0;
+			mint High = _Len;
+
+			if (High == 0)
+				return -1;
+
+			tf_CType const *pArray = _pArray;
+
+			while (Low < High)
+			{
+				mint Mid = (Low + High) >> 1;
+				if (fg_CheckOrdering(_fCompare(pArray[Mid], _ToFind)) < 0)
+					Low = Mid + 1;
+				else
+					High = Mid;
+			}
+
+			return Low;
+		}
+
+		template <typename tf_CType, typename tf_CFind>
+		constexpr aint fg_BinarySearchLowerBound(tf_CType const *_pArray, mint _Len, tf_CFind const &_ToFind)
+		{
+			return fg_BinarySearchLowerBound(_pArray, _Len, _ToFind, CSort_Default());
+		}
 	}
 
 	namespace NContainer
