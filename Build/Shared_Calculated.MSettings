@@ -437,7 +437,7 @@ Property
 	}
 
 	MalterlibGitOriginRemote: string = ""
-	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, [`@(MalterlibGitRepoGitDir)/config`], "git", "remote", "get-url", "origin")
+	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, ["ByDigest:", `@(MalterlibGitRepoGitDir)/config`], "git", "remote", "get-url", "origin")
 	{
 		!!MalterlibIsGitRepository true
 	}
