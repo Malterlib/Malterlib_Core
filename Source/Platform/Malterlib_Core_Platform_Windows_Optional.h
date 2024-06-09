@@ -32,8 +32,10 @@ namespace NLocal
 		VOID (WINAPI *m_fRtlClearBits)(IN PRTL_BITMAP  _pBitMapHeader, IN ULONG  _StartingIndex, IN ULONG  _NumberToClear);
 
 		void (WINAPI *m_fGetNativeSystemInfo)(__out LPSYSTEM_INFO _pSystemInfo);
+#if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
 		PVOID (WINAPI *m_fAddVectoredExceptionHandler)(ULONG _First, PVECTORED_EXCEPTION_HANDLER _pHandler);
 		ULONG (WINAPI *m_fRemoveVectoredExceptionHandler)(PVOID _pHandler);
+#endif
 	
 		SIZE_T (WINAPI *m_fLargePageMinimum)();
 

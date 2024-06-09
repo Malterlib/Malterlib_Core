@@ -713,11 +713,23 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags =+ ["clang_rt.asan-x86_64.lib"]
+	ExtraLinkerFlags =+ ["clang_rt.asan-x86_64.lib", "clang_rt.asan_cxx-x86_64.lib"]
 	{
 		&
 		{
 			TargetIsExecutable true
+			TargetIsLaunchableExecutable true
+			MalterlibSupportSanitizerEnable_Address true
+			Target.PlatformToolset "ClangCL"
+		}
+	}
+
+	ExtraLinkerFlags =+ ["clang_rt.asan_dll_thunk-x86_64.lib"]
+	{
+		&
+		{
+			TargetIsExecutable true
+			!TargetIsLaunchableExecutable true
 			MalterlibSupportSanitizerEnable_Address true
 			Target.PlatformToolset "ClangCL"
 		}

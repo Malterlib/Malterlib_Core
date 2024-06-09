@@ -1718,12 +1718,23 @@ Compile
 		!!Target.PlatformToolset "ClangCL"
 	}
 
+	ExtraCompilerFlags += ["-Xclang", "-Og", "-Xclang", "-mllvm", "-Xclang", "-inline-threshold=0"]
+	{
+		&
+		{
+			Target.PlatformToolset "ClangCL"
+			Compile.Optimize "Off"
+			Compile.Sanitize_Address true
+		}
+	}
+	
 	ExtraCompilerFlags += ["-Xclang", "-O0"]
 	{
 		&
 		{
 			Target.PlatformToolset "ClangCL"
 			Compile.Optimize "Off"
+			Compile.Sanitize_Address false
 		}
 	}
 

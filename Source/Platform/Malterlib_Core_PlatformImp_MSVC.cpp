@@ -180,7 +180,7 @@ namespace
 #include "Malterlib_Core_PlatformImp_MSVC_NTSpecific.cpp"
 #include "Malterlib_Core_PlatformImp_MSVC_CPUUsageMonitor.cpp"
 
-// Note: These needs to be nade exactly like this to be compatible with old version of library (when Malterlib was named Ids)
+// Note: These needs to be named exactly like this to be compatible with old version of library (when Malterlib was named Ids)
 #if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
 	#pragma comment(linker, "/export:IdsFreeLibraryExternal=fg_IdsFreeLibraryExternal")
 	#pragma comment(linker, "/export:IdsLoadLibraryExternal=fg_IdsLoadLibraryExternal")
@@ -1903,9 +1903,11 @@ void fg_LoadFunctionPointers()
 		(FARPROC &)Functions.m_fRtlClearBits = GetProcAddress(g_hNtDll, "RtlClearBits");
 		(FARPROC &)Functions.m_fNtQueryInformationThread = GetProcAddress(g_hNtDll, "NtQueryInformationThread");
 
-		(FARPROC &)Functions.m_fAddVectoredExceptionHandler = GetProcAddress(g_hKernel32, "AddVectoredExceptionHandler");
 		(FARPROC &)Functions.m_fGetNativeSystemInfo = GetProcAddress(g_hKernel32, "GetNativeSystemInfo");
+#if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
+		(FARPROC &)Functions.m_fAddVectoredExceptionHandler = GetProcAddress(g_hKernel32, "AddVectoredExceptionHandler");
 		(FARPROC &)Functions.m_fRemoveVectoredExceptionHandler = GetProcAddress(g_hKernel32, "RemoveVectoredExceptionHandler");
+#endif
 
 		(FARPROC &)Functions.m_fSetProcessUserModeExceptionPolicy = GetProcAddress(g_hKernel32, "SetProcessUserModeExceptionPolicy");
 		(FARPROC &)Functions.m_fGetProcessUserModeExceptionPolicy = GetProcAddress(g_hKernel32, "GetProcessUserModeExceptionPolicy");
@@ -6305,8 +6307,32 @@ namespace NMib
 	}
 }
 
+#if defined(DMibSanitizerEnabled_Address) && defined(DCompiler_clang_cl)
+extern "C" void __asan_init();
+
+#if !defined(DMibDynamicLibrary)
+#pragma comment(linker, "/export:__asan_get_alloc_stack")
+#pragma comment(linker, "/export:__sanitizer_print_memory_profile")
+
+assure_used extern "C" int __asan_on_delete(void *ptr, size_t size)
+{
+	return NMib::NMemory::CCaptureDefaultDelete::fs_ReportDelete(ptr, size);
+}
+#pragma comment(linker, "/export:__asan_on_delete")
+#endif
+
+#endif
+
 void NSys::fg_CreateSystem()
 {
+#if defined(DMibSanitizerEnabled_Address) && defined(DCompiler_clang_cl)
+	//__asan_get_alloc_stack(0, nullptr,0, nullptr);
+	__asan_init();
+#if !defined(DMibDynamicLibrary)
+	NSys::fg_Compiler_MakeActive(&__asan_on_error);
+#endif
+#endif
+
 	if (g_bCreatedSystem)
 		return;
 	g_bSystemCreated = true;
@@ -6328,12 +6354,14 @@ void NSys::fg_CreateSystem()
 	gs_ThreadLocalParentThread = NSys::fg_Thread_AllocLocal();
 
 //	if (!g_bIsDll)
+#ifndef DMibSanitizerEnabled_Address
 	{
 		if (S_OK == NMib::NPlatform::fg_PatchIAT(g_hDllInstance, "KERNEL32.dll", "ExitProcess", (PVOID) fg_HookExitProcess, (PVOID *) &g_fOrgExitProcess))
 			g_bPatchedExitProcess = true;
 		if (S_OK == NMib::NPlatform::fg_PatchIAT(g_hDllInstance, "KERNEL32.dll", "TerminateProcess", (PVOID) fg_HookTerminateProcess, (PVOID *) &g_fOrgTerminateProcess))
 			g_bPatchedTerminateProcess = true;
 	}
+#endif
 
 #ifdef DMibPIR
 	fg_MalterlibInitStdLib();
