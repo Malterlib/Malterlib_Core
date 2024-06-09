@@ -1628,6 +1628,16 @@ Compile
 		}
 	}
 
+	ExtraCompilerFlags =+ ["-Xclang", "-fwritable-strings"]
+	{
+		&
+		{
+			Compile.StringPooling false
+			PlatformType "Windows"
+			Target.PlatformToolset "ClangCL"
+		}
+	}	
+
 	ExtraCompilerFlags =+ `/MP@(MalterlibCustomConcurrentCompile->ToString())`
 	{
 		&
@@ -2594,21 +2604,16 @@ Compile
 	StringPooling: bool?
 	StringPooling false
 	{
-		&
-		{
-			PlatformType "Windows"
-			!Target.VisualStudioPlatform "Clang"
-			!Target.PlatformToolset "ClangCL"
-		}
+		!!PlatformType "Windows"
 	}
 	StringPooling true
 	{
 		&
 		{
 			PlatformType "Windows"
+			!Compile.Sanitize_Address true
 			|
 			{
-				Target.PlatformToolset "ClangCL"
 				Compile.Optimize "On"
 				Compile.Optimize "Full"
 			}
