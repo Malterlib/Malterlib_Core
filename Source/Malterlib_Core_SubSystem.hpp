@@ -16,20 +16,20 @@ namespace NMib
 	{
 		DMibLock(mp_Lock);
 		if (mp_bWasCreated.f_Load(NAtomic::EMemoryOrder_Acquire))
-			return ((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
+			return ((t_CSubSystem *)mp_ObjectSpace);
 		
 		t_CSubSystem *pSubSystem;
 		if (_fConstruct)
-			pSubSystem = _fConstruct(mp_ObjectSpace.m_Aligned);
+			pSubSystem = _fConstruct(mp_ObjectSpace);
 		else
-			pSubSystem = new(mp_ObjectSpace.m_Aligned) t_CSubSystem();
+			pSubSystem = new(mp_ObjectSpace) t_CSubSystem();
 		
 		pSubSystem->m_DestructionOrder = t_DestructionOrder;
 		
 		fg_GetSys()->f_AddSubSystem(*pSubSystem);
 		mp_bWasCreated.f_Store(true);
 
-		return ((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
+		return ((t_CSubSystem *)mp_ObjectSpace);
 	}
 	
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
@@ -43,7 +43,7 @@ namespace NMib
 	inline_always t_CSubSystem &TCSubSystem<t_CSubSystem, t_DestructionOrder>::operator *()
 	{
 		if (mp_bWasCreated.f_Load(NAtomic::EMemoryOrder_Acquire)) [[likely]]
-			return *((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
+			return *((t_CSubSystem *)mp_ObjectSpace);
 
 		return *fp_Create(nullptr);
 	}
@@ -52,7 +52,7 @@ namespace NMib
 	inline_always t_CSubSystem *TCSubSystem<t_CSubSystem, t_DestructionOrder>::operator ->()
 	{
 		if (mp_bWasCreated.f_Load(NAtomic::EMemoryOrder_Acquire)) [[likely]]
-			return ((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
+			return ((t_CSubSystem *)mp_ObjectSpace);
 
 		return fp_Create(nullptr);
 	}
@@ -60,7 +60,7 @@ namespace NMib
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
 	t_CSubSystem *TCSubSystem<t_CSubSystem, t_DestructionOrder>::f_GetUnsafe()
 	{
-		return ((t_CSubSystem *)mp_ObjectSpace.m_Aligned);
+		return ((t_CSubSystem *)mp_ObjectSpace);
 	}
 };
 
