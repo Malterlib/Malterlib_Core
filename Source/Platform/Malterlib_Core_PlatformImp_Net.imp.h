@@ -91,7 +91,7 @@ void CAddressResolver::f_Close(void* _pResolver)
 		else
 			mp_DoneOrInProgressList.f_Remove(pReq);
 	}
-	delete pReq;
+	fg_DeleteObject(NMemory::CDefaultAllocator(), pReq);
 }
 
 aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject* _pThread)

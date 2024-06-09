@@ -320,7 +320,7 @@ void CFileChangeNotificationContext::f_Close(void *_pNotification)
 #endif
 	
 	m_Notifications.f_Remove(pNotification);
-	delete pNotification;
+	fg_DeleteObject(NMemory::CDefaultAllocator(), pNotification);
 }
 
 bool CFileChangeNotificationContext::f_Changed(void *_pNotification)

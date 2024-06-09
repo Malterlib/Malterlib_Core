@@ -19,6 +19,8 @@ namespace NMib
 		class TCAllocator_Secure;
 
 		struct CAllocator_HeapSecure;
+
+		using CDefaultAllocator = CAllocator_Heap;
 	}
 	
 	namespace NThread
@@ -202,14 +204,6 @@ typedef NMib::TCAutoClear<ch32> zch32;
 #include <Mib/Memory/Allocators/Secure>
 
 #include "../../Numeric/Source/Malterlib_Numeric_Float_StdLib.hpp"
-
-namespace NMib
-{
-	namespace NMemory
-	{
-		typedef NMib::NMemory::CAllocator_Heap CDefaultAllocator;
-	}
-}
 
 namespace NMib
 {

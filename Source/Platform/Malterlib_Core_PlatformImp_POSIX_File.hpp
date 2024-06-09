@@ -2386,7 +2386,7 @@ void *NSys::NFile::fg_FindOpen(const NMib::NStr::CStr &_FindPattern)
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("opendir('{}') when finding files") << Path, ErrNo));
 	}
 
-	CPOSIXFileFind *pFind = DMibNew CPOSIXFileFind;
+	CPOSIXFileFind *pFind = fg_ConstructObject<CPOSIXFileFind>(NMemory::CDefaultAllocator());
 
 	pFind->m_FullPath = Path;
 	pFind->m_SearchPattern = MatchStr;
@@ -2506,6 +2506,6 @@ void NSys::NFile::fg_FindClose(void *_pFindContext)
 	if (!_pFindContext)
 		return;
 	CPOSIXFileFind *pFind = (CPOSIXFileFind*)_pFindContext;
-	delete pFind;
+	fg_DeleteObject(NMemory::CDefaultAllocator(), pFind);
 }
 

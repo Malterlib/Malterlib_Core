@@ -72,7 +72,7 @@ void CWindowsSocket::f_UpdateDelayedSend(const NTime::CTime &_Now)
 				if (pPacket->m_SentData == pPacket->m_Data.f_GetLen())
 				{
 					m_DelayedData -= pPacket->m_SentData;
-					delete pPacket;
+					fg_DeleteObject(NMemory::CDefaultAllocator(), pPacket);
 					pPacket = m_DelayedPackets.f_GetFirst();
 				}
 				else
@@ -408,7 +408,7 @@ CWindowsAddress* CWindowsSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddr
 				sockaddr_in NativeAddr;
 				fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv4*)_pData, NativeAddr);
 
-				return DMibNew CWindowsAddress(NativeAddr);
+				return fg_ConstructObject<CWindowsAddress>(NMemory::CDefaultAllocator(), NativeAddr);
 			}
 			break;
 
@@ -420,7 +420,7 @@ CWindowsAddress* CWindowsSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddr
 				sockaddr_in6 NativeAddr;
 				fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv6*)_pData, NativeAddr);
 
-				return DMibNew CWindowsAddress(NativeAddr);
+				return fg_ConstructObject<CWindowsAddress>(NMemory::CDefaultAllocator(), NativeAddr);
 			}
 			break;
 
@@ -679,7 +679,10 @@ int CWindowsSocketContext::f_CompareAddresses(CWindowsAddress const& _First, CWi
 
 void CWindowsSocketContext::f_FreeAddress(CWindowsAddress* _pAddress) // It is OK to free a nullptr address.
 {
-	delete _pAddress;
+	if (!_pAddress)
+		return;
+
+	fg_DeleteObject(NMemory::CDefaultAllocator(), _pAddress);
 }
 
 NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const &_Address, ENetAddressStringFlag _Flags)
@@ -1316,7 +1319,7 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 		DMibLockTyped(NMib::NThread::CMutual, _pSocket->m_Lock);
 	}
 
-	delete _pSocket;
+	fg_DeleteObject(NMemory::CDefaultAllocator(), _pSocket);
 
 	return true;
 }
@@ -1351,7 +1354,7 @@ mint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData,
 			return 0;
 		}
 
-		CWindowsSocket::CDelayedPacket *pNewPacket = DMibNew CWindowsSocket::CDelayedPacket;
+		CWindowsSocket::CDelayedPacket *pNewPacket = fg_ConstructObject<CWindowsSocket::CDelayedPacket>(NMemory::CDefaultAllocator());
 		pNewPacket->m_Data.f_Insert((uint8 *)_pData, _DataLen);
 		NTime::CTime Now = NTime::CTime::fs_NowUTC();
 		NTime::CTime SendTime = Now + NTime::CTimeSpanConvert::fs_CreateSpanFromSeconds(DTCPDelayEmulation_MinDelay);
@@ -1455,7 +1458,7 @@ NStr::CStr CWindowsSocketContext::f_GetCloseReason(CWindowsSocket *_pSocket)
 CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	DMibRequire(!!_pSocket);
-	CWindowsSocket *pReturn = DMibNew CWindowsSocket;
+	CWindowsSocket *pReturn = fg_ConstructObject<CWindowsSocket>(NMemory::CDefaultAllocator());
 
 	pReturn->m_fOnStateChange = fg_Move(_fOnStateChange);
 	pReturn->m_pSocket = (void *)_pSocket;
@@ -1465,7 +1468,7 @@ CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pSocket, NMib::NF
 	if (WSAAsyncSelect((SOCKET)pReturn->m_pSocket, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
 	{
 		uint32 Error = WSAGetLastError();
-		delete pReturn;
+		fg_DeleteObject(NMemory::CDefaultAllocator(), pReturn);
 		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 

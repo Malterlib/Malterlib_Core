@@ -293,14 +293,14 @@ public:
 		NTSTATUS ntReturn = m_fNTQuerySystemInformation(SystemHandleInformation, pHandleInfo, dwSize, &dwSize);
 		if(ntReturn == STATUS_INFO_LENGTH_MISMATCH)
 		{
-			delete pHandleInfo;
+			delete [] pHandleInfo;
 			pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[dwSize];
 			ntReturn = m_fNTQuerySystemInformation(SystemHandleInformation, pHandleInfo, dwSize, &dwSize);
 		}
 		if(ntReturn == STATUS_INFO_LENGTH_MISMATCH)
 		{
 			dwSize *= 2;
-			delete pHandleInfo;
+			delete [] pHandleInfo;
 			pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[dwSize];
 			ntReturn = m_fNTQuerySystemInformation(SystemHandleInformation, pHandleInfo, dwSize, &dwSize);
 		}
@@ -344,7 +344,7 @@ public:
 			CloseHandle (hthread);
 		}	
 
-		delete pHandleInfo;
+		delete [] pHandleInfo;
 	}
 
 

@@ -221,10 +221,10 @@ namespace NMib
 	void CSystem::f_Destruct()
 	{
 #if DMibSysLogSeverities
-		delete m_pSystemLog;
+		fg_DeleteObject(NMemory::CDefaultAllocator(), m_pSystemLog);
 		m_pSystemLog = nullptr;
 
-		delete m_pDefaultLogFile;
+		fg_DeleteObject(NMemory::CDefaultAllocator(), m_pDefaultLogFile);
 		m_pDefaultLogFile = nullptr;
 #endif
 
@@ -297,7 +297,7 @@ namespace NMib
 		NSys::fg_HW_GetVirtualMachineInfo(mp_VMInfo);
 
 #if DMibSysLogSeverities
-		m_pSystemLog = DMibNew NLog::CLogger();
+		m_pSystemLog = fg_ConstructObject<NLog::CLogger>(NMemory::CDefaultAllocator());
 
 		if (!m_pSystemLog->f_ReadConfig("Malterlib_Log_Config.txt"))
 		{
@@ -360,7 +360,7 @@ namespace NMib
 					ProgramName = "Malterlib";
 			}
 
-			m_pDefaultLogFile = DMibNew NLog::CLogFile();
+			m_pDefaultLogFile = fg_ConstructObject<NLog::CLogFile>(NMemory::CDefaultAllocator());
 			//m_pDefaultLogFile->m_Filename = ProgramName + "_%TIME%.txt";
 			m_pDefaultLogFile->m_Filename = ProgramName + ".log";
 			m_FileLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::CFileLogger(m_pDefaultLogFile));

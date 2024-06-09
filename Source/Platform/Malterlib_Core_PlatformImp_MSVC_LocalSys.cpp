@@ -621,7 +621,7 @@ public:
 				CNotificationBundle *pBundle = m_FreeBundles.f_GetFirst();
 				if (!pBundle)
 				{
-					pBundle = DMibNew CNotificationBundle(this);
+					pBundle = fg_ConstructObject<CNotificationBundle>(NMemory::CDefaultAllocator(), this);
 					pBundle->f_Start();
 				}
 				pNot = pBundle->m_Free.f_Pop();
@@ -664,7 +664,7 @@ public:
 				{
 					DMibUnlock(m_Lock);
 					pBundle->f_Stop();
-					delete pBundle;
+					fg_DeleteObject(NMemory::CDefaultAllocator(), pBundle);
 				}
 			}
 			else

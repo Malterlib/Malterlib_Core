@@ -4871,7 +4871,7 @@ void *NSys::NFile::fg_FindOpen(const CStr &_FindPattern)
 	else
 		DMibErrorFile("Could not find the end of the path");
 
-	CWin32FileFind *pFind = DMibNew CWin32FileFind;
+	CWin32FileFind *pFind = fg_ConstructObject<CWin32FileFind>(NMemory::CDefaultAllocator());
 
 	FullPath.f_SetModified();
 
@@ -4921,7 +4921,7 @@ const CStr *NSys::NFile::fg_FindNext(void *_pFindContext, EFileAttrib &_FileAttr
 void NSys::NFile::fg_FindClose(void *_pFindContext)
 {
 	CWin32FileFind *pFind = (CWin32FileFind*)_pFindContext;
-	delete pFind;
+	fg_DeleteObject(NMemory::CDefaultAllocator(), pFind);
 }
 
 static DWORD CALLBACK fsg_CopyProgressRoutine

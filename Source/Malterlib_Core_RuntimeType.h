@@ -88,7 +88,7 @@ namespace NMib
 			if constexpr (NTraits::TCIsAbstract<t_CObject>::mc_Value)
 				DMibError("Cannot construct an abstract class");
 			else
-				return (t_CCastClass *)DMibNew t_CObject();
+				return fg_ConstructObject<t_CObject>(NMemory::CDefaultAllocator());
 		}
 	};
 

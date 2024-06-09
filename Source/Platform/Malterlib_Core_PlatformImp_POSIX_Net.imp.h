@@ -29,7 +29,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressT
 			sockaddr_in NativeAddr;
 			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv4*)_pData, NativeAddr);
 
-			return DMibNew CPOSIXAddress(NativeAddr);
+			return fg_ConstructObject<CPOSIXAddress>(NMemory::CDefaultAllocator(), NativeAddr);
 		}
 		break;
 	case NMib::NNetwork::ENetAddressType_TCPv6:
@@ -40,7 +40,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressT
 			sockaddr_in6 NativeAddr;
 			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv6*)_pData, NativeAddr);
 
-			return DMibNew CPOSIXAddress(NativeAddr);
+			return fg_ConstructObject<CPOSIXAddress>(NMemory::CDefaultAllocator(), NativeAddr);
 		}
 		break;
 	case NMib::NNetwork::ENetAddressType_Unix:
@@ -339,7 +339,10 @@ int CPOSIXSocketContext::f_CompareAddresses(CPOSIXAddress const& _First, CPOSIXA
 
 void CPOSIXSocketContext::f_FreeAddress(CPOSIXAddress* _pAddress) // It is OK to free a nullptr address.
 {
-	delete _pAddress;
+	if (!_pAddress)
+		return;
+
+	fg_DeleteObject(NMemory::CDefaultAllocator(), _pAddress);
 }
 
 #ifdef DPlatformFamily_macOS
@@ -1010,7 +1013,7 @@ bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
 		}
 	}
 
-	delete _pSocket;
+	fg_DeleteObject(NMemory::CDefaultAllocator(), _pSocket);
 
 	return true;
 }
