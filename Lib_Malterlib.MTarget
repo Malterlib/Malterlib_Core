@@ -784,13 +784,15 @@ Property
 						}
 						%GenerateFile ["exe_common.inl", "utility.cpp", "dll_dllmain.cpp"]
 						{
-							// ./Binaries/Malterlib/Windows/x64/MTool BinaryDiff "/c/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.38.33130/crt/src/vcruntime/utility.cpp" /c/CompiledFiles/Malterlib4-590ae979/Tests/Generated/Lib_Malterlib_Runtime/NoConfig/vcruntime/utility.cpp Malterlib/Core/Patches/14.38.33130/VCCrt_utility.cpp.patch
+							// ./Binaries/Malterlib/Windows/x64/MTool BinaryDiff "/c/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.40.33807/crt/src/vcruntime/utility.cpp" /c/CompiledFiles/Mal18f/Tese5c/Generated/Lib_Malterlib_Runtime/NoConfig/vcruntime/utility.cpp Malterlib/Core/Patches/14.38.33130/VCCrt_utility.cpp.patch
+							// ./Binaries/Malterlib/Windows/x64/MTool BinaryDiff "/c/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.40.33807/crt/src/vcruntime/dll_dllmain.cpp" /c/CompiledFiles/Mal18f/Tese5c/Generated/Lib_Malterlib_Runtime/NoConfig/vcruntime/dll_dllmain.cpp Malterlib/Core/Patches/14.38.33130/VCCrt_dll_dllmain.cpp.patch
+							// ./Binaries/Malterlib/Windows/x64/MTool BinaryDiff "/c/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.40.33807/crt/src/vcruntime/exe_common.inl" /c/CompiledFiles/Mal18f/Tese5c/Generated/Lib_Malterlib_Runtime/NoConfig/vcruntime/exe_common.inl Malterlib/Core/Patches/14.38.33130/VCCrt_exe_common.inl.patch
 							GenerateFile
 							{
 								Name `@(GeneratedDirectoryNoConfig)vcruntime/@(this.Identity)`
 								Contents ExecuteCommand(
 									`@(GeneratedDirectoryNoConfig)vcruntime_@(ThisFileName).state`
-									, [ThisSourceFile]
+									, [ThisSourceFile, PatchFile]
 									, MToolPath
 									, "BinaryPatch"
 									, ThisSourceFile

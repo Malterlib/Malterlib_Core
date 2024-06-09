@@ -901,4 +901,22 @@ GeneratorSetting
 		)
 		, Type: "unique"
 	}
+
+	Compile_Warnings_IgnoredAttributes =+ {
+		Flags: Compile.Warnings_IgnoredAttributes->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-ignored-attributes"]
+			, true, ["-Wignored-attributes"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_Format =+ {
+		Flags: Compile.Warnings_Format->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-format"]
+			, true, ["-Wformat"]
+		)
+		, Type: "unique"
+	}
 }

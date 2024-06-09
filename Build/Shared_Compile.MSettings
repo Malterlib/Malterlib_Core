@@ -1146,6 +1146,8 @@ Compile
 	Warnings_NoPessimizingMove: bool?
 	Warnings_ASANWithoutDebugInfo: bool?
 	Warnings_InlineNewDelete: bool?
+	Warnings_IgnoredAttributes: bool?
+	Warnings_Format: bool?
 
 	AllCPUSubTypes: bool?
 	StackGuard: bool?

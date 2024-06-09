@@ -735,6 +735,17 @@ Target
 		}
 	}
 
+	ExtraLinkerFlags =+ ["/SAFESEH:NO"]
+	{
+		&
+		{
+			TargetIsExecutable true
+			Architecture "x86"
+			MalterlibDoExeFS true
+			Target.PlatformToolset "ClangCL"
+		}
+	}
+
 	PlatformToolset MalterlibVisualStudioToolset
 	{
 		&

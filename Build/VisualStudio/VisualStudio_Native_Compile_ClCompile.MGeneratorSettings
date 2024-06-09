@@ -446,6 +446,9 @@ GeneratorSetting
 	Compile_Warnings_DeprecatedPragma =+ GeneratorSetting.f_Helper_SetVSWarning("", "deprecated-pragma", Compile.Warnings_DeprecatedPragma)
 	Compile_Warnings_InlineNewDelete =+ GeneratorSetting.f_Helper_SetVSWarning("", "inline-new-delete", Compile.Warnings_InlineNewDelete)
 
+	Compile_Warnings_IgnoredAttributes =+ GeneratorSetting.f_Helper_SetVSWarning("", "ignored-attributes", Compile.Warnings_IgnoredAttributes)
+	Compile_Warnings_Format =+ GeneratorSetting.f_Helper_SetVSWarning("", "format", Compile.Warnings_Format)
+
 	Compile_Warnings_DeprecatedEnumConversion =+ {
 		VSSettings: Compile.Warnings_DeprecatedEnumConversion->SwitchWithError(
 			"Unsupported option: "
