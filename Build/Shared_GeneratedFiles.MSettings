@@ -401,12 +401,12 @@ Property
 					`fi\n`\
 					`function ArrayContainsValue()\n`\
 					`{\n`\
-					`	local SearchFor="$1"\n`\
+					`	local SearchFor="${1^^}"\n`\
 					`	shift\n`\
 					`	local Array=("$@@")\n`\
 					`\n`\
 					`	for ArrayEntry in "${Array[@@]}"; do\n`\
-					`		if [[ "$ArrayEntry" == "$SearchFor" ]]; then\n`\
+					`		if [[ "${ArrayEntry^^}" == "${SearchFor}" ]]; then\n`\
 					`			return 0\n`\
 					`		fi\n`\
 					`	done\n`\
@@ -425,13 +425,17 @@ Property
 					`	while read -r Line; do\n`\
 					`		Key="${Line%%=*}"\n`\
 					`		Value="${Line#*=}"\n`\
-					`		if ArrayContainsValue "$Key" "${OldVars[@@]}" && [[ "$Key" != "PATH" ]]; then\n`\
+					`		if ArrayContainsValue "$Key" "${OldVars[@@]}" && [[ "${Key^^}" != "PATH" ]]; then\n`\
 					`			continue\n`\
 					`		fi\n`\
 					`		if [[ "$Key" =~ $InvalidKeyRegex ]]; then\n`\
 					`			continue\n`\
 					`		fi\n`\
-					`		export "$Key"="$Value"\n`\
+					`		if [[ "${Key^^}" == "PATH" ]]; then\n`\
+					`			export "PATH"="$Value"\n`\
+					`		else\n`\
+					`			export "$Key"="$Value"\n`\
+					`		fi\n`\
 					`	done < <(cmd.exe //C SharedBuildSettingsVCVars.bat)\n`\
 					`\n`\
 					`	export "MalterlibImportedVCPath=true"\n`\
