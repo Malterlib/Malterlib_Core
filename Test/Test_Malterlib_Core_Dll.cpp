@@ -19,6 +19,9 @@ namespace
 
 		void f_DoTests()
 		{
+#if defined(DCompiler_MSVC_Workaround_DllsBroken)
+			return;
+#endif
 			// tsan does not currently support unloading dlls
 			CStr DllPath = CStr("Test_Malterlib_Helper_Core") + NMib::NFile::CFile::fs_GetDllExtension();
 #ifdef DPlatformFamily_Linux
