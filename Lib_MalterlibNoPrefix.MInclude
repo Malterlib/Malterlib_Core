@@ -253,10 +253,6 @@ Compile
 					Compile
 					{
 						Disabled true
-						CxxLanguage "C++23"
-						{
-							!!Compiler "Clang"
-						}
 					}
 				}
 				%File "Source/Platform/Malterlib_Core_PlatformImp_MacOS.cpp"
@@ -266,10 +262,6 @@ Compile
 						Disabled true
 						{
 							!PlatformFamily "macOS"
-						}
-						CxxLanguage "C++23"
-						{
-							!!Compiler "Clang"
 						}
 					}
 				}
@@ -281,10 +273,6 @@ Compile
 						{
 							!!Documentation "Doxygen"
 							!PlatformFamily "macOS"
-						}
-						CxxLanguage "C++23"
-						{
-							!!Compiler "Clang"
 						}
 					}
 				}

@@ -12,7 +12,6 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <Security/Authorization.h>
 #include <Security/Security.h>
-#include <ApplicationServices/ApplicationServices.h>
 #include <CoreServices/CoreServices.h>
 
 #include <Mib/Concurrency/ThreadSafeQueue>

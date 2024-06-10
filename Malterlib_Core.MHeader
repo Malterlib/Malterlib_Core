@@ -74,11 +74,6 @@ Import "Lib_Malterlib.MTarget"
 					{
 						!PlatformFamily PlatformFamilyFromFile
 					}
-
-					CxxLanguage "C++23"
-					{
-						!!Compiler "Clang"
-					}
 				}
 			}
 

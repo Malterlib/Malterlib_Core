@@ -1740,16 +1740,26 @@ Compile
 		}
 	}
 
-	CxxLanguage: string = "C++23"
+	CxxLanguage: string?
+
+	CxxLanguage "C++26"
 	{
 		&
 		{
 			|
 			{
 				Compile.Type "C++"
-				Compile.Type "ObjC++"
 			}
 			Target.PlatformToolset "ClangCL"
+		}
+	}
+
+	CxxLanguage "C++23"
+	{
+		&
+		{
+			Compile.CxxLanguage undefined
+			Compile.Type "ObjC++"
 		}
 	}
 
