@@ -1298,6 +1298,11 @@ CStr NSys::NFile::fg_GetProgramPath()
 	return fg_GetProgramPathGeneral<CStr>();
 }
 
+CStr NSys::NFile::fg_GetProgramPathForExecutableContents()
+{
+	return fg_GetProgramPath();
+}
+
 CStrNonTracked NSys::NFile::fg_GetProgramPathNonTracked()
 {
 	return fg_GetProgramPathGeneral<CStrNonTracked>();

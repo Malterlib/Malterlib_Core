@@ -2127,7 +2127,6 @@ CStrNonTracked NSys::NFile::fg_GetProgramDirectoryNonTracked()
 	return fg_GetProgramDirectoryGeneral<CStrNonTracked>();
 }
 
-
 CStr NSys::NFile::fg_GetProgramPath()
 {
 	return fg_GetProgramPathGeneral<CStr>();
@@ -2136,6 +2135,11 @@ CStr NSys::NFile::fg_GetProgramPath()
 CStrNonTracked NSys::NFile::fg_GetProgramPathNonTracked()
 {
 	return fg_GetProgramPathGeneral<CStrNonTracked>();
+}
+
+CStr NSys::NFile::fg_GetProgramPathForExecutableContents()
+{
+	return CStr::CFormat("/proc/{}/exe") << (mint)getpid();
 }
 
 NMib::NStr::CStr NSys::NFile::fg_GetModulePath(void *_pCode)

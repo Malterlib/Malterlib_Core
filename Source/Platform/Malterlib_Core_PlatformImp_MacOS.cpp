@@ -1960,6 +1960,11 @@ CStrNonTracked NSys::NFile::fg_GetProgramPathNonTracked()
 	return fg_GetProgramPathGeneral<CStrNonTracked>();
 }
 
+CStr NSys::NFile::fg_GetProgramPathForExecutableContents()
+{
+	return fg_GetProgramPath();
+}
+
 NMib::NStr::CStr NSys::NFile::fg_GetModulePath(void *_pCode)
 {
 	Dl_info ModuleInfo;

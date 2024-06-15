@@ -5740,6 +5740,11 @@ CStr NSys::NFile::fg_GetProgramPath()
 	return fg_GetLocalSys()->m_ProgramPath_CStr;
 } 
 
+CStr NSys::NFile::fg_GetProgramPathForExecutableContents()
+{
+	return fg_GetProgramPath();
+}
+
 CStr NSys::NFile::fg_GetCurrentDirectory()
 {
 	CWStr Ret;
