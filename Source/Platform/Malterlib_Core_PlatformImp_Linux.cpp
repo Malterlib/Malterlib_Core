@@ -2111,7 +2111,7 @@ namespace NMib
 			{
 				tf_CStr ExePath = typename tf_CStr::CFormat("/proc/{}/exe") << (mint)getpid();
 				tf_CStr FullPath = fg_ResolveSymbolicLink<tf_CStr>(ExePath);
-				return FullPath;
+				return FullPath.f_RemoveSuffix(" (deleted)");
 			}
 		}
 	}
