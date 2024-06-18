@@ -2026,6 +2026,10 @@ Compile
 		!!PlatformFamily "Linux"
 		!!PlatformFamily "Emscripten"
 	}
+	PreprocessorDefines += ["DMibDebug"]
+	{
+		!!DebugCode true
+	}
 	PreprocessorDefines += "_DEBUG"
 	{
 		&

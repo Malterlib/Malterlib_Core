@@ -86,12 +86,14 @@
 
 
 // Debug mode
-#if defined(DCompiler_clang) || defined(DCompiler_gcc) || defined(DCompiler_MSVC)
-#	ifdef _DEBUG
-#		define DMibDebug
+#ifndef DMibDebug
+#	if defined(DCompiler_clang) || defined(DCompiler_gcc) || defined(DCompiler_MSVC)
+#		ifdef _DEBUG
+#			define DMibDebug
+#		endif
+#	else
+#		error "Implement this"
 #	endif
-#else
-#	error "Implement this"
 #endif
 
 
