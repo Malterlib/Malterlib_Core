@@ -1509,6 +1509,7 @@ Property
 		{
 			!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 		}
+		PreprocessorDefines += `DMibConfig_Thread_DebugThreadLocals=@(MalterlibThread_DebugThreadLocals ? "1" : "0")`
 	}
 	Property
 	{
