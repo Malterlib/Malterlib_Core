@@ -46,26 +46,26 @@ static_assert(sizeof(pid_t) <= sizeof(mint), "pid_t must be the same size or sma
 mint NSys::fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*))
 {
 	pthread_key_t pKey = 0;
-	if (pthread_key_create(&pKey, _pDestructor))
-		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", errno));
+	if (auto ErrNo = pthread_key_create(&pKey, _pDestructor))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", ErrNo));
 	else if (pKey == 0)
 	{
 		// We don't support the key being 0, allocate the next key if this happens
-		if (pthread_key_create(&pKey, _pDestructor))
-			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", errno));
+		if (auto ErrNo = pthread_key_create(&pKey, _pDestructor))
+			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", ErrNo));
 		DMibFastCheck(pKey != 0);
 	}
 	
-	if (pthread_setspecific(pKey, nullptr))
-		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc with destructor)", errno));
+	if (auto ErrNo = pthread_setspecific(pKey, nullptr))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc with destructor)", ErrNo));
 	return (mint)pKey;
 }
 
 void NSys::fg_Thread_FreeLocalWithDestructor(mint _iStorage)
 {
 	pthread_key_t pKey = (pthread_key_t)_iStorage;
-	if (pthread_key_delete(pKey))
-		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_delete (thread local free)", errno));
+	if (auto ErrNo = pthread_key_delete(pKey))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_delete (thread local free)", ErrNo));
 }
 
 #ifdef DPlatformFamily_macOS
@@ -86,8 +86,8 @@ void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_p
 	if (ThisThread == _ThreadID)
 	{
 		pthread_key_t pKey = (pthread_key_t)_iStorage;
-		if (pthread_setspecific(pKey, _pData))
-			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", errno));
+		if (auto ErrNo = pthread_setspecific(pKey, _pData))
+			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", ErrNo));
 		return;
 	}
 #ifdef DPlatformFamily_macOS
@@ -121,31 +121,31 @@ void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_p
 mint NSys::fg_Thread_AllocLocal()
 {
 	pthread_key_t pKey = 0;
-	if (pthread_key_create(&pKey, nullptr))
-		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc)", errno));
+	if (auto ErrNo = pthread_key_create(&pKey, nullptr))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc)", ErrNo));
 	else if (pKey == 0)
 	{
-		if (pthread_key_create(&pKey, nullptr))
-			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc)", errno));
+		if (auto ErrNo = pthread_key_create(&pKey, nullptr))
+			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc)", ErrNo));
 		DMibFastCheck(pKey != 0);
 	}
-	if (pthread_setspecific(pKey, nullptr))
-		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc)", errno));
+	if (auto ErrNo = pthread_setspecific(pKey, nullptr))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc)", ErrNo));
 	return (mint)pKey;
 }
 
 void NSys::fg_Thread_FreeLocal(mint _iStorage)
 {
 	pthread_key_t pKey = (pthread_key_t)_iStorage;
-	if (pthread_key_delete(pKey))
-		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_delete (thread local free)", errno));
+	if (auto ErrNo = pthread_key_delete(pKey))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_delete (thread local free)", ErrNo));
 }
 
 void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
 {
 	pthread_key_t pKey = (pthread_key_t)_iStorage;
-	if (pthread_setspecific(pKey, _pData))
-		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", errno));
+	if (auto ErrNo = pthread_setspecific(pKey, _pData))
+		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", ErrNo));
 }
 
 void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
