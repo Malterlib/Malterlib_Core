@@ -123,6 +123,12 @@ Compile
 
 %Group "Source"
 {
+	Compile
+	{
+		!!CompileDialect "C"
+		PreprocessorDefines += `DMibConfig_Thread_DebugThreadLocals=@(MalterlibThread_DebugThreadLocals ? "1" : "0")`
+	}
+
 	%File "Source/Platform/Malterlib_Core_PlatformImp_DisableStackTraceUnit.cpp"
 	%Group "Memory"
 	{
