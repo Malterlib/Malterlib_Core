@@ -678,7 +678,9 @@ CSystemLinux::CSystemLinux()
 {
 	fg_MemClear(m_SocketContext);
 
-	pthread_key_create(&m_ThreadDestructionHook, fs_ThreadDestructionHook);
+	auto Error = pthread_key_create(&m_ThreadDestructionHook, fs_ThreadDestructionHook);
+	if (Error)
+		DMibError(NMib::NPlatform::fg_FormatErrno("pthread_key_create", Error));
 
 	m_DesktopEnvironment = fg_DeduceDesktopEnvironment();
 

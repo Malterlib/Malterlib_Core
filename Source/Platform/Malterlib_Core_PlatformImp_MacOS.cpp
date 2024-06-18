@@ -621,7 +621,8 @@ public:
 
 	void f_InitThreadLocal()
 	{
-		pthread_key_create(&m_ForkThreadLocal, nullptr);
+		if (auto ErrNo = pthread_key_create(&m_ForkThreadLocal, nullptr))
+			DMibError(NMib::NPlatform::fg_FormatErrno("pthread_key_create", ErrNo));
 	}
 
 	void f_Init()
@@ -650,7 +651,8 @@ public:
 
 		CSystem::f_Destruct();
 
-		pthread_key_delete(m_ForkThreadLocal);
+		if (auto ErrNo = pthread_key_delete(m_ForkThreadLocal))
+			DMibError(NMib::NPlatform::fg_FormatErrno("pthread_key_delete", ErrNo));
 	}
 
 	static void fs_ThreadDestructionHook(void* _ThreadID)
