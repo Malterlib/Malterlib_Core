@@ -241,6 +241,8 @@ namespace NMib
 
 	void CSystem::f_Init()
 	{
+		// Pre-alloctate exception thread local
+		NException::fg_UncaughtExceptions();
 	}
 
 	void CSystem::f_RemoveAllLoggers()
