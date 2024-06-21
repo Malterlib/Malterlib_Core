@@ -1,0 +1,28 @@
+// Copyright © 2024 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Type
+{
+	namespace NRepositoryReleasePackage
+	{
+		CPackage: {
+			PackageName: string
+			, Files: [string]
+			, Compress: bool = true
+			, CompressArguments: [string] = ["-a"]
+		}
+	}
+
+	CRepositoryReleasePackage: {
+		ReleaseName : string
+		, Description : string
+		, SourceReference: string
+		, MakeLatest: bool = true
+		, Packages: [type(NRepositoryReleasePackage::CPackage)]
+	}
+}
+
+Repository
+{
+	ReleasePackage: type(CRepositoryReleasePackage)?
+}

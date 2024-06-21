@@ -10,6 +10,7 @@ Property
 Import "Malterlib_Core_RepositoryCore.MHeader"
 Import "Build/Shared_Repository.MSettings"
 Import "Build/Shared_RepositoryPolicy.MSettings"
+Import "Build/Shared_RepositoryReleasePackage.MSettings"
 Import "Build/Shared_Types.MSettings"
 Import "Malterlib_Core_RepositoryBinary.MHeader"
 Import "Malterlib_Core_RepositoryModules.MHeader"
