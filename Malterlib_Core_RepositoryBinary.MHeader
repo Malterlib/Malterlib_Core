@@ -85,6 +85,23 @@ Property
 			}
 		}
 		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
+		ReleasePackage {
+			ReleaseName : `bootstrap/@(MalterlibBootstrapVersion->ToString())`
+			, Description: `Malterlib bootstrap binaries version @(MalterlibBootstrapVersion->ToString())`
+			, SourceReference: "lfs"
+			, Packages: [
+				{
+					PackageName: "MTool.tar.gz"
+					, Compress: true
+					, Files: ["Bootstrap.version", RepoPlatformFamily->SwitchWithError(
+						"Unsupported platform: "
+						, "macOS", ["MTool", "mib", "bsdtar", "MalterlibHelper", "MalterlibOverrideMalloc.dylib"]
+						, "Linux", ["MTool", "mib", "bsdtar", "MalterlibHelper"]
+						, "Windows", ["MTool.exe", "mib.exe", "bsdtar.exe"]
+					)...]
+				}
+			]
+		}
 	}
 }
 
