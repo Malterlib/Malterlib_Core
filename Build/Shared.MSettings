@@ -1,6 +1,9 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+Import "Shared_Repository.MSettings"
+Import "Shared_RepositoryPolicy.MSettings"
+
 Import "Shared.MGeneratorSettings"
 
 Import "Xcode/Xcode.MGeneratorSettings"
@@ -29,8 +32,6 @@ Import "Shared_Property.MSettings"
 Import "Shared_Compile.MSettings"
 Import "Shared_Workspace.MSettings"
 Import "Shared_Target.MSettings"
-Import "Shared_Repository.MSettings"
-Import "Shared_RepositoryPolicy.MSettings"
 Import "Shared_Import.MSettings"
 
 // Files generated such as exporting vars to external build system
