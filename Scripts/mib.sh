@@ -6,10 +6,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 set -e
 
-source "$DIR/Detect.sh"
+if [[ "$MalterlibExecutable" == "" ]]; then
+	source "$DIR/Detect.sh"
+fi
+
 ExtraOptions=""
 
-export MalterlibProtectedEnvironment="MToolIsMalterlib;@MalterlibProtectedEnvironment"
+export MalterlibProtectedEnvironment="MToolIsMalterlib;MalterlibProtectedEnvironment"
 
 while true; do
 

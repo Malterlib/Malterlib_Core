@@ -7,7 +7,9 @@ ScriptDir="$PWD"
 set -e
 
 if [ -e ../../Scripts/Detect.sh ]; then
-	source ../../Scripts/Detect.sh
+	if [[ "$MToolExecutable" == "" ]]; then
+		source ../../Scripts/Detect.sh
+	fi
 elif [[ "$MToolPath" != "" ]]; then
 	MToolExecutable="$MToolPath/MTool"
 else

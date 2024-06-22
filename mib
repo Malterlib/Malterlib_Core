@@ -5,7 +5,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BASH_SOURCE_FULL="$DIR/${BASH_SOURCE[0]##*/}"
 
-set -e
+set -eo pipefail
 
 cd "$DIR"
 
@@ -67,9 +67,9 @@ function BootstrapInit()
 	BootstrapInit=true
 
 	echo
-	OutputHeading '/¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\'
-	OutputHeading '| Bootstrapping Malterlib |'
-	OutputHeading '\_________________________/'
+	OutputHeading '╭─────────────────────────╮'
+	OutputHeading '│ Bootstrapping Malterlib │'
+	OutputHeading '╰─────────────────────────╯'
 	echo
 
 	# Make sure that lfs is installed
@@ -93,9 +93,9 @@ function ReportBootstrapDone()
 		return
 	fi
 
-	OutputHeading '/¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\'
-	OutputHeading '| Successfully bootstrapped Malterlib |'
-	OutputHeading '\_____________________________________/'
+	OutputHeading '╭─────────────────────────────────────╮'
+	OutputHeading '│ Successfully bootstrapped Malterlib │'
+	OutputHeading '╰─────────────────────────────────────╯'
 	echo
 }
 
@@ -136,13 +136,35 @@ function GetMalterlibCoreHash()
 }
 
 MalterlibChangingBootstrapVersion="false"
-BootstrapVersion="4"
+BootstrapVersion="5"
 MalterlibCoreBootstrapVersion="2"
+
+export MalterlibScriptPath="$DIR"
+export MalterlibBashSourceFull="$BASH_SOURCE_FULL"
+
+function DownloadPrivateGithubAsset
+{
+	GitHubApiToken=`printf "protocol=https\nhost=github.com\n" | git credential fill | grep password | cut -d = -f 2`
+
+	ApiRepoRoot="https://api.github.com/repos/Malterlib/$1"
+	AuthString="Authorization: token $GitHubApiToken"
+
+	echo "    $ApiRepoRoot"
+	curl -o /dev/null -sH "$AuthString" "$ApiRepoRoot" || { echo "Error: Invalid repo, token or network issue!";  exit 1; }
+
+	echo "    $ApiRepoRoot/releases/tags/$2"
+	TagResponse=$(curl -sH "$AuthString" "$ApiRepoRoot/releases/tags/$2")
+	eval $(echo "$TagResponse" | grep -C3 "name.:.\+$3" | grep -w id | tr : = | tr -cd '[[:alnum:]]=')
+
+	[ "$id" ] || { echo "Error: Failed to get asset id, response: $TagResponse" | awk 'length($0)<50' >&2; exit 1; }
+
+	echo "    $ApiRepoRoot/releases/assets/$id"
+	curl -LJo "$4" --no-progress-meter -H "Authorization: token $GitHubApiToken" -H 'Accept: application/octet-stream' "$ApiRepoRoot/releases/assets/$id"
+}
 
 function BootstrapCore()
 {
 	if ! [ -e Malterlib/Core ]; then
-		BootstrapInit
 		DetectRepoRoot
 
 		if ! [ -e Malterlib/Core ]; then
@@ -193,21 +215,52 @@ function BootstrapCore()
 		fi
 	fi
 
+	unset MalterlibBinariesDir
 	source ./Malterlib/Core/Scripts/Detect.sh
 	if [[ "$MalterlibPlatform" ==  Windows ]]; then
 		mkdir -p /tmp
 	fi
 
 	MalterlibBinariesPath="Binaries/Malterlib/${MalterlibPlatform}/${MalterlibArch}"
-	MalterlibBinariesRepo="MalterlibBinaries_${MalterlibPlatform}_${MalterlibArch}"
 
-	if [ -e "$MalterlibBinariesPath" ]; then
-		find "$DIR/$MalterlibBinariesPath" -maxdepth 0 -type d -empty -exec rmdir {} \;
+	if [ -e "$MalterlibScriptPath/$MalterlibBinariesPath" ]; then
+		find "$MalterlibScriptPath/$MalterlibBinariesPath" -maxdepth 0 -type d -empty -exec rmdir {} \;
 	fi
 
-	if ! [ -e "$MalterlibBinariesPath/Bootstrap.version" ] || [[ `cat "$MalterlibBinariesPath/Bootstrap.version"` != "$BootstrapVersion" ]]; then
-		echo Removing binaries because they are not compatible with current bootstrap process
-		rm -rf "$MalterlibBinariesPath"
+	export MalterlibBootstrapBinariesPath="$HOME/.Malterlib/bootstrap/$BootstrapVersion"
+	if ! [ -e "$MalterlibBootstrapBinariesPath/Bootstrap.version" ]; then
+		if ! "$MalterlibExecutable" install-binariese &> /dev/null; then
+			BootstrapInit
+			DetectRepoRoot
+			export TempDir=`mktemp -d`
+			mkdir -p "$TempDir"
+
+			MalterlibBinariesRepo="MalterlibBinaries_${MalterlibPlatform}_${MalterlibArch}_rLFS"
+
+			PublicAssetUrl="$MalterlibRepoRoot/$MalterlibBinariesRepo/releases/download/bootstrap%2F${BootstrapVersion}/MTool.tar.gz"
+			echo "Trying public download"
+			echo "    $PublicAssetUrl"
+			ExpectedError="The requested URL returned error: 404"
+			if ! curl -L --no-progress-meter -fo "$TempDir/MTool.tar.gz" "$PublicAssetUrl" 2>&1 | grep -v "$ExpectedError"; then
+				echo Trying private download instead
+				DownloadPrivateGithubAsset "$MalterlibBinariesRepo" "bootstrap/${BootstrapVersion}" "MTool.tar.gz" "$TempDir/MTool.tar.gz"
+				echo
+			fi
+
+			mkdir -p "$MalterlibBootstrapBinariesPath"
+			pushd "$MalterlibBootstrapBinariesPath" > /dev/null
+				echo "$PWD:"
+				tar --force-local -xvf "$TempDir/MTool.tar.gz"
+				./mib install-binaries
+			popd > /dev/null
+
+			echo
+
+			ReportBootstrapDone
+		fi
+	fi
+
+	if ! [ -e "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version" ] || [[ `cat "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version"` != "$BootstrapVersion" ]]; then
 		export MalterlibChangingBootstrapVersion=true
 	fi
 
@@ -220,43 +273,11 @@ function BootstrapCore()
 			mv BuildSystem/Default/RepositoryState.json{.new,}
 		fi
 	fi
-
-	if ! [ -e "$MalterlibBinariesPath" ]; then
-		BootstrapInit
-		DetectRepoRoot
-
-		if ! [ -e "$MalterlibBinariesPath" ]; then
-
-			OutputInfo "Cloning $MalterlibBinariesPath"
-
-			RepoFolder="Malterlib/Core/"
-			GitHash=`cat Malterlib/Core/*.MRepo | grep -A2 "\"\\.\\./\\.\\./$MalterlibBinariesPath\"" | grep '"Hash":' | cut '-d ' -f 2 | tr -d '"' || true`
-
-			if [[ "$GitHash" != "" ]]; then
-				echo "Found commit hash in ${RepoFolder}*.MRepo files: `OutputNote "$GitHash"`"
-
-				git clone -n "$MalterlibRepoRoot/$MalterlibBinariesRepo.git" $MalterlibBinariesPath
-				pushd $MalterlibBinariesPath > /dev/null
-				git checkout -B master $GitHash
-				popd > /dev/null
-			else
-				OutputError "Could not find commit hash in ${RepoFolder}*.MRepo files using latest default branch"
-
-				git clone "$MalterlibRepoRoot/$MalterlibBinariesRepo.git" $MalterlibBinariesPath
-			fi
-
-			echo
-		fi
-	fi
-
-	ReportBootstrapDone
 }
 
 BootstrapCore
 
 export MalterlibBinariesPath
-export MalterlibScriptPath="$DIR"
-export MalterlibBashSourceFull="$BASH_SOURCE_FULL"
 
 ScriptsDir="$PWD/Malterlib/Core/Scripts"
 NumArguments=$#
@@ -271,6 +292,22 @@ while true; do
 
 	function UpdateMTool()
 	{
+		unset MalterlibBinariesDir
+		if [[ "$PWD" != "$MalterlibScriptPath" ]]; then
+			echo "Current directory is incorrect: \"$PWD\" != \"$MalterlibScriptPath\""
+			exit 1
+		fi
+
+		MalterlibBinariesPath="Binaries/Malterlib/${MalterlibPlatform}/${MalterlibArch}"
+
+		if ! [ -e "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version" ] || [[ `cat "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version"` != "$BootstrapVersion" ]]; then
+			MalterlibBinariesPath="$MalterlibBootstrapBinariesPath"
+			export MalterlibBinariesDir="$MalterlibBinariesPath"
+			source "$MalterlibScriptPath/Malterlib/Core/Scripts/Detect.sh"
+		elif [[ "$1" != "false" ]]; then
+			source "$MalterlibScriptPath/Malterlib/Core/Scripts/Detect.sh"
+		fi
+
 		if [[ "$MalterlibPlatform" ==  Windows ]] || [[ "$MalterlibSafeMib" == "true" ]]; then
 			DependencyFile=BuildSystem/SafeMib/SafeMib.MalterlibDependency
 
@@ -283,7 +320,7 @@ while true; do
 
 				ExcludePatterns="*/.git;*/.DS_Store;*.TMP"
 
-				MalterlibDiffCopyExcludePatterns="$ExcludePatterns" "$MToolExecutable" DiffCopy "$MalterlibBinariesPath/*" "BuildSystem/SafeMib/Binaries" "" 1 1
+				MalterlibDiffCopyExcludePatterns="$ExcludePatterns" "$MToolExecutable" DiffCopy "`MalterlibConvertPath \"$MalterlibBinariesPath\"`/*" "BuildSystem/SafeMib/Binaries" "" 1 1
 				MalterlibDiffCopyExcludePatterns="$ExcludePatterns" "$MToolExecutable" DiffCopy "Malterlib/Core/Scripts/*" "BuildSystem/SafeMib/Scripts" "" 1 1
 				"$MToolExecutable" TouchOrCreate "BuildSystem/SafeMib/SafeMib.updated"
 
@@ -300,10 +337,11 @@ while true; do
 
 			export MalterlibBinariesDir="$PWD/BuildSystem/SafeMib/Binaries"
 			ScriptsDir="$PWD/BuildSystem/SafeMib/Scripts"
+			source ./Malterlib/Core/Scripts/Detect.sh
 		fi
 	}
 
-	UpdateMTool
+	UpdateMTool false
 
 	export -f UpdateMTool
 
@@ -353,7 +391,7 @@ while true; do
 
 			set +e
 
-			"$ScriptsDir/mib.sh" generate "$@"
+			BootstrapVersion="$BootstrapVersion" "$ScriptsDir/mib.sh" generate "$@"
 
 			MToolExit=$?
 			set -e
@@ -415,9 +453,9 @@ while true; do
 		*)
 			set +e
 			if (( $NumArguments >= 1 )); then
-				"$ScriptsDir/mib.sh" "$Command" "$@"
+				BootstrapVersion="$BootstrapVersion" "$ScriptsDir/mib.sh" "$Command" "$@"
 			else
-				"$ScriptsDir/mib.sh" "$@"
+				BootstrapVersion="$BootstrapVersion" "$ScriptsDir/mib.sh" "$@"
 			fi
 			MToolExit=$?
 			set -e
