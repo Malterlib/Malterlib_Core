@@ -19,9 +19,10 @@ namespace NMib
 					return;
 				
 				CStr ToProtect = *pProtected;
-				while (!ToProtect.f_IsEmpty())
+				m_Environment.f_Remove(pProtected);
+
+				for (auto &Variable : ToProtect.f_Split<true>(";"))
 				{
-					CStr Variable = fg_GetStrSep(ToProtect, ";");
 					auto *pValue = m_Environment.f_FindEqual(Variable);
 					if (!pValue)
 						continue;
@@ -29,8 +30,7 @@ namespace NMib
 					m_Environment.f_Remove(Variable);
 				}
 				
-				m_ProtectedEnvironment["MalterlibProtectedEnvironment"] = *pProtected;
-				m_Environment.f_Remove(pProtected);
+				m_ProtectedEnvironment["MalterlibProtectedEnvironment"] = ToProtect;
 			}
 			
 			NThread::CMutualManyRead m_Lock;
