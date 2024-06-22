@@ -82,7 +82,7 @@ Property
 	MalterlibAllBinaryRepositories: bool = false // User(Repository)=true: Set to true to sync all binary repositories.
 	MalterlibAllBinaryRepositories_macOS: bool = false
 
-	MalterlibBinaryRepositoriesUseReleaseLFSStore: bool = false // User(Repository)=true: Use binary LFS store for repositories.
+	MalterlibBinaryRepositoriesUseReleaseLFSStore: bool = true // User(Repository)=true: Use binary LFS store for repositories.
 }
 
 Property
