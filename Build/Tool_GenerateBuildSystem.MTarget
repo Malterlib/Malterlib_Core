@@ -118,10 +118,6 @@ Property
 		{
 			%GenerateFile "IntermediateDirectories"
 			{
-				&
-				{
-					GeneratorFamily "Xcode"
-				}
 				Property
 				{
 					IntermediateDirectoriesTemplate function(string _Target) string
@@ -269,16 +265,21 @@ Property
 						}
 					}
 
+					Contents =+	`"@(Builtin.MToolExe)" CheckDependencies "%2%"\n`\
+								`IF %ERRORLEVEL% NEQ 0 (\n`\
+								`  echo error: Dependency checking failed\n`\
+								`  exit 1\n`\
+								`)\n`
+					{
+						!!HostPlatformFamily "Windows"
+					}
 					Contents =+	`"@(Builtin.MToolExe)" CheckDependencies "$2"\n`\
 								`if [ "$?" != "0" ]; then\n`\
 								`  echo error: Dependency checking failed\n`\
 								`  exit 1\n`\
 								`fi\n`
 					{
-						&
-						{
-							!HostPlatformFamily "Windows"
-						}
+						!HostPlatformFamily "Windows"
 					}
 					Contents =+ "exit 0\n"
 					{
