@@ -17,6 +17,7 @@ function DoDetect()
 			export MalterlibTerminalHeight=`tput lines`
 		fi
 		MalterlibPlatform=Windows
+		MSYS=winsymlinks:native
 		if [[ "$PROCESSOR_IDENTIFIER" == ARMv8\ \(64-bit\)* ]]; then
 			MalterlibArch=arm64
 		elif [[ $ProcessorArch == i*86 ]] ; then
@@ -85,3 +86,4 @@ export MalterlibPlatform
 export MalterlibArch
 export MToolExecutable="$MToolDirectory/MTool"
 export MalterlibExecutable="$MToolDirectory/mib"
+export MSYS
