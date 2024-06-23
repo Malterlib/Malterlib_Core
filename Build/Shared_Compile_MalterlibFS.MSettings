@@ -73,7 +73,6 @@ Compile
 		&
 		{
 			this.Type "File"
-			GeneratorFamily "Xcode"
 			!MalterlibDisableDependencyFiles true
 		}
 	}
