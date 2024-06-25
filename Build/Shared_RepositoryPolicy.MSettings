@@ -472,3 +472,114 @@ Repository
 		!!Repository.ApplyPolicy undefined
 	}
 }
+
+Repository
+{
+	&
+	{
+		Repository.Type "External"
+		true !!Repository.URL->StartsWith("https://github.com/Malterlib/")
+	}
+
+	Policy #<RepositorySettings> {
+		Name: `@(Repository.MalterlibRoot->GetFile())/@(Repository.URL->GetFileNoExt())`
+		, HasIssues: false
+		, HasProjects: false
+		, HasWiki: false
+		, HasDiscussions: false
+		, HasDownloads: false
+		, AllowSquashMerge: false
+		, AllowMergeCommit: false
+		, AllowRebaseMerge: true
+		, AllowAutoMerge: false
+		, AllowUpdateBranch: false
+		, DeleteBranchOnMerge: true
+	}
+	{
+		|
+		{
+			Repository.Policy undefined
+			Repository.Policy<RepositorySettings> undefined
+		}
+	}
+
+	Policy #<Permissions> {
+		Teams: {
+			"reviewers": "read"
+			, "coders": "write"
+			, "hansoft-coders": "write"
+			, "hansoft-testers": "write"
+			, "pushers": "maintain"
+			, "force-pushers": "maintain"
+		}
+		, RemoveOther: true
+	}
+	{
+		|
+		{
+			Repository.Policy undefined
+			Repository.Policy<Permissions> undefined
+		}
+	}
+
+	Policy #<BranchProtection> {
+		"*": {
+			AllowsForcePushes: true
+			, RequiresLinearHistory: false
+			, IsAdminEnforced: true
+			, AllowsDeletions: true
+		}
+		, "malterlib": {
+			RequiresApprovingReviews: true
+			, RequiredApprovingReviewCount: 1
+			, DismissesStaleReviews: true
+			, BypassPullRequestAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}
+			]
+			, RequiresConversationResolution: true
+			, RequiresLinearHistory: false
+			, RestrictsPushes: true
+			, PushAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}
+			]
+			, IsAdminEnforced: true
+			, AllowsForcePushes: false
+			, AllowsDeletions: false
+			, BypassForcePushAllowances: [
+				{
+					Type: "Team"
+					, Value: "force-pushers"
+				}
+			]
+		}
+	}
+	{
+		|
+		{
+			Repository.Policy undefined
+			Repository.Policy<BranchProtection> undefined
+		}
+	}
+
+	Policy #<ActionsSettings> {
+		ActionsEnabled: false
+	}
+	{
+		|
+		{
+			Repository.Policy undefined
+			Repository.Policy<ActionsSettings> undefined
+		}
+	}
+
+	ApplyPolicy true
+	{
+		!!Repository.ApplyPolicy undefined
+	}
+}
