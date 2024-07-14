@@ -129,6 +129,11 @@ Import
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
 
+	CMake_ExcludeFromHash =+ " -fuse-ld=lld"
+	{
+		!!PlatformFamily "macOS"
+	}
+
 	CMake_ExcludeFromHash =+ PlatformToolsetCompiler->GetPath() + "/"
 	{
 		!PlatformToolsetCompiler undefined
