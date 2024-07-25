@@ -45,13 +45,13 @@
 		"Hash": "4452839207df7a88ad82e9a907fda51fd90622e4"
 	},
 	"../../Binaries/MalterlibSDK/Linux/arm64": {
-		"Hash": "ce159f99a8642bce3deb36d62c5c47655309e33c"
+		"Hash": "bf7a6fb0d5d9cbdb62301a656a62aa083eb01c0e"
 	},
 	"../../Binaries/MalterlibSDK/Linux/x64": {
-		"Hash": "012956f93bd3a440a157474070ce3b9ecb3afc60"
+		"Hash": "ac57fef34d607c8bad31b2a7c629329085f38491"
 	},
 	"../../Binaries/MalterlibSDK/Linux/x86": {
-		"Hash": "29e333fa98fd610b5321c5b4aeb70884aed90069"
+		"Hash": "dc45792fdeb0bc89cdb1e7d6e5ee5b0b26d2fff2"
 	},
 	"../../Binaries/MalterlibTest/Cloud/Linux/x64": {
 		"Hash": "7580a3eb92c17f57f60c72ac7685dd5919bc66c1"
