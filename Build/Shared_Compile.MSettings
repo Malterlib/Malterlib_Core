@@ -1236,7 +1236,11 @@ Compile
 	{
 		&
 		{
-			PlatformToolsetFamily "clang"
+			|
+			{
+				PlatformToolsetFamily "clang"
+				Target.PlatformToolset "ClangCL"
+			}
 			Compile.Verbose undefined
 		}
 	}
@@ -1514,7 +1518,11 @@ Compile
 	SizedDeallocation: bool?
 	SizedDeallocation true
 	{
-		!!PlatformToolsetFamily "clang"
+		|
+		{
+			PlatformToolsetFamily "clang"
+			Target.PlatformToolset "ClangCL"
+		}
 	}
 
 	BuiltinSearchPath: [string]?
@@ -1798,7 +1806,11 @@ Compile
 		&
 		{
 			MalterlibVerboseTemplateErrors true
-			PlatformToolsetFamily "clang"
+			|
+			{
+				PlatformToolsetFamily "clang"
+				Target.PlatformToolset "ClangCL"
+			}
 			Compile.VerboseTemplateErrors undefined
 		}
 	}
@@ -1808,7 +1820,11 @@ Compile
 	{
 		&
 		{
-			PlatformToolsetFamily "clang"
+			|
+			{
+				PlatformToolsetFamily "clang"
+				Target.PlatformToolset "ClangCL"
+			}
 			Compile.VerboseTemplateErrors undefined
 		}
 	}

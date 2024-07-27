@@ -559,4 +559,26 @@ GeneratorSetting
 	{
 		!!Compiler "Clang"
 	}
+
+	Compile_VerboseTemplateErrors =+ {
+		VSSettings: Compile.VerboseTemplateErrors->SwitchWithError(
+			"Unsupported option: "
+			, false, { }
+			, true, { AdditionalOptions: `-Xclang -fdiagnostics-show-template-tree -Xclang -fno-elide-type -Xclang -ftemplate-backtrace-limit=0 @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_SizedDeallocation =+ {
+		VSSettings: Compile.SizedDeallocation->SwitchWithError(
+			"Unsupported option: "
+			, false, { AdditionalOptions: `-Xclang -fnosized-deallocation @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `-Xclang -fsized-deallocation @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
 }
