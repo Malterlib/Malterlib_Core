@@ -17,13 +17,13 @@ Import "VisualStudio/VisualStudio.MGeneratorSettings"
 }
 
 // Configurations
-Include "Shared_Configurations.MSettings"
+Import "Shared_Configurations.MSettings"
 
 // Properties
-Include "Shared_Defaults.MSettings"
-Include "Shared_Calculated.MSettings"
-Include "Shared_Property.MSettings"
-Include "Shared_Repository.MSettings"
+Import "Shared_Defaults.MSettings"
+Import "Shared_Calculated.MSettings"
+Import "Shared_Property.MSettings"
+Import "Shared_Repository.MSettings"
 
 // Error checking
 Target.CheckErrors: string = ""
