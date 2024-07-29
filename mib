@@ -250,7 +250,11 @@ function BootstrapCore()
 			mkdir -p "$MalterlibBootstrapBinariesPath"
 			pushd "$MalterlibBootstrapBinariesPath" > /dev/null
 				echo "$PWD:"
-				tar --force-local -xvf "$TempDir/MTool.tar.gz"
+				if [[ "$MalterlibPlatform" ==  "macOS" ]]; then
+					tar -xvf "$TempDir/MTool.tar.gz"
+				else
+					tar --force-local -xvf "$TempDir/MTool.tar.gz"
+				fi
 				./mib install-binaries
 			popd > /dev/null
 
