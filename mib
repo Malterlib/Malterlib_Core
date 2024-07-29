@@ -229,7 +229,7 @@ function BootstrapCore()
 
 	export MalterlibBootstrapBinariesPath="$HOME/.Malterlib/bootstrap/$BootstrapVersion"
 	if ! [ -e "$MalterlibBootstrapBinariesPath/Bootstrap.version" ]; then
-		if ! "$MalterlibExecutable" install-binariese &> /dev/null; then
+		if ! "$MalterlibExecutable" install-binaries &> /dev/null; then
 			BootstrapInit
 			DetectRepoRoot
 			export TempDir=`mktemp -d`
