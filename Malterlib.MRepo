@@ -1,27 +1,27 @@
 {
 	"../../Binaries/Malterlib/Linux/arm64": {
-		"Hash": "0bbac07fc96979fa5f54bc13b4692afa63c729d9"
+		"Hash": "b1e5fe689b9de26191ec7dbc3f2037cfac1e3532"
 	},
 	"../../Binaries/Malterlib/Linux/x64": {
-		"Hash": "48e81eaa192a09f863fd2f91fa868e182371916e"
+		"Hash": "968162a340625dc5519d13db440bbc7a114eeddf"
 	},
 	"../../Binaries/Malterlib/Linux/x86": {
-		"Hash": "1985c076d210a2683649f22b3a588a1591a7dd2c"
+		"Hash": "f9d86545cfa59e9b25f7836b8e7308eec5b74ce1"
 	},
 	"../../Binaries/Malterlib/Windows/arm64": {
-		"Hash": "f7749a0e506abfe5ac4d00efdaebc81ed939d6df"
+		"Hash": "14deb9e6d828b01575117d2eceb61349722a4ebf"
 	},
 	"../../Binaries/Malterlib/Windows/x64": {
-		"Hash": "9d7e963b7a8745fdfb6c96d5cdec43415146c977"
+		"Hash": "ff5dcf354f8014a95931d6aa647e2d3712c35e08"
 	},
 	"../../Binaries/Malterlib/Windows/x86": {
-		"Hash": "ddaaff62a536836def2a3bfde04a8964175334bc"
+		"Hash": "c0e28e84868f039bff28f6760ce68062e21d49ff"
 	},
 	"../../Binaries/Malterlib/macOS/arm64": {
-		"Hash": "73d878813a7f1b11ccabc495877a1038d75b5f34"
+		"Hash": "df8890f77221512fa295343a72ec2370b47109d0"
 	},
 	"../../Binaries/Malterlib/macOS/x64": {
-		"Hash": "80b7fa17ddab858eae52ff94fffae6d10432dffc"
+		"Hash": "bbbe29045fd94d2a9a6906452d0efc177d624300"
 	},
 	"../../Binaries/MalterlibLLVM/Linux/arm64": {
 		"Hash": "f646f84cc40ac022c1fd6b9c9a4a1699a4880774"
@@ -81,7 +81,7 @@
 		"Hash": "fd2418ff0ca39b4231617c02d49b4e879e64e56d"
 	},
 	"../CommandLine": {
-		"Hash": "b64c06b8344c0de1fa471366f88b16616a0bcb09"
+		"Hash": "6120877cca2d6114bde674cad8b94992cb7a2ceb"
 	},
 	"../Compression": {
 		"Hash": "478ae6e852843b3171d30397ce2acf9697d2a5fe"
@@ -123,7 +123,7 @@
 		"Hash": "a0308ba22ab54ba5973f5b97af7ffa01130a84cd"
 	},
 	"../File": {
-		"Hash": "9487d6b5b3a20c5ffea1d5ff98615ee06304a1a1"
+		"Hash": "e37b971b37a561539a12b87bcc36ce3e21fdad4f"
 	},
 	"../Function": {
 		"Hash": "c5cd385e28af605e5b45a3593b427fca69772952"
@@ -207,7 +207,7 @@
 		"Hash": "67fed60aeaec88683d73bf79dca12b1f5b33462e"
 	},
 	"../Tool": {
-		"Hash": "58b4dba8f31db893ba4ab673e2977909487e646a"
+		"Hash": "a09d30aa00353210d924146fc41cb7022fd37adb"
 	},
 	"../Type": {
 		"Hash": "b0d7cb11126ec99d67f5261031fed855c86c62fa"
