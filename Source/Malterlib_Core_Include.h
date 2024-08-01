@@ -31,6 +31,12 @@ namespace NMib
 		struct CEventAutoResetAggregate;
 	}
 
+	namespace NFile
+	{
+		static constexpr mint gc_IdealNetworkQueueSize = 128 * 1024 * 1024;
+		static constexpr mint gc_IdealIoSize = 1024 * 1024;
+	}
+
 	namespace NContainer
 	{
 		template <mint t_MinSize = 16, bool t_bShrink = true, bool t_bCheckBounds = true>
