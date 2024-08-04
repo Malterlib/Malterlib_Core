@@ -745,7 +745,9 @@ GeneratorSetting
 			, "SSE42", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2"]
 			, "AVX", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-mavx"]
 			, "AVX2", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-mavx", "-mavx2"]
+			, "X86_64_v2", ["-march=x86-64-v2"]
 			, "X86_64_v3", ["-march=x86-64-v3"]
+			, "X86_64_v4", ["-march=x86-64-v4"]
 
 		)
 		, Type: "unique"

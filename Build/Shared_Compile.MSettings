@@ -2772,9 +2772,21 @@ Compile
 	ExtendedInstructionSet: string?
 	ExtendedInstructionSet "SSE2"
 	{
-		|
+		&
 		{
+			Compile.ExtendedInstructionSet undefined
 			Architecture "x86"
+		}
+	}
+
+	// Make sure that macOS Rosetta works
+	ExtendedInstructionSet "X86_64_v2"
+	{
+		&
+		{
+			Compile.ExtendedInstructionSet undefined
+			Architecture "x64"
+			PlatformFamily "macOS"
 		}
 	}
 
@@ -2782,6 +2794,7 @@ Compile
 	{
 		&
 		{
+			Compile.ExtendedInstructionSet undefined
 			|
 			{
 				!PlatformFamily "Windows"
@@ -2795,6 +2808,7 @@ Compile
 	{
 		&
 		{
+			Compile.ExtendedInstructionSet undefined
 			PlatformFamily "Windows"
 			!Target.PlatformToolset "ClangCL"
 			|
