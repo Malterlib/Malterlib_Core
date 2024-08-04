@@ -54,13 +54,13 @@
 		"Hash": "dc45792fdeb0bc89cdb1e7d6e5ee5b0b26d2fff2"
 	},
 	"../../Binaries/MalterlibTest/Cloud/Linux/x64": {
-		"Hash": "7580a3eb92c17f57f60c72ac7685dd5919bc66c1"
+		"Hash": "e6136b5c91f0eba5736416250334f64b45576174"
 	},
 	"../../Binaries/MalterlibTest/Cloud/OSX/x64": {
 		"Hash": "618764e80ec78a8056b4ae69575e0803191e04e4"
 	},
 	"../../Binaries/MalterlibTest/Cloud/macOS/x64": {
-		"Hash": "1b743961a731e3287be2423ca684b3ddbae39e18"
+		"Hash": "6dadf0a0e822992bd825be3ba654d2cd8dabdc6d"
 	},
 	"../../SDK": {
 		"Hash": "619e3098502c3d4cb08b59f907f9b5425c1afb36"
