@@ -24,25 +24,25 @@
 		"Hash": "bbbe29045fd94d2a9a6906452d0efc177d624300"
 	},
 	"../../Binaries/MalterlibLLVM/Linux/arm64": {
-		"Hash": "f646f84cc40ac022c1fd6b9c9a4a1699a4880774"
+		"Hash": "28d0161865548fe871bdc8314ec38207e5ba601a"
 	},
 	"../../Binaries/MalterlibLLVM/Linux/x64": {
-		"Hash": "4f2ca6fec0f87997405299097fbcaa2429f84b49"
+		"Hash": "2312ab9c7aaf7e49ed409b70830df3c0d58a4c99"
 	},
 	"../../Binaries/MalterlibLLVM/Linux/x86": {
-		"Hash": "a6455a6d7f1b906dcdde10bbef25c2e369e54efe"
+		"Hash": "12cff85114b593fb07556d997d547a14f71a44a8"
 	},
 	"../../Binaries/MalterlibLLVM/Windows/arm64": {
-		"Hash": "ab3ed0b284ebdbba0c1ac4a7a014a2125e34abfc"
+		"Hash": "1bc6bc3f9efc5c32e00bd87e618470b709649dad"
 	},
 	"../../Binaries/MalterlibLLVM/Windows/x64": {
-		"Hash": "655180c6f71f215573bb3e5a41835ccc8dd90c0d"
+		"Hash": "0407ea61d43035238ed6ad58363ce47019764949"
 	},
 	"../../Binaries/MalterlibLLVM/macOS/arm64": {
-		"Hash": "1dbcb0adf168f9d17558877a3188afd13cc13c81"
+		"Hash": "6f7fd814cd28f9ec9ea822a3e5ae8875c9f8fc49"
 	},
 	"../../Binaries/MalterlibLLVM/macOS/x64": {
-		"Hash": "4452839207df7a88ad82e9a907fda51fd90622e4"
+		"Hash": "8a98c12d2110ff05348dceeefe26a90c6049045a"
 	},
 	"../../Binaries/MalterlibSDK/Linux/arm64": {
 		"Hash": "bf7a6fb0d5d9cbdb62301a656a62aa083eb01c0e"
@@ -207,7 +207,7 @@
 		"Hash": "67fed60aeaec88683d73bf79dca12b1f5b33462e"
 	},
 	"../Tool": {
-		"Hash": "a09d30aa00353210d924146fc41cb7022fd37adb"
+		"Hash": "4cff7d05dd4df64c096145e00f98134b818c1347"
 	},
 	"../Type": {
 		"Hash": "b0d7cb11126ec99d67f5261031fed855c86c62fa"
