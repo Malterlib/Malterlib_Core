@@ -80,31 +80,6 @@ Property
 			!!PlatformType "Unix"
 		}
 	}
-	Compile
-	{
-		&
-		{
-			CompileDialect "C"
-			|
-			{
-				PlatformFamily "Emscripten"
-				PlatformFamily "Linux"
-				PlatformFamily "macOS"
-			}
-			!DocumentationEnabled true
-		}
-		PreprocessorDefines =+ "malloc=nontracked_malloc"
-		PreprocessorDefines =+ "free=nontracked_free"
-		PreprocessorDefines =+ "calloc=nontracked_calloc"
-		PreprocessorDefines =+ "realloc=nontracked_realloc"
-		PreprocessorDefines =+ "cfree=nontracked_cfree"
-		PreprocessorDefines =+ "memalign=nontracked_memalign"
-		PreprocessorDefines =+ "posix_memalign=nontracked_posix_memalign"
-		PreprocessorDefines += "aligned_alloc=nontracked_aligned_alloc"
-		PreprocessorDefines =+ "valloc=nontracked_valloc"
-		PreprocessorDefines =+ "pvalloc=nontracked_pvalloc"
-		PreprocessorDefines =+ "malloc_usable_size=nontracked_malloc_usable_size"
-	}
 }
 
 %Target "Lib_Malterlib_RuntimeABI"
@@ -137,6 +112,31 @@ Property
 		Group "Malterlib"
 		LinkTimeCodeGeneration false
 		ExtraGroups =+ "{Lib_Malterlib_Runtime}/{SharedSettings}"
+	}
+	Compile
+	{
+		&
+		{
+			CompileDialect "C"
+			|
+			{
+				PlatformFamily "Emscripten"
+				PlatformFamily "Linux"
+				PlatformFamily "macOS"
+			}
+			!DocumentationEnabled true
+		}
+		PreprocessorDefines =+ "malloc=nontracked_malloc"
+		PreprocessorDefines =+ "free=nontracked_free"
+		PreprocessorDefines =+ "calloc=nontracked_calloc"
+		PreprocessorDefines =+ "realloc=nontracked_realloc"
+		PreprocessorDefines =+ "cfree=nontracked_cfree"
+		PreprocessorDefines =+ "memalign=nontracked_memalign"
+		PreprocessorDefines =+ "posix_memalign=nontracked_posix_memalign"
+		PreprocessorDefines += "aligned_alloc=nontracked_aligned_alloc"
+		PreprocessorDefines =+ "valloc=nontracked_valloc"
+		PreprocessorDefines =+ "pvalloc=nontracked_pvalloc"
+		PreprocessorDefines =+ "malloc_usable_size=nontracked_malloc_usable_size"
 	}
 	Compile
 	{
@@ -515,83 +515,109 @@ Property
 	}
 	%Group "Source"
 	{
+		Compile
+		{
+			!!MalterlibCompileSupportTabSetings true
+			IndentWidth 2
+			TabWidth 2
+			UsesTabs false
+		}
+
+		%Group "libc++"
+		{
+			!!MalterlibUseStaticLibCxx true
+			Compile
+			{
+				!!CompileDialect "C"
+				!!Compile.Type "Assembler"
+
+				PreprocessorDefines =+ ["_LIBCPP_BUILDING_LIBRARY", "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED"]
+				DynamicTypeInfo true
+				{
+					!!ForceEnableDynamicTypeInfoLibCXX true
+				}
+			}
+			%Group "Headers"
+			{
+				%File "../../External/llvm-project/libcxx/include/^*"
+				Compile.Type "Header"
+			}
+			%Group "Source"
+			{
+				%File "../../External/llvm-project/libcxx/src/^*"
+				%File "../../External/llvm-project/libcxx/src/new.cpp"
+				{
+					Compile.PreprocessorDefines =+ "_LIBCPP_DISABLE_NEW_DELETE_DEFINITIONS"
+					{
+						!MalterlibDefaultToolset true
+					}
+				}
+				%File "../../External/llvm-project/libcxx/src/tz.cpp"
+				{
+					Compile.Disabled true
+				}
+				%File "../../External/llvm-project/libcxx/src/tzdb_list.cpp"
+				{
+					Compile.Disabled true
+				}
+				%Group "pstl"
+				{
+					%File "../../External/llvm-project/libcxx/src/pstl/libdispatch.cpp"
+					{
+						Compile.Disabled true
+						{
+							!PlatformFamily "macOS"
+						}
+					}
+				}
+				%Group "support"
+				{
+					%Group "ibm"
+					{
+						%File "../../External/llvm-project/libcxx/src/support/ibm/*.cpp"
+						{
+							Compile.Disabled true
+						}
+					}
+					%Group "win32"
+					{
+						%File "../../External/llvm-project/libcxx/src/support/win32/*.cpp"
+						{
+							Compile.Disabled true
+							{
+								!PlatformFamily "Windows"
+							}
+						}
+					}
+				}
+			}
+		}
 		%Group "NonTracked"
 		{
 			Compile
 			{
-				!!MalterlibCompileSupportTabSetings true
-				IndentWidth 2
-				TabWidth 2
-				UsesTabs false
-			}
-			%Group "libc++"
-			{
-				!!MalterlibUseStaticLibCxx true
-				Compile
+				&
 				{
-					!!CompileDialect "C"
-					!!Compile.Type "Assembler"
-
-					PreprocessorDefines =+ ["_LIBCPP_BUILDING_LIBRARY", "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED"]
-					DynamicTypeInfo true
+					CompileDialect "C"
+					|
 					{
-						!!ForceEnableDynamicTypeInfoLibCXX true
+						PlatformFamily "Emscripten"
+						PlatformFamily "Linux"
+						PlatformFamily "macOS"
 					}
+					!DocumentationEnabled true
 				}
-				%Group "Headers"
-				{
-					%File "../../External/llvm-project/libcxx/include/^*"
-					Compile.Type "Header"
-				}
-				%Group "Source"
-				{
-					%File "../../External/llvm-project/libcxx/src/^*"
-					%File "../../External/llvm-project/libcxx/src/new.cpp"
-					{
-						Compile.PreprocessorDefines =+ "_LIBCPP_DISABLE_NEW_DELETE_DEFINITIONS"
-						{
-							!MalterlibDefaultToolset true
-						}
-					}
-					%File "../../External/llvm-project/libcxx/src/tz.cpp"
-					{
-						Compile.Disabled true
-					}
-					%File "../../External/llvm-project/libcxx/src/tzdb_list.cpp"
-					{
-						Compile.Disabled true
-					}					
-					%Group "pstl"
-					{
-						%File "../../External/llvm-project/libcxx/src/pstl/libdispatch.cpp"
-						{
-							Compile.Disabled true
-							{
-								!PlatformFamily "macOS"
-							}
-						}
-					}
-					%Group "support"
-					{
-						%Group "ibm"
-						{
-							%File "../../External/llvm-project/libcxx/src/support/ibm/*.cpp"
-							{
-								Compile.Disabled true
-							}
-						}
-						%Group "win32"
-						{
-							%File "../../External/llvm-project/libcxx/src/support/win32/*.cpp"
-							{
-								Compile.Disabled true
-								{
-									!PlatformFamily "Windows"
-								}
-							}
-						}
-					}
-				}
+				PreprocessorDefines =+ "malloc=nontracked_malloc"
+				PreprocessorDefines =+ "free=nontracked_free"
+				PreprocessorDefines =+ "calloc=nontracked_calloc"
+				PreprocessorDefines =+ "realloc=nontracked_realloc"
+				PreprocessorDefines =+ "cfree=nontracked_cfree"
+				PreprocessorDefines =+ "memalign=nontracked_memalign"
+				PreprocessorDefines =+ "posix_memalign=nontracked_posix_memalign"
+				PreprocessorDefines += "aligned_alloc=nontracked_aligned_alloc"
+				PreprocessorDefines =+ "valloc=nontracked_valloc"
+				PreprocessorDefines =+ "pvalloc=nontracked_pvalloc"
+				PreprocessorDefines =+ "malloc_usable_size=nontracked_malloc_usable_size"
 			}
 			%Group "elftoolchain"
 			{
