@@ -205,6 +205,13 @@ UpdateXcodePlugins()
 			fi
 
 			popd > /dev/null
+		elif [ -d "$RepositoryDirectory/MalterlibXcodePatches/llbuild" ]; then
+			if [[ "$HasLibraryValidation" == "false" ]] || [ -e "$XcodeLocation/Contents/SignState.json" ]; then
+				echo Installing patched LLBuild
+				pushd "$RepositoryDirectory/MalterlibXcodePatches/llbuild" > /dev/null
+				./install.sh "$XcodeLocation"
+				popd > /dev/null
+			fi
 		fi
 	fi
 
