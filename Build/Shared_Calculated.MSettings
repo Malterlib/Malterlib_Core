@@ -450,7 +450,7 @@ Property
 		!!MalterlibGitOriginRemote ""
 	}
 
-	MalterlibReproducibleBuild: bool = false // User(Tests)=true: Set to true to enable shared pointer reference debugging
+	MalterlibReproducibleBuild: bool = false // User(Build System)=true: Set to true to enable reproducible builds, setting dates to a known value
 
 	CurrentTimeVersionString: string = DateTime("{YYYY}/{MM}/{DD} {HH}:{MNMN}:{SS}")
 
