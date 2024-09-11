@@ -147,7 +147,7 @@
 		"Hash": "9e88f4b9405f3c3121193f619d5a5bb14e3c8796"
 	},
 	"../Log": {
-		"Hash": "5e5aab18a75f0ad187b5702c8fb73242fa5afd99"
+		"Hash": "e8300451f073b3e078fa62da2e7a89ef281cbdb2"
 	},
 	"../Memory": {
 		"Hash": "e8903388bfeedc4b4c2fb0bb75d56f6d85d686df"
@@ -171,7 +171,7 @@
 		"Hash": "04e82f4a2053e87f5c36b74d2a04df7c67a66db2"
 	},
 	"../Process": {
-		"Hash": "c82efa0bf92ba12c0afbda3ac8d6dfc691ee4e40"
+		"Hash": "e5e18090d14a0cd721643ce05f435e097fa4f9d9"
 	},
 	"../Qt": {
 		"Hash": "7f292c21c6dcec3e169a25bf689a58b211a74314"
