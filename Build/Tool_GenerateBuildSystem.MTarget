@@ -4,22 +4,31 @@
 Property
 {
 	MalterlibDebugConfigureLLDBScript: bool = true // User(Debug)=false: Configure Malterlib lldb helpers in ~/.lldbinit automatically when building
+
+	MalterlibIntermediateDirectoriesFile: string = GeneratedWorkspaceDirectory / "IntermediateDirectories.txt"
+
+	MalterlibCheckAllDependenciesCommandBash: string = `@(Builtin.MToolExe->EscapeBash()) CheckDependencies "$MalterlibIntermediateDirectoriesFile"`
+
+	MalterlibCheckAllDependenciesCommand: string = MalterlibCheckAllDependenciesCommandBash
+	MalterlibCheckAllDependenciesCommand: string = `@(Builtin.MToolExe->EscapeWindows()) CheckDependencies "%MalterlibIntermediateDirectoriesFile%"`
+	{
+		!!HostPlatformFamily "Windows"
+	}
 }
 
 %Target "Tool_GenerateBuildSystem"
 {
-	Property
-	{
-		IntermediateDirectoriesFile: string = GeneratedDirectory / "IntermediateDirectories.txt"
-	}
 	Target
 	{
 		BaseName "GenerateBuildSystem"
 		Type "Tool"
-		CommandLine_Build `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Build "@(IntermediateDirectoriesFile)"`
-		CommandLine_ReBuild `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" ReBuild "@(IntermediateDirectoriesFile)"`
-		CommandLine_Clean `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Clean "@(IntermediateDirectoriesFile)"`
+		CommandLine_Build `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Build`
+		CommandLine_ReBuild `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" ReBuild`
+		CommandLine_Clean `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Clean`
 		CommandLine_Outputs [Builtin.GeneratorStateFile]
+
+		ExportScriptEnvironment += "MalterlibIntermediateDirectoriesFile"
+
 		Group "Tools/Malterlib"
 	}
 	%Group "Source"
@@ -125,7 +134,7 @@ Property
 				}
 				GenerateFile
 				{
-					Name IntermediateDirectoriesFile
+					Name MalterlibIntermediateDirectoriesFile
 					Contents Workspace.AllTargets->ForEach(&IntermediateDirectoriesTemplate)
 					Executable false
 					UnicodeBOM true
@@ -265,7 +274,7 @@ Property
 						}
 					}
 
-					Contents =+	`"@(Builtin.MToolExe)" CheckDependencies "%2%"\n`\
+					Contents =+	`@(MalterlibCheckAllDependenciesCommand)\n`\
 								`IF %ERRORLEVEL% NEQ 0 (\n`\
 								`  echo error: Dependency checking failed\n`\
 								`  exit 1\n`\
@@ -273,7 +282,7 @@ Property
 					{
 						!!HostPlatformFamily "Windows"
 					}
-					Contents =+	`"@(Builtin.MToolExe)" CheckDependencies "$2"\n`\
+					Contents =+	`@(MalterlibCheckAllDependenciesCommand)\n`\
 								`if [ "$?" != "0" ]; then\n`\
 								`  echo error: Dependency checking failed\n`\
 								`  exit 1\n`\
