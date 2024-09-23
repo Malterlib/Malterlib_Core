@@ -744,6 +744,12 @@ GeneratorSetting
 		}
 	}
 
+	Target_Workaround_CLANG_CXX_STANDARD_LIBRARY_HARDENING =+ {
+		XCConfigs: {
+			"CLANG_CXX_STANDARD_LIBRARY_HARDENING": Target.Workaround_CLANG_CXX_STANDARD_LIBRARY_HARDENING
+		}
+	}
+
 	Target_LTOObjectFile =+ {
 		XCConfigs: {
 			"LD_LTO_OBJECT_FILE": Target.LTOObjectFile

@@ -2186,7 +2186,7 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (mint _ThreadID, HANDL
 		Data.f_SetLen(NeededSize);
 		NLocal::SYSTEM_PROCESS_INFORMATION *pInfo = (NLocal::SYSTEM_PROCESS_INFORMATION *)Data.f_GetArray();
 
-		if (NTSTATUS RetVal = NLocal::g_OptionalFunctions.m_fNtQuerySystemInformation(SystemProcessInformation, pInfo, NeededSize, &NeededSize))
+		if (NLocal::g_OptionalFunctions.m_fNtQuerySystemInformation(SystemProcessInformation, pInfo, NeededSize, &NeededSize))
 			break;
 
 		int32 SizeLeft = NeededSize;

@@ -1,6 +1,8 @@
 // Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+#define _LIBCPP_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS
+
 #include <Mib/Core/Core>
 #include <Mib/Cryptography/UUID>
 

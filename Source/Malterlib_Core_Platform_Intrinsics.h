@@ -4,6 +4,9 @@
 #pragma once
 
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	if defined(DCompiler_clang_cl)
+#		include <intrin.h>
+#	endif
 #	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 #		include <stdint.h>
 #		include <x86intrin.h>

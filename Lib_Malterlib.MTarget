@@ -137,6 +137,7 @@ Property
 		PreprocessorDefines =+ "valloc=nontracked_valloc"
 		PreprocessorDefines =+ "pvalloc=nontracked_pvalloc"
 		PreprocessorDefines =+ "malloc_usable_size=nontracked_malloc_usable_size"
+		PreprocessorDefines =+ ["_LIBCPP_BUILDING_LIBRARY", "_LIBUNWIND_DYLD_FIND_UNWIND_SECTIONS_PROVIDED"]
 	}
 	Compile
 	{
@@ -552,13 +553,10 @@ Property
 						!MalterlibDefaultToolset true
 					}
 				}
-				%File "../../External/llvm-project/libcxx/src/tz.cpp"
+				%Group "experimental"
 				{
 					Compile.Disabled true
-				}
-				%File "../../External/llvm-project/libcxx/src/tzdb_list.cpp"
-				{
-					Compile.Disabled true
+					%File "../../External/llvm-project/libcxx/src/experimental/*.cpp"
 				}
 				%Group "pstl"
 				{

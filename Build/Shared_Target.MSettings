@@ -1132,6 +1132,7 @@ Target
 	Workaround_CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING: string = ""
 	Workaround_CLANG_WARN_STRICT_PROTOTYPES: string = ""
 	Workaround_CLANG_WARN_RANGE_LOOP_ANALYSIS: string = ""
+	Workaround_CLANG_CXX_STANDARD_LIBRARY_HARDENING: string = ""
 }
 
 Property

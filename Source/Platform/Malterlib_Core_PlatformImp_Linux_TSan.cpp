@@ -8,14 +8,9 @@
 #include <unistd.h>
 #include <sanitizer/tsan_interface.h>
 
-namespace NMib
-{
-	extern mint g_bCreatedSystem;
-}
-
 DMibSuppressThreadSanitizer inline_never assure_used void __tsan_check_forked_parent_or_child()
 {
-	if (!NMib::g_bCreatedSystem)
+	if (!NMib::g_bCanUseSystemMalloc)
 		return;
 
 	auto &Sys = *((CSystemLinux *)NMib::fg_GetSys());
