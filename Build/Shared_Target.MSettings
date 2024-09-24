@@ -1017,7 +1017,7 @@ Target
 Property
 {
 	fg_ExportScriptEnvironmentContents_Template function(string _EnvVar) string = ""
-	fg_ExportScriptEnvironmentContents_Template =+ `export @(_EnvVar)=@(GetProperty(&@(_EnvVar), "Target:*")->ToStringCompact()->Escape())\n`
+	fg_ExportScriptEnvironmentContents_Template =+ `export @(_EnvVar)=@(GetProperty(&@(_EnvVar), "Target:*")->ToStringCompact()->EscapeHost())\n`
 	{
 		&
 		{
@@ -1025,7 +1025,7 @@ Property
 			!GetProperty(&@(_EnvVar), "Target:*") undefined
 		}
 	}
-	fg_ExportScriptEnvironmentContents_Template =+ `set @(_EnvVar)=@(GetProperty(&@(_EnvVar), "Target:*")->ToStringCompact())\r\n`
+	fg_ExportScriptEnvironmentContents_Template =+ `set "@(_EnvVar)=@(GetProperty(&@(_EnvVar), "Target:*")->ToStringCompact())"\r\n`
 	{
 		&
 		{
