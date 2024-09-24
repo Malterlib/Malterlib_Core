@@ -10,7 +10,7 @@ Property
 	MalterlibCheckAllDependenciesCommandBash: string = `@(Builtin.MToolExe->EscapeBash()) CheckDependencies "$MalterlibIntermediateDirectoriesFile"`
 
 	MalterlibCheckAllDependenciesCommand: string = MalterlibCheckAllDependenciesCommandBash
-	MalterlibCheckAllDependenciesCommand: string = `@(Builtin.MToolExe->EscapeWindows()) CheckDependencies "%MalterlibIntermediateDirectoriesFile%"`
+	MalterlibCheckAllDependenciesCommand `@(Builtin.MToolExe->EscapeWindows()) CheckDependencies "%MalterlibIntermediateDirectoriesFile%"`
 	{
 		!!HostPlatformFamily "Windows"
 	}
