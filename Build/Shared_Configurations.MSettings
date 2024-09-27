@@ -77,25 +77,15 @@ Property
 	EnableTestConfigs: bool = false // User(- Configs)=true: Enable test configs
 	EnableDocumentationConfigs: bool = false // User(- Configs)=true: Enable documenattion configs
 	OnlyTestConfigs: bool = false // User(- Configs)=true: Only test configs enabled
-	EnableProfileConfigs: bool = false // User(- Configs)=true: Enable 'Optimized' and 'Profile' configs
-	EnableExtraDebuggingConfigs: bool = false // User(- Configs)=true: Enable 'Debug Optimized', 'Fast Compile', 'Release Debug' configs
+	EnableProfileConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Profile" : false) // User(- Configs)=true: Enable 'Profile' config
+	EnableOptimizedConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Optimized" : false) // User(- Configs)=true: Enable 'Optimized' config
+	EnableDebugOptimizedConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Debug Optimized" : false) // User(- Configs)=true: Enable 'Debug Optimized' config
+	EnableReleaseDebugConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Release Debug" : false) // User(- Configs)=true: Enable 'Release Debug' config
+	EnableFastCompileConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Fast Compile" : false) // User(- Configs)=true: Enable 'Fast Compile' configs
 
 	EnableReleaseConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Release" : true) // User(- Configs)=false: Enable 'Release' configuration
 	EnableReleaseTestingConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Release Testing" : true) // User(- Configs)=false: Enable 'Release Testing' configuration
 	EnableDebugInlinedConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Debug Inlined" : false) // User(- Configs)=false: Enable 'Debug Inlined' configuration
-	EnableDebugInlinedConfig ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Debug Inlined" : true)
-	{
-		&
-		{
-			EnableDebugInlinedConfig undefined
-			!MalterlibBuildServerBuild true
-			|
-			{
-				PlatformFamily "Windows"
-				EnableExtraDebuggingConfigs true
-			}
-		}
-	}
 
 	EnableDebugConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Debug" : true) // User(- Configs)=false: Enable 'Debug' configuration
 
@@ -266,11 +256,7 @@ Property
 	}
     Fast\ Compile "Minimize compiler time"
 	{
-		|
-		{
-			EnableExtraDebuggingConfigs true
-			SingleConfiguration "Fast Compile"
-		}
+		!!EnableFastCompileConfig true
 	}
     Debug\ Inlined "High debuggability with compiler optimizations that does not hurt debuggability"
 	{
@@ -278,35 +264,19 @@ Property
 	}
     Debug\ Optimized "All debug code paths, but with optimizations"
 	{
-		|
-		{
-			EnableExtraDebuggingConfigs true
-			SingleConfiguration "Debug Optimized"
-		}
+		!!EnableDebugOptimizedConfig true
 	}
     Optimized "Fully optimized using latest CPU instructions"
 	{
-		|
-		{
-			EnableProfileConfigs true
-			SingleConfiguration "Optimized"
-		}
+		!!EnableOptimizedConfig true
 	}
     Profile "High performance, but good compile time"
 	{
-		|
-		{
-			EnableProfileConfigs true
-			SingleConfiguration "Profile"
-		}
+		!!EnableProfileConfig true
 	}
     Release\ Debug "Release code paths, but no compiler optimizations"
 	{
-		|
-		{
-			EnableExtraDebuggingConfigs true
-			SingleConfiguration "Release Debug"
-		}
+		!!EnableReleaseDebugConfig true
 	}
     Release\ Testing "Release code with optimizations, but with asserts and contracts enabled"
 	{
@@ -321,8 +291,8 @@ Property
 Property
 {
 	Tests: string?
-	MalterlibEnablePerfTestConfig: bool = true // User(Tests)=false: Enable Perf Tests config
-	MalterlibEnableTestsConfig: bool = true // User(Tests)=false: Enable Tests config
+	MalterlibEnablePerfTestConfig: bool = true // User(- Configs)=false: Enable Perf Tests config
+	MalterlibEnableTestsConfig: bool = true // User(- Configs)=false: Enable Tests config
 }
 
 *Tests
