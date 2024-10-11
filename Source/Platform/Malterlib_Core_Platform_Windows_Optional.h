@@ -86,6 +86,10 @@ namespace NLocal
 
 		BOOL (WINAPI *m_fWaitOnAddress)(volatile VOID *Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds);
 		void (WINAPI *m_fWakeByAddressSingle)(PVOID Address);
+
+		BOOL (WINAPI *m_fSystemTimeToTzSpecificLocalTimeEx)(const DYNAMIC_TIME_ZONE_INFORMATION *lpTimeZoneInformation, SYSTEMTIME const *lpUniversalTime, LPSYSTEMTIME lpLocalTime);
+		BOOL (WINAPI *m_fTzSpecificLocalTimeToSystemTimeEx)(const DYNAMIC_TIME_ZONE_INFORMATION *lpTimeZoneInformation, SYSTEMTIME const *lpLocalTime, LPSYSTEMTIME lpUniversalTime);
+		BOOL (WINAPI *m_fGetTimeZoneInformationForYear)(USHORT wYear, PDYNAMIC_TIME_ZONE_INFORMATION pdtzi, LPTIME_ZONE_INFORMATION ptzi);
 	};
 
 	extern OSVERSIONINFOEX g_VersionInfo;

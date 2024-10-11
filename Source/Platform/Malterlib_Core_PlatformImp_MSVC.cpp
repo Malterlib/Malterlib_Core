@@ -1964,6 +1964,10 @@ void fg_LoadFunctionPointers()
 		if (!Functions.m_fWakeByAddressSingle)
 			(FARPROC &)Functions.m_fWaitOnAddress = nullptr;
 
+		(FARPROC &)Functions.m_fSystemTimeToTzSpecificLocalTimeEx = GetProcAddress(g_hKernel32, "SystemTimeToTzSpecificLocalTimeEx");
+		(FARPROC &)Functions.m_fTzSpecificLocalTimeToSystemTimeEx = GetProcAddress(g_hKernel32, "TzSpecificLocalTimeToSystemTimeEx");		
+		(FARPROC &)Functions.m_fGetTimeZoneInformationForYear = GetProcAddress(g_hKernel32, "GetTimeZoneInformationForYear");
+
 		g_VersionInfo.dwOSVersionInfoSize = sizeof(g_VersionInfo);
 		if (Functions.m_fRtlGetVersion)
 			Functions.m_fRtlGetVersion((PRTL_OSVERSIONINFOW)&g_VersionInfo);

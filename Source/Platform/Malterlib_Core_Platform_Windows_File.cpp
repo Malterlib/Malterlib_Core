@@ -15,7 +15,7 @@ namespace NMib
 				constexpr static NMib::NTime::CTime const g_FileTimeBase = NMib::NTime::CTime::fs_Create(237148610522659200, 0);
 			}
 
-			NTime::CTimeSpan fg_Win32_FileTimeToMalterlibTimeSpan(FILETIME &_FileTime)
+			NTime::CTimeSpan fg_Win32_FileTimeToMalterlibTimeSpan(FILETIME const &_FileTime)
 			{
 				LARGE_INTEGER Temp;
 				Temp.HighPart = _FileTime.dwHighDateTime;
@@ -30,14 +30,14 @@ namespace NMib
 				return FileTimeSpan;
 			}
 
-			NTime::CTime fg_Win32_FileTimeToMalterlibTime(FILETIME &_FileTime)
+			NTime::CTime fg_Win32_FileTimeToMalterlibTime(FILETIME const &_FileTime)
 			{
 				NTime::CTime BaseTime = g_FileTimeBase;
 
 				return BaseTime + fg_Win32_FileTimeToMalterlibTimeSpan(_FileTime);
 			}
 
-			void fg_Win32_MalterlibTimeToFileTime(const NTime::CTime &_Time, FILETIME &_FileTime)
+			void fg_Win32_MalterlibTimeToFileTime(NTime::CTime const &_Time, FILETIME &o_FileTime)
 			{
 				NTime::CTime BaseTime = g_FileTimeBase;
 				NTime::CTimeSpan FileTimeSpan = _Time - BaseTime;
@@ -46,23 +46,40 @@ namespace NMib
 				Temp.QuadPart = FileTimeSpan.f_GetSeconds() * 10000000;
 				Temp.QuadPart += (FileTimeSpan.f_GetFraction() * 10000000.0).f_ToInt();
 
-				_FileTime.dwHighDateTime = Temp.HighPart;
-				_FileTime.dwLowDateTime = Temp.LowPart;
+				o_FileTime.dwHighDateTime = Temp.HighPart;
+				o_FileTime.dwLowDateTime = Temp.LowPart;
 			}
 
-			void fg_MalterlibTimeToSystemTime(const NTime::CTime &_Time, SYSTEMTIME &_SysTime)
+			void fg_MalterlibTimeToSystemTime(NTime::CTimeConvert::CDateTime const &_DateTime, SYSTEMTIME &o_SysTime)
 			{
-				NTime::CTimeConvert::CDateTime DateTime;
-				NTime::CTimeConvert(_Time).f_ExtractDateTime(DateTime);
-	
-				_SysTime.wYear = DateTime.m_Year;
-				_SysTime.wMonth = DateTime.m_Month;
-				_SysTime.wDayOfWeek = DateTime.m_DayOfWeek;
-				_SysTime.wDay = DateTime.m_DayOfMonth;
-				_SysTime.wHour = DateTime.m_Hour;
-				_SysTime.wMinute = DateTime.m_Minute;
-				_SysTime.wSecond = DateTime.m_Second;
-				_SysTime.wMilliseconds = (DateTime.m_Fraction * 1000.0).f_ToInt();
+				o_SysTime.wYear = _DateTime.m_Year;
+				o_SysTime.wMonth = _DateTime.m_Month;
+				o_SysTime.wDayOfWeek = _DateTime.m_DayOfWeek;
+				o_SysTime.wDay = _DateTime.m_DayOfMonth;
+				o_SysTime.wHour = _DateTime.m_Hour;
+				o_SysTime.wMinute = _DateTime.m_Minute;
+				o_SysTime.wSecond = _DateTime.m_Second;
+				o_SysTime.wMilliseconds = (_DateTime.m_Fraction * 1000.0).f_ToInt();
+			}
+
+			void fg_MalterlibTimeToSystemTime(const NTime::CTime &_Time, SYSTEMTIME &o_SysTime)
+			{
+				return fg_MalterlibTimeToSystemTime(NTime::CTimeConvert(_Time).f_ExtractDateTime(), o_SysTime);
+			}
+
+			NTime::CTime fg_SystemTimeToMalterlibTime(SYSTEMTIME const &_SysTime)
+			{
+				return NTime::CTimeConvert::fs_CreateTime
+					(
+						_SysTime.wYear
+						, _SysTime.wMonth
+						, _SysTime.wDay
+						, _SysTime.wHour
+						, _SysTime.wMinute
+						, _SysTime.wSecond
+						, fp64(_SysTime.wMilliseconds) / 1000.0
+					)
+				;
 			}
 		}
 	}
