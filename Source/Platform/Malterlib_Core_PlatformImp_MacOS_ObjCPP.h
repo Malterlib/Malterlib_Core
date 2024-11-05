@@ -198,7 +198,7 @@ namespace NMib
 
 				NContainer::TCLinkedList<NStorage::TCTuple<NStr::CStr, bool>> m_RenamedFromQueue;
 
-				DMibRefCountDebuggingOnly(NStorage::CRefCountDebugReference m_DebugSelfRef);
+				DIfRefCountDebugging(NStorage::CRefCountDebugReference m_DebugSelfRef);
 
 				NMib::NThread::CSemaphoreAggregate *m_pReportTo;
 				uint64 m_UpdateSequence = 0;
