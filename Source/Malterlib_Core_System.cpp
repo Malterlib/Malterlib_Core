@@ -12,6 +12,37 @@ void fg_MalterlibMallocOverride_PreDestroyNonTrackedMemoryManager();
 
 namespace NMib
 {
+	CPromiseKeepAlive::~CPromiseKeepAlive() = default;
+
+	NStorage::TCUniquePointer<CPromiseKeepAlive> CPromiseKeepAlive::f_AddMultiple
+		(
+			NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pThis
+			, NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pNext
+		)
+	{
+		DMibFastCheck(_pThis.f_Get() == this);
+
+		NStorage::TCUniquePointer<CMultiplePromiseKeepAlive> pKeepAlive = fg_Construct<CMultiplePromiseKeepAlive>();
+		pKeepAlive->m_KeepAlive.f_Insert(fg_Move(_pThis));
+		pKeepAlive->m_KeepAlive.f_Insert(fg_Move(_pNext));
+
+		return pKeepAlive;
+	}
+
+	NContainer::TCVector<NStorage::TCUniquePointer<CPromiseKeepAlive>> m_KeepAlive;
+
+	NStorage::TCUniquePointer<CPromiseKeepAlive> CMultiplePromiseKeepAlive::f_AddMultiple
+		(
+			NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pThis
+			, NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pNext
+		)
+	{
+		DMibFastCheck(_pThis.f_Get() == this);
+
+		m_KeepAlive.f_Insert(fg_Move(_pNext));
+
+		return _pThis;
+	}
 
 	namespace NMemory
 	{

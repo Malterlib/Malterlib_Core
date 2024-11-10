@@ -21,14 +21,46 @@ namespace NMib
 		class CExceptionFilter;
 	}
 
+	struct CPromiseKeepAlive
+	{
+		CPromiseKeepAlive(mint _Allocsize)
+			: m_VirtualAllocSize(_Allocsize)
+		{
+		}
+
+		virtual ~CPromiseKeepAlive() = 0;
+		virtual NStorage::TCUniquePointer<CPromiseKeepAlive> f_AddMultiple(NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pThis, NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pNext);
+
+		mint m_VirtualAllocSize = 0;
+	};
+
+	struct CMultiplePromiseKeepAlive final : public CPromiseKeepAlive
+	{
+		CMultiplePromiseKeepAlive()
+			: CPromiseKeepAlive(sizeof(*this))
+		{
+		}
+
+		NContainer::TCVector<NStorage::TCUniquePointer<CPromiseKeepAlive>> m_KeepAlive;
+
+		NStorage::TCUniquePointer<CPromiseKeepAlive> f_AddMultiple(NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pThis, NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pNext) override;
+	};
+
 	struct CPromiseThreadLocal
 	{
 		void *m_pOnResultSet = nullptr;
+		void *m_pUsePromise = nullptr;
+		NFunction::TCFunctionNoAllocMovable<NStorage::TCUniquePointer<CPromiseKeepAlive> ()> m_fConsumeKeepAlive;
+
 #if DMibEnableSafeCheck > 0
 		void const *m_pOnResultSetConsumedBy = nullptr;
-		void const *m_pExpectCoroutineCallSetConsumedBy = nullptr;
+		void const *m_pExpectCoroutineCallConsumedBy = nullptr;
+		void const *m_pUsePromiseConsumedBy = nullptr;
 		uint32 m_OnResultSetTypeHash = 0;
+		uint32 m_UsePromiseTypeHash = 0;
 		bool m_bCaptureDebugException = false;
+		bool m_bExpectCoroutineCall = false;
+		bool m_bSafeCall = false;
 #endif
 	};
 
@@ -41,7 +73,6 @@ namespace NMib
 		DMibListLinkDS_List(CCrossActorCallStateScope, m_Link) m_CrossActorStateScopes;
 
 #if DMibEnableSafeCheck > 0
-		bool m_bExpectCoroutineCall = false;
 		bool m_bDispatchWithReturnIsIndirection = false;
 #endif
 	};
