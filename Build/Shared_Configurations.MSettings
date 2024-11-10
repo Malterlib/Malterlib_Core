@@ -321,7 +321,8 @@ Property
 Property
 {
 	Tests: string?
-	MalterlibEnablePerfTestConfig: bool = true // User(Tests)=false: Enable sanitizers as separate configurations
+	MalterlibEnablePerfTestConfig: bool = true // User(Tests)=false: Enable Perf Tests config
+	MalterlibEnableTestsConfig: bool = true // User(Tests)=false: Enable Tests config
 }
 
 *Tests
@@ -331,6 +332,7 @@ Property
 	{
 		&
 		{
+			MalterlibEnableTestsConfig true
 			|
 			{
 				Configuration "Profile"
