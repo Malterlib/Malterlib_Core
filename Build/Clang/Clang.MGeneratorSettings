@@ -686,6 +686,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_Warnings_MisleadingIndentation =+ {
+		Flags: Compile.Warnings_MisleadingIndentation->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wmisleading-indentation"
+			, true, "-Wno-misleading-indentation"
+		)
+		, Type: "unique"
+	}
+
 	Compile_EmscriptenWarnings =+ {
 		Flags: Compile.EmscriptenWarnings->SwitchWithError(
 			"Unsupported option: "

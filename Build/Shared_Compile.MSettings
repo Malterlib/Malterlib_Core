@@ -1148,6 +1148,7 @@ Compile
 	Warnings_InlineNewDelete: bool?
 	Warnings_IgnoredAttributes: bool?
 	Warnings_Format: bool?
+	Warnings_MisleadingIndentation: bool?
 
 	AllCPUSubTypes: bool?
 	StackGuard: bool?
@@ -1161,6 +1162,14 @@ Compile
 		}
 	}
 	Warnings_InlineNewDelete false
+	{
+		&
+		{
+			Compiler "Clang"
+			CompileDialect "C"
+		}
+	}
+	Warnings_MisleadingIndentation true
 	{
 		&
 		{
@@ -2436,7 +2445,7 @@ Compile
 
 	DwarfVersion: int?
 
-	DwarfVersion 4
+	DwarfVersion 5
 	{
 		&
 		{
