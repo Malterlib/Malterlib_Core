@@ -102,7 +102,6 @@ namespace NMib
 #			endif
 			DMibFastCheck(pThreadLocalBlock);
 			void *pRet = (void *)pThreadLocalBlock[_iStorage];
-			DMibFastCheck(pRet);
 			return pRet;
 		}
 
@@ -127,7 +126,6 @@ namespace NMib
 #			else
 				NPrivate::fg_GetTebData<void *>(_iStorage*4 + 900*4);
 #			endif
-			DMibFastCheck(pRet);
 			return pRet;
 		}
 
