@@ -719,7 +719,7 @@ Property
 	{
 		!!PlatformFamily "Linux"
 	}
-	Malterlib_DummmyLibrary "kernel32.lib"
+	Malterlib_DummmyLibrary VisualStudioMSVCRootPath / MalterlibMSVCVersion / `lib/@(Architecture)/delayimp.lib`
 	{
 		!!PlatformFamily "Windows"
 	}
