@@ -917,21 +917,12 @@ Property
 Property
 {
 	MalterlibLinkerDemangle: bool = true // User(Toolset)=false: Set to false to display mangled names in linker messages
-	MalterlibOverrideMSVCVersion: string?
 
 	MalterlibDisableAutomaticResources: bool = false
 
 	MalterlibUseLocalCompilerBuild: bool = false // User(Toolset)=true: Build llvm locally and use that for building
 
 	MalterlibMSVCVersion: string?
-	MalterlibMSVCVersion MalterlibOverrideMSVCVersion
-	{
-		&
-		{
-			MalterlibMSVCVersion undefined
-			!MalterlibOverrideMSVCVersion undefined
-		}
-	}
 
 	VisualStudioRootUnix: string = `@(Builtin.VisualStudioRoot->UnixPath())`
 	VisualStudioMSVCRootPath: string = `@(VisualStudioRootUnix)/VC/Tools/MSVC`
@@ -941,7 +932,11 @@ Property
 		!HostPlatformFamily "Windows"
 	}
 
-	MalterlibMSVCVersion VisualStudioMSVCRootPath->FindDirectoriesIn('*')<[0]>->GetFile()
+	VisualStudioMSVCVersionPaths: [string] = VisualStudioMSVCRootPath->FindDirectoriesIn('*')->Sort()
+
+	MalterlibLatestMSVCVersion: string = VisualStudioMSVCVersionPaths<[VisualStudioMSVCVersionPaths->Length() - 1]>->GetFile()
+
+	MalterlibMSVCVersion MalterlibLatestMSVCVersion
 	{
 		!!MalterlibMSVCVersion undefined
 	}
@@ -976,16 +971,6 @@ Property
 			MalterlibUseLocalCompilerBuild true
 			!MalterlibDefaultCompiler true
 			!HostPlatformFamily "Windows"
-		}
-	}
-	PlatformToolsetCompiler `@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture)/cl.exe`
-	{
-		&
-		{
-			PlatformToolsetCompiler undefined
-			!MalterlibOverrideMSVCVersion undefined
-			!MalterlibDefaultCompiler true
-			HostPlatformFamily "Windows"
 		}
 	}
 	PlatformToolsetCompilerBasePath: string?
@@ -3186,28 +3171,16 @@ Target
 		!!GeneratorFamily "Xcode"
 	}
 
+	VCToolsVersion MalterlibMSVCVersion
+	{
+		&
+		{
+			!MalterlibMSVCVersion undefined
+			GeneratorFamily "VisualStudio"
+		}
+	}
+
 	ToolPath += [MToolDirectory]
-
-	ToolPath += `@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/HostX64/x64`
-	{
-		&
-		{
-			!MalterlibOverrideMSVCVersion undefined
-			HostPlatformFamily "Windows"
-			WindowsNativeToolChain true
-			MSVCToolChainArchitecture "HostX64/x86"
-		}
-	}
-
-	ToolPath += `@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/bin/@(MSVCToolChainArchitecture)`
-	{
-		&
-		{
-			!MalterlibOverrideMSVCVersion undefined
-			HostPlatformFamily "Windows"
-			WindowsNativeToolChain true
-		}
-	}
 
 	ToolPath += `@(MalterlibBinariesDirectory)/NoLib/x86`
 	{
@@ -3226,31 +3199,6 @@ Target
 			PlatformType "Windows"
 			MalterlibGenerateLibrary false
 			WindowsNativeToolChain true
-		}
-	}
-}
-
-Compile
-{
-	SearchPath += `@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/include`
-	{
-		&
-		{
-			!MalterlibOverrideMSVCVersion undefined
-			CompileDialect "C"
-			HostPlatformFamily "Windows"
-		}
-	}
-}
-
-Target
-{
-	SearchPath += `@(MalterlibToolsRoot)/MSVC/@(MalterlibOverrideMSVCVersion)/lib/@(Architecture)`
-	{
-		&
-		{
-			!MalterlibOverrideMSVCVersion undefined
-			HostPlatformFamily "Windows"
 		}
 	}
 }

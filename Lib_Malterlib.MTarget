@@ -743,10 +743,6 @@ Property
 				VisualStudioRoot: string = Builtin.VisualStudioRoot->UnixPath()
 
 				MSVCRootPath: string
-				MSVCRootPath `@(MalterlibToolsRoot)/MSVC`
-				{
-					!MalterlibOverrideMSVCVersion undefined
-				}
 				MSVCRootPath `@(VisualStudioRoot)/VC/Tools/MSVC`
 				{
 					!!MSVCRootPath undefined
