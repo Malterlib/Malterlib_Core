@@ -78,6 +78,17 @@ GeneratorSetting
 		]
 	}*/
 
+	Target_VCToolsVersion =+ {
+		VSSettings: [
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "VCToolsVersion"
+				, Value: Target.VCToolsVersion->WindowsPath()
+			}
+		]
+	}
+
 	Target_FileExtension =+ {
 		VSSettings: [
 			{
