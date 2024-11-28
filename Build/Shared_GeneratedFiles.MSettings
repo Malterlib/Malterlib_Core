@@ -542,6 +542,13 @@ Property
 
 %Group "~Automatic/Workspace Build Server Helpers"
 {
+	Property
+	{
+		ScriptWindowsBash true
+		{
+			!!HostPlatformFamily "Windows"
+		}
+	}
 	%GenerateFile "Paths"
 	{
 		GenerateFile
