@@ -14,7 +14,13 @@ source ./BuildSystem/SharedBuildSettings.sh
 
 for Argument in "$@" ; do
 	echo Cleaning workspace: $Argument
-	CleanPath=${MalterlibCompiledFilesSourceBase}/${Argument}
+	if [ -f "BuildSystem/Default/Files/$Argument/Paths.sh" ]; then
+		source "BuildSystem/Default/Files/$Argument/Paths.sh"
+		WorkspacePathVariableName="WorkspaceBase_$Argument"
+		CleanPath=${!WorkspacePathVariableName}
+	else
+		CleanPath=${MalterlibCompiledFilesSourceBase}/${Argument}
+	fi
 	echo CleanPath: ${CleanPath}
 	if [ -d "$CleanPath/Int" ] ; then
 		MTool DeleteDirectoryRecursive "$CleanPath/Int"
