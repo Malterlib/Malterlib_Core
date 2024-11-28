@@ -565,3 +565,23 @@ Property
 		}
 	}
 }
+
+%Group "~Automatic/Workspace Build Server Helpers"
+{
+	%GenerateFile "Paths"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/Files/@(Workspace:Workspace.Name)/Paths.sh`
+			Contents `@(ScriptExport(`WorkspaceBase_@(Workspace:Workspace.Name)`, MalterlibCompiledFilesWarkspaceBase))\r\n`
+			Executable true
+			UnixLineEnds ScriptUnixLineEnds
+			UnicodeBOM false
+		}
+	}
+}
+
+Workspace
+{
+	ExtraGroups =+ "~Automatic/Workspace Build Server Helpers"
+}
