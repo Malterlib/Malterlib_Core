@@ -337,3 +337,7 @@ namespace std
 #else
 	#define DMibMovedFromValid(d_Value)
 #endif
+
+#if defined(__apple_build_version__) && (__apple_build_version__ < 17000000)
+#define DCompiler_Workaround_Apple_clang
+#endif
