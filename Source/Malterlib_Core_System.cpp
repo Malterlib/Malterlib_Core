@@ -14,36 +14,6 @@ namespace NMib
 {
 	CPromiseKeepAlive::~CPromiseKeepAlive() = default;
 
-	NStorage::TCUniquePointer<CPromiseKeepAlive> CPromiseKeepAlive::f_AddMultiple
-		(
-			NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pThis
-			, NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pNext
-		)
-	{
-		DMibFastCheck(_pThis.f_Get() == this);
-
-		NStorage::TCUniquePointer<CMultiplePromiseKeepAlive> pKeepAlive = fg_Construct<CMultiplePromiseKeepAlive>();
-		pKeepAlive->m_KeepAlive.f_Insert(fg_Move(_pThis));
-		pKeepAlive->m_KeepAlive.f_Insert(fg_Move(_pNext));
-
-		return pKeepAlive;
-	}
-
-	NContainer::TCVector<NStorage::TCUniquePointer<CPromiseKeepAlive>> m_KeepAlive;
-
-	NStorage::TCUniquePointer<CPromiseKeepAlive> CMultiplePromiseKeepAlive::f_AddMultiple
-		(
-			NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pThis
-			, NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pNext
-		)
-	{
-		DMibFastCheck(_pThis.f_Get() == this);
-
-		m_KeepAlive.f_Insert(fg_Move(_pNext));
-
-		return _pThis;
-	}
-
 	namespace NMemory
 	{
 		void fg_Mem_InitSubsystem();
@@ -113,9 +83,14 @@ namespace NMib
 		return NPrivate::g_SubSystem_SystemThreadLocal.f_WasCreated() && NPrivate::g_SubSystem_SystemThreadLocal.f_GetUnsafe()->m_ThreadLocal.f_TryGet();
 	}
 
+	namespace NConcurrency
+	{
+		void fg_ConcurrencyThreadLocalInit();
+	}
 	void fg_SystemThreadInit()
 	{
 		[[maybe_unused]] auto &Local = *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal;
+		NConcurrency::fg_ConcurrencyThreadLocalInit();
 	}
 
 	inline_always_lto CSystemThreadLocal &fg_SystemThreadLocal()

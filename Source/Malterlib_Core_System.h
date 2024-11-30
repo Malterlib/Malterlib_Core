@@ -29,28 +29,33 @@ namespace NMib
 		}
 
 		virtual ~CPromiseKeepAlive() = 0;
-		virtual NStorage::TCUniquePointer<CPromiseKeepAlive> f_AddMultiple(NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pThis, NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pNext);
 
 		mint m_VirtualAllocSize = 0;
 	};
 
-	struct CMultiplePromiseKeepAlive final : public CPromiseKeepAlive
+	namespace NConcurrency
 	{
-		CMultiplePromiseKeepAlive()
-			: CPromiseKeepAlive(sizeof(*this))
-		{
-		}
-
-		NContainer::TCVector<NStorage::TCUniquePointer<CPromiseKeepAlive>> m_KeepAlive;
-
-		NStorage::TCUniquePointer<CPromiseKeepAlive> f_AddMultiple(NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pThis, NStorage::TCUniquePointer<CPromiseKeepAlive> &&_pNext) override;
-	};
+		struct CConcurrencyThreadLocal;
+	}
 
 	struct CPromiseThreadLocal
 	{
+#if DMibEnableSafeCheck > 0
+		~CPromiseThreadLocal();
+#endif
+
+		NConcurrency::CConcurrencyThreadLocal &f_ConcurrencyThreadLocal();
+		void f_PushAllocation(void *_pAllocation);
+		void *f_PopAllocation();
+
 		void *m_pOnResultSet = nullptr;
 		void *m_pUsePromise = nullptr;
-		NFunction::TCFunctionNoAllocMovable<NStorage::TCUniquePointer<CPromiseKeepAlive> ()> m_fConsumeKeepAlive;
+		void *m_pCurrentActorCalled = nullptr;
+		void *m_pCoroutinePromiseAllocation = nullptr;
+		NContainer::TCGrowingVector<void *> m_PreviousCoroutinePromiseAllocations;
+		CPromiseKeepAlive *m_pKeepAlive = nullptr;
+		NConcurrency::CConcurrencyThreadLocal *m_pConcurrencyThreadLocal = nullptr;
+		bool m_bSupendOnInitialSuspend = false;
 
 #if DMibEnableSafeCheck > 0
 		void const *m_pOnResultSetConsumedBy = nullptr;
@@ -62,13 +67,19 @@ namespace NMib
 		bool m_bExpectCoroutineCall = false;
 		bool m_bSafeCall = false;
 #endif
+
+	private:
+		void fp_PushAllocationSlowPath(void *_pAllocation);
+		void *fp_PopAllocationSlowPath();
 	};
 
 	struct CSystemThreadLocal
 	{
 		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
+#if DMibConfig_Tests_Enable
 		NConcurrency::ECoroutineFlag m_ExtraCoroutineFlags = NConcurrency::ECoroutineFlag_None;
+#endif
 		CPromiseThreadLocal m_PromiseThreadLocal;
 		DMibListLinkDS_List(CCrossActorCallStateScope, m_Link) m_CrossActorStateScopes;
 
