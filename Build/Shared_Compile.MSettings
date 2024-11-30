@@ -2508,6 +2508,20 @@ Compile
 		}
 	}
 
+	ThreadPointerAccessMethod "tpidrro_el0"
+	{
+		&
+		{
+			Compiler "Clang"
+			PlatformFamily "macOS"
+			|
+			{
+				Architecture "arm64"
+				Architecture "arm64e"
+			}
+		}
+	}
+
 	Symbols "None"
 	{
 		!!Configuration "Fast Compile"

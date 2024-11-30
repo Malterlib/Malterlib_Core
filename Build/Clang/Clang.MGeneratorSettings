@@ -806,6 +806,11 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_ThreadPointerAccessMethod =+ {
+		Flags: `-mtp=@(Compile.ThreadPointerAccessMethod)`
+		, Type: "unique"
+	}
+
 	Compile_Optimize =+ {
 		Flags: Compile.Optimize->SwitchWithError(
 			"Unsupported option: "

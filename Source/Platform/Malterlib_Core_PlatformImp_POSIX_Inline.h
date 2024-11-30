@@ -57,6 +57,16 @@ namespace NMib
 		
 		mint fg_GetThreadSelf_Safe();
 
+#if defined(__aarch64__)
+		inline_always mint fg_GetThreadPointer()
+		{
+#if defined(DPlatformFamily_macOS)
+			return (mint)__builtin_thread_pointer() & ~mint(0x7);
+#endif
+			return (mint)__builtin_thread_pointer();
+		}
+#endif
+
 		inline_always mint fg_GetThreadSelf()
 		{
 		#ifdef DMibSafeThreadLocals
@@ -65,19 +75,13 @@ namespace NMib
 			#if DPlatformVersion >= 1070
 				mint Return;
 				#if defined(__i386__)
-					asm ("mov %%gs:0x0,%0" : "=r"(Return) : );
+					mint __attribute__((address_space(256))) *pAddress = 0;
+					Return = *pAddress;
 				#elif defined(__x86_64__)
-					asm ("mov %%gs:0x0,%0" : "=r"(Return) : );
+					mint __attribute__((address_space(256))) *pAddress = 0;
+					Return = *pAddress;
 				#elif defined(__aarch64__)
-					asm
-						(
-							"mrs %0, tpidrro_el0\n"
-							"bic %0, %0, #7\n"
-							"sub %0, %0, %1"
-							: "=&r"(Return)
-							: "i"(sizeof(void *) * 28)
-						)
-					;
+					Return = fg_GetThreadPointer() - sizeof(void *) * 28;
 				#else
 					#error "Not Implemented"
 				#endif
@@ -89,9 +93,11 @@ namespace NMib
 				mint Return;
 				
 				#if defined(__i386__)
-					asm ("mov %%gs:0x0(%1),%0" : "=r"(Return) : "r"(g_ThreadSelfOffset) );
+					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)g_ThreadSelfOffset;
+					Return = *pAddress;
 				#elif defined(__x86_64__)
-					asm ("mov %%gs:0x0(%1),%0" : "=r"(Return) : "r"(g_ThreadSelfOffset) );
+					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)g_ThreadSelfOffset;
+					Return = *pAddress;
 				#elif defined(__ppc__) || defined(__ppc64__)
 					return fg_GetThreadSelf_Safe();
 				#else
@@ -108,18 +114,13 @@ namespace NMib
 			#ifdef DMibAssumeGlibc
 				mint Return;
 				#if defined(__i386__)
-					asm ("mov %%gs:0x8,%0" : "=r"(Return) : );
+					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)0x8;
+					Return = *pAddress;
 				#elif defined(__x86_64__)
-					asm ("mov %%fs:0x10,%0" : "=r"(Return) : );
+					mint __attribute__((address_space(257))) *pAddress = (mint __attribute__((address_space(257))) *)0x10;
+					Return = *pAddress;
 				#elif defined(__aarch64__)
-					asm
-						(
-							"mrs %0, TPIDR_EL0\n"
-							"sub %0, %0, %1"
-							: "=&r"(Return)
-							: "r"(g_ThreadSelfOffset)
-						)
-					;
+					Return = fg_GetThreadPointer() - g_ThreadSelfOffset;
 				#else
 					#error "Not Implemented"
 				#endif
@@ -147,18 +148,13 @@ namespace NMib
 			#if DPlatformVersion >= 1070
 				mint Return;
 				#if defined(__i386__)
-					asm ("mov %%gs:0x0(,%1,4),%0" : "=r"(Return) : "r"(_iVariable));
+					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)(_iVariable * 4);
+					Return = *pAddress;
 				#elif defined(__x86_64__)
-					asm ("mov %%gs:0x0(,%1,8),%0" : "=r"(Return) : "r"(_iVariable));
+					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)(_iVariable * 8);
+					Return = *pAddress;
 				#elif defined(__aarch64__)
-					mint *pThreadLocals;
-					asm
-						(
-							"mrs %0, tpidrro_el0\n"
-							"bic %0, %0, #7\n"
-							: "=r" (pThreadLocals)
-						)
-					;
+					mint *pThreadLocals = (mint *)fg_GetThreadPointer();
 					Return = pThreadLocals[_iVariable];
 				#else
 					#error "Not Implemented"
@@ -168,9 +164,11 @@ namespace NMib
 			#elif DPlatformVersion >= 1050
 				mint Return;
 				#if defined(__i386__)
-					asm ("mov %%gs:0x0(%2,%1,4),%0" : "=r"(Return) : "r"(_iVariable), "r"(g_ThreadLocalOffset) );
+					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)(_iVariable * 4 + g_ThreadLocalOffset);
+					Return = *pAddress;
 				#elif defined(__x86_64__)
-					asm ("mov %%gs:0x0(%2,%1,8),%0" : "=r"(Return) : "r"(_iVariable), "r"(g_ThreadLocalOffset) );
+					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)(_iVariable * 8 + g_ThreadLocalOffset);
+					Return = *pAddress;
 				#elif defined(__ppc__) || defined(__ppc64__)
 					return fg_GetThreadLocal_Safe(_iVariable);
 				#else
@@ -186,19 +184,13 @@ namespace NMib
 			#ifdef DMibStaticThreadLocals
 				mint Return;
 				#if defined(__i386__)
-					asm ("mov %%gs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)(_iVariable);
+					Return = *pAddress;
 				#elif defined(__x86_64__)
-					asm ("mov %%fs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+					mint __attribute__((address_space(257))) *pAddress = (mint __attribute__((address_space(257))) *)(_iVariable);
+					Return = *pAddress;
 				#elif defined(__aarch64__)
-					mint Temp;
-					asm
-						(
-							"mrs %[Temp], TPIDR_EL0\n"
-							"ldr %[Return], [%[Temp], %[_iVariable]]"
-							: [Temp] "=&r"(Temp), [Return] "=r"(Return)
-							: [_iVariable] "r"(_iVariable)
-						)
-					;
+					Return = *((mint *)(fg_GetThreadPointer() + _iVariable));
 				#else
 					#error "Not Implemented"
 				#endif
@@ -261,13 +253,13 @@ namespace NMib
 			mint Return;
 			#ifdef DMibStaticThreadLocals
 				#if defined(__i386__)
-					asm ("mov %%gs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)(_iVariable);
+					Return = *pAddress;
 				#elif defined(__x86_64__)
-					asm ("mov %%fs:0x0(, %1),%0" : "=r"(Return) : "r"(_iVariable));
+					mint __attribute__((address_space(257))) *pAddress = (mint __attribute__((address_space(257))) *)(_iVariable);
+					Return = *pAddress;
 				#elif defined(__aarch64__)
-					mint ThreadLocals;
-					asm volatile ("mrs %0, TPIDR_EL0" : "=r" (ThreadLocals));
-					Return = *((mint *)(ThreadLocals + _iVariable));
+					Return = *((mint *)(fg_GetThreadPointer() + _iVariable));
 				#else
 					#error "Not Implemented"
 				#endif
