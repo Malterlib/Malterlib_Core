@@ -39,6 +39,20 @@ namespace NMib
 			}
 		}
 
+		static int fg_TranslateLookupError(int _Error)
+		{
+			switch (_Error)
+			{
+			case ENOENT:
+			case ESRCH:
+			case EBADF:
+			case EPERM:
+				return 0;
+			default:
+				return _Error;
+			}
+		}
+
 		passwd *fg_Helper_GetPwNam(ch8 const *_pName, CGetPwUidState &o_State)
 		{
 			mint Size = 1024;
@@ -60,7 +74,7 @@ namespace NMib
 				{
 					if (Error != ERANGE)
 					{
-						o_State.m_Error = Error;
+						o_State.m_Error = fg_TranslateLookupError(Error);
 						return nullptr;
 					}
 				}
@@ -90,7 +104,7 @@ namespace NMib
 				{
 					if (Error != ERANGE)
 					{
-						o_State.m_Error = Error;
+						o_State.m_Error = fg_TranslateLookupError(Error);
 						return nullptr;
 					}
 				}
@@ -120,7 +134,7 @@ namespace NMib
 				{
 					if (Error != ERANGE)
 					{
-						o_State.m_Error = Error;
+						o_State.m_Error = fg_TranslateLookupError(Error);
 						return nullptr;
 					}
 				}
