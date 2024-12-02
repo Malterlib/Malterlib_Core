@@ -105,24 +105,19 @@ NMib::NStr::CStr NSys::fg_UserManagement_GetProcessEffectiveGroupName()
 
 bool NSys::fg_UserManagement_GroupExists(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr &_ReturnGID)
 {
-	errno = 0;
-	
 	NMib::NPlatform::CGetGrGidState State;
 	group *pGroup = NMib::NPlatform::fg_Helper_GetGrNam(_GroupName.f_GetStr(), State);
 
 	if (pGroup)
 		_ReturnGID = NMib::NStr::CStr::CFormat("{}") << pGroup->gr_gid;
-	else if (errno != 0)
+	else if (State.m_Error != 0)
 		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam_r('{}') when checking if group exists") << _GroupName, State.m_Error));
-	
 
 	return pGroup != nullptr;
 }
 
 bool NSys::fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib::NStr::CStr &_ReturnUID)
 {
-	errno = 0;
-	
 	NMib::NPlatform::CGetPwUidState State;
 	passwd *pPassword = NMib::NPlatform::fg_Helper_GetPwNam(_UserName.f_GetStr(), State);
 
@@ -136,8 +131,6 @@ bool NSys::fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib:
 
 NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemberOfGroups(NMib::NStr::CStr const &_UserName)
 {
-	errno = 0;
-	
 	CStr UserName = _UserName;
 	
 	NMib::NPlatform::CGetPwUidState State;
@@ -183,8 +176,6 @@ NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemb
 
 bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName)
 {
-	errno = 0;
-	
 	NMib::NPlatform::CGetPwUidState State;
 	passwd *pPassword = NMib::NPlatform::fg_Helper_GetPwNam(_UserName.f_GetStr(), State);
 
