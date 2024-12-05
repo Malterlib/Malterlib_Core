@@ -144,9 +144,11 @@
 #		define mark_no_coroutine_debug
 #	endif
 #	define mark_artificial mark_no_coroutine_debug [[gnu::artificial]]
+#	define mark_nodebug [[gnu::nodebug]]
 #else
 #	define mark_no_coroutine_debug
 #	define mark_artificial
+#	define mark_nodebug
 #endif
 
 // Aliasing
