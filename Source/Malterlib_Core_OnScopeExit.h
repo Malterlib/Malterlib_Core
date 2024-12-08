@@ -66,6 +66,12 @@ namespace NMib
 			mp_bIsValid = false;
 		}
 
+		inline_always void f_ClearFunctor()
+		{
+			mp_bIsValid = false;
+			mp_fOnExitFunctor.f_Clear();
+		}
+
 		inline_always bool f_IsValid() const
 		{
 			return mp_bIsValid;
