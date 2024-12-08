@@ -87,14 +87,14 @@ namespace NMib
 			, ESharedPointerOption_SupportWeakPointer = DMibBit(0)
 		};
 
-		template <CSharedPointerOptionUnderlying t_Options = ESharedPointerOption_None>
+		template <CSharedPointerOptionUnderlying t_Options = ESharedPointerOption_None, typename t_CountType = smint>
 		struct TCIntrusiveRefCount;
 
-		template <>
-		struct TCIntrusiveRefCount<ESharedPointerOption_None>;
+		template <typename t_CountType>
+		struct TCIntrusiveRefCount<ESharedPointerOption_None, t_CountType>;
 
-		template <>
-		struct TCIntrusiveRefCount<ESharedPointerOption_SupportWeakPointer>;
+		template <typename t_CountType>
+		struct TCIntrusiveRefCount<ESharedPointerOption_SupportWeakPointer, t_CountType>;
 	}
 	
 	template <typename t_CIntType>
