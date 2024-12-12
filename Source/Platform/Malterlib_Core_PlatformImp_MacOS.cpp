@@ -579,6 +579,12 @@ public:
 
 	static void fs_ForkChild()
 	{
+		fs_ForkChildStart();
+		fs_ForkChildFinished();
+	}
+
+	static void fs_ForkChildStart()
+	{
 		auto &Sys = *fg_GetLocalSys();
 		if (pthread_getspecific(Sys.m_ForkThreadLocal))
 		{
@@ -596,12 +602,20 @@ public:
 			Sys.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
-			g_bCanStartThreads = true;
-			Sys.f_MemoryManager_CanStartThreads();
-			fg_MalterlibMallocOverride_CanStartThreads();
 
 			if (!g_bRegisteredAtFork)
 				g_bForking = false;
+		}
+	}
+
+	static void fs_ForkChildFinished()
+	{
+		if (!g_bCanStartThreads)
+		{
+			g_bCanStartThreads = true;
+			auto &Sys = *fg_GetLocalSys();
+			Sys.f_MemoryManager_CanStartThreads();
+			fg_MalterlibMallocOverride_CanStartThreads();
 		}
 	}
 
@@ -1690,14 +1704,22 @@ namespace NMib
 		{
 			CSystemMacOS::fs_ForkParent();
 		}
+		void fg_MalterlibSystem_ForkChildOverride()
+		{
+			CSystemMacOS::fs_ForkChildStart();
+			if (!g_bRegisteredAtFork)
+				CSystemMacOS::fs_ForkChildFinished();
+		}
 		void fg_MalterlibSystem_ForkChild()
 		{
-			CSystemMacOS::fs_ForkChild();
+			CSystemMacOS::fs_ForkChildStart();
+			CSystemMacOS::fs_ForkChildFinished();
 		}
 
 		void fg_MalterlibSystem_ForkChildFinished()
 		{
-			CSystemMacOS::fs_ForkChild();
+			CSystemMacOS::fs_ForkChildStart();
+			CSystemMacOS::fs_ForkChildFinished();
 
 			g_bForking = false;
 		}
