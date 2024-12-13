@@ -33,7 +33,7 @@ CAddressResolver::~CAddressResolver()
 	}
 }
 
-void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish)
+void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish)
 {
 	NStorage::TCUniquePointer<CResolveRequest> pReq = fg_Construct();
 

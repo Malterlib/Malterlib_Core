@@ -34,7 +34,7 @@ private:
 		NThread::CMutual m_Lock;
 			EFlag m_Flags;
 			NMib::NSys::NNetwork::CAddress m_Address;
-			NMib::NFunction::TCFunction<void ()> m_fOnFinish;
+			NMib::NFunction::TCFunctionMutable<void ()> m_fOnFinish;
 			NMib::NStr::CStr m_ErrorString;
 			NMib::NNetwork::ENetAddressType m_PreferType;
 
@@ -54,7 +54,7 @@ public:
 	CAddressResolver();
 	~CAddressResolver();
 
-	void* f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunction<void ()> &&_fOnFinish);
+	void* f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
 	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error);
 	void f_Close(void* _pResolver);
 
