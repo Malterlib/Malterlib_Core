@@ -93,7 +93,7 @@ namespace NMib
 		NConcurrency::fg_ConcurrencyThreadLocalInit();
 	}
 
-	inline_always_lto CSystemThreadLocal &fg_SystemThreadLocal()
+	mark_nodebug inline_always_lto CSystemThreadLocal &fg_SystemThreadLocal()
 	{
 #ifdef DMibConfig_ManualForeignThreadInitialization
 		DMibFastCheck(NPrivate::g_SubSystem_SystemThreadLocal.f_WasCreated() && NPrivate::g_SubSystem_SystemThreadLocal.f_GetUnsafe()->m_ThreadLocal.f_TryGet());

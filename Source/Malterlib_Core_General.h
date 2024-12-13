@@ -83,13 +83,13 @@ namespace NMib
 #else
 
 	template <typename t_CType> 
-	mark_artificial constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &_ToForward)
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &_ToForward)
 	{
 		return static_cast<t_CType&&>(_ToForward);
 	}
 
 	template <typename t_CType> 
-	mark_artificial constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &&_ToForward) noexcept
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &&_ToForward) noexcept
 	{
 		static_assert(!NTraits::TCIsLValueReference<t_CType>::mc_Value, "Cannot be a lvalue reference here");
 		return static_cast<t_CType&&>(_ToForward);
@@ -126,33 +126,33 @@ namespace NMib
 	}
 	
 	template <typename t_CType, typename t_CTypeToCopyTo> 
-	mark_artificial inline_always_debug decltype(auto) fg_ForwardAs(t_CTypeToCopyTo &&_ToForward)
+	mark_artificial mark_nodebug inline_always_debug decltype(auto) fg_ForwardAs(t_CTypeToCopyTo &&_ToForward)
 	{
 		return static_cast<typename NPrivate::TCForwardCopyEvalHelper<t_CType &&, t_CTypeToCopyTo>::CType>(_ToForward);
 	}
 	
 	template <typename t_CType>
-	mark_artificial inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_Move(t_CType &&_ToMove) noexcept
+	mark_artificial mark_nodebug inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_Move(t_CType &&_ToMove) noexcept
 		requires (!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value) // Trying to move const value
 	{
 		return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
 	}
 
 	template <typename t_CType>
-	mark_artificial inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType fg_ExchangeMove(t_CType &&_ToMove) noexcept
+	mark_artificial mark_nodebug inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType fg_ExchangeMove(t_CType &&_ToMove) noexcept
 		requires (!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value) // Trying to move const value
 	{
 		return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
 	}
 
 	template <typename t_CType>
-	mark_artificial inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
+	mark_artificial mark_nodebug inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
 	{
 		return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
 	}
 
 	template <typename tf_CDestination, typename t_CSetTo>
-	mark_artificial constexpr inline_always_debug auto fg_Exchange(tf_CDestination &_Destination, t_CSetTo &&_SetTo)
+	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_Exchange(tf_CDestination &_Destination, t_CSetTo &&_SetTo)
 	{
 		auto Temp = fg_Move(_Destination);
 		_Destination = fg_Forward<t_CSetTo>(_SetTo);
@@ -160,13 +160,13 @@ namespace NMib
 	}
 	
 	template <typename tf_CType>
-	mark_artificial constexpr inline_always_debug tf_CType fg_TempCopy(tf_CType const &_Value)
+	mark_artificial mark_nodebug constexpr inline_always_debug tf_CType fg_TempCopy(tf_CType const &_Value)
 	{
 		return _Value;
 	}
 
 	template <typename tf_CToType, typename tf_CType>
-	mark_artificial constexpr inline_always_debug decltype(auto) fg_CopyOrMove(tf_CType &&_Value)
+	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_CopyOrMove(tf_CType &&_Value)
 	{
 		using CToType = typename NTraits::TCRemoveReferenceAndQualifiers<tf_CToType>::CType;
 
@@ -182,25 +182,25 @@ namespace NMib
 	}
 
 	template <typename t_CType>
-	mark_artificial constexpr inline_always_debug t_CType volatile &fg_Volatile(t_CType &_In)
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType volatile &fg_Volatile(t_CType &_In)
 	{
 		return (t_CType volatile &)_In;
 	}
 
 	template <typename t_CType>
-	mark_artificial constexpr inline_always_debug t_CType const &fg_Const(t_CType const&_In)
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType const &fg_Const(t_CType const&_In)
 	{
 		return (t_CType const &)_In;
 	}
 
 	template <typename t_CType, TCEnableIfType<NTraits::TCIsRValueReference<t_CType>::mc_Value || !NTraits::TCIsReference<t_CType>::mc_Value> * = nullptr>
-	mark_artificial constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In)
+	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In)
 	{
 		return fg_Move(_In);
 	}
 
 	template <typename t_CType, TCEnableIfType<!NTraits::TCIsRValueReference<t_CType>::mc_Value && NTraits::TCIsReference<t_CType>::mc_Value> * = nullptr>
-	mark_artificial constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) -> typename NTraits::TCRemoveReference<t_CType>::CType const &
+	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) -> typename NTraits::TCRemoveReference<t_CType>::CType const &
 	{
 		return static_cast<typename NTraits::TCRemoveReference<t_CType>::CType const &>(_In);
 	}
@@ -208,12 +208,12 @@ namespace NMib
 	template <typename t_CValue>
 	struct TCMoveValueFunctor
 	{
-		TCMoveValueFunctor(t_CValue &&_Value)
+		mark_nodebug TCMoveValueFunctor(t_CValue &&_Value)
 			: mp_Value(fg_Move(_Value))
 		{
 		}
 
-		mark_artificial inline_always t_CValue operator()()
+		mark_artificial mark_nodebug inline_always t_CValue operator()()
 		{
 			return fg_Move(mp_Value);
 		}
@@ -228,28 +228,28 @@ namespace NMib
 		t_CType const &m_Data;
 	public:
 
-		TCCopy(t_CType const &_Data)
+		mark_nodebug TCCopy(t_CType const &_Data)
 			: m_Data(_Data)
 		{
 		}
 
-		TCCopy(TCCopy const &_Other)
+		mark_nodebug TCCopy(TCCopy const &_Other)
 			: m_Data(_Other.m_Data)
 		{
 		}
 
-		TCCopy(TCCopy &&_Other)
+		mark_nodebug TCCopy(TCCopy &&_Other)
 			: m_Data(_Other.m_Data)
 		{
 		}
 
-		t_CType const &operator *() const
+		mark_nodebug t_CType const &operator *() const
 		{
 			return m_Data;
 		}
 	};
 	template <typename t_CType>
-	inline_always_debug TCCopy<t_CType> fg_Copy(t_CType const&_In)
+	mark_nodebug inline_always_debug TCCopy<t_CType> fg_Copy(t_CType const&_In)
 	{
 		return TCCopy<t_CType>(_In);
 	}
@@ -260,28 +260,28 @@ namespace NMib
 		t_CType const &m_Data;
 	public:
 
-		TCByValue(t_CType const &_Data)
+		mark_nodebug TCByValue(t_CType const &_Data)
 			: m_Data(_Data)
 		{
 		}
 
-		TCByValue(TCByValue const &_Other)
+		mark_nodebug TCByValue(TCByValue const &_Other)
 			: m_Data(_Other.m_Data)
 		{
 		}
 
-		TCByValue(TCByValue &&_Other)
+		mark_nodebug TCByValue(TCByValue &&_Other)
 			: m_Data(_Other.m_Data)
 		{
 		}
 
-		t_CType const &operator *() const
+		mark_nodebug t_CType const &operator *() const
 		{
 			return m_Data;
 		}
 	};
 	template <typename t_CType>
-	inline_always_debug TCByValue<t_CType> fg_ByValue(t_CType const&_In)
+	mark_nodebug inline_always_debug TCByValue<t_CType> fg_ByValue(t_CType const&_In)
 	{
 		return TCByValue<t_CType>(_In);
 	}
@@ -293,12 +293,12 @@ namespace NMib
 	public:
 
 		template <typename tf_CType>
-		TCExplicit(tf_CType &&_Data)
+		mark_nodebug TCExplicit(tf_CType &&_Data)
 			: m_Data(fg_Forward<tf_CType>(_Data))
 		{
 		}
 
-		t_CType operator *()
+		mark_nodebug t_CType operator *()
 		{
 			return fg_Forward<t_CType>(m_Data);
 		}
@@ -311,24 +311,24 @@ namespace NMib
 	};
 	
 	template <typename tf_CType, TCEnableIfType<NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
-	inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
+	mark_nodebug inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(_In);
 	}
 	
 	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && !NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
-	inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
+	mark_nodebug inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(fg_Move(_In));
 	}
 	
 	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
-	inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
+	mark_nodebug inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(_In);
 	}
 	
-	inline_always_debug TCExplicit<void> fg_Explicit()
+	mark_nodebug inline_always_debug TCExplicit<void> fg_Explicit()
 	{
 		return TCExplicit<void>();
 	}
@@ -336,13 +336,13 @@ namespace NMib
 	struct CExplicitHelper
 	{
 		template <typename tf_CType, TCEnableIfType<NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
-		inline_always_debug TCExplicit<tf_CType> operator = (tf_CType &&_In) const
+		mark_nodebug inline_always_debug TCExplicit<tf_CType> operator = (tf_CType &&_In) const
 		{
 			return TCExplicit<tf_CType>(_In);
 		}
 		
 		template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
-		inline_always_debug TCExplicit<tf_CType> operator = (tf_CType &&_In) const
+		mark_nodebug inline_always_debug TCExplicit<tf_CType> operator = (tf_CType &&_In) const
 		{
 			return TCExplicit<tf_CType>(fg_Move(_In));
 		}
@@ -357,12 +357,12 @@ namespace NMib
 	public:
 
 		template <typename tf_CType>
-		TCAttach(tf_CType &&_Data)
+		mark_nodebug TCAttach(tf_CType &&_Data)
 			: m_Data(fg_Forward<tf_CType>(_Data))
 		{
 		}
 
-		t_CType operator *()
+		mark_nodebug t_CType operator *()
 		{
 			return fg_Forward<t_CType>(m_Data);
 		}
@@ -375,24 +375,24 @@ namespace NMib
 	};
 
 	template <typename tf_CType, TCEnableIfType<NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
-	inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
+	mark_nodebug inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
 	{
 		return TCAttach<tf_CType>(_In);
 	}
 
 	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && !NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
-	inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
+	mark_nodebug inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
 	{
 		return TCAttach<tf_CType>(fg_Move(_In));
 	}
 
 	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
-	inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
+	mark_nodebug inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
 	{
 		return TCAttach<tf_CType>(_In);
 	}
 
-	inline_always_debug TCAttach<void> fg_Attach()
+	mark_nodebug inline_always_debug TCAttach<void> fg_Attach()
 	{
 		return TCAttach<void>();
 	}
@@ -402,7 +402,7 @@ namespace NMib
 		struct CDefault
 		{
 			template <typename tf_CReturn>
-			operator tf_CReturn()
+			mark_nodebug operator tf_CReturn()
 			{
 				return tf_CReturn();
 			}
@@ -411,19 +411,19 @@ namespace NMib
 		struct CIgnore
 		{
 			template <typename tf_CType>
-			inline_always_debug CIgnore &operator =(tf_CType &&_Value)
+			mark_nodebug inline_always_debug CIgnore &operator =(tf_CType &&_Value)
 			{
 				return *this;
 			}
 		};
 	}
 
-	inline_always_debug NInternal::CIgnore fg_Ignore()
+	mark_nodebug inline_always_debug NInternal::CIgnore fg_Ignore()
 	{
 		return NInternal::CIgnore();
 	}
 
-	inline_always_debug NInternal::CDefault fg_Default()
+	mark_nodebug inline_always_debug NInternal::CDefault fg_Default()
 	{
 		return NInternal::CDefault();
 	}
@@ -437,13 +437,13 @@ namespace NMib
 			t_CFrom m_From;
 
 			template<typename ft_CFrom>
-			TCAutoStaticCast(ft_CFrom &&_From)
+			mark_nodebug TCAutoStaticCast(ft_CFrom &&_From)
 				: m_From(fg_Forward<ft_CFrom>(_From))
 			{
 			}
 
 			template <typename ft_CTo>
-			operator ft_CTo()
+			mark_nodebug operator ft_CTo()
 			{
 				return static_cast<ft_CTo>(m_From);
 			}
@@ -451,7 +451,7 @@ namespace NMib
 
 	}
 	template <typename ft_CFrom>
-	NInternal::TCAutoStaticCast<ft_CFrom> fg_AutoStaticCast(ft_CFrom &&_From)
+	mark_nodebug NInternal::TCAutoStaticCast<ft_CFrom> fg_AutoStaticCast(ft_CFrom &&_From)
 	{
 		return NInternal::TCAutoStaticCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
 	}
@@ -464,13 +464,13 @@ namespace NMib
 			t_CFrom m_From;
 
 			template<typename ft_CFrom>
-			TCAutoConstCast(ft_CFrom &&_From)
+			mark_nodebug TCAutoConstCast(ft_CFrom &&_From)
 				: m_From(fg_Forward<ft_CFrom>(_From))
 			{
 			}
 
 			template <typename ft_CTo>
-			operator ft_CTo()
+			mark_nodebug operator ft_CTo()
 			{
 				return const_cast<ft_CTo>(m_From);
 			}
@@ -478,7 +478,7 @@ namespace NMib
 
 	}
 	template <typename ft_CFrom>
-	NInternal::TCAutoConstCast<ft_CFrom> fg_AutoConstCast(ft_CFrom &&_From)
+	mark_nodebug NInternal::TCAutoConstCast<ft_CFrom> fg_AutoConstCast(ft_CFrom &&_From)
 	{
 		return NInternal::TCAutoConstCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
 	}
@@ -492,13 +492,13 @@ namespace NMib
 			t_CFrom m_From;
 
 			template<typename ft_CFrom>
-			TCAutoReinterpretCast(ft_CFrom &&_From)
+			mark_nodebug TCAutoReinterpretCast(ft_CFrom &&_From)
 				: m_From(fg_Forward<ft_CFrom>(_From))
 			{
 			}
 
 			template <typename ft_CTo>
-			operator ft_CTo()
+			mark_nodebug operator ft_CTo()
 			{
 				return reinterpret_cast<ft_CTo>(m_From);
 			}
@@ -506,7 +506,7 @@ namespace NMib
 
 	}
 	template <typename ft_CFrom>
-	NInternal::TCAutoReinterpretCast<ft_CFrom> fg_AutoReinterpretCast(ft_CFrom &&_From)
+	mark_nodebug NInternal::TCAutoReinterpretCast<ft_CFrom> fg_AutoReinterpretCast(ft_CFrom &&_From)
 	{
 		return NInternal::TCAutoReinterpretCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
 	}
@@ -519,13 +519,13 @@ namespace NMib
 			t_CFrom m_From;
 
 			template<typename ft_CFrom>
-			TCAutoCCast(ft_CFrom &&_From)
+			mark_nodebug TCAutoCCast(ft_CFrom &&_From)
 				: m_From(fg_Forward<ft_CFrom>(_From))
 			{
 			}
 
 			template <typename ft_CTo>
-			operator ft_CTo()
+			mark_nodebug operator ft_CTo()
 			{
 				return (ft_CTo)(m_From);
 			}
@@ -533,7 +533,7 @@ namespace NMib
 
 	}
 	template <typename ft_CFrom>
-	NInternal::TCAutoCCast<ft_CFrom> fg_AutoCCast(ft_CFrom &&_From)
+	mark_nodebug NInternal::TCAutoCCast<ft_CFrom> fg_AutoCCast(ft_CFrom &&_From)
 	{
 		return NInternal::TCAutoCCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
 	}
@@ -575,49 +575,49 @@ namespace NMib
 	};
 	
 	template <typename t_CType>
-	inline_always_debug t_CType &fg_RemoveQualifiers(t_CType &_In)
+	mark_nodebug inline_always_debug t_CType &fg_RemoveQualifiers(t_CType &_In)
 	{
 		return _In;
 	}
 
 	template <typename t_CType>
-	inline_always_debug t_CType &fg_RemoveQualifiers(t_CType const &_In)
+	mark_nodebug inline_always_debug t_CType &fg_RemoveQualifiers(t_CType const &_In)
 	{
 		return const_cast<t_CType &>(_In);
 	}
 
 	template <typename t_CType>
-	inline_always_debug t_CType &fg_RemoveQualifiers(t_CType volatile &_In)
+	mark_nodebug inline_always_debug t_CType &fg_RemoveQualifiers(t_CType volatile &_In)
 	{
 		return const_cast<t_CType &>(_In);
 	}
 
 	template <typename t_CType>
-	inline_always_debug t_CType &fg_RemoveQualifiers(t_CType const volatile &_In)
+	mark_nodebug inline_always_debug t_CType &fg_RemoveQualifiers(t_CType const volatile &_In)
 	{
 		return const_cast<t_CType &>(_In);
 	}
 
 	template <typename t_CType>
-	inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType &&_In)
+	mark_nodebug inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType &&_In)
 	{
 		return fg_Move(_In);
 	}
 
 	template <typename t_CType>
-	inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType const &&_In)
+	mark_nodebug inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType const &&_In)
 	{
 		return fg_Move(const_cast<t_CType &>(_In));
 	}
 
 	template <typename t_CType>
-	inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType volatile &&_In)
+	mark_nodebug inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType volatile &&_In)
 	{
 		return fg_Move(const_cast<t_CType &>(_In));
 	}
 
 	template <typename t_CType>
-	inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType const volatile &&_In)
+	mark_nodebug inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType const volatile &&_In)
 	{
 		return fg_Move(const_cast<t_CType &>(_In));
 	}
@@ -629,57 +629,57 @@ namespace NMib
 		t_CType m_Type;
 	public:
 
-		TCLambdaMover(t_CType &&_Other)
+		mark_nodebug TCLambdaMover(t_CType &&_Other)
 			: m_Type(fg_Move(_Other))
 		{
 		}
 
-		TCLambdaMover(TCCopy<t_CType> &&_Other)
+		mark_nodebug TCLambdaMover(TCCopy<t_CType> &&_Other)
 			: m_Type(*_Other)
 		{
 		}
 
-		TCLambdaMover(TCLambdaMover const &_Other)
+		mark_nodebug TCLambdaMover(TCLambdaMover const &_Other)
 			: m_Type(fg_Move(fg_RemoveQualifiers(_Other.m_Type)))
 		{
 		}
 
-		TCLambdaMover(TCLambdaMover &_Other)
+		mark_nodebug TCLambdaMover(TCLambdaMover &_Other)
 			: m_Type(fg_Move(fg_RemoveQualifiers(_Other.m_Type)))
 		{
 		}
 
-		TCLambdaMover(TCLambdaMover &&_Other)
+		mark_nodebug TCLambdaMover(TCLambdaMover &&_Other)
 			: m_Type(fg_Move(_Other.m_Type))
 		{
 		}
 
-		t_CType &operator *() const
+		mark_nodebug t_CType &operator *() const
 		{
 			return fg_RemoveQualifiers(m_Type);
 		}
 	};
 
 	template <typename tf_CType>
-	TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType> fg_LambdaMove(tf_CType &&_Type)
+	mark_nodebug TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType> fg_LambdaMove(tf_CType &&_Type)
 	{
 		return TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType>(fg_Move(_Type));
 	}
 
 	template <typename tf_CType>
-	TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType> fg_LambdaMove(TCCopy<tf_CType> &&_Type)
+	mark_nodebug TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType> fg_LambdaMove(TCCopy<tf_CType> &&_Type)
 	{
 		return TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType>(fg_Move(_Type));
 	}
 
 	template <typename t_CType>
-	inline_always_debug t_CType volatile const &fg_ConstVolatile(t_CType &_In)
+	mark_nodebug inline_always_debug t_CType volatile const &fg_ConstVolatile(t_CType &_In)
 	{
 		return (t_CType volatile const &)_In;
 	}
 
 	template <typename t_CType>
-	static constexpr inline_small t_CType fg_PowerOfTwoMinusOne(uaint _Power)
+	mark_nodebug static constexpr inline_small t_CType fg_PowerOfTwoMinusOne(uaint _Power)
 	{
 		return ((t_CType(1)) << (_Power - 1)) + (((t_CType(1)) << (_Power - 1)) - t_CType(1));
 	}
@@ -695,7 +695,7 @@ namespace NMib
 
 
 	template <typename t_CType>
-	inline_always_debug t_CType *fg_NullPtr()
+	mark_nodebug inline_always_debug t_CType *fg_NullPtr()
 	{
 		return (t_CType *)nullptr;
 	}
