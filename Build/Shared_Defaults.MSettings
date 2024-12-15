@@ -73,10 +73,10 @@ Property
 
 	MalterlibMaxSupportedWindowsVersion: string = "10.0.22621.0" // User(Platform Version): Max supported Windows version.
 
-	MalterlibMinSupportedMacOSVersion: string = "10.15" // User(Platform Version): Max supported macOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMinSupportedMacOSVersion: string = "11.00" // User(Platform Version): Max supported macOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 	MalterlibMaxSupportedMacOSVersion: string = "Latest" // User(Platform Version): Max supported macOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 
-	MalterlibMinSupportedMacOSVersion "13.0"
+	MalterlibMinSupportedMacOSVersion "13.00"
 	{
 		&
 		{
