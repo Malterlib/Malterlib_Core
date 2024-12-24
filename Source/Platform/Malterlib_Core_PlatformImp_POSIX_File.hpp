@@ -1494,6 +1494,20 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr co
 	return Attribs;
 }
 
+NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(void *_pFile)
+{
+	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
+
+	struct stat Stats;
+	if (fstat(pFile->m_BSDFile, &Stats))
+	{
+		auto ErrNo = errno;
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("fstat('{}') when getting unique file ID") << pFile->f_GetFileName(), ErrNo));
+	}
+
+	return {static_cast<uint64>(Stats.st_dev), Stats.st_ino};
+}
+
 NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NStr::CStr const& _FileName)
 {
 	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);

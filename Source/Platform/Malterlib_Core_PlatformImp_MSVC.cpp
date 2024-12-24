@@ -4367,18 +4367,14 @@ EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const& _FileNam
 	return fg_GetAttributes(_FileName);
 }
 
-NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NStr::CStr const& _FileName)
+NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(void *_pFile)
 {
-	CFile File;
-	auto FileOpenFlags = EFileOpen_ShareAll | EFileOpen_ReadAttribs;
-	if (CFile::fs_FileExists(CStr(_FileName), EFileAttrib_Directory))
-		FileOpenFlags |= EFileOpen_Directory;
-	File.f_Open(_FileName, FileOpenFlags);
+	auto pFile = ((CWin32File *)_pFile);
 
 	if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx)
 	{
 		Undocumented_FILE_ID_INFO FileIDInfo;
-		if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx(File.f_GetOSFile(), Undocumented_FileIdInfo, &FileIDInfo, sizeof(FileIDInfo)))
+		if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx(pFile->m_pFile, Undocumented_FileIdInfo, &FileIDInfo, sizeof(FileIDInfo)))
 		{
 			NMib::NFile::CUniqueFileIdentifier FileID;
 			FileID.m_VolumeID = FileIDInfo.VolumeSerialNumber;
@@ -4390,8 +4386,8 @@ NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NSt
 	}
 
 	BY_HANDLE_FILE_INFORMATION FileInfo;
-	if (!GetFileInformationByHandle(File.f_GetOSFile(), &FileInfo))
-		DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << _FileName << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	if (!GetFileInformationByHandle(pFile->m_pFile, &FileInfo))
+		DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << pFile->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
 	NMib::NFile::CUniqueFileIdentifier FileID;
 	FileID.m_VolumeID = FileInfo.dwVolumeSerialNumber;
@@ -4399,6 +4395,17 @@ NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NSt
 	FileID.m_FileID += FileInfo.nFileIndexLow;
 
 	return FileID;
+}
+
+NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NStr::CStr const& _FileName)
+{
+	CFile File;
+	auto FileOpenFlags = EFileOpen_ShareAll | EFileOpen_ReadAttribs;
+	if (CFile::fs_FileExists(_FileName, EFileAttrib_Directory))
+		FileOpenFlags |= EFileOpen_Directory;
+	File.f_Open(_FileName, FileOpenFlags);
+
+	return File.f_GetUniqueIdentifier();
 }
 
 NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifierOnLink(NMib::NStr::CStr const &_FileName)
