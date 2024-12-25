@@ -1092,6 +1092,34 @@ namespace NMib
 			}
 		}
 
+		template <typename tf_CType>
+		DMibSuppressThreadSanitizer tf_CType fg_ReadArrayTSanWorkaround(tf_CType *_pArray, mint _iIndex)
+		{
+			return _pArray[_iIndex];
+		}
+
+		DMibSuppressThreadSanitizer CStr fg_ReadStringTSanWorkaround(ch8 const *_pString)
+		{
+#ifdef DMibSanitizerEnabled_Thread
+			mint Len = 0;
+			for (auto pParse = _pString; *pParse; ++pParse)
+				++Len;
+
+			CStr Return;
+			auto pOut = Return.f_GetStr(Len);
+
+			for (auto pParse = _pString; *pParse; ++pParse, ++pOut)
+				*pOut = *pParse;
+
+			*pOut = 0;
+
+			Return.f_SetStrLen(Len);
+			return Return;
+#else
+			return _pString;
+#endif
+		}
+
 		void CFileChangeNoticationContext::CNotification::f_ProcessChanges
 			(
 				mint _nEvents
@@ -1110,12 +1138,12 @@ namespace NMib
 
 			for (mint i = 0; i < _nEvents; ++i)
 			{
-				CStr Path(_pPaths[i]);
+				CStr Path(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, i)));
 				auto PathLen = Path.f_GetLen();
 				if (PathLen > 0 && Path.f_GetAt(PathLen - 1) == '/')
 					Path = Path.f_Left(PathLen - 1);
 
-				FSEventStreamEventFlags Flags = _Flags[i];
+				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, i);
 
 				if (NMib::CSystem::ms_PlatformVersion >= 10'15'00)
 				{
@@ -1345,21 +1373,21 @@ namespace NMib
 			TCSet<CStr> ProtectedDirs;
 			for (mint i = 0; i < _nEvents; ++i)
 			{
-				CStr EventPath(_pPaths[i]);
+				CStr EventPath(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, i)));
 				if (EventPath.f_EndsWith("/"))
 					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
 
-				FSEventStreamEventFlags Flags = _Flags[i];
+				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, i);
 
 				if (ProtectedDirs.f_FindEqual(EventPath))
 				{
-					//DMibConErrOut2("IGNORE Change: {} = {nfh} - {}\n", EventPath, Flags, _IDs[i]);
+					//DMibConErrOut2("IGNORE Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, i));
 					continue;
 				}
 
 				CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(EventPath, m_NotificationPath.m_UserPath);
 
-				//DMibConErrOut2("Change: {} = {nfh} - {}\n", EventPath, Flags, _IDs[i]);
+				//DMibConErrOut2("Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, i));
 
 				bool bIsDir = (Flags & kFSEventStreamEventFlagItemIsDir) && !(Flags & kFSEventStreamEventFlagItemIsSymlink);
 
