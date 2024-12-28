@@ -1562,6 +1562,7 @@ Property
 		MalterlibSupportSanitizerEnable_UndefinedBehavior false
 		MalterlibSupportSanitizerEnable_Thread false
 		MalterlibSupportSanitizerEnable_Address false
+		MalterlibEnableBreakpad false
 	}
 	Target
 	{
