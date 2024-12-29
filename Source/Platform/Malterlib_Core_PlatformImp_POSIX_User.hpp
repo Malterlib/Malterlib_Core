@@ -174,6 +174,14 @@ NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemb
 	return Ret;
 }
 
+template <typename tf_CType>
+static tf_CType fg_ReadUnaligned(tf_CType const * __attribute((aligned(1))) _pInput)
+{
+	tf_CType Return;
+	fg_MemCopy((void *)&Return, (void *)_pInput, sizeof(tf_CType));
+	return Return;
+}
+
 bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName)
 {
 	NMib::NPlatform::CGetPwUidState State;
@@ -202,10 +210,10 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 	if (grp.gr_gid == pPassword->pw_gid)
 		return true;
 
-	for (; *(grp.gr_mem) != nullptr; (grp.gr_mem)++)
+	for (char **pMemberIterator = grp.gr_mem; fg_ReadUnaligned(pMemberIterator) != nullptr; pMemberIterator++)
 	{
 		CStrPtr Ptr;
-		Ptr.f_SetConstPtr(*(grp.gr_mem), fg_StrLen(*(grp.gr_mem)));
+		Ptr.f_SetConstPtr(fg_ReadUnaligned(pMemberIterator), fg_StrLen(fg_ReadUnaligned(pMemberIterator)));
 		if (_UserName.f_Cmp(Ptr) == 0)
 			return true;
 	}
