@@ -227,6 +227,7 @@ Compile
 				}
 
 				%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC.cpp" // Uses Malterlib heap enablement
+				%File "Source/Platform/Malterlib_Core_PlatformImp_Windows_CrossModule.cpp"
 				%File "Source/Platform/Malterlib_Core_PlatformImp_MSVC_StructuredException.cpp"
 				{
 					Compile
