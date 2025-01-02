@@ -1,6 +1,26 @@
 // Copyright © 2015 Hansoft AB 
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+//#define DMibWindowsUseArbitraryUserPointerForThreadLocals
+
+namespace NMib::NThread::NPlatform
+{
+	struct CWindowsThreadLocals
+	{
+		static constexpr mint mc_ThreadLocalSlots = 256; // 2 KiB
+
+#ifdef DMibWindowsUseArbitraryUserPointerForThreadLocals
+		static constexpr uint32 ms_ThreadLocalsExtendedLocactionOffset = sizeof(void *) * 5;
+#else
+		static uint32 ms_ThreadLocalsExtendedLocactionOffset;
+#endif
+		static mint ms_ThreadLocalsMinOffset;
+		static mint ms_ThreadLocalsMaxOffset;
+
+		void *m_ThreadLocals[mc_ThreadLocalSlots];
+	};
+}
+
 namespace NMib
 {
 	namespace NSys
@@ -77,58 +97,42 @@ namespace NMib
 
 		inline_always void *fg_Thread_GetLocal(mint _iStorage)
 		{
-			DMibFastCheck(_iStorage <= 0x400);
-#			if defined(DArchitecture_arm64)
-				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0x1780);
-#			elif defined(DArchitecture_x64)
-				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0x1780);
-#			else
-				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0xf94);
-#			endif
-			if (pThreadLocalBlock)
-				return (void *)pThreadLocalBlock[_iStorage];
+			using namespace NMib::NThread::NPlatform;
+
+			DMibFastCheck(_iStorage <= CWindowsThreadLocals::mc_ThreadLocalSlots);
+			auto *pThreadLocals = NPrivate::fg_GetTebData<CWindowsThreadLocals *>(CWindowsThreadLocals::ms_ThreadLocalsExtendedLocactionOffset);
+ 			if (pThreadLocals)
+				return pThreadLocals->m_ThreadLocals[_iStorage];
 			return nullptr;
 		}
 
 		inline_always void *fg_Thread_GetLocalAlwaysSet(mint _iStorage)
 		{
-			DMibFastCheck(_iStorage <= 0x400);
-#			if defined(DArchitecture_arm64)
-				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0x1780);
-#			elif defined(DArchitecture_x64)
-				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0x1780);
-#			else
-				mint *pThreadLocalBlock = NPrivate::fg_GetTebData<mint *>(0xf94);
-#			endif
-			DMibFastCheck(pThreadLocalBlock);
-			void *pRet = (void *)pThreadLocalBlock[_iStorage];
-			return pRet;
+			using namespace NMib::NThread::NPlatform;
+
+			DMibFastCheck(_iStorage <= CWindowsThreadLocals::mc_ThreadLocalSlots);
+			auto *pThreadLocals = NPrivate::fg_GetTebData<CWindowsThreadLocals *>(CWindowsThreadLocals::ms_ThreadLocalsExtendedLocactionOffset);
+			DMibFastCheck(pThreadLocals);
+			return pThreadLocals->m_ThreadLocals[_iStorage];
 		}
 
 		inline_always void *fg_Thread_GetLocalFast(mint _iStorage)
 		{
-#			if defined(DArchitecture_arm64)
-				return NPrivate::fg_GetTebData<void *>(_iStorage*8 + 0x1480);
-#			elif defined(DArchitecture_x64)
-				return NPrivate::fg_GetTebData<void *>(_iStorage*8 + 0x1480);
-#			else
-				return NPrivate::fg_GetTebData<void *>(_iStorage*4 + 900*4);
-#			endif
+			using namespace NMib::NThread::NPlatform;
+
+			DMibFastCheck(_iStorage >= CWindowsThreadLocals::CWindowsThreadLocals::ms_ThreadLocalsMinOffset);
+			DMibFastCheck(_iStorage <= CWindowsThreadLocals::CWindowsThreadLocals::ms_ThreadLocalsMaxOffset);
+			return NPrivate::fg_GetTebData<void *>(_iStorage);
 		}
 
 		inline_always void *fg_Thread_GetLocalAlwaysSetFast(mint _iStorage)
 		{
-			void *pRet =
-#			if defined(DArchitecture_arm64)
-				NPrivate::fg_GetTebData<void *>(_iStorage*8 + 0x1480);
-#			elif defined(DArchitecture_x64)
-				NPrivate::fg_GetTebData<void *>(_iStorage*8 + 0x1480);
-#			else
-				NPrivate::fg_GetTebData<void *>(_iStorage*4 + 900*4);
-#			endif
-			return pRet;
-		}
+			using namespace NMib::NThread::NPlatform;
 
+			DMibFastCheck(_iStorage >= CWindowsThreadLocals::CWindowsThreadLocals::ms_ThreadLocalsMinOffset);
+			DMibFastCheck(_iStorage <= CWindowsThreadLocals::CWindowsThreadLocals::ms_ThreadLocalsMaxOffset);
+			return NPrivate::fg_GetTebData<void *>(_iStorage);
+		}
 		
 		inline_always mint fg_Thread_GetCurrentUID()
 		{	

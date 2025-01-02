@@ -11,6 +11,7 @@
 #include <Mib/Core/Core>
 
 #include "Malterlib_Core_PlatformImp_MSVC_WindowsDefines.h"
+#include "Malterlib_Core_PlatformImp_Windows_CrossModule.h"
 #include <wincrypt.h>
 
 #include <Mib/Cryptography/UUID>
@@ -1591,6 +1592,10 @@ bool g_bProcessDetached = false;
 
 void fg_SetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage, void *_pData)
 {
+	using namespace NMib::NThread::NPlatform;
+
+	DMibFastCheck(_iStorage < CWindowsThreadLocals::mc_ThreadLocalSlots);
+
 	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
 	if (hThread)
 	{
@@ -1599,51 +1604,48 @@ void fg_SetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage, void *_pDat
 		if (SuspendThread(hThread) != 0xFFFFFFFF)
 		{
 			NLocal::THREAD_BASIC_INFORMATION ThreadInfo;
-			if (NT_SUCCESS(NLocal::g_OptionalFunctions.m_fNtQueryInformationThread(hThread, (::THREADINFOCLASS)NLocal::ThreadBasicInformation, &ThreadInfo, sizeof( NLocal::THREAD_BASIC_INFORMATION ), 0)))
+			if
+			(
+				NT_SUCCESS
+				(
+					NLocal::g_OptionalFunctions.m_fNtQueryInformationThread
+					(
+						hThread
+						, (::THREADINFOCLASS)NLocal::ThreadBasicInformation
+						, &ThreadInfo
+						, sizeof(NLocal::THREAD_BASIC_INFORMATION)
+						, 0
+					)
+				)
+			)
 			{
-				mint *pTIB = (mint *)ThreadInfo.TebBaseAddress;
-	#if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
-				if (_iStorage < 0x40)
-					pTIB[_iStorage + 0x290] = (mint)_pData;
-				else if (_iStorage < 0x440)
-				{
-					mint *pThreadLocalBlock = (mint *)pTIB[0x2F0];
+				CWindowsCrossModuleThreadInfo * &pThreadInfo =
+					*
+					(
+						(CWindowsCrossModuleThreadInfo **)((uint8 *)ThreadInfo.TebBaseAddress + CWindowsThreadLocals::ms_ThreadLocalsExtendedLocactionOffset)
+					)
+				;
 
-					if (!pThreadLocalBlock)
+				if (!pThreadInfo)
+				{
+					NLocal::g_OptionalFunctions.m_fRtlAcquirePebLock();
+					auto Cleanup = g_OnScopeExit / [&]
+						{
+							NLocal::g_OptionalFunctions.m_fRtlReleasePebLock();
+						}
+					;
+					if (!pThreadInfo)
 					{
-						// This is potentially unsafe because of race condition, should maybe suspend thread?
-						pThreadLocalBlock = (mint *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(void*)*1024);
-						if (fg_Volatile(pTIB[0x2F0]))
+						auto pNewInfo = CWindowsCrossModuleProcessInfo::fs_CreateThreadInfo(_ThreadID);
+						if (fg_Volatile(pThreadInfo))
 							DMibPDebugBreak;
-						pTIB[0x2F0] = (mint)pThreadLocalBlock;
+
+						CWindowsCrossModuleProcessInfo::ms_pThis->m_ThreadInfos.f_Insert(pNewInfo);
+						pThreadInfo = pNewInfo;
 					}
-
-					pThreadLocalBlock[_iStorage - 64] = (mint)_pData; 
 				}
-				else
-					DMibFastCheck(0);
-	#else
-				if (_iStorage < 0x40)
-				{
-					pTIB[_iStorage + 0x384] = (mint)_pData;
-				}
-				else if (_iStorage < 0x440)
-				{
-					mint *pThreadLocalBlock = (mint *)pTIB[0x3E5];
 
-					if (!pThreadLocalBlock)
-					{
-						pThreadLocalBlock = (mint *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(void*)*1024);
-						if (fg_Volatile(pTIB[0x3E5]))
-							DMibPDebugBreak;
-						pTIB[0x3E5] = (mint)pThreadLocalBlock;
-					}
-
-					pThreadLocalBlock[_iStorage - 64] = (mint)_pData; 
-				}
-				else
-					DMibFastCheck(0);
-	#endif
+				pThreadInfo->m_ThreadLocals.m_ThreadLocals[_iStorage] = _pData;
 				bSuccess = true;
 			}
 			else
@@ -1662,6 +1664,10 @@ void fg_SetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage, void *_pDat
 
 void *fg_GetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage)
 {
+	using namespace NMib::NThread::NPlatform;
+
+	DMibFastCheck(_iStorage < CWindowsThreadLocals::mc_ThreadLocalSlots);
+
 	void *pRet = nullptr;
 	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
 	if (hThread)
@@ -1671,37 +1677,31 @@ void *fg_GetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage)
 		if (SuspendThread(hThread) != 0xFFFFFFFF)
 		{
 			NLocal::THREAD_BASIC_INFORMATION ThreadInfo;
-			if (NT_SUCCESS(NLocal::g_OptionalFunctions.m_fNtQueryInformationThread(hThread, (::THREADINFOCLASS)NLocal::ThreadBasicInformation, &ThreadInfo, sizeof( NLocal::THREAD_BASIC_INFORMATION ), 0)))
+			if
+			(
+				NT_SUCCESS
+				(
+					NLocal::g_OptionalFunctions.m_fNtQueryInformationThread
+					(
+						hThread
+						, (::THREADINFOCLASS)NLocal::ThreadBasicInformation
+						, &ThreadInfo
+						, sizeof(NLocal::THREAD_BASIC_INFORMATION)
+						, 0
+					)
+				)
+			)
 			{
-				mint *pTIB = (mint *)ThreadInfo.TebBaseAddress;
-	#if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
-				if (_iStorage < 0x40)
-					pRet = (void *)pTIB[_iStorage + 0x290];
-				else if (_iStorage < 0x440)
-				{
-					mint *pThreadLocalBlock = (mint *)pTIB[0x2F0];
+				CWindowsCrossModuleThreadInfo *pThreadInfo =
+					*
+					(
+						(CWindowsCrossModuleThreadInfo **)((uint8 *)ThreadInfo.TebBaseAddress + CWindowsThreadLocals::ms_ThreadLocalsExtendedLocactionOffset)
+					)
+				;
 
-					if (pThreadLocalBlock)
-						pRet = (void *)pThreadLocalBlock[_iStorage - 64];
+				if (pThreadInfo)
+					pRet = pThreadInfo->m_ThreadLocals.m_ThreadLocals[_iStorage];
 
-				}
-				else
-					DMibFastCheck(0);
-	#else
-				if (_iStorage < 0x40)
-				{
-					pRet = (void *)pTIB[_iStorage + 0x384];
-				}
-				else if (_iStorage < 0x440)
-				{
-					mint *pThreadLocalBlock = (mint *)pTIB[0x3E5];
-
-					if (pThreadLocalBlock)
-						pRet = (void *)pThreadLocalBlock[_iStorage - 64];
-				}
-				else
-					DMibFastCheck(0);
-	#endif
 				bSuccess = true;
 			}
 			else
@@ -1720,48 +1720,134 @@ void *fg_GetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage)
 	return pRet;
 }
 
-DWORD WINAPI fg_TlsAllocInternal( bool _bFast)
+void fg_SetThreadLocalForOtherThreadFast(mint _ThreadID, mint _iStorage, void *_pData)
+{
+	DMibFastCheck(_iStorage >= NLocal::fg_TlsIndexToTebOffset(0));
+	DMibFastCheck(_iStorage < NLocal::fg_TlsIndexToTebOffset(64));
+
+	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
+	if (hThread)
+	{
+		[[maybe_unused]] bool bSuccess = false;
+		CFStr256 ErrorStr;
+		if (SuspendThread(hThread) != 0xFFFFFFFF)
+		{
+			NLocal::THREAD_BASIC_INFORMATION ThreadInfo;
+			if
+			(
+				NT_SUCCESS
+				(
+					NLocal::g_OptionalFunctions.m_fNtQueryInformationThread
+					(
+						hThread
+						, (::THREADINFOCLASS)NLocal::ThreadBasicInformation
+						, &ThreadInfo
+						, sizeof(NLocal::THREAD_BASIC_INFORMATION)
+						, 0
+					)
+				)
+			)
+			{
+				void **pTlsLocation = (void **)((uint8 *)ThreadInfo.TebBaseAddress + _iStorage);
+
+				*pTlsLocation = _pData;
+
+				bSuccess = true;
+			}
+			else
+				ErrorStr = "NtQueryInformationThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
+
+			ResumeThread(hThread);
+		}
+		else
+			ErrorStr = "SuspendThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
+		CloseHandle(hThread);
+
+//		if (!bSuccess && !g_bProcessDetached)
+	//		DMibError((CFStr256::CFormat("Failed to set thread storage for another thread ({}): {}") << _ThreadID << ErrorStr).f_GetStr());
+	}
+}
+
+void *fg_GetThreadLocalForOtherThreadFast(mint _ThreadID, mint _iStorage)
+{
+	DMibFastCheck(_iStorage >= NLocal::fg_TlsIndexToTebOffset(0));
+	DMibFastCheck(_iStorage < NLocal::fg_TlsIndexToTebOffset(64));
+
+	void *pRet = nullptr;
+	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
+	if (hThread)
+	{
+		bool bSuccess = false;
+		CFStr256 ErrorStr;
+		if (SuspendThread(hThread) != 0xFFFFFFFF)
+		{
+			NLocal::THREAD_BASIC_INFORMATION ThreadInfo;
+			if
+			(
+				NT_SUCCESS
+				(
+					NLocal::g_OptionalFunctions.m_fNtQueryInformationThread
+					(
+						hThread
+						, (::THREADINFOCLASS)NLocal::ThreadBasicInformation
+						, &ThreadInfo
+						, sizeof(NLocal::THREAD_BASIC_INFORMATION)
+						, 0
+					)
+				)
+			)
+			{
+				void **pTlsLocation = (void **)((uint8 *)ThreadInfo.TebBaseAddress + _iStorage);
+
+				pRet = *pTlsLocation;
+
+				bSuccess = true;
+			}
+			else
+				ErrorStr = "NtQueryInformationThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
+
+			ResumeThread(hThread);
+		}
+		else
+			ErrorStr = "SuspendThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
+		CloseHandle(hThread);
+
+		if (!bSuccess && !g_bProcessDetached)
+			DMibError((CFStr256::CFormat("Failed to get thread storage for another thread ({}): {}") << _ThreadID << ErrorStr).f_GetStr());
+	}
+
+	return pRet;
+}
+
+DWORD WINAPI fg_TlsAllocInternal()
 {
 	CUndocumentedTEB *pTEB = fg_GetTEB();
 	UndocumentedPEB *pPEB = fg_GetPEB(pTEB);
-	DWORD index = -1;
+	DWORD Index = TLS_OUT_OF_INDEXES;
 
 	NLocal::g_OptionalFunctions.m_fRtlAcquirePebLock();
-	if (_bFast)
+	auto Cleanup = g_OnScopeExit / [&]
+		{
+			NLocal::g_OptionalFunctions.m_fRtlReleasePebLock();
+		}
+	;
+
+	Index = NLocal::g_OptionalFunctions.m_fRtlFindClearBitsAndSet( pPEB->TlsBitmap, 1, 0 );
+	if (Index != ~0U)
 	{
-		index = NLocal::g_OptionalFunctions.m_fRtlFindClearBitsAndSet( pPEB->TlsBitmap, 1, 0 );
-		if (index != ~0U) 
-			pTEB->TlsSlots[index] = 0; /* clear the value */
+		pTEB->TlsSlots[Index] = 0;
+
+		return NLocal::fg_TlsIndexToTebOffset(Index);
 	}
 	else
-	{
-		index = NLocal::g_OptionalFunctions.m_fRtlFindClearBitsAndSet( pPEB->TlsExpansionBitmap, 1, 0 );
-		if (index != ~0U)
-		{
-			if (!pTEB->TlsExpansionSlots &&
-				!(pTEB->TlsExpansionSlots = (PPVOID)HeapAlloc( GetProcessHeap(), HEAP_ZERO_MEMORY,
-				8 * sizeof(pPEB->TlsExpansionBitmapBits) * sizeof(void*) )))
-			{
-				NLocal::g_OptionalFunctions.m_fRtlClearBits( pPEB->TlsExpansionBitmap, index, 1 );
-				index = ~0U;
-				SetLastError( ERROR_NOT_ENOUGH_MEMORY );
-			}
-			else
-			{
-				pTEB->TlsExpansionSlots[index] = 0; /* clear the value */
-				//index += TLS_MINIMUM_AVAILABLE;
-			}
-		}
-		else 
-			SetLastError( ERROR_NO_MORE_ITEMS );
-	}
-	NLocal::g_OptionalFunctions.m_fRtlReleasePebLock();
-	return index;
+		return TLS_OUT_OF_INDEXES;
 }
 
 mint NSys::fg_Thread_AllocLocal()
 {
-	mint Index = fg_TlsAllocInternal(false);
+	using namespace NMib::NThread::NPlatform;
+
+	auto Index = CWindowsCrossModuleProcessInfo::fs_AllocThreadLocal();
 	if (Index == TLS_OUT_OF_INDEXES)
 		DMibErrorSystemImp("Thread_AllocStorage: Out of indices");
 	return Index;
@@ -1769,28 +1855,25 @@ mint NSys::fg_Thread_AllocLocal()
 
 void NSys::fg_Thread_FreeLocal(mint _iStorage)
 {
-	if (!TlsFree(_iStorage+0x40))
-	{
-		DMibErrorSystemImp("Thread_FreeStorage: Failed to free Thread Storage Index");
-	}
-}
+	using namespace NMib::NThread::NPlatform;
 
+	CWindowsCrossModuleProcessInfo::fs_FreeThreadLocal(_iStorage);
+}
 
 void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_SetLocal(_iStorage, _pData);
 
-	fg_SetThreadLocalForOtherThread(_ThreadID, _iStorage + 0x40, _pData);
-
+	fg_SetThreadLocalForOtherThread(_ThreadID, _iStorage, _pData);
 }
 
 void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
 {
-	if (!TlsSetValue(_iStorage+0x40, _pData))
-	{
+	using namespace NMib::NThread::NPlatform;
+
+	if (!CWindowsCrossModuleProcessInfo::fs_SetThreadLocal(_iStorage, _pData))
 		DMibErrorSystemImp("Thread_FreeStorage: Failed to set Thread Storage Value");
-	}
 }
 
 #if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
@@ -1806,7 +1889,7 @@ void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocal(_iStorage);
 
-	return fg_GetThreadLocalForOtherThread(_ThreadID, _iStorage + 0x40);
+	return fg_GetThreadLocalForOtherThread(_ThreadID, _iStorage);
 }
 
 void *NSys::fg_Thread_GetLocalAlwaysSet(mint _ThreadID, mint _iStorage)
@@ -1814,12 +1897,12 @@ void *NSys::fg_Thread_GetLocalAlwaysSet(mint _ThreadID, mint _iStorage)
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocal(_iStorage);
 
-	return fg_GetThreadLocalForOtherThread(_ThreadID, _iStorage + 0x40);
+	return fg_GetThreadLocalForOtherThread(_ThreadID, _iStorage);
 }
 
 mint NSys::fg_Thread_AllocLocalFast()
 {
-	DWORD Return = fg_TlsAllocInternal(true);
+	DWORD Return = fg_TlsAllocInternal();
 	if (Return == TLS_OUT_OF_INDEXES)
 		DMibErrorSystemImp("fg_Thread_AllocLocalFast: Out of indices");
 	return Return;
@@ -1827,7 +1910,9 @@ mint NSys::fg_Thread_AllocLocalFast()
 
 void NSys::fg_Thread_FreeLocalFast(mint _iStorage)
 {
-	if (!TlsFree(_iStorage))
+	uint32 Index = NLocal::fg_TebOffsetToTlsIndex(_iStorage);
+
+	if (!TlsFree(Index))
 	{
 		DMibErrorSystemImp("fg_Thread_FreeLocalFast: Failed to free Thread Storage Index");
 	}
@@ -1835,7 +1920,9 @@ void NSys::fg_Thread_FreeLocalFast(mint _iStorage)
 
 void NSys::fg_Thread_SetLocalFast(mint _iStorage, void *_pData)
 {
-	if (!TlsSetValue(_iStorage, _pData))
+	uint32 Index = NLocal::fg_TebOffsetToTlsIndex(_iStorage);
+
+	if (!TlsSetValue(Index, _pData))
 	{
 		DMibErrorSystemImp("fg_Thread_SetLocalFast: Failed to set Thread Storage Value");
 	}
@@ -1846,7 +1933,7 @@ void NSys::fg_Thread_SetLocalFast(mint _ThreadID, mint _iStorage, void *_pData)
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_SetLocalFast(_iStorage, _pData);
 
-	fg_SetThreadLocalForOtherThread(_ThreadID, _iStorage, _pData);
+	fg_SetThreadLocalForOtherThreadFast(_ThreadID, _iStorage, _pData);
 }
 
 void *NSys::fg_Thread_GetLocalFast(mint _ThreadID, mint _iStorage)
@@ -1854,7 +1941,7 @@ void *NSys::fg_Thread_GetLocalFast(mint _ThreadID, mint _iStorage)
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocalFast(_iStorage);
 
-	return fg_GetThreadLocalForOtherThread(_ThreadID, _iStorage);
+	return fg_GetThreadLocalForOtherThreadFast(_ThreadID, _iStorage);
 }
 
 void *NSys::fg_Thread_GetLocalAlwaysSetFast(mint _ThreadID, mint _iStorage)
@@ -1862,7 +1949,7 @@ void *NSys::fg_Thread_GetLocalAlwaysSetFast(mint _ThreadID, mint _iStorage)
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocalFast(_iStorage);
 
-	return fg_GetThreadLocalForOtherThread(_ThreadID, _iStorage);
+	return fg_GetThreadLocalForOtherThreadFast(_ThreadID, _iStorage);
 }
 
 bool fg_Win32_RunningWine()
@@ -2449,6 +2536,8 @@ void fg_CheckProcessStop()
 void fg_MakeTlsActive();
 inline_never void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 {
+	using namespace NMib::NThread::NPlatform;
+
 	fg_LoadFunctionPointers();
 
 	{
@@ -2468,6 +2557,8 @@ inline_never void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 	}
 
 	fg_CheckProcessStop();
+
+	fg_Windows_InitCrossModule();
 
 	fg_CreateMalterlib();
 
@@ -2626,6 +2717,8 @@ extern bool g_bSysDeleted;
 
 extern "C" BOOL WINAPI fg_MalterlibDllMain(HANDLE _pInstance, DWORD _Reason, void *_pReserved)
 {
+	using namespace NMib::NThread::NPlatform;
+
 	if (_Reason == DLL_PROCESS_ATTACH)
 	{
 		fg_InitMalterlibAllInternal(_pInstance);
@@ -2646,6 +2739,7 @@ extern "C" BOOL WINAPI fg_MalterlibDllMain(HANDLE _pInstance, DWORD _Reason, voi
 		{
 			//DMibDTraceSafe("fg_MalterlibDllMain({}): Thread dettach {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved);
 			fg_GetLocalSys()->f_OnThreadDestroyed();
+			CWindowsCrossModuleProcessInfo::fs_DestroyThreadInfo();
 		}
 	}
 
@@ -2656,6 +2750,8 @@ extern "C" BOOL (WINAPI * const _pRawDllMain)(HANDLE, DWORD, LPVOID) = &fg_Malte
 
 void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
 {
+	using namespace NMib::NThread::NPlatform;
+
 	if (_Reason == DLL_PROCESS_ATTACH)
 	{
 		fg_InitMalterlibAllInternal(_pInstance);
@@ -2670,6 +2766,7 @@ void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
 				return;
 			fg_DestroyMalterlib();
 			//fg_GetLocalSys()->f_OnThreadDestroyed();
+
 			//DMibDTraceSafe("fg_TLSCallback({}): Process detach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved << g_bIsDll);
 		}
 	}
@@ -2690,6 +2787,7 @@ void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
 		if (!g_bSysDeleted && !g_bIsDll)
 		{
 			fg_GetLocalSys()->f_OnThreadDestroyed();
+			CWindowsCrossModuleProcessInfo::fs_DestroyThreadInfo();
 			//DMibDTraceSafe("fg_TLSCallback({}): Thread detach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved << g_bIsDll);
 		}
 	}
@@ -6460,8 +6558,11 @@ void __cdecl fg_DestroyMalterlibAggregates()
 
 void fg_DestroySystem()
 {
+	using namespace NMib::NThread::NPlatform;
+
 	NSys::fg_Thread_FreeLocal(gs_ThreadLocalParentThread);
 
+	fg_Windows_DestroyCrossModule();
 }
 
 void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
