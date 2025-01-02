@@ -3737,7 +3737,7 @@ Target
 
 Property
 {
-	MalterlibWindowsSettings_SegmentHeap: bool = false
+	MalterlibWindowsSettings_SegmentHeap: bool = true
 	MalterlibWindowsSettings_LongPathAware: bool = true
 	MalterlibExtraAssemblyInfo: string = ""
 	MalterlibGenerateWindowsVersion: bool = true
