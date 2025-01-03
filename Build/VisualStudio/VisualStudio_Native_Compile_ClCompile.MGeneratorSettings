@@ -572,6 +572,39 @@ GeneratorSetting
 		!!Compiler "Clang"
 	}
 
+	Compile_PchInstantiateTemplates =+ {
+		VSSettings: Compile.PchInstantiateTemplates->SwitchWithError(
+			"Unsupported option: "
+			, false, { }
+			, true, { AdditionalOptions: `-Xclang -fpch-instantiate-templates @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_PchCodeGen =+ {
+		VSSettings: Compile.PchCodeGen->SwitchWithError(
+			"Unsupported option: "
+			, false, { }
+			, true, { AdditionalOptions: `-Xclang -fpch-codegen @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_PchDebugInfo =+ {
+		VSSettings: Compile.PchDebugInfo->SwitchWithError(
+			"Unsupported option: "
+			, false, { }
+			, true, { AdditionalOptions: `-Xclang -fpch-debuginfo @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
 	Compile_SizedDeallocation =+ {
 		VSSettings: Compile.SizedDeallocation->SwitchWithError(
 			"Unsupported option: "

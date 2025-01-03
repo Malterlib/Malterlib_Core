@@ -321,6 +321,33 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_PchInstantiateTemplates =+ {
+		Flags: Compile.PchInstantiateTemplates->SwitchWithError(
+			"Unsupported option: "
+			, true, ["-fpch-instantiate-templates"]
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_PchCodeGen =+ {
+		Flags: Compile.PchCodeGen->SwitchWithError(
+			"Unsupported option: "
+			, true, ["-fpch-codegen"]
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_PchDebugInfo =+ {
+		Flags: Compile.PchDebugInfo->SwitchWithError(
+			"Unsupported option: "
+			, true, ["-fpch-debuginfo"]
+			, false, []
+		)
+		, Type: "unique"
+	}
+
 	Compile_LimitedDebugInfo =+ {
 		Flags: Compile.LimitedDebugInfo->SwitchWithError(
 			"Unsupported option: "

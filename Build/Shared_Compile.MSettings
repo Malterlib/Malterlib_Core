@@ -1780,6 +1780,33 @@ Compile
 		}
 	}
 
+	PchInstantiateTemplates: bool?
+	PchDebugInfo: bool?
+	PchCodeGen: bool?
+
+/*	PchDebugInfo true
+	{
+		!!Compiler "Clang"
+	}
+
+	PchCodeGen true
+	{
+		!!Compiler "Clang"
+	}*/
+
+	PchInstantiateTemplates true
+	{
+		&
+		{
+			Compiler "Clang"
+			|
+			{
+				Compile.Type "C++"
+				Compile.Type "ObjC++"
+			}
+		}
+	}
+
 	CodeCoverage: bool?
 	CodeCoverage true
 	{
