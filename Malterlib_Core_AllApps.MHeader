@@ -4,6 +4,7 @@
 Property
 {
 	Malterlib_All_App_Targets: [type(CEntity)] = []
+	Malterlib_All_App_ExtraGroups: [string] = []
 }
 
 %Workspace "Apps_Malterlib_All"
@@ -21,15 +22,17 @@ Property
 		{
 			!!MalterlibLog_EnableVerboseDebugLog false
 		}
+
+		MalterlibPostCopyProject "Malterlib_All"
+		{
+			!!TargetIsExecutable true
+		}
 	}
 
 	%Group "Apps"
 	{
-		Property.MalterlibPostCopyProject "Malterlib_All"
-		{
-			!!TargetIsExecutable true
-		}
-
 		%Target Malterlib_All_App_Targets
 	}
+
+	Workspace.ExtraGroups =+ Malterlib_All_App_ExtraGroups->Unique()
 }
