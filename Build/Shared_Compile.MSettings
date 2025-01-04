@@ -2573,12 +2573,12 @@ Compile
 		&
 		{
 			PlatformFamily "Linux"
+			!MalterlibDeploySymbols true
 			|
 			{
 				Malterlib_LinuxLinker "gold"
 				Malterlib_LinuxLinker "lld"
 			}
-			!MalterlibBuildServerBuild true
 		}
 	}
 

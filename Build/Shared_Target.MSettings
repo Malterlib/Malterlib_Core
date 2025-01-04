@@ -1330,6 +1330,14 @@ Target
 		}
 	}
 
+	LDFlags =+ "-Wl,--build-id=uuid"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+		}
+	}
+
 	LDFlags =+ "-fsanitize=thread"
 	{
 		!!MalterlibSupportSanitizerEnable_Thread true
@@ -1743,6 +1751,11 @@ Target
 	}
 
 	LDFlags =+ [["-Xlinker", "-Bsymbolic", "-Xlinker", "-Bsymbolic-functions"]]
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	LDFlags =+ [["-Xlinker", "--compress-debug-sections=zstd"]]
 	{
 		!!PlatformFamily "Linux"
 	}
@@ -3981,6 +3994,26 @@ Property
 		}
 	}
 
+	MalterlibObjCopyProgram: string
+	MalterlibObjCopyProgram `@(MalterlibToolsPrefix)llvm-objcopy`
+	{
+		!MalterlibToolsPrefix undefined
+	}
+	MalterlibObjCopyProgram "llvm-objcopy"
+	{
+		!!MalterlibObjCopyProgram undefined
+	}
+
+	MalterlibReadElfProgram: string
+	MalterlibReadElfProgram `@(MalterlibToolsPrefix)llvm-readobj`
+	{
+		!MalterlibToolsPrefix undefined
+	}
+	MalterlibReadElfProgram "llvm-readelf"
+	{
+		!!MalterlibReadElfProgram undefined
+	}
+	
 	MalterlibStripOptions: [string] = []
 
 	MalterlibStripOptions =+ ["-u", "-r"]
@@ -4243,7 +4276,6 @@ Property
 
 Property
 {
-	MalterlibDumpSymsCommand: string = "dump_syms"
 	MalterlibPostBuildScriptShowEnv: bool = false // User(Build System)=true: Enable to show the environment variables of the build environment
 }
 
@@ -4825,37 +4857,20 @@ Target
 
 	// Do this before signing as we want to strip the executable
 	PostBuildScript =+ `echo Deploy Symbols:\r\n`\
-					`echo @(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) \\> @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
-					`@(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`
+					`BuildID=@(MalterlibReadElfProgram) --notes ./Test_Malterlib_CrashReport | grep "Build ID" | cut "-d:" -f 2 | cut "-d " -f 2`\
+					`echo @(MalterlibStripProgram) --only-keep-debug @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).debug`->Escape())\r\n`\
+					`@(MalterlibStripProgram) --only-keep-debug @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).debug`->Escape())\r\n`
 	{
 		&
 		{
-			|
-			{
-				PlatformIsDarwin true
-				PlatformFamily "Linux"
-			}
+			PlatformFamily "Linux"
 			TargetIsExecutable true
 			MalterlibDeploySymbols true
-		}
-	}
-	PostBuildScript =+	`echo @(MalterlibDumpSymsCommand) @(`@(MalterlibFinalModuleDestination).dSYM`->Escape()) \\> @(`@(MalterlibFinalModuleDestination).dSYM.breakpad`->Escape())\r\n`\
-						`@(MalterlibDumpSymsCommand) @(`@(MalterlibFinalModuleDestination).dSYM`->Escape()) > @(`@(MalterlibFinalModuleDestination).dSYM.breakpad`->Escape())\r\n`
-	{
-		&
-		{
-			PlatformIsDarwin true
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-			Target.DebugInformationFormat "dwarf-with-dsym"
 		}
 	}
 
 	PostBuildScript =+	`echo zip -qj @(MalterlibFinalModuleDestination->Escape()) @(`@(MalterlibFinalModuleDestination).zip`->Escape())\r\n`\
-						`if [ -f @(`@(MalterlibFinalModuleDestination).zip`->Escape()) ]\r\n`\
-						`then\r\n`\
-						`	rm @(`@(MalterlibFinalModuleDestination).zip`->Escape())\r\n`\
-						`fi\r\n`\
+						`rm -f @(`@(MalterlibFinalModuleDestination).zip`->Escape())\r\n`\
 						`zip -qj @(`@(MalterlibFinalModuleDestination).zip`->Escape()) @(MalterlibFinalModuleDestination->Escape())\r\n`
 	{
 		&
