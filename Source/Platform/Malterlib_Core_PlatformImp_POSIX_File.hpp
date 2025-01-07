@@ -1494,6 +1494,39 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr co
 	return Attribs;
 }
 
+NMib::NFile::ECheckFileRights NSys::NFile::fg_CheckFileRights(CStr const &_File, NMib::NFile::EFileRight _Rights)
+{
+	if (!NMib::NFile::CFile::fs_FileExists(_File))
+		return NMib::NFile::ECheckFileRights_DoesNotExist;
+
+	bool bRead = (_Rights & NMib::NFile::EFileRight_Read) != 0;
+	bool bWrite = (_Rights & NMib::NFile::EFileRight_Write) != 0;
+
+	uint32 OpenFlags = fg_GetUnixOpenFlags();
+	if (bRead && bWrite)
+		OpenFlags |= O_RDWR;
+	else if (bRead)
+		OpenFlags |= O_RDONLY;
+	else if (bWrite)
+		OpenFlags |= O_WRONLY;
+
+	int iFile = open(_File, OpenFlags, 0644);
+	if (iFile < 0)
+	{
+		switch (errno)
+		{
+		case EACCES:
+			return NMib::NFile::ECheckFileRights_NoAccess;
+		}
+
+		return NMib::NFile::ECheckFileRights_Access;
+	}
+
+	close(iFile);
+
+	return NMib::NFile::ECheckFileRights_Access;
+}
+
 NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(void *_pFile)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;

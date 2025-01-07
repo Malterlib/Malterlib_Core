@@ -2937,14 +2937,6 @@ bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
 	return false;
 }
 
-NMib::NFile::ECheckFileRights NSys::NFile::fg_CheckFileRights( const CStr & _File, NMib::NFile::EFileRight _Rights)
-{
-    if (NMib::NFile::CFile::fs_FileExists(_File))
-        return NMib::NFile::ECheckFileRights_Access; // TODO
-    else
-        return NMib::NFile::ECheckFileRights_DoesNotExist; // TODO
-}
-
 ch8 const *NSys::NFile::fg_GetDllExtension()
 {
 	return ".dylib";

@@ -2984,14 +2984,6 @@ void NSys::fg_TerminateProcess(aint _ExitCode)
 	raise(SIGKILL);
 }
 
-NMib::NFile::ECheckFileRights NSys::NFile::fg_CheckFileRights( const CStr & _File, NMib::NFile::EFileRight _Rights)
-{
-    if (NMib::NFile::CFile::fs_FileExists(_File))
-        return NMib::NFile::ECheckFileRights_Access; // TODO
-    else
-        return NMib::NFile::ECheckFileRights_DoesNotExist; // TODO
-}
-
 ch8 const *NSys::NFile::fg_GetDllExtension()
 {
 	return ".so";
