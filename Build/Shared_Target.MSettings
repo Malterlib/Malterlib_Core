@@ -3009,7 +3009,11 @@ Property
 		}
 	}
 
-	MalterlibOriginalModuleDestinationExecutable: string = MalterlibOriginalModuleDestination
+	MalterlibOriginalModuleDestinationExecutable: string?
+	MalterlibOriginalModuleDestinationExecutable MalterlibOriginalModuleDestination
+	{
+		!Target.Type "Tool"
+	}
 	MalterlibOriginalModuleDestinationExecutable `@(MalterlibOriginalModuleDestination)/Contents/MacOS/@(Target:Target.FileName)`
 	{
 		&
@@ -4578,10 +4582,14 @@ Target
 
 Property
 {
-	MalterlibExecutableInput: string = MalterlibOriginalModuleDestinationExecutable
+	MalterlibExecutableInput: string? = MalterlibOriginalModuleDestinationExecutable
 
-	MalterlibPostBuildScriptInputs: [string]?
+	MalterlibPostBuildScriptInputs: [string] = []
 	MalterlibPostBuildScriptInputs =+ MalterlibExecutableInput
+	{
+		!MalterlibExecutableInput undefined
+	}
+
 	MalterlibPostBuildScriptInputs =+ MalterlibPostCopyConfigFile
 	{
 		&
@@ -5219,6 +5227,7 @@ Target
 	{
 		&
 		{
+			!MalterlibOriginalModuleDestinationExecutable undefined
 			!Target:Target.DependencyFile undefined
 			!Target:Target.Type "Tool"
 		}
