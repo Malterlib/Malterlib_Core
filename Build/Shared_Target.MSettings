@@ -3148,6 +3148,7 @@ Target
 		&
 		{
 			!MalterlibMSVCVersion undefined
+			Target.Language "Native"
 			GeneratorFamily "VisualStudio"
 		}
 	}
