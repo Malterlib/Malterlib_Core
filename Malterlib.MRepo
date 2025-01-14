@@ -1,27 +1,27 @@
 {
 	"../../Binaries/Malterlib/Linux/arm64": {
-		"Hash": "127dc934d09005499f60b4118acbd3416d0654b2"
+		"Hash": "ca36c6e24af48bdfc6491cbed79023263d45cf57"
 	},
 	"../../Binaries/Malterlib/Linux/x64": {
-		"Hash": "1d0740499a6ed6c1642015e2aaf76a1ea083234f"
+		"Hash": "3e92a441159f92a9926a4811cea21a6b87923f27"
 	},
 	"../../Binaries/Malterlib/Linux/x86": {
-		"Hash": "9081a6b3c01e09d38aef1696e9c60bf3379a41f1"
+		"Hash": "b3f03b0a282e17e689700d6859dbe41848921106"
 	},
 	"../../Binaries/Malterlib/Windows/arm64": {
-		"Hash": "f6382d12a73472e71f2fcff19720729a2cbaf7de"
+		"Hash": "259ac4be29a98006ec9557c3ce6d57f04069416a"
 	},
 	"../../Binaries/Malterlib/Windows/x64": {
-		"Hash": "2bc63346d10ffaf7b86160260904e28493545693"
+		"Hash": "c610caa9ba11671222c3723657b09bd19170855f"
 	},
 	"../../Binaries/Malterlib/Windows/x86": {
-		"Hash": "102a58ed21b328659d77122d10e15a317288997d"
+		"Hash": "38796120ad5562fbd35148fd177d5fa6327572de"
 	},
 	"../../Binaries/Malterlib/macOS/arm64": {
-		"Hash": "6b57cf2a9a3573e62ba5dc8a610a3b9852c8f0eb"
+		"Hash": "059414a37be37a8ef3e159ccde9d0fb023861be9"
 	},
 	"../../Binaries/Malterlib/macOS/x64": {
-		"Hash": "61411ee19e48b0ccaf8853ba2ce3577c7c5c36d4"
+		"Hash": "0d33b03efd598c2462beef06df40fe815556993d"
 	},
 	"../../Binaries/MalterlibLLVM/Linux/arm64": {
 		"Hash": "213331467c38590a736cad75b9e103efc5f3773a"
@@ -39,10 +39,10 @@
 		"Hash": "1fa5b8cb279d4c9d6c4a3758b3ddd05bd1eceff4"
 	},
 	"../../Binaries/MalterlibSDK/Linux/arm64": {
-		"Hash": "4daecc4bfbdf817a5c02e610f1060ad7297179cd"
+		"Hash": "4b55173c13bdbe729a4eacd7728e93e99942cc50"
 	},
 	"../../Binaries/MalterlibSDK/Linux/x64": {
-		"Hash": "4c39425639ef818f6d0a3f3c76542404766c1c94"
+		"Hash": "cf94075144b82437f303b7bbf88671f44a64a915"
 	},
 	"../../Binaries/MalterlibSDK/Linux/x86": {
 		"Hash": "26421b4e7ea1620d49f1f0e75fd4ef5014eae3bd"
@@ -168,7 +168,7 @@
 		"Hash": "0c331e5b1557e98a8e570dc84564acf3b9bd966a"
 	},
 	"../Qt": {
-		"Hash": "99ac1666b4f56dacfe5f54b7849f117efa13aced"
+		"Hash": "9927f8ed1053c61e31b926575a25811fd2e117a2"
 	},
 	"../SQL": {
 		"Hash": "7cffcfbc5ad75cc2fb536c429afc4c1b449fd81d"
