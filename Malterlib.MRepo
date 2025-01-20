@@ -54,7 +54,7 @@
 		"Hash": "dc45792fdeb0bc89cdb1e7d6e5ee5b0b26d2fff2"
 	},
 	"../../Binaries/MalterlibTest/Cloud/Linux/x64": {
-		"Hash": "e6136b5c91f0eba5736416250334f64b45576174"
+		"Hash": "143495f86986cacd8ae42e1264f28accfaac4915"
 	},
 	"../../Binaries/MalterlibTest/Cloud/OSX/x64": {
 		"Hash": "618764e80ec78a8056b4ae69575e0803191e04e4"
@@ -78,7 +78,7 @@
 		"Hash": "eda18430c46fed052c88d9360a47976d1849f9af"
 	},
 	"../Cloud": {
-		"Hash": "505b5423e716e8ef1fcbcf51aac17f53735709e7"
+		"Hash": "6c5ddc7459978a6c02835fe7839b24b588b2d18e"
 	},
 	"../CommandLine": {
 		"Hash": "e6a553249ff3922bee51e1a83825ae88c22456af"
