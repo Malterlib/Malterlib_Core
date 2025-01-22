@@ -63,6 +63,13 @@ namespace NMib::NSys
 			if (_Signal > NSIG || _Signal < 0)
 				return; // Invalid signal
 
+			auto OldErrNo = errno;
+			auto CleanupErrno = g_OnScopeExit / [&]
+				{
+					errno = OldErrNo;
+				}
+			;
+
 			auto &SubSystem = *g_SubSystem_Core_Signal;
 
 			auto &ThreadLocal = *SubSystem.m_ThreadLocal;
