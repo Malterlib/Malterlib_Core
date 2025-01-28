@@ -227,10 +227,12 @@ namespace NMib
 	void CSystem::f_Destruct()
 	{
 #if DMibSysLogSeverities
-		fg_DeleteObject(NMemory::CDefaultAllocator(), m_pSystemLog);
+		if (m_pSystemLog)
+			fg_DeleteObject(NMemory::CDefaultAllocator(), m_pSystemLog);
 		m_pSystemLog = nullptr;
 
-		fg_DeleteObject(NMemory::CDefaultAllocator(), m_pDefaultLogFile);
+		if (m_pDefaultLogFile)
+			fg_DeleteObject(NMemory::CDefaultAllocator(), m_pDefaultLogFile);
 		m_pDefaultLogFile = nullptr;
 #endif
 
