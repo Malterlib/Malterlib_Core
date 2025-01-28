@@ -1149,6 +1149,7 @@ Compile
 	Warnings_IgnoredAttributes: bool?
 	Warnings_Format: bool?
 	Warnings_MisleadingIndentation: bool?
+	Warnings_VariableLengthArray: bool?
 
 	AllCPUSubTypes: bool?
 	StackGuard: bool?

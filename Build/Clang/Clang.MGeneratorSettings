@@ -962,4 +962,13 @@ GeneratorSetting
 		)
 		, Type: "unique"
 	}
+
+	Compile_Warnings_VariableLengthArray =+ {
+		Flags: Compile.Warnings_VariableLengthArray->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-vla-cxx-extension"]
+			, true, ["-Wvla-cxx-extension"]
+		)
+		, Type: "unique"
+	}
 }
