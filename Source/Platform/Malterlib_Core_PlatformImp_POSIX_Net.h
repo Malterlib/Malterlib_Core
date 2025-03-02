@@ -222,7 +222,7 @@ private:
 
 		NStr::CStr f_GetThreadName() override
 		{
-			return CStr("POSIX SocketContext Poller Thread");
+			return CStr("Socket Poller");
 		}
 
 		aint f_Main() override

@@ -733,7 +733,10 @@ void *NSys::fg_Thread_Create
 	pThreadParams->m_pThreadParam = _pParam;
 	pThreadParams->m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();
 	pThreadParams->m_ThreadName = _pThreadName;
-	
+#ifdef DPlatformFamily_Linux
+	pThreadParams->m_ThreadName = pThreadParams->m_ThreadName.f_Left(15);
+#endif
+
 	pthread_t ThreadID;
 
 	Result = pthread_create(&ThreadID, Data.f_GetThreadAttribs(), &fg_ThreadStartRoutine, pThreadParams.f_Get());	
