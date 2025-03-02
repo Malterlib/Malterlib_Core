@@ -33,7 +33,11 @@ namespace NMib
 
 	namespace NFile
 	{
+#if DMibPPtrBits > 32
 		static constexpr mint gc_IdealNetworkQueueSize = 128 * 1024 * 1024;
+#else
+		static constexpr mint gc_IdealNetworkQueueSize = 16 * 1024 * 1024;
+#endif
 		static constexpr mint gc_IdealIoSize = 1024 * 1024;
 	}
 
