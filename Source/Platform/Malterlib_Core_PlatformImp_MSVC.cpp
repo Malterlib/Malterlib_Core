@@ -4120,22 +4120,12 @@ mint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset
 {
 	uint32 BytesRead;
 
-	CMibFilePos NewOffset;
-	
-	if (!(((CWin32File *)_pFile)->m_Flags & NMib::NFile::EFileOpen_NoFileLength))
-	{
-		if (!SetFilePointerEx(((CWin32File *)_pFile)->m_pFile, *((LARGE_INTEGER *)&_Offset), (LARGE_INTEGER *)&NewOffset, FILE_BEGIN))
-		{
-			DMibErrorFile((CStr::CFormat("Windows returned an error from SetFilePointerEx({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-		}
+	OVERLAPPED Overlapped;
+	NMib::NMemory::fg_MemClear(Overlapped);
+	Overlapped.Offset = _Offset & 0xffffffffll;
+	Overlapped.OffsetHigh = (_Offset >> 32) & 0xffffffffll;
 
-		if (NewOffset != _Offset)
-		{
-			DMibErrorFile("Failed to move file pointer to read location");
-		}
-	}
-
-	if (!ReadFile(((CWin32File *)_pFile)->m_pFile, _pData, _NumBytes, &BytesRead, nullptr))
+	if (!ReadFile(((CWin32File *)_pFile)->m_pFile, _pData, _NumBytes, &BytesRead, &Overlapped))
 	{
 		DMibErrorFile((CStr::CFormat("Windows returned an error from ReadFile({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 	}
@@ -4146,22 +4136,13 @@ mint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset
 mint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos &_Offset, mint _NumBytes)
 {
 	uint32 BytesWritten;
-	CMibFilePos NewOffset;
 	
-	if (!(((CWin32File *)_pFile)->m_Flags & NMib::NFile::EFileOpen_NoFileLength))
-	{
-		if (!SetFilePointerEx(((CWin32File *)_pFile)->m_pFile, *((LARGE_INTEGER *)&_Offset), (LARGE_INTEGER *)&NewOffset, FILE_BEGIN))
-		{
-			DMibErrorFile((CStr::CFormat("Windows returned an error from SetFilePointerEx({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-		}
+	OVERLAPPED Overlapped;
+	NMib::NMemory::fg_MemClear(Overlapped);
+	Overlapped.Offset = _Offset & 0xffffffffll;
+	Overlapped.OffsetHigh = (_Offset >> 32) & 0xffffffffll;
 
-		if (NewOffset != _Offset)
-		{
-			DMibErrorFile("Failed to move file pointer to write location");
-		}
-	}
-
-	if (!WriteFile(((CWin32File *)_pFile)->m_pFile, _pData, _NumBytes, &BytesWritten, nullptr))
+	if (!WriteFile(((CWin32File *)_pFile)->m_pFile, _pData, _NumBytes, &BytesWritten, &Overlapped))
 	{
 		DMibErrorFile((CStr::CFormat("Windows returned an error from WriteFile({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 	}
