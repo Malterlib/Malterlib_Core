@@ -2337,7 +2337,7 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (mint _ThreadID, HANDL
 	}
 }
 
-namespace NPrivate
+namespace
 {
 	struct CEnumThreadEntry
 	{
@@ -2386,8 +2386,6 @@ void fg_EnumProcessThreads(TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnT
 	// Repeat until no change
 	// Let user do thread manipulation
 	// Resume threads
-
-	using namespace ::NPrivate;
 
 	struct CState
 	{
