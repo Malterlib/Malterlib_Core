@@ -418,22 +418,22 @@ Property
 
 	MalterlibGitRepoGitDir: string = `@(Builtin.BasePathAbsolute)/.git`
 
-	MalterlibGitRepoInputFiles: [string] = []
+	f_MalterlibGitRepoInputFiles function(string _RepoDir) [string] = []
 
-	MalterlibGitRepoInputFiles =+ `@(MalterlibGitRepoGitDir)/HEAD`
-	MalterlibGitRepoInputFiles =+ `@(MalterlibGitRepoGitDir)/packed-refs`
+	f_MalterlibGitRepoInputFiles =+ `@(_RepoDir)/HEAD`
+	f_MalterlibGitRepoInputFiles =+ `@(_RepoDir)/packed-refs`
 	{
-		![] MalterlibGitRepoGitDir->FindFilesIn("packed-refs")
+		![] _RepoDir->FindFilesIn("packed-refs")
 	}
 
-	MalterlibGitHeadRef: string = `@(ReadFile(`@(MalterlibGitRepoGitDir)/HEAD`)->ParseFormatString("ref: {}\n", "{0}"))`
-	MalterlibGitHeadRefPath: string = `@(MalterlibGitRepoGitDir)/@(MalterlibGitHeadRef)`
-	MalterlibGitHeadRefFile: string = MalterlibGitHeadRefPath->GetFile()
-	MalterlibGitHeadRefDir: string = MalterlibGitHeadRefPath->GetPath()
+	f_MalterlibGitHeadRef function(string _RepoDir) string = `@(ReadFile(`@(_RepoDir)/HEAD`)->ParseFormatString("ref: {}\n", "{0}"))`
+	f_MalterlibGitHeadRefPath function(string _RepoDir) string = `@(_RepoDir)/@(f_MalterlibGitHeadRef(_RepoDir))`
+	f_MalterlibGitHeadRefFile function(string _RepoDir) string = f_MalterlibGitHeadRefPath(_RepoDir)->GetFile()
+	f_MalterlibGitHeadRefDir function(string _RepoDir) string = f_MalterlibGitHeadRefPath(_RepoDir)->GetPath()
 
-	MalterlibGitRepoInputFiles =+ `@(MalterlibGitRepoGitDir)/@(MalterlibGitHeadRef)`
+	f_MalterlibGitRepoInputFiles =+ `@(_RepoDir)/@(f_MalterlibGitHeadRef(_RepoDir))`
 	{
-		![] MalterlibGitHeadRefDir->FindFilesIn(MalterlibGitHeadRefFile)
+		![] f_MalterlibGitHeadRefDir(_RepoDir)->FindFilesIn(f_MalterlibGitHeadRefFile(_RepoDir))
 	}
 
 	MalterlibGitOriginRemote: string = ""
@@ -466,7 +466,7 @@ Property
 	}
 
 	MalterlibGitBranch: string?
-	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, MalterlibGitRepoInputFiles, "git", "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
+	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir), "git", "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
 	{
 		&
 		{
@@ -484,7 +484,7 @@ Property
 	}
 
 	MalterlibGitCommit: string = ""
-	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, MalterlibGitRepoInputFiles, "git", "rev-parse", "HEAD")->Trim()
+	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir), "git", "rev-parse", "HEAD")->Trim()
 	{
 		&
 		{

@@ -211,15 +211,20 @@ GeneratorSetting
 	Compile_Symbols =+ {
 		Flags: Compile.Symbols->SwitchWithError(
 			"Unsupported option: "
-			, "FullForDebug", ["-gfull", "-fstandalone-debug"]
-			, "Full", "-g"
-			, "Fast", "-gline-tables-only"
+			, "FullForDebug", [["-gfull", "-glldb", "-fstandalone-debug", "-Xclang", "-debugger-tuning=lldb"]]
+			, "Full", [["-g", "-glldb", "-Xclang", "-debugger-tuning=lldb"]]
+			, "Fast", ["-gline-tables-only"]
 			, "None", "-g0"
 			, "Default", []
 		)
 		, Type: "unique"
 	}
 
+	Compile_DwarfDebugFlags =+ {
+		Flags: [["-Xclang", "-dwarf-debug-flags", "-Xclang", Compile.DwarfDebugFlags]]
+		, Type: "unique"
+	}
+	
 	Compile_TargetTriple =+ {
 		Flags: [["-target", Compile.TargetTriple], ["-target", Compile.TargetTriple]]
 		, Type: "unique"

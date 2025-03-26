@@ -2532,6 +2532,9 @@ void fg_CheckProcessStop()
 }
 
 void fg_MakeTlsActive();
+
+extern "C" ch8 const g_Malterlib_RepoInfo[];
+
 inline_never void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 {
 	using namespace NMib::NThread::NPlatform;
@@ -2573,6 +2576,7 @@ inline_never void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 
 	NSys::fg_Compiler_MakeActive(&g_OffsetThreadLocalOffset);
 	NSys::fg_Compiler_MakeActive(&g_DebugTIB);
+	NSys::fg_Compiler_MakeActive(&g_Malterlib_RepoInfo);
 	
 	fg_MakeTlsActive();
 

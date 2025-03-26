@@ -873,6 +873,10 @@ Property
 	{
 		!!PlatformFamily "Linux"
 	}
+	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-windows-msvc`
+	{
+		!!PlatformFamily "Windows"
+	}
 
 	MalterlibClangLibraryTargetTriple: string?
 	MalterlibClangLibraryTargetTriple `@(MalterlibNativeClangLibraryArchitecture)-apple-macos@(MalterlibMinSupportedMacOSVersion)`
@@ -1153,6 +1157,8 @@ Compile
 
 	AllCPUSubTypes: bool?
 	StackGuard: bool?
+
+	DwarfDebugFlags: string?
 
 	Warnings_CharSubscripts false
 	{

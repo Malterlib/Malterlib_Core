@@ -4213,12 +4213,162 @@ Target
 	{
 		!MalterlibExeFSSpecContents undefined
 	}
+}
 
+Property
+{
+	f_GetUrlInfo function(string _Property) [{
+		URL: string,
+		Location: string,
+		Commit: string,
+	}]
+
+	f_GetUrlInfo =+ {
+		URL: GetProperty(&Repository.URL, _Property),
+		Location: GetProperty(&Repository.Location, _Property),
+		Commit: ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit-@(GetProperty(&Repository.Location, _Property)->HashSHA256()).MState`, f_MalterlibGitRepoInputFiles(GetProperty(&Repository.Location, _Property) / ".git"), "git", "-C", GetProperty(&Repository.Location, _Property), "rev-parse", "HEAD")->Trim()
+	}
+
+	RepoDebugInfo: string
+
+	RepoDebugInfo AllRepositories->ForEach(&f_GetUrlInfo)->ToString()
+}
+
+%GenerateFile "Repository Debug Info"
+{
+	!PlatformFamily "Windows"
+
+	GenerateFile
+	{
+		Group `@(Platform) @(Architecture) @(FullConfiguration)`
+		Name GeneratedGlobalDirectory / "RepoDebug.json"
+		Contents RepoDebugInfo
+		UnicodeBOM false
+	}
+}
+
+%GenerateFile "Repository Debug Info Hash"
+{
+	!PlatformFamily "Windows"
+
+	GenerateFile
+	{
+		Group `@(Platform) @(Architecture) @(FullConfiguration)`
+		Name GeneratedGlobalDirectory / "RepoDebug.json.sha256"
+		Contents RepoDebugInfo->HashSHA256()
+		UnicodeBOM false
+	}
+}
+
+%GenerateFile "Repository Debug Info Cpp"
+{
+	!!PlatformFamily "Windows"
+
+	Property
+	{
+		f_OutputCppStringChunk function(string _Chunk) string = ""
+
+		f_OutputCppStringChunk =+ `R"-----(@(_Chunk))-----"\n`
+	}
+
+	GenerateFile
+	{
+		Group `@(Platform) @(Architecture) @(FullConfiguration)`
+		Name GeneratedGlobalDirectory / "RepoDebug.cpp"
+		Contents	`#include <Mib/Core/Core>\n`\
+					`\n`\
+					`#pragma section(".repo", read)\n`\
+					`\n`\					
+					`extern "C" __declspec(allocate(".repo")) assure_used __declspec(selectany) ch8 const g_Malterlib_RepoInfo[] = @(Log(RepoDebugInfo->ChunkString(16000))->ForEach(&f_OutputCppStringChunk));\n`
+		UnicodeBOM false
+	}
+}
+
+Property
+{
+	RepoDebugInfoHash: string = ReadFile(GeneratedGlobalDirectory / "RepoDebug.json.sha256")
+	RepoDebugInfoSectionName: string = `.repo_@(RepoDebugInfoHash->Left(8))`
+
+	RepoDebugInfoSectionName `__repo_@(RepoDebugInfoHash->Left(8))`
+	{
+		!!PlatformFamily "macOS"
+	}
+}
+
+%Group "{~Automatic}/{Repository Debug Info}"
+{
+	Property
+	{
+		OutputFile: string = Target.IntermediateDirectory / "RepoDebug.o"
+		SourceObject: string = Target.IntermediateDirectory / "RepoDebug-empty.o"
+
+		ClangPath: string = MalterlibLLVMHostBinariesDirectory / "bin/clang"
+		ObjCopyPath: string = MalterlibLLVMHostBinariesDirectory / "bin/llvm-objcopy"
+
+		OutputFile Target.IntermediateDirectory / "RepoDebug.obj"
+		{
+			!!PlatformFamily "Windows"
+		}
+	}
+
+	%Group "~Automatic"
+	{
+		%Group "Repository Debug Info"
+		{
+			%File GeneratedGlobalDirectory / "RepoDebug.cpp"
+			{
+				!!PlatformFamily "Windows"
+			}
+
+			%File GeneratedGlobalDirectory / "RepoDebug.json"
+			{
+				!!PlatformFamily "Linux"
+
+				Compile
+				{
+					Type "Custom"
+
+					Custom_CommandLine 	`@(ClangPath) -target @(MalterlibTargetTriple) -c -x c /dev/null -o @(SourceObject->EscapeHost()) && `\
+										`@(ObjCopyPath) --add-section @(`@(RepoDebugInfoSectionName)=@(GeneratedGlobalDirectory / "RepoDebug.json")`->EscapeHost()) --set-section-flags @(RepoDebugInfoSectionName)=readonly,debug @(SourceObject->EscapeHost()) @(OutputFile->EscapeHost())`
+
+					Custom_Inputs [GeneratedGlobalDirectory / "RepoDebug.json"]
+					Custom_Outputs [OutputFile]
+				}
+			}
+		}
+	}
+
+	Target.LinkWithLibraries =+ OutputFile
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	Target.LinkWithLibraries =+ [["-sectcreate", "__TEXT", RepoDebugInfoSectionName, GeneratedGlobalDirectory / "RepoDebug.json"]]
+	{
+		!!PlatformFamily "macOS"
+	}
+}
+
+Target
+{
+	ExtraGroups =+ "{~Automatic}/{Repository Debug Info}"
+	{
+		!!TargetIsExecutable true
+	}
 }
 
 Compile
 {
 	Custom_VerifyInputsAndOutputsExist: bool?
+
+	DwarfDebugFlags `repo-debug-section=@(RepoDebugInfoSectionName)`
+	{
+		&
+		{
+			CompileDialect "C"
+			!PlatformFamily "Windows"
+		}
+	}
 }
 
 %Group "~Automatic/Utility Build"
