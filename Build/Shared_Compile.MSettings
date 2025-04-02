@@ -1303,6 +1303,7 @@ Compile
 	Warnings_UnknownPragma: bool?
 	Warnings_UnusedVariable: bool?
 	Warnings_UnusedButSetVariable: bool?
+	Warnings_MissingBraces: bool?
 	Warnings_Switch: bool?
 	Warnings_SingleBitBitfieldConstantConversion: bool?
 

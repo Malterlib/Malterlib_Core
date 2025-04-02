@@ -628,6 +628,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_Warnings_MissingBraces =+ {
+		Flags: Compile.Warnings_MissingBraces->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-missing-braces"
+			, true, "-Wmissing-braces"
+		)
+		, Type: "unique"
+	}
+
 	Compile_Warnings_AlignMismatch =+ {
 		Flags: Compile.Warnings_AlignMismatch->SwitchWithError(
 			"Unsupported option: "

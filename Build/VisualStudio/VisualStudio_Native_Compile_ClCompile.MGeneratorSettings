@@ -423,6 +423,7 @@ GeneratorSetting
 	Compile_Warnings_DeprecatedNonPrototype =+ GeneratorSetting.f_Helper_SetVSWarning("", "deprecated-non-prototype", Compile.Warnings_DeprecatedNonPrototype)
 
 	Compile_Warnings_UnusedButSetVariable =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-but-set-variable", Compile.Warnings_UnusedButSetVariable)
+	Compile_Warnings_MissingBraces =+ GeneratorSetting.f_Helper_SetVSWarning("", "missing-braces", Compile.Warnings_MissingBraces)
 	Compile_Warnings_UnusedVariable =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-variable", Compile.Warnings_UnusedVariable)
 	Compile_Warnings_UnusedFunction =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-function", Compile.Warnings_UnusedFunction)
 	Compile_Warnings_UnusedExceptionParameter =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-exception-parameter", Compile.Warnings_UnusedExceptionParameter)
@@ -507,19 +508,19 @@ GeneratorSetting
 	}
 
 	Compile_CxxLanguage =+ {
-		VSSettings: { AdditionalOptions: `-Xclang @(Compile.CxxLanguage->SwitchWithError(
+		VSSettings: { AdditionalOptions: `@(Compile.CxxLanguage->SwitchWithError(
 			"Unsupported option: "
-			, "GNU++11", "-std=gnu++11"
-			, "GNU++14", "-std=gnu++14"
-			, "GNU++17", "-std=gnu++17"
-			, "GNU++20", "-std=gnu++20"
-			, "GNU++23", "-std=gnu++2b"
-			, "C++11", "-std=c++11"
-			, "C++14", "-std=c++14"
-			, "C++17", "-std=c++17"
-			, "C++20", "-std=c++20"
-			, "C++23", "-std=c++23"
-			, "C++26", "-std=c++2c"
+			, "GNU++11", "-Xclang -std=gnu++11"
+			, "GNU++14", "-Xclang -std=gnu++14"
+			, "GNU++17", "-Xclang -std=gnu++17"
+			, "GNU++20", "-Xclang -std=gnu++20"
+			, "GNU++23", "-Xclang -std=gnu++2b"
+			, "C++11", "-std:c++11"
+			, "C++14", "-std:c++14"
+			, "C++17", "-std:c++17"
+			, "C++20", "-std:c++20"
+			, "C++23", "-std:c++23"
+			, "C++26", "-std:c++latest"
 			, "", []
 		)) @(Builtin.Inherit)` }
 	}
