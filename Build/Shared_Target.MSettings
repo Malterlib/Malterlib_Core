@@ -3487,7 +3487,9 @@ Property
 						`	<key>CFBundleShortVersionString</key>\n`\
 						`		<string>@(ProductVersionMajor->ToString()).@(ProductVersionMinor->ToString()).@(ProductVersionRevision->ToString())</string>\n`\
 						`	<key>CFBundleName</key>\n`\
-						`		<string>@(MalterlibTargetFriendlyName)</string>\n`
+						`		<string>@(MalterlibTargetFriendlyName)</string>\n`\
+						`	<key>CFBundleDisplayName</key>\n`\
+						`		<string>@(Target:Target.FileName)</string>\n`
 
 			Contents =+	`	<key>NSHumanReadableCopyright</key>\n`\
 						`		<string>@(ProductCopyright)</string>\n`\
