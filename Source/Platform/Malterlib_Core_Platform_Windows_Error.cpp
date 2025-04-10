@@ -12,43 +12,45 @@ namespace NMib
 		{
 			if (!_Error)
 				_Error = GetLastError();
-			LPVOID lpMsgBuf;
-			if (FormatMessage( 
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-				FORMAT_MESSAGE_FROM_SYSTEM | 
-				FORMAT_MESSAGE_IGNORE_INSERTS,
-				nullptr,
-				_Error,
-				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-				(LPTSTR) &lpMsgBuf,
-				0,
-				nullptr 
-			))
-			{
-				// Process any inserts in lpMsgBuf.
-				// ...
-				// Display the string.
 
-				NStr::CFStr256 LastError;
-				if (lpMsgBuf)
+			LPWSTR pMessageBuffer = nullptr;
+			if
+			(
+				FormatMessageW
+				(
+					FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS
+					, nullptr
+					, _Error
+					, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
+					, (LPWSTR)&pMessageBuffer
+					, 0
+					, nullptr
+				)
+			)
+			{
+				if (pMessageBuffer)
 				{
-					LastError = (LPTSTR)lpMsgBuf;
-					LocalFree(lpMsgBuf);
+					NStr::CFStr256 Return = NStr::CFStr256::CFormat("{} {}") << _Error << pMessageBuffer;
+
+					LocalFree(pMessageBuffer);
+
+					return Return.f_Trim();
 				}
-
-				return LastError.f_Trim();
 			}
-			else
-			{
-				return NStr::CFStr256::CFormat("0x{nfh,sj8,sf0}") << _Error;
 
-			}
+			return NStr::CFStr256::CFormat("{} Unknown error") << _Error;
 		}
 
 		template <typename tf_CStr>
 		tf_CStr fg_ErrnoString(int _Err)
 		{
-			return tf_CStr(strerror(_Err));
+			tf_CStr ErrorFormat;
+
+			auto pError = strerror(_Err);
+			if (!pError)
+				return typename tf_CStr::CFormat("Unknown error ({})") << _Err;
+			else
+				return typename tf_CStr::CFormat("{} ({})") << pError << _Err;
 		}
 
 		template NStr::CStr fg_ErrnoString<NStr::CStr>(int _Err);

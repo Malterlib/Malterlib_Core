@@ -907,7 +907,7 @@ namespace NMib
 					if (ExitCode != 0)
 					{
 						HRESULT Result = LsaNtStatusToWinError(ExitCode);
-						fl_ReportError(NStr::CStr::CFormat("Error loading library remotely: {} ({}, {})") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Result) << ExitCode << Result);
+						fl_ReportError(NStr::CStr::CFormat("Error loading library remotely: {} ({})") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Result) << ExitCode);
 						return EInjectDllResult_Failed;
 					}
 				}
