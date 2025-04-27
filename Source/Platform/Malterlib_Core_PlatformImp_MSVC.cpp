@@ -822,9 +822,9 @@ void NSys::fg_ConsoleOutput(CStrNonTracked const &_Str)
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Str, STD_OUTPUT_HANDLE, false);
 }
 
-void NSys::fg_ConsoleOutput(CStrSecure const &_Str)
+void NSys::fg_ConsoleOutput(CStrIO const &_Str)
 {
-	fg_ConsoleOutputHelper<CWStrSecure, CStrSecure>(_Str, STD_OUTPUT_HANDLE, false);
+	fg_ConsoleOutputHelper<CWStrIO, CStrIO>(_Str, STD_OUTPUT_HANDLE, false);
 }
 
 void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
@@ -842,7 +842,7 @@ void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSpan const &_Str)
 	fg_ConsoleOutputHelper<CFWStr1024, CFStr1024>(CFStr1024(_Str.f_GetStr(), _Str.f_GetLen()), STD_ERROR_HANDLE, true);
 }
 
-void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer)
+void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer)
 {
 	uint32 Written = 0;
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -871,9 +871,9 @@ void NSys::fg_ConsoleErrorOutput(const NMib::NStr::CStrNonTracked &_Str)
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(_Str, STD_ERROR_HANDLE, false);
 }
 
-void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSecure const &_Str)
+void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrIO const &_Str)
 {
-	fg_ConsoleOutputHelper<CWStrSecure, CStrSecure>(_Str, STD_ERROR_HANDLE, false);
+	fg_ConsoleOutputHelper<CWStrIO, CStrIO>(_Str, STD_ERROR_HANDLE, false);
 }
 
 void *fg_AllocVirtualMemory(mint &_Size, mint _Type, ENumaNode _NumaNode, mint _Alignment, EAllocationFlag _Flags)

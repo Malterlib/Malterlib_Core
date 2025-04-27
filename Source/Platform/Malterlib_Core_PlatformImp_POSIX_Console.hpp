@@ -93,12 +93,12 @@ void NSys::fg_ConsoleOutput(NMib::NStr::CStrNonTracked const &_Str)
 	fg_WriteStringToPipe(1, _Str.f_GetStr(), _Str.f_GetLen());
 }
 
-void NSys::fg_ConsoleOutput(NMib::NStr::CStrSecure const &_Str)
+void NSys::fg_ConsoleOutput(NMib::NStr::CStrIO const &_Str)
 {
 	fg_WriteStringToPipe(1, _Str.f_GetStr(), _Str.f_GetLen());
 }
 
-void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CSecureByteVector const &_Buffer)
+void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer)
 {
 	fg_WriteStringToPipe(1, (const ch8 *)_Buffer.f_GetArray(), _Buffer.f_GetLen());
 }
@@ -121,7 +121,7 @@ void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSpan const &_Str)
 	fg_WriteStringToPipe(2, _Str.f_GetStr(), _Str.f_GetLen());
 }
 
-void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSecure const &_Str)
+void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrIO const &_Str)
 {
 	fg_WriteStringToPipe(2, _Str.f_GetStr(), _Str.f_GetLen());
 }

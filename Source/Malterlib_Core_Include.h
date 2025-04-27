@@ -53,6 +53,17 @@ namespace NMib
 
 		struct CByteVector;
 		struct CSecureByteVector;
+		
+//#define DMibSecureClearIOBuffers_Enable
+#ifdef DMibSecureClearIOBuffers_Enable
+		using CIOByteVector = NContainer::CSecureByteVector;
+#else
+		using CIOByteVector = NContainer::CByteVector;
+#endif
+	}
+
+	namespace NFile
+	{
 	}
 
 	struct CVoidTag;
