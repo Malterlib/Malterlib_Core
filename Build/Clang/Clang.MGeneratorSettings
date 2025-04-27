@@ -435,10 +435,12 @@ GeneratorSetting
 				, "-Wno-reorder"
 				, "-Wno-unneeded-internal-declaration"
 				, "-Wno-invalid-offsetof"
+				, "-Wreorder-init-list"
 			]
 			, "Pedantic", [
 				"-Weverything"
 				, "-Wno-invalid-offsetof"
+				, "-Wreorder-init-list"
 			]
 		)
 		, Type: "unique"
