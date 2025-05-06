@@ -849,27 +849,30 @@ GeneratorSetting
 		}
 	}
 
+	Helper_TargetIntRelativeToWorkspaceInt: string
+	Helper_TargetIntRelativeToWorkspaceInt Target.IntermediateDirectory->RemoveSuffix("/")->MakeRelative(Workspace:Workspace.IntermediateDirectory->RemoveSuffix("/"))
+
 	Target_IntermediateDirectory =+ {
 		XCConfigs: {
-			"CONFIGURATION_TEMP_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "TARGET_TEMP_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "TEMP_FILES_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "TEMP_FILE_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "PROJECT_TEMP_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "PROJECT_TEMP_ROOT": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "BUILD_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "BUILD_ROOT": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "OBJROOT": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "SYMROOT": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "TEMP_ROOT": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "MODULE_CACHE_DIR": Target.IntermediateDirectory->RemoveSuffix("/")
-			, "LOCSYMROOT": Target.IntermediateDirectory->RemoveSuffix("/")
+			"TEMP_ROOT": "$(OBJROOT)" / GeneratorSetting.Helper_TargetIntRelativeToWorkspaceInt
+			, "PROJECT_TEMP_ROOT": "$(OBJROOT)" / GeneratorSetting.Helper_TargetIntRelativeToWorkspaceInt
+			, "PROJECT_TEMP_DIR": "$(OBJROOT)" / GeneratorSetting.Helper_TargetIntRelativeToWorkspaceInt
+			, "CONFIGURATION_TEMP_DIR": "$(OBJROOT)" / GeneratorSetting.Helper_TargetIntRelativeToWorkspaceInt
+			, "TARGET_TEMP_DIR": "$(OBJROOT)" / GeneratorSetting.Helper_TargetIntRelativeToWorkspaceInt
+			, "TEMP_FILES_DIR": "$(OBJROOT)" / GeneratorSetting.Helper_TargetIntRelativeToWorkspaceInt
+			, "TEMP_FILE_DIR": "$(OBJROOT)" / GeneratorSetting.Helper_TargetIntRelativeToWorkspaceInt
+			, "MODULE_CACHE_DIR": "$(OBJROOT)" / GeneratorSetting.Helper_TargetIntRelativeToWorkspaceInt
 		}
 	}
 
+	Helper_TargetOutRelativeToWorkspaceOut: string
+	Helper_TargetOutRelativeToWorkspaceOut Target.OutputDirectory->RemoveSuffix("/")->MakeRelative(Workspace:Workspace.OutputDirectory->RemoveSuffix("/"))
+
 	Target_OutputDirectory =+ {
 		XCConfigs: {
-			"CONFIGURATION_BUILD_DIR": Target.OutputDirectory->RemoveSuffix("/")
+			"BUILD_ROOT": "$(SYMROOT)" / GeneratorSetting.Helper_TargetOutRelativeToWorkspaceOut
+			, "BUILD_DIR": "$(SYMROOT)" / GeneratorSetting.Helper_TargetOutRelativeToWorkspaceOut
+			, "CONFIGURATION_BUILD_DIR": "$(SYMROOT)" / GeneratorSetting.Helper_TargetOutRelativeToWorkspaceOut
 		}
 	}
 
@@ -881,13 +884,13 @@ GeneratorSetting
 
 	Target_ProjectDerivedSourcesDir =+ {
 		XCConfigs: {
-			"PROJECT_DERIVED_FILE_DIR": Target.ProjectDerivedSourcesDir
+			"PROJECT_DERIVED_FILE_DIR": "$(OBJROOT)" / Target.ProjectDerivedSourcesDir->RemoveSuffix("/")->MakeRelative(Workspace:Workspace.IntermediateDirectory->RemoveSuffix("/"))
 		}
 	}
 
 	Target_ProjectSharedPrecompPrefixDir =+ {
 		XCConfigs: {
-			"SHARED_PRECOMPS_DIR": Target.ProjectSharedPrecompPrefixDir
+			"SHARED_PRECOMPS_DIR": "$(OBJROOT)" / Target.ProjectSharedPrecompPrefixDir->RemoveSuffix("/")->MakeRelative(Workspace:Workspace.IntermediateDirectory->RemoveSuffix("/"))
 		}
 	}
 

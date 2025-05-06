@@ -168,11 +168,10 @@ GeneratorSetting
 		Flags: Compile.NewDeleteVisibilityHidden->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, "-fvisibility-global-new-delete-hidden"
+			, true, "-fvisibility-global-new-delete=force-hidden"
 		)
 		, Type: "unique"
 	}
-	// Switch to when Xcode clang supports it: "-fvisibility-global-new-delete=force-hidden"
 
 	Compile_ObjectiveCARC =+ {
 		Flags: Compile.ObjectiveCARC->SwitchWithError(
