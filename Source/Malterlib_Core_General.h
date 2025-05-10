@@ -96,6 +96,19 @@ namespace NMib
 	}
 #endif
 
+	template <typename tf_CType, size_t tf_ArrayElements>
+	consteval size_t fg_ArraySize(tf_CType (&_Array)[tf_ArrayElements]) noexcept
+	{
+		return tf_ArrayElements;
+	}
+
+	template <typename tf_CType>
+	consteval size_t fg_ArraySize(tf_CType const &_Array) noexcept
+		requires (sizeof(tf_CType) == 0)
+	{
+		return 0;
+	}
+
 	namespace NPrivate
 	{
 		template <typename t_CType, typename t_CTypeToCopyTo>
