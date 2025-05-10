@@ -95,6 +95,19 @@ namespace NMib
 		ch8 const* m_pName;		
 	};
 
+	struct CBuildMetadata
+	{
+		ch8 const *m_pProduct;
+		ch8 const *m_pApplication;
+		ch8 const *m_pConfiguration;
+		ch8 const *m_pGitBranch;
+		ch8 const *m_pGitCommit;
+		ch8 const *m_pPlatform;
+		ch8 const *m_pVersion;
+		mint m_nTags = 0;
+		ch8 const * const*m_pTags;
+	};
+
 	namespace NSys
 	{
 		/***************************************************************************************************\
@@ -254,7 +267,7 @@ namespace NMib
 		void fg_DebugOutput(const NMib::NStr::CWStrNonTracked &_Output);
 		void fg_DebugOutput(const NMib::NStr::CUStrNonTracked &_Output);
 
+		CBuildMetadata fg_GetBuildMetadata();
 	}
-
 }
 

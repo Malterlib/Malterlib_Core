@@ -975,6 +975,78 @@ Compile
 	}
 }
 
+%Group "~Automatic/Metadata"
+{
+	%GenerateFile "Metadata"
+	{
+		Property
+		{
+			f_ExpandTags function(string _Tag) string = ""
+
+			f_ExpandTags =+ "			"
+			{
+				!!f_ExpandTags undefined
+			}
+
+			f_ExpandTags =+ "			, "
+			{
+				!f_ExpandTags "			"
+			}
+			
+			f_ExpandTags =+ `@(_Tag->Escape())\n`
+		}
+
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name `@(GeneratedDirectory)BuildMetadata.cpp`
+
+			Contents	`#include <Mib/Core/Core>\n\n`\
+						`namespace NMib::NSys\n`\
+						`{\n`
+
+			Contents =+ `	static constexpr ch8 const *gc_Tags[] =\n`\
+						`		{\n`\
+						`@(MalterlibCloudVersionInfo_Tags->ForEach(&f_ExpandTags))`\
+						`		}\n`\
+						`	;\n`\
+						`\n`
+						{
+							!MalterlibCloudVersionInfo_Tags->Length() 0
+						}
+			
+			Contents =+ `	CBuildMetadata fg_GetBuildMetadata()\n`\
+						`	{\n`\
+						`		return\n`\
+						`			{\n`\
+						`				.m_pProduct = @(MalterlibCloudVersionInfo_Product->Escape())\n`\
+						`				, .m_pApplication = @(MalterlibCloudVersionInfo_Application->Escape())\n`\
+						`				, .m_pConfiguration = @(MalterlibCloudVersionInfo_Configuration->Escape())\n`\
+						`				, .m_pGitBranch = @((MalterlibGitBranch || "")->Escape())\n`\
+						`				, .m_pGitCommit = @(MalterlibGitCommit->Escape())\n`\
+						`				, .m_pPlatform = @(MalterlibCloudPlatform->Escape())\n`\
+						`				, .m_pVersion = @(MalterlibCloudVersionInfo_Version->Escape())\n`\
+						`				, .m_nTags = @(MalterlibCloudVersionInfo_Tags->Length()->ToString())\n`\
+						`				, .m_pTags = @((MalterlibCloudVersionInfo_Tags->Length() == 0) ? "nullptr" : "gc_Tags")\n`\
+						`		 	}\n`\
+						`		;\n`\
+						`	}\n`\
+						`}\n`
+
+			UnicodeBOM true
+		}
+	}
+
+	%Dependency "Lib_Breakpad_Common"
+	{
+		!!MalterlibEnableBreakpad true
+	}
+	%Dependency "Lib_Breakpad_Client"
+	{
+		!!MalterlibEnableBreakpad true
+	}
+}
+
 Target
 {
 	ExtraGroups =+ "~Automatic/Breakpad Support"
@@ -983,6 +1055,18 @@ Target
 		{
 			MalterlibEnableBreakpad true
 			TargetIsLaunchableExecutable true
+		}
+	}
+}
+
+Target
+{
+	ExtraGroups =+ "~Automatic/Metadata"
+	{
+		&
+		{
+			TargetIsExecutable true
+			!MalterlibDisableMalterlib true
 		}
 	}
 }
