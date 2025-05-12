@@ -1043,8 +1043,25 @@ inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
 	return nullptr;
 }
 
+constinit NMib::NThread::CLowLevelLockAggregate g_CrashReporterLock = {DAggregateInit};
+NMib::NStr::CStrNonTracked g_CrashReporterString;
+
 void NSys::fg_System_ReportContractViolation(const NMib::NStr::CStrNonTracked &_Message)
 {
+	DMibLock(g_CrashReporterLock);
+	if (g_CrashReporterString)
+	{
+		g_CrashReporterString += "\n\n";
+		g_CrashReporterString += _Message;
+	}
+	else
+		g_CrashReporterString = _Message;
+}
+
+NMib::NStr::CStrNonTracked NSys::fg_System_GetContractViolationMessage()
+{
+	DMibLock(g_CrashReporterLock);
+	return g_CrashReporterString;
 }
 
 void NSys::fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode)

@@ -1407,6 +1407,20 @@ void NSys::fg_System_ReportContractViolation(const NMib::NStr::CStrNonTracked &_
 	__crashreporter_info__ = (char *)g_CrashReporterString.f_GetStr();
 }
 
+NMib::NStr::CStrNonTracked NSys::fg_System_GetContractViolationMessage()
+{
+	DMibLock(g_CrashReporterLock);
+	if (__crashreporter_info__)
+	{
+		if (__crashreporter_info__ == g_CrashReporterString.f_GetStr())
+			return g_CrashReporterString;
+		else
+			return __crashreporter_info__;
+	}
+	else
+		return {};
+}
+
 void fg_ReportCurrentException()
 {
 	if (!__cxxabiv1::__cxa_current_primary_exception())
