@@ -921,7 +921,7 @@ Compile
 
 %Group "~Automatic/Breakpad Support"
 {
-	%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp"
+	%File "Source/Platform/Malterlib_Core_PlatformImp_Breakpad.cpp"
 	{
 		Compile.Disabled true
 		{

@@ -297,6 +297,10 @@ Compile
 				}
 				%File "Source/Platform/Malterlib_Core_PlatformImp_Emscripten*"
 			}
+			%File "Source/Platform/Malterlib_Core_PlatformImp_Breakpad.cpp"
+			{
+				Compile.Disabled true
+			}
 			%Group "Linux"
 			{
 				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux*"
@@ -309,10 +313,6 @@ Compile
 					{
 						!PlatformFamily "Linux"
 					}
-				}
-				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_Breakpad.cpp"
-				{
-					Compile.Disabled true
 				}
 				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_TSan.cpp"
 				{
