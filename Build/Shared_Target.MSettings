@@ -4279,7 +4279,7 @@ Property
 					`\n`\
 					`#pragma section(".repo", read)\n`\
 					`\n`\					
-					`extern "C" __declspec(allocate(".repo")) assure_used __declspec(selectany) ch8 const g_Malterlib_RepoInfo[] = @(Log(RepoDebugInfo->ChunkString(16000))->ForEach(&f_OutputCppStringChunk));\n`
+					`extern "C" __declspec(allocate(".repo")) assure_used __declspec(selectany) ch8 const g_Malterlib_RepoInfo[] = @(RepoDebugInfo->ChunkString(16000)->ForEach(&f_OutputCppStringChunk));\n`
 		UnicodeBOM false
 	}
 }
