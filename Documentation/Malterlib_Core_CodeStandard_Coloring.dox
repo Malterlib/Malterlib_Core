@@ -92,71 +92,73 @@ easy to apply the highlighting without language specific parsing support.
 	}
 \endcode
 
+Colors are in DCI-P3 color space
+
 \htmlonly
 
 <div class="code_table"><table border="0" cellspacing="0" style="margin-left:2px;border-spacing:5px"><tbody>
 <tr><th style="width:120px;background-color:black;color:white">Language</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ffffff</td><td style="background-color:#ffffff"></td><td style="color:#ffffff">= * + - % {} [] () <></td><td></td></tr>
-<tr><td></td><td>#ffffff</td><td style="background-color:#ffffff"></td><td style="color:#ffffff">#</td><td></td></tr>
-<tr><td></td><td>#ffffff</td><td style="background-color:#ffffff"></td><td style="color:#ffffff">for if while do</td><td></td></tr>
-<tr><td></td><td>#c0c0c0</td><td style="background-color:#c0c0c0"></td><td style="color:#c0c0c0">typename</td><td></td></tr>
-<tr><td></td><td>#c0c0c0</td><td style="background-color:#c0c0c0"></td><td style="color:#c0c0c0">inline</td><td></td></tr>
-<tr><td></td><td>#808080</td><td style="background-color:#808080"></td><td style="color:#808080">\</td><td></td></tr>
-<tr><td></td><td>#ffc8ca</td><td style="background-color:#ffc8ca"></td><td style="color:#ffc8ca">public private protected friend</td><td></td></tr>
-<tr><td></td><td>#ffb680</td><td style="background-color:#ffb680"></td><td style="color:#ffb680">const volatile</td><td></td></tr>
+<tr><td></td><td>#ffffff</td><td style="background-color:#ffffff;background-color:color(display-p3 1.0 1.0 1.0)"></td><td style="color:#ffffff;color:color(display-p3 1.0 1.0 1.0)">= * + - % {} [] () <></td><td></td></tr>
+<tr><td></td><td>#ffffff</td><td style="background-color:#ffffff;background-color:color(display-p3 1.0 1.0 1.0)"></td><td style="color:#ffffff;color:color(display-p3 1.0 1.0 1.0)">#</td><td></td></tr>
+<tr><td></td><td>#ffffff</td><td style="background-color:#ffffff;background-color:color(display-p3 1.0 1.0 1.0)"></td><td style="color:#ffffff;color:color(display-p3 1.0 1.0 1.0)">for if while do</td><td></td></tr>
+<tr><td></td><td>#c0c0c0</td><td style="background-color:#c0c0c0;background-color:color(display-p3 0.753 0.753 0.753)"></td><td style="color:#c0c0c0;color:color(display-p3 0.753 0.753 0.753)">typename</td><td></td></tr>
+<tr><td></td><td>#c0c0c0</td><td style="background-color:#c0c0c0;background-color:color(display-p3 0.753 0.753 0.753)"></td><td style="color:#c0c0c0;color:color(display-p3 0.753 0.753 0.753)">inline</td><td></td></tr>
+<tr><td></td><td>#808080</td><td style="background-color:#808080;background-color:color(display-p3 0.502 0.502 0.502)"></td><td style="color:#808080;color:color(display-p3 0.502 0.502 0.502)">\</td><td></td></tr>
+<tr><td></td><td>#ffc8ca</td><td style="background-color:#ffc8ca;background-color:color(display-p3 1 0.784 0.792)"></td><td style="color:#ffc8ca;color:color(display-p3 1 0.784 0.792)">public private protected friend</td><td></td></tr>
+<tr><td></td><td>#ffb680</td><td style="background-color:#ffb680;background-color:color(display-p3 1 0.714 0.502)"></td><td style="color:#ffb680;color:color(display-p3 1 0.714 0.502)">const volatile</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Builtin types</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ff5966</td><td style="background-color:#ff5966"></td><td style="color:#ff5966">int bool void uint32</td><td></td></tr>
+<tr><td></td><td>#ff5966</td><td style="background-color:#ff5966;background-color:color(display-p3 1 0.34 0.4)"></td><td style="color:#ff5966;color:color(display-p3 1 0.34 0.4)">int bool void uint32</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Constant values</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ff0080</td><td style="background-color:#ff0080"></td><td style="color:#ff0080">15 60.6</td><td></td></tr>
-<tr><td></td><td>#ff5bad</td><td style="background-color:#ff5bad"></td><td style="color:#ff5bad">t_Test</td><td></td></tr>
-<tr><td></td><td>#ff8ac5</td><td style="background-color:#ff8ac5"></td><td style="color:#ff8ac5">gc_Test ETest_Value mc_Test gc_Test c_Test true false nullptr</td><td></td></tr>
-<tr><td></td><td>#ca97b1</td><td style="background-color:#ca97b1"></td><td style="color:#ca97b1">mcp_Test</td><td></td></tr>
-<tr><td></td><td>#ffb7db</td><td style="background-color:#ffb7db"></td><td style="color:#ffb7db">tf_Test</td><td></td></tr>
+<tr><td></td><td>#ff0080</td><td style="background-color:#ff0080;background-color:color(display-p3 1 0 0.502)"></td><td style="color:#ff0080;color:color(display-p3 1 0 0.502)">15 60.6</td><td></td></tr>
+<tr><td></td><td>#ff5bad</td><td style="background-color:#ff5bad;background-color:color(display-p3 1 0.357 0.678)"></td><td style="color:#ff5bad;color:color(display-p3 1 0.357 0.678)">t_Test</td><td></td></tr>
+<tr><td></td><td>#ff8ac5</td><td style="background-color:#ff8ac5;background-color:color(display-p3 1 0.541 0.773)"></td><td style="color:#ff8ac5;color:color(display-p3 1 0.541 0.773)">gc_Test ETest_Value mc_Test gc_Test c_Test true false nullptr</td><td></td></tr>
+<tr><td></td><td>#ca97b1</td><td style="background-color:#ca97b1;background-color:color(display-p3 0.792 0.592 0.694)"></td><td style="color:#ca97b1;color:color(display-p3 0.792 0.592 0.694)">mcp_Test</td><td></td></tr>
+<tr><td></td><td>#ffb7db</td><td style="background-color:#ffb7db;background-color:color(display-p3 1 0.718 0.859)"></td><td style="color:#ffb7db;color:color(display-p3 1 0.718 0.859)">tf_Test</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Character</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ff48f0</td><td style="background-color:#ff48f0"></td><td style="color:#ff48f0">'T'</td><td></td></tr>
+<tr><td></td><td>#ff48f0</td><td style="background-color:#ff48f0;background-color:color(display-p3 1 0.282 0.941)"></td><td style="color:#ff48f0;color:color(display-p3 1 0.282 0.941)">'T'</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Namespace</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#d785ff</td><td style="background-color:#d785ff"></td><td style="color:#d785ff">NTest</td><td></td></tr>
+<tr><td></td><td>#d785ff</td><td style="background-color:#d785ff;background-color:color(display-p3 0.843 0.522 1)"></td><td style="color:#d785ff;color:color(display-p3 0.843 0.522 1)">NTest</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Types</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#8269ff</td><td style="background-color:#8269ff"></td><td style="color:#8269ff">t_CTest t_TCTest</td><td></td></tr>
-<tr><td></td><td>#cdc3ff</td><td style="background-color:#cdc3ff"></td><td style="color:#cdc3ff">tf_CTest tf_TCTest</td><td></td></tr>
-<tr><td></td><td>#b8aaff</td><td style="background-color:#b8aaff"></td><td style="color:#b8aaff">CTest TCTest ETest</td><td></td></tr>
-<tr><td></td><td>#dbd3ff</td><td style="background-color:#dbd3ff"></td><td style="color:#dbd3ff">auto</td><td></td></tr>
+<tr><td></td><td>#8269ff</td><td style="background-color:#8269ff;background-color:color(display-p3 0.51 0.412 1)"></td><td style="color:#8269ff;color:color(display-p3 0.51 0.412 1)">t_CTest t_TCTest</td><td></td></tr>
+<tr><td></td><td>#cdc3ff</td><td style="background-color:#cdc3ff;background-color:color(display-p3 0.804 0.765 1)"></td><td style="color:#cdc3ff;color:color(display-p3 0.804 0.765 1)">tf_CTest tf_TCTest</td><td></td></tr>
+<tr><td></td><td>#b8aaff</td><td style="background-color:#b8aaff;background-color:color(display-p3 0.722 0.667 1)"></td><td style="color:#b8aaff;color:color(display-p3 0.722 0.667 1)">CTest TCTest ETest</td><td></td></tr>
+<tr><td></td><td>#dbd3ff</td><td style="background-color:#dbd3ff;background-color:color(display-p3 0.859 0.827 1)"></td><td style="color:#dbd3ff;color:color(display-p3 0.859 0.827 1)">auto</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">String</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#009eff</td><td style="background-color:#009eff"></td><td style="color:#009eff">"String"</td><td></td></tr>
+<tr><td></td><td>#009eff</td><td style="background-color:#009eff;background-color:color(display-p3 0 0.62 1)"></td><td style="color:#009eff;color:color(display-p3 0 0.62 1)">"String"</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Functors</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#00e4e6</td><td style="background-color:#00e4e6"></td><td style="color:#00e4e6">_fTest</td><td></td></tr>
-<tr><td></td><td>#36e8cd</td><td style="background-color:#36e8cd"></td><td style="color:#36e8cd">o_fTest</td><td></td></tr>
-<tr><td></td><td>#00edae</td><td style="background-color:#00edae"></td><td style="color:#00edae">fTest</td><td></td></tr>
-<tr><td></td><td>#00f265</td><td style="background-color:#00f265"></td><td style="color:#00f265">m_fTest</td><td></td></tr>
-<tr><td></td><td>#4fc17e</td><td style="background-color:#4fc17e"></td><td style="color:#4fc17e">mp_fTest</td><td></td></tr>
+<tr><td></td><td>#00e4e6</td><td style="background-color:#00e4e6;background-color:color(display-p3 0 0.894 0.902)"></td><td style="color:#00e4e6;color:color(display-p3 0 0.894 0.902)">_fTest</td><td></td></tr>
+<tr><td></td><td>#36e8cd</td><td style="background-color:#36e8cd;background-color:color(display-p3 0.212 0.91 0.804)"></td><td style="color:#36e8cd;color:color(display-p3 0.212 0.91 0.804)">o_fTest</td><td></td></tr>
+<tr><td></td><td>#00edae</td><td style="background-color:#00edae;background-color:color(display-p3 0 0.929 0.682)"></td><td style="color:#00edae;color:color(display-p3 0 0.929 0.682)">fTest</td><td></td></tr>
+<tr><td></td><td>#00f265</td><td style="background-color:#00f265;background-color:color(display-p3 0 0.949 0.396)"></td><td style="color:#00f265;color:color(display-p3 0 0.949 0.396)">m_fTest</td><td></td></tr>
+<tr><td></td><td>#4fc17e</td><td style="background-color:#4fc17e;background-color:color(display-p3 0.31 0.757 0.494)"></td><td style="color:#4fc17e;color:color(display-p3 0.31 0.757 0.494)">mp_fTest</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Functions</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#26ff00</td><td style="background-color:#26ff00"></td><td style="color:#26ff00">f_Test fs_Test</td><td></td></tr>
-<tr><td></td><td>#1cb900</td><td style="background-color:#1cb900"></td><td style="color:#1cb900">fg_Test fsg_Test</td><td></td></tr>
-<tr><td></td><td>#8dd580</td><td style="background-color:#8dd580"></td><td style="color:#8dd580">fp_Test fsp_Test </td><td></td></tr>
+<tr><td></td><td>#26ff00</td><td style="background-color:#26ff00;background-color:color(display-p3 0.149 1 0)"></td><td style="color:#26ff00;color:color(display-p3 0.149 1 0)">f_Test fs_Test</td><td></td></tr>
+<tr><td></td><td>#1cb900</td><td style="background-color:#1cb900;background-color:color(display-p3 0.11 0.725 0)"></td><td style="color:#1cb900;color:color(display-p3 0.11 0.725 0)">fg_Test fsg_Test</td><td></td></tr>
+<tr><td></td><td>#8dd580</td><td style="background-color:#8dd580;background-color:color(display-p3 0.553 0.835 0.502)"></td><td style="color:#8dd580;color:color(display-p3 0.553 0.835 0.502)">fp_Test fsp_Test </td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Parameters</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#e6ff00</td><td style="background-color:#e6ff00"></td><td style="color:#e6ff00">_Test p_Test</td><td></td></tr>
-<tr><td></td><td>#fff54b</td><td style="background-color:#fff54b"></td><td style="color:#fff54b">o_Test po_Test</td><td></td></tr>
+<tr><td></td><td>#e6ff00</td><td style="background-color:#e6ff00;background-color:color(display-p3 0.902 1 0)"></td><td style="color:#e6ff00;color:color(display-p3 0.902 1 0)">_Test p_Test</td><td></td></tr>
+<tr><td></td><td>#fff54b</td><td style="background-color:#fff54b;background-color:color(display-p3 1 0.961 0.294)"></td><td style="color:#fff54b;color:color(display-p3 1 0.961 0.294)">o_Test po_Test</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ffd700</td><td style="background-color:#ffd700"></td><td style="color:#ffd700">Var</td><td></td></tr>
+<tr><td></td><td>#ffd700</td><td style="background-color:#ffd700;background-color:color(display-p3 1 0.843 0)"></td><td style="color:#ffd700;color:color(display-p3 1 0.843 0)">Var</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Concepts</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ffd700</td><td style="background-color:#ffb680"></td><td style="color:#ffb680">cComparable</td><td></td></tr>
+<tr><td></td><td>#ffb680</td><td style="background-color:#ffb680;background-color:color(display-p3 1 0.714 0.502)"></td><td style="color:#ffb680;color:color(display-p3 1 0.714 0.502)">cComparable</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Member variables</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ffa600</td><td style="background-color:#ffa600"></td><td style="color:#ffa600">m_Test</td><td></td></tr>
-<tr><td></td><td>#c59d53</td><td style="background-color:#c59d53"></td><td style="color:#c59d53">mp_Test</td><td></td></tr>
+<tr><td></td><td>#ffa600</td><td style="background-color:#ffa600;background-color:color(display-p3 1 0.651 0)"></td><td style="color:#ffa600;color:color(display-p3 1 0.651 0)">m_Test</td><td></td></tr>
+<tr><td></td><td>#c59d53</td><td style="background-color:#c59d53;background-color:color(display-p3 0.773 0.616 0.325)"></td><td style="color:#c59d53;color:color(display-p3 0.773 0.616 0.325)">mp_Test</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Macros</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ff7700</td><td style="background-color:#ff7700"></td><td style="color:#ff7700">DTest</td><td></td></tr>
-<tr><td></td><td>#ffbc81</td><td style="background-color:#ffbc81"></td><td style="color:#ffbc81">d_Test</td><td></td></tr>
+<tr><td></td><td>#ff7700</td><td style="background-color:#ff7700;background-color:color(display-p3 1 0.467 0)"></td><td style="color:#ff7700;color:color(display-p3 1 0.467 0)">DTest</td><td></td></tr>
+<tr><td></td><td>#ffbc81</td><td style="background-color:#ffbc81;background-color:color(display-p3 1 0.737 0.506)"></td><td style="color:#ffbc81;color:color(display-p3 1 0.737 0.506)">d_Test</td><td></td></tr>
 <tr><th style="width:120px;background-color:black;color:white">Globals</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#ff3f1c</td><td style="background-color:#ff3f1c"></td><td style="color:#ff3f1c">ms_Test</td><td></td></tr>
-<tr><td></td><td>#e13819</td><td style="background-color:#e13819"></td><td style="color:#e13819">g_Test gs_Test</td><td></td></tr>
-<tr><td></td><td>#d56955</td><td style="background-color:#d56955"></td><td style="color:#d56955">msp_Test</td><td></td></tr>
+<tr><td></td><td>#ff3f1c</td><td style="background-color:#ff3f1c;background-color:color(display-p3 1 0.247 0.11)"></td><td style="color:#ff3f1c;color:color(display-p3 1 0.247 0.11)">ms_Test</td><td></td></tr>
+<tr><td></td><td>#e13819</td><td style="background-color:#e13819;background-color:color(display-p3 0.882 0.22 0.098)"></td><td style="color:#e13819;color:color(display-p3 0.882 0.22 0.098)">g_Test gs_Test</td><td></td></tr>
+<tr><td></td><td>#d56955</td><td style="background-color:#d56955;background-color:color(display-p3 0.835 0.412 0.333)"></td><td style="color:#d56955;color:color(display-p3 0.835 0.412 0.333)">msp_Test</td><td></td></tr>
 </tbody></table></div>
 <div class="code_table"><table border="0" cellspacing="0" style="margin-left:2px;border-spacing:5px"><tbody>
 <tr><th style="width:120px;background-color:black;color:white">Comments</th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="width:30px;background-color:black;color:white"></th><th style="background-color:black;color:white"></th><th style="background-color:black;color:white"></th></tr>
-<tr><td></td><td>#003737</td><td>#ff9f3b</td><td style="background-color:#003737"></td><td style="background-color:#ff9f3b"></td><td style="background-color:#003737;color:#ff9f3b">// Comment</td><td></td></tr>
-<tr><td></td><td>#003737</td><td>#9bcde6</td><td style="background-color:#003737"></td><td style="background-color:#9bcde6"></td><td style="background-color:#003737;color:#9bcde6">/// Documentation comment</td><td></td></tr>
-<tr><td></td><td>#003737</td><td>#f070b6</td><td style="background-color:#003737"></td><td style="background-color:#f070b6"></td><td style="background-color:#003737;color:#f070b6">@Keyword</td><td></td></tr>
-<tr><td></td><td>#003737</td><td>#9dff70</td><td style="background-color:#003737"></td><td style="background-color:#9dff70"></td><td style="background-color:#003737;color:#9dff70">http://example.com</td><td></td></tr>
+<tr><td></td><td>#003737</td><td>#ff9f3b</td><td style="background-color:#003737;background-color:color(display-p3 0 0.216 0.216)"></td><td style="background-color:#ff9f3b;background-color:color(display-p3 1 0.624 0.231)"></td><td style="background-color:#003737;background-color:color(display-p3 0 0.216 0.216);color:#ff9f3b">// Comment</td><td></td></tr>
+<tr><td></td><td>#003737</td><td>#9bcde6</td><td style="background-color:#003737;background-color:color(display-p3 0 0.216 0.216)"></td><td style="background-color:#9bcde6;background-color:color(display-p3 0.608 0.804 0.902)"></td><td style="background-color:#003737;background-color:color(display-p3 0 0.216 0.216);color:#9bcde6">/// Documentation comment</td><td></td></tr>
+<tr><td></td><td>#003737</td><td>#f070b6</td><td style="background-color:#003737;background-color:color(display-p3 0 0.216 0.216)"></td><td style="background-color:#f070b6;background-color:color(display-p3 0.941 0.439 0.714)"></td><td style="background-color:#003737;background-color:color(display-p3 0 0.216 0.216);color:#f070b6">@Keyword</td><td></td></tr>
+<tr><td></td><td>#003737</td><td>#9dff70</td><td style="background-color:#003737;background-color:color(display-p3 0 0.216 0.216)"></td><td style="background-color:#9dff70;background-color:color(display-p3 0.616 1 0.439)"></td><td style="background-color:#003737;background-color:color(display-p3 0 0.216 0.216);color:#9dff70">http://example.com</td><td></td></tr>
 </tbody></table></div>
 
 \endhtmlonly
