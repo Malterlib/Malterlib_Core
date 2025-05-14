@@ -5066,17 +5066,6 @@ Target
 		}
 	}
 
-	PostBuildScript =+	`MTool DiffCopy @(`@(MalterlibOriginalModuleDestination).dSYM`->Escape()) @(MalterlibFinalModuleDestinationPath->Escape()) "" 0\r\n`
-	{
-		&
-		{
-			!MalterlibFinalModuleDestination MalterlibOriginalModuleDestination
-			!DisableDiffCopy true
-			PlatformIsDarwin true
-			Target.DebugInformationFormat "dwarf-with-dsym"
-		}
-	}
-
 	PostBuildScript =+ `@(MalterlibExtraPostBuildScript)\r\n`
 	{
 		&
@@ -5092,26 +5081,12 @@ Target
 	}
 
 	// Do this before signing as we want to strip the executable
-	PostBuildScript =+ `echo Deploy Symbols:\r\n`\
-					`BuildID=@(MalterlibReadElfProgram) --notes ./Test_Malterlib_CrashReport | grep "Build ID" | cut "-d:" -f 2 | cut "-d " -f 2`\
-					`echo @(MalterlibStripProgram) --only-keep-debug @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).debug`->Escape())\r\n`\
-					`@(MalterlibStripProgram) --only-keep-debug @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).debug`->Escape())\r\n`
+	PostBuildScript =+ `@(MalterlibCloud_DebugManagerAssetUploadCommand) --asset-type Executable @(MalterlibFinalModuleDestination->EscapeHost())\r\n`
 	{
 		&
 		{
 			PlatformFamily "Linux"
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-		}
-	}
-
-	PostBuildScript =+	`echo zip -qj @(MalterlibFinalModuleDestination->Escape()) @(`@(MalterlibFinalModuleDestination).zip`->Escape())\r\n`\
-						`rm -f @(`@(MalterlibFinalModuleDestination).zip`->Escape())\r\n`\
-						`zip -qj @(`@(MalterlibFinalModuleDestination).zip`->Escape()) @(MalterlibFinalModuleDestination->Escape())\r\n`
-	{
-		&
-		{
-			PlatformFamily "Linux"
+			MalterlibCloud_DebugManagerGlobalEnable true
 			TargetIsExecutable true
 			MalterlibDeploySymbols true
 		}
@@ -5142,108 +5117,17 @@ Target
 		}
 	}
 
-	PostBuildScript =+	`echo zip -qj @(`@(MalterlibFinalModuleDestination).breakpad.zip`->Escape()) @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
-						`if [ -f @(`@(MalterlibFinalModuleDestination).breakpad.zip`->Escape()) ]\r\n`\
-						`then\r\n`\
-						`	rm @(`@(MalterlibFinalModuleDestination).breakpad.zip`->Escape())\r\n`\
-						`fi\r\n`\
-						`zip -qj @(`@(MalterlibFinalModuleDestination).breakpad.zip`->Escape()) @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
-						`echo MTool SymbolBreakpad "/Temp/SymbolTest" @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
-						`export BrekapadOutputPath=\`MTool SymbolBreakpad @(MalterlibDeploySymbolsPath->Escape()) @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\`\r\n`\
-						`echo Deploying symbols to: $BrekapadOutputPath\r\n`
-	{
-		&
-		{
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformIsDarwin true
-			}
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-		}
-	}
-
-	PostBuildScript =+	`echo zip -qj "@(MalterlibFinalModuleDestination).dSYM.breakpad" "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip"\r\n`\
-						`if [ -f "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" ]\r\n`\
-						`then\r\n`\
-						`	rm "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip"\r\n`\
-						`fi\r\n`\
-						`zip -qj "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "@(MalterlibFinalModuleDestination).dSYM.breakpad"\r\n`
+	PostBuildScript =+	`@(MalterlibCloud_DebugManagerAssetUploadCommand) --asset-type DebugInfo @(`@(MalterlibOriginalModuleDestination).dSYM`->EscapeHost())\r\n`
 	{
 		&
 		{
 			PlatformIsDarwin true
 			TargetIsExecutable true
+			MalterlibCloud_DebugManagerGlobalEnable true
 			MalterlibDeploySymbols true
 			Target.DebugInformationFormat "dwarf-with-dsym"
 		}
 	}
-
-	PostBuildScript =+	`echo zip -qj "@(MalterlibFinalModuleDestination).dSYM" "@(MalterlibFinalModuleDestination).dSYM.zip"\r\n`\
-						`if [ -f "@(MalterlibFinalModuleDestination).dSYM.zip" ]\r\n`\
-						`then\r\n`\
-						`	rm "@(MalterlibFinalModuleDestination).dSYM.zip"\r\n`\
-						`fi\r\n`\
-						`zip -qrj "@(MalterlibFinalModuleDestination).dSYM.zip" "@(MalterlibFinalModuleDestination).dSYM"\r\n`
-	{
-		&
-		{
-			PlatformIsDarwin true
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-			Target.DebugInformationFormat "dwarf-with-dsym"
-		}
-	}
-
-
-	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
-	{
-		&
-		{
-			|
-			{
-				PlatformFamily "Linux"
-				PlatformIsDarwin true
-			}
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-		}
-	}
-	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).dSYM.breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
-	{
-		&
-		{
-			PlatformIsDarwin true
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-			Target.DebugInformationFormat "dwarf-with-dsym"
-		}
-	}
-	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).dSYM.zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).dSYM.zip" "$BrekapadOutputPath" "" 0\r\n`
-	{
-		&
-		{
-			PlatformIsDarwin true
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-			Target.DebugInformationFormat "dwarf-with-dsym"
-		}
-	}
-	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).zip" "$BrekapadOutputPath" "" 0\r\n`\
-						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).zip" "$BrekapadOutputPath" "" 0\r\n`
-	{
-		&
-		{
-			PlatformFamily "Linux"
-			TargetIsExecutable true
-			MalterlibDeploySymbols true
-		}
-	}
-
 
 	PostBuildScript =+	`sn -Ra "@(MalterlibFinalModuleDestination->WindowsPath())" "@(MalterlibStronglyNamedAssembly->WindowsPath())"\r\n`
 	{
@@ -5352,15 +5236,25 @@ Target
 		}
 	}
 
-	PostBuildScript =+	`echo Deploy Symbols:\r\n`\
-						`echo @(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`\
-						`@(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`
+	PostBuildScript =+	`@(MalterlibCloud_DebugManagerAssetUploadCommand) --asset-type Executable @(MalterlibFinalModuleDestination->EscapeHost())\r\n`
+	{
+		&
+		{
+			!PlatformFamily "Linux" // Linux is already
+			MalterlibCloud_DebugManagerGlobalEnable true
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+		}
+	}
+
+	PostBuildScript =+	`@(MalterlibCloud_DebugManagerAssetUploadCommand) --asset-type DebugInfo @(Target:Target.SymbolFile->EscapeHost())\r\n`
 	{
 		&
 		{
 			PlatformFamily "Windows"
-			TargetIsExecutable true
 			!Target:Target.SymbolFile undefined
+			MalterlibCloud_DebugManagerGlobalEnable true
+			TargetIsExecutable true
 			MalterlibDeploySymbols true
 		}
 	}
