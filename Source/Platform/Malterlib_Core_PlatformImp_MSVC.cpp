@@ -5384,7 +5384,10 @@ namespace
 	static CWindowsHandle fg_PreparePosixSemanticsRenameOrDelete(tf_CWStr const &_WindowsFile)
 	{
 		if (NLocal::g_VersionInfo.dwBuildNumber < 14393) // Windows 10 RS1
+		{
+			SetLastError(0);
 			return {};
+		}
 
 		CWindowsHandle FileHandle = CreateFileW
 			(
@@ -5778,6 +5781,8 @@ static bool fg_DeleteGeneric(tf_CStr &_File)
 	auto FileName = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal<tf_CWStr>(_File);
 
 	DWORD PosixSemanticsError = 0;
+	DWORD PosixSemanticsOpenError = 0;
+
 	if (auto FileHandle = fg_PreparePosixSemanticsRenameOrDelete(FileName))
 	{
 		FILE_DISPOSITION_INFO_EX FileDispositoinInfo;
@@ -5794,6 +5799,8 @@ static bool fg_DeleteGeneric(tf_CStr &_File)
 		else
 			return false;
 	}
+	else if constexpr (t_bThrowError)
+		PosixSemanticsOpenError = GetLastError();
 
 	if (!DeleteFileW(FileName))
 	{
@@ -5805,7 +5812,7 @@ static bool fg_DeleteGeneric(tf_CStr &_File)
 
 		if constexpr (t_bThrowError)
 		{
-			auto DeleteFileError = "Windows returned an error from DeleteFile({}): {}"_f << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr();
+			CStr DeleteFileError = "Windows returned an error from DeleteFile({}): {}"_f << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr();
 			if (PosixSemanticsError)
 			{
 				DMibErrorFile
@@ -5813,6 +5820,17 @@ static bool fg_DeleteGeneric(tf_CStr &_File)
 						"Windows returned an error from SetFileInformationByHandle(Delete)({}): {}\n{}"_f 
 						<< _File 
 						<< NMib::NPlatform::fg_Win32_GetLastErrorStr(PosixSemanticsError) 
+						<< DeleteFileError
+					)
+				;
+			}
+			else if (PosixSemanticsOpenError)
+			{
+				DMibErrorFile
+					(
+						"Windows returned an error from CreateFileW(Delete)({}): {}\n{}"_f
+						<< _File
+						<< NMib::NPlatform::fg_Win32_GetLastErrorStr(PosixSemanticsOpenError)
 						<< DeleteFileError
 					)
 				;
