@@ -14,19 +14,24 @@ namespace NMib
 				_Error = GetLastError();
 
 			LPWSTR pMessageBuffer = nullptr;
-			if
-			(
-				FormatMessageW
-				(
-					FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS
-					, nullptr
-					, _Error
-					, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
-					, (LPWSTR)&pMessageBuffer
-					, 0
-					, nullptr
-				)
-			)
+
+			auto fTryLanguage = [&](DWORD _Language)
+				{
+					return FormatMessageW
+						(
+							FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS
+							, nullptr
+							, _Error
+							, _Language
+							, (LPWSTR)&pMessageBuffer
+							, 0
+							, nullptr
+						)
+					;
+				}
+			;
+
+			if (fTryLanguage(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US)) || (GetLastError() == ERROR_RESOURCE_LANG_NOT_FOUND && fTryLanguage(0)))
 			{
 				if (pMessageBuffer)
 				{
