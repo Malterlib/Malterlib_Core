@@ -262,7 +262,7 @@ GeneratorSetting
 		, "ShellScript", "None"
 		, "VisualStudioVisualizer", "Natvis"
 		, "Custom", "CustomBuild"
-		, "WindowsManifest", "Manifest"
+		, "WindowsManifest", "None"
 	)
 
 	Compile_Type =+ {

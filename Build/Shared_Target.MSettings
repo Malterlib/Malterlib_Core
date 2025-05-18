@@ -3733,221 +3733,235 @@ Property
 	MalterlibGenerateWindowsVersion: bool = true
 }
 
-%Group "~Automatic/Windows Specific"
+%Group "{~Automatic}/{Windows Specific}"
 {
-	%GenerateFile "Generate .NET Assembly Info"
+	%Group "~Automatic"
 	{
-		!!LanguageFamily ".NET"
-		Property
+		%Group "Windows Specific"
 		{
-			CalcGUID: string = MalterlibFinalModuleDestination->HashUUID("Bare")
-		}
-		GenerateFile
-		{
-			Group `@(Platform) @(Architecture) @(FullConfiguration)`
-			Name `@(GeneratedDirectory)AssemblyInfo.cs`
+			%GenerateFile "Generate .NET Assembly Info"
+			{
+				!!LanguageFamily ".NET"
+				Property
+				{
+					CalcGUID: string = MalterlibFinalModuleDestination->HashUUID("Bare")
+				}
+				GenerateFile
+				{
+					Group `@(Platform) @(Architecture) @(FullConfiguration)`
+					Name `@(GeneratedDirectory)AssemblyInfo.cs`
 
-			Contents	`\n`\
-						`#if (@(MalterlibUniqueConfig))\r\n`\
-						`using System.Reflection;\r\n`\
-						`using System.Runtime.CompilerServices;\r\n`\
-						`using System.Runtime.InteropServices;\r\n`\
-						`[assembly: AssemblyTitle(@(ProductName->Escape()))]\r\n`\
-						`[assembly: AssemblyDescription(@(ProductDescription->Escape()))]\r\n`\
-						`[assembly: AssemblyConfiguration(@(ProductVersionExtra->Escape()))]\r\n`\
-						`[assembly: AssemblyCompany(@(ProductCompany->Escape()))]\r\n`\
-						`[assembly: AssemblyProduct(@(ProductName->Escape()))]\r\n`\
-						`[assembly: AssemblyCopyright(@(ProductCopyright->Escape()))]\r\n`\
-						`[assembly: AssemblyTrademark("")]\r\n`\
-						`[assembly: AssemblyCulture("")]\r\n`\
-						`[assembly: ComVisible(false)]\r\n`\
-						`[assembly: Guid(@(CalcGUID->Escape()))]\r\n`\
-						`[assembly: AssemblyFileVersion(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))]\r\n`\
-						`[assembly: AssemblyVersion(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))]\r\n`\
-						`@(MalterlibExtraAssemblyInfo)`\
-						`#endif\r\n`
+					Contents	`\n`\
+								`#if (@(MalterlibUniqueConfig))\r\n`\
+								`using System.Reflection;\r\n`\
+								`using System.Runtime.CompilerServices;\r\n`\
+								`using System.Runtime.InteropServices;\r\n`\
+								`[assembly: AssemblyTitle(@(ProductName->Escape()))]\r\n`\
+								`[assembly: AssemblyDescription(@(ProductDescription->Escape()))]\r\n`\
+								`[assembly: AssemblyConfiguration(@(ProductVersionExtra->Escape()))]\r\n`\
+								`[assembly: AssemblyCompany(@(ProductCompany->Escape()))]\r\n`\
+								`[assembly: AssemblyProduct(@(ProductName->Escape()))]\r\n`\
+								`[assembly: AssemblyCopyright(@(ProductCopyright->Escape()))]\r\n`\
+								`[assembly: AssemblyTrademark("")]\r\n`\
+								`[assembly: AssemblyCulture("")]\r\n`\
+								`[assembly: ComVisible(false)]\r\n`\
+								`[assembly: Guid(@(CalcGUID->Escape()))]\r\n`\
+								`[assembly: AssemblyFileVersion(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))]\r\n`\
+								`[assembly: AssemblyVersion(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))]\r\n`\
+								`@(MalterlibExtraAssemblyInfo)`\
+								`#endif\r\n`
 
-			UnicodeBOM true
+					UnicodeBOM true
+				}
+			}
+
+			%GenerateFile "Generate C++ Managed"
+			{
+				&
+				{
+					LanguageFamily "Native"
+					Target.CLRSupport true
+				}
+
+				Property
+				{
+					CalcGUID: string = MalterlibFinalModuleDestination->HashUUID("Bare")
+				}
+				GenerateFile
+				{
+					Group `@(Platform) @(Architecture) @(FullConfiguration)`
+					Name `@(GeneratedDirectory)AssemblyInfo.cpp`
+
+					Contents	`\n`\
+								`using namespace System;\r\n`\
+								`using namespace System::Reflection;\r\n`\
+								`using namespace System::Runtime::CompilerServices;\r\n`\
+								`using namespace System::Runtime::InteropServices;\r\n`\
+								`using namespace System::Security::Permissions;\r\n`\
+								`[assembly:AssemblyTitleAttribute(@(ProductName->Escape()))];\r\n`\
+								`[assembly:AssemblyDescriptionAttribute(@(ProductDescription->Escape()))];\r\n`\
+								`[assembly:AssemblyConfigurationAttribute(@(ProductVersionExtra->Escape()))];\r\n`\
+								`[assembly:AssemblyCompanyAttribute(@(ProductCompany->Escape()))];\r\n`\
+								`[assembly:AssemblyProductAttribute(@(ProductName->Escape()))];\r\n`\
+								`[assembly:AssemblyCopyrightAttribute(@(ProductCopyright->Escape()))];\r\n`\
+								`[assembly:AssemblyTrademarkAttribute("")];\r\n`\
+								`[assembly:AssemblyCultureAttribute("")];\r\n`\
+								`[assembly:ComVisible(false)];\r\n`\
+								`[assembly:Guid(@(CalcGUID->Escape()))];\r\n`\
+								`[assembly:CLSCompliantAttribute(true)];\r\n`\
+								`[assembly:AssemblyFileVersionAttribute(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))];\r\n`\
+								`[assembly:AssemblyVersionAttribute(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))];\r\n`\
+								`#pragma warning(disable:4947) // Request minimum deprecated in .NET 4.0\r\n`\
+								`[assembly:SecurityPermission(SecurityAction::RequestMinimum, UnmanagedCode = true)];\r\n`\
+								`@(MalterlibExtraAssemblyInfo)`
+
+					UnicodeBOM true
+				}
+			}
+
+			%GenerateFile "Generate Resource"
+			{
+				&
+				{
+					LanguageFamily "Native"
+					MalterlibGenerateWindowsVersion true
+				}
+
+				Property
+				{
+					ResourceFileType: string = "VFT_UNKNOWN"
+
+					ResourceFileType "VFT_APP"
+					{
+						!!Target.Type "ConsoleExecutable"
+						!!Target.Type "UIExecutable"
+						!!Target.Type "Executable"
+					}
+					ResourceFileType "VFT_DRV"
+					{
+						!!Target.Type "Driver"
+					}
+					ResourceFileType "VFT_DLL"
+					{
+						!!Target.Type "DynamicLibrary"
+						!!Target.Type "SharedDynamicLibrary"
+					}
+
+					PrivateBuildString: string = {
+						MalterlibBranch: MalterlibFullBranch
+						, MalterlibGitBranch: (MalterlibGitBranch || "")
+						, MalterlibGitCommit: MalterlibGitCommit
+					}->EJSONToString("")
+				}
+				GenerateFile
+				{
+					Group `@(Platform) @(Architecture) @(FullConfiguration)`
+					Name `@(GeneratedDirectory)Resources.rc`
+
+					Contents	`\n`\
+								`#define IDI_ICON1                       101\r\n`\
+								`// Next default values for new objects\r\n`\
+								`// \r\n`\
+								`#ifdef APSTUDIO_INVOKED\r\n`\
+								`#ifndef APSTUDIO_READONLY_SYMBOLS\r\n`\
+								`#define _APS_NEXT_RESOURCE_VALUE        102\r\n`\
+								`#define _APS_NEXT_COMMAND_VALUE         40001\r\n`\
+								`#define _APS_NEXT_CONTROL_VALUE         1001\r\n`\
+								`#define _APS_NEXT_SYMED_VALUE           101\r\n`\
+								`#endif\r\n`\
+								`#endif\r\n`\
+								`IDI_ICON1 ICON @(`@(MalterlibExeIcon->MakeRelative(GeneratedDirectory)->WindowsPath()->Replace("\\", "\\\\"))`->Escape())\r\n`
+					{
+						!MalterlibExeIcon undefined
+					}
+
+					Contents =+	`#include "winres.h"\r\n`\
+								`VS_VERSION_INFO VERSIONINFO\r\n`\
+								` FILEVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision),0\r\n`\
+								` PRODUCTVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision),0\r\n`\
+								` FILEFLAGSMASK 0x17L\r\n`\
+								`#ifdef _DEBUG\r\n`\
+								` FILEFLAGS VS_FF_DEBUG | VS_FF_PRIVATEBUILD\r\n`\
+								`#else\r\n`\
+								` FILEFLAGS VS_FF_PRIVATEBUILD\r\n`\
+								`#endif\r\n`\
+								` FILEOS VOS_NT_WINDOWS32\r\n`\
+								` FILETYPE @(ResourceFileType)\r\n`\
+								` FILESUBTYPE VFT2_UNKNOWN\r\n`\
+								`BEGIN\r\n`\
+								`	BLOCK "StringFileInfo"\r\n`\
+								`	BEGIN\r\n`\
+								`		BLOCK "040904b0"\r\n`\
+								`		BEGIN\r\n`\
+								`			VALUE "CompanyName", @(ProductCompany->Escape())\r\n`\
+								`			VALUE "FileDescription", @(ProductDescription->Escape())\r\n`\
+								`			VALUE "FileVersion", @(`@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)`->Escape())\r\n`\
+								`			VALUE "InternalName", @(Target:Target.FileName->Escape())\r\n`\
+								`			VALUE "LegalCopyright", @(ProductCopyright->Escape())\r\n`\
+								`			VALUE "OriginalFilename", @(`@(Target:Target.FileName)@(Target:Target.FileExtension)`->Escape())\r\n`\
+								`			VALUE "ProductName", @(ProductName->Escape())\r\n`\
+								`			VALUE "ProductVersion", @(`@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)`->Escape())\r\n`\
+								`			VALUE "PrivateBuild", @(PrivateBuildString->Escape()->Replace("\\\"", "\\x22"))\r\n`\
+								`		END\r\n`\
+								`	END\r\n`\
+								`	BLOCK "VarFileInfo"\r\n`\
+								`	BEGIN\r\n`\
+								`		VALUE "Translation", 0x0409, 1200\r\n`\
+								`	END\r\n`\
+								`END\r\n`
+
+					UTF16 true
+					UnicodeBOM true
+				}
+			}
+
+			%GenerateFile "Manifest"
+			{
+				!!LanguageFamily "Native"
+
+				GenerateFile
+				{
+					Group `@(Platform) @(Architecture) @(FullConfiguration)`
+					Name `@(GeneratedDirectory)WindowsManifest.manifest`
+
+					Contents	'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'\
+								'<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">\r\n'\
+								'	<asmv3:application>\r\n'\
+								'		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings" xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">\r\n'
+
+					Contents =+ '			<heapType>SegmentHeap</heapType>\r\n'
+					{
+						!!MalterlibWindowsSettings_SegmentHeap true
+					}
+
+					Contents =+ '			<ws2:longPathAware>true</ws2:longPathAware>\r\n'
+					{
+						!!MalterlibWindowsSettings_LongPathAware true
+					}
+
+					Contents =+ '		</asmv3:windowsSettings>\r\n'\
+								'	</asmv3:application>\r\n'\
+								'</assembly>\r\n'
+
+
+					UTF16 false
+					UnicodeBOM true
+				}
+			}
 		}
 	}
 
-	%GenerateFile "Generate C++ Managed"
-	{
-		&
-		{
-			LanguageFamily "Native"
-			Target.CLRSupport true
-		}
-
-		Property
-		{
-			CalcGUID: string = MalterlibFinalModuleDestination->HashUUID("Bare")
-		}
-		GenerateFile
-		{
-			Group `@(Platform) @(Architecture) @(FullConfiguration)`
-			Name `@(GeneratedDirectory)AssemblyInfo.cpp`
-
-			Contents	`\n`\
-						`using namespace System;\r\n`\
-						`using namespace System::Reflection;\r\n`\
-						`using namespace System::Runtime::CompilerServices;\r\n`\
-						`using namespace System::Runtime::InteropServices;\r\n`\
-						`using namespace System::Security::Permissions;\r\n`\
-						`[assembly:AssemblyTitleAttribute(@(ProductName->Escape()))];\r\n`\
-						`[assembly:AssemblyDescriptionAttribute(@(ProductDescription->Escape()))];\r\n`\
-						`[assembly:AssemblyConfigurationAttribute(@(ProductVersionExtra->Escape()))];\r\n`\
-						`[assembly:AssemblyCompanyAttribute(@(ProductCompany->Escape()))];\r\n`\
-						`[assembly:AssemblyProductAttribute(@(ProductName->Escape()))];\r\n`\
-						`[assembly:AssemblyCopyrightAttribute(@(ProductCopyright->Escape()))];\r\n`\
-						`[assembly:AssemblyTrademarkAttribute("")];\r\n`\
-						`[assembly:AssemblyCultureAttribute("")];\r\n`\
-						`[assembly:ComVisible(false)];\r\n`\
-						`[assembly:Guid(@(CalcGUID->Escape()))];\r\n`\
-						`[assembly:CLSCompliantAttribute(true)];\r\n`\
-						`[assembly:AssemblyFileVersionAttribute(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))];\r\n`\
-						`[assembly:AssemblyVersionAttribute(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))];\r\n`\
-						`#pragma warning(disable:4947) // Request minimum deprecated in .NET 4.0\r\n`\
-						`[assembly:SecurityPermission(SecurityAction::RequestMinimum, UnmanagedCode = true)];\r\n`\
-						`@(MalterlibExtraAssemblyInfo)`
-
-			UnicodeBOM true
-		}
-	}
-
-	%GenerateFile "Generate Resource"
-	{
-		&
-		{
-			LanguageFamily "Native"
-			MalterlibGenerateWindowsVersion true
-		}
-
-		Property
-		{
-			ResourceFileType: string = "VFT_UNKNOWN"
-
-			ResourceFileType "VFT_APP"
-			{
-				!!Target.Type "ConsoleExecutable"
-				!!Target.Type "UIExecutable"
-				!!Target.Type "Executable"
-			}
-			ResourceFileType "VFT_DRV"
-			{
-				!!Target.Type "Driver"
-			}
-			ResourceFileType "VFT_DLL"
-			{
-				!!Target.Type "DynamicLibrary"
-				!!Target.Type "SharedDynamicLibrary"
-			}
-
-			PrivateBuildString: string = {
-				MalterlibBranch: MalterlibFullBranch
-				, MalterlibGitBranch: (MalterlibGitBranch || "")
-				, MalterlibGitCommit: MalterlibGitCommit
-			}->EJSONToString("")
-		}
-		GenerateFile
-		{
-			Group `@(Platform) @(Architecture) @(FullConfiguration)`
-			Name `@(GeneratedDirectory)Resources.rc`
-
-			Contents	`\n`\
-						`#define IDI_ICON1                       101\r\n`\
-						`// Next default values for new objects\r\n`\
-						`// \r\n`\
-						`#ifdef APSTUDIO_INVOKED\r\n`\
-						`#ifndef APSTUDIO_READONLY_SYMBOLS\r\n`\
-						`#define _APS_NEXT_RESOURCE_VALUE        102\r\n`\
-						`#define _APS_NEXT_COMMAND_VALUE         40001\r\n`\
-						`#define _APS_NEXT_CONTROL_VALUE         1001\r\n`\
-						`#define _APS_NEXT_SYMED_VALUE           101\r\n`\
-						`#endif\r\n`\
-						`#endif\r\n`\
-						`IDI_ICON1 ICON @(`@(MalterlibExeIcon->MakeRelative(GeneratedDirectory)->WindowsPath()->Replace("\\", "\\\\"))`->Escape())\r\n`
-			{
-				!MalterlibExeIcon undefined
-			}
-
-			Contents =+	`#include "winres.h"\r\n`\
-						`VS_VERSION_INFO VERSIONINFO\r\n`\
-						` FILEVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision),0\r\n`\
-						` PRODUCTVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision),0\r\n`\
-						` FILEFLAGSMASK 0x17L\r\n`\
-						`#ifdef _DEBUG\r\n`\
-						` FILEFLAGS VS_FF_DEBUG | VS_FF_PRIVATEBUILD\r\n`\
-						`#else\r\n`\
-						` FILEFLAGS VS_FF_PRIVATEBUILD\r\n`\
-						`#endif\r\n`\
-						` FILEOS VOS_NT_WINDOWS32\r\n`\
-						` FILETYPE @(ResourceFileType)\r\n`\
-						` FILESUBTYPE VFT2_UNKNOWN\r\n`\
-						`BEGIN\r\n`\
-						`	BLOCK "StringFileInfo"\r\n`\
-						`	BEGIN\r\n`\
-						`		BLOCK "040904b0"\r\n`\
-						`		BEGIN\r\n`\
-						`			VALUE "CompanyName", @(ProductCompany->Escape())\r\n`\
-						`			VALUE "FileDescription", @(ProductDescription->Escape())\r\n`\
-						`			VALUE "FileVersion", @(`@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)`->Escape())\r\n`\
-						`			VALUE "InternalName", @(Target:Target.FileName->Escape())\r\n`\
-						`			VALUE "LegalCopyright", @(ProductCopyright->Escape())\r\n`\
-						`			VALUE "OriginalFilename", @(`@(Target:Target.FileName)@(Target:Target.FileExtension)`->Escape())\r\n`\
-						`			VALUE "ProductName", @(ProductName->Escape())\r\n`\
-						`			VALUE "ProductVersion", @(`@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)`->Escape())\r\n`\
-						`			VALUE "PrivateBuild", @(PrivateBuildString->Escape()->Replace("\\\"", "\\x22"))\r\n`\
-						`		END\r\n`\
-						`	END\r\n`\
-						`	BLOCK "VarFileInfo"\r\n`\
-						`	BEGIN\r\n`\
-						`		VALUE "Translation", 0x0409, 1200\r\n`\
-						`	END\r\n`\
-						`END\r\n`
-
-			UTF16 true
-			UnicodeBOM true
-		}
-	}
-
-	%GenerateFile "Manifest"
+	Target
 	{
 		!!LanguageFamily "Native"
 
-		GenerateFile
-		{
-			Group `@(Platform) @(Architecture) @(FullConfiguration)`
-			Name `@(GeneratedDirectory)WindowsManifest.manifest`
-
-			Contents	'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'\
-						'<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">\r\n'\
-						'	<asmv3:application>\r\n'\
-						'		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings" xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">\r\n'
-
-			Contents =+ '			<heapType>SegmentHeap</heapType>\r\n'
-			{
-				!!MalterlibWindowsSettings_SegmentHeap true
-			}
-
-			Contents =+ '			<ws2:longPathAware>true</ws2:longPathAware>\r\n'
-			{
-				!!MalterlibWindowsSettings_LongPathAware true
-			}
-
-			Contents =+ '		</asmv3:windowsSettings>\r\n'\
-						'	</asmv3:application>\r\n'\
-						'</assembly>\r\n'
-
-
-			UTF16 false
-			UnicodeBOM true
-		}
-	}
+		ExtraLinkerFlags =+ `/MANIFESTINPUT:@(GeneratedDirectory)WindowsManifest.manifest`
+	}	
 }
+
 Target
 {
-	ExtraGroups =+ "~Automatic/Windows Specific"
+	ExtraGroups =+ "{~Automatic}/{Windows Specific}"
 	{
 		&
 		{

@@ -292,7 +292,7 @@ GeneratorSetting
 			, "C++17", "-std=c++17"
 			, "C++20", "-std=c++20"
 			, "C++23", "-std=c++23"
-			, "C++26", "-std=c++2c"
+			, "C++26", "-std=c++26"
 			, "", []
 		)
 		, Type: "unique"
@@ -757,7 +757,7 @@ GeneratorSetting
 	Compile_WarningsAsErrors =+ {
 		Flags: Compile.WarningsAsErrors->SwitchWithError(
 			"Unsupported option: "
-			, true, "-Werror"
+			, true, ["-Werror", "-Wno-error=unknown-warning-option"]
 			, false, []
 		)
 		, Type: "unique"
@@ -983,6 +983,14 @@ GeneratorSetting
 			"Unsupported option: "
 			, false, ["-Wno-vla-cxx-extension"]
 			, true, ["-Wvla-cxx-extension"]
+		)
+		, Type: "unique"
+	}
+	Compile_Warnings_MissingCommaVariadicParam =+ {
+		Flags: Compile.Warnings_MissingCommaVariadicParam->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-deprecated-missing-comma-variadic-parameter"]
+			, true, ["-Wdeprecated-missing-comma-variadic-parameter"]
 		)
 		, Type: "unique"
 	}

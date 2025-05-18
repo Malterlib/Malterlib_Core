@@ -1154,6 +1154,18 @@ Compile
 	Warnings_Format: bool?
 	Warnings_MisleadingIndentation: bool?
 	Warnings_VariableLengthArray: bool?
+	Warnings_MainDefinition: bool?
+	Warnings_MissingCommaVariadicParam: bool?
+
+	Warnings_MainDefinition false
+	{
+		&
+		{
+			Compiler "Clang"
+			CompileDialect "C"
+			PlatformFamily "Windows"
+		}
+	}
 
 	AllCPUSubTypes: bool?
 	StackGuard: bool?
@@ -1548,7 +1560,10 @@ Compile
 		!!PlatformToolsetFamily "clang"
 	}
 
-	SearchPath += `@(Builtin.BasePathAbsolute)/External/llvm-project/libcxx/include`
+	SearchPath += [
+		`@(Builtin.BasePathAbsolute)/External/llvm-project/libcxx/include`
+		, `@(Builtin.BasePathAbsolute)/External/llvm-project/libc`
+	]
 	{
 		&
 		{
@@ -1970,6 +1985,20 @@ Compile
 		, "_LIBCPP_HAS_NO_STD_MODULES"
 		, "_LIBCPP_HAS_NO_TIME_ZONE_DATABASE"
 		, "_LIBCPP_HARDENING_MODE_DEFAULT=_LIBCPP_HARDENING_MODE_NONE"
+		, "_LIBCPP_HAS_THREADS=1"
+		, `_LIBCPP_HAS_TIME_ZONE_DATABASE=@((PlatformFamily == "Linux") ? "1" : "0")`
+		, `_LIBCPP_HAS_THREAD_API_PTHREAD=@((PlatformFamily == "Linux" || PlatformFamily == "macOS") ? "1" : "0")`
+		, `_LIBCPP_HAS_THREAD_API_WIN32=@((PlatformFamily == "Windows") ? "1" : "0")`
+		, `@((PlatformFamily == "macOS") ? "_LIBCPP_PSTL_BACKEND_LIBDISPATCH" : "_LIBCPP_PSTL_BACKEND_STD_THREAD")=1`
+		, "_LIBCPP_HAS_MONOTONIC_CLOCK=1"
+		, "_LIBCPP_HAS_TERMINAL=1"
+		, "_LIBCPP_HAS_UNICODE=1"
+		, "_LIBCPP_HAS_WIDE_CHARACTERS=1"
+		, "_LIBCPP_HAS_LOCALIZATION=1"
+		, "_LIBCPP_HAS_FILESYSTEM=1"
+		, "_LIBCPP_HAS_RANDOM_DEVICE=1"
+		, "_LIBCPP_HAS_VENDOR_AVAILABILITY_ANNOTATIONS=0"
+		, "LIBC_NAMESPACE=__llvm_libc"
 	]
 	{
 		&
@@ -1986,26 +2015,6 @@ Compile
 		{
 			MalterlibUseStaticLibCxx true
 			MalterlibSupportSanitizerEnable_Address true
-		}
-	}
-
-
-
-	PreprocessorDefines += ["_LIBCPP_PSTL_BACKEND_LIBDISPATCH=1"]
-	{
-		&
-		{
-			PlatformFamily "macOS"
-			MalterlibUseStaticLibCxx true
-		}
-	}
-
-	PreprocessorDefines += ["_LIBCPP_PSTL_BACKEND_STD_THREAD=1"]
-	{
-		&
-		{
-			!PlatformFamily "macOS"
-			MalterlibUseStaticLibCxx true
 		}
 	}
 
