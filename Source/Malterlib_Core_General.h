@@ -1446,15 +1446,16 @@ namespace NMib
 	class TCAutoClear
 	{
 	public:
-		TCAutoClear()
-		{
-			m_Value = 0;
-		}
+		TCAutoClear() = default;
+		TCAutoClear(TCAutoClear const &_Other) = default;
+		TCAutoClear(TCAutoClear &&_Other) = default;
+
 		TCAutoClear(t_CType const& _Value)
 		{
 			m_Value = _Value;
 		}
-		t_CType m_Value;
+
+		t_CType m_Value = 0;
 
 		operator t_CType & ()
 		{
@@ -1476,13 +1477,8 @@ namespace NMib
 			return m_Value;
 		}
 
-
-
-		TCAutoClear &operator = (TCAutoClear const& _Other)
-		{
-			m_Value = _Other.m_Value;
-			return *this;
-		}
+		TCAutoClear &operator = (TCAutoClear const &_Other) = default;
+		TCAutoClear &operator = (TCAutoClear &&_Other) = default;
 
 		TCAutoClear &operator = (t_CType const& _Other)
 		{
