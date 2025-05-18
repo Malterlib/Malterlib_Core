@@ -3,44 +3,30 @@
 
 #pragma once
 
+#include <type_traits>
+
 namespace NMib
 {
 	template <bool t_bEnable, typename t_CType = void>
-	struct TCEnableIf 
-	{
-		typedef t_CType CType;
-	};
+	using TCEnableIf = typename std::enable_if<t_bEnable, t_CType>::type;
 
-	template <typename t_CType>
-	struct TCEnableIf<false, t_CType>
-	{
-	};
-
-	template <bool t_bEnable, typename t_CType = void>
-	using TCEnableIfType = typename TCEnableIf<t_bEnable, t_CType>::CType;
-
-	template <bool t_bDisable, class t_CType = void>
-	struct TCDisableIf 
-	{
-		typedef t_CType CType;
-	};
-
-	template <class t_CType>
-	struct TCDisableIf<true, t_CType> 
-	{
-	};
+	template <bool t_bDisable, typename t_CType = void>
+	using TCDisableIf = typename std::enable_if<!t_bDisable, t_CType>::type;
 
 	template <bool t_bFirstType, typename t_CType0, typename t_CType1>
-	struct TCChooseType
+	struct TCConditionalHelper
 	{
 		typedef t_CType0 CType;
 	};
 
 	template <typename t_CType0, typename t_CType1>
-	struct TCChooseType<false, t_CType0, t_CType1>
+	struct TCConditionalHelper<false, t_CType0, t_CType1>
 	{
 		typedef t_CType1 CType;
 	};
+
+	template <bool t_bFirstType, typename t_CType0, typename t_CType1>
+	using TCConditional = typename TCConditionalHelper<t_bFirstType, t_CType0, t_CType1>::CType;
 
 	template <typename t_CInt, bool t_bFirstType, t_CInt t_Val0, t_CInt t_Val1>
 	struct TCChooseInt

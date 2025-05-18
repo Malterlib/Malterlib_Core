@@ -215,7 +215,7 @@ struct CCodePageCache
 	{
 		for (int i = 0; i < 256; ++i)
 		{
-			ch32 Char = NMib::NTraits::TCUnsigned<ch32>::CType(NMib::NTraits::TCUnsigned<ch16>::CType(NMib::NStr::TCCharEncodingConverter<NMib::NStr::ECharacterEncoding_Windows_1252>::ms_Table[i].m_UnicodeChar));
+			ch32 Char = NMib::NTraits::TCUnsigned<ch32>(NMib::NTraits::TCUnsigned<ch16>(NMib::NStr::TCCharEncodingConverter<NMib::NStr::ECharacterEncoding_Windows_1252>::ms_Table[i].m_UnicodeChar));
 			if (Char != 0xFFFF)
 				m_Cache[Char] = i;
 		}

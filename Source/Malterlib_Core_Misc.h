@@ -5,18 +5,6 @@
 
 #include <Mib/Core/Core>
 
-#define DMibInterfaceSingle(_InterfaceName, _Implementation) class _Implementation; typedef _Implementation CIImp ## _InterfaceName;
-#define DMibInterfaceVirtual(_InterfaceName) typedef NMib::CEmpty CIImp ## _InterfaceName;
-#define DMibInterfaceImp(_InterfaceName) typedef NMib::TCChooseType<NMib::NTraits::TCIsSame<CIImp ## _InterfaceName, NMib::CEmpty>::mc_Value, IImp ## _InterfaceName, CIImp ## _InterfaceName>::CType CImp;\
-	typedef NMib::TCChooseType<NMib::NTraits::TCIsSame<CIImp ## _InterfaceName, NMib::CEmpty>::mc_Value, IImp ## _InterfaceName, NMib::CEmpty>::CType CBase;
-#ifndef DMibPNoShortCuts
-
-#define DInterfaceSingle DMibInterfaceSingle
-#define DInterfaceVirtual DMibInterfaceVirtual
-#define DInterfaceImp DMibInterfaceImp
-
-#endif
-
 namespace NMib
 {
 	namespace NMisc
@@ -36,7 +24,7 @@ namespace NMib
 
 		template <typename tf_CContainer, typename tf_CType, typename tf_CDefault>
 		auto fg_FindEqual(tf_CContainer &&_Container, const tf_CType &_ToFind, const tf_CDefault &_Default)
-			-> typename NTraits::TCRemoveReference<decltype(*fg_Forward<tf_CContainer>(_Container).f_FindEqual(_ToFind))>::CType
+			-> NTraits::TCRemoveReference<decltype(*fg_Forward<tf_CContainer>(_Container).f_FindEqual(_ToFind))>
 		{
 			auto *pFind = _Container.f_FindEqual(_ToFind);
 			if (pFind)
@@ -549,7 +537,7 @@ namespace NMib
 		}
 		
 		template <typename tf_CContainer>
-		CIteratorEndSentinel end(tf_CContainer &&_Container, TCEnableIfType<!NTraits::TCIsVoid<decltype(_Container.f_GetIterator())>::mc_Value, bool> = true)
+		CIteratorEndSentinel end(tf_CContainer &&_Container, TCEnableIf<!NTraits::cIsVoid<decltype(_Container.f_GetIterator())>, bool> = true)
 		{
 			return CIteratorEndSentinel();
 		}

@@ -84,7 +84,7 @@ namespace
 
 
 
-	DMibStaticCheck(ETestOperator_All == 7);
+	static_assert(ETestOperator_All == 7);
 
 	class COperators_Tests : public NMib::NTest::CTest
 	{

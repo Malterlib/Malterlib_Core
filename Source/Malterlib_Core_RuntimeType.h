@@ -85,7 +85,7 @@ namespace NMib
 
 		virtual void *f_CreateObject() const
 		{
-			if constexpr (NTraits::TCIsAbstract<t_CObject>::mc_Value)
+			if constexpr (NTraits::cIsAbstract<t_CObject>)
 				DMibError("Cannot construct an abstract class");
 			else
 				return fg_ConstructObject<t_CObject>(NMemory::CDefaultAllocator());

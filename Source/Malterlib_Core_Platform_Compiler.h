@@ -41,64 +41,6 @@
 #	define DMibDeprecatedSuppressStop
 #endif
 
-// Type traits
-#if defined(DCompiler_clang) || defined(DCompiler_gcc)
-
-#if __has_warning("-Wdeprecated-builtins")
-	#pragma clang diagnostic ignored "-Wdeprecated-builtins"
-#endif
-
-#	define DMibPHasAssignmentOperator(d_Type) __has_assign(d_Type)
-#	define DMibPHasCopyConstructor(d_Type) __has_copy(d_Type)
-#	define DMibPHasNothrowAssignmentOperator(d_Type) __has_nothrow_assign(d_Type)
-#	define DMibPHasNothrowDefaultConstructor(d_Type) __has_nothrow_constructor(d_Type)
-#	define DMibPHasNothrowCopyConstructor(d_Type) __has_nothrow_copy(d_Type)
-#	define DMibPHasTrivialAssignmentOperator(d_Type) __has_trivial_assign(d_Type)
-#	define DMibPHasTrivialDefaultConstructor(d_Type) __has_trivial_constructor(d_Type)
-#	define DMibPHasTrivialCopyConstructor(d_Type) __has_trivial_copy(d_Type)
-#	define DMibPHasTrivialDestructor(d_Type) __has_trivial_destructor(d_Type)
-#	define DMibPHasUserDestructor(d_Type) __has_user_destructor(d_Type)
-#	define DMibPHasVirtualDestructor(d_Type) __has_virtual_destructor(d_Type)
-
-#	define DMibPIsAbstractType(d_Type) __is_abstract(d_Type)
-#	define DMibPIsBaseOfType(_BaseType, _DerivedType) __is_base_of(_BaseType,_DerivedType)
-#	define DMibPIsClassType(d_Type) __is_class(d_Type)
-#	define DMibPIsTypeConvertibleToType(_FromType, _ToType) __is_convertible_to(_FromType, _ToType)
-#	define DMibPIsEmptyType(d_Type) __is_empty(d_Type)
-#	define DMibPIsEnumType(d_Type) __is_enum(d_Type)
-#	define DMibPUnderlyingType(d_Type) __underlying_type(d_Type)
-#	define DMibPIsPODType(d_Type) __is_pod(d_Type)
-#	define DMibPIsPolymorphicType(d_Type) __is_polymorphic(d_Type)
-#	define DMibPIsUnionType(d_Type) __is_union(d_Type)
-
-#elif defined(DCompiler_MSVC)
-#	define DMibPHasAssignmentOperator(d_Type) __has_assign(d_Type)
-#	define DMibPHasCopyConstructor(d_Type) __has_copy(d_Type)
-#	define DMibPHasNothrowAssignmentOperator(d_Type) __has_nothrow_assign(d_Type)
-#	define DMibPHasNothrowDefaultConstructor(d_Type) __has_nothrow_constructor(d_Type)
-#	define DMibPHasNothrowCopyConstructor(d_Type) __has_nothrow_copy(d_Type)
-#	define DMibPHasTrivialAssignmentOperator(d_Type) __has_trivial_assign(d_Type)
-#	define DMibPHasTrivialDefaultConstructor(d_Type) __has_trivial_constructor(d_Type)
-#	define DMibPHasTrivialCopyConstructor(d_Type) __has_trivial_copy(d_Type)
-#	define DMibPHasTrivialDestructor(d_Type) __has_trivial_destructor(d_Type)
-#	define DMibPHasUserDestructor(d_Type) __has_user_destructor(d_Type)
-#	define DMibPHasVirtualDestructor(d_Type) __has_virtual_destructor(d_Type)
-
-#	define DMibPIsAbstractType(d_Type) __is_abstract(d_Type)
-#	define DMibPIsBaseOfType(d_BaseType, d_DerivedType) __is_base_of(d_BaseType, d_DerivedType)
-#	define DMibPIsClassType(d_Type) __is_class(d_Type)
-#	define DMibPIsTypeConvertibleToType(d_FromType, d_ToType) __is_convertible_to(d_FromType, d_ToType)
-#	define DMibPIsEmptyType(d_Type) __is_empty(d_Type)
-#	define DMibPIsEnumType(d_Type) __is_enum(d_Type)
-#	define DMibPUnderlyingType(d_Type) __underlying_type(d_Type)
-#	define DMibPIsPODType(d_Type) __is_pod(d_Type)
-#	define DMibPIsPolymorphicType(d_Type) __is_polymorphic(d_Type)
-#	define DMibPIsUnionType(d_Type) __is_union(d_Type)
-
-#else
-#	error "Implement this"
-#endif
-
 #ifdef DCompiler_clang
 #define if_consteval if consteval
 #define if_not_consteval if !consteval

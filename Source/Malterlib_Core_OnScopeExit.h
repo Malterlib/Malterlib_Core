@@ -83,17 +83,17 @@ namespace NMib
 	};
 	
 	template<typename tf_FOnExitFunctor>
-	inline_always TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType> fg_OnScopeExit(tf_FOnExitFunctor &&_fOnExitFunctor)
+	inline_always TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>> fg_OnScopeExit(tf_FOnExitFunctor &&_fOnExitFunctor)
 	{ 
-		return TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor)); 
+		return TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
 	}
 	
 	struct COnScopeExitHelper
 	{
 		template<typename tf_FOnExitFunctor>
-		inline_always TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
+		inline_always TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
 		{
-			return TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
+			return TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
 		}
 	};
 	extern COnScopeExitHelper const &g_OnScopeExit;
@@ -101,9 +101,9 @@ namespace NMib
 	struct COnScopeExitHelperWithException
 	{
 		template<typename tf_FOnExitFunctor>
-		inline_always TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType, false> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
+		inline_always TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>, false> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
 		{
-			return TCOnScopeExit<typename NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>::CType, false>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
+			return TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>, false>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
 		}
 	};
 	extern COnScopeExitHelperWithException const &g_OnScopeExitWithException;

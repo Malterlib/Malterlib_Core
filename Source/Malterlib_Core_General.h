@@ -53,12 +53,6 @@ namespace NMib
 	{
 	};
 
-#	define DMibStaticCheck( _Expression ) static_assert(_Expression, "Static assert failed: " DMibStringize(_Expression))
-		
-#	ifndef DMibPNoShortCuts
-#		define DStaticCheck DMibStaticCheck
-#	endif
-
 #if defined(DCompiler_MSVC) && defined(DCompiler_MSVC_EDG)
 
 	namespace NPrivate
@@ -83,15 +77,15 @@ namespace NMib
 #else
 
 	template <typename t_CType> 
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &_ToForward)
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(NTraits::TCRemoveReference<t_CType> &_ToForward)
 	{
 		return static_cast<t_CType&&>(_ToForward);
 	}
 
 	template <typename t_CType> 
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(typename NTraits::TCRemoveReference<t_CType>::CType &&_ToForward) noexcept
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(NTraits::TCRemoveReference<t_CType> &&_ToForward) noexcept
 	{
-		static_assert(!NTraits::TCIsLValueReference<t_CType>::mc_Value, "Cannot be a lvalue reference here");
+		static_assert(!NTraits::cIsLValueReference<t_CType>, "Cannot be a lvalue reference here");
 		return static_cast<t_CType&&>(_ToForward);
 	}
 #endif
@@ -114,25 +108,24 @@ namespace NMib
 		template <typename t_CType, typename t_CTypeToCopyTo>
 		struct TCForwardCopyEvalHelper
 		{
-			typedef typename NMib::NTraits::TCCopyQualifiers
+			using CTypeQualifiers = NMib::NTraits::TCCopyQualifiers
 				<
-					typename NMib::NTraits::TCRemoveReference<t_CType>::CType
-					, typename NMib::NTraits::TCRemoveReference<t_CTypeToCopyTo>::CType
-				>::CType CTypeQualifiers
+					NMib::NTraits::TCRemoveReference<t_CType>
+					, NMib::NTraits::TCRemoveReference<t_CTypeToCopyTo>
+				>
 			;
 			
-		    typedef typename TCChooseType
+		    using CType = TCConditional
 				<
-					NMib::NTraits::TCIsRValueReference<t_CType>::mc_Value
-					, typename NMib::NTraits::TCAddRValueReference<CTypeQualifiers>::CType
-					, typename TCChooseType
+					NMib::NTraits::cIsRValueReference<t_CType>
+					, NMib::NTraits::TCAddRValueReference<CTypeQualifiers>
+					, TCConditional
 					<
-						NMib::NTraits::TCIsLValueReference<t_CType>::mc_Value
-						, typename NMib::NTraits::TCAddLValueReference<CTypeQualifiers>::CType
-						, typename NMib::NTraits::TCRemoveReference<CTypeQualifiers>::CType
-					>::CType
+						NMib::NTraits::cIsLValueReference<t_CType>
+						, NMib::NTraits::TCAddLValueReference<CTypeQualifiers>
+						, NMib::NTraits::TCRemoveReference<CTypeQualifiers>
+					>
 				>
-				::CType CType;
 			;
 			
 		};
@@ -145,23 +138,23 @@ namespace NMib
 	}
 	
 	template <typename t_CType>
-	mark_artificial mark_nodebug inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_Move(t_CType &&_ToMove) noexcept
-		requires (!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value) // Trying to move const value
+	mark_artificial mark_nodebug inline_always_debug NTraits::TCRemoveReference<t_CType> &&fg_Move(t_CType &&_ToMove) noexcept
+		requires (!NTraits::cIsConst<NTraits::TCRemoveReference<t_CType>>) // Trying to move const value
 	{
-		return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
+		return ((NTraits::TCRemoveReference<t_CType> &&)_ToMove);
 	}
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType fg_ExchangeMove(t_CType &&_ToMove) noexcept
-		requires (!NTraits::TCIsConst<typename NTraits::TCRemoveReference<t_CType>::CType>::mc_Value) // Trying to move const value
+	mark_artificial mark_nodebug inline_always_debug NTraits::TCRemoveReference<t_CType> fg_ExchangeMove(t_CType &&_ToMove) noexcept
+		requires (!NTraits::cIsConst<NTraits::TCRemoveReference<t_CType>>) // Trying to move const value
 	{
-		return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
+		return ((NTraits::TCRemoveReference<t_CType> &&)_ToMove);
 	}
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug inline_always_debug typename NTraits::TCRemoveReference<t_CType>::CType &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
+	mark_artificial mark_nodebug inline_always_debug NTraits::TCRemoveReference<t_CType> &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
 	{
-		return ((typename NTraits::TCRemoveReference<t_CType>::CType &&)_ToMove);
+		return ((NTraits::TCRemoveReference<t_CType> &&)_ToMove);
 	}
 
 	template <typename tf_CDestination, typename t_CSetTo>
@@ -181,11 +174,11 @@ namespace NMib
 	template <typename tf_CToType, typename tf_CType>
 	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_CopyOrMove(tf_CType &&_Value)
 	{
-		using CToType = typename NTraits::TCRemoveReferenceAndQualifiers<tf_CToType>::CType;
+		using CToType = NTraits::TCRemoveReferenceAndQualifiers<tf_CToType>;
 
-		if constexpr (NTraits::TCIsSame<CToType, typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType>::mc_Value)
+		if constexpr (NTraits::cIsSame<CToType, NTraits::TCRemoveReferenceAndQualifiers<tf_CType>>)
 		{
-			if constexpr (NTraits::TCIsRValueReference<tf_CType &&>::mc_Value)
+			if constexpr (NTraits::cIsRValueReference<tf_CType &&>)
 				return (fg_Forward<tf_CType>(_Value));
 			else
 				return CToType(fg_Forward<tf_CType>(_Value));
@@ -206,16 +199,16 @@ namespace NMib
 		return (t_CType const &)_In;
 	}
 
-	template <typename t_CType, TCEnableIfType<NTraits::TCIsRValueReference<t_CType>::mc_Value || !NTraits::TCIsReference<t_CType>::mc_Value> * = nullptr>
+	template <typename t_CType, TCEnableIf<NTraits::cIsRValueReference<t_CType> || !NTraits::cIsReference<t_CType>> * = nullptr>
 	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In)
 	{
 		return fg_Move(_In);
 	}
 
-	template <typename t_CType, TCEnableIfType<!NTraits::TCIsRValueReference<t_CType>::mc_Value && NTraits::TCIsReference<t_CType>::mc_Value> * = nullptr>
-	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) -> typename NTraits::TCRemoveReference<t_CType>::CType const &
+	template <typename t_CType, TCEnableIf<!NTraits::cIsRValueReference<t_CType> && NTraits::cIsReference<t_CType>> * = nullptr>
+	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) -> NTraits::TCRemoveReference<t_CType> const &
 	{
-		return static_cast<typename NTraits::TCRemoveReference<t_CType>::CType const &>(_In);
+		return static_cast<NTraits::TCRemoveReference<t_CType> const &>(_In);
 	}
 
 	template <typename t_CValue>
@@ -323,19 +316,19 @@ namespace NMib
 	public:
 	};
 	
-	template <typename tf_CType, TCEnableIfType<NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
+	template <typename tf_CType, TCEnableIf<NTraits::cIsReference<tf_CType>> * = nullptr>
 	mark_nodebug inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(_In);
 	}
 	
-	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && !NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
+	template <typename tf_CType, TCEnableIf<!NTraits::cIsReference<tf_CType> && !NTraits::cIsConst<NTraits::TCRemoveReference<tf_CType>>> * = nullptr>
 	mark_nodebug inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(fg_Move(_In));
 	}
 	
-	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
+	template <typename tf_CType, TCEnableIf<!NTraits::cIsReference<tf_CType> && NTraits::cIsConst<NTraits::TCRemoveReference<tf_CType>>> * = nullptr>
 	mark_nodebug inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(_In);
@@ -348,13 +341,13 @@ namespace NMib
 	
 	struct CExplicitHelper
 	{
-		template <typename tf_CType, TCEnableIfType<NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
+		template <typename tf_CType, TCEnableIf<NTraits::cIsReference<tf_CType>> * = nullptr>
 		mark_nodebug inline_always_debug TCExplicit<tf_CType> operator = (tf_CType &&_In) const
 		{
 			return TCExplicit<tf_CType>(_In);
 		}
 		
-		template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
+		template <typename tf_CType, TCEnableIf<!NTraits::cIsReference<tf_CType>> * = nullptr>
 		mark_nodebug inline_always_debug TCExplicit<tf_CType> operator = (tf_CType &&_In) const
 		{
 			return TCExplicit<tf_CType>(fg_Move(_In));
@@ -387,19 +380,19 @@ namespace NMib
 	public:
 	};
 
-	template <typename tf_CType, TCEnableIfType<NTraits::TCIsReference<tf_CType>::mc_Value> * = nullptr>
+	template <typename tf_CType, TCEnableIf<NTraits::cIsReference<tf_CType>> * = nullptr>
 	mark_nodebug inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
 	{
 		return TCAttach<tf_CType>(_In);
 	}
 
-	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && !NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
+	template <typename tf_CType, TCEnableIf<!NTraits::cIsReference<tf_CType> && !NTraits::cIsConst<NTraits::TCRemoveReference<tf_CType>>> * = nullptr>
 	mark_nodebug inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
 	{
 		return TCAttach<tf_CType>(fg_Move(_In));
 	}
 
-	template <typename tf_CType, TCEnableIfType<!NTraits::TCIsReference<tf_CType>::mc_Value && NTraits::TCIsConst<typename NTraits::TCRemoveReference<tf_CType>::CType>::mc_Value> * = nullptr>
+	template <typename tf_CType, TCEnableIf<!NTraits::cIsReference<tf_CType> && NTraits::cIsConst<NTraits::TCRemoveReference<tf_CType>>> * = nullptr>
 	mark_nodebug inline_always_debug TCAttach<tf_CType> fg_Attach(tf_CType &&_In)
 	{
 		return TCAttach<tf_CType>(_In);
@@ -674,15 +667,15 @@ namespace NMib
 	};
 
 	template <typename tf_CType>
-	mark_nodebug TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType> fg_LambdaMove(tf_CType &&_Type)
+	mark_nodebug TCLambdaMover<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>> fg_LambdaMove(tf_CType &&_Type)
 	{
-		return TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType>(fg_Move(_Type));
+		return TCLambdaMover<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>>(fg_Move(_Type));
 	}
 
 	template <typename tf_CType>
-	mark_nodebug TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType> fg_LambdaMove(TCCopy<tf_CType> &&_Type)
+	mark_nodebug TCLambdaMover<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>> fg_LambdaMove(TCCopy<tf_CType> &&_Type)
 	{
-		return TCLambdaMover<typename NTraits::TCRemoveQualifiers<typename NTraits::TCRemoveReference<tf_CType>::CType>::CType>(fg_Move(_Type));
+		return TCLambdaMover<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>>(fg_Move(_Type));
 	}
 
 	template <typename t_CType>
@@ -913,7 +906,7 @@ namespace NMib
 
 
 	template <typename tf_CFirst, typename tf_CSecond>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second)
 	{
 		if (fg_Forward<tf_CFirst>(_First) < fg_Forward<tf_CSecond>(_Second))
 			return fg_Forward<tf_CFirst>(_First);
@@ -922,7 +915,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
 	{
 		if (fg_Forward<tf_CFirst>(_First) < fg_Forward<tf_CSecond>(_Second))
 			return fg_Min(fg_Forward<tf_CFirst>(_First), fg_Forward<tfp_CRest>(p_Rest)...);
@@ -931,7 +924,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second)
 	{
 		if (fg_Forward<tf_CSecond>(_Second) < fg_Forward<tf_CFirst>(_First))
 			return fg_Forward<tf_CFirst>(_First);
@@ -940,7 +933,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
 	{
 		if (fg_Forward<tf_CSecond>(_Second) < fg_Forward<tf_CFirst>(_First))
 			return fg_Max(fg_Forward<tf_CFirst>(_First), fg_Forward<tfp_CRest>(p_Rest)...);
@@ -949,13 +942,13 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CMin, typename tf_CMax>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Clamp(tf_CFirst &&_First, tf_CMin &&_Min, tf_CMax &&_Max)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Clamp(tf_CFirst &&_First, tf_CMin &&_Min, tf_CMax &&_Max)
 	{
 		return fg_Max(fg_Min(fg_Forward<tf_CFirst>(_First), fg_Forward<tf_CMax>(_Max)), fg_Forward<tf_CMin>(_Min));
 	}
 
 	template <typename tf_CLeft, typename tf_CRight>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CLeft>::CType fg_MaxValidFloat(tf_CLeft &&_Left, tf_CRight &&_Right)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CLeft> fg_MaxValidFloat(tf_CLeft &&_Left, tf_CRight &&_Right)
 	{
 		if (_Left.f_IsNan())
 		{
@@ -977,13 +970,13 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_MaxValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_MaxValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
 	{
 		return fg_MaxValidFloat(fg_MaxValidFloat(fg_Forward<tf_CFirst>(_First), fg_Forward<tf_CSecond>(_Second)), fg_Forward<tfp_CRest>(p_Rest)...);
 	}
 
 	template <typename tf_CLeft, typename tf_CRight>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CLeft>::CType fg_MinValidFloat(tf_CLeft &&_Left, tf_CRight &&_Right)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CLeft> fg_MinValidFloat(tf_CLeft &&_Left, tf_CRight &&_Right)
 	{
 		if (_Left.f_IsNan())
 		{
@@ -1005,15 +998,15 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_MinValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_MinValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
 	{
 		return fg_MinValidFloat(fg_MinValidFloat(fg_Forward<tf_CFirst>(_First), fg_Forward<tf_CSecond>(_Second)), fg_Forward<tfp_CRest>(p_Rest)...);
 	}
 
 	template <typename tf_CFirst>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_CFirst>::CType fg_Abs(tf_CFirst &&_First)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Abs(tf_CFirst &&_First)
 	{
-		if (fg_Forward<tf_CFirst>(_First) >= typename NTraits::TCRemoveReference<tf_CFirst>::CType(0))
+		if (fg_Forward<tf_CFirst>(_First) >= NTraits::TCRemoveReference<tf_CFirst>(0))
 			return fg_Forward<tf_CFirst>(_First);
 		else
 			return -fg_Forward<tf_CFirst>(_First);
@@ -1071,21 +1064,21 @@ namespace NMib
 	template <typename t_ToAlign>
 	constexpr inline_small t_ToAlign fg_AlignUpConstExpr(t_ToAlign _pMem, mint _Alignment)
 	{
-		using CIntegerType = typename NTraits::TCUnsigned<typename NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>::CType>::CType ;
+		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
 		return (t_ToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
 	template <typename t_ToAlign>
 	constexpr inline_small t_ToAlign fg_AlignDownConstExpr(t_ToAlign _pMem, mint _Alignment)
 	{
-		using CIntegerType = typename NTraits::TCUnsigned<typename NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>::CType>::CType;
+		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
 		return (t_ToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
 	template <typename t_ToAlign>
 	inline_small t_ToAlign fg_AlignUp(t_ToAlign _pMem, mint _Alignment)
 	{
-		using CIntegerType = typename NTraits::TCUnsigned<typename NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>::CType>::CType;
+		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
 		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_pMem) == 0);
 		return (t_ToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
@@ -1093,7 +1086,7 @@ namespace NMib
 	template <typename t_ToAlign>
 	inline_small t_ToAlign fg_AlignDown(t_ToAlign _pMem, mint _Alignment)
 	{
-		using CIntegerType = typename NTraits::TCUnsigned<typename NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>::CType>::CType;
+		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
 		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_pMem) == 0);
 		return (t_ToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
@@ -1124,38 +1117,38 @@ namespace NMib
 	}
 
 	template <typename tf_CType>
-	typename TCEnableIf
+	TCEnableIf
 	<
-		!NTraits::TCIsVoid<tf_CType>::mc_Value
-		&& !NTraits::TCIsArray<tf_CType>::mc_Value
-		&& !NTraits::TCIsPointer<tf_CType>::mc_Value
+		!NTraits::cIsVoid<tf_CType>
+		&& !NTraits::cIsArray<tf_CType>
+		&& !NTraits::cIsPointer<tf_CType>
 		, void
-	>::CType
+	>
 	fg_CallDestructor(tf_CType &_Type)
 	{
 		_Type.~tf_CType();
 	}
 
 	template <typename tf_CType>
-	typename TCEnableIf
+	TCEnableIf
 	<
-		NTraits::TCIsVoid<tf_CType>::mc_Value
-		|| NTraits::TCIsPointer<tf_CType>::mc_Value
+		NTraits::cIsVoid<tf_CType>
+		|| NTraits::cIsPointer<tf_CType>
 		, void
-	>::CType
+	>
 	fg_CallDestructor(tf_CType &_Type)
 	{
 	}
 	
 	template <typename tf_CType>
-	typename TCEnableIf
+	TCEnableIf
 	<
-		NTraits::TCIsArray<tf_CType>::mc_Value
+		NTraits::cIsArray<tf_CType>
 		, void
-	>::CType
+	>
 	fg_CallDestructor(tf_CType &_Type)
 	{
-		aint iElement = NTraits::TCExtent<tf_CType>::mc_Value - 1;
+		aint iElement = NTraits::gc_ArrayExtent<tf_CType> - 1;
 		for (; iElement >= 0; --iElement)
 		{
 			fg_CallDestructor(_Type[iElement]);
@@ -1191,7 +1184,7 @@ namespace NMib
 		template <typename t_CIntType>
 		struct TCLimitsIntHelper<t_CIntType, 1>
 		{
-			typedef typename NMib::NTraits::TCUnsigned<t_CIntType>::CType CUnsigned;
+			using CUnsigned = NMib::NTraits::TCUnsigned<t_CIntType>;
 
 			constexpr static t_CIntType mc_Min = (t_CIntType(1) << ((sizeof(t_CIntType)*8)-1));
 			constexpr static t_CIntType mc_Max = t_CIntType((CUnsigned(1) << ((sizeof(t_CIntType)*8)-1)) - CUnsigned(1));
@@ -1204,7 +1197,7 @@ namespace NMib
 	}
 
 	template <typename t_CIntType>
-	class TCLimitsInt : public NMib::NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::TCIsSigned<t_CIntType>::mc_Value>
+	class TCLimitsInt : public NMib::NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::cIsSigned<t_CIntType>>
 	{
 	public:
 	};
@@ -1243,9 +1236,9 @@ namespace NMib
 	{
 		if constexpr (sizeof(t_CInt0) > sizeof(t_CInt1))
 		{
-			if constexpr (NTraits::TCIsSigned<t_CInt0>::mc_Value)
+			if constexpr (NTraits::cIsSigned<t_CInt0>)
 			{
-				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::cIsSigned<t_CInt1>)
 					return _Left > t_CInt0(_Right);
 				else
 				{
@@ -1257,7 +1250,7 @@ namespace NMib
 			}
 			else
 			{
-				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::cIsSigned<t_CInt1>)
 				{
 					t_CInt1 Zero(0);
 					if (_Right < Zero)
@@ -1270,9 +1263,9 @@ namespace NMib
 		}
 		else if constexpr (sizeof(t_CInt0) < sizeof(t_CInt1))
 		{
-			if constexpr (NTraits::TCIsSigned<t_CInt0>::mc_Value)
+			if constexpr (NTraits::cIsSigned<t_CInt0>)
 			{
-				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::cIsSigned<t_CInt1>)
 					return t_CInt1(_Left) > _Right;
 				else
 				{
@@ -1284,7 +1277,7 @@ namespace NMib
 			}
 			else
 			{
-				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::cIsSigned<t_CInt1>)
 				{
 					t_CInt1 Zero(0);
 					if (_Right < Zero)
@@ -1297,9 +1290,9 @@ namespace NMib
 		}
 		else
 		{
-			if constexpr (NTraits::TCIsSigned<t_CInt0>::mc_Value)
+			if constexpr (NTraits::cIsSigned<t_CInt0>)
 			{
-				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::cIsSigned<t_CInt1>)
 					return _Left > t_CInt0(_Right);
 				else
 				{
@@ -1311,7 +1304,7 @@ namespace NMib
 			}
 			else
 			{
-				if constexpr (NTraits::TCIsSigned<t_CInt1>::mc_Value)
+				if constexpr (NTraits::cIsSigned<t_CInt1>)
 				{
 					t_CInt1 Zero(0);
 					if (_Right < Zero)
@@ -1554,21 +1547,14 @@ namespace NMib
 		}
 	};
 
-	template <typename t_CType, t_CType _Argument0, t_CType _Argument1>
-	struct TCConstantMax : public NTraits::TCCompileTimeConstant<t_CType, (_Argument0 > _Argument1 ? _Argument0 : _Argument1)>
-	{
-	};
+	template <typename t_CType, t_CType t_Argument0, t_CType t_Argument1>
+	constexpr inline t_CType gc_ConstantMax = (t_Argument0 > t_Argument1 ? t_Argument0 : t_Argument1);
 
+	template <typename t_CType, t_CType t_Argument0, t_CType t_Argument1>
+	constexpr inline t_CType gc_ConstantMin = (t_Argument0 < t_Argument1 ? t_Argument0 : t_Argument1);
 
-	template <typename t_CType, t_CType _Argument0, t_CType _Argument1>
-	struct TCConstantMin : public NTraits::TCCompileTimeConstant<t_CType, (_Argument0 < _Argument1 ? _Argument0 : _Argument1)>
-	{
-	};
-
-	template <typename t_CType, t_CType _Argument0>
-	struct TCConstantAbs: public NTraits::TCCompileTimeConstant<t_CType, (_Argument0 < t_CType(0) ? (t_CType(0)-_Argument0) : _Argument0)>
-	{
-	};
+	template <typename t_CType, t_CType t_Argument0>
+	constexpr inline t_CType gc_ConstantAbs = (t_Argument0 < t_CType(0) ? (t_CType(0) - t_Argument0) : t_Argument0);
 
 	template <typename t_CAny>
 	static t_CAny fg_MakeSymbolActive(t_CAny &&_Other)
@@ -1672,7 +1658,7 @@ namespace NMib
 
 // Gets a pointer to a class wich member is contained in from a pointer to that member
 #define DMibGetParent(_Class, _Member, _Ptr) ((_Class *)(((uint8 *)_Ptr) + ( ((mint)((_Class *)((void*)_Ptr))) - ((mint)(&((_Class *)((void *)_Ptr))->_Member)) )))
-#define DMibGetHighestBitSet(_Number) (NMib::TCHighestBitSet<mint, _Number>::mc_Value)
+#define DMibGetHighestBitSet(_Number) (NMib::gc_HighestBitSet<mint, _Number>)
 
 #ifndef DMibPNoShortCuts
 #	define DGetParent(_Class, _Member, _Ptr) DMibGetParent(_Class, _Member, _Ptr)

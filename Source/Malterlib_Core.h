@@ -56,9 +56,9 @@ namespace NMib
 
 	template <typename tf_CType>
 	concept cIsOrderType
-		= NTraits::TCIsSame<typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType, COrdering_Partial>::mc_Value
-		|| NTraits::TCIsSame<typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType, COrdering_Weak>::mc_Value
-		|| NTraits::TCIsSame<typename NTraits::TCRemoveReferenceAndQualifiers<tf_CType>::CType, COrdering_Strong>::mc_Value
+		= NTraits::cIsSame<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>, COrdering_Partial>
+		|| NTraits::cIsSame<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>, COrdering_Weak>
+		|| NTraits::cIsSame<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>, COrdering_Strong>
 	;
 
 	template <typename tf_CType>
@@ -90,13 +90,13 @@ namespace NMib
 	using TCInitializerList = std::initializer_list<t_CType>;
 	
 	template <typename tf_C1, typename tf_C2>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Min(tf_C1 &&_First, tf_C2 &&_Second);
+	constexpr inline_small NTraits::TCRemoveReference<tf_C1> fg_Min(tf_C1 &&_First, tf_C2 &&_Second);
 
 	template <typename tf_C1, typename tf_C2>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Max(tf_C1 &&_First, tf_C2 &&_Second);
+	constexpr inline_small NTraits::TCRemoveReference<tf_C1> fg_Max(tf_C1 &&_First, tf_C2 &&_Second);
 
 	template <typename tf_C1>
-	constexpr inline_small typename NTraits::TCRemoveReference<tf_C1>::CType fg_Abs(tf_C1 &&_First);
+	constexpr inline_small NTraits::TCRemoveReference<tf_C1> fg_Abs(tf_C1 &&_First);
 	
 	[[noreturn]] void fg_NoReturn();
 }
@@ -124,35 +124,43 @@ namespace NMib
 		NMib::NTraits::CFalseBySize fg_IsDefault(int16 _Dummy);
 
 		template <typename t_CType0, typename t_CType1, typename t_CPrio>
-		class TCIsDefault : public NTraits::TCCompileTimeConstant<bool, sizeof(fg_IsDefault<TCConvert<t_CType0, t_CType1, t_CPrio>>(0)) == sizeof(NMib::NTraits::CFalseBySize)>
-		{
-		};
+		concept cIsDefault = sizeof(fg_IsDefault<TCConvert<t_CType0, t_CType1, t_CPrio>>(0)) == sizeof(NMib::NTraits::CFalseBySize);
 
 		template <typename tf_CType0, typename tf_CType1>
-		constexpr inline_small typename TCEnableIf<TCIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2> >::mc_Value, tf_CType0>::CType fg_ConvertPrivate(tf_CType1 const &_From)
+		constexpr inline_small TCEnableIf<cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2>>, tf_CType0> fg_ConvertPrivate(tf_CType1 const &_From)
 		{
 			return TCConvert<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2> >::fs_Convert(_From);
 		}
 		template <typename tf_CType0, typename tf_CType1>
-		constexpr inline_small typename TCEnableIf<TCIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 1> >::mc_Value && !TCIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2> >::mc_Value, tf_CType0>::CType fg_ConvertPrivate(tf_CType1 const &_From)
+		constexpr inline_small auto fg_ConvertPrivate(tf_CType1 const &_From)
+			-> TCEnableIf
+			<
+				cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 1>> && !cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2>>
+				, tf_CType0
+			>
 		{
 			return TCConvert<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 1> >::fs_Convert(_From);
 		}
 		template <typename tf_CType0, typename tf_CType1>
-		constexpr inline_small typename TCEnableIf<!TCIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 1> >::mc_Value && !TCIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2> >::mc_Value, tf_CType0>::CType fg_ConvertPrivate(tf_CType1 const &_From)
+		constexpr inline_small auto fg_ConvertPrivate(tf_CType1 const &_From)
+			-> TCEnableIf
+			<
+				!cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 1>> && !cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2>>
+				, tf_CType0
+			>
 		{
 			return TCConvert<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 0> >::fs_Convert(_From);
 		}
 	}
 
 	template <typename tf_CType0, typename tf_CType1>
-	constexpr inline_small typename TCDisableIf<NTraits::TCIsSame<tf_CType0, tf_CType1>::mc_Value, tf_CType0>::CType fg_Convert(tf_CType1 const &_From)
+	constexpr inline_small TCDisableIf<NTraits::cIsSame<tf_CType0, tf_CType1>, tf_CType0> fg_Convert(tf_CType1 const &_From)
 	{
 		return NConvertPrivate::fg_ConvertPrivate<tf_CType0, tf_CType1>(_From);
 	}
 
 	template <typename tf_CType0, typename tf_CType1>
-	constexpr inline_small typename TCEnableIf<NTraits::TCIsSame<tf_CType0, tf_CType1>::mc_Value, tf_CType0>::CType fg_Convert(tf_CType1 const &_From)
+	constexpr inline_small TCEnableIf<NTraits::cIsSame<tf_CType0, tf_CType1>, tf_CType0> fg_Convert(tf_CType1 const &_From)
 	{
 		return _From;
 	}

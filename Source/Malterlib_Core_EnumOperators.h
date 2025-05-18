@@ -9,7 +9,7 @@
 
 template <typename t_CEnum>
 DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator | ( t_CEnum _Left, t_CEnum _Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) | static_cast<CUnderlyingType>(_Right));
@@ -17,7 +17,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator | ( t_CEn
 
 template <typename t_CEnum>
 DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator |= (t_CEnum &_Left, t_CEnum _Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	_Left = static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) | static_cast<CUnderlyingType>(_Right));
@@ -26,7 +26,7 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator |= (t_CEnum &_Left
 
 template <typename t_CEnum>
 DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator & (t_CEnum _Left, t_CEnum _Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) & static_cast<CUnderlyingType>(_Right));
@@ -34,7 +34,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator & (t_CEnu
 
 template <typename t_CEnum>
 DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator &= (t_CEnum &_Left, t_CEnum _Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	_Left = static_cast<t_CEnum>((static_cast<CUnderlyingType>(_Left) & static_cast<CUnderlyingType>(_Right)));
@@ -43,7 +43,7 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator &= (t_CEnum &_Left
 
 template <typename t_CEnum>
 DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ^ (t_CEnum _Left, t_CEnum _Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) ^ static_cast<CUnderlyingType>(_Right));
@@ -51,7 +51,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ^ (t_CEnu
 
 template <typename t_CEnum>
 DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator ^= (t_CEnum &_Left, t_CEnum _Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	_Left = static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) ^ static_cast<CUnderlyingType>(_Right));
@@ -60,7 +60,7 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator ^= (t_CEnum &_Left
 
 template <typename t_CEnum>
 DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ~ (t_CEnum _Left)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	return static_cast<t_CEnum>(~static_cast<CUnderlyingType>(_Left));
@@ -68,7 +68,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ~ (t_CEnu
 
 template <typename t_CEnum, typename t_CShift>
 DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator << (t_CEnum _Left, t_CShift _nPlaces)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) << _nPlaces);
@@ -76,7 +76,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator << (t_CEn
 
 template <typename t_CEnum, typename t_CShift>
 DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator >> (t_CEnum _Left, t_CShift _nPlaces)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	return static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) >> _nPlaces);
@@ -84,7 +84,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator >> (t_CEn
 
 template <typename t_CEnum, typename t_CShift>
 DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator <<= (t_CEnum &_Left, t_CShift _nPlaces)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	_Left = static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) << _nPlaces);
@@ -93,7 +93,7 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator <<= (t_CEnum &_Lef
 
 template <typename t_CEnum, typename t_CShift>
 DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator >>= (t_CEnum &_Left, t_CShift _nPlaces)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
 	_Left = static_cast<t_CEnum>(static_cast<CUnderlyingType>(_Left) >> _nPlaces);
@@ -108,49 +108,49 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator >>= (t_CEnum &_Lef
 
 template <typename t_CEnum0, typename t_CEnum1>
 constexpr inline_small bool operator == (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum0>::mc_Value && NMib::NTraits::TCIsEnum<t_CEnum1>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
-	static_assert(NMib::NTraits::TCIsSame<t_CEnum0, t_CEnum1>::mc_Value, "Comparison of two different enum types is unsafe");
+	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
 	return _Left == _Right;
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
 constexpr inline_small bool operator != (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum0>::mc_Value && NMib::NTraits::TCIsEnum<t_CEnum1>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
-	static_assert(NMib::NTraits::TCIsSame<t_CEnum0, t_CEnum1>::mc_Value, "Comparison of two different enum types is unsafe");
+	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
 	return _Left != _Right;
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
 constexpr inline_small bool operator < (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum0>::mc_Value && NMib::NTraits::TCIsEnum<t_CEnum1>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
-	static_assert(NMib::NTraits::TCIsSame<t_CEnum0, t_CEnum1>::mc_Value, "Comparison of two different enum types is unsafe");
+	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
 	return _Left < _Right;
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
 constexpr inline_small bool operator > (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum0>::mc_Value && NMib::NTraits::TCIsEnum<t_CEnum1>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
-	static_assert(NMib::NTraits::TCIsSame<t_CEnum0, t_CEnum1>::mc_Value, "Comparison of two different enum types is unsafe");
+	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
 	return _Left > _Right;
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
 constexpr inline_small bool operator <= (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum0>::mc_Value && NMib::NTraits::TCIsEnum<t_CEnum1>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
-	static_assert(NMib::NTraits::TCIsSame<t_CEnum0, t_CEnum1>::mc_Value, "Comparison of two different enum types is unsafe");
+	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
 	return _Left <= _Right;
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
 constexpr inline_small bool operator >= (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
-	requires (NMib::NTraits::TCIsEnum<t_CEnum0>::mc_Value && NMib::NTraits::TCIsEnum<t_CEnum1>::mc_Value)
+	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
-	static_assert(NMib::NTraits::TCIsSame<t_CEnum0, t_CEnum1>::mc_Value, "Comparison of two different enum types is unsafe");
+	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
 	return _Left >= _Right;
 }
 
