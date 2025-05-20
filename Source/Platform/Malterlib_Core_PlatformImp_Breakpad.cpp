@@ -70,9 +70,26 @@ namespace NMib
 						}
 					}
 
+					auto fStripBundleDirectory = [](NStr::CStrNonTracked const &_Directory)
+						{
+							auto Path = _Directory;
+							if (NFile::CFile::fs_GetFile(Path) == "MacOS")
+							{
+								Path = NFile::CFile::fs_GetPath(Path);
+								if (NFile::CFile::fs_GetFile(Path) == "Contents")
+								{
+									Path = NFile::CFile::fs_GetPath(Path);
+									if (!NFile::CFile::fs_GetExtension(Path).f_IsEmpty())
+										return NFile::CFile::fs_GetPath(Path);
+								}
+							}
+							return _Directory;
+						}
+					;
+
 					if (!bUseMalterlibCrashDumpDir)
 					{
-						DumpLocation = NFile::CFile::fs_AppendPath(NFile::CFile::fs_GetProgramDirectoryNonTracked(), "CrashDumps");
+						DumpLocation = NFile::CFile::fs_AppendPath(fStripBundleDirectory(NFile::CFile::fs_GetProgramDirectoryNonTracked()), "CrashDumps");
 						if (!NMisc::fg_CheckAccessRights(DumpLocation, false))
 						{
 							DumpLocation = NFile::CFile::fs_AppendPath(NFile::CFile::fs_GetUserLocalProgramDirectoryNonTracked(), "CrashDumps");
