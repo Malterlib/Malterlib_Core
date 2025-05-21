@@ -87,7 +87,7 @@ namespace NMib
 		}
 	};
 
-	typedef TCVoidFunctor<void> CVoidFunctor;
+	using CVoidFunctor = TCVoidFunctor<void>;
 
 	struct CEmpty
 	{
@@ -163,45 +163,42 @@ namespace NMib
 
 #include <Mib/Numeric/Integer>
 
-typedef NMib::TCAutoClear<bool> zbool;
-
-typedef NMib::TCAutoClear<mint> zmint;
-typedef NMib::TCAutoClear<smint> zsmint;
-
-typedef NMib::TCAutoClear<aint> zamint;
-typedef NMib::TCAutoClear<uaint> zuamint;
-
-typedef NMib::TCAutoClear<int8> zint8;
-typedef NMib::TCAutoClear<uint8> zuint8;
-typedef NMib::TCAutoClear<int16> zint16;
-typedef NMib::TCAutoClear<uint16> zuint16;
-typedef NMib::TCAutoClear<int32> zint32;
-typedef NMib::TCAutoClear<uint32> zuint32;
-typedef NMib::TCAutoClear<int64> zint64;
-typedef NMib::TCAutoClear<uint64> zuint64;
-typedef NMib::TCAutoClear<int80> zint80;
-typedef NMib::TCAutoClear<uint80> zuint80;
-typedef NMib::TCAutoClear<int128> zint128;
-typedef NMib::TCAutoClear<uint128> zuint128;
-typedef NMib::TCAutoClear<int160> zint160;
-typedef NMib::TCAutoClear<uint160> zuint160;
-typedef NMib::TCAutoClear<int256> zint256;
-typedef NMib::TCAutoClear<uint256> zuint256;
-typedef NMib::TCAutoClear<int320> zint320;
-typedef NMib::TCAutoClear<uint320> zuint320;
-typedef NMib::TCAutoClear<int512> zint512;
-typedef NMib::TCAutoClear<uint512> zuint512;
-typedef NMib::TCAutoClear<int1024> zint1024;
-typedef NMib::TCAutoClear<uint1024> zuint1024;
-typedef NMib::TCAutoClear<int2048> zint2048;
-typedef NMib::TCAutoClear<uint2048> zuint2048;
-typedef NMib::TCAutoClear<int4096> zint4096;
-typedef NMib::TCAutoClear<uint4096> zuint4096;
-typedef NMib::TCAutoClear<int8192> zint8192;
-typedef NMib::TCAutoClear<uint8192> zuint8192;
-typedef NMib::TCAutoClear<ch8> zch8;
-typedef NMib::TCAutoClear<ch16> zch16;
-typedef NMib::TCAutoClear<ch32> zch32;
+using zbool = NMib::TCAutoClear<bool>;
+using zmint = NMib::TCAutoClear<mint>;
+using zsmint = NMib::TCAutoClear<smint>;
+using zamint = NMib::TCAutoClear<aint>;
+using zuamint = NMib::TCAutoClear<uaint>;
+using zint8 = NMib::TCAutoClear<int8>;
+using zuint8 = NMib::TCAutoClear<uint8>;
+using zint16 = NMib::TCAutoClear<int16>;
+using zuint16 = NMib::TCAutoClear<uint16>;
+using zint32 = NMib::TCAutoClear<int32>;
+using zuint32 = NMib::TCAutoClear<uint32>;
+using zint64 = NMib::TCAutoClear<int64>;
+using zuint64 = NMib::TCAutoClear<uint64>;
+using zint80 = NMib::TCAutoClear<int80>;
+using zuint80 = NMib::TCAutoClear<uint80>;
+using zint128 = NMib::TCAutoClear<int128>;
+using zuint128 = NMib::TCAutoClear<uint128>;
+using zint160 = NMib::TCAutoClear<int160>;
+using zuint160 = NMib::TCAutoClear<uint160>;
+using zint256 = NMib::TCAutoClear<int256>;
+using zuint256 = NMib::TCAutoClear<uint256>;
+using zint320 = NMib::TCAutoClear<int320>;
+using zuint320 = NMib::TCAutoClear<uint320>;
+using zint512 = NMib::TCAutoClear<int512>;
+using zuint512 = NMib::TCAutoClear<uint512>;
+using zint1024 = NMib::TCAutoClear<int1024>;
+using zuint1024 = NMib::TCAutoClear<uint1024>;
+using zint2048 = NMib::TCAutoClear<int2048>;
+using zuint2048 = NMib::TCAutoClear<uint2048>;
+using zint4096 = NMib::TCAutoClear<int4096>;
+using zuint4096 = NMib::TCAutoClear<uint4096>;
+using zint8192 = NMib::TCAutoClear<int8192>;
+using zuint8192 = NMib::TCAutoClear<uint8192>;
+using zch8 = NMib::TCAutoClear<ch8>;
+using zch16 = NMib::TCAutoClear<ch16>;
+using zch32 = NMib::TCAutoClear<ch32>;
 
 #include <Mib/Numeric/Float>
 

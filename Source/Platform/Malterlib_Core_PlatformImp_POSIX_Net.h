@@ -87,7 +87,7 @@ struct CPOSIXSocket
 
 };
 
-typedef CRuntimeNetAddress CPOSIXAddress;
+using CPOSIXAddress = CRuntimeNetAddress;
 
 class CPOSIXImpSpecificSocketPoller
 {

@@ -20,9 +20,9 @@
 		static CCodeAddressFile *fs_Debug_File();
 		static CCodeAddressLine *fs_Debug_Line();
 	};
-	typedef CMibCodeAddressType* CMibCodeAddress;
+	using CMibCodeAddress = CMibCodeAddressType *;
 #else
-	typedef void* CMibCodeAddress;
+	using CMibCodeAddress = void *;
 #endif
 
 

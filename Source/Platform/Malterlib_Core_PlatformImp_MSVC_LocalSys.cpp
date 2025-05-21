@@ -468,7 +468,7 @@ public:
 				m_FirstReadDoneEvent.f_SetSignaled();
 			}
 		};
-		typedef DMibListLinkDS_Iter(CNotification, m_Link)  CNotificationIter;
+		using CNotificationIter = DMibListLinkDS_Iter(CNotification, m_Link);
 
 		class CNotificationBundle : public NThread::CThread
 		{
@@ -886,7 +886,7 @@ public:
 #endif
 	}
 
-	typedef void (DMibCrossmoduleAPI FSetAssertInfo)(int32 _AssertType, const ch8 *_pAssertMessage);
+	using FSetAssertInfo = void DMibCrossmoduleAPI (int32 _AssertType, const ch8 *_pAssertMessage);
 
 	FSetAssertInfo *m_pSetAssertInfo;
 	NThread::CMutual m_ContractInfoLock;

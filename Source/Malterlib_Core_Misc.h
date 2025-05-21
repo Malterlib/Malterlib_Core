@@ -85,8 +85,8 @@ namespace NMib
 			public:		
 		};
 		
-#		define DMibTypeID(_Class, _ID) namespace NMib{namespace NMisc{template <> class TCTypeID<_Class > {public: enum {ETypeID = _ID};}; template <> class TCTypeIDReverse<_ID> {public: typedef _Class CType;};}}
-		
+#		define DMibTypeID(_Class, _ID) namespace NMib{namespace NMisc{template <> class TCTypeID<_Class > {public: enum {ETypeID = _ID};}; template <> class TCTypeIDReverse<_ID> {public: using CType = _Class;};}}
+
 		
 		class CClassContainer
 		{
@@ -196,7 +196,7 @@ namespace NMib
 			public:
 			
 			DMibListLinkD_List(CClassContainer, m_Link) m_List;
-			typedef DMibListLinkD_Iter(CClassContainer, m_Link) CIter;
+			using CIter = DMibListLinkD_Iter(CClassContainer, m_Link) ;
 			
 			~CClassContainerList()
 			{

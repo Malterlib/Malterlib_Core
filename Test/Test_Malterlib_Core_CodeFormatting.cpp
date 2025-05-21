@@ -132,14 +132,14 @@ struct CTest
 class CTest
 {
 };
-typedef int CTestInt;
+using CTestInt = int;
 
 struct ICTest
 { 
 	virtual void f_Function() = 0; 
 };
 
-typedef void (FTest)();
+using FTest = void ();
 FTest* fTest = []{};
 
 template <typename t_CType>
@@ -277,7 +277,8 @@ CByteVector ByteBuffer;
 uint8 const *pBytes = ByteBuffer.f_GetArray();
 
 
-typedef void (FTest)(int);
+using FTest = void (int);
+
 class CTest
 {
 	TCFunction<void ()> m_fTest;
@@ -437,7 +438,7 @@ struct ICTest
 // PF (Deprecated)
 
 // F
-typedef void (FTest)(int);
+using FTest = void (int);
 
 // pTemplateType:
 // TC

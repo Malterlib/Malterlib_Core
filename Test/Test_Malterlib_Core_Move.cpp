@@ -99,9 +99,9 @@ namespace
 			CTestStruct2 Struct2(NMib::fg_Move(Struct));
 
 #ifdef DMalterlibUseLibCxx
-			typedef std::u16string CStdUTF16String;
+			using CStdUTF16String = std::u16string;
 #else
-			typedef std::wstring CStdUTF16String;
+			using CStdUTF16String = std::wstring;
 #endif
 
 			std::pair<std::string, CStdUTF16String> Test("Testing1", str_utf16("Testing2"));

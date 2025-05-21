@@ -151,7 +151,7 @@ namespace NMib
 {
 	namespace NLog
 	{
-		typedef NStr::CStrNonTracked CLogStr;
+		using CLogStr = NStr::CStrNonTracked;
 	}
 
 #if DMibSysLogSeverities
@@ -163,8 +163,8 @@ namespace NMib
 #endif
 
 	// The global system object... Can be overridden, its not recommended if you don't know what you are doing though
-	typedef void (calling_convention_c FConstruct)(void);
-	typedef void (calling_convention_c FDestruct)(void);
+	using FConstruct = void calling_convention_c (void);
+	using FDestruct = void calling_convention_c (void);
 
 	class CSystemShared;
 
@@ -188,9 +188,9 @@ namespace NMib
 
 	
 //	#ifdef DPlatformFamily_macOS
-//		typedef NMemory::CAllocator_VirtualNoCommit CMainHeapVirtualAllocator;
+//		using CMainHeapVirtualAllocator = NMemory::CAllocator_VirtualNoCommit;
 //	#else
-		typedef NMemory::CAllocator_Virtual CMainHeapVirtualAllocator;
+		using CMainHeapVirtualAllocator = NMemory::CAllocator_Virtual;
 //	#endif
 
 #ifdef DPlatformFamily_Windows

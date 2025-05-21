@@ -206,7 +206,7 @@ namespace NMib
 				bool m_bStreamStarted = false;
 				bool m_bPerFileEvents = false;
 			};
-			typedef DMibListLinkDS_Iter(CNotification, m_Link)  CNotificationIter;
+			using CNotificationIter = DMibListLinkDS_Iter(CNotification, m_Link);
 
 			NThread::CMutual m_Lock;
 

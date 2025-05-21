@@ -524,13 +524,13 @@ Non integer constants should be defined in static class (preferable) or global v
 #define DContextPrefix_ConstantName  <value>
 
 For local constants use:
-const static [<type>] cs_ConstantName = <value>;
+constexpr static <type> c_ConstantName = <value>;
 
 Type declarations
 Typedef:ed types are written with a C prefix, like a class name, for example:
-typedef <type> CTypeName;
+using CTypeName = <type>;
 
 Typedef:ed function types are written with F prefix and should not define a pointer directly, for example:
-typedef void (FCallbackFunction)(int32 _Type, int32 _Value);
- 
+using FCallbackFunction = void (int32 _Type, int32 _Value);
+
  */

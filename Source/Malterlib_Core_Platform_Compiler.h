@@ -86,7 +86,7 @@ _LIBCPP_END_NAMESPACE_STD
 		{
 			namespace NTypeInfo
 			{
-				typedef std::type_info CTypeInfo;
+				using CTypeInfo = std::type_info;
 			}
 		}
 #	endif
@@ -107,7 +107,7 @@ namespace std
 		{
 			namespace NTypeInfo
 			{
-				typedef type_info CTypeInfo;
+				using CTypeInfo = type_info;
 			}
 		}
 #	endif
@@ -136,7 +136,7 @@ namespace std
 #	if defined(DArchitecture_x86)
 #		define DMibPArglistIntSizeOf(n)   ( (sizeof(n) + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
 #		define DMibPArglistIntAlign(n)   ( (n + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
-		typedef void * CMibArgList;
+		using CMibArgList = void *;
 #		define DMibPArgListStart(_ArgList, _PrevArg) { _ArgList = ((char *)&_PrevArg + DMibPArglistIntSizeOf(_PrevArg)); }
 		namespace NMib
 		{
@@ -153,7 +153,7 @@ namespace std
 #		define DMibPArgListNextArg(_ArgList, _ArgType) (*((_ArgType *)NMib::NHelpers::ArgListNextArg(_ArgList, sizeof(_ArgType))))
 #		define DMibPArgListEnd(_ArgList) ((void)0)
 #	elif defined(DArchitecture_x64)
-		typedef char * CMibArgList;
+		using CMibArgList = char *;
 		extern "C" void __cdecl __va_start(CMibArgList *, ...);
 #		define DMibPArgListStart(_ArgList, _PrevArg) ( __va_start(&_ArgList, _PrevArg) )
 #		define DMibPArgListNextArg(_ArgList, _ArgType) \
@@ -163,7 +163,7 @@ namespace std
 #		define DMibPArgListEnd(_ArgList) ((void)0)
 #	else
 #		include <stdarg.h>
-		typedef va_list CMibArgList;
+		using CMibArgList = va_list;
 #		define DMibPArgListStart(_ArgList, _PrevArg) va_start(_ArgList, _PrevArg)
 #		define DMibPArgListNextArg(_ArgList, _ArgType) va_arg(_ArgList, _ArgType)
 #		define DMibPArgListEnd(_ArgList) va_end(_ArgList)

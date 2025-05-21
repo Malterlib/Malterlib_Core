@@ -537,7 +537,7 @@ NMib::NSys::EDesktopEnvironment fg_DeduceDesktopEnvironment()
 }
 
 
-typedef char uuid_string_t[256];
+using uuid_string_t = char[256];
 
 struct CUUIDLibrary final : public NMib::CDynamicLibraryUtility
 {

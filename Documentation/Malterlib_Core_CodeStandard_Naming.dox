@@ -539,7 +539,7 @@ Types, enumerators and namespaces are prefixed.
 	class CTest
 	{
 	};
-	typedef int CTestInt;
+	using CTestInt = int;
 ~~~
 	</td>
 	<td></td>
@@ -562,7 +562,7 @@ Types, enumerators and namespaces are prefixed.
 	<td>Function types</td>
 	<td>
 ~~~
-	typedef void (FTest)();
+	using FTest = void ();
 	FTest* fTest = []{};
 ~~~
 	</td>
@@ -689,7 +689,7 @@ Function return values should not be concept prefixed.
 	<td>Function object</td>
 	<td>
 ~~~
-	typedef void (FTest)(int);
+	using FTest = void (int);
 	class CTest
 	{
 		TCFunction<void ()> m_fTest;

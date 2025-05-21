@@ -107,7 +107,7 @@ namespace NMib
 	class TCConvert
 	{
 	public:
-		typedef int CDefault;
+		using CDefault = int;
 
 		static constexpr inline_small t_CType0 fs_Convert(t_CType1 const &_From)
 		{

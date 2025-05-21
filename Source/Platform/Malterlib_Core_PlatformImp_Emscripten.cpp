@@ -177,7 +177,7 @@ CSystem_POSIX *fg_GetSys_POSIX()
 	return &fg_GetLocalSys()->m_Posix;
 }
 
-typedef char uuid_string_t[256];
+using uuid_string_t = char[256];
 
 void NSys::fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_UUID)
 {

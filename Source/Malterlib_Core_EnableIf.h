@@ -16,13 +16,13 @@ namespace NMib
 	template <bool t_bFirstType, typename t_CType0, typename t_CType1>
 	struct TCConditionalHelper
 	{
-		typedef t_CType0 CType;
+		using CType = t_CType0;
 	};
 
 	template <typename t_CType0, typename t_CType1>
 	struct TCConditionalHelper<false, t_CType0, t_CType1>
 	{
-		typedef t_CType1 CType;
+		using CType = t_CType1;
 	};
 
 	template <bool t_bFirstType, typename t_CType0, typename t_CType1>

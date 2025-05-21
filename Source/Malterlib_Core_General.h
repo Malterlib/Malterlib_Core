@@ -40,10 +40,10 @@ namespace NMib
 {
 	struct CHideNull
 	{
-		typedef decltype(nullptr) CNullPtr;
+		using CNullPtr = decltype(nullptr);
 	};
 
-	typedef CHideNull::CNullPtr CNullPtr;
+	using CNullPtr = CHideNull::CNullPtr;
 
 	struct CCompareConstructTag
 	{
@@ -60,7 +60,7 @@ namespace NMib
 		template <typename t_CType> 
 		struct TCForwardHelper
 		{
-		    typedef t_CType CType;
+		    using CType = t_CType;
 
 			inline_small const t_CType& operator()(const t_CType& _Left) const
 			{
@@ -710,7 +710,7 @@ namespace NMib
 	class TCHelper_ByteSwap
 	{
 	public:
-		typedef t_CType CType;
+		using CType = t_CType;
 		enum
 		{
 			EDefaultImplementation = 1
@@ -737,7 +737,7 @@ namespace NMib
 	class TCHelper_ByteSwap<uint8>
 	{
 	public:
-		typedef uint8 CType;
+		using CType = uint8;
 		enum
 		{
 			EDefaultImplementation = 0
@@ -771,7 +771,7 @@ namespace NMib
 	class TCHelper_ByteSwap<uint16>
 	{
 	public:
-		typedef uint16 CType;
+		using CType = uint16;
 		enum
 		{
 			EDefaultImplementation = 0
@@ -791,7 +791,7 @@ namespace NMib
 	class TCHelper_ByteSwap<uint32>
 	{
 	public:
-		typedef uint32 CType;
+		using CType = uint32;
 		enum
 		{
 			EDefaultImplementation = 0
@@ -811,7 +811,7 @@ namespace NMib
 	class TCHelper_ByteSwap<uint64>
 	{
 	public:
-		typedef uint64 CType;
+		using CType = uint64;
 		enum
 		{
 			EDefaultImplementation = 0
@@ -831,35 +831,35 @@ namespace NMib
 	class TCHelper_ByteSwapChooseBySize
 	{
 	public:
-		typedef TCHelper_ByteSwap<t_CType> CSwapper;
+		using CSwapper = TCHelper_ByteSwap<t_CType>;
 	};
 
 	template <typename t_CType>
 	class TCHelper_ByteSwapChooseBySize<1, t_CType>
 	{
 	public:
-		typedef TCHelper_ByteSwap<uint8> CSwapper;
+		using CSwapper = TCHelper_ByteSwap<uint8>;
 	};
 
 	template <typename t_CType>
 	class TCHelper_ByteSwapChooseBySize<2, t_CType>
 	{
 	public:
-		typedef TCHelper_ByteSwap<uint16> CSwapper;
+		using CSwapper = TCHelper_ByteSwap<uint16>;
 	};
 
 	template <typename t_CType>
 	class TCHelper_ByteSwapChooseBySize<4, t_CType>
 	{
 	public:
-		typedef TCHelper_ByteSwap<uint32> CSwapper;
+		using CSwapper = TCHelper_ByteSwap<uint32>;
 	};
 
 	template <typename t_CType>
 	class TCHelper_ByteSwapChooseBySize<8, t_CType>
 	{
 	public:
-		typedef TCHelper_ByteSwap<uint64> CSwapper;
+		using CSwapper = TCHelper_ByteSwap<uint64>;
 	};
 	
 	template <typename t_CInt>
@@ -868,7 +868,7 @@ namespace NMib
 		// Static branch
 		if constexpr (TCHelper_ByteSwap<t_CInt>::EDefaultImplementation)
 		{
-			typedef typename TCHelper_ByteSwapChooseBySize<sizeof(t_CInt), t_CInt>::CSwapper CSwapper;
+			using CSwapper = typename TCHelper_ByteSwapChooseBySize<sizeof(t_CInt), t_CInt>::CSwapper;
 			return CSwapper::fs_Swap((typename CSwapper::CType &)_In);
 		}
 		else

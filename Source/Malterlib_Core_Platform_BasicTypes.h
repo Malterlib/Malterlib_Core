@@ -23,61 +23,52 @@
 
 // Basic types
 
-typedef float pfp32;
+using pfp32 = float;
 #define DMibPCanDo_fp32
 static_assert(sizeof(pfp32)*8 == 32, "fp32 not supported");
 
-typedef double pfp64;
+using pfp64 = double;
 #define DMibPCanDo_fp64
 static_assert(sizeof(pfp64)*8 == 64, "fp64 not supported");
 
 #if !defined(DCompiler_MSVC) && !defined(DCompiler_clang_cl) && (defined(DArchitecture_x86) || defined(DArchitecture_x64))
-typedef long double pfp80;
+using pfp80 = long double;
 #define DMibPCanDo_fp80
 static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 #endif
 
 #if defined(DPlatformFamily_macOS)
 #	if DMibPPtrBits >= 64
-		typedef signed char int8;
 		#define DMibPCanDo_int8
-
-		typedef signed short int16;
 		#define DMibPCanDo_int16
-
-		typedef signed int int32;
 		#define DMibPCanDo_int32
-
-		typedef signed long long int64;
 		#define DMibPCanDo_int64
-
-		typedef signed __int128 int128;
 		#define DMibPCanDo_int128
-
-		typedef unsigned char uint8;
 		#define DMibPCanDo_uint8
-
-		typedef unsigned short uint16;
 		#define DMibPCanDo_uint16
-
-		typedef unsigned int uint32;
 		#define DMibPCanDo_uint32
-
-		typedef unsigned long long uint64; // Nope msvs cant do this
 		#define DMibPCanDo_uint64
-
-		typedef unsigned __int128 uint128; // Nope msvs cant do this
 		#define DMibPCanDo_uint128
 
-		typedef unsigned long int mint; // Memory size unsigned int
-		typedef signed long int smint; // Memory size unsigned int
-		typedef signed long long aint; // Architecture size int
-		typedef unsigned long long uaint; // Architecture size unsigned int
+		using int8 = signed char;
+		using int16 = signed short;
+		using int32 = signed int;
+		using int64 = signed long long;
+		using int128 = signed __int128;
+		using uint8 = unsigned char;
+		using uint16 = unsigned short;
+		using uint32 = unsigned int;
+		using uint64 = unsigned long long;
+		using uint128 = unsigned __int128;
 
-		typedef char ch8;
-		typedef char16_t ch16;
-		typedef char32_t ch32;
-		//#define int Error
+		using mint = unsigned long int;
+		using smint = signed long int;
+		using aint = signed long long;
+		using uaint = unsigned long long;
+
+		using ch8 = char;
+		using ch16 = char16_t;
+		using ch32 = char32_t;
 
 		//#define DMibPUniqueType_int
 		//#define DMibPUniqueType_uint
@@ -93,39 +84,32 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		//#define DMibPSignedType_ch16
 		//#define DMibPSignedType_ch32
 #	else
-		typedef signed char int8;
 		#define DMibPCanDo_int8
-
-		typedef signed short int16;
 		#define DMibPCanDo_int16
-
-		typedef signed int int32;
 		#define DMibPCanDo_int32
-
-		typedef signed long long int64;
 		#define DMibPCanDo_int64
-
-		typedef unsigned char uint8;
 		#define DMibPCanDo_uint8
-
-		typedef unsigned short uint16;
 		#define DMibPCanDo_uint16
-
-		typedef unsigned int uint32;
 		#define DMibPCanDo_uint32
-
-		typedef unsigned long long uint64; // Nope msvs cant do this
 		#define DMibPCanDo_uint64
 
-		typedef unsigned long mint; // Memory size unsigned int
-		typedef signed long smint; // Memory size unsigned int
-		typedef int aint; // Architecture size int
-		typedef unsigned int uaint; // Architecture size unsigned int
+		using int8 = signed char;
+		using int16 = signed short;
+		using int32 = signed int;
+		using int64 = signed long long;
+		using uint8 = unsigned char;
+		using uint16 = unsigned short;
+		using uint32 = unsigned int;
+		using uint64 = unsigned long long;
 
-		typedef char ch8;
-		typedef char16_t ch16;
-		typedef char32_t ch32;
-		//#define int Error
+		using mint = unsigned long;
+		using smint = signed long;
+		using aint = int;
+		using uaint = unsigned int;
+
+		using ch8 = char;
+		using ch16 = char16_t;
+		using ch32 = char32_t;
 
 		//#define DMibPUniqueType_int
 		//#define DMibPUniqueType_uint
@@ -143,45 +127,36 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 #	endif
 #elif defined(DPlatformFamily_Linux)
 #	if DMibPPtrBits >= 64
-		typedef signed char int8;
 		#define DMibPCanDo_int8
-
-		typedef signed short int16;
 		#define DMibPCanDo_int16
-
-		typedef signed int int32;
 		#define DMibPCanDo_int32
-
-		typedef signed long long int64;
 		#define DMibPCanDo_int64
-
-		typedef signed __int128 int128;
 		#define DMibPCanDo_int128
-
-		typedef unsigned char uint8;
 		#define DMibPCanDo_uint8
-
-		typedef unsigned short uint16;
 		#define DMibPCanDo_uint16
-
-		typedef unsigned int uint32;
 		#define DMibPCanDo_uint32
-
-		typedef unsigned long long uint64; // Nope msvs cant do this
 		#define DMibPCanDo_uint64
-
-		typedef unsigned __int128 uint128;
 		#define DMibPCanDo_uint128
 
-		typedef unsigned long int mint; // Memory size unsigned int
-		typedef signed long int smint; // Memory size unsigned int
-		typedef signed long long aint; // Architecture size int
-		typedef unsigned long long uaint; // Architecture size unsigned int
+		using int8 = signed char;
+		using int16 = signed short;
+		using int32 = signed int;
+		using int64 = signed long long;
+		using int128 = signed __int128;
+		using uint8 = unsigned char;
+		using uint16 = unsigned short;
+		using uint32 = unsigned int;
+		using uint64 = unsigned long long;
+		using uint128 = unsigned __int128;
 
-		typedef char ch8;
-		typedef char16_t ch16;
-		typedef char32_t ch32;
-		//#define int Error
+		using mint = unsigned long int;
+		using smint = signed long int;
+		using aint = signed long long;
+		using uaint = unsigned long long;
+
+		using ch8 = char;
+		using ch16 = char16_t;
+		using ch32 = char32_t;
 
 		//#define DMibPUniqueType_int
 		//#define DMibPUniqueType_uint
@@ -199,39 +174,32 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		//#define DMibPSignedType_ch16
 		//#define DMibPSignedType_ch32
 #	else
-		typedef signed char int8;
 		#define DMibPCanDo_int8
-
-		typedef signed short int16;
 		#define DMibPCanDo_int16
-
-		typedef signed long int32;
 		#define DMibPCanDo_int32
-
-		typedef signed long long int64;
 		#define DMibPCanDo_int64
-
-		typedef unsigned char uint8;
 		#define DMibPCanDo_uint8
-
-		typedef unsigned short uint16;
 		#define DMibPCanDo_uint16
-
-		typedef unsigned long uint32;
 		#define DMibPCanDo_uint32
-
-		typedef unsigned long long uint64; // Nope msvs cant do this
 		#define DMibPCanDo_uint64
 
-		typedef unsigned int mint; // Memory size unsigned int
-		typedef signed int smint; // Memory size unsigned int
-		typedef int aint; // Architecture size int
-		typedef unsigned int uaint; // Architecture size unsigned int
+		using int8 = signed char;
+		using int16 = signed short;
+		using int32 = signed long;
+		using int64 = signed long long;
+		using uint8 = unsigned char;
+		using uint16 = unsigned short;
+		using uint32 = unsigned long;
+		using uint64 = unsigned long long;
 
-		typedef char ch8;
-		typedef char16_t ch16;
-		typedef char32_t ch32;
-		//#define int Error
+		using mint = unsigned int;
+		using smint = signed int;
+		using aint = int;
+		using uaint = unsigned int;
+
+		using ch8 = char;
+		using ch16 = char16_t;
+		using ch32 = char32_t;
 
 		//#define DMibPUniqueType_int
 		//#define DMibPUniqueType_uint
@@ -249,39 +217,32 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 #	endif
 #elif defined(DPlatformFamily_Windows)
 #	if DMibPPtrBits >= 64
-		typedef char int8;
 		#define DMibPCanDo_int8
-
-		typedef short int16;
 		#define DMibPCanDo_int16
-
-		typedef long int32;
 		#define DMibPCanDo_int32
-
-		typedef __int64 int64;
 		#define DMibPCanDo_int64
-
-		typedef unsigned char uint8;
 		#define DMibPCanDo_uint8
-
-		typedef unsigned short uint16;
 		#define DMibPCanDo_uint16
-
-		typedef unsigned long uint32;
 		#define DMibPCanDo_uint32
-
-		typedef unsigned __int64 uint64; // Nope msvc cant do this
 		#define DMibPCanDo_uint64
 
-		typedef __int64 smint; // Memory size unsigned int
-		typedef unsigned __int64 mint; // Memory size signed int
-		typedef __int64 aint; // Architecture size int
-		typedef unsigned __int64 uaint; // Architecture size unsigned int
+		using int8 = char;
+		using int16 = short;
+		using int32 = long;
+		using int64 = __int64;
+		using uint8 = unsigned char;
+		using uint16 = unsigned short;
+		using uint32 = unsigned long;
+		using uint64 = unsigned __int64;
 
-		typedef int8 ch8;
-		typedef wchar_t ch16;
-		typedef char32_t ch32;
-		//#define int Error
+		using smint = __int64;
+		using mint = unsigned __int64;
+		using aint = __int64;
+		using uaint = unsigned __int64;
+
+		using ch8 = int8;
+		using ch16 = wchar_t;
+		using ch32 = char32_t;
 
 		#define DMibPUniqueType_int
 		#define DMibPUniqueType_uint
@@ -298,39 +259,30 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		//#define DMibPSignedType_ch16
 		//#define DMibPSignedType_ch32
 #	else
-		typedef char int8;
 		#define DMibPCanDo_int8
-
-		typedef short int16;
 		#define DMibPCanDo_int16
-
-		typedef long int32;
 		#define DMibPCanDo_int32
-
-		typedef __int64 int64;
 		#define DMibPCanDo_int64
-
-		typedef unsigned char uint8;
 		#define DMibPCanDo_uint8
-
-		typedef unsigned short uint16;
 		#define DMibPCanDo_uint16
-
-		typedef unsigned long uint32;
 		#define DMibPCanDo_uint32
-
-		typedef unsigned __int64 uint64; // Nope msvc cant do this
 		#define DMibPCanDo_uint64
 
-		typedef unsigned int mint; // Memory size unsigned int
-		typedef int smint; // Memory size signed int
-		typedef int aint; // Architecture size int
-		typedef unsigned int uaint; // Architecture size unsigned int
-
-		typedef int8 ch8;
-		typedef wchar_t ch16;
-		typedef char32_t ch32;
-		//#define int Error
+		using int8 = char;
+		using int16 = short;
+		using int32 = long;
+		using int64 = __int64;
+		using uint8 = unsigned char;
+		using uint16 = unsigned short;
+		using uint32 = unsigned long;
+		using uint64 = unsigned __int64;
+		using mint = unsigned int;
+		using smint = int;
+		using aint = int;
+		using uaint = unsigned int;
+		using ch8 = int8;
+		using ch16 = wchar_t;
+		using ch32 = char32_t;
 
 		//#define DMibPUniqueType_int
 		//#define DMibPUniqueType_uint
@@ -348,39 +300,30 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		//#define DMibPSignedType_ch32
 #	endif
 #elif defined(DPlatformFamily_Emscripten)
-	typedef signed char int8;
 	#define DMibPCanDo_int8
-
-	typedef signed short int16;
 	#define DMibPCanDo_int16
-
-	typedef signed long int32;
 	#define DMibPCanDo_int32
-
-	typedef signed long long int64;
 	#define DMibPCanDo_int64
-
-	typedef unsigned char uint8;
 	#define DMibPCanDo_uint8
-
-	typedef unsigned short uint16;
 	#define DMibPCanDo_uint16
-
-	typedef unsigned long uint32;
 	#define DMibPCanDo_uint32
-
-	typedef unsigned long long uint64; // Nope msvs cant do this
 	#define DMibPCanDo_uint64
 
-	typedef unsigned int mint; // Memory size unsigned int
-	typedef signed int smint; // Memory size unsigned int
-	typedef int aint; // Architecture size int
-	typedef unsigned int uaint; // Architecture size unsigned int
-
-	typedef char ch8;
-	typedef char16_t ch16;
-	typedef char32_t ch32;
-	//#define int Error
+	using int8 = signed char;
+	using int16 = signed short;
+	using int32 = signed long;
+	using int64 = signed long long;
+	using uint8 = unsigned char;
+	using uint16 = unsigned short;
+	using uint32 = unsigned long;
+	using uint64 = unsigned long long;
+	using mint = unsigned int;
+	using smint = signed int;
+	using aint = int;
+	using uaint = unsigned int;
+	using ch8 = char;
+	using ch16 = char16_t;
+	using ch32 = char32_t;
 
 	//#define DMibPUniqueType_int
 	//#define DMibPUniqueType_uint
@@ -400,7 +343,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 #endif
 
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Windows) || defined(DPlatformFamily_Emscripten)
-	typedef int64 CMibFilePos;
+	using CMibFilePos = int64;
 #else
 #	error "Implement this"
 #endif

@@ -37,18 +37,18 @@ namespace NMib
 		template <typename t_CBaseTag, typename t_CDefaultTag>
 		struct TCEvalTag<t_CBaseTag, t_CDefaultTag>
 		{
-			typedef t_CDefaultTag CType;
+			using CType = t_CDefaultTag;
 		};
 
 		template <typename t_CBaseTag, typename t_CDefaultTag, typename t_CTag0, typename ...tp_CTags>
 		struct TCEvalTag<t_CBaseTag, t_CDefaultTag, t_CTag0, tp_CTags...>
 		{
-			typedef TCConditional
+			using CType = TCConditional
 				<
 					NMib::NTraits::cIsConvertible<t_CTag0, t_CBaseTag>
 					, t_CTag0
 					, typename TCEvalTag<t_CBaseTag, t_CDefaultTag, tp_CTags...>::CType
-				> CType
+				>
 			;
 		};
 		
@@ -59,9 +59,9 @@ namespace NMib
 		template <typename ...tp_COtherTags, typename t_CTag, typename ...tp_CTags>
 		struct TCEvalTagCompatible<TCTags<tp_COtherTags...>, t_CTag, tp_CTags...>
 		{
-			typedef NMib::NTraits::TCGetBase<t_CTag> CBaseTag;
-			typedef typename NPrivate::TCEvalTag<CBaseTag, CBaseTag, tp_COtherTags...>::CType COtherTag;
-			
+			using CBaseTag = NMib::NTraits::TCGetBase<t_CTag>;
+			using COtherTag = typename NPrivate::TCEvalTag<CBaseTag, CBaseTag, tp_COtherTags...>::CType;
+
 			enum
 			{
 				mc_Value = NMib::NTraits::cIsConvertible<COtherTag, t_CTag>
@@ -93,7 +93,7 @@ namespace NMib
 		template <typename t_CTagsToRemove, typename t_CResultingTags>
 		struct TCEvalRemoveTags<t_CTagsToRemove, t_CResultingTags, TCTags<>>
 		{
-			typedef t_CResultingTags CType;
+			using CType = t_CResultingTags;
 		};
 		
 		template <typename t_CTags, typename t_CBaseTag>
@@ -120,14 +120,13 @@ namespace NMib
 		template <typename ...tp_CTagsToRemove, typename ...tp_CResultingTags, typename t_CTag0, typename ...tp_CTags>
 		struct TCEvalRemoveTags<TCTags<tp_CTagsToRemove...>, TCTags<tp_CResultingTags...>, TCTags<t_CTag0, tp_CTags...>>
 		{
-			typedef TCConditional
+			using CType = TCConditional
 				<
 					!TCEvalHasTagType<TCTags<tp_CTagsToRemove...>, NMib::NTraits::TCGetBase<t_CTag0>>::mc_Value
 					//NMib::NTraits::cIsConvertible<t_CTag0, t_CBaseTag>
 					, typename TCEvalRemoveTags<TCTags<tp_CTagsToRemove...>, TCTags<tp_CResultingTags..., t_CTag0>, TCTags<tp_CTags...>>::CType
 					, typename TCEvalRemoveTags<TCTags<tp_CTagsToRemove...>, TCTags<tp_CResultingTags...>, TCTags<tp_CTags...>>::CType
 				>
-				CType
 			;
 		};
 		
@@ -137,13 +136,13 @@ namespace NMib
 	template <typename ...tp_CTags, typename t_CBaseTag, typename t_CDefaultTag>
 	struct TCGetTag<TCTags<tp_CTags...>, t_CBaseTag, t_CDefaultTag>
 	{
-		typedef typename NPrivate::TCEvalTag<t_CBaseTag, t_CDefaultTag, tp_CTags...>::CType CType;
+		using CType = typename NPrivate::TCEvalTag<t_CBaseTag, t_CDefaultTag, tp_CTags...>::CType;
 	};
 	
 	template <typename ...tp_CTags, typename t_CBaseTag>
 	struct TCHasTag<TCTags<tp_CTags...>, t_CBaseTag>
 	{
-		typedef NMib::NTraits::TCGetBase<t_CBaseTag> CBaseTag;
+		using CBaseTag = NMib::NTraits::TCGetBase<t_CBaseTag>;
 		enum
 		{
 			mc_Value = NTraits::cIsConvertible<typename TCGetTag<TCTags<tp_CTags...>, CBaseTag>::CType, t_CBaseTag>
@@ -153,12 +152,12 @@ namespace NMib
 	template <typename ...tp_CTags, typename ...tp_CTagsToRemove>
 	struct TCRemoveTags<TCTags<tp_CTags...>, tp_CTagsToRemove...>
 	{
-		typedef typename NPrivate::TCEvalRemoveTags<TCTags<tp_CTagsToRemove...>, TCTags<>, TCTags<tp_CTags...>>::CType CType;
-	};		
+		using CType = typename NPrivate::TCEvalRemoveTags<TCTags<tp_CTagsToRemove...>, TCTags<>, TCTags<tp_CTags...>>::CType;
+	};
 
 	template <typename ...tp_CTags, typename ...tp_CTagsToAdd>
 	struct TCAddTags<TCTags<tp_CTags...>, tp_CTagsToAdd...>
 	{
-		typedef TCTags<tp_CTags..., tp_CTagsToAdd...> CType;
+		using CType = TCTags<tp_CTags..., tp_CTagsToAdd...>;
 	};
 }

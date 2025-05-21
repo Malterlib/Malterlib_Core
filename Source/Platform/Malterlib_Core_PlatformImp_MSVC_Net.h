@@ -9,7 +9,7 @@
 
 #include "Malterlib_Core_PlatformImp_Net.h"
 
-typedef CRuntimeNetAddress CWindowsAddress;
+using CWindowsAddress = CRuntimeNetAddress;
 class CWindowsSocketContext;
 
 struct [[nodiscard]] CWindowsSocketContextThreadUseScope

@@ -28,8 +28,8 @@ namespace NMib
 		EDebugContractFailureAction_NotHandled,
 	};
 
-	typedef aint (FThreadProc)(void *_pContext);
-	
+	using FThreadProc = aint (void *_pContext);
+
 	namespace NCryptography
 	{
 		struct CUniversallyUniqueIdentifier;
@@ -170,11 +170,7 @@ namespace NMib
 		|	Description:		Should display a message telling the user that the program has probably		|
 		|						deadlocked and that the user can decide to create a crash dump.				|
 		\*_________________________________________________________________________________________________*/
-		typedef 
-		bool // Return true if the user choose to create a crash dump.
-		(FDeadlockUserNotify)
-		(
-		);
+		using FDeadlockUserNotify = bool (); // Return true if the user choose to create a crash dump.
 
 		
 		void fg_Debug_SetDeadlockNotifyFunction(FDeadlockUserNotify *_pCrashDumpUserNotify);
@@ -216,13 +212,17 @@ namespace NMib
 		|							false if execution should end											|
 		|																									|
 		\*_________________________________________________________________________________________________*/
-		typedef bool (FCrashDumpUserNotify)(const NMib::NStr::CStr &_CustomMessage,
-											const NMib::NStr::CStr &_ProgramName,
-											const NMib::NStr::CStr &_SupportEmail,
-											const NMib::NStr::CStr &_FileName,
-											const NMib::NStr::CStr &FileNameDumpMini,
-											const NMib::NStr::CStr &FileNameDump,
-											bool _bAllowContinue);
+		using FCrashDumpUserNotify = bool
+			(
+				NMib::NStr::CStr const &_CustomMessage
+				, NMib::NStr::CStr const &_ProgramName
+				, NMib::NStr::CStr const &_SupportEmail
+				, NMib::NStr::CStr const &_FileName
+				, NMib::NStr::CStr const &_FileNameDumpMini
+				, NMib::NStr::CStr const &_FileNameDump
+				, bool _bAllowContinue
+			)
+		;
 
 		void fg_Debug_SetCrashDumpUserNotifyFunction(FCrashDumpUserNotify *_pCrashDumpUserNotify);
 		void fg_Debug_SetCrashDumpUserNotifyFormats(NMib::NStr::CStrNonTracked const &_CustomMessage, NMib::NStr::CStrNonTracked const &_CanContinueMessage, NMib::NStr::CStrNonTracked const &_NoContinueMessage);

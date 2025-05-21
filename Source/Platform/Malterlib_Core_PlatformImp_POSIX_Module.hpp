@@ -30,7 +30,7 @@ using namespace NMib;
 // POSIX Dynamic Library Implementation
 // *************************************************************************************************************************
 
-typedef calling_convention_c void (FMalterlibLibraryFunc)();
+using FMalterlibLibraryFunc = void calling_convention_c ();
 
 namespace
 {
