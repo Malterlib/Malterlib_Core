@@ -307,9 +307,8 @@ namespace NMib
 
 		static inline_small fp64 fg_GetRandomFloatFullPrecision()
 		{
-			union
+			struct
 			{
-				uint64 m_RandomInt64;
 				uint32 m_Random[2];
 			} Random;
 
@@ -318,7 +317,9 @@ namespace NMib
 			Random.m_Random[0] = ThreadLocal.f_GetValue<uint32>();
 			Random.m_Random[1] = ThreadLocal.f_GetValue<uint32>();
 
-			return fp64(pfp64(Random.m_RandomInt64)) / fp64(pfp64(TCLimitsInt<uint64>::mc_Max));
+			uint64 RandomInt64 = fg_BitCast<uint64>(Random);
+
+			return fp64(pfp64(RandomInt64)) / fp64(pfp64(TCLimitsInt<uint64>::mc_Max));
 		}
 
 

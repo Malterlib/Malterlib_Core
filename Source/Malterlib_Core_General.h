@@ -5,6 +5,8 @@
 
 #include <Mib/Core/Core>
 
+#include <bit>
+
 // New override
 
 namespace NMib
@@ -699,6 +701,12 @@ namespace NMib
 		_Right = fg_Move(Temp);
 	}
 
+
+	template <typename t_CTo, typename t_CFrom>
+	constexpr static inline_small t_CTo fg_BitCast(t_CFrom const &_From)
+	{
+		return std::bit_cast<t_CTo>(_From);
+	}
 
 	template <typename t_CType>
 	mark_nodebug inline_always_debug t_CType *fg_NullPtr()
