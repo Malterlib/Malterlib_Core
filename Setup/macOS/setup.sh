@@ -118,14 +118,7 @@ UpdateDependencies()
 		brew upgrade
 	fi
 
-	brew install cmake go graphviz ruby ninja git git-lfs zstd
-
-	export PATH="`brew --prefix ruby`/bin:$PATH"
-
-	gem install xcpretty
-	gem update --system
-
-	ln -f -s `brew --prefix ruby`/bin/xcpretty `brew --prefix`/bin/xcpretty
+	brew install cmake go graphviz ninja git git-lfs zstd xcbeautify
 }
 
 UpdateXcodePlugins()

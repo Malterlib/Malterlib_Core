@@ -363,7 +363,6 @@ while true; do
 		OutputInfo '[Generating]'
 		./mib generate Tests
 		source BuildSystem/SharedBuildSettings.sh
-		export MalterlibXCPrettyOptions="-t"
 		OutputTime
 
 		OutputInfo '[Building]'

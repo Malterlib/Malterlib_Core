@@ -253,7 +253,7 @@ Property
 											`		mkdir -p \`dirname "$TempFile"\`\r\n`\
 											`	fi\r\n`\
 											`	export LC_CTYPE="en_US.UTF-8"\r\n`\
-											`	if ! xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs "$@@" | tee "$TempFile" | xcpretty --color $MalterlibXCPrettyOptions; then\r\n`\
+											`	if ! xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs "$@@" | tee "$TempFile" | xcbeautify $MalterlibXCBeautifyOptions; then\r\n`\
 											`		if [[ "$MalterlibBuildLogFile" != "" ]]; then\r\n`\
 											`			echo "error: Build failed. See log file: $MalterlibBuildLogFile"\r\n`\
 											`		else\r\n`\
