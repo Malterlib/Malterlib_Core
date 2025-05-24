@@ -31,7 +31,7 @@ using pfp64 = double;
 #define DMibPCanDo_fp64
 static_assert(sizeof(pfp64)*8 == 64, "fp64 not supported");
 
-#if !defined(DCompiler_MSVC) && !defined(DCompiler_clang_cl) && (defined(DArchitecture_x86) || defined(DArchitecture_x64))
+#if !defined(DCompiler_MSVC) && !defined(DCompiler_clang_cl) && __LDBL_MANT_DIG__ == 64
 using pfp80 = long double;
 #define DMibPCanDo_fp80
 static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
