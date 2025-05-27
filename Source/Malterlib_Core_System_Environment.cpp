@@ -32,12 +32,30 @@ namespace NMib
 				
 				m_ProtectedEnvironment["MalterlibProtectedEnvironment"] = ToProtect;
 			}
-			
+
+			void f_PrepareFork() override
+			{
+				m_Lock.f_Lock();
+				m_Lock.f_PrepareFork();
+			}
+
+			void f_ForkedParent() override
+			{
+				m_Lock.f_ForkedParent();
+				m_Lock.f_Unlock();
+			}
+
+			void f_ForkedChild() override
+			{
+				m_Lock.f_ForkedChild();
+				m_Lock.f_Unlock();
+			}
+
 			NThread::CMutualManyRead m_Lock;
 			CSystemEnvironment m_Environment;
 			CSystemEnvironment m_ProtectedEnvironment;
 		};
-		
+
 		constinit TCSubSystem<CSubSystem_Core_Environment, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Environment = {DAggregateInit};
 	}
 	
