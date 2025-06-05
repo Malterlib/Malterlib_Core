@@ -1156,6 +1156,7 @@ Compile
 	Warnings_VariableLengthArray: bool?
 	Warnings_MainDefinition: bool?
 	Warnings_MissingCommaVariadicParam: bool?
+	Warnings_NonTrivialMemCall: bool?
 
 	Warnings_MainDefinition false
 	{

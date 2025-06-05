@@ -994,4 +994,13 @@ GeneratorSetting
 		)
 		, Type: "unique"
 	}
+
+	Compile_Warnings_NonTrivialMemCall =+ {
+		Flags: Compile.Warnings_NonTrivialMemCall->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-nontrivial-memcall"]
+			, true, ["-Wnontrivial-memcall"]
+		)
+		, Type: "unique"
+	}
 }
