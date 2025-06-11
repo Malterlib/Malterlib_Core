@@ -18,10 +18,10 @@
 		"Hash": "d6bb207f34d76d3dfc568582c30c11326bc550de"
 	},
 	"../../Binaries/Malterlib/macOS/arm64": {
-		"Hash": "ea022f0958b05e78b0d0e50d3d6a6278ad06e085"
+		"Hash": "d9a94c4d98b5cffa3e611a50db5099055de339ff"
 	},
 	"../../Binaries/Malterlib/macOS/x64": {
-		"Hash": "a43f39b7b931ad7b56e90d1d753431ed14c41978"
+		"Hash": "42efcfa8b0e89df26358f9ea414cdbc053add332"
 	},
 	"../../Binaries/MalterlibLLVM/Linux/arm64": {
 		"Hash": "d37ce53effb3605fbbc1c83399fd25fc691f1419"
@@ -75,7 +75,7 @@
 		"Hash": "2d3bafb6c792cea6a4de5f85c93dec7fe8709c49"
 	},
 	"../BuildSystem": {
-		"Hash": "daa332873fd8729471eb9c47dee48ab7e8bdf114"
+		"Hash": "c6d822c836d4ea87c367069edb673030b4ca06c1"
 	},
 	"../Cloud": {
 		"Hash": "3414f559f20cabcb716d66cb755fc6af85ae3f58"
