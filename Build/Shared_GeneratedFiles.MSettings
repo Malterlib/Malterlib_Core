@@ -232,6 +232,13 @@ Property
 
 	MalterlibUseXCodeBuild: bool = false
 
+	MalterlibXCBeautifyOptions: string = "--preserve-unbeautified"
+
+	SharedBuildSettingsScriptContents =+	`export MalterlibXCBeautifyOptions=${MalterlibXCBeautifyOptions:-@(MalterlibXCBeautifyOptions)}\r\n`
+	{
+		!!HostPlatformFamily "macOS"
+	}
+
 	SharedBuildSettingsScriptContents =+	`export XCodeBuildTool="xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs"\r\n`
 	{
 		&
