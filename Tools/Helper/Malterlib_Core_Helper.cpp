@@ -324,6 +324,8 @@ int main(int _nArgs, char *_Arguments[])
 			return 1;
 		}
 
+		_Arguments[0] = (char *)pExecutableToLaunch;
+
 		for (int i = 2; i < _nArgs; ++i)
 			_Arguments[i - 1] = _Arguments[i];
 		_Arguments[_nArgs - 1] = nullptr;
