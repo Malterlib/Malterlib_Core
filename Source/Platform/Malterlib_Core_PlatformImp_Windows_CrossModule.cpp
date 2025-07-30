@@ -85,9 +85,9 @@ namespace NMib::NThread::NPlatform
 			for (mint i = 0; i < sizeof(mint) * 8; ++i)
 			{
 				if (Pointer & (mint(1) << i))
-					DeleteAtom(FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MalterlibCrossModuleAtom{}")) << i)));
+					DeleteAtom(FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << i)));
 			}
-			DeleteAtom(FindAtomW(str_utf16("MalterlibCrossModuleAtom")));
+			DeleteAtom(FindAtomW(str_utf16("MibCrossModuleAtom")));
 
 			CWindowsCrossModuleProcessInfo::ms_pThis->~CWindowsCrossModuleProcessInfo();
 			HeapFree(GetProcessHeap(), 0, CWindowsCrossModuleProcessInfo::ms_pThis);
