@@ -329,6 +329,35 @@ Property
 	}
 }
 
+%GenerateFile ["Malterlib", "MalterlibLLVM"]->Unique()
+{
+	GenerateFile
+	{
+		Name `../../Binaries/@(this.Identity)/HostPlatformArchitecture`->MakeAbsolute()
+		Contents `@(HostPlatformFamily)/@(HostArchitecture)`
+		Executable false
+		UnixLineEnds true
+		UnicodeBOM false
+		Symlink true
+		BeforeImports true
+		SymlinkDirectory true
+		SymlinkBasePath `../../Binaries/@(this.Identity)`->MakeAbsolute()
+	}
+}
+
+%GenerateFile ["Malterlib", "MalterlibLLVM"]
+{
+	GenerateFile
+	{
+		Name `../../Binaries/@(this.Identity)/.gitignore`->MakeAbsolute()
+		Contents "/HostPlatformArchitecture\n"
+		Executable false
+		UnixLineEnds true
+		UnicodeBOM false
+		BeforeImports true
+	}
+}
+
 %GenerateFile "mib"
 {
 	!true "."->FindFilesIn("mib")->IsEmpty()

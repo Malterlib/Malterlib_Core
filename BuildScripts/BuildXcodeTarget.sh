@@ -14,33 +14,15 @@ source ./BuildSystem/SharedBuildSettings.sh
 
 export "PATH=/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:$PATH"
 
-Workspace="$1"
-Target="$2"
-Platform="$3"
-Architecture="$4"
-Config="$5"
+Workspace="${1:-Tests}"
+Target="${2:-Build All}"
+Platform="${3:-$HostPlatform}"
+Architecture="${4:-$HostArchitecture}"
+Config="${5:-Debug}"
+BuildSystemDir="${6:-BuildSystem/Default}"
 
-if [[ "$Workspace" == "" ]]; then
-	Workspace="Tests"
-fi
-
-if [[ "$Target" == "" ]]; then
-	Target="Build All"
-fi
-
-if [[ "$Platform" == "" ]]; then
-	Platform="$HostPlatform"
-fi
-
-if [[ "$Architecture" == "" ]]; then
-	Architecture="$HostArchitecture"
-fi
-
-if [[ "$Config" == "" ]]; then
-	Config="Debug"
-fi
-
-$XCodeBuildTool -workspace "BuildSystem/Default/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
+echo $XCodeBuildTool -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
+$XCodeBuildTool -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
 
 exit 0
 

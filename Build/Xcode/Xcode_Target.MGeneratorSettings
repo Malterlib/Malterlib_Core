@@ -73,6 +73,10 @@ GeneratorSetting
 
 GeneratorSetting
 {
+	Target_IDEDebugPriority {}
+	{
+		!!GeneratorSetting.Target_IDEDebugPriority undefined
+	}
 	Target_ObjectLibrary {}
 	{
 		!!GeneratorSetting.Target_ObjectLibrary undefined

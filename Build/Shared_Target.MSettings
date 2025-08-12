@@ -270,6 +270,7 @@ Target
 	EnableModuleDebugging false
 
 	GenerateScheme: bool
+	IDEDebugPriority: int = 100 // Used for selecting the default debug target in IDEs. Higher value is higher priority
 
 	GenerateScheme MalterlibGenerateScheme
 	{

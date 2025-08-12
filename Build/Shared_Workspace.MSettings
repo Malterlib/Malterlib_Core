@@ -24,4 +24,30 @@ Workspace
 
 	IntermediateDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Int`
 	OutputDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Out`
+
+	IDEDefaultBuildTarget: string? // Used to specify the default build target to use in IDEs. Default is to build all targets.
+	IDEDefaultDebugTargets: [string] = [] // Used to specify the default debug targets to use in IDEs. Overrides Target.IDEDebugPriority.
+	IDEPriority: int = 100 // Priority used to select the default workspace in IDEs
+
+	ConfigurationPriority: int = 100 // Priority used to select the default configuration in IDEs
+
+	ConfigurationPriority 100
+	{
+		!!Workspace.ConfigurationPriority undefined
+	}
+
+	ConfigurationPriority Workspace.ConfigurationPriority + 100
+	{
+		!!PlatformFamily HostPlatformFamily
+	}
+
+	ConfigurationPriority Workspace.ConfigurationPriority + 10
+	{
+		!!Architecture HostArchitecture
+	}
+
+	ConfigurationPriority Workspace.ConfigurationPriority + 1
+	{
+		!!Configuration "Debug"
+	}
 }

@@ -12,29 +12,11 @@ source "$DIR/DetectSystem.sh"
 
 source ./BuildSystem/SharedBuildSettings.sh
 
-Workspace="$1"
-Platform="$2"
-Architecture="$3"
-
-# Remove quotes around config if they exist.
-Config="${4%\"}"
-Config="${Config#\"}"
-
-if [[ "$Workspace" == "" ]]; then
-	Workspace="Tests"
-fi
-
-if [[ "$Platform" == "" ]]; then
-	Platform="$HostPlatform"
-fi
-
-if [[ "$Architecture" == "" ]]; then
-	Architecture="$HostArchitecture"
-fi
-
-if [[ "$Config" == "" ]]; then
-	Config="Debug"
-fi
+Workspace="${1:-Tests}"
+Platform="${2:-$HostPlatform}"
+Architecture="${3:-$HostArchitecture}"
+Config="${4:-Debug}"
+BuildSystemDir="${5:-BuildSystem/Default}"
 
 ExtraParams=
 if [[ "$MalterlibMSBuildBuildMaxParallelProjects" != "" ]]; then
@@ -43,7 +25,7 @@ else
 	ExtraParams="-m"
 fi
 
-echo CallDirect msbuild.exe "\"BuildSystem/Default/${Workspace}.sln"\" /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
-CallDirect msbuild.exe "\"BuildSystem/Default/${Workspace}.sln"\" /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
+echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\" /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
+CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\" /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
 
 exit 0

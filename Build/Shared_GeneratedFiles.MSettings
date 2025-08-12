@@ -528,9 +528,221 @@ Property
 	}
 }
 
+Property
+{
+	MalterlibGeneratorIDEPriority: int = 100
+	MalterlibGeneratorIDEPriority 100
+	{
+		!!MalterlibGeneratorIDEPriority undefined
+	}
+
+	MalterlibGeneratorIDEPriority MalterlibGeneratorIDEPriority + 100
+	{
+		!!BuildSystemOutputDir->GetFile() "Default"
+	}
+}
+
+%Group "~Automatic/WorkspaceConfigStore"
+{
+	GenerateFile
+	{
+		UnicodeBOM false
+		UnixLineEnds true
+		Executable false
+	}
+
+	%GenerateFile "Generator"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/Generator.json`
+
+			Contents {
+				generator: Generator
+				, generatorFamily: GeneratorFamily
+				, outputDir: BuildSystemOutputDir
+				, buildSystemFile: BuildSystemFile
+				, buildSystemBasePath: BuildSystemBasePath
+				, priority: MalterlibGeneratorIDEPriority
+			}->ToString()
+		}
+	}
+
+	%GenerateFile "Workspace"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Workspace.json`
+
+			Contents {
+				name: Workspace:this.Identity
+				, priority: Workspace.IDEPriority
+			}->ToString()
+		}
+	}
+
+	%GenerateFile "BuildWorkspace"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/BuildWorkspace.sh`
+
+			Contents `#!/bin/bash\n`\
+			`\n`\
+			`set -e\n`\
+			`export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer github-actions --preserve-unbeautified"}"\n`\
+			`\n`
+
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeWorkspace.sh" "$@@"\n`
+			{
+				!!GeneratorFamily "Xcode"
+			}
+
+			Executable true
+		}
+	}
+
+	%GenerateFile "BuildTarget"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/BuildTarget.sh`
+
+			Contents `#!/bin/bash\n`\
+			`\n`\
+			`set -e\n`\
+			`export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer github-actions --preserve-unbeautified"}"\n`\
+			`\n`
+
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeTarget.sh" "$@@"\n`
+			{
+				!!GeneratorFamily "Xcode"
+			}
+
+			Executable true
+		}
+	}
+}
+
+%Group "~Automatic/TargetConfigStore"
+{
+	GenerateFile
+	{
+		UnicodeBOM false
+		UnixLineEnds true
+		Executable false
+	}
+
+	%GenerateFile "Target"
+	{
+		!!Target.GenerateScheme true
+
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name).json`
+
+			Contents {
+				name: Target:this.Identity
+			}->ToString()
+		}
+	}
+
+	%GenerateFile "WorkspaceDebugTargets"
+	{
+		!!Target.GenerateScheme true
+
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name).json`
+
+			Contents {
+				name: Target:this.Identity
+			}->ToString()
+		}
+	}
+
+	%GenerateFile "WorkspaceConfigurations"
+	{
+		!!Target.GenerateScheme true
+
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Configs/@(Platform) @(Architecture) @(FullConfiguration).json`
+
+			ContentsJson: any = {}
+
+			ContentsJson {
+				defaultDebugTargets: Workspace.IDEDefaultDebugTargets
+				, configurationPriority: Workspace.ConfigurationPriority
+				, platform: Platform
+				, architecture: Architecture
+				, configuration: FullConfiguration
+			}
+
+			ContentsJson #<defaultBuildTarget> Workspace.IDEDefaultBuildTarget
+			{
+				!Workspace.IDEDefaultBuildTarget undefined
+			}
+
+			Contents GenerateFile.ContentsJson->ToString()
+		}
+	}
+
+	%GenerateFile "TargetConfigurations"
+	{
+		!!Target.GenerateScheme true
+
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name)/Configs/@(Platform) @(Architecture) @(FullConfiguration).json`
+
+			ContentsJson: any = {}
+
+			ContentsJson {
+				platform: Platform
+				, architecture: Architecture
+				, configuration: FullConfiguration
+				, debugPriority: Target.IDEDebugPriority
+			}
+
+			ContentsJson #<localDebuggerCommand> Target.LocalDebuggerCommand
+			{
+				!Target.LocalDebuggerCommand undefined
+			}
+
+			ContentsJson #<remoteDebuggerCommand> Target.RemoteDebuggerCommand
+			{
+				!Target.RemoteDebuggerCommand undefined
+			}
+
+			ContentsJson #<localDebuggerWorkingDirectory> Target.LocalDebuggerWorkingDirectory
+			{
+				!Target.LocalDebuggerWorkingDirectory undefined
+			}
+
+			ContentsJson #<remoteDebuggerWorkingDirectory> Target.RemoteDebuggerWorkingDirectory
+			{
+				!Target.RemoteDebuggerWorkingDirectory undefined
+			}
+
+			ContentsJson #<debuggerCommandArguments> Target.DebuggerCommandArguments
+			{
+				!Target.DebuggerCommandArguments undefined
+			}
+
+			Contents GenerateFile.ContentsJson->ToString()
+		}
+	}
+}
+
 Workspace
 {
-	ExtraGroups =+ ["~Automatic/WorkspaceLastBuild", "~Automatic/WorkspaceBranchLastBuild"]
+	ExtraGroups =+ ["~Automatic/WorkspaceLastBuild", "~Automatic/WorkspaceBranchLastBuild", "~Automatic/WorkspaceConfigStore"]
+}
+
+Target
+{
+	ExtraGroups =+ ["~Automatic/TargetConfigStore"]
 }
 
 Property
