@@ -1001,7 +1001,7 @@ Compile
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)BuildMetadata.cpp`
 
-			Contents	`#include <Mib/Core/Core>\n\n`\
+			Contents	`#include <Mib/Core/BuildMetaData>\n\n`\
 						`namespace NMib::NSys\n`\
 						`{\n`
 
