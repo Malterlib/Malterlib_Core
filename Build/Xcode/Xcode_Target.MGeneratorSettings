@@ -77,6 +77,22 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Target_IDEDebugPriority undefined
 	}
+	Target_AllFiles_C {}
+	{
+		!!GeneratorSetting.Target_AllFiles_C undefined
+	}
+	Target_AllFiles_C\+\+ {}
+	{
+		!!GeneratorSetting.Target_AllFiles_C\+\+ undefined
+	}
+	Target_AllFiles_ObjC {}
+	{
+		!!GeneratorSetting.Target_AllFiles_ObjC undefined
+	}
+	Target_AllFiles_ObjC\+\+ {}
+	{
+		!!GeneratorSetting.Target_AllFiles_ObjC\+\+ undefined
+	}
 	Target_ObjectLibrary {}
 	{
 		!!GeneratorSetting.Target_ObjectLibrary undefined

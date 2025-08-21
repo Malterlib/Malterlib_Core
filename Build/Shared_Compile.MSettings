@@ -1125,7 +1125,7 @@ Property
 			Target.CLRSupport true
 		}
 	}
-	
+
 	MalterlibAlwaysUseLongWindowsPaths: bool = false
 	MalterlibCustomConcurrentCompile: int?
 
@@ -1678,7 +1678,7 @@ Compile
 			PlatformType "Windows"
 			Target.PlatformToolset "ClangCL"
 		}
-	}	
+	}
 
 	ExtraCompilerFlags =+ `/MP@(MalterlibCustomConcurrentCompile->ToString())`
 	{
@@ -1769,7 +1769,7 @@ Compile
 			Compile.Sanitize_Address true
 		}
 	}
-	
+
 	ExtraCompilerFlags += ["-Xclang", "-O0"]
 	{
 		&
@@ -1790,7 +1790,6 @@ Compile
 			{
 				Compile.Type "C++"
 			}
-			Target.PlatformToolset "ClangCL"
 		}
 	}
 
@@ -2541,7 +2540,7 @@ Compile
 	ExtraCompilerFlags =+ "/Zc:__cplusplus"
 	{
 		!!PlatformFamily "Windows"
-	}	
+	}
 
 	ExtraCompilerFlags =+ "/utf-8"
 	{
@@ -2646,7 +2645,7 @@ Compile
 			!Target.VisualStudioPlatform "Clang"
 		}
 	}
-	
+
 	SupportJustMyCode: bool = false
 	{
 		!!PlatformFamily "Windows"
