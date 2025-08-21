@@ -1,27 +1,27 @@
 {
 	"../../Binaries/Malterlib/Linux/arm64": {
-		"Hash": "ebcc9277361882e46f8769d9f3f3595c9c4e5de3"
+		"Hash": "7b7d70d0aec9499f178419a5bccc397a7046c579"
 	},
 	"../../Binaries/Malterlib/Linux/x64": {
-		"Hash": "0e51aa2ada2c07e031cc43494318a07a9ddef226"
+		"Hash": "4fdb8f336e7ee2f2cff5ddc94f592255ef16957f"
 	},
 	"../../Binaries/Malterlib/Linux/x86": {
-		"Hash": "346635a59d55e6de56d7bb6a9f705fc02a07cac4"
+		"Hash": "1a13ea766065feaaebc14cbe3c17e72da2d8cfca"
 	},
 	"../../Binaries/Malterlib/Windows/arm64": {
-		"Hash": "2331bfd0cb8975e802bb5a6ab374fe906c101940"
+		"Hash": "06d11c7d09315e07fe28a8efba509a10fe71cf7b"
 	},
 	"../../Binaries/Malterlib/Windows/x64": {
-		"Hash": "297a9e21bc1ddff8d9764d9d67585a25554b8a50"
+		"Hash": "624e3a94d8dfc94074ea725b074c64df6ab34e4c"
 	},
 	"../../Binaries/Malterlib/Windows/x86": {
-		"Hash": "d6bb207f34d76d3dfc568582c30c11326bc550de"
+		"Hash": "e38aa98a3d47b5faaed949f6e5a2eac2c1f2ceae"
 	},
 	"../../Binaries/Malterlib/macOS/arm64": {
-		"Hash": "d9a94c4d98b5cffa3e611a50db5099055de339ff"
+		"Hash": "0932bf81f999708dd55dc6ac75b566b1b0d3af74"
 	},
 	"../../Binaries/Malterlib/macOS/x64": {
-		"Hash": "42efcfa8b0e89df26358f9ea414cdbc053add332"
+		"Hash": "abee6cc606b6f8ccbfb4c323c858cf605f3b2373"
 	},
 	"../../Binaries/MalterlibLLVM/Linux/arm64": {
 		"Hash": "d37ce53effb3605fbbc1c83399fd25fc691f1419"
@@ -39,7 +39,7 @@
 		"Hash": "d4b36e5437abba7f2efb27bc415a87a5e5d1a5f2"
 	},
 	"../../Binaries/MalterlibLLVM/macOS/arm64": {
-		"Hash": "0c05e7298fd144b417ce44da3deba9a7cbd112c2"
+		"Hash": "6294537f879140f0a2644a6b73ebdcf0f09a20d8"
 	},
 	"../../Binaries/MalterlibLLVM/macOS/x64": {
 		"Hash": "2f88943d3f8f756618612eabe594008f3c9ece93"
@@ -198,7 +198,7 @@
 		"Hash": "a09289500150a31a07cd77506dc41ffc1caf8e4a"
 	},
 	"../Test": {
-		"Hash": "5ce8235a6cae8ba67b4d7ea0857088c16ab2775e"
+		"Hash": "8849da2bef7c6394b75e79f66062649fa5f4de0f"
 	},
 	"../Thread": {
 		"Hash": "1d6ecc6a3fa9382d91b77537f9ef0abeb2d87c6c"
@@ -216,7 +216,7 @@
 		"Hash": "3213a0219d06a2b461c38216091ba2b7c4ae8031"
 	},
 	"../Web": {
-		"Hash": "58057f21b1014c7fae29c6c107ff894603f77ef6"
+		"Hash": "b576ec1744f61079a113256d9256b567e46ee5f0"
 	},
 	"../WebApp": {
 		"Hash": "42ec9665a81106a1dd6b9ac62ba16b0e206a86b4"
