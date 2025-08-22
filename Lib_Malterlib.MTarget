@@ -765,7 +765,7 @@ Property
 					Compile
 					{
 						!!CompileDialect "C"
-						
+
 						FullEval true
 
 						SearchPath += `@(VisualStudioCRTPath->MakeAbsolute())/vcruntime`
@@ -992,7 +992,7 @@ Compile
 			{
 				!f_ExpandTags "			"
 			}
-			
+
 			f_ExpandTags =+ `@(_Tag->Escape())\n`
 		}
 
@@ -1014,7 +1014,7 @@ Compile
 						{
 							!MalterlibCloudVersionInfo_Tags->Length() 0
 						}
-			
+
 			Contents =+ `	CBuildMetadata fg_GetBuildMetadata()\n`\
 						`	{\n`\
 						`		return\n`\
@@ -1654,9 +1654,6 @@ Property
 		Type "ConsoleExecutable"
 		Group "Malterlib"
 		GenerateScheme false
-		{
-			!!GeneratorFamily "Xcode"
-		}
 		LDFlags =+ "-nostdlib++"
 		{
 			&

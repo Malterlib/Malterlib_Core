@@ -170,7 +170,7 @@ Property
 					PlatformFamily "Linux"
 				}
 			}
-			
+
 			LinkWithLibraries_Contents: string?
 			LinkWithLibraries_Contents fg_RecursiveStringArrayToCommandLine(
 				Concat(
@@ -297,9 +297,6 @@ Property
 		Name "Exe_Malterlib_Export_Exe"
 		Type "ConsoleExecutable"
 		GenerateScheme true
-		{
-			!!GeneratorFamily "Xcode"
-		}
 	}
 	%Dependency "Lib_Malterlib"
 
@@ -316,9 +313,6 @@ Property
 		Name "Exe_Malterlib_Export_NoExe"
 		Type "ConsoleExecutable"
 		GenerateScheme true
-		{
-			!!GeneratorFamily "Xcode"
-		}
 	}
 	%Dependency "Lib_Malterlib"
 
@@ -336,9 +330,6 @@ Property
 		Name "Dll_Malterlib_Export_Dll"
 		Type "DynamicLibrary"
 		GenerateScheme true
-		{
-			!!GeneratorFamily "Xcode"
-		}
 	}
 	%Dependency "Lib_Malterlib"
 
@@ -351,7 +342,7 @@ Property
 %Workspace "Malterlib_Export"
 {
 	!!MalterlibExportEnable true
-	
+
 	Property.MalterlibXcodeObjectsDirectory "Objects-normal"
 
 	%Target "Lib_Malterlib_Export_Exe"

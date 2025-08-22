@@ -7,6 +7,14 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Target_Group undefined
 	}
+	Target_GenerateScheme {}
+	{
+		!!GeneratorSetting.Target_GenerateScheme undefined
+	}
+	Target_IDEDebugPriority {}
+	{
+		!!GeneratorSetting.Target_IDEDebugPriority undefined
+	}
 	Target_VisualStudioPlatform {}
 	{
 		!!GeneratorSetting.Target_VisualStudioPlatform undefined

@@ -264,13 +264,9 @@ Property.MalterlibGenerateScheme: bool = true
 
 Target
 {
-	!!GeneratorFamily "Xcode"
-
-	EnableModuleDebugging: bool?
-	EnableModuleDebugging false
+	IDEDebugPriority: int = 100 // Used for selecting the default debug target in IDEs. Higher value is higher priority
 
 	GenerateScheme: bool
-	IDEDebugPriority: int = 100 // Used for selecting the default debug target in IDEs. Higher value is higher priority
 
 	GenerateScheme MalterlibGenerateScheme
 	{
@@ -294,6 +290,14 @@ Target
 	{
 		!!Target.GenerateScheme undefined
 	}
+}
+
+Target
+{
+	!!GeneratorFamily "Xcode"
+
+	EnableModuleDebugging: bool?
+	EnableModuleDebugging false
 }
 
 Target
@@ -3109,7 +3113,7 @@ Property
 	{
 		!!DebugCode true
 	}
-	
+
 	MalterlibLLVMSanitizerRuntime VisualStudioMSVCRootPath / MalterlibMSVCVersion / `bin/Host@(Architecture)/@(Architecture)/clang_rt.asan@(MSVCDebugType)_dynamic-@(MSVCSanitizerArchitecture).dll`
 	{
 		&
@@ -3957,7 +3961,7 @@ Property
 		!!LanguageFamily "Native"
 
 		ExtraLinkerFlags =+ `/MANIFESTINPUT:@(GeneratedDirectory)WindowsManifest.manifest`
-	}	
+	}
 }
 
 Target
@@ -4029,7 +4033,7 @@ Property
 	{
 		!!MalterlibReadElfProgram undefined
 	}
-	
+
 	MalterlibStripOptions: [string] = []
 
 	MalterlibStripOptions =+ ["-u", "-r"]
@@ -4293,7 +4297,7 @@ Property
 		Contents	`#include <Mib/Core/Core>\n`\
 					`\n`\
 					`#pragma section(".repo", read)\n`\
-					`\n`\					
+					`\n`\
 					`extern "C" __declspec(allocate(".repo")) assure_used __declspec(selectany) ch8 const g_Malterlib_RepoInfo[] = @(RepoDebugInfo->ChunkString(16000)->ForEach(&f_OutputCppStringChunk));\n`
 		UnicodeBOM false
 	}

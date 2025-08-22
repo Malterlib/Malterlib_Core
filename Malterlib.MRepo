@@ -78,7 +78,7 @@
 		"Hash": "f51a76ee1454244cb1989d2f09ccc8fffc462f54"
 	},
 	"../Cloud": {
-		"Hash": "ec268f16da2bb47f368b84f38b5799c064b05850"
+		"Hash": "f81a911dec8e6b7a7107cfd317524c8425175154"
 	},
 	"../CommandLine": {
 		"Hash": "b7c9bd929ac2ba33ce2052c4e65537224538802d"
@@ -150,7 +150,7 @@
 		"Hash": "98e3b57a0d4432b555f5f3ed27dff587f720c58d"
 	},
 	"../Memory": {
-		"Hash": "be28e9d7504ea0cf8d078bd0d6771a57bc647572"
+		"Hash": "6234d1491a5854681133b7cccf31e7d1b0703c4d"
 	},
 	"../Meta": {
 		"Hash": "90131df6ff69049086ac2623d8f169ddb6cef51b"
