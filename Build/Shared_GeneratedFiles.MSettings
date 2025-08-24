@@ -592,7 +592,7 @@ Property
 			Contents `#!/bin/bash\n`\
 			`\n`\
 			`set -e\n`\
-			`export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer github-actions --preserve-unbeautified"}"\n`\
+			`export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
 			`\n`
 
 			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeWorkspace.sh" "$@@"\n`
@@ -613,7 +613,7 @@ Property
 			Contents `#!/bin/bash\n`\
 			`\n`\
 			`set -e\n`\
-			`export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer github-actions --preserve-unbeautified"}"\n`\
+			`export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
 			`\n`
 
 			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeTarget.sh" "$@@"\n`
