@@ -504,13 +504,17 @@ Property
 	{
 		!!CompileDialect "C"
 
-		SearchPath += "../../External/llvm-project/libcxx/src"->MakeAbsolute()
+		SearchPath += [
+			"../../External/llvm-project/libcxx/src"->MakeAbsolute()
+			, "../../External/llvm-project/libc"->MakeAbsolute()
+		]
 		{
 			&
 			{
 				MalterlibUseStaticLibCxx true
 			}
 		}
+
 
 		Analyzer false
 	}
