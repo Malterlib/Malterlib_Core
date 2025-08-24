@@ -478,4 +478,27 @@ Property
 	{
 		!ClangForWindows_Enabled undefined
 	}
+
+	BuildSystemFullConfiguration: string
+	BuildSystemFullConfiguration Configuration
+
+	ExtraConfigurations: [string] = []
+
+	ExtraConfigurations =+ "Tests"
+	{
+		!Tests undefined
+	}
+
+	ExtraConfigurations =+ "Documentation"
+	{
+		!Documentation undefined
+	}
+
+	f_GetConfigValue function(string _ConfigName) [string]
+	f_GetConfigValue =+ @(_ConfigName)
+
+	BuildSystemFullConfiguration `@(BuildSystemFullConfiguration) (@(ExtraConfigurations->ForEach(&f_GetConfigValue)->Join(" ")))`
+	{
+		!ExtraConfigurations []
+	}
 }

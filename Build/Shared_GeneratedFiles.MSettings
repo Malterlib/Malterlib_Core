@@ -657,22 +657,6 @@ Target
 
 	%GenerateFile "Target"
 	{
-		!!Target.GenerateScheme true
-
-		GenerateFile
-		{
-			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name).json`
-
-			Contents {
-				name: Target:this.Identity
-			}->ToString()
-		}
-	}
-
-	%GenerateFile "WorkspaceDebugTargets"
-	{
-		!!Target.GenerateScheme true
-
 		GenerateFile
 		{
 			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name).json`
@@ -685,8 +669,6 @@ Target
 
 	%GenerateFile "WorkspaceConfigurations"
 	{
-		!!Target.GenerateScheme true
-
 		GenerateFile
 		{
 			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Configs/@(Platform) @(Architecture) @(FullConfiguration).json`
@@ -698,7 +680,7 @@ Target
 				, configurationPriority: Workspace.ConfigurationPriority
 				, platform: Platform
 				, architecture: Architecture
-				, configuration: FullConfiguration
+				, configuration: BuildSystemFullConfiguration
 			}
 
 			ContentsJson #<defaultBuildTarget> Workspace.IDEDefaultBuildTarget
@@ -712,8 +694,6 @@ Target
 
 	%GenerateFile "TargetConfigurations"
 	{
-		!!Target.GenerateScheme true
-
 		GenerateFile
 		{
 			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name)/Configs/@(Platform) @(Architecture) @(FullConfiguration).json`
@@ -723,8 +703,9 @@ Target
 			ContentsJson {
 				platform: Platform
 				, architecture: Architecture
-				, configuration: FullConfiguration
+				, configuration: BuildSystemFullConfiguration
 				, debugPriority: Target.IDEDebugPriority
+				, generateScheme: Target.GenerateScheme
 			}
 
 			ContentsJson #<localDebuggerCommand> Target.LocalDebuggerCommand
@@ -754,7 +735,11 @@ Target
 
 			ContentsJson #<compileCommands> `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name)/@(Platform) @(Architecture) @(FullConfiguration)/compile_commands.json`
 			{
-				!!GeneratorFamily "Xcode"
+				&
+				{
+					GeneratorFamily "Xcode"
+					!Target.Type "Tool"
+				}
 			}
 
 			Contents GenerateFile.ContentsJson->ToString()
@@ -774,19 +759,38 @@ Target
 		{
 			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name)/@(Platform) @(Architecture) @(FullConfiguration)/compile_commands.json`
 
+			XcodePlatformDir: string = Malterlib_MacOSDeveloperLocaction / "Platforms/MacOSX.platform"
+
 			f_GenerateDefine function(string _Define) [string] = []
 			f_GenerateDefine += `-D@(_Define)`
 
 			f_GenerateInclude function(string _Path) [string] = []
 			f_GenerateInclude += `-I@(_Path)`
 
+			f_GenerateFrameworkInclude function(string _Path) [string] = []
+			f_GenerateFrameworkInclude += `-F@(_Path->Replace("$(PLATFORM_DIR)", GenerateFile.XcodePlatformDir))`
+
 			f_GenerateCompileCommands function(string _File) [type(CCompileCommandsEntry)] = []
+			f_OptionalOption function(string _Option, string? _OptionValue) [string] = []
+			f_OptionalOption [_Option, _OptionValue]
+			{
+				!_OptionValue undefined
+			}
+
+			PlatformSpecificOptions: [string] = []
+			PlatformSpecificOptions =+ `-mmacosx-version-min=@(Compile.MinMacOSVersion->ToString())`
+			PlatformSpecificOptions =+ `-stdlib=@(Target.CxxStandardLibrary->ToString())`
 
 			f_GenerateCompileCommands =+ {
 				directory: BuildSystemBasePath
 				, file: GetProperty(&this.IdentityAsAbsolutePath, _File)
 				, arguments: [
 					PlatformToolsetCompiler
+					, "-target"
+					, GetProperty(&Compile.TargetTriple, _File)
+					, "-isysroot"
+					, ((PlatformFamily == "macOS") ? Import.SdkRoot_macOS : MalterlibSysRoot)
+					, GenerateFile.PlatformSpecificOptions...
 					, "-x"
 					, Compile.Type->SwitchWithError(
 						"Unknown compile type"
@@ -795,6 +799,15 @@ Target
 						, "ObjC", "objective-c"
 						, "ObjC++", "objective-c++"
 					)
+					, GetProperty(&Compile.DefaultHeaders, _File)->SwitchWithError(
+						"Unsupported option: "
+						, "None", ["-nostdinc"]
+						, "NoStdLib", ["-nostdlibinc"]
+						, "NoCompiler", ["-nobuiltininc"]
+						, "NoStdIncludeCxx", ["-nostdinc++"]
+						, "All", []
+						, undefined, []
+					)...
 					,
 					(
 						Compile.Type->SwitchWithError(
@@ -841,8 +854,13 @@ Target
 					)
 					, GetProperty(&Compile.PreprocessorDefines, _File)->ForEach(&GenerateFile.f_GenerateDefine)...
 					, GetProperty(&Compile.SearchPath, _File)->ForEach(&GenerateFile.f_GenerateInclude)...
-					, ((Compile.PrefixHeader <!=> undefined) ? ["-include", Compile.PrefixHeader] : [])...
+					, GetProperty(&Compile.FrameworkSearchPath, _File)->ForEach(&GenerateFile.f_GenerateFrameworkInclude)...
+					, GenerateFile.f_OptionalOption("-include", GetProperty(&Compile.PrefixHeader, _File))...
+					, "-Wno-inline-new-delete"
 				]
+			}
+			{
+				!GetProperty(&Compile.Disabled, _File) true
 			}
 
 			f_GetCompileCommandsForCompileType function(string _CompileType) [type(CCompileCommandsEntry)] = []
