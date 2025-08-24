@@ -116,6 +116,7 @@ Property
 	Repository
 	{
 		Type "Malterlib"
+		GitIgnoreType "GitIgnore"
 		Location RepoDir->MakeAbsolute()
 		URL `@(Repository.MalterlibRoot)/@(RepoName)`
 		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)

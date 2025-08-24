@@ -228,6 +228,11 @@ Repository
 		!!Repository.Type "External"
 	}
 
+	GitIgnoreType "CoreExcludesFile"
+	{
+		!!Repository.Type "Malterlib"
+	}
+
 	URL `@(Repository.ExternalRoot)/@(Repository.Identity).git`
 	{
 		&
