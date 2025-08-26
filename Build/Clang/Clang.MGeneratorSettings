@@ -222,6 +222,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_ObjectiveCExceptions =+ {
+		Flags: Compile.ObjectiveCExceptions->SwitchWithError(
+			"Unsupported option: "
+			, true, ["-fobjc-exceptions"]
+			, false, "-fno-objc-exceptions"
+		)
+		, Type: "unique"
+	}
+
 	Compile_ProvidedNewAligment =+ {
 		Flags: `-fnew-alignment=@(Compile.ProvidedNewAligment->ToString())`
 		, Type: "unique"
@@ -771,8 +780,17 @@ GeneratorSetting
 	Compile_Warnings_MisleadingIndentation =+ {
 		Flags: Compile.Warnings_MisleadingIndentation->SwitchWithError(
 			"Unsupported option: "
-			, false, "-Wmisleading-indentation"
-			, true, "-Wno-misleading-indentation"
+			, false, "-Wno-misleading-indentation"
+			, true, "-Wmisleading-indentation"
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_FormatSecurity =+ {
+		Flags: Compile.Warnings_FormatSecurity->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-format-security"
+			, true, "-Wformat-security"
 		)
 		, Type: "unique"
 	}

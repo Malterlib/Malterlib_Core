@@ -1157,6 +1157,7 @@ Compile
 	Warnings_MainDefinition: bool?
 	Warnings_MissingCommaVariadicParam: bool?
 	Warnings_NonTrivialMemCall: bool?
+	Warnings_FormatSecurity: bool?
 
 	Warnings_MainDefinition false
 	{
@@ -2996,6 +2997,8 @@ Compile
 			CompileDialect "C"
 		}
 	}
+
+	ObjectiveCExceptions: bool?
 
 	ObjectiveCARC: bool?
 	ObjectiveCARC false

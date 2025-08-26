@@ -451,6 +451,7 @@ GeneratorSetting
 
 	Compile_Warnings_IgnoredAttributes =+ GeneratorSetting.f_Helper_SetVSWarning("", "ignored-attributes", Compile.Warnings_IgnoredAttributes)
 	Compile_Warnings_MisleadingIndentation =+ GeneratorSetting.f_Helper_SetVSWarning("", "misleading-indentation", Compile.Warnings_MisleadingIndentation)
+	Compile_Warnings_FormatSecurity =+ GeneratorSetting.f_Helper_SetVSWarning("", "format-security", Compile.Warnings_MisleadingIndentation)
 	Compile_Warnings_VariableLengthArray =+ GeneratorSetting.f_Helper_SetVSWarning("", "vla-cxx-extension", Compile.Warnings_VariableLengthArray)
 	Compile_Warnings_Format =+ GeneratorSetting.f_Helper_SetVSWarning("", "format", Compile.Warnings_Format)
 	Compile_Warnings_MainDefinition =+ GeneratorSetting.f_Helper_SetVSWarning("", "main", Compile.Warnings_MainDefinition)
