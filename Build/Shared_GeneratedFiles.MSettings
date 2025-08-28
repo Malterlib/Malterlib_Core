@@ -708,6 +708,25 @@ Target
 				, generateScheme: Target.GenerateScheme
 			}
 
+			ContentsJson #<postCopyProject> Target:MalterlibPostCopyProject
+			{
+				!Target:MalterlibPostCopyProject undefined
+			}
+
+			ContentsJson #<postCopyProject2> Target:MalterlibPostCopyProject2
+			{
+				!Target:MalterlibPostCopyProject2 undefined
+			}
+
+			ContentsJson #<postCopyDestination> Target:MalterlibPostCopyDestination
+			{
+				&
+				{
+					!Target:MalterlibPostCopyProject undefined
+					!Target:MalterlibPostCopyDestination undefined
+				}
+			}
+
 			ContentsJson #<localDebuggerCommand> Target.LocalDebuggerCommand
 			{
 				!Target.LocalDebuggerCommand undefined

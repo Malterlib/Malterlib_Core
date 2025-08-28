@@ -2886,7 +2886,7 @@ Target
 		!Target.Type "SharedDynamicLibrary"
 	}
 
-	LocalDebuggerCommand `@(MalterlibDeployRoot)/@(MalterlibCalculatedPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)`
+	LocalDebuggerCommand MalterlibDeployRoot / MalterlibCalculatedPostCopyProject / MalterlibPostCopyDestination / `@(Target.FileName)@(Target.FileExtension)`
 	{
 		&
 		{
@@ -2895,7 +2895,7 @@ Target
 			!MalterlibPostCopyDestination ""
 		}
 	}
-	LocalDebuggerCommand `@(MalterlibDeployRoot)/@(MalterlibCalculatedPostCopyProject)/@(Target.FileName)@(Target.FileExtension)`
+	LocalDebuggerCommand MalterlibDeployRoot / MalterlibCalculatedPostCopyProject/ `@(Target.FileName)@(Target.FileExtension)`
 	{
 		&
 		{
@@ -2905,7 +2905,7 @@ Target
 		}
 	}
 
-	RemoteDebuggerCommand `@(MalterlibRemoteDeployDebugRoot)/@(MalterlibCalculatedPostCopyProject)/@(MalterlibPostCopyDestination)/@(Target.FileName)@(Target.FileExtension)`
+	RemoteDebuggerCommand MalterlibRemoteDeployDebugRoot / MalterlibCalculatedPostCopyProject / MalterlibPostCopyDestination / `@(Target.FileName)@(Target.FileExtension)`
 	{
 		&
 		{
@@ -2914,7 +2914,7 @@ Target
 			!MalterlibPostCopyDestination undefined
 		}
 	}
-	RemoteDebuggerCommand `@(MalterlibRemoteDeployDebugRoot)/@(MalterlibCalculatedPostCopyProject)/@(Target.FileName)@(Target.FileExtension)`
+	RemoteDebuggerCommand MalterlibRemoteDeployDebugRoot / MalterlibCalculatedPostCopyProject / `@(Target.FileName)@(Target.FileExtension)`
 	{
 		&
 		{
