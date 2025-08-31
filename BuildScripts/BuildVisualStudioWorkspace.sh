@@ -4,7 +4,7 @@
 
 # Usage: BuildVisualStudioWorkspace.sh Workspace Platform Architecture Configuration
 
-set -e
+set -eo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -25,7 +25,11 @@ else
 	ExtraParams="-m"
 fi
 
-echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\" /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
-CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\" /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
+echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\"  /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
+if ! CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\" "\"/consoleLoggerParameters:Verbosity=normal;ForceConsoleColor;NoSummary;ForceNoAlign;DisableConsoleColor;NoItemAndPropertyList\"" /nologo /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\"" 2>&1 | MTool MSBuildFilter; then
+	echo
+	echo "Build failed"
+	echo
+fi
 
 exit 0

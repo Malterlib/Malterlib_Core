@@ -592,12 +592,17 @@ Property
 			Contents `#!/bin/bash\n`\
 			`\n`\
 			`set -e\n`\
-			`export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
 			`\n`
 
-			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeWorkspace.sh" "$@@"\n`
+			Contents =+ `export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
+						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeWorkspace.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "Xcode"
+			}
+
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioWorkspace.sh" "$@@"\n`
+			{
+				!!GeneratorFamily "VisualStudio"
 			}
 
 			Executable true
@@ -613,12 +618,17 @@ Property
 			Contents `#!/bin/bash\n`\
 			`\n`\
 			`set -e\n`\
-			`export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
 			`\n`
 
-			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeTarget.sh" "$@@"\n`
+			Contents =+ `export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
+						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeTarget.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "Xcode"
+			}
+
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioTarget.sh" "$@@"\n`
+			{
+				!!GeneratorFamily "VisualStudio"
 			}
 
 			Executable true
@@ -698,6 +708,12 @@ Target
 		{
 			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name)/Configs/@(Platform) @(Architecture) @(FullConfiguration).json`
 
+			f_GetGroupPath function(string _Entity) string = ""
+			f_GetGroupPath GenerateFile.f_GetGroupPath / _Entity->RemovePrefix("Group:")
+			{
+				!!_Entity->StartsWith("Group:") true
+			}
+
 			ContentsJson: any = {}
 
 			ContentsJson {
@@ -706,6 +722,16 @@ Target
 				, configuration: BuildSystemFullConfiguration
 				, debugPriority: Target.IDEDebugPriority
 				, generateScheme: Target.GenerateScheme
+			}
+
+			ContentsJson #<targetName> (Target:this.EntityPath->Split("->")->ForEach(&GenerateFile.f_GetGroupPath) / Target:Target.Name)->WindowsPath()
+			{
+				!!GeneratorFamily "VisualStudio"
+			}
+
+			ContentsJson #<targetName> Target:Target.Name
+			{
+				!GeneratorFamily "VisualStudio"
 			}
 
 			ContentsJson #<postCopyProject> Target:MalterlibPostCopyProject

@@ -348,12 +348,36 @@ Property
 	}
 }
 
+%GenerateFile "MalterlibLLVMCodeLLDB"
+{
+	GenerateFile
+	{
+		Name `../../Binaries/MalterlibLLVM/HostPlatformArchitectureCodeLLDB`->MakeAbsolute()
+		Contents `@(HostPlatformFamily)/@(HostArchitecture)`
+		Contents `@(HostPlatformFamily)/x64`
+		{
+			&
+			{
+				HostPlatformFamily "Windows"
+				HostArchitecture "arm64"
+			}
+		}
+		Executable false
+		UnixLineEnds true
+		UnicodeBOM false
+		Symlink true
+		BeforeImports true
+		SymlinkDirectory true
+		SymlinkBasePath `../../Binaries/MalterlibLLVM`->MakeAbsolute()
+	}
+}
+
 %GenerateFile ["Malterlib", "MalterlibLLVM"]
 {
 	GenerateFile
 	{
 		Name `../../Binaries/@(this.Identity)/.gitignore`->MakeAbsolute()
-		Contents "/HostPlatformArchitecture\n"
+		Contents "/HostPlatformArchitecture\n/HostPlatformArchitectureCodeLLDB\n"
 		Executable false
 		UnixLineEnds true
 		UnicodeBOM false
