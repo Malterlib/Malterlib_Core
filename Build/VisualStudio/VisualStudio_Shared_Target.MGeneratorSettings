@@ -3,6 +3,22 @@
 
 GeneratorSetting
 {
+	Target_AllFiles_C {}
+	{
+		!!GeneratorSetting.Target_AllFiles_C undefined
+	}
+	Target_AllFiles_C\+\+ {}
+	{
+		!!GeneratorSetting.Target_AllFiles_C\+\+ undefined
+	}
+	Target_AllFiles_ObjC {}
+	{
+		!!GeneratorSetting.Target_AllFiles_ObjC undefined
+	}
+	Target_AllFiles_ObjC\+\+ {}
+	{
+		!!GeneratorSetting.Target_AllFiles_ObjC\+\+ undefined
+	}
 	Target_Group {}
 	{
 		!!GeneratorSetting.Target_Group undefined

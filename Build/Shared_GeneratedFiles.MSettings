@@ -648,8 +648,6 @@ Type
 
 Target
 {
-	!!GeneratorFamily "Xcode"
-
 	AllFiles_C\+\+: [string] = []
 	AllFiles_C: [string] = []
 	AllFiles_ObjC: [string] = []
@@ -782,7 +780,6 @@ Target
 			{
 				&
 				{
-					GeneratorFamily "Xcode"
 					!Target.Type "Tool"
 				}
 			}
@@ -796,7 +793,6 @@ Target
 		&
 		{
 			MalterlibGenerateCompileCommands true
-			GeneratorFamily "Xcode"
 			!Target.Type "Tool"
 		}
 
@@ -808,9 +804,15 @@ Target
 
 			f_GenerateDefine function(string _Define) [string] = []
 			f_GenerateDefine += `-D@(_Define)`
+			{
+				!_Define "{578185E0-2E2A-4481-A34E-BCC3F64CDCA2}"
+			}
 
 			f_GenerateInclude function(string _Path) [string] = []
 			f_GenerateInclude += `-I@(_Path)`
+			{
+				!_Path "{578185E0-2E2A-4481-A34E-BCC3F64CDCA2}"
+			}
 
 			f_GenerateFrameworkInclude function(string _Path) [string] = []
 			f_GenerateFrameworkInclude += `-F@(_Path->Replace("$(PLATFORM_DIR)", GenerateFile.XcodePlatformDir))`
@@ -824,17 +826,26 @@ Target
 
 			PlatformSpecificOptions: [string] = []
 			PlatformSpecificOptions =+ `-mmacosx-version-min=@(Compile.MinMacOSVersion->ToString())`
+			{
+				!!PlatformFamily "macOS"
+			}
 			PlatformSpecificOptions =+ `-stdlib=@(Target.CxxStandardLibrary->ToString())`
+			{
+				!PlatformFamily "Windows"
+			}
 
 			f_GenerateCompileCommands =+ {
 				directory: BuildSystemBasePath
 				, file: GetProperty(&this.IdentityAsAbsolutePath, _File)
 				, arguments: [
-					PlatformToolsetCompiler
+					(PlatformToolsetCompiler || MalterlibLLVMHostBinariesDirectory / "bin/clang")
 					, "-target"
-					, GetProperty(&Compile.TargetTriple, _File)
-					, "-isysroot"
-					, ((PlatformFamily == "macOS") ? Import.SdkRoot_macOS : MalterlibSysRoot)
+					, (GetProperty(&Compile.TargetTriple, _File) || MalterlibTargetTriple)
+					, (
+						(GeneratorFamily == "VisualStudio")
+						? []
+						: ["-isysroot", ((PlatformFamily == "macOS") ? Import.SdkRoot_macOS : MalterlibSysRoot)]
+					)...
 					, GenerateFile.PlatformSpecificOptions...
 					, "-x"
 					, Compile.Type->SwitchWithError(
@@ -880,7 +891,7 @@ Target
 								, "", "-std=c++26"
 								, undefined, "-std=c++26"
 							)
-							, "C", Compile.CLanguage->SwitchWithError(
+							, "C", ((GeneratorFamily == "VisualStudio") ? "C99" : Compile.CLanguage)->SwitchWithError(
 								"Unsupported option: "
 								, "C89", "-std=c89"
 								, "C99", "-std=c99"
@@ -899,7 +910,7 @@ Target
 					)
 					, GetProperty(&Compile.PreprocessorDefines, _File)->ForEach(&GenerateFile.f_GenerateDefine)...
 					, GetProperty(&Compile.SearchPath, _File)->ForEach(&GenerateFile.f_GenerateInclude)...
-					, GetProperty(&Compile.FrameworkSearchPath, _File)->ForEach(&GenerateFile.f_GenerateFrameworkInclude)...
+					, (GetProperty(&Compile.FrameworkSearchPath, _File) || [])->ForEach(&GenerateFile.f_GenerateFrameworkInclude)...
 					, GenerateFile.f_OptionalOption("-include", GetProperty(&Compile.PrefixHeader, _File))...
 					, "-Wno-inline-new-delete"
 				]
