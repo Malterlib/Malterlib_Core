@@ -712,6 +712,20 @@ DMibCheck(_pPointer != nullptr);
 7. **Document platform differences** - Note any platform-specific behavior
 8. **Minimize dependencies** - Core should have minimal external dependencies
 
+## Common Development Debugging Mistakes
+
+Based on real development sessions, here are common mistakes to avoid when debugging Malterlib issues:
+
+1. **Fix symptoms instead of root causes** - When functionality isn't working, analyze the underlying implementation rather than creating workarounds in application code.
+
+2. **Add logging to wrong execution paths** - Use comprehensive diagnostic logging to understand which code paths are actually being taken before making assumptions about program flow.
+
+3. **Treat all error conditions the same** - Different error codes often have different meanings. Only handle specific error conditions you can prove are the intended case, and report others as distinct error types.
+
+4. **Use human-readable error messages** - Always use platform error translation functions (like `NPlatform::fg_Win32_GetLastErrorStr()`) instead of just showing numeric error codes to users or logs.
+
+5. **Don't fix multiple C++ compilation errors simultaneously** - In C++, always fix the first compilation error first. Other errors often cascade from the initial issue and may resolve automatically once the first error is fixed. Attempting to fix multiple errors simultaneously can lead to confusion and wasted effort.
+
 ## Module-Specific Coding Standards
 
 In addition to the general Malterlib coding standards:
