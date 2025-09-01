@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -59,7 +59,7 @@ namespace NMib
 
 	namespace NPrivate
 	{
-		template <typename t_CType> 
+		template <typename t_CType>
 		struct TCForwardHelper
 		{
 		    using CType = t_CType;
@@ -70,21 +70,21 @@ namespace NMib
 			}
 		};
 	}
- 
-	template <typename t_CType> 
-	constexpr inline_always_debug t_CType&& fg_Forward(typename NPrivate::TCForwardHelper<t_CType>::CType &_ToForward) 
+
+	template <typename t_CType>
+	constexpr inline_always_debug t_CType&& fg_Forward(typename NPrivate::TCForwardHelper<t_CType>::CType &_ToForward)
 	{
 		return (t_CType&& )_ToForward;
 	}
 #else
 
-	template <typename t_CType> 
+	template <typename t_CType>
 	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(NTraits::TCRemoveReference<t_CType> &_ToForward)
 	{
 		return static_cast<t_CType&&>(_ToForward);
 	}
 
-	template <typename t_CType> 
+	template <typename t_CType>
 	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(NTraits::TCRemoveReference<t_CType> &&_ToForward) noexcept
 	{
 		static_assert(!NTraits::cIsLValueReference<t_CType>, "Cannot be a lvalue reference here");
@@ -116,7 +116,7 @@ namespace NMib
 					, NMib::NTraits::TCRemoveReference<t_CTypeToCopyTo>
 				>
 			;
-			
+
 		    using CType = TCConditional
 				<
 					NMib::NTraits::cIsRValueReference<t_CType>
@@ -129,32 +129,32 @@ namespace NMib
 					>
 				>
 			;
-			
+
 		};
 	}
-	
-	template <typename t_CType, typename t_CTypeToCopyTo> 
-	mark_artificial mark_nodebug inline_always_debug decltype(auto) fg_ForwardAs(t_CTypeToCopyTo &&_ToForward)
+
+	template <typename t_CType, typename t_CTypeToCopyTo>
+	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_ForwardAs(t_CTypeToCopyTo &&_ToForward) noexcept
 	{
 		return static_cast<typename NPrivate::TCForwardCopyEvalHelper<t_CType &&, t_CTypeToCopyTo>::CType>(_ToForward);
 	}
-	
+
 	template <typename t_CType>
-	mark_artificial mark_nodebug inline_always_debug NTraits::TCRemoveReference<t_CType> &&fg_Move(t_CType &&_ToMove) noexcept
+	mark_artificial mark_nodebug constexpr inline_always_debug NTraits::TCRemoveReference<t_CType> &&fg_Move(t_CType &&_ToMove) noexcept
 		requires (!NTraits::cIsConst<NTraits::TCRemoveReference<t_CType>>) // Trying to move const value
 	{
 		return ((NTraits::TCRemoveReference<t_CType> &&)_ToMove);
 	}
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug inline_always_debug NTraits::TCRemoveReference<t_CType> fg_ExchangeMove(t_CType &&_ToMove) noexcept
+	mark_artificial mark_nodebug constexpr inline_always_debug NTraits::TCRemoveReference<t_CType> fg_ExchangeMove(t_CType &&_ToMove) noexcept
 		requires (!NTraits::cIsConst<NTraits::TCRemoveReference<t_CType>>) // Trying to move const value
 	{
 		return ((NTraits::TCRemoveReference<t_CType> &&)_ToMove);
 	}
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug inline_always_debug NTraits::TCRemoveReference<t_CType> &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
+	mark_artificial mark_nodebug constexpr inline_always_debug NTraits::TCRemoveReference<t_CType> &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
 	{
 		return ((NTraits::TCRemoveReference<t_CType> &&)_ToMove);
 	}
@@ -166,7 +166,7 @@ namespace NMib
 		_Destination = fg_Forward<t_CSetTo>(_SetTo);
 		return Temp;
 	}
-	
+
 	template <typename tf_CType>
 	mark_artificial mark_nodebug constexpr inline_always_debug tf_CType fg_TempCopy(tf_CType const &_Value)
 	{
@@ -190,25 +190,25 @@ namespace NMib
 	}
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType volatile &fg_Volatile(t_CType &_In)
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType volatile &fg_Volatile(t_CType &_In) noexcept
 	{
 		return (t_CType volatile &)_In;
 	}
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType const &fg_Const(t_CType const&_In)
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType const &fg_Const(t_CType const&_In) noexcept
 	{
 		return (t_CType const &)_In;
 	}
 
 	template <typename t_CType, TCEnableIf<NTraits::cIsRValueReference<t_CType> || !NTraits::cIsReference<t_CType>> * = nullptr>
-	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In)
+	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In) noexcept
 	{
 		return fg_Move(_In);
 	}
 
 	template <typename t_CType, TCEnableIf<!NTraits::cIsRValueReference<t_CType> && NTraits::cIsReference<t_CType>> * = nullptr>
-	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) -> NTraits::TCRemoveReference<t_CType> const &
+	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) noexcept -> NTraits::TCRemoveReference<t_CType> const &
 	{
 		return static_cast<NTraits::TCRemoveReference<t_CType> const &>(_In);
 	}
@@ -317,30 +317,30 @@ namespace NMib
 	{
 	public:
 	};
-	
+
 	template <typename tf_CType, TCEnableIf<NTraits::cIsReference<tf_CType>> * = nullptr>
 	mark_nodebug inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(_In);
 	}
-	
+
 	template <typename tf_CType, TCEnableIf<!NTraits::cIsReference<tf_CType> && !NTraits::cIsConst<NTraits::TCRemoveReference<tf_CType>>> * = nullptr>
 	mark_nodebug inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(fg_Move(_In));
 	}
-	
+
 	template <typename tf_CType, TCEnableIf<!NTraits::cIsReference<tf_CType> && NTraits::cIsConst<NTraits::TCRemoveReference<tf_CType>>> * = nullptr>
 	mark_nodebug inline_always_debug TCExplicit<tf_CType> fg_Explicit(tf_CType &&_In)
 	{
 		return TCExplicit<tf_CType>(_In);
 	}
-	
+
 	mark_nodebug inline_always_debug TCExplicit<void> fg_Explicit()
 	{
 		return TCExplicit<void>();
 	}
-	
+
 	struct CExplicitHelper
 	{
 		template <typename tf_CType, TCEnableIf<NTraits::cIsReference<tf_CType>> * = nullptr>
@@ -348,14 +348,14 @@ namespace NMib
 		{
 			return TCExplicit<tf_CType>(_In);
 		}
-		
+
 		template <typename tf_CType, TCEnableIf<!NTraits::cIsReference<tf_CType>> * = nullptr>
 		mark_nodebug inline_always_debug TCExplicit<tf_CType> operator = (tf_CType &&_In) const
 		{
 			return TCExplicit<tf_CType>(fg_Move(_In));
 		}
 	};
-	
+
 	extern CExplicitHelper const &g_Explicit;
 
 	template <typename t_CType>
@@ -435,7 +435,7 @@ namespace NMib
 	{
 		return NInternal::CDefault();
 	}
-	
+
 
 	namespace NInternal
 	{
@@ -561,7 +561,7 @@ namespace NMib
 		TCSupportCopyMove &operator =(TCSupportCopyMove const &) = default;
 		TCSupportCopyMove &operator =(TCSupportCopyMove &&) = delete;
 	};
-	
+
 	template <>
 	struct TCSupportCopyMove<false, true>
 	{
@@ -571,7 +571,7 @@ namespace NMib
 		TCSupportCopyMove &operator =(TCSupportCopyMove const &) = delete;
 		TCSupportCopyMove &operator =(TCSupportCopyMove &&) = default;
 	};
-	
+
 	template <>
 	struct TCSupportCopyMove<false, false>
 	{
@@ -581,7 +581,7 @@ namespace NMib
 		TCSupportCopyMove &operator =(TCSupportCopyMove const &) = delete;
 		TCSupportCopyMove &operator =(TCSupportCopyMove &&) = delete;
 	};
-	
+
 	template <typename t_CType>
 	mark_nodebug inline_always_debug t_CType &fg_RemoveQualifiers(t_CType &_In)
 	{
@@ -737,7 +737,7 @@ namespace NMib
 				--iEnd;
 			}
 			return Return;
-		}	
+		}
 	};
 
 	#ifdef DMibPCanDo_uint8
@@ -773,7 +773,7 @@ namespace NMib
                              (((uint64)(x) & 0x0000000000ff0000ULL) << 24) | \
                              (((uint64)(x) & 0x000000000000ff00ULL) << 40) | \
                              (((uint64)(x) & 0x00000000000000ffULL) << 56))
-	
+
 	#ifdef DMibPCanDo_uint16
 	template <>
 	class TCHelper_ByteSwap<uint16>
@@ -869,7 +869,7 @@ namespace NMib
 	public:
 		using CSwapper = TCHelper_ByteSwap<uint64>;
 	};
-	
+
 	template <typename t_CInt>
 	inline_small t_CInt fg_ByteSwap(t_CInt _In)
 	{
@@ -882,7 +882,7 @@ namespace NMib
 		else
 			return TCHelper_ByteSwap<t_CInt>::fs_Swap(_In);
 	}
-		
+
 	template <typename t_CInt>
 	inline_small void fg_ByteSwap(t_CInt *_pIn, mint _Len)
 	{
@@ -901,7 +901,7 @@ namespace NMib
 		return fg_ByteSwap(_In);
 		#endif
 	}
-	
+
 	template <typename t_CInt>
 	inline_small t_CInt fg_ByteSwapBE(t_CInt _In)
 	{
@@ -1147,7 +1147,7 @@ namespace NMib
 	fg_CallDestructor(tf_CType &_Type)
 	{
 	}
-	
+
 	template <typename tf_CType>
 	TCEnableIf
 	<
@@ -1162,7 +1162,7 @@ namespace NMib
 			fg_CallDestructor(_Type[iElement]);
 		}
 	}
-	
+
 	struct CSort_Default
 	{
 		template <typename t_CKey0, typename t_CKey1>
@@ -1179,7 +1179,7 @@ namespace NMib
 	#pragma warning(disable:4307)
 	#pragma warning(disable:4309)
 #endif
-		
+
 		template <typename t_CIntType, bool t_bSigned>
 		struct TCLimitsIntHelper
 		{
@@ -1237,8 +1237,8 @@ namespace NMib
 	{
 		return CAutoLimitMax();
 	}
-	
-	
+
+
 	template <typename t_CInt0, typename t_CInt1>
 	bool fg_SafeLargerThan(t_CInt0 const &_Left, t_CInt1 const &_Right)
 	{
@@ -1333,10 +1333,10 @@ namespace NMib
 			template <typename t_CFormatter, typename t_CData>
 			struct TCDetermineStringFormatterReturnType;
 		}
-		
+
 		template <typename t_CFormatter, typename t_CData>
 		inline_small typename NPrivate::TCDetermineStringFormatterReturnType<t_CFormatter, t_CData>::CType fg_CreateStringFormatter(t_CFormatter &_Formatter, t_CData const &_Data);
-		
+
 	}
 	// Auto clear int
 
@@ -1395,7 +1395,7 @@ namespace NMib
 		{
 			return NStr::fg_CreateStringFormatter(_Formatter, m_Int);
 		}
-		
+
 		template <typename t_CStream>
 		void f_Feed(t_CStream &_Stream) const
 		{
@@ -1489,13 +1489,13 @@ namespace NMib
 
 		template <typename t_CFormatter>
 		int f_GetStringFormatType(t_CFormatter &_Formatter);
-		
+
 		template <typename t_CFormatter>
 		auto f_CreateStringFormatter(t_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, m_Value))
 		{
 			return NStr::fg_CreateStringFormatter(_Formatter, m_Value);
 		}
-		
+
 		template <typename t_CStream>
 		void f_Feed(t_CStream &_Stream) const
 		{
