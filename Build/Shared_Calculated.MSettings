@@ -437,7 +437,7 @@ Property
 	}
 
 	MalterlibGitOriginRemote: string = ""
-	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, ["ByDigest:", `@(MalterlibGitRepoGitDir)/config`], "git", "remote", "get-url", "origin")
+	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, ["ByDigest:", `@(MalterlibGitRepoGitDir)/config`], `git@(HostExecutableExtension)`, "remote", "get-url", "origin")
 	{
 		!!MalterlibIsGitRepository true
 	}
@@ -466,7 +466,7 @@ Property
 	}
 
 	MalterlibGitBranch: string?
-	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir), "git", "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
+	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir), `git@(HostExecutableExtension)`, "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
 	{
 		&
 		{
@@ -484,7 +484,7 @@ Property
 	}
 
 	MalterlibGitCommit: string = ""
-	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir), "git", "rev-parse", "HEAD")->Trim()
+	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir), `git@(HostExecutableExtension)`, "rev-parse", "HEAD")->Trim()
 	{
 		&
 		{
