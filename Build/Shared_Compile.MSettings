@@ -2995,6 +2995,8 @@ Compile
 	{
 		!!Compile.ObjectiveCARC true
 	}
+	
+	ObjectiveCWeak: bool?
 }
 
 // Windows resources
