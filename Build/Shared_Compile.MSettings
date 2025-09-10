@@ -2807,6 +2807,17 @@ Compile
 	{
 		!!Compile.ObjectiveCARC true
 	}
+	
+	ObjectiveCWeak: bool?
+	ObjectiveCWeak false
+	{
+		&
+		{
+			Compile.ObjectiveCWeak undefined
+			PlatformFamily "macOS"
+		}
+	}
+	
 }
 
 // Windows resources

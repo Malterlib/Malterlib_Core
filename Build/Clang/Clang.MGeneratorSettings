@@ -182,6 +182,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_ObjectiveCWeak =+ {
+		Flags: Compile.ObjectiveCWeak->SwitchWithError(
+			"Unsupported option: "
+			, false, []
+			, true, "-fobjc-weak"
+		)
+		, Type: "unique"
+	}
+
 	Compile_ProvidedNewAligment =+ {
 		Flags: `-fnew-alignment=@(Compile.ProvidedNewAligment->ToString())`
 		, Type: "unique"
