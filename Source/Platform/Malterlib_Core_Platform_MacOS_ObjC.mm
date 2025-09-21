@@ -38,13 +38,31 @@ namespace NMib
 		NStr::CStr fg_MacOS_GetString(NSString *_pStr)
 		{
 			if (!_pStr)
-				return NStr::CStr();
+				return {};
 
-			NStr::CStr Return(_pStr.UTF8String);
+			auto pString = _pStr.UTF8String;
+			if (!pString)
+				return {};
+
+			NStr::CStr Return(pString);
+	
+			return Return;
+		}
+
+		NStr::CStrNonTracked fg_MacOS_GetStringUntracked(NSString *_pStr)
+		{
+			if (!_pStr)
+				return {};
+
+			auto pString = _pStr.UTF8String;
+			if (!pString)
+				return {};
+
+			NStr::CStrNonTracked Return(pString);
 
 			return Return;
 		}
-		
+
 		NStr::CStr fg_MacOS_GetString(CFStringRef _pKey)
 		{
 			mint MaxNeededSize = mint(CFStringGetLength(_pKey)) * 4u + 1u;

@@ -62,8 +62,7 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get application support diretory)", errno));
 
 			NSString *pAppSupport = [pPaths objectAtIndex:0];
-			CStr Out;
-			Out.f_AddStr(pAppSupport.UTF8String);
+			CStr Out = NMib::NPlatform::fg_MacOS_GetString(pAppSupport);
 
 			return Out;
 		}
@@ -80,8 +79,7 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get application support diretory)", errno));
 			NSString *pAppSupport = [pPaths objectAtIndex:0];
 
-			CStrNonTracked Out;
-			Out.f_AddStr(pAppSupport.UTF8String);
+			CStrNonTracked Out = NMib::NPlatform::fg_MacOS_GetStringUntracked(pAppSupport);
 
 			return Out;
 		}
@@ -98,8 +96,7 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get caches diretory)", errno));
 			NSString *pCaches = [pPaths objectAtIndex:0];
 
-			CStr Out;
-			Out.f_AddStr(pCaches.UTF8String);
+			CStr Out = NMib::NPlatform::fg_MacOS_GetString(pCaches);
 
 			return Out;
 		}
@@ -117,8 +114,7 @@ namespace NMib
 
 			NSString *pCaches = [pPaths objectAtIndex:0];
 
-			CStrNonTracked Out;
-			Out.f_AddStr(pCaches.UTF8String);
+			CStrNonTracked Out = NMib::NPlatform::fg_MacOS_GetStringUntracked(pCaches);
 
 			return Out;
 		}
@@ -135,8 +131,7 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get log diretory)", errno));
 			NSString *pCaches = [pPaths objectAtIndex:0];
 
-			CStr Out;
-			Out.f_AddStr(pCaches.UTF8String);
+			CStr Out = NMib::NPlatform::fg_MacOS_GetString(pCaches);
 			Out += "/Logs";
 
 			return Out;
@@ -154,8 +149,7 @@ namespace NMib
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get log diretory)", errno));
 			NSString *pCaches = [pPaths objectAtIndex:0];
 
-			CStrNonTracked Out;
-			Out.f_AddStr(pCaches.UTF8String);
+			CStrNonTracked Out = NMib::NPlatform::fg_MacOS_GetStringUntracked(pCaches);
 			Out += "/Logs";
 
 			return Out;

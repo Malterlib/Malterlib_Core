@@ -27,5 +27,7 @@ namespace NMib
 		NSString* fg_MacOS_GetString(NStr::CStr const& _Str);
 		NStr::CStr fg_MacOS_GetString(NSString *_pStr);
 		NStr::CStr fg_MacOS_GetString(CFStringRef _pKey);
+		NStr::CStrNonTracked fg_MacOS_GetStringUntracked(NSString *_pStr);
+		NStr::CStrNonTracked fg_MacOS_GetStringUntracked(CFStringRef _pKey);
 	}
 }
