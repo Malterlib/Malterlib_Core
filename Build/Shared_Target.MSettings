@@ -3309,6 +3309,19 @@ Property
 			PlatformIsDarwin true
 			Target.Type "UIExecutable"
 			!MalterlibExeIcon undefined
+			!MalterlibExeIcon->GetExtension() "icon"
+		}
+	}
+
+	MalterlibPostBuildScriptPreSign =+	`@(ScriptMkDir(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`))\r\n`\
+										`actool --compile @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources`->Escape()) --platform macosx --minimum-deployment-target "@(MalterlibMinSupportedMacOSVersion)" --warnings --notices --compress-pngs --app-icon @(MalterlibExeIcon->GetFileNoExt()->Escape()) --output-partial-info-plist @((Target.IntermediateDirectory / "Partial.plist")->Escape()) @(MalterlibExeIcon->Escape())\r\n`
+	{
+		&
+		{
+			PlatformIsDarwin true
+			Target.Type "UIExecutable"
+			!MalterlibExeIcon undefined
+			MalterlibExeIcon->GetExtension() "icon"
 		}
 	}
 
@@ -3579,6 +3592,16 @@ Property
 						`	<string>@(MalterlibExeIcon->GetFileNoExt())</string>\n`
 			{
 				!MalterlibExeIcon undefined
+			}
+
+			Contents =+	`	<key>CFBundleIconName</key>\n`\
+						`	<string>@(MalterlibExeIcon->GetFileNoExt())</string>\n`
+			{
+				&
+				{
+					!MalterlibExeIcon undefined
+					MalterlibExeIcon->GetExtension() "icon"
+				}
 			}
 
 
