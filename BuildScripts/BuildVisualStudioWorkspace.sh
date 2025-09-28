@@ -30,6 +30,7 @@ if ! CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\" "\"/console
 	echo
 	echo "Build failed"
 	echo
+	exit 1
 fi
 
 exit 0
