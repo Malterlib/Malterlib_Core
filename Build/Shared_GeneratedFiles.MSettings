@@ -190,7 +190,7 @@ Property
 
 
 	SharedBuildSettingsScriptContents =+	`\r\n`\
-											`export NumCPUs=\`getconf _NPROCESSORS_ONLN\`\r\n`
+											`export NumCPUs=${NumCPUs:-\`getconf _NPROCESSORS_ONLN\`}\r\n`
 	{
 		&
 		{
@@ -200,7 +200,7 @@ Property
 	}
 
 	SharedBuildSettingsScriptContents =+	`\r\n`\
-											`export NumCPUs=\`grep -c "processor" /proc/cpuinfo\`\r\n`
+											`export NumCPUs=${NumCPUs:-\`grep -c "processor" /proc/cpuinfo\`}\r\n`
 	{
 		&
 		{
