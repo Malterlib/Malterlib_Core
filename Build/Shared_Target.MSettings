@@ -4271,6 +4271,8 @@ Property
 		Commit: ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit-@(GetProperty(&Repository.Location, _Property)->HashSHA256()).MState`, f_MalterlibGitRepoInputFiles(GetProperty(&Repository.Location, _Property) / ".git"), "git", "-C", GetProperty(&Repository.Location, _Property), "rev-parse", "HEAD")->Trim()
 	}
 
+	MalterlibEnableRepoDebugInfo: bool = MalterlibBuildServerBuild // User(Build System)=true: Enable repository debug information embedded in the executable
+
 	RepoDebugInfo: string
 
 	RepoDebugInfo AllRepositories->ForEach(&f_GetUrlInfo)->ToString()
@@ -4278,7 +4280,11 @@ Property
 
 %GenerateFile "Repository Debug Info"
 {
-	!PlatformFamily "Windows"
+	&
+	{
+		MalterlibEnableRepoDebugInfo true
+		!PlatformFamily "Windows"
+	}
 
 	GenerateFile
 	{
@@ -4291,7 +4297,11 @@ Property
 
 %GenerateFile "Repository Debug Info Hash"
 {
-	!PlatformFamily "Windows"
+	&
+	{
+		MalterlibEnableRepoDebugInfo true
+		!PlatformFamily "Windows"
+	}
 
 	GenerateFile
 	{
@@ -4304,7 +4314,11 @@ Property
 
 %GenerateFile "Repository Debug Info Cpp"
 {
-	!!PlatformFamily "Windows"
+	&
+	{
+		MalterlibEnableRepoDebugInfo true
+		PlatformFamily "Windows"
+	}
 
 	Property
 	{
@@ -4395,7 +4409,11 @@ Target
 {
 	ExtraGroups =+ "{~Automatic}/{Repository Debug Info}"
 	{
-		!!TargetIsExecutable true
+		&
+		{
+			MalterlibEnableRepoDebugInfo true
+			TargetIsExecutable true
+		}
 	}
 }
 
@@ -4407,6 +4425,7 @@ Compile
 	{
 		&
 		{
+			MalterlibEnableRepoDebugInfo true
 			CompileDialect "C"
 			!PlatformFamily "Windows"
 		}

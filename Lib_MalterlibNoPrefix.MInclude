@@ -45,6 +45,11 @@ Compile
 		!!MalterlibDynamicLibrary true
 	}
 
+	PreprocessorDefines =+ "DMibConfig_EnableRepoDebugInfo=1"
+	{
+		!!MalterlibEnableRepoDebugInfo true
+	}
+
 	PreprocessorDefines =+ "DMibConfig_OverrideSystemMalloc"
 	{
 		!!MalterlibMemoryManager_EnableOverrideSystemMalloc true
