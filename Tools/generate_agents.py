@@ -133,7 +133,7 @@ def convert(input_path: str, output_path: str, repo_root: str) -> None:
 
     # Write output
     with io.open(output_path, "w", encoding="utf-8") as f:
-        f.write("<!-- GENERATED FILE: Do not edit manually. Run Tools/expand_agents.py to regenerate. -->\n\n")
+        f.write("<!-- GENERATED FILE: Do not edit manually. Run ./Malterlib/Core/Tools/generate_agents.py to regenerate. -->\n\n")
         f.writelines(lines)
 
 
