@@ -595,12 +595,15 @@ Property
 			`\n`
 
 			Contents =+ `export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
+						`"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
 						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeWorkspace.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "Xcode"
 			}
 
-			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioWorkspace.sh" "$@@"\n`
+			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
+						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioWorkspace.sh" "$@@"\n`
+
 			{
 				!!GeneratorFamily "VisualStudio"
 			}
@@ -621,12 +624,14 @@ Property
 			`\n`
 
 			Contents =+ `export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
+						`"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
 						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeTarget.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "Xcode"
 			}
 
-			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioTarget.sh" "$@@"\n`
+			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
+						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioTarget.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "VisualStudio"
 			}
