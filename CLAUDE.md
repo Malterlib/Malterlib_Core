@@ -118,6 +118,7 @@ Located in `External/` directory:
 - Switch branch: `./mib branch [BranchName]`
 - Push changes: `./mib push`
 - The system uses git LFS for binary dependencies - ensure it's installed
+- Many directories under `Malterlib/` are separate Git repositories. When checking status or searching history, run Git commands inside the relevant subdirectory (`Malterlib/Concurrency`, `Malterlib/Cloud`, etc.) or use the helper scripts (`./mib git ...`) that fan out across sub-repos.
 
 ### Working with Workspaces
 Workspaces are collections of build targets. Common workspaces include:
