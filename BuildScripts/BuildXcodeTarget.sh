@@ -4,7 +4,7 @@
 
 # Usage: BuildXcodeTarget.sh Workspace Target Platform Architecture Configuration
 
-set -e
+set -eo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -21,8 +21,8 @@ Architecture="${4:-$HostArchitecture}"
 Config="${5:-Debug}"
 BuildSystemDir="${6:-BuildSystem/Default}"
 
-echo $XCodeBuildTool -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
-$XCodeBuildTool -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
+echo xcodebuild -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
+xcodebuild -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config" 2>&1 | MTool XcodeBuildFilter
 
 exit 0
 
