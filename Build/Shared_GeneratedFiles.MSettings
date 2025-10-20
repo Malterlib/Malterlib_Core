@@ -1017,3 +1017,25 @@ Workspace
 {
 	ExtraGroups =+ "~Automatic/Workspace Build Server Helpers"
 }
+
+Property
+{
+	MalterlibUseDefaultClangDFile: bool = true // User(Tools)=false: Use default .clangd file from Malterlib/Core/Tools/ClangD/.clangd
+}
+
+%GenerateFile ".clangd"
+{
+	!!MalterlibUseDefaultClangDFile true
+
+	GenerateFile
+	{
+		Name Builtin.BasePathAbsolute / ".clangd"
+
+		Symlink true
+		SymlinkBasePath Builtin.BasePathAbsolute
+		Contents "Malterlib/Core/Tools/ClangD/.clangd"
+		Executable false
+		UnixLineEnds true
+		UnicodeBOM false
+	}
+}

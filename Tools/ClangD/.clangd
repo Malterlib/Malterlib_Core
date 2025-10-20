@@ -1,0 +1,261 @@
+CompileFlags:
+  Compiler: Binaries/MalterlibLLVM/HostPlatformArchitecture/bin/clang++
+  HeaderCompilation: InContext
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
+SemanticTokens:
+  Rules:
+    Type|Primitive|Typedef|Class:
+      - regex: '^(double|float|fp1024|fp128|fp16|fp2048|fp256|fp32|fp4096|fp512|fp64|fp8|fp80|ufp1024|ufp128|ufp16|ufp2048|ufp256|ufp32|ufp4096|ufp512|ufp64|ufp8|ufp80|zfp1024|zfp128|zfp16|zfp2048|zfp256|zfp32|zfp4096|zfp512|zfp64|zfp8|zfp80|zufp1024|zufp128|zufp16|zufp2048|zufp256|zufp32|zufp4096|zufp512|zufp64|zufp8|zufp80)$'
+        add: [Custom0, Custom1]  # malterlib.keyword.builtin.float.types
+      - regex: '^(__int16|__int32|__int64|__int8|aint|int|int1024|int128|int16|int160|int2048|int256|int32|int4096|int512|int64|int8|int80|int8192|mint|size_t|smint|uaint|uint1024|uint128|uint16|uint160|uint2048|uint256|uint32|uint4096|uint512|uint64|uint8|uint80|uint8192|umint|zamint|zint1024|zint128|zint16|zint160|zint2048|zint256|zint32|zint4096|zint512|zint64|zint8|zint80|zint8192|zmint|zsmint|zuamint|zuint1024|zuint128|zuint16|zuint160|zuint2048|zuint256|zuint32|zuint4096|zuint512|zuint64|zuint8|zuint80|zuint8192|zumint)$'
+        add: [Custom0, Custom2]  # malterlib.keyword.builtin.integer.types
+      - regex: '^(long|short|signed|unsigned)$'
+        add: [Custom0, Custom3]  # malterlib.keyword.builtin.type.modifiers
+      - regex: '^(bint|bool|void|zbint|zbool)$'
+        add: [Custom0, Custom4]  # malterlib.keyword.builtin.types
+      - regex: '^(__m128|__m128d|__m128i|__m64|__w64)$'
+        add: [Custom0, Custom5]  # malterlib.keyword.builtin.vector.types
+      - regex: '^auto$'
+        add: [Custom4]  # malterlib.keyword.auto
+      - regex: '^(__wchar_t|ch16|ch32|ch8|char|char16_t|char32_t|uch16|uch32|uch8|wchar_t|zch16|zch32|zch8|zuch16|zuch32|zuch8)$'
+        add: [Custom5]  # malterlib.keyword.builtin.character.types
+    Parameter:
+      - regex: '^_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom1, Custom2, Custom4, Custom6]  # malterlib.function.parameter.functor
+      - regex: '^(p_of[A-Z][A-Za-z0-9_]*|po_f[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom3, Custom4, Custom6]  # malterlib.function.parameter.output.pack.functor
+      - regex: '^(_of[A-Z][A-Za-z0-9_]*|o_f[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom1, Custom3, Custom5]  # malterlib.function.parameter.output.functor
+      - regex: '^(p_o([binpfro]?[A-Z][A-Za-z0-9_]*)|po_([binpfro]?[A-Z][A-Za-z0-9_]*))$'
+        add: [Custom0, Custom3, Custom4, Custom6]  # malterlib.function.parameter.output.pack
+      - regex: '^(_o([binpfro]?[A-Z][A-Za-z0-9_]*)|o_([binpfro]?[A-Z][A-Za-z0-9_]*))$'
+        add: [Custom1, Custom2, Custom5, Custom6]  # malterlib.function.parameter.output
+    Field:
+      - regex: '^m_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom2, Custom4, Custom5]  # malterlib.member.variable.public.functor
+      - regex: '^mp_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom2, Custom4, Custom6]  # malterlib.member.variable.private.functor
+    LocalVariable:
+      - regex: '^(fl_[A-Z][A-Za-z0-9_]*|f[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom1, Custom4, Custom5]  # malterlib.variable.functor
+    Unknown:
+      - regex: '^memory_order$'
+        add: [Custom0]  # malterlib.enum
+      - regex: '^(memory_order_acq_rel|memory_order_acquire|memory_order_consume|memory_order_relaxed|memory_order_release|memory_order_seq_cst)$'
+        add: [Custom1]  # malterlib.enumerator
+      - regex: '^(allocate_shared|bind|const_pointer_cast|declval|dynamic_pointer_cast|forward|forward_as_tuple|get_deleter|getline|make_pair|make_shared|make_tuple|max|min|move|move_if_noexcept|static_pointer_cast|tie|tuple_cat)$'
+        add: [Custom2]  # malterlib.function
+      - regex: '^(friend|private|protected|public)$'
+        add: [Custom3]  # malterlib.keyword.access
+      - regex: '^auto$'
+        add: [Custom4]  # malterlib.keyword.auto
+      - regex: '^(__wchar_t|ch16|ch32|ch8|char|char16_t|char32_t|uch16|uch32|uch8|wchar_t|zch16|zch32|zch8|zuch16|zuch32|zuch8)$'
+        add: [Custom5]  # malterlib.keyword.builtin.character.types
+      - regex: '^(NULL|false|nullptr|true)$'
+        add: [Custom6]  # malterlib.keyword.builtin.constants
+      - regex: '^(double|float|fp1024|fp128|fp16|fp2048|fp256|fp32|fp4096|fp512|fp64|fp8|fp80|ufp1024|ufp128|ufp16|ufp2048|ufp256|ufp32|ufp4096|ufp512|ufp64|ufp8|ufp80|zfp1024|zfp128|zfp16|zfp2048|zfp256|zfp32|zfp4096|zfp512|zfp64|zfp8|zfp80|zufp1024|zufp128|zufp16|zufp2048|zufp256|zufp32|zufp4096|zufp512|zufp64|zufp8|zufp80)$'
+        add: [Custom0, Custom1]  # malterlib.keyword.builtin.float.types
+      - regex: '^(__int16|__int32|__int64|__int8|aint|int|int1024|int128|int16|int160|int2048|int256|int32|int4096|int512|int64|int8|int80|int8192|mint|size_t|smint|uaint|uint1024|uint128|uint16|uint160|uint2048|uint256|uint32|uint4096|uint512|uint64|uint8|uint80|uint8192|umint|zamint|zint1024|zint128|zint16|zint160|zint2048|zint256|zint32|zint4096|zint512|zint64|zint8|zint80|zint8192|zmint|zsmint|zuamint|zuint1024|zuint128|zuint16|zuint160|zuint2048|zuint256|zuint32|zuint4096|zuint512|zuint64|zuint8|zuint80|zuint8192|zumint)$'
+        add: [Custom0, Custom2]  # malterlib.keyword.builtin.integer.types
+      - regex: '^(long|short|signed|unsigned)$'
+        add: [Custom0, Custom3]  # malterlib.keyword.builtin.type.modifiers
+      - regex: '^(bint|bool|void|zbint|zbool)$'
+        add: [Custom0, Custom4]  # malterlib.keyword.builtin.types
+      - regex: '^(__m128|__m128d|__m128i|__m64|__w64)$'
+        add: [Custom0, Custom5]  # malterlib.keyword.builtin.vector.types
+      - regex: '^(const_cast|dynamic_cast|reinterpret_cast|static_cast)$'
+        add: [Custom0, Custom6]  # malterlib.keyword.casts
+      - regex: '^(__abstract|__box|__delegate|__gc|__hook|__identifier|__nogc|__pin|__property|__sealed|__try_cast|__unhook|__value|abstract|array|delegate|event|friend_as|gcnew|generic|initonly|interface|interior_ptr|literal|ref|safecast|value)$'
+        add: [Custom1, Custom2]  # malterlib.keyword.clr
+      - regex: '^(assume|break|case|constant_int64|constant_uint64|continue|default|do|else|for|goto|if|likely|return|switch|unlikely|while|yield_cpu)$'
+        add: [Custom1, Custom3]  # malterlib.keyword.control.statement
+      - regex: '^(__except|__finally|__leave|__raise|__try|catch|finally|throw|try)$'
+        add: [Custom1, Custom4]  # malterlib.keyword.exception.handling
+      - regex: '^(__alignof|__uuidof|decltype|sizeof|typeid)$'
+        add: [Custom1, Custom5]  # malterlib.keyword.introspection
+      - regex: '^namespace$'
+        add: [Custom1, Custom6]  # malterlib.keyword.namespace
+      - regex: '^(delete|new)$'
+        add: [Custom2, Custom3]  # malterlib.keyword.new.delete
+      - regex: '^operator$'
+        add: [Custom2, Custom4]  # malterlib.keyword.operator
+      - regex: '^(__asm|__assume)$'
+        add: [Custom2, Custom5]  # malterlib.keyword.optimization
+      - regex: '^(__event|__if_exists|__if_not_exists|__interface|__multiple_inheritance|__noop|__single_inheritance|__super|__virtual_inheritance)$'
+        add: [Custom2, Custom6]  # malterlib.keyword.other
+      - regex: '^(__attribute__|__based|__cdecl|__declspec|__fastcall|__forceinline|__inline|__pragma|__restrict__|__stdcall|__thiscall|__unaligned|align_cacheline|assure_used|calling_convention_c|carries_dependency|cdecl|constexpr|deprecated|dllexport|dllimport|explicit|fallthrough|fastcall|function_does_not_return|ignore|inline|inline_always|inline_always_debug|inline_always_lambda|inline_extralarge|inline_large|inline_medium|inline_never|inline_never_debug|inline_small|intrinsic|mark_artificial|mark_no_coroutine_debug|mark_nodebug|maybe_unused|module_export|module_import|naked|no_unique_address|nodiscard|noexcept|noinline|noreturn|nothrow|novtable|only_parameters_aliased|optimize_for_synchronized|property|return_not_aliased|selectany|stdcall|str_utf16|str_utf32|str_utf8|thread|uuid|variable_not_aliased)$'
+        add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
+      - regex: '^(\[\[|\]\])$'
+        add: [Custom3, Custom5]  # malterlib.keyword.property.modifiers.brackets
+      - regex: '^pure$'
+        add: [Custom3, Custom6]  # malterlib.keyword.pure
+      - regex: '^(const|volatile)$'
+        add: [Custom4, Custom5]  # malterlib.keyword.qualifier
+      - regex: '^static_assert$'
+        add: [Custom4, Custom6]  # malterlib.keyword.static.assert
+      - regex: '^(extern|mutable|register|static)$'
+        add: [Custom5, Custom6]  # malterlib.keyword.storage.class
+      - regex: '^template$'
+        add: [Custom0, Custom1, Custom2]  # malterlib.keyword.template
+      - regex: '^this$'
+        add: [Custom0, Custom1, Custom3]  # malterlib.keyword.this
+      - regex: '^(class|enum|struct|union)$'
+        add: [Custom0, Custom1, Custom4]  # malterlib.keyword.type.specification
+      - regex: '^typedef$'
+        add: [Custom0, Custom1, Custom5]  # malterlib.keyword.typedef
+      - regex: '^typename$'
+        add: [Custom0, Custom1, Custom6]  # malterlib.keyword.typename
+      - regex: '^using$'
+        add: [Custom0, Custom2, Custom3]  # malterlib.keyword.using
+      - regex: '^(final|override|sealed|virtual)$'
+        add: [Custom0, Custom2, Custom4]  # malterlib.keyword.virtual
+      - regex: '^assert$'
+        add: [Custom0, Custom2, Custom5]  # malterlib.macro
+      - regex: '^npos$'
+        add: [Custom0, Custom2, Custom6]  # malterlib.member.constant.public
+      - regex: '^(assign|at|back|before_begin|bucket|bucket_count|bucket_size|c_str|capacity|cbefore_begin|clear|compare|compare_exchange_strong|compare_exchange_weak|copy|count|data|emplace|emplace_after|emplace_back|emplace_front|emplace_hint|empty|equal_range|erase|erase_after|exchange|fetch_add|fetch_and|fetch_or|fetch_sub|fetch_xor|fill|find|find_first_not_of|find_first_of|find_last_of|fint_last_not_of|front|get_allocator|hash_fuction|insert|insert_after|is_lock_free|key_comp|key_eq|length|load|load_factor|lower_bound|max_bucket_count|max_load_factor|max_size|merge|pop|pop_back|pop_front|push|push_back|push_front|rehash|remove|remove_if|reserve|resize|reverse|rfind|shrink_to_fit|size|sort|splice|splice_after|store|substr|top|unique|upper_bound|value_comp)$'
+        add: [Custom0, Custom3, Custom4]  # malterlib.member.function.public
+      - regex: '^std$'
+        add: [Custom0, Custom3, Custom5]  # malterlib.namespace
+      - regex: '^(\#define|\#elif|\#else|\#endif|\#error|\#if|\#ifdef|\#ifndef|\#import|\#include|\#line|\#pragma|\#undef|\#using|define|defined|elif|endif|error|ifdef|ifndef|import|include|line|once|pragma|undef)$'
+        add: [Custom0, Custom3, Custom6]  # malterlib.preprocessor.directive
+      - regex: '^(add_const|add_cv|add_lvalue_reference|add_pointer|add_rvalue_reference|add_volatile|aligned_storage|aligned_union|alignment_of|allocator|atomic|auto_ptr_ref|basic_filebuf|basic_fstream|basic_ifstream|basic_ofstream|basic_string|char_traits|common_type|conditional|decay|default_delete|deque|enable_if|enable_shared_from_this|extent|forward_list|function|has_virtual_destructor|integral_constant|is_abstract|is_arithmetic|is_array|is_assignable|is_base_of|is_class|is_compound|is_const|is_constructible|is_convertible|is_copy_assignable|is_copy_constructible|is_default_constructible|is_destructible|is_empty|is_enum|is_floating_point|is_function|is_fundamental|is_integral|is_literal_type|is_lvalue_reference|is_member_function_pointer|is_member_object_pointer|is_member_pointer|is_move_assignable|is_move_constructible|is_nothrow_assignable|is_nothrow_constructible|is_nothrow_copy_assignable|is_nothrow_copy_constructible|is_nothrow_default_constructible|is_nothrow_destructible|is_nothrow_move_assignable|is_nothrow_move_constructible|is_object|is_pod|is_pointer|is_polymorphic|is_reference|is_rvalue_reference|is_same|is_scalar|is_signed|is_standard_layout|is_trivial|is_trivially_assignable|is_trivially_constructible|is_trivially_copy_assignable|is_trivially_copy_constructible|is_trivially_copyable|is_trivially_default_constructible|is_trivially_destructible|is_trivially_move_assignable|is_trivially_move_constructible|is_union|is_unsigned|is_void|is_volatile|list|make_signed|make_unsigned|map|multimap|multiset|owner_less|pair|priority_queue|queue|rank|remove_all_extents|remove_const|remove_cv|remove_extent|remove_pointer|remove_reference|remove_volatile|result_of|set|shared_ptr|stack|tuple|underlying_type|unique_ptr|unordered_map|unordered_multimap|unordered_multiset|unordered_set|vector|weak_ptr)$'
+        add: [Custom0, Custom4, Custom5]  # malterlib.template.type
+      - regex: '^(CFStr|CFUStr|CFWStr|allocator_type|atomic_flag|char_type|const_iterator|const_local_iterator|const_pointer|const_reference|const_reverse_iterator|difference_type|false_type|filebuf|fstream|hasher|ifstream|int_type|iterator|key_compare|key_equal|key_type|local_iterator|mapped_type|off_type|ofstream|pointer|pos_type|reference|reverse_iterator|size_type|state_type|string|traits_type|true_type|type|u16string|u32string|value_compare|value_type|wfilebuf|wfstream|wifstream|wofstream|wstring)$'
+        add: [Custom0, Custom4, Custom6]  # malterlib.type
+      - regex: '^(CFUStr[A-Z][A-Za-z0-9_]*|CFWStr[A-Z][A-Za-z0-9_]*|CFStr[A-Z][A-Za-z0-9_]*|CF[A-Z][A-Za-z0-9_]*Ref|NS[A-Z][A-Za-z0-9_]*|UI[A-Z][A-Za-z0-9_]*|C[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom4, Custom6]  # malterlib.type
+      - regex: '^(tfp_TC[A-Z][A-Za-z0-9_]*|tfp_TF[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom5, Custom6]  # malterlib.function.template.template.param.pack
+      - regex: '^(fsg_r[A-Z][A-Za-z0-9_]*|fsgr_[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom2, Custom3]  # malterlib.static.function.recursive
+      - regex: '^(fsp_r[A-Z][A-Za-z0-9_]*|fspr_[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom2, Custom4]  # malterlib.member.static.function.private.recursive
+      - regex: '^msp_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom1, Custom2, Custom5]  # malterlib.member.static.variable.private.functor
+      - regex: '^(tf_TC[A-Z][A-Za-z0-9_]*|tf_TF[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom2, Custom6]  # malterlib.function.template.template.param
+      - regex: '^tfp_C[A-Z][A-Za-z0-9_]*$'
+        add: [Custom1, Custom3, Custom4]  # malterlib.function.template.type.param.class.pack
+      - regex: '^tfp_F[A-Z][A-Za-z0-9_]*$'
+        add: [Custom1, Custom3, Custom5]  # malterlib.function.template.type.param.function.pack
+      - regex: '^(tp_TC[A-Z][A-Za-z0-9_]*|tp_TF[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom3, Custom6]  # malterlib.template.template.param.pack
+      - regex: '^(fg_r[A-Z][A-Za-z0-9_]*|fgr_[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom4, Custom5]  # malterlib.function.recursive
+      - regex: '^(fp_r[A-Z][A-Za-z0-9_]*|fpr_[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom4, Custom6]  # malterlib.member.function.private.recursive
+      - regex: '^(fs_r[A-Z][A-Za-z0-9_]*|fsr_[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom5, Custom6]  # malterlib.member.static.function.public.recursive
+      - regex: '^fsg_[A-Z][A-Za-z0-9_]*$'
+        add: [Custom2, Custom3, Custom4]  # malterlib.static.function
+      - regex: '^fsp_[A-Z][A-Za-z0-9_]*$'
+        add: [Custom2, Custom3, Custom5]  # malterlib.member.static.function.private
+      - regex: '^gs_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom2, Custom3, Custom6]  # malterlib.global.static.variable.functor
+      - regex: '^mcp_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom2, Custom4, Custom5]  # malterlib.member.constant.private
+      - regex: '^mp_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom2, Custom4, Custom6]  # malterlib.member.variable.private.functor
+      - regex: '^ms_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom2, Custom5, Custom6]  # malterlib.member.static.variable.public.functor
+      - regex: '^msp_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom3, Custom4, Custom5]  # malterlib.member.static.variable.private
+      - regex: '^(p_of[A-Z][A-Za-z0-9_]*|po_f[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom3, Custom4, Custom6]  # malterlib.function.parameter.output.pack.functor
+      - regex: '^(t_TC[A-Z][A-Za-z0-9_]*|t_TF[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom3, Custom5, Custom6]  # malterlib.template.template.param
+      - regex: '^tf_C[A-Z][A-Za-z0-9_]*$'
+        add: [Custom4, Custom5, Custom6]  # malterlib.function.template.type.param.class
+      - regex: '^tf_F[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom1, Custom2, Custom3]  # malterlib.function.template.type.param.function
+      - regex: '^tfp_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom1, Custom2, Custom4]  # malterlib.function.template.non.type.param.pack
+      - regex: '^tp_C[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom1, Custom2, Custom5]  # malterlib.template.type.param.class.pack
+      - regex: '^tp_F[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom1, Custom2, Custom6]  # malterlib.template.type.param.function.pack
+      - regex: '^TIC[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom1, Custom3, Custom4]  # malterlib.template.type.interface
+      - regex: '^(_of[A-Z][A-Za-z0-9_]*|o_f[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom1, Custom3, Custom5]  # malterlib.function.parameter.output.functor
+      - regex: '^(f_r[A-Z][A-Za-z0-9_]*|fr_[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom1, Custom3, Custom6]  # malterlib.member.function.public.recursive
+      - regex: '^(fg_[A-Z][A-Za-z0-9_]*|CF[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom2]  # malterlib.function
+      - regex: '^(fl_[A-Z][A-Za-z0-9_]*|f[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom1, Custom4, Custom5]  # malterlib.variable.functor
+      - regex: '^fp_[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom1, Custom4, Custom6]  # malterlib.member.function.private
+      - regex: '^fs_[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom1, Custom5, Custom6]  # malterlib.member.static.function.public
+      - regex: '^g_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom2, Custom3, Custom4]  # malterlib.global.variable.functor
+      - regex: '^gc_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom2, Custom3, Custom5]  # malterlib.global.constant
+      - regex: '^gs_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom2, Custom3, Custom6]  # malterlib.global.static.variable
+      - regex: '^m_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom2, Custom4, Custom5]  # malterlib.member.variable.public.functor
+      - regex: '^mc_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom2, Custom6]  # malterlib.member.constant.public
+      - regex: '^mp_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom2, Custom4, Custom6]  # malterlib.member.variable.private
+      - regex: '^ms_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom2, Custom5, Custom6]  # malterlib.member.static.variable.public
+      - regex: '^p_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom3, Custom4, Custom5]  # malterlib.function.parameter.pack.functor
+      - regex: '^(p_o([binpfro]?[A-Z][A-Za-z0-9_]*)|po_([binpfro]?[A-Z][A-Za-z0-9_]*))$'
+        add: [Custom0, Custom3, Custom4, Custom6]  # malterlib.function.parameter.output.pack
+      - regex: '^s_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom3, Custom5, Custom6]  # malterlib.static.variable.functor
+      - regex: '^t_C[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom4, Custom5, Custom6]  # malterlib.template.type.param.class
+      - regex: '^t_F[A-Z][A-Za-z0-9_]*$'
+        add: [Custom1, Custom2, Custom3, Custom4]  # malterlib.template.type.param.function
+      - regex: '^tf_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom2, Custom3, Custom5]  # malterlib.function.template.non.type.param
+      - regex: '^tp_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom2, Custom3, Custom6]  # malterlib.template.non.type.param.pack
+      - regex: '^IC[A-Z][A-Za-z0-9_]*$'
+        add: [Custom1, Custom2, Custom4, Custom5]  # malterlib.type.interface
+      - regex: '^(TC[A-Z][A-Za-z0-9_]*|TF[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom4, Custom5]  # malterlib.template.type
+      - regex: '^_f[A-Z][A-Za-z0-9_]*$'
+        add: [Custom1, Custom2, Custom4, Custom6]  # malterlib.function.parameter.functor
+      - regex: '^(_o([binpfro]?[A-Z][A-Za-z0-9_]*)|o_([binpfro]?[A-Z][A-Za-z0-9_]*))$'
+        add: [Custom1, Custom2, Custom5, Custom6]  # malterlib.function.parameter.output
+      - regex: '^c_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom3, Custom4, Custom5]  # malterlib.constant.variable
+      - regex: '^d_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom3, Custom4, Custom6]  # malterlib.macro.parameter
+      - regex: '^f_[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom3, Custom4]  # malterlib.member.function.public
+      - regex: '^g_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom3, Custom5, Custom6]  # malterlib.global.variable
+      - regex: '^m_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1, Custom4, Custom5, Custom6]  # malterlib.member.variable.public
+      - regex: '^p_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom2, Custom3, Custom4, Custom5]  # malterlib.function.parameter.pack
+      - regex: '^s_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom2, Custom3, Custom4, Custom6]  # malterlib.static.variable
+      - regex: '^t_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom2, Custom3, Custom5, Custom6]  # malterlib.template.non.type.param
+      - regex: '^D[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom2, Custom5]  # malterlib.macro
+      - regex: '^(E[A-Z][A-Za-z0-9_]*_[A-Za-z0-9_]*|k[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom1]  # malterlib.enumerator
+      - regex: '^E[A-Z][A-Za-z0-9]*$'
+        add: [Custom0]  # malterlib.enum
+      - regex: '^F[A-Z][A-Za-z0-9_]*$'
+        add: [Custom2, Custom4, Custom5, Custom6]  # malterlib.type.function
+      - regex: '^N[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom3, Custom5]  # malterlib.namespace
+      - regex: '^_([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom3, Custom4, Custom5, Custom6]  # malterlib.function.parameter
+      - regex: '^c[A-Z][A-Za-z0-9_]*$'
+        add: [Custom0, Custom1, Custom2, Custom3, Custom4]  # malterlib.concept
+      - regex: '^([binpfro]?[A-Z][A-Za-z0-9_]*)$'
+        add: [Custom0, Custom1, Custom2, Custom3, Custom5]  # malterlib.variable
