@@ -1,4 +1,4 @@
-// Copyright © 2020 Favro Holding AB 
+// Copyright © 2020 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <stdlib.h>
@@ -193,7 +193,7 @@ int main(int _nArgs, char *_Arguments[])
 			{
 				if (chdir(pDirectory))
 				{
-					fg_OutputError(errno, "The OS returned an error from chdir('%s') when setting current directory in forked process: %s", pDirectory);
+					fg_OutputError(errno, "The OS returned an error from chdir('%s') when setting current directory in launch helper: %s\n", pDirectory);
 					return 1;
 				}
 			}
@@ -203,7 +203,7 @@ int main(int _nArgs, char *_Arguments[])
 			{
 				if (setgid(atoll(pGid)))
 				{
-					fg_OutputError(errno, "The OS returned an error from setgid(%s) when setting process group in forked process: %s", pGid);
+					fg_OutputError(errno, "The OS returned an error from setgid(%s) when setting process group in launch helper: %s\n", pGid);
 					return 65;
 				}
 			}
@@ -211,7 +211,7 @@ int main(int _nArgs, char *_Arguments[])
 			{
 				if (setuid(atoll(pUid)))
 				{
-					fg_OutputError(errno, "The OS returned an error from setuid(%s) when setting process user in forked process: %s", pUid);
+					fg_OutputError(errno, "The OS returned an error from setuid(%s) when setting process user in launch helper: %s\n", pUid);
 					return 64;
 				}
 			}
@@ -221,7 +221,7 @@ int main(int _nArgs, char *_Arguments[])
 
 				auto fReportParseError = [&](char const *_pError)
 					{
-						fprintf(stderr, "Error parsing limits when setting limits in forked process: %s", _pError);
+						fprintf(stderr, "Error parsing limits when setting limits in launch helper: %s\n", _pError);
 						return 1;
 					}
 				;
@@ -244,7 +244,7 @@ int main(int _nArgs, char *_Arguments[])
 					rlimit Limits;
 					if (getrlimit(RLimit, &Limits))
 					{
-						fg_OutputError(errno, "The OS returned an error from getrlimit(%d) when setting process limits in forked process: %s", RLimit);
+						fg_OutputError(errno, "The OS returned an error from getrlimit(%d) when setting process limits in launch helper: %s\n", RLimit);
 						return 67;
 					}
 
@@ -293,7 +293,7 @@ int main(int _nArgs, char *_Arguments[])
 						fg_OutputError
 							(
 								errno
-								, "The OS returned an error from setrlimit(%d, {%lld, %lld}) when setting limits in forked process: %s"
+								, "The OS returned an error from setrlimit(%d, {%lld, %lld}) when setting limits in launch helper: %s\n"
 								, RLimit
 								, Limits.rlim_cur
 								, Limits.rlim_max
@@ -332,7 +332,7 @@ int main(int _nArgs, char *_Arguments[])
 
 		execve(pExecutableToLaunch, _Arguments, pEnvironment);
 
-		fg_OutputError(errno, "The OS returned an error from execve(%s) when executing in forked process: %s", pExecutableToLaunch);
+		fg_OutputError(errno, "The OS returned an error from execve(%s) when executing in launch helper: %s\n", pExecutableToLaunch);
 
 		return 1;
 	}
