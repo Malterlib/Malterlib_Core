@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -22,7 +22,7 @@
 
 // Compiler message
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define DMibCompilerMessage(d_Message) 
+#	define DMibCompilerMessage(d_Message)
 #elif defined(DCompiler_MSVC)
 #	define DMibCompilerMessage(d_Message) __pragma(message(d_Message))
 #else
@@ -112,15 +112,6 @@ namespace std
 		}
 #	endif
 
-#else
-#	error "Implement this"
-#endif
-
-// Assume
-#if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define assume(x) ((void)0)
-#elif defined(DCompiler_MSVC)
-#	define assume(d_ToAssume) (__assume(d_ToAssume))
 #else
 #	error "Implement this"
 #endif
