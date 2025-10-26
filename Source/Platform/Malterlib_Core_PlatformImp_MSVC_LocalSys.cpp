@@ -723,7 +723,7 @@ public:
 		// open process token
 		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
 		{
-			uint32 LastError = GetLastError();
+			[[maybe_unused]] uint32 LastError = GetLastError();
 			DMibTrace("OpenProcessToken failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
 			return false;
 		}
@@ -735,7 +735,7 @@ public:
 					// close the handle
 					if (!CloseHandle(hToken))
 					{
-						uint32 LastError = GetLastError();
+						[[maybe_unused]] uint32 LastError = GetLastError();
 						DMibTrace("CloseHandle failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
 					}
 				}
@@ -745,7 +745,7 @@ public:
 		// get the luid
 		if (!LookupPrivilegeValue(NULL, pszPrivilege, &tp.Privileges[0].Luid))
 		{
-			uint32 LastError = GetLastError();
+			[[maybe_unused]] uint32 LastError = GetLastError();
 			DMibTrace("LookupPrivilegeValue failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
 			return false;
 		}
@@ -766,7 +766,7 @@ public:
 		error = GetLastError();
 		if (!status || (error != ERROR_SUCCESS))
 		{
-			uint32 LastError = error;
+			[[maybe_unused]] uint32 LastError = error;
 			DMibTrace("AdjustTokenPrivileges failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
 			return false;
 		}
