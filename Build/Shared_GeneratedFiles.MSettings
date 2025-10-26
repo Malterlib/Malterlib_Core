@@ -1021,6 +1021,7 @@ Workspace
 Property
 {
 	MalterlibUseDefaultClangDFile: bool = true // User(Tools)=false: Use default .clangd file from Malterlib/Core/Tools/ClangD/.clangd
+	MalterlibUseDefaultLLDBInitFile: bool = true // User(Tools)=false: Use default .lldbinit file from Malterlib/Core/Tools/LLDB/.lldbinit
 }
 
 %GenerateFile ".clangd"
@@ -1034,6 +1035,23 @@ Property
 		Symlink true
 		SymlinkBasePath Builtin.BasePathAbsolute
 		Contents "Malterlib/Core/Tools/ClangD/.clangd"
+		Executable false
+		UnixLineEnds true
+		UnicodeBOM false
+	}
+}
+
+%GenerateFile ".lldbinit"
+{
+	!!MalterlibUseDefaultLLDBInitFile true
+
+	GenerateFile
+	{
+		Name Builtin.BasePathAbsolute / ".lldbinit"
+
+		Symlink true
+		SymlinkBasePath Builtin.BasePathAbsolute
+		Contents "Malterlib/Core/Tools/LLDB/.lldbinit"
 		Executable false
 		UnixLineEnds true
 		UnicodeBOM false
