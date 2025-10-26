@@ -12,6 +12,12 @@ GeneratorSetting
 {
 	!!LanguageFamily ".NET"
 
+	Dependency_Link {
+		VSSettings: {
+			ReferenceOutputAssembly: Dependency.Link->f_BoolToString()
+		}
+	}
+
 	Target_FileExtension {}
 	{
 		!!GeneratorSetting.Target_FileExtension undefined

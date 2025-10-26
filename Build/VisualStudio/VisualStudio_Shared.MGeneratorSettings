@@ -3,12 +3,6 @@
 
 GeneratorSetting
 {
-	Dependency_Link {
-		VSSettings: {
-			ReferenceOutputAssembly: Dependency.Link->f_BoolToString()
-		}
-	}
-
 	Dependency_Indirect {}
 	{
 		!!GeneratorSetting.Dependency_Indirect undefined

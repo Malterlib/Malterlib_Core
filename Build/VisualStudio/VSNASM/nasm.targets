@@ -89,4 +89,16 @@
       <Lib Include="@(NASM->Metadata('ObjectFileName')->Distinct()->ClearMetadata())" Condition="'%(NASM.ExcludedFromBuild)' != 'true'"/>
     </ItemGroup>
   </Target>
+  <PropertyGroup>
+    <CommonBuildOnlyTargets>$(CommonBuildOnlyTargets);ComputeNASMObjects</CommonBuildOnlyTargets>
+  </PropertyGroup>
+  <Target Name="ComputeNASMObjects" Condition="'@(NASM)'!=''">
+    <ItemGroup>
+      <Object Include="@(NASM->'%(ObjectFileName)')" Condition="'%(NASM.ExcludedFromBuild)'!='true'">
+        <LinkCompiled>true</LinkCompiled>
+        <LibCompiled>true</LibCompiled>
+        <ImpLibCompiled>false</ImpLibCompiled>
+      </Object>
+    </ItemGroup>
+  </Target>
 </Project>

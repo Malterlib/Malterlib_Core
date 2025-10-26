@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<!-- Override GetResolvedLinkObjs to prevent transitive obj collection -->
+	<Target Name="GetResolvedLinkObjs"
+			Returns="@(ObjFullPath)"
+			DependsOnTargets="$(CommonBuildOnlyTargets);ComputeCLOutputs"
+			Condition="'$(ConfigurationType)'=='StaticLibrary'">
+		<!-- Only return our own objects, not transitive ones -->
+		<PropertyGroup>
+		<_ObjFullPath Condition="'@(Obj)'!=''">@(Obj->'%(fullpath)')</_ObjFullPath>
+		</PropertyGroup>
+
+		<ItemGroup>
+		<ObjFullPath Include="$(_ObjFullPath);@(Object->ClearMetadata()->Distinct())">
+			<FileType>obj</FileType>
+			<ProjectType>$(ConfigurationType)</ProjectType>
+		</ObjFullPath>
+		</ItemGroup>
+	</Target>
+
+	<Target Name="GetResolvedLinkLibs"
+			Returns="@(LibFullPath)"
+			DependsOnTargets="$(CommonBuildOnlyTargets)"
+			Condition="'$(ConfigurationType)'=='StaticLibrary'">
+		<!-- Add tmp items (preserve shape) -->
+		<ItemGroup>
+		<Lib Include="tmp" Condition="'@(Lib)'==''">
+			<DeleteSoon>true</DeleteSoon>
+		</Lib>
+		</ItemGroup>
+		<PropertyGroup>
+		<_LibFullPath>@(Lib->Metadata('OutputFile')->FullPath()->Distinct())</_LibFullPath>
+		</PropertyGroup>
+		<ItemGroup>
+		<LibFullPath Include="$(_LibFullPath)">
+			<ProjectType>$(ConfigurationType)</ProjectType>
+			<FileType>lib</FileType>
+		</LibFullPath>
+		<Lib Remove="@(Lib)" Condition="'%(Lib.DeleteSoon)'=='true'" />
+		</ItemGroup>
+	</Target>
+
+	<PropertyGroup>
+		<!-- Force new value after toolset -->
+		<StaticLibraryResolveLinkLib>$(CommonBuildOnlyTargets)</StaticLibraryResolveLinkLib>
+	</PropertyGroup>
+</Project>

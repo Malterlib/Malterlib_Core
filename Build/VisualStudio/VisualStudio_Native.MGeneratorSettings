@@ -7,6 +7,7 @@ GeneratorSetting
 		"$(VCTargetsPath)\\Microsoft.Cpp.targets"
 		, "$(VCTargetsPath)\\BuildCustomizations\\masm.targets"
 		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\VSNASM\\nasm.targets`
+		, `$(MSBuildProjectDirectory)..\\@(Builtin.BasePathRelativeProject->WindowsPath())\\Malterlib\\Core\\Build\\VisualStudio\\CustomTargets\\Malterlib.targets`
 	]
 	{
 		!!Target.Language "Native"
@@ -94,7 +95,7 @@ GeneratorSetting
 				, Value: Target.UseDebugLibraries->f_BoolToString()
 			}
 		]
-	}	
+	}
 
 	Target_NasmPath =+ {
 		VSSettings: [
@@ -291,9 +292,17 @@ GeneratorSetting
 {
 	!!Target.Language "Native"
 
+	Dependency_Link {
+		VSSettings: {
+			LinkLibraryDependencies: Dependency.Link->f_BoolToString()
+			, Private: false->f_BoolToString()
+			, ReferenceOutputAssembly: false->f_BoolToString()
+		}
+	}
+
 	Dependency_LinkWithObjectFiles =+ {
 		VSSettings: {
-			UseLibraryDependencyInputs: (Dependency.LinkWithObjectFiles)->f_BoolToString()
+			UseLibraryDependencyInputs: (Dependency.LinkWithObjectFiles && Dependency.Link)->f_BoolToString()
 		}
 	}
 
