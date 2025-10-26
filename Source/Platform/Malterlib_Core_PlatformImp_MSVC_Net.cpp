@@ -208,6 +208,9 @@ void CWindowsSocketContext::f_CheckFailed()
 
 LRESULT WINAPI CWindowsSocketContext::fsp_SocketWindowProc(HWND _hWnd, UINT _Message, WPARAM _wParam, LPARAM _lParam)
 {
+	if (_Message == WM_ENDSESSION || _Message == WM_QUERYENDSESSION)
+		NMib::NPlatform::fg_ReportIsShuttingDown();
+
 	return DefWindowProc(_hWnd, _Message, _wParam, _lParam);
 }
 
@@ -540,7 +543,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 		auto Address = CUnixAddress::fs_Parse(_Address, _bThrowOnError);
 		if (!Address)
 			return nullptr;
-		
+
 		pAddress->f_Set(fg_Move(*Address));
 		return pAddress.f_Detach();
 	}
@@ -1036,7 +1039,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 
 	ENetAddressType AddressType = Address.f_GetType();
 
-	if 
+	if
 		(
 			AddressType != ENetAddressType_TCPv4
 			&& AddressType != ENetAddressType_TCPv6
@@ -1253,7 +1256,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		}
 	}
 #endif
-	
+
 	if (_pSocket->m_BindAddressType != ENetAddressType_Unix)
 	{
 		BOOL NoDelay = true;

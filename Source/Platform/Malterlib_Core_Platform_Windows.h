@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -12,28 +12,25 @@ extern NMib::NAtomic::TCAtomicAggregate<smint> g_bDoneMalterlibInitAll;
 extern HINSTANCE g_hDllInstance;
 extern bool g_bIsDll;
 
-namespace NMib
+namespace NMib::NPlatform
 {
-	namespace NPlatform
+	void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
+
+	inline_small bool fg_IsGoodStackPtr(void *_pAddr, mint _Len, mint _StackStart, mint _StackEnd)
 	{
-		void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
+		mint StackStart = _StackStart;
+		mint StackEnd = _StackEnd;
+		mint AddrStart = (mint)_pAddr;
+		mint AddrEnd = AddrStart + _Len;
 
-		inline_small bool fg_IsGoodStackPtr(void *_pAddr, mint _Len, mint _StackStart, mint _StackEnd)
-		{
-			mint StackStart = _StackStart;
-			mint StackEnd = _StackEnd;
-			mint AddrStart = (mint)_pAddr;
-			mint AddrEnd = AddrStart + _Len;
+		if (AddrEnd < AddrStart)
+			return false;
 
-			if (AddrEnd < AddrStart)
-				return false;
-
-			return AddrEnd <= StackStart && AddrStart >= StackEnd;
-		}
-
-		bool fg_IsVista();
-		bool fg_ThisThreadOwnsDllLock();
-
+		return AddrEnd <= StackStart && AddrStart >= StackEnd;
 	}
-}
 
+	bool fg_IsVista();
+	bool fg_ThisThreadOwnsDllLock();
+	bool fg_IsShuttingDown();
+	void fg_ReportIsShuttingDown();
+}
