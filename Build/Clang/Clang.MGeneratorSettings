@@ -10,12 +10,43 @@ GeneratorSetting
 	Compile_DoCompileAndLink {
 	}
 
+	Compile_DiagnosticsFormat =+ {
+		Flags: `-fdiagnostics-format=@(Compile.DiagnosticsFormat)`
+		, Type: "unique"
+	}
+
+	Compile_CaretDiagnostics =+ {
+		Flags: Compile.CaretDiagnostics->SwitchWithError(
+			"Unsupported option: "
+			, false, "-fno-caret-diagnostics"
+			, true, "-fcaret-diagnostics"
+		)
+		, Type: "unique"
+	}
+
+	Compile_DiagnosticsFixitInfo =+ {
+		Flags: Compile.DiagnosticsFixitInfo->SwitchWithError(
+			"Unsupported option: "
+			, false, "-fno-diagnostics-fixit-info"
+			, true, "-fdiagnostics-fixit-info"
+		)
+		, Type: "unique"
+	}
+
+	Compile_ColorDiagnostics =+ {
+		Flags: Compile.ColorDiagnostics->SwitchWithError(
+			"Unsupported option: "
+			, false, "-fno-color-diagnostics"
+			, true, ["-fcolor-diagnostics"]
+		)
+		, Type: "unique"
+	}
+
 	Compile_AlignedAllocationProvided =+ {
 		Flags: Compile.AlignedAllocationProvided ? "-faligned-allocation" : "-fno-aligned-allocation"
 		, Type: "unique"
 	}
 	{
-		//#Debug "TraceEval"
 	}
 
 	Compile_AlignDouble =+ {
@@ -232,7 +263,7 @@ GeneratorSetting
 		Flags: [["-Xclang", "-dwarf-debug-flags", "-Xclang", Compile.DwarfDebugFlags]]
 		, Type: "unique"
 	}
-	
+
 	Compile_TargetTriple =+ {
 		Flags: [["-target", Compile.TargetTriple], ["-target", Compile.TargetTriple]]
 		, Type: "unique"

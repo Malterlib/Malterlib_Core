@@ -469,8 +469,48 @@ GeneratorSetting
 	Compile_CoroutineAlignedAllocation =+ {
 		VSSettings: Compile.CoroutineAlignedAllocation->SwitchWithError(
 			"Unsupported option: "
-			, false, { AdditionalOptions: `-Xclang -fno-coro-aligned-allocation @(Builtin.Inherit)` }
-			, true, { AdditionalOptions: `-Xclang -fcoro-aligned-allocation @(Builtin.Inherit)` }
+			, false, { AdditionalOptions: `/clang:-fno-coro-aligned-allocation @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `/clang:-fcoro-aligned-allocation @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_DiagnosticsFormat =+ {
+		VSSettings: { AdditionalOptions: `/clang:-fdiagnostics-format=@(Compile.DiagnosticsFormat) @(Builtin.Inherit)` }
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_CaretDiagnostics =+ {
+		VSSettings: Compile.CaretDiagnostics->SwitchWithError(
+			"Unsupported option: "
+			, false, { AdditionalOptions: `/clang:-fno-caret-diagnostics @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `/clang:-fcaret-diagnostics @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_DiagnosticsFixitInfo =+ {
+		VSSettings: Compile.DiagnosticsFixitInfo->SwitchWithError(
+			"Unsupported option: "
+			, false, { AdditionalOptions: `/clang:-fno-diagnostics-fixit-info @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `/clang:-fdiagnostics-fixit-info @(Builtin.Inherit)` }
+		)
+	}
+	{
+		!!Compiler "Clang"
+	}
+
+	Compile_ColorDiagnostics =+ {
+		VSSettings: Compile.ColorDiagnostics->SwitchWithError(
+			"Unsupported option: "
+			, false, { AdditionalOptions: `/clang:-fno-color-diagnostics @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `/clang:-fcolor-diagnostics @(Builtin.Inherit)` }
 		)
 	}
 	{

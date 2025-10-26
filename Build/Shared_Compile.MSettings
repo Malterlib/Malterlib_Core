@@ -1712,6 +1712,34 @@ Compile
 		!!Compiler "Clang"
 	}
 
+	DiagnosticsFormat: string?
+	DiagnosticsFormat "clang"
+	{
+		&
+		{
+			Compiler "Clang"
+			!GeneratorFamily "VisualStudio"
+		}
+	}
+
+	CaretDiagnostics: bool?
+	CaretDiagnostics false
+	{
+		!!Compiler "Clang"
+	}
+
+	DiagnosticsFixitInfo: bool?
+	DiagnosticsFixitInfo false
+	{
+		!!Compiler "Clang"
+	}
+
+	ColorDiagnostics: bool?
+	ColorDiagnostics true
+	{
+		!!Compiler "Clang"
+	}
+
 	ProcessorArchitecture: string?
 	ProcessorArchitecture "armv8.2-a"
 	{
@@ -2995,7 +3023,7 @@ Compile
 	{
 		!!Compile.ObjectiveCARC true
 	}
-	
+
 	ObjectiveCWeak: bool?
 }
 
