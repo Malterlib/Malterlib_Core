@@ -553,11 +553,11 @@ GeneratorSetting
 	Compile_CxxLanguage =+ {
 		VSSettings: { AdditionalOptions: `@(Compile.CxxLanguage->SwitchWithError(
 			"Unsupported option: "
-			, "GNU++11", "-Xclang -std=gnu++11"
-			, "GNU++14", "-Xclang -std=gnu++14"
-			, "GNU++17", "-Xclang -std=gnu++17"
-			, "GNU++20", "-Xclang -std=gnu++20"
-			, "GNU++23", "-Xclang -std=gnu++2b"
+			, "GNU++11", "/clang:-std=gnu++11"
+			, "GNU++14", "/clang:-std=gnu++14"
+			, "GNU++17", "/clang:-std=gnu++17"
+			, "GNU++20", "/clang:-std=gnu++20"
+			, "GNU++23", "/clang:-std=gnu++2b"
 			, "C++11", "-std:c++11"
 			, "C++14", "-std:c++14"
 			, "C++17", "-std:c++17"
@@ -569,7 +569,7 @@ GeneratorSetting
 	}
 
 	Compile_CLanguage =+ {
-		VSSettings: { AdditionalOptions: `-Xclang @(Compile.CLanguage->SwitchWithError(
+		VSSettings: { AdditionalOptions: `/clang:@(Compile.CLanguage->SwitchWithError(
 			"Unsupported option: "
 			, "C89", "-std=c89"
 			, "C99", "-std=c99"
@@ -586,21 +586,21 @@ GeneratorSetting
 	}
 
 	Compile_ConstexprSteps =+ {
-		VSSettings: { AdditionalOptions: `-Xclang -fconstexpr-steps=@(Compile.ConstexprSteps->ToString()) @(Builtin.Inherit)` }
+		VSSettings: { AdditionalOptions: `/clang:-fconstexpr-steps=@(Compile.ConstexprSteps->ToString()) @(Builtin.Inherit)` }
 	}
 	{
 		!!Compiler "Clang"
 	}
 
 	Compile_AlignedAllocationProvided =+ {
-		VSSettings: { AdditionalOptions: `@(Compile.AlignedAllocationProvided ? "-Xclang -faligned-allocation" : "-Xclang -fno-aligned-allocation") @(Builtin.Inherit)` }
+		VSSettings: { AdditionalOptions: `@(Compile.AlignedAllocationProvided ? "/clang:-faligned-allocation" : "/clang:-fno-aligned-allocation") @(Builtin.Inherit)` }
 	}
 	{
 		!!Compiler "Clang"
 	}
 
 	Compile_ProvidedNewAligment =+ {
-		VSSettings: { AdditionalOptions: `-Xclang -fnew-alignment=@(Compile.ProvidedNewAligment->ToString()) @(Builtin.Inherit)` }
+		VSSettings: { AdditionalOptions: `/clang:-fnew-alignment=@(Compile.ProvidedNewAligment->ToString()) @(Builtin.Inherit)` }
 	}
 	{
 		!!Compiler "Clang"
@@ -610,7 +610,7 @@ GeneratorSetting
 		VSSettings: Compile.VerboseTemplateErrors->SwitchWithError(
 			"Unsupported option: "
 			, false, { }
-			, true, { AdditionalOptions: `-Xclang -fdiagnostics-show-template-tree -Xclang -fno-elide-type -Xclang -ftemplate-backtrace-limit=0 @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `/clang:-fdiagnostics-show-template-tree /clang:-fno-elide-type /clang:-ftemplate-backtrace-limit=0 @(Builtin.Inherit)` }
 		)
 	}
 	{
@@ -621,7 +621,7 @@ GeneratorSetting
 		VSSettings: Compile.PchInstantiateTemplates->SwitchWithError(
 			"Unsupported option: "
 			, false, { }
-			, true, { AdditionalOptions: `-Xclang -fpch-instantiate-templates @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `/clang:-fpch-instantiate-templates @(Builtin.Inherit)` }
 		)
 	}
 	{
@@ -632,7 +632,7 @@ GeneratorSetting
 		VSSettings: Compile.PchCodeGen->SwitchWithError(
 			"Unsupported option: "
 			, false, { }
-			, true, { AdditionalOptions: `-Xclang -fpch-codegen @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `/clang:-fpch-codegen @(Builtin.Inherit)` }
 		)
 	}
 	{
@@ -643,7 +643,7 @@ GeneratorSetting
 		VSSettings: Compile.PchDebugInfo->SwitchWithError(
 			"Unsupported option: "
 			, false, { }
-			, true, { AdditionalOptions: `-Xclang -fpch-debuginfo @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `/clang:-fpch-debuginfo @(Builtin.Inherit)` }
 		)
 	}
 	{
@@ -653,8 +653,8 @@ GeneratorSetting
 	Compile_SizedDeallocation =+ {
 		VSSettings: Compile.SizedDeallocation->SwitchWithError(
 			"Unsupported option: "
-			, false, { AdditionalOptions: `-Xclang -fnosized-deallocation @(Builtin.Inherit)` }
-			, true, { AdditionalOptions: `-Xclang -fsized-deallocation @(Builtin.Inherit)` }
+			, false, { AdditionalOptions: `/clang:-fnosized-deallocation @(Builtin.Inherit)` }
+			, true, { AdditionalOptions: `/clang:-fsized-deallocation @(Builtin.Inherit)` }
 		)
 	}
 	{
