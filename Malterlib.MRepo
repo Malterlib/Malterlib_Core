@@ -1,27 +1,27 @@
 {
 	"../../Binaries/Malterlib/Linux/arm64": {
-		"Hash": "d1ae23f5e62c3782d670c7d997d218897329541f"
+		"Hash": "dc91789d732dce8fd07427c07ad7b85acbada245"
 	},
 	"../../Binaries/Malterlib/Linux/x64": {
-		"Hash": "8d980b8f7d769d2b4a0447b22e2f263a26fb627c"
+		"Hash": "091944e07d166c2313fe41f097795ea728bc2058"
 	},
 	"../../Binaries/Malterlib/Linux/x86": {
-		"Hash": "99f0c11b3d0d67ae326b28565d4c8fa5696d21eb"
+		"Hash": "9197ff46957af98ec455fe974bfed0c02ee5e519"
 	},
 	"../../Binaries/Malterlib/Windows/arm64": {
-		"Hash": "3fce3384f2e5fb89c4a0d5c14c33d47bc53c39a4"
+		"Hash": "63d4f7fe302a46bf0323d43df144b8b4b5346120"
 	},
 	"../../Binaries/Malterlib/Windows/x64": {
-		"Hash": "f8b92ce073b573b9f2560e32735b3049d3e1c3d5"
+		"Hash": "800412a774ccad2c4f03bbec65d505a082388364"
 	},
 	"../../Binaries/Malterlib/Windows/x86": {
-		"Hash": "d96d577b3e5ea96976c9d77e059d2a5c6c7bbd7e"
+		"Hash": "713702612395de0d5c7f9b35814442046e1ccf1b"
 	},
 	"../../Binaries/Malterlib/macOS/arm64": {
-		"Hash": "6a0867aeba4d260095a9ce7ab204124c019dba64"
+		"Hash": "88f4216db2feac12c04f3798095a7efd0d138095"
 	},
 	"../../Binaries/Malterlib/macOS/x64": {
-		"Hash": "990582a10008063b832e644ec77bda1c69c2c5aa"
+		"Hash": "a5241213efb1a9a868abca0686a259c026a25e4a"
 	},
 	"../../Binaries/MalterlibLLVM/Linux/arm64": {
 		"Hash": "d37ce53effb3605fbbc1c83399fd25fc691f1419"
@@ -129,7 +129,7 @@
 		"Hash": "f6c16a13973e72296959693d9287cac9fca463a4"
 	},
 	"../Git": {
-		"Hash": "fe706268cc3bcac62c06f076acb03262ccafeb90"
+		"Hash": "e68dce7663af1c10a93d24d854ff32943a19e284"
 	},
 	"../Graphics": {
 		"Hash": "635bc26cfedbcc5a5e932617e3d89668feba8854"
@@ -207,7 +207,7 @@
 		"Hash": "c6edb114b31e807dab6a536bc8d45ac84d26f245"
 	},
 	"../Tool": {
-		"Hash": "e629b86771ca2c38b410cf6078d4f295477e210a"
+		"Hash": "dafae8f3a2b2353f1e3adb5ae6fcd750b97214fb"
 	},
 	"../Type": {
 		"Hash": "73aaa9619b7f5ee523c4dd451e053ea6061fa737"
@@ -216,7 +216,7 @@
 		"Hash": "3213a0219d06a2b461c38216091ba2b7c4ae8031"
 	},
 	"../Web": {
-		"Hash": "2572336289d743e384403a789be48ee79d404036"
+		"Hash": "1ce5732c1ed248c8e784b8dfeb948cd4dd888e93"
 	},
 	"../WebApp": {
 		"Hash": "9e41f8c02cf18cb2968b0b3dbc847a4e3e93d3a6"
