@@ -849,7 +849,10 @@ Target
 					, (
 						(GeneratorFamily == "VisualStudio")
 						? []
-						: ["-isysroot", ((PlatformFamily == "macOS") ? Import.SdkRoot_macOS : MalterlibSysRoot)]
+						: (
+							(PlatformFamily == "macOS") ? ["-isysroot", Import.SdkRoot_macOS]
+							: ["-isysroot", MalterlibSysRoot, "--sysroot", MalterlibSysRoot]
+						)
 					)...
 					, GenerateFile.PlatformSpecificOptions...
 					, "-x"
@@ -918,6 +921,7 @@ Target
 					, (GetProperty(&Compile.FrameworkSearchPath, _File) || [])->ForEach(&GenerateFile.f_GenerateFrameworkInclude)...
 					, GenerateFile.f_OptionalOption("-include", GetProperty(&Compile.PrefixHeader, _File))...
 					, "-Wno-inline-new-delete"
+					, "-Wno-invalid-offsetof"
 				]
 			}
 			{
