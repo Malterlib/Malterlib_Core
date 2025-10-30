@@ -27,11 +27,4 @@ else
 fi
 
 echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" /nodereuse:false $ExtraParams /v:m "\"/target:$Target\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\""
-if ! CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" "\"/consoleLoggerParameters:Verbosity=normal;ForceConsoleColor;NoSummary;ForceNoAlign;DisableConsoleColor;NoItemAndPropertyList\"" /nologo /nodereuse:false $ExtraParams /v:m "\"/target:$Target\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\"" | MTool MSBuildFilter ; then
-	echo
-	echo "Build failed"
-	echo
-	exit 1
-fi
-
-exit 0
+CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" "\"/consoleLoggerParameters:Verbosity=normal;ForceConsoleColor;NoSummary;ForceNoAlign;DisableConsoleColor;NoItemAndPropertyList\"" /nologo /nodereuse:false $ExtraParams /v:m "\"/target:$Target\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\"" | MTool MSBuildFilter
