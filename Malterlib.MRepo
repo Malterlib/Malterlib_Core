@@ -132,7 +132,7 @@
 		"Hash": "21323eff648137d9094e39bfa517fa062dc3883e"
 	},
 	"../Graphics": {
-		"Hash": "56bac51ea3e4c0c55008c3292476e719193b1766"
+		"Hash": "afb9f039c6fb2538f60e47641b66c0dac9856220"
 	},
 	"../Instrumentation": {
 		"Hash": "99cf3922610fdd62f5284b6107c9c3a38baaec27"
@@ -174,7 +174,7 @@
 		"Hash": "6e073661a4b219529131e27eb13bb24acdd8cca6"
 	},
 	"../Qt": {
-		"Hash": "eeafbb4c1bf5f69a744d413e3d488e99cbddac0b"
+		"Hash": "f1e274d38bc81bd447e7f7b3a349a7173f674162"
 	},
 	"../SQL": {
 		"Hash": "3a6053a5c7af9651232e1a7b24a1e395e12d16f3"
