@@ -2884,7 +2884,7 @@ Compile
 		}
 	}
 
-	ExtendedInstructionSet "X86_64_v3"
+	ExtendedInstructionSet "X86_64_v2"
 	{
 		&
 		{

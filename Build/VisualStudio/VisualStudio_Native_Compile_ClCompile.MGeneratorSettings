@@ -219,7 +219,9 @@ GeneratorSetting
 			, "SSE42", { AdditionalOptions: `-msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "StreamingSIMDExtensions2" }
 			, "AVX", { AdditionalOptions: `-msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "AdvancedVectorExtensions" }
 			, "AVX2", { AdditionalOptions: `-msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx -mavx2 @(Builtin.Inherit)`, EnableEnhancedInstructionSet: "AdvancedVectorExtensions2" }
+			, "X86_64_v2", { AdditionalOptions: `-march=x86-64-v2 -mno-rdrnd @(Builtin.Inherit)` }
 			, "X86_64_v3", { AdditionalOptions: `-march=x86-64-v3 @(Builtin.Inherit)` }
+			, "X86_64_v4", { AdditionalOptions: `-march=x86-64-v4 @(Builtin.Inherit)` }
 		)
 	}
 	{
