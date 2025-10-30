@@ -704,7 +704,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 			CNetAddressTCPv4 TCPv4;
 			f_GetAddressRaw(_Address, ENetAddressType_TCPv4, &TCPv4, sizeof(TCPv4));
 
-			AddressStr += "{}.{}.{}.{}:{}"_f << TCPv4.m_IP[0] << TCPv4.m_IP[1] << TCPv4.m_IP[2] << TCPv4.m_IP[3];
+			AddressStr += "{}.{}.{}.{}"_f << TCPv4.m_IP[0] << TCPv4.m_IP[1] << TCPv4.m_IP[2] << TCPv4.m_IP[3];
 
 			if (_Flags & ENetAddressStringFlag_IncludePort)
 				AddressStr += ":{}"_f << TCPv4.m_Port;
