@@ -839,6 +839,23 @@ Target
 				!PlatformFamily "Windows"
 			}
 
+			PlatformSpecificOptions =+ "-DUNICODE"
+			{
+				&
+				{
+					PlatformFamily "Windows"
+					Target.CharacterSet "Unicode"
+				}
+			}
+			PlatformSpecificOptions =+ "-D_MBCS"
+			{
+				&
+				{
+					PlatformFamily "Windows"
+					!Target.CharacterSet "Unicode"
+				}
+			}
+
 			f_GenerateCompileCommands =+ {
 				directory: BuildSystemBasePath
 				, file: GetProperty(&this.IdentityAsAbsolutePath, _File)
