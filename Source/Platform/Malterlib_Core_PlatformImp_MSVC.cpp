@@ -347,7 +347,7 @@ void NSys::fg_FreeLibrary(void *_pModule)
 
 void* NSys::fg_GetLibrarySymbol(void* _pModule, char const* _pSymbol)
 {
-	return GetProcAddress((HMODULE)_pModule, _pSymbol);
+	return (void *)GetProcAddress((HMODULE)_pModule, _pSymbol);
 }
 
 void* NSys::fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned long long& _nDataBytes)
@@ -1999,8 +1999,8 @@ void fg_LoadFunctionPointers()
 		(FARPROC &)Functions.m_fSetProcessUserModeExceptionPolicy = GetProcAddress(g_hKernel32, "SetProcessUserModeExceptionPolicy");
 		(FARPROC &)Functions.m_fGetProcessUserModeExceptionPolicy = GetProcAddress(g_hKernel32, "GetProcessUserModeExceptionPolicy");
 
-		Functions.m_pKiUserApcDispatcher = GetProcAddress(g_hNtDll, "KiUserApcDispatcher");
-		Functions.m_pKiUserCallbackDispatcher = GetProcAddress(g_hNtDll, "KiUserCallbackDispatcher");
+		(FARPROC &)Functions.m_pKiUserApcDispatcher = GetProcAddress(g_hNtDll, "KiUserApcDispatcher");
+		(FARPROC &)Functions.m_pKiUserCallbackDispatcher = GetProcAddress(g_hNtDll, "KiUserCallbackDispatcher");
 
 		(FARPROC &)Functions.m_fWineGetVersion = GetProcAddress(g_hNtDll, "wine_get_version");
 
@@ -3133,7 +3133,7 @@ uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
 void *NSys::fg_Module_Get(mint &_ModuleSize)
 {
 	MEMORY_BASIC_INFORMATION MemInfo;
-	if (VirtualQuery(&NSys::fg_Module_Get, &MemInfo, sizeof(MemInfo)))
+	if (VirtualQuery((void *)&NSys::fg_Module_Get, &MemInfo, sizeof(MemInfo)))
 	{
 		uint8 *pBase = (uint8 *)MemInfo.AllocationBase;
 		uint8 *pTest = (uint8 *)MemInfo.BaseAddress + MemInfo.RegionSize;
