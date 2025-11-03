@@ -76,10 +76,39 @@ Property
 	EnablePlatform_iOS: bool = ((SinglePlatform <!=> undefined) ? SinglePlatform == "iOS" : false)
 	EnablePlatform_Emscripten: bool = ((SinglePlatform <!=> undefined) ? SinglePlatform == "Emscripten" : false) // User(- Platform)=true: Enables emscripten support
 
+	SupportedArchitecture_x86: bool = false
+	SupportedArchitecture_x86 true
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	SupportedArchitecture_x64: bool = false
+	SupportedArchitecture_x64 true
+	{
+		|
+		{
+			PlatformFamily "Linux"
+			PlatformFamily "macOS"
+			PlatformFamily "Windows"
+		}
+	}
+
+	SupportedArchitecture_arm64: bool = false
+	SupportedArchitecture_arm64 true
+	{
+		|
+		{
+			PlatformFamily "Linux"
+			PlatformFamily "macOS"
+			PlatformFamily "Windows"
+			PlatformFamily "iOS"
+		}
+	}
+
 	// Supported
-	EnableArchitecture_x64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x64" : true) // User(- Platform)=false: Enables generation of x64 architecture
-	EnableArchitecture_x86: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x86" : true) // User(- Platform)=false: Enables generation of x86 architecture
-	EnableArchitecture_arm64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "arm64" : true) // User(- Platform)=false: Enables generation of arm arm64 architecture
+	EnableArchitecture_x64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x64" : SupportedArchitecture_x64) // User(- Platform)=false: Enables generation of x64 architecture
+	EnableArchitecture_x86: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x86" : SupportedArchitecture_x86) // User(- Platform)=false: Enables generation of x86 architecture
+	EnableArchitecture_arm64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "arm64" : SupportedArchitecture_arm64) // User(- Platform)=false: Enables generation of arm arm64 architecture
 
 	// Unsupported
 	EnableArchitecture_ArmV7: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ArmV7" : false) // User(- Platform)=false: Enables generation of arm V7 architecture
@@ -174,95 +203,43 @@ Property
 {
 	x86 "Intel x86" // Maps to Win32 Platform in Visual tudio
 	{
-		&
-		{
-			!Platform "macOS"
-			!Platform "Emscripten"
-			!PlatformFamily "iOS"
-			EnableArchitecture_x86 true
-		}
+		!!EnableArchitecture_x86 true
 	}
 	x64 "Intel x64" // Maps to x64 Platform in Visual tudio
 	{
-		&
-		{
-			!Platform "Emscripten"
-			!PlatformFamily "iOS"
-			EnableArchitecture_x64 true
-		}
+		!!EnableArchitecture_x64 true
 	}
 	Itanium "Itanium" // Maps to Itanium Platform in Visual tudio
 	{
-		&
-		{
-			Platform "Windows"
-			EnableArchitecture_Itanium true
-		}
+		!!EnableArchitecture_Itanium true
 	}
 	ArmV7 "Arm V7" // Maps to Itanium Platform in Visual tudio
 	{
-		&
-		{
-			PlatformFamily "iOS"
-			EnableArchitecture_ArmV7 true
-		}
+		!!EnableArchitecture_ArmV7 true
 	}
 	ArmV7s "Arm V7s" // Maps to Itanium Platform in Visual tudio
 	{
-		&
-		{
-			PlatformFamily "iOS"
-			EnableArchitecture_ArmV7s true
-		}
+		!!EnableArchitecture_ArmV7s true
 	}
 	arm64 "Arm 64"
 	{
-		&
-		{
-			|
-			{
-				PlatformFamily "iOS"
-				PlatformFamily "macOS"
-				PlatformFamily "Linux"
-				PlatformFamily "Windows"
-			}
-			EnableArchitecture_arm64 true
-		}
+		!!EnableArchitecture_arm64 true
 	}
 	arm64e "Arm 64 Extended"
 	{
-		&
-		{
-			|
-			{
-				PlatformFamily "iOS"
-				PlatformFamily "macOS"
-			}
-			EnableArchitecture_arm64e true
-		}
+		!!EnableArchitecture_arm64e true
 	}
 	ppc32 "Power PC"
 	{
-		&
-		{
-			EnableArchitecture_ppc32 true
-			PlatformVersion 1050
-		}
+		!!EnableArchitecture_ppc32 true
 	}
 	ppc64 "Power PC 64 bit"
 	{
-		&
-		{
-			EnableArchitecture_ppc64 true
-			PlatformVersion 1050
-		}
+		!!EnableArchitecture_ppc64 true
 	}
 	le32 "Generic 32 bit Little endian"
 	{
-		|
-		{
-			Platform "Emscripten"
-		}
+		!!Platform "Emscripten"
 	}
 }
 

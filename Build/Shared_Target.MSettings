@@ -472,7 +472,7 @@ Target
 
 Property
 {
-	MalterlibUseClangForWindows: bool = (ClangForWindows_Enabled == "Clang") // User(Toolset)=true: Enable clang compilation for Windows platform
+	MalterlibUseClangForWindows: bool = (!MalterlibUseClangForWindowsConfigs || ClangForWindows_Enabled == "Clang") // User(Toolset)=false: Enable clang compilation for Windows platform
 }
 
 Target
