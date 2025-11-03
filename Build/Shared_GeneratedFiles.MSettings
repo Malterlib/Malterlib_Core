@@ -85,6 +85,7 @@ Property
 											`@(ScriptExport("Win32SignToolTimestampServerOptions", Win32SignToolTimestampServerOptions))\r\n`\
 											`@(ScriptExport("MalterlibSignCertMacOS", MalterlibSignCertMacOS))\r\n`\
 											`@(ScriptExport("MalterlibSignCertWindows", MalterlibSignCertWindows))\r\n`\
+											`@(ScriptExport("MalterlibNeedNugetRestore", MalterlibNeedNugetRestore->ToString()))\r\n`\
 											`\r\n`\
 											`@(ScriptExport("HostPlatformFamily", HostPlatformFamily))\r\n`\
 											`@(ScriptExport("HostPlatform", HostPlatform))\r\n`\

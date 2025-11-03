@@ -49,6 +49,12 @@ GeneratorSetting
 					, "StaticLibrary", "StaticLibrary"
 					, "Tool", "Utility"
 				)
+			},
+			{
+				Type: "PropertyGroup"
+				, Label: "Configuration"
+				, Key: "ResolveNuGetPackages"
+				, Value: false->f_BoolToString()
 			}
 		]
 	}

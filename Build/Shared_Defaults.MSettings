@@ -104,6 +104,8 @@ Property
 
 	MalterlibNotarizeMacOSProfile: string? // User(Signing)="ProfileName": Set this to keychain profile used for notarization. Previously stored with xcrun notarytool store-credentials --apple-id "email" --team-id "team"
 
+	MalterlibNeedNugetRestore: bool = false
+
 	MalterlibBreakpadUploadServer: string = "https://error-reports.malterlib.org"
 	MalterlibBreakpadReportInterval: int = 0
 	MalterlibBreakpadRequestComments: bool = true
@@ -282,7 +284,7 @@ Property
 			PlatformFamily "macOS"
 			PlatformFamily "Linux"
 		}
-	}	
+	}
 
 	MalterlibRuntime_AlwaysRelease: bool? // User(Toolset)=false: Enable runtime (libc++ etc) to always be compile as if release config (default true)
 	MalterlibRuntime_AlwaysRelease true
@@ -343,7 +345,7 @@ Property
 		&
 		{
 			MalterlibWindowsNtVersion undefined
-			PlatformFamily "Windows"			
+			PlatformFamily "Windows"
 		}
 	}
 	MalterlibWindowsVersion: string

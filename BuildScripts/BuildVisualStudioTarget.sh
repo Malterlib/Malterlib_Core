@@ -26,5 +26,10 @@ else
 	ExtraParams="-m"
 fi
 
-echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" /nodereuse:false $ExtraParams /v:m "\"/target:$Target\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\""
-CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" "\"/consoleLoggerParameters:Verbosity=normal;ForceConsoleColor;NoSummary;ForceNoAlign;DisableConsoleColor;NoItemAndPropertyList\"" /nologo /nodereuse:false $ExtraParams /v:m "\"/target:$Target\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\"" | MTool MSBuildFilter
+if [[ "$MalterlibNeedNugetRestore" == "true" ]]; then
+	echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" /nodereuse:false $ExtraParams /v:m "\"/target:Restore\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\""
+	CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" "\"/consoleLoggerParameters:Verbosity=normal;ForceConsoleColor;NoSummary;ForceNoAlign;DisableConsoleColor;NoItemAndPropertyList\"" /nologo /nodereuse:false $ExtraParams /v:m "\"/target:Restore\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\"" | MTool MSBuildFilter
+fi
+
+echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" /nodereuse:false $ExtraParams /v:m "\"/target:${Target//\./_}\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\""
+CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" "\"/consoleLoggerParameters:Verbosity=normal;ForceConsoleColor;NoSummary;ForceNoAlign;DisableConsoleColor;NoItemAndPropertyList\"" /nologo /nodereuse:false $ExtraParams /v:m "\"/target:${Target//\./_}\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\"" | MTool MSBuildFilter
