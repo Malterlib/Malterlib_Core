@@ -772,6 +772,18 @@ Target
 		}
 	}
 
+	PlatformToolset "v145"
+	{
+		&
+		{
+			Target.PlatformToolset undefined
+			|
+			{
+				Generator "VisualStudio2026"
+			}
+		}
+	}
+
 	PlatformToolset Error("Could not find suitable PlatformToolset")
 	{
 		!!Target.PlatformToolset undefined
