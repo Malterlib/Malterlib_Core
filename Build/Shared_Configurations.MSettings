@@ -3,9 +3,27 @@
 
 Property
 {
-	SinglePlatform: string? // User(-  Single Config)="macOS": Enable only a single Platform
-	SingleArchitecture: string? // User(-  Single Config)="arm64": Enable only a single Architecture
-	SingleConfiguration: string? // User(-  Single Config)="Debug": Enable only a single Configuration
+	DefaultSinglePlatform: string?
+	DefaultSinglePlatform HostPlatform
+	{
+		!MalterlibBuildServerBuild true
+	}
+
+	DefaultSingleArchitecture: string?
+	DefaultSingleArchitecture HostArchitecture
+	{
+		!MalterlibBuildServerBuild true
+	}
+
+	DefaultSingleConfiguration: string?
+	DefaultSingleConfiguration "Debug"
+	{
+		!MalterlibBuildServerBuild true
+	}
+
+	SinglePlatform: string? = DefaultSinglePlatform // User(-  Single Config)="macOS": Enable only a single Platform
+	SingleArchitecture: string? = DefaultSingleArchitecture // User(-  Single Config)="arm64": Enable only a single Architecture
+	SingleConfiguration: string? = DefaultSingleConfiguration // User(-  Single Config)="Debug": Enable only a single Configuration
 
 	EnablePlatform_Windows: bool // User(- Platform)=true: Enables Windows platform
 	EnablePlatform_Windows ((SinglePlatform <!=> undefined) ? SinglePlatform == "Windows" : true)
