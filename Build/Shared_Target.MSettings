@@ -718,7 +718,7 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags =+ ["clang_rt.asan-x86_64.lib", "clang_rt.asan_cxx-x86_64.lib"]
+	ExtraLinkerFlags =+ ["/FORCE:MULTIPLE", "-incremental:no", "clang_rt.asan_dynamic-x86_64.lib", "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"]
 	{
 		&
 		{
@@ -729,7 +729,7 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags =+ ["clang_rt.asan_dll_thunk-x86_64.lib"]
+	ExtraLinkerFlags =+ ["/FORCE:MULTIPLE", "-incremental:no", "clang_rt.asan_dynamic-x86_64.lib", "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"]
 	{
 		&
 		{
@@ -3121,6 +3121,16 @@ Property
 			MalterlibSupportSanitizerEnable_Address true
 			PlatformFamily "Windows"
 			!Target.PlatformToolset "ClangCL"
+		}
+	}
+
+	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersionMajor)/lib/Windows/clang_rt.asan_dynamic-@(MSVCSanitizerArchitecture).dll`
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			MalterlibSupportSanitizerEnable_Address true
+			Target.PlatformToolset "ClangCL"
 		}
 	}
 
