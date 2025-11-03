@@ -104,8 +104,6 @@ Property
 
 	MalterlibNotarizeMacOSProfile: string? // User(Signing)="ProfileName": Set this to keychain profile used for notarization. Previously stored with xcrun notarytool store-credentials --apple-id "email" --team-id "team"
 
-	MalterlibNeedNugetRestore: bool = false
-
 	MalterlibBreakpadUploadServer: string = "https://error-reports.malterlib.org"
 	MalterlibBreakpadReportInterval: int = 0
 	MalterlibBreakpadRequestComments: bool = true
