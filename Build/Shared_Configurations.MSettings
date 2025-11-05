@@ -203,11 +203,27 @@ Property
 {
 	x86 "Intel x86" // Maps to Win32 Platform in Visual tudio
 	{
-		!!EnableArchitecture_x86 true
+		&
+		{
+			|
+			{
+				PlatformFamily "Linux"
+			}
+			EnableArchitecture_x86 true
+		}
 	}
 	x64 "Intel x64" // Maps to x64 Platform in Visual tudio
 	{
-		!!EnableArchitecture_x64 true
+		&
+		{
+			|
+			{
+				PlatformFamily "macOS"
+				PlatformFamily "Linux"
+				PlatformFamily "Windows"
+			}
+			EnableArchitecture_x64 true
+		}
 	}
 	Itanium "Itanium" // Maps to Itanium Platform in Visual tudio
 	{
@@ -223,11 +239,29 @@ Property
 	}
 	arm64 "Arm 64"
 	{
-		!!EnableArchitecture_arm64 true
+		&
+		{
+			|
+			{
+				PlatformFamily "iOS"
+				PlatformFamily "macOS"
+				PlatformFamily "Linux"
+				PlatformFamily "Windows"
+			}
+			EnableArchitecture_arm64 true
+		}
 	}
 	arm64e "Arm 64 Extended"
 	{
-		!!EnableArchitecture_arm64e true
+		&
+		{
+			|
+			{
+				PlatformFamily "iOS"
+				PlatformFamily "macOS"
+			}
+			EnableArchitecture_arm64e true
+		}
 	}
 	ppc32 "Power PC"
 	{
