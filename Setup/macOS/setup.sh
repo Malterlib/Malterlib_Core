@@ -32,12 +32,12 @@ fi
 DependenciesVersion=3
 DependenciesFile="$DependenciesDirectory/MalterlibDependencies.ver"
 
-Setting_Plugin_Malterlib=true
-Setting_Plugin_NavigationFixes=true
-Setting_Plugin_CustomizeAnnotations=true
-Setting_Plugin_HideDistractions=true
+Setting_Plugin_Malterlib=false
+Setting_Plugin_NavigationFixes=false
+Setting_Plugin_CustomizeAnnotations=false
+Setting_Plugin_HideDistractions=false
 Setting_Plugin_P4Checkout=false
-Setting_SyntaxHighlight=true
+Setting_SyntaxHighlight=false
 Setting_PatchedLLBuild=true
 
 HasSystemIntegrityProtection=true
