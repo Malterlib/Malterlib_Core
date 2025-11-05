@@ -682,6 +682,7 @@ Property
 								, "-E"
 								, "-d"
 								, `-DSRCDIR=@(ElfToolchainRoot)/libelf`
+								, `-I@(ElfToolchainRoot)/libelf`
 								, `-I@(ElfToolchainRoot)/common`
 								, this.Identity->MakeAbsolute()
 							)
@@ -715,6 +716,7 @@ Property
 								, "-E"
 								, "-d"
 								, `-DSRCDIR=@(ElfToolchainRoot)/libdwarf`
+								, `-I@(ElfToolchainRoot)/libdwarf`
 								, `-I@(ElfToolchainRoot)/common`
 								, this.Identity->MakeAbsolute()
 							)
