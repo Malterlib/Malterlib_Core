@@ -294,7 +294,7 @@ Property
 		}
 	}
 
-	MalterlibMemoryManager: one_of("Malterlib", "System", "OverwriteCheck", "MiMalloc", "TcMalloc") = "Malterlib" // User(Memory Manager)=OverwriteCheck: Choose the memory manager. Options: Malterlib, System, OverwriteCheck, MiMalloc, TcMalloc (default Malterlib)
+	MalterlibMemoryManager: one_of("Malterlib", "System", "OverwriteCheck", "MiMalloc", "TcMalloc") = "Malterlib" // User(Memory Manager)="OverwriteCheck": Choose the memory manager. Options: Malterlib, System, OverwriteCheck, MiMalloc, TcMalloc (default Malterlib)
 	MalterlibMemoryManager "System"
 	{
 		&
