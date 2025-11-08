@@ -4512,6 +4512,7 @@ Property
 
 Property
 {
+	MalterlibDumpSymsCommand: string = "dump_syms"
 	MalterlibPostBuildScriptShowEnv: bool = false // User(Build System)=true: Enable to show the environment variables of the build environment
 }
 
@@ -5093,15 +5094,29 @@ Target
 
 	// Do this before signing as we want to strip the executable
 	PostBuildScript =+ `echo Deploy Symbols:\r\n`\
-					`BuildID=@(MalterlibReadElfProgram) --notes ./Test_Malterlib_CrashReport | grep "Build ID" | cut "-d:" -f 2 | cut "-d " -f 2`\
-					`echo @(MalterlibStripProgram) --only-keep-debug @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).debug`->Escape())\r\n`\
-					`@(MalterlibStripProgram) --only-keep-debug @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).debug`->Escape())\r\n`
+					`echo @(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) \\> @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
+					`@(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`
 	{
 		&
 		{
-			PlatformFamily "Linux"
+			|
+			{
+				PlatformIsDarwin true
+				PlatformFamily "Linux"
+			}
 			TargetIsExecutable true
 			MalterlibDeploySymbols true
+		}
+	}
+	PostBuildScript =+	`echo @(MalterlibDumpSymsCommand) @(`@(MalterlibFinalModuleDestination).dSYM`->Escape()) \\> @(`@(MalterlibFinalModuleDestination).dSYM.breakpad`->Escape())\r\n`\
+						`@(MalterlibDumpSymsCommand) @(`@(MalterlibFinalModuleDestination).dSYM`->Escape()) > @(`@(MalterlibFinalModuleDestination).dSYM.breakpad`->Escape())\r\n`
+	{
+		&
+		{
+			PlatformIsDarwin true
+			TargetIsExecutable true
+			MalterlibDeploySymbols true
+			Target.DebugInformationFormat "dwarf-with-dsym"
 		}
 	}
 
