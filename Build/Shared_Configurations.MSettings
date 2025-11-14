@@ -79,7 +79,10 @@ Property
 	SupportedArchitecture_x86: bool = false
 	SupportedArchitecture_x86 true
 	{
-		!!PlatformFamily "Linux"
+		|
+		{
+			EnablePlatform_Linux true
+		}
 	}
 
 	SupportedArchitecture_x64: bool = false
@@ -87,9 +90,9 @@ Property
 	{
 		|
 		{
-			PlatformFamily "Linux"
-			PlatformFamily "macOS"
-			PlatformFamily "Windows"
+			EnablePlatform_Linux true
+			EnablePlatform_macOS true
+			EnablePlatform_Windows true
 		}
 	}
 
@@ -98,10 +101,10 @@ Property
 	{
 		|
 		{
-			PlatformFamily "Linux"
-			PlatformFamily "macOS"
-			PlatformFamily "Windows"
-			PlatformFamily "iOS"
+			EnablePlatform_Linux true
+			EnablePlatform_macOS true
+			EnablePlatform_Windows true
+			EnablePlatform_iOS true
 		}
 	}
 
