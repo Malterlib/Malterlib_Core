@@ -232,13 +232,6 @@ Property
 
 	MalterlibUseXCodeBuild: bool = false
 
-	MalterlibXCBeautifyOptions: string = "--preserve-unbeautified"
-
-	SharedBuildSettingsScriptContents =+	`export MalterlibXCBeautifyOptions=${MalterlibXCBeautifyOptions:-@(MalterlibXCBeautifyOptions)}\r\n`
-	{
-		!!HostPlatformFamily "macOS"
-	}
-
 	SharedBuildSettingsScriptContents =+	`export XCodeBuildTool="xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs"\r\n`
 	{
 		&
@@ -251,31 +244,9 @@ Property
 	SharedBuildSettingsScriptContents =+	`function XCodeBuild_Pretty()\r\n`\
 											`{\r\n`\
 											`	oldstate="$(shopt -po; shopt -p)"\r\n`\
-											`	set -e\r\n`\
-											`	set -o pipefail\r\n`\
-											`	if [[ "$MalterlibBuildLogFile" == "" ]]; then\r\n`\
-											`		TempFile=\`mktemp\`\r\n`\
-											`	else\r\n`\
-											`		TempFile="$MalterlibBaseDir/$MalterlibBuildLogFile"\r\n`\
-											`		mkdir -p \`dirname "$TempFile"\`\r\n`\
-											`	fi\r\n`\
+											`	set -eo pipefail\r\n`\
 											`	export LC_CTYPE="en_US.UTF-8"\r\n`\
-											`	if ! xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs "$@@" | tee "$TempFile" | xcbeautify $MalterlibXCBeautifyOptions; then\r\n`\
-											`		if [[ "$MalterlibBuildLogFile" != "" ]]; then\r\n`\
-											`			echo "error: Build failed. See log file: $MalterlibBuildLogFile"\r\n`\
-											`		else\r\n`\
-											`			echo "error: Build failed. See full log:"\r\n`\
-											`			wc -c "$TempFile"\r\n`\
-											`			echo ""\r\n`\
-											`			cat "$TempFile"\r\n`\
-											`			echo "Full log output done"\r\n`\
-											`			rm -f "$TempFile"\r\n`\
-											`		fi\r\n`\
-											`		exit 1\r\n`\
-											`	fi\r\n`\
-											`	if [[ "$MalterlibBuildLogFile" == "" ]]; then\r\n`\
-											`		rm -f "$TempFile"\r\n`\
-											`	fi\r\n`\
+											`	xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs "$@@" 2>&1 | MTool XcodeBuildFilter\r\n`\
 											`	eval "$oldstate"\r\n`\
 											`}\r\n`\
 											`export XCodeBuild_Pretty\r\n`\
@@ -594,8 +565,7 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
-						`"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
+			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
 						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeWorkspace.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "Xcode"
@@ -623,8 +593,7 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `export MalterlibXCBeautifyOptions="${MalterlibXCBeautifyOptions:-"--renderer terminal"}"\n`\
-						`"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
+			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
 						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeTarget.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "Xcode"

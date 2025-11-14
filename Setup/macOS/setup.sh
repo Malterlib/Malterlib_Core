@@ -118,7 +118,7 @@ UpdateDependencies()
 		brew upgrade
 	fi
 
-	brew install cmake go graphviz ninja git git-lfs zstd xcbeautify
+	brew install cmake go graphviz ninja git git-lfs zstd
 }
 
 UpdateXcodePlugins()
