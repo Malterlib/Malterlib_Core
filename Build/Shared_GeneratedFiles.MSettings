@@ -565,15 +565,17 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
-						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeWorkspace.sh" "$@@"\n`
+			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`
+			{
+				!MalterlibDisableBuildSystemGeneration true
+			}
+
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeWorkspace.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "Xcode"
 			}
 
-			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
-						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioWorkspace.sh" "$@@"\n`
-
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioWorkspace.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "VisualStudio"
 			}
@@ -593,14 +595,17 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
-						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeTarget.sh" "$@@"\n`
+			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`
+			{
+				!MalterlibDisableBuildSystemGeneration true
+			}
+
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildXcodeTarget.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "Xcode"
 			}
 
-			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`\
-						`"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioTarget.sh" "$@@"\n`
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioTarget.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "VisualStudio"
 			}
