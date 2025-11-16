@@ -3196,6 +3196,7 @@ Compile
 								`cd @(Compile.Custom_WorkingDirectory->Escape())\r\n`\
 								`call @(MalterlibExportEnvironmentScript->EscapeHost())\r\n`\
 								`@((Compile.Custom_CommandLine || "")->Replace('">"', ">")->Replace("&& ", "&& ^\r\n"))\r\n`\
+								`IF %ERRORLEVEL% NEQ 0 exit /B %ERRORLEVEL%\r\n`\
 								`@((Compile.Custom_Outputs || [])->ForEach(&f_ExpandCustomCommandOutputs))\r\n`
 	{
 		!!GeneratorFamily "VisualStudio"
