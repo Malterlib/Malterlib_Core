@@ -1052,3 +1052,20 @@ Property
 		UnicodeBOM false
 	}
 }
+
+%GenerateFile "UserSettingGlobal.MSettings"
+{
+	!!MalterlibUseDefaultLLDBInitFile true
+
+	GenerateFile
+	{
+		Name Builtin.BasePathAbsolute / "BuildSystem/UserSettingGlobal.MSettings"
+
+		Symlink true
+		SymlinkBasePath Builtin.BasePathAbsolute
+		Contents `@(HOME)/UserSettingGlobalV2.MSettings`
+		Executable false
+		UnixLineEnds true
+		UnicodeBOM false
+	}
+}
