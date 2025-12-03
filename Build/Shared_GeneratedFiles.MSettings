@@ -1063,7 +1063,7 @@ Property
 
 		Symlink true
 		SymlinkBasePath Builtin.BasePathAbsolute
-		Contents `@(HOME)/UserSettingGlobalV2.MSettings`
+		Contents `@(HomeDirectory)/UserSettingGlobalV2.MSettings`
 		Executable false
 		UnixLineEnds true
 		UnicodeBOM false

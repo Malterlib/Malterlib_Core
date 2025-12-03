@@ -10,6 +10,7 @@ Property
 	MalterlibRemoteDeployDebugRoot: string
 	MalterlibDeploySymbolsPath: string
 	HOME: string
+	HomeDirectory: string = HOME->MakeAbsolute() // Normalizes path
 }
 
 // Windows paths
@@ -49,7 +50,7 @@ Property
 			![] "C:/"->FindDirectoriesIn("CompiledFiles")
 		}
 	}
-	MalterlibCompiledFiles `@(HOME)/.CompiledFiles/`
+	MalterlibCompiledFiles `@(HomeDirectory)/.CompiledFiles/`
 	{
 		!!MalterlibCompiledFiles undefined
 	}
@@ -96,7 +97,7 @@ Property
 		}
 	}
 
-	MalterlibDevelopmentRoot `@(HOME)/.Development/`
+	MalterlibDevelopmentRoot `@(HomeDirectory)/.Development/`
 	{
 		!!MalterlibDevelopmentRoot undefined
 	}
@@ -124,7 +125,7 @@ Property
 		}
 	}
 
-	MalterlibDeployRoot `@(HOME)/.Deploy`
+	MalterlibDeployRoot `@(HomeDirectory)/.Deploy`
 	{
 		!!MalterlibDeployRoot undefined
 	}
@@ -165,7 +166,7 @@ Property
 	}
 
 
-	MalterlibDependenciesDirectory `@(HOME)/.CompiledFiles/Dependencies`
+	MalterlibDependenciesDirectory `@(HomeDirectory)/.CompiledFiles/Dependencies`
 	{
 		!!MalterlibDependenciesDirectory undefined
 	}
@@ -188,7 +189,7 @@ Property
 		}
 	}
 
-	MalterlibCompiledFiles `@(HOME)/.CompiledFiles/`
+	MalterlibCompiledFiles `@(HomeDirectory)/.CompiledFiles/`
 	{
 		!!MalterlibCompiledFiles undefined
 	}
@@ -225,7 +226,7 @@ Property
 		}
 	}
 
-	MalterlibDeployRoot `@(HOME)/.Deploy`
+	MalterlibDeployRoot `@(HomeDirectory)/.Deploy`
 	{
 		!!MalterlibDeployRoot undefined
 	}

@@ -6,10 +6,10 @@
 	Property
 	{
 		FullPath: string
-		
+
 		g_DSStoreName: string = ".DS_Store"
 
-		XcodeSpecificationsDir: string = `@(HOME)/Library/Application Support/Developer/Shared/Xcode/Specifications`
+		XcodeSpecificationsDir: string = `@(HomeDirectory)/Library/Application Support/Developer/Shared/Xcode/Specifications`
 		SpecificationsRoot: string = "Build/Xcode/Specifications"->MakeAbsolute()
 
 		RelativePath function(string _File) string
