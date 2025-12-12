@@ -5458,7 +5458,7 @@ static DWORD fg_AtomicReplaceImplementation(CStr const &_FileFrom, CStr const &_
 		{
 			// Handle deletion of running executables
 			FileHandle.f_Clear();
-			CStr TempName = "{}~{}.TMP"_f << _FileTo << NCryptography::fg_RandomID();
+			CStr TempName = "{}~{}.TMP"_f << _FileTo << NCryptography::fg_FastRandomID();
 			if (auto Error = fg_AtomicReplaceImplementation(_FileTo, TempName, true); Error == 0)
 			{
 				if (auto Error = fg_AtomicReplaceImplementation(_FileFrom, _FileTo, true); Error == 0)
