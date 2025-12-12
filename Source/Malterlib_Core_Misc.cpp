@@ -3,27 +3,57 @@
 
 #include <Mib/Process/Platform>
 #include <Mib/Cryptography/Hashes/SHA>
+#include <Mib/Cryptography/SecureRandom>
 
 namespace NMib
 {
 	namespace NMisc
 	{
+		// Combined thread-local storage for both fast and secure random generators
+		// Using one struct saves thread-local storage IDs
+		struct CRandomThreadLocal
+		{
+			CAutoRandom m_Random; // Fast, non-secure XorShift
+			NCryptography::CSecureRandom m_SecureRandom; // Secure ChaCha20-based
+		};
+
 		struct CSubSystem_Misc_Random : public CSubSystem
 		{
 			void f_ForkedChildAfterThreadLocal() override
 			{
-				// Reset random
+				// Reset random - this will destroy and recreate on next access
 				m_Random.f_DestroyForThread();
 			}
 
-			NThread::TCThreadLocal<CAutoRandom, NMemory::CAllocator_NonTrackedHeap> m_Random;
+			NThread::TCThreadLocal<CRandomThreadLocal, NMemory::CAllocator_NonTrackedHeap> m_Random;
 		};
 
 		constinit TCSubSystem<CSubSystem_Misc_Random, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Misc_Random = {DAggregateInit};
 
 		CRandomShiftRNG &fg_RandomThreadLocal()
 		{
-			return *(*g_SubSystem_Misc_Random).m_Random;
+			return (*g_SubSystem_Misc_Random).m_Random->m_Random;
+		}
+
+		NCryptography::CSecureRandom &fg_SecureRandomThreadLocal()
+		{
+			return (*g_SubSystem_Misc_Random).m_Random->m_SecureRandom;
+		}
+
+		int32 fg_GetSecureRandom()
+		{
+			return fg_SecureRandomThreadLocal().f_GetValue<int32>() & 0x7fffffff;
+		}
+
+		uint32 fg_GetSecureRandomUnsigned()
+		{
+			return fg_SecureRandomThreadLocal().f_GetValue<uint32>();
+		}
+
+		fp64 fg_GetSecureRandomFloat()
+		{
+			uint64 RandomInt64 = fg_SecureRandomThreadLocal().f_GetValue<uint64>();
+			return fp64(pfp64(RandomInt64)) / fp64(pfp64(TCLimitsInt<uint64>::mc_Max));
 		}
 
 		static uint32 fg_IntegerFromCyclesAndRandom()

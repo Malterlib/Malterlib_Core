@@ -1,9 +1,14 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
 
 #include <Mib/Core/Core>
+
+namespace NMib::NCryptography
+{
+	struct CSecureRandom;
+}
 
 namespace NMib
 {
@@ -14,8 +19,7 @@ namespace NMib
 		bool fg_CheckAccessRights(NStr::CStr const& _Path, bool _bRandom = true);
 		bool fg_CheckAccessRights(NStr::CStrNonTracked const& _Path, bool _bRandom = true);
 		bool fg_CheckFileAccessRights(NStr::CStr _Path);
-		
- 
+
 		template <typename tf_CContainer, typename tf_CType>
 		auto fg_FindEqual(tf_CContainer &&_Container, const tf_CType &_ToFind) -> decltype(fg_Forward<tf_CContainer>(_Container).f_FindEqual(_ToFind))
 		{
@@ -76,18 +80,18 @@ namespace NMib
 		template <typename t_CType>
 		class TCTypeID
 		{
-			public:		
+			public:
 		};
 
 		template <int t_TypeID>
 		class TCTypeIDReverse
 		{
-			public:		
+			public:
 		};
-		
+
 #		define DMibTypeID(_Class, _ID) namespace NMib{namespace NMisc{template <> class TCTypeID<_Class > {public: enum {ETypeID = _ID};}; template <> class TCTypeIDReverse<_ID> {public: using CType = _Class;};}}
 
-		
+
 		class CClassContainer
 		{
 			private:
@@ -95,18 +99,18 @@ namespace NMib
 
 			CClassContainer() {}
 			CClassContainer(CClassContainer const&) {} // Ignore the link.
-			
+
 			virtual ~CClassContainer()
 			{
 			}
-			
+
 			DMibListLinkD_Link(CClassContainer, m_Link);
-			
+
 			void *f_GetVoidPtr() const
 			{
 				return (void *)this;
 			}
-			
+
 			template <typename t_CCast>
 			t_CCast *f_Get() const
 			{
@@ -134,18 +138,18 @@ namespace NMib
 			virtual void *fp_GetPointer() const = 0;
 			virtual aint fp_GetIdentifier() const = 0;
 			virtual mint fp_GetContext() const = 0;
-									
+
 		};
-		
+
 		template <typename t_CType>
 		class TCClassContainer : public CClassContainer
 		{
 			public:
-			
+
 			const t_CType *m_pContainee;
 			aint m_Identifier;
 			mint m_Context;
-			
+
 			TCClassContainer(const t_CType &_Containee, aint _Identifier)
 			{
 				m_pContainee = &_Containee;
@@ -158,7 +162,7 @@ namespace NMib
 				m_Identifier = _Identifier;
 				m_Context = _Context;
 			}
-			
+
 		protected:
 			virtual aint fp_GetIdentifier() const
 			{
@@ -169,13 +173,13 @@ namespace NMib
 			{
 				return m_Context;
 			}
-			
+
 			virtual void *fp_GetPointer() const
 			{
 				return (void *)m_pContainee;
 			}
 		};
-		
+
 		template <typename t_CType>
 		TCClassContainer<t_CType> fg_GetClassContainer(const t_CType &_Object)
 		{
@@ -187,21 +191,21 @@ namespace NMib
 		{
 			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::ETypeID, _Context));
 		}
-		
+
 #		define DGetCC(_Object)	NMib::NMisc::fg_GetClassContainer(_Object).f_GetVoidPtr()
 #		define DGetCCContext(_Object, _Context)	NMib::NMisc::fg_GetClassContainer(_Object, _Context).f_GetVoidPtr()
-		
+
 		class CClassContainerList
 		{
 			public:
-			
+
 			DMibListLinkD_List(CClassContainer, m_Link) m_List;
 			using CIter = DMibListLinkD_Iter(CClassContainer, m_Link) ;
-			
+
 			~CClassContainerList()
 			{
-			}					
-		};	
+			}
+		};
 
 		CClassContainerList *fg_GetClassContainerListArgList(CClassContainerList &_List, CMibArgList &_Args);
 		CClassContainerList *fg_GetClassContainerList(CClassContainerList *_pList, ...);
@@ -267,8 +271,8 @@ namespace NMib
 
 			template <typename tf_CInt>
 			constexpr inline_small tf_CInt f_GetValue(tf_CInt _Min, tf_CInt _Max)
-			{ 
-				return _Min + f_GetValue<tf_CInt>() % (_Max - _Min); 
+			{
+				return _Min + f_GetValue<tf_CInt>() % (_Max - _Min);
 			}
 
 			constexpr inline_small static uint32 fs_Max()
@@ -289,6 +293,8 @@ namespace NMib
 		};
 
 		CRandomShiftRNG &fg_RandomThreadLocal();
+
+		NCryptography::CSecureRandom &fg_SecureRandomThreadLocal();
 
 		static inline_small int32 fg_GetRandom()
 		{
@@ -322,12 +328,17 @@ namespace NMib
 			return fp64(pfp64(RandomInt64)) / fp64(pfp64(TCLimitsInt<uint64>::mc_Max));
 		}
 
+		// Secure random functions (ChaCha20-based CSPRNG)
+		// Use these for security-sensitive operations (tokens, keys, nonces, etc.)
+		int32 fg_GetSecureRandom();
+		uint32 fg_GetSecureRandomUnsigned();
+		fp64 fg_GetSecureRandomFloat();
 
 		static inline_small void fg_SetRanmomSeed(aint _Seed)
 		{
 			fg_RandomThreadLocal() = CRandomShiftRNG(_Seed);
 		}
-		
+
 		static inline_small CRandomShiftRNG &fg_Random()
 		{
 			return fg_RandomThreadLocal();
@@ -530,13 +541,13 @@ namespace NMib
 				return !_Container;
 			}
 		};
-		
+
 		template <typename tf_CContainer>
 		auto begin(tf_CContainer &&_Container) -> decltype(_Container.f_GetIterator())
 		{
 			return _Container.f_GetIterator();
 		}
-		
+
 		template <typename tf_CContainer>
 		CIteratorEndSentinel end(tf_CContainer &&_Container, TCEnableIf<!NTraits::cIsVoid<decltype(_Container.f_GetIterator())>, bool> = true)
 		{
@@ -573,16 +584,16 @@ namespace NMib
 		template <typename tf_CType>
 		typename TCStr<tf_CType>::CChar const *begin(TCStr<tf_CType> const &_String)
 		{
-			return _String.f_GetStr(); 
+			return _String.f_GetStr();
 		}
 
 		template <typename tf_CType>
 		typename TCStr<tf_CType>::CChar const *end(TCStr<tf_CType> const &_String)
 		{
-			return _String.f_GetStr() + _String.f_GetLen(); 
+			return _String.f_GetStr() + _String.f_GetLen();
 		}
 	}
-	
+
 	namespace NIntrusive
 	{
 		using NContainer::CIteratorEndSentinel;
