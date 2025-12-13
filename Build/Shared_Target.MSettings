@@ -3268,7 +3268,9 @@ Property
 
 			Contents `#pragma once\r\n@(MalterlibBuildSpecifics)`
 
-			UnicodeBOM true
+			UnixLineEnds true
+			UnicodeBOM false
+			
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 		}
 		Compile
@@ -3302,6 +3304,9 @@ Target
 		{
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 			Name `@(GeneratedDirectory)Dependencies.cpp`
+
+			UnixLineEnds true
+			UnicodeBOM false
 
 			Contents [XcodeGeneratorDependencyFiles..., PreBuildOutputFile]->ForEach(&fg_ExpandDependenciesTemplate)
 		}
