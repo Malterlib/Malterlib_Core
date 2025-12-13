@@ -49,7 +49,7 @@ namespace NMib
 		struct CVectorOptionsDefault;
 
 		template <typename t_CData, typename t_CAllocator = NMib::NMemory::CAllocator_Heap, typename t_COptions = CVectorOptionsDefault>
-		class TCVector;
+		struct TCVector;
 
 		struct CByteVector;
 		struct CSecureByteVector;
