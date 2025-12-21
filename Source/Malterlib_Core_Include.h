@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #ifdef DMibSafety_IncMalterlib_H
@@ -22,7 +22,7 @@ namespace NMib
 
 		using CDefaultAllocator = CAllocator_Heap;
 	}
-	
+
 	namespace NThread
 	{
 		class CNoLock;
@@ -53,7 +53,7 @@ namespace NMib
 
 		struct CByteVector;
 		struct CSecureByteVector;
-		
+
 //#define DMibSecureClearIOBuffers_Enable
 #ifdef DMibSecureClearIOBuffers_Enable
 		using CIOByteVector = NContainer::CSecureByteVector;
@@ -72,7 +72,7 @@ namespace NMib
 	struct TCVoidFunctor
 	{
 		template <typename ...tfp_CParam>
-		t_CReturn operator ()(tfp_CParam && ...) const volatile 
+		t_CReturn operator ()(tfp_CParam && ...) const volatile
 		{
 			return t_CReturn();
 		}
@@ -82,7 +82,7 @@ namespace NMib
 	struct TCVoidFunctor<void>
 	{
 		template <typename ...tfp_CParam>
-		void operator ()(tfp_CParam && ...) const volatile 
+		void operator ()(tfp_CParam && ...) const volatile
 		{
 		}
 	};
@@ -111,16 +111,16 @@ namespace NMib
 		template <typename t_CountType>
 		struct TCIntrusiveRefCount<ESharedPointerOption_SupportWeakPointer, t_CountType>;
 	}
-	
+
 	template <typename t_CIntType>
 	class TCLimitsInt;
 
 	namespace NFunction
 	{
-		template 
+		template
 		<
 			typename t_CFunction // The function definition to contain
-			, typename... tp_COptions // Arguments, Can be function definition, option (CFunctionSupportEqualityCompareTag, CFunctionSupportOrderedCompareTag) or allocator 
+			, typename... tp_COptions // Arguments, Can be function definition, option (CFunctionSupportEqualityCompareTag, CFunctionSupportOrderedCompareTag) or allocator
 		>
 		class TCFunctionNoAlloc;
 
@@ -240,7 +240,7 @@ namespace NMib
 
 		template <typename t_CType, typename... tp_COptions>
 		class TCWeakPointer;
-		
+
 	}
 }
 
@@ -351,9 +351,9 @@ namespace NMib
 	using namespace NMib::NException;
 	using namespace NMib::NMisc;
 	using namespace NMib::NStream;
-	using namespace NMib::NContainer;	
-	using namespace NMib::NAtomic;	
-	using namespace NMib::NSystem;	
+	using namespace NMib::NContainer;
+	using namespace NMib::NAtomic;
+	using namespace NMib::NSystem;
 	#define DNewLine DMibNewLine
 #endif
 
