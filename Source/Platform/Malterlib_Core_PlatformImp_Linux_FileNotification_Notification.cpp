@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_PlatformImp_Linux_FileNotification.h"
@@ -69,7 +69,7 @@ void CFileChangeNotificationContext::CNotification::f_RegisterChange
 	Change.m_Notification = _Notification;
 	Change.m_Path = _Path;
 	Change.m_PathFrom = _RenameFrom;
-	
+
 	if (o_Context.m_ChangesSet(Change).f_WasCreated())
 	{
 		if (_Notification == EFileChangeNotification_Removed || _Notification == EFileChangeNotification_Added || _Notification == EFileChangeNotification_Renamed)
@@ -85,22 +85,35 @@ void CFileChangeNotificationContext::CNotification::f_OnRemovedFromRename(CFindC
 		f_RegisterChange(o_Context, _PendingRename.m_RelativePath, NMib::NFile::EFileChangeNotification_Removed);
 	if ((m_Flags & NFile::EFileChange_DirectoryName) && !_PendingRename.m_RelativePath.f_IsEmpty())
 		f_RegisterChange(o_Context, NFile::CFile::fs_GetPath(_PendingRename.m_RelativePath), NMib::NFile::EFileChangeNotification_Modified);
-	
-	if (_PendingRename.m_bIsDir && (m_Flags & NFile::EFileChange_Recursive) && _PendingRename.m_pWatch)
+
+	if (_PendingRename.m_bIsDir && (m_Flags & NFile::EFileChange_Recursive))
 	{
-		_PendingRename.m_pWatch->f_ForEachChildFile
-			(
-				[&](CStr const &_Path, bool _bIsDir)
-				{
-					CStr ChildRelativePath = CFile::fs_AppendPath(_PendingRename.m_RelativePath, _Path);
-					if (((m_Flags & NFile::EFileChange_DirectoryName) && _bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !_bIsDir))
-						f_RegisterChange(o_Context, ChildRelativePath, NMib::NFile::EFileChangeNotification_Removed);
-				}
-				, true  
-			)
-		;
+		if (_PendingRename.m_pWatch)
+		{
+			_PendingRename.m_pWatch->f_ForEachChildFile
+				(
+					[&](CStr const &_Path, bool _bIsDir)
+					{
+						CStr ChildRelativePath = CFile::fs_AppendPath(_PendingRename.m_RelativePath, _Path);
+						if (((m_Flags & NFile::EFileChange_DirectoryName) && _bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !_bIsDir))
+							f_RegisterChange(o_Context, ChildRelativePath, NMib::NFile::EFileChangeNotification_Removed);
+					}
+					, true
+				)
+			;
+		}
+		else if (!_PendingRename.m_ChildFilesSnapshot.f_IsEmpty())
+		{
+			for (auto &bIsDir : _PendingRename.m_ChildFilesSnapshot)
+			{
+				CStr const &ChildPath = _PendingRename.m_ChildFilesSnapshot.fs_GetKey(bIsDir);
+				CStr ChildRelativePath = CFile::fs_AppendPath(_PendingRename.m_RelativePath, ChildPath);
+				if (((m_Flags & NFile::EFileChange_DirectoryName) && bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !bIsDir))
+					f_RegisterChange(o_Context, ChildRelativePath, NMib::NFile::EFileChangeNotification_Removed);
+			}
+		}
 	}
-	
+
 	if (_PendingRename.m_pWatch)
 		m_pContext->f_UnlinkWatch(_PendingRename.m_pWatch, this, true);
 }
@@ -119,10 +132,10 @@ void CFileChangeNotificationContext::CNotification::f_OnAdded(CFindChangesContex
 		f_RegisterChange(o_Context, _Path, NMib::NFile::EFileChangeNotification_Added);
 	if (m_Flags & NFile::EFileChange_DirectoryName)
 		f_RegisterChange(o_Context, NFile::CFile::fs_GetPath(_Path), NMib::NFile::EFileChangeNotification_Modified);
-	
+
 	if (!pWatch || !(m_Flags & (NFile::EFileChange_DirectoryName | NFile::EFileChange_FileName)))
 		return;
-	
+
 	pWatch->f_ForEachChildFile
 		(
 			[&](CStr const &_ChildPath, bool _bIsDir)
@@ -131,7 +144,7 @@ void CFileChangeNotificationContext::CNotification::f_OnAdded(CFindChangesContex
 				if (((m_Flags & NFile::EFileChange_DirectoryName) && _bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !_bIsDir))
 					f_RegisterChange(o_Context, RelativePath, NMib::NFile::EFileChangeNotification_Added);
 			}
-			, true  
+			, true
 		)
 	;
 }
@@ -143,12 +156,12 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 		return;
 
 	CStr EventPath = _pWatch->f_GetPath();
-	
+
 	CStr EventFileName(_Event.name, fg_StrLen(_Event.name, _Event.len));
 
 	if (!EventFileName.f_IsEmpty())
 		EventPath += CStr::CFormat("/{}") << EventFileName;
-	
+
 	CStr RelativePath = EventPath.f_Delete(0, m_BasePath.f_GetLen()+1);
 	//DMibConOut2("f_OnEvent: {} = 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8}\n", CStr(_Event.name, fg_StrLen(_Event.name, _Event.len)), _Event.mask, _Event.cookie);
 
@@ -156,6 +169,8 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 
 	if ((_Event.mask & IN_MOVE_SELF) && RelativePath == "")
 	{
+		DMibFileChangeNotificationsDebugOut("MoveSelf {}", RelativePath);
+
 		bool bNewSelfValid;
 		try
 		{
@@ -215,14 +230,19 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 
 	if (_Event.mask & IN_DELETE_SELF)
 	{
+		DMibFileChangeNotificationsDebugOut("DeleteSelf {}", RelativePath);
 		if (RelativePath.f_IsEmpty() && (((m_Flags & NFile::EFileChange_DirectoryName) && bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !bIsDir)))
 			f_RegisterChange(o_Context, RelativePath, NMib::NFile::EFileChangeNotification_Removed);
 		m_pContext->f_UnlinkWatch(_pWatch, this, true);
 	}
 	else if (_Event.mask & IN_CREATE)
+	{
+		DMibFileChangeNotificationsDebugOut("Create {}", RelativePath);
 		f_OnAdded(o_Context, RelativePath, bIsDir, _pWatch.f_Get());
+	}
 	else if (_Event.mask & IN_DELETE)
 	{
+		DMibFileChangeNotificationsDebugOut("Delete {}", RelativePath);
 		if (((m_Flags & NFile::EFileChange_DirectoryName) && bIsDir) || ((m_Flags & NFile::EFileChange_FileName) && !bIsDir))
 			f_RegisterChange(o_Context, RelativePath, NMib::NFile::EFileChangeNotification_Removed);
 		if (m_Flags & NFile::EFileChange_DirectoryName)
@@ -230,6 +250,7 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 	}
 	else if (_Event.mask & IN_MOVED_FROM)
 	{
+		DMibFileChangeNotificationsDebugOut("MovedFrom {} 0x{nfh,sf0,sj8}", RelativePath, _Event.cookie);
 		auto Mapped = m_PendingRenames(_Event.cookie);
 		CPendingRename &PendingRename = *Mapped;
 		if (Mapped.f_WasCreated())
@@ -238,10 +259,20 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 		PendingRename.m_RelativePath = RelativePath;
 		PendingRename.m_bIsDir = bIsDir;
 		PendingRename.m_pWatch = fg_Explicit(_pWatch->f_GetChild(EventFileName));
+
+		if (!PendingRename.m_pWatch)
+		{
+			if (auto *pPendingReParent = m_pContext->m_PendingReParents.f_FindEqual(EventPath))
+			{
+				PendingRename.m_ChildFilesSnapshot = fg_Move(pPendingReParent->m_ChildFiles);
+				m_pContext->m_PendingReParents.f_Remove(pPendingReParent);
+			}
+		}
 		return;
 	}
 	else if (_Event.mask & IN_MOVED_TO)
 	{
+		DMibFileChangeNotificationsDebugOut("MovedTo {} 0x{nfh,sf0,sj8}", RelativePath, _Event.cookie);
 		auto pRename = m_PendingRenames.f_FindEqual(_Event.cookie);
 		if (pRename)
 		{
@@ -305,7 +336,14 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 			f_OnAdded(o_Context, RelativePath, bIsDir, _pWatch.f_Get());
 		}
 	}
+	else if (!(_Event.mask & (IN_MODIFY | IN_ATTRIB)))
+	{
+		DMibFileChangeNotificationsDebugOut("UNKNOWN(0x{nfh,sf0,sj8}) {} 0x{nfh,sf0,sj8}", _Event.mask, RelativePath, _Event.cookie);
+	}
 
 	if (((_Event.mask & IN_MODIFY) && (m_Flags & NFile::EFileChange_Write)) || ((_Event.mask & IN_ATTRIB) && (m_Flags & NFile::EFileChange_Attributes)))
+	{
+		DMibFileChangeNotificationsDebugOut("Modified {}", RelativePath);
 		f_RegisterChange(o_Context, RelativePath, NMib::NFile::EFileChangeNotification_Modified);
+	}
 }

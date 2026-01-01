@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -31,7 +31,7 @@ class CFileChangeNotificationContext
 public:
 	CFileChangeNotificationContext();
 	~CFileChangeNotificationContext();
-		
+
 	class CNotification;
 	class CWatch
 	{
@@ -46,16 +46,16 @@ public:
 			if (mp_pParent)
 				mp_pParent->mp_Children.f_Insert(*this);
 		}
-		
+
 		~CWatch()
 		{
 		}
-		
+
 		CWatch *f_GetParent() const
 		{
 			return mp_pParent;
 		}
-		
+
 		void f_SetParent(CWatch *_pParent, CStr const &_Path)
 		{
 			mp_Link.f_Unlink();
@@ -67,32 +67,32 @@ public:
 				mp_pParent->mp_Children.f_Insert(this);
 			}
 		}
-		
+
 		auto &f_GetChildren()
 		{
 			return mp_Children;
 		}
-		
+
 		void f_AddReference(CNotification *_pReference)
 		{
 			mp_References[_pReference];
 		}
-		
+
 		void f_RemoveReference(CNotification *_pReference)
 		{
 			mp_References.f_Remove(_pReference);
 		}
-		
+
 		bool f_IsReferenced()
 		{
 			return !mp_References.f_IsEmpty();
 		}
-		
+
 		int f_GetDescriptor()
 		{
 			return mp_Descriptor;
 		}
-		
+
 		TCSet<CNotification *> f_GetReferences()
 		{
 			return mp_References;
@@ -102,12 +102,12 @@ public:
 		{
 			return mp_References.f_GetLen();
 		}
-		
+
 		CStr f_GetPath() const
 		{
 			return mp_Path;
 		}
-		
+
 		CWatch *f_GetChild(CStr const &_FileName)
 		{
 			for (auto &Child : mp_Children)
@@ -128,14 +128,14 @@ public:
 		{
 			for (auto &bIsDir : m_ChildFiles)
 				_fOnFile(CFile::fs_AppendPath(_BasePath, m_ChildFiles.fs_GetKey(bIsDir)), bIsDir);
-			
+
 			if (!_bRecursive)
 				return;
-			
+
 			for (auto &Child : mp_Children)
 				Child.fr_ForEachChildFile(CFile::fs_AppendPath(_BasePath, Child.mp_FileName), _fOnFile, true);
 		}
-		
+
 		template <typename tf_FOnFile>
 		void f_ForEachChildFile(tf_FOnFile &&_fOnFile, bool _bRecursive)
 		{
@@ -156,7 +156,7 @@ public:
 	};
 
 	class CNotificationThread;
-	
+
 	class CNotification
 	{
 	public:
@@ -166,28 +166,29 @@ public:
 			EFileChangeNotification m_Notification = EFileChangeNotification_Undefined;
 			CStr m_Path;
 			NStr::CStr m_PathFrom;
-			
+
 			auto operator <=> (CChange const &_Right) const = default;
 		};
-		
+
 		struct CFindChangesContext
 		{
 			TCLinkedList<CChange> m_ChangesFileName;
 			TCLinkedList<CChange> m_Changes;
 			TCSet<CChange> m_ChangesSet;
 		};
-		
+
 		struct CPendingRename
 		{
 			NTime::CClock m_Clock{true};
 			CStr m_RelativePath;
 			TCSharedPointer<CWatch> m_pWatch;
 			bool m_bIsDir = false;
+			TCMap<CStr, bool> m_ChildFilesSnapshot;
 		};
-		
+
 		CNotification(CFileChangeNotificationContext* _pNotificationContext, CStr const &_BasePath);
 		~CNotification();
-		
+
 		void f_Clear();
 		void f_Cancel();
 		CWatch *f_WatchPath(CWatch *_pParentWatch, CStr const &_Path, bool _bThrow);
@@ -195,21 +196,21 @@ public:
 		void f_OnEvent(CFindChangesContext &o_Context, inotify_event const &_Event, TCSharedPointer<CWatch> const &_pWatch);
 		void f_OnAdded(CFindChangesContext &o_Context, CStr const &_Path, bool _bIsDir, CWatch* _pWatch);
 		void f_OnRemovedFromRename(CFindChangesContext &o_Context, CPendingRename const &_PendingRename);
-		
+
 		DMibListLinkDS_Link(CNotification, m_Link);
 		TCMap<int, TCSharedPointer<CWatch>> m_Watches;
 		CStr m_BasePath;
 		CFileChangeNotificationContext *m_pContext;
-		
+
 		NFile::CUniqueFileIdentifier m_SelfUniqueID;
 
 		TCLinkedList<CChange> m_Changes;
 		CMutual m_ChangesLock;
-		
+
 		TCMap<uint32, CPendingRename> m_PendingRenames;
-		
+
 		CSemaphoreAggregate *m_pReportTo;
-		
+
 		EFileChange m_Flags;
 		bool m_bSelfValid = true;
 	};
@@ -217,14 +218,14 @@ public:
 	class CNotificationThread : public NMib::NThread::CThread
 	{
 	public:
-		CNotificationThread(CFileChangeNotificationContext *_pContext);		
+		CNotificationThread(CFileChangeNotificationContext *_pContext);
 		~CNotificationThread();
-		
+
 		virtual NStr::CStr f_GetThreadName();
 		bool f_ReadEvents();
 		void f_HandleRenameTimeouts(TCMap<CNotification *, CNotification::CFindChangesContext> &_NotificationContexts);
 		aint f_Main();
-		
+
 		CFileChangeNotificationContext *m_pContext;
 		CByteVector m_ChangesBuffer;
 	};
@@ -237,11 +238,18 @@ public:
 	};
 	TCMap<uint32, CPendingRename> m_PendingRenames;
 	mint m_nPendingNotificationRenames = 0;
-	
+
+	struct CPendingReParent
+	{
+		NTime::CClock m_Clock{true};
+		TCMap<CStr, bool> m_ChildFiles;
+	};
+	TCMap<CStr, CPendingReParent> m_PendingReParents;
+
 	int f_Inotify_AddWatch(CStr const &_Path);
 	void f_Inotify_RemoveWatch(int _Descriptor);
 	ssize_t f_Inotify_Read(CByteVector &_Buffer);
-	
+
 	CWatch &f_LinkWatch(int _WatchDescriptor, CStr const &_Path, CNotification *_pNotification, CWatch *_pParentWatch);
 	void f_UnlinkWatch(TCSharedPointer<CWatch> _pWatch, CNotification *_pNotification, bool _bDescriptorInvalid);
 
@@ -249,12 +257,12 @@ public:
 	void f_Close(void *_pNotification);
 	bool f_Changed(void *_pNotification);
 	bool f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, CStr &_PathFrom);
-	
+
 	int m_NotifyDescriptor;
 	int m_PollDescriptor;
 
 	int m_WakeupPipe[2];		// Used to wake the epoll thread up.
-	
+
 	TCMap<int, TCSharedPointer<CWatch>> m_Watches;
 	DMibListLinkDS_List(CNotification, m_Link) m_Notifications;
 	CMutual m_ContextLock;

@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_PlatformImp_Linux_FileNotification.h"
@@ -10,7 +10,7 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 {
 	m_WakeupPipe[0] = -1;
 	m_WakeupPipe[1] = -1;
-	
+
 	if (NLocal::g_f_inotify_init1)
 		m_NotifyDescriptor = NLocal::g_f_inotify_init1(IN_NONBLOCK | IN_CLOEXEC); // This should never block, epoll takes care of that.
 	else if (NLocal::g_f_inotify_init)
@@ -40,8 +40,8 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 			DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_init(): Unknown error {}") << errno);
 		}
 	}
-	
-	
+
+
 	if (!NLocal::g_f_inotify_init1)
 	{
 		fcntl(m_NotifyDescriptor, F_SETFL, fcntl(m_NotifyDescriptor, F_GETFL) | O_NONBLOCK);
@@ -49,9 +49,9 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 	}
 
 	int (* fLocal_epoll_create1)(int __flags) __THROW;
-	
+
 	(void * &)fLocal_epoll_create1 = dlsym(RTLD_DEFAULT, "epoll_create1");
-	
+
 	if (fLocal_epoll_create1)
 		m_PollDescriptor = fLocal_epoll_create1(EPOLL_CLOEXEC);
 	else
@@ -110,7 +110,7 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 			}
 		}
 	}
-	
+
 	{
 		int PipeRet;
 		if (NLocal::g_f_pipe2)
@@ -130,14 +130,14 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 		(void)PipeRet;
 		if (PipeRet != 0)
 			DMibError(NMib::NPlatform::fg_FormatErrno("pipe (file notification wakeup)", errno));
-		
+
 		epoll_event Event;
 		Event.events = EPOLLIN;
 		Event.data.fd = m_WakeupPipe[0];
 		int Result = epoll_ctl(m_PollDescriptor, EPOLL_CTL_ADD, m_WakeupPipe[0], &Event);
 		if (Result)
 			DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({}, {})") << m_PollDescriptor << m_WakeupPipe[0], errno));
-		
+
 	}
 
 	m_pNotificationThread = fg_Construct(this);
@@ -146,17 +146,17 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 
 CFileChangeNotificationContext::~CFileChangeNotificationContext()
 {
-	
+
 	if (m_pNotificationThread)
 	{
 		// We need to stop this first, otherwise it will have gone out of scope when it's stopped in the super class
 		m_pNotificationThread->f_Stop(false);
 		char Byte = 1;
 		write(m_WakeupPipe[1], &Byte, 1);
-		m_pNotificationThread->f_Stop(true);				
+		m_pNotificationThread->f_Stop(true);
 		m_pNotificationThread.f_Clear();
 	}
-	
+
 	m_Notifications.f_DeleteAllDefiniteType();
 
 	if (m_WakeupPipe[0] >= 0)
@@ -199,7 +199,7 @@ void CFileChangeNotificationContext::f_Inotify_RemoveWatch(int _Descriptor)
 ssize_t CFileChangeNotificationContext::f_Inotify_Read(CByteVector &_Buffer)
 {
 	ssize_t ReadResult = read(m_NotifyDescriptor, _Buffer.f_GetArray(), _Buffer.f_GetLen());
-	
+
 	if (ReadResult < 0)
 	{
 		switch (errno)
@@ -231,14 +231,27 @@ ssize_t CFileChangeNotificationContext::f_Inotify_Read(CByteVector &_Buffer)
 CFileChangeNotificationContext::CWatch &CFileChangeNotificationContext::f_LinkWatch(int _WatchDescriptor, CStr const &_Path, CNotification *_pNotification, CWatch *_pParentWatch)
 {
 	NStorage::TCSharedPointer<CWatch> pWatch;
-	
+
 	if (auto *pExistingWatch = m_Watches.f_FindEqual(_WatchDescriptor))
 	{
 		pWatch = *pExistingWatch;
-		if (!pWatch->f_GetParent() && _pParentWatch)
+
+		if (pWatch->f_GetPath() != _Path)
+		{
+			CPendingReParent &ReParent = m_PendingReParents[pWatch->f_GetPath()];
+			pWatch->f_ForEachChildFile
+				(
+					[&](CStr const &_ChildPath, bool _bIsDir)
+					{
+						ReParent.m_ChildFiles[_ChildPath] = _bIsDir;
+					}
+					, true
+				)
+			;
 			pWatch->f_SetParent(_pParentWatch, _Path);
-		
-		DMibCheck(!_pParentWatch || pWatch->f_GetParent() == _pParentWatch);
+		}
+		else if (!pWatch->f_GetParent() && _pParentWatch)
+			pWatch->f_SetParent(_pParentWatch, _Path);
 	}
 	else
 	{
@@ -264,7 +277,7 @@ void CFileChangeNotificationContext::f_UnlinkWatch(TCSharedPointer<CWatch> _pWat
 {
 	_pNotification->m_Watches.f_Remove(_pWatch->f_GetDescriptor());
 	_pWatch->f_RemoveReference(_pNotification);
-	
+
 	if (!_pWatch->f_IsReferenced())
 	{
 		int WatchDescriptor = _pWatch->f_GetDescriptor();
@@ -303,7 +316,7 @@ void *CFileChangeNotificationContext::f_Open(const CStr &_FileName, NMib::NFile:
 		pNot->f_WatchPath(nullptr, FileName, true);
 
 		m_Notifications.f_Insert(pNot.f_Get());
-	
+
 		return pNot.f_Detach();
 	}
 }
@@ -318,7 +331,7 @@ void CFileChangeNotificationContext::f_Close(void *_pNotification)
 	for (auto &pWatch : m_Watches)
 		DMibFastCheck(!pWatch->f_HasNotification(pNotification));
 #endif
-	
+
 	m_Notifications.f_Remove(pNotification);
 	fg_DeleteObject(NMemory::CDefaultAllocator(), pNotification);
 }

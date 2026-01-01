@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_PlatformImp_Linux_FileNotification.h"
@@ -47,8 +47,21 @@ void CFileChangeNotificationContext::CNotificationThread::f_HandleRenameTimeouts
 			continue;
 		}
 
-		Rename.m_pWatch->f_SetParent(nullptr, CStr());
+		if (Rename.m_pWatch)
+			Rename.m_pWatch->f_SetParent(nullptr, CStr());
 		iRename.f_Remove();
+	}
+
+	// Clean up pending re-parent entries that never received an IN_MOVED_FROM event
+	auto &PendingReParents = m_pContext->m_PendingReParents;
+	for (auto iReParent = PendingReParents.f_GetIterator(); iReParent;)
+	{
+		if (iReParent->m_Clock.f_GetTime() < 1.0)
+		{
+			++iReParent;
+			continue;
+		}
+		iReParent.f_Remove();
 	}
 }
 
@@ -110,7 +123,7 @@ bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 
 			CStr EventPath(Event.name, fg_StrLen(Event.name, Event.len));
 			CStr FullEventPath = CFile::fs_AppendPath(Watch.f_GetPath(), EventPath);
-			
+
 			if (Event.mask & IN_CREATE)
 			{
 				Watch.m_ChildFiles[EventPath] = CFile::fs_FileExists(FullEventPath, EFileAttrib_Directory);
@@ -144,14 +157,38 @@ bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 	}
 
 	f_HandleRenameTimeouts(NotificationContexts);
-	
+
 	for (auto &Context : NotificationContexts)
 	{
 		CNotification *pNotification = NotificationContexts.fs_GetKey(Context);
-		
+
 		if (!Context.m_ChangesFileName.f_IsEmpty() || !Context.m_Changes.f_IsEmpty())
 		{
 			DMibLock(pNotification->m_ChangesLock);
+
+#ifdef DMibFileChangeNotificationsDebug
+			auto fNotificationToStr = [](EFileChangeNotification _Notification) -> CStr
+				{
+					switch (_Notification)
+					{
+					case EFileChangeNotification_Undefined: return "Undefined";
+					case EFileChangeNotification_Unknown: return "Unknown";
+					case EFileChangeNotification_Added: return "Added";
+					case EFileChangeNotification_Removed: return "Removed";
+					case EFileChangeNotification_Modified: return "Modified";
+					case EFileChangeNotification_Renamed: return "Renamed";
+					}
+
+					return "";
+				}
+			;
+
+			for (auto &Test : Context.m_ChangesFileName)
+				DMibFileChangeNotificationsDebugOut("--- {} {} {}", fNotificationToStr(Test.m_Notification), Test.m_Path, Test.m_PathFrom);
+			for (auto &Test : Context.m_Changes)
+				DMibFileChangeNotificationsDebugOut("--- {} {} {}", fNotificationToStr(Test.m_Notification), Test.m_Path, Test.m_PathFrom);
+#endif
+
 			pNotification->m_Changes.f_Insert(fg_Move(Context.m_ChangesFileName));
 			pNotification->m_Changes.f_Insert(fg_Move(Context.m_Changes));
 			if (pNotification->m_pReportTo)
@@ -159,7 +196,7 @@ bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 		}
 	}
 
-	return !m_pContext->m_PendingRenames.f_IsEmpty() || m_pContext->m_nPendingNotificationRenames != 0;
+	return !m_pContext->m_PendingRenames.f_IsEmpty() || m_pContext->m_nPendingNotificationRenames != 0 || !m_pContext->m_PendingReParents.f_IsEmpty();
 }
 
 aint CFileChangeNotificationContext::CNotificationThread::f_Main()
