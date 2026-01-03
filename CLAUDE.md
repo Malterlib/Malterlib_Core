@@ -12,7 +12,7 @@ Malterlib is a comprehensive C++ framework and build system that provides cross-
 - **mib** - The main build command located at `./mib` (shell script wrapper)
 - Uses custom `.MHeader`, `.MTarget`, `.MBuildSystem`, `.MRepo` files for configuration
 - Supports multiple platforms: macOS, Windows, Linux
-- Supports multiple architectures: x86_64, ARM64
+- Supports multiple architectures: arm64, x86, x86
 
 ### Common Build Commands
 
@@ -21,11 +21,12 @@ Malterlib is a comprehensive C++ framework and build system that provides cross-
 ./mib generate [WorkspaceName]
 
 # Build a workspace
-./mib build [WorkspaceName] [Platform] [Architecture] [Configuration]
-# Example: ./mib build Tests macOS x86_64 Debug
+MalterlibBuildShowProgress=false ./mib build [WorkspaceName] [Platform] [Architecture] [Configuration]
+# Example: ./mib build Tests macOS arm64 Debug
 
 # Build a specific target within a workspace
-./mib build_target [WorkspaceName] [TargetName] [Platform] [Architecture] [Configuration]
+MalterlibBuildShowProgress=false ./mib build_target [WorkspaceName] [TargetName] [Platform] [Architecture] [Configuration]
+# Example: ./mib build Tests Com_Test_Malterlib_Container macOS arm64 Debug
 
 # Build and run tests
 ./mib test [Configuration]  # Default is Debug
@@ -65,10 +66,22 @@ Malterlib is a comprehensive C++ framework and build system that provides cross-
 ./mib --help [CommandName]  # Detailed help for specific command
 ```
 
+Remember to use MalterlibBuildShowProgress=false when building so you don't get overwhelmed with uncessary output.
+
 ### Build Configurations
 - **Debug** - Debug build with assertions and debug symbols
 - **Release** - Optimized release build
 - **Release (Tests)** - Release build with test support
+
+### Build Platforms
+- **Windows** - Buildable on Windows host
+- **macOS** - Buildable on macOS host
+- **Linux** - Buildable on macOS host
+
+### Build Configurations
+- **arm64** - Supported on macOS, Linux and Windows
+- **x64** - Supported on macOS, Linux and Windows
+- **x86** - Only supported on Linux
 
 ## Framework Architecture
 
@@ -103,11 +116,11 @@ Located in `External/` directory:
 1. Place code in appropriate module directory under `Malterlib/`
 2. Update or create `.MHeader` files to include new targets
 3. Run `./mib generate` to regenerate build files
-4. Build with `./mib build [workspace]`
+4. Build with `MalterlibBuildShowProgress=false ./mib build [workspace]`
 
 ### Running Tests
 1. Generate test workspace: `./mib generate Tests`
-2. Build tests: `./mib build Tests [Platform] [Architecture] Debug`
+2. Build tests: `MalterlibBuildShowProgress=false ./mib build Tests [Platform] [Architecture] Debug`
 3. Run tests: `./mib test` or directly execute `RunAllTests` binary
 4. To run specific tests: `/opt/Deploy/Tests/RunAllTests --paths '["Module/Test/Name"]'`
 5. For continuous testing during development: build with Debug configuration for faster iteration
