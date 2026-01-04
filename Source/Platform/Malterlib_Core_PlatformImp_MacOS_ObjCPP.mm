@@ -938,7 +938,10 @@ namespace NMib
 				}
 			}
 
-			if (_bRecursive || _bFirstRecursive)
+			// For new directories (no old snapshot), always process children recursively
+			// to generate Added notifications for all descendants
+			bool bNewDirectory = bIsDir && !pOldSnapshot;
+			if (_bRecursive || _bFirstRecursive || bNewDirectory)
 			{
 				if (pOldSnapshot)
 				{
@@ -950,8 +953,10 @@ namespace NMib
 							o_Context.m_PotentialOld[Child.f_GetKey()];
 					}
 				}
+				// New directories need full recursion to generate Added for all children
+				bool bChildRecursive = _bRecursive || bNewDirectory;
 				for (auto &Child : _NewSnapshot.m_Children)
-					fr_FindChanges(o_Context, Child, _bRecursive, _bPotentianllyRecursive, false);
+					fr_FindChanges(o_Context, Child, bChildRecursive, _bPotentianllyRecursive, false);
 			}
 		}
 
@@ -1313,10 +1318,23 @@ namespace NMib
 						if (!FindChangesContext.m_UsedOld.f_FindEqual(PotentiallyRemoved))
 						{
 							auto *pSnapshots = m_SnapshotsByNode.f_FindEqual(PotentiallyRemoved);
-							if (!pSnapshots || NewSnapshotsByNode.f_FindEqual(PotentiallyRemoved))
+							if (!pSnapshots)
 								continue;
+
+							// Get the set of paths for this inode in the new snapshot
+							TCSet<CStr> NewPaths;
+							if (auto *pNewSnapshots = NewSnapshotsByNode.f_FindEqual(PotentiallyRemoved))
+							{
+								for (auto &NewSnapshot : *pNewSnapshots)
+									NewPaths[NewSnapshot.m_FullFileName];
+							}
+
+							// Only generate Removed for paths that are in old snapshot but NOT in new snapshot
 							for (auto &Snapshot : *pSnapshots)
-								f_AddNotification(FindChangesContext, EFileChangeNotification_Removed, Snapshot.m_FullFileName);
+							{
+								if (!NewPaths.f_FindEqual(Snapshot.m_FullFileName))
+									f_AddNotification(FindChangesContext, EFileChangeNotification_Removed, Snapshot.m_FullFileName);
+							}
 						}
 					}
 				}
