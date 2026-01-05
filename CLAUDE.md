@@ -150,6 +150,8 @@ Generate a workspace before building: `./mib generate [WorkspaceName]`
 - Use 1 tab character for indentation (tab width = 4 columns)
 - Do not expand tabs to spaces
 - Tabs are preferred for easier navigation
+- **All files in `Malterlib/` use tabs** - when editing, always assume that the file has tabs, unless you know different
+- Files in `External/` (third-party code) may use different conventions - check the specific file
 
 #### Line Length
 - Maximum 190 columns
