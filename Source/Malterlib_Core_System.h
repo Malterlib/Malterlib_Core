@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -186,7 +186,7 @@ namespace NMib
 #define DWorkaroundVirtualLayout
 #endif
 
-	
+
 //	#ifdef DPlatformFamily_macOS
 //		using CMainHeapVirtualAllocator = NMemory::CAllocator_VirtualNoCommit;
 //	#else
@@ -198,9 +198,9 @@ namespace NMib
 #else
 	using CSystemEnvironment = NContainer::TCMap<NStr::CStr, NStr::CStr>;
 #endif
-			
+
 	class CSystem
-	{	
+	{
 		friend struct CRunTimeObjectInfo;
 		friend class NThread::CSemaphoreAggregate;
 		friend class CSystemModule;
@@ -226,11 +226,11 @@ namespace NMib
 		NThread::CMutual m_Lock;
 
 		NStr::CStr m_ProgramName;
-		
+
 		NStr::CStr m_CrashHandlerPath;
 		NStr::CStr m_CrashHandlerExePath;
 		NStr::CStr m_CrashHandlerServer;
-		
+
 		NStr::CStr m_SupportEmail;
 		NStr::CStrNonTracked m_ProgramNameNonTracked;
 		NStr::CStrNonTracked m_SupportEmailNonTracked;
@@ -240,12 +240,12 @@ namespace NMib
 		bool m_bIsDll;
 
 		NAtomic::TCAtomic<bool> m_bDestroyingThreadSpecific = false;
-		
+
 #if DMibConfig_Memory_Shims_EnableGlobal
 		void fp_CreateGlobalMemoryReporter();
 		void fp_DestroyGlobalMemoryReporter();
 #endif
-		
+
 		void fp_CreateNonTrackedMemoryManager();
 		void fp_DestroyNonTrackedMemoryManager();
 		void fp_CreateMemoryManager();
@@ -289,12 +289,12 @@ namespace NMib
 
 		void fp_InitComplete();	// Called by subclasses to signify they have finished constructing.
 
-	public:	
-		
+	public:
+
 		void f_AddSubSystem(CSubSystem &_SubSystem);
 
 		static bool ms_bDisableMemoryManagerLeakReport;
-		
+
 		CVirtualMachineInfo const& f_GetVirtualMachineInfo() const
 		{
 			return mp_VMInfo;
@@ -309,7 +309,7 @@ namespace NMib
 		void f_RemoveAllLoggers();
 		void f_AddStdErrLogger();
 		void f_AddFileLogger();
-		
+
 		void f_RegisterProgram(const NStr::CStr &_ProgramName, const NStr::CStr &_SupportEmail, bool _bRunningAsDaemon)
 		{
 			m_ProgramName = _ProgramName;
@@ -338,24 +338,24 @@ namespace NMib
 		{
 			return m_ProgramName;
 		}
-		
+
 		void f_SetCrashHandler(NStr::CStr const& _Path, NStr::CStr const& _Server);
-		
+
 		NStr::CStr const &f_GetCrashHandlerPath() const
 		{
 			return m_CrashHandlerPath;
 		}
-		
+
 		NStr::CStr const &f_GetCrashHandlerServer() const
 		{
 			return m_CrashHandlerServer;
 		}
-		
+
 		NStr::CStr const &f_GetCrashHandlerExePath() const
 		{
 			return m_CrashHandlerExePath;
 		}
-		
+
 		NStr::CStrNonTracked const &f_GetProgramNameNonTracked() const
 		{
 			return m_ProgramNameNonTracked;
@@ -380,11 +380,11 @@ namespace NMib
 
 		NStr::CStr const &f_GetProgramRoot() const
 		{
-			return m_ProgramRoot; 
+			return m_ProgramRoot;
 		}
 		NStr::CStrNonTracked const &f_GetProgramRootNonTracked() const
 		{
-			return m_ProgramRootNonTracked; 
+			return m_ProgramRootNonTracked;
 		}
 
 
@@ -445,11 +445,11 @@ namespace NMib
 		void f_MemoryManager_CanStartThreads();
 
 		void f_MemoryManager_GarbageCollect();
-		
+
 		void f_MemoryManager_SetNumaNode(ENumaNode _NumaNode);
 
 		void f_MemoryManager_OnThreadCreated(mint _ThreadID, mint _ParentID);
-		
+
 		NMemory::CMemoryManagerCheckout f_MemoryManager_Checkout();
 
 		void f_MemoryManager_DisableLeakReport(bool _bDisable);
@@ -505,17 +505,17 @@ namespace NMib
 		///
 		/// Command line
 		/// ============
-		
+
 		NStr::CStr f_CommandLineParameters();
 		aint f_NumCommandLineParameters();
 		NStr::CStr f_CommandLineParameter(aint _iIndex);
-		
+
 		NContainer::TCVector<NMib::NStr::CStr> f_GetCommandLineArgs() const;
 
 		///
 		/// Environment
 		/// ============
-		
+
 		CSystemEnvironment f_Environment() const;
 		void f_SetEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Value);
 		NStr::CStr f_GetEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Default = {}, bool *o_pExists = nullptr) const;
@@ -523,7 +523,7 @@ namespace NMib
 		CSystemEnvironment f_ProtectedEnvironment() const; // Whole environment, with and without protected variables
 		void f_ProtectEnvironmentVariable(NStr::CStr const &_Variable);
 		NStr::CStr f_GetProtectedEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Default = {}, bool *o_pExists = nullptr) const;
-		
+
 		static uint32 ms_PlatformVersion;
 	};
 
@@ -537,7 +537,7 @@ namespace NMib
 	extern NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads;
 	extern mint g_bMemoryManagerNeededAfterDestroy;
 	extern mint g_bCreatedSystem;
-							
+
 	static inline_small CSystem *fg_GetSys()
 	{
 #		ifdef DMibPAutomaticSystemCreation
@@ -551,9 +551,9 @@ namespace NMib
 			return g_pSys;
 #		endif
 	}
-	
+
 	class CSystemModule
-	{	
+	{
 	public:
 
 		CSystem *m_pSystem;
@@ -563,7 +563,7 @@ namespace NMib
 		NThread::CMutualAggregate m_Lock;
 
 		constexpr CSystemModule(EAggregateInitialization _Init);
-		
+
 		void f_Destroy();
 		void f_DestroyAggregates(bool _bDestroySystem);
 
@@ -572,7 +572,7 @@ namespace NMib
 		void f_AddAggregate(NStorage::CAggregate *_pAggregate);
 		void f_RemoveAggregate(NStorage::CAggregate *_pAggregate);
 	};
-	
+
 	extern CSystemModule g_SystemModule;
 
 	static inline_small CSystemModule *fg_GetModule()
@@ -585,7 +585,7 @@ namespace NMib
 	public:
 		const ch8 *m_pAppClass;
 	};
-	
+
 	// These classes the app has to overide to tell the runtime which classes the app should be. m_pSysImp does not have to be definde
 #	ifndef DMibModule
 		extern CAppClasses g_AppClasses;
@@ -596,7 +596,7 @@ namespace NMib
 #	ifndef DMibPNoShortCuts
 #		define DAppNoClass DMibAppNoClass
 #	endif
-	
+
 };
 
 #include <Mib/Time/Timer>

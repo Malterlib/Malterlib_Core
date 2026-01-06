@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Test/Performance>
@@ -69,7 +69,7 @@ namespace
 				ThreadStarted.f_ResetSignaled();
 
 				void (calling_convention_c *pTestFunc)() = nullptr;
-				
+
 				auto fl_ThreadProc
 					= [&](NMib::NThread::CThreadObject *_pThread) -> aint
 					{
@@ -100,7 +100,7 @@ namespace
 				pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 
 				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
-				
+
 				if (NMib::NFile::CFileChangeNotification::fs_Supported())
 					(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
 				else
@@ -141,7 +141,7 @@ namespace
 				ThreadStarted.f_Wait();
 
 				pThread2.f_Clear();
-				
+
 #if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
 				NMib::NSys::fg_FreeLibrary(pDll);
 #endif
@@ -150,7 +150,7 @@ namespace
 			{
 				void *pDll = nullptr;
 				void (calling_convention_c *pTestFunc)() = nullptr;
-				
+
 				auto fl_ThreadProc
 					= [&](NMib::NThread::CThreadObject *_pThread) -> aint
 					{
@@ -169,11 +169,11 @@ namespace
 				NMib::NContainer::TCVector<NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject>> Threads;
 				Threads.f_SetLen(100);
 				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
-				
+
 				(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
 				DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop);
 				pTestFunc();
-				
+
 				for (mint i = 0; i < 10; ++i)
 				{
 					for (auto i = 0; i < 64; ++i)
@@ -252,7 +252,7 @@ namespace
 				for(mint j = 0; j < nTests; ++j)
 				{
 					MalterlibTime.f_Start();
-					for (mint i = 0; i < nLoops; ++i) 
+					for (mint i = 0; i < nLoops; ++i)
 					{
 						auto pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 						DMibTest(DMibExpr(pDll))(ETestFlag_Aggregated);

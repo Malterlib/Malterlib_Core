@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -14,7 +14,7 @@ namespace NMib
 	{
 		m_pPool = [[NSAutoreleasePool alloc] init];
 	}
-	
+
 	CAutoReleasePool::~CAutoReleasePool()
 	{
 		[m_pPool drain];
@@ -45,7 +45,7 @@ namespace NMib
 				return {};
 
 			NStr::CStr Return(pString);
-	
+
 			return Return;
 		}
 

@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -36,7 +36,7 @@ namespace NMib::NSys
 			{
 				m_bWasDestroyed.f_Store(true);
 			}
-			
+
 			void f_DestroyThreadSpecific() override
 			{
 				if (m_pThread)
@@ -55,7 +55,7 @@ namespace NMib::NSys
 
 			NThread::TCThreadLocal<CThreadLocal> m_ThreadLocal;
 		};
-		
+
 		constinit TCSubSystem<CSubSystem_Core_Signal, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Signal = {DAggregateInit};
 
 		void CSubSystem_Core_Signal::fs_SignalHandler(int _Signal)
@@ -212,7 +212,7 @@ namespace NMib::NSys
 				auto &SubSystem = *g_SubSystem_Core_Signal;
 				if (SubSystem.m_bWasDestroyed.f_Load())
 					return;
-				
+
 				DMibLock(SubSystem.m_Lock);
 				auto &SignalHandler = SubSystem.m_SignalHandlers[_Signal];
 				SignalHandler.m_Functions.f_Remove(*pFunction);

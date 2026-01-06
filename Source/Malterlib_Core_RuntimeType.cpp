@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -14,7 +14,7 @@ namespace NMib
 		{
 			CRunTimeObjectInfoContainer m_GlobalNamespace;
 		};
-		
+
 		constinit TCSubSystem<CSubSystem_Core_RunTimeObject, ESubSystemDestruction_BeforeMemoryManager> g_DynamicObjectsSystem = {DAggregateInit};
 	}
 
@@ -83,7 +83,7 @@ namespace NMib
 			if (!pInfo)
 			{
 				NStorage::TCUniquePointer<CRunTimeObjectInfoContainer, NMemory::CAllocator_NonTrackedHeap> pNewInfo = fg_Construct();
-				
+
 				pNewInfo->m_bIsStatic = false;
 				((CRunTimeObjectInfoContainer *)pNewInfo.f_Get())->f_Construct(Namespace);
 				pInfo = pNewInfo.f_Detach();
@@ -127,11 +127,11 @@ namespace NMib
 		{
 			m_pNamespace = &g_DynamicObjectsSystem->m_GlobalNamespace;
 		}
-		
+
 		m_pName = pName;
 
 		m_bIsStatic = _bIsStatic;
-		
+
 		auto *pInfo = m_pNamespace->m_Namespace.f_FindEqual(pName);
 		if (_pParent)
 			m_pParent = f_GetObject(_pParent, NStr::fg_StrLen(_pParent));
@@ -177,7 +177,7 @@ namespace NMib
 				}
 
 				DMibSafeCheck(pInfo->m_pNamespace == m_pNamespace, "Should have same namespace");
-				
+
 				pInfo->m_pNamespace->m_Namespace.f_Remove(pInfo);
 				pInfo->m_pNamespace = nullptr;
 				NStorage::TCUniquePointer<CRunTimeObjectInfo, NMemory::CAllocator_NonTrackedHeap> pInfoPtr = fg_Explicit(pInfo);
@@ -278,7 +278,7 @@ namespace NMib
 		aint iNamespace = NStr::fg_StrFind(_pObjectName, "::");
 		if (iNamespace >= 0)
 		{
-			const ch8 *pNamespace = _pObjectName + iNamespace;				
+			const ch8 *pNamespace = _pObjectName + iNamespace;
 			const ch8 *pNamespaceStart = _pObjectName;
 
 			CRunTimeObjectInfo *pRuntimeObject = &g_DynamicObjectsSystem->m_GlobalNamespace;
@@ -296,7 +296,7 @@ namespace NMib
 					return nullptr;
 
 				pNamespaceStart = pNamespace + 2;
-		
+
 				iNamespace = NStr::fg_StrFind(pNamespaceStart, "::");
 
 				if (iNamespace < 0)

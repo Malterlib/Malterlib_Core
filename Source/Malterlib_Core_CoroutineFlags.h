@@ -14,7 +14,7 @@ namespace NMib::NConcurrency
 		, ECoroutineFlag_AllowReferences = DMibBit(2)	///< Warning, when you allow references for parameters in your coroutine, make sure that you don't use the reference
 														///< after the first suspension point, as it will be out of scope in this case.
 		, ECoroutineFlag_BreakSelfReference = DMibBit(3)///< When co_awaiting a future don't hold a reference to the actor
-		
+
 		, ECoroutineFlag_UnsafeReferenceParameters = DMibBit(4) // Automatically generated
 		, ECoroutineFlag_UnsafeThisPointer = DMibBit(5)			// Automatically generated
 

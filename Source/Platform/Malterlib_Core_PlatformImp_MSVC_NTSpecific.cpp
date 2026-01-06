@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 // -------------------------------------------------------------------------
@@ -71,7 +71,7 @@ public:
 			(FARPROC &)m_fEnumProcesses = GetProcAddress(m_PSAPIDll, "EnumProcesses");
 			(FARPROC &)m_fGetModuleBaseNameW = GetProcAddress(m_PSAPIDll, "GetModuleBaseNameW");
 			(FARPROC &)m_fGetModuleFileNameExW = GetProcAddress(m_PSAPIDll, "GetModuleFileNameExW");
-			(FARPROC &)m_fGetProcessImageFileNameW = GetProcAddress(m_PSAPIDll, "GetProcessImageFileNameW");		
+			(FARPROC &)m_fGetProcessImageFileNameW = GetProcAddress(m_PSAPIDll, "GetProcessImageFileNameW");
 		}
 
 		m_NTDLLDll = NLocal::g_hNtDll;
@@ -196,13 +196,13 @@ private:
 					if(DuplicateHandle(_pProcessInfo->m_hProcess, (HANDLE)(mint)SysHandle.Handle, GetCurrentProcess(), &_pProcessInfo->m_hObject, STANDARD_RIGHTS_REQUIRED, FALSE, DUPLICATE_SAME_ACCESS) != FALSE)
 					{
 						CStr Name = _pProcessInfo->m_pThis->fp_GetObjectInfo(_pProcessInfo->m_hObject, NLocalWindows::ObjectNameInformation, *_pProcessInfo);
-						
+
 						if (!Name.f_IsEmpty())
 						{
 							CHandleInfo &Handle = _pProcessInfo->m_pHandles->f_Insert();
 							Handle.m_ProcessName = _pProcessInfo->m_pThis->fp_GetProcessName(_pProcessInfo->m_hProcess);
 							Handle.m_ProcessID = Process;
-							Handle.m_HandleName = Name;							
+							Handle.m_HandleName = Name;
 							Handle.m_HandleID = SysHandle.Handle;
 						}
 						CloseHandle(_pProcessInfo->m_hObject);
@@ -224,7 +224,7 @@ private:
 		HANDLE hToken;
 		TOKEN_PRIVILEGES tokenPriv;
 		LUID luidDebug;
-		if(OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != FALSE) 
+		if(OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != FALSE)
 		{
 			if(LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &luidDebug) != FALSE)
 			{
@@ -245,7 +245,7 @@ private:
 		CWStr BaseName;
 		if (m_fGetProcessImageFileNameW)
 			m_fGetProcessImageFileNameW(_hProcess, BaseName.f_GetStr(1024), 1024);
-		else 
+		else
 		if (m_fGetModuleFileNameExW)
 			m_fGetModuleFileNameExW(_hProcess, nullptr, BaseName.f_GetStr(1024), 1024);
 		else if (m_fGetModuleBaseNameW)
@@ -330,7 +330,7 @@ public:
 						bWasTimeout = ProcessInfo.m_Event.f_WaitTimeout(0.05f);
 					}
 					if (bWasTimeout)
-					{	
+					{
 						DMibDTraceSafe("Killed Thread!!\r\n", 0);
 						TerminateThread(hthread, 0);
 						CloseHandle (hthread);
@@ -342,7 +342,7 @@ public:
 			}
 			WaitForSingleObject(hthread, INFINITE);
 			CloseHandle (hthread);
-		}	
+		}
 
 		delete [] pHandleInfo;
 	}

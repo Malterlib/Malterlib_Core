@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -40,7 +40,7 @@ private:
 
 		// Protected by CResolveThread::mp_Lock.
 		DMibListLinkS_Link(CResolveRequest, m_Link);
-	};	
+	};
 
 	NThread::CMutual mp_Lock;
 		DMibListLinkS_List(CResolveRequest, m_Link) mp_PendingList;
@@ -128,7 +128,7 @@ public:
 		mp_lData.f_SetLen(_nDataBytes);
 		fg_MemCopy(mp_lData.f_GetArray(), _pData, _nDataBytes);
 	}
-	
+
 	void *f_GetForWrite(NMib::NNetwork::ENetAddressType _Type, mint _nDataBytes)
 	{
 		mp_Type = _Type;
@@ -150,9 +150,9 @@ public:
 	{
 		f_Set(NMib::NNetwork::ENetAddressType_Unix, &_Unix, sizeof(CUnixAddress));
 	}
-	
+
 	mint f_GetFullDataLen() const { return mp_lData.f_GetLen(); }
-	mint f_GetSockAddrLen() const 
+	mint f_GetSockAddrLen() const
 	{
 		using namespace NMib::NNetwork;
 		switch (mp_Type)

@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_PlatformImp_Linux_SecurePassword.h"
@@ -10,7 +10,7 @@
 namespace NMib
 {
 	namespace NSys
-	{	
+	{
 
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLibSecretPasswordManager();
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem* _pDBus);
@@ -56,12 +56,12 @@ namespace NMib
 			{
 				return ESecurePassword_Failure;
 			}
-			
+
 			bool f_SecurePassword_Supported() override
 			{
 				return false;
 			}
-			
+
 		};
 
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem* _pDBus)
@@ -75,7 +75,7 @@ namespace NMib
 
 			if (!pManager)
 				pManager = fg_Construct<CNullPasswordManager>();
-			
+
 			return pManager;
 		}
 

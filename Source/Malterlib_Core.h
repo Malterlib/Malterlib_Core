@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -45,7 +45,7 @@ namespace NMib
 
 #include <Mib/Contract/Safe>
 
-// Malterlib namespace... this makes 
+// Malterlib namespace... this makes
 #define DMibSafety_IncMalterlib_H
 
 namespace NMib
@@ -88,7 +88,7 @@ namespace NMib
 
 	template <typename t_CType>
 	using TCInitializerList = std::initializer_list<t_CType>;
-	
+
 	template <typename tf_C1, typename tf_C2>
 	constexpr inline_small NTraits::TCRemoveReference<tf_C1> fg_Min(tf_C1 &&_First, tf_C2 &&_Second);
 
@@ -97,7 +97,7 @@ namespace NMib
 
 	template <typename tf_C1>
 	constexpr inline_small NTraits::TCRemoveReference<tf_C1> fg_Abs(tf_C1 &&_First);
-	
+
 	[[noreturn]] void fg_NoReturn();
 }
 
@@ -182,7 +182,7 @@ namespace NMib
 			, EFileSystemFeature_HasDrives	= DMibBit(0)
 			, EFileSystemFeature_HasExecuteAttrib	= DMibBit(1)
 		};
-		
+
 		enum EFileOpen
 		{
 			EFileOpen_None = 0
@@ -216,21 +216,21 @@ namespace NMib
 			, EFileAttrib_Hidden		= DMibBit(2)
 			, EFileAttrib_ReadOnly	= DMibBit(3)		// Available on Windows and macOS. On Linux this maps to EFileAttrib_UserWrite. If any of them are set the attribute is set on Linux
 			, EFileAttrib_System		= DMibBit(4)
-			, EFileAttrib_File		= DMibBit(5) // Used for finding files			
+			, EFileAttrib_File		= DMibBit(5) // Used for finding files
 			, EFileAttrib_BackedUp	= DMibBit(6) // Bit that is reset when a file is written to (opened with write access). Only supporte by virtual FS.
 			, EFileAttrib_FindDirectoryLast	= DMibBit(7)
 			, EFileAttrib_Archive	= DMibBit(8)
 			, EFileAttrib_Executable = DMibBit(9) // Only on platforms/filesystems that support it.
 			, EFileAttrib_EmulatedLink = DMibBit(10) // Used to save emulated links and distinguish emulated from real links
-			, EFileAttrib_UserExecute	= DMibBit(11)	// Unix only 
-			, EFileAttrib_UserRead	= DMibBit(12)		// Unix only 
-			, EFileAttrib_UserWrite	= DMibBit(13)		// Unix only 
-			, EFileAttrib_GroupExecute	= DMibBit(14)	// Unix only 
-			, EFileAttrib_GroupRead	= DMibBit(15)		// Unix only 
-			, EFileAttrib_GroupWrite = DMibBit(16)		// Unix only 
-			, EFileAttrib_EveryoneExecute	= DMibBit(17)	// Unix only 
-			, EFileAttrib_EveryoneRead	= DMibBit(18)		// Unix only 
-			, EFileAttrib_EveryoneWrite = DMibBit(19)		// Unix only 
+			, EFileAttrib_UserExecute	= DMibBit(11)	// Unix only
+			, EFileAttrib_UserRead	= DMibBit(12)		// Unix only
+			, EFileAttrib_UserWrite	= DMibBit(13)		// Unix only
+			, EFileAttrib_GroupExecute	= DMibBit(14)	// Unix only
+			, EFileAttrib_GroupRead	= DMibBit(15)		// Unix only
+			, EFileAttrib_GroupWrite = DMibBit(16)		// Unix only
+			, EFileAttrib_EveryoneExecute	= DMibBit(17)	// Unix only
+			, EFileAttrib_EveryoneRead	= DMibBit(18)		// Unix only
+			, EFileAttrib_EveryoneWrite = DMibBit(19)		// Unix only
 			, EFileAttrib_UnixAttributesValid = DMibBit(20)		// When setting attributes needs to be specified for unix only attributes to be applied
 			, EFileAttrib_AllUnixPermissions
 				= EFileAttrib_UserExecute
@@ -285,7 +285,7 @@ namespace NMib
 		{
 			 EFileChangeNotification_Undefined		= 0
 			 , EFileChangeNotification_Unknown
-			 , EFileChangeNotification_Added		
+			 , EFileChangeNotification_Added
 			 , EFileChangeNotification_Removed
 			 , EFileChangeNotification_Modified
 			 , EFileChangeNotification_Renamed

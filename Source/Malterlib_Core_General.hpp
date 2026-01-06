@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -42,12 +42,12 @@ namespace NMib
 		Hash = (uint64(Hash) + (Hash << 15)) & uint64(0xffffffff);
 		return Hash;
 	}
-	
+
 	static consteval void fg_ParseUntilCallingConvention(char const *&_pParse)
 	{
 		mint nStart = 0;
 
-		constexpr char const *c_CallingConventions[] = 
+		constexpr char const *c_CallingConventions[] =
 			{
 				"__thiscall "
 				, "__cdecl "
@@ -193,7 +193,7 @@ namespace NMib
 
 		if (pStartType[0] == '`' && pStartType[1] == 'a')
 			throw "Not portable"; // `anonymous-namespace'::
-		
+
 		return CConstExprSubStr(pStartType, (pParse - pStartType));
 #else
 		char const *pParseStart = DMibPFunctionSignature;

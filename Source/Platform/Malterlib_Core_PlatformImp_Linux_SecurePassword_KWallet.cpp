@@ -1,8 +1,8 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 /*
-	At the end of this file: The KWallet DBus Interface 
+	At the end of this file: The KWallet DBus Interface
 */
 #include "Malterlib_Core_PlatformImp_Linux_SecurePassword.h"
 #include <Mib/Core/DynamicLibrary>
@@ -11,7 +11,7 @@
 namespace NMib
 {
 	namespace NSys
-	{	
+	{
 
 		//
 		// KDE Secure Password Implementation
@@ -37,7 +37,7 @@ namespace NMib
 			static char const* mc_KWalletInterface;
 
 			bool fp_OpenConnection();
-	
+
 			template<typename... Args>
 			bool fp_MethodCall(NDBus::CMessage& _oReply, char const* _pMethodName, Args const&... _Args)
 			{
@@ -131,7 +131,7 @@ namespace NMib
 					}
 				);
 
-			auto fl_CheckEnabled = 
+			auto fl_CheckEnabled =
 				[&](bool _bLog) -> bool
 				{ // Check KWallet is enabled
 					NDBus::CMessage IsEnabledReply(mp_DBus);
@@ -154,9 +154,9 @@ namespace NMib
 					{
 						if (_bLog)
 							DMibLog(Error, "KWallet: KWallet is not enabled.", 0);
-						return false;				
+						return false;
 					}
-					
+
 					return true;
 				};
 
@@ -165,7 +165,7 @@ namespace NMib
 				if (fp_LaunchKWallet())
 				{
 					if (!fl_CheckEnabled(true))
-						return;					
+						return;
 				}
 				else
 					return;
@@ -285,7 +285,7 @@ namespace NMib
 				return ESecurePassword_NotFound;
 			else if (Result < 0)
 				return ESecurePassword_Failure;
-			else 
+			else
 				return ESecurePassword_OK;
 		}
 
@@ -414,13 +414,13 @@ namespace NMib
 				if (!fp_MethodCall(HasFolderReply, "hasFolder", Handle, mp_Folder, mp_Location))
 				{
 					fp_LogConnectionError("Failed to check for SecureStorage folder.");
-					return -1;					
+					return -1;
 				}
 
 				if (!fp_ParseSimpleMessage(HasFolderReply, bHasFolder))
 				{
 					DMibLog(Error, "KWallet: hasFolder returned an unexpected reply.", 0);
-					return -1;										
+					return -1;
 				}
 			}
 
@@ -432,19 +432,19 @@ namespace NMib
 				if (!fp_MethodCall(CreateFolderReply, "createFolder", Handle, mp_Folder, mp_Location))
 				{
 					fp_LogConnectionError("Call to createFolder failed for SecureStorage folder.");
-					return -1;										
+					return -1;
 				}
 
 				if (!fp_ParseSimpleMessage(CreateFolderReply, bHasFolder))
 				{
 					DMibLog(Error, "KWallet: createFolder returned an unexpected reply.", 0);
-					return -1;															
+					return -1;
 				}
 
 				if (!bHasFolder)
 				{
 					DMibLog(Error, "KWallet: createFolder failed to create SecureStorage folder.", 0);
-					return -1;										
+					return -1;
 				}
 			}
 
@@ -520,7 +520,7 @@ namespace NMib
 
 			if (Result != 0)
 			{
-				DMibLog(Error, "KWallet: start_service_by_desktop_name for kwalletd failed with \"{}\".", ErrorString);				
+				DMibLog(Error, "KWallet: start_service_by_desktop_name for kwalletd failed with \"{}\".", ErrorString);
 				return false;
 			}
 
@@ -541,7 +541,7 @@ namespace NMib
 } // Namespace NMib
 
 /*
-The KWallet DBus Interface 
+The KWallet DBus Interface
 Service: org.kde.kwalletd
 Path: /modules/kwalletd
 

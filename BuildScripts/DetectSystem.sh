@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright © 2015 Hansoft AB 
+# Copyright © 2015 Hansoft AB
 # Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 set -e
@@ -38,7 +38,7 @@ function TempPath()
 BuildSystemRoot=$(cd "${BASH_SOURCE%/*}/../../.." ; echo $PWD)
 if [[ "$MLBuildBuildSystemRoot" != "" ]]; then
 	BuildSystemRoot="$BuildSystemRoot/$MLBuildBuildSystemRoot"
-fi 
+fi
 
 source "$BuildSystemRoot/Malterlib/Core/Scripts/Detect.sh"
 export MToolPath="$MToolDirectory"

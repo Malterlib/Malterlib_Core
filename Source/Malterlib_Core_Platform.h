@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -9,7 +9,7 @@ namespace NMib
 	{
 		EEndian_Native = 0,
 		EEndian_Little = 1,
-		EEndian_Big	= 2			
+		EEndian_Big	= 2
 	};
 }
 

@@ -365,7 +365,7 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 		case NMib::NNetwork::ENetAddressType_TCPv4:
 			{
 				auto &Address = _Address.f_GetTCPv4();
-				
+
 				if (_Flags & ENetAddressStringFlag_IncludeType)
 					AddressStr += "TCPv4:";
 
@@ -376,7 +376,7 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 					<< ((ntohl(Address.sin_addr.s_addr) >> 8) & 0xFF)
 					<< ((ntohl(Address.sin_addr.s_addr) >> 0) & 0xFF)
 				;
-				
+
 				if (_Flags & ENetAddressStringFlag_IncludePort)
 					AddressStr += ":{}"_f << ntohs(Address.sin_port);
 			}
@@ -921,7 +921,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 #endif
 	{
 		DMibLock(NMib::NPlatform::fg_ForkLock());
-		
+
 		ResultFD = accept(_pSocket->m_FD, NULL, NULL);
 
 		if (ResultFD == -1)

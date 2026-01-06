@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 namespace NMib
@@ -8,7 +8,7 @@ namespace NMib
 		// *************************************************************************************************************************
 		// POSIX virtual memory allocation
 		// *************************************************************************************************************************
-		
+
 		namespace NPrivate
 		{
 			extern mint g_PageSize;
@@ -18,27 +18,27 @@ namespace NMib
 		{
 			return NPrivate::g_PageSize;
 		}
-		
+
 		inline_always mint fg_Mem_VirtualGranularityCommit(bool _bLargePages)
 		{
 			return NPrivate::g_PageSize;
 		}
-		
+
 		inline_always mint fg_Mem_VirtualGranularityProtect(bool _bLargePages)
 		{
 			return NPrivate::g_PageSize;
 		}
-		
+
 		inline_always fp32 fg_Mem_VirtualOverhead(void const *_pMem)
 		{
 			return 0.0f;
 		}
-		
+
 		constexpr inline_always bool fg_Mem_VirtualCanCommit()
 		{
 			return true;
 		}
-		
+
 		inline_always bool fg_Mem_VirtualCanProtect()
 		{
 			return true;
@@ -54,7 +54,7 @@ namespace NMib
 #elif defined(DPlatformFamily_Linux) && defined(DArchitecture_arm64)
 		extern mint g_ThreadSelfOffset;
 #endif
-		
+
 		mint fg_GetThreadSelf_Safe();
 
 #if defined(__aarch64__)
@@ -88,10 +88,10 @@ namespace NMib
 
 				DMibFastCheck(Return == (mint)fg_GetThreadSelf_Safe());
 				return Return;
-				
+
 			#elif DPlatformVersion >= 1050
 				mint Return;
-				
+
 				#if defined(__i386__)
 					mint __attribute__((address_space(256))) *pAddress = (mint __attribute__((address_space(256))) *)g_ThreadSelfOffset;
 					Return = *pAddress;
@@ -103,7 +103,7 @@ namespace NMib
 				#else
 					#error "Not Implemented"
 				#endif
-				
+
 				DMibFastCheck(Return == fg_GetThreadSelf_Safe());
 				return Return;
 			#else
@@ -293,7 +293,7 @@ namespace NMib
 		}
 
 		inline_always mint fg_Thread_GetCurrentUID()
-		{	
+		{
 			return fg_GetThreadSelf();
 		}
 

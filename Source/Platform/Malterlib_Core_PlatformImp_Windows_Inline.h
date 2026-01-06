@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 //#define DMibWindowsUseArbitraryUserPointerForThreadLocals
@@ -28,7 +28,7 @@ namespace NMib
 		// *************************************************************************************************************************
 		// POSIX virtual memory allocation
 		// *************************************************************************************************************************
-		
+
 		namespace NPrivate
 		{
 			extern mint g_VirtualAllocGranularity;
@@ -42,7 +42,7 @@ namespace NMib
 			else
 				return NPrivate::g_VirtualAllocGranularity;
 		}
-		
+
 		inline_always mint fg_Mem_VirtualGranularityCommit(bool _bLargePages)
 		{
 			if (_bLargePages)
@@ -50,7 +50,7 @@ namespace NMib
 			else
 				return 4096;
 		}
-		
+
 		inline_always mint fg_Mem_VirtualGranularityProtect(bool _bLargePages)
 		{
 			if (_bLargePages)
@@ -58,17 +58,17 @@ namespace NMib
 			else
 				return 4096;
 		}
-		
+
 		inline_always fp32 fg_Mem_VirtualOverhead(void const *_pMem)
 		{
 			return 0.0f;
 		}
-		
+
 		constexpr inline_always bool fg_Mem_VirtualCanCommit()
 		{
 			return true;
 		}
-		
+
 		inline_always bool fg_Mem_VirtualCanProtect()
 		{
 			return true;
@@ -133,9 +133,9 @@ namespace NMib
 			DMibFastCheck(_iStorage <= CWindowsThreadLocals::CWindowsThreadLocals::ms_ThreadLocalsMaxOffset);
 			return NPrivate::fg_GetTebData<void *>(_iStorage);
 		}
-		
+
 		inline_always mint fg_Thread_GetCurrentUID()
-		{	
+		{
 			// Read directly from TIB (Thread Information Block)
 #			if defined(DArchitecture_arm64)
 				return NPrivate::fg_GetTebData<mint>(0x48);
@@ -144,13 +144,13 @@ namespace NMib
 #			else
 				return NPrivate::fg_GetTebData<mint>(0x24);
 #			endif
-		}		
+		}
 
 		inline_always mint fg_Thread_GetCurrentUIDAlternate()
 		{
 			return fg_Thread_GetCurrentUID();
-		}		
-		
+		}
+
 	}
 }
 

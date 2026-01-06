@@ -117,11 +117,11 @@ if [[ "$MalterlibPlatform" == "Windows" ]]; then
 			RepoConfig=`cat Stream.conf`
 			for Line in $RepoConfig; do
 				IFS=' '
-				
+
 				read -a LineCommands <<< "$Line"
 				Key=${LineCommands[0]}
 				Value=${LineCommands[1]}
-				
+
 				if [[ "$Key" == "WindowsGenerator" ]]; then
 					WindowsGenerator=$Value
 				fi

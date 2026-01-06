@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -15,7 +15,7 @@ namespace NMib
 	class TCSubSystem
 	{
 	public:
-		
+
 		mark_nodebug bool f_WasCreated() const;
 		mark_nodebug t_CSubSystem &operator *();
 		mark_nodebug t_CSubSystem *operator ->();
@@ -31,10 +31,10 @@ namespace NMib
 			, mp_bWasCreated{false}
 		{
 		}
-		
-	public: // check if we can use private on MSVC and still get static initialization		
+
+	public: // check if we can use private on MSVC and still get static initialization
 		inline_never t_CSubSystem *fp_Create(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
-		
+
 		alignas(t_CSubSystem) uint8 mp_ObjectSpace[sizeof(t_CSubSystem)];
 		NThread::CLowLevelLockAggregate mp_Lock;
 		NAtomic::TCAtomic<bool> mp_bWasCreated;

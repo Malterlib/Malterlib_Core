@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -130,19 +130,19 @@
 					return -1;
 				return 31 - __builtin_clz(_Value);
 			}
-			
+
 			constexpr inline_always int fg_GetHighestBitSet32NoZero(uint32 _Value)
 			{
 				return 31 - __builtin_clz(_Value);
 			}
-			
+
 			constexpr inline_always int fg_GetLowestBitSet32(uint32 _Value)
 			{
 				if (!_Value)
 					return -1;
 				return __builtin_ctz(_Value);
 			}
-			
+
 			constexpr inline_always int fg_GetLowestBitSet32NoZero(uint32 _Value)
 			{
 				return __builtin_ctz(_Value);
@@ -155,19 +155,19 @@
 						return -1;
 					return 63 - __builtin_clzll(_Value);
 				}
-				
+
 				constexpr inline_always int fg_GetHighestBitSet64NoZero(uint64 _Value)
 				{
 					return 63 - __builtin_clzll(_Value);
 				}
-				
+
 				constexpr inline_always int fg_GetLowestBitSet64(uint64 _Value)
 				{
 					if (!_Value)
 						return -1;
 					return __builtin_ctzll(_Value);
 				}
-				
+
 				constexpr inline_always int fg_GetLowestBitSet64NoZero(uint64 _Value)
 				{
 					return __builtin_ctzll(_Value);

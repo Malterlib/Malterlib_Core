@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 //#define DKTrace(...) DMibTrace("***" __VA_ARGS__)
@@ -17,11 +17,11 @@ public:
 
 	void f_Push(struct kevent* _pEvents, mint _nEvents)
 	{
-	
+
 		DMibLock(mp_Lock);
-		
+
 		struct kevent* pEnd = _pEvents + _nEvents;
-		
+
 		while(_pEvents < pEnd)
 		{
 			mp_lQueue.f_Insert(*_pEvents);
@@ -84,7 +84,7 @@ bool CPOSIXImpSpecificSocketPoller::CInternal::f_PushSocketEvents(CPOSIXSocket *
 		CurEvent.flags = Flags;
 		CurEvent.udata = _pSocket;
 	}
-	
+
 	if (EventsToRegister & EPOSIXSocketEvent_Write)
 	{
 		struct kevent& CurEvent = lSocketEvents[nSocketEvents];
@@ -132,17 +132,17 @@ CPOSIXImpSpecificSocketPoller::CPOSIXImpSpecificSocketPoller()
 				PipeRet = pipe(mp_pInternal->m_ReadWritePipe);
 				if (PipeRet)
 					break;
-				
+
 				fcntl(mp_pInternal->m_ReadWritePipe[0], F_SETFL, fcntl(mp_pInternal->m_ReadWritePipe[0], F_GETFL) | O_NONBLOCK);
 				fcntl(mp_pInternal->m_ReadWritePipe[1], F_SETFL, fcntl(mp_pInternal->m_ReadWritePipe[1], F_GETFL) | O_NONBLOCK);
 
 				fcntl(mp_pInternal->m_ReadWritePipe[0], F_SETFD, fcntl(mp_pInternal->m_ReadWritePipe[0], F_GETFD) | FD_CLOEXEC);
 				fcntl(mp_pInternal->m_ReadWritePipe[1], F_SETFD, fcntl(mp_pInternal->m_ReadWritePipe[1], F_GETFD) | FD_CLOEXEC);
-				
+
 			}
 		}
 		while (false);
-		
+
 		(void)PipeRet;
 		DMibSafeCheck(PipeRet == 0, "Failed to create pipe");
 
@@ -172,7 +172,7 @@ void CPOSIXImpSpecificSocketPoller::f_RegisterSocket(CPOSIXSocket* _pSocket)
 {
 	if (_pSocket->m_bIsRegistered)
 		DMibErrorNet("POSIX socket already registered");
-	
+
 	_pSocket->m_bIsRegistered = true;
 
 	if (!mp_pInternal->f_PushSocketEvents(_pSocket, false))
@@ -370,14 +370,14 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 					}
 				}
 			}
-		}		
+		}
 	}
 }
 
 void CPOSIXImpSpecificSocketPoller::f_Break()
 {
 	mp_pInternal->m_bBreak.f_Store(1);
-	
+
 	char Byte = 1;
 	write(mp_pInternal->m_ReadWritePipe[1], &Byte, 1);
 }
@@ -441,14 +441,14 @@ bool CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, con
 			SocketType = SOCK_STREAM;
 			MalterlibSocketType = 0x101;
 		}
-		
+
 		sockaddr_ctl SockAddr;
 		fg_MemClear(SockAddr);
 
 		int fd = socket(PF_SYSTEM, SocketType, SYSPROTO_CONTROL);
-		if (fd == -1) 
+		if (fd == -1)
 			return false;
-		
+
 		auto Cleanup
 			= fg_OnScopeExit
 			(
@@ -458,7 +458,7 @@ bool CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, con
 				}
 			)
 		;
-		
+
 		SockAddr.sc_len = sizeof(SockAddr);
 		SockAddr.sc_family = AF_SYSTEM;
 		SockAddr.ss_sysaddr = AF_SYS_CONTROL;
@@ -466,17 +466,17 @@ bool CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress& _oAddr, con
 		fg_MemClear(CtlInfo);
 		fg_StrCopy(CtlInfo.ctl_name, Address.f_GetStr(), sizeof(CtlInfo.ctl_name));
 
-		if (ioctl(fd, CTLIOCGINFO, &CtlInfo)) 
+		if (ioctl(fd, CTLIOCGINFO, &CtlInfo))
 			return false;
-		
+
 		SockAddr.sc_id = CtlInfo.ctl_id;
 		SockAddr.sc_unit = 0;
-	 
+
 		_oAddr.f_Set((NMib::NNetwork::ENetAddressType)MalterlibSocketType, &SockAddr, sizeof(SockAddr));
-		
+
 		return true;
 	}
-	
+
 	return false;
 }
 

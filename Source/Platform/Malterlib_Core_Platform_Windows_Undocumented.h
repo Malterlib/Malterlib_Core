@@ -1,11 +1,11 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
 
 #include <winternl.h>
 
-typedef void (*PPEBLOCKROUTINE)( PVOID PebLock ); 
+typedef void (*PPEBLOCKROUTINE)( PVOID PebLock );
 
 typedef struct _PEB_FREE_BLOCK {
 	struct _PEB_FREE_BLOCK	*Next;
@@ -431,9 +431,9 @@ typedef struct _REPARSE_DATA_BUFFER {
 	ULONG  ReparseTag;
 	USHORT ReparseDataLength;
 	USHORT Reserved;
-	union 
+	union
 	{
-		struct 
+		struct
 		{
 			USHORT SubstituteNameOffset;
 			USHORT SubstituteNameLength;
@@ -442,7 +442,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 			ULONG  Flags;
 			WCHAR  PathBuffer[1];
 		} SymbolicLinkReparseBuffer;
-		struct 
+		struct
 		{
 			USHORT SubstituteNameOffset;
 			USHORT SubstituteNameLength;
@@ -450,7 +450,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 			USHORT PrintNameLength;
 			WCHAR  PathBuffer[1];
 		} MountPointReparseBuffer;
-		struct 
+		struct
 		{
 			UCHAR DataBuffer[1];
 		} GenericReparseBuffer;
@@ -479,7 +479,7 @@ enum Undocumented_PROCESSINFOCLASS
 	ProcessEnableAlignmentFaultFixup, // invalid class
 	ProcessPriorityClass,
 	ProcessWx86Information,
-	ProcessHandleCount, 
+	ProcessHandleCount,
 	ProcessAffinityMask, // invalid for query
 	ProcessPriorityBoost,
 	ProcessDeviceMap,
@@ -491,7 +491,7 @@ enum Undocumented_PROCESSINFOCLASS
 	Undocumented_ProcessBreakOnTermination,
 	ProcessDebugObjectHandle,
 	ProcessDebugFlags, // EProcess->Flags.NoDebugInherit
-	ProcessHandleTracing, 
+	ProcessHandleTracing,
 	ProcessIoPriority,
 	ProcessExecuteFlags,
 	ProcessTlsInformation, // invalid class
@@ -571,7 +571,7 @@ enum Undocumented_FILE_INFO_BY_HANDLE_CLASS
     Undocumented_MaximumFileInfoByHandleClass
 };
 
-struct Undocumented_FILE_ID_INFO 
+struct Undocumented_FILE_ID_INFO
 {
     ULONGLONG VolumeSerialNumber;
     FILE_ID_128 FileId;

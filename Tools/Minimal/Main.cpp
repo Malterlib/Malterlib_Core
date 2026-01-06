@@ -17,7 +17,7 @@ class CMinimal : public CApplication
 	aint f_Main()
 	{
 		return 0;
-	}	
+	}
 };
 
 DAppImplement(CMinimal);

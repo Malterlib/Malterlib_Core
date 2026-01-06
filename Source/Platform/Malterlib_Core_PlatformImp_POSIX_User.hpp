@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 using namespace NMib;
@@ -125,14 +125,14 @@ bool NSys::fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib:
 		_ReturnUID = NMib::NStr::CStr::CFormat("{}") << pPassword->pw_uid;
 	else if (State.m_Error != 0)
 		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when checking if user exists") << _UserName, State.m_Error));
-	
+
 	return pPassword != nullptr;
 }
 
 NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemberOfGroups(NMib::NStr::CStr const &_UserName)
 {
 	CStr UserName = _UserName;
-	
+
 	NMib::NPlatform::CGetPwUidState State;
 	passwd *pPassword = NMib::NPlatform::fg_Helper_GetPwNam(_UserName.f_GetStr(), State);
 
@@ -143,7 +143,7 @@ NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemb
 		else
 			DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when getting user group members") << _UserName, State.m_Error));
 	}
-	
+
 #ifdef DPlatformFamily_macOS
 	TCVector<int> Groups;
 #else
@@ -167,10 +167,10 @@ NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemb
 	}
 
 	NMib::NContainer::TCVector<NMib::NStr::CStr> Ret;
-	
+
 	for (auto &Group : Groups)
 		Ret.f_Insert(CStr::fs_ToStr(Group));
-	
+
 	return Ret;
 }
 
@@ -194,16 +194,16 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 		else
 			DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when checking if user is member of group") << _UserName, State.m_Error));
 	}
-	
+
 	struct group grp;
 	struct group * grpptr=&grp;
 	struct group * tempGrpPtr;
 	char grpbuffer[4096];
 	int  grplinelen = sizeof(grpbuffer);
-	
+
 	if ((getgrnam_r(_GroupName.f_GetStr(), grpptr, grpbuffer, grplinelen, &tempGrpPtr)) != 0)
 		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam_r('{}') when checking if user is member of group") << _GroupName, errno));
-	
+
 	if (tempGrpPtr == nullptr)
 		DMibError(CStr::CFormat("Group does not exists: {}") << _GroupName);
 
@@ -217,7 +217,7 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 		if (_UserName.f_Cmp(Ptr) == 0)
 			return true;
 	}
-	
+
 	return false;
 }
 

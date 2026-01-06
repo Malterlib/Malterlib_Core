@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -15,7 +15,7 @@ namespace NMib
 	};
 
 	struct CRunTimeObjectInfo : public CRunTimeObjectInfoLinks
-	{		
+	{
 		struct CCompare
 		{
 			ch8 const * operator () (CRunTimeObjectInfo const &_Info)
@@ -51,7 +51,7 @@ namespace NMib
 		const ch8 *m_pName = nullptr;
 		bool m_bIsStatic = true;
 
-		
+
 	};
 
 	struct CRunTimeObjectInfoContainer : public CRunTimeObjectInfo

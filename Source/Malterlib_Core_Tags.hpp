@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -10,12 +10,12 @@ namespace NMib
 	{
 		template <typename t_CTags0, typename t_CTags1>
 		struct TCAreTagsCompatible;
-	}		
+	}
 
 	template <typename ...tfp_CTag>
 	struct TCTags
 	{
-		template 
+		template
 		<
 			typename ...tfp_CTags
 			, TCEnableIf<NPrivate::TCAreTagsCompatible<TCTags<tfp_CTags...>, TCTags>::mc_Value> * = nullptr
@@ -27,7 +27,7 @@ namespace NMib
 		{
 		}
 	};
-	
+
 	namespace NPrivate
 	{
 
@@ -51,8 +51,8 @@ namespace NMib
 				>
 			;
 		};
-		
-		
+
+
 		template <typename t_COtherTags, typename ...tp_CTags>
 		struct TCEvalTagCompatible;
 
@@ -77,7 +77,7 @@ namespace NMib
 				mc_Value = true
 			};
 		};
-		
+
 		template <typename ...tp_CTags0, typename ...tp_CTags1>
 		struct TCAreTagsCompatible<TCTags<tp_CTags0...>, TCTags<tp_CTags1...>>
 		{
@@ -86,7 +86,7 @@ namespace NMib
 				mc_Value = NPrivate::TCEvalTagCompatible<TCTags<tp_CTags0...>, tp_CTags1...>::mc_Value
 			};
 		};
-		
+
 		template <typename t_CTagsToRemove, typename t_CResultingTags, typename t_CTags>
 		struct TCEvalRemoveTags;
 
@@ -95,7 +95,7 @@ namespace NMib
 		{
 			using CType = t_CResultingTags;
 		};
-		
+
 		template <typename t_CTags, typename t_CBaseTag>
 		struct TCEvalHasTagType;
 
@@ -129,16 +129,16 @@ namespace NMib
 				>
 			;
 		};
-		
-		
+
+
 	}
-	
+
 	template <typename ...tp_CTags, typename t_CBaseTag, typename t_CDefaultTag>
 	struct TCGetTag<TCTags<tp_CTags...>, t_CBaseTag, t_CDefaultTag>
 	{
 		using CType = typename NPrivate::TCEvalTag<t_CBaseTag, t_CDefaultTag, tp_CTags...>::CType;
 	};
-	
+
 	template <typename ...tp_CTags, typename t_CBaseTag>
 	struct TCHasTag<TCTags<tp_CTags...>, t_CBaseTag>
 	{
@@ -147,8 +147,8 @@ namespace NMib
 		{
 			mc_Value = NTraits::cIsConvertible<typename TCGetTag<TCTags<tp_CTags...>, CBaseTag>::CType, t_CBaseTag>
 		};
-	};		
-	
+	};
+
 	template <typename ...tp_CTags, typename ...tp_CTagsToRemove>
 	struct TCRemoveTags<TCTags<tp_CTags...>, tp_CTagsToRemove...>
 	{

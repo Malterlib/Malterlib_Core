@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -21,7 +21,7 @@ namespace NMib
 		, EAllocationFlag_NonTrackedMainHeap = DMibBit(7)
 		, EAllocationFlag_SizeNotNeeded = DMibBit(8)
 	};
-	
+
 	enum ENumaNode : int32
 	{
 		ENumaNode_Default = -1
@@ -67,10 +67,10 @@ namespace NMib
 		,EProcessorFeature_NEON		= DMibBit(7)	// Armv7+ (SIMD)
 		,EProcessorFeature_VFP		= DMibBit(8)	// Arm* (FPU)
 
-		/* Other interesting flags to add:			
+		/* Other interesting flags to add:
 				AVX
 				POPCNT
-				CMPXCHG16B				
+				CMPXCHG16B
 				3DNow(?)
 		*/
 
@@ -93,7 +93,7 @@ namespace NMib
 	struct CVirtualMachineInfo
 	{
 		bool m_bDetected;
-		ch8 const* m_pName;		
+		ch8 const* m_pName;
 	};
 
 	namespace NSys
@@ -114,8 +114,8 @@ namespace NMib
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
 
-		void fg_Mem_DisableLazyReturnCheckout();	
-		void fg_Mem_EnableLazyReturnCheckout();	
+		void fg_Mem_DisableLazyReturnCheckout();
+		void fg_Mem_EnableLazyReturnCheckout();
 
 		void fg_Mem_PrepareFork();
 		void fg_Mem_ForkedChild();
@@ -145,7 +145,7 @@ namespace NMib
 		| Threading																							|
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
-		
+
 		void *fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount);
 		void *fg_Semaphore_Duplicate(void * _pSemaphore);
 		void fg_Semaphore_ForkedChild(void * _pSemaphore);
@@ -183,7 +183,7 @@ namespace NMib
 		mint fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*));
 		void fg_Thread_FreeLocalWithDestructor(mint _iStorage);
 	#endif
-		
+
 		void fg_Thread_FreeLocal(mint _iStorage);
 		void fg_Thread_SetLocal(mint _iStorage, void *_pData);
 		void fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_pData);
@@ -231,11 +231,11 @@ namespace NMib
 		| System
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
-        
+
 		void fg_CreateSystem();
 		void fg_DestroySystem();
 		void fg_PreDestroyHeap();
-		
+
 		void fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes);
 
 		/***************************************************************************************************\

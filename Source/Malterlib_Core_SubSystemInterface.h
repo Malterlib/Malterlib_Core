@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -14,7 +14,7 @@ namespace NMib
 		, ESubSystemDestruction_BeforeThreadLocals
 		, ESubSystemDestruction_Last
 	};
-	
+
 	struct CSubSystem
 	{
 		DMibListLinkD_Link(CSubSystem, m_Link);
@@ -24,7 +24,7 @@ namespace NMib
 		{
 			return m_DestructionOrder >= ESubSystemDestruction_BeforeThreadLocals;
 		}
-		
+
 		CSubSystem();
 		virtual ~CSubSystem();
 

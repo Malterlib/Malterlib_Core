@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -20,7 +20,7 @@ namespace NMib
 		TCOnScopeExit(TCOnScopeExit const&) = delete;
 		TCOnScopeExit operator=(TCOnScopeExit const&) = delete;
 		TCOnScopeExit(t_FOnExitFunctor const &_fOnExitFunctor) = delete;
-		
+
 		inline_always TCOnScopeExit(t_FOnExitFunctor &&_fOnExitFunctor)
 			: mp_fOnExitFunctor(fg_Move(_fOnExitFunctor))
 			, mp_bIsValid(true)
@@ -34,7 +34,7 @@ namespace NMib
 			_Other.mp_bIsValid = false;
 		}
 
-		TCOnScopeExit &operator = (TCOnScopeExit &&_Other) 
+		TCOnScopeExit &operator = (TCOnScopeExit &&_Other)
 		{
 			mp_fOnExitFunctor = fg_Move(_Other.mp_fOnExitFunctor);
 			mp_bIsValid = _Other.mp_bIsValid;
@@ -43,7 +43,7 @@ namespace NMib
 		}
 
 		inline_always ~TCOnScopeExit() noexcept(t_bNoExcept)
-		{ 
+		{
 			if (mp_bIsValid)
 			{
 				mp_bIsValid = false;
@@ -81,13 +81,13 @@ namespace NMib
 		t_FOnExitFunctor mp_fOnExitFunctor;
 		bool mp_bIsValid;
 	};
-	
+
 	template<typename tf_FOnExitFunctor>
 	inline_always TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>> fg_OnScopeExit(tf_FOnExitFunctor &&_fOnExitFunctor)
-	{ 
+	{
 		return TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
 	}
-	
+
 	struct COnScopeExitHelper
 	{
 		template<typename tf_FOnExitFunctor>

@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -7,7 +7,7 @@ namespace NMib
 {
 	template <typename ...tfp_CTag>
 	struct TCTags;
-	
+
 	template <typename t_CTags, typename t_CBaseTag, typename t_CDefaultTag = t_CBaseTag>
 	struct TCGetTag;
 
@@ -19,7 +19,7 @@ namespace NMib
 
 	template <typename t_CTags, typename ...tp_CTagsToAdd>
 	struct TCAddTags;
-	
+
 }
 
 #include "Malterlib_Core_Tags.hpp"

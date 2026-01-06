@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -7,20 +7,20 @@
 
 namespace NMib
 {
-	
+
 	namespace NSys
 	{
-		
+
 		BreakpadRef g_Breakpad = nullptr;
-		
+
 		static BreakpadRef InitBreakpad(void)
 		{
 			if (!BreakpadVersion)
 				return nullptr;
-			
+
 			if (BreakpadVersion() < 1)
 				return nullptr;
-			
+
 			if (!BreakpadCreate)
 				return nullptr;
 
@@ -29,33 +29,33 @@ namespace NMib
 			NSMutableDictionary *plist = [NSMutableDictionary dictionaryWithDictionary:[[NSBundle mainBundle] infoDictionary]] ;
 			if (plist)
 			{
-				
+
 				NMib::NStr::CStr TempDir = NMib::NFile::CFile::fs_GetTemporaryDirectory() + "/CrashDumps/" + NMib::NCryptography::fg_GetSecureUuidString(NCryptography::EUniversallyUniqueIdentifierFormat_AlphaNum);
-				
+
 				try
 				{
 					NMib::NFile::CFile::fs_CreateDirectory(TempDir);
-					
+
 					[plist setObject:[[NSString alloc] initWithUTF8String:TempDir.f_GetStr()] forKey:@"BreakpadMinidumpLocation"];
-					
+
 					/*for (id key in plist) {
-					
+
 						NSLog(@"key: %@, value: %@", key, [plist objectForKey:key]);
-						
+
 					}*/
-					
+
 					// Note: version 1.0.0.4 of the framework changed the type of the argument
 					// from CFDictionaryRef to NSDictionary * on the next line:
 					breakpad = BreakpadCreate(plist);
 
 				}
 				catch(NMib::NFile::CExceptionFile const&){}
-				
+
 			}
 			[pool release];
 			return breakpad;
 		}
-		
+
 		void fg_InitBreakpad()
 		{
 			//DMibTraceSafe("Init breakpad called\n", 0);

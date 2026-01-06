@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 struct CEpollEvent
@@ -14,22 +14,22 @@ class CEpollQueue
 private:
 	NThread::CMutual mp_Lock;
 	NContainer::TCVector<struct CEpollEvent> mp_lQueue;
-	
+
 public:
-	
+
 	void f_Push(struct CEpollEvent* _pEvents, mint _nEvents)
 	{
 		DMibLock(mp_Lock);
-		
+
 		struct CEpollEvent* pEnd = _pEvents + _nEvents;
-		
+
 		while(_pEvents < pEnd)
 		{
 			mp_lQueue.f_Insert(*_pEvents);
 			++_pEvents;
 		}
 	}
-	
+
 	NContainer::TCVector<struct CEpollEvent> f_Take()
 	{
 		DMibLock(mp_Lock);
@@ -52,14 +52,14 @@ public:
 bool CPOSIXImpSpecificSocketPoller::CInternal::f_PushSocketEvents(CPOSIXSocket* _pSocket, bool _bForRemoval)
 {
 	EPOSIXSocketEvent EventsToRegister = _pSocket->m_RegisteredEvents;
-	
+
 	if ((EventsToRegister & EPOSIXSocketEvent_Read) || (EventsToRegister & EPOSIXSocketEvent_Write))
-	{		
+	{
 		struct CEpollEvent CurEvent;
-		
+
 		fg_MemClear(&CurEvent, sizeof(struct CEpollEvent));
 		CurEvent.m_Fd = _pSocket->m_FD;
-		CurEvent.m_EpollEvent.events = 
+		CurEvent.m_EpollEvent.events =
 			EPOLLET
 			| EPOLLRDHUP
 			| ((EventsToRegister & EPOSIXSocketEvent_Read) ? EPOLLIN : 0)
@@ -70,11 +70,11 @@ bool CPOSIXImpSpecificSocketPoller::CInternal::f_PushSocketEvents(CPOSIXSocket* 
 		CurEvent.m_EpollEvent.data.ptr = _pSocket;
 
 		m_ChangeQueue.f_Push(&CurEvent, 1);
-		
+
 		// Wake up thread.
 		char Byte = 1;
 		write(m_ReadWritePipe[1], &Byte, 1);
-		
+
 		return true;
 	}
 	else
@@ -84,12 +84,12 @@ bool CPOSIXImpSpecificSocketPoller::CInternal::f_PushSocketEvents(CPOSIXSocket* 
 CPOSIXImpSpecificSocketPoller::CPOSIXImpSpecificSocketPoller()
 {
 	mp_pInternal = fg_Construct();
-	
+
 	mp_pInternal->m_bBreak.f_Store(0);
-	
+
 	{
 		// We use this pipe so we can wake up the epoll when it is waiting.
-		
+
 		int PipeRet;
 		if (NLocal::g_f_pipe2)
 			PipeRet = NLocal::g_f_pipe2(mp_pInternal->m_ReadWritePipe, O_NONBLOCK | O_CLOEXEC);
@@ -107,7 +107,7 @@ CPOSIXImpSpecificSocketPoller::CPOSIXImpSpecificSocketPoller()
 		}
 		if (PipeRet)
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("pipe (socket poller)", errno));
-		
+
 		struct CEpollEvent CurEvent;
 		fg_MemClear(&CurEvent, sizeof(struct CEpollEvent));
 		CurEvent.m_Fd = mp_pInternal->m_ReadWritePipe[0];
@@ -116,22 +116,22 @@ CPOSIXImpSpecificSocketPoller::CPOSIXImpSpecificSocketPoller()
 		CurEvent.m_EpollEvent.events = EPOLLIN;
 		CurEvent.m_EpollEvent.data.fd = mp_pInternal->m_ReadWritePipe[0];
 
-		
+
 		mp_pInternal->m_ChangeQueue.f_Push(&CurEvent, 1);
 	}
-	
+
 	int (* fLocal_epoll_create1)(int __flags) __THROW;
-	
+
 	(void * &)fLocal_epoll_create1 = dlsym(RTLD_DEFAULT, "epoll_create1");
-	
+
 	if (fLocal_epoll_create1)
 		mp_pInternal->m_EpollFd = fLocal_epoll_create1(EPOLL_CLOEXEC);
 	else
 		mp_pInternal->m_EpollFd = epoll_create(1);
-	
+
 	if (mp_pInternal->m_EpollFd == -1)
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("epoll_create (socket poller)", errno));
-	
+
 	if (!fLocal_epoll_create1)
 		fcntl(mp_pInternal->m_EpollFd, F_SETFD, fcntl(mp_pInternal->m_EpollFd, F_GETFD) | FD_CLOEXEC);
 }
@@ -214,7 +214,7 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 				}
 			}
 		}
-		
+
 		// Wait for events
 		do
 		{
@@ -330,7 +330,7 @@ void CPOSIXImpSpecificSocketPoller::f_Run(NThread::CThread* _pThread)
 void CPOSIXImpSpecificSocketPoller::f_Break()
 {
 	mp_pInternal->m_bBreak.f_Store(1);
-	
+
 	char Byte = 1;
 	write(mp_pInternal->m_ReadWritePipe[1], &Byte, 1);
 }

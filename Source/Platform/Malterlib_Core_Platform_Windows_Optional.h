@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Windows.h>
@@ -36,7 +36,7 @@ namespace NLocal
 		PVOID (WINAPI *m_fAddVectoredExceptionHandler)(ULONG _First, PVECTORED_EXCEPTION_HANDLER _pHandler);
 		ULONG (WINAPI *m_fRemoveVectoredExceptionHandler)(PVOID _pHandler);
 #endif
-	
+
 		SIZE_T (WINAPI *m_fLargePageMinimum)();
 
 		char *(WINAPI *m_fWineGetVersion)();
@@ -59,7 +59,7 @@ namespace NLocal
 		BOOLEAN (APIENTRY *m_fCreateSymbolicLinkW)(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
 
 		BOOL (WINAPI *m_fCreateHardLinkW)(LPCWSTR lpFileName, LPCWSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
-	
+
 		BOOL (WINAPI *m_fWow64DisableWow64FsRedirection)(PVOID * OldValue);
 		BOOL (WINAPI *m_fWow64RevertWow64FsRedirection)(PVOID OlValue);
 

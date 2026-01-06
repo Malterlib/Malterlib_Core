@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -17,7 +17,7 @@ namespace NMib
 				auto *pProtected = m_Environment.f_FindEqual("MalterlibProtectedEnvironment");
 				if (!pProtected)
 					return;
-				
+
 				CStr ToProtect = *pProtected;
 				m_Environment.f_Remove(pProtected);
 
@@ -29,7 +29,7 @@ namespace NMib
 					m_ProtectedEnvironment[Variable] = *pValue;
 					m_Environment.f_Remove(Variable);
 				}
-				
+
 				m_ProtectedEnvironment["MalterlibProtectedEnvironment"] = ToProtect;
 			}
 
@@ -58,21 +58,21 @@ namespace NMib
 
 		constinit TCSubSystem<CSubSystem_Core_Environment, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Environment = {DAggregateInit};
 	}
-	
+
 	CSystemEnvironment CSystem::f_Environment() const
 	{
 		auto &SubSystem = *g_SubSystem_Core_Environment;
 		DMibLockRead(SubSystem.m_Lock);
 		return SubSystem.m_Environment;
 	}
-	
+
 	void CSystem::f_SetEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Value)
 	{
 		auto &SubSystem = *g_SubSystem_Core_Environment;
 		DMibLock(SubSystem.m_Lock);
 		SubSystem.m_Environment[_Name] = _Value;
-	}	
-	
+	}
+
 	CStr CSystem::f_GetEnvironmentVariable(CStr const &_Name, CStr const &_Default, bool *o_pExists) const
 	{
 		auto &SubSystem = *g_SubSystem_Core_Environment;
@@ -88,13 +88,13 @@ namespace NMib
 			*o_pExists = false;
 		return _Default;
 	}
-	
+
 	CSystemEnvironment CSystem::f_ProtectedEnvironment() const
 	{
 		auto &SubSystem = *g_SubSystem_Core_Environment;
 		DMibLockRead(SubSystem.m_Lock);
 		auto Environment = SubSystem.m_ProtectedEnvironment;
-		Environment += SubSystem.m_Environment; 
+		Environment += SubSystem.m_Environment;
 		return Environment;
 	}
 
@@ -107,8 +107,8 @@ namespace NMib
 			return;
 		SubSystem.m_ProtectedEnvironment[_Variable] = *pValue;
 		SubSystem.m_Environment.f_Remove(_Variable);
-	}	
-	
+	}
+
 	CStr CSystem::f_GetProtectedEnvironmentVariable(CStr const &_Name, CStr const &_Default, bool *o_pExists) const
 	{
 		auto &SubSystem = *g_SubSystem_Core_Environment;

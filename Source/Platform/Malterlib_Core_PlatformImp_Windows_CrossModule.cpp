@@ -68,7 +68,7 @@ namespace NMib::NThread::NPlatform
 		CWindowsThreadLocals::ms_ThreadLocalsMinOffset = NLocal::fg_TlsIndexToTebOffset(0);
 		CWindowsThreadLocals::ms_ThreadLocalsMaxOffset = NLocal::fg_TlsIndexToTebOffset(63);
 	}
-	
+
 	void fg_Windows_DestroyCrossModule()
 	{
 		NLocal::g_OptionalFunctions.m_fRtlAcquirePebLock();
@@ -227,7 +227,7 @@ namespace NMib::NThread::NPlatform
 
 		DMibFastCheck(CWindowsCrossModuleProcessInfo::ms_pThis);
 		DMibFastCheck(CWindowsCrossModuleProcessInfo::ms_pThis->m_ThreadLocalFreeSlots.f_GetBit(_ThreadLocalID));
-		
+
 		CWindowsCrossModuleProcessInfo::ms_pThis->m_ThreadLocalFreeSlots.f_SetBit<false>(_ThreadLocalID);
 	}
 

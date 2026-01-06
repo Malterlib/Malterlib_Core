@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -131,7 +131,7 @@ public:
 		int m_Type;
 		int m_Protocol;
 	};
-	
+
 	bool f_GetSocketCreateParams(::NMib::NNetwork::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams);
 };
 
@@ -164,7 +164,7 @@ public:
 
 		NMib::NStr::CStr f_GetAddressString(CPOSIXAddress const &_Address, ENetAddressStringFlag _Flags);
 
-	// Connection Operations	
+	// Connection Operations
 		CPOSIXSocket *f_AsyncConnect
 			(
 				CPOSIXAddress const &_Address
@@ -172,7 +172,7 @@ public:
 				, CPOSIXAddress const *_pBindAddress
 			)
 		;
-		
+
 		CPOSIXSocket *f_Listen
 			(
 				CPOSIXAddress const &_Address
@@ -210,10 +210,10 @@ public:
 		CPOSIXSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 		void *f_GiveUpForInherit(CPOSIXSocket *_pSocket);
 		void *f_GetOSSocket(CPOSIXSocket *_pSocket);
-		
+
 		CPOSIXAddress* f_GetPeerAddress(CPOSIXSocket *_pSocket);
 		uint32 f_GetListenPort(CPOSIXSocket *_pSocket);
-		
+
 private:
 
 	struct CPollerThread : public NMib::NThread::CThread
@@ -240,7 +240,7 @@ private:
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
-	
+
 	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv4 const& _InAddr, sockaddr_in& _OutAddr) const
 	{
 		fg_MemClear(_OutAddr);
@@ -248,9 +248,9 @@ private:
 		_OutAddr.sin_len = sizeof(_OutAddr);
 #endif
 		_OutAddr.sin_family = AF_INET;
-		
+
 		_OutAddr.sin_addr.s_addr = _InAddr.m_IP[3] << 24 | _InAddr.m_IP[2] << 16 | _InAddr.m_IP[1] << 8 |	_InAddr.m_IP[0];
-		
+
 		_OutAddr.sin_port = htons(_InAddr.m_Port);
 	}
 
@@ -261,9 +261,9 @@ private:
 		_OutAddr.sin6_len = sizeof(_OutAddr);
 #endif
 		_OutAddr.sin6_family = AF_INET6;
-		
+
 		fg_MemCopy(&_OutAddr.sin6_addr.s6_addr, &_InAddr.m_IP, sizeof(uint8) * 16);
-		
+
 		_OutAddr.sin6_port = htons(_InAddr.m_Port);
 	}
 
@@ -286,7 +286,7 @@ private:
 #pragma clang diagnostic pop
 
 	bool fp_GetSocketCreateParams(NMib::NNetwork::ENetAddressType _AddressType, CPOSIXImpSpecificSocketContext::CSocketCreateParams &o_Params);
-	
+
 	CPOSIXSocket *fp_Connect
 		(
 			CPOSIXAddress const &_Address
@@ -303,8 +303,8 @@ private:
 			, bool _bFromInherit = false
 		)
 	;
-	void fp_PrepareUnixListen(CPOSIXAddress const &_Address); 
-	void fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address); 
+	void fp_PrepareUnixListen(CPOSIXAddress const &_Address);
+	void fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address);
 
 	CPOSIXImpSpecificSocketContext mp_ImpSpecific;
 

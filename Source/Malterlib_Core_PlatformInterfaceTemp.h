@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -19,7 +19,7 @@ namespace NMib
 		,EProtect_WriteExec		= EProtect_Write | EProtect_Exec
 		,EProtect_All			= EProtect_Read | EProtect_Write | EProtect_Exec
 	};
-	
+
 	enum EDebugCheckFailureAction
 	{
 		EDebugContractFailureAction_Continue,
@@ -39,7 +39,7 @@ namespace NMib
 	{
 		struct CSystemCPUUsage
 		{
-			// 
+			//
 			fp32 m_User;
 			fp32 m_Kernel;
 			fp32 m_Idle;
@@ -66,11 +66,11 @@ namespace NMib
 			{
 				return m_User + m_Kernel;
 			}
-			
+
 		};
 
 	}
-	
+
 	enum EOperatingSystemArch
 	{
 		EOperatingSystemArch_Unknown = -1,
@@ -81,9 +81,9 @@ namespace NMib
 		EOperatingSystemArch_le32,
 		EOperatingSystemArch_arm64,
 	};
-	
+
 	namespace NSys
-	{		
+	{
 		void fg_FreeLibrary(void *_pModule);
 		void* fg_LoadLibrary(NMib::NStr::CStr const& _Library);
 		void* fg_LoadLibrary(NMib::NStr::CStrNonTracked const& _Library);
@@ -93,9 +93,9 @@ namespace NMib
 
 		void fg_System_ReportContractViolation(const NMib::NStr::CStrNonTracked &_Message);
 		NMib::NStr::CStrNonTracked fg_System_GetContractViolationMessage();
-		
+
 		bool fg_System_GetOperatingSystemVersion(int& o_Major, int& o_Minor, int& o_Fix, EOperatingSystemArch &o_Arch, bool _bForceUpdate = false);
-		
+
 		void fg_System_ExitProcess(aint _ExitCode);
 
 		void fg_ConsoleOutputRaw(const NMib::NStr::CStrNonTracked &_Str);
@@ -112,13 +112,13 @@ namespace NMib
 		bool fg_ConsoleOutputValid();
 		bool fg_ConsoleErrorOutputValid();
 		bool fg_ConsoleInputValid();
-		
+
 		struct CConsoleProperties
 		{
 			uint32 m_Width = 0;
 			uint32 m_Height = 0;
 		};
-		
+
 		CConsoleProperties fg_GetConsoleProperties();
 
 		mint fg_Mem_GetNumNumaNodes();
@@ -172,7 +172,7 @@ namespace NMib
 		\*_________________________________________________________________________________________________*/
 		using FDeadlockUserNotify = bool (); // Return true if the user choose to create a crash dump.
 
-		
+
 		void fg_Debug_SetDeadlockNotifyFunction(FDeadlockUserNotify *_pCrashDumpUserNotify);
 		void fg_Debug_StartDeadlockDetector(fp64 _Timeout);
 		void fg_Debug_NotDeadlocked();
@@ -229,14 +229,14 @@ namespace NMib
 
 		void fg_Mem_EnableMemoryToucher(bool _bEnabled, fp64 _CPUUsage = 0.0);
 
-		
+
 		void fg_TerminateProcess(aint _ExitCode);
 
 		void fg_Process_AllowInvalidExit(bool _bAllow);
 
 		NMib::NStr::CStr fg_Process_GetCommandLine();
 		void fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> &_List);
-		
+
 		NMib::NStr::CStr fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName);
 		NMib::NStr::CStrNonTracked fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName);
 		NMib::NStr::CFStr256 fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CFStr256 const &_VariableName);
@@ -247,7 +247,7 @@ namespace NMib
 		void fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked const &_Value);
 
 		NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> fg_Process_GetEnvironmentVariables_NonProtected();
-		
+
 		NMib::NStr::CStr fg_System_GenerateUUID();
 		void fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_UUID);
 
@@ -263,7 +263,7 @@ namespace NMib
 		void *fg_System_CPUUsageMonitor_Open();
 		void fg_System_CPUUsageMonitor_Close(void *_pHandle);
 		void fg_System_EnableFloatingPointExceptions();
-		
+
 		void *fg_Process_GetCrossModuleMemoryManagerInterface();
 		void fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface);
 
@@ -295,7 +295,7 @@ namespace NMib
 		ESecurePassword fg_SecurePassword_Exists(NMib::NStr::CStr const& _Key);
 		bool fg_SecurePassword_Supported();
 //		ESecurePassword fg_SecurePassword_Enum(NMib::NContainer::TCVector<NMib::NStr::CStr> & _oKeys);
-		
+
 		/*
 			User management
 		*/
@@ -308,20 +308,20 @@ namespace NMib
 
 		NMib::NStr::CStr fg_UserManagement_GetProcessRealUser();
 		NMib::NStr::CStr fg_UserManagement_GetProcessEffectiveUser();
-		
+
 		NMib::NStr::CStr fg_UserManagement_GetProcessRealGroup();
 		NMib::NStr::CStr fg_UserManagement_GetProcessEffectiveGroup();
 
 		NMib::NStr::CStr fg_UserManagement_GetProcessRealUserName();
 		NMib::NStr::CStr fg_UserManagement_GetProcessEffectiveUserName();
-		
+
 		NMib::NStr::CStr fg_UserManagement_GetProcessRealGroupName();
 		NMib::NStr::CStr fg_UserManagement_GetProcessEffectiveGroupName();
-		
+
 		bool fg_UserManagement_GroupExists(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr &_ReturnGID);
 		void fg_UserManagement_CreateGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr &_ReturnGID);
 		void fg_UserManagement_DeleteGroup(NMib::NStr::CStr const &_GroupName);
-		
+
 		bool fg_UserManagement_UserExists(NMib::NStr::CStr const &_UserName, NMib::NStr::CStr &_ReturnUID);
 		NMib::NStr::CStr fg_UserManagement_MakeValidUserName(NMib::NStr::CStr const &_UserName);
 		NMib::NStr::CStr fg_UserManagement_MakeValidGroupName(NMib::NStr::CStr const &_GroupName);
@@ -342,15 +342,15 @@ namespace NMib
 				, NMib::NStr::CStrSecure const &_Password
 			)
 		;
-		
+
 		void fg_UserManagement_DeleteUser(NMib::NStr::CStr const &_UserName);
-		
+
 		void fg_UserManagement_AddUserToGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName);
 		void fg_UserManagement_RemoveUserFromGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName);
 		bool fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr const &_UserName);
 		NMib::NContainer::TCVector<NMib::NStr::CStr> fg_UserManagement_UserGetMemberOfGroups(NMib::NStr::CStr const &_UserName);
 		bool fg_UserManagement_IsValidName(NMib::NStr::CStr const &_Name);
-		
+
 		/*
 		Desktop Environment
 		*/

@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -23,7 +23,7 @@ namespace NMib
 
 	namespace NSys
 	{
-		
+
 		bool fg_Compiler_MakeActive(int _Dummy, ...)
 		{
 			CMibArgList Args;
@@ -104,14 +104,14 @@ namespace NMib
 		return *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal;
 #endif
 	}
-	
+
 	/************************************************************************************************\
 	||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
 	|| CSystem
 	||______________________________________________________________________________________________||
 	\************************************************************************************************/
 
-	// Main System object. Created at start of 
+	// Main System object. Created at start of
 	CSystem *g_pSys = nullptr;
 
 	void fg_MaybeSystemThreadInit()
@@ -147,7 +147,7 @@ namespace NMib
 		// Construct things
 
 		fp_ThreadLocalCreate();
-		
+
 		fp_CreateNonTrackedMemoryManager();
 #if DMibConfig_Memory_Shims_EnableGlobal
 		fp_CreateGlobalMemoryReporter();
@@ -171,7 +171,7 @@ namespace NMib
 		NTime::CSystem_Time::fs_CyclesFrequency();
 #endif
 	}
-	
+
 	CSystem::~CSystem()
 	{
 		m_ProgramNameNonTracked.f_Clear();
@@ -190,13 +190,13 @@ namespace NMib
 		fp_SubSystem_DestroyBeforeThreadLocals();
 
 		fp_ThreadLocalDestroy();
-		
+
 		fp_SubSystem_Destroy();
 	}
 
 	void CSystem::fp_InitComplete()
 	{
-		m_bInitDone = true;	
+		m_bInitDone = true;
 	}
 
 	void CSystem::f_PreDestructThreadSpecific()
@@ -216,7 +216,7 @@ namespace NMib
 #if DMibSysLogSeverities
 		m_pSystemLog->f_SetDispatcher(nullptr);
 #endif
-		
+
 		fp_SubSystem_DestroyThreadSpecific();
 
 		fg_MalterlibMallocOverride_DestroyThreads();
@@ -265,7 +265,7 @@ namespace NMib
 		m_FileLoggerDestination = 0;
 #endif
 	}
-	
+
 	bool CSystem::f_HasTraceLogger() const
 	{
 #if DMibEnableTrace > 0 && DMibSysLogSeverities != 0
@@ -280,14 +280,14 @@ namespace NMib
 #if DMibEnableTrace > 0
 #if DMibSysLogSeverities
 		if (m_TraceLoggerDestination)
-		{			
+		{
 			m_pSystemLog->f_RemoveGlobalDestination(m_TraceLoggerDestination);
 			m_TraceLoggerDestination = 0;
 		}
 #endif
 #endif
 	}
-	
+
 	void CSystem::f_AddStdErrLogger()
 	{
 #if DMibSysLogSeverities
@@ -377,14 +377,14 @@ namespace NMib
 		}
 #endif
 	}
-	
+
 	void CSystem::f_SetDefaultLogFileName(NLog::CLogStr const &_Name)
 	{
 #if DMibSysLogSeverities
 		m_pDefaultLogFile->m_Filename = _Name;
 #endif
 	}
-	
+
 	void CSystem::f_SetDefaultLogFileDirectory(NLog::CLogStr const &_Directory)
 	{
 #if DMibSysLogSeverities
@@ -394,14 +394,14 @@ namespace NMib
 
 	void CSystem::f_InitModuleThreaded()
 	{
-		g_bCanStartThreads = true;		
+		g_bCanStartThreads = true;
 #if DMibRemoteDebugger_Enabled
 		NDebug::NRemoteDebugger::fg_RD_NetworkAvailableForClient();
 #endif
 		f_MemoryManager_CanStartThreads();
 		fg_MalterlibMallocOverride_CanStartThreads();
 	}
-		
+
 	void CSystem::f_InitModule(FConstruct **_pCConstructorsStart, FConstruct **_pCConstructorsEnd, FConstruct **_pCppConstructors, FConstruct **_pCppConstructorsEnd)
 	{
 		// Call c constructors
@@ -411,7 +411,7 @@ namespace NMib
 				(**_pCConstructorsStart)();
 			++_pCConstructorsStart;
 		}
-		
+
 		// Call C++ constructors
 		while (_pCppConstructors < _pCppConstructorsEnd)
 		{
@@ -429,7 +429,7 @@ namespace NMib
 
 		g_SystemModule.f_Destroy();
 	}
-	
+
 	void CSystem::f_PrepareFork()
 	{
 #if DMibSysLogSeverities
@@ -480,7 +480,7 @@ namespace NMib
 			m_pSystemLog->f_ForkedParent();
 #endif
 	}
-	
+
 	void CSystem::f_DestroyAggregates()
 	{
 		g_SystemModule.f_DestroyAggregates(false);
@@ -491,7 +491,7 @@ namespace NMib
 
 		NSys::fg_System_ExitProcess(_ExitCode);
 	}
-	
+
 
 	void CSystem::f_FatalError(const ch8 *_pMessage)
 	{
@@ -623,7 +623,7 @@ namespace NMib
 			fsg_ParseCommandLine(m_CommandLineData->m_CommandLine, m_CommandLineData->m_lCommandLineParameters.f_GetArray());
 		}
 	}
-	
+
 	void CSystem::f_SetCrashHandler(NStr::CStr const& _Path, NStr::CStr const& _Server)
 	{
 		m_CrashHandlerPath = _Path;
@@ -647,7 +647,7 @@ namespace NMib
 	{
 		return m_CommandLineData->m_CommandLine;
 	}
-	
+
 	NContainer::TCVector<NMib::NStr::CStr> CSystem::f_GetCommandLineArgs() const
 	{
 		NContainer::TCVector<NMib::NStr::CStr> CommandLineArgs;
@@ -671,14 +671,14 @@ namespace NMib
 	|| CSystemModule
 	||______________________________________________________________________________________________||
 	\************************************************************************************************/
-	
+
 	constexpr CSystemModule::CSystemModule(EAggregateInitialization _Init)
 		: m_pSystem{nullptr}
 		, m_Aggregates{_Init}
 		, m_Lock{_Init}
 	{
 	}
-	
+
 	// Make sure that our system module is aggregate
 	constinit CSystemModule g_SystemModule = {DAggregateInit};
 
@@ -708,7 +708,7 @@ namespace NMib
 	void CSystemModule::f_Destroy()
 	{
 		f_DestroyAggregates(true);
-		
+
 		m_Lock.f_Destruct();
 		m_Aggregates.f_Destruct();
 
@@ -806,7 +806,7 @@ namespace NMib
 	{
 		if (!m_bValid)
 			return;
-		
+
 		auto &ThreadLocal = fg_SystemThreadLocal();
 
 		DMibFastCheck(m_pCoroutineHandler == ThreadLocal.m_pCurrentCoroutineHandler);

@@ -1,4 +1,4 @@
-﻿/*	Copyright © 2015 Hansoft AB 
+﻿/*	Copyright © 2015 Hansoft AB
 	Distributed under the MIT license, see license text in LICENSE.Malterlib
 */
 
@@ -21,10 +21,10 @@ table, th, td
 @media only screen and (min--moz-device-pixel-ratio: 2),
 only screen and (-o-min-device-pixel-ratio: 2/1),
 only screen and (-webkit-min-device-pixel-ratio: 2),
-only screen and (min-device-pixel-ratio: 2) 
+only screen and (min-device-pixel-ratio: 2)
 {
 	table, th, td
 	{
 		font-family: "Unbroken 20px", Unbroken, monospace;
 	}
-}	
+}

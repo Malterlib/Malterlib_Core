@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 using namespace NMib;
@@ -111,12 +111,12 @@ void *NSys::fg_LoadLibrary(const CStrNonTracked &_Library)
 }
 
 void NSys::fg_FreeLibrary(void *_pModule)
-{	
+{
 	void (*pMalterlibFreeLibraryExternal)();
 	pMalterlibFreeLibraryExternal = (FMalterlibLibraryFunc*)NSys::fg_GetLibrarySymbol(_pModule, "IdsFreeLibraryExternal");
 	if (pMalterlibFreeLibraryExternal)
 		pMalterlibFreeLibraryExternal();
-	
+
 	dlclose(_pModule);
 }
 

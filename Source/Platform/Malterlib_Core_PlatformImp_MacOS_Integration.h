@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -11,7 +11,7 @@ namespace NMib
 		void fg_MacOS_SetBadgeLabel(NStr::CStr const& _Label);
 		void fg_MacOS_ClearBadgeLabel();
 		bool fg_MacOS_PlaySound(uint8 const* _pWaveform, mint _nBytes);
-		
+
 	} // Namespace NRuntime
 
 } // Namespace NMib

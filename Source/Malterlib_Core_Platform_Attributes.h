@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -10,7 +10,7 @@
 #	define DMibPEndPackedStruct
 #elif defined(DCompiler_MSVC)
 #	define DMibPStartPackedStruct __pragma(pack(push, 1))
-#	define DMibPPackedStruct 
+#	define DMibPPackedStruct
 #	define DMibPEndPackedStruct __pragma(pack(pop))
 #else
 #	error "Implement this"
@@ -115,7 +115,7 @@
 #if DMibPInlineLevel > 1
 #	define inline_small inline_always
 #else
-#	define inline_small 
+#	define inline_small
 #endif
 
 #if DMibPInlineLevel > 2
@@ -133,7 +133,7 @@
 #if DMibPInlineLevel > 4
 #	define inline_extralarge inline_always
 #else
-#	define inline_extralarge 
+#	define inline_extralarge
 #endif
 
 // Aliasing
@@ -153,9 +153,9 @@
 
 // Aliasing
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define only_parameters_aliased 
+#	define only_parameters_aliased
 #	define malloc_like __attribute__((__malloc__))
-#	define return_not_aliased 
+#	define return_not_aliased
 #	define function_does_not_return __attribute__((noreturn))
 #	define variable_not_aliased __restrict__
 #	define function_does_not_return_analyzer __attribute__((analyzer_noreturn))

@@ -1,8 +1,8 @@
 #!/bin/bash
-# Copyright © 2015 Hansoft AB 
+# Copyright © 2015 Hansoft AB
 # Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-# Usage: ./mib build_target Workspace Target Platform Architecture Configuration 
+# Usage: ./mib build_target Workspace Target Platform Architecture Configuration
 
 set -e
 

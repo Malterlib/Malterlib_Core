@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_PlatformImp_Net.h"
@@ -61,7 +61,7 @@ bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddr
 
 	DMibLock(pReq->m_Lock);
 	if (pReq->m_Flags & EFlag_Done)
-	{		
+	{
 		_oAddress = pReq->m_Address;
 		pReq->m_Address = nullptr;
 		return true;
@@ -97,7 +97,7 @@ void CAddressResolver::f_Close(void* _pResolver)
 aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject* _pThread)
 {
 	while(_pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
-	{		
+	{
 		CResolveRequest* pReq;
 
 		while (1)

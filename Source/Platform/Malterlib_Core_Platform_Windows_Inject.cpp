@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_Platform_Windows_Inject.h"
@@ -36,7 +36,7 @@ namespace NMib
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;
 			PIMAGE_IMPORT_DESCRIPTOR pImportDescriptor;
-			UINT uiIter;	
+			UINT uiIter;
 
 			pDOSHeader = (PIMAGE_DOS_HEADER) _hMod;
 			pNTHeader = (PIMAGE_NT_HEADERS) RVA2PTR(pDOSHeader, pDOSHeader->e_lfanew);
@@ -90,7 +90,7 @@ namespace NMib
 							if (!VirtualProtect(memInfoThunk.BaseAddress, memInfoThunk.RegionSize, memInfoThunk.Protect, &dwDummy))
 								return HRESULT_FROM_WIN32(GetLastError());
 
-							return S_OK;					
+							return S_OK;
 						}
 					}
 					return HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND);
@@ -191,7 +191,7 @@ namespace NMib
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;
 			PIMAGE_DELAY_IMPORT_DESCRIPTOR pDelayImportDescriptor;
-			UINT uiIter;	
+			UINT uiIter;
 
 			pDOSHeader = (PIMAGE_DOS_HEADER) _hMod;
 			pNTHeader = (PIMAGE_NT_HEADERS) RVA2PTR(pDOSHeader, pDOSHeader->e_lfanew);
@@ -243,7 +243,7 @@ namespace NMib
 							if (!VirtualProtect(memInfoThunk.BaseAddress, memInfoThunk.RegionSize, memInfoThunk.Protect, &dwDummy))
 								return HRESULT_FROM_WIN32(GetLastError());
 
-							return S_OK;					
+							return S_OK;
 						}
 					}
 					return HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND);
@@ -267,7 +267,7 @@ namespace NMib
 				DWORD dwBytes;
 				unsigned int uiIter;
 				TCHAR szModName[MAX_PATH];
-	
+
 				hProcess = OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ, FALSE, _PID);
 				if (NULL == hProcess)
 					return NULL;
@@ -286,9 +286,9 @@ namespace NMib
 						}
 					}
 				}
-	
+
 				CloseHandle(hProcess);
-	
+
 				return NULL;
 			}
 
@@ -370,7 +370,7 @@ namespace NMib
 			return 0;
 		}
 
-		uint8 *fg_SkipJumps(uint8 *pbCode) 
+		uint8 *fg_SkipJumps(uint8 *pbCode)
 		{
 		#if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 
@@ -395,13 +395,13 @@ namespace NMib
 				// ... that shows us an absolute pointer
 				return fg_SkipJumps(*(uint8 **)(pbCode + 6 + lOffset));
 		#endif
-			} 
+			}
 			else if (pbCode[0] == 0xe9)
 			{
 				// here the behavior is identical, we have...
 				// ...a 32-bit offset to the destination.
 				return fg_SkipJumps(pbCode + 5 + *(INT32 *)&pbCode[1]);
-			} 
+			}
 			else if (pbCode[0] == 0xeb)
 			{
 				// and finally an 8-bit offset to the destination
@@ -688,7 +688,7 @@ namespace NMib
 							if (ReadProcessMemory(hProcess, MemInfo.BaseAddress, Temp, 4096, &dwBytes) && dwBytes == 4096)
 							{
 								auto pRemoteHeaders = fg_GetImageHeaders((HMODULE)Temp);
-						
+
 								if (pRemoteHeaders && NMemory::fg_MemCmp((uint8 *)pRemoteHeaders, (uint8 *)pThisNtDllHeaders, sizeof(*pThisNtDllHeaders)) == 0)
 								{
 									// If the headers are the same, it means that the checksum is the same
@@ -711,7 +711,7 @@ namespace NMib
 				return EInjectDllResult_Failed;
 			}
 
-	
+
 			NStr::CWStr DllDirectories = NFile::CFile::fs_GetPath(NStr::CWStr(_pDLLName)).f_ReplaceChar('/', '\\');
 
 			NStr::CWStr Temp;
@@ -736,7 +736,7 @@ namespace NMib
 			size_t RemoteMemorySize = StringMemorySize;
 			size_t DllDirectoriesSize = (DllDirectories.f_GetLen() + 1) * 2;
 			RemoteMemorySize += DllDirectoriesSize;
-	
+
 			RemoteMemorySize += 256+16*4;
 			RemoteMemorySize += sizeof(CInjectDllData);
 
@@ -766,7 +766,7 @@ namespace NMib
 				(
 					[&]
 					{
-						VirtualFreeEx(hProcess, lpRemoteMemory, RemoteMemorySize, MEM_RELEASE);			
+						VirtualFreeEx(hProcess, lpRemoteMemory, RemoteMemorySize, MEM_RELEASE);
 					}
 				)
 			;
@@ -801,7 +801,7 @@ namespace NMib
 			lpRemoteMemoryOut = fg_AlignUp(lpRemoteMemoryOut, 16);
 
 			InjectData.m_pLdrLoadDll = fg_AutoStaticCast((void *)((mint)hRemoteNtDll + ((mint)fpLdrLoadDll - (mint)hThisNtDll)));
-	
+
 			InjectData.m_DllCharacteristics = 0;
 			InjectData.m_pModuleHandle = nullptr;
 
@@ -890,9 +890,9 @@ namespace NMib
 						HRESULT Error = GetLastError();
 						fl_ReportError
 							(
-								NStr::CStr::CFormat("Failed to join remote thread({}): {} CreateRemote: {}") 
-								<< hRemoteThread 
-								<< NMib::NPlatform::fg_Win32_GetLastErrorStr(Error) 
+								NStr::CStr::CFormat("Failed to join remote thread({}): {} CreateRemote: {}")
+								<< hRemoteThread
+								<< NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)
 								<< NMib::NPlatform::fg_Win32_GetLastErrorStr(ErrorCreateRemote)
 							)
 						;

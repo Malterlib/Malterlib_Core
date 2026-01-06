@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -7,7 +7,7 @@
 namespace NMib
 {
 	namespace NSys
-	{	
+	{
 
 		struct CLinuxPasswordManager
 		{
@@ -21,7 +21,7 @@ namespace NMib
 			virtual ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const& _Key) = 0;
 			virtual ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure& _oPassword) = 0;
 			virtual ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const& _Key) = 0;
-			
+
 			virtual bool f_SecurePassword_Supported()
 			{
 				return true;

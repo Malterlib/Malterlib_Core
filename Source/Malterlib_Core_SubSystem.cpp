@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_SubSystem.h"
@@ -20,11 +20,11 @@ namespace NMib
 	void CSubSystem::f_PrepareFork()
 	{
 	}
-	
+
 	void CSubSystem::f_ForkedParent()
 	{
 	}
-	
+
 	void CSubSystem::f_ForkedChild()
 	{
 	}
@@ -40,19 +40,19 @@ namespace NMib
 	void CSubSystem::f_PreDestroyThreadSpecific()
 	{
 	}
-	
+
 	void CSubSystem::f_DestroyThreadSpecific()
 	{
 	}
-	
+
 	void CSubSystem::f_DestroyThreadLocal()
 	{
 	}
-	
+
 	void CSubSystem::f_ExitModule()
 	{
 	}
-	
+
 	void CSystem::f_AddSubSystem(CSubSystem &_SubSystem)
 	{
 		DMibLock(mp_SubSystemsLock);
@@ -177,7 +177,7 @@ namespace NMib
 	{
 		fp_SubSystem_DestroySubsystems(ESubSystemDestruction_BeforeMemoryManager);
 	}
-	
+
 	void CSystem::fp_SubSystem_DestroyBeforeNonTrackedMemoryManager()
 	{
 		fp_SubSystem_DestroySubsystems(ESubSystemDestruction_BeforeNonTrackedMemoryManager);

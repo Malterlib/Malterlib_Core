@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -192,7 +192,7 @@ namespace NMib
 		void fg_InitialiseCrashReporter();
 
 		constinit NMib::NStorage::TCAggregateSimple<CBreakpad> g_Breakpad = {DAggregateInit};
-		
+
 		void fg_InitBreakpad()
 		{
 			g_Breakpad.f_Construct();

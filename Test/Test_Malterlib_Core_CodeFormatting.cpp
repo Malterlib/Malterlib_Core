@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -23,7 +23,7 @@ void fg_TestOut(int*& _opTest)
 	auto pTest = nullptr;
 	if (pTest)
 		_opTest = pTest;
-	
+
 	m_PendingAtomic;
 }
 
@@ -135,8 +135,8 @@ class CTest
 using CTestInt = int;
 
 struct ICTest
-{ 
-	virtual void f_Function() = 0; 
+{
+	virtual void f_Function() = 0;
 };
 
 using FTest = void ();
@@ -150,7 +150,7 @@ struct TCTest
 template <typename t_CType>
 struct TICTest
 {
-	virtual void f_Function() = 0; 
+	virtual void f_Function() = 0;
 };
 
 
@@ -478,7 +478,7 @@ uint32 g_Test;
 // pGlobalConstant:
 // gc_
 [[maybe_unused]] static const uint32 gc_Test = 0;
- 
+
 
 // Functions
 
@@ -523,13 +523,13 @@ public:
 		if (g_Test)
 			return fr_Test();
 	}
-	
+
 	// pMemberStaticFunctionPublic
 	// fs_
 	static void fs_Test()
 	{
 	}
-	
+
 	// fsr_
 	static void fsr_Test()
 	{
@@ -548,7 +548,7 @@ public:
 	// pMemberConstantPublic:
 	// mc_
 	static const uint32 mc_Test = 0;
-	
+
 private:
 
 	// pMemberFunctionPrivate:
@@ -556,20 +556,20 @@ private:
 	void fp_Test()
 	{
 	}
-	
+
 	// fpr_
 	void fpr_Test()
 	{
 		if (g_Test)
 			return fpr_Test();
 	}
-	
+
 	// pMemberStaticFunctionPrivate
 	// fsp_
 	static void fsp_Test()
 	{
 	}
-	
+
 	// fspr_
 	static void fspr_Test()
 	{
@@ -588,9 +588,9 @@ private:
 	// pMemberConstantPrivate:
 	// mcp_
 	static const uint32 mcp_Test = 0;
-	
+
 };
-	
+
 // Params
 
 // pFunctionParameter:

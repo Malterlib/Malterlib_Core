@@ -1,15 +1,15 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 /*
 	Author:			Michael Wynne
 
 	Contents:		POSIX implementation of platform specific functions
-	
-	Comments:		When using this to support a POSIX compliant platform ensure that you 
+
+	Comments:		When using this to support a POSIX compliant platform ensure that you
 					implement the methods declared in the "Implementation specific headers"
-					section below, PRIOR to including this cpp file.	
-*/	
+					section below, PRIOR to including this cpp file.
+*/
 using namespace NMib;
 
 #include <errno.h>
@@ -106,11 +106,11 @@ namespace NMib
 		}
 		void fg_ForkPrepare()
 		{
-			::fg_ForkPrepare();			
+			::fg_ForkPrepare();
 		}
 		void fg_ForkParentOrChild()
 		{
-			::fg_ForkParentOrChild();			
+			::fg_ForkParentOrChild();
 		}
 	}
 }
@@ -150,7 +150,7 @@ namespace NMib
 				}
 				else
 					DMibDTraceSafe("getrlimit RLIMIT_NOFILE failed: {}\n", strerror(errno));
-				
+
 				if (!getrlimit(RLIMIT_NPROC, &Limits))
 				{
 					Limits.rlim_cur = Limits.rlim_max;
@@ -159,8 +159,8 @@ namespace NMib
 				}
 				else
 					DMibDTraceSafe("getrlimit RLIMIT_NPROC failed: {}\n", strerror(errno));
-				
-				
+
+
 			}
 		}
 	}

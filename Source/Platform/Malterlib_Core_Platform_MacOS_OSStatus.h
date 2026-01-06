@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 namespace NMib
@@ -11,7 +11,7 @@ namespace NMib
 			const ch8 *m_pShort;
 			const ch8 *m_pLong;
 		};
-		
+
 		CMacOSError const *fg_GetOSStatusError(int _Status);
 
 		NStr::CFStr256 fg_FormatOSStatus(const ch8 *_pDesc, int _Status);

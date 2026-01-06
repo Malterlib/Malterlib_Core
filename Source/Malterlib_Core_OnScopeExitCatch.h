@@ -28,7 +28,7 @@ namespace NMib
 	{
 		template<typename tf_FOnExitFunctor>
 		TCOnScopeExit<NFunction::TCFunction<void ()>> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
-		{ 
+		{
 			return TCOnScopeExit<NFunction::TCFunction<void ()>>
 				(
 					[_fOnExitFunctor]()

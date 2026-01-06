@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Mib/Core/Core>
@@ -21,7 +21,7 @@ namespace NMib
 		~CAutoReleasePool();
 	};
 #endif
-	
+
 	namespace NPlatform
 	{
 		NSString* fg_MacOS_GetString(NStr::CStr const& _Str);

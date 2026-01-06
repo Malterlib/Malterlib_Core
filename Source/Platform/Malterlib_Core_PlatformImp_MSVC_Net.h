@@ -1,7 +1,7 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-#pragma once 
+#pragma once
 
 #include <Mib/Core/Core>
 
@@ -91,7 +91,7 @@ public:
 
 	CWindowsSocket();
 	~CWindowsSocket();
-	
+
 };
 
 
@@ -125,7 +125,7 @@ protected:
 
 			// Protected by CResolveThread::mp_Lock.
 			CResolveRequest* m_pNext;
-		};	
+		};
 
 		CWindowsSocketContext* mp_pContext;
 
@@ -174,9 +174,9 @@ protected:
 	{
 		fg_MemClear(_OutAddr);
 		_OutAddr.sin_family = AF_INET;
-		
+
 		_OutAddr.sin_addr.s_addr = _InAddr.m_IP[3] << 24 | _InAddr.m_IP[2] << 16 | _InAddr.m_IP[1] << 8 |	_InAddr.m_IP[0];
-		
+
 		_OutAddr.sin_port = htons(_InAddr.m_Port);
 	}
 
@@ -184,9 +184,9 @@ protected:
 	{
 		fg_MemClear(_OutAddr);
 		_OutAddr.sin6_family = AF_INET6;
-		
+
 		fg_MemCopy(&_OutAddr.sin6_addr.s6_addr, &_InAddr.m_IP, sizeof(uint8) * 16);
-		
+
 		_OutAddr.sin6_port = htons(_InAddr.m_Port);
 	}
 
@@ -254,7 +254,7 @@ public:
 
 		NMib::NStr::CStr f_GetAddressString(CWindowsAddress const &_Address, ENetAddressStringFlag _Flags);
 
-	// Connection Operations	
+	// Connection Operations
 		CWindowsSocket *f_AsyncConnect
 			(
 				CWindowsAddress const &_Address
@@ -300,8 +300,8 @@ public:
 		CWindowsSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 		void *f_GiveUpForInherit(CWindowsSocket *_pSocket);
 		void *f_GetOSSocket(CWindowsSocket *_pSocket);
-		
-		CWindowsAddress* f_GetPeerAddress(CWindowsSocket *_pSocket);	
-		uint32 f_GetListenPort(CWindowsSocket *_pSocket);	
+
+		CWindowsAddress* f_GetPeerAddress(CWindowsSocket *_pSocket);
+		uint32 f_GetListenPort(CWindowsSocket *_pSocket);
 };
 

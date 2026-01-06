@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include <Windows.h>
@@ -190,13 +190,13 @@ namespace NMib
 				if (o_Path.f_GetLen() >= 2 && o_Path[1] == ':')
 					o_Path[0] = NStr::fg_CharLowerCase(o_Path[0]);
 			}
-			
+
 			template <typename tf_CRet, typename tf_CSrc>
 			tf_CRet fg_ConvertFromWindowsPathInternal(const tf_CSrc &_Path)
 			{
 				auto ToRet = _Path;
 				fg_StrReplaceChar(ToRet, '\\', '/');
-	
+
 				if (ToRet.f_CmpNoCase("//?/UNC/", 8) == 0)
 				{
 					auto Path = "//" + ToRet.f_Extract(8);

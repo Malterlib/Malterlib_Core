@@ -53,7 +53,7 @@
       Category="Assembler Options"
       DisplayName="Output File Name"
       Description="Specify Output Filename."
-      HelpUrl="http://www.nasm.us/doc/nasmdoc2.html#section-2.1.1"  
+      HelpUrl="http://www.nasm.us/doc/nasmdoc2.html#section-2.1.1"
       Switch="-o &quot;[value]&quot;" />
     <BoolProperty
       Name="GenerateDebugInformation"

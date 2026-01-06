@@ -1147,7 +1147,7 @@ void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
 			}
 			_pData += nBytes;
 			_nBytes -= nBytes;
-			
+
 			if (_nBytes == 0)
 				return;
 		}

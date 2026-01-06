@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 using namespace NMib;
@@ -62,7 +62,7 @@ void fg_WriteStringToPipe(int _Handle, ch8 const *_pStr, mint _Len)
 				ToPoll[nPoll].events = POLLWRNORM | POLLOUT;
 				ToPoll[nPoll].revents = 0;
 				++nPoll;
-					
+
 				int PollReturn = poll(ToPoll, nPoll, -1);
 				if (PollReturn == -1)
 					break;
@@ -74,7 +74,7 @@ void fg_WriteStringToPipe(int _Handle, ch8 const *_pStr, mint _Len)
 		{
 			_Len -= Written;
 			_pStr += Written;
-		}			
+		}
 	}
 }
 
@@ -109,10 +109,10 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 	winsize WindowSize;
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &WindowSize))
 		return Return;
-	
+
 	Return.m_Width = WindowSize.ws_col;
 	Return.m_Height = WindowSize.ws_row;
-	
+
 	return Return;
 }
 
@@ -135,7 +135,7 @@ void NSys::fg_DebugOutput(const ch8 *_pToOutput)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
-	
+
 	fg_WriteStringToPipe(2, _pToOutput, fg_StrLen(_pToOutput));
 }
 
@@ -143,7 +143,7 @@ void NSys::fg_DebugOutput(const ch16 *_pToOutput)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
-	
+
 	CStrNonTracked Output = CWStrNonTracked(_pToOutput);
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
 }
@@ -152,7 +152,7 @@ void NSys::fg_DebugOutput(const ch32 *_pToOutput)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
-	
+
 	CStrNonTracked Output = CUStrNonTracked(_pToOutput);
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
 }
@@ -161,7 +161,7 @@ void NSys::fg_DebugOutput(const NMib::NStr::CStrNonTracked &_Output)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
-	
+
 	fg_WriteStringToPipe(2, _Output.f_GetStr(), _Output.f_GetLen());
 }
 
@@ -169,7 +169,7 @@ void NSys::fg_DebugOutput(const NMib::NStr::CWStrNonTracked &_Output)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
-	
+
 	CStrNonTracked Output = _Output;
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
 }
@@ -178,7 +178,7 @@ void NSys::fg_DebugOutput(const NMib::NStr::CUStrNonTracked &_Output)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
-	
+
 	CStrNonTracked Output = _Output;
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
 }

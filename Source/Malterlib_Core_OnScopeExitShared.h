@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #pragma once
@@ -11,9 +11,9 @@ namespace NMib
 	using COnScopeExitShared = NStorage::TCSharedPointer<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>;
 	using COnScopeExitSharedWithException = NStorage::TCSharedPointer<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>, false>>;
 
-	inline_always COnScopeExitShared fg_OnScopeExitShared(NFunction::TCFunctionMovable<void ()> &&_fOnExitFunctor) 
-	{ 
-		return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>(fg_Move(_fOnExitFunctor)); 
+	inline_always COnScopeExitShared fg_OnScopeExitShared(NFunction::TCFunctionMovable<void ()> &&_fOnExitFunctor)
+	{
+		return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>(fg_Move(_fOnExitFunctor));
 	}
 
 	struct COnScopeExitSharedHelper

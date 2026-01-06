@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "windows.h"
@@ -31,7 +31,7 @@ class CMemoryToucher : public NMib::CVirtualDestructor
 	NMib::NStorage::TCUniquePointer<CInternal> m_pInternal;
 public:
 	CMemoryToucher(fp64 _CPUUsage);
-	~CMemoryToucher();		
+	~CMemoryToucher();
 };
 
 class CMemoryToucher::CInternal : public NMib::NThread::CThread
@@ -45,7 +45,7 @@ public:
 	};
 
 private:
-	
+
 	void fp_Touch(void *_pAddress, mint _Size)
 	{
 		try
@@ -93,9 +93,9 @@ private:
 					TotalTimer.f_Start();
 					continue;
 				}
-				if 
+				if
 				(
-					(MemInfo.State & MEM_COMMIT) 
+					(MemInfo.State & MEM_COMMIT)
 					&& (MemInfo.Protect & (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY | PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY))
 					&& !(MemInfo.Protect & (PAGE_GUARD | PAGE_WRITECOMBINE | PAGE_NOCACHE))
 				)

@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
@@ -55,7 +55,7 @@ namespace NMib
 			if (!strerror_r(_Err, ErrorFormat.f_GetStr(256), 256)) // IMPORTANT: This function has different semantics on macOS and Linux
 				pError = ErrorFormat.f_GetStr();
 			else
-				pError = nullptr;		
+				pError = nullptr;
 			if (!pError)
 			{
 				if (_pDesc[0])
@@ -72,6 +72,6 @@ namespace NMib
 #else
 	#error "Not implemented"
 #endif
-		
+
 	}
 }
