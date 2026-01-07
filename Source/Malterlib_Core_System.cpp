@@ -753,7 +753,7 @@ namespace NMib
 		DMibPDebugBreak;
 	}
 
-	[[nodiscard]] NException::CExceptionPointer CCoroutineThreadLocalHandler::f_Resume() noexcept
+	[[nodiscard]] NStorage::TCUniquePointer<ICOnResumeResult> CCoroutineThreadLocalHandler::f_Resume() noexcept
 	{
 		f_ResumeNoExcept();
 		return {};
