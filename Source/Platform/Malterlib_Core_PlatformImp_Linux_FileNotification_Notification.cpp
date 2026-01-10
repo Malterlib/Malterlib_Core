@@ -300,6 +300,19 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 					)
 				;
 			}
+			else if (bIsDir && (m_Flags & NFile::EFileChange_Recursive) && !Rename.m_ChildFilesSnapshot.f_IsEmpty())
+			{
+				// When the watch was reparented (same inode reused), use the child files snapshot
+				// to register Renamed notifications for children
+				for (auto &bIsChildDir : Rename.m_ChildFilesSnapshot)
+				{
+					CStr const &ChildPath = Rename.m_ChildFilesSnapshot.fs_GetKey(bIsChildDir);
+					CStr ChildRelativePath = CFile::fs_AppendPath(RelativePath, ChildPath);
+					CStr FromPath = CFile::fs_AppendPath(Rename.m_RelativePath, ChildPath);
+					if (((m_Flags & NFile::EFileChange_DirectoryName) && bIsChildDir) || ((m_Flags & NFile::EFileChange_FileName) && !bIsChildDir))
+						f_RegisterChange(o_Context, ChildRelativePath, NMib::NFile::EFileChangeNotification_Renamed, FromPath);
+				}
+			}
 
 			if (Rename.m_pWatch)
 			{
