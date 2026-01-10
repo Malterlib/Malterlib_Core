@@ -742,6 +742,12 @@ Based on real development sessions, here are common mistakes to avoid when debug
 
 5. **Don't fix multiple C++ compilation errors simultaneously** - In C++, always fix the first compilation error first. Other errors often cascade from the initial issue and may resolve automatically once the first error is fixed. Attempting to fix multiple errors simultaneously can lead to confusion and wasted effort.
 
+6. **Distinguish IDE diagnostics from manual build diagnostics** - When using the `mcp__ide__getDiagnostics` tool, diagnostics come from different sources:
+   - **clangd diagnostics** (language server): Have `"source": "clang"` and `"code"` fields (e.g., `"code": "ovl_no_viable_oper"`). These are live and updated as you edit files - trust these for current file state. Also note that you cannot always trust the diagnostics in header files, because clangd doesn't always have the context correct.
+   - **Manual build diagnostics**: Have NO `source` or `code` fields. These are stale results from a previous build the user ran manually and may not reflect current code state.
+
+   **Best practice**: Ignore diagnostics without a `source` field unless the user explicitly says something like "check the last build I did" or "look at the build output". When in doubt, trust clangd diagnostics (those with `"source": "clang"`) as they reflect the current state of the code.
+
 ## Module-Specific Coding Standards
 
 In addition to the general Malterlib coding standards:
