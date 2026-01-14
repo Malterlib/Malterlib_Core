@@ -52,6 +52,15 @@ namespace NMib
 
 			void fg_MalterlibTimeToSystemTime(NTime::CTimeConvert::CDateTime const &_DateTime, SYSTEMTIME &o_SysTime)
 			{
+				DMibRequire
+					(
+						_DateTime.m_Fraction >= 0.0
+						&& _DateTime.m_Fraction < 1.0
+						&& (_DateTime.m_Fraction * 1000.0).f_ToIntRound() <= 999
+					)
+					(_DateTime.m_Fraction)
+				;
+
 				o_SysTime.wYear = _DateTime.m_Year;
 				o_SysTime.wMonth = _DateTime.m_Month;
 				o_SysTime.wDayOfWeek = _DateTime.m_DayOfWeek;
@@ -59,12 +68,24 @@ namespace NMib
 				o_SysTime.wHour = _DateTime.m_Hour;
 				o_SysTime.wMinute = _DateTime.m_Minute;
 				o_SysTime.wSecond = _DateTime.m_Second;
-				o_SysTime.wMilliseconds = (_DateTime.m_Fraction * 1000.0).f_ToInt();
+				o_SysTime.wMilliseconds = fg_Clamp((_DateTime.m_Fraction * 1000.0).f_ToIntRound(), 0, 999);
 			}
 
-			void fg_MalterlibTimeToSystemTime(const NTime::CTime &_Time, SYSTEMTIME &o_SysTime)
+			void fg_MalterlibTimeToSystemTime(NTime::CTime const &_Time, SYSTEMTIME &o_SysTime)
 			{
-				return fg_MalterlibTimeToSystemTime(NTime::CTimeConvert(_Time).f_ExtractDateTime(), o_SysTime);
+				// Round to nearest millisecond with proper rollover to next second
+				NTime::CTime RoundedTime = _Time;
+				fp64 Fraction = RoundedTime.f_GetFraction();
+				int32 Milliseconds = (Fraction * 1000.0).f_ToIntRound();
+				if (Milliseconds >= 1000)
+				{
+					RoundedTime.f_SetSeconds(RoundedTime.f_GetSeconds() + 1);
+					RoundedTime.f_SetFraction(0.0);
+				}
+				else
+					RoundedTime.f_SetFraction(fp64(Milliseconds) / 1000.0);
+
+				return fg_MalterlibTimeToSystemTime(NTime::CTimeConvert(RoundedTime).f_ExtractDateTime(), o_SysTime);
 			}
 
 			NTime::CTime fg_SystemTimeToMalterlibTime(SYSTEMTIME const &_SysTime)
