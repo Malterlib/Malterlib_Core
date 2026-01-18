@@ -109,7 +109,7 @@ GeneratorSetting
 				Type: "PropertyGroup"
 				, Label: "Configuration"
 				, Key: "NasmPath"
-				, Value: Target.NasmPath->EscapeMSBuild()
+				, Value: (Target.NasmPath->WindowsPath() + "\\")->EscapeMSBuild()
 			}
 		]
 	}
@@ -270,6 +270,18 @@ GeneratorSetting
 		, "VisualStudioVisualizer", "Natvis"
 		, "Custom", "CustomBuild"
 		, "WindowsManifest", "None"
+	)
+
+	VisualStudio_BuildSupported: bool = (Compile.GenericCompileType <==> "GenericCustom") ? true : SwitchWithDefault(Compile.Type, false
+		, "C++", true
+		, "C++Managed", true
+		, "C", true
+		, "Object", true
+		, "Assembler", true
+		, "AssemblerNasm", true
+		, "WindowsResource", true
+		, "VisualStudioVisualizer", true
+		, "Custom", true
 	)
 
 	Compile_Type =+ {

@@ -1,0 +1,65 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+// Windows manifest file support for Ninja generator
+// Manifest files are embedded into executables via linker, not compiled separately
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		PlatformFamily "Windows"
+		Compile.Type "WindowsManifest"
+		!Compile.Disabled true
+	}
+
+	BuildDisabled true
+
+	// Add manifest file as implicit linker input
+	LinkerImplicitInputs =+ this.Identity
+
+	// Track manifest files for linker flags
+	LinkerManifestInputs =+ this.Identity
+}
+
+GeneratorSetting
+{
+	&
+	{
+		TargetIsExecutable true
+		PlatformFamily "Windows"
+	}
+
+	// Collect manifest files for linker flags
+	f_Ninja_CalculateManifestInputs function(string _File) [string] = []
+	f_Ninja_CalculateManifestInputs =+ &Compile.LinkerManifestInputs->GetProperty(_File)
+
+	Ninja_ManifestFiles: [string] = []
+	Ninja_ManifestFiles =+ Target.AllFiles->ForEach(&GeneratorSetting.f_Ninja_CalculateManifestInputs)
+
+	// Helper to prefix manifest files with /MANIFESTINPUT:
+	f_PrefixManifestInput function(string _File) [string] = []
+	f_PrefixManifestInput =+ `-Wl,/MANIFESTINPUT:@(_File)`
+
+	// Add manifest embedding linker flags
+	Target_WindowsManifest =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: (GeneratorSetting.Ninja_ManifestFiles->IsEmpty()) ? [] : [
+					"-Wl,/MANIFEST:EMBED"
+					, GeneratorSetting.Ninja_ManifestFiles->ForEach(&GeneratorSetting.f_PrefixManifestInput)...
+				]
+			}
+		]
+	)
+}
+
+GeneratorSetting
+{
+	Target_WindowsManifest {}
+	{
+		!!GeneratorSetting.Target_WindowsManifest undefined
+	}
+}

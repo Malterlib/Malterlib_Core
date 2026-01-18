@@ -29,6 +29,18 @@ Property
 		!!CompileDialect "C"
 		PrefixHeader undefined
 	}
+
+	Compile
+	{
+		&
+		{
+			CompileDialect "C"
+			GeneratorFamily "Ninja"
+		}
+
+		ObjectFileName Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).o`
+	}
+
 	%Group "Source"
 	{
 		%Group "Runtime"
@@ -310,12 +322,14 @@ Property
 					!!Architecture "x86"
 					//%File "../../SDK/compiler-rt/lib/builtins/i386/*.c"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/i386/*.S"
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/i386/*.s"
 				}
 				%Group "x64"
 				{
 					!!Architecture "x64"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/x86_64/*.c"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/x86_64/*.S"
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/x86_64/*.s"
 				}
 				%Group "aarch64"
 				{
@@ -323,6 +337,7 @@ Property
 					!!Architecture "arm64e"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/*.c"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/*.S"
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/*.s"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/lse.S"
 					{
 						Compile.Disabled true
@@ -334,6 +349,17 @@ Property
 							!!PlatformFamily "macOS"
 						}
 					}
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/aarch64/arm_apple_sme_abi.s"
+					{
+						// This .s file uses C preprocessor macros despite lowercase extension
+						Compile.AssemblerType "WithPreprocessor"
+
+						Compile.Disabled true
+						{
+							!PlatformFamily "macOS"
+						}
+					}
+
 				}
 				%Group "ppc"
 				{
@@ -341,6 +367,7 @@ Property
 					!!Architecture "ppc64"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/ppc/*.c"
 					%File "../../External/llvm-project/compiler-rt/lib/builtins/ppc/*.S"
+					%File "../../External/llvm-project/compiler-rt/lib/builtins/ppc/*.s"
 				}
 			}
 		}
@@ -789,6 +816,8 @@ Property
 						{
 							!!PlatformType "Windows"
 						}
+
+						Warnings_UnusedValue false
 					}
 
 					%Group "vcruntime"
@@ -1343,6 +1372,8 @@ Target
 	%Dependency "Com_MalterlibHelper"
 	{
 		!!MalterlibNeedsMalterlibHelper true
+
+		Dependency.Link false
 	}
 }
 

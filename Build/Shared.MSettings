@@ -14,10 +14,15 @@ Import "Xcode/Xcode.MGeneratorSettings"
 Import "Clang/Clang.MGeneratorSettings"
 {
 	!!GeneratorFamily "Xcode"
+	!!GeneratorFamily "Ninja"
 }
 Import "VisualStudio/VisualStudio.MGeneratorSettings"
 {
 	!!GeneratorFamily "VisualStudio"
+}
+Import "Ninja/Ninja.MGeneratorSettings"
+{
+	!!GeneratorFamily "Ninja"
 }
 
 // Configurations

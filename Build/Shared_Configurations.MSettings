@@ -31,7 +31,15 @@ Property
 		&
 		{
 			EnablePlatform_Windows undefined
-			GeneratorFamily "VisualStudio"
+			|
+			{
+				&
+				{
+					GeneratorFamily "Ninja"
+					HostPlatformFamily "Windows"
+				}
+				GeneratorFamily "VisualStudio"
+			}
 		}
 	}
 	EnablePlatform_Windows ((SinglePlatform <!=> undefined) ? SinglePlatform == "Windows" : false)
@@ -45,11 +53,22 @@ Property
 		&
 		{
 			EnablePlatform_Linux undefined
-			GeneratorFamily "Xcode"
 			|
 			{
-				 MalterlibBuildServerBuild true
-				 HostPlatformFamily "Linux"
+				&
+				{
+					GeneratorFamily "Ninja"
+					HostPlatformFamily "Linux"
+				}
+				&
+				{
+					GeneratorFamily "Xcode"
+					|
+					{
+						 MalterlibBuildServerBuild true
+						 HostPlatformFamily "Linux"
+					}
+				}
 			}
 		}
 	}
@@ -64,8 +83,19 @@ Property
 		&
 		{
 			EnablePlatform_macOS undefined
-			GeneratorFamily "Xcode"
-			HostPlatformFamily "macOS"
+			|
+			{
+				&
+				{
+					GeneratorFamily "Ninja"
+					HostPlatformFamily "macOS"
+				}
+				&
+				{
+					GeneratorFamily "Xcode"
+					HostPlatformFamily "macOS"
+				}
+			}
 		}
 	}
 	EnablePlatform_macOS ((SinglePlatform <!=> undefined) ? SinglePlatform == "macOS" : false)
@@ -163,7 +193,11 @@ Property
 	{
 		&
 		{
-			GeneratorFamily "VisualStudio"
+			|
+			{
+				GeneratorFamily "VisualStudio"
+				GeneratorFamily "Ninja"
+			}
 			EnablePlatform_Windows true
 		}
 
@@ -172,7 +206,11 @@ Property
 	{
 		&
 		{
-			GeneratorFamily "Xcode"
+			|
+			{
+				GeneratorFamily "Xcode"
+				GeneratorFamily "Ninja"
+			}
 			EnablePlatform_macOS true
 		}
 	}
@@ -180,7 +218,11 @@ Property
 	{
 		&
 		{
-			GeneratorFamily "Xcode"
+			|
+			{
+				GeneratorFamily "Xcode"
+				GeneratorFamily "Ninja"
+			}
 			EnablePlatform_iOS true
 		}
 	}
@@ -188,7 +230,11 @@ Property
 	{
 		&
 		{
-			GeneratorFamily "Xcode"
+			|
+			{
+				GeneratorFamily "Xcode"
+				GeneratorFamily "Ninja"
+			}
 			EnablePlatform_Linux true
 		}
 	}
@@ -196,7 +242,11 @@ Property
 	{
 		&
 		{
-			GeneratorFamily "Xcode"
+			|
+			{
+				GeneratorFamily "Xcode"
+				GeneratorFamily "Ninja"
+			}
 			EnablePlatform_Emscripten true
 		}
 	}

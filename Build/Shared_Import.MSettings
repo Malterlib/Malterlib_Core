@@ -82,6 +82,7 @@ Import
 	CMake_AlwaysFullRebuild: bool = true // User(Import)=false: Always do a full rebuild of cmake generation when the cache is outdated
 	CMake_VerboseHash: bool = false // User(Import)=true: Trace out the string used to determine the config hash for cmake imports
 	CMake_DiffHash: bool = false // User(Import)=true: Run diff program with differences between hashes
+	CMake_ForceCrossCompile: bool = false
 
 	CMake_OutputFilesParseTerminators: string = "/\"' ,\t\r\n"
 
@@ -130,7 +131,7 @@ Import
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
 	CMake_ExcludeFromHash =+ VisualStudioMSVCRootPath / MalterlibMSVCVersion
 	{
-		!!GeneratorFamily "VisualStudio"
+		!!PlatformFamily "Windows"
 	}
 
 	CMake_ExcludeFromHash =+ " -fuse-ld=lld"
@@ -210,7 +211,7 @@ Import
 		{CMakeLanguage: "RC", MalterlibLanguage: "WindowsResource"},
 	]
 	{
-		!!GeneratorFamily "VisualStudio"
+		!!PlatformFamily "Windows"
 	}
 
 	CMake_TryCompilePlatformVariables: [string] = []
@@ -521,6 +522,11 @@ Import
 Import
 {
 	!PlatformFamily "Windows"
+
+	CMake_ForceCrossCompile true
+	{
+		!!PlatformFamily "Linux"
+	}
 
 	CMake_SysRoot MalterlibSysRoot
 	{

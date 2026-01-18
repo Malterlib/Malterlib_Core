@@ -1,0 +1,75 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+// Windows resource compilation support for Ninja generator
+
+GeneratorSetting
+{
+	&
+	{
+		PlatformFamily "Windows"
+		Compile.Type "WindowsResource"
+	}
+
+	Compile_Type #<Build.inputs> =+ this.Identity
+
+	// Use /C 65001 to tell llvm-rc to read UTF-8 encoded source files
+	Compile_Type #<Rule.command> `@(PlatformToolsetResourceCompiler->Escape()) /C 65001 @(Builtin.Flags) @(Builtin.Input)`
+	Compile_Type #<Build.description> `Compiling resource @(this.Identity->GetFile())`
+
+	Compile_ObjectFileName #<Build.outputs> =+ Compile.ObjectFileName
+
+	Compile_ObjectFileName =+ {
+		Flags: [["/fo", Compile.ObjectFileName]]
+		, FlagsPriority: -1000
+	}
+
+	Compile_PreprocessorDefines =+ {
+		Flags: Compile.PreprocessorDefines->f_PrefixFlags("/D")
+		, Type: "unique"
+	}
+
+	Compile_SearchPath =+ {
+		Flags: Compile.SearchPath->f_PrefixFlags("/I")
+		, Type: "unique"
+	}
+
+	Compile_SystemSearchPath =+ {
+		Flags: Compile.SystemSearchPath->f_PrefixFlags("/I")
+		, Type: "unique"
+	}
+
+	Compile_Culture =+ {
+		Flags: [["/l", Compile.Culture]]
+		, Type: "unique"
+	}
+
+	// Empty handlers for settings not applicable to resource compilation
+	Compile_Optimize =+ {}
+	Compile_Warnings =+ {}
+	Compile_WarningsAsErrors =+ {}
+	Compile_Symbols =+ {}
+}
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		PlatformFamily "Windows"
+		Compile.Type "WindowsResource"
+		!Compile.Disabled true
+	}
+
+	// Resource output file name
+	ObjectFileName Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt())_@(this.EntityPath->HashSHA256(8)).res`
+
+	// Add resource output to linker inputs
+	LinkerInputs =+ Compile.ObjectFileName
+	{
+		&
+		{
+			this.Type "File"
+		}
+	}
+}

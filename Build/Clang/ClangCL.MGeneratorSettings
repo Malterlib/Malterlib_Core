@@ -1,0 +1,196 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+// Windows clang-cl specific settings
+// These settings translate Visual Studio compiler options to clang-cl equivalents
+
+GeneratorSetting
+{
+	!!IsClangCL true
+
+	Compile_RuntimeLibrary =+ {
+		Flags: Compile.RuntimeLibrary->SwitchWithError(
+			"Unsupported option: "
+			, "Static", "/MT"
+			, "StaticDebug", "/MTd"
+			, "Dynamic", "/MD"
+			, "DynamicDebug", "/MDd"
+		)
+		, Type: "unique"
+	}
+
+	Compile_CallingConvention =+ {
+		Flags: Compile.CallingConvention->SwitchWithError(
+			"Unsupported option: "
+			, "Cdecl", "/Gd"
+			, "StdCall", "/Gr"
+			, "FastCall", "/Gz"
+		)
+		, Type: "unique"
+	}
+
+	Compile_StringPooling =+ {
+		Flags: Compile.StringPooling ? [] : "/clang:-fwritable-strings"
+		, Type: "unique"
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		TargetIsExecutable true
+		IsClangCL true
+	}
+
+	Target_DataExecutionPrevention =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.DataExecutionPrevention ? ["-Wl,/NXCOMPAT"] : ["-Wl,/NXCOMPAT:NO"]
+			}
+		]
+	)
+
+	Target_RandomizedBaseAddress =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.RandomizedBaseAddress ? ["-Wl,/DYNAMICBASE"] : ["-Wl,/DYNAMICBASE:NO"]
+			}
+		]
+	)
+
+	Target_LargeAddressAware =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.LargeAddressAware ? ["-Wl,/LARGEADDRESSAWARE"] : []
+			}
+		]
+	)
+
+	Target_LinkIncremental =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.LinkIncremental ? ["-Wl,/INCREMENTAL"] : ["-Wl,/INCREMENTAL:NO"]
+			}
+		]
+	)
+
+	Target_IgnoreAllDefaultLibraries =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.IgnoreAllDefaultLibraries ? ["-Wl,/NODEFAULTLIB"] : []
+			}
+		]
+	)
+
+	Target_EntryPointSymbol =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: [`-Wl,/ENTRY:@(Target.EntryPointSymbol)`]
+			}
+		]
+	)
+
+	Target_ModuleDefinitionFile =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: [`-Wl,/DEF:@(Target.ModuleDefinitionFile)`]
+			}
+		]
+	)
+
+	Target_TargetMachine =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.TargetMachine->SwitchWithError(
+					"Unsupported machine: "
+					, "MachineX64", "-Wl,/MACHINE:X64"
+					, "MachineX86", "-Wl,/MACHINE:X86"
+					, "MachineARM64", "-Wl,/MACHINE:ARM64"
+				)
+			}
+		]
+	)
+
+	Target_GenerateManifest =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.GenerateManifest ? ["-Wl,/MANIFEST"] : ["-Wl,/MANIFEST:NO"]
+			}
+		]
+	)
+
+	Target_Driver =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.Driver->SwitchWithError(
+					"Unsupported option: "
+					, true, "-Wl,/DRIVER"
+					, "UpOnly", "-Wl,/DRIVER:UPONLY"
+					, "WDM", "-Wl,/DRIVER:WDM"
+				)
+			}
+		]
+	)
+
+	Target_Version =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: [`-Wl,/VERSION:@(Target.Version)`]
+			}
+		]
+	)
+
+	Target_SymbolFile =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: [`-Wl,/PDB:@(Target.SymbolFile)`]
+			}
+		]
+	)
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Target.Type "StaticLibrary"
+		PlatformFamily "Windows"
+		Compiler "Clang"
+	}
+
+	Target_ExtraLibFlags =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["llvm-lib"]
+				, Flags: Target.ExtraLibFlags
+			}
+		]
+	)
+
+	Target_TargetMachine =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["llvm-lib"]
+				, Flags: Target.TargetMachine->SwitchWithError(
+					"Unsupported machine: "
+					, "MachineX64", "/MACHINE:X64"
+					, "MachineX86", "/MACHINE:X86"
+					, "MachineARM64", "/MACHINE:ARM64"
+				)
+			}
+		]
+	)
+}

@@ -15,6 +15,10 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Dependency_Name undefined
 	}
+	Dependency_Target {}
+	Dependency_Stage {}
+	Dependency_IndirectOrderedEvaluated {}
+	Dependency_IndirectEvaluated {}
 
 	Dependency_Type {
 		VSSettings: {

@@ -1,0 +1,257 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Type
+{
+	CNinja_Rule: {
+		command?: string
+		, command_raw?: bool
+		, command_cwd?: string
+
+		, environment?: {
+			...: string
+		}
+
+		, phony?: bool
+
+		, depfile?: string
+		, deps?: one_of("gcc", "msvc")
+		, msvc_deps_prefix?: string
+		, dyndep?: string
+
+		, restat?: bool
+
+		, pool?: string
+
+		, generator?: bool
+		, in_newline?: bool
+
+		, rspfile?: string
+		, rspfile_content?: string
+	}
+
+	CNinja_Build: {
+		inputs?: [string]
+		, outputs?: [string]
+		, implicit_outputs?: [string]
+		, implicit_dependencies?: [string]
+		, order_dependencies?: [string]
+		, validations?: [string]
+		, ...: string
+	}
+
+	CSharedFlags: one_of(string, [one_of(string, [string])], undefined)
+
+	CSharedSettings: {
+		Flags?: one_of(string, [one_of(string, [string])])
+		, FlagsShared?: {
+			...: type(CSharedFlags)
+		}
+		, FlagsPriority?: one_of(int, undefined)
+		, Type?: one_of("unique", "multiple")
+		, Rule?: type(CNinja_Rule)
+		, Build?: type(CNinja_Build)
+	}
+
+	CSharedSettingsWithPosition: {
+		Value: type(CSharedSettings)
+		, Positions: [type(CPosition)]
+		, Property: type(CProperty)
+	}
+
+	CCompileSettings: type(CSharedSettings)
+ 	CTargetSettings: type(CSharedSettings)
+
+	CNinja_FlagsMap: {
+		...: one_of(string, [one_of(string, [string])])
+	}
+
+	CNinja_BuildAndRule: {
+		Positions: [type(CPosition)]
+		, Build?: type(CNinja_Build)
+		, Rule?: type(CNinja_Rule)
+		, Flags?: one_of(string, [one_of(string, [string])])
+		, FlagsShared?: type(CNinja_FlagsMap)
+		, FlagsPriority?: int
+	}
+
+	CRulesMap: {
+		...: type(CNinja_BuildAndRule)
+	}
+
+	CCompile: {
+		Type: string
+		, Disabled: bool
+		, Rule: type(CRulesMap)
+	}
+
+	CDependency: {
+	}
+
+	CWorkspace: {
+		NinjaRequiredVersion: string = "2.00"
+		, BuildDir: string
+		, DefaultTarget?: string
+		, Environment: {
+			Override: bool = false
+			, Copy: [string] = []
+			, Set: {
+				...: string
+			} = {}
+		} = {}
+		, PoolDepths: {
+			...: int
+		}
+		, OtherRules: [{
+			...: type(CNinja_BuildAndRule)
+		}]
+	}
+
+	CTarget: {
+		Rule_PreBuild: type(CRulesMap)
+		, Rule_Build: type(CRulesMap)
+		, Rule_PostBuild: type(CRulesMap)
+		, OtherRules: [type(CRulesMap)]
+	}
+}
+
+GeneratorSetting
+{
+	TargetPhony_CompileDependencies: string = `Compile Dependencies @(Target:Target.Name)`
+	TargetPhony_LinkDependencies: string = `Link Dependencies @(Target:Target.Name)`
+	TargetPhony_ValidationDependencies: string = `Validation Dependencies @(Target:Target.Name)`
+}
+
+GeneratorSetting
+{
+	Compile {
+		Type: Compile.Type
+		, Disabled: (Compile.Disabled || Compile.BuildDisabled || Compile.Type == "None")
+	}
+
+	Workspace {
+		DefaultTarget: "Build All"
+		, PoolDepths: Workspace.PoolDepths
+		, BuildDir: Workspace.IntermediateDirectory
+		, OtherRules: []
+		, Environment: {
+			Override: true
+			, Copy: BuildSystemProtectedEnvironmentVariables
+			, Set: BuildSystemEnvironment()
+		}
+	}
+
+	f_GetTargetNames function(string _Target) [string] = []
+	f_GetTargetNames =+ &Target:Target.Name->GetProperty(_Target)
+
+	Workspace #<OtherRules> =+ {
+		AlwaysDirty: {
+			Positions: []
+			, Rule: {
+				phony: true
+			}
+			, Build: {
+				outputs: [".AlwaysDirty"]
+			}
+		}
+	}
+
+	Workspace #<OtherRules> =+ {
+		Workspace: {
+			Positions: []
+			, Rule: {
+				phony: true
+			}
+			, Build: {
+				outputs: ["Build All"]
+				, order_dependencies: (Workspace:Workspace.AllTargets ?? [])->ForEach(&GeneratorSetting.f_GetTargetNames)
+			}
+		}
+	}
+}
+
+Target
+{
+	Language "Native"
+	{
+		!!Target.Language undefined
+	}
+}
+
+Property
+{
+	fg_ExportScriptEnvironmentContentsNinja_Template function(string _EnvVar) {...: string} = {}
+	fg_ExportScriptEnvironmentContentsNinja_Template =+ {
+		`@(_EnvVar)`: &@(_EnvVar)->GetProperty("Target:*")->AsString()
+	}
+	{
+		!GetProperty(&@(_EnvVar), "Target:*") undefined
+	}
+
+	PATH: string = ""
+
+	// Path separator for joining paths in environment variables
+	PathSeparator: string = ":"
+	PathSeparator ";"
+	{
+		!!PlatformFamily "Windows"
+	}
+}
+
+GeneratorSetting
+{
+	f_ExtractSettingsFlags function(type(CSharedSettingsWithPosition) _Setting) {...: type(CNinja_BuildAndRule)} = {}
+
+	f_ExtractSettingsFlags =+ {
+		`@(_Setting<Property.Type>).@(_Setting<Property.Name>)`: {
+			<<<: {
+				Positions: _Setting<Positions>
+				, Build: _Setting<Value.Build>
+				, Rule: _Setting<Value.Rule>
+				, Flags: _Setting<Value?.Flags>
+				, FlagsPriority: _Setting<Value?.FlagsPriority>
+			}
+		}
+	}
+
+	f_ExtractTargetSettingsFlags function(type(CSharedSettingsWithPosition) _Setting) {...: type(CNinja_BuildAndRule)} = {}
+
+	f_ExtractTargetSettingsFlags =+ {
+		`@(_Setting<Property.Type>).@(_Setting<Property.Name>)`: {
+			<<<: {
+				Positions: _Setting<Positions>
+				, Build: _Setting<Value.Build>
+				, Rule: _Setting<Value.Rule>
+				, Flags: _Setting<Value?.Flags>
+				, FlagsShared: _Setting<Value?.FlagsShared>
+				, FlagsPriority: _Setting<Value?.FlagsPriority>
+			}
+		}
+	}
+
+	Dependency {
+	}
+}
+
+GeneratorSetting
+{
+	Dependency_Link {}
+	Dependency_LinkWithObjectFiles {}
+	Dependency_Indirect {}
+	Dependency_IndirectOrdered {}
+}
+
+Import "Ninja_Target.MGeneratorSettings"
+Import "Ninja_Compile.MGeneratorSettings"
+Import "Ninja_Resource.MGeneratorSettings"
+Import "Ninja_DriverKitInterface.MGeneratorSettings"
+Import "Ninja_Nib.MGeneratorSettings"
+Import "Ninja_Nasm.MGeneratorSettings"
+Import "Ninja_MASM.MGeneratorSettings"
+Import "Ninja_Object.MGeneratorSettings"
+Import "Ninja_WindowsManifest.MGeneratorSettings"
+Import "Ninja_Validation.MGeneratorSettings"
+{
+	!!MalterlibValidateGenerateSettings "true"
+}
+Import "../Clang/ClangCL.MGeneratorSettings"

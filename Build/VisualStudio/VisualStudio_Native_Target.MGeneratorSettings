@@ -273,6 +273,8 @@ GeneratorSetting
 	Target_CommandLine_Clean {}
 	Target_CommandLine_Inputs {}
 	Target_CommandLine_Outputs {}
+	Target_CommandLine_IsGenerator {}
+	Target_CommandLine_AlwaysDirty {}
 	Target_Real_CommandLine_Build {}
 	Target_Real_CommandLine_ReBuild {}
 	Target_Real_CommandLine_Clean {}

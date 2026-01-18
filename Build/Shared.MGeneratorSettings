@@ -33,7 +33,11 @@ Property
 			{
 				&
 				{
-					GeneratorFamily "Xcode"
+					|
+					{
+						GeneratorFamily "Xcode"
+						GeneratorFamily "Ninja"
+					}
 					|
 					{
 						CompileDialect "C"
@@ -115,6 +119,9 @@ GeneratorSetting
 	Dependency: type(CDependency)
 	DefinedProperties: [type(CProperty)]
 	FileLevel: bool = false
+
+	TargetValidateSettings: bool = true
+	CompileValidateSettings: bool = true
 }
 
 Type
@@ -181,7 +188,7 @@ GeneratorSetting
 	}
 */
 
-	f_GetSetting ErrorWithPositions(&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : "")`)
+	f_GetSetting ErrorWithPositions(&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : ""). File: @(this.Identity)`)
 	{
 		!!GeneratorSetting.f_GetSetting<Value> undefined
 	}

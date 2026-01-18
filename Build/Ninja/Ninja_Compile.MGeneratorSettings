@@ -1,0 +1,440 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	NinjaCompileType: string
+
+	PrecompiledPrefixHeaderObject: one_of(type(CEntity), [any]) = []
+
+	PrecompiledPrefixHeaderObject {
+		Name: Compile.PrefixHeader
+		, Properties: {
+			NinjaCompileType: Compile.Type
+		}
+	}
+	{
+		&
+		{
+			!Compile.PrefixHeader undefined
+			Compile.PrecompilePrefixHeader true
+		}
+	}
+
+	f_GetUniquePrefixHeaders function(string _File) [type(CEntity)] = []
+	f_GetUniquePrefixHeaders =+ &PrecompiledPrefixHeaderObject->GetProperty(_File)
+
+	PrecompiledPrefixHeaderName: string = Target.IntermediateDirectory / `@(Compile.Type)_@(Compile.PrefixHeader->GetFileNoExt())_@(Compile.PrefixHeader->HashSHA256(8)).h.pch`
+
+	ClangCanCompile: bool = false
+
+	ClangCanCompile true
+	{
+		&
+		{
+			!Compile.Disabled true
+			|
+			{
+				&
+				{
+					CompileDialect "C"
+					!Compile.Type "DriverKitInterface"
+				}
+				&
+				{
+					Compile.Type "Assembler"
+					!PlatformFamily "Windows" // Uses MASM
+				}
+			}
+		}
+	}
+
+	// Object file extension (platform-dependent)
+	Ninja_ObjectFileExtension: string = "o"
+	Ninja_ObjectFileExtension "obj"
+	{
+		!!PlatformFamily "Windows"
+	}
+}
+
+GeneratorSetting
+{
+	f_ExtractCompileSettings function([type(CSharedSettingsWithPosition)] _Settings) any
+	f_ExtractCompileSettings {
+		Rule: _Settings->ForEach(&GeneratorSetting.f_ExtractSettingsFlags)
+	}
+
+	Compile =+ GeneratorSetting.f_ExtractCompileSettings(Compile.Disabled ? [] : GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetSettings))
+}
+
+Compile
+{
+	!!ClangCanCompile true
+
+	ObjectFileName Target.IntermediateDirectory / `@(Compile.Type)_@(this.Identity->GetFileNoExt())_@(this.Identity->HashSHA256(8)).h.pch`
+	{
+		&
+		{
+			Compile.PrecompilePrefixHeader "XInternalCreate"
+			this.Type "File"
+		}
+	}
+	DepFileName Target.IntermediateDirectory / `@(Compile.Type)_@(this.Identity->GetFileNoExt())_@(this.Identity->HashSHA256(8)).h.pch.d`
+	{
+		&
+		{
+			Compile.PrecompilePrefixHeader "XInternalCreate"
+			this.Type "File"
+		}
+	}
+
+	ObjectFileName Target.IntermediateDirectory / `@(File:this.Identity->GetFileNoExt())_@(this.EntityPath->HashSHA256(8)).@(Ninja_ObjectFileExtension)`
+	{
+		&
+		{
+			!Compile.PrecompilePrefixHeader "XInternalCreate"
+			this.Type "File"
+		}
+	}
+	DepFileName Target.IntermediateDirectory / `@(File:this.Identity->GetFileNoExt())_@(this.EntityPath->HashSHA256(8)).@(Ninja_ObjectFileExtension).d`
+	{
+		&
+		{
+			!Compile.PrecompilePrefixHeader "XInternalCreate"
+			this.Type "File"
+		}
+	}
+}
+
+GeneratorSetting
+{
+
+	// Tool type used for shared flag lookup (clang for C/ObjC/Assembler, clang++ for C++/ObjC++)
+	Ninja_CompileToolType: string
+
+	Ninja_CompileToolType Compile.Type->SwitchWithError(
+		"Unsupported compile type for tool selection: "
+		, "C++", "clang++"
+		, "C", "clang"
+		, "ObjC++", "clang++"
+		, "ObjC", "clang"
+		, "Assembler", "clang"
+	)
+	{
+		!HostPlatformFamily "Windows"
+	}
+
+	Ninja_CompileToolType Compile.Type->SwitchWithError(
+		"Unsupported compile type for tool selection: "
+		, "C++", "clang-cl++"
+		, "C", "clang-cl"
+		, "ObjC++", "clang-cl++"
+		, "ObjC", "clang-cl"
+		, "Assembler", "clang"
+	)
+	{
+		!!HostPlatformFamily "Windows"
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		&
+		{
+			CompileDialect "C"
+			!Compile.Type "DriverKitInterface"
+		}
+		!Compile.PrecompilePrefixHeader "XInternalCreate"
+	}
+
+	Compile_Type += {
+		Flags: [
+			[
+				Compile.Type->f_SourceLanguageFlag()
+			]
+			, GeneratorSetting.Ninja_CompileToolType->GetSharedFlags()
+		]
+		, FlagsPriority: 1000
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Compile.Type "Assembler"
+		ClangCanCompile true
+	}
+
+	Compile_Type += {
+		Flags: [
+			[
+				`-x@(Compile.AssemblerType->SwitchWithError(
+					"Unsupported AssemblerType: "
+					, "Plain", "assembler"
+					, "WithPreprocessor", "assembler-with-cpp"
+				))`
+			]
+			, GeneratorSetting.Ninja_CompileToolType->GetSharedFlags()
+		]
+		, FlagsPriority: 1000
+	}
+}
+
+GeneratorSetting
+{
+	!Compile.Disabled true
+
+	Compile_Type #<Build.order_dependencies> =+ GeneratorSetting.TargetPhony_CompileDependencies
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Compiler "Clang"
+		ClangCanCompile true
+	}
+
+	Compile_Type #<Build.inputs> =+ this.Identity
+
+	Compile_Type #<Rule.command> `@((MalterlibLLVMHostBinariesDirectory / `bin/clang-cl@(HostExecutableExtension)`)->Escape()) -c @(Builtin.Flags) @(Builtin.Input)`
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	Compile_Type #<Rule.command> `@((`@(MalterlibToolsPrefix)clang@(HostExecutableExtension)`)->Escape()) -c @(Builtin.Flags) @(Builtin.Input)`
+	{
+		!PlatformFamily "Windows"
+	}
+
+	Compile_Type #<Build.description> `Compiling @(this.Identity->GetFile())`
+
+	// Set INCLUDE environment variable for clang-cl to auto-detect MSVC/Windows SDK headers
+	Compile_IncludeEnvironmentPaths #<Rule.environment> =+ {
+		INCLUDE: Compile.IncludeEnvironmentPaths->Join(";")
+	}
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			!Compile.IncludeEnvironmentPaths undefined
+			!Compile.IncludeEnvironmentPaths []
+		}
+	}
+
+	Compile_ObjectFileName #<Build.outputs> =+ Compile.ObjectFileName
+
+	Compile_ObjectFileName =+ {
+		Flags: [["-o", Compile.ObjectFileName]]
+		, FlagsPriority: -1000
+	}
+
+	Compile_DepFileName =+ {
+		Flags: [["-MD"->f_ClangFlag(), `-MF@(Compile.DepFileName)`->f_ClangFlag()]]
+	}
+
+	Compile_DepFileName #<Build.depfile> Compile.DepFileName
+
+	Compile_DepFileName #<Rule.depfile> `@(Builtin.Dollar)depfile`
+	Compile_DepFileName #<Rule.deps> "gcc"
+
+	Compile_PrefixHeader =+ {
+		Flags: [["-include"->f_ClangFlag(), Compile.PrefixHeader->f_ClangFlag()]]
+	}
+	{
+		&
+		{
+			!Compile.PrecompilePrefixHeader "XInternalCreate"
+			Compile.PrecompilePrefixHeader false
+			!Compile.PrefixHeader undefined
+		}
+	}
+
+	Compile_PrefixHeader =+ {}
+	{
+		!!GeneratorSetting.Compile_PrefixHeader undefined
+	}
+
+	Compile_PrecompilePrefixHeader =+ {
+		Flags: Compile.PrecompilePrefixHeader->SwitchWithError(
+			"Unsupported option: "
+			, true, [["-include-pch"->f_ClangFlag(), PrecompiledPrefixHeaderName->f_ClangFlag(), "-include"->f_ClangFlag(), Compile.PrefixHeader->f_ClangFlag()]]
+			, false, []
+		)
+	}
+	{
+		&
+		{
+			!Compile.PrefixHeader undefined
+			!Compile.PrecompilePrefixHeader "XInternalCreate"
+		}
+	}
+
+	Compile_PrecompilePrefixHeader =+ {
+		Flags: [Compile.Type->f_HeaderLanguageFlags(), GeneratorSetting.Ninja_CompileToolType->GetSharedFlags()]
+		, FlagsPriority: 1000
+	}
+	{
+		&
+		{
+			!Compile.PrefixHeader undefined
+			Compile.PrecompilePrefixHeader "XInternalCreate"
+		}
+	}
+
+	Compile_PrecompilePrefixHeader #<Build.implicit_dependencies> =+ PrecompiledPrefixHeaderName
+	{
+		&
+		{
+			Compile.PrecompilePrefixHeader true
+			!Compile.PrefixHeader undefined
+		}
+	}
+
+	Compile_PrecompilePrefixHeader =+ {}
+	{
+		!!GeneratorSetting.Compile_PrecompilePrefixHeader undefined
+	}
+}
+
+Target
+{
+	AllFiles: [string] = []
+}
+
+GeneratorSetting
+{
+	Target_AllFiles {}
+	Target_AllFiles_C\+\+ {}
+	Target_AllFiles_C {}
+	Target_AllFiles_ObjC\+\+ {}
+	Target_AllFiles_ObjC {}
+}
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+
+		ClangCanCompile true
+		!Compile.PrecompilePrefixHeader "XInternalCreate"
+	}
+
+	LinkerInputs =+ Compile.ObjectFileName
+	{
+		&
+		{
+			this.Type "File"
+			!Compile.Disabled true
+		}
+	}
+}
+
+%Group "~Automatic/Prefix Headers"
+{
+	%Group "C++"
+	{
+		%File Target.AllFiles_C\+\+->ForEach(&f_GetUniquePrefixHeaders)->Unique()
+		{
+			Compile
+			{
+				Type NinjaCompileType
+				PrecompilePrefixHeader "XInternalCreate"
+				//PrefixHeader undefined
+			}
+		}
+	}
+	%Group "ObjC++"
+	{
+		%File Target.AllFiles_ObjC\+\+->ForEach(&f_GetUniquePrefixHeaders)->Unique()
+		{
+			Compile
+			{
+				Type NinjaCompileType
+				PrecompilePrefixHeader "XInternalCreate"
+				//PrefixHeader undefined
+			}
+		}
+	}
+	%Group "C"
+	{
+		%File Target.AllFiles_C->ForEach(&f_GetUniquePrefixHeaders)->Unique()
+		{
+			Compile
+			{
+				Type NinjaCompileType
+				PrecompilePrefixHeader "XInternalCreate"
+				//PrefixHeader undefined
+			}
+		}
+	}
+	%Group "ObjC"
+	{
+		%File Target.AllFiles_ObjC->ForEach(&f_GetUniquePrefixHeaders)->Unique()
+		{
+			Compile
+			{
+				Type NinjaCompileType
+				PrecompilePrefixHeader "XInternalCreate"
+				//PrefixHeader undefined
+			}
+		}
+	}
+}
+
+Target
+{
+	ExtraGroups =+ "~Automatic/Prefix Headers"
+	{
+		!!Target.Language "Native"
+	}
+}
+
+Import "Ninja_Compile_Types.MGeneratorSettings"
+
+GeneratorSetting
+{
+	Compile_RealCustom_Inputs =+ {}
+	Compile_BuildDisabled =+ {}
+	Compile_LinkerInputs  =+ {}
+	Compile_LinkerImplicitInputs =+ {}
+	Compile_LinkerManifestInputs =+ {}
+	Compile_Optimize =+ {}
+	Compile_Verbose =+ {}
+	Compile_GenericCompileType =+ {}
+	Compile_Custom_CommandLine =+ {}
+	Compile_Custom_Outputs =+ {}
+	Compile_Custom_WorkingDirectory =+ {}
+	Compile_Custom_Inputs =+ {}
+	Compile_SymbolFile =+ {}
+	Compile_IndentWidth =+ {}
+	Compile_TabWidth =+ {}
+	Compile_InitEarly =+ {}
+	Compile_UsesTabs =+ {}
+	Compile_Disabled =+ {}
+	Compile_DepFileName =+ {}
+	Compile_Type =+ {}
+	Compile_AssemblerType =+ {}
+	Compile_AllowNonExisting =+ {}
+	Compile_FullEval =+ {}
+
+	// MSVC-specific settings with no Clang equivalent
+	Compile_ConcurrentCompile =+ {}
+	Compile_ForceSynchronousPDBWrites =+ {}
+	Compile_MaxHeap =+ {}
+	Compile_LinkerInternalLinkageOpt =+ {}
+	Compile_SupportJustMyCode =+ {}
+	Compile_CreateHotpatchableImage =+ {}
+	Compile_EnableFiberSafeOptimizations =+ {}
+	Compile_MinimalRebuild =+ {}
+	Compile_SeparateWCharType =+ {}
+	Compile_ForceConformanceInForLoopScope =+ {}
+	Compile_XInternalPrecompiledHeaderOutputFile =+ {}
+	Compile_StringPooling =+ {}
+	Compile_RuntimeLibrary =+ {}
+	Compile_IncludeEnvironmentPaths =+ {}
+}

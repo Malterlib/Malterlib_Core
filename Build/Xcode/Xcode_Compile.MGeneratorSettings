@@ -185,6 +185,10 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Compile_Type undefined
 	}
+	Compile_AssemblerType {}
+	{
+		!!GeneratorSetting.Compile_AssemblerType undefined
+	}
 	Compile_AllowNonExisting {}
 	{
 		!!GeneratorSetting.Compile_AllowNonExisting undefined

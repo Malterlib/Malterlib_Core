@@ -51,3 +51,54 @@ Workspace
 		!!Configuration "Debug"
 	}
 }
+
+Property
+{
+	BuildSystemProtectedEnvironmentVariables: [string] = []
+
+	// Security/Authentication tokens
+	BuildSystemProtectedEnvironmentVariables =+ [
+		"GITHUB_TOKEN"
+		, "GH_TOKEN"
+		, "GITLAB_TOKEN"
+		, "CI_JOB_TOKEN"
+		, "NPM_TOKEN"
+		, "NODE_AUTH_TOKEN"
+		, "AWS_ACCESS_KEY_ID"
+		, "AWS_SECRET_ACCESS_KEY"
+		, "AWS_SESSION_TOKEN"
+		, "HOMEBREW_GITHUB_API_TOKEN"
+		, "CODECOV_TOKEN"
+		, "COVERALLS_REPO_TOKEN"
+	]
+
+	// Session-specific variables
+	BuildSystemProtectedEnvironmentVariables =+ [
+		"XDG_SESSION_ID"
+		, "XDG_RUNTIME_DIR"
+		, "SSH_AUTH_SOCK"
+		, "SSH_CONNECTION"
+		, "SSH_CLIENT"
+		, "SSH_TTY"
+		, "GPG_TTY"
+		, "TERM_SESSION_ID"
+		, "DISPLAY"
+		, "WINDOWID"
+	]
+
+	// CI/CD variables that change per build
+	BuildSystemProtectedEnvironmentVariables =+ [
+		"GITHUB_RUN_ID"
+		, "GITHUB_RUN_NUMBER"
+		, "GITHUB_SHA"
+		, "BUILD_NUMBER"
+		, "BUILD_ID"
+	]
+
+	// Temporary directories
+	BuildSystemProtectedEnvironmentVariables =+ [
+		"TMPDIR"
+		, "TEMP"
+		, "TMP"
+	]
+}

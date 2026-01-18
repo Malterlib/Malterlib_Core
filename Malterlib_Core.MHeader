@@ -1,4 +1,4 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
 Property
@@ -245,6 +245,17 @@ Import "Lib_Malterlib.MTarget"
 			Indirect true
 		}
 	}
+
+	%Dependency ["user32.lib", "advapi32.lib", "shell32.lib", "ole32.lib", "oleaut32.lib"]
+	{
+		!!PlatformFamily "Windows"
+
+		Dependency
+		{
+			Type "Library"
+			Indirect true
+		}
+	}
 }
 
 //	Target.ExtraGroups =+ "~Automatic/Malterlib Indirect Dependencies;@(AllSubLibraryGroups);@(MalterlibLibraryGroups)"
@@ -302,7 +313,7 @@ Property
 
 	Property
 	{
-		MalterlibNoShortcuts true	
+		MalterlibNoShortcuts true
 		DocumentationModule "Malterlib"
 	}
 	Target
@@ -348,12 +359,16 @@ Property
 		}
 	}
 	%Dependency "Dll_Test_Malterlib_Helper_Core"
+	{
+		Dependency.Link false
+		Dependency.Stage "Runtime"
+	}
 }
 
 Property
 {
 	!!MalterlibEnableInternalTests true
-	
+
 	MalterlibTests =+ "Malterlib_Core"
 	MalterlibTestExtraGroups_Malterlib_Core: [string] = ["{Test}/{Malterlib_Core}"]
 }

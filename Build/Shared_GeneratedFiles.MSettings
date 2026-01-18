@@ -18,13 +18,8 @@ Property
 		&
 		{
 			HostPlatformFamily "Windows"
-			!ScriptWindowsBash true
+			ScriptWindowsBat true
 		}
-	}
-
-	SharedBuildSettingsScriptContents =+ `export "PATH=/Applications/Xcode.app/Contents/Developer/usr/bin:$PATH"\r\n`
-	{
-		!!Generator "Xcode" // Use old xcode build for Xcode generator
 	}
 
 	SharedBuildSettingsScriptContents =+	`export "MalterlibBaseDir=\`cd "${BASH_SOURCE%/*}/.." && pwd\`/"\r\n`\
@@ -40,7 +35,7 @@ Property
 											`	MTool.exe "$@@"\r\n`\
 											`}\r\n`
 	{
-		!!ScriptWindowsBash true
+		!!ScriptWindowsBat false
 	}
 
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibSharedDeployRoot", MalterlibSharedDeployRoot))\r\n`
@@ -50,8 +45,7 @@ Property
 											`	MTool BuildServerTool Tool=ZMTool "$@@"\r\n`\
 											`}\r\n`
 	{
-		!!ScriptWindowsBash true
-		!HostPlatformFamily "Windows"
+		!!ScriptWindowsBat false
 	}
 
 	SharedBuildSettingsScriptContents =+	`\r\n`\
@@ -64,8 +58,7 @@ Property
 											`	TempDirectory="$TMPDIR"\r\n`\
 											`fi\r\n`
 	{
-		!HostPlatformFamily "Windows"
-		!!ScriptWindowsBash true
+		!!ScriptWindowsBat false
 	}
 
 	SharedBuildSettingsScriptContents =+	`\r\n`\
@@ -159,7 +152,7 @@ Property
 		&
 		{
 			HostPlatformFamily "Windows"
-			!ScriptWindowsBash true
+			ScriptWindowsBat true
 		}
 	}
 
@@ -168,7 +161,11 @@ Property
 											`popd > /dev/null\r\n`\
 											`\r\n`
 	{
-		!!ScriptWindowsBash true
+		&
+		{
+			HostPlatformFamily "Windows"
+			ScriptWindowsBat false
+		}
 	}
 
 	SharedBuildSettingsScriptContents =+	`function CheckErrors {\r\n`\
@@ -186,9 +183,7 @@ Property
 											`export -f CheckErrors\r\n`\
 											`export -f EvalVar\r\n`
 	{
-
-		!!PlatformType "Unix"
-		!!ScriptWindowsBash true
+		!!ScriptWindowsBat false
 	}
 
 
@@ -281,9 +276,7 @@ Property
 											`	fi\r\n`\
 											`}\r\n`
 	{
-
-		!!PlatformType "Unix"
-		!!ScriptWindowsBash true
+		!!ScriptWindowsBat false
 	}
 }
 
@@ -319,6 +312,10 @@ Property
 %GenerateFile "LocalBuildSettingsWindowsBashVCVarsBat"
 {
 	!!HostPlatformFamily "Windows"
+	Property
+	{
+		ScriptWindowsBash false
+	}
 	GenerateFile
 	{
 		Name `BuildSystem/SharedBuildSettingsVCVars@(ScriptExtension)`
@@ -486,7 +483,7 @@ Property
 		!!BuildSystemOutputDir->GetFile() "Default"
 	}
 
-	MalterlibGenerateCompileCommands: bool = (!MalterlibBuildServerBuild && !RunningCI) // User(Build System)=false: Enable compile_commands.json generation. Slows down generation significantly.
+	MalterlibGenerateCompileCommands: bool = (!MalterlibBuildServerBuild && !RunningCI) // User(Build System)=false: Enable compile_commands.json generation. Slows down generation significantly unless you are using the Ninja generator.
 }
 
 %Group "~Automatic/WorkspaceConfigStore"
@@ -539,7 +536,7 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`
+			Contents =+ `@(MalterlibBuildSystemGenerateCommand) --no-signal-changed "$1"\n`
 			{
 				!MalterlibDisableBuildSystemGeneration true
 			}
@@ -552,6 +549,11 @@ Property
 			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioWorkspace.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "VisualStudio"
+			}
+
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildNinjaWorkspace.sh" "$@@"\n`
+			{
+				!!GeneratorFamily "Ninja"
 			}
 
 			Executable true
@@ -569,7 +571,7 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `"$MalterlibWorkspaceRoot/mib" generate --use-cached-environment "$1"\n`
+			Contents =+ `@(MalterlibBuildSystemGenerateCommand) --no-signal-changed "$1"\n`
 			{
 				!MalterlibDisableBuildSystemGeneration true
 			}
@@ -582,6 +584,11 @@ Property
 			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildVisualStudioTarget.sh" "$@@"\n`
 			{
 				!!GeneratorFamily "VisualStudio"
+			}
+
+			Contents =+ `"$MalterlibWorkspaceRoot/Malterlib/Core/BuildScripts/BuildNinjaTarget.sh" "$@@"\n`
+			{
+				!!GeneratorFamily "Ninja"
 			}
 
 			Executable true
@@ -605,6 +612,24 @@ Target
 	AllFiles_C: [string] = []
 	AllFiles_ObjC: [string] = []
 	AllFiles_ObjC\+\+: [string] = []
+}
+
+Property
+{
+	CompileCommandsFile: string
+	CompileCommandsFile `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name)/@(Platform) @(Architecture) @(FullConfiguration)/compile_commands.json`
+}
+
+Target
+{
+	CompileCommandsFile CompileCommandsFile
+	{
+		&
+		{
+			MalterlibGenerateCompileCommands true
+			GeneratorFamily "Ninja"
+		}
+	}
 }
 
 %Group "~Automatic/TargetConfigStore"
@@ -729,7 +754,7 @@ Target
 				!Target.DebuggerCommandArguments undefined
 			}
 
-			ContentsJson #<compileCommands> `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name)/@(Platform) @(Architecture) @(FullConfiguration)/compile_commands.json`
+			ContentsJson #<compileCommands> CompileCommandsFile
 			{
 				&
 				{
@@ -747,11 +772,12 @@ Target
 		{
 			MalterlibGenerateCompileCommands true
 			!Target.Type "Tool"
+			!GeneratorFamily "Ninja"
 		}
 
 		GenerateFile
 		{
-			Name `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name)/@(Platform) @(Architecture) @(FullConfiguration)/compile_commands.json`
+			Name CompileCommandsFile
 
 			XcodePlatformDir: string = Malterlib_MacOSDeveloperLocaction / "Platforms/MacOSX.platform"
 
@@ -965,9 +991,6 @@ Property
 	Property
 	{
 		ScriptWindowsBash true
-		{
-			!!HostPlatformFamily "Windows"
-		}
 	}
 	%GenerateFile "Paths"
 	{

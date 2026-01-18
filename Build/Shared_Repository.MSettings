@@ -47,6 +47,29 @@ Property
 		}
 	}
 }
+
+Property
+{
+	!!HostPlatformFamily "Linux"
+
+	MalterlibRepositoryEditor "/usr/bin/smerge {}"
+	{
+		&
+		{
+			MalterlibRepositoryEditor undefined
+			"/usr/bin/smerge"->FileExists() true
+		}
+	}
+	MalterlibRepositoryEditorSequential true
+	{
+		&
+		{
+			MalterlibRepositoryEditorSequential undefined
+			MalterlibRepositoryEditor "/usr/bin/smerge"
+		}
+	}
+}
+
 Property
 {
 	!!HostPlatformFamily "Windows"

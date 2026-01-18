@@ -1,0 +1,75 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+// Nib (compiled Interface Builder) file support for Ninja generator
+// Nib files are pre-compiled and just need to be copied to the bundle's Resources folder
+// This is handled via PostBuildScript rather than individual compile rules
+
+// Collect all Nib files in the target
+Target
+{
+	AllFiles_Nib: [string] = []
+}
+
+GeneratorSetting
+{
+	Target_AllFiles_Nib {}
+}
+
+// Disable compile for Nib files - they're handled via PostBuildScript
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		Compile.Type "Nib"
+	}
+
+	Disabled true
+}
+
+// Function to generate copy command for a single Nib file
+Property
+{
+	// Get actual file path from property path
+	f_GetNibFilePath function(string _File) string
+	f_GetNibFilePath &this.Identity->GetProperty(_File)
+
+	// Get the localization-relative path (e.g., "en.lproj/File.nib")
+	f_NibRelativePath function(string _FilePath) string
+	f_NibRelativePath _FilePath->GetLastPaths(2)
+
+	// Generate copy command for a Nib file
+	f_NibCopyCommand function(string _File) string
+	f_NibCopyCommand `MTool DiffCopy @(_File->f_GetNibFilePath()->EscapeHost()) @((`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources/@(_File->f_GetNibFilePath()->f_NibRelativePath()->GetPath())`)->EscapeHost()) "" 0\r\n`
+}
+
+// Add Nib file copying to PostBuildScript
+Property
+{
+	&
+	{
+		GeneratorFamily "Ninja"
+		PlatformFamily "macOS"
+		MalterlibIsMacOSBundle true
+	}
+
+	// Add Nib files as inputs to post-build script so Ninja tracks dependencies
+	MalterlibPostBuildScriptInputs =+ Target.AllFiles_Nib->ForEach(&f_GetNibFilePath)
+	{
+		&
+		{
+			!Target.AllFiles_Nib undefined
+			!Target.AllFiles_Nib []
+		}
+	}
+
+	MalterlibPostBuildScriptPreSign =+ Target.AllFiles_Nib->ForEach(&f_NibCopyCommand)
+	{
+		&
+		{
+			!Target.AllFiles_Nib undefined
+			!Target.AllFiles_Nib []
+		}
+	}
+}

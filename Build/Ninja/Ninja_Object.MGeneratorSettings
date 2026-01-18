@@ -1,0 +1,26 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+// Pre-compiled object file support for Ninja generator
+// Object files are passed directly to the linker without compilation
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		Compile.Type "Object"
+		!Compile.Disabled true
+	}
+
+	BuildDisabled true
+
+	// Add object file directly to linker inputs
+	LinkerInputs =+ this.Identity
+	{
+		&
+		{
+			this.Type "File"
+		}
+	}
+}

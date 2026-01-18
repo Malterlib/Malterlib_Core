@@ -1,5 +1,4 @@
 CompileFlags:
-  Compiler: Binaries/MalterlibLLVM/HostPlatformArchitecture/bin/clang++
   HeaderCompilation: InContext
 Diagnostics:
   UnusedIncludes: None

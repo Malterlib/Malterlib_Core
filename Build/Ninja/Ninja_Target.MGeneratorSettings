@@ -1,0 +1,1528 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Property
+{
+	MalterlibMemoryPerLTOLink: float = 8192.0
+	MalterlibThreadsPerLTOLink: int = 4
+}
+
+Workspace
+{
+	PoolDepths: {
+		...: int
+	} = {
+		LTOLinkPool: Clamp((HostSystemInfo<PhysicalMemoryMiB> / MalterlibMemoryPerLTOLink)->AsInteger(), 1, Max(HostSystemInfo<PhysicalThreads> / MalterlibThreadsPerLTOLink, 1))
+	}
+}
+
+
+GeneratorSetting
+{
+	Ninja_TargetType: string
+	Ninja_TargetType SwitchWithError(
+		Target.Type, `Unknown target type: @(Target.Type)`
+		, "Executable", "Application"
+		, "ConsoleExecutable", "Application"
+		, "UIExecutable", "Application"
+		, "DynamicLibrary", "DynamicLibrary"
+		, "XcodeBundle", "DynamicLibrary"
+		, "SharedDynamicLibrary", "DynamicLibrary"
+		, "StaticLibrary", "StaticLibrary"
+		, "Driver", "Driver"
+		, "Tool", "Makefile"
+	)
+
+	Ninja_TargetExecutable: string
+
+	// Unix/POSIX tool executables
+	Ninja_TargetExecutable Target.Type->SwitchWithError(
+		"Target executable in native mode is not known for target type: "
+		, "StaticLibrary", (Documentation <==> "Doxygen") ? Builtin.MToolExe->GetPath() / "DoxygenLibTool/libtool" : `@(MalterlibToolsPrefix)llvm-ar`
+		, "ConsoleExecutable", `@(MalterlibToolsPrefix)clang++`
+		, "UIExecutable", `@(MalterlibToolsPrefix)clang++`
+		, "Executable", `@(MalterlibToolsPrefix)clang++`
+		, "DynamicLibrary", `@(MalterlibToolsPrefix)clang++`
+		, "XcodeBundle", `@(MalterlibToolsPrefix)clang++`
+		, "SharedDynamicLibrary", `@(MalterlibToolsPrefix)clang++`
+		, "Driver", `@(MalterlibToolsPrefix)clang++`
+		, "Tool", "false"
+	)
+	{
+		&
+		{
+			LanguageFamily "Native"
+			!PlatformFamily "Windows"
+		}
+	}
+
+	// Windows tool executables using ClangCL toolchain
+	Ninja_TargetExecutable Target.Type->SwitchWithError(
+		"Target executable in native mode is not known for target type: "
+		, "StaticLibrary", (Documentation <==> "Doxygen") ? Builtin.MToolExe->GetPath() / `DoxygenLibTool/libtool@(HostExecutableExtension)` : `@(MalterlibToolsPrefix)llvm-lib@(HostExecutableExtension)`
+		, "ConsoleExecutable", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
+		, "UIExecutable", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
+		, "Executable", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
+		, "DynamicLibrary", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
+		, "SharedDynamicLibrary", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
+		, "Tool", "false"
+	)
+	{
+		&
+		{
+			LanguageFamily "Native"
+			PlatformFamily "Windows"
+		}
+	}
+
+	// Tool type used for flag matching (separate from actual executable for clang driver usage)
+	Ninja_TargetToolType: string
+
+	// Unix/POSIX tool types
+	Ninja_TargetToolType Target.Type->SwitchWithError(
+		"Target tool type in native mode is not known for target type: "
+		, "StaticLibrary", (Documentation <==> "Doxygen") ? "libtool" : "llvm-ar"
+		, "ConsoleExecutable", "ld.lld"
+		, "UIExecutable", "ld.lld"
+		, "Executable", "ld.lld"
+		, "DynamicLibrary", "ld.lld"
+		, "XcodeBundle", "ld.lld"
+		, "SharedDynamicLibrary", "ld.lld"
+		, "Driver", "ld.lld"
+		, "Tool", "false"
+	)
+	{
+		&
+		{
+			LanguageFamily "Native"
+			!PlatformFamily "Windows"
+		}
+	}
+
+	// Windows tool types using ClangCL toolchain
+	Ninja_TargetToolType Target.Type->SwitchWithError(
+		"Target tool type in native mode is not known for target type: "
+		, "StaticLibrary", "llvm-lib"
+		, "ConsoleExecutable", "lld-link"
+		, "UIExecutable", "lld-link"
+		, "Executable", "lld-link"
+		, "DynamicLibrary", "lld-link"
+		, "SharedDynamicLibrary", "lld-link"
+		, "Tool", "false"
+	)
+	{
+		&
+		{
+			LanguageFamily "Native"
+			PlatformFamily "Windows"
+		}
+	}
+
+	// Deterministic mode modifier for llvm-ar (appended to rcs flags)
+	Ninja_ArDeterministicModifier: string = ""
+	Ninja_ArDeterministicModifier "D"
+	{
+		!!Target.LibtoolDeterministicMode true
+	}
+
+	Ninja_FirstObjects: string = ""
+	Ninja_FirstObjects ` @(Target.FirstObjects->JoinEscaped(" "))`
+	{
+		!Target.FirstObjects undefined
+	}
+
+	Ninja_TargetCommand: string
+
+	// Unix/POSIX command format
+	Ninja_TargetCommand Target.Type->SwitchWithError(
+		"Target command in native mode is not known for target type: "
+		, "StaticLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) @(Builtin.Flags) rcs@(GeneratorSetting.Ninja_ArDeterministicModifier) @(Builtin.Output) @(Builtin.Input)`
+		, "ConsoleExecutable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
+		, "UIExecutable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
+		, "Executable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
+		, "DynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
+		, "XcodeBundle", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
+		, "SharedDynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
+		, "Driver", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
+		, "Tool", "false"
+	)
+	{
+		&
+		{
+			LanguageFamily "Native"
+			!PlatformFamily "Windows"
+		}
+	}
+
+	// Windows command format using clang++ driver with lld-link
+	// Uses response files (@$rspfile) to avoid command line length limits
+	Ninja_TargetCommand Target.Type->SwitchWithError(
+		"Target command in native mode is not known for target type: "
+		, "StaticLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) /nologo /OUT:@(Builtin.Output) @@@(Builtin.RspFile)`
+		, "ConsoleExecutable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -fuse-ld=lld-link -o @(Builtin.Output) @@@(Builtin.RspFile)`
+		, "UIExecutable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -fuse-ld=lld-link -o @(Builtin.Output) @@@(Builtin.RspFile)`
+		, "Executable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -fuse-ld=lld-link -o @(Builtin.Output) @@@(Builtin.RspFile)`
+		, "DynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -fuse-ld=lld-link -o @(Builtin.Output) @@@(Builtin.RspFile)`
+		, "SharedDynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -fuse-ld=lld-link -o @(Builtin.Output) @@@(Builtin.RspFile)`
+		, "Tool", "false"
+	)
+	{
+		&
+		{
+			LanguageFamily "Native"
+			PlatformFamily "Windows"
+		}
+	}
+
+	// Response file content for Windows linking (inputs only)
+	Ninja_TargetRspfileContent: string = `@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
+	{
+		&
+		{
+			LanguageFamily "Native"
+			PlatformFamily "Windows"
+		}
+	}
+
+	Ninja_TargetInputs: [string] = []
+	Ninja_TargetImplicitInputs: [string] = []
+	Ninja_TargetOutputs: [string] = []
+	Ninja_TargetImplicitOutputs: [string] = []
+
+	Ninja_TargetImplicitOutputs =+ MalterlibOriginalModuleDestination
+	{
+		&
+		{
+			!MalterlibOriginalModuleDestinationExecutable undefined
+			!MalterlibOriginalModuleDestinationExecutable MalterlibOriginalModuleDestination
+		}
+	}
+
+	f_Ninja_CalculateTargetFileInputs function(string _File) [string] = []
+	f_Ninja_CalculateTargetFileInputs =+ &Compile.LinkerInputs->GetProperty(_File)
+
+	Ninja_TargetInputs =+ Target.AllFiles->ForEach(&GeneratorSetting.f_Ninja_CalculateTargetFileInputs)
+
+	// Collect implicit linker inputs (e.g., manifest files)
+	f_Ninja_CalculateTargetFileImplicitInputs function(string _File) [string] = []
+	f_Ninja_CalculateTargetFileImplicitInputs =+ &Compile.LinkerImplicitInputs->GetProperty(_File)
+
+	Ninja_TargetImplicitInputs =+ Target.AllFiles->ForEach(&GeneratorSetting.f_Ninja_CalculateTargetFileImplicitInputs)
+
+	// Add library dependencies as implicit inputs for executables
+	// This ensures Ninja rebuilds when dependent libraries change
+	Ninja_TargetImplicitInputs =+ Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetLibraryPaths)
+	{
+		|
+		{
+			TargetIsExecutable true
+			Target.Type "StaticLibrary"
+		}
+	}
+
+	// Get object files from ObjectLibrary dependencies
+	// For ObjectLibrary dependencies, get Target.AllFiles and calculate linker inputs
+	MaybeGetObjectLibraryInputs: one_of(string, [string]) = []
+	MaybeGetObjectLibraryInputs (&Target.AllFiles->GetProperty(Dependency.TargetPropertyPath))->ForEach(&GeneratorSetting.f_Ninja_CalculateTargetFileInputs)
+	{
+		&
+		{
+			Dependency.Link true
+			!Dependency.IndirectEvaluated true
+			Dependency.ObjectLibrary true
+		}
+	}
+
+	f_GetObjectLibraryInputs function(string _Dependency) [string] = []
+	f_GetObjectLibraryInputs =+ &GeneratorSetting.MaybeGetObjectLibraryInputs->GetProperty(_Dependency)
+
+	// Add object library files to target inputs for executables
+	Ninja_TargetInputs =+ Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetObjectLibraryInputs)
+	{
+		!!TargetIsExecutable true
+	}
+
+	// Get library output path from regular (non-ObjectLibrary) dependencies
+	MaybeGetLibraryPath: one_of(string, [string]) = []
+	MaybeGetLibraryPath &MalterlibFinalModuleDestination->GetProperty(Dependency.TargetPropertyPath)
+	{
+		&
+		{
+			Dependency.Link true
+			!Dependency.IndirectEvaluated true
+			Dependency.Type ""
+			!Dependency.ObjectLibrary true
+		}
+	}
+
+	f_GetLibraryPaths function(string _Dependency) [string] = []
+	f_GetLibraryPaths =+ &GeneratorSetting.MaybeGetLibraryPath->GetProperty(_Dependency)
+
+	// Get LinkerGroup from dependency's target
+	MaybeGetLinkerGroup: one_of(string, [string]) = []
+	MaybeGetLinkerGroup &Target.LinkerGroup->GetProperty(Dependency.TargetPropertyPath)
+	{
+		&
+		{
+			Dependency.Link true
+			!Dependency.IndirectEvaluated true
+			Dependency.Type ""
+			!Dependency.ObjectLibrary true
+		}
+	}
+
+	f_GetLinkerGroup function(string _Dependency) [string] = []
+	f_GetLinkerGroup =+ &GeneratorSetting.MaybeGetLinkerGroup->GetProperty(_Dependency)
+
+	// Collect libraries grouped by LinkerGroup value
+	// Dynamic object keys: group name -> array of library paths
+	MaybeAddLibraryToGroup: [{Group: string, Path: string}] = []
+	MaybeAddLibraryToGroup += { Group: &Target.LinkerGroup->GetProperty(Dependency.TargetPropertyPath), Path: &MalterlibFinalModuleDestination->GetProperty(Dependency.TargetPropertyPath) }
+	{
+		&
+		{
+			Dependency.Link true
+			!Dependency.IndirectEvaluated true
+			Dependency.Type ""
+			!Dependency.ObjectLibrary true
+		}
+	}
+
+	f_AddLibraryToGroup function(string _Dependency) [{Group: string, Path: string}] = []
+	f_AddLibraryToGroup =+ &GeneratorSetting.MaybeAddLibraryToGroup->GetProperty(_Dependency)
+
+	f_ToLibraryGroupedObject function({Group: string, Path: string} _Entry) {...: [string]} = {}
+	f_ToLibraryGroupedObject #<@(_Entry<Group>)> += _Entry<Path>
+
+	// Collect all library dependencies into groups
+	Helper_LibraryGroups: {...: [string]} = {}
+	Helper_LibraryGroups Target:Target.Dependencies->ForEach(&GeneratorSetting.f_AddLibraryToGroup)->ForEach(&GeneratorSetting.f_ToLibraryGroupedObject)
+
+	// Wrap linker group with --start-group/--end-group on Linux when enabled
+	f_WrapLinkerGroup function(string _GroupName, [string] _Paths) [string] = []
+	f_WrapLinkerGroup =+ ["-Wl,--start-group", _Paths..., "-Wl,--end-group"]
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Target.EnableLinkerGroups true
+			!_Paths->IsEmpty() true
+		}
+	}
+	f_WrapLinkerGroup =+ _Paths
+	{
+		|
+		{
+			!PlatformFamily "Linux"
+			!Target.EnableLinkerGroups true
+		}
+	}
+
+	// Process all groups and wrap them appropriately
+	Helper_WrappedLibraries: [string] = []
+	Helper_WrappedLibraries =+ GeneratorSetting.Helper_LibraryGroups->ForEach(&GeneratorSetting.f_WrapLinkerGroup)
+	{
+		!!TargetIsExecutable true
+	}
+
+	// Bash executable for script execution (Git Bash on Windows)
+	Ninja_BashExecutable: string = "/bin/bash"
+	Ninja_BashExecutable "C:/Program Files/Git/bin/bash.exe"
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	Target {
+		Rule_PreBuild: {
+			All: {
+				Positions: []
+				, Rule: {
+					command: `@(GeneratorSetting.Ninja_BashExecutable->Escape()) -c @(Builtin.Dollar)script_file`
+					, restat: true
+					, environment: {
+						PATH: `@(Target:Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
+						, <<: Target:Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
+					}
+				}
+				, Build: {
+					description: `@(Target:Target.Name) pre build`
+					, outputs: Target:Target.PreBuildScriptOutputs
+					, order_dependencies: [Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetCompileDependencies)...]
+					, implicit_dependencies: Target:Target.PreBuildScriptInputs
+					, script_file: Target:Target.PreBuildScriptFile->Escape()
+				}
+			}
+		}
+		, Rule_Build: {
+		}
+		, Rule_PostBuild: {
+			All: {
+				Positions: []
+				, Rule: {
+					command: `@(GeneratorSetting.Ninja_BashExecutable->Escape()) -c @(Builtin.Dollar)script_file`
+					, restat: true
+					, environment: {
+						PATH: `@(Target:Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
+						, <<: Target:Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
+					}
+				}
+				, Build: {
+					description: `@(Target:Target.Name) post build`
+					, outputs: Target:Target.PostBuildScriptOutputs
+					, implicit_dependencies: Target:Target.PostBuildScriptInputs
+					, script_file: Target:Target.PostBuildScriptFile->Escape()
+				}
+			}
+		}
+		, OtherRules: [
+			{
+				TargetPostBuildPhony: {
+					Positions: []
+					, Rule: {
+						phony: true
+					}
+					, Build: {
+						outputs: [`@(Target:Target.Name) post build`]
+						, order_dependencies: Target:Target.PostBuildScriptOutputs
+					}
+				}
+			}
+		]
+	}
+
+	f_ExtractTargetSettings function([type(CSharedSettingsWithPosition)] _Settings) any
+	f_ExtractTargetSettings {
+		Rule_Build: _Settings->ForEach(&GeneratorSetting.f_ExtractTargetSettingsFlags)
+	}
+
+	Target =+ GeneratorSetting.f_ExtractTargetSettings(GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetSettings))
+
+	MaybeGetLinkDependency: one_of(string, [string]) = []
+	MaybeGetLinkDependency `@(Dependency.Name) post build`
+	{
+		&
+		{
+			!Dependency.IndirectEvaluated true
+			Dependency.Stage "Link"
+			Dependency.Type ""
+		}
+	}
+
+	f_GetLinkDependencies function(string _Dependency) [string] = []
+	f_GetLinkDependencies =+ &GeneratorSetting.MaybeGetLinkDependency->GetProperty(_Dependency)
+
+	Target #<OtherRules> =+ {
+		TargetLinkDependencies: {
+			Positions: []
+			, Rule: {
+				phony: true
+			}
+			, Build: {
+				outputs: [GeneratorSetting.TargetPhony_LinkDependencies]
+				, order_dependencies: Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetLinkDependencies)
+			}
+		}
+	}
+
+	MaybeGetValidationDependency: one_of(string, [string]) = []
+	MaybeGetValidationDependency `@(Dependency.Name) post build`
+	{
+		&
+		{
+			!Dependency.IndirectEvaluated true
+			Dependency.Stage "Runtime"
+			Dependency.Type ""
+		}
+	}
+
+	f_GetValidationDependencies function(string _Dependency) [string] = []
+	f_GetValidationDependencies =+ &GeneratorSetting.MaybeGetValidationDependency->GetProperty(_Dependency)
+
+	Target #<OtherRules> =+ {
+		TargetValidationDependencies: {
+			Positions: []
+			, Rule: {
+				phony: true
+			}
+			, Build: {
+				outputs: [GeneratorSetting.TargetPhony_ValidationDependencies]
+				, validations: Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetValidationDependencies)
+			}
+		}
+	}
+
+	MaybeGetCompileDependency: one_of(string, [string]) = []
+	MaybeGetCompileDependency `@(Dependency.Name) post build`
+	{
+		&
+		{
+			!Dependency.IndirectEvaluated true
+			Dependency.Stage "Compile"
+			Dependency.Type ""
+		}
+	}
+
+	f_GetCompileDependencies function(string _Dependency) [string] = []
+	f_GetCompileDependencies =+ &GeneratorSetting.MaybeGetCompileDependency->GetProperty(_Dependency)
+
+	Target #<OtherRules> =+ {
+		TargetCompileDependencies: {
+			Positions: []
+			, Rule: {
+				phony: true
+			}
+			, Build: {
+				outputs: [GeneratorSetting.TargetPhony_CompileDependencies]
+				, order_dependencies: Target:Target.PreBuildScriptOutputs
+			}
+		}
+	}
+
+	Target #<OtherRules> =+ {
+		TargetPhonyOutputs: {
+			Positions: []
+			, Rule: {
+				phony: true
+			}
+			, Build: {
+				outputs: Target.PhonyOutputs
+			}
+		}
+	}
+	{
+		&
+		{
+			!Target.PhonyOutputs undefined
+			!Target.PhonyOutputs []
+		}
+	}
+}
+
+GeneratorSetting
+{
+	Target_Type #<Build.order_dependencies> =+ [GeneratorSetting.TargetPhony_LinkDependencies, GeneratorSetting.TargetPhony_CompileDependencies]
+	Target_Type #<Build.validations> =+ [GeneratorSetting.TargetPhony_ValidationDependencies]
+	Target_Type #<Rule.environment> += Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
+	Target_Type #<Rule.environment> += {
+		PATH: `@(Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
+	}
+	{
+		&
+		{
+			!Target.ToolPath undefined
+			!Target.ToolPath []
+		}
+	}
+}
+
+GeneratorSetting
+{
+	TargetIsExecutable true
+
+	// macOS/iOS/DriverKit: Use -dead_strip
+	Target_RemoveUnreferencedSymbols =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.RemoveUnreferencedSymbols ? ["-dead_strip"] : []
+			}
+		]
+	)
+	{
+		|
+		{
+			PlatformFamily "macOS"
+			PlatformFamily "iOS"
+			PlatformFamily "DriverKit"
+		}
+	}
+
+	// Linux: Use --gc-sections
+	Target_RemoveUnreferencedSymbols =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.RemoveUnreferencedSymbols ? [["-Xlinker", "--gc-sections"]] : []
+			}
+		]
+	)
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	Target_RemoveUnreferencedSymbols =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.RemoveUnreferencedSymbols ? [["-Wl,/OPT:REF"]] : []
+			}
+		]
+	)
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	f_PrefixWithL function(string _Path) [string] = []
+	f_PrefixWithL =+ `-L@(_Path)`
+
+	Target_SearchPath =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld", "libtool"]
+				, Flags: Target.SearchPath->ForEach(&GeneratorSetting.f_PrefixWithL)
+			}
+		]
+	)
+	{
+		!PlatformFamily "Windows"
+	}
+
+	f_PrefixWithLibPath function(string _Path) [string] = []
+	f_PrefixWithLibPath =+ `-Wl,/LIBPATH:@(_Path)`
+
+	Target_SearchPath =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.SearchPath->ForEach(&GeneratorSetting.f_PrefixWithLibPath)
+			}
+		]
+	)
+	{
+		!!PlatformFamily "Windows"
+	}
+}
+
+GeneratorSetting
+{
+	!!Target.Type "Tool"
+
+	Target_Type #<Build.description> `Running @(this.Identity->GetFile())`
+
+	Target_CommandLine_Build #<Rule.command> `@(GeneratorSetting.Ninja_BashExecutable->Escape()) -c @(Target.CommandLine_Build->Escape())`
+	Target_CommandLine_Build #<Rule.restat> true
+	Target_CommandLine_AlwaysDirty #<Build.implicit_dependencies> =+ (Target.CommandLine_AlwaysDirty ? [".AlwaysDirty"] : [])
+
+	Target_CommandLine_Inputs #<Build.implicit_dependencies> =+ Target.CommandLine_Inputs
+	Target_CommandLine_Outputs #<Build.outputs> =+ Target.CommandLine_Outputs
+	Target_CommandLine_IsGenerator #<Rule.generator> Target.CommandLine_IsGenerator
+
+	Target_CommandLine_ReBuild {}
+	Target_CommandLine_Clean {}
+}
+
+GeneratorSetting
+{
+	!!TargetIsLinkable true
+
+	Target_Type #<Rule.command> GeneratorSetting.Ninja_TargetCommand
+
+	// Enable restat for macOS bundles so ninja re-checks mtimes after bundle creation
+	Target_Type #<Rule.restat> true
+	{
+		!!MalterlibIsMacOSBundle true
+	}
+
+	// Response file for Windows to handle long command lines
+	Target_Type #<Rule.rspfile> Target.IntermediateDirectory / "link.rsp"
+	{
+		!!PlatformFamily "Windows"
+	}
+	Target_Type #<Rule.rspfile_content> GeneratorSetting.Ninja_TargetRspfileContent
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	Target_Type #<Build.description> Target:Target.Name
+
+	Target_Type #<Build.outputs> =+ MalterlibOriginalModuleDestinationExecutable
+	Target_Type #<Build.outputs> =+ GeneratorSetting.Ninja_TargetOutputs
+
+	Target_Type #<Build.inputs> =+ GeneratorSetting.Ninja_TargetInputs
+	Target_Type #<Build.implicit_outputs> =+ GeneratorSetting.Ninja_TargetImplicitOutputs
+	Target_Type #<Build.implicit_dependencies> =+ GeneratorSetting.Ninja_TargetImplicitInputs
+}
+
+GeneratorSetting
+{
+	Target_PhonyOutputs =+ {}
+	Target_Language =+ {}
+	Target_ObjectLibrary =+ {}
+	Target_IDEDebugPriority =+ {}
+	Target_FirstObjects =+ {}
+	Target_AllFiles =+ {}
+	Target_LinkWithLibraries =+ {}
+	Target_BaseName =+ {}
+	Target_ExportScriptEnvironmentContents =+ {}
+	Target_GenerateScheme =+ {}
+	Target_ProductType =+ {}
+	Target_RemoteDebuggerCommand =+ {}
+	Target_RemoteDebuggerWorkingDirectory =+ {}
+	Target_Version =+ {}
+	Target_DriverType =+ {}
+	Target_Group =+ {}
+	Target_BaseFileName =+ {}
+	Target_FileNameBase =+ {}
+	Target_Output =+ {}
+	Target_CharacterSet =+ {}
+	Target_Disabled =+ {}
+	Target_FollowIndirectDependencies =+ {}
+	Target_Name =+ {}
+	Target_ExtraGroups =+ {}
+	Target_ExportScriptEnvironment =+ {}
+	Target_EnableLinkerGroups =+ {}
+	Target_InjectedExtraGroups =+ {}
+	Target_DependencyInjectionGroups =+ {}
+
+	// Use any in all of these functions here to speed up generation, as this is only an intermediate value
+	f_SetSharedFlags function(any _ToolConfigs) any
+
+	f_SetSharedFlags {
+		FlagsShared: _ToolConfigs->ForEach(&GeneratorSetting.f_SetSharedFlags_BuildFlagsShared)
+		, Flags: _ToolConfigs->ForEach(&GeneratorSetting.f_SetSharedFlags_BuildFlagsForTool, {Selection: GeneratorSetting.Ninja_TargetToolType})
+		, Type: "unique"
+	}
+
+	f_SetSharedFlags_BuildFlagsShared function(any _ToolConfig) any = {}
+	f_SetSharedFlags_BuildFlagsShared =+ {
+		`@(_ToolConfig<Tools>->Join(","))`: _ToolConfig<Flags>
+	}
+
+	f_SetSharedFlags_BuildFlagsForTool function(any _ToolConfig) any = []
+	f_SetSharedFlags_BuildFlagsForTool _ToolConfig<Flags>
+	{
+		&
+		{
+			!_ToolConfig<Flags>->IsEmpty() true
+			_ToolConfig<Tools>->ForEach(&GeneratorSetting.f_SetSharedFlags_IsCurrentTool) true
+		}
+	}
+
+	f_SetSharedFlags_IsCurrentTool function(any _Tool) any = false
+	f_SetSharedFlags_IsCurrentTool true
+	{
+		!!Selection _Tool
+	}
+
+	// Calculate SDK path: use directly if absolute, otherwise prepend Malterlib_MacOSSDKsRoot
+	f_GetSDKPath function(string _SDKRoot) string
+	f_GetSDKPath _SDKRoot
+	{
+		!!_SDKRoot->IsAbsolute() true
+	}
+	f_GetSDKPath _SDKRoot->MakeAbsolute(Malterlib_MacOSSDKsRoot)
+	{
+		&
+		{
+			!_SDKRoot->IsAbsolute() true
+			_SDKRoot->EndsWith(".sdk") true
+		}
+	}
+	f_GetSDKPath `@(_SDKRoot).sdk`->MakeAbsolute(Malterlib_MacOSSDKsRoot)
+	{
+		&
+		{
+			!_SDKRoot->IsAbsolute() true
+			!_SDKRoot->EndsWith(".sdk") true
+		}
+	}
+
+	Target_SDKRoot =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++", "ld", "ld.lld", "lld"]
+				, Flags: ["-isysroot", Target.SDKRoot->GeneratorSetting.f_GetSDKPath()]
+			}, {
+				Tools: ["swift"]
+				, Flags: ["-sdk", Target.SDKRoot->GeneratorSetting.f_GetSDKPath()]
+			}, {
+				Tools: ["libtool"]
+				, Flags: ["-syslibroot", Target.SDKRoot->GeneratorSetting.f_GetSDKPath()]
+			}, {
+				Tools: ["llvm-ar"]
+				, Flags: []
+			}, {
+				Tools: ["false"]
+				, Flags: []
+			}
+		]
+	)
+
+	Target_SDKRoot #<Rule.environment> =+ {
+		"SDKROOT": Target.SDKRoot->GeneratorSetting.f_GetSDKPath()
+	}
+
+	// Only used for plist auto generation, not part of link command line
+	Target_BundleIdentifier =+ {}
+
+	// Not part of link command line
+	Target_CodeSigningIdentity =+ {}
+
+	Target_DebugInformationFormat =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: (Target.GenerateDebugInformation ?? true) ? Target.DebugInformationFormat->SwitchWithError(
+					"Unsupported debug information option: "
+					, "dwarf", ["-g"]
+					, "dwarf-with-dsym", ["-g"]
+					, "", []
+				) : []
+			}
+		]
+	)
+	{
+		!PlatformFamily "Windows"
+	}
+
+	Target_GenerateDebugInformation =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: (Target.GenerateDebugInformation ?? true) ? ["-Wl,/DEBUG"] : []
+			}
+		]
+	)
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	Target_GenerateDebugInformation =+ {}
+
+	Target_DeploymentTarget =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++", "ld", "ld.lld", "lld", "swift"]
+				, Flags: `-mmacosx-version-min=@(Target.DeploymentTarget)`
+			}
+		]
+	)
+	{
+		// DriverKit has deployment target in the target triple, not via -mmacosx-version-min
+		!Target.DriverType "DriverKit"
+	}
+
+	// Empty handler for DriverKit - deployment target is in the target triple
+	Target_DeploymentTarget =+ {}
+	{
+		!!Target.DriverType "DriverKit"
+	}
+
+
+	Target_EnableModuleDebugging =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++", "ld", "ld.lld", "lld", "swift"]
+				, Flags: Target.EnableModuleDebugging ? ["-gmodules"] : []
+			}
+		]
+	)
+
+	Target_HardenedRuntime =+ {}
+
+	Target_LDFlags =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld", "lld-link"]
+				, Flags: Target.LDFlags
+			}
+		]
+	)
+
+	Target_LDFlagsFirst =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld", "lld-link"]
+				, Flags: Target.LDFlagsFirst
+			}
+		]
+	)
+
+	Target_LDFlagsFirst =+ {
+		FlagsPriority: 1000
+	}
+
+	Target_ExtraLinkerFlags =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld", "lld-link"]
+				, Flags: Target.ExtraLinkerFlags
+			}
+		]
+	)
+
+	Target_LinkTimeCodeGeneration =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++", "clang-cl", "clang-cl++", "ld", "ld.lld", "lld"]
+				, Flags: Target.LinkTimeCodeGeneration->SwitchWithError(
+					"Unsupported LTO option: "
+					, true, "-flto"->f_ClangFlag()
+					, false, []
+					, "Fast", "-flto=thin"->f_ClangFlag()
+				)
+			}
+		]
+	)
+
+	Target_LinkTimeCodeGeneration #<Rule.pool> "LTOLinkPool"
+	{
+		&
+		{
+			TargetIsExecutable true
+			|
+			{
+				Target.LinkTimeCodeGeneration true
+				Target.LinkTimeCodeGeneration "Fast"
+			}
+		}
+	}
+
+	Target_LTOCachePath =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: [["-Xlinker", "-cache_path_lto", "-Xlinker", Target.LTOCachePath]]
+			}
+		]
+	)
+	{
+		!!PlatformFamily "macOS"
+	}
+
+	Target_LTOCachePath =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: [`-Wl,/lldltocache:@(Target.LTOCachePath)`]
+			}
+		]
+	)
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	Target_LTOCachePath =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: [["-Xlinker", `--thinlto-cache-dir=@(Target.LTOCachePath)`]]
+			}
+		]
+	)
+	{
+		&
+		{
+			!PlatformFamily "macOS"
+			!PlatformFamily "Windows"
+		}
+	}
+
+	Target_LocalDebuggerCommand =+ {}
+	Target_DebuggerCommandArguments =+ {}
+	Target_LocalDebuggerWorkingDirectory =+ {}
+	Target_MToolPath =+ {}
+	Target_MalterlibInfoPListFile =+ {}
+
+	Target_CharacterSet =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++", "clang-cl", "clang-cl++"]
+				, Flags: Target.CharacterSet->SwitchWithError(
+					"Unsupported option: "
+					, "Unicode", ["-DUNICODE", "-D_UNICODE"]
+					, "MultiByte", ["-D_MBCS"]
+				)
+			}
+		]
+	)
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	Target_NativeOptimize =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.NativeOptimize->SwitchWithError(
+					"Unsupported optimize option: "
+					, "Off", "-O0"
+					, "Fast", "-O3"
+					, "On", "-O3"
+					, "Full", "-Ofast"
+				)
+			}
+		]
+	)
+
+	Target_ObjcLinkRuntime =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.ObjcLinkRuntime->SwitchWithError(
+					"Unsupported optimize option: "
+					, true, "-fobjc-link-runtime"
+					, false, []
+				)
+			}
+		]
+	)
+
+	Target_PlatformToolset =+ {}
+	Target_PlatformToolsetCompiler =+ {}
+
+	Target_PreBuildScript =+ {}
+	Target_PostBuildScript =+ {}
+
+	Target_PreBuildScriptFile =+ {}
+	Target_PostBuildScriptFile =+ {}
+
+	// Add -dynamiclib or -bundle flag for dynamic library targets on macOS
+	Target_Type =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.Type->SwitchWithError(
+					"Unsupported target type for library flag: "
+					, "ConsoleExecutable", []
+					, "UIExecutable", []
+					, "Executable", []
+					, "StaticLibrary", []
+					, "DynamicLibrary", "-bundle"
+					, "XcodeBundle", "-bundle"
+					, "SharedDynamicLibrary", "-dynamiclib"
+					, "Driver", []
+					, "Tool", []
+				)
+			}
+		]
+	)
+	{
+		!!PlatformFamily "macOS"
+	}
+
+	Target_Type =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.Type->SwitchWithError(
+					"Unsupported target type for library flag: "
+					, "ConsoleExecutable", []
+					, "UIExecutable", []
+					, "Executable", []
+					, "StaticLibrary", []
+					, "DynamicLibrary", "-shared"
+					, "SharedDynamicLibrary", "-shared"
+					, "Tool", []
+				)
+			}
+		]
+	)
+	{
+		!!PlatformFamily "Linux"
+	}
+
+	Target_Type =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.Type->SwitchWithError(
+					"Unsupported target type for library flag: "
+					, "ConsoleExecutable", []
+					, "UIExecutable", []
+					, "Executable", []
+					, "StaticLibrary", []
+					, "DynamicLibrary", "-Wl,/DLL"
+					, "SharedDynamicLibrary", "-Wl,/DLL"
+					, "Tool", []
+				)
+			}
+		]
+	)
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	Target_SubSystem =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.SubSystem->SwitchWithError(
+					"Unsupported SubSystem: "
+					, "Console", [["-Xlinker", `/SUBSYSTEM:CONSOLE,@(Target.MinimumRequiredVersion)`]]
+					, "Windows", [["-Xlinker", `/SUBSYSTEM:WINDOWS,@(Target.MinimumRequiredVersion)`]]
+					, "Native", [["-Xlinker", `/SUBSYSTEM:NATIVE,@(Target.MinimumRequiredVersion)`]]
+				)
+			}
+		]
+	)
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			!Target.MinimumRequiredVersion undefined
+		}
+	}
+
+	Target_SubSystem =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.SubSystem->SwitchWithError(
+					"Unsupported SubSystem: "
+					, "Console", "-Wl,/SUBSYSTEM:CONSOLE"
+					, "Windows", "-Wl,/SUBSYSTEM:WINDOWS"
+					, "Native", "-Wl,/SUBSYSTEM:NATIVE"
+				)
+			}
+		]
+	)
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			Target.MinimumRequiredVersion undefined
+		}
+	}
+
+	Target_SubSystem =+ {}
+
+	f_ExtractLibraryDependencies function(string _ExternalDependency) [one_of([string], string)] = []
+
+	f_FlagOrAbsolute function(string _Library) string
+	f_FlagOrAbsolute _Library
+	{
+		!!_Library->IsAbsolute() true
+	}
+	f_FlagOrAbsolute `-l@(_Library)`
+	{
+		!_Library->IsAbsolute() true
+	}
+
+	f_ExtractLibraryDependencies =+ (&Dependency.Name->GetProperty(_ExternalDependency))->GeneratorSetting.f_FlagOrAbsolute()
+	{
+		&
+		{
+			|
+			{
+				TargetIsExecutable true
+				!(&Dependency.Indirect->GetProperty(_ExternalDependency)) true
+			}
+			(&Dependency.Type->GetProperty(_ExternalDependency)) "Library"
+		}
+	}
+
+	f_FrameworkOrAbsolute function(string _Library) [one_of(string, [string])]
+	f_FrameworkOrAbsolute [_Library]
+	{
+		!!_Library->IsAbsolute() true
+	}
+	f_FrameworkOrAbsolute [["-framework", _Library]]
+	{
+		!_Library->IsAbsolute() true
+	}
+
+	f_ExtractLibraryDependencies =+ (&Dependency.Name->GetProperty(_ExternalDependency))->GeneratorSetting.f_FrameworkOrAbsolute()
+	{
+		&
+		{
+			|
+			{
+				TargetIsExecutable true
+				!(&Dependency.Indirect->GetProperty(_ExternalDependency)) true
+			}
+			(&Dependency.Type->GetProperty(_ExternalDependency)) "Framework"
+		}
+	}
+
+	Helper_LinkWithLibraries: [one_of([string], string)]?
+
+	Helper_LinkWithLibraries =+ MalterlibOverrideMallocLibrary
+	{
+		!!MalterlibNeedsMallocOverrideLibrary true
+	}
+	Helper_LinkWithLibraries =+ Target.ExternalDependencies->ForEach(&GeneratorSetting.f_ExtractLibraryDependencies)->Unique()
+	Helper_LinkWithLibraries =+ Target.LinkWithLibraries
+
+	// Add library files from target dependencies (with linker group wrapping on Linux)
+	Helper_LinkWithLibraries =+ GeneratorSetting.Helper_WrappedLibraries
+	{
+		!!TargetIsExecutable true
+	}
+
+	Target_LinkWithLibraries =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld", "lld-link"]
+				, Flags: GeneratorSetting.Helper_LinkWithLibraries
+			}
+		]
+	)
+	{
+		!!TargetIsExecutable true
+	}
+
+	Target_LinkWithLibraries =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["libtool", "llvm-ar", "llvm-lib"]
+				, Flags: GeneratorSetting.Helper_LinkWithLibraries
+			}
+		]
+	)
+	{
+		!!Target.Type "StaticLibrary"
+	}
+
+	Target_CodeCoverageLinkerMapping =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.CodeCoverageLinkerMapping ? ["-fprofile-instr-generate"] : []
+			}
+		]
+	)
+
+	Target_SupportedPlatforms =+ {}
+	Target_Architectures =+ {}
+	Target_ValidArchitectures =+ {}
+	Target_ToolPath =+ {}
+	Target_DependencyFile =+ {}
+
+	Target_DependencyInfoFile =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: [["-Xlinker", "-dependency_info", "-Xlinker", Target.DependencyInfoFile]]
+			}
+		]
+	)
+
+	Target_CodeSignEntitlements =+ {}
+	Target_CodeSignStyle =+ {}
+	Target_CodeSignInjectBaseEntitlements =+ {}
+	Target_IndexStoreEnable =+ {}
+
+	Target_QtToolsRoot #<Rule.environment> =+ {
+		"QT_TOOLS_ROOT": Target.QtToolsRoot
+	}
+
+	Target_QtIncludeRoot #<Rule.environment> =+ {
+		"QT_INCLUDE_ROOT": Target.QtIncludeRoot
+	}
+
+	// -object_path_lto is macOS ld64-specific, not supported by lld on Linux
+	Target_LTOObjectFile =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: (Target.LTOObjectFile->IsEmpty() ? [] : [["-Xlinker", "-object_path_lto", "-Xlinker", Target.LTOObjectFile]])
+			}
+		]
+	)
+	{
+		!!PlatformFamily "macOS"
+	}
+
+	Target_CodeSigningRequired =+ {}
+	Target_CodeSigningAllowed =+ {}
+
+	Target_InstrumentForOptimization =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++", "clang-cl", "clang-cl++", "ld", "ld.lld", "lld"]
+				, Flags: Target.InstrumentForOptimization ? ["-fprofile-instr-generate"->f_ClangFlag()] : []
+			}
+		]
+	)
+
+	Target_FileName =+ {}
+	Target_Type =+ {}
+	Target_LinkerGroup =+ {}
+	Target_ExcludedSourceFileNames =+ {}
+	Target_FileExtension =+ {}
+	Target_IntermediateDirectory =+ {}
+	Target_OutputDirectory =+ {}
+	Target_FilePrefix =+ {}
+	Target_ProjectDerivedSourcesDir =+ {}
+	Target_ProjectSharedPrecompPrefixDir =+ {}
+	Target_ExecutableFolder =+ {}
+	Target_OnlyActiveArchitectures =+ {}
+	Target_AlwaysSearchUserPaths =+ {}
+	Target_DriverkitDeploymentTarget =+ {}
+	Target_iOSDeploymentTarget =+ {}
+	Target_NativeArchitecture =+ {}
+	Target_NativeArchitectureActual =+ {}
+	Target_CombineHiDPIImages =+ {}
+
+	Target_LibToolFlags =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["libtool", "llvm-ar"]
+				, Flags: Target.LibToolFlags
+			}
+		]
+	)
+
+	Target_HeadermapIncludeTarget =+ {}
+	Target_HeadermapEnable =+ {}
+	Target_HeadermapIncludeFrameworks =+ {}
+	Target_HeadermapIncludeProject =+ {}
+	Target_StripDebugSymbolsDuringCopy =+ {}
+	Target_StripLinkedProduct =+ {}
+	Target_StripStyle =+ {}
+	Target_UseSeperateStrip =+ {}
+
+	Target_RetainCommentsFromSystemHeaders =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++", "clang-cl", "clang-cl++"]
+				, Flags: Target.RetainCommentsFromSystemHeaders ? ["-fretain-comments-from-system-headers"->f_ClangFlag()] : []
+			}
+		]
+	)
+
+	Target_CxxLanguage =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang++"]
+				, Flags: Target.CxxLanguage->SwitchWithError(
+					"Unknown C++ language option: "
+					, "GNU++11", "-std=gnu++11"
+					, "GNU++14", "-std=gnu++14"
+					, "GNU++17", "-std=gnu++17"
+					, "GNU++20", "-std=gnu++20"
+					, "GNU++23", "-std=gnu++2b"
+					, "C++11", "-std=c++11"
+					, "C++14", "-std=c++14"
+					, "C++17", "-std=c++17"
+					, "C++20", "-std=c++20"
+					, "C++23", "-std=c++23"
+					, "C++26", "-std=c++2c"
+				)
+			}
+		]
+	)
+
+	Target_NoDeduplication =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.NoDeduplication ? ["-Xlinker", "-no_deduplicate"] : []
+			}
+		]
+	)
+
+	Target_LibtoolDeterministicMode =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["libtool"]
+				, Flags: Target.LibtoolDeterministicMode ? ["-D"] : []
+			}
+		]
+	)
+
+
+	Target_CLanguage =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang"]
+				, Flags: Target.CLanguage->SwitchWithError(
+					"Unknown C language option: "
+					, "C89", "-std=c89"
+					, "C99", "-std=c99"
+					, "C11", "-std=c11"
+					, "GNU89", "-std=gnu89"
+					, "GNU99", "-std=gnu99"
+					, "GNU11", "-std=gnu11"
+				)
+			}
+		]
+	)
+
+	Target_CxxStandardLibrary =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++"]
+				, Flags: Target.CxxStandardLibrary->SwitchWithError(
+					"Unknown C++ stdlib option: "
+					, "none", []
+					, "libc++", "-stdlib=libc++"
+					, "libstdc++", "-stdlib=libstdc++"
+				)
+			},
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.CxxStandardLibrary->SwitchWithError(
+					"Unknown C++ stdlib option: "
+					, "none", []
+					, "libc++", []
+					, "libstdc++", "-stdlib=libstdc++"
+				)
+			}
+		]
+	)
+	{
+		!!PlatformFamily "macOS"
+	}
+
+	Target_CxxStandardLibrary =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++", "ld", "ld.lld", "lld"]
+				, Flags: Target.CxxStandardLibrary->SwitchWithError(
+					"Unknown C++ stdlib option: "
+					, "none", []
+					, "libc++", "-stdlib=libc++"
+					, "libstdc++", "-stdlib=libstdc++"
+				)
+			}
+		]
+	)
+	{
+		!PlatformFamily "macOS"
+	}
+
+	Target_SharedLibraryInstallPath =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: [["-install_name", Target.SharedLibraryInstallPath]]
+			}
+		]
+	)
+
+	Target_LinkWithStandardLibraries =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: Target.LinkWithStandardLibraries ? [] : ["-nostdlib"]
+			}
+		]
+	)
+
+	Target_CompatibilityVersion =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: [["-Xlinker", "-compatibility_version", "-Xlinker", Target.CompatibilityVersion]]
+			}
+		]
+	)
+	{
+		!!Target.Type "SharedDynamicLibrary"
+	}
+
+	Target_CurrentVersion =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["ld", "ld.lld", "lld"]
+				, Flags: [["-Xlinker", "-current_version", "-Xlinker", Target.CurrentVersion]]
+			}
+		]
+	)
+	{
+		!!Target.Type "SharedDynamicLibrary"
+	}
+
+	Target_CompatibilityVersion =+ {}
+	{
+		!Target.Type "SharedDynamicLibrary"
+	}
+
+	Target_CurrentVersion =+ {}
+	{
+		!Target.Type "SharedDynamicLibrary"
+	}
+
+	Target_PostBuildScriptInputs =+ {}
+	Target_PostBuildScriptOutputs =+ {}
+	Target_PreBuildScriptInputs =+ {}
+	Target_PreBuildScriptOutputs =+ {}
+
+	Target_CodeCoverageMapping =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["clang", "clang++", "clang-cl", "clang-cl++"]
+				, Flags: Target.CodeCoverageMapping ? ["-fprofile-instr-generate", "-fcoverage-mapping"]->f_ClangFlags() : []
+			}
+		]
+	)
+
+	Target_ClangUseResponseFile =+ {}
+	Target_CompileCommandsFile =+ {}
+
+	// VS-specific target settings with no Ninja equivalent
+	Target_VCToolsVersion =+ {}
+	Target_LLVMToolsVersion =+ {}
+	Target_PlatformVersion =+ {}
+	Target_LinkKeyFile =+ {}
+	Target_DelaySign =+ {}
+	Target_AssemblyDebug =+ {}
+	Target_Driver =+ {}
+	Target_IgnoreImportLibrary =+ {}
+	Target_Verbose =+ {}
+	Target_SymbolFile =+ {}
+	Target_TargetFrameworkVersion =+ {}
+	Target_UseMultiToolTask =+ {}
+	Target_MultiProcCL =+ {}
+	Target_EnforceProcessCountAcrossBuilds =+ {}
+	Target_UseMsbuildResourceManager =+ {}
+	Target_LLVMInstallDir =+ {}
+	Target_UseDebugLibraries =+ {}
+	Target_NasmPath =+ {}
+	Target_UseOfMfc =+ {}
+	Target_UseOfAtl =+ {}
+	Target_DefaultToolArchitecture =+ {}
+	Target_CLRSupport =+ {}
+	Target_IgnoreWarnCompileDuplicatedFilename =+ {}
+	Target_EnableASAN =+ {}
+	Target_CustomBuildAfterTargets =+ {}
+	Target_CustomBuildBeforeTargets =+ {}
+	Target_VisualStudioPlatform =+ {}
+
+	// Windows-specific settings that have handlers in ClangCL.MGeneratorSettings
+	Target_DataExecutionPrevention =+ {}
+	Target_RandomizedBaseAddress =+ {}
+	Target_LargeAddressAware =+ {}
+	Target_LinkIncremental =+ {}
+	Target_IgnoreAllDefaultLibraries =+ {}
+	Target_EntryPointSymbol =+ {}
+	Target_ModuleDefinitionFile =+ {}
+	Target_TargetMachine =+ {}
+	Target_GenerateManifest =+ {}
+	Target_MinimumRequiredVersion =+ {}
+	Target_ExtraLibFlags =+ {}
+}
+
+GeneratorSetting
+{
+	f_GetAllInputsFromBuildAndRule function(string _Key, type(CNinja_BuildAndRule) _BuildAndRule) [string] = []
+	f_GetAllInputsFromBuildAndRule =+ [(_BuildAndRule<Build?.inputs> || [])..., (_BuildAndRule<Build?.implicit_dependencies> || [])..., (_BuildAndRule<Build?.order_dependencies> || [])...]
+
+	f_GetAllInputsFromRulesMap function(type(CRulesMap) _RulesMap) [string] = []
+	f_GetAllInputsFromRulesMap =+ _RulesMap->ForEach(&GeneratorSetting.f_GetAllInputsFromBuildAndRule)
+
+	f_GetAllOutputsFromBuildAndRule function(string _Key, type(CNinja_BuildAndRule) _BuildAndRule) [string] = []
+	f_GetAllOutputsFromBuildAndRule =+ [(_BuildAndRule<Build?.outputs> || [])..., (_BuildAndRule<Build?.implicit_outputs> || [])...]
+
+	f_GetAllOutputsFromRulesMap function(type(CRulesMap) _RulesMap) [string] = []
+	f_GetAllOutputsFromRulesMap =+ _RulesMap->ForEach(&GeneratorSetting.f_GetAllOutputsFromBuildAndRule)
+
+	Target #<OtherRules> =+ {
+		Target: {
+			Positions: []
+			, Rule: {
+				phony: true
+			}
+			, Build: {
+				outputs: [Target:Target.Name]
+				, order_dependencies: [
+					(GeneratorSetting.Target<Rule_PreBuild> || {})->GeneratorSetting.f_GetAllOutputsFromRulesMap()...
+					, (GeneratorSetting.Target<Rule_Build> || {})->GeneratorSetting.f_GetAllOutputsFromRulesMap()...
+					, (GeneratorSetting.Target<Rule_PostBuild> || {})->GeneratorSetting.f_GetAllOutputsFromRulesMap()...
+				]
+			}
+		}
+	}
+}

@@ -50,6 +50,17 @@ Target
 	InstrumentForOptimization: bool?
 	LinkWithStandardLibraries: bool?
 	SharedLibraryInstallPath: string?
+	PhonyOutputs: [string]?
+}
+
+Target
+{
+	!!PlatformFamily "Windows"
+
+	NasmPath: string? = MalterlibBinariesDirectory
+	{
+		!!Target.Language "Native"
+	}
 }
 
 Target
@@ -59,11 +70,6 @@ Target
 	CLRSupport false
 	{
 		!!Target.CLRSupport undefined
-	}
-
-	NasmPath: string? = `@(MalterlibBinariesDirectory->WindowsPath())\\`
-	{
-		!!Target.Language "Native"
 	}
 
 	CustomBuildAfterTargets: string?
@@ -111,6 +117,23 @@ Property
 				Target:Target.Type "XcodeBundle"
 				Target:Target.Type "SharedDynamicLibrary"
 				Target:Target.Type "Driver"
+			}
+		}
+	}
+
+	TargetIsLinkable: bool = false
+	TargetIsLinkable true
+	{
+		|
+		{
+			TargetIsExecutable true
+			&
+			{
+				HasParentEntity("Target") true
+				|
+				{
+					Target:Target.Type "StaticLibrary"
+				}
 			}
 		}
 	}
@@ -518,14 +541,33 @@ Target
 	}
 }
 
+Property
+{
+	ToolBuildOutputFile: string = `@(Target.IntermediateDirectory)ToolBuildOutput.h`
+}
+
 Target
 {
-	CommandLine_Build: string?
+	!!Target.Type "Tool"
+
+	CommandLine_Build: string = `MTool CreateFile "@(ToolBuildOutputFile)"`
 	CommandLine_ReBuild: string?
 	CommandLine_Clean: string?
 
 	CommandLine_Inputs: [string]?
 	CommandLine_Outputs: [string]?
+	CommandLine_IsGenerator: bool?
+	CommandLine_AlwaysDirty: bool = true
+
+	CommandLine_Outputs [ToolBuildOutputFile]
+	{
+		!!Target.CommandLine_Build `MTool CreateFile "@(ToolBuildOutputFile)"`
+	}
+
+	CommandLine_AlwaysDirty false
+	{
+		!!Target.CommandLine_Build `MTool CreateFile "@(ToolBuildOutputFile)"`
+	}
 }
 
 Target
@@ -591,10 +633,7 @@ Target
 
 Target
 {
-	&
-	{
-		GeneratorFamily "VisualStudio"
-	}
+	!!PlatformFamily "Windows"
 
 	UseMultiToolTask: bool = true
 	EnforceProcessCountAcrossBuilds: bool = true
@@ -926,7 +965,17 @@ Property
 		&
 		{
 			!PlatformToolsetCompilerBasePath undefined
-			GeneratorFamily "Xcode"
+			PlatformToolsetCompiler->GetFileNoExt() "clang"
+		}
+	}
+
+	// Fallback for macOS when using default compiler (Xcode toolchain)
+	MalterlibToolsPrefix `@(Malterlib_MacOSDeveloperLocaction)/Toolchains/XcodeDefault.xctoolchain/usr/bin/`
+	{
+		&
+		{
+			MalterlibDefaultCompiler true
+			PlatformFamily "macOS"
 		}
 	}
 }
@@ -958,42 +1007,130 @@ Property
 		!!MalterlibMSVCVersion undefined
 	}
 
+	// Windows SDK paths for Ninja generator (avoiding vcvarsall.bat dependency)
+	MalterlibWindowsSDKRootPath: string = "C:/Program Files (x86)/Windows Kits/10" // User(Toolset): Windows SDK root path
+
+	MalterlibWindowsSDKVersionPaths: [string] = MalterlibWindowsSDKRootPath->Append("/Include")->FindDirectoriesIn('10.*')->Sort()
+
+	MalterlibLatestWindowsSDKVersion: string = MalterlibWindowsSDKVersionPaths<[MalterlibWindowsSDKVersionPaths->Length() - 1]>->GetFile()
+
+	// Use Target.PlatformVersion if set, otherwise use latest SDK version
+	MalterlibWindowsSDKVersion: string?
+	MalterlibWindowsSDKVersion Target.PlatformVersion
+	{
+		&
+		{
+			MalterlibWindowsSDKVersion undefined
+			!Target.PlatformVersion undefined
+		}
+	}
+	MalterlibWindowsSDKVersion MalterlibLatestWindowsSDKVersion
+	{
+		!!MalterlibWindowsSDKVersion undefined
+	}
+
+	// MSVC architecture mapping (x64 -> x64, arm64 -> arm64)
+	MalterlibMSVCArchitecture: string?
+	MalterlibMSVCArchitecture "x64"
+	{
+		!!Architecture "x64"
+	}
+	MalterlibMSVCArchitecture "x86"
+	{
+		!!Architecture "x86"
+	}
+	MalterlibMSVCArchitecture "arm64"
+	{
+		!!Architecture "arm64"
+	}
+
+	// MSVC include path
+	MalterlibMSVCIncludePath: string = VisualStudioMSVCRootPath / MalterlibMSVCVersion / "include"
+
+	// MSVC library path
+	MalterlibMSVCLibPath: string = VisualStudioMSVCRootPath / MalterlibMSVCVersion / "lib" / MalterlibMSVCArchitecture
+
+	// Windows SDK include paths
+	MalterlibWindowsSDKIncludePath: string = MalterlibWindowsSDKRootPath / "Include" / MalterlibWindowsSDKVersion
+	MalterlibWindowsSDKUCRTIncludePath: string = MalterlibWindowsSDKIncludePath / "ucrt"
+	MalterlibWindowsSDKUMIncludePath: string = MalterlibWindowsSDKIncludePath / "um"
+	MalterlibWindowsSDKSharedIncludePath: string = MalterlibWindowsSDKIncludePath / "shared"
+	MalterlibWindowsSDKWinRTIncludePath: string = MalterlibWindowsSDKIncludePath / "winrt"
+	MalterlibWindowsSDKCppWinRTIncludePath: string = MalterlibWindowsSDKIncludePath / "cppwinrt"
+
+	// Windows SDK library paths
+	MalterlibWindowsSDKLibPath: string = MalterlibWindowsSDKRootPath / "Lib" / MalterlibWindowsSDKVersion
+	MalterlibWindowsSDKUCRTLibPath: string = MalterlibWindowsSDKLibPath / "ucrt" / MalterlibMSVCArchitecture
+	MalterlibWindowsSDKUMLibPath: string = MalterlibWindowsSDKLibPath / "um" / MalterlibMSVCArchitecture
+
 	PlatformToolsetCompiler: string? // User(Toolset)="/opt/Source/llvm-malterlib/build/main/bin/clang": Change the clang compiler location
 
-	PlatformToolsetCompiler MalterlibLLVMHostBinariesDirectory / "bin/clang"
+	PlatformToolsetCompiler MalterlibLLVMHostBinariesDirectory / `bin/clang@(HostExecutableExtension)`
 	{
 		&
 		{
 			PlatformToolsetCompiler undefined
 			!MalterlibUseLocalCompilerBuild true
 			!MalterlibDefaultCompiler true
-			!HostPlatformFamily "Windows"
 		}
 	}
 
-	PlatformToolsetCompiler "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc"
+	PlatformToolsetCompiler `/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc@(HostExecutableExtension)`
 	{
 		&
 		{
 			PlatformToolsetCompiler undefined
 			PlatformFamily "Emscripten"
-			!HostPlatformFamily "Windows"
 		}
 	}
-	PlatformToolsetCompiler `@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang`
+	PlatformToolsetCompiler `@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang@(HostExecutableExtension)`
 	{
 		&
 		{
 			PlatformToolsetCompiler undefined
 			MalterlibUseLocalCompilerBuild true
 			!MalterlibDefaultCompiler true
-			!HostPlatformFamily "Windows"
 		}
 	}
 	PlatformToolsetCompilerBasePath: string?
 	PlatformToolsetCompilerBasePath PlatformToolsetCompiler->GetPath()->GetPath()
 	{
 		!PlatformToolsetCompiler undefined
+	}
+
+	// Windows resource compiler (llvm-rc)
+	PlatformToolsetResourceCompiler: string?
+	PlatformToolsetResourceCompiler `@(MalterlibToolsPrefix)llvm-rc@(HostExecutableExtension)`
+	{
+		&
+		{
+			PlatformToolsetResourceCompiler undefined
+			!PlatformToolsetCompilerBasePath undefined
+			PlatformFamily "Windows"
+		}
+	}
+
+	// MASM assembler (ml64.exe/ml.exe from MSVC)
+	PlatformToolsetMASM: string?
+	PlatformToolsetMASM VisualStudioMSVCRootPath / MalterlibMSVCVersion / `bin/@(MSVCToolChainArchitecture)/ml64@(HostExecutableExtension)`
+	{
+		&
+		{
+			PlatformToolsetMASM undefined
+			!MalterlibMSVCVersion undefined
+			PlatformFamily "Windows"
+			!Architecture "x86"
+		}
+	}
+	PlatformToolsetMASM VisualStudioMSVCRootPath / MalterlibMSVCVersion / `bin/@(MSVCToolChainArchitecture)/ml@(HostExecutableExtension)`
+	{
+		&
+		{
+			PlatformToolsetMASM undefined
+			!MalterlibMSVCVersion undefined
+			PlatformFamily "Windows"
+			Architecture "x86"
+		}
 	}
 }
 
@@ -1017,6 +1154,7 @@ Target
 Target
 {
 	!!GeneratorFamily "Xcode"
+	!!GeneratorFamily "Ninja"
 
 	MToolPath: string?
 	MToolPath MToolPath
@@ -1156,13 +1294,24 @@ Property
 	}
 }
 
+Property
+{
+	ToolChain: string = ""
+
+	ToolChain "llvm"
+	{
+		!!GeneratorFamily "Xcode"
+		!!GeneratorFamily "Ninja"
+	}
+}
+
 // Xcode
 Target
 {
 	&
 	{
 		LanguageFamily "Native"
-		GeneratorFamily "Xcode"
+		ToolChain "llvm"
 	}
 
 	EnableLinkerGroups true
@@ -1185,7 +1334,11 @@ Target
 	LTOObjectFile: string?
 	LTOObjectFile ""
 	{
-		!!PlatformFamily "Linux"
+		&
+		{
+			PlatformFamily "Linux"
+			GeneratorFamily "Xcode"
+		}
 	}
 
 	TargetTripleArchitecture: string?
@@ -1195,22 +1348,38 @@ Target
 
 	TargetTripleArchitecture MalterlibNativeClangArchitecture
 	{
-		!!PlatformFamily "Linux"
+		&
+		{
+			GeneratorFamily "Xcode"
+			PlatformFamily "Linux"
+		}
 	}
 
 	TargetTripleVendor "unknown-linux"
 	{
-		!!PlatformFamily "Linux"
+		&
+		{
+			GeneratorFamily "Xcode"
+			PlatformFamily "Linux"
+		}
 	}
 
 	TargetTripleOsVersion ""
 	{
-		!!PlatformFamily "Linux"
+		&
+		{
+			GeneratorFamily "Xcode"
+			PlatformFamily "Linux"
+		}
 	}
 
 	TargetTripleSuffix "gnu"
 	{
-		!!PlatformFamily "Linux"
+		&
+		{
+			GeneratorFamily "Xcode"
+			PlatformFamily "Linux"
+		}
 	}
 
 	LDFlags: [one_of(string, [string])] = []
@@ -1218,6 +1387,7 @@ Target
 	{
 		&
 		{
+			!MalterlibMacOSLinkerVersion undefined
 			PlatformFamily "macOS"
 			HostPlatformFamily "macOS"
 			!Target.DriverType "DriverKit"
@@ -1599,6 +1769,7 @@ Target
 	{
 		&
 		{
+			!GeneratorFamily "Ninja"
 			TargetIsExecutable true
 			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
@@ -1616,6 +1787,7 @@ Target
 	{
 		&
 		{
+			!GeneratorFamily "Ninja"
 			TargetIsExecutable true
 			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
@@ -1634,6 +1806,7 @@ Target
 		&
 		{
 			PlatformFamily "Linux"
+			GeneratorFamily "Xcode"
 			MalterlibEnableLinkTimeCodeGeneration "Fast"
 		}
 	}
@@ -1700,8 +1873,15 @@ Target
 	PlatformToolsetLibTool: string?
 	PlatformToolsetLibTool `@(MalterlibBinariesDirectory->MakeAbsolute())/LinuxLibTool/libtool`
 	{
-		!!PlatformFamily "Linux"
-		!!PlatformFamily "Emscripten"
+		&
+		{
+			GeneratorFamily "Xcode"
+			|
+			{
+				PlatformFamily "Linux"
+				PlatformFamily "Emscripten"
+			}
+		}
 	}
 
 	PlatformToolsetLibTool `@(PlatformToolsetCompilerBasePath)/bin/libtool`
@@ -1718,7 +1898,11 @@ Target
 
 	PlatformToolsetLibTool Builtin.MToolExe->GetPath() / "DoxygenLibTool/libtool"
 	{
-		!!Documentation "Doxygen"
+		&
+		{
+			GeneratorFamily "Xcode"
+			Documentation "Doxygen"
+		}
 	}
 
 	LibToolFlags: [one_of(string, [string])] = []
@@ -1729,7 +1913,7 @@ Target
 		{
 			!Target:Target.Type "StaticLibrary"
 			Documentation "Doxygen"
-			GeneratorFamily "Xcode"
+			!GeneratorFamily "VisualStudio"
 		}
 	}
 
@@ -1926,6 +2110,7 @@ Target
 		&
 		{
 			!PlatformToolsetCompiler undefined
+			GeneratorFamily "Xcode"
 			PlatformFamily "Linux"
 		}
 	}
@@ -2050,7 +2235,7 @@ Target
 
 	SDKRoot: string?
 
-	SDKRoot `driverkit@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
+	SDKRoot `DriverKit@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
 	{
 		&
 		{
@@ -2061,7 +2246,7 @@ Target
 		}
 	}
 
-	SDKRoot `macosx@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
+	SDKRoot `MacOSX@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
 	{
 		&
 		{
@@ -2069,7 +2254,7 @@ Target
 			PlatformFamily "macOS"
 		}
 	}
-	SDKRoot `macosx@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
+	SDKRoot `MacOSX@((MalterlibMaxSupportedMacOSVersion == "Latest") ? "" : @(MalterlibMaxSupportedMacOSVersion))`
 	{
 		&
 		{
@@ -2078,7 +2263,7 @@ Target
 		}
 	}
 
-	SDKRoot `iphoneos@(MalterlibMaxSupportediOSVersion)`
+	SDKRoot `iPhoneOS@(MalterlibMaxSupportediOSVersion)`
 	{
 		&
 		{
@@ -2113,6 +2298,7 @@ Target
 		{
 			Target.DeploymentTarget undefined
 			PlatformFamily "Linux"
+			GeneratorFamily "Xcode"
 		}
 	}
 	DeploymentTarget MalterlibMinSupportedMacOSVersion
@@ -2256,7 +2442,11 @@ Target.ObjcLinkRuntime: bool?
 
 Target
 {
-	!!GeneratorFamily "Xcode"
+	|
+	{
+		GeneratorFamily "Xcode"
+		GeneratorFamily "Ninja"
+	}
 
 	ValidArchitectures: string?
 	DebugInformationFormat: string?
@@ -2377,6 +2567,9 @@ Target
 
 	DependencyInfoFile: string?
 	DependencyInfoFile "" // Empty as the linker does not support it
+	{
+		!!GeneratorFamily "Xcode"
+	}
 //	ValidArchitectures "none"
 //	Architectures "none"
 
@@ -2404,6 +2597,9 @@ Target
 	NativeArchitectureActual MalterlibXcodeBuildArchitecture
 
 	DependencyInfoFile "" // Empty as the linker does not support it
+	{
+		!!GeneratorFamily "Xcode"
+	}
 //	ValidArchitectures "none"
 //	Architectures "none"
 
@@ -2463,7 +2659,21 @@ Target
 	LinkTimeCodeGeneration: one_of(bool, "Fast") = false
 	LinkTimeCodeGeneration MalterlibEnableLinkTimeCodeGeneration
 	{
-		!PlatformFamily "Linux"
+		|
+		{
+			!PlatformFamily "Linux"
+			!GeneratorFamily "Xcode"
+		}
+	}
+
+	LTOCachePath: string?
+	LTOCachePath Target.IntermediateDirectory / "LTOCache"
+	{
+		&
+		{
+			!GeneratorFamily "Xcode"
+			Compiler "Clang"
+		}
 	}
 }
 
@@ -2481,14 +2691,15 @@ Target
 	Version `@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision)`
 
 	GenerateDebugInformation: one_of(bool, "DebugFastLink")?
-	GenerateDebugInformation true
+	GenerateDebugInformation MalterlibDebugSymbolsEnable
 	GenerateDebugInformation "DebugFastLink"
 	{
 		&
 		{
 			LanguageFamily "Native"
 			!MalterlibDeploySymbols true
-			GeneratorFamily "VisualStudio"
+			MalterlibDebugSymbolsEnable true
+			PlatformFamily "Windows"
 			!Target.CLRSupport true
 			!MalterlibMemoryManager_Debug_EnableStackTrace true // Currently crashes in DIA if enabled
 			!MalterlibEnableFastLink false
@@ -2509,6 +2720,17 @@ Property
 	{
 		&
 		{
+			GeneratorFamily "Xcode"
+			!MalterlibDisableMalterlib true
+			MalterlibNeedsInitProject true
+		}
+	}
+
+	MalterlibPosixInitFileName `@(MalterlibCompiledFilesWarkspaceBase)/Int/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/Malterlib_Core_PlatformImp_Posix_Init.o`
+	{
+		&
+		{
+			!GeneratorFamily "Xcode"
 			!MalterlibDisableMalterlib true
 			MalterlibNeedsInitProject true
 		}
@@ -2578,10 +2800,25 @@ Target
 		}
 	}
 
+	FirstObjects: [string]?
+
+	FirstObjects ((PlatformFamily == "macOS") ? ["-force_load", MalterlibPosixInitFileName] : [MalterlibPosixInitFileName])
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			TargetIsExecutable true
+			!Target.Type "Driver"
+			!MalterlibDisableMalterlib true
+			!MalterlibPosixInitFileName undefined
+		}
+	}
+
 	LinkWithLibraries += [["-first_object", MalterlibPosixInitFileName]]
 	{
 		&
 		{
+			!GeneratorFamily "Ninja"
 			TargetIsExecutable true
 			!Target.Type "Driver"
 			!MalterlibDisableMalterlib true
@@ -2635,6 +2872,35 @@ Target
 	RemoveUnreferencedSymbols true // OptimizeReferences
 	{
 		!!Target.RemoveUnreferencedSymbols undefined
+	}
+
+	// Ninja generator Windows SDK and MSVC library paths
+	// These paths are added for the Ninja generator to avoid vcvarsall.bat dependency
+	SearchPath += MalterlibMSVCLibPath
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			PlatformFamily "Windows"
+		}
+	}
+
+	SearchPath += MalterlibWindowsSDKUCRTLibPath
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			PlatformFamily "Windows"
+		}
+	}
+
+	SearchPath += MalterlibWindowsSDKUMLibPath
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			PlatformFamily "Windows"
+		}
 	}
 }
 
@@ -2784,12 +3050,23 @@ Target
 		}
 	}
 
+	ExtraLinkerFlags += ["-Wl,/OPT:ICF=16"]
+	{
+		&
+		{
+			DebugCompiler false
+			!Configuration "Release Debug"
+			Generator "Ninja"
+		}
+	}
+
 	ExtraLinkerFlags += ["/OPT:ICF=16"]
 	{
 		&
 		{
 			DebugCompiler false
 			!Configuration "Release Debug"
+			!Generator "Ninja"
 		}
 	}
 
@@ -3006,11 +3283,11 @@ Property
 
 	MalterlibSharedTempExeFSPath: string = `@(MalterlibSharedIntermediateDirectory)/ExeFS/*`
 
-	MalterlibOriginalModuleDestination: string = `@(Target.OutputDirectory)@(Target.FileName)@(Target.FileExtension)`
+	MalterlibOriginalModuleDestination: string = `@(Target.OutputDirectory)@(Target:Target.FileName)@(Target:Target.FileExtension)`
 	MalterlibOriginalModulePath: string = MalterlibOriginalModuleDestination->GetPath()
 
 	MalterlibFinalModuleDestination: string = MalterlibOriginalModuleDestination
-	MalterlibFinalModuleDestination `@(Target.OutputDirectory)Deployed/@(Target.FileName)@(Target.FileExtension)`
+	MalterlibFinalModuleDestination `@(Target:Target.OutputDirectory)Deployed/@(Target:Target.FileName)@(Target:Target.FileExtension)`
 	{
 		&
 		{
@@ -3072,8 +3349,15 @@ Property
 
 	MalterlibUniqueConfig: string = GeneratedDirectory->Sanitize()->Replace('-', '_')->Replace('.', '_')
 
-	MalterlibMacOSLinkerVersion: int
-	MalterlibMacOSLinkerVersion ExecuteCommand(`@(GeneratedGlobalDirectory)MacOSLinkerVersion.MState`, ["/usr/bin/ld"], "bash", "-c", "/usr/bin/ld -v 2>&1")->Trim()->Split("PROJECT:")<[1]>->Split("\n")<[0]>->Split("ld64-")<[0]>->AsInteger()
+	MalterlibMacOSLinkerVersion: int?
+	MalterlibMacOSLinkerVersion ExecuteCommand(`@(GeneratedGlobalDirectory)MacOSLinkerVersion.MState`, ["/usr/bin/ld"], "bash", "-c", "/usr/bin/ld -v 2>&1")->Trim()->Split("PROJECT:")<[1]>->Split("\n")<[0]>->RemovePrefix("ld64-")->RemovePrefix("ld-")->AsInteger()
+	{
+		&
+		{
+			HostPlatformFamily "macOS"
+			!MalterlibDefaultCompiler true
+		}
+	}
 }
 
 Property
@@ -3270,7 +3554,7 @@ Property
 
 			UnixLineEnds true
 			UnicodeBOM false
-			
+
 			Group `@(Platform) @(Architecture) @(FullConfiguration)`
 		}
 		Compile
@@ -3363,6 +3647,56 @@ Property
 			PlatformIsDarwin true
 			Target.Type "UIExecutable"
 			!MalterlibExeMainNibFile undefined
+		}
+	}
+
+	// Process Info.plist and create PkgInfo for non-Xcode builds (Ninja generator)
+	// Use plutil to normalize format like Xcode does
+
+	// Process Info.plist to Contents/ for standard bundles (non-DriverKit)
+	MalterlibPostBuildScriptPreSign =+ `plutil -convert xml1 @(Target:Target.MalterlibInfoPListFile->Escape()) -o @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Info.plist`->Escape())\r\n`
+	{
+		&
+		{
+			MalterlibIsMacOSBundle true
+			!GeneratorFamily "Xcode"
+			!Target:Target.MalterlibInfoPListFile undefined
+			!Target.DriverType "DriverKit"
+		}
+	}
+
+	// Process Info.plist to bundle root for DriverKit bundles
+	MalterlibPostBuildScriptPreSign =+ `plutil -convert xml1 @(Target:Target.MalterlibInfoPListFile->Escape()) -o @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Info.plist`->Escape())\r\n`
+	{
+		&
+		{
+			MalterlibIsMacOSBundle true
+			!GeneratorFamily "Xcode"
+			!Target:Target.MalterlibInfoPListFile undefined
+			Target.DriverType "DriverKit"
+		}
+	}
+
+	// Create PkgInfo for UIExecutable and XcodeBundle (APPL type)
+	MalterlibPostBuildScriptPreSign =+ `printf 'APPL????' > @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/PkgInfo`->Escape())\r\n`
+	{
+		&
+		{
+			MalterlibIsMacOSBundle true
+			!GeneratorFamily "Xcode"
+			!Target.Type "Driver"
+		}
+	}
+
+	// Create PkgInfo for IoKit kernel extensions (KEXT type)
+	MalterlibPostBuildScriptPreSign =+ `printf 'KEXT????' > @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/PkgInfo`->Escape())\r\n`
+	{
+		&
+		{
+			MalterlibIsMacOSBundle true
+			!GeneratorFamily "Xcode"
+			Target.Type "Driver"
+			Target.DriverType "IoKit"
 		}
 	}
 }
@@ -3514,11 +3848,11 @@ Property
 						`	<key>CFBundleShortVersionString</key>\n`\
 						`		<string>@(ProductVersionMajor->ToString()).@(ProductVersionMinor->ToString()).@(ProductVersionRevision->ToString())</string>\n`\
 						`	<key>CFBundleName</key>\n`\
-						`		<string>@(MalterlibTargetFriendlyName)</string>\n`\
-						`	<key>CFBundleDisplayName</key>\n`\
-						`		<string>@(Target:Target.FileName)</string>\n`
+						`		<string>@(MalterlibTargetFriendlyName)</string>\n`
 
-			Contents =+	`	<key>NSHumanReadableCopyright</key>\n`\
+			Contents =+	`	<key>CFBundleDisplayName</key>\n`\
+						`		<string>@(Target:Target.FileName)</string>\n`\
+						`	<key>NSHumanReadableCopyright</key>\n`\
 						`		<string>@(ProductCopyright)</string>\n`\
 						`	<key>NSPrincipalClass</key>\n`\
 						`		<string>@(MalterlibXcodePrincipalClass)</string>\n`\
@@ -3565,6 +3899,17 @@ Property
 				{
 					Target.Type "Driver"
 					Target.DriverType "DriverKit"
+				}
+			}
+
+			Contents =+	`	<key>OSMinimumDriverKitVersion</key>\n`\
+						`		<string>@(Target.DriverkitDeploymentTarget)</string>\n`
+			{
+				&
+				{
+					Target.Type "Driver"
+					Target.DriverType "DriverKit"
+					!Target.DriverkitDeploymentTarget undefined
 				}
 			}
 
@@ -3969,6 +4314,12 @@ Property
 
 					UTF16 true
 					UnicodeBOM true
+
+					// llvm-rc doesn't support UTF-16, use UTF-8 for Ninja generator
+					UTF16 false
+					{
+						!!Generator "Ninja"
+					}
 				}
 			}
 
@@ -4012,7 +4363,12 @@ Property
 	{
 		!!LanguageFamily "Native"
 
+		// For Visual Studio, add manifest via ExtraLinkerFlags
+		// For Ninja, this is handled by Ninja_WindowsManifest.MGeneratorSettings with -Wl, prefix
 		ExtraLinkerFlags =+ `/MANIFESTINPUT:@(GeneratedDirectory)WindowsManifest.manifest`
+		{
+			!Generator "Ninja"
+		}
 	}
 }
 
@@ -4461,6 +4817,45 @@ Compile
 	}
 }
 
+%Group "~Automatic/BuildScripts"
+{
+	%GenerateFile "PreBuild"
+	{
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name GeneratedDirectory / "PreBuild.sh"
+			Contents Target.PreBuildScript ?? ""
+			UnixLineEnds true
+			UnicodeBOM false
+			Executable true
+		}
+
+	}
+	%GenerateFile "PostBuild"
+	{
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name GeneratedDirectory / "PostBuild.sh"
+			Contents Target.PostBuildScript ?? ""
+			UnixLineEnds true
+			UnicodeBOM false
+			Executable true
+		}
+	}
+}
+
+Target
+{
+	!!GeneratorFamily "Ninja"
+
+	PostBuildScriptFile: string? = GeneratedDirectory / "PostBuild.sh"
+	PreBuildScriptFile: string? = GeneratedDirectory / "PreBuild.sh"
+
+	ExtraGroups =+ "~Automatic/BuildScripts"
+}
+
 %Group "~Automatic/Utility Build"
 {
 	%GenerateFile "Generate"
@@ -4841,7 +5236,11 @@ Target
 
 Target
 {
-	!!GeneratorFamily "Xcode"
+	|
+	{
+		GeneratorFamily "Xcode"
+		GeneratorFamily "Ninja"
+	}
 
 	PreBuildScriptInputs =+ Builtin.MToolExe
 	PreBuildScriptInputs =+ PreBuildScriptDependencies
@@ -4850,8 +5249,17 @@ Target
 						`if [ "$?" != "0" ]; then\n`\
 						`  echo error: Dependency checking failed\n`\
 						`  exit 1\n`\
-						`fi\n`\
-						`MTool TouchOrCreate @(PreBuildOutputFile->Escape())\n`
+						`fi\n`
+
+	PreBuildScript =+	`MTool CopyWriteTime @(Target.PreBuildScriptInputs<[0]>->Escape()) @(PreBuildOutputFile->Escape()) @(Target.PreBuildScriptInputs->Slice(1)->JoinEscaped(" "))\n`
+	{
+		!Target.PreBuildScriptInputs []
+	}
+
+	PreBuildScript =+	`MTool CreateFile @(PreBuildOutputFile->Escape())\n`
+	{
+		!!Target.PreBuildScriptInputs []
+	}
 }
 
 Property
@@ -4862,6 +5270,15 @@ Property
 	MalterlibPostBuildScriptInputs =+ MalterlibExecutableInput
 	{
 		!MalterlibExecutableInput undefined
+	}
+
+	MalterlibPostBuildScriptInputs =+ Target.CommandLine_Outputs
+	{
+		&
+		{
+			Target.Type "Tool"
+			!Target.CommandLine_Outputs undefined
+		}
 	}
 
 	MalterlibPostBuildScriptInputs =+ MalterlibPostCopyConfigFile
@@ -4901,28 +5318,71 @@ Property
 	{
 		|
 		{
-			!_Input MalterlibFinalModuleDestinationExecutable
-			MalterlibFinalModuleDestinationExecutable MalterlibOriginalModuleDestinationExecutable
+			&
+			{
+				!_Input MalterlibFinalModuleDestinationExecutable
+				!_Input MalterlibFinalModuleDestination
+			}
+			&
+			{
+				MalterlibFinalModuleDestinationExecutable MalterlibOriginalModuleDestinationExecutable
+				MalterlibFinalModuleDestination MalterlibOriginalModuleDestination
+			}
 		}
 	}
 	MalterlibPostBuildScriptInputsContents: [string] = MalterlibPostBuildScriptInputs->ForEach(&MalterlibPostBuildScriptInputsInternalTemplate)
 
-	PostBuildOutputfile: string
+	PostBuildOutputfile: string?
 	PostBuildOutputfile `@(Target.IntermediateDirectory)PostBuildOutput.h`
+	{
+		!!Target:Target.DependencyFile undefined
+	}
 }
 
 Target
 {
-	!!GeneratorFamily "Xcode"
+	|
+	{
+		GeneratorFamily "Xcode"
+		GeneratorFamily "Ninja"
+	}
 
 	PostBuildScriptInputs MalterlibPostBuildScriptInputsContents
 	PostBuildScriptOutputs += PostBuildOutputfile
+	{
+		!PostBuildOutputfile undefined
+	}
 	PostBuildScriptOutputs += Target:Target.DependencyFile
+	{
+		!Target:Target.DependencyFile undefined
+	}
+
+	PostBuildScriptOutputs += MalterlibFinalModuleDestinationExecutable
 	{
 		&
 		{
-			!Target:Target.DependencyFile undefined
-			!Target:Target.Type "Tool"
+			!MalterlibFinalModuleDestinationExecutable MalterlibOriginalModuleDestinationExecutable
+			!Target.Type "Tool"
+		}
+	}
+
+	PostBuildScriptOutputs += MalterlibFinalModuleDestination
+	{
+		&
+		{
+			MalterlibIsMacOSBundle true
+			!MalterlibFinalModuleDestination MalterlibFinalModuleDestinationExecutable
+		}
+	}
+
+	PostBuildScriptOutputs += [`@(MalterlibOriginalModuleDestination).dSYM`, `@(MalterlibOriginalModuleDestination).dSYM/Contents/Resources/DWARF/@(Target:Target.FileName)`]
+	{
+		&
+		{
+			PlatformIsDarwin true
+			!GeneratorFamily "Xcode"
+			Target.DebugInformationFormat "dwarf-with-dsym"
+			TargetIsExecutable true
 		}
 	}
 }
@@ -5032,6 +5492,7 @@ Property
 		{
 			PlatformIsDarwin true
 			Target.DebugInformationFormat "dwarf-with-dsym"
+			GeneratorFamily "Xcode"
 		}
 	}
 }
@@ -5069,6 +5530,19 @@ Target
 		{
 			!MalterlibFinalModuleDestination MalterlibOriginalModuleDestination
 			!DisableDiffCopy true
+		}
+	}
+
+	// Generate dSYM bundle for non-Xcode builds (Ninja generator)
+	PostBuildScript =+	`echo dsymutil @(MalterlibOriginalModuleDestinationExecutable->Escape()) -o @(`@(MalterlibOriginalModuleDestination).dSYM`->Escape())\r\n`\
+						`dsymutil @(MalterlibOriginalModuleDestinationExecutable->Escape()) -o @(`@(MalterlibOriginalModuleDestination).dSYM`->Escape())\r\n`
+	{
+		&
+		{
+			PlatformIsDarwin true
+			!GeneratorFamily "Xcode"
+			Target.DebugInformationFormat "dwarf-with-dsym"
+			TargetIsExecutable true
 		}
 	}
 
@@ -5488,29 +5962,25 @@ Target
 
 	DependencyFile `@(Target.OutputDirectory)@(Target.Name).h`
 	{
-		&
+		|
 		{
 			GeneratorFamily "Xcode"
+			GeneratorFamily "Ninja"
 		}
 	}
 
-	PostBuildScript =+	`MTool CopyWriteTime "@(MalterlibOriginalModuleDestinationExecutable)" "@(Target:Target.DependencyFile)"\r\n`
+	PostBuildScript =+	`MTool CopyWriteTime @(Target:Target.PostBuildScriptInputs<[0]>->Escape()) @(Target:Target.DependencyFile->Escape()) @(Target:Target.PostBuildScriptInputs->Slice(1)->JoinEscaped(" "))\r\n`
 	{
 		&
 		{
-			!MalterlibOriginalModuleDestinationExecutable undefined
+			!Target:Target.PostBuildScriptInputs []
 			!Target:Target.DependencyFile undefined
-			!Target:Target.Type "Tool"
 		}
 	}
 
 	PostBuildScript =+	`MTool TouchOrCreate "@(PostBuildOutputfile)"\r\n`
 	{
-		|
-		{
-			!Target:Target.Type "Tool"
-			GeneratorFamily "Xcode"
-		}
+		!PostBuildOutputfile undefined
 	}
 }
 

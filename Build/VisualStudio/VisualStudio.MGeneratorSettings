@@ -161,8 +161,25 @@ GeneratorSetting
 		, VSType: &GeneratorSetting.VisualStudio_FileType->WithPosition()
 		, PrecompilePrefixHeader: Compile.PrecompilePrefixHeader <==> true
 		, PrefixHeader: &Compile.PrefixHeader->WithPosition()
-		, Disabled: Compile.Disabled
+		, Disabled: (Compile.Disabled || !GeneratorSetting.VisualStudio_BuildSupported)
 		, VSSettings: GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetSettings)->ForEach(&GeneratorSetting.f_GetCompileVSSettings)
+	}
+	{
+		!!(Compile.Disabled || !GeneratorSetting.VisualStudio_BuildSupported) false
+	}
+
+	VisualStudio_FileTypeNone: string = "None"
+
+	Compile {
+		Type: &Compile.Type->WithPosition()
+		, VSType: &GeneratorSetting.VisualStudio_FileTypeNone->WithPosition()
+		, PrecompilePrefixHeader: false
+		, PrefixHeader: &Compile.PrefixHeader->WithPosition()
+		, Disabled: true
+		, VSSettings: {}
+	}
+	{
+		!!(Compile.Disabled || !GeneratorSetting.VisualStudio_BuildSupported) true
 	}
 }
 

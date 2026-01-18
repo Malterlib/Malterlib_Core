@@ -1,6 +1,74 @@
 // Copyright © 2022 Favro Holding AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
+Property
+{
+	IsClangCL: bool = false
+	IsClangCL true
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	f_ClangFlag function(string _Flag) string = _Flag
+	f_ClangFlag `/clang:@(_Flag)`
+	{
+		!!IsClangCL true
+	}
+
+	f_ClangFlagsHelper function(string _Flag) [string] = []
+	f_ClangFlagsHelper =+ `/clang:@(_Flag)`
+	{
+		!!IsClangCL true
+	}
+
+	f_ClangFlags function([string] _Flags) [string] = _Flags
+	f_ClangFlags _Flags->ForEach(&f_ClangFlagsHelper)
+	{
+		!!IsClangCL true
+	}
+
+	f_SourceLanguageFlag function(string _Type) string = `-x@(_Type->SwitchWithError(
+		"Unsupported compile type: "
+		, "C++", "c++"
+		, "C", "c"
+		, "ObjC++", "objective-c++"
+		, "ObjC", "objective-c"
+	))`
+	f_SourceLanguageFlag _Type->SwitchWithError(
+		"Unsupported compile type: "
+		, "C++", "/TP"
+		, "C", "/TC"
+		, "ObjC++", "/TP"
+		, "ObjC", "/TC"
+	)
+	{
+		!!IsClangCL true
+	}
+
+	f_HeaderLanguageFlags function(string _Type) [string] = [`-x@(_Type->SwitchWithError(
+		"Unsupported compile type: "
+		, "C++", "c++-header"
+		, "C", "c-header"
+		, "ObjC++", "objective-c++-header"
+		, "ObjC", "objective-c-header"
+	))`]
+
+	f_HeaderLanguageFlags [
+		_Type->SwitchWithError(
+			"Unsupported compile type: "
+			, "C++", "/TP"
+			, "C", "/TC"
+			, "ObjC++", "/TP"
+			, "ObjC", "/TC"
+		)
+		, "-Xclang"
+		, "-emit-pch"
+	]
+	{
+		!!IsClangCL true
+	}
+}
+
 GeneratorSetting
 {
 	!!Compiler "Clang"
@@ -11,7 +79,7 @@ GeneratorSetting
 	}
 
 	Compile_DiagnosticsFormat =+ {
-		Flags: `-fdiagnostics-format=@(Compile.DiagnosticsFormat)`
+		Flags: `-fdiagnostics-format=@(Compile.DiagnosticsFormat)`->f_ClangFlag()
 		, Type: "unique"
 	}
 
@@ -20,7 +88,7 @@ GeneratorSetting
 			"Unsupported option: "
 			, false, "-fno-caret-diagnostics"
 			, true, "-fcaret-diagnostics"
-		)
+		)->f_ClangFlag()
 		, Type: "unique"
 	}
 
@@ -29,7 +97,7 @@ GeneratorSetting
 			"Unsupported option: "
 			, false, "-fno-diagnostics-fixit-info"
 			, true, "-fdiagnostics-fixit-info"
-		)
+		)->f_ClangFlag()
 		, Type: "unique"
 	}
 
@@ -37,25 +105,25 @@ GeneratorSetting
 		Flags: Compile.ColorDiagnostics->SwitchWithError(
 			"Unsupported option: "
 			, false, "-fno-color-diagnostics"
-			, true, ["-fcolor-diagnostics"]
-		)
+			, true, "-fcolor-diagnostics"
+		)->f_ClangFlag()
 		, Type: "unique"
 	}
 
 	Compile_AlignedAllocationProvided =+ {
-		Flags: Compile.AlignedAllocationProvided ? "-faligned-allocation" : "-fno-aligned-allocation"
+		Flags: (Compile.AlignedAllocationProvided ? "-faligned-allocation" : "-fno-aligned-allocation")->f_ClangFlag()
 		, Type: "unique"
 	}
 	{
 	}
 
 	Compile_AlignDouble =+ {
-		Flags: Compile.AlignDouble ? "-malign-double" : []
+		Flags: Compile.AlignDouble ? "-malign-double"->f_ClangFlag() : []
 		, Type: "unique"
 	}
 
 	Compile_AsyncUnwindTables =+ {
-		Flags: Compile.AsyncUnwindTables ? "-fasynchronous-unwind-tables" : "-fno-asynchronous-unwind-tables"
+		Flags: (Compile.AsyncUnwindTables ? "-fasynchronous-unwind-tables" : "-fno-asynchronous-unwind-tables")->f_ClangFlag()
 		, Type: "unique"
 	}
 
@@ -68,7 +136,7 @@ GeneratorSetting
 	}
 
 	Compile_ConstexprSteps =+ {
-		Flags: `-fconstexpr-steps=@(Compile.ConstexprSteps->ToString())`
+		Flags: `-fconstexpr-steps=@(Compile.ConstexprSteps->ToString())`->f_ClangFlag()
 		, Type: "unique"
 	}
 
@@ -77,14 +145,14 @@ GeneratorSetting
 			"Unsupported option: "
 			, false, "-fno-coro-aligned-allocation"
 			, true, "-fcoro-aligned-allocation"
-		)
+		)->f_ClangFlag()
 		, Type: "unique"
 	}
 
 	Compile_DataSections =+ {
 		Flags: Compile.DataSections->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fdata-sections"
+			, true, "-fdata-sections"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -93,10 +161,10 @@ GeneratorSetting
 	Compile_DefaultHeaders =+ {
 		Flags: Compile.DefaultHeaders->SwitchWithError(
 			"Unsupported option: "
-			, "None", "-nostdinc"
-			, "NoStdLib", "-nostdlibinc"
-			, "NoCompiler", "-nobuiltininc"
-			, "NoStdIncludeCxx", "-nostdinc++"
+			, "None", "-nostdinc"->f_ClangFlag()
+			, "NoStdLib", "-nostdlibinc"->f_ClangFlag()
+			, "NoCompiler", "-nobuiltininc"->f_ClangFlag()
+			, "NoStdIncludeCxx", "-nostdinc++"->f_ClangFlag()
 			, "All", []
 		)
 		, Type: "unique"
@@ -105,10 +173,10 @@ GeneratorSetting
 	Compile_DefaultVisibility =+ {
 		Flags: Compile.DefaultVisibility->SwitchWithError(
 			"Unsupported option: "
-			, "Default", "-fvisibility=default"
-			, "Hidden", "-fvisibility=hidden"
-			, "InlineHidden", "-fvisibility-inlines-hidden"
-			, "AllHidden", ["-fvisibility=hidden", "-fvisibility-inlines-hidden"]
+			, "Default", "-fvisibility=default"->f_ClangFlag()
+			, "Hidden", "-fvisibility=hidden"->f_ClangFlag()
+			, "InlineHidden", "-fvisibility-inlines-hidden"->f_ClangFlag()
+			, "AllHidden", ["-fvisibility=hidden", "-fvisibility-inlines-hidden"]->f_ClangFlags()
 		)
 		, Type: "unique"
 	}
@@ -117,38 +185,57 @@ GeneratorSetting
 		Flags: Compile.DynamicTypeInfo->SwitchWithError(
 			"Unsupported option: "
 			, true, []
-			, false, "-fno-rtti"
+			, false, "-fno-rtti"->f_ClangFlag()
 		)
 		, Type: "unique"
 	}
 
+	// Exception handling for clang-cl (Windows) - use MSVC-style flags
 	Compile_Exceptions =+ {
 		Flags: Compile.Exceptions->SwitchWithError(
 			"Unsupported option: "
-			, "Full", [["-fexceptions", "-fasynchronous-unwind-tables"]]
-			, "C++", [["-fexceptions", "-fno-asynchronous-unwind-tables"]]
-			, "ExternCandC++", [["-fexceptions", "-fno-asynchronous-unwind-tables"]]
+			, "Full", "/EHa"
+			, "C++", "/EHsc"
+			, "ExternCandC++", "/EHs"
+			, "Off", []
+		)
+		, Type: "unique"
+	}
+	{
+		!!IsClangCL true
+	}
+
+	// Exception handling for pure Clang (non-Windows)
+	Compile_Exceptions =+ {
+		Flags: Compile.Exceptions->SwitchWithError(
+			"Unsupported option: "
+			, "Full", ["-fexceptions", "-fasynchronous-unwind-tables"]
+			, "C++", ["-fexceptions", "-fno-asynchronous-unwind-tables"]
+			, "ExternCandC++", ["-fexceptions", "-fno-asynchronous-unwind-tables"]
 			, "Off", "-fno-exceptions"
 		)
 		, Type: "unique"
 	}
+	{
+		!IsClangCL true
+	}
 
 	Compile_FrameworkSearchPath =+ {
-		Flags: Compile.FrameworkSearchPath->f_PrefixFlags("-F")
+		Flags: Compile.FrameworkSearchPath->f_PrefixFlags("-F"->f_ClangFlag())
 		, Type: "unique"
 	}
 
 	Compile_ProfileGuidedOptimizationGenerate =+ {
 		Flags: Compile.ProfileGuidedOptimizationGenerate->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fprofile-instr-generate"
+			, true, "-fprofile-instr-generate"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
 	}
 
 	Compile_ProfileGuidedOptimizationUse =+ {
-		Flags: [`-fprofile-use=@(Compile.ProfileGuidedOptimizationUse)`, "-Wno-profile-instr-unprofiled", "-Wno-profile-instr-out-of-date", "-Wno-backend-plugin"]
+		Flags: [`-fprofile-use=@(Compile.ProfileGuidedOptimizationUse)`->f_ClangFlag(), "-Wno-profile-instr-unprofiled", "-Wno-profile-instr-out-of-date", "-Wno-backend-plugin"]
 		, Type: "unique"
 	}
 
@@ -156,7 +243,7 @@ GeneratorSetting
 		Flags: Compile.FunctionSections->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, "-ffunction-sections"
+			, true, "-ffunction-sections"->f_ClangFlag()
 		)
 		, Type: "unique"
 	}
@@ -164,8 +251,8 @@ GeneratorSetting
 	Compile_Inline =+ {
 		Flags: Compile.Inline->SwitchWithError(
 			"Unsupported option: "
-			, "Off", "-fno-inline"
-			, "Explicit", "-fno-inline-functions"
+			, "Off", "-fno-inline"->f_ClangFlag()
+			, "Explicit", "-fno-inline-functions"->f_ClangFlag()
 			, "Automatic", []
 		)
 		, Type: "unique"
@@ -174,7 +261,7 @@ GeneratorSetting
 	Compile_Analyzer =+ {
 		Flags: Compile.Analyzer->SwitchWithError(
 			"Unsupported option: "
-			, false, [["-Xanalyzer", "-analyzer-disable-all-checks"]]
+			, false, ["-Xanalyzer", "-analyzer-disable-all-checks"]->f_ClangFlags()
 			, true, []
 		)
 		, Type: "unique"
@@ -183,15 +270,15 @@ GeneratorSetting
 	Compile_LinkTimeCodeGeneration =+ {
 		Flags: Compile.LinkTimeCodeGeneration->SwitchWithError(
 			"Unsupported option: "
-			, true, "-flto"
-			, "Fast", "-flto=thin"
+			, true, "-flto"->f_ClangFlag()
+			, "Fast", "-flto=thin"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
 	}
 
 	Compile_MinMacOSVersion =+ {
-		Flags: `-mmacosx-version-min=@(Compile.MinMacOSVersion->ToString())`
+		Flags: `-mmacosx-version-min=@(Compile.MinMacOSVersion->ToString())`->f_ClangFlag()
 		, Type: "unique"
 	}
 
@@ -199,7 +286,7 @@ GeneratorSetting
 		Flags: Compile.NewDeleteVisibilityHidden->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, "-fvisibility-global-new-delete=force-hidden"
+			, true, "-fvisibility-global-new-delete=force-hidden"->f_ClangFlag()
 		)
 		, Type: "unique"
 	}
@@ -207,8 +294,8 @@ GeneratorSetting
 	Compile_ObjectiveCARC =+ {
 		Flags: Compile.ObjectiveCARC->SwitchWithError(
 			"Unsupported option: "
-			, true, ["-fobjc-arc", "-fobjc-arc-exceptions"]
-			, false, "-fno-objc-arc"
+			, true, ["-fobjc-arc", "-fobjc-arc-exceptions"]->f_ClangFlags()
+			, false, "-fno-objc-arc"->f_ClangFlag()
 		)
 		, Type: "unique"
 	}
@@ -217,7 +304,7 @@ GeneratorSetting
 		Flags: Compile.ObjectiveCWeak->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, "-fobjc-weak"
+			, true, "-fobjc-weak"->f_ClangFlag()
 		)
 		, Type: "unique"
 	}
@@ -232,7 +319,7 @@ GeneratorSetting
 	}
 
 	Compile_ProvidedNewAligment =+ {
-		Flags: `-fnew-alignment=@(Compile.ProvidedNewAligment->ToString())`
+		Flags: `-fnew-alignment=@(Compile.ProvidedNewAligment->ToString())`->f_ClangFlag()
 		, Type: "unique"
 	}
 
@@ -250,8 +337,8 @@ GeneratorSetting
 	Compile_SizedDeallocation =+ {
 		Flags: Compile.SizedDeallocation->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fsized-deallocation"
-			, false, "-fnosized-deallocation"
+			, true, "-fsized-deallocation"->f_ClangFlag()
+			, false, "-fnosized-deallocation"->f_ClangFlag()
 		)
 		, Type: "unique"
 	}
@@ -259,13 +346,33 @@ GeneratorSetting
 	Compile_Symbols =+ {
 		Flags: Compile.Symbols->SwitchWithError(
 			"Unsupported option: "
-			, "FullForDebug", [["-gfull", "-glldb", "-fstandalone-debug", "-Xclang", "-debugger-tuning=lldb"]]
-			, "Full", [["-g", "-glldb", "-Xclang", "-debugger-tuning=lldb"]]
-			, "Fast", ["-gline-tables-only"]
-			, "None", "-g0"
+			, "FullForDebug", ["-gfull", "-glldb", "-fstandalone-debug", "-Xclang", "-debugger-tuning=lldb"]->f_ClangFlags()
+			, "Full", ["-g", "-glldb", "-Xclang", "-debugger-tuning=lldb"]->f_ClangFlags()
+			, "Fast", "-gline-tables-only"->f_ClangFlag()
+			, "None", "-g0"->f_ClangFlag()
 			, "Default", []
 		)
 		, Type: "unique"
+	}
+	{
+		!IsClangCL true
+	}
+
+	// Debug symbols - use CodeView format for Windows compatibility
+	// /Z7 embeds debug info in object files (compatible with Windows debuggers)
+	Compile_Symbols =+ {
+		Flags: Compile.Symbols->SwitchWithError(
+			"Unsupported option: "
+			, "FullForDebug", ["/Z7", "-gcodeview"]
+			, "Full", ["/Z7", "-gcodeview"]
+			, "Fast", "/Z7"
+			, "None", []
+			, "Default", []
+		)
+		, Type: "unique"
+	}
+	{
+		!!IsClangCL true
 	}
 
 	Compile_DwarfDebugFlags =+ {
@@ -274,7 +381,7 @@ GeneratorSetting
 	}
 
 	Compile_TargetTriple =+ {
-		Flags: [["-target", Compile.TargetTriple], ["-target", Compile.TargetTriple]]
+		Flags: `--target=@(Compile.TargetTriple)`
 		, Type: "unique"
 	}
 
@@ -286,7 +393,7 @@ GeneratorSetting
 	Compile_Verbose =+ {
 		Flags: Compile.Verbose->SwitchWithError(
 			"Unsupported option: "
-			, true, "-v"
+			, true, "-v"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -295,7 +402,7 @@ GeneratorSetting
 	Compile_LinuxXcodeCompatibility =+ {
 		Flags: Compile.LinuxXcodeCompatibility->SwitchWithError(
 			"Unsupported option: "
-			, true, "-claim_xcode"
+			, true, "-claim_xcode"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -304,7 +411,7 @@ GeneratorSetting
 	Compile_Sanitize =+ {
 		Flags: Compile.Sanitize->SwitchWithError(
 			"Unsupported option: "
-			, true, ["-fsanitize=address", "-fno-omit-frame-pointer"]
+			, true, ["-fsanitize=address", "-fno-omit-frame-pointer"]->f_ClangFlags()
 			, false, []
 		)
 		, Type: "unique"
@@ -313,8 +420,8 @@ GeneratorSetting
 	Compile_OmitFramePointer =+ {
 		Flags: Compile.OmitFramePointer->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fomit-frame-pointer"
-			, false, "-fno-omit-frame-pointer"
+			, true, "-fomit-frame-pointer"->f_ClangFlag()
+			, false, "-fno-omit-frame-pointer"->f_ClangFlag()
 		)
 		, Type: "unique"
 	}
@@ -322,12 +429,36 @@ GeneratorSetting
 	Compile_SplitSymbols =+ {
 		Flags: Compile.SplitSymbols->SwitchWithError(
 			"Unsupported option: "
-			, true, ["-gsplit-dwarf", "-ggnu-pubnames"]
+			, true, ["-gsplit-dwarf", "-ggnu-pubnames"]->f_ClangFlags()
 			, false, []
 		)
 		, Type: "unique"
 	}
 
+	// For clang-cl, use native /std: flags
+	Compile_CxxLanguage =+ {
+		Flags: Compile.CxxLanguage->SwitchWithError(
+			"Unsupported option: "
+			, "GNU++11", "-std=gnu++11"->f_ClangFlag()
+			, "GNU++14", "-std=gnu++14"->f_ClangFlag()
+			, "GNU++17", "-std=gnu++17"->f_ClangFlag()
+			, "GNU++20", "-std=gnu++20"->f_ClangFlag()
+			, "GNU++23", "-std=gnu++2b"->f_ClangFlag()
+			, "C++11", "-std=c++11"->f_ClangFlag()
+			, "C++14", "-std=c++14"->f_ClangFlag()
+			, "C++17", "-std=c++17"->f_ClangFlag()
+			, "C++20", "-std=c++20"->f_ClangFlag()
+			, "C++23", "-std=c++23"->f_ClangFlag()
+			, "C++26", "-std=c++26"->f_ClangFlag()
+			, "", []
+		)
+		, Type: "unique"
+	}
+	{
+		!!IsClangCL true
+	}
+
+	// For regular clang, use -std= flags
 	Compile_CxxLanguage =+ {
 		Flags: Compile.CxxLanguage->SwitchWithError(
 			"Unsupported option: "
@@ -346,7 +477,33 @@ GeneratorSetting
 		)
 		, Type: "unique"
 	}
+	{
+		!IsClangCL true
+	}
 
+	// For clang-cl, use native /std: flags for C
+	Compile_CLanguage =+ {
+		Flags: Compile.CLanguage->SwitchWithError(
+			"Unsupported option: "
+			, "C89", "-std=c89"->f_ClangFlag()
+			, "C99", "-std=c99"->f_ClangFlag()
+			, "C11", "-std=c11"->f_ClangFlag()
+			, "C17", "-std=c17"->f_ClangFlag()
+			, "C2x", "-std=c2x"->f_ClangFlag()
+			, "GNU89", "-std=gnu89"->f_ClangFlag()
+			, "GNU99", "-std=gnu99"->f_ClangFlag()
+			, "GNU11", "-std=gnu11"->f_ClangFlag()
+			, "GNU17", "-std=gnu17"->f_ClangFlag()
+			, "GNU2x", "-std=gnu2x"->f_ClangFlag()
+			, "", []
+		)
+		, Type: "unique"
+	}
+	{
+		!!IsClangCL true
+	}
+
+	// For regular clang, use -std= flags for C
 	Compile_CLanguage =+ {
 		Flags: Compile.CLanguage->SwitchWithError(
 			"Unsupported option: "
@@ -364,11 +521,14 @@ GeneratorSetting
 		)
 		, Type: "unique"
 	}
+	{
+		!IsClangCL true
+	}
 
 	Compile_VerboseTemplateErrors =+ {
 		Flags: Compile.VerboseTemplateErrors->SwitchWithError(
 			"Unsupported option: "
-			, true, ["-fdiagnostics-show-template-tree", "-fno-elide-type", "-ftemplate-backtrace-limit=0"]
+			, true, ["-fdiagnostics-show-template-tree", "-fno-elide-type", "-ftemplate-backtrace-limit=0"]->f_ClangFlags()
 			, false, []
 		)
 		, Type: "unique"
@@ -377,7 +537,7 @@ GeneratorSetting
 	Compile_PchInstantiateTemplates =+ {
 		Flags: Compile.PchInstantiateTemplates->SwitchWithError(
 			"Unsupported option: "
-			, true, ["-fpch-instantiate-templates"]
+			, true, "-fpch-instantiate-templates"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -386,7 +546,7 @@ GeneratorSetting
 	Compile_PchCodeGen =+ {
 		Flags: Compile.PchCodeGen->SwitchWithError(
 			"Unsupported option: "
-			, true, ["-fpch-codegen"]
+			, true, "-fpch-codegen"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -395,7 +555,7 @@ GeneratorSetting
 	Compile_PchDebugInfo =+ {
 		Flags: Compile.PchDebugInfo->SwitchWithError(
 			"Unsupported option: "
-			, true, ["-fpch-debuginfo"]
+			, true, "-fpch-debuginfo"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -404,7 +564,7 @@ GeneratorSetting
 	Compile_LimitedDebugInfo =+ {
 		Flags: Compile.LimitedDebugInfo->SwitchWithError(
 			"Unsupported option: "
-			, true, "-flimit-debug-info"
+			, true, "-flimit-debug-info"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -421,12 +581,12 @@ GeneratorSetting
 	}
 
 	Compile_MiniOSVersion =+ {
-		Flags: `-miphoneos-version-min=@(Compile.MiniOSVersion->ToString())`
+		Flags: `-miphoneos-version-min=@(Compile.MiniOSVersion->ToString())`->f_ClangFlag()
 		, Type: "unique"
 	}
 
 	Compile_SysRoot =+ {
-		Flags: ["--sysroot", Compile.SysRoot]
+		Flags: ["--sysroot"->f_ClangFlag(), Compile.SysRoot]
 		, Type: "unique"
 	}
 
@@ -441,24 +601,64 @@ GeneratorSetting
 	}
 
 	Compile_ToolPrefix =+ {
-		Flags: [Compile.ToolPrefix->f_PrefixFlags("-B")]
+		Flags: [Compile.ToolPrefix->f_PrefixFlags("-B"->f_ClangFlag())]
 		, Type: "unique"
 	}
 
 	Compile_SystemSearchPath =+ {
-		Flags: [Compile.SystemSearchPath->f_PrefixFlags("-isystem")]
+		Flags: [Compile.SystemSearchPath->f_PrefixFlags("-isystem"->f_ClangFlag())]
 		, Type: "unique"
 	}
 
 	Compile_ClangTimeTrace =+ {
 		Flags: Compile.ClangTimeTrace->SwitchWithError(
 			"Unsupported option: "
-			, true, "-ftime-trace"
+			, true, "-ftime-trace"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
 	}
 
+	// For clang-cl, use MSVC-style warning flags
+	Compile_Warnings =+ {
+		Flags: Compile.Warnings->SwitchWithError(
+			"Unsupported option: "
+			, "Off", "/W0"
+			, "Minimal", [
+				"/W3"
+				, "-Wno-switch"
+				, "-Wno-unused-private-field"
+				, "-Wno-missing-braces"
+				, "-Wno-reorder"
+				, "-Wno-unneeded-internal-declaration"
+				, "-Wno-pointer-sign"
+				, "-Wno-tautological-compare"
+				, "-Wno-incompatible-pointer-types"
+				, "-Wno-unused-local-typedef"
+				, "-Wno-invalid-offsetof"
+			]
+			, "On", [
+				"/W3"
+				, "-Wno-unused-private-field"
+				, "-Wno-missing-braces"
+				, "-Wno-reorder"
+				, "-Wno-unneeded-internal-declaration"
+				, "-Wno-invalid-offsetof"
+				, "-Wreorder-init-list"
+			]
+			, "Pedantic", [
+				"/W4"
+				, "-Wno-invalid-offsetof"
+				, "-Wreorder-init-list"
+			]
+		)
+		, Type: "unique"
+	}
+	{
+		!!IsClangCL true
+	}
+
+	// For regular clang, use Clang-style warning flags
 	Compile_Warnings =+ {
 		Flags: Compile.Warnings->SwitchWithError(
 			"Unsupported option: "
@@ -492,6 +692,9 @@ GeneratorSetting
 			]
 		)
 		, Type: "unique"
+	}
+	{
+		!IsClangCL true
 	}
 
 	Compile_Warnings_DeprecatedDeclarations =+ {
@@ -745,7 +948,7 @@ GeneratorSetting
 		Flags: Compile.CodeCoverage->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, ["-fprofile-instr-generate", "-fcoverage-mapping"]
+			, true, ["-fprofile-instr-generate", "-fcoverage-mapping"]->f_ClangFlags()
 		)
 		, Type: "unique"
 	}
@@ -806,10 +1009,37 @@ GeneratorSetting
 	Compile_StackGuard =+ {
 		Flags: Compile.StackGuard->SwitchWithError(
 			"Unsupported option: "
+			, true, "/GS"
+			, false, "/GS-"
+		)
+		, Type: "unique"
+	}
+	{
+		!!IsClangCL true
+	}
+
+	Compile_StackGuard =+ {
+		Flags: Compile.StackGuard->SwitchWithError(
+			"Unsupported option: "
 			, true, "-fstack-protector"
 			, false, "-fno-stack-protector"
 		)
 		, Type: "unique"
+	}
+	{
+		!IsClangCL true
+	}
+
+	Compile_WarningsAsErrors =+ {
+		Flags: Compile.WarningsAsErrors->SwitchWithError(
+			"Unsupported option: "
+			, true, "/WX"
+			, false, []
+		)
+		, Type: "unique"
+	}
+	{
+		!!IsClangCL true
 	}
 
 	Compile_WarningsAsErrors =+ {
@@ -820,11 +1050,14 @@ GeneratorSetting
 		)
 		, Type: "unique"
 	}
+	{
+		!IsClangCL true
+	}
 
 	Compile_PositionIndependantCode =+ {
 		Flags: Compile.PositionIndependantCode->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fPIC"
+			, true, "-fPIC"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -833,30 +1066,29 @@ GeneratorSetting
 	Compile_OpenMP =+ {
 		Flags: Compile.OpenMP->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fopenmp"
+			, true, "-fopenmp"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
 	}
 
 	Compile_UseFullPaths {}
-	Compile_FloatingPointExceptions {}
 
 	Compile_ExtendedInstructionSet =+ {
 		Flags: Compile.ExtendedInstructionSet->SwitchWithError(
 			"Unsupported option: "
-			, "Off", ["-mno-sse"]
-			, "SSE1", ["-msse"]
-			, "SSE2", ["-msse", "-msse2"]
-			, "SSE3", ["-msse", "-msse2", "-msse3"]
-			, "SSSE3", ["-msse", "-msse2", "-msse3", "-mssse3"]
-			, "SSE41", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1"]
-			, "SSE42", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2"]
-			, "AVX", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-mavx"]
-			, "AVX2", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-mavx", "-mavx2"]
-			, "X86_64_v2", ["-march=x86-64-v2"]
-			, "X86_64_v3", ["-march=x86-64-v3"]
-			, "X86_64_v4", ["-march=x86-64-v4"]
+			, "Off", "-mno-sse"->f_ClangFlag()
+			, "SSE1", "-msse"->f_ClangFlag()
+			, "SSE2", ["-msse", "-msse2"]->f_ClangFlags()
+			, "SSE3", ["-msse", "-msse2", "-msse3"]->f_ClangFlags()
+			, "SSSE3", ["-msse", "-msse2", "-msse3", "-mssse3"]->f_ClangFlags()
+			, "SSE41", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1"]->f_ClangFlags()
+			, "SSE42", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2"]->f_ClangFlags()
+			, "AVX", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-mavx"]->f_ClangFlags()
+			, "AVX2", ["-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-mavx", "-mavx2"]->f_ClangFlags()
+			, "X86_64_v2", "-march=x86-64-v2"->f_ClangFlag()
+			, "X86_64_v3", "-march=x86-64-v3"->f_ClangFlag()
+			, "X86_64_v4", "-march=x86-64-v4"->f_ClangFlag()
 
 		)
 		, Type: "unique"
@@ -865,19 +1097,21 @@ GeneratorSetting
 	Compile_DefaultLibraries =+ {
 		Flags: Compile.DefaultLibraries->SwitchWithError(
 			"Unsupported option: "
-			, "NoStdLibCxx", "-nostdlib++"
-			, "NoStdLib", "-nostdlib"
+			, "NoStdLibCxx", "-nostdlib++"->f_ClangFlag()
+			, "NoStdLib", "-nostdlib"->f_ClangFlag()
 			, "All", []
 		)
 		, Type: "unique"
 	}
 
-	Compile_RuntimeLibrary {}
+	Compile_RuntimeLibrary =+ {}
+	Compile_CallingConvention =+ {}
+	Compile_StringPooling =+ {}
 
 	Compile_AppleKernelOptions =+ {
 		Flags: Compile.AppleKernelOptions->SwitchWithError(
 			"Unsupported option: "
-			, true, ["-fasm-blocks", "-fstrict-aliasing", "-Wdeprecated-declarations", "-Winvalid-offsetof", "-Wno-deprecated", "-Wno-overloaded-virtual"]
+			, true, ["-fasm-blocks", "-fstrict-aliasing", "-Wdeprecated-declarations", "-Winvalid-offsetof", "-Wno-deprecated", "-Wno-overloaded-virtual"]->f_ClangFlags()
 			, false, []
 		)
 		, Type: "unique"
@@ -886,7 +1120,7 @@ GeneratorSetting
 	Compile_AppleKernelOptionsCxx =+ {
 		Flags: Compile.AppleKernelOptionsCxx->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fapple-kext"
+			, true, "-fapple-kext"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -895,29 +1129,29 @@ GeneratorSetting
 	Compile_ForceDwarfExceptions =+ {
 		Flags: Compile.ForceDwarfExceptions->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fdwarf-exceptions"
+			, true, "-fdwarf-exceptions"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
 	}
 
 	Compile_ProcessorArchitecture =+ {
-		Flags: `-march=@(Compile.ProcessorArchitecture)`
+		Flags: `-march=@(Compile.ProcessorArchitecture)`->f_ClangFlag()
 		, Type: "unique"
 	}
 
 	Compile_ThreadPointerAccessMethod =+ {
-		Flags: `-mtp=@(Compile.ThreadPointerAccessMethod)`
+		Flags: `-mtp=@(Compile.ThreadPointerAccessMethod)`->f_ClangFlag()
 		, Type: "unique"
 	}
 
 	Compile_Optimize =+ {
 		Flags: Compile.Optimize->SwitchWithError(
 			"Unsupported option: "
-			, "Off", "-O0"
-			, "Fast", "-O3"
-			, "On", ["-O3", "-fno-fast-math"]
-			, "Full", ["-O3", "-fno-fast-math"]
+			, "Off", "-O0"->f_ClangFlag()
+			, "Fast", "-O3"->f_ClangFlag()
+			, "On", ["-O3", "-fno-fast-math"]->f_ClangFlags()
+			, "Full", ["-O3", "-fno-fast-math"]->f_ClangFlags()
 		)
 		, Type: "unique"
 	}
@@ -926,7 +1160,7 @@ GeneratorSetting
 		Flags: Compile.Sanitize_Thread->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, "-fsanitize=thread"
+			, true, "-fsanitize=thread"->f_ClangFlag()
 		)
 		, Type: "unique"
 	}
@@ -935,17 +1169,16 @@ GeneratorSetting
 		Flags: Compile.Sanitize_Address->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, [["-fsanitize=address", "-fsanitize-address-use-after-scope"]]
+			, true, ["-fsanitize=address", "-fsanitize-address-use-after-scope"]->f_ClangFlags()
 		)
 		, Type: "unique"
 	}
 
-	// We use interfaces across interface boundraries which results in different typeinfo for the same type
 	Compile_Sanitize_UndefinedBehavior =+ {
 		Flags: Compile.Sanitize_UndefinedBehavior->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, [["-fsanitize=undefined", "-fno-sanitize=vptr,function"]]
+			, true, ["-fsanitize=undefined", "-fno-sanitize=vptr,function"]->f_ClangFlags()
 		)
 		, Type: "unique"
 	}
@@ -954,20 +1187,20 @@ GeneratorSetting
 		Flags: Compile.Sanitize_NoRecover->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, "-fno-sanitize-recover=all"
+			, true, "-fno-sanitize-recover=all"->f_ClangFlag()
 		)
 		, Type: "unique"
 	}
 
 	Compile_DwarfVersion =+ {
-		Flags: `-gdwarf-@(Compile.DwarfVersion->ToString())`
+		Flags: `-gdwarf-@(Compile.DwarfVersion->ToString())`->f_ClangFlag()
 		, Type: "unique"
 	}
 
 	Compile_ShortWChar =+ {
 		Flags: Compile.ShortWChar->SwitchWithError(
 			"Unsupported option: "
-			, true, "-fshort-wchar"
+			, true, "-fshort-wchar"->f_ClangFlag()
 			, false, []
 		)
 		, Type: "unique"
@@ -1059,6 +1292,58 @@ GeneratorSetting
 			, false, ["-Wno-nontrivial-memcall"]
 			, true, ["-Wnontrivial-memcall"]
 		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_MainDefinition =+ {
+		Flags: Compile.Warnings_MainDefinition->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-main"]
+			, true, ["-Wmain"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_ExtraCompilerFlags =+ {
+		Flags: Compile.ExtraCompilerFlags
+		, Type: "multiple"
+	}
+
+	Compile_StructMemberAlignment =+ {
+		Flags: Compile.StructMemberAlignment->SwitchWithError(
+			"Unsupported option: "
+			, "Default", []
+			, "1", "-fpack-struct=1"->f_ClangFlag()
+			, "2", "-fpack-struct=2"->f_ClangFlag()
+			, "4", "-fpack-struct=4"->f_ClangFlag()
+			, "8", "-fpack-struct=8"->f_ClangFlag()
+			, "16", "-fpack-struct=16"->f_ClangFlag()
+		)
+		, Type: "unique"
+	}
+
+	Compile_FloatingPointModel =+ {
+		Flags: Compile.FloatingPointModel->SwitchWithError(
+			"Unsupported option: "
+			, "Precise", "-ffp-model=precise"->f_ClangFlag()
+			, "Strict", "-ffp-model=strict"->f_ClangFlag()
+			, "Fast", "-ffp-model=fast"->f_ClangFlag()
+		)
+		, Type: "unique"
+	}
+
+	Compile_FloatingPointExceptions =+ {
+		Flags: (Compile.FloatingPointExceptions ? "-ffp-exception-behavior=strict" : "-ffp-exception-behavior=ignore")->f_ClangFlag()
+		, Type: "unique"
+	}
+
+	Compile_FunctionLevelLinking =+ {
+		Flags: Compile.FunctionLevelLinking ? "-ffunction-sections"->f_ClangFlag() : []
+		, Type: "unique"
+	}
+
+	Compile_IgnoreStandardIncludePath =+ {
+		Flags: Compile.IgnoreStandardIncludePath ? "-nostdinc"->f_ClangFlag() : []
 		, Type: "unique"
 	}
 }

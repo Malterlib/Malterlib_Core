@@ -1,0 +1,41 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+GeneratorSetting
+{
+	TargetValidateSettings Error(`Target build needs an input in @(Target:Target.Name): @(GeneratorSetting.Target<Rule_Build>->ToString())`)
+	{
+		!!(GeneratorSetting.Target<Rule_Build> || {})->GeneratorSetting.f_GetAllInputsFromRulesMap() []
+	}
+
+	TargetValidateSettings Error(`Target build needs an output in @(Target:Target.Name): @(GeneratorSetting.Target<Rule_Build>->ToString())`)
+	{
+		!!(GeneratorSetting.Target<Rule_Build> || {})->GeneratorSetting.f_GetAllOutputsFromRulesMap() []
+	}
+
+	TargetValidateSettings Error(`Post build script needs an input in @(Target:Target.Name)`)
+	{
+		!![(GeneratorSetting.Target<Rule_PostBuild.All.Build.implicit_dependencies> ?? [])..., (GeneratorSetting.Target<Rule_PostBuild.All.Build.inputs> ?? [])...] []
+	}
+
+	TargetValidateSettings Error(`Post build script needs an output in @(Target:Target.Name)`)
+	{
+		&
+		{
+			GeneratorSetting.Target<Rule_PostBuild.All.Build.implicit_outputs> []
+		}
+	}
+
+	TargetValidateSettings Error(`Pre build script needs an input in @(Target:Target.Name)`)
+	{
+		!![(GeneratorSetting.Target<Rule_PreBuild.All.Build.implicit_dependencies> ?? [])..., (GeneratorSetting.Target<Rule_PreBuild.All.Build.inputs> ?? [])...] []
+	}
+
+	TargetValidateSettings Error(`Pre build script needs an output in @(Target:Target.Name)`)
+	{
+		&
+		{
+			GeneratorSetting.Target<Rule_PreBuild.All.Build.implicit_outputs> []
+		}
+	}
+}

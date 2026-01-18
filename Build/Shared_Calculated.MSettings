@@ -140,18 +140,18 @@ Property
 
 Property
 {
+	ScriptWindowsBash: bool?
+
+	ScriptWindowsBat: bool = (ScriptWindowsBash <==> false || (ScriptWindowsBash <!=> true && HostPlatformFamily == "Windows" && GeneratorFamily == "VisualStudio"))
+
 	ScriptExtension: string
 	ScriptExtension ".bat"
 	{
-		!!PlatformType "Windows"
+		!!ScriptWindowsBat true
 	}
 	ScriptExtension ".sh"
 	{
-		|
-		{
-			PlatformType "Unix"
-			ScriptWindowsBash true
-		}
+		!!ScriptExtension undefined
 	}
 
 	HostExecutableExtension: string = ""
@@ -163,50 +163,34 @@ Property
 	ScriptExport function(string _Name, string _Value) string
 	ScriptExport `set @(_Name)=@(_Value)`
 	{
-		!!PlatformType "Windows"
+		!!ScriptWindowsBat true
 	}
 	ScriptExport `export @(`@(_Name)=@(_Value)`->EscapeBash())`
 	{
-		|
-		{
-			PlatformType "Unix"
-			ScriptWindowsBash true
-		}
+		!!ScriptWindowsBat false
 	}
 
 	ScriptMkDir function(string _Directory) string
 	ScriptMkDir `if not exist @(_Directory->WindowsPath()->EscapeHost()) md @(_Directory->WindowsPath()->EscapeHost())\r\n`
 	{
-		!!PlatformType "Windows"
+		!!ScriptWindowsBat true
 	}
 
 	ScriptMkDir `mkdir -p @(_Directory->EscapeBash())`
 	{
-		|
-		{
-			PlatformType "Unix"
-			ScriptWindowsBash true
-		}
+		!!ScriptWindowsBat false
 	}
 
 	ScriptPreamble: string = ""
 	ScriptPreamble "#!/bin/bash\n\n"
 	{
-		|
-		{
-			PlatformType "Unix"
-			ScriptWindowsBash true
-		}
+		!!ScriptWindowsBat false
 	}
 
 	ScriptUnixLineEnds: bool = false
 	ScriptUnixLineEnds true
 	{
-		|
-		{
-			PlatformType "Unix"
-			ScriptWindowsBash true
-		}
+		!!ScriptWindowsBat false
 	}
 
 	NativeLineEnding: string = "\r\n"
@@ -218,10 +202,12 @@ Property
 	BashScriptPrefix: string = ""
 	BashScriptPrefix "\"C:/Program Files/Git/bin/bash.exe\" "
 	{
-		!!PlatformFamily "Windows"
+		&
+		{
+			GeneratorFamily "VisualStudio"
+			PlatformFamily "Windows"
+		}
 	}
-
-	ScriptWindowsBash: bool = false
 }
 Property
 {
@@ -709,6 +695,25 @@ Property
 			"/usr/share/xcode-select/xcode_dir_path"->LinkExists() true
 		}
 	}
+
+	// Xcode platform directory name (e.g., MacOSX.platform, iPhoneOS.platform)
+	Malterlib_XcodePlatformName: string = "MacOSX.platform"
+	Malterlib_XcodePlatformName "iPhoneOS.platform"
+	{
+		!!PlatformFamily "iOS"
+	}
+	Malterlib_XcodePlatformName "DriverKit.platform"
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			Target.DriverType "DriverKit"
+		}
+	}
+
+	Malterlib_XcodePlatformDir: string = `@(Malterlib_MacOSDeveloperLocaction)/Platforms/@(Malterlib_XcodePlatformName)`
+
+	Malterlib_MacOSSDKsRoot: string = `@(Malterlib_XcodePlatformDir)/Developer/SDKs`
 
 	Malterlib_DummmyLibrary: string = "/dev/null"
 	Malterlib_DummmyLibrary `@(Malterlib_MacOSDeveloperLocaction)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/libSystem.B.tbd`

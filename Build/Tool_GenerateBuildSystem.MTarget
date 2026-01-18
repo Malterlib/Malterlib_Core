@@ -12,8 +12,26 @@ Property
 	MalterlibCheckAllDependenciesCommand: string = MalterlibCheckAllDependenciesCommandBash
 	MalterlibCheckAllDependenciesCommand `@(Builtin.MToolExe->EscapeWindows()) CheckDependencies "%MalterlibIntermediateDirectoriesFile%"`
 	{
-		!!HostPlatformFamily "Windows"
+		!!ScriptWindowsBat true
 	}
+}
+
+Property
+{
+	MalterlibBuildSystemGenerateCommand: string
+
+	MalterlibBuildSystemGenerateCommand `@(Builtin.MalterlibExe->EscapeBash()) generate --build-system @(Builtin.BuildSystemSourceAbsolute->EscapeHost()) --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->EscapeBash()) --use-cached-environment`
+	{
+		!ScriptWindowsBat true
+	}
+
+	MalterlibBuildSystemGenerateCommand `"@(Builtin.MalterlibExe->EscapeWindows())" generate --build-system "@(Builtin.BuildSystemSourceAbsolute)" --generator "@(Generator)" --output-directory "@(Builtin.GeneratedBuildSystemDir)" --use-cached-environment`
+	{
+		!!ScriptWindowsBat true
+	}
+
+	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibBuildSystemGenerateCommand", MalterlibBuildSystemGenerateCommand))\r\n`
+	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibDisableBuildSystemGeneration", MalterlibDisableBuildSystemGeneration->ToString()))\r\n`
 }
 
 %Target "Tool_GenerateBuildSystem"
@@ -26,10 +44,13 @@ Property
 		CommandLine_ReBuild `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" ReBuild`
 		CommandLine_Clean `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Clean`
 		CommandLine_Outputs [Builtin.GeneratorStateFile]
+		CommandLine_IsGenerator !MalterlibDisableBuildSystemGeneration
 
 		ExportScriptEnvironment += "MalterlibIntermediateDirectoriesFile"
 
 		Group "Tools/Malterlib"
+
+		PhonyOutputs [MalterlibPostCopyConfigFile]
 	}
 	%Group "Source"
 	{
@@ -174,19 +195,18 @@ Property
 
 					Contents =+	"set -eo pipefail\r\n"
 					{
-						!HostPlatformFamily "Windows"
+						!ScriptWindowsBat true
 					}
 
 					Contents =+	`IF "%DisableProjectGen%" == "1" GOTO Skip\r\n`\
 								`:RetryGeneration\r\n`\
 								`cd @(Builtin.BasePathAbsolute->WindowsPath()->EscapeHost())\r\n`\
-								`"@(Builtin.MalterlibExe)" generate --build-system "@(Builtin.BuildSystemSourceAbsolute)" --generator "@(Generator)" --output-directory "@(Builtin.GeneratedBuildSystemDir)" --use-cached-environment --action "%1" "@(Workspace:Workspace.Name)"\r\n`\
-								`IF %ERRORLEVEL% EQU 2 set ERRORLEVEL=0\r\n`
+								`@(MalterlibBuildSystemGenerateCommand) --action "%1" "@(Workspace:Workspace.Name)" --no-signal-changed\r\n`
 					{
 						&
 						{
 							!MalterlibDisableBuildSystemGeneration true
-							HostPlatformFamily "Windows"
+							ScriptWindowsBat true
 						}
 					}
 
@@ -205,22 +225,22 @@ Property
 						{
 
 							!MalterlibDisableBuildSystemGeneration true
-							HostPlatformFamily "Windows"
+							ScriptWindowsBat true
 							IsSafeMTool true
 						}
 					}
 
-					Contents =+	`if ! grep ~/.lldbinit -qe '#StartMalterlibLLDB'; then\r\n`\
+					Contents =+	`if ! [ -f ~/.lldbinit ] || ! grep ~/.lldbinit -qe '#StartMalterlibLLDB'; then\r\n`\
 								`	echo '#StartMalterlibLLDB' >> ~/.lldbinit\r\n`\
 								`	echo '#EndMalterlibLLDB' >> ~/.lldbinit\r\n`\
 								`fi\r\n`\
-								`sed -i '' $'/#StartMalterlibLLDB/,/#EndMalterlibLLDB/c\\\\\\n#StartMalterlibLLDB\\\\\\ncommand script import "@(LLDBScriptLocation)"\\\\\\n#EndMalterlibLLDB\\n' ~/.lldbinit\r\n`
+								`sed -i.bak $'/#StartMalterlibLLDB/,/#EndMalterlibLLDB/c\\\\\\n#StartMalterlibLLDB\\\\\\ncommand script import "@(LLDBScriptLocation)"\\\\\\n#EndMalterlibLLDB\\n' ~/.lldbinit && rm -f ~/.lldbinit.bak\r\n`
 					{
 						&
 						{
 							MalterlibDebugConfigureLLDBScript true
 							!MalterlibDisableBuildSystemGeneration true
-							!HostPlatformFamily "Windows"
+							!ScriptWindowsBat true
 						}
 					}
 
@@ -229,7 +249,7 @@ Property
 						&
 						{
 							!MalterlibDisableBuildSystemGeneration true
-							HostPlatformFamily "Windows"
+							ScriptWindowsBat true
 						}
 					}
 
@@ -237,13 +257,22 @@ Property
 								`  exit 0\n`\
 								`fi\n`\
 								`cd @(Builtin.BasePathAbsolute->EscapeHost())\n`\
-								`@(Builtin.MalterlibExe->EscapeHost()) generate --build-system @(Builtin.BuildSystemSourceAbsolute->EscapeHost()) --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->EscapeHost()) --action "$1" --use-cached-environment "@(Workspace:Workspace.Name)"\n`\
+								`set +e\n`\
+								`@(MalterlibBuildSystemGenerateCommand) --action "$1" "@(Workspace:Workspace.Name)"\n`\
 								`ErrorLevel=$?\n`\
-								`if [ "$ErrorLevel" == "2" ]; then\n`\
+								`set -e\n`
+					{
+						&
+						{
+							!MalterlibDisableBuildSystemGeneration true
+							!ScriptWindowsBat true
+						}
+					}
+
+					Contents =+	`if [ "$ErrorLevel" == "2" ]; then\n`\
 								`  echo error: Build system changed, aborting build\n`\
 								`  exit 1\n`\
-								`fi\n`\
-								`if [ "$ErrorLevel" != "0" ]; then\n`\
+								`elif [ "$ErrorLevel" != "0" ]; then\n`\
 								`  echo error: Build system generation failed\n`\
 								`  exit 1\n`\
 								`fi\n`
@@ -251,7 +280,21 @@ Property
 						&
 						{
 							!MalterlibDisableBuildSystemGeneration true
-							!HostPlatformFamily "Windows"
+							GeneratorFamily "Xcode"
+						}
+					}
+
+					Contents =+	`if [ "$ErrorLevel" == "2" ]; then\n`\
+								`  echo error: Build system changed, Ninja generator should pick it up\n`\
+								`elif [ "$ErrorLevel" != "0" ]; then\n`\
+								`  echo error: Build system generation failed\n`\
+								`  exit 1\n`\
+								`fi\n`
+					{
+						&
+						{
+							!MalterlibDisableBuildSystemGeneration true
+							GeneratorFamily "Ninja"
 						}
 					}
 
@@ -280,7 +323,7 @@ Property
 								`  exit 1\n`\
 								`)\n`
 					{
-						!!HostPlatformFamily "Windows"
+						!!ScriptWindowsBat true
 					}
 					Contents =+	`@(MalterlibCheckAllDependenciesCommand)\n`\
 								`if [ "$?" != "0" ]; then\n`\
@@ -288,7 +331,7 @@ Property
 								`  exit 1\n`\
 								`fi\n`
 					{
-						!HostPlatformFamily "Windows"
+						!ScriptWindowsBat true
 					}
 					Contents =+ "exit 0\n"
 					{
@@ -314,7 +357,11 @@ Property
 {
 	%Dependency "Tool_GenerateBuildSystem"
 	{
-		Dependency.Link false
+		Dependency
+		{
+			Link false
+			Stage "Compile"
+		}
 	}
 }
 

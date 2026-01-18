@@ -41,6 +41,17 @@ GeneratorSetting
 		, "AppxManifest", "AppxManifest"
 	)
 
+	VisualStudio_BuildSupported: bool = SwitchWithDefault(
+		Compile.Type, false
+		, "C#", true
+		, "C#Component", true
+		, "ApplicationDefinition", true
+		, "Page", true
+		, "EmbeddedResource_ResX", true
+		, "AppDesigner", true
+		, "AppxManifest", true
+	)
+
 	Compile_Type =+ {
 		VSSettings: Compile.Type->SwitchWithDefault(
 			{}

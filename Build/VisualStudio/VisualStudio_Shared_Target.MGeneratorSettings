@@ -83,10 +83,6 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Target_Language undefined
 	}
-	Target_Language2 {}
-	{
-		!!GeneratorSetting.Target_Language2 undefined
-	}
 	Target_ExternalDependencies {}
 	{
 		!!GeneratorSetting.Target_ExternalDependencies undefined
@@ -115,7 +111,11 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Target_DependencyInjectionGroups undefined
 	}
-
+	Target_CompileCommandsFile {}
+	{
+		!!GeneratorSetting.Target_CompileCommandsFile undefined
+	}
+	Target_PhonyOutputs {}
 
 	Target_TargetFrameworkVersion =+ {
 		VSSettings: [

@@ -69,6 +69,8 @@ GeneratorSetting
 
 	Target_CommandLine_ReBuild {}
 	Target_CommandLine_Clean {}
+	Target_CommandLine_IsGenerator {}
+	Target_CommandLine_AlwaysDirty {}
 }
 
 GeneratorSetting
@@ -185,10 +187,15 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Target_DependencyInjectionGroups undefined
 	}
+	Target_CompileCommandsFile {}
+	{
+		!!GeneratorSetting.Target_CompileCommandsFile undefined
+	}
+	Target_PhonyOutputs {}
 
 	Target_SDKRoot =+ {
 		XCConfigs: {
-			"SDKROOT": Target.SDKRoot
+			"SDKROOT": (Target.SDKRoot->IsAbsolute() ? Target.SDKRoot : Target.SDKRoot->LowerCase())
 		}
 	}
 

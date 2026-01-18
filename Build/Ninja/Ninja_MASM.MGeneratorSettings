@@ -1,0 +1,89 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+// MASM assembler compilation support for Ninja generator (Windows only)
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		PlatformFamily "Windows"
+		Compile.Type "Assembler"
+	}
+
+	// MASM output file name
+	ObjectFileName Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt())_@(this.EntityPath->HashSHA256(8)).@(Ninja_ObjectFileExtension)`
+}
+
+GeneratorSetting
+{
+	&
+	{
+		PlatformFamily "Windows"
+		Compile.Type "Assembler"
+	}
+
+	Compile_Type #<Build.inputs> =+ this.Identity
+
+	Compile_Type #<Rule.command> `@(PlatformToolsetMASM->Escape()) /c @(Builtin.Flags) @(Builtin.Input)`
+	Compile_Type #<Build.description> `Assembling (MASM) @(this.Identity->GetFile())`
+
+	Compile_ObjectFileName #<Build.outputs> =+ Compile.ObjectFileName
+
+	Compile_ObjectFileName =+ {
+		Flags: [["/Fo", Compile.ObjectFileName]]
+		, FlagsPriority: -1000
+	}
+
+	Compile_PreprocessorDefines =+ {
+		Flags: Compile.PreprocessorDefines->f_PrefixFlags("/D")
+		, Type: "unique"
+	}
+
+	Compile_SearchPath =+ {
+		Flags: Compile.SearchPath->f_PrefixFlags("/I")
+		, Type: "unique"
+	}
+
+	Compile_ExtraCompilerFlags =+ {
+		Flags: Compile.ExtraCompilerFlags
+		, Type: "multiple"
+	}
+
+	// PreserveIdentifierCase: /Cp preserves case, /Cu maps to upper, /Cx preserves public/extern only
+	Compile_PreserveIdentifierCase =+ {
+		Flags: Compile.PreserveIdentifierCase->SwitchWithError(
+			"Unsupported option: "
+			, true, "/Cp"
+			, false, "/Cu"
+		)
+		, Type: "unique"
+	}
+
+	// Empty handlers for settings not applicable to MASM
+	Compile_Optimize =+ {}
+	Compile_Warnings =+ {}
+	Compile_WarningsAsErrors =+ {}
+	Compile_Symbols =+ {}
+	Compile_SystemSearchPath =+ {}
+}
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		PlatformFamily "Windows"
+		Compile.Type "Assembler"
+		!Compile.Disabled true
+	}
+
+	LinkerInputs =+ Compile.ObjectFileName
+	{
+		&
+		{
+			this.Type "File"
+		}
+	}
+}

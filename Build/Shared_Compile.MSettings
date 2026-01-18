@@ -88,6 +88,20 @@ Compile
 		}
 	}
 
+	AssemblerType: one_of("Plain", "WithPreprocessor")?
+
+	AssemblerType this.Identity->GetExtension()->SwitchWithDefault(
+		"Plain"
+		, "S", "WithPreprocessor"
+	)
+	{
+		&
+		{
+			Compile.AssemblerType undefined
+			Compile.Type "Assembler"
+		}
+	}
+
 	Type "C++"
 	{
 		|
@@ -348,7 +362,47 @@ Compile
 	{
 		!!Compile.Type "DriverKitInterface"
 	}
+}
 
+// DriverKitInterface (.iig) compile properties
+Compile
+{
+	&
+	{
+		LanguageFamily "Native"
+		Compile.Type "DriverKitInterface"
+		Target.DriverType "DriverKit"
+		!GeneratorFamily "Xcode"
+	}
+
+	// Initialize SearchPath and inherit from Target
+	SearchPath ((Builtin.Inherit == "") ? [] : [Builtin.Inherit])
+	SearchPath =+ (Target:Target.SearchPath || [])
+	SearchPath += [Target.IntermediateDirectory]
+	SearchPath += Builtin.BasePathAbsolute
+	SearchPath += MalterlibIncludeOutputDir
+	SearchPath += `@(Builtin.BasePathAbsolute)/Malterlib/Core/Include`
+
+	// Framework search paths
+	FrameworkSearchPath: [string]?
+	FrameworkSearchPath =+ (Target:Target.FrameworkSearchPath || [])
+
+	// SDK root for DriverKit
+	SDKRoot: string?
+	SDKRoot Target:Target.SDKRoot
+
+	// C++ language standard
+	CxxLanguage: string?
+	CxxLanguage Target:Target.CxxLanguage
+
+	// IIG-specific preprocessor define
+	PreprocessorDefines ((Builtin.Inherit == "") ? [] : [Builtin.Inherit])
+	PreprocessorDefines =+ "__IIG=1"
+}
+
+Compile
+{
+	!!LanguageFamily "Native"
 
 	Type "ObjC++"
 	{
@@ -662,6 +716,16 @@ Compile
 	}
 }
 
+Compile
+{
+	!!Generator "Ninja"
+
+	LinkerInputs: [string] = []
+	LinkerImplicitInputs: [string] = []
+	LinkerManifestInputs: [string] = []
+	IncludeEnvironmentPaths: [string] = []
+}
+
 Property
 {
 	MalterlibDebugSymbolsEnable: bool = true // User(Debug)=false: Enable generation of debug symbols
@@ -869,6 +933,14 @@ Property
 			!Target.DriverType "DriverKit"
 		}
 	}
+	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-apple-driverkit@(Target.DriverkitDeploymentTarget)`
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			Target.DriverType "DriverKit"
+		}
+	}
 	MalterlibTargetTriple `@(MalterlibNativeClangArchitecture)-unknown-linux-gnu`
 	{
 		!!PlatformFamily "Linux"
@@ -1060,9 +1132,8 @@ Compile
 	{
 		&
 		{
-			Compiler "Clang"
-			!PlatformFamily "Linux"
 			Compile.CLanguage undefined
+			Compiler "Clang"
 		}
 	}
 }
@@ -1617,7 +1688,19 @@ Compile
 	FrameworkSearchPath: [string]?
 	FrameworkSearchPath += `$(PLATFORM_DIR)/Developer/Library/Frameworks`
 	{
-		!!PlatformFamily "macOS"
+		&
+		{
+			PlatformFamily "macOS"
+			GeneratorFamily "Xcode"
+		}
+	}
+	FrameworkSearchPath += `@(Malterlib_XcodePlatformDir)/Developer/Library/Frameworks`
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			!GeneratorFamily "Xcode"
+		}
 	}
 
 	MaxHeap: string?
@@ -1719,7 +1802,7 @@ Compile
 		&
 		{
 			Compiler "Clang"
-			!GeneratorFamily "VisualStudio"
+			!HostPlatformFamily "Windows"
 		}
 	}
 
@@ -3218,4 +3301,25 @@ Compile
 	}
 
 	GenericCompileType "GenericCustom"
+}
+
+// Ninja generator Windows SDK and MSVC include paths
+// These paths are set via INCLUDE environment variable to let clang-cl auto-detect headers
+// and avoid conflicts between Clang's built-in headers and MSVC headers
+Compile
+{
+	&
+	{
+		GeneratorFamily "Ninja"
+		PlatformFamily "Windows"
+		CompileDialect "C"
+	}
+
+	// Add MSVC include path via INCLUDE env var
+	IncludeEnvironmentPaths += MalterlibMSVCIncludePath
+
+	// Add Windows SDK include paths via INCLUDE env var
+	IncludeEnvironmentPaths += MalterlibWindowsSDKUCRTIncludePath
+	IncludeEnvironmentPaths += MalterlibWindowsSDKUMIncludePath
+	IncludeEnvironmentPaths += MalterlibWindowsSDKSharedIncludePath
 }

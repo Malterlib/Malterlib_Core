@@ -319,6 +319,10 @@ Compile
 						!PlatformFamily "Linux"
 					}
 				}
+				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_ProgramIdentifier.cpp"
+				{
+					Compile.Disabled true
+				}
 				%File "Source/Platform/Malterlib_Core_PlatformImp_Linux_TSan.cpp"
 				{
 					Compile.Sanitize_Thread false

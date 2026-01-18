@@ -37,4 +37,11 @@ Dependency
 	{
 		!!Dependency.Name undefined
 	}
+
+	Stage: one_of("Compile", "Link", "Runtime") = "Link"
+
+	Target Dependency:this.Identity
+	{
+		!!Dependency.Target undefined
+	}
 }

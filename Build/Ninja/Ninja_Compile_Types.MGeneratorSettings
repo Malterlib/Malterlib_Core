@@ -1,0 +1,148 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+GeneratorSetting
+{
+	!!Compiler "Clang"
+
+	Compile_BuiltinSearchPath =+ {
+		Flags: Compile.BuiltinSearchPath->f_PrefixFlags("-I")
+		, Type: "unique"
+	}
+}
+
+Property
+{
+	CompileSupported: bool = !([
+		"CSS"
+		, "Header"
+		, "JavaScript"
+		, "JSON"
+		, "MalterlibBuildSystem"
+		, "None"
+		, "PList"
+		, "Python"
+		, "ShellScript"
+		, "SVG"
+		, "VisualStudioVisualizer"
+		, "XML"
+		, "HTML"
+	]->ContainsListElement(Compile.Type))
+}
+
+Compile
+{
+	Disabled true
+	{
+		!CompileSupported true
+	}
+
+	BuildDisabled: bool = false
+}
+
+GeneratorSetting
+{
+	|
+	{
+		Compile.Type "Custom"
+		Compile.GenericCompileType "GenericCustom"
+	}
+
+	CalculateCommandLine: string
+	CalculateCommandLine `set -eo pipefail\n`\
+	`@(Compile.Custom_CommandLine)\n`
+
+	Compile_Custom_CommandLine #<Rule.command> `@(Compile.Custom_Shell) @(GeneratorSetting.CalculateCommandLine->Escape())`
+	{
+		!Compile.Custom_Shell undefined
+	}
+	Compile_Custom_CommandLine #<Rule.command> Compile.Custom_CommandLine
+	{
+		!!Compile.Custom_Shell undefined
+	}
+
+	Compile_Type #<Build.description> `Custom rule @(this.Identity->GetFile())`
+	Compile_Custom_Outputs #<Build.outputs> =+ Compile.Custom_Outputs
+	Compile_Custom_Inputs #<Build.implicit_dependencies> =+ Compile.Custom_Inputs
+	Compile_Custom_WorkingDirectory #<Rule.command_cwd> Compile.Custom_WorkingDirectory
+
+	Compile_Type #<Rule.environment> += Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
+	Compile_Type #<Rule.environment> += {
+		PATH: `@(Target.ToolPath->Join(":")):@(PATH)`
+	}
+	{
+		&
+		{
+			!Target.ToolPath undefined
+			!Target.ToolPath []
+		}
+	}
+}
+
+GeneratorSetting
+{
+	Compile_Custom_Shell += {}
+	{
+		!!GeneratorSetting.Compile_Custom_Shell undefined
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		Compile.Type "Assembler"
+		!PlatformFamily "Windows" // Uses MASM
+	}
+
+	Compile_SearchPath =+ {
+		Flags: Compile.SearchPath->f_PrefixFlags("-I")
+		, Type: "unique"
+	}
+
+	Compile_PreprocessorDefines =+ {
+		Flags: Compile.PreprocessorDefines->f_PrefixFlags("-D")
+		, Type: "unique"
+	}
+
+	Compile_AllCPUSubTypes =+ {
+		Flags: Compile.AllCPUSubTypes->SwitchWithError(
+			"Unsupported option: "
+			, true, "-force_cpusubtype_ALL"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	Compile_Optimize {}
+}
+
+Property
+{
+	f_GetObjectOutputs function(string _Output) [string] = []
+
+	f_GetObjectOutputs =+ _Output
+	{
+		|
+		{
+			_Output->GetExtension() ".o"
+			_Output->GetExtension() ".obj"
+			_Output->GetExtension() ".a"
+		}
+	}
+}
+
+Compile
+{
+	&
+	{
+		|
+		{
+			Compile.Type "Custom"
+			Compile.GenericCompileType "GenericCustom"
+		}
+		!Compile.Disabled true
+	}
+
+	LinkerInputs =+ (Compile.Custom_Outputs || [])->ForEach(&f_GetObjectOutputs)
+}

@@ -1,0 +1,140 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+// NASM assembler compilation support for Ninja generator
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		Compile.Type "AssemblerNasm"
+	}
+
+	// NASM output file name
+	ObjectFileName Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt())_@(this.EntityPath->HashSHA256(8)).@(Ninja_ObjectFileExtension)`
+}
+
+GeneratorSetting
+{
+	!!Compile.Type "AssemblerNasm"
+
+	// NASM executable path - user configurable, defaults to "nasm" (assumes in PATH)
+	NasmPath: string?
+
+	// NASM output format based on platform and architecture
+	NasmOutputFormat: string?
+	NasmOutputFormat "win64"
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			Architecture "x64"
+		}
+	}
+	NasmOutputFormat "win32"
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			Architecture "x86"
+		}
+	}
+	NasmOutputFormat "elf64"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Architecture "x64"
+		}
+	}
+	NasmOutputFormat "elf32"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Architecture "x86"
+		}
+	}
+	NasmOutputFormat "macho64"
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			Architecture "x64"
+		}
+	}
+	NasmOutputFormat "macho64"
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			Architecture "arm64"
+		}
+	}
+
+	// NASM executable path (use NasmPath if set, otherwise default to 'nasm')
+	NasmExecutable: string = `nasm@(HostExecutableExtension)`
+
+	NasmExecutable Target.NasmPath / `nasm@(HostExecutableExtension)`
+	{
+		&
+		{
+			GeneratorSetting.NasmExecutable undefined
+			!Target.NasmPath undefined
+		}
+	}
+
+	Compile_Type #<Build.inputs> =+ this.Identity
+
+	Compile_Type #<Rule.command> `@(GeneratorSetting.NasmExecutable->Escape()) -f @(GeneratorSetting.NasmOutputFormat) @(Builtin.Flags) @(Builtin.Input)`
+	Compile_Type #<Build.description> `Assembling (NASM) @(this.Identity->GetFile())`
+
+	Compile_ObjectFileName #<Build.outputs> =+ Compile.ObjectFileName
+
+	Compile_ObjectFileName =+ {
+		Flags: [["-o", Compile.ObjectFileName]]
+		, FlagsPriority: -1000
+	}
+
+	Compile_PreprocessorDefines =+ {
+		Flags: Compile.PreprocessorDefines->f_PrefixFlags("-D")
+		, Type: "unique"
+	}
+
+	Compile_SearchPath =+ {
+		Flags: Compile.SearchPath->f_PrefixFlags("-I")
+		, Type: "unique"
+	}
+
+	Compile_ExtraCompilerFlags =+ {
+		Flags: Compile.ExtraCompilerFlags
+		, Type: "multiple"
+	}
+
+	// Empty handlers for settings not applicable to NASM
+	Compile_Optimize =+ {}
+	Compile_Warnings =+ {}
+	Compile_WarningsAsErrors =+ {}
+	Compile_Symbols =+ {}
+	Compile_SystemSearchPath =+ {}
+}
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		Compile.Type "AssemblerNasm"
+		!Compile.Disabled true
+	}
+
+	LinkerInputs =+ Compile.ObjectFileName
+	{
+		&
+		{
+			this.Type "File"
+		}
+	}
+}
+
