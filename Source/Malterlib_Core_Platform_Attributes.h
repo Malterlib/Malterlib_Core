@@ -51,7 +51,7 @@
 
 // Force linking
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define assure_used __attribute__((used))
+#	define assure_used __attribute__((used)) __attribute__((retain))
 #elif defined(DCompiler_MSVC)
 #	define assure_used
 #else
