@@ -179,10 +179,6 @@ private:
 			TCVector<NLocalWindows::SYSTEM_HANDLE> &Iter = *_pProcessInfo->m_Iter;
 			DWORD Process = _pProcessInfo->m_Iter.f_GetKey();
 			_pProcessInfo->m_hProcess = OpenProcess(PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,	FALSE, Process);
-			if (Process == GetCurrentProcessId())
-			{
-				int notehunoteh = 0; notehunoteh;
-			}
 
 			if(_pProcessInfo->m_hProcess && _pProcessInfo->m_hProcess != INVALID_HANDLE_VALUE)
 			{

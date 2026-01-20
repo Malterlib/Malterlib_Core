@@ -64,8 +64,7 @@ namespace NMib
 						if (NeededLen)
 						{
 							tf_CWindows ShortPathW;
-							mint NeededLen2 = GetShortPathNameW(TempW, ShortPathW.f_GetStr(NeededLen), NeededLen);
-							NeededLen2;
+							[[maybe_unused]] mint NeededLen2 = GetShortPathNameW(TempW, ShortPathW.f_GetStr(NeededLen), NeededLen);
 							DMibSafeCheck(NeededLen2 <= NeededLen, "");
 							TempW = ShortPathW + "\\" + File;
 							if (TempW.f_CmpNoCase("\\\\?\\UNC\\", 8) == 0)
@@ -93,8 +92,7 @@ namespace NMib
 						if (NeededLen)
 						{
 							tf_CWindows ShortPathW;
-							mint NeededLen2 = GetShortPathNameW(ToRetW, ShortPathW.f_GetStr(NeededLen), NeededLen);
-							NeededLen2;
+							[[maybe_unused]] mint NeededLen2 = GetShortPathNameW(ToRetW, ShortPathW.f_GetStr(NeededLen), NeededLen);
 							DMibSafeCheck(NeededLen2 <= NeededLen, "");
 							auto TempW = ShortPathW;
 							if (TempW.f_CmpNoCase("\\\\?\\UNC\\", 8) == 0)
@@ -140,8 +138,7 @@ namespace NMib
 				if (NeededLen)
 				{
 					tf_CWindows ShortPathW;
-					mint NeededLen2 = GetShortPathNameW(ToRetW, ShortPathW.f_GetStr(NeededLen), NeededLen);
-					NeededLen2;
+					[[maybe_unused]] mint NeededLen2 = GetShortPathNameW(ToRetW, ShortPathW.f_GetStr(NeededLen), NeededLen);
 					DMibSafeCheck(NeededLen2 <= NeededLen, "");
 					auto TempW = ShortPathW;
 					if (TempW.f_CmpNoCase("\\\\?\\UNC\\", 8) == 0)
@@ -176,8 +173,7 @@ namespace NMib
 				if (NeededLen)
 				{
 					tf_CWindows LongPathW;
-					mint NeededLen2 = GetLongPathNameW(ToRetW, LongPathW.f_GetStr(NeededLen), NeededLen);
-					NeededLen2;
+					[[maybe_unused]] mint NeededLen2 = GetLongPathNameW(ToRetW, LongPathW.f_GetStr(NeededLen), NeededLen);
 					DMibSafeCheck(NeededLen2 <= NeededLen, "");
 					return LongPathW;
 				}
