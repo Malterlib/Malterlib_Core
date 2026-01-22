@@ -16,9 +16,9 @@ export "PATH=/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin
 
 Workspace="${1:-Tests}"
 Target="${2:-Build All}"
-Platform="${3:-$HostPlatform}"
-Architecture="${4:-$HostArchitecture}"
-Config="${5:-Debug}"
+Platform="${3:-$MalterlibDefaultPlatform}"
+Architecture="${4:-$MalterlibDefaultArchitecture}"
+Config="${5:-$MalterlibDefaultConfiguration}"
 BuildSystemDir="${6:-BuildSystem/Default}"
 
 echo xcodebuild -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"

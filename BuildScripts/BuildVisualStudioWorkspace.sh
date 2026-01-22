@@ -13,9 +13,9 @@ source "$DIR/DetectSystem.sh"
 source ./BuildSystem/SharedBuildSettings.sh
 
 Workspace="${1:-Tests}"
-Platform="${2:-$HostPlatform}"
-Architecture="${3:-$HostArchitecture}"
-Config="${4:-Debug}"
+Platform="${2:-$MalterlibDefaultPlatform}"
+Architecture="${3:-$MalterlibDefaultArchitecture}"
+Config="${4:-$MalterlibDefaultConfiguration}"
 BuildSystemDir="${5:-BuildSystem/Default}"
 
 ExtraParams=

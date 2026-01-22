@@ -15,9 +15,9 @@ source ./BuildSystem/SharedBuildSettings.sh
 export "PATH=/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:$PATH"
 
 Workspace="${1:-Tests}"
-Platform="${2:-$HostPlatform}"
-Architecture="${3:-$HostArchitecture}"
-Config="${4:-Debug}"
+Platform="${2:-$MalterlibDefaultPlatform}"
+Architecture="${3:-$MalterlibDefaultArchitecture}"
+Config="${4:-$MalterlibDefaultConfiguration}"
 BuildSystemDir="${5:-BuildSystem/Default}"
 
 echo xcodebuild -workspace "$BuildSystemDir/$Workspace.xcworkspace" -scheme "Build All $Platform $Architecture $Config"
