@@ -360,18 +360,15 @@ while true; do
 			echo
 		}
 
-		OutputInfo '[Generating]'
-		./mib generate Tests
-		source BuildSystem/SharedBuildSettings.sh
+		OutputInfo '[Building]'
+		./mib build Tests
 		OutputTime
 
-		OutputInfo '[Building]'
-		./mib build Tests "$HostPlatform" "$HostArchitecture" "$1"
-		OutputTime
+		source BuildSystem/SharedBuildSettings.sh
 
 		OutputInfo '[Testing]'
 
-		if "$MalterlibDeployRoot/Tests/RunAllTests" --quiet ; then
+		if "$MalterlibDeployRoot/Tests/RunAllTests" "$@"; then
 			OutputTime
 			OutputHeading Success
 		else
@@ -432,14 +429,7 @@ while true; do
 			./Malterlib/Core/BuildScripts/BuildWorkspace.sh "$@"
 		;;
 		test)
-			Config=Debug
-			if [[ "$1" != "" ]]; then
-				Config="$1"
-			fi
-			RunTests "$Config"
-		;;
-		test_release)
-			RunTests "Release (Tests)"
+			RunTests "$@"
 		;;
 		build_target)
 			./Malterlib/Core/BuildScripts/BuildTarget.sh "$@"
