@@ -61,7 +61,18 @@ if [[ "$MalterlibPlatform" ==  Windows ]]; then
 	export MTool
 fi
 
-export PATH="$MToolPath:$PATH"
+function AddToPathIfNotAdded()
+{
+	if [ -d "$1" ]; then
+		if [[ ":$PATH:" != *":$1:"* ]]; then
+			export PATH="$1:$PATH"
+		fi
+	fi
+}
+
+AddToPathIfNotAdded "$MToolPath"
+
+export AddToPathIfNotAdded
 
 export CallDirect
 

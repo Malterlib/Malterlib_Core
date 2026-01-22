@@ -9,8 +9,21 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 SysName=$(uname -s)
+
+function AddToPathIfNotAdded()
+{
+	if [ -d "$1" ]; then
+		if [[ ":$PATH:" != *":$1:"* ]]; then
+			export PATH="$1:$PATH"
+		fi
+	fi
+}
+
 if [[ $SysName ==  Darwin* ]] ; then
-	export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:$PATH"
+	AddToPathIfNotAdded "/usr/local/bin"
+	AddToPathIfNotAdded "/usr/local/sbin"
+	AddToPathIfNotAdded "/opt/homebrew/bin"
+	AddToPathIfNotAdded "/opt/homebrew/sbin"
 fi
 
 pushd "$DIR/../../.." > /dev/null
