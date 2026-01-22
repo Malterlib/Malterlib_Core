@@ -20,17 +20,16 @@ Malterlib is a comprehensive C++ framework and build system that provides cross-
 # Generate build system for a workspace
 ./mib generate [WorkspaceName]
 
-# Build a workspace
-MalterlibBuildShowProgress=false ./mib build [WorkspaceName] [Platform] [Architecture] [Configuration]
-# Example: ./mib build Tests macOS arm64 Debug
+# Generate and build a workspace
+MalterlibBuildShowProgress=false ./mib build WorkspaceName [Platform] [Architecture] [Configuration]
+# Example: ./mib build Tests
 
-# Build a specific target within a workspace
-MalterlibBuildShowProgress=false ./mib build_target [WorkspaceName] [TargetName] [Platform] [Architecture] [Configuration]
-# Example: ./mib build Tests Com_Test_Malterlib_Container macOS arm64 Debug
+# Generate and build a specific target within a workspace
+MalterlibBuildShowProgress=false ./mib build_target WorkspaceName TargetName [Platform] [Architecture] [Configuration]
+# Example: ./mib build Tests Com_Test_Malterlib_Container
 
-# Build and run tests
-./mib test [Configuration]  # Default is Debug
-./mib test_release          # Run tests with Release configuration
+# Generate, build and run tests
+MalterlibBuildShowProgress=false ./mib test
 
 # Update repositories
 ./mib update_repos
@@ -50,16 +49,13 @@ MalterlibBuildShowProgress=false ./mib build_target [WorkspaceName] [TargetName]
 # Push changes across all repositories
 ./mib push
 
-# Clean up branches that have been pushed
-./mib cleanup-branches [BranchNames...]
-
 # Run a specific test
 /opt/Deploy/Tests/RunAllTests --paths '["Path/To/Test", "Path/To/Test2", "Path/To/Test*"]' # macOS
 /Deploy/Tests/RunAllTests --paths '["Path/To/Test", "Path/To/Test2", "Path/To/Test*"]' # Linux
 /c/Tests/RunAllTests --paths '["Path/To/Test", "Path/To/Test2", "Path/To/Test*"]' # Windows
 
-# Run tests with quiet output (only show failures)
-/opt/Deploy/Tests/RunAllTests --quiet
+# Run tests without quiet output
+/opt/Deploy/Tests/RunAllTests --no-quiet
 
 # Get help for mib commands
 ./mib --help
@@ -67,6 +63,8 @@ MalterlibBuildShowProgress=false ./mib build_target [WorkspaceName] [TargetName]
 ```
 
 Remember to use MalterlibBuildShowProgress=false when building so you don't get overwhelmed with uncessary output.
+
+To change the platform to target edit BuildSystem/Default/UserSettings.MSettings and change (and uncomment if needed) SingleArchitecture, SingleConfiguration, SinglePlatform
 
 ### Build Configurations
 - **Debug** - Debug build with assertions and debug symbols
@@ -115,15 +113,12 @@ Located in `External/` directory:
 ### Adding New Code
 1. Place code in appropriate module directory under `Malterlib/`
 2. Update or create `.MHeader` files to include new targets
-3. Run `./mib generate` to regenerate build files
-4. Build with `MalterlibBuildShowProgress=false ./mib build [workspace]`
+3. Generate and build with `MalterlibBuildShowProgress=false ./mib build [workspace]`
 
 ### Running Tests
-1. Generate test workspace: `./mib generate Tests`
-2. Build tests: `MalterlibBuildShowProgress=false ./mib build Tests [Platform] [Architecture] Debug`
-3. Run tests: `./mib test` or directly execute `RunAllTests` binary
-4. To run specific tests: `/opt/Deploy/Tests/RunAllTests --paths '["Module/Test/Name"]'`
-5. For continuous testing during development: build with Debug configuration for faster iteration
+1. Build and run tests: `./mib test`
+2. To run specific tests: `/opt/Deploy/Tests/RunAllTests --paths '["Module/Test/Name"]'`
+3. Build and run specific tests: `./mib test --paths '["Module/Test/Name"]'`
 
 ### Repository Management
 - Check status: `./mib status`
