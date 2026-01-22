@@ -9,14 +9,22 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/DetectSystem.sh"
+source ./BuildSystem/SharedBuildSettings.sh
 
-if [[ "$MalterlibPlatform" == "Windows" ]] ; then
-	"$DIR/PostbuildVisualStudio.sh" "$@"
-	exit $?
-elif [[ "$MalterlibPlatform" == "macOS" ]] || [[ "$MalterlibPlatform" == "Linux" ]] ; then
-	"$DIR/PostbuildXcode.sh" "$@"
-	exit $?
-else
-	echo Unknown system, aborting build
-	exit 1
-fi
+for Argument in "$@" ; do
+	echo Cleaning workspace: $Argument
+	if [ -f "BuildSystem/Default/Files/$Argument/Paths.sh" ]; then
+		source "BuildSystem/Default/Files/$Argument/Paths.sh"
+		WorkspacePathVariableName="WorkspaceBase_$Argument"
+		CleanPath=${!WorkspacePathVariableName}
+	else
+		CleanPath=${MalterlibCompiledFilesSourceBase}/${Argument}
+	fi
+	echo CleanPath: ${CleanPath}
+	if [ -d "$CleanPath/Int" ] ; then
+		MTool DeleteDirectoryRecursive "$CleanPath/Int"
+	fi
+	if [ -d "$CleanPath/Out" ] ; then
+		MTool DeleteDirectoryRecursive "$CleanPath/Out"
+	fi
+done

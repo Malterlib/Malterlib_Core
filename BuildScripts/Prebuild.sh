@@ -80,13 +80,88 @@ if [ -x "$MLBuildPrebuild" ]; then
 	"./$MLBuildPrebuild" "$@"
 fi
 
-if [[ "$MalterlibPlatform" == "Windows" ]] ; then
-	"$DIR/PrebuildVisualStudio.sh" "$@"
-	exit $?
-elif [[ "$MalterlibPlatform" == "macOS" ]] || [[ "$MalterlibPlatform" == "Linux" ]]; then
-	"$DIR/PrebuildXcode.sh" "$@"
-	exit $?
-else
-	echo Unknown system, aborting build
+export MalterlibDoingProductBuild=true
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+BuildSystem="$1"
+Generator="$Malterlib_Generator"
+Extension=MBuildSystem
+
+if ! [[ $# -gt 0 ]]; then
+	echo "You have to specify the build system"
 	exit 1
 fi
+
+shift
+
+if ! [[ $# -gt 0 ]]; then
+	echo "You have to specify the workspaces"
+	exit 1
+fi
+
+GenerateAction="ReBuild"
+if [ "$MalterlibPreBuildNoReBuild" == "true" ]; then
+	GenerateAction="Build"
+fi
+
+for Argument in "$@" ; do
+	if [[ $Argument = Generator\=* ]] ; then
+		Generator="${Argument/Generator\=/}"
+		echo Set generator to: $Generator
+	elif [[ $Argument = Extension\=* ]] ; then
+		Extension="${Argument/Extension\=/}"
+		echo Set extension to: $Extension
+	else
+		echo Generating $Argument
+
+		if [[ "$Generator" =~ ^Xcode ]] && [[ "$MalterlibPlatform" == "macOS" ]] ; then
+			# Set Xcode build location to legacy
+			defaults write com.apple.dt.Xcode IDEBuildLocationStyle DeterminedByTargets
+		fi
+
+		set +e
+		"$BuildSystemRoot/mib" generate --build-system "$BuildSystem.$Extension" --generator "$Generator" --no-use-user-settings  --action $GenerateAction "$Argument"
+		GenError="$?"
+		set -e
+		if [[ $GenError -ne 0 ]] && [[ $GenError -ne 2 ]] ; then
+			echo "Build system generation failed with $GenError, aborting"
+			exit 1
+		fi
+	fi
+done
+
+source ./BuildSystem/SharedBuildSettings.sh
+
+Generator="$Malterlib_Generator"
+Extension=MBuildSystem
+
+if [ "$MalterlibPreBuildNoClean" != "true" ] ; then
+	for Argument in "$@" ; do
+		if [[ $Argument = Generator\=* ]] ; then
+			Generator="${Argument/Generator\=/}"
+		elif [[ $Argument = Extension\=* ]] ; then
+			Extension="${Argument/Extension\=/}"
+		else
+			echo Cleaning workspace: $Argument
+			if [ -f "BuildSystem/Default/Files/$Argument/Paths.sh" ]; then
+				source "BuildSystem/Default/Files/$Argument/Paths.sh"
+				WorkspacePathVariableName="WorkspaceBase_$Argument"
+				CleanPath=${!WorkspacePathVariableName}
+			else
+				CleanPath=${MalterlibCompiledFilesSourceBase}/${Argument}
+			fi
+
+			echo CleanPath: ${CleanPath}
+			if [ -d "$CleanPath/Int" ] ; then
+				MTool DeleteDirectoryRecursive "$CleanPath/Int"
+			fi
+			if [ -d "$CleanPath/Out" ] ; then
+				MTool DeleteDirectoryRecursive "$CleanPath/Out"
+			fi
+		fi
+	done
+fi
+
+exit 0
+
