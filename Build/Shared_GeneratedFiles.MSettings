@@ -233,35 +233,6 @@ Property
 		!!MalterlibUseCustomXcodeToolchain true
 	}
 
-	MalterlibUseXCodeBuild: bool = false
-
-	SharedBuildSettingsScriptContents =+	`export XCodeBuildTool="xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs"\r\n`
-	{
-		&
-		{
-			MalterlibUseXCodeBuild true
-			HostPlatformFamily "macOS"
-		}
-	}
-
-	SharedBuildSettingsScriptContents =+	`function XCodeBuild_Pretty()\r\n`\
-											`{\r\n`\
-											`	oldstate="$(shopt -po; shopt -p)"\r\n`\
-											`	set -eo pipefail\r\n`\
-											`	export LC_CTYPE="en_US.UTF-8"\r\n`\
-											`	xcodebuild @(XcodeBuildToolChain) -jobs $NumCPUs "$@@" 2>&1 | MTool XcodeBuildFilter\r\n`\
-											`	eval "$oldstate"\r\n`\
-											`}\r\n`\
-											`export XCodeBuild_Pretty\r\n`\
-											`export XCodeBuildTool=XCodeBuild_Pretty\r\n`
-	{
-		&
-		{
-			!MalterlibUseXCodeBuild true
-			HostPlatformFamily "macOS"
-		}
-	}
-
 	SharedBuildSettingsScriptContents =+	`\r\n`\
 											`function CleanWorkspaceForConfig()\r\n`\
 											`{\r\n`\
