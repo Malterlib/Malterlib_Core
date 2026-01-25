@@ -1635,15 +1635,50 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _Filename, NMib
 	auto Span = _Time - EpochStart;
 	timespec TimeSpec;
 	TimeSpec.tv_sec = Span.f_GetSeconds();
-	TimeSpec.tv_nsec = (Span.f_GetFraction() * fp64(1000000000.0)).f_ToInt();
+
+	// Convert fraction to nanoseconds using integer arithmetic with rounding
+	// to avoid precision loss from floating-point truncation
+	uint64 FractionInt = Span.f_GetFractionInt();
+	constexpr uint64 Billion = 1'000'000'000;
+	constexpr uint64 Divisor = NTime::NPrivate::CConst::mc_FractionDividend / Billion;
+
+	// Integer division with rounding: (a + b/2) / b rounds to nearest
+	uint64 Nanoseconds = (FractionInt + Divisor / 2) / Divisor;
+
+	// Handle overflow if nanoseconds rounds to 1 second
+	if (Nanoseconds >= Billion)
+	{
+		++TimeSpec.tv_sec;
+		TimeSpec.tv_nsec = 0;
+	}
+	else
+	{
+		TimeSpec.tv_nsec = static_cast<long>(Nanoseconds);
+	}
+
 	return TimeSpec;
 }
 
 static NTime::CTime fsg_TimespecToCTime(timespec const &_DateTime)
 {
 	static CTime EpochStart = NTime::CTimeConvert::fs_CreateTime(1970, 1, 1);
-	fp64 Fraction = fp64(_DateTime.tv_nsec) / fp64(1000000000.0);
-	return EpochStart + CTimeSpanConvert_BabylonianCommon::fs_CreateSpanFromSeconds(_DateTime.tv_sec, Fraction);
+
+	// Convert nanoseconds to internal fraction using integer arithmetic
+	// FractionInt = Nanoseconds * mc_FractionDividend / 1e9
+	//             = Nanoseconds * (Divisor * 1e9 + Remainder) / 1e9
+	//             = Nanoseconds * Divisor + Nanoseconds * Remainder / 1e9
+	constexpr uint64 Billion = 1'000'000'000;
+	constexpr uint64 Divisor = NTime::NPrivate::CConst::mc_FractionDividend / Billion;
+	constexpr uint64 Remainder = NTime::NPrivate::CConst::mc_FractionDividend % Billion;
+
+	uint64 Nanoseconds = _DateTime.tv_nsec;
+	uint64 FractionInt = Nanoseconds * Divisor + Nanoseconds * Remainder / Billion;
+
+	CTimeSpan Span;
+	Span.f_SetSecondsNoFraction(_DateTime.tv_sec);
+	Span.f_SetFractionInt(FractionInt);
+
+	return EpochStart + Span;
 }
 
 NTime::CTime NSys::NFile::fg_GetCreationTime(void *_pFile)

@@ -23,9 +23,21 @@ namespace NMib
 
 				uint64 Nano100 = Temp.QuadPart;
 				uint64 nSeconds = Nano100 / 10000000;
+				uint64 Nano100Remainder = Nano100 % 10000000;
+
+				// Convert 100-nanosecond units to internal fraction using integer arithmetic
+				// FractionInt = Nano100Remainder * mc_FractionDividend / 10,000,000
+				//             = Nano100Remainder * (Divisor * 10,000,000 + Remainder) / 10,000,000
+				//             = Nano100Remainder * Divisor + Nano100Remainder * Remainder / 10,000,000
+				constexpr uint64 TenMillion = 10'000'000;
+				constexpr uint64 Divisor = NTime::NPrivate::CConst::mc_FractionDividend / TenMillion;
+				constexpr uint64 Remainder = NTime::NPrivate::CConst::mc_FractionDividend % TenMillion;
+
+				uint64 FractionInt = Nano100Remainder * Divisor + Nano100Remainder * Remainder / TenMillion;
+
 				NTime::CTimeSpan FileTimeSpan;
-				FileTimeSpan.f_SetSeconds(nSeconds);
-				FileTimeSpan.f_SetFraction(fp64(Nano100 % 10000000) / fp64(10000000.0));
+				FileTimeSpan.f_SetSecondsNoFraction(nSeconds);
+				FileTimeSpan.f_SetFractionInt(FractionInt);
 
 				return FileTimeSpan;
 			}
@@ -42,9 +54,23 @@ namespace NMib
 				NTime::CTime BaseTime = g_FileTimeBase;
 				NTime::CTimeSpan FileTimeSpan = _Time - BaseTime;
 
+				// Convert internal fraction to 100-nanosecond units using integer arithmetic with rounding
+				// Nano100 = FractionInt * 10,000,000 / mc_FractionDividend
+				//         = (FractionInt + Divisor/2) / Divisor  (with rounding)
+				constexpr uint64 TenMillion = 10'000'000;
+				constexpr uint64 Divisor = NTime::NPrivate::CConst::mc_FractionDividend / TenMillion;
+
+				uint64 FractionInt = FileTimeSpan.f_GetFractionInt();
+				uint64 Nano100 = (FractionInt + Divisor / 2) / Divisor;
+
 				LARGE_INTEGER Temp;
-				Temp.QuadPart = FileTimeSpan.f_GetSeconds() * 10000000;
-				Temp.QuadPart += (FileTimeSpan.f_GetFraction() * 10000000.0).f_ToInt();
+				Temp.QuadPart = FileTimeSpan.f_GetSeconds() * TenMillion;
+
+				// Handle overflow if Nano100 rounds to TenMillion
+				if (Nano100 >= TenMillion)
+					Temp.QuadPart += TenMillion;
+				else
+					Temp.QuadPart += Nano100;
 
 				o_FileTime.dwHighDateTime = Temp.HighPart;
 				o_FileTime.dwLowDateTime = Temp.LowPart;
