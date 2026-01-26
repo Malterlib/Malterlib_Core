@@ -77,7 +77,7 @@ namespace NMib
 					DMibError(NStr::CStr::CFormat("In sandbox QueryDosDevice failed: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 				}
 
-				return _In.f_Replace(Drive, DeviceName).f_ReplaceChar('/', '\\');
+				return _In.f_Replace(NStr::CStr(Drive), NStr::CStr(DeviceName)).f_ReplaceChar('/', '\\');
 			}
 
 			void fg_RemoveDosDevice(NStr::CStr const &_Device)
