@@ -13,7 +13,8 @@ GeneratorSetting
 
 Property
 {
-	CompileSupported: bool = !([
+	CompileSupported: bool = false
+	CompileSupported !([
 		"CSS"
 		, "Header"
 		, "JavaScript"
@@ -27,7 +28,15 @@ Property
 		, "VisualStudioVisualizer"
 		, "XML"
 		, "HTML"
-	]->ContainsListElement(Compile.Type))
+	]->ContainsListElement(Compile.Type
+	))
+	{
+		&
+		{
+			!Compile.Type undefined
+			!Compile.Type ""
+		}
+	}
 }
 
 Compile
@@ -79,6 +88,19 @@ GeneratorSetting
 	}
 }
 
+Compile
+{
+	CompileTypeDependencies =+ "Custom"
+	{
+		!!ClangCanCompile true
+	}
+}
+
+Property
+{
+	AllCompileTypeDependencies =+ "Custom"
+}
+
 GeneratorSetting
 {
 	Compile_Custom_Shell += {}
@@ -120,14 +142,27 @@ GeneratorSetting
 Property
 {
 	f_GetObjectOutputs function(string _Output) [string] = []
-
 	f_GetObjectOutputs =+ _Output
 	{
 		|
 		{
-			_Output->GetExtension() ".o"
-			_Output->GetExtension() ".obj"
-			_Output->GetExtension() ".a"
+			_Output->GetExtension() "o"
+			_Output->GetExtension() "obj"
+			_Output->GetExtension() "a"
+		}
+	}
+
+	f_GetHeaderOutputs function(string _Output) [string] = []
+	f_GetHeaderOutputs =+ _Output
+	{
+		|
+		{
+			_Output->GetExtension() "h"
+			_Output->GetExtension() "hpp"
+			_Output->GetExtension() "hxx"
+			_Output->GetExtension() "i"
+			_Output->GetExtension() "ipp"
+			_Output->GetExtension() "ixx"
 		}
 	}
 }
@@ -145,4 +180,18 @@ Compile
 	}
 
 	LinkerInputs =+ (Compile.Custom_Outputs || [])->ForEach(&f_GetObjectOutputs)
+}
+
+Target
+{
+	AllFiles_Custom: [string] = []
+
+}
+
+GeneratorSetting
+{
+	Target_AllFiles_Custom {}
+
+	CompileTypeOutputs_Custom: [string] = []
+	CompileTypeOutputs_Custom =+ (Compile.Custom_Outputs || [])->ForEach(&f_GetHeaderOutputs)
 }

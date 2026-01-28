@@ -243,6 +243,7 @@ GeneratorSetting
 
 Import "Ninja_Target.MGeneratorSettings"
 Import "Ninja_Compile.MGeneratorSettings"
+Import "Ninja_CompileTypeDependencies.MGeneratorSettings"
 Import "Ninja_Resource.MGeneratorSettings"
 Import "Ninja_DriverKitInterface.MGeneratorSettings"
 Import "Ninja_Nib.MGeneratorSettings"

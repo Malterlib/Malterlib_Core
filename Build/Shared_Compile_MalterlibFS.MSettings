@@ -155,6 +155,14 @@ GeneratorSetting
 	Compile_Optimize =+ {}
 	Compile_DoCompileAndLink =+ {}
 	Compile_SymbolName =+ {}
+
+	// Compile type outputs for dependency system
+	CompileTypeOutputs_MalterlibFS: [string] = []
+	CompileTypeOutputs_MalterlibFS =+ Compile.ObjectFileName
+	CompileTypeOutputs_MalterlibFS =+ Compile.CppFileName
+	{
+		!Compile.CppFileName undefined
+	}
 }
 
 Target

@@ -1,0 +1,47 @@
+// Copyright © 2026 Unbroken AB
+// Distributed under the MIT license, see license text in LICENSE.Malterlib
+
+Compile
+{
+	CompileTypeDependencies: [string] = []
+}
+
+Property
+{
+	AllCompileTypeDependencies: [string] = []
+}
+
+GeneratorSetting
+{
+	GetCompileTypeOutputs: [string] = []
+	GetCompileTypeOutputs =+ GeneratorSetting.CompileTypeOutputs_@(CompileType)
+	{
+		!Compile.Disabled true
+	}
+
+	f_GetCompileTypeOutput function(string _File) [string] = []
+	f_GetCompileTypeOutput =+ &GeneratorSetting.GetCompileTypeOutputs->GetProperty(_File, {CompileType: CompileType})
+
+	f_GetCompileTypePhony function(string _CompileType) string = ""
+	f_GetCompileTypePhony `Compile Type @(_CompileType) @(Target:Target.Name)`
+
+	f_GetCompileTypeOutputs function(string _CompileType) [string] = Target:Target.AllFiles_@(_CompileType)->ForEach(&GeneratorSetting.f_GetCompileTypeOutput, {CompileType: _CompileType})
+
+	f_CreateCompileTypePhonyRule function(string _CompileType) type(CRulesMap) = {}
+	f_CreateCompileTypePhonyRule {
+		Rule: {
+			Positions: []
+			, Rule: {
+				phony: true
+			}
+			, Build: {
+				outputs: [GeneratorSetting.f_GetCompileTypePhony(_CompileType)]
+				, inputs: GeneratorSetting.f_GetCompileTypeOutputs(_CompileType)
+			}
+		}
+	}
+
+	Target #<OtherRules> =+ AllCompileTypeDependencies->ForEach(&GeneratorSetting.f_CreateCompileTypePhonyRule)
+
+	Compile_CompileTypeDependencies #<Build.order_dependencies> =+ Compile.CompileTypeDependencies->ForEach(&GeneratorSetting.f_GetCompileTypePhony)
+}

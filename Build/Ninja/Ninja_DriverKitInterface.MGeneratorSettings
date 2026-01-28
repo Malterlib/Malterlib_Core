@@ -19,14 +19,17 @@ Target
 GeneratorSetting
 {
 	Target_AllFiles_DriverKitInterface {}
+
+	CompileTypeOutputs_DriverKitInterface: [string] = []
+	CompileTypeOutputs_DriverKitInterface =+ [Compile.IIG_HeaderOutput, Compile.IIG_ImplOutput]
+	{
+		!!Target.DriverType "DriverKit"
+	}
 }
 
-// Define properties for generated files from iig
 Property
 {
-	// Generated implementation file entity for injection
 	IIG_GeneratedFile_Cpp: one_of(type(CEntity), [any]) = []
-
 	IIG_GeneratedFile_Cpp {
 		Name: Compile.IIG_ImplOutput
 		, Properties: {
@@ -49,13 +52,8 @@ Compile
 		Target.DriverType "DriverKit"
 	}
 
-	// Generated header file output path (in IntermediateDirectory)
 	IIG_HeaderOutput: string = Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).h`
-
-	// Generated implementation file output path (in IntermediateDirectory)
 	IIG_ImplOutput: string = Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).iig.cpp`
-
-	// Dependency file for tracking header includes
 	DepFileName: string = Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).iig.d`
 }
 
@@ -70,16 +68,12 @@ GeneratorSetting
 
 	Compile_Type #<Build.inputs> =+ this.Identity
 
-	// iig command: --def <input> --header <header output> --impl <impl output> -- <clang args>
 	Compile_Type #<Rule.command> `@(IIGToolPath->Escape()) --def @(Builtin.Input) --header @(Compile.IIG_HeaderOutput->Escape()) --impl @(Compile.IIG_ImplOutput->Escape()) --deployment-target @(Target.DriverkitDeploymentTarget) -- @(Builtin.Flags)`
 
 	Compile_Type #<Build.description> `Generating DriverKit interface @(this.Identity->GetFile())`
 
-	// Output the header file as primary output, implementation as implicit
-	Compile_Type #<Build.outputs> =+ Compile.IIG_HeaderOutput
-	Compile_Type #<Build.implicit_outputs> =+ Compile.IIG_ImplOutput
+	Compile_Type #<Build.outputs> =+ [Compile.IIG_HeaderOutput, Compile.IIG_ImplOutput]
 
-	// Include paths for iig preprocessing
 	Compile_SearchPath =+ {
 		Flags: Compile.SearchPath->f_PrefixFlags("-I")
 		, Type: "unique"
@@ -100,18 +94,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
-	// SDK root for DriverKit headers
 	Compile_SDKRoot =+ {
 		Flags: ["-isysroot", Compile.SDKRoot->GeneratorSetting.f_GetSDKPath()]
 	}
 
-	// Source language type (iig processes C++ code)
 	Compile_Type =+ {
 		Flags: ["-x", "c++"]
 		, FlagsPriority: 1000
 	}
 
-	// C++ language standard
 	Compile_CxxLanguage =+ {
 		Flags: Compile.CxxLanguage->SwitchWithError(
 			"Unknown C++ language option: "
@@ -128,7 +119,6 @@ GeneratorSetting
 		)
 	}
 
-	// Empty handlers for settings not applicable to iig
 	Compile_Optimize =+ {}
 	Compile_Warnings =+ {}
 	Compile_WarningsAsErrors =+ {}
@@ -138,11 +128,9 @@ GeneratorSetting
 	Compile_PrefixHeader =+ {}
 	Compile_TargetTriple =+ {}
 
-	// Handlers for IIG-specific properties (output handled via Build.outputs above)
 	Compile_IIG_HeaderOutput =+ {}
 	Compile_IIG_ImplOutput =+ {}
 
-	// Dependency file support for tracking header includes
 	Compile_DepFileName =+ {
 		Flags: ["-MD", `-MF@(Compile.DepFileName)`]
 	}
@@ -153,7 +141,6 @@ GeneratorSetting
 	Compile_DepFileName #<Rule.deps> "gcc"
 }
 
-// Group for injecting generated C++ files to be compiled
 Property
 {
 	f_GetIIGGeneratedCpp function(string _File) [type(CEntity)] = []
@@ -172,7 +159,6 @@ Property
 			{
 				Type "C++"
 
-				// Add IntermediateDirectory to search path so generated headers can be found
 				SearchPath =+ Target:Target.IntermediateDirectory
 			}
 		}
@@ -189,4 +175,22 @@ Target
 			LanguageFamily "Native"
 		}
 	}
+}
+
+Compile
+{
+	&
+	{
+		Target.DriverType "DriverKit"
+		ClangCanCompile true
+	}
+
+	CompileTypeDependencies =+ "DriverKitInterface"
+}
+
+Property
+{
+	!!Target.DriverType "DriverKit"
+
+	AllCompileTypeDependencies =+ "DriverKitInterface"
 }

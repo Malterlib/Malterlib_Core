@@ -303,6 +303,7 @@ GeneratorSetting
 Target
 {
 	AllFiles: [string] = []
+	AllFiles_Assembler: [string] = []
 }
 
 GeneratorSetting
@@ -312,6 +313,22 @@ GeneratorSetting
 	Target_AllFiles_C {}
 	Target_AllFiles_ObjC\+\+ {}
 	Target_AllFiles_ObjC {}
+	Target_AllFiles_Assembler {}
+
+	CompileTypeOutputs_C\+\+: [string] = []
+	CompileTypeOutputs_C\+\+ =+ Compile.ObjectFileName
+
+	CompileTypeOutputs_C: [string] = []
+	CompileTypeOutputs_C =+ Compile.ObjectFileName
+
+	CompileTypeOutputs_ObjC\+\+: [string] = []
+	CompileTypeOutputs_ObjC\+\+ =+ Compile.ObjectFileName
+
+	CompileTypeOutputs_ObjC: [string] = []
+	CompileTypeOutputs_ObjC =+ Compile.ObjectFileName
+
+	CompileTypeOutputs_Assembler: [string] = []
+	CompileTypeOutputs_Assembler =+ Compile.ObjectFileName
 }
 
 Compile
