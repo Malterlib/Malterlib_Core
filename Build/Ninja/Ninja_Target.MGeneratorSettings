@@ -348,7 +348,7 @@ GeneratorSetting
 					description: `@(Target:Target.Name) pre build`
 					, outputs: Target:Target.PreBuildScriptOutputs
 					, order_dependencies: [Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetCompileDependencies)...]
-					, implicit_dependencies: Target:Target.PreBuildScriptInputs
+					, implicit_dependencies: [Target:Target.PreBuildScriptFile, Target:Target.PreBuildScriptInputs...]
 					, script_file: Target:Target.PreBuildScriptFile->Escape()
 				}
 			}
@@ -369,7 +369,7 @@ GeneratorSetting
 				, Build: {
 					description: `@(Target:Target.Name) post build`
 					, outputs: Target:Target.PostBuildScriptOutputs
-					, implicit_dependencies: Target:Target.PostBuildScriptInputs
+					, implicit_dependencies: [Target:Target.PostBuildScriptFile, Target:Target.PostBuildScriptInputs...]
 					, script_file: Target:Target.PostBuildScriptFile->Escape()
 				}
 			}
@@ -922,6 +922,11 @@ GeneratorSetting
 	Target_DebuggerCommandArguments =+ {}
 	Target_LocalDebuggerWorkingDirectory =+ {}
 	Target_MToolPath =+ {}
+
+	Target_MalterlibInfoPListFile #<Build.implicit_dependencies> =+ Target:Target.MalterlibInfoPListFile
+	{
+		!MalterlibIsMacOSBundle true
+	}
 	Target_MalterlibInfoPListFile =+ {}
 
 	Target_CharacterSet =+ GeneratorSetting.f_SetSharedFlags(

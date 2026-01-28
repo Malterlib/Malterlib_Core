@@ -3653,6 +3653,16 @@ Property
 	// Process Info.plist and create PkgInfo for non-Xcode builds (Ninja generator)
 	// Use plutil to normalize format like Xcode does
 
+	MalterlibPostBuildScriptInputs =+ Target:Target.MalterlibInfoPListFile
+	{
+		&
+		{
+			MalterlibIsMacOSBundle true
+			!GeneratorFamily "Xcode"
+			!Target:Target.MalterlibInfoPListFile undefined
+		}
+	}
+
 	// Process Info.plist to Contents/ for standard bundles (non-DriverKit)
 	MalterlibPostBuildScriptPreSign =+ `plutil -convert xml1 @(Target:Target.MalterlibInfoPListFile->Escape()) -o @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Info.plist`->Escape())\r\n`
 	{
@@ -5569,6 +5579,11 @@ Target
 	PostBuildScript =+ `@(MalterlibPostBuildScriptPreSign)\r\n`
 	{
 		!MalterlibPostBuildScriptPreSign undefined
+	}
+
+	PostBuildScript =+ `touch @(MalterlibFinalModuleDestination->Escape())\r\n`
+	{
+		!!MalterlibIsMacOSBundle true
 	}
 
 	// Do this before signing as we want to strip the executable
