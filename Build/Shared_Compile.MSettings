@@ -1010,6 +1010,11 @@ Compile
 		{
 			PlatformIsDarwin true
 			PlatformFamily "Linux"
+			&
+			{
+				PlatformFamily "Windows"
+				!GeneratorFamily "VisualStudio"
+			}
 		}
 	}
 
