@@ -58,7 +58,15 @@ Property
 				&
 				{
 					GeneratorFamily "Ninja"
-					HostPlatformFamily "Linux"
+					|
+					{
+						&
+						{
+							MalterlibBuildServerBuild true
+							!HostPlatformFamily "Windows"
+						}
+						HostPlatformFamily "Linux"
+					}
 				}
 				&
 				{

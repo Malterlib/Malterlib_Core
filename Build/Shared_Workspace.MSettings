@@ -56,9 +56,43 @@ Property
 {
 	BuildSystemProtectedEnvironmentVariables: [string] = []
 
+	// Malterlib build server
+	BuildSystemProtectedEnvironmentVariables =+ [
+		"IdsBuildServerLaunchID"
+		, "IdsBuildServerTemp"
+		, "MSBUILD_PIPE_NAME"
+		, "MSBUILDDISABLENODEREUSE"
+		, "_MSPDBSRV_ENDPOINT_"
+		, "MalterlibBuildServerLaunchID"
+		, "MalterlibCompiledFiles"
+		, "MalterlibDevelopmentRoot"
+		, "MalterlibDependenciesDirectory"
+		, "MalterlibSandboxUniqueFiles"
+		, "MalterlibSandboxLimitProcesses"
+		, "MalterlibTerminalWidth"
+		, "MalterlibBoxDrawing"
+		, "MalterlibColor"
+		, "MalterlibColor24Bit"
+		, "P4CLIENT"
+		, "P4USER"
+		, "P4PORT"
+		, "P4HOST"
+		, "P4PASSWD"
+	]
+
+	// VS Code
+	BuildSystemProtectedEnvironmentVariables =+ [
+		"VSCODE_GIT_ASKPASS_EXTRA_ARGS"
+		, "VSCODE_GIT_ASKPASS_MAIN"
+		, "VSCODE_GIT_ASKPASS_NODE"
+		, "VSCODE_GIT_IPC_HANDLE"
+		, "VSCODE_NONCE"
+	]
+
 	// Security/Authentication tokens
 	BuildSystemProtectedEnvironmentVariables =+ [
 		"GITHUB_TOKEN"
+		, "GIT_ASKPASS"
 		, "GH_TOKEN"
 		, "GITLAB_TOKEN"
 		, "CI_JOB_TOKEN"

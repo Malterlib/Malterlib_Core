@@ -35,7 +35,11 @@ Property
 											`	MTool.exe "$@@"\r\n`\
 											`}\r\n`
 	{
-		!!ScriptWindowsBat false
+		&
+		{
+			HostPlatformFamily "Windows"
+			ScriptWindowsBat false
+		}
 	}
 
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibSharedDeployRoot", MalterlibSharedDeployRoot))\r\n`
@@ -78,9 +82,9 @@ Property
 											`@(ScriptExport("Win32SignToolTimestampServerOptions", Win32SignToolTimestampServerOptions))\r\n`\
 											`@(ScriptExport("MalterlibSignCertMacOS", MalterlibSignCertMacOS))\r\n`\
 											`@(ScriptExport("MalterlibSignCertWindows", MalterlibSignCertWindows))\r\n`\
-											`@(ScriptExport("MalterlibDefaultPlatform", SinglePlatform))\r\n`\
-											`@(ScriptExport("MalterlibDefaultArchitecture", SingleArchitecture))\r\n`\
-											`@(ScriptExport("MalterlibDefaultConfiguration", SingleConfiguration))\r\n`\
+											`@(ScriptExport("MalterlibDefaultPlatform", SinglePlatform ?? ""))\r\n`\
+											`@(ScriptExport("MalterlibDefaultArchitecture", SingleArchitecture ?? ""))\r\n`\
+											`@(ScriptExport("MalterlibDefaultConfiguration", SingleConfiguration ?? ""))\r\n`\
 											`\r\n`\
 											`@(ScriptExport("HostPlatformFamily", HostPlatformFamily))\r\n`\
 											`@(ScriptExport("HostPlatform", HostPlatform))\r\n`\
