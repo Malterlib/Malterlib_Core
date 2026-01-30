@@ -188,6 +188,8 @@ GeneratorSetting
 	Ninja_TargetImplicitInputs: [string] = []
 	Ninja_TargetOutputs: [string] = []
 	Ninja_TargetImplicitOutputs: [string] = []
+	Ninja_TargetOrderDependencies: [string] = []
+	Ninja_TargetValidationDependencies: [string] = []
 
 	Ninja_TargetImplicitOutputs =+ MalterlibOriginalModuleDestination
 	{
@@ -500,8 +502,12 @@ GeneratorSetting
 
 GeneratorSetting
 {
-	Target_Type #<Build.order_dependencies> =+ [GeneratorSetting.TargetPhony_LinkDependencies, GeneratorSetting.TargetPhony_CompileDependencies]
-	Target_Type #<Build.validations> =+ [GeneratorSetting.TargetPhony_ValidationDependencies]
+	Ninja_TargetOrderDependencies =+ [GeneratorSetting.TargetPhony_LinkDependencies, GeneratorSetting.TargetPhony_CompileDependencies]
+	Ninja_TargetValidationDependencies [GeneratorSetting.TargetPhony_ValidationDependencies]
+
+	Target_Type #<Build.order_dependencies> =+ GeneratorSetting.Ninja_TargetOrderDependencies
+	Target_Type #<Build.validations> =+ GeneratorSetting.Ninja_TargetValidationDependencies
+
 	Target_Type #<Rule.environment> += Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
 	Target_Type #<Rule.environment> += {
 		PATH: `@(Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
@@ -512,6 +518,28 @@ GeneratorSetting
 			!Target.ToolPath undefined
 			!Target.ToolPath []
 		}
+	}
+
+	Target #<OtherRules> =+ {
+		CleanStaticLibrary: {
+			Positions: []
+			, Rule: {
+				command: `@(GeneratorSetting.Ninja_BashExecutable->Escape()) -c "rm -f @(Builtin.Dollar)target && touch @(Builtin.Dollar)prepfile"`
+				, restat: true
+			}
+			, Build: {
+				outputs: [`@(Target.IntermediateDirectory / MalterlibOriginalModuleDestinationExecutable->GetFile()).prep`]
+				, description: `Preparing @(Builtin.Dollar)target`
+				, inputs: GeneratorSetting.Ninja_TargetInputs
+				, implicit_dependencies: GeneratorSetting.Ninja_TargetImplicitInputs
+				, order_dependencies: GeneratorSetting.Ninja_TargetOrderDependencies
+				, target: MalterlibOriginalModuleDestinationExecutable->EscapeBash()->EscapeBash()->RemovePrefix('"')->RemoveSuffix('"')
+				, prepfile: `@(Target.IntermediateDirectory / MalterlibOriginalModuleDestinationExecutable->GetFile()).prep`->EscapeBash()->EscapeBash()->RemovePrefix('"')->RemoveSuffix('"')
+			}
+		}
+	}
+	{
+		!!Target.Type "StaticLibrary"
 	}
 }
 
@@ -639,6 +667,11 @@ GeneratorSetting
 	Target_Type #<Build.outputs> =+ GeneratorSetting.Ninja_TargetOutputs
 
 	Target_Type #<Build.inputs> =+ GeneratorSetting.Ninja_TargetInputs
+	Target_Type #<Build.order_dependencies> =+ `@(Target.IntermediateDirectory / MalterlibOriginalModuleDestinationExecutable->GetFile()).prep`
+	{
+		!!Target.Type "StaticLibrary"
+	}
+
 	Target_Type #<Build.implicit_outputs> =+ GeneratorSetting.Ninja_TargetImplicitOutputs
 	Target_Type #<Build.implicit_dependencies> =+ GeneratorSetting.Ninja_TargetImplicitInputs
 }
