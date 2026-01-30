@@ -264,7 +264,7 @@ Compile
 
 	Custom_Inputs =+ this.Identity
 
-	Custom_CommandLine `@(Builtin.MToolExe) VirtualFS -o @(Compile.ObjectFileName->Escape()) -ocpp @(Compile.CppFileName->Escape())`
+	Custom_CommandLine `@(Builtin.MToolExe->Escape()) VirtualFS -o @(Compile.ObjectFileName->Escape()) -ocpp @(Compile.CppFileName->Escape())`
 	Custom_CommandLine =+ ` -oidsdepend @(Compile.MalterlibDependencyFileName->Escape())`
 	{
 		!Compile.MalterlibDependencyFileName undefined

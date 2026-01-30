@@ -550,7 +550,7 @@ Target
 {
 	!!Target.Type "Tool"
 
-	CommandLine_Build: string = `MTool CreateFile "@(ToolBuildOutputFile)"`
+	CommandLine_Build: string = `MTool CreateFile @(ToolBuildOutputFile->fg_EscapeCommand())`
 	CommandLine_ReBuild: string?
 	CommandLine_Clean: string?
 
@@ -561,12 +561,12 @@ Target
 
 	CommandLine_Outputs [ToolBuildOutputFile]
 	{
-		!!Target.CommandLine_Build `MTool CreateFile "@(ToolBuildOutputFile)"`
+		!!Target.CommandLine_Build `MTool CreateFile @(ToolBuildOutputFile->fg_EscapeCommand())`
 	}
 
 	CommandLine_AlwaysDirty false
 	{
-		!!Target.CommandLine_Build `MTool CreateFile "@(ToolBuildOutputFile)"`
+		!!Target.CommandLine_Build `MTool CreateFile @(ToolBuildOutputFile->fg_EscapeCommand())`
 	}
 }
 
@@ -4788,8 +4788,8 @@ Property
 				{
 					Type "Custom"
 
-					Custom_CommandLine 	`@(ClangPath) -target @(MalterlibTargetTriple) -c -x c /dev/null -o @(SourceObject->EscapeHost()) && `\
-										`@(ObjCopyPath) --add-section @(`@(RepoDebugInfoSectionName)=@(GeneratedGlobalDirectory / "RepoDebug.json")`->EscapeHost()) --set-section-flags @(RepoDebugInfoSectionName)=readonly,debug @(SourceObject->EscapeHost()) @(OutputFile->EscapeHost())`
+					Custom_CommandLine 	`@(ClangPath->fg_EscapeCommand()) -target @(MalterlibTargetTriple->fg_EscapeCommand()) -c -x c /dev/null -o @(SourceObject->fg_EscapeCommand()) && `\
+										`@(ObjCopyPath->fg_EscapeCommand()) --add-section @(`@(RepoDebugInfoSectionName)=@(GeneratedGlobalDirectory / "RepoDebug.json")`->fg_EscapeCommand()) --set-section-flags @(RepoDebugInfoSectionName)=readonly,debug @(SourceObject->fg_EscapeCommand()) @(OutputFile->fg_EscapeCommand())`
 
 					Custom_Inputs [GeneratedGlobalDirectory / "RepoDebug.json"]
 					Custom_Outputs [OutputFile]

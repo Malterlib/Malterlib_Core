@@ -69,4 +69,20 @@ Property
 	}
 
 	f_RemoveFromArray function([any] _Array, any _ToRemove) [any] = _Array->ForEach(&f_RemoveFromArrayHelper, {ToRemove: _ToRemove})
+
+	fg_EscapeCommand function(string _String) string
+
+	fg_EscapeCommand _String->EscapeWindows()
+	{
+		&
+		{
+			fg_EscapeCommand undefined
+			GeneratorFamily "VisualStudio"
+		}
+	}
+
+	fg_EscapeCommand _String->EscapeBash()
+	{
+		!!fg_EscapeCommand undefined
+	}
 }

@@ -337,7 +337,7 @@ GeneratorSetting
 			All: {
 				Positions: []
 				, Rule: {
-					command: `@(GeneratorSetting.Ninja_BashExecutable->Escape()) -c @(Builtin.Dollar)script_file`
+					command: `@(GeneratorSetting.Ninja_BashExecutable->Escape()) @(Builtin.Dollar)script_file`
 					, restat: true
 					, environment: {
 						PATH: `@(Target:Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
@@ -359,7 +359,7 @@ GeneratorSetting
 			All: {
 				Positions: []
 				, Rule: {
-					command: `@(GeneratorSetting.Ninja_BashExecutable->Escape()) -c @(Builtin.Dollar)script_file`
+					command: `@(GeneratorSetting.Ninja_BashExecutable->Escape()) @(Builtin.Dollar)script_file`
 					, restat: true
 					, environment: {
 						PATH: `@(Target:Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`

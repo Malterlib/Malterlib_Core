@@ -40,9 +40,9 @@ Property
 	{
 		BaseName "GenerateBuildSystem"
 		Type "Tool"
-		CommandLine_Build `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Build`
-		CommandLine_ReBuild `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" ReBuild`
-		CommandLine_Clean `"@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate"))" Clean`
+		CommandLine_Build `@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate")->fg_EscapeCommand()) Build`
+		CommandLine_ReBuild `@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate")->fg_EscapeCommand()) ReBuild`
+		CommandLine_Clean `@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate")->fg_EscapeCommand()) Clean`
 		CommandLine_Outputs [Builtin.GeneratorStateFile]
 		CommandLine_IsGenerator !MalterlibDisableBuildSystemGeneration
 
