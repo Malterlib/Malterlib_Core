@@ -3088,6 +3088,14 @@ Target
 	}
 }
 
+%Group "{~Automatic}/{Windows Driver Specific}"
+{
+	%Dependency ["BufferOverflowK.lib", "Wdmsec.lib", "ntoskrnl.lib", "hal.lib", "ntstrsafe.lib"]
+	{
+		Dependency.Type "Library"
+	}
+}
+
 // Windows and driver targets
 Target
 {
@@ -3110,7 +3118,8 @@ Target
 	IgnoreAllDefaultLibraries: bool?
 	IgnoreAllDefaultLibraries true
 
-	LinkWithLibraries += ["BufferOverflowK.lib", "Wdmsec.lib", "ntoskrnl.lib", "hal.lib", "ntstrsafe.lib"]
+	ExtraGroups =+ "{~Automatic}/{Windows Driver Specific}"
+
 	//RandomizedBaseAddress false
 	//DataExecutionPrevention false
 }
