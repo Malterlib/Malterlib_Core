@@ -5,7 +5,6 @@ Import "Malterlib_Core_RepositoryModules.MHeader"
 
 Property.MalterlibModules =+ [
 	"Atomic"
-	, "Algorithm"
 	, "Bit"
 	, "BuildSystem"
 	, "Cloud"
@@ -30,7 +29,6 @@ Property.MalterlibModules =+ [
 	, "Instrumentation"
 	, "InterProcess"
 	, "Intrusive"
-	, "Iterator"
 	, "Log"
 	, "Memory"
 	, "Meta"
