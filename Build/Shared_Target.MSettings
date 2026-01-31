@@ -5236,10 +5236,31 @@ Property
 Property
 {
 	PreBuildScriptDependenciesTemplate function(string _Dependency) [string] = []
-	PreBuildScriptDependenciesTemplate =+ GetProperty(&Target.DependencyFile, _Dependency)
+	PreBuildScriptDependenciesTemplate =+ &Target.DependencyFile->GetProperty(_Dependency)
 
 	PreBuildScriptDependencies: [string] = []
 	PreBuildScriptDependencies =+ Target.DependencyTargets->ForEach(&PreBuildScriptDependenciesTemplate)
+	{
+		!GeneratorFamily "Ninja"
+	}
+
+	MaybeGetPreBuildDependency: one_of(string, [string]) = []
+	MaybeGetPreBuildDependency &Target.DependencyFile->GetProperty(Dependency.TargetPropertyPath)
+	{
+		&
+		{
+			!Dependency.IndirectEvaluated true
+			Dependency.Stage "Compile"
+		}
+	}
+
+	f_GetPreBuildDependencies function(string _Dependency) [string] = []
+	f_GetPreBuildDependencies =+ &MaybeGetPreBuildDependency->GetProperty(_Dependency)
+
+	PreBuildScriptDependencies =+ Target.Dependencies->ForEach(&f_GetPreBuildDependencies)
+	{
+		!!GeneratorFamily "Ninja"
+	}
 
 	PreBuildOutputFile: string = `@(Target.IntermediateDirectory)PreBuildOutput.h`
 }
