@@ -180,9 +180,19 @@ Target
 
 Property
 {
+	fg_ConvertToStringIfNeeded function(any _Value) string
+	fg_ConvertToStringIfNeeded _Value
+	{
+		!!_Value->IsString() true
+	}
+	fg_ConvertToStringIfNeeded _Value->AsString()->Trim()
+	{
+		!_Value->IsString() true
+	}
+
 	fg_ExportScriptEnvironmentContentsNinja_Template function(string _EnvVar) {...: string} = {}
 	fg_ExportScriptEnvironmentContentsNinja_Template =+ {
-		`@(_EnvVar)`: &@(_EnvVar)->GetProperty("Target:*")->AsString()
+		`@(_EnvVar)`: &@(_EnvVar)->GetProperty("Target:*")->fg_ConvertToStringIfNeeded()
 	}
 	{
 		!GetProperty(&@(_EnvVar), "Target:*") undefined
