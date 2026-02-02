@@ -1274,6 +1274,8 @@ Compile
 			CompileDialect "C"
 		}
 	}
+
+	DepFileName: string?
 }
 
 // Assembler settings

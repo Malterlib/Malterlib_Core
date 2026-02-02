@@ -7,12 +7,18 @@ Property
 
 	MalterlibIntermediateDirectoriesFile: string = GeneratedWorkspaceDirectory / "IntermediateDirectories.txt"
 
-	MalterlibCheckAllDependenciesCommandBash: string = `@(Builtin.MToolExe->EscapeBash()) CheckDependencies "$MalterlibIntermediateDirectoriesFile"`
+	MalterlibCheckAllDependenciesCommandBash: string = `@(Builtin.MToolExe->EscapeBash()) CheckDependencies OutputDirty=true "$MalterlibIntermediateDirectoriesFile"`
 
 	MalterlibCheckAllDependenciesCommand: string = MalterlibCheckAllDependenciesCommandBash
 	MalterlibCheckAllDependenciesCommand `@(Builtin.MToolExe->EscapeWindows()) CheckDependencies "%MalterlibIntermediateDirectoriesFile%"`
 	{
 		!!ScriptWindowsBat true
+	}
+
+	MalterlibNinjaGeneratorFile: string
+	MalterlibNinjaGeneratorFile Builtin.GeneratedBuildSystemDir / Workspace:Workspace.Name / `@(Platform) @(Architecture) @(BuildSystemFullConfiguration)/build.ninja`
+	{
+		!!GeneratorFamily "Ninja"
 	}
 }
 
@@ -43,10 +49,17 @@ Property
 		CommandLine_Build `@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate")->fg_EscapeCommand()) Build`
 		CommandLine_ReBuild `@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate")->fg_EscapeCommand()) ReBuild`
 		CommandLine_Clean `@(GetProperty(&GenerateFile.Name, "Target:Tool_GenerateBuildSystem.Group:Source.Group:Build System Generated Files.GenerateFile:Generate")->fg_EscapeCommand()) Clean`
-		CommandLine_Outputs [Builtin.GeneratorStateFile]
+		CommandLine_Outputs =+ "build.ninja"
+		{
+			!!GeneratorFamily "Ninja"
+		}
+		CommandLine_Outputs =+ Builtin.GeneratorStateFile
+		{
+			!GeneratorFamily "Ninja"
+		}
 		CommandLine_IsGenerator !MalterlibDisableBuildSystemGeneration
 
-		ExportScriptEnvironment += "MalterlibIntermediateDirectoriesFile"
+		ExportScriptEnvironment += ["MalterlibIntermediateDirectoriesFile", "MalterlibNinjaGeneratorFile"]
 
 		Group "Tools/Malterlib"
 
@@ -325,13 +338,39 @@ Property
 					{
 						!!ScriptWindowsBat true
 					}
-					Contents =+	`@(MalterlibCheckAllDependenciesCommand)\n`\
+					Contents =+	`set +e\n`\
+								`DependencyOutput=$(@(MalterlibCheckAllDependenciesCommand))\n`\
+								`DependencyExitCode=$?\n`\
+								`set -e\n`\
+								`echo "$DependencyOutput"\n`\
+								`if [ "$DependencyExitCode" != "0" ]; then\n`\
+								`  echo error: Dependency checking failed\n`\
+								`  exit 1\n`\
+								`fi\n`\
+								`DependenciesDirtyCheckString=\`echo "$DependencyOutput" | grep "Dependency check: Some files were dirty" || true\`\n`\
+								`if [ -n "$DependenciesDirtyCheckString" ]; then\n`\
+								`  touch "$MalterlibNinjaGeneratorFile"\n`\
+								`fi\n`
+					{
+						&
+						{
+							!ScriptWindowsBat true
+							GeneratorFamily "Ninja"
+						}
+					}
+					Contents =+	`set +e\n`\
+								`@(MalterlibCheckAllDependenciesCommand)\n`\
+								`set -e\n`\
 								`if [ "$?" != "0" ]; then\n`\
 								`  echo error: Dependency checking failed\n`\
 								`  exit 1\n`\
 								`fi\n`
 					{
-						!ScriptWindowsBat true
+						&
+						{
+							!ScriptWindowsBat true
+							!GeneratorFamily "Ninja"
+						}
 					}
 					Contents =+ "exit 0\n"
 					{
@@ -360,7 +399,7 @@ Property
 		Dependency
 		{
 			Link false
-			Stage "Compile"
+			Stage ((GeneratorFamily == "Ninja") ? "None" : "Compile")
 		}
 	}
 }

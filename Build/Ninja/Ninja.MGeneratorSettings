@@ -143,6 +143,9 @@ GeneratorSetting
 
 	f_GetTargetNames function(string _Target) [string] = []
 	f_GetTargetNames =+ &Target:Target.Name->GetProperty(_Target)
+	{
+		!(&Target:Target.Name->GetProperty(_Target)) "Tool_GenerateBuildSystem"
+	}
 
 	Workspace #<OtherRules> =+ {
 		AlwaysDirty: {

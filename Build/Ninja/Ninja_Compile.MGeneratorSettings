@@ -236,11 +236,6 @@ GeneratorSetting
 		Flags: [["-MD"->f_ClangFlag(), `-MF@(Compile.DepFileName)`->f_ClangFlag()]]
 	}
 
-	Compile_DepFileName #<Build.depfile> Compile.DepFileName
-
-	Compile_DepFileName #<Rule.depfile> `@(Builtin.Dollar)depfile`
-	Compile_DepFileName #<Rule.deps> "gcc"
-
 	Compile_PrefixHeader =+ {
 		Flags: [["-include"->f_ClangFlag(), Compile.PrefixHeader->f_ClangFlag()]]
 	}
@@ -454,4 +449,11 @@ GeneratorSetting
 	Compile_StringPooling =+ {}
 	Compile_RuntimeLibrary =+ {}
 	Compile_IncludeEnvironmentPaths =+ {}
+}
+
+GeneratorSetting
+{
+	Compile_DepFileName #<Build.depfile> Compile.DepFileName
+	Compile_DepFileName #<Rule.depfile> `@(Builtin.Dollar)depfile`
+	Compile_DepFileName #<Rule.deps> "gcc"
 }

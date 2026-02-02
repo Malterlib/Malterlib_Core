@@ -54,7 +54,7 @@ Compile
 
 	IIG_HeaderOutput: string = Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).h`
 	IIG_ImplOutput: string = Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).iig.cpp`
-	DepFileName: string = Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).iig.d`
+	DepFileName Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).iig.d`
 }
 
 GeneratorSetting
@@ -134,11 +134,6 @@ GeneratorSetting
 	Compile_DepFileName =+ {
 		Flags: ["-MD", `-MF@(Compile.DepFileName)`]
 	}
-
-	Compile_DepFileName #<Build.depfile> Compile.DepFileName
-
-	Compile_DepFileName #<Rule.depfile> `@(Builtin.Dollar)depfile`
-	Compile_DepFileName #<Rule.deps> "gcc"
 }
 
 Property
