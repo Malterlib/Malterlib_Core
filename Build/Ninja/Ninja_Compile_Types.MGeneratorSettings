@@ -16,6 +16,7 @@ Property
 	CompileSupported: bool = false
 	CompileSupported !([
 		"CSS"
+		, "PNG"
 		, "Header"
 		, "JavaScript"
 		, "JSON"
