@@ -327,11 +327,11 @@ Platform detection happens at compile-time through macros:
 
 ```cpp
 // Platform family detection
-#ifdef DMibPlatformFamily_macOS
+#ifdef DPlatformFamily_macOS
 	// macOS-specific code
-#elif DMibPlatformFamily_Windows
+#elif DPlatformFamily_Windows
 	// Windows-specific code
-#elif DMibPlatformFamily_Linux
+#elif DPlatformFamily_Linux
 	// Linux-specific code
 #endif
 
@@ -570,13 +570,13 @@ void fg_CreateConfigDirectory()
 {
 	NStr::CStr Path;
 
-#ifdef DMibPlatformFamily_Windows
+#ifdef DPlatformFamily_Windows
 	Path = NPlatform::fg_GetEnvironmentVariable("APPDATA");
 	Path += "\\MyApp";
-#elif DMibPlatformFamily_macOS
+#elif DPlatformFamily_macOS
 	Path = NPlatform::fg_GetHomeDirectory();
 	Path += "/Library/Application Support/MyApp";
-#elif DMibPlatformFamily_Linux
+#elif DPlatformFamily_Linux
 	Path = NPlatform::fg_GetHomeDirectory();
 	Path += "/.config/myapp";
 #endif
@@ -717,7 +717,7 @@ DMibCheck(_pPointer != nullptr);
 1. **Always use platform abstraction** - Never use OS APIs directly
 2. **Prefer subsystems over globals** - Use TCSubSystem for singletons
 3. **Use scope guards for cleanup** - `g_OnScopeExit / [&]{}` for RAII
-4. **Check platform at compile-time** - Use DMibPlatformFamily_* macros
+4. **Check platform at compile-time** - Use DPlatformFamily_* macros
 5. **Follow naming conventions** - See main CLAUDE.md for standards
 6. **Test on all platforms** - Core changes affect entire framework
 7. **Document platform differences** - Note any platform-specific behavior
