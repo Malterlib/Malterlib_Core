@@ -24,6 +24,7 @@
 #include <Mib/Core/PlatformSpecific/WindowsFile>
 #include <Mib/Core/PlatformSpecific/WindowsInject>
 #include <Mib/Core/PlatformSpecific/Windows>
+#include <Mib/Process/ProcessLaunch>
 #include <TlHelp32.h>
 
 using namespace NMib;
@@ -1537,6 +1538,32 @@ void NSys::fg_TerminateProcess(aint _ExitCode)
 		TerminateProcess(GetCurrentProcess(), _ExitCode);
 }
 
+// Filters --OutputPID and its argument from a parameters-only string (no executable prefix).
+static NStr::CStr fsg_FilterOutputPID(NStr::CStr _Params)
+{
+	// Fast check: if --OutputPID is not present, return as-is
+	if (_Params.f_Find("--OutputPID") < 0)
+		return _Params;
+
+	// Prepend a dummy executable so fs_ParseCommandLineWindows can parse correctly
+	CStr Executable;
+	auto Params = NMib::NProcess::CProcessLaunchParams::fs_ParseCommandLineWindows("_ " + _Params, Executable);
+
+	TCVector<CStr> FilteredParams;
+	for (auto iParam = Params.f_GetIterator(); iParam; ++iParam)
+	{
+		if (*iParam == "--OutputPID")
+		{
+			++iParam; // Skip the pipe base name argument
+			if (!iParam)
+				break;
+			continue;
+		}
+		FilteredParams.f_InsertLast(*iParam);
+	}
+	return NMib::NProcess::CProcessLaunchParams::fs_GetParamsWindows(FilteredParams);
+}
+
 NStr::CStr NSys::fg_CommandLineParameters()
 {
 	LPWSTR pCommandLine = GetCommandLineW();
@@ -1559,7 +1586,7 @@ NStr::CStr NSys::fg_CommandLineParameters()
 				{
 					while (*pCommandLine && fg_CharIsWhiteSpace(*pCommandLine))
 						++pCommandLine;
-					return CWStr(pCommandLine);
+					return fsg_FilterOutputPID(CWStr(pCommandLine));
 				}
 			}
 			break;
@@ -3153,8 +3180,39 @@ void *NSys::fg_Module_Get(mint &_ModuleSize)
 
 NStr::CStr NSys::fg_Process_GetCommandLine()
 {
-	CWStr Temp = GetCommandLineW();
-	return Temp;
+	CStr CommandLine = CWStr(GetCommandLineW());
+
+	// Fast check: if --OutputPID is not present, return as-is
+	if (CommandLine.f_Find("--OutputPID") < 0)
+		return CommandLine;
+
+	CStr Executable;
+	auto Params = NMib::NProcess::CProcessLaunchParams::fs_ParseCommandLineWindows(CommandLine, Executable);
+
+	TCVector<CStr> FilteredParams;
+	for (auto iParam = Params.f_GetIterator(); iParam; ++iParam)
+	{
+		if (*iParam == "--OutputPID")
+		{
+			++iParam; // Skip the pipe base name argument
+			if (!iParam)
+				break;
+			continue;
+		}
+		FilteredParams.f_InsertLast(*iParam);
+	}
+
+	CStr Return;
+	if (Executable.f_FindChar(' ') >= 0)
+		Return = "\"" + Executable + "\"";
+	else
+		Return = Executable;
+
+	CStr ParamsStr = NMib::NProcess::CProcessLaunchParams::fs_GetParamsWindows(FilteredParams);
+	if (!ParamsStr.f_IsEmpty())
+		Return += " " + ParamsStr;
+
+	return Return;
 }
 
 NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NSys::fg_Process_GetEnvironmentVariables_NonProtected()
@@ -3290,19 +3348,31 @@ void NSys::fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> 
 		_wsetargv();
 
 	int NumArgs = __argc;
-	_List.f_SetLen(NumArgs);
-
 	for (int i = 0; i < NumArgs; ++i)
-		_List[i] = CWStr(__wargv[i]);
+	{
+		CStr Arg = CWStr(__wargv[i]);
+		if (Arg == "--OutputPID")
+		{
+			++i; // Skip the pipe base name argument
+			continue;
+		}
+		_List.f_Insert(Arg);
+	}
 #else
 	if (!__wargv)
 		_configure_wide_argv(_get_startup_argv_mode());
 
 	int NumArgs = __argc;
-	_List.f_SetLen(NumArgs);
-
 	for (int i = 0; i < NumArgs; ++i)
-		_List[i] = CWStr(__wargv[i]);
+	{
+		CStr Arg = CWStr(__wargv[i]);
+		if (Arg == "--OutputPID")
+		{
+			++i; // Skip the pipe base name argument
+			continue;
+		}
+		_List.f_Insert(Arg);
+	}
 #endif
 }
 
@@ -6576,6 +6646,70 @@ void NSys::fg_CreateSystem()
 	if (pLocalSys)
 		pLocalSys->f_InitModule();
 
+	// Handle --OutputPID for elevated process stdio redirection.
+	// When a parent process launches us elevated via ShellExecuteExW with "runas",
+	// it creates named pipes and passes the pipe base name via --OutputPID.
+	// We connect our stdio handles to those pipes here.
+	{
+		CStr CommandLine = CWStr(GetCommandLineW());
+		if (CommandLine.f_Find("--OutputPID") >= 0)
+		{
+			CStr Executable;
+			auto Params = NMib::NProcess::CProcessLaunchParams::fs_ParseCommandLineWindows(CommandLine, Executable);
+
+			for (auto iParam = Params.f_GetIterator(); iParam; ++iParam)
+			{
+				if (*iParam == "--OutputPID")
+				{
+					++iParam;
+					if (!iParam)
+						break;
+
+					CStr PipeBaseName = *iParam;
+
+					// Open stdout pipe (write end)
+					{
+						CWStr StdOutPipeName = PipeBaseName + "_StdOut";
+						HANDLE hStdOut = CreateFileW(
+							StdOutPipeName.f_GetStr(),
+							GENERIC_WRITE, 0, nullptr,
+							OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+						if (hStdOut && hStdOut != INVALID_HANDLE_VALUE)
+							SetStdHandle(STD_OUTPUT_HANDLE, hStdOut);
+					}
+
+					// Open stderr pipe (write end) - may not exist if parent didn't request separate stderr
+					{
+						CWStr StdErrPipeName = PipeBaseName + "_StdErr";
+						HANDLE hStdErr = CreateFileW(
+							StdErrPipeName.f_GetStr(),
+							GENERIC_WRITE, 0, nullptr,
+							OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+						if (hStdErr && hStdErr != INVALID_HANDLE_VALUE)
+							SetStdHandle(STD_ERROR_HANDLE, hStdErr);
+						else
+							SetStdHandle(STD_ERROR_HANDLE, GetStdHandle(STD_OUTPUT_HANDLE));
+					}
+
+					// Open stdin pipe (read end)
+					{
+						CWStr StdInPipeName = PipeBaseName + "_StdIn";
+						HANDLE hStdIn = CreateFileW(
+							StdInPipeName.f_GetStr(),
+							GENERIC_READ, 0, nullptr,
+							OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+						if (hStdIn && hStdIn != INVALID_HANDLE_VALUE)
+							SetStdHandle(STD_INPUT_HANDLE, hStdIn);
+					}
+
+					break;
+				}
+			}
+		}
+	}
 }
 
 bool g_bSysDeleted = false;
