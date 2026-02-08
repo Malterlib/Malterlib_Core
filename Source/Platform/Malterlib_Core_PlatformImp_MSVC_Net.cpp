@@ -3,6 +3,88 @@
 
 #include "Malterlib_Core_PlatformImp_MSVC_Net.h"
 
+#include <AclAPI.h>
+
+// Apply Unix socket permission flags as Windows ACLs on the socket file
+static void fg_ApplyUnixSocketPermissions(CUnixAddress const &_UnixAddress)
+{
+	if (!_UnixAddress.m_Permissions)
+		return;
+
+	using namespace NMib::NStr;
+	using namespace NMib::NFile;
+
+	// Map Unix "everyone" permission flags to Windows generic access rights
+	DWORD EveryoneAccess = 0;
+	if (_UnixAddress.m_Permissions & EFileAttrib_EveryoneRead)
+		EveryoneAccess |= GENERIC_READ;
+	if (_UnixAddress.m_Permissions & EFileAttrib_EveryoneWrite)
+		EveryoneAccess |= GENERIC_WRITE;
+	if (_UnixAddress.m_Permissions & EFileAttrib_EveryoneExecute)
+		EveryoneAccess |= GENERIC_EXECUTE;
+
+	if (!EveryoneAccess)
+		return;
+
+	// Create SID for Everyone (S-1-1-0)
+	SID_IDENTIFIER_AUTHORITY WorldAuthority = SECURITY_WORLD_SID_AUTHORITY;
+	PSID pEveryoneSid = nullptr;
+	if (!AllocateAndInitializeSid(&WorldAuthority, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pEveryoneSid))
+	{
+		DMibErrorNet
+			(
+				"Could not allocate Everyone SID for unix socket permissions on '{}', windows returned: {}"_f
+				<< _UnixAddress.f_GetPath()
+				<< NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError())
+			)
+		;
+	}
+
+	auto SidCleanup = g_OnScopeExit / [&]
+		{
+			FreeSid(pEveryoneSid);
+		}
+	;
+
+	EXPLICIT_ACCESS_A ExplicitAccess = {};
+	ExplicitAccess.grfAccessPermissions = EveryoneAccess;
+	ExplicitAccess.grfAccessMode = SET_ACCESS;
+	ExplicitAccess.grfInheritance = NO_INHERITANCE;
+	ExplicitAccess.Trustee.TrusteeForm = TRUSTEE_IS_SID;
+	ExplicitAccess.Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+	ExplicitAccess.Trustee.ptstrName = (LPSTR)pEveryoneSid;
+
+	// Get existing DACL on the socket file
+	PACL pOldDacl = nullptr;
+	PSECURITY_DESCRIPTOR pSD = nullptr;
+	DWORD Result = GetNamedSecurityInfoA(_UnixAddress.f_GetPath(), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pOldDacl, nullptr, &pSD);
+	if (Result != ERROR_SUCCESS)
+		DMibErrorNet(("Could not get security info for unix socket '{}', windows returned: {}"_f << _UnixAddress.f_GetPath() << NMib::NPlatform::fg_Win32_GetLastErrorStr(Result)));
+
+	auto SDCleanup = g_OnScopeExit / [&]
+		{
+			if (pSD) LocalFree(pSD);
+		}
+	;
+
+	// Merge new ACE into existing DACL
+	PACL pNewDacl = nullptr;
+	Result = SetEntriesInAclA(1, &ExplicitAccess, pOldDacl, &pNewDacl);
+	if (Result != ERROR_SUCCESS)
+		DMibErrorNet(("Could not build ACL for unix socket '{}', windows returned: {}"_f << _UnixAddress.f_GetPath() << NMib::NPlatform::fg_Win32_GetLastErrorStr(Result)));
+
+	auto DaclCleanup = g_OnScopeExit / [&]
+		{
+			if (pNewDacl) LocalFree(pNewDacl);
+		}
+	;
+
+	// Apply updated DACL to the socket file
+	Result = SetNamedSecurityInfoA(const_cast<char *>(_UnixAddress.f_GetPath()), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pNewDacl, nullptr);
+	if (Result != ERROR_SUCCESS)
+		DMibErrorNet(("Could not set permissions on unix socket '{}', windows returned: {}"_f << _UnixAddress.f_GetPath() << NMib::NPlatform::fg_Win32_GetLastErrorStr(Result)));
+}
+
 // *************************************************************************************************************************
 // CWindowsSocket Implementation
 // *************************************************************************************************************************
@@ -1078,6 +1160,9 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
+	if (_Address.f_GetType() == ENetAddressType_Unix)
+		fg_ApplyUnixSocketPermissions(_Address.f_GetUnix());
+
 	Result = listen(hSock, SOMAXCONN);
 
 	if (Result != 0)
@@ -1176,6 +1261,9 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 		uint32 Error = WSAGetLastError();
 		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
+
+	if (_Address.f_GetType() == ENetAddressType_Unix)
+		fg_ApplyUnixSocketPermissions(_Address.f_GetUnix());
 
 	TCUniquePointer<CWindowsSocket> pSocket = fg_Construct();
 
