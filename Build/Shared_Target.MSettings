@@ -4298,8 +4298,8 @@ Property
 
 					Contents =+	`#include "winres.h"\r\n`\
 								`VS_VERSION_INFO VERSIONINFO\r\n`\
-								` FILEVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision),0\r\n`\
-								` PRODUCTVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision),0\r\n`\
+								` FILEVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision->AsInteger()->ToString()),0\r\n`\
+								` PRODUCTVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision->AsInteger()->ToString()),0\r\n`\
 								` FILEFLAGSMASK 0x17L\r\n`\
 								`#ifdef _DEBUG\r\n`\
 								` FILEFLAGS VS_FF_DEBUG | VS_FF_PRIVATEBUILD\r\n`\

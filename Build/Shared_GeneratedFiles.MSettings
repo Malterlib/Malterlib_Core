@@ -97,7 +97,7 @@ Property
 											`@(ScriptExport("ProductVersionMajor", ProductVersionMajor->ToString()))\r\n`\
 											`@(ScriptExport("ProductVersionMinor", ProductVersionMinor))\r\n`\
 											`@(ScriptExport("ProductVersionRevision", ProductVersionRevision))\r\n`\
-											`@(ScriptExport("ProductVersionRevisionNumber", ProductVersionRevision->Format("{}")))\r\n`\
+											`@(ScriptExport("ProductVersionRevisionNumber", ProductVersionRevision->AsInteger()->ToString()))\r\n`\
 											`@(ScriptExport("ProductVersionExtra", ProductVersionExtra))\r\n`\
 											`@(ScriptExport("ProductName", ProductName))\r\n`\
 											`@(ScriptExport("ProductCompany", ProductCompany))\r\n`\
