@@ -1063,6 +1063,21 @@ Property
 	MalterlibWindowsSDKUCRTLibPath: string = MalterlibWindowsSDKLibPath / "ucrt" / MalterlibMSVCArchitecture
 	MalterlibWindowsSDKUMLibPath: string = MalterlibWindowsSDKLibPath / "um" / MalterlibMSVCArchitecture
 
+	// Windows WDK (Driver Kit) include paths
+	MalterlibWindowsWDKKMIncludePath: string = MalterlibWindowsSDKIncludePath / "km"
+	MalterlibWindowsWDKKMCRTIncludePath: string = MalterlibWindowsSDKIncludePath / "km/crt"
+	MalterlibWindowsWDKSharedIncludePath: string = MalterlibWindowsSDKSharedIncludePath
+
+	// KMDF version auto-detection (use latest installed)
+	MalterlibWindowsKMDFRootPath: string = MalterlibWindowsSDKRootPath / "Include/wdf/kmdf"
+	MalterlibWindowsKMDFVersionPaths: [string] = MalterlibWindowsKMDFRootPath->FindDirectoriesIn('*')->Sort()
+	MalterlibWindowsKMDFVersion: string = MalterlibWindowsKMDFVersionPaths<[MalterlibWindowsKMDFVersionPaths->Length() - 1]>->GetFile()
+	MalterlibWindowsKMDFIncludePath: string = MalterlibWindowsKMDFRootPath / MalterlibWindowsKMDFVersion
+
+	// Windows WDK library paths
+	MalterlibWindowsWDKKMLibPath: string = MalterlibWindowsSDKLibPath / "km" / MalterlibMSVCArchitecture
+	MalterlibWindowsKMDFLibPath: string = MalterlibWindowsSDKRootPath / "Lib/wdf/kmdf" / MalterlibMSVCArchitecture / MalterlibWindowsKMDFVersion
+
 	PlatformToolsetCompiler: string? // User(Toolset)="/opt/Source/llvm-malterlib/build/main/bin/clang": Change the clang compiler location
 
 	PlatformToolsetCompiler MalterlibLLVMHostBinariesDirectory / `bin/clang@(HostExecutableExtension)`
@@ -2849,22 +2864,12 @@ Target
 		!Builtin.Inherit ""
 	}
 
-	SearchPath += `@("../../../SDK"->MakeAbsolute())/WDK/lib/WXP/i386`
+	SearchPath += [MalterlibWindowsWDKKMLibPath, MalterlibWindowsKMDFLibPath]
 	{
 		&
 		{
 			PlatformType "Windows"
 			Target.Type "Driver"
-			Architecture "x86"
-		}
-	}
-	SearchPath =+ `@("../../../SDK"->MakeAbsolute())/WDK/lib/WNET/amd64`
-	{
-		&
-		{
-			PlatformType "Windows"
-			Target.Type "Driver"
-			Architecture "x64"
 		}
 	}
 

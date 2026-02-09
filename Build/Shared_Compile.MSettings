@@ -1667,7 +1667,7 @@ Compile
 		}
 	}
 
-	SearchPath += [`@(Builtin.BasePathAbsolute)/SDK/WDK/inc/ddk`, `@(Builtin.BasePathAbsolute)/SDK/WDK/inc/api`, `@(Builtin.BasePathAbsolute)/SDK/WDK/inc/crt`]
+	SearchPath += [MalterlibWindowsWDKKMIncludePath, MalterlibWindowsWDKKMCRTIncludePath, MalterlibWindowsWDKSharedIncludePath, MalterlibWindowsKMDFIncludePath]
 	{
 		&
 		{
@@ -2513,7 +2513,7 @@ Compile
 	{
 		!PlatformVersion undefined
 	}
-	PreprocessorDefines += "_DDK_"
+	PreprocessorDefines += ["_DDK_", "_KERNEL_MODE"]
 	{
 		&
 		{

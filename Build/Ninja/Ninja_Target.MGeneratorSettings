@@ -65,6 +65,7 @@ GeneratorSetting
 		, "Executable", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
 		, "DynamicLibrary", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
 		, "SharedDynamicLibrary", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
+		, "Driver", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
 		, "Tool", "false"
 	)
 	{
@@ -108,6 +109,7 @@ GeneratorSetting
 		, "Executable", "lld-link"
 		, "DynamicLibrary", "lld-link"
 		, "SharedDynamicLibrary", "lld-link"
+		, "Driver", "lld-link"
 		, "Tool", "false"
 	)
 	{
@@ -164,6 +166,7 @@ GeneratorSetting
 		, "Executable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -fuse-ld=lld-link -o @(Builtin.Output) @@@(Builtin.RspFile)`
 		, "DynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -fuse-ld=lld-link -o @(Builtin.Output) @@@(Builtin.RspFile)`
 		, "SharedDynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -fuse-ld=lld-link -o @(Builtin.Output) @@@(Builtin.RspFile)`
+		, "Driver", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -fuse-ld=lld-link -o @(Builtin.Output) @@@(Builtin.RspFile)`
 		, "Tool", "false"
 	)
 	{
@@ -1072,6 +1075,7 @@ GeneratorSetting
 					, "StaticLibrary", []
 					, "DynamicLibrary", "-Wl,/DLL"
 					, "SharedDynamicLibrary", "-Wl,/DLL"
+					, "Driver", []
 					, "Tool", []
 				)
 			}
@@ -1497,7 +1501,19 @@ GeneratorSetting
 	Target_LinkKeyFile =+ {}
 	Target_DelaySign =+ {}
 	Target_AssemblyDebug =+ {}
-	Target_Driver =+ {}
+	Target_Driver =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: Target.Driver->SwitchWithError(
+					"Unsupported option: "
+					, true, "-Wl,/DRIVER"
+					, "UpOnly", "-Wl,/DRIVER:UPONLY"
+					, "WDM", "-Wl,/DRIVER:WDM"
+				)
+			}
+		]
+	)
 	Target_IgnoreImportLibrary =+ {}
 	Target_Verbose =+ {}
 	Target_SymbolFile =+ {}
