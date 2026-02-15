@@ -1089,6 +1089,9 @@ Property
 	// Windows SDK binary paths
 	MalterlibWindowsSDKBinPath: string = MalterlibWindowsSDKRootPath / "bin" / MalterlibWindowsSDKVersion / MalterlibMSVCArchitecture
 
+	// Windows SDK binary path (x86 tools, used for inf2cat which is only available as x86)
+	MalterlibWindowsSDKBinPathx86: string = MalterlibWindowsSDKRootPath / "bin" / MalterlibWindowsSDKVersion / "x86"
+
 	// Windows WDK (Driver Kit) include paths
 	MalterlibWindowsWDKKMIncludePath: string = MalterlibWindowsSDKIncludePath / "km"
 	MalterlibWindowsWDKKMCRTIncludePath: string = MalterlibWindowsSDKIncludePath / "km/crt"
@@ -3173,6 +3176,21 @@ Target
 
 Property
 {
+	MalterlibDriverINFFile: string?
+
+	MalterlibWindowsInf2CatOS: string?
+	MalterlibWindowsInf2CatOS "10_NI_X64"
+	{
+		!!Architecture "x64"
+	}
+	MalterlibWindowsInf2CatOS "10_NI_ARM64"
+	{
+		!!Architecture "arm64"
+	}
+}
+
+Property
+{
 	MalterlibSeparatePostCopyPerPlatfrom: bool = true // User(Build System)=false: Enable separate post copy projects when building for non-host platforms
 
 	MalterlibCalculatedPostCopyProject: string?
@@ -3565,6 +3583,15 @@ Target
 		}
 	}
 
+	ToolPath =+ [MalterlibWindowsSDKBinPath, MalterlibWindowsSDKBinPathx86]
+	{
+		&
+		{
+			HostPlatformFamily "Windows"
+			!Generator "VisualStudio"
+		}
+	}
+
 	ToolPath += [MToolDirectory]
 
 	ToolPath += `@(MalterlibBinariesDirectory)/NoLib/x86`
@@ -3584,14 +3611,6 @@ Target
 			PlatformType "Windows"
 			MalterlibGenerateLibrary false
 			WindowsNativeToolChain true
-		}
-	}
-
-	ToolPath += MalterlibWindowsSDKBinPath
-	{
-		&
-		{
-			HostPlatformFamily "Windows"
 		}
 	}
 }
@@ -5484,6 +5503,16 @@ Target
 			TargetIsExecutable true
 		}
 	}
+
+	PostBuildScriptOutputs += `@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cat`
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			!MalterlibDriverINFFile undefined
+		}
+	}
 }
 
 Property
@@ -5536,6 +5565,16 @@ Property
 			!MalterlibIsMacOSBundle true
 		}
 	}
+	MalterlibPostCopySources =+ `@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cat`
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			!MalterlibDriverINFFile undefined
+		}
+	}
+
 	MalterlibPostCopySources =+ MalterlibLLVMSanitizerRuntime
 	{
 		&
@@ -5593,6 +5632,11 @@ Property
 			Target.DebugInformationFormat "dwarf-with-dsym"
 			GeneratorFamily "Xcode"
 		}
+	}
+
+	MalterlibPostBuildScriptInputs =+ MalterlibDriverINFFile
+	{
+		!MalterlibDriverINFFile undefined
 	}
 }
 
@@ -5951,6 +5995,23 @@ Target
 				}
 			}
 
+		}
+	}
+
+	PostBuildScript =+	`cp @(MalterlibDriverINFFile->Escape()) @(MalterlibFinalModuleDestinationPath->Escape())\r\n`\
+						`echo Inf2Cat:\r\n`\
+						`echo MSYS_NO_PATHCONV=1 Inf2Cat.exe /driver:@(MalterlibFinalModuleDestinationPath->WindowsPath()->Escape()) /os:@(MalterlibWindowsInf2CatOS) /uselocaltime\r\n`\
+						`MSYS_NO_PATHCONV=1 Inf2Cat.exe /driver:@(MalterlibFinalModuleDestinationPath->WindowsPath()->Escape()) /os:@(MalterlibWindowsInf2CatOS) /uselocaltime\r\n`\
+						`echo Sign Catalog:\r\n`\
+						`echo MSYS_NO_PATHCONV=1 SignTool.exe sign /fd SHA256 /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(`@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cat`->WindowsPath()->Escape())\r\n`\
+						`MSYS_NO_PATHCONV=1 SignTool.exe sign /fd SHA256 /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(`@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cat`->WindowsPath()->Escape())\r\n`
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			MalterlibDriverSigning true
+			!MalterlibDriverINFFile undefined
 		}
 	}
 
