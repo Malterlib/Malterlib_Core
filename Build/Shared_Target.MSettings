@@ -1086,6 +1086,9 @@ Property
 	MalterlibWindowsSDKUCRTLibPath: string = MalterlibWindowsSDKLibPath / "ucrt" / MalterlibMSVCArchitecture
 	MalterlibWindowsSDKUMLibPath: string = MalterlibWindowsSDKLibPath / "um" / MalterlibMSVCArchitecture
 
+	// Windows SDK binary paths
+	MalterlibWindowsSDKBinPath: string = MalterlibWindowsSDKRootPath / "bin" / MalterlibWindowsSDKVersion / MalterlibMSVCArchitecture
+
 	// Windows WDK (Driver Kit) include paths
 	MalterlibWindowsWDKKMIncludePath: string = MalterlibWindowsSDKIncludePath / "km"
 	MalterlibWindowsWDKKMCRTIncludePath: string = MalterlibWindowsSDKIncludePath / "km/crt"
@@ -3118,8 +3121,24 @@ Target
 
 %Group "{~Automatic}/{Windows Driver Specific}"
 {
-	%Dependency ["BufferOverflowK.lib", "Wdmsec.lib", "ntoskrnl.lib", "hal.lib", "ntstrsafe.lib"]
+	%Dependency ["Wdmsec.lib", "ntoskrnl.lib", "hal.lib", "ntstrsafe.lib"]
 	{
+		Dependency.Type "Library"
+	}
+	%Dependency "BufferOverflowK.lib"
+	{
+		|
+		{
+			Architecture "x64"
+			Architecture "x86"
+		}
+
+		Dependency.Type "Library"
+	}
+	%Dependency "bufferoverflowfastfailk.lib"
+	{
+		!!Architecture "arm64"
+
 		Dependency.Type "Library"
 	}
 }
@@ -3565,6 +3584,14 @@ Target
 			PlatformType "Windows"
 			MalterlibGenerateLibrary false
 			WindowsNativeToolChain true
+		}
+	}
+
+	ToolPath += MalterlibWindowsSDKBinPath
+	{
+		&
+		{
+			HostPlatformFamily "Windows"
 		}
 	}
 }
@@ -5167,7 +5194,7 @@ Property
 		}
 	}
 
-	Win32SignTool `@('../../../SDK'->MakeAbsolute())/WDK/bin/x86/SignTool.exe`
+	Win32SignTool "SignTool.exe"
 	{
 		!!Win32SignTool undefined
 	}
@@ -5183,9 +5210,9 @@ Property
 	}
 
 	MalterlibWindowsSignCommandLine: string
-	MalterlibWindowsSignCommandLine `@(Win32SignTool) sign /fd SHA256 /ac @(MalterlibSignIncludeCert->WindowsPath()->Escape()) /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(MalterlibFinalModuleDestination->WindowsPath()->Escape())`
+	MalterlibWindowsSignCommandLine `MSYS_NO_PATHCONV=1 @(Win32SignTool) sign /fd SHA256 /ac @(MalterlibSignIncludeCert->WindowsPath()->Escape()) /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(MalterlibFinalModuleDestination->WindowsPath()->Escape())`
 
-	MalterlibWindowsSignCommandLine `@(Win32SignTool) sign /fd SHA256 /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(MalterlibFinalModuleDestination->WindowsPath()->Escape())`
+	MalterlibWindowsSignCommandLine `MSYS_NO_PATHCONV=1 @(Win32SignTool) sign /fd SHA256 /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(MalterlibFinalModuleDestination->WindowsPath()->Escape())`
 	{
 		!!MalterlibSignIncludeCert "none"
 	}
@@ -5298,7 +5325,11 @@ Target
 	PreBuildScript: string = ""
 	PreBuildScript += "set -eo pipefail\r\n"
 	{
-		!!PlatformType "Unix"
+		|
+		{
+			PlatformType "Unix"
+			GeneratorFamily "Ninja"
+		}
 	}
 }
 
@@ -5570,7 +5601,11 @@ Target
 	PostBuildScript: string = ""
 	PostBuildScript += "set -eo pipefail\r\n"
 	{
-		!!PlatformType "Unix"
+		|
+		{
+			PlatformType "Unix"
+			GeneratorFamily "Ninja"
+		}
 	}
 
 	PostBuildScript =+ "env\r\n"

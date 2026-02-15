@@ -1080,7 +1080,7 @@ GeneratorSetting
 					, "StaticLibrary", []
 					, "DynamicLibrary", "-Wl,/DLL"
 					, "SharedDynamicLibrary", "-Wl,/DLL"
-					, "Driver", []
+					, "Driver", "-Wl,/DLL"
 					, "Tool", []
 				)
 			}

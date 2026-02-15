@@ -861,6 +861,7 @@ Property
 				Architecture "arm64"
 				Target.Type "Driver"
 				!Target.DriverType "DriverKit"
+				PlatformFamily "macOS"
 			}
 		}
 	}
@@ -2352,7 +2353,11 @@ Compile
 	{
 		&
 		{
-			Architecture "x64"
+			|
+			{
+				Architecture "x64"
+				Architecture "arm64"
+			}
 			PlatformType "Windows"
 		}
 	}
@@ -2364,6 +2369,16 @@ Compile
 			Target.Type "Driver"
 			PlatformType "Windows"
 			Architecture "x64"
+		}
+	}
+
+	PreprocessorDefines += "_ARM64_"
+	{
+		&
+		{
+			Target.Type "Driver"
+			PlatformType "Windows"
+			Architecture "arm64"
 		}
 	}
 

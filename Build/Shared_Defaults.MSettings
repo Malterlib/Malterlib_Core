@@ -98,8 +98,8 @@ Property
 	MalterlibSharedDeployRoot: string = "/Shared"
 
 	MalterlibSignIncludeCert: string = `@(Builtin.BasePathAbsolute)/Settings/Certificates/MSCV-GlobalSign.cer` // User(Signing): Set this to 'none' to disable incude cert for development
-	MalterlibSignTimestampServer: string = "http://timestamp.globalsign.com/scripts/timestamp.dll" // User(Signing): Timestamp server to use when signing windows executables
-	MalterlibSignTimestampServerRFC3161: string = "" // User(Signing): RFC 3161 Timestamp server to use when signing windows executables. This will override any setting in MalterlibSignTimestampServer
+	MalterlibSignTimestampServer: string = "http://timestamp.digicert.com" // User(Signing): Timestamp server to use when signing windows executables
+	MalterlibSignTimestampServerRFC3161: string = "http://timestamp.digicert.com" // User(Signing): RFC 3161 Timestamp server to use when signing windows executables. This will override any setting in MalterlibSignTimestampServer
 	MalterlibSignCertWindows: string = "Unknown Company" // User(Signing)="Name of cert": Set this to your local certificate for driver development
 	MalterlibSignCertMacOS: string = "-" // User(Signing)=SHA1OfCert: Set this to your Developer ID cert for driver development
 
