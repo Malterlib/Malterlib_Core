@@ -264,7 +264,7 @@ CFileChangeNotificationContext::CWatch &CFileChangeNotificationContext::f_LinkWa
 		}
 		catch ([[maybe_unused]] NException::CException const &_Exception)
 		{
-			DMibTrace("Failed to find files in sub watch {} ({})", _Path << _Exception.f_GetErrorStr());
+			DMibTrace("Failed to find files in sub watch {} ({})", _Path, _Exception.f_GetErrorStr());
 		}
 	}
 

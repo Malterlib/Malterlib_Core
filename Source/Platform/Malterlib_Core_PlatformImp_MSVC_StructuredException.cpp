@@ -86,7 +86,7 @@ private:
 				if (!VirtualQuery((void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
 				{
 #ifdef DConfig_ReleaseTesting
-					DMibTrace("Scanned {} bytes in {} seconds!!!\r\n", TotalScannedMemory << TotalTimer.f_GetTime());
+					DMibTrace("Scanned {} bytes in {} seconds!!!\r\n", TotalScannedMemory, TotalTimer.f_GetTime());
 #endif
 					TotalScannedMemory = 0;
 					CurrentAddress = StartAddress;
@@ -107,7 +107,7 @@ private:
 				if (CurrentAddress == (mint)MemInfo.BaseAddress + MemInfo.RegionSize)
 				{
 #ifdef DConfig_ReleaseTesting
-					DMibTrace("Scanned {} bytes in {} seconds 2!!!\r\n", TotalScannedMemory << TotalTimer.f_GetTime());
+					DMibTrace("Scanned {} bytes in {} seconds 2!!!\r\n", TotalScannedMemory, TotalTimer.f_GetTime());
 #endif
 					TotalScannedMemory = 0;
 					CurrentAddress = StartAddress;

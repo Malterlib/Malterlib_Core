@@ -3532,7 +3532,7 @@ namespace NMib
 // This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
 extern "C" module_export void *fg_IdsGetCrossModuleMemoryManagerInterface()
 {
-//	DMibTraceSafe("fg_IdsGetCrossModuleMemoryManagerInterface({}, {}) = {}\n", &fg_IdsGetCrossModuleMemoryManagerInterface << fg_GetSys()->f_IsDll() << NMib::NSys::g_pCrossModuleMemoryManagerInterface);
+//	DMibTraceSafe("fg_IdsGetCrossModuleMemoryManagerInterface({}, {}) = {}\n", &fg_IdsGetCrossModuleMemoryManagerInterface, fg_GetSys()->f_IsDll(), NMib::NSys::g_pCrossModuleMemoryManagerInterface);
 	return NMib::NSys::g_pCrossModuleMemoryManagerInterface;
 }
 
@@ -3549,7 +3549,7 @@ void *NSys::fg_Process_GetCrossModuleMemoryManagerInterface()
 	if (fMalterlibGetCrossModuleMemoryManagerInterface)
 		pRet = fMalterlibGetCrossModuleMemoryManagerInterface();
 
-//	DMibTraceSafe("fg_Process_GetCrossModuleMemoryManagerInterface({}) = {}\n", fg_GetSys()->f_IsDll() << pRet);
+//	DMibTraceSafe("fg_Process_GetCrossModuleMemoryManagerInterface({}) = {}\n", fg_GetSys()->f_IsDll(), pRet);
 	return pRet;
 #else
 	return fg_IdsGetCrossModuleMemoryManagerInterface();

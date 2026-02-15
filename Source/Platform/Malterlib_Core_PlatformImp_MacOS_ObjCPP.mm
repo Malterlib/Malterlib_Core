@@ -771,7 +771,7 @@ namespace NMib
 
 		void fgr_TraceSnapshot(CFileChangeNoticationContext::CNotification::CFileSnapshot const &_Snapshot, mint _Depth)
 		{
-			DMibTrace("{sj*}{}\n", "" << (_Depth * 4) << _Snapshot.m_FileName);
+			DMibTrace("{sj*}{}\n", "", (_Depth * 4), _Snapshot.m_FileName);
 			for (auto iChild = _Snapshot.m_Children.f_GetIterator(); iChild; ++iChild)
 			{
 				fgr_TraceSnapshot(*iChild, _Depth + 1);
@@ -994,7 +994,7 @@ namespace NMib
 
 			if (!_Path.f_StartsWith(m_NotificationPath.m_UserPath))
 			{
-				DMibTrace("'{}' does not start with '{}'\n", _Path << m_NotificationPath.m_UserPath);
+				DMibTrace("'{}' does not start with '{}'\n", _Path, m_NotificationPath.m_UserPath);
 				DMibSafeCheck(false, "File path not correct!!");
 				return; // Error
 			}
@@ -1393,13 +1393,13 @@ namespace NMib
 
 				if (ProtectedDirs.f_FindEqual(EventPath))
 				{
-					//DMibConErrOut2("IGNORE Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, i));
+					//DMibConErrOut("IGNORE Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, i));
 					continue;
 				}
 
 				CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(EventPath, m_NotificationPath.m_UserPath);
 
-				//DMibConErrOut2("Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, i));
+				//DMibConErrOut("Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, i));
 
 				bool bIsDir = (Flags & kFSEventStreamEventFlagItemIsDir) && !(Flags & kFSEventStreamEventFlagItemIsSymlink);
 
@@ -1474,7 +1474,7 @@ namespace NMib
 
 			}
 
-			//DMibConErrOut2("m_RenamedFromQueue {}\n", m_RenamedFromQueue.f_GetLen());
+			//DMibConErrOut("m_RenamedFromQueue {}\n", m_RenamedFromQueue.f_GetLen());
 
 			for (auto &RenameTo : m_RenamedFromQueue)
 			{
@@ -1488,7 +1488,7 @@ namespace NMib
 
 			m_RenamedFromQueue.f_Clear();
 
-			//DMibConErrOut2("GENERATED {}\n", FindChangesContext.m_ChangesFileName.f_GetLen() + FindChangesContext.m_Changes.f_GetLen());
+			//DMibConErrOut("GENERATED {}\n", FindChangesContext.m_ChangesFileName.f_GetLen() + FindChangesContext.m_Changes.f_GetLen());
 
 			if
 				(
@@ -1657,7 +1657,7 @@ namespace NMib
 			char RealPath[MAXPATHLEN];
 			if (_FD && fcntl(_FD, F_GETPATH, RealPath) != -1)
 			{
-				//		DMibTrace("{} = {}\n", RealPath << _Fallback);
+				//		DMibTrace("{} = {}\n", RealPath, _Fallback);
 				return CStr(RealPath);
 			}
 			else

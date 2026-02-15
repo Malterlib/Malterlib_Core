@@ -45,9 +45,16 @@ namespace NMib
 						[[maybe_unused]] NStr::CFStr256 Short = NStr::CFStr256((OSErr.m_pShort ? OSErr.m_pShort : "")).f_TrimLeft().f_TrimRight();
 						[[maybe_unused]] NStr::CFStr256 Long = NStr::CFStr256((OSErr.m_pLong ? OSErr.m_pLong : "")).f_TrimLeft().f_TrimRight();
 
-						DMibTrace("MacOSErrorStor: Error {} ({}, {}) already in strore as ({}, {})\n",
-								   OSErr.m_Code << Short << Long
-								   << (pErr->m_pShort ? pErr->m_pShort : "") << (pErr->m_pLong ? pErr->m_pLong : ""));
+						DMibTrace
+							(
+								"MacOSErrorStor: Error {} ({}, {}) already in strore as ({}, {})\n"
+								, OSErr.m_Code
+								, Short
+								, Long
+								, (pErr->m_pShort ? pErr->m_pShort : "")
+								, (pErr->m_pLong ? pErr->m_pLong : "")
+							)
+						;
 					}
 					else
 					{

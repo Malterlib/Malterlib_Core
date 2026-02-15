@@ -2353,7 +2353,7 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (mint _ThreadID, HANDL
 							&& te.th32OwnerProcessID == CurrentProcess && te.th32ThreadID != ThisUID
 						)
 					{
-						//DMibTrace("Process {} Thread {}\n", te.th32OwnerProcessID << te.th32ThreadID);
+						//DMibTrace("Process {} Thread {}\n", te.th32OwnerProcessID, te.th32ThreadID);
 						_fOnThread(te.th32ThreadID, nullptr);
 					}
 					te.dwSize = sizeof(te);
@@ -2755,22 +2755,22 @@ extern "C" BOOL WINAPI fg_MalterlibDllMain(HANDLE _pInstance, DWORD _Reason, voi
 	if (_Reason == DLL_PROCESS_ATTACH)
 	{
 		fg_InitMalterlibAllInternal(_pInstance);
-			//DMibDTraceSafe("fg_MalterlibDllMain({}): Process attach {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved);
+			//DMibDTraceSafe("fg_MalterlibDllMain({}): Process attach {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved);
 		++gs_LibraryRefCount;
 	}
 	else if (_Reason == DLL_PROCESS_DETACH)
 	{
-		//DMibDTraceSafe("fg_MalterlibDllMain({}): Process detach {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved);
+		//DMibDTraceSafe("fg_MalterlibDllMain({}): Process detach {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved);
 	}
 	else if (_Reason == DLL_THREAD_ATTACH)
 	{
-		//DMibDTraceSafe("fg_MalterlibDllMain({}): Thread attach {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved);
+		//DMibDTraceSafe("fg_MalterlibDllMain({}): Thread attach {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved);
 	}
 	else if (_Reason == DLL_THREAD_DETACH)
 	{
 		if (!g_bSysDeleted)
 		{
-			//DMibDTraceSafe("fg_MalterlibDllMain({}): Thread dettach {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved);
+			//DMibDTraceSafe("fg_MalterlibDllMain({}): Thread dettach {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved);
 			fg_GetLocalSys()->f_OnThreadDestroyed();
 			CWindowsCrossModuleProcessInfo::fs_DestroyThreadInfo();
 		}
@@ -2788,7 +2788,7 @@ void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
 	if (_Reason == DLL_PROCESS_ATTACH)
 	{
 		fg_InitMalterlibAllInternal(_pInstance);
-		//DMibDTraceSafe("fg_TLSCallback({}): Process attach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved << g_bIsDll);
+		//DMibDTraceSafe("fg_TLSCallback({}): Process attach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved, g_bIsDll);
 	}
 	else if (_Reason == DLL_PROCESS_DETACH)
 	{
@@ -2800,12 +2800,12 @@ void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
 			fg_DestroyMalterlib();
 			//fg_GetLocalSys()->f_OnThreadDestroyed();
 
-			//DMibDTraceSafe("fg_TLSCallback({}): Process detach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved << g_bIsDll);
+			//DMibDTraceSafe("fg_TLSCallback({}): Process detach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved, g_bIsDll);
 		}
 	}
 	else if (_Reason == DLL_THREAD_ATTACH)
 	{
-		//DMibDTraceSafe("fg_TLSCallback({}): Thread attach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved << g_bIsDll);
+		//DMibDTraceSafe("fg_TLSCallback({}): Thread attach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved, g_bIsDll);
 		if (!g_bSysDeleted)
 		{
 			// Seems to be needed in Wine to wait until dll/process initialization is done (Windows does not start new threads in Ldr code).
@@ -2821,7 +2821,7 @@ void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
 		{
 			fg_GetLocalSys()->f_OnThreadDestroyed();
 			CWindowsCrossModuleProcessInfo::fs_DestroyThreadInfo();
-			//DMibDTraceSafe("fg_TLSCallback({}): Thread detach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID() << _pInstance << _pReserved << g_bIsDll);
+			//DMibDTraceSafe("fg_TLSCallback({}): Thread detach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved, g_bIsDll);
 		}
 	}
 }
@@ -4628,7 +4628,7 @@ void NSys::NFile::fg_FileEnumOtherHandles(const NMib::NStr::CStr &_FileName, NCo
 	for (mint i = 0; i < nHandles; ++i)
 	{
 		CHandleInformation::CHandleInfo &Handle = Handles[i];
-		DMibDTrace("{} - {} - {}\r\n", Handle.m_HandleName << Handle.m_ProcessID << Handle.m_HandleID);
+		DMibDTrace("{} - {} - {}\r\n", Handle.m_HandleName, Handle.m_ProcessID, Handle.m_HandleID);
 		if (Handle.m_ProcessID == CurrentProcessID && Handle.m_HandleID == (uint32)(mint)pFileHandle)
 		{
 			pThisHandle = &Handle;
@@ -6507,7 +6507,7 @@ bool g_bAllowInvalidExit = false;
 
 VOID WINAPI fg_HookExitProcess(__in  UINT _ExitCode)
 {
-	//DMibTraceSafe("fg_HookExitProcess {} {}\r\n", _ExitCode << g_bValidExitProcess);
+	//DMibTraceSafe("fg_HookExitProcess {} {}\r\n", _ExitCode, g_bValidExitProcess);
 	fg_GetLocalSys()->f_DestroyThreadSpecific();
 #ifdef DMibDebug
 	fg_DestroyMalterlib();
@@ -6530,7 +6530,7 @@ VOID WINAPI fg_HookExitProcess(__in  UINT _ExitCode)
 
 BOOL WINAPI fg_HookTerminateProcess(__in  HANDLE _hProcess,__in  UINT _ExitCode)
 {
-//	DMibTraceSafe("fg_HookTerminateProcess {} {}\r\n", _hProcess << _ExitCode);
+//	DMibTraceSafe("fg_HookTerminateProcess {} {}\r\n", _hProcess, _ExitCode);
 	if (_hProcess == GetCurrentProcess() && !g_bAllowInvalidExit)
 	{
 		NMib::NContainer::TCVector<CStr> GeneratedDumps;

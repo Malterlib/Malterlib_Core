@@ -163,7 +163,7 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 		EventPath += CStr::CFormat("/{}") << EventFileName;
 
 	CStr RelativePath = EventPath.f_Delete(0, m_BasePath.f_GetLen()+1);
-	//DMibConOut2("f_OnEvent: {} = 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8}\n", CStr(_Event.name, fg_StrLen(_Event.name, _Event.len)), _Event.mask, _Event.cookie);
+	//DMibConOut("f_OnEvent: {} = 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8}\n", CStr(_Event.name, fg_StrLen(_Event.name, _Event.len)), _Event.mask, _Event.cookie);
 
 	bool bIsDir = (_Event.mask & IN_ISDIR) != 0;
 

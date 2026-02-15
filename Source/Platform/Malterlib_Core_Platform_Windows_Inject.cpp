@@ -74,7 +74,7 @@ namespace NMib
 							DWORD dwDummy;
 							MEMORY_BASIC_INFORMATION memInfoThunk;
 
-							//DMibDTraceSafe("{} {} (0x{}) 0x{} -> 0x{}\r\n", psDLLName << (const ch8 *)pImportByName->Name << (void *)(&(pFirstThunkIter->u1.Function)) << (void *)pFirstThunkIter->u1.Function << _pHookingProc);
+							//DMibDTraceSafe("{} {} (0x{}) 0x{} -> 0x{}\r\n", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function, _pHookingProc);
 
 							// Make page writable.
 							VirtualQuery(pFirstThunkIter, &memInfoThunk, sizeof(MEMORY_BASIC_INFORMATION));
@@ -150,7 +150,7 @@ namespace NMib
 						continue;
 
 					pImportByName = (PIMAGE_IMPORT_BY_NAME) RVA2PTR(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
-					DMibDTraceSafe("{} {} (0x{}) 0x{}\r\n", psDLLName << (const ch8 *)pImportByName->Name << (void *)(&(pFirstThunkIter->u1.Function)) << (void *)pFirstThunkIter->u1.Function);
+					DMibDTraceSafe("{} {} (0x{}) 0x{}\r\n", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function);
 				}
 			}
 
@@ -179,7 +179,7 @@ namespace NMib
 						continue;
 
 					pImportByName = (PIMAGE_IMPORT_BY_NAME) RVA2PTR(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
-					DMibDTraceSafe("{} {} (0x{}) 0x{}", psDLLName << (const ch8 *)pImportByName->Name << (void *)(&(pFirstThunkIter->u1.Function)) << (void *)pFirstThunkIter->u1.Function);
+					DMibDTraceSafe("{} {} (0x{}) 0x{}", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function);
 				}
 			}
 
@@ -227,7 +227,7 @@ namespace NMib
 							DWORD dwDummy;
 							MEMORY_BASIC_INFORMATION memInfoThunk;
 
-							//DMibDTraceSafe("{} {} (0x{}) 0x{} -> 0x{}\r\n", psDLLName << (const ch8 *)pImportByName->Name << (void *)(&(pFirstThunkIter->u1.Function)) << (void *)pFirstThunkIter->u1.Function << _pHookingProc);
+							//DMibDTraceSafe("{} {} (0x{}) 0x{} -> 0x{}\r\n", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function, _pHookingProc);
 
 							// Make page writable.
 							VirtualQuery(pFirstThunkIter, &memInfoThunk, sizeof(MEMORY_BASIC_INFORMATION));
@@ -680,7 +680,7 @@ namespace NMib
 						//NStr::CWStr BaseName;
 						//GetMappedFileNameW(hProcess, (HMODULE)MemInfo.AllocationBase, BaseName.f_GetStr(1024), 1024);
 						//BaseName.f_GetLen();
-						//DTrace("0x{nfh,sj16,sf0} -> 0x{nfh,sj16,sf0}: State: 0x{nfh,sj8,sf0}: {}\n", MemInfo.BaseAddress << ((mint)MemInfo.BaseAddress + MemInfo.RegionSize) << MemInfo.State << BaseName);
+						//DTrace("0x{nfh,sj16,sf0} -> 0x{nfh,sj16,sf0}: State: 0x{nfh,sj8,sf0}: {}\n", MemInfo.BaseAddress, ((mint)MemInfo.BaseAddress + MemInfo.RegionSize), MemInfo.State, BaseName);
 
 						if (!hRemoteNtDll)
 						{
