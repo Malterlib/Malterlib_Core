@@ -708,38 +708,38 @@ uint32 fg_CodepageToCFStringEncoding(uint32 _Codepage)
 	return kCFStringEncodingInvalidId;
 }
 
-void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, ch8 _ErrorChar)
+void NMib::NStr::NPlatform::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, ch8 _ErrorChar)
 {
 	fg_SystemEncodeCodePageStr(_In, _Out, 1252, _ErrorChar); // 1252 == Windows Latin 1
 }
 
-void NMib::NSys::NStr::fg_SystemEncodeAnsiStr(NMib::NStr::CStrNonTracked const &_In, NMib::NStr::CAnsiStrNonTracked &_Out, ch8 _ErrorChar)
+void NMib::NStr::NPlatform::fg_SystemEncodeAnsiStr(NMib::NStr::CStrNonTracked const &_In, NMib::NStr::CAnsiStrNonTracked &_Out, ch8 _ErrorChar)
 {
 	fg_SystemEncodeCodePageStr(_In, _Out, 1252, _ErrorChar); // 1252 == Windows Latin 1
 }
 
 
-void NMib::NSys::NStr::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStr const &_In, NMib::NStr::CStr &_Out)
+void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStr const &_In, NMib::NStr::CStr &_Out)
 {
 	fg_SystemDecodeCodePageStr(_In, _Out, 1252);  // 1252 == Windows Latin 1
 }
 
-void NMib::NSys::NStr::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::CStr &_Out)
+void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::CStr &_Out)
 {
 	fg_SystemDecodeCodePageStr(_pIn, _Out, 1252);  // 1252 == Windows Latin 1
 }
 
-void NMib::NSys::NStr::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStrNonTracked const &_In, NMib::NStr::CStrNonTracked &_Out)
+void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStrNonTracked const &_In, NMib::NStr::CStrNonTracked &_Out)
 {
 	fg_SystemDecodeCodePageStr(_In, _Out, 1252);  // 1252 == Windows Latin 1
 }
 
-void NMib::NSys::NStr::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::CStrNonTracked &_Out)
+void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::CStrNonTracked &_Out)
 {
 	fg_SystemDecodeCodePageStr(_pIn, _Out, 1252);  // 1252 == Windows Latin 1
 }
 
-void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, uint32 _CodePage, ch8 _ErrorChar)
+void NMib::NStr::NPlatform::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, uint32 _CodePage, ch8 _ErrorChar)
 {
 	uint32 CodePage = fg_CodepageToCFStringEncoding(_CodePage);
 	if (CodePage == kCFStringEncodingInvalidId)
@@ -769,7 +769,7 @@ void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_In, N
 	_Out.f_SetStr((ch8 const *)CFDataGetBytePtr(pData), CFDataGetLength(pData));
 }
 
-void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracked const &_In, NMib::NStr::CAnsiStrNonTracked &_Out, uint32 _CodePage, ch8 _ErrorChar)
+void NMib::NStr::NPlatform::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracked const &_In, NMib::NStr::CAnsiStrNonTracked &_Out, uint32 _CodePage, ch8 _ErrorChar)
 {
 	uint32 CodePage = fg_CodepageToCFStringEncoding(_CodePage);
 	if (CodePage == kCFStringEncodingInvalidId)
@@ -799,7 +799,7 @@ void NMib::NSys::NStr::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracked con
 	_Out.f_SetStr((ch8 const *)CFDataGetBytePtr(pData), CFDataGetLength(pData));
 }
 
-void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr const &_In, NMib::NStr::CStr &_Out, uint32 _CodePage)
+void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr const &_In, NMib::NStr::CStr &_Out, uint32 _CodePage)
 {
 	uint32 CodePage = fg_CodepageToCFStringEncoding(_CodePage);
 	if (CodePage == kCFStringEncodingInvalidId)
@@ -845,7 +845,7 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr const &_I
 }
 
 
-void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::CStr &_Out, uint32 _CodePage)
+void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::CStr &_Out, uint32 _CodePage)
 {
 	uint32 CodePage = fg_CodepageToCFStringEncoding(_CodePage);
 	if (CodePage == kCFStringEncodingInvalidId)
@@ -891,7 +891,7 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::C
 }
 
 
-void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTracked const &_In, NMib::NStr::CStrNonTracked &_Out, uint32 _CodePage)
+void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTracked const &_In, NMib::NStr::CStrNonTracked &_Out, uint32 _CodePage)
 {
 	uint32 CodePage = fg_CodepageToCFStringEncoding(_CodePage);
 	if (CodePage == kCFStringEncodingInvalidId)
@@ -936,7 +936,7 @@ void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTracked
 	}
 }
 
-void NMib::NSys::NStr::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::CStrNonTracked &_Out, uint32 _CodePage)
+void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::CStrNonTracked &_Out, uint32 _CodePage)
 {
 	uint32 CodePage = fg_CodepageToCFStringEncoding(_CodePage);
 	if (CodePage == kCFStringEncodingInvalidId)

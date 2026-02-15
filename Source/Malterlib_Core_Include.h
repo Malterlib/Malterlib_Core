@@ -246,7 +246,7 @@ namespace NMib
 
 #include "../../String/Source/Malterlib_String_Types.h"
 
-#include "../../String/Source/Malterlib_String_Container_Types.h"
+#include "../../String/Source/Container/Malterlib_String_Container_Types.h"
 
 #include <Mib/Intrusive/SinglyLinkedList>
 #include <Mib/Intrusive/DoublyLinkedList>

@@ -12,7 +12,7 @@ namespace NMib
 			CStr fg_StrFromWindowsAnsi(const CAnsiStr &_Str)
 			{
 				CStr To;
-				NSys::NStr::fg_SystemDecodeAnsiStr(_Str, To);
+				NStr::NPlatform::fg_SystemDecodeAnsiStr(_Str, To);
 				return To;
 			}
 
