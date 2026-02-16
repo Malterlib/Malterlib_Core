@@ -66,12 +66,12 @@ if [[ "$MLBuildGit" != "" && "$MLBuildUseGit" == "1" ]]; then
 		git checkout -f -B "$Branch" "origin/$Branch"
 		git clean -fd
 		if [ -x mib ]; then
-			./mib update_repos
+			./mib update_repos --no-use-cached-environment
 		fi
 		popd > /dev/null
 	done
 else
-	./mib update_repos
+	./mib update_repos --no-use-cached-environment
 fi
 
 source "$DIR/DetectSystem.sh"
