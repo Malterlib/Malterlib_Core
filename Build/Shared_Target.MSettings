@@ -5355,13 +5355,13 @@ Property
 		}
 	}
 
-	fg_ExpartPostBuildScriptInputsPostCopy function(type(CFileCopyOptionsDetailed) _CopyOptions) [string] = []
-	fg_ExpartPostBuildScriptInputsPostCopy =+ _CopyOptions<Pattern>
+	f_ExtractPlainFilesFromCopyOptions function(type(CFileCopyOptionsDetailed) _CopyOptions) [string] = []
+	f_ExtractPlainFilesFromCopyOptions =+ _CopyOptions<Pattern>
 	{
 		!_CopyOptions<Pattern>->Find("*") true // Don't support wildcards
 	}
 
-	MalterlibPostBuildScriptInputs =+ fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(&fg_ExpartPostBuildScriptInputsPostCopy)
+	MalterlibPostBuildScriptInputs =+ fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(&f_ExtractPlainFilesFromCopyOptions)
 	{
 		&
 		{
