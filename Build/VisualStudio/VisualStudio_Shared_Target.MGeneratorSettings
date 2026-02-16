@@ -31,6 +31,10 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Target_IDEDebugPriority undefined
 	}
+	Target_BuildPriority {}
+	{
+		!!GeneratorSetting.Target_BuildPriority undefined
+	}
 	Target_VisualStudioPlatform {}
 	{
 		!!GeneratorSetting.Target_VisualStudioPlatform undefined

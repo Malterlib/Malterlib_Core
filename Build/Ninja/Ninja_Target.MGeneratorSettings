@@ -348,6 +348,7 @@ GeneratorSetting
 						PATH: `@(Target:Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
 						, <<: Target:Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
 					}
+					, build_priority: Target.BuildPriority->ToString()
 				}
 				, Build: {
 					description: `@(Target:Target.Name) pre build`
@@ -370,6 +371,7 @@ GeneratorSetting
 						PATH: `@(Target:Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
 						, <<: Target:Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
 					}
+					, build_priority: Target.BuildPriority->ToString()
 				}
 				, Build: {
 					description: `@(Target:Target.Name) post build`
@@ -510,6 +512,8 @@ GeneratorSetting
 
 	Target_Type #<Build.order_dependencies> =+ GeneratorSetting.Ninja_TargetOrderDependencies
 	Target_Type #<Build.validations> =+ GeneratorSetting.Ninja_TargetValidationDependencies
+
+	Target_Type #<Rule.build_priority> Target.BuildPriority->ToString()
 
 	Target_Type #<Rule.environment> += Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
 	Target_Type #<Rule.environment> += {
@@ -685,6 +689,7 @@ GeneratorSetting
 	Target_Language =+ {}
 	Target_ObjectLibrary =+ {}
 	Target_IDEDebugPriority =+ {}
+	Target_BuildPriority =+ {}
 	Target_FirstObjects =+ {}
 	Target_AllFiles =+ {}
 	Target_LinkWithLibraries =+ {}

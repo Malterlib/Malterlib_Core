@@ -285,9 +285,25 @@ Target
 
 Property.MalterlibGenerateScheme: bool = true
 
+Compile
+{
+	BuildPriority: int? // Used for ordering the build in the build graph. Higher value is higher priority. After first build it's inferred from the number of milliseconds the build took, overrides the targets build priority
+}
+
 Target
 {
 	IDEDebugPriority: int = 100 // Used for selecting the default debug target in IDEs. Higher value is higher priority
+
+	BuildPriority: int = 100 // Used for ordering the build in the build graph. Higher value is higher priority. After first build it's inferred from the number of milliseconds the build took
+
+	BuildPriority 2000
+	{
+		&
+		{
+			Target.BuildPriority undefined
+			Target.Type "Tool"
+		}
+	}
 
 	GenerateScheme: bool
 

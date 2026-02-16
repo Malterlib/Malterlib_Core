@@ -188,6 +188,7 @@ GeneratorSetting
 	!Compile.Disabled true
 
 	Compile_Type #<Build.order_dependencies> =+ GeneratorSetting.TargetPhony_CompileDependencies
+	Compile_Type #<Rule.build_priority> (Compile.BuildPriority ?? Target.BuildPriority)->ToString()
 }
 
 GeneratorSetting

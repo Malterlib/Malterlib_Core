@@ -28,6 +28,8 @@ Type
 
 		, rspfile?: string
 		, rspfile_content?: string
+
+		, build_priority?: string
 	}
 
 	CNinja_Build: {
@@ -37,6 +39,7 @@ Type
 		, implicit_dependencies?: [string]
 		, order_dependencies?: [string]
 		, validations?: [string]
+		, build_priority?: string
 		, ...: string
 	}
 
