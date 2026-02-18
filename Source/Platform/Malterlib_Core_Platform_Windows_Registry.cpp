@@ -438,7 +438,7 @@ namespace NMib
 
 			HRESULT Error;
 			if ((Error = RegCreateKeyExW(mp_hRootKey, NStr::NPlatform::fg_StrToWindows(SubKey),0,nullptr,REG_OPTION_NON_VOLATILE,fp_GetAccess(KEY_WRITE),nullptr,&PathKey,nullptr)) != ERROR_SUCCESS)
-				DMibError(NStr::CStr::CFormat("RegCreateKeyEx failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
+				DMibError(NStr::CStr::CFormat("RegCreateKeyEx({}) failed with: {}") << SubKey << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 
 			auto Cleanup
 				= fg_OnScopeExit
