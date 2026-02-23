@@ -4797,6 +4797,45 @@ Property
 	}
 }
 
+%Group "~Automatic/Driver CAB"
+{
+	%GenerateFile "Generate"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			MalterlibDriverSigning true
+			!MalterlibDriverINFFile undefined
+		}
+
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name `@(GeneratedDirectory)@(Target:Target.BaseFileName).ddf`
+
+			Contents	`.OPTION EXPLICIT\r\n`\
+						`.Set CabinetFileCountThreshold=0\r\n`\
+						`.Set FolderFileCountThreshold=0\r\n`\
+						`.Set FolderSizeThreshold=0\r\n`\
+						`.Set MaxCabinetSize=0\r\n`\
+						`.Set MaxDiskFileCount=0\r\n`\
+						`.Set MaxDiskSize=0\r\n`\
+						`.Set CompressionType=MSZIP\r\n`\
+						`.Set Cabinet=on\r\n`\
+						`.Set Compress=on\r\n`\
+						`.Set DiskDirectoryTemplate=@(MalterlibFinalModuleDestinationPath->WindowsPath())\r\n`\
+						`.Set CabinetNameTemplate=@(Target:Target.BaseFileName).cab\r\n`\
+						`.Set DestinationDir=@(Target:Target.BaseFileName)\r\n`\
+						`@(`@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).inf`->WindowsPath())\r\n`\
+						`@(`@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).sys`->WindowsPath())\r\n`\
+						`@(`@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cat`->WindowsPath())\r\n`
+
+			UnicodeBOM false
+		}
+	}
+}
+
 %Group "~Automatic/DLL Definition"
 {
 	%GenerateFile "Generate"
@@ -4841,6 +4880,20 @@ Target
 				PlatformFamily "Windows"
 				PlatformFamily "macOS"
 			}
+		}
+	}
+}
+
+Target
+{
+	ExtraGroups =+ "~Automatic/Driver CAB"
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			MalterlibDriverSigning true
+			!MalterlibDriverINFFile undefined
 		}
 	}
 }
@@ -5794,6 +5847,17 @@ Target
 			!MalterlibDriverINFFile undefined
 		}
 	}
+
+	PostBuildScriptOutputs += `@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cab`
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			MalterlibDriverSigning true
+			!MalterlibDriverINFFile undefined
+		}
+	}
 }
 
 Property
@@ -5855,6 +5919,18 @@ Property
 			!MalterlibDriverINFFile undefined
 		}
 	}
+
+	MalterlibPostCopySources =+ `@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cab`
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			MalterlibDriverSigning true
+			!MalterlibDriverINFFile undefined
+		}
+	}
+
 
 	// .NET 5+ executables need the runtimeconfig.json deployed alongside the .exe.
 	// The file is generated into GeneratedDirectory by %GenerateFile "Generate .NET runtimeconfig.json"
@@ -5976,6 +6052,17 @@ Property
 	MalterlibPostBuildScriptInputs =+ MalterlibDriverINFFile
 	{
 		!MalterlibDriverINFFile undefined
+	}
+
+	MalterlibPostBuildScriptInputs =+ `@(GeneratedDirectory)@(Target:Target.BaseFileName).ddf`
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			MalterlibDriverSigning true
+			!MalterlibDriverINFFile undefined
+		}
 	}
 
 	// In SingleFile mode the runtimeconfig.json is consumed by MTool BuildAppHost
@@ -6494,6 +6581,19 @@ Target
 						`echo Sign Catalog:\r\n`\
 						`echo MSYS_NO_PATHCONV=1 SignTool.exe sign /fd SHA256 /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(`@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cat`->WindowsPath()->Escape())\r\n`\
 						`MSYS_NO_PATHCONV=1 SignTool.exe sign /fd SHA256 /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(`@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cat`->WindowsPath()->Escape())\r\n`
+	{
+		&
+		{
+			PlatformType "Windows"
+			Target.Type "Driver"
+			MalterlibDriverSigning true
+			!MalterlibDriverINFFile undefined
+		}
+	}
+
+	PostBuildScript =+	`echo Create Driver CAB:\r\n`\
+						`echo MSYS_NO_PATHCONV=1 MakeCab.exe /f @(`@(GeneratedDirectory)@(Target:Target.BaseFileName).ddf`->WindowsPath()->Escape())\r\n`\
+						`MSYS_NO_PATHCONV=1 MakeCab.exe /f @(`@(GeneratedDirectory)@(Target:Target.BaseFileName).ddf`->WindowsPath()->Escape())\r\n`
 	{
 		&
 		{
