@@ -68,7 +68,7 @@ assure_used CMibCodeAddressType::CCodeAddressLine *CMibCodeAddressType::fs_Debug
 
 bool CSystem_POSIX::f_GetMalterlibDisableStdErrLog()
 {
-	if (m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::EMemoryOrder_Relaxed) == 0)
+	if (m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::gc_MemoryOrder_Relaxed) == 0)
 	{
 		const char *pEnv = getenv("MalterlibDisableStdErrLog");
 
@@ -78,7 +78,7 @@ bool CSystem_POSIX::f_GetMalterlibDisableStdErrLog()
 			m_MalterlibDisableStdErrLog = 1;
 	}
 
-	return m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::EMemoryOrder_Relaxed) == 2;
+	return m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::gc_MemoryOrder_Relaxed) == 2;
 }
 
 void CSystem_POSIX::f_DestroyThreadSpecific()

@@ -737,7 +737,7 @@ namespace NMib
 
 	CCoroutineThreadLocalHandler::CCoroutineThreadLocalHandler(bool _bAddToCoroutine)
 	{
-		if (!g_bCanStartThreads.f_Load(NAtomic::EMemoryOrder_Relaxed) || !_bAddToCoroutine)
+		if (!g_bCanStartThreads.f_Load(NAtomic::gc_MemoryOrder_Relaxed) || !_bAddToCoroutine)
 			return;
 
 		auto &ThreadLocal = fg_SystemThreadLocal();
@@ -762,7 +762,7 @@ namespace NMib
 	CCrossActorCallStateScope::CCrossActorCallStateScope(bool _bAddToCoroutine)
 		: CCoroutineThreadLocalHandler(_bAddToCoroutine)
 	{
-		if (!g_bCanStartThreads.f_Load(NAtomic::EMemoryOrder_Relaxed))
+		if (!g_bCanStartThreads.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
 			return;
 
 		auto &ThreadLocal = fg_SystemThreadLocal();

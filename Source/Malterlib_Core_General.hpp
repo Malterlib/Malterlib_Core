@@ -282,7 +282,7 @@ namespace NMib
 #else
 		static ch8 s_ReturnName[sizeof(DMibPFunctionSignature)];
 		static constinit NAtomic::TCAtomic<uint32> s_bInit = 0;
-		if (s_bInit.f_Load(NAtomic::EMemoryOrder_Acquire) == 2)
+		if (s_bInit.f_Load(NAtomic::gc_MemoryOrder_Acquire) == 2)
 			return s_ReturnName;
 
 		uint32 Expected = 0;
@@ -313,9 +313,9 @@ namespace NMib
 				++pParse;
 			}
 			NStr::fg_StrCopy(s_ReturnName, pStartType, (pParse - pStartType) + 1);
-			s_bInit.f_Store(2, NAtomic::EMemoryOrder_Release);
+			s_bInit.f_Store(2, NAtomic::gc_MemoryOrder_Release);
 		}
-		else while (s_bInit.f_Load(NAtomic::EMemoryOrder_Acquire) < 2)
+		else while (s_bInit.f_Load(NAtomic::gc_MemoryOrder_Acquire) < 2)
 			NSys::fg_Thread_SmallestSleep();
 
 		return s_ReturnName;

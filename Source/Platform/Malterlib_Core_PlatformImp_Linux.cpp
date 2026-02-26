@@ -2567,7 +2567,7 @@ namespace NMib::NThread
 			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
 
 			uint32 OldValue = 0;
-			if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
+			if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
 			{
 				if ((OldValue & gc_FutexThreadMask) == ThreadID)
 					fg_AbortFutex(-1); // Recursive lock not supported
@@ -2582,7 +2582,7 @@ namespace NMib::NThread
 		else
 		{
 			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 			{
 				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
 				return false;
@@ -2607,7 +2607,7 @@ namespace NMib::NThread
 			while (true)
 			{
 				uint32 OldValue = 0;
-				if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
+				if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
 					break;
 
 				if ((OldValue & gc_FutexThreadMask) == ThreadID)
@@ -2634,7 +2634,7 @@ namespace NMib::NThread
 		{
 			NMib::NThread::CThreadSpinWaiter SpinWaiter;
 			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 			{
 				SpinWaiter.f_Wait();
 				Expected = 0;
@@ -2661,7 +2661,7 @@ namespace NMib::NThread
 
 			uint32 OldValue = ThreadID;
 
-			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::EMemoryOrder_Release, NAtomic::EMemoryOrder_Relaxed))
+			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::gc_MemoryOrder_Release, NAtomic::gc_MemoryOrder_Relaxed))
 			{
 				// Contended
 				if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
@@ -2669,7 +2669,7 @@ namespace NMib::NThread
 			}
 		}
 		else
-			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
 
 		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
 	}
@@ -2681,7 +2681,7 @@ namespace NMib::NThread
 			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
 
 			uint32 OldValue = 0;
-			if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
+			if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
 			{
 				if ((OldValue & gc_FutexThreadMask) == ThreadID)
 					fg_AbortFutex(-1); // Recursive lock not supported
@@ -2695,7 +2695,7 @@ namespace NMib::NThread
 		else
 		{
 			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 				return false;
 		}
 #ifdef DMibSanitizerEnabled_Thread
@@ -2717,7 +2717,7 @@ namespace NMib::NThread
 			while (true)
 			{
 				uint32 OldValue = 0;
-				if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Relaxed))
+				if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
 					break;
 
 				if ((OldValue & gc_FutexThreadMask) == ThreadID)
@@ -2744,7 +2744,7 @@ namespace NMib::NThread
 		{
 			NMib::NThread::CThreadSpinWaiter SpinWaiter;
 			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 			{
 				SpinWaiter.f_Wait();
 				Expected = 0;
@@ -2774,7 +2774,7 @@ namespace NMib::NThread
 
 			uint32 OldValue = ThreadID;
 
-			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::EMemoryOrder_Release, NAtomic::EMemoryOrder_Relaxed))
+			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::gc_MemoryOrder_Release, NAtomic::gc_MemoryOrder_Relaxed))
 			{
 				// Contended
 				if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
@@ -2782,7 +2782,7 @@ namespace NMib::NThread
 			}
 		}
 		else
-			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
 	}
 }
 

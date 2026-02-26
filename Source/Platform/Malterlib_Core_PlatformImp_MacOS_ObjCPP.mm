@@ -1578,7 +1578,7 @@ namespace NMib
 
 		void CFileChangeNoticationContext::f_StartThread()
 		{
-			if (m_bProcessThreadStarted.f_Load(NAtomic::EMemoryOrder_Relaxed))
+			if (m_bProcessThreadStarted.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
 				return;
 			DMibLock(m_RunLoopLock);
 			if (m_pProcessThread)

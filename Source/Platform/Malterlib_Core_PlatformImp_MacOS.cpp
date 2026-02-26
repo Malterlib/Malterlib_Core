@@ -2569,7 +2569,7 @@ namespace NMib::NThread
 		else
 		{
 			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 			{
 				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
 				return false;
@@ -2599,7 +2599,7 @@ namespace NMib::NThread
 		{
 			NMib::NThread::CThreadSpinWaiter SpinWaiter;
 			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			while (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 			{
 				SpinWaiter.f_Wait();
 				Expected = 0;
@@ -2627,7 +2627,7 @@ namespace NMib::NThread
 			os_unfair_lock_unlock((os_unfair_lock_t)&m_Lock);
 #if DPlatformVersion < 10120
 		else
-			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
 #endif
 
 		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
@@ -2646,7 +2646,7 @@ namespace NMib::NThread
 		else
 		{
 			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 				return false;
 		}
 #endif
@@ -2673,7 +2673,7 @@ namespace NMib::NThread
 		{
 			NMib::NThread::CThreadSpinWaiter SpinWaiter;
 			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			while (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 			{
 				SpinWaiter.f_Wait();
 				Expected = 0;
@@ -2704,7 +2704,7 @@ namespace NMib::NThread
 			os_unfair_lock_unlock((os_unfair_lock_t)&m_Lock);
 #if DPlatformVersion < 10120
 		else
-			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
 #endif
 
 	}
@@ -3016,7 +3016,7 @@ extern "C" bool _dyld_find_unwind_sections(void* addr, struct dyld_unwind_sectio
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #ifdef DMibNoMacOSCrossModuleExceptions
-	if (!g_ThisModuleImage.f_Load(NAtomic::EMemoryOrder_Acquire))
+	if (!g_ThisModuleImage.f_Load(NAtomic::gc_MemoryOrder_Acquire))
 #if __has_feature(ptrauth_calls)
 		g_ThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)ptrauth_strip(&_dyld_find_unwind_sections, ptrauth_key_function_pointer)));
 #else

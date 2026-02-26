@@ -3514,7 +3514,7 @@ namespace NMib::NThread
 		{
 			uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
 			uint32 PrevioustThreadID = 0;
-			if (!m_Lock.f_CompareExchangeStrong(PrevioustThreadID, CurrentThreadID, EMemoryOrder_Acquire, EMemoryOrder_Acquire))
+			if (!m_Lock.f_CompareExchangeStrong(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
 			{
 				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
 				return false;
@@ -3523,7 +3523,7 @@ namespace NMib::NThread
 		else
 		{
 			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 			{
 				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
 				return false;
@@ -3547,7 +3547,7 @@ namespace NMib::NThread
 			while (true)
 			{
 				uint32 PrevioustThreadID = 0;
-				if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, EMemoryOrder_Acquire, EMemoryOrder_Acquire))
+				if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
 					break;
 
 				NLocal::g_OptionalFunctions.m_fWaitOnAddress(&m_Lock, &PrevioustThreadID, sizeof(PrevioustThreadID), INFINITE);
@@ -3557,7 +3557,7 @@ namespace NMib::NThread
 		{
 			NMib::NThread::CThreadSpinWaiter SpinWaiter;
 			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 			{
 				SpinWaiter.f_Wait();
 				Expected = 0;
@@ -3580,11 +3580,11 @@ namespace NMib::NThread
 #endif
 		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
 		{
-			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);;
+			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);;
 			NLocal::g_OptionalFunctions.m_fWakeByAddressSingle(&m_Lock);
 		}
 		else
-			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
 
 		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
 	}
@@ -3595,13 +3595,13 @@ namespace NMib::NThread
 		{
 			uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
 			uint32 PrevioustThreadID = 0;
-			if (!m_Lock.f_CompareExchangeStrong(PrevioustThreadID, CurrentThreadID, EMemoryOrder_Acquire, EMemoryOrder_Acquire))
+			if (!m_Lock.f_CompareExchangeStrong(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
 				return false;
 		}
 		else
 		{
 			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 				return false;
 		}
 #ifdef DMibSanitizerEnabled_Thread
@@ -3622,7 +3622,7 @@ namespace NMib::NThread
 			while (true)
 			{
 				uint32 PrevioustThreadID = 0;
-				if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, EMemoryOrder_Acquire, EMemoryOrder_Acquire))
+				if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
 					break;
 
 				NLocal::g_OptionalFunctions.m_fWaitOnAddress(&m_Lock, &PrevioustThreadID, sizeof(PrevioustThreadID), INFINITE);
@@ -3632,7 +3632,7 @@ namespace NMib::NThread
 		{
 			NMib::NThread::CThreadSpinWaiter SpinWaiter;
 			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::EMemoryOrder_Acquire, NAtomic::EMemoryOrder_Acquire))
+			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
 			{
 				SpinWaiter.f_Wait();
 				Expected = 0;
@@ -3658,11 +3658,11 @@ namespace NMib::NThread
 #endif
 		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
 		{
-			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);;
+			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);;
 			NLocal::g_OptionalFunctions.m_fWakeByAddressSingle(&m_Lock);
 		}
 		else
-			m_Lock.f_Exchange(0, NAtomic::EMemoryOrder_Release);
+			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
 	}
 }
 
