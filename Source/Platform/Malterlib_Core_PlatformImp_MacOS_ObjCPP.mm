@@ -35,7 +35,7 @@ using namespace NContainer;
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
 #include "Malterlib_Core_Platform_POSIX_User.h"
 
-extern NAtomic::TCAtomicAggregate<mint> g_ForceMmapSequence;
+extern NAtomic::TCAtomic<mint> g_ForceMmapSequence;
 
 namespace NMib
 {

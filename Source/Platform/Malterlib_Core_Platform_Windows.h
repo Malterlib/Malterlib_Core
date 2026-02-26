@@ -8,7 +8,7 @@
 
 extern VOID (WINAPI *g_fOrgExitProcess)(__in  UINT _ExitCode);
 extern BOOL (WINAPI *g_fOrgTerminateProcess)(__in  HANDLE _hProcess, __in  UINT _ExitCode);
-extern NMib::NAtomic::TCAtomicAggregate<smint> g_bDoneMalterlibInitAll;
+extern NMib::NAtomic::TCAtomic<smint> g_bDoneMalterlibInitAll;
 extern HINSTANCE g_hDllInstance;
 extern bool g_bIsDll;
 

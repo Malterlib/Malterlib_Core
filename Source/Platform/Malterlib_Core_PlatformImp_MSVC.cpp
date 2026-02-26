@@ -47,14 +47,14 @@ using namespace NMib::NStorage;
 HINSTANCE g_hDllInstance = 0;
 bool g_bIsDll = false;
 
-static NAtomic::TCAtomicAggregate<smint> gs_LibraryRefCount = {mint(smint(-1))};
+static NAtomic::TCAtomic<smint> gs_LibraryRefCount{smint(-1)};
 static mint gs_ThreadLocalParentThread = 0xFFFFFFFF;
 
 VOID (WINAPI *g_fOrgExitProcess)(__in  UINT _ExitCode) = nullptr;
 BOOL (WINAPI *g_fOrgTerminateProcess)(__in  HANDLE _hProcess, __in  UINT _ExitCode) = nullptr;
 
 
-extern NAtomic::TCAtomicAggregate<smint> g_bDoneMalterlibInitAll;
+extern NAtomic::TCAtomic<smint> g_bDoneMalterlibInitAll;
 
 #pragma warning(disable:4344)
 
@@ -2093,7 +2093,7 @@ void fg_LoadFunctionPointers()
 
 }
 
-NAtomic::TCAtomicAggregate<smint> g_bDoneMalterlibInitAll = {0};
+NAtomic::TCAtomic<smint> g_bDoneMalterlibInitAll {0};
 
 extern "C" void __cdecl __security_init_cookie(void);
 
@@ -6559,7 +6559,7 @@ namespace NMib
 	static_assert(__alignof(g_SystemMemory) >= mint(DMibPMemoryCacheLineSize), "Alignment didn't work");
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = true;
-	constinit NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads = {DAggregateInit};
+	constinit NAtomic::TCAtomic<mint> g_bCanStartThreads{0};
 	mint g_bCreatedSystem = false;
 	namespace NSys
 	{

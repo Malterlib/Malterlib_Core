@@ -614,7 +614,7 @@ namespace NMib
 	mint align_cacheline g_SystemMemory[sizeof(CSystemEmscripten) / sizeof(uint64)];
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = false;
-	constinit NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads = {DAggregateInit};
+	constinit NAtomic::TCAtomic<mint> g_bCanStartThreads{0};
 }
 
 void fg_ForkPrepare()

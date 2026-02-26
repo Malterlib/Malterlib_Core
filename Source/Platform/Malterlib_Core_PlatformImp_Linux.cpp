@@ -1356,7 +1356,7 @@ namespace NMib
 	mint align_cacheline g_SystemMemory[sizeof(CSystemLinux) / sizeof(mint)];
 	mint g_bCreatingSystemDone = false;
 	mint g_bCanUseSystemMalloc = false;
-	constinit NAtomic::TCAtomicAggregate<mint> g_bCanStartThreads = {DAggregateInit};
+	constinit NAtomic::TCAtomic<mint> g_bCanStartThreads{0};
 }
 
 void fg_ForkPrepare()
@@ -2505,7 +2505,7 @@ namespace NMib::NThread
 		constexpr uint32 gc_FutexThreadMask = uint32(FUTEX_TID_MASK);
 	}
 
-	uint32 call_futex(NAtomic::TCAtomicAggregate<CLowLevelLockAggregateLockType> &_Value, int _Operation)
+	uint32 call_futex(NAtomic::TCAtomic<CLowLevelLockAggregateLockType> &_Value, int _Operation)
 	{
 		return syscall(SYS_futex, (int *)&_Value, _Operation, 0, nullptr, nullptr, 0);
 	}

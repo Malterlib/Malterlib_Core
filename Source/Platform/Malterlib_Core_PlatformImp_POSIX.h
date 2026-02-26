@@ -38,6 +38,6 @@ struct CSystem_POSIX
 	void f_DestroyThreadSpecific();
 	void f_Destruct();
 
-	NMib::NAtomic::TCAtomicAggregate<uint32> m_MalterlibDisableStdErrLog = {DAggregateInit};
+	NMib::NAtomic::TCAtomic<uint32> m_MalterlibDisableStdErrLog{0};
 	NMib::NThread::CMutual m_ForkLock;
 };
