@@ -1666,14 +1666,9 @@ namespace NMib
 
 // Gets a pointer to a class wich member is contained in from a pointer to that member
 #define DMibGetParent(_Class, _Member, _Ptr) ((_Class *)(((uint8 *)_Ptr) + ( ((mint)((_Class *)((void*)_Ptr))) - ((mint)(&((_Class *)((void *)_Ptr))->_Member)) )))
-#define DMibGetHighestBitSet(_Number) (NMib::gc_HighestBitSet<mint, _Number>)
 
 #ifndef DMibPNoShortCuts
 #	define DGetParent(_Class, _Member, _Ptr) DMibGetParent(_Class, _Member, _Ptr)
-#	define DBit(_Bit) DMibBit(_Bit)
-#	define DBitTyped(_Bit, _Type) DMibBitTyped(_Bit, _Type)
-#	define DBitRange(_BitStart, _BitEnd) DMibBitRange(_BitStart, _BitEnd)
-#	define DGetHighestBitSet(_Number) DMibGetHighestBitSet(_Number)
 #	define DNew DMibNew
 #endif
 
