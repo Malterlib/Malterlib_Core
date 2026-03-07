@@ -222,7 +222,6 @@ Property
 			!MalterlibDefaultToolset true
 			|
 			{
-				PlatformFamily "Emscripten"
 				PlatformIsDarwin true
 				PlatformFamily "Linux"
 			}
@@ -242,7 +241,6 @@ Property
 			|
 			{
 				PlatformFamily "Linux"
-				PlatformFamily "Emscripten"
 				PlatformIsDarwin true
 			}
 		}
@@ -262,7 +260,6 @@ Property
 			!MalterlibDefaultToolset true
 			|
 			{
-				PlatformFamily "Emscripten"
 				PlatformIsDarwin true
 				PlatformFamily "Linux"
 			}

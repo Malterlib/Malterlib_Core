@@ -294,14 +294,6 @@ Compile
 				Compile.Disabled true
 				%File "Source/Platform/Malterlib_Core_PlatformImp_POSIX*"
 			}
-			%Group "Emscripten"
-			{
-				Compile.Disabled true
-				{
-					!PlatformFamily "Emscripten"
-				}
-				%File "Source/Platform/Malterlib_Core_PlatformImp_Emscripten*"
-			}
 			%File "Source/Platform/Malterlib_Core_PlatformImp_Breakpad.cpp"
 			{
 				Compile.Disabled true

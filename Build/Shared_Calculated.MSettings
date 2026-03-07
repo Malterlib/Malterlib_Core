@@ -80,10 +80,6 @@ Property
 	{
 		!!Platform "Linux"
 	}
-	PlatformFamily "Emscripten"
-	{
-		!!Platform "Emscripten"
-	}
 
 	PlatformIsDarwin: bool = false
 	PlatformIsDarwin true

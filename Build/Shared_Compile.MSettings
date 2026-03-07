@@ -1167,13 +1167,6 @@ Property
 
 Property
 {
-	!!PlatformFamily "Emscripten"
-
-	PlatformVersion 1000
-}
-
-Property
-{
 	MalterlibMSVCEnableUTF8: bool = true
 	MalterlibNoShortcuts: bool = false
 	DoesNotUseMalterlib: bool = false
@@ -1414,12 +1407,6 @@ Compile
 
 	WarningsAsErrors: bool?
 	WarningsAsErrors true
-
-	EmscriptenWarnings: string?
-	EmscriptenWarnings "On"
-	{
-		!!PlatformFamily "Emscripten"
-	}
 
 	SysRoot: string?
 	SysRoot MalterlibSysRoot
@@ -2301,7 +2288,6 @@ Compile
 	{
 		!!PlatformIsDarwin true
 		!!PlatformFamily "Linux"
-		!!PlatformFamily "Emscripten"
 	}
 	PreprocessorDefines += ["DMibDebug"]
 	{
@@ -2703,18 +2689,6 @@ Compile
 	{
 		!!Configuration "Fast Compile"
 		!!MalterlibDebugSymbolsEnable false
-	}
-	Symbols "Default"
-	{
-		&
-		{
-			|
-			{
-				Configuration "Release"
-				Configuration "Fast Compile"
-			}
-			PlatformFamily "Emscripten"
-		}
 	}
 
 	SplitSymbols: bool?

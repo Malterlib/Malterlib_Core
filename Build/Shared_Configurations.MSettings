@@ -112,7 +112,6 @@ Property
 	}
 
 	EnablePlatform_iOS: bool = ((SinglePlatform <!=> undefined) ? SinglePlatform == "iOS" : false)
-	EnablePlatform_Emscripten: bool = ((SinglePlatform <!=> undefined) ? SinglePlatform == "Emscripten" : false) // User(- Platform)=true: Enables emscripten support
 
 	SupportedArchitecture_x86: bool = false
 	SupportedArchitecture_x86 true
@@ -246,18 +245,6 @@ Property
 			EnablePlatform_Linux true
 		}
 	}
-	Emscripten "Emscripten platform"
-	{
-		&
-		{
-			|
-			{
-				GeneratorFamily "Xcode"
-				GeneratorFamily "Ninja"
-			}
-			EnablePlatform_Emscripten true
-		}
-	}
 }
 
 *Architecture
@@ -334,7 +321,7 @@ Property
 	}
 	le32 "Generic 32 bit Little endian"
 	{
-		!!Platform "Emscripten"
+		!!false true
 	}
 }
 

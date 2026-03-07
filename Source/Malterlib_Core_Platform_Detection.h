@@ -35,9 +35,6 @@
 #	elif defined(__WIN32__) || defined(_MSC_VER)
 #		define DPlatformFamily Windows
 #		define DPlatformFamily_Windows
-#	elif defined(EMSCRIPTEN)
-#		define DPlatformFamily Emscripten
-#		define DPlatformFamily_Emscripten
 #	else
 #		error "Platform family not detected"
 #	endif

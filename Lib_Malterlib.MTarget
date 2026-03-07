@@ -132,7 +132,6 @@ Property
 			CompileDialect "C"
 			|
 			{
-				PlatformFamily "Emscripten"
 				PlatformFamily "Linux"
 				PlatformFamily "macOS"
 			}
@@ -173,7 +172,6 @@ Property
 				{
 					PlatformFamily "Linux"
 					PlatformFamily "macOS"
-					PlatformFamily "Emscripten"
 				}
 			}
 		}
@@ -198,7 +196,6 @@ Property
 				{
 					PlatformFamily "Linux"
 					PlatformFamily "macOS"
-					PlatformFamily "Emscripten"
 				}
 			}
 
@@ -413,12 +410,6 @@ Property
 			}
 			%File "../../External/llvm-project/libunwind/include/^*"
 			%File "../../External/llvm-project/libunwind/src/*"
-			{
-				Compile.Disabled true
-				{
-					!!PlatformFamily "Emscripten"
-				}
-			}
 		}
 		%Group "libc++abi"
 		{
@@ -442,12 +433,6 @@ Property
 			}
 
 			%File "../../External/llvm-project/libcxxabi/src/*.cpp"
-			{
-				Compile.Disabled true
-				{
-					!!PlatformFamily "Emscripten"
-				}
-			}
 			%File "../../External/llvm-project/libcxxabi/src/*.h"
 			%File "../../External/llvm-project/libcxxabi/include/*.h"
 			{
@@ -488,10 +473,6 @@ Property
 						CompileDialect "C"
 						!WorkaroundLTOValue undefined
 					}
-				}
-				Compile.Disabled true
-				{
-					!!PlatformFamily "Emscripten"
 				}
 			}
 		}
@@ -630,7 +611,6 @@ Property
 					CompileDialect "C"
 					|
 					{
-						PlatformFamily "Emscripten"
 						PlatformFamily "Linux"
 						PlatformFamily "macOS"
 					}

@@ -484,31 +484,6 @@ Target
 	}
 }
 
-// File extensions Emscripten
-Target
-{
-	&
-	{
-		LanguageFamily "Native"
-		PlatformFamily "Emscripten"
-	}
-	FileExtension ".a"
-	{
-		!!Target.Type "StaticLibrary"
-	}
-	FileExtension ".js"
-	{
-		!!Target.Type "DynamicLibrary"
-		!!Target.Type "SharedDynamicLibrary"
-	}
-	FileExtension ".html"
-	{
-		!!Target.Type "UIExecutable"
-		!!Target.Type "Executable"
-		!!Target.Type "ConsoleExecutable"
-	}
-}
-
 Property
 {
 	MalterlibUseClangForWindows: bool = (!MalterlibUseClangForWindowsConfigs || ClangForWindows_Enabled == "Clang") // User(Toolset)=false: Enable clang compilation for Windows platform
@@ -973,15 +948,10 @@ Property
 		|
 		{
 			PlatformFamily "Linux"
-			PlatformFamily "Emscripten"
 		}
 	}
 
 	MalterlibToolsPrefix: string?
-	MalterlibToolsPrefix "/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/"
-	{
-		!!PlatformFamily "Emscripten"
-	}
 
 	MalterlibToolsPrefix `@(PlatformToolsetCompilerBasePath)/bin/`
 	{
@@ -1119,14 +1089,6 @@ Property
 		}
 	}
 
-	PlatformToolsetCompiler `/opt/Development/Malterlib/llvm/unstable-emscripten/emscripten/emcc@(HostExecutableExtension)`
-	{
-		&
-		{
-			PlatformToolsetCompiler undefined
-			PlatformFamily "Emscripten"
-		}
-	}
 	PlatformToolsetCompiler `@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang@(HostExecutableExtension)`
 	{
 		&
@@ -1176,23 +1138,6 @@ Property
 			Architecture "x86"
 		}
 	}
-}
-
-// Emscripten
-Target
-{
-	&
-	{
-		LanguageFamily "Native"
-		GeneratorFamily "Xcode"
-		PlatformFamily "Emscripten"
-	}
-
-	EmscriptenFastCompiler true
-	EmscriptenEmscriptenRoot "/Development/Malterlib/llvm/unstable-emscripten/emscripten"
-	EmscriptenLLVMRoot "/Development/Malterlib/llvm/unstable-emscripten/build/make/bin"
-	EmscriptenPython "/usr/bin/python"
-	EmscriptenNode "/usr/local/bin/node"
 }
 
 Target
@@ -1471,23 +1416,6 @@ Target
 	{
 		!Target.EmscriptenNode undefined
 	}
-	LDFlags =+ [["-s", "DISABLE_SYSLIB_libcxx=1"], ["-s", "DISABLE_SYSLIB_libcxxabi=1"]]
-	{
-		&
-		{
-			PlatformFamily "Emscripten"
-			!MalterlibDisableMalterlib true
-		}
-	}
-
-	LDFlags =+ ["-O2", ["-s", "DISABLE_EXCEPTION_CATCHING=0"]]
-	{
-		&
-		{
-			PlatformFamily "Emscripten"
-			!Compile.Optimize "Off"
-		}
-	}
 
 	LDFlags =+ `-mmacosx-version-min=@(MalterlibMinSupportedMacOSVersion)`
 	{
@@ -1495,23 +1423,6 @@ Target
 		{
 			PlatformFamily "macOS"
 			!Target.DriverType "DriverKit"
-		}
-	}
-
-	LDFlags =+ [["--closure", "1"]]
-	{
-		&
-		{
-			PlatformFamily "Emscripten"
-			Configuration "Release"
-		}
-	}
-	LDFlags =+ [["--closure", "0"]]
-	{
-		&
-		{
-			PlatformFamily "Emscripten"
-			!Configuration "Release"
 		}
 	}
 
@@ -1923,7 +1834,6 @@ Target
 			|
 			{
 				PlatformFamily "Linux"
-				PlatformFamily "Emscripten"
 			}
 		}
 	}
@@ -1964,11 +1874,6 @@ Target
 	LDFlags =+ ["-fprofile-instr-generate", "-fcoverage-mapping"]
 	{
 		!!MalterlibCodeCoverage true
-	}
-
-	LDFlags =+ "-Wno-warn-absolute-paths"
-	{
-		!!PlatformFamily "Emscripten"
 	}
 
 	LDFlags =+ [["-target", MalterlibTargetTriple]]
@@ -2158,10 +2063,6 @@ Target
 			PlatformFamily "Linux"
 		}
 	}
-	LibToolFlags =+ [["-crosspath", "/Development/Malterlib/llvm/unstable-emscripten/emscripten"]]
-	{
-		!!PlatformFamily "Emscripten"
-	}
 
 	LibToolFlags =+ [["-env_EMCC_FAST_COMPILER", "1"]]
 	{
@@ -2323,7 +2224,6 @@ Target
 			Target.SDKRoot undefined
 			|
 			{
-				PlatformFamily "Emscripten"
 				PlatformFamily "Linux"
 			}
 		}
@@ -2610,36 +2510,6 @@ Target
 	NativeArchitectureActual MalterlibXcodeBuildArchitecture
 
 	DependencyInfoFile: string?
-	DependencyInfoFile "" // Empty as the linker does not support it
-	{
-		!!GeneratorFamily "Xcode"
-	}
-//	ValidArchitectures "none"
-//	Architectures "none"
-
-}
-
-// Emscripten
-Target
-{
-	&
-	{
-		LanguageFamily "Native"
-		PlatformFamily "Emscripten"
-		!Target.Type "Tool"
-	}
-	ObjcLinkRuntime false
-
-	DebugInformationFormat ""
-
-	ValidArchitectures MalterlibXcodeBuildArchitecture
-	Architectures MalterlibXcodeBuildArchitecture
-
-	SupportedPlatforms "macosx"
-	OnlyActiveArchitectures true
-	NativeArchitecture MalterlibXcodeBuildArchitecture
-	NativeArchitectureActual MalterlibXcodeBuildArchitecture
-
 	DependencyInfoFile "" // Empty as the linker does not support it
 	{
 		!!GeneratorFamily "Xcode"
