@@ -602,7 +602,7 @@ namespace NMib
 
 		EInjectDllResult fg_InjectDLL(HANDLE _hProcess, HANDLE _hThread, const WCHAR *_pDLLName, NStr::CStr &_Error)
 		{
-		//	NMib::NTime::CTimerTraceScope Scope("fg_InjectDLL");
+		//	NMib::NTime::CTimeMeasureTraceScope Scope("fg_InjectDLL");
 		//	DMibTrace("Injecting Dll: {}\r\n", _pDLLName);
 			BOOL bRet = true;
 			SIZE_T dwBytes;

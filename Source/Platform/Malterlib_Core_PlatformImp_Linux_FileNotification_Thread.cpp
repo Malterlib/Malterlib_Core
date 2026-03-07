@@ -26,7 +26,7 @@ void CFileChangeNotificationContext::CNotificationThread::f_HandleRenameTimeouts
 		for (auto iRename = Notification.m_PendingRenames.f_GetIterator(); iRename;)
 		{
 			auto &Rename = *iRename;
-			if (Rename.m_Clock.f_GetTime() < 1.0)
+			if (Rename.m_Stopwatch.f_GetTime() < 1.0)
 			{
 				++iRename;
 				continue;
@@ -41,7 +41,7 @@ void CFileChangeNotificationContext::CNotificationThread::f_HandleRenameTimeouts
 	for (auto iRename = PendingRenames.f_GetIterator(); iRename;)
 	{
 		auto &Rename = *iRename;
-		if (Rename.m_Clock.f_GetTime() < 1.0)
+		if (Rename.m_Stopwatch.f_GetTime() < 1.0)
 		{
 			++iRename;
 			continue;
@@ -56,7 +56,7 @@ void CFileChangeNotificationContext::CNotificationThread::f_HandleRenameTimeouts
 	auto &PendingReParents = m_pContext->m_PendingReParents;
 	for (auto iReParent = PendingReParents.f_GetIterator(); iReParent;)
 	{
-		if (iReParent->m_Clock.f_GetTime() < 1.0)
+		if (iReParent->m_Stopwatch.f_GetTime() < 1.0)
 		{
 			++iReParent;
 			continue;

@@ -5554,7 +5554,7 @@ static DWORD fg_AtomicReplaceImplementation(CStr const &_FileFrom, CStr const &_
 		Flags |= REPLACEFILE_IGNORE_ACL_ERRORS;
 #endif
 
-	NTime::CClock Timeout{true};
+	NTime::CStopwatch Stopwatch{true};
 	mint nTries = 0;
 
 l_Retry:
@@ -5569,7 +5569,7 @@ l_Retry:
 
 		if (ReplaceError == ERROR_UNABLE_TO_REMOVE_REPLACED)
 		{
-			if (Timeout.f_GetTime() < 0.1 || nTries < 10)
+			if (Stopwatch.f_GetTime() < 0.1 || nTries < 10)
 			{
 				Sleep(0);
 				goto l_Retry;
@@ -5931,7 +5931,7 @@ void NSys::NFile::fg_Delete(const CStrNonTracked &_File)
 
 void NSys::NFile::fg_DeleteDirectory(const CStr &_File)
 {
-	NTime::CClock Timeout{true};
+	NTime::CStopwatch Stopwatch{true};
 	mint nTries = 0;
 
 l_Retry:
@@ -5943,7 +5943,7 @@ l_Retry:
 		auto Error = GetLastError();
 		if (Error == ERROR_DIR_NOT_EMPTY)
 		{
-			if (Timeout.f_GetTime() < 0.1 || nTries < 10)
+			if (Stopwatch.f_GetTime() < 0.1 || nTries < 10)
 			{
 				Sleep(0);
 				goto l_Retry;
@@ -5956,7 +5956,7 @@ l_Retry:
 
 void NSys::NFile::fg_DeleteDirectory(const CStrNonTracked &_File)
 {
-	NTime::CClock Timeout{true};
+	NTime::CStopwatch Stopwatch{true};
 	mint nTries = 0;
 
 l_Retry:
@@ -5968,7 +5968,7 @@ l_Retry:
 		auto Error = GetLastError();
 		if (Error == ERROR_DIR_NOT_EMPTY)
 		{
-			if (Timeout.f_GetTime() < 0.1 || nTries < 10)
+			if (Stopwatch.f_GetTime() < 0.1 || nTries < 10)
 			{
 				Sleep(0);
 				goto l_Retry;

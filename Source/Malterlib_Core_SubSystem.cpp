@@ -209,6 +209,3 @@ namespace NMib
 			SubSystem.f_ExitModule();
 	}
 };
-
-#include <Mib/Time/Timer>
-

@@ -73,24 +73,24 @@ private:
 		fp64 RunTime = 0.0;
 		if (bUseRunTime)
 			RunTime = -(m_CPUUsage / (fp64(10.0) * m_CPUUsage - fp64(10.0)));
-		NMib::NTime::CClock TotalTimer;
-		TotalTimer.f_Start();
+		NMib::NTime::CStopwatch TotalStopwatch;
+		TotalStopwatch.f_Start();
 		while (f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
 		{
 			mint ScannedMemory = 0;
-			NMib::NTime::CClock Timer;
-			Timer.f_Start();
+			NMib::NTime::CStopwatch Stopwatch;
+			Stopwatch.f_Start();
 			for (mint i = 0; true; ++i)
 			{
 				MEMORY_BASIC_INFORMATION MemInfo;
 				if (!VirtualQuery((void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
 				{
 #ifdef DConfig_ReleaseTesting
-					DMibTrace("Scanned {} bytes in {} seconds!!!\r\n", TotalScannedMemory, TotalTimer.f_GetTime());
+					DMibTrace("Scanned {} bytes in {} seconds!!!\r\n", TotalScannedMemory, TotalStopwatch.f_GetTime());
 #endif
 					TotalScannedMemory = 0;
 					CurrentAddress = StartAddress;
-					TotalTimer.f_Start();
+					TotalStopwatch.f_Start();
 					continue;
 				}
 				if
@@ -107,15 +107,15 @@ private:
 				if (CurrentAddress == (mint)MemInfo.BaseAddress + MemInfo.RegionSize)
 				{
 #ifdef DConfig_ReleaseTesting
-					DMibTrace("Scanned {} bytes in {} seconds 2!!!\r\n", TotalScannedMemory, TotalTimer.f_GetTime());
+					DMibTrace("Scanned {} bytes in {} seconds 2!!!\r\n", TotalScannedMemory, TotalStopwatch.f_GetTime());
 #endif
 					TotalScannedMemory = 0;
 					CurrentAddress = StartAddress;
-					TotalTimer.f_Start();
+					TotalStopwatch.f_Start();
 				}
 				else
 					CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
-				if ((ScannedMemory > MaxPerTime || i > 1000) && (!bUseRunTime || Timer.f_GetTime() > RunTime))
+				if ((ScannedMemory > MaxPerTime || i > 1000) && (!bUseRunTime || Stopwatch.f_GetTime() > RunTime))
 					break;
 			}
 			m_EventWantQuit.f_WaitTimeout(0.1);

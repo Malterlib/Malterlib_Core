@@ -599,7 +599,5 @@ namespace NMib
 
 };
 
-#include <Mib/Time/Timer>
-
 #include "Malterlib_Core_SubSystem.hpp"
 

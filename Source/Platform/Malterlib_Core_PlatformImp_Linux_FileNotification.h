@@ -179,7 +179,7 @@ public:
 
 		struct CPendingRename
 		{
-			NTime::CClock m_Clock{true};
+			NTime::CStopwatch m_Stopwatch{true};
 			CStr m_RelativePath;
 			TCSharedPointer<CWatch> m_pWatch;
 			bool m_bIsDir = false;
@@ -233,7 +233,7 @@ public:
 	struct CPendingRename
 	{
 		TCSharedPointer<CWatch> m_pWatch;
-		NTime::CClock m_Clock{true};
+		NTime::CStopwatch m_Stopwatch{true};
 		bool m_bIsDirectory = false;
 	};
 	TCMap<uint32, CPendingRename> m_PendingRenames;
@@ -241,7 +241,7 @@ public:
 
 	struct CPendingReParent
 	{
-		NTime::CClock m_Clock{true};
+		NTime::CStopwatch m_Stopwatch{true};
 		TCMap<CStr, bool> m_ChildFiles;
 	};
 	TCMap<CStr, CPendingReParent> m_PendingReParents;

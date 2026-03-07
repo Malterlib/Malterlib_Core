@@ -356,7 +356,7 @@ public:
 	bool f_WaitTimeout(fp32 _Timeout)
 	{
 		bool bRet = true;
-		CClockRaw TimeWait;
+		CStopwatchRaw TimeWait;
 		TimeWait.f_Start();
 		DMibLock(m_Lock);
 		fp64 Time = TimeWait.f_GetTime();
