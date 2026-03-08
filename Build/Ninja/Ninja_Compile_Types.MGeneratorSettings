@@ -61,14 +61,29 @@ GeneratorSetting
 	CalculateCommandLine: string
 	CalculateCommandLine `set -eo pipefail\n`\
 	`@(Compile.Custom_CommandLine)\n`
+	{
+		!!Compile.Custom_Shell->FindNoCase("bash") true
+	}
+	CalculateCommandLine Compile.Custom_CommandLine
+	{
+		!Compile.Custom_Shell->FindNoCase("bash") true
+	}
 
 	Compile_Custom_CommandLine #<Rule.command> `@(Compile.Custom_Shell) @(GeneratorSetting.CalculateCommandLine->Escape())`
 	{
-		!Compile.Custom_Shell undefined
+		&
+		{
+			!Compile.Custom_Shell undefined
+			!Compile.Custom_Shell ""
+		}
 	}
 	Compile_Custom_CommandLine #<Rule.command> Compile.Custom_CommandLine
 	{
-		!!Compile.Custom_Shell undefined
+		|
+		{
+			Compile.Custom_Shell undefined
+			Compile.Custom_Shell ""
+		}
 	}
 
 	Compile_Type #<Build.description> `Custom rule @(this.Identity->GetFile())`
@@ -76,9 +91,11 @@ GeneratorSetting
 	Compile_Custom_Inputs #<Build.implicit_dependencies> =+ Compile.Custom_Inputs
 	Compile_Custom_WorkingDirectory #<Rule.command_cwd> Compile.Custom_WorkingDirectory
 
+	Compile_Type #<Rule.restat> Compile.Custom_Restat
+
 	Compile_Type #<Rule.environment> += Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
 	Compile_Type #<Rule.environment> += {
-		PATH: `@(Target.ToolPath->Join(":")):@(PATH)`
+		PATH: `@(Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
 	}
 	{
 		&
@@ -164,6 +181,9 @@ Property
 			_Output->GetExtension() "i"
 			_Output->GetExtension() "ipp"
 			_Output->GetExtension() "ixx"
+			_Output->GetExtension() "c"
+			_Output->GetExtension() "cpp"
+			_Output->GetExtension() "cxx"
 		}
 	}
 }
@@ -181,6 +201,10 @@ Compile
 	}
 
 	LinkerInputs =+ (Compile.Custom_Outputs || [])->ForEach(&f_GetObjectOutputs)
+	PostBuildImplicitInputs =+ (Compile.Custom_Outputs || [])
+	{
+		!!GeneratorFamily "Ninja"
+	}
 }
 
 Target
@@ -192,6 +216,7 @@ Target
 GeneratorSetting
 {
 	Target_AllFiles_Custom {}
+	Compile_Custom_Restat {}
 
 	CompileTypeOutputs_Custom: [string] = []
 	CompileTypeOutputs_Custom =+ (Compile.Custom_Outputs || [])->ForEach(&f_GetHeaderOutputs)

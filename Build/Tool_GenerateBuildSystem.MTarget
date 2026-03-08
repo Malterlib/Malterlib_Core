@@ -59,7 +59,11 @@ Property
 		}
 		CommandLine_IsGenerator !MalterlibDisableBuildSystemGeneration
 
-		ExportScriptEnvironment += ["MalterlibIntermediateDirectoriesFile", "MalterlibNinjaGeneratorFile"]
+		ExportScriptEnvironment += ["MalterlibIntermediateDirectoriesFile"]
+		ExportScriptEnvironment += ["MalterlibNinjaGeneratorFile"]
+		{
+			!!GeneratorFamily "Ninja"
+		}
 
 		Group "Tools/Malterlib"
 

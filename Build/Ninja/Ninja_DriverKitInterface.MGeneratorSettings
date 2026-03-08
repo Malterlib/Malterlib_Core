@@ -178,6 +178,7 @@ Compile
 	{
 		Target.DriverType "DriverKit"
 		ClangCanCompile true
+		GeneratorFamily "Ninja"
 	}
 
 	CompileTypeDependencies =+ "DriverKitInterface"

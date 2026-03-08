@@ -723,6 +723,7 @@ Compile
 	LinkerInputs: [string] = []
 	LinkerImplicitInputs: [string] = []
 	LinkerManifestInputs: [string] = []
+	PostBuildImplicitInputs: [string] = []
 	IncludeEnvironmentPaths: [string] = []
 }
 
@@ -3153,6 +3154,12 @@ Compile
 	}
 }
 
+Property
+{
+	WINDIR: string = "C:\\Windows"
+	COMSPEC: string = `@(WINDIR)\\system32\\cmd.exe`
+}
+
 Compile
 {
 	Custom_Shell: string?
@@ -3161,7 +3168,15 @@ Compile
 		&
 		{
 			Compile.Custom_Shell undefined
-			!PlatformFamily "Windows"
+			!HostPlatformFamily "Windows"
+		}
+	}
+	Custom_Shell `@(COMSPEC) /c`
+	{
+		&
+		{
+			Compile.Custom_Shell undefined
+			HostPlatformFamily "Windows"
 		}
 	}
 }
@@ -3248,6 +3263,16 @@ Compile
 		!!GeneratorFamily "VisualStudio"
 	}
 
+	Custom_Restat: bool?
+	Custom_Restat true
+	{
+		&
+		{
+			Compile.Custom_Restat undefined
+			GeneratorFamily "Ninja"
+		}
+	}
+
 	Custom_BuildInParallel: bool?
 	Custom_BuildInParallel true
 	{
@@ -3318,4 +3343,6 @@ Compile
 	IncludeEnvironmentPaths += MalterlibWindowsSDKUCRTIncludePath
 	IncludeEnvironmentPaths += MalterlibWindowsSDKUMIncludePath
 	IncludeEnvironmentPaths += MalterlibWindowsSDKSharedIncludePath
+	IncludeEnvironmentPaths += MalterlibWindowsSDKWinRTIncludePath
+	IncludeEnvironmentPaths += MalterlibWindowsSDKCppWinRTIncludePath
 }

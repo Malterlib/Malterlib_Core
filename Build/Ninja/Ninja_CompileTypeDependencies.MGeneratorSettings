@@ -25,10 +25,13 @@ GeneratorSetting
 	f_GetCompileTypePhony function(string _CompileType) string = ""
 	f_GetCompileTypePhony `Compile Type @(_CompileType) @(Target:Target.Name)`
 
+	f_GetCompileTypePhonyArray function(string _CompileType) [string] = []
+	f_GetCompileTypePhonyArray =+ `Compile Type @(_CompileType) @(Target:Target.Name)`
+
 	f_GetCompileTypeOutputs function(string _CompileType) [string] = Target:Target.AllFiles_@(_CompileType)->ForEach(&GeneratorSetting.f_GetCompileTypeOutput, {CompileType: _CompileType})
 
-	f_CreateCompileTypePhonyRule function(string _CompileType) type(CRulesMap) = {}
-	f_CreateCompileTypePhonyRule {
+	f_CreateCompileTypePhonyRules function(string _CompileType) [type(CRulesMap)] = {}
+	f_CreateCompileTypePhonyRules =+ {
 		Rule: {
 			Positions: []
 			, Rule: {
@@ -41,7 +44,7 @@ GeneratorSetting
 		}
 	}
 
-	Target #<OtherRules> =+ AllCompileTypeDependencies->ForEach(&GeneratorSetting.f_CreateCompileTypePhonyRule)
+	Target #<OtherRules> =+ AllCompileTypeDependencies->ForEach(&GeneratorSetting.f_CreateCompileTypePhonyRules)
 
-	Compile_CompileTypeDependencies #<Build.order_dependencies> =+ Compile.CompileTypeDependencies->ForEach(&GeneratorSetting.f_GetCompileTypePhony)
+	Compile_CompileTypeDependencies #<Build.order_dependencies> =+ Compile.CompileTypeDependencies->ForEach(&GeneratorSetting.f_GetCompileTypePhonyArray)
 }

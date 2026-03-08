@@ -267,7 +267,7 @@ Compile
 
 	GenericCompileType "GenericCustom"
 
-	Custom_Shell undefined
+	Custom_Shell ""
 
 	Custom_WorkingDirectory Target:Target.IntermediateDirectory->MakeAbsolute()
 	Custom_Outputs [Compile.ObjectFileName, Compile.CppFileName]

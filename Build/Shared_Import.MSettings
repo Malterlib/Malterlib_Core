@@ -495,6 +495,37 @@ Import
 		&
 		{
 			!PlatformToolsetCompiler undefined
+			!HostPlatformFamily "Windows"
+		}
+	}
+
+	CMake_CCompiler PlatformToolsetCompiler->GetPath()->UnixPath() / "clang-cl.exe"
+	{
+		&
+		{
+			!PlatformToolsetCompiler undefined
+			HostPlatformFamily "Windows"
+			PlatformToolsetCompiler->GetFile() "clang.exe"
+		}
+	}
+
+	CMake_CCompiler PlatformToolsetCompiler->UnixPath()
+	{
+		&
+		{
+			!PlatformToolsetCompiler undefined
+			HostPlatformFamily "Windows"
+			!PlatformToolsetCompiler->GetFile() "clang.exe"
+		}
+	}
+
+	CMake_CxxCompiler PlatformToolsetCompiler->GetPath()->UnixPath() / "clang-cl.exe"
+	{
+		&
+		{
+			!PlatformToolsetCompiler undefined
+			HostPlatformFamily "Windows"
+			PlatformToolsetCompiler->GetFile() "clang.exe"
 		}
 	}
 
@@ -503,6 +534,7 @@ Import
 		&
 		{
 			HostPlatformFamily "Windows"
+			!PlatformToolsetCompiler->GetFile() "clang.exe"
 			!PlatformToolsetCompiler undefined
 		}
 	}

@@ -201,7 +201,17 @@ GeneratorSetting
 
 	Compile_Type #<Build.inputs> =+ this.Identity
 
-	Compile_Type #<Rule.command> `@((MalterlibLLVMHostBinariesDirectory / `bin/clang-cl@(HostExecutableExtension)`)->Escape()) -c @(Builtin.Flags) @(Builtin.Input)`
+	Compile_Type #<Rule.command> `@((MalterlibLLVMHostBinariesDirectory / `bin/clang-cl@(HostExecutableExtension)`)->Escape()) -c @@@(Builtin.RspFile) @(Builtin.Input)`
+	{
+		!!PlatformFamily "Windows"
+	}
+
+	// Response file for Windows to handle long command lines
+	Compile_Type #<Rule.rspfile> `@(Builtin.Dollar)out.rsp`
+	{
+		!!PlatformFamily "Windows"
+	}
+	Compile_Type #<Rule.rspfile_content> `@(Builtin.Flags)`
 	{
 		!!PlatformFamily "Windows"
 	}
@@ -416,6 +426,7 @@ GeneratorSetting
 	Compile_LinkerInputs  =+ {}
 	Compile_LinkerImplicitInputs =+ {}
 	Compile_LinkerManifestInputs =+ {}
+	Compile_PostBuildImplicitInputs =+ {}
 	Compile_Optimize =+ {}
 	Compile_Verbose =+ {}
 	Compile_GenericCompileType =+ {}

@@ -409,7 +409,11 @@ GeneratorSetting
 	{
 		&
 		{
-			!Dependency.IndirectEvaluated true
+			|
+			{
+				!Dependency.IndirectEvaluated true
+				Dependency.IndirectOrdered true
+			}
 			Dependency.Stage "Link"
 			Dependency.Type ""
 		}
@@ -436,7 +440,11 @@ GeneratorSetting
 	{
 		&
 		{
-			!Dependency.IndirectEvaluated true
+			|
+			{
+				!Dependency.IndirectEvaluated true
+				Dependency.IndirectOrdered true
+			}
 			Dependency.Stage "Runtime"
 			Dependency.Type ""
 		}
@@ -463,7 +471,11 @@ GeneratorSetting
 	{
 		&
 		{
-			!Dependency.IndirectEvaluated true
+			|
+			{
+				!Dependency.IndirectEvaluated true
+				Dependency.IndirectOrdered true
+			}
 			Dependency.Stage "Compile"
 			Dependency.Type ""
 		}

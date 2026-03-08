@@ -23,4 +23,8 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Compile_FullEval undefined
 	}
+	Compile_Custom_Shell += {}
+	{
+		!!GeneratorSetting.Compile_Custom_Shell undefined
+	}
 }

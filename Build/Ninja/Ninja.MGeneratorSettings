@@ -144,10 +144,15 @@ GeneratorSetting
 		}
 	}
 
-	f_GetTargetNames function(string _Target) [string] = []
-	f_GetTargetNames =+ &Target:Target.Name->GetProperty(_Target)
+	f_GetBuildAllTargetNames function(string _Target) [string] = []
+	f_GetBuildAllTargetNames =+ &Target:Target.Name->GetProperty(_Target)
 	{
-		!(&Target:Target.Name->GetProperty(_Target)) "Tool_GenerateBuildSystem"
+		&
+		{
+			!(&Target:Target.Name->GetProperty(_Target)) "Tool_GenerateBuildSystem"
+			!(&Target:Target.Disabled->GetProperty(_Target)) true
+		}
+
 	}
 
 	Workspace #<OtherRules> =+ {
@@ -170,7 +175,7 @@ GeneratorSetting
 			}
 			, Build: {
 				outputs: ["Build All"]
-				, order_dependencies: (Workspace:Workspace.AllTargets ?? [])->ForEach(&GeneratorSetting.f_GetTargetNames)
+				, order_dependencies: (Workspace:Workspace.AllTargets ?? [])->ForEach(&GeneratorSetting.f_GetBuildAllTargetNames)
 			}
 		}
 	}
@@ -210,7 +215,7 @@ Property
 	PathSeparator: string = ":"
 	PathSeparator ";"
 	{
-		!!PlatformFamily "Windows"
+		!!HostPlatformFamily "Windows"
 	}
 }
 
