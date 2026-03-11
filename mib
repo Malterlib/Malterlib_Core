@@ -2,12 +2,12 @@
 # Copyright © 2017-2018 Nonna Holding AB
 # Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-BASH_SOURCE_FULL="$DIR/${BASH_SOURCE[0]##*/}"
+export MalterlibScriptPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export MalterlibBashSourceFull="$DIR/${BASH_SOURCE[0]##*/}"
 
 set -eo pipefail
 
-cd "$DIR"
+cd "$MalterlibScriptPath"
 
 if [ -e .malterlib_only_repos ] && [[ "$MalterlibOnlyRepositoryManagement" == "" ]]; then
 	export MalterlibOnlyRepositoryManagement=true
@@ -18,7 +18,7 @@ if [ -e Binaries/Malterlib/LICENSE.Malterlib ]; then
 fi
 
 if [ -e Malterlib/Core ]; then
-	find "$DIR/Malterlib/Core" -maxdepth 0 -type d -empty -exec rmdir {} \;
+	find "$MalterlibScriptPath/Malterlib/Core" -maxdepth 0 -type d -empty -exec rmdir {} \;
 fi
 
 function OutputInfo()
@@ -99,6 +99,40 @@ function ReportBootstrapDone()
 	echo
 }
 
+function IsWorktree()
+{
+	if [ -f "$MalterlibScriptPath/.git" ]; then
+		local GitDirContent
+		GitDirContent=$(cat "$MalterlibScriptPath/.git")
+		if [[ "$GitDirContent" == gitdir:*/.git/worktrees/* ]]; then
+			return 0
+		fi
+	fi
+	return 1
+}
+
+function GetWorktreeMainRoot()
+{
+	if [ -f "$MalterlibScriptPath/.git" ]; then
+		local GitDir
+		GitDir=$(cat "$MalterlibScriptPath/.git" | sed 's/^gitdir: //')
+		# Resolve relative path
+		GitDir=$(cd "$MalterlibScriptPath" && cd "$GitDir" && pwd)
+		# Read commondir to find main .git
+		if [ -f "$GitDir/commondir" ]; then
+			local CommonDir
+			CommonDir=$(cat "$GitDir/commondir")
+			local MainGitDir
+			MainGitDir=$(cd "$GitDir" && cd "$CommonDir" && pwd)
+			# Main root is parent of .git directory
+			echo "$(dirname "$MainGitDir")"
+		else
+			# Fallback: parse path - gitdir is <main>/.git/worktrees/<name>
+			echo "$GitDir" | sed 's|/\.git/worktrees/.*$||'
+		fi
+	fi
+}
+
 function DetectRepoRoot()
 {
 	if [[ "$MalterlibRepoRoot" == "" ]]; then
@@ -139,9 +173,6 @@ MalterlibChangingBootstrapVersion="false"
 BootstrapVersion="5"
 MalterlibCoreBootstrapVersion="2"
 
-export MalterlibScriptPath="$DIR"
-export MalterlibBashSourceFull="$BASH_SOURCE_FULL"
-
 function DownloadPrivateGithubAsset
 {
 	GitHubApiToken=`printf "protocol=https\nhost=github.com\n" | git credential fill | grep password | cut -d = -f 2`
@@ -169,20 +200,66 @@ function BootstrapCore()
 
 		if ! [ -e Malterlib/Core ]; then
 
-			OutputInfo "Cloning Malterlib/Core"
-
 			GitHash=`GetMalterlibCoreHash`
-			if [[ "$GitHash" != "" ]]; then
-				echo "Found commit hash in *.MRepo files: `OutputNote "$GitHash"`"
 
-				git clone -n "$MalterlibRepoRoot/Malterlib_Core.git" Malterlib/Core
-				pushd Malterlib/Core > /dev/null
-				git checkout -B master $GitHash
-				popd > /dev/null
+			if IsWorktree; then
+				MainRoot=$(GetWorktreeMainRoot)
+				MainSubRepo="$MainRoot/Malterlib/Core"
+
+				if [ -e "$MainSubRepo/.git" ]; then
+					# Get the branch name from the current worktree, not the main
+					MainBranch=$(git -C "$MalterlibScriptPath" branch --show-current)
+
+					OutputInfo "Adding Malterlib/Core as worktree from main working tree"
+
+					git -C "$MainSubRepo" worktree prune
+
+					if [[ "$GitHash" != "" ]]; then
+						echo "Found commit hash in *.MRepo files: `OutputNote "$GitHash"`"
+						if [[ "$MainBranch" != "" ]]; then
+							git -C "$MainSubRepo" worktree add -B "$MainBranch" "$MalterlibScriptPath/Malterlib/Core" "$GitHash"
+						else
+							git -C "$MainSubRepo" worktree add "$MalterlibScriptPath/Malterlib/Core" "$GitHash"
+						fi
+					else
+						OutputError "Could not find commit hash in *.MRepo files using latest default branch"
+						if [[ "$MainBranch" != "" ]]; then
+							git -C "$MainSubRepo" worktree add -B "$MainBranch" "$MalterlibScriptPath/Malterlib/Core"
+						else
+							git -C "$MainSubRepo" worktree add "$MalterlibScriptPath/Malterlib/Core"
+						fi
+					fi
+				else
+					OutputInfo "Cloning Malterlib/Core"
+
+					if [[ "$GitHash" != "" ]]; then
+						echo "Found commit hash in *.MRepo files: `OutputNote "$GitHash"`"
+
+						git clone -n "$MalterlibRepoRoot/Malterlib_Core.git" Malterlib/Core
+						pushd Malterlib/Core > /dev/null
+						git checkout -B master $GitHash
+						popd > /dev/null
+					else
+						OutputError "Could not find commit hash in *.MRepo files using latest default branch"
+
+						git clone "$MalterlibRepoRoot/Malterlib_Core.git" Malterlib/Core
+					fi
+				fi
 			else
-				OutputError "Could not find commit hash in *.MRepo files using latest default branch"
+				OutputInfo "Cloning Malterlib/Core"
 
-				git clone "$MalterlibRepoRoot/Malterlib_Core.git" Malterlib/Core
+				if [[ "$GitHash" != "" ]]; then
+					echo "Found commit hash in *.MRepo files: `OutputNote "$GitHash"`"
+
+					git clone -n "$MalterlibRepoRoot/Malterlib_Core.git" Malterlib/Core
+					pushd Malterlib/Core > /dev/null
+					git checkout -B master $GitHash
+					popd > /dev/null
+				else
+					OutputError "Could not find commit hash in *.MRepo files using latest default branch"
+
+					git clone "$MalterlibRepoRoot/Malterlib_Core.git" Malterlib/Core
+				fi
 			fi
 
 			echo
@@ -304,7 +381,11 @@ while true; do
 
 		MalterlibBinariesPath="Binaries/Malterlib/${MalterlibPlatform}/${MalterlibArch}"
 
-		if ! [ -e "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version" ] || [[ `cat "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version"` != "$BootstrapVersion" ]]; then
+		if [[ "${MalterlibUseGlobalBinaries-}" == "true" ]]; then
+			MalterlibBinariesPath="$MalterlibBootstrapBinariesPath"
+			export MalterlibBinariesDir="$MalterlibBinariesPath"
+			source "$MalterlibScriptPath/Malterlib/Core/Scripts/Detect.sh"
+		elif ! [ -e "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version" ] || [[ `cat "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version"` != "$BootstrapVersion" ]]; then
 			MalterlibBinariesPath="$MalterlibBootstrapBinariesPath"
 			export MalterlibBinariesDir="$MalterlibBinariesPath"
 			source "$MalterlibScriptPath/Malterlib/Core/Scripts/Detect.sh"
