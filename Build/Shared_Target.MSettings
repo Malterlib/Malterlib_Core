@@ -4619,7 +4619,7 @@ Property
 	f_GetUrlInfo =+ {
 		URL: GetProperty(&Repository.URL, _Property),
 		Location: GetProperty(&Repository.Location, _Property),
-		Commit: ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit-@(GetProperty(&Repository.Location, _Property)->HashSHA256()).MState`, f_MalterlibGitRepoInputFiles(GetProperty(&Repository.Location, _Property) / ".git"), "git", "-C", GetProperty(&Repository.Location, _Property), "rev-parse", "HEAD")->Trim()
+		Commit: ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit-@(GetProperty(&Repository.Location, _Property)->HashSHA256()).MState`, f_MalterlibGitRepoInputFiles(f_MalterlibGitDataDir(GetProperty(&Repository.Location, _Property)), f_MalterlibGitCommonDir(f_MalterlibGitDataDir(GetProperty(&Repository.Location, _Property)))), "git", "-C", GetProperty(&Repository.Location, _Property), "rev-parse", "HEAD")->Trim()
 	}
 
 	MalterlibEnableRepoDebugInfo: bool = MalterlibBuildServerBuild // User(Build System)=true: Enable repository debug information embedded in the executable

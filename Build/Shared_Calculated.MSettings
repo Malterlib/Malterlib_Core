@@ -394,32 +394,63 @@ Property
 		&
 		{
 			!MalterlibChangingBootstrapVersion true
-			![] Builtin.BasePathAbsolute->FindDirectoriesIn(".git")
+			`@(Builtin.BasePathAbsolute)/.git`->FileOrDirectoryExists() true
 		}
 	}
 
-	MalterlibGitRepoGitDir: string = `@(Builtin.BasePathAbsolute)/.git`
-
-	f_MalterlibGitRepoInputFiles function(string _RepoDir) [string] = []
-
-	f_MalterlibGitRepoInputFiles =+ `@(_RepoDir)/HEAD`
-	f_MalterlibGitRepoInputFiles =+ `@(_RepoDir)/packed-refs`
+	// Resolves a location to its actual git data directory.
+	// Normal repo: .git is a directory -> Location/.git
+	// Worktree/submodule: .git is a file containing "gitdir: <path>" -> resolved path
+	f_MalterlibGitDataDir function(string _Location) string
+	f_MalterlibGitDataDir `@(_Location)/.git`
 	{
-		![] _RepoDir->FindFilesIn("packed-refs")
+		!!`@(_Location)/.git`->DirectoryExists() true
+	}
+	f_MalterlibGitDataDir ReadFile(`@(_Location)/.git`)->Trim()->ParseFormatString("gitdir: {}", "{0}")->MakeAbsolute(_Location)
+	{
+		&
+		{
+			f_MalterlibGitDataDir undefined
+			`@(_Location)/.git`->FileExists() true
+		}
 	}
 
-	f_MalterlibGitHeadRef function(string _RepoDir) string = `@(ReadFile(`@(_RepoDir)/HEAD`)->ParseFormatString("ref: {}\n", "{0}"))`
-	f_MalterlibGitHeadRefPath function(string _RepoDir) string = `@(_RepoDir)/@(f_MalterlibGitHeadRef(_RepoDir))`
-	f_MalterlibGitHeadRefFile function(string _RepoDir) string = f_MalterlibGitHeadRefPath(_RepoDir)->GetFile()
-	f_MalterlibGitHeadRefDir function(string _RepoDir) string = f_MalterlibGitHeadRefPath(_RepoDir)->GetPath()
-
-	f_MalterlibGitRepoInputFiles =+ `@(_RepoDir)/@(f_MalterlibGitHeadRef(_RepoDir))`
+	// Resolves common dir from data dir.
+	// Worktree: reads commondir file (contains relative path like "../..")
+	// Normal/submodule: no commondir file, common dir = data dir
+	f_MalterlibGitCommonDir function(string _DataDir) string
+	f_MalterlibGitCommonDir ReadFile(`@(_DataDir)/commondir`)->Trim()->MakeAbsolute(_DataDir)
 	{
-		![] f_MalterlibGitHeadRefDir(_RepoDir)->FindFilesIn(f_MalterlibGitHeadRefFile(_RepoDir))
+		!!`@(_DataDir)/commondir`->FileExists() true
+	}
+	f_MalterlibGitCommonDir _DataDir
+	{
+		!`@(_DataDir)/commondir`->FileExists() true
+	}
+
+	MalterlibGitRepoGitDir: string = f_MalterlibGitDataDir(Builtin.BasePathAbsolute)
+	MalterlibGitRepoGitCommonDir: string = f_MalterlibGitCommonDir(MalterlibGitRepoGitDir)
+
+	f_MalterlibGitRepoInputFiles function(string _DataDir, string _CommonDir) [string] = []
+
+	f_MalterlibGitRepoInputFiles =+ `@(_DataDir)/HEAD`
+	f_MalterlibGitRepoInputFiles =+ `@(_CommonDir)/packed-refs`
+	{
+		![] _CommonDir->FindFilesIn("packed-refs")
+	}
+
+	f_MalterlibGitHeadRef function(string _DataDir) string = `@(ReadFile(`@(_DataDir)/HEAD`)->ParseFormatString("ref: {}\n", "{0}"))`
+	f_MalterlibGitHeadRefPath function(string _DataDir, string _CommonDir) string = `@(_CommonDir)/@(f_MalterlibGitHeadRef(_DataDir))`
+	f_MalterlibGitHeadRefFile function(string _DataDir, string _CommonDir) string = f_MalterlibGitHeadRefPath(_DataDir, _CommonDir)->GetFile()
+	f_MalterlibGitHeadRefDir function(string _DataDir, string _CommonDir) string = f_MalterlibGitHeadRefPath(_DataDir, _CommonDir)->GetPath()
+
+	f_MalterlibGitRepoInputFiles =+ `@(_CommonDir)/@(f_MalterlibGitHeadRef(_DataDir))`
+	{
+		![] f_MalterlibGitHeadRefDir(_DataDir, _CommonDir)->FindFilesIn(f_MalterlibGitHeadRefFile(_DataDir, _CommonDir))
 	}
 
 	MalterlibGitOriginRemote: string = ""
-	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, ["ByDigest:", `@(MalterlibGitRepoGitDir)/config`], `git@(HostExecutableExtension)`, "remote", "get-url", "origin")
+	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, ["ByDigest:", `@(MalterlibGitRepoGitCommonDir)/config`], `git@(HostExecutableExtension)`, "remote", "get-url", "origin")
 	{
 		!!MalterlibIsGitRepository true
 	}
@@ -448,7 +479,7 @@ Property
 	}
 
 	MalterlibGitBranch: string?
-	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir), `git@(HostExecutableExtension)`, "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
+	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir), `git@(HostExecutableExtension)`, "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
 	{
 		&
 		{
@@ -466,7 +497,7 @@ Property
 	}
 
 	MalterlibGitCommit: string = ""
-	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir), `git@(HostExecutableExtension)`, "rev-parse", "HEAD")->Trim()
+	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir), `git@(HostExecutableExtension)`, "rev-parse", "HEAD")->Trim()
 	{
 		&
 		{

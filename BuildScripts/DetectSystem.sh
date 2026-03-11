@@ -40,13 +40,61 @@ if [[ "$MLBuildBuildSystemRoot" != "" ]]; then
 	BuildSystemRoot="$BuildSystemRoot/$MLBuildBuildSystemRoot"
 fi
 
+function ResolveBootstrapVersion()
+{
+	if [[ "${BootstrapVersion-}" == "" ]]; then
+		local BootstrapVersionPath="$BuildSystemRoot/Malterlib/Core/Bootstrap.version"
+		if [ -e "$BootstrapVersionPath" ]; then
+			export BootstrapVersion=$(<"$BootstrapVersionPath")
+		fi
+	fi
+}
+
+if [[ "${MalterlibUseGlobalBinaries-}" == "true" ]] && [[ "${MalterlibBinariesDir-}" == "" ]]; then
+	ResolveBootstrapVersion
+	if [[ "${MalterlibBootstrapBinariesPath-}" == "" ]] && [[ "${BootstrapVersion-}" != "" ]]; then
+		export MalterlibBootstrapBinariesPath="$HOME/.Malterlib/bootstrap/$BootstrapVersion"
+	fi
+
+	if [[ "${MalterlibBootstrapBinariesPath-}" != "" ]] && [ -d "$MalterlibBootstrapBinariesPath" ]; then
+		export MalterlibBinariesDir="$MalterlibBootstrapBinariesPath"
+	fi
+fi
+
 source "$BuildSystemRoot/Malterlib/Core/Scripts/Detect.sh"
 export MToolPath="$MToolDirectory"
 
+function RefreshToolPathVariables()
+{
+	export MToolDirectory="$MToolPath"
+	export MToolExecutable="$MToolDirectory/${MToolExecutable##*/}"
+	export MalterlibExecutable="$MToolDirectory/${MalterlibExecutable##*/}"
+}
+
+RefreshToolPathVariables
+
+MToolExecutableName=MTool
 if [[ "$MalterlibPlatform" ==  Windows ]]; then
-	if [[ "$MToolPath" != "$BuildSystemRoot/BuildSystem/SafeMib/Binaries" ]]; then
+	MToolExecutableName=MTool.exe
+fi
+
+if [[ "${MalterlibUseGlobalBinaries-}" == "true" ]] && ! [ -e "$MToolPath/$MToolExecutableName" ]; then
+	"$BuildSystemRoot/mib" bootstrap_only
+	ResolveBootstrapVersion
+	if [[ "${MalterlibBootstrapBinariesPath-}" == "" ]] && [[ "${BootstrapVersion-}" != "" ]]; then
+		export MalterlibBootstrapBinariesPath="$HOME/.Malterlib/bootstrap/$BootstrapVersion"
+	fi
+	if [[ "${MalterlibBootstrapBinariesPath-}" != "" ]] && [ -d "$MalterlibBootstrapBinariesPath" ]; then
+		export MToolPath="$MalterlibBootstrapBinariesPath"
+		RefreshToolPathVariables
+	fi
+fi
+
+if [[ "$MalterlibPlatform" ==  Windows ]]; then
+	if [[ "${MalterlibUseGlobalBinaries-}" != "true" ]] && [[ "$MToolPath" != "$BuildSystemRoot/BuildSystem/SafeMib/Binaries" ]]; then
 		"$BuildSystemRoot/mib" bootstrap_only
 		export MToolPath="$BuildSystemRoot/BuildSystem/SafeMib/Binaries"
+		RefreshToolPathVariables
 	fi
 
 	function p4()
