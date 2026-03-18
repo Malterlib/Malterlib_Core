@@ -1238,6 +1238,64 @@ namespace NMib
 		return CAutoLimitMax();
 	}
 
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+	template <typename t_CInt>
+	constexpr inline_small bool fg_MultiplyOverflow(t_CInt _Left, t_CInt _Right, t_CInt &o_Result) noexcept
+		requires (NTraits::cIsFundamental<t_CInt> && NTraits::cIsInteger<t_CInt> && !NTraits::cIsSame<NTraits::TCRemoveQualifiers<t_CInt>, bool>)
+	{
+		return __builtin_mul_overflow(_Left, _Right, &o_Result);
+	}
+#endif
+
+	template <typename t_CInt>
+	constexpr inline_small bool fg_MultiplyOverflow(t_CInt _Left, t_CInt _Right, t_CInt &o_Result) noexcept
+		requires
+		(
+			NTraits::cIsInteger<t_CInt>
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+			&& !NTraits::cIsFundamental<t_CInt>
+#endif
+			&& !NTraits::cIsSame<NTraits::TCRemoveQualifiers<t_CInt>, bool>
+		)
+	{
+		if constexpr (NTraits::cIsSigned<t_CInt>)
+		{
+			if (_Left == 0 || _Right == 0)
+			{
+				o_Result = 0;
+				return false;
+			}
+
+			if (_Left > 0)
+			{
+				if (_Right > 0)
+				{
+					if (_Left > TCLimitsInt<t_CInt>::mc_Max / _Right)
+						return true;
+				}
+				else if (_Right < TCLimitsInt<t_CInt>::mc_Min / _Left)
+					return true;
+			}
+			else
+			{
+				if (_Right > 0)
+				{
+					if (_Left < TCLimitsInt<t_CInt>::mc_Min / _Right)
+						return true;
+				}
+				else if (_Right < TCLimitsInt<t_CInt>::mc_Max / _Left)
+					return true;
+			}
+		}
+		else
+		{
+			if (_Right != 0 && _Left > TCLimitsInt<t_CInt>::mc_Max / _Right)
+				return true;
+		}
+
+		o_Result = _Left * _Right;
+		return false;
+	}
 
 	template <typename t_CInt0, typename t_CInt1>
 	bool fg_SafeLargerThan(t_CInt0 const &_Left, t_CInt1 const &_Right)
@@ -1671,4 +1729,3 @@ namespace NMib
 #	define DGetParent(_Class, _Member, _Ptr) DMibGetParent(_Class, _Member, _Ptr)
 #	define DNew DMibNew
 #endif
-
