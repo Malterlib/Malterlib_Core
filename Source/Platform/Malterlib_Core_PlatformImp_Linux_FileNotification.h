@@ -167,7 +167,7 @@ public:
 			CStr m_Path;
 			NStr::CStr m_PathFrom;
 
-			auto operator <=> (CChange const &_Right) const = default;
+			auto operator <=> (CChange const &_Right) const noexcept = default;
 		};
 
 		struct CFindChangesContext

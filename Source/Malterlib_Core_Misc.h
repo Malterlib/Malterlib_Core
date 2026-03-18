@@ -536,7 +536,7 @@ namespace NMib
 		struct CIteratorEndSentinel
 		{
 			template <typename tf_CContainer>
-			friend inline_always bool operator == (tf_CContainer &_Container, CIteratorEndSentinel const &_EndSentinel)
+			friend inline_always bool operator == (tf_CContainer &_Container, CIteratorEndSentinel const &_EndSentinel) noexcept
 			{
 				return !_Container;
 			}

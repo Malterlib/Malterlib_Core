@@ -31,22 +31,22 @@ namespace
 			return m_Value != 0;
 		}
 
-		auto operator <=> (CTestVal const &_Other) const
+		auto operator <=> (CTestVal const &_Other) const noexcept
 		{
 			return m_Value <=> _Other.m_Value;
 		}
 
-		bool operator == (CTestVal const &_Other) const
+		bool operator == (CTestVal const &_Other) const noexcept
 		{
 			return m_Value == _Other.m_Value;
 		}
 
-		auto operator <=> (int _Other) const
+		auto operator <=> (int _Other) const noexcept
 		{
 			return m_Value <=> _Other;
 		}
 
-		bool operator == (int _Other) const
+		bool operator == (int _Other) const noexcept
 		{
 			return m_Value == _Other;
 		}
@@ -61,12 +61,12 @@ namespace
 		}
 	};
 
-	auto operator <=> (int _Left, const CTestVal &_Right)
+	auto operator <=> (int _Left, const CTestVal &_Right) noexcept
 	{
 		return _Left <=> _Right.f_GetVal();
 	}
 
-	[[maybe_unused]] bool operator == (int _Left, const CTestVal &_Right)
+	[[maybe_unused]] bool operator == (int _Left, const CTestVal &_Right) noexcept
 	{
 		return _Left == _Right.f_GetVal();
 	}

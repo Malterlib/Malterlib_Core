@@ -8,7 +8,7 @@
 #include <Mib/Core/EnableIf>
 
 template <typename t_CEnum>
-DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator | ( t_CEnum _Left, t_CEnum _Right)
+DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator | ( t_CEnum _Left, t_CEnum _Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -16,7 +16,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator | ( t_CEn
 }
 
 template <typename t_CEnum>
-DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator |= (t_CEnum &_Left, t_CEnum _Right)
+DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator |= (t_CEnum &_Left, t_CEnum _Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -25,7 +25,7 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator |= (t_CEnum &_Left
 }
 
 template <typename t_CEnum>
-DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator & (t_CEnum _Left, t_CEnum _Right)
+DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator & (t_CEnum _Left, t_CEnum _Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -42,7 +42,7 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator &= (t_CEnum &_Left
 }
 
 template <typename t_CEnum>
-DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ^ (t_CEnum _Left, t_CEnum _Right)
+DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ^ (t_CEnum _Left, t_CEnum _Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -50,7 +50,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ^ (t_CEnu
 }
 
 template <typename t_CEnum>
-DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator ^= (t_CEnum &_Left, t_CEnum _Right)
+DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator ^= (t_CEnum &_Left, t_CEnum _Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -59,7 +59,7 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator ^= (t_CEnum &_Left
 }
 
 template <typename t_CEnum>
-DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ~ (t_CEnum _Left)
+DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ~ (t_CEnum _Left) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -67,7 +67,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator ~ (t_CEnu
 }
 
 template <typename t_CEnum, typename t_CShift>
-DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator << (t_CEnum _Left, t_CShift _nPlaces)
+DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator << (t_CEnum _Left, t_CShift _nPlaces) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -75,7 +75,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator << (t_CEn
 }
 
 template <typename t_CEnum, typename t_CShift>
-DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator >> (t_CEnum _Left, t_CShift _nPlaces)
+DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator >> (t_CEnum _Left, t_CShift _nPlaces) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -83,7 +83,7 @@ DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator >> (t_CEn
 }
 
 template <typename t_CEnum, typename t_CShift>
-DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator <<= (t_CEnum &_Left, t_CShift _nPlaces)
+DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator <<= (t_CEnum &_Left, t_CShift _nPlaces) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -92,7 +92,7 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator <<= (t_CEnum &_Lef
 }
 
 template <typename t_CEnum, typename t_CShift>
-DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator >>= (t_CEnum &_Left, t_CShift _nPlaces)
+DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator >>= (t_CEnum &_Left, t_CShift _nPlaces) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;
@@ -107,7 +107,7 @@ DMibSuppressUndefinedSanitizer inline_small t_CEnum &operator >>= (t_CEnum &_Lef
 // This happens all the time in constant expressions that compare different values. Maybe make OK for anonymous enums somehow
 
 template <typename t_CEnum0, typename t_CEnum1>
-constexpr inline_small bool operator == (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
+constexpr inline_small bool operator == (t_CEnum0 const &_Left, t_CEnum1 const &_Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
 	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
@@ -115,7 +115,7 @@ constexpr inline_small bool operator == (t_CEnum0 const &_Left, t_CEnum1 const &
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
-constexpr inline_small bool operator != (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
+constexpr inline_small bool operator != (t_CEnum0 const &_Left, t_CEnum1 const &_Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
 	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
@@ -123,7 +123,7 @@ constexpr inline_small bool operator != (t_CEnum0 const &_Left, t_CEnum1 const &
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
-constexpr inline_small bool operator < (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
+constexpr inline_small bool operator < (t_CEnum0 const &_Left, t_CEnum1 const &_Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
 	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
@@ -131,7 +131,7 @@ constexpr inline_small bool operator < (t_CEnum0 const &_Left, t_CEnum1 const &_
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
-constexpr inline_small bool operator > (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
+constexpr inline_small bool operator > (t_CEnum0 const &_Left, t_CEnum1 const &_Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
 	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
@@ -139,7 +139,7 @@ constexpr inline_small bool operator > (t_CEnum0 const &_Left, t_CEnum1 const &_
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
-constexpr inline_small bool operator <= (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
+constexpr inline_small bool operator <= (t_CEnum0 const &_Left, t_CEnum1 const &_Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
 	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
@@ -147,7 +147,7 @@ constexpr inline_small bool operator <= (t_CEnum0 const &_Left, t_CEnum1 const &
 }
 
 template <typename t_CEnum0, typename t_CEnum1>
-constexpr inline_small bool operator >= (t_CEnum0 const &_Left, t_CEnum1 const &_Right)
+constexpr inline_small bool operator >= (t_CEnum0 const &_Left, t_CEnum1 const &_Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum0> && NMib::NTraits::cIsEnum<t_CEnum1>)
 {
 	static_assert(NMib::NTraits::cIsSame<t_CEnum0, t_CEnum1>, "Comparison of two different enum types is unsafe");
@@ -159,7 +159,7 @@ constexpr inline_small bool operator >= (t_CEnum0 const &_Left, t_CEnum1 const &
 namespace NMib
 {
 	template <typename tf_CType>
-	inline_always bool fg_IsSet(tf_CType _Value, tf_CType _Flags)
+	inline_always bool fg_IsSet(tf_CType _Value, tf_CType _Flags) noexcept
 		requires (NTraits::cIsScopedEnum<tf_CType>)
 	{
 		return (_Value & _Flags) != tf_CType(0);

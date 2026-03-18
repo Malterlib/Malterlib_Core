@@ -149,7 +149,7 @@ namespace NMib
 
 	struct CVoidTag
 	{
-		auto operator <=> (CVoidTag const &_Right) const = default;
+		auto operator <=> (CVoidTag const &_Right) const noexcept = default;
 
 		template <typename tf_CStr>
 		void f_Format(tf_CStr &o_Str) const

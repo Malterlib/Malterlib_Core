@@ -34,7 +34,7 @@ namespace NMib
 					NMib::NStr::CStr m_Path;
 					NMib::NStr::CStr m_PathFrom;
 
-					auto operator <=> (CChange const &_Right) const = default;
+					auto operator <=> (CChange const &_Right) const noexcept = default;
 				};
 
 				struct CFileKey
@@ -42,7 +42,7 @@ namespace NMib
 					decltype(stat::st_dev) st_dev;
 					decltype(stat::st_ino) st_ino;
 
-					auto operator <=> (CFileKey const &_Right) const = default;
+					auto operator <=> (CFileKey const &_Right) const noexcept = default;
 
 					CFileKey(struct stat const &_Init)
 						: st_dev(_Init.st_dev)

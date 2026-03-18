@@ -4294,7 +4294,7 @@ struct CMalterlibExtendedAttributes
 		_Stream >> m_ExtendedAttributes;
 	}
 
-	bool operator == (CMalterlibExtendedAttributes const &_Right) const
+	bool operator == (CMalterlibExtendedAttributes const &_Right) const noexcept
 	{
 		return m_ExtendedAttributes == _Right.m_ExtendedAttributes;
 	}

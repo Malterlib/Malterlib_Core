@@ -79,7 +79,7 @@ namespace NMib
 #else
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(NTraits::TCRemoveReference<t_CType> &_ToForward)
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(NTraits::TCRemoveReference<t_CType> &_ToForward) noexcept
 	{
 		return static_cast<t_CType&&>(_ToForward);
 	}
@@ -1166,7 +1166,7 @@ namespace NMib
 	struct CSort_Default
 	{
 		template <typename t_CKey0, typename t_CKey1>
-		constexpr inline_small auto operator() (t_CKey0 &&_Left, t_CKey1 &&_Right) const
+		constexpr inline_small static auto operator() (t_CKey0 &&_Left, t_CKey1 &&_Right) noexcept(noexcept(_Left <=> _Right))
 		{
 			return _Left <=> _Right;
 		}
@@ -1408,36 +1408,36 @@ namespace NMib
 			_Stream >> m_Int;
 		}
 
-		auto operator <=> (TCAutoClearInt const &_Right) const
+		auto operator <=> (TCAutoClearInt const &_Right) const noexcept(noexcept(f_Get() <=> _Right.f_Get()))
 		{
 			return f_Get() <=> _Right.f_Get();
 		}
 
-		bool operator == (TCAutoClearInt const &_Right) const
+		bool operator == (TCAutoClearInt const &_Right) const noexcept(noexcept(f_Get() == _Right.f_Get()))
 		{
 			return f_Get() == _Right.f_Get();
 		}
 
 		template <typename tf_CRight>
-		auto operator <=> (tf_CRight const &_Right) const
+		auto operator <=> (tf_CRight const &_Right) const noexcept(noexcept(f_Get() <=> _Right))
 		{
 			return f_Get() <=> _Right;
 		}
 
 		template <typename tf_CRight, tf_CRight tf_RightValue>
-		auto operator <=> (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const
+		auto operator <=> (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const noexcept(noexcept(f_Get() <=> _Right.f_Get()))
 		{
 			return f_Get() <=> _Right.f_Get();
 		}
 
 		template <typename tf_CRight>
-		bool operator == (tf_CRight const &_Right) const
+		bool operator == (tf_CRight const &_Right) const noexcept(noexcept(f_Get() == _Right))
 		{
 			return f_Get() == _Right;
 		}
 
 		template <typename tf_CRight, tf_CRight tf_RightValue>
-		bool operator == (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const
+		bool operator == (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const noexcept(noexcept(f_Get() == _Right.f_Get()))
 		{
 			return f_Get() == _Right.f_Get();
 		}
@@ -1508,48 +1508,48 @@ namespace NMib
 			_Stream >> m_Value;
 		}
 
-		auto operator <=> (TCAutoClear const &_Right) const
+		auto operator <=> (TCAutoClear const &_Right) const noexcept(noexcept(f_Get() <=> _Right.f_Get()))
 		{
 			return f_Get() <=> _Right.f_Get();
 		}
 
-		bool operator == (TCAutoClear const &_Right) const
+		bool operator == (TCAutoClear const &_Right) const noexcept(noexcept(f_Get() == _Right.f_Get()))
 		{
 			return f_Get() == _Right.f_Get();
 		}
 
 		template <typename tf_CRight>
-		auto operator <=> (tf_CRight const &_Right) const
+		auto operator <=> (tf_CRight const &_Right) const noexcept(noexcept(f_Get() <=> _Right))
 		{
 			return f_Get() <=> _Right;
 		}
 
 		template <typename tf_CRight>
-		auto operator <=> (TCAutoClear<tf_CRight> const &_Right) const
+		auto operator <=> (TCAutoClear<tf_CRight> const &_Right) const noexcept(noexcept(f_Get() <=> _Right.f_Get()))
 		{
 			return f_Get() <=> _Right.f_Get();
 		}
 
 		template <typename tf_CRight>
-		bool operator == (tf_CRight const &_Right) const
+		bool operator == (tf_CRight const &_Right) const noexcept(noexcept(f_Get() == _Right))
 		{
 			return f_Get() == _Right;
 		}
 
 		template <typename tf_CRight>
-		bool operator == (TCAutoClear<tf_CRight> const &_Right) const
+		bool operator == (TCAutoClear<tf_CRight> const &_Right) const noexcept(noexcept(f_Get() == _Right.f_Get()))
 		{
 			return f_Get() == _Right.f_Get();
 		}
 
 		template <typename tf_CRight, tf_CRight tf_RightValue>
-		auto operator <=> (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const
+		auto operator <=> (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const noexcept(noexcept(f_Get() <=> _Right.f_Get()))
 		{
 			return f_Get() <=> _Right.f_Get();
 		}
 
 		template <typename tf_CRight, tf_CRight tf_RightValue>
-		bool operator == (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const
+		bool operator == (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const noexcept(noexcept(f_Get() == _Right.f_Get()))
 		{
 			return f_Get() == _Right.f_Get();
 		}
