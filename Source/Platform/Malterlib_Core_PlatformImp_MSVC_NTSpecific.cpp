@@ -162,7 +162,7 @@ private:
 			if((ntReturn >= STATUS_SUCCESS) && (pObjectInfo->Buffer != nullptr))
 			{
 				NMib::NStr::CWStr TempStr;
-				mint StrLen = fg_StrLen(pObjectInfo->Buffer, pObjectInfo->Length/2);
+				umint StrLen = fg_StrLen(pObjectInfo->Buffer, pObjectInfo->Length/2);
 				TempStr.f_AddStr(pObjectInfo->Buffer, StrLen);
 				return NFile::NPlatform::fg_ConvertFromWindowsPath(TempStr);
 			}
@@ -182,14 +182,14 @@ private:
 
 			if(_pProcessInfo->m_hProcess && _pProcessInfo->m_hProcess != INVALID_HANDLE_VALUE)
 			{
-				mint nHandles = Iter.f_GetLen();
-				for (mint i = 0; i < nHandles; ++i)
+				umint nHandles = Iter.f_GetLen();
+				for (umint i = 0; i < nHandles; ++i)
 				{
 					NLocalWindows::SYSTEM_HANDLE &SysHandle = Iter[i];
 					if (SysHandle.ObjectType != _pProcessInfo->m_FileTypeID)
 						continue;
 					_pProcessInfo->m_hObject = nullptr;
-					if(DuplicateHandle(_pProcessInfo->m_hProcess, (HANDLE)(mint)SysHandle.Handle, GetCurrentProcess(), &_pProcessInfo->m_hObject, STANDARD_RIGHTS_REQUIRED, FALSE, DUPLICATE_SAME_ACCESS) != FALSE)
+					if(DuplicateHandle(_pProcessInfo->m_hProcess, (HANDLE)(umint)SysHandle.Handle, GetCurrentProcess(), &_pProcessInfo->m_hObject, STANDARD_RIGHTS_REQUIRED, FALSE, DUPLICATE_SAME_ACCESS) != FALSE)
 					{
 						CStr Name = _pProcessInfo->m_pThis->fp_GetObjectInfo(_pProcessInfo->m_hObject, NLocalWindows::ObjectNameInformation, *_pProcessInfo);
 

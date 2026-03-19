@@ -35,7 +35,7 @@ using namespace NContainer;
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
 #include "Malterlib_Core_Platform_POSIX_User.h"
 
-extern NAtomic::TCAtomic<mint> g_ForceMmapSequence;
+extern NAtomic::TCAtomic<umint> g_ForceMmapSequence;
 
 namespace NMib
 {
@@ -237,7 +237,7 @@ namespace NMib
 			[[NSApp dockTile] setBadgeLabel:nil];
 		}
 
-		bool fg_MacOS_PlaySound(uint8 const* _pWaveform, mint _nBytes)
+		bool fg_MacOS_PlaySound(uint8 const* _pWaveform, umint _nBytes)
 		{
 			CAutoReleasePool ARPool;
 
@@ -769,7 +769,7 @@ namespace NMib
 			}
 		}
 
-		void fgr_TraceSnapshot(CFileChangeNoticationContext::CNotification::CFileSnapshot const &_Snapshot, mint _Depth)
+		void fgr_TraceSnapshot(CFileChangeNoticationContext::CNotification::CFileSnapshot const &_Snapshot, umint _Depth)
 		{
 			DMibTrace("{sj*}{}\n", "", (_Depth * 4), _Snapshot.m_FileName);
 			for (auto iChild = _Snapshot.m_Children.f_GetIterator(); iChild; ++iChild)
@@ -1092,7 +1092,7 @@ namespace NMib
 		}
 
 		template <typename tf_CType>
-		DMibSuppressThreadSanitizer tf_CType fg_ReadArrayTSanWorkaround(tf_CType *_pArray, mint _iIndex)
+		DMibSuppressThreadSanitizer tf_CType fg_ReadArrayTSanWorkaround(tf_CType *_pArray, umint _iIndex)
 		{
 			return _pArray[_iIndex];
 		}
@@ -1100,7 +1100,7 @@ namespace NMib
 		DMibSuppressThreadSanitizer CStr fg_ReadStringTSanWorkaround(ch8 const *_pString)
 		{
 #ifdef DMibSanitizerEnabled_Thread
-			mint Len = 0;
+			umint Len = 0;
 			for (auto pParse = _pString; *pParse; ++pParse)
 				++Len;
 
@@ -1121,7 +1121,7 @@ namespace NMib
 
 		void CFileChangeNoticationContext::CNotification::f_ProcessChanges
 			(
-				mint _nEvents
+				umint _nEvents
 				, ch8 const **_pPaths
 				, FSEventStreamEventFlags const _Flags[]
 				, FSEventStreamEventId const _IDs[]
@@ -1135,7 +1135,7 @@ namespace NMib
 
 			CUpdateSnapshotContext UpdateContext{NewSnapshotsByNode, m_SnapshotsByNode, m_UpdateSequence, m_NotificationPath};
 
-			for (mint i = 0; i < _nEvents; ++i)
+			for (umint i = 0; i < _nEvents; ++i)
 			{
 				CStr Path(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, i)));
 				auto PathLen = Path.f_GetLen();
@@ -1374,7 +1374,7 @@ namespace NMib
 
 		void CFileChangeNoticationContext::CNotification::f_ProcessChangesPerFile
 			(
-				mint _nEvents
+				umint _nEvents
 				, ch8 const **_pPaths
 				, FSEventStreamEventFlags const _Flags[]
 				, FSEventStreamEventId const _IDs[]
@@ -1383,7 +1383,7 @@ namespace NMib
 			CFindChangesContext FindChangesContext;
 
 			TCSet<CStr> ProtectedDirs;
-			for (mint i = 0; i < _nEvents; ++i)
+			for (umint i = 0; i < _nEvents; ++i)
 			{
 				CStr EventPath(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, i)));
 				if (EventPath.f_EndsWith("/"))

@@ -1,7 +1,7 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-/** 
+/**
 
 \page p_Malterlib_Core_CodeStandard_Naming Naming
 
@@ -42,7 +42,7 @@ The exception to the upper camel case rule is that features that are emulation o
 	unlikely
 	uint32
 	fp64
-	mint
+	umint
 ~~~
 
 \section s_Malterlib_Core_CodeStandard_Naming_StoragePrefixes Storage prefixes
@@ -53,11 +53,11 @@ Prefixes | Detailed information
 f_ fp_ fs_ fsp_ fg_ fsg_  | \ref s_Malterlib_Core_CodeStandard_Naming_FunctionPrefixes
 _ p_ o_ po_ t_ tp_ tf_ tpf_ d_ | \ref s_Malterlib_Core_CodeStandard_Naming_ParameterPrefixes
 c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_Naming_VariablePrefixes
- 
- 
+
+
 \subsection s_Malterlib_Core_CodeStandard_Naming_FunctionPrefixes Function prefixes
 
- 
+
 <table>
 <tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
 <tr>
@@ -121,7 +121,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	<td></td>
 </tr>
 </table>
- 
+
 \subsection s_Malterlib_Core_CodeStandard_Naming_ParameterPrefixes Parameter prefixes
 
 \subsubsection s_Malterlib_Core_CodeStandard_Naming_FunctionParameterPrefixes Function parameter prefixes
@@ -135,8 +135,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	void f_Func(int _Test)
 	void f_Func(bool _bTest)
-	void f_Func(mint _iTest)
-	void f_Func(mint _nTest)
+	void f_Func(umint _iTest)
+	void f_Func(umint _nTest)
 	void f_Func(int *_pTest)
 	void f_Func(FTest _fTest)
 ~~~
@@ -165,8 +165,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	void f_Func(int &o_Test)
 	void f_Func(bool &o_bTest)
-	void f_Func(mint &o_iTest)
-	void f_Func(mint &o_nTest)
+	void f_Func(umint &o_iTest)
+	void f_Func(umint &o_nTest)
 	void f_Func(int *&o_pTest)
 	void f_Func(FTest &o_fTest)
 ~~~
@@ -190,8 +190,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 </tr>
 </table>
 
- 
- 
+
+
 \subsubsection s_Malterlib_Core_CodeStandard_Naming_TemplateParameterPrefixes Template parameter prefixes
 
 <table>
@@ -250,7 +250,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 </tr>
 </table>
 
-  
+
 \subsubsection s_Malterlib_Core_CodeStandard_Naming_MacroParameterPrefixes Macro parameter prefix
 
 <table>
@@ -292,8 +292,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	uint32 Test = 0;
 	bool bTest = true;
 	TCSet<int> cTest;
-	mint iTest = 0;
-	mint nTest = 0;
+	umint iTest = 0;
+	umint nTest = 0;
 	int *pTest = nullptr;
 	FTest *fTest = &fg_Test;
 	auto fTest = []{};
@@ -308,8 +308,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	static uint32 const c_Test = 0;
 	static bool const c_bTest = true;
-	static mint const c_iTest = 0;
-	static mint const c_nTest = 0;
+	static umint const c_iTest = 0;
+	static umint const c_nTest = 0;
 ~~~
 	</td>
 	<td></td>
@@ -321,8 +321,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	static uint32 s_Test = 0;
 	static bool s_bTest = true;
-	static mint s_iTest = 0;
-	static mint s_nTest = 0;
+	static umint s_iTest = 0;
+	static umint s_nTest = 0;
 	static int *s_pTest = nullptr;
 	static FTest *s_fTest = &fg_Test;
 	static auto s_fTest = []{};
@@ -334,7 +334,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 
 \subsubsection s_Malterlib_Core_CodeStandard_Naming_GlobalVariablePrefixes Global variable prefixes
 
- 
+
 <table>
 <tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
 <tr>
@@ -344,8 +344,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	uint32 g_Test = 0;
 	bool g_bTest = true;
-	mint g_iTest = 0;
-	mint g_nTest = 0;
+	umint g_iTest = 0;
+	umint g_nTest = 0;
 	int *g_pTest = nullptr;
 	FTest *g_fTest = &fg_Test;
 	auto g_fTest = []{};
@@ -360,8 +360,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	static uint32 const gc_Test = 0;
 	static bool const gc_bTest = true;
-	static mint const gc_iTest = 0;
-	static mint const gc_nTest = 0;
+	static umint const gc_iTest = 0;
+	static umint const gc_nTest = 0;
 ~~~
 	</td>
 	<td></td>
@@ -373,8 +373,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 ~~~
 	static uint32 gs_Test = 0;
 	static bool gs_bTest = true;
-	static mint gs_iTest = 0;
-	static mint gs_nTest = 0;
+	static umint gs_iTest = 0;
+	static umint gs_nTest = 0;
 	static int *gs_pTest = nullptr;
 	static FTest *gs_fTest = &fg_Test;
 	static auto gs_fTest = []{};
@@ -386,7 +386,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 
 \subsubsection s_Malterlib_Core_CodeStandard_Naming_MemberVariablePrefixes Member variable prefixes
 
- 
+
 <table>
 <tr><th>Prefix</th><th>Usage</th><th>Examples</th><th>Discussion</th></tr>
 <tr>
@@ -398,8 +398,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		uint32 m_Test;
 		bool m_bTest;
-		mint m_iTest;
-		mint m_nTest;
+		umint m_iTest;
+		umint m_nTest;
 		int *m_pTest;
 		FTest *m_fTest;
 		TCFunction<void ()> m_fTest;
@@ -417,8 +417,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		static uint32 const mc_Test = 0;
 		static bool const mc_bTest = true;
-		static mint const mc_iTest = 0;
-		static mint const mc_nTest = 0;
+		static umint const mc_iTest = 0;
+		static umint const mc_nTest = 0;
 	};
 ~~~
 	</td>
@@ -433,8 +433,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		static uint32 ms_Test;
 		static bool ms_bTest;
-		static mint ms_iTest;
-		static mint ms_nTest;
+		static umint ms_iTest;
+		static umint ms_nTest;
 		static int *ms_pTest;
 		static FTest *ms_fTest;
 		static auto ms_fTest;
@@ -452,8 +452,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		uint32 mp_Test;
 		bool mp_bTest;
-		mint mp_iTest;
-		mint mp_nTest;
+		umint mp_iTest;
+		umint mp_nTest;
 		int *mp_pTest;
 		FTest *mp_fTest;
 		TCFunction<void ()> mp_fTest;
@@ -471,8 +471,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		static uint32 const mcp_Test = 0;
 		static bool const mcp_bTest = true;
-		static mint const mcp_iTest = 0;
-		static mint const mcp_nTest = 0;
+		static umint const mcp_iTest = 0;
+		static umint const mcp_nTest = 0;
 	};
 ~~~
 	</td>
@@ -487,8 +487,8 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	{
 		static uint32 msp_Test;
 		static bool msp_bTest;
-		static mint msp_iTest;
-		static mint msp_nTest;
+		static umint msp_iTest;
+		static umint msp_nTest;
 		static int *msp_pTest;
 		static FTest *msp_fTest;
 		static auto msp_fTest;
@@ -498,7 +498,7 @@ c_ s_ g_ gc_ gs_ m_ mc_ ms_ mp_ mcp_ msp_ | \ref s_Malterlib_Core_CodeStandard_N
 	<td></td>
 </tr>
 </table>
- 
+
 
 \section s_Malterlib_Core_CodeStandard_Naming_TypePrefixes Type prefixes
 
@@ -550,7 +550,7 @@ Types, enumerators and namespaces are prefixed.
 	<td>
 ~~~
 	struct ICTest
-	{ 
+	{
 		virtual void f_Function() = 0;
 	};
 ~~~
@@ -589,7 +589,7 @@ Types, enumerators and namespaces are prefixed.
 	template <typename t_CType>
 	struct TICTest
 	{
-		virtual void f_Function() = 0; 
+		virtual void f_Function() = 0;
 	};
 ~~~
 	</td>
@@ -655,7 +655,7 @@ Function return values should not be concept prefixed.
 	for (auto iByte = rByte.f_Front(); iByte != rByte.f_Back(); ++iByte)
 		*iByte;
 
-	for (mint iByte = 0; iByte < ByteBuffer.f_GetLen(); ++iByte)
+	for (umint iByte = 0; iByte < ByteBuffer.f_GetLen(); ++iByte)
 		ByteBuffer[iByte];
 ~~~
 	</td>
@@ -667,7 +667,7 @@ Function return values should not be concept prefixed.
 	<td>
 ~~~
 	CByteVector ByteBuffer;
-	mint nBytes = ByteBuffer.f_GetLen();
+	umint nBytes = ByteBuffer.f_GetLen();
 ~~~
 	</td>
 	<td>It does not mean that the variable is a number, it is only applicable if you can replace the n with "number of". </td>
@@ -695,7 +695,7 @@ Function return values should not be concept prefixed.
 		TCFunction<void ()> m_fTest;
 		FTest *m_fTest2;
 	};
- 
+
 	void fg_Test(CTest const &_Test)
 	{
 		auto fTest = []()
@@ -724,7 +724,7 @@ Function return values should not be concept prefixed.
 	<td>When applied to a variable the r concept prefix means a iterator range, not to be confused with the r prefix for a function.</td>
 </tr>
 </table>
- 
- 
+
+
 */
 

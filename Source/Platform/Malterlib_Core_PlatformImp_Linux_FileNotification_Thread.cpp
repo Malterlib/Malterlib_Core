@@ -11,7 +11,7 @@ NStr::CStr CFileChangeNotificationContext::CNotificationThread::f_GetThreadName(
 CFileChangeNotificationContext::CNotificationThread::CNotificationThread(CFileChangeNotificationContext *_pContext)
 {
 	m_pContext = _pContext;
-	mint MinSize = sizeof(struct inotify_event) + NAME_MAX + 1;
+	umint MinSize = sizeof(struct inotify_event) + NAME_MAX + 1;
 	m_ChangesBuffer.f_SetLen(fg_Max(64*1024, MinSize));
 }
 

@@ -23,14 +23,14 @@ namespace NMib
 
 	struct CPromiseKeepAlive
 	{
-		CPromiseKeepAlive(mint _Allocsize)
+		CPromiseKeepAlive(umint _Allocsize)
 			: m_VirtualAllocSize(_Allocsize)
 		{
 		}
 
 		virtual ~CPromiseKeepAlive() = 0;
 
-		mint m_VirtualAllocSize = 0;
+		umint m_VirtualAllocSize = 0;
 	};
 
 	namespace NConcurrency
@@ -281,10 +281,10 @@ namespace NMib
 		NLog::CLogger* m_pSystemLog;
 		NLog::CLogFile* m_pDefaultLogFile;
 #if DMibEnableTrace > 0
-		mint m_TraceLoggerDestination = 0;
+		umint m_TraceLoggerDestination = 0;
 #endif
-		mint m_StdErrLoggerDestination = 0;
-		mint m_FileLoggerDestination = 0;
+		umint m_StdErrLoggerDestination = 0;
+		umint m_FileLoggerDestination = 0;
 #endif
 
 		void fp_InitComplete();	// Called by subclasses to signify they have finished constructing.
@@ -448,7 +448,7 @@ namespace NMib
 
 		void f_MemoryManager_SetNumaNode(ENumaNode _NumaNode);
 
-		void f_MemoryManager_OnThreadCreated(mint _ThreadID, mint _ParentID);
+		void f_MemoryManager_OnThreadCreated(umint _ThreadID, umint _ParentID);
 
 		NMemory::CMemoryManagerCheckout f_MemoryManager_Checkout();
 
@@ -480,22 +480,22 @@ namespace NMib
         ||______________________________________________________________________________________________||
         \************************************************************************************************/
 
-		void *f_ThreadLocalAlloc(NThread::CThreadLocalInterface &_Key, mint &_ThreadLocalLocal);
+		void *f_ThreadLocalAlloc(NThread::CThreadLocalInterface &_Key, umint &_ThreadLocalLocal);
 		void f_ThreadLocalFree(NThread::CThreadLocalInterface &_Key, void *_pStorageIndex);
 		void f_ThreadLocalFreeThread();
-		void f_ThreadLocalCreateThread(mint _ThreadID, mint _ParentThreadID);
+		void f_ThreadLocalCreateThread(umint _ThreadID, umint _ParentThreadID);
 		void *f_ThreadLocalGet(void *_pStorageIndex);
 		void f_ThreadLocalReinitForThread(void *_pStorageIndex);
 		void f_ThreadLocalDestroyForThread(void *_pStorageIndex);
 		void f_ThreadLocalSet(void *_pStorageIndex, void *_pValue);
-		void f_OnThreadCreated(mint _ThreadID, mint _ParentID);
+		void f_OnThreadCreated(umint _ThreadID, umint _ParentID);
 		void f_OnThreadDestroyed();
 
 		void f_ThreadLocal_PrepareFork();
 		void f_ThreadLocal_ForkedChild();
 		void f_ThreadLocal_ForkedParent();
 
-		void f_ThreadEnum(NFunction::TCFunction<void (mint _ThreadID)> const &_EnumFunc);
+		void f_ThreadEnum(NFunction::TCFunction<void (umint _ThreadID)> const &_EnumFunc);
 		bool f_ThreadDestroyed() const;
 		bool f_ThreadCreated() const;
 
@@ -528,15 +528,15 @@ namespace NMib
 	};
 
 #ifdef DMibPAutomaticSystemCreation
-	extern mint g_SystemMemory[];
+	extern umint g_SystemMemory[];
 #else
 	extern CSystem *g_pSys;
 #endif
-	extern mint g_bCreatingSystemDone;
-	extern mint g_bCanUseSystemMalloc;
-	extern NAtomic::TCAtomic<mint> g_bCanStartThreads;
-	extern mint g_bMemoryManagerNeededAfterDestroy;
-	extern mint g_bCreatedSystem;
+	extern umint g_bCreatingSystemDone;
+	extern umint g_bCanUseSystemMalloc;
+	extern NAtomic::TCAtomic<umint> g_bCanStartThreads;
+	extern umint g_bMemoryManagerNeededAfterDestroy;
+	extern umint g_bCreatedSystem;
 
 	static inline_small CSystem *fg_GetSys()
 	{

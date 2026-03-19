@@ -19,7 +19,7 @@ namespace NMib
 		void fg_Mem_InitSubsystem();
 	}
 
-	mint g_bMemoryManagerNeededAfterDestroy = false;
+	umint g_bMemoryManagerNeededAfterDestroy = false;
 
 	namespace NSys
 	{
@@ -344,22 +344,22 @@ namespace NMib
 				ProgramName = NFile::CFile::fs_GetFileNoExt(NFile::CFile::fs_GetProgramPathNonTracked());
 
 				{ // Condition the program name
-					mint UnderPos = ProgramName.f_FindReverse("_");
+					umint UnderPos = ProgramName.f_FindReverse("_");
 					if (UnderPos != -1)
 					{
 						ProgramName = ProgramName.f_Extract(0, UnderPos);
 					}
 
-					mint Len = ProgramName.f_GetLen();
+					umint Len = ProgramName.f_GetLen();
 
-					mint DIPos = ProgramName.f_FindNoCase("DI");
+					umint DIPos = ProgramName.f_FindNoCase("DI");
 					if (DIPos == (Len - 2))
 					{
 						ProgramName = ProgramName.f_Extract(0, Len - 2);
 					}
 					else
 					{
-						mint DPos = ProgramName.f_FindNoCase("D");
+						umint DPos = ProgramName.f_FindNoCase("D");
 						if (DPos == Len -1)
 						{
 							ProgramName = ProgramName.f_Extract(0, Len - 1);

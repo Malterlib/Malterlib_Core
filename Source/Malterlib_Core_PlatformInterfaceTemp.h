@@ -100,7 +100,7 @@ namespace NMib
 
 		void fg_ConsoleOutputRaw(const NMib::NStr::CStrNonTracked &_Str);
 		void fg_ConsoleOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer);
-		void fg_ConsoleOutput(ch8 const *_pStr, mint _Len);
+		void fg_ConsoleOutput(ch8 const *_pStr, umint _Len);
 		void fg_ConsoleOutput(NMib::NStr::CStrSpan const &_Str);
 		void fg_ConsoleOutput(NMib::NStr::CStrNonTracked const &_Str);
 		void fg_ConsoleOutput(NMib::NStr::CStrIO const &_Str);
@@ -121,13 +121,13 @@ namespace NMib
 
 		CConsoleProperties fg_GetConsoleProperties();
 
-		mint fg_Mem_GetNumNumaNodes();
-		void fg_Mem_GetNumaNodes(ENumaNode *_pNodens, mint _nNodes);
+		umint fg_Mem_GetNumNumaNodes();
+		void fg_Mem_GetNumaNodes(ENumaNode *_pNodens, umint _nNodes);
 
 		NMib::COnScopeExitShared fg_System_RegisterForSignal(int _Signal, NFunction::TCFunctionMutable<void ()> &&_fOnSignal);
 		NMib::COnScopeExitShared fg_System_RegisterForThreadSignal(int _Signal, NFunction::TCFunctionMutable<void ()> &&_fOnSignal);
 
-		void *fg_InterProcess_MemAlloc(ch8 const *_pName, mint _Size, void * &_pMemory);
+		void *fg_InterProcess_MemAlloc(ch8 const *_pName, umint _Size, void * &_pMemory);
 		void fg_InterProcess_MemFree(void *_pHandle, void *_pMemory);
 
 		void fg_Thread_Sleep(fp32 _Seconds);
@@ -136,24 +136,24 @@ namespace NMib
 				FThreadProc *_pThreadProc
 				, void *_pParam
 				, EExecutionPriority _Priority
-				, mint _StackSize
+				, umint _StackSize
 				, bool _bSuspended
 				, const ch8 *_pThreadName
-				, mint _Affinity
-				, mint &_ThreadID
+				, umint _Affinity
+				, umint &_ThreadID
 			)
 		;
 		void fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority);
-		void fg_Thread_SetAffinity(void *_pThread, mint _Affinity);
+		void fg_Thread_SetAffinity(void *_pThread, umint _Affinity);
 		void fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode);
 		void fg_Thread_Destroy(void *_pThread);
 		void fg_Thread_Suspend(void *_pThread);
 		void fg_Thread_Resume(void *_pThread);
 		void fg_Thread_SmallestSleep();
-		void fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnThread);
+		void fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread);
 
-		mint fg_Thread_GetPhysicalCores();
-		mint fg_Thread_GetVirtualCores();
+		umint fg_Thread_GetPhysicalCores();
+		umint fg_Thread_GetVirtualCores();
 
 		void *fg_Thread_BeginDestroy(void *_pThread);
 		void fg_Thread_BlockUntilExit(void *_pThreadDestroyContext);
@@ -184,12 +184,12 @@ namespace NMib
 
 
 		CMibCodeAddress fg_System_GetStackTrace(aint _iDepth);
-		mint fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth);
+		umint fg_System_GetStackTrace(CMibCodeAddress *_pStack, umint _nMaxDepth);
 		void fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NMib::NStr::CStr &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bool _bDisplayGUI);
 		void fg_Debug_GenerateMemoryDump
 			(
 				NMib::NContainer::TCVector<void*, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Locations
-				, NMib::NContainer::TCVector<mint, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Sizes
+				, NMib::NContainer::TCVector<umint, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Sizes
 			)
 		;
 
@@ -197,7 +197,7 @@ namespace NMib
 
 		void fg_Debug_UndecorateName(const ch8 *_pName, NMib::NStr::CStr &_Destination);
 		void fg_Debug_UndecorateName(const ch8 *_pName, NMib::NStr::CStrNonTracked &_Destination);
-		void fg_Debug_UndecorateName(const ch8 *_pName, ch8 *_pDestination, mint _MaxLen);
+		void fg_Debug_UndecorateName(const ch8 *_pName, ch8 *_pDestination, umint _MaxLen);
 
 		/*¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*\
 		|	Function:			FCrashDumpUserNotify														|
@@ -255,7 +255,7 @@ namespace NMib
 
 		uint16 fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language);
 
-		void *fg_Module_Get(mint &_ModuleSize);
+		void *fg_Module_Get(umint &_ModuleSize);
 
 		void fg_Message(const ch8 *_pMessageType, const ch8 *_pToOutput);
 		void fg_Message(const ch16 *_pMessageType, const ch16 *_pToOutput);

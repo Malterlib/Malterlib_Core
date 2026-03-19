@@ -11,7 +11,7 @@ namespace NMib
 	{
 		passwd *fg_Helper_GetPwUid(uid_t _UserID, CGetPwUidState &o_State)
 		{
-			mint Size = 1024;
+			umint Size = 1024;
 
 			auto InitialLength = sysconf(_SC_GETPW_R_SIZE_MAX);
 			if (InitialLength > 0)
@@ -55,7 +55,7 @@ namespace NMib
 
 		passwd *fg_Helper_GetPwNam(ch8 const *_pName, CGetPwUidState &o_State)
 		{
-			mint Size = 1024;
+			umint Size = 1024;
 
 			auto InitialLength = sysconf(_SC_GETPW_R_SIZE_MAX);
 			if (InitialLength > 0)
@@ -85,7 +85,7 @@ namespace NMib
 
 		group *fg_Helper_GetGrGid(gid_t _GroupID, CGetGrGidState &o_State)
 		{
-			mint Size = 1024;
+			umint Size = 1024;
 
 			auto InitialLength = sysconf(_SC_GETGR_R_SIZE_MAX);
 			if (InitialLength > 0)
@@ -115,7 +115,7 @@ namespace NMib
 
 		group *fg_Helper_GetGrNam(ch8 const *_pName, CGetGrGidState &o_State)
 		{
-			mint Size = 1024;
+			umint Size = 1024;
 
 			auto InitialLength = sysconf(_SC_GETGR_R_SIZE_MAX);
 			if (InitialLength > 0)

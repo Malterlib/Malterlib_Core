@@ -174,7 +174,7 @@ namespace
 				DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop);
 				pTestFunc();
 
-				for (mint i = 0; i < 10; ++i)
+				for (umint i = 0; i < 10; ++i)
 				{
 					for (auto i = 0; i < 64; ++i)
 					{
@@ -241,18 +241,18 @@ namespace
 			{
 				CTestPerformanceMeasure MalterlibTime("Malterlib");
 
-				mint nTests = 256*16;
+				umint nTests = 256*16;
 #ifdef DMibDebug
 				nTests /= 16;
 #endif
 				nTests += 1;
 
-				mint nLoops = 1;
+				umint nLoops = 1;
 
-				for(mint j = 0; j < nTests; ++j)
+				for(umint j = 0; j < nTests; ++j)
 				{
 					MalterlibTime.f_Start();
-					for (mint i = 0; i < nLoops; ++i)
+					for (umint i = 0; i < nLoops; ++i)
 					{
 						auto pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 						DMibTest(DMibExpr(pDll))(ETestFlag_Aggregated);

@@ -63,7 +63,7 @@ public:
 
 struct CUnixAddress
 {
-	static constexpr mint mc_MaxAddressLength = sizeof(sockaddr_un::sun_path) - 1;
+	static constexpr umint mc_MaxAddressLength = sizeof(sockaddr_un::sun_path) - 1;
 
 	ch8 const *f_GetPath() const
 	{
@@ -93,7 +93,7 @@ public:
 	{
 	}
 
-	CRuntimeNetAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+	CRuntimeNetAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 		: mp_Type(NMib::NNetwork::ENetAddressType_None)
 	{
 		f_Set(_Type, _pData, _nDataBytes);
@@ -122,14 +122,14 @@ public:
 		return mp_Type;
 	}
 
-	void f_Set(NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+	void f_Set(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 	{
 		mp_Type = _Type;
 		mp_lData.f_SetLen(_nDataBytes);
 		fg_MemCopy(mp_lData.f_GetArray(), _pData, _nDataBytes);
 	}
 
-	void *f_GetForWrite(NMib::NNetwork::ENetAddressType _Type, mint _nDataBytes)
+	void *f_GetForWrite(NMib::NNetwork::ENetAddressType _Type, umint _nDataBytes)
 	{
 		mp_Type = _Type;
 		mp_lData.f_SetLen(_nDataBytes);
@@ -151,8 +151,8 @@ public:
 		f_Set(NMib::NNetwork::ENetAddressType_Unix, &_Unix, sizeof(CUnixAddress));
 	}
 
-	mint f_GetFullDataLen() const { return mp_lData.f_GetLen(); }
-	mint f_GetSockAddrLen() const
+	umint f_GetFullDataLen() const { return mp_lData.f_GetLen(); }
+	umint f_GetSockAddrLen() const
 	{
 		using namespace NMib::NNetwork;
 		switch (mp_Type)

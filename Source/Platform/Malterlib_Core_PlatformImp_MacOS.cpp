@@ -81,7 +81,7 @@ extern "C"
 	void *nontracked_calloc (size_t __nmemb, size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		mint Size = __nmemb * __size;
+		umint Size = __nmemb * __size;
 #		if DMibConfig_MalterlibMemoryManager_Debug
 			auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
@@ -270,10 +270,10 @@ public:
 
 	semaphore_t m_Semaphore;
 
-	mint m_Value;
-	mint m_Maximum;
+	umint m_Value;
+	umint m_Maximum;
 
-	CImpSemaphore(mint _Value, mint _Maximum)
+	CImpSemaphore(umint _Value, umint _Maximum)
 		: m_Semaphore(MACH_PORT_NULL)
 	{
 		f_Init();
@@ -315,7 +315,7 @@ public:
 			DMibError((CFStr256::CFormat("semaphore_create failed: 0x{nfh} {}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
 	}
 
-	void f_Signal(mint _Count)
+	void f_Signal(umint _Count)
 	{
 		DMibLock(m_Lock);
 		if (m_Value + _Count > m_Maximum)
@@ -393,7 +393,7 @@ public:
 
 constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CLowLevelLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
-void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
+void *NSys::fg_Semaphore_Alloc(umint _InitialCount, umint _MaximumCount)
 {
 	CImpSemaphore *pSemaphore = g_ImpSemaphorePool.f_New(_InitialCount, _MaximumCount);
 	return pSemaphore;
@@ -416,7 +416,7 @@ void NSys::fg_Semaphore_Free(void *_pSemaphore)
 #endif
 }
 
-void NSys::fg_Semaphore_Increase(void * _pSemaphore, mint _Count)
+void NSys::fg_Semaphore_Increase(void * _pSemaphore, umint _Count)
 {
 	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
 	pSemaphore->f_Signal(_Count);
@@ -468,13 +468,13 @@ NStr::CStr NSys::fg_System_GenerateUUID()
 	return CStr(CStr::CFormat("{{{}}") << RetStr);
 }
 
-void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
+void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes)
 {
 	if (&getentropy)
 	{
 		while (_nBytes)
 		{
-			mint ThisTime = fg_Min(_nBytes, 256);
+			umint ThisTime = fg_Min(_nBytes, 256);
 			if (getentropy(_pData, ThisTime))
 				DMibPDebugBreak;
 			_nBytes -= ThisTime;
@@ -511,7 +511,7 @@ public:
 		auto &Sys = *fg_GetLocalSys();
 		if (!pthread_getspecific(Sys.m_ForkThreadLocal))
 		{
-			pthread_setspecific(Sys.m_ForkThreadLocal, (void *)(mint)getpid());
+			pthread_setspecific(Sys.m_ForkThreadLocal, (void *)(umint)getpid());
 			Sys.m_Posix.f_GetMalterlibDisableStdErrLog(); // getenv fails on forked process, to workaround this here
 
 			Sys.m_Posix.m_ForkLock.f_Lock();
@@ -531,14 +531,14 @@ public:
 		if (Current)
 		{
 #ifdef DMibSanitizerEnabled_Thread
-			if (Current == (void *)(mint)getpid())
+			if (Current == (void *)(umint)getpid())
 				__tsan_forked_parent();
 			else
 				__tsan_forked_child();
 #endif
 
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
-			if (Current != (void *)(mint)getpid())
+			if (Current != (void *)(umint)getpid())
 			{
 				g_ImpSemaphorePool.f_ForkedChildLocked();
 				g_EventEmulationPool.f_ForkedChildLocked();
@@ -546,7 +546,7 @@ public:
 			}
 			g_ImpSemaphorePool.f_Unlock();
 			g_EventEmulationPool.f_Unlock();
-			if (Current == (void *)(mint)getpid())
+			if (Current == (void *)(umint)getpid())
 			{
 				Sys.f_ForkedParent(); // Parent
 				Sys.m_Posix.m_ForkLock.f_ForkedParent();
@@ -1041,18 +1041,18 @@ void NSys::fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode)
 	// TODO: Implement
 }
 
-mint NSys::fg_Mem_GetNumNumaNodes()
+umint NSys::fg_Mem_GetNumNumaNodes()
 {
   // TODO: Implement
   return 0;
 }
 
-void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, mint _nNodes)
+void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, umint _nNodes)
 {
   // TODO: Implement
 }
 
-void *NSys::fg_InterProcess_MemAlloc(ch8 const *_pName, mint _Size, void * &_pMemory)
+void *NSys::fg_InterProcess_MemAlloc(ch8 const *_pName, umint _Size, void * &_pMemory)
 {
 	// TODO: Implement
 	DMibError("Not implemented");
@@ -1191,11 +1191,11 @@ void NSys::fg_Message(const ch16 *_pMessageType, const ch16 *_pToOutput)
 
 namespace NMib
 {
-	mint align_cacheline g_SystemMemory[sizeof(CSystemMacOS) / sizeof(mint)];
-	mint g_bCreatingSystemDone = false;
-	mint g_bCanUseSystemMalloc = false;
-	constinit NAtomic::TCAtomic<mint> g_bCanStartThreads{0};
-	mint g_bCreatedSystem = false;
+	umint align_cacheline g_SystemMemory[sizeof(CSystemMacOS) / sizeof(umint)];
+	umint g_bCreatingSystemDone = false;
+	umint g_bCanUseSystemMalloc = false;
+	constinit NAtomic::TCAtomic<umint> g_bCanStartThreads{0};
+	umint g_bCreatedSystem = false;
 }
 
 #include <mach-o/dyld.h>
@@ -1364,7 +1364,7 @@ namespace NMib
 	{
 		void fg_CreateSystemMalloc(bool _bProvideDestroySystem);
 		void fg_CreateSystemVersion();
-		extern mint g_ThreadLocalOffsetPThread;
+		extern umint g_ThreadLocalOffsetPThread;
 	}
 
 }
@@ -1528,7 +1528,7 @@ void NSys::fg_CreateSystemVersion()
 
 namespace NMib::NSys::NPrivate
 {
-	constinit mint g_PageSize = 0;
+	constinit umint g_PageSize = 0;
 
 	void (* g_pDestroyAtExit)(void) = nullptr;
 }
@@ -1558,7 +1558,7 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 
 	auto pSystemMemory = (void *)NMib::g_SystemMemory;
 	auto pSystem = new(pSystemMemory) CSystemMacOS();
-	static_assert(alignof(CSystemMacOS) <= mint(DMibPMemoryCacheLineSize), "Aligment error");
+	static_assert(alignof(CSystemMacOS) <= umint(DMibPMemoryCacheLineSize), "Aligment error");
 
 	NSys::fg_Compiler_MakeActive(&pSystemMemory);
 	NSys::fg_Compiler_MakeActive(&pSystem);
@@ -1638,7 +1638,7 @@ void NSys::fg_CreateSystem()
 				if (pArgs[i])
 				{
 					if (fg_StrCmp(pArgs[i], "--OutputPID") == 0)
-						NSys::fg_ConsoleOutput((CFStr256::CFormat("{nfh,sj16,sf0}") << (mint)getpid()).f_GetStr().f_Span());
+						NSys::fg_ConsoleOutput((CFStr256::CFormat("{nfh,sj16,sf0}") << (umint)getpid()).f_GetStr().f_Span());
 					else if (fg_StrCmp(pArgs[i], "--OutputStdErrToStdOut") == 0)
 						dup2(1, 2);
 					else if (fg_StrCmp(pArgs[i], "--NoStdErr") == 0)
@@ -1929,7 +1929,7 @@ NStr::CStr NSys::NFile::fg_GetRawTemporaryDirectory()
 		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TEMPDIR");
 	if (!TmpDir.f_IsEmpty())
 	{
-		mint Len = TmpDir.f_GetLen();
+		umint Len = TmpDir.f_GetLen();
 		if (TmpDir[Len - 1] == '/')
 			return TmpDir.f_Left(Len - 1);
 		return TmpDir;
@@ -1948,7 +1948,7 @@ NStr::CStrNonTracked NSys::NFile::fg_GetRawTemporaryDirectoryNonTracked()
 		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMPDIR"));
 	if (!TmpDir.f_IsEmpty())
 	{
-		mint Len = TmpDir.f_GetLen();
+		umint Len = TmpDir.f_GetLen();
 		if (TmpDir[Len - 1] == '/')
 			return TmpDir.f_Left(Len - 1);
 		return TmpDir;
@@ -2285,7 +2285,7 @@ bool NSys::NFile::fg_ChangeNotification_Supported()
 
 #include "Malterlib_Core_PlatformImp_MacOS_Net.imp.h"
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_CreateAddress(_Type, _pData, _nDataBytes);
 }
@@ -2302,13 +2302,13 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAd
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CPOSIXAddress*)_Address);
 }
 
-bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress*)_Address, _ExpectedType, _opRawData, _nDataBytes);
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CPOSIXAddress*)_Address, _Type, _pRawData, _nDataBytes);
@@ -2319,7 +2319,7 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_ResolveAddress(const NMib::NStr::CSt
 	return fg_GetLocalSys()->m_SocketContext->f_ResolveAddress(_Address, _PreferType);
 }
 
-mint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
+umint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
 {
 	return CUnixAddress::mc_MaxAddressLength;
 }
@@ -2411,22 +2411,22 @@ void NSys::NNetwork::fg_Shutdown(void *_pSocket)
 	fg_GetLocalSys()->m_SocketContext->f_Shutdown((CPOSIXSocket*)_pSocket);
 }
 
-mint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, mint _DataLen) // Returns bytes receive
+umint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, umint _DataLen) // Returns bytes receive
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Receive((CPOSIXSocket*)_pSocket, _pData, _DataLen);
 }
 
-mint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, mint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Send((CPOSIXSocket*)_pSocket, _pData, _DataLen);
 }
 
-mint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, mint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket*)_pSocket, *((CPOSIXAddress*)_Address), _pData, _DataLen);
 }
 
-mint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, mint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket*)_pSocket, *((CPOSIXAddress*)_Address), _pData, _DataLen);
 }
@@ -2729,7 +2729,7 @@ void* NSys::fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned
 
 }
 
-mint NSys::fg_Thread_GetVirtualCores()
+umint NSys::fg_Thread_GetVirtualCores()
 {
 	int nCPUs = 0;
 	size_t DataSize = sizeof(nCPUs);
@@ -2740,7 +2740,7 @@ mint NSys::fg_Thread_GetVirtualCores()
 	return 1;
 }
 
-mint NSys::fg_Thread_GetPhysicalCores()
+umint NSys::fg_Thread_GetPhysicalCores()
 {
 	int nCPUs = 0;
 	size_t DataSize = sizeof(nCPUs);
@@ -2768,9 +2768,9 @@ NMib::NStr::CStr NSys::fg_System_GetCPUName()
 }
 
 
-inline_never mint NMib::NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth)
+inline_never umint NMib::NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, umint _nMaxDepth)
 {
-	return (mint)backtrace((void**)_pStack, (int)_nMaxDepth);
+	return (umint)backtrace((void**)_pStack, (int)_nMaxDepth);
 }
 
 inline_never CMibCodeAddress NMib::NSys::fg_System_GetStackTrace(aint _iDepth)
@@ -2885,7 +2885,7 @@ void NSys::fg_Mem_EnableMemoryToucher(bool _bEnabled, fp64 _CPUUsage)
 #include <sys/mman.h>
 #include <mach/mach_vm.h>
 
-void *NSys::fg_Mem_VirtualAllocInRange(mint &_Size, uint8 *_pLower, uint8 *_pUpper, EAllocationFlag _AllocFlags, ENumaNode _NumaNode, mint _Alignment)
+void *NSys::fg_Mem_VirtualAllocInRange(umint &_Size, uint8 *_pLower, uint8 *_pUpper, EAllocationFlag _AllocFlags, ENumaNode _NumaNode, umint _Alignment)
 {
 	DMibFastCheck(_AllocFlags & EAllocationFlag_WillFreeWithSize);
 	DMibFastCheck(_Alignment == 0);
@@ -2897,8 +2897,8 @@ void *NSys::fg_Mem_VirtualAllocInRange(mint &_Size, uint8 *_pLower, uint8 *_pUpp
 	_pLower = fg_AlignUp(_pLower, NMib::NSys::NPrivate::g_PageSize);
 	_pUpper = fg_AlignDown(_pUpper, NMib::NSys::NPrivate::g_PageSize);
 
-	vm_address_t AllocAddress = (vm_address_t)(mint)_pLower;
-	vm_address_t EndAddress = (vm_address_t)(mint)_pUpper - _Size;
+	vm_address_t AllocAddress = (vm_address_t)(umint)_pLower;
+	vm_address_t EndAddress = (vm_address_t)(umint)_pUpper - _Size;
 
 	while (AllocAddress < EndAddress)
 	{
@@ -2925,7 +2925,7 @@ void *NSys::fg_Mem_VirtualAllocInRange(mint &_Size, uint8 *_pLower, uint8 *_pUpp
 	return nullptr;
 }
 
-void NSys::fg_Mem_VirtualFlushInstructionCache(void *_pMem, mint _Size)
+void NSys::fg_Mem_VirtualFlushInstructionCache(void *_pMem, umint _Size)
 {
 	uint8 *pStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	uint8 *pEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);

@@ -10,7 +10,7 @@
 #ifdef DTCPDelayEmulation
 	// These are vars so you can tweak them on the fly.
 	bool bDTCPDelayEmulation = false;
-	mint DTCPDelayEmulation_Rate = 200*1024;
+	umint DTCPDelayEmulation_Rate = 200*1024;
 	double DTCPDelayEmulation_MinDelay = 0.1;
 	//#define DTCPDelayEmulation_Rate 200*1024
 	//#define DTCPDelayEmulation_MinDelay 0.1
@@ -418,7 +418,7 @@ public:
 							}
 
 							if (pNotification->NextEntryOffset)
-								pNotification = (FILE_NOTIFY_INFORMATION *)((mint)pNotification + pNotification->NextEntryOffset);
+								pNotification = (FILE_NOTIFY_INFORMATION *)((umint)pNotification + pNotification->NextEntryOffset);
 							else
 								pNotification = nullptr;
 						}
@@ -486,7 +486,7 @@ public:
 			CNotificationBundle(CFileChangeNoticationContext *_pContext)
 			{
 				m_pContext = _pContext;
-				for (mint i = 0; i < ENumNotifications; ++i)
+				for (umint i = 0; i < ENumNotifications; ++i)
 				{
 					m_Notifications[i].m_pBundle = this;
 					m_Free.f_Insert(m_Notifications[i]);
@@ -931,10 +931,10 @@ public:
 			{
 				AddAtom(str_utf16("IdsAssertAtom"));
 				m_pSetAssertInfo = &fs_SetAssertInfo;
-				mint PausePointer = (mint)m_pSetAssertInfo;
-				for (mint i = 0; i < sizeof(mint) * 8; ++i)
+				umint PausePointer = (umint)m_pSetAssertInfo;
+				for (umint i = 0; i < sizeof(umint) * 8; ++i)
 				{
-					if (PausePointer & (mint(1) << i))
+					if (PausePointer & (umint(1) << i))
 					{
 						AddAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << i));
 					}
@@ -942,12 +942,12 @@ public:
 			}
 			else
 			{
-				mint PausePointer = 0;
-				for (mint i = 0; i < sizeof(mint) * 8; ++i)
+				umint PausePointer = 0;
+				for (umint i = 0; i < sizeof(umint) * 8; ++i)
 				{
 					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << i)))
 					{
-						PausePointer |= (mint(1) << i);
+						PausePointer |= (umint(1) << i);
 
 					}
 				}
@@ -959,12 +959,12 @@ public:
 		{
 			if (FindAtom(str_utf16("IdsAssertAtom")))
 			{
-				mint PausePointer = 0;
-				for (mint i = 0; i < sizeof(mint) * 8; ++i)
+				umint PausePointer = 0;
+				for (umint i = 0; i < sizeof(umint) * 8; ++i)
 				{
 					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << i)))
 					{
-						PausePointer |= (mint(1) << i);
+						PausePointer |= (umint(1) << i);
 
 					}
 				}

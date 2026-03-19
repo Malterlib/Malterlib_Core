@@ -237,7 +237,7 @@ public:
 		bool m_bIsDirectory = false;
 	};
 	TCMap<uint32, CPendingRename> m_PendingRenames;
-	mint m_nPendingNotificationRenames = 0;
+	umint m_nPendingNotificationRenames = 0;
 
 	struct CPendingReParent
 	{

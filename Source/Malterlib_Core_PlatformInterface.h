@@ -121,24 +121,24 @@ namespace NMib
 		void fg_Mem_ForkedChild();
 		void fg_Mem_ForkedParent();
 
-		void *fg_Mem_VirtualAllocInRange(mint &_Size, uint8 *_pLower, uint8 *_pUpper, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default, mint _Alignment = 0);
-		void *fg_Mem_VirtualAlloc(mint &_Size, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default, mint _Alignment = 0);
-		void *fg_Mem_VirtualRealloc(void *_pMem, mint &_Size, mint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default);
-		void *fg_Mem_VirtualResize(void *_pMem, mint &_Size, mint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default);
-		mint fg_Mem_VirtualGranularityAlloc(bool _bLargePages);
-		mint fg_Mem_VirtualGranularityCommit(bool _bLargePages);
-		mint fg_Mem_VirtualGranularityProtect(bool _bLargePages);
-		void fg_Mem_VirtualCommit(void *_pMem, mint _Size);
-		void fg_Mem_VirtualProtect(void *_pMem, mint _Size, uaint _Protect);
-		void fg_Mem_VirtualDecommit(void *_pMem, mint _Size);
-		void fg_Mem_VirtualFree(void *_pMem, mint _Size);
-		mint fg_Mem_VirtualSize(const void *_pMem);
-		mint fg_Mem_VirtualTrySize(const void *_pMem);
+		void *fg_Mem_VirtualAllocInRange(umint &_Size, uint8 *_pLower, uint8 *_pUpper, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default, umint _Alignment = 0);
+		void *fg_Mem_VirtualAlloc(umint &_Size, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default, umint _Alignment = 0);
+		void *fg_Mem_VirtualRealloc(void *_pMem, umint &_Size, umint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default);
+		void *fg_Mem_VirtualResize(void *_pMem, umint &_Size, umint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default);
+		umint fg_Mem_VirtualGranularityAlloc(bool _bLargePages);
+		umint fg_Mem_VirtualGranularityCommit(bool _bLargePages);
+		umint fg_Mem_VirtualGranularityProtect(bool _bLargePages);
+		void fg_Mem_VirtualCommit(void *_pMem, umint _Size);
+		void fg_Mem_VirtualProtect(void *_pMem, umint _Size, uaint _Protect);
+		void fg_Mem_VirtualDecommit(void *_pMem, umint _Size);
+		void fg_Mem_VirtualFree(void *_pMem, umint _Size);
+		umint fg_Mem_VirtualSize(const void *_pMem);
+		umint fg_Mem_VirtualTrySize(const void *_pMem);
 		fp32 fg_Mem_VirtualOverhead(void const *_pMem);
 		constexpr bool fg_Mem_VirtualCanCommit();
 		bool fg_Mem_VirtualCanProtect();
-		void fg_Mem_VirtualFlushInstructionCache(void *_pMem, mint _Size);
-		mint fg_Mem_PageSize();
+		void fg_Mem_VirtualFlushInstructionCache(void *_pMem, umint _Size);
+		umint fg_Mem_PageSize();
 
 		/***************************************************************************************************\
 		|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|
@@ -146,11 +146,11 @@ namespace NMib
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
 
-		void *fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount);
+		void *fg_Semaphore_Alloc(umint _InitialCount, umint _MaximumCount);
 		void *fg_Semaphore_Duplicate(void * _pSemaphore);
 		void fg_Semaphore_ForkedChild(void * _pSemaphore);
 		void fg_Semaphore_Free(void * _pSemaphore);
-		void fg_Semaphore_Increase(void * _pSemaphore, mint _Count);
+		void fg_Semaphore_Increase(void * _pSemaphore, umint _Count);
 		void fg_Semaphore_Wait(void * _pSemaphore);
 		bool fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout);
 		bool fg_Semaphore_TryWait(void * _pSemaphore);
@@ -167,8 +167,8 @@ namespace NMib
 		bool fg_Event_TryWait(void * _pEvent);
 
 		void *fg_Thread_GetCurrent();
-		mint fg_Thread_GetCurrentUID();
-		mint fg_Thread_GetCurrentUIDAlternate();
+		umint fg_Thread_GetCurrentUID();
+		umint fg_Thread_GetCurrentUIDAlternate();
 		void fg_Thread_Yield();
 
 		/***************************************************************************************************\
@@ -177,30 +177,30 @@ namespace NMib
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
 
-		mint fg_Thread_AllocLocal();
+		umint fg_Thread_AllocLocal();
 
 	#ifdef DMibPSupportThreadLocalDestructors
-		mint fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*));
-		void fg_Thread_FreeLocalWithDestructor(mint _iStorage);
+		umint fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*));
+		void fg_Thread_FreeLocalWithDestructor(umint _iStorage);
 	#endif
 
-		void fg_Thread_FreeLocal(mint _iStorage);
-		void fg_Thread_SetLocal(mint _iStorage, void *_pData);
-		void fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_pData);
-		void fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData);
-		void *fg_Thread_GetLocal(mint _ThreadID, mint _iStorage);
-		void *fg_Thread_GetLocal(mint _iStorage);
-		void *fg_Thread_GetLocalAlwaysSet(mint _iStorage);
-		void *fg_Thread_GetLocalAlwaysSet(mint _ThreadID, mint _iStorage);
+		void fg_Thread_FreeLocal(umint _iStorage);
+		void fg_Thread_SetLocal(umint _iStorage, void *_pData);
+		void fg_Thread_SetLocalDestructor(umint _ThreadID, umint _iStorage, void *_pData);
+		void fg_Thread_SetLocal(umint _ThreadID, umint _iStorage, void *_pData);
+		void *fg_Thread_GetLocal(umint _ThreadID, umint _iStorage);
+		void *fg_Thread_GetLocal(umint _iStorage);
+		void *fg_Thread_GetLocalAlwaysSet(umint _iStorage);
+		void *fg_Thread_GetLocalAlwaysSet(umint _ThreadID, umint _iStorage);
 
-		mint fg_Thread_AllocLocalFast();
-		void fg_Thread_FreeLocalFast(mint _iStorage);
-		void fg_Thread_SetLocalFast(mint _iStorage, void *_pData);
-		void fg_Thread_SetLocalFast(mint _ThreadID, mint _iStorage, void *_pData);
-		void *fg_Thread_GetLocalFast(mint _iStorage);
-		void *fg_Thread_GetLocalFast(mint _ThreadID, mint _iStorage);
-		void *fg_Thread_GetLocalAlwaysSetFast(mint _iStorage);
-		void *fg_Thread_GetLocalAlwaysSetFast(mint _ThreadID, mint _iStorage);
+		umint fg_Thread_AllocLocalFast();
+		void fg_Thread_FreeLocalFast(umint _iStorage);
+		void fg_Thread_SetLocalFast(umint _iStorage, void *_pData);
+		void fg_Thread_SetLocalFast(umint _ThreadID, umint _iStorage, void *_pData);
+		void *fg_Thread_GetLocalFast(umint _iStorage);
+		void *fg_Thread_GetLocalFast(umint _ThreadID, umint _iStorage);
+		void *fg_Thread_GetLocalAlwaysSetFast(umint _iStorage);
+		void *fg_Thread_GetLocalAlwaysSetFast(umint _ThreadID, umint _iStorage);
 
 		/***************************************************************************************************\
 		|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|
@@ -236,7 +236,7 @@ namespace NMib
 		void fg_DestroySystem();
 		void fg_PreDestroyHeap();
 
-		void fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes);
+		void fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes);
 
 		/***************************************************************************************************\
 		|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|

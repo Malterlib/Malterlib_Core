@@ -58,7 +58,7 @@
 #endif
 #pragma warning(disable:4100) // unreferenced formal parameter
 #pragma warning(disable:4127) // conditional expression is constant
-#pragma warning(disable:4244) // conversion from 'mint' to 'const unsigned int', possible loss of data
+#pragma warning(disable:4244) // conversion from 'umint' to 'const unsigned int', possible loss of data
 #pragma warning(disable:4146) // unary minus operator applied to unsigned type, result still unsigned
 #pragma warning(disable:4200) // nonstandard extension used : zero-sized array in struct/union
 #pragma warning(disable:4211) // nonstandard extension used : redefined extern to static

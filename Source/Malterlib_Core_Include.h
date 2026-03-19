@@ -34,16 +34,16 @@ namespace NMib
 	namespace NFile
 	{
 #if DMibPPtrBits > 32
-		static constexpr mint gc_IdealNetworkQueueSize = 128 * 1024 * 1024;
+		static constexpr umint gc_IdealNetworkQueueSize = 128 * 1024 * 1024;
 #else
-		static constexpr mint gc_IdealNetworkQueueSize = 16 * 1024 * 1024;
+		static constexpr umint gc_IdealNetworkQueueSize = 16 * 1024 * 1024;
 #endif
-		static constexpr mint gc_IdealIoSize = 1024 * 1024;
+		static constexpr umint gc_IdealIoSize = 1024 * 1024;
 	}
 
 	namespace NContainer
 	{
-		template <mint t_MinSize = 16, bool t_bShrink = true, bool t_bCheckBounds = true>
+		template <umint t_MinSize = 16, bool t_bShrink = true, bool t_bCheckBounds = true>
 		struct TCVectorOptions;
 
 		struct CVectorOptionsDefault;
@@ -164,7 +164,7 @@ namespace NMib
 #include <Mib/Numeric/Integer>
 
 using zbool = NMib::TCAutoClear<bool>;
-using zmint = NMib::TCAutoClear<mint>;
+using zmint = NMib::TCAutoClear<umint>;
 using zsmint = NMib::TCAutoClear<smint>;
 using zamint = NMib::TCAutoClear<aint>;
 using zuamint = NMib::TCAutoClear<uaint>;

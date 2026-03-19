@@ -59,7 +59,7 @@ namespace NMib
 			{
 				NStr::CWStr DeviceName;
 				NStr::CWStr Drive = NFile::CFile::fs_GetDrive(_In);
-				mint Len = 256;
+				umint Len = 256;
 				bool bFailed = false;
 				while (!QueryDosDevice(Drive, DeviceName.f_GetStr(Len), Len))
 				{

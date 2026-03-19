@@ -35,15 +35,15 @@ using namespace NMib;
 // These static asserts check that everything is OK.
 // *************************************************************************************************************************
 
-static_assert(sizeof(pthread_key_t) <= sizeof(mint), "pthread_key_t must be the same size or smaller than a mint.");
-static_assert(sizeof(pthread_t) <= sizeof(mint), "pthread_t must be the same size or smaller than a mint.");
-static_assert(sizeof(pid_t) <= sizeof(mint), "pid_t must be the same size or smaller than a mint.");
+static_assert(sizeof(pthread_key_t) <= sizeof(umint), "pthread_key_t must be the same size or smaller than a umint.");
+static_assert(sizeof(pthread_t) <= sizeof(umint), "pthread_t must be the same size or smaller than a umint.");
+static_assert(sizeof(pid_t) <= sizeof(umint), "pid_t must be the same size or smaller than a umint.");
 
 // *************************************************************************************************************************
 // POSIX Thread Implementation
 // *************************************************************************************************************************
 
-mint NSys::fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*))
+umint NSys::fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*))
 {
 	pthread_key_t pKey = 0;
 	if (auto ErrNo = pthread_key_create(&pKey, _pDestructor))
@@ -58,10 +58,10 @@ mint NSys::fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*))
 
 	if (auto ErrNo = pthread_setspecific(pKey, nullptr))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc with destructor)", ErrNo));
-	return (mint)pKey;
+	return (umint)pKey;
 }
 
-void NSys::fg_Thread_FreeLocalWithDestructor(mint _iStorage)
+void NSys::fg_Thread_FreeLocalWithDestructor(umint _iStorage)
 {
 	pthread_key_t pKey = (pthread_key_t)_iStorage;
 	if (auto ErrNo = pthread_key_delete(pKey))
@@ -69,20 +69,20 @@ void NSys::fg_Thread_FreeLocalWithDestructor(mint _iStorage)
 }
 
 #ifdef DPlatformFamily_macOS
-mint NSys::g_ThreadSelfOffset = 0;
-mint NSys::g_ThreadLocalOffset = 0;
+umint NSys::g_ThreadSelfOffset = 0;
+umint NSys::g_ThreadLocalOffset = 0;
 namespace NMib
 {
 	namespace NSys
 	{
-		mint g_ThreadLocalOffsetPThread = 0;
+		umint g_ThreadLocalOffsetPThread = 0;
 	}
 }
 #endif
 
-void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_pData)
+void NSys::fg_Thread_SetLocalDestructor(umint _ThreadID, umint _iStorage, void *_pData)
 {
-	mint ThisThread = fg_Thread_GetCurrentUID();
+	umint ThisThread = fg_Thread_GetCurrentUID();
 	if (ThisThread == _ThreadID)
 	{
 		pthread_key_t pKey = (pthread_key_t)_iStorage;
@@ -93,20 +93,20 @@ void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_p
 #ifdef DPlatformFamily_macOS
 	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
 
-		NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-		pThreadLocal->f_Exchange((mint)_pData)
+		NAtomic::TCAtomic<umint> *pThreadLocal = (NAtomic::TCAtomic<umint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(umint));
+		pThreadLocal->f_Exchange((umint)_pData)
 
 	#else
 		#if DPlatformVersion >= 1070
 			#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__)
-				NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
+				NAtomic::TCAtomic<umint> *pThreadLocal = (NAtomic::TCAtomic<umint> *)((_ThreadID + 0x0) + _iStorage * sizeof(umint));
 			#else
 				#error "Not Implemented"
 			#endif
-			pThreadLocal->f_Exchange((mint)_pData);
+			pThreadLocal->f_Exchange((umint)_pData);
 		#elif DPlatformVersion >= 1050
-			NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-			pThreadLocal->f_Exchange((mint)_pData);
+			NAtomic::TCAtomic<umint> *pThreadLocal = (NAtomic::TCAtomic<umint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(umint));
+			pThreadLocal->f_Exchange((umint)_pData);
 		#else
 			#error "Not Implemented"
 		#endif
@@ -118,7 +118,7 @@ void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_p
 
 #ifndef DMibStaticThreadLocals
 
-mint NSys::fg_Thread_AllocLocal()
+umint NSys::fg_Thread_AllocLocal()
 {
 	pthread_key_t pKey = 0;
 	if (auto ErrNo = pthread_key_create(&pKey, nullptr))
@@ -131,26 +131,26 @@ mint NSys::fg_Thread_AllocLocal()
 	}
 	if (auto ErrNo = pthread_setspecific(pKey, nullptr))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc)", ErrNo));
-	return (mint)pKey;
+	return (umint)pKey;
 }
 
-void NSys::fg_Thread_FreeLocal(mint _iStorage)
+void NSys::fg_Thread_FreeLocal(umint _iStorage)
 {
 	pthread_key_t pKey = (pthread_key_t)_iStorage;
 	if (auto ErrNo = pthread_key_delete(pKey))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_delete (thread local free)", ErrNo));
 }
 
-void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
+void NSys::fg_Thread_SetLocal(umint _iStorage, void *_pData)
 {
 	pthread_key_t pKey = (pthread_key_t)_iStorage;
 	if (auto ErrNo = pthread_setspecific(pKey, _pData))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", ErrNo));
 }
 
-void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
+void NSys::fg_Thread_SetLocal(umint _ThreadID, umint _iStorage, void *_pData)
 {
-	mint ThisThread = fg_Thread_GetCurrentUID();
+	umint ThisThread = fg_Thread_GetCurrentUID();
 	if (ThisThread == _ThreadID)
 	{
 		fg_Thread_SetLocal(_iStorage, _pData);
@@ -158,20 +158,20 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 	}
 #ifdef DPlatformFamily_macOS
 	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
-		NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-		pThreadLocal->f_Exchange((mint)_pData)
+		NAtomic::TCAtomic<umint> *pThreadLocal = (NAtomic::TCAtomic<umint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(umint));
+		pThreadLocal->f_Exchange((umint)_pData)
 
 	#else
 		#if DPlatformVersion >= 1070
 			#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__)
-				NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
+				NAtomic::TCAtomic<umint> *pThreadLocal = (NAtomic::TCAtomic<umint> *)((_ThreadID + 0x0) + _iStorage * sizeof(umint));
 			#else
 				#error "Not Implemented"
 			#endif
-			pThreadLocal->f_Exchange((mint)_pData);
+			pThreadLocal->f_Exchange((umint)_pData);
 		#elif DPlatformVersion >= 1050
-			NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-			pThreadLocal->f_Exchange((mint)_pData);
+			NAtomic::TCAtomic<umint> *pThreadLocal = (NAtomic::TCAtomic<umint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(umint));
+			pThreadLocal->f_Exchange((umint)_pData);
 		#else
 			#error "Not Implemented"
 		#endif
@@ -181,13 +181,13 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 #endif
 }
 
-void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
+void *NSys::fg_Thread_GetLocal(umint _ThreadID, umint _iStorage)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocal(_iStorage);
 
 #if defined(DPlatformFamily_macOS)
-	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffsetPThread) + _iStorage * sizeof(mint));
+	NAtomic::TCAtomic<umint> *pThreadLocal = (NAtomic::TCAtomic<umint> *)((_ThreadID + g_ThreadLocalOffsetPThread) + _iStorage * sizeof(umint));
 	return (void *)pThreadLocal->f_Load();
 #else
 	DMibPDebugBreak; // Should never get here
@@ -199,22 +199,22 @@ void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 #endif
 
 #ifdef DMibDebuggerHelpers
-assure_used void *fg_Debug_GetThreadLocal(mint _iStorage)
+assure_used void *fg_Debug_GetThreadLocal(umint _iStorage)
 {
 	return NSys::fg_Thread_GetLocal(_iStorage);
 }
 #endif
 
-void *NSys::fg_Thread_GetLocalFast(mint _ThreadID, mint _iStorage)
+void *NSys::fg_Thread_GetLocalFast(umint _ThreadID, umint _iStorage)
 {
 	return fg_Thread_GetLocal(_ThreadID, _iStorage);
 }
 
-void *NSys::fg_Thread_GetLocalAlwaysSet(mint _ThreadID, mint _iStorage)
+void *NSys::fg_Thread_GetLocalAlwaysSet(umint _ThreadID, umint _iStorage)
 {
 	return fg_Thread_GetLocal(_ThreadID, _iStorage);
 }
-void *NSys::fg_Thread_GetLocalAlwaysSetFast(mint _ThreadID, mint _iStorage)
+void *NSys::fg_Thread_GetLocalAlwaysSetFast(umint _ThreadID, umint _iStorage)
 {
 	return fg_Thread_GetLocal(_ThreadID, _iStorage);
 }
@@ -242,15 +242,15 @@ class CImpSemaphore
 public:
 	pthread_mutex_t m_Lock;
 	pthread_cond_t m_Condition;
-	mint m_Value;
-	mint m_Maximum;
+	umint m_Value;
+	umint m_Maximum;
 
 	pthread_mutex_t *fp_GetMutex()
 	{
 		return (pthread_mutex_t *)&m_Lock;
 	}
 
-	CImpSemaphore(mint _Value, mint _Maximum)
+	CImpSemaphore(umint _Value, umint _Maximum)
 	{
 		f_Init();
 		m_Value = _Value;
@@ -285,7 +285,7 @@ public:
 			DMibError(NPlatform::fg_FormatErrno("pthread_cond_init (semaphore init)", ErrNo));
 	}
 
-	void f_Signal(mint _Count)
+	void f_Signal(umint _Count)
 	{
 		int ErrNo;
 		if ((ErrNo = pthread_mutex_lock(fp_GetMutex())) != 0)
@@ -393,7 +393,7 @@ public:
 
 constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CLowLevelLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
-void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
+void *NSys::fg_Semaphore_Alloc(umint _InitialCount, umint _MaximumCount)
 {
 	CImpSemaphore *pSemaphore = g_ImpSemaphorePool.f_New(_InitialCount, _MaximumCount);
 	return pSemaphore;
@@ -416,7 +416,7 @@ void NSys::fg_Semaphore_Free(void *_pSemaphore)
 #endif
 }
 
-void NSys::fg_Semaphore_Increase(void * _pSemaphore, mint _Count)
+void NSys::fg_Semaphore_Increase(void * _pSemaphore, umint _Count)
 {
 	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
 	pSemaphore->f_Signal(_Count);
@@ -448,7 +448,7 @@ struct CThreadStartParams
 {
 	FThreadProc *m_pThreadProc;
 	void *m_pThreadParam;
-	mint m_ParentThreadID;
+	umint m_ParentThreadID;
 	CStrNonTracked m_ThreadName;
 };
 
@@ -488,7 +488,7 @@ namespace
 {
 	struct CPrioMap
 	{
-		mint m_MalterlibPriority;
+		umint m_MalterlibPriority;
 		int m_Scheduler;
 	};
 
@@ -506,7 +506,7 @@ namespace
 		,	{ 0xe000, SCHED_FIFO }
 		,	{ 0x10000, SCHED_FIFO }
 #endif
-		,	{ ~mint(0), 0 }
+		,	{ ~umint(0), 0 }
 	};
 };
 
@@ -515,7 +515,7 @@ static void fg_POSIX_MapThreadPriority(EExecutionPriority _Priority, int& _oSche
 	CPrioMap const* pCurEntry = & gc_MalterlibToPOSIXPriorityMap[0];
 	CPrioMap const* pNextEntry;
 
-	while (pCurEntry->m_MalterlibPriority != ~mint(0))
+	while (pCurEntry->m_MalterlibPriority != ~umint(0))
 	{
 		pNextEntry = pCurEntry + 1;
 
@@ -603,11 +603,11 @@ void *NSys::fg_Thread_Create
 		FThreadProc *_pThreadProc
 		, void *_pParam
 		, EExecutionPriority _Priority
-		, mint _StackSize
+		, umint _StackSize
 		, bool _bSuspended
 		, const ch8 *_pThreadName
-		, mint _Affinity
-		, mint &_ThreadID
+		, umint _Affinity
+		, umint &_ThreadID
 	)
 {
 	int Result;
@@ -706,8 +706,8 @@ void *NSys::fg_Thread_Create
 		cpu_set_t CPUSet;
 		CPU_ZERO(&CPUSet);
 
-		mint const nBits = sizeof(_Affinity) * 8;
-		for (mint iB = 0
+		umint const nBits = sizeof(_Affinity) * 8;
+		for (umint iB = 0
 			;iB < nBits
 			;++iB)
 		{
@@ -757,12 +757,12 @@ void *NSys::fg_Thread_Create
 	}
 #endif // DMibPMachKernel
 
-	_ThreadID = (mint)ThreadID;
+	_ThreadID = (umint)ThreadID;
 	return (void *)ThreadID;
 }
 
 
-void NSys::fg_Thread_SetAffinity(void *_pThread, mint _Affinity)
+void NSys::fg_Thread_SetAffinity(void *_pThread, umint _Affinity)
 {
 	pthread_t ThreadID = (pthread_t)_pThread;
 
@@ -779,8 +779,8 @@ void NSys::fg_Thread_SetAffinity(void *_pThread, mint _Affinity)
 	cpu_set_t CPUSet;
 	CPU_ZERO(&CPUSet);
 
-	mint const nBits = sizeof(_Affinity) * 8;
-	for (mint iB = 0
+	umint const nBits = sizeof(_Affinity) * 8;
+	for (umint iB = 0
 		;iB < nBits
 		;++iB)
 	{
@@ -1032,7 +1032,7 @@ bool NSys::fg_Event_TryWait(void * _pEvent)
 	return ((CEventEmulation *)_pEvent)->f_TryWait();
 }
 
-mint NSys::fg_Thread_GetCurrentUIDAlternate()
+umint NSys::fg_Thread_GetCurrentUIDAlternate()
 {
 #ifdef DPlatformFamily_macOS
 	if (&pthread_threadid_np)
@@ -1054,14 +1054,14 @@ mint NSys::fg_Thread_GetCurrentUIDAlternate()
 #endif
 }
 
-mint NSys::fg_GetThreadSelf_Safe()
+umint NSys::fg_GetThreadSelf_Safe()
 {
-	return (mint)pthread_self();
+	return (umint)pthread_self();
 }
 
-mint NSys::fg_GetThreadLocal_Safe(mint _iVariable)
+umint NSys::fg_GetThreadLocal_Safe(umint _iVariable)
 {
-	return (mint)pthread_getspecific((pthread_key_t)_iVariable);
+	return (umint)pthread_getspecific((pthread_key_t)_iVariable);
 }
 
 #endif

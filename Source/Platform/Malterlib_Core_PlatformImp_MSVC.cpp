@@ -48,7 +48,7 @@ HINSTANCE g_hDllInstance = 0;
 bool g_bIsDll = false;
 
 static NAtomic::TCAtomic<smint> gs_LibraryRefCount{smint(-1)};
-static mint gs_ThreadLocalParentThread = 0xFFFFFFFF;
+static umint gs_ThreadLocalParentThread = 0xFFFFFFFF;
 
 VOID (WINAPI *g_fOrgExitProcess)(__in  UINT _ExitCode) = nullptr;
 BOOL (WINAPI *g_fOrgTerminateProcess)(__in  HANDLE _hProcess, __in  UINT _ExitCode) = nullptr;
@@ -81,8 +81,8 @@ namespace NMib::NPlatform
 #endif
 
 #ifdef DArchitecture_x64
-extern "C" mint fg_MalterlibGetFramePtr_X86_64();
-extern "C" mint fg_MalterlibGetRDTSC_X86_64();
+extern "C" umint fg_MalterlibGetFramePtr_X86_64();
+extern "C" umint fg_MalterlibGetRDTSC_X86_64();
 extern "C" uint32 fg_MalterlibGetCurrentThreadID_X86_64();
 #endif
 
@@ -96,7 +96,7 @@ extern "C" uint32 fg_MalterlibGetCurrentThreadID_X86_64();
 #define DMibSystemManagerPrefix "Release" DMibSystemVersion
 #endif
 
-static mint fsg_GetStackTrace(mint *_pStack, mint _nMaxDepth, mint _StackFrame);
+static umint fsg_GetStackTrace(umint *_pStack, umint _nMaxDepth, umint _StackFrame);
 
 
 //#include "sal.h"
@@ -163,12 +163,12 @@ public:
 
 namespace
 {
-	inline_small bool fg_IsGoodStackPtr(void *_pAddr, mint _Len, mint _StackStart, mint _StackEnd)
+	inline_small bool fg_IsGoodStackPtr(void *_pAddr, umint _Len, umint _StackStart, umint _StackEnd)
 	{
-		mint StackStart = _StackStart;
-		mint StackEnd = _StackEnd;
-		mint AddrStart = (mint)_pAddr;
-		mint AddrEnd = AddrStart + _Len;
+		umint StackStart = _StackStart;
+		umint StackEnd = _StackEnd;
+		umint AddrStart = (umint)_pAddr;
+		umint AddrEnd = AddrStart + _Len;
 
 		if (AddrEnd < AddrStart)
 			return false;
@@ -468,24 +468,24 @@ namespace
 	}
 }
 
-[[maybe_unused]] static mint fsg_GetStackTrace(mint *_pStack, mint _nMaxDepth, mint _StackFrame)
+[[maybe_unused]] static umint fsg_GetStackTrace(umint *_pStack, umint _nMaxDepth, umint _StackFrame)
 {
 	CUndocumentedTEB *pTEB = fg_GetTEB();
-	mint StackStart = (mint)pTEB->Tib.StackBase;
-	mint StackEnd = (mint)pTEB->Tib.StackLimit;
+	umint StackStart = (umint)pTEB->Tib.StackBase;
+	umint StackEnd = (umint)pTEB->Tib.StackLimit;
 
-	mint *pStack = _pStack;
+	umint *pStack = _pStack;
 
 	try
 	{
-		mint StackFrame = _StackFrame;
+		umint StackFrame = _StackFrame;
 		while (_nMaxDepth)
 		{
-			if (!fg_IsGoodStackPtr((void *)StackFrame, sizeof(mint) * 2, StackStart, StackEnd))
+			if (!fg_IsGoodStackPtr((void *)StackFrame, sizeof(umint) * 2, StackStart, StackEnd))
 				break;
-			*pStack = *((mint *)(StackFrame + sizeof(mint)));
+			*pStack = *((umint *)(StackFrame + sizeof(umint)));
 			++pStack;
-			StackFrame = *((mint *)(StackFrame));
+			StackFrame = *((umint *)(StackFrame));
 			--_nMaxDepth;
 		}
 	}
@@ -500,7 +500,7 @@ namespace
 
 #include "winnt.h"
 
-inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth)
+inline_never umint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, umint _nMaxDepth)
 {
 #if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
 
@@ -513,7 +513,7 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 	try
 	{
 
-		mint RegEBP = (mint)_ReturnAddress();
+		umint RegEBP = (umint)_ReturnAddress();
 #ifdef DArchitecture_x64
 		RegEBP = fg_MalterlibGetFramePtr_X86_64();
 #else
@@ -523,8 +523,8 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 		}
 #endif
 
-		//RegEBP = *((mint *)(RegEBP));
-		return fsg_GetStackTrace((mint *)_pStack, _nMaxDepth, RegEBP);
+		//RegEBP = *((umint *)(RegEBP));
+		return fsg_GetStackTrace((umint *)_pStack, _nMaxDepth, RegEBP);
 	}
 	catch(...)
 	{
@@ -544,12 +544,12 @@ inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
 #else
 
 	CUndocumentedTEB *pTEB = fg_GetTEB();
-	mint StackStart = (mint)pTEB->Tib.StackBase;
-	mint StackEnd = (mint)pTEB->Tib.StackLimit;
-	mint Ret = 0;
+	umint StackStart = (umint)pTEB->Tib.StackBase;
+	umint StackEnd = (umint)pTEB->Tib.StackLimit;
+	umint Ret = 0;
 	try
 	{
-		mint RegEBP;
+		umint RegEBP;
 #ifdef DArchitecture_x64
 		RegEBP = fg_MalterlibGetFramePtr_X86_64();
 #else
@@ -559,15 +559,15 @@ inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
 		}
 #endif
 
-		RegEBP = *((mint *)(RegEBP));
+		RegEBP = *((umint *)(RegEBP));
 
-		mint Caller = 0;
+		umint Caller = 0;
 		while (_iDepth)
 		{
 			if (!fg_IsGoodStackPtr((void *)RegEBP, 8, StackStart, StackEnd))
 				return 0;
-			Caller = *((mint *)(RegEBP + 4));
-			RegEBP = *((mint *)(RegEBP));
+			Caller = *((umint *)(RegEBP + 4));
+			RegEBP = *((umint *)(RegEBP));
 			--_iDepth;
 		}
 		Ret = Caller;
@@ -583,11 +583,11 @@ inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
 void NSys::fg_DebugOutput(const ch8 *_pToOutput)
 {
 	ch8 Temp[2048];
-	mint Len = fg_StrLen(_pToOutput);
+	umint Len = fg_StrLen(_pToOutput);
 	while (Len)
 	{
 		ch8 *pTemp = NMib::NStr::fg_StrCopy(Temp, _pToOutput, 2048);
-		mint nChars = pTemp - Temp;
+		umint nChars = pTemp - Temp;
 		Len -= nChars;
 		_pToOutput += nChars;
 		OutputDebugStringA(Temp);
@@ -597,11 +597,11 @@ void NSys::fg_DebugOutput(const ch8 *_pToOutput)
 void NSys::fg_DebugOutput(const ch16 *_pToOutput)
 {
 	ch16 Temp[2048];
-	mint Len = fg_StrLen(_pToOutput);
+	umint Len = fg_StrLen(_pToOutput);
 	while (Len)
 	{
 		ch16 *pTemp = NMib::NStr::fg_StrCopy(Temp, _pToOutput, 2048);
-		mint nChars = pTemp - Temp;
+		umint nChars = pTemp - Temp;
 		Len -= nChars;
 		_pToOutput += nChars;
 		OutputDebugStringW(Temp);
@@ -689,12 +689,12 @@ namespace
 			if (GetFileType(hCon) == FILE_TYPE_CHAR)
 			{
 				const ch16 *pOut = WideChar;
-				mint Len = WideChar.f_GetLen();;
+				umint Len = WideChar.f_GetLen();;
 				while (Len)
 				{
 					ch16 Temp[2048];
 					ch16 *pTemp = NMib::NStr::fg_StrCopy(Temp, pOut, 2048);
-					mint nChars = pTemp - Temp;
+					umint nChars = pTemp - Temp;
 					Len -= nChars;
 					pOut += nChars;
 					if (!WriteConsoleW(hCon, Temp, nChars, &Written, nullptr))
@@ -709,12 +709,12 @@ namespace
 			{
 				tf_UTF8Str Output = _Str;
 				const ch8 *pOut = Output;
-				mint Len = fg_StrLen(Output);
+				umint Len = fg_StrLen(Output);
 				while (Len)
 				{
 					ch8 Temp[2048];
 					ch8 *pTemp = NMib::NStr::fg_StrCopy(Temp, pOut, 2048);
-					mint nChars = pTemp - Temp;
+					umint nChars = pTemp - Temp;
 					Len -= nChars;
 					pOut += nChars;
 					if (!WriteFile(hCon, Temp, nChars, &Written, nullptr))
@@ -828,7 +828,7 @@ void NSys::fg_ConsoleOutput(CStrIO const &_Str)
 	fg_ConsoleOutputHelper<CWStrIO, CStrIO>(_Str, STD_OUTPUT_HANDLE, false);
 }
 
-void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
+void NSys::fg_ConsoleOutput(ch8 const *_pStr, umint _Len)
 {
 	fg_ConsoleOutputHelper<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(_pStr, _Len), STD_OUTPUT_HANDLE, true);
 }
@@ -851,11 +851,11 @@ void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer
 	if (!hCon)
 		return;
 	uint8 const *pOut = _Buffer.f_GetArray();
-	mint Len = _Buffer.f_GetLen();
+	umint Len = _Buffer.f_GetLen();
 	uint8 Temp[2048];
 	while (Len)
 	{
-		mint ToCopy = fg_Min(Len, 2048u);
+		umint ToCopy = fg_Min(Len, 2048u);
 		NMib::NMemory::fg_MemCopy(Temp, pOut, ToCopy);
 		if (!WriteFile(hCon, Temp, ToCopy, &Written, nullptr))
 		{
@@ -877,7 +877,7 @@ void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrIO const &_Str)
 	fg_ConsoleOutputHelper<CWStrIO, CStrIO>(_Str, STD_ERROR_HANDLE, false);
 }
 
-void *fg_AllocVirtualMemory(mint &_Size, mint _Type, ENumaNode _NumaNode, mint _Alignment, EAllocationFlag _Flags)
+void *fg_AllocVirtualMemory(umint &_Size, umint _Type, ENumaNode _NumaNode, umint _Alignment, EAllocationFlag _Flags)
 {
 //	DMibSafeCheck(_Size == fg_AlignUp(_Size, CAllocator_Virtual::f_GranularityAlloc()), "You are wasting space");
 	if (_Size == 0)
@@ -889,9 +889,9 @@ void *fg_AllocVirtualMemory(mint &_Size, mint _Type, ENumaNode _NumaNode, mint _
 	if (!pSys || pSys->m_bDestroying)
 		_Flags &= ~(EAllocationFlag_LocationUp | EAllocationFlag_LocationDown);
 
-	mint Granularity = NSys::fg_Mem_VirtualGranularityAlloc((Flags & MEM_LARGE_PAGES) != 0);
-	mint Size = fg_AlignUp(_Size, fg_Max(Granularity, _Alignment));
-	mint IdealSize = Size;
+	umint Granularity = NSys::fg_Mem_VirtualGranularityAlloc((Flags & MEM_LARGE_PAGES) != 0);
+	umint Size = fg_AlignUp(_Size, fg_Max(Granularity, _Alignment));
+	umint IdealSize = Size;
 
 	if (_Alignment)
 	{
@@ -960,7 +960,7 @@ void *fg_AllocVirtualMemory(mint &_Size, mint _Type, ENumaNode _NumaNode, mint _
 		}
 		if (_Alignment)
 		{
-			if ((mint)pMem & (_Alignment - 1) || (Size != IdealSize))
+			if ((umint)pMem & (_Alignment - 1) || (Size != IdealSize))
 			{
 				VirtualFree(pMem, 0, MEM_RELEASE);
 				if (Size == IdealSize)
@@ -970,7 +970,7 @@ void *fg_AllocVirtualMemory(mint &_Size, mint _Type, ENumaNode _NumaNode, mint _
 				}
 				else
 				{
-					pOldMem = (void *)fg_AlignDown((mint)pMem + (_Alignment - 1), _Alignment);
+					pOldMem = (void *)fg_AlignDown((umint)pMem + (_Alignment - 1), _Alignment);
 					Size = IdealSize;
 				}
 				pMem = nullptr;
@@ -1016,7 +1016,7 @@ void NSys::fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode)
 
 }
 
-mint NSys::fg_Mem_GetNumNumaNodes()
+umint NSys::fg_Mem_GetNumNumaNodes()
 {
 	if (!NLocal::g_OptionalFunctions.m_fVirtualAllocExNuma)
 		return 0; // Numa nodes not supported
@@ -1047,7 +1047,7 @@ mint NSys::fg_Mem_GetNumNumaNodes()
 	return Ret;
 }
 
-void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, mint _nNodes)
+void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, umint _nNodes)
 {
 	if (!NLocal::g_OptionalFunctions.m_fVirtualAllocExNuma)
 		return; // Numa nodes not supported
@@ -1057,7 +1057,7 @@ void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, mint _nNodes)
 		return;
 	if (HighestNumber == 0)
 		return;
-	mint Ret = 0;
+	umint Ret = 0;
 	for (uint32 i = 0; i <= HighestNumber; ++i)
 	{
 		if (NLocal::g_OptionalFunctions.m_fGetNumaNodeProcessorMaskEx)
@@ -1086,7 +1086,7 @@ void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, mint _nNodes)
 	}
 }
 
-void *NSys::fg_Mem_VirtualAlloc(mint &_Size, EAllocationFlag _AllocFlags, ENumaNode _NumaNode, mint _Alignment)
+void *NSys::fg_Mem_VirtualAlloc(umint &_Size, EAllocationFlag _AllocFlags, ENumaNode _NumaNode, umint _Alignment)
 {
 	uint32 Flags;
 	if (_AllocFlags & EAllocationFlag_NoCommit)
@@ -1103,7 +1103,7 @@ void *NSys::fg_Mem_VirtualAlloc(mint &_Size, EAllocationFlag _AllocFlags, ENumaN
 	return fg_AllocVirtualMemory(_Size, Flags, _NumaNode, _Alignment, _AllocFlags);
 }
 
-void *NSys::fg_Mem_VirtualRealloc(void *_pMem, mint &_Size, mint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode)
+void *NSys::fg_Mem_VirtualRealloc(void *_pMem, umint &_Size, umint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode)
 {
 	if (_OldSize == 0)
 		_OldSize = fg_Mem_VirtualSize(_pMem);
@@ -1111,7 +1111,7 @@ void *NSys::fg_Mem_VirtualRealloc(void *_pMem, mint &_Size, mint _OldSize, EAllo
 	return fg_Mem_VirtualAlloc(_Size, _AllocFlags, _NumaNode, _AllocFlags);
 }
 
-void *NSys::fg_Mem_VirtualResize(void *_pMem, mint &_Size, mint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode)
+void *NSys::fg_Mem_VirtualResize(void *_pMem, umint &_Size, umint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode)
 {
 	if (_OldSize == 0)
 		_OldSize = fg_Mem_VirtualSize(_pMem);
@@ -1122,7 +1122,7 @@ void *NSys::fg_Mem_VirtualResize(void *_pMem, mint &_Size, mint _OldSize, EAlloc
 }
 
 
-void NSys::fg_Mem_VirtualProtect(void *_pMem, mint _Size, uaint _Protect)
+void NSys::fg_Mem_VirtualProtect(void *_pMem, umint _Size, uaint _Protect)
 {
 	uaint Protect = PAGE_NOACCESS;
 	switch ((_Protect) & EProtect_All)
@@ -1158,14 +1158,14 @@ void NSys::fg_Mem_VirtualProtect(void *_pMem, mint _Size, uaint _Protect)
 	DWORD OldProtect = 0;
 	if (!VirtualProtect(_pMem, _Size, Protect, &OldProtect))
 	{
-		mint Address = (mint)_pMem;
-		mint Size = _Size;
+		umint Address = (umint)_pMem;
+		umint Size = _Size;
 		while (Size)
 		{
 			MEMORY_BASIC_INFORMATION MemInfo;
 			VirtualQuery((void *)Address, &MemInfo, sizeof(MemInfo));
-			mint CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
-			mint ThisTime = fg_Min(Size, CurrentAddress - Address);
+			umint CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
+			umint ThisTime = fg_Min(Size, CurrentAddress - Address);
 
 			if (!VirtualProtect((void *)Address, ThisTime, Protect, &OldProtect))
 			{
@@ -1180,22 +1180,22 @@ void NSys::fg_Mem_VirtualProtect(void *_pMem, mint _Size, uaint _Protect)
 	}
 }
 
-void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
+void NSys::fg_Mem_VirtualCommit(void *_pMem, umint _Size)
 {
 #if 0 //def DMibDebug
 	// Check if the range of memory already is commited
 
-	mint Address = (mint)_pMem;
-	mint Size = _Size;
+	umint Address = (umint)_pMem;
+	umint Size = _Size;
 	while (Size)
 	{
 		MEMORY_BASIC_INFORMATION MemInfo;
 		VirtualQuery((void *)Address, &MemInfo, sizeof(MemInfo));
-		mint CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
-		mint ThisTime = fg_Min(Size, CurrentAddress - Address);
+		umint CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
+		umint ThisTime = fg_Min(Size, CurrentAddress - Address);
 		if (MemInfo.State != MEM_RESERVE || MemInfo.Type != MEM_PRIVATE)
 		{
-			CFStr256 Temp = CFStr256::CFormat("You are wasting clock cycles 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8}\n") << mint(_pMem) << mint(_Size) << mint(CurrentAddress) << mint(ThisTime);
+			CFStr256 Temp = CFStr256::CFormat("You are wasting clock cycles 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8}\n") << umint(_pMem) << umint(_Size) << umint(CurrentAddress) << umint(ThisTime);
 			OutputDebugStringA(Temp);
 		}
 //		DMibSafeCheck(MemInfo.State == MEM_RESERVE && MemInfo.Type == MEM_PRIVATE, "You are wasting clock cycles");
@@ -1210,28 +1210,28 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
 #if 0
 	{
 	//	DMibDTrace("VirtualStupidizing\n", 0);
-		mint Address = (mint)_pMem;
+		umint Address = (umint)_pMem;
 		while (_Size)
 		{
 			MEMORY_BASIC_INFORMATION MemInfo;
 			VirtualQuery((void *)Address, &MemInfo, sizeof(MemInfo));
-			mint CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
-			mint AllocBase = (mint)MemInfo.AllocationBase;
-			mint NextBase = AllocBase;
+			umint CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
+			umint AllocBase = (umint)MemInfo.AllocationBase;
+			umint NextBase = AllocBase;
 			while (AllocBase == NextBase)
 			{
 				if (VirtualQuery((void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
 				{
-					NextBase = (mint)MemInfo.AllocationBase;
-					CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
+					NextBase = (umint)MemInfo.AllocationBase;
+					CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
 				}
 				else
 				{
-					NextBase = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
+					NextBase = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
 				}
 			}
 
-			mint ThisTime = fg_Min(_Size, NextBase - Address);
+			umint ThisTime = fg_Min(_Size, NextBase - Address);
 			_Size -= ThisTime;
 
 			if (!VirtualAlloc((void *)Address, ThisTime, MEM_COMMIT, PAGE_READWRITE))
@@ -1245,21 +1245,21 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
 #endif
 }
 
-void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
+void NSys::fg_Mem_VirtualDecommit(void *_pMem, umint _Size)
 {
 
 #ifdef DMibDebug
 	// Check if the range of memory already is commited
 
-	mint Address = (mint)_pMem;
-	mint Size = _Size;
+	umint Address = (umint)_pMem;
+	umint Size = _Size;
 	while (Size)
 	{
 		MEMORY_BASIC_INFORMATION MemInfo;
 		VirtualQuery((void *)Address, &MemInfo, sizeof(MemInfo));
 		DMibSafeCheck(MemInfo.State == MEM_COMMIT && MemInfo.Type == MEM_PRIVATE, "You are wasting clock cycles");
-		mint CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
-		mint ThisTime = fg_Min(Size, CurrentAddress - Address);
+		umint CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
+		umint ThisTime = fg_Min(Size, CurrentAddress - Address);
 		Size -= ThisTime;
 		Address += ThisTime;
 	}
@@ -1271,28 +1271,28 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 #if 0
 	{
 	//	DMibDTrace("VirtualStupidizing2\n", 0);
-		mint Address = (mint)_pMem;
+		umint Address = (umint)_pMem;
 		while (_Size)
 		{
 			MEMORY_BASIC_INFORMATION MemInfo;
 			VirtualQuery((void *)Address, &MemInfo, sizeof(MemInfo));
-			mint CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
-			mint AllocBase = (mint)MemInfo.AllocationBase;
-			mint NextBase = AllocBase;
+			umint CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
+			umint AllocBase = (umint)MemInfo.AllocationBase;
+			umint NextBase = AllocBase;
 			while (AllocBase == NextBase)
 			{
 				if (VirtualQuery((void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
 				{
-					NextBase = (mint)MemInfo.AllocationBase;
-					CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
+					NextBase = (umint)MemInfo.AllocationBase;
+					CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
 				}
 				else
 				{
-					NextBase = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
+					NextBase = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
 				}
 			}
 
-			mint ThisTime = fg_Min(_Size, NextBase - Address);
+			umint ThisTime = fg_Min(_Size, NextBase - Address);
 			_Size -= ThisTime;
 
 			if (!VirtualFree((void *)Address, ThisTime, MEM_DECOMMIT))
@@ -1306,7 +1306,7 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 
 }
 
-void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
+void NSys::fg_Mem_VirtualFree(void *_pMem, umint _Size)
 {
 	if (!_pMem)
 		return;
@@ -1318,7 +1318,7 @@ void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
 }
 
 
-void *NSys::fg_InterProcess_MemAlloc(ch8 const *_pName, mint _Size, void * &_pMemory)
+void *NSys::fg_InterProcess_MemAlloc(ch8 const *_pName, umint _Size, void * &_pMemory)
 {
 	uint64 Size = _Size; //fg_AlignUp((uint64)_Size, (uint64)gs_SysInfo.dwAllocationGranularity);
 	void *pHandle = CreateFileMappingA(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE | SEC_COMMIT, (Size >> 32) & 0xFFFFFFFFu, Size & 0xFFFFFFFFu, _pName);
@@ -1351,7 +1351,7 @@ void NSys::fg_InterProcess_MemFree(void *_pHandle, void *_pMemory)
 		DMibErrorMemory((CFStr256::CFormat("Windows returned an error from CloseHandle: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 }
-mint NSys::fg_Mem_VirtualSize(const void *_pMem)
+umint NSys::fg_Mem_VirtualSize(const void *_pMem)
 {
 	MEMORY_BASIC_INFORMATION Info;
 	if (!VirtualQuery(_pMem, &Info, sizeof(Info)))
@@ -1362,13 +1362,13 @@ mint NSys::fg_Mem_VirtualSize(const void *_pMem)
 	return Info.RegionSize;
 }
 
-mint NSys::fg_Mem_VirtualTrySize(const void *_pMem)
+umint NSys::fg_Mem_VirtualTrySize(const void *_pMem)
 {
 	DMibPDebugBreak; // Not supported
 	return 0;
 }
 
-mint NSys::fg_Mem_PageSize()
+umint NSys::fg_Mem_PageSize()
 {
 	return gs_SysInfo.dwPageSize;
 }
@@ -1610,14 +1610,14 @@ NStr::CStr NSys::fg_CommandLineParameters()
 
 void NSys::fg_Thread_Sleep(fp32 _Seconds)
 {
-	mint MilliSec = (_Seconds * 1000.0).f_ToInt();
+	umint MilliSec = (_Seconds * 1000.0).f_ToInt();
 
 	Sleep(MilliSec);
 }
 
 bool g_bProcessDetached = false;
 
-void fg_SetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage, void *_pData)
+void fg_SetThreadLocalForOtherThread(umint _ThreadID, umint _iStorage, void *_pData)
 {
 	using namespace NMib::NThread::NPlatform;
 
@@ -1689,7 +1689,7 @@ void fg_SetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage, void *_pDat
 	}
 }
 
-void *fg_GetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage)
+void *fg_GetThreadLocalForOtherThread(umint _ThreadID, umint _iStorage)
 {
 	using namespace NMib::NThread::NPlatform;
 
@@ -1747,7 +1747,7 @@ void *fg_GetThreadLocalForOtherThread(mint _ThreadID, mint _iStorage)
 	return pRet;
 }
 
-void fg_SetThreadLocalForOtherThreadFast(mint _ThreadID, mint _iStorage, void *_pData)
+void fg_SetThreadLocalForOtherThreadFast(umint _ThreadID, umint _iStorage, void *_pData)
 {
 	DMibFastCheck(_iStorage >= NLocal::fg_TlsIndexToTebOffset(0));
 	DMibFastCheck(_iStorage < NLocal::fg_TlsIndexToTebOffset(64));
@@ -1795,7 +1795,7 @@ void fg_SetThreadLocalForOtherThreadFast(mint _ThreadID, mint _iStorage, void *_
 	}
 }
 
-void *fg_GetThreadLocalForOtherThreadFast(mint _ThreadID, mint _iStorage)
+void *fg_GetThreadLocalForOtherThreadFast(umint _ThreadID, umint _iStorage)
 {
 	DMibFastCheck(_iStorage >= NLocal::fg_TlsIndexToTebOffset(0));
 	DMibFastCheck(_iStorage < NLocal::fg_TlsIndexToTebOffset(64));
@@ -1870,7 +1870,7 @@ DWORD WINAPI fg_TlsAllocInternal()
 		return TLS_OUT_OF_INDEXES;
 }
 
-mint NSys::fg_Thread_AllocLocal()
+umint NSys::fg_Thread_AllocLocal()
 {
 	using namespace NMib::NThread::NPlatform;
 
@@ -1880,14 +1880,14 @@ mint NSys::fg_Thread_AllocLocal()
 	return Index;
 }
 
-void NSys::fg_Thread_FreeLocal(mint _iStorage)
+void NSys::fg_Thread_FreeLocal(umint _iStorage)
 {
 	using namespace NMib::NThread::NPlatform;
 
 	CWindowsCrossModuleProcessInfo::fs_FreeThreadLocal(_iStorage);
 }
 
-void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
+void NSys::fg_Thread_SetLocal(umint _ThreadID, umint _iStorage, void *_pData)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_SetLocal(_iStorage, _pData);
@@ -1895,7 +1895,7 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 	fg_SetThreadLocalForOtherThread(_ThreadID, _iStorage, _pData);
 }
 
-void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
+void NSys::fg_Thread_SetLocal(umint _iStorage, void *_pData)
 {
 	using namespace NMib::NThread::NPlatform;
 
@@ -1904,14 +1904,14 @@ void NSys::fg_Thread_SetLocal(mint _iStorage, void *_pData)
 }
 
 #if defined(DArchitecture_x64) || defined(DArchitecture_arm64)
-mint g_OffsetThreadLocalOffset = 0x1780;
+umint g_OffsetThreadLocalOffset = 0x1780;
 #else
-mint g_OffsetThreadLocalOffset = 0xf94;
+umint g_OffsetThreadLocalOffset = 0xf94;
 #endif
 
-thread_local mint g_DebugTIB = (mint)fg_GetTEB();
+thread_local umint g_DebugTIB = (umint)fg_GetTEB();
 
-void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
+void *NSys::fg_Thread_GetLocal(umint _ThreadID, umint _iStorage)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocal(_iStorage);
@@ -1919,7 +1919,7 @@ void *NSys::fg_Thread_GetLocal(mint _ThreadID, mint _iStorage)
 	return fg_GetThreadLocalForOtherThread(_ThreadID, _iStorage);
 }
 
-void *NSys::fg_Thread_GetLocalAlwaysSet(mint _ThreadID, mint _iStorage)
+void *NSys::fg_Thread_GetLocalAlwaysSet(umint _ThreadID, umint _iStorage)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocal(_iStorage);
@@ -1927,7 +1927,7 @@ void *NSys::fg_Thread_GetLocalAlwaysSet(mint _ThreadID, mint _iStorage)
 	return fg_GetThreadLocalForOtherThread(_ThreadID, _iStorage);
 }
 
-mint NSys::fg_Thread_AllocLocalFast()
+umint NSys::fg_Thread_AllocLocalFast()
 {
 	DWORD Return = fg_TlsAllocInternal();
 	if (Return == TLS_OUT_OF_INDEXES)
@@ -1935,7 +1935,7 @@ mint NSys::fg_Thread_AllocLocalFast()
 	return Return;
 }
 
-void NSys::fg_Thread_FreeLocalFast(mint _iStorage)
+void NSys::fg_Thread_FreeLocalFast(umint _iStorage)
 {
 	uint32 Index = NLocal::fg_TebOffsetToTlsIndex(_iStorage);
 
@@ -1945,7 +1945,7 @@ void NSys::fg_Thread_FreeLocalFast(mint _iStorage)
 	}
 }
 
-void NSys::fg_Thread_SetLocalFast(mint _iStorage, void *_pData)
+void NSys::fg_Thread_SetLocalFast(umint _iStorage, void *_pData)
 {
 	uint32 Index = NLocal::fg_TebOffsetToTlsIndex(_iStorage);
 
@@ -1955,7 +1955,7 @@ void NSys::fg_Thread_SetLocalFast(mint _iStorage, void *_pData)
 	}
 }
 
-void NSys::fg_Thread_SetLocalFast(mint _ThreadID, mint _iStorage, void *_pData)
+void NSys::fg_Thread_SetLocalFast(umint _ThreadID, umint _iStorage, void *_pData)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_SetLocalFast(_iStorage, _pData);
@@ -1963,7 +1963,7 @@ void NSys::fg_Thread_SetLocalFast(mint _ThreadID, mint _iStorage, void *_pData)
 	fg_SetThreadLocalForOtherThreadFast(_ThreadID, _iStorage, _pData);
 }
 
-void *NSys::fg_Thread_GetLocalFast(mint _ThreadID, mint _iStorage)
+void *NSys::fg_Thread_GetLocalFast(umint _ThreadID, umint _iStorage)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocalFast(_iStorage);
@@ -1971,7 +1971,7 @@ void *NSys::fg_Thread_GetLocalFast(mint _ThreadID, mint _iStorage)
 	return fg_GetThreadLocalForOtherThreadFast(_ThreadID, _iStorage);
 }
 
-void *NSys::fg_Thread_GetLocalAlwaysSetFast(mint _ThreadID, mint _iStorage)
+void *NSys::fg_Thread_GetLocalAlwaysSetFast(umint _ThreadID, umint _iStorage)
 {
 	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
 		return fg_Thread_GetLocalFast(_iStorage);
@@ -2247,14 +2247,14 @@ namespace NLocal
 
 }
 
-void fg_EnumProcessThreads(TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnThread);
+void fg_EnumProcessThreads(TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread);
 
 void fg_InitMalterlibAllEnumOtherThreads()
 {
-	mint ThisUID = NSys::fg_Thread_GetCurrentUID();
+	umint ThisUID = NSys::fg_Thread_GetCurrentUID();
 	fg_EnumProcessThreads
 		(
-			[&](mint _ThreadID)
+			[&](umint _ThreadID)
 			{
 				fg_GetLocalSys()->f_ThreadLocalCreateThread(_ThreadID, ThisUID);
 			}
@@ -2262,9 +2262,9 @@ void fg_InitMalterlibAllEnumOtherThreads()
 	;
 }
 
-void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (mint _ThreadID, HANDLE _pThread)> const &_fOnThread)
+void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (umint _ThreadID, HANDLE _pThread)> const &_fOnThread)
 {
-	mint ThisUID = NSys::fg_Thread_GetCurrentUID();
+	umint ThisUID = NSys::fg_Thread_GetCurrentUID();
 	uint32 CurrentProcess = GetCurrentProcessId();
 
 	//
@@ -2310,14 +2310,14 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (mint _ThreadID, HANDL
 		int32 SizeLeft = NeededSize;
 		while (SizeLeft > 0)
 		{
-			if ((mint)pInfo->UniqueProcessId == CurrentProcess)
+			if ((umint)pInfo->UniqueProcessId == CurrentProcess)
 			{
-				for (mint i = 0; i < pInfo->NumberOfThreads; ++i)
+				for (umint i = 0; i < pInfo->NumberOfThreads; ++i)
 				{
 					auto &Thread = pInfo->Threads[i];
-					mint ThreadID = (mint)Thread.ClientId.UniqueThread;
+					umint ThreadID = (umint)Thread.ClientId.UniqueThread;
 					if (Thread.State != NLocal::StateTerminated && ThreadID != ThisUID)
-						_fOnThread((mint)ThreadID, nullptr);
+						_fOnThread((umint)ThreadID, nullptr);
 				}
 				return;
 			}
@@ -2325,7 +2325,7 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (mint _ThreadID, HANDL
 			if (!pInfo->NextEntryOffset)
 				break;
 			SizeLeft -= pInfo->NextEntryOffset;
-			pInfo = (NLocal::SYSTEM_PROCESS_INFORMATION *)((mint)pInfo + pInfo->NextEntryOffset);
+			pInfo = (NLocal::SYSTEM_PROCESS_INFORMATION *)((umint)pInfo + pInfo->NextEntryOffset);
 		}
 		break;
 	}
@@ -2368,7 +2368,7 @@ namespace
 {
 	struct CEnumThreadEntry
 	{
-		mint m_ThreadID;
+		umint m_ThreadID;
 		HANDLE m_pThread;
 	};
 
@@ -2378,11 +2378,11 @@ namespace
 		{
 			return _Left.m_ThreadID <=> _Right.m_ThreadID;
 		}
-		COrdering_Partial operator ()(CEnumThreadEntry const &_Left, mint _Right) const
+		COrdering_Partial operator ()(CEnumThreadEntry const &_Left, umint _Right) const
 		{
 			return _Left.m_ThreadID <=> _Right;
 		}
-		COrdering_Partial operator ()(mint _Left, CEnumThreadEntry const &_Right) const
+		COrdering_Partial operator ()(umint _Left, CEnumThreadEntry const &_Right) const
 		{
 			return _Left <=> _Right.m_ThreadID;
 		}
@@ -2406,7 +2406,7 @@ namespace
 }
 
 
-void fg_EnumProcessThreads(TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnThread)
+void fg_EnumProcessThreads(TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread)
 {
 	// Enum threads
 	//	Suspend thread
@@ -2417,10 +2417,10 @@ void fg_EnumProcessThreads(TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnT
 	struct CState
 	{
 		TCVector<CEnumThreadEntry, NMemory::CAllocator_VirtualNoTracking> m_Threads;
-		mint m_nEnum = 0;
-		mint m_nSuspend = 0;
-		mint m_nReady = 0;
-		mint m_nOpen = 0;
+		umint m_nEnum = 0;
+		umint m_nSuspend = 0;
+		umint m_nReady = 0;
+		umint m_nOpen = 0;
 		bool m_bDoneSomething = true;
 	};
 
@@ -2429,11 +2429,11 @@ void fg_EnumProcessThreads(TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnT
 	while (State.m_bDoneSomething)
 	{
 		State.m_bDoneSomething = false;
-		mint nStartingThreads = State.m_Threads.f_GetLen();
+		umint nStartingThreads = State.m_Threads.f_GetLen();
 		++State.m_nEnum;
 		fg_EnumProcessThreadsInternal
 			(
-				[&](mint _ThreadID, HANDLE _pThread) -> bool
+				[&](umint _ThreadID, HANDLE _pThread) -> bool
 				{
 					if (State.m_Threads.f_BinarySearch(CEnumThreadEntrySort(), _ThreadID, nStartingThreads) >= 0)
 						return false;
@@ -2594,7 +2594,7 @@ inline_never void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 
 	fg_FixFunctionPointers_Alloc();
 
-	mint ThisUID = NSys::fg_Thread_GetCurrentUID();
+	umint ThisUID = NSys::fg_Thread_GetCurrentUID();
 	fg_GetLocalSys()->f_ThreadLocalCreateThread(ThisUID, 0);
 
 	fg_InitMalterlibAllEnumOtherThreads();
@@ -2647,7 +2647,7 @@ void __cdecl fg_InitMalterlibAll(void *_pInstance)
 
 void * __cdecl fg_MalterlibAllocNonTracked(size_t _Size)
 {
-	mint Size = _Size;
+	umint Size = _Size;
 	void *pMem = CAllocator_NonTrackedHeap::f_Alloc(Size);
 	memset(pMem, 0, _Size);
 	return pMem;
@@ -2662,7 +2662,7 @@ bool NMib::NPlatform::fg_ThisThreadOwnsDllLock()
 		return bHeld != 0;
 	}
 	UndocumentedPEB *pPeb = fg_GetPEB(fg_GetTEB());
-	return (uint32)(mint)pPeb->LoaderLock->OwningThread == GetCurrentThreadId();
+	return (uint32)(umint)pPeb->LoaderLock->OwningThread == GetCurrentThreadId();
 }
 
 
@@ -2677,10 +2677,10 @@ namespace
 			return g_bTerminatedThread;
 		g_bCheckedTerminatedThread = true;
 		bool bTerminatedThread = false;
-		mint nThreads = 0;
+		umint nThreads = 0;
 		fg_GetSys()->f_ThreadEnum
 			(
-				[&](mint _ThreadID)
+				[&](umint _ThreadID)
 				{
 					++nThreads;
 					HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT, false, _ThreadID);
@@ -2724,7 +2724,7 @@ namespace
 		{
 			if (NLocal::g_OptionalFunctions.m_fLdrDisableThreadCalloutsForDll)
 			{
-				auto Ret = NLocal::g_OptionalFunctions.m_fLdrDisableThreadCalloutsForDll((void *)(mint)1);
+				auto Ret = NLocal::g_OptionalFunctions.m_fLdrDisableThreadCalloutsForDll((void *)(umint)1);
 
 				// Due to an implementation detail in ntdll.dll this means that the process is currently exiting
 				if (Ret == 0)
@@ -2811,7 +2811,7 @@ void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
 			// Seems to be needed in Wine to wait until dll/process initialization is done (Windows does not start new threads in Ldr code).
 			while (g_bDoneMalterlibInitAll.f_Load() < 2)
 				Sleep(1);
-			mint ParentThread = (mint)NSys::fg_Thread_GetLocal(gs_ThreadLocalParentThread);
+			umint ParentThread = (umint)NSys::fg_Thread_GetLocal(gs_ThreadLocalParentThread);
 			fg_GetLocalSys()->f_OnThreadCreated(NSys::fg_Thread_GetCurrentUID(), ParentThread);
 		}
 	}
@@ -2958,11 +2958,11 @@ void *NSys::fg_Thread_Create
 		FThreadProc *_pThreadProc
 		, void *_pParam
 		, EExecutionPriority _Priority
-		, mint _StackSize
+		, umint _StackSize
 		, bool _bSuspended
 		, const ch8 *_pThreadName
-		, mint _Affinity
-		, mint &_ThreadID
+		, umint _Affinity
+		, umint &_ThreadID
 	)
 {
 	TCUniquePointer<CThreadParameters, NMemory::CAllocator_NonTrackedHeap> pThreadParameters = fg_Construct();
@@ -3005,7 +3005,7 @@ void *NSys::fg_Thread_Create
 	return hThread;
 }
 
-void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (mint _ThreadID)> const &_fOnThread)
+void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread)
 {
 	fg_EnumProcessThreads(_fOnThread);
 }
@@ -3034,7 +3034,7 @@ void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 	}
 }
 
-void NSys::fg_Thread_SetAffinity(void *_pThread, mint _Affinity)
+void NSys::fg_Thread_SetAffinity(void *_pThread, umint _Affinity)
 {
 	if (!SetThreadAffinityMask(_pThread, _Affinity))
 	{
@@ -3056,10 +3056,10 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 	if (!FindAtom(str_utf16("IdsCrossModuleMemManAtom")))
 	{
 		AddAtomW(str_utf16("IdsCrossModuleMemManAtom"));
-		mint Pointer = (mint)_pInterface;
-		for (mint i = 0; i < sizeof(mint) * 8; ++i)
+		umint Pointer = (umint)_pInterface;
+		for (umint i = 0; i < sizeof(umint) * 8; ++i)
 		{
-			if (Pointer & (mint(1) << i))
+			if (Pointer & (umint(1) << i))
 			{
 				AddAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsCrossModuleMemManAtom{}")) << i));
 			}
@@ -3075,21 +3075,21 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 
 void *NSys::fg_Process_GetCrossModuleMemoryManagerInterface()
 {
-	mint Pointer = 0;
+	umint Pointer = 0;
 	// This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
 	if (FindAtomW(str_utf16("IdsCrossModuleMemManAtom")))
 	{
-		for (mint i = 0; i < sizeof(mint) * 8; ++i)
+		for (umint i = 0; i < sizeof(umint) * 8; ++i)
 		{
 			if (FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("IdsCrossModuleMemManAtom{}")) << i)))
-				Pointer |= (mint(1) << i);
+				Pointer |= (umint(1) << i);
 		}
 	}
 	return (void *)Pointer;
 }
 
 
-void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
+void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes)
 {
 	HCRYPTPROV hProvider = 0;
 
@@ -3157,7 +3157,7 @@ uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
 {
 	return GetUserDefaultUILanguage();
 }
-void *NSys::fg_Module_Get(mint &_ModuleSize)
+void *NSys::fg_Module_Get(umint &_ModuleSize)
 {
 	MEMORY_BASIC_INFORMATION MemInfo;
 	if (VirtualQuery((void *)&NSys::fg_Module_Get, &MemInfo, sizeof(MemInfo)))
@@ -3388,7 +3388,7 @@ NMib::NStr::CStr NSys::fg_System_GetCPUName()
 }
 
 
-mint NSys::fg_Thread_GetPhysicalCores()
+umint NSys::fg_Thread_GetPhysicalCores()
 {
 	HMODULE pKernel32 = NLocal::g_hKernel32;
 	if (pKernel32)
@@ -3420,8 +3420,8 @@ mint NSys::fg_Thread_GetPhysicalCores()
 
 			if (!bError)
 			{
-				mint nPhysicalCores = 0;
-				mint ByteOffset = 0;
+				umint nPhysicalCores = 0;
+				umint ByteOffset = 0;
 
 				PSYSTEM_LOGICAL_PROCESSOR_INFORMATION pLPI = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)Buffer.f_GetArray();
 
@@ -3447,7 +3447,7 @@ mint NSys::fg_Thread_GetPhysicalCores()
 	return gs_SysInfo.dwNumberOfProcessors;
 }
 
-mint NSys::fg_Thread_GetVirtualCores()
+umint NSys::fg_Thread_GetVirtualCores()
 {
 	return gs_SysInfo.dwNumberOfProcessors;
 }
@@ -3668,17 +3668,17 @@ namespace NMib::NThread
 
 void *NSys::fg_Thread_GetCurrent()
 {
-	return (void *)(mint)GetCurrentThread();
+	return (void *)(umint)GetCurrentThread();
 }
 
 #if 0
-mint NSys::fg_Thread_GetCurrentUID()
+umint NSys::fg_Thread_GetCurrentUID()
 {
-	return (mint)GetCurrentThreadId();
+	return (umint)GetCurrentThreadId();
 }
 #endif
 
-void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
+void *NSys::fg_Semaphore_Alloc(umint _InitialCount, umint _MaximumCount)
 {
 	return CreateSemaphore(nullptr, _InitialCount, _MaximumCount, nullptr);
 }
@@ -3701,7 +3701,7 @@ void NSys::fg_Semaphore_Free(void *_pSemaphore)
 }
 
 
-void NSys::fg_Semaphore_Increase(void * _pSemaphore, mint _Count)
+void NSys::fg_Semaphore_Increase(void * _pSemaphore, umint _Count)
 {
 	ReleaseSemaphore(_pSemaphore, _Count, nullptr);
 }
@@ -4192,7 +4192,7 @@ void *NSys::NFile::fg_GetOSFile(void *_pFile)
 	return ((CWin32File *)_pFile)->m_pFile;
 }
 
-mint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset, mint _NumBytes)
+umint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset, umint _NumBytes)
 {
 	uint32 BytesRead;
 
@@ -4209,7 +4209,7 @@ mint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset
 	return BytesRead;
 }
 
-mint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos &_Offset, mint _NumBytes)
+umint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos &_Offset, umint _NumBytes)
 {
 	uint32 BytesWritten;
 
@@ -4478,7 +4478,7 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetValidAttributes()
 	return NMib::NFile::EFileAttrib_None;
 }
 
-mint NSys::NFile::fg_MaximumPathLength()
+umint NSys::NFile::fg_MaximumPathLength()
 {
 	return NMib::NFile::NPlatform::gc_MaxWindowsPath;
 }
@@ -4623,13 +4623,13 @@ void NSys::NFile::fg_FileEnumOtherHandles(const NMib::NStr::CStr &_FileName, NCo
 	Info.f_EnumHandles(Handles);
 
 	CHandleInformation::CHandleInfo *pThisHandle = nullptr;
-	mint nHandles = Handles.f_GetLen();
+	umint nHandles = Handles.f_GetLen();
 	CStr ToTrace;
-	for (mint i = 0; i < nHandles; ++i)
+	for (umint i = 0; i < nHandles; ++i)
 	{
 		CHandleInformation::CHandleInfo &Handle = Handles[i];
 		DMibDTrace("{} - {} - {}\r\n", Handle.m_HandleName, Handle.m_ProcessID, Handle.m_HandleID);
-		if (Handle.m_ProcessID == CurrentProcessID && Handle.m_HandleID == (uint32)(mint)pFileHandle)
+		if (Handle.m_ProcessID == CurrentProcessID && Handle.m_HandleID == (uint32)(umint)pFileHandle)
 		{
 			pThisHandle = &Handle;
 			break;
@@ -4639,8 +4639,8 @@ void NSys::NFile::fg_FileEnumOtherHandles(const NMib::NStr::CStr &_FileName, NCo
 	{
 		CStr BasePath = NMib::NFile::CFile::fs_GetPath(pThisHandle->m_HandleName.f_ReplaceChar('\\', '/'));
 		CStr FileToFind = BasePath + "/" + FindFile;
-		mint nHandles = Handles.f_GetLen();
-		for (mint i = 0; i < nHandles; ++i)
+		umint nHandles = Handles.f_GetLen();
+		for (umint i = 0; i < nHandles; ++i)
 		{
 			CHandleInformation::CHandleInfo &Handle = Handles[i];
 			if (Handle.m_HandleName.f_ReplaceChar('\\', '/') == FileToFind)
@@ -4674,12 +4674,12 @@ void NSys::NFile::fg_FileEnumOtherHandles(void *_pFile, NContainer::TCVector<NMi
 	Info.f_EnumHandles(Handles);
 
 	CHandleInformation::CHandleInfo *pThisHandle = nullptr;
-	mint nHandles = Handles.f_GetLen();
+	umint nHandles = Handles.f_GetLen();
 	CStr ToTrace;
-	for (mint i = 0; i < nHandles; ++i)
+	for (umint i = 0; i < nHandles; ++i)
 	{
 		CHandleInformation::CHandleInfo &Handle = Handles[i];
-		if (Handle.m_ProcessID == CurrentProcessID && Handle.m_HandleID == (uint32)(mint)pFileHandle)
+		if (Handle.m_ProcessID == CurrentProcessID && Handle.m_HandleID == (uint32)(umint)pFileHandle)
 		{
 			pThisHandle = &Handle;
 			break;
@@ -4687,8 +4687,8 @@ void NSys::NFile::fg_FileEnumOtherHandles(void *_pFile, NContainer::TCVector<NMi
 	}
 	if (pThisHandle)
 	{
-		mint nHandles = Handles.f_GetLen();
-		for (mint i = 0; i < nHandles; ++i)
+		umint nHandles = Handles.f_GetLen();
+		for (umint i = 0; i < nHandles; ++i)
 		{
 			CHandleInformation::CHandleInfo &Handle = Handles[i];
 			if (Handle.m_HandleName == pThisHandle->m_HandleName && &Handle != pThisHandle)
@@ -4995,7 +4995,7 @@ public:
 	CStr m_LastFullName;
 	WIN32_FIND_DATAW m_FindData;
 	void *m_pFindHandle;
-	mint m_Mode;
+	umint m_Mode;
 };
 
 	//fs_GetExpandedPath
@@ -5253,9 +5253,9 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 
 		TargetFile.f_Open(DestFile, TargetFileOpenFlags);
 
-		mint nPathBytes = ToMount.f_GetLen() * sizeof(ch16);
+		umint nPathBytes = ToMount.f_GetLen() * sizeof(ch16);
 
-		mint Size = sizeof(REPARSE_DATA_BUFFER) + nPathBytes;
+		umint Size = sizeof(REPARSE_DATA_BUFFER) + nPathBytes;
 		REPARSE_DATA_BUFFER *pReparseData = (REPARSE_DATA_BUFFER *)NMemory::fg_Alloc(Size);
 		fg_MemClear(pReparseData, Size);
 		auto Cleanup = fg_OnScopeExit([&]{NMemory::fg_Free(pReparseData, Size);});
@@ -5271,7 +5271,7 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 			fg_StrCopy(pReparseData->MountPointReparseBuffer.PathBuffer, ToMount);
 		}
 
-		mint nIOControlBytes = pReparseData->ReparseDataLength + 8;
+		umint nIOControlBytes = pReparseData->ReparseDataLength + 8;
 
 		DWORD Return;
 
@@ -5327,12 +5327,12 @@ NMib::NStr::CStr NSys::NFile::fg_ResolveSymbolicLink(const NMib::NStr::CStr &_Fi
 	CFile TargetFile;
 	TargetFile.f_Open(_FileFrom, TargetFileOpenFlags);
 
-	mint Size = sizeof(REPARSE_DATA_BUFFER) + 65536 * sizeof(ch16);
+	umint Size = sizeof(REPARSE_DATA_BUFFER) + 65536 * sizeof(ch16);
 	REPARSE_DATA_BUFFER *pReparseData = (REPARSE_DATA_BUFFER *)NMemory::fg_Alloc(Size);
 	fg_MemClear(pReparseData, Size);
 	auto Cleanup = fg_OnScopeExit([&]{NMemory::fg_Free(pReparseData, Size);});
 
-	mint nIOControlBytes = Size;
+	umint nIOControlBytes = Size;
 
 	DWORD Return;
 
@@ -5501,10 +5501,10 @@ static DWORD fg_AtomicReplaceImplementation(CStr const &_FileFrom, CStr const &_
 	{
 		auto FileTo = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_FileTo);
 
-		mint SizeNeeded = sizeof(FILE_RENAME_INFO) + (FileTo.f_GetLen() + 1) * sizeof(ch16);
+		umint SizeNeeded = sizeof(FILE_RENAME_INFO) + (FileTo.f_GetLen() + 1) * sizeof(ch16);
 
-		TCVector<mint> Buffer;
-		Buffer.f_SetLen((SizeNeeded + sizeof(mint) - 1) / sizeof(mint));
+		TCVector<umint> Buffer;
+		Buffer.f_SetLen((SizeNeeded + sizeof(umint) - 1) / sizeof(umint));
 
 		FILE_RENAME_INFO *pRenameInfo = (FILE_RENAME_INFO *)Buffer.f_GetArray();
 
@@ -5555,7 +5555,7 @@ static DWORD fg_AtomicReplaceImplementation(CStr const &_FileFrom, CStr const &_
 #endif
 
 	NTime::CStopwatch Stopwatch{true};
-	mint nTries = 0;
+	umint nTries = 0;
 
 l_Retry:
 
@@ -5932,7 +5932,7 @@ void NSys::NFile::fg_Delete(const CStrNonTracked &_File)
 void NSys::NFile::fg_DeleteDirectory(const CStr &_File)
 {
 	NTime::CStopwatch Stopwatch{true};
-	mint nTries = 0;
+	umint nTries = 0;
 
 l_Retry:
 
@@ -5957,7 +5957,7 @@ l_Retry:
 void NSys::NFile::fg_DeleteDirectory(const CStrNonTracked &_File)
 {
 	NTime::CStopwatch Stopwatch{true};
-	mint nTries = 0;
+	umint nTries = 0;
 
 l_Retry:
 
@@ -6102,7 +6102,7 @@ CStr NSys::NFile::fg_GetModulePath(void *_pCode)
 		CWStr BaseName;
 		if (!GetModuleFileName((HMODULE)MemInfo.AllocationBase, BaseName.f_GetStr(1024), 1024))
 		{
-			DMibError((CStr::CFormat("Windows returned an error from GetModuleFileName(0x{nfh,sj*2,sf0}): {}") << (mint)MemInfo.AllocationBase << NMib::NPlatform::fg_Win32_GetLastErrorStr() << sizeof(mint)*2).f_GetStr());
+			DMibError((CStr::CFormat("Windows returned an error from GetModuleFileName(0x{nfh,sj*2,sf0}): {}") << (umint)MemInfo.AllocationBase << NMib::NPlatform::fg_Win32_GetLastErrorStr() << sizeof(umint)*2).f_GetStr());
 		}
 		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(BaseName);
 	}
@@ -6227,7 +6227,7 @@ CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 		CWStrNonTracked BaseName;
 		if (!GetModuleFileName((HMODULE)MemInfo.AllocationBase, BaseName.f_GetStr(1024), 1024))
 		{
-			DMibError((CStr::CFormat("Windows returned an error from GetModuleFileName(0x{nfh,sj*2,sf0}): {}") << (mint)MemInfo.AllocationBase << NMib::NPlatform::fg_Win32_GetLastErrorStr() << sizeof(mint)*2).f_GetStr());
+			DMibError((CStr::CFormat("Windows returned an error from GetModuleFileName(0x{nfh,sj*2,sf0}): {}") << (umint)MemInfo.AllocationBase << NMib::NPlatform::fg_Win32_GetLastErrorStr() << sizeof(umint)*2).f_GetStr());
 		}
 		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(BaseName);
 	}
@@ -6240,7 +6240,7 @@ CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 // Net Implementation
 // *************************************************************************************************************************
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_CreateAddress(_Type, _pData, _nDataBytes);
 }
@@ -6256,13 +6256,13 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAd
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CWindowsAddress*)_Address);
 }
 
-bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CWindowsAddress*)_Address, _ExpectedType, _opRawData, _nDataBytes);
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CWindowsAddress*)_Address, _Type, _pRawData, _nDataBytes);
@@ -6360,22 +6360,22 @@ void NSys::NNetwork::fg_Shutdown(void *_pSocket) // Closes the socket and connec
 	fg_GetLocalSys()->m_SocketContext->f_Shutdown((CWindowsSocket*)_pSocket);
 }
 
-mint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, mint _DataLen) // Returns bytes receive
+umint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, umint _DataLen) // Returns bytes receive
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Receive((CWindowsSocket*)_pSocket, _pData, _DataLen);
 }
 
-mint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, mint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Send((CWindowsSocket*)_pSocket, _pData, _DataLen);
 }
 
-mint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, mint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CWindowsSocket*)_pSocket, *((CWindowsAddress*)_Address), _pData, _DataLen);
 }
 
-mint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, mint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CWindowsSocket*)_pSocket, *((CWindowsAddress*)_Address), _pData, _DataLen);
 }
@@ -6555,19 +6555,19 @@ void NSys::fg_PreDestroyHeap()
 namespace NMib
 {
 
-	mint align_cacheline g_SystemMemory[sizeof(CSystemWindowsMSVC) / sizeof(mint)];
-	static_assert(__alignof(g_SystemMemory) >= mint(DMibPMemoryCacheLineSize), "Alignment didn't work");
-	mint g_bCreatingSystemDone = false;
-	mint g_bCanUseSystemMalloc = true;
-	constinit NAtomic::TCAtomic<mint> g_bCanStartThreads{0};
-	mint g_bCreatedSystem = false;
+	umint align_cacheline g_SystemMemory[sizeof(CSystemWindowsMSVC) / sizeof(umint)];
+	static_assert(__alignof(g_SystemMemory) >= umint(DMibPMemoryCacheLineSize), "Alignment didn't work");
+	umint g_bCreatingSystemDone = false;
+	umint g_bCanUseSystemMalloc = true;
+	constinit NAtomic::TCAtomic<umint> g_bCanStartThreads{0};
+	umint g_bCreatedSystem = false;
 	namespace NSys
 	{
 		namespace NPrivate
 		{
-			mint g_VirtualAllocGranularity = 64*1024;
-			mint g_VirtualAllocGranularityLarge = 64*1024;
-			mint g_PageSizeLarge = 64*1024;
+			umint g_VirtualAllocGranularity = 64*1024;
+			umint g_VirtualAllocGranularityLarge = 64*1024;
+			umint g_PageSizeLarge = 64*1024;
 		}
 
 	}

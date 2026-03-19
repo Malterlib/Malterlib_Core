@@ -22,7 +22,7 @@ namespace NMib
 		return Hash;
 	}
 
-	static constexpr uint32 fg_JenkinsHash(const char * const _pString, mint _Len, char _ExtraChar)
+	static constexpr uint32 fg_JenkinsHash(const char * const _pString, umint _Len, char _ExtraChar)
 	{
 		uint32 Hash = 0;
 		for (char const *pStr = _pString; pStr < _pString + _Len; ++pStr)
@@ -45,7 +45,7 @@ namespace NMib
 
 	static consteval void fg_ParseUntilCallingConvention(char const *&_pParse)
 	{
-		mint nStart = 0;
+		umint nStart = 0;
 
 		constexpr char const *c_CallingConventions[] =
 			{
@@ -112,7 +112,7 @@ namespace NMib
 
 	static consteval void fg_ParseTypeIdentifierConstexpr(char const *&_pParse)
 	{
-		mint nStart = 0;
+		umint nStart = 0;
 
 		while (*_pParse)
 		{
@@ -162,8 +162,8 @@ namespace NMib
 		else if (NStr::fg_StrStartsWith(pParse, "struct "))
 			pParse += 7;
 		char const *pStartType = pParse;
-		mint nStart = 0;
-		mint nStartParen = 0;
+		umint nStart = 0;
+		umint nStartParen = 0;
 
 		while (*pParse)
 		{
@@ -205,7 +205,7 @@ namespace NMib
 		if (*pParse == ' ')
 			++pParse;
 		char const *pStartType = pParse;
-		mint nStart = 1;
+		umint nStart = 1;
 
 		while (*pParse)
 		{
@@ -243,8 +243,8 @@ namespace NMib
 		if (*pParse == '<')
 			++pParse;
 		ch8 const *pStartType = pParse;
-		mint nStart = 0;
-		mint nStartParen = 0;
+		umint nStart = 0;
+		umint nStartParen = 0;
 
 		while (*pParse)
 		{
@@ -297,7 +297,7 @@ namespace NMib
 			if (*pParse == ' ')
 				++pParse;
 			ch8 const *pStartType = pParse;
-			mint nStart = 1;
+			umint nStart = 1;
 
 			while (*pParse)
 			{
@@ -352,7 +352,7 @@ namespace NMib
 		if (*pParse == ' ')
 			++pParse;
 		char const *pStartType = pParse;
-		mint nStart = 1;
+		umint nStart = 1;
 
 		while (*pParse)
 		{
@@ -381,7 +381,7 @@ namespace NMib
 		char const *pStartName = nullptr;
 		char const *pEnd = FunctionName.m_pString + FunctionName.m_Len - 1;
 
-		mint nOpen = 0;
+		umint nOpen = 0;
 		for (char const *pParse = pEnd; pParse > FunctionName.m_pString; --pParse)
 		{
 			if (*pParse == '>' || *pParse == ')' || *pParse == ']')
@@ -410,7 +410,7 @@ namespace NMib
 		char const *pStartName = nullptr;
 		char const *pEnd = _pFunctionName + NStr::fg_StrLen(_pFunctionName) - 1;
 
-		mint nOpen = 0;
+		umint nOpen = 0;
 		for (char const *pParse = pEnd; pParse > _pFunctionName; --pParse)
 		{
 			if (*pParse == '>' || *pParse == ')' || *pParse == ']')

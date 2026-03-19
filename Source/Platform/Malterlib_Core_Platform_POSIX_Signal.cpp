@@ -14,8 +14,8 @@ namespace NMib::NSys
 			struct CSignalHandlers
 			{
 				void (*m_fOldSignal)(int) = nullptr;
-				NAtomic::TCAtomic<mint> m_nPending;
-				NAtomic::TCAtomic<mint> m_nThreadSignals;
+				NAtomic::TCAtomic<umint> m_nPending;
+				NAtomic::TCAtomic<umint> m_nThreadSignals;
 				NContainer::TCLinkedList<NFunction::TCFunctionMutable<void ()>> m_Functions;
 				bool m_bInstalled = false;
 			};
@@ -148,7 +148,7 @@ namespace NMib::NSys
 
 				DMibLock(SubSystem.m_Lock);
 				auto &SignalHandler = SubSystem.m_SignalHandlers[_Signal];
-				mint ThreadSignals = SignalHandler.m_nThreadSignals.f_FetchSub(1) - 1;
+				umint ThreadSignals = SignalHandler.m_nThreadSignals.f_FetchSub(1) - 1;
 				if (SignalHandler.m_Functions.f_IsEmpty() && ThreadSignals == 0 )
 				{
 					SignalHandler.m_bInstalled = false;
@@ -185,7 +185,7 @@ namespace NMib::NSys
 									for (auto &Handler : SubSystem.m_SignalHandlers)
 									{
 										auto nPending = Handler.m_nPending.f_Exchange(0);
-										for (mint i = 0; i < nPending; ++i)
+										for (umint i = 0; i < nPending; ++i)
 										{
 											for (auto &fOnSignal : Handler.m_Functions)
 												fOnSignal();

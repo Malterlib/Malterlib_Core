@@ -170,7 +170,7 @@ namespace NMib
 				void f_FullRescan();
 				void f_ProcessChanges
 					(
-						mint _nEvents
+						umint _nEvents
 						, ch8 const **_pPaths
 						, FSEventStreamEventFlags const _Flags[]
 						, FSEventStreamEventId const _IDs[]
@@ -179,7 +179,7 @@ namespace NMib
 				;
 				void f_ProcessChangesPerFile
 					(
-						mint _nEvents
+						umint _nEvents
 						, ch8 const **_pPaths
 						, FSEventStreamEventFlags const _Flags[]
 						, FSEventStreamEventId const _IDs[]

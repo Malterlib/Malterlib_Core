@@ -60,11 +60,11 @@ namespace NMib
 							TempW = "\\\\?\\UNC\\" + TempW.f_Extract(2);
 						else
 							TempW = "\\\\?\\" + TempW;
-						mint NeededLen = GetShortPathNameW(TempW, nullptr, 0);
+						umint NeededLen = GetShortPathNameW(TempW, nullptr, 0);
 						if (NeededLen)
 						{
 							tf_CWindows ShortPathW;
-							[[maybe_unused]] mint NeededLen2 = GetShortPathNameW(TempW, ShortPathW.f_GetStr(NeededLen), NeededLen);
+							[[maybe_unused]] umint NeededLen2 = GetShortPathNameW(TempW, ShortPathW.f_GetStr(NeededLen), NeededLen);
 							DMibSafeCheck(NeededLen2 <= NeededLen, "");
 							TempW = ShortPathW + "\\" + File;
 							if (TempW.f_CmpNoCase("\\\\?\\UNC\\", 8) == 0)
@@ -88,11 +88,11 @@ namespace NMib
 
 					if (_MaxLen > 0 && _bTryShorten)
 					{
-						mint NeededLen = GetShortPathNameW(ToRetW, nullptr, 0);
+						umint NeededLen = GetShortPathNameW(ToRetW, nullptr, 0);
 						if (NeededLen)
 						{
 							tf_CWindows ShortPathW;
-							[[maybe_unused]] mint NeededLen2 = GetShortPathNameW(ToRetW, ShortPathW.f_GetStr(NeededLen), NeededLen);
+							[[maybe_unused]] umint NeededLen2 = GetShortPathNameW(ToRetW, ShortPathW.f_GetStr(NeededLen), NeededLen);
 							DMibSafeCheck(NeededLen2 <= NeededLen, "");
 							auto TempW = ShortPathW;
 							if (TempW.f_CmpNoCase("\\\\?\\UNC\\", 8) == 0)
@@ -134,11 +134,11 @@ namespace NMib
 
 				auto ToRetW = NStr::NPlatform::fg_StrToWindows<tf_CWindows>(ToRet);
 				fg_StrReplaceChar(ToRetW, '/', '\\');
-				mint NeededLen = GetShortPathNameW(ToRetW, nullptr, 0);
+				umint NeededLen = GetShortPathNameW(ToRetW, nullptr, 0);
 				if (NeededLen)
 				{
 					tf_CWindows ShortPathW;
-					[[maybe_unused]] mint NeededLen2 = GetShortPathNameW(ToRetW, ShortPathW.f_GetStr(NeededLen), NeededLen);
+					[[maybe_unused]] umint NeededLen2 = GetShortPathNameW(ToRetW, ShortPathW.f_GetStr(NeededLen), NeededLen);
 					DMibSafeCheck(NeededLen2 <= NeededLen, "");
 					auto TempW = ShortPathW;
 					if (TempW.f_CmpNoCase("\\\\?\\UNC\\", 8) == 0)
@@ -169,11 +169,11 @@ namespace NMib
 
 				auto ToRetW = NStr::NPlatform::fg_StrToWindows<tf_CWindows>(ToRet);
 				fg_StrReplaceChar(ToRetW, '/', '\\');
-				mint NeededLen = GetLongPathNameW(ToRetW, nullptr, 0);
+				umint NeededLen = GetLongPathNameW(ToRetW, nullptr, 0);
 				if (NeededLen)
 				{
 					tf_CWindows LongPathW;
-					[[maybe_unused]] mint NeededLen2 = GetLongPathNameW(ToRetW, LongPathW.f_GetStr(NeededLen), NeededLen);
+					[[maybe_unused]] umint NeededLen2 = GetLongPathNameW(ToRetW, LongPathW.f_GetStr(NeededLen), NeededLen);
 					DMibSafeCheck(NeededLen2 <= NeededLen, "");
 					return LongPathW;
 				}

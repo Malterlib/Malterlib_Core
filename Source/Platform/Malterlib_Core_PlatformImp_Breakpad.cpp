@@ -44,7 +44,7 @@ namespace NMib
 
 			auto &OutTags = Metadata["Tags"].f_Array();
 
-			for (mint iTag = 0; iTag < BuildMetadata.m_nTags; ++iTag)
+			for (umint iTag = 0; iTag < BuildMetadata.m_nTags; ++iTag)
 				OutTags.f_Insert(BuildMetadata.m_pTags[iTag]);
 
 			m_MetadataTemplate = Metadata.f_ToString();

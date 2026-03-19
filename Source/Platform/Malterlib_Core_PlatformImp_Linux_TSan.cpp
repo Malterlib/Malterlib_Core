@@ -17,7 +17,7 @@ DMibSuppressThreadSanitizer inline_never assure_used void __tsan_check_forked_pa
 	void *Current = pthread_getspecific(Sys.m_ThreadDestructionHook);
 	if (Current)
 	{
-		if (Current == (void *)(mint)getpid())
+		if (Current == (void *)(umint)getpid())
 			__tsan_forked_parent();
 		else
 			__tsan_forked_child();

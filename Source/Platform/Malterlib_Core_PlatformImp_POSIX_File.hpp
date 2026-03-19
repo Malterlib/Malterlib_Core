@@ -701,7 +701,7 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetValidAttributes()
 	return NMib::NFile::EFileAttrib_UnixAttributesValid;
 }
 
-mint NSys::NFile::fg_MaximumPathLength()
+umint NSys::NFile::fg_MaximumPathLength()
 {
 	return PATH_MAX;
 }
@@ -1087,7 +1087,7 @@ namespace
 	}
 }
 
-mint NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, uint8 *_pData, mint _nBytes)
+umint NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, uint8 *_pData, umint _nBytes)
 {
 	using namespace NMib::NFile;
 	auto Flags = EFileOpen_Read | EFileOpen_ShareBypass | EFileOpen_NoLocalCache | EFileOpen_ShareBypass;
@@ -1140,7 +1140,7 @@ void *NSys::NFile::fg_Open(const NMib::NStr::CStrNonTracked &_FileName, NMib::NF
 void *NSys::NFile::fg_GetOSFile(void *_pFile)
 {
 	static_assert(sizeof(void *) >= sizeof(CPOSIXFile::m_BSDFile), "Cannot fit");
-	return (void *)(mint)((CPOSIXFile *)_pFile)->m_BSDFile;
+	return (void *)(umint)((CPOSIXFile *)_pFile)->m_BSDFile;
 }
 
 void NSys::NFile::fg_Close(void *_pFile)
@@ -1154,20 +1154,20 @@ void NSys::NFile::fg_Close(void *_pFile)
 	pFile->f_Delete();
 }
 
-mint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset, mint _NumBytes)
+umint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset, umint _NumBytes)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-	if (_NumBytes > mint(1) * 1024 * 1024 * 1024)
+	if (_NumBytes > umint(1) * 1024 * 1024 * 1024)
 	{
-		mint ReturnBytes = 0;
-		mint nBytesLeft = _NumBytes;
+		umint ReturnBytes = 0;
+		umint nBytesLeft = _NumBytes;
 		CMibFilePos Offset = _Offset;
 		uint8 *pData = (uint8 *)_pData;
 
 		while (nBytesLeft)
 		{
-			mint ThisTime = fg_Min(nBytesLeft, mint(1) * 1024 * 1024 * 1024);
+			umint ThisTime = fg_Min(nBytesLeft, umint(1) * 1024 * 1024 * 1024);
 			ssize_t ReadBytes = pread(pFile->m_BSDFile, pData, ThisTime, Offset);
 			if (ReadBytes < 0)
 				DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pread('{}') when reading file") << pFile->f_GetFileName(), errno));
@@ -1193,20 +1193,20 @@ mint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset
 	}
 }
 
-mint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos &_Offset, mint _NumBytes)
+umint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos &_Offset, umint _NumBytes)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-	if (_NumBytes > mint(1) * 1024 * 1024 * 1024)
+	if (_NumBytes > umint(1) * 1024 * 1024 * 1024)
 	{
-		mint ReturnBytes = 0;
-		mint nBytesLeft = _NumBytes;
+		umint ReturnBytes = 0;
+		umint nBytesLeft = _NumBytes;
 		CMibFilePos Offset = _Offset;
 		uint8 const *pData = (uint8 const *)_pData;
 
 		while (nBytesLeft)
 		{
-			mint ThisTime = fg_Min(nBytesLeft, mint(1) * 1024 * 1024 * 1024);
+			umint ThisTime = fg_Min(nBytesLeft, umint(1) * 1024 * 1024 * 1024);
 			ssize_t WrittenBytes = pwrite(pFile->m_BSDFile, pData, ThisTime, Offset);
 			if (WrittenBytes < 0)
 				DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("pwrite('{}') when writing file") << pFile->f_GetFileName(), errno));
@@ -2482,7 +2482,7 @@ static bool fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
 	NStr::CStr Temp1 = NStr::CStr(_pPattern).f_UpperCase();
 	const char *pParse = Temp0;
 	const char *pPattern = Temp1;
-	mint nWildCardAttempt = 0; // This ensures that e.g. *.hcl matches 0x0409.Estonian.hcl
+	umint nWildCardAttempt = 0; // This ensures that e.g. *.hcl matches 0x0409.Estonian.hcl
 	bool bWildCardSearch = false;
 
 	while (true)
@@ -2493,7 +2493,7 @@ static bool fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
 			{
 				bWildCardSearch = true;
 				++pPattern;
-				mint iWildCardAttempt = 0;
+				umint iWildCardAttempt = 0;
 				while (*pParse)
 				{
 					if (*pParse != *pPattern)

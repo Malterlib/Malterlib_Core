@@ -275,7 +275,7 @@ auto Value = fg_Function
 
 ## Important Framework Notes
 
-- `mint` (or memory integer) is an unsigned integer type sized for memory/count/index use on the target platform. Its signed counterpart is `smint`, while `aint` is a separate signed arithmetic/result type and should not be treated as the signed form of `mint`.
+- `umint` (or memory integer) is an unsigned integer type sized for memory/count/index use on the target platform. Its signed counterpart is `smint`, while `aint` is a separate signed arithmetic/result type and should not be treated as the signed form of `umint`.
 - The build system uses absolute paths by default
 - Build artifacts are placed in `/opt/Deploy/`, `/Deploy/` or `/c/Deploy/` depending on the OS and `BuildSystem/Default/PostCopy.MConfig`
 - The system supports cross-compilation for multiple platforms

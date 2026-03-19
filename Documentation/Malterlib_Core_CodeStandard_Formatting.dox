@@ -1,7 +1,7 @@
-// Copyright © 2015 Hansoft AB 
+// Copyright © 2015 Hansoft AB
 // Distributed under the MIT license, see license text in LICENSE.Malterlib
 
-/** 
+/**
 
 \page p_Malterlib_Core_CodeStandard_Formatting Formatting
 
@@ -10,7 +10,7 @@
 Indentation is done with 1 tab character. One tab character must be 4 columns. You should make sure that your editor is not set to expand tabs to spaces.
 
 Tabs are easier to navigate and manipulate in the text editor than spaces.
- 
+
 \section s_Malterlib_Core_CodeStandard_Formatting_Limits Limits
 
 One line should in almost all cases be limited to 190 columns.
@@ -18,11 +18,11 @@ One line should in almost all cases be limited to 190 columns.
 Make sure that you have turned on column guides in your favorite text editor.
 
 The column limit should be as wide as possible while still fitting on the screen without scrolling. With a 6 pixel wide font this limit allows small screens down to 1280x720 to fit all columns without scrolling horizontally. On desktop screens 2560 pixels wide or wider this allows fitting code side by side for diffing.
- 
+
 \section s_Malterlib_Core_CodeStandard_Formatting_Whitespace Whitespace
- 
+
 The standard for the whitespace is designed to be consistent. There should be only one correct way for an expression to be broken up with whitespace.
- 
+
 \subsection s_Malterlib_Core_CodeStandard_Formatting_Operators Operators
 All operators, except '.', '->' and '*' (dereference), have spaces before and after:
 ~~~
@@ -37,11 +37,11 @@ The comma operator have a space after but not before:
 ~~~
 	fg_Func(1, 2);
 ~~~
- 
+
 \subsection s_Malterlib_Core_CodeStandard_Formatting_SplittingStatement Splitting statements
 
 When splitting a statement across several lines, each substatement on the same logical level needs to always be on it's own line:
- 
+
 ~~~
 	fg_FuncCall(5, 6, (5 + 9));
 ~~~
@@ -55,9 +55,9 @@ Is split to:
 		)
 	;
 ~~~
- 
+
 This makes it easy to follow the logic of large statements with complex logic. See below for examples of specific cases.
- 
+
 When a statement is split across lines, all scope markers have to be on their own lines:
 ~~~
 	fg_FuncCall
@@ -71,7 +71,7 @@ When a statement is split across lines, all scope markers have to be on their ow
 			, 8
 		)
 	;
- 
+
 	using CType =
 		TCTemplate
 		<
@@ -83,7 +83,7 @@ When a statement is split across lines, all scope markers have to be on their ow
 
 
 \subsection s_Malterlib_Core_CodeStandard_Formatting_Clauses Clauses
-Every start of a block (i.e. '{') is placed on a new line straight under the word it's connected to, while parenthesis is indented. 
+Every start of a block (i.e. '{') is placed on a new line straight under the word it's connected to, while parenthesis is indented.
 Every end of a block (i.e. '}') is placed on the same indent level as the start block is placed.
 There should be a space character between the clause and the parenthesis.
 Correct example:
@@ -117,7 +117,7 @@ Incorrect example:
 		Call1();
 	}
 \endcode
- 
+
 \subsubsection s_Malterlib_Core_CodeStandard_Formatting_If If
 ~~~
 	if (bTest)
@@ -139,7 +139,7 @@ Incorrect example:
 ~~~
 
 ~~~
-	if 
+	if
 		(
 			bExprX
 			&& (bExprY || bExprZ)
@@ -154,12 +154,12 @@ Incorrect example:
 \subsubsection s_Malterlib_Core_CodeStandard_Formatting_For For
 
 ~~~
-	for (mint iValue = 0; iValue < 5; ++iValue)
+	for (umint iValue = 0; iValue < 5; ++iValue)
 		fg_FuncCall0(ValueArray[i]);
 ~~~
- 
+
 ~~~
-	for (mint iValue = 0; iValue < 5; ++iValue)
+	for (umint iValue = 0; iValue < 5; ++iValue)
 	{
 		fg_FuncCall0(ValueArray[i]);
 		fg_FuncCall1(ValueArray[i]);
@@ -167,9 +167,9 @@ Incorrect example:
 ~~~
 
 ~~~
-	for 
+	for
 		(
-			mint iValue = 0
+			umint iValue = 0
 			; iValue < 5
 			; ++iValue
 		)
@@ -178,13 +178,13 @@ Incorrect example:
 		fg_FuncCall1(ValueArray[i]);
 	}
 ~~~
- 
+
 \subsubsection s_Malterlib_Core_CodeStandard_Formatting_While While
 ~~~
 	while (bTest)
 		fg_FuncCall0();
 ~~~
- 
+
 ~~~
 	while (bTest)
 	{
@@ -235,7 +235,7 @@ Incorrect example:
 		)
 	;
 ~~~
- 
+
 
 \subsubsection s_Malterlib_Core_CodeStandard_Formatting_Switch Switch
 ~~~
@@ -299,8 +299,8 @@ Returning the value on the same line as the case statement is ok:
 	default: return 7;
 	}
 ~~~
- 
-Several statements and then a break can be hard to read correctly so avoid this: 
+
+Several statements and then a break can be hard to read correctly so avoid this:
 \code{+incorrect}
 	switch (Value)
 	{
@@ -324,16 +324,16 @@ The correct way:
 		break;
 	}
 ~~~
- 
+
 \subsection s_Malterlib_Core_CodeStandard_Formatting_Functions Functions
 
 A function declaration or prototype is defined as follows. Note that the ordering here is significant:
 \verbatim
 [static] [virtual] [inline] [other_attributes] <return type> f_FunctionName(<parameter list>) [const] [volatile] [= 0];
- 
+
 [static] [virtual] [inline] [other_attributes] auto f_FunctionName(<parameter list>) [const] [volatile] [= 0] -> <return type>;
 \endverbatim
- 
+
 You can never split the function into several lines before the function name. If you need extra space before the function name, specify the function with trailing return type.
 
 \verbatim
@@ -343,8 +343,8 @@ You can never split the function into several lines before the function name. If
 \endverbatim
 
 If you would save more space by splitting the parameters, do that instead or in addition to specifying the return type on a separate trailing line.
- 
-Any lines after the line with the function name are indented.  
+
+Any lines after the line with the function name are indented.
 
 Examples:
 ~~~
@@ -377,7 +377,7 @@ Examples:
 
 	template <typename tf_CType>
 	typename TCLongTemplate<tf_CType>::CType fg_Function(int _Param0, int _Param1);
- 
+
 	template <typename tf_CType>
 	static inline_always auto fg_Function(int _Param0, int _Param1)
 		-> typename TCLongTemplate
@@ -395,7 +395,7 @@ Examples:
 			int _Param0
 			, int _Param1
 		)
-		-> typename TCLongTemplate<tf_CType, uint32, 3>::CType 
+		-> typename TCLongTemplate<tf_CType, uint32, 3>::CType
 	{
 	}
 
@@ -406,29 +406,29 @@ Examples:
 			, int _Param1
 		)
 		const volatile
-		-> typename TCLongTemplate<tf_CType>::CType 
+		-> typename TCLongTemplate<tf_CType>::CType
 	{
 	}
 
 	template <typename tf_CType>
 	auto f_Function(int _Param0, int _Param1) const volatile
-		-> typename TCLongTemplate<tf_CType>::CType 
+		-> typename TCLongTemplate<tf_CType>::CType
 	{
 	}
- 
+
 	auto fg_Function
 		(
 			int _Param0
 			, int _Param1
 		)
-		-> typename TCLongTemplate<fp32, uint32, 3>::CType 
+		-> typename TCLongTemplate<fp32, uint32, 3>::CType
 	{
 	}
- 
+
 ~~~
 
 \subsection s_Malterlib_Core_CodeStandard_Formatting_Classes Classes, Structs and Unions
- 
+
 ~~~
 	class CTest
 	{
@@ -438,29 +438,29 @@ Examples:
 			uint32 m_Member;
 		};
 		using CRetValue = uint32;
- 
+
 		CRetValue f_PublicFunction(CSubStruct const &_Param);
- 
+
 		uint32 m_PublicMember;
- 
+
 	protected:
 		struct CProtectedSubStruct
 		{
 			uint32 m_Member;
 		};
 		using CProtectedRetValue = uint32;
- 
+
 		CProtectedRetValue fp_ProtectedFunction(CProtectedSubStruct const &_Param);
 
 		uint32 mp_ProtectedMember;
- 
+
 	private:
 		struct CPrivateSubStruct
 		{
 			uint32 m_Member;
 		};
 		using CPrivateRetValue = uint32;
- 
+
 		CPrivateRetValue fp_PrivateFunction(CPrivateSubStruct const &_Param);
 
 		uint32 mp_PrivateMember;
@@ -488,15 +488,15 @@ struct TCTestClass
 /*
 
 Splitting indentation rules
- 
+
 namespace
- 
+
 * and & for variables and params.
- 
+
 
 
 [static] [virtual] <return type> f_FunctionName(<parameter list>);
- 
+
 
 Class declarations
 class <class name> [: public <class name>]

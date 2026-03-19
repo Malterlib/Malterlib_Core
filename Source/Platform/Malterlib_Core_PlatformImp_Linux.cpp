@@ -222,7 +222,7 @@ namespace NLocal
 
 bool g_bIsSharedLibrary = false;
 
-mint g_MainModuleBase = 0;
+umint g_MainModuleBase = 0;
 
 void fg_ForkPrepare();
 void fg_ForkParentOrChild();
@@ -300,10 +300,10 @@ public:
 	sem_t m_Semaphore = {0};
 	bool m_bSemaphoreInit = false;
 
-	mint m_Value;
-	mint m_Maximum;
+	umint m_Value;
+	umint m_Maximum;
 
-	CImpSemaphore(mint _Value, mint _Maximum)
+	CImpSemaphore(umint _Value, umint _Maximum)
 		: m_Value(_Value)
 		, m_Maximum(_Maximum)
 	{
@@ -340,7 +340,7 @@ public:
 		}
 	}
 
-	void f_Signal(mint _Count)
+	void f_Signal(umint _Count)
 	{
 		DMibLock(m_Lock);
 		if (m_Value + _Count > m_Maximum)
@@ -427,7 +427,7 @@ public:
 
 constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CLowLevelLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
 
-void *NSys::fg_Semaphore_Alloc(mint _InitialCount, mint _MaximumCount)
+void *NSys::fg_Semaphore_Alloc(umint _InitialCount, umint _MaximumCount)
 {
 	CImpSemaphore *pSemaphore = g_ImpSemaphorePool.f_New(_InitialCount, _MaximumCount);
 	return pSemaphore;
@@ -450,7 +450,7 @@ void NSys::fg_Semaphore_Free(void *_pSemaphore)
 #endif
 }
 
-void NSys::fg_Semaphore_Increase(void * _pSemaphore, mint _Count)
+void NSys::fg_Semaphore_Increase(void * _pSemaphore, umint _Count)
 {
 	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
 	pSemaphore->f_Signal(_Count);
@@ -576,7 +576,7 @@ void CSystemLinux::fs_ForkPrepare()
 	auto &Sys = *fg_GetLocalSys();
 	if (!pthread_getspecific(Sys.m_ThreadDestructionHook))
 	{
-		pthread_setspecific(Sys.m_ThreadDestructionHook, (void *)(mint)getpid());
+		pthread_setspecific(Sys.m_ThreadDestructionHook, (void *)(umint)getpid());
 		Sys.m_Posix.f_GetMalterlibDisableStdErrLog(); // getenv fails on forked process, to workaround this here
 
 		Sys.m_Posix.m_ForkLock.f_Lock();
@@ -594,13 +594,13 @@ void CSystemLinux::fs_ForkParentOrChild()
 	if (Current)
 	{
 #ifdef DMibSanitizerEnabled_Thread
-		if (Current == (void *)(mint)getpid())
+		if (Current == (void *)(umint)getpid())
 			__tsan_forked_parent();
 		else
 			__tsan_forked_child();
 #endif
 		pthread_setspecific(Sys.m_ThreadDestructionHook, nullptr);
-		if (Current != (void *)(mint)getpid())
+		if (Current != (void *)(umint)getpid())
 		{
 #if !defined(DMibDynamicLibrary) || (defined(DMibDynamicLibrary) && !defined(DMibAssumeMalterlibHost))
 			g_MalterlibCurrentTID = syscall(SYS_gettid);
@@ -612,7 +612,7 @@ void CSystemLinux::fs_ForkParentOrChild()
 		}
 		g_ImpSemaphorePool.f_Unlock();
 		g_EventEmulationPool.f_Unlock();
-		if (Current == (void *)(mint)getpid())
+		if (Current == (void *)(umint)getpid())
 		{
 			Sys.f_ForkedParent(); // Parent
 			Sys.m_Posix.m_ForkLock.f_ForkedParent();
@@ -693,7 +693,7 @@ NMib::NSys::CLinuxPasswordManager* CSystemLinux::f_GetPasswordManager()
 {
 	if (m_PasswordManagerCreated.f_Load() != 2)
 	{
-		mint Expected = 0;
+		umint Expected = 0;
 		if (m_PasswordManagerCreated.f_CompareExchangeStrong(Expected, 1))
 		{
 			m_pPasswordManager = NMib::NSys::fg_CreateLinuxPasswordManager(m_pDBus.f_Get());
@@ -985,7 +985,7 @@ void NSys::fg_Thread_Resume(void *_pThread)
 extern "C" _Unwind_Reason_Code _Unwind_Backtrace(_Unwind_Trace_Fn, void *);
 extern "C" uintptr_t _Unwind_GetIP(struct _Unwind_Context *context);
 
-inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _nMaxDepth)
+inline_never umint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, umint _nMaxDepth)
 {
 	if (_nMaxDepth == 0)
 		return 0;
@@ -995,13 +995,13 @@ inline_never mint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, mint _
 
 #if DArchitecture_arm64
 	// This seems to be faster
-	return (mint)backtrace((void**)_pStack, (int)_nMaxDepth);
+	return (umint)backtrace((void**)_pStack, (int)_nMaxDepth);
 #else
 	struct CContext
 	{
 		CMibCodeAddress *m_pStack;
-		mint m_nMaxDepth;
-		mint m_nAdded = 0;
+		umint m_nMaxDepth;
+		umint m_nAdded = 0;
 	};
 
 	CContext Context;
@@ -1037,7 +1037,7 @@ inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
 	CMibCodeAddress StackTraces[256];
 	StackTraces[_iDepth] = 0;
 
-	mint nReturned = fg_System_GetStackTrace(StackTraces, _iDepth - 1);
+	umint nReturned = fg_System_GetStackTrace(StackTraces, _iDepth - 1);
 	if (nReturned <= _iDepth + 1)
 		return StackTraces[_iDepth];
 	return nullptr;
@@ -1069,18 +1069,18 @@ void NSys::fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode)
 	// TODO: Implement
 }
 
-mint NSys::fg_Mem_GetNumNumaNodes()
+umint NSys::fg_Mem_GetNumNumaNodes()
 {
   // TODO: Implement
   return 0;
 }
 
-void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, mint _nNodes)
+void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, umint _nNodes)
 {
   // TODO: Implement
 }
 
-void *NSys::fg_InterProcess_MemAlloc(ch8 const *_pName, mint _Size, void * &_pMemory)
+void *NSys::fg_InterProcess_MemAlloc(ch8 const *_pName, umint _Size, void * &_pMemory)
 {
 	// TODO: Implement
 	DMibError("Not implemented");
@@ -1107,7 +1107,7 @@ namespace
 	{
 		TCVector<tf_CStr> Return;
 
-		tf_CStr CmdlinePath = typename tf_CStr::CFormat("/proc/{}/cmdline") << (mint)getpid();
+		tf_CStr CmdlinePath = typename tf_CStr::CFormat("/proc/{}/cmdline") << (umint)getpid();
 		auto FileData = fg_ReadProcFS<tf_CStr>(CmdlinePath);
 
 		auto pParse = FileData.f_GetArray();
@@ -1128,7 +1128,7 @@ namespace
 }
 
 
-void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, mint _nBytes)
+void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes)
 {
 	if (NLocal::g_f_getrandom)
 	{
@@ -1216,7 +1216,7 @@ bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
 
 			while (*pVendorLookup)
 			{
-				mint NameLen = fg_StrLen(*pVendorLookup);
+				umint NameLen = fg_StrLen(*pVendorLookup);
 				if (	SysVendorData.f_GetLen() >= NameLen
 					&&	fg_MemCmp((uint8 const *)SysVendorData.f_GetArray(), (uint8 const *)*pVendorLookup, NameLen) == 0)
 				{
@@ -1247,7 +1247,7 @@ bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
 
 			while (*pVendorLookup)
 			{
-				mint NameLen = fg_StrLen(*pVendorLookup);
+				umint NameLen = fg_StrLen(*pVendorLookup);
 				if (	BiosVendorData.f_GetLen() >= NameLen
 					&&	fg_MemCmp((uint8 const *)BiosVendorData.f_GetArray(), (uint8 const *)*pVendorLookup, NameLen) == 0)
 				{
@@ -1279,7 +1279,7 @@ bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
 
 			while (*pProductLookup)
 			{
-				mint NameLen = fg_StrLen(*pProductLookup);
+				umint NameLen = fg_StrLen(*pProductLookup);
 				if (	ProductNameData.f_GetLen() >= NameLen
 					&&	fg_MemCmp((uint8 const *)ProductNameData.f_GetArray(), (uint8 const *)*pProductLookup, NameLen) == 0)
 				{
@@ -1353,10 +1353,10 @@ void fg_DestroySystemAtExit()
 
 namespace NMib
 {
-	mint align_cacheline g_SystemMemory[sizeof(CSystemLinux) / sizeof(mint)];
-	mint g_bCreatingSystemDone = false;
-	mint g_bCanUseSystemMalloc = false;
-	constinit NAtomic::TCAtomic<mint> g_bCanStartThreads{0};
+	umint align_cacheline g_SystemMemory[sizeof(CSystemLinux) / sizeof(umint)];
+	umint g_bCreatingSystemDone = false;
+	umint g_bCanUseSystemMalloc = false;
+	constinit NAtomic::TCAtomic<umint> g_bCanStartThreads{0};
 }
 
 void fg_ForkPrepare()
@@ -1458,7 +1458,7 @@ bool NSys::fg_System_GetOperatingSystemVersion(int &o_Major, int &o_Minor, int &
 #if defined(DArchitecture_arm64)
 namespace NMib::NSys
 {
-	mint g_ThreadSelfOffset = 0;
+	umint g_ThreadSelfOffset = 0;
 }
 #endif
 
@@ -1469,7 +1469,7 @@ void NSys::fg_CreateSystemVersion()
 
 #if defined(DArchitecture_arm64)
 	{
-		mint ThreadLocal;
+		umint ThreadLocal;
 		asm volatile ("mrs %0, TPIDR_EL0" : "=r" (ThreadLocal));
 		g_ThreadSelfOffset = ThreadLocal - pthread_self();
 	}
@@ -1523,7 +1523,7 @@ namespace NMib
 				Dl_info Info;
 				dladdr((void *)&fg_CreateSystem, &Info);
 
-				g_MainModuleBase = (mint)((uint8 const *)FirstHeader.dlpi_phdr - FirstHeader.dlpi_phdr->p_offset);
+				g_MainModuleBase = (umint)((uint8 const *)FirstHeader.dlpi_phdr - FirstHeader.dlpi_phdr->p_offset);
 
 			}
 		#pragma clang diagnostic pop
@@ -1548,7 +1548,7 @@ extern "C"
 	void *nontracked_calloc (size_t __nmemb, size_t __size) __THROW __wur
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		mint Size = __nmemb * __size;
+		umint Size = __nmemb * __size;
 #		if DMibConfig_MalterlibMemoryManager_Debug
 			auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #		else
@@ -1637,7 +1637,7 @@ extern "C" void fg_InitMalterlib();
 
 namespace NMib
 {
-	mint g_bCreatedSystem = false;
+	umint g_bCreatedSystem = false;
 }
 
 void fg_ReportCurrentException()
@@ -1716,7 +1716,7 @@ namespace NMib::NSys
 
 namespace NMib::NSys::NPrivate
 {
-	constinit mint g_PageSize = 0;
+	constinit umint g_PageSize = 0;
 }
 
 void NSys::fg_CreateSystem()
@@ -1761,7 +1761,7 @@ void NSys::fg_CreateSystem()
 
 	auto pSystemMemory = (void *)NMib::g_SystemMemory;
 	auto pSystem = new(pSystemMemory) CSystemLinux();
-	static_assert(alignof(CSystemLinux) <= mint(DMibPMemoryCacheLineSize), "Aligment error");
+	static_assert(alignof(CSystemLinux) <= umint(DMibPMemoryCacheLineSize), "Aligment error");
 
 	NSys::fg_Compiler_MakeActive(&pSystemMemory);
 	NSys::fg_Compiler_MakeActive(&pSystem);
@@ -1828,7 +1828,7 @@ void NSys::fg_CreateSystem()
 						}
 					}
 
-					DMibConOutRaw((CFStr256::CFormat("bdda0079-b6eb-41ac-88d0-01b50e8be939 {nfh} {}\n") << (mint)getpid() << Error.f_ReplaceChar('\n', '\r')).f_GetStr());
+					DMibConOutRaw((CFStr256::CFormat("bdda0079-b6eb-41ac-88d0-01b50e8be939 {nfh} {}\n") << (umint)getpid() << Error.f_ReplaceChar('\n', '\r')).f_GetStr());
 
 					if (!StdInPipeName.f_IsEmpty())
 					{
@@ -1852,7 +1852,7 @@ void NSys::fg_CreateSystem()
 
 				}
 				else
-					DMibConOutRaw((CFStr256::CFormat("bdda0079-b6eb-41ac-88d0-01b50e8be939 {nfh} {}\n") << (mint)getpid() << Error.f_ReplaceChar('\n', '\r')).f_GetStr());
+					DMibConOutRaw((CFStr256::CFormat("bdda0079-b6eb-41ac-88d0-01b50e8be939 {nfh} {}\n") << (umint)getpid() << Error.f_ReplaceChar('\n', '\r')).f_GetStr());
 
 
 				break;
@@ -1915,7 +1915,7 @@ void NSys::fg_DestroySystem()
 
 bool NSys::fg_System_BeingDebugged()
 {
-	CStrNonTracked StatusPath = CStrNonTracked::CFormat("/proc/{}/status") << (mint)getpid();
+	CStrNonTracked StatusPath = CStrNonTracked::CFormat("/proc/{}/status") << (umint)getpid();
 	auto FileData = fg_ReadProcFS<CStrNonTracked>(StatusPath);
 
 	auto pParse = FileData.f_GetArray();
@@ -2091,7 +2091,7 @@ NStr::CStr NSys::NFile::fg_GetRawTemporaryDirectory()
 		TmpDir = fg_GetSys()->f_GetEnvironmentVariable("TEMPDIR");
 	if (!TmpDir.f_IsEmpty())
 	{
-		mint Len = TmpDir.f_GetLen();
+		umint Len = TmpDir.f_GetLen();
 		if (TmpDir[Len - 1] == '/')
 			return TmpDir.f_Left(Len - 1);
 		return TmpDir;
@@ -2110,7 +2110,7 @@ NStr::CStrNonTracked NSys::NFile::fg_GetRawTemporaryDirectoryNonTracked()
 		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMPDIR"));
 	if (!TmpDir.f_IsEmpty())
 	{
-		mint Len = TmpDir.f_GetLen();
+		umint Len = TmpDir.f_GetLen();
 		if (TmpDir[Len - 1] == '/')
 			return TmpDir.f_Left(Len - 1);
 		return TmpDir;
@@ -2130,14 +2130,14 @@ namespace NMib
 			template <typename tf_CStr>
 			tf_CStr fg_GetProgramDirectoryGeneral()
 			{
-				tf_CStr ExePath = typename tf_CStr::CFormat("/proc/{}/exe") << (mint)getpid();
+				tf_CStr ExePath = typename tf_CStr::CFormat("/proc/{}/exe") << (umint)getpid();
 				tf_CStr FullPath = fg_ResolveSymbolicLink<tf_CStr>(ExePath);
 				return NMib::NFile::CFile::fs_GetPath(FullPath);
 			}
 			template <typename tf_CStr>
 			tf_CStr fg_GetProgramPathGeneral()
 			{
-				tf_CStr ExePath = typename tf_CStr::CFormat("/proc/{}/exe") << (mint)getpid();
+				tf_CStr ExePath = typename tf_CStr::CFormat("/proc/{}/exe") << (umint)getpid();
 				tf_CStr FullPath = fg_ResolveSymbolicLink<tf_CStr>(ExePath);
 				return FullPath.f_RemoveSuffix(" (deleted)");
 			}
@@ -2167,7 +2167,7 @@ CStrNonTracked NSys::NFile::fg_GetProgramPathNonTracked()
 
 CStr NSys::NFile::fg_GetProgramPathForExecutableContents()
 {
-	return CStr::CFormat("/proc/{}/exe") << (mint)getpid();
+	return CStr::CFormat("/proc/{}/exe") << (umint)getpid();
 }
 
 NMib::NStr::CStr NSys::NFile::fg_GetModulePath(void *_pCode)
@@ -2175,7 +2175,7 @@ NMib::NStr::CStr NSys::NFile::fg_GetModulePath(void *_pCode)
 	Dl_info ModuleInfo;
 	if (dladdr(_pCode, &ModuleInfo) != 0)
 	{
-		if ((mint)ModuleInfo.dli_fbase == g_MainModuleBase)
+		if ((umint)ModuleInfo.dli_fbase == g_MainModuleBase)
 			return fg_GetProgramPath();
 		return ModuleInfo.dli_fname;
 	}
@@ -2188,7 +2188,7 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 	Dl_info ModuleInfo;
 	if (dladdr(_pCode, &ModuleInfo) != 0)
 	{
-		if ((mint)ModuleInfo.dli_fbase == g_MainModuleBase)
+		if ((umint)ModuleInfo.dli_fbase == g_MainModuleBase)
 			return fg_GetProgramPathNonTracked();
 		return ModuleInfo.dli_fname;
 	}
@@ -2289,7 +2289,7 @@ bool NSys::NFile::fg_ChangeNotification_Supported()
 
 #include "Malterlib_Core_PlatformImp_Linux_Net.imp.h"
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_CreateAddress(_Type, _pData, _nDataBytes);
 }
@@ -2306,13 +2306,13 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAd
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CPOSIXAddress*)_Address);
 }
 
-bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress*)_Address, _ExpectedType, _opRawData, _nDataBytes);
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, mint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CPOSIXAddress*)_Address, _Type, _pRawData, _nDataBytes);
@@ -2323,7 +2323,7 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_ResolveAddress(const NMib::NStr::CSt
 	return fg_GetLocalSys()->m_SocketContext->f_ResolveAddress(_Address, _PreferType);
 }
 
-mint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
+umint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
 {
 	return CUnixAddress::mc_MaxAddressLength;
 }
@@ -2415,22 +2415,22 @@ void NSys::NNetwork::fg_Shutdown(void *_pSocket)
 	fg_GetLocalSys()->m_SocketContext->f_Shutdown((CPOSIXSocket*)_pSocket);
 }
 
-mint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, mint _DataLen) // Returns bytes receive
+umint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, umint _DataLen) // Returns bytes receive
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Receive((CPOSIXSocket*)_pSocket, _pData, _DataLen);
 }
 
-mint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, mint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_Send((CPOSIXSocket*)_pSocket, _pData, _DataLen);
 }
 
-mint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, mint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket*)_pSocket, *((CPOSIXAddress*)_Address), _pData, _DataLen);
 }
 
-mint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, mint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket*)_pSocket, *((CPOSIXAddress*)_Address), _pData, _DataLen);
 }
@@ -2806,12 +2806,12 @@ void* NSys::fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned
 }
 
 
-mint NSys::fg_Thread_GetVirtualCores()
+umint NSys::fg_Thread_GetVirtualCores()
 {
 	return fg_Max(sysconf(_SC_NPROCESSORS_ONLN), 1);
 }
 
-mint NSys::fg_Thread_GetPhysicalCores()
+umint NSys::fg_Thread_GetPhysicalCores()
 {
 	return fg_Max(sysconf(_SC_NPROCESSORS_ONLN), 1);
 }
@@ -3397,7 +3397,7 @@ extern "C" int __sched_cpucount(size_t _SetSize, cpu_set_t const *_pSet)
 #endif
 		}
 
-		for (mint iBit = 0; iBit < sizeof(Mask) * 8; ++iBit)
+		for (umint iBit = 0; iBit < sizeof(Mask) * 8; ++iBit)
 		{
 			if (Mask & (__cpu_mask(1) << iBit))
 				++CpuCount;

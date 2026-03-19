@@ -16,12 +16,12 @@ namespace NMib::NPlatform
 {
 	void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
 
-	inline_small bool fg_IsGoodStackPtr(void *_pAddr, mint _Len, mint _StackStart, mint _StackEnd)
+	inline_small bool fg_IsGoodStackPtr(void *_pAddr, umint _Len, umint _StackStart, umint _StackEnd)
 	{
-		mint StackStart = _StackStart;
-		mint StackEnd = _StackEnd;
-		mint AddrStart = (mint)_pAddr;
-		mint AddrEnd = AddrStart + _Len;
+		umint StackStart = _StackStart;
+		umint StackEnd = _StackEnd;
+		umint AddrStart = (umint)_pAddr;
+		umint AddrEnd = AddrStart + _Len;
 
 		if (AddrEnd < AddrStart)
 			return false;

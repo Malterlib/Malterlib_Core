@@ -725,7 +725,7 @@ namespace NMib
 		};
 		static t_CType fs_Swap(t_CType const& _Data)
 		{
-			mint Size = sizeof(_Data);
+			umint Size = sizeof(_Data);
 			int iEnd = Size - 1;
 			int iStart = 0;
 			t_CType Return = _Data;
@@ -835,7 +835,7 @@ namespace NMib
 	};
 	#endif
 
-	template <mint t_nBytes, typename t_CType>
+	template <umint t_nBytes, typename t_CType>
 	class TCHelper_ByteSwapChooseBySize
 	{
 	public:
@@ -884,9 +884,9 @@ namespace NMib
 	}
 
 	template <typename t_CInt>
-	inline_small void fg_ByteSwap(t_CInt *_pIn, mint _Len)
+	inline_small void fg_ByteSwap(t_CInt *_pIn, umint _Len)
 	{
-		for (mint i = 0; i < _Len; ++i)
+		for (umint i = 0; i < _Len; ++i)
 		{
 			_pIn[i] = fg_ByteSwap(_pIn[i]);
 		}
@@ -1070,21 +1070,21 @@ namespace NMib
 
 
 	template <typename t_ToAlign>
-	constexpr inline_small t_ToAlign fg_AlignUpConstExpr(t_ToAlign _pMem, mint _Alignment)
+	constexpr inline_small t_ToAlign fg_AlignUpConstExpr(t_ToAlign _pMem, umint _Alignment)
 	{
 		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
 		return (t_ToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
 	template <typename t_ToAlign>
-	constexpr inline_small t_ToAlign fg_AlignDownConstExpr(t_ToAlign _pMem, mint _Alignment)
+	constexpr inline_small t_ToAlign fg_AlignDownConstExpr(t_ToAlign _pMem, umint _Alignment)
 	{
 		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
 		return (t_ToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
 	template <typename t_ToAlign>
-	inline_small t_ToAlign fg_AlignUp(t_ToAlign _pMem, mint _Alignment)
+	inline_small t_ToAlign fg_AlignUp(t_ToAlign _pMem, umint _Alignment)
 	{
 		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
 		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_pMem) == 0);
@@ -1092,7 +1092,7 @@ namespace NMib
 	}
 
 	template <typename t_ToAlign>
-	inline_small t_ToAlign fg_AlignDown(t_ToAlign _pMem, mint _Alignment)
+	inline_small t_ToAlign fg_AlignDown(t_ToAlign _pMem, umint _Alignment)
 	{
 		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
 		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_pMem) == 0);
@@ -1633,26 +1633,26 @@ namespace NMib
 
 	struct CConstExprSubStr
 	{
-		constexpr CConstExprSubStr(char const *_pString, mint _Len)
+		constexpr CConstExprSubStr(char const *_pString, umint _Len)
 			: m_pString(_pString)
 			, m_Len(_Len)
 		{
 		}
 
 		char const *m_pString;
-		mint m_Len;
+		umint m_Len;
 	};
 
 	template <typename tf_CType>
 	static consteval CConstExprSubStr fg_GetTypeNameConstExpr();
 
-	template <mint t_nCharacters>
+	template <umint t_nCharacters>
 	struct TCConstExprSubStr : public CConstExprSubStr
 	{
 		constexpr TCConstExprSubStr(char const *_pString)
 			: CConstExprSubStr(m_String, t_nCharacters)
 		{
-			for (mint i = 0; i < t_nCharacters; ++i)
+			for (umint i = 0; i < t_nCharacters; ++i)
 				m_String[i] = _pString[i];
 			m_String[t_nCharacters] = 0;
 		}
@@ -1668,7 +1668,7 @@ namespace NMib
 	}
 
 	static constexpr uint32 fg_JenkinsHash(const char * const _pString);
-	static constexpr uint32 fg_JenkinsHash(const char * const _pString, mint _Len, char _ExtraChar);
+	static constexpr uint32 fg_JenkinsHash(const char * const _pString, umint _Len, char _ExtraChar);
 
 	static consteval void fg_ParseTypeIdentifierConstexpr(char const *&_pParse);
 	static consteval void fg_ParseUntilCallingConvention(char const *&_pParse);
@@ -1723,7 +1723,7 @@ namespace NMib
 #include <Mib/Bit/Bit>
 
 // Gets a pointer to a class wich member is contained in from a pointer to that member
-#define DMibGetParent(_Class, _Member, _Ptr) ((_Class *)(((uint8 *)_Ptr) + ( ((mint)((_Class *)((void*)_Ptr))) - ((mint)(&((_Class *)((void *)_Ptr))->_Member)) )))
+#define DMibGetParent(_Class, _Member, _Ptr) ((_Class *)(((uint8 *)_Ptr) + ( ((umint)((_Class *)((void*)_Ptr))) - ((umint)(&((_Class *)((void *)_Ptr))->_Member)) )))
 
 #ifndef DMibPNoShortCuts
 #	define DGetParent(_Class, _Member, _Ptr) DMibGetParent(_Class, _Member, _Ptr)

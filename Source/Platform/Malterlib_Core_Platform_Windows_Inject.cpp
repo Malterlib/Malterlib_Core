@@ -84,7 +84,7 @@ namespace NMib
 							// Replace function pointers (non-atomically).
 							if (_pOriginalProc)
 								*_pOriginalProc = (void *) pFirstThunkIter->u1.Function;
-							pFirstThunkIter->u1.Function = (mint) _pHookingProc;
+							pFirstThunkIter->u1.Function = (umint) _pHookingProc;
 
 							// Restore page protection.
 							if (!VirtualProtect(memInfoThunk.BaseAddress, memInfoThunk.RegionSize, memInfoThunk.Protect, &dwDummy))
@@ -237,7 +237,7 @@ namespace NMib
 							// Replace function pointers (non-atomically).
 							if (_pOriginalProc)
 								*_pOriginalProc = (void *) pFirstThunkIter->u1.Function;
-							pFirstThunkIter->u1.Function = (mint) _pHookingProc;
+							pFirstThunkIter->u1.Function = (umint) _pHookingProc;
 
 							// Restore page protection.
 							if (!VirtualProtect(memInfoThunk.BaseAddress, memInfoThunk.RegionSize, memInfoThunk.Protect, &dwDummy))
@@ -668,8 +668,8 @@ namespace NMib
 
 			HMODULE hRemoteNtDll = 0;
 			{
-				mint StartAddress = TCLimitsInt<mint>::mc_Min;
-				mint CurrentAddress = StartAddress;
+				umint StartAddress = TCLimitsInt<umint>::mc_Min;
+				umint CurrentAddress = StartAddress;
 				while (true)
 				{
 					MEMORY_BASIC_INFORMATION MemInfo;
@@ -680,7 +680,7 @@ namespace NMib
 						//NStr::CWStr BaseName;
 						//GetMappedFileNameW(hProcess, (HMODULE)MemInfo.AllocationBase, BaseName.f_GetStr(1024), 1024);
 						//BaseName.f_GetLen();
-						//DTrace("0x{nfh,sj16,sf0} -> 0x{nfh,sj16,sf0}: State: 0x{nfh,sj8,sf0}: {}\n", MemInfo.BaseAddress, ((mint)MemInfo.BaseAddress + MemInfo.RegionSize), MemInfo.State, BaseName);
+						//DTrace("0x{nfh,sj16,sf0} -> 0x{nfh,sj16,sf0}: State: 0x{nfh,sj8,sf0}: {}\n", MemInfo.BaseAddress, ((umint)MemInfo.BaseAddress + MemInfo.RegionSize), MemInfo.State, BaseName);
 
 						if (!hRemoteNtDll)
 						{
@@ -698,10 +698,10 @@ namespace NMib
 							}
 						}
 					}
-					if (CurrentAddress == (mint)MemInfo.BaseAddress + MemInfo.RegionSize)
+					if (CurrentAddress == (umint)MemInfo.BaseAddress + MemInfo.RegionSize)
 						break;
 					else
-						CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
+						CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
 				}
 			}
 
@@ -800,7 +800,7 @@ namespace NMib
 			lpRemoteMemoryOut += dwBytes;
 			lpRemoteMemoryOut = fg_AlignUp(lpRemoteMemoryOut, 16);
 
-			InjectData.m_pLdrLoadDll = fg_AutoStaticCast((void *)((mint)hRemoteNtDll + ((mint)fpLdrLoadDll - (mint)hThisNtDll)));
+			InjectData.m_pLdrLoadDll = fg_AutoStaticCast((void *)((umint)hRemoteNtDll + ((umint)fpLdrLoadDll - (umint)hThisNtDll)));
 
 			InjectData.m_DllCharacteristics = 0;
 			InjectData.m_pModuleHandle = nullptr;
@@ -808,7 +808,7 @@ namespace NMib
 			uint8 *pRemoteFunction;
 			{
 
-				mint Size = 256; // Guess maximum of dummy function
+				umint Size = 256; // Guess maximum of dummy function
 				uint8 *pFuncOut = (uint8 *)&fg_InjectDllRemote;
 				// Put function into it's own memory page
 				pFuncOut = fg_SkipJumps(pFuncOut);
@@ -862,7 +862,7 @@ namespace NMib
 
 			if (_hThread && bIsCygwin)
 			{
-				if (!QueueUserAPC((PAPCFUNC)pRemoteFunction, _hThread, (mint)pRemoteInjectData))
+				if (!QueueUserAPC((PAPCFUNC)pRemoteFunction, _hThread, (umint)pRemoteInjectData))
 				{
 					HRESULT Error = GetLastError();
 					fl_ReportError(NStr::CStr::CFormat("Failed to queue user APC: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));

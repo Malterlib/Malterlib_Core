@@ -59,7 +59,7 @@ public:
 
 	CStr m_CloseReason;
 
-	mint m_BindAddressSize = 0;
+	umint m_BindAddressSize = 0;
 	ENetAddressType m_BindAddressType = ENetAddressType_None;
 	TCUniquePointer<CUnixListenState> m_pUnixListen;
 	int m_AsyncSelectFlags = 0;
@@ -78,12 +78,12 @@ public:
 			m_SentData = 0;
 		}
 		CByteVector m_Data;
-		mint m_SentData;
+		umint m_SentData;
 		NTime::CTime m_SendTime;
 		DMibListLinkDS_Link(CDelayedPacket, m_Link);
 	};
 	DMibListLinkDS_List(CDelayedPacket, m_Link) m_DelayedPackets;
-	mint m_DelayedData;
+	umint m_DelayedData;
 	bool m_bDelayedStuffed;
 
 	void f_UpdateDelayedSend(const NTime::CTime &_Now);
@@ -150,7 +150,7 @@ protected:
 protected:
 	void *mp_hThread;
 	uint32 mp_ThreadID;
-	mint mp_ThreadRefcount = 0;
+	umint mp_ThreadRefcount = 0;
 	NMib::NThread::CEvent mp_ThreadStartEvent;
 	NMib::NThread::CMutual mp_ThreadStartLock;
 	bool mp_bInitFailed;
@@ -234,12 +234,12 @@ public:
 	bool f_IsEmpty();
 
 	// Address
-		CWindowsAddress* f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes);
+		CWindowsAddress* f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes);
 		CWindowsAddress* f_DuplicateAddress(CWindowsAddress* _Address);
 
 		NMib::NNetwork::ENetAddressType f_GetAddressType(CWindowsAddress const& _pAddress);
-		bool f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes);
-		CWindowsAddress* f_SetAddressRaw(CWindowsAddress* _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const* _opRawData, mint _nDataBytes);
+		bool f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes);
+		CWindowsAddress* f_SetAddressRaw(CWindowsAddress* _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const* _opRawData, umint _nDataBytes);
 
 		CWindowsAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
 		CWindowsAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError);
@@ -284,10 +284,10 @@ public:
 		bool f_Close(CWindowsSocket* _pSocket);
 		bool f_Shutdown(CWindowsSocket *_pSocket);
 
-		mint f_Receive(CWindowsSocket *_pSocket, void *_pData, mint _DataLen);
-		mint f_Send(CWindowsSocket *_pSocket, const void *_pData, mint _DataLen);
-		mint f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAddress const &_Address, const void *_pData, mint _DataLen);
-		mint f_ReceiveDatagram(CWindowsSocket *_pSocket, CWindowsAddress &_Address, void *_pData, mint _DataLen);
+		umint f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen);
+		umint f_Send(CWindowsSocket *_pSocket, const void *_pData, umint _DataLen);
+		umint f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAddress const &_Address, const void *_pData, umint _DataLen);
+		umint f_ReceiveDatagram(CWindowsSocket *_pSocket, CWindowsAddress &_Address, void *_pData, umint _DataLen);
 
 	// Socket Properties & State
 

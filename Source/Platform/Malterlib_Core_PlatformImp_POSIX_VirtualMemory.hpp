@@ -35,10 +35,10 @@ using namespace NMib;
 
 namespace NMib::NSys::NPrivate
 {
-	extern mint g_PageSize;
+	extern umint g_PageSize;
 }
 
-void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, EAllocationFlag _Flags)
+void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment, EAllocationFlag _Flags)
 {
 	int Protection = PROT_READ | PROT_WRITE;
 #ifdef DPlatformFamily_macOS
@@ -113,13 +113,13 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 		if (!pAddress || pAddress == MAP_FAILED)
 			fl_ReportError(errno);
 
-		if (!((mint)pAddress & (_Alignment - 1)))
+		if (!((umint)pAddress & (_Alignment - 1)))
 		{
 			if (!(_Flags & EAllocationFlag_WillFreeWithSize))
 			{
 				DMibFastCheck(g_bCreatingSystemDone);
 				DMibLock(g_VirtualMapLock);
-				(*g_VirtualMap)[((mint)pAddress)>>12] = _Size;
+				(*g_VirtualMap)[((umint)pAddress)>>12] = _Size;
 			}
 			return fSetUncommited(pAddress);
 		}
@@ -130,7 +130,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 				DMibTraceSafe("munmap failed: {}" DMibNewLine, NMib::NPlatform::fg_FormatErrno("munmap", errno));
 				DMibPDebugBreak; // Should not fail
 			}
-			mint AllocSize = _Size + _Alignment - NMib::NSys::NPrivate::g_PageSize;
+			umint AllocSize = _Size + _Alignment - NMib::NSys::NPrivate::g_PageSize;
 			pAddress = (uint8 *)mmap(nullptr, AllocSize, Protection, MapOptions, DVmTag(Tag + 1), 0);
 
 			if (!pAddress || pAddress == MAP_FAILED)
@@ -140,7 +140,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 
 			uint8 *pStartAddress = fg_AlignUp(pAddress, _Alignment);
 			uint8 *pEndAddress = pStartAddress + _Size;
-			mint ToFreeStart = pStartAddress - pAddress;
+			umint ToFreeStart = pStartAddress - pAddress;
 			if (ToFreeStart)
 			{
 				if (munmap(pAddress, ToFreeStart))
@@ -149,7 +149,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 					DMibPDebugBreak; // Should not fail
 				}
 			}
-			mint ToFreeEnd = pEndAlignment - pEndAddress;
+			umint ToFreeEnd = pEndAlignment - pEndAddress;
 			if (ToFreeEnd)
 			{
 				if (munmap(pEndAddress, ToFreeEnd))
@@ -162,7 +162,7 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 			{
 				DMibFastCheck(g_bCreatingSystemDone);
 				DMibLock(g_VirtualMapLock);
-				(*g_VirtualMap)[((mint)pStartAddress)>>12] = _Size;
+				(*g_VirtualMap)[((umint)pStartAddress)>>12] = _Size;
 			}
 			return fSetUncommited(pStartAddress);
 		}
@@ -178,19 +178,19 @@ void *fg_AllocVirtualMemory(mint &_Size, ENumaNode _NumaNode, mint _Alignment, E
 		{
 			DMibFastCheck(g_bCreatingSystemDone);
 			DMibLock(g_VirtualMapLock);
-			(*g_VirtualMap)[((mint)pAddress)>>12] = _Size;
+			(*g_VirtualMap)[((umint)pAddress)>>12] = _Size;
 		}
 
 		return fSetUncommited(pAddress);
 	}
 }
 
-void *NSys::fg_Mem_VirtualAlloc(mint &_Size, EAllocationFlag _AllocFlags, ENumaNode _NumaNode, mint _Alignment)
+void *NSys::fg_Mem_VirtualAlloc(umint &_Size, EAllocationFlag _AllocFlags, ENumaNode _NumaNode, umint _Alignment)
 {
 	return fg_AllocVirtualMemory(_Size, _NumaNode, _Alignment, _AllocFlags);
 }
 
-void NSys::fg_Mem_VirtualProtect(void *_pMem, mint _Size, uaint _Protect)
+void NSys::fg_Mem_VirtualProtect(void *_pMem, umint _Size, uaint _Protect)
 {
 	int Protection =
 		( (_Protect & EProtect_Read) ? PROT_READ : 0 )
@@ -208,7 +208,7 @@ void NSys::fg_Mem_VirtualProtect(void *_pMem, mint _Size, uaint _Protect)
 	}
 }
 
-void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
+void NSys::fg_Mem_VirtualCommit(void *_pMem, umint _Size)
 {
 #ifdef DPlatformFamily_Emscripten
 	// Nop
@@ -256,7 +256,7 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, mint _Size)
 #endif
 }
 
-void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
+void NSys::fg_Mem_VirtualDecommit(void *_pMem, umint _Size)
 {
 #ifdef DPlatformFamily_Emscripten
 	// Nop
@@ -306,7 +306,7 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, mint _Size)
 }
 
 extern bool g_bSysDeleted;
-inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
+inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, umint _Size)
 {
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	if (_Size == 0)
@@ -317,7 +317,7 @@ inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
 		{
 			//DMibDTraceSafe("Sys exists\n", 0);
 			DMibLock(g_VirtualMapLock);
-			auto pSize = (*g_VirtualMap).f_FindEqual(((mint)_pMem)>>12);
+			auto pSize = (*g_VirtualMap).f_FindEqual(((umint)_pMem)>>12);
 			if (pSize)
 			{
 				//DMibDTraceSafe("pSize found\n", 0);
@@ -331,7 +331,7 @@ inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
 				else if (!g_bSysDeleted)
 				{
 					DMibFastCheck(g_bCreatingSystemDone);
-					(*g_VirtualMap).f_Remove(((mint)_pMem)>>12);
+					(*g_VirtualMap).f_Remove(((umint)_pMem)>>12);
 				}
 				return;
 			}
@@ -351,13 +351,13 @@ inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, mint _Size)
 	}
 }
 
-void *NSys::fg_Mem_VirtualRealloc(void *_pMem, mint &_Size, mint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode)
+void *NSys::fg_Mem_VirtualRealloc(void *_pMem, umint &_Size, umint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode)
 {
     fg_Mem_VirtualFree(_pMem, _OldSize);
 	return fg_Mem_VirtualAlloc(_Size, _AllocFlags, _NumaNode);
 }
 
-void *NSys::fg_Mem_VirtualResize(void *_pMem, mint &_Size, mint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode)
+void *NSys::fg_Mem_VirtualResize(void *_pMem, umint &_Size, umint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode)
 {
 	void *pNewMem = fg_Mem_VirtualAlloc(_Size, _AllocFlags, _NumaNode);
 	fg_MemCopy(pNewMem, _pMem, fg_Min(_Size, _OldSize));
@@ -365,14 +365,14 @@ void *NSys::fg_Mem_VirtualResize(void *_pMem, mint &_Size, mint _OldSize, EAlloc
 	return pNewMem;
 }
 
-mint NSys::fg_Mem_VirtualSize(const void *_pMem)
+umint NSys::fg_Mem_VirtualSize(const void *_pMem)
 {
 	auto *pSys = fg_GetSys_POSIX();
 	if (pSys)
 	{
 		{
 			DMibLock(g_VirtualMapLock);
-			mint *pFind = (*g_VirtualMap).f_FindEqual(((mint)_pMem)>>12);
+			umint *pFind = (*g_VirtualMap).f_FindEqual(((umint)_pMem)>>12);
 			if (pFind)
 				return *pFind;
 		}
@@ -380,14 +380,14 @@ mint NSys::fg_Mem_VirtualSize(const void *_pMem)
 	return 0;
 }
 
-mint NSys::fg_Mem_VirtualTrySize(const void *_pMem)
+umint NSys::fg_Mem_VirtualTrySize(const void *_pMem)
 {
 	auto *pSys = fg_GetSys_POSIX();
 	if (pSys)
 	{
 		{
 			DMibLock(g_VirtualMapLock);
-			mint *pFind = (*g_VirtualMap).f_FindEqual(((mint)_pMem)>>12);
+			umint *pFind = (*g_VirtualMap).f_FindEqual(((umint)_pMem)>>12);
 			if (pFind)
 				return *pFind;
 		}
@@ -395,7 +395,7 @@ mint NSys::fg_Mem_VirtualTrySize(const void *_pMem)
 	return 0;
 }
 
-mint NSys::fg_Mem_PageSize()
+umint NSys::fg_Mem_PageSize()
 {
 	return sysconf(_SC_PAGE_SIZE);
 }

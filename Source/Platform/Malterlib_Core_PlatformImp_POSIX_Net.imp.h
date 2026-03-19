@@ -17,7 +17,7 @@ CPOSIXSocketContext::~CPOSIXSocketContext()
 	mp_PollerThread.f_Stop(true);
 }
 
-CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {
 	switch(_Type)
 	{
@@ -72,7 +72,7 @@ NMib::NNetwork::ENetAddressType CPOSIXSocketContext::f_GetAddressType(CPOSIXAddr
 	return _Address.f_GetType();
 }
 
-bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes)
 {
 	NMib::NNetwork::ENetAddressType Type = _Address.f_GetType();
 
@@ -114,7 +114,7 @@ bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::N
 	}
 }
 
-CPOSIXAddress* CPOSIXSocketContext::f_SetAddressRaw(CPOSIXAddress* _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, mint _nDataBytes)
+CPOSIXAddress* CPOSIXSocketContext::f_SetAddressRaw(CPOSIXAddress* _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, umint _nDataBytes)
 {
 	if (_Type != _pAddress->f_GetType())
 	{
@@ -526,7 +526,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 		, CPOSIXAddress const *_pBindAddress
 	)
 {
-	mint Retries = 32;
+	umint Retries = 32;
 	int FD;
 	bool bConnected;
 	while (Retries)
@@ -1039,7 +1039,7 @@ NMib::NNetwork::ENetTCPState CPOSIXSocketContext::f_GetState(CPOSIXSocket *_pSoc
 	return (NMib::NNetwork::ENetTCPState)_pSocket->m_StateAtomic.f_Exchange(0);
 }
 
-mint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, mint _DataLen)
+umint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, umint _DataLen)
 {
 	int Result = recv(_pSocket->m_FD, _pData, _DataLen, 0);
 
@@ -1058,7 +1058,7 @@ mint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, mint _
 	return Result;
 }
 
-mint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, mint _DataLen)
+umint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, umint _DataLen)
 {
 	int Flags = 0;
 #ifdef DPlatformFamily_Linux
@@ -1081,7 +1081,7 @@ mint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, min
 	return Result;
 }
 
-mint CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address, const void *_pData, mint _DataLen)
+umint CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address, const void *_pData, umint _DataLen)
 {
 	int Flags = 0;
 #ifdef DPlatformFamily_Linux
@@ -1104,7 +1104,7 @@ mint CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress c
 	return Result;
 }
 
-mint CPOSIXSocketContext::f_ReceiveDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress &_Address, void *_pData, mint _DataLen)
+umint CPOSIXSocketContext::f_ReceiveDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress &_Address, void *_pData, umint _DataLen)
 {
 	socklen_t Len = _pSocket->m_BindAddressSize;
 	int Result = recvfrom(_pSocket->m_FD, _pData, _DataLen, 0, (sockaddr *)_Address.f_GetForWrite(_pSocket->m_AddressType, Len), &Len);
@@ -1164,12 +1164,12 @@ void *CPOSIXSocketContext::f_GiveUpForInherit(CPOSIXSocket *_pSocket)
 		_pSocket->m_FD = -1;
 	}
 
-	return (void*)(mint)FD;
+	return (void*)(umint)FD;
 }
 
 void *CPOSIXSocketContext::f_GetOSSocket(CPOSIXSocket *_pSocket)
 {
-	return (void*)(mint)_pSocket->m_FD;
+	return (void*)(umint)_pSocket->m_FD;
 }
 
 CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)

@@ -31,7 +31,7 @@ namespace NMib
 
 			NStr::CStr fg_ConvertToMinGWPath(NStr::CStr const &_In);
 
-			static constexpr mint gc_MaxWindowsPath = 32768;
+			static constexpr umint gc_MaxWindowsPath = 32768;
 		}
 	}
 }

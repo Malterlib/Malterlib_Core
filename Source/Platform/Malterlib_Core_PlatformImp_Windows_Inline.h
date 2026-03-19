@@ -7,15 +7,15 @@ namespace NMib::NThread::NPlatform
 {
 	struct CWindowsThreadLocals
 	{
-		static constexpr mint mc_ThreadLocalSlots = 256; // 2 KiB
+		static constexpr umint mc_ThreadLocalSlots = 256; // 2 KiB
 
 #ifdef DMibWindowsUseArbitraryUserPointerForThreadLocals
 		static constexpr uint32 ms_ThreadLocalsExtendedLocactionOffset = sizeof(void *) * 5;
 #else
 		static uint32 ms_ThreadLocalsExtendedLocactionOffset;
 #endif
-		static mint ms_ThreadLocalsMinOffset;
-		static mint ms_ThreadLocalsMaxOffset;
+		static umint ms_ThreadLocalsMinOffset;
+		static umint ms_ThreadLocalsMaxOffset;
 
 		void *m_ThreadLocals[mc_ThreadLocalSlots];
 	};
@@ -31,11 +31,11 @@ namespace NMib
 
 		namespace NPrivate
 		{
-			extern mint g_VirtualAllocGranularity;
-			extern mint g_VirtualAllocGranularityLarge;
-			extern mint g_PageSizeLarge;
+			extern umint g_VirtualAllocGranularity;
+			extern umint g_VirtualAllocGranularityLarge;
+			extern umint g_PageSizeLarge;
 		}
-		inline_always mint fg_Mem_VirtualGranularityAlloc(bool _bLargePages)
+		inline_always umint fg_Mem_VirtualGranularityAlloc(bool _bLargePages)
 		{
 			if (_bLargePages)
 				return NPrivate::g_VirtualAllocGranularityLarge;
@@ -43,7 +43,7 @@ namespace NMib
 				return NPrivate::g_VirtualAllocGranularity;
 		}
 
-		inline_always mint fg_Mem_VirtualGranularityCommit(bool _bLargePages)
+		inline_always umint fg_Mem_VirtualGranularityCommit(bool _bLargePages)
 		{
 			if (_bLargePages)
 				return NPrivate::g_PageSizeLarge;
@@ -51,7 +51,7 @@ namespace NMib
 				return 4096;
 		}
 
-		inline_always mint fg_Mem_VirtualGranularityProtect(bool _bLargePages)
+		inline_always umint fg_Mem_VirtualGranularityProtect(bool _bLargePages)
 		{
 			if (_bLargePages)
 				return NPrivate::g_PageSizeLarge;
@@ -82,7 +82,7 @@ namespace NMib
 		namespace NPrivate
 		{
 			template <typename tf_CType>
-			inline_always tf_CType fg_GetTebData(mint _iIndex)
+			inline_always tf_CType fg_GetTebData(umint _iIndex)
 			{
 #				if defined(DArchitecture_arm64)
 					return (tf_CType)__readx18qword(_iIndex);
@@ -95,7 +95,7 @@ namespace NMib
 
 		}
 
-		inline_always void *fg_Thread_GetLocal(mint _iStorage)
+		inline_always void *fg_Thread_GetLocal(umint _iStorage)
 		{
 			using namespace NMib::NThread::NPlatform;
 
@@ -106,7 +106,7 @@ namespace NMib
 			return nullptr;
 		}
 
-		inline_always void *fg_Thread_GetLocalAlwaysSet(mint _iStorage)
+		inline_always void *fg_Thread_GetLocalAlwaysSet(umint _iStorage)
 		{
 			using namespace NMib::NThread::NPlatform;
 
@@ -116,7 +116,7 @@ namespace NMib
 			return pThreadLocals->m_ThreadLocals[_iStorage];
 		}
 
-		inline_always void *fg_Thread_GetLocalFast(mint _iStorage)
+		inline_always void *fg_Thread_GetLocalFast(umint _iStorage)
 		{
 			using namespace NMib::NThread::NPlatform;
 
@@ -125,7 +125,7 @@ namespace NMib
 			return NPrivate::fg_GetTebData<void *>(_iStorage);
 		}
 
-		inline_always void *fg_Thread_GetLocalAlwaysSetFast(mint _iStorage)
+		inline_always void *fg_Thread_GetLocalAlwaysSetFast(umint _iStorage)
 		{
 			using namespace NMib::NThread::NPlatform;
 
@@ -134,19 +134,19 @@ namespace NMib
 			return NPrivate::fg_GetTebData<void *>(_iStorage);
 		}
 
-		inline_always mint fg_Thread_GetCurrentUID()
+		inline_always umint fg_Thread_GetCurrentUID()
 		{
 			// Read directly from TIB (Thread Information Block)
 #			if defined(DArchitecture_arm64)
-				return NPrivate::fg_GetTebData<mint>(0x48);
+				return NPrivate::fg_GetTebData<umint>(0x48);
 #			elif defined(DArchitecture_x64)
-				return NPrivate::fg_GetTebData<mint>(0x48);
+				return NPrivate::fg_GetTebData<umint>(0x48);
 #			else
-				return NPrivate::fg_GetTebData<mint>(0x24);
+				return NPrivate::fg_GetTebData<umint>(0x24);
 #			endif
 		}
 
-		inline_always mint fg_Thread_GetCurrentUIDAlternate()
+		inline_always umint fg_Thread_GetCurrentUIDAlternate()
 		{
 			return fg_Thread_GetCurrentUID();
 		}

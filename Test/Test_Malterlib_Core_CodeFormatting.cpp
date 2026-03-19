@@ -75,8 +75,8 @@ void fg_TestOut(bool& _oTest)
 void (int& _oTest)
 void (bool& _obTest)
 void (TCSet<int>& _ocTest)
-void (mint& _oiTest)
-void (mint& _onTest)
+void (umint& _oiTest)
+void (umint& _onTest)
 void (int*& _opTest)
 void (FTest& _ofTest)
 void f_Func(t_CInt& ...p_oTest)
@@ -157,8 +157,8 @@ struct TICTest
 void (int _Test)
 void (bool _bTest)
 void (TCSet<int> _cTest)
-void (mint _iTest)
-void (mint _nTest)
+void (umint _iTest)
+void (umint _nTest)
 void (int* _pTest)
 void (FTest _fTest)
 
@@ -173,8 +173,8 @@ void f_Func(t_FFunc ...p_fTest)
 void (int& o_Test)
 void (bool& o_bTest)
 void (TCSet<int>& o_cTest)
-void (mint& o_iTest)
-void (mint& o_nTest)
+void (umint& o_iTest)
+void (umint& o_nTest)
 void (int*& o_pTest)
 void (FTest& o_fTest)
 
@@ -244,7 +244,7 @@ unlikely
 pure
 uint32
 fp64
-mint
+umint
 
 bool bTest = true;
 void (bool _bTest);
@@ -263,7 +263,7 @@ auto rByte = fg_Range(ByteBuffer);
 for (auto iByte = rByte.f_Front(); iByte != rByte.f_Back(); ++iByte)
 	*iByte;
 
-for (mint iByte = 0; iByte < ByteBuffer.f_GetLen(); ++iByte)
+for (umint iByte = 0; iByte < ByteBuffer.f_GetLen(); ++iByte)
 	ByteBuffer[iByte];
 
 CByteVector ByteBuffer;
@@ -271,7 +271,7 @@ for (auto rByte = fg_Range(ByteBuffer); rByte; ++rByte)
 	*rByte;
 
 CByteVector ByteBuffer;
-mint nBytes = ByteBuffer.f_GetLen();
+umint nBytes = ByteBuffer.f_GetLen();
 
 CByteVector ByteBuffer;
 uint8 const *pBytes = ByteBuffer.f_GetArray();
@@ -307,22 +307,22 @@ void fg_rTest(uint32 _Value)
 uint32 Test = 0;
 bool bTest = true;
 TCSet<int> cTest;
-mint iTest = 0;
-mint nTest = 0;
+umint iTest = 0;
+umint nTest = 0;
 int* pTest = nullptr;
 FTest* fTest = &fg_Test;
 auto fTest = []{};
 
 static const uint32 c_Test = 0;
 static const bool c_bTest = true;
-static const mint c_iTest = 0;
-static const mint c_nTest = 0;
+static const umint c_iTest = 0;
+static const umint c_nTest = 0;
 
 static uint32 s_Test = 0;
 static bool s_bTest = true;
 static TCSet<int> s_cTest;
-static mint s_iTest = 0;
-static mint s_nTest = 0;
+static umint s_iTest = 0;
+static umint s_nTest = 0;
 static int* s_pTest = nullptr;
 static FTest* s_fTest = &fg_Test;
 static auto s_fTest = []{};
@@ -331,22 +331,22 @@ static auto s_fTest = []{};
 uint32 g_Test = 0;
 bool g_bTest = true;
 TCSet<int> g_cTest;
-mint g_iTest = 0;
-mint g_nTest = 0;
+umint g_iTest = 0;
+umint g_nTest = 0;
 int* g_pTest = nullptr;
 FTest* g_fTest = &fg_Test;
 auto g_fTest = []{};
 
 static const uint32 gc_Test = 0;
 static const bool gc_bTest = true;
-static const mint gc_iTest = 0;
-static const mint gc_nTest = 0;
+static const umint gc_iTest = 0;
+static const umint gc_nTest = 0;
 
 static uint32 gs_Test = 0;
 static bool gs_bTest = true;
 static TCSet<int> gs_cTest;
-static mint gs_iTest = 0;
-static mint gs_nTest = 0;
+static umint gs_iTest = 0;
+static umint gs_nTest = 0;
 static int* gs_pTest = nullptr;
 static FTest* gs_fTest = &fg_Test;
 static auto gs_fTest = []{};
@@ -357,8 +357,8 @@ class CTest
 	uint32 m_Test;
 	bool m_bTest;
 	TCSet<int> m_cTest;
-	mint m_iTest;
-	mint m_nTest;
+	umint m_iTest;
+	umint m_nTest;
 	int* m_pTest;
 	FTest* m_fTest;
 	TCFunction<void ()> m_fTest;
@@ -368,8 +368,8 @@ class CTest
 {
 	static const uint32 mc_Test = 0;
 	static const bool mc_bTest = true;
-	static const mint mc_iTest = 0;
-	static const mint mc_nTest = 0;
+	static const umint mc_iTest = 0;
+	static const umint mc_nTest = 0;
 };
 
 
@@ -378,8 +378,8 @@ class CTest
 	static uint32 ms_Test;
 	static bool ms_bTest;
 	static TCSet<int> ms_cTest;
-	static mint ms_iTest;
-	static mint ms_nTest;
+	static umint ms_iTest;
+	static umint ms_nTest;
 	static int* ms_pTest;
 	static FTest* ms_fTest;
 	static auto ms_fTest;
@@ -391,8 +391,8 @@ class CTest
 	uint32 mp_Test;
 	bool mp_bTest;
 	TCSet<int> mp_cTest;
-	mint mp_iTest;
-	mint mp_nTest;
+	umint mp_iTest;
+	umint mp_nTest;
 	int* mp_pTest;
 	FTest* mp_fTest;
 	TCFunction<void ()> mp_fTest;
@@ -402,8 +402,8 @@ class CTest
 {
 	static const uint32 mcp_Test = 0;
 	static const bool mcp_bTest = true;
-	static const mint mcp_iTest = 0;
-	static const mint mcp_nTest = 0;
+	static const umint mcp_iTest = 0;
+	static const umint mcp_nTest = 0;
 };
 
 
@@ -412,8 +412,8 @@ class CTest
 	static uint32 msp_Test;
 	static bool msp_bTest;
 	static TCSet<int> msp_cTest;
-	static mint msp_iTest;
-	static mint msp_nTest;
+	static umint msp_iTest;
+	static umint msp_nTest;
 	static int* msp_pTest;
 	static FTest* msp_fTest;
 	static auto msp_fTest;

@@ -130,8 +130,8 @@ CWindowsSocket::~CWindowsSocket()
 
 void CWindowsSocket::f_UpdateDelayedSend(const NTime::CTime &_Now)
 {
-	mint LastDelayedData;
-	mint NewDelayedData;
+	umint LastDelayedData;
+	umint NewDelayedData;
 	bool bDelayedStuffed;
 	{
 		DMibLock(m_DelayedLock);
@@ -141,7 +141,7 @@ void CWindowsSocket::f_UpdateDelayedSend(const NTime::CTime &_Now)
 		{
 			if (_Now > pPacket->m_SendTime)
 			{
-				mint Data = pPacket->m_Data.f_GetLen() - pPacket->m_SentData;
+				umint Data = pPacket->m_Data.f_GetLen() - pPacket->m_SentData;
 				int Ret = send((SOCKET)m_pSocket, (const char *)pPacket->m_Data.f_GetArray() + pPacket->m_SentData, Data, 0);
 
 				if (Ret == SOCKET_ERROR)
@@ -301,10 +301,10 @@ aint CWindowsSocketContext::f_Main()
 	mp_hThread = GetCurrentThread();
 	mp_ThreadID = GetCurrentThreadId();
 
-	mint ProcessId = (mint)GetCurrentProcessId();
+	umint ProcessId = (umint)GetCurrentProcessId();
 
 	CFStr256 FormatFormat;
-	FormatFormat = CFStr256::CFormat("NMib" DMibSystemManagerPrefix "PID_0x{nfh,sf0,sj*2}_THIS_0x{nfh,sf0,sj*2}") << ProcessId << (mint)this << sizeof(ProcessId) * 2 ;
+	FormatFormat = CFStr256::CFormat("NMib" DMibSystemManagerPrefix "PID_0x{nfh,sf0,sj*2}_THIS_0x{nfh,sf0,sj*2}") << ProcessId << (umint)this << sizeof(ProcessId) * 2 ;
 
 	CFStr256 ClassName = CFStr256::CFormat("MalterlibSocketReportClass_{}") << FormatFormat;
 
@@ -398,8 +398,8 @@ aint CWindowsSocketContext::f_Main()
 					{
 
 						DMibUnlockTyped(NThread::CMutual, mp_Lock);
-//									mint Error = WSAGETSELECTERROR(Message.lParam);
-						mint Event = WSAGETSELECTEVENT(Message.lParam);
+//									umint Error = WSAGETSELECTERROR(Message.lParam);
+						umint Event = WSAGETSELECTEVENT(Message.lParam);
 
 						{
 							NMib::NNetwork::ENetTCPState StateAdded = NMib::NNetwork::ENetTCPState_None;
@@ -480,7 +480,7 @@ bool CWindowsSocketContext::f_IsEmpty()
 // WindowsSocketContext Address Methods
 // *************************************************************************************************************************
 
-CWindowsAddress* CWindowsSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, mint _nDataBytes)
+CWindowsAddress* CWindowsSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {
 	switch(_Type)
 	{
@@ -528,7 +528,7 @@ NMib::NNetwork::ENetAddressType CWindowsSocketContext::f_GetAddressType(CWindows
 	return _Address.f_GetType();
 }
 
-bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, mint _nDataBytes)
+bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes)
 {
 	NMib::NNetwork::ENetAddressType Type = _Address.f_GetType();
 
@@ -570,7 +570,7 @@ bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMi
 	}
 }
 
-CWindowsAddress* CWindowsSocketContext::f_SetAddressRaw(CWindowsAddress* _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, mint _nDataBytes)
+CWindowsAddress* CWindowsSocketContext::f_SetAddressRaw(CWindowsAddress* _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, umint _nDataBytes)
 {
 	if (_Type != _pAddress->f_GetType())
 	{
@@ -1415,7 +1415,7 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 	return true;
 }
 
-mint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, mint _DataLen)
+umint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen)
 {
 	int Ret = recv((SOCKET)_pSocket->m_pSocket, (char *)_pData, _DataLen, 0);
 
@@ -1433,7 +1433,7 @@ mint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, mi
 	return Ret;
 }
 
-mint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData, mint _DataLen)
+umint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData, umint _DataLen)
 {
 #ifdef DTCPDelayEmulation
 	if (bDTCPDelayEmulation)
@@ -1477,7 +1477,7 @@ mint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData,
 	return Ret;
 }
 
-mint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAddress const&_Address, const void *_pData, mint _DataLen)
+umint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAddress const&_Address, const void *_pData, umint _DataLen)
 {
 	int Ret = sendto((SOCKET)_pSocket->m_pSocket, (const char *)_pData, _DataLen, 0, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
@@ -1495,7 +1495,7 @@ mint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAdd
 	return Ret;
 }
 
-mint CWindowsSocketContext::f_ReceiveDatagram(CWindowsSocket *_pSocket, CWindowsAddress &_Address, void *_pData, mint _DataLen)
+umint CWindowsSocketContext::f_ReceiveDatagram(CWindowsSocket *_pSocket, CWindowsAddress &_Address, void *_pData, umint _DataLen)
 {
 	socklen_t Len = _pSocket->m_BindAddressSize;
 	int Ret = recvfrom((SOCKET)_pSocket->m_pSocket, (char *)_pData, _DataLen, 0, (sockaddr *)_Address.f_GetForWrite(_pSocket->m_BindAddressType, Len), &Len);
@@ -1581,8 +1581,8 @@ struct CWindowsSocket_OldVersion
 {
 	struct CLock
 	{
-		mint m_nLocked;
-		mint m_ThreadID;
+		umint m_nLocked;
+		umint m_ThreadID;
 		aint m_nRecurse;
 		void* m_Event;
 	};
@@ -1692,7 +1692,7 @@ uint32 CWindowsSocketContext::f_GetListenPort(CWindowsSocket *_pSocket)
 	}
 }
 
-mint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
+umint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
 {
 	return CUnixAddress::mc_MaxAddressLength;
 }

@@ -526,7 +526,7 @@ inline_always CUndocumentedTEB *fg_GetTEB()
 }
 
 template <typename tf_CType>
-inline_always tf_CType fg_GetTebData(mint _iIndex)
+inline_always tf_CType fg_GetTebData(umint _iIndex)
 {
 #if defined(DArchitecture_arm64)
 	return (tf_CType)__readx18qword(_iIndex);

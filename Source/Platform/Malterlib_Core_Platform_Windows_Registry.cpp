@@ -372,7 +372,7 @@ namespace NMib
 		{
 			NContainer::TCVector<NStr::CStr> Children;
 			fp_EnumKeys(_Key, Children);
-			for (mint i = 0; i < Children.f_GetLen(); ++i)
+			for (umint i = 0; i < Children.f_GetLen(); ++i)
 			{
 				fp_DeleteKey(_Key + "\\" + Children[i]);
 			}
@@ -457,13 +457,13 @@ namespace NMib
 			}
 			else if (_pMulti)
 			{
-				mint NeededLen = 1;
+				umint NeededLen = 1;
 				NContainer::TCVector<NStr::CWStr> TempMulti;
 				TempMulti.f_SetLen(_pMulti->f_GetLen());
-				for (mint i = 0; i < _pMulti->f_GetLen(); ++i)
+				for (umint i = 0; i < _pMulti->f_GetLen(); ++i)
 				{
 					TempMulti[i] = NStr::NPlatform::fg_StrToWindows((*_pMulti)[i]);
-					mint Len = TempMulti[i].f_GetLen();
+					umint Len = TempMulti[i].f_GetLen();
 					if (Len)
 					{
 						NeededLen += Len + 1;
@@ -474,9 +474,9 @@ namespace NMib
 				Temp.f_SetLen(NeededLen);
 				ch16 *pParse = Temp.f_GetArray();
 
-				for (mint i = 0; i < _pMulti->f_GetLen(); ++i)
+				for (umint i = 0; i < _pMulti->f_GetLen(); ++i)
 				{
-					mint Len = TempMulti[i].f_GetLen();
+					umint Len = TempMulti[i].f_GetLen();
 					if (Len)
 					{
 						NMib::NMemory::fg_MemCopy(pParse, TempMulti[i].f_GetStr(), (Len + 1)*2);
@@ -532,7 +532,7 @@ namespace NMib
 			_Values.f_SetLen(nValues);
 			LongestValueName++;
 
-			for (mint i = 0; i < nValues; ++i)
+			for (umint i = 0; i < nValues; ++i)
 			{
 				NStr::CWStr Temp;
 				TmpLength = LongestValueName;
@@ -573,7 +573,7 @@ namespace NMib
 			_Keys.f_SetLen(nSubKeys);
 			LongestSubKey++;
 
-			for (mint i = 0; i < nSubKeys; ++i)
+			for (umint i = 0; i < nSubKeys; ++i)
 			{
 				NStr::CWStr Temp;
 				if(RegEnumKeyW(PathKey, i, Temp.f_GetStr(LongestSubKey), LongestSubKey) == ERROR_NO_MORE_ITEMS)

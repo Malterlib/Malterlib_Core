@@ -14,23 +14,23 @@ namespace NMib::NThread::NPlatform
 	{
 		CWindowsThreadLocals m_ThreadLocals;
 		CWindowsCrossModuleProcessInfo *m_pProcessInfo;
-		mint m_ThreadID = 0;
-		NAtomic::TCAtomic<mint> m_nThreadDestroys;
+		umint m_ThreadID = 0;
+		NAtomic::TCAtomic<umint> m_nThreadDestroys;
 		DMibListLinkDS_Link(CWindowsCrossModuleThreadInfo, m_Link);
-		mint m_Reserved[123] = {0};
+		umint m_Reserved[123] = {0};
 	};
 
 	static_assert(sizeof(CWindowsCrossModuleThreadInfo) == sizeof(void *) * 384);
 
 	struct CWindowsCrossModuleProcessInfo final
 	{
-		mint m_Version = 0;
-		NAtomic::TCAtomic<mint> m_RefCount;
-		mint m_ThreadLocal = TCLimitsInt<mint>::mc_Max;
+		umint m_Version = 0;
+		NAtomic::TCAtomic<umint> m_RefCount;
+		umint m_ThreadLocal = TCLimitsInt<umint>::mc_Max;
 		NContainer::TCBitArray<CWindowsThreadLocals::mc_ThreadLocalSlots> m_ThreadLocalFreeSlots;
 		DMibListLinkDS_List(CWindowsCrossModuleThreadInfo, m_Link) m_ThreadInfos;
 
-		mint m_Reserved[124 - CWindowsThreadLocals::mc_ThreadLocalSlots / (sizeof(void *) * 8)] = {0};
+		umint m_Reserved[124 - CWindowsThreadLocals::mc_ThreadLocalSlots / (sizeof(void *) * 8)] = {0};
 
 		CWindowsCrossModuleProcessInfo();
 		~CWindowsCrossModuleProcessInfo();
@@ -42,7 +42,7 @@ namespace NMib::NThread::NPlatform
 		static bool fs_SetThreadLocal(uint32 _ThreadLocalID, void *_pValue);
 
 		static CWindowsCrossModuleThreadInfo *fs_GetOrCreateThreadInfo();
-		static CWindowsCrossModuleThreadInfo *fs_CreateThreadInfo(mint _ThreadID);
+		static CWindowsCrossModuleThreadInfo *fs_CreateThreadInfo(umint _ThreadID);
 		static void fs_DestroyThreadInfo();
 	};
 

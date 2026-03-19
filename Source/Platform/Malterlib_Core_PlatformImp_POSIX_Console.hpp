@@ -44,7 +44,7 @@ void NSys::fg_ConsoleOutputRaw(NMib::NStr::CStrNonTracked const &_Str)
 	fg_ConsoleOutput(_Str);
 }
 
-void fg_WriteStringToPipe(int _Handle, ch8 const *_pStr, mint _Len)
+void fg_WriteStringToPipe(int _Handle, ch8 const *_pStr, umint _Len)
 {
 	if (!_Len)
 		return;
@@ -78,7 +78,7 @@ void fg_WriteStringToPipe(int _Handle, ch8 const *_pStr, mint _Len)
 	}
 }
 
-void NSys::fg_ConsoleOutput(ch8 const *_pStr, mint _Len)
+void NSys::fg_ConsoleOutput(ch8 const *_pStr, umint _Len)
 {
 	fg_WriteStringToPipe(1, _pStr, _Len);
 }

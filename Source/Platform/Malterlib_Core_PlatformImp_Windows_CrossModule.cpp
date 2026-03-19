@@ -15,8 +15,8 @@ namespace NMib::NThread::NPlatform
 	uint32 CWindowsThreadLocals::ms_ThreadLocalsExtendedLocactionOffset = 0;
 #endif
 
-	mint CWindowsThreadLocals::ms_ThreadLocalsMinOffset = 0;
-	mint CWindowsThreadLocals::ms_ThreadLocalsMaxOffset = 0;
+	umint CWindowsThreadLocals::ms_ThreadLocalsMinOffset = 0;
+	umint CWindowsThreadLocals::ms_ThreadLocalsMaxOffset = 0;
 
 	void fg_Windows_InitCrossModule()
 	{
@@ -33,10 +33,10 @@ namespace NMib::NThread::NPlatform
 
 			CWindowsCrossModuleProcessInfo::ms_pThis = new (pMemory) CWindowsCrossModuleProcessInfo();
 
-			mint Pointer = (mint)CWindowsCrossModuleProcessInfo::ms_pThis;
-			for (mint i = 0; i < sizeof(mint) * 8; ++i)
+			umint Pointer = (umint)CWindowsCrossModuleProcessInfo::ms_pThis;
+			for (umint i = 0; i < sizeof(umint) * 8; ++i)
 			{
-				if (Pointer & (mint(1) << i))
+				if (Pointer & (umint(1) << i))
 				{
 					AddAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << i));
 				}
@@ -45,14 +45,14 @@ namespace NMib::NThread::NPlatform
 		}
 		else
 		{
-			mint Pointer = 0;
+			umint Pointer = 0;
 			// This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
 			if (FindAtomW(str_utf16("MibCrossModuleAtom")))
 			{
-				for (mint i = 0; i < sizeof(mint) * 8; ++i)
+				for (umint i = 0; i < sizeof(umint) * 8; ++i)
 				{
 					if (FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << i)))
-						Pointer |= (mint(1) << i);
+						Pointer |= (umint(1) << i);
 				}
 			}
 
@@ -81,10 +81,10 @@ namespace NMib::NThread::NPlatform
 
 		if (CWindowsCrossModuleProcessInfo::ms_pThis->m_RefCount.f_FetchSub(1) == 1)
 		{
-			mint Pointer = (mint)CWindowsCrossModuleProcessInfo::ms_pThis;
-			for (mint i = 0; i < sizeof(mint) * 8; ++i)
+			umint Pointer = (umint)CWindowsCrossModuleProcessInfo::ms_pThis;
+			for (umint i = 0; i < sizeof(umint) * 8; ++i)
 			{
-				if (Pointer & (mint(1) << i))
+				if (Pointer & (umint(1) << i))
 					DeleteAtom(FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MalterlibCrossModuleAtom{}")) << i)));
 			}
 			DeleteAtom(FindAtomW(str_utf16("MalterlibCrossModuleAtom")));
@@ -142,7 +142,7 @@ namespace NMib::NThread::NPlatform
 		return pThreadLocals;
 	}
 
-	CWindowsCrossModuleThreadInfo *CWindowsCrossModuleProcessInfo::fs_CreateThreadInfo(mint _ThreadID)
+	CWindowsCrossModuleThreadInfo *CWindowsCrossModuleProcessInfo::fs_CreateThreadInfo(umint _ThreadID)
 	{
 		void *pMemory = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(CWindowsCrossModuleThreadInfo));
 

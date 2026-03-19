@@ -46,7 +46,7 @@ public:
 
 private:
 
-	void fp_Touch(void *_pAddress, mint _Size)
+	void fp_Touch(void *_pAddress, umint _Size)
 	{
 		try
 		{
@@ -65,10 +65,10 @@ private:
 
 	aint f_Main() override
 	{
-		mint StartAddress = NMib::TCLimitsInt<mint>::mc_Min;
-		mint CurrentAddress = StartAddress;
-		mint MaxPerTime = 1*1024*1024;
-		[[maybe_unused]] mint TotalScannedMemory = 0;
+		umint StartAddress = NMib::TCLimitsInt<umint>::mc_Min;
+		umint CurrentAddress = StartAddress;
+		umint MaxPerTime = 1*1024*1024;
+		[[maybe_unused]] umint TotalScannedMemory = 0;
 		bool bUseRunTime = m_CPUUsage != 0.0;
 		fp64 RunTime = 0.0;
 		if (bUseRunTime)
@@ -77,10 +77,10 @@ private:
 		TotalStopwatch.f_Start();
 		while (f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
 		{
-			mint ScannedMemory = 0;
+			umint ScannedMemory = 0;
 			NMib::NTime::CStopwatch Stopwatch;
 			Stopwatch.f_Start();
-			for (mint i = 0; true; ++i)
+			for (umint i = 0; true; ++i)
 			{
 				MEMORY_BASIC_INFORMATION MemInfo;
 				if (!VirtualQuery((void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
@@ -104,7 +104,7 @@ private:
 					ScannedMemory += MemInfo.RegionSize;
 					TotalScannedMemory += MemInfo.RegionSize;
 				}
-				if (CurrentAddress == (mint)MemInfo.BaseAddress + MemInfo.RegionSize)
+				if (CurrentAddress == (umint)MemInfo.BaseAddress + MemInfo.RegionSize)
 				{
 #ifdef DConfig_ReleaseTesting
 					DMibTrace("Scanned {} bytes in {} seconds 2!!!\r\n", TotalScannedMemory, TotalStopwatch.f_GetTime());
@@ -114,7 +114,7 @@ private:
 					TotalStopwatch.f_Start();
 				}
 				else
-					CurrentAddress = (mint)MemInfo.BaseAddress + MemInfo.RegionSize;
+					CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
 				if ((ScannedMemory > MaxPerTime || i > 1000) && (!bUseRunTime || Stopwatch.f_GetTime() > RunTime))
 					break;
 			}

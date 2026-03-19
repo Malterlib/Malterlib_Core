@@ -51,7 +51,7 @@ public:
 
 	NMib::NStorage::TCUniquePointer<NMib::NDBus::CSystem> m_pDBus; // May be nullptr
 
-	NMib::NAtomic::TCAtomic<mint> m_PasswordManagerCreated;
+	NMib::NAtomic::TCAtomic<umint> m_PasswordManagerCreated;
 	NMib::NStorage::TCUniquePointer<NMib::NSys::CLinuxPasswordManager> m_pPasswordManager;
 
 	NMib::NSys::EDesktopEnvironment m_DesktopEnvironment;

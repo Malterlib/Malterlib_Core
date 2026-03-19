@@ -55,7 +55,7 @@ namespace NMib
 		return ToReturn;
 	}
 
-	CRunTimeObjectInfo *CRunTimeObjectInfo::f_GetObject(const ch8 *_pName, mint _NameLen)
+	CRunTimeObjectInfo *CRunTimeObjectInfo::f_GetObject(const ch8 *_pName, umint _NameLen)
 	{
 		CRunTimeObjectInfo *pNamespace = &g_DynamicObjectsSystem->m_GlobalNamespace;
 
@@ -63,7 +63,7 @@ namespace NMib
 		const ch8 *pNamespaceStr = _pName;
 		while (1)
 		{
-			DMibFastCheck(mint(pNamespaceStr - _pName) < _NameLen);
+			DMibFastCheck(umint(pNamespaceStr - _pName) < _NameLen);
 			NStr::CStr String;
 			aint iSub = NStr::fg_StrFind(pNamespaceStr, "::");
 			if (iSub >= 0)
@@ -111,7 +111,7 @@ namespace NMib
 
 	void CRunTimeObjectInfo::f_Construct(const ch8 *_pName, const ch8 *_pParent, bool _bIsStatic)
 	{
-//		NSys::fg_DebugOutput((NStr::CFStr256::CFormat("Constructing 0x{nfh,sj16,sf0} {} parent {}" DMibNewLine) << (mint)this << _pName << _pParent).f_GetStr());
+//		NSys::fg_DebugOutput((NStr::CFStr256::CFormat("Constructing 0x{nfh,sj16,sf0} {} parent {}" DMibNewLine) << (umint)this << _pName << _pParent).f_GetStr());
 
 		const ch8 *pNamespace = NStr::fg_StrAdd(_pName, NStr::fg_StrFindReverse(_pName, "::"));
 		const ch8 *pName = _pName;
@@ -202,7 +202,7 @@ namespace NMib
 
 	void CRunTimeObjectInfo::f_Destruct()
 	{
-//		NSys::fg_DebugOutput((NStr::CFStr256::CFormat("Destroying 0x{nfh,sj16,sf0} {}" DMibNewLine) << (mint)m_pName<< m_pName ).f_GetStr());
+//		NSys::fg_DebugOutput((NStr::CFStr256::CFormat("Destroying 0x{nfh,sj16,sf0} {}" DMibNewLine) << (umint)m_pName<< m_pName ).f_GetStr());
 
 		if (!m_Children.f_IsEmpty() || !m_Namespace.f_IsEmpty())
 		{

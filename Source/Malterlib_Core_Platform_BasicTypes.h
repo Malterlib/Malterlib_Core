@@ -61,7 +61,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		using uint64 = unsigned long long;
 		using uint128 = unsigned __int128;
 
-		using mint = unsigned long int;
+		using umint = unsigned long int;
 		using smint = signed long int;
 		using aint = signed long long;
 		using uaint = unsigned long long;
@@ -102,7 +102,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		using uint32 = unsigned int;
 		using uint64 = unsigned long long;
 
-		using mint = unsigned long;
+		using umint = unsigned long;
 		using smint = signed long;
 		using aint = int;
 		using uaint = unsigned int;
@@ -149,7 +149,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		using uint64 = unsigned long long;
 		using uint128 = unsigned __int128;
 
-		using mint = unsigned long int;
+		using umint = unsigned long int;
 		using smint = signed long int;
 		using aint = signed long long;
 		using uaint = unsigned long long;
@@ -192,7 +192,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		using uint32 = unsigned long;
 		using uint64 = unsigned long long;
 
-		using mint = unsigned int;
+		using umint = unsigned int;
 		using smint = signed int;
 		using aint = int;
 		using uaint = unsigned int;
@@ -236,7 +236,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		using uint64 = unsigned __int64;
 
 		using smint = __int64;
-		using mint = unsigned __int64;
+		using umint = unsigned __int64;
 		using aint = __int64;
 		using uaint = unsigned __int64;
 
@@ -276,7 +276,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 		using uint16 = unsigned short;
 		using uint32 = unsigned long;
 		using uint64 = unsigned __int64;
-		using mint = unsigned int;
+		using umint = unsigned int;
 		using smint = int;
 		using aint = int;
 		using uaint = unsigned int;
@@ -317,7 +317,7 @@ static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
 	using uint16 = unsigned short;
 	using uint32 = unsigned long;
 	using uint64 = unsigned long long;
-	using mint = unsigned int;
+	using umint = unsigned int;
 	using smint = signed int;
 	using aint = int;
 	using uaint = unsigned int;

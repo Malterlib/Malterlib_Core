@@ -65,7 +65,7 @@ namespace NMib
 
 		NStr::CStr fg_MacOS_GetString(CFStringRef _pKey)
 		{
-			mint MaxNeededSize = mint(CFStringGetLength(_pKey)) * 4u + 1u;
+			umint MaxNeededSize = umint(CFStringGetLength(_pKey)) * 4u + 1u;
 
 			auto pUTF8 = CFStringGetCStringPtr(_pKey, kCFStringEncodingUTF8);
 			if (pUTF8)
@@ -82,7 +82,7 @@ namespace NMib
 
 		NStr::CStrNonTracked fg_MacOS_GetStringUntracked(CFStringRef _pKey)
 		{
-			mint MaxNeededSize = mint(CFStringGetLength(_pKey)) * 4u + 1u;
+			umint MaxNeededSize = umint(CFStringGetLength(_pKey)) * 4u + 1u;
 
 			auto pUTF8 = CFStringGetCStringPtr(_pKey, kCFStringEncodingUTF8);
 			if (pUTF8)

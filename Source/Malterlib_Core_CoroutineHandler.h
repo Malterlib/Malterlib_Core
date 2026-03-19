@@ -59,7 +59,7 @@ namespace NMib
 
 		DMibListLinkDS_List(CCoroutineThreadLocalHandler, m_Link) m_ThreadLocalHandlers;
 #if DMibEnableSafeCheck > 0
-		mint m_nThreadLocalScopes = 0;
+		umint m_nThreadLocalScopes = 0;
 #endif
 	};
 

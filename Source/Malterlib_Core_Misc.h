@@ -130,14 +130,14 @@ namespace NMib
 				return fp_GetIdentifier();
 			}
 
-			inline_small mint f_GetContext() const
+			inline_small umint f_GetContext() const
 			{
 				return fp_GetContext();
 			}
 		protected:
 			virtual void *fp_GetPointer() const = 0;
 			virtual aint fp_GetIdentifier() const = 0;
-			virtual mint fp_GetContext() const = 0;
+			virtual umint fp_GetContext() const = 0;
 
 		};
 
@@ -148,7 +148,7 @@ namespace NMib
 
 			const t_CType *m_pContainee;
 			aint m_Identifier;
-			mint m_Context;
+			umint m_Context;
 
 			TCClassContainer(const t_CType &_Containee, aint _Identifier)
 			{
@@ -156,7 +156,7 @@ namespace NMib
 				m_Identifier = _Identifier;
 				m_Context = 0;
 			}
-			TCClassContainer(const t_CType &_Containee, aint _Identifier, mint _Context)
+			TCClassContainer(const t_CType &_Containee, aint _Identifier, umint _Context)
 			{
 				m_pContainee = &_Containee;
 				m_Identifier = _Identifier;
@@ -169,7 +169,7 @@ namespace NMib
 				return m_Identifier;
 			}
 
-			virtual mint fp_GetContext() const
+			virtual umint fp_GetContext() const
 			{
 				return m_Context;
 			}
@@ -187,7 +187,7 @@ namespace NMib
 		}
 
 		template <typename t_CType>
-		TCClassContainer<t_CType> fg_GetClassContainer(const t_CType &_Object, mint _Context)
+		TCClassContainer<t_CType> fg_GetClassContainer(const t_CType &_Object, umint _Context)
 		{
 			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::ETypeID, _Context));
 		}
@@ -251,7 +251,7 @@ namespace NMib
 				if constexpr (sizeof(tf_CInt) > 4)
 				{
 					tf_CInt Return = mp_Z;
-					for (mint i = 1; i < (sizeof(tf_CInt) + 3) / 4; ++i)
+					for (umint i = 1; i < (sizeof(tf_CInt) + 3) / 4; ++i)
 					{
 						Return <<= 32;
 						Return |= f_GetValue<uint32>();
@@ -452,16 +452,16 @@ namespace NMib
 		}
 
 		template <typename tf_CType, typename tf_FCompare, typename tf_CFind>
-		constexpr aint fg_BinarySearch(tf_CType const *_pArray, mint _Len, tf_CFind const &_ToFind, tf_FCompare &&_fCompare)
+		constexpr aint fg_BinarySearch(tf_CType const *_pArray, umint _Len, tf_CFind const &_ToFind, tf_FCompare &&_fCompare)
 		{
-			mint Low = 0;
-			mint High = _Len;
+			umint Low = 0;
+			umint High = _Len;
 
 			tf_CType const *pArray = _pArray;
 
 			while (Low < High)
 			{
-				mint Mid = (Low + High) >> 1;
+				umint Mid = (Low + High) >> 1;
 				if (fg_CheckOrdering(_fCompare(pArray[Mid], _ToFind)) < 0)
 					Low = Mid + 1;
 				else
@@ -475,16 +475,16 @@ namespace NMib
 		}
 
 		template <typename tf_CType, typename tf_CFind>
-		constexpr aint fg_BinarySearch(tf_CType const *_pArray, mint _Len, tf_CFind const &_ToFind)
+		constexpr aint fg_BinarySearch(tf_CType const *_pArray, umint _Len, tf_CFind const &_ToFind)
 		{
 			return fg_BinarySearch(_pArray, _Len, _ToFind, CSort_Default());
 		}
 
 		template <typename tf_CType, typename tf_FCompare>
-		constexpr bool fg_IsSorted(tf_CType const *_pArray, mint _Len, tf_FCompare &&_fCompare)
+		constexpr bool fg_IsSorted(tf_CType const *_pArray, umint _Len, tf_FCompare &&_fCompare)
 		{
 			tf_CType const *pArray = _pArray;
-			for (mint i = 0, j = 1; j != _Len; ++i, ++j)
+			for (umint i = 0, j = 1; j != _Len; ++i, ++j)
 			{
 				if (fg_CheckOrdering(_fCompare(pArray[j], pArray[i])) < 0)
 					return false;
@@ -494,16 +494,16 @@ namespace NMib
 		}
 
 		template <typename tf_CType>
-		constexpr bool fg_IsSorted(tf_CType const *_pArray, mint _Len)
+		constexpr bool fg_IsSorted(tf_CType const *_pArray, umint _Len)
 		{
 			return fg_IsSorted(_pArray, _Len, CSort_Default());
 		}
 
 		template <typename tf_CType, typename tf_FCompare, typename tf_CFind>
-		constexpr aint fg_BinarySearchLowerBound(tf_CType const *_pArray, mint _Len, tf_CFind const &_ToFind, tf_FCompare &&_fCompare)
+		constexpr aint fg_BinarySearchLowerBound(tf_CType const *_pArray, umint _Len, tf_CFind const &_ToFind, tf_FCompare &&_fCompare)
 		{
-			mint Low = 0;
-			mint High = _Len;
+			umint Low = 0;
+			umint High = _Len;
 
 			if (High == 0)
 				return -1;
@@ -512,7 +512,7 @@ namespace NMib
 
 			while (Low < High)
 			{
-				mint Mid = (Low + High) >> 1;
+				umint Mid = (Low + High) >> 1;
 				if (fg_CheckOrdering(_fCompare(pArray[Mid], _ToFind)) < 0)
 					Low = Mid + 1;
 				else
@@ -523,7 +523,7 @@ namespace NMib
 		}
 
 		template <typename tf_CType, typename tf_CFind>
-		constexpr aint fg_BinarySearchLowerBound(tf_CType const *_pArray, mint _Len, tf_CFind const &_ToFind)
+		constexpr aint fg_BinarySearchLowerBound(tf_CType const *_pArray, umint _Len, tf_CFind const &_ToFind)
 		{
 			return fg_BinarySearchLowerBound(_pArray, _Len, _ToFind, CSort_Default());
 		}
