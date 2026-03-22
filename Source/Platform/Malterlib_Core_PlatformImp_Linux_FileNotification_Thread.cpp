@@ -140,7 +140,7 @@ bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 				}
 				auto *pChild = Watch.f_GetChild(EventPath);
 				if (pChild)
-					PendingRenames[Event.cookie] = {fg_Explicit(pChild), bIsDirectory};
+					PendingRenames[Event.cookie] = {.m_pWatch = fg_Explicit(pChild), .m_bIsDirectory = bIsDirectory};
 			}
 			else if (Event.mask & IN_MOVED_TO)
 			{
