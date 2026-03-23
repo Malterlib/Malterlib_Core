@@ -15,10 +15,13 @@ source ./BuildSystem/SharedBuildSettings.sh
 export "PATH=/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:$PATH"
 
 Workspace="${1:-Tests}"
+
+source "$DIR/ResolveConfig.sh"
+
 Platform="${2:-$MalterlibDefaultPlatform}"
 Architecture="${3:-$MalterlibDefaultArchitecture}"
 Config="${4:-$MalterlibDefaultConfiguration}"
-BuildSystemDir="${5:-BuildSystem/Default}"
+BuildSystemDir="${5:-${MalterlibGeneratedBuildSystemDir:-BuildSystem/Default}}"
 
 echo xcodebuild -workspace "$BuildSystemDir/$Workspace.xcworkspace" -scheme "Build All $Platform $Architecture $Config"
 xcodebuild -workspace "$BuildSystemDir/$Workspace.xcworkspace" -scheme "Build All $Platform $Architecture $Config" 2>&1 | MTool XcodeBuildFilter
