@@ -14,10 +14,13 @@ source ./BuildSystem/SharedBuildSettings.sh
 
 Workspace="${1:-Tests}"
 Target="${2:-Build}"
+
+source "$DIR/ResolveConfig.sh"
+
 Platform="${3:-$MalterlibDefaultPlatform}"
 Architecture="${4:-$MalterlibDefaultArchitecture}"
 Config="${5:-$MalterlibDefaultConfiguration}"
-BuildSystemDir="${6:-BuildSystem/Default}"
+BuildSystemDir="${6:-${MalterlibGeneratedBuildSystemDir:-BuildSystem/Default}}"
 
 ExtraParams=
 if [[ "$MalterlibMSBuildBuildMaxParallelProjects" != "" ]]; then
