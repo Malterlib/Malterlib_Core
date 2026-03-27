@@ -14,6 +14,16 @@ Malterlib is a comprehensive C++ framework and build system that provides cross-
 - Supports multiple platforms: macOS, Windows, Linux
 - Supports multiple architectures: arm64, x86, x86
 
+### Shell Setup
+
+Before running any commands, enable pipefail so that piped commands propagate failure exit codes correctly:
+
+```bash
+set -o pipefail
+```
+
+Without this, piping output through `tail`, `head`, etc. will hide non-zero exit codes from the original command.
+
 ### Common Build Commands
 
 ```bash
@@ -209,6 +219,14 @@ auto Value = fg_Function
 ```
 
 ```cpp
+fg_Function
+	(
+		5
+	)
+;
+```
+
+```cpp
 (
 	[&]
 	{
@@ -231,8 +249,8 @@ auto Value = fg_Function
 - `fp_`: Private/protected member function
 - `fs_`: Static member function
 - `fsp_`: Private/protected static member function
-- `fg_`: Global function
-- `fsg_`: Static global function
+- `fg_`: Global function (also used in anonymous namespaces)
+- `fsg_`: Static global function (only when explicitly declared `static`, not for anonymous namespaces)
 
 #### Parameter Prefixes
 - `_`: Standard function parameter
@@ -247,9 +265,9 @@ auto Value = fg_Function
 - No prefix for local variables
 - `c_`: Compile-time constant local variables
 - `s_`: Static local variables
-- `g_`: Global variables
-- `gc_`: Compile-time constant global variables
-- `gs_`: Static global variables
+- `g_`: Global variables (also used in anonymous namespaces)
+- `gc_`: Compile-time constant global variables (also used in anonymous namespaces)
+- `gs_`: Static global variables (only when explicitly declared `static`, not for anonymous namespaces)
 - `m_`: Member variables
 - `mc_`: Compile-time constant member variables
 - `ms_`: Static member variables
