@@ -14,6 +14,16 @@ Malterlib is a comprehensive C++ framework and build system that provides cross-
 - Supports multiple platforms: macOS, Windows, Linux
 - Supports multiple architectures: arm64, x86, x86
 
+### Shell Setup
+
+Before running any commands, enable pipefail so that piped commands propagate failure exit codes correctly:
+
+```bash
+set -o pipefail
+```
+
+Without this, piping output through `tail`, `head`, etc. will hide non-zero exit codes from the original command.
+
 ### Common Build Commands
 
 ```bash
@@ -211,6 +221,14 @@ auto Value = fg_Function
 ```
 
 ```cpp
+fg_Function
+	(
+		5
+	)
+;
+```
+
+```cpp
 (
 	[&]
 	{
@@ -233,8 +251,8 @@ auto Value = fg_Function
 - `fp_`: Private/protected member function
 - `fs_`: Static member function
 - `fsp_`: Private/protected static member function
-- `fg_`: Global function
-- `fsg_`: Static global function
+- `fg_`: Global function (also used in anonymous namespaces)
+- `fsg_`: Static global function (only when explicitly declared `static`, not for anonymous namespaces)
 
 #### Parameter Prefixes
 - `_`: Standard function parameter
@@ -249,9 +267,9 @@ auto Value = fg_Function
 - No prefix for local variables
 - `c_`: Compile-time constant local variables
 - `s_`: Static local variables
-- `g_`: Global variables
-- `gc_`: Compile-time constant global variables
-- `gs_`: Static global variables
+- `g_`: Global variables (also used in anonymous namespaces)
+- `gc_`: Compile-time constant global variables (also used in anonymous namespaces)
+- `gs_`: Static global variables (only when explicitly declared `static`, not for anonymous namespaces)
 - `m_`: Member variables
 - `mc_`: Compile-time constant member variables
 - `ms_`: Static member variables
@@ -493,25 +511,24 @@ Type-safe enum class operators:
 // Define an enum with operators
 enum class EMyFlags : uint32
 {
-	ENone = 0,
-	EFlag1 = 1 << 0,
-	EFlag2 = 1 << 1,
-	EFlag3 = 1 << 2
+	mc_None = 0,
+	, mc_Flag1 = DMibBit(0)
+	, mc_Flag2 = DMibBit(1)
+	, mc_Flag3 = DMibBit(2)
 };
-DMibEnumOperators(EMyFlags);
 
 // Use enum operators
 void fg_UseFlags()
 {
-	EMyFlags nFlags = EMyFlags::EFlag1 | EMyFlags::EFlag2;
+	EMyFlags Flags = EMyFlags::mc_Flag1 | EMyFlags::mc_Flag2;
 
-	if (nFlags & EMyFlags::EFlag1)
+	if (fg_IsSet(Flags, EMyFlags::mc_Flag1))
 	{
 		// Flag1 is set
 		fg_ProcessFlag1();
 	}
 
-	nFlags &= ~EMyFlags::EFlag2;  // Clear Flag2
+	nFlags &= ~EMyFlags::mc_Flag2;  // Clear Flag2
 }
 ```
 
@@ -832,6 +849,7 @@ Since Core is the foundation of Malterlib, here are references to all module-spe
 - **Numeric**: `../Numeric/CLAUDE.md` - Numerical operations and math
 - **Process**: `../Process/CLAUDE.md` - Process management and IPC
 - **Stream**: `../Stream/CLAUDE.md` - Stream processing and I/O
+- **Test**: `../Test/CLAUDE.md` - Test framework usage and test-writing conventions
 - **Time**: `../Time/CLAUDE.md` - Time and date utilities
 - **Web**: `../Web/CLAUDE.md` - Web server and HTTP handling
 
