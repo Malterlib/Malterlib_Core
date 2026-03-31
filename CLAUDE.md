@@ -35,14 +35,14 @@ MalterlibBuildShowProgress=false ./mib build WorkspaceName [Platform] [Architect
 # Example: ./mib build Tests
 
 # Generate and build a specific target within a workspace
-MalterlibBuildShowProgress=false ./mib build_target WorkspaceName TargetName [Platform] [Architecture] [Configuration]
+MalterlibBuildShowProgress=false ./mib build-target WorkspaceName TargetName [Platform] [Architecture] [Configuration]
 # Example: ./mib build Tests Com_Test_Malterlib_Container
 
 # Generate, build and run tests
 MalterlibBuildShowProgress=false ./mib test
 
 # Update repositories
-./mib update_repos
+./mib update-repos
 
 # Get repository status
 ./mib status
@@ -133,7 +133,7 @@ Located in `External/` directory:
 
 ### Repository Management
 - Check status: `./mib status`
-- Update all repos: `./mib update_repos`
+- Update all repos: `./mib update-repos`
 - Switch branch: `./mib branch [BranchName]`
 - Push changes: `./mib push`
 - The system uses git LFS for binary dependencies - ensure it's installed
@@ -301,7 +301,7 @@ fg_Function
 - The project uses custom memory management with configurable allocators
 - LFS (Large File Storage) is used for binary dependencies
 - The build system caches environment and dependency information in `BuildSystem/Default/`
-- When switching branches, run `./mib update_repos` to ensure all repositories are synchronized
+- When switching branches, run `./mib update-repos` to ensure all repositories are synchronized
 - The mib script automatically bootstraps required tools on first use
 - **Bit utilities**: `fg_GetHighestBitSet(x)` safely handles `x == 0` (returns a defined value). `fg_GetHighestBitSetNoZero(x)` is the faster variant that requires `x != 0` — passing 0 is undefined behavior. Use `fg_GetHighestBitSet` when zero is a possible input; use `fg_GetHighestBitSetNoZero` only when zero has been excluded by a prior check.
 

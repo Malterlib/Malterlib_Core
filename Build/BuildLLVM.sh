@@ -117,7 +117,7 @@ function BuildClangVersion()
 
 	export MalterlibRepositoryHardReset=true
 
-	./mib update_repos
+	./mib update-repos
 
 	export TOOLCHAIN_DIR="$DT_TOOLCHAIN_DIR"
 

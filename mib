@@ -498,6 +498,9 @@ while true; do
 			# TODO: deprecate this
 			exit 0
 		;;
+		bootstrap-only)
+			exit 0
+		;;
 		bootstrap_only)
 			exit 0
 		;;
@@ -512,6 +515,9 @@ while true; do
 		test)
 			RunTests "$@"
 		;;
+		build-target)
+			./Malterlib/Core/BuildScripts/BuildTarget.sh "$@"
+		;;
 		build_target)
 			./Malterlib/Core/BuildScripts/BuildTarget.sh "$@"
 		;;
@@ -520,6 +526,9 @@ while true; do
 		;;
 		postbuild)
 			./Malterlib/Core/BuildScripts/Postbuild.sh "$@"
+		;;
+		detect-system)
+			source ./Malterlib/Core/BuildScripts/DetectSystem.sh "$@"
 		;;
 		detect_system)
 			source ./Malterlib/Core/BuildScripts/DetectSystem.sh "$@"
