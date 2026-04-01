@@ -1,0 +1,154 @@
+// Copyright Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+Type
+{
+	namespace NLicense
+	{
+		CAnnotation: {
+			Path: [string]
+			, CopyrightText: string
+			, LicenseIdentifier: string
+			, Precedence?: string
+		}
+
+		CFileSource: {
+			Source: string
+			, Name?: string
+		}
+
+		CHeaderOverride: {
+			Path: [string]
+			, Header: [string]
+		}
+
+		CCommentStyle: {
+			Path: [string]
+			, LinePrefix: string
+			, LineSuffix?: string
+			, DetectShebang?: bool
+			, IsPython?: bool
+			, IsXml?: bool
+		}
+	}
+
+	CLicenseConfig: {
+		Header?: [string]
+		, Include?: [string]
+		, Exclude: [string] = ["LICENSE", "LICENSES/*", "REUSE.toml"]
+		, Disallowed?: [string]
+		, HeaderOverrides?: [type(NLicense::CHeaderOverride)]
+		, CommentStyles?: [type(NLicense::CCommentStyle)]
+		, LicenseFiles?: {
+			...: one_of([type(NLicense::CFileSource)], string)
+		}
+		, ReuseAnnotations?: [type(NLicense::CAnnotation)]
+	}
+}
+
+Property
+{
+	MalterlibRepoDefaultLicenseConfig: type(CLicenseConfig)
+
+	MalterlibRepoDefaultLicenseConfig {
+		Header: ["Copyright © Unbroken AB", "SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception"]
+		, Include: ["*"]
+		, Exclude: ["LICENSE", "LICENSES/*", "REUSE.toml"]
+		, Disallowed: ["LICENSE.Malterlib", "PROVENANCE.md"]
+		, CommentStyles: [
+			{
+				Path: ["Include/*"]
+				, LinePrefix: "// "
+			}
+		]
+		, LicenseFiles: {
+			"LICENSE": "../LICENSE"->MakeAbsolute()
+			, "LICENSES/Apache-2.0.txt": "../LICENSES/Apache-2.0.txt"->MakeAbsolute()
+			, "LICENSES/LLVM-exception.txt": "../LICENSES/LLVM-exception.txt"->MakeAbsolute()
+		}
+		, ReuseAnnotations: [
+			{
+				Path: Repository.MalterlibRepoReusePaths
+				, CopyrightText: "Unbroken AB"
+				, LicenseIdentifier: "Apache-2.0 WITH LLVM-exception"
+				, Precedence: "override"
+			}
+		]
+	}
+}
+
+Repository
+{
+	MalterlibRepoReusePaths: [string]
+	MalterlibRepoReusePaths ["ImportCache/*", "*/ImportCache/*", "IC/*", "*/IC/*", "*.MRepo", ".gitignore", "*/.gitignore", "*.md"]
+
+	License: type(CLicenseConfig)?
+	CheckLicense: bool = false
+}
+
+Repository
+{
+	!!Repository.Type "Malterlib"
+
+	License MalterlibRepoDefaultLicenseConfig
+	{
+		!!Repository.License undefined
+	}
+
+	CheckLicense true
+	{
+		&
+		{
+			Repository.CheckLicense undefined
+			MalterlibRepoName->StartsWith("MalterlibBinaries") false
+			MalterlibRepoName->StartsWith("MalterlibLLVMBinaries") false
+			MalterlibRepoName->StartsWith("MalterlibTestBinaries") false
+		}
+	}
+}
+
+Repository
+{
+	!!MalterlibRepoName "Malterlib_Core.git"
+
+	MalterlibRepoReusePaths =+ [
+		"Bootstrap.version"
+		, "Build/VisualStudio/MalterlibMSBuild.dll"
+		, "Build/llvm.*.versiontime"
+		, "Documentation/cloc.def"
+		, "Patches/*"
+		, "Resources/*.ico"
+	]
+
+	License #<ReuseAnnotations> =+ [{
+			Path: ["Build/VisualStudio/VSNASM/*"]
+			, CopyrightText: "ShiftMediaProject"
+			, LicenseIdentifier: "LGPL-2.1-or-later"
+			, Precedence: "override"
+		}
+		, {
+			Path: ["LLVMGenerated/*"]
+			, CopyrightText: "LLVM Project"
+			, LicenseIdentifier: "Apache-2.0 WITH LLVM-exception"
+			, Precedence: "override"
+		}
+	]
+
+	License #<CommentStyles> =+ {
+		Path: ["Export/Malterlib_Core_Export_C*", "Export/Malterlib_Core_Export_ObjC*"]
+		, LinePrefix: "// "
+	}
+
+	License #<CommentStyles> =+ {
+		Path: ["mib"]
+		, LinePrefix: "# "
+		, DetectShebang: true
+	}
+
+	License #<CommentStyles> =+ {
+		Path: ["Build/VisualStudio/*.props", "Build/VisualStudio/*.targets", "Resources/macOS/Default.entitlements"]
+		, LinePrefix: "<!-- "
+		, LineSuffix: " -->"
+		, IsXml: true
+	}
+}

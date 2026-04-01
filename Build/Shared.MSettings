@@ -3,6 +3,7 @@
 
 Import "Shared_Repository.MSettings"
 Import "Shared_RepositoryPolicy.MSettings"
+Import "Shared_RepositoryLicense.MSettings"
 Import "Shared_RepositoryReleasePackage.MSettings"
 
 Import "Shared.MGeneratorSettings"
