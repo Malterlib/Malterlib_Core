@@ -102,8 +102,8 @@ Property
 {
 	Property
 	{
-		RepoName: string = `@(this.Identity).git`
-		RepoName `@(this.Identity)_rLFS.git`
+		MalterlibRepoName `@(this.Identity).git`
+		MalterlibRepoName `@(this.Identity)_rLFS.git`
 		{
 			!!MalterlibBinaryRepositoriesUseReleaseLFSStore true
 		}
@@ -116,17 +116,17 @@ Property
 		Type "Malterlib"
 		GitIgnoreType "GitIgnore"
 		Location RepoDir->MakeAbsolute()
-		URL `@(Repository.MalterlibRoot)/@(RepoName)`
+		URL `@(Repository.MalterlibRoot)/@(MalterlibRepoName)`
 		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
 		{
 			!MalterlibRemotePrefixes undefined
 		}
-		Remotes =+ {Name: "malterlib", URL: `https://github.com/Malterlib/@(RepoName)`, Write: MalterlibUpstreamWriteAccess}
+		Remotes =+ {Name: "malterlib", URL: `https://github.com/Malterlib/@(MalterlibRepoName)`, Write: MalterlibUpstreamWriteAccess}
 		{
 			&
 			{
 				MalterlibUpstreamAccess true
-				!Repository.URL `https://github.com/Malterlib/@(RepoName)`
+				!Repository.URL `https://github.com/Malterlib/@(MalterlibRepoName)`
 			}
 		}
 		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore

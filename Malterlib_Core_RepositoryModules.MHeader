@@ -11,7 +11,7 @@ Property
 %Repository MalterlibModules->Unique()
 {
 	!MalterlibUseGitRepo false
-	Property.RepoName: string = `Malterlib_@(this.Identity).git`
+	Property.MalterlibRepoName `Malterlib_@(this.Identity).git`
 
 	Repository
 	{
@@ -20,12 +20,12 @@ Property
 		{
 			!MalterlibRemotePrefixes undefined
 		}
-		Remotes =+ {Name: "malterlib", URL: `https://github.com/Malterlib/@(RepoName)`, Write: MalterlibUpstreamWriteAccess}
+		Remotes =+ {Name: "malterlib", URL: `https://github.com/Malterlib/@(MalterlibRepoName)`, Write: MalterlibUpstreamWriteAccess}
 		{
 			&
 			{
 				MalterlibUpstreamAccess true
-				!Repository.URL `https://github.com/Malterlib/@(RepoName)`
+				!Repository.URL `https://github.com/Malterlib/@(MalterlibRepoName)`
 			}
 		}
 	}
