@@ -13,6 +13,8 @@ Property
 
 	MalterlibBinaryRepositoriesUseReleaseLFSStore: bool = true // User(Repository)=true: Use binary LFS store for repositories.
 
+	MalterlibInstallGitHookHelpers: bool = (!RunningCI && !MalterlibBuildServerBuild) // User(Repository)=false: Install Malterlib git hook helpers into repositories.
+
 	MalterlibBootstrapVersion: int = 5
 }
 
@@ -50,6 +52,10 @@ Property
 		Location Builtin.BasePathAbsolute
 		URL MalterlibGitOriginRemote
 		ExcludeFromSeen true
+		Hooks #<"post-checkout"> =+ "Scripts/GitHooks/post-checkout.sh"->MakeAbsolute()
+		{
+			!!MalterlibInstallGitHookHelpers true
+		}
 	}
 }
 
