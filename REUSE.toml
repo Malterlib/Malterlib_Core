@@ -1,0 +1,19 @@
+version = 1
+
+[[annotations]]
+path = ["ImportCache/**", "**/ImportCache/**", "IC/**", "**/IC/**", "**.MRepo", ".gitignore", "**/.gitignore", "**.md", "Bootstrap.version", "Build/VisualStudio/MalterlibMSBuild.dll", "Build/llvm.**.versiontime", "Documentation/cloc.def", "Patches/**", "Resources/**.ico"]
+precedence = "override"
+SPDX-FileCopyrightText = "Unbroken AB"
+SPDX-License-Identifier = "Apache-2.0 WITH LLVM-exception"
+
+[[annotations]]
+path = "Build/VisualStudio/VSNASM/**"
+precedence = "override"
+SPDX-FileCopyrightText = "ShiftMediaProject"
+SPDX-License-Identifier = "LGPL-2.1-or-later"
+
+[[annotations]]
+path = "LLVMGenerated/**"
+precedence = "override"
+SPDX-FileCopyrightText = "LLVM Project"
+SPDX-License-Identifier = "Apache-2.0 WITH LLVM-exception"

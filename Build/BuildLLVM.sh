@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright © Unbroken AB
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 trap 'rc=$?; echo "${BASH_SOURCE}:${LINENO}: error: Trapped error: $rc"; exit $rc' ERR
 

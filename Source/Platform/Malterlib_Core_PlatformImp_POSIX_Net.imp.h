@@ -1,5 +1,5 @@
-// Copyright © 2015 Hansoft AB
-// Distributed under the MIT license, see license text in LICENSE.Malterlib
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_PlatformImp_POSIX_Net.h"
 #include <Mib/Process/Platform>

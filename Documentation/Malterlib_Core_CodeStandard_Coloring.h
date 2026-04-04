@@ -1,3 +1,6 @@
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 // Use in editor to test coloring
 
 #if 0

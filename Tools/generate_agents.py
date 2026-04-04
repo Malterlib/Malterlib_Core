@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright © Unbroken AB
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 """
 Expand @-mentions in Markdown files recursively.
 

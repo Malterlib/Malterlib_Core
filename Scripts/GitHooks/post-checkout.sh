@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright Unbroken AB
+# Copyright © Unbroken AB
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # Skip when this checkout was driven by mib itself. MalterlibInvocationCommands

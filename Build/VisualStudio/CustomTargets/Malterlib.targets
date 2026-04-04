@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright © Unbroken AB -->
+<!-- SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception -->
+
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<!-- Override GetResolvedLinkObjs to prevent transitive obj collection -->
 	<Target Name="GetResolvedLinkObjs"

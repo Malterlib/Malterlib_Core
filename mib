@@ -1,6 +1,6 @@
 #!/bin/bash
-# Copyright © 2017-2018 Nonna Holding AB
-# Distributed under the MIT license, see license text in LICENSE.Malterlib
+# Copyright © Unbroken AB
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 export MalterlibScriptPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export MalterlibBashSourceFull="$MalterlibScriptPath/${BASH_SOURCE[0]##*/}"

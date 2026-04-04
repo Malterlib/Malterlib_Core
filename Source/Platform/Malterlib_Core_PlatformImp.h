@@ -1,5 +1,5 @@
-// Copyright © 2015 Hansoft AB
-// Distributed under the MIT license, see license text in LICENSE.Malterlib
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #ifndef DMibSafety_IncMalterlib_H
 #	error "You have to include this file through <Mib/Core/Core>"
