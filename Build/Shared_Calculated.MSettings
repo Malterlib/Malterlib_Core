@@ -398,6 +398,17 @@ Property
 		}
 	}
 
+	MalterlibIsPerforceRepository: bool = false
+	MalterlibIsPerforceRepository true
+	{
+		&
+		{
+			!MalterlibChangingBootstrapVersion true
+			!`@(Builtin.BasePathAbsolute)/.git`->FileOrDirectoryExists() true
+			`@(Builtin.BasePathAbsolute)/.p4config`->FileExists() true
+		}
+	}
+
 	// Resolves a location to its actual git data directory.
 	// Normal repo: .git is a directory -> Location/.git
 	// Worktree/submodule: .git is a file containing "gitdir: <path>" -> resolved path
@@ -512,6 +523,65 @@ Property
 			MalterlibGitCommit undefined
 			MalterlibIsGitRepository true
 		}
+	}
+
+	_MSPDBSRV_ENDPOINT_: string = "" // Used as a unique identifier for each build server build
+
+	// Collect all git sub-repo locations (repo locations that have .git and are not the base dir)
+	f_MalterlibCollectGitSubRepoLocation: [string] = []
+	f_MalterlibCollectGitSubRepoLocation [Repository.Location]
+	{
+		!Repository.Location Builtin.BasePathAbsolute
+	}
+
+	f_MalterlibCollectGitSubRepoLocations function(string _Property) [string]
+	f_MalterlibCollectGitSubRepoLocations =+ &f_MalterlibCollectGitSubRepoLocation->GetProperty(_Property)
+
+	MalterlibGitSubRepoLocations: [string] = AllRepositories->ForEach(&f_MalterlibCollectGitSubRepoLocations)
+	MalterlibPerforcePrefixTarget: string
+
+	// Helper: returns _Location if PrefixTarget starts with it (config file is inside this git repo)
+	f_MalterlibPerforceCheckPathPrefix function(string _Location) [string] = []
+	f_MalterlibPerforceCheckPathPrefix =+ _Location
+	{
+		!!MalterlibPerforcePrefixTarget->StartsWith(`@(_Location->RemoveSuffix("/"))/`) true
+	}
+
+	// Collect config files that are NOT inside any git sub-repo (belong to perforce root)
+	f_MalterlibCollectPerforceRootConfigFiles function(string _Property) [string]
+	f_MalterlibCollectPerforceRootConfigFiles =+ GetProperty(&Repository.ConfigFile, _Property)
+	{
+		!!MalterlibGitSubRepoLocations->ForEach(&f_MalterlibPerforceCheckPathPrefix, {MalterlibPerforcePrefixTarget: &Repository.ConfigFile->GetProperty(_Property)})->IsEmpty() true
+	}
+
+	MalterlibPerforceRootConfigFiles: [string] = AllRepositories->ForEach(&f_MalterlibCollectPerforceRootConfigFiles)
+
+	MalterlibPerforceChangelist: string = ""
+	MalterlibPerforceChangelist ExecuteCommand(`@(GeneratedGlobalDirectory)@(_MSPDBSRV_ENDPOINT_)P4Changelist.MState`, MalterlibPerforceRootConfigFiles, `p4@(HostExecutableExtension)`, "changes", "-m", "1", "...#have")->Trim()->ParseFormatString("Change {} on {}", "{0}")
+	{
+		&
+		{
+			MalterlibReproducibleBuild false
+			MalterlibIsPerforceRepository true
+		}
+	}
+	MalterlibPerforceChangelist "default"
+	{
+		&
+		{
+			MalterlibPerforceChangelist undefined
+			MalterlibIsPerforceRepository true
+		}
+	}
+
+	MalterlibRootRevision: string = ""
+	MalterlibRootRevision MalterlibGitCommit
+	{
+		!!MalterlibIsGitRepository true
+	}
+	MalterlibRootRevision MalterlibPerforceChangelist
+	{
+		!!MalterlibIsPerforceRepository true
 	}
 }
 

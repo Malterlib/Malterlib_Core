@@ -436,7 +436,7 @@ Property
 	GenerateFile
 	{
 		Name "BuildSystem/LastBuild/last-build"
-		Contents `@(MalterlibGitCommit)\n`
+		Contents `@(MalterlibRootRevision)\n`
 		UnicodeBOM false
 		UnixLineEnds true
 		Executable false
@@ -450,7 +450,7 @@ Property
 		GenerateFile
 		{
 			Name `BuildSystem/LastBuild/last-build-@(Workspace:this.Identity)`
-			Contents `@(MalterlibGitCommit)\n`
+			Contents `@(MalterlibRootRevision)\n`
 			UnicodeBOM false
 			UnixLineEnds true
 			Executable false
@@ -466,7 +466,7 @@ Property
 		GenerateFile
 		{
 			Name `BuildSystem/LastBuild/last-build-@(Workspace:this.Identity)-@(MalterlibGitBranch || "")`
-			Contents `@(MalterlibGitCommit)\n`
+			Contents `@(MalterlibRootRevision)\n`
 			UnicodeBOM false
 			UnixLineEnds true
 			Executable false
