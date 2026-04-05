@@ -449,7 +449,7 @@ GeneratorSetting
 			, "C++17", "-std=c++17"->f_ClangFlag()
 			, "C++20", "-std=c++20"->f_ClangFlag()
 			, "C++23", "-std=c++23"->f_ClangFlag()
-			, "C++26", "-std=c++26"->f_ClangFlag()
+			, "C++26", ["-std=c++26", "-Wno-c23-extensions"]->f_ClangFlags()
 			, "", []
 		)
 		, Type: "unique"
@@ -472,7 +472,7 @@ GeneratorSetting
 			, "C++17", "-std=c++17"
 			, "C++20", "-std=c++20"
 			, "C++23", "-std=c++23"
-			, "C++26", "-std=c++26"
+			, "C++26", ["-std=c++26", "-Wno-c23-extensions"]
 			, "", []
 		)
 		, Type: "unique"

@@ -891,9 +891,9 @@ Target
 								, "C++17", "-std=c++17"
 								, "C++20", "-std=c++20"
 								, "C++23", "-std=c++23"
-								, "C++26", "-std=c++26"
-								, "", "-std=c++26"
-								, undefined, "-std=c++26"
+								, "C++26", ["-std=c++26", "-Wno-c23-extensions"]
+								, "", ["-std=c++26", "-Wno-c23-extensions"]
+								, undefined, ["-std=c++26", "-Wno-c23-extensions"]
 							)
 							, "C", ((GeneratorFamily == "VisualStudio") ? "C99" : Compile.CLanguage)->SwitchWithError(
 								"Unsupported option: "
