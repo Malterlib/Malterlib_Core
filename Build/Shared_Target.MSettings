@@ -758,7 +758,7 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags =+ ["/FORCE:MULTIPLE", "-incremental:no", "clang_rt.asan_dynamic-x86_64.lib", "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"]
+	ExtraLinkerFlags =+ ["/FORCE:MULTIPLE"->f_LinkerFlag(), "-incremental:no"->f_LinkerFlag(), "clang_rt.asan_dynamic-x86_64.lib"->f_LinkerLibrary(), "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"->f_LinkerFlag()]
 	{
 		&
 		{
@@ -766,10 +766,11 @@ Target
 			TargetIsLaunchableExecutable true
 			MalterlibSupportSanitizerEnable_Address true
 			Target.PlatformToolset "ClangCL"
+			GeneratorFamily "VisualStudio"
 		}
 	}
 
-	ExtraLinkerFlags =+ ["/FORCE:MULTIPLE", "-incremental:no", "clang_rt.asan_dynamic-x86_64.lib", "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"]
+	ExtraLinkerFlags =+ ["/FORCE:MULTIPLE"->f_LinkerFlag(), "-incremental:no"->f_LinkerFlag(), "clang_rt.asan_dynamic-x86_64.lib"->f_LinkerLibrary(), "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"->f_LinkerFlag()]
 	{
 		&
 		{
@@ -777,10 +778,22 @@ Target
 			!TargetIsLaunchableExecutable true
 			MalterlibSupportSanitizerEnable_Address true
 			Target.PlatformToolset "ClangCL"
+			GeneratorFamily "VisualStudio"
 		}
 	}
 
-	ExtraLinkerFlags =+ ["/SAFESEH:NO"]
+	ExtraLinkerFlags =+ ["/FORCE:MULTIPLE"->f_LinkerFlag(), "-incremental:no"->f_LinkerFlag()]
+	{
+		&
+		{
+			TargetIsExecutable true
+			MalterlibSupportSanitizerEnable_Address true
+			Target.PlatformToolset "ClangCL"
+			GeneratorFamily "Ninja"
+		}
+	}
+
+	ExtraLinkerFlags =+ ["/SAFESEH:NO"->f_LinkerFlag()]
 	{
 		&
 		{

@@ -27,6 +27,30 @@ Property
 		!!IsClangCL true
 	}
 
+	f_LinkerFlag function(string _Flag) string = _Flag
+	f_LinkerFlag `-Wl,@(_Flag)`
+	{
+		!!GeneratorFamily "Ninja"
+	}
+
+	f_LinkerFlagsHelper function(string _Flag) [string] = []
+	f_LinkerFlagsHelper =+ `-Wl,@(_Flag)`
+	{
+		!!GeneratorFamily "Ninja"
+	}
+
+	f_LinkerFlags function([string] _Flags) [string] = _Flags
+	f_LinkerFlags _Flags->ForEach(&f_LinkerFlagsHelper)
+	{
+		!!GeneratorFamily "Ninja"
+	}
+
+	f_LinkerLibrary function(string _Library) string = _Library
+	f_LinkerLibrary `-l@(_Library)`
+	{
+		!!GeneratorFamily "Ninja"
+	}
+
 	f_SourceLanguageFlag function(string _Type) string = `-x@(_Type->SwitchWithError(
 		"Unsupported compile type: "
 		, "C++", "c++"
