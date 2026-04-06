@@ -4977,7 +4977,7 @@ Property
 	{
 		!!true _CopyOptions<AbsoluteDestination>
 	}
-	MalterlibBuildServerPutPathUploadTemplate =+ `@(_DestinationDir->AppendPath(MalterlibBuildServerPutPathUploadTemplateCopyOptions<Destination>))`
+	MalterlibBuildServerPutPathUploadTemplate =+ _DestinationDir / MalterlibBuildServerPutPathUploadTemplateCopyOptions<Destination>
 
 	MalterlibBuildServerPutPathUploadDestinationDirs function(type(CFileCopyOptionsDetailed) _CopyOptions) string
 	MalterlibBuildServerPutPathUploadDestinationDirs MalterlibBuildServerPutPath->f_ToStringArray()->ForEach(&MalterlibBuildServerPutPathUploadTemplate, {MalterlibBuildServerPutPathUploadTemplateCopyOptions: _CopyOptions})->Join(";")
@@ -5484,7 +5484,7 @@ Property
 	{
 		!!true _CopyOptions<AbsoluteDestination>
 	}
-	MalterlibPostCopyInternalTemplate =+	`MTool PostCopy @(`@(_CopyOptions<Pattern>)`->EscapeHost()) @(`Config=@(MalterlibPostCopyConfigFile)`->EscapeHost()) @(`Project=@(MalterlibCalculatedPostCopyProject)`->EscapeHost()) @(`OutFolder=@(MalterlibPostCopyDestination->AppendPath(_CopyOptions<Destination>))`->EscapeHost()) Hash=@(MalterlibPostCopyHash->ToString()) FindDirectory=@(_CopyOptions<FindDirectory>->ToString()) Recursive=@(_CopyOptions<Recursive>->ToString())\r\n`
+	MalterlibPostCopyInternalTemplate =+	`MTool PostCopy @(`@(_CopyOptions<Pattern>)`->EscapeHost()) @(`Config=@(MalterlibPostCopyConfigFile)`->EscapeHost()) @(`Project=@(MalterlibCalculatedPostCopyProject)`->EscapeHost()) @(`OutFolder=@(MalterlibPostCopyDestination / _CopyOptions<Destination>)`->EscapeHost()) Hash=@(MalterlibPostCopyHash->ToString()) FindDirectory=@(_CopyOptions<FindDirectory>->ToString()) Recursive=@(_CopyOptions<Recursive>->ToString())\r\n`
 
 	MalterlibPostCopyContents: string?
 	MalterlibPostCopyContents fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(&MalterlibPostCopyInternalTemplate)
