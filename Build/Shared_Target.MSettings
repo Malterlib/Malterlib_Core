@@ -3478,6 +3478,11 @@ Target
 		}
 	}
 
+	ToolPath += [MalterlibBinariesDirectory]
+	{
+		!MToolDirectory MalterlibBinariesDirectory
+	}
+
 	ToolPath += [MToolDirectory]
 
 	ToolPath += `@(MalterlibBinariesDirectory)/NoLib/x86`
