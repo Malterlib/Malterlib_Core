@@ -75,15 +75,15 @@ namespace NTest
 		NMib::NFunction::TCFunction<void ()> m_fFunctor;
 
 		uint32 m_VariablePublic;
-		uint32 ms_StaticVariablePublic;
-		uint32 mc_ConstantPublic;
+		static uint32 ms_StaticVariablePublic;
+		constexpr static uint32 mc_ConstantPublic = 0;
 
 	private:
 		NMib::NFunction::TCFunction<void ()> mp_fFunctor;
 
 		uint32 mp_VariablePrivate;
 		static uint32 msp_StaticVariablePrivate;
-		static uint32 const mcp_ConstantPrivate;
+		constexpr static uint32 mcp_ConstantPrivate = 0;
 
 		void fp_FunctionPrivate();
 
