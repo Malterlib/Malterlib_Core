@@ -144,6 +144,11 @@ Import
 		!PlatformToolsetCompiler undefined
 	}
 
+	CMake_ExcludeFromHash =+ MalterlibLLVMBinariesDirectory + "/"
+	{
+		!!PlatformFamily "Linux"
+	}
+
 	CMake_CacheReplaceContents =+ [
 		{Find: "C:/Go/bin/", Replace: ""}
 		, {Find: "C:\\Go\\bin\\", Replace: ""}
@@ -311,11 +316,12 @@ Import
 
 	CMake_Variables =+ ["CMAKE_CXX_FLAGS_INIT=-stdlib=libc++"]
 	{
-		|
-		{
-			PlatformFamily "Linux"
-			PlatformFamily "macOS"
-		}
+		!!PlatformFamily "macOS"
+	}
+
+	CMake_Variables =+ [`CMAKE_CXX_FLAGS_INIT=-stdlib=libc++ -isystem @(`@(MalterlibLLVMBinariesDirectory)/include/@(MalterlibClangLibraryTargetTriple)/c++/v1`->EscapeHost())`]
+	{
+		!!PlatformFamily "Linux"
 	}
 
 	CMake_Variables =+ [`CMAKE_LINKER=@(Malterlib_LinuxLinker)`]
@@ -433,18 +439,14 @@ Import
 	}
 
 	CMake_ExcludeFromHash =+ [`@(MalterlibDependenciesDirectory)/`]
+	CMake_ExcludeFromHash =+ [`@(MalterlibSysRoot)/`]
+	{
+		!!PlatformFamily "Linux"
+	}
 	CMake_ExcludeFromHash =+ Builtin.BasePathAbsolute
 	CMake_ExcludeFromHash =+ Import.TempDirectory
 	CMake_ExcludeFromHash =+ Builtin.CMakeRoot
 	CMake_ExcludeFromHash =+ [MalterlibCompiledFiles]
-	CMake_ExcludeFromHash =+ [`@(MalterlibSysRoot)/`]
-	{
-		&
-		{
-			PlatformFamily "Linux"
-			Architecture "x86"
-		}
-	}
 	CMake_ExcludeFromHash =+ [`@(Malterlib_MacOSDeveloperLocaction)/`]
 	{
 		!!PlatformFamily "macOS"
@@ -567,6 +569,15 @@ Import
 			!MalterlibSysRoot undefined
 			!Documentation "Doxygen"
 		}
+	}
+
+	CMake_Variables =+ [
+		"CMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY"
+		, "CMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY"
+		, "CMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY"
+	]
+	{
+		!!PlatformFamily "Linux"
 	}
 
 	CMake_CCompilerTarget MalterlibTargetTriple

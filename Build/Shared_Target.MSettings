@@ -958,8 +958,20 @@ Target
 
 Property
 {
+	MalterlibLinuxSDKDistro: string = "Ubuntu"
+
+	MalterlibLinuxSDKDistro "Debian"
+	{
+		&
+		{
+			MalterlibLinuxSDKDistro undefined
+			PlatformFamily "Linux"
+			Architecture "x86"
+		}
+	}
+
 	MalterlibSysRoot: string?
-	MalterlibSysRoot `@("../../../Binaries/MalterlibSDK"->MakeAbsolute())/@(PlatformFamily)/@(Architecture)/Linux.sdk`
+	MalterlibSysRoot `@("../../../Binaries/MalterlibSDK"->MakeAbsolute())/@(PlatformFamily)/@(MalterlibLinuxSDKDistro)/@(Architecture)/Linux.sdk`
 	{
 		|
 		{
