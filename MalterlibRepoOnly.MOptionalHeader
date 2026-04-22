@@ -3,7 +3,7 @@
 
 Property
 {
-	MalterlibOnlyRepositoryManagement: bool = false
+	MalterlibOnlyRepositoryManagement: bool = true
 }
 
 // Start with reposicory
@@ -16,25 +16,4 @@ Import "Build/Shared_Types.MSettings"
 Import "Malterlib_Core_RepositoryBinary.MHeader"
 Import "Malterlib_Core_RepositoryModules.MHeader"
 
-// Must start with the settings
-Import "Build/Shared.MSettings"
-{
-	!MalterlibOnlyRepositoryManagement "true"
-}
-
-// Import all sub projects
-Import "Malterlib_Core.MHeader"
-{
-	!MalterlibOnlyRepositoryManagement "true"
-}
-
-Import "../*/*.MHeader"
-{
-	!MalterlibOnlyRepositoryManagement "true"
-}
-
 Import "Build/SharedRepositoryOnly.MSettings"
-{
-	!!MalterlibOnlyRepositoryManagement "true"
-}
-
