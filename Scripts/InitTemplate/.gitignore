@@ -1,0 +1,14 @@
+# Additional ignore entries for sub-repositories (Malterlib/*, External/*,
+# Binaries/*) are added dynamically by the mib/MTool executable during
+# ./mib update-repos, so they do not need to be listed here.
+
+/BuildSystem
+/*.MRepoState
+/.cache
+/compile_commands.json
+/.vscode/malterlib.local.json
+/.claude/*.local.json
+*.sublime-workspace
+.DS_Store
+.git
+.lock

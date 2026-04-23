@@ -551,9 +551,23 @@ MalterlibCoreBootstrapVersion="2"
 
 function DownloadPrivateGithubAsset
 {
-	GitHubApiToken=`printf "protocol=https\nhost=github.com\n" | git credential fill | grep password | cut -d = -f 2`
+	# Derive host + org from MalterlibRepoRoot so private asset fetches honor
+	# --repo-root / custom mirrors. For github.com, the dedicated API host is
+	# api.github.com; GitHub Enterprise exposes the REST API under /api/v3 on
+	# the same host.
+	local RepoRootNoScheme="${MalterlibRepoRoot#*://}"
+	local RepoRootHost="${RepoRootNoScheme%%/*}"
+	local RepoRootOrg="${RepoRootNoScheme#*/}"
+	local ApiBase
+	if [[ "$RepoRootHost" == "github.com" ]]; then
+		ApiBase="https://api.github.com"
+	else
+		ApiBase="https://$RepoRootHost/api/v3"
+	fi
 
-	ApiRepoRoot="https://api.github.com/repos/Malterlib/$1"
+	GitHubApiToken=`printf "protocol=https\nhost=%s\n" "$RepoRootHost" | git credential fill | grep password | cut -d = -f 2`
+
+	ApiRepoRoot="$ApiBase/repos/$RepoRootOrg/$1"
 	AuthString="Authorization: token $GitHubApiToken"
 
 	echo "    $ApiRepoRoot"
@@ -688,6 +702,54 @@ function BootstrapCore()
 		fi
 	fi
 }
+
+# `mib init --repo-root=<url>` must take effect before BootstrapCore, otherwise
+# DetectRepoRoot falls back to https://github.com/Malterlib and the initial
+# clone of Malterlib/Core and the bootstrap binary download go to the wrong
+# place. Only consumed here; Init.sh does its own parsing for baking the value
+# into the generated .MBuildSystem.
+if [[ "$1" == "init" ]]; then
+	for (( InitArgIndex=2; InitArgIndex<=$#; InitArgIndex++ )); do
+		InitArg="${!InitArgIndex}"
+		case "$InitArg" in
+			--repo-root)
+				InitArgNext=$((InitArgIndex+1))
+				if (( InitArgNext > $# )) || [[ "${!InitArgNext}" == --* ]]; then
+					OutputError "--repo-root requires a URL value"
+					exit 1
+				fi
+				InitRepoRootValue="${!InitArgNext}"
+				if [[ "$InitRepoRootValue" != https://* ]]; then
+					OutputError "--repo-root must be an https:// URL: $InitRepoRootValue"
+					exit 1
+				fi
+				if [[ "$InitRepoRootValue" == */ ]]; then
+					OutputError "--repo-root must not end with a trailing slash: $InitRepoRootValue"
+					exit 1
+				fi
+				export MalterlibRepoRoot="$InitRepoRootValue"
+				break
+				;;
+			--repo-root=*)
+				InitRepoRootValue="${InitArg#*=}"
+				if [[ -z "$InitRepoRootValue" ]]; then
+					OutputError "--repo-root= requires a URL value"
+					exit 1
+				fi
+				if [[ "$InitRepoRootValue" != https://* ]]; then
+					OutputError "--repo-root must be an https:// URL: $InitRepoRootValue"
+					exit 1
+				fi
+				if [[ "$InitRepoRootValue" == */ ]]; then
+					OutputError "--repo-root must not end with a trailing slash: $InitRepoRootValue"
+					exit 1
+				fi
+				export MalterlibRepoRoot="$InitRepoRootValue"
+				break
+				;;
+		esac
+	done
+fi
 
 BootstrapCore
 
@@ -860,6 +922,9 @@ while true; do
 			if [[ "$MalterlibPlatform" == macOS ]] ; then
 				./Malterlib/Core/Setup/macOS/setup.sh "$@"
 			fi
+		;;
+		init)
+			"$ScriptsDir/Init.sh" "$@"
 		;;
 		build)
 			./Malterlib/Core/BuildScripts/BuildWorkspace.sh "$@"

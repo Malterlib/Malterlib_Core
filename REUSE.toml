@@ -13,7 +13,7 @@ SPDX-FileCopyrightText = "ShiftMediaProject"
 SPDX-License-Identifier = "LGPL-2.1-or-later"
 
 [[annotations]]
-path = "LLVMGenerated/**"
+path = ["LLVMGenerated/**", "Scripts/InitTemplate/**"]
 precedence = "override"
 SPDX-FileCopyrightText = "LLVM Project"
 SPDX-License-Identifier = "Apache-2.0 WITH LLVM-exception"

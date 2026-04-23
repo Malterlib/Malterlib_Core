@@ -1,0 +1,53 @@
+// ${executableExtension} and ${dynamicLibraryExtension} below are not expanded
+// by stock VS Code. To make them resolve, either use UnbrokenCode
+// (https://github.com/Unbroken/UnbrokenCode/releases/latest), which supports
+// them out of the box, or install the "Bundled Extensions" from the same
+// release — forked clangd and CodeLLDB extensions with workarounds that also
+// run inside stock VS Code or any VS Code fork.
+{
+	"editor.tabSize": 4,
+	"editor.insertSpaces": false,
+	"files.trimTrailingWhitespace": true,
+	"files.insertFinalNewline": true,
+	"files.exclude": {
+		"BuildSystem/SafeMib": true,
+		"BuildSystem/LastBuild": true,
+		"External": true,
+		".cache": true,
+		"**/BuildSystem/last-build*": true,
+		"**/Binaries/**": true
+	},
+	"search.exclude": {
+		"BuildSystem/**/Files": true,
+		"*.sublime-workspace": true,
+		"**/compile_commands.json": true,
+		"**/IC/*": true,
+		"**/ImportCache/*": true,
+		"**/ConfigStore/*": true
+	},
+	"files.associations": {
+		"**/Include/**": "cpp",
+		"**/RootInclude/**": "cpp"
+	},
+	"git.autoRepositoryDetection": "subFolders",
+	"git.repositoryScanMaxDepth": 5,
+	"clangd.path": "${workspaceFolder}/Binaries/MalterlibLLVM/HostPlatformArchitecture/bin/clangd${executableExtension}",
+	"clangd.arguments": ["--background-index", "--use-dirty-headers", "--header-insertion=never"],
+	"lldb.displayFormat": "auto",
+	"lldb.showDisassembly": "auto",
+	"lldb.dereferencePointers": false,
+	"lldb.consoleMode": "commands",
+	"lldb.launch.library": "${workspaceRoot}/Binaries/MalterlibLLVM/HostPlatformArchitectureCodeLLDB/lib/liblldb${dynamicLibraryExtension}",
+	"lldb.launch.initCommands": ["command source ${workspaceRoot}/.lldbinit"],
+	"cmake.configureOnOpen": false,
+	"cmake.configureOnEdit": false,
+	"cmake.ctest.enabled": false,
+	"cmake.ignoreCMakeListsMissing": true,
+	"cmake.sourceDirectory": [],
+	"js/ts.tsc.autoDetect": "off",
+	"grunt.autoDetect": "off",
+	"jake.autoDetect": "off",
+	"gulp.autoDetect": "off",
+	"npm.autoDetect": "off",
+	"search.useIgnoreFiles": false
+}

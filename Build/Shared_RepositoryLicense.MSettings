@@ -127,7 +127,7 @@ Repository
 			, Precedence: "override"
 		}
 		, {
-			Path: ["LLVMGenerated/*"]
+			Path: ["LLVMGenerated/*", "Scripts/InitTemplate/*"]
 			, CopyrightText: "LLVM Project"
 			, LicenseIdentifier: "Apache-2.0 WITH LLVM-exception"
 			, Precedence: "override"
@@ -135,7 +135,7 @@ Repository
 	]
 
 	License #<CommentStyles> =+ {
-		Path: ["Export/Malterlib_Core_Export_C*", "Export/Malterlib_Core_Export_ObjC*"]
+		Path: ["Export/Malterlib_Core_Export_C*", "Export/Malterlib_Core_Export_ObjC*", "*.MOptionalHeader"]
 		, LinePrefix: "// "
 	}
 
