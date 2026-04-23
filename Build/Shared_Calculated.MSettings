@@ -460,18 +460,34 @@ Property
 		![] f_MalterlibGitHeadRefDir(_DataDir, _CommonDir)->FindFilesIn(f_MalterlibGitHeadRefFile(_DataDir, _CommonDir))
 	}
 
+	MalterlibGitRemotes: string = ""
+	MalterlibGitRemotes ExecuteCommand(`@(GeneratedGlobalDirectory)GitRemotes.MState`, ["ByDigest:", `@(MalterlibGitRepoGitCommonDir)/config`], `git@(HostExecutableExtension)`, "remote")
+	{
+		!!MalterlibIsGitRepository true
+	}
+
+	MalterlibGitHasOrigin: bool = false
+	MalterlibGitHasOrigin true
+	{
+		!!MalterlibGitRemotes->FindGetLine("origin") "origin"
+	}
+
 	MalterlibGitOriginRemote: string = ""
 	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, ["ByDigest:", `@(MalterlibGitRepoGitCommonDir)/config`], `git@(HostExecutableExtension)`, "remote", "get-url", "origin")
 	{
-		!!MalterlibIsGitRepository true
+		!!MalterlibGitHasOrigin true
 	}
 	MalterlibGitOriginRemote MalterlibGitOriginRemote->FindGetLine("*")
 	{
-		!!MalterlibIsGitRepository true
+		!!MalterlibGitHasOrigin true
 	}
 	MalterlibGitOriginRemote Error(`Your root git repository at '@(Builtin.BasePathAbsolute)' remote 'origin' doesn't have a proper remote URL, please set it`)
 	{
-		!!MalterlibGitOriginRemote ""
+		&
+		{
+			MalterlibGitHasOrigin true
+			MalterlibGitOriginRemote ""
+		}
 	}
 
 	MalterlibReproducibleBuild: bool = false // User(Build System)=true: Set to true to enable reproducible builds, setting dates to a known value
@@ -489,13 +505,35 @@ Property
 		!!MalterlibReproducibleBuild true
 	}
 
+	// Probe whether HEAD itself resolves to a commit, not whether any ref does.
+	// `rev-list --all` would include remote refs and tags that a fetch may have
+	// populated while HEAD is still unborn, which would spoof MalterlibGitHasValidHead
+	// and then break on the subsequent `rev-parse HEAD`. The .MTryState extension
+	// enables ExecuteCommand's Try mode, so a non-zero exit (unborn HEAD) yields
+	// an empty string instead of throwing.
+	MalterlibGitHeadCommit: string = ""
+	MalterlibGitHeadCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitHeadCommit.MTryState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir), `git@(HostExecutableExtension)`, "rev-parse", "--verify", "--quiet", "HEAD")->Trim()
+	{
+		!!MalterlibIsGitRepository true
+	}
+
+	MalterlibGitHasValidHead: bool = false
+	MalterlibGitHasValidHead true
+	{
+		&
+		{
+			MalterlibIsGitRepository true
+			!MalterlibGitHeadCommit ""
+		}
+	}
+
 	MalterlibGitBranch: string?
 	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir), `git@(HostExecutableExtension)`, "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
 	{
 		&
 		{
 			MalterlibReproducibleBuild false
-			MalterlibIsGitRepository true
+			MalterlibGitHasValidHead true
 		}
 	}
 	MalterlibGitBranch "default"
@@ -508,12 +546,12 @@ Property
 	}
 
 	MalterlibGitCommit: string = ""
-	MalterlibGitCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir), `git@(HostExecutableExtension)`, "rev-parse", "HEAD")->Trim()
+	MalterlibGitCommit MalterlibGitHeadCommit
 	{
 		&
 		{
 			MalterlibReproducibleBuild false
-			MalterlibIsGitRepository true
+			MalterlibGitHasValidHead true
 		}
 	}
 	MalterlibGitCommit "default"
