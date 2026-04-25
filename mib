@@ -665,7 +665,12 @@ function BootstrapCore()
 			echo "Trying public download"
 			echo "    $PublicAssetUrl"
 			ExpectedError="The requested URL returned error: 404"
-			if ! curl -L --no-progress-meter -fo "$TempDir/MTool.tar.gz" "$PublicAssetUrl" 2>&1 | grep -v "$ExpectedError"; then
+			CurlErrorFile=`mktemp`
+			if curl -L --no-progress-meter -fo "$TempDir/MTool.tar.gz" "$PublicAssetUrl" 2>"$CurlErrorFile"; then
+				rm -f "$CurlErrorFile"
+			else
+				grep -v "$ExpectedError" "$CurlErrorFile" >&2 || true
+				rm -f "$CurlErrorFile"
 				echo Trying private download instead
 				DownloadPrivateGithubAsset "$MalterlibBinariesRepo" "bootstrap/${BootstrapVersion}" "MTool.tar.gz" "$TempDir/MTool.tar.gz"
 				echo
