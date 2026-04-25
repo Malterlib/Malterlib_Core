@@ -1570,6 +1570,11 @@ Property
 {
 	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem: bool = false // User(Undocumented)=true: Init early support. Currently breaks macOS 10.12
 	MalterlibMemoryManager_CheckOverrideMemoryLeaks: bool = false
+
+	MalterlibModules =+ "Instrumentation"
+	{
+		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
+	}
 }
 
 %Target "Dll_MalterlibOverrideMalloc"

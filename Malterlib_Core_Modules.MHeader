@@ -3,11 +3,29 @@
 
 Import "Malterlib_Core_RepositoryModules.MHeader"
 
+Property
+{
+	MalterlibEnableOptonalModules: bool = false // User(Repository)=true: Enable extra optional Malterlib modules
+
+	MalterlibOptionalModules: [string] = []
+}
+
+Property.MalterlibOptionalModules =+ [
+	"BuildSystem"
+	, "Cloud"
+	, "Git"
+	, "Instrumentation"
+	, "InterProcess"
+	, "Mongo"
+	, "Perforce"
+	, "SQL"
+	, "Tool"
+	, "WebApp"
+]
+
 Property.MalterlibModules =+ [
 	"Atomic"
 	, "Bit"
-	, "BuildSystem"
-	, "Cloud"
 	, "CommandLine"
 	, "Compression"
 	, "Concurrency"
@@ -24,23 +42,15 @@ Property.MalterlibModules =+ [
 	, "Exception"
 	, "File"
 	, "Function"
-	, "Git"
 	, "Graphics"
-	, "Instrumentation"
-	, "InterProcess"
 	, "Intrusive"
 	, "Log"
 	, "Memory"
 	, "Meta"
-	, "WebApp"
-	, "Mongo"
 	, "Network"
 	, "Numeric"
-	, "Perforce"
 	, "Preprocessor"
 	, "Process"
-	, "SQL"
-	, "STL"
 	, "Security"
 	, "Storage"
 	, "Stream"
@@ -53,6 +63,11 @@ Property.MalterlibModules =+ [
 	, "Web"
 	, "XML"
 ]
+
+Property.MalterlibModules =+ MalterlibOptionalModules
+{
+	!!MalterlibEnableOptonalModules true
+}
 
 Property
 {
