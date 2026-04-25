@@ -8,6 +8,7 @@ Property
 	MalterlibEnableOptonalModules: bool = false // User(Repository)=true: Enable extra optional Malterlib modules
 
 	MalterlibOptionalModules: [string] = []
+	MalterlibDefaultModules: [string] = []
 }
 
 Property.MalterlibOptionalModules =+ [
@@ -23,7 +24,7 @@ Property.MalterlibOptionalModules =+ [
 	, "WebApp"
 ]
 
-Property.MalterlibModules =+ [
+Property.MalterlibDefaultModules =+ [
 	"Atomic"
 	, "Bit"
 	, "CommandLine"
@@ -64,6 +65,7 @@ Property.MalterlibModules =+ [
 	, "XML"
 ]
 
+Property.MalterlibModules =+ MalterlibDefaultModules
 Property.MalterlibModules =+ MalterlibOptionalModules
 {
 	!!MalterlibEnableOptonalModules true
@@ -120,6 +122,8 @@ Property
 
 	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_DebianBased_Source"
 }
+
+Property.MalterlibPublicRepositories =+ MalterlibBinarySDKRepositories->Unique()->ForEach(&f_GetMalterlibRepositoryNameFromRepoRLFS)
 
 %Repository MalterlibBinarySDKRepositories->Unique()
 {

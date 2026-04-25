@@ -61,6 +61,11 @@ Property
 	}
 }
 
+Property
+{
+	MalterlibPublicRepositories =+ MalterlibBinaryRepositories->Unique()->ForEach(&f_GetMalterlibRepositoryNameFromRepoRLFS)
+}
+
 %Repository MalterlibBinaryRepositories->Unique()
 {
 	Property
@@ -170,6 +175,11 @@ Property
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_arm64"
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Windows_x64"
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Windows_arm64"
+}
+
+Property
+{
+	MalterlibPublicRepositories =+ MalterlibBinaryLLVMRepositories->Unique()->ForEach(&f_GetMalterlibRepositoryNameFromRepoRLFS)
 }
 
 %Repository MalterlibBinaryLLVMRepositories->Unique()

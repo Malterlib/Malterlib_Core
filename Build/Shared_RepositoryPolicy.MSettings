@@ -307,14 +307,34 @@ Repository
 	ApplyPolicyPretend: bool = false
 }
 
+Property
+{
+	MalterlibRepositoryOrganization: string = Repository.MalterlibRoot->GetFile()
+	MalterlibRepositoryName: string = `@(Repository.MalterlibRoot->GetFile())/@(Repository.URL->GetFileNoExt())`
+
+	f_GetMalterlibRepositoryNameFromModules function(string _Name) [string] = []
+	f_GetMalterlibRepositoryNameFromModules =+ `@(MalterlibRepositoryOrganization)/Malterlib_@(_Name)`
+
+	f_GetMalterlibRepositoryNameFromRepo function(string _Name) [string] = []
+	f_GetMalterlibRepositoryNameFromRepo =+ `@(MalterlibRepositoryOrganization)/@(_Name)`
+
+	f_GetMalterlibRepositoryNameFromRepoRLFS function(string _Name) [string] = []
+	f_GetMalterlibRepositoryNameFromRepoRLFS =+ `@(MalterlibRepositoryOrganization)/@(_Name)_rLFS`
+
+	MalterlibPublicRepositories: [string] = []
+	MalterlibPublicRepositories =+ [MalterlibDefaultModules..., MalterlibOptionalModules...]->Unique()->ForEach(&f_GetMalterlibRepositoryNameFromModules)
+
+	MalterlibPublicRepositories =+ `@(MalterlibRepositoryOrganization)/Malterlib_Core`
+}
+
 Repository
 {
 	!!Repository.Type "Malterlib"
 
 	Policy #<RepositorySettings> {
-		Name: `@(Repository.MalterlibRoot->GetFile())/@(Repository.URL->GetFileNoExt())`
+		Name: MalterlibRepositoryName
 		, DefaultBranch: "master"
-		, IsPrivate: true
+		, IsPrivate: !MalterlibPublicRepositories->ContainsListElement(MalterlibRepositoryName)
 		, HasIssues: false
 		, HasProjects: false
 		, HasWiki: false
