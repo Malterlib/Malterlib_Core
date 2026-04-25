@@ -990,6 +990,44 @@ Compile
 	}
 }
 
+Property
+{
+	|
+	{
+		&
+		{
+			"MalterlibModuleCloud_Version"->IsDefined() true
+			(MalterlibModuleCloud_Version >= 1) true
+		}
+		!MalterlibModules->ContainsListElement("Cloud") true
+	}
+
+	MalterlibCloudPlatform: string = `@(Platform->Replace(' ',''))-@(Architecture->Replace(' ',''))`
+
+	MalterlibCloudVersionInfo_Application: string = Target.FileName
+	MalterlibCloudVersionInfo_Branch: string = MalterlibFullBranch
+	MalterlibCloudVersionInfo_BranchForVersion: string = MalterlibCloudVersionInfo_Branch->Replace(' ', '')->Replace('(', '-')->Replace(')', '')
+	MalterlibCloudVersionInfo_Configuration: string = FullConfiguration
+	MalterlibCloudVersionInfo_Product: string = Workspace:Workspace.Name
+	MalterlibCloudVersionInfo_Tags: [string] = []
+
+	MalterlibCloud_VersionUploadVersion: string? // User(Cloud Debug): Allows you to override the version uploaded to version manager for debug purposes
+
+	MalterlibCloudVersionInfo_Version: string
+	MalterlibCloudVersionInfo_Version MalterlibCloud_VersionUploadVersion
+	{
+		&
+		{
+			MalterlibCloudVersionInfo_Version undefined
+			!MalterlibCloud_VersionUploadVersion undefined
+		}
+	}
+	MalterlibCloudVersionInfo_Version Format("{}/{}.{}.{}", MalterlibCloudVersionInfo_BranchForVersion, ProductVersionMajor->AsInteger(), ProductVersionMinor->AsInteger(), ProductVersionRevision->AsInteger())
+	{
+		!!MalterlibCloudVersionInfo_Version undefined
+	}
+}
+
 %Group "~Automatic/Metadata"
 {
 	%GenerateFile "Metadata"
