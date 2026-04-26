@@ -701,6 +701,19 @@ Target
 	PlatformToolsetCompiler: string?
 }
 
+Property
+{
+	f_ValidatePathExists function(string _Path, string _Error) string
+	f_ValidatePathExists _Path
+	{
+		!!_Path->FileOrDirectoryExists() true
+	}
+	f_ValidatePathExists Error(`@(_Error) @(_Path)`)
+	{
+		!_Path->FileOrDirectoryExists() true
+	}
+}
+
 // Windows
 Target
 {
@@ -1072,7 +1085,7 @@ Property
 	MalterlibMSVCLibPath: string = VisualStudioMSVCRootPath / MalterlibMSVCVersion / "lib" / MalterlibMSVCArchitecture
 
 	// Windows SDK include paths
-	MalterlibWindowsSDKIncludePath: string = MalterlibWindowsSDKRootPath / "Include" / MalterlibWindowsSDKVersion
+	MalterlibWindowsSDKIncludePath: string = (MalterlibWindowsSDKRootPath / "Include" / MalterlibWindowsSDKVersion)->f_ValidatePathExists("Windows SDK not found at")
 	MalterlibWindowsSDKUCRTIncludePath: string = MalterlibWindowsSDKIncludePath / "ucrt"
 	MalterlibWindowsSDKUMIncludePath: string = MalterlibWindowsSDKIncludePath / "um"
 	MalterlibWindowsSDKSharedIncludePath: string = MalterlibWindowsSDKIncludePath / "shared"
@@ -6075,4 +6088,3 @@ Target
 		!PostBuildOutputfile undefined
 	}
 }
-

@@ -30,6 +30,9 @@ UpdateDependencies()
 		echo Installing brew
 		sudo ls
 		NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	elif [[ "$RunningCI" == "true" ]] || [[ "$CI" == "true" ]]; then
+		HOMEBREW_NO_AUTO_UPDATE=1 brew install --quiet git git-lfs zstd
+		return
 	else
 		brew update
 		brew upgrade

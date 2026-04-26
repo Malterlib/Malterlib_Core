@@ -10,14 +10,18 @@ Property
 	HasLLVMRepository: bool = false
 	HasLLVMRepository true
 	{
-		|
+		&
 		{
-			EnablePlatformFamily_macOS true
-			EnablePlatformFamily_Linux true
-			&
+			HasLLVMRepository undefined
+			|
 			{
-				MalterlibUseClangForWindowsSupported true
-				EnablePlatformFamily_Windows true
+				EnablePlatformFamily_macOS true
+				EnablePlatformFamily_Linux true
+				&
+				{
+					MalterlibUseClangForWindowsSupported true
+					EnablePlatformFamily_Windows true
+				}
 			}
 		}
 	}

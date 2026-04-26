@@ -126,11 +126,16 @@ Property
 Property
 {
 	MalterlibBinaryLLVMRepositories: [string] = []
+	MalterlibSyncBinaryLLVMRepositories: bool = true // User(Repository)=true: Set to false to skip LLVM binary repositories.
 }
 
 Property
 {
-	!MalterlibOnlyRepositoryManagement true
+	&
+	{
+		!MalterlibOnlyRepositoryManagement true
+		MalterlibSyncBinaryLLVMRepositories true
+	}
 
 	MalterlibBinaryLLVMRepositories =+ `MalterlibLLVMBinaries_@(HostPlatformFamily)_@(HostArchitecture)`
 	{
@@ -170,6 +175,7 @@ Property
 	{
 		MalterlibAllBinaryRepositories true
 		!MalterlibOnlyRepositoryManagement true
+		MalterlibSyncBinaryLLVMRepositories true
 	}
 
 	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_macOS_x64"
