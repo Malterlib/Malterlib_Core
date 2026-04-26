@@ -15,6 +15,9 @@ Property
 		Type "External"
 		ConvertUnderscoreToPath true
 		Remotes =+ {Name: "upstream", URL: `https://github.com/boostorg/@(this.Identity->Replace("boost_", "")).git`}
+		{
+			!!MalterlibAddUpstreams true
+		}
 	}
 }
 
@@ -202,7 +205,7 @@ Property
 			MalterlibIncludeLevel "Target"
 			MalterlibIncludePerConfig true
 		}
-		
+
 	}
 	MalterlibBoostIncludeOutputDir `@(GeneratedDirectoryNoConfig)BoostRootInclude`
 	{
@@ -211,7 +214,7 @@ Property
 			MalterlibIncludeLevel "Target"
 			!MalterlibIncludePerConfig true
 		}
-		
+
 	}
 	MalterlibBoostIncludeOutputDir `@(GeneratedWorkspaceDirectory)BoostRootInclude`
 	{
@@ -220,7 +223,7 @@ Property
 			MalterlibIncludeLevel "Workspace"
 			MalterlibIncludePerConfig true
 		}
-		
+
 	}
 	MalterlibBoostIncludeOutputDir `@(GeneratedWorkspaceDirectoryNoConfig)BoostRootInclude`
 	{
@@ -266,7 +269,7 @@ Compile
 	%Target "Lib_boost_regex"
 	{
 		!!true MalterlibBoostModules->ContainsListElement("regex")
-		
+
 		Target
 		{
 			BaseName "boost_regex"
@@ -279,7 +282,7 @@ Compile
 	%Target "Lib_boost_system"
 	{
 		!!true MalterlibBoostModules->ContainsListElement("system")
-		
+
 		Target
 		{
 			BaseName "boost_system"
@@ -292,7 +295,7 @@ Compile
 	%Target "Lib_boost_thread"
 	{
 		!!true MalterlibBoostModules->ContainsListElement("thread")
-		
+
 		Target
 		{
 			BaseName "boost_thread"

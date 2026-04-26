@@ -29,8 +29,10 @@ Property
 	BUILDSERVER: bool = false
 	MalterlibBuildServerBuild: bool = BUILDSERVER
 	RunningCI: bool = false
-    MalterlibBuildSigning: bool = MalterlibBuildServerBuild
+	MalterlibBuildSigning: bool = MalterlibBuildServerBuild
 	MalterlibBuildServerTest: bool = false
+
+	MalterlibAddUpstreams: bool = ((!RunningCI) && (!MalterlibBuildServerBuild))
 
 	MalterlibBuildServerCommandPrefix: string = ""
 

@@ -33,6 +33,9 @@ Property
 	{
 		Type "External"
 		Remotes =+ {Name: "upstream", URL: "https://github.com/llvm/llvm-project.git"}
+		{
+			!!MalterlibAddUpstreams true
+		}
 		DefaultUpstreamBranch MalterlibClangUpstreamBranch
 		Tags ["llvm"]
 	}
