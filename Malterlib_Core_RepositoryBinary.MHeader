@@ -13,7 +13,7 @@ Property
 
 	MalterlibBinaryRepositoriesUseReleaseLFSStore: bool = true // User(Repository)=true: Use binary LFS store for repositories.
 
-	MalterlibInstallGitHookHelpers: bool = (!RunningCI && !MalterlibBuildServerBuild) // User(Repository)=false: Install Malterlib git hook helpers into repositories.
+	MalterlibInstallGitHookHelpers: bool = ((!RunningCI) && (!MalterlibBuildServerBuild)) // User(Repository)=false: Install Malterlib git hook helpers into repositories.
 
 	MalterlibBootstrapVersion: int = 5
 }

@@ -488,7 +488,7 @@ Property
 		!!BuildSystemOutputDir->GetFile() "Default"
 	}
 
-	MalterlibGenerateCompileCommands: bool = (!MalterlibBuildServerBuild && !RunningCI) // User(Build System)=false: Enable compile_commands.json generation. Slows down generation significantly unless you are using the Ninja generator.
+	MalterlibGenerateCompileCommands: bool = ((!MalterlibBuildServerBuild) && (!RunningCI)) // User(Build System)=false: Enable compile_commands.json generation. Slows down generation significantly unless you are using the Ninja generator.
 }
 
 %Group "~Automatic/WorkspaceConfigStore"
