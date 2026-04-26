@@ -99,6 +99,10 @@ Property
 			}
 		}
 		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
+		Hooks #<"pre-commit"> =+ "Scripts/GitHooks/pre-commit-lfs-check.sh"->MakeAbsolute()
+		{
+			!!MalterlibInstallGitHookHelpers true
+		}
 		ReleasePackage {
 			ReleaseName : `bootstrap/@(MalterlibBootstrapVersion->ToString())`
 			, Description: `Malterlib bootstrap binaries version @(MalterlibBootstrapVersion->ToString())`
@@ -214,6 +218,10 @@ Property
 			}
 		}
 		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
+		Hooks #<"pre-commit"> =+ "Scripts/GitHooks/pre-commit-lfs-check.sh"->MakeAbsolute()
+		{
+			!!MalterlibInstallGitHookHelpers true
+		}
 	}
 }
 
@@ -346,6 +354,10 @@ Property
 			}
 		}
 		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
+		Hooks #<"pre-commit"> =+ "Scripts/GitHooks/pre-commit-lfs-check.sh"->MakeAbsolute()
+		{
+			!!MalterlibInstallGitHookHelpers true
+		}
 	}
 }
 

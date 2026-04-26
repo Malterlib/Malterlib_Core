@@ -158,5 +158,9 @@ Property.MalterlibPublicRepositories =+ MalterlibBinarySDKRepositories->Unique()
 			}
 		}
 		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
+		Hooks #<"pre-commit"> =+ "Scripts/GitHooks/pre-commit-lfs-check.sh"->MakeAbsolute()
+		{
+			!!MalterlibInstallGitHookHelpers true
+		}
 	}
 }
