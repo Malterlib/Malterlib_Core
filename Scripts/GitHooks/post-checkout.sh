@@ -58,4 +58,16 @@ fi
 
 if [ -x "$RepoRoot/mib" ]; then
 	"$RepoRoot/mib" update-repos "${MibArgs[@]}"
+	UpdateReposExit=$?
+	if [ $UpdateReposExit -ne 0 ]; then
+		exit $UpdateReposExit
+	fi
+
+	if [[ "$MalterlibHookMainWorktreeFallback" == "true" ]]; then
+		# The dispatcher used the main worktree hook payload because this linked
+		# worktree had not been managed yet. The first update may have been limited
+		# to bootstrapping the worktree; run once more so the freshly installed
+		# per-worktree state is applied to the root repository as well.
+		MalterlibHookMainWorktreeFallback=false "$RepoRoot/mib" update-repos "${MibArgs[@]}"
+	fi
 fi
