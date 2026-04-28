@@ -16,6 +16,13 @@ Property
 	MalterlibInstallGitHookHelpers: bool = ((!RunningCI) && (!MalterlibBuildServerBuild)) // User(Repository)=false: Install Malterlib git hook helpers into repositories.
 
 	MalterlibBootstrapVersion: int = 5
+
+	MalterlibRootPostCheckoutHooks: [string] = []
+
+	MalterlibRootPostCheckoutHooks ["Scripts/GitHooks/post-checkout.sh"->MakeAbsolute()]
+	{
+		!!MalterlibRootPostCheckoutHooks undefined
+	}
 }
 
 Property
@@ -54,7 +61,7 @@ Property
 		Location Builtin.BasePathAbsolute
 		URL MalterlibGitOriginRemote
 		ExcludeFromSeen true
-		Hooks #<"post-checkout"> =+ "Scripts/GitHooks/post-checkout.sh"->MakeAbsolute()
+		Hooks #<"post-checkout"> MalterlibRootPostCheckoutHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
 		}
