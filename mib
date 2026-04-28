@@ -356,8 +356,8 @@ function TryGetBranchHash()
 	fi
 
 	if [[ "$GitHash" == "" ]]; then
-		OutputInfo "Fetching $RepoPath to obtain branch '$Branch'"
-		git -C "$RepoPath" fetch --all --tags
+		OutputInfo "Fetching $RepoPath to obtain branch '$Branch'" >&2
+		git -C "$RepoPath" fetch --all --tags >&2
 		GitHash=$(git -C "$RepoPath" rev-parse --verify "refs/remotes/origin/$Branch^{commit}" 2>/dev/null || true)
 
 		if [[ "$GitHash" == "" ]]; then
@@ -536,6 +536,9 @@ function CloneAndSyncCoreCheckout()
 {
 	local GitHash="$1"
 
+	# Repository management is branch-based. Even when Malterlib.MRepo pins an
+	# exact Core hash, bootstrap still needs a root branch name so Core and the
+	# other managed repositories can be synchronized consistently afterward.
 	RequireMainBranch "Cannot bootstrap Malterlib/Core: main repository is in detached HEAD state"
 
 	OutputInfo "Cloning Malterlib/Core"
