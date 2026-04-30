@@ -5,7 +5,7 @@ Import "Malterlib_Core_RepositoryModules.MHeader"
 
 Property
 {
-	MalterlibEnableOptonalModules: bool = false // User(Repository)=true: Enable extra optional Malterlib modules
+	MalterlibEnableOptionalModules: bool = false // User(Repository)=true: Enable extra optional Malterlib modules
 
 	MalterlibOptionalModules: [string] = []
 	MalterlibDefaultModules: [string] = []
@@ -68,7 +68,7 @@ Property.MalterlibDefaultModules =+ [
 Property.MalterlibModules =+ MalterlibDefaultModules
 Property.MalterlibModules =+ MalterlibOptionalModules
 {
-	!!MalterlibEnableOptonalModules true
+	!!MalterlibEnableOptionalModules true
 }
 
 Property
