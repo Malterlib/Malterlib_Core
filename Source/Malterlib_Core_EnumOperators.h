@@ -159,7 +159,7 @@ constexpr inline_small bool operator >= (t_CEnum0 const &_Left, t_CEnum1 const &
 namespace NMib
 {
 	template <typename tf_CType>
-	inline_always bool fg_IsSet(tf_CType _Value, tf_CType _Flags) noexcept
+	constexpr inline_always bool fg_IsSet(tf_CType _Value, tf_CType _Flags) noexcept
 		requires (NTraits::cIsScopedEnum<tf_CType>)
 	{
 		return (_Value & _Flags) != tf_CType(0);
