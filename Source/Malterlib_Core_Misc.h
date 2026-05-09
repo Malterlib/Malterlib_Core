@@ -536,44 +536,44 @@ namespace NMib
 		struct CIteratorEndSentinel
 		{
 			template <typename tf_CContainer>
-			friend inline_always bool operator == (tf_CContainer &_Container, CIteratorEndSentinel const &_EndSentinel) noexcept
+			constexpr friend inline_always bool operator == (tf_CContainer &_Container, CIteratorEndSentinel const &_EndSentinel) noexcept
 			{
 				return !_Container;
 			}
 		};
 
 		template <typename tf_CContainer>
-		auto begin(tf_CContainer &&_Container) -> decltype(_Container.f_GetIterator())
+		constexpr inline_always auto begin(tf_CContainer &&_Container) -> decltype(_Container.f_GetIterator())
 		{
 			return _Container.f_GetIterator();
 		}
 
 		template <typename tf_CContainer>
-		CIteratorEndSentinel end(tf_CContainer &&_Container, TCEnableIf<!NTraits::cIsVoid<decltype(_Container.f_GetIterator())>, bool> = true)
+		constexpr inline_always CIteratorEndSentinel end(tf_CContainer &&_Container, TCEnableIf<!NTraits::cIsVoid<decltype(_Container.f_GetIterator())>, bool> = true)
 		{
 			return CIteratorEndSentinel();
 		}
 
 		template <typename tf_CType>
-		tf_CType *begin(TCVector<tf_CType> &_Container)
+		constexpr inline_always tf_CType *begin(TCVector<tf_CType> &_Container)
 		{
 			return _Container.f_GetArray();
 		}
 
 		template <typename tf_CType>
-		tf_CType const *begin(TCVector<tf_CType> const &_Container)
+		constexpr inline_always tf_CType const *begin(TCVector<tf_CType> const &_Container)
 		{
 			return _Container.f_GetArray();
 		}
 
 		template <typename tf_CType>
-		tf_CType *end(TCVector<tf_CType>& _Container)
+		constexpr inline_always tf_CType *end(TCVector<tf_CType>& _Container)
 		{
 			return _Container.f_GetArray() + _Container.f_GetLen();
 		}
 
 		template <typename tf_CType>
-		tf_CType const *end(TCVector<tf_CType> const &_Container)
+		constexpr inline_always tf_CType const *end(TCVector<tf_CType> const &_Container)
 		{
 			return _Container.f_GetArray() + _Container.f_GetLen();
 		}
@@ -582,13 +582,13 @@ namespace NMib
 	namespace NStr
 	{
 		template <typename tf_CType>
-		typename TCStr<tf_CType>::CChar const *begin(TCStr<tf_CType> const &_String)
+		constexpr inline_always typename TCStr<tf_CType>::CChar const *begin(TCStr<tf_CType> const &_String)
 		{
 			return _String.f_GetStr();
 		}
 
 		template <typename tf_CType>
-		typename TCStr<tf_CType>::CChar const *end(TCStr<tf_CType> const &_String)
+		constexpr inline_always typename TCStr<tf_CType>::CChar const *end(TCStr<tf_CType> const &_String)
 		{
 			return _String.f_GetStr() + _String.f_GetLen();
 		}
