@@ -140,11 +140,11 @@ Incorrect example:
 
 ~~~
 	if
-		(
-			bExprX
-			&& (bExprY || bExprZ)
-			&& bExprA
-		)
+	(
+		bExprX
+		&& (bExprY || bExprZ)
+		&& bExprA
+	)
 	{
 		fg_FuncCall0();
 		fg_FuncCall1();
@@ -168,11 +168,11 @@ Incorrect example:
 
 ~~~
 	for
-		(
-			umint iValue = 0
-			; iValue < 5
-			; ++iValue
-		)
+	(
+		umint iValue = 0
+		; iValue < 5
+		; ++iValue
+	)
 	{
 		fg_FuncCall0(ValueArray[i]);
 		fg_FuncCall1(ValueArray[i]);
