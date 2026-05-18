@@ -3153,7 +3153,7 @@ Compile
 	{
 		&
 		{
-			DebugCode false
+			DebugCode true
 			Target.Type "Driver"
 		}
 	}
