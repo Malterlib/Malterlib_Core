@@ -3309,7 +3309,7 @@ Target
 
 		Dependency.Type "Library"
 	}
-	%Dependency "bufferoverflowfastfailk.lib"
+	%Dependency ["bufferoverflowfastfailk.lib", "libcntpr.lib"]
 	{
 		!!Architecture "arm64"
 
