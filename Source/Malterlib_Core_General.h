@@ -1631,16 +1631,38 @@ namespace NMib
 	template <typename tf_CType>
 	ch8 const *fg_GetTypeName();
 
+	namespace NStr
+	{
+		template <typename tf_CData>
+		constexpr umint fg_StrLen(tf_CData const *_pStr);
+	}
+
 	struct CConstExprSubStr
 	{
-		constexpr CConstExprSubStr(char const *_pString, umint _Len)
+		constexpr CConstExprSubStr(ch8 const *_pString, umint _Len)
 			: m_pString(_pString)
 			, m_Len(_Len)
 		{
 		}
 
-		char const *m_pString;
-		umint m_Len;
+		constexpr CConstExprSubStr(ch8 const *_pString)
+			: m_pString(_pString)
+			, m_Len(_pString ? NStr::fg_StrLen(_pString) : 0)
+		{
+		}
+
+		consteval ch8 const *data() const
+		{
+			return m_pString;
+		}
+
+		consteval umint size() const
+		{
+			return m_Len;
+		}
+
+		ch8 const *m_pString = nullptr;
+		umint m_Len = 0;
 	};
 
 	template <typename tf_CType>
