@@ -16,13 +16,6 @@ Malterlib Build System
     3rd_gen_scale 1.51
     end_of_line_continuation \\$
 
-Nginx Config
-    filter call_regexp_common C++
-    filter remove_inline //.*$
-    extension conf
-    3rd_gen_scale 1.51
-    end_of_line_continuation \\$
-
 Doxygen
     filter call_regexp_common C++
     filter remove_inline //.*$
