@@ -176,6 +176,21 @@ Generate a workspace before building: `./mib generate [WorkspaceName]`
 - Closing brace `}` is at the same indent level as the start
 - Single statements do not require braces
 - Space between keyword and parenthesis
+- Use `struct`, not `class`, for Malterlib types. Do not add a leading `public:` section just to expose the default interface. Only use `class` when editing third-party code or when an external API requires that exact spelling.
+
+#### Parameter Ownership
+- For non-coroutine function parameters that would otherwise take an owning object by value, choose explicit semantics: use `const &` when borrowing/read-only, or `&&` when consuming/moving from the argument.
+- Do not use by-value parameters as a default sink pattern just to allow temporaries and lvalues. If a callsite needs to pass an lvalue to a consuming `&&` parameter, make the copy explicit at the callsite with `fg_TempCopy`.
+- Coroutine parameters are the exception: follow coroutine safety requirements and pass values as needed so data survives suspension.
+
+#### Logical Unit Spacing
+- Separate distinct logical units with one blank line: setup, validation, operation execution, result capture, assertions, cleanup, and terminal `return`/`co_return`.
+- Do not add a blank line immediately after an opening `{` before the first statement.
+- Do not add a blank line immediately after `case` or `default` labels before the case body.
+- In switch cases, keep one-statement return cases compact. For multi-statement cases, separate the case work from the case-level `break;` with a blank line.
+- Keep fold-expression statements ending in `, ...` closed as `);` on the same line. This is the exception to the split-statement semicolon rule.
+- For local `using namespace` declarations, add a blank line before subsequent code.
+- For lambdas assigned to variables, indent the lambda body braces one continuation level under the lambda expression, and put the terminating `;` on its own statement-indentation line.
 
 #### Statement Splitting
 - Each substatement on the same logical level goes on its own line
@@ -189,6 +204,7 @@ Generate a workspace before building: `./mib generate [WorkspaceName]`
 - Exception: if the statement itself starts with `(`, keep that `(` at the statement indentation level instead of adding a continuation indent
 - If a function declaration or definition is split to fit the line length, first convert it to trailing return type
 - If it still does not fit, put the trailing return type on its own line; do not put the return type on a separate line before the function name
+- Do not split function declarations or definitions by putting some parameters on the first line and remaining parameters on continuation lines. Either keep the full parameter list on one line or split the whole parameter list under an indented `(`.
 - When control-flow conditions such as `if` are split across lines, use braces even for a single statement to keep the structure clear
 - When a split statement, expression, or declaration ends with `;`, put the `;` on its own line at the statement indentation level
 
