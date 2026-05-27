@@ -1180,6 +1180,31 @@ void NSys::fg_Mem_VirtualProtect(void *_pMem, umint _Size, uaint _Protect)
 	}
 }
 
+uaint NSys::fg_Mem_VirtualGetProtect(void const *_pMem)
+{
+	MEMORY_BASIC_INFORMATION Info;
+	if (!VirtualQuery(_pMem, &Info, sizeof(Info)))
+		return 0;
+
+	switch (Info.Protect & 0xff)
+	{
+	case PAGE_READONLY:
+		return EProtect_Read;
+	case PAGE_READWRITE:
+	case PAGE_WRITECOPY:
+		return EProtect_ReadWrite;
+	case PAGE_EXECUTE:
+		return EProtect_Exec;
+	case PAGE_EXECUTE_READ:
+		return EProtect_ReadExec;
+	case PAGE_EXECUTE_READWRITE:
+	case PAGE_EXECUTE_WRITECOPY:
+		return EProtect_All;
+	default:
+		return 0;
+	}
+}
+
 void NSys::fg_Mem_VirtualCommit(void *_pMem, umint _Size)
 {
 #if 0 //def DMibDebug
@@ -6886,4 +6911,3 @@ NMib::NSys::EDesktopEnvironment NMib::NSys::fg_DesktopEnvironment_Get()
 {
 	return NMib::NSys::EDesktopEnvironment_Windows;
 }
-

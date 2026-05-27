@@ -23,6 +23,11 @@ using namespace NMib;
 
 #include <sys/param.h>
 
+#ifdef DPlatformFamily_macOS
+	#include <mach/mach.h>
+	#include <mach/mach_vm.h>
+#endif
+
 #include "Malterlib_Core_PlatformImp_POSIX.h"
 
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
@@ -206,6 +211,100 @@ void NSys::fg_Mem_VirtualProtect(void *_pMem, umint _Size, uaint _Protect)
 		int ErrNo = errno;
 		DMibErrorMemory(NPlatform::fg_FormatErrno("mprotect (virtual protect)", ErrNo));
 	}
+}
+
+uaint NSys::fg_Mem_VirtualGetProtect(void const *_pMem)
+{
+#ifdef DPlatformFamily_macOS
+	mach_vm_address_t QueryAddress = mach_vm_address_t(_pMem);
+	mach_vm_address_t Address = QueryAddress;
+	mach_vm_size_t Size = 0;
+	vm_region_basic_info_data_64_t Info;
+	mach_msg_type_number_t Count = VM_REGION_BASIC_INFO_COUNT_64;
+	mach_port_t ObjectName = MACH_PORT_NULL;
+	kern_return_t Result = mach_vm_region
+		(
+			mach_task_self()
+			, &Address
+			, &Size
+			, VM_REGION_BASIC_INFO_64
+			, reinterpret_cast<vm_region_info_t>(&Info)
+			, &Count
+			, &ObjectName
+		)
+	;
+	if (ObjectName != MACH_PORT_NULL)
+		mach_port_deallocate(mach_task_self(), ObjectName);
+
+	if (Result != KERN_SUCCESS)
+		return 0;
+	if (QueryAddress < Address || QueryAddress - Address >= Size)
+		return 0;
+
+	return
+		((Info.protection & VM_PROT_READ) ? EProtect_Read : 0)
+		| ((Info.protection & VM_PROT_WRITE) ? EProtect_Write : 0)
+		| ((Info.protection & VM_PROT_EXECUTE) ? EProtect_Exec : 0)
+	;
+#else
+	NContainer::TCVector<ch8, NMemory::CAllocator_NonTrackedHeap> FileData;
+	try
+	{
+		FileData = NPlatform::fg_ReadProcFSNonTracked("/proc/self/maps");
+	}
+	catch (NMib::NFile::CExceptionFile const &)
+	{
+		return EProtect_All;
+	}
+
+	umint Target = umint(_pMem);
+	ch8 const *pIterator = FileData.f_GetArray();
+	ch8 const *pEnd = pIterator + FileData.f_GetLen();
+	while (pIterator < pEnd)
+	{
+		ch8 const *pLineEnd = pIterator;
+		while (pLineEnd < pEnd && *pLineEnd != '\n' && *pLineEnd != 0)
+			++pLineEnd;
+
+		ch8 const *pLineIterator = pIterator;
+		umint Start = NStr::fg_StrToIntParseHexNoSign(pLineIterator, pLineEnd - pLineIterator, umint(0));
+		if (pLineIterator == pIterator || pLineIterator >= pLineEnd || *pLineIterator != '-')
+		{
+			pIterator = pLineEnd + 1;
+			continue;
+		}
+		++pLineIterator;
+		ch8 const *pEndStart = pLineIterator;
+		umint End = NStr::fg_StrToIntParseHexNoSign(pLineIterator, pLineEnd - pLineIterator, umint(0));
+		if (pLineIterator == pEndStart || pLineIterator >= pLineEnd || *pLineIterator != ' ')
+		{
+			pIterator = pLineEnd + 1;
+			continue;
+		}
+		++pLineIterator;
+		if (pLineIterator + 2 >= pLineEnd)
+		{
+			pIterator = pLineEnd + 1;
+			continue;
+		}
+
+		if (Target < Start || Target >= End)
+		{
+			pIterator = pLineEnd + 1;
+			continue;
+		}
+
+		return
+			((pLineIterator[0] == 'r') ? EProtect_Read : 0)
+			| ((pLineIterator[1] == 'w') ? EProtect_Write : 0)
+			| ((pLineIterator[2] == 'x') ? EProtect_Exec : 0)
+		;
+
+		pIterator = pLineEnd + 1;
+	}
+
+	return 0;
+#endif
 }
 
 void NSys::fg_Mem_VirtualCommit(void *_pMem, umint _Size)

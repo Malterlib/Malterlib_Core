@@ -130,6 +130,7 @@ namespace NMib
 		umint fg_Mem_VirtualGranularityProtect(bool _bLargePages);
 		void fg_Mem_VirtualCommit(void *_pMem, umint _Size);
 		void fg_Mem_VirtualProtect(void *_pMem, umint _Size, uaint _Protect);
+		uaint fg_Mem_VirtualGetProtect(void const *_pMem);
 		void fg_Mem_VirtualDecommit(void *_pMem, umint _Size);
 		void fg_Mem_VirtualFree(void *_pMem, umint _Size);
 		umint fg_Mem_VirtualSize(const void *_pMem);
@@ -258,4 +259,3 @@ namespace NMib
 		CBuildMetadata fg_GetBuildMetadata();
 	}
 }
-
