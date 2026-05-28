@@ -132,6 +132,13 @@ GeneratorSetting
 		, Disabled: (Compile.Disabled || Compile.BuildDisabled || Compile.Type == "None")
 	}
 
+	f_FilterEnvironmentVariable function(string _Key, string _Value) {...: string} = {}
+
+	f_FilterEnvironmentVariable #<@(_Key)> _Value
+	{
+		!BuildSystemIgnoredEnvironmentVariables->ContainsListElement(_Key) true
+	}
+
 	Workspace {
 		DefaultTarget: "Build All"
 		, PoolDepths: Workspace.PoolDepths
@@ -139,8 +146,8 @@ GeneratorSetting
 		, OtherRules: []
 		, Environment: {
 			Override: true
-			, Copy: BuildSystemProtectedEnvironmentVariables
-			, Set: BuildSystemEnvironment()
+			, Copy: BuildSystemCopiedEnvironmentVariables
+			, Set: BuildSystemEnvironment()->ForEach(&GeneratorSetting.f_FilterEnvironmentVariable)
 		}
 	}
 

@@ -54,10 +54,38 @@ Workspace
 
 Property
 {
-	BuildSystemProtectedEnvironmentVariables: [string] = []
+	BuildSystemIgnoredEnvironmentVariables: [string] = []
+
+	BuildSystemIgnoredEnvironmentVariables =+ [
+		"BASH_FUNC_UpdateMTool%%"
+		, "BootstrapVersion"
+		, "CODELLDB_LAUNCH_CONNECT_FILE"
+		, "MalterlibArch"
+		, "MalterlibBashSourceFull"
+		, "MalterlibBinariesDir"
+		, "MalterlibBinariesPath"
+		, "MalterlibBootstrapBinariesPath"
+		, "MalterlibExecutable"
+		, "MalterlibPlatform"
+		, "MalterlibScriptPath"
+		, "MalterlibTerminalHeight"
+		, "MalterlibVisualStudioVersion"
+		, "Malterlib_NeedActionOnPull"
+	]
+
+	BuildSystemCopiedEnvironmentVariables: [string] = []
+
+	// Terminal
+	BuildSystemCopiedEnvironmentVariables =+ [
+		"TERM"
+		, "TERM_PROGRAM"
+		, "TERM_PROGRAM_VERSION"
+		, "WT_PROFILE_ID"
+		, "WT_SESSION"
+	]
 
 	// Malterlib build server
-	BuildSystemProtectedEnvironmentVariables =+ [
+	BuildSystemCopiedEnvironmentVariables =+ [
 		"IdsBuildServerLaunchID"
 		, "IdsBuildServerTemp"
 		, "MSBUILD_PIPE_NAME"
@@ -81,16 +109,18 @@ Property
 	]
 
 	// VS Code
-	BuildSystemProtectedEnvironmentVariables =+ [
+	BuildSystemCopiedEnvironmentVariables =+ [
 		"VSCODE_GIT_ASKPASS_EXTRA_ARGS"
 		, "VSCODE_GIT_ASKPASS_MAIN"
 		, "VSCODE_GIT_ASKPASS_NODE"
 		, "VSCODE_GIT_IPC_HANDLE"
 		, "VSCODE_NONCE"
+		, "VSCODE_COMPAT_USER_DATA_DIR"
+		, "VSCODE_ENV_PREPEND"
 	]
 
 	// Security/Authentication tokens
-	BuildSystemProtectedEnvironmentVariables =+ [
+	BuildSystemCopiedEnvironmentVariables =+ [
 		"GITHUB_TOKEN"
 		, "GIT_ASKPASS"
 		, "GH_TOKEN"
@@ -107,7 +137,7 @@ Property
 	]
 
 	// Session-specific variables
-	BuildSystemProtectedEnvironmentVariables =+ [
+	BuildSystemCopiedEnvironmentVariables =+ [
 		"XDG_SESSION_ID"
 		, "XDG_RUNTIME_DIR"
 		, "SSH_AUTH_SOCK"
@@ -121,7 +151,7 @@ Property
 	]
 
 	// CI/CD variables that change per build
-	BuildSystemProtectedEnvironmentVariables =+ [
+	BuildSystemCopiedEnvironmentVariables =+ [
 		"GITHUB_RUN_ID"
 		, "GITHUB_RUN_NUMBER"
 		, "GITHUB_SHA"
@@ -130,7 +160,7 @@ Property
 	]
 
 	// Temporary directories
-	BuildSystemProtectedEnvironmentVariables =+ [
+	BuildSystemCopiedEnvironmentVariables =+ [
 		"TMPDIR"
 		, "TEMP"
 		, "TMP"
