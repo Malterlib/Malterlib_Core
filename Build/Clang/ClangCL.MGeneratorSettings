@@ -6,7 +6,11 @@
 
 GeneratorSetting
 {
-	!!IsClangCL true
+	&
+	{
+		IsClangCL true
+		Compiler "Clang"
+	}
 
 	Compile_RuntimeLibrary =+ {
 		Flags: Compile.RuntimeLibrary->SwitchWithError(
@@ -47,7 +51,7 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: Target.DataExecutionPrevention ? ["-Wl,/NXCOMPAT"] : ["-Wl,/NXCOMPAT:NO"]
+				, Flags: Target.DataExecutionPrevention ? [GeneratorSetting.f_LDFlag("/NXCOMPAT")] : [GeneratorSetting.f_LDFlag("/NXCOMPAT:NO")]
 			}
 		]
 	)
@@ -56,7 +60,7 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: Target.RandomizedBaseAddress ? ["-Wl,/DYNAMICBASE"] : ["-Wl,/DYNAMICBASE:NO"]
+				, Flags: Target.RandomizedBaseAddress ? [GeneratorSetting.f_LDFlag("/DYNAMICBASE")] : [GeneratorSetting.f_LDFlag("/DYNAMICBASE:NO")]
 			}
 		]
 	)
@@ -65,7 +69,7 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: Target.LargeAddressAware ? ["-Wl,/LARGEADDRESSAWARE"] : []
+				, Flags: Target.LargeAddressAware ? [GeneratorSetting.f_LDFlag("/LARGEADDRESSAWARE")] : []
 			}
 		]
 	)
@@ -74,7 +78,7 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: Target.LinkIncremental ? ["-Wl,/INCREMENTAL"] : ["-Wl,/INCREMENTAL:NO"]
+				, Flags: Target.LinkIncremental ? [GeneratorSetting.f_LDFlag("/INCREMENTAL")] : [GeneratorSetting.f_LDFlag("/INCREMENTAL:NO")]
 			}
 		]
 	)
@@ -83,7 +87,7 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: Target.IgnoreAllDefaultLibraries ? ["-Wl,/NODEFAULTLIB"] : []
+				, Flags: Target.IgnoreAllDefaultLibraries ? [GeneratorSetting.f_LDFlag("/NODEFAULTLIB")] : []
 			}
 		]
 	)
@@ -92,7 +96,7 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: [`-Wl,/ENTRY:@(Target.EntryPointSymbol)`]
+				, Flags: [GeneratorSetting.f_LDFlag(`/ENTRY:@(Target.EntryPointSymbol)`)]
 			}
 		]
 	)
@@ -101,7 +105,7 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: [`-Wl,/DEF:@(Target.ModuleDefinitionFile)`]
+				, Flags: [GeneratorSetting.f_LDFlag(`/DEF:@(Target.ModuleDefinitionFile)`)]
 			}
 		]
 	)
@@ -112,9 +116,9 @@ GeneratorSetting
 				Tools: ["lld-link"]
 				, Flags: Target.TargetMachine->SwitchWithError(
 					"Unsupported machine: "
-					, "MachineX64", "-Wl,/MACHINE:X64"
-					, "MachineX86", "-Wl,/MACHINE:X86"
-					, "MachineARM64", "-Wl,/MACHINE:ARM64"
+					, "MachineX64", GeneratorSetting.f_LDFlag("/MACHINE:X64")
+					, "MachineX86", GeneratorSetting.f_LDFlag("/MACHINE:X86")
+					, "MachineARM64", GeneratorSetting.f_LDFlag("/MACHINE:ARM64")
 				)
 			}
 		]
@@ -124,7 +128,7 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: Target.GenerateManifest ? ["-Wl,/MANIFEST"] : ["-Wl,/MANIFEST:NO"]
+				, Flags: Target.GenerateManifest ? [GeneratorSetting.f_LDFlag("/MANIFEST")] : [GeneratorSetting.f_LDFlag("/MANIFEST:NO")]
 			}
 		]
 	)
@@ -135,9 +139,9 @@ GeneratorSetting
 				Tools: ["lld-link"]
 				, Flags: Target.Driver->SwitchWithError(
 					"Unsupported option: "
-					, true, "-Wl,/DRIVER"
-					, "UpOnly", "-Wl,/DRIVER:UPONLY"
-					, "WDM", "-Wl,/DRIVER:WDM"
+					, true, GeneratorSetting.f_LDFlag("/DRIVER")
+					, "UpOnly", GeneratorSetting.f_LDFlag("/DRIVER:UPONLY")
+					, "WDM", GeneratorSetting.f_LDFlag("/DRIVER:WDM")
 				)
 			},
 			{
@@ -151,7 +155,7 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: [`-Wl,/VERSION:@(Target.Version)`]
+				, Flags: [GeneratorSetting.f_LDFlag(`/VERSION:@(Target.Version)`)]
 			}
 		]
 	)
@@ -160,10 +164,28 @@ GeneratorSetting
 		[
 			{
 				Tools: ["lld-link"]
-				, Flags: [`-Wl,/PDB:@(Target.SymbolFile)`]
+				, Flags: [GeneratorSetting.f_LDFlag(`/PDB:@(Target.SymbolFile)`)]
 			}
 		]
 	)
+
+	// Strong-name key file for managed targets. Visual Studio sets this via the <KeyFile>
+	// project property; for direct link.exe invocation we must pass it as /KEYFILE:.
+	// Pair with /DELAYSIGN+ so the post-build sn -Ra step has a delay-signed assembly to fix up.
+	Target_LinkKeyFile =+ GeneratorSetting.f_SetSharedFlags(
+		[
+			{
+				Tools: ["lld-link"]
+				, Flags: [
+					GeneratorSetting.f_LDFlag(`/KEYFILE:@(Target.LinkKeyFile->WindowsPath())`)
+					, GeneratorSetting.f_LDFlag("/DELAYSIGN")
+				]
+			}
+		]
+	)
+	{
+		!Target.LinkKeyFile undefined
+	}
 }
 
 GeneratorSetting

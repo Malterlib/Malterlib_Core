@@ -738,6 +738,11 @@ Compile
 {
 	!!LanguageFamily ".NET"
 
+	// Symbols and Warnings are only typed in the Native+C/C++ Compile block (lines 1369, 2592).
+	// Declare them here so .NET generators (csc for Ninja, msbuild for VS) can read them.
+	Symbols: string?
+	Warnings: string?
+
 	Symbols "Full"
 	Symbols "FullForDebug"
 	{

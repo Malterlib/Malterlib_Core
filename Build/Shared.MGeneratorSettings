@@ -40,7 +40,11 @@ Property
 					}
 					|
 					{
-						CompileDialect "C"
+						&
+						{
+							CompileDialect "C"
+							!Compile.Type "C++Managed"
+						}
 						Compile.Type "Assembler"
 					}
 				}
@@ -67,6 +71,15 @@ Property
 			{
 				CompileDialect "C"
 			}
+		}
+	}
+	Compiler "MSVC"
+	{
+		&
+		{
+			Compiler undefined
+			GeneratorFamily "Ninja"
+			Compile.Type "C++Managed"
 		}
 	}
 

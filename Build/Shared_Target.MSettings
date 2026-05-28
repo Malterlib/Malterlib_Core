@@ -55,6 +55,44 @@ Target
 
 Target
 {
+	&
+	{
+		LanguageFamily "Native"
+		!Target.CLRSupport undefined
+		GeneratorFamily "Ninja"
+	}
+
+	// Use the MSVC linker (link.exe) directly instead of the clang++ driver / lld-link.
+	// Required for C++/CLI managed targets (both Framework /clr and NetCore /clr:netcore) —
+	// lld-link cannot consume CLR objects. Can be set explicitly for other native MS-link scenarios.
+	UseMSLinker: bool?
+	UseMSLinker true
+	{
+		!!Target.UseMSLinker undefined
+	}
+}
+
+Target
+{
+	&
+	{
+		LanguageFamily ".NET"
+		GeneratorFamily "Ninja"
+	}
+
+	// Baseline assembly references for NetCore C# / C++/CLI targets. .NET Framework's System.dll
+	// forwards to types like Object/Enum/etc., but NetCore splits the BCL across many small
+	// assemblies — these are the ones every NetCore target needs in addition to its own deps.
+	// Targets can extend this list (e.g. add System.Console for console apps) via += in their .MTarget.
+	NetCoreBaselineRefs: [string]? = []
+	NetCoreBaselineRefs ["mscorlib", "netstandard", "System.Runtime", "System.Runtime.InteropServices", "System.Console", "System.Threading", "System.Threading.Thread"]
+	{
+		!!Target.CLRSupport "NetCore"
+	}
+}
+
+Target
+{
 	!!PlatformFamily "Windows"
 
 	NasmPath: string? = MalterlibBinariesDirectory
@@ -826,27 +864,21 @@ Target
 		}
 	}
 
-	PlatformToolset "v143"
-	{
-		&
-		{
-			Target.PlatformToolset undefined
-			|
-			{
-				Generator "VisualStudio2022"
-			}
-		}
-	}
-
 	PlatformToolset "v145"
 	{
 		&
 		{
 			Target.PlatformToolset undefined
-			|
-			{
-				Generator "VisualStudio2026"
-			}
+			(Builtin.VisualStudioRoot / "MSBuild/Current/Microsoft.VisualStudioVersion.v18.Common.props")->FileExists() true
+		}
+	}
+
+	PlatformToolset "v143"
+	{
+		&
+		{
+			Target.PlatformToolset undefined
+			(Builtin.VisualStudioRoot / "MSBuild/Current/Microsoft.VisualStudioVersion.v17.Common.props")->FileExists() true
 		}
 	}
 
@@ -1044,7 +1076,7 @@ Property
 	// Windows SDK paths for Ninja generator (avoiding vcvarsall.bat dependency)
 	MalterlibWindowsSDKRootPath: string = "C:/Program Files (x86)/Windows Kits/10" // User(Toolset): Windows SDK root path
 
-	MalterlibWindowsSDKVersionPaths: [string] = MalterlibWindowsSDKRootPath->Append("/Include")->FindDirectoriesIn('10.*')->Sort()
+	MalterlibWindowsSDKVersionPaths: [string] = (MalterlibWindowsSDKRootPath / "Include")->FindDirectoriesIn('10.*')->Sort()
 
 	MalterlibLatestWindowsSDKVersion: string = MalterlibWindowsSDKVersionPaths<[MalterlibWindowsSDKVersionPaths->Length() - 1]>->GetFile()
 
@@ -1178,6 +1210,211 @@ Property
 			PlatformFamily "Windows"
 			Architecture "x86"
 		}
+	}
+
+	// MSVC compiler (cl.exe from MSVC) for managed C++ builds
+	PlatformToolsetMSVC: string?
+	PlatformToolsetMSVC VisualStudioMSVCRootPath / MalterlibMSVCVersion / `bin/@(MSVCToolChainArchitecture)/cl@(HostExecutableExtension)`
+	{
+		&
+		{
+			PlatformToolsetMSVC undefined
+			!MalterlibMSVCVersion undefined
+			PlatformFamily "Windows"
+		}
+	}
+
+	// MSVC linker (link.exe from MSVC) — required for C++/CLI (managed) targets
+	// because lld-link cannot consume CLR object files
+	PlatformToolsetMSVCLinker: string?
+	PlatformToolsetMSVCLinker VisualStudioMSVCRootPath / MalterlibMSVCVersion / `bin/@(MSVCToolChainArchitecture)/link@(HostExecutableExtension)`
+	{
+		&
+		{
+			PlatformToolsetMSVCLinker undefined
+			!MalterlibMSVCVersion undefined
+			PlatformFamily "Windows"
+		}
+	}
+
+	// C# compiler (csc.exe from Visual Studio's Roslyn install).
+	// The Roslyn build supports modern C# features and works for both .NET Framework and NetCore targets.
+	PlatformToolsetCSharpCompiler: string?
+	PlatformToolsetCSharpCompiler `@(VisualStudioRootUnix)/MSBuild/Current/Bin/Roslyn/csc@(HostExecutableExtension)`
+	{
+		&
+		{
+			PlatformToolsetCSharpCompiler undefined
+			HostPlatformFamily "Windows"
+		}
+	}
+
+	// .NET Framework reference assemblies (System.dll, System.Data.dll, etc.) used by C# /reference:.
+	// Visual Studio looks these up automatically via project properties; direct csc invocation needs the path.
+	MalterlibNETFXReferenceAssemblyRoot: string = "C:/Program Files (x86)/Reference Assemblies/Microsoft/Framework/.NETFramework"
+
+	// Resolve the reference-assembly directory for a given Target.TargetFrameworkVersion (e.g. "v4.6" → ".../v4.6").
+	f_MalterlibNETFXReferenceAssemblyPath function(string _TargetFrameworkVersion) string? = undefined
+	f_MalterlibNETFXReferenceAssemblyPath MalterlibNETFXReferenceAssemblyRoot / _TargetFrameworkVersion
+	{
+		!!HostPlatformFamily "Windows"
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// .NET SDK discovery — used for C++/CLI (NetCore) reference assemblies (mscorlib.dll etc.)
+	// passed to cl.exe via /AI<path>. Discovery avoids launching `dotnet --list-sdks`.
+	//
+	//   Windows: HKLM\SOFTWARE\dotnet\Setup\InstalledVersions\<arch>\InstallLocation
+	//            (the dotnet bootstrappers themselves use this; falls back to %ProgramFiles%\dotnet
+	//            which is the documented default install path)
+	//   macOS:   /usr/local/share/dotnet  (Microsoft installer default)
+	//   Linux:   /usr/share/dotnet        (typical distro/.deb default)
+	// ---------------------------------------------------------------------------------------------
+	MalterlibDotNetRoot: string? // User(Toolset): Override the .NET SDK install root
+	// Default to Microsoft's documented install path; override below if the registry has a value.
+	MalterlibDotNetRoot "C:/Program Files/dotnet"
+	{
+		&
+		{
+			MalterlibDotNetRoot undefined
+			HostPlatformFamily "Windows"
+		}
+	}
+	// .NET 7+ registry layout: <arch>\sharedhost\Path (older .NET 6 used <arch>\InstallLocation directly).
+	// Use HostArchitecture — dotnet is installed for the host arch and the ref packs are arch-neutral.
+	MalterlibDotNetRoot ReadWindowsRegistry(
+		"Win64_LocalMachine"
+		, `SOFTWARE\\dotnet\\Setup\\InstalledVersions\\@(HostArchitecture)\\sharedhost`
+		, "Path"
+	)
+	{
+		&
+		{
+			HostPlatformFamily "Windows"
+			!ReadWindowsRegistry(
+				"Win64_LocalMachine"
+				, `SOFTWARE\\dotnet\\Setup\\InstalledVersions\\@(HostArchitecture)\\sharedhost`
+				, "Path"
+			) ""
+		}
+	}
+	MalterlibDotNetRoot "/usr/local/share/dotnet"
+	{
+		&
+		{
+			MalterlibDotNetRoot undefined
+			HostPlatformFamily "macOS"
+		}
+	}
+	MalterlibDotNetRoot "/usr/share/dotnet"
+	{
+		&
+		{
+			MalterlibDotNetRoot undefined
+			HostPlatformFamily "Linux"
+		}
+	}
+
+	// Reference-pack root: contains <Major>.<Minor>.<Patch>/ref/net<Major>.<Minor>/ subdirs.
+	MalterlibDotNetReferencePacksRoot: string?
+	MalterlibDotNetReferencePacksRoot MalterlibDotNetRoot / "packs/Microsoft.NETCore.App.Ref"
+	{
+		!MalterlibDotNetRoot undefined
+	}
+
+	// Resolve the latest patch version of a given <Major>.<Minor> series (e.g. "8.0" → "8.0.10").
+	// Globs Microsoft.NETCore.App.Ref/<Major>.<Minor>.* and returns the highest patch.
+	f_MalterlibDotNetLatestRefVersion function(string _MajorMinor) string? = undefined
+	f_MalterlibDotNetLatestRefVersion (
+		MalterlibDotNetReferencePacksRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Sort()
+		<[MalterlibDotNetReferencePacksRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Length() - 1]>
+	)->GetFile()
+	{
+		&
+		{
+			!MalterlibDotNetReferencePacksRoot undefined
+			(MalterlibDotNetReferencePacksRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Length() > 0) true
+		}
+	}
+
+	// Full reference-assembly directory for a given <Major>.<Minor> (e.g. "8.0" → ".../ref/net8.0/").
+	// Pass the result to cl.exe as /AI<path> so /clr:netcore can resolve mscorlib.dll etc.
+	f_MalterlibDotNetReferenceAssemblyPath function(string _MajorMinor) string? = undefined
+	f_MalterlibDotNetReferenceAssemblyPath MalterlibDotNetReferencePacksRoot / f_MalterlibDotNetLatestRefVersion(_MajorMinor) / `ref/net@(_MajorMinor)`
+	{
+		!f_MalterlibDotNetLatestRefVersion(_MajorMinor) undefined
+	}
+
+	// .NET Framework SDK — contains mscoree.lib and other managed-code import libs.
+	// Visual Studio's vcvarsall normally injects this automatically; Ninja+link.exe must
+	// add it explicitly. Latest installed version is fine — these import libs are stable.
+	// Only meaningful on Windows; consumers gate usage on PlatformFamily.
+	MalterlibNETFXSDKRoot: string = "C:/Program Files (x86)/Windows Kits/NETFXSDK"
+	MalterlibNETFXSDKVersionPaths: [string] = MalterlibNETFXSDKRoot->FindDirectoriesIn('*')->Sort()
+
+	MalterlibNETFXSDKVersion: string?
+	MalterlibNETFXSDKVersion MalterlibNETFXSDKVersionPaths<[MalterlibNETFXSDKVersionPaths->Length() - 1]>->GetFile()
+	{
+		&
+		{
+			HostPlatformFamily "Windows"
+			(MalterlibNETFXSDKVersionPaths->Length() > 0) true
+		}
+	}
+
+	MalterlibNETFXSDKLibPath: string?
+	MalterlibNETFXSDKLibPath MalterlibNETFXSDKRoot / MalterlibNETFXSDKVersion / `Lib/um/@(MalterlibMSVCArchitecture)`
+	{
+		!MalterlibNETFXSDKVersion undefined
+	}
+
+	// .NET Framework SDK Tools directory — contains sn.exe for strong-naming assemblies.
+	// Visual Studio's vcvarsall puts this on PATH; Ninja invokes the post-build script
+	// directly so we must add it via Target.ToolPath ourselves.
+	MalterlibNETFXSDKToolsRoot: string = "C:/Program Files (x86)/Microsoft SDKs/Windows/v10.0A/bin"
+	MalterlibNETFXSDKToolsPaths: [string] = MalterlibNETFXSDKToolsRoot->FindDirectoriesIn('NETFX*Tools')->Sort()
+
+	MalterlibNETFXSDKToolsPath: string?
+	MalterlibNETFXSDKToolsPath MalterlibNETFXSDKToolsPaths<[MalterlibNETFXSDKToolsPaths->Length() - 1]>
+	{
+		&
+		{
+			HostPlatformFamily "Windows"
+			(MalterlibNETFXSDKToolsPaths->Length() > 0) true
+		}
+	}
+
+	// Apphost pack: contains ijwhost.lib (linked by C++/CLI assemblies under /clr:netcore).
+	// Per-architecture pack name uses the win-<arch> RID (Windows Runtime Identifier).
+	MalterlibDotNetAppHostPackRoot: string?
+	MalterlibDotNetAppHostPackRoot MalterlibDotNetRoot / `packs/Microsoft.NETCore.App.Host.win-@(Architecture)`
+	{
+		&
+		{
+			!MalterlibDotNetRoot undefined
+			PlatformFamily "Windows"
+		}
+	}
+
+	f_MalterlibDotNetLatestAppHostVersion function(string _MajorMinor) string? = undefined
+	f_MalterlibDotNetLatestAppHostVersion (
+		MalterlibDotNetAppHostPackRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Sort()
+		<[MalterlibDotNetAppHostPackRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Length() - 1]>
+	)->GetFile()
+	{
+		&
+		{
+			!MalterlibDotNetAppHostPackRoot undefined
+			(MalterlibDotNetAppHostPackRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Length() > 0) true
+		}
+	}
+
+	// Path containing ijwhost.lib for a given <Major>.<Minor>. Add to Target.SearchPath
+	// so link.exe can resolve the auto-linked import lib.
+	f_MalterlibDotNetAppHostNativePath function(string _MajorMinor) string? = undefined
+	f_MalterlibDotNetAppHostNativePath MalterlibDotNetAppHostPackRoot / f_MalterlibDotNetLatestAppHostVersion(_MajorMinor) / `runtimes/win-@(Architecture)/native`
+	{
+		!f_MalterlibDotNetLatestAppHostVersion(_MajorMinor) undefined
 	}
 }
 
@@ -1919,7 +2156,11 @@ Target
 
 	LDFlags =+ [["-target", MalterlibTargetTriple]]
 	{
-		!MalterlibTargetTriple undefined
+		&
+		{
+			!MalterlibTargetTriple undefined
+			!Target.UseMSLinker true
+		}
 	}
 
 	LDFlags =+ [["--sysroot", MalterlibSysRoot]]
@@ -1929,7 +2170,11 @@ Target
 
 	LDFlags =+ [["-Xlinker", "-demangle"]]
 	{
-		!!MalterlibLinkerDemangle true
+		&
+		{
+			MalterlibLinkerDemangle true
+			!Target.UseMSLinker true
+		}
 	}
 
 	LDFlags =+ [["-Xlinker", "-rpath-link", "-Xlinker", `@(MalterlibSysRoot)/lib32`], ["-Xlinker", "-rpath-link", "-Xlinker", `@(MalterlibSysRoot)/usr/lib32`]]
@@ -3322,6 +3567,25 @@ Property
 			Target.DriverType "DriverKit"
 		}
 	}
+
+	// .NET 5+ launchable executables under Ninja: csc writes the managed
+	// assembly into the target's intermediate directory under <name>.dll
+	// instead of producing the runnable .exe directly. PostBuild then runs
+	// MTool BuildAppHost to read the .dll and generate the canonical
+	// MalterlibOriginalModuleDestination (.exe = apphost shim, optionally
+	// containing a single-file bundle). Keeping csc's output and BuildAppHost's
+	// output in different directories means re-firing PostBuild without csc
+	// firing first can't corrupt the .dll by overwriting it with apphost bytes.
+	MalterlibOriginalModuleDestinationExecutable `@(Target.IntermediateDirectory)@(Target:Target.FileName).dll`
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			Target.Language "C#"
+			Target.CLRSupport "NetCore"
+			TargetIsLaunchableExecutable true
+		}
+	}
 }
 
 Property
@@ -3450,15 +3714,7 @@ Property
 
 Property
 {
-	MSVCToolChainArchitecture: string
-	MSVCToolChainArchitecture "HostX64/x64"
-	{
-		!!Architecture "x64"
-	}
-	MSVCToolChainArchitecture "HostX64/x86"
-	{
-		!!Architecture "x86"
-	}
+	MSVCToolChainArchitecture: string = `Host@(HostArchitecture)/@(Architecture)`
 }
 
 // Misc
@@ -4183,6 +4439,44 @@ Property
 								`#endif\r\n`
 
 					UnicodeBOM true
+				}
+			}
+
+			// .NET 5+ apps need a runtimeconfig.json next to the entry assembly so the
+			// host (apphost.exe / dotnet) knows which framework version to load.
+			// Without this, running the .exe falls back to .NET Framework 4 and fails
+			// with "Could not load file or assembly 'System.Runtime, Version=8.0.0.0...'".
+			%GenerateFile "Generate .NET runtimeconfig.json"
+			{
+				&
+				{
+					LanguageFamily ".NET"
+					Target.CLRSupport "NetCore"
+					TargetIsLaunchableExecutable true
+				}
+
+				GenerateFile
+				{
+					Group `@(Platform) @(Architecture) @(FullConfiguration)`
+					Name `@(GeneratedDirectory)@(MalterlibFinalModuleDestination->GetFileNoExt()).runtimeconfig.json`
+
+					ContentsJson: any = {
+						runtimeOptions: {
+							tfm: Target.TargetFrameworkVersion
+							, framework: {
+								name: "Microsoft.NETCore.App"
+								, version: `@(Target.TargetFrameworkVersion->Extract(3)).0`
+							}
+						}
+					}
+
+					Contents GenerateFile.ContentsJson->ToString()
+
+					// hostfxr's bundle-loader feeds runtimeconfig.json bytes
+					// straight to RapidJSON without skipping a UTF-8 BOM, so a
+					// BOM here causes the embedded config to fail JSON parse
+					// inside a single-file apphost. Emit raw UTF-8 with no BOM.
+					UnicodeBOM false
 				}
 			}
 
@@ -5440,6 +5734,31 @@ Target
 		}
 	}
 
+	// Ninja .NET 5+: csc writes <Int>/<base>.dll (declared as the link rule's
+	// output via the MalterlibOriginalModuleDestinationExecutable override),
+	// PostBuild's MTool BuildAppHost step produces the canonical
+	// MalterlibOriginalModuleDestination (Out/<base>.exe). Declare it as a
+	// PostBuild output so ninja knows where the apphost comes from.
+	PostBuildScriptOutputs += MalterlibOriginalModuleDestination
+	{
+		!MalterlibNinjaCSharpDllPath undefined
+	}
+
+	// Non-single-file Ninja .NET 5+: PostBuild also DiffCopies the managed .dll
+	// from <Int>/ into <Out>/Deployed/ alongside the apphost .exe, so declare
+	// that as an output too. Skipped when SingleFile is on (the .dll is
+	// embedded inside the apphost and never lands in Deployed/).
+	PostBuildScriptOutputs += MalterlibFinalModuleDestinationPath / `@(MalterlibFinalModuleDestination->GetFileNoExt()).dll`
+	{
+		&
+		{
+			!MalterlibNinjaCSharpDllPath undefined
+			!MalterlibFinalModuleDestination MalterlibOriginalModuleDestination
+			!DisableDiffCopy true
+			!MalterlibNinjaCSharpSingleFile true
+		}
+	}
+
 	PostBuildScriptOutputs += `@(MalterlibFinalModuleDestinationPath)/@(Target:Target.BaseFileName).cat`
 	{
 		&
@@ -5511,6 +5830,64 @@ Property
 		}
 	}
 
+	// .NET 5+ executables need the runtimeconfig.json deployed alongside the .exe.
+	// The file is generated into GeneratedDirectory by %GenerateFile "Generate .NET runtimeconfig.json"
+	// and copied to the deploy location here. Skipped in Ninja+SingleFile mode
+	// where the runtimeconfig.json is embedded in the apphost bundle.
+	MalterlibPostCopySources =+ `@(GeneratedDirectory)@(MalterlibFinalModuleDestination->GetFileNoExt()).runtimeconfig.json`
+	{
+		&
+		{
+			Target.CLRSupport "NetCore"
+			TargetIsLaunchableExecutable true
+			!MalterlibNinjaCSharpSingleFile true
+		}
+	}
+
+	// Ninja's C# pipeline drives csc.exe directly, so unlike MSBuild it doesn't
+	// produce the apphost shim that .NET 5+ executables need on Windows. We rename
+	// csc's .exe output to .dll and generate the apphost in PostBuild (see below),
+	// so the managed assembly must also be deployed alongside the apphost .exe.
+	// NoInput because the .dll is produced by the PostBuild step itself — pulling
+	// it into PostBuildScriptInputs via f_ExtractPlainFilesFromCopyOptions would
+	// make Ninja see a cycle (output depends on itself).
+	// Skipped in SingleFile mode where the .dll is embedded in the apphost bundle.
+	MalterlibPostCopySources =+ {
+		Pattern: MalterlibFinalModuleDestinationPath / `@(MalterlibFinalModuleDestination->GetFileNoExt()).dll`
+		, NoInput: true
+	}
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			Target.Language "C#"
+			Target.CLRSupport "NetCore"
+			TargetIsLaunchableExecutable true
+			!MalterlibNinjaCSharpSingleFile true
+		}
+	}
+
+	// Mixed-mode C++/CLI assemblies built with /clr:netcore link against ijwhost.dll
+	// (the .NET 5+ "It Just Works" host that bridges into hostfxr). Unlike Framework
+	// /clr which goes through mscoree, NetCore /clr requires ijwhost.dll to be
+	// resolvable at load time — the simplest fix is to deploy it next to the assembly.
+	// MSBuild handles this for VS-driven C++/CLI projects; with Ninja we copy it ourselves.
+	MalterlibPostCopySources =+ f_MalterlibDotNetAppHostNativePath(Target.TargetFrameworkVersion->Extract(3)) / "ijwhost.dll"
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			LanguageFamily "Native"
+			Target.CLRSupport "NetCore"
+			|
+			{
+				Target.Type "DynamicLibrary"
+				Target.Type "SharedDynamicLibrary"
+			}
+			!f_MalterlibDotNetAppHostNativePath(Target.TargetFrameworkVersion->Extract(3)) undefined
+		}
+	}
+
 	MalterlibPostCopySources =+ MalterlibLLVMSanitizerRuntime
 	{
 		&
@@ -5574,6 +5951,105 @@ Property
 	{
 		!MalterlibDriverINFFile undefined
 	}
+
+	// In SingleFile mode the runtimeconfig.json is consumed by MTool BuildAppHost
+	// (embedded in the apphost bundle) rather than deployed as a sibling, so it
+	// no longer reaches PostBuildScriptInputs via PostCopySources. Add it
+	// explicitly so PostBuild reruns when the template's runtimeconfig changes.
+	MalterlibPostBuildScriptInputs =+ MalterlibNinjaCSharpRuntimeConfigPath
+	{
+		&
+		{
+			!MalterlibNinjaCSharpRuntimeConfigPath undefined
+			MalterlibNinjaCSharpSingleFile true
+		}
+	}
+
+	// Track the apphost.exe template too: when the .NET SDK is updated and a
+	// newer apphost ships, the PostBuild step needs to rerun so the launcher
+	// inherits the new bytes.
+	MalterlibPostBuildScriptInputs =+ MalterlibNinjaCSharpAppHostTemplate
+	{
+		!MalterlibNinjaCSharpAppHostTemplate undefined
+	}
+}
+
+// Ninja-only helpers for .NET 5+ launchable executables. csc.exe doesn't produce
+// the native apphost shim that lets .NET Core/5+ EXEs boot under hostfxr — we
+// replicate that step in PostBuild. These properties stay undefined for any other
+// generator/language/CLR combination so the rest of the build is unaffected.
+Property
+{
+	// csc's output path: <Int>/<base>.dll. This is what
+	// MalterlibOriginalModuleDestinationExecutable resolves to for NetCore C#
+	// launchables on Ninja (overridden above) — the link rule writes the
+	// managed assembly here, PostBuild reads it and produces the apphost .exe
+	// at MalterlibOriginalModuleDestination. Two distinct paths means PostBuild
+	// can't ever overwrite csc's output with apphost bytes.
+	MalterlibNinjaCSharpDllPath: string?
+	MalterlibNinjaCSharpDllPath MalterlibOriginalModuleDestinationExecutable
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			Target.Language "C#"
+			Target.CLRSupport "NetCore"
+			TargetIsLaunchableExecutable true
+		}
+	}
+
+	// apphost.exe shipped in the Microsoft.NETCore.App.Host.win-<arch> pack matching
+	// Target.TargetFrameworkVersion (e.g. "net8.0" → 8.0). f_MalterlibDotNetAppHostNativePath
+	// is gated on Windows + a discovered .NET install, so this stays undefined when
+	// either is missing and the PostBuild apphost step short-circuits.
+	MalterlibNinjaCSharpAppHostTemplate: string?
+	MalterlibNinjaCSharpAppHostTemplate f_MalterlibDotNetAppHostNativePath(Target.TargetFrameworkVersion->Extract(3)) / "apphost.exe"
+	{
+		&
+		{
+			!MalterlibNinjaCSharpDllPath undefined
+			!f_MalterlibDotNetAppHostNativePath(Target.TargetFrameworkVersion->Extract(3)) undefined
+		}
+	}
+
+	// winexe targets need the apphost's PE Subsystem field flipped from Console (3)
+	// to Windows GUI (2) so launching doesn't pop up a console window.
+	MalterlibNinjaCSharpAppHostSubsystemGUI: bool = false
+	MalterlibNinjaCSharpAppHostSubsystemGUI true
+	{
+		&
+		{
+			!MalterlibNinjaCSharpDllPath undefined
+			|
+			{
+				Target.Type "Executable"
+				Target.Type "UIExecutable"
+			}
+		}
+	}
+
+	// Single-file mode: append a .NET 8 bundle (format v6) to the apphost so the
+	// managed assembly and runtimeconfig.json are embedded in the .exe. The
+	// runtime prefers the bundle when present, so external sibling files become
+	// redundant — we skip deploying them when SingleFile is true.
+	// User(Build System): Disable to deploy the .dll and runtimeconfig.json as separate files.
+	MalterlibNinjaCSharpSingleFile: bool?
+	MalterlibNinjaCSharpSingleFile true
+	{
+		&
+		{
+			!MalterlibNinjaCSharpDllPath undefined
+			MalterlibNinjaCSharpSingleFile undefined
+		}
+	}
+
+	// runtimeconfig.json source path — generated by %GenerateFile and consumed
+	// by both the deploy (when not single-file) and the bundle.
+	MalterlibNinjaCSharpRuntimeConfigPath: string?
+	MalterlibNinjaCSharpRuntimeConfigPath `@(GeneratedDirectory)@(MalterlibFinalModuleDestination->GetFileNoExt()).runtimeconfig.json`
+	{
+		!MalterlibNinjaCSharpDllPath undefined
+	}
 }
 
 Target
@@ -5607,12 +6083,51 @@ Target
 	}
 	*/
 
+	// Ninja .NET 5+ apphost generation. csc writes the managed assembly to
+	// MalterlibOriginalModuleDestinationExecutable (= <Int>/<base>.dll under
+	// the target's intermediate dir; see the override at line ~3580). We then
+	// patch a copy of apphost.exe to load that .dll at runtime and write the
+	// result to MalterlibOriginalModuleDestination (= Out/<base>.exe). The two
+	// paths are in different directories so PostBuild can rerun without ever
+	// clobbering csc's output.
+	//
+	// Target.Type "Executable"/"UIExecutable" map to /target:winexe in
+	// Ninja_CSharp.MGeneratorSettings; for those we also flip the apphost's
+	// PE Subsystem field to Windows GUI (2). "ConsoleExecutable" stays Console (3).
+	//
+	// SingleFile mode (default): pass the .dll and runtimeconfig.json as bundle
+	// specs so MTool BuildAppHost embeds them in the .exe; nothing else needs
+	// to ship. Otherwise the .dll and runtimeconfig.json are deployed as siblings.
+	PostBuildScript =+	`MTool BuildAppHost --template @(MalterlibNinjaCSharpAppHostTemplate->Escape()) --output @(MalterlibOriginalModuleDestination->Escape()) --assembly @(MalterlibNinjaCSharpDllPath->GetFile()->Escape())`\
+						`@(MalterlibNinjaCSharpAppHostSubsystemGUI ? " --gui" : "")`\
+						`@(MalterlibNinjaCSharpSingleFile ? ` --bundle-file @(`@(MalterlibNinjaCSharpDllPath),@(MalterlibNinjaCSharpRuntimeConfigPath)`->Escape())` : "")\r\n`
+	{
+		&
+		{
+			!MalterlibNinjaCSharpDllPath undefined
+			!MalterlibNinjaCSharpAppHostTemplate undefined
+		}
+	}
+
 	PostBuildScript =+	`MTool DiffCopy @(MalterlibOriginalModuleDestination->Escape()) @(MalterlibFinalModuleDestinationPath->Escape()) "" 0\r\n`
 	{
 		&
 		{
 			!MalterlibFinalModuleDestination MalterlibOriginalModuleDestination
 			!DisableDiffCopy true
+		}
+	}
+
+	// Deploy the managed assembly alongside the apphost .exe (Ninja .NET 5+).
+	// Skipped when SingleFile is on — the .dll is embedded inside the .exe.
+	PostBuildScript =+	`MTool DiffCopy @(MalterlibNinjaCSharpDllPath->Escape()) @(MalterlibFinalModuleDestinationPath->Escape()) "" 0\r\n`
+	{
+		&
+		{
+			!MalterlibNinjaCSharpDllPath undefined
+			!MalterlibFinalModuleDestination MalterlibOriginalModuleDestination
+			!DisableDiffCopy true
+			!MalterlibNinjaCSharpSingleFile true
 		}
 	}
 
@@ -5838,6 +6353,18 @@ Target
 		}
 	}
 
+	// Make sn.exe (and other NETFX SDK tools) findable by the post-build script
+	ToolPath =+ MalterlibNETFXSDKToolsPath ?? []
+	{
+		&
+		{
+			TargetIsExecutable true
+			!MalterlibStronglyNamedAssembly undefined
+			PlatformType "Windows"
+			!Configuration "Fast Compile"
+		}
+	}
+
 	CodeSignEntitlements: string?
 	CodeSignEntitlements MalterlibSignMacOSEntitlements
 	{
@@ -5959,8 +6486,8 @@ Target
 		{
 			PlatformFamily "Windows"
 			TargetIsExecutable true
-			!Target:Target.SymbolFile undefined
 			MalterlibDeploySymbols true
+			!Target:Target.SymbolFile undefined
 		}
 	}
 

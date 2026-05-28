@@ -39,6 +39,7 @@ Property
 				{
 					CompileDialect "C"
 					!Compile.Type "DriverKitInterface"
+					!Compile.Type "C++Managed"
 				}
 				&
 				{
@@ -121,7 +122,11 @@ GeneratorSetting
 		, "Assembler", "clang"
 	)
 	{
-		!HostPlatformFamily "Windows"
+		&
+		{
+			!HostPlatformFamily "Windows"
+			!Compile.Type "C++Managed"
+		}
 	}
 
 	Ninja_CompileToolType Compile.Type->SwitchWithError(
@@ -133,7 +138,11 @@ GeneratorSetting
 		, "Assembler", "clang"
 	)
 	{
-		!!HostPlatformFamily "Windows"
+		&
+		{
+			HostPlatformFamily "Windows"
+			!Compile.Type "C++Managed"
+		}
 	}
 }
 
@@ -145,6 +154,7 @@ GeneratorSetting
 		{
 			CompileDialect "C"
 			!Compile.Type "DriverKitInterface"
+			!Compile.Type "C++Managed"
 		}
 		!Compile.PrecompilePrefixHeader "XInternalCreate"
 	}
@@ -310,6 +320,7 @@ Target
 {
 	AllFiles: [string] = []
 	AllFiles_Assembler: [string] = []
+	AllFiles_C\+\+Managed: [string] = []
 }
 
 GeneratorSetting
@@ -320,6 +331,7 @@ GeneratorSetting
 	Target_AllFiles_ObjC\+\+ {}
 	Target_AllFiles_ObjC {}
 	Target_AllFiles_Assembler {}
+	Target_AllFiles_C\+\+Managed {}
 
 	CompileTypeOutputs_C\+\+: [string] = []
 	CompileTypeOutputs_C\+\+ =+ Compile.ObjectFileName
@@ -335,6 +347,9 @@ GeneratorSetting
 
 	CompileTypeOutputs_Assembler: [string] = []
 	CompileTypeOutputs_Assembler =+ Compile.ObjectFileName
+
+	CompileTypeOutputs_C\+\+Managed: [string] = []
+	CompileTypeOutputs_C\+\+Managed =+ Compile.ObjectFileName
 }
 
 Compile

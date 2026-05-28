@@ -40,7 +40,7 @@ GeneratorSetting
 
 	// Helper to prefix manifest files with /MANIFESTINPUT:
 	f_PrefixManifestInput function(string _File) [string] = []
-	f_PrefixManifestInput =+ `-Wl,/MANIFESTINPUT:@(_File)`
+	f_PrefixManifestInput =+ GeneratorSetting.f_LDFlag(`/MANIFESTINPUT:@(_File)`)
 
 	// Add manifest embedding linker flags
 	Target_WindowsManifest =+ GeneratorSetting.f_SetSharedFlags(
@@ -48,7 +48,7 @@ GeneratorSetting
 			{
 				Tools: ["lld-link"]
 				, Flags: (GeneratorSetting.Ninja_ManifestFiles->IsEmpty()) ? [] : [
-					"-Wl,/MANIFEST:EMBED"
+					GeneratorSetting.f_LDFlag("/MANIFEST:EMBED")
 					, GeneratorSetting.Ninja_ManifestFiles->ForEach(&GeneratorSetting.f_PrefixManifestInput)...
 				]
 			}

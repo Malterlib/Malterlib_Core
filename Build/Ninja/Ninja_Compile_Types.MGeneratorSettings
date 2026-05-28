@@ -133,11 +133,17 @@ Compile
 	{
 		!!ClangCanCompile true
 	}
+
+	CompileTypeDependencies =+ "C++Managed"
+	{
+		!!ClangCanCompile true
+	}
 }
 
 Property
 {
 	AllCompileTypeDependencies =+ "Custom"
+	AllCompileTypeDependencies =+ "C++Managed"
 }
 
 GeneratorSetting

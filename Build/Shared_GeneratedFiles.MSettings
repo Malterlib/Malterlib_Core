@@ -287,6 +287,13 @@ Property
 
 %GenerateFile "LocalBuildSettings"
 {
+	Property
+	{
+		ScriptWindowsBat true
+		{
+			!!HostPlatformFamily "Windows"
+		}
+	}
 	GenerateFile
 	{
 		Name `BuildSystem/SharedBuildSettings@(ScriptExtension)`

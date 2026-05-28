@@ -1,0 +1,239 @@
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+// C# language support for Ninja generator (Windows host).
+// Mirrors Ninja_Object's pattern: per-file compile is disabled, .cs files are aggregated
+// via Compile.LinkerInputs and consumed by a single csc.exe invocation as the target's
+// "link" step. csc.exe is the Roslyn build shipped with Visual Studio.
+
+// Per-file: collect .cs source files into LinkerInputs; no per-file compile rule.
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		Compile.Type "C#"
+		!Compile.Disabled true
+	}
+
+	BuildDisabled true
+
+	LinkerInputs =+ this.Identity
+	{
+		!!this.Type "File"
+	}
+
+}
+
+// Map Compile.* properties to csc.exe flags. Mirrors VisualStudio_DotNet_Compile.MGeneratorSettings:
+// PreprocessorDefines -> /define:, Optimize -> /optimize+/-, Symbols -> /debug:, Warnings -> /warn:.
+// The aggregation point in the Target_Type Flags list above evaluates this at the target's
+// Compile entity (filtered to Compile.Type "C#"), so all values are taken from there.
+Compile
+{
+	!!Compile.Type "C#"
+
+	Ninja_CompileFlags: [string] = []
+
+	// One /define: per symbol. csc accepts identifier names only — the .NET LanguageFamily
+	// Compile block in Shared_Compile.MSettings already sets a separate, identifier-only
+	// PreprocessorDefines list for C#, so no =value filtering is needed here.
+	Ninja_CompileFlags =+ Compile.PreprocessorDefines->f_PrefixFlags("/define:")
+
+	Ninja_CompileFlags =+ Compile.Optimize->SwitchWithError(
+		"Unsupported C# Compile.Optimize option: "
+		, "Off", "/optimize-"
+		, "On", "/optimize+"
+		, "Fast", "/optimize+"
+		, "Full", "/optimize+"
+	)
+
+	// /debug:full|pdbonly|none. csc treats /debug:full and /debug:pdbonly as implicitly
+	// enabling debug emission; /debug:none disables it. Target_GenerateDebugInformation
+	// below additionally emits /debug+ when symbols are wanted.
+	Ninja_CompileFlags =+ Compile.Symbols->SwitchWithError(
+		"Unsupported C# Compile.Symbols option: "
+		, "FullForDebug", "/debug:full"
+		, "Full", "/debug:pdbonly"
+		, "Fast", "/debug:pdbonly"
+		, "None", "/debug:none"
+	)
+
+	Ninja_CompileFlags =+ Compile.Warnings->SwitchWithError(
+		"Unsupported C# Compile.Warnings option: "
+		, "Off", "/warn:0"
+		, "Minimal", "/warn:1"
+		, "On", "/warn:3"
+		, "Pedantic", "/warn:4"
+	)
+}
+
+// Target-level: csc.exe invocation as the only build rule for the target.
+GeneratorSetting
+{
+	!!Target.Language "C#"
+
+	Ninja_TargetExecutable PlatformToolsetCSharpCompiler
+	Ninja_TargetToolType "csc"
+
+	// Map Target.Type to csc /target: option
+	Ninja_CSharpTargetType: string
+	Ninja_CSharpTargetType Target.Type->SwitchWithError(
+		"Unsupported target type for C#: "
+		, "Executable", "winexe"
+		, "ConsoleExecutable", "exe"
+		, "UIExecutable", "winexe"
+		, "DynamicLibrary", "library"
+		, "SharedDynamicLibrary", "library"
+	)
+
+	Ninja_TargetCommand `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) /noconfig /nologo @@@(Builtin.RspFile)`
+
+	// Response file: target-type, output, flags, and source files (Builtin.Input is LinkerInputs aggregation)
+	Ninja_TargetRspfileContent: string = `/target:@(GeneratorSetting.Ninja_CSharpTargetType) /out:@(Builtin.Output) @(Builtin.Flags) @(Builtin.Input)`
+
+	// csc emits a sibling .pdb when /debug is on. Declare it as an implicit
+	// output so ninja knows the link rule produces it (otherwise downstream
+	// consumers / cleanups can't see it as buildable). GenerateDebugInformation
+	// defaults to true; only suppress when explicitly false.
+	Ninja_TargetImplicitOutputs =+ MalterlibOriginalModuleDestinationExecutable->GetPath() / `@(MalterlibOriginalModuleDestinationExecutable->GetFileNoExt()).pdb`
+	{
+		!Target.GenerateDebugInformation false
+	}
+}
+
+// Translate target dependencies into /reference: flags.
+GeneratorSetting
+{
+	!!Target.Language "C#"
+
+	// AssemblyReference: emit /reference:<refDir>/<DepName>.dll.
+	// Framework: <Reference Assemblies>/.NETFramework/v4.6/. NetCore: <DotNet>/packs/Microsoft.NETCore.App.Ref/8.0.x/ref/net8.0/.
+	// Target.TargetFrameworkVersion is e.g. "v4.6" or "net8.0" — we strip the prefix to get the Major.Minor key for NetCore.
+	MaybeGetCSharpAssemblyReference: one_of(string, [string]) = []
+	MaybeGetCSharpAssemblyReference `/reference:@(f_MalterlibNETFXReferenceAssemblyPath(Target.TargetFrameworkVersion))/@(Dependency.Name).dll`
+	{
+		&
+		{
+			Dependency.Type "AssemblyReference"
+			!Dependency.IndirectEvaluated true
+			!Target.CLRSupport "NetCore"
+		}
+	}
+	MaybeGetCSharpAssemblyReference `/reference:@(f_MalterlibDotNetReferenceAssemblyPath(Target.TargetFrameworkVersion->Extract(3)) ?? "")/@(Dependency.Name).dll`
+	{
+		&
+		{
+			Dependency.Type "AssemblyReference"
+			!Dependency.IndirectEvaluated true
+			Target.CLRSupport "NetCore"
+		}
+	}
+
+	f_GetCSharpAssemblyReference function(string _Dependency) [string] = []
+	f_GetCSharpAssemblyReference =+ &GeneratorSetting.MaybeGetCSharpAssemblyReference->GetProperty(_Dependency)
+
+	// Regular link dependency to a managed target: emit /reference:<built-output-path>.
+	// Only managed assemblies have metadata csc can consume — skip StaticLibrary deps
+	// (those produce *.lib which is native-only and would trip csc with CS0009).
+	MaybeGetCSharpProjectReference: one_of(string, [string]) = []
+	MaybeGetCSharpProjectReference `/reference:@(&MalterlibFinalModuleDestination->GetProperty(Dependency.TargetPropertyPath))`
+	{
+		&
+		{
+			Dependency.Link true
+			!Dependency.IndirectEvaluated true
+			Dependency.Type ""
+			!Dependency.ObjectLibrary true
+			!&Target.Type->GetProperty(Dependency.TargetPropertyPath) "StaticLibrary"
+		}
+	}
+
+	f_GetCSharpProjectReference function(string _Dependency) [string] = []
+	f_GetCSharpProjectReference =+ &GeneratorSetting.MaybeGetCSharpProjectReference->GetProperty(_Dependency)
+
+	Target_Type =+ {
+		Flags: [
+			&Compile.Ninja_CompileFlags->GetProperty("Target:*", {"Compile.Type": "C#"})
+			, Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetCSharpAssemblyReference)
+			, Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetCSharpProjectReference)
+		]
+	}
+}
+
+// NetCore baseline references — System.Runtime, mscorlib, netstandard hold basic types
+// (Object, Enum, etc.) that csc must see explicitly. The Framework System.dll forwards to
+// these automatically; NetCore splits them out so we /reference: them by hand.
+// The list itself comes from Target.NetCoreBaselineRefs (Shared_Target.MSettings) so other
+// generators / consumers can extend it if needed.
+GeneratorSetting
+{
+	&
+	{
+		Target.Language "C#"
+		Target.CLRSupport "NetCore"
+		GeneratorFamily "Ninja"
+	}
+
+	f_GetNetCoreBaselineRef function(string _Name) [string] = []
+	f_GetNetCoreBaselineRef =+ `/reference:@(f_MalterlibDotNetReferenceAssemblyPath(Target.TargetFrameworkVersion->Extract(3)) ?? "")/@(_Name).dll`
+
+	Target_NetCoreBaselineRefs =+ {
+		Flags: Target.NetCoreBaselineRefs->ForEach(&GeneratorSetting.f_GetNetCoreBaselineRef)
+	}
+}
+
+// Strong-name key file → /keyfile:
+GeneratorSetting
+{
+	!!Target.Language "C#"
+
+	Target_LinkKeyFile =+ {
+		Flags: `/keyfile:@(Target.LinkKeyFile->WindowsPath())`
+	}
+	{
+		!Target.LinkKeyFile undefined
+	}
+}
+
+// Debug symbols → /debug+ /debug:full
+GeneratorSetting
+{
+	!!Target.Language "C#"
+
+	Target_GenerateDebugInformation =+ {
+		Flags: (Target.GenerateDebugInformation ?? true) ? ["/debug+", "/debug:full"] : []
+	}
+}
+
+// Empty defaults for Target.X properties that have no meaning for csc.exe but must be
+// registered so the build system can read them without errors.
+// (.NET-specific names mirror VisualStudio_DotNet_Target.MGeneratorSettings.)
+GeneratorSetting
+{
+	!!Target.Language "C#"
+
+	Target_ErrorReport =+ {}
+	Target_CodeAnalysisRuleSet =+ {}
+	Target_AppDesignerFolder =+ {}
+	Target_DefaultNamespace =+ {}
+	Target_GenerateAssemblyInfo =+ {}
+	Target_PlatformTarget =+ {}
+	Target_StartAction =+ {}
+	Target_TargetMachine =+ {}
+	Target_LargeAddressAware =+ {}
+	Target_DataExecutionPrevention =+ {}
+	Target_RandomizedBaseAddress =+ {}
+	Target_LinkIncremental =+ {}
+	Target_IgnoreAllDefaultLibraries =+ {}
+	Target_EntryPointSymbol =+ {}
+	Target_ModuleDefinitionFile =+ {}
+	Target_GenerateManifest =+ {}
+	Target_Driver =+ {}
+	Target_Version =+ {}
+	Target_SymbolFile =+ {}
+	Target_SubSystem =+ {}
+	Target_RemoveUnreferencedSymbols =+ {}
+	Target_SearchPath =+ {}
+	Target_WindowsManifest =+ {}
+}

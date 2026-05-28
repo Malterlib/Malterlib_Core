@@ -27,16 +27,35 @@ Property
 		!!IsClangCL true
 	}
 
+	// Wrap a linker flag for the clang driver (-Wl,X). Returns _Flag raw for
+	// VisualStudio (which fronts link.exe natively) and for MS-linker mode on
+	// Ninja (link.exe invoked directly — no driver to peel off the prefix).
 	f_LinkerFlag function(string _Flag) string = _Flag
 	f_LinkerFlag `-Wl,@(_Flag)`
 	{
-		!!GeneratorFamily "Ninja"
+		&
+		{
+			GeneratorFamily "Ninja"
+			!Target.UseMSLinker true
+		}
 	}
 
 	f_LinkerFlagsHelper function(string _Flag) [string] = []
 	f_LinkerFlagsHelper =+ `-Wl,@(_Flag)`
 	{
-		!!GeneratorFamily "Ninja"
+		&
+		{
+			GeneratorFamily "Ninja"
+			!Target.UseMSLinker true
+		}
+	}
+	f_LinkerFlagsHelper =+ _Flag
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			Target.UseMSLinker true
+		}
 	}
 
 	f_LinkerFlags function([string] _Flags) [string] = _Flags

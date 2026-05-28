@@ -1,0 +1,478 @@
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+// Managed C++ (C++/CLI) compilation support for Ninja generator (Windows only)
+// Uses MSVC cl.exe instead of ClangCL since Clang does not support /clr
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		PlatformFamily "Windows"
+		Compile.Type "C++Managed"
+	}
+
+	// MSVC cl.exe output file name
+	ObjectFileName Target.IntermediateDirectory / `Managed_@(this.Identity->GetFileNoExt())_@(this.EntityPath->HashSHA256(8)).@(Ninja_ObjectFileExtension)`
+	{
+		&
+		{
+			!Compile.PrecompilePrefixHeader "XInternalCreate"
+			this.Type "File"
+		}
+	}
+}
+
+GeneratorSetting
+{
+	&
+	{
+		PlatformFamily "Windows"
+		Compile.Type "C++Managed"
+	}
+
+	Compile_Type #<Build.inputs> =+ this.Identity
+
+	// MSVC cl.exe command with response file
+	Compile_Type #<Rule.command> `@(PlatformToolsetMSVC->Escape()) /nologo /c @@@(Builtin.RspFile) @(Builtin.Input)`
+	Compile_Type #<Rule.rspfile> `@(Builtin.Dollar)out.rsp`
+	Compile_Type #<Rule.rspfile_content> `@(Builtin.Flags)`
+	Compile_Type #<Build.description> `Compiling (MSVC/CLR) @(this.Identity->GetFile())`
+
+	// Use MSVC-style dependency tracking via /showIncludes
+	Compile_Type #<Rule.deps> "msvc"
+
+	// Compile as C++ and enable CLR (/clr for .NET Framework, /clr:netcore for .NET 5+).
+	// For NetCore, also pass /AI<ref-assembly-path> so cl.exe can resolve mscorlib.dll etc.
+	// (Target.TargetFrameworkVersion is "net8.0" — strip "net" to get the Major.Minor key.)
+	// Show includes for MSVC dependency tracking.
+	Compile_Type =+ {
+		Flags: [
+			"/TP"
+			, (Target.CLRSupport <==> "NetCore") ? "/clr:netcore" : "/clr"
+			, "/showIncludes"
+			, (
+				(Target.CLRSupport <==> "NetCore" && Target.TargetFrameworkVersion->StartsWith("net"))
+				? `/AI@(f_MalterlibDotNetReferenceAssemblyPath(Target.TargetFrameworkVersion->Extract(3)) ?? "")`
+				: []
+			)
+		]
+		, FlagsPriority: 1000
+	}
+
+	// Set INCLUDE environment variable for MSVC cl.exe to find system headers
+	Compile_IncludeEnvironmentPaths #<Rule.environment> =+ {
+		INCLUDE: Compile.IncludeEnvironmentPaths->Join(";")
+	}
+	{
+		&
+		{
+			!Compile.IncludeEnvironmentPaths undefined
+			!Compile.IncludeEnvironmentPaths []
+		}
+	}
+
+	Compile_ObjectFileName #<Build.outputs> =+ Compile.ObjectFileName
+
+	Compile_ObjectFileName =+ {
+		Flags: [`/Fo@(Compile.ObjectFileName)`]
+		, FlagsPriority: -1000
+	}
+
+	// Include paths
+	Compile_SearchPath =+ {
+		Flags: Compile.SearchPath->f_PrefixFlags("/I")
+		, Type: "unique"
+	}
+
+	Compile_SystemSearchPath =+ {
+		Flags: Compile.SystemSearchPath->f_PrefixFlags("/I")
+		, Type: "unique"
+	}
+
+	// Preprocessor defines
+	Compile_PreprocessorDefines =+ {
+		Flags: Compile.PreprocessorDefines->f_PrefixFlags("/D")
+		, Type: "unique"
+	}
+
+	// MSVC optimization flags
+	Compile_Optimize =+ {
+		Flags: Compile.Optimize->SwitchWithError(
+			"Unsupported option: "
+			, "Off", "/Od"
+			, "Fast", "/O2"
+			, "On", "/O2"
+			, "Full", "/Ox"
+		)
+		, Type: "unique"
+	}
+
+	// Warning levels
+	Compile_Warnings =+ {
+		Flags: Compile.Warnings->SwitchWithError(
+			"Unsupported option: "
+			, "Off", "/W0"
+			, "Minimal", "/W1"
+			, "On", "/W3"
+			, "Pedantic", "/W4"
+		)
+		, Type: "unique"
+	}
+
+	Compile_WarningsAsErrors =+ {
+		Flags: Compile.WarningsAsErrors->SwitchWithError(
+			"Unsupported option: "
+			, true, "/WX"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	// Debug symbols - use /Z7 to embed debug info in object files
+	Compile_Symbols =+ {
+		Flags: Compile.Symbols->SwitchWithError(
+			"Unsupported option: "
+			, "FullForDebug", "/Z7"
+			, "Full", "/Z7"
+			, "Fast", "/Z7"
+			, "None", []
+			, "Default", []
+		)
+		, Type: "unique"
+	}
+
+	// Exception handling
+	Compile_Exceptions =+ {
+		Flags: Compile.Exceptions->SwitchWithError(
+			"Unsupported option: "
+			, "Full", "/EHa"
+			, "C++", "/EHsc"
+			, "ExternCandC++", "/EHs"
+			, "Off", []
+		)
+		, Type: "unique"
+	}
+
+	// Runtime library
+	Compile_RuntimeLibrary =+ {
+		Flags: Compile.RuntimeLibrary->SwitchWithError(
+			"Unsupported option: "
+			, "Static", "/MT"
+			, "StaticDebug", "/MTd"
+			, "Dynamic", "/MD"
+			, "DynamicDebug", "/MDd"
+		)
+		, Type: "unique"
+	}
+
+	// Calling convention
+	Compile_CallingConvention =+ {
+		Flags: Compile.CallingConvention->SwitchWithError(
+			"Unsupported option: "
+			, "Cdecl", "/Gd"
+			, "StdCall", "/Gr"
+			, "FastCall", "/Gz"
+		)
+		, Type: "unique"
+	}
+
+	// RTTI
+	Compile_DynamicTypeInfo =+ {
+		Flags: Compile.DynamicTypeInfo->SwitchWithError(
+			"Unsupported option: "
+			, true, "/GR"
+			, false, "/GR-"
+		)
+		, Type: "unique"
+	}
+
+	// Inline control
+	Compile_Inline =+ {
+		Flags: Compile.Inline->SwitchWithError(
+			"Unsupported option: "
+			, "Off", "/Ob0"
+			, "Explicit", "/Ob1"
+			, "Automatic", "/Ob2"
+		)
+		, Type: "unique"
+	}
+
+	// Runtime error checks
+	Compile_RuntimeChecks =+ {
+		Flags: Compile.RuntimeChecks->SwitchWithError(
+			"Unsupported option: "
+			, "Off", []
+			, "Fast", "/RTC1"
+			, "On", "/RTCsu"
+			, "Full", "/RTC1"
+		)
+		, Type: "unique"
+	}
+
+	// Function-level linking
+	Compile_FunctionLevelLinking =+ {
+		Flags: Compile.FunctionLevelLinking ? "/Gy" : []
+		, Type: "unique"
+	}
+
+	// String pooling
+	Compile_StringPooling =+ {
+		Flags: Compile.StringPooling ? "/GF" : []
+		, Type: "unique"
+	}
+
+	// Struct member alignment
+	Compile_StructMemberAlignment =+ {
+		Flags: Compile.StructMemberAlignment->SwitchWithError(
+			"Unsupported option: "
+			, "Default", []
+			, "1", "/Zp1"
+			, "2", "/Zp2"
+			, "4", "/Zp4"
+			, "8", "/Zp8"
+			, "16", "/Zp16"
+		)
+		, Type: "unique"
+	}
+
+	// Floating point model
+	Compile_FloatingPointModel =+ {
+		Flags: Compile.FloatingPointModel->SwitchWithError(
+			"Unsupported option: "
+			, "Precise", "/fp:precise"
+			, "Strict", "/fp:strict"
+			, "Fast", "/fp:fast"
+		)
+		, Type: "unique"
+	}
+
+	// Floating point exceptions
+	Compile_FloatingPointExceptions =+ {
+		Flags: Compile.FloatingPointExceptions ? "/fp:except" : "/fp:except-"
+		, Type: "unique"
+	}
+
+	// Extended instruction set
+	Compile_ExtendedInstructionSet =+ {
+		Flags: Compile.ExtendedInstructionSet->SwitchWithError(
+			"Unsupported option: "
+			, "Off", []
+			, "SSE1", "/arch:SSE"
+			, "SSE2", "/arch:SSE2"
+			, "SSE3", "/arch:SSE2"
+			, "SSSE3", "/arch:SSE2"
+			, "SSE41", "/arch:SSE2"
+			, "SSE42", "/arch:SSE2"
+			, "AVX", "/arch:AVX"
+			, "AVX2", "/arch:AVX2"
+			, "X86_64_v2", "/arch:SSE2"
+			, "X86_64_v3", "/arch:AVX2"
+			, "X86_64_v4", "/arch:AVX512"
+		)
+		, Type: "unique"
+	}
+
+	// Link-time code generation (whole program optimization)
+	Compile_LinkTimeCodeGeneration =+ {
+		Flags: Compile.LinkTimeCodeGeneration->SwitchWithError(
+			"Unsupported option: "
+			, true, "/GL"
+			, "Fast", "/GL"
+			, false, []
+		)
+		, Type: "unique"
+	}
+
+	// Extra compiler flags (pass through)
+	Compile_ExtraCompilerFlags =+ {
+		Flags: Compile.ExtraCompilerFlags
+		, Type: "multiple"
+	}
+
+	// Prefix header (forced include)
+	Compile_PrefixHeader =+ {
+		Flags: [["/FI", Compile.PrefixHeader]]
+	}
+	{
+		&
+		{
+			!Compile.PrecompilePrefixHeader "XInternalCreate"
+			Compile.PrecompilePrefixHeader false
+			!Compile.PrefixHeader undefined
+		}
+	}
+
+	Compile_PrefixHeader =+ {}
+	{
+		!!GeneratorSetting.Compile_PrefixHeader undefined
+	}
+
+	// Precompiled headers (not used for managed in Ninja - use forced include only)
+	Compile_PrecompilePrefixHeader =+ {}
+	{
+		!!GeneratorSetting.Compile_PrecompilePrefixHeader undefined
+	}
+
+	// Stack protection
+	Compile_StackGuard =+ {
+		Flags: Compile.StackGuard->SwitchWithError(
+			"Unsupported option: "
+			, true, "/GS"
+			, false, "/GS-"
+		)
+		, Type: "unique"
+	}
+
+	// Ignore standard include path
+	Compile_IgnoreStandardIncludePath =+ {
+		Flags: Compile.IgnoreStandardIncludePath ? "/X" : []
+		, Type: "unique"
+	}
+
+	// Language extensions
+	Compile_EnableLanguageExtensions =+ {
+		Flags: Compile.EnableLanguageExtensions ? [] : "/Za"
+		, Type: "unique"
+	}
+
+	// Additional options
+	Compile_AdditionalOptions =+ {
+		Flags: Compile.AdditionalOptions
+		, Type: "multiple"
+	}
+
+	// Empty handlers for settings not applicable to MSVC managed builds
+	Compile_DoCompileAndLink =+ {}
+	Compile_TargetTriple =+ {}
+	Compile_ToolClass =+ {}
+	Compile_DefaultHeaders =+ {}
+	Compile_DefaultVisibility =+ {}
+	Compile_DefaultLibraries =+ {}
+	Compile_FrameworkSearchPath =+ {}
+	Compile_SysRoot =+ {}
+	Compile_ToolPrefix =+ {}
+	Compile_PositionIndependantCode =+ {}
+	Compile_SplitSymbols =+ {}
+	Compile_DwarfDebugFlags =+ {}
+	Compile_DwarfVersion =+ {}
+	Compile_LinuxXcodeCompatibility =+ {}
+	Compile_DocumentationModule =+ {}
+	Compile_AppleKernelOptions =+ {}
+	Compile_AppleKernelOptionsCxx =+ {}
+	Compile_ForceDwarfExceptions =+ {}
+	Compile_ProcessorArchitecture =+ {}
+	Compile_ThreadPointerAccessMethod =+ {}
+	Compile_ShortWChar =+ {}
+	Compile_Sanitize =+ {}
+	Compile_Sanitize_Thread =+ {}
+	Compile_Sanitize_Address =+ {}
+	Compile_Sanitize_UndefinedBehavior =+ {}
+	Compile_Sanitize_NoRecover =+ {}
+	Compile_OmitFramePointer =+ {}
+	Compile_MinMacOSVersion =+ {}
+	Compile_MiniOSVersion =+ {}
+	Compile_ObjectiveCARC =+ {}
+	Compile_ObjectiveCWeak =+ {}
+	Compile_ObjectiveCExceptions =+ {}
+	Compile_CodeCoverage =+ {}
+	Compile_Analyzer =+ {}
+	Compile_ProfileGuidedOptimizationGenerate =+ {}
+	Compile_ProfileGuidedOptimizationUse =+ {}
+	Compile_EmscriptenWarnings =+ {}
+	Compile_AlignedAllocationProvided =+ {}
+	Compile_AlignDouble =+ {}
+	Compile_AsyncUnwindTables =+ {}
+	Compile_DataSections =+ {}
+	Compile_FunctionSections =+ {}
+	Compile_NewDeleteVisibilityHidden =+ {}
+	Compile_SizedDeallocation =+ {}
+	Compile_CoroutineAlignedAllocation =+ {}
+	Compile_ProvidedNewAligment =+ {}
+	Compile_ConstexprSteps =+ {}
+	Compile_PchInstantiateTemplates =+ {}
+	Compile_PchCodeGen =+ {}
+	Compile_PchDebugInfo =+ {}
+	Compile_LimitedDebugInfo =+ {}
+	Compile_VerboseTemplateErrors =+ {}
+	Compile_ClangTimeTrace =+ {}
+	Compile_ClangUnstableWarnings =+ {}
+	Compile_DiagnosticsFormat =+ {}
+	Compile_CaretDiagnostics =+ {}
+	Compile_DiagnosticsFixitInfo =+ {}
+	Compile_ColorDiagnostics =+ {}
+	Compile_CxxLanguage =+ {}
+	Compile_CLanguage =+ {}
+	Compile_OpenMP =+ {}
+	Compile_UseFullPaths =+ {}
+	Compile_DisableSecurityWarnings =+ {}
+	Compile_DisableDeprecationWarnings =+ {}
+
+	// Individual warning settings (not applicable for MSVC managed)
+	Compile_Warnings_DeprecatedDeclarations =+ {}
+	Compile_Warnings_DeprecatedNonPrototype =+ {}
+	Compile_Warnings_ShiftCountNegative =+ {}
+	Compile_Warnings_DeprecatedPragma =+ {}
+	Compile_Warnings_DeprecatedThisCapture =+ {}
+	Compile_Warnings_ShiftOverflow =+ {}
+	Compile_Warnings_ConstantConversion =+ {}
+	Compile_Warnings_DeprecatedBuiltins =+ {}
+	Compile_Warnings_NoPessimizingMove =+ {}
+	Compile_Warnings_UnusedExceptionParameter =+ {}
+	Compile_Warnings_Cxx11Narrowing =+ {}
+	Compile_Warnings_TautolagicalPointerCompare =+ {}
+	Compile_Warnings_UnusedVariable =+ {}
+	Compile_Warnings_UnusedFunction =+ {}
+	Compile_Warnings_UnusedValue =+ {}
+	Compile_Warnings_VarArgs =+ {}
+	Compile_Warnings_UnusedLabel =+ {}
+	Compile_Warnings_OverloadedVirtual =+ {}
+	Compile_Warnings_CharSubscripts =+ {}
+	Compile_Warnings_Parentheses =+ {}
+	Compile_Warnings_UnusedButSetVariable =+ {}
+	Compile_Warnings_MissingBraces =+ {}
+	Compile_Warnings_AlignMismatch =+ {}
+	Compile_Warnings_BitwiseInsteadOfLogical =+ {}
+	Compile_Warnings_ConversionToSmallerInt =+ {}
+	Compile_Warnings_ConversionToSmallerType =+ {}
+	Compile_Warnings_IncompatibleTypes =+ {}
+	Compile_Warnings_Switch =+ {}
+	Compile_Warnings_SingleBitBitfieldConstantConversion =+ {}
+	Compile_Warnings_UnknownPragma =+ {}
+	Compile_Warnings_NoUnused =+ {}
+	Compile_Warnings_NoUnknownPragmas =+ {}
+	Compile_Warnings_NoVirtualOverride =+ {}
+	Compile_Warnings_MisleadingIndentation =+ {}
+	Compile_Warnings_FormatSecurity =+ {}
+	Compile_Warnings_UnusedCommandLineArgument =+ {}
+	Compile_Warnings_DeprecatedEnumConversion =+ {}
+	Compile_Warnings_InlineNewDelete =+ {}
+	Compile_Warnings_IgnoredAttributes =+ {}
+	Compile_Warnings_Format =+ {}
+	Compile_Warnings_VariableLengthArray =+ {}
+	Compile_Warnings_MissingCommaVariadicParam =+ {}
+	Compile_Warnings_NonTrivialMemCall =+ {}
+	Compile_Warnings_MainDefinition =+ {}
+	Compile_Warnings_ASANWithoutDebugInfo =+ {}
+	Compile_BuiltinSearchPath =+ {}
+}
+
+Compile
+{
+	&
+	{
+		Generator "Ninja"
+		PlatformFamily "Windows"
+		Compile.Type "C++Managed"
+		!Compile.Disabled true
+	}
+
+	LinkerInputs =+ Compile.ObjectFileName
+	{
+		&
+		{
+			this.Type "File"
+		}
+	}
+}
