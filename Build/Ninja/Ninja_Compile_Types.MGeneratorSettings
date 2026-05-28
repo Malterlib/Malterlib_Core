@@ -75,8 +75,29 @@ GeneratorSetting
 		{
 			!Compile.Custom_Shell undefined
 			!Compile.Custom_Shell ""
+			!HostPlatformFamily "Windows"
 		}
 	}
+
+	// On Windows, the inner cmdline is authored in cmd-style (e.g. `"c:/path with spaces/foo.exe" args`)
+	// and is destined for cmd.exe `/c`. cmd.exe doesn't understand CRT-style `\"` / `\\` escapes, so we
+	// can't simply Escape() the whole inner cmdline as one argv element — cmd would parse the resulting
+	// `\"...\"` literally, producing an invalid exe path.
+	//
+	// Instead: parse the inner cmdline with Windows rules into argv tokens, then re-emit them as
+	// space-separated tokens with `JoinEscaped`. JoinEscaped uses the same `\"` / `\\` escape form
+	// that ninja's command_raw parser (AddArguments) understands, so the round-trip is exact, and
+	// each token reaches cmd as a separate space-separated piece that cmd parses correctly.
+	Compile_Custom_CommandLine #<Rule.command> `@(Compile.Custom_Shell) @(GeneratorSetting.CalculateCommandLine->ParseCommandLineWindows()->JoinEscaped(" "))`
+	{
+		&
+		{
+			!Compile.Custom_Shell undefined
+			!Compile.Custom_Shell ""
+			HostPlatformFamily "Windows"
+		}
+	}
+
 	Compile_Custom_CommandLine #<Rule.command> Compile.Custom_CommandLine
 	{
 		|
