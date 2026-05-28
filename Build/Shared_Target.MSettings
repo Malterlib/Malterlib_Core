@@ -5320,7 +5320,7 @@ Property
 	MalterlibBuildServerPutPathUploadDestinationDirs MalterlibBuildServerPutPath->f_ToStringArray()->ForEach(&MalterlibBuildServerPutPathUploadTemplate, {MalterlibBuildServerPutPathUploadTemplateCopyOptions: _CopyOptions})->Join(";")
 
 	MalterlibBuildServerPutPathUploadTemplateOuter function(type(CFileCopyOptionsDetailed) _CopyOptions) string = ""
-	MalterlibBuildServerPutPathUploadTemplateOuter =+ `@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->EscapeHost()) @(`DestinationDir=@(MalterlibBuildServerPutPathUploadDestinationDirs(_CopyOptions))`->EscapeHost())\r\n`
+	MalterlibBuildServerPutPathUploadTemplateOuter =+ `@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->f_ScriptEscapeString()) @(`DestinationDir=@(MalterlibBuildServerPutPathUploadDestinationDirs(_CopyOptions))`->f_ScriptEscapeString())\r\n`
 
 	MalterlibBuildServerPutPathUploadContents: string
 	MalterlibBuildServerPutPathUploadContents =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach(&MalterlibBuildServerPutPathUploadTemplateOuter)
@@ -5904,7 +5904,7 @@ Property
 	{
 		!!true _CopyOptions<AbsoluteDestination>
 	}
-	MalterlibPostCopyInternalTemplate =+	`MTool PostCopy @(`@(_CopyOptions<Pattern>)`->EscapeHost()) @(`Config=@(MalterlibPostCopyConfigFile)`->EscapeHost()) @(`Project=@(MalterlibCalculatedPostCopyProject)`->EscapeHost()) @(`OutFolder=@(MalterlibPostCopyDestination / _CopyOptions<Destination>)`->EscapeHost()) Hash=@(MalterlibPostCopyHash->ToString()) FindDirectory=@(_CopyOptions<FindDirectory>->ToString()) Recursive=@(_CopyOptions<Recursive>->ToString())\r\n`
+	MalterlibPostCopyInternalTemplate =+	`MTool PostCopy @(`@(_CopyOptions<Pattern>)`->f_ScriptNativeEscapedPath()) @(`Config=@(MalterlibPostCopyConfigFile)`->f_ScriptEscapeString()) @(`Project=@(MalterlibCalculatedPostCopyProject)`->f_ScriptEscapeString()) @(`OutFolder=@(MalterlibPostCopyDestination / _CopyOptions<Destination>)`->f_ScriptEscapeString()) Hash=@(MalterlibPostCopyHash->ToString()) FindDirectory=@(_CopyOptions<FindDirectory>->ToString()) Recursive=@(_CopyOptions<Recursive>->ToString())\r\n`
 
 	MalterlibPostCopyContents: string?
 	MalterlibPostCopyContents fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(&MalterlibPostCopyInternalTemplate)
@@ -6214,8 +6214,8 @@ Target
 		}
 	}
 
-	PostBuildScript =+	`echo @(MalterlibStripProgram) @(EscapeHost(MalterlibStripOptions...)) @(MalterlibFinalModuleDestinationExecutable->EscapeHost())\r\n`\
-						`@(MalterlibStripProgram) @(EscapeHost(MalterlibStripOptions...)) @(MalterlibFinalModuleDestinationExecutable->EscapeHost())\r\n`
+	PostBuildScript =+	`echo @(MalterlibStripProgram) @(EscapeHost(MalterlibStripOptions...)) @(MalterlibFinalModuleDestinationExecutable->f_ScriptNativeEscapedPath())\r\n`\
+						`@(MalterlibStripProgram) @(EscapeHost(MalterlibStripOptions...)) @(MalterlibFinalModuleDestinationExecutable->f_ScriptNativeEscapedPath())\r\n`
 	{
 		&
 		{
@@ -6395,8 +6395,8 @@ Target
 	}
 
 	PostBuildScript =+	`echo Sign:\r\n`\
-						`echo @(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->EscapeHost()) @(MalterlibFinalModuleDestination->EscapeHost())\r\n`\
-						`@(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->EscapeHost()) @(MalterlibFinalModuleDestination->EscapeHost())\r\n`
+						`echo @(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->f_ScriptNativeEscapedPath()) @(MalterlibFinalModuleDestination->f_ScriptNativeEscapedPath())\r\n`\
+						`@(MalterlibCodeSignMacOSCommand) --force @(MalterlibCodeSignMacOSExtraOptions) --timestamp --sign @(MalterlibSignCertMacOS->f_ScriptNativeEscapedPath()) @(MalterlibFinalModuleDestination->f_ScriptNativeEscapedPath())\r\n`
 	{
 		&
 		{
@@ -6416,19 +6416,19 @@ Target
 	}
 
 	PostBuildScript =+	`echo Notarize:\r\n`\
-						`/usr/bin/ditto -c -k --keepParent "@(MalterlibFinalModuleDestination->NativePath())" "@(MalterlibFinalModuleDestination->NativePath()).zip"\r\n`\
-						`echo @(MalterlibNotaryToolMacOSCommand) submit "@(MalterlibFinalModuleDestination->NativePath()).zip" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash()) \r\n`\
-						`@(MalterlibNotaryToolMacOSCommand) submit "@(MalterlibFinalModuleDestination->NativePath()).zip" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash()) 2>&1 | tee "@(MalterlibFinalModuleDestination->NativePath()).log"\r\n`\
-						`SubmissionID=\`grep "@(MalterlibFinalModuleDestination->NativePath()).log" -e "id:" | head -n 1 | awk -F 'id: ' '{print $2}'\`\r\n`\
+						`/usr/bin/ditto -c -k --keepParent "@(MalterlibFinalModuleDestination->f_ScriptNativePath())" "@(MalterlibFinalModuleDestination->f_ScriptNativePath()).zip"\r\n`\
+						`echo @(MalterlibNotaryToolMacOSCommand) submit "@(MalterlibFinalModuleDestination->f_ScriptNativePath()).zip" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash()) \r\n`\
+						`@(MalterlibNotaryToolMacOSCommand) submit "@(MalterlibFinalModuleDestination->f_ScriptNativePath()).zip" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash()) 2>&1 | tee "@(MalterlibFinalModuleDestination->f_ScriptNativePath()).log"\r\n`\
+						`SubmissionID=\`grep "@(MalterlibFinalModuleDestination->f_ScriptNativePath()).log" -e "id:" | head -n 1 | awk -F 'id: ' '{print $2}'\`\r\n`\
 						`echo SubmissionID=$SubmissionID\r\n`\
 						`@(MalterlibNotaryToolMacOSCommand) wait "$SubmissionID" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash())\r\n`\
-						`@(MalterlibNotaryToolMacOSCommand) log "$SubmissionID" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash()) | tee "@(MalterlibFinalModuleDestination->NativePath()).log"\r\n`\
-						`if ! grep -q "\\"status\\": \\"Accepted\\"" "@(MalterlibFinalModuleDestination->NativePath()).log"; then\r\n`\
+						`@(MalterlibNotaryToolMacOSCommand) log "$SubmissionID" --keychain-profile @(MalterlibNotarizeMacOSProfile->EscapeBash()) | tee "@(MalterlibFinalModuleDestination->f_ScriptNativePath()).log"\r\n`\
+						`if ! grep -q "\\"status\\": \\"Accepted\\"" "@(MalterlibFinalModuleDestination->f_ScriptNativePath()).log"; then\r\n`\
 						`	echo "Error: Notarization failed"\r\n`\
 						`	exit 1\r\n`\
 						`fi\r\n`\
-						`echo @(MalterlibStaplerMacOSCommand) staple "@(MalterlibFinalModuleDestination->NativePath())"\r\n`\
-						`@(MalterlibStaplerMacOSCommand) staple "@(MalterlibFinalModuleDestination->NativePath())"\r\n`
+						`echo @(MalterlibStaplerMacOSCommand) staple "@(MalterlibFinalModuleDestination->f_ScriptNativePath())"\r\n`\
+						`@(MalterlibStaplerMacOSCommand) staple "@(MalterlibFinalModuleDestination->f_ScriptNativePath())"\r\n`
 	{
 		&
 		{

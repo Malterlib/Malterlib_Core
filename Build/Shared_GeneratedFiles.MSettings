@@ -963,14 +963,14 @@ Property
 	BuildServerHelpers_ConfigName: string
 
 	BuildServerHelpersPathContents: string?
-	BuildServerHelpersPathContents	`@(ScriptExport(`Output_@(BuildServerHelpers_ConfigName)`, Target:Target.OutputDirectory->NativePath()))\r\n`\
-									`@(ScriptExport(`Product_@(BuildServerHelpers_ConfigName)`, MalterlibFinalModuleDestination->NativePath()))\r\n`\
-									`@(ScriptExport(`Intermediate_@(BuildServerHelpers_ConfigName)`, Target:Target.IntermediateDirectory->NativePath()))\r\n`\
-									`@(ScriptExport("MalterlibSharedIntermediateDirectory", Target:Property.MalterlibSharedIntermediateDirectory->NativePath()))\r\n`\
-									`@(ScriptExport(`Output_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)`, Target:Target.OutputDirectory->NativePath()))\r\n`\
-									`@(ScriptExport(`Product_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)`, MalterlibFinalModuleDestination->NativePath()))\r\n`\
-									`@(ScriptExport(`Intermediate_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)`, Target:Target.IntermediateDirectory->NativePath()))\r\n`\
-									`@(ScriptExport(`MalterlibSharedIntermediateDirectory_@(Target:Target.Name)`, Target:Property.MalterlibSharedIntermediateDirectory->NativePath()))\r\n`
+	BuildServerHelpersPathContents	`@(ScriptExport(`Output_@(BuildServerHelpers_ConfigName)`, Target:Target.OutputDirectory->f_ScriptNativePath()))\r\n`\
+									`@(ScriptExport(`Product_@(BuildServerHelpers_ConfigName)`, MalterlibFinalModuleDestination->f_ScriptNativePath()))\r\n`\
+									`@(ScriptExport(`Intermediate_@(BuildServerHelpers_ConfigName)`, Target:Target.IntermediateDirectory->f_ScriptNativePath()))\r\n`\
+									`@(ScriptExport("MalterlibSharedIntermediateDirectory", Target:Property.MalterlibSharedIntermediateDirectory->f_ScriptNativePath()))\r\n`\
+									`@(ScriptExport(`Output_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)`, Target:Target.OutputDirectory->f_ScriptNativePath()))\r\n`\
+									`@(ScriptExport(`Product_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)`, MalterlibFinalModuleDestination->f_ScriptNativePath()))\r\n`\
+									`@(ScriptExport(`Intermediate_@(Target:Target.Name)_@(BuildServerHelpers_ConfigName)`, Target:Target.IntermediateDirectory->f_ScriptNativePath()))\r\n`\
+									`@(ScriptExport(`MalterlibSharedIntermediateDirectory_@(Target:Target.Name)`, Target:Property.MalterlibSharedIntermediateDirectory->f_ScriptNativePath()))\r\n`
 	{
 		!!Property.TargetIsExecutable true
 	}

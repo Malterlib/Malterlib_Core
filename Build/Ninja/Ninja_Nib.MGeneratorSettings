@@ -41,7 +41,7 @@ Property
 
 	// Generate copy command for a Nib file
 	f_NibCopyCommand function(string _File) string
-	f_NibCopyCommand `MTool DiffCopy @(_File->f_GetNibFilePath()->EscapeHost()) @((`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources/@(_File->f_GetNibFilePath()->f_NibRelativePath()->GetPath())`)->EscapeHost()) "" 0\r\n`
+	f_NibCopyCommand `MTool DiffCopy @(_File->f_GetNibFilePath()->f_ScriptNativeEscapedPath()) @((`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/Resources/@(_File->f_GetNibFilePath()->f_NibRelativePath()->GetPath())`)->f_ScriptNativeEscapedPath()) "" 0\r\n`
 }
 
 // Add Nib file copying to PostBuildScript

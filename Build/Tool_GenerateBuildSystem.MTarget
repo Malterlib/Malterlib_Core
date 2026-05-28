@@ -26,15 +26,7 @@ Property
 {
 	MalterlibBuildSystemGenerateCommand: string
 
-	MalterlibBuildSystemGenerateCommand `@(Builtin.MalterlibExe->EscapeBash()) generate --build-system @(Builtin.BuildSystemSourceAbsolute->EscapeHost()) --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->EscapeBash()) --use-cached-environment`
-	{
-		!ScriptWindowsBat true
-	}
-
-	MalterlibBuildSystemGenerateCommand `"@(Builtin.MalterlibExe->EscapeWindows())" generate --build-system "@(Builtin.BuildSystemSourceAbsolute)" --generator "@(Generator)" --output-directory "@(Builtin.GeneratedBuildSystemDir)" --use-cached-environment`
-	{
-		!!ScriptWindowsBat true
-	}
+	MalterlibBuildSystemGenerateCommand `@(Builtin.MalterlibExe->f_ScriptNativeEscapedPath()) generate --build-system @(Builtin.BuildSystemSourceAbsolute->f_ScriptNativeEscapedPath()) --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->f_ScriptNativeEscapedPath()) --use-cached-environment`
 
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibBuildSystemGenerateCommand", MalterlibBuildSystemGenerateCommand))\r\n`
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibDisableBuildSystemGeneration", MalterlibDisableBuildSystemGeneration->ToString()))\r\n`

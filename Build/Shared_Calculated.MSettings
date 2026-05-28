@@ -166,6 +166,29 @@ Property
 		!!ScriptWindowsBat false
 	}
 
+	f_ScriptEscapeString function(string _Value) string
+	f_ScriptEscapeString _Value->EscapeWindows()
+	{
+		!!ScriptWindowsBat true
+	}
+	f_ScriptEscapeString _Value->EscapeBash()
+	{
+		!!ScriptWindowsBat false
+	}
+
+	f_ScriptNativePath function(string _Value) string
+	f_ScriptNativePath _Value->NativePath()
+	{
+		!!ScriptWindowsBat true
+	}
+	f_ScriptNativePath _Value->UnixPath()
+	{
+		!!ScriptWindowsBat false
+	}
+
+	f_ScriptNativeEscapedPath function(string _Value) string
+	f_ScriptNativeEscapedPath _Value->f_ScriptNativePath()->f_ScriptEscapeString()
+
 	ScriptMkDir function(string _Directory) string
 	ScriptMkDir `if not exist @(_Directory->WindowsPath()->EscapeHost()) md @(_Directory->WindowsPath()->EscapeHost())\r\n`
 	{
