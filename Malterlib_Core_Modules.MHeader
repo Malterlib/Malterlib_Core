@@ -23,6 +23,7 @@ Property.MalterlibOptionalModules =+ [
 	, "SQL"
 	, "Tool"
 	, "WebApp"
+	, "Virtualization"
 ]
 
 Property.MalterlibDefaultModules =+ [
@@ -64,6 +65,10 @@ Property.MalterlibDefaultModules =+ [
 	, "Type"
 	, "Web"
 	, "XML"
+]
+
+Property.MalterlibPrivateModules =+ [
+	"Virtualization"
 ]
 
 Property.MalterlibModules =+ MalterlibDefaultModules
