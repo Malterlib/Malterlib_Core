@@ -24,6 +24,7 @@ Property.MalterlibOptionalModules =+ [
 	, "SQL"
 	, "Tool"
 	, "WebApp"
+	, "Virtualization"
 ]
 
 Property.MalterlibDefaultModules =+ [
@@ -65,6 +66,12 @@ Property.MalterlibDefaultModules =+ [
 	, "Type"
 	, "Web"
 	, "XML"
+]
+
+// Private modules stay among the optional modules until they are made public when ready, so syncing with
+// MalterlibEnableOptionalModules needs access to their repositories meanwhile
+Property.MalterlibPrivateModules =+ [
+	"Virtualization"
 ]
 
 Property.MalterlibModules =+ MalterlibDefaultModules
