@@ -107,6 +107,19 @@
 #	error "Implement this"
 #endif
 
+// Workaround for clang-cl/MSVC WinEH funclet codegen miscompiling a try/catch (e.g.
+// std::rethrow_exception + catch) that gets inlined into a C++ coroutine resume body in
+// optimized builds. On the MSVC exception model (notably aarch64-windows-msvc) the catch
+// funclet emitted inside a suspended coroutine crashes at runtime; it works in Debug only
+// because nothing inlines, leaving the try/catch in its own ordinary frame. Mark such a
+// helper with this so it stays out of the coroutine frame. No-op where the MSVC EH model
+// is not used (Itanium/SEH-less targets do not have this miscompile).
+#if defined(DCompiler_clang_cl) || defined(DCompiler_MSVC)
+#	define inline_never_coro_exception_workaround inline_never
+#else
+#	define inline_never_coro_exception_workaround
+#endif
+
 // Inlinelevel
 #ifndef DMibPInlineLevel
 #	define DMibPInlineLevel 3
