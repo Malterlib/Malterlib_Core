@@ -6479,8 +6479,8 @@ Target
 	}
 
 	PostBuildScript =+	`echo Deploy Symbols:\r\n`\
-						`echo @(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`\
-						`@(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`
+						`echo MSYS_NO_PATHCONV=1 @(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`\
+						`MSYS_NO_PATHCONV=1 @(MalterlibDeploySymbolsTool(MalterlibDeploySymbolsPath, `@(MalterlibFinalModuleDestination)?@(Target:Target.SymbolFile)`)) Symbol "@(MalterlibDeploySymbolsPath)" "@(MalterlibFinalModuleDestination)"\r\n`
 	{
 		&
 		{
