@@ -1113,8 +1113,14 @@ Property
 	// MSVC include path
 	MalterlibMSVCIncludePath: string = VisualStudioMSVCRootPath / MalterlibMSVCVersion / "include"
 
+	// MSVC ATL/MFC include path (optional Visual Studio component, not part of clang-cl auto-detection)
+	MalterlibMSVCAtlMfcIncludePath: string = VisualStudioMSVCRootPath / MalterlibMSVCVersion / "atlmfc/include"
+
 	// MSVC library path
 	MalterlibMSVCLibPath: string = VisualStudioMSVCRootPath / MalterlibMSVCVersion / "lib" / MalterlibMSVCArchitecture
+
+	// MSVC ATL/MFC library path
+	MalterlibMSVCAtlMfcLibPath: string = VisualStudioMSVCRootPath / MalterlibMSVCVersion / "atlmfc/lib" / MalterlibMSVCArchitecture
 
 	// Windows SDK include paths
 	MalterlibWindowsSDKIncludePath: string = (MalterlibWindowsSDKRootPath / "Include" / MalterlibWindowsSDKVersion)->f_ValidatePathExists("Windows SDK not found at")
@@ -3067,6 +3073,15 @@ Target
 	// Ninja generator Windows SDK and MSVC library paths
 	// These paths are added for the Ninja generator to avoid vcvarsall.bat dependency
 	SearchPath += MalterlibMSVCLibPath
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			PlatformFamily "Windows"
+		}
+	}
+
+	SearchPath += MalterlibMSVCAtlMfcLibPath
 	{
 		&
 		{
