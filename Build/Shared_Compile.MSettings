@@ -3344,6 +3344,9 @@ Compile
 	// Add MSVC include path via INCLUDE env var
 	IncludeEnvironmentPaths += MalterlibMSVCIncludePath
 
+	// Add MSVC ATL/MFC include path via INCLUDE env var (clang-cl auto-detection never adds atlmfc)
+	IncludeEnvironmentPaths += MalterlibMSVCAtlMfcIncludePath
+
 	// Add Windows SDK include paths via INCLUDE env var
 	IncludeEnvironmentPaths += MalterlibWindowsSDKUCRTIncludePath
 	IncludeEnvironmentPaths += MalterlibWindowsSDKUMIncludePath
