@@ -5660,6 +5660,17 @@ Property
 		}
 	}
 
+	MalterlibPostBuildScriptInputs =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach(&f_ExtractPlainFilesFromCopyOptions)
+	{
+		&
+		{
+			!MalterlibBuildServerPutPath undefined
+			MalterlibBuildServerBuild true
+			!MalterlibBuildServerTest true
+			!MalterlibBuildServerPutDisabled true
+		}
+	}
+
 	MalterlibPostBuildScriptInputsInternalTemplate function(string _Input) [string] = []
 	MalterlibPostBuildScriptInputsInternalTemplate =+ _Input
 	{
