@@ -427,6 +427,7 @@ GeneratorSetting
 	Compile_Warnings_UnusedButSetVariable =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-but-set-variable", Compile.Warnings_UnusedButSetVariable)
 	Compile_Warnings_MissingBraces =+ GeneratorSetting.f_Helper_SetVSWarning("", "missing-braces", Compile.Warnings_MissingBraces)
 	Compile_Warnings_UnusedVariable =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-variable", Compile.Warnings_UnusedVariable)
+	Compile_Warnings_DefaultConstInitVarUnsafe =+ GeneratorSetting.f_Helper_SetVSWarning("", "default-const-init-var-unsafe", Compile.Warnings_DefaultConstInitVarUnsafe)
 	Compile_Warnings_UnusedFunction =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-function", Compile.Warnings_UnusedFunction)
 	Compile_Warnings_UnusedExceptionParameter =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-exception-parameter", Compile.Warnings_UnusedExceptionParameter)
 

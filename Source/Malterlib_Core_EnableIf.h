@@ -67,7 +67,7 @@ namespace NMib
 		};
 	};
 
-	template <int t_Val0, int t_Val1>
+	template <bool t_Val0, bool t_Val1>
 	struct TCChooseInt<bool, false, t_Val0, t_Val1>
 	{
 		enum

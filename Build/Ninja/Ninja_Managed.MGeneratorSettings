@@ -423,6 +423,7 @@ GeneratorSetting
 	Compile_Warnings_Cxx11Narrowing =+ {}
 	Compile_Warnings_TautolagicalPointerCompare =+ {}
 	Compile_Warnings_UnusedVariable =+ {}
+	Compile_Warnings_DefaultConstInitVarUnsafe =+ {}
 	Compile_Warnings_UnusedFunction =+ {}
 	Compile_Warnings_UnusedValue =+ {}
 	Compile_Warnings_VarArgs =+ {}

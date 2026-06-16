@@ -857,6 +857,15 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_Warnings_DefaultConstInitVarUnsafe =+ {
+		Flags: Compile.Warnings_DefaultConstInitVarUnsafe->SwitchWithError(
+			"Unsupported option: "
+			, false, "-Wno-default-const-init-var-unsafe"
+			, true, "-Wdefault-const-init-var-unsafe"
+		)
+		, Type: "unique"
+	}
+
 	Compile_Warnings_UnusedFunction =+ {
 		Flags: Compile.Warnings_UnusedFunction->SwitchWithError(
 			"Unsupported option: "

@@ -1906,15 +1906,6 @@ Compile
 		}
 	}
 
-	CxxLanguage "C++23"
-	{
-		&
-		{
-			Compile.CxxLanguage undefined
-			Compile.Type "ObjC++"
-		}
-	}
-
 	PchInstantiateTemplates: bool?
 	PchDebugInfo: bool?
 	PchCodeGen: bool?

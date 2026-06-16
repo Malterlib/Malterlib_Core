@@ -28,6 +28,7 @@
 #include <spawn.h>
 #include <glob.h>
 #include <sys/syscall.h>
+#include <cstdlib>
 #include <exception>
 #include <utility>
 
