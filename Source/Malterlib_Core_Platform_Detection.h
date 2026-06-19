@@ -72,18 +72,11 @@
 #	endif
 #endif
 
-
 // Default debugger if not defined
 #ifndef DDebugger
-#	if defined(DCompiler_MSVC) || defined(DCompiler_clang_cl)
-#		define DDebugger VisualStudio
-#		define DDebugger_VisualStudio
-#	elif defined(DCompiler_clang)
-#		define DDebugger lldb
-#		define DDebugger_lldb
-#	endif
+#	define DDebugger lldb
+#	define DDebugger_lldb
 #endif
-
 
 // Debug mode
 #ifndef DMibDebug

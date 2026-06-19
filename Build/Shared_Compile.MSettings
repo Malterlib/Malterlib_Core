@@ -2134,6 +2134,7 @@ Compile
 			{
 				PlatformIsDarwin true
 				PlatformFamily "Linux"
+				PlatformFamily "Windows"
 			}
 			!Configuration "Release"
 			!Configuration "Optimized"
