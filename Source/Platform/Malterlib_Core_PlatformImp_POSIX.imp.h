@@ -49,23 +49,6 @@ constinit NMib::NStorage::TCAggregateSimple<TCMapWithPool<umint, umint, NMib::CS
 
 constinit NAtomic::TCAtomic<umint> g_ForceMmapSequence{0};
 
-#ifdef DMibDebuggerHelpers
-assure_used CMibCodeAddressType::CCodeAddressFunction *CMibCodeAddressType::fs_Debug_Function()
-{
-	return nullptr;
-}
-
-assure_used CMibCodeAddressType::CCodeAddressFile *CMibCodeAddressType::fs_Debug_File()
-{
-	return nullptr;
-}
-
-assure_used CMibCodeAddressType::CCodeAddressLine *CMibCodeAddressType::fs_Debug_Line()
-{
-	return nullptr;
-}
-#endif
-
 bool CSystem_POSIX::f_GetMalterlibDisableStdErrLog()
 {
 	if (m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::gc_MemoryOrder_Relaxed) == 0)
@@ -87,11 +70,6 @@ void CSystem_POSIX::f_DestroyThreadSpecific()
 
 void CSystem_POSIX::f_Destruct()
 {
-#ifdef DMibDebuggerHelpers
-	static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_Function>::mc_Value);
-	static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_File>::mc_Value);
-	static_assert(TCInstantiateValue<&CMibCodeAddressType::fs_Debug_Line>::mc_Value);
-#endif
 }
 
 CSystem_POSIX *fg_GetSys_POSIX();

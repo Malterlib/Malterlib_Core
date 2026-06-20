@@ -2126,21 +2126,6 @@ Compile
 		!!MalterlibNoShortcuts true
 	}
 
-	PreprocessorDefines += "DMibDebuggerHelpers"
-	{
-		&
-		{
-			|
-			{
-				PlatformIsDarwin true
-				PlatformFamily "Linux"
-				PlatformFamily "Windows"
-			}
-			!Configuration "Release"
-			!Configuration "Optimized"
-		}
-	}
-
 	PreprocessorDefines += "_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES"
 
 	PreprocessorDefines += ["BOOST_ALL_NO_LIB", "BOOST_NODEFAULTVISIBILITY"]

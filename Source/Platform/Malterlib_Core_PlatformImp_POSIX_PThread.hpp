@@ -198,13 +198,6 @@ void *NSys::fg_Thread_GetLocal(umint _ThreadID, umint _iStorage)
 
 #endif
 
-#ifdef DMibDebuggerHelpers
-assure_used void *fg_Debug_GetThreadLocal(umint _iStorage)
-{
-	return NSys::fg_Thread_GetLocal(_iStorage);
-}
-#endif
-
 void *NSys::fg_Thread_GetLocalFast(umint _ThreadID, umint _iStorage)
 {
 	return fg_Thread_GetLocal(_ThreadID, _iStorage);
