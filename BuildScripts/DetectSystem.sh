@@ -14,6 +14,8 @@ function CallDirect()
 }
 
 if [[ $SysName ==  MSYS* ]] || [[ $SysName ==  MINGW* ]] ; then
+	# Breaks cmd.exe bare-command resolution (vcvars/msbuild) on hardened machines
+	unset NoDefaultCurrentDirectoryInExePath
 	function CallDirect()
 	{
 		local ProgramToCall=$1
