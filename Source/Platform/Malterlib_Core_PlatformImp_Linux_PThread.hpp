@@ -28,6 +28,8 @@ constexpr umint gc_nMalterlibThreadLocals = 256; // 2 KB on 64 bit platforms
 constinit NThread::CLowLevelLockAggregate gc_nMalterlibThreadLocalsAllocatedLock = {DAggregateInit};
 constinit NContainer::TCBitArrayHierarchical<gc_nMalterlibThreadLocals> gc_nMalterlibThreadLocalsAllocated{};
 
+extern "C" assure_used umint g_MalterlibLinuxThreadLocalsAreThreadPointerRelative = 1;
+
 #ifdef DMibDynamicLibrary
 	#ifndef DMibAssumeMalterlibHost
 		__thread umint __attribute__((tls_model("initial-exec"))) g_MalterlibThreadLocals[256] = {0};
