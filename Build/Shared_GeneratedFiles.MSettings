@@ -161,9 +161,7 @@ Property
 		}
 	}
 
-	SharedBuildSettingsScriptContents =+	`pushd $MalterlibBaseDir/BuildSystem > /dev/null\r\n`\
-											`source ./SharedBuildSettingsVCVars.sh\r\n`\
-											`popd > /dev/null\r\n`\
+	SharedBuildSettingsScriptContents =+	`source "$MalterlibBaseDir/BuildSystem/SharedBuildSettingsVCVars.sh"\r\n`\
 											`\r\n`
 	{
 		&
@@ -382,14 +380,36 @@ Property
 					`		OldVars+=("$key")\n`\
 					`	done < <(env)\n`\
 					`\n`\
-					`	InvalidKeyRegex=".*[!\\\\(\\\\)]"\n`\
+					`	local ScriptDirectory\n`\
+					`	ScriptDirectory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"\n`\
+					`\n`\
+					`	local VCVarsCommand\n`\
+					`	VCVarsCommand=".\\\\SharedBuildSettingsVCVars.bat"\n`\
+					`\n`\
+					`	local ShellFlags="$-"\n`\
+					`	local VCVarsOutput\n`\
+					`	set +e\n`\
+					`	VCVarsOutput="$(cd "$ScriptDirectory" && MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL="*" cmd.exe /D /C "$VCVarsCommand" 2>&1)"\n`\
+					`	local VCVarsStatus=$?\n`\
+					`	if [[ "$ShellFlags" == *e* ]]; then\n`\
+					`		set -e\n`\
+					`	fi\n`\
+					`	if [[ $VCVarsStatus -ne 0 ]]; then\n`\
+					`		echo "$VCVarsOutput" >&2\n`\
+					`		return $VCVarsStatus\n`\
+					`	fi\n`\
+					`\n`\
+					`	ValidKeyRegex="^[A-Za-z_][A-Za-z0-9_]*$"\n`\
 					`	while read -r Line; do\n`\
+					`		if [[ "$Line" != *=* ]]; then\n`\
+					`			continue\n`\
+					`		fi\n`\
 					`		Key="${Line%%=*}"\n`\
 					`		Value="${Line#*=}"\n`\
 					`		if ArrayContainsValue "$Key" "${OldVars[@@]}" && [[ "${Key^^}" != "PATH" ]]; then\n`\
 					`			continue\n`\
 					`		fi\n`\
-					`		if [[ "$Key" =~ $InvalidKeyRegex ]]; then\n`\
+					`		if ! [[ "$Key" =~ $ValidKeyRegex ]]; then\n`\
 					`			continue\n`\
 					`		fi\n`\
 					`		if [[ "${Key^^}" == "PATH" ]]; then\n`\
@@ -397,7 +417,7 @@ Property
 					`		else\n`\
 					`			export "$Key"="$Value"\n`\
 					`		fi\n`\
-					`	done < <(cmd.exe //C SharedBuildSettingsVCVars.bat)\n`\
+					`	done <<< "$VCVarsOutput"\n`\
 					`\n`\
 					`	export "MalterlibImportedVCPath=true"\n`\
 					`}\n`\
