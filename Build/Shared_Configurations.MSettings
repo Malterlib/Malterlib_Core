@@ -472,6 +472,7 @@ Property
 			Sanitizer_Address undefined
 			Sanitizer_UndefinedBehavior undefined
 			!PlatformFamily "Windows"
+			!Architecture "x86"
 		}
 	}
 }
