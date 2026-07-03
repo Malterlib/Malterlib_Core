@@ -56,6 +56,16 @@ fg_PathIsUnsmudgedPointer() {
 		| cmp -s - <(printf '%s' "$LfsPointerSignature")
 }
 
+fg_StagedBlobIsLfsPointer() {
+	# `git lfs ls-files` deduplicates by object: when several paths share
+	# one blob, only the first path is listed and the rest land in the
+	# non-LFS list even though they are stored as LFS pointers. Detect
+	# that by reading the staged blob directly.
+	git cat-file blob ":0:$1" 2>/dev/null \
+		| head -c "$SignatureLen" \
+		| cmp -s - <(printf '%s' "$LfsPointerSignature")
+}
+
 # --- Files tracked in LFS: must be binary ----------------------------------
 # Plain `mktemp` (no `-t`) is portable across BSD (macOS) and GNU (Linux).
 # BSD `mktemp -t prefix` and GNU `mktemp -t template` use incompatible
@@ -106,6 +116,12 @@ while IFS= read -r File; do
 	[ -f "$File" ] || continue
 
 	if fg_PathIsBinary "$File"; then
+		if fg_StagedBlobIsLfsPointer "$File"; then
+			# Stored in LFS after all — `git lfs ls-files` omitted this
+			# path because another path shares the same blob.
+			continue
+		fi
+
 		echo "ERROR: $File: stored as raw content but actual content is binary." >&2
 		echo "       Update .gitattributes to route this path through LFS, then run 'git add --renormalize $File'." >&2
 		Errors=$((Errors + 1))
