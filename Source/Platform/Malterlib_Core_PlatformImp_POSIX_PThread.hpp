@@ -688,6 +688,14 @@ void *NSys::fg_Thread_Create
 	_StackSize *= 4;
 #endif
 
+#if DMibPPtrBits == 32
+	// The OS default stack (RLIMIT_STACK, usually 8 MiB on Linux) exhausts the
+	// 32-bit address space when many threads are created, so use a smaller
+	// default
+	if (_StackSize == 0)
+		_StackSize = 1024 * 1024;
+#endif
+
 	if (_StackSize != 0)
 		pthread_attr_setstacksize (Data.f_UseThreadAttribs(), _StackSize);
 
