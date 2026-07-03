@@ -110,6 +110,18 @@ Property
 	{
 		!!IsClangCL true
 	}
+
+	Sanitize_UndefinedBehaviorFlags: [string]
+	Sanitize_UndefinedBehaviorFlags ["-fsanitize=undefined", "-fno-sanitize=vptr,function"]
+
+	// The LLVM 22 x86 backend rejects frame-index displacements outside the signed 32-bit range on 32-bit
+	// targets. UBSan pointer-overflow checks bias loop induction variables, which makes loop-strength-reduction
+	// fold compensating displacements near INT32_MIN into stack addressing that no longer fits once the frame
+	// offset is added, even though the address arithmetic wraps correctly at runtime.
+	Sanitize_UndefinedBehaviorFlags =+ "-fno-sanitize=pointer-overflow"
+	{
+		!!Architecture "x86"
+	}
 }
 
 GeneratorSetting
@@ -1230,7 +1242,7 @@ GeneratorSetting
 		Flags: Compile.Sanitize_UndefinedBehavior->SwitchWithError(
 			"Unsupported option: "
 			, false, []
-			, true, ["-fsanitize=undefined", "-fno-sanitize=vptr,function"]->f_ClangFlags()
+			, true, Sanitize_UndefinedBehaviorFlags->f_ClangFlags()
 		)
 		, Type: "unique"
 	}
