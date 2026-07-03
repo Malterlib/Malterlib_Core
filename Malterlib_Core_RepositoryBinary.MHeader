@@ -242,14 +242,20 @@ Property
 {
 	&
 	{
-		HostPlatformFamily "macOS"
+		|
+		{
+			HostPlatformFamily "macOS"
+			HostPlatformFamily "Linux"
+		}
 		RepoPlatformFamily "Linux"
+		!RepoIsHostToolchain true
 	}
 
 	Property
 	{
 		RepoPlatformFamily: string = this.Identity->ParseFormatString("{}_{}_{}", "{1}")
 		RepoArchitecture: string = this.Identity->ParseFormatString("{}_{}_{}", "{2}")
+		RepoIsHostToolchain: bool = (RepoPlatformFamily == HostPlatformFamily && RepoArchitecture == HostArchitecture)
 		RepoDir: string = `../../Binaries/MalterlibLLVM/@(RepoPlatformFamily)/@(RepoArchitecture)`
 
 		PlatformSuffix: string
@@ -290,7 +296,11 @@ Property
 {
 	&
 	{
-		HostPlatformFamily "macOS"
+		|
+		{
+			HostPlatformFamily "macOS"
+			HostPlatformFamily "Linux"
+		}
 		RepoPlatformFamily "Linux"
 		RepoArchitecture "x86"
 	}
