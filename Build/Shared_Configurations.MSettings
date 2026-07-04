@@ -119,6 +119,7 @@ Property
 		|
 		{
 			EnablePlatform_Linux true
+			EnablePlatform_Windows true
 		}
 	}
 
@@ -256,6 +257,7 @@ Property
 			|
 			{
 				PlatformFamily "Linux"
+				PlatformFamily "Windows"
 			}
 			EnableArchitecture_x86 true
 		}
@@ -489,6 +491,11 @@ Property
 			!Tests "Perf Tests"
 			Sanitizer_Thread undefined
 			Sanitizer_UndefinedBehavior undefined
+			&
+			{
+				PlatformFamily "Windows"
+				Architecture "x64"
+			}
 		}
 	}
 }
