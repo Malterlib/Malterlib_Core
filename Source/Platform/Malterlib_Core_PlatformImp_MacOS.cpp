@@ -18,6 +18,7 @@
 
 #include <Mib/Concurrency/ThreadSafeQueue>
 
+#include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <sys/utsname.h>
 #include <crt_externs.h>
@@ -25,6 +26,13 @@
 #include <os/lock.h>
 #include <sys/random.h>
 #include <exception>
+
+#ifdef DMibConfig_PThreadIntrospection
+#include <Mib/Container/MapWithPool>
+#include <Mib/Container/SetWithPool>
+#include <pthread/introspection.h>
+#include "Malterlib_Core_ThreadNotificationCrossModule.h"
+#endif
 
 #if __has_feature(ptrauth_calls)
 #include <ptrauth.h>
@@ -50,6 +58,59 @@ bool g_bIsSharedLibrary = false;
 bool g_bRegisteredAtFork = false;
 bool g_bForking = false;
 
+#ifdef DMibConfig_PThreadIntrospection
+namespace
+{
+	constinit umint g_iThreadNotificationDestructor = 0;
+	#ifndef DMibDynamicLibrary
+		constinit NThread::CLowLevelRecursiveLockAggregate g_ThreadNotificationLock = {DAggregateInit};
+	#else
+		constinit NThread::CLowLevelRecursiveLockAggregate g_OwnThreadNotificationLock = {DAggregateInit};
+	#endif
+
+	void fg_PThreadNotificationDestructor(void *_pValue);
+
+	void fg_ReservePThreadNotificationDestructor()
+	{
+		if (!g_iThreadNotificationDestructor)
+			g_iThreadNotificationDestructor = NSys::fg_Thread_AllocLocalWithDestructor(&fg_PThreadNotificationDestructor);
+	}
+
+	void fg_FreePThreadNotificationDestructor()
+	{
+	#ifndef DMibDynamicLibrary
+		DMibLock(g_ThreadNotificationLock);
+	#else
+		DMibLock(g_OwnThreadNotificationLock);
+	#endif
+		if (!g_iThreadNotificationDestructor)
+			return;
+
+		umint iThreadNotificationDestructor = g_iThreadNotificationDestructor;
+		g_iThreadNotificationDestructor = 0;
+		NSys::fg_Thread_FreeLocalWithDestructor(iThreadNotificationDestructor);
+	}
+
+	void fg_SetPThreadNotificationActive(umint _ThreadID)
+	{
+		DMibFastCheck(g_iThreadNotificationDestructor);
+		NSys::fg_Thread_SetLocalDestructor(_ThreadID, g_iThreadNotificationDestructor, (void *)1);
+	}
+
+	void fg_SetPThreadNotificationDestroyed()
+	{
+		DMibFastCheck(g_iThreadNotificationDestructor);
+		NSys::fg_Thread_SetLocal(g_iThreadNotificationDestructor, (void *)TCLimitsInt<umint>::mc_Max);
+	}
+}
+
+inline_always_lto bool NSys::fg_Thread_GetLocalsDestroyed(umint)
+{
+	DMibFastCheck(g_iThreadNotificationDestructor);
+	return (umint)NSys::fg_Thread_GetLocal(g_iThreadNotificationDestructor) == TCLimitsInt<umint>::mc_Max;
+}
+#endif
+
 void fg_ForkPrepare();
 void fg_ForkParentOrChild();
 void fg_MalterlibMallocOverride_CanStartThreads();
@@ -62,6 +123,8 @@ namespace NMib
 		extern int g_OperatingSystemMinor;
 		extern int g_OperatingSystemFix;
 
+		void fg_MalterlibSystem_ForkPrepare();
+		void fg_MalterlibSystem_ForkParent();
 		void fg_MalterlibSystem_ForkChildFinished();
 	}
 }
@@ -1358,6 +1421,10 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 
 	fg_CreateSystemVersion();
 
+#ifdef DMibConfig_PThreadIntrospection
+	fg_ReservePThreadNotificationDestructor();
+#endif
+
 	fg_MalterlibMallocOverrideInit();
 
 	g_bCreatedSystemMalloc = true;
@@ -1403,6 +1470,852 @@ module_export assure_used extern "C" int __asan_on_delete(void *ptr, size_t size
 }
 #endif
 
+extern bool g_bSysDeleted;
+
+namespace
+{
+	// Apple libpthread 454 through 539 keep cancel_state at this
+	// pointer-width-dependent distance before the TSD base.
+	constexpr umint gc_PThreadCancelStateOffsetFromTSD = 0x2a + 2 * sizeof(void *);
+	constexpr uint16 gc_PThreadCancelStateExiting = 0x20;
+
+	DMibSuppressThreadSanitizer inline_never bool fg_PThreadIsExiting(pthread_t _pThread)
+	{
+		auto pCancelState = reinterpret_cast<uint16 *>
+			(
+				reinterpret_cast<uint8 *>(_pThread)
+					+ NSys::g_ThreadLocalOffsetPThread
+					- gc_PThreadCancelStateOffsetFromTSD
+			)
+		;
+	#ifdef DMibSanitizerEnabled_Thread
+		// TSan does not model Mach thread suspension and reports this private
+		// pthread-state read against its own earlier TLS initialization write.
+		uint16 CancelState = *reinterpret_cast<uint16 volatile *>(pCancelState);
+	#else
+		uint16 CancelState = reinterpret_cast<NAtomic::TCAtomic<uint16> *>(pCancelState)->f_Load(NAtomic::gc_MemoryOrder_Relaxed);
+	#endif
+		return (CancelState & gc_PThreadCancelStateExiting) != 0;
+	}
+
+#ifdef DMibConfig_PThreadIntrospection
+	void fg_Thread_EnumOtherThreadsInProcessKernel(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread)
+	{
+		thread_act_array_t pThreads = nullptr;
+		mach_msg_type_number_t ThreadCount = 0;
+		if (task_threads(mach_task_self(), &pThreads, &ThreadCount) != KERN_SUCCESS)
+			return;
+
+		umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+		for (mach_msg_type_number_t i = 0; i < ThreadCount; ++i)
+		{
+			mach_port_t MachThread = pThreads[i];
+			// Resolve the pthread while the target can still release libpthread's
+			// global list lock. Matching MACH_THREAD_SELF also proves TSD setup.
+			pthread_t pThread = pthread_from_mach_thread_np(MachThread);
+			if (!pThread || (umint)pThread == CurrentThread)
+			{
+				mach_port_deallocate(mach_task_self(), MachThread);
+				continue;
+			}
+
+			if (thread_suspend(MachThread) != KERN_SUCCESS)
+			{
+				mach_port_deallocate(mach_task_self(), MachThread);
+				continue;
+			}
+
+			auto ResumeThread = g_OnScopeExit / [&]
+				{
+					thread_resume(MachThread);
+					mach_port_deallocate(mach_task_self(), MachThread);
+				}
+			;
+
+			if (!fg_PThreadIsExiting(pThread))
+				_fOnThread((umint)pThread);
+		}
+
+		vm_deallocate(mach_task_self(), (vm_address_t)pThreads, ThreadCount * sizeof(*pThreads));
+	}
+#endif
+
+	void fg_Thread_EnumOtherThreadsInProcessSuspended(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread)
+	{
+		struct CSuspendedThread
+		{
+			mach_port_t m_MachThread;
+			umint m_ThreadID;
+		};
+
+		NContainer::TCSet<mach_port_t, CSort_Default, NMemory::CAllocator_VirtualNoTracking> SeenThreads;
+		NContainer::TCVector<CSuspendedThread, NMemory::CAllocator_VirtualNoTracking> SuspendedThreads;
+		mach_port_t CurrentMachThread = pthread_mach_thread_np(pthread_self());
+		bool bFoundNewThread;
+		do
+		{
+			bFoundNewThread = false;
+			thread_act_array_t pThreads = nullptr;
+			mach_msg_type_number_t ThreadCount = 0;
+			if (task_threads(mach_task_self(), &pThreads, &ThreadCount) != KERN_SUCCESS)
+				break;
+
+			auto CleanupThreads = g_OnScopeExit / [&]
+				{
+					for (mach_msg_type_number_t i = 0; i < ThreadCount; ++i)
+					{
+						if (pThreads[i] != MACH_PORT_NULL)
+							mach_port_deallocate(mach_task_self(), pThreads[i]);
+					}
+
+					vm_deallocate(mach_task_self(), (vm_address_t)pThreads, ThreadCount * sizeof(*pThreads));
+				}
+			;
+
+			for (mach_msg_type_number_t i = 0; i < ThreadCount; ++i)
+			{
+				mach_port_t MachThread = pThreads[i];
+				if (MachThread == CurrentMachThread || SeenThreads.f_Exists(MachThread))
+					continue;
+
+				SeenThreads.f_Insert(MachThread);
+				bFoundNewThread = true;
+
+				if (thread_suspend(MachThread) != KERN_SUCCESS)
+					continue;
+
+				auto ResumeThread = g_OnScopeExit / [&]
+					{
+						thread_resume(MachThread);
+					}
+				;
+
+				thread_identifier_info_data_t ThreadInfo = {};
+				mach_msg_type_number_t ThreadInfoCount = THREAD_IDENTIFIER_INFO_COUNT;
+				if
+				(
+					thread_info(MachThread, THREAD_IDENTIFIER_INFO, reinterpret_cast<thread_info_t>(&ThreadInfo), &ThreadInfoCount) != KERN_SUCCESS
+					|| ThreadInfo.thread_handle < NSys::g_ThreadLocalOffsetPThread
+				)
+				{
+					continue;
+				}
+
+				// XNU exposes the TSD base as thread_handle. Deriving pthread_t from
+				// it avoids entering libpthread while any target thread is suspended.
+				umint ThreadID = (umint)ThreadInfo.thread_handle - NSys::g_ThreadLocalOffsetPThread;
+				if (fg_PThreadIsExiting(reinterpret_cast<pthread_t>(ThreadID)))
+					continue;
+
+				SuspendedThreads.f_Insert(CSuspendedThread{MachThread, ThreadID});
+				pThreads[i] = MACH_PORT_NULL;
+				ResumeThread.f_Clear();
+			}
+		}
+		while (bFoundNewThread);
+
+		auto ResumeThreads = g_OnScopeExit / [&]
+			{
+				for (auto &Thread : SuspendedThreads)
+				{
+					thread_resume(Thread.m_MachThread);
+					mach_port_deallocate(mach_task_self(), Thread.m_MachThread);
+				}
+			}
+		;
+
+		for (auto &Thread : SuspendedThreads)
+			_fOnThread(Thread.m_ThreadID);
+	}
+}
+
+#ifdef DMibConfig_PThreadIntrospection
+
+// Threads not started by Malterlib (dispatch workers, XPC reply threads,
+// threads started by frameworks) never pass the Malterlib thread trampoline,
+// so the pthread introspection hook delivers the thread create notification
+// that always-created thread locals require. The hook is a process global, so
+// the executable installs it and distributes the notifications to every
+// registered Malterlib module; a shared library registers with the executable
+// through the exported functions, or chains the hook itself when the host is
+// not a Malterlib executable
+
+namespace
+{
+	// This module's notifications, invoked on the thread the event concerns
+	// except when a module registers and receives the already existing threads
+	void fg_MalterlibThreadCreatedNotificationLocal(umint _ThreadID, umint _ParentThreadID)
+	{
+		if (g_bSysDeleted)
+			return;
+
+		fg_SetPThreadNotificationActive(_ThreadID);
+		fg_GetLocalSys()->f_OnThreadCreated(_ThreadID, _ParentThreadID);
+	}
+
+	void fg_MalterlibThreadTerminatedNotificationLocal(umint _ThreadID)
+	{
+		fg_GetLocalSys()->f_OnThreadDestroyed();
+		fg_SetPThreadNotificationDestroyed();
+	}
+}
+
+#ifndef DMibDynamicLibrary
+
+namespace
+{
+	struct CThreadNotificationRegistration
+	{
+		auto f_GetModule() const -> NSys::NPrivate::CThreadNotificationModule *
+		{
+			using CNotifications = NContainer::TCMap<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration>;
+			return CNotifications::fs_GetKey(*this);
+		}
+
+		DMibListLinkDS_Link(CThreadNotificationRegistration, m_Link);
+	};
+
+	struct CThreadNotificationThread
+	{
+		__darwin_pthread_handler_rec m_CleanupHandler{};
+		bool m_bCleanupInstalled = false;
+		bool m_bTerminated = false;
+	};
+
+	struct CThreadNotificationState
+	{
+		using CThreads = NContainer::TCMapWithPool<umint, CThreadNotificationThread, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
+		using CStartingThreads = NContainer::TCSetWithPool<umint, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
+		using CNotifications = NContainer::TCMap<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration>;
+
+		CThreads m_LiveThreads;
+		CStartingThreads m_StartingThreads;
+		CNotifications m_Notifications;
+		DMibListLinkDS_List(CThreadNotificationRegistration, m_Link) m_NotificationOrder;
+		bool m_bSeeded = false;
+	};
+
+	constinit NStorage::TCAggregateSimple<CThreadNotificationState> g_ThreadNotificationState = {DAggregateInit};
+	constinit NSys::NPrivate::CThreadNotificationModule g_LocalThreadNotificationModule =
+		{
+			.m_Version = NSys::NPrivate::EThreadNotificationCrossModule_Version
+			, .m_Reserved = {}
+			, .m_fCreated = &fg_MalterlibThreadCreatedNotificationLocal
+			, .m_fTerminated = &fg_MalterlibThreadTerminatedNotificationLocal
+			, .m_fForkPrepare = nullptr
+			, .m_fForkParent = nullptr
+			, .m_fForkChild = nullptr
+		}
+	;
+	pthread_introspection_hook_t g_fPreviousIntrospectionHook = nullptr;
+	constinit umint g_iThreadLocalParentThread = 0;
+	constinit NAtomic::TCAtomic<bool> g_bThreadNotificationsForking{false};
+	bool g_bThreadNotificationsInitialized = false;
+
+	void fg_NotifyThreadTerminated(CThreadNotificationState &_State, umint _ThreadID, bool _bRestoreThreadLocals)
+	{
+		auto pThread = _State.m_LiveThreads.f_FindEqual(_ThreadID);
+		if (pThread)
+		{
+			if (pThread->m_bTerminated && !_bRestoreThreadLocals)
+				return;
+			pThread->m_bTerminated = true;
+		}
+		else if (!_State.m_StartingThreads.f_Exists(_ThreadID))
+			return;
+
+		if (_bRestoreThreadLocals)
+			fg_GetLocalSys()->f_ThreadLocalRestoreThread();
+
+		auto iRegistration = _State.m_NotificationOrder.f_GetIterator();
+		iRegistration.f_Reverse(_State.m_NotificationOrder);
+		for (; iRegistration; --iRegistration)
+			iRegistration->f_GetModule()->m_fTerminated(_ThreadID);
+	}
+
+	void fg_PThreadCleanup(void *_pThreadID)
+	{
+		if (!g_bThreadNotificationsInitialized)
+			return;
+
+		DMibLock(g_ThreadNotificationLock);
+		fg_NotifyThreadTerminated(*g_ThreadNotificationState, (umint)_pThreadID, false);
+	}
+
+	void fg_InstallPThreadCleanup(CThreadNotificationThread &_Thread, umint _ThreadID)
+	{
+		DMibFastCheck(!_Thread.m_bCleanupInstalled);
+
+		pthread_t pThread = pthread_self();
+		_Thread.m_CleanupHandler.__routine = &fg_PThreadCleanup;
+		_Thread.m_CleanupHandler.__arg = (void *)_ThreadID;
+		_Thread.m_CleanupHandler.__next = pThread->__cleanup_stack;
+		pThread->__cleanup_stack = &_Thread.m_CleanupHandler;
+		_Thread.m_bCleanupInstalled = true;
+	}
+
+	void fg_PThreadNotificationDestructor(void *_pValue)
+	{
+		DMibLock(g_ThreadNotificationLock);
+		if (!g_iThreadNotificationDestructor)
+			return;
+
+		if ((umint)_pValue != TCLimitsInt<umint>::mc_Max)
+		{
+			if (g_bThreadNotificationsInitialized)
+				fg_NotifyThreadTerminated(*g_ThreadNotificationState, NSys::fg_Thread_GetCurrentUID(), false);
+		}
+
+		fg_SetPThreadNotificationDestroyed();
+	}
+
+	void fg_PThreadIntrospectionHook(unsigned int _Event, pthread_t _pThread, void *_pAddress, size_t _Size)
+	{
+		if (g_fPreviousIntrospectionHook)
+			g_fPreviousIntrospectionHook(_Event, _pThread, _pAddress, _Size);
+
+		DMibLock(g_ThreadNotificationLock);
+		if
+		(
+			!g_bThreadNotificationsInitialized
+			|| !g_iThreadLocalParentThread
+			|| g_bThreadNotificationsForking.f_Load(NAtomic::gc_MemoryOrder_Acquire)
+		)
+		{
+			return;
+		}
+
+		if (_Event == PTHREAD_INTROSPECTION_THREAD_CREATE)
+		{
+			// The creating thread stores itself in the new thread's storage
+			// before the thread starts, mirroring the Windows implementation
+			NSys::fg_Thread_SetLocal((umint)_pThread, g_iThreadLocalParentThread, (void *)NSys::fg_Thread_GetCurrentUID());
+
+			g_ThreadNotificationState->m_StartingThreads.f_Insert((umint)_pThread);
+		}
+		else if (_Event == PTHREAD_INTROSPECTION_THREAD_START)
+		{
+			umint ParentThread = (umint)NSys::fg_Thread_GetLocal(g_iThreadLocalParentThread);
+			umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+
+			auto &State = *g_ThreadNotificationState;
+			if (State.m_LiveThreads.f_FindEqual(CurrentThread))
+				return;
+
+			auto &Thread = State.m_LiveThreads[CurrentThread];
+			fg_InstallPThreadCleanup(Thread, CurrentThread);
+			for (auto &Registration : State.m_NotificationOrder)
+				Registration.f_GetModule()->m_fCreated(CurrentThread, ParentThread);
+
+			State.m_StartingThreads.f_Remove(CurrentThread);
+		}
+		else if (_Event == PTHREAD_INTROSPECTION_THREAD_TERMINATE)
+		{
+			// The terminate event arrives before the thread's stack is freed, so
+			// holding the lock here keeps registration safe against exiting
+			// threads
+			umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+
+			auto &State = *g_ThreadNotificationState;
+			fg_NotifyThreadTerminated(State, CurrentThread, true);
+
+			State.m_StartingThreads.f_Remove(CurrentThread);
+			State.m_LiveThreads.f_Remove(CurrentThread);
+		}
+		else if (_Event == PTHREAD_INTROSPECTION_THREAD_DESTROY)
+			g_ThreadNotificationState->m_StartingThreads.f_Remove((umint)_pThread);
+	}
+
+	void fg_ThreadNotificationsForkPrepare()
+	{
+		if (!g_bThreadNotificationsInitialized)
+			return;
+
+		g_bThreadNotificationsForking.f_Store(true, NAtomic::gc_MemoryOrder_Release);
+		g_ThreadNotificationLock.f_Lock();
+
+		auto &State = *g_ThreadNotificationState;
+		for (auto &Registration : State.m_NotificationOrder)
+		{
+			auto pModule = Registration.f_GetModule();
+			if (pModule->m_fForkPrepare)
+				pModule->m_fForkPrepare();
+		}
+	}
+
+	void fg_ThreadNotificationsForkParent()
+	{
+		if (!g_bThreadNotificationsInitialized)
+			return;
+
+		auto &State = *g_ThreadNotificationState;
+		auto iRegistration = State.m_NotificationOrder.f_GetIterator();
+		iRegistration.f_Reverse(State.m_NotificationOrder);
+		for (; iRegistration; --iRegistration)
+		{
+			auto pModule = iRegistration->f_GetModule();
+			if (pModule->m_fForkParent)
+				pModule->m_fForkParent();
+		}
+
+		g_ThreadNotificationLock.f_Unlock();
+		g_bThreadNotificationsForking.f_Store(false, NAtomic::gc_MemoryOrder_Release);
+	}
+
+	void fg_ThreadNotificationsForkChild()
+	{
+		if (!g_bThreadNotificationsInitialized)
+			return;
+
+		// Only the forking thread survives in the child
+		auto &State = *g_ThreadNotificationState;
+		auto iRegistration = State.m_NotificationOrder.f_GetIterator();
+		iRegistration.f_Reverse(State.m_NotificationOrder);
+		for (; iRegistration; --iRegistration)
+		{
+			auto pModule = iRegistration->f_GetModule();
+			if (pModule->m_fForkChild)
+				pModule->m_fForkChild();
+		}
+
+		umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+		while (true)
+		{
+			umint ThreadToRemove = 0;
+			for (auto &Thread : State.m_LiveThreads)
+			{
+				umint ThreadID = CThreadNotificationState::CThreads::fs_GetKey(Thread);
+				if (ThreadID != CurrentThread)
+				{
+					ThreadToRemove = ThreadID;
+					break;
+				}
+			}
+
+			if (!ThreadToRemove)
+				break;
+			State.m_LiveThreads.f_Remove(ThreadToRemove);
+		}
+		if (!State.m_LiveThreads.f_FindEqual(CurrentThread))
+			(void)State.m_LiveThreads[CurrentThread];
+		State.m_StartingThreads.f_Clear();
+
+		g_ThreadNotificationLock.f_ForkedChildLocked();
+		g_ThreadNotificationLock.f_Unlock();
+		g_bThreadNotificationsForking.f_Store(false, NAtomic::gc_MemoryOrder_Release);
+	}
+
+	void fg_InstallPThreadIntrospectionHook()
+	{
+		DMibFastCheck(!g_bThreadNotificationsInitialized);
+		g_ThreadNotificationState.f_Construct();
+
+		{
+			DMibLock(g_ThreadNotificationLock);
+
+			auto &State = *g_ThreadNotificationState;
+			umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+			(void)State.m_LiveThreads[CurrentThread];
+			fg_SetPThreadNotificationActive(CurrentThread);
+			auto &Registration = State.m_Notifications[&g_LocalThreadNotificationModule];
+			State.m_NotificationOrder.f_Insert(Registration);
+		}
+
+		g_iThreadLocalParentThread = NSys::fg_Thread_AllocLocal();
+		g_bThreadNotificationsInitialized = true;
+		g_fPreviousIntrospectionHook = pthread_introspection_hook_install(&fg_PThreadIntrospectionHook);
+
+		{
+			DMibLock(g_ThreadNotificationLock);
+
+			auto &State = *g_ThreadNotificationState;
+			fg_Thread_EnumOtherThreadsInProcessKernel
+				(
+					[&](umint _ThreadID)
+					{
+						if (!State.m_StartingThreads.f_Exists(_ThreadID))
+						{
+							(void)State.m_LiveThreads[_ThreadID];
+							fg_SetPThreadNotificationActive(_ThreadID);
+						}
+					}
+				)
+			;
+			State.m_bSeeded = true;
+		}
+	}
+
+	void fg_DestroyPThreadIntrospectionHook()
+	{
+		DMibLock(g_ThreadNotificationLock);
+		if (!g_bThreadNotificationsInitialized)
+			return;
+
+		g_bThreadNotificationsInitialized = false;
+		umint iThreadLocalParentThread = g_iThreadLocalParentThread;
+		g_iThreadLocalParentThread = 0;
+		NSys::fg_Thread_FreeLocal(iThreadLocalParentThread);
+		g_ThreadNotificationState.f_Destruct();
+	}
+
+}
+
+void DMibCrossmoduleAPI fg_ThreadNotificationRegister(NSys::NPrivate::CThreadNotificationModule *_pModule)
+{
+	if (g_bSysDeleted)
+		return;
+
+	DMibFastCheck(_pModule->m_Version >= NSys::NPrivate::EThreadNotificationCrossModule_Version_Min);
+
+	DMibLock(g_ThreadNotificationLock);
+
+	auto &State = *g_ThreadNotificationState;
+	auto &Registration = State.m_Notifications[_pModule];
+	DMibFastCheck(!Registration.m_Link.f_IsInList());
+	State.m_NotificationOrder.f_Insert(Registration);
+
+	// The registering module gets the threads that already exist; the lock
+	// keeps them from completing termination while their thread locals are
+	// created
+	umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+	for (auto &Thread : State.m_LiveThreads)
+	{
+		umint ThreadID = CThreadNotificationState::CThreads::fs_GetKey(Thread);
+		if (!Thread.m_bTerminated && ThreadID != CurrentThread)
+			_pModule->m_fCreated(ThreadID, 0);
+	}
+}
+
+void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadNotificationModule *_pModule)
+{
+	if (g_bSysDeleted)
+		return;
+
+	DMibLock(g_ThreadNotificationLock);
+
+	auto &State = *g_ThreadNotificationState;
+	auto pRegistration = State.m_Notifications.f_FindEqual(_pModule);
+	if (!pRegistration)
+		return;
+
+	State.m_Notifications.f_Remove(_pModule);
+}
+
+void DMibCrossmoduleAPI fg_ThreadNotificationEnum(NSys::NPrivate::FThreadEnumCallback *_fThread, void *_pContext)
+{
+	if (g_bSysDeleted)
+		return;
+
+	DMibLock(g_ThreadNotificationLock);
+
+	DMibFastCheck(g_ThreadNotificationState->m_bSeeded);
+	umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+	for (auto &Thread : g_ThreadNotificationState->m_LiveThreads)
+	{
+		umint ThreadID = CThreadNotificationState::CThreads::fs_GetKey(Thread);
+		if (!Thread.m_bTerminated && ThreadID != CurrentThread)
+			_fThread(ThreadID, _pContext);
+	}
+}
+
+constinit NSys::NPrivate::CThreadNotificationCrossModule g_ThreadNotificationCrossModule =
+	{
+		.m_Version = NSys::NPrivate::EThreadNotificationCrossModule_Version
+		, .m_Reserved = {}
+		, .m_fRegister = &fg_ThreadNotificationRegister
+		, .m_fUnregister = &fg_ThreadNotificationUnregister
+		, .m_fEnum = &fg_ThreadNotificationEnum
+	}
+;
+
+extern "C" assure_used module_export NSys::NPrivate::CThreadNotificationCrossModule *fg_MalterlibGetThreadNotificationCrossModule(uint32 _Version)
+{
+	if (_Version < NSys::NPrivate::EThreadNotificationCrossModule_Version_Min)
+		return nullptr;
+
+	// Malterlib executable initialization precedes every dependent Malterlib dylib
+	// constructor. Returning this interface before the host has constructed its
+	// dispatcher would violate the same ordering required by memory interposition.
+	DMibFastCheck(g_bThreadNotificationsInitialized);
+	return &g_ThreadNotificationCrossModule;
+}
+
+#else
+
+namespace
+{
+	struct COwnThreadNotificationThread
+	{
+		bool m_bTerminated = false;
+	};
+
+	struct COwnThreadNotificationState
+	{
+		using CThreads = NContainer::TCMapWithPool<umint, COwnThreadNotificationThread, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
+		using CStartingThreads = NContainer::TCSetWithPool<umint, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
+
+		CThreads m_LiveThreads;
+		CStartingThreads m_StartingThreads;
+		bool m_bSeeded = false;
+	};
+
+	NSys::NPrivate::CThreadNotificationCrossModule *g_pHostThreadNotificationCrossModule = nullptr;
+	pthread_introspection_hook_t g_fPreviousIntrospectionHook = nullptr;
+	constinit NStorage::TCAggregateSimple<COwnThreadNotificationState> g_OwnThreadNotificationState = {DAggregateInit};
+	constinit umint g_iThreadLocalParentThread = 0;
+	bool g_bOwnIntrospectionHook = false;
+
+	void fg_NotifyOwnThreadTerminated(COwnThreadNotificationState &_State, umint _ThreadID)
+	{
+		auto pThread = _State.m_LiveThreads.f_FindEqual(_ThreadID);
+		if (pThread)
+		{
+			if (pThread->m_bTerminated)
+				return;
+			pThread->m_bTerminated = true;
+		}
+		else if (!_State.m_StartingThreads.f_Exists(_ThreadID))
+			return;
+
+		fg_MalterlibThreadTerminatedNotificationLocal(_ThreadID);
+	}
+
+	void fg_PThreadNotificationDestructor(void *_pValue)
+	{
+		DMibLock(g_OwnThreadNotificationLock);
+		if (!g_iThreadNotificationDestructor)
+			return;
+
+		if ((umint)_pValue != TCLimitsInt<umint>::mc_Max)
+		{
+			if (g_pHostThreadNotificationCrossModule)
+				fg_MalterlibThreadTerminatedNotificationLocal(NSys::fg_Thread_GetCurrentUID());
+			else if (g_bOwnIntrospectionHook)
+				fg_NotifyOwnThreadTerminated(*g_OwnThreadNotificationState, NSys::fg_Thread_GetCurrentUID());
+		}
+
+		fg_SetPThreadNotificationDestroyed();
+	}
+
+	void fg_PThreadIntrospectionHook(unsigned int _Event, pthread_t _pThread, void *_pAddress, size_t _Size)
+	{
+		if (g_fPreviousIntrospectionHook)
+			g_fPreviousIntrospectionHook(_Event, _pThread, _pAddress, _Size);
+
+		DMibLock(g_OwnThreadNotificationLock);
+		if (!g_bOwnIntrospectionHook || !g_iThreadLocalParentThread)
+			return;
+
+		if (_Event == PTHREAD_INTROSPECTION_THREAD_CREATE)
+		{
+			NSys::fg_Thread_SetLocal((umint)_pThread, g_iThreadLocalParentThread, (void *)NSys::fg_Thread_GetCurrentUID());
+
+			g_OwnThreadNotificationState->m_StartingThreads.f_Insert((umint)_pThread);
+		}
+		else if (_Event == PTHREAD_INTROSPECTION_THREAD_START)
+		{
+			umint ParentThread = (umint)NSys::fg_Thread_GetLocal(g_iThreadLocalParentThread);
+			umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+
+			auto &State = *g_OwnThreadNotificationState;
+			if (State.m_LiveThreads.f_FindEqual(CurrentThread))
+				return;
+
+			// Initialize this module's always-created thread locals before using
+			// the heap-backed notification registry on the new thread
+			fg_MalterlibThreadCreatedNotificationLocal(CurrentThread, ParentThread);
+
+			State.m_StartingThreads.f_Remove(CurrentThread);
+			(void)State.m_LiveThreads[CurrentThread];
+		}
+		else if (_Event == PTHREAD_INTROSPECTION_THREAD_TERMINATE)
+		{
+			umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+
+			auto &State = *g_OwnThreadNotificationState;
+			fg_NotifyOwnThreadTerminated(State, CurrentThread);
+
+			State.m_StartingThreads.f_Remove(CurrentThread);
+			State.m_LiveThreads.f_Remove(CurrentThread);
+		}
+		else if (_Event == PTHREAD_INTROSPECTION_THREAD_DESTROY)
+			g_OwnThreadNotificationState->m_StartingThreads.f_Remove((umint)_pThread);
+	}
+
+	void fg_MalterlibThreadForkPrepareLocal()
+	{
+		g_OwnThreadNotificationLock.f_Lock();
+		fg_GetLocalSys()->f_ThreadLocal_PrepareFork();
+	}
+
+	void fg_MalterlibThreadForkParentLocal()
+	{
+		fg_GetLocalSys()->f_ThreadLocal_ForkedParent();
+		g_OwnThreadNotificationLock.f_Unlock();
+	}
+
+	void fg_MalterlibThreadForkChildLocal()
+	{
+		fg_GetLocalSys()->f_ThreadLocal_ForkedChild();
+		g_OwnThreadNotificationLock.f_ForkedChildLocked();
+		g_OwnThreadNotificationLock.f_Unlock();
+	}
+
+	constinit NSys::NPrivate::CThreadNotificationModule g_ThreadNotificationModule =
+		{
+			.m_Version = NSys::NPrivate::EThreadNotificationCrossModule_Version
+			, .m_Reserved = {}
+			, .m_fCreated = &fg_MalterlibThreadCreatedNotificationLocal
+			, .m_fTerminated = &fg_MalterlibThreadTerminatedNotificationLocal
+			, .m_fForkPrepare = &fg_MalterlibThreadForkPrepareLocal
+			, .m_fForkParent = &fg_MalterlibThreadForkParentLocal
+			, .m_fForkChild = &fg_MalterlibThreadForkChildLocal
+		}
+	;
+
+	void fg_RegisterThreadNotifications()
+	{
+		fg_SetPThreadNotificationActive(NSys::fg_Thread_GetCurrentUID());
+
+		auto fGetInterface = (NSys::NPrivate::FGetThreadNotificationCrossModule *)dlsym(RTLD_DEFAULT, "fg_MalterlibGetThreadNotificationCrossModule");
+		auto pInterface = fGetInterface ? fGetInterface(NSys::NPrivate::EThreadNotificationCrossModule_Version) : nullptr;
+
+#ifdef DMibAssumeMalterlibHost
+		DMibFastCheck(!pInterface || pInterface->m_Version >= NSys::NPrivate::EThreadNotificationCrossModule_Version_Min);
+#endif
+
+		if (pInterface && pInterface->m_Version >= NSys::NPrivate::EThreadNotificationCrossModule_Version_Min)
+		{
+			g_pHostThreadNotificationCrossModule = pInterface;
+			pInterface->m_fRegister(&g_ThreadNotificationModule);
+			return;
+		}
+
+		// The host is not a Malterlib executable, so this library chains the
+		// process global hook itself and maintains its own thread registry
+		g_OwnThreadNotificationState.f_Construct();
+		(void)g_OwnThreadNotificationState->m_LiveThreads[NSys::fg_Thread_GetCurrentUID()];
+		g_bOwnIntrospectionHook = true;
+		g_iThreadLocalParentThread = NSys::fg_Thread_AllocLocal();
+		g_fPreviousIntrospectionHook = pthread_introspection_hook_install(&fg_PThreadIntrospectionHook);
+
+		{
+			DMibLock(g_OwnThreadNotificationLock);
+
+			auto &State = *g_OwnThreadNotificationState;
+			fg_Thread_EnumOtherThreadsInProcessKernel
+				(
+					[&](umint _ThreadID)
+					{
+						if (!State.m_StartingThreads.f_Exists(_ThreadID))
+						{
+							(void)State.m_LiveThreads[_ThreadID];
+							fg_SetPThreadNotificationActive(_ThreadID);
+						}
+					}
+				)
+			;
+			State.m_bSeeded = true;
+		}
+	}
+
+	void fg_UnregisterThreadNotifications()
+	{
+		if (g_pHostThreadNotificationCrossModule)
+		{
+			g_pHostThreadNotificationCrossModule->m_fUnregister(&g_ThreadNotificationModule);
+			g_pHostThreadNotificationCrossModule = nullptr;
+		}
+	}
+
+	void fg_DestroyOwnPThreadIntrospectionHook()
+	{
+		DMibLock(g_OwnThreadNotificationLock);
+		if (!g_bOwnIntrospectionHook)
+			return;
+
+		g_bOwnIntrospectionHook = false;
+		umint iThreadLocalParentThread = g_iThreadLocalParentThread;
+		g_iThreadLocalParentThread = 0;
+
+		// A Malterlib executable hosts the cross-module dispatcher, so a library
+		// reaches this private-hook path only in a non-Malterlib process. That host
+		// must have no other introspection-hook user, or be the sole owner itself.
+		// pthread provides no safe conditional restore, so composing this path with
+		// another hook owner or unloading it while another owner exists is unsupported.
+		[[maybe_unused]] auto fCurrentHook = pthread_introspection_hook_install(g_fPreviousIntrospectionHook);
+		DMibFastCheck(fCurrentHook == &fg_PThreadIntrospectionHook);
+		NSys::fg_Thread_FreeLocal(iThreadLocalParentThread);
+		g_OwnThreadNotificationState.f_Destruct();
+	}
+}
+
+#endif
+
+#endif
+
+void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread)
+{
+#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+	fg_ThreadNotificationEnum
+		(
+			[](umint _ThreadID, void *_pContext)
+			{
+				(*reinterpret_cast<NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const *>(_pContext))(_ThreadID);
+			}
+			, const_cast<void *>(reinterpret_cast<void const *>(&_fOnThread))
+		)
+	;
+	return;
+#elif defined(DMibConfig_PThreadIntrospection) && defined(DMibDynamicLibrary)
+	if (g_pHostThreadNotificationCrossModule)
+	{
+		g_pHostThreadNotificationCrossModule->m_fEnum
+			(
+				[](umint _ThreadID, void *_pContext)
+				{
+					(*reinterpret_cast<NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const *>(_pContext))(_ThreadID);
+				}
+				, const_cast<void *>(reinterpret_cast<void const *>(&_fOnThread))
+			)
+		;
+		return;
+	}
+
+	if (g_bOwnIntrospectionHook)
+	{
+		DMibLock(g_OwnThreadNotificationLock);
+
+		DMibFastCheck(g_OwnThreadNotificationState->m_bSeeded);
+		umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
+		for (auto &Thread : g_OwnThreadNotificationState->m_LiveThreads)
+		{
+			umint ThreadID = COwnThreadNotificationState::CThreads::fs_GetKey(Thread);
+			if (!Thread.m_bTerminated && ThreadID != CurrentThread)
+				_fOnThread(ThreadID);
+		}
+		return;
+	}
+#endif
+
+	fg_Thread_EnumOtherThreadsInProcessSuspended(_fOnThread);
+}
+
+#ifdef DMibConfig_PThreadIntrospection
+void fg_InitMalterlibAllEnumOtherThreads()
+{
+	umint ThisUID = NSys::fg_Thread_GetCurrentUID();
+	NSys::fg_Thread_EnumOtherThreadsInProcess
+		(
+			[&](umint _ThreadID)
+			{
+				fg_GetLocalSys()->f_ThreadLocalCreateThread(_ThreadID, ThisUID);
+			}
+		)
+	;
+}
+#endif
+
 void NSys::fg_CreateSystem()
 {
 	if (g_bCreatedSystem)
@@ -1429,7 +2342,7 @@ void NSys::fg_CreateSystem()
 		if (!g_bRegisteredAtFork)
 		{
 			g_bRegisteredAtFork = true;
-			pthread_atfork(&CSystemMacOS::fs_ForkPrepare, &CSystemMacOS::fs_ForkParent, &fg_MalterlibSystem_ForkChildFinished);
+			pthread_atfork(&fg_MalterlibSystem_ForkPrepare, &fg_MalterlibSystem_ForkParent, &fg_MalterlibSystem_ForkChildFinished);
 		}
 		signal(SIGHUP,SIG_IGN);
 	}
@@ -1470,7 +2383,21 @@ void NSys::fg_CreateSystem()
 
 	pSystem->f_Init();
 	pSystem->f_InitModule();
+
+#ifdef DMibConfig_PThreadIntrospection
+	umint ThisUID = NSys::fg_Thread_GetCurrentUID();
+	pSystem->f_ThreadLocalCreateThread(ThisUID, 0);
+
+	#ifndef DMibDynamicLibrary
+		fg_InstallPThreadIntrospectionHook();
+	#else
+		fg_RegisterThreadNotifications();
+	#endif
+	fg_InitMalterlibAllEnumOtherThreads();
+#endif
+
 	fg_InitBreakpad();
+
 	pSystem->f_InitModuleThreaded();
 
 	setlinebuf(stdout); // Default to line buffered output
@@ -1481,6 +2408,13 @@ bool g_bSysDeleted = false;
 
 void NSys::fg_PreDestroyHeap()
 {
+#ifdef DMibConfig_PThreadIntrospection
+	#ifndef DMibDynamicLibrary
+		fg_DestroyPThreadIntrospectionHook();
+	#else
+		fg_DestroyOwnPThreadIntrospectionHook();
+	#endif
+#endif
 }
 
 void NSys::fg_DestroySystem()
@@ -1491,8 +2425,16 @@ void NSys::fg_DestroySystem()
 
 		auto pSys = fg_GetLocalSys();
 		pSys->f_DestroyThreadSpecific();
+		// f_DestroyThreadSpecific() stops and joins every thread before lifecycle
+		// notification state is torn down, so no introspection callback can race the code below.
 
 		pSys->f_ExitModule();
+
+#if defined(DMibConfig_PThreadIntrospection) && defined(DMibDynamicLibrary)
+		// Keep termination coordinated while module aggregates release their
+		// thread locals, then unregister before the context and module disappear
+		fg_UnregisterThreadNotifications();
+#endif
 
 		// We need to flush these before the buffer memory is deleted
 		fflush(stdout);
@@ -1505,6 +2447,10 @@ void NSys::fg_DestroySystem()
 			return; // Forked children have several problems with invalid semaphores etc, so lets just not destroy anything here
 		pSys->~CSystemMacOS();
 
+#ifdef DMibConfig_PThreadIntrospection
+		fg_FreePThreadNotificationDestructor();
+#endif
+
 		g_VirtualMap.f_Destruct();
 		g_VirtualMapLock.f_Destruct();
 	}
@@ -1516,27 +2462,45 @@ namespace NMib
 	{
 		void fg_MalterlibSystem_ForkPrepare()
 		{
+		#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+			fg_ThreadNotificationsForkPrepare();
+		#endif
 			CSystemMacOS::fs_ForkPrepare();
 		}
 		void fg_MalterlibSystem_ForkParent()
 		{
 			CSystemMacOS::fs_ForkParent();
+		#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+			fg_ThreadNotificationsForkParent();
+		#endif
 		}
 		void fg_MalterlibSystem_ForkChildOverride()
 		{
 			CSystemMacOS::fs_ForkChildStart();
-			if (!g_bRegisteredAtFork)
-				CSystemMacOS::fs_ForkChildFinished();
+		}
+		void fg_MalterlibSystem_ForkChildOverrideFinished()
+		{
+			#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+			fg_ThreadNotificationsForkChild();
+			#endif
+			CSystemMacOS::fs_ForkChildFinished();
+			g_bForking = false;
 		}
 		void fg_MalterlibSystem_ForkChild()
 		{
 			CSystemMacOS::fs_ForkChildStart();
+		#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+			fg_ThreadNotificationsForkChild();
+		#endif
 			CSystemMacOS::fs_ForkChildFinished();
 		}
 
 		void fg_MalterlibSystem_ForkChildFinished()
 		{
 			CSystemMacOS::fs_ForkChildStart();
+		#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+			fg_ThreadNotificationsForkChild();
+		#endif
 			CSystemMacOS::fs_ForkChildFinished();
 
 			g_bForking = false;
@@ -3164,4 +4128,3 @@ extern "C" bool _dyld_find_unwind_sections(void* addr, struct dyld_unwind_sectio
 }
 
 #endif
-

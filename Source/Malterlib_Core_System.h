@@ -90,6 +90,7 @@ namespace NMib
 
 	bool fg_SystemThreadLocalWasCreated();
 	mark_nodebug inline_always_lto CSystemThreadLocal &fg_SystemThreadLocal();
+	CSystemThreadLocal &fg_SystemThreadLocal(umint _ThreadID);
 	void fg_SystemThreadInit();
 	void fg_MaybeSystemThreadInit();
 
@@ -483,6 +484,8 @@ namespace NMib
 		void *f_ThreadLocalAlloc(NThread::CThreadLocalInterface &_Key, umint &_ThreadLocalLocal);
 		void f_ThreadLocalFree(NThread::CThreadLocalInterface &_Key, void *_pStorageIndex);
 		void f_ThreadLocalFreeThread();
+		void f_ThreadLocalFreeThreadFromNotification();
+		void f_ThreadLocalRestoreThread();
 		void f_ThreadLocalCreateThread(umint _ThreadID, umint _ParentThreadID);
 		void *f_ThreadLocalGet(void *_pStorageIndex);
 		void f_ThreadLocalReinitForThread(void *_pStorageIndex);
@@ -600,4 +603,3 @@ namespace NMib
 };
 
 #include "Malterlib_Core_SubSystem.hpp"
-

@@ -2234,6 +2234,15 @@ Compile
 			MalterlibThread_LinuxUseStaticThreadLocal true
 		}
 	}
+	PreprocessorDefines += "DMibConfig_PThreadIntrospection"
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			MalterlibThread_MacOSPThreadIntrospection true
+			!MalterlibSupportSanitizerEnable_Thread true
+		}
+	}
 	PreprocessorDefines += "DMibAssumeGlibc"
 	{
 		&

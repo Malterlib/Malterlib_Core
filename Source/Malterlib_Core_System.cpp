@@ -102,7 +102,12 @@ namespace NMib
 		return *NPrivate::g_SubSystem_SystemThreadLocal.f_GetUnsafe()->m_ThreadLocal.f_TryGet();
 #else
 		return *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal;
-#endif
+	#endif
+	}
+
+	CSystemThreadLocal &fg_SystemThreadLocal(umint _ThreadID)
+	{
+		return *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal.f_GetForThread(_ThreadID);
 	}
 
 	/************************************************************************************************\
