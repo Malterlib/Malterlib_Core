@@ -37,6 +37,7 @@ Property
 	MalterlibBuildServerCommandPrefix: string = ""
 
 	MalterlibManualForeignThreadInitialization: bool = true
+	MalterlibThread_MacOSPThreadIntrospection: bool = true // Initialize foreign threads (dispatch workers, XPC reply threads) through the pthread introspection hook, enabling always-created thread locals on macOS
 
     MalterlibSigning: bool
 	MalterlibSigning true

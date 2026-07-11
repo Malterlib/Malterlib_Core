@@ -483,6 +483,7 @@ namespace NMib
 		void *f_ThreadLocalAlloc(NThread::CThreadLocalInterface &_Key, umint &_ThreadLocalLocal);
 		void f_ThreadLocalFree(NThread::CThreadLocalInterface &_Key, void *_pStorageIndex);
 		void f_ThreadLocalFreeThread();
+		void f_ThreadLocalFreeThreadFromNotification();
 		void f_ThreadLocalCreateThread(umint _ThreadID, umint _ParentThreadID);
 		void *f_ThreadLocalGet(void *_pStorageIndex);
 		void f_ThreadLocalReinitForThread(void *_pStorageIndex);
