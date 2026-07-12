@@ -2881,6 +2881,20 @@ Target
 			Compiler "Clang"
 		}
 	}
+
+	LTOObjectFile Target.IntermediateDirectory / "LTO.o"
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			PlatformFamily "macOS"
+			|
+			{
+				Target.LinkTimeCodeGeneration true
+				Target.LinkTimeCodeGeneration "Fast"
+			}
+		}
+	}
 }
 
 Property
