@@ -107,6 +107,18 @@
 #	error "Implement this"
 #endif
 
+// Disable the stack-smashing protector (/GS cookie) for one function. Only for functions
+// whose frame can be legitimately overwritten from outside (e.g. loader callbacks living
+// inside the wow64 scratch zone), where a cookie check would turn a harmless overwrite
+// into a fastfail.
+#if defined(DCompiler_clang) || defined(DCompiler_gcc)
+#	define mark_no_stack_protector __attribute__((no_stack_protector))
+#elif defined(DCompiler_MSVC)
+#	define mark_no_stack_protector __declspec(safebuffers)
+#else
+#	define mark_no_stack_protector
+#endif
+
 // Workaround for clang-cl/MSVC WinEH funclet codegen miscompiling a try/catch (e.g.
 // std::rethrow_exception + catch) that gets inlined into a C++ coroutine resume body in
 // optimized builds. On the MSVC exception model (notably aarch64-windows-msvc) the catch

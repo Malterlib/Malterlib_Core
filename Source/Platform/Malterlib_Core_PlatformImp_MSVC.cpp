@@ -26,6 +26,7 @@
 #include <Mib/Core/PlatformSpecific/Windows>
 #include <Mib/Process/ProcessLaunch>
 #include <TlHelp32.h>
+#include <malloc.h>
 
 using namespace NMib;
 using namespace NMib::NMemory;
@@ -2773,7 +2774,28 @@ void __cdecl fg_MalterlibFreeNonTracked(void *_pMem)
 
 extern bool g_bSysDeleted;
 
-extern "C" BOOL WINAPI fg_MalterlibDllMain(HANDLE _pInstance, DWORD _Reason, void *_pReserved)
+// wow64 allocates temporary exception/context records on the 32-bit stack a few hundred
+// bytes below the stack pointer that was captured when the 64-bit loader called into
+// 32-bit code. Loader callbacks are entered right at that pointer, so everything they
+// call lives inside this scratch zone and can be overwritten at any time (observed up to
+// ~0xC00 bytes below the callout point; a /GS cookie check then fastfails the process
+// with 0xC0000409). The callback trampolines below open a stack gap so all real work
+// runs below the zone. The trampolines themselves must not carry a /GS cookie (their
+// frames stay inside the zone) and the bodies must not inline back into them.
+// For DLLs the CRT's own dllmain_dispatch/init code between _pRawDllMain and the TLS
+// callbacks still runs inside the zone; that exposure is inherent to every x86 DLL and
+// cannot be wrapped from here.
+
+#ifdef DArchitecture_x86
+namespace
+{
+	// Escaping the gap address through a volatile global stops the optimizer from
+	// shrinking the allocation (volatile local accesses alone do not preserve its size).
+	void * volatile g_pLoaderStackGapEscape;
+}
+#endif
+
+inline_never BOOL WINAPI fg_MalterlibDllMainBody(HANDLE _pInstance, DWORD _Reason, void *_pReserved)
 {
 	using namespace NMib::NThread::NPlatform;
 
@@ -2804,9 +2826,17 @@ extern "C" BOOL WINAPI fg_MalterlibDllMain(HANDLE _pInstance, DWORD _Reason, voi
 	return 1;
 }
 
+extern "C" mark_no_stack_protector inline_never BOOL WINAPI fg_MalterlibDllMain(HANDLE _pInstance, DWORD _Reason, void *_pReserved)
+{
+#ifdef DArchitecture_x86
+	g_pLoaderStackGapEscape = _alloca(0x1800);
+#endif
+	return fg_MalterlibDllMainBody(_pInstance, _Reason, _pReserved);
+}
+
 extern "C" BOOL (WINAPI * const _pRawDllMain)(HANDLE, DWORD, LPVOID) = &fg_MalterlibDllMain;
 
-void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
+inline_never void NTAPI fg_TLSCallbackBody(void *_pInstance, DWORD _Reason, void *_pReserved)
 {
 	using namespace NMib::NThread::NPlatform;
 
@@ -2851,8 +2881,19 @@ void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
 	}
 }
 
-extern "C" BOOL NTAPI fg_MalterlibDllMainCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
+mark_no_stack_protector inline_never void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
 {
+#ifdef DArchitecture_x86
+	g_pLoaderStackGapEscape = _alloca(0x1800);
+#endif
+	fg_TLSCallbackBody(_pInstance, _Reason, _pReserved);
+}
+
+extern "C" mark_no_stack_protector inline_never BOOL NTAPI fg_MalterlibDllMainCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
+{
+#ifdef DArchitecture_x86
+	g_pLoaderStackGapEscape = _alloca(0x1800);
+#endif
 	if (_Reason == DLL_PROCESS_DETACH && !g_bSysDeleted && g_bIsDll && _pReserved)
 	{
 		if (fg_CheckTerminatedThread())
