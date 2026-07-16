@@ -6,9 +6,21 @@ Import "Malterlib_Core_RepositoryCore.MHeader"
 Property
 {
 	MalterlibModules: [string] = []
+	MalterlibPrivateModules: [string] = [] // Synced only with MalterlibEnablePrivateModules, whatever adds them to MalterlibModules
+	MalterlibEnablePrivateModules: bool = false // User(Repository)=true: Sync the private Malterlib modules, which needs read access to their repositories
+
+	f_GetMalterlibSyncedModules function(string _Name) [string] = []
+	f_GetMalterlibSyncedModules =+ _Name
+	{
+		|
+		{
+			MalterlibEnablePrivateModules true
+			!MalterlibPrivateModules->ContainsListElement(_Name) true
+		}
+	}
 }
 
-%Repository MalterlibModules->Unique()
+%Repository MalterlibModules->Unique()->ForEach(&f_GetMalterlibSyncedModules)
 {
 	!MalterlibUseGitRepo false
 	Property.MalterlibRepoName `Malterlib_@(this.Identity).git`
