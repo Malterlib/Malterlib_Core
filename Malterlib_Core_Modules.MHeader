@@ -9,6 +9,7 @@ Property
 
 	MalterlibOptionalModules: [string] = []
 	MalterlibDefaultModules: [string] = []
+	MalterlibPrivateModules: [string] = []
 }
 
 Property.MalterlibOptionalModules =+ [
