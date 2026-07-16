@@ -312,8 +312,11 @@ Property
 	MalterlibRepositoryOrganization: string = Repository.MalterlibRoot->GetFile()
 	MalterlibRepositoryName: string = `@(Repository.MalterlibRoot->GetFile())/@(Repository.URL->GetFileNoExt())`
 
-	f_GetMalterlibRepositoryNameFromModules function(string _Name) [string] = []
-	f_GetMalterlibRepositoryNameFromModules =+ `@(MalterlibRepositoryOrganization)/Malterlib_@(_Name)`
+	f_GetMalterlibPublicRepositoryNameFromModules function(string _Name) [string] = []
+	f_GetMalterlibPublicRepositoryNameFromModules =+ `@(MalterlibRepositoryOrganization)/Malterlib_@(_Name)`
+	{
+		!MalterlibPrivateModules->ContainsListElement(_Name) true
+	}
 
 	f_GetMalterlibRepositoryNameFromRepo function(string _Name) [string] = []
 	f_GetMalterlibRepositoryNameFromRepo =+ `@(MalterlibRepositoryOrganization)/@(_Name)`
@@ -322,7 +325,7 @@ Property
 	f_GetMalterlibRepositoryNameFromRepoRLFS =+ `@(MalterlibRepositoryOrganization)/@(_Name)_rLFS`
 
 	MalterlibPublicRepositories: [string] = []
-	MalterlibPublicRepositories =+ [MalterlibDefaultModules..., MalterlibOptionalModules...]->Unique()->ForEach(&f_GetMalterlibRepositoryNameFromModules)
+	MalterlibPublicRepositories =+ [MalterlibDefaultModules..., MalterlibOptionalModules...]->Unique()->ForEach(&f_GetMalterlibPublicRepositoryNameFromModules)
 
 	MalterlibPublicRepositories =+ `@(MalterlibRepositoryOrganization)/Malterlib_Core`
 }
