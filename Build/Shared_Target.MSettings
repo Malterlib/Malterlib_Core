@@ -2080,6 +2080,52 @@ Target
 		}
 	}
 
+	// The links use -nostdlib, so the clang driver never adds the profile runtime archive on
+	// its own, and current LLVM no longer emits a ___llvm_profile_runtime reference on Darwin
+	// that would pull it from an archive (the driver is expected to force-load it). Without
+	// this the instrumented binary carries counters but never writes a .profraw. The whole
+	// archive is loaded on every platform, matching what the Darwin driver does.
+	LDFlags =+ `-Wl,-force_load,@(MalterlibLLVMBinariesDirectory)/lib/clang/@(MalterlibClangVersionMajor)/lib/darwin/libclang_rt.profile_osx.a`
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			!GeneratorFamily "Xcode"
+			MalterlibProfileGuidedOptimization "generate"
+		}
+	}
+
+	// The bundled runtimes live in per target triple directories; the clang runtime uses i386 for
+	// 32 bit x86 where the library triple uses i686
+	LDFlags =+ `-Wl,--whole-archive,@(MalterlibLLVMBinariesDirectory)/lib/clang/@(MalterlibClangVersionMajor)/lib/@(MalterlibClangLibraryTargetTriple)/libclang_rt.profile.a,--no-whole-archive`
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			!Architecture "x86"
+			MalterlibProfileGuidedOptimization "generate"
+		}
+	}
+
+	LDFlags =+ `-Wl,--whole-archive,@(MalterlibLLVMBinariesDirectory)/lib/clang/@(MalterlibClangVersionMajor)/lib/i386-unknown-linux-gnu/libclang_rt.profile.a,--no-whole-archive`
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Architecture "x86"
+			MalterlibProfileGuidedOptimization "generate"
+		}
+	}
+
+	ExtraLinkerFlags =+ [`-wholearchive:@(MalterlibLLVMBinariesDirectory)/lib/clang/@(MalterlibClangVersionMajor)/lib/Windows/clang_rt.profile-@(MSVCSanitizerArchitecture).lib`->f_LinkerFlag()]
+	{
+		&
+		{
+			PlatformFamily "Windows"
+			MalterlibProfileGuidedOptimization "generate"
+		}
+	}
+
 	PlatformToolset: string?
 
 	PlatformToolset "com.apple.compilers.llvm.clang.1_0"
@@ -3680,6 +3726,11 @@ Property
 	MSVCSanitizerArchitecture "i386"
 	{
 		!!Architecture "x86"
+	}
+
+	MSVCSanitizerArchitecture "aarch64"
+	{
+		!!Architecture "arm64"
 	}
 
 	MSVCDebugType: string = ""
