@@ -983,6 +983,7 @@ Target
 	{
 		&
 		{
+			GeneratorFamily "VisualStudio"
 			TargetIsExecutable true
 			MalterlibProfileGuidedOptimization "generate"
 			!MalterlibEnableLinkTimeCodeGeneration false
@@ -993,6 +994,7 @@ Target
 	{
 		&
 		{
+			GeneratorFamily "VisualStudio"
 			TargetIsExecutable true
 			!MalterlibProfileGuidedOptimization undefined
 			!MalterlibProfileGuidedOptimization "generate"
