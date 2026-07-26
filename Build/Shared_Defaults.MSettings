@@ -304,6 +304,8 @@ Property
 		}
 	}
 
+	MalterlibMemoryManagerFlavor: one_of("Bitmap", "BlockLists", "SubSlabLists") = "Bitmap" // User(Memory Manager)="BlockLists": Choose the free store flavor for the Malterlib memory manager together with the matching concurrency and memory manager eager GC configuration. Options: Bitmap, BlockLists, SubSlabLists (default Bitmap)
+
 	MalterlibMemoryManager_AlwaysRelease: bool = Not(DocumentationEnabled) // User(Memory Manager)=false: Enable memory manager to always be compile as if release config (default true)
 
 	MalterlibMemoryManager_Debug_Features: one_of(bool, undefined) // User(Memory Manager)=false: Global toggle for debug memory manager. Can be toggled without recompiling everything.

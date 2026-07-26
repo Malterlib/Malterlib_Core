@@ -148,11 +148,37 @@ Compile
 				!RealConfiguration Configuration
 			}
 
-			// Which heap to use
+			// Which heap to use. The Bitmap flavor is the compiled-in default (SubSlabBitmaps
+			// with the per-platform eager GC tuning in the headers), so it emits no defines.
+			// The BlockLists flavor and the non-Malterlib memory managers pair with the old
+			// lazy collect heuristics, which measure slightly better for them; SubSlabLists
+			// shares the sub-slab reap machinery with Bitmap and follows its defaults.
 			Compile
 			{
 				!!CompileDialect "C"
 				PreprocessorDefines =+ `DMibConfig_MemoryManager_Use@(MalterlibMemoryManager)`
+				PreprocessorDefines += "DMibConfig_Memory_FreeStoreMode=0"
+				{
+					&
+					{
+						MalterlibMemoryManagerFlavor "BlockLists"
+					}
+				}
+				PreprocessorDefines += "DMibConfig_Memory_FreeStoreMode=1"
+				{
+					&
+					{
+						MalterlibMemoryManagerFlavor "SubSlabLists"
+					}
+				}
+				PreprocessorDefines += "DMibConfig_Memory_EagerOwnerGC=0"
+				{
+					|
+					{
+						!MalterlibMemoryManager "Malterlib"
+						MalterlibMemoryManagerFlavor "BlockLists"
+					}
+				}
 			}
 
 			%File "../Memory/Source/Malterlib_Memory_SystemManager*"
