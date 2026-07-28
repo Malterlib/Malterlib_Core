@@ -147,15 +147,6 @@ Property
 	!!HostPlatformFamily "macOS"
 	!!HostPlatformFamily "Linux"
 
-	MalterlibDependenciesDirectory "/opt/CompiledFiles/Dependencies"
-	{
-		&
-		{
-			MalterlibDependenciesDirectory undefined
-			![] "/opt"->FindDirectoriesIn("CompiledFiles")
-		}
-	}
-
 	MalterlibDependenciesDirectory "/CompiledFiles/Dependencies"
 	{
 		&
@@ -165,19 +156,19 @@ Property
 		}
 	}
 
+	MalterlibDependenciesDirectory "/opt/CompiledFiles/Dependencies"
+	{
+		&
+		{
+			MalterlibDependenciesDirectory undefined
+			![] "/opt"->FindDirectoriesIn("CompiledFiles")
+		}
+	}
+
 
 	MalterlibDependenciesDirectory `@(HomeDirectory)/.CompiledFiles/Dependencies`
 	{
 		!!MalterlibDependenciesDirectory undefined
-	}
-
-	MalterlibCompiledFiles "/opt/CompiledFiles/"
-	{
-		&
-		{
-			MalterlibCompiledFiles undefined
-			![] "/opt"->FindDirectoriesIn("CompiledFiles")
-		}
 	}
 
 	MalterlibCompiledFiles "/CompiledFiles/"
@@ -186,6 +177,15 @@ Property
 		{
 			MalterlibCompiledFiles undefined
 			![] "/"->FindDirectoriesIn("CompiledFiles")
+		}
+	}
+
+	MalterlibCompiledFiles "/opt/CompiledFiles/"
+	{
+		&
+		{
+			MalterlibCompiledFiles undefined
+			![] "/opt"->FindDirectoriesIn("CompiledFiles")
 		}
 	}
 
@@ -208,21 +208,21 @@ Property
 		!!MalterlibDevelopmentRoot undefined
 	}
 
-	MalterlibDeployRoot "/opt/Deploy"
-	{
-		&
-		{
-			MalterlibDeployRoot undefined
-			![] "/opt"->FindDirectoriesIn("Deploy")
-		}
-	}
-
 	MalterlibDeployRoot "/Deploy"
 	{
 		&
 		{
 			MalterlibDeployRoot undefined
 			![] "/"->FindDirectoriesIn("Deploy")
+		}
+	}
+
+	MalterlibDeployRoot "/opt/Deploy"
+	{
+		&
+		{
+			MalterlibDeployRoot undefined
+			![] "/opt"->FindDirectoriesIn("Deploy")
 		}
 	}
 
