@@ -41,8 +41,17 @@ if ! git symbolic-ref -q HEAD > /dev/null 2>&1; then
 	exit 0
 fi
 
-# Run update-repos after branch switch
-RepoRoot="$(git rev-parse --show-toplevel)"
+# Run update-repos after branch switch.
+#
+# Prefer the root the dispatcher recorded when mib installed these hooks over
+# asking git. `git rev-parse --show-toplevel` always reports the fully resolved
+# path, so on a checkout reached through a symlink it would hand mib a different
+# root than an interactive run uses, and everything derived from the root would
+# alternate between the two spellings on every checkout.
+RepoRoot="$MalterlibHookWorkspaceRoot"
+if [ -z "$RepoRoot" ]; then
+	RepoRoot="$(git rev-parse --show-toplevel)"
+fi
 
 # Unset git environment variables set by the hook caller
 # to prevent them from leaking into mib's internal git operations
