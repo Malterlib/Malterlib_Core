@@ -120,9 +120,9 @@ Property
 					, Compress: true
 					, Files: ["Bootstrap.version", RepoPlatformFamily->SwitchWithError(
 						"Unsupported platform: "
-						, "macOS", ["MTool", "mib", "bsdtar", "MalterlibHelper", "MalterlibOverrideMalloc.dylib", "LICENSE"]
-						, "Linux", ["MTool", "mib", "bsdtar", "MalterlibHelper", "LICENSE"]
-						, "Windows", ["MTool.exe", "mib.exe", "bsdtar.exe", "LICENSE"]
+						, "macOS", ["MTool", "mib", "bsdtar", "zstd", "MalterlibHelper", "MalterlibOverrideMalloc.dylib", "LICENSE"]
+						, "Linux", ["MTool", "mib", "bsdtar", "zstd", "MalterlibHelper", "LICENSE"]
+						, "Windows", ["MTool.exe", "mib.exe", "bsdtar.exe", "zstd.exe", "LICENSE"]
 					)...]
 				}
 			]
