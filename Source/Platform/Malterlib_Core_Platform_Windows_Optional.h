@@ -11,7 +11,6 @@ namespace NLocal
 	extern HMODULE g_hNtDll;
 	extern HMODULE g_hKernel32;
 	extern HMODULE g_hAdvAPI32;
-	extern HMODULE g_hAPIMSWinCoreSynchl120;
 
 	struct COptionalFunctions
 	{
@@ -84,8 +83,6 @@ namespace NLocal
 
 		BOOL (WINAPI *m_fGetFileInformationByHandleEx)(HANDLE hFile, Undocumented_FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
 
-		BOOL (WINAPI *m_fWaitOnAddress)(volatile VOID *Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds);
-		void (WINAPI *m_fWakeByAddressSingle)(PVOID Address);
 
 		BOOL (WINAPI *m_fSystemTimeToTzSpecificLocalTimeEx)(const DYNAMIC_TIME_ZONE_INFORMATION *lpTimeZoneInformation, SYSTEMTIME const *lpUniversalTime, LPSYSTEMTIME lpLocalTime);
 		BOOL (WINAPI *m_fTzSpecificLocalTimeToSystemTimeEx)(const DYNAMIC_TIME_ZONE_INFORMATION *lpTimeZoneInformation, SYSTEMTIME const *lpLocalTime, LPSYSTEMTIME lpUniversalTime);

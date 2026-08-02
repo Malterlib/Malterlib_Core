@@ -2047,7 +2047,6 @@ void fg_LoadFunctionPointers()
 		g_hKernel32 = GetModuleHandle(str_utf16("kernel32.dll"));
 		g_hNtDll = GetModuleHandle(str_utf16("ntdll.dll"));
 		g_hAdvAPI32 = GetModuleHandle(str_utf16("advapi32.dll"));
-		g_hAPIMSWinCoreSynchl120 = GetModuleHandle(str_utf16("API-MS-Win-Core-Synch-l1-2-0.dll"));
 		auto &Functions = g_OptionalFunctions;
 
 		(FARPROC &)Functions.m_fGetLogicalProcessorInformation = GetProcAddress(g_hKernel32, "GetLogicalProcessorInformation");
@@ -2106,17 +2105,6 @@ void fg_LoadFunctionPointers()
 		(FARPROC &)Functions.m_fGetFileInformationByHandleEx = GetProcAddress(g_hKernel32, "GetFileInformationByHandleEx");
 
 		(FARPROC &)Functions.m_fPrivIsDllSynchronizationHeld = GetProcAddress(g_hKernel32, "PrivIsDllSynchronizationHeld");
-
-		(FARPROC &)Functions.m_fWaitOnAddress = GetProcAddress(g_hKernel32, "WaitOnAddress");
-		if (!Functions.m_fWaitOnAddress)
-			(FARPROC &)Functions.m_fWaitOnAddress = GetProcAddress(g_hAPIMSWinCoreSynchl120, "WaitOnAddress");
-
-		(FARPROC &)Functions.m_fWakeByAddressSingle = GetProcAddress(g_hKernel32, "WakeByAddressSingle");
-		if (!Functions.m_fWakeByAddressSingle)
-			(FARPROC &)Functions.m_fWakeByAddressSingle = GetProcAddress(g_hAPIMSWinCoreSynchl120, "WakeByAddressSingle");
-
-		if (!Functions.m_fWakeByAddressSingle)
-			(FARPROC &)Functions.m_fWaitOnAddress = nullptr;
 
 		(FARPROC &)Functions.m_fSystemTimeToTzSpecificLocalTimeEx = GetProcAddress(g_hKernel32, "SystemTimeToTzSpecificLocalTimeEx");
 		(FARPROC &)Functions.m_fTzSpecificLocalTimeToSystemTimeEx = GetProcAddress(g_hKernel32, "TzSpecificLocalTimeToSystemTimeEx");
@@ -3590,24 +3578,12 @@ namespace NMib::NThread
 	{
 		DMibSanitizerAnnotate_MutexPreLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock);
 
-		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
+		uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
+		uint32 PrevioustThreadID = 0;
+		if (!m_Lock.f_CompareExchangeStrong(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
 		{
-			uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
-			uint32 PrevioustThreadID = 0;
-			if (!m_Lock.f_CompareExchangeStrong(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
-			{
-				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
-				return false;
-			}
-		}
-		else
-		{
-			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
-			{
-				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
-				return false;
-			}
+			DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
+			return false;
 		}
 
 #if DMibEnableSafeCheck > 0
@@ -3621,27 +3597,14 @@ namespace NMib::NThread
 	void CLowLevelLockAggregate::f_Lock()
 	{
 		DMibSanitizerAnnotate_MutexPreLock(this, 0);
-		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
+		uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
+		while (true)
 		{
-			uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
-			while (true)
-			{
-				uint32 PrevioustThreadID = 0;
-				if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
-					break;
+			uint32 PrevioustThreadID = 0;
+			if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
+				break;
 
-				NLocal::g_OptionalFunctions.m_fWaitOnAddress(&m_Lock, &PrevioustThreadID, sizeof(PrevioustThreadID), INFINITE);
-			}
-		}
-		else
-		{
-			NMib::NThread::CThreadSpinWaiter SpinWaiter;
-			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
-			{
-				SpinWaiter.f_Wait();
-				Expected = 0;
-			}
+			WaitOnAddress(&m_Lock, &PrevioustThreadID, sizeof(PrevioustThreadID), INFINITE);
 		}
 
 #if DMibEnableSafeCheck > 0
@@ -3658,32 +3621,18 @@ namespace NMib::NThread
 		m_ThreadID = 0;
 		m_AlternateThreadID = 0;
 #endif
-		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
-		{
-			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);;
-			NLocal::g_OptionalFunctions.m_fWakeByAddressSingle(&m_Lock);
-		}
-		else
-			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
+		m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
+		WakeByAddressSingle(&m_Lock);
 
 		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
 	}
 
 	bool CLowLevelLockAggregate::f_TryLockNoSanitize()
 	{
-		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
-		{
-			uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
-			uint32 PrevioustThreadID = 0;
-			if (!m_Lock.f_CompareExchangeStrong(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
-				return false;
-		}
-		else
-		{
-			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
-				return false;
-		}
+		uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
+		uint32 PrevioustThreadID = 0;
+		if (!m_Lock.f_CompareExchangeStrong(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
+			return false;
 #ifdef DMibSanitizerEnabled_Thread
 		__tsan_acquire(&m_Lock);
 #endif
@@ -3696,27 +3645,14 @@ namespace NMib::NThread
 
 	void CLowLevelLockAggregate::f_LockNoSanitize()
 	{
-		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
+		uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
+		while (true)
 		{
-			uint32 CurrentThreadID = NSys::fg_Thread_GetCurrentUID();
-			while (true)
-			{
-				uint32 PrevioustThreadID = 0;
-				if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
-					break;
+			uint32 PrevioustThreadID = 0;
+			if (m_Lock.f_CompareExchangeWeak(PrevioustThreadID, CurrentThreadID, gc_MemoryOrder_Acquire, gc_MemoryOrder_Acquire))
+				break;
 
-				NLocal::g_OptionalFunctions.m_fWaitOnAddress(&m_Lock, &PrevioustThreadID, sizeof(PrevioustThreadID), INFINITE);
-			}
-		}
-		else
-		{
-			NMib::NThread::CThreadSpinWaiter SpinWaiter;
-			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
-			{
-				SpinWaiter.f_Wait();
-				Expected = 0;
-			}
+			WaitOnAddress(&m_Lock, &PrevioustThreadID, sizeof(PrevioustThreadID), INFINITE);
 		}
 #ifdef DMibSanitizerEnabled_Thread
 		__tsan_acquire(&m_Lock);
@@ -3736,14 +3672,58 @@ namespace NMib::NThread
 #ifdef DMibSanitizerEnabled_Thread
 		__tsan_release(&m_Lock);
 #endif
-		if (NLocal::g_OptionalFunctions.m_fWaitOnAddress)
-		{
-			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);;
-			NLocal::g_OptionalFunctions.m_fWakeByAddressSingle(&m_Lock);
-		}
-		else
-			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
+		m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
+		WakeByAddressSingle(&m_Lock);
 	}
+}
+
+void NSys::fg_Futex_Wait(uint32 volatile *_pAddress, uint32 _Expected)
+{
+	uint32 Expected = _Expected;
+	WaitOnAddress((volatile VOID *)_pAddress, &Expected, sizeof(uint32), INFINITE);
+}
+
+bool NSys::fg_Futex_WaitTimeout(uint32 volatile *_pAddress, uint32 _Expected, fp64 _Timeout)
+{
+	if (_Timeout <= 0.0)
+		return true;
+
+	// Long waits are capped at an int32-safe millisecond count (~24.8 days; the
+	// conversion must not overflow a 32-bit aint) and their expiry is reported as
+	// a spurious wake so the caller re-arms against its deadline instead of
+	// timing out early
+	DWORD TimeoutMs;
+	bool bCapped = false;
+	if (_Timeout >= fp64(2147483.0))
+	{
+		TimeoutMs = 2147483000;
+		bCapped = true;
+	}
+	else
+		TimeoutMs = (DWORD)(_Timeout * 1000.0).f_Ceil().f_ToInt();
+
+	uint32 Expected = _Expected;
+	if (!WaitOnAddress((volatile VOID *)_pAddress, &Expected, sizeof(uint32), TimeoutMs))
+		return GetLastError() == ERROR_TIMEOUT && !bCapped;
+
+	return false;
+}
+
+void NSys::fg_Futex_WakeOne(uint32 volatile *_pAddress)
+{
+	WakeByAddressSingle((PVOID)_pAddress);
+}
+
+void NSys::fg_Futex_WakeCount(uint32 volatile *_pAddress, uint32 _nToWake)
+{
+	// Windows has no wake-count API; wakes with no waiters are cheap
+	while (_nToWake--)
+		WakeByAddressSingle((PVOID)_pAddress);
+}
+
+void NSys::fg_Futex_WakeAll(uint32 volatile *_pAddress)
+{
+	WakeByAddressAll((PVOID)_pAddress);
 }
 
 void *NSys::fg_Thread_GetCurrent()
@@ -3758,99 +3738,7 @@ umint NSys::fg_Thread_GetCurrentUID()
 }
 #endif
 
-void *NSys::fg_Semaphore_Alloc(umint _InitialCount, umint _MaximumCount)
-{
-	return CreateSemaphore(nullptr, _InitialCount, _MaximumCount, nullptr);
-}
-
-void NSys::fg_Semaphore_ForkedChild(void * _pSemaphore)
-{
-}
-
-void *NSys::fg_Semaphore_Duplicate(void *_pSemaphore)
-{
-	HANDLE pTarget = nullptr;
-	DuplicateHandle(GetCurrentProcess(), _pSemaphore, GetCurrentProcess(), &pTarget, 0, FALSE, DUPLICATE_SAME_ACCESS);
-	return pTarget;
-}
-
-
-void NSys::fg_Semaphore_Free(void *_pSemaphore)
-{
-	CloseHandle(_pSemaphore);
-}
-
-
-void NSys::fg_Semaphore_Increase(void * _pSemaphore, umint _Count)
-{
-	ReleaseSemaphore(_pSemaphore, _Count, nullptr);
-}
-
-void NSys::fg_Semaphore_Wait(void * _pSemaphore)
-{
-	WaitForSingleObject(_pSemaphore, INFINITE);
-}
-
-bool NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
-{
-	if (_Timeout < 0)
-		return WaitForSingleObjectEx(_pSemaphore, ((-_Timeout) * 1000.0 / NTime::CSystem_Time::fs_GetTimeSpeed()).f_Ceil().f_ToInt(), true) != WAIT_OBJECT_0;
-	else
-		return WaitForSingleObjectEx(_pSemaphore, (_Timeout * 1000.0 / NTime::CSystem_Time::fs_GetTimeSpeed()).f_Ceil().f_ToInt(), false) != WAIT_OBJECT_0;
-}
-
-bool NSys::fg_Semaphore_TryWait(void * _pSemaphore)
-{
-	return WaitForSingleObject(_pSemaphore, 0) == WAIT_OBJECT_0;
-}
-
-
-void *NSys::fg_Event_Alloc(bool _InitialSignal)
-{
-	return CreateEventA(nullptr, true, _InitialSignal, nullptr);
-}
-
-void NSys::fg_Event_PrepareFork(void *_pEvent)
-{
-}
-
-void NSys::fg_Event_ForkedChild(void *_pEvent)
-{
-}
-
-void NSys::fg_Event_ForkedParent(void *_pEvent)
-{
-}
-
-void NSys::fg_Event_Free(void *_pEvent)
-{
-	CloseHandle(_pEvent);
-}
-
-void NSys::fg_Event_SetSignaled(void * _pEvent)
-{
-	SetEvent(_pEvent);
-}
-
-void NSys::fg_Event_ResetSignaled(void * _pEvent)
-{
-	ResetEvent(_pEvent);
-}
-
-void NSys::fg_Event_Wait(void * _pEvent)
-{
-	WaitForSingleObject(_pEvent, INFINITE);
-}
-
-bool NSys::fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout)
-{
-	return WaitForSingleObject(_pEvent, (_Timeout * 1000.0 / NTime::CSystem_Time::fs_GetTimeSpeed()).f_Ceil().f_ToInt()) != WAIT_OBJECT_0;
-}
-
-bool NSys::fg_Event_TryWait(void * _pEvent)
-{
-	return WaitForSingleObject(_pEvent, 0) == WAIT_OBJECT_0;
-}
+#include "Malterlib_Core_PlatformImp_FutexSync.hpp"
 
 void NSys::fg_Message(const ch8 *_pMessageType, const ch8 *_pToOutput)
 {
@@ -6566,7 +6454,6 @@ namespace NLocal
 	HMODULE g_hNtDll = nullptr;
 	HMODULE g_hKernel32 = nullptr;
 	HMODULE g_hAdvAPI32 = nullptr;
-	HMODULE g_hAPIMSWinCoreSynchl120 = nullptr;
 }
 
 bool g_bValidExitProcess = false;

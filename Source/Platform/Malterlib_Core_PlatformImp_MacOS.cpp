@@ -163,7 +163,7 @@ extern "C"
 // *************************************************************************************************************************
 
 #define DMibPMachKernel
-#define DMibConfig_SemaphoreImplemented
+#define DMibConfig_FutexImplemented
 
 #include "Malterlib_Core_PlatformImp_POSIX_PThread.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX.imp.h"
@@ -262,184 +262,6 @@ CStr fg_EscapeString(CStr _In)
 	std::unreachable();
 }
 
-class align_cacheline CImpSemaphore
-{
-public:
-
-	NMib::NThread::CLowLevelLock m_Lock;
-
-	semaphore_t m_Semaphore;
-
-	umint m_Value;
-	umint m_Maximum;
-
-	CImpSemaphore(umint _Value, umint _Maximum)
-		: m_Semaphore(MACH_PORT_NULL)
-	{
-		f_Init();
-		m_Value = _Value;
-		m_Maximum = _Maximum;
-	}
-
-	~CImpSemaphore() noexcept(false)
-	{
-		{
-			DMibLock(m_Lock);
-		}
-
-		if (m_Semaphore != MACH_PORT_NULL)
-		{
-			kern_return_t Result = semaphore_destroy(mach_task_self(), m_Semaphore);
-			if (Result != KERN_SUCCESS)
-				DMibError((CFStr256::CFormat("semaphore_destroy failed: 0x{nfh} {}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
-		}
-	}
-
-	void f_ForkedChild()
-	{
-		kern_return_t Result = semaphore_create(mach_task_self(), &m_Semaphore, SYNC_POLICY_FIFO, 0);
-
-		m_Lock.f_ForkedChildUnlocked();
-
-		if (Result != KERN_SUCCESS)
-			DMibError((CFStr256::CFormat("semaphore_create failed: 0x{nfh} {}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
-	}
-
-	void f_Init()
-	{
-		kern_return_t Result = semaphore_create(mach_task_self(), &m_Semaphore, SYNC_POLICY_FIFO, 0);
-
-		m_Lock.f_Construct();
-
-		if (Result != KERN_SUCCESS)
-			DMibError((CFStr256::CFormat("semaphore_create failed: 0x{nfh} {}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
-	}
-
-	void f_Signal(umint _Count)
-	{
-		DMibLock(m_Lock);
-		if (m_Value + _Count > m_Maximum)
-			_Count = m_Maximum - m_Value;
-		m_Value += _Count;
-
-		while (_Count--)
-			semaphore_signal(m_Semaphore);
-	}
-
-	bool f_TryWait()
-	{
-		bool bRet = false;
-		DMibLock(m_Lock);
-		if (m_Value > 0)
-		{
-			--m_Value;
-			bRet = true;
-		}
-		return bRet;
-	}
-
-	void f_Wait()
-	{
-		DMibLock(m_Lock);
-		while (m_Value <= 0)
-		{
-			{
-				DMibUnlock(m_Lock);
-				kern_return_t Result = semaphore_wait(m_Semaphore);
-				if (Result != KERN_SUCCESS && Result != KERN_ABORTED)
-					DMibError((CFStr256::CFormat("semaphore_wait failed: 0x{nfh} {}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
-			}
-		}
-		--m_Value;
-	}
-
-	bool f_WaitTimeout(fp32 _Timeout)
-	{
-		bool bRet = true;
-		CStopwatchRaw TimeWait;
-		TimeWait.f_Start();
-		DMibLock(m_Lock);
-		fp64 Time = TimeWait.f_GetTime();
-		while (Time < _Timeout)
-		{
-			if (m_Value <= 0)
-			{
-				mach_timespec_t ToWait;
-				fp64 ToWaitLeft = _Timeout - Time;
-				fp64 nSec = ToWaitLeft.f_Floor();
-				ToWait.tv_sec=nSec.f_ToInt();
-				ToWait.tv_nsec=((ToWaitLeft - nSec)*fp32(1000000000.0f)).f_ToInt();
-
-				{
-					DMibUnlock(m_Lock);
-					kern_return_t Result = semaphore_timedwait(m_Semaphore, ToWait);
-					if (Result == KERN_OPERATION_TIMED_OUT)
-						;
-					else if (Result != KERN_SUCCESS && Result != KERN_ABORTED)
-						DMibError((CFStr256::CFormat("semaphore_timedwait failed: 0x{nfh}") << Result << mach_error_string(Result)).f_GetStr().f_GetStr());
-				}
-			}
-			else
-			{
-				bRet = false;
-				--m_Value;
-				break;
-			}
-			Time = TimeWait.f_GetTime();
-		}
-		return bRet;
-	}
-};
-
-constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CLowLevelLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
-
-void *NSys::fg_Semaphore_Alloc(umint _InitialCount, umint _MaximumCount)
-{
-	CImpSemaphore *pSemaphore = g_ImpSemaphorePool.f_New(_InitialCount, _MaximumCount);
-	return pSemaphore;
-}
-
-void NSys::fg_Semaphore_ForkedChild(void * _pSemaphore)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	pSemaphore->f_ForkedChild();
-}
-
-void NSys::fg_Semaphore_Free(void *_pSemaphore)
-{
-	[[maybe_unused]] CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-#ifdef DMibSanitizerEnabled_Thread
-	DMibLock(g_ImpSemaphorePool);
-	pSemaphore->~CImpSemaphore();
-#else
-	g_ImpSemaphorePool.f_Delete(pSemaphore);
-#endif
-}
-
-void NSys::fg_Semaphore_Increase(void * _pSemaphore, umint _Count)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	pSemaphore->f_Signal(_Count);
-}
-
-void NSys::fg_Semaphore_Wait(void * _pSemaphore)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	pSemaphore->f_Wait();
-}
-
-bool NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	return pSemaphore->f_WaitTimeout(_Timeout * CSystem_Time::fs_GetTimeSpeedReciprocal());
-}
-
-bool NSys::fg_Semaphore_TryWait(void * _pSemaphore)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	return pSemaphore->f_TryWait();
-}
-
 void NSys::fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_UUID)
 {
 	static_assert(sizeof(uuid_t) == sizeof(_UUID));
@@ -517,8 +339,6 @@ public:
 			Sys.m_Posix.m_ForkLock.f_Lock();
 			Sys.m_Posix.m_ForkLock.f_PrepareFork();
 			Sys.f_PrepareFork();
-			g_EventEmulationPool.f_Lock();
-			g_ImpSemaphorePool.f_Lock();
 		}
 	}
 
@@ -540,12 +360,8 @@ public:
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
 			if (Current != (void *)(umint)getpid())
 			{
-				g_ImpSemaphorePool.f_ForkedChildLocked();
-				g_EventEmulationPool.f_ForkedChildLocked();
 				Sys.m_bForkedChild = true;
 			}
-			g_ImpSemaphorePool.f_Unlock();
-			g_EventEmulationPool.f_Unlock();
 			if (Current == (void *)(umint)getpid())
 			{
 				Sys.f_ForkedParent(); // Parent
@@ -569,8 +385,6 @@ public:
 			__tsan_forked_parent();
 #endif
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
-			g_ImpSemaphorePool.f_Unlock();
-			g_EventEmulationPool.f_Unlock();
 			Sys.f_ForkedParent();
 			Sys.m_Posix.m_ForkLock.f_ForkedParent();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
@@ -595,10 +409,6 @@ public:
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
 			Sys.m_bForkedChild = true;
 			g_bCanStartThreads = false;
-			g_ImpSemaphorePool.f_ForkedChildLocked();
-			g_EventEmulationPool.f_ForkedChildLocked();
-			g_ImpSemaphorePool.f_Unlock();
-			g_EventEmulationPool.f_Unlock();
 			Sys.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
@@ -1697,12 +1507,6 @@ void NSys::fg_DestroySystem()
 
 		g_VirtualMap.f_Destruct();
 		g_VirtualMapLock.f_Destruct();
-
-		if (!g_bMemoryManagerNeededAfterDestroy)
-		{
-			g_EventEmulationPool.f_Destruct();
-			g_ImpSemaphorePool.f_Destruct();
-		}
 	}
 }
 
@@ -2505,6 +2309,10 @@ void NSys::fg_Thread_Yield()
 
 namespace NMib::NThread
 {
+	// CLowLevelLockAggregate keeps per-platform implementations on purpose:
+	// macOS os_unfair_lock donates priority to the owner, Linux uses a
+	// priority-inheritance futex, Windows WaitOnAddress has neither. A generic
+	// futex implementation would lose the priority handling.
 	static_assert(sizeof(os_unfair_lock) == sizeof(CLowLevelLockAggregate::m_Lock));
 	static_assert(os_unfair_lock(OS_UNFAIR_LOCK_INIT)._os_unfair_lock_opaque == 0);
 
@@ -2706,8 +2514,264 @@ namespace NMib::NThread
 		else
 			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
 #endif
-
 	}
+}
+
+#if __has_include(<os/os_sync_wait_on_address.h>)
+	// The native futex API ships with the macOS 14.4 SDK and later
+	#include <os/os_sync_wait_on_address.h>
+	#define DMibPMacOSHasOsSync 1
+#endif
+
+#if !defined(DMibPMacOSHasOsSync) || DPlatformVersion < 140400
+	// Fallback for macOS < 14.4 (or pre-14.4 SDKs) where os_sync_wait_on_address is unavailable.
+	// __ulock_wait/__ulock_wait2/__ulock_wake are private but ABI-stable syscall
+	// wrappers (libc++ atomic waits and os_unfair_lock park through the same ulock
+	// syscalls). __ulock_wait2 (uint64 nanosecond timeout) exists since macOS 11
+	// and is weak-imported; where the symbol is absent the code falls back to
+	// __ulock_wait (macOS 10.12+, uint32 microsecond timeout).
+	// Delete this block when the deployment floor is raised to macOS 14.4.
+	#define DMibPMacOSUseUlockFallback 1
+
+	extern "C"
+	{
+		int __ulock_wait(uint32_t _Operation, void *_pAddress, uint64_t _Value, uint32_t _TimeoutUs);
+		int __ulock_wait2(uint32_t _Operation, void *_pAddress, uint64_t _Value, uint64_t _TimeoutNs, uint64_t _Value2) __attribute__((weak_import));
+		int __ulock_wake(uint32_t _Operation, void *_pAddress, uint64_t _WakeValue);
+	}
+
+	namespace
+	{
+		constexpr uint32 gc_UlockCompareAndWait = 0x00000001; // UL_COMPARE_AND_WAIT
+		constexpr uint32 gc_UlockFlagWakeAll = 0x00000100; // ULF_WAKE_ALL
+		constexpr uint32 gc_UlockFlagNoErrNo = 0x01000000; // ULF_NO_ERRNO
+	}
+#endif
+
+#include <cstdlib>
+
+namespace
+{
+	[[noreturn]] inline_never void fg_AbortFutexWord(int _Error)
+	{
+		[[maybe_unused]] volatile int Error = _Error;
+		DMibPDebugBreak;
+		std::abort();
+	}
+}
+
+void NSys::fg_Futex_Wait(uint32 volatile *_pAddress, uint32 _Expected)
+{
+#if defined(DMibPMacOSHasOsSync)
+#	if defined(DMibPMacOSUseUlockFallback)
+	if (__builtin_available(macOS 14.4, iOS 17.4, *))
+#	endif
+	{
+		int Result = os_sync_wait_on_address((void *)_pAddress, _Expected, sizeof(uint32), OS_SYNC_WAIT_ON_ADDRESS_NONE);
+		if (Result >= 0)
+			return;
+
+		int ErrNo = errno;
+		if (ErrNo != EINTR && ErrNo != EFAULT && ErrNo != ENOMEM)
+			fg_AbortFutexWord(ErrNo);
+
+		return;
+	}
+#endif
+
+#if defined(DMibPMacOSUseUlockFallback)
+	int Result;
+	if (&__ulock_wait2)
+		Result = __ulock_wait2(gc_UlockCompareAndWait | gc_UlockFlagNoErrNo, (void *)_pAddress, _Expected, 0, 0);
+	else
+		Result = __ulock_wait(gc_UlockCompareAndWait | gc_UlockFlagNoErrNo, (void *)_pAddress, _Expected, 0);
+
+	if (Result >= 0)
+		return;
+
+	if (Result != -EINTR && Result != -EFAULT && Result != -ENOMEM)
+		fg_AbortFutexWord(-Result);
+#endif
+}
+
+bool NSys::fg_Futex_WaitTimeout(uint32 volatile *_pAddress, uint32 _Expected, fp64 _Timeout)
+{
+	if (_Timeout <= 0.0)
+		return true;
+
+	if (_Timeout >= fp64(1000000000.0))
+	{
+		// Longer than ~31 years; avoid nanosecond overflow and wait untimed
+		fg_Futex_Wait(_pAddress, _Expected);
+		return false;
+	}
+
+	uint64 TimeoutNs = (uint64)(_Timeout * fp64(1000000000.0)).f_Ceil().f_ToInt();
+
+#if defined(DMibPMacOSHasOsSync)
+#	if defined(DMibPMacOSUseUlockFallback)
+	if (__builtin_available(macOS 14.4, iOS 17.4, *))
+#	endif
+	{
+		int Result = os_sync_wait_on_address_with_timeout
+			(
+				(void *)_pAddress
+				, _Expected
+				, sizeof(uint32)
+				, OS_SYNC_WAIT_ON_ADDRESS_NONE
+				, OS_CLOCK_MACH_ABSOLUTE_TIME
+				, TimeoutNs
+			)
+		;
+		if (Result >= 0)
+			return false;
+
+		int ErrNo = errno;
+		if (ErrNo == ETIMEDOUT)
+			return true;
+
+		// EINTR/EFAULT/ENOMEM count as spurious wakeups; the caller re-checks its predicate
+		if (ErrNo != EINTR && ErrNo != EFAULT && ErrNo != ENOMEM)
+			fg_AbortFutexWord(ErrNo);
+
+		return false;
+	}
+#endif
+
+#if defined(DMibPMacOSUseUlockFallback)
+	if (&__ulock_wait2)
+	{
+		int Result = __ulock_wait2(gc_UlockCompareAndWait | gc_UlockFlagNoErrNo, (void *)_pAddress, _Expected, TimeoutNs, 0);
+		if (Result >= 0)
+			return false;
+
+		if (Result == -ETIMEDOUT)
+			return true;
+
+		// EINTR/EFAULT/ENOMEM count as spurious wakeups; the caller re-checks its predicate
+		if (Result != -EINTR && Result != -EFAULT && Result != -ENOMEM)
+			fg_AbortFutexWord(-Result);
+
+		return false;
+	}
+
+	// __ulock_wait takes a uint32 microsecond timeout (max ~71.6 minutes); longer
+	// waits are capped and a capped expiry is reported as a spurious wake so the
+	// caller re-arms against its deadline
+	uint64 TimeoutUs = (TimeoutNs + 999) / 1000;
+	bool bCapped = false;
+	if (TimeoutUs > uint64(0xffffffff))
+	{
+		TimeoutUs = uint64(0xffffffff);
+		bCapped = true;
+	}
+
+	int Result = __ulock_wait(gc_UlockCompareAndWait | gc_UlockFlagNoErrNo, (void *)_pAddress, _Expected, (uint32)TimeoutUs);
+	if (Result >= 0)
+		return false;
+
+	if (Result == -ETIMEDOUT)
+		return !bCapped;
+
+	// EINTR/EFAULT/ENOMEM count as spurious wakeups; the caller re-checks its predicate
+	if (Result != -EINTR && Result != -EFAULT && Result != -ENOMEM)
+		fg_AbortFutexWord(-Result);
+
+	return false;
+#endif
+}
+
+// Wake errors tolerated in all wake paths: ENOENT (no waiters) and EDOM/EINVAL
+// (the address was reused by a different ulock opcode or wait size, e.g. an
+// os_unfair_lock, after a woken waiter destroyed the object; ulock reports this
+// as EDOM, os_sync as EINVAL) — all are harmless stale wakes under the
+// destruction-safe contract. Our own os_sync arguments are compile-time
+// constants, so EINVAL cannot indicate an argument error here.
+void NSys::fg_Futex_WakeOne(uint32 volatile *_pAddress)
+{
+#if defined(DMibPMacOSHasOsSync)
+#	if defined(DMibPMacOSUseUlockFallback)
+	if (__builtin_available(macOS 14.4, iOS 17.4, *))
+#	endif
+	{
+		if (os_sync_wake_by_address_any((void *)_pAddress, sizeof(uint32), OS_SYNC_WAKE_BY_ADDRESS_NONE) != 0)
+		{
+			int ErrNo = errno;
+			if (ErrNo != ENOENT && ErrNo != EDOM && ErrNo != EINVAL)
+				fg_AbortFutexWord(ErrNo);
+		}
+		return;
+	}
+#endif
+
+#if defined(DMibPMacOSUseUlockFallback)
+	int Result = __ulock_wake(gc_UlockCompareAndWait | gc_UlockFlagNoErrNo, (void *)_pAddress, 0);
+	if (Result < 0 && Result != -ENOENT && Result != -EDOM)
+		fg_AbortFutexWord(-Result);
+#endif
+}
+
+void NSys::fg_Futex_WakeCount(uint32 volatile *_pAddress, uint32 _nToWake)
+{
+	// No wake-count API on macOS; loop single wakes and stop as soon as the
+	// kernel reports no remaining waiters
+#if defined(DMibPMacOSHasOsSync)
+#	if defined(DMibPMacOSUseUlockFallback)
+	if (__builtin_available(macOS 14.4, iOS 17.4, *))
+#	endif
+	{
+		while (_nToWake--)
+		{
+			if (os_sync_wake_by_address_any((void *)_pAddress, sizeof(uint32), OS_SYNC_WAKE_BY_ADDRESS_NONE) != 0)
+			{
+				int ErrNo = errno;
+				if (ErrNo != ENOENT && ErrNo != EDOM && ErrNo != EINVAL)
+					fg_AbortFutexWord(ErrNo);
+
+				return;
+			}
+		}
+		return;
+	}
+#endif
+
+#if defined(DMibPMacOSUseUlockFallback)
+	while (_nToWake--)
+	{
+		int Result = __ulock_wake(gc_UlockCompareAndWait | gc_UlockFlagNoErrNo, (void *)_pAddress, 0);
+		if (Result < 0)
+		{
+			if (Result != -ENOENT && Result != -EDOM)
+				fg_AbortFutexWord(-Result);
+
+			return;
+		}
+	}
+#endif
+}
+
+void NSys::fg_Futex_WakeAll(uint32 volatile *_pAddress)
+{
+#if defined(DMibPMacOSHasOsSync)
+#	if defined(DMibPMacOSUseUlockFallback)
+	if (__builtin_available(macOS 14.4, iOS 17.4, *))
+#	endif
+	{
+		if (os_sync_wake_by_address_all((void *)_pAddress, sizeof(uint32), OS_SYNC_WAKE_BY_ADDRESS_NONE) != 0)
+		{
+			int ErrNo = errno;
+			if (ErrNo != ENOENT && ErrNo != EDOM && ErrNo != EINVAL)
+				fg_AbortFutexWord(ErrNo);
+		}
+		return;
+	}
+#endif
+
+#if defined(DMibPMacOSUseUlockFallback)
+	int Result = __ulock_wake(gc_UlockCompareAndWait | gc_UlockFlagWakeAll | gc_UlockFlagNoErrNo, (void *)_pAddress, 0);
+	if (Result < 0 && Result != -ENOENT && Result != -EDOM)
+		fg_AbortFutexWord(-Result);
+#endif
 }
 
 uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)

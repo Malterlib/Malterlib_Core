@@ -147,25 +147,22 @@ namespace NMib
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
 
-		void *fg_Semaphore_Alloc(umint _InitialCount, umint _MaximumCount);
-		void *fg_Semaphore_Duplicate(void * _pSemaphore);
-		void fg_Semaphore_ForkedChild(void * _pSemaphore);
-		void fg_Semaphore_Free(void * _pSemaphore);
-		void fg_Semaphore_Increase(void * _pSemaphore, umint _Count);
-		void fg_Semaphore_Wait(void * _pSemaphore);
-		bool fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout);
-		bool fg_Semaphore_TryWait(void * _pSemaphore);
-
-		void *fg_Event_Alloc(bool _InitialSignal);
-		void fg_Event_Free(void *_pEvent);
-		void fg_Event_PrepareFork(void *_pEvent);
-		void fg_Event_ForkedChild(void *_pEvent);
-		void fg_Event_ForkedParent(void *_pEvent);
-		void fg_Event_SetSignaled(void * _pEvent);
-		void fg_Event_ResetSignaled(void * _pEvent);
-		void fg_Event_Wait(void * _pEvent);
-		bool fg_Event_WaitTimeout(void * _pEvent, fp64 _Timeout);
-		bool fg_Event_TryWait(void * _pEvent);
+		// Futex-style wait/wake on a 32-bit word. _pAddress must be 4-byte aligned.
+		// A wait blocks only while *_pAddress == _Expected and may return spuriously;
+		// callers must re-check their predicate in a loop.
+		// Wakes never dereference _pAddress in user space, so they are safe on
+		// addresses whose object has already been destroyed; the cost is a
+		// possible spurious wake of an unrelated waiter that reuses the address,
+		// which the wait contract already requires callers to tolerate.
+		// _Timeout is relative real-time seconds without time-speed scaling; a wait
+		// with _Timeout <= 0 returns immediately. Returns true if the wait timed out.
+		void fg_Futex_Wait(uint32 volatile *_pAddress, uint32 _Expected);
+		bool fg_Futex_WaitTimeout(uint32 volatile *_pAddress, uint32 _Expected, fp64 _Timeout);
+		void fg_Futex_WakeOne(uint32 volatile *_pAddress);
+		// Wakes at most _nToWake waiters; a single syscall where the OS supports a
+		// wake count (Linux), otherwise a loop of single wakes
+		void fg_Futex_WakeCount(uint32 volatile *_pAddress, uint32 _nToWake);
+		void fg_Futex_WakeAll(uint32 volatile *_pAddress);
 
 		void *fg_Thread_GetCurrent();
 		umint fg_Thread_GetCurrentUID();

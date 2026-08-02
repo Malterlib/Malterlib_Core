@@ -238,7 +238,7 @@ void fg_MalterlibMallocOverride_CanStartThreads();
 // *************************************************************************************************************************
 
 #define DMibPLinuxKernel
-#define DMibConfig_SemaphoreImplemented
+#define DMibConfig_FutexImplemented
 
 #include "Malterlib_Core_PlatformImp_POSIX_PThread.hpp"
 #include "Malterlib_Core_PlatformImp_Linux_PThread.hpp"
@@ -264,7 +264,6 @@ void fg_MalterlibMallocOverride_CanStartThreads();
 #include <sys/mount.h>
 #include <linux/sysctl.h>
 #include <sys/epoll.h>
-#include <semaphore.h>
 
 #include <execinfo.h>
 #include <dlfcn.h>
@@ -291,189 +290,6 @@ CStr fg_EscapeString(CStr _In)
 [[noreturn]] void NMib::fg_NoReturn()
 {
 	std::unreachable();
-}
-
-class CImpSemaphore
-{
-public:
-	NMib::NThread::CLowLevelLock m_Lock;
-
-	sem_t m_Semaphore = {0};
-	bool m_bSemaphoreInit = false;
-
-	umint m_Value;
-	umint m_Maximum;
-
-	CImpSemaphore(umint _Value, umint _Maximum)
-		: m_Value(_Value)
-		, m_Maximum(_Maximum)
-	{
-		f_Init();
-	}
-
-	~CImpSemaphore() noexcept(false)
-	{
-		DMibLock(m_Lock);
-
-		if (m_bSemaphoreInit)
-		{
-			if (sem_destroy(&m_Semaphore))
-				DMibError(NMib::NPlatform::fg_FormatErrno("sem_destroy (semaphore destructor)", errno));
-		}
-	}
-
-	void f_ForkedChild()
-	{
-		m_Lock.f_ForkedChildUnlocked();
-		if (sem_init(&m_Semaphore, false, 0))
-			DMibError(NMib::NPlatform::fg_FormatErrno("sem_init (semaphore init)", errno));
-		m_bSemaphoreInit = true;
-	}
-
-	void f_Init()
-	{
-		m_Lock.f_Construct();
-		{
-			DMibLock(m_Lock);
-			if (sem_init(&m_Semaphore, false, 0))
-				DMibError(NMib::NPlatform::fg_FormatErrno("sem_init (semaphore init)", errno));
-			m_bSemaphoreInit = true;
-		}
-	}
-
-	void f_Signal(umint _Count)
-	{
-		DMibLock(m_Lock);
-		if (m_Value + _Count > m_Maximum)
-			_Count = m_Maximum - m_Value;
-		m_Value += _Count;
-
-		while (_Count--)
-			sem_post(&m_Semaphore);
-	}
-
-	bool f_TryWait()
-	{
-		bool bRet = false;
-		DMibLock(m_Lock);
-		if (m_Value > 0)
-		{
-			--m_Value;
-			bRet = true;
-		}
-		return bRet;
-	}
-
-	void f_Wait()
-	{
-		DMibLock(m_Lock);
-		while (m_Value <= 0)
-		{
-			{
-				DMibUnlock(m_Lock);
-				if (sem_wait(&m_Semaphore))
-				{
-					int ErrNo = errno;
-					if (ErrNo == EINTR)
-						continue;
-					DMibError(NMib::NPlatform::fg_FormatErrno("sem_wait (semaphore wait)", ErrNo));
-				}
-			}
-		}
-		--m_Value;
-	}
-
-	bool f_WaitTimeout(fp32 _Timeout)
-	{
-		bool bRet = true;
-		CStopwatchRaw TimeWait;
-		TimeWait.f_Start();
-		DMibLock(m_Lock);
-		fp64 Time = TimeWait.f_GetTime();
-		while (Time < _Timeout)
-		{
-			if (m_Value <= 0)
-			{
-				timespec ToWait;
-				clock_gettime(CLOCK_REALTIME, &ToWait);
-
-				fp64 ToWaitLeft = (_Timeout - Time) + fp32(ToWait.tv_nsec) * (fp32(1.0f) / fp32(1000000000.0f));
-				fp64 nSec = ToWaitLeft.f_Floor();
-				ToWait.tv_sec += nSec.f_ToInt();
-				ToWait.tv_nsec = ((ToWaitLeft - nSec)*fp32(1000000000.0f)).f_ToInt();
-
-				{
-					DMibUnlock(m_Lock);
-					if (sem_timedwait(&m_Semaphore, &ToWait))
-					{
-						int ErrNo = errno;
-						if (ErrNo == ETIMEDOUT || ErrNo == EINTR)
-							;
-						else
-							DMibError(NMib::NPlatform::fg_FormatErrno("sem_timedwait (semaphore wait timeout)", errno));
-					}
-				}
-			}
-			else
-			{
-				bRet = false;
-				--m_Value;
-				break;
-			}
-			Time = TimeWait.f_GetTime();
-		}
-		return bRet;
-	}
-};
-
-constinit NMemory::TCPoolAggregate<CImpSemaphore, 128, NThread::CLowLevelLockAggregate, CPoolType_Freeable, CAllocator_VirtualNoTracking> g_ImpSemaphorePool = {DAggregateInit};
-
-void *NSys::fg_Semaphore_Alloc(umint _InitialCount, umint _MaximumCount)
-{
-	CImpSemaphore *pSemaphore = g_ImpSemaphorePool.f_New(_InitialCount, _MaximumCount);
-	return pSemaphore;
-}
-
-void NSys::fg_Semaphore_ForkedChild(void * _pSemaphore)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	pSemaphore->f_ForkedChild();
-}
-
-void NSys::fg_Semaphore_Free(void *_pSemaphore)
-{
-	[[maybe_unused]] CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-#ifdef DMibSanitizerEnabled_Thread
-	DMibLock(g_ImpSemaphorePool);
-	pSemaphore->~CImpSemaphore();
-#else
-	g_ImpSemaphorePool.f_Delete(pSemaphore);
-#endif
-}
-
-void NSys::fg_Semaphore_Increase(void * _pSemaphore, umint _Count)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	pSemaphore->f_Signal(_Count);
-}
-
-void NSys::fg_Semaphore_Wait(void * _pSemaphore)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	pSemaphore->f_Wait();
-}
-
-bool NSys::fg_Semaphore_WaitTimeout(void * _pSemaphore, fp64 _Timeout)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	return pSemaphore->f_WaitTimeout(_Timeout * NTime::CSystem_Time::fs_GetTimeSpeedReciprocal());
-}
-
-bool NSys::fg_Semaphore_TryWait(void * _pSemaphore)
-{
-	CImpSemaphore *pSemaphore = (CImpSemaphore *)_pSemaphore;
-	return pSemaphore->f_TryWait();
-
 }
 
 namespace NMib
@@ -583,8 +399,6 @@ void CSystemLinux::fs_ForkPrepare()
 		Sys.m_Posix.m_ForkLock.f_Lock();
 		Sys.m_Posix.m_ForkLock.f_PrepareFork();
 		Sys.f_PrepareFork();
-		g_EventEmulationPool.f_Lock();
-		g_ImpSemaphorePool.f_Lock();
 	}
 }
 
@@ -608,11 +422,7 @@ void CSystemLinux::fs_ForkParentOrChild()
 #endif
 			Sys.m_bForkedChild = true;
 			g_bCanStackTrace = false;
-			g_ImpSemaphorePool.f_ForkedChildLocked();
-			g_EventEmulationPool.f_ForkedChildLocked();
 		}
-		g_ImpSemaphorePool.f_Unlock();
-		g_EventEmulationPool.f_Unlock();
 		if (Current == (void *)(umint)getpid())
 		{
 			Sys.f_ForkedParent(); // Parent
@@ -637,8 +447,6 @@ void CSystemLinux::fs_ForkParent()
 		__tsan_forked_parent();
 #endif
 		pthread_setspecific(Sys.m_ThreadDestructionHook, 0);
-		g_ImpSemaphorePool.f_Unlock();
-		g_EventEmulationPool.f_Unlock();
 		Sys.f_ForkedParent();
 		Sys.m_Posix.m_ForkLock.f_ForkedParent();
 		Sys.m_Posix.m_ForkLock.f_Unlock();
@@ -661,10 +469,6 @@ void CSystemLinux::fs_ForkChild()
 		Sys.m_bForkedChild = true;
 		g_bCanStartThreads = false;
 		g_bCanStackTrace = false;
-		g_ImpSemaphorePool.f_ForkedChildLocked();
-		g_EventEmulationPool.f_ForkedChildLocked();
-		g_ImpSemaphorePool.f_Unlock();
-		g_EventEmulationPool.f_Unlock();
 		Sys.f_ForkedChild();
 		Sys.m_Posix.m_ForkLock.f_ForkedChild();
 		Sys.m_Posix.m_ForkLock.f_Unlock();
@@ -1486,6 +1290,20 @@ void NSys::fg_CreateSystemVersion()
 	}
 
 	CSystem::ms_PlatformVersion = g_OperatingSystemMajor * 1'000'000 + g_OperatingSystemMinor * 1'000 + g_OperatingSystemFix;
+
+	if (CSystem::ms_PlatformVersion < 2'006'028)
+	{
+		// The synchronization primitives issue FUTEX_*_PRIVATE, FUTEX_WAIT_BITSET
+		// and FUTEX_LOCK_PI syscalls unconditionally (kernel 2.6.28+). On older
+		// kernels those fail with ENOSYS/EINVAL, wakes are silently lost and
+		// waiters hang, so fail loudly up front instead. This can run from
+		// .preinit_array with malloc overridden before the memory manager is
+		// initialized, so only raw syscalls and a trap are safe here — abort()
+		// flushes stdio on older glibc, which touches libc state and locks
+		static constexpr char gc_pKernelTooOld[] = "Malterlib requires Linux kernel 2.6.28 or later\n";
+		[[maybe_unused]] auto Written = write(2, gc_pKernelTooOld, sizeof(gc_pKernelTooOld) - 1);
+		__builtin_trap();
+	}
 }
 
 namespace NMib
@@ -1905,12 +1723,6 @@ void NSys::fg_DestroySystem()
 
 		g_VirtualMap.f_Destruct();
 		g_VirtualMapLock.f_Destruct();
-
-		if (!g_bMemoryManagerNeededAfterDestroy)
-		{
-			g_EventEmulationPool.f_Destruct();
-			g_ImpSemaphorePool.f_Destruct();
-		}
 	}
 }
 
@@ -2499,6 +2311,10 @@ pid_t fg_Malterlib_Thread_GetTID_Local();
 
 namespace NMib::NThread
 {
+	// CLowLevelLockAggregate keeps per-platform implementations on purpose:
+	// Linux uses a priority-inheritance futex (FUTEX_LOCK_PI), macOS os_unfair_lock
+	// donates priority, Windows WaitOnAddress has neither. A generic futex
+	// implementation would lose the priority handling.
 	static_assert(sizeof(int) == sizeof(CLowLevelLockAggregate::m_Lock));
 
 	namespace
@@ -2525,10 +2341,7 @@ namespace NMib::NThread
 
 	void CLowLevelLockAggregate::f_ForkedChildLocked()
 	{
-		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
-			m_Lock = fg_Malterlib_Thread_GetTID_Local();
-		else
-			m_Lock = 1;
+		m_Lock = fg_Malterlib_Thread_GetTID_Local();
 
 #if DMibEnableSafeCheck > 0
 		++m_nForked;
@@ -2563,31 +2376,19 @@ namespace NMib::NThread
 	{
 		DMibSanitizerAnnotate_MutexPreLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock);
 
-		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+		uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+
+		uint32 OldValue = 0;
+		if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
 		{
-			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+			if ((OldValue & gc_FutexThreadMask) == ThreadID)
+				fg_AbortFutex(-1); // Recursive lock not supported
 
-			uint32 OldValue = 0;
-			if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
-			{
-				if ((OldValue & gc_FutexThreadMask) == ThreadID)
-					fg_AbortFutex(-1); // Recursive lock not supported
+			if (OldValue & FUTEX_OWNER_DIED)
+				fg_AbortFutex(-2); // Killing threads in not supported
 
-				if (OldValue & FUTEX_OWNER_DIED)
-					fg_AbortFutex(-2); // Killing threads in not supported
-
-				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
-				return false;
-			}
-		}
-		else
-		{
-			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
-			{
-				DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
-				return false;
-			}
+			DMibSanitizerAnnotate_MutexPostLock(this, __tsan_mutex_write_reentrant | __tsan_mutex_try_lock | __tsan_mutex_try_lock_failed, 1);
+			return false;
 		}
 
 #if DMibEnableSafeCheck > 0
@@ -2601,44 +2402,31 @@ namespace NMib::NThread
 	void CLowLevelLockAggregate::f_Lock()
 	{
 		DMibSanitizerAnnotate_MutexPreLock(this, 0);
-		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
-		{
-			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+		uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
 
-			while (true)
+		while (true)
+		{
+			uint32 OldValue = 0;
+			if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
+				break;
+
+			if ((OldValue & gc_FutexThreadMask) == ThreadID)
+				fg_AbortFutex(-1); // Recursive lock not supported
+
+			if (OldValue & FUTEX_OWNER_DIED)
+				fg_AbortFutex(-2); // Killing threads in not supported
+
+			if (OldValue & gc_FutexThreadMask)
 			{
-				uint32 OldValue = 0;
-				if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
+				if (!call_futex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
 					break;
 
-				if ((OldValue & gc_FutexThreadMask) == ThreadID)
-					fg_AbortFutex(-1); // Recursive lock not supported
-
-				if (OldValue & FUTEX_OWNER_DIED)
-					fg_AbortFutex(-2); // Killing threads in not supported
-
-				if (OldValue & gc_FutexThreadMask)
+				auto Error = errno;
+				switch (Error)
 				{
-					if (!call_futex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
-						break;
-
-					auto Error = errno;
-					switch (Error)
-					{
-					case EAGAIN: break;
-					default: fg_AbortFutex(Error); // Broken
-					}
+				case EAGAIN: break;
+				default: fg_AbortFutex(Error); // Broken
 				}
-			}
-		}
-		else
-		{
-			NMib::NThread::CThreadSpinWaiter SpinWaiter;
-			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
-			{
-				SpinWaiter.f_Wait();
-				Expected = 0;
 			}
 		}
 
@@ -2656,48 +2444,34 @@ namespace NMib::NThread
 		m_ThreadID = 0;
 		m_AlternateThreadID = 0;
 #endif
-		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+		uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+
+		uint32 OldValue = ThreadID;
+
+		if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::gc_MemoryOrder_Release, NAtomic::gc_MemoryOrder_Relaxed))
 		{
-			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
-
-			uint32 OldValue = ThreadID;
-
-			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::gc_MemoryOrder_Release, NAtomic::gc_MemoryOrder_Relaxed))
-			{
-				// Contended
-				if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
-					fg_AbortFutex(errno);
-			}
+			// Contended
+			if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
+				fg_AbortFutex(errno);
 		}
-		else
-			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
 
 		DMibSanitizerAnnotate_MutexPostUnlock(this, 0);
 	}
 
 	bool CLowLevelLockAggregate::f_TryLockNoSanitize()
 	{
-		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+		uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+
+		uint32 OldValue = 0;
+		if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
 		{
-			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+			if ((OldValue & gc_FutexThreadMask) == ThreadID)
+				fg_AbortFutex(-1); // Recursive lock not supported
 
-			uint32 OldValue = 0;
-			if (!m_Lock.f_CompareExchangeStrong(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
-			{
-				if ((OldValue & gc_FutexThreadMask) == ThreadID)
-					fg_AbortFutex(-1); // Recursive lock not supported
+			if (OldValue & FUTEX_OWNER_DIED)
+				fg_AbortFutex(-2); // Killing threads in not supported
 
-				if (OldValue & FUTEX_OWNER_DIED)
-					fg_AbortFutex(-2); // Killing threads in not supported
-
-				return false;
-			}
-		}
-		else
-		{
-			uint32 Expected = 0;
-			if (!m_Lock.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
-				return false;
+			return false;
 		}
 #ifdef DMibSanitizerEnabled_Thread
 		__tsan_acquire(&m_Lock);
@@ -2711,44 +2485,31 @@ namespace NMib::NThread
 
 	void CLowLevelLockAggregate::f_LockNoSanitize()
 	{
-		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
-		{
-			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+		uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
 
-			while (true)
+		while (true)
+		{
+			uint32 OldValue = 0;
+			if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
+				break;
+
+			if ((OldValue & gc_FutexThreadMask) == ThreadID)
+				fg_AbortFutex(-1); // Recursive lock not supported
+
+			if (OldValue & FUTEX_OWNER_DIED)
+				fg_AbortFutex(-2); // Killing threads in not supported
+
+			if (OldValue & gc_FutexThreadMask)
 			{
-				uint32 OldValue = 0;
-				if (m_Lock.f_CompareExchangeWeak(OldValue, ThreadID, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Relaxed))
+				if (!call_futex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
 					break;
 
-				if ((OldValue & gc_FutexThreadMask) == ThreadID)
-					fg_AbortFutex(-1); // Recursive lock not supported
-
-				if (OldValue & FUTEX_OWNER_DIED)
-					fg_AbortFutex(-2); // Killing threads in not supported
-
-				if (OldValue & gc_FutexThreadMask)
+				auto Error = errno;
+				switch (Error)
 				{
-					if (!call_futex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
-						break;
-
-					auto Error = errno;
-					switch (Error)
-					{
-					case EAGAIN: break;
-					default: fg_AbortFutex(Error); // Broken
-					}
+				case EAGAIN: break;
+				default: fg_AbortFutex(Error); // Broken
 				}
-			}
-		}
-		else
-		{
-			NMib::NThread::CThreadSpinWaiter SpinWaiter;
-			uint32 Expected = 0;
-			while (!m_Lock.f_CompareExchangeWeak(Expected, 1, NAtomic::gc_MemoryOrder_Acquire, NAtomic::gc_MemoryOrder_Acquire))
-			{
-				SpinWaiter.f_Wait();
-				Expected = 0;
 			}
 		}
 #ifdef DMibSanitizerEnabled_Thread
@@ -2769,22 +2530,97 @@ namespace NMib::NThread
 #ifdef DMibSanitizerEnabled_Thread
 		__tsan_release(&m_Lock);
 #endif
-		if (NMib::CSystem::ms_PlatformVersion >= 2'006'018)
+		uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
+
+		uint32 OldValue = ThreadID;
+
+		if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::gc_MemoryOrder_Release, NAtomic::gc_MemoryOrder_Relaxed))
 		{
-			uint32 ThreadID = fg_Malterlib_Thread_GetTID_Local();
-
-			uint32 OldValue = ThreadID;
-
-			if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::gc_MemoryOrder_Release, NAtomic::gc_MemoryOrder_Relaxed))
-			{
-				// Contended
-				if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
-					fg_AbortFutex(errno);
-			}
+			// Contended
+			if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
+				fg_AbortFutex(errno);
 		}
-		else
-			m_Lock.f_Exchange(0, NAtomic::gc_MemoryOrder_Release);
 	}
+}
+
+namespace
+{
+	[[noreturn]] inline_never void fg_AbortFutexWord(int _Error)
+	{
+		[[maybe_unused]] volatile int Error = _Error;
+		DMibPDebugBreak;
+		std::abort();
+	}
+}
+
+void NSys::fg_Futex_Wait(uint32 volatile *_pAddress, uint32 _Expected)
+{
+	long Result = syscall(SYS_futex, (uint32 *)_pAddress, FUTEX_WAIT_PRIVATE, _Expected, nullptr, nullptr, 0);
+	if (Result == 0)
+		return;
+
+	int ErrNo = errno;
+	if (ErrNo != EAGAIN && ErrNo != EINTR)
+		fg_AbortFutexWord(ErrNo);
+}
+
+bool NSys::fg_Futex_WaitTimeout(uint32 volatile *_pAddress, uint32 _Expected, fp64 _Timeout)
+{
+	if (_Timeout <= 0.0)
+		return true;
+
+	if (_Timeout >= fp64(1000000000.0))
+	{
+		// Longer than ~31 years; avoid deadline overflow and wait untimed
+		fg_Futex_Wait(_pAddress, _Expected);
+		return false;
+	}
+
+	// Absolute CLOCK_MONOTONIC deadline so EINTR restarts keep the same deadline
+	timespec Deadline;
+	clock_gettime(CLOCK_MONOTONIC, &Deadline);
+
+	fp64 nSec = _Timeout.f_Floor();
+	Deadline.tv_sec += nSec.f_ToInt();
+	Deadline.tv_nsec += ((_Timeout - nSec) * fp64(1000000000.0)).f_ToInt();
+	if (Deadline.tv_nsec >= 1000000000)
+	{
+		++Deadline.tv_sec;
+		Deadline.tv_nsec -= 1000000000;
+	}
+
+	while (true)
+	{
+		long Result = syscall(SYS_futex, (uint32 *)_pAddress, FUTEX_WAIT_BITSET_PRIVATE, _Expected, &Deadline, nullptr, FUTEX_BITSET_MATCH_ANY);
+		if (Result == 0)
+			return false;
+
+		int ErrNo = errno;
+		if (ErrNo == ETIMEDOUT)
+			return true;
+
+		if (ErrNo == EAGAIN)
+			return false;
+
+		if (ErrNo != EINTR)
+			fg_AbortFutexWord(ErrNo);
+	}
+}
+
+void NSys::fg_Futex_WakeOne(uint32 volatile *_pAddress)
+{
+	syscall(SYS_futex, (uint32 *)_pAddress, FUTEX_WAKE_PRIVATE, 1, nullptr, nullptr, 0);
+}
+
+void NSys::fg_Futex_WakeCount(uint32 volatile *_pAddress, uint32 _nToWake)
+{
+	int nToWake = (int)fg_Min((umint)_nToWake, (umint)TCLimitsInt<int>::mc_Max);
+	syscall(SYS_futex, (uint32 *)_pAddress, FUTEX_WAKE_PRIVATE, nToWake, nullptr, nullptr, 0);
+}
+
+void NSys::fg_Futex_WakeAll(uint32 volatile *_pAddress)
+{
+	syscall(SYS_futex, (uint32 *)_pAddress, FUTEX_WAKE_PRIVATE, TCLimitsInt<int>::mc_Max, nullptr, nullptr, 0);
 }
 
 #include <locale.h>

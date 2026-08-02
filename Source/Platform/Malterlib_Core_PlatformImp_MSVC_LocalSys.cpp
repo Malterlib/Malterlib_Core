@@ -181,7 +181,7 @@ public:
 					{
 						{
 							m_pBundle->m_ToCancel.f_Insert(this);
-							m_pBundle->m_EventWantQuit.f_Signal();
+							m_pBundle->f_Wake();
 						}
 
 						if (m_pBundle)
@@ -483,7 +483,15 @@ public:
 			};
 
 			CFileChangeNoticationContext *m_pContext;
+
+			// Raw Win32 event: the notification thread needs an alertable
+			// WaitForSingleObjectEx for APC delivery, which futex events cannot provide
+			HANDLE m_hWakeEvent;
+			NAtomic::TCAtomic<uint32> m_bQuit;
+
 			CNotificationBundle(CFileChangeNoticationContext *_pContext)
+				: m_hWakeEvent(CreateEventA(nullptr, false, false, nullptr))
+				, m_bQuit(0)
 			{
 				m_pContext = _pContext;
 				for (umint i = 0; i < ENumNotifications; ++i)
@@ -495,6 +503,30 @@ public:
 
 			~CNotificationBundle()
 			{
+				// The worker may still be blocked on m_hWakeEvent; it must be stopped
+				// before the handle is closed (closing a handle with a pending wait is
+				// undefined, and the base destructor's f_Stop would come too late)
+				f_StopBundle();
+
+				if (m_hWakeEvent)
+				{
+					::CloseHandle(m_hWakeEvent);
+					m_hWakeEvent = nullptr;
+				}
+			}
+
+			void f_Wake()
+			{
+				SetEvent(m_hWakeEvent);
+			}
+
+			umint f_StopBundle()
+			{
+				// Set the quit flag before waking so the thread cannot re-park
+				// between the wake and CThread::f_Stop's state change
+				m_bQuit.f_Store(1);
+				SetEvent(m_hWakeEvent);
+				return f_Stop();
 			}
 
 			CNotification m_Notifications[ENumNotifications];
@@ -510,7 +542,7 @@ public:
 
 			aint f_Main()
 			{
-				while (f_GetState() != NThread::EThreadState_EventWantQuit)
+				while (f_GetState() != NThread::EThreadState_EventWantQuit && !m_bQuit.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
 				{
 					{
 						CNotification *pPop;
@@ -540,7 +572,7 @@ public:
 						}
 					}
 
-					WaitForSingleObjectEx(m_EventWantQuit.m_pSemaphore, INFINITE, true);
+					WaitForSingleObjectEx(m_hWakeEvent, INFINITE, true);
 					{
 						CNotification *pPop;
 						{
@@ -644,7 +676,7 @@ public:
 					pBundle->m_ToRead.f_Insert(pNot);
 				}
 
-				pBundle->m_EventWantQuit.f_Signal();
+				pBundle->f_Wake();
 			}
 			pNot->m_FirstReadDoneEvent.f_Wait();
 			return pNot;
@@ -657,13 +689,13 @@ public:
 			pNotification->f_Clear();
 			CNotificationBundle *pBundle = pNotification->m_pBundle;
 			pBundle->m_Free.f_Insert(pNotification);
-			pBundle->m_EventWantQuit.f_Signal();
+			pBundle->f_Wake();
 			if (pBundle->m_Used.f_IsEmpty())
 			{
 				pBundle->m_Link.f_Unlink();
 				{
 					DMibUnlock(m_Lock);
-					pBundle->f_Stop();
+					pBundle->f_StopBundle();
 					fg_DeleteObject(NMemory::CDefaultAllocator(), pBundle);
 				}
 			}

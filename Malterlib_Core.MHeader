@@ -249,7 +249,7 @@ Import "Lib_Malterlib.MTarget"
 		}
 	}
 
-	%Dependency ["user32.lib", "advapi32.lib", "shell32.lib", "ole32.lib", "oleaut32.lib"]
+	%Dependency ["user32.lib", "advapi32.lib", "shell32.lib", "ole32.lib", "oleaut32.lib", "synchronization.lib"]
 	{
 		!!PlatformFamily "Windows"
 
