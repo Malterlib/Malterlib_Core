@@ -10,8 +10,8 @@
 //#include "sdkddkver.h"
 
 #ifndef NTDDI_VERSION
-#	define _WIN32_WINNT _WIN32_WINNT_VISTA
-#	define NTDDI_VERSION NTDDI_VISTA
+#	define _WIN32_WINNT _WIN32_WINNT_WIN8
+#	define NTDDI_VERSION NTDDI_WIN8
 #	include "sdkddkver.h"
 #endif
 

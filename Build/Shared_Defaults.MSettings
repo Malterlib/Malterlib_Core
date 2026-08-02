@@ -340,7 +340,7 @@ Property
 	MalterlibBuildSpecifics: string?
 
 	MalterlibWindowsNtVersion: string
-	MalterlibWindowsNtVersion "_WIN32_WINNT_VISTA"
+	MalterlibWindowsNtVersion "_WIN32_WINNT_WIN8"
 	{
 		&
 		{
@@ -349,7 +349,7 @@ Property
 		}
 	}
 	MalterlibWindowsVersion: string
-	MalterlibWindowsVersion "NTDDI_VISTA"
+	MalterlibWindowsVersion "NTDDI_WIN8"
 	{
 		&
 		{

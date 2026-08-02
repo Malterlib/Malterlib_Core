@@ -8,8 +8,8 @@
 #elif defined(DPlatformFamily_Linux)
 #elif defined(DPlatformFamily_Windows)
 #	ifndef NTDDI_VERSION
-#		define _WIN32_WINNT _WIN32_WINNT_VISTA
-#		define NTDDI_VERSION NTDDI_VISTA
+#		define _WIN32_WINNT _WIN32_WINNT_WIN8
+#		define NTDDI_VERSION NTDDI_WIN8
 #	endif
 #	if DMibPPtrBits >= 64
 #		if !defined(_KERNEL32_)
