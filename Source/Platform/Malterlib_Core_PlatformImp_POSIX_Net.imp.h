@@ -490,8 +490,7 @@ int fg_GetUnixSocketFlags()
 {
 	int OpenFlags = 0;
 #if defined(DPlatformFamily_Linux)
-	if (NMib::CSystem::ms_PlatformVersion >= 2'006'027)
-		OpenFlags |= SOCK_CLOEXEC;
+	OpenFlags |= SOCK_CLOEXEC;
 #endif
 	return OpenFlags;
 }
@@ -499,8 +498,8 @@ int fg_GetUnixSocketFlags()
 void fg_SetUnixSocketOptions(int _File)
 {
 #if defined(DPlatformFamily_Linux)
-	if (NMib::CSystem::ms_PlatformVersion >= 2'006'027)
-		return;
+	// SOCK_CLOEXEC is passed at socket creation via fg_GetUnixSocketFlags
+	return;
 #endif
 	// Set CloseOnExec so that child processes do not get our open files.
 	int FDFlags = fcntl(_File, F_GETFD);

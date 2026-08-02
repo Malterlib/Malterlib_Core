@@ -212,13 +212,7 @@ NContainer::TCVector<NStr::CStr> NSys::NFile::fg_GetMounts(NMib::NFile::EFileMou
 #ifdef DPlatformFamily_Linux
 	NContainer::TCVector<NMib::NStr::CStr> Return;
 
-	bool bUseMountInfo = NMib::CSystem::ms_PlatformVersion >= 2'006'026;
-
-	NContainer::TCVector<ch8> FileData;
-	if (bUseMountInfo)
-		FileData = NPlatform::fg_ReadProcFS("/proc/self/mountinfo");
-	else
-		FileData = NPlatform::fg_ReadProcFS("/proc/mounts");
+	NContainer::TCVector<ch8> FileData = NPlatform::fg_ReadProcFS("/proc/self/mountinfo");
 
 	auto pParse = FileData.f_GetArray();
 
@@ -232,27 +226,12 @@ NContainer::TCVector<NStr::CStr> NSys::NFile::fg_GetMounts(NMib::NFile::EFileMou
 		fg_ParseEndOfLine(pParse);
 		auto Components = Str.f_Split(" ");
 
-		CStr SourcePath;
-		CStr MountPath;
-		CStr DeviceID;
+		if (Components.f_GetLen() < 10)
+			continue;
 
-		if (bUseMountInfo)
-		{
-			if (Components.f_GetLen() < 10)
-				continue;
-
-			DeviceID = fg_ParseOctalCoded(Components[2]);
-			MountPath = fg_ParseOctalCoded(Components[4]);
-			SourcePath = fg_ParseOctalCoded(Components[9]);
-		}
-		else
-		{
-			if (Components.f_GetLen() < 2)
-				continue;
-
-			SourcePath = fg_ParseOctalCoded(Components[0]);
-			MountPath = fg_ParseOctalCoded(Components[1]);
-		}
+		CStr DeviceID = fg_ParseOctalCoded(Components[2]);
+		CStr MountPath = fg_ParseOctalCoded(Components[4]);
+		CStr SourcePath = fg_ParseOctalCoded(Components[9]);
 
 		CStr Remote = "Remote";
 		if (SourcePath.f_FindChar(':') >= 0)
@@ -719,8 +698,7 @@ int fg_GetUnixOpenFlags()
 	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
 		OpenFlags |= O_CLOEXEC;
 #elif defined(DPlatformFamily_Linux)
-	if (NMib::CSystem::ms_PlatformVersion >= 2'006'023)
-		OpenFlags |= O_CLOEXEC;
+	OpenFlags |= O_CLOEXEC;
 #endif
 	return OpenFlags;
 }
@@ -731,8 +709,7 @@ void fg_SetUnixHandleOptions(int _File)
 	if (NMib::CSystem::ms_PlatformVersion >= 10'07'00)
 		return;
 #elif defined(DPlatformFamily_Linux)
-	if (NMib::CSystem::ms_PlatformVersion >= 2'006'023)
-		return;
+	return;
 #endif
 
 	// Set CloseOnExec so that child processes do not get our open files.
