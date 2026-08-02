@@ -54,10 +54,6 @@ Compile
 	{
 		!!MalterlibMemoryManager_EnableOverrideSystemMalloc true
 	}
-	PreprocessorDefines =+ "DMalterlibMemoryOverrideMacOSInitBeforeLibSystemSupport"
-	{
-		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
-	}
 
 	PreprocessorDefines =+ "DMibConfig_CheckOverrideMemoryLeaks"
 	{
@@ -194,13 +190,6 @@ Compile
 				}
 				%File "../Memory/Source/Malterlib_Memory_SystemOverride*"
 				%File "../Memory/Source/Malterlib_Memory_SystemOverride_MacOS.cpp"
-				{
-					Compile.Disabled true
-					{
-						!PlatformFamily "macOS"
-					}
-				}
-				%File "../Memory/Source/Malterlib_Memory_SystemOverride_MacOSLowLevel.cpp"
 				{
 					Compile.Disabled true
 					{

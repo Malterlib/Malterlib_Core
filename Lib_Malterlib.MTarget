@@ -873,25 +873,6 @@ Property
 		PrefixHeader undefined
 	}
 	Include "Lib_MalterlibNoPrefix.MInclude"
-
-	%Dependency "Lib_Malterlib_Instrumentation"
-	{
-		&
-		{
-			|
-			{
-				&
-				{
-					MalterlibMemoryManager_EnableOverrideSystemMalloc true
-					MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
-				}
-			}
-			PlatformFamily "macOS"
-			!DocumentationEnabled true
-		}
-
-		Dependency.Indirect true
-	}
 }
 
 Property
@@ -1606,13 +1587,7 @@ Property
 
 Property
 {
-	MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem: bool = false // User(Undocumented)=true: Init early support. Currently breaks macOS 10.12
 	MalterlibMemoryManager_CheckOverrideMemoryLeaks: bool = false
-
-	MalterlibModules =+ "Instrumentation"
-	{
-		!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
-	}
 }
 
 %Target "Dll_MalterlibOverrideMalloc"
@@ -1668,10 +1643,6 @@ Property
 		StackGuard false
 		{
 			!!PlatformFamily "macOS"
-		}
-		PreprocessorDefines =+ "DMalterlibMemoryOverrideMacOSInitBeforeLibSystemSupport"
-		{
-			!!MalterlibMemoryManager_OverrideSystemMallocInitBeforeLibSystem true
 		}
 		PreprocessorDefines += `DMibConfig_Thread_DebugThreadLocals=@(MalterlibThread_DebugThreadLocals ? "1" : "0")`
 	}
