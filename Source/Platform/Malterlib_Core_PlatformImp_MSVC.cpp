@@ -3221,6 +3221,65 @@ NStr::CStr NSys::fg_System_GenerateUUID()
 }
 
 
+bool NSys::fg_Clipboard_Supported()
+{
+	return true;
+}
+
+bool NSys::fg_Clipboard_SetText(NStr::CStr const &_Text)
+{
+	NStr::CWStr Wide = _Text;
+
+	if (!OpenClipboard(nullptr))
+		return false;
+
+	bool bSuccess = false;
+
+	EmptyClipboard();
+
+	umint nBytes = (Wide.f_GetLen() + 1) * sizeof(ch16);
+	HGLOBAL GlobalMem = GlobalAlloc(GMEM_MOVEABLE, nBytes);
+	if (GlobalMem)
+	{
+		uint8 *pMem = (uint8 *)GlobalLock(GlobalMem);
+		fg_MemCopy(pMem, Wide.f_GetStr(), nBytes);
+		GlobalUnlock(GlobalMem);
+
+		if (SetClipboardData(CF_UNICODETEXT, GlobalMem))
+			bSuccess = true;
+		else
+			GlobalFree(GlobalMem);
+	}
+
+	CloseClipboard();
+
+	return bSuccess;
+}
+
+bool NSys::fg_Clipboard_GetText(NStr::CStr &o_Text)
+{
+	if (!OpenClipboard(nullptr))
+		return false;
+
+	bool bSuccess = false;
+
+	HANDLE Data = GetClipboardData(CF_UNICODETEXT);
+	if (Data)
+	{
+		ch16 const *pWide = (ch16 const *)GlobalLock(Data);
+		if (pWide)
+		{
+			o_Text = NStr::CStr(NStr::CWStr(pWide));
+			GlobalUnlock(Data);
+			bSuccess = true;
+		}
+	}
+
+	CloseClipboard();
+
+	return bSuccess;
+}
+
 uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
 {
 	return GetUserDefaultUILanguage();

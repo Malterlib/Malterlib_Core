@@ -273,6 +273,15 @@ namespace NMib
 
 
 		/*
+			System clipboard access for plain UTF-8 text. Platforms without a system clipboard
+			(currently Linux) report unsupported and fail the accessors.
+		*/
+
+		bool fg_Clipboard_Supported();
+		bool fg_Clipboard_SetText(NMib::NStr::CStr const &_Text);
+		bool fg_Clipboard_GetText(NMib::NStr::CStr &o_Text);
+
+		/*
 			Basic interface for storing secure passwords on a per-user, per-application basis.
 		*/
 
