@@ -2948,6 +2948,22 @@ namespace NMib
 		/*
 		 Basic interface for storing secure passwords on a per-user, per-application basis.
 		 */
+		// No system clipboard without a display server dependency
+		bool fg_Clipboard_Supported()
+		{
+			return false;
+		}
+
+		bool fg_Clipboard_SetText(CStr const &)
+		{
+			return false;
+		}
+
+		bool fg_Clipboard_GetText(CStr &)
+		{
+			return false;
+		}
+
 		bool fg_SecurePassword_IsLocked()
 		{
 			return fg_GetLocalSys()->f_GetPasswordManager()->f_SecurePassword_IsLocked();

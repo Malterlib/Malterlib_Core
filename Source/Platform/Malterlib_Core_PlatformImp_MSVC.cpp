@@ -652,7 +652,6 @@ NMib::NStr::CStrNonTracked NSys::fg_System_GetContractViolationMessage()
 }
 
 
-
 namespace
 {
 	template <typename tf_CWinStr, typename tf_UTF8Str, typename tf_CStr>
@@ -3221,6 +3220,85 @@ NStr::CStr NSys::fg_System_GenerateUUID()
 }
 
 
+bool NSys::fg_Clipboard_Supported()
+{
+	return true;
+}
+
+bool NSys::fg_Clipboard_SetText(NStr::CStr const &_Text)
+{
+	NStr::CWStr Wide = _Text;
+
+	// SetClipboardData needs an owner window. A message-only window suffices because text is transferred immediately.
+	NStr::CFStr256 ClassName = NStr::CFStr256::CFormat("MalterlibClipboardClass_PID_0x{nfh}") << (umint)GetCurrentProcessId();
+
+	WNDCLASSA WndClass;
+	memset(&WndClass, 0, sizeof(WndClass));
+	WndClass.lpszClassName = ClassName;
+	WndClass.lpfnWndProc = &DefWindowProcA;
+	WndClass.hInstance = g_hDllInstance;
+	if (!RegisterClassA(&WndClass) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
+		return false;
+
+	HWND hWnd = CreateWindowExA(0, ClassName, ClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, g_hDllInstance, nullptr);
+	if (!hWnd)
+		return false;
+
+	bool bSuccess = false;
+
+	if (OpenClipboard(hWnd))
+	{
+		EmptyClipboard();
+
+		umint nBytes = (Wide.f_GetLen() + 1) * sizeof(ch16);
+		HGLOBAL GlobalMem = GlobalAlloc(GMEM_MOVEABLE, nBytes);
+		if (GlobalMem)
+		{
+			if (uint8 *pMem = (uint8 *)GlobalLock(GlobalMem))
+			{
+				fg_MemCopy(pMem, Wide.f_GetStr(), nBytes);
+				GlobalUnlock(GlobalMem);
+
+				if (SetClipboardData(CF_UNICODETEXT, GlobalMem))
+					bSuccess = true;
+			}
+
+			if (!bSuccess)
+				GlobalFree(GlobalMem);
+		}
+
+		CloseClipboard();
+	}
+
+	DestroyWindow(hWnd);
+
+	return bSuccess;
+}
+
+bool NSys::fg_Clipboard_GetText(NStr::CStr &o_Text)
+{
+	if (!OpenClipboard(nullptr))
+		return false;
+
+	bool bSuccess = false;
+
+	HANDLE Data = GetClipboardData(CF_UNICODETEXT);
+	if (Data)
+	{
+		ch16 const *pWide = (ch16 const *)GlobalLock(Data);
+		if (pWide)
+		{
+			o_Text = NStr::CStr(NStr::CWStr(pWide));
+			GlobalUnlock(Data);
+			bSuccess = true;
+		}
+	}
+
+	CloseClipboard();
+
+	return bSuccess;
+}
+
 uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
 {
 	return GetUserDefaultUILanguage();
@@ -4969,8 +5047,6 @@ public:
 	//fs_GetExpandedPath
 
 
-
-
 HINSTANCE fg_Win32_GetInstance(const void *_pCode)
 {
 	MEMORY_BASIC_INFORMATION MemInfo;
@@ -4980,7 +5056,6 @@ HINSTANCE fg_Win32_GetInstance(const void *_pCode)
 	}
 	return nullptr;
 }
-
 
 
 void *NSys::NFile::fg_FindOpen(const CStr &_FindPattern)
@@ -6391,7 +6466,6 @@ uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 }
 
 
-
 #ifndef _DEBUG
 #	if (_MSC_VER >= 1300)
 // On vc7 we can att link time code generation
@@ -6426,7 +6500,6 @@ uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 //#pragma comment(linker, "/Stub:c:\\NOSTUB.EXE")
 
 //#pragma comment(linker, "/Stub:VC7Fix\\NOSTUB.EXE")
-
 
 
 #ifndef _DEBUG
@@ -6469,7 +6542,6 @@ void __cdecl fg_ValidDestroyModule()
 }
 
 bool g_bAllowInvalidExit = false;
-
 
 
 VOID WINAPI fg_HookExitProcess(__in  UINT _ExitCode)

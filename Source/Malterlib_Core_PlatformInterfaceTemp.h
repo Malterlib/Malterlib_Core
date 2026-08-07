@@ -272,6 +272,10 @@ namespace NMib
 		NSystem::CSystemCPUUsage fg_System_CPUUsageMonitor_GetUsage(void *_pHandle, bool &_bChanged);
 
 
+		bool fg_Clipboard_Supported();
+		bool fg_Clipboard_SetText(NMib::NStr::CStr const &_Text);
+		bool fg_Clipboard_GetText(NMib::NStr::CStr &o_Text);
+
 		/*
 			Basic interface for storing secure passwords on a per-user, per-application basis.
 		*/

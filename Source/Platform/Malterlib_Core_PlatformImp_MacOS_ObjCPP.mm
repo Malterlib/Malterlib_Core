@@ -50,6 +50,38 @@ namespace NMib
 			}
 		}
 
+		bool fg_Clipboard_Supported()
+		{
+			return true;
+		}
+
+		bool fg_Clipboard_SetText(CStr const &_Text)
+		{
+			CAutoReleasePool ARPool;
+
+			NSString *pString = [[NSString alloc] initWithBytes:_Text.f_GetStr() length:NSUInteger(_Text.f_GetLen()) encoding:NSUTF8StringEncoding];
+			if (!pString)
+				return false;
+
+			NSPasteboard *pPasteboard = NSPasteboard.generalPasteboard;
+			[pPasteboard clearContents];
+
+			return [pPasteboard setString:pString forType:NSPasteboardTypeString];
+		}
+
+		bool fg_Clipboard_GetText(CStr &o_Text)
+		{
+			CAutoReleasePool ARPool;
+
+			NSString *pString = [NSPasteboard.generalPasteboard stringForType:NSPasteboardTypeString];
+			if (!pString)
+				return false;
+
+			o_Text = CStr([pString UTF8String]);
+
+			return true;
+		}
+
 		CStr fg_MacOS_GetApplicationSupportDirectory()
 		{
 			if (fg_OverrideHome())
