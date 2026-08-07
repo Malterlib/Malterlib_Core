@@ -177,9 +177,6 @@ void CWindowsSocket::f_UpdateDelayedSend(const NTime::CTime &_Now)
 
 #endif
 
-// *************************************************************************************************************************
-// WindowsSocketContext Implementation
-// *************************************************************************************************************************
 
 CWindowsSocketContext::CWindowsSocketContext()
 {

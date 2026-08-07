@@ -1508,6 +1508,55 @@ namespace NMib
 			}
 		}
 
+		void CFileChangeNoticationContext::CNotification::f_ProcessChangesHints
+			(
+				umint _nEvents
+				, ch8 const **_pPaths
+				, FSEventStreamEventFlags const _Flags[]
+				, FSEventStreamEventId const _IDs[]
+			)
+		{
+			// No snapshot exists in path-hint mode; only root-change flags are reliable.
+			CFindChangesContext FindChangesContext;
+
+			for (umint i = 0; i < _nEvents; ++i)
+			{
+				CStr EventPath(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, i)));
+
+				if (EventPath.f_EndsWith("/"))
+					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
+
+				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, i);
+
+				// Events name the resolved or synthetic root; hints are relative to the root the user gave
+				if (EventPath == m_NotificationPath.m_ResolvedPath || EventPath == m_NotificationPath.m_SyntheticPath)
+					EventPath = m_NotificationPath.m_UserPath;
+				else if (EventPath.f_StartsWith(m_NotificationPathCompare.m_ResolvedPath))
+					EventPath = m_NotificationPathCompare.m_UserPath + EventPath.f_Extract(m_NotificationPathCompare.m_ResolvedPath.f_GetLen());
+				else if (EventPath.f_StartsWith(m_NotificationPathCompare.m_SyntheticPath))
+					EventPath = m_NotificationPathCompare.m_UserPath + EventPath.f_Extract(m_NotificationPathCompare.m_SyntheticPath.f_GetLen());
+
+				if ((Flags & kFSEventStreamEventFlagRootChanged) || EventPath == m_NotificationPath.m_UserPath)
+				{
+					f_AddNotification(FindChangesContext, EFileChangeNotification_Unknown, CStr());
+					continue;
+				}
+
+				if (!EventPath.f_StartsWith(m_NotificationPathCompare.m_UserPath))
+					continue; // Outside the watched root
+
+				f_AddNotification(FindChangesContext, EFileChangeNotification_Unknown, EventPath.f_Extract(m_NotificationPathCompare.m_UserPath.f_GetLen()));
+			}
+
+			if (!FindChangesContext.m_Changes.f_IsEmpty())
+			{
+				DMibLock(m_ChangesLock);
+				m_Changes.f_Insert(fg_Move(FindChangesContext.m_Changes));
+				if (m_pReportTo)
+					m_pReportTo->f_Signal();
+			}
+		}
+
 		void CFileChangeNoticationContext::CNotification::f_InitialScan()
 		{
 			ch8 const *Paths[1] = {m_NotificationPath.m_UserPath.f_GetStr()};
@@ -1544,7 +1593,9 @@ namespace NMib
 
 			CNotification *pNotification = (CNotification *)clientCallBackInfo;
 
-			if (pNotification->m_bPerFileEvents)
+			if (pNotification->m_bPathHintsOnly)
+				pNotification->f_ProcessChangesHints(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs);
+			else if (pNotification->m_bPerFileEvents)
 				pNotification->f_ProcessChangesPerFile(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs);
 			else
 				pNotification->f_ProcessChanges(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs, false);
@@ -1753,6 +1804,9 @@ namespace NMib
 			// This doesn't work because all events are accumelated, so if one file get's a flag set, that flag will be set forever in subsequent events
 			pNotification->m_bPerFileEvents = false; //= CSystem::ms_PlatformVersion >= 10'07'00;
 
+			// Path hints never trust flags, so accumulated flags are harmless there
+			pNotification->m_bPathHintsOnly = (_OpenFlags & NFile::EFileChange_PathHintsOnly) != 0;
+
 			FSEventStreamRef pStream;
 
 			/* Create the stream, passing in a callback */
@@ -1784,7 +1838,7 @@ namespace NMib
 			pNotification->m_pReportTo = _pReportTo;
 
 			// Scan full dir in this call so we don't miss any notifications
-			if (!pNotification->m_bPerFileEvents)
+			if (!pNotification->m_bPerFileEvents && !pNotification->m_bPathHintsOnly)
 				pNotification->f_InitialScan();
 
 			NThread::CEvent SetupDone;
@@ -1802,7 +1856,7 @@ namespace NMib
 						FSEventStreamStart(pNotification->m_pEventStream);
 						pNotification->m_bStreamStarted = true;
 						// Scan full dir and note any changes that have happened since f_Open was called, the rest will be handled by the notifications from the OS
-						if (!pNotification->m_bPerFileEvents)
+						if (!pNotification->m_bPerFileEvents && !pNotification->m_bPathHintsOnly)
 							pNotification->f_FullRescan();
 						SetupDone.f_SetSignaled();
 					}

@@ -190,7 +190,6 @@ public:
 		CPOSIXSocket *f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 
 		void f_StartSocket(CPOSIXSocket *_pSocket);
-
 		bool f_Close(CPOSIXSocket* _pSocket);
 		void f_Shutdown(CPOSIXSocket* _pSocket);
 

@@ -185,6 +185,14 @@ namespace NMib
 						, FSEventStreamEventId const _IDs[]
 					)
 				;
+				void f_ProcessChangesHints
+					(
+						umint _nEvents
+						, ch8 const **_pPaths
+						, FSEventStreamEventFlags const _Flags[]
+						, FSEventStreamEventId const _IDs[]
+					)
+				;
 
 				DMibListLinkDS_Link(CNotification, m_Link);
 
@@ -205,6 +213,7 @@ namespace NMib
 				bool m_bAddedToRunLoop = false;
 				bool m_bStreamStarted = false;
 				bool m_bPerFileEvents = false;
+				bool m_bPathHintsOnly = false;
 			};
 			using CNotificationIter = DMibListLinkDS_Iter(CNotification, m_Link);
 

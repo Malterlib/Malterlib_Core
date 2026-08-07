@@ -279,6 +279,7 @@ namespace NMib
 			, EFileChange_Write			= DMibBit(5)
 			, EFileChange_Security		= DMibBit(6)
 			, EFileChange_All = DMibBitRange(0, 6)
+			, EFileChange_PathHintsOnly	= DMibBit(7) // Permits Unknown path hints without snapshots; consumers must re-inspect paths. Backend support varies.
 		};
 
 		enum EFileChangeNotification
