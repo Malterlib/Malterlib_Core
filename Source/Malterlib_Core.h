@@ -279,6 +279,12 @@ namespace NMib
 			, EFileChange_Write			= DMibBit(5)
 			, EFileChange_Security		= DMibBit(6)
 			, EFileChange_All = DMibBitRange(0, 6)
+
+			// Recursive watches only report changed paths as EFileChangeNotification_Unknown
+			// without tracking a file snapshot, so registration is instant and memory stays
+			// constant no matter how large the tree is. Consumers re-inspect the reported paths
+			// themselves. Platforms with per file notifications may still report precise types.
+			, EFileChange_PathHintsOnly	= DMibBit(7)
 		};
 
 		enum EFileChangeNotification

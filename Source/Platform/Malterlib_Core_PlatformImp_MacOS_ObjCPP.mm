@@ -1508,6 +1508,54 @@ namespace NMib
 			}
 		}
 
+		void CFileChangeNoticationContext::CNotification::f_ProcessChangesHints
+			(
+				umint _nEvents
+				, ch8 const **_pPaths
+				, FSEventStreamEventFlags const _Flags[]
+				, FSEventStreamEventId const _IDs[]
+			)
+		{
+			// Path hints only: no snapshot exists, so every reported path forwards as an unknown
+			// change for the consumer to re-inspect. Only the root-changed flag is consulted; the
+			// accumulated per-file flags are not
+			CFindChangesContext FindChangesContext;
+
+			for (umint i = 0; i < _nEvents; ++i)
+			{
+				CStr EventPath(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, i)));
+
+				if (EventPath.f_EndsWith("/"))
+					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
+
+				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, i);
+
+				if ((Flags & kFSEventStreamEventFlagRootChanged) || EventPath == m_NotificationPath.m_UserPath || EventPath == m_NotificationPath.m_ResolvedPath)
+				{
+					f_AddNotification(FindChangesContext, EFileChangeNotification_Unknown, CStr());
+					continue;
+				}
+
+				CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(EventPath, m_NotificationPath.m_UserPath);
+
+				if (RelativePath == EventPath)
+					RelativePath = NMib::NFile::CFile::fs_MakePathRelative(EventPath, m_NotificationPath.m_ResolvedPath);
+
+				if (RelativePath == EventPath)
+					continue; // Outside the watched root
+
+				f_AddNotification(FindChangesContext, EFileChangeNotification_Unknown, RelativePath);
+			}
+
+			if (!FindChangesContext.m_Changes.f_IsEmpty())
+			{
+				DMibLock(m_ChangesLock);
+				m_Changes.f_Insert(fg_Move(FindChangesContext.m_Changes));
+				if (m_pReportTo)
+					m_pReportTo->f_Signal();
+			}
+		}
+
 		void CFileChangeNoticationContext::CNotification::f_InitialScan()
 		{
 			ch8 const *Paths[1] = {m_NotificationPath.m_UserPath.f_GetStr()};
@@ -1544,7 +1592,9 @@ namespace NMib
 
 			CNotification *pNotification = (CNotification *)clientCallBackInfo;
 
-			if (pNotification->m_bPerFileEvents)
+			if (pNotification->m_bPathHintsOnly)
+				pNotification->f_ProcessChangesHints(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs);
+			else if (pNotification->m_bPerFileEvents)
 				pNotification->f_ProcessChangesPerFile(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs);
 			else
 				pNotification->f_ProcessChanges(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs, false);
@@ -1753,6 +1803,9 @@ namespace NMib
 			// This doesn't work because all events are accumelated, so if one file get's a flag set, that flag will be set forever in subsequent events
 			pNotification->m_bPerFileEvents = false; //= CSystem::ms_PlatformVersion >= 10'07'00;
 
+			// Path hints never trust flags, so accumulated flags are harmless there
+			pNotification->m_bPathHintsOnly = (_OpenFlags & NFile::EFileChange_PathHintsOnly) != 0;
+
 			FSEventStreamRef pStream;
 
 			/* Create the stream, passing in a callback */
@@ -1784,7 +1837,7 @@ namespace NMib
 			pNotification->m_pReportTo = _pReportTo;
 
 			// Scan full dir in this call so we don't miss any notifications
-			if (!pNotification->m_bPerFileEvents)
+			if (!pNotification->m_bPerFileEvents && !pNotification->m_bPathHintsOnly)
 				pNotification->f_InitialScan();
 
 			NThread::CEvent SetupDone;
@@ -1802,7 +1855,7 @@ namespace NMib
 						FSEventStreamStart(pNotification->m_pEventStream);
 						pNotification->m_bStreamStarted = true;
 						// Scan full dir and note any changes that have happened since f_Open was called, the rest will be handled by the notifications from the OS
-						if (!pNotification->m_bPerFileEvents)
+						if (!pNotification->m_bPerFileEvents && !pNotification->m_bPathHintsOnly)
 							pNotification->f_FullRescan();
 						SetupDone.f_SetSignaled();
 					}
