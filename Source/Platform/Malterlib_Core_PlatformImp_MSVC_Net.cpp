@@ -1477,6 +1477,45 @@ umint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData
 	return Ret;
 }
 
+// The ioctl ships in afunix.h in recent Windows SDKs; define it for older SDK headers
+#ifndef SIO_AF_UNIX_GETPEERPID
+	#define SIO_AF_UNIX_GETPEERPID _WSAIOR(IOC_VENDOR, 256)
+#endif
+
+bool CWindowsSocketContext::f_GetProcessIdentity(CWindowsSocket *_pSocket, NMib::NSys::NNetwork::CProcessIdentity &o_LocalIdentity, NMib::NSys::NNetwork::CProcessIdentity &o_PeerIdentity)
+{
+	o_LocalIdentity = {};
+	o_PeerIdentity = {};
+
+	// Only a connected unix domain socket carries a kernel-authenticated peer process id
+	sockaddr_storage PeerAddr;
+	int nAddrBytes = sizeof(PeerAddr);
+
+	if (getpeername((SOCKET)_pSocket->m_pSocket, (struct sockaddr *)&PeerAddr, &nAddrBytes) != 0)
+		return false;
+
+	if (PeerAddr.ss_family != AF_UNIX)
+		return false;
+
+	// SIO_AF_UNIX_GETPEERPID reports the pid captured by the kernel when the peer connected. A
+	// Windows build too old to support the ioctl fails here, and the authenticated unix
+	// handshake fails closed with it. Success is judged by the call result and a nonzero pid
+	// only: some supported builds (Windows 10 1903) fill in the pid but leave the returned
+	// byte count at zero
+	ULONG PeerPid = 0;
+	DWORD nBytesReturned = 0;
+	if (WSAIoctl((SOCKET)_pSocket->m_pSocket, SIO_AF_UNIX_GETPEERPID, nullptr, 0, &PeerPid, sizeof(PeerPid), &nBytesReturned, nullptr, nullptr) != 0)
+		return false;
+
+	if (!PeerPid)
+		return false;
+
+	o_LocalIdentity.m_ProcessID = GetCurrentProcessId();
+	o_PeerIdentity.m_ProcessID = PeerPid;
+
+	return true;
+}
+
 umint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAddress const&_Address, const void *_pData, umint _DataLen)
 {
 	int Ret = sendto((SOCKET)_pSocket->m_pSocket, (const char *)_pData, _DataLen, 0, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
