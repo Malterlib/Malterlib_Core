@@ -6450,6 +6450,20 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_GetPeerAddress(void *_pSocket)
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_GetPeerAddress((CWindowsSocket*)_pSocket);
 }
 
+bool NSys::NNetwork::fg_GetProcessIdentity(void *_pSocket, CProcessIdentity &o_LocalIdentity, CProcessIdentity &o_PeerIdentity)
+{
+	return fg_GetLocalSys()->m_SocketContext->f_GetProcessIdentity((CWindowsSocket*)_pSocket, o_LocalIdentity, o_PeerIdentity);
+}
+
+bool NSys::NNetwork::fg_HasUnixSocketPeerProcessIdentity()
+{
+	// SIO_AF_UNIX_GETPEERPID requires the Windows 10 1809 kernel (10.0.17763): AF_UNIX itself
+	// shipped in 1803 (17134) but its afunix.sys lacks the ioctl, which first appears in
+	// 17763's afunix.sys. Older kernels are reported unsupported up front and callers use TLS
+	auto &Version = NLocal::g_VersionInfo;
+	return Version.dwMajorVersion > 10 || (Version.dwMajorVersion == 10 && Version.dwBuildNumber >= 17763);
+}
+
 uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetListenPort((CWindowsSocket*)_pSocket);
