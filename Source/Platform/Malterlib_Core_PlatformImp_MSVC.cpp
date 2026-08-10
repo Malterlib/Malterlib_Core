@@ -6460,6 +6460,18 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_GetPeerAddress(void *_pSocket)
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_GetPeerAddress((CWindowsSocket*)_pSocket);
 }
 
+bool NSys::NNetwork::fg_GetProcessIdentity(void *_pSocket, CProcessIdentity &o_LocalIdentity, CProcessIdentity &o_PeerIdentity)
+{
+	return fg_GetLocalSys()->m_SocketContext->f_GetProcessIdentity((CWindowsSocket*)_pSocket, o_LocalIdentity, o_PeerIdentity);
+}
+
+bool NSys::NNetwork::fg_HasUnixSocketPeerProcessIdentity()
+{
+	// SIO_AF_UNIX_GETPEERPID requires Windows 10 1809 (build 17763), later than AF_UNIX itself.
+	auto &Version = NLocal::g_VersionInfo;
+	return Version.dwMajorVersion > 10 || (Version.dwMajorVersion == 10 && Version.dwBuildNumber >= 17763);
+}
+
 uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetListenPort((CWindowsSocket*)_pSocket);

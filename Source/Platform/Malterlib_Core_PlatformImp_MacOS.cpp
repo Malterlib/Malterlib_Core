@@ -3236,6 +3236,16 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_GetPeerAddress(void *_pSocket)
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_GetPeerAddress((CPOSIXSocket*)_pSocket);
 }
 
+bool NSys::NNetwork::fg_GetProcessIdentity(void *_pSocket, CProcessIdentity &o_LocalIdentity, CProcessIdentity &o_PeerIdentity)
+{
+	return fg_GetLocalSys()->m_SocketContext->f_GetProcessIdentity((CPOSIXSocket*)_pSocket, o_LocalIdentity, o_PeerIdentity);
+}
+
+bool NSys::NNetwork::fg_HasUnixSocketPeerProcessIdentity()
+{
+	return true;
+}
+
 uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetListenPort((CPOSIXSocket*)_pSocket);

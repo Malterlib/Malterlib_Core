@@ -6,6 +6,104 @@
 
 #include <netinet/tcp.h>
 
+#if defined(DPlatformFamily_Linux)
+	#include <sys/stat.h>
+	#include <sys/vfs.h>
+	#include <sys/syscall.h>
+	#include <fcntl.h>
+	#include <unistd.h>
+	#include <errno.h>
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <string.h>
+
+	// Build headers may predate SO_PEERPIDFD (Linux 6.5) and pidfs (6.9); supply absent constants.
+	#ifndef SO_PEERPIDFD
+		#define SO_PEERPIDFD 77
+	#endif
+	#ifndef PID_FS_MAGIC
+		#define PID_FS_MAGIC 0x50494446
+	#endif
+	#ifndef SYS_pidfd_open
+		#define SYS_pidfd_open 434
+	#endif
+
+namespace
+{
+	// Returns false without pidfs: older pidfds share an anonymous inode and cannot identify a process.
+	bool fg_GetPidFSIdentity(int _PidFD, uint64 &o_Device, uint64 &o_Inode)
+	{
+		struct statfs FSInfo;
+		if (fstatfs(_PidFD, &FSInfo) != 0)
+			return false;
+
+		if (FSInfo.f_type != PID_FS_MAGIC)
+			return false;
+
+		struct stat PidStat;
+		if (fstat(_PidFD, &PidStat) != 0)
+			return false;
+
+		o_Device = uint64(PidStat.st_dev);
+		o_Inode = uint64(PidStat.st_ino);
+
+		return true;
+	}
+
+	// Read through the pinned pidfd to avoid PID reuse. Requires /proc for this PID namespace.
+	// Pid <= 0 means reaped or invisible; multiple NSpid entries mean a descendant namespace.
+	bool fg_GetPeerSameNamespacePid(int _PidFD, pid_t &o_PeerPID)
+	{
+		char pPath[64];
+		snprintf(pPath, sizeof(pPath), "/proc/self/fdinfo/%d", _PidFD);
+
+		int FDInfoFD = open(pPath, O_RDONLY | O_CLOEXEC);
+		if (FDInfoFD < 0)
+			return false;
+
+		auto CleanupFDInfoFD = g_OnScopeExit / [&]
+			{
+				close(FDInfoFD);
+			}
+		;
+
+		char pBuffer[4096];
+		auto nBytes = read(FDInfoFD, pBuffer, sizeof(pBuffer) - 1);
+		if (nBytes <= 0)
+			return false;
+
+		pBuffer[nBytes] = 0;
+
+		char const *pPid = strstr(pBuffer, "\nPid:");
+		if (!pPid)
+			return false;
+
+		long PeerPID = strtol(pPid + 5, nullptr, 10);
+		if (PeerPID <= 0)
+			return false;
+
+		// An absent NSpid line means the kernel is built without pid namespaces, so same-namespace
+		// holds trivially
+		if (char const *pNSPid = strstr(pBuffer, "\nNSpid:"))
+		{
+			char *pEnd = nullptr;
+			long FirstNSPid = strtol(pNSPid + 7, &pEnd, 10);
+			if (FirstNSPid != PeerPID)
+				return false;
+
+			while (pEnd && (*pEnd == ' ' || *pEnd == '\t'))
+				++pEnd;
+			if (pEnd && *pEnd >= '0' && *pEnd <= '9')
+				return false;
+		}
+
+		o_PeerPID = pid_t(PeerPID);
+
+		return true;
+	}
+}
+#endif
+
 CPOSIXSocketContext::CPOSIXSocketContext()
 {
 	mp_PollerThread.f_Start(EExecutionPriority_Highest);
@@ -1012,6 +1110,13 @@ bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
 		}
 	}
 
+#if defined(DPlatformFamily_Linux)
+	if (_pSocket->m_LocalPidFD != -1)
+		close(_pSocket->m_LocalPidFD);
+	if (_pSocket->m_PeerPidFD != -1)
+		close(_pSocket->m_PeerPidFD);
+#endif
+
 	fg_DeleteObject(NMemory::CDefaultAllocator(), _pSocket);
 
 	return true;
@@ -1223,6 +1328,117 @@ CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 	{
 		return nullptr;
 	}
+}
+
+bool CPOSIXSocketContext::f_GetProcessIdentity(CPOSIXSocket *_pSocket, NMib::NSys::NNetwork::CProcessIdentity &o_LocalIdentity, NMib::NSys::NNetwork::CProcessIdentity &o_PeerIdentity)
+{
+	o_LocalIdentity = {};
+	o_PeerIdentity = {};
+
+	sockaddr_storage PeerAddr;
+	socklen_t nAddrBytes = sizeof(PeerAddr);
+
+	if (getpeername(_pSocket->m_FD, (struct sockaddr *)&PeerAddr, &nAddrBytes) != 0)
+		return false;
+
+	if (PeerAddr.ss_family != AF_UNIX)
+		return false;
+
+	pid_t LocalPID = getpid();
+	pid_t PeerPID = 0;
+
+#if defined(DPlatformFamily_Linux)
+	// SO_PEERCRED identifies the process that called listen/connect. A transferred listener therefore cannot
+	// authenticate as its accepting process; such topologies require TLS.
+	struct ucred Credentials;
+	socklen_t nCredentialBytes = sizeof(Credentials);
+
+	if (getsockopt(_pSocket->m_FD, SOL_SOCKET, SO_PEERCRED, &Credentials, &nCredentialBytes) != 0)
+		return false;
+
+	if (nCredentialBytes != sizeof(Credentials))
+		return false;
+
+	PeerPID = Credentials.pid;
+#else
+	pid_t PeerPIDValue = 0;
+	socklen_t nPeerPIDBytes = sizeof(PeerPIDValue);
+
+	if (getsockopt(_pSocket->m_FD, SOL_LOCAL, LOCAL_PEERPID, &PeerPIDValue, &nPeerPIDBytes) != 0)
+		return false;
+
+	if (nPeerPIDBytes != sizeof(PeerPIDValue))
+		return false;
+
+	PeerPID = PeerPIDValue;
+#endif
+
+	if (LocalPID <= 0)
+		return false;
+
+#if defined(DPlatformFamily_Linux)
+	// pidfs identifies the pinned process across namespaces and PID reuse. Older pidfds require a same-namespace PID.
+	// Without SO_PEERPIDFD, numeric identity retains a namespace ambiguity; failure after capability detection must not downgrade.
+	int PeerPidFD = -1;
+	socklen_t nPeerPidFDBytes = sizeof(PeerPidFD);
+	if (getsockopt(_pSocket->m_FD, SOL_SOCKET, SO_PEERPIDFD, &PeerPidFD, &nPeerPidFDBytes) != 0)
+	{
+		if (errno != ENOPROTOOPT)
+			return false;
+
+		if (PeerPID <= 0)
+			return false;
+	}
+	else
+	{
+		if (PeerPidFD < 0)
+			return false;
+
+		// Keep both pidfds until close: 32-bit kernels can recycle pidfs inodes after their last reference closes.
+		if (_pSocket->m_PeerPidFD != -1)
+			close(_pSocket->m_PeerPidFD);
+		_pSocket->m_PeerPidFD = PeerPidFD;
+
+		uint64 PeerDevice = 0;
+		uint64 PeerInode = 0;
+		if (fg_GetPidFSIdentity(PeerPidFD, PeerDevice, PeerInode))
+		{
+			int LocalPidFD = int(syscall(SYS_pidfd_open, LocalPID, 0));
+			if (LocalPidFD < 0)
+				return false;
+
+			if (_pSocket->m_LocalPidFD != -1)
+				close(_pSocket->m_LocalPidFD);
+			_pSocket->m_LocalPidFD = LocalPidFD;
+
+			uint64 LocalDevice = 0;
+			uint64 LocalInode = 0;
+			if (!fg_GetPidFSIdentity(LocalPidFD, LocalDevice, LocalInode))
+				return false;
+
+			o_LocalIdentity.m_PidFSDevice = LocalDevice;
+			o_LocalIdentity.m_PidFSInode = LocalInode;
+			o_PeerIdentity.m_PidFSDevice = PeerDevice;
+			o_PeerIdentity.m_PidFSInode = PeerInode;
+		}
+		else
+		{
+			pid_t FDInfoPeerPID = 0;
+			if (!fg_GetPeerSameNamespacePid(PeerPidFD, FDInfoPeerPID))
+				return false;
+
+			PeerPID = FDInfoPeerPID;
+		}
+	}
+#else
+	if (PeerPID <= 0)
+		return false;
+#endif
+
+	o_LocalIdentity.m_ProcessID = uint64(LocalPID);
+	o_PeerIdentity.m_ProcessID = PeerPID > 0 ? uint64(PeerPID) : 0;
+
+	return true;
 }
 
 uint32 CPOSIXSocketContext::f_GetListenPort(CPOSIXSocket *_pSocket)

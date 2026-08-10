@@ -43,6 +43,11 @@ struct CPOSIXSocket
 	NStr::CStr m_UnixFilePath;
 	NStr::CStr m_PeerUnixFilePath;
 
+#if defined(DPlatformFamily_Linux)
+	int m_LocalPidFD = -1; // Pin process identities until close; 32-bit kernels may recycle pidfs inodes after the last pidfd closes.
+	int m_PeerPidFD = -1;
+#endif
+
 	// This is stull that will be changed or use by the poller etc...
 	NMib::NThread::CMutual m_Lock;
 	bool m_bInitialWriteNotification;
@@ -211,6 +216,7 @@ public:
 		void *f_GetOSSocket(CPOSIXSocket *_pSocket);
 
 		CPOSIXAddress* f_GetPeerAddress(CPOSIXSocket *_pSocket);
+		bool f_GetProcessIdentity(CPOSIXSocket *_pSocket, NMib::NSys::NNetwork::CProcessIdentity &o_LocalIdentity, NMib::NSys::NNetwork::CProcessIdentity &o_PeerIdentity);
 		uint32 f_GetListenPort(CPOSIXSocket *_pSocket);
 
 private:
