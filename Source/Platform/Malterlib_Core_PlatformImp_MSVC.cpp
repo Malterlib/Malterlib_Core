@@ -3161,8 +3161,10 @@ void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes)
 {
 	HCRYPTPROV hProvider = 0;
 
+	// Entropy failure is not recoverable and callers treat this as noexcept, matching the POSIX
+	// implementations which assert rather than throw
 	if (!CryptAcquireContextW(&hProvider, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-		DMibError((CFStr256::CFormat("Windows returned an error from CryptAcquireContextW: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError())).f_GetStr());
+		DMibPDebugBreak;
 
 	auto Cleanup = fg_OnScopeExit
 		(
@@ -3173,7 +3175,7 @@ void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes)
 		)
 	;
 	if (!CryptGenRandom(hProvider, _nBytes, _pData))
-		DMibError((CFStr256::CFormat("Windows returned an error from CryptGenRandom: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError())).f_GetStr());
+		DMibPDebugBreak;
 }
 
 
