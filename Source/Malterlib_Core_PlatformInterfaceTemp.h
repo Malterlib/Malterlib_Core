@@ -84,6 +84,15 @@ namespace NMib
 
 	namespace NSys
 	{
+		// One entry of a vectored operation: the spans of a transfer are handed to the kernel in one
+		// operation where the platform supports it. Layout compatible with the platform iovec so span
+		// arrays pass through without conversion
+		struct CIoSpan
+		{
+			void const *m_pData;
+			umint m_nBytes;
+		};
+
 		void fg_FreeLibrary(void *_pModule);
 		void* fg_LoadLibrary(NMib::NStr::CStr const& _Library);
 		void* fg_LoadLibrary(NMib::NStr::CStrNonTracked const& _Library);

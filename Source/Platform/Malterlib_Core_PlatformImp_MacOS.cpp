@@ -3189,6 +3189,11 @@ umint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, umint _DataLen
 	return fg_GetLocalSys()->m_SocketContext->f_Send((CPOSIXSocket*)_pSocket, _pData, _DataLen);
 }
 
+umint NSys::NNetwork::fg_SendVectored(void *_pSocket, NSys::CIoSpan const *_pSpans, umint _nSpans)
+{
+	return fg_GetLocalSys()->m_SocketContext->f_SendVectored((CPOSIXSocket*)_pSocket, _pSpans, _nSpans);
+}
+
 umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket*)_pSocket, *((CPOSIXAddress*)_Address), _pData, _DataLen);
