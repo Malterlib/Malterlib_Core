@@ -84,6 +84,13 @@ namespace NMib
 
 	namespace NSys
 	{
+		// Layout matches the platform iovec so span arrays can pass through without conversion.
+		struct CIoSpan
+		{
+			void const *m_pData;
+			umint m_nBytes;
+		};
+
 		void fg_FreeLibrary(void *_pModule);
 		void* fg_LoadLibrary(NMib::NStr::CStr const& _Library);
 		void* fg_LoadLibrary(NMib::NStr::CStrNonTracked const& _Library);
