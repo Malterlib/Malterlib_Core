@@ -293,6 +293,7 @@ namespace NMib
 #include <Mib/Stream/Streams/LinkedList>
 
 #include <Mib/Stream/Streams/Vector>
+#include <Mib/Stream/Streams/BinaryStorage>
 
 #include <Mib/Log/Log>
 
