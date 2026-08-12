@@ -1477,6 +1477,73 @@ umint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData
 	return Ret;
 }
 
+umint CWindowsSocketContext::f_SendVectored(CWindowsSocket *_pSocket, NMib::NSys::CIoSpan const *_pSpans, umint _nSpans)
+{
+#ifdef DTCPDelayEmulation
+	if (bDTCPDelayEmulation)
+	{
+		// Delay emulation queues per send call, so vectored sends keep the per span loop
+		umint nTotalBytes = 0;
+		for (umint iSpan = 0; iSpan < _nSpans; ++iSpan)
+		{
+			if (!_pSpans[iSpan].m_nBytes)
+				continue;
+
+			umint nBytes = f_Send(_pSocket, _pSpans[iSpan].m_pData, _pSpans[iSpan].m_nBytes);
+			nTotalBytes += nBytes;
+
+			if (nBytes != _pSpans[iSpan].m_nBytes)
+				break;
+		}
+
+		return nTotalBytes;
+	}
+#endif
+
+	constexpr umint c_MaxVectors = 64;
+	WSABUF Buffers[c_MaxVectors];
+	umint nBuffers = 0;
+	for (umint iSpan = 0; iSpan < _nSpans && nBuffers < c_MaxVectors; ++iSpan)
+	{
+		if (!_pSpans[iSpan].m_nBytes)
+			continue;
+
+		// WSABUF lengths are 32-bit: an oversized span is sent as a clamped prefix and ends
+		// the gather, since buffers after a partial span would go out on the wire out of order.
+		// The caller's partial-send handling resumes with the remainder
+		umint nSpanBytes = _pSpans[iSpan].m_nBytes;
+		bool bClamped = nSpanBytes > umint(TCLimitsInt<ULONG>::mc_Max);
+		if (bClamped)
+			nSpanBytes = umint(TCLimitsInt<ULONG>::mc_Max);
+
+		Buffers[nBuffers].buf = (CHAR *)_pSpans[iSpan].m_pData;
+		Buffers[nBuffers].len = (ULONG)nSpanBytes;
+		++nBuffers;
+
+		if (bClamped)
+			break;
+	}
+
+	if (!nBuffers)
+		return 0;
+
+	DWORD nBytesSent = 0;
+	int Ret = WSASend((SOCKET)_pSocket->m_pSocket, Buffers, (DWORD)nBuffers, &nBytesSent, 0, nullptr, nullptr);
+
+	if (Ret == SOCKET_ERROR)
+	{
+		int Error = WSAGetLastError();
+		if (Error != WSAEWOULDBLOCK)
+		{
+			DMibErrorNet((CStr::CFormat("Could not send on socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
+		else
+			return 0;
+	}
+
+	return nBytesSent;
+}
+
 // The ioctl ships in afunix.h in recent Windows SDKs; define it for older SDK headers
 #ifndef SIO_AF_UNIX_GETPEERPID
 	#define SIO_AF_UNIX_GETPEERPID _WSAIOR(IOC_VENDOR, 256)

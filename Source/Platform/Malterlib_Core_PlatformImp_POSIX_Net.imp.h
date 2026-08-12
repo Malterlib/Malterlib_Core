@@ -5,6 +5,7 @@
 #include <Mib/Process/Platform>
 
 #include <netinet/tcp.h>
+#include <sys/uio.h>
 
 #if defined(DPlatformFamily_Linux)
 	#include <sys/stat.h>
@@ -1188,6 +1189,49 @@ umint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, um
 		else
 		{
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("send (send to socket)", errno));
+		}
+	}
+
+	return Result;
+}
+
+umint CPOSIXSocketContext::f_SendVectored(CPOSIXSocket *_pSocket, NMib::NSys::CIoSpan const *_pSpans, umint _nSpans)
+{
+	constexpr umint c_MaxVectors = 64;
+	iovec IoVectors[c_MaxVectors];
+	umint nVectors = 0;
+	for (umint iSpan = 0; iSpan < _nSpans && nVectors < c_MaxVectors; ++iSpan)
+	{
+		if (!_pSpans[iSpan].m_nBytes)
+			continue;
+
+		IoVectors[nVectors].iov_base = (void *)_pSpans[iSpan].m_pData;
+		IoVectors[nVectors].iov_len = _pSpans[iSpan].m_nBytes;
+		++nVectors;
+	}
+
+	if (!nVectors)
+		return 0;
+
+	msghdr Header = {};
+	Header.msg_iov = IoVectors;
+	Header.msg_iovlen = (decltype(Header.msg_iovlen))nVectors;
+
+	int Flags = 0;
+#ifdef DPlatformFamily_Linux
+	Flags |= MSG_NOSIGNAL;
+#endif
+	auto Result = sendmsg(_pSocket->m_FD, &Header, Flags);
+
+	if (Result == -1)
+	{
+		if (errno == EAGAIN)
+		{
+			Result = 0;
+		}
+		else
+		{
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("sendmsg (send to socket)", errno));
 		}
 	}
 
