@@ -102,6 +102,7 @@ Property
 	MalterlibSignTimestampServerRFC3161: string = "" // User(Signing): RFC 3161 Timestamp server to use when signing windows executables. This will override any setting in MalterlibSignTimestampServer
 	MalterlibSignCertWindows: string = "Unknown Company" // User(Signing)="Name of cert": Set this to your local certificate for driver development
 	MalterlibSignCertMacOS: string = "-" // User(Signing)=SHA1OfCert: Set this to your Developer ID cert for driver development
+	MalterlibWindowsSignMethod: string = "SignTool" // User(Signing)="SignTool" or "smctl": Tool used to sign Windows executables, "SignTool"=signtool.exe, "smctl"=DigiCert Software Trust Manager CLI
 
 	MalterlibNotarizeMacOSProfile: string? // User(Signing)="ProfileName": Set this to keychain profile used for notarization. Previously stored with xcrun notarytool store-credentials --apple-id "email" --team-id "team"
 

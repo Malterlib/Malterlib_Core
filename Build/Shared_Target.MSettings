@@ -4725,6 +4725,19 @@ Property
 		!!Win32SignTool undefined
 	}
 
+	SmctlSignTool: string
+	SmctlSignTool `@(MalterlibBuildServerCommandPrefix)MTool BuildServerTool Tool=smctl`
+	{
+		!!MalterlibBuildServerBuild true
+	}
+
+	SmctlSignTool "smctl"
+	{
+		!MalterlibBuildServerBuild true
+	}
+
+	MalterlibSmctlKeypairAlias: string = "MalterlibSmctlKeypairAliasNotSet" // User(Signing): --keypair-alias value passed to smctl when signing Windows executables. Never leave this empty - it's passed to MTool BuildServerTool as a bare positional argument, and MTool's argument parser treats the first empty argument as the end of the argument list, silently truncating everything after it (--input, --simple, etc.)
+
 	Win32SignToolTimestampServerOptions: string
 	Win32SignToolTimestampServerOptions `/td SHA256 /tr @(MalterlibSignTimestampServerRFC3161)`
 	{
@@ -4741,6 +4754,11 @@ Property
 	MalterlibWindowsSignCommandLine `@(Win32SignTool) sign /fd SHA256 /n @(MalterlibSignCertWindows->Escape()) @(Win32SignToolTimestampServerOptions) @(MalterlibFinalModuleDestination->WindowsPath()->Escape())`
 	{
 		!!MalterlibSignIncludeCert "none"
+	}
+
+	MalterlibWindowsSignCommandLine `@(SmctlSignTool) sign --keypair-alias @(MalterlibSmctlKeypairAlias->Escape()) --input @(MalterlibFinalModuleDestination->Escape()) --simple --sigalg SHA256 --digalg SHA256 --verbose`
+	{
+		!!MalterlibWindowsSignMethod "smctl"
 	}
 
 	MalterlibSignMacOSDeep: bool = true
