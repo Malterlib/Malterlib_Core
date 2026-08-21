@@ -104,6 +104,17 @@ namespace NLocal
 
 	int	 (*__real___isoc99_vsscanf)(const char * __restrict __str, const char * __restrict __format, va_list) = nullptr;
 
+	// glibc exports these libthread_db descriptors (the private struct pthread thread-local layout) in its dynamic
+	// symbol table only from glibc 2.34 onwards (the release that merged libpthread into libc; Ubuntu 21.10+, first
+	// LTS 22.04) — before 2.34 they were local symbols in libpthread.so. We resolve them dynamically against the
+	// system glibc so a build against an older SDK glibc still links; they stay null on systems whose glibc does not
+	// export them, in which case the cross-thread thread-local path reports an unsupported-layout error.
+	uint32 const *g_p_thread_db_pthread_specific = nullptr;
+	uint32 const *g_p_thread_db_pthread_key_data_data = nullptr;
+	uint32 const *g_p_thread_db_pthread_key_data_seq = nullptr;
+	uint32 const *g_p_thread_db_pthread_key_data_level2_data = nullptr;
+	uint32 const *g_p_thread_db_sizeof_pthread_key_data = nullptr;
+
 	namespace
 	{
 		bool g_bSymbolsGotten = false;
@@ -127,6 +138,12 @@ namespace NLocal
 		(void * &)g_f_utimensat = dlsym(RTLD_DEFAULT, "utimensat");
 		(void * &)g_f_futimens = dlsym(RTLD_DEFAULT, "futimens");
 		(void * &)g_f_getrandom = dlsym(RTLD_DEFAULT, "getrandom");
+
+		g_p_thread_db_pthread_specific = (uint32 const *)dlsym(RTLD_DEFAULT, "_thread_db_pthread_specific");
+		g_p_thread_db_pthread_key_data_data = (uint32 const *)dlsym(RTLD_DEFAULT, "_thread_db_pthread_key_data_data");
+		g_p_thread_db_pthread_key_data_seq = (uint32 const *)dlsym(RTLD_DEFAULT, "_thread_db_pthread_key_data_seq");
+		g_p_thread_db_pthread_key_data_level2_data = (uint32 const *)dlsym(RTLD_DEFAULT, "_thread_db_pthread_key_data_level2_data");
+		g_p_thread_db_sizeof_pthread_key_data = (uint32 const *)dlsym(RTLD_DEFAULT, "_thread_db_sizeof_pthread_key_data");
 
 		(void * &)__real_versioned_exp_new = dlvsym(RTLD_DEFAULT, "exp", "GLIBC_2.29");
 		if (!__real_versioned_exp_new)
