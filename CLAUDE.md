@@ -202,6 +202,7 @@ Generate a workspace before building: `./mib generate [WorkspaceName]`
 - If it may be extended afterward, indent the continued part one extra level
 - If it may not be extended afterward, do not add the extra continuation indent
 - Exception: if the statement itself starts with `(`, keep that `(` at the statement indentation level instead of adding a continuation indent
+- When a split function call is already a logical unit inside another split expression, align the call's `(` and matching `)` with the function expression; do not add another continuation level solely for the argument list
 - If a function declaration or definition is split to fit the line length, first convert it to trailing return type
 - If it still does not fit, put the trailing return type on its own line; do not put the return type on a separate line before the function name
 - Do not split function declarations or definitions by putting some parameters on the first line and remaining parameters on continuation lines. Either keep the full parameter list on one line or split the whole parameter list under an indented `(`.
@@ -212,6 +213,19 @@ Generate a workspace before building: `./mib generate [WorkspaceName]`
 if
 (
 	Condition
+)
+{
+	Statement();
+}
+```
+
+```cpp
+if
+(
+	!pValue->f_Check
+	(
+		Argument
+	)
 )
 {
 	Statement();
