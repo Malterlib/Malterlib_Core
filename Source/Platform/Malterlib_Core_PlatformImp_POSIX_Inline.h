@@ -54,16 +54,21 @@ namespace NMib
 #elif defined(DPlatformFamily_Linux) && defined(DArchitecture_arm64)
 		extern umint g_ThreadSelfOffset;
 #endif
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+		extern smint g_GlibcThreadLocalOffsetThreadPointer;
+		extern umint const *g_pGlibcThreadKeys;
+#endif
 
 		umint fg_GetThreadSelf_Safe();
 
-#if defined(__aarch64__)
+#if defined(__aarch64__) || (defined(DPlatformFamily_Linux) && (defined(__i386__) || defined(__x86_64__)))
 		inline_always umint fg_GetThreadPointer()
 		{
-#if defined(DPlatformFamily_macOS)
+		#if defined(DPlatformFamily_macOS)
 			return (umint)__builtin_thread_pointer() & ~umint(0x7);
-#endif
+		#else
 			return (umint)__builtin_thread_pointer();
+		#endif
 		}
 #endif
 
@@ -138,6 +143,93 @@ namespace NMib
 		#endif
 		}
 
+	#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+		namespace NPrivate
+		{
+			// Allocation validates that glibc uses 32 two-word entries per level 2.
+			// Keeping the real pthread key makes its high and low bits the block and entry indices.
+			constexpr umint gc_nGlibcThreadLocalLevel2Shift = 5;
+			constexpr umint gc_nGlibcThreadLocalsPerLevel2 = umint(1) << gc_nGlibcThreadLocalLevel2Shift;
+			constexpr umint gc_nGlibcThreadLocalWordsPerKey = 2;
+			constexpr umint gc_iGlibcThreadLocalSequence = 0;
+			constexpr umint gc_iGlibcThreadLocalData = 1;
+
+			inline_always umint fg_GetThreadLocal_Glibc(umint _iVariable)
+			{
+				DMibFastCheck(_iVariable > 0);
+
+				auto pLevel2Pointers = reinterpret_cast<uint8 **>(reinterpret_cast<uint8 *>(fg_GetThreadPointer()) + g_GlibcThreadLocalOffsetThreadPointer);
+				uint8 *pLevel2 = pLevel2Pointers[_iVariable >> gc_nGlibcThreadLocalLevel2Shift];
+				if (!pLevel2) [[unlikely]]
+					return 0;
+
+				umint *pKeyData = reinterpret_cast<umint *>(pLevel2) + (_iVariable & (gc_nGlibcThreadLocalsPerLevel2 - 1)) * gc_nGlibcThreadLocalWordsPerKey;
+				umint Data = pKeyData[gc_iGlibcThreadLocalData];
+				if (!Data)
+					return 0;
+
+				if (pKeyData[gc_iGlibcThreadLocalSequence] != g_pGlibcThreadKeys[_iVariable * gc_nGlibcThreadLocalWordsPerKey]) [[unlikely]]
+				{
+					pKeyData[gc_iGlibcThreadLocalData] = 0;
+					return 0;
+				}
+
+				return Data;
+			}
+
+			inline_always umint fg_GetThreadLocalAlwaysSet_Glibc(umint _iVariable)
+			{
+				DMibFastCheck(_iVariable > 0);
+
+				auto pLevel2Pointers = reinterpret_cast<uint8 **>(reinterpret_cast<uint8 *>(fg_GetThreadPointer()) + g_GlibcThreadLocalOffsetThreadPointer);
+				uint8 *pLevel2 = pLevel2Pointers[_iVariable >> gc_nGlibcThreadLocalLevel2Shift];
+				DMibFastCheck(pLevel2);
+
+				umint *pKeyData = reinterpret_cast<umint *>(pLevel2) + (_iVariable & (gc_nGlibcThreadLocalsPerLevel2 - 1)) * gc_nGlibcThreadLocalWordsPerKey;
+				umint Data = pKeyData[gc_iGlibcThreadLocalData];
+				DMibFastCheck(!Data || pKeyData[gc_iGlibcThreadLocalSequence] == g_pGlibcThreadKeys[_iVariable * gc_nGlibcThreadLocalWordsPerKey]);
+
+				return Data;
+			}
+
+			inline_always umint fg_GetThreadLocalFast_Glibc(umint _iVariable)
+			{
+				DMibFastCheck(_iVariable > 0 && _iVariable < gc_nGlibcThreadLocalsPerLevel2);
+
+				auto pLevel2Pointers = reinterpret_cast<uint8 **>(reinterpret_cast<uint8 *>(fg_GetThreadPointer()) + g_GlibcThreadLocalOffsetThreadPointer);
+				uint8 *pLevel2 = pLevel2Pointers[0];
+				DMibFastCheck(pLevel2);
+
+				umint *pKeyData = reinterpret_cast<umint *>(pLevel2) + _iVariable * gc_nGlibcThreadLocalWordsPerKey;
+				umint Data = pKeyData[gc_iGlibcThreadLocalData];
+				if (!Data)
+					return 0;
+
+				if (pKeyData[gc_iGlibcThreadLocalSequence] != g_pGlibcThreadKeys[_iVariable * gc_nGlibcThreadLocalWordsPerKey]) [[unlikely]]
+				{
+					pKeyData[gc_iGlibcThreadLocalData] = 0;
+					return 0;
+				}
+
+				return Data;
+			}
+
+			inline_always umint fg_GetThreadLocalAlwaysSetFast_Glibc(umint _iVariable)
+			{
+				DMibFastCheck(_iVariable > 0 && _iVariable < gc_nGlibcThreadLocalsPerLevel2);
+
+				auto pLevel2Pointers = reinterpret_cast<uint8 **>(reinterpret_cast<uint8 *>(fg_GetThreadPointer()) + g_GlibcThreadLocalOffsetThreadPointer);
+				uint8 *pLevel2 = pLevel2Pointers[0];
+				DMibFastCheck(pLevel2);
+
+				umint *pKeyData = reinterpret_cast<umint *>(pLevel2) + _iVariable * gc_nGlibcThreadLocalWordsPerKey;
+				umint Data = pKeyData[gc_iGlibcThreadLocalData];
+				DMibFastCheck(!Data || pKeyData[gc_iGlibcThreadLocalSequence] == g_pGlibcThreadKeys[_iVariable * gc_nGlibcThreadLocalWordsPerKey]);
+				return Data;
+			}
+		}
+	#endif
+
 		umint fg_GetThreadLocal_Safe(umint _iVariable);
 
 		inline_always umint fg_GetThreadLocal(umint _iVariable)
@@ -195,17 +287,10 @@ namespace NMib
 					#error "Not Implemented"
 				#endif
 				return Return;
-/*			#elif defined(DMibAssumeGlibc)
-				umint Return;
-				#if defined(__i386__)
-					asm ("mov %%gs:0x0(%2,%1,4),%0" : "=r"(Return) : "r"(_iVariable * 2 + 1), "r"(DMibPOffsetOf(pthread, specific_1stblock)));
-				#elif defined(__x86_64__)
-					asm ("mov %%fs:0x318(,%1,8),%0" : "=r"(Return) : "r"(_iVariable * 2));
-				#else
-					#error "Not Implemented"
-				#endif
+			#elif defined(DMibConfig_LinuxOptimizeGlibcThreadLocals)
+				umint Return = NPrivate::fg_GetThreadLocal_Glibc(_iVariable);
 				DMibFastCheck(Return == fg_GetThreadLocal_Safe(_iVariable));
-				return Return;*/
+				return Return;
 			#else
 				return fg_GetThreadLocal_Safe(_iVariable);
 			#endif
@@ -224,13 +309,19 @@ namespace NMib
 
 		inline_always void *fg_Thread_GetLocalAlwaysSet(umint _iStorage)
 		{
+	#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals) && !defined(DMibSafeThreadLocals)
+			return (void *)NPrivate::fg_GetThreadLocalAlwaysSet_Glibc(_iStorage);
+	#else
 			return (void *)fg_GetThreadLocal(_iStorage);
+	#endif
 		}
 
+	#if !defined(DPlatformFamily_Linux) || !defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) || defined(DMibStaticThreadLocals)
 		inline_always umint fg_Thread_AllocLocalFast()
 		{
 			return fg_Thread_AllocLocal();
 		}
+	#endif
 
 		inline_always void fg_Thread_FreeLocalFast(umint _iStorage)
 		{
@@ -263,16 +354,8 @@ namespace NMib
 				#else
 					#error "Not Implemented"
 				#endif
-/*			#elif defined(DMibAssumeGlibc)
-				umint Return;
-				#if defined(__i386__)
-					asm ("mov %%gs:0x0(%2,%1,4),%0" : "=r"(Return) : "r"(_iVariable * 2 + 1), "r"(DMibPOffsetOf(pthread, specific_1stblock)));
-				#elif defined(__x86_64__)
-					asm ("mov %%fs:0x318(,%1,8),%0" : "=r"(Return) : "r"(_iVariable * 2));
-				#else
-					#error "Not Implemented"
-				#endif
-				DMibFastCheck(Return == fg_GetThreadLocal_Safe(_iVariable));*/
+			#elif defined(DMibConfig_LinuxOptimizeGlibcThreadLocals)
+				Return = NPrivate::fg_GetThreadLocalFast_Glibc(_iVariable);
 			#else
 				return (void *)fg_GetThreadLocal(_iVariable);
 			#endif
@@ -284,7 +367,11 @@ namespace NMib
 
 		inline_always void *fg_Thread_GetLocalAlwaysSetFast(umint _iStorage)
 		{
+	#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+			return (void *)NPrivate::fg_GetThreadLocalAlwaysSetFast_Glibc(_iStorage);
+	#else
 			return fg_Thread_GetLocalAlwaysSet(_iStorage);
+	#endif
 		}
 
 		inline_always void *fg_Thread_GetCurrent()

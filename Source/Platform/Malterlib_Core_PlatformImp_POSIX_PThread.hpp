@@ -35,15 +35,42 @@ using namespace NMib;
 // glibc exports these descriptors for libthread_db so debuggers do not need to hard-code the private struct pthread layout.
 extern "C"
 {
+	#ifdef DMibConfig_LinuxOptimizeGlibcThreadLocals
+	extern uint8 __pthread_keys[];
+	extern uint32 const _thread_db___pthread_keys[3];
+	#endif
 	extern uint32 const _thread_db_pthread_specific[3];
 	extern uint32 const _thread_db_pthread_key_data_data[3];
 	extern uint32 const _thread_db_pthread_key_data_seq[3];
 	extern uint32 const _thread_db_pthread_key_data_level2_data[3];
 	extern uint32 const _thread_db_sizeof_pthread_key_data;
+	#ifdef DMibConfig_LinuxOptimizeGlibcThreadLocals
+	extern uint32 const _thread_db_pthread_key_struct_destr[3];
+	extern uint32 const _thread_db_pthread_key_struct_seq[3];
+	extern uint32 const _thread_db_sizeof_pthread_key_struct;
+	#endif
 }
 
 namespace
 {
+	#ifdef DMibConfig_LinuxOptimizeGlibcThreadLocals
+	constexpr umint gc_nGlibcThreadLocalLevel2Shift = 5;
+	constexpr umint gc_nGlibcThreadLocalsPerLevel2 = umint(1) << gc_nGlibcThreadLocalLevel2Shift;
+	#endif
+	#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+		#if !defined(DMibDynamicLibrary) && defined(DMibConfig_OverrideSystemMalloc)
+			#define DUseGlibcDummyThreadLocalLevel2
+		#endif
+	#endif
+	#ifdef DUseGlibcDummyThreadLocalLevel2
+	constexpr umint gc_nGlibcThreadLocalWordsPerKey = 2;
+	struct CGlibcDummyThreadLocalLevel2
+	{
+		umint m_Data[gc_nGlibcThreadLocalsPerLevel2 * gc_nGlibcThreadLocalWordsPerKey] = {};
+		bool m_bInstalled = false;
+	};
+	#endif
+
 	enum EGlibcThreadDbDescriptor
 	{
 		EGlibcThreadDbDescriptor_SizeBits
@@ -53,19 +80,150 @@ namespace
 
 	void fg_Glibc_ValidateThreadLocalLayout()
 	{
-		if
-		(
-			_thread_db_pthread_specific[EGlibcThreadDbDescriptor_SizeBits] % 8 != 0
+		bool bInvalid =
+			_thread_db_pthread_specific[EGlibcThreadDbDescriptor_SizeBits] % (sizeof(umint) * 8) != 0
 			|| _thread_db_pthread_key_data_data[EGlibcThreadDbDescriptor_SizeBits] != sizeof(umint) * 8
 			|| _thread_db_pthread_key_data_seq[EGlibcThreadDbDescriptor_SizeBits] != sizeof(umint) * 8
 			|| _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_SizeBits] != _thread_db_sizeof_pthread_key_data * 8
 			|| !_thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_nElements]
-			|| _thread_db_pthread_specific[EGlibcThreadDbDescriptor_SizeBits] / 8 % sizeof(umint) != 0
-		)
+		;
+	#ifdef DMibConfig_LinuxOptimizeGlibcThreadLocals
+		bInvalid = bInvalid
+			|| _thread_db___pthread_keys[EGlibcThreadDbDescriptor_SizeBits] != _thread_db_sizeof_pthread_key_struct * 8
+			|| _thread_db___pthread_keys[EGlibcThreadDbDescriptor_nElements] <= gc_nGlibcThreadLocalsPerLevel2
+			|| _thread_db_pthread_key_data_data[EGlibcThreadDbDescriptor_Offset] != sizeof(umint)
+			|| _thread_db_pthread_key_data_seq[EGlibcThreadDbDescriptor_Offset] != 0
+			|| _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_nElements] != gc_nGlibcThreadLocalsPerLevel2
+			|| _thread_db_pthread_key_struct_destr[EGlibcThreadDbDescriptor_SizeBits] != sizeof(umint) * 8
+			|| _thread_db_pthread_key_struct_destr[EGlibcThreadDbDescriptor_Offset] != sizeof(umint)
+			|| _thread_db_pthread_key_struct_seq[EGlibcThreadDbDescriptor_SizeBits] != sizeof(umint) * 8
+			|| _thread_db_pthread_key_struct_seq[EGlibcThreadDbDescriptor_Offset] != 0
+			|| _thread_db_sizeof_pthread_key_data != sizeof(umint) * 2
+			|| _thread_db_sizeof_pthread_key_struct != sizeof(umint) * 2
+			||
+			(
+				_thread_db_pthread_specific[EGlibcThreadDbDescriptor_SizeBits] / 8 / sizeof(umint) * gc_nGlibcThreadLocalsPerLevel2
+				< _thread_db___pthread_keys[EGlibcThreadDbDescriptor_nElements]
+			)
+		;
+	#endif
+		if (bInvalid)
 		{
-			DMibErrorSystemImp("Unsupported glibc thread local layout");
+			NSys::fg_ConsoleErrorOutput(gc_Str<"Unsupported glibc thread local layout\n">.m_Str.f_Span());
+			DMibPDebugBreak;
 		}
 	}
+
+	#if defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+	void fg_Glibc_InitializeThreadLocalLayout()
+	{
+		fg_Glibc_ValidateThreadLocalLayout();
+		NSys::g_GlibcThreadLocalOffsetThreadPointer
+			= smint((umint)pthread_self())
+			+ smint(_thread_db_pthread_specific[EGlibcThreadDbDescriptor_Offset])
+			- smint(NSys::fg_GetThreadPointer())
+		;
+		NSys::g_pGlibcThreadKeys = reinterpret_cast<umint const *>(__pthread_keys);
+	}
+	#endif
+
+	#ifdef DMibConfig_LinuxOptimizeGlibcThreadLocals
+	uint8 *fg_Glibc_GetThreadKey(umint _iStorage)
+	{
+		return __pthread_keys + _iStorage * _thread_db_sizeof_pthread_key_struct;
+	}
+
+	NAtomic::TCAtomic<umint> *fg_Glibc_GetThreadKeySequence(umint _iStorage)
+	{
+		return reinterpret_cast<NAtomic::TCAtomic<umint> *>(fg_Glibc_GetThreadKey(_iStorage) + _thread_db_pthread_key_struct_seq[EGlibcThreadDbDescriptor_Offset]);
+	}
+	#endif
+
+	#ifdef DUseGlibcDummyThreadLocalLevel2
+	void fg_Glibc_InstallDummyThreadLocalLevel2(CGlibcDummyThreadLocalLevel2 &_Dummy)
+	{
+		if (_Dummy.m_bInstalled)
+			return;
+
+		fg_Glibc_ValidateThreadLocalLayout();
+		DMibFastCheck(sizeof(_Dummy.m_Data) == gc_nGlibcThreadLocalsPerLevel2 * _thread_db_sizeof_pthread_key_data);
+
+		auto pLevel2Pointers = reinterpret_cast<uint8 **>(reinterpret_cast<uint8 *>(pthread_self()) + _thread_db_pthread_specific[EGlibcThreadDbDescriptor_Offset]);
+		if (pLevel2Pointers[1])
+			return;
+
+		pLevel2Pointers[1] = reinterpret_cast<uint8 *>(_Dummy.m_Data);
+		_Dummy.m_bInstalled = true;
+	}
+
+	void fg_Glibc_ReplaceDummyThreadLocalLevel2(CGlibcDummyThreadLocalLevel2 &_Dummy)
+	{
+		if (!_Dummy.m_bInstalled)
+			return;
+
+		void *pLevel2 = calloc(gc_nGlibcThreadLocalsPerLevel2, _thread_db_sizeof_pthread_key_data);
+		if (!pLevel2)
+			DMibErrorSystemImp(NMib::NPlatform::fg_FormatErrno("calloc (thread local block)", errno));
+
+		fg_MemCopy(pLevel2, _Dummy.m_Data, sizeof(_Dummy.m_Data));
+
+		auto pLevel2Pointers = reinterpret_cast<uint8 **>
+			(
+				reinterpret_cast<uint8 *>(pthread_self())
+					+ _thread_db_pthread_specific[EGlibcThreadDbDescriptor_Offset]
+			)
+		;
+		DMibFastCheck(pLevel2Pointers[1] == reinterpret_cast<uint8 *>(_Dummy.m_Data));
+		pLevel2Pointers[1] = reinterpret_cast<uint8 *>(pLevel2);
+		_Dummy.m_bInstalled = false;
+	}
+	#endif
+
+	#if defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+	umint fg_Glibc_Thread_AllocLocal(bool _bFast, void (_pDestructor)(void *))
+	{
+		fg_Glibc_ValidateThreadLocalLayout();
+
+		// The first glibc level-2 block gives fast storage a fixed single-block lookup.
+		// Normal allocation starts at the second block so it never consumes a fast key.
+		umint iBegin = _bFast ? 1 : gc_nGlibcThreadLocalsPerLevel2;
+		umint iEnd = _bFast
+			? gc_nGlibcThreadLocalsPerLevel2
+			: _thread_db___pthread_keys[EGlibcThreadDbDescriptor_nElements]
+		;
+
+		for (umint iStorage = iBegin; iStorage < iEnd; ++iStorage)
+		{
+			auto pSequence = fg_Glibc_GetThreadKeySequence(iStorage);
+			umint Sequence = pSequence->f_Load(NAtomic::gc_MemoryOrder_Acquire);
+			if ((Sequence & 1) || Sequence >= Sequence + 2)
+				continue;
+
+			umint Expected = Sequence;
+			if
+			(
+				!pSequence->f_CompareExchangeStrong
+				(
+					Expected
+					, Sequence + 1
+					, NAtomic::gc_MemoryOrder_AcquireRelease
+					, NAtomic::gc_MemoryOrder_Acquire
+				)
+			)
+			{
+				continue;
+			}
+
+			auto pDestructor = reinterpret_cast<void (**)(void *)>(fg_Glibc_GetThreadKey(iStorage) + _thread_db_pthread_key_struct_destr[EGlibcThreadDbDescriptor_Offset]);
+			*pDestructor = _pDestructor;
+
+			return iStorage;
+		}
+
+		DMibErrorSystemImp(_bFast ? "Out of fast glibc thread local indices" : "Out of glibc thread local indices");
+		return TCLimitsInt<umint>::mc_Max;
+	}
+	#endif
 
 	uint8 *fg_Glibc_GetThreadLocalLevel2(umint _ThreadID, umint _iStorage, bool _bCreate)
 	{
@@ -83,10 +241,10 @@ namespace
 				+ _thread_db_pthread_specific[EGlibcThreadDbDescriptor_Offset]
 			)
 		;
-		auto &pLevel2Pointer = pLevel2Pointers[iLevel2];
-		umint pLevel2 = pLevel2Pointer.f_Load(NAtomic::gc_MemoryOrder_Acquire);
-		if (pLevel2 || !_bCreate)
-			return reinterpret_cast<uint8 *>(pLevel2);
+		auto &Level2PointerSlot = pLevel2Pointers[iLevel2];
+		umint Level2Address = Level2PointerSlot.f_Load(NAtomic::gc_MemoryOrder_Acquire);
+		if (Level2Address || !_bCreate)
+			return reinterpret_cast<uint8 *>(Level2Address);
 
 		if (!iLevel2)
 			DMibErrorSystemImp("glibc first thread local block is not initialized");
@@ -98,13 +256,13 @@ namespace
 		umint Expected = 0;
 		if
 		(
-			pLevel2Pointer.f_CompareExchangeStrong
-				(
-					Expected
-					, reinterpret_cast<umint>(pNewLevel2)
-					, NAtomic::gc_MemoryOrder_AcquireRelease
-					, NAtomic::gc_MemoryOrder_Acquire
-				)
+			Level2PointerSlot.f_CompareExchangeStrong
+			(
+				Expected
+				, reinterpret_cast<umint>(pNewLevel2)
+				, NAtomic::gc_MemoryOrder_AcquireRelease
+				, NAtomic::gc_MemoryOrder_Acquire
+			)
 		)
 		{
 			return reinterpret_cast<uint8 *>(pNewLevel2);
@@ -117,11 +275,11 @@ namespace
 	NAtomic::TCAtomic<umint> *fg_Glibc_GetThreadLocalField(uint8 *_pLevel2, umint _iStorage, uint32 const (&_Descriptor)[3])
 	{
 		umint nPerLevel2 = _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_nElements];
-		umint iLevel2 = _iStorage % nPerLevel2;
+		umint iData = _iStorage % nPerLevel2;
 		return reinterpret_cast<NAtomic::TCAtomic<umint> *>
 			(
 				_pLevel2
-				+ iLevel2 * _thread_db_sizeof_pthread_key_data
+				+ iData * _thread_db_sizeof_pthread_key_data
 				+ _Descriptor[EGlibcThreadDbDescriptor_Offset]
 			)
 		;
@@ -129,6 +287,12 @@ namespace
 
 	umint fg_Glibc_GetThreadLocalSequence(umint _iStorage)
 	{
+	#ifdef DMibConfig_LinuxOptimizeGlibcThreadLocals
+		umint Sequence = fg_Glibc_GetThreadKeySequence(_iStorage)->f_Load(NAtomic::gc_MemoryOrder_Acquire);
+		if (!(Sequence & 1))
+			DMibErrorSystemImp("glibc thread local index is not allocated");
+		return Sequence;
+	#else
 		uint8 Probe = 0;
 		void *pOldData = pthread_getspecific((pthread_key_t)_iStorage);
 		if (auto ErrNo = pthread_setspecific((pthread_key_t)_iStorage, &Probe))
@@ -149,6 +313,7 @@ namespace
 			DMibErrorSystemImp("Unsupported glibc thread local layout");
 
 		return Sequence;
+	#endif
 	}
 
 	void fg_Glibc_Thread_SetLocal(umint _ThreadID, umint _iStorage, void *_pData)
@@ -198,8 +363,81 @@ namespace
 
 		return reinterpret_cast<void *>(Data);
 	}
+
+	#ifdef DMibConfig_LinuxOptimizeGlibcThreadLocals
+	void *fg_Glibc_Thread_GetLocalAlwaysSet(umint _ThreadID, umint _iStorage)
+	{
+		uint8 *pLevel2 = fg_Glibc_GetThreadLocalLevel2(_ThreadID, _iStorage, false);
+		DMibFastCheck(pLevel2);
+
+		auto pData = fg_Glibc_GetThreadLocalField(pLevel2, _iStorage, _thread_db_pthread_key_data_data);
+		umint Data = pData->f_Load(NAtomic::gc_MemoryOrder_Acquire);
+		DMibFastCheck
+			(
+				!Data
+					|| fg_Glibc_GetThreadLocalField(pLevel2, _iStorage, _thread_db_pthread_key_data_seq)->f_Load(NAtomic::gc_MemoryOrder_Acquire)
+						== fg_Glibc_GetThreadLocalSequence(_iStorage)
+			)
+		;
+		return reinterpret_cast<void *>(Data);
+	}
+
+	uint8 *fg_Glibc_GetThreadLocalLevel2Fast(umint _ThreadID, umint _iStorage)
+	{
+		fg_Glibc_ValidateThreadLocalLayout();
+		DMibFastCheck(_iStorage > 0 && _iStorage < gc_nGlibcThreadLocalsPerLevel2);
+
+		auto pLevel2Pointers = reinterpret_cast<NAtomic::TCAtomic<umint> *>
+			(
+				reinterpret_cast<uint8 *>(_ThreadID)
+					+ _thread_db_pthread_specific[EGlibcThreadDbDescriptor_Offset]
+			)
+		;
+		umint Level2Address = pLevel2Pointers[0].f_Load(NAtomic::gc_MemoryOrder_Acquire);
+		DMibFastCheck(Level2Address);
+		return reinterpret_cast<uint8 *>(Level2Address);
+	}
+
+	void *fg_Glibc_Thread_GetLocalFast(umint _ThreadID, umint _iStorage)
+	{
+		uint8 *pLevel2 = fg_Glibc_GetThreadLocalLevel2Fast(_ThreadID, _iStorage);
+		auto pData = fg_Glibc_GetThreadLocalField(pLevel2, _iStorage, _thread_db_pthread_key_data_data);
+		umint Data = pData->f_Load(NAtomic::gc_MemoryOrder_Acquire);
+		if (!Data)
+			return nullptr;
+
+		umint Sequence = fg_Glibc_GetThreadLocalField(pLevel2, _iStorage, _thread_db_pthread_key_data_seq)->f_Load(NAtomic::gc_MemoryOrder_Acquire);
+		if (Sequence != fg_Glibc_GetThreadLocalSequence(_iStorage))
+		{
+			pData->f_Exchange(0);
+			return nullptr;
+		}
+
+		return reinterpret_cast<void *>(Data);
+	}
+
+	void *fg_Glibc_Thread_GetLocalAlwaysSetFast(umint _ThreadID, umint _iStorage)
+	{
+		uint8 *pLevel2 = fg_Glibc_GetThreadLocalLevel2Fast(_ThreadID, _iStorage);
+		auto pData = fg_Glibc_GetThreadLocalField(pLevel2, _iStorage, _thread_db_pthread_key_data_data);
+		umint Data = pData->f_Load(NAtomic::gc_MemoryOrder_Acquire);
+		DMibFastCheck
+			(
+				!Data
+					|| fg_Glibc_GetThreadLocalField(pLevel2, _iStorage, _thread_db_pthread_key_data_seq)->f_Load(NAtomic::gc_MemoryOrder_Acquire)
+						== fg_Glibc_GetThreadLocalSequence(_iStorage)
+			)
+		;
+		return reinterpret_cast<void *>(Data);
+	}
+	#endif
 	#endif
 }
+#endif
+
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+smint NSys::g_GlibcThreadLocalOffsetThreadPointer = 0;
+umint const *NSys::g_pGlibcThreadKeys = nullptr;
 #endif
 
 // *************************************************************************************************************************
@@ -217,6 +455,15 @@ static_assert(sizeof(pid_t) <= sizeof(umint), "pid_t must be the same size or sm
 
 umint NSys::fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*))
 {
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+	#ifdef DUseGlibcDummyThreadLocalLevel2
+	// Lifecycle keys must work before a new thread's allocator can create its
+	// second-level block
+	return fg_Glibc_Thread_AllocLocal(true, _pDestructor);
+	#else
+	return fg_Glibc_Thread_AllocLocal(false, _pDestructor);
+	#endif
+#else
 	pthread_key_t pKey = 0;
 	if (auto ErrNo = pthread_key_create(&pKey, _pDestructor))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", ErrNo));
@@ -231,6 +478,7 @@ umint NSys::fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*))
 	if (auto ErrNo = pthread_setspecific(pKey, nullptr))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc with destructor)", ErrNo));
 	return (umint)pKey;
+#endif
 }
 
 void NSys::fg_Thread_FreeLocalWithDestructor(umint _iStorage)
@@ -278,6 +526,9 @@ void NSys::fg_Thread_SetLocalDestructor(umint _ThreadID, umint _iStorage, void *
 
 umint NSys::fg_Thread_AllocLocal()
 {
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals)
+	return fg_Glibc_Thread_AllocLocal(false, nullptr);
+#else
 	pthread_key_t pKey = 0;
 	if (auto ErrNo = pthread_key_create(&pKey, nullptr))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc)", ErrNo));
@@ -290,7 +541,15 @@ umint NSys::fg_Thread_AllocLocal()
 	if (auto ErrNo = pthread_setspecific(pKey, nullptr))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc)", ErrNo));
 	return (umint)pKey;
+#endif
 }
+
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals)
+umint NSys::fg_Thread_AllocLocalFast()
+{
+	return fg_Glibc_Thread_AllocLocal(true, nullptr);
+}
+#endif
 
 void NSys::fg_Thread_FreeLocal(umint _iStorage)
 {
@@ -347,16 +606,39 @@ void *NSys::fg_Thread_GetLocal(umint _ThreadID, umint _iStorage)
 
 void *NSys::fg_Thread_GetLocalFast(umint _ThreadID, umint _iStorage)
 {
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+	DMibFastCheck(_iStorage > 0 && _iStorage < gc_nGlibcThreadLocalsPerLevel2);
+	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
+		return fg_Thread_GetLocalFast(_iStorage);
+
+	return fg_Glibc_Thread_GetLocalFast(_ThreadID, _iStorage);
+#else
 	return fg_Thread_GetLocal(_ThreadID, _iStorage);
+#endif
 }
 
 void *NSys::fg_Thread_GetLocalAlwaysSet(umint _ThreadID, umint _iStorage)
 {
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
+		return fg_Thread_GetLocalAlwaysSet(_iStorage);
+
+	return fg_Glibc_Thread_GetLocalAlwaysSet(_ThreadID, _iStorage);
+#else
 	return fg_Thread_GetLocal(_ThreadID, _iStorage);
+#endif
 }
 void *NSys::fg_Thread_GetLocalAlwaysSetFast(umint _ThreadID, umint _iStorage)
 {
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+	DMibFastCheck(_iStorage > 0 && _iStorage < gc_nGlibcThreadLocalsPerLevel2);
+	if (NSys::fg_Thread_GetCurrentUID() == _ThreadID)
+		return fg_Thread_GetLocalAlwaysSetFast(_iStorage);
+
+	return fg_Glibc_Thread_GetLocalAlwaysSetFast(_ThreadID, _iStorage);
+#else
 	return fg_Thread_GetLocal(_ThreadID, _iStorage);
+#endif
 }
 
 void NSys::fg_Thread_Sleep(fp32 _Seconds)
@@ -400,7 +682,16 @@ void *fg_ThreadStartRoutine(void *_pParams)
 
 	CThreadStartParams StartParams = *pThreadParams;
 
+#ifdef DUseGlibcDummyThreadLocalLevel2
+	CGlibcDummyThreadLocalLevel2 DummyThreadLocalLevel2;
+	fg_Glibc_InstallDummyThreadLocalLevel2(DummyThreadLocalLevel2);
+#endif
+
 	fg_GetSys()->f_ThreadLocalCreateThread(NSys::fg_Thread_GetCurrentUID(), StartParams.m_ParentThreadID);
+
+#ifdef DUseGlibcDummyThreadLocalLevel2
+	fg_Glibc_ReplaceDummyThreadLocalLevel2(DummyThreadLocalLevel2);
+#endif
 
 	pThreadParams.f_Clear();
 

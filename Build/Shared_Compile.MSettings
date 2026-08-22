@@ -2251,6 +2251,15 @@ Compile
 			MalterlibThread_LinuxAssumeGlibc true
 		}
 	}
+	PreprocessorDefines += "DMibConfig_LinuxOptimizeGlibcThreadLocals"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			MalterlibThread_LinuxAssumeGlibc true
+			MalterlibThread_LinuxOptimizeGlibcThreadLocals true
+		}
+	}
 
 	PreprocessorDefines += "DMibUseGoldLinker"
 	{
