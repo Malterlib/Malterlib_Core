@@ -455,10 +455,11 @@ Property.Documentation: string?
 
 Property
 {
-	Sanitizer_Thread: string = ""
-	Sanitizer_Address: string = ""
-	Sanitizer_UndefinedBehavior: string = ""
-	MalterlibEnableSanitizerReleaseConfigs: bool = false // User(Debug)=true: Enable sanitizers as separate configurations
+	Sanitizer_Thread: string? = undefined
+	Sanitizer_Address: string? = undefined
+	Sanitizer_UndefinedBehavior: string? = undefined
+	MalterlibEnableSanitizerReleaseConfigs: bool = false // User(Debug)=true: Enable sanitizers as separate configurations for Release
+	MalterlibEnableSanitizerReleaseTestingConfigs: bool = false // User(Debug)=true: Enable sanitizers as separate configurations for Release Testing
 }
 
 *Sanitizer_Thread
@@ -468,8 +469,19 @@ Property
 	{
 		&
 		{
-			MalterlibEnableSanitizerReleaseConfigs true
-			Configuration "Release"
+			|
+			{
+				&
+				{
+					MalterlibEnableSanitizerReleaseConfigs true
+					Configuration "Release"
+				}
+				&
+				{
+					MalterlibEnableSanitizerReleaseTestingConfigs true
+					Configuration "Release Testing"
+				}
+			}
 			!Tests "Perf Tests"
 			Sanitizer_Address undefined
 			Sanitizer_UndefinedBehavior undefined
@@ -486,15 +498,30 @@ Property
 	{
 		&
 		{
-			MalterlibEnableSanitizerReleaseConfigs true
-			Configuration "Release"
+			|
+			{
+				&
+				{
+					MalterlibEnableSanitizerReleaseConfigs true
+					Configuration "Release"
+				}
+				&
+				{
+					MalterlibEnableSanitizerReleaseTestingConfigs true
+					Configuration "Release Testing"
+				}
+			}
 			!Tests "Perf Tests"
 			Sanitizer_Thread undefined
 			Sanitizer_UndefinedBehavior undefined
-			&
+			|
 			{
-				PlatformFamily "Windows"
-				Architecture "x64"
+				!PlatformFamily "Windows"
+				&
+				{
+					PlatformFamily "Windows"
+					Architecture "x64"
+				}
 			}
 		}
 	}
@@ -507,35 +534,23 @@ Property
 	{
 		&
 		{
-			MalterlibEnableSanitizerReleaseConfigs true
-			Configuration "Release"
+			|
+			{
+				&
+				{
+					MalterlibEnableSanitizerReleaseConfigs true
+					Configuration "Release"
+				}
+				&
+				{
+					MalterlibEnableSanitizerReleaseTestingConfigs true
+					Configuration "Release Testing"
+				}
+			}
 			!Tests "Perf Tests"
 			Sanitizer_Thread undefined
 			Sanitizer_Address undefined
 			!PlatformFamily "Windows"
-		}
-	}
-}
-
-Property
-{
-	ClangForWindows_Enabled: string = ""
-	MalterlibUseClangForWindowsConfigs: bool = false // User(Debug)=true: Enable clang-cl as separate configuration
-}
-
-*ClangForWindows_Enabled
-{
-	\ "Empty"
-	Clang "Enable clang-cl"
-	{
-		&
-		{
-			PlatformFamily "Windows"
-			MalterlibUseClangForWindowsConfigs true
-			!Tests "Perf Tests"
-			Sanitizer_Thread undefined
-			Sanitizer_Address undefined
-			Sanitizer_UndefinedBehavior undefined
 		}
 	}
 }
@@ -559,11 +574,6 @@ Property
 		!Sanitizer_Thread undefined
 	}
 
-	FullConfiguration =+ ClangForWindows_Enabled
-	{
-		!ClangForWindows_Enabled undefined
-	}
-
 	BuildSystemFullConfiguration: string
 	BuildSystemFullConfiguration Configuration
 
@@ -579,10 +589,25 @@ Property
 		!Documentation undefined
 	}
 
+	ExtraConfigurations =+ "Sanitizer_UndefinedBehavior"
+	{
+		!Sanitizer_UndefinedBehavior undefined
+	}
+
+	ExtraConfigurations =+ "Sanitizer_Address"
+	{
+		!Sanitizer_Address undefined
+	}
+
+	ExtraConfigurations =+ "Sanitizer_Thread"
+	{
+		!Sanitizer_Thread undefined
+	}
+
 	f_GetConfigValue function(string _ConfigName) [string]
 	f_GetConfigValue =+ @(_ConfigName)
 
-	BuildSystemFullConfiguration `@(BuildSystemFullConfiguration) (@(ExtraConfigurations->ForEach(&f_GetConfigValue)->Join(" ")))`
+	BuildSystemFullConfiguration `@(BuildSystemFullConfiguration) (@(ExtraConfigurations->Sort()->ForEach(&f_GetConfigValue)->Join(" ")))`
 	{
 		!ExtraConfigurations []
 	}
