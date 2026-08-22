@@ -2311,6 +2311,35 @@ Target
 		}
 	}
 
+	LDFlags =+ [
+		["-Xlinker", "--export-dynamic-symbol=pthread_create"]
+		, ["-Xlinker", "--export-dynamic-symbol=fg_MalterlibGetThreadNotificationCrossModule"]
+	]
+	{
+		&
+		{
+			|
+			{
+				Malterlib_LinuxLinker "gold"
+				Malterlib_LinuxLinker "lld"
+			}
+			Malterlib_AssumeMalterlibHost true
+			MalterlibThread_LinuxPThreadMonitoring true
+			|
+			{
+				MalterlibThread_LinuxUseStaticThreadLocal true
+				MalterlibThread_LinuxAssumeGlibc true
+			}
+			PlatformFamily "Linux"
+			|
+			{
+				Target.Type "ConsoleExecutable"
+				Target.Type "Executable"
+				Target.Type "UIExecutable"
+			}
+		}
+	}
+
 	LDFlags += [["-Xlinker", "--export-dynamic-symbol=fg_Malterlib_Thread_AllocLocal"], ["-Xlinker", "--export-dynamic-symbol=fg_Malterlib_Thread_FreeLocal"]]
 	{
 		&

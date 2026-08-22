@@ -200,8 +200,11 @@ namespace NMib
 		void *fg_Thread_GetLocalAlwaysSetFast(umint _iStorage);
 		void *fg_Thread_GetLocalAlwaysSetFast(umint _ThreadID, umint _iStorage);
 
-	#if defined(DPlatformFamily_macOS) && defined(DMibConfig_PThreadIntrospection)
+	#if defined(DPlatformFamily_Linux) || (defined(DPlatformFamily_macOS) && defined(DMibConfig_PThreadIntrospection))
 		bool fg_Thread_GetLocalsDestroyed(umint _iPerThread);
+	#endif
+	#ifdef DPlatformFamily_Linux
+		void fg_Thread_SetLocalsDestroyed(bool _bDestroyed);
 	#endif
 
 		/***************************************************************************************************\

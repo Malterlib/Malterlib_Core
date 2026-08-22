@@ -2260,6 +2260,21 @@ Compile
 			MalterlibThread_LinuxOptimizeGlibcThreadLocals true
 		}
 	}
+	PreprocessorDefines += "DMibConfig_LinuxPThreadMonitoring"
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Malterlib_AssumeMalterlibHost true
+			MalterlibThread_LinuxPThreadMonitoring true
+			!MalterlibSupportSanitizerEnable_Thread true
+			|
+			{
+				MalterlibThread_LinuxUseStaticThreadLocal true
+				MalterlibThread_LinuxAssumeGlibc true
+			}
+		}
+	}
 
 	PreprocessorDefines += "DMibUseGoldLinker"
 	{

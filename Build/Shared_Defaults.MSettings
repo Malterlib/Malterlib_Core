@@ -377,6 +377,7 @@ Property
 	MalterlibThread_LinuxUseStaticThreadLocal: bool = false // User(Undocumented)=true: Use static thread locals on Linux. WARNING: This only works for executables, or load time dynamic libraries. Dynamic libraries loaded with dlopen() will not work, unless Malterlib_AssumeMalterlibHost is also specified.
 	MalterlibThread_LinuxAssumeGlibc: bool = true // User(Undocumented)=false: Executable will only work on glibc system. Speeds up thread self access.
 	MalterlibThread_LinuxOptimizeGlibcThreadLocals: bool = true // User(Undocumented)=false: Optimize non-static pthread local allocation and access using the glibc layout.
+	MalterlibThread_LinuxPThreadMonitoring: bool = true // User(Undocumented)=false: Monitor pthread lifecycle through a Malterlib host and enable always-created thread locals.
 	Malterlib_AssumeMalterlibHost: bool = false // User(Undocumented)=true: Dynamic libraries will only work when loaded from a process that uses Malterlib. Speeds up thread local access.
 	Malterlib_LinuxInitInPreInitArray: bool = false // User: Init before other shared libraries has been initialized. This can cause problems in some GLIBC versions
 	Malterlib_LinuxLinker: string = "lld" // User(Toolset)="gold": Which linker to use on linux. Defaults to lld

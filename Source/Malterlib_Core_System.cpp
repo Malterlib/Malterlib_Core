@@ -89,6 +89,11 @@ namespace NMib
 	}
 	void fg_SystemThreadInit()
 	{
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxPThreadMonitoring)
+		if (!fg_GetSys()->f_ThreadCreated())
+			fg_GetSys()->f_ThreadLocalCreateThread(NSys::fg_Thread_GetCurrentUID(), 0);
+#endif
+
 		[[maybe_unused]] auto &Local = *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal;
 		NConcurrency::fg_ConcurrencyThreadLocalInit();
 	}

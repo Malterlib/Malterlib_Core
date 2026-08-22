@@ -8,13 +8,22 @@
 // DMibPSupportThreadCreateNotification
 // DMibPSupportThreadDestroyNotification
 // DMibPSupportThreadLocalDestructors
+// DMibPSupportSetThreadLocalForOtherThread
+
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Windows) || (defined(DPlatformFamily_Linux) && (defined(DMibStaticThreadLocals) || defined(DMibAssumeGlibc)))
+// The platform can update storage belonging to another live thread.
+#	define DMibPSupportSetThreadLocalForOtherThread
+#endif
 
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
 #	define DMibPSupportThreadDestroyNotification
 #	define DMibPSupportThreadLocalDestructors
-	// The pthread introspection hook notifies about every thread in the
-	// process, which enables always-created thread locals on macOS
+	// The pthread introspection hook on macOS and the host pthread override on
+	// Linux notify every participating thread before it runs user code.
 #	if defined(DPlatformFamily_macOS) && defined(DMibConfig_PThreadIntrospection)
+#		define DMibPSupportAlwaysCreatedThreadLocal
+#		define DMibPSupportThreadCreateNotification
+#	elif defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxPThreadMonitoring) && (defined(DMibStaticThreadLocals) || defined(DMibAssumeGlibc))
 #		define DMibPSupportAlwaysCreatedThreadLocal
 #		define DMibPSupportThreadCreateNotification
 #	endif
@@ -27,4 +36,3 @@
 #else
 #	error "Implement this"
 #endif
-

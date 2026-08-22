@@ -47,6 +47,9 @@ namespace NLocal
 	int (*g_f_inotify_add_watch)(int __fd, const char *__name, uint32_t __mask) __THROW = nullptr;
 	int (*g_f_inotify_rm_watch)(int __fd, int __wd) __THROW = nullptr;
 	int (*g_f_pthread_setname_np)(pthread_t __target_thread, __const char *__name) = nullptr;
+#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
+	int (*g_f_pthread_create)(pthread_t *__restrict _pThread, pthread_attr_t const *__restrict _pAttributes, void *(*_fStart)(void *), void *__restrict _pArgument) = nullptr;
+#endif
 	void *(*g_f_memcpy)(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) = &memmove;
 	int (*g_f_utimensat)(int dirfd, const char *pathname, const struct timespec times[2], int flags) = nullptr;
 	int (*g_f_futimens)(int fd, const struct timespec times[2]) = nullptr;
@@ -124,6 +127,13 @@ namespace NLocal
 		(void * &)g_f_inotify_add_watch = dlsym(RTLD_DEFAULT, "inotify_add_watch");
 		(void * &)g_f_inotify_rm_watch = dlsym(RTLD_DEFAULT, "inotify_rm_watch");
 		(void * &)g_f_pthread_setname_np = dlsym(RTLD_DEFAULT, "pthread_setname_np");
+#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
+	#if defined(DMibSanitizerEnabled_Address) || defined(DMibSanitizerEnabled_Thread)
+		(void * &)g_f_pthread_create = dlsym(RTLD_DEFAULT, "__interceptor_pthread_create");
+	#endif
+		if (!g_f_pthread_create)
+			(void * &)g_f_pthread_create = dlsym(RTLD_NEXT, "pthread_create");
+#endif
 		(void * &)g_f_memcpy = dlsym(RTLD_NEXT, "memcpy");
 		(void * &)g_f_utimensat = dlsym(RTLD_DEFAULT, "utimensat");
 		(void * &)g_f_futimens = dlsym(RTLD_DEFAULT, "futimens");
@@ -223,6 +233,27 @@ namespace NLocal
 
 bool g_bIsSharedLibrary = false;
 
+extern "C"
+{
+#ifdef DMibDynamicLibrary
+	// Every DLL owns its destruction state and may be loaded after threads exist.
+	__attribute__((visibility("hidden"))) __thread bool __attribute__((tls_model("local-dynamic"))) g_MalterlibThreadLocalsDestroyed = false;
+#else
+	// The executable's fixed TLS offset is the hot-path representation.
+	__attribute__((visibility("hidden"))) __thread bool __attribute__((tls_model("local-exec"))) g_MalterlibThreadLocalsDestroyed = false;
+#endif
+}
+
+inline_always_lto bool NSys::fg_Thread_GetLocalsDestroyed(umint _iPerThread)
+{
+	return g_MalterlibThreadLocalsDestroyed;
+}
+
+inline_always_lto void NSys::fg_Thread_SetLocalsDestroyed(bool _bDestroyed)
+{
+	g_MalterlibThreadLocalsDestroyed = _bDestroyed;
+}
+
 umint g_MainModuleBase = 0;
 
 void fg_ForkPrepare();
@@ -230,6 +261,7 @@ void fg_ForkParentOrChild();
 int fg_GetUnixOpenFlags();
 void fg_SetUnixHandleOptions(int _File);
 void fg_MalterlibMallocOverride_CanStartThreads();
+static inline_small class CSystemLinux *fg_GetLocalSys();
 
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
 
@@ -274,8 +306,6 @@ void fg_MalterlibMallocOverride_CanStartThreads();
 #include <cxxabi.h>
 
 #include <uuid/uuid.h>	// For UUID gen
-
-static inline_small class CSystemLinux *fg_GetLocalSys();
 
 void calling_convention_c fg_Malterlib_MakeActive()
 {
@@ -393,6 +423,10 @@ void CSystemLinux::fs_ForkPrepare()
 	auto &Sys = *fg_GetLocalSys();
 	if (!pthread_getspecific(Sys.m_ThreadDestructionHook))
 	{
+	#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
+		fg_ThreadNotificationsForkPrepare();
+	#endif
+
 		pthread_setspecific(Sys.m_ThreadDestructionHook, (void *)(umint)getpid());
 		Sys.m_Posix.f_GetMalterlibDisableStdErrLog(); // getenv fails on forked process, to workaround this here
 
@@ -428,12 +462,18 @@ void CSystemLinux::fs_ForkParentOrChild()
 			Sys.f_ForkedParent(); // Parent
 			Sys.m_Posix.m_ForkLock.f_ForkedParent();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
+		#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
+			fg_ThreadNotificationsForkParent();
+		#endif
 		}
 		else
 		{
 			Sys.f_ForkedChild(); // Child
 			Sys.m_Posix.m_ForkLock.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
+		#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
+			fg_ThreadNotificationsForkChild();
+		#endif
 		}
 	}
 }
@@ -450,6 +490,9 @@ void CSystemLinux::fs_ForkParent()
 		Sys.f_ForkedParent();
 		Sys.m_Posix.m_ForkLock.f_ForkedParent();
 		Sys.m_Posix.m_ForkLock.f_Unlock();
+	#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
+		fg_ThreadNotificationsForkParent();
+	#endif
 	}
 }
 
@@ -472,6 +515,9 @@ void CSystemLinux::fs_ForkChild()
 		Sys.f_ForkedChild();
 		Sys.m_Posix.m_ForkLock.f_ForkedChild();
 		Sys.m_Posix.m_ForkLock.f_Unlock();
+	#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
+		fg_ThreadNotificationsForkChild();
+	#endif
 		g_bCanStartThreads = true;
 		Sys.f_MemoryManager_CanStartThreads();
 		fg_MalterlibMallocOverride_CanStartThreads();
@@ -1272,6 +1318,10 @@ void NSys::fg_CreateSystemVersion()
 	if (CSystem::ms_PlatformVersion != 0)
 		return;
 
+#if defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
+	fg_Glibc_InitializeThreadLocalLayout();
+#endif
+
 #if defined(DArchitecture_arm64)
 	{
 		umint ThreadLocal;
@@ -1543,9 +1593,17 @@ void NSys::fg_CreateSystem()
 	if (g_bCreatedSystem)
 		return;
 
+#ifdef DUseGlibcDummyThreadLocalLevel2
+	CGlibcDummyThreadLocalLevel2 DummyThreadLocalLevel2;
+#endif
+
 	NPrivate::g_PageSize = sysconf(_SC_PAGE_SIZE);
 
 	fg_CreateSystemVersion();
+
+#ifdef DUseGlibcDummyThreadLocalLevel2
+	fg_Glibc_InstallDummyThreadLocalLevel2(DummyThreadLocalLevel2);
+#endif
 
 #ifdef DMibConfig_OverrideSystemMalloc
 	g_bMemoryManagerNeededAfterDestroy = true;
@@ -1594,6 +1652,11 @@ void NSys::fg_CreateSystem()
 #endif
 
 	g_bCanUseSystemMalloc = true;
+
+#ifdef DUseGlibcDummyThreadLocalLevel2
+	fg_Glibc_ReplaceDummyThreadLocalLevel2(DummyThreadLocalLevel2);
+#endif
+
 	g_bCanStackTrace = true;
 
 	// Can use malloc from here on
@@ -1685,6 +1748,15 @@ void NSys::fg_CreateSystem()
 
 	pSystem->f_InitModule();
 	fg_InitBreakpad();
+
+	#ifdef DMibConfig_LinuxPThreadMonitoring
+		umint ThisUID = NSys::fg_Thread_GetCurrentUID();
+		pSystem->f_ThreadLocalCreateThread(ThisUID, 0);
+
+		fg_InitializePThreadNotifications();
+		fg_InitMalterlibAllEnumOtherThreads();
+	#endif
+
 	pSystem->f_InitModuleThreaded();
 
 	#ifdef DMibSanitizerEnabled_Thread
@@ -1696,6 +1768,9 @@ bool g_bSysDeleted = false;
 
 void NSys::fg_PreDestroyHeap()
 {
+#ifdef DMibConfig_LinuxPThreadMonitoring
+	fg_DestroyPThreadNotifications();
+#endif
 }
 
 void NSys::fg_DestroySystem()
@@ -1707,8 +1782,14 @@ void NSys::fg_DestroySystem()
 		auto pSys = fg_GetLocalSys();
 
 		pSys->f_DestroyThreadSpecific();
+		// f_DestroyThreadSpecific() stops and joins every thread before lifecycle
+		// notification state is torn down, so no thread callback can race the code below.
 
 		pSys->f_ExitModule();
+
+	#ifdef DMibConfig_LinuxPThreadMonitoring
+		fg_UnregisterPThreadNotifications();
+	#endif
 
 		// We need to flush these before the buffer memory is deleted
 		fflush(stdout);
