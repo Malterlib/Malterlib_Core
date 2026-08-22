@@ -139,9 +139,9 @@ Property
 	}
 	MalterlibLocalizationRoot: string = `@(Builtin.BasePathAbsolute)/MalterlibLegacy/Localization`
 
-	MalterlibSupportSanitizerEnable_Thread: bool = (Sanitizer_Thread == "TSan") // User(Debug)=true: Enable thread sanitizer
-	MalterlibSupportSanitizerEnable_Address: bool = (Sanitizer_Address == "ASan") // User(Debug)=true: Enable address sanitizer
-	MalterlibSupportSanitizerEnable_UndefinedBehavior: bool = (Sanitizer_UndefinedBehavior == "UBSan") // User(Debug)=true: Enable undefined behavior sanitizer
+	MalterlibSupportSanitizerEnable_Thread: bool = (Sanitizer_Thread <==> "TSan") // User(Debug)=true: Enable thread sanitizer
+	MalterlibSupportSanitizerEnable_Address: bool = (Sanitizer_Address <==> "ASan") // User(Debug)=true: Enable address sanitizer
+	MalterlibSupportSanitizerEnable_UndefinedBehavior: bool = (Sanitizer_UndefinedBehavior <==> "UBSan") // User(Debug)=true: Enable undefined behavior sanitizer
 	MalterlibSupportSanitizerEnable_NoRecover: bool = false // User(Debug)=true: Don't recover from sanitizer errors. Useful for running automated tests.
 
 	MalterlibSupportSanitizers: bool = false // User(Debug)=true: Enable to support sanitizer debugging such as ASAN on macOS. Implicitly turns on default toolchain, and system memory manager
