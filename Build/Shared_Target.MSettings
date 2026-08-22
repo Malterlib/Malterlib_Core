@@ -524,7 +524,7 @@ Target
 
 Property
 {
-	MalterlibUseClangForWindows: bool = (!MalterlibUseClangForWindowsConfigs || ClangForWindows_Enabled == "Clang") // User(Toolset)=false: Enable clang compilation for Windows platform
+	MalterlibUseClangForWindows: bool = true // User(Toolset)=false: Enable clang compilation for Windows platform
 
 	MalterlibAbsoluteBasePath: string = Builtin.BasePathAbsolute
 }
