@@ -272,26 +272,10 @@ void NSys::fg_Thread_SetLocalDestructor(mint _ThreadID, mint _iStorage, void *_p
 		return;
 	}
 #ifdef DPlatformFamily_macOS
-	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
-		
-		NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-		pThreadLocal->f_Exchange((mint)_pData)
-
-	#else
-		#if DPlatformVersion >= 1070
-			#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__)
-				NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
-			#else
-				#error "Not Implemented"
-			#endif
-			pThreadLocal->f_Exchange((mint)_pData);
-		#elif DPlatformVersion >= 1050
-			NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-			pThreadLocal->f_Exchange((mint)_pData);
-		#else
-			#error "Not Implemented"
-		#endif
-	#endif
+	// The thread UID is the pthread_t and the thread specific data lives at
+	// g_ThreadLocalOffsetPThread from it, matching fg_Thread_GetLocal
+	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffsetPThread) + _iStorage * sizeof(mint));
+	pThreadLocal->f_Exchange((mint)_pData);
 #elif defined(DPlatformFamily_Linux) && defined(DMibAssumeGlibc)
 	fg_Glibc_Thread_SetLocal(_ThreadID, _iStorage, _pData);
 #else
@@ -340,25 +324,10 @@ void NSys::fg_Thread_SetLocal(mint _ThreadID, mint _iStorage, void *_pData)
 		return;
 	}
 #ifdef DPlatformFamily_macOS
-	#if defined(DMibSafeThreadLocals) && !defined(DArchitecture_ppc32) && !defined(DArchitecture_ppc64)
-		NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-		pThreadLocal->f_Exchange((mint)_pData)
-
-	#else
-		#if DPlatformVersion >= 1070
-			#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__)
-				NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + 0x0) + _iStorage * sizeof(mint));
-			#else
-				#error "Not Implemented"
-			#endif
-			pThreadLocal->f_Exchange((mint)_pData);
-		#elif DPlatformVersion >= 1050
-			NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffset) + _iStorage * sizeof(mint));
-			pThreadLocal->f_Exchange((mint)_pData);
-		#else
-			#error "Not Implemented"
-		#endif
-	#endif
+	// The thread UID is the pthread_t and the thread specific data lives at
+	// g_ThreadLocalOffsetPThread from it, matching fg_Thread_GetLocal
+	NAtomic::TCAtomic<mint> *pThreadLocal = (NAtomic::TCAtomic<mint> *)((_ThreadID + g_ThreadLocalOffsetPThread) + _iStorage * sizeof(mint));
+	pThreadLocal->f_Exchange((mint)_pData);
 #elif defined(DPlatformFamily_Linux) && defined(DMibAssumeGlibc)
 	fg_Glibc_Thread_SetLocal(_ThreadID, _iStorage, _pData);
 #else
