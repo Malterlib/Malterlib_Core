@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_PlatformImp_MSVC_Net.h"
+#include "Malterlib_Core_Platform_Windows.h"
+#include "Malterlib_Core_Platform_Windows_IoLoop_Iocp_Internal.h"
 
 #include <AclAPI.h>
+#include <mstcpip.h>
 
 // Apply Unix socket permission flags as Windows ACLs on the socket file
 static void fg_ApplyUnixSocketPermissions(CUnixAddress const &_UnixAddress)
@@ -89,18 +92,6 @@ static void fg_ApplyUnixSocketPermissions(CUnixAddress const &_UnixAddress)
 // CWindowsSocket Implementation
 // *************************************************************************************************************************
 
-CWindowsSocket::CWindowsSocket()
-{
-	m_pSocket = nullptr;
-#ifdef DTCPDelayEmulation
-	m_DelayedData = 0;
-	m_bDelayedStuffed = 0;
-#endif
-
-	m_Magic = 0x4EA11E49;
-	m_Version = 0x101;
-}
-
 CWindowsSocket::CUnixListenState::~CUnixListenState()
 {
 	try
@@ -116,75 +107,40 @@ CWindowsSocket::CUnixListenState::~CUnixListenState()
 	}
 }
 
-CWindowsSocket::~CWindowsSocket()
+
+#if DMibConfig_IoDebug_Enable
+// Null when the statistics are off, so a recording site asks and finds the counters in one read
+NSys::CSocketIoStats *fg_SocketIoStats()
 {
-	m_fOnStateChange.f_Clear();
-#ifdef DTCPDelayEmulation
-	m_DelayedPackets.f_DeleteAllDefiniteType();
-#endif
-	if (m_pSocket && !(m_StateAtomic.f_Load() & DMibBit(31)))
-		closesocket((SOCKET)m_pSocket);
+	auto &Io = NSys::fg_IoSubSystem();
+	if (!Io.f_StatsEnabled())
+		return nullptr;
+
+	return &Io.m_SocketIoStats;
 }
 
-#ifdef DTCPDelayEmulation
-
-void CWindowsSocket::f_UpdateDelayedSend(const NTime::CTime &_Now)
+static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWouldBlock)
 {
-	umint LastDelayedData;
-	umint NewDelayedData;
-	bool bDelayedStuffed;
-	{
-		DMibLock(m_DelayedLock);
-		LastDelayedData = m_DelayedData;
-		CDelayedPacket *pPacket = m_DelayedPackets.f_GetFirst();
-		while (pPacket)
-		{
-			if (_Now > pPacket->m_SendTime)
-			{
-				umint Data = pPacket->m_Data.f_GetLen() - pPacket->m_SentData;
-				int Ret = send((SOCKET)m_pSocket, (const char *)pPacket->m_Data.f_GetArray() + pPacket->m_SentData, Data, 0);
+	auto *pStats = fg_SocketIoStats();
+	if (!pStats)
+		return;
 
-				if (Ret == SOCKET_ERROR)
-				{
-					break;
-				}
-				else
-					pPacket->m_SentData += Ret;
-
-				if (pPacket->m_SentData == pPacket->m_Data.f_GetLen())
-				{
-					m_DelayedData -= pPacket->m_SentData;
-					fg_DeleteObject(NMemory::CDefaultAllocator(), pPacket);
-					pPacket = m_DelayedPackets.f_GetFirst();
-				}
-				else
-					break;
-			}
-			else
-				break;
-		}
-		NewDelayedData = m_DelayedData;
-		bDelayedStuffed = m_bDelayedStuffed;
-	}
-	if (bDelayedStuffed && NewDelayedData < DTCPDelayEmulation_MaxQueue)
-	{
-		DMibLockTyped(NThread::CMutual, mp_Lock);
-		m_State |= NMib::NNetwork::ENetTCPState_Write;
-		if (m_fOnStateChange)
-			m_fOnStateChange(NMib::NNetwork::ENetTCPState_Write);
-	}
+	pStats->m_nSendCalls.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	pStats->m_nSendBytesRequested.f_FetchAdd(_nRequested, NAtomic::gc_MemoryOrder_Relaxed);
+	pStats->m_nSendBytesSent.f_FetchAdd(_nSent, NAtomic::gc_MemoryOrder_Relaxed);
+	if (_nRequested)
+		pStats->m_SendSizeBuckets[fg_GetHighestBitSet(_nRequested)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	if (_bWouldBlock)
+		pStats->m_nSendWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	else if (_nSent < _nRequested)
+		pStats->m_nSendShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 }
-
 #endif
-
 
 CWindowsSocketContext::CWindowsSocketContext()
 {
-	mp_ThreadStartEvent.f_ResetSignaled();
+	mp_pIo = &fg_IoSubSystem_Windows();
 	mp_bInitFailed = false;
-	mp_hThread = nullptr;
-	mp_hReportWnd = nullptr;
-	mp_ThreadID = -1;
 
 	{
 		WORD wVersionRequested;
@@ -207,76 +163,26 @@ CWindowsSocketContext::CWindowsSocketContext()
 			mp_bInitFailed = true;
 		}
 	}
+
+	// Create the shared loop before its thread; failure must surface before sockets can use it.
+	mp_PollerThread.mp_pLoop = fg_CreatePlatformIoLoop();
+	if (mp_PollerThread.mp_pLoop)
+		mp_PollerThread.f_Start(EExecutionPriority_Highest);
+	else
+		mp_bInitFailed = true;
 }
 
 CWindowsSocketContext::~CWindowsSocketContext()
 {
-	DMibFastCheck(mp_ThreadRefcount == 0);
-	fp_StopThread(true);
-	*mp_pDestroyed = true;
-}
-
-CWindowsSocketContextThreadUseScope::CWindowsSocketContextThreadUseScope(CWindowsSocketContext *_pContext)
-	: mp_pContext(_pContext)
-	, mp_pDestroyed(_pContext->mp_pDestroyed)
-{
-}
-
-CWindowsSocketContextThreadUseScope::CWindowsSocketContextThreadUseScope(CWindowsSocketContextThreadUseScope &&_Other)
-	: mp_pContext(fg_Exchange(_Other.mp_pContext, nullptr))
-	, mp_pDestroyed(fg_Move(_Other.mp_pDestroyed))
-{
-}
-
-CWindowsSocketContextThreadUseScope &CWindowsSocketContextThreadUseScope::operator = (CWindowsSocketContextThreadUseScope &&_Other)
-{
- 	mp_pContext = fg_Exchange(_Other.mp_pContext, nullptr);
-	mp_pDestroyed = fg_Move(_Other.mp_pDestroyed);
-
-	return *this;
-}
-
-CWindowsSocketContextThreadUseScope::~CWindowsSocketContextThreadUseScope()
-{
-	if (!mp_pContext || *mp_pDestroyed)
-		return;
-
-	mp_pContext->fp_StopThread(false);
-}
-
-void CWindowsSocketContext::fp_StopThread(bool _bForce)
-{
-	DMibLock(mp_ThreadStartLock);
-	if (--mp_ThreadRefcount > 0 && !_bForce)
-		return;
-
-	if (NMib::NThread::CThread::f_GetState() == EThreadState_Running)
+	// Other modules may still own sockets; this subsystem must not tear down their Winsock provider.
+	if (mp_PollerThread.mp_pLoop)
 	{
-		PostThreadMessage(mp_ThreadID, WM_QUIT, 0, 0);
-		f_Stop();
-		mp_ThreadStartEvent.f_ResetSignaled();
+		// The poller's exit drain acknowledges the last removals; a socket still open past it
+		// is an error in its owner's teardown order, which the loop's destruction checks
+		mp_PollerThread.f_Stop(true);
+		NSys::fg_DestroyIoLoop(mp_PollerThread.mp_pLoop);
+		mp_PollerThread.mp_pLoop = nullptr;
 	}
-}
-
-CWindowsSocketContextThreadUseScope CWindowsSocketContext::f_StartThread()
-{
-	DMibLock(mp_ThreadStartLock);
-	if (++mp_ThreadRefcount != 1)
-		return {this};
-
-	DMibFastCheck(NMib::NThread::CThread::f_GetState() != EThreadState_Running);
-	if (NMib::NThread::CThread::f_GetState() != EThreadState_Running)
-	{
-		f_Start(EExecutionPriority_High);
-		mp_ThreadStartEvent.f_Wait();
-	}
-
-	return {this};
-}
-
-NStr::CStr CWindowsSocketContext::f_GetThreadName()
-{
-	return "Malterlib_Core_PlatformImp_WindowsSocketContext";
 }
 
 void CWindowsSocketContext::f_CheckFailed()
@@ -285,193 +191,6 @@ void CWindowsSocketContext::f_CheckFailed()
 		DMibErrorNet("Initziation of WinSock has faild, cannot use net");
 }
 
-LRESULT WINAPI CWindowsSocketContext::fsp_SocketWindowProc(HWND _hWnd, UINT _Message, WPARAM _wParam, LPARAM _lParam)
-{
-	if (_Message == WM_ENDSESSION || _Message == WM_QUERYENDSESSION)
-		NMib::NPlatform::fg_ReportIsShuttingDown();
-
-	return DefWindowProc(_hWnd, _Message, _wParam, _lParam);
-}
-
-aint CWindowsSocketContext::f_Main()
-{
-	mp_hThread = GetCurrentThread();
-	mp_ThreadID = GetCurrentThreadId();
-
-	umint ProcessId = (umint)GetCurrentProcessId();
-
-	CFStr256 FormatFormat;
-	FormatFormat = CFStr256::CFormat("NMib" DMibSystemManagerPrefix "PID_0x{nfh,sf0,sj*2}_THIS_0x{nfh,sf0,sj*2}") << ProcessId << (umint)this << sizeof(ProcessId) * 2 ;
-
-	CFStr256 ClassName = CFStr256::CFormat("MalterlibSocketReportClass_{}") << FormatFormat;
-
-	WNDCLASSA WndClass;
-	memset(&WndClass, 0, sizeof(WndClass));
-	WndClass.lpszClassName = ClassName ;
-	WndClass.lpfnWndProc = fsp_SocketWindowProc;
-	WndClass.hInstance = g_hDllInstance;
-	if (!RegisterClassA(&WndClass))
-	{
-		mp_bInitFailed = true;
-		mp_ThreadStartEvent.f_SetSignaled();
-		return 0;
-	}
-
-	mp_hReportWnd = CreateWindowA(ClassName, ClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, 0, 0);
-
-	if (!mp_hReportWnd)
-	{
-		UnregisterClassA(ClassName, g_hDllInstance);
-		mp_bInitFailed = true;
-		mp_ThreadStartEvent.f_SetSignaled();
-		return 0;
-	}
-
-#ifdef DTCPDelayEmulation
-	SetTimer(nullptr, 1, 10, nullptr);
-#endif
-	mp_ThreadStartEvent.f_SetSignaled();
-
-	while (NThread::CThread::f_GetState() != NThread::EThreadState_EventWantQuit)
-	{
-		int32 Ret;
-
-		MSG Message;
-
-		Ret = GetMessage( &Message, nullptr, 0, 0 );
-		if (Ret == -1 || Ret == 0 || Message.message == WM_QUIT)
-		{
-			// handle the error and possibly exit
-			goto ExitThread;
-		}
-		else if (Message.message == WM_TIMER)
-		{
-#ifdef DTCPDelayEmulation
-			// Kickstart buggy drivers
-			CWindowsSocket *pSocket;
-			NTime::CTime Now = NTime::CTime::fs_NowUTC();
-			{
-				DMibLockTyped(NThread::CMutual, mp_Lock);
-				auto Iter = mp_SocketTree.f_GetIterator();
-				while (Iter)
-				{
-					pSocket = Iter;
-					pSocket->f_UpdateDelayedSend(Now);
-					++Iter;
-				}
-			}
-#endif
-		}
-		else if (Message.message == WM_USER + 1)
-		{
-			void *hSocket = (void *)Message.wParam;
-			CWindowsSocket *pSocket;
-			{
-				DMibLockTyped(NThread::CMutual, mp_Lock);
-				pSocket = mp_SocketTree.f_FindEqual(hSocket);
-				if (pSocket)
-				{
-					pSocket->m_bReceiveEvents = true;
-					if (pSocket->m_fOnStateChange)
-					{
-						uint32 State = pSocket->m_StateAtomic.f_Load() & DMibBitRange(0, 30);
-						pSocket->m_fOnStateChange((ENetTCPState)State);
-					}
-				}
-			}
-		}
-		else if (Message.message == WM_USER)
-		{
-			void *hSocket = (void *)Message.wParam;
-
-			CWindowsSocket *pSocket;
-			{
-				DMibLockTyped(NThread::CMutual, mp_Lock);
-				pSocket = mp_SocketTree.f_FindEqual(hSocket);
-
-				if (pSocket)
-				{
-					DMibLockTyped(NThread::CMutual, pSocket->m_Lock);
-					{
-
-						DMibUnlockTyped(NThread::CMutual, mp_Lock);
-//									umint Error = WSAGETSELECTERROR(Message.lParam);
-						umint Event = WSAGETSELECTEVENT(Message.lParam);
-
-						{
-							NMib::NNetwork::ENetTCPState StateAdded = NMib::NNetwork::ENetTCPState_None;
-							if (Event & FD_READ)
-								StateAdded |= NMib::NNetwork::ENetTCPState_Read;
-							if (Event & FD_WRITE)
-							{
-#ifndef DTCPDelayEmulation
-								StateAdded |= NMib::NNetwork::ENetTCPState_Write;
-#else
-								if (!bDTCPDelayEmulation)
-									StateAdded |= NMib::NNetwork::ENetTCPState_Write;
-#endif
-
-							}
-							if (Event & FD_ACCEPT)
-								StateAdded |= NMib::NNetwork::ENetTCPState_Connection;
-							if (Event & FD_CONNECT)
-							{
-								int Error = WSAGETSELECTERROR(Message.lParam);
-								if (Error)
-								{
-									StateAdded |= NMib::NNetwork::ENetTCPState_Closed;
-									pSocket->m_CloseReason = NMib::NPlatform::fg_Win32_GetLastErrorStr(Error);
-								}
-								else
-								{
-									StateAdded |= NMib::NNetwork::ENetTCPState_Connected;
-								}
-							}
-							if (Event & FD_CLOSE)
-							{
-								int Error = WSAGETSELECTERROR(Message.lParam);
-								StateAdded |= NMib::NNetwork::ENetTCPState_Closed;
-								if (Error)
-									pSocket->m_CloseReason = NMib::NPlatform::fg_Win32_GetLastErrorStr(Error);
-								else
-									pSocket->m_CloseReason = "Connection gracefully disconnected";
-							}
-
-							if (StateAdded)
-							{
-								pSocket->m_StateAtomic |= StateAdded;
-								if (pSocket->m_bReceiveEvents && pSocket->m_fOnStateChange)
-									pSocket->m_fOnStateChange(StateAdded);
-							}
-						}
-					}
-				}
-
-			}
-		}
-		else
-		{
-			TranslateMessage(&Message);
-			DispatchMessage(&Message);
-		}
-	}
-
-ExitThread:
-	if (mp_hReportWnd)
-	{
-		DestroyWindow(mp_hReportWnd);
-		mp_hReportWnd = nullptr;
-	}
-
-	UnregisterClassA(ClassName, g_hDllInstance);
-
-	return 0;
-}
-
-bool CWindowsSocketContext::f_IsEmpty()
-{
-	return mp_SocketTree.f_IsEmpty();
-}
 
 // *************************************************************************************************************************
 // WindowsSocketContext Address Methods
@@ -874,7 +593,6 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 
 	return AddressStr;
 }
-
 // *************************************************************************************************************************
 // WindowsSocketContext Connection Operations
 // *************************************************************************************************************************
@@ -882,6 +600,301 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 static bool fg_UnixSocketsSupported()
 {
 	return CSystem::ms_PlatformVersion >= 10'0'017063;
+}
+
+namespace
+{
+	// Both loopback endpoints must opt in; newer kernels may already provide this fast path.
+	void fg_EnableLoopbackFastPath(CIoSubSystem_Windows *_pIo, SOCKET _Socket)
+	{
+		if (!_pIo->f_LoopbackFastPathEnabled())
+			return;
+
+		int bEnable = 1;
+		DWORD nBytes = 0;
+		WSAIoctl(_Socket, SIO_LOOPBACK_FAST_PATH, &bEnable, sizeof(bEnable), nullptr, 0, &nBytes, nullptr, nullptr);
+	}
+
+	bool fg_IsLoopbackSockAddr(sockaddr const *_pAddress)
+	{
+		if (_pAddress->sa_family == AF_INET)
+		{
+			auto const &Native = *(sockaddr_in const *)_pAddress;
+			return ((uint8 const *)&Native.sin_addr.s_addr)[0] == 127;
+		}
+
+		if (_pAddress->sa_family == AF_INET6)
+		{
+			auto const &Native = *(sockaddr_in6 const *)_pAddress;
+			if (IN6_IS_ADDR_LOOPBACK(&Native.sin6_addr))
+				return true;
+			if (IN6_IS_ADDR_V4MAPPED(&Native.sin6_addr))
+				return Native.sin6_addr.s6_addr[12] == 127;
+		}
+
+		return false;
+	}
+
+	bool fg_IsLoopbackAddress(CWindowsAddress const &_Address)
+	{
+		if (_Address.f_GetType() != ENetAddressType_TCPv4 && _Address.f_GetType() != ENetAddressType_TCPv6)
+			return false;
+
+		return fg_IsLoopbackSockAddr((sockaddr const *)_Address.f_Get());
+	}
+
+	bool fg_IsLoopbackPeer(SOCKET _Socket)
+	{
+		sockaddr_storage Peer;
+		int nBytes = sizeof(Peer);
+		if (getpeername(_Socket, (sockaddr *)&Peer, &nBytes) != 0)
+			return false;
+
+		return fg_IsLoopbackSockAddr((sockaddr const *)&Peer);
+	}
+
+	// Loopback lacks receive-window autotuning; larger buffers avoid wake-sized bursts.
+	// Do not apply to remote peers, where fixed receive buffers disable needed autotuning.
+	constexpr int gc_LoopbackTcpSocketBufferBytes = 1024 * 1024;
+
+	void fg_SizeLoopbackTcpBuffers(SOCKET _Socket)
+	{
+		int BufferSize = gc_LoopbackTcpSocketBufferBytes;
+		if
+		(
+			setsockopt(_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+			|| setsockopt(_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+		)
+		{
+			uint32 Error = WSAGetLastError();
+			DMibErrorNet((CStr::CFormat("Could not size the buffers of a loopback TCP socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
+	}
+
+	void fg_SetNonBlocking(SOCKET _Socket, char const *_pWhat)
+	{
+		u_long bNonBlocking = 1;
+		if (ioctlsocket(_Socket, FIONBIO, &bNonBlocking) != 0)
+		{
+			uint32 Error = WSAGetLastError();
+			DMibErrorNet((CStr::CFormat("Could not set socket non-blocking ({}), windows returned: {}") << _pWhat << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
+	}
+
+	constexpr NSys::EIoLoopEvent fg_IoLoopMaskFromSocketEvents(EWindowsSocketEvent _Events)
+	{
+		return
+			((_Events & EWindowsSocketEvent_Read) ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
+			| ((_Events & EWindowsSocketEvent_Write) ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None)
+		;
+	}
+}
+
+// Decode on the driving thread so readiness preserves ordering with the rest of the dispatch pass.
+static void fg_DispatchSocketIoEvent(void *_pToken, NSys::EIoLoopEvent _Events, int _Error)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pToken;
+
+	DMibLock(pSocket->m_Lock);
+
+	if (_Events == NSys::EIoLoopEvent::mc_None)
+	{
+		// Replay readiness predating registration; no new edge may arrive.
+		if (pSocket->m_fOnStateChange)
+			pSocket->m_fOnStateChange((ENetTCPState)pSocket->m_StateAtomic.f_Load());
+
+		return;
+	}
+
+#if DMibConfig_IoDebug_Enable
+	if (auto *pStats = fg_SocketIoStats())
+	{
+		if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
+			pStats->m_nReadinessReportsRead.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Write))
+			pStats->m_nReadinessReportsWrite.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
+	if (pSocket->m_CloseError || pSocket->m_bNonErrorClose)
+		return;
+
+	ENetTCPState AddedState = ENetTCPState_None;
+
+	auto fAddState = [&]
+		{
+			if (AddedState)
+			{
+				pSocket->m_StateAtomic.f_FetchOr(AddedState);
+				if (pSocket->m_fOnStateChange)
+					pSocket->m_fOnStateChange(AddedState);
+			}
+		}
+	;
+
+	auto fSocketError = [&]() -> int
+		{
+			int Error = 0;
+			int ErrorLen = sizeof(Error);
+			if (getsockopt(pSocket->m_Socket, SOL_SOCKET, SO_ERROR, (char *)&Error, &ErrorLen) != 0)
+				return WSAGetLastError();
+
+			return Error;
+		}
+	;
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Error))
+	{
+		if (_Error)
+			pSocket->m_CloseError = _Error;
+		else
+		{
+			// The backend has no error value for this event; the socket error answers, with -1
+			// standing in when even that is empty so the close still reads as an error close
+			pSocket->m_CloseError = fSocketError();
+			if (!pSocket->m_CloseError)
+				pSocket->m_CloseError = -1;
+		}
+
+		AddedState |= ENetTCPState_Closed;
+		fAddState();
+
+		return;
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_WriteClosed))
+	{
+		int Error = fSocketError();
+		if (Error)
+			pSocket->m_CloseError = Error;
+		else
+			pSocket->m_bNonErrorClose = true;
+
+		AddedState |= ENetTCPState_Closed;
+		fAddState();
+
+		return;
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Hup))
+	{
+		int Error = fSocketError();
+		if (Error)
+			pSocket->m_CloseError = Error;
+		else
+			pSocket->m_bNonErrorClose = true;
+
+		AddedState |= ENetTCPState_Closed;
+		fAddState();
+
+		return;
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_ReadClosed))
+	{
+		// AFD has no event for the completed pair of half-closes. Track local shutdown and report readable too,
+		// so consumers drain any final payload before observing EOF.
+		if (pSocket->m_bShutdownCalled)
+		{
+			int Error = fSocketError();
+			if (Error)
+				pSocket->m_CloseError = Error;
+			else
+				pSocket->m_bNonErrorClose = true;
+
+			AddedState |= ENetTCPState_Closed | ENetTCPState_Read;
+			fAddState();
+
+			return;
+		}
+
+		if (!pSocket->m_bRemoteCloseSignalled)
+		{
+			pSocket->m_bRemoteCloseSignalled = true;
+			AddedState |= ENetTCPState_RemoteClosed | ENetTCPState_Read;
+		}
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
+	{
+		if (pSocket->m_Mode == EWindowsSocketMode_Connect || pSocket->m_Mode == EWindowsSocketMode_Datagram)
+			AddedState |= ENetTCPState_Read;
+		else if (pSocket->m_Mode == EWindowsSocketMode_Listen)
+			AddedState |= ENetTCPState_Connection;
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Write))
+	{
+		if (pSocket->m_Mode == EWindowsSocketMode_Connect || pSocket->m_Mode == EWindowsSocketMode_Datagram)
+			AddedState |= ENetTCPState_Write;
+		else if (pSocket->m_Mode == EWindowsSocketMode_Connecting)
+		{
+			// Writability arrives for a settled connect either way; the socket error is what
+			// distinguishes success from failure
+			int Error = fSocketError();
+			if (Error)
+			{
+				pSocket->m_CloseError = Error;
+				AddedState |= ENetTCPState_Closed;
+			}
+			else
+			{
+				pSocket->m_Mode = EWindowsSocketMode_Connect;
+				AddedState |= ENetTCPState_Connected;
+			}
+		}
+	}
+
+	fAddState();
+}
+
+static ENetAddressType fsg_AddressTypeOfSocket(SOCKET _Socket)
+{
+	sockaddr_storage Address;
+	int nAddress = sizeof(Address);
+	fg_MemClear(&Address, sizeof(Address));
+
+	if (getsockname(_Socket, (sockaddr *)&Address, &nAddress) != 0)
+		return ENetAddressType_None;
+
+	if (Address.ss_family == AF_UNIX)
+		return ENetAddressType_Unix;
+	if (Address.ss_family == AF_INET)
+		return ENetAddressType_TCPv4;
+	if (Address.ss_family == AF_INET6)
+		return ENetAddressType_TCPv6;
+
+	return ENetAddressType_None;
+}
+
+CWindowsSocket *CWindowsSocketContext::fp_CreateSocket
+	(
+		SOCKET _Socket
+		, EWindowsSocketMode _Mode
+		, EWindowsSocketEvent _Events
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		, bool _bFromInherit
+	)
+{
+	NMib::NStorage::TCUniquePointer<CWindowsSocket> pNewSocket = fg_Construct(_Socket, _Mode, _Events, fg_Move(_fOnStateChange));
+	pNewSocket->m_pIo = mp_pIo;
+
+	if (_bFromInherit)
+	{
+		pNewSocket->m_bInitialWriteNotification = false;
+		pNewSocket->m_bFromInherit = true;
+	}
+
+	NMib::NNetwork::ENetTCPState StateAdded = NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write;
+
+	if (_Mode == EWindowsSocketMode_Connect)
+		StateAdded |= NMib::NNetwork::ENetTCPState_Connected;
+	else if (_Mode == EWindowsSocketMode_Connecting)
+		pNewSocket->m_bInitialWriteNotification = false;
+
+	pNewSocket->m_StateAtomic.f_FetchOr(StateAdded);
+
+	return pNewSocket.f_Detach();
 }
 
 CWindowsSocket *CWindowsSocketContext::fp_Connect
@@ -930,11 +943,11 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 	SOCKET hSock = INVALID_SOCKET;
 
 	if
-		(
-			AddressType != ENetAddressType_TCPv4
-			&& AddressType != ENetAddressType_TCPv6
-			&& AddressType != ENetAddressType_Unix
-		)
+	(
+		AddressType != ENetAddressType_TCPv4
+		&& AddressType != ENetAddressType_TCPv6
+		&& AddressType != ENetAddressType_Unix
+	)
 	{
 		DMibErrorNet("Invalid address type.");
 	}
@@ -957,24 +970,6 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 		}
 	;
 
-#ifdef DMibNetworkLimitBufferSize
-	int Buf = EDefaultSocketBufSize;
-	if (Buf > 0)
-	{
-		if (setsockopt(hSock, SOL_SOCKET, SO_RCVBUF, (char *)&Buf, sizeof(Buf)))
-		{
-			uint32 Error = WSAGetLastError();
-			DMibErrorNet((CStr::CFormat("Could not set connect socket receive buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
-
-		if (setsockopt(hSock, SOL_SOCKET, SO_SNDBUF, (char *)&Buf, sizeof(Buf)))
-		{
-			uint32 Error = WSAGetLastError();
-			DMibErrorNet((CStr::CFormat("Could not set connect socket send buffer size, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
-	}
-#endif
-
 	if (AddressType != ENetAddressType_Unix)
 	{
 		BOOL NoDelay = true;
@@ -982,6 +977,12 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 		{
 			uint32 Error = WSAGetLastError();
 			DMibErrorNet((CStr::CFormat("Could not set connect socket NoDelay setting, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
+
+		if (fg_IsLoopbackAddress(Address))
+		{
+			fg_EnableLoopbackFastPath(mp_pIo, hSock);
+			fg_SizeLoopbackTcpBuffers(hSock);
 		}
 	}
 
@@ -995,35 +996,9 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 		}
 	}
 
-	TCUniquePointer<CWindowsSocket> pSocket;
+	fg_SetNonBlocking(hSock, "connect");
 
-	pSocket = fg_Construct();
-
-	pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
-	pSocket->m_pSocket = (void *)hSock;
-	SocketCleanup.f_Clear();
-	{
-		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-		mp_SocketTree.f_Insert(pSocket.f_Get());
-	}
-
-	pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write;
-	pSocket->m_ThreadUseScope = f_StartThread();
-
-	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE | FD_CONNECT))
-	{
-		uint32 Error = WSAGetLastError();
-		{
-			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-			mp_SocketTree.f_Remove(pSocket.f_Get());
-		}
-		// Make sure that the report thread isn't using our socket
-		{
-			DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
-		}
-		pSocket = nullptr;
-		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-	}
+	EWindowsSocketMode Mode = EWindowsSocketMode_Connect;
 
 	int Result = connect(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
 	if (Result != 0)
@@ -1032,16 +1007,6 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 
 		if (Error != WSAEWOULDBLOCK)
 		{
-			{
-				DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-				mp_SocketTree.f_Remove(pSocket.f_Get());
-			}
-			// Make sure that the report thread isn't using our socket
-			{
-				DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
-			}
-			pSocket = nullptr;
-
 			if (_Address.f_GetType() == ENetAddressType_Unix)
 			{
 				auto &Unix = _Address.f_GetUnix();
@@ -1050,11 +1015,16 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 			else
 				DMibErrorNet((CStr::CFormat("Could not connect socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
-	}
-	else
-		pSocket->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Connected;
 
-	return pSocket.f_Detach();
+		Mode = EWindowsSocketMode_Connecting;
+	}
+
+	SocketCleanup.f_Clear();
+
+	auto *pSocket = fp_CreateSocket(hSock, Mode, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
+	pSocket->m_AddressType = AddressType;
+
+	return pSocket;
 }
 
 CWindowsSocket *CWindowsSocketContext::f_AsyncConnect
@@ -1069,7 +1039,286 @@ CWindowsSocket *CWindowsSocketContext::f_AsyncConnect
 
 void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 {
-	PostThreadMessage(mp_ThreadID, WM_USER + 1, (WPARAM)_pSocket->m_pSocket, 0);
+	if (umint nBufferBytes = mp_pIo->f_SocketBufferBytesOverride(); nBufferBytes && _pSocket->m_Socket != INVALID_SOCKET)
+	{
+		int BufferSize = (int)fg_Min(nBufferBytes, umint(INT_MAX));
+		if
+		(
+			setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+			|| setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+		)
+		{
+			uint32 Error = WSAGetLastError();
+			DMibErrorNet((CStr::CFormat("Could not apply MalterlibSocketBufferSize, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
+	}
+
+	if (_pSocket->m_pIoRegistration)
+		DMibErrorNet("Windows socket already registered");
+
+	NSys::EIoLoopEvent EventMask = fg_IoLoopMaskFromSocketEvents(_pSocket->m_RegisteredEvents);
+	if (EventMask == NSys::EIoLoopEvent::mc_None)
+		DMibErrorNet("Failed to register Windows socket.");
+
+	NSys::ICIoLoop *pThreadLoop = NSys::fg_GetThreadIoLoop();
+	_pSocket->m_pOwningLoop = pThreadLoop ? pThreadLoop : mp_PollerThread.mp_pLoop;
+
+	NSys::CIoLoopRegisterOptions RegisterOptions;
+	RegisterOptions.m_bReadinessOnly = _pSocket->m_bInheritable;
+	RegisterOptions.m_bInheritedHandle = _pSocket->m_bFromInherit;
+
+	// Decide release semantics before publishing registration: its callback can immediately activate completion I/O.
+	// Apply SO_SNDBUF only on the first completion send so readiness handshakes retain buffering.
+	_pSocket->m_nSendBufferBytesToApply = mp_pIo->f_SocketSendBufferBytesOverride();
+	// Unbuffered TCP needs SIO_TCP_INFO for window sizing. Inheritable sockets retain buffers for readiness sends.
+	if
+	(
+		_pSocket->m_nSendBufferBytesToApply == umint(-1)
+		&& !_pSocket->m_bInheritable
+		&& mp_pIo->f_DirectSendEnabled()
+		&& _pSocket->m_Mode != EWindowsSocketMode_Datagram
+		&& (_pSocket->m_AddressType == ENetAddressType_Unix || fg_WindowsTcpInfoSupported())
+	)
+	{
+		_pSocket->m_nSendBufferBytesToApply = 0;
+	}
+	if (_pSocket->m_nSendBufferBytesToApply == 0 && _pSocket->m_AddressType != ENetAddressType_Unix)
+		RegisterOptions.m_bSendCompletesOnAck = true;
+
+	_pSocket->m_pIoRegistration = _pSocket->m_pOwningLoop->f_Register
+		(
+			(NSys::CIoLoopHandle)_pSocket->m_Socket
+			, _pSocket
+			, EventMask
+			, &fg_DispatchSocketIoEvent
+			, fg_IsSet(EventMask, NSys::EIoLoopEvent::mc_Read) != 0
+			, RegisterOptions
+		)
+	;
+
+	if (_pSocket->m_nSendWindowBytes)
+		_pSocket->m_pOwningLoop->f_SetSendWindow(_pSocket->m_pIoRegistration, _pSocket->m_nSendWindowBytes);
+}
+
+// Arm after would-block or a short stream transfer, which proves the queue exhausted.
+// EOF must not rearm; datagrams require an actual would-block observation.
+static void fg_RequestSocketReadiness(CWindowsSocket *_pSocket, NSys::EIoLoopEvent _EventMask)
+{
+	if (!_pSocket->m_pOwningLoop || !_pSocket->m_pIoRegistration)
+		return;
+
+#if DMibConfig_IoDebug_Enable
+	if (auto *pStats = fg_SocketIoStats())
+	{
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Read))
+			pStats->m_nReadinessArmsRead.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Write))
+			pStats->m_nReadinessArmsWrite.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
+	_pSocket->m_pOwningLoop->f_RequestReadiness(_pSocket->m_pIoRegistration, _EventMask);
+}
+
+void NSys::NNetwork::fg_RequestReadiness(void *_pSocket, bool _bRead, bool _bWrite)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+
+	NSys::EIoLoopEvent EventMask =
+		(_bRead ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
+		| (_bWrite ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None)
+	;
+	if (EventMask != NSys::EIoLoopEvent::mc_None)
+		fg_RequestSocketReadiness(pSocket, EventMask);
+}
+
+NSys::ICIoLoop *NSys::NNetwork::fg_GetOwningIoLoop(void *_pSocket)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+
+	// Only caller-created loops are restorable bindings; nullptr already selects the shared poller.
+	NSys::ICIoLoop *pOwningLoop = pSocket->m_pOwningLoop;
+	if (!pOwningLoop || !pOwningLoop->m_bCreatedAsLoop)
+		return nullptr;
+
+	return pOwningLoop;
+}
+
+namespace
+{
+	// Submissions follow registration changes on the loop queue, so binding precedes kernel submission.
+	// Read only immutable registration options here; failed binding cancels pending work.
+	bool fg_CompletionPortIsOwningLoops(CWindowsSocket *_pSocket)
+	{
+		if (!_pSocket->m_pIoRegistration)
+			return false;
+
+		return !static_cast<CIocpRegistration const *>(_pSocket->m_pIoRegistration)->m_Options.m_bReadinessOnly;
+	}
+}
+
+// Windows readiness requires an extra poll per arm; completion I/O also benefits local streams.
+bool NSys::NNetwork::fg_SupportsCompletionIo(void *_pSocket)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+
+	if (pSocket->m_Mode != EWindowsSocketMode_Connect && pSocket->m_Mode != EWindowsSocketMode_Connecting)
+		return false;
+
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pOwningLoop->f_SupportsCompletionIo())
+		return false;
+
+	return fg_CompletionPortIsOwningLoops(pSocket);
+}
+
+bool NSys::NNetwork::fg_SupportsReceiveStream(void *_pSocket)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+
+	if (pSocket->m_Mode != EWindowsSocketMode_Connect && pSocket->m_Mode != EWindowsSocketMode_Connecting)
+		return false;
+
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pOwningLoop->f_SupportsReceiveStream())
+		return false;
+
+	return fg_CompletionPortIsOwningLoops(pSocket);
+}
+
+bool NSys::NNetwork::fg_SendReleaseIsPrompt(void *_pSocket)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return true;
+
+	return pSocket->m_pOwningLoop->f_SendReleaseIsPrompt(pSocket->m_pIoRegistration);
+}
+
+bool NSys::NNetwork::fg_StartReceiveStream(void *_pSocket, umint _nBufferBytes, NStorage::TCSharedPointer<NSys::CIoStreamBackpressure> _pBackpressure, NSys::FIoStreamSink &&_fSink)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return false;
+
+	return pSocket->m_pOwningLoop->f_StartReceiveStream(pSocket->m_pIoRegistration, _nBufferBytes, fg_Move(_pBackpressure), fg_Move(_fSink));
+}
+
+void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return;
+
+	pSocket->m_pOwningLoop->f_ResumeReceiveStream(pSocket->m_pIoRegistration);
+}
+
+// Set before starting: readiness-only registration avoids permanent completion-port binding for the next owner.
+void NSys::NNetwork::fg_SetInheritable(void *_pSocket)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (pSocket->m_pIoRegistration)
+		DMibErrorNet("A socket can only be made inheritable before it is started");
+
+	pSocket->m_bInheritable = true;
+}
+
+// Transport upgrades retain the existing registration and kernel connection.
+void NSys::NNetwork::fg_ReownSocket(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	{
+		DMibLock(pSocket->m_Lock);
+		pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
+		pSocket->m_bInitialWriteNotification = false;
+	}
+
+	pSocket->m_StateAtomic.f_FetchOr(NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write | NMib::NNetwork::ENetTCPState_Connected);
+	fg_RequestReadiness(_pSocket, true, true);
+}
+
+void NSys::NNetwork::fg_SetAbortOnClose(void *_pSocket)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (pSocket->m_Socket == INVALID_SOCKET || pSocket->m_AddressType == ENetAddressType_Unix)
+		return;
+
+	linger Linger{1, 0};
+	setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_LINGER, (char const *)&Linger, sizeof(Linger));
+}
+
+// Fixed buffers disable Windows autotuning; apply only explicit windows and preserve send-buffer overrides.
+void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConfigured)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (pSocket->m_Socket == INVALID_SOCKET || !_nBytes)
+		return;
+
+	pSocket->m_nSendWindowBytes = _nBytes;
+	if (pSocket->m_pOwningLoop && pSocket->m_pIoRegistration)
+		pSocket->m_pOwningLoop->f_SetSendWindow(pSocket->m_pIoRegistration, _nBytes);
+
+	if (!_bConfigured || pSocket->m_AddressType == ENetAddressType_Unix)
+		return;
+
+	int BufferSize = (int)fg_Min(_nBytes, umint(TCLimitsInt<int>::mc_Max));
+	if
+	(
+		(
+			pSocket->m_nSendBufferBytesToApply == umint(-1)
+			&& setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+		)
+		|| setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+	)
+	{
+		uint32 Error = WSAGetLastError();
+		DMibErrorNet((CStr::CFormat("Could not size the socket buffers to the send window, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+	}
+}
+
+#include "Malterlib_Core_Platform_Windows_TcpInfo.h"
+
+bool NSys::NNetwork::fg_QueryPathDeliveryRate(void *_pSocket, umint &o_nBytes, bool &o_bAppLimited)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (pSocket->m_Socket == INVALID_SOCKET || pSocket->m_AddressType == ENetAddressType_Unix)
+		return false;
+
+	return fg_Windows_QueryPathDeliveryRate(pSocket->m_Socket, pSocket->m_PathLastBytesOut, pSocket->m_PathLastStamp, o_nBytes, o_bAppLimited);
+}
+
+bool NSys::NNetwork::fg_IsSendWindowFull(void *_pSocket, umint _nUnreleasedBytes, umint _nStartBytes)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return false;
+
+	return pSocket->m_pOwningLoop->f_IsSendWindowFull(pSocket->m_pIoRegistration, _nUnreleasedBytes, _nStartBytes);
+}
+
+umint NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *_pSpans, umint _nSpans, NSys::FIoCompletion &&_fOnComplete, NSys::FIoBufferReleased &&_fOnBufferReleased)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return 0;
+
+	// Defer SO_SNDBUF=0 until all sends are overlapped; unbuffered nonblocking sends can stall a readiness handshake.
+	if (!pSocket->m_bSendBufferDecided)
+	{
+		pSocket->m_bSendBufferDecided = true;
+
+		umint nSendBufferBytes = pSocket->m_nSendBufferBytesToApply;
+		if (nSendBufferBytes != umint(-1))
+		{
+			// Release semantics were published at registration; retaining an unexpected buffer would violate them.
+			int BufferSize = (int)fg_Min(nSendBufferBytes, umint(TCLimitsInt<int>::mc_Max));
+			if (setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0)
+			{
+				uint32 Error = WSAGetLastError();
+				DMibErrorNet((CStr::CFormat("Could not apply the send buffer policy, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			}
+		}
+	}
+
+	return pSocket->m_pOwningLoop->f_SubmitSendVectored(pSocket->m_pIoRegistration, _pSpans, _nSpans, fg_Move(_fOnComplete), fg_Move(_fOnBufferReleased));
 }
 
 TCUniquePointer<CWindowsSocket::CUnixListenState> CWindowsSocketContext::fp_PrepareUnixListen(CWindowsAddress &o_Address)
@@ -1113,6 +1362,8 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		, NNetwork::ENetFlag _Flags
 	)
 {
+	f_CheckFailed();
+
 	CWindowsAddress Address = _Address;
 	auto pUnixListen = fp_PrepareUnixListen(Address);
 
@@ -1160,6 +1411,13 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 	if (_Address.f_GetType() == ENetAddressType_Unix)
 		fg_ApplyUnixSocketPermissions(_Address.f_GetUnix());
 
+	// Accepted sockets inherit the fast path from the listener; only loopback peers that opted
+	// in themselves take it
+	if (AddressType != ENetAddressType_Unix)
+		fg_EnableLoopbackFastPath(mp_pIo, hSock);
+
+	fg_SetNonBlocking(hSock, "listen");
+
 	Result = listen(hSock, SOMAXCONN);
 
 	if (Result != 0)
@@ -1168,44 +1426,20 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		DMibErrorNet((CStr::CFormat("Could not listen on socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
-	TCUniquePointer<CWindowsSocket> pSocket = fg_Construct();
+	Cleanup.f_Clear();
 
-	pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
-	pSocket->m_pSocket = (void *)hSock;
+	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Listen, EWindowsSocketEvent_Read, fg_Move(_fOnStateChange));
+	pSocket->m_AddressType = AddressType;
 	pSocket->m_pUnixListen = fg_Move(pUnixListen);
 
 	if (pSocket->m_pUnixListen)
 	{
-		uint16 ListenPort = f_GetListenPort(pSocket.f_Get());
+		uint16 ListenPort = f_GetListenPort(pSocket);
 		auto &UnixListen = *pSocket->m_pUnixListen;
 		UnixListen.m_UnixFile << ListenPort;
 	}
 
-	Cleanup.f_Clear();
-	{
-		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-		mp_SocketTree.f_Insert(pSocket.f_Get());
-		pSocket->m_BindAddressType = AddressType;
-	}
-
-	pSocket->m_ThreadUseScope = f_StartThread();
-
-	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_ACCEPT | FD_CLOSE))
-	{
-		uint32 Error = WSAGetLastError();
-		{
-			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-			mp_SocketTree.f_Remove(pSocket.f_Get());
-		}
-		// Make sure that the report thread isn't using our socket
-		{
-			DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
-		}
-		pSocket.f_Clear();
-		DMibErrorNet((CStr::CFormat("Could not listen on socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-	}
-
-	return pSocket.f_Detach();
+	return pSocket;
 }
 
 CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
@@ -1215,6 +1449,8 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 		, NNetwork::ENetFlag _Flags
 	)
 {
+	f_CheckFailed();
+
 	CWindowsAddress Address = _Address;
 	auto pUnixListen = fp_PrepareUnixListen(Address);
 
@@ -1262,58 +1498,38 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 	if (_Address.f_GetType() == ENetAddressType_Unix)
 		fg_ApplyUnixSocketPermissions(_Address.f_GetUnix());
 
-	TCUniquePointer<CWindowsSocket> pSocket = fg_Construct();
+	fg_SetNonBlocking(hSock, "listen datagram");
 
-	pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
-	pSocket->m_pSocket = (void *)hSock;
 	Cleanup.f_Clear();
 
+	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Datagram, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
+	pSocket->m_AddressType = AddressType;
+	pSocket->m_BindAddressSize = Address.f_GetSockAddrLen();
 	pSocket->m_pUnixListen = fg_Move(pUnixListen);
 
 	if (pSocket->m_pUnixListen)
 	{
-		uint16 ListenPort = f_GetListenPort(pSocket.f_Get());
+		uint16 ListenPort = f_GetListenPort(pSocket);
 		auto &UnixListen = *pSocket->m_pUnixListen;
 		UnixListen.m_UnixFile << ListenPort;
 	}
 
-	{
-		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-		mp_SocketTree.f_Insert(pSocket.f_Get());
-		pSocket->m_BindAddressSize = Address.f_GetSockAddrLen();
-		pSocket->m_BindAddressType = AddressType;
-	}
-
-	pSocket->m_ThreadUseScope = f_StartThread();
-
-	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
-	{
-		uint32 Error = WSAGetLastError();
-		{
-			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-			mp_SocketTree.f_Remove(pSocket.f_Get());
-		}
-		// Make sure that the report thread isn't using our socket
-		{
-			DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
-		}
-		pSocket.f_Clear();
-		DMibErrorNet((CStr::CFormat("Could not bind socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-	}
-
-	return pSocket.f_Detach();
+	return pSocket;
 }
 
 CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	f_CheckFailed();
 
-	SOCKET hSock = accept((SOCKET)_pSocket->m_pSocket, nullptr, 0);
+	SOCKET hSock = accept(_pSocket->m_Socket, nullptr, 0);
 	if (hSock == INVALID_SOCKET)
 	{
 		int LastError = WSAGetLastError();
 		if (LastError == WSAEWOULDBLOCK)
+		{
+			fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
 			return nullptr;
+		}
 
 		DMibErrorNet((CStr::CFormat("Could not accept socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError)).f_GetStr());
 	}
@@ -1324,25 +1540,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 		}
 	;
 
-#ifdef DMibNetworkLimitBufferSize
-	int Buf = EDefaultSocketBufSize;
-	if (Buf > 0)
-	{
-		if (setsockopt(hSock, SOL_SOCKET, SO_RCVBUF, (char *)&Buf, sizeof(Buf)))
-		{
-			uint32 Error = WSAGetLastError();
-			DMibErrorNet((CStr::CFormat("Could not accept socket (SO_RCVBUF), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
-
-		if (setsockopt(hSock, SOL_SOCKET, SO_SNDBUF, (char *)&Buf, sizeof(Buf)))
-		{
-			uint32 Error = WSAGetLastError();
-			DMibErrorNet((CStr::CFormat("Could not accept socket (SO_SNDBUF), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
-	}
-#endif
-
-	if (_pSocket->m_BindAddressType != ENetAddressType_Unix)
+	if (_pSocket->m_AddressType != ENetAddressType_Unix)
 	{
 		BOOL NoDelay = true;
 		if (setsockopt(hSock, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
@@ -1350,159 +1548,249 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 			uint32 Error = WSAGetLastError();
 			DMibErrorNet((CStr::CFormat("Could not accept socket (TCP_NODELAY), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
+
+		if (fg_IsLoopbackPeer(hSock))
+			fg_SizeLoopbackTcpBuffers(hSock);
 	}
 
-	TCUniquePointer<CWindowsSocket> pSocket = fg_Construct();
+	// Explicit rather than trusting inheritance from the listener
+	fg_SetNonBlocking(hSock, "accept");
 
-	pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
-	pSocket->m_pSocket = (void *)hSock;
 	Cleanup.f_Clear();
-	{
-		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-		mp_SocketTree.f_Insert(pSocket.f_Get());
-	}
 
-	pSocket->m_ThreadUseScope = f_StartThread();
+	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Connect, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
+	pSocket->m_AddressType = _pSocket->m_AddressType;
+	pSocket->m_bInheritable = _pSocket->m_bInheritable;
 
-	if (WSAAsyncSelect(hSock, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
-	{
-		uint32 Error = WSAGetLastError();
-		{
-			DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-			mp_SocketTree.f_Remove(pSocket.f_Get());
-		}
-		// Make sure that the report thread isn't using our socket
-		{
-			DMibLockTyped(NMib::NThread::CMutual, pSocket->m_Lock);
-		}
-		pSocket.f_Clear();
-		DMibErrorNet((CStr::CFormat("Could not accept socket (WSAAsyncSelect), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-	}
-
-	return pSocket.f_Detach();
+	return pSocket;
 }
 
 bool CWindowsSocketContext::f_Shutdown(CWindowsSocket *_pSocket)
 {
-	int Ret = shutdown((SOCKET)_pSocket->m_pSocket, SD_SEND);
+	int Ret = shutdown(_pSocket->m_Socket, SD_SEND);
 
 	if (Ret == SOCKET_ERROR)
 	{
 		int Error = WSAGetLastError();
-		DMibErrorNet((CStr::CFormat("Could not shutdown socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		if (Error != WSAEWOULDBLOCK && Error != WSAENOTCONN)
+			DMibErrorNet((CStr::CFormat("Could not shutdown socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
+	else
+	{
+		bool bRemoteCloseSignalled;
+		{
+			DMibLock(_pSocket->m_Lock);
+			_pSocket->m_bShutdownCalled = true;
+			bRemoteCloseSignalled = _pSocket->m_bRemoteCloseSignalled;
+		}
+
+		// AFD emits no event when local shutdown completes a prior peer half-close. Re-request held close state under the dispatch lock
+		// so exactly one path reports full closure.
+		if (bRemoteCloseSignalled)
+			fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_ReadClosed);
+	}
+
 	return true;
+}
+
+#if DMibConfig_IoDebug_Enable
+static void fsg_DumpTcpInfoAtClose(CWindowsSocket *_pSocket)
+{
+	if
+	(
+		!_pSocket->m_pIo->f_StatsEnabled()
+		|| _pSocket->m_AddressType == ENetAddressType_Unix
+		|| _pSocket->m_Mode == EWindowsSocketMode_Datagram
+		|| _pSocket->m_Mode == EWindowsSocketMode_Listen
+	)
+	{
+		return;
+	}
+
+	DWORD Version = 0;
+	CWindowsTcpInfoV0 Info;
+	DWORD nBytes = 0;
+	if (WSAIoctl(_pSocket->m_Socket, SIO_TCP_INFO, &Version, sizeof(Version), &Info, sizeof(Info), &nBytes, nullptr, nullptr) != 0)
+		return;
+
+	if (Info.m_BytesOut < 1024 * 1024)
+		return;
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+			(
+				"[tcp info] out={} in={} rttUs={} minRttUs={} cwnd={} sndWnd={} inFlight={} mss={} retransBytes={} fastRetrans={} timeouts={} dupAcks={} reorderedBytes={} timeMs={}\n"
+				, Info.m_BytesOut
+				, Info.m_BytesIn
+				, Info.m_RttUs
+				, Info.m_MinRttUs
+				, Info.m_Cwnd
+				, Info.m_SndWnd
+				, Info.m_BytesInFlight
+				, Info.m_Mss
+				, Info.m_BytesRetrans
+				, Info.m_FastRetrans
+				, Info.m_TimeoutEpisodes
+				, Info.m_DupAcksIn
+				, Info.m_BytesReordered
+				, Info.m_ConnectionTimeMs
+			)
+		)
+	;
+}
+#endif
+
+// Run only after no loop reference remains; closes the handle and frees the socket.
+void CWindowsSocketContext::fp_DestroySocket(CWindowsSocket *_pSocket)
+{
+	if (_pSocket->m_Socket != INVALID_SOCKET)
+	{
+		DMibLock(_pSocket->m_Lock);
+#if DMibConfig_IoDebug_Enable
+		fsg_DumpTcpInfoAtClose(_pSocket);
+#endif
+		closesocket(_pSocket->m_Socket);
+		_pSocket->m_Socket = INVALID_SOCKET;
+	}
+
+	_pSocket->m_pUnixListen.f_Clear();
+
+	fg_DeleteObject(NMemory::CDefaultAllocator(), _pSocket);
 }
 
 bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 {
+	// Only shared-poller sockets may close synchronously. Cross-waits between pool-hosted loops can deadlock; use asynchronous close.
+	auto *pOwningLoop = _pSocket->m_pOwningLoop;
+	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_Socket != INVALID_SOCKET)
+		DMibErrorNet("Synchronous close on a pool-hosted loop; use the asynchronous form");
+
+	if (_pSocket->m_Socket != INVALID_SOCKET)
 	{
-		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-		if (_pSocket->m_TreeLink.f_IsInTree())
-			mp_SocketTree.f_Remove(_pSocket);
+		if (pOwningLoop && _pSocket->m_pIoRegistration)
+		{
+			pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
+			_pSocket->m_pIoRegistration = nullptr;
+		}
+
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_fOnStateChange.f_Clear();
 	}
 
-	// Make sure that the report thread isn't using our socket
-	{
-		DMibLockTyped(NMib::NThread::CMutual, _pSocket->m_Lock);
-	}
-
-	fg_DeleteObject(NMemory::CDefaultAllocator(), _pSocket);
+	fp_DestroySocket(_pSocket);
 
 	return true;
 }
 
+// Consumes the socket. Registered sockets complete on their loop after removal and handle close; unregistered sockets complete inline.
+void CWindowsSocketContext::f_CloseAsync(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
+{
+	auto *pOwningLoop = _pSocket->m_pOwningLoop;
+
+	if (pOwningLoop && _pSocket->m_pIoRegistration && _pSocket->m_Socket != INVALID_SOCKET)
+	{
+		// Always defer registered sockets through their loop; pool threads cannot block on each other's deregistrations.
+		// The handle and socket file are unavailable for reuse until the continuation runs.
+		{
+			DMibLock(_pSocket->m_Lock);
+			_pSocket->m_fOnStateChange.f_Clear();
+		}
+
+		pOwningLoop->f_DeregisterAsync
+			(
+				_pSocket->m_pIoRegistration
+				, [this, _pSocket, _fOnClosed = fg_Move(_fOnClosed)]() mutable
+				{
+					fp_DestroySocket(_pSocket);
+					if (_fOnClosed)
+						_fOnClosed();
+				}
+			)
+		;
+
+		return;
+	}
+
+	{
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_fOnStateChange.f_Clear();
+	}
+
+	fp_DestroySocket(_pSocket);
+	if (_fOnClosed)
+		_fOnClosed();
+}
+
 umint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream)
 {
-	int Ret = recv((SOCKET)_pSocket->m_pSocket, (char *)_pData, _DataLen, 0);
+	int Ret = recv(_pSocket->m_Socket, (char *)_pData, (int)fg_Min(_DataLen, umint(INT_MAX)), 0);
 
 	o_bEndOfStream = Ret == 0 && _DataLen != 0;
+
+#if DMibConfig_IoDebug_Enable
+	if (auto *pStats = fg_SocketIoStats())
+	{
+		pStats->m_nRecvCalls.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (Ret > 0)
+		{
+			pStats->m_nRecvBytes.f_FetchAdd((umint)Ret, NAtomic::gc_MemoryOrder_Relaxed);
+			pStats->m_RecvSizeBuckets[fg_GetHighestBitSet((umint)Ret)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			if ((umint)Ret < _DataLen)
+				pStats->m_nRecvShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		}
+		else if (Ret == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
+			pStats->m_nRecvWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		else if (o_bEndOfStream)
+			pStats->m_nRecvEndOfStream.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
 
 	if (Ret == SOCKET_ERROR)
 	{
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
-		{
 			DMibErrorNet((CStr::CFormat("Could not revc from socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
-		else
-			return 0;
+
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
+		return 0;
 	}
+
+	if (Ret > 0 && (umint)Ret < _DataLen)
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
 
 	return Ret;
 }
 
 umint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData, umint _DataLen)
 {
-#ifdef DTCPDelayEmulation
-	if (bDTCPDelayEmulation)
-	{
-		DMibLock(_pSocket->m_DelayedLock);
-		if (_pSocket->m_DelayedData >= DTCPDelayEmulation_MaxQueue)
-		{
-			_pSocket->m_bDelayedStuffed = true;
-			return 0;
-		}
+	int Ret = send(_pSocket->m_Socket, (const char *)_pData, (int)fg_Min(_DataLen, umint(INT_MAX)), 0);
 
-		CWindowsSocket::CDelayedPacket *pNewPacket = fg_ConstructObject<CWindowsSocket::CDelayedPacket>(NMemory::CDefaultAllocator());
-		pNewPacket->m_Data.f_Insert((uint8 *)_pData, _DataLen);
-		NTime::CTime Now = NTime::CTime::fs_NowUTC();
-		NTime::CTime SendTime = Now + NTime::CTimeSpanConvert::fs_CreateSpanFromSeconds(DTCPDelayEmulation_MinDelay);
-		NTime::CTime SendTimeRateLimit;
-		SendTimeRateLimit = Now + NTime::CTimeSpanConvert::fs_CreateSpanFromSeconds(fp64(_pSocket->m_DelayedData)/fp64(DTCPDelayEmulation_Rate));
-		if (SendTimeRateLimit > SendTime)
-			pNewPacket->m_SendTime = SendTimeRateLimit;
-		else
-			pNewPacket->m_SendTime = SendTime;
-		_pSocket->m_DelayedPackets.f_Insert(pNewPacket);
-		_pSocket->m_DelayedData += _DataLen;
-		return _DataLen;
-	}
+#if DMibConfig_IoDebug_Enable
+	fg_SocketIoStatsCountSend(_DataLen, Ret > 0 ? (umint)Ret : 0, Ret == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK);
 #endif
-
-	int Ret = send((SOCKET)_pSocket->m_pSocket, (const char *)_pData, _DataLen, 0);
 
 	if (Ret == SOCKET_ERROR)
 	{
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
-		{
 			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
-		else
-			return 0;
+
+		Ret = 0;
 	}
+
+	if ((umint)Ret < _DataLen)
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Write);
 
 	return Ret;
 }
 
 umint CWindowsSocketContext::f_SendVectored(CWindowsSocket *_pSocket, NMib::NSys::CIoSpan const *_pSpans, umint _nSpans)
 {
-#ifdef DTCPDelayEmulation
-	if (bDTCPDelayEmulation)
-	{
-		// Delay emulation queues per send call, so vectored sends keep the per span loop
-		umint nTotalBytes = 0;
-		for (umint iSpan = 0; iSpan < _nSpans; ++iSpan)
-		{
-			if (!_pSpans[iSpan].m_nBytes)
-				continue;
-
-			umint nBytes = f_Send(_pSocket, _pSpans[iSpan].m_pData, _pSpans[iSpan].m_nBytes);
-			nTotalBytes += nBytes;
-
-			if (nBytes != _pSpans[iSpan].m_nBytes)
-				break;
-		}
-
-		return nTotalBytes;
-	}
-#endif
-
-	constexpr umint c_MaxVectors = 64;
-	WSABUF Buffers[c_MaxVectors];
+	WSABUF Buffers[NMib::NSys::gc_IoLoopMaxSubmitSpans];
 	umint nBuffers = 0;
-	for (umint iSpan = 0; iSpan < _nSpans && nBuffers < c_MaxVectors; ++iSpan)
+	umint nSubmittedBytes = 0;
+	for (umint iSpan = 0; iSpan < _nSpans && nBuffers < NMib::NSys::gc_IoLoopMaxSubmitSpans; ++iSpan)
 	{
 		if (!_pSpans[iSpan].m_nBytes)
 			continue;
@@ -1515,6 +1803,7 @@ umint CWindowsSocketContext::f_SendVectored(CWindowsSocket *_pSocket, NMib::NSys
 
 		Buffers[nBuffers].buf = (CHAR *)_pSpans[iSpan].m_pData;
 		Buffers[nBuffers].len = (ULONG)nSpanBytes;
+		nSubmittedBytes += nSpanBytes;
 		++nBuffers;
 
 		if (bClamped)
@@ -1525,18 +1814,25 @@ umint CWindowsSocketContext::f_SendVectored(CWindowsSocket *_pSocket, NMib::NSys
 		return 0;
 
 	DWORD nBytesSent = 0;
-	int Ret = WSASend((SOCKET)_pSocket->m_pSocket, Buffers, (DWORD)nBuffers, &nBytesSent, 0, nullptr, nullptr);
+	int Ret = WSASend(_pSocket->m_Socket, Buffers, (DWORD)nBuffers, &nBytesSent, 0, nullptr, nullptr);
+
+#if DMibConfig_IoDebug_Enable
+	fg_SocketIoStatsCountSend(nSubmittedBytes, Ret == SOCKET_ERROR ? 0 : (umint)nBytesSent, Ret == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK);
+#endif
 
 	if (Ret == SOCKET_ERROR)
 	{
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
-		{
 			DMibErrorNet((CStr::CFormat("Could not send on socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
-		else
-			return 0;
+
+		nBytesSent = 0;
 	}
+
+	// Would-block and a short send both prove the buffer filled; measured against what was
+	// actually handed over, since spans past the buffer cap were never submitted
+	if ((umint)nBytesSent < nSubmittedBytes)
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Write);
 
 	return nBytesSent;
 }
@@ -1554,7 +1850,7 @@ bool CWindowsSocketContext::f_GetProcessIdentity(CWindowsSocket *_pSocket, NMib:
 	sockaddr_storage PeerAddr;
 	int nAddrBytes = sizeof(PeerAddr);
 
-	if (getpeername((SOCKET)_pSocket->m_pSocket, (struct sockaddr *)&PeerAddr, &nAddrBytes) != 0)
+	if (getpeername(_pSocket->m_Socket, (struct sockaddr *)&PeerAddr, &nAddrBytes) != 0)
 		return false;
 
 	if (PeerAddr.ss_family != AF_UNIX)
@@ -1563,7 +1859,7 @@ bool CWindowsSocketContext::f_GetProcessIdentity(CWindowsSocket *_pSocket, NMib:
 	// Some supported kernels return a PID with zero bytes returned; validate the ioctl result and nonzero PID only.
 	ULONG PeerPid = 0;
 	DWORD nBytesReturned = 0;
-	if (WSAIoctl((SOCKET)_pSocket->m_pSocket, SIO_AF_UNIX_GETPEERPID, nullptr, 0, &PeerPid, sizeof(PeerPid), &nBytesReturned, nullptr, nullptr) != 0)
+	if (WSAIoctl(_pSocket->m_Socket, SIO_AF_UNIX_GETPEERPID, nullptr, 0, &PeerPid, sizeof(PeerPid), &nBytesReturned, nullptr, nullptr) != 0)
 		return false;
 
 	if (!PeerPid)
@@ -1577,17 +1873,17 @@ bool CWindowsSocketContext::f_GetProcessIdentity(CWindowsSocket *_pSocket, NMib:
 
 umint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAddress const&_Address, const void *_pData, umint _DataLen)
 {
-	int Ret = sendto((SOCKET)_pSocket->m_pSocket, (const char *)_pData, _DataLen, 0, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	int Ret = sendto(_pSocket->m_Socket, (const char *)_pData, (int)fg_Min(_DataLen, umint(INT_MAX)), 0, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Ret == SOCKET_ERROR)
 	{
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
-		{
 			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
-		else
-			return 0;
+
+		// Would-block only: a datagram result says nothing about queue occupancy short of it
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Write);
+		return 0;
 	}
 
 	return Ret;
@@ -1595,18 +1891,18 @@ umint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAd
 
 umint CWindowsSocketContext::f_ReceiveDatagram(CWindowsSocket *_pSocket, CWindowsAddress &_Address, void *_pData, umint _DataLen)
 {
-	socklen_t Len = _pSocket->m_BindAddressSize;
-	int Ret = recvfrom((SOCKET)_pSocket->m_pSocket, (char *)_pData, _DataLen, 0, (sockaddr *)_Address.f_GetForWrite(_pSocket->m_BindAddressType, Len), &Len);
+	socklen_t Len = (socklen_t)_pSocket->m_BindAddressSize;
+	int Ret = recvfrom(_pSocket->m_Socket, (char *)_pData, (int)fg_Min(_DataLen, umint(INT_MAX)), 0, (sockaddr *)_Address.f_GetForWrite(_pSocket->m_AddressType, Len), &Len);
 
 	if (Ret == SOCKET_ERROR)
 	{
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
-		{
 			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-		}
-		else
-			return 0;
+
+		// Would-block only: a short datagram read is a truncated datagram, not an empty queue
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
+		return 0;
 	}
 
 	return Ret;
@@ -1618,61 +1914,82 @@ umint CWindowsSocketContext::f_ReceiveDatagram(CWindowsSocket *_pSocket, CWindow
 
 void CWindowsSocketContext::f_SetOnStateChange(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	{
-		DMibLockTyped(NMib::NThread::CMutual, _pSocket->m_Lock);
-		_pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
-
-		// Signal once so the new report to gets to update
-		PostThreadMessage(mp_ThreadID, WM_USER + 1, (WPARAM)_pSocket->m_pSocket, 0);
-	}
+	DMibLock(_pSocket->m_Lock);
+	_pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
 }
 
 NMib::NNetwork::ENetTCPState CWindowsSocketContext::f_GetState(CWindowsSocket *_pSocket)
 {
-	uint32 OldState = _pSocket->m_StateAtomic.f_FetchAnd(~((uint32)DMibBitRange(0, 30)));
-	uint32 State = OldState & DMibBitRange(0, 30);
-	return (NMib::NNetwork::ENetTCPState)State;
+	return (NMib::NNetwork::ENetTCPState)_pSocket->m_StateAtomic.f_Exchange(0);
 }
 
 NStr::CStr CWindowsSocketContext::f_GetCloseReason(CWindowsSocket *_pSocket)
 {
-	NStr::CStr Ret;
+	int CloseError = 0;
+	bool bGracefulClose = false;
+
 	{
-		DMibLockTyped(NThread::CMutual, _pSocket->m_Lock);
-		Ret = _pSocket->m_CloseReason;
+		DMibLock(_pSocket->m_Lock);
+		CloseError = _pSocket->m_CloseError;
+		bGracefulClose = _pSocket->m_bShutdownCalled && _pSocket->m_bNonErrorClose;
 	}
-	return Ret;
+
+	if (CloseError == 0)
+	{
+		if (bGracefulClose)
+			return gc_Str<"Connection gracefully disconnected">.m_Str;
+		else
+			return gc_Str<"End of file encountered">.m_Str;
+	}
+
+	if (CloseError == -1)
+		return gc_Str<"Connection closed with an unknown error">.m_Str;
+
+	return NStr::CStr(NMib::NPlatform::fg_Win32_GetLastErrorStr((uint32)CloseError));
 }
 
-CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	DMibRequire(!!_pSocket);
-	CWindowsSocket *pReturn = fg_ConstructObject<CWindowsSocket>(NMemory::CDefaultAllocator());
+	DMibRequire(!!_pOSSocket);
+	f_CheckFailed();
 
-	pReturn->m_fOnStateChange = fg_Move(_fOnStateChange);
-	pReturn->m_pSocket = (void *)_pSocket;
-	pReturn->m_StateAtomic |= NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write;
-	pReturn->m_ThreadUseScope = f_StartThread();
+	SOCKET Socket = (SOCKET)_pOSSocket;
 
-	if (WSAAsyncSelect((SOCKET)pReturn->m_pSocket, mp_hReportWnd, WM_USER, FD_READ | FD_WRITE | FD_CLOSE))
+	// Inherited handles may retain window/event selection; clearing it also establishes nonblocking mode.
+	if (WSAEventSelect(Socket, nullptr, 0) != 0)
 	{
 		uint32 Error = WSAGetLastError();
-		fg_DeleteObject(NMemory::CDefaultAllocator(), pReturn);
-		DMibErrorNet((CStr::CFormat("Could not set socket async mode, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		DMibErrorNet
+			(
+				"Could not clear the event selection of an inherited socket handle, windows returned: {}"_f
+				<< NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)
+			)
+		;
 	}
+	fg_SetNonBlocking(Socket, "inherit");
 
+	// Adopt before registration; reject an incompatible permanent binding rather than send completions to an unserviced port.
+	NSys::ICIoLoop *pThreadLoop = NSys::fg_GetThreadIoLoop();
+	NSys::ICIoLoop *pOwningLoop = pThreadLoop ? pThreadLoop : mp_PollerThread.mp_pLoop;
+	int AdoptError = 0;
+	if (pOwningLoop && !pOwningLoop->f_AdoptHandle((NSys::CIoLoopHandle)Socket, AdoptError))
 	{
-		DMibLockTyped(NMib::NThread::CMutual, mp_Lock);
-		CWindowsSocket *pSocket = mp_SocketTree.f_FindEqual(_pSocket);
-		if (pSocket)
-		{
-			DMibCheck(pSocket->m_pSocket == _pSocket);
-			mp_SocketTree.f_Remove(pSocket);
-		}
-		mp_SocketTree.f_Insert(pReturn);
+		closesocket(Socket);
+		DMibErrorNet
+			(
+				"Cannot inherit a socket handle bound to a completion port this system will not replace; the previous owner must create it inheritable. Windows returned: {}"_f
+				<< NMib::NPlatform::fg_Win32_GetLastErrorStr(AdoptError)
+			)
+		;
 	}
 
-	return pReturn;
+	auto *pSocket = fp_CreateSocket(Socket, EWindowsSocketMode_Connect, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange), true);
+
+	// Inherited sockets lack address metadata; query the family before applying TCP-only buffer policy.
+	if (pSocket)
+		pSocket->m_AddressType = fsg_AddressTypeOfSocket(Socket);
+
+	return pSocket;
 }
 
 struct CWindowsSocket_OldVersion
@@ -1695,28 +2012,123 @@ struct CWindowsSocket_OldVersion
 	TCAtomic<uint32> m_State;
 };
 
+// Version 0x101 ABI: the handle offset and high-bit give-up flag must match cross-module callers.
+struct CWindowsSocket_V101
+{
+	uint32 m_Magic;
+	uint32 m_Version;
+	void *m_pSocket;
+	TCAtomic<uint32> m_StateAtomic;
+};
+
 void *CWindowsSocketContext::f_GiveUpForInherit(CWindowsSocket *_pSocket)
 {
 	DMibRequire(!!_pSocket);
+
 	if (_pSocket->m_Magic == 0x4EA11E49)
 	{
-		// Versioned
-		if (_pSocket->m_Version != 0x101)
+		if (_pSocket->m_Version == 0x101)
+		{
+			auto *pOld = (CWindowsSocket_V101 *)_pSocket;
+			pOld->m_StateAtomic |= DMibBit(31);
+			return pOld->m_pSocket;
+		}
+
+		if (_pSocket->m_Version != 0x102)
 			DMibErrorNet(fg_Format("Unsupported socket version: {nfh}", _pSocket->m_Version));
-		_pSocket->m_StateAtomic |= DMibBit(31);
-		return _pSocket->m_pSocket;
+	}
+	else
+	{
+		CWindowsSocket_OldVersion* pSocket = (CWindowsSocket_OldVersion*)_pSocket;
+		auto *pSocketHandle = pSocket->m_pSocket;
+		pSocket->m_State |= DMibBit(31);
+		return pSocketHandle;
 	}
 
-	CWindowsSocket_OldVersion* pSocket = (CWindowsSocket_OldVersion*)_pSocket;
-	auto *pSocketHandle = pSocket->m_pSocket;
-	pSocket->m_State |= DMibBit(31); // Hopefully this is good enough. Old versions needed this to be locked
-	return pSocketHandle;
+	// Stop callbacks before removal; extract the handle only after no loop reference remains.
+	{
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_fOnStateChange.f_Clear();
+	}
+
+	auto *pOwningLoop = _pSocket->m_pOwningLoop;
+	if (pOwningLoop && _pSocket->m_pIoRegistration)
+	{
+		// Pool-hosted loops require asynchronous handoff to avoid cross-thread deregistration deadlocks.
+		if (pOwningLoop != mp_PollerThread.mp_pLoop)
+			DMibErrorNet("Synchronous inherit handoff on a pool-hosted loop; use the asynchronous form");
+
+		pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
+		_pSocket->m_pIoRegistration = nullptr;
+	}
+
+	SOCKET Socket = INVALID_SOCKET;
+	{
+		DMibLock(_pSocket->m_Lock);
+		Socket = _pSocket->m_Socket;
+		_pSocket->m_Socket = INVALID_SOCKET;
+	}
+
+	return (void *)Socket;
+}
+
+void CWindowsSocketContext::f_GiveUpForInheritAsync(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle)
+{
+	// Consume the platform socket now; hand out its handle only after removal acknowledgement makes reuse safe.
+	{
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_fOnStateChange.f_Clear();
+	}
+
+	auto *pOwningLoop = _pSocket->m_pOwningLoop;
+	if (pOwningLoop && _pSocket->m_pIoRegistration)
+	{
+		auto *pRegistration = _pSocket->m_pIoRegistration;
+		_pSocket->m_pIoRegistration = nullptr;
+
+		pOwningLoop->f_DeregisterAsync
+			(
+				pRegistration
+				, [this, _pSocket, _fOnHandle = fg_Move(_fOnHandle)]() mutable
+				{
+					SOCKET Socket = INVALID_SOCKET;
+					{
+						DMibLock(_pSocket->m_Lock);
+						Socket = _pSocket->m_Socket;
+						_pSocket->m_Socket = INVALID_SOCKET;
+					}
+
+					fp_DestroySocket(_pSocket);
+					_fOnHandle((void *)Socket);
+				}
+			)
+		;
+
+		return;
+	}
+
+	// Never registered: no loop to defer to, so the handle is produced on the calling thread
+
+	SOCKET Socket = INVALID_SOCKET;
+	{
+		DMibLock(_pSocket->m_Lock);
+		Socket = _pSocket->m_Socket;
+		_pSocket->m_Socket = INVALID_SOCKET;
+	}
+
+	fp_DestroySocket(_pSocket);
+	_fOnHandle((void *)Socket);
+}
+
+void CWindowsSocketContext::f_CloseSocketHandle(void *_pSocketHandle)
+{
+	closesocket((SOCKET)_pSocketHandle);
 }
 
 void *CWindowsSocketContext::f_GetOSSocket(CWindowsSocket *_pSocket)
 {
 	DMibRequire(!!_pSocket);
-	return _pSocket->m_pSocket;
+	return (void *)_pSocket->m_Socket;
 }
 
 CWindowsAddress* CWindowsSocketContext::f_GetPeerAddress(CWindowsSocket *_pSocket)
@@ -1725,7 +2137,7 @@ CWindowsAddress* CWindowsSocketContext::f_GetPeerAddress(CWindowsSocket *_pSocke
 
 	socklen_t nAddrBytes = sizeof(PeerAddr);
 
-	int Ret = getpeername( (SOCKET)_pSocket->m_pSocket, (struct sockaddr *)&PeerAddr, &nAddrBytes);
+	int Ret = getpeername(_pSocket->m_Socket, (struct sockaddr *)&PeerAddr, &nAddrBytes);
 
 	if (Ret != 0)
 	{
@@ -1766,7 +2178,7 @@ uint32 CWindowsSocketContext::f_GetListenPort(CWindowsSocket *_pSocket)
 
 	socklen_t nAddrBytes = sizeof(PeerAddr);
 
-	int Ret = getsockname((SOCKET)_pSocket->m_pSocket, (struct sockaddr *)&PeerAddr, &nAddrBytes);
+	int Ret = getsockname(_pSocket->m_Socket, (struct sockaddr *)&PeerAddr, &nAddrBytes);
 
 	if (Ret != 0)
 	{

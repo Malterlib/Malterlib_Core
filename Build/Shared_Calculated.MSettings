@@ -746,6 +746,9 @@ Property
 		!!DocumentationEnabled true
 	}
 
+	MalterlibIoUring_Enable: bool = true // User(Core)=false: Set to false to build without the io_uring io loop backend (Linux falls back to epoll)
+	MalterlibIoDebug_Enable: bool = DebugCode // User(Debug)=true: Enable the io loop / io debugging environment overrides read by the io subsystem sources (Malterlib_Core_*IoSubSystem*.cpp)
+
 	Malterlib_RefCountDebugging_Enable: bool = false // User(Debug)=true: Set to true to enable shared pointer reference debugging
 	Malterlib_RefCountLeakDebugging_Enable: bool = false // User(Debug)=true: Set to true to enable tracing information about shared pointer references when displaying memory leaks. Requires Malterlib_RefCountDebugging_Enable to be enabled as well
 

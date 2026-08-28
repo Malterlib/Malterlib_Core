@@ -170,6 +170,9 @@ namespace NMib
 
 #include "../../Core/Source/Platform/Malterlib_Core_PlatformImp.h"
 
+// Concurrency uses ICIoLoop in its pool queues, so declare it before the include reaches Concurrency.
+#include "Malterlib_Core_IoLoop.h"
+
 #	include "../../Core/Source/Malterlib_Core_Include.h"
 #include <Mib/Numeric/FloatImp>
 namespace NMib

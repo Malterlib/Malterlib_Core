@@ -32,6 +32,8 @@ namespace NMib::NPlatform
 
 	bool fg_IsShuttingDown()
 	{
+		fg_EnsureEndSessionReporting();
+
 		if (gs_ShuttingDown.f_Load())
 			return true;
 

@@ -2563,6 +2563,8 @@ Compile
 		}
 	}
 
+	PreprocessorDefines += `DMibConfig_IoUring_Enable=@(MalterlibIoUring_Enable ? "1" : "0")`
+	PreprocessorDefines += `DMibConfig_IoDebug_Enable=@(MalterlibIoDebug_Enable ? "1" : "0")`
 	PreprocessorDefines += `DMibConfig_RefCountDebugging=@(Malterlib_RefCountDebugging_Enable ? "1" : "0")`
 	PreprocessorDefines += `DMibConfig_RefCountLeakDebugging=@(Malterlib_RefCountLeakDebugging_Enable ? "1" : "0")`
 	PreprocessorDefines += `DMibConfig_Tests_Enable=@(Malterlib_Tests_Enable ? "1" : "0")`
