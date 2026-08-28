@@ -78,6 +78,11 @@ void fg_WriteStringToPipe(int _Handle, ch8 const *_pStr, umint _Len)
 	}
 }
 
+bool NSys::fg_ConsoleInputIsTerminal()
+{
+	return isatty(0) != 0;
+}
+
 void NSys::fg_ConsoleOutput(ch8 const *_pStr, umint _Len)
 {
 	fg_WriteStringToPipe(1, _pStr, _Len);

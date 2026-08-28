@@ -121,6 +121,7 @@ namespace NMib
 		bool fg_ConsoleOutputValid();
 		bool fg_ConsoleErrorOutputValid();
 		bool fg_ConsoleInputValid();
+		bool fg_ConsoleInputIsTerminal();
 
 		struct CConsoleProperties
 		{
