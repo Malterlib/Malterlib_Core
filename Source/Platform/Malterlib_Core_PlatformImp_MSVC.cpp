@@ -5196,6 +5196,11 @@ bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib:
 	return false;
 }
 
+bool NSys::NFile::fg_TryCloneData(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	return false;
+}
+
 void NSys::NFile::fg_Copy(const CStr &_FileFrom, const CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
 	BOOL Cancel = false;

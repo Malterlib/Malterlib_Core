@@ -4,6 +4,7 @@
 #define _LIBCPP_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS
 
 #include <Mib/Core/Core>
+#include <Mib/Cryptography/RandomID>
 #include <Mib/Cryptography/UUID>
 
 #define _DARWIN_USE_64_BIT_INODE
@@ -23,6 +24,9 @@
 #include <sys/utsname.h>
 #include <crt_externs.h>
 #include <sys/clonefile.h>
+#include <sys/xattr.h>
+#include <sys/attr.h>
+#include <sys/acl.h>
 #include <os/lock.h>
 #include <sys/random.h>
 #include <exception>
@@ -2959,6 +2963,249 @@ bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib:
 		return false;
 
 	if (clonefile(_FileFrom, _FileTo, 0))
+		return false;
+
+	return true;
+}
+
+bool NSys::NFile::fg_TryCloneData(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	if (!&fclonefileat)
+		return false;
+
+	// Shared advisory lock, same as a CFile read open with sharing — see the Linux clone path
+	int LockFile = open(_FileFrom, O_RDONLY | O_CLOEXEC);
+	if (LockFile < 0)
+		return false;
+
+	auto CloseLockFile = g_OnScopeExit / [&]
+		{
+			close(LockFile);
+		}
+	;
+
+	if (flock(LockFile, LOCK_SH | LOCK_NB) != 0)
+		return false;
+
+	// The guards run on the very inode that stays open and locked, and the clone below runs
+	// from the same descriptor: validating one inode and then cloning the path again would let
+	// a concurrent atomic replace swap in an unvalidated, unlocked source — a compressed
+	// replacement would then be stripped into an empty destination
+	{
+		struct stat SourceStat;
+		if (fstat(LockFile, &SourceStat) != 0)
+			return false;
+
+		// clonefile would happily clone a whole directory hierarchy; this function promises a
+		// data-only clone of one regular file, exactly like the Linux reflink path
+		if (!S_ISREG(SourceStat.st_mode))
+			return false;
+
+		// A filesystem-compressed source keeps its logical bytes in the decmpfs attribute and
+		// the resource fork behind UF_COMPRESSED — the metadata strip below would delete the
+		// data itself (verified: the strip turns the clone into an empty file). Such sources
+		// must materialize through the read/write fallback
+		if (SourceStat.st_flags & UF_COMPRESSED)
+			return false;
+	}
+
+	// clonefile clones the whole inode — mode, special bits, file flags and extended attributes
+	// included — while data-only semantics promise the metadata of a freshly created file. The
+	// probe learns what mode a fresh file at the destination gets: the umask applies inside the
+	// kernel, so it is never read or temporarily cleared, which would race other threads
+	// creating files.
+	//
+	// The probe is at the destination path itself, deliberately: default modes can depend on the
+	// containing directory (default ACLs), so only the real path answers correctly. A concurrent
+	// writer creating the same destination path mid-probe is outside the contract — the copy as
+	// a whole overwrites that path, exactly as the fallback write would stomp the same file
+	mode_t FreshMode;
+	acl_t ProbeAcl = nullptr;
+	auto FreeProbeAcl = g_OnScopeExit / [&]
+		{
+			if (ProbeAcl)
+				acl_free(ProbeAcl);
+		}
+	;
+	{
+		int ProbeFile = open(_FileTo, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, 0666);
+		if (ProbeFile < 0)
+			return false;
+
+		struct stat ProbeStat;
+		bool bProbeStated = fstat(ProbeFile, &ProbeStat) == 0;
+
+		// The probe also answers what ACL a fresh file inherits from the destination directory;
+		// null when it inherits none, which is the common case
+		ProbeAcl = acl_get_fd_np(ProbeFile, ACL_TYPE_EXTENDED);
+
+		close(ProbeFile);
+		unlink(_FileTo);
+		if (!bProbeStated)
+			return false;
+
+		FreshMode = ProbeStat.st_mode & 07777;
+	}
+
+	// The clone is materialized and sanitized inside a private 0700 staging directory next to the
+	// destination and only renamed into place once it carries fresh-file metadata: clonefile
+	// publishes the source's mode, flags, extended attributes and ACL, and sanitizing at the
+	// final path would expose the source's metadata — and content, where the source mode is
+	// wider than the fresh mode — to any observer of the destination directory for the whole
+	// strip window. The staging directory denies every other account access to the clone until
+	// it looks exactly like a freshly created file.
+	//
+	// The directory name carries a random ID — the same scheme as the diff copy's temporary
+	// file, but the cryptographically secure generator, because the name is a security
+	// boundary here: a predictable name could be pre-created, even as a symlink, by anyone
+	// able to write the destination directory, and any recovery that removes such a
+	// pre-existing path would delete attacker-chosen targets with this caller's privileges.
+	// Nothing pre-existing is ever reused or cleaned for the same reason: a collision simply
+	// fails over to the copy fallback, and a leftover from a crashed copy stays behind, bounded
+	// by the crash and owned 0700 by the copying user.
+	CStr StagingDir = CStr::CFormat("{}.{}.clonetmp") << _FileTo << NCryptography::fg_RandomID();
+	if (mkdir(StagingDir, 0700) != 0)
+		return false;
+
+	// The path is trusted for exactly one open: in a destination directory writable by another
+	// principal the staging directory can be renamed away and substituted the moment it
+	// appears, so everything after the mkdir runs relative to this descriptor, with the inode
+	// verified below as one this process created — a substitute cannot carry this user's
+	// ownership. O_NOFOLLOW refuses a planted symlink outright
+	int StagingDirFd = open(StagingDir, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+	if (StagingDirFd < 0)
+	{
+		rmdir(StagingDir);
+		return false;
+	}
+
+	auto CleanupStaging = g_OnScopeExit / [&]
+		{
+			// Descriptor-relative, so the entry removed is the staged file whatever happened
+			// to the path; after a successful rename it is already gone and the unlinkat
+			// misses harmlessly. The rmdir is by path and best effort: a directory renamed
+			// away by an attacker leaks bounded to the crash case, and removing a substitute
+			// only succeeds when it is empty
+			unlinkat(StagingDirFd, "File", 0);
+			close(StagingDirFd);
+			rmdir(StagingDir);
+		}
+	;
+
+	{
+		struct stat StagingStat;
+		if (fstat(StagingDirFd, &StagingStat) != 0 || StagingStat.st_uid != geteuid())
+			return false;
+	}
+
+	// The 0700 mode alone is not the whole privacy boundary: an inheritable directory ACE on
+	// the destination parent rides onto the fresh staging directory and can grant another
+	// principal access regardless of the mode bits. The empty set expresses removal, exactly
+	// as it does for the staged file's own ACL below
+	{
+		acl_t EmptyAcl = acl_init(1);
+		if (!EmptyAcl)
+			return false;
+
+		int AclReturn = acl_set_fd_np(StagingDirFd, EmptyAcl, ACL_TYPE_EXTENDED);
+		acl_free(EmptyAcl);
+		if (AclReturn != 0)
+			return false;
+	}
+
+	// The clone runs from the source descriptor the guards and the lock above validated into
+	// the verified staging directory, never through full paths again. CLONE_NOOWNERCOPY: a
+	// privileged caller would otherwise clone the source's uid and gid, where the fresh-file
+	// contract promises ownership as if the caller had created the file
+	if (fclonefileat(LockFile, StagingDirFd, "File", CLONE_NOOWNERCOPY))
+		return false;
+
+	// Nothing else can reach inside the verified 0700 directory, and O_NOFOLLOW refuses
+	// anything that is not the plain file the clone just created; every strip below runs on
+	// this descriptor
+	int StagedFileFd = openat(StagingDirFd, "File", O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+	if (StagedFileFd < 0)
+		return false;
+
+	auto CloseStagedFile = g_OnScopeExit / [&]
+		{
+			close(StagedFileFd);
+		}
+	;
+
+	// Flags first: an inherited immutable flag would block the strip below and the cleanup unlink
+	if (fchflags(StagedFileFd, 0) != 0)
+		return false;
+
+	if (fchmod(StagedFileFd, FreshMode) != 0)
+		return false;
+
+	// Extended attributes carry quarantine state, resource forks and custom metadata the
+	// fallback's fresh file would not have
+	ssize_t NamesLen = flistxattr(StagedFileFd, nullptr, 0, 0);
+	if (NamesLen < 0)
+		return false;
+
+	if (NamesLen > 0)
+	{
+		NContainer::TCVector<ch8> Names;
+		Names.f_SetLen((umint)NamesLen + 1);
+		NamesLen = flistxattr(StagedFileFd, Names.f_GetArray(), (size_t)NamesLen, 0);
+		if (NamesLen < 0)
+			return false;
+
+		umint iName = 0;
+		while (iName < (umint)NamesLen)
+		{
+			ch8 const *pName = Names.f_GetArray() + iName;
+			if (fremovexattr(StagedFileFd, pName, 0) != 0 && errno != ENOATTR)
+				return false;
+
+			iName += strlen(pName) + 1;
+		}
+	}
+
+	// ACLs ride the clone but live outside listxattr's view, so the strip above cannot see them.
+	// A fresh file carries exactly the ACL the probe inherited from the destination directory —
+	// none in the common case, which the empty set expresses as removal
+	{
+		acl_t FreshAcl = ProbeAcl ? ProbeAcl : acl_init(1);
+		if (!FreshAcl)
+			return false;
+
+		int AclReturn = acl_set_fd_np(StagedFileFd, FreshAcl, ACL_TYPE_EXTENDED);
+		if (!ProbeAcl)
+			acl_free(FreshAcl);
+		if (AclReturn != 0)
+			return false;
+	}
+
+	// clonefile also clones the timestamps; a freshly created file is born now and has been
+	// touched now, so both the creation time and the access/modification pair are reset. The
+	// caller stamping its own write time afterwards lands on top of this, the same as it does
+	// on a file the fallback wrote
+	{
+		struct timespec Now;
+		if (clock_gettime(CLOCK_REALTIME, &Now) != 0)
+			return false;
+
+		struct attrlist AttrList;
+		fg_MemClear(&AttrList, sizeof(AttrList));
+		AttrList.bitmapcount = ATTR_BIT_MAP_COUNT;
+		AttrList.commonattr = ATTR_CMN_CRTIME;
+
+		struct timespec CreationTime = Now;
+		if (fsetattrlist(StagedFileFd, &AttrList, &CreationTime, sizeof(CreationTime), 0) != 0)
+			return false;
+
+		struct timespec Times[2] = {Now, Now};
+		if (futimens(StagedFileFd, Times) != 0)
+			return false;
+	}
+
+	// Atomic publication out of the verified directory; a concurrent writer creating the same
+	// destination path mid-copy is outside the contract, exactly as documented at the probe
+	if (renameat(StagingDirFd, "File", AT_FDCWD, _FileTo) != 0)
 		return false;
 
 	return true;

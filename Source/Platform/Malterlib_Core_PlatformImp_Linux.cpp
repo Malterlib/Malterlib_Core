@@ -294,6 +294,7 @@ static inline_small class CSystemLinux *fg_GetLocalSys();
 #include <sys/ioctl.h>
 #include <sys/param.h>
 #include <sys/mount.h>
+#include <sys/xattr.h>
 #include <linux/sysctl.h>
 #include <sys/epoll.h>
 
@@ -2090,19 +2091,354 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 		return NMib::NStr::CStrNonTracked();
 }
 
+#ifndef FICLONE
+	#define FICLONE _IOW(0x94, 9, int)
+#endif
+#ifndef FS_IOC_GETFLAGS
+	#define FS_IOC_GETFLAGS _IOR('f', 1, long)
+#endif
+#ifndef FS_IOC_SETFLAGS
+	#define FS_IOC_SETFLAGS _IOW('f', 2, long)
+#endif
+
+// Clones _FileFrom to _FileTo as a copy-on-write reflink. Returns 0 on success, errno on failure.
+// Requires a reflink-capable filesystem (XFS with reflink=1, Btrfs) and both files on the same filesystem.
+// _bFreshMetadata selects data-only semantics: the destination keeps the metadata of a freshly
+// created file (default mode through the umask, no special bits, no extended attributes — FICLONE
+// only moves data extents into the new inode); otherwise the source mode is restored so the clone
+// is a faithful duplicate
+static int fsg_CloneFile(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, bool _bFreshMetadata)
+{
+	int SourceFile = open(_FileFrom, fg_GetUnixOpenFlags() | O_RDONLY);
+	if (SourceFile < 0)
+		return errno;
+
+	auto CloseSource = g_OnScopeExit / [&]
+		{
+			close(SourceFile);
+		}
+	;
+
+	struct stat SourceStat;
+	if (fstat(SourceFile, &SourceStat) != 0)
+		return errno;
+
+	if (!S_ISREG(SourceStat.st_mode))
+		return EINVAL;
+
+	// The same shared advisory lock a CFile read open with sharing takes: a writer holding the
+	// exclusive Malterlib lock must deny this copy exactly as it would deny the fallback, whose
+	// own open then reports the lock properly
+	if (flock(SourceFile, LOCK_SH | LOCK_NB) != 0)
+		return errno;
+
+	// The faithful duplicate is created 0600 and receives the source mode only after the
+	// ownership below is settled: creating it with the source's mode directly would publish the
+	// source's set-ID bits on a caller-owned inode for the window until the fchown — for a
+	// privileged caller that is a transient set-ID executable with the wrong owner, and a crash
+	// inside the window would leave it behind permanently
+	int DestFile = open(_FileTo, fg_GetUnixOpenFlags() | O_WRONLY | O_CREAT | O_EXCL, _bFreshMetadata ? 0666 : 0600);
+	if (DestFile < 0)
+		return errno;
+
+	auto CloseDest = g_OnScopeExit / [&]
+		{
+			close(DestFile);
+		}
+	;
+
+	// Fresh by O_EXCL, so nothing can hold a lock yet; taken for uniformity with the write path
+	if (flock(DestFile, LOCK_SH | LOCK_NB) != 0)
+	{
+		int Error = errno;
+		unlink(_FileTo);
+		return Error;
+	}
+
+	if (ioctl(DestFile, FICLONE, SourceFile) != 0)
+	{
+		int Error = errno;
+		unlink(_FileTo);
+		return Error;
+	}
+
+	// The open above created the destination restrictively, and FICLONE clones data extents
+	// only, so the metadata has to be restored explicitly for the clone to be a faithful
+	// duplicate: the full mode — special bits deliberately included, exactly as clonefile
+	// preserves them on macOS; a duplicate that must not carry them is a data-only clone, which
+	// is what _bFreshMetadata selects — plus the extended attributes and timestamps the fresh
+	// inode does not have
+	if (!_bFreshMetadata)
+	{
+		auto fFail = [&]() -> int
+			{
+				int Error = errno;
+				unlink(_FileTo);
+				return Error;
+			}
+		;
+
+		// Ownership first, and before the mode: a faithful duplicate of another user's file must
+		// carry that user's ownership — a privileged caller restoring the source's setuid bits
+		// onto a caller-owned inode would otherwise mint an escalated set-ID file. chown also
+		// clears special bits, which is why it precedes the fchmod. An unprivileged caller gets
+		// EPERM for a cross-owner source and keeps its own ownership, where the restored set-ID
+		// bits grant nothing the caller does not already have
+		if (fchown(DestFile, SourceStat.st_uid, SourceStat.st_gid) != 0 && errno != EPERM)
+			return fFail();
+
+		NContainer::TCVector<char> SourceNames;
+		ssize_t SourceNamesLen = flistxattr(SourceFile, nullptr, 0);
+		if (SourceNamesLen < 0)
+			return fFail();
+
+		if (SourceNamesLen > 0)
+		{
+			SourceNames.f_SetLen((umint)SourceNamesLen + 1);
+			SourceNamesLen = flistxattr(SourceFile, SourceNames.f_GetArray(), (size_t)SourceNamesLen);
+			if (SourceNamesLen < 0)
+				return fFail();
+
+			NContainer::TCVector<char> Value;
+			umint iName = 0;
+			while (iName < (umint)SourceNamesLen)
+			{
+				char const *pName = SourceNames.f_GetArray() + iName;
+
+				ssize_t ValueLen = fgetxattr(SourceFile, pName, nullptr, 0);
+				if (ValueLen < 0)
+				{
+					// Removed between the listing and the read; a faithful copy of the current
+					// state simply skips it
+					if (errno == ENODATA)
+					{
+						iName += strlen(pName) + 1;
+						continue;
+					}
+					return fFail();
+				}
+
+				Value.f_SetLen((umint)ValueLen);
+				if (ValueLen > 0)
+				{
+					ValueLen = fgetxattr(SourceFile, pName, Value.f_GetArray(), (size_t)ValueLen);
+					if (ValueLen < 0)
+						return fFail();
+				}
+
+				if (fsetxattr(DestFile, pName, Value.f_GetArray(), (size_t)ValueLen, 0) != 0)
+					return fFail();
+
+				iName += strlen(pName) + 1;
+			}
+		}
+
+		// The created inode can carry attributes of its own the source never had — a default
+		// POSIX ACL on the destination directory materializes as system.posix_acl_access at
+		// creation — and a faithful duplicate must not be wider than its source, so anything
+		// not on the source is removed
+		{
+			ssize_t DestNamesLen = flistxattr(DestFile, nullptr, 0);
+			if (DestNamesLen < 0)
+				return fFail();
+
+			if (DestNamesLen > 0)
+			{
+				NContainer::TCVector<char> DestNames;
+				DestNames.f_SetLen((umint)DestNamesLen + 1);
+				DestNamesLen = flistxattr(DestFile, DestNames.f_GetArray(), (size_t)DestNamesLen);
+				if (DestNamesLen < 0)
+					return fFail();
+
+				umint iDestName = 0;
+				while (iDestName < (umint)DestNamesLen)
+				{
+					char const *pDestName = DestNames.f_GetArray() + iDestName;
+
+					bool bOnSource = false;
+					umint iSourceName = 0;
+					while (iSourceName < (umint)SourceNamesLen)
+					{
+						char const *pSourceName = SourceNames.f_GetArray() + iSourceName;
+						if (strcmp(pDestName, pSourceName) == 0)
+						{
+							bOnSource = true;
+							break;
+						}
+						iSourceName += strlen(pSourceName) + 1;
+					}
+
+					if (!bOnSource && fremovexattr(DestFile, pDestName) != 0 && errno != ENODATA)
+						return fFail();
+
+					iDestName += strlen(pDestName) + 1;
+				}
+			}
+		}
+
+		// The mode lands only after the xattr work above: a default POSIX ACL on the destination
+		// directory materializes at creation with named entries behind an empty mask, and a
+		// chmod to the source mode would set that mask — briefly reading the cloned data open to
+		// those named users — before the dest-only prune removed the inherited ACL. With the
+		// prune done, the inode is still 0600 until this point
+		if (fchmod(DestFile, SourceStat.st_mode & 07777) != 0)
+			return fFail();
+
+		struct timespec Times[2] = {SourceStat.st_atim, SourceStat.st_mtim};
+		if (futimens(DestFile, Times) != 0)
+			return fFail();
+
+		// Inode flags (nodump, append only, immutable, ...) live outside both the mode and the
+		// xattrs. Copied last so an inherited immutable flag cannot block the metadata writes
+		// above, and best effort: not every filesystem implements them, and some flags need
+		// privileges the caller may lack — a plain copy would lose them just the same
+		{
+			long SourceFlags = 0;
+			if (ioctl(SourceFile, FS_IOC_GETFLAGS, &SourceFlags) == 0)
+			{
+				long DestFlags = 0;
+				if (ioctl(DestFile, FS_IOC_GETFLAGS, &DestFlags) == 0 && DestFlags != SourceFlags)
+				{
+					if
+						(
+							ioctl(DestFile, FS_IOC_SETFLAGS, &SourceFlags) != 0
+							&& errno != EPERM
+							&& errno != EOPNOTSUPP
+							&& errno != ENOTTY
+						)
+					{
+						return fFail();
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+// Copies file data inside the kernel; on same-filesystem XFS/Btrfs this can itself perform a reflink copy.
+// Returns false when unsupported so the caller can fall back to a userspace copy.
+static bool fsg_TryCopyFileRange(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+#ifdef __NR_copy_file_range
+	int SourceFile = open(_FileFrom, fg_GetUnixOpenFlags() | O_RDONLY);
+	if (SourceFile < 0)
+		return false;
+
+	auto CloseSource = g_OnScopeExit / [&]
+		{
+			close(SourceFile);
+		}
+	;
+
+	struct stat SourceStat;
+	if (fstat(SourceFile, &SourceStat) != 0)
+		return false;
+
+	if (!S_ISREG(SourceStat.st_mode))
+		return false;
+
+	// procfs and sysfs regulars report a zero size while still yielding bytes on read; the
+	// size-driven loop below would declare such a copy complete without moving anything. The
+	// raw fallback reads the truth, and a genuinely empty file copies correctly through it too
+	if (SourceStat.st_size == 0)
+		return false;
+
+	// Shared advisory lock, same as a CFile read open with sharing — see fsg_CloneFile
+	if (flock(SourceFile, LOCK_SH | LOCK_NB) != 0)
+		return false;
+
+	// Whether the destination is created here decides the failure cleanup below: a stub this
+	// helper created must not survive a failed fast copy, while a pre-existing destination keeps
+	// its identity — hard links, ownership — by being overwritten in place, exactly like the
+	// fallback would. lstat rather than access: a dangling symlink counts as existing, so the
+	// cleanup never unlinks a link whose target the open below created — the fallback then
+	// writes through the link, same as it always did
+	struct stat DestEntryStat;
+	bool bDestExisted = lstat(_FileTo, &DestEntryStat) == 0;
+
+	// Created with the fixed default mode the copy ends at, never the source's bits: a
+	// source-derived creation mode would expose the half-written file with the source's wider
+	// permissions — special bits included, which the umask does not mask — for the duration of
+	// the copy, and leave them behind if the process dies before the normalization below.
+	//
+	// Deliberately not O_TRUNC: the support probe is the first copy_file_range call itself, so
+	// truncating up front would destroy a pre-existing destination's content on the common
+	// no-support failure (EXDEV, older kernels) before the path fallback has secured the data —
+	// a source locked away or replaced in that gap would then fail the fallback and leave only
+	// the truncated wreck. The tail beyond the copied size is cut after the copy succeeds
+	int DestFile = open(_FileTo, fg_GetUnixOpenFlags() | O_WRONLY | O_CREAT, 0644);
+	if (DestFile < 0)
+		return false;
+
+	auto CloseDest = g_OnScopeExit / [&]
+		{
+			close(DestFile);
+		}
+	;
+
+	auto fFail = [&]() -> bool
+		{
+			if (!bDestExisted)
+				unlink(_FileTo);
+			return false;
+		}
+	;
+
+	// A pre-existing destination can be under another holder's Malterlib lock, which the
+	// fallback's own write open would respect; the fast path takes the same shared lock
+	if (flock(DestFile, LOCK_SH | LOCK_NB) != 0)
+		return fFail();
+
+	// Use syscall directly to avoid depending on the glibc 2.27+ copy_file_range symbol
+	off_t Remaining = SourceStat.st_size;
+	while (Remaining > 0)
+	{
+		ssize_t nCopied = syscall(__NR_copy_file_range, SourceFile, nullptr, DestFile, nullptr, (size_t)Remaining, 0u);
+		if (nCopied <= 0)
+			return fFail();
+		Remaining -= nCopied;
+	}
+
+	// Every byte has landed; a longer pre-existing destination loses its tail only now
+	if (ftruncate(DestFile, SourceStat.st_size) != 0)
+		return fFail();
+
+	// CFile normalizes every file it opens for writing to the fixed 0644 default before the
+	// caller's attribute copy adjusts read-only and executable — the userspace fallback goes
+	// through exactly that path, so the fast path applies the same policy rather than inventing
+	// its own from the source mode or the umask. Special bits never propagate on a copy, and the
+	// destination's permissions must not depend on which copy path happened to run
+	if (fchmod(DestFile, 0644) != 0)
+		return fFail();
+
+	return true;
+#else
+	return false;
+#endif
+}
+
 void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-	DMibErrorFile("Not supported");
+	if (int Error = fsg_CloneFile(_FileFrom, _FileTo, false))
+		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("clone('{}', '{}')") << _FileFrom << _FileTo, Error));
 }
 
 bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-	return false;
+	return fsg_CloneFile(_FileFrom, _FileTo, false) == 0;
+}
+
+bool NSys::NFile::fg_TryCloneData(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	return fsg_CloneFile(_FileFrom, _FileTo, true) == 0;
 }
 
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-	NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo); // No good way to do this on Linux unless you have kernel 2.6.33 or later (sendfile)
+	if (!fsg_TryCopyFileRange(_FileFrom, _FileTo))
+		NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo);
 
 	// Copy the attributes
 	{
@@ -2138,7 +2474,8 @@ void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib
 
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
-	NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo); // No good way to do this on Linux unless you have kernel 2.6.33 or later (sendfile)
+	if (!fsg_TryCopyFileRange(_FileFrom, _FileTo))
+		NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo);
 
 	// Copy the attributes
 	{
