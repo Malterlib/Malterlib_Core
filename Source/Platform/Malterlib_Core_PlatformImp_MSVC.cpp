@@ -6403,9 +6403,9 @@ void NSys::NNetwork::fg_Shutdown(void *_pSocket) // Closes the socket and connec
 	fg_GetLocalSys()->m_SocketContext->f_Shutdown((CWindowsSocket*)_pSocket);
 }
 
-umint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, umint _DataLen) // Returns bytes receive
+umint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream) // Returns bytes receive
 {
-	return fg_GetLocalSys()->m_SocketContext->f_Receive((CWindowsSocket*)_pSocket, _pData, _DataLen);
+	return fg_GetLocalSys()->m_SocketContext->f_Receive((CWindowsSocket*)_pSocket, _pData, _DataLen, o_bEndOfStream);
 }
 
 umint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, umint _DataLen) // Returns bytes sen
