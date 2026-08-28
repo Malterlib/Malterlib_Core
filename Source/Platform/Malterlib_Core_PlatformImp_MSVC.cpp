@@ -764,6 +764,15 @@ bool NSys::fg_ConsoleInputValid()
 	return false;
 }
 
+bool NSys::fg_ConsoleInputIsTerminal()
+{
+	HANDLE hCon = GetStdHandle(STD_INPUT_HANDLE);
+	if (!hCon || hCon == INVALID_HANDLE_VALUE)
+		return false;
+
+	DWORD Mode;
+	return GetConsoleMode(hCon, &Mode) != 0;
+}
 
 bool NSys::fg_ConsoleErrorOutputValid()
 {
