@@ -33,4 +33,5 @@ namespace NMib::NPlatform
 	bool fg_ThisThreadOwnsDllLock();
 	bool fg_IsShuttingDown();
 	void fg_ReportIsShuttingDown();
+	void fg_EnsureEndSessionReporting();
 }

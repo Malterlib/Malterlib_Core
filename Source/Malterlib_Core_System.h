@@ -73,9 +73,15 @@ namespace NMib
 		void *fp_PopAllocationSlowPath();
 	};
 
+	namespace NSys
+	{
+		struct ICIoLoop;
+	}
+
 	struct CSystemThreadLocal
 	{
 		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
+		NSys::ICIoLoop *m_pThreadIoLoop = nullptr; // Binding used by I/O objects started on this thread.
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
 #if DMibConfig_Tests_Enable
 		NConcurrency::ECoroutineFlag m_ExtraCoroutineFlags = NConcurrency::ECoroutineFlag_None;

@@ -242,6 +242,12 @@ namespace NMib
 		class TCWeakPointer;
 
 	}
+
+	// Destruction runs on whichever thread releases the last reference.
+	struct CVirtualDestroyBase
+	{
+		virtual ~CVirtualDestroyBase() = default;
+	};
 }
 
 #include "../../String/Source/Malterlib_String_Types.h"

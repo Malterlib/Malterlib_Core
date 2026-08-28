@@ -8,8 +8,14 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "../Malterlib_Core_IoSubSystem.h"
 
 #include "Malterlib_Core_PlatformImp_Net.h"
+#include "Malterlib_Core_Platform_POSIX_IoLoop.h"
+
+#if DMibConfig_IoDebug_Enable
+NSys::CSocketIoStats *fg_SocketIoStats();
+#endif
 
 static const uint32 ENetAddressType_Kernel = 3;
 
@@ -51,16 +57,21 @@ struct CPOSIXSocket
 	// This is stull that will be changed or use by the poller etc...
 	NMib::NThread::CMutual m_Lock;
 	bool m_bInitialWriteNotification;
+	NMib::NSys::CIoSubSystem *m_pIo = nullptr;
+
 	NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
 	NAtomic::TCAtomic<uint32> m_StateAtomic;
 	int m_CloseError;
 	bool m_bShutdownCalled = false;
 	bool m_bNonErrorClose = false;
 	bool m_bRemoteCloseSignalled = false;
-	bool m_bIsRegistered = false;
 
-	// This is set once, used and then cleared.
-	NMib::NAtomic::TCAtomic<NMib::NThread::CEvent*> m_pDestructionReportTo;
+	int8 m_CompletionPeerClass = 0; // 0 = unknown, 1 = local, 2 = remote; cache only after connect. Local peers default to readiness.
+
+	NMib::NSys::ICIoLoop *m_pOwningLoop = nullptr; // Fixed at socket start; deregistration must use the same loop.
+	NMib::NSys::CIoLoopRegistration *m_pIoRegistration = nullptr; // Non-null while registered; the loop owns this opaque registration.
+
+	umint m_nSendWindowBytes = 0; // Zero until set; retained before start so registration receives the configured window.
 
 	// This is protected by the context m_Lock.
 	NMib::NIntrusive::TCAVLLink<> m_FDToSocketLink;
@@ -81,7 +92,6 @@ struct CPOSIXSocket
 		, m_bInitialWriteNotification(true)
 		, m_StateAtomic(NMib::NNetwork::ENetTCPState_Write)
 		, m_CloseError(0)
-		, m_pDestructionReportTo(nullptr)
 		, m_fOnStateChange(fg_Move(_fOnStateChange))
 	{}
 
@@ -94,26 +104,6 @@ struct CPOSIXSocket
 
 using CPOSIXAddress = CRuntimeNetAddress;
 
-class CPOSIXImpSpecificSocketPoller
-{
-private:
-	class CInternal;
-	NMib::NStorage::TCUniquePointer<CInternal> mp_pInternal;
-
-public:
-	CPOSIXImpSpecificSocketPoller();
-	~CPOSIXImpSpecificSocketPoller();
-
-	// Called from any thread:
-	void f_RegisterSocket(CPOSIXSocket* _pSocket);
-	void f_DeregisterSocket(CPOSIXSocket* _pSocket);
-
-	// Called from a dedicated poller thread:
-	void f_Run(NThread::CThread* _pThread);
-
-	// Called from any thread. Causes the f_Run loop to check the state of the thread.
-	void f_Break();
-};
 
 class CPOSIXImpSpecificSocketContext
 {
@@ -196,6 +186,7 @@ public:
 
 		void f_StartSocket(CPOSIXSocket *_pSocket);
 		bool f_Close(CPOSIXSocket* _pSocket);
+		void f_CloseAsync(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 		void f_Shutdown(CPOSIXSocket* _pSocket);
 
 		umint f_Receive(CPOSIXSocket *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream);
@@ -214,6 +205,7 @@ public:
 
 		CPOSIXSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 		void *f_GiveUpForInherit(CPOSIXSocket *_pSocket);
+		void f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle);
 		void *f_GetOSSocket(CPOSIXSocket *_pSocket);
 
 		CPOSIXAddress* f_GetPeerAddress(CPOSIXSocket *_pSocket);
@@ -222,10 +214,10 @@ public:
 
 private:
 
+	void fp_DestroySocket(CPOSIXSocket *_pSocket);
+
 	struct CPollerThread : public NMib::NThread::CThread
 	{
-		CPOSIXImpSpecificSocketPoller mp_Poller;
-
 		NStr::CStr f_GetThreadName() override
 		{
 			return CStr("Socket Poller");
@@ -233,15 +225,25 @@ private:
 
 		aint f_Main() override
 		{
-			mp_Poller.f_Run(this);
+			mp_pLoop->f_SetOwnerThreadToCurrent();
+
+			while (mp_bStop.f_Load() == 0 && f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
+				mp_pLoop->f_WaitAndDispatch();
+
+			mp_pLoop->f_DrainForShutdown();
+
 			return 0;
 		}
 
 		umint f_Stop(bool _bBlock) override
 		{
-			mp_Poller.f_Break();
+			mp_bStop.f_Store(1);
+			mp_pLoop->f_Wake();
 			return NMib::NThread::CThread::f_Stop(_bBlock);
 		}
+
+		NMib::NSys::ICIoLoop *mp_pLoop = nullptr; // Create before starting the shared poller thread; destroy after it stops.
+		NMib::NAtomic::TCAtomic<smint> mp_bStop{0};
 	};
 
 #pragma clang diagnostic push
@@ -313,7 +315,7 @@ private:
 	void fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address);
 
 	CPOSIXImpSpecificSocketContext mp_ImpSpecific;
-
+	NMib::NSys::CIoSubSystem *mp_pIo = nullptr;
 	CPollerThread mp_PollerThread;
 
 	// TODO: This should be able to be replaced by an imp specific version.
