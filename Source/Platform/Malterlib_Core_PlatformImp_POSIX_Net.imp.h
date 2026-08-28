@@ -1158,9 +1158,11 @@ NMib::NNetwork::ENetTCPState CPOSIXSocketContext::f_GetState(CPOSIXSocket *_pSoc
 	return (NMib::NNetwork::ENetTCPState)_pSocket->m_StateAtomic.f_Exchange(0);
 }
 
-umint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, umint _DataLen)
+umint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream)
 {
 	int Result = recv(_pSocket->m_FD, _pData, _DataLen, 0);
+
+	o_bEndOfStream = Result == 0 && _DataLen != 0;
 
 	if (Result == -1)
 	{

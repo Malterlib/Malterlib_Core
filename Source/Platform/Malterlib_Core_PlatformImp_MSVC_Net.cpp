@@ -1415,9 +1415,11 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 	return true;
 }
 
-umint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen)
+umint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream)
 {
 	int Ret = recv((SOCKET)_pSocket->m_pSocket, (char *)_pData, _DataLen, 0);
+
+	o_bEndOfStream = Ret == 0 && _DataLen != 0;
 
 	if (Ret == SOCKET_ERROR)
 	{

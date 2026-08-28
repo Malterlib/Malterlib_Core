@@ -202,7 +202,7 @@ public:
 		bool f_Close(CPOSIXSocket* _pSocket);
 		void f_Shutdown(CPOSIXSocket* _pSocket);
 
-		umint f_Receive(CPOSIXSocket *_pSocket, void *_pData, umint _DataLen);
+		umint f_Receive(CPOSIXSocket *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream);
 		umint f_Send(CPOSIXSocket *_pSocket, const void *_pData, umint _DataLen);
 		umint f_SendVectored(CPOSIXSocket *_pSocket, NMib::NSys::CIoSpan const *_pSpans, umint _nSpans);
 		umint f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address, const void *_pData, umint _DataLen);
