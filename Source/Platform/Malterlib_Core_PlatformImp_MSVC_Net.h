@@ -284,7 +284,7 @@ public:
 		bool f_Close(CWindowsSocket* _pSocket);
 		bool f_Shutdown(CWindowsSocket *_pSocket);
 
-		umint f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen);
+		umint f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream);
 		umint f_Send(CWindowsSocket *_pSocket, const void *_pData, umint _DataLen);
 		umint f_SendVectored(CWindowsSocket *_pSocket, NMib::NSys::CIoSpan const *_pSpans, umint _nSpans);
 		bool f_GetProcessIdentity(CWindowsSocket *_pSocket, NMib::NSys::NNetwork::CProcessIdentity &o_LocalIdentity, NMib::NSys::NNetwork::CProcessIdentity &o_PeerIdentity);
