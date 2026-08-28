@@ -294,6 +294,7 @@ static inline_small class CSystemLinux *fg_GetLocalSys();
 #include <sys/ioctl.h>
 #include <sys/param.h>
 #include <sys/mount.h>
+#include <sys/xattr.h>
 #include <linux/sysctl.h>
 #include <sys/epoll.h>
 
@@ -2013,8 +2014,6 @@ NStr::CStrNonTracked NSys::NFile::fg_GetRawTemporaryDirectoryNonTracked()
 }
 
 
-
-
 namespace NMib
 {
 	namespace NSys
@@ -2090,19 +2089,301 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 		return NMib::NStr::CStrNonTracked();
 }
 
+#ifndef FICLONE
+	#define FICLONE _IOW(0x94, 9, int)
+#endif
+#ifndef FS_IOC_GETFLAGS
+	#define FS_IOC_GETFLAGS _IOR('f', 1, long)
+#endif
+#ifndef FS_IOC_SETFLAGS
+	#define FS_IOC_SETFLAGS _IOW('f', 2, long)
+#endif
+
+// Returns zero on a same-filesystem reflink, errno on failure.
+// Fresh metadata preserves creation defaults; otherwise restore source ownership, mode, attributes and timestamps.
+static int fsg_CloneFile(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, bool _bFreshMetadata)
+{
+	// Use nonblocking open so a FIFO cannot hang before the regular-file check.
+	int SourceFile = open(_FileFrom, fg_GetUnixOpenFlags() | O_RDONLY | O_NONBLOCK);
+	if (SourceFile < 0)
+		return errno;
+
+	auto CloseSource = g_OnScopeExit / [&]
+		{
+			close(SourceFile);
+		}
+	;
+
+	struct stat SourceStat;
+	if (fstat(SourceFile, &SourceStat) != 0)
+		return errno;
+
+	if (!S_ISREG(SourceStat.st_mode))
+		return EINVAL;
+
+	// Respect the same advisory locks as the CFile fallback.
+	if (flock(SourceFile, LOCK_SH | LOCK_NB) != 0)
+		return errno;
+
+	// Create duplicates restrictively until ownership is set; source set-ID bits on a caller-owned inode could escalate privileges.
+	int DestFile = open(_FileTo, fg_GetUnixOpenFlags() | O_WRONLY | O_CREAT | O_EXCL, _bFreshMetadata ? 0666 : 0600);
+	if (DestFile < 0)
+		return errno;
+
+	auto CloseDest = g_OnScopeExit / [&]
+		{
+			close(DestFile);
+		}
+	;
+
+	if (flock(DestFile, LOCK_SH | LOCK_NB) != 0)
+	{
+		int Error = errno;
+		unlink(_FileTo);
+		return Error;
+	}
+
+	if (ioctl(DestFile, FICLONE, SourceFile) != 0)
+	{
+		int Error = errno;
+		unlink(_FileTo);
+		return Error;
+	}
+
+	if (!_bFreshMetadata)
+	{
+		auto fFail = [&]() -> int
+			{
+				int Error = errno;
+				unlink(_FileTo);
+				return Error;
+			}
+		;
+
+		// Set ownership before restoring set-ID bits; chown also clears them. EPERM leaves caller ownership,
+		// where restored set-ID bits confer no privilege the caller lacks.
+		if (fchown(DestFile, SourceStat.st_uid, SourceStat.st_gid) != 0 && errno != EPERM)
+			return fFail();
+
+		NContainer::TCVector<char> SourceNames;
+		ssize_t SourceNamesLen = flistxattr(SourceFile, nullptr, 0);
+		if (SourceNamesLen < 0)
+			return fFail();
+
+		if (SourceNamesLen > 0)
+		{
+			SourceNames.f_SetLen((umint)SourceNamesLen + 1);
+			SourceNamesLen = flistxattr(SourceFile, SourceNames.f_GetArray(), (size_t)SourceNamesLen);
+			if (SourceNamesLen < 0)
+				return fFail();
+
+			NContainer::TCVector<char> Value;
+			umint iName = 0;
+			while (iName < (umint)SourceNamesLen)
+			{
+				char const *pName = SourceNames.f_GetArray() + iName;
+
+				ssize_t ValueLen = fgetxattr(SourceFile, pName, nullptr, 0);
+				if (ValueLen < 0)
+				{
+					if (errno == ENODATA)
+					{
+						iName += strlen(pName) + 1;
+						continue;
+					}
+					return fFail();
+				}
+
+				Value.f_SetLen((umint)ValueLen);
+				if (ValueLen > 0)
+				{
+					ValueLen = fgetxattr(SourceFile, pName, Value.f_GetArray(), (size_t)ValueLen);
+					if (ValueLen < 0)
+						return fFail();
+				}
+
+				if (fsetxattr(DestFile, pName, Value.f_GetArray(), (size_t)ValueLen, 0) != 0)
+					return fFail();
+
+				iName += strlen(pName) + 1;
+			}
+		}
+
+		// Remove destination-only attributes, including inherited ACLs that could grant access beyond the source policy.
+		{
+			ssize_t DestNamesLen = flistxattr(DestFile, nullptr, 0);
+			if (DestNamesLen < 0)
+				return fFail();
+
+			if (DestNamesLen > 0)
+			{
+				NContainer::TCVector<char> DestNames;
+				DestNames.f_SetLen((umint)DestNamesLen + 1);
+				DestNamesLen = flistxattr(DestFile, DestNames.f_GetArray(), (size_t)DestNamesLen);
+				if (DestNamesLen < 0)
+					return fFail();
+
+				umint iDestName = 0;
+				while (iDestName < (umint)DestNamesLen)
+				{
+					char const *pDestName = DestNames.f_GetArray() + iDestName;
+
+					bool bOnSource = false;
+					umint iSourceName = 0;
+					while (iSourceName < (umint)SourceNamesLen)
+					{
+						char const *pSourceName = SourceNames.f_GetArray() + iSourceName;
+						if (strcmp(pDestName, pSourceName) == 0)
+						{
+							bOnSource = true;
+							break;
+						}
+						iSourceName += strlen(pSourceName) + 1;
+					}
+
+					if (!bOnSource && fremovexattr(DestFile, pDestName) != 0 && errno != ENODATA)
+						return fFail();
+
+					iDestName += strlen(pDestName) + 1;
+				}
+			}
+		}
+
+		// Prune inherited ACLs before chmod can enable their named-user entries through the ACL mask.
+		if (fchmod(DestFile, SourceStat.st_mode & 07777) != 0)
+			return fFail();
+
+		struct timespec Times[2] = {SourceStat.st_atim, SourceStat.st_mtim};
+		if (futimens(DestFile, Times) != 0)
+			return fFail();
+
+		// Copy inode flags last so immutable flags cannot block metadata writes. Unsupported or privileged flags are best effort.
+		{
+			long SourceFlags = 0;
+			if (ioctl(SourceFile, FS_IOC_GETFLAGS, &SourceFlags) == 0)
+			{
+				long DestFlags = 0;
+				if (ioctl(DestFile, FS_IOC_GETFLAGS, &DestFlags) == 0 && DestFlags != SourceFlags)
+				{
+					if
+						(
+							ioctl(DestFile, FS_IOC_SETFLAGS, &SourceFlags) != 0
+							&& errno != EPERM
+							&& errno != EOPNOTSUPP
+							&& errno != ENOTTY
+						)
+					{
+						return fFail();
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+// Copies file data inside the kernel; on same-filesystem XFS/Btrfs this can itself perform a reflink copy.
+// Returns false when unsupported so the caller can fall back to a userspace copy.
+static bool fsg_TryCopyFileRange(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+#ifdef __NR_copy_file_range
+	int SourceFile = open(_FileFrom, fg_GetUnixOpenFlags() | O_RDONLY);
+	if (SourceFile < 0)
+		return false;
+
+	auto CloseSource = g_OnScopeExit / [&]
+		{
+			close(SourceFile);
+		}
+	;
+
+	struct stat SourceStat;
+	if (fstat(SourceFile, &SourceStat) != 0)
+		return false;
+
+	if (!S_ISREG(SourceStat.st_mode))
+		return false;
+
+	// Zero-sized procfs/sysfs files may yield data; use the read-based fallback.
+	if (SourceStat.st_size == 0)
+		return false;
+
+	// Shared advisory lock, same as a CFile read open with sharing — see fsg_CloneFile
+	if (flock(SourceFile, LOCK_SH | LOCK_NB) != 0)
+		return false;
+
+	// Only remove files created here on failure. lstat treats dangling symlinks as existing so cleanup preserves them.
+	struct stat DestEntryStat;
+	bool bDestExisted = lstat(_FileTo, &DestEntryStat) == 0;
+
+	// Use default permissions to avoid exposing source special bits during copying.
+	// Do not truncate until copy_file_range succeeds; an unsupported fast path must preserve the destination for fallback.
+	int DestFile = open(_FileTo, fg_GetUnixOpenFlags() | O_WRONLY | O_CREAT, 0644);
+	if (DestFile < 0)
+		return false;
+
+	auto CloseDest = g_OnScopeExit / [&]
+		{
+			close(DestFile);
+		}
+	;
+
+	auto fFail = [&]() -> bool
+		{
+			if (!bDestExisted)
+				unlink(_FileTo);
+			return false;
+		}
+	;
+
+	// Respect existing destination locks just as the write fallback does.
+	if (flock(DestFile, LOCK_SH | LOCK_NB) != 0)
+		return fFail();
+
+	// Use syscall directly to avoid depending on the glibc 2.27+ copy_file_range symbol
+	off_t Remaining = SourceStat.st_size;
+	while (Remaining > 0)
+	{
+		ssize_t nCopied = syscall(__NR_copy_file_range, SourceFile, nullptr, DestFile, nullptr, (size_t)Remaining, 0u);
+		if (nCopied <= 0)
+			return fFail();
+		Remaining -= nCopied;
+	}
+
+	if (ftruncate(DestFile, SourceStat.st_size) != 0)
+		return fFail();
+
+	// Match CFile's fixed 0644 write-open policy before the caller applies read-only and executable attributes.
+	if (fchmod(DestFile, 0644) != 0)
+		return fFail();
+
+	return true;
+#else
+	return false;
+#endif
+}
+
 void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-	DMibErrorFile("Not supported");
+	if (int Error = fsg_CloneFile(_FileFrom, _FileTo, false))
+		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("clone('{}', '{}')") << _FileFrom << _FileTo, Error));
 }
 
 bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-	return false;
+	return fsg_CloneFile(_FileFrom, _FileTo, false) == 0;
+}
+
+bool NSys::NFile::fg_TryCloneData(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	return fsg_CloneFile(_FileFrom, _FileTo, true) == 0;
 }
 
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
-	NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo); // No good way to do this on Linux unless you have kernel 2.6.33 or later (sendfile)
+	if (!fsg_TryCopyFileRange(_FileFrom, _FileTo))
+		NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo);
 
 	// Copy the attributes
 	{
@@ -2138,7 +2419,8 @@ void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib
 
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
-	NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo); // No good way to do this on Linux unless you have kernel 2.6.33 or later (sendfile)
+	if (!fsg_TryCopyFileRange(_FileFrom, _FileTo))
+		NMib::NFile::CFile::fs_CopyFileRaw(_FileFrom, _FileTo);
 
 	// Copy the attributes
 	{

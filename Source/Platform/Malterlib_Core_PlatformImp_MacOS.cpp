@@ -4,6 +4,7 @@
 #define _LIBCPP_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS
 
 #include <Mib/Core/Core>
+#include <Mib/Cryptography/RandomID>
 #include <Mib/Cryptography/UUID>
 
 #define _DARWIN_USE_64_BIT_INODE
@@ -23,6 +24,9 @@
 #include <sys/utsname.h>
 #include <crt_externs.h>
 #include <sys/clonefile.h>
+#include <sys/xattr.h>
+#include <sys/attr.h>
+#include <sys/acl.h>
 #include <os/lock.h>
 #include <sys/random.h>
 #include <exception>
@@ -853,7 +857,6 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 		_Out = UniString;
 	}
 }
-
 
 
 NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NMib::NSys::fg_Process_GetEnvironmentVariables_NonProtected()
@@ -2964,6 +2967,200 @@ bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib:
 	return true;
 }
 
+bool NSys::NFile::fg_TryCloneData(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+{
+	if (!&fclonefileat)
+		return false;
+
+	// Use nonblocking open to reject FIFOs without hanging, and take the same advisory lock as a CFile read.
+	int LockFile = open(_FileFrom, O_RDONLY | O_CLOEXEC | O_NONBLOCK);
+	if (LockFile < 0)
+		return false;
+
+	auto CloseLockFile = g_OnScopeExit / [&]
+		{
+			close(LockFile);
+		}
+	;
+
+	if (flock(LockFile, LOCK_SH | LOCK_NB) != 0)
+		return false;
+
+	// Validate and clone through one locked descriptor so path replacement cannot substitute an unchecked source.
+	{
+		struct stat SourceStat;
+		if (fstat(LockFile, &SourceStat) != 0)
+			return false;
+
+		// clonefile accepts directory hierarchies; this API only clones regular-file data.
+		if (!S_ISREG(SourceStat.st_mode))
+			return false;
+
+		// UF_COMPRESSED data can live in decmpfs metadata/resource forks; stripping metadata would remove the data. Use the read/write fallback.
+		if (SourceStat.st_flags & UF_COMPRESSED)
+			return false;
+	}
+
+	// Probe creation defaults at the destination: directory ACLs affect them. Never change the process-wide umask to inspect it.
+	// Callers must exclude concurrent writers to the destination path.
+	mode_t FreshMode;
+	acl_t ProbeAcl = nullptr;
+	auto FreeProbeAcl = g_OnScopeExit / [&]
+		{
+			if (ProbeAcl)
+				acl_free(ProbeAcl);
+		}
+	;
+	{
+		int ProbeFile = open(_FileTo, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, 0666);
+		if (ProbeFile < 0)
+			return false;
+
+		struct stat ProbeStat;
+		bool bProbeStated = fstat(ProbeFile, &ProbeStat) == 0;
+
+		ProbeAcl = acl_get_fd_np(ProbeFile, ACL_TYPE_EXTENDED);
+
+		close(ProbeFile);
+		unlink(_FileTo);
+		if (!bProbeStated)
+			return false;
+
+		FreshMode = ProbeStat.st_mode & 07777;
+	}
+
+	// Sanitize source metadata inside a private staging directory before publication, so inherited permissions cannot expose it.
+	// Use an unpredictable name and never reuse or clean a collision: it may belong to another writer.
+	CStr StagingDir = CStr::CFormat("{}.{}.clonetmp") << _FileTo << NCryptography::fg_RandomID();
+	if (mkdir(StagingDir, 0700) != 0)
+		return false;
+
+	// The staging path can be replaced; use a verified, no-follow directory descriptor for subsequent operations.
+	int StagingDirFd = open(StagingDir, O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+	if (StagingDirFd < 0)
+	{
+		rmdir(StagingDir);
+		return false;
+	}
+
+	// Ownership does not prove this attempt created an entry; cleanup may remove only the file cloned by this attempt.
+	bool bStagedFileCloned = false;
+
+	auto CleanupStaging = g_OnScopeExit / [&]
+		{
+			// Descriptor-relative cleanup follows the staged file despite path replacement. Best-effort rmdir can only remove an empty directory.
+			if (bStagedFileCloned)
+				unlinkat(StagingDirFd, "File", 0);
+			close(StagingDirFd);
+			rmdir(StagingDir);
+		}
+	;
+
+	// Verify both ownership and private mode; a substituted directory can have this user's ownership with wider permissions.
+	{
+		struct stat StagingStat;
+		if (fstat(StagingDirFd, &StagingStat) != 0 || StagingStat.st_uid != geteuid() || (StagingStat.st_mode & 077) != 0)
+			return false;
+	}
+
+	// Inherited ACL entries can grant access despite mode 0700; remove them before cloning.
+	{
+		acl_t EmptyAcl = acl_init(1);
+		if (!EmptyAcl)
+			return false;
+
+		int AclReturn = acl_set_fd_np(StagingDirFd, EmptyAcl, ACL_TYPE_EXTENDED);
+		acl_free(EmptyAcl);
+		if (AclReturn != 0)
+			return false;
+	}
+
+	// Clone from verified descriptors. CLONE_NOOWNERCOPY preserves fresh-file ownership even for privileged callers.
+	if (fclonefileat(LockFile, StagingDirFd, "File", CLONE_NOOWNERCOPY))
+		return false;
+	bStagedFileCloned = true;
+
+	int StagedFileFd = openat(StagingDirFd, "File", O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+	if (StagedFileFd < 0)
+		return false;
+
+	auto CloseStagedFile = g_OnScopeExit / [&]
+		{
+			close(StagedFileFd);
+		}
+	;
+
+	// Flags first: an inherited immutable flag would block the strip below and the cleanup unlink
+	if (fchflags(StagedFileFd, 0) != 0)
+		return false;
+
+	if (fchmod(StagedFileFd, FreshMode) != 0)
+		return false;
+
+	// Extended attributes carry quarantine state, resource forks and custom metadata the
+	// fallback's fresh file would not have
+	ssize_t NamesLen = flistxattr(StagedFileFd, nullptr, 0, 0);
+	if (NamesLen < 0)
+		return false;
+
+	if (NamesLen > 0)
+	{
+		NContainer::TCVector<ch8> Names;
+		Names.f_SetLen((umint)NamesLen + 1);
+		NamesLen = flistxattr(StagedFileFd, Names.f_GetArray(), (size_t)NamesLen, 0);
+		if (NamesLen < 0)
+			return false;
+
+		umint iName = 0;
+		while (iName < (umint)NamesLen)
+		{
+			ch8 const *pName = Names.f_GetArray() + iName;
+			if (fremovexattr(StagedFileFd, pName, 0) != 0 && errno != ENOATTR)
+				return false;
+
+			iName += strlen(pName) + 1;
+		}
+	}
+
+	// ACLs are invisible to listxattr; restore the destination's creation ACL explicitly, using an empty set for none.
+	{
+		acl_t FreshAcl = ProbeAcl ? ProbeAcl : acl_init(1);
+		if (!FreshAcl)
+			return false;
+
+		int AclReturn = acl_set_fd_np(StagedFileFd, FreshAcl, ACL_TYPE_EXTENDED);
+		if (!ProbeAcl)
+			acl_free(FreshAcl);
+		if (AclReturn != 0)
+			return false;
+	}
+
+	// Cloning copies timestamps; reset creation and access/modification times to fresh-file values.
+	{
+		struct timespec Now;
+		if (clock_gettime(CLOCK_REALTIME, &Now) != 0)
+			return false;
+
+		struct attrlist AttrList;
+		fg_MemClear(&AttrList, sizeof(AttrList));
+		AttrList.bitmapcount = ATTR_BIT_MAP_COUNT;
+		AttrList.commonattr = ATTR_CMN_CRTIME;
+
+		struct timespec CreationTime = Now;
+		if (fsetattrlist(StagedFileFd, &AttrList, &CreationTime, sizeof(CreationTime), 0) != 0)
+			return false;
+
+		struct timespec Times[2] = {Now, Now};
+		if (futimens(StagedFileFd, Times) != 0)
+			return false;
+	}
+
+	if (renameat(StagingDirFd, "File", AT_FDCWD, _FileTo) != 0)
+		return false;
+
+	return true;
+}
+
 void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
 {
 	if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, false))
@@ -3975,7 +4172,6 @@ void NSys::fg_Mem_VirtualFlushInstructionCache(void *_pMem, umint _Size)
     if (msync(pStart, pEnd - pStart, MS_INVALIDATE | MS_SYNC))
 		DMibError(NMib::NPlatform::fg_FormatErrno("msync", errno));
 }
-
 
 
 void NSys::fg_TerminateProcess(aint _ExitCode)
