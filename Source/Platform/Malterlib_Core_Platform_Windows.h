@@ -33,4 +33,10 @@ namespace NMib::NPlatform
 	bool fg_ThisThreadOwnsDllLock();
 	bool fg_IsShuttingDown();
 	void fg_ReportIsShuttingDown();
+
+	// Starts the hidden top-level window that hears the session ending and reports it, once per
+	// process; stopped with the platform. Broadcast messages never reach a message-only window,
+	// so a process without a window of its own has no other way to be told
+	void fg_EnsureEndSessionReporting();
+	void fg_StopEndSessionReporting();
 }

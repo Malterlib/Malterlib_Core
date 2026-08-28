@@ -242,6 +242,13 @@ namespace NMib
 		class TCWeakPointer;
 
 	}
+
+	// The destructor is the release event — it runs exactly once, on whichever thread drops the
+	// last reference, which is what makes end-of-life accounting hung off it reliable
+	struct CVirtualDestroyBase
+	{
+		virtual ~CVirtualDestroyBase() = default;
+	};
 }
 
 #include "../../String/Source/Malterlib_String_Types.h"
