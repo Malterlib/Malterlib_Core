@@ -1,0 +1,81 @@
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#include <Mib/Core/Core>
+#include <Mib/Core/IoStream>
+
+namespace NMib::NSys
+{
+	ICThreadIoLoop::~ICThreadIoLoop()
+	{
+	}
+
+	ICIoLoop::~ICIoLoop()
+	{
+	}
+
+	// Set while a thread is creating io objects that should belong to a loop it owns, so that
+	// registration happens with that loop straight away
+	static thread_local ICIoLoop *gs_pThreadIoLoop = nullptr;
+
+	void fg_SetThreadIoLoop(ICIoLoop *_pLoop)
+	{
+		gs_pThreadIoLoop = _pLoop;
+	}
+
+	ICIoLoop *fg_GetThreadIoLoop()
+	{
+		return gs_pThreadIoLoop;
+	}
+
+	void ICThreadIoLoop::f_DrainForShutdown()
+	{
+		f_PollAndDispatch();
+	}
+
+	void ICThreadIoLoop::f_AbandonPendingTeardown()
+	{
+	}
+
+	void ICThreadIoLoop::f_SetParkEvent(NThread::CEventAutoReset *_pEvent)
+	{
+	}
+
+	bool ICThreadIoLoop::f_ParksOnQueueEvent() const
+	{
+		return false;
+	}
+
+	void ICIoLoop::f_RequestReadiness(CIoLoopRegistration *_pRegistration, EIoLoopEvent _EventMask)
+	{
+	}
+
+	umint ICIoLoop::f_GetCompletionSendDepth() const
+	{
+		return 1;
+	}
+
+	bool ICIoLoop::f_SupportsCompletionIo() const
+	{
+		return false;
+	}
+
+	bool ICIoLoop::f_SubmitSendVectored(CIoLoopRegistration *_pRegistration, CIoSpan const *_pSpans, umint _nSpans, FIoCompletion &&_fOnComplete, FIoBufferReleased &&_fOnBufferReleased)
+	{
+		return false;
+	}
+
+	bool ICIoLoop::f_SupportsReceiveStream() const
+	{
+		return false;
+	}
+
+	bool ICIoLoop::f_StartReceiveStream(CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NStorage::TCSharedPointer<CIoStreamBackpressure> _pBackpressure, FIoStreamSink &&_fSink)
+	{
+		return false;
+	}
+
+	void ICIoLoop::f_ResumeReceiveStream(CIoLoopRegistration *_pRegistration)
+	{
+	}
+}

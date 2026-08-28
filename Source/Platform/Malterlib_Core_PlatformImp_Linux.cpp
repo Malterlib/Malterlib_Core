@@ -2698,6 +2698,16 @@ void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
 	return fg_GetLocalSys()->m_SocketContext->f_GiveUpForInherit((CPOSIXSocket*)_pSocket);
 }
 
+void NSys::NNetwork::fg_GiveUpForInheritAsync(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle)
+{
+	fg_GetLocalSys()->m_SocketContext->f_GiveUpForInheritAsync((CPOSIXSocket*)_pSocket, fg_Move(_fOnHandle));
+}
+
+void NSys::NNetwork::fg_CloseSocketHandle(void *_pSocketHandle)
+{
+	close((int)(umint)_pSocketHandle);
+}
+
 void *NSys::NNetwork::fg_GetOSSocket(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetOSSocket((CPOSIXSocket*)_pSocket);

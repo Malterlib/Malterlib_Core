@@ -1,6 +1,8 @@
 // Copyright © Unbroken AB
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <Mib/Core/IoStream>
+
 #define _CRT_DECLARE_GLOBAL_VARIABLES_DIRECTLY
 
 #pragma warning(disable:4996)
@@ -6366,6 +6368,18 @@ void NSys::NNetwork::fg_StartSocket(void *_pSocket)
 	return fg_GetLocalSys()->m_SocketContext->f_StartSocket((CWindowsSocket *)_pSocket);
 }
 
+// Windows routes socket events through a message window on one thread of its own, which nothing
+// else can park in, so there is no loop to hand out here and every socket keeps using that thread
+NSys::ICIoLoop *NSys::fg_CreateIoLoop()
+{
+	return nullptr;
+}
+
+void NSys::fg_DestroyIoLoop(NSys::ICIoLoop *_pLoop)
+{
+	DMibFastCheck(!_pLoop);
+}
+
 void *NSys::NNetwork::fg_Listen
 	(
 		NSys::NNetwork::CAddress _Address
@@ -6418,6 +6432,44 @@ umint NSys::NNetwork::fg_SendVectored(void *_pSocket, NSys::CIoSpan const *_pSpa
 	return fg_GetLocalSys()->m_SocketContext->f_SendVectored((CWindowsSocket*)_pSocket, _pSpans, _nSpans);
 }
 
+// Windows sockets are all serviced by the message-window poller, so no socket has a created loop
+// to report
+NSys::ICIoLoop *NSys::NNetwork::fg_GetOwningIoLoop(void *)
+{
+	return nullptr;
+}
+
+// The message-window poller keeps standing interest, so a readiness request has nothing to arm
+void NSys::NNetwork::fg_RequestReadiness(void *, bool, bool)
+{
+}
+
+// Completion transfers are a Linux io_uring capability; the IOCP backend that would provide them
+// here is deliberately deferred, so Windows sockets stay on the readiness path
+bool NSys::NNetwork::fg_SupportsCompletionIo(void *)
+{
+	return false;
+}
+
+bool NSys::NNetwork::fg_SupportsReceiveStream(void *)
+{
+	return false;
+}
+
+bool NSys::NNetwork::fg_StartReceiveStream(void *, umint, NStorage::TCSharedPointer<NSys::CIoStreamBackpressure>, NSys::FIoStreamSink &&)
+{
+	return false;
+}
+
+void NSys::NNetwork::fg_ResumeReceiveStream(void *)
+{
+}
+
+bool NSys::NNetwork::fg_SubmitSendVectored(void *, NSys::CIoSpan const *, umint, NSys::FIoCompletion &&, NSys::FIoBufferReleased &&)
+{
+	return false;
+}
+
 umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, umint _DataLen) // Returns bytes sen
 {
 	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CWindowsSocket*)_pSocket, *((CWindowsAddress*)_Address), _pData, _DataLen);
@@ -6453,6 +6505,21 @@ void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunct
 void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GiveUpForInherit((CWindowsSocket*)_pSocket);
+}
+
+// The message-window poller unhooks synchronously, so the acknowledge-first contract is already
+// satisfied when the synchronous form returns and the continuation can run inline. The
+// asynchronous form consumes the platform socket, so the emptied object is closed here
+void NSys::NNetwork::fg_GiveUpForInheritAsync(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle)
+{
+	void *pSocketHandle = fg_GiveUpForInherit(_pSocket);
+	fg_Close(_pSocket);
+	_fOnHandle(pSocketHandle);
+}
+
+void NSys::NNetwork::fg_CloseSocketHandle(void *_pSocketHandle)
+{
+	closesocket((SOCKET)_pSocketHandle);
 }
 
 void *NSys::NNetwork::fg_GetOSSocket(void *_pSocket)
