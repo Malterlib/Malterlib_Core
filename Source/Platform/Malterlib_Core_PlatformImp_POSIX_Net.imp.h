@@ -6,6 +6,7 @@
 
 #include <netinet/tcp.h>
 #include <sys/uio.h>
+#include <sys/stat.h>
 
 #if defined(DPlatformFamily_Linux)
 	#include <sys/stat.h>
@@ -757,9 +758,11 @@ void CPOSIXSocketContext::fp_PrepareUnixListen(CPOSIXAddress const &_Address)
 	{
 		CUnixAddress const &UnixAddress = _Address.f_GetUnix();
 
+		// ENOENT is success: concurrent teardown can remove the stale socket before unlink.
 		NStr::CStr UnixFilePath = UnixAddress.f_GetPath();
-		if (NFile::CFile::fs_FileExists(UnixFilePath))
-			NFile::CFile::fs_DeleteFile(UnixFilePath);
+		NStr::CStr PosixPath = fg_ConvertToPOSIXPath(UnixFilePath);
+		if (unlink(PosixPath.f_GetStr()) != 0 && errno != ENOENT)
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno(NStr::CStr::CFormat("unlink('{}') when removing stale unix socket") << UnixFilePath, errno));
 		auto Directory = NFile::CFile::fs_GetPath(UnixFilePath);
 		if (!NFile::CFile::fs_FileExists(Directory))
 		{
