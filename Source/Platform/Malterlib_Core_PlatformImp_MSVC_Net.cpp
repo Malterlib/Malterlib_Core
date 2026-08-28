@@ -1502,10 +1502,9 @@ umint CWindowsSocketContext::f_SendVectored(CWindowsSocket *_pSocket, NMib::NSys
 	}
 #endif
 
-	constexpr umint c_MaxVectors = 64;
-	WSABUF Buffers[c_MaxVectors];
+	WSABUF Buffers[NMib::NSys::gc_IoLoopMaxSubmitSpans];
 	umint nBuffers = 0;
-	for (umint iSpan = 0; iSpan < _nSpans && nBuffers < c_MaxVectors; ++iSpan)
+	for (umint iSpan = 0; iSpan < _nSpans && nBuffers < NMib::NSys::gc_IoLoopMaxSubmitSpans; ++iSpan)
 	{
 		if (!_pSpans[iSpan].m_nBytes)
 			continue;

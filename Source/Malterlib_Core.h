@@ -170,6 +170,10 @@ namespace NMib
 
 #include "../../Core/Source/Platform/Malterlib_Core_PlatformImp.h"
 
+// Ahead of the include below, which reaches into Concurrency, because the pool queues there refer
+// to this interface
+#include "Malterlib_Core_IoLoop.h"
+
 #	include "../../Core/Source/Malterlib_Core_Include.h"
 #include <Mib/Numeric/FloatImp>
 namespace NMib
