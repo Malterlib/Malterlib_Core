@@ -240,6 +240,7 @@ extern "C"
 #include "Malterlib_Core_PlatformImp_POSIX_Module.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX_User.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX_VirtualMemory.hpp"
+#include "Malterlib_Core_Platform_MacOS_IoSubSystem.h"
 #include "Malterlib_Core_PlatformImp_POSIX_Net.imp.h"
 
 // *************************************************************************************************************************
@@ -3476,6 +3477,21 @@ void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunct
 void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GiveUpForInherit((CPOSIXSocket*)_pSocket);
+}
+
+void NSys::NNetwork::fg_GiveUpForInheritAsync(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle)
+{
+	fg_GetLocalSys()->m_SocketContext->f_GiveUpForInheritAsync((CPOSIXSocket*)_pSocket, fg_Move(_fOnHandle));
+}
+
+void NSys::NNetwork::fg_CloseAsync(void *_pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
+{
+	fg_GetLocalSys()->m_SocketContext->f_CloseAsync((CPOSIXSocket*)_pSocket, fg_Move(_fOnClosed));
+}
+
+void NSys::NNetwork::fg_CloseSocketHandle(void *_pSocketHandle)
+{
+	close((int)(umint)_pSocketHandle);
 }
 
 void *NSys::NNetwork::fg_GetOSSocket(void *_pSocket)

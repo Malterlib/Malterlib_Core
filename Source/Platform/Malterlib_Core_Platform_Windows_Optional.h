@@ -69,6 +69,39 @@ namespace NLocal
 		BOOL (WINAPI *m_fCancelSynchronousIo)(HANDLE hThread);
 		BOOL (WINAPI *m_fCancelIoEx)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
 
+		// The native entry points the io loop drives the AFD device and completion bindings with
+		NTSTATUS (NTAPI *m_fNtCreateFile)
+			(
+				PHANDLE _phFile
+				, ACCESS_MASK _DesiredAccess
+				, POBJECT_ATTRIBUTES _pObjectAttributes
+				, PIO_STATUS_BLOCK _pIoStatusBlock
+				, PLARGE_INTEGER _pAllocationSize
+				, ULONG _FileAttributes
+				, ULONG _ShareAccess
+				, ULONG _CreateDisposition
+				, ULONG _CreateOptions
+				, PVOID _pEaBuffer
+				, ULONG _EaLength
+			)
+		;
+		NTSTATUS (NTAPI *m_fNtDeviceIoControlFile)
+			(
+				HANDLE _hFile
+				, HANDLE _hEvent
+				, PIO_APC_ROUTINE _fApcRoutine
+				, PVOID _pApcContext
+				, PIO_STATUS_BLOCK _pIoStatusBlock
+				, ULONG _IoControlCode
+				, PVOID _pInputBuffer
+				, ULONG _InputBufferLength
+				, PVOID _pOutputBuffer
+				, ULONG _OutputBufferLength
+			)
+		;
+		NTSTATUS (NTAPI *m_fNtSetInformationFile)(HANDLE _hFile, PIO_STATUS_BLOCK _pIoStatusBlock, PVOID _pFileInformation, ULONG _Length, FILE_INFORMATION_CLASS _FileInformationClass);
+		ULONG (NTAPI *m_fRtlNtStatusToDosError)(NTSTATUS _Status);
+
 		NTSTATUS (WINAPI *m_fNtQuerySystemInformation)(DWORD SystemInformationClass, PVOID SystemInformation, DWORD SystemInformationLength, PDWORD ReturnLength);
 
 		NTSTATUS (WINAPI *m_fNtGetNextThread)(HANDLE ProcessHandle, HANDLE ThreadHandle, ACCESS_MASK DesiredAccess, ULONG HandleAttributes, ULONG Flags, PHANDLE NewThreadHandle);

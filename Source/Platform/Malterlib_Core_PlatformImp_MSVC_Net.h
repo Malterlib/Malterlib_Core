@@ -5,29 +5,35 @@
 
 #include <Mib/Core/Core>
 
+#include "../Malterlib_Core_IoSubSystem.h"
+
 #include <afunix.h>
 
 #include "Malterlib_Core_PlatformImp_Net.h"
+#include "Malterlib_Core_Platform_Windows_IoLoop.h"
 
 using CWindowsAddress = CRuntimeNetAddress;
-class CWindowsSocketContext;
 
-struct [[nodiscard]] CWindowsSocketContextThreadUseScope
+enum EWindowsSocketEvent
 {
-	CWindowsSocketContextThreadUseScope() = default;
-	CWindowsSocketContextThreadUseScope(CWindowsSocketContext *_pContext);
-	~CWindowsSocketContextThreadUseScope();
-	CWindowsSocketContextThreadUseScope(CWindowsSocketContextThreadUseScope &&_Other);
-	CWindowsSocketContextThreadUseScope &operator = (CWindowsSocketContextThreadUseScope &&_Other);
-
-private:
-	CWindowsSocketContext *mp_pContext = nullptr;
-	NStorage::TCSharedPointer<bool> mp_pDestroyed;
+	EWindowsSocketEvent_Read	= 1 << 0,
+	EWindowsSocketEvent_Write	= 1 << 1,
 };
 
-class CWindowsSocket
+enum EWindowsSocketMode
 {
-public:
+	EWindowsSocketMode_Connecting,
+	EWindowsSocketMode_Connect,
+	EWindowsSocketMode_Listen,
+	EWindowsSocketMode_Datagram,
+};
+
+// Whether the kernel answers SIO_TCP_INFO (Windows 10 1703, build 15063), which is what sizes a
+// zero copy send pipeline to its path; without it TCP sends keep their socket buffer
+bool fg_WindowsTcpInfoSupported();
+
+struct CWindowsSocket
+{
 	struct CUnixListenState
 	{
 		~CUnixListenState();
@@ -37,138 +43,134 @@ public:
 		TCBinaryStreamFile<> m_UnixFile;
 	};
 
-	class CAVLCompare_CTCPSocket
-	{
-	public:
-		inline_small void const *operator () (CWindowsSocket const &_Node) const
-		{
-			return _Node.m_pSocket;
-		}
-	};
+	// Cross-module identification: the old Malterlib project hands its sockets over to this
+	// module, built against an older layout, so the first three members stay where every version
+	// had them. Newer modules give up their sockets within themselves
+	uint32 m_Magic = 0x4EA11E49;
+	uint32 m_Version = 0x102;
 
-	uint32 m_Magic;
-	uint32 m_Version;
-	void *m_pSocket;
-	TCAtomic<uint32> m_StateAtomic;
-
-	NMib::NThread::CMutual m_Lock;
-
-	NIntrusive::TCAVLLink<> m_TreeLink;
-
-	NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
-
-	CStr m_CloseReason;
-
+	// This info is set once and never changed. The socket becomes invalid when it is given up
+	// for another owner to inherit
+	SOCKET m_Socket;
+	EWindowsSocketMode m_Mode;
+	EWindowsSocketEvent m_RegisteredEvents;
 	umint m_BindAddressSize = 0;
-	ENetAddressType m_BindAddressType = ENetAddressType_None;
+	ENetAddressType m_AddressType = ENetAddressType_None;
 	TCUniquePointer<CUnixListenState> m_pUnixListen;
-	int m_AsyncSelectFlags = 0;
-	bool m_bReceiveEvents = false;
 
-	CWindowsSocketContextThreadUseScope m_ThreadUseScope;
+	// The io subsystem, cached at creation so the socket paths need no getter
+	NMib::NSys::CIoSubSystem *m_pIo = nullptr;
 
-#ifdef DTCPDelayEmulation
+	// Changed by the loop's dispatch and the consumer alike, under the lock
+	NMib::NThread::CMutual m_Lock;
+	bool m_bInitialWriteNotification;
+	NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
+	TCAtomic<uint32> m_StateAtomic;
+	int m_CloseError;
+	bool m_bShutdownCalled = false;
+	bool m_bNonErrorClose = false;
+	bool m_bRemoteCloseSignalled = false;
 
-	NMib::NThread::CMutual m_DelayedLock;
-	class CDelayedPacket
+	bool m_bSendBufferDecided = false;
+
+	// The bytes the connection may have in flight on its sends, 0 until set; what a configured
+	// window sizes the kernel buffers to, and what bounds the unacknowledged bytes of sends that
+	// go without a send buffer
+	umint m_nSendWindowBytes = 0;
+
+	// What the last path query saw, for the rate the next one derives
+	uint64 m_PathLastBytesOut = 0;
+	uint64 m_PathLastStamp = 0;
+
+	// The send buffer the first completion send applies, decided at registration (see
+	// f_StartSocket); ~umint(0) leaves the system default
+	umint m_nSendBufferBytesToApply = umint(-1);
+
+	// The loop this socket was registered with, which is where it has to be deregistered again.
+	// Set once when the socket is started and never changed, so a socket never migrates between
+	// loops and no handshake is needed to move it
+	NMib::NSys::ICIoLoop *m_pOwningLoop = nullptr;
+
+	// The socket's registration with its owning loop, non-null exactly while registered. The
+	// handle is the loop's identity for the socket; the loop never dereferences the socket itself
+	NMib::NSys::CIoLoopRegistration *m_pIoRegistration = nullptr;
+
+	// Created to be given up to an owner that cannot rebind a handle — a backend without a
+	// completion port, or a system without the native replace: registered readiness-only, so the
+	// handle is never bound. Set before the socket starts; a listen socket passes it to what it
+	// accepts. A loop of this kind takes over bound handles as well, so the flag is only for
+	// those receivers
+	bool m_bInheritable = false;
+
+	CWindowsSocket
+		(
+			SOCKET _Socket
+			, EWindowsSocketMode _Mode
+			, EWindowsSocketEvent _Events
+			, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		)
+		: m_Socket(_Socket)
+		, m_Mode(_Mode)
+		, m_RegisteredEvents(_Events)
+		, m_bInitialWriteNotification(true)
+		, m_fOnStateChange(fg_Move(_fOnStateChange))
+		, m_StateAtomic(NMib::NNetwork::ENetTCPState_Write)
+		, m_CloseError(0)
 	{
-	public:
-		CDelayedPacket()
-		{
-			m_SentData = 0;
-		}
-		CByteVector m_Data;
-		umint m_SentData;
-		NTime::CTime m_SendTime;
-		DMibListLinkDS_Link(CDelayedPacket, m_Link);
-	};
-	DMibListLinkDS_List(CDelayedPacket, m_Link) m_DelayedPackets;
-	umint m_DelayedData;
-	bool m_bDelayedStuffed;
-
-	void f_UpdateDelayedSend(const NTime::CTime &_Now);
-#endif
-
-	CWindowsSocket();
-	~CWindowsSocket();
-
+	}
 };
 
+#if DMibConfig_IoDebug_Enable
+// Null when the statistics are off; the counters live on the io subsystem (m_SocketIoStats)
+NSys::CSocketIoStats *fg_SocketIoStats();
+#endif
 
-class CWindowsSocketContext : public NMib::NThread::CThread
+struct CIoSubSystem_Windows;
+
+class CWindowsSocketContext
 {
 protected:
-	friend struct CWindowsSocketContextThreadUseScope;
+	bool mp_bInitFailed;
 
-	// A simple async name resolver.
-	class CResolver
+	// The process wide shared loop for sockets nobody claimed, hosted on a dedicated thread.
+	// Created by the context before the thread starts and destroyed after it stops
+	struct CPollerThread : public NMib::NThread::CThread
 	{
-	private:
-		enum EFlag
+		NStr::CStr f_GetThreadName() override
 		{
-			EFlag_None		= 0,
-			EFlag_Done		= DMibBit(0),
-			EFlag_Unwanted	= DMibBit(1),
-			EFlag_Error		= DMibBit(2),
-			EFlag_InProgress = DMibBit(3),
-		};
+			return CStr("Socket Poller");
+		}
 
-		struct CResolveRequest
+		aint f_Main() override
 		{
-			NStr::CStr m_Name;
+			mp_pLoop->f_SetOwnerThreadToCurrent();
 
-			NThread::CMutual m_Lock;
-				EFlag m_Flags;
-				NStorage::TCUniquePointer<CWindowsAddress> m_pAddress;
-				NMib::NThread::CSemaphoreAggregate* m_pReportTo;
-				NMib::NStr::CStr m_ErrorString;
+			while (mp_bStop.f_Load() == 0 && f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
+				mp_pLoop->f_WaitAndDispatch();
 
-			// Protected by CResolveThread::mp_Lock.
-			CResolveRequest* m_pNext;
-		};
+			// Deregistrations still in progress complete before the loop loses its thread, as the
+			// loop's contract asks of its owner
+			mp_pLoop->f_DrainForShutdown();
 
-		CWindowsSocketContext* mp_pContext;
+			return 0;
+		}
 
-		NThread::CMutual mp_Lock;
-			CResolveRequest* mp_pHead;	// Take from here.
-			CResolveRequest* mp_pTail;	// Add Here
+		umint f_Stop(bool _bBlock) override
+		{
+			mp_bStop.f_Store(1);
+			mp_pLoop->f_Wake();
+			return NMib::NThread::CThread::f_Stop(_bBlock);
+		}
 
-		NStorage::TCUniquePointer<NThread::CThreadObject> mp_pThread;
-
-		CResolveRequest* fp_Pop();
-		aint fp_ResolveWorker(NThread::CThreadObject* _pThread);
-
-	public:
-		CResolver(CWindowsSocketContext* _pContext);
-		~CResolver();
-
-		void* f_Open(NMib::NStr::CStr const& _Name, NMib::NThread::CSemaphoreAggregate* _pReportTo);
-		bool f_GetResult(void *_pResolver, CWindowsAddress*& _opAddress, NMib::NStr::CStr &_Error);
-		void f_Close(void* _pResolver);
+		NMib::NSys::ICIoLoop *mp_pLoop = nullptr;
+		NMib::NAtomic::TCAtomic<smint> mp_bStop{0};
 	};
 
-protected:
-	void *mp_hThread;
-	uint32 mp_ThreadID;
-	umint mp_ThreadRefcount = 0;
-	NMib::NThread::CEvent mp_ThreadStartEvent;
-	NMib::NThread::CMutual mp_ThreadStartLock;
-	bool mp_bInitFailed;
-	HWND mp_hReportWnd;
-
-	NMib::NThread::CMutual mp_Lock;
-	NIntrusive::TCAVLTree<&CWindowsSocket::m_TreeLink, CWindowsSocket::CAVLCompare_CTCPSocket> mp_SocketTree;
-
-	NStorage::TCSharedPointer<bool> mp_pDestroyed = fg_Construct(false);
+	// The io subsystem the socket policies read their knobs from, cached at construction
+	CIoSubSystem_Windows *mp_pIo = nullptr;
+	CPollerThread mp_PollerThread;
 
 	CAddressResolver mp_Resolver;
-
-#ifdef DMibNetworkLimitBufferSize
-	enum
-	{
-		EDefaultSocketBufSize = 32*1024
-	};
-#endif
 
 	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv4 const& _InAddr, sockaddr_in& _OutAddr) const
 	{
@@ -214,24 +216,28 @@ protected:
 		)
 	;
 
-	TCUniquePointer<CWindowsSocket::CUnixListenState> fp_PrepareUnixListen(CWindowsAddress &o_Address);
+	CWindowsSocket *fp_CreateSocket
+		(
+			SOCKET _Socket
+			, EWindowsSocketMode _Mode
+			, EWindowsSocketEvent _Events
+			, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			, bool _bFromInherit = false
+		)
+	;
 
-	void fp_StopThread(bool _bForce);
+	// Final teardown once no loop holds the socket: closes the handle, removes any unix socket
+	// file and frees the object. Runs on the closing thread for poller-owned sockets and on the
+	// loop's thread for the asynchronous path
+	void fp_DestroySocket(CWindowsSocket *_pSocket);
+
+	TCUniquePointer<CWindowsSocket::CUnixListenState> fp_PrepareUnixListen(CWindowsAddress &o_Address);
 
 public:
 	CWindowsSocketContext();
 	~CWindowsSocketContext();
 
-	CWindowsSocketContextThreadUseScope f_StartThread();
-
 	void f_CheckFailed();
-
-	static LRESULT WINAPI fsp_SocketWindowProc(HWND _hWnd, UINT _Message, WPARAM _wParam, LPARAM _lParam);
-
-	virtual NStr::CStr f_GetThreadName();
-	virtual aint f_Main();
-
-	bool f_IsEmpty();
 
 	// Address
 		CWindowsAddress* f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes);
@@ -282,6 +288,11 @@ public:
 		CWindowsSocket *f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 
 		bool f_Close(CWindowsSocket* _pSocket);
+
+		// Closes the socket and runs the continuation once the handle is closed and any unix
+		// socket file removed: on the loop's thread for a socket on a created loop, inline
+		// otherwise. The platform socket is consumed on the call
+		void f_CloseAsync(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 		bool f_Shutdown(CWindowsSocket *_pSocket);
 
 		umint f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream);
@@ -301,9 +312,10 @@ public:
 
 		CWindowsSocket* f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 		void *f_GiveUpForInherit(CWindowsSocket *_pSocket);
+		void f_GiveUpForInheritAsync(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle);
+		void f_CloseSocketHandle(void *_pSocketHandle);
 		void *f_GetOSSocket(CWindowsSocket *_pSocket);
 
 		CWindowsAddress* f_GetPeerAddress(CWindowsSocket *_pSocket);
 		uint32 f_GetListenPort(CWindowsSocket *_pSocket);
 };
-

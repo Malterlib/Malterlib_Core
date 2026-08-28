@@ -9,6 +9,7 @@
 
 
 #include <Mib/Core/Core>
+#include <Mib/Core/IoStream>
 
 #include "Malterlib_Core_PlatformImp_MSVC_WindowsDefines.h"
 #include "Malterlib_Core_PlatformImp_Windows_CrossModule.h"
@@ -2100,6 +2101,11 @@ void fg_LoadFunctionPointers()
 
 		(FARPROC &)Functions.m_fCancelSynchronousIo = GetProcAddress(g_hKernel32, "CancelSynchronousIo");
 		(FARPROC &)Functions.m_fCancelIoEx = GetProcAddress(g_hKernel32, "CancelIoEx");
+
+		(FARPROC &)Functions.m_fNtCreateFile = GetProcAddress(g_hNtDll, "NtCreateFile");
+		(FARPROC &)Functions.m_fNtDeviceIoControlFile = GetProcAddress(g_hNtDll, "NtDeviceIoControlFile");
+		(FARPROC &)Functions.m_fNtSetInformationFile = GetProcAddress(g_hNtDll, "NtSetInformationFile");
+		(FARPROC &)Functions.m_fRtlNtStatusToDosError = GetProcAddress(g_hNtDll, "RtlNtStatusToDosError");
 
 		(FARPROC &)Functions.m_fNtQuerySystemInformation = GetProcAddress(g_hNtDll, "NtQuerySystemInformation");
 
@@ -6461,6 +6467,21 @@ void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
 	return fg_GetLocalSys()->m_SocketContext->f_GiveUpForInherit((CWindowsSocket*)_pSocket);
 }
 
+void NSys::NNetwork::fg_GiveUpForInheritAsync(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle)
+{
+	fg_GetLocalSys()->m_SocketContext->f_GiveUpForInheritAsync((CWindowsSocket *)_pSocket, fg_Move(_fOnHandle));
+}
+
+void NSys::NNetwork::fg_CloseAsync(void *_pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
+{
+	fg_GetLocalSys()->m_SocketContext->f_CloseAsync((CWindowsSocket *)_pSocket, fg_Move(_fOnClosed));
+}
+
+void NSys::NNetwork::fg_CloseSocketHandle(void *_pSocketHandle)
+{
+	fg_GetLocalSys()->m_SocketContext->f_CloseSocketHandle(_pSocketHandle);
+}
+
 void *NSys::NNetwork::fg_GetOSSocket(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetOSSocket((CWindowsSocket*)_pSocket);
@@ -6483,6 +6504,12 @@ bool NSys::NNetwork::fg_HasUnixSocketPeerProcessIdentity()
 	// 17763's afunix.sys. Older kernels are reported unsupported up front and callers use TLS
 	auto &Version = NLocal::g_VersionInfo;
 	return Version.dwMajorVersion > 10 || (Version.dwMajorVersion == 10 && Version.dwBuildNumber >= 17763);
+}
+
+bool fg_WindowsTcpInfoSupported()
+{
+	auto &Version = NLocal::g_VersionInfo;
+	return Version.dwMajorVersion > 10 || (Version.dwMajorVersion == 10 && Version.dwBuildNumber >= 15063);
 }
 
 uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)

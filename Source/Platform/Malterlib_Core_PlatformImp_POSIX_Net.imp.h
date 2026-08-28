@@ -5,6 +5,9 @@
 #include <Mib/Process/Platform>
 
 #include <netinet/tcp.h>
+#if defined(DPlatformFamily_macOS)
+	#include <sys/sysctl.h>
+#endif
 #include <sys/uio.h>
 #include <sys/stat.h>
 
@@ -115,15 +118,50 @@ namespace
 }
 #endif
 
+#if DMibConfig_IoDebug_Enable
+// Null when the statistics are off, so a recording site asks and finds the counters in one read
+NSys::CSocketIoStats *fg_SocketIoStats()
+{
+	auto &Io = NSys::fg_IoSubSystem();
+	if (!Io.f_StatsEnabled())
+		return nullptr;
+
+	return &Io.m_SocketIoStats;
+}
+
+static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWouldBlock)
+{
+	auto *pStats = fg_SocketIoStats();
+	if (!pStats)
+		return;
+
+	pStats->m_nSendCalls.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	pStats->m_nSendBytesRequested.f_FetchAdd(_nRequested, NAtomic::gc_MemoryOrder_Relaxed);
+	pStats->m_nSendBytesSent.f_FetchAdd(_nSent, NAtomic::gc_MemoryOrder_Relaxed);
+	if (_nRequested)
+		pStats->m_SendSizeBuckets[fg_Min(umint(fg_GetHighestBitSet(_nRequested)), umint(32))].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	if (_bWouldBlock)
+		pStats->m_nSendWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	else if (_nSent < _nRequested)
+		pStats->m_nSendShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+}
+#endif
+
 CPOSIXSocketContext::CPOSIXSocketContext()
 {
+	mp_pIo = &NSys::fg_IoSubSystem();
+	// The shared loop exists before the thread that hosts it, so the thread body never checks
+	mp_PollerThread.mp_pLoop = fg_CreatePlatformIoLoop();
 	mp_PollerThread.f_Start(EExecutionPriority_Highest);
 	signal(SIGPIPE, SIG_IGN);
 }
 
 CPOSIXSocketContext::~CPOSIXSocketContext()
 {
+	// The poller's exit drain acknowledges the last removals; a socket still open past it is an
+	// error in its owner's teardown order, which the loop's destruction checks
 	mp_PollerThread.f_Stop(true);
+	NSys::fg_DestroyIoLoop(mp_PollerThread.mp_pLoop);
 }
 
 CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
@@ -813,9 +851,508 @@ CPOSIXSocket* CPOSIXSocketContext::f_AsyncConnect
 	return fp_Connect(_Address, fg_Move(_fOnStateChange), _pBindAddress);
 }
 
+static NSys::EIoLoopEvent fg_IoLoopMaskFromSocketEvents(EPOSIXSocketEvent _Events)
+{
+	return
+		((_Events & EPOSIXSocketEvent_Read) ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
+		| ((_Events & EPOSIXSocketEvent_Write) ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None)
+	;
+}
+
+// The one decoder from loop readiness to socket state, shared by every backend: the loops report
+// normalized EIoLoopEvent bits and this is the only place that knows what they mean for a socket.
+// Runs on the thread driving the socket's loop, at the point in the pass where the event was
+// reaped, so state callbacks keep their ordering against everything else the pass dispatches
+static void fg_DispatchSocketIoEvent(void *_pToken, NSys::EIoLoopEvent _Events, int _Error)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pToken;
+
+	DMibLock(pSocket->m_Lock);
+
+	if (_Events == NSys::EIoLoopEvent::mc_None)
+	{
+		// The registration has been applied: report the state that accumulated before the loop
+		// could deliver anything, so a connection with pre-registration readiness is not stalled
+		// waiting for a fresh edge
+		if (pSocket->m_fOnStateChange)
+			pSocket->m_fOnStateChange((ENetTCPState)pSocket->m_StateAtomic.f_Load());
+
+		return;
+	}
+
+#if DMibConfig_IoDebug_Enable
+	if (auto *pStats = fg_SocketIoStats())
+	{
+		if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
+			pStats->m_nReadinessReportsRead.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Write))
+			pStats->m_nReadinessReportsWrite.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
+	if (pSocket->m_CloseError || pSocket->m_bNonErrorClose)
+		return;
+
+	ENetTCPState AddedState = ENetTCPState_None;
+
+	auto fAddState = [&]
+		{
+			if (AddedState)
+			{
+				pSocket->m_StateAtomic.f_FetchOr(AddedState);
+				if (pSocket->m_fOnStateChange)
+					pSocket->m_fOnStateChange(AddedState);
+			}
+		}
+	;
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Error))
+	{
+		if (_Error)
+			pSocket->m_CloseError = _Error;
+		else
+		{
+			// The backend has no error value for this event; the socket error answers, with -1
+			// standing in when even that is empty so the close still reads as an error close
+			int Error = 0;
+			socklen_t ErrorLen = sizeof(Error);
+			if (getsockopt(pSocket->m_FD, SOL_SOCKET, SO_ERROR, (void *)&Error, &ErrorLen) == 0)
+			{
+				pSocket->m_CloseError = Error;
+				if (!pSocket->m_CloseError)
+					pSocket->m_CloseError = -1;
+			}
+			else
+				pSocket->m_CloseError = errno;
+		}
+
+		AddedState |= ENetTCPState_Closed;
+		fAddState();
+
+		return;
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_WriteClosed))
+	{
+		// The writing side is finished; whether that is an orderly close or a failure is answered
+		// by the socket error
+		int ErrorCode = 0;
+		socklen_t ErrorCodeSize = sizeof(ErrorCode);
+		int GetRet = getsockopt(pSocket->m_FD, SOL_SOCKET, SO_ERROR, &ErrorCode, &ErrorCodeSize);
+
+		if (GetRet)
+			pSocket->m_CloseError = errno;
+		else if (ErrorCode)
+			pSocket->m_CloseError = ErrorCode;
+		else
+			pSocket->m_bNonErrorClose = true;
+
+		AddedState |= ENetTCPState_Closed;
+		fAddState();
+
+		return;
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Hup))
+	{
+		// The connection is gone with no error implied by the event itself
+		pSocket->m_bNonErrorClose = true;
+		AddedState |= ENetTCPState_Closed;
+		fAddState();
+
+		return;
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_ReadClosed))
+	{
+		if (!pSocket->m_bRemoteCloseSignalled)
+		{
+			pSocket->m_bRemoteCloseSignalled = true;
+			AddedState |= ENetTCPState_RemoteClosed | ENetTCPState_Read;
+		}
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
+	{
+		if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
+			AddedState |= ENetTCPState_Read;
+		else if (pSocket->m_Mode == EPOSIXSocketMode_Listen)
+			AddedState |= ENetTCPState_Connection;
+	}
+
+	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Write))
+	{
+		if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
+			AddedState |= ENetTCPState_Write;
+		else if (pSocket->m_Mode == EPOSIXSocketMode_Connecting)
+		{
+#if defined(DPlatformFamily_macOS)
+			// kqueue reports no separate error event for a failed connect: writability arrives
+			// either way and the socket error is what distinguishes success from failure
+			int ErrorCode = 0;
+			socklen_t ErrorCodeSize = sizeof(ErrorCode);
+			int GetRet = getsockopt(pSocket->m_FD, SOL_SOCKET, SO_ERROR, &ErrorCode, &ErrorCodeSize);
+
+			if (GetRet || ErrorCode)
+			{
+				pSocket->m_CloseError = GetRet ? errno : ErrorCode;
+				AddedState |= ENetTCPState_Closed;
+			}
+			else
+			{
+				pSocket->m_Mode = EPOSIXSocketMode_Connect;
+				AddedState |= ENetTCPState_Connected;
+			}
+#else
+			// A failed connect surfaces as an error event on this backend, so writability alone
+			// means the connect completed
+			AddedState |= ENetTCPState_Connected;
+			pSocket->m_Mode = EPOSIXSocketMode_Connect;
+#endif
+		}
+	}
+
+	fAddState();
+}
+
 void CPOSIXSocketContext::f_StartSocket(CPOSIXSocket *_pSocket)
 {
-	mp_PollerThread.mp_Poller.f_RegisterSocket(_pSocket);
+	// Kernel default socket buffers quantize a bulk stream into buffer-sized bursts with a wake
+	// handoff between each, which caps per-socket throughput at roughly buffer size over wake
+	// round-trip time. The override is a debugging aid for measuring that effect; POSIX otherwise
+	// keeps the kernel default, unlike the Windows implementation, which already sizes its buffers
+	if (umint nBufferBytes = mp_pIo->f_SocketBufferBytesOverride(); nBufferBytes && _pSocket->m_FD != -1)
+	{
+		int BufferSize = (int)fg_Min(nBufferBytes, umint(TCLimitsInt<int>::mc_Max));
+		setsockopt(_pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &BufferSize, sizeof(BufferSize));
+		setsockopt(_pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &BufferSize, sizeof(BufferSize));
+	}
+
+	if (_pSocket->m_pIoRegistration)
+		DMibErrorNet("POSIX socket already registered");
+
+	NSys::EIoLoopEvent EventMask = fg_IoLoopMaskFromSocketEvents(_pSocket->m_RegisteredEvents);
+	if (EventMask == NSys::EIoLoopEvent::mc_None)
+		DMibErrorNet("Failed to register POSIX socket.");
+
+	NSys::ICIoLoop *pThreadLoop = NSys::fg_GetThreadIoLoop();
+	_pSocket->m_pOwningLoop = pThreadLoop ? pThreadLoop : mp_PollerThread.mp_pLoop;
+
+	// The registration-applied notification is what today's read kickstart was: connections whose
+	// readable state predates the registration get it reported once the add lands
+	_pSocket->m_pIoRegistration = _pSocket->m_pOwningLoop->f_Register
+		(
+			_pSocket->m_FD
+			, _pSocket
+			, EventMask
+			, &fg_DispatchSocketIoEvent
+			, fg_IsSet(EventMask, NSys::EIoLoopEvent::mc_Read) != 0
+		)
+	;
+
+	// A window set before the socket was started reaches the loop now that there is a
+	// registration to hold it
+	if (_pSocket->m_nSendWindowBytes)
+		_pSocket->m_pOwningLoop->f_SetSendWindow(_pSocket->m_pIoRegistration, _pSocket->m_nSendWindowBytes);
+}
+
+// A would-block observation is the only point where requesting the next readiness report means
+// anything: the single-shot backend arms exactly here, and backends with standing interest ignore
+// the request. Short stream transfers count as would-block — a short recv proves the receive
+// queue was emptied and a short send proves the buffer filled — so consumers that stop at a short
+// result without driving on to EAGAIN cannot strand. End of stream deliberately does not count:
+// nothing further is coming, and the close events report it
+static void fg_RequestSocketReadiness(CPOSIXSocket *_pSocket, NSys::EIoLoopEvent _EventMask)
+{
+	if (!_pSocket->m_pOwningLoop || !_pSocket->m_pIoRegistration)
+		return;
+
+#if DMibConfig_IoDebug_Enable
+	if (auto *pStats = fg_SocketIoStats())
+	{
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Read))
+			pStats->m_nReadinessArmsRead.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Write))
+			pStats->m_nReadinessArmsWrite.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
+	_pSocket->m_pOwningLoop->f_RequestReadiness(_pSocket->m_pIoRegistration, _EventMask);
+}
+
+void NSys::NNetwork::fg_RequestReadiness(void *_pSocket, bool _bRead, bool _bWrite)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+
+	NSys::EIoLoopEvent EventMask =
+		(_bRead ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
+		| (_bWrite ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None)
+	;
+	if (EventMask != NSys::EIoLoopEvent::mc_None)
+		fg_RequestSocketReadiness(pSocket, EventMask);
+}
+
+NSys::ICIoLoop *NSys::NNetwork::fg_GetOwningIoLoop(void *_pSocket)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+
+	// Null for a socket serviced by the shared poller thread: only created loops are bindings a
+	// caller can restore, and the shared poller is what a null binding already means
+	NSys::ICIoLoop *pOwningLoop = pSocket->m_pOwningLoop;
+	if (!pOwningLoop || !pOwningLoop->m_bCreatedAsLoop)
+		return nullptr;
+
+	return pOwningLoop;
+}
+
+namespace
+{
+	// MalterlibIoUringCompletion=1 forces completion transfers onto local peers too, so the
+	// local paths stay measurable; unset leaves them on readiness, and =0 vetoes the machinery
+	// at the probe before this question is ever asked
+	bool fg_CompletionLocalForced(CPOSIXSocket *_pSocket)
+	{
+		return _pSocket->m_pIo->f_CompletionLocalForced();
+	}
+
+	// Whether the peer is on another machine, cached on the socket once the answer is knowable.
+	// A unix peer or a loopback address is local; an unconnected socket answers local for now
+	// without caching, so the settled connection gets a real probe
+	bool fg_CompletionPeerIsRemote(CPOSIXSocket *_pSocket)
+	{
+		if (_pSocket->m_CompletionPeerClass)
+			return _pSocket->m_CompletionPeerClass == 2;
+
+		sockaddr_storage Peer;
+		socklen_t nPeer = sizeof(Peer);
+		NMib::NMemory::fg_MemClear(&Peer, sizeof(Peer));
+
+		if (getpeername(_pSocket->m_FD, (sockaddr *)&Peer, &nPeer) != 0)
+			return false;
+
+		bool bRemote = false;
+		if (Peer.ss_family == AF_INET)
+		{
+			auto const &Address = *(sockaddr_in const *)&Peer;
+
+			// Network byte order, so the first octet is the first byte in memory
+			bRemote = ((uint8 const *)&Address.sin_addr.s_addr)[0] != 127;
+		}
+		else if (Peer.ss_family == AF_INET6)
+		{
+			auto const &Address = *(sockaddr_in6 const *)&Peer;
+			if (IN6_IS_ADDR_LOOPBACK(&Address.sin6_addr))
+				bRemote = false;
+			else if (IN6_IS_ADDR_V4MAPPED(&Address.sin6_addr))
+			{
+				// A v4 mapped address carries the v4 rules with it
+				bRemote = Address.sin6_addr.s6_addr[12] != 127;
+			}
+			else
+				bRemote = true;
+		}
+
+		_pSocket->m_CompletionPeerClass = bRemote ? 2 : 1;
+
+		return bRemote;
+	}
+}
+
+bool NSys::NNetwork::fg_SupportsCompletionIo(void *_pSocket)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+
+	// Streams only: datagram and listen sockets have no byte stream to complete into, and the
+	// connecting mode is included because it settles into connect without changing pollers
+	if (pSocket->m_Mode != EPOSIXSocketMode_Connect && pSocket->m_Mode != EPOSIXSocketMode_Connecting)
+		return false;
+
+	// Loops without completion transfers answer through the interface default, so no platform
+	// split is needed here
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pOwningLoop->f_SupportsCompletionIo())
+		return false;
+
+	return fg_CompletionLocalForced(pSocket) || fg_CompletionPeerIsRemote(pSocket);
+}
+
+// Deliberately no registration state or teardown check here or in the send variant below: a
+// submission racing a close is resolved on the loop's thread, where the pending operation drain
+// validates the registration and completes orphaned operations as cancelled. A check here could
+// not close that race, only narrow it, and the owner's ordering (operations queued before the
+// removal) plus the acknowledgement's extra pass guarantee the drain always runs before the
+// socket — and its registration handle — can be freed
+bool NSys::NNetwork::fg_SupportsReceiveStream(void *_pSocket)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+
+	if (pSocket->m_Mode != EPOSIXSocketMode_Connect && pSocket->m_Mode != EPOSIXSocketMode_Connecting)
+		return false;
+
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pOwningLoop->f_SupportsReceiveStream())
+		return false;
+
+	return fg_CompletionLocalForced(pSocket) || fg_CompletionPeerIsRemote(pSocket);
+}
+
+bool NSys::NNetwork::fg_SendReleaseIsPrompt(void *_pSocket)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return true;
+
+	return pSocket->m_pOwningLoop->f_SendReleaseIsPrompt(pSocket->m_pIoRegistration);
+}
+
+bool NSys::NNetwork::fg_StartReceiveStream(void *_pSocket, umint _nBufferBytes, NStorage::TCSharedPointer<NSys::CIoStreamBackpressure> _pBackpressure, NSys::FIoStreamSink &&_fSink)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return false;
+
+	return pSocket->m_pOwningLoop->f_StartReceiveStream(pSocket->m_pIoRegistration, _nBufferBytes, fg_Move(_pBackpressure), fg_Move(_fSink));
+}
+
+void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return;
+
+	pSocket->m_pOwningLoop->f_ResumeReceiveStream(pSocket->m_pIoRegistration);
+}
+
+// Nothing binds a descriptor to a loop for life here, so an inheritable socket registers and
+// is given up like any other and there is nothing to remember about it
+void NSys::NNetwork::fg_SetInheritable(void *)
+{
+}
+
+// Moves the platform socket to a new owner without touching its registration: for a transport
+// upgrade that keeps the connection as the loop and the kernel know it
+void NSys::NNetwork::fg_ReownSocket(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	{
+		DMibLock(pSocket->m_Lock);
+		pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
+		pSocket->m_bInitialWriteNotification = false;
+	}
+
+	// The kickstart an inherited handle gets from its registration-applied notification: the new
+	// owner learns of the connection and of both directions through a readiness report of its
+	// own, delivered on the loop's thread like every other
+	pSocket->m_StateAtomic.f_FetchOr(NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write | NMib::NNetwork::ENetTCPState_Connected);
+	fg_RequestReadiness(_pSocket, true, true);
+}
+
+// Where the kernel autotunes the buffers the window is left to it. Linux grows TCP buffers to
+// net.ipv4.tcp_wmem/tcp_rmem, and an explicit SO_SNDBUF there is capped by net.core.wmem_max,
+// far below what autotuning reaches, so a set size would shrink the window rather than widen
+// it; its zero copy sends are bounded by the loop instead. macOS autotunes TCP up to
+// net.inet.tcp.autosndbufmax/autorcvbufmax but never unix sockets, whose 8 KiB
+// net.local.stream.sendspace/recvspace default quantizes a bulk stream into 8 KiB bursts with
+// a wake between each: those always get the window, TCP only a configured one, both within
+// what kern.ipc.maxsockbuf lets a socket reserve
+void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConfigured)
+{
+#if defined(DPlatformFamily_macOS)
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (pSocket->m_FD == -1 || !_nBytes)
+		return;
+	if (!_bConfigured && pSocket->m_AddressType != ENetAddressType_Unix)
+		return;
+
+	// MalterlibSendWindowBuffers=0 leaves the kernel defaults, for measuring what the sizing is worth
+	if (!pSocket->m_pIo->f_SendWindowBuffersEnabled())
+		return;
+
+	umint nBytes = fg_Min(_nBytes, static_cast<CIoSubSystem_MacOS &>(*pSocket->m_pIo).m_nMaxSocketReserveBytes, umint(TCLimitsInt<int>::mc_Max));
+	if (nBytes < _nBytes && _bConfigured)
+	{
+		static NAtomic::TCAtomic<bool> s_bLogged = false;
+		if (!s_bLogged.f_Exchange(true))
+		{
+			DMibLogWithCategory
+				(
+					Mib/Core/Net
+					, Warning
+					, "The send window of {} KiB exceeds what kern.ipc.maxsockbuf lets a socket reserve; the socket buffers are {} KiB. Raise the sysctl for a wider window"
+					, _nBytes / 1024
+					, nBytes / 1024
+				)
+			;
+		}
+	}
+
+	int BufferSize = int(nBytes);
+	if
+	(
+		setsockopt(pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &BufferSize, sizeof(BufferSize)) != 0
+		|| setsockopt(pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &BufferSize, sizeof(BufferSize)) != 0
+	)
+	{
+		int Error = errno;
+		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("setsockopt (send window)", Error));
+	}
+#elif defined(DPlatformFamily_Linux)
+	// The kernel already autotunes the buffers; what a zero copy sender needs bounded is how
+	// far ahead of the transmit edge the write queue may run, since a zero copy send only
+	// completes once the kernel has queued it and the caller's pages stay pinned until it is
+	// acknowledged. TCP_NOTSENT_LOWAT holds the unsent part to a couple of frames: past it the
+	// send waits, its completion waits with it, and the caller's own pipeline fills instead
+	// of the kernel's — the unacknowledged part TCP bounds by its own window. A quarter of
+	// the send window, within a frame or two of the usual fragment
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (pSocket->m_FD == -1 || !_nBytes || pSocket->m_AddressType == ENetAddressType_Unix)
+		return;
+
+	pSocket->m_nSendWindowBytes = _nBytes;
+	if (pSocket->m_pOwningLoop && pSocket->m_pIoRegistration)
+		pSocket->m_pOwningLoop->f_SetSendWindow(pSocket->m_pIoRegistration, _nBytes);
+
+	int LowWater = int(fg_Clamp(_nBytes / 4, umint(64 * 1024), umint(256 * 1024)));
+	if (setsockopt(pSocket->m_FD, IPPROTO_TCP, TCP_NOTSENT_LOWAT, &LowWater, sizeof(LowWater)) != 0)
+	{
+		int Error = errno;
+		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("setsockopt (TCP_NOTSENT_LOWAT)", Error));
+	}
+#else
+	#error "Implement this"
+#endif
+}
+
+#if defined(DPlatformFamily_Linux)
+	#include "Malterlib_Core_Platform_Linux_TcpInfo.h"
+#endif
+bool NSys::NNetwork::fg_QueryPathDeliveryRate(void *_pSocket, umint &o_nBytes, bool &o_bAppLimited)
+{
+#if defined(DPlatformFamily_Linux)
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (pSocket->m_FD == -1 || pSocket->m_AddressType == ENetAddressType_Unix)
+		return false;
+
+	return fg_Linux_QueryPathDeliveryRate(pSocket->m_FD, o_nBytes, o_bAppLimited);
+#else
+	return false;
+#endif
+}
+
+bool NSys::NNetwork::fg_IsSendWindowFull(void *_pSocket, umint _nUnreleasedBytes, umint _nStartBytes)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return false;
+
+	return pSocket->m_pOwningLoop->f_IsSendWindowFull(pSocket->m_pIoRegistration, _nUnreleasedBytes, _nStartBytes);
+}
+
+umint NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *_pSpans, umint _nSpans, NSys::FIoCompletion &&_fOnComplete, NSys::FIoBufferReleased &&_fOnBufferReleased)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return 0;
+
+	return pSocket->m_pOwningLoop->f_SubmitSendVectored(pSocket->m_pIoRegistration, _pSpans, _nSpans, fg_Move(_fOnComplete), fg_Move(_fOnBufferReleased));
 }
 
 CPOSIXSocket* CPOSIXSocketContext::f_Listen
@@ -1024,7 +1561,10 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 		{
 			int Error = errno;
 			if (Error == EAGAIN || Error == EWOULDBLOCK)
+			{
+				fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
 				return nullptr;
+			}
 
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("accept", Error));
 		}
@@ -1040,7 +1580,10 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 		{
 			int Error = errno;
 			if (Error == EAGAIN || Error == EWOULDBLOCK)
+			{
+				fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
 				return nullptr;
+			}
 
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("accept", Error));
 		}
@@ -1101,17 +1644,12 @@ void CPOSIXSocketContext::f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunc
 	}
 }
 
-bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
+void CPOSIXSocketContext::fp_DestroySocket(CPOSIXSocket *_pSocket)
 {
 	if (_pSocket->m_FD != -1)
 	{
-		mp_PollerThread.mp_Poller.f_DeregisterSocket(_pSocket);
-
-		{
-			DMibLock(_pSocket->m_Lock);
-			_pSocket->m_fOnStateChange.f_Clear();
-			close(_pSocket->m_FD);
-		}
+		DMibLock(_pSocket->m_Lock);
+		close(_pSocket->m_FD);
 	}
 	if (!_pSocket->m_UnixFilePath.f_IsEmpty())
 	{
@@ -1133,8 +1671,82 @@ bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
 #endif
 
 	fg_DeleteObject(NMemory::CDefaultAllocator(), _pSocket);
+}
+
+bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
+{
+	// The synchronous form is legal only where blocking on the acknowledgement is: the shared
+	// poller runs on a thread of its own that is always responsive. A socket on a pool-hosted
+	// loop must use the asynchronous form — a blocking wait here could deadlock two pool threads
+	// deregistering into each other's loops, and quietly deferring the close would leave the
+	// caller believing the descriptor and a listener's socket file are gone when they are not
+	auto *pOwningLoop = _pSocket->m_pOwningLoop;
+	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_FD != -1)
+		DMibErrorNet("Synchronous close on a pool-hosted loop; use the asynchronous form");
+
+	// The removal is waited for, so the descriptor is gone on return; a socket that never registered
+	// has nothing to wait for
+	if (_pSocket->m_FD != -1)
+	{
+		if (pOwningLoop && _pSocket->m_pIoRegistration)
+		{
+			pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
+			_pSocket->m_pIoRegistration = nullptr;
+		}
+
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_fOnStateChange.f_Clear();
+	}
+
+	fp_DestroySocket(_pSocket);
 
 	return true;
+}
+
+void CPOSIXSocketContext::f_CloseAsync(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
+{
+	auto *pOwningLoop = _pSocket->m_pOwningLoop;
+
+	if (pOwningLoop && _pSocket->m_pIoRegistration && _pSocket->m_FD != -1)
+	{
+		// Always through the loop, on the shared poller as much as on a pool-hosted one: one path,
+		// so a caller cannot come to depend on a continuation that runs inline for some sockets
+		// and later for others. Pool threads never block anyway, so
+		// the removal cannot be waited for: whoever hosts the loop may be closing a socket of
+		// this thread's loop at the same time, and the acknowledgement may need actor jobs to run
+		// before it can be produced. No callback fires after the clear below, and the loop
+		// destroys the socket once the removal has been applied. The descriptor, and a
+		// listener's socket file with it, are gone only when the continuation runs, so an owner
+		// that reuses the name must wait for it
+		{
+			DMibLock(_pSocket->m_Lock);
+			_pSocket->m_fOnStateChange.f_Clear();
+		}
+
+		pOwningLoop->f_DeregisterAsync
+			(
+				_pSocket->m_pIoRegistration
+				, [this, _pSocket, _fOnClosed = fg_Move(_fOnClosed)]() mutable
+				{
+					fp_DestroySocket(_pSocket);
+					if (_fOnClosed)
+						_fOnClosed();
+				}
+			)
+		;
+
+		return;
+	}
+
+	// Never registered, or already given up: no loop to defer to
+	{
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_fOnStateChange.f_Clear();
+	}
+
+	fp_DestroySocket(_pSocket);
+	if (_fOnClosed)
+		_fOnClosed();
 }
 
 void CPOSIXSocketContext::f_Shutdown(CPOSIXSocket* _pSocket)
@@ -1164,17 +1776,36 @@ umint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, umint
 
 	o_bEndOfStream = Result == 0 && _DataLen != 0;
 
+#if DMibConfig_IoDebug_Enable
+	if (auto *pStats = fg_SocketIoStats())
+	{
+		pStats->m_nRecvCalls.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (Result > 0)
+		{
+			pStats->m_nRecvBytes.f_FetchAdd((umint)Result, NAtomic::gc_MemoryOrder_Relaxed);
+			pStats->m_RecvSizeBuckets[fg_GetHighestBitSet((umint)Result)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			if ((umint)Result < _DataLen)
+				pStats->m_nRecvShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		}
+		else if (Result == -1 && errno == EAGAIN)
+			pStats->m_nRecvWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		else if (o_bEndOfStream)
+			pStats->m_nRecvEndOfStream.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
 	if (Result == -1)
 	{
 		if (errno == EAGAIN)
 		{
+			fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
 			Result = 0;
 		}
 		else
-		{
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("recv (receive from socket)", errno));
-		}
 	}
+	else if (Result > 0 && (umint)Result < _DataLen)
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
 
 	return Result;
 }
@@ -1186,6 +1817,10 @@ umint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, um
 	Flags |= MSG_NOSIGNAL;
 #endif
 	int Result = send(_pSocket->m_FD, _pData, _DataLen, Flags);
+
+#if DMibConfig_IoDebug_Enable
+	fg_SocketIoStatsCountSend(_DataLen, Result > 0 ? (umint)Result : 0, Result == -1 && errno == EAGAIN);
+#endif
 
 	if (Result == -1)
 	{
@@ -1199,21 +1834,25 @@ umint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, um
 		}
 	}
 
+	if ((umint)Result < _DataLen)
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Write);
+
 	return Result;
 }
 
 umint CPOSIXSocketContext::f_SendVectored(CPOSIXSocket *_pSocket, NMib::NSys::CIoSpan const *_pSpans, umint _nSpans)
 {
-	constexpr umint c_MaxVectors = 64;
-	iovec IoVectors[c_MaxVectors];
+	iovec IoVectors[NSys::gc_IoLoopMaxSubmitSpans];
 	umint nVectors = 0;
-	for (umint iSpan = 0; iSpan < _nSpans && nVectors < c_MaxVectors; ++iSpan)
+	umint nSubmittedBytes = 0;
+	for (umint iSpan = 0; iSpan < _nSpans && nVectors < NSys::gc_IoLoopMaxSubmitSpans; ++iSpan)
 	{
 		if (!_pSpans[iSpan].m_nBytes)
 			continue;
 
 		IoVectors[nVectors].iov_base = (void *)_pSpans[iSpan].m_pData;
 		IoVectors[nVectors].iov_len = _pSpans[iSpan].m_nBytes;
+		nSubmittedBytes += _pSpans[iSpan].m_nBytes;
 		++nVectors;
 	}
 
@@ -1230,17 +1869,22 @@ umint CPOSIXSocketContext::f_SendVectored(CPOSIXSocket *_pSocket, NMib::NSys::CI
 #endif
 	auto Result = sendmsg(_pSocket->m_FD, &Header, Flags);
 
+#if DMibConfig_IoDebug_Enable
+	fg_SocketIoStatsCountSend(nSubmittedBytes, Result > 0 ? (umint)Result : 0, Result == -1 && errno == EAGAIN);
+#endif
+
 	if (Result == -1)
 	{
 		if (errno == EAGAIN)
-		{
 			Result = 0;
-		}
 		else
-		{
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("sendmsg (send to socket)", errno));
-		}
 	}
+
+	// EAGAIN and a short send both prove the buffer filled; measured against what was actually
+	// handed to sendmsg, since spans past the vector cap were never submitted
+	if ((umint)Result < nSubmittedBytes)
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Write);
 
 	return Result;
 }
@@ -1257,12 +1901,12 @@ umint CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress 
 	{
 		if (errno == EAGAIN)
 		{
+			// EAGAIN only: a datagram result says nothing about queue occupancy short of it
+			fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Write);
 			Result = 0;
 		}
 		else
-		{
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("send (send to socket)", errno));
-		}
 	}
 
 	return Result;
@@ -1277,12 +1921,12 @@ umint CPOSIXSocketContext::f_ReceiveDatagram(CPOSIXSocket *_pSocket, CPOSIXAddre
 	{
 		if (errno == EAGAIN)
 		{
+			// EAGAIN only: a short datagram read is a truncated datagram, not an empty queue
+			fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
 			Result = 0;
 		}
 		else
-		{
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("send (send to socket)", errno));
-		}
 	}
 
 	return Result;
@@ -1317,18 +1961,87 @@ CPOSIXSocket* CPOSIXSocketContext::f_InheritHandle2(void* _pOSSocket, NMib::NFun
 
 void *CPOSIXSocketContext::f_GiveUpForInherit(CPOSIXSocket *_pSocket)
 {
-	int FD = -1;
-
-	mp_PollerThread.mp_Poller.f_DeregisterSocket(_pSocket);
-
+	// No callback fires after this clear. The descriptor is extracted only after the
+	// registration is fully removed, so the loop never holds a reference to a file whose number
+	// belongs to the caller
 	{
 		DMibLock(_pSocket->m_Lock);
 		_pSocket->m_fOnStateChange.f_Clear();
+	}
+
+	auto *pOwningLoop = _pSocket->m_pOwningLoop;
+	if (pOwningLoop && _pSocket->m_pIoRegistration)
+	{
+		// The synchronous form is legal only where blocking on the acknowledgement is: the
+		// shared poller runs on a thread of its own that is always responsive. A socket on a
+		// pool-hosted loop must use the asynchronous form — a blocking wait here could deadlock
+		// two pool threads deregistering into each other's loops
+		if (pOwningLoop != mp_PollerThread.mp_pLoop)
+			DMibErrorNet("Synchronous inherit handoff on a pool-hosted loop; use the asynchronous form");
+
+		pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
+		_pSocket->m_pIoRegistration = nullptr;
+	}
+
+	int FD = -1;
+	{
+		DMibLock(_pSocket->m_Lock);
 		FD = _pSocket->m_FD;
 		_pSocket->m_FD = -1;
 	}
 
 	return (void*)(umint)FD;
+}
+
+void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle)
+{
+	// Acknowledge-first handoff: the caller receives the descriptor only after the loop has
+	// removed the registration and nothing loop-side references the file, so the new owner may
+	// close, reuse, or re-register the number freely. The platform socket is consumed here —
+	// the caller must not touch it after this call, and the continuation destroys it
+	{
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_fOnStateChange.f_Clear();
+	}
+
+	auto *pOwningLoop = _pSocket->m_pOwningLoop;
+	if (pOwningLoop && _pSocket->m_pIoRegistration)
+	{
+		auto *pRegistration = _pSocket->m_pIoRegistration;
+		_pSocket->m_pIoRegistration = nullptr;
+
+		pOwningLoop->f_DeregisterAsync
+			(
+				pRegistration
+				, [this, _pSocket, _fOnHandle = fg_Move(_fOnHandle)]() mutable
+				{
+					int FD = -1;
+					{
+						DMibLock(_pSocket->m_Lock);
+						FD = _pSocket->m_FD;
+						_pSocket->m_FD = -1;
+					}
+
+					fp_DestroySocket(_pSocket);
+					_fOnHandle((void *)(umint)FD);
+				}
+			)
+		;
+
+		return;
+	}
+
+	// Never registered: no loop to defer to, so the descriptor is produced on the calling thread
+
+	int FD = -1;
+	{
+		DMibLock(_pSocket->m_Lock);
+		FD = _pSocket->m_FD;
+		_pSocket->m_FD = -1;
+	}
+
+	fp_DestroySocket(_pSocket);
+	_fOnHandle((void *)(umint)FD);
 }
 
 void *CPOSIXSocketContext::f_GetOSSocket(CPOSIXSocket *_pSocket)
@@ -1568,6 +2281,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 #endif
 
 	NMib::NStorage::TCUniquePointer<CPOSIXSocket> pNewSocket = fg_Construct(_FD, _Mode, _Events, fg_Move(_fOnStateChange));
+	pNewSocket->m_pIo = mp_pIo;
 
 	if (_bFromInherit)
 	{
