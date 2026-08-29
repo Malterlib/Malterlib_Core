@@ -70,6 +70,7 @@ namespace
 			m_bCompletionEnabled = fg_IocpEnvFlag("MalterlibIocpCompletion", true);
 			m_bSkipSuccessEnabled = fg_IocpEnvFlag("MalterlibIocpSkipSuccess", false);
 			m_bLoopbackFastPathEnabled = fg_IocpEnvFlag("MalterlibLoopbackFastPath", true);
+			m_bDirectSendEnabled = fg_IocpEnvFlag("MalterlibIocpDirectSend", true);
 			m_nSendDepth = fg_IocpEnvCount("MalterlibIocpSendDepth", gc_IocpDefaultSendDepth, 1, gc_IocpMaxSendDepth);
 			m_nRecvDepth = fg_IocpEnvCount("MalterlibIocpRecvDepth", gc_IocpDefaultRecvDepth, 1, gc_IocpMaxRecvDepth);
 			m_nRecvBufferBytesOverride = fg_IocpEnvCount("MalterlibIocpRecvBufferBytes", 0, 4096, umint(1) << 30);
@@ -108,6 +109,7 @@ namespace
 		bool m_bCompletionEnabled = true;
 		bool m_bSkipSuccessEnabled = false;
 		bool m_bLoopbackFastPathEnabled = true;
+		bool m_bDirectSendEnabled = true;
 		bool m_bStatsEnabled = false;
 		int m_TraceMode = 0;
 		umint m_nSendDepth = gc_IocpDefaultSendDepth;
@@ -192,6 +194,11 @@ umint fg_IocpSocketBufferBytesOverride()
 umint fg_IocpSocketSendBufferBytesOverride()
 {
 	return fg_IocpConfig().m_nSocketSendBufferBytesOverride;
+}
+
+bool fg_IocpDirectSendEnabled()
+{
+	return fg_IocpConfig().m_bDirectSendEnabled;
 }
 
 namespace

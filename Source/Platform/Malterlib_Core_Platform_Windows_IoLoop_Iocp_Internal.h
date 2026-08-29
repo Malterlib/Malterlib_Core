@@ -24,20 +24,21 @@ constexpr umint gc_IocpDequeueBatch = 64;
 // synchronously completing receives cannot starve the queue the loop is hosted in
 constexpr umint gc_IocpMaxInlinePerPass = 256;
 
-// The slice a large socket buffer is cut into for the stream's receives: small enough that the
-// blocks cycle hot through the recycler, large enough that per-buffer bookkeeping stays
-// negligible. A socket whose own buffer is smaller keeps it whole
-constexpr umint gc_IocpReceiveSliceBytes = 64 * 1024;
+// The slice a large socket buffer is cut into for the stream's receives: with the default depth
+// it is what a direct send can be delivered into ahead of the receiver (a megabyte posted), small
+// enough that the blocks still cycle hot through the recycler. A socket whose own buffer is
+// smaller keeps it whole
+constexpr umint gc_IocpReceiveSliceBytes = 256 * 1024;
 
 // A buffer whose untouched tail is shorter than this retires instead of taking another receive:
 // the kernel would fill a sliver and the delivery would pin a whole block for it
 constexpr umint gc_IocpRecvMinPostBytes = 4096;
 
-// Blocks a stream's recycler keeps for reuse. Consumers assembling messages hold a pipeline's
+// Memory a stream's recycler keeps for reuse. Consumers assembling messages hold a pipeline's
 // worth of delivered buffers and return them in bursts, so a short list drops most of a burst
 // to the allocator and the next posts go cold again — measured at a million fresh allocations
-// per bulk run with a list of eight
-constexpr umint gc_IocpRecyclerMaxFree = 128;
+// per bulk run with a list of eight blocks; a few megabytes covers the burst at any slice size
+constexpr umint gc_IocpRecyclerMaxFreeBytes = 8 * 1024 * 1024;
 
 // One \Device\Afd handle serving a bounded number of registrations' polls
 struct CIocpAfdGroup

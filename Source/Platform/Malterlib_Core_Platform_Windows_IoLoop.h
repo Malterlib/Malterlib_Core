@@ -17,6 +17,7 @@ struct CIocpPendingOp;
 bool fg_IocpLoopbackFastPathEnabled();
 umint fg_IocpSocketBufferBytesOverride();
 umint fg_IocpSocketSendBufferBytesOverride();
+bool fg_IocpDirectSendEnabled();
 #else
 constexpr bool fg_IocpLoopbackFastPathEnabled()
 {
@@ -31,6 +32,11 @@ constexpr umint fg_IocpSocketBufferBytesOverride()
 constexpr umint fg_IocpSocketSendBufferBytesOverride()
 {
 	return umint(-1);
+}
+
+constexpr bool fg_IocpDirectSendEnabled()
+{
+	return true;
 }
 #endif
 
@@ -73,16 +79,15 @@ struct CIocpStreamBuffer final : NMib::CVirtualDestroyBase
 	umint m_nCharged = 0;
 };
 
-// The receives a stream keeps with the kernel at once. One reproduces the unpipelined path; two
-// removes the re-post bubble between a completion and the next receive at the price of the
-// deliveries alternating between two buffers — measured a few percent ahead on bulk streams.
-// Enough posted ahead (a couple of megabytes) turns every receive pending, which moves the copy
-// out of the receiving thread into the sender's WSASend, straight into the posted pages — and
-// measured slower: that copy costs more per byte than the socket buffer pair, and it lands on
-// the one sending thread instead of being split across the two sides. The cap exists for the
-// override to explore that; the default keeps the split
+// The receives a stream keeps with the kernel at once. With the unix sockets' direct sends (see
+// fg_SubmitSendVectored in the socket layer) a receive already pending when the send arrives is
+// filled straight from the sender's pages, so what is posted ahead decides how much of the
+// stream takes the single copy: four slices of a quarter megabyte measured 31 GB/s on one
+// connection and 71 GB/s on three against 22 and 48 for two of 64 KiB, while larger sets fall
+// off again once the posted memory outgrows the cache (eight of a megabyte: 17 and 30). The cap
+// exists for the override to explore around that
 constexpr umint gc_IocpMaxRecvDepth = 16;
-constexpr umint gc_IocpDefaultRecvDepth = 2;
+constexpr umint gc_IocpDefaultRecvDepth = 4;
 
 // The sends a registration keeps with the kernel at once. An overlapped send copies into the
 // socket's buffer and completes at once, so with one in flight every send would pay a full loop
@@ -339,7 +344,7 @@ private:
 	void fp_ResumeStream(CIocpRegistration *_pRegistration);
 	void fp_ReportCompletedRecvs(CIocpRegistration *_pRegistration, umint &_nReported);
 	void fp_StageStreamSegment(CIocpRegistration *_pRegistration, NMib::NSys::CIoStreamSegment &&_Segment, umint &_nReported);
-	void fp_DeliverStreamSegment(CIocpRegistration *_pRegistration, NMib::NSys::CIoStreamSegment _Segment, umint &_nReported);
+	void fp_DeliverStreamSegment(CIocpRegistration *_pRegistration, NMib::NSys::CIoStreamSegment &&_Segment, umint &_nReported);
 	void fp_FlushStreamSegment(CIocpRegistration *_pRegistration, umint &_nReported);
 	void fp_FlushStreamSegments(umint &_nReported);
 	void fp_EndStream(CIocpRegistration *_pRegistration, NMib::NSys::EIoCompletionStatus _Status, int32 _Error, umint &_nReported);

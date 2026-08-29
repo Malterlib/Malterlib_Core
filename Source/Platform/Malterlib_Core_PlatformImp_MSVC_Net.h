@@ -67,7 +67,7 @@ struct CWindowsSocket
 	// loop rebind it. Readiness works regardless, since polls are issued on the loop's own AFD
 	// handle
 	bool m_bInheritedFromOwningLoop = false;
-	bool m_bSendBufferOverrideApplied = false;
+	bool m_bSendBufferDecided = false;
 
 	// The loop this socket was registered with, which is where it has to be deregistered again.
 	// Set once when the socket is started and never changed, so a socket never migrates between
