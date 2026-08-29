@@ -114,8 +114,13 @@ static_assert(alignof(CUringIoOp) > gc_UringUserData_TagMask);
 // How many sends' buffers may await their zero copy notifications at once — the generation
 // cap MalterlibIoUringSendDepth overrides. Not an operation concurrency: one send is in
 // flight regardless, and the next is submitted on its result while the data keeps
-// transmitting from the TCP queue. One reproduces the unpipelined path exactly
-constexpr umint gc_UringDefaultSendDepth = 2;
+// transmitting from the TCP queue. One reproduces the unpipelined path exactly. A zero
+// copy send reports only once its pages are handed off, which tracks the wire, so what
+// keeps a link busy is the bytes queued behind the send in flight: on 10 GbE with the
+// wire's 64 KiB sends, two measured 540 MB/s, four 1140, and six to eight the line rate at
+// 1180, with a single socket peaking at seven outstanding and every socket of a four
+// connection transport at five — the actors' reservation count, and the cap
+constexpr umint gc_UringDefaultSendDepth = 8;
 constexpr umint gc_UringMaxSendDepth = 8;
 
 // Buffers in a receive stream's provided ring, overridden by MalterlibIoUringReceiveBuffers.
