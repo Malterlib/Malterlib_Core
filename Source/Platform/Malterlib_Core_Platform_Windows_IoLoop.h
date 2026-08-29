@@ -69,8 +69,13 @@ struct CIocpStreamBuffer final : NMib::CVirtualDestroyBase
 
 // The receives a stream keeps with the kernel at once. One reproduces the unpipelined path; two
 // removes the re-post bubble between a completion and the next receive at the price of the
-// deliveries alternating between two buffers — measured a few percent ahead on bulk streams
-constexpr umint gc_IocpMaxRecvDepth = 2;
+// deliveries alternating between two buffers — measured a few percent ahead on bulk streams.
+// Enough posted ahead (a couple of megabytes) turns every receive pending, which moves the copy
+// out of the receiving thread into the sender's WSASend, straight into the posted pages — and
+// measured slower: that copy costs more per byte than the socket buffer pair, and it lands on
+// the one sending thread instead of being split across the two sides. The cap exists for the
+// override to explore that; the default keeps the split
+constexpr umint gc_IocpMaxRecvDepth = 16;
 constexpr umint gc_IocpDefaultRecvDepth = 2;
 
 // The sends a registration keeps with the kernel at once. An overlapped send copies into the
