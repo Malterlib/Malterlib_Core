@@ -75,6 +75,8 @@ namespace NLocal
 
 		DWORD (WINAPI *m_fGetThreadId)(HANDLE Thread);
 
+		HRESULT (WINAPI *m_fSetThreadDescription)(HANDLE hThread, PCWSTR lpThreadDescription);
+
 		NTSTATUS (WINAPI *m_fNtQueryInformationProcess)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength, PULONG ReturnLength);
 
 		NTSTATUS (WINAPI *m_fLdrDisableThreadCalloutsForDll)(IN PVOID BaseAddress);
