@@ -1156,6 +1156,12 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 		setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize));
 	}
 
+	if (umint nSendBufferBytes = fg_IocpSocketSendBufferBytesOverride(); nSendBufferBytes != umint(-1) && _pSocket->m_Socket != INVALID_SOCKET)
+	{
+		int BufferSize = (int)fg_Min(nSendBufferBytes, umint(TCLimitsInt<int>::mc_Max));
+		setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize));
+	}
+
 	if (_pSocket->m_pIoRegistration)
 		DMibErrorNet("Windows socket already registered");
 

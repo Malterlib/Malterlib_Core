@@ -74,6 +74,7 @@ namespace
 			m_nRecvDepth = fg_IocpEnvCount("MalterlibIocpRecvDepth", gc_IocpDefaultRecvDepth, 1, gc_IocpMaxRecvDepth);
 			m_nRecvBufferBytesOverride = fg_IocpEnvCount("MalterlibIocpRecvBufferBytes", 0, 4096, umint(1) << 30);
 			m_nSocketBufferBytesOverride = fg_IocpEnvCount("MalterlibSocketBufferSize", 0, 1, umint(1) << 30);
+			m_nSocketSendBufferBytesOverride = fg_IocpEnvCount("MalterlibSocketSendBufferSize", umint(-1), 0, umint(1) << 30);
 
 			auto TraceSetting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIocpTrace"));
 			if (TraceSetting == "1")
@@ -108,6 +109,7 @@ namespace
 		umint m_nRecvDepth = gc_IocpDefaultRecvDepth;
 		umint m_nRecvBufferBytesOverride = 0;
 		umint m_nSocketBufferBytesOverride = 0;
+		umint m_nSocketSendBufferBytesOverride = umint(-1);
 		CIocpTraceEntry *m_pTraceRing = nullptr;
 		NAtomic::TCAtomic<uint64> m_nTraceNext{0};
 #endif
@@ -178,6 +180,13 @@ umint fg_IocpRecvBufferBytesOverride()
 umint fg_IocpSocketBufferBytesOverride()
 {
 	return fg_IocpConfig().m_nSocketBufferBytesOverride;
+}
+
+// -1 leaves the socket's send buffer alone; 0 makes AFD transmit straight from the locked user
+// pages of an overlapped send instead of copying them into its own buffer first
+umint fg_IocpSocketSendBufferBytesOverride()
+{
+	return fg_IocpConfig().m_nSocketSendBufferBytesOverride;
 }
 
 namespace

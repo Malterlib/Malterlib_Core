@@ -16,6 +16,7 @@ struct CIocpPendingOp;
 #if DMibConfig_IoDebug_Enable
 bool fg_IocpLoopbackFastPathEnabled();
 umint fg_IocpSocketBufferBytesOverride();
+umint fg_IocpSocketSendBufferBytesOverride();
 #else
 constexpr bool fg_IocpLoopbackFastPathEnabled()
 {
@@ -25,6 +26,11 @@ constexpr bool fg_IocpLoopbackFastPathEnabled()
 constexpr umint fg_IocpSocketBufferBytesOverride()
 {
 	return 0;
+}
+
+constexpr umint fg_IocpSocketSendBufferBytesOverride()
+{
+	return umint(-1);
 }
 #endif
 
