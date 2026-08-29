@@ -420,7 +420,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 
 #if DMibConfig_IoDebug_Enable
 					if (fg_UringTraceEnabled())
-						fg_UringTrace("stream-dry", pStreamRegistration->m_pToken, pStreamRegistration->m_Fd, 0);
+						fg_UringTrace("stream-dry", pStreamRegistration->m_pToken, pStreamRegistration->m_Handle, 0);
 #endif
 				}
 			}
@@ -468,7 +468,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 		{
 #if DMibConfig_IoDebug_Enable
 			if (fg_UringTraceEnabled() && (_PollBits & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)))
-				fg_UringTrace("close-event", pRegistration->m_pToken, pRegistration->m_Fd, _PollBits);
+				fg_UringTrace("close-event", pRegistration->m_pToken, pRegistration->m_Handle, _PollBits);
 #endif
 
 			++pRegistration->m_nOutstanding;

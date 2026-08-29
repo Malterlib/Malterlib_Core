@@ -57,7 +57,7 @@ void CIoLoop_IoUring::f_RequestReadiness(NSys::CIoLoopRegistration *_pRegistrati
 
 	CIoLoopChange Change;
 	Change.m_bReadinessRequest = true;
-	Change.m_Fd = _pRegistration->m_Fd;
+	Change.m_Handle = _pRegistration->m_Handle;
 	Change.m_pRegistration = _pRegistration;
 	mp_ChangeQueue.f_Push(fg_Move(Change));
 	fp_SignalWake();
@@ -79,7 +79,7 @@ void CIoLoop_IoUring::fp_ArmPoll(CUringRegistration *_pRegistration, uint64 _Tag
 	// observation
 	CIoUringSqe &Sqe = fp_PrepareSqe();
 	Sqe.m_Opcode = gc_IoUringOp_PollAdd;
-	Sqe.m_Fd = _pRegistration->m_Fd;
+	Sqe.m_Fd = _pRegistration->m_Handle;
 	Sqe.m_OpFlags = _PollMask;
 	Sqe.m_UserData = (uint64)(umint)_pRegistration | _Tag;
 	++_pRegistration->m_nOutstanding;
@@ -205,7 +205,7 @@ void CIoLoop_IoUring::fp_TryAcknowledge(CUringRegistration *_pRegistration, umin
 
 #if DMibConfig_IoDebug_Enable
 	if (fg_UringTraceEnabled())
-		fg_UringTrace("ack", _pRegistration->m_pToken, _pRegistration->m_Fd, 0);
+		fg_UringTrace("ack", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 
 	CIoLoopDeferredAck Ack{_pRegistration, _pRegistration->m_pDeregWait, fg_Move(_pRegistration->m_fOnDeregistered)};
@@ -242,7 +242,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 				pRegistration->m_fOnDeregistered = fg_Move(Change.m_fOnDeregistered);
 #if DMibConfig_IoDebug_Enable
 				if (fg_UringTraceEnabled())
-					fg_UringTrace("deregister", pRegistration->m_pToken, Change.m_Fd, (uint32)pRegistration->m_nOutstanding);
+					fg_UringTrace("deregister", pRegistration->m_pToken, Change.m_Handle, (uint32)pRegistration->m_nOutstanding);
 #endif
 
 				fp_CancelOutstanding(pRegistration, nReported);
@@ -252,7 +252,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 			{
 				CIoUringSqe &Sqe = fp_PrepareSqe();
 				Sqe.m_Opcode = gc_IoUringOp_PollAdd;
-				Sqe.m_Fd = Change.m_Fd;
+				Sqe.m_Fd = Change.m_Handle;
 				Sqe.m_OpFlags = EPOLLIN;
 				Sqe.m_Len = gc_IoUringPoll_AddMulti;
 				Sqe.m_UserData = gc_UringUserData_Pipe;
@@ -281,7 +281,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 				auto *pRegistration = static_cast<CUringRegistration *>(Change.m_pRegistration);
 #if DMibConfig_IoDebug_Enable
 				if (fg_UringTraceEnabled())
-					fg_UringTrace("register", pRegistration->m_pToken, Change.m_Fd, uint32(pRegistration->m_EventMask));
+					fg_UringTrace("register", pRegistration->m_pToken, Change.m_Handle, uint32(pRegistration->m_EventMask));
 #endif
 
 				// The implicit initial request seeded by f_Register: level-at-arm polls report
@@ -374,7 +374,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 
 #if DMibConfig_IoDebug_Enable
 				if (fg_UringTraceEnabled())
-					fg_UringTrace(pOp->m_bStreamStart ? "completion-mode-read" : "completion-mode-write", pRegistration->m_pToken, pRegistration->m_Fd, 0);
+					fg_UringTrace(pOp->m_bStreamStart ? "completion-mode-read" : "completion-mode-write", pRegistration->m_pToken, pRegistration->m_Handle, 0);
 #endif
 			}
 
@@ -474,7 +474,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 #endif
 
 			Sqe.m_Opcode = pOp->m_bZeroCopy ? gc_IoUringOp_SendMsgZc : gc_IoUringOp_SendMsg;
-			Sqe.m_Fd = pRegistration->m_Fd;
+			Sqe.m_Fd = pRegistration->m_Handle;
 			Sqe.m_Addr = (uint64)(umint)&pOp->m_MsgHdr;
 			Sqe.m_Len = 1;
 			// The kernel runs the retry loop itself: with exactly one operation ever in flight

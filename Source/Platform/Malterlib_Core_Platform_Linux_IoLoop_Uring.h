@@ -136,6 +136,7 @@ struct CIoLoop_IoUring : public CIoLoop_POSIXBase
 	void f_AbandonPendingTeardown() override;
 	bool f_SupportsCompletionIo() const override;
 	umint f_GetCompletionSendDepth() const override;
+	bool f_SendReleaseIsPrompt(NMib::NSys::CIoLoopRegistration const *_pRegistration) const override;
 	bool f_SubmitSendVectored(NMib::NSys::CIoLoopRegistration *_pRegistration, NMib::NSys::CIoSpan const *_pSpans, umint _nSpans, NMib::NSys::FIoCompletion &&_fOnComplete, NMib::NSys::FIoBufferReleased &&_fOnBufferReleased) override;
 	bool f_SupportsReceiveStream() const override;
 	bool f_StartReceiveStream(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> _pBackpressure, NMib::NSys::FIoStreamSink &&_fSink) override;

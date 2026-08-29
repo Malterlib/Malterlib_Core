@@ -60,6 +60,11 @@ namespace NMib::NSys
 		return false;
 	}
 
+	bool ICIoLoop::f_SendReleaseIsPrompt(CIoLoopRegistration const *_pRegistration) const
+	{
+		return true;
+	}
+
 	bool ICIoLoop::f_SubmitSendVectored(CIoLoopRegistration *_pRegistration, CIoSpan const *_pSpans, umint _nSpans, FIoCompletion &&_fOnComplete, FIoBufferReleased &&_fOnBufferReleased)
 	{
 		return false;

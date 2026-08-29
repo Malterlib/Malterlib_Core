@@ -118,7 +118,7 @@ bool CIoLoop_IoUring::fp_StartStream(CUringRegistration *_pRegistration, NStorag
 
 #if DMibConfig_IoDebug_Enable
 	if (fg_UringTraceEnabled())
-		fg_UringTrace("stream-start", _pRegistration->m_pToken, _pRegistration->m_Fd, (uint32)nBuffers);
+		fg_UringTrace("stream-start", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)nBuffers);
 #endif
 
 	return true;
@@ -134,7 +134,7 @@ void CIoLoop_IoUring::fp_ArmStream(CUringRegistration *_pRegistration)
 	// probe already gates completion mode on
 	CIoUringSqe &Sqe = fp_PrepareSqe();
 	Sqe.m_Opcode = gc_IoUringOp_Recv;
-	Sqe.m_Fd = _pRegistration->m_Fd;
+	Sqe.m_Fd = _pRegistration->m_Handle;
 	Sqe.m_Flags = gc_IoUringSqeFlag_BufferSelect;
 	Sqe.m_IoPrio = gc_IoUringRecv_Multishot | gc_IoUringRecvSend_Bundle;
 	Sqe.m_BufIndex = _pRegistration->m_pRecvRing->m_Bgid;
@@ -172,7 +172,7 @@ bool CIoLoop_IoUring::fp_RefillBid(CUringRegistration *_pRegistration, uint16 _B
 				if (fg_UringStatsEnabled())
 					g_UringStats.m_nStreamParks.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 				if (fg_UringTraceEnabled())
-					fg_UringTrace("stream-park", _pRegistration->m_pToken, _pRegistration->m_Fd, _Bid);
+					fg_UringTrace("stream-park", _pRegistration->m_pToken, _pRegistration->m_Handle, _Bid);
 #endif
 
 				return false;
@@ -253,7 +253,7 @@ void CIoLoop_IoUring::fp_ResumeStream(CUringRegistration *_pRegistration)
 
 #if DMibConfig_IoDebug_Enable
 		if (fg_UringTraceEnabled())
-			fg_UringTrace("stream-rearm", _pRegistration->m_pToken, _pRegistration->m_Fd, 0);
+			fg_UringTrace("stream-rearm", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 	}
 }

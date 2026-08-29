@@ -6367,18 +6367,6 @@ void NSys::NNetwork::fg_StartSocket(void *_pSocket)
 	return fg_GetLocalSys()->m_SocketContext->f_StartSocket((CWindowsSocket *)_pSocket);
 }
 
-// Windows routes socket events through a message window on one thread of its own, which nothing
-// else can park in, so there is no loop to hand out here and every socket keeps using that thread
-NSys::ICIoLoop *NSys::fg_CreateIoLoop()
-{
-	return nullptr;
-}
-
-void NSys::fg_DestroyIoLoop(NSys::ICIoLoop *_pLoop)
-{
-	DMibFastCheck(!_pLoop);
-}
-
 void *NSys::NNetwork::fg_Listen
 	(
 		NSys::NNetwork::CAddress _Address

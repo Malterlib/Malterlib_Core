@@ -27,6 +27,16 @@ namespace NMib::NFunction
 
 namespace NMib::NSys
 {
+	// The kernel handle a registration names: a descriptor number on POSIX, a SOCKET or HANDLE
+	// value on Windows. Wide enough for either; the all-ones value is invalid on both
+#if defined(DPlatformFamily_Windows)
+	using CIoLoopHandle = umint;
+	constexpr CIoLoopHandle gc_IoLoopHandleInvalid = ~CIoLoopHandle(0);
+#else
+	using CIoLoopHandle = int;
+	constexpr CIoLoopHandle gc_IoLoopHandleInvalid = -1;
+#endif
+
 	// An event loop that a worker thread parks in instead of its own wake event, so that what the
 	// loop reports and the work that consumes it run on the same thread with no handoff between
 	// them. Everything except f_Wake runs on the thread the loop was attached to.
@@ -203,7 +213,7 @@ namespace NMib::NSys
 		// and never dereferenced by the loop. With _bNotifyRegistered the callback is invoked
 		// once with 0 events when the registration has been applied, so a consumer can report
 		// state that predates the registration
-		virtual auto f_Register(int _Fd, void *_pToken, EIoLoopEvent _EventMask, FIoLoopReadinessCallback _fOnEvents, bool _bNotifyRegistered) -> CIoLoopRegistration * = 0;
+		virtual auto f_Register(CIoLoopHandle _Handle, void *_pToken, EIoLoopEvent _EventMask, FIoLoopReadinessCallback _fOnEvents, bool _bNotifyRegistered) -> CIoLoopRegistration * = 0;
 
 		// Requests the next readiness report for the given EIoLoopEvent bits, callable from any
 		// thread. Only meaningful directly after a would-block observation on that direction: a
@@ -246,6 +256,14 @@ namespace NMib::NSys
 		// copy generation cap, not an operation concurrency: one send is in flight regardless.
 		// The default says one, which is what every caller assumed before any could pipeline
 		virtual umint f_GetCompletionSendDepth() const;
+
+		// Whether an accepted send's buffer-released functor runs directly after its completion
+		// for this registration, so no buffer outlives the reported result. False while zero copy
+		// sends are possible, since their pages stay pinned until the peer acknowledges them —
+		// and a backend that has not yet settled whether zero copy applies answers false. A
+		// caller that would otherwise copy bytes out of storage it recycles at the completion
+		// can skip that copy on a true answer
+		virtual bool f_SendReleaseIsPrompt(CIoLoopRegistration const *_pRegistration) const;
 
 		virtual bool f_SubmitSendVectored(CIoLoopRegistration *_pRegistration, CIoSpan const *_pSpans, umint _nSpans, FIoCompletion &&_fOnComplete, FIoBufferReleased &&_fOnBufferReleased);
 

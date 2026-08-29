@@ -48,7 +48,7 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
 		{
 			struct kevent CurEvent;
 			fg_MemClear(&CurEvent, sizeof(struct kevent));
-			CurEvent.ident = Change.m_Fd;
+			CurEvent.ident = Change.m_Handle;
 			CurEvent.filter = EVFILT_READ;
 			CurEvent.flags = EV_CLEAR | EV_ADD;
 			CurEvent.udata = nullptr;
@@ -64,7 +64,7 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
 		{
 			struct kevent CurEvent;
 			fg_MemClear(&CurEvent, sizeof(struct kevent));
-			CurEvent.ident = Change.m_Fd;
+			CurEvent.ident = Change.m_Handle;
 			CurEvent.filter = EVFILT_READ;
 			CurEvent.flags = Flags;
 			CurEvent.udata = pRegistration;
@@ -75,7 +75,7 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
 		{
 			struct kevent CurEvent;
 			fg_MemClear(&CurEvent, sizeof(struct kevent));
-			CurEvent.ident = Change.m_Fd;
+			CurEvent.ident = Change.m_Handle;
 			CurEvent.filter = EVFILT_WRITE;
 			CurEvent.flags = Flags;
 			CurEvent.udata = pRegistration;

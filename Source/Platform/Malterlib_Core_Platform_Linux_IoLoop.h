@@ -41,5 +41,5 @@ constexpr uint32 fg_PollInterestFromIoLoopMask(NMib::NSys::EIoLoopEvent _EventMa
 // the io debugging overrides every trace site is compiled out with the declarations
 #if DMibConfig_IoDebug_Enable
 bool fg_UringTraceEnabled();
-void fg_UringTrace(char const *_pWhat, void const *_pToken, int _Fd, uint32 _Value);
+void fg_UringTrace(char const *_pWhat, void const *_pToken, NMib::NSys::CIoLoopHandle _Handle, uint32 _Value);
 #endif

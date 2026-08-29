@@ -54,7 +54,7 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock)
 				// was reported as an error event — its number was never added
 				epoll_event DeleteEv;
 				fg_MemClear(&DeleteEv, sizeof(DeleteEv));
-				[[maybe_unused]] int DeleteReturn = epoll_ctl(mp_EpollFd, EPOLL_CTL_DEL, Change.m_Fd, &DeleteEv);
+				[[maybe_unused]] int DeleteReturn = epoll_ctl(mp_EpollFd, EPOLL_CTL_DEL, Change.m_Handle, &DeleteEv);
 				DMibFastCheck(DeleteReturn != -1 || errno == ENOENT);
 
 				// The acknowledgement obligations ride the entry, so every removal
@@ -73,8 +73,8 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock)
 				epoll_event Ev;
 				fg_MemClear(&Ev, sizeof(Ev));
 				Ev.events = EPOLLIN;
-				Ev.data.fd = Change.m_Fd;
-				[[maybe_unused]] int Return = epoll_ctl(mp_EpollFd, EPOLL_CTL_ADD, Change.m_Fd, &Ev);
+				Ev.data.fd = Change.m_Handle;
+				[[maybe_unused]] int Return = epoll_ctl(mp_EpollFd, EPOLL_CTL_ADD, Change.m_Handle, &Ev);
 				DMibFastCheck(Return != -1);
 
 				continue;
@@ -87,7 +87,7 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock)
 			Ev.events = EPOLLET | EPOLLRDHUP | fg_PollInterestFromIoLoopMask(pRegistration->m_EventMask);
 			Ev.data.ptr = pRegistration;
 
-			int Return = epoll_ctl(mp_EpollFd, EPOLL_CTL_ADD, Change.m_Fd, &Ev);
+			int Return = epoll_ctl(mp_EpollFd, EPOLL_CTL_ADD, Change.m_Handle, &Ev);
 			[[maybe_unused]] int Error = Return == -1 ? errno : 0;
 			// An add can fail environmentally with a correct caller (the max_user_watches
 			// limit, memory pressure). Anything else failing is a broken invariant in this
@@ -168,7 +168,7 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock)
 
 #if DMibConfig_IoDebug_Enable
 		if (fg_UringTraceEnabled() && (Event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)))
-			fg_UringTrace("close-event", pRegistration->m_pToken, pRegistration->m_Fd, Event.events);
+			fg_UringTrace("close-event", pRegistration->m_pToken, pRegistration->m_Handle, Event.events);
 #endif
 
 		pRegistration->m_fOnEvents(pRegistration->m_pToken, fg_IoLoopEventsFromPollBits(Event.events), 0);

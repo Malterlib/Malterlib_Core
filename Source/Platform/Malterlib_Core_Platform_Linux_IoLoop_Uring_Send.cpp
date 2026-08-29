@@ -288,6 +288,18 @@ umint CIoLoop_IoUring::f_GetCompletionSendDepth() const
 	return f_SupportsCompletionIo() ? fg_UringSendDepth() : 1;
 }
 
+// Prompt unless zero copy can still apply: a kernel without it releases at the result, and so
+// does a registration whose peer probe settled on local. Before the probe the answer has to be
+// the cautious one, since the first send is what runs it
+bool CIoLoop_IoUring::f_SendReleaseIsPrompt(NSys::CIoLoopRegistration const *_pRegistration) const
+{
+	if (!CIoUringRing::fs_SendZeroCopySupported())
+		return true;
+
+	auto *pRegistration = static_cast<CUringRegistration const *>(_pRegistration);
+	return pRegistration->m_bZeroCopyProbed && !pRegistration->m_bZeroCopyEligible;
+}
+
 bool CIoLoop_IoUring::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistration, NSys::CIoSpan const *_pSpans, umint _nSpans, NSys::FIoCompletion &&_fOnComplete, NSys::FIoBufferReleased &&_fOnBufferReleased)
 {
 	if (!f_SupportsCompletionIo())

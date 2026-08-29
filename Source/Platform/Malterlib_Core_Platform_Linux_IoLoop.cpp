@@ -16,7 +16,7 @@ bool fg_UringTraceEnabled()
 	return s_bEnabled;
 }
 
-void fg_UringTrace(char const *_pWhat, void const *_pToken, int _Fd, uint32 _Value)
+void fg_UringTrace(char const *_pWhat, void const *_pToken, NMib::NSys::CIoLoopHandle _Handle, uint32 _Value)
 {
 	int64 Ticks = NTime::CSystem_Time::fs_GetTimerValue();
 	int64 Frequency = NTime::CSystem_Time::fs_TimerFrequency();
@@ -32,7 +32,7 @@ void fg_UringTrace(char const *_pWhat, void const *_pToken, int _Fd, uint32 _Val
 				, NStr::fg_FormatMinLength<6>(NStr::fg_FormatFillOut<'0'>(NStr::fg_FormatIntFormat<10>(Microseconds)))
 				, _pWhat
 				, NStr::fg_FormatIntFormat<16>((umint)_pToken)
-				, _Fd
+				, _Handle
 				, NStr::fg_FormatIntFormat<16>(_Value)
 			)
 		)

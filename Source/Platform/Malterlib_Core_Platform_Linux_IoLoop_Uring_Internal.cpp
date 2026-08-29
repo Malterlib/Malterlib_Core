@@ -339,11 +339,11 @@ void fg_UringProbePeerClass(CUringRegistration *_pRegistration)
 		return;
 
 	_pRegistration->m_bZeroCopyProbed = true;
-	_pRegistration->m_bZeroCopyEligible = fg_UringPeerIsRemote(_pRegistration->m_Fd);
+	_pRegistration->m_bZeroCopyEligible = fg_UringPeerIsRemote(_pRegistration->m_Handle);
 
 #if DMibConfig_IoDebug_Enable
 	if (fg_UringTraceEnabled())
-		fg_UringTrace(_pRegistration->m_bZeroCopyEligible ? "zerocopy-eligible" : "zerocopy-local", _pRegistration->m_pToken, _pRegistration->m_Fd, 0);
+		fg_UringTrace(_pRegistration->m_bZeroCopyEligible ? "zerocopy-eligible" : "zerocopy-local", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 }
 
