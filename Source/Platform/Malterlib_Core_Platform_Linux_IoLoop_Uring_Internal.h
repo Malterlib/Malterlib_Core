@@ -11,6 +11,11 @@
 // is a registration record address with a tag in the low four bits, which the record's alignment
 // keeps zero. The pointer rides intact — no generation steals high bits — so every 64 bit address
 // layout works, arm64 memory tagging included
+// The loops' ring sizes: a completion ring far deeper than the submission ring, since a stream's
+// multishot receives and the bundled sends complete many entries per submission
+constexpr uint32 gc_UringLoopSqEntries = 256;
+constexpr uint32 gc_UringLoopCqEntries = 4096;
+
 constexpr uint64 gc_UringUserData_Pipe = 1;
 constexpr uint64 gc_UringUserData_Futex = 2;
 constexpr uint64 gc_UringUserData_LoopOwnLimit = 16;

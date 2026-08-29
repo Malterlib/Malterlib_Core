@@ -3,6 +3,8 @@
 
 #include "Malterlib_Core_Platform_Linux_IoUring.h"
 
+#include <sys/resource.h>
+
 int CIoUringRing::fs_Setup(uint32 _nEntries, CIoUringParams *_pParams)
 {
 	return (int)syscall(gc_IoUringSyscall_Setup, _nEntries, _pParams);
@@ -295,6 +297,77 @@ int CIoUringRing::f_Submit(uint32 _nMinComplete, bool _bGetEvents)
 // readiness backend needs. Covers ENOSYS, EPERM, seccomp and kernel.io_uring_disabled.
 // MalterlibIoUring=0 vetoes for environments that ban io_uring outright; the veto is only
 // honored in builds with the io debugging overrides enabled (MalterlibIoDebug_Enable)
+umint CIoUringRing::fs_RingBytes(uint32 _nSqEntries, uint32 _nCqEntries)
+{
+	CIoUringRing Probe;
+	if (!Probe.f_Create(_nSqEntries, _nCqEntries, true))
+		return 0;
+
+	umint PageSize = NMib::NSys::fg_Mem_VirtualGranularityCommit(false);
+	auto fPageRound = [&](umint _nBytes) -> umint
+		{
+			return (_nBytes + PageSize - 1) & ~(PageSize - 1);
+		}
+	;
+
+	umint nBytes = fPageRound(Probe.m_SqRingSize) + fPageRound(Probe.m_SqesSize);
+	if (!(Probe.m_Features & gc_IoUringFeat_SingleMmap))
+		nBytes += fPageRound(Probe.m_CqRingSize);
+
+	Probe.f_Destroy();
+
+	return nBytes;
+}
+
+bool CIoUringRing::fs_MemlockFits(umint _nBytes, umint &o_LimitBytes)
+{
+	o_LimitBytes = ~umint(0);
+
+	rlimit Limit;
+	if (getrlimit(RLIMIT_MEMLOCK, &Limit) != 0 || Limit.rlim_cur == RLIM_INFINITY)
+		return true;
+
+	o_LimitBytes = (umint)Limit.rlim_cur;
+	if (_nBytes > o_LimitBytes)
+		return false;
+
+	CIoUringRing Probe;
+	if (!Probe.f_Create(8, 8, true))
+		return true;
+
+	// Populated up front, since the registration pins the pages either way
+	void *pMemory = mmap(nullptr, _nBytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+	if (pMemory == MAP_FAILED)
+	{
+		Probe.f_Destroy();
+		return true;
+	}
+
+	// The kernel takes at most a gigabyte per registered buffer
+	constexpr umint c_MaxPieceBytes = umint(1) << 30;
+	constexpr uint32 c_MaxPieces = 8;
+	iovec Pieces[c_MaxPieces];
+	uint32 nPieces = 0;
+	for (umint Offset = 0; Offset < _nBytes && nPieces < c_MaxPieces; ++nPieces)
+	{
+		umint nPieceBytes = NMib::fg_Min(_nBytes - Offset, c_MaxPieceBytes);
+		Pieces[nPieces].iov_base = (uint8 *)pMemory + Offset;
+		Pieces[nPieces].iov_len = nPieceBytes;
+		Offset += nPieceBytes;
+	}
+
+	// Only the kernel's accounting verdict counts; any other failure says nothing about it
+	bool bFits = true;
+	if (fs_Register(Probe.m_RingFd, gc_IoUringRegister_Buffers, Pieces, nPieces) != 0)
+		bFits = errno != ENOMEM;
+
+	// Closing the ring releases the registration
+	Probe.f_Destroy();
+	munmap(pMemory, _nBytes);
+
+	return bFits;
+}
+
 bool CIoUringRing::fs_Available()
 {
 #if !DMibConfig_IoUring_Enable

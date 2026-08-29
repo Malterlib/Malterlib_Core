@@ -80,6 +80,9 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock)
 				continue;
 			}
 
+			// The first socket on the loop is late enough for the log to be configured
+			fg_UringLogMemlockFallback();
+
 			auto *pRegistration = Change.m_pRegistration;
 
 			epoll_event Ev;

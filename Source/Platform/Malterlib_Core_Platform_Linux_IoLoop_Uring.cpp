@@ -22,7 +22,7 @@ CIoLoop_IoUring::CIoLoop_IoUring()
 	bSqPoll = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringSqPoll")) == "1";
 #endif
 
-	if (CIoUringRing::fs_Available() && mp_Ring.f_Create(256, 4096, true, bSqPoll))
+	if (CIoUringRing::fs_Available() && mp_Ring.f_Create(gc_UringLoopSqEntries, gc_UringLoopCqEntries, true, bSqPoll))
 		mp_bRingCreated = true;
 }
 

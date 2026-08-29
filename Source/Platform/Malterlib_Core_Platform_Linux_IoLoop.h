@@ -39,6 +39,11 @@ constexpr uint32 fg_PollInterestFromIoLoopMask(NMib::NSys::EIoLoopEvent _EventMa
 // Diagnostic trace for the uring bring-up, enabled with MalterlibUringTrace=1: close-class events
 // and registration lifecycle only, so the volume stays too low to shift timing. In builds without
 // the io debugging overrides every trace site is compiled out with the declarations
+// Logs, once, that the loops fell back to epoll for the locked memory limit — called from the
+// epoll loop's first socket registration rather than at the decision, which is made while the
+// first loops are constructed and can precede the application's log configuration
+void fg_UringLogMemlockFallback();
+
 #if DMibConfig_IoDebug_Enable
 bool fg_UringTraceEnabled();
 void fg_UringTrace(char const *_pWhat, void const *_pToken, NMib::NSys::CIoLoopHandle _Handle, uint32 _Value);
