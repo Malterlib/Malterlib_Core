@@ -33,6 +33,12 @@ constexpr umint gc_IocpReceiveSliceBytes = 64 * 1024;
 // the kernel would fill a sliver and the delivery would pin a whole block for it
 constexpr umint gc_IocpRecvMinPostBytes = 4096;
 
+// Blocks a stream's recycler keeps for reuse. Consumers assembling messages hold a pipeline's
+// worth of delivered buffers and return them in bursts, so a short list drops most of a burst
+// to the allocator and the next posts go cold again — measured at a million fresh allocations
+// per bulk run with a list of eight
+constexpr umint gc_IocpRecyclerMaxFree = 128;
+
 // One \Device\Afd handle serving a bounded number of registrations' polls
 struct CIocpAfdGroup
 {
@@ -71,9 +77,13 @@ constexpr bool fg_IocpCompletionEnabled()
 	return true;
 }
 
+// Off by default: with the port skipped, a stream whose data is already waiting completes its
+// receives inline, and the pass reports a whole firehose of them before the hosting queue gets
+// to run the jobs that consume them — measured at half the throughput and twice the round trip
+// of one packet per transfer, which interleaves the two naturally
 constexpr bool fg_IocpSkipSuccessEnabled()
 {
-	return true;
+	return false;
 }
 
 constexpr umint fg_IocpSendDepth()
@@ -83,7 +93,7 @@ constexpr umint fg_IocpSendDepth()
 
 constexpr umint fg_IocpRecvDepth()
 {
-	return 1;
+	return gc_IocpDefaultRecvDepth;
 }
 
 constexpr umint fg_IocpRecvBufferBytesOverride()

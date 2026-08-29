@@ -9,6 +9,7 @@ using namespace NMib::NSys;
 
 namespace
 {
+#if DMibConfig_IoDebug_Enable
 	bool fg_IocpEnvFlag(char const *_pName, bool _bDefault)
 	{
 		auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked(_pName));
@@ -43,6 +44,7 @@ namespace
 	};
 
 	constexpr umint gc_IocpTraceRingEntries = 1 << 16;
+#endif
 
 	// Everything answered once for the process: the native entry points and the io debugging
 	// knobs. Constant-initialized and filled once under an atomic guard on first use — function-
@@ -65,10 +67,10 @@ namespace
 
 #if DMibConfig_IoDebug_Enable
 			m_bCompletionEnabled = fg_IocpEnvFlag("MalterlibIocpCompletion", true);
-			m_bSkipSuccessEnabled = fg_IocpEnvFlag("MalterlibIocpSkipSuccess", true);
+			m_bSkipSuccessEnabled = fg_IocpEnvFlag("MalterlibIocpSkipSuccess", false);
 			m_bLoopbackFastPathEnabled = fg_IocpEnvFlag("MalterlibLoopbackFastPath", true);
 			m_nSendDepth = fg_IocpEnvCount("MalterlibIocpSendDepth", gc_IocpDefaultSendDepth, 1, gc_IocpMaxSendDepth);
-			m_nRecvDepth = fg_IocpEnvCount("MalterlibIocpRecvDepth", 1, 1, gc_IocpMaxRecvDepth);
+			m_nRecvDepth = fg_IocpEnvCount("MalterlibIocpRecvDepth", gc_IocpDefaultRecvDepth, 1, gc_IocpMaxRecvDepth);
 			m_nRecvBufferBytesOverride = fg_IocpEnvCount("MalterlibIocpRecvBufferBytes", 0, 4096, umint(1) << 30);
 			m_nSocketBufferBytesOverride = fg_IocpEnvCount("MalterlibSocketBufferSize", 0, 1, umint(1) << 30);
 
@@ -97,12 +99,12 @@ namespace
 
 #if DMibConfig_IoDebug_Enable
 		bool m_bCompletionEnabled = true;
-		bool m_bSkipSuccessEnabled = true;
+		bool m_bSkipSuccessEnabled = false;
 		bool m_bLoopbackFastPathEnabled = true;
 		bool m_bStatsEnabled = false;
 		int m_TraceMode = 0;
 		umint m_nSendDepth = gc_IocpDefaultSendDepth;
-		umint m_nRecvDepth = 1;
+		umint m_nRecvDepth = gc_IocpDefaultRecvDepth;
 		umint m_nRecvBufferBytesOverride = 0;
 		umint m_nSocketBufferBytesOverride = 0;
 		CIocpTraceEntry *m_pTraceRing = nullptr;

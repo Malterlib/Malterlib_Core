@@ -62,7 +62,7 @@ bool CIoLoop_Iocp::fp_StartStream(CIocpRegistration *_pRegistration, NStorage::T
 	// allocator and the next posts go cold again
 	_pRegistration->m_pRecycler = fg_Construct();
 	_pRegistration->m_pRecycler->m_nBufferBytes = nBufferBytes;
-	_pRegistration->m_pRecycler->m_nMaxFree = 4 * nDepth + 4;
+	_pRegistration->m_pRecycler->m_nMaxFree = gc_IocpRecyclerMaxFree;
 
 	// The stream charges whole buffer capacities, so the window has to be able to hold a full
 	// set of them on top of what the consumer keeps; a window denominated in the socket's own

@@ -69,8 +69,9 @@ struct CIocpStreamBuffer final : NMib::CVirtualDestroyBase
 
 // The receives a stream keeps with the kernel at once. One reproduces the unpipelined path; two
 // removes the re-post bubble between a completion and the next receive at the price of the
-// deliveries alternating between two buffers
+// deliveries alternating between two buffers — measured a few percent ahead on bulk streams
 constexpr umint gc_IocpMaxRecvDepth = 2;
+constexpr umint gc_IocpDefaultRecvDepth = 2;
 
 // The sends a registration keeps with the kernel at once. An overlapped send copies into the
 // socket's buffer and completes at once, so with one in flight every send would pay a full loop
