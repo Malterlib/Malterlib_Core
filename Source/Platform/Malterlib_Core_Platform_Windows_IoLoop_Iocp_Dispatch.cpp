@@ -136,7 +136,10 @@ void CIoLoop_Iocp::fp_DispatchPoll(CIocpPollOp *_pOp, umint &_nReported)
 	if (AfdEvents & (gc_AfdPoll_Abort | gc_AfdPoll_LocalClose | gc_AfdPoll_ConnectFail))
 		pRegistration->m_ClosePollState = CIocpRegistration::EClosePoll::mc_Terminal;
 	else if (AfdEvents & gc_AfdPoll_Disconnect)
+	{
 		pRegistration->m_ClosePollState = CIocpRegistration::EClosePoll::mc_AbortOnly;
+		pRegistration->m_bDisconnectReported = true;
+	}
 
 	NSys::EIoLoopEvent Events = fg_IoLoopEventsFromAfd(AfdEvents);
 	if (Events != NSys::EIoLoopEvent::mc_None)

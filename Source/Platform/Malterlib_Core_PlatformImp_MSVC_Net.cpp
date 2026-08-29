@@ -761,6 +761,25 @@ static void fg_DispatchSocketIoEvent(void *_pToken, NSys::EIoLoopEvent _Events, 
 
 	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_ReadClosed))
 	{
+		// The peer's half close after this side's own is the full close — what epoll reports as
+		// a hangup once both halves are shut. AFD has no event for the pair, so the socket keeps
+		// the score: a shutdown already called makes this the end of the connection, graceful
+		// unless the socket error says otherwise. Like the hangup it stands in for, it is
+		// reported on its own; any readable bytes ahead of the close are drained by the consumer
+		if (pSocket->m_bShutdownCalled)
+		{
+			int Error = fSocketError();
+			if (Error)
+				pSocket->m_CloseError = Error;
+			else
+				pSocket->m_bNonErrorClose = true;
+
+			AddedState |= ENetTCPState_Closed;
+			fAddState();
+
+			return;
+		}
+
 		if (!pSocket->m_bRemoteCloseSignalled)
 		{
 			pSocket->m_bRemoteCloseSignalled = true;
@@ -1374,8 +1393,21 @@ bool CWindowsSocketContext::f_Shutdown(CWindowsSocket *_pSocket)
 	}
 	else
 	{
-		DMibLock(_pSocket->m_Lock);
-		_pSocket->m_bShutdownCalled = true;
+		bool bRemoteCloseSignalled;
+		{
+			DMibLock(_pSocket->m_Lock);
+			_pSocket->m_bShutdownCalled = true;
+			bRemoteCloseSignalled = _pSocket->m_bRemoteCloseSignalled;
+		}
+
+		// The peer's half close was reported before this shutdown, so the shutdown completes the
+		// pair — and AFD reports nothing for that. The close class is asked for again; the loop
+		// answers with the disconnect it already holds, which the dispatch reads as the full
+		// close now that the shutdown is on record. Decided under the lock the dispatch holds, so
+		// a disconnect landing concurrently sees the shutdown itself and exactly one of the two
+		// paths reports the close
+		if (bRemoteCloseSignalled)
+			fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_ReadClosed);
 	}
 
 	return true;

@@ -196,6 +196,11 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	bool m_bWriteWanted = false;
 	EClosePoll m_ClosePollState = EClosePoll::mc_Disconnect;
 
+	// Whether the peer's half close has been reported, by the poll or by the stream running dry.
+	// Level state rather than an edge: asked for again it is answered again, since neither the
+	// poll nor the stream has anything further to say about it
+	bool m_bDisconnectReported = false;
+
 	// Sends in submission order: issued ones first, then those waiting for a slot. Results are
 	// reported from the head only while the head is complete, so a later completion overtaking
 	// an earlier one at the port waits in place — submit order is report order by construction,

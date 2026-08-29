@@ -386,6 +386,13 @@ void CIoLoop_Iocp::fp_ArmRequested(CIocpRegistration *_pRegistration, NSys::EIoL
 	if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Write))
 		_pRegistration->m_bWriteWanted = true;
 
+	// The close class is level state, not an edge: a request naming it after the peer's half
+	// close was reported — a consumer whose own shutdown has now completed the pair, which AFD
+	// has no event for — is answered at once with what is already known. Before that, the
+	// standing close poll answers when it happens
+	if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_ReadClosed) && _pRegistration->m_bDisconnectReported)
+		fp_DispatchReadiness(_pRegistration, NSys::EIoLoopEvent::mc_ReadClosed, 0, _nReported);
+
 	fp_UpdatePoll(_pRegistration, _nReported);
 }
 

@@ -221,7 +221,14 @@ namespace NMib::NSys
 		// descriptor until the next readiness transition — which the preceding would-block
 		// observation guarantees is coming. Requests coalesce; spurious reports remain legal, and
 		// backends with standing interest may ignore requests entirely. f_Register performs one
-		// implicit request of the full event mask
+		// implicit request of the full event mask.
+		//
+		// The close class may be named as well. It is level state, not an edge: a backend whose
+		// kernel has no event for the pair of half closes — a shutdown after the peer's reported
+		// disconnect completes the connection with nothing further to poll for — answers such a
+		// request at once with the disconnect it already holds, so the consumer completing the
+		// pair learns of the full close. Backends whose kernel reports the full close itself may
+		// ignore the bits
 		virtual void f_RequestReadiness(CIoLoopRegistration *_pRegistration, EIoLoopEvent _EventMask);
 
 		// Removes a registration and blocks until no callback can be in flight. On the owner

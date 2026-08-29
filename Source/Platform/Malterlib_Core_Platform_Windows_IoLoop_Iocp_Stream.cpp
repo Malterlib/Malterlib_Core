@@ -331,6 +331,7 @@ void CIoLoop_Iocp::fp_ReportCompletedRecvs(CIocpRegistration *_pRegistration, um
 					fg_IocpTrace("stream-eof-close", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 
+				_pRegistration->m_bDisconnectReported = true;
 				fp_DispatchReadiness(_pRegistration, NSys::EIoLoopEvent::mc_ReadClosed, 0, _nReported);
 			}
 
