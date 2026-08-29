@@ -179,7 +179,7 @@ namespace NMib::NSys
 	struct CIoStreamBackpressure;
 
 	// Invoked on the thread that drives the loop, once per segment
-	using FIoStreamSink = NFunction::TCFunctionMovable<void (CIoStreamSegment _Segment)>;
+	using FIoStreamSink = NFunction::TCFunctionMovable<void (CIoStreamSegment &&_Segment)>;
 
 	// One entry of a vectored operation; defined with the platform interface
 	struct CIoSpan;

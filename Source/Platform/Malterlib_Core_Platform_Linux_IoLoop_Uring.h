@@ -60,7 +60,7 @@ struct CUringRegistration : public NMib::NSys::CIoLoopRegistration
 	// kernel consumes them — the memory manager is the reuse layer — and each delivered buffer
 	// frees itself, and releases its backpressure charge, when the last reference anywhere drops
 	CUringRecvRing *m_pRecvRing = nullptr;
-	NMib::NFunction::TCFunctionMovable<void (NMib::NSys::CIoStreamSegment _Segment)> m_fStreamSink;
+	NMib::NFunction::TCFunctionMovable<void (NMib::NSys::CIoStreamSegment &&_Segment)> m_fStreamSink;
 	umint m_nStreamBufferBytes = 0;
 
 	// One merged, undelivered segment: an incremental ring lands consecutive receives back to
@@ -157,7 +157,7 @@ private:
 	void fp_ArmStream(CUringRegistration *_pRegistration);
 	bool fp_RefillBid(CUringRegistration *_pRegistration, uint16 _Bid);
 	void fp_ResumeStream(CUringRegistration *_pRegistration);
-	void fp_DeliverStreamSegment(CUringRegistration *_pRegistration, NMib::NSys::CIoStreamSegment _Segment, umint &_nReported);
+	void fp_DeliverStreamSegment(CUringRegistration *_pRegistration, NMib::NSys::CIoStreamSegment &&_Segment, umint &_nReported);
 	void fp_FlushStreamSegment(CUringRegistration *_pRegistration, umint &_nReported);
 	void fp_FlushStreamSegments(umint &_nReported);
 	void fp_EndStream(CUringRegistration *_pRegistration, NMib::NSys::EIoCompletionStatus _Status, int32 _Error, umint &_nReported);

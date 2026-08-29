@@ -260,7 +260,7 @@ void CIoLoop_IoUring::fp_ResumeStream(CUringRegistration *_pRegistration)
 
 // Dispatches one segment into the sink under a pin on the outstanding count, like every other
 // dispatch: anything the sink triggers finds the count nonzero and cannot free the record
-void CIoLoop_IoUring::fp_DeliverStreamSegment(CUringRegistration *_pRegistration, NSys::CIoStreamSegment _Segment, umint &_nReported)
+void CIoLoop_IoUring::fp_DeliverStreamSegment(CUringRegistration *_pRegistration, NSys::CIoStreamSegment &&_Segment, umint &_nReported)
 {
 	++_pRegistration->m_nOutstanding;
 	_pRegistration->m_fStreamSink(fg_Move(_Segment));
