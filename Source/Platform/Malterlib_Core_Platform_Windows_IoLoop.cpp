@@ -41,6 +41,7 @@ namespace
 		void const *m_pToken;
 		NSys::CIoLoopHandle m_Handle;
 		uint32 m_Value;
+		uint32 m_ThreadId;
 	};
 
 	constexpr umint gc_IocpTraceRingEntries = 1 << 16;
@@ -191,13 +192,14 @@ namespace
 			(
 				NStr::fg_Format<NStr::CStrNonTracked>
 				(
-					"[iocp {}.{}] {} socket=0x{} handle={} value=0x{}\n"
+					"[iocp {}.{}] {} socket=0x{} handle={} value=0x{} thread={}\n"
 					, NStr::fg_FormatMinLength<5>(NStr::fg_FormatIntFormat<10>(Seconds))
 					, NStr::fg_FormatMinLength<6>(NStr::fg_FormatFillOut<'0'>(NStr::fg_FormatIntFormat<10>(Microseconds)))
 					, _Entry.m_pWhat
 					, NStr::fg_FormatIntFormat<16>((umint)_Entry.m_pToken)
 					, _Entry.m_Handle
 					, NStr::fg_FormatIntFormat<16>(_Entry.m_Value)
+					, _Entry.m_ThreadId
 				)
 			)
 		;
@@ -220,7 +222,7 @@ bool fg_IocpTraceEnabled()
 
 void fg_IocpTrace(char const *_pWhat, void const *_pToken, NSys::CIoLoopHandle _Handle, uint32 _Value)
 {
-	CIocpTraceEntry Entry{NTime::CSystem_Time::fs_GetTimerValue(), _pWhat, _pToken, _Handle, _Value};
+	CIocpTraceEntry Entry{NTime::CSystem_Time::fs_GetTimerValue(), _pWhat, _pToken, _Handle, _Value, GetCurrentThreadId()};
 
 	auto &Config = fg_IocpConfig();
 	if (Config.m_TraceMode == 2)
