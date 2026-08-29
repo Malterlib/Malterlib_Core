@@ -110,8 +110,159 @@ CWindowsSocket::CUnixListenState::~CUnixListenState()
 // WindowsSocketContext Implementation
 // *************************************************************************************************************************
 
+#if DMibConfig_IoDebug_Enable
+CSocketIoStats g_SocketIoStats;
+
+static void fg_DumpSocketIoStats()
+{
+	auto fLoad = [](NAtomic::TCAtomic<uint64> const &_Value) -> uint64
+		{
+			return _Value.f_Load(NAtomic::gc_MemoryOrder_Relaxed);
+		}
+	;
+
+	uint64 nRecvCalls = fLoad(g_SocketIoStats.m_nRecvCalls);
+	uint64 nRecvBytes = fLoad(g_SocketIoStats.m_nRecvBytes);
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+			(
+				"[io stats] readiness recv: calls={} bytes={} avg={} wouldBlock={} short={} endOfStream={}\n"
+				, nRecvCalls
+				, nRecvBytes
+				, nRecvCalls ? nRecvBytes / nRecvCalls : 0
+				, fLoad(g_SocketIoStats.m_nRecvWouldBlock)
+				, fLoad(g_SocketIoStats.m_nRecvShort)
+				, fLoad(g_SocketIoStats.m_nRecvEndOfStream)
+			)
+		)
+	;
+
+	for (umint iBucket = 0; iBucket < 33; ++iBucket)
+	{
+		uint64 nCount = fLoad(g_SocketIoStats.m_RecvSizeBuckets[iBucket]);
+		if (!nCount)
+			continue;
+
+		NSys::fg_ConsoleErrorOutput
+			(
+				NStr::fg_Format<NStr::CStrNonTracked>
+				(
+					"[io stats] readiness recv size 2^{}: {}\n"
+					, iBucket
+					, nCount
+				)
+			)
+		;
+	}
+
+	uint64 nSendCalls = fLoad(g_SocketIoStats.m_nSendCalls);
+	uint64 nSendRequested = fLoad(g_SocketIoStats.m_nSendBytesRequested);
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+			(
+				"[io stats] readiness send: calls={} bytesReq={} bytesSent={} avgReq={} wouldBlock={} short={}\n"
+				, nSendCalls
+				, nSendRequested
+				, fLoad(g_SocketIoStats.m_nSendBytesSent)
+				, nSendCalls ? nSendRequested / nSendCalls : 0
+				, fLoad(g_SocketIoStats.m_nSendWouldBlock)
+				, fLoad(g_SocketIoStats.m_nSendShort)
+			)
+		)
+	;
+
+	for (umint iBucket = 0; iBucket < 33; ++iBucket)
+	{
+		uint64 nCount = fLoad(g_SocketIoStats.m_SendSizeBuckets[iBucket]);
+		if (!nCount)
+			continue;
+
+		NSys::fg_ConsoleErrorOutput
+			(
+				NStr::fg_Format<NStr::CStrNonTracked>
+				(
+					"[io stats] readiness send size 2^{}: {}\n"
+					, iBucket
+					, nCount
+				)
+			)
+		;
+	}
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+			(
+				"[io stats] readiness arms: read={} write={} reports: read={} write={}\n"
+				, fLoad(g_SocketIoStats.m_nReadinessArmsRead)
+				, fLoad(g_SocketIoStats.m_nReadinessArmsWrite)
+				, fLoad(g_SocketIoStats.m_nReadinessReportsRead)
+				, fLoad(g_SocketIoStats.m_nReadinessReportsWrite)
+			)
+		)
+	;
+}
+
+// Answered once for the process under an atomic guard rather than a function-local static: the
+// build disables their thread-safe initialization, and two threads racing the first ask would
+// read a zero-initialized value. 0 = not asked, 1 = a thread is asking, 2 = answered
+constinit NAtomic::TCAtomic<uint32> g_SocketIoStatsState{0};
+constinit bool g_bSocketIoStatsEnabled = false;
+
+bool fg_SocketIoStatsEnabled()
+{
+	uint32 State = g_SocketIoStatsState.f_Load(NAtomic::gc_MemoryOrder_Acquire);
+	if (State == 2) [[likely]]
+		return g_bSocketIoStatsEnabled;
+
+	uint32 Expected = 0;
+	if (State == 0 && g_SocketIoStatsState.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_AcquireRelease, NAtomic::gc_MemoryOrder_Acquire))
+	{
+		if (NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoStats")) == "1")
+		{
+			atexit(&fg_DumpSocketIoStats);
+			g_bSocketIoStatsEnabled = true;
+		}
+
+		g_SocketIoStatsState.f_Store(2, NAtomic::gc_MemoryOrder_Release);
+
+		return g_bSocketIoStatsEnabled;
+	}
+
+	while (g_SocketIoStatsState.f_Load(NAtomic::gc_MemoryOrder_Acquire) != 2)
+		NSys::fg_Thread_Yield();
+
+	return g_bSocketIoStatsEnabled;
+}
+
+static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWouldBlock)
+{
+	if (!fg_SocketIoStatsEnabled())
+		return;
+
+	g_SocketIoStats.m_nSendCalls.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	g_SocketIoStats.m_nSendBytesRequested.f_FetchAdd(_nRequested, NAtomic::gc_MemoryOrder_Relaxed);
+	g_SocketIoStats.m_nSendBytesSent.f_FetchAdd(_nSent, NAtomic::gc_MemoryOrder_Relaxed);
+	if (_nRequested)
+		g_SocketIoStats.m_SendSizeBuckets[fg_GetHighestBitSet(_nRequested)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	if (_bWouldBlock)
+		g_SocketIoStats.m_nSendWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	else if (_nSent < _nRequested)
+		g_SocketIoStats.m_nSendShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+}
+#endif
+
 CWindowsSocketContext::CWindowsSocketContext()
 {
+#if DMibConfig_IoDebug_Enable
+	// The exit reports register on the first ask; asking here makes every run report
+	fg_SocketIoStatsEnabled();
+#endif
+
 	mp_bInitFailed = false;
 
 	{
@@ -684,6 +835,16 @@ static void fg_DispatchSocketIoEvent(void *_pToken, NSys::EIoLoopEvent _Events, 
 		return;
 	}
 
+#if DMibConfig_IoDebug_Enable
+	if (fg_SocketIoStatsEnabled())
+	{
+		if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
+			g_SocketIoStats.m_nReadinessReportsRead.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Write))
+			g_SocketIoStats.m_nReadinessReportsWrite.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
 	if (pSocket->m_CloseError || pSocket->m_bNonErrorClose)
 		return;
 
@@ -1026,8 +1187,20 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 // report it
 static void fg_RequestSocketReadiness(CWindowsSocket *_pSocket, NSys::EIoLoopEvent _EventMask)
 {
-	if (_pSocket->m_pOwningLoop && _pSocket->m_pIoRegistration)
-		_pSocket->m_pOwningLoop->f_RequestReadiness(_pSocket->m_pIoRegistration, _EventMask);
+	if (!_pSocket->m_pOwningLoop || !_pSocket->m_pIoRegistration)
+		return;
+
+#if DMibConfig_IoDebug_Enable
+	if (fg_SocketIoStatsEnabled())
+	{
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Read))
+			g_SocketIoStats.m_nReadinessArmsRead.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Write))
+			g_SocketIoStats.m_nReadinessArmsWrite.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
+	_pSocket->m_pOwningLoop->f_RequestReadiness(_pSocket->m_pIoRegistration, _EventMask);
 }
 
 void NSys::NNetwork::fg_RequestReadiness(void *_pSocket, bool _bRead, bool _bWrite)
@@ -1509,6 +1682,24 @@ umint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, u
 
 	o_bEndOfStream = Ret == 0 && _DataLen != 0;
 
+#if DMibConfig_IoDebug_Enable
+	if (fg_SocketIoStatsEnabled())
+	{
+		g_SocketIoStats.m_nRecvCalls.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (Ret > 0)
+		{
+			g_SocketIoStats.m_nRecvBytes.f_FetchAdd((umint)Ret, NAtomic::gc_MemoryOrder_Relaxed);
+			g_SocketIoStats.m_RecvSizeBuckets[fg_GetHighestBitSet((umint)Ret)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			if ((umint)Ret < _DataLen)
+				g_SocketIoStats.m_nRecvShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		}
+		else if (Ret == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
+			g_SocketIoStats.m_nRecvWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		else if (o_bEndOfStream)
+			g_SocketIoStats.m_nRecvEndOfStream.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
 	if (Ret == SOCKET_ERROR)
 	{
 		int Error = WSAGetLastError();
@@ -1528,6 +1719,10 @@ umint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, u
 umint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData, umint _DataLen)
 {
 	int Ret = send(_pSocket->m_Socket, (const char *)_pData, (int)fg_Min(_DataLen, umint(INT_MAX)), 0);
+
+#if DMibConfig_IoDebug_Enable
+	fg_SocketIoStatsCountSend(_DataLen, Ret > 0 ? (umint)Ret : 0, Ret == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK);
+#endif
 
 	if (Ret == SOCKET_ERROR)
 	{
@@ -1576,6 +1771,10 @@ umint CWindowsSocketContext::f_SendVectored(CWindowsSocket *_pSocket, NMib::NSys
 
 	DWORD nBytesSent = 0;
 	int Ret = WSASend(_pSocket->m_Socket, Buffers, (DWORD)nBuffers, &nBytesSent, 0, nullptr, nullptr);
+
+#if DMibConfig_IoDebug_Enable
+	fg_SocketIoStatsCountSend(nSubmittedBytes, Ret == SOCKET_ERROR ? 0 : (umint)nBytesSent, Ret == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK);
+#endif
 
 	if (Ret == SOCKET_ERROR)
 	{
