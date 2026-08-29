@@ -1430,6 +1430,22 @@ void CWindowsSocketContext::fp_DestroySocket(CWindowsSocket *_pSocket)
 
 bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 {
+	// The synchronous form is legal only where blocking on the acknowledgement is: the shared
+	// poller runs on a thread of its own that is always responsive. A socket on a pool-hosted
+	// loop must use the asynchronous form — a blocking wait here could deadlock two pool threads
+	// deregistering into each other's loops, and quietly deferring the close would leave the
+	// caller believing the handle and a listener's socket file are gone when they are not
+	auto *pOwningLoop = _pSocket->m_pOwningLoop;
+	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_Socket != INVALID_SOCKET)
+		DMibErrorNet("Synchronous close on a pool-hosted loop; use the asynchronous form");
+
+	f_CloseAsync(_pSocket, {});
+
+	return true;
+}
+
+void CWindowsSocketContext::f_CloseAsync(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
+{
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
 
 	if (pOwningLoop && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_Socket != INVALID_SOCKET)
@@ -1438,7 +1454,9 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 		// the removal cannot be waited for: whoever hosts the loop may be closing a socket of
 		// this thread's loop at the same time, and the acknowledgement may need actor jobs to run
 		// before it can be produced. No callback fires after the clear below, and the loop
-		// destroys the socket once the removal has been applied
+		// destroys the socket once the removal has been applied. The handle, and a listener's
+		// socket file with it, are gone only when the continuation runs, so an owner that reuses
+		// the name must wait for it
 		{
 			DMibLock(_pSocket->m_Lock);
 			_pSocket->m_fOnStateChange.f_Clear();
@@ -1449,17 +1467,23 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 			pOwningLoop->f_DeregisterAsync
 				(
 					_pSocket->m_pIoRegistration
-					, [this, _pSocket]
+					, [this, _pSocket, _fOnClosed = fg_Move(_fOnClosed)]() mutable
 					{
 						fp_DestroySocket(_pSocket);
+						if (_fOnClosed)
+							_fOnClosed();
 					}
 				)
 			;
-		}
-		else
-			fp_DestroySocket(_pSocket);
 
-		return true;
+			return;
+		}
+
+		fp_DestroySocket(_pSocket);
+		if (_fOnClosed)
+			_fOnClosed();
+
+		return;
 	}
 
 	if (_pSocket->m_Socket != INVALID_SOCKET)
@@ -1475,8 +1499,8 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 	}
 
 	fp_DestroySocket(_pSocket);
-
-	return true;
+	if (_fOnClosed)
+		_fOnClosed();
 }
 
 umint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream)

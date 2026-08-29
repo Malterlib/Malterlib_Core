@@ -6461,14 +6461,9 @@ void NSys::NNetwork::fg_GiveUpForInheritAsync(void *_pSocket, NMib::NFunction::T
 	fg_GetLocalSys()->m_SocketContext->f_GiveUpForInheritAsync((CWindowsSocket *)_pSocket, fg_Move(_fOnHandle));
 }
 
-// The message-window poller unhooks synchronously and the unix socket file goes with the socket
-// object, so the close is complete when the synchronous form returns and the continuation runs
-// inline
 void NSys::NNetwork::fg_CloseAsync(void *_pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
 {
-	fg_Close(_pSocket);
-	if (_fOnClosed)
-		_fOnClosed();
+	fg_GetLocalSys()->m_SocketContext->f_CloseAsync((CWindowsSocket *)_pSocket, fg_Move(_fOnClosed));
 }
 
 void NSys::NNetwork::fg_CloseSocketHandle(void *_pSocketHandle)

@@ -244,6 +244,11 @@ public:
 		CWindowsSocket *f_Accept(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 
 		bool f_Close(CWindowsSocket* _pSocket);
+
+		// Closes the socket and runs the continuation once the handle is closed and any unix
+		// socket file removed: on the loop's thread for a socket on a created loop, inline
+		// otherwise. The platform socket is consumed on the call
+		void f_CloseAsync(CWindowsSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 		bool f_Shutdown(CWindowsSocket *_pSocket);
 
 		umint f_Receive(CWindowsSocket *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream);
