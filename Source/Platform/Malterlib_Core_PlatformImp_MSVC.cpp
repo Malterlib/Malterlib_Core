@@ -2111,6 +2111,7 @@ void fg_LoadFunctionPointers()
 		(FARPROC &)Functions.m_fNtGetNextThread = GetProcAddress(g_hNtDll, "NtGetNextThread");
 
 		(FARPROC &)Functions.m_fGetThreadId = GetProcAddress(g_hKernel32, "GetThreadId");
+		(FARPROC &)Functions.m_fSetThreadDescription = GetProcAddress(g_hKernel32, "SetThreadDescription");
 
 		(FARPROC &)Functions.m_fNtQueryInformationProcess = GetProcAddress(g_hNtDll, "NtQueryInformationProcess");
 		(FARPROC &)Functions.m_fLdrDisableThreadCalloutsForDll = GetProcAddress(g_hNtDll, "LdrDisableThreadCalloutsForDll");
@@ -2950,6 +2951,22 @@ public:
 
 void fg_SetThreadName( DWORD _ThreadID, CHAR const *_pThreadName)
 {
+	// Thread descriptions support later debugger/profiler attachment on Windows 10 1607+; retain the exception protocol for attached debuggers.
+	if (auto fSetThreadDescription = NLocal::g_OptionalFunctions.m_fSetThreadDescription)
+	{
+		WCHAR Name[256];
+		if (MultiByteToWideChar(CP_UTF8, 0, _pThreadName, -1, Name, 256) > 0)
+		{
+			if (_ThreadID == GetCurrentThreadId())
+				fSetThreadDescription(GetCurrentThread(), Name);
+			else if (HANDLE hThread = OpenThread(THREAD_SET_LIMITED_INFORMATION, FALSE, _ThreadID))
+			{
+				fSetThreadDescription(hThread, Name);
+				CloseHandle(hThread);
+			}
+		}
+	}
+
 	UndocumentedPEB *pPeb = fg_GetPEB(fg_GetTEB());
 	if (!pPeb->BeingDebugged)
 		return;
