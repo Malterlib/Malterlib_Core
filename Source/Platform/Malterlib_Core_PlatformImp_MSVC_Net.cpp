@@ -1156,12 +1156,6 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 		setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize));
 	}
 
-	if (umint nSendBufferBytes = fg_IocpSocketSendBufferBytesOverride(); nSendBufferBytes != umint(-1) && _pSocket->m_Socket != INVALID_SOCKET)
-	{
-		int BufferSize = (int)fg_Min(nSendBufferBytes, umint(TCLimitsInt<int>::mc_Max));
-		setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize));
-	}
-
 	if (_pSocket->m_pIoRegistration)
 		DMibErrorNet("Windows socket already registered");
 
@@ -1316,6 +1310,18 @@ bool NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *
 	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
 	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
 		return false;
+
+#if DMibConfig_IoDebug_Enable
+	// Applied at the first completion send rather than at start: a zero send buffer makes the
+	// readiness path's non-blocking send unable to queue anything until the peer has a receive
+	// pending, which strands a handshake. From here on every send is an overlapped one
+	if (umint nSendBufferBytes = fg_IocpSocketSendBufferBytesOverride(); nSendBufferBytes != umint(-1) && !pSocket->m_bSendBufferOverrideApplied)
+	{
+		pSocket->m_bSendBufferOverrideApplied = true;
+		int BufferSize = (int)fg_Min(nSendBufferBytes, umint(TCLimitsInt<int>::mc_Max));
+		setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize));
+	}
+#endif
 
 	return pSocket->m_pOwningLoop->f_SubmitSendVectored(pSocket->m_pIoRegistration, _pSpans, _nSpans, fg_Move(_fOnComplete), fg_Move(_fOnBufferReleased));
 }

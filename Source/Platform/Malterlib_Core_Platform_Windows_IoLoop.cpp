@@ -74,7 +74,12 @@ namespace
 			m_nRecvDepth = fg_IocpEnvCount("MalterlibIocpRecvDepth", gc_IocpDefaultRecvDepth, 1, gc_IocpMaxRecvDepth);
 			m_nRecvBufferBytesOverride = fg_IocpEnvCount("MalterlibIocpRecvBufferBytes", 0, 4096, umint(1) << 30);
 			m_nSocketBufferBytesOverride = fg_IocpEnvCount("MalterlibSocketBufferSize", 0, 1, umint(1) << 30);
-			m_nSocketSendBufferBytesOverride = fg_IocpEnvCount("MalterlibSocketSendBufferSize", umint(-1), 0, umint(1) << 30);
+			// Zero is a meaningful value here (no send buffering at all), which the count reader
+			// would take for unset
+			if (NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibSocketSendBufferSize")) == "0")
+				m_nSocketSendBufferBytesOverride = 0;
+			else
+				m_nSocketSendBufferBytesOverride = fg_IocpEnvCount("MalterlibSocketSendBufferSize", umint(-1), 1, umint(1) << 30);
 
 			auto TraceSetting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIocpTrace"));
 			if (TraceSetting == "1")
