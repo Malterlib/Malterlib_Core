@@ -745,17 +745,17 @@ namespace
 		WSAIoctl(_Socket, SIO_LOOPBACK_FAST_PATH, &bEnable, sizeof(bEnable), nullptr, 0, &nBytes, nullptr, nullptr);
 	}
 
-	bool fg_IsLoopbackAddress(CWindowsAddress const &_Address)
+	bool fg_IsLoopbackSockAddr(sockaddr const *_pAddress)
 	{
-		if (_Address.f_GetType() == ENetAddressType_TCPv4)
+		if (_pAddress->sa_family == AF_INET)
 		{
-			auto const &Native = *(sockaddr_in const *)_Address.f_Get();
+			auto const &Native = *(sockaddr_in const *)_pAddress;
 			return ((uint8 const *)&Native.sin_addr.s_addr)[0] == 127;
 		}
 
-		if (_Address.f_GetType() == ENetAddressType_TCPv6)
+		if (_pAddress->sa_family == AF_INET6)
 		{
-			auto const &Native = *(sockaddr_in6 const *)_Address.f_Get();
+			auto const &Native = *(sockaddr_in6 const *)_pAddress;
 			if (IN6_IS_ADDR_LOOPBACK(&Native.sin6_addr))
 				return true;
 			if (IN6_IS_ADDR_V4MAPPED(&Native.sin6_addr))
@@ -763,6 +763,41 @@ namespace
 		}
 
 		return false;
+	}
+
+	bool fg_IsLoopbackAddress(CWindowsAddress const &_Address)
+	{
+		if (_Address.f_GetType() != ENetAddressType_TCPv4 && _Address.f_GetType() != ENetAddressType_TCPv6)
+			return false;
+
+		return fg_IsLoopbackSockAddr((sockaddr const *)_Address.f_Get());
+	}
+
+	// Whether the connected peer of a TCP socket is this machine, asked of the kernel after an
+	// accept, where only the listener's address is otherwise known
+	bool fg_IsLoopbackPeer(SOCKET _Socket)
+	{
+		sockaddr_storage Peer;
+		int nBytes = sizeof(Peer);
+		if (getpeername(_Socket, (sockaddr *)&Peer, &nBytes) != 0)
+			return false;
+
+		return fg_IsLoopbackSockAddr((sockaddr const *)&Peer);
+	}
+
+	// Socket buffers for a TCP connection whose peer is this machine. The kernel's 64 KiB defaults
+	// quantize a loopback stream into buffer-sized bursts with a wake handoff between each, and
+	// on loopback the receive buffer is the whole flow control window since there is no
+	// autotuning to grow it: a megabyte each measured 5.8 GB/s against 2.7 for the defaults on
+	// a TLS transport, with four times as much no better and sixteen worse. Loopback only — an
+	// explicit receive buffer disables the receive window autotuning that a remote peer needs
+	constexpr int gc_LoopbackTcpSocketBufferBytes = 1024 * 1024;
+
+	void fg_SizeLoopbackTcpBuffers(SOCKET _Socket)
+	{
+		int BufferSize = gc_LoopbackTcpSocketBufferBytes;
+		setsockopt(_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize));
+		setsockopt(_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize));
 	}
 
 	void fg_SetNonBlocking(SOCKET _Socket, char const *_pWhat)
@@ -1090,7 +1125,10 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 		}
 
 		if (fg_IsLoopbackAddress(Address))
+		{
 			fg_EnableLoopbackFastPath(hSock);
+			fg_SizeLoopbackTcpBuffers(hSock);
+		}
 	}
 
 	if (_pBindAddress)
@@ -1568,6 +1606,9 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 			uint32 Error = WSAGetLastError();
 			DMibErrorNet((CStr::CFormat("Could not accept socket (TCP_NODELAY), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
+
+		if (fg_IsLoopbackPeer(hSock))
+			fg_SizeLoopbackTcpBuffers(hSock);
 	}
 
 	// Explicit rather than trusting inheritance from the listener
