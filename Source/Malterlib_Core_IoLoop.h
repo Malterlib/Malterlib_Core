@@ -238,10 +238,12 @@ namespace NMib::NSys
 		virtual void f_DeregisterAsync(CIoLoopRegistration *_pRegistration, NFunction::TCFunctionMovable<void ()> &&_fOnDeregistered) = 0;
 
 		// Completion sends: vectored sends submitted against a registration, reported through
-		// their completion functors on the loop's thread. At most one send is ever in flight per
-		// registration — the loop holds later submits back until the one before completes, which
-		// is what keeps the stream in order with no link protocol. False from the submit means
-		// the operation was not accepted and the caller keeps using readiness io.
+		// their completion functors on the loop's thread, one at a time and in submission order —
+		// which is what keeps the stream in order with no link protocol. How many the loop keeps
+		// with the kernel at once is its own: the io_uring backend holds later submits back until
+		// the one before completes, the IOCP backend pipelines several and reports them from the
+		// head of its queue. False from the submit means the operation was not accepted and the
+		// caller keeps using readiness io.
 		//
 		// Synchronization is the caller's: all submits against one registration — sends here,
 		// stream starts and resumes below — must be sequenced by a single owner, and the last of
@@ -253,8 +255,9 @@ namespace NMib::NSys
 		virtual bool f_SupportsCompletionIo() const;
 
 		// How many sends' buffers may be awaiting release at once for one io object — the zero
-		// copy generation cap, not an operation concurrency: one send is in flight regardless.
-		// The default says one, which is what every caller assumed before any could pipeline
+		// copy generation cap, not an operation concurrency: completions are still reported one
+		// at a time. The default says one, which is what every caller assumed before any could
+		// pipeline
 		virtual umint f_GetCompletionSendDepth() const;
 
 		// Whether an accepted send's buffer-released functor runs directly after its completion

@@ -1,0 +1,271 @@
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#include "Malterlib_Core_Platform_Windows_IoLoop_Iocp_Internal.h"
+
+using namespace NMib;
+using namespace NMib::NMemory;
+using namespace NMib::NSys;
+
+bool CIoLoop_Iocp::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistration, NSys::CIoSpan const *_pSpans, umint _nSpans, NSys::FIoCompletion &&_fOnComplete, NSys::FIoBufferReleased &&_fOnBufferReleased)
+{
+	if (!f_SupportsCompletionIo())
+		return false;
+
+	CIocpSendOp *pOp = fg_ConstructObject<CIocpSendOp>(CDefaultAllocator());
+	pOp->m_pRegistration = static_cast<CIocpRegistration *>(_pRegistration);
+	pOp->m_Kind = EIocpOpKind::mc_Send;
+
+	// The buffers name the caller's spans in place: the kernel copies them at issue. A span
+	// beyond what one buffer can describe is clamped and ends the gather; the completion
+	// reports the shorter count and the caller offers the remainder again
+	umint nBuffers = 0;
+	bool bClamped = false;
+	for (umint iSpan = 0; iSpan < _nSpans && nBuffers < NSys::gc_IoLoopMaxSubmitSpans && !bClamped; ++iSpan)
+	{
+		umint nBytes = _pSpans[iSpan].m_nBytes;
+		if (!nBytes)
+			continue;
+
+		if (nBytes > ULONG_MAX)
+		{
+			nBytes = ULONG_MAX;
+			bClamped = true;
+		}
+
+		pOp->m_Buffers[nBuffers].buf = (CHAR *)_pSpans[iSpan].m_pData;
+		pOp->m_Buffers[nBuffers].len = (ULONG)nBytes;
+		pOp->m_nRequested += nBytes;
+		++nBuffers;
+	}
+
+	if (!nBuffers)
+	{
+		fg_DeleteObject(CDefaultAllocator(), pOp);
+		return false;
+	}
+
+	pOp->m_nBuffers = (DWORD)nBuffers;
+	pOp->m_fOnComplete = fg_Move(_fOnComplete);
+	pOp->m_fOnBufferReleased = fg_Move(_fOnBufferReleased);
+#if DMibConfig_IoDebug_Enable
+	if (fg_IocpStatsEnabled())
+		pOp->m_EnqueueStamp = fg_IocpStatsNow();
+#endif
+
+	// The raw registration pointer needs no reference of its own while the operation waits in
+	// the queue: every enqueue — sends here, stream starts and resumes alike — is sequenced by
+	// the socket's owner, which queues its last operation before it requests removal, and the
+	// acknowledgement that frees a registration sweeps this queue first
+	auto *pPending = fg_ConstructObject<CIocpPendingOp>(CDefaultAllocator());
+	pPending->m_pRegistration = pOp->m_pRegistration;
+	pPending->m_pSendOp = pOp;
+	fp_QueuePendingOp(pPending);
+
+	return true;
+}
+
+// Loop thread: the send takes its place at the tail of the registration's FIFO and is issued
+// at once if a slot is free
+void CIoLoop_Iocp::fp_AppendSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp)
+{
+	_pOp->m_pNext = nullptr;
+	if (_pRegistration->m_pSendTail)
+		_pRegistration->m_pSendTail->m_pNext = _pOp;
+	else
+		_pRegistration->m_pSendHead = _pOp;
+	_pRegistration->m_pSendTail = _pOp;
+
+	if (!_pRegistration->m_pSendNextToIssue)
+		_pRegistration->m_pSendNextToIssue = _pOp;
+
+	fp_IssueDeferredSends(_pRegistration);
+}
+
+void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration)
+{
+	umint nDepth = fg_IocpSendDepth();
+
+	while (_pRegistration->m_pSendNextToIssue && _pRegistration->m_nSendsInFlight < nDepth)
+	{
+		CIocpSendOp *pOp = _pRegistration->m_pSendNextToIssue;
+		_pRegistration->m_pSendNextToIssue = pOp->m_pNext;
+
+		fp_IssueSend(_pRegistration, pOp);
+	}
+
+#if DMibConfig_IoDebug_Enable
+	if (fg_IocpStatsEnabled() && _pRegistration->m_pSendNextToIssue)
+		g_IocpStats.m_nSendDeferred.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+#endif
+}
+
+// Hands one send to the kernel. Every outcome leaves exactly one completion owed: a packet for
+// a pended or, without skip mode, a synchronously finished send; an inline entry for one that
+// finished at issue under skip mode or failed at issue. Counted from here to its report
+void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp)
+{
+	fg_MemClear(&_pOp->m_Overlapped, sizeof(_pOp->m_Overlapped));
+	_pOp->m_Status = 0;
+	_pOp->m_nBytes = 0;
+	_pOp->m_Error = 0;
+	_pOp->m_bCompleted = false;
+	_pOp->m_bIssued = true;
+	++_pRegistration->m_nOutstanding;
+	++_pRegistration->m_nSendsInFlight;
+
+#if DMibConfig_IoDebug_Enable
+	if (fg_IocpStatsEnabled())
+	{
+		if (_pOp->m_EnqueueStamp)
+		{
+			g_IocpStats.m_nSendSubmitLagNs.f_FetchAdd(fg_IocpStatsNow() - _pOp->m_EnqueueStamp, NAtomic::gc_MemoryOrder_Relaxed);
+			g_IocpStats.m_nSendSubmitLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		}
+
+		if (_pRegistration->m_SendIdleStamp)
+		{
+			g_IocpStats.m_nSendIdleNs.f_FetchAdd(fg_IocpStatsNow() - _pRegistration->m_SendIdleStamp, NAtomic::gc_MemoryOrder_Relaxed);
+			g_IocpStats.m_nSendIdleGaps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			_pRegistration->m_SendIdleStamp = 0;
+		}
+
+		g_IocpStats.m_nSendOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		g_IocpStats.m_nSendBytesRequested.f_FetchAdd(_pOp->m_nRequested, NAtomic::gc_MemoryOrder_Relaxed);
+		g_IocpStats.m_SendSizeBuckets[fg_GetHighestBitSet(_pOp->m_nRequested)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
+	DWORD nSent = 0;
+	int Ret = WSASend((SOCKET)_pRegistration->m_Handle, _pOp->m_Buffers, _pOp->m_nBuffers, &nSent, 0, &_pOp->m_Overlapped, nullptr);
+
+#if DMibConfig_IoDebug_Enable
+	if (fg_IocpTraceEnabled())
+		fg_IocpTrace(Ret == 0 ? "send-issue-done" : "send-issue", _pRegistration->m_pToken, _pRegistration->m_Handle, Ret == 0 ? (uint32)nSent : (uint32)WSAGetLastError());
+#endif
+
+	if (Ret == 0)
+	{
+		if (_pRegistration->m_bSkipSuccess)
+		{
+			_pOp->m_bCompleted = true;
+			_pOp->m_nBytes = nSent;
+			fp_QueueInlineCompletion(_pRegistration);
+
+#if DMibConfig_IoDebug_Enable
+			if (fg_IocpStatsEnabled())
+				g_IocpStats.m_nSendInline.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+#endif
+		}
+
+		return;
+	}
+
+	int Error = WSAGetLastError();
+	if (Error == WSA_IO_PENDING)
+		return;
+
+	// Failed at issue: nothing reached the kernel and no packet follows. Reported through the
+	// FIFO like any other result, so it still lands in submission order
+	_pOp->m_bCompleted = true;
+	_pOp->m_Status = gc_NtStatus_Unsuccessful;
+	_pOp->m_Error = Error;
+	fp_QueueInlineCompletion(_pRegistration);
+}
+
+// Reports from the head while the head is complete: a later send's completion that arrived
+// first waits in place, so submit order is report order. The released functor runs right after
+// the completion — the kernel copied the buffers at issue — and the freed slot issues the next
+// deferred send. The head is re-read after every callback, since a callback may submit
+void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, umint &_nReported)
+{
+	while (_pRegistration->m_pSendHead && _pRegistration->m_pSendHead->m_bCompleted)
+	{
+		CIocpSendOp *pOp = _pRegistration->m_pSendHead;
+		_pRegistration->m_pSendHead = pOp->m_pNext;
+		if (!_pRegistration->m_pSendHead)
+			_pRegistration->m_pSendTail = nullptr;
+		if (_pRegistration->m_pSendNextToIssue == pOp)
+			_pRegistration->m_pSendNextToIssue = pOp->m_pNext;
+
+		NSys::CIoCompletion Result;
+		if (pOp->m_bIssued)
+		{
+			pOp->m_bIssued = false;
+			--_pRegistration->m_nSendsInFlight;
+			DMibCheck(_pRegistration->m_nOutstanding != 0);
+			--_pRegistration->m_nOutstanding;
+
+			if (pOp->m_Status == gc_NtStatus_Cancelled)
+				Result.m_Status = NSys::EIoCompletionStatus::mc_Cancelled;
+			else if (pOp->m_Status != gc_NtStatus_Success)
+			{
+				Result.m_Status = NSys::EIoCompletionStatus::mc_Error;
+				Result.m_Error = fp_OpError(_pRegistration, pOp);
+			}
+			else
+				Result.m_nBytes = pOp->m_nBytes;
+		}
+		else
+		{
+			// Never issued: cancelled in place by the deregistration
+			Result.m_Status = NSys::EIoCompletionStatus::mc_Cancelled;
+		}
+
+#if DMibConfig_IoDebug_Enable
+		if (fg_IocpStatsEnabled())
+		{
+			if (Result.m_Status == NSys::EIoCompletionStatus::mc_Done)
+			{
+				g_IocpStats.m_nSendBytesSent.f_FetchAdd(Result.m_nBytes, NAtomic::gc_MemoryOrder_Relaxed);
+				if (Result.m_nBytes < pOp->m_nRequested)
+					g_IocpStats.m_nSendShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			}
+			else if (Result.m_Status == NSys::EIoCompletionStatus::mc_Error)
+				g_IocpStats.m_nSendErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+
+			if (!_pRegistration->m_nSendsInFlight)
+				_pRegistration->m_SendIdleStamp = fg_IocpStatsNow();
+		}
+#endif
+
+#if DMibConfig_IoDebug_Enable
+		if (fg_IocpTraceEnabled())
+			fg_IocpTrace("send-report", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)Result.m_nBytes | ((uint32)Result.m_Status << 24));
+#endif
+
+		++_pRegistration->m_nOutstanding;
+		++mp_nDispatchDepth;
+		pOp->m_fOnComplete(Result);
+		if (pOp->m_fOnBufferReleased)
+			pOp->m_fOnBufferReleased();
+		--mp_nDispatchDepth;
+		--_pRegistration->m_nOutstanding;
+		++_nReported;
+
+		fg_DeleteObject(CDefaultAllocator(), pOp);
+	}
+
+	if (!_pRegistration->m_bDeregistering)
+		fp_IssueDeferredSends(_pRegistration);
+}
+
+// Sends that never reached the kernel are cancelled in place; they report in order behind the
+// issued ones, whose cancelled completions the kernel delivers
+void CIoLoop_Iocp::fp_CancelDeferredSends(CIocpRegistration *_pRegistration)
+{
+	for (CIocpSendOp *pOp = _pRegistration->m_pSendNextToIssue; pOp; pOp = pOp->m_pNext)
+	{
+		pOp->m_bCompleted = true;
+		pOp->m_Status = gc_NtStatus_Cancelled;
+	}
+
+	_pRegistration->m_pSendNextToIssue = nullptr;
+}
+
+void CIoLoop_Iocp::fp_ReleaseSends(CIocpRegistration *_pRegistration)
+{
+	// Nothing can remain: every issued send was reported before the count reached zero, and
+	// every deferred one was cancelled in place and reported behind them
+	DMibFastCheck(!_pRegistration->m_pSendHead && !_pRegistration->m_nSendsInFlight);
+}

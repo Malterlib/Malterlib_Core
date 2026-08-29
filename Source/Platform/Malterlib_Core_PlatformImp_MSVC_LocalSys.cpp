@@ -1015,6 +1015,7 @@ public:
 			m_FileChangeNoticationContext.f_Destruct();
 		if (m_SocketContext.f_IsConstructed())
 			m_SocketContext.f_Destruct();
+		NMib::NPlatform::fg_StopEndSessionReporting();
 
 		CSystem::f_DestructThreadSpecific();
 	}

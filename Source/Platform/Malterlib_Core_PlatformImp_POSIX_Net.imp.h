@@ -1317,6 +1317,15 @@ bool NSys::NNetwork::fg_SupportsReceiveStream(void *_pSocket)
 	return fg_CompletionLocalForced() || fg_CompletionPeerIsRemote(pSocket);
 }
 
+bool NSys::NNetwork::fg_SendReleaseIsPrompt(void *_pSocket)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
+		return true;
+
+	return pSocket->m_pOwningLoop->f_SendReleaseIsPrompt(pSocket->m_pIoRegistration);
+}
+
 bool NSys::NNetwork::fg_StartReceiveStream(void *_pSocket, umint _nBufferBytes, NStorage::TCSharedPointer<NSys::CIoStreamBackpressure> _pBackpressure, NSys::FIoStreamSink &&_fSink)
 {
 	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
