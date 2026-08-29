@@ -4,6 +4,7 @@
 #include "Malterlib_Core_Platform_Linux_IoLoop.h"
 #include "Malterlib_Core_Platform_Linux_IoLoop_Epoll.h"
 #include "Malterlib_Core_Platform_Linux_IoLoop_Uring.h"
+#include "Malterlib_Core_Platform_Linux_IoLoop_Uring_Internal.h"
 
 using namespace NMib;
 using namespace NMib::NMemory;
@@ -41,6 +42,12 @@ void fg_UringTrace(char const *_pWhat, void const *_pToken, int _Fd, uint32 _Val
 
 NMib::NSys::ICIoLoop *fg_CreatePlatformIoLoop()
 {
+#if DMibConfig_IoDebug_Enable
+	// The exit report registers on the first ask; asking at loop creation makes a run whose
+	// transfers stayed on readiness report the completion counters' zeros alongside
+	fg_UringStatsEnabled();
+#endif
+
 	if (CIoUringRing::fs_Available())
 	{
 		// Ring creation can still fail where the probe passed (descriptor or memory pressure at

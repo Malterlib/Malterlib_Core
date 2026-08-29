@@ -123,6 +123,8 @@ bool CIoLoop_IoUring::fp_PublishSend(CUringRegistration *_pRegistration, CUringI
 		}
 		g_UringStats.m_nSendBytesRequested.f_FetchAdd(nBytes, NAtomic::gc_MemoryOrder_Relaxed);
 		g_UringStats.m_nSendPublishes.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (nBytes)
+			g_UringStats.m_SendSizeBuckets[fg_GetHighestBitSet(nBytes)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	}
 #endif
 

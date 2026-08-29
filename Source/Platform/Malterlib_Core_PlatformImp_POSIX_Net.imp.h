@@ -115,8 +115,149 @@ namespace
 }
 #endif
 
+#if DMibConfig_IoDebug_Enable
+CSocketIoStats g_SocketIoStats;
+
+static void fg_DumpSocketIoStats()
+{
+	auto fLoad = [](NAtomic::TCAtomic<uint64> const &_Value) -> uint64
+		{
+			return _Value.f_Load(NAtomic::gc_MemoryOrder_Relaxed);
+		}
+	;
+
+	uint64 nRecvCalls = fLoad(g_SocketIoStats.m_nRecvCalls);
+	uint64 nRecvBytes = fLoad(g_SocketIoStats.m_nRecvBytes);
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+			(
+				"[io stats] readiness recv: calls={} bytes={} avg={} wouldBlock={} short={} endOfStream={}\n"
+				, nRecvCalls
+				, nRecvBytes
+				, nRecvCalls ? nRecvBytes / nRecvCalls : 0
+				, fLoad(g_SocketIoStats.m_nRecvWouldBlock)
+				, fLoad(g_SocketIoStats.m_nRecvShort)
+				, fLoad(g_SocketIoStats.m_nRecvEndOfStream)
+			)
+		)
+	;
+
+	for (umint iBucket = 0; iBucket < 33; ++iBucket)
+	{
+		uint64 nCount = fLoad(g_SocketIoStats.m_RecvSizeBuckets[iBucket]);
+		if (!nCount)
+			continue;
+
+		NSys::fg_ConsoleErrorOutput
+			(
+				NStr::fg_Format<NStr::CStrNonTracked>
+				(
+					"[io stats] readiness recv size 2^{}: {}\n"
+					, iBucket
+					, nCount
+				)
+			)
+		;
+	}
+
+	uint64 nSendCalls = fLoad(g_SocketIoStats.m_nSendCalls);
+	uint64 nSendRequested = fLoad(g_SocketIoStats.m_nSendBytesRequested);
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+			(
+				"[io stats] readiness send: calls={} bytesReq={} bytesSent={} avgReq={} wouldBlock={} short={}\n"
+				, nSendCalls
+				, nSendRequested
+				, fLoad(g_SocketIoStats.m_nSendBytesSent)
+				, nSendCalls ? nSendRequested / nSendCalls : 0
+				, fLoad(g_SocketIoStats.m_nSendWouldBlock)
+				, fLoad(g_SocketIoStats.m_nSendShort)
+			)
+		)
+	;
+
+	for (umint iBucket = 0; iBucket < 33; ++iBucket)
+	{
+		uint64 nCount = fLoad(g_SocketIoStats.m_SendSizeBuckets[iBucket]);
+		if (!nCount)
+			continue;
+
+		NSys::fg_ConsoleErrorOutput
+			(
+				NStr::fg_Format<NStr::CStrNonTracked>
+				(
+					"[io stats] readiness send size 2^{}: {}\n"
+					, iBucket
+					, nCount
+				)
+			)
+		;
+	}
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+			(
+				"[io stats] readiness arms: read={} write={} reports: read={} write={}\n"
+				, fLoad(g_SocketIoStats.m_nReadinessArmsRead)
+				, fLoad(g_SocketIoStats.m_nReadinessArmsWrite)
+				, fLoad(g_SocketIoStats.m_nReadinessReportsRead)
+				, fLoad(g_SocketIoStats.m_nReadinessReportsWrite)
+			)
+		)
+	;
+}
+
+bool fg_SocketIoStatsEnabled()
+{
+	static bool s_bEnabled =
+		(
+			[]() -> bool
+			{
+				auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoStats"));
+				if (Setting == "1")
+				{
+					atexit(&fg_DumpSocketIoStats);
+					return true;
+				}
+
+				return false;
+			}
+			()
+		)
+	;
+
+	return s_bEnabled;
+}
+
+static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWouldBlock)
+{
+	if (!fg_SocketIoStatsEnabled())
+		return;
+
+	g_SocketIoStats.m_nSendCalls.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	g_SocketIoStats.m_nSendBytesRequested.f_FetchAdd(_nRequested, NAtomic::gc_MemoryOrder_Relaxed);
+	g_SocketIoStats.m_nSendBytesSent.f_FetchAdd(_nSent, NAtomic::gc_MemoryOrder_Relaxed);
+	if (_nRequested)
+		g_SocketIoStats.m_SendSizeBuckets[fg_GetHighestBitSet(_nRequested)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	if (_bWouldBlock)
+		g_SocketIoStats.m_nSendWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	else if (_nSent < _nRequested)
+		g_SocketIoStats.m_nSendShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+}
+#endif
+
 CPOSIXSocketContext::CPOSIXSocketContext()
 {
+#if DMibConfig_IoDebug_Enable
+	// The exit reports register on the first ask; asking here makes every run report
+	fg_SocketIoStatsEnabled();
+#endif
+
 	// The shared loop exists before the thread that hosts it, so the thread body never checks
 	mp_PollerThread.mp_pLoop = fg_CreatePlatformIoLoop();
 	mp_PollerThread.f_Start(EExecutionPriority_Highest);
@@ -845,6 +986,16 @@ static void fg_DispatchSocketIoEvent(void *_pToken, NSys::EIoLoopEvent _Events, 
 		return;
 	}
 
+#if DMibConfig_IoDebug_Enable
+	if (fg_SocketIoStatsEnabled())
+	{
+		if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
+			g_SocketIoStats.m_nReadinessReportsRead.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Write))
+			g_SocketIoStats.m_nReadinessReportsWrite.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
 	if (pSocket->m_CloseError || pSocket->m_bNonErrorClose)
 		return;
 
@@ -1024,8 +1175,20 @@ void CPOSIXSocketContext::f_StartSocket(CPOSIXSocket *_pSocket)
 // nothing further is coming, and the close events report it
 static void fg_RequestSocketReadiness(CPOSIXSocket *_pSocket, NSys::EIoLoopEvent _EventMask)
 {
-	if (_pSocket->m_pOwningLoop && _pSocket->m_pIoRegistration)
-		_pSocket->m_pOwningLoop->f_RequestReadiness(_pSocket->m_pIoRegistration, _EventMask);
+	if (!_pSocket->m_pOwningLoop || !_pSocket->m_pIoRegistration)
+		return;
+
+#if DMibConfig_IoDebug_Enable
+	if (fg_SocketIoStatsEnabled())
+	{
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Read))
+			g_SocketIoStats.m_nReadinessArmsRead.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Write))
+			g_SocketIoStats.m_nReadinessArmsWrite.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
+	_pSocket->m_pOwningLoop->f_RequestReadiness(_pSocket->m_pIoRegistration, _EventMask);
 }
 
 void NSys::NNetwork::fg_RequestReadiness(void *_pSocket, bool _bRead, bool _bWrite)
@@ -1601,6 +1764,24 @@ umint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, umint
 
 	o_bEndOfStream = Result == 0 && _DataLen != 0;
 
+#if DMibConfig_IoDebug_Enable
+	if (fg_SocketIoStatsEnabled())
+	{
+		g_SocketIoStats.m_nRecvCalls.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (Result > 0)
+		{
+			g_SocketIoStats.m_nRecvBytes.f_FetchAdd((umint)Result, NAtomic::gc_MemoryOrder_Relaxed);
+			g_SocketIoStats.m_RecvSizeBuckets[fg_GetHighestBitSet((umint)Result)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			if ((umint)Result < _DataLen)
+				g_SocketIoStats.m_nRecvShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		}
+		else if (Result == -1 && errno == EAGAIN)
+			g_SocketIoStats.m_nRecvWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		else if (o_bEndOfStream)
+			g_SocketIoStats.m_nRecvEndOfStream.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+
 	if (Result == -1)
 	{
 		if (errno == EAGAIN)
@@ -1624,6 +1805,10 @@ umint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, um
 	Flags |= MSG_NOSIGNAL;
 #endif
 	int Result = send(_pSocket->m_FD, _pData, _DataLen, Flags);
+
+#if DMibConfig_IoDebug_Enable
+	fg_SocketIoStatsCountSend(_DataLen, Result > 0 ? (umint)Result : 0, Result == -1 && errno == EAGAIN);
+#endif
 
 	if (Result == -1)
 	{
@@ -1671,6 +1856,10 @@ umint CPOSIXSocketContext::f_SendVectored(CPOSIXSocket *_pSocket, NMib::NSys::CI
 	Flags |= MSG_NOSIGNAL;
 #endif
 	auto Result = sendmsg(_pSocket->m_FD, &Header, Flags);
+
+#if DMibConfig_IoDebug_Enable
+	fg_SocketIoStatsCountSend(nSubmittedBytes, Result > 0 ? (umint)Result : 0, Result == -1 && errno == EAGAIN);
+#endif
 
 	if (Result == -1)
 	{
