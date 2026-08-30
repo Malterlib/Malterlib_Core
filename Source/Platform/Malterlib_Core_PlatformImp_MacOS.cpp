@@ -240,6 +240,7 @@ extern "C"
 #include "Malterlib_Core_PlatformImp_POSIX_Module.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX_User.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX_VirtualMemory.hpp"
+#include "Malterlib_Core_Platform_MacOS_IoSubSystem.h"
 #include "Malterlib_Core_PlatformImp_POSIX_Net.imp.h"
 
 // *************************************************************************************************************************

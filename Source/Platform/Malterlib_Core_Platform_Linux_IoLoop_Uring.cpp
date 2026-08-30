@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Linux_IoLoop_Uring_Internal.h"
+#include "Malterlib_Core_Platform_Linux_IoSubSystem.h"
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
 
 #include <unistd.h>
@@ -22,7 +23,7 @@ CIoLoop_IoUring::CIoLoop_IoUring()
 	bSqPoll = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringSqPoll")) == "1";
 #endif
 
-	if (CIoUringRing::fs_Available() && mp_Ring.f_Create(gc_UringLoopSqEntries, gc_UringLoopCqEntries, true, bSqPoll))
+	if (fg_IoSubSystem_Linux().m_bUringAvailable && mp_Ring.f_Create(gc_UringLoopSqEntries, gc_UringLoopCqEntries, true, bSqPoll))
 		mp_bRingCreated = true;
 }
 

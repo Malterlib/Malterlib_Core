@@ -1355,21 +1355,7 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 	if (!NSys::fg_IoSubSystem().f_SendWindowBuffersEnabled())
 		return;
 
-	// sbreserve refuses more than sb_max * MCLBYTES / (MSIZE + MCLBYTES), eight ninths of the sysctl
-	static umint const s_nMaxReserve =
-		(
-			[]() -> umint
-			{
-				uint64 nMax = 0;
-				size_t nSize = sizeof(nMax);
-				if (sysctlbyname("kern.ipc.maxsockbuf", &nMax, &nSize, nullptr, 0) != 0 || !nMax)
-					nMax = 8 * 1024 * 1024;
-				return umint(nMax) / 9 * 8;
-			}
-			()
-		)
-	;
-	umint nBytes = fg_Min(_nBytes, s_nMaxReserve, umint(TCLimitsInt<int>::mc_Max));
+	umint nBytes = fg_Min(_nBytes, fg_IoSubSystem_MacOS().m_nMaxSocketReserveBytes, umint(TCLimitsInt<int>::mc_Max));
 	if (nBytes < _nBytes && _bConfigured)
 	{
 		static NAtomic::TCAtomic<bool> s_bLogged = false;

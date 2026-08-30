@@ -373,7 +373,7 @@ bool CIoUringRing::fs_Available()
 #if !DMibConfig_IoUring_Enable
 	return false;
 #else
-	static bool s_bAvailable =
+	bool bAvailable =
 		(
 			[]() -> bool
 			{
@@ -583,6 +583,6 @@ bool CIoUringRing::fs_Available()
 			()
 		)
 	;
-	return s_bAvailable;
+	return bAvailable;
 #endif
 }

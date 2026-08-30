@@ -5,6 +5,28 @@
 
 using namespace NMib;
 
+// The warning the epoll fallback prints once when io_uring was there but did not fit
+void fg_UringLogMemlockFallback()
+{
+	static NAtomic::TCAtomic<bool> s_bLogged = false;
+
+	auto &Io = fg_IoSubSystem_Linux();
+	if (!Io.m_bUringAvailable || Io.m_bUringMemlockFits || s_bLogged.f_Exchange(true))
+		return;
+
+	DMibLogWithCategory
+		(
+			Mib/Core/IoLoop
+			, Warning
+			, "io_uring disabled: the locked memory limit (RLIMIT_MEMLOCK, {} KiB) cannot hold the rings of {} io loops ({} KiB) plus {} KiB for zero copy sends. "
+				"Sockets use epoll instead; raise the limit (ulimit -l) to enable io_uring"
+			, Io.m_nUringMemlockLimitBytes / 1024
+			, Io.m_nUringMemlockLoops
+			, Io.m_nUringMemlockLoops * Io.m_nUringMemlockRingBytes / 1024
+			, gc_UringSendMarginBytes / 1024
+		);
+}
+
 namespace
 {
 	constinit TCSubSystem<CIoSubSystem_Linux, ESubSystemDestruction_BeforeMemoryManager> g_IoSubSystem = {DAggregateInit};
@@ -22,6 +44,16 @@ CIoSubSystem_Linux &fg_IoSubSystem_Linux()
 
 CIoSubSystem_Linux::CIoSubSystem_Linux()
 {
+	m_bUringAvailable = CIoUringRing::fs_Available();
+	if (m_bUringAvailable)
+	{
+		m_nUringMemlockLoops = NSys::fg_Thread_GetVirtualCores() * gc_UringLoopsPerCore + gc_UringExtraLoops;
+		m_nUringMemlockRingBytes = CIoUringRing::fs_RingBytes(gc_UringLoopSqEntries, gc_UringLoopCqEntries);
+
+		umint nNeededBytes = m_nUringMemlockLoops * m_nUringMemlockRingBytes + gc_UringSendMarginBytes;
+		m_bUringMemlockFits = CIoUringRing::fs_MemlockFits(nNeededBytes, m_nUringMemlockLimitBytes);
+	}
+
 #if DMibConfig_IoDebug_Enable
 	m_bTraceEnabled = fsp_EnvFlag("MalterlibUringTrace", false);
 	m_nSendDepth = fsp_EnvCount("MalterlibIoUringSendDepth", gc_UringDefaultSendDepth, 1, gc_UringMaxSendDepth);

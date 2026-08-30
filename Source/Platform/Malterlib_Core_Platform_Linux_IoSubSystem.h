@@ -7,9 +7,31 @@
 
 // The Linux io subsystem: this platform's io knobs, decided once in the constructor; without
 // the io debugging overrides the accessors answer their compile time defaults as constants
+// The kernel charges every ring's memory, and the pinned pages of every zero copy send, to the
+// user's locked memory limit (RLIMIT_MEMLOCK). Its legacy default of 8 MiB is less than the rings
+// of one loop per pool thread on a machine with a few dozen cores, which left the first zero copy
+// send failing with ENOMEM and the transport dropping the connection. Decided once, in the
+// constructor: the rings of every loop the process may create — the actor pools take one per
+// thread per priority — plus a margin for sends in flight have to fit what the limit still has,
+// measured against the kernel's own accounting so that the rings other processes of the same
+// user hold count too. Otherwise every loop is an epoll loop, which pins nothing, and the log
+// says why (fg_UringLogMemlockFallback)
+constexpr umint gc_UringLoopsPerCore = 3;
+constexpr umint gc_UringExtraLoops = 4;
+constexpr umint gc_UringSendMarginBytes = 16 * 1024 * 1024;
+
 struct CIoSubSystem_Linux : NMib::NSys::CIoSubSystem
 {
 	CIoSubSystem_Linux();
+
+	// Probed once at construction: whether io_uring works here at all, and whether the loops
+	// the process may create fit the locked memory limit. The loops read these members instead
+	// of probing per creation
+	bool m_bUringAvailable = false;
+	bool m_bUringMemlockFits = true;
+	umint m_nUringMemlockLimitBytes = 0;
+	umint m_nUringMemlockLoops = 0;
+	umint m_nUringMemlockRingBytes = 0;
 
 	// How many sends the loop keeps with the kernel at once for one descriptor; one reproduces
 	// the unpipelined path exactly
