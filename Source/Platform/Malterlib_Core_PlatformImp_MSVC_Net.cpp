@@ -1059,11 +1059,11 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 	SOCKET hSock = INVALID_SOCKET;
 
 	if
-		(
-			AddressType != ENetAddressType_TCPv4
-			&& AddressType != ENetAddressType_TCPv6
-			&& AddressType != ENetAddressType_Unix
-		)
+	(
+		AddressType != ENetAddressType_TCPv4
+		&& AddressType != ENetAddressType_TCPv6
+		&& AddressType != ENetAddressType_Unix
+	)
 	{
 		DMibErrorNet("Invalid address type.");
 	}
@@ -1341,11 +1341,7 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 	pSocket->m_pOwningLoop->f_ResumeReceiveStream(pSocket->m_pIoRegistration);
 }
 
-// Windows autotunes the receive window and buffers sends dynamically, so only a configured
-// window is applied to the kernel buffers; setting them fixes both at the window and turns the
-// autotuning off for this socket. The send buffer stays with the override when one is in force,
-// since a socket sending without a buffer holds its window in the unacknowledged bytes instead,
-// which the loop bounds to it
+
 // Marks the socket as one that will be given up to another owner. Must precede the start: the
 // registration it decides is never bound to a completion port, and that binding, once made,
 // is for the handle's lifetime
@@ -1376,6 +1372,11 @@ void NSys::NNetwork::fg_ReownSocket(void *_pSocket, NMib::NFunction::TCFunctionM
 	fg_RequestReadiness(_pSocket, true, true);
 }
 
+// Windows autotunes the receive window and buffers sends dynamically, so only a configured
+// window is applied to the kernel buffers; setting them fixes both at the window and turns the
+// autotuning off for this socket. The send buffer stays with the override when one is in force,
+// since a socket sending without a buffer holds its window in the unacknowledged bytes instead,
+// which the loop bounds to it
 void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConfigured)
 {
 	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;

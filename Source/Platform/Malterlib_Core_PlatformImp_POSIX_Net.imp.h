@@ -1347,14 +1347,7 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 	pSocket->m_pOwningLoop->f_ResumeReceiveStream(pSocket->m_pIoRegistration);
 }
 
-// Where the kernel autotunes the buffers the window is left to it. Linux grows TCP buffers to
-// net.ipv4.tcp_wmem/tcp_rmem, and an explicit SO_SNDBUF there is capped by net.core.wmem_max,
-// far below what autotuning reaches, so a set size would shrink the window rather than widen
-// it; its zero copy sends are bounded by the loop instead. macOS autotunes TCP up to
-// net.inet.tcp.autosndbufmax/autorcvbufmax but never unix sockets, whose 8 KiB
-// net.local.stream.sendspace/recvspace default quantizes a bulk stream into 8 KiB bursts with
-// a wake between each: those always get the window, TCP only a configured one, both within
-// what kern.ipc.maxsockbuf lets a socket reserve
+
 // Nothing binds a descriptor to a loop for life here, so an inheritable socket registers like
 // any other; the flag is kept for the record
 void NSys::NNetwork::fg_SetInheritable(void *_pSocket)
@@ -1380,6 +1373,14 @@ void NSys::NNetwork::fg_ReownSocket(void *_pSocket, NMib::NFunction::TCFunctionM
 	fg_RequestReadiness(_pSocket, true, true);
 }
 
+// Where the kernel autotunes the buffers the window is left to it. Linux grows TCP buffers to
+// net.ipv4.tcp_wmem/tcp_rmem, and an explicit SO_SNDBUF there is capped by net.core.wmem_max,
+// far below what autotuning reaches, so a set size would shrink the window rather than widen
+// it; its zero copy sends are bounded by the loop instead. macOS autotunes TCP up to
+// net.inet.tcp.autosndbufmax/autorcvbufmax but never unix sockets, whose 8 KiB
+// net.local.stream.sendspace/recvspace default quantizes a bulk stream into 8 KiB bursts with
+// a wake between each: those always get the window, TCP only a configured one, both within
+// what kern.ipc.maxsockbuf lets a socket reserve
 void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConfigured)
 {
 #if defined(DPlatformFamily_macOS)
