@@ -43,21 +43,21 @@ struct CIoSubSystem_Linux : NMib::NSys::CIoSubSystem
 	// Probed once at construction: whether io_uring works here at all, and whether the loops
 	// the process may create fit the locked memory limit. The loops read these members instead
 	// of probing per creation
-	bool m_bUringAvailable = false;
-	bool m_bUringMemlockFits = true;
 	umint m_nUringMemlockLimitBytes = 0;
 	umint m_nUringMemlockLoops = 0;
 	umint m_nUringMemlockRingBytes = 0;
+	bool m_bUringAvailable = false;
+	bool m_bUringMemlockFits = true;
 
 	// What the kernel's io_uring supports, filled by the same probe
 	CIoUringCaps m_UringCaps;
 
 #if DMibConfig_IoDebug_Enable
-	bool m_bTraceEnabled = false;
-	EUringZeroCopyOverride m_ZeroCopyOverride = EUringZeroCopyOverride::mc_None;
 	umint m_nSendDepth = gc_UringDefaultSendDepth;
 	umint m_nReceiveBuffersOverride = 0;
 	umint m_nReceiveBufferBytesOverride = 0;
+	EUringZeroCopyOverride m_ZeroCopyOverride = EUringZeroCopyOverride::mc_None;
+	bool m_bTraceEnabled = false;
 #endif
 };
 
