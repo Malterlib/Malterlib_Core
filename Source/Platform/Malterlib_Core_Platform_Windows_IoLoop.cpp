@@ -10,8 +10,7 @@ using namespace NMib::NSys;
 
 #if DMibConfig_IoDebug_Enable
 
-CIocpStats g_IocpStats;
-
+// Monotonic nanoseconds for the send lag measurements
 uint64 fg_IocpStatsNow()
 {
 	int64 Ticks = NTime::CSystem_Time::fs_GetTimerValue();
@@ -19,118 +18,6 @@ uint64 fg_IocpStatsNow()
 	return (uint64)((Ticks / Frequency) * 1000000000 + ((Ticks % Frequency) * 1000000000) / Frequency);
 }
 
-void fg_DumpIocpStats()
-{
-	auto fLoad = [](NAtomic::TCAtomic<uint64> const &_Value) -> uint64
-		{
-			return _Value.f_Load(NAtomic::gc_MemoryOrder_Relaxed);
-		}
-	;
-
-	uint64 nSegments = fLoad(g_IocpStats.m_nRecvSegments);
-	uint64 nBytes = fLoad(g_IocpStats.m_nRecvBytes);
-
-	NSys::fg_ConsoleErrorOutput
-		(
-			NStr::fg_Format<NStr::CStrNonTracked>
-			(
-				"[io stats] recv: segments={} bytes={} avg={} allocs={} reuses={} posts={} inline={} parks={} resumes={} errors={}\n"
-				, nSegments
-				, nBytes
-				, nSegments ? nBytes / nSegments : 0
-				, fLoad(g_IocpStats.m_nRecvBufferAllocs)
-				, fLoad(g_IocpStats.m_nRecvBufferReuses)
-				, fLoad(g_IocpStats.m_nRecvPosts)
-				, fLoad(g_IocpStats.m_nRecvInline)
-				, fLoad(g_IocpStats.m_nStreamParks)
-				, fLoad(g_IocpStats.m_nStreamResumes)
-				, fLoad(g_IocpStats.m_nRecvErrors)
-			)
-		)
-	;
-
-	for (umint iBucket = 0; iBucket < 33; ++iBucket)
-	{
-		uint64 nCount = fLoad(g_IocpStats.m_RecvSizeBuckets[iBucket]);
-		if (!nCount)
-			continue;
-
-		NSys::fg_ConsoleErrorOutput(NStr::fg_Format<NStr::CStrNonTracked>("[io stats] recv size 2^{}: {}\n", iBucket, nCount));
-	}
-
-	uint64 nSendRequested = fLoad(g_IocpStats.m_nSendBytesRequested);
-	uint64 nSendOps = fLoad(g_IocpStats.m_nSendOps);
-
-	NSys::fg_ConsoleErrorOutput
-		(
-			NStr::fg_Format<NStr::CStrNonTracked>
-			(
-				"[io stats] send: ops={} pendingAtIssue={} inline={} deferred={} maxInFlight={} maxBytesInFlight={} short={} bytesReq={} bytesSent={} avgReq={} errors={}\n"
-				, nSendOps
-				, fLoad(g_IocpStats.m_nSendPendingAtIssue)
-				, fLoad(g_IocpStats.m_nSendInline)
-				, fLoad(g_IocpStats.m_nSendDeferred)
-				, fLoad(g_IocpStats.m_nSendMaxInFlight)
-				, fLoad(g_IocpStats.m_nSendMaxBytesInFlight)
-				, fLoad(g_IocpStats.m_nSendShort)
-				, nSendRequested
-				, fLoad(g_IocpStats.m_nSendBytesSent)
-				, nSendOps ? nSendRequested / nSendOps : 0
-				, fLoad(g_IocpStats.m_nSendErrors)
-			)
-		)
-	;
-
-	for (umint iBucket = 0; iBucket < 33; ++iBucket)
-	{
-		uint64 nCount = fLoad(g_IocpStats.m_SendSizeBuckets[iBucket]);
-		if (!nCount)
-			continue;
-
-		NSys::fg_ConsoleErrorOutput(NStr::fg_Format<NStr::CStrNonTracked>("[io stats] send size 2^{}: {}\n", iBucket, nCount));
-	}
-
-	uint64 nIdleGaps = fLoad(g_IocpStats.m_nSendIdleGaps);
-	uint64 nLagOps = fLoad(g_IocpStats.m_nSendSubmitLagOps);
-	uint64 nSyncOps = fLoad(g_IocpStats.m_nSendPacketLagSyncOps);
-	uint64 nPendingOps = fLoad(g_IocpStats.m_nSendPacketLagPendingOps);
-
-	NSys::fg_ConsoleErrorOutput
-		(
-			NStr::fg_Format<NStr::CStrNonTracked>
-			(
-				"[io stats] send idle: gaps={} totalNs={} avgNs={} submitLagOps={} submitLagNs={} submitLagAvgNs={} packetLagSyncOps={} packetLagSyncAvgNs={} packetLagPendingOps={} packetLagPendingAvgNs={}\n"
-				, nIdleGaps
-				, fLoad(g_IocpStats.m_nSendIdleNs)
-				, nIdleGaps ? fLoad(g_IocpStats.m_nSendIdleNs) / nIdleGaps : 0
-				, nLagOps
-				, fLoad(g_IocpStats.m_nSendSubmitLagNs)
-				, nLagOps ? fLoad(g_IocpStats.m_nSendSubmitLagNs) / nLagOps : 0
-				, nSyncOps
-				, nSyncOps ? fLoad(g_IocpStats.m_nSendPacketLagSyncNs) / nSyncOps : 0
-				, nPendingOps
-				, nPendingOps ? fLoad(g_IocpStats.m_nSendPacketLagPendingNs) / nPendingOps : 0
-			)
-		)
-	;
-
-	NSys::fg_ConsoleErrorOutput
-		(
-			NStr::fg_Format<NStr::CStrNonTracked>
-			(
-				"[io stats] loop: registrations={} skipSuccess={} pollArms={} pollCancels={} pollEvents={} waits={} packets={} wakePosts={}\n"
-				, fLoad(g_IocpStats.m_nRegistrations)
-				, fLoad(g_IocpStats.m_nSkipSuccessSockets)
-				, fLoad(g_IocpStats.m_nPollArms)
-				, fLoad(g_IocpStats.m_nPollCancels)
-				, fLoad(g_IocpStats.m_nPollEvents)
-				, fLoad(g_IocpStats.m_nWaits)
-				, fLoad(g_IocpStats.m_nPackets)
-				, fLoad(g_IocpStats.m_nWakePosts)
-			)
-		)
-	;
-}
 
 #endif
 

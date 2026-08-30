@@ -86,13 +86,13 @@ void CIoLoop_Iocp::fp_DispatchOp(CIocpOp *_pOp, umint &_nReported)
 				uint64 LagNs = fg_IocpStatsNow() - pSend->m_IssueStamp;
 				if (pSend->m_bPendingAtIssue)
 				{
-					g_IocpStats.m_nSendPacketLagPendingNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
-					g_IocpStats.m_nSendPacketLagPendingOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_IocpStats.m_nSendPacketLagPendingNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_IocpStats.m_nSendPacketLagPendingOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 				}
 				else
 				{
-					g_IocpStats.m_nSendPacketLagSyncNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
-					g_IocpStats.m_nSendPacketLagSyncOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_IocpStats.m_nSendPacketLagSyncNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_IocpStats.m_nSendPacketLagSyncOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 				}
 			}
 		}
@@ -143,7 +143,7 @@ void CIoLoop_Iocp::fp_DispatchPoll(CIocpPollOp *_pOp, umint &_nReported)
 
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
-		g_IocpStats.m_nPollEvents.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nPollEvents.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	if (mp_pIo->f_TraceEnabled())
 		mp_pIo->f_Trace((AfdEvents & (gc_AfdPoll_Disconnect | gc_AfdPoll_Abort | gc_AfdPoll_LocalClose | gc_AfdPoll_ConnectFail)) ? "close-event" : "poll-event", pRegistration->m_pToken, pRegistration->m_Handle, ReportedEvents | (_pOp->m_ArmedEvents << 16));
 #endif

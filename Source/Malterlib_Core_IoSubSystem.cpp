@@ -32,16 +32,19 @@ namespace NMib::NSys
 			mp_nSocketSendBufferBytesOverride = 0;
 		mp_nReceiveWindowBytesOverride = fsp_EnvCount("MalterlibReceiveWindow", 0, 1, umint(1) << 40);
 		mp_nWebSocketFrameAhead = fsp_EnvCount("MalterlibWebSocketFrameAhead", 0, 1, 64);
+
+		if (mp_bStatsEnabled)
+			f_RegisterStatsDump(&fg_DumpSocketIoStats);
 #endif
 	}
 
 	CIoSubSystem::~CIoSubSystem()
 	{
 		for (auto fDump : mp_StatsDumps)
-			fDump();
+			fDump(*this);
 	}
 
-	void CIoSubSystem::f_RegisterStatsDump(void (*_fDump)())
+	void CIoSubSystem::f_RegisterStatsDump(FIoStatsDump _fDump)
 	{
 		DMibLock(mp_StatsDumpLock);
 		if (!mp_StatsDumps.f_FindEqual(_fDump))

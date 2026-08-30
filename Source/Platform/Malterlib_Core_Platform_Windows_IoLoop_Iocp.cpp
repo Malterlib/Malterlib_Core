@@ -56,7 +56,7 @@ void CIoLoop_Iocp::fp_WakeKernel()
 {
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
-		g_IocpStats.m_nWakePosts.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nWakePosts.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 	PostQueuedCompletionStatus(mp_hPort, 0, gc_IocpKey_Wake, nullptr);
@@ -252,9 +252,9 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
 	{
-		g_IocpStats.m_nRegistrations.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nRegistrations.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		if (_pRegistration->m_bSkipSuccess)
-			g_IocpStats.m_nSkipSuccessSockets.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_nSkipSuccessSockets.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	}
 #endif
 
@@ -362,7 +362,7 @@ bool CIoLoop_Iocp::fp_ArmPoll(CIocpRegistration *_pRegistration, ULONG _AfdEvent
 
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
-		g_IocpStats.m_nPollArms.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nPollArms.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	if (mp_pIo->f_TraceEnabled())
 		mp_pIo->f_Trace(Status == gc_NtStatus_Pending ? "poll-arm" : "poll-arm-immediate", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)_AfdEvents);
 #endif
@@ -451,7 +451,7 @@ void CIoLoop_Iocp::fp_CancelPoll(CIocpRegistration *_pRegistration)
 
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
-		g_IocpStats.m_nPollCancels.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nPollCancels.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 	CancelIoEx(_pRegistration->m_PollOp.m_pGroup->m_hAfd, &_pRegistration->m_PollOp.m_Overlapped);
@@ -792,8 +792,8 @@ umint CIoLoop_Iocp::fp_IterateTimeout(bool _bBlock, DWORD _TimeoutMs)
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
 	{
-		g_IocpStats.m_nWaits.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-		g_IocpStats.m_nPackets.f_FetchAdd(nEntries, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nWaits.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nPackets.f_FetchAdd(nEntries, NAtomic::gc_MemoryOrder_Relaxed);
 	}
 #endif
 

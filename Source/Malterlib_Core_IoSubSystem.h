@@ -21,10 +21,44 @@ namespace NMib::NSys
 
 	inline bool fg_ResolveIoKnob(EIoKnob _Knob, bool _bCompiledDefault);
 
+	// Cumulative readiness-path socket statistics, reported at process exit when MalterlibIoStats=1:
+	// the readiness counterpart of the IOCP completion counters, so the two transfer paths can be
+	// compared on the same terms — how many transfer calls it took, how big they were, how often
+	// they met an empty queue or a full buffer, and how many readiness arms and reports drove them.
+	// Relaxed atomics: every loop and every calling thread writes them, exactness per counter is not
+	// the point. Everything here and every recording site exists only in builds carrying the io
+	// debugging overrides
+#if DMibConfig_IoDebug_Enable
+	struct CSocketIoStats
+	{
+		NAtomic::TCAtomic<uint64> m_nRecvCalls = 0;
+		NAtomic::TCAtomic<uint64> m_nRecvBytes = 0;
+		NAtomic::TCAtomic<uint64> m_nRecvWouldBlock = 0;
+		NAtomic::TCAtomic<uint64> m_nRecvShort = 0;
+		NAtomic::TCAtomic<uint64> m_nRecvEndOfStream = 0;
+		NAtomic::TCAtomic<uint64> m_RecvSizeBuckets[33] = {};
+		NAtomic::TCAtomic<uint64> m_nSendCalls = 0;
+		NAtomic::TCAtomic<uint64> m_nSendBytesRequested = 0;
+		NAtomic::TCAtomic<uint64> m_nSendBytesSent = 0;
+		NAtomic::TCAtomic<uint64> m_nSendWouldBlock = 0;
+		NAtomic::TCAtomic<uint64> m_nSendShort = 0;
+		NAtomic::TCAtomic<uint64> m_SendSizeBuckets[33] = {};
+		NAtomic::TCAtomic<uint64> m_nReadinessArmsRead = 0;
+		NAtomic::TCAtomic<uint64> m_nReadinessArmsWrite = 0;
+		NAtomic::TCAtomic<uint64> m_nReadinessReportsRead = 0;
+		NAtomic::TCAtomic<uint64> m_nReadinessReportsWrite = 0;
+	};
+#endif
+
+	struct CIoSubSystem;
+
+	// A statistics report the destructor runs, handed the subsystem the run registered it on
+	using FIoStatsDump = void (*)(CIoSubSystem &);
+
 	// Function pointers have no ordering of their own, so the report set compares their addresses
 	struct CSort_StatsDump
 	{
-		auto operator()(void (*_fLeft)(), void (*_fRight)()) const
+		auto operator()(FIoStatsDump _fLeft, FIoStatsDump _fRight) const
 		{
 			return (umint)_fLeft <=> (umint)_fRight;
 		}
@@ -86,7 +120,11 @@ namespace NMib::NSys
 		// Adds a statistics report to what the destructor prints. An area registers its report
 		// when it starts collecting, so a run only prints the areas it touched. Thread safe; a
 		// report registered twice prints once
-		void f_RegisterStatsDump(void (*_fDump)());
+		void f_RegisterStatsDump(FIoStatsDump _fDump);
+
+#if DMibConfig_IoDebug_Enable
+		CSocketIoStats m_SocketIoStats;
+#endif
 
 	protected:
 		// The environment readers the constructors decide the knobs with, io-debug builds only
@@ -110,12 +148,17 @@ namespace NMib::NSys
 #endif
 
 		NThread::CLowLevelLockAggregate mp_StatsDumpLock = {DAggregateInit};
-		NContainer::TCSet<void (*)(), CSort_StatsDump> mp_StatsDumps;
+		NContainer::TCSet<FIoStatsDump, CSort_StatsDump> mp_StatsDumps;
 	};
 
 	// The platform's io subsystem seen as the shared base, created on first use. Each platform
 	// defines this next to its own subsystem instance and derived-type getter
 	CIoSubSystem &fg_IoSubSystem();
 }
+
+#if DMibConfig_IoDebug_Enable
+// The socket statistics report, registered by the base constructor when MalterlibIoStats=1
+void fg_DumpSocketIoStats(NMib::NSys::CIoSubSystem &_Io);
+#endif
 
 #include "Malterlib_Core_IoSubSystem.hpp"

@@ -113,7 +113,7 @@ void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration, umin
 
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled() && _pRegistration->m_pSendNextToIssue)
-		g_IocpStats.m_nSendDeferred.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nSendDeferred.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 }
 
@@ -163,10 +163,10 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
 	{
-		if (_pRegistration->m_nSendsInFlight > g_IocpStats.m_nSendMaxInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
-			g_IocpStats.m_nSendMaxInFlight.f_Store(_pRegistration->m_nSendsInFlight, NAtomic::gc_MemoryOrder_Relaxed);
-		if (_pRegistration->m_nSendBytesInFlight > g_IocpStats.m_nSendMaxBytesInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
-			g_IocpStats.m_nSendMaxBytesInFlight.f_Store(_pRegistration->m_nSendBytesInFlight, NAtomic::gc_MemoryOrder_Relaxed);
+		if (_pRegistration->m_nSendsInFlight > mp_pIo->m_IocpStats.m_nSendMaxInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+			mp_pIo->m_IocpStats.m_nSendMaxInFlight.f_Store(_pRegistration->m_nSendsInFlight, NAtomic::gc_MemoryOrder_Relaxed);
+		if (_pRegistration->m_nSendBytesInFlight > mp_pIo->m_IocpStats.m_nSendMaxBytesInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+			mp_pIo->m_IocpStats.m_nSendMaxBytesInFlight.f_Store(_pRegistration->m_nSendBytesInFlight, NAtomic::gc_MemoryOrder_Relaxed);
 	}
 #endif
 
@@ -175,20 +175,20 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	{
 		if (_pOp->m_EnqueueStamp)
 		{
-			g_IocpStats.m_nSendSubmitLagNs.f_FetchAdd(fg_IocpStatsNow() - _pOp->m_EnqueueStamp, NAtomic::gc_MemoryOrder_Relaxed);
-			g_IocpStats.m_nSendSubmitLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_nSendSubmitLagNs.f_FetchAdd(fg_IocpStatsNow() - _pOp->m_EnqueueStamp, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_nSendSubmitLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		}
 
 		if (_pRegistration->m_SendIdleStamp)
 		{
-			g_IocpStats.m_nSendIdleNs.f_FetchAdd(fg_IocpStatsNow() - _pRegistration->m_SendIdleStamp, NAtomic::gc_MemoryOrder_Relaxed);
-			g_IocpStats.m_nSendIdleGaps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_nSendIdleNs.f_FetchAdd(fg_IocpStatsNow() - _pRegistration->m_SendIdleStamp, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_nSendIdleGaps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			_pRegistration->m_SendIdleStamp = 0;
 		}
 
-		g_IocpStats.m_nSendOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-		g_IocpStats.m_nSendBytesRequested.f_FetchAdd(_pOp->m_nRequested, NAtomic::gc_MemoryOrder_Relaxed);
-		g_IocpStats.m_SendSizeBuckets[fg_GetHighestBitSet(_pOp->m_nRequested)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nSendOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nSendBytesRequested.f_FetchAdd(_pOp->m_nRequested, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_SendSizeBuckets[fg_GetHighestBitSet(_pOp->m_nRequested)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	}
 #endif
 
@@ -215,7 +215,7 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 
 #if DMibConfig_IoDebug_Enable
 			if (mp_pIo->f_StatsEnabled())
-				g_IocpStats.m_nSendInline.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_IocpStats.m_nSendInline.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 		}
 		else
@@ -230,7 +230,7 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 #if DMibConfig_IoDebug_Enable
 		if (mp_pIo->f_StatsEnabled())
 		{
-			g_IocpStats.m_nSendPendingAtIssue.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_nSendPendingAtIssue.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			_pOp->m_bPendingAtIssue = true;
 		}
 #endif
@@ -292,12 +292,12 @@ void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, um
 		{
 			if (Result.m_Status == NSys::EIoCompletionStatus::mc_Done)
 			{
-				g_IocpStats.m_nSendBytesSent.f_FetchAdd(Result.m_nBytes, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_IocpStats.m_nSendBytesSent.f_FetchAdd(Result.m_nBytes, NAtomic::gc_MemoryOrder_Relaxed);
 				if (Result.m_nBytes < pOp->m_nRequested)
-					g_IocpStats.m_nSendShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_IocpStats.m_nSendShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			}
 			else if (Result.m_Status == NSys::EIoCompletionStatus::mc_Error)
-				g_IocpStats.m_nSendErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_IocpStats.m_nSendErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 
 			if (!_pRegistration->m_nSendsInFlight)
 				_pRegistration->m_SendIdleStamp = fg_IocpStatsNow();

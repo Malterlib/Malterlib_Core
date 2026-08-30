@@ -5,6 +5,8 @@
 
 #include <Mib/Core/Core>
 
+#include "../Malterlib_Core_IoSubSystem.h"
+
 #include <afunix.h>
 
 #include "Malterlib_Core_PlatformImp_Net.h"
@@ -109,39 +111,9 @@ struct CWindowsSocket
 	}
 };
 
-// Cumulative readiness-path socket statistics, reported at process exit when MalterlibIoStats=1:
-// the readiness counterpart of the IOCP completion counters, so the two transfer paths can be
-// compared on the same terms — how many transfer calls it took, how big they were, how often
-// they met an empty queue or a full buffer, and how many readiness arms and reports drove them.
-// Relaxed atomics: every loop and every calling thread writes them, exactness per counter is not
-// the point. Everything here and every recording site exists only in builds carrying the io
-// debugging overrides
 #if DMibConfig_IoDebug_Enable
-struct CSocketIoStats
-{
-	NAtomic::TCAtomic<uint64> m_nRecvCalls = 0;
-	NAtomic::TCAtomic<uint64> m_nRecvBytes = 0;
-	NAtomic::TCAtomic<uint64> m_nRecvWouldBlock = 0;
-	NAtomic::TCAtomic<uint64> m_nRecvShort = 0;
-	NAtomic::TCAtomic<uint64> m_nRecvEndOfStream = 0;
-	NAtomic::TCAtomic<uint64> m_RecvSizeBuckets[33] = {};
-	NAtomic::TCAtomic<uint64> m_nSendCalls = 0;
-	NAtomic::TCAtomic<uint64> m_nSendBytesRequested = 0;
-	NAtomic::TCAtomic<uint64> m_nSendBytesSent = 0;
-	NAtomic::TCAtomic<uint64> m_nSendWouldBlock = 0;
-	NAtomic::TCAtomic<uint64> m_nSendShort = 0;
-	NAtomic::TCAtomic<uint64> m_SendSizeBuckets[33] = {};
-	NAtomic::TCAtomic<uint64> m_nReadinessArmsRead = 0;
-	NAtomic::TCAtomic<uint64> m_nReadinessArmsWrite = 0;
-	NAtomic::TCAtomic<uint64> m_nReadinessReportsRead = 0;
-	NAtomic::TCAtomic<uint64> m_nReadinessReportsWrite = 0;
-};
-
-extern CSocketIoStats g_SocketIoStats;
-
-// Registers the exit report the first time it answers true. The socket context asks at startup,
-// so a run whose transfers never reached a counted site still reports its zeros
-bool fg_SocketIoStatsEnabled();
+// Null when the statistics are off; the counters live on the io subsystem (m_SocketIoStats)
+NSys::CSocketIoStats *fg_SocketIoStats();
 #endif
 
 struct CIoSubSystem_Windows;

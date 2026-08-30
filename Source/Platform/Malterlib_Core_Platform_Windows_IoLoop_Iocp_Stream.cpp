@@ -105,7 +105,7 @@ NStorage::TCSharedPointer<CIocpStreamBuffer> CIoLoop_Iocp::fp_TakeStreamBuffer(C
 			{
 #if DMibConfig_IoDebug_Enable
 				if (mp_pIo->f_StatsEnabled())
-					g_IocpStats.m_nStreamParks.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_IocpStats.m_nStreamParks.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 				if (mp_pIo->f_TraceEnabled())
 					mp_pIo->f_Trace("stream-park", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
@@ -128,12 +128,12 @@ NStorage::TCSharedPointer<CIocpStreamBuffer> CIoLoop_Iocp::fp_TakeStreamBuffer(C
 
 #if DMibConfig_IoDebug_Enable
 		if (mp_pIo->f_StatsEnabled())
-			g_IocpStats.m_nRecvBufferAllocs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_nRecvBufferAllocs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 	}
 #if DMibConfig_IoDebug_Enable
 	else if (mp_pIo->f_StatsEnabled())
-		g_IocpStats.m_nRecvBufferReuses.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nRecvBufferReuses.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 	pBuffer->m_nDataBytes = _pRegistration->m_nRecvBufferBytes;
 	pBuffer->m_pRecycler = _pRegistration->m_pRecycler;
@@ -183,7 +183,7 @@ bool CIoLoop_Iocp::fp_PostRecv(CIocpRegistration *_pRegistration, CIocpRecvOp &_
 
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
-		g_IocpStats.m_nRecvPosts.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nRecvPosts.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 	DWORD nReceived = 0;
@@ -204,7 +204,7 @@ bool CIoLoop_Iocp::fp_PostRecv(CIocpRegistration *_pRegistration, CIocpRecvOp &_
 
 #if DMibConfig_IoDebug_Enable
 			if (mp_pIo->f_StatsEnabled())
-				g_IocpStats.m_nRecvInline.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_IocpStats.m_nRecvInline.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 		}
 
@@ -260,7 +260,7 @@ void CIoLoop_Iocp::fp_ResumeStream(CIocpRegistration *_pRegistration)
 
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
-		g_IocpStats.m_nStreamResumes.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_IocpStats.m_nStreamResumes.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	if (mp_pIo->f_TraceEnabled())
 		mp_pIo->f_Trace("stream-rearm", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
@@ -306,7 +306,7 @@ void CIoLoop_Iocp::fp_ReportCompletedRecvs(CIocpRegistration *_pRegistration, um
 		{
 #if DMibConfig_IoDebug_Enable
 			if (mp_pIo->f_StatsEnabled())
-				g_IocpStats.m_nRecvErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_IocpStats.m_nRecvErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 			int Error = fp_OpError(_pRegistration, pOp);
@@ -345,9 +345,9 @@ void CIoLoop_Iocp::fp_ReportCompletedRecvs(CIocpRegistration *_pRegistration, um
 			mp_pIo->f_Trace("recv-report", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)nBytes);
 		if (mp_pIo->f_StatsEnabled())
 		{
-			g_IocpStats.m_nRecvSegments.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-			g_IocpStats.m_nRecvBytes.f_FetchAdd(nBytes, NAtomic::gc_MemoryOrder_Relaxed);
-			g_IocpStats.m_RecvSizeBuckets[fg_GetHighestBitSet(nBytes)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_nRecvSegments.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_nRecvBytes.f_FetchAdd(nBytes, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_IocpStats.m_RecvSizeBuckets[fg_GetHighestBitSet(nBytes)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		}
 #endif
 

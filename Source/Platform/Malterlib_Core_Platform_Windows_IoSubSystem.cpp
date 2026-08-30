@@ -8,7 +8,7 @@ using namespace NMib::NMemory;
 using namespace NMib::NSys;
 
 #if DMibConfig_IoDebug_Enable
-static void fg_DumpIocpTraceRing();
+static void fg_DumpIocpTraceRing(NMib::NSys::CIoSubSystem &_Io);
 #endif
 
 namespace
@@ -80,9 +80,9 @@ namespace
 	}
 }
 
-static void fg_DumpIocpTraceRing()
+static void fg_DumpIocpTraceRing(NMib::NSys::CIoSubSystem &_Io)
 {
-	auto &Io = fg_IoSubSystem_Windows();
+	auto &Io = static_cast<CIoSubSystem_Windows &>(_Io);
 	uint64 nTotal = Io.m_nTraceNext.f_Load(NAtomic::gc_MemoryOrder_Acquire);
 	uint64 iFirst = nTotal > gc_IocpTraceRingEntries ? nTotal - gc_IocpTraceRingEntries : 0;
 	for (uint64 iEntry = iFirst; iEntry < nTotal; ++iEntry)
