@@ -36,15 +36,15 @@ namespace NMib::NSys
 
 	CIoSubSystem::~CIoSubSystem()
 	{
-		for (umint Dump : mp_StatsDumps)
-			((void (*)())Dump)();
+		for (auto fDump : mp_StatsDumps)
+			fDump();
 	}
 
 	void CIoSubSystem::f_RegisterStatsDump(void (*_fDump)())
 	{
 		DMibLock(mp_StatsDumpLock);
-		if (!mp_StatsDumps.f_FindEqual((umint)_fDump))
-			mp_StatsDumps.f_Insert((umint)_fDump);
+		if (!mp_StatsDumps.f_FindEqual(_fDump))
+			mp_StatsDumps.f_Insert(_fDump);
 	}
 
 #if DMibConfig_IoDebug_Enable

@@ -21,6 +21,15 @@ namespace NMib::NSys
 
 	inline bool fg_ResolveIoKnob(EIoKnob _Knob, bool _bCompiledDefault);
 
+	// Function pointers have no ordering of their own, so the report set compares their addresses
+	struct CSort_StatsDump
+	{
+		auto operator()(void (*_fLeft)(), void (*_fRight)()) const
+		{
+			return (umint)_fLeft <=> (umint)_fRight;
+		}
+	};
+
 	// The io configuration of the process, created on first use and destroyed with the other
 	// subsystems. Every environment knob is read once, in the constructor; consumers keep a
 	// pointer to the subsystem and read plain members through the accessors instead of asking
@@ -96,8 +105,7 @@ namespace NMib::NSys
 #endif
 
 		NThread::CLowLevelLockAggregate mp_StatsDumpLock = {DAggregateInit};
-		// The reports, keyed by address: function pointers have no ordering of their own
-		NContainer::TCSet<umint> mp_StatsDumps;
+		NContainer::TCSet<void (*)(), CSort_StatsDump> mp_StatsDumps;
 	};
 
 	// The platform's io subsystem seen as the shared base, created on first use. Each platform
