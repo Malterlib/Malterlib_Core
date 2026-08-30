@@ -1198,23 +1198,11 @@ namespace
 {
 	// MalterlibIoUringCompletion=1 forces completion transfers onto local peers too, so the
 	// local paths stay measurable; unset leaves them on readiness, and =0 vetoes the machinery
-	// at the probe before this question is ever asked. Without the io debugging overrides the
-	// answer is a constexpr false and the consulting branches fold away
-#if DMibConfig_IoDebug_Enable
+	// at the probe before this question is ever asked
 	bool fg_CompletionLocalForced()
 	{
-		static bool s_bForced =
-			NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringCompletion")) == "1"
-		;
-
-		return s_bForced;
+		return NSys::fg_IoSubSystem().f_CompletionLocalForced();
 	}
-#else
-	constexpr bool fg_CompletionLocalForced()
-	{
-		return false;
-	}
-#endif
 
 	// Whether the peer is on another machine, cached on the socket once the answer is knowable.
 	// A unix peer or a loopback address is local; an unconnected socket answers local for now
@@ -1363,12 +1351,9 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 	if (!_bConfigured && pSocket->m_AddressType != ENetAddressType_Unix)
 		return;
 
-#if DMibConfig_IoDebug_Enable
 	// MalterlibSendWindowBuffers=0 leaves the kernel defaults, for measuring what the sizing is worth
-	static bool const s_bSizeBuffers = NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("MalterlibSendWindowBuffers")) != "0";
-	if (!s_bSizeBuffers)
+	if (!NSys::fg_IoSubSystem().f_SendWindowBuffersEnabled())
 		return;
-#endif
 
 	// sbreserve refuses more than sb_max * MCLBYTES / (MSIZE + MCLBYTES), eight ninths of the sysctl
 	static umint const s_nMaxReserve =

@@ -42,11 +42,11 @@ namespace NMib::NSys
 
 	inline bool CIoSubSystem::f_CompletionLocalForced() const
 	{
-	#if DMibConfig_IoDebug_Enable
+#if DMibConfig_IoDebug_Enable
 		return mp_bCompletionLocalForced;
-	#else
+#else
 		return false;
-	#endif
+#endif
 	}
 
 	inline bool CIoSubSystem::f_SendWindowBuffersEnabled() const
