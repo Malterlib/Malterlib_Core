@@ -248,7 +248,7 @@ void fg_DumpUringStats()
 		(
 			NStr::fg_Format<NStr::CStrNonTracked>
 			(
-				"[io stats] send: ops={} publishes={} zc={} short={} bytesReq={} bytesSent={} avgReq={} notifs={} maxInFlight={} maxBytesInFlight={}\n"
+				"[io stats] send: ops={} publishes={} zc={} short={} bytesReq={} bytesSent={} avgReq={} notifs={} maxInFlight={} maxBytesInFlight={} notifLagAvgUs={} notifLagMaxUs={}\n"
 				, nSendOps
 				, fLoad(g_UringStats.m_nSendPublishes)
 				, fLoad(g_UringStats.m_nSendZcOps)
@@ -259,6 +259,8 @@ void fg_DumpUringStats()
 				, fLoad(g_UringStats.m_nSendNotifs)
 				, fLoad(g_UringStats.m_nSendMaxInFlight)
 				, fLoad(g_UringStats.m_nSendMaxBytesInFlight)
+				, fLoad(g_UringStats.m_nSendNotifLagOps) ? fLoad(g_UringStats.m_nSendNotifLagNs) / fLoad(g_UringStats.m_nSendNotifLagOps) / 1000 : 0
+				, fLoad(g_UringStats.m_nSendNotifLagMaxNs) / 1000
 			)
 		)
 	;

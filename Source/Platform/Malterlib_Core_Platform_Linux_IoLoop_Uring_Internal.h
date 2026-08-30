@@ -199,6 +199,10 @@ struct CUringStats
 	// The most zero copy sends, and bytes, one loop had awaiting their notification at once
 	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxInFlight = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxBytesInFlight = 0;
+	// From a zero copy send's result to its release notification: total, count and the longest
+	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifLagNs = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifLagOps = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifLagMaxNs = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendErrors = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendIdleGaps = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendIdleNs = 0;

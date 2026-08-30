@@ -280,6 +280,16 @@ void CIoLoop_IoUring::fp_ReleaseNotifyPending(CUringIoOp *_pOp)
 	pLast->m_iNotifyPending = iPending;
 	mp_NotifyPending.f_SetLen(mp_NotifyPending.f_GetLen() - 1);
 	mp_nNotifyPendingBytes -= _pOp->m_nRequested;
+#if DMibConfig_IoDebug_Enable
+	if (fg_UringStatsEnabled() && _pOp->m_EnqueueStamp)
+	{
+		uint64 LagNs = fg_UringStatsNow() - _pOp->m_EnqueueStamp;
+		g_UringStats.m_nSendNotifLagNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
+		g_UringStats.m_nSendNotifLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (LagNs > g_UringStats.m_nSendNotifLagMaxNs.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+			g_UringStats.m_nSendNotifLagMaxNs.f_Store(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
 
 	_pOp->m_iNotifyPending = ~umint(0);
 }
