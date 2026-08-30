@@ -41,8 +41,9 @@ struct CWindowsSocket
 		TCBinaryStreamFile<> m_UnixFile;
 	};
 
-	// Cross-module identification: another module handing a socket over may have been built
-	// against an older layout, so the first three members stay where every version had them
+	// Cross-module identification: the old Malterlib project hands its sockets over to this
+	// module, built against an older layout, so the first three members stay where every version
+	// had them. Newer modules give up their sockets within themselves
 	uint32 m_Magic = 0x4EA11E49;
 	uint32 m_Version = 0x102;
 
@@ -65,12 +66,6 @@ struct CWindowsSocket
 	bool m_bNonErrorClose = false;
 	bool m_bRemoteCloseSignalled = false;
 
-	// Whether the socket's completion port is provably this loop's. A handle keeps the port of
-	// its first association for its lifetime, so a handle adopted from a give-up is only capable
-	// of completion transfers on the loop that first registered it — or after the system let the
-	// loop rebind it. Readiness works regardless, since polls are issued on the loop's own AFD
-	// handle
-	bool m_bInheritedFromOwningLoop = false;
 	bool m_bSendBufferDecided = false;
 
 	// The bytes the connection may have in flight on its sends, 0 until set; what a configured
@@ -94,6 +89,13 @@ struct CWindowsSocket
 	// The socket's registration with its owning loop, non-null exactly while registered. The
 	// handle is the loop's identity for the socket; the loop never dereferences the socket itself
 	NMib::NSys::CIoLoopRegistration *m_pIoRegistration = nullptr;
+
+	// Created to be given up to an owner that cannot rebind a handle — a backend without a
+	// completion port, or a system without the native replace: registered readiness-only, so the
+	// handle is never bound. Set before the socket starts; a listen socket passes it to what it
+	// accepts. A loop of this kind takes over bound handles as well, so the flag is only for
+	// those receivers
+	bool m_bInheritable = false;
 
 	CWindowsSocket(SOCKET _Socket, EWindowsSocketMode _Mode, EWindowsSocketEvent _Events, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 		: m_Socket(_Socket)

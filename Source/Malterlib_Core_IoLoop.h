@@ -193,6 +193,15 @@ namespace NMib::NSys
 	// or the asynchronous continuation runs. Opaque outside the platform backends
 	struct CIoLoopRegistration;
 
+	// What a registration asks of the loop beyond its interest mask. A readiness-only registration
+	// is never bound to the loop's completion mechanism where that binding is permanent (an IOCP
+	// association outlives every owner of the handle), so the handle stays free for another owner
+	// — another module, even — to bind; it is driven by readiness polls alone
+	struct CIoLoopRegisterOptions
+	{
+		bool m_bReadinessOnly = false;
+	};
+
 	// A loop seen by whatever registers io objects into it. Registration and submission are
 	// callable from any thread; readiness callbacks, completion functors and deregistration
 	// continuations run synchronously on the thread currently driving the loop — during
@@ -213,7 +222,7 @@ namespace NMib::NSys
 		// and never dereferenced by the loop. With _bNotifyRegistered the callback is invoked
 		// once with 0 events when the registration has been applied, so a consumer can report
 		// state that predates the registration
-		virtual auto f_Register(CIoLoopHandle _Handle, void *_pToken, EIoLoopEvent _EventMask, FIoLoopReadinessCallback _fOnEvents, bool _bNotifyRegistered) -> CIoLoopRegistration * = 0;
+		virtual auto f_Register(CIoLoopHandle _Handle, void *_pToken, EIoLoopEvent _EventMask, FIoLoopReadinessCallback _fOnEvents, bool _bNotifyRegistered, CIoLoopRegisterOptions const &_Options = CIoLoopRegisterOptions()) -> CIoLoopRegistration * = 0;
 
 		// Requests the next readiness report for the given EIoLoopEvent bits, callable from any
 		// thread. Only meaningful directly after a would-block observation on that direction: a
@@ -299,6 +308,13 @@ namespace NMib::NSys
 		// in flight. Falls under the owner-sequencing contract of the sends. Loops whose sends
 		// release promptly, or that leave the window to the kernel's buffers, ignore it
 		virtual void f_SetSendWindow(CIoLoopRegistration *_pRegistration, umint _nBytes);
+
+		// Takes over a handle another owner gave up, ahead of registering it: where the loop's
+		// completion binding is permanent this binds the handle to this loop's port, which is
+		// exactly what fails for a handle a previous owner had bound elsewhere. False with the
+		// platform error then, and the caller refuses the handle; true on platforms with nothing
+		// to bind
+		virtual bool f_AdoptHandle(CIoLoopHandle _Handle, int &o_Error);
 
 		// True for loops handed out for worker threads to park in (fg_CreateIoLoop), false for a
 		// platform's shared loop on its own thread. What lets an io object be asked which loop it

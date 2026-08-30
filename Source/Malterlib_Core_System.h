@@ -73,9 +73,17 @@ namespace NMib
 		void *fp_PopAllocationSlowPath();
 	};
 
+	namespace NSys
+	{
+		struct ICIoLoop;
+	}
+
 	struct CSystemThreadLocal
 	{
 		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
+		// Set while the thread is creating io objects that should belong to a loop it owns, so that
+		// their registration happens with that loop straight away (NSys::fg_SetThreadIoLoop)
+		NSys::ICIoLoop *m_pThreadIoLoop = nullptr;
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
 #if DMibConfig_Tests_Enable
 		NConcurrency::ECoroutineFlag m_ExtraCoroutineFlags = NConcurrency::ECoroutineFlag_None;

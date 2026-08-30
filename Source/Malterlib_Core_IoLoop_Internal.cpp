@@ -72,11 +72,12 @@ void CIoLoop_Base::fp_SignalWake()
 		fp_WakeKernel();
 }
 
-auto CIoLoop_Base::f_Register(NSys::CIoLoopHandle _Handle, void *_pToken, NSys::EIoLoopEvent _EventMask, NSys::FIoLoopReadinessCallback _fOnEvents, bool _bNotifyRegistered) -> NSys::CIoLoopRegistration *
+auto CIoLoop_Base::f_Register(NSys::CIoLoopHandle _Handle, void *_pToken, NSys::EIoLoopEvent _EventMask, NSys::FIoLoopReadinessCallback _fOnEvents, bool _bNotifyRegistered, NSys::CIoLoopRegisterOptions const &_Options) -> NSys::CIoLoopRegistration *
 {
 	auto *pRegistration = fp_CreateRegistration();
 
 	pRegistration->m_Handle = _Handle;
+	pRegistration->m_Options = _Options;
 	pRegistration->m_pToken = _pToken;
 	pRegistration->m_EventMask = _EventMask;
 	pRegistration->m_fOnEvents = _fOnEvents;

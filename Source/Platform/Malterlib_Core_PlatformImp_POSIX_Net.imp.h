@@ -1355,6 +1355,31 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 // net.local.stream.sendspace/recvspace default quantizes a bulk stream into 8 KiB bursts with
 // a wake between each: those always get the window, TCP only a configured one, both within
 // what kern.ipc.maxsockbuf lets a socket reserve
+// Nothing binds a descriptor to a loop for life here, so an inheritable socket registers like
+// any other; the flag is kept for the record
+void NSys::NNetwork::fg_SetInheritable(void *_pSocket)
+{
+	((CPOSIXSocket *)_pSocket)->m_bInheritable = true;
+}
+
+// Moves the platform socket to a new owner without touching its registration: for a transport
+// upgrade that keeps the connection as the loop and the kernel know it
+void NSys::NNetwork::fg_ReownSocket(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+{
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	{
+		DMibLock(pSocket->m_Lock);
+		pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
+		pSocket->m_bInitialWriteNotification = false;
+	}
+
+	// The kickstart an inherited handle gets from its registration-applied notification: the new
+	// owner learns of the connection and of both directions through a readiness report of its
+	// own, delivered on the loop's thread like every other
+	pSocket->m_StateAtomic.f_FetchOr(NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write | NMib::NNetwork::ENetTCPState_Connected);
+	fg_RequestReadiness(_pSocket, true, true);
+}
+
 void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConfigured)
 {
 #if defined(DPlatformFamily_macOS)
@@ -1786,6 +1811,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 
 	auto *pSocket = fp_CreateSocket(ResultFD, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = _pSocket->m_AddressType;
+	pSocket->m_bInheritable = _pSocket->m_bInheritable;
 
 	{
 		sockaddr_storage SocketName;
@@ -1849,7 +1875,21 @@ bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
 	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_FD != -1)
 		DMibErrorNet("Synchronous close on a pool-hosted loop; use the asynchronous form");
 
-	f_CloseAsync(_pSocket, {});
+	// The removal is waited for, so the descriptor is gone on return; a socket that never registered
+	// has nothing to wait for
+	if (_pSocket->m_FD != -1)
+	{
+		if (pOwningLoop && _pSocket->m_pIoRegistration)
+		{
+			pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
+			_pSocket->m_pIoRegistration = nullptr;
+		}
+
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_fOnStateChange.f_Clear();
+	}
+
+	fp_DestroySocket(_pSocket);
 
 	return true;
 }
@@ -1858,9 +1898,11 @@ void CPOSIXSocketContext::f_CloseAsync(CPOSIXSocket* _pSocket, NMib::NFunction::
 {
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
 
-	if (pOwningLoop && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_FD != -1)
+	if (pOwningLoop && _pSocket->m_pIoRegistration && _pSocket->m_FD != -1)
 	{
-		// The socket belongs to a loop hosted on a pool thread, and pool threads never block, so
+		// Always through the loop, on the shared poller as much as on a pool-hosted one: one path,
+		// so a caller cannot come to depend on a continuation that runs inline for some sockets
+		// and later for others. Pool threads never block anyway, so
 		// the removal cannot be waited for: whoever hosts the loop may be closing a socket of
 		// this thread's loop at the same time, and the acknowledgement may need actor jobs to run
 		// before it can be produced. No callback fires after the clear below, and the loop
@@ -1872,38 +1914,23 @@ void CPOSIXSocketContext::f_CloseAsync(CPOSIXSocket* _pSocket, NMib::NFunction::
 			_pSocket->m_fOnStateChange.f_Clear();
 		}
 
-		if (_pSocket->m_pIoRegistration)
-		{
-			pOwningLoop->f_DeregisterAsync
-				(
-					_pSocket->m_pIoRegistration
-					, [this, _pSocket, _fOnClosed = fg_Move(_fOnClosed)]() mutable
-					{
-						fp_DestroySocket(_pSocket);
-						if (_fOnClosed)
-							_fOnClosed();
-					}
-				)
-			;
-
-			return;
-		}
-
-		fp_DestroySocket(_pSocket);
-		if (_fOnClosed)
-			_fOnClosed();
+		pOwningLoop->f_DeregisterAsync
+			(
+				_pSocket->m_pIoRegistration
+				, [this, _pSocket, _fOnClosed = fg_Move(_fOnClosed)]() mutable
+				{
+					fp_DestroySocket(_pSocket);
+					if (_fOnClosed)
+						_fOnClosed();
+				}
+			)
+		;
 
 		return;
 	}
 
-	if (_pSocket->m_FD != -1)
+	// Never registered, or already given up: no loop to defer to
 	{
-		if (pOwningLoop && _pSocket->m_pIoRegistration)
-		{
-			pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
-			_pSocket->m_pIoRegistration = nullptr;
-		}
-
 		DMibLock(_pSocket->m_Lock);
 		_pSocket->m_fOnStateChange.f_Clear();
 	}
@@ -2169,7 +2196,7 @@ void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::
 	}
 
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
-	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop)
+	if (pOwningLoop && _pSocket->m_pIoRegistration)
 	{
 		auto *pRegistration = _pSocket->m_pIoRegistration;
 		_pSocket->m_pIoRegistration = nullptr;
@@ -2195,13 +2222,7 @@ void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::
 		return;
 	}
 
-	// Shared poller or never registered: the blocking removal is safe here and the handle is
-	// produced on the calling thread
-	if (pOwningLoop && _pSocket->m_pIoRegistration)
-	{
-		pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
-		_pSocket->m_pIoRegistration = nullptr;
-	}
+	// Never registered: no loop to defer to, so the descriptor is produced on the calling thread
 
 	int FD = -1;
 	{

@@ -292,8 +292,9 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	bool m_bSendCompletesOnAck = false;
 
 	// The socket's completions provably arrive on this loop's port: the handle was bound here at
-	// registration, or rebound here. False for a handle that kept an earlier binding the system
-	// would not replace — readiness still works, transfers must not be submitted
+	// registration or rebound here. False for a readiness-only registration, which is never bound
+	// so that the handle stays free for its next owner — readiness works regardless, transfers
+	// must not be submitted
 	bool m_bAssociated = false;
 
 	// Listed in the loop's inline completion queue, holding one obligation on the count while
@@ -330,6 +331,7 @@ struct CIoLoop_Iocp : public CIoLoop_Base
 	bool f_StartReceiveStream(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> _pBackpressure, NMib::NSys::FIoStreamSink &&_fSink) override;
 	void f_ResumeReceiveStream(NMib::NSys::CIoLoopRegistration *_pRegistration) override;
 	void f_SetSendWindow(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nBytes) override;
+	bool f_AdoptHandle(NMib::NSys::CIoLoopHandle _Handle, int &o_Error) override;
 
 private:
 	umint fp_Iterate(bool _bBlock) override;

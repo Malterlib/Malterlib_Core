@@ -3,6 +3,7 @@
 
 #include <Mib/Core/Core>
 #include <Mib/Core/IoStream>
+#include <Mib/Core/System>
 
 namespace NMib::NSys
 {
@@ -14,18 +15,14 @@ namespace NMib::NSys
 	{
 	}
 
-	// Set while a thread is creating io objects that should belong to a loop it owns, so that
-	// registration happens with that loop straight away
-	static thread_local ICIoLoop *gs_pThreadIoLoop = nullptr;
-
 	void fg_SetThreadIoLoop(ICIoLoop *_pLoop)
 	{
-		gs_pThreadIoLoop = _pLoop;
+		fg_SystemThreadLocal().m_pThreadIoLoop = _pLoop;
 	}
 
 	ICIoLoop *fg_GetThreadIoLoop()
 	{
-		return gs_pThreadIoLoop;
+		return fg_SystemThreadLocal().m_pThreadIoLoop;
 	}
 
 	void ICThreadIoLoop::f_DrainForShutdown()
@@ -86,5 +83,10 @@ namespace NMib::NSys
 
 	void ICIoLoop::f_SetSendWindow(CIoLoopRegistration *_pRegistration, umint _nBytes)
 	{
+	}
+
+	bool ICIoLoop::f_AdoptHandle(CIoLoopHandle, int &)
+	{
+		return true;
 	}
 }

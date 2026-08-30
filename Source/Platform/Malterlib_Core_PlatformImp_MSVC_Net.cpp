@@ -818,36 +818,6 @@ namespace
 			| ((_Events & EWindowsSocketEvent_Write) ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None)
 		;
 	}
-
-	// Where a handle given up for inheritance was registered, keyed by the handle. A handle keeps
-	// its first completion port for its lifetime, so the adopter has to know whether the loop it
-	// registers with is the one that port belongs to; handles cannot be recycled while the given
-	// up socket stays open, and it stays open until adopted or closed through this module
-	NThread::CMutual g_GivenUpHandlesLock;
-	NContainer::TCMap<umint, NSys::ICIoLoop *> g_GivenUpHandles;
-
-	void fg_RecordGivenUpHandle(SOCKET _Socket, NSys::ICIoLoop *_pOwningLoop)
-	{
-		DMibLock(g_GivenUpHandlesLock);
-		if (auto *pEntry = g_GivenUpHandles.f_FindEqual((umint)_Socket))
-			*pEntry = _pOwningLoop;
-		else
-			g_GivenUpHandles.f_Insert((umint)_Socket) = _pOwningLoop;
-	}
-
-	// Removes the record and answers the loop it named, null when the handle is unknown here
-	NSys::ICIoLoop *fg_TakeGivenUpHandle(SOCKET _Socket, bool &o_bKnown)
-	{
-		DMibLock(g_GivenUpHandlesLock);
-		auto *pEntry = g_GivenUpHandles.f_FindEqual((umint)_Socket);
-		o_bKnown = pEntry != nullptr;
-		if (!pEntry)
-			return nullptr;
-
-		NSys::ICIoLoop *pLoop = *pEntry;
-		g_GivenUpHandles.f_Remove((umint)_Socket);
-		return pLoop;
-	}
 }
 
 // The one decoder from loop readiness to socket state: the loop reports normalized EIoLoopEvent
@@ -1205,6 +1175,10 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 	NSys::ICIoLoop *pThreadLoop = NSys::fg_GetThreadIoLoop();
 	_pSocket->m_pOwningLoop = pThreadLoop ? pThreadLoop : mp_PollerThread.mp_pLoop;
 
+	// An inheritable socket is never bound to the port
+	NSys::CIoLoopRegisterOptions RegisterOptions;
+	RegisterOptions.m_bReadinessOnly = _pSocket->m_bInheritable;
+
 	// The registration-applied notification is the read kickstart: connections whose readable
 	// state predates the registration get it reported once the add lands
 	_pSocket->m_pIoRegistration = _pSocket->m_pOwningLoop->f_Register
@@ -1214,6 +1188,7 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 			, EventMask
 			, &fg_DispatchSocketIoEvent
 			, fg_IsSet(EventMask, NSys::EIoLoopEvent::mc_Read) != 0
+			, RegisterOptions
 		)
 	;
 
@@ -1227,9 +1202,12 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 	_pSocket->m_nSendBufferBytesToApply = fg_IocpSocketSendBufferBytesOverride();
 	// TCP goes without a buffer only where SIO_TCP_INFO can size its pipeline to the path; an
 	// older kernel keeps the buffered sends, which need no such sizing
+	// An inheritable socket sends on the readiness path only, whose non-blocking sends need the
+	// buffer
 	if
 	(
 		_pSocket->m_nSendBufferBytesToApply == umint(-1)
+		&& !_pSocket->m_bInheritable
 		&& fg_IocpDirectSendEnabled()
 		&& _pSocket->m_Mode != EWindowsSocketMode_Datagram
 		&& (_pSocket->m_AddressType == ENetAddressType_Unix || fg_WindowsTcpInfoSupported())
@@ -1292,17 +1270,13 @@ NSys::ICIoLoop *NSys::NNetwork::fg_GetOwningIoLoop(void *_pSocket)
 
 namespace
 {
-	// Whether transfers submitted against this socket complete on its loop's port. A fresh
-	// handle is bound at registration; an adopted one keeps its first port, and is capable only
-	// if that port is this loop's — the give-up record says which loop that was — or the loop
-	// managed to rebind it
+	// Whether transfers submitted against this socket complete on its loop's port: the loop
+	// bound the handle there, rebound it, or bound it when it adopted the handle. A readiness-only
+	// registration never binds
 	bool fg_CompletionPortIsOwningLoops(CWindowsSocket *_pSocket)
 	{
 		if (!_pSocket->m_pIoRegistration)
 			return false;
-
-		if (_pSocket->m_bInheritedFromOwningLoop)
-			return true;
 
 		return static_cast<CIocpRegistration const *>(_pSocket->m_pIoRegistration)->m_bAssociated;
 	}
@@ -1372,6 +1346,36 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 // autotuning off for this socket. The send buffer stays with the override when one is in force,
 // since a socket sending without a buffer holds its window in the unacknowledged bytes instead,
 // which the loop bounds to it
+// Marks the socket as one that will be given up to another owner. Must precede the start: the
+// registration it decides is never bound to a completion port, and that binding, once made,
+// is for the handle's lifetime
+void NSys::NNetwork::fg_SetInheritable(void *_pSocket)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (pSocket->m_pIoRegistration)
+		DMibErrorNet("A socket can only be made inheritable before it is started");
+
+	pSocket->m_bInheritable = true;
+}
+
+// Moves the platform socket to a new owner without touching its registration: for a transport
+// upgrade that keeps the connection as the loop and the kernel know it
+void NSys::NNetwork::fg_ReownSocket(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	{
+		DMibLock(pSocket->m_Lock);
+		pSocket->m_fOnStateChange = fg_Move(_fOnStateChange);
+		pSocket->m_bInitialWriteNotification = false;
+	}
+
+	// The kickstart an inherited handle gets from its registration-applied notification: the new
+	// owner learns of the connection and of both directions through a readiness report of its
+	// own, delivered on the loop's thread like every other
+	pSocket->m_StateAtomic.f_FetchOr(NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write | NMib::NNetwork::ENetTCPState_Connected);
+	fg_RequestReadiness(_pSocket, true, true);
+}
+
 void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConfigured)
 {
 	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
@@ -1725,6 +1729,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 
 	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Connect, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = _pSocket->m_AddressType;
+	pSocket->m_bInheritable = _pSocket->m_bInheritable;
 
 	return pSocket;
 }
@@ -1832,7 +1837,21 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_Socket != INVALID_SOCKET)
 		DMibErrorNet("Synchronous close on a pool-hosted loop; use the asynchronous form");
 
-	f_CloseAsync(_pSocket, {});
+	// The removal is waited for, so the handle is gone on return; a socket that never registered
+	// has nothing to wait for
+	if (_pSocket->m_Socket != INVALID_SOCKET)
+	{
+		if (pOwningLoop && _pSocket->m_pIoRegistration)
+		{
+			pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
+			_pSocket->m_pIoRegistration = nullptr;
+		}
+
+		DMibLock(_pSocket->m_Lock);
+		_pSocket->m_fOnStateChange.f_Clear();
+	}
+
+	fp_DestroySocket(_pSocket);
 
 	return true;
 }
@@ -1841,9 +1860,11 @@ void CWindowsSocketContext::f_CloseAsync(CWindowsSocket *_pSocket, NMib::NFuncti
 {
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
 
-	if (pOwningLoop && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_Socket != INVALID_SOCKET)
+	if (pOwningLoop && _pSocket->m_pIoRegistration && _pSocket->m_Socket != INVALID_SOCKET)
 	{
-		// The socket belongs to a loop hosted on a pool thread, and pool threads never block, so
+		// Always through the loop, on the shared poller as much as on a pool-hosted one: one path,
+		// so a caller cannot come to depend on a continuation that runs inline for some sockets
+		// and later for others. Pool threads never block anyway, so
 		// the removal cannot be waited for: whoever hosts the loop may be closing a socket of
 		// this thread's loop at the same time, and the acknowledgement may need actor jobs to run
 		// before it can be produced. No callback fires after the clear below, and the loop
@@ -1855,38 +1876,23 @@ void CWindowsSocketContext::f_CloseAsync(CWindowsSocket *_pSocket, NMib::NFuncti
 			_pSocket->m_fOnStateChange.f_Clear();
 		}
 
-		if (_pSocket->m_pIoRegistration)
-		{
-			pOwningLoop->f_DeregisterAsync
-				(
-					_pSocket->m_pIoRegistration
-					, [this, _pSocket, _fOnClosed = fg_Move(_fOnClosed)]() mutable
-					{
-						fp_DestroySocket(_pSocket);
-						if (_fOnClosed)
-							_fOnClosed();
-					}
-				)
-			;
-
-			return;
-		}
-
-		fp_DestroySocket(_pSocket);
-		if (_fOnClosed)
-			_fOnClosed();
+		pOwningLoop->f_DeregisterAsync
+			(
+				_pSocket->m_pIoRegistration
+				, [this, _pSocket, _fOnClosed = fg_Move(_fOnClosed)]() mutable
+				{
+					fp_DestroySocket(_pSocket);
+					if (_fOnClosed)
+						_fOnClosed();
+				}
+			)
+		;
 
 		return;
 	}
 
-	if (_pSocket->m_Socket != INVALID_SOCKET)
+	// Never registered, or already given up: no loop to defer to
 	{
-		if (pOwningLoop && _pSocket->m_pIoRegistration)
-		{
-			pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
-			_pSocket->m_pIoRegistration = nullptr;
-		}
-
 		DMibLock(_pSocket->m_Lock);
 		_pSocket->m_fOnStateChange.f_Clear();
 	}
@@ -2141,18 +2147,21 @@ CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::
 	WSAEventSelect(Socket, nullptr, 0);
 	fg_SetNonBlocking(Socket, "inherit");
 
-	bool bKnown = false;
-	NSys::ICIoLoop *pPreviousLoop = fg_TakeGivenUpHandle(Socket, bKnown);
-
-	auto *pSocket = fp_CreateSocket(Socket, EWindowsSocketMode_Connect, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange), true);
-
-	// Settled at start, once the owning loop is known: the handle's port is that loop's if the
-	// give-up happened from the same loop
+	// The loop that will own the socket takes the handle over now: a handle some other loop had
+	// bound is rebound here where the system allows it, and refused where it does not rather
+	// than driven by a port that never reads its packets — an owner that has to hand a socket
+	// to such a receiver creates it inheritable, which leaves the handle unbound
 	NSys::ICIoLoop *pThreadLoop = NSys::fg_GetThreadIoLoop();
 	NSys::ICIoLoop *pOwningLoop = pThreadLoop ? pThreadLoop : mp_PollerThread.mp_pLoop;
-	pSocket->m_bInheritedFromOwningLoop = bKnown && pPreviousLoop == pOwningLoop;
+	int AdoptError = 0;
+	if (pOwningLoop && !pOwningLoop->f_AdoptHandle((NSys::CIoLoopHandle)Socket, AdoptError))
+	{
+		// Nothing else can be done with the handle either, so it does not outlive the refusal
+		closesocket(Socket);
+		DMibErrorNet((CStr::CFormat("Cannot inherit a socket handle bound to a completion port this system will not replace; the previous owner must create it inheritable. Windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(AdoptError)).f_GetStr());
+	}
 
-	return pSocket;
+	return fp_CreateSocket(Socket, EWindowsSocketMode_Connect, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange), true);
 }
 
 struct CWindowsSocket_OldVersion
@@ -2238,9 +2247,6 @@ void *CWindowsSocketContext::f_GiveUpForInherit(CWindowsSocket *_pSocket)
 		_pSocket->m_Socket = INVALID_SOCKET;
 	}
 
-	if (Socket != INVALID_SOCKET)
-		fg_RecordGivenUpHandle(Socket, pOwningLoop);
-
 	return (void *)Socket;
 }
 
@@ -2256,7 +2262,7 @@ void CWindowsSocketContext::f_GiveUpForInheritAsync(CWindowsSocket *_pSocket, NM
 	}
 
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
-	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop)
+	if (pOwningLoop && _pSocket->m_pIoRegistration)
 	{
 		auto *pRegistration = _pSocket->m_pIoRegistration;
 		_pSocket->m_pIoRegistration = nullptr;
@@ -2264,7 +2270,7 @@ void CWindowsSocketContext::f_GiveUpForInheritAsync(CWindowsSocket *_pSocket, NM
 		pOwningLoop->f_DeregisterAsync
 			(
 				pRegistration
-				, [this, _pSocket, pOwningLoop, _fOnHandle = fg_Move(_fOnHandle)]() mutable
+				, [this, _pSocket, _fOnHandle = fg_Move(_fOnHandle)]() mutable
 				{
 					SOCKET Socket = INVALID_SOCKET;
 					{
@@ -2272,9 +2278,6 @@ void CWindowsSocketContext::f_GiveUpForInheritAsync(CWindowsSocket *_pSocket, NM
 						Socket = _pSocket->m_Socket;
 						_pSocket->m_Socket = INVALID_SOCKET;
 					}
-
-					if (Socket != INVALID_SOCKET)
-						fg_RecordGivenUpHandle(Socket, pOwningLoop);
 
 					fp_DestroySocket(_pSocket);
 					_fOnHandle((void *)Socket);
@@ -2285,13 +2288,7 @@ void CWindowsSocketContext::f_GiveUpForInheritAsync(CWindowsSocket *_pSocket, NM
 		return;
 	}
 
-	// Shared poller or never registered: the blocking removal is safe here and the handle is
-	// produced on the calling thread
-	if (pOwningLoop && _pSocket->m_pIoRegistration)
-	{
-		pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
-		_pSocket->m_pIoRegistration = nullptr;
-	}
+	// Never registered: no loop to defer to, so the handle is produced on the calling thread
 
 	SOCKET Socket = INVALID_SOCKET;
 	{
@@ -2300,21 +2297,13 @@ void CWindowsSocketContext::f_GiveUpForInheritAsync(CWindowsSocket *_pSocket, NM
 		_pSocket->m_Socket = INVALID_SOCKET;
 	}
 
-	if (Socket != INVALID_SOCKET)
-		fg_RecordGivenUpHandle(Socket, pOwningLoop);
-
 	fp_DestroySocket(_pSocket);
 	_fOnHandle((void *)Socket);
 }
 
 void CWindowsSocketContext::f_CloseSocketHandle(void *_pSocketHandle)
 {
-	SOCKET Socket = (SOCKET)_pSocketHandle;
-
-	bool bKnown = false;
-	fg_TakeGivenUpHandle(Socket, bKnown);
-
-	closesocket(Socket);
+	closesocket((SOCKET)_pSocketHandle);
 }
 
 void *CWindowsSocketContext::f_GetOSSocket(CWindowsSocket *_pSocket)

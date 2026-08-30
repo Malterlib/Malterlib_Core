@@ -180,12 +180,13 @@ void CIoLoop_Iocp::fp_ReleaseAfdGroup(CIocpRegistration *_pRegistration)
 	_pRegistration->m_pAfdGroup = nullptr;
 }
 
-// Binds the socket to the port and settles what its polls name. The association is permanent for
-// the handle's lifetime, so a handle that was registered before — the websocket upgrade re-
-// registers a given-up handle with the loop that owned it — refuses a second binding; that is
-// accepted as already bound, and a rebind is attempted through the native replace where the
-// system offers it. Completion packets name the operation, never the key, so a stale key from
-// an earlier binding is harmless
+// Settles what the socket's polls name and, unless the registration is readiness-only, binds
+// the socket to the port. The association is permanent for the handle's lifetime, so a handle
+// already bound — adopted from a give-up and bound to this port then, or bound to some other
+// port by an owner that did not keep it free — refuses a second binding; that is rebound
+// through the native replace (Windows 8.1 and later), and refused where that fails: completion
+// packets posted to a port this loop never reads would hang the socket silently. The packets
+// name the operation, never the key, so the key an adoption left behind is harmless
 bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 {
 	SOCKET Socket = (SOCKET)_pRegistration->m_Handle;
@@ -195,6 +196,10 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 	if (WSAIoctl(Socket, SIO_BASE_HANDLE, nullptr, 0, &hBase, sizeof(hBase), &nBytes, nullptr, nullptr) != 0 || !hBase)
 		hBase = (HANDLE)Socket;
 	_pRegistration->m_hBase = hBase;
+
+	// Never bound, and no notification modes either: those stick to the handle as well
+	if (_pRegistration->m_Options.m_bReadinessOnly)
+		return true;
 
 	if (CreateIoCompletionPort((HANDLE)Socket, mp_hPort, (ULONG_PTR)_pRegistration, 0))
 		_pRegistration->m_bAssociated = true;
@@ -218,6 +223,12 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 			NTSTATUS Status = Nt.m_fNtSetInformationFile((HANDLE)Socket, &IoStatus, &Information, sizeof(Information), (FILE_INFORMATION_CLASS)gc_NtFileInformation_ReplaceCompletionInformation);
 			if (Status == gc_NtStatus_Success)
 				_pRegistration->m_bAssociated = true;
+		}
+
+		if (!_pRegistration->m_bAssociated)
+		{
+			o_Error = (int)Error;
+			return false;
 		}
 	}
 
@@ -246,6 +257,39 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 #endif
 
 	return true;
+}
+
+// The adoption binds the handle here with no key — the registration that follows names the
+// operation in every packet, so the key is never read. A handle another loop had bound, in this
+// process or another module, refuses the binding and is rebound through the native replace
+// (Windows 8.1 and later); only where that fails too is the handle refused, since a port this
+// loop never reads would swallow its packets
+bool CIoLoop_Iocp::f_AdoptHandle(NSys::CIoLoopHandle _Handle, int &o_Error)
+{
+	if (CreateIoCompletionPort((HANDLE)_Handle, mp_hPort, 0, 0))
+		return true;
+
+	o_Error = (int)GetLastError();
+	if (o_Error != ERROR_INVALID_PARAMETER)
+		return false;
+
+	auto const &Nt = fg_IocpNtFunctions();
+	if (!Nt.m_fNtSetInformationFile)
+		return false;
+
+	CNtFileCompletionInformation Information;
+	Information.m_hPort = mp_hPort;
+	Information.m_pKey = nullptr;
+
+	IO_STATUS_BLOCK IoStatus;
+	NTSTATUS Status = Nt.m_fNtSetInformationFile((HANDLE)_Handle, &IoStatus, &Information, sizeof(Information), (FILE_INFORMATION_CLASS)gc_NtFileInformation_ReplaceCompletionInformation);
+	if (Status == gc_NtStatus_Success)
+		return true;
+
+	if (Nt.m_fRtlNtStatusToDosError)
+		o_Error = (int)Nt.m_fRtlNtStatusToDosError(Status);
+
+	return false;
 }
 
 // Dispatches into the consumer under a pin on the outstanding count: anything the callback

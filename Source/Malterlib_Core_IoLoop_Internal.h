@@ -22,6 +22,7 @@ namespace NMib::NSys
 		FIoLoopReadinessCallback m_fOnEvents = nullptr;
 		NMib::NSys::EIoLoopEvent m_EventMask = NMib::NSys::EIoLoopEvent::mc_None;
 		CIoLoopHandle m_Handle = gc_IoLoopHandleInvalid;
+		CIoLoopRegisterOptions m_Options;
 
 		// Readiness request coalescing: EIoLoopEvent bits requested and not yet consumed by the
 		// loop. The requester that turns the word nonzero owns pushing the queue notification;
@@ -97,7 +98,7 @@ struct CIoLoop_Base : public NMib::NSys::ICIoLoop
 {
 	void f_SetOwnerThreadToCurrent() override;
 
-	auto f_Register(NMib::NSys::CIoLoopHandle _Handle, void *_pToken, NMib::NSys::EIoLoopEvent _EventMask, NMib::NSys::FIoLoopReadinessCallback _fOnEvents, bool _bNotifyRegistered) -> NMib::NSys::CIoLoopRegistration * override;
+	auto f_Register(NMib::NSys::CIoLoopHandle _Handle, void *_pToken, NMib::NSys::EIoLoopEvent _EventMask, NMib::NSys::FIoLoopReadinessCallback _fOnEvents, bool _bNotifyRegistered, NMib::NSys::CIoLoopRegisterOptions const &_Options) -> NMib::NSys::CIoLoopRegistration * override;
 	void f_Deregister(NMib::NSys::CIoLoopRegistration *_pRegistration) override;
 	void f_DeregisterAsync(NMib::NSys::CIoLoopRegistration *_pRegistration, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnDeregistered) override;
 
