@@ -26,6 +26,10 @@ enum EWindowsSocketMode
 	EWindowsSocketMode_Datagram,
 };
 
+// Whether the kernel answers SIO_TCP_INFO (Windows 10 1703, build 15063), which is what sizes a
+// zero copy send pipeline to its path; without it TCP sends keep their socket buffer
+bool fg_WindowsTcpInfoSupported();
+
 struct CWindowsSocket
 {
 	struct CUnixListenState

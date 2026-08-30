@@ -6514,6 +6514,12 @@ bool NSys::NNetwork::fg_HasUnixSocketPeerProcessIdentity()
 	return Version.dwMajorVersion > 10 || (Version.dwMajorVersion == 10 && Version.dwBuildNumber >= 17763);
 }
 
+bool fg_WindowsTcpInfoSupported()
+{
+	auto &Version = NLocal::g_VersionInfo;
+	return Version.dwMajorVersion > 10 || (Version.dwMajorVersion == 10 && Version.dwBuildNumber >= 15063);
+}
+
 uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GetListenPort((CWindowsSocket*)_pSocket);

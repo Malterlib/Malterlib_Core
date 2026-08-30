@@ -1224,8 +1224,18 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 	// acknowledgement, which the loop turns into a completion at issue and a release at the
 	// packet, with the send window bounding what is unacknowledged
 	_pSocket->m_nSendBufferBytesToApply = fg_IocpSocketSendBufferBytesOverride();
-	if (_pSocket->m_nSendBufferBytesToApply == umint(-1) && fg_IocpDirectSendEnabled() && _pSocket->m_Mode != EWindowsSocketMode_Datagram)
+	// TCP goes without a buffer only where SIO_TCP_INFO can size its pipeline to the path; an
+	// older kernel keeps the buffered sends, which need no such sizing
+	if
+	(
+		_pSocket->m_nSendBufferBytesToApply == umint(-1)
+		&& fg_IocpDirectSendEnabled()
+		&& _pSocket->m_Mode != EWindowsSocketMode_Datagram
+		&& (_pSocket->m_AddressType == ENetAddressType_Unix || fg_WindowsTcpInfoSupported())
+	)
+	{
 		_pSocket->m_nSendBufferBytesToApply = 0;
+	}
 	if (_pSocket->m_nSendBufferBytesToApply == 0 && _pSocket->m_AddressType != ENetAddressType_Unix && _pSocket->m_pIoRegistration)
 		static_cast<CIocpRegistration *>(_pSocket->m_pIoRegistration)->m_bSendCompletesOnAck = true;
 }
