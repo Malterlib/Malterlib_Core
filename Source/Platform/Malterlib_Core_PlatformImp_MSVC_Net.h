@@ -69,6 +69,11 @@ struct CWindowsSocket
 	bool m_bInheritedFromOwningLoop = false;
 	bool m_bSendBufferDecided = false;
 
+	// The bytes the connection may have in flight on its sends, 0 until set; what a configured
+	// window sizes the kernel buffers to, and what bounds the unacknowledged bytes of sends that
+	// go without a send buffer
+	umint m_nSendWindowBytes = 0;
+
 	// The send buffer the first completion send applies, decided at registration (see
 	// f_StartSocket); ~umint(0) leaves the system default
 	umint m_nSendBufferBytesToApply = umint(-1);

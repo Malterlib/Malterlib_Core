@@ -5,6 +5,9 @@
 #include <Mib/Process/Platform>
 
 #include <netinet/tcp.h>
+#if defined(DPlatformFamily_macOS)
+	#include <sys/sysctl.h>
+#endif
 #include <sys/uio.h>
 #include <sys/stat.h>
 
@@ -1342,6 +1345,65 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 		return;
 
 	pSocket->m_pOwningLoop->f_ResumeReceiveStream(pSocket->m_pIoRegistration);
+}
+
+// Where the kernel autotunes the buffers the window is left to it. Linux grows TCP buffers to
+// net.ipv4.tcp_wmem/tcp_rmem, and an explicit SO_SNDBUF there is capped by net.core.wmem_max,
+// far below what autotuning reaches, so a set size would shrink the window rather than widen
+// it; its zero copy sends are bounded by the loop instead. macOS autotunes TCP up to
+// net.inet.tcp.autosndbufmax/autorcvbufmax but never unix sockets, whose 8 KiB
+// net.local.stream.sendspace/recvspace default quantizes a bulk stream into 8 KiB bursts with
+// a wake between each: those always get the window, TCP only a configured one, both within
+// what kern.ipc.maxsockbuf lets a socket reserve
+void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConfigured)
+{
+#if defined(DPlatformFamily_macOS)
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (pSocket->m_FD == -1 || !_nBytes)
+		return;
+	if (!_bConfigured && pSocket->m_AddressType != ENetAddressType_Unix)
+		return;
+
+	// sbreserve refuses more than sb_max * MCLBYTES / (MSIZE + MCLBYTES), eight ninths of the sysctl
+	static umint const s_nMaxReserve =
+		(
+			[]() -> umint
+			{
+				uint64 nMax = 0;
+				size_t nSize = sizeof(nMax);
+				if (sysctlbyname("kern.ipc.maxsockbuf", &nMax, &nSize, nullptr, 0) != 0 || !nMax)
+					nMax = 8 * 1024 * 1024;
+				return umint(nMax) / 9 * 8;
+			}
+			()
+		)
+	;
+	umint nBytes = fg_Min(_nBytes, s_nMaxReserve, umint(TCLimitsInt<int>::mc_Max));
+	if (nBytes < _nBytes && _bConfigured)
+	{
+		static NAtomic::TCAtomic<bool> s_bLogged = false;
+		if (!s_bLogged.f_Exchange(true))
+		{
+			DMibLogWithCategory
+				(
+					Mib/Core/Net
+					, Warning
+					, "The send window of {} KiB exceeds what kern.ipc.maxsockbuf lets a socket reserve; the socket buffers are {} KiB. Raise the sysctl for a wider window"
+					, _nBytes / 1024
+					, nBytes / 1024
+				)
+			;
+		}
+	}
+
+	int BufferSize = int(nBytes);
+	setsockopt(pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &BufferSize, sizeof(BufferSize));
+	setsockopt(pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &BufferSize, sizeof(BufferSize));
+#else
+	(void)_pSocket;
+	(void)_nBytes;
+	(void)_bConfigured;
+#endif
 }
 
 bool NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *_pSpans, umint _nSpans, NSys::FIoCompletion &&_fOnComplete, NSys::FIoBufferReleased &&_fOnBufferReleased)

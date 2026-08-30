@@ -1355,6 +1355,27 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 	pSocket->m_pOwningLoop->f_ResumeReceiveStream(pSocket->m_pIoRegistration);
 }
 
+// Windows autotunes the receive window and buffers sends dynamically, so only a configured
+// window is applied to the kernel buffers; setting them fixes both at the window and turns the
+// autotuning off for this socket. The send buffer stays with the override when one is in force,
+// since a socket sending without a buffer holds its window in the unacknowledged bytes instead,
+// which the loop bounds to it
+void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConfigured)
+{
+	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
+	if (pSocket->m_Socket == INVALID_SOCKET || !_nBytes)
+		return;
+
+	pSocket->m_nSendWindowBytes = _nBytes;
+	if (!_bConfigured || pSocket->m_AddressType == ENetAddressType_Unix)
+		return;
+
+	int BufferSize = (int)fg_Min(_nBytes, umint(TCLimitsInt<int>::mc_Max));
+	if (pSocket->m_nSendBufferBytesToApply == umint(-1))
+		setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize));
+	setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize));
+}
+
 bool NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *_pSpans, umint _nSpans, NSys::FIoCompletion &&_fOnComplete, NSys::FIoBufferReleased &&_fOnBufferReleased)
 {
 	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
