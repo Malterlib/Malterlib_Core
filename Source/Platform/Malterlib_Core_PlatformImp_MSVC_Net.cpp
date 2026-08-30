@@ -1215,6 +1215,18 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 			, fg_IsSet(EventMask, NSys::EIoLoopEvent::mc_Read) != 0
 		)
 	;
+
+	// The send buffer policy, settled here so the loop's release promise is known before any
+	// consumer asks; the option itself is applied at the first completion send (see
+	// fg_SubmitSendVectored). A unix socket goes without a buffer for the direct delivery into
+	// the peer's pending receive, and completes within the local round trip. A TCP socket does
+	// so only under the override: without a buffer its sends finish at the acknowledgement,
+	// which the loop turns into a completion at issue and a release at the packet
+	_pSocket->m_nSendBufferBytesToApply = fg_IocpSocketSendBufferBytesOverride();
+	if (_pSocket->m_nSendBufferBytesToApply == umint(-1) && fg_IocpDirectSendEnabled() && _pSocket->m_AddressType == ENetAddressType_Unix)
+		_pSocket->m_nSendBufferBytesToApply = 0;
+	if (_pSocket->m_nSendBufferBytesToApply == 0 && _pSocket->m_AddressType != ENetAddressType_Unix && _pSocket->m_pIoRegistration)
+		static_cast<CIocpRegistration *>(_pSocket->m_pIoRegistration)->m_bSendCompletesOnAck = true;
 }
 
 // A would-block observation is the only point where requesting the next readiness report means
@@ -1359,16 +1371,12 @@ bool NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *
 	// promise already allows for. Decided at the first completion send rather than at start: a
 	// zero send buffer leaves the readiness path's non-blocking send unable to queue anything
 	// until the peer has a receive pending, which would strand a handshake, and from here on
-	// every send is an overlapped one. TCP keeps its buffer: a zero buffer there completes each
-	// send only on the peer's acknowledgement, which the loop's send depth is not sized for
+	// every send is an overlapped one. The policy itself was settled at registration
 	if (!pSocket->m_bSendBufferDecided)
 	{
 		pSocket->m_bSendBufferDecided = true;
 
-		umint nSendBufferBytes = fg_IocpSocketSendBufferBytesOverride();
-		if (nSendBufferBytes == umint(-1) && fg_IocpDirectSendEnabled() && pSocket->m_AddressType == ENetAddressType_Unix)
-			nSendBufferBytes = 0;
-
+		umint nSendBufferBytes = pSocket->m_nSendBufferBytesToApply;
 		if (nSendBufferBytes != umint(-1))
 		{
 			int BufferSize = (int)fg_Min(nSendBufferBytes, umint(TCLimitsInt<int>::mc_Max));

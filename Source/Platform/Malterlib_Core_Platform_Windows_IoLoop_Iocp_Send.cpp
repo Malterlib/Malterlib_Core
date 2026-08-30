@@ -67,7 +67,7 @@ bool CIoLoop_Iocp::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistratio
 
 // Loop thread: the send takes its place at the tail of the registration's FIFO and is issued
 // at once if a slot is free
-void CIoLoop_Iocp::fp_AppendSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp)
+void CIoLoop_Iocp::fp_AppendSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported)
 {
 	_pOp->m_pNext = nullptr;
 	if (_pRegistration->m_pSendTail)
@@ -79,10 +79,10 @@ void CIoLoop_Iocp::fp_AppendSend(CIocpRegistration *_pRegistration, CIocpSendOp 
 	if (!_pRegistration->m_pSendNextToIssue)
 		_pRegistration->m_pSendNextToIssue = _pOp;
 
-	fp_IssueDeferredSends(_pRegistration);
+	fp_IssueDeferredSends(_pRegistration, _nReported);
 }
 
-void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration)
+void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration, umint &_nReported)
 {
 	umint nDepth = fg_IocpSendDepth();
 
@@ -91,7 +91,7 @@ void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration)
 		CIocpSendOp *pOp = _pRegistration->m_pSendNextToIssue;
 		_pRegistration->m_pSendNextToIssue = pOp->m_pNext;
 
-		fp_IssueSend(_pRegistration, pOp);
+		fp_IssueSend(_pRegistration, pOp, _nReported);
 	}
 
 #if DMibConfig_IoDebug_Enable
@@ -103,7 +103,36 @@ void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration)
 // Hands one send to the kernel. Every outcome leaves exactly one completion owed: a packet for
 // a pended or, without skip mode, a synchronously finished send; an inline entry for one that
 // finished at issue under skip mode or failed at issue. Counted from here to its report
-void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp)
+// A send the kernel has accepted on a socket that finishes sends only at the acknowledgement:
+// the whole request is reported as completed here, in issue order — which is submission
+// order, so the consumers' byte accounting sees what it would from a buffered send — and
+// the packet, when it comes, runs the release alone. An overlapped stream send transfers all
+// of its bytes unless the connection fails, and a failure after this report reaches the
+// consumer through the socket, as it does for a buffered send whose bytes the kernel took
+void CIoLoop_Iocp::fp_ReportSendAccepted(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported)
+{
+	if (!_pRegistration->m_bSendCompletesOnAck || _pOp->m_bCompletionReported)
+		return;
+
+	_pOp->m_bCompletionReported = true;
+
+#if DMibConfig_IoDebug_Enable
+	if (fg_IocpTraceEnabled())
+		fg_IocpTrace("send-accepted", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)_pOp->m_nRequested);
+#endif
+
+	NSys::CIoCompletion Result;
+	Result.m_nBytes = _pOp->m_nRequested;
+
+	++_pRegistration->m_nOutstanding;
+	++mp_nDispatchDepth;
+	_pOp->m_fOnComplete(Result);
+	--mp_nDispatchDepth;
+	--_pRegistration->m_nOutstanding;
+	++_nReported;
+}
+
+void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported)
 {
 	fg_MemClear(&_pOp->m_Overlapped, sizeof(_pOp->m_Overlapped));
 	_pOp->m_Status = 0;
@@ -157,13 +186,18 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 				g_IocpStats.m_nSendInline.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 		}
+		else
+			fp_ReportSendAccepted(_pRegistration, _pOp, _nReported);
 
 		return;
 	}
 
 	int Error = WSAGetLastError();
 	if (Error == WSA_IO_PENDING)
+	{
+		fp_ReportSendAccepted(_pRegistration, _pOp, _nReported);
 		return;
+	}
 
 	// Failed at issue: nothing reached the kernel and no packet follows. Reported through the
 	// FIFO like any other result, so it still lands in submission order
@@ -236,7 +270,11 @@ void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, um
 
 		++_pRegistration->m_nOutstanding;
 		++mp_nDispatchDepth;
-		pOp->m_fOnComplete(Result);
+		// Reported already for a send accepted on an acknowledgement-completing socket; what the
+		// packet says then is the release, and a failure it carries reaches the consumer through
+		// the socket instead
+		if (!pOp->m_bCompletionReported)
+			pOp->m_fOnComplete(Result);
 		if (pOp->m_fOnBufferReleased)
 			pOp->m_fOnBufferReleased();
 		--mp_nDispatchDepth;
@@ -247,7 +285,7 @@ void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, um
 	}
 
 	if (!_pRegistration->m_bDeregistering)
-		fp_IssueDeferredSends(_pRegistration);
+		fp_IssueDeferredSends(_pRegistration, _nReported);
 }
 
 // Sends that never reached the kernel are cancelled in place; they report in order behind the
@@ -261,6 +299,11 @@ void CIoLoop_Iocp::fp_CancelDeferredSends(CIocpRegistration *_pRegistration)
 	}
 
 	_pRegistration->m_pSendNextToIssue = nullptr;
+}
+
+bool CIoLoop_Iocp::f_SendReleaseIsPrompt(NSys::CIoLoopRegistration const *_pRegistration) const
+{
+	return !static_cast<CIocpRegistration const *>(_pRegistration)->m_bSendCompletesOnAck;
 }
 
 void CIoLoop_Iocp::fp_ReleaseSends(CIocpRegistration *_pRegistration)

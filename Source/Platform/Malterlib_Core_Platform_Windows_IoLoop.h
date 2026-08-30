@@ -155,6 +155,10 @@ struct CIocpSendOp : public CIocpOp
 	DWORD m_nBuffers = 0;
 	umint m_nRequested = 0;
 	CIocpSendOp *m_pNext = nullptr;
+
+	// The completion was reported when the kernel accepted the send (see
+	// CIocpRegistration::m_bSendCompletesOnAck); the packet only runs the release
+	bool m_bCompletionReported = false;
 #if DMibConfig_IoDebug_Enable
 	uint64 m_EnqueueStamp = 0;
 #endif
@@ -266,6 +270,17 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	// are reported from the loop's inline list instead of a packet
 	bool m_bSkipSuccess = false;
 
+	// The socket sends without a send buffer: the kernel transmits from the caller's pages and
+	// finishes the send only once the peer has acknowledged it. That is the release, not the
+	// completion — the completion is the ordering point the consumers consume bytes on, and
+	// waiting for the acknowledgement there serialized every message on a round trip, with
+	// the tail segment of each waiting out the peer's delayed acknowledgement. So the
+	// completion is reported as soon as the kernel has accepted the send, like the queued
+	// result of a zero copy send on Linux, and the packet runs only the release; the promise
+	// of a prompt release is withdrawn accordingly. Set by the socket layer at registration,
+	// before any submission or any consumer asks
+	bool m_bSendCompletesOnAck = false;
+
 	// The socket's completions provably arrive on this loop's port: the handle was bound here at
 	// registration, or rebound here. False for a handle that kept an earlier binding the system
 	// would not replace — readiness still works, transfers must not be submitted
@@ -301,6 +316,7 @@ struct CIoLoop_Iocp : public CIoLoop_Base
 	umint f_GetCompletionSendDepth() const override;
 	bool f_SubmitSendVectored(NMib::NSys::CIoLoopRegistration *_pRegistration, NMib::NSys::CIoSpan const *_pSpans, umint _nSpans, NMib::NSys::FIoCompletion &&_fOnComplete, NMib::NSys::FIoBufferReleased &&_fOnBufferReleased) override;
 	bool f_SupportsReceiveStream() const override;
+	bool f_SendReleaseIsPrompt(NMib::NSys::CIoLoopRegistration const *_pRegistration) const override;
 	bool f_StartReceiveStream(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> _pBackpressure, NMib::NSys::FIoStreamSink &&_fSink) override;
 	void f_ResumeReceiveStream(NMib::NSys::CIoLoopRegistration *_pRegistration) override;
 
@@ -330,9 +346,10 @@ private:
 	void fp_TryAcknowledge(CIocpRegistration *_pRegistration, umint &_nReported);
 	void fp_DispatchReadiness(CIocpRegistration *_pRegistration, NMib::NSys::EIoLoopEvent _Events, int _Error, umint &_nReported);
 
-	void fp_AppendSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp);
-	void fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp);
-	void fp_IssueDeferredSends(CIocpRegistration *_pRegistration);
+	void fp_AppendSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported);
+	void fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported);
+	void fp_IssueDeferredSends(CIocpRegistration *_pRegistration, umint &_nReported);
+	void fp_ReportSendAccepted(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported);
 	void fp_ReportCompletedSends(CIocpRegistration *_pRegistration, umint &_nReported);
 	void fp_CancelDeferredSends(CIocpRegistration *_pRegistration);
 	void fp_ReleaseSends(CIocpRegistration *_pRegistration);

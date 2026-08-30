@@ -69,6 +69,10 @@ struct CWindowsSocket
 	bool m_bInheritedFromOwningLoop = false;
 	bool m_bSendBufferDecided = false;
 
+	// The send buffer the first completion send applies, decided at registration (see
+	// f_StartSocket); ~umint(0) leaves the system default
+	umint m_nSendBufferBytesToApply = umint(-1);
+
 	// The loop this socket was registered with, which is where it has to be deregistered again.
 	// Set once when the socket is started and never changed, so a socket never migrates between
 	// loops and no handshake is needed to move it

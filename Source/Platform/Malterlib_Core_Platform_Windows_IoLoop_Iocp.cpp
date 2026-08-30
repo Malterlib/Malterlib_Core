@@ -693,7 +693,7 @@ void CIoLoop_Iocp::fp_ApplyPendingOp(CIocpPendingOp *_pOp, umint &_nReported)
 		return;
 	}
 
-	fp_AppendSend(pRegistration, _pOp->m_pSendOp);
+	fp_AppendSend(pRegistration, _pOp->m_pSendOp, _nReported);
 	fg_DeleteObject(CDefaultAllocator(), _pOp);
 }
 
