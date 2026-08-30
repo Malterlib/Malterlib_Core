@@ -1347,11 +1347,10 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 	pSocket->m_pOwningLoop->f_ResumeReceiveStream(pSocket->m_pIoRegistration);
 }
 
-// Nothing binds a descriptor to a loop for life here, so an inheritable socket registers like
-// any other; the flag is kept for the record
-void NSys::NNetwork::fg_SetInheritable(void *_pSocket)
+// Nothing binds a descriptor to a loop for life here, so an inheritable socket registers and
+// is given up like any other and there is nothing to remember about it
+void NSys::NNetwork::fg_SetInheritable(void *)
 {
-	((CPOSIXSocket *)_pSocket)->m_bInheritable = true;
 }
 
 // Moves the platform socket to a new owner without touching its registration: for a transport
@@ -1822,7 +1821,6 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 
 	auto *pSocket = fp_CreateSocket(ResultFD, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = _pSocket->m_AddressType;
-	pSocket->m_bInheritable = _pSocket->m_bInheritable;
 
 	{
 		sockaddr_storage SocketName;

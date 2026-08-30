@@ -113,10 +113,6 @@ struct CPOSIXSocket
 	// handle is the loop's identity for the socket; the loop never dereferences the socket itself
 	NMib::NSys::CIoLoopRegistration *m_pIoRegistration = nullptr;
 
-	// Created to be given up to an owner that cannot rebind a handle. Nothing here binds a
-	// descriptor to a loop for life, so the flag changes nothing on this platform
-	bool m_bInheritable = false;
-
 	// This is protected by the context m_Lock.
 	NMib::NIntrusive::TCAVLLink<> m_FDToSocketLink;
 
