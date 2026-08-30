@@ -411,73 +411,15 @@ bool CIoUringRing::fs_Available(CIoUringCaps &o_Caps)
 					}
 					o_Caps.m_bReceiveStream = bStream;
 
-					// Send bundles are a flag on the send opcode with no probe entry of its
-					// own, so probe functionally — a socketpair, a ring with one published
-					// buffer, one bundle send; an old kernel answers -EINVAL. Completion
-					// sends require it: there is exactly one completion send path, and a
-					// kernel without bundles keeps the whole readiness backend
-					if (o_Caps.m_bCompletion)
+					// Completion sends require bundles: there is exactly one completion send
+					// path, and a kernel without them keeps the whole readiness backend.
+					// Bundles arrived in the same release (6.10) as the send buffer-select
+					// feature bit, which the setup call reports directly
+					if (o_Caps.m_bCompletion && !(Probe.m_Features & gc_IoUringFeat_SendBufSelect))
 					{
-						bool bBundle = false;
-						int Sockets[2];
-						if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, Sockets) == 0)
-						{
-							void *pRing = NMib::NMemory::CDefaultAllocator::f_AllocAligned(PageSize, PageSize);
-							if (pRing)
-							{
-								CIoUringBufReg Reg;
-								NMib::NMemory::fg_MemClear(&Reg, sizeof(Reg));
-								Reg.m_RingAddr = (uint64)(umint)pRing;
-								Reg.m_nRingEntries = 8;
-								Reg.m_Bgid = 1;
-
-								if (fs_Register(Probe.m_RingFd, gc_IoUringRegister_PbufRing, &Reg, 1) == 0)
-								{
-									static uint8 s_ProbeBytes[64];
-									auto *pEntries = (CIoUringBuf *)pRing;
-									pEntries[0].m_Addr = (uint64)(umint)s_ProbeBytes;
-									pEntries[0].m_Len = sizeof(s_ProbeBytes);
-									pEntries[0].m_Bid = 0;
-									__atomic_store_n((uint16 *)((uint8 *)pRing + 14), 1, __ATOMIC_RELEASE);
-
-									CIoUringSqe *pSqe = Probe.f_GetSqe();
-									NMib::NMemory::fg_MemClear(pSqe, sizeof(*pSqe));
-									pSqe->m_Opcode = gc_IoUringOp_Send;
-									pSqe->m_Fd = Sockets[0];
-									pSqe->m_Flags = gc_IoUringSqeFlag_BufferSelect;
-									pSqe->m_IoPrio = gc_IoUringRecvSend_Bundle;
-									pSqe->m_BufIndex = 1;
-									pSqe->m_OpFlags = MSG_NOSIGNAL;
-									pSqe->m_UserData = 1;
-
-									if (Probe.f_Submit(1, true) >= 0)
-									{
-										if (CIoUringCqe *pCqe = Probe.f_PeekCqe())
-										{
-											bBundle = pCqe->m_Res == (int32)sizeof(s_ProbeBytes);
-											Probe.f_AdvanceCq();
-										}
-									}
-
-									CIoUringBufReg Unreg;
-									NMib::NMemory::fg_MemClear(&Unreg, sizeof(Unreg));
-									Unreg.m_Bgid = 1;
-									fs_Register(Probe.m_RingFd, gc_IoUringRegister_UnregisterPbufRing, &Unreg, 1);
-								}
-
-								NMib::NMemory::CDefaultAllocator::f_Free(pRing, PageSize);
-							}
-
-							close(Sockets[0]);
-							close(Sockets[1]);
-						}
-
-						o_Caps.m_bCompletion = bBundle;
-						if (!bBundle)
-						{
-							o_Caps.m_bSendZeroCopy = false;
-							o_Caps.m_bReceiveStream = false;
-						}
+						o_Caps.m_bCompletion = false;
+						o_Caps.m_bSendZeroCopy = false;
+						o_Caps.m_bReceiveStream = false;
 					}
 				}
 

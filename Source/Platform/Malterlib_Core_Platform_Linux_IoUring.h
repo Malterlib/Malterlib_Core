@@ -111,6 +111,7 @@ constexpr uint32 gc_IoUringFeat_SingleMmap = 1 << 0;
 constexpr uint32 gc_IoUringFeat_NoDrop = 1 << 1;
 constexpr uint32 gc_IoUringFeat_SubmitStable = 1 << 2;
 constexpr uint32 gc_IoUringFeat_ExtArg = 1 << 8;
+constexpr uint32 gc_IoUringFeat_SendBufSelect = 1 << 14;
 
 constexpr uint8 gc_IoUringOp_PollAdd = 6;
 constexpr uint8 gc_IoUringOp_PollRemove = 7;
