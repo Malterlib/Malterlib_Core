@@ -797,8 +797,15 @@ namespace
 	void fg_SizeLoopbackTcpBuffers(SOCKET _Socket)
 	{
 		int BufferSize = gc_LoopbackTcpSocketBufferBytes;
-		setsockopt(_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize));
-		setsockopt(_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize));
+		if
+		(
+			setsockopt(_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+			|| setsockopt(_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+		)
+		{
+			uint32 Error = WSAGetLastError();
+			DMibErrorNet((CStr::CFormat("Could not size the buffers of a loopback TCP socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
 	}
 
 	void fg_SetNonBlocking(SOCKET _Socket, char const *_pWhat)
@@ -1161,8 +1168,15 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 	if (umint nBufferBytes = fg_IocpSocketBufferBytesOverride(); nBufferBytes && _pSocket->m_Socket != INVALID_SOCKET)
 	{
 		int BufferSize = (int)fg_Min(nBufferBytes, umint(INT_MAX));
-		setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize));
-		setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize));
+		if
+		(
+			setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+			|| setsockopt(_pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+		)
+		{
+			uint32 Error = WSAGetLastError();
+			DMibErrorNet((CStr::CFormat("Could not apply MalterlibSocketBufferSize, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
 	}
 
 	if (_pSocket->m_pIoRegistration)
@@ -1390,9 +1404,18 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 		return;
 
 	int BufferSize = (int)fg_Min(_nBytes, umint(TCLimitsInt<int>::mc_Max));
-	if (pSocket->m_nSendBufferBytesToApply == umint(-1))
-		setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize));
-	setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize));
+	if
+	(
+		(
+			pSocket->m_nSendBufferBytesToApply == umint(-1)
+			&& setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+		)
+		|| setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
+	)
+	{
+		uint32 Error = WSAGetLastError();
+		DMibErrorNet((CStr::CFormat("Could not size the socket buffers to the send window, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+	}
 }
 
 // SIO_TCP_INFO and its record, as the SDK declares them for Windows 10 1703 and later, spelled
@@ -1482,8 +1505,14 @@ bool NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *
 		umint nSendBufferBytes = pSocket->m_nSendBufferBytesToApply;
 		if (nSendBufferBytes != umint(-1))
 		{
+			// The registration's release promise was settled from this policy, so a socket the
+			// loop already treats as sending without a buffer must not keep one behind its back
 			int BufferSize = (int)fg_Min(nSendBufferBytes, umint(TCLimitsInt<int>::mc_Max));
-			setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize));
+			if (setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0)
+			{
+				uint32 Error = WSAGetLastError();
+				DMibErrorNet((CStr::CFormat("Could not apply the send buffer policy, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			}
 		}
 	}
 
@@ -2144,7 +2173,11 @@ CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::
 
 	// A handle from an older module may still carry a window or event selection; clearing it is
 	// also what puts the handle into the non-blocking mode a fresh selection would have
-	WSAEventSelect(Socket, nullptr, 0);
+	if (WSAEventSelect(Socket, nullptr, 0) != 0)
+	{
+		uint32 Error = WSAGetLastError();
+		DMibErrorNet((CStr::CFormat("Could not clear the event selection of an inherited socket handle, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+	}
 	fg_SetNonBlocking(Socket, "inherit");
 
 	// The loop that will own the socket takes the handle over now: a handle some other loop had

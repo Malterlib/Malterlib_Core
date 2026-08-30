@@ -1429,8 +1429,15 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 	}
 
 	int BufferSize = int(nBytes);
-	setsockopt(pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &BufferSize, sizeof(BufferSize));
-	setsockopt(pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &BufferSize, sizeof(BufferSize));
+	if
+	(
+		setsockopt(pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &BufferSize, sizeof(BufferSize)) != 0
+		|| setsockopt(pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &BufferSize, sizeof(BufferSize)) != 0
+	)
+	{
+		int Error = errno;
+		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("setsockopt (send window)", Error));
+	}
 #elif defined(DPlatformFamily_Linux)
 	// The kernel already autotunes the buffers; what a zero copy sender needs bounded is how
 	// far ahead of the transmit edge the write queue may run, since a zero copy send only
@@ -1445,7 +1452,11 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 		return;
 
 	int LowWater = int(fg_Clamp(_nBytes / 4, umint(64 * 1024), umint(256 * 1024)));
-	setsockopt(pSocket->m_FD, IPPROTO_TCP, TCP_NOTSENT_LOWAT, &LowWater, sizeof(LowWater));
+	if (setsockopt(pSocket->m_FD, IPPROTO_TCP, TCP_NOTSENT_LOWAT, &LowWater, sizeof(LowWater)) != 0)
+	{
+		int Error = errno;
+		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("setsockopt (TCP_NOTSENT_LOWAT)", Error));
+	}
 #else
 	(void)_pSocket;
 	(void)_nBytes;
