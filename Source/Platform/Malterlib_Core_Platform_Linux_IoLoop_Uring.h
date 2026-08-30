@@ -211,13 +211,13 @@ private:
 	// once — a flush inside the pass restages — which the pending flag makes harmless
 	NMib::NContainer::TCVector<CUringRegistration *> mp_StreamFlushQueue;
 
+	// The io subsystem, cached since each access through the getter is an atomic operation
+	CIoSubSystem_Linux *mp_pIo = nullptr;
+
 	// Buffer group ids are a per-ring u16 namespace; freed ids are reused before the counter
 	// grows so a long-lived loop cannot wrap into an id still registered
 	NMib::NContainer::TCVector<uint16> mp_FreeBgids;
 	uint16 mp_NextBgid = 0;
-
-	// The io subsystem, cached since each access through the getter is an atomic operation
-	CIoSubSystem_Linux *mp_pIo = nullptr;
 
 	bool mp_bRingCreated = false;
 	bool mp_bFutexArmed = false;
