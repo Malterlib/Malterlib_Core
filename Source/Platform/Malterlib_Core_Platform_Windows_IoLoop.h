@@ -280,15 +280,14 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	// are reported from the loop's inline list instead of a packet
 	bool m_bSkipSuccess = false;
 
-	// The socket sends without a send buffer: the kernel transmits from the caller's pages and
-	// finishes the send only once the peer has acknowledged it. That is the release, not the
-	// completion — the completion is the ordering point the consumers consume bytes on, and
-	// waiting for the acknowledgement there serialized every message on a round trip, with
-	// the tail segment of each waiting out the peer's delayed acknowledgement. So the
-	// completion is reported as soon as the kernel has accepted the send, like the queued
-	// result of a zero copy send on Linux, and the packet runs only the release; the promise
-	// of a prompt release is withdrawn accordingly. Set by the socket layer at registration,
-	// before any submission or any consumer asks
+	// The socket sends with SO_SNDBUF=0: the kernel transmits from the caller's pages, and the
+	// overlapped send finishes only when the peer acknowledges the bytes. Reporting
+	// m_fOnComplete that late would serialize every message on a round trip (measured: the last
+	// segment of each also waits out the peer's delayed acknowledgement), so for these
+	// registrations the loop reports m_fOnComplete as soon as WSASend accepts the send — like
+	// the queued result of a Linux zero copy send — and the completion packet runs only
+	// m_fOnBufferReleased. f_SendReleaseIsPrompt answers false for them. Set by the socket
+	// layer at registration, before any send is submitted
 	bool m_bSendCompletesOnAck = false;
 
 	// The socket's completions provably arrive on this loop's port: the handle was bound here at

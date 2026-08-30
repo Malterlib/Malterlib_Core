@@ -1206,13 +1206,16 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 		)
 	;
 
-	// The send buffer policy, settled here so the loop's release promise is known before any
-	// consumer asks; the option itself is applied at the first completion send (see
-	// fg_SubmitSendVectored). Stream sockets go without a buffer: a unix socket's sends then
-	// deliver straight into the peer's pending receive and complete within the local round
-	// trip, and a TCP socket's transmit from the caller's pages and finish at the
-	// acknowledgement, which the loop turns into a completion at issue and a release at the
-	// packet, with the send window bounding what is unacknowledged
+	// Decide the send buffer policy now, before any send: m_bSendCompletesOnAck below is set
+	// from it, and consumers read the loop's f_SendReleaseIsPrompt answer — which is derived
+	// from that flag — when they activate completion io. The SO_SNDBUF option itself is applied
+	// later, at the first completion send; fg_SubmitSendVectored explains why.
+	//
+	// The policy: stream sockets get SO_SNDBUF=0, so the kernel sends straight from the
+	// caller's buffers instead of copying them first. On a unix socket the data is copied once,
+	// into the receive the peer has posted, and the send completes right away. On TCP the send
+	// only completes once the peer has acknowledged the bytes; see m_bSendCompletesOnAck for
+	// how the loop reports those, and the send window for what bounds them
 	_pSocket->m_nSendBufferBytesToApply = fg_IocpSocketSendBufferBytesOverride();
 	// TCP goes without a buffer only where SIO_TCP_INFO can size its pipeline to the path; an
 	// older kernel keeps the buffered sends, which need no such sizing
@@ -1487,17 +1490,18 @@ bool NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *
 	if (!pSocket->m_pOwningLoop || !pSocket->m_pIoRegistration)
 		return false;
 
-	// A unix socket's completion sends go without a send buffer: with SO_SNDBUF at zero AFD
-	// transmits an overlapped send from the caller's locked pages, and afunix delivers it into a
-	// receive the peer already has pending with a single copy, where the buffered path copies the
-	// send into the kernel and out again — measured at 22 against 18 GB/s on one connection and
-	// 48 against 25 on three, with the receive stream's posted slices deciding how much of the
-	// stream takes the direct route. The send then completes when the peer has consumed the
-	// bytes rather than when the kernel has taken them, which is what the loop's release
-	// promise already allows for. Decided at the first completion send rather than at start: a
-	// zero send buffer leaves the readiness path's non-blocking send unable to queue anything
-	// until the peer has a receive pending, which would strand a handshake, and from here on
-	// every send is an overlapped one. The policy itself was settled at registration
+	// Applies the send buffer policy that f_StartSocket decided. It is applied here, at the
+	// first completion send, and not at start, because SO_SNDBUF=0 breaks the readiness path: a
+	// non-blocking send on such a socket cannot queue anything until the peer has a receive
+	// pending, which would strand a handshake. From this point on every send is overlapped, so
+	// that no longer matters.
+	//
+	// The zero buffer removes a copy. On a unix socket AFD transmits the overlapped send from
+	// the caller's locked pages and afunix places it straight into the receive the peer has
+	// posted: measured at 22 vs 18 GB/s on one connection and 48 vs 25 on three, with the
+	// receive stream's posted slices deciding how much of the stream takes that route. The send
+	// then completes when the peer has consumed the bytes rather than when the kernel has
+	// copied them, which f_SendReleaseIsPrompt already tells the consumers
 	if (!pSocket->m_bSendBufferDecided)
 	{
 		pSocket->m_bSendBufferDecided = true;
@@ -1505,8 +1509,8 @@ bool NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *
 		umint nSendBufferBytes = pSocket->m_nSendBufferBytesToApply;
 		if (nSendBufferBytes != umint(-1))
 		{
-			// The registration's release promise was settled from this policy, so a socket the
-			// loop already treats as sending without a buffer must not keep one behind its back
+			// m_bSendCompletesOnAck was set from this policy at registration, so the socket must
+			// not silently keep a buffer the loop believes is gone
 			int BufferSize = (int)fg_Min(nSendBufferBytes, umint(TCLimitsInt<int>::mc_Max));
 			if (setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0)
 			{
