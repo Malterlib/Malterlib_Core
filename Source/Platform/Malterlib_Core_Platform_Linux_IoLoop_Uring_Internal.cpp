@@ -18,18 +18,13 @@ using namespace NMib::NSys;
 
 namespace
 {
-	EUringZeroCopyOverride fg_UringZeroCopyOverride()
-	{
-		return fg_IoSubSystem_Linux().f_ZeroCopyOverride();
-	}
-
 	// Whether this descriptor's peer is somewhere a zero copy send is worth doing. A unix socket
 	// or a loopback address is not: the pages end up referenced by the peer's receive queue on the
 	// same machine, so nothing is saved and they stay pinned until it reads.
 	//
 	// MalterlibIoUringZeroCopyLocal=1 says yes regardless and =0 says no regardless, so both sides
 	// of the decision can be measured
-	bool fg_UringPeerIsRemote(int _Fd)
+	bool fg_UringPeerIsRemote(CIoSubSystem_Linux *_pIo, int _Fd)
 	{
 		sockaddr_storage Peer;
 		socklen_t nPeer = sizeof(Peer);
@@ -45,7 +40,7 @@ namespace
 		if (Peer.ss_family != AF_INET && Peer.ss_family != AF_INET6)
 			return false;
 
-		switch (fg_UringZeroCopyOverride())
+		switch (_pIo->f_ZeroCopyOverride())
 		{
 		case EUringZeroCopyOverride::mc_Never:
 			return false;
@@ -82,47 +77,24 @@ namespace
 }
 
 #if DMibConfig_IoDebug_Enable
-umint fg_UringSendDepth()
-{
-	return fg_IoSubSystem_Linux().f_SendDepth();
-}
-
-umint fg_UringReceiveBuffersOverride()
-{
-	return fg_IoSubSystem_Linux().f_ReceiveBuffersOverride();
-}
-
-umint fg_UringReceiveBufferBytesOverride()
-{
-	return fg_IoSubSystem_Linux().f_ReceiveBufferBytesOverride();
-}
-#endif
-
-#if DMibConfig_IoDebug_Enable
 uint64 fg_UringStatsNow()
 {
 	timespec Time;
 	clock_gettime(CLOCK_MONOTONIC_RAW, &Time);
 	return (uint64)Time.tv_sec * 1000000000 + (uint64)Time.tv_nsec;
 }
-
-// The subsystem read the knob once and registered the report in its constructor
-bool fg_UringStatsEnabled()
-{
-	return fg_IoSubSystem_Linux().f_StatsEnabled();
-}
 #endif
 
-void fg_UringProbePeerClass(CUringRegistration *_pRegistration)
+void fg_UringProbePeerClass(CIoSubSystem_Linux *_pIo, CUringRegistration *_pRegistration)
 {
 	if (_pRegistration->m_bZeroCopyProbed)
 		return;
 
 	_pRegistration->m_bZeroCopyProbed = true;
-	_pRegistration->m_bZeroCopyEligible = fg_UringPeerIsRemote(_pRegistration->m_Handle);
+	_pRegistration->m_bZeroCopyEligible = fg_UringPeerIsRemote(_pIo, _pRegistration->m_Handle);
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_UringTraceEnabled())
+	if (_pIo->f_TraceEnabled())
 		fg_UringTrace(_pRegistration->m_bZeroCopyEligible ? "zerocopy-eligible" : "zerocopy-local", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 }

@@ -615,9 +615,9 @@ namespace
 	// The loopback fast path bypasses most of the TCP stack for connections between two sockets
 	// on this machine that both opted in; on newer systems loopback is already short-circuited
 	// and the option is a no-op. MalterlibLoopbackFastPath=0 leaves it off for measurement
-	void fg_EnableLoopbackFastPath(SOCKET _Socket)
+	void fg_EnableLoopbackFastPath(CIoSubSystem_Windows *_pIo, SOCKET _Socket)
 	{
-		if (!fg_IoSubSystem_Windows().f_LoopbackFastPathEnabled())
+		if (!_pIo->f_LoopbackFastPathEnabled())
 			return;
 
 		int bEnable = 1;
@@ -883,6 +883,7 @@ CWindowsSocket *CWindowsSocketContext::fp_CreateSocket
 	)
 {
 	NMib::NStorage::TCUniquePointer<CWindowsSocket> pNewSocket = fg_Construct(_Socket, _Mode, _Events, fg_Move(_fOnStateChange));
+	pNewSocket->m_pIo = mp_pIo;
 
 	if (_bFromInherit)
 		pNewSocket->m_bInitialWriteNotification = false;
@@ -983,7 +984,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 
 		if (fg_IsLoopbackAddress(Address))
 		{
-			fg_EnableLoopbackFastPath(hSock);
+			fg_EnableLoopbackFastPath(mp_pIo, hSock);
 			fg_SizeLoopbackTcpBuffers(hSock);
 		}
 	}
@@ -1495,7 +1496,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 	// Accepted sockets inherit the fast path from the listener; only loopback peers that opted
 	// in themselves take it
 	if (AddressType != ENetAddressType_Unix)
-		fg_EnableLoopbackFastPath(hSock);
+		fg_EnableLoopbackFastPath(mp_pIo, hSock);
 
 	fg_SetNonBlocking(hSock, "listen");
 
@@ -1683,7 +1684,7 @@ bool CWindowsSocketContext::f_Shutdown(CWindowsSocket *_pSocket)
 // as the socket closes: the loss recovery and window figures that decide a path's throughput
 static void fsg_DumpTcpInfoAtClose(CWindowsSocket *_pSocket)
 {
-	if (!NSys::fg_IoSubSystem().f_StatsEnabled() || _pSocket->m_AddressType == ENetAddressType_Unix || _pSocket->m_Mode == EWindowsSocketMode_Datagram || _pSocket->m_Mode == EWindowsSocketMode_Listen)
+	if (!_pSocket->m_pIo->f_StatsEnabled() || _pSocket->m_AddressType == ENetAddressType_Unix || _pSocket->m_Mode == EWindowsSocketMode_Datagram || _pSocket->m_Mode == EWindowsSocketMode_Listen)
 		return;
 
 	DWORD Version = 0;

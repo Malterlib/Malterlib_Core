@@ -122,9 +122,4 @@ CIoSubSystem_Windows &fg_IoSubSystem_Windows();
 void fg_DumpIocpStats(NMib::NSys::CIoSubSystem &_Io);
 #endif
 
-#if DMibConfig_IoDebug_Enable
-bool fg_IocpTraceEnabled();
-void fg_IocpTrace(char const *_pWhat, void const *_pToken, NMib::NSys::CIoLoopHandle _Handle, uint32 _Value);
-#endif
-
 #include "Malterlib_Core_Platform_Windows_IoSubSystem.hpp"

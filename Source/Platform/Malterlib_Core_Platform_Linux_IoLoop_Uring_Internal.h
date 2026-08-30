@@ -147,46 +147,13 @@ enum class EUringZeroCopyOverride
 	, mc_Always
 };
 
-// Answered from the subsystem in io-debug builds and as constants otherwise, so the consulting
-// branches fold away in release
-#if DMibConfig_IoDebug_Enable
-umint fg_UringSendDepth();
-#else
-constexpr umint fg_UringSendDepth()
-{
-	return gc_UringDefaultSendDepth;
-}
-#endif
-
-// Debug override for the number of buffers in a receive stream's provided ring,
-// 0 = derive the count from the socket's own buffer size
-#if DMibConfig_IoDebug_Enable
-umint fg_UringReceiveBuffersOverride();
-#else
-constexpr umint fg_UringReceiveBuffersOverride()
-{
-	return 0;
-}
-#endif
-
-// Debug override for the size of each receive stream buffer, 0 = use the socket's own size
-#if DMibConfig_IoDebug_Enable
-umint fg_UringReceiveBufferBytesOverride();
-#else
-constexpr umint fg_UringReceiveBufferBytesOverride()
-{
-	return 0;
-}
-#endif
-
 #if DMibConfig_IoDebug_Enable
 // Monotonic nanoseconds for the send idle gap measurement; only called when stats are on
 uint64 fg_UringStatsNow();
-bool fg_UringStatsEnabled();
 #endif
 
 // Settles a registration's zero copy eligibility once, at its first send
-void fg_UringProbePeerClass(CUringRegistration *_pRegistration);
+void fg_UringProbePeerClass(CIoSubSystem_Linux *_pIo, CUringRegistration *_pRegistration);
 
 // The ring's block reuse, shared with every buffer born from it. A dying buffer returns its
 // block here instead of to the allocator, and the refill pops newest first, so the block the

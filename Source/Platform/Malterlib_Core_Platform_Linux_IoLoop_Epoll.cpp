@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Linux_IoLoop_Epoll.h"
+#include "Malterlib_Core_Platform_Linux_IoSubSystem.h"
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
 
 #include <unistd.h>
@@ -15,6 +16,10 @@ using namespace NMib::NSys;
 
 CIoLoop_Epoll::CIoLoop_Epoll()
 {
+#if DMibConfig_IoDebug_Enable
+	mp_pIo = &fg_IoSubSystem_Linux();
+#endif
+
 	int (* fLocal_epoll_create1)(int __flags) __THROW;
 
 	(void * &)fLocal_epoll_create1 = dlsym(RTLD_DEFAULT, "epoll_create1");
@@ -170,7 +175,7 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock)
 		auto *pRegistration = (NSys::CIoLoopRegistration *)Event.data.ptr;
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_UringTraceEnabled() && (Event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)))
+		if (mp_pIo->f_TraceEnabled() && (Event.events & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)))
 			fg_UringTrace("close-event", pRegistration->m_pToken, pRegistration->m_Handle, Event.events);
 #endif
 

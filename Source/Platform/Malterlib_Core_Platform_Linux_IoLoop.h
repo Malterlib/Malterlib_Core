@@ -45,6 +45,5 @@ constexpr uint32 fg_PollInterestFromIoLoopMask(NMib::NSys::EIoLoopEvent _EventMa
 void fg_UringLogMemlockFallback();
 
 #if DMibConfig_IoDebug_Enable
-bool fg_UringTraceEnabled();
 void fg_UringTrace(char const *_pWhat, void const *_pToken, NMib::NSys::CIoLoopHandle _Handle, uint32 _Value);
 #endif

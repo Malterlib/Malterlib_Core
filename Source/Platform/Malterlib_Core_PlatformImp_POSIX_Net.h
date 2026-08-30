@@ -61,6 +61,9 @@ struct CPOSIXSocket
 	// This is stull that will be changed or use by the poller etc...
 	NMib::NThread::CMutual m_Lock;
 	bool m_bInitialWriteNotification;
+	// The io subsystem, cached at creation so the socket paths need no getter
+	NMib::NSys::CIoSubSystem *m_pIo = nullptr;
+
 	NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> m_fOnStateChange;
 	NAtomic::TCAtomic<uint32> m_StateAtomic;
 	int m_CloseError;

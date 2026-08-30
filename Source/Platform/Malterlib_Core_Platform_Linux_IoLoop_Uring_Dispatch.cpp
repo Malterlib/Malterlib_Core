@@ -141,7 +141,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 		if (_Flags & gc_IoUringCqe_FNotif)
 		{
 #if DMibConfig_IoDebug_Enable
-			if (fg_UringStatsEnabled())
+			if (mp_pIo->f_StatsEnabled())
 				mp_pIo->m_UringStats.m_nSendNotifs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -175,7 +175,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			if (_Res >= 0)
 			{
 #if DMibConfig_IoDebug_Enable
-				if (fg_UringStatsEnabled())
+				if (mp_pIo->f_StatsEnabled())
 					mp_pIo->m_UringStats.m_nSendBytesSent.f_FetchAdd((uint64)(uint32)_Res, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -186,7 +186,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 				// The connection is over for sends; -ENOBUFS is only the arm racing an empty
 				// ring and carries on below
 #if DMibConfig_IoDebug_Enable
-				if (fg_UringStatsEnabled() && _Res != -ECANCELED)
+				if (mp_pIo->f_StatsEnabled() && _Res != -ECANCELED)
 					mp_pIo->m_UringStats.m_nSendErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -206,7 +206,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			if (pSendRing && !pSendRing->m_Records.f_IsEmpty() && !pSendRegistration->m_bDeregistering)
 				fp_ArmSendBundle(pSendRegistration);
 #if DMibConfig_IoDebug_Enable
-			else if (fg_UringStatsEnabled())
+			else if (mp_pIo->f_StatsEnabled())
 				pSendRegistration->m_SendIdleStamp = fg_UringStatsNow();
 #endif
 
@@ -216,7 +216,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 		}
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_UringStatsEnabled())
+		if (mp_pIo->f_StatsEnabled())
 			pSendRegistration->m_SendIdleStamp = fg_UringStatsNow();
 #endif
 
@@ -232,7 +232,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			Result.m_nBytes = (umint)(uint32)_Res;
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_UringStatsEnabled())
+		if (mp_pIo->f_StatsEnabled())
 		{
 			if (_Res >= 0)
 			{
@@ -261,7 +261,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			mp_NotifyPending.f_InsertLast(pOp);
 			mp_nNotifyPendingBytes += pOp->m_nRequested;
 #if DMibConfig_IoDebug_Enable
-			if (fg_UringStatsEnabled())
+			if (mp_pIo->f_StatsEnabled())
 			{
 				pOp->m_EnqueueStamp = fg_UringStatsNow();
 				if (mp_NotifyPending.f_GetLen() > mp_pIo->m_UringStats.m_nSendMaxInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
@@ -317,7 +317,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			DMibFastCheck(pRing->m_nOrderCount != 0 && pRing->f_OrderFront() == Bid);
 
 #if DMibConfig_IoDebug_Enable
-			if (fg_UringStatsEnabled())
+			if (mp_pIo->f_StatsEnabled())
 			{
 				mp_pIo->m_UringStats.m_nRecvSegments.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 				mp_pIo->m_UringStats.m_nRecvBytes.f_FetchAdd((uint64)(uint32)_Res, NAtomic::gc_MemoryOrder_Relaxed);
@@ -409,7 +409,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			if (_Res == -ENOBUFS)
 			{
 #if DMibConfig_IoDebug_Enable
-				if (fg_UringStatsEnabled())
+				if (mp_pIo->f_StatsEnabled())
 					mp_pIo->m_UringStats.m_nStreamEnobufs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -430,7 +430,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 					pStreamRegistration->m_bStreamNeedsRearm = true;
 
 #if DMibConfig_IoDebug_Enable
-					if (fg_UringTraceEnabled())
+					if (mp_pIo->f_TraceEnabled())
 						fg_UringTrace("stream-dry", pStreamRegistration->m_pToken, pStreamRegistration->m_Handle, 0);
 #endif
 				}
@@ -454,7 +454,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			else
 			{
 #if DMibConfig_IoDebug_Enable
-				if (fg_UringStatsEnabled())
+				if (mp_pIo->f_StatsEnabled())
 					mp_pIo->m_UringStats.m_nRecvErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -478,7 +478,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 	auto fDispatchEvents = [&](uint32 _PollBits)
 		{
 #if DMibConfig_IoDebug_Enable
-			if (fg_UringTraceEnabled() && (_PollBits & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)))
+			if (mp_pIo->f_TraceEnabled() && (_PollBits & (EPOLLERR | EPOLLHUP | EPOLLRDHUP)))
 				fg_UringTrace("close-event", pRegistration->m_pToken, pRegistration->m_Handle, _PollBits);
 #endif
 

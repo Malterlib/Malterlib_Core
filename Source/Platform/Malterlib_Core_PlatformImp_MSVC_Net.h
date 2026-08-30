@@ -58,6 +58,9 @@ struct CWindowsSocket
 	ENetAddressType m_AddressType = ENetAddressType_None;
 	TCUniquePointer<CUnixListenState> m_pUnixListen;
 
+	// The io subsystem, cached at creation so the socket paths need no getter
+	NMib::NSys::CIoSubSystem *m_pIo = nullptr;
+
 	// Changed by the loop's dispatch and the consumer alike, under the lock
 	NMib::NThread::CMutual m_Lock;
 	bool m_bInitialWriteNotification;

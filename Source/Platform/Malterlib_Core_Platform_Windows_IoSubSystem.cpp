@@ -103,14 +103,4 @@ void CIoSubSystem_Windows::f_Trace(char const *_pWhat, void const *_pToken, NSys
 	fg_IocpTracePrint(Entry);
 }
 
-bool fg_IocpTraceEnabled()
-{
-	return fg_IoSubSystem_Windows().f_TraceEnabled();
-}
-
-void fg_IocpTrace(char const *_pWhat, void const *_pToken, NSys::CIoLoopHandle _Handle, uint32 _Value)
-{
-	fg_IoSubSystem_Windows().f_Trace(_pWhat, _pToken, _Handle, _Value);
-}
-
 #endif

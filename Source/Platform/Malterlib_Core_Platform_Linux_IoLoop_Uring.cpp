@@ -207,7 +207,7 @@ void CIoLoop_IoUring::fp_TryAcknowledge(CUringRegistration *_pRegistration, umin
 	--mp_nDeregistering;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_UringTraceEnabled())
+	if (mp_pIo->f_TraceEnabled())
 		fg_UringTrace("ack", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 
@@ -244,7 +244,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 				pRegistration->m_pDeregWait = Change.m_pDeregWait;
 				pRegistration->m_fOnDeregistered = fg_Move(Change.m_fOnDeregistered);
 #if DMibConfig_IoDebug_Enable
-				if (fg_UringTraceEnabled())
+				if (mp_pIo->f_TraceEnabled())
 					fg_UringTrace("deregister", pRegistration->m_pToken, Change.m_Handle, (uint32)pRegistration->m_nOutstanding);
 #endif
 
@@ -283,7 +283,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 			{
 				auto *pRegistration = static_cast<CUringRegistration *>(Change.m_pRegistration);
 #if DMibConfig_IoDebug_Enable
-				if (fg_UringTraceEnabled())
+				if (mp_pIo->f_TraceEnabled())
 					fg_UringTrace("register", pRegistration->m_pToken, Change.m_Handle, uint32(pRegistration->m_EventMask));
 #endif
 
@@ -376,7 +376,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 				}
 
 #if DMibConfig_IoDebug_Enable
-				if (fg_UringTraceEnabled())
+				if (mp_pIo->f_TraceEnabled())
 					fg_UringTrace(pOp->m_bStreamStart ? "completion-mode-read" : "completion-mode-write", pRegistration->m_pToken, pRegistration->m_Handle, 0);
 #endif
 			}
@@ -412,7 +412,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 			// single-operation path so zero copy stays available; a local peer's transfers are
 			// published into the bundle ring, where one operation drains everything published
 			// at its issue and nothing waits on a caller between operations
-			fg_UringProbePeerClass(pRegistration);
+			fg_UringProbePeerClass(mp_pIo, pRegistration);
 
 			if (!pRegistration->m_bZeroCopyEligible)
 			{
@@ -438,13 +438,13 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 			pRegistration->m_pSendOp = pOp;
 
 #if DMibConfig_IoDebug_Enable
-			if (fg_UringStatsEnabled() && pOp->m_EnqueueStamp)
+			if (mp_pIo->f_StatsEnabled() && pOp->m_EnqueueStamp)
 			{
 				mp_pIo->m_UringStats.m_nSendSubmitLagNs.f_FetchAdd(fg_UringStatsNow() - pOp->m_EnqueueStamp, NAtomic::gc_MemoryOrder_Relaxed);
 				mp_pIo->m_UringStats.m_nSendSubmitLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			}
 
-			if (fg_UringStatsEnabled() && pRegistration->m_SendIdleStamp)
+			if (mp_pIo->f_StatsEnabled() && pRegistration->m_SendIdleStamp)
 			{
 				mp_pIo->m_UringStats.m_nSendIdleNs.f_FetchAdd(fg_UringStatsNow() - pRegistration->m_SendIdleStamp, NAtomic::gc_MemoryOrder_Relaxed);
 				mp_pIo->m_UringStats.m_nSendIdleGaps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
@@ -462,7 +462,7 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 			pOp->m_bZeroCopy = fp_IsZeroCopyEligible(pRegistration, nSendBytes);
 
 #if DMibConfig_IoDebug_Enable
-			if (fg_UringStatsEnabled())
+			if (mp_pIo->f_StatsEnabled())
 			{
 				mp_pIo->m_UringStats.m_nSendOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 				mp_pIo->m_UringStats.m_nSendBytesRequested.f_FetchAdd(nSendBytes, NAtomic::gc_MemoryOrder_Relaxed);

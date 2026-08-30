@@ -11,11 +11,6 @@ using namespace NMib;
 using namespace NMib::NMemory;
 
 #if DMibConfig_IoDebug_Enable
-bool fg_UringTraceEnabled()
-{
-	return fg_IoSubSystem_Linux().f_TraceEnabled();
-}
-
 void fg_UringTrace(char const *_pWhat, void const *_pToken, NMib::NSys::CIoLoopHandle _Handle, uint32 _Value)
 {
 	int64 Ticks = NTime::CSystem_Time::fs_GetTimerValue();
@@ -42,12 +37,6 @@ void fg_UringTrace(char const *_pWhat, void const *_pToken, NMib::NSys::CIoLoopH
 
 NMib::NSys::ICIoLoop *fg_CreatePlatformIoLoop()
 {
-#if DMibConfig_IoDebug_Enable
-	// The exit report registers on the first ask; asking at loop creation makes a run whose
-	// transfers stayed on readiness report the completion counters' zeros alongside
-	fg_UringStatsEnabled();
-#endif
-
 	auto &Io = fg_IoSubSystem_Linux();
 	if (Io.m_bUringAvailable && Io.m_bUringMemlockFits)
 	{

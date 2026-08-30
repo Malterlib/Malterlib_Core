@@ -1103,9 +1103,9 @@ namespace
 	// MalterlibIoUringCompletion=1 forces completion transfers onto local peers too, so the
 	// local paths stay measurable; unset leaves them on readiness, and =0 vetoes the machinery
 	// at the probe before this question is ever asked
-	bool fg_CompletionLocalForced()
+	bool fg_CompletionLocalForced(CPOSIXSocket *_pSocket)
 	{
-		return NSys::fg_IoSubSystem().f_CompletionLocalForced();
+		return _pSocket->m_pIo->f_CompletionLocalForced();
 	}
 
 	// Whether the peer is on another machine, cached on the socket once the answer is knowable.
@@ -1165,7 +1165,7 @@ bool NSys::NNetwork::fg_SupportsCompletionIo(void *_pSocket)
 	if (!pSocket->m_pOwningLoop || !pSocket->m_pOwningLoop->f_SupportsCompletionIo())
 		return false;
 
-	return fg_CompletionLocalForced() || fg_CompletionPeerIsRemote(pSocket);
+	return fg_CompletionLocalForced(pSocket) || fg_CompletionPeerIsRemote(pSocket);
 }
 
 // Deliberately no registration state or teardown check here or in the send variant below: a
@@ -1184,7 +1184,7 @@ bool NSys::NNetwork::fg_SupportsReceiveStream(void *_pSocket)
 	if (!pSocket->m_pOwningLoop || !pSocket->m_pOwningLoop->f_SupportsReceiveStream())
 		return false;
 
-	return fg_CompletionLocalForced() || fg_CompletionPeerIsRemote(pSocket);
+	return fg_CompletionLocalForced(pSocket) || fg_CompletionPeerIsRemote(pSocket);
 }
 
 bool NSys::NNetwork::fg_SendReleaseIsPrompt(void *_pSocket)
@@ -1256,10 +1256,10 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 		return;
 
 	// MalterlibSendWindowBuffers=0 leaves the kernel defaults, for measuring what the sizing is worth
-	if (!NSys::fg_IoSubSystem().f_SendWindowBuffersEnabled())
+	if (!pSocket->m_pIo->f_SendWindowBuffersEnabled())
 		return;
 
-	umint nBytes = fg_Min(_nBytes, fg_IoSubSystem_MacOS().m_nMaxSocketReserveBytes, umint(TCLimitsInt<int>::mc_Max));
+	umint nBytes = fg_Min(_nBytes, static_cast<CIoSubSystem_MacOS &>(*pSocket->m_pIo).m_nMaxSocketReserveBytes, umint(TCLimitsInt<int>::mc_Max));
 	if (nBytes < _nBytes && _bConfigured)
 	{
 		static NAtomic::TCAtomic<bool> s_bLogged = false;
@@ -2324,6 +2324,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 #endif
 
 	NMib::NStorage::TCUniquePointer<CPOSIXSocket> pNewSocket = fg_Construct(_FD, _Mode, _Events, fg_Move(_fOnStateChange));
+	pNewSocket->m_pIo = mp_pIo;
 
 	if (_bFromInherit)
 	{

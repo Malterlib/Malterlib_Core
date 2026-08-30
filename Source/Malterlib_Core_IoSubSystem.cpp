@@ -34,7 +34,10 @@ namespace NMib::NSys
 		mp_nWebSocketFrameAhead = fsp_EnvCount("MalterlibWebSocketFrameAhead", 0, 1, 64);
 
 		if (mp_bStatsEnabled)
+		{
 			f_RegisterStatsDump(&fg_DumpSocketIoStats);
+			f_RegisterStatsDump(&fg_DumpNetIoStats);
+		}
 #endif
 	}
 

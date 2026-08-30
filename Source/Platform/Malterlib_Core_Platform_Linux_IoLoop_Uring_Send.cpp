@@ -31,7 +31,7 @@ bool CIoLoop_IoUring::fp_IsZeroCopyEligible(CUringRegistration *_pRegistration, 
 	if (_nBytes < c_nMinZeroCopyBytes)
 		return false;
 
-	fg_UringProbePeerClass(_pRegistration);
+	fg_UringProbePeerClass(mp_pIo, _pRegistration);
 
 	return _pRegistration->m_bZeroCopyEligible;
 }
@@ -115,7 +115,7 @@ bool CIoLoop_IoUring::fp_PublishSend(CUringRegistration *_pRegistration, CUringI
 	Record.m_fOnBufferReleased = fg_Move(_pOp->m_fOnBufferReleased);
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_UringStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 	{
 		if (_pOp->m_EnqueueStamp)
 		{
@@ -150,7 +150,7 @@ void CIoLoop_IoUring::fp_ArmSendBundle(CUringRegistration *_pRegistration)
 	_pRegistration->m_pSendOp = pOp;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_UringStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 	{
 		mp_pIo->m_UringStats.m_nSendOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		if (_pRegistration->m_SendIdleStamp)
@@ -282,7 +282,7 @@ void CIoLoop_IoUring::fp_ReleaseNotifyPending(CUringIoOp *_pOp)
 	mp_NotifyPending.f_SetLen(mp_NotifyPending.f_GetLen() - 1);
 	mp_nNotifyPendingBytes -= _pOp->m_nRequested;
 #if DMibConfig_IoDebug_Enable
-	if (fg_UringStatsEnabled() && _pOp->m_EnqueueStamp)
+	if (mp_pIo->f_StatsEnabled() && _pOp->m_EnqueueStamp)
 	{
 		uint64 LagNs = fg_UringStatsNow() - _pOp->m_EnqueueStamp;
 		mp_pIo->m_UringStats.m_nSendNotifLagNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
@@ -297,7 +297,7 @@ void CIoLoop_IoUring::fp_ReleaseNotifyPending(CUringIoOp *_pOp)
 
 umint CIoLoop_IoUring::f_GetCompletionSendDepth() const
 {
-	return f_SupportsCompletionIo() ? fg_UringSendDepth() : 1;
+	return f_SupportsCompletionIo() ? mp_pIo->f_SendDepth() : 1;
 }
 
 // Prompt unless zero copy can still apply: a kernel without it releases at the result, and so
@@ -343,7 +343,7 @@ bool CIoLoop_IoUring::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistra
 	pOp->m_fOnComplete = fg_Move(_fOnComplete);
 	pOp->m_fOnBufferReleased = fg_Move(_fOnBufferReleased);
 #if DMibConfig_IoDebug_Enable
-	if (fg_UringStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		pOp->m_EnqueueStamp = fg_UringStatsNow();
 #endif
 

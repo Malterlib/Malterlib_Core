@@ -107,4 +107,98 @@ void fg_DumpSocketIoStats(NMib::NSys::CIoSubSystem &_Io)
 		)
 	;}
 
+// The socket-actor level report; the Network module records the counters, the base subsystem
+// carries them like the ssl and websocket knobs
+void fg_DumpNetIoStats(NMib::NSys::CIoSubSystem &_Io)
+{
+	auto &Stats = _Io.m_NetIoStats;
+
+	auto fLoad = [](NAtomic::TCAtomic<uint64> const &_Value) -> uint64
+		{
+			return _Value.f_Load(NAtomic::gc_MemoryOrder_Relaxed);
+		}
+	;
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+				(
+					"[net stats] send: readiness={} readinessBytes={} submits={} blocked={} maxOutstanding={} syncParked={} continuations={}\n"
+					, fLoad(Stats.m_nSendReadinessCalls)
+					, fLoad(Stats.m_nSendReadinessBytes)
+					, fLoad(Stats.m_nSendSubmits)
+					, fLoad(Stats.m_nSendBlocked)
+					, fLoad(Stats.m_nSendMaxOutstanding)
+					, fLoad(Stats.m_nSendSyncParked)
+					, fLoad(Stats.m_nSendContinuations)
+				)
+		)
+	;
+
+	uint64 nShared = fLoad(Stats.m_nRecvSharedDeliveries);
+	uint64 nCopy = fLoad(Stats.m_nRecvCopyDeliveries);
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+				(
+					"[net stats] recv: readiness={} readinessBytes={} shared={} sharedBytes={} copy={} copyBytes={} sslSegments={} sslNoProgress={} sslCompacts={}\n"
+					, fLoad(Stats.m_nRecvReadinessCalls)
+					, fLoad(Stats.m_nRecvReadinessBytes)
+					, nShared
+					, fLoad(Stats.m_nRecvSharedBytes)
+					, nCopy
+					, fLoad(Stats.m_nRecvCopyBytes)
+					, fLoad(Stats.m_nSslSegments)
+					, fLoad(Stats.m_nSslNoProgress)
+					, fLoad(Stats.m_nSslCompacts)
+				)
+		)
+	;
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+				(
+					"[net stats] storage copies: range={} feed={} feedConst={} consume={}\n"
+					, NStream::g_BinaryStorageRangeCopyBytes.f_Load(NAtomic::gc_MemoryOrder_Relaxed)
+					, NStream::g_BinaryStorageFeedCopyBytes.f_Load(NAtomic::gc_MemoryOrder_Relaxed)
+					, NStream::g_BinaryStorageFeedConstCopyBytes.f_Load(NAtomic::gc_MemoryOrder_Relaxed)
+					, NStream::g_BinaryStorageConsumeCopyBytes.f_Load(NAtomic::gc_MemoryOrder_Relaxed)
+				)
+		)
+	;
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+				(
+					"[net stats] ssl pump: submits={} inFlight={} beginRefused={} kernelRefused={} lastRefusal: pending={} pinned={} canBegin={} ops={}/{}\n"
+					, fLoad(Stats.m_nPumpSubmits)
+					, fLoad(Stats.m_nPumpInFlight)
+					, fLoad(Stats.m_nPumpBeginRefused)
+					, fLoad(Stats.m_nPumpKernelRefused)
+					, fLoad(Stats.m_LastPumpPending)
+					, fLoad(Stats.m_LastPumpPinned)
+					, fLoad(Stats.m_LastPumpCanBegin)
+					, fLoad(Stats.m_LastPumpOpsUnresolved)
+					, fLoad(Stats.m_LastPumpOpsInUse)
+				)
+		)
+	;
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+				(
+					"[net stats] ssl pins: max={} maxBytes={} cap: max={} bdp={} queries={}\n"
+					, fLoad(Stats.m_nSslMaxPinned)
+					, fLoad(Stats.m_nSslMaxPinnedBytes)
+					, fLoad(Stats.m_nSslWindowMax)
+					, fLoad(Stats.m_nSslWindowBandwidthDelay)
+					, fLoad(Stats.m_nSslWindowQueries)
+				)
+		)
+	;
+}
+
 #endif

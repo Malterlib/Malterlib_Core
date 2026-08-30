@@ -31,10 +31,10 @@ bool CIoLoop_IoUring::fp_StartStream(CUringRegistration *_pRegistration, NStorag
 	umint nSocketBytes = NMemory::CDefaultAllocator::f_SizePadded(_pRegistration->m_nStreamBufferBytes);
 
 	umint nBufferBytes = nSocketBytes;
-	if (!fg_UringReceiveBufferBytesOverride() && nSocketBytes > gc_UringReceiveSliceBytes)
+	if (!mp_pIo->f_ReceiveBufferBytesOverride() && nSocketBytes > gc_UringReceiveSliceBytes)
 		nBufferBytes = NMemory::CDefaultAllocator::f_SizePadded(gc_UringReceiveSliceBytes);
 
-	umint nBuffers = fg_UringReceiveBuffersOverride();
+	umint nBuffers = mp_pIo->f_ReceiveBuffersOverride();
 	if (!nBuffers)
 		nBuffers = fg_Clamp((nSocketBytes + nBufferBytes - 1) / nBufferBytes, gc_UringMinReceiveBuffers, gc_UringMaxReceiveBuffers);
 
@@ -118,7 +118,7 @@ bool CIoLoop_IoUring::fp_StartStream(CUringRegistration *_pRegistration, NStorag
 		fp_RefillBid(_pRegistration, (uint16)iBuffer);
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_UringTraceEnabled())
+	if (mp_pIo->f_TraceEnabled())
 		fg_UringTrace("stream-start", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)nBuffers);
 #endif
 
@@ -145,7 +145,7 @@ void CIoLoop_IoUring::fp_ArmStream(CUringRegistration *_pRegistration)
 	_pRegistration->m_bStreamArmed = true;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_UringStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		mp_pIo->m_UringStats.m_nStreamArms.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 }
@@ -170,9 +170,9 @@ bool CIoLoop_IoUring::fp_RefillBid(CUringRegistration *_pRegistration, uint16 _B
 				pRing->m_UnfilledBids.f_Insert(_Bid);
 
 #if DMibConfig_IoDebug_Enable
-				if (fg_UringStatsEnabled())
+				if (mp_pIo->f_StatsEnabled())
 					mp_pIo->m_UringStats.m_nStreamParks.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-				if (fg_UringTraceEnabled())
+				if (mp_pIo->f_TraceEnabled())
 					fg_UringTrace("stream-park", _pRegistration->m_pToken, _pRegistration->m_Handle, _Bid);
 #endif
 
@@ -193,7 +193,7 @@ bool CIoLoop_IoUring::fp_RefillBid(CUringRegistration *_pRegistration, uint16 _B
 		pBuffer->m_pData = (uint8 *)NMemory::CDefaultAllocator::f_Alloc(pRing->m_nBufferBytes);
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_UringStatsEnabled())
+		if (mp_pIo->f_StatsEnabled())
 		{
 			mp_pIo->m_UringStats.m_nRecvBufferAllocs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			mp_pIo->m_UringStats.m_nRecvBufferAllocBytes.f_FetchAdd(pRing->m_nBufferBytes, NAtomic::gc_MemoryOrder_Relaxed);
@@ -201,7 +201,7 @@ bool CIoLoop_IoUring::fp_RefillBid(CUringRegistration *_pRegistration, uint16 _B
 #endif
 	}
 #if DMibConfig_IoDebug_Enable
-	else if (fg_UringStatsEnabled())
+	else if (mp_pIo->f_StatsEnabled())
 		mp_pIo->m_UringStats.m_nRecvBufferReuses.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 	pBuffer->m_nDataBytes = pRing->m_nBufferBytes;
@@ -228,7 +228,7 @@ void CIoLoop_IoUring::fp_ResumeStream(CUringRegistration *_pRegistration)
 		return;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_UringStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		mp_pIo->m_UringStats.m_nStreamResumes.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -253,7 +253,7 @@ void CIoLoop_IoUring::fp_ResumeStream(CUringRegistration *_pRegistration)
 		fp_ArmStream(_pRegistration);
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_UringTraceEnabled())
+		if (mp_pIo->f_TraceEnabled())
 			fg_UringTrace("stream-rearm", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 	}
@@ -381,7 +381,7 @@ bool CIoLoop_IoUring::f_StartReceiveStream(NSys::CIoLoopRegistration *_pRegistra
 	pOp->m_bStreamStart = true;
 	// The ring entry carries a 32 bit length
 	pOp->m_nBytes = fg_Min(_nBufferBytes, umint(1) << 30);
-	if (umint nOverride = fg_UringReceiveBufferBytesOverride())
+	if (umint nOverride = mp_pIo->f_ReceiveBufferBytesOverride())
 		pOp->m_nBytes = nOverride;
 	pOp->m_fSink = fg_Move(_fSink);
 	pOp->m_pBackpressure = fg_Move(_pBackpressure);
