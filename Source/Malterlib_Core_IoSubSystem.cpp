@@ -12,6 +12,7 @@ namespace NMib::NSys
 #if DMibConfig_IoDebug_Enable
 		mp_bStatsEnabled = fsp_EnvFlag("MalterlibIoStats", false);
 		mp_bSendWindowBuffers = fsp_EnvFlag("MalterlibSendWindowBuffers", true);
+		mp_bCompletionLocalForced = fsp_EnvFlag("MalterlibIoUringCompletion", false);
 		mp_SslSendBatching = fsp_EnvKnob("MalterlibSSLSendBatching");
 		mp_SslZeroCopy = fsp_EnvKnob("MalterlibSSLZeroCopy");
 		// The direction specific name wins over the shared one, which is there so a recipe that

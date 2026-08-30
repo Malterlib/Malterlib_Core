@@ -75,6 +75,10 @@ namespace NMib::NSys
 		inline EIoKnob f_SslCompletionIoReceive() const;
 		inline EIoKnob f_SslSealAhead() const;
 
+		// MalterlibIoUringCompletion=1: force completion transfers onto local peers too, so the
+		// local paths stay measurable; unset leaves them on readiness
+		inline bool f_CompletionLocalForced() const;
+
 		// MalterlibWebSocketFrameAhead: how many frame batches the websocket actor frames ahead
 		// of its in-flight sends; 0 is the actor's default of one
 		inline umint f_WebSocketFrameAhead() const;
@@ -93,6 +97,7 @@ namespace NMib::NSys
 
 		bool mp_bStatsEnabled = false;
 		bool mp_bSendWindowBuffers = true;
+		bool mp_bCompletionLocalForced = false;
 		EIoKnob mp_SslSendBatching = EIoKnob::mc_Default;
 		EIoKnob mp_SslZeroCopy = EIoKnob::mc_Default;
 		EIoKnob mp_SslCompletionIoSend = EIoKnob::mc_Default;
