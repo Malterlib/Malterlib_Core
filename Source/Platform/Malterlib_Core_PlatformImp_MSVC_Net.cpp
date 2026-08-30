@@ -2157,13 +2157,13 @@ NStr::CStr CWindowsSocketContext::f_GetCloseReason(CWindowsSocket *_pSocket)
 	if (CloseError == 0)
 	{
 		if (bGracefulClose)
-			return "Connection gracefully disconnected";
+			return gc_Str<"Connection gracefully disconnected">.m_Str;
 		else
-			return "End of file encountered";
+			return gc_Str<"End of file encountered">.m_Str;
 	}
 
 	if (CloseError == -1)
-		return "Connection closed with an unknown error";
+		return gc_Str<"Connection closed with an unknown error">.m_Str;
 
 	return NStr::CStr(NMib::NPlatform::fg_Win32_GetLastErrorStr((uint32)CloseError));
 }

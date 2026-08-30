@@ -329,9 +329,4 @@ public:
 
 		CWindowsAddress* f_GetPeerAddress(CWindowsSocket *_pSocket);
 		uint32 f_GetListenPort(CWindowsSocket *_pSocket);
-
-		NMib::NSys::ICIoLoop *f_GetPollerLoop() const
-		{
-			return mp_PollerThread.mp_pLoop;
-		}
 };
