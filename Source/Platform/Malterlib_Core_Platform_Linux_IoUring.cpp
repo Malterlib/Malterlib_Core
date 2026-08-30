@@ -3,7 +3,6 @@
 
 #include "Malterlib_Core_Platform_Linux_IoUring.h"
 
-#include <sys/resource.h>
 
 int CIoUringRing::fs_Setup(uint32 _nEntries, CIoUringParams *_pParams)
 {
@@ -415,8 +414,8 @@ bool CIoUringRing::fs_Available()
 						// The register syscall can be filtered separately from setup and
 						// enter, so support means an actual ring registers — not just that
 						// the kernel is new enough
-						void *pRing = mmap(nullptr, PageSize, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-						if (pRing == MAP_FAILED)
+						void *pRing = NMib::NMemory::CDefaultAllocator::f_AllocAligned(PageSize, PageSize);
+						if (!pRing)
 							bStream = false;
 						else
 						{
@@ -453,7 +452,7 @@ bool CIoUringRing::fs_Available()
 								}
 							}
 
-							munmap(pRing, PageSize);
+							NMib::NMemory::CDefaultAllocator::f_Free(pRing, PageSize);
 						}
 					}
 					fs_ReceiveStreamSupported() = bStream;
@@ -469,8 +468,8 @@ bool CIoUringRing::fs_Available()
 						int Sockets[2];
 						if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, Sockets) == 0)
 						{
-							void *pRing = mmap(nullptr, PageSize, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-							if (pRing != MAP_FAILED)
+							void *pRing = NMib::NMemory::CDefaultAllocator::f_AllocAligned(PageSize, PageSize);
+							if (pRing)
 							{
 								CIoUringBufReg Reg;
 								NMib::NMemory::fg_MemClear(&Reg, sizeof(Reg));
@@ -512,7 +511,7 @@ bool CIoUringRing::fs_Available()
 									fs_Register(Probe.m_RingFd, gc_IoUringRegister_UnregisterPbufRing, &Unreg, 1);
 								}
 
-								munmap(pRing, PageSize);
+								NMib::NMemory::CDefaultAllocator::f_Free(pRing, PageSize);
 							}
 
 							close(Sockets[0]);
