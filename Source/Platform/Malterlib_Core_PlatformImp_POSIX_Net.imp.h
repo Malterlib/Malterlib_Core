@@ -1445,7 +1445,6 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 	// send waits, its completion waits with it, and the caller's own pipeline fills instead
 	// of the kernel's — the unacknowledged part TCP bounds by its own window. A quarter of
 	// the send window, within a frame or two of the usual fragment
-	(void)_bConfigured;
 	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
 	if (pSocket->m_FD == -1 || !_nBytes || pSocket->m_AddressType == ENetAddressType_Unix)
 		return;
@@ -1457,9 +1456,6 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("setsockopt (TCP_NOTSENT_LOWAT)", Error));
 	}
 #else
-	(void)_pSocket;
-	(void)_nBytes;
-	(void)_bConfigured;
 #endif
 }
 
@@ -1538,10 +1534,6 @@ bool NSys::NNetwork::fg_QueryPathBandwidthDelay(void *_pSocket, umint &o_nBytes,
 
 	return true;
 #else
-	(void)_pSocket;
-	(void)o_nBytes;
-	(void)o_bAppLimited;
-
 	return false;
 #endif
 }
