@@ -163,7 +163,7 @@ void CIoLoop_IoUring::fp_ArmSendBundle(CUringRegistration *_pRegistration)
 
 	CIoUringSqe &Sqe = fp_PrepareSqe();
 	Sqe.m_Opcode = gc_IoUringOp_Send;
-	Sqe.m_Fd = _pRegistration->m_Fd;
+	Sqe.m_Fd = _pRegistration->m_Handle;
 	Sqe.m_Flags = gc_IoUringSqeFlag_BufferSelect;
 	Sqe.m_IoPrio = gc_IoUringRecvSend_Bundle;
 	Sqe.m_BufIndex = _pRegistration->m_pSendRing->m_Bgid;
