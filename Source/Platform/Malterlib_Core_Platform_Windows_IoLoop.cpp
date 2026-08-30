@@ -311,8 +311,9 @@ void CIocpConfig::fsg_DumpStats()
 		(
 			NStr::fg_Format<NStr::CStrNonTracked>
 			(
-				"[io stats] send: ops={} inline={} deferred={} maxInFlight={} maxBytesInFlight={} short={} bytesReq={} bytesSent={} avgReq={} errors={}\n"
+				"[io stats] send: ops={} pendingAtIssue={} inline={} deferred={} maxInFlight={} maxBytesInFlight={} short={} bytesReq={} bytesSent={} avgReq={} errors={}\n"
 				, nSendOps
+				, fLoad(g_IocpStats.m_nSendPendingAtIssue)
 				, fLoad(g_IocpStats.m_nSendInline)
 				, fLoad(g_IocpStats.m_nSendDeferred)
 				, fLoad(g_IocpStats.m_nSendMaxInFlight)
@@ -337,18 +338,24 @@ void CIocpConfig::fsg_DumpStats()
 
 	uint64 nIdleGaps = fLoad(g_IocpStats.m_nSendIdleGaps);
 	uint64 nLagOps = fLoad(g_IocpStats.m_nSendSubmitLagOps);
+	uint64 nSyncOps = fLoad(g_IocpStats.m_nSendPacketLagSyncOps);
+	uint64 nPendingOps = fLoad(g_IocpStats.m_nSendPacketLagPendingOps);
 
 	NSys::fg_ConsoleErrorOutput
 		(
 			NStr::fg_Format<NStr::CStrNonTracked>
 			(
-				"[io stats] send idle: gaps={} totalNs={} avgNs={} submitLagOps={} submitLagNs={} submitLagAvgNs={}\n"
+				"[io stats] send idle: gaps={} totalNs={} avgNs={} submitLagOps={} submitLagNs={} submitLagAvgNs={} packetLagSyncOps={} packetLagSyncAvgNs={} packetLagPendingOps={} packetLagPendingAvgNs={}\n"
 				, nIdleGaps
 				, fLoad(g_IocpStats.m_nSendIdleNs)
 				, nIdleGaps ? fLoad(g_IocpStats.m_nSendIdleNs) / nIdleGaps : 0
 				, nLagOps
 				, fLoad(g_IocpStats.m_nSendSubmitLagNs)
 				, nLagOps ? fLoad(g_IocpStats.m_nSendSubmitLagNs) / nLagOps : 0
+				, nSyncOps
+				, nSyncOps ? fLoad(g_IocpStats.m_nSendPacketLagSyncNs) / nSyncOps : 0
+				, nPendingOps
+				, nPendingOps ? fLoad(g_IocpStats.m_nSendPacketLagPendingNs) / nPendingOps : 0
 			)
 		)
 	;

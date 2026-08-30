@@ -192,6 +192,11 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	}
 #endif
 
+#if DMibConfig_IoDebug_Enable
+	if (fg_IocpStatsEnabled())
+		_pOp->m_IssueStamp = fg_IocpStatsNow();
+#endif
+
 	DWORD nSent = 0;
 	int Ret = WSASend((SOCKET)_pRegistration->m_Handle, _pOp->m_Buffers, _pOp->m_nBuffers, &nSent, 0, &_pOp->m_Overlapped, nullptr);
 
@@ -222,6 +227,14 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	int Error = WSAGetLastError();
 	if (Error == WSA_IO_PENDING)
 	{
+#if DMibConfig_IoDebug_Enable
+		if (fg_IocpStatsEnabled())
+		{
+			g_IocpStats.m_nSendPendingAtIssue.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			_pOp->m_bPendingAtIssue = true;
+		}
+#endif
+
 		fp_ReportSendAccepted(_pRegistration, _pOp, _nReported);
 		return;
 	}

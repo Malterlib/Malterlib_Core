@@ -122,6 +122,9 @@ struct CIocpStats
 	NMib::NAtomic::TCAtomic<uint64> m_nSendOps = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendInline = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendDeferred = 0;
+	// Sends WSASend left pending, against those it finished at the call: the kernel takes a
+	// buffered send at the call when it copies it, so the split tells copy from pin
+	NMib::NAtomic::TCAtomic<uint64> m_nSendPendingAtIssue = 0;
 	// The most sends, and bytes, one registration had issued and unfinished at once
 	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxInFlight = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxBytesInFlight = 0;
@@ -133,6 +136,11 @@ struct CIocpStats
 	NMib::NAtomic::TCAtomic<uint64> m_nSendIdleNs = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendSubmitLagNs = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendSubmitLagOps = 0;
+	// Issue to completion packet, for sends WSASend finished at the call and for those it left pending
+	NMib::NAtomic::TCAtomic<uint64> m_nSendPacketLagSyncNs = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendPacketLagSyncOps = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendPacketLagPendingNs = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendPacketLagPendingOps = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_SendSizeBuckets[33] = {};
 	NMib::NAtomic::TCAtomic<uint64> m_nPollArms = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nPollCancels = 0;

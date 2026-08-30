@@ -3,6 +3,7 @@
 
 #include "Malterlib_Core_PlatformImp_MSVC_Net.h"
 #include "Malterlib_Core_Platform_Windows.h"
+#include "Malterlib_Core_Platform_Windows_IoLoop_Iocp_Internal.h"
 
 #include <AclAPI.h>
 #include <mstcpip.h>
@@ -1760,11 +1761,56 @@ bool CWindowsSocketContext::f_Shutdown(CWindowsSocket *_pSocket)
 	return true;
 }
 
+#if DMibConfig_IoDebug_Enable
+// With MalterlibIoStats=1, what the kernel counted on a TCP connection over its lifetime, printed
+// as the socket closes: the loss recovery and window figures that decide a path's throughput
+static void fsg_DumpTcpInfoAtClose(CWindowsSocket *_pSocket)
+{
+	if (!fg_IocpStatsEnabled() || _pSocket->m_AddressType == ENetAddressType_Unix || _pSocket->m_Mode == EWindowsSocketMode_Datagram || _pSocket->m_Mode == EWindowsSocketMode_Listen)
+		return;
+
+	DWORD Version = 0;
+	CWindowsTcpInfoV0 Info;
+	DWORD nBytes = 0;
+	if (WSAIoctl(_pSocket->m_Socket, SIO_TCP_INFO, &Version, sizeof(Version), &Info, sizeof(Info), &nBytes, nullptr, nullptr) != 0)
+		return;
+
+	if (Info.m_BytesOut < 1024 * 1024)
+		return;
+
+	NSys::fg_ConsoleErrorOutput
+		(
+			NStr::fg_Format<NStr::CStrNonTracked>
+			(
+				"[tcp info] out={} in={} rttUs={} minRttUs={} cwnd={} sndWnd={} inFlight={} mss={} retransBytes={} fastRetrans={} timeouts={} dupAcks={} reorderedBytes={} timeMs={}\n"
+				, Info.m_BytesOut
+				, Info.m_BytesIn
+				, Info.m_RttUs
+				, Info.m_MinRttUs
+				, Info.m_Cwnd
+				, Info.m_SndWnd
+				, Info.m_BytesInFlight
+				, Info.m_Mss
+				, Info.m_BytesRetrans
+				, Info.m_FastRetrans
+				, Info.m_TimeoutEpisodes
+				, Info.m_DupAcksIn
+				, Info.m_BytesReordered
+				, Info.m_ConnectionTimeMs
+			)
+		)
+	;
+}
+#endif
+
 void CWindowsSocketContext::fp_DestroySocket(CWindowsSocket *_pSocket)
 {
 	if (_pSocket->m_Socket != INVALID_SOCKET)
 	{
 		DMibLock(_pSocket->m_Lock);
+#if DMibConfig_IoDebug_Enable
+		fsg_DumpTcpInfoAtClose(_pSocket);
+#endif
 		closesocket(_pSocket->m_Socket);
 		_pSocket->m_Socket = INVALID_SOCKET;
 	}

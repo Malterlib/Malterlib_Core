@@ -76,6 +76,26 @@ void CIoLoop_Iocp::fp_DispatchOp(CIocpOp *_pOp, umint &_nReported)
 
 	case EIocpOpKind::mc_Send:
 		_pOp->m_bCompleted = true;
+#if DMibConfig_IoDebug_Enable
+		if (fg_IocpStatsEnabled())
+		{
+			auto *pSend = static_cast<CIocpSendOp *>(_pOp);
+			if (pSend->m_IssueStamp)
+			{
+				uint64 LagNs = fg_IocpStatsNow() - pSend->m_IssueStamp;
+				if (pSend->m_bPendingAtIssue)
+				{
+					g_IocpStats.m_nSendPacketLagPendingNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
+					g_IocpStats.m_nSendPacketLagPendingOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				}
+				else
+				{
+					g_IocpStats.m_nSendPacketLagSyncNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
+					g_IocpStats.m_nSendPacketLagSyncOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				}
+			}
+		}
+#endif
 		fp_ReportCompletedSends(pRegistration, _nReported);
 		break;
 

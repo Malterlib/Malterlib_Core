@@ -163,6 +163,9 @@ struct CIocpSendOp : public CIocpOp
 	bool m_bCompletionReported = false;
 #if DMibConfig_IoDebug_Enable
 	uint64 m_EnqueueStamp = 0;
+	// When WSASend was called, and whether it left the send pending, for the packet latency stat
+	uint64 m_IssueStamp = 0;
+	bool m_bPendingAtIssue = false;
 #endif
 };
 
