@@ -319,55 +319,6 @@ umint CIoUringRing::fs_RingBytes(uint32 _nSqEntries, uint32 _nCqEntries)
 	return nBytes;
 }
 
-bool CIoUringRing::fs_MemlockFits(umint _nBytes, umint &o_LimitBytes)
-{
-	o_LimitBytes = ~umint(0);
-
-	rlimit Limit;
-	if (getrlimit(RLIMIT_MEMLOCK, &Limit) != 0 || Limit.rlim_cur == RLIM_INFINITY)
-		return true;
-
-	o_LimitBytes = (umint)Limit.rlim_cur;
-	if (_nBytes > o_LimitBytes)
-		return false;
-
-	CIoUringRing Probe;
-	if (!Probe.f_Create(8, 8, true))
-		return true;
-
-	// Populated up front, since the registration pins the pages either way
-	void *pMemory = mmap(nullptr, _nBytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
-	if (pMemory == MAP_FAILED)
-	{
-		Probe.f_Destroy();
-		return true;
-	}
-
-	// The kernel takes at most a gigabyte per registered buffer
-	constexpr umint c_MaxPieceBytes = umint(1) << 30;
-	constexpr uint32 c_MaxPieces = 8;
-	iovec Pieces[c_MaxPieces];
-	uint32 nPieces = 0;
-	for (umint Offset = 0; Offset < _nBytes && nPieces < c_MaxPieces; ++nPieces)
-	{
-		umint nPieceBytes = NMib::fg_Min(_nBytes - Offset, c_MaxPieceBytes);
-		Pieces[nPieces].iov_base = (uint8 *)pMemory + Offset;
-		Pieces[nPieces].iov_len = nPieceBytes;
-		Offset += nPieceBytes;
-	}
-
-	// Only the kernel's accounting verdict counts; any other failure says nothing about it
-	bool bFits = true;
-	if (fs_Register(Probe.m_RingFd, gc_IoUringRegister_Buffers, Pieces, nPieces) != 0)
-		bFits = errno != ENOMEM;
-
-	// Closing the ring releases the registration
-	Probe.f_Destroy();
-	munmap(pMemory, _nBytes);
-
-	return bFits;
-}
-
 bool CIoUringRing::fs_Available()
 {
 #if !DMibConfig_IoUring_Enable

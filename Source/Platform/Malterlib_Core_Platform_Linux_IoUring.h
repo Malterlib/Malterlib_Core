@@ -232,12 +232,6 @@ struct CIoUringRing
 	// submission entries — which it also charges to the user's locked memory limit
 	static umint fs_RingBytes(uint32 _nSqEntries, uint32 _nCqEntries);
 
-	// Whether the user's locked memory limit (RLIMIT_MEMLOCK) still has room for _nBytes of
-	// io_uring accounting: a throwaway ring registers that much as a fixed buffer, which the
-	// kernel charges exactly like ring memory and zero copy sends, and releases it again, so
-	// what other processes of the same user hold counts too. True for an unlimited limit or
-	// when the probe cannot tell. o_LimitBytes receives the limit, ~umint(0) when unlimited
-	static bool fs_MemlockFits(umint _nBytes, umint &o_LimitBytes);
 	static bool &fs_FutexWaitSupported();
 	static bool &fs_SendZeroCopySupported();
 	static bool &fs_CompletionSupported();

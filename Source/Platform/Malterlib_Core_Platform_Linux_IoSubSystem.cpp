@@ -3,6 +3,8 @@
 
 #include "Malterlib_Core_Platform_Linux_IoSubSystem.h"
 
+#include <sys/resource.h>
+
 using namespace NMib;
 
 // The warning the epoll fallback prints once when io_uring was there but did not fit
@@ -24,7 +26,8 @@ void fg_UringLogMemlockFallback()
 			, Io.m_nUringMemlockLoops
 			, Io.m_nUringMemlockLoops * Io.m_nUringMemlockRingBytes / 1024
 			, gc_UringSendMarginBytes / 1024
-		);
+		)
+	;
 }
 
 namespace
@@ -51,7 +54,13 @@ CIoSubSystem_Linux::CIoSubSystem_Linux()
 		m_nUringMemlockRingBytes = CIoUringRing::fs_RingBytes(gc_UringLoopSqEntries, gc_UringLoopCqEntries);
 
 		umint nNeededBytes = m_nUringMemlockLoops * m_nUringMemlockRingBytes + gc_UringSendMarginBytes;
-		m_bUringMemlockFits = CIoUringRing::fs_MemlockFits(nNeededBytes, m_nUringMemlockLimitBytes);
+
+		rlimit Limit;
+		if (getrlimit(RLIMIT_MEMLOCK, &Limit) == 0 && Limit.rlim_cur != RLIM_INFINITY)
+		{
+			m_nUringMemlockLimitBytes = (umint)Limit.rlim_cur;
+			m_bUringMemlockFits = nNeededBytes <= m_nUringMemlockLimitBytes;
+		}
 	}
 
 #if DMibConfig_IoDebug_Enable
