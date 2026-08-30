@@ -54,20 +54,6 @@ CIoSubSystem_Windows::CIoSubSystem_Windows()
 #endif
 }
 
-// A view of the entry points COptionalFunctions resolved at platform start
-CIocpNtFunctions fg_IocpNtFunctions()
-{
-	auto const &Functions = NLocal::g_OptionalFunctions;
-
-	CIocpNtFunctions Nt;
-	Nt.m_fNtCreateFile = Functions.m_fNtCreateFile;
-	Nt.m_fNtDeviceIoControlFile = Functions.m_fNtDeviceIoControlFile;
-	Nt.m_fNtSetInformationFile = Functions.m_fNtSetInformationFile;
-	Nt.m_fRtlNtStatusToDosError = Functions.m_fRtlNtStatusToDosError;
-
-	return Nt;
-}
-
 #if DMibConfig_IoDebug_Enable
 namespace
 {
@@ -332,7 +318,10 @@ CIocpStreamBuffer::~CIocpStreamBuffer()
 
 NMib::NSys::ICIoLoop *fg_CreatePlatformIoLoop()
 {
-	if (!fg_IocpNtFunctions().f_IsComplete())
+	// The native entry points the loop cannot do without, resolved with the other optional
+	// functions at platform start
+	auto const &Functions = NLocal::g_OptionalFunctions;
+	if (!Functions.m_fNtCreateFile || !Functions.m_fNtDeviceIoControlFile || !Functions.m_fRtlNtStatusToDosError)
 		return nullptr;
 
 	auto *pLoop = fg_ConstructObject<CIoLoop_Iocp>(CAllocator_NonTrackedHeap());

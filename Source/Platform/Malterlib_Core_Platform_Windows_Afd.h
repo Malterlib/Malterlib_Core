@@ -65,21 +65,3 @@ struct CNtFileCompletionInformation
 	PVOID m_pKey;
 };
 
-// The ntdll entry points the io loop uses, resolved once per process: the AFD device is opened
-// and polled through the native API, and none of these have a public import library the build
-// links
-struct CIocpNtFunctions
-{
-	NTSTATUS (NTAPI *m_fNtCreateFile)(PHANDLE _phFile, ACCESS_MASK _DesiredAccess, POBJECT_ATTRIBUTES _pObjectAttributes, PIO_STATUS_BLOCK _pIoStatusBlock, PLARGE_INTEGER _pAllocationSize, ULONG _FileAttributes, ULONG _ShareAccess, ULONG _CreateDisposition, ULONG _CreateOptions, PVOID _pEaBuffer, ULONG _EaLength) = nullptr;
-	NTSTATUS (NTAPI *m_fNtDeviceIoControlFile)(HANDLE _hFile, HANDLE _hEvent, PIO_APC_ROUTINE _fApcRoutine, PVOID _pApcContext, PIO_STATUS_BLOCK _pIoStatusBlock, ULONG _IoControlCode, PVOID _pInputBuffer, ULONG _InputBufferLength, PVOID _pOutputBuffer, ULONG _OutputBufferLength) = nullptr;
-	NTSTATUS (NTAPI *m_fNtSetInformationFile)(HANDLE _hFile, PIO_STATUS_BLOCK _pIoStatusBlock, PVOID _pFileInformation, ULONG _Length, FILE_INFORMATION_CLASS _FileInformationClass) = nullptr;
-	ULONG (NTAPI *m_fRtlNtStatusToDosError)(NTSTATUS _Status) = nullptr;
-
-	// Everything the loop cannot do without
-	bool f_IsComplete() const
-	{
-		return m_fNtCreateFile && m_fNtDeviceIoControlFile && m_fRtlNtStatusToDosError;
-	}
-};
-
-CIocpNtFunctions fg_IocpNtFunctions();

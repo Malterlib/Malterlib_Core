@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Windows_IoLoop_Iocp_Internal.h"
+#include "Malterlib_Core_Platform_Windows_Optional.h"
 
 using namespace NMib;
 using namespace NMib::NMemory;
@@ -128,7 +129,7 @@ void CIoLoop_Iocp::fp_DispatchPoll(CIocpPollOp *_pOp, umint &_nReported)
 	if (_pOp->m_Status != gc_NtStatus_Success)
 	{
 		pRegistration->m_ClosePollState = CIocpRegistration::EClosePoll::mc_Terminal;
-		fp_DispatchReadiness(pRegistration, NSys::EIoLoopEvent::mc_Error, (int)fg_IocpNtFunctions().m_fRtlNtStatusToDosError(_pOp->m_Status), _nReported);
+		fp_DispatchReadiness(pRegistration, NSys::EIoLoopEvent::mc_Error, (int)NLocal::g_OptionalFunctions.m_fRtlNtStatusToDosError(_pOp->m_Status), _nReported);
 		return;
 	}
 

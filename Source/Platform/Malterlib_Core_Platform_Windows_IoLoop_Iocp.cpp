@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Windows_IoLoop_Iocp_Internal.h"
+#include "Malterlib_Core_Platform_Windows_Optional.h"
 
 using namespace NMib;
 using namespace NMib::NMemory;
@@ -139,7 +140,7 @@ CIocpAfdGroup *CIoLoop_Iocp::fp_AcquireAfdGroup()
 		}
 	}
 
-	auto const &Nt = fg_IocpNtFunctions();
+	auto const &Nt = NLocal::g_OptionalFunctions;
 
 	wchar_t const *pDeviceName = L"\\Device\\Afd\\Malterlib";
 	UNICODE_STRING Name;
@@ -213,7 +214,7 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 			return false;
 		}
 
-		auto const &Nt = fg_IocpNtFunctions();
+		auto const &Nt = NLocal::g_OptionalFunctions;
 		if (Nt.m_fNtSetInformationFile)
 		{
 			CNtFileCompletionInformation Information;
@@ -274,7 +275,7 @@ bool CIoLoop_Iocp::f_AdoptHandle(NSys::CIoLoopHandle _Handle, int &o_Error)
 	if (o_Error != ERROR_INVALID_PARAMETER)
 		return false;
 
-	auto const &Nt = fg_IocpNtFunctions();
+	auto const &Nt = NLocal::g_OptionalFunctions;
 	if (!Nt.m_fNtSetInformationFile)
 		return false;
 
@@ -330,7 +331,7 @@ bool CIoLoop_Iocp::fp_ArmPoll(CIocpRegistration *_pRegistration, ULONG _AfdEvent
 	Op.m_PollInfo.m_Handles[0].m_Events = _AfdEvents;
 	Op.m_PollInfo.m_Handles[0].m_Status = 0;
 
-	auto const &Nt = fg_IocpNtFunctions();
+	auto const &Nt = NLocal::g_OptionalFunctions;
 	NTSTATUS Status = Nt.m_fNtDeviceIoControlFile
 		(
 			Op.m_pGroup->m_hAfd
