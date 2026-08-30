@@ -259,6 +259,16 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 		{
 			pOp->m_iNotifyPending = mp_NotifyPending.f_GetLen();
 			mp_NotifyPending.f_InsertLast(pOp);
+			mp_nNotifyPendingBytes += pOp->m_nRequested;
+#if DMibConfig_IoDebug_Enable
+			if (fg_UringStatsEnabled())
+			{
+				if (mp_NotifyPending.f_GetLen() > g_UringStats.m_nSendMaxInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+					g_UringStats.m_nSendMaxInFlight.f_Store(mp_NotifyPending.f_GetLen(), NAtomic::gc_MemoryOrder_Relaxed);
+				if (mp_nNotifyPendingBytes > g_UringStats.m_nSendMaxBytesInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+					g_UringStats.m_nSendMaxBytesInFlight.f_Store(mp_nNotifyPendingBytes, NAtomic::gc_MemoryOrder_Relaxed);
+			}
+#endif
 		}
 		else
 		{

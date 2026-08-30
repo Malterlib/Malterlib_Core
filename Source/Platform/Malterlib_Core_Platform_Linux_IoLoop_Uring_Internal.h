@@ -196,6 +196,9 @@ struct CUringStats
 	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesRequested = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesSent = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifs = 0;
+	// The most zero copy sends, and bytes, one loop had awaiting their notification at once
+	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxInFlight = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxBytesInFlight = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendErrors = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendIdleGaps = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendIdleNs = 0;

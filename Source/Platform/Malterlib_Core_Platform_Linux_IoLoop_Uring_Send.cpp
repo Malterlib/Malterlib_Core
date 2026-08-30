@@ -279,6 +279,7 @@ void CIoLoop_IoUring::fp_ReleaseNotifyPending(CUringIoOp *_pOp)
 	mp_NotifyPending[iPending] = pLast;
 	pLast->m_iNotifyPending = iPending;
 	mp_NotifyPending.f_SetLen(mp_NotifyPending.f_GetLen() - 1);
+	mp_nNotifyPendingBytes -= _pOp->m_nRequested;
 
 	_pOp->m_iNotifyPending = ~umint(0);
 }

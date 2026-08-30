@@ -203,6 +203,7 @@ private:
 	// are no longer any registration's obligation — see CUringIoOp — so this is what still knows
 	// about them when the ring is destroyed with notifications outstanding
 	NMib::NContainer::TCVector<CUringIoOp *> mp_NotifyPending;
+	umint mp_nNotifyPendingBytes = 0;
 
 	// Registrations holding a merged, undelivered receive segment, in first-staged order;
 	// flushed and cleared at the end of every reap pass. May hold a registration more than
