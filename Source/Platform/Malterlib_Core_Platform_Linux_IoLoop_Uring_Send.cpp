@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Linux_IoLoop_Uring_Internal.h"
+#include "Malterlib_Core_Platform_Linux_IoSubSystem.h"
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
 
 #include <unistd.h>
@@ -21,7 +22,7 @@ using namespace NMib::NSys;
 // for the pinning and the second completion than the copy costs them
 bool CIoLoop_IoUring::fp_IsZeroCopyEligible(CUringRegistration *_pRegistration, umint _nBytes)
 {
-	if (!CIoUringRing::fs_SendZeroCopySupported())
+	if (!mp_pIo->m_UringCaps.m_bSendZeroCopy)
 		return false;
 
 	// Below this the pin plus the extra completion costs more than the copy it replaces
@@ -304,7 +305,7 @@ umint CIoLoop_IoUring::f_GetCompletionSendDepth() const
 // the cautious one, since the first send is what runs it
 bool CIoLoop_IoUring::f_SendReleaseIsPrompt(NSys::CIoLoopRegistration const *_pRegistration) const
 {
-	if (!CIoUringRing::fs_SendZeroCopySupported())
+	if (!mp_pIo->m_UringCaps.m_bSendZeroCopy)
 		return true;
 
 	auto *pRegistration = static_cast<CUringRegistration const *>(_pRegistration);

@@ -7,6 +7,7 @@
 #include "Malterlib_Core_Platform_Linux_IoUring.h"
 #include <Mib/Core/IoStream>
 
+struct CIoSubSystem_Linux;
 struct CUringIoOp;
 struct CUringRecvRing;
 struct CUringSendRing;
@@ -216,6 +217,9 @@ private:
 	uint16 mp_NextBgid = 0;
 
 	bool mp_bRingCreated = false;
+
+	// The io subsystem, cached since each access through the getter is an atomic operation
+	CIoSubSystem_Linux *mp_pIo = nullptr;
 	bool mp_bFutexArmed = false;
 	bool mp_bFlushingStreamSegments = false;
 };

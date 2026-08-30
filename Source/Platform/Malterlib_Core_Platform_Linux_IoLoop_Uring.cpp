@@ -23,7 +23,9 @@ CIoLoop_IoUring::CIoLoop_IoUring()
 	bSqPoll = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringSqPoll")) == "1";
 #endif
 
-	if (fg_IoSubSystem_Linux().m_bUringAvailable && mp_Ring.f_Create(gc_UringLoopSqEntries, gc_UringLoopCqEntries, true, bSqPoll))
+	mp_pIo = &fg_IoSubSystem_Linux();
+
+	if (mp_pIo->m_bUringAvailable && mp_Ring.f_Create(gc_UringLoopSqEntries, gc_UringLoopCqEntries, true, bSqPoll))
 		mp_bRingCreated = true;
 }
 
@@ -582,7 +584,7 @@ void CIoLoop_IoUring::f_DrainForShutdown()
 
 void CIoLoop_IoUring::f_SetParkEvent(NThread::CEventAutoReset *_pEvent)
 {
-	if (mp_bRingCreated && CIoUringRing::fs_FutexWaitSupported())
+	if (mp_bRingCreated && mp_pIo->m_UringCaps.m_bFutexWait)
 		mp_pParkEvent = _pEvent;
 }
 
@@ -649,10 +651,10 @@ void CIoLoop_IoUring::f_AbandonPendingTeardown()
 
 bool CIoLoop_IoUring::f_SupportsCompletionIo() const
 {
-	return mp_bRingCreated && CIoUringRing::fs_CompletionSupported();
+	return mp_bRingCreated && mp_pIo->m_UringCaps.m_bCompletion;
 }
 
 bool CIoLoop_IoUring::f_SupportsReceiveStream() const
 {
-	return mp_bRingCreated && CIoUringRing::fs_ReceiveStreamSupported();
+	return mp_bRingCreated && mp_pIo->m_UringCaps.m_bReceiveStream;
 }

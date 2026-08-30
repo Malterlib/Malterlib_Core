@@ -67,52 +67,6 @@ bool CIoUringRing::f_CqOverflowPending() const
 	return (__atomic_load_n(m_pSqFlags, __ATOMIC_ACQUIRE) & gc_IoUringSq_CqOverflow) != 0;
 }
 
-// Set as a side effect of the fs_Available probe; futex waits in the ring need 6.7
-bool &CIoUringRing::fs_FutexWaitSupported()
-{
-	static bool s_bSupported = false;
-	return s_bSupported;
-}
-
-// Set as a side effect of the fs_Available probe. Zero copy sends hand the kernel the caller's
-// pages instead of copying them, at the cost of a second completion per operation and of the
-// pages staying pinned until it arrives.
-//
-// MalterlibIoUringSendZeroCopy=0 keeps ordinary sends
-bool &CIoUringRing::fs_SendZeroCopySupported()
-{
-	static bool s_bSupported = false;
-	return s_bSupported;
-}
-
-// Set as a side effect of the fs_Available probe: completion transfers submit vectored sends
-// as ring operations, and cancel them through async cancel on teardown.
-// MalterlibIoUringCompletion=0 keeps the readiness backend while leaving polls on the ring
-bool &CIoUringRing::fs_CompletionSupported()
-{
-	static bool s_bSupported = false;
-	return s_bSupported;
-}
-
-// Set as a side effect of the fs_Available probe: inbound payload as one standing multishot
-// receive per socket over a provided-buffer ring, needing kernel 6.0 — probed through the
-// send-zc opcode that release introduced, plus an actual provided-buffer ring registration so
-// a filtered register syscall fails the probe rather than every socket.
-// MalterlibIoUringMultishot=0 keeps receives on readiness for comparison
-bool &CIoUringRing::fs_ReceiveStreamSupported()
-{
-	static bool s_bSupported = false;
-	return s_bSupported;
-}
-
-// Whether provided buffer rings support incremental consumption (6.12+), probed by
-// registering a ring with the flag set
-bool &CIoUringRing::fs_ReceiveStreamIncremental()
-{
-	static bool s_bSupported = false;
-	return s_bSupported;
-}
-
 // _bDeferEnable creates the ring disabled: pollers are constructed on whichever thread starts
 // the connection while a different thread drives the loop, and single issuer binds the ring to
 // the enabling task, so the driving thread claims ownership by enabling it before first use
@@ -318,7 +272,7 @@ umint CIoUringRing::fs_RingBytes(uint32 _nSqEntries, uint32 _nCqEntries)
 	return nBytes;
 }
 
-bool CIoUringRing::fs_Available()
+bool CIoUringRing::fs_Available(CIoUringCaps &o_Caps)
 {
 #if !DMibConfig_IoUring_Enable
 	return false;
@@ -377,14 +331,14 @@ bool CIoUringRing::fs_Available()
 						&& fSupported(gc_IoUringOp_AsyncCancel)
 						&& fSupported(gc_IoUringOp_Socket)
 					;
-					fs_FutexWaitSupported() = bOps && fSupported(gc_IoUringOp_FutexWait);
+					o_Caps.m_bFutexWait = bOps && fSupported(gc_IoUringOp_FutexWait);
 
 					bool bCompletionVetoed = false;
 #if DMibConfig_IoDebug_Enable
 					auto CompletionSetting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringCompletion"));
 					bCompletionVetoed = CompletionSetting == "0";
 #endif
-					fs_CompletionSupported() =
+					o_Caps.m_bCompletion =
 						bOps
 						&& !bCompletionVetoed
 						&& fSupported(gc_IoUringOp_Recv)
@@ -397,8 +351,8 @@ bool CIoUringRing::fs_Available()
 					auto ZeroCopySetting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringSendZeroCopy"));
 					bZeroCopyVetoed = ZeroCopySetting == "0";
 #endif
-					fs_SendZeroCopySupported() =
-						fs_CompletionSupported()
+					o_Caps.m_bSendZeroCopy =
+						o_Caps.m_bCompletion
 						&& !bZeroCopyVetoed
 						&& fSupported(gc_IoUringOp_SendMsgZc)
 					;
@@ -408,7 +362,7 @@ bool CIoUringRing::fs_Available()
 					auto MultishotSetting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringMultishot"));
 					bMultishotVetoed = MultishotSetting == "0";
 #endif
-					bool bStream = fs_CompletionSupported() && !bMultishotVetoed && fSupported(gc_IoUringOp_SendZc);
+					bool bStream = o_Caps.m_bCompletion && !bMultishotVetoed && fSupported(gc_IoUringOp_SendZc);
 					if (bStream)
 					{
 						// The register syscall can be filtered separately from setup and
@@ -446,7 +400,7 @@ bool CIoUringRing::fs_Available()
 									Reg.m_Flags = gc_IoUringPbufRing_Incremental;
 									if (fs_Register(Probe.m_RingFd, gc_IoUringRegister_PbufRing, &Reg, 1) == 0)
 									{
-										fs_ReceiveStreamIncremental() = true;
+										o_Caps.m_bReceiveStreamIncremental = true;
 										fs_Register(Probe.m_RingFd, gc_IoUringRegister_UnregisterPbufRing, &Unreg, 1);
 									}
 								}
@@ -455,14 +409,14 @@ bool CIoUringRing::fs_Available()
 							NMib::NMemory::CDefaultAllocator::f_Free(pRing, PageSize);
 						}
 					}
-					fs_ReceiveStreamSupported() = bStream;
+					o_Caps.m_bReceiveStream = bStream;
 
 					// Send bundles are a flag on the send opcode with no probe entry of its
 					// own, so probe functionally — a socketpair, a ring with one published
 					// buffer, one bundle send; an old kernel answers -EINVAL. Completion
 					// sends require it: there is exactly one completion send path, and a
 					// kernel without bundles keeps the whole readiness backend
-					if (fs_CompletionSupported())
+					if (o_Caps.m_bCompletion)
 					{
 						bool bBundle = false;
 						int Sockets[2];
@@ -518,11 +472,11 @@ bool CIoUringRing::fs_Available()
 							close(Sockets[1]);
 						}
 
-						fs_CompletionSupported() = bBundle;
+						o_Caps.m_bCompletion = bBundle;
 						if (!bBundle)
 						{
-							fs_SendZeroCopySupported() = false;
-							fs_ReceiveStreamSupported() = false;
+							o_Caps.m_bSendZeroCopy = false;
+							o_Caps.m_bReceiveStream = false;
 						}
 					}
 				}

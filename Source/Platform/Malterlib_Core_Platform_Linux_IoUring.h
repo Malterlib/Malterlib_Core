@@ -209,6 +209,35 @@ constexpr long gc_IoUringSyscall_Register = 427;
 
 // One ring, owned and driven by a single thread (submissions and reaps are unsynchronized).
 // Other threads only ever wake the owner through the poller's pipe, never touch the ring
+// What the probed kernel's io_uring supports, filled by fs_Available as a side effect of its
+// feature probes
+struct CIoUringCaps
+{
+	// Futex waits in the ring need 6.7; the loop then parks in the ring instead of the event
+	bool m_bFutexWait = false;
+
+	// Completion transfers submit vectored sends as ring operations, and cancel them through
+	// async cancel on teardown. MalterlibIoUringCompletion=0 keeps the readiness backend
+	// while leaving polls on the ring
+	bool m_bCompletion = false;
+
+	// Zero copy sends hand the kernel the caller's pages instead of copying them, at the cost
+	// of a second completion per operation and of the pages staying pinned until it arrives.
+	// MalterlibIoUringSendZeroCopy=0 keeps ordinary sends
+	bool m_bSendZeroCopy = false;
+
+	// Inbound payload as one standing multishot receive per socket over a provided-buffer
+	// ring, needing kernel 6.0 — probed through the send-zc opcode that release introduced,
+	// plus an actual provided-buffer ring registration so a filtered register syscall fails
+	// the probe rather than every socket. MalterlibIoUringMultishot=0 keeps receives on
+	// readiness for comparison
+	bool m_bReceiveStream = false;
+
+	// Whether provided buffer rings support incremental consumption (6.12+), probed by
+	// registering a ring with the flag set
+	bool m_bReceiveStreamIncremental = false;
+};
+
 struct CIoUringRing
 {
 	static int fs_Setup(uint32 _nEntries, CIoUringParams *_pParams);
@@ -226,17 +255,12 @@ struct CIoUringRing
 	void f_AdvanceCq();
 	bool f_CqOverflowPending() const;
 
-	static bool fs_Available();
+	static bool fs_Available(CIoUringCaps &o_Caps);
 
 	// Bytes the kernel maps for a ring with these entry counts — the ring pages plus the
 	// submission entries — which it also charges to the user's locked memory limit
 	static umint fs_RingBytes(uint32 _nSqEntries, uint32 _nCqEntries);
 
-	static bool &fs_FutexWaitSupported();
-	static bool &fs_SendZeroCopySupported();
-	static bool &fs_CompletionSupported();
-	static bool &fs_ReceiveStreamSupported();
-	static bool &fs_ReceiveStreamIncremental();
 
 	void *m_pSqRing = nullptr;
 	umint m_SqRingSize = 0;

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Linux_IoLoop_Uring_Internal.h"
+#include "Malterlib_Core_Platform_Linux_IoSubSystem.h"
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
 
 #include <unistd.h>
@@ -55,7 +56,7 @@ bool CIoLoop_IoUring::fp_StartStream(CUringRegistration *_pRegistration, NStorag
 	else
 		Bgid = mp_NextBgid++;
 
-	bool bIncremental = CIoUringRing::fs_ReceiveStreamIncremental();
+	bool bIncremental = mp_pIo->m_UringCaps.m_bReceiveStreamIncremental;
 
 	CIoUringBufReg Reg;
 	fg_MemClear(&Reg, sizeof(Reg));

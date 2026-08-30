@@ -35,6 +35,9 @@ struct CIoSubSystem_Linux : NMib::NSys::CIoSubSystem
 	umint m_nUringMemlockLoops = 0;
 	umint m_nUringMemlockRingBytes = 0;
 
+	// What the kernel's io_uring supports, filled by the same probe
+	CIoUringCaps m_UringCaps;
+
 	// How many sends the loop keeps with the kernel at once for one descriptor; one reproduces
 	// the unpipelined path exactly
 	inline umint f_SendDepth() const;

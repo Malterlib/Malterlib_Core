@@ -47,7 +47,7 @@ CIoSubSystem_Linux &fg_IoSubSystem_Linux()
 
 CIoSubSystem_Linux::CIoSubSystem_Linux()
 {
-	m_bUringAvailable = CIoUringRing::fs_Available();
+	m_bUringAvailable = CIoUringRing::fs_Available(m_UringCaps);
 	if (m_bUringAvailable)
 	{
 		m_nUringMemlockLoops = NSys::fg_Thread_GetVirtualCores() * gc_UringLoopsPerCore + gc_UringExtraLoops;
