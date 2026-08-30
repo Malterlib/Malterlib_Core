@@ -3,6 +3,8 @@
 
 #include "Malterlib_Core_Platform_Windows_IoLoop_Iocp_Internal.h"
 
+#include <ws2tcpip.h>
+
 using namespace NMib;
 using namespace NMib::NMemory;
 using namespace NMib::NSys;
@@ -65,6 +67,76 @@ bool CIoLoop_Iocp::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistratio
 	return true;
 }
 
+// What TCP would like pended on the connection, in bytes: its own reading of the path's
+// bandwidth-delay product, which is what a sender without a socket buffer needs to keep with
+// the kernel and nothing more
+void CIoLoop_Iocp::fp_QueryIdealBacklog(CIocpRegistration *_pRegistration)
+{
+	ULONG nBacklog = 0;
+	DWORD nBytes = 0;
+	if (WSAIoctl((SOCKET)_pRegistration->m_Handle, SIO_IDEAL_SEND_BACKLOG_QUERY, nullptr, 0, &nBacklog, sizeof(nBacklog), &nBytes, nullptr, nullptr) != 0)
+	{
+		_pRegistration->m_bIdealBacklogUnsupported = true;
+		return;
+	}
+
+	_pRegistration->m_nIdealSendBacklog = nBacklog;
+
+#if DMibConfig_IoDebug_Enable
+	if (fg_IocpStatsEnabled())
+	{
+		g_IocpStats.m_nIdealSendBacklogChanges.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (nBacklog > g_IocpStats.m_nIdealSendBacklogMax.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+			g_IocpStats.m_nIdealSendBacklogMax.f_Store(nBacklog, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
+}
+
+// The standing request that completes when the ideal backlog changes: one packet owed, and
+// on its arrival the value is read again and the request re-armed
+void CIoLoop_Iocp::fp_ArmIdealBacklog(CIocpRegistration *_pRegistration)
+{
+	if (_pRegistration->m_bIdealBacklogArmed || _pRegistration->m_bIdealBacklogUnsupported || _pRegistration->m_bDeregistering)
+		return;
+
+	CIocpOp *pOp = &_pRegistration->m_IdealBacklogOp;
+	fg_MemClear(&pOp->m_Overlapped, sizeof(pOp->m_Overlapped));
+	pOp->m_pRegistration = _pRegistration;
+	pOp->m_Kind = EIocpOpKind::mc_IdealBacklog;
+	pOp->m_Status = 0;
+	pOp->m_nBytes = 0;
+	pOp->m_Error = 0;
+	pOp->m_bCompleted = false;
+
+	DWORD nBytes = 0;
+	if (WSAIoctl((SOCKET)_pRegistration->m_Handle, SIO_IDEAL_SEND_BACKLOG_CHANGE, nullptr, 0, nullptr, 0, &nBytes, &pOp->m_Overlapped, nullptr) != 0 && WSAGetLastError() != WSA_IO_PENDING)
+	{
+		_pRegistration->m_bIdealBacklogUnsupported = true;
+		return;
+	}
+
+	pOp->m_bIssued = true;
+	_pRegistration->m_bIdealBacklogArmed = true;
+	++_pRegistration->m_nOutstanding;
+}
+
+void CIoLoop_Iocp::fp_DispatchIdealBacklog(CIocpOp *_pOp, umint &_nReported)
+{
+	CIocpRegistration *pRegistration = _pOp->m_pRegistration;
+
+	DMibCheck(pRegistration->m_nOutstanding != 0);
+	--pRegistration->m_nOutstanding;
+	_pOp->m_bIssued = false;
+	pRegistration->m_bIdealBacklogArmed = false;
+
+	if (_pOp->m_Status != 0 || pRegistration->m_bDeregistering)
+		return;
+
+	fp_QueryIdealBacklog(pRegistration);
+	fp_ArmIdealBacklog(pRegistration);
+	fp_IssueDeferredSends(pRegistration, _nReported);
+}
+
 void CIoLoop_Iocp::f_SetSendWindow(NSys::CIoLoopRegistration *_pRegistration, umint _nBytes)
 {
 	auto *pOp = fg_ConstructObject<CIocpPendingOp>(CDefaultAllocator());
@@ -97,12 +169,27 @@ void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration, umin
 	umint nDepth = fg_IocpSendDepth();
 
 	// A socket whose sends finish at the acknowledgement holds its window in the unacknowledged
-	// bytes, so those are issued within the window in bytes rather than within a count of sends
-	bool bByBytes = _pRegistration->m_bSendCompletesOnAck && _pRegistration->m_nSendWindowBytes;
+	// bytes, so those are issued within a window in bytes rather than within a count of sends:
+	// what TCP says should be pended for full throughput, under the configured cap when there is
+	// one. The first such send asks TCP and arms the request that reports every change
+	umint nWindow = 0;
+	if (_pRegistration->m_bSendCompletesOnAck && _pRegistration->m_pSendNextToIssue)
+	{
+		if (!_pRegistration->m_bIdealBacklogArmed && !_pRegistration->m_bIdealBacklogUnsupported && !_pRegistration->m_bDeregistering)
+		{
+			fp_QueryIdealBacklog(_pRegistration);
+			fp_ArmIdealBacklog(_pRegistration);
+		}
+
+		nWindow = _pRegistration->m_nIdealSendBacklog;
+		if (_pRegistration->m_nSendWindowBytes && (!nWindow || _pRegistration->m_nSendWindowBytes < nWindow))
+			nWindow = _pRegistration->m_nSendWindowBytes;
+	}
+
 	while
 	(
 		_pRegistration->m_pSendNextToIssue
-		&& (bByBytes ? _pRegistration->m_nSendBytesInFlight < _pRegistration->m_nSendWindowBytes : _pRegistration->m_nSendsInFlight < nDepth)
+		&& (nWindow ? _pRegistration->m_nSendBytesInFlight < nWindow : _pRegistration->m_nSendsInFlight < nDepth)
 	)
 	{
 		CIocpSendOp *pOp = _pRegistration->m_pSendNextToIssue;

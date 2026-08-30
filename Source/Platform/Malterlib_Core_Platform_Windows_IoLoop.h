@@ -103,6 +103,7 @@ enum class EIocpOpKind : uint8
 	mc_Poll
 	, mc_Send
 	, mc_Recv
+	, mc_IdealBacklog
 };
 
 // One kernel operation: the OVERLAPPED the kernel names it by, first, so the pointer a dequeued
@@ -232,10 +233,17 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	CIocpSendOp *m_pSendNextToIssue = nullptr;
 	umint m_nSendsInFlight = 0;
 
-	// For sends that finish at the acknowledgement: the bytes the issued ones hold, and the
-	// window they are issued within (0 keeps the count of sends as the bound)
+	// For sends that finish at the acknowledgement: the bytes the issued ones hold, the cap
+	// configured for them (0 for none), and what TCP says should be pended on the connection
+	// for full throughput — the ideal send backlog, queried when the first such send is issued
+	// and again whenever the standing change request completes. The lesser of the two bounds
+	// what is issued; without either, the count of sends does
 	umint m_nSendBytesInFlight = 0;
 	umint m_nSendWindowBytes = 0;
+	umint m_nIdealSendBacklog = 0;
+	CIocpOp m_IdealBacklogOp;
+	bool m_bIdealBacklogArmed = false;
+	bool m_bIdealBacklogUnsupported = false;
 #if DMibConfig_IoDebug_Enable
 	uint64 m_SendIdleStamp = 0;
 #endif
@@ -357,6 +365,9 @@ private:
 	void fp_AppendSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported);
 	void fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported);
 	void fp_IssueDeferredSends(CIocpRegistration *_pRegistration, umint &_nReported);
+	void fp_QueryIdealBacklog(CIocpRegistration *_pRegistration);
+	void fp_ArmIdealBacklog(CIocpRegistration *_pRegistration);
+	void fp_DispatchIdealBacklog(CIocpOp *_pOp, umint &_nReported);
 	void fp_ReportSendAccepted(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported);
 	void fp_ReportCompletedSends(CIocpRegistration *_pRegistration, umint &_nReported);
 	void fp_CancelDeferredSends(CIocpRegistration *_pRegistration);

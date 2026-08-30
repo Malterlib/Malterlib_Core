@@ -1406,6 +1406,21 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 	int BufferSize = int(nBytes);
 	setsockopt(pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &BufferSize, sizeof(BufferSize));
 	setsockopt(pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &BufferSize, sizeof(BufferSize));
+#elif defined(DPlatformFamily_Linux)
+	// The kernel already autotunes the buffers; what a zero copy sender needs bounded is how
+	// far ahead of the transmit edge the write queue may run, since a zero copy send only
+	// completes once the kernel has queued it and the caller's pages stay pinned until it is
+	// acknowledged. TCP_NOTSENT_LOWAT holds the unsent part to a couple of frames: past it the
+	// send waits, its completion waits with it, and the caller's own pipeline fills instead
+	// of the kernel's — the unacknowledged part TCP bounds by its own window. A quarter of
+	// the send window, within a frame or two of the usual fragment
+	(void)_bConfigured;
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (pSocket->m_FD == -1 || !_nBytes || pSocket->m_AddressType == ENetAddressType_Unix)
+		return;
+
+	int LowWater = int(fg_Clamp(_nBytes / 4, umint(64 * 1024), umint(256 * 1024)));
+	setsockopt(pSocket->m_FD, IPPROTO_TCP, TCP_NOTSENT_LOWAT, &LowWater, sizeof(LowWater));
 #else
 	(void)_pSocket;
 	(void)_nBytes;

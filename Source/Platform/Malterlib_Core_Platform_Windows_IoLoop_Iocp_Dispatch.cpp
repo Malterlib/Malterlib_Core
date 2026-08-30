@@ -83,6 +83,10 @@ void CIoLoop_Iocp::fp_DispatchOp(CIocpOp *_pOp, umint &_nReported)
 		_pOp->m_bCompleted = true;
 		fp_ReportCompletedRecvs(pRegistration, _nReported);
 		break;
+
+	case EIocpOpKind::mc_IdealBacklog:
+		fp_DispatchIdealBacklog(_pOp, _nReported);
+		break;
 	}
 
 	fp_TryAcknowledge(pRegistration, _nReported);

@@ -125,6 +125,9 @@ struct CIocpStats
 	// The most sends, and bytes, one registration had issued and unfinished at once
 	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxInFlight = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxBytesInFlight = 0;
+	// The widest ideal send backlog TCP reported, and how often it changed
+	NMib::NAtomic::TCAtomic<uint64> m_nIdealSendBacklogMax = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nIdealSendBacklogChanges = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendShort = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesRequested = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesSent = 0;
