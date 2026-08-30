@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Linux_IoLoop_Uring_Internal.h"
+#include "Malterlib_Core_Platform_Linux_IoSubSystem.h"
 
 #include <stdlib.h>
 #include <unistd.h>

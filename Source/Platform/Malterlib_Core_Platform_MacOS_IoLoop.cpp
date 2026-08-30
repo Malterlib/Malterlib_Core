@@ -3,7 +3,6 @@
 
 #include "Malterlib_Core_Platform_MacOS_IoLoop.h"
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
-#include "../Malterlib_Core_IoSubSystem.h"
 
 #include <unistd.h>
 #include <errno.h>
@@ -219,21 +218,6 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
 	}
 
 	return nReported;
-}
-
-// This platform has no io knobs of its own yet; the subsystem carries the shared ones
-struct CIoSubSystem_MacOS : NMib::NSys::CIoSubSystem
-{
-};
-
-namespace
-{
-	constinit NMib::TCSubSystem<CIoSubSystem_MacOS, NMib::ESubSystemDestruction_BeforeMemoryManager> g_IoSubSystem = {DAggregateInit};
-}
-
-NMib::NSys::CIoSubSystem &NMib::NSys::fg_IoSubSystem()
-{
-	return *g_IoSubSystem;
 }
 
 NMib::NSys::ICIoLoop *fg_CreatePlatformIoLoop()
