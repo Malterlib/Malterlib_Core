@@ -1456,6 +1456,7 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("setsockopt (TCP_NOTSENT_LOWAT)", Error));
 	}
 #else
+	#error "Implement this"
 #endif
 }
 
