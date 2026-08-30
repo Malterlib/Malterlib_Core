@@ -119,13 +119,13 @@ bool CIoLoop_IoUring::fp_PublishSend(CUringRegistration *_pRegistration, CUringI
 	{
 		if (_pOp->m_EnqueueStamp)
 		{
-			g_UringStats.m_nSendSubmitLagNs.f_FetchAdd(fg_UringStatsNow() - _pOp->m_EnqueueStamp, NAtomic::gc_MemoryOrder_Relaxed);
-			g_UringStats.m_nSendSubmitLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_UringStats.m_nSendSubmitLagNs.f_FetchAdd(fg_UringStatsNow() - _pOp->m_EnqueueStamp, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_UringStats.m_nSendSubmitLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		}
-		g_UringStats.m_nSendBytesRequested.f_FetchAdd(nBytes, NAtomic::gc_MemoryOrder_Relaxed);
-		g_UringStats.m_nSendPublishes.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_UringStats.m_nSendBytesRequested.f_FetchAdd(nBytes, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_UringStats.m_nSendPublishes.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		if (nBytes)
-			g_UringStats.m_SendSizeBuckets[fg_GetHighestBitSet(nBytes)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_UringStats.m_SendSizeBuckets[fg_GetHighestBitSet(nBytes)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	}
 #endif
 
@@ -152,11 +152,11 @@ void CIoLoop_IoUring::fp_ArmSendBundle(CUringRegistration *_pRegistration)
 #if DMibConfig_IoDebug_Enable
 	if (fg_UringStatsEnabled())
 	{
-		g_UringStats.m_nSendOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_UringStats.m_nSendOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		if (_pRegistration->m_SendIdleStamp)
 		{
-			g_UringStats.m_nSendIdleNs.f_FetchAdd(fg_UringStatsNow() - _pRegistration->m_SendIdleStamp, NAtomic::gc_MemoryOrder_Relaxed);
-			g_UringStats.m_nSendIdleGaps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_UringStats.m_nSendIdleNs.f_FetchAdd(fg_UringStatsNow() - _pRegistration->m_SendIdleStamp, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_UringStats.m_nSendIdleGaps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			_pRegistration->m_SendIdleStamp = 0;
 		}
 	}
@@ -285,10 +285,10 @@ void CIoLoop_IoUring::fp_ReleaseNotifyPending(CUringIoOp *_pOp)
 	if (fg_UringStatsEnabled() && _pOp->m_EnqueueStamp)
 	{
 		uint64 LagNs = fg_UringStatsNow() - _pOp->m_EnqueueStamp;
-		g_UringStats.m_nSendNotifLagNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
-		g_UringStats.m_nSendNotifLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-		if (LagNs > g_UringStats.m_nSendNotifLagMaxNs.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
-			g_UringStats.m_nSendNotifLagMaxNs.f_Store(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_UringStats.m_nSendNotifLagNs.f_FetchAdd(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_UringStats.m_nSendNotifLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		if (LagNs > mp_pIo->m_UringStats.m_nSendNotifLagMaxNs.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+			mp_pIo->m_UringStats.m_nSendNotifLagMaxNs.f_Store(LagNs, NAtomic::gc_MemoryOrder_Relaxed);
 	}
 #endif
 

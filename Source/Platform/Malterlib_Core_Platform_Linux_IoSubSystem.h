@@ -22,6 +22,50 @@ constexpr umint gc_UringLoopsPerCore = 3;
 constexpr umint gc_UringExtraLoops = 4;
 constexpr umint gc_UringSendMarginBytes = 32 * 1024 * 1024;
 
+// Cumulative io statistics, reported at process exit when MalterlibIoStats=1: what the
+// benchmarks need to check assumptions against — how big the deliveries actually are,
+// whether the ring ever runs dry, how often the window parks, and what the send pipeline is
+// doing. Relaxed atomics: several loops write them, exactness per counter is not the point.
+// Everything here — the counters, the clock, the dump, and every recording site — exists
+// only in builds carrying the io debugging overrides
+#if DMibConfig_IoDebug_Enable
+struct CUringStats
+{
+	NMib::NAtomic::TCAtomic<uint64> m_nRecvSegments = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nRecvBytes = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_RecvSizeBuckets[33] = {};
+	NMib::NAtomic::TCAtomic<uint64> m_nRecvBufferAllocs = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nRecvBufferReuses = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendPublishes = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendSubmitLagNs = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendSubmitLagOps = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nRecvBufferAllocBytes = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nStreamArms = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nStreamEnobufs = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nStreamParks = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nStreamResumes = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendOps = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendZcOps = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendShort = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesRequested = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesSent = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifs = 0;
+	// The most zero copy sends, and bytes, one loop had awaiting their notification at once
+	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxInFlight = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxBytesInFlight = 0;
+	// From a zero copy send's result to its release notification: total, count and the longest
+	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifLagNs = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifLagOps = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifLagMaxNs = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendErrors = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendIdleGaps = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendIdleNs = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_SendSizeBuckets[33] = {};
+	NMib::NAtomic::TCAtomic<uint64> m_SendZcSizeBuckets[33] = {};
+	NMib::NAtomic::TCAtomic<uint64> m_nRecvErrors = 0;
+};
+#endif
+
 struct CIoSubSystem_Linux : NMib::NSys::CIoSubSystem
 {
 	CIoSubSystem_Linux();
@@ -56,6 +100,8 @@ struct CIoSubSystem_Linux : NMib::NSys::CIoSubSystem
 	umint m_nSendDepth = gc_UringDefaultSendDepth;
 	umint m_nReceiveBuffersOverride = 0;
 	umint m_nReceiveBufferBytesOverride = 0;
+
+	CUringStats m_UringStats;
 	EUringZeroCopyOverride m_ZeroCopyOverride = EUringZeroCopyOverride::mc_None;
 	bool m_bTraceEnabled = false;
 #endif
@@ -63,5 +109,10 @@ struct CIoSubSystem_Linux : NMib::NSys::CIoSubSystem
 
 // The subsystem, as the derived type; NSys::fg_IoSubSystem answers the same object as the base
 CIoSubSystem_Linux &fg_IoSubSystem_Linux();
+
+#if DMibConfig_IoDebug_Enable
+// The uring statistics report, registered by the constructor when MalterlibIoStats=1
+void fg_DumpUringStats(NMib::NSys::CIoSubSystem &_Io);
+#endif
 
 #include "Malterlib_Core_Platform_Linux_IoSubSystem.hpp"

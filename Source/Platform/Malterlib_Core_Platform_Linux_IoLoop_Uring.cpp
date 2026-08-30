@@ -440,14 +440,14 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 #if DMibConfig_IoDebug_Enable
 			if (fg_UringStatsEnabled() && pOp->m_EnqueueStamp)
 			{
-				g_UringStats.m_nSendSubmitLagNs.f_FetchAdd(fg_UringStatsNow() - pOp->m_EnqueueStamp, NAtomic::gc_MemoryOrder_Relaxed);
-				g_UringStats.m_nSendSubmitLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nSendSubmitLagNs.f_FetchAdd(fg_UringStatsNow() - pOp->m_EnqueueStamp, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nSendSubmitLagOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			}
 
 			if (fg_UringStatsEnabled() && pRegistration->m_SendIdleStamp)
 			{
-				g_UringStats.m_nSendIdleNs.f_FetchAdd(fg_UringStatsNow() - pRegistration->m_SendIdleStamp, NAtomic::gc_MemoryOrder_Relaxed);
-				g_UringStats.m_nSendIdleGaps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nSendIdleNs.f_FetchAdd(fg_UringStatsNow() - pRegistration->m_SendIdleStamp, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nSendIdleGaps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 				pRegistration->m_SendIdleStamp = 0;
 			}
 #endif
@@ -464,15 +464,15 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 #if DMibConfig_IoDebug_Enable
 			if (fg_UringStatsEnabled())
 			{
-				g_UringStats.m_nSendOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-				g_UringStats.m_nSendBytesRequested.f_FetchAdd(nSendBytes, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nSendOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nSendBytesRequested.f_FetchAdd(nSendBytes, NAtomic::gc_MemoryOrder_Relaxed);
 				if (pOp->m_bZeroCopy)
 				{
-					g_UringStats.m_nSendZcOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-					g_UringStats.m_SendZcSizeBuckets[fg_GetHighestBitSet(nSendBytes)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_UringStats.m_nSendZcOps.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_UringStats.m_SendZcSizeBuckets[fg_GetHighestBitSet(nSendBytes)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 				}
 				else
-					g_UringStats.m_SendSizeBuckets[fg_GetHighestBitSet(nSendBytes)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_UringStats.m_SendSizeBuckets[fg_GetHighestBitSet(nSendBytes)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			}
 #endif
 

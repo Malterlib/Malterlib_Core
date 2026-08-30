@@ -179,55 +179,10 @@ constexpr umint fg_UringReceiveBufferBytesOverride()
 }
 #endif
 
-// Cumulative io statistics, reported at process exit when MalterlibIoStats=1: what the
-// benchmarks need to check assumptions against — how big the deliveries actually are,
-// whether the ring ever runs dry, how often the window parks, and what the send pipeline is
-// doing. Relaxed atomics: several loops write them, exactness per counter is not the point.
-// Everything here — the counters, the clock, the dump, and every recording site — exists
-// only in builds carrying the io debugging overrides
 #if DMibConfig_IoDebug_Enable
-struct CUringStats
-{
-	NMib::NAtomic::TCAtomic<uint64> m_nRecvSegments = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nRecvBytes = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_RecvSizeBuckets[33] = {};
-	NMib::NAtomic::TCAtomic<uint64> m_nRecvBufferAllocs = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nRecvBufferReuses = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendPublishes = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendSubmitLagNs = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendSubmitLagOps = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nRecvBufferAllocBytes = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nStreamArms = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nStreamEnobufs = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nStreamParks = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nStreamResumes = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendOps = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendZcOps = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendShort = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesRequested = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesSent = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifs = 0;
-	// The most zero copy sends, and bytes, one loop had awaiting their notification at once
-	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxInFlight = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxBytesInFlight = 0;
-	// From a zero copy send's result to its release notification: total, count and the longest
-	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifLagNs = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifLagOps = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendNotifLagMaxNs = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendErrors = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendIdleGaps = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_nSendIdleNs = 0;
-	NMib::NAtomic::TCAtomic<uint64> m_SendSizeBuckets[33] = {};
-	NMib::NAtomic::TCAtomic<uint64> m_SendZcSizeBuckets[33] = {};
-	NMib::NAtomic::TCAtomic<uint64> m_nRecvErrors = 0;
-};
-
-extern CUringStats g_UringStats;
-
 // Monotonic nanoseconds for the send idle gap measurement; only called when stats are on
 uint64 fg_UringStatsNow();
 bool fg_UringStatsEnabled();
-void fg_DumpUringStats();
 #endif
 
 // Settles a registration's zero copy eligibility once, at its first send

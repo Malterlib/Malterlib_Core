@@ -142,7 +142,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 		{
 #if DMibConfig_IoDebug_Enable
 			if (fg_UringStatsEnabled())
-				g_UringStats.m_nSendNotifs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nSendNotifs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 			// The pages are released and the buffers may be reused, which is the released
@@ -176,7 +176,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			{
 #if DMibConfig_IoDebug_Enable
 				if (fg_UringStatsEnabled())
-					g_UringStats.m_nSendBytesSent.f_FetchAdd((uint64)(uint32)_Res, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_UringStats.m_nSendBytesSent.f_FetchAdd((uint64)(uint32)_Res, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 				fp_CoverSendRecords(pSendRegistration, (umint)(uint32)_Res, _nReported);
@@ -187,7 +187,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 				// ring and carries on below
 #if DMibConfig_IoDebug_Enable
 				if (fg_UringStatsEnabled() && _Res != -ECANCELED)
-					g_UringStats.m_nSendErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_UringStats.m_nSendErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 				fp_FailSendRecords
@@ -236,12 +236,12 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 		{
 			if (_Res >= 0)
 			{
-				g_UringStats.m_nSendBytesSent.f_FetchAdd((uint64)(uint32)_Res, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nSendBytesSent.f_FetchAdd((uint64)(uint32)_Res, NAtomic::gc_MemoryOrder_Relaxed);
 				if ((umint)(uint32)_Res < pOp->m_nRequested)
-					g_UringStats.m_nSendShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_UringStats.m_nSendShort.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			}
 			else if (_Res != -ECANCELED)
-				g_UringStats.m_nSendErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nSendErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		}
 #endif
 
@@ -264,10 +264,10 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			if (fg_UringStatsEnabled())
 			{
 				pOp->m_EnqueueStamp = fg_UringStatsNow();
-				if (mp_NotifyPending.f_GetLen() > g_UringStats.m_nSendMaxInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
-					g_UringStats.m_nSendMaxInFlight.f_Store(mp_NotifyPending.f_GetLen(), NAtomic::gc_MemoryOrder_Relaxed);
-				if (mp_nNotifyPendingBytes > g_UringStats.m_nSendMaxBytesInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
-					g_UringStats.m_nSendMaxBytesInFlight.f_Store(mp_nNotifyPendingBytes, NAtomic::gc_MemoryOrder_Relaxed);
+				if (mp_NotifyPending.f_GetLen() > mp_pIo->m_UringStats.m_nSendMaxInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+					mp_pIo->m_UringStats.m_nSendMaxInFlight.f_Store(mp_NotifyPending.f_GetLen(), NAtomic::gc_MemoryOrder_Relaxed);
+				if (mp_nNotifyPendingBytes > mp_pIo->m_UringStats.m_nSendMaxBytesInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+					mp_pIo->m_UringStats.m_nSendMaxBytesInFlight.f_Store(mp_nNotifyPendingBytes, NAtomic::gc_MemoryOrder_Relaxed);
 			}
 #endif
 		}
@@ -319,9 +319,9 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 #if DMibConfig_IoDebug_Enable
 			if (fg_UringStatsEnabled())
 			{
-				g_UringStats.m_nRecvSegments.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-				g_UringStats.m_nRecvBytes.f_FetchAdd((uint64)(uint32)_Res, NAtomic::gc_MemoryOrder_Relaxed);
-				g_UringStats.m_RecvSizeBuckets[fg_GetHighestBitSet((umint)(uint32)_Res)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nRecvSegments.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_nRecvBytes.f_FetchAdd((uint64)(uint32)_Res, NAtomic::gc_MemoryOrder_Relaxed);
+				mp_pIo->m_UringStats.m_RecvSizeBuckets[fg_GetHighestBitSet((umint)(uint32)_Res)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			}
 #endif
 
@@ -410,7 +410,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			{
 #if DMibConfig_IoDebug_Enable
 				if (fg_UringStatsEnabled())
-					g_UringStats.m_nStreamEnobufs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_UringStats.m_nStreamEnobufs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 				// The ring ran dry at the moment the kernel looked. Every consumed bid is
@@ -455,7 +455,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			{
 #if DMibConfig_IoDebug_Enable
 				if (fg_UringStatsEnabled())
-					g_UringStats.m_nRecvErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_UringStats.m_nRecvErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 				fp_EndStream(pStreamRegistration, NSys::EIoCompletionStatus::mc_Error, -_Res, _nReported);

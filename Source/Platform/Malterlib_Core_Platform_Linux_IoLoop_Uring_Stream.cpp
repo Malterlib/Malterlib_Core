@@ -146,7 +146,7 @@ void CIoLoop_IoUring::fp_ArmStream(CUringRegistration *_pRegistration)
 
 #if DMibConfig_IoDebug_Enable
 	if (fg_UringStatsEnabled())
-		g_UringStats.m_nStreamArms.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_UringStats.m_nStreamArms.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 }
 
@@ -171,7 +171,7 @@ bool CIoLoop_IoUring::fp_RefillBid(CUringRegistration *_pRegistration, uint16 _B
 
 #if DMibConfig_IoDebug_Enable
 				if (fg_UringStatsEnabled())
-					g_UringStats.m_nStreamParks.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+					mp_pIo->m_UringStats.m_nStreamParks.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 				if (fg_UringTraceEnabled())
 					fg_UringTrace("stream-park", _pRegistration->m_pToken, _pRegistration->m_Handle, _Bid);
 #endif
@@ -195,14 +195,14 @@ bool CIoLoop_IoUring::fp_RefillBid(CUringRegistration *_pRegistration, uint16 _B
 #if DMibConfig_IoDebug_Enable
 		if (fg_UringStatsEnabled())
 		{
-			g_UringStats.m_nRecvBufferAllocs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-			g_UringStats.m_nRecvBufferAllocBytes.f_FetchAdd(pRing->m_nBufferBytes, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_UringStats.m_nRecvBufferAllocs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+			mp_pIo->m_UringStats.m_nRecvBufferAllocBytes.f_FetchAdd(pRing->m_nBufferBytes, NAtomic::gc_MemoryOrder_Relaxed);
 		}
 #endif
 	}
 #if DMibConfig_IoDebug_Enable
 	else if (fg_UringStatsEnabled())
-		g_UringStats.m_nRecvBufferReuses.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_UringStats.m_nRecvBufferReuses.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 	pBuffer->m_nDataBytes = pRing->m_nBufferBytes;
 	pBuffer->m_pRecycler = pRing->m_pRecycler;
@@ -229,7 +229,7 @@ void CIoLoop_IoUring::fp_ResumeStream(CUringRegistration *_pRegistration)
 
 #if DMibConfig_IoDebug_Enable
 	if (fg_UringStatsEnabled())
-		g_UringStats.m_nStreamResumes.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		mp_pIo->m_UringStats.m_nStreamResumes.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
 	NContainer::TCVector<uint16> Unfilled = fg_Move(pRing->m_UnfilledBids);
