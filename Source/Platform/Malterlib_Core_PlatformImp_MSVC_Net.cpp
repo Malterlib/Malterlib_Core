@@ -1784,7 +1784,7 @@ bool CWindowsSocketContext::f_Shutdown(CWindowsSocket *_pSocket)
 // as the socket closes: the loss recovery and window figures that decide a path's throughput
 static void fsg_DumpTcpInfoAtClose(CWindowsSocket *_pSocket)
 {
-	if (!fg_IocpStatsEnabled() || _pSocket->m_AddressType == ENetAddressType_Unix || _pSocket->m_Mode == EWindowsSocketMode_Datagram || _pSocket->m_Mode == EWindowsSocketMode_Listen)
+	if (!NSys::fg_IoSubSystem().f_StatsEnabled() || _pSocket->m_AddressType == ENetAddressType_Unix || _pSocket->m_Mode == EWindowsSocketMode_Datagram || _pSocket->m_Mode == EWindowsSocketMode_Listen)
 		return;
 
 	DWORD Version = 0;

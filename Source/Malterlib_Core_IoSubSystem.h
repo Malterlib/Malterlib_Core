@@ -5,6 +5,8 @@
 
 #include "Malterlib_Core_SubSystem.h"
 
+#include <Mib/Container/Set>
+
 namespace NMib::NSys
 {
 	// An io knob the environment may override in io-debug builds. The module that owns the
@@ -68,9 +70,9 @@ namespace NMib::NSys
 		// of its in-flight sends; 0 is the actor's default of one
 		inline umint f_WebSocketFrameAhead() const;
 
-		// Adds a statistics report to what the destructor prints, in registration order. An area
-		// registers its report when it starts collecting, so a run only prints the areas it
-		// touched. Thread safe; a report registered twice prints once
+		// Adds a statistics report to what the destructor prints. An area registers its report
+		// when it starts collecting, so a run only prints the areas it touched. Thread safe; a
+		// report registered twice prints once
 		void f_RegisterStatsDump(void (*_fDump)());
 
 	protected:
@@ -93,10 +95,9 @@ namespace NMib::NSys
 		umint mp_nWebSocketFrameAhead = 0;
 #endif
 
-		static constexpr umint mcp_nMaxStatsDumps = 8;
 		NThread::CLowLevelLockAggregate mp_StatsDumpLock = {DAggregateInit};
-		void (*mp_fStatsDumps[mcp_nMaxStatsDumps])() = {};
-		umint mp_nStatsDumps = 0;
+		// The reports, keyed by address: function pointers have no ordering of their own
+		NContainer::TCSet<umint> mp_StatsDumps;
 	};
 
 	// The platform's io subsystem seen as the shared base, created on first use. Each platform

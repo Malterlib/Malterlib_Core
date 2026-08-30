@@ -132,10 +132,6 @@ void fg_DumpIocpStats()
 	;
 }
 
-bool fg_IocpStatsEnabled()
-{
-	return fg_IoSubSystem_Windows().f_StatsEnabled();
-}
 #endif
 
 // Newest first: the most recently returned block is the hottest

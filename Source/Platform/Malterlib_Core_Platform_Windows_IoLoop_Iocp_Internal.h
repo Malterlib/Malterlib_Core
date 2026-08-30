@@ -113,6 +113,5 @@ struct CIocpStats
 extern CIocpStats g_IocpStats;
 
 uint64 fg_IocpStatsNow();
-bool fg_IocpStatsEnabled();
 void fg_DumpIocpStats();
 #endif
