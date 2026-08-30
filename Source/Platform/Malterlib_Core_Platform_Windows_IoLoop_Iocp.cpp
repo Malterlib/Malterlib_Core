@@ -418,7 +418,7 @@ void CIoLoop_Iocp::fp_CancelOutstanding(CIocpRegistration *_pRegistration, umint
 	// Every transfer the socket has with the kernel, whichever thread issued it. The caller
 	// keeps the socket open until the acknowledgement, which is what makes cancelling by
 	// handle valid throughout
-	if (_pRegistration->m_nSendsInFlight || _pRegistration->m_nRecvsInFlight || _pRegistration->m_bIdealBacklogArmed)
+	if (_pRegistration->m_nSendsInFlight || _pRegistration->m_nRecvsInFlight)
 		CancelIoEx((HANDLE)_pRegistration->m_Handle, nullptr);
 
 	// Sends that never reached the kernel have nothing to cancel there; marked cancelled in

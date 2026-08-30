@@ -74,6 +74,10 @@ struct CWindowsSocket
 	// go without a send buffer
 	umint m_nSendWindowBytes = 0;
 
+	// What the last path query saw, for the rate the next one derives
+	uint64 m_PathLastBytesOut = 0;
+	uint64 m_PathLastStamp = 0;
+
 	// The send buffer the first completion send applies, decided at registration (see
 	// f_StartSocket); ~umint(0) leaves the system default
 	umint m_nSendBufferBytesToApply = umint(-1);

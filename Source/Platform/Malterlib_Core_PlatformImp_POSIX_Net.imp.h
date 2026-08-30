@@ -1428,6 +1428,37 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 #endif
 }
 
+// Linux measures both halves itself: tcpi_delivery_rate is the rate the peer has been
+// acknowledging at, tcpi_min_rtt the least round trip seen, and it says when the rate was
+// held back by the sender rather than the path
+bool NSys::NNetwork::fg_QueryPathBandwidthDelay(void *_pSocket, umint &o_nBytes, bool &o_bAppLimited)
+{
+#if defined(DPlatformFamily_Linux)
+	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
+	if (pSocket->m_FD == -1 || pSocket->m_AddressType == ENetAddressType_Unix)
+		return false;
+
+	tcp_info Info;
+	NMib::NMemory::fg_MemClear(&Info, sizeof(Info));
+	socklen_t nInfo = sizeof(Info);
+	if (getsockopt(pSocket->m_FD, IPPROTO_TCP, TCP_INFO, &Info, &nInfo) != 0)
+		return false;
+	if (nInfo < offsetof(tcp_info, tcpi_delivery_rate) + sizeof(Info.tcpi_delivery_rate) || !Info.tcpi_delivery_rate || !Info.tcpi_min_rtt)
+		return false;
+
+	o_nBytes = umint(Info.tcpi_delivery_rate * uint64(Info.tcpi_min_rtt) / 1000000);
+	o_bAppLimited = Info.tcpi_delivery_rate_app_limited != 0;
+
+	return true;
+#else
+	(void)_pSocket;
+	(void)o_nBytes;
+	(void)o_bAppLimited;
+
+	return false;
+#endif
+}
+
 bool NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const *_pSpans, umint _nSpans, NSys::FIoCompletion &&_fOnComplete, NSys::FIoBufferReleased &&_fOnBufferReleased)
 {
 	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
