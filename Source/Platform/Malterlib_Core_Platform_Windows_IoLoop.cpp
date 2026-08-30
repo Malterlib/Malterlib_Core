@@ -311,10 +311,12 @@ void CIocpConfig::fsg_DumpStats()
 		(
 			NStr::fg_Format<NStr::CStrNonTracked>
 			(
-				"[io stats] send: ops={} inline={} deferred={} short={} bytesReq={} bytesSent={} avgReq={} errors={}\n"
+				"[io stats] send: ops={} inline={} deferred={} maxInFlight={} maxBytesInFlight={} short={} bytesReq={} bytesSent={} avgReq={} errors={}\n"
 				, nSendOps
 				, fLoad(g_IocpStats.m_nSendInline)
 				, fLoad(g_IocpStats.m_nSendDeferred)
+				, fLoad(g_IocpStats.m_nSendMaxInFlight)
+				, fLoad(g_IocpStats.m_nSendMaxBytesInFlight)
 				, fLoad(g_IocpStats.m_nSendShort)
 				, nSendRequested
 				, fLoad(g_IocpStats.m_nSendBytesSent)

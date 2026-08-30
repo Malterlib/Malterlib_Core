@@ -160,6 +160,15 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	++_pRegistration->m_nOutstanding;
 	++_pRegistration->m_nSendsInFlight;
 	_pRegistration->m_nSendBytesInFlight += _pOp->m_nRequested;
+#if DMibConfig_IoDebug_Enable
+	if (fg_IocpStatsEnabled())
+	{
+		if (_pRegistration->m_nSendsInFlight > g_IocpStats.m_nSendMaxInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+			g_IocpStats.m_nSendMaxInFlight.f_Store(_pRegistration->m_nSendsInFlight, NAtomic::gc_MemoryOrder_Relaxed);
+		if (_pRegistration->m_nSendBytesInFlight > g_IocpStats.m_nSendMaxBytesInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+			g_IocpStats.m_nSendMaxBytesInFlight.f_Store(_pRegistration->m_nSendBytesInFlight, NAtomic::gc_MemoryOrder_Relaxed);
+	}
+#endif
 
 #if DMibConfig_IoDebug_Enable
 	if (fg_IocpStatsEnabled())

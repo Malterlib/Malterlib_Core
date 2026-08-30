@@ -1218,12 +1218,13 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 
 	// The send buffer policy, settled here so the loop's release promise is known before any
 	// consumer asks; the option itself is applied at the first completion send (see
-	// fg_SubmitSendVectored). A unix socket goes without a buffer for the direct delivery into
-	// the peer's pending receive, and completes within the local round trip. A TCP socket does
-	// so only under the override: without a buffer its sends finish at the acknowledgement,
-	// which the loop turns into a completion at issue and a release at the packet
+	// fg_SubmitSendVectored). Stream sockets go without a buffer: a unix socket's sends then
+	// deliver straight into the peer's pending receive and complete within the local round
+	// trip, and a TCP socket's transmit from the caller's pages and finish at the
+	// acknowledgement, which the loop turns into a completion at issue and a release at the
+	// packet, with the send window bounding what is unacknowledged
 	_pSocket->m_nSendBufferBytesToApply = fg_IocpSocketSendBufferBytesOverride();
-	if (_pSocket->m_nSendBufferBytesToApply == umint(-1) && fg_IocpDirectSendEnabled() && _pSocket->m_AddressType == ENetAddressType_Unix)
+	if (_pSocket->m_nSendBufferBytesToApply == umint(-1) && fg_IocpDirectSendEnabled() && _pSocket->m_Mode != EWindowsSocketMode_Datagram)
 		_pSocket->m_nSendBufferBytesToApply = 0;
 	if (_pSocket->m_nSendBufferBytesToApply == 0 && _pSocket->m_AddressType != ENetAddressType_Unix && _pSocket->m_pIoRegistration)
 		static_cast<CIocpRegistration *>(_pSocket->m_pIoRegistration)->m_bSendCompletesOnAck = true;

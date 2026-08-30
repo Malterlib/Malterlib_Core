@@ -122,6 +122,9 @@ struct CIocpStats
 	NMib::NAtomic::TCAtomic<uint64> m_nSendOps = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendInline = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendDeferred = 0;
+	// The most sends, and bytes, one registration had issued and unfinished at once
+	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxInFlight = 0;
+	NMib::NAtomic::TCAtomic<uint64> m_nSendMaxBytesInFlight = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendShort = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesRequested = 0;
 	NMib::NAtomic::TCAtomic<uint64> m_nSendBytesSent = 0;
