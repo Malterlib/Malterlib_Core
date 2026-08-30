@@ -1341,7 +1341,6 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 	pSocket->m_pOwningLoop->f_ResumeReceiveStream(pSocket->m_pIoRegistration);
 }
 
-
 // Marks the socket as one that will be given up to another owner. Must precede the start: the
 // registration it decides is never bound to a completion port, and that binding, once made,
 // is for the handle's lifetime

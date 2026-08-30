@@ -1347,7 +1347,6 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 	pSocket->m_pOwningLoop->f_ResumeReceiveStream(pSocket->m_pIoRegistration);
 }
 
-
 // Nothing binds a descriptor to a loop for life here, so an inheritable socket registers like
 // any other; the flag is kept for the record
 void NSys::NNetwork::fg_SetInheritable(void *_pSocket)
