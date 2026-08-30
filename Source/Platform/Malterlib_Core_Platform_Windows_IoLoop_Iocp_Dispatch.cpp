@@ -77,7 +77,7 @@ void CIoLoop_Iocp::fp_DispatchOp(CIocpOp *_pOp, umint &_nReported)
 	case EIocpOpKind::mc_Send:
 		_pOp->m_bCompleted = true;
 #if DMibConfig_IoDebug_Enable
-		if (fg_IocpStatsEnabled())
+		if (mp_pIo->f_StatsEnabled())
 		{
 			auto *pSend = static_cast<CIocpSendOp *>(_pOp);
 			if (pSend->m_IssueStamp)
@@ -141,10 +141,10 @@ void CIoLoop_Iocp::fp_DispatchPoll(CIocpPollOp *_pOp, umint &_nReported)
 	ULONG AfdEvents = ReportedEvents & _pOp->m_ArmedEvents;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		g_IocpStats.m_nPollEvents.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-	if (fg_IocpTraceEnabled())
-		fg_IocpTrace((AfdEvents & (gc_AfdPoll_Disconnect | gc_AfdPoll_Abort | gc_AfdPoll_LocalClose | gc_AfdPoll_ConnectFail)) ? "close-event" : "poll-event", pRegistration->m_pToken, pRegistration->m_Handle, ReportedEvents | (_pOp->m_ArmedEvents << 16));
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace((AfdEvents & (gc_AfdPoll_Disconnect | gc_AfdPoll_Abort | gc_AfdPoll_LocalClose | gc_AfdPoll_ConnectFail)) ? "close-event" : "poll-event", pRegistration->m_pToken, pRegistration->m_Handle, ReportedEvents | (_pOp->m_ArmedEvents << 16));
 #endif
 
 	// Each direction's report is one-shot; the close class advances its state so each of its

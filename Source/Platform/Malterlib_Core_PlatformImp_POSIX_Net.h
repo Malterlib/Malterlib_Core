@@ -8,6 +8,7 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "../Malterlib_Core_IoSubSystem.h"
 
 #include "Malterlib_Core_PlatformImp_Net.h"
 #include "Malterlib_Core_Platform_POSIX_IoLoop.h"
@@ -366,6 +367,8 @@ private:
 
 	CPOSIXImpSpecificSocketContext mp_ImpSpecific;
 
+	// The io subsystem the socket policies read their knobs from, cached at construction
+	NMib::NSys::CIoSubSystem *mp_pIo = nullptr;
 	CPollerThread mp_PollerThread;
 
 	// TODO: This should be able to be replaced by an imp specific version.

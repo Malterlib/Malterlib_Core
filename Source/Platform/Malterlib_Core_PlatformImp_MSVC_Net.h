@@ -144,6 +144,8 @@ extern CSocketIoStats g_SocketIoStats;
 bool fg_SocketIoStatsEnabled();
 #endif
 
+struct CIoSubSystem_Windows;
+
 class CWindowsSocketContext
 {
 protected:
@@ -179,6 +181,8 @@ protected:
 		NMib::NAtomic::TCAtomic<smint> mp_bStop{0};
 	};
 
+	// The io subsystem the socket policies read their knobs from, cached at construction
+	CIoSubSystem_Windows *mp_pIo = nullptr;
 	CPollerThread mp_PollerThread;
 
 	CAddressResolver mp_Resolver;

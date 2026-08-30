@@ -21,6 +21,7 @@ CIocpRegistration::CIocpRegistration()
 
 CIoLoop_Iocp::CIoLoop_Iocp()
 {
+	mp_pIo = &fg_IoSubSystem_Windows();
 	// One concurrent thread: the port is parked in by exactly the thread that hosts the loop
 	mp_hPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
 	mp_bCreated = mp_hPort != nullptr;
@@ -53,7 +54,7 @@ auto CIoLoop_Iocp::fp_CreateRegistration() -> NSys::CIoLoopRegistration *
 void CIoLoop_Iocp::fp_WakeKernel()
 {
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		g_IocpStats.m_nWakePosts.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -236,7 +237,7 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 	// packet round trip. Only sound for a provider whose handle is the socket itself: a layered
 	// provider between the two would see a completion its handle never posted
 	UCHAR Modes = FILE_SKIP_SET_EVENT_ON_HANDLE;
-	if (fg_IocpSkipSuccessEnabled() && hBase == (HANDLE)Socket)
+	if (mp_pIo->f_SkipSuccessEnabled() && hBase == (HANDLE)Socket)
 	{
 		WSAPROTOCOL_INFOW ProtocolInfo;
 		int nProtocolInfo = sizeof(ProtocolInfo);
@@ -248,7 +249,7 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 		_pRegistration->m_bSkipSuccess = (Modes & FILE_SKIP_COMPLETION_PORT_ON_SUCCESS) != 0;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 	{
 		g_IocpStats.m_nRegistrations.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		if (_pRegistration->m_bSkipSuccess)
@@ -359,10 +360,10 @@ bool CIoLoop_Iocp::fp_ArmPoll(CIocpRegistration *_pRegistration, ULONG _AfdEvent
 	++_pRegistration->m_nOutstanding;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		g_IocpStats.m_nPollArms.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-	if (fg_IocpTraceEnabled())
-		fg_IocpTrace(Status == gc_NtStatus_Pending ? "poll-arm" : "poll-arm-immediate", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)_AfdEvents);
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace(Status == gc_NtStatus_Pending ? "poll-arm" : "poll-arm-immediate", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)_AfdEvents);
 #endif
 
 	return true;
@@ -448,7 +449,7 @@ void CIoLoop_Iocp::fp_CancelPoll(CIocpRegistration *_pRegistration)
 	_pRegistration->m_bPollCancelRequested = true;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		g_IocpStats.m_nPollCancels.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -525,8 +526,8 @@ void CIoLoop_Iocp::fp_SweepPendingOps(CIocpRegistration *_pRegistration)
 	for (CIocpPendingOp *pOp : Swept)
 	{
 #if DMibConfig_IoDebug_Enable
-		if (fg_IocpTraceEnabled())
-			fg_IocpTrace("pending-op-swept", _pRegistration->m_pToken, _pRegistration->m_Handle, pOp->m_bStreamStart ? 1 : pOp->m_bStreamResume ? 2 : 3);
+		if (mp_pIo->f_TraceEnabled())
+			mp_pIo->f_Trace("pending-op-swept", _pRegistration->m_pToken, _pRegistration->m_Handle, pOp->m_bStreamStart ? 1 : pOp->m_bStreamResume ? 2 : 3);
 #endif
 
 		if (pOp->m_bStreamStart)
@@ -562,8 +563,8 @@ void CIoLoop_Iocp::fp_TryAcknowledge(CIocpRegistration *_pRegistration, umint &_
 	--mp_nDeregistering;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpTraceEnabled())
-		fg_IocpTrace("ack", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace("ack", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 
 	CIoLoopDeferredAck Ack{_pRegistration, _pRegistration->m_pDeregWait, fg_Move(_pRegistration->m_fOnDeregistered)};
@@ -590,8 +591,8 @@ void CIoLoop_Iocp::fp_ProcessChanges(umint &_nReported)
 			pRegistration->m_pDeregWait = Change.m_pDeregWait;
 			pRegistration->m_fOnDeregistered = fg_Move(Change.m_fOnDeregistered);
 #if DMibConfig_IoDebug_Enable
-			if (fg_IocpTraceEnabled())
-				fg_IocpTrace("deregister", pRegistration->m_pToken, Change.m_Handle, (uint32)pRegistration->m_nOutstanding);
+			if (mp_pIo->f_TraceEnabled())
+				mp_pIo->f_Trace("deregister", pRegistration->m_pToken, Change.m_Handle, (uint32)pRegistration->m_nOutstanding);
 #endif
 
 			fp_CancelOutstanding(pRegistration, _nReported);
@@ -615,8 +616,8 @@ void CIoLoop_Iocp::fp_ProcessChanges(umint &_nReported)
 		else
 		{
 #if DMibConfig_IoDebug_Enable
-			if (fg_IocpTraceEnabled())
-				fg_IocpTrace("register", pRegistration->m_pToken, Change.m_Handle, uint32(pRegistration->m_EventMask));
+			if (mp_pIo->f_TraceEnabled())
+				mp_pIo->f_Trace("register", pRegistration->m_pToken, Change.m_Handle, uint32(pRegistration->m_EventMask));
 #endif
 
 			int Error = 0;
@@ -676,8 +677,8 @@ void CIoLoop_Iocp::fp_ApplyPendingOp(CIocpPendingOp *_pOp, umint &_nReported)
 		// still on the loop's thread as the contract promises. A resume message carries
 		// nothing and is simply moot
 #if DMibConfig_IoDebug_Enable
-		if (fg_IocpTraceEnabled())
-			fg_IocpTrace("pending-op-cancelled", pRegistration->m_pToken, pRegistration->m_Handle, _pOp->m_bStreamStart ? 1 : _pOp->m_bStreamResume ? 2 : 3);
+		if (mp_pIo->f_TraceEnabled())
+			mp_pIo->f_Trace("pending-op-cancelled", pRegistration->m_pToken, pRegistration->m_Handle, _pOp->m_bStreamStart ? 1 : _pOp->m_bStreamResume ? 2 : 3);
 #endif
 
 		if (_pOp->m_bStreamStart)
@@ -725,8 +726,8 @@ void CIoLoop_Iocp::fp_ApplyPendingOp(CIocpPendingOp *_pOp, umint &_nReported)
 		fp_UpdatePoll(pRegistration, _nReported);
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_IocpTraceEnabled())
-			fg_IocpTrace(_pOp->m_bStreamStart ? "completion-mode-read" : "completion-mode-write", pRegistration->m_pToken, pRegistration->m_Handle, 0);
+		if (mp_pIo->f_TraceEnabled())
+			mp_pIo->f_Trace(_pOp->m_bStreamStart ? "completion-mode-read" : "completion-mode-write", pRegistration->m_pToken, pRegistration->m_Handle, 0);
 #endif
 	}
 
@@ -788,7 +789,7 @@ umint CIoLoop_Iocp::fp_IterateTimeout(bool _bBlock, DWORD _TimeoutMs)
 		nEntries = 0;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 	{
 		g_IocpStats.m_nWaits.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 		g_IocpStats.m_nPackets.f_FetchAdd(nEntries, NAtomic::gc_MemoryOrder_Relaxed);
@@ -858,15 +859,15 @@ void CIoLoop_Iocp::f_AbandonPendingTeardown()
 
 bool CIoLoop_Iocp::f_SupportsCompletionIo() const
 {
-	return mp_bCreated && fg_IocpCompletionEnabled();
+	return mp_bCreated && mp_pIo->f_CompletionEnabled();
 }
 
 umint CIoLoop_Iocp::f_GetCompletionSendDepth() const
 {
-	return f_SupportsCompletionIo() ? fg_IocpSendDepth() : 1;
+	return f_SupportsCompletionIo() ? mp_pIo->f_SendDepth() : 1;
 }
 
 bool CIoLoop_Iocp::f_SupportsReceiveStream() const
 {
-	return mp_bCreated && fg_IocpCompletionEnabled();
+	return mp_bCreated && mp_pIo->f_CompletionEnabled();
 }

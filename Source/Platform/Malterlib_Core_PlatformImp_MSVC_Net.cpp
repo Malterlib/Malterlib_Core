@@ -208,36 +208,10 @@ static void fg_DumpSocketIoStats()
 	;
 }
 
-// Answered once for the process under an atomic guard rather than a function-local static: the
-// build disables their thread-safe initialization, and two threads racing the first ask would
-// read a zero-initialized value. 0 = not asked, 1 = a thread is asking, 2 = answered
-constinit NAtomic::TCAtomic<uint32> g_SocketIoStatsState{0};
-constinit bool g_bSocketIoStatsEnabled = false;
-
+// The subsystem read the knob once; the socket context registers the report at construction
 bool fg_SocketIoStatsEnabled()
 {
-	uint32 State = g_SocketIoStatsState.f_Load(NAtomic::gc_MemoryOrder_Acquire);
-	if (State == 2) [[likely]]
-		return g_bSocketIoStatsEnabled;
-
-	uint32 Expected = 0;
-	if (State == 0 && g_SocketIoStatsState.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_AcquireRelease, NAtomic::gc_MemoryOrder_Acquire))
-	{
-		if (NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoStats")) == "1")
-		{
-			atexit(&fg_DumpSocketIoStats);
-			g_bSocketIoStatsEnabled = true;
-		}
-
-		g_SocketIoStatsState.f_Store(2, NAtomic::gc_MemoryOrder_Release);
-
-		return g_bSocketIoStatsEnabled;
-	}
-
-	while (g_SocketIoStatsState.f_Load(NAtomic::gc_MemoryOrder_Acquire) != 2)
-		NSys::fg_Thread_Yield();
-
-	return g_bSocketIoStatsEnabled;
+	return NSys::fg_IoSubSystem().f_StatsEnabled();
 }
 
 static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWouldBlock)
@@ -259,6 +233,12 @@ static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWo
 
 CWindowsSocketContext::CWindowsSocketContext()
 {
+	mp_pIo = &fg_IoSubSystem_Windows();
+#if DMibConfig_IoDebug_Enable
+	if (mp_pIo->f_StatsEnabled())
+		mp_pIo->f_RegisterStatsDump(&fg_DumpSocketIoStats);
+#endif
+
 #if DMibConfig_IoDebug_Enable
 	// The exit reports register on the first ask; asking here makes every run report
 	fg_SocketIoStatsEnabled();
@@ -738,7 +718,7 @@ namespace
 	// and the option is a no-op. MalterlibLoopbackFastPath=0 leaves it off for measurement
 	void fg_EnableLoopbackFastPath(SOCKET _Socket)
 	{
-		if (!fg_IocpLoopbackFastPathEnabled())
+		if (!fg_IoSubSystem_Windows().f_LoopbackFastPathEnabled())
 			return;
 
 		int bEnable = 1;
@@ -1165,7 +1145,7 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 	// Kernel default socket buffers quantize a bulk stream into buffer-sized bursts with a wake
 	// handoff between each, which caps per-socket throughput at roughly buffer size over wake
 	// round-trip time. The override is a debugging aid for measuring that effect
-	if (umint nBufferBytes = fg_IocpSocketBufferBytesOverride(); nBufferBytes && _pSocket->m_Socket != INVALID_SOCKET)
+	if (umint nBufferBytes = mp_pIo->f_SocketBufferBytesOverride(); nBufferBytes && _pSocket->m_Socket != INVALID_SOCKET)
 	{
 		int BufferSize = (int)fg_Min(nBufferBytes, umint(INT_MAX));
 		if
@@ -1216,7 +1196,7 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 	// into the receive the peer has posted, and the send completes right away. On TCP the send
 	// only completes once the peer has acknowledged the bytes; see m_bSendCompletesOnAck for
 	// how the loop reports those, and the send window for what bounds them
-	_pSocket->m_nSendBufferBytesToApply = fg_IocpSocketSendBufferBytesOverride();
+	_pSocket->m_nSendBufferBytesToApply = mp_pIo->f_SocketSendBufferBytesOverride();
 	// TCP goes without a buffer only where SIO_TCP_INFO can size its pipeline to the path; an
 	// older kernel keeps the buffered sends, which need no such sizing
 	// An inheritable socket sends on the readiness path only, whose non-blocking sends need the
@@ -1225,7 +1205,7 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 	(
 		_pSocket->m_nSendBufferBytesToApply == umint(-1)
 		&& !_pSocket->m_bInheritable
-		&& fg_IocpDirectSendEnabled()
+		&& mp_pIo->f_DirectSendEnabled()
 		&& _pSocket->m_Mode != EWindowsSocketMode_Datagram
 		&& (_pSocket->m_AddressType == ENetAddressType_Unix || fg_WindowsTcpInfoSupported())
 	)

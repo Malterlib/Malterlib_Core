@@ -19,7 +19,7 @@ bool CIoLoop_Iocp::f_StartReceiveStream(NSys::CIoLoopRegistration *_pRegistratio
 	pOp->m_bStreamStart = true;
 	// A buffer descriptor carries a 32 bit length
 	pOp->m_nBytes = fg_Min(_nBufferBytes, umint(1) << 30);
-	if (umint nOverride = fg_IocpRecvBufferBytesOverride())
+	if (umint nOverride = mp_pIo->f_RecvBufferBytesOverride())
 		pOp->m_nBytes = nOverride;
 	pOp->m_fSink = fg_Move(_fSink);
 	pOp->m_pBackpressure = fg_Move(_pBackpressure);
@@ -47,10 +47,10 @@ bool CIoLoop_Iocp::fp_StartStream(CIocpRegistration *_pRegistration, NStorage::T
 	umint nSocketBytes = NMemory::CDefaultAllocator::f_SizePadded(_pRegistration->m_nStreamBufferBytes);
 
 	umint nBufferBytes = nSocketBytes;
-	if (!fg_IocpRecvBufferBytesOverride() && nSocketBytes > gc_IocpReceiveSliceBytes)
+	if (!mp_pIo->f_RecvBufferBytesOverride() && nSocketBytes > gc_IocpReceiveSliceBytes)
 		nBufferBytes = NMemory::CDefaultAllocator::f_SizePadded(gc_IocpReceiveSliceBytes);
 
-	umint nDepth = fg_IocpRecvDepth();
+	umint nDepth = mp_pIo->f_RecvDepth();
 
 	_pRegistration->m_nRecvBufferBytes = nBufferBytes;
 	_pRegistration->m_nRecvDepth = nDepth;
@@ -80,8 +80,8 @@ bool CIoLoop_Iocp::fp_StartStream(CIocpRegistration *_pRegistration, NStorage::T
 	}
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpTraceEnabled())
-		fg_IocpTrace("stream-start", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)nBufferBytes);
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace("stream-start", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)nBufferBytes);
 #endif
 
 	return true;
@@ -104,10 +104,10 @@ NStorage::TCSharedPointer<CIocpStreamBuffer> CIoLoop_Iocp::fp_TakeStreamBuffer(C
 			if (Backpressure->m_nOutstandingBytes.f_Load(NAtomic::gc_MemoryOrder_Acquire) >= Backpressure->m_nLimitBytes)
 			{
 #if DMibConfig_IoDebug_Enable
-				if (fg_IocpStatsEnabled())
+				if (mp_pIo->f_StatsEnabled())
 					g_IocpStats.m_nStreamParks.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-				if (fg_IocpTraceEnabled())
-					fg_IocpTrace("stream-park", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
+				if (mp_pIo->f_TraceEnabled())
+					mp_pIo->f_Trace("stream-park", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 
 				return {};
@@ -127,12 +127,12 @@ NStorage::TCSharedPointer<CIocpStreamBuffer> CIoLoop_Iocp::fp_TakeStreamBuffer(C
 		pBuffer->m_pData = (uint8 *)NMemory::CDefaultAllocator::f_Alloc(_pRegistration->m_nRecvBufferBytes);
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_IocpStatsEnabled())
+		if (mp_pIo->f_StatsEnabled())
 			g_IocpStats.m_nRecvBufferAllocs.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 	}
 #if DMibConfig_IoDebug_Enable
-	else if (fg_IocpStatsEnabled())
+	else if (mp_pIo->f_StatsEnabled())
 		g_IocpStats.m_nRecvBufferReuses.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 	pBuffer->m_nDataBytes = _pRegistration->m_nRecvBufferBytes;
@@ -182,7 +182,7 @@ bool CIoLoop_Iocp::fp_PostRecv(CIocpRegistration *_pRegistration, CIocpRecvOp &_
 	_pRegistration->m_pRecvTail = &_Op;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		g_IocpStats.m_nRecvPosts.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -190,8 +190,8 @@ bool CIoLoop_Iocp::fp_PostRecv(CIocpRegistration *_pRegistration, CIocpRecvOp &_
 	int Ret = WSARecv((SOCKET)_pRegistration->m_Handle, &_Op.m_Buffer, 1, &nReceived, &_Op.m_Flags, &_Op.m_Overlapped, nullptr);
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpTraceEnabled())
-		fg_IocpTrace(Ret == 0 ? "recv-post-done" : "recv-post", _pRegistration->m_pToken, _pRegistration->m_Handle, Ret == 0 ? (uint32)nReceived : (uint32)WSAGetLastError());
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace(Ret == 0 ? "recv-post-done" : "recv-post", _pRegistration->m_pToken, _pRegistration->m_Handle, Ret == 0 ? (uint32)nReceived : (uint32)WSAGetLastError());
 #endif
 
 	if (Ret == 0)
@@ -203,7 +203,7 @@ bool CIoLoop_Iocp::fp_PostRecv(CIocpRegistration *_pRegistration, CIocpRecvOp &_
 			fp_QueueInlineCompletion(_pRegistration);
 
 #if DMibConfig_IoDebug_Enable
-			if (fg_IocpStatsEnabled())
+			if (mp_pIo->f_StatsEnabled())
 				g_IocpStats.m_nRecvInline.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 		}
@@ -230,8 +230,8 @@ void CIoLoop_Iocp::fp_ArmStream(CIocpRegistration *_pRegistration)
 	_pRegistration->m_bStreamNeedsRearm = false;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpTraceEnabled())
-		fg_IocpTrace("stream-arm", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)_pRegistration->m_nRecvDepth | ((uint32)_pRegistration->m_RecvOps[0].m_bIssued << 8) | ((uint32)_pRegistration->m_nRecvsInFlight << 16));
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace("stream-arm", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)_pRegistration->m_nRecvDepth | ((uint32)_pRegistration->m_RecvOps[0].m_bIssued << 8) | ((uint32)_pRegistration->m_nRecvsInFlight << 16));
 #endif
 
 	for (umint iOp = 0; iOp < _pRegistration->m_nRecvDepth; ++iOp)
@@ -259,10 +259,10 @@ void CIoLoop_Iocp::fp_ResumeStream(CIocpRegistration *_pRegistration)
 		return;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		g_IocpStats.m_nStreamResumes.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
-	if (fg_IocpTraceEnabled())
-		fg_IocpTrace("stream-rearm", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace("stream-rearm", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 
 	fp_ArmStream(_pRegistration);
@@ -305,7 +305,7 @@ void CIoLoop_Iocp::fp_ReportCompletedRecvs(CIocpRegistration *_pRegistration, um
 		if (pOp->m_Status != gc_NtStatus_Success)
 		{
 #if DMibConfig_IoDebug_Enable
-			if (fg_IocpStatsEnabled())
+			if (mp_pIo->f_StatsEnabled())
 				g_IocpStats.m_nRecvErrors.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
@@ -327,8 +327,8 @@ void CIoLoop_Iocp::fp_ReportCompletedRecvs(CIocpRegistration *_pRegistration, um
 			if (!_pRegistration->m_bDeregistering)
 			{
 #if DMibConfig_IoDebug_Enable
-				if (fg_IocpTraceEnabled())
-					fg_IocpTrace("stream-eof-close", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
+				if (mp_pIo->f_TraceEnabled())
+					mp_pIo->f_Trace("stream-eof-close", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
 #endif
 
 				_pRegistration->m_bDisconnectReported = true;
@@ -341,9 +341,9 @@ void CIoLoop_Iocp::fp_ReportCompletedRecvs(CIocpRegistration *_pRegistration, um
 		umint nBytes = pOp->m_nBytes;
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_IocpTraceEnabled())
-			fg_IocpTrace("recv-report", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)nBytes);
-		if (fg_IocpStatsEnabled())
+		if (mp_pIo->f_TraceEnabled())
+			mp_pIo->f_Trace("recv-report", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)nBytes);
+		if (mp_pIo->f_StatsEnabled())
 		{
 			g_IocpStats.m_nRecvSegments.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			g_IocpStats.m_nRecvBytes.f_FetchAdd(nBytes, NAtomic::gc_MemoryOrder_Relaxed);

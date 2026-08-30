@@ -17,44 +17,10 @@ using namespace NMib::NSys;
 
 namespace
 {
-	enum class EUringZeroCopyOverride
-	{
-		mc_None
-		, mc_Never
-		, mc_Always
-	};
-
-	// Answered once for the process, like every other io debugging knob: the environment is read
-	// on the first call and never again, so deciding a peer costs no lookup. Without the io
-	// debugging overrides every knob is its compile time answer as a constexpr constant, so the
-	// branches consulting it fold away
-#if DMibConfig_IoDebug_Enable
 	EUringZeroCopyOverride fg_UringZeroCopyOverride()
 	{
-		static EUringZeroCopyOverride s_Override =
-			(
-				[]() -> EUringZeroCopyOverride
-				{
-					auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringZeroCopyLocal"));
-					if (Setting == "0")
-						return EUringZeroCopyOverride::mc_Never;
-					if (Setting == "1")
-						return EUringZeroCopyOverride::mc_Always;
-
-					return EUringZeroCopyOverride::mc_None;
-				}
-				()
-			)
-		;
-
-		return s_Override;
+		return fg_IoSubSystem_Linux().f_ZeroCopyOverride();
 	}
-#else
-	constexpr EUringZeroCopyOverride fg_UringZeroCopyOverride()
-	{
-		return EUringZeroCopyOverride::mc_None;
-	}
-#endif
 
 	// Whether this descriptor's peer is somewhere a zero copy send is worth doing. A unix socket
 	// or a loopback address is not: the pages end up referenced by the peer's receive queue on the
@@ -117,69 +83,17 @@ namespace
 #if DMibConfig_IoDebug_Enable
 umint fg_UringSendDepth()
 {
-	static umint s_nDepth =
-		(
-			[]() -> umint
-			{
-				auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringSendDepth"));
-
-				umint nDepth = Setting.f_ToIntExact(umint(0));
-				if (nDepth)
-					return fg_Min(nDepth, gc_UringMaxSendDepth);
-
-				return gc_UringDefaultSendDepth;
-			}
-			()
-		)
-	;
-
-	return s_nDepth;
+	return fg_IoSubSystem_Linux().f_SendDepth();
 }
-#endif
 
-#if DMibConfig_IoDebug_Enable
 umint fg_UringReceiveBuffersOverride()
 {
-	static umint s_nBuffers =
-		(
-			[]() -> umint
-			{
-				auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringReceiveBuffers"));
-
-				umint nBuffers = Setting.f_ToIntExact(umint(0));
-				if (nBuffers)
-					return fg_Clamp(nBuffers, umint(2), gc_UringMaxReceiveBuffers);
-
-				return 0;
-			}
-			()
-		)
-	;
-
-	return s_nBuffers;
+	return fg_IoSubSystem_Linux().f_ReceiveBuffersOverride();
 }
-#endif
 
-#if DMibConfig_IoDebug_Enable
 umint fg_UringReceiveBufferBytesOverride()
 {
-	static umint s_nBytes =
-		(
-			[]() -> umint
-			{
-				auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringRecvBufferBytes"));
-
-				umint nBytes = Setting.f_ToIntExact(umint(0));
-				if (nBytes)
-					return fg_Clamp(nBytes, umint(4096), umint(1) << 30);
-
-				return 0;
-			}
-			()
-		)
-	;
-
-	return s_nBytes;
+	return fg_IoSubSystem_Linux().f_ReceiveBufferBytesOverride();
 }
 #endif
 
@@ -314,26 +228,10 @@ void fg_DumpUringStats()
 	;
 }
 
+// The subsystem read the knob once and registered the report in its constructor
 bool fg_UringStatsEnabled()
 {
-	static bool s_bEnabled =
-		(
-			[]() -> bool
-			{
-				auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoStats"));
-				if (Setting == "1")
-				{
-					atexit(&fg_DumpUringStats);
-					return true;
-				}
-
-				return false;
-			}
-			()
-		)
-	;
-
-	return s_bEnabled;
+	return fg_IoSubSystem_Linux().f_StatsEnabled();
 }
 #endif
 

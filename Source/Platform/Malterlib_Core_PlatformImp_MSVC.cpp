@@ -2102,6 +2102,11 @@ void fg_LoadFunctionPointers()
 		(FARPROC &)Functions.m_fCancelSynchronousIo = GetProcAddress(g_hKernel32, "CancelSynchronousIo");
 		(FARPROC &)Functions.m_fCancelIoEx = GetProcAddress(g_hKernel32, "CancelIoEx");
 
+		(FARPROC &)Functions.m_fNtCreateFile = GetProcAddress(g_hNtDll, "NtCreateFile");
+		(FARPROC &)Functions.m_fNtDeviceIoControlFile = GetProcAddress(g_hNtDll, "NtDeviceIoControlFile");
+		(FARPROC &)Functions.m_fNtSetInformationFile = GetProcAddress(g_hNtDll, "NtSetInformationFile");
+		(FARPROC &)Functions.m_fRtlNtStatusToDosError = GetProcAddress(g_hNtDll, "RtlNtStatusToDosError");
+
 		(FARPROC &)Functions.m_fNtQuerySystemInformation = GetProcAddress(g_hNtDll, "NtQuerySystemInformation");
 
 		(FARPROC &)Functions.m_fNtGetNextThread = GetProcAddress(g_hNtDll, "NtGetNextThread");

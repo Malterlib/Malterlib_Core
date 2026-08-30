@@ -11,35 +11,6 @@ struct CIocpRegistration;
 struct CIocpAfdGroup;
 struct CIocpPendingOp;
 
-// Io debugging knobs the socket layer consults, answered once for the process like the loop's
-// own; constants without the io debugging overrides
-#if DMibConfig_IoDebug_Enable
-bool fg_IocpLoopbackFastPathEnabled();
-umint fg_IocpSocketBufferBytesOverride();
-umint fg_IocpSocketSendBufferBytesOverride();
-bool fg_IocpDirectSendEnabled();
-#else
-constexpr bool fg_IocpLoopbackFastPathEnabled()
-{
-	return true;
-}
-
-constexpr umint fg_IocpSocketBufferBytesOverride()
-{
-	return 0;
-}
-
-constexpr umint fg_IocpSocketSendBufferBytesOverride()
-{
-	return umint(-1);
-}
-
-constexpr bool fg_IocpDirectSendEnabled()
-{
-	return true;
-}
-#endif
-
 // The stream's block reuse, shared with every buffer born from it. A dying buffer returns its
 // block here instead of to the allocator, and the next post takes newest first, so the block the
 // kernel copies into next is the one most recently touched. Consumers die on any thread while
@@ -309,6 +280,8 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 // count reaches zero is provably unnamed anywhere and is freed with no generation or drain-before
 // -free protocol. And a registered socket stays open and owned by its caller until the
 // deregistration acknowledgement runs, so it is targetable by handle throughout
+struct CIoSubSystem_Windows;
+
 struct CIoLoop_Iocp : public CIoLoop_Base
 {
 	CIoLoop_Iocp();
@@ -387,6 +360,9 @@ private:
 	int fp_OpError(CIocpRegistration *_pRegistration, CIocpOp *_pOp);
 
 	HANDLE mp_hPort = nullptr;
+
+	// The io subsystem the loop reads its knobs from, cached at construction
+	CIoSubSystem_Windows *mp_pIo = nullptr;
 
 	// The \Device\Afd handles polls are issued on, each serving a bounded number of registrations
 	NMib::NContainer::TCVector<CIocpAfdGroup *> mp_AfdGroups;

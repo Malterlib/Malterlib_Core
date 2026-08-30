@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "../Malterlib_Core_IoSubSystem.h"
+
 #include "Malterlib_Core_Platform_Linux_IoLoop_Uring.h"
 
 #include <sys/socket.h>
@@ -136,8 +138,85 @@ constexpr umint gc_UringMaxReceiveBuffers = 64;
 // bookkeeping stays negligible. A socket whose own buffer is smaller keeps it whole
 constexpr umint gc_UringReceiveSliceBytes = 64 * 1024;
 
-// How many sends this loop will keep with the kernel at once for one descriptor. Answered once,
-// like the other io debugging knobs. One reproduces the unpipelined path exactly
+// Whether a peer class override forces or forbids zero copy sends regardless of where the peer
+// is (MalterlibIoUringZeroCopyLocal)
+enum class EUringZeroCopyOverride
+{
+	mc_None
+	, mc_Never
+	, mc_Always
+};
+
+// The Linux io subsystem: this platform's io knobs, decided once in the constructor; without
+// the io debugging overrides the accessors answer their compile time defaults as constants
+struct CIoSubSystem_Linux : NMib::NSys::CIoSubSystem
+{
+	CIoSubSystem_Linux();
+
+	// How many sends the loop keeps with the kernel at once for one descriptor; one reproduces
+	// the unpipelined path exactly
+	umint f_SendDepth() const
+	{
+#if DMibConfig_IoDebug_Enable
+		return m_nSendDepth;
+#else
+		return gc_UringDefaultSendDepth;
+#endif
+	}
+
+	// Debug override for the number of buffers in a receive stream's provided ring,
+	// 0 = derive the count from the socket's own buffer size
+	umint f_ReceiveBuffersOverride() const
+	{
+#if DMibConfig_IoDebug_Enable
+		return m_nReceiveBuffersOverride;
+#else
+		return 0;
+#endif
+	}
+
+	// Debug override for the size of each receive stream buffer, 0 = use the socket's own size
+	umint f_ReceiveBufferBytesOverride() const
+	{
+#if DMibConfig_IoDebug_Enable
+		return m_nReceiveBufferBytesOverride;
+#else
+		return 0;
+#endif
+	}
+
+	EUringZeroCopyOverride f_ZeroCopyOverride() const
+	{
+#if DMibConfig_IoDebug_Enable
+		return m_ZeroCopyOverride;
+#else
+		return EUringZeroCopyOverride::mc_None;
+#endif
+	}
+
+	bool f_TraceEnabled() const
+	{
+#if DMibConfig_IoDebug_Enable
+		return m_bTraceEnabled;
+#else
+		return false;
+#endif
+	}
+
+#if DMibConfig_IoDebug_Enable
+	bool m_bTraceEnabled = false;
+	EUringZeroCopyOverride m_ZeroCopyOverride = EUringZeroCopyOverride::mc_None;
+	umint m_nSendDepth = gc_UringDefaultSendDepth;
+	umint m_nReceiveBuffersOverride = 0;
+	umint m_nReceiveBufferBytesOverride = 0;
+#endif
+};
+
+// The subsystem, as the derived type; NSys::fg_IoSubSystem answers the same object as the base
+CIoSubSystem_Linux &fg_IoSubSystem_Linux();
+
+// Answered from the subsystem in io-debug builds and as constants otherwise, so the consulting
+// branches fold away in release
 #if DMibConfig_IoDebug_Enable
 umint fg_UringSendDepth();
 #else
@@ -216,6 +295,7 @@ extern CUringStats g_UringStats;
 // Monotonic nanoseconds for the send idle gap measurement; only called when stats are on
 uint64 fg_UringStatsNow();
 bool fg_UringStatsEnabled();
+void fg_DumpUringStats();
 #endif
 
 // Settles a registration's zero copy eligibility once, at its first send

@@ -49,7 +49,7 @@ bool CIoLoop_Iocp::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistratio
 	pOp->m_fOnComplete = fg_Move(_fOnComplete);
 	pOp->m_fOnBufferReleased = fg_Move(_fOnBufferReleased);
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		pOp->m_EnqueueStamp = fg_IocpStatsNow();
 #endif
 
@@ -94,7 +94,7 @@ void CIoLoop_Iocp::fp_AppendSend(CIocpRegistration *_pRegistration, CIocpSendOp 
 
 void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration, umint &_nReported)
 {
-	umint nDepth = fg_IocpSendDepth();
+	umint nDepth = mp_pIo->f_SendDepth();
 
 	// A socket whose sends finish at the acknowledgement holds its window in the unacknowledged
 	// bytes, so those are issued within the window in bytes rather than within a count of sends
@@ -112,7 +112,7 @@ void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration, umin
 	}
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled() && _pRegistration->m_pSendNextToIssue)
+	if (mp_pIo->f_StatsEnabled() && _pRegistration->m_pSendNextToIssue)
 		g_IocpStats.m_nSendDeferred.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 }
@@ -134,8 +134,8 @@ void CIoLoop_Iocp::fp_ReportSendAccepted(CIocpRegistration *_pRegistration, CIoc
 	_pOp->m_bCompletionReported = true;
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpTraceEnabled())
-		fg_IocpTrace("send-accepted", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)_pOp->m_nRequested);
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace("send-accepted", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)_pOp->m_nRequested);
 #endif
 
 	NSys::CIoCompletion Result;
@@ -161,7 +161,7 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	++_pRegistration->m_nSendsInFlight;
 	_pRegistration->m_nSendBytesInFlight += _pOp->m_nRequested;
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 	{
 		if (_pRegistration->m_nSendsInFlight > g_IocpStats.m_nSendMaxInFlight.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
 			g_IocpStats.m_nSendMaxInFlight.f_Store(_pRegistration->m_nSendsInFlight, NAtomic::gc_MemoryOrder_Relaxed);
@@ -171,7 +171,7 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 #endif
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 	{
 		if (_pOp->m_EnqueueStamp)
 		{
@@ -193,7 +193,7 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 #endif
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpStatsEnabled())
+	if (mp_pIo->f_StatsEnabled())
 		_pOp->m_IssueStamp = fg_IocpStatsNow();
 #endif
 
@@ -201,8 +201,8 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	int Ret = WSASend((SOCKET)_pRegistration->m_Handle, _pOp->m_Buffers, _pOp->m_nBuffers, &nSent, 0, &_pOp->m_Overlapped, nullptr);
 
 #if DMibConfig_IoDebug_Enable
-	if (fg_IocpTraceEnabled())
-		fg_IocpTrace(Ret == 0 ? "send-issue-done" : "send-issue", _pRegistration->m_pToken, _pRegistration->m_Handle, Ret == 0 ? (uint32)nSent : (uint32)WSAGetLastError());
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace(Ret == 0 ? "send-issue-done" : "send-issue", _pRegistration->m_pToken, _pRegistration->m_Handle, Ret == 0 ? (uint32)nSent : (uint32)WSAGetLastError());
 #endif
 
 	if (Ret == 0)
@@ -214,7 +214,7 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 			fp_QueueInlineCompletion(_pRegistration);
 
 #if DMibConfig_IoDebug_Enable
-			if (fg_IocpStatsEnabled())
+			if (mp_pIo->f_StatsEnabled())
 				g_IocpStats.m_nSendInline.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 		}
@@ -228,7 +228,7 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	if (Error == WSA_IO_PENDING)
 	{
 #if DMibConfig_IoDebug_Enable
-		if (fg_IocpStatsEnabled())
+		if (mp_pIo->f_StatsEnabled())
 		{
 			g_IocpStats.m_nSendPendingAtIssue.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 			_pOp->m_bPendingAtIssue = true;
@@ -288,7 +288,7 @@ void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, um
 		}
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_IocpStatsEnabled())
+		if (mp_pIo->f_StatsEnabled())
 		{
 			if (Result.m_Status == NSys::EIoCompletionStatus::mc_Done)
 			{
@@ -305,8 +305,8 @@ void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, um
 #endif
 
 #if DMibConfig_IoDebug_Enable
-		if (fg_IocpTraceEnabled())
-			fg_IocpTrace("send-report", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)Result.m_nBytes | ((uint32)Result.m_Status << 24));
+		if (mp_pIo->f_TraceEnabled())
+			mp_pIo->f_Trace("send-report", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)Result.m_nBytes | ((uint32)Result.m_Status << 24));
 #endif
 
 		++_pRegistration->m_nOutstanding;

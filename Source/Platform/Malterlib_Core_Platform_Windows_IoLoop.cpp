@@ -2,205 +2,73 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Windows_IoLoop_Iocp_Internal.h"
+#include "Malterlib_Core_Platform_Windows_Optional.h"
 
 using namespace NMib;
 using namespace NMib::NMemory;
 using namespace NMib::NSys;
 
+#if DMibConfig_IoDebug_Enable
+static void fg_DumpIocpTraceRing();
+static void fg_DumpIocpStats();
+#endif
+
 namespace
 {
-#if DMibConfig_IoDebug_Enable
-	bool fg_IocpEnvFlag(char const *_pName, bool _bDefault)
-	{
-		auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked(_pName));
-		if (Setting == "0")
-			return false;
-		if (Setting == "1")
-			return true;
+	constinit TCSubSystem<CIoSubSystem_Windows, ESubSystemDestruction_BeforeMemoryManager> g_IoSubSystem = {DAggregateInit};
+}
 
-		return _bDefault;
+NMib::NSys::CIoSubSystem &NMib::NSys::fg_IoSubSystem()
+{
+	return *g_IoSubSystem;
+}
+
+CIoSubSystem_Windows &fg_IoSubSystem_Windows()
+{
+	return *g_IoSubSystem;
+}
+
+CIoSubSystem_Windows::CIoSubSystem_Windows()
+{
+#if DMibConfig_IoDebug_Enable
+	m_bCompletionEnabled = fsp_EnvFlag("MalterlibIocpCompletion", true);
+	m_bSkipSuccessEnabled = fsp_EnvFlag("MalterlibIocpSkipSuccess", false);
+	m_bLoopbackFastPathEnabled = fsp_EnvFlag("MalterlibLoopbackFastPath", true);
+	m_bDirectSendEnabled = fsp_EnvFlag("MalterlibIocpDirectSend", true);
+	m_nSendDepth = fsp_EnvCount("MalterlibIocpSendDepth", gc_IocpDefaultSendDepth, 1, gc_IocpMaxSendDepth);
+	m_nRecvDepth = fsp_EnvCount("MalterlibIocpRecvDepth", gc_IocpDefaultRecvDepth, 1, gc_IocpMaxRecvDepth);
+	m_nRecvBufferBytesOverride = fsp_EnvCount("MalterlibIocpRecvBufferBytes", 0, 4096, umint(1) << 30);
+
+	auto TraceSetting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIocpTrace"));
+	if (TraceSetting == "1")
+		m_TraceMode = 1;
+	else if (TraceSetting == "2")
+	{
+		m_TraceMode = 2;
+		m_pTraceRing = (CIocpTraceEntry *)NMemory::CAllocator_NonTrackedHeap::f_Alloc(sizeof(CIocpTraceEntry) * gc_IocpTraceRingEntries);
+		f_RegisterStatsDump(&fg_DumpIocpTraceRing);
 	}
 
-	umint fg_IocpEnvCount(char const *_pName, umint _Default, umint _Min, umint _Max)
-	{
-		auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked(_pName));
-
-		umint nValue = Setting.f_ToIntExact(umint(0));
-		if (nValue)
-			return fg_Clamp(nValue, _Min, _Max);
-
-		return _Default;
-	}
-
-	// MalterlibIocpTrace=1 prints every trace line as it happens; =2 records them into a ring
-	// and prints the ring at exit, so timing-sensitive failures are not disturbed by the console
-	struct CIocpTraceEntry
-	{
-		int64 m_Ticks;
-		char const *m_pWhat;
-		void const *m_pToken;
-		NSys::CIoLoopHandle m_Handle;
-		uint32 m_Value;
-		uint32 m_ThreadId;
-	};
-
-	constexpr umint gc_IocpTraceRingEntries = 1 << 16;
+	if (f_StatsEnabled())
+		f_RegisterStatsDump(&fg_DumpIocpStats);
 #endif
-
-	// Everything answered once for the process: the native entry points and the io debugging
-	// knobs. Constant-initialized and filled once under an atomic guard on first use — function-
-	// local statics are not an option, since the build disables their thread-safe
-	// initialization and two loop threads racing the first call would read a zero-initialized
-	// value — and trivially destructible, so the loops and sockets torn down after static
-	// destruction can still read it
-	struct CIocpConfig
-	{
-		void f_Load()
-		{
-			HMODULE hNtDll = GetModuleHandleW(L"ntdll.dll");
-			if (hNtDll)
-			{
-				(FARPROC &)m_NtFunctions.m_fNtCreateFile = GetProcAddress(hNtDll, "NtCreateFile");
-				(FARPROC &)m_NtFunctions.m_fNtDeviceIoControlFile = GetProcAddress(hNtDll, "NtDeviceIoControlFile");
-				(FARPROC &)m_NtFunctions.m_fNtSetInformationFile = GetProcAddress(hNtDll, "NtSetInformationFile");
-				(FARPROC &)m_NtFunctions.m_fRtlNtStatusToDosError = GetProcAddress(hNtDll, "RtlNtStatusToDosError");
-			}
-
-#if DMibConfig_IoDebug_Enable
-			m_bCompletionEnabled = fg_IocpEnvFlag("MalterlibIocpCompletion", true);
-			m_bSkipSuccessEnabled = fg_IocpEnvFlag("MalterlibIocpSkipSuccess", false);
-			m_bLoopbackFastPathEnabled = fg_IocpEnvFlag("MalterlibLoopbackFastPath", true);
-			m_bDirectSendEnabled = fg_IocpEnvFlag("MalterlibIocpDirectSend", true);
-			m_nSendDepth = fg_IocpEnvCount("MalterlibIocpSendDepth", gc_IocpDefaultSendDepth, 1, gc_IocpMaxSendDepth);
-			m_nRecvDepth = fg_IocpEnvCount("MalterlibIocpRecvDepth", gc_IocpDefaultRecvDepth, 1, gc_IocpMaxRecvDepth);
-			m_nRecvBufferBytesOverride = fg_IocpEnvCount("MalterlibIocpRecvBufferBytes", 0, 4096, umint(1) << 30);
-			m_nSocketBufferBytesOverride = fg_IocpEnvCount("MalterlibSocketBufferSize", 0, 1, umint(1) << 30);
-			// Zero is a meaningful value here (no send buffering at all), which the count reader
-			// would take for unset
-			if (NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibSocketSendBufferSize")) == "0")
-				m_nSocketSendBufferBytesOverride = 0;
-			else
-				m_nSocketSendBufferBytesOverride = fg_IocpEnvCount("MalterlibSocketSendBufferSize", umint(-1), 1, umint(1) << 30);
-
-			auto TraceSetting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIocpTrace"));
-			if (TraceSetting == "1")
-				m_TraceMode = 1;
-			else if (TraceSetting == "2")
-			{
-				m_TraceMode = 2;
-				m_pTraceRing = (CIocpTraceEntry *)NMemory::CAllocator_NonTrackedHeap::f_Alloc(sizeof(CIocpTraceEntry) * gc_IocpTraceRingEntries);
-				atexit(&fsg_DumpTraceRing);
-			}
-
-			if (NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoStats")) == "1")
-			{
-				m_bStatsEnabled = true;
-				atexit(&fsg_DumpStats);
-			}
-#endif
-		}
-
-		static void fsg_DumpTraceRing();
-		static void fsg_DumpStats();
-
-		CIocpNtFunctions m_NtFunctions;
-
-#if DMibConfig_IoDebug_Enable
-		bool m_bCompletionEnabled = true;
-		bool m_bSkipSuccessEnabled = false;
-		bool m_bLoopbackFastPathEnabled = true;
-		bool m_bDirectSendEnabled = true;
-		bool m_bStatsEnabled = false;
-		int m_TraceMode = 0;
-		umint m_nSendDepth = gc_IocpDefaultSendDepth;
-		umint m_nRecvDepth = gc_IocpDefaultRecvDepth;
-		umint m_nRecvBufferBytesOverride = 0;
-		umint m_nSocketBufferBytesOverride = 0;
-		umint m_nSocketSendBufferBytesOverride = umint(-1);
-		CIocpTraceEntry *m_pTraceRing = nullptr;
-		NAtomic::TCAtomic<uint64> m_nTraceNext{0};
-#endif
-	};
-
-	constinit CIocpConfig g_IocpConfig;
-
-	// 0 = not loaded, 1 = a thread is loading, 2 = loaded
-	constinit NAtomic::TCAtomic<uint32> g_IocpConfigState{0};
-
-	CIocpConfig &fg_IocpConfig()
-	{
-		uint32 State = g_IocpConfigState.f_Load(NAtomic::gc_MemoryOrder_Acquire);
-		if (State == 2) [[likely]]
-			return g_IocpConfig;
-
-		uint32 Expected = 0;
-		if (State == 0 && g_IocpConfigState.f_CompareExchangeStrong(Expected, 1, NAtomic::gc_MemoryOrder_AcquireRelease, NAtomic::gc_MemoryOrder_Acquire))
-		{
-			g_IocpConfig.f_Load();
-			g_IocpConfigState.f_Store(2, NAtomic::gc_MemoryOrder_Release);
-			return g_IocpConfig;
-		}
-
-		while (g_IocpConfigState.f_Load(NAtomic::gc_MemoryOrder_Acquire) != 2)
-			NSys::fg_Thread_Yield();
-
-		return g_IocpConfig;
-	}
 }
 
-CIocpNtFunctions const &fg_IocpNtFunctions()
+// A view of the entry points COptionalFunctions resolved at platform start
+CIocpNtFunctions fg_IocpNtFunctions()
 {
-	return fg_IocpConfig().m_NtFunctions;
+	auto const &Functions = NLocal::g_OptionalFunctions;
+
+	CIocpNtFunctions Nt;
+	Nt.m_fNtCreateFile = Functions.m_fNtCreateFile;
+	Nt.m_fNtDeviceIoControlFile = Functions.m_fNtDeviceIoControlFile;
+	Nt.m_fNtSetInformationFile = Functions.m_fNtSetInformationFile;
+	Nt.m_fRtlNtStatusToDosError = Functions.m_fRtlNtStatusToDosError;
+
+	return Nt;
 }
 
 #if DMibConfig_IoDebug_Enable
-bool fg_IocpCompletionEnabled()
-{
-	return fg_IocpConfig().m_bCompletionEnabled;
-}
-
-bool fg_IocpSkipSuccessEnabled()
-{
-	return fg_IocpConfig().m_bSkipSuccessEnabled;
-}
-
-bool fg_IocpLoopbackFastPathEnabled()
-{
-	return fg_IocpConfig().m_bLoopbackFastPathEnabled;
-}
-
-umint fg_IocpSendDepth()
-{
-	return fg_IocpConfig().m_nSendDepth;
-}
-
-umint fg_IocpRecvDepth()
-{
-	return fg_IocpConfig().m_nRecvDepth;
-}
-
-umint fg_IocpRecvBufferBytesOverride()
-{
-	return fg_IocpConfig().m_nRecvBufferBytesOverride;
-}
-
-umint fg_IocpSocketBufferBytesOverride()
-{
-	return fg_IocpConfig().m_nSocketBufferBytesOverride;
-}
-
-// -1 leaves the socket's send buffer alone; 0 makes AFD transmit straight from the locked user
-// pages of an overlapped send instead of copying them into its own buffer first
-umint fg_IocpSocketSendBufferBytesOverride()
-{
-	return fg_IocpConfig().m_nSocketSendBufferBytesOverride;
-}
-
-bool fg_IocpDirectSendEnabled()
-{
-	return fg_IocpConfig().m_bDirectSendEnabled;
-}
-
 namespace
 {
 	void fg_IocpTracePrint(CIocpTraceEntry const &_Entry)
@@ -227,33 +95,37 @@ namespace
 	}
 }
 
-void CIocpConfig::fsg_DumpTraceRing()
+static void fg_DumpIocpTraceRing()
 {
-	auto &Config = fg_IocpConfig();
-	uint64 nTotal = Config.m_nTraceNext.f_Load(NAtomic::gc_MemoryOrder_Acquire);
+	auto &Io = fg_IoSubSystem_Windows();
+	uint64 nTotal = Io.m_nTraceNext.f_Load(NAtomic::gc_MemoryOrder_Acquire);
 	uint64 iFirst = nTotal > gc_IocpTraceRingEntries ? nTotal - gc_IocpTraceRingEntries : 0;
 	for (uint64 iEntry = iFirst; iEntry < nTotal; ++iEntry)
-		fg_IocpTracePrint(Config.m_pTraceRing[iEntry % gc_IocpTraceRingEntries]);
+		fg_IocpTracePrint(Io.m_pTraceRing[iEntry % gc_IocpTraceRingEntries]);
 }
 
 bool fg_IocpTraceEnabled()
 {
-	return fg_IocpConfig().m_TraceMode != 0;
+	return fg_IoSubSystem_Windows().f_TraceEnabled();
 }
 
-void fg_IocpTrace(char const *_pWhat, void const *_pToken, NSys::CIoLoopHandle _Handle, uint32 _Value)
+void CIoSubSystem_Windows::f_Trace(char const *_pWhat, void const *_pToken, NSys::CIoLoopHandle _Handle, uint32 _Value)
 {
 	CIocpTraceEntry Entry{NTime::CSystem_Time::fs_GetTimerValue(), _pWhat, _pToken, _Handle, _Value, GetCurrentThreadId()};
 
-	auto &Config = fg_IocpConfig();
-	if (Config.m_TraceMode == 2)
+	if (m_TraceMode == 2)
 	{
-		uint64 iEntry = Config.m_nTraceNext.f_FetchAdd(1, NAtomic::gc_MemoryOrder_AcquireRelease);
-		Config.m_pTraceRing[iEntry % gc_IocpTraceRingEntries] = Entry;
+		uint64 iEntry = m_nTraceNext.f_FetchAdd(1, NAtomic::gc_MemoryOrder_AcquireRelease);
+		m_pTraceRing[iEntry % gc_IocpTraceRingEntries] = Entry;
 		return;
 	}
 
 	fg_IocpTracePrint(Entry);
+}
+
+void fg_IocpTrace(char const *_pWhat, void const *_pToken, NSys::CIoLoopHandle _Handle, uint32 _Value)
+{
+	fg_IoSubSystem_Windows().f_Trace(_pWhat, _pToken, _Handle, _Value);
 }
 
 CIocpStats g_IocpStats;
@@ -265,7 +137,7 @@ uint64 fg_IocpStatsNow()
 	return (uint64)((Ticks / Frequency) * 1000000000 + ((Ticks % Frequency) * 1000000000) / Frequency);
 }
 
-void CIocpConfig::fsg_DumpStats()
+static void fg_DumpIocpStats()
 {
 	auto fLoad = [](NAtomic::TCAtomic<uint64> const &_Value) -> uint64
 		{
@@ -380,15 +252,7 @@ void CIocpConfig::fsg_DumpStats()
 
 bool fg_IocpStatsEnabled()
 {
-	return fg_IocpConfig().m_bStatsEnabled;
-}
-#else
-void CIocpConfig::fsg_DumpTraceRing()
-{
-}
-
-void CIocpConfig::fsg_DumpStats()
-{
+	return fg_IoSubSystem_Windows().f_StatsEnabled();
 }
 #endif
 

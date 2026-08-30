@@ -82,4 +82,4 @@ struct CIocpNtFunctions
 	}
 };
 
-CIocpNtFunctions const &fg_IocpNtFunctions();
+CIocpNtFunctions fg_IocpNtFunctions();

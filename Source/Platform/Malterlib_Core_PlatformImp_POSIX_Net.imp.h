@@ -215,26 +215,10 @@ static void fg_DumpSocketIoStats()
 	;
 }
 
+// The subsystem read the knob once; the socket context registers the report at construction
 bool fg_SocketIoStatsEnabled()
 {
-	static bool s_bEnabled =
-		(
-			[]() -> bool
-			{
-				auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoStats"));
-				if (Setting == "1")
-				{
-					atexit(&fg_DumpSocketIoStats);
-					return true;
-				}
-
-				return false;
-			}
-			()
-		)
-	;
-
-	return s_bEnabled;
+	return NSys::fg_IoSubSystem().f_StatsEnabled();
 }
 
 static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWouldBlock)
@@ -256,9 +240,10 @@ static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWo
 
 CPOSIXSocketContext::CPOSIXSocketContext()
 {
+	mp_pIo = &NSys::fg_IoSubSystem();
 #if DMibConfig_IoDebug_Enable
-	// The exit reports register on the first ask; asking here makes every run report
-	fg_SocketIoStatsEnabled();
+	if (mp_pIo->f_StatsEnabled())
+		mp_pIo->f_RegisterStatsDump(&fg_DumpSocketIoStats);
 #endif
 
 	// The shared loop exists before the thread that hosts it, so the thread body never checks
@@ -1126,26 +1111,16 @@ static void fg_DispatchSocketIoEvent(void *_pToken, NSys::EIoLoopEvent _Events, 
 
 void CPOSIXSocketContext::f_StartSocket(CPOSIXSocket *_pSocket)
 {
-#if DMibConfig_IoDebug_Enable
 	// Kernel default socket buffers quantize a bulk stream into buffer-sized bursts with a wake
 	// handoff between each, which caps per-socket throughput at roughly buffer size over wake
 	// round-trip time. The override is a debugging aid for measuring that effect; POSIX otherwise
 	// keeps the kernel default, unlike the Windows implementation, which already sizes its buffers
-	static int s_BufferSize =
-		(
-			[]() -> int
-			{
-				return NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("MalterlibSocketBufferSize")).f_ToInt(int(0));
-			}
-			()
-		)
-	;
-	if (s_BufferSize > 0 && _pSocket->m_FD != -1)
+	if (umint nBufferBytes = mp_pIo->f_SocketBufferBytesOverride(); nBufferBytes && _pSocket->m_FD != -1)
 	{
-		setsockopt(_pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &s_BufferSize, sizeof(s_BufferSize));
-		setsockopt(_pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &s_BufferSize, sizeof(s_BufferSize));
+		int BufferSize = (int)fg_Min(nBufferBytes, umint(TCLimitsInt<int>::mc_Max));
+		setsockopt(_pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &BufferSize, sizeof(BufferSize));
+		setsockopt(_pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &BufferSize, sizeof(BufferSize));
 	}
-#endif
 
 	if (_pSocket->m_pIoRegistration)
 		DMibErrorNet("POSIX socket already registered");
