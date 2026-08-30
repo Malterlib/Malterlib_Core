@@ -17,13 +17,7 @@ namespace NMib::NSys
 		, mc_On
 	};
 
-	inline bool fg_ResolveIoKnob(EIoKnob _Knob, bool _bCompiledDefault)
-	{
-		if (_Knob == EIoKnob::mc_Default)
-			return _bCompiledDefault;
-
-		return _Knob == EIoKnob::mc_On;
-	}
+	inline bool fg_ResolveIoKnob(EIoKnob _Knob, bool _bCompiledDefault);
 
 	// The io configuration of the process, created on first use and destroyed with the other
 	// subsystems. Every environment knob is read once, in the constructor; consumers keep a
@@ -43,117 +37,36 @@ namespace NMib::NSys
 		~CIoSubSystem() override;
 
 		// MalterlibIoStats=1: collect and, at destruction, print io statistics
-		bool f_StatsEnabled() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_bStatsEnabled;
-#else
-			return false;
-#endif
-		}
+		inline bool f_StatsEnabled() const;
 
 		// MalterlibSocketBufferSize: SO_SNDBUF and SO_RCVBUF for every socket, a measurement aid;
 		// 0 leaves the platform's policy
-		umint f_SocketBufferBytesOverride() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_nSocketBufferBytesOverride;
-#else
-			return 0;
-#endif
-		}
+		inline umint f_SocketBufferBytesOverride() const;
 
 		// MalterlibSocketSendBufferSize: SO_SNDBUF alone; ~umint(0) leaves the platform's policy,
 		// 0 is meaningful (no send buffer at all)
-		umint f_SocketSendBufferBytesOverride() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_nSocketSendBufferBytesOverride;
-#else
-			return umint(-1);
-#endif
-		}
+		inline umint f_SocketSendBufferBytesOverride() const;
 
 		// MalterlibSendWindowBuffers=0: leave the kernel socket buffers alone where a send window
 		// would otherwise size them, for measuring what the sizing is worth
-		bool f_SendWindowBuffersEnabled() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_bSendWindowBuffers;
-#else
-			return true;
-#endif
-		}
+		inline bool f_SendWindowBuffersEnabled() const;
 
 		// MalterlibReceiveWindow: the receive stream flow-control window in bytes; 0 leaves the
 		// size derived from the connection's buffers
-		umint f_ReceiveWindowBytesOverride() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_nReceiveWindowBytesOverride;
-#else
-			return 0;
-#endif
-		}
+		inline umint f_ReceiveWindowBytesOverride() const;
 
 		// MalterlibSSLSendBatching, MalterlibSSLZeroCopy, MalterlibSSLCompletionIoSend,
 		// MalterlibSSLCompletionIoReceive, MalterlibSSLSealAhead: the SSL transport's measurement
 		// knobs; the transport resolves them against its compiled defaults with fg_ResolveIoKnob
-		EIoKnob f_SslSendBatching() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_SslSendBatching;
-#else
-			return EIoKnob::mc_Default;
-#endif
-		}
-
-		EIoKnob f_SslZeroCopy() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_SslZeroCopy;
-#else
-			return EIoKnob::mc_Default;
-#endif
-		}
-
-		EIoKnob f_SslCompletionIoSend() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_SslCompletionIoSend;
-#else
-			return EIoKnob::mc_Default;
-#endif
-		}
-
-		EIoKnob f_SslCompletionIoReceive() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_SslCompletionIoReceive;
-#else
-			return EIoKnob::mc_Default;
-#endif
-		}
-
-		EIoKnob f_SslSealAhead() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_SslSealAhead;
-#else
-			return EIoKnob::mc_Default;
-#endif
-		}
+		inline EIoKnob f_SslSendBatching() const;
+		inline EIoKnob f_SslZeroCopy() const;
+		inline EIoKnob f_SslCompletionIoSend() const;
+		inline EIoKnob f_SslCompletionIoReceive() const;
+		inline EIoKnob f_SslSealAhead() const;
 
 		// MalterlibWebSocketFrameAhead: how many frame batches the websocket actor frames ahead
 		// of its in-flight sends; 0 is the actor's default of one
-		umint f_WebSocketFrameAhead() const
-		{
-#if DMibConfig_IoDebug_Enable
-			return mp_nWebSocketFrameAhead;
-#else
-			return 0;
-#endif
-		}
+		inline umint f_WebSocketFrameAhead() const;
 
 		// Adds a statistics report to what the destructor prints, in registration order. An area
 		// registers its report when it starts collecting, so a run only prints the areas it
@@ -190,3 +103,5 @@ namespace NMib::NSys
 	// defines this next to its own subsystem instance and derived-type getter
 	CIoSubSystem &fg_IoSubSystem();
 }
+
+#include "Malterlib_Core_IoSubSystem.hpp"
