@@ -83,4 +83,8 @@ namespace NMib::NSys
 	void ICIoLoop::f_ResumeReceiveStream(CIoLoopRegistration *_pRegistration)
 	{
 	}
+
+	void ICIoLoop::f_SetSendWindow(CIoLoopRegistration *_pRegistration, umint _nBytes)
+	{
+	}
 }

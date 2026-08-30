@@ -65,6 +65,16 @@ bool CIoLoop_Iocp::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistratio
 	return true;
 }
 
+void CIoLoop_Iocp::f_SetSendWindow(NSys::CIoLoopRegistration *_pRegistration, umint _nBytes)
+{
+	auto *pOp = fg_ConstructObject<CIocpPendingOp>(CDefaultAllocator());
+	pOp->m_pRegistration = static_cast<CIocpRegistration *>(_pRegistration);
+	pOp->m_bSendWindow = true;
+	pOp->m_nBytes = _nBytes;
+
+	fp_QueuePendingOp(pOp);
+}
+
 // Loop thread: the send takes its place at the tail of the registration's FIFO and is issued
 // at once if a slot is free
 void CIoLoop_Iocp::fp_AppendSend(CIocpRegistration *_pRegistration, CIocpSendOp *_pOp, umint &_nReported)
@@ -86,7 +96,14 @@ void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration, umin
 {
 	umint nDepth = fg_IocpSendDepth();
 
-	while (_pRegistration->m_pSendNextToIssue && _pRegistration->m_nSendsInFlight < nDepth)
+	// A socket whose sends finish at the acknowledgement holds its window in the unacknowledged
+	// bytes, so those are issued within the window in bytes rather than within a count of sends
+	bool bByBytes = _pRegistration->m_bSendCompletesOnAck && _pRegistration->m_nSendWindowBytes;
+	while
+	(
+		_pRegistration->m_pSendNextToIssue
+		&& (bByBytes ? _pRegistration->m_nSendBytesInFlight < _pRegistration->m_nSendWindowBytes : _pRegistration->m_nSendsInFlight < nDepth)
+	)
 	{
 		CIocpSendOp *pOp = _pRegistration->m_pSendNextToIssue;
 		_pRegistration->m_pSendNextToIssue = pOp->m_pNext;
@@ -142,6 +159,7 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	_pOp->m_bIssued = true;
 	++_pRegistration->m_nOutstanding;
 	++_pRegistration->m_nSendsInFlight;
+	_pRegistration->m_nSendBytesInFlight += _pOp->m_nRequested;
 
 #if DMibConfig_IoDebug_Enable
 	if (fg_IocpStatsEnabled())
@@ -227,6 +245,7 @@ void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, um
 		{
 			pOp->m_bIssued = false;
 			--_pRegistration->m_nSendsInFlight;
+			_pRegistration->m_nSendBytesInFlight -= pOp->m_nRequested;
 			DMibCheck(_pRegistration->m_nOutstanding != 0);
 			--_pRegistration->m_nOutstanding;
 

@@ -661,6 +661,15 @@ void CIoLoop_Iocp::fp_ApplyPendingOp(CIocpPendingOp *_pOp, umint &_nReported)
 		return;
 	}
 
+	// A wider window may let queued sends go out at once
+	if (_pOp->m_bSendWindow)
+	{
+		pRegistration->m_nSendWindowBytes = _pOp->m_nBytes;
+		fp_IssueDeferredSends(pRegistration, _nReported);
+		fg_DeleteObject(CDefaultAllocator(), _pOp);
+		return;
+	}
+
 	// The first operation of a direction flips that direction to completion transfers: its
 	// readiness poll is cancelled — every arriving segment would otherwise fire a readiness
 	// edge nobody consumes — while the other direction is left alone and the standing close

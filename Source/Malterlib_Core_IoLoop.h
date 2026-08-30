@@ -293,6 +293,13 @@ namespace NMib::NSys
 		virtual bool f_StartReceiveStream(CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NStorage::TCSharedPointer<CIoStreamBackpressure> _pBackpressure, FIoStreamSink &&_fSink);
 		virtual void f_ResumeReceiveStream(CIoLoopRegistration *_pRegistration);
 
+		// The bytes the registration's sends may hold unreleased at once, for a loop whose sends on
+		// this socket finish only at the peer's acknowledgement: such a loop issues queued sends
+		// while the unacknowledged bytes are within the window, instead of within its count of sends
+		// in flight. Falls under the owner-sequencing contract of the sends. Loops whose sends
+		// release promptly, or that leave the window to the kernel's buffers, ignore it
+		virtual void f_SetSendWindow(CIoLoopRegistration *_pRegistration, umint _nBytes);
+
 		// True for loops handed out for worker threads to park in (fg_CreateIoLoop), false for a
 		// platform's shared loop on its own thread. What lets an io object be asked which loop it
 		// belongs to — restoring a binding needs the claimed loop, and the shared loop is not a

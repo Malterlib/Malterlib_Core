@@ -1367,6 +1367,9 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 		return;
 
 	pSocket->m_nSendWindowBytes = _nBytes;
+	if (pSocket->m_pOwningLoop && pSocket->m_pIoRegistration)
+		pSocket->m_pOwningLoop->f_SetSendWindow(pSocket->m_pIoRegistration, _nBytes);
+
 	if (!_bConfigured || pSocket->m_AddressType == ENetAddressType_Unix)
 		return;
 

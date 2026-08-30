@@ -92,8 +92,10 @@ constexpr umint gc_IocpDefaultRecvDepth = 4;
 // The sends a registration keeps with the kernel at once. An overlapped send copies into the
 // socket's buffer and completes at once, so with one in flight every send would pay a full loop
 // round trip before the next could be issued; several in flight let a whole burst be with the
-// kernel together. Capped at what the consumers can have outstanding
-constexpr umint gc_IocpDefaultSendDepth = 4;
+// kernel together. Capped at what the consumers can have outstanding; the same eight as the
+// io_uring loop, which reached line rate on a 10 GbE link with seven of them in flight. Sends
+// that finish at the acknowledgement are bounded by the send window in bytes instead
+constexpr umint gc_IocpDefaultSendDepth = 8;
 constexpr umint gc_IocpMaxSendDepth = 8;
 
 enum class EIocpOpKind : uint8
@@ -229,6 +231,11 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	CIocpSendOp *m_pSendTail = nullptr;
 	CIocpSendOp *m_pSendNextToIssue = nullptr;
 	umint m_nSendsInFlight = 0;
+
+	// For sends that finish at the acknowledgement: the bytes the issued ones hold, and the
+	// window they are issued within (0 keeps the count of sends as the bound)
+	umint m_nSendBytesInFlight = 0;
+	umint m_nSendWindowBytes = 0;
 #if DMibConfig_IoDebug_Enable
 	uint64 m_SendIdleStamp = 0;
 #endif
@@ -319,6 +326,7 @@ struct CIoLoop_Iocp : public CIoLoop_Base
 	bool f_SendReleaseIsPrompt(NMib::NSys::CIoLoopRegistration const *_pRegistration) const override;
 	bool f_StartReceiveStream(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> _pBackpressure, NMib::NSys::FIoStreamSink &&_fSink) override;
 	void f_ResumeReceiveStream(NMib::NSys::CIoLoopRegistration *_pRegistration) override;
+	void f_SetSendWindow(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nBytes) override;
 
 private:
 	umint fp_Iterate(bool _bBlock) override;

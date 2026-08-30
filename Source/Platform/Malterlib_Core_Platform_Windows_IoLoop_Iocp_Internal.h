@@ -59,6 +59,7 @@ struct CIocpPendingOp
 	umint m_nBytes = 0;
 	bool m_bStreamStart = false;
 	bool m_bStreamResume = false;
+	bool m_bSendWindow = false;
 };
 
 // The io debugging knobs, answered once for the process like their io_uring counterparts.
