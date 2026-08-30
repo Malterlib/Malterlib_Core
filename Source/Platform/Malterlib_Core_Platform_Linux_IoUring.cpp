@@ -365,50 +365,60 @@ bool CIoUringRing::fs_Available(CIoUringCaps &o_Caps)
 					bool bStream = o_Caps.m_bCompletion && !bMultishotVetoed && fSupported(gc_IoUringOp_SendZc);
 					if (bStream)
 					{
-						// The register syscall can be filtered separately from setup and
-						// enter, so support means an actual ring registers — not just that
-						// the kernel is new enough
+						// No feature bit covers provided-buffer rings, and the register syscall
+						// can be filtered separately from setup and enter, so support means an
+						// actual ring registers — not just that the kernel is new enough.
+						// Incremental consumption (6.12) is tried first — an older kernel
+						// rejects the whole registration — and the plain retry then settles
+						// both answers with one registration on a kernel that has everything.
+						// MalterlibIoUringIncremental=0 keeps whole-buffer consumption
 						void *pRing = NMib::NMemory::CDefaultAllocator::f_AllocAligned(PageSize, PageSize);
 						if (!pRing)
 							bStream = false;
 						else
 						{
+							bool bIncrementalVetoed = false;
+#if DMibConfig_IoDebug_Enable
+							auto IncrementalSetting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringIncremental"));
+							bIncrementalVetoed = IncrementalSetting == "0";
+#endif
+
 							CIoUringBufReg Reg;
 							NMib::NMemory::fg_MemClear(&Reg, sizeof(Reg));
 							Reg.m_RingAddr = (uint64)(umint)pRing;
 							Reg.m_nRingEntries = 8;
 							Reg.m_Bgid = 0;
 
-							if (fs_Register(Probe.m_RingFd, gc_IoUringRegister_PbufRing, &Reg, 1) != 0)
-								bStream = false;
-							else
+							bool bRegistered = false;
+							if (!bIncrementalVetoed)
+							{
+								Reg.m_Flags = gc_IoUringPbufRing_Incremental;
+								if (fs_Register(Probe.m_RingFd, gc_IoUringRegister_PbufRing, &Reg, 1) == 0)
+								{
+									o_Caps.m_bReceiveStreamIncremental = true;
+									bRegistered = true;
+								}
+							}
+
+							if (!bRegistered)
+							{
+								Reg.m_Flags = 0;
+								if (fs_Register(Probe.m_RingFd, gc_IoUringRegister_PbufRing, &Reg, 1) != 0)
+									bStream = false;
+							}
+
+							if (bStream)
 							{
 								CIoUringBufReg Unreg;
 								NMib::NMemory::fg_MemClear(&Unreg, sizeof(Unreg));
 								Unreg.m_Bgid = 0;
 								fs_Register(Probe.m_RingFd, gc_IoUringRegister_UnregisterPbufRing, &Unreg, 1);
-
-								// Incremental consumption is its own probe rung: an old
-								// kernel rejects the flag and the plain ring carries on
-								bool bIncrementalVetoed = false;
-#if DMibConfig_IoDebug_Enable
-								auto IncrementalSetting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUringIncremental"));
-								bIncrementalVetoed = IncrementalSetting == "0";
-#endif
-								if (!bIncrementalVetoed)
-								{
-									Reg.m_Flags = gc_IoUringPbufRing_Incremental;
-									if (fs_Register(Probe.m_RingFd, gc_IoUringRegister_PbufRing, &Reg, 1) == 0)
-									{
-										o_Caps.m_bReceiveStreamIncremental = true;
-										fs_Register(Probe.m_RingFd, gc_IoUringRegister_UnregisterPbufRing, &Unreg, 1);
-									}
-								}
 							}
 
 							NMib::NMemory::CDefaultAllocator::f_Free(pRing, PageSize);
 						}
 					}
+
 					o_Caps.m_bReceiveStream = bStream;
 
 					// Completion sends require bundles: there is exactly one completion send
