@@ -26,18 +26,6 @@ struct CIoSubSystem_Linux : NMib::NSys::CIoSubSystem
 {
 	CIoSubSystem_Linux();
 
-	// Probed once at construction: whether io_uring works here at all, and whether the loops
-	// the process may create fit the locked memory limit. The loops read these members instead
-	// of probing per creation
-	bool m_bUringAvailable = false;
-	bool m_bUringMemlockFits = true;
-	umint m_nUringMemlockLimitBytes = 0;
-	umint m_nUringMemlockLoops = 0;
-	umint m_nUringMemlockRingBytes = 0;
-
-	// What the kernel's io_uring supports, filled by the same probe
-	CIoUringCaps m_UringCaps;
-
 	// How many sends the loop keeps with the kernel at once for one descriptor; one reproduces
 	// the unpipelined path exactly
 	inline umint f_SendDepth() const;
@@ -51,6 +39,18 @@ struct CIoSubSystem_Linux : NMib::NSys::CIoSubSystem
 
 	inline EUringZeroCopyOverride f_ZeroCopyOverride() const;
 	inline bool f_TraceEnabled() const;
+
+	// Probed once at construction: whether io_uring works here at all, and whether the loops
+	// the process may create fit the locked memory limit. The loops read these members instead
+	// of probing per creation
+	bool m_bUringAvailable = false;
+	bool m_bUringMemlockFits = true;
+	umint m_nUringMemlockLimitBytes = 0;
+	umint m_nUringMemlockLoops = 0;
+	umint m_nUringMemlockRingBytes = 0;
+
+	// What the kernel's io_uring supports, filled by the same probe
+	CIoUringCaps m_UringCaps;
 
 #if DMibConfig_IoDebug_Enable
 	bool m_bTraceEnabled = false;
