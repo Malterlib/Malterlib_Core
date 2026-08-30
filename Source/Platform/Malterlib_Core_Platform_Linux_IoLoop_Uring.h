@@ -216,10 +216,10 @@ private:
 	NMib::NContainer::TCVector<uint16> mp_FreeBgids;
 	uint16 mp_NextBgid = 0;
 
-	bool mp_bRingCreated = false;
-
 	// The io subsystem, cached since each access through the getter is an atomic operation
 	CIoSubSystem_Linux *mp_pIo = nullptr;
+
+	bool mp_bRingCreated = false;
 	bool mp_bFutexArmed = false;
 	bool mp_bFlushingStreamSegments = false;
 };
