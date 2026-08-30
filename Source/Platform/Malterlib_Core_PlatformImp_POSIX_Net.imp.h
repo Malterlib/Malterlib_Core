@@ -1364,6 +1364,13 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 	if (!_bConfigured && pSocket->m_AddressType != ENetAddressType_Unix)
 		return;
 
+#if DMibConfig_IoDebug_Enable
+	// MalterlibSendWindowBuffers=0 leaves the kernel defaults, for measuring what the sizing is worth
+	static bool const s_bSizeBuffers = NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("MalterlibSendWindowBuffers")) != "0";
+	if (!s_bSizeBuffers)
+		return;
+#endif
+
 	// sbreserve refuses more than sb_max * MCLBYTES / (MSIZE + MCLBYTES), eight ninths of the sysctl
 	static umint const s_nMaxReserve =
 		(
