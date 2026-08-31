@@ -279,7 +279,7 @@ bool CIoUringRing::fs_Available(CIoUringCaps &o_Caps)
 #else
 	bool bAvailable =
 		(
-			[]() -> bool
+			[&]() -> bool
 			{
 #if DMibConfig_IoDebug_Enable
 				auto Setting = NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked("MalterlibIoUring"));
