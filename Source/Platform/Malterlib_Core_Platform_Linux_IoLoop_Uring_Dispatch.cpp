@@ -259,11 +259,18 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 
 		if (_Flags & gc_IoUringCqe_FMore)
 		{
+			// Only a send with at most one notification ahead of it samples the release lag:
+			// one behind a standing queue measures the queue, and a window sized by its own
+			// occupancy only grows the occupancy
+			if (mp_NotifyPending.f_GetLen() <= 1)
+			{
+				pOp->m_pLagWindowRegistration = pSendRegistration;
+				pOp->m_ReleaseLagIssueStamp = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
+			}
+
 			pOp->m_iNotifyPending = mp_NotifyPending.f_GetLen();
 			mp_NotifyPending.f_InsertLast(pOp);
 			mp_nNotifyPendingBytes += pOp->m_nRequested;
-			pOp->m_pLagWindowRegistration = pSendRegistration;
-			pOp->m_ReleaseLagIssueStamp = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
 #if DMibConfig_IoDebug_Enable
 			if (mp_pIo->f_StatsEnabled())
 			{

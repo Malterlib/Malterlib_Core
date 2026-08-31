@@ -207,8 +207,10 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	_pRegistration->m_nSendBytesInFlight += _pOp->m_nRequested;
 
 	// The packet is the release on an acknowledgement-completing socket; its lag from here
-	// feeds the window's sliding minimum
-	if (_pRegistration->m_bSendCompletesOnAck)
+	// feeds the window's sliding minimum. Only a send with at most one ahead of it samples:
+	// one issued into a standing queue measures the queue, and a window sized by its own
+	// occupancy only grows the occupancy
+	if (_pRegistration->m_bSendCompletesOnAck && _pRegistration->m_nSendsInFlight <= 2)
 		_pOp->m_ReleaseLagIssueStamp = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
