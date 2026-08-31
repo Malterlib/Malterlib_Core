@@ -81,14 +81,31 @@ namespace NMib::NSys
 	{
 	}
 
+	// Ages the sliding minimum on time rather than on samples: a saturated pipeline whose
+	// window ballooned takes no more low-occupancy samples, and a minimum that only ages on
+	// samples would keep the value that ballooned it forever. Empty epochs zero the product,
+	// the target falls to its headroom, the shrink rule brings the window down, and the
+	// smaller occupancy is what lets honest samples flow again
+	static void fsg_RollIoSendLagEpochs(CIoSendWindow &_Window, uint64 _Now, umint _nEpochTicks)
+	{
+		if (!_Window.m_LagEpochStamp)
+		{
+			_Window.m_LagEpochStamp = _Now;
+			return;
+		}
+
+		uint64 nElapsed = _Now - _Window.m_LagEpochStamp;
+		if (nElapsed < _nEpochTicks)
+			return;
+
+		_Window.m_MinReleaseLagTicks[1] = nElapsed >= 2 * _nEpochTicks ? 0 : _Window.m_MinReleaseLagTicks[0];
+		_Window.m_MinReleaseLagTicks[0] = 0;
+		_Window.m_LagEpochStamp = _Now;
+	}
+
 	void fg_SampleIoSendReleaseLag(CIoSendWindow &_Window, uint64 _LagTicks, uint64 _Now, umint _nEpochTicks)
 	{
-		if (!_Window.m_LagEpochStamp || _Now - _Window.m_LagEpochStamp >= _nEpochTicks)
-		{
-			_Window.m_MinReleaseLagTicks[1] = _Window.m_MinReleaseLagTicks[0];
-			_Window.m_MinReleaseLagTicks[0] = 0;
-			_Window.m_LagEpochStamp = _Now;
-		}
+		fsg_RollIoSendLagEpochs(_Window, _Now, _nEpochTicks);
 
 		if (!_Window.m_MinReleaseLagTicks[0] || _LagTicks < _Window.m_MinReleaseLagTicks[0])
 			_Window.m_MinReleaseLagTicks[0] = _LagTicks;
@@ -96,15 +113,26 @@ namespace NMib::NSys
 
 	void fg_ConsiderIoSendWindowGrowth(CIoSendWindow &_Window, umint _nDeliveryRateBytes, bool _bAppLimited, uint64 _Now, umint _nTicksPerSecond, umint _nShrinkAfterTicks)
 	{
+		fsg_RollIoSendLagEpochs(_Window, _Now, _nShrinkAfterTicks);
+
 		uint64 nLagTicks = _Window.m_MinReleaseLagTicks[0];
 		if (_Window.m_MinReleaseLagTicks[1] && (!nLagTicks || _Window.m_MinReleaseLagTicks[1] < nLagTicks))
 			nLagTicks = _Window.m_MinReleaseLagTicks[1];
 
-		umint nProduct = umint(uint64(_nDeliveryRateBytes) * nLagTicks / _nTicksPerSecond);
-
 		umint nWindow = _Window.m_nEffectiveBytes;
 		umint nHeadroom = fg_Max(2 * _Window.m_nLargestSendBytes, _Window.m_nStartBytes / 4);
-		umint nTarget = fg_Min(nProduct + nProduct / 4 + nHeadroom, _Window.m_nMaxBytes);
+
+		// Without a release that met a low occupancy lately the honest latency is unknown:
+		// the target then decays a quarter per shrink period, and the smaller window is
+		// itself what lets samples flow again and stop the decay where they say
+		umint nTarget;
+		if (nLagTicks)
+		{
+			umint nProduct = umint(uint64(_nDeliveryRateBytes) * nLagTicks / _nTicksPerSecond);
+			nTarget = fg_Min(nProduct + nProduct / 4 + nHeadroom, _Window.m_nMaxBytes);
+		}
+		else
+			nTarget = fg_Max(nHeadroom, nWindow - nWindow / 4 - 1);
 		if (nTarget > nWindow)
 		{
 			_Window.m_nEffectiveBytes = fg_Min(nTarget, nWindow * 2);

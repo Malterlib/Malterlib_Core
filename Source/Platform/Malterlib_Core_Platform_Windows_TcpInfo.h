@@ -36,8 +36,10 @@ struct CWindowsTcpInfoV0
 // Windows reports the bytes sent so far; the delivery rate is what went out between two
 // readings, so the first only takes its bearings — the caller carries them. The latency the
 // consumer multiplies the rate with is measured at the releases themselves, not asked of the
-// path. Whether the sender held the rate back is not reported, and the query is made while
-// the sender is bound, so it is taken as held back by the sender rather than the path
+// path. Whether the sender held the rate back is read off the wire: bytes in flight short of
+// both the congestion and the peer's receive window means the sender had nothing more to
+// give, and a rate from such a sample must not shrink the window — while a full wire means
+// the path or the peer is the limiter, which is exactly when shrinking is right
 inline bool fg_Windows_QueryPathDeliveryRate(SOCKET _Socket, uint64 &io_LastBytesOut, uint64 &io_LastStamp, umint &o_nBytesPerSecond, bool &o_bAppLimited)
 {
 	DWORD Version = 0;
@@ -57,7 +59,9 @@ inline bool fg_Windows_QueryPathDeliveryRate(SOCKET _Socket, uint64 &io_LastByte
 		return false;
 
 	o_nBytesPerSecond = umint((Info.m_BytesOut - LastBytesOut) * Frequency / (Stamp - LastStamp));
-	o_bAppLimited = true;
+
+	ULONG nWireWindow = Info.m_Cwnd < Info.m_SndWnd ? Info.m_Cwnd : Info.m_SndWnd;
+	o_bAppLimited = Info.m_BytesInFlight + Info.m_Mss < nWireWindow;
 
 	return true;
 }
