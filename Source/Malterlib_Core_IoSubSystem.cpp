@@ -5,6 +5,23 @@
 
 #include "Malterlib_Core_IoSubSystem.h"
 
+#include <stdlib.h>
+
+namespace
+{
+	// The atexit view of the subsystem for the statistics reports: Windows release exits skip
+	// the subsystem teardown (the ExitProcess hook only runs the full destroy in debug), so the
+	// reports print from an atexit handler there; f_DumpStats' once flag keeps the destructor
+	// and the handler from both reporting
+	NMib::NSys::CIoSubSystem *g_pIoStatsSubSystem = nullptr;
+
+	void fg_DumpIoStatsAtExit()
+	{
+		if (g_pIoStatsSubSystem)
+			g_pIoStatsSubSystem->f_DumpStats();
+	}
+}
+
 namespace NMib::NSys
 {
 	CIoSubSystem::CIoSubSystem()
@@ -47,15 +64,36 @@ namespace NMib::NSys
 
 	CIoSubSystem::~CIoSubSystem()
 	{
-		for (auto fDump : mp_StatsDumps)
-			fDump(*this);
+		f_DumpStats();
+
+		g_pIoStatsSubSystem = nullptr;
 	}
 
 	void CIoSubSystem::f_RegisterStatsDump(FIoStatsDump _fDump)
 	{
 		DMibLock(mp_StatsDumpLock);
-		if (!mp_StatsDumps.f_FindEqual(_fDump))
-			mp_StatsDumps.f_Insert(_fDump);
+		if (mp_StatsDumps.f_FindEqual(_fDump))
+			return;
+
+		mp_StatsDumps.f_Insert(_fDump);
+
+		if (!g_pIoStatsSubSystem)
+		{
+			g_pIoStatsSubSystem = this;
+			atexit(&fg_DumpIoStatsAtExit);
+		}
+	}
+
+	void CIoSubSystem::f_DumpStats()
+	{
+		DMibLock(mp_StatsDumpLock);
+		if (mp_bStatsDumped)
+			return;
+
+		mp_bStatsDumped = true;
+
+		for (auto fDump : mp_StatsDumps)
+			fDump(*this);
 	}
 
 #if DMibConfig_IoDebug_Enable

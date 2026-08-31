@@ -160,10 +160,15 @@ namespace NMib::NSys
 		// of its in-flight sends; 0 is the actor's default of one
 		inline umint f_WebSocketFrameAhead() const;
 
-		// Adds a statistics report to what the destructor prints. An area registers its report
-		// when it starts collecting, so a run only prints the areas it touched. Thread safe; a
-		// report registered twice prints once
+		// Adds a statistics report to what the end of the run prints. An area registers its
+		// report when it starts collecting, so a run only prints the areas it touched. Thread
+		// safe; a report registered twice prints once
 		void f_RegisterStatsDump(FIoStatsDump _fDump);
+
+		// Prints the registered reports once. Runs from the destructor and from an atexit
+		// handler the first registration arms: Windows release exits skip the subsystem
+		// teardown, so only the handler reports there
+		void f_DumpStats();
 
 		// The send window asks pace their path queries by these; raw timer ticks, converted once
 		umint m_nWindowQueryIntervalTicks = 0;
@@ -197,6 +202,7 @@ namespace NMib::NSys
 
 		NThread::CLowLevelLockAggregate mp_StatsDumpLock = {DAggregateInit};
 		NContainer::TCSet<FIoStatsDump, CSort_StatsDump> mp_StatsDumps;
+		bool mp_bStatsDumped = false;
 	};
 
 	// The platform's io subsystem seen as the shared base, created on first use. Each platform
