@@ -84,7 +84,8 @@ namespace NMib::NSys
 	void fg_ConsiderIoSendWindowGrowth(CIoSendWindow &_Window, umint _nBandwidthDelayBytes, bool _bAppLimited, uint64 _Now, umint _nShrinkAfterTicks)
 	{
 		umint nWindow = _Window.m_nEffectiveBytes;
-		umint nTarget = fg_Min(_nBandwidthDelayBytes + _nBandwidthDelayBytes / 4 + _Window.m_nStartBytes / 4, _Window.m_nMaxBytes);
+		umint nHeadroom = fg_Max(2 * _Window.m_nLargestSendBytes, _Window.m_nStartBytes / 4);
+		umint nTarget = fg_Min(_nBandwidthDelayBytes + _nBandwidthDelayBytes / 4 + nHeadroom, _Window.m_nMaxBytes);
 		if (nTarget > nWindow)
 		{
 			_Window.m_nEffectiveBytes = fg_Min(nTarget, nWindow * 2);

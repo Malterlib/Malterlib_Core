@@ -203,6 +203,12 @@ namespace NMib::NSys
 		umint m_nStartBytes = 0;
 		umint m_nEffectiveBytes = 0;
 		umint m_nShrinkTargetBytes = 0;
+
+		// The largest single send this registration has submitted: the producer’s actual
+		// granularity, which the growth target keeps two of above the bandwidth-delay product
+		// so the window can always carry a fresh send while one awaits release
+		umint m_nLargestSendBytes = 0;
+
 		uint64 m_QueryStamp = 0;
 		uint64 m_ShrinkSince = 0;
 
@@ -213,10 +219,14 @@ namespace NMib::NSys
 
 	// The window is full and the asker has more to send: grow the effective window toward the
 	// configured one when the path’s bandwidth-delay product asks for it — by no more than a
-	// doubling per sample, so one odd reading cannot open it wide. A product at or under the
-	// window leaves it where it is: the pipeline then keeps running dry, which is what lets the
-	// buffer releases through. A product under three quarters of the window for a whole second
-	// brings it down, never below the start; a rate the sender held back never shrinks anything
+	// doubling per sample, so one odd reading cannot open it wide. The target keeps two whole
+	// sends of headroom above the product: the product is measured against the least round
+	// trip, while what the completion pipeline actually rides on is the release latency, and
+	// without the granularity term a window of one send can never admit a second. A product at
+	// or under the window leaves it where it is: the pipeline then keeps running dry, which is
+	// what lets the buffer releases through. A product under three quarters of the window for a
+	// whole second brings it down, never below the start; a rate the sender held back never
+	// shrinks anything
 	void fg_ConsiderIoSendWindowGrowth(CIoSendWindow &_Window, umint _nBandwidthDelayBytes, bool _bAppLimited, uint64 _Now, umint _nShrinkAfterTicks);
 
 	// What a registration asks of the loop beyond its interest mask. A readiness-only registration

@@ -326,6 +326,13 @@ void CIoLoop_IoUring::f_SetSendWindow(NSys::CIoLoopRegistration *_pRegistration,
 bool CIoLoop_IoUring::f_IsSendWindowFull(NSys::CIoLoopRegistration *_pRegistration, umint _nUnreleasedBytes, umint _nStartBytes)
 {
 	auto *pRegistration = static_cast<CUringRegistration *>(_pRegistration);
+
+	// Only zero copy sends hold their pages to the peer's acknowledgement; plain sends release
+	// at the copy, so the default queue depth is all the pipeline needs there and the window
+	// stays out of the way
+	if (!pRegistration->m_bZeroCopyEligible)
+		return false;
+
 	auto &Window = pRegistration->m_SendWindow;
 	if (!Window.m_nMaxBytes)
 		return false;
@@ -363,6 +370,7 @@ bool CIoLoop_IoUring::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistra
 	pOp->m_pRegistration = static_cast<CUringRegistration *>(_pRegistration);
 
 	umint nVectors = 0;
+	umint nRequested = 0;
 	for (umint iSpan = 0; iSpan < _nSpans && nVectors < gc_UringMaxSendVectors; ++iSpan)
 	{
 		if (!_pSpans[iSpan].m_nBytes)
@@ -370,6 +378,7 @@ bool CIoLoop_IoUring::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistra
 
 		pOp->m_IoVecs[nVectors].iov_base = (void *)_pSpans[iSpan].m_pData;
 		pOp->m_IoVecs[nVectors].iov_len = _pSpans[iSpan].m_nBytes;
+		nRequested += _pSpans[iSpan].m_nBytes;
 		++nVectors;
 	}
 
@@ -378,6 +387,11 @@ bool CIoLoop_IoUring::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistra
 		fg_DeleteObject(NMemory::CDefaultAllocator(), pOp);
 		return false;
 	}
+
+	// The window's granularity sample; sequenced by the socket's owner like the asks
+	auto *pRegistration = static_cast<CUringRegistration *>(_pRegistration);
+	if (nRequested > pRegistration->m_SendWindow.m_nLargestSendBytes)
+		pRegistration->m_SendWindow.m_nLargestSendBytes = nRequested;
 
 	fg_MemClear(&pOp->m_MsgHdr, sizeof(pOp->m_MsgHdr));
 	pOp->m_MsgHdr.msg_iov = pOp->m_IoVecs;

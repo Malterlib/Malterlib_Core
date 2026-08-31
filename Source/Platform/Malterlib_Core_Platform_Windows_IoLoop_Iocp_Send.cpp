@@ -49,6 +49,10 @@ bool CIoLoop_Iocp::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistratio
 	pOp->m_nBuffers = (DWORD)nBuffers;
 	pOp->m_fOnComplete = fg_Move(_fOnComplete);
 	pOp->m_fOnBufferReleased = fg_Move(_fOnBufferReleased);
+
+	// The window's granularity sample; sequenced by the socket's owner like the asks
+	if (pOp->m_nRequested > pOp->m_pRegistration->m_SendWindow.m_nLargestSendBytes)
+		pOp->m_pRegistration->m_SendWindow.m_nLargestSendBytes = pOp->m_nRequested;
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
 		pOp->m_EnqueueStamp = fg_IocpStatsNow();
