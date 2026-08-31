@@ -80,6 +80,12 @@ struct alignas(16) CUringIoOp
 	// while the operation is an ordinary one
 	umint m_iNotifyPending = ~umint(0);
 
+	// Whose window the notification's lag feeds, and when the send was placed; the
+	// deregistration acknowledgement clears the pointer for notifications that outlive their
+	// registration
+	CUringRegistration *m_pLagWindowRegistration = nullptr;
+	uint64 m_ReleaseLagIssueStamp = 0;
+
 	// Receive stream buffer size request
 	umint m_nBytes;
 

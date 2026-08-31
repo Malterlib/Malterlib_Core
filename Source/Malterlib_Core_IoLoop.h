@@ -205,7 +205,7 @@ namespace NMib::NSys
 		umint m_nShrinkTargetBytes = 0;
 
 		// The largest single send this registration has submitted: the producer’s actual
-		// granularity, which the growth target keeps two of above the bandwidth-delay product
+		// granularity, which the growth target keeps two of above the rate-latency product
 		// so the window can always carry a fresh send while one awaits release
 		umint m_nLargestSendBytes = 0;
 
@@ -215,19 +215,29 @@ namespace NMib::NSys
 		// The previous sample, for platforms that derive the rate from two readings
 		uint64 m_LastBytesOut = 0;
 		uint64 m_LastStamp = 0;
+
+		// The release latency's sliding minimum: two epochs of the lowest submit-to-release
+		// lag seen, so the target multiplies the delivery rate by the lag a release meets with
+		// no self-queueing ahead of it, and a changed path re-teaches it within two epochs
+		uint64 m_MinReleaseLagTicks[2] = {};
+		uint64 m_LagEpochStamp = 0;
 	};
 
+	// One submit-to-release latency observation for a registration's window; the epoch length
+	// bounds how long a stale minimum survives
+	void fg_SampleIoSendReleaseLag(CIoSendWindow &_Window, uint64 _LagTicks, uint64 _Now, umint _nEpochTicks);
+
 	// The window is full and the asker has more to send: grow the effective window toward the
-	// configured one when the path’s bandwidth-delay product asks for it — by no more than a
-	// doubling per sample, so one odd reading cannot open it wide. The target keeps two whole
-	// sends of headroom above the product: the product is measured against the least round
-	// trip, while what the completion pipeline actually rides on is the release latency, and
-	// without the granularity term a window of one send can never admit a second. A product at
-	// or under the window leaves it where it is: the pipeline then keeps running dry, which is
-	// what lets the buffer releases through. A product under three quarters of the window for a
-	// whole second brings it down, never below the start; a rate the sender held back never
-	// shrinks anything
-	void fg_ConsiderIoSendWindowGrowth(CIoSendWindow &_Window, umint _nBandwidthDelayBytes, bool _bAppLimited, uint64 _Now, umint _nShrinkAfterTicks);
+	// configured one when the path asks for it — by no more than a doubling per sample, so one
+	// odd reading cannot open it wide. The target is the delivery rate times the least release
+	// latency the window has observed — what must stay in flight for the pipeline to never run
+	// dry of it — plus two whole sends of headroom, since without the granularity term a
+	// window of one send can never admit a second. The least lag rather than the average keeps
+	// the product from chasing its own queue: the average lag times the rate is, by Little's
+	// law, whatever is in flight right now. A target at or under the window leaves it where it
+	// is; one under three quarters of the window for a whole second brings it down, never
+	// below the start; a rate the sender held back never shrinks anything
+	void fg_ConsiderIoSendWindowGrowth(CIoSendWindow &_Window, umint _nDeliveryRateBytes, bool _bAppLimited, uint64 _Now, umint _nTicksPerSecond, umint _nShrinkAfterTicks);
 
 	// What a registration asks of the loop beyond its interest mask. A readiness-only registration
 	// is never bound to the loop's completion mechanism where that binding is permanent (an IOCP

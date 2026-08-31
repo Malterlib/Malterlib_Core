@@ -112,10 +112,10 @@ bool CIoLoop_Iocp::f_IsSendWindowFull(NSys::CIoLoopRegistration *_pRegistration,
 
 	Window.m_QueryStamp = Now;
 
-	umint nBandwidthDelay = 0;
+	umint nDeliveryRate = 0;
 	bool bAppLimited = false;
-	if (fg_Windows_QueryPathBandwidthDelay((SOCKET)pRegistration->m_Handle, Window.m_LastBytesOut, Window.m_LastStamp, nBandwidthDelay, bAppLimited))
-		NSys::fg_ConsiderIoSendWindowGrowth(Window, nBandwidthDelay, bAppLimited, Now, mp_pIo->m_nWindowShrinkAfterTicks);
+	if (fg_Windows_QueryPathDeliveryRate((SOCKET)pRegistration->m_Handle, Window.m_LastBytesOut, Window.m_LastStamp, nDeliveryRate, bAppLimited))
+		NSys::fg_ConsiderIoSendWindowGrowth(Window, nDeliveryRate, bAppLimited, Now, mp_pIo->m_nTicksPerSecond, mp_pIo->m_nWindowShrinkAfterTicks);
 
 	return _nUnreleasedBytes >= Window.m_nEffectiveBytes;
 }
@@ -205,6 +205,11 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	++_pRegistration->m_nOutstanding;
 	++_pRegistration->m_nSendsInFlight;
 	_pRegistration->m_nSendBytesInFlight += _pOp->m_nRequested;
+
+	// The packet is the release on an acknowledgement-completing socket; its lag from here
+	// feeds the window's sliding minimum
+	if (_pRegistration->m_bSendCompletesOnAck)
+		_pOp->m_ReleaseLagIssueStamp = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
 	{
@@ -353,6 +358,12 @@ void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, um
 		if (mp_pIo->f_TraceEnabled())
 			mp_pIo->f_Trace("send-report", _pRegistration->m_pToken, _pRegistration->m_Handle, (uint32)Result.m_nBytes | ((uint32)Result.m_Status << 24));
 #endif
+
+		if (pOp->m_ReleaseLagIssueStamp)
+		{
+			uint64 Now = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
+			NSys::fg_SampleIoSendReleaseLag(_pRegistration->m_SendWindow, Now - pOp->m_ReleaseLagIssueStamp, Now, mp_pIo->m_nWindowShrinkAfterTicks);
+		}
 
 		++_pRegistration->m_nOutstanding;
 		++mp_nDispatchDepth;

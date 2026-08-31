@@ -282,6 +282,14 @@ void CIoLoop_IoUring::fp_ReleaseNotifyPending(CUringIoOp *_pOp)
 	pLast->m_iNotifyPending = iPending;
 	mp_NotifyPending.f_SetLen(mp_NotifyPending.f_GetLen() - 1);
 	mp_nNotifyPendingBytes -= _pOp->m_nRequested;
+
+	// The notification is the release; its lag feeds the window's sliding minimum unless the
+	// registration is already gone
+	if (_pOp->m_pLagWindowRegistration && _pOp->m_ReleaseLagIssueStamp)
+	{
+		uint64 Now = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
+		NSys::fg_SampleIoSendReleaseLag(_pOp->m_pLagWindowRegistration->m_SendWindow, Now - _pOp->m_ReleaseLagIssueStamp, Now, mp_pIo->m_nWindowShrinkAfterTicks);
+	}
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled() && _pOp->m_EnqueueStamp)
 	{
@@ -353,10 +361,10 @@ bool CIoLoop_IoUring::f_IsSendWindowFull(NSys::CIoLoopRegistration *_pRegistrati
 
 	Window.m_QueryStamp = Now;
 
-	umint nBandwidthDelay = 0;
+	umint nDeliveryRate = 0;
 	bool bAppLimited = false;
-	if (fg_Linux_QueryPathBandwidthDelay((int)pRegistration->m_Handle, nBandwidthDelay, bAppLimited))
-		NSys::fg_ConsiderIoSendWindowGrowth(Window, nBandwidthDelay, bAppLimited, Now, mp_pIo->m_nWindowShrinkAfterTicks);
+	if (fg_Linux_QueryPathDeliveryRate((int)pRegistration->m_Handle, nDeliveryRate, bAppLimited))
+		NSys::fg_ConsiderIoSendWindowGrowth(Window, nDeliveryRate, bAppLimited, Now, mp_pIo->m_nTicksPerSecond, mp_pIo->m_nWindowShrinkAfterTicks);
 
 	return _nUnreleasedBytes >= Window.m_nEffectiveBytes;
 }

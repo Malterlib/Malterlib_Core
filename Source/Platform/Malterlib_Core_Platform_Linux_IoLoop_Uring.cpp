@@ -204,6 +204,13 @@ void CIoLoop_IoUring::fp_TryAcknowledge(CUringRegistration *_pRegistration, umin
 	fp_SweepPendingOps(_pRegistration);
 	fp_ReleaseStream(_pRegistration);
 	fp_ReleaseSendRing(_pRegistration);
+
+	// Notifications that outlive this registration must not feed its window
+	for (CUringIoOp *pOp : mp_NotifyPending)
+	{
+		if (pOp->m_pLagWindowRegistration == _pRegistration)
+			pOp->m_pLagWindowRegistration = nullptr;
+	}
 	--mp_nDeregistering;
 
 #if DMibConfig_IoDebug_Enable

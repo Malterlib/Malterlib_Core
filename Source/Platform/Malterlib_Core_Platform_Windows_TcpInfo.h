@@ -33,11 +33,12 @@ struct CWindowsTcpInfoV0
 	UCHAR m_SynRetrans;
 };
 
-// Windows reports the least round trip and the bytes sent so far; the rate is what went out
-// between two readings, so the first only takes its bearings — the caller carries them.
-// Whether the sender held that rate back is not reported, and the query is made while the
-// sender is bound, so it is taken as held back by the sender rather than the path
-inline bool fg_Windows_QueryPathBandwidthDelay(SOCKET _Socket, uint64 &io_LastBytesOut, uint64 &io_LastStamp, umint &o_nBytes, bool &o_bAppLimited)
+// Windows reports the bytes sent so far; the delivery rate is what went out between two
+// readings, so the first only takes its bearings — the caller carries them. The latency the
+// consumer multiplies the rate with is measured at the releases themselves, not asked of the
+// path. Whether the sender held the rate back is not reported, and the query is made while
+// the sender is bound, so it is taken as held back by the sender rather than the path
+inline bool fg_Windows_QueryPathDeliveryRate(SOCKET _Socket, uint64 &io_LastBytesOut, uint64 &io_LastStamp, umint &o_nBytesPerSecond, bool &o_bAppLimited)
 {
 	DWORD Version = 0;
 	CWindowsTcpInfoV0 Info;
@@ -52,12 +53,10 @@ inline bool fg_Windows_QueryPathBandwidthDelay(SOCKET _Socket, uint64 &io_LastBy
 	io_LastBytesOut = Info.m_BytesOut;
 	io_LastStamp = Stamp;
 
-	if (!LastStamp || Stamp <= LastStamp || Info.m_BytesOut <= LastBytesOut || !Info.m_MinRttUs)
+	if (!LastStamp || Stamp <= LastStamp || Info.m_BytesOut <= LastBytesOut)
 		return false;
 
-	// bytes per second times the round trip in seconds
-	uint64 Rate = (Info.m_BytesOut - LastBytesOut) * Frequency / (Stamp - LastStamp);
-	o_nBytes = umint(Rate * Info.m_MinRttUs / 1000000);
+	o_nBytesPerSecond = umint((Info.m_BytesOut - LastBytesOut) * Frequency / (Stamp - LastStamp));
 	o_bAppLimited = true;
 
 	return true;

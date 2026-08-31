@@ -173,6 +173,7 @@ namespace NMib::NSys
 		// The send window asks pace their path queries by these; raw timer ticks, converted once
 		umint m_nWindowQueryIntervalTicks = 0;
 		umint m_nWindowShrinkAfterTicks = 0;
+		umint m_nTicksPerSecond = 0;
 
 #if DMibConfig_IoDebug_Enable
 		CSocketIoStats m_SocketIoStats;

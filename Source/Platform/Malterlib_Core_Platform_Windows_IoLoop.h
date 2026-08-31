@@ -131,6 +131,11 @@ struct CIocpSendOp : public CIocpOp
 
 	// The completion was reported when the kernel accepted the send (see
 	// CIocpRegistration::m_bSendCompletesOnAck); the packet only runs the release
+
+	// When the send was issued, for the window's release latency sample the packet takes;
+	// only acknowledgement-completing sends stamp it
+	uint64 m_ReleaseLagIssueStamp = 0;
+
 	bool m_bCompletionReported = false;
 #if DMibConfig_IoDebug_Enable
 	uint64 m_EnqueueStamp = 0;

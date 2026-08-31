@@ -81,11 +81,30 @@ namespace NMib::NSys
 	{
 	}
 
-	void fg_ConsiderIoSendWindowGrowth(CIoSendWindow &_Window, umint _nBandwidthDelayBytes, bool _bAppLimited, uint64 _Now, umint _nShrinkAfterTicks)
+	void fg_SampleIoSendReleaseLag(CIoSendWindow &_Window, uint64 _LagTicks, uint64 _Now, umint _nEpochTicks)
 	{
+		if (!_Window.m_LagEpochStamp || _Now - _Window.m_LagEpochStamp >= _nEpochTicks)
+		{
+			_Window.m_MinReleaseLagTicks[1] = _Window.m_MinReleaseLagTicks[0];
+			_Window.m_MinReleaseLagTicks[0] = 0;
+			_Window.m_LagEpochStamp = _Now;
+		}
+
+		if (!_Window.m_MinReleaseLagTicks[0] || _LagTicks < _Window.m_MinReleaseLagTicks[0])
+			_Window.m_MinReleaseLagTicks[0] = _LagTicks;
+	}
+
+	void fg_ConsiderIoSendWindowGrowth(CIoSendWindow &_Window, umint _nDeliveryRateBytes, bool _bAppLimited, uint64 _Now, umint _nTicksPerSecond, umint _nShrinkAfterTicks)
+	{
+		uint64 nLagTicks = _Window.m_MinReleaseLagTicks[0];
+		if (_Window.m_MinReleaseLagTicks[1] && (!nLagTicks || _Window.m_MinReleaseLagTicks[1] < nLagTicks))
+			nLagTicks = _Window.m_MinReleaseLagTicks[1];
+
+		umint nProduct = umint(uint64(_nDeliveryRateBytes) * nLagTicks / _nTicksPerSecond);
+
 		umint nWindow = _Window.m_nEffectiveBytes;
 		umint nHeadroom = fg_Max(2 * _Window.m_nLargestSendBytes, _Window.m_nStartBytes / 4);
-		umint nTarget = fg_Min(_nBandwidthDelayBytes + _nBandwidthDelayBytes / 4 + nHeadroom, _Window.m_nMaxBytes);
+		umint nTarget = fg_Min(nProduct + nProduct / 4 + nHeadroom, _Window.m_nMaxBytes);
 		if (nTarget > nWindow)
 		{
 			_Window.m_nEffectiveBytes = fg_Min(nTarget, nWindow * 2);

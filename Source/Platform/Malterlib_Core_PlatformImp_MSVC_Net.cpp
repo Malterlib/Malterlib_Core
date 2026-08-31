@@ -1303,13 +1303,13 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 
 #include "Malterlib_Core_Platform_Windows_TcpInfo.h"
 
-bool NSys::NNetwork::fg_QueryPathBandwidthDelay(void *_pSocket, umint &o_nBytes, bool &o_bAppLimited)
+bool NSys::NNetwork::fg_QueryPathDeliveryRate(void *_pSocket, umint &o_nBytes, bool &o_bAppLimited)
 {
 	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
 	if (pSocket->m_Socket == INVALID_SOCKET || pSocket->m_AddressType == ENetAddressType_Unix)
 		return false;
 
-	return fg_Windows_QueryPathBandwidthDelay(pSocket->m_Socket, pSocket->m_PathLastBytesOut, pSocket->m_PathLastStamp, o_nBytes, o_bAppLimited);
+	return fg_Windows_QueryPathDeliveryRate(pSocket->m_Socket, pSocket->m_PathLastBytesOut, pSocket->m_PathLastStamp, o_nBytes, o_bAppLimited);
 }
 
 bool NSys::NNetwork::fg_IsSendWindowFull(void *_pSocket, umint _nUnreleasedBytes, umint _nStartBytes)

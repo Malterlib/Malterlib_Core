@@ -1316,14 +1316,14 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 #if defined(DPlatformFamily_Linux)
 	#include "Malterlib_Core_Platform_Linux_TcpInfo.h"
 #endif
-bool NSys::NNetwork::fg_QueryPathBandwidthDelay(void *_pSocket, umint &o_nBytes, bool &o_bAppLimited)
+bool NSys::NNetwork::fg_QueryPathDeliveryRate(void *_pSocket, umint &o_nBytes, bool &o_bAppLimited)
 {
 #if defined(DPlatformFamily_Linux)
 	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
 	if (pSocket->m_FD == -1 || pSocket->m_AddressType == ENetAddressType_Unix)
 		return false;
 
-	return fg_Linux_QueryPathBandwidthDelay(pSocket->m_FD, o_nBytes, o_bAppLimited);
+	return fg_Linux_QueryPathDeliveryRate(pSocket->m_FD, o_nBytes, o_bAppLimited);
 #else
 	return false;
 #endif

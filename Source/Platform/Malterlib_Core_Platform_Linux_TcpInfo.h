@@ -75,7 +75,9 @@ struct CLinuxTcpInfo
 static_assert(offsetof(CLinuxTcpInfo, m_MinRtt) == 148 && offsetof(CLinuxTcpInfo, m_DeliveryRate) == 160, "The layout must be the kernel's");
 static_assert(offsetof(CLinuxTcpInfo, m_BusyTime) == 168 && offsetof(CLinuxTcpInfo, m_SndWnd) == 228, "The layout must be the kernel's");
 
-inline bool fg_Linux_QueryPathBandwidthDelay(int _Fd, umint &o_nBytes, bool &o_bAppLimited)
+// The rate the peer has been acknowledging at; the latency the consumer multiplies it with is
+// measured at the releases themselves, not asked of the path
+inline bool fg_Linux_QueryPathDeliveryRate(int _Fd, umint &o_nBytesPerSecond, bool &o_bAppLimited)
 {
 	CLinuxTcpInfo Info;
 	NMib::NMemory::fg_MemClear(&Info, sizeof(Info));
@@ -85,20 +87,10 @@ inline bool fg_Linux_QueryPathBandwidthDelay(int _Fd, umint &o_nBytes, bool &o_b
 
 	// Everything through the delivery rate has to be answered; the limiter accounting past it
 	// stays zero on an older kernel and simply does not contribute
-	if (nInfo < offsetof(CLinuxTcpInfo, m_BusyTime) || !Info.m_DeliveryRate || !Info.m_MinRtt)
+	if (nInfo < offsetof(CLinuxTcpInfo, m_BusyTime) || !Info.m_DeliveryRate)
 		return false;
 
-	umint nRateDelay = umint(Info.m_DeliveryRate * uint64(Info.m_MinRtt) / 1000000);
-
-	// The congestion window is the kernel's own answer for what belongs in flight, and fq
-	// pacing keeps it honest here. The delivery-rate product alone locks a zero copy sender
-	// under line rate: its pages release at the acknowledgement, a delay the least round trip
-	// does not represent, and the rate the low window then achieves feeds the next sample —
-	// a fixed point below the link. The congestion window covers that release latency by
-	// construction
-	umint nCwndBytes = umint(Info.m_SndCwnd) * umint(Info.m_SndMss);
-
-	o_nBytes = NMib::fg_Max(nRateDelay, nCwndBytes);
+	o_nBytesPerSecond = umint(Info.m_DeliveryRate);
 	o_bAppLimited = (Info.m_Flags & 1) != 0;
 
 	return true;

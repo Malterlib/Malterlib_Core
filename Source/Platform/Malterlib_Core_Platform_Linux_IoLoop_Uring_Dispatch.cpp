@@ -262,6 +262,8 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			pOp->m_iNotifyPending = mp_NotifyPending.f_GetLen();
 			mp_NotifyPending.f_InsertLast(pOp);
 			mp_nNotifyPendingBytes += pOp->m_nRequested;
+			pOp->m_pLagWindowRegistration = pSendRegistration;
+			pOp->m_ReleaseLagIssueStamp = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
 #if DMibConfig_IoDebug_Enable
 			if (mp_pIo->f_StatsEnabled())
 			{
