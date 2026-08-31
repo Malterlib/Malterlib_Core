@@ -19,6 +19,9 @@ struct CUringSendRing;
 // exactly one CQE — so no CQE anywhere can name a freed record
 struct CUringRegistration : public NMib::NSys::CIoLoopRegistration
 {
+	// The adaptive window the consumer asks about; owned by the asker, never read by the loop
+	NMib::NSys::CIoSendWindow m_SendWindow;
+
 	// Close events ride their own standing poll so idle and completion-mode windows still learn
 	// of peer death. Armed for EPOLLRDHUP first; a half-closed peer keeps RDHUP level-set, so
 	// after it fires the rearm asks for errors-and-hangup only, and after those fire nothing is
@@ -130,6 +133,9 @@ struct CIoLoop_IoUring : public CIoLoop_POSIXBase
 	bool f_IsRingCreated() const;
 
 	void f_RequestReadiness(NMib::NSys::CIoLoopRegistration *_pRegistration, NMib::NSys::EIoLoopEvent _EventMask) override;
+
+	void f_SetSendWindow(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nBytes) override;
+	bool f_IsSendWindowFull(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nUnreleasedBytes, umint _nStartBytes) override;
 
 	void f_SetParkEvent(NMib::NThread::CEventAutoReset *_pEvent) override;
 	bool f_ParksOnQueueEvent() const override;

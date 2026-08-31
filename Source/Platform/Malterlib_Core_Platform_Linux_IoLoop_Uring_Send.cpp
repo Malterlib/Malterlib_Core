@@ -3,6 +3,7 @@
 
 #include "Malterlib_Core_Platform_Linux_IoLoop_Uring_Internal.h"
 #include "Malterlib_Core_Platform_Linux_IoSubSystem.h"
+#include "Malterlib_Core_Platform_Linux_TcpInfo.h"
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
 
 #include <unistd.h>
@@ -310,6 +311,47 @@ bool CIoLoop_IoUring::f_SendReleaseIsPrompt(NSys::CIoLoopRegistration const *_pR
 
 	auto *pRegistration = static_cast<CUringRegistration const *>(_pRegistration);
 	return pRegistration->m_bZeroCopyProbed && !pRegistration->m_bZeroCopyEligible;
+}
+
+// The ask side reads the ceiling directly; setting the window falls under the same owner
+// sequencing as the sends. The kernel holds its own bound (TCP_NOTSENT_LOWAT and the
+// congestion window), so nothing else consults this — the ask below is what enforces it
+void CIoLoop_IoUring::f_SetSendWindow(NSys::CIoLoopRegistration *_pRegistration, umint _nBytes)
+{
+	static_cast<CUringRegistration *>(_pRegistration)->m_SendWindow.m_nMaxBytes = _nBytes;
+}
+
+// The consumer’s ask before it gathers another batch; see f_IsSendWindowFull in the interface.
+// Owner-sequenced with the sends, so the window state needs no locking
+bool CIoLoop_IoUring::f_IsSendWindowFull(NSys::CIoLoopRegistration *_pRegistration, umint _nUnreleasedBytes, umint _nStartBytes)
+{
+	auto *pRegistration = static_cast<CUringRegistration *>(_pRegistration);
+	auto &Window = pRegistration->m_SendWindow;
+	if (!Window.m_nMaxBytes)
+		return false;
+
+	if (!Window.m_nEffectiveBytes)
+	{
+		Window.m_nStartBytes = fg_Clamp(_nStartBytes, umint(1), Window.m_nMaxBytes);
+		Window.m_nEffectiveBytes = Window.m_nStartBytes;
+	}
+
+	if (_nUnreleasedBytes < Window.m_nEffectiveBytes)
+		return false;
+
+	// Full while more wants out is the moment to ask the path, at most every 10 ms
+	uint64 Now = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
+	if (Window.m_QueryStamp && Now - Window.m_QueryStamp < mp_pIo->m_nWindowQueryIntervalTicks)
+		return true;
+
+	Window.m_QueryStamp = Now;
+
+	umint nBandwidthDelay = 0;
+	bool bAppLimited = false;
+	if (fg_Linux_QueryPathBandwidthDelay((int)pRegistration->m_Handle, nBandwidthDelay, bAppLimited))
+		NSys::fg_ConsiderIoSendWindowGrowth(Window, nBandwidthDelay, bAppLimited, Now, mp_pIo->m_nWindowShrinkAfterTicks);
+
+	return _nUnreleasedBytes >= Window.m_nEffectiveBytes;
 }
 
 bool CIoLoop_IoUring::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistration, NSys::CIoSpan const *_pSpans, umint _nSpans, NSys::FIoCompletion &&_fOnComplete, NSys::FIoBufferReleased &&_fOnBufferReleased)

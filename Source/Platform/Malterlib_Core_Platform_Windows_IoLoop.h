@@ -210,6 +210,9 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	// window they are issued within (0 keeps the count of sends as the bound)
 	umint m_nSendBytesInFlight = 0;
 	umint m_nSendWindowBytes = 0;
+
+	// The adaptive window the consumer asks about; owned by the asker, never read by the loop
+	NMib::NSys::CIoSendWindow m_SendWindow;
 #if DMibConfig_IoDebug_Enable
 	uint64 m_SendIdleStamp = 0;
 #endif
@@ -303,6 +306,7 @@ struct CIoLoop_Iocp : public CIoLoop_Base
 	bool f_StartReceiveStream(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> _pBackpressure, NMib::NSys::FIoStreamSink &&_fSink) override;
 	void f_ResumeReceiveStream(NMib::NSys::CIoLoopRegistration *_pRegistration) override;
 	void f_SetSendWindow(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nBytes) override;
+	bool f_IsSendWindowFull(NMib::NSys::CIoLoopRegistration *_pRegistration, umint _nUnreleasedBytes, umint _nStartBytes) override;
 	bool f_AdoptHandle(NMib::NSys::CIoLoopHandle _Handle, int &o_Error) override;
 
 private:

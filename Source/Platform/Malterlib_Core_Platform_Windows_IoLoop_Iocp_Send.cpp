@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Windows_IoLoop_Iocp_Internal.h"
+#include "Malterlib_Core_Platform_Windows_TcpInfo.h"
 
 using namespace NMib;
 using namespace NMib::NMemory;
@@ -67,12 +68,52 @@ bool CIoLoop_Iocp::f_SubmitSendVectored(NSys::CIoLoopRegistration *_pRegistratio
 
 void CIoLoop_Iocp::f_SetSendWindow(NSys::CIoLoopRegistration *_pRegistration, umint _nBytes)
 {
+	// The ask side reads the ceiling directly; setting the window falls under the same owner
+	// sequencing as the sends, so no queue trip is needed for it
+	static_cast<CIocpRegistration *>(_pRegistration)->m_SendWindow.m_nMaxBytes = _nBytes;
+
 	auto *pOp = fg_ConstructObject<CIocpPendingOp>(CDefaultAllocator());
 	pOp->m_pRegistration = static_cast<CIocpRegistration *>(_pRegistration);
 	pOp->m_bSendWindow = true;
 	pOp->m_nBytes = _nBytes;
 
 	fp_QueuePendingOp(pOp);
+}
+
+// The consumer’s ask before it gathers another batch; see f_IsSendWindowFull in the interface.
+// Owner-sequenced with the sends, so the window state needs no locking
+bool CIoLoop_Iocp::f_IsSendWindowFull(NSys::CIoLoopRegistration *_pRegistration, umint _nUnreleasedBytes, umint _nStartBytes)
+{
+	auto *pRegistration = static_cast<CIocpRegistration *>(_pRegistration);
+	if (!pRegistration->m_bSendCompletesOnAck)
+		return false;
+
+	auto &Window = pRegistration->m_SendWindow;
+	if (!Window.m_nMaxBytes)
+		return false;
+
+	if (!Window.m_nEffectiveBytes)
+	{
+		Window.m_nStartBytes = fg_Clamp(_nStartBytes, umint(1), Window.m_nMaxBytes);
+		Window.m_nEffectiveBytes = Window.m_nStartBytes;
+	}
+
+	if (_nUnreleasedBytes < Window.m_nEffectiveBytes)
+		return false;
+
+	// Full while more wants out is the moment to ask the path, at most every 10 ms
+	uint64 Now = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
+	if (Window.m_QueryStamp && Now - Window.m_QueryStamp < mp_pIo->m_nWindowQueryIntervalTicks)
+		return true;
+
+	Window.m_QueryStamp = Now;
+
+	umint nBandwidthDelay = 0;
+	bool bAppLimited = false;
+	if (fg_Windows_QueryPathBandwidthDelay((SOCKET)pRegistration->m_Handle, Window.m_LastBytesOut, Window.m_LastStamp, nBandwidthDelay, bAppLimited))
+		NSys::fg_ConsiderIoSendWindowGrowth(Window, nBandwidthDelay, bAppLimited, Now, mp_pIo->m_nWindowShrinkAfterTicks);
+
+	return _nUnreleasedBytes >= Window.m_nEffectiveBytes;
 }
 
 // Loop thread: the send takes its place at the tail of the registration's FIFO and is issued

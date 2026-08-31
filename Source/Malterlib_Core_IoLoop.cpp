@@ -81,10 +81,39 @@ namespace NMib::NSys
 	{
 	}
 
+	void fg_ConsiderIoSendWindowGrowth(CIoSendWindow &_Window, umint _nBandwidthDelayBytes, bool _bAppLimited, uint64 _Now, umint _nShrinkAfterTicks)
+	{
+		umint nWindow = _Window.m_nEffectiveBytes;
+		umint nTarget = fg_Min(_nBandwidthDelayBytes + _nBandwidthDelayBytes / 4 + _Window.m_nStartBytes / 4, _Window.m_nMaxBytes);
+		if (nTarget > nWindow)
+		{
+			_Window.m_nEffectiveBytes = fg_Min(nTarget, nWindow * 2);
+			_Window.m_ShrinkSince = 0;
+		}
+		else if (_bAppLimited || nTarget >= nWindow - nWindow / 4)
+			_Window.m_ShrinkSince = 0;
+		else
+		{
+			if (!_Window.m_ShrinkSince)
+				_Window.m_ShrinkSince = _Now;
+
+			_Window.m_nShrinkTargetBytes = nTarget;
+			if (_Now - _Window.m_ShrinkSince >= _nShrinkAfterTicks)
+			{
+				_Window.m_nEffectiveBytes = fg_Max(_Window.m_nShrinkTargetBytes, _Window.m_nStartBytes);
+				_Window.m_ShrinkSince = 0;
+			}
+		}
+	}
+
 	void ICIoLoop::f_SetSendWindow(CIoLoopRegistration *_pRegistration, umint _nBytes)
 	{
 	}
 
+	bool ICIoLoop::f_IsSendWindowFull(CIoLoopRegistration *, umint, umint)
+	{
+		return false;
+	}
 	bool ICIoLoop::f_AdoptHandle(CIoLoopHandle, int &)
 	{
 		return true;

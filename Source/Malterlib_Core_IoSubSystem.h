@@ -165,6 +165,10 @@ namespace NMib::NSys
 		// report registered twice prints once
 		void f_RegisterStatsDump(FIoStatsDump _fDump);
 
+		// The send window asks pace their path queries by these; raw timer ticks, converted once
+		umint m_nWindowQueryIntervalTicks = 0;
+		umint m_nWindowShrinkAfterTicks = 0;
+
 #if DMibConfig_IoDebug_Enable
 		CSocketIoStats m_SocketIoStats;
 		CNetIoStats m_NetIoStats;

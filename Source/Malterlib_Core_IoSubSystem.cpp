@@ -9,6 +9,10 @@ namespace NMib::NSys
 {
 	CIoSubSystem::CIoSubSystem()
 	{
+		uint64 Frequency = (uint64)NTime::CSystem_Time::fs_TimerFrequency();
+		m_nWindowQueryIntervalTicks = umint(Frequency / 100);
+		m_nWindowShrinkAfterTicks = umint(Frequency);
+
 #if DMibConfig_IoDebug_Enable
 		mp_bStatsEnabled = fsp_EnvFlag("MalterlibIoStats", false);
 		mp_bSendWindowBuffers = fsp_EnvFlag("MalterlibSendWindowBuffers", true);

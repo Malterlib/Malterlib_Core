@@ -193,6 +193,32 @@ namespace NMib::NSys
 	// or the asynchronous continuation runs. Opaque outside the platform backends
 	struct CIoLoopRegistration;
 
+	// The adaptive send window of one registration: the ceiling f_SetSendWindow configured, the
+	// start a connection begins at, and the effective size the path has earned in between. Every
+	// field belongs to the single consumer that asks f_IsSendWindowFull and sets the window —
+	// the loop itself never reads it
+	struct CIoSendWindow
+	{
+		umint m_nMaxBytes = 0;
+		umint m_nStartBytes = 0;
+		umint m_nEffectiveBytes = 0;
+		umint m_nShrinkTargetBytes = 0;
+		uint64 m_QueryStamp = 0;
+		uint64 m_ShrinkSince = 0;
+
+		// The previous sample, for platforms that derive the rate from two readings
+		uint64 m_LastBytesOut = 0;
+		uint64 m_LastStamp = 0;
+	};
+
+	// The window is full and the asker has more to send: grow the effective window toward the
+	// configured one when the path’s bandwidth-delay product asks for it — by no more than a
+	// doubling per sample, so one odd reading cannot open it wide. A product at or under the
+	// window leaves it where it is: the pipeline then keeps running dry, which is what lets the
+	// buffer releases through. A product under three quarters of the window for a whole second
+	// brings it down, never below the start; a rate the sender held back never shrinks anything
+	void fg_ConsiderIoSendWindowGrowth(CIoSendWindow &_Window, umint _nBandwidthDelayBytes, bool _bAppLimited, uint64 _Now, umint _nShrinkAfterTicks);
+
 	// What a registration asks of the loop beyond its interest mask. A readiness-only registration
 	// is never bound to the loop's completion mechanism where that binding is permanent (an IOCP
 	// association outlives every owner of the handle), so the handle stays free for another owner
@@ -308,6 +334,15 @@ namespace NMib::NSys
 		// in flight. Falls under the owner-sequencing contract of the sends. Loops whose sends
 		// release promptly, or that leave the window to the kernel's buffers, ignore it
 		virtual void f_SetSendWindow(CIoLoopRegistration *_pRegistration, umint _nBytes);
+
+		// Whether the registration’s sends should pause: the bytes whose release functors have not
+		// run have reached the window the path has earned. The consumer asks before gathering
+		// another batch; a full answer leaves the batch in the consumer’s own queue, and the next
+		// release re-asks. _nStartBytes is the window the connection begins with — a few frames —
+		// which the ask grows toward the configured window only while full answers would otherwise
+		// throttle a path whose bandwidth-delay product needs more. Falls under the owner-sequencing
+		// contract of the sends. Loops that leave the window to the kernel’s buffers answer false
+		virtual bool f_IsSendWindowFull(CIoLoopRegistration *_pRegistration, umint _nUnreleasedBytes, umint _nStartBytes);
 
 		// Takes over a handle another owner gave up, ahead of registering it: where the loop's
 		// completion binding is permanent this binds the handle to this loop's port, which is
