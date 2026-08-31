@@ -56,8 +56,24 @@ struct CLinuxTcpInfo
 	uint32 m_DataSegsIn;
 	uint32 m_DataSegsOut;
 	uint64 m_DeliveryRate;
+
+	// The limiter accounting (4.10): microseconds spent busy sending, held by the peer's
+	// receive window, and held by the send buffer — who the bottleneck was, measured by the
+	// kernel itself. Zero on kernels that answer with fewer bytes
+	uint64 m_BusyTime;
+	uint64 m_RwndLimited;
+	uint64 m_SndbufLimited;
+	uint32 m_Delivered;
+	uint32 m_DeliveredCe;
+	uint64 m_BytesSent;
+	uint64 m_BytesRetrans;
+	uint32 m_DsackDups;
+	uint32 m_ReordSeen;
+	uint32 m_RcvOoopack;
+	uint32 m_SndWnd;
 };
 static_assert(offsetof(CLinuxTcpInfo, m_MinRtt) == 148 && offsetof(CLinuxTcpInfo, m_DeliveryRate) == 160, "The layout must be the kernel's");
+static_assert(offsetof(CLinuxTcpInfo, m_BusyTime) == 168 && offsetof(CLinuxTcpInfo, m_SndWnd) == 228, "The layout must be the kernel's");
 
 inline bool fg_Linux_QueryPathBandwidthDelay(int _Fd, umint &o_nBytes, bool &o_bAppLimited)
 {
@@ -66,10 +82,23 @@ inline bool fg_Linux_QueryPathBandwidthDelay(int _Fd, umint &o_nBytes, bool &o_b
 	socklen_t nInfo = sizeof(Info);
 	if (getsockopt(_Fd, IPPROTO_TCP, TCP_INFO, &Info, &nInfo) != 0)
 		return false;
-	if (nInfo < sizeof(Info) || !Info.m_DeliveryRate || !Info.m_MinRtt)
+
+	// Everything through the delivery rate has to be answered; the limiter accounting past it
+	// stays zero on an older kernel and simply does not contribute
+	if (nInfo < offsetof(CLinuxTcpInfo, m_BusyTime) || !Info.m_DeliveryRate || !Info.m_MinRtt)
 		return false;
 
-	o_nBytes = umint(Info.m_DeliveryRate * uint64(Info.m_MinRtt) / 1000000);
+	umint nRateDelay = umint(Info.m_DeliveryRate * uint64(Info.m_MinRtt) / 1000000);
+
+	// The congestion window is the kernel's own answer for what belongs in flight, and fq
+	// pacing keeps it honest here. The delivery-rate product alone locks a zero copy sender
+	// under line rate: its pages release at the acknowledgement, a delay the least round trip
+	// does not represent, and the rate the low window then achieves feeds the next sample —
+	// a fixed point below the link. The congestion window covers that release latency by
+	// construction
+	umint nCwndBytes = umint(Info.m_SndCwnd) * umint(Info.m_SndMss);
+
+	o_nBytes = NMib::fg_Max(nRateDelay, nCwndBytes);
 	o_bAppLimited = (Info.m_Flags & 1) != 0;
 
 	return true;
