@@ -132,7 +132,7 @@ static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWo
 	pStats->m_nSendBytesRequested.f_FetchAdd(_nRequested, NAtomic::gc_MemoryOrder_Relaxed);
 	pStats->m_nSendBytesSent.f_FetchAdd(_nSent, NAtomic::gc_MemoryOrder_Relaxed);
 	if (_nRequested)
-		pStats->m_SendSizeBuckets[fg_GetHighestBitSet(_nRequested)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		pStats->m_SendSizeBuckets[fg_Min(umint(fg_GetHighestBitSet(_nRequested)), umint(32))].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	if (_bWouldBlock)
 		pStats->m_nSendWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	else if (_nSent < _nRequested)
@@ -165,6 +165,8 @@ CWindowsSocketContext::CWindowsSocketContext()
 			WSACleanup( );
 			mp_bInitFailed = true;
 		}
+		else if (err == 0)
+			mp_bWsaStarted = true;
 	}
 
 	// A networking process listens for the session ending, as the socket window used to try to
@@ -183,8 +185,6 @@ CWindowsSocketContext::CWindowsSocketContext()
 
 CWindowsSocketContext::~CWindowsSocketContext()
 {
-	// No WSACleanup: another module in the process may still own sockets, and a cleanup here
-	// would fail their later closes. Process exit reclaims the provider
 	if (mp_PollerThread.mp_pLoop)
 	{
 		// The poller's exit drain acknowledges the last removals; a socket still open past it
@@ -193,6 +193,27 @@ CWindowsSocketContext::~CWindowsSocketContext()
 		NSys::fg_DestroyIoLoop(mp_PollerThread.mp_pLoop);
 		mp_PollerThread.mp_pLoop = nullptr;
 	}
+
+	// Balance the constructor's WSAStartup once every socket this context owns is gone. The
+	// winsock reference count keeps the provider alive for any module holding its own startup
+	// reference, so only a module leaning on ours without one loses anything. Dropping the last
+	// reference is what makes mswsock retire its helper thread; left running, that thread is
+	// killed by ExitProcess and its corpse makes the terminated-thread check at process detach
+	// veto subsystem teardown for every networked process.
+	// This destructor is designed to run outside the loader lock: f_DestroyThreadSpecific
+	// destructs the context from the ExitProcess hook for a program and from
+	// IdsFreeLibraryExternal for a Malterlib DLL, both before the loader is involved. The guard
+	// covers a host that skips IdsFreeLibraryExternal and lets the CRT cleanup reach this from
+	// DllMain, where the WSACleanup documentation forbids the call — the final cleanup unloads
+	// the provider DLLs, which the loader is not reentrant for — and where it could not help
+	// anyway: the helper thread cannot finish exiting while we hold the lock its detach
+	// notification needs. There the reference is left for process exit to reclaim
+	// Members are destroyed after this body, and the resolver's worker may still be inside
+	// GetAddrInfoW; it is stopped and joined here so every call of its runs on a started winsock
+	mp_Resolver.f_Stop();
+
+	if (mp_bWsaStarted && !NMib::NPlatform::fg_ThisThreadOwnsDllLock())
+		WSACleanup();
 }
 
 void CWindowsSocketContext::f_CheckFailed()
