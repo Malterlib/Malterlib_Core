@@ -4,6 +4,7 @@
 #include <Mib/Core/Core>
 
 #include "Malterlib_Core_IoSubSystem.h"
+#include <Mib/Time/Stopwatch>
 
 #include <stdlib.h>
 
@@ -26,7 +27,7 @@ namespace NMib::NSys
 {
 	CIoSubSystem::CIoSubSystem()
 	{
-		uint64 Frequency = (uint64)NTime::CSystem_Time::fs_TimerFrequency();
+		uint64 Frequency = uint64(NTime::NPlatform::fg_TimerRaw_PreciseFrequency());
 		m_nWindowQueryIntervalTicks = umint(Frequency / 100);
 		m_nWindowShrinkAfterTicks = umint(Frequency);
 		m_nTicksPerSecond = umint(Frequency);

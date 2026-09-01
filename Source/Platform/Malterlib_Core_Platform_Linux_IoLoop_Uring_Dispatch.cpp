@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include "Malterlib_Core_Platform_Linux_IoSubSystem.h"
+#include <Mib/Time/Stopwatch>
 
 #include "Malterlib_Core_Platform_Linux_IoLoop_Uring_Internal.h"
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
@@ -265,7 +266,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 			if (mp_NotifyPending.f_GetLen() <= 1)
 			{
 				pOp->m_pLagWindowRegistration = pSendRegistration;
-				pOp->m_ReleaseLagIssueStamp = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
+				pOp->m_ReleaseLagIssueStamp = uint64(NTime::NPlatform::fg_TimerRaw_PreciseGet());
 			}
 
 			pOp->m_iNotifyPending = mp_NotifyPending.f_GetLen();

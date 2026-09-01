@@ -3,6 +3,7 @@
 
 #include "Malterlib_Core_Platform_Windows_IoLoop_Iocp_Internal.h"
 #include "Malterlib_Core_Platform_Windows_TcpInfo.h"
+#include <Mib/Time/Stopwatch>
 
 using namespace NMib;
 using namespace NMib::NMemory;
@@ -106,7 +107,7 @@ bool CIoLoop_Iocp::f_IsSendWindowFull(NSys::CIoLoopRegistration *_pRegistration,
 		return false;
 
 	// Full while more wants out is the moment to ask the path, at most every 10 ms
-	uint64 Now = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
+	uint64 Now = uint64(NTime::NPlatform::fg_TimerRaw_PreciseGet());
 	if (Window.m_QueryStamp && Now - Window.m_QueryStamp < mp_pIo->m_nWindowQueryIntervalTicks)
 		return true;
 
@@ -211,7 +212,7 @@ void CIoLoop_Iocp::fp_IssueSend(CIocpRegistration *_pRegistration, CIocpSendOp *
 	// one issued into a standing queue measures the queue, and a window sized by its own
 	// occupancy only grows the occupancy
 	if (_pRegistration->m_bSendCompletesOnAck && _pRegistration->m_nSendsInFlight <= 2)
-		_pOp->m_ReleaseLagIssueStamp = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
+		_pOp->m_ReleaseLagIssueStamp = uint64(NTime::NPlatform::fg_TimerRaw_PreciseGet());
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_StatsEnabled())
 	{
@@ -363,7 +364,7 @@ void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, um
 
 		if (pOp->m_ReleaseLagIssueStamp)
 		{
-			uint64 Now = (uint64)NTime::CSystem_Time::fs_GetTimerValue();
+			uint64 Now = uint64(NTime::NPlatform::fg_TimerRaw_PreciseGet());
 			NSys::fg_SampleIoSendReleaseLag(_pRegistration->m_SendWindow, Now - pOp->m_ReleaseLagIssueStamp, Now, mp_pIo->m_nWindowShrinkAfterTicks);
 		}
 

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <Mib/Time/Stopwatch>
+
 // SIO_TCP_INFO and its record, as the SDK declares them for Windows 10 1703 and later, spelled
 // out here because the SDK hides them behind a target version this build does not set. The
 // query fails on earlier systems and the path is then simply not asked
@@ -48,8 +50,8 @@ inline bool fg_Windows_QueryPathDeliveryRate(SOCKET _Socket, uint64 &io_LastByte
 	if (WSAIoctl(_Socket, SIO_TCP_INFO, &Version, sizeof(Version), &Info, sizeof(Info), &nBytes, nullptr, nullptr) != 0)
 		return false;
 
-	uint64 Stamp = (uint64)NMib::NTime::CSystem_Time::fs_GetTimerValue();
-	uint64 Frequency = (uint64)NMib::NTime::CSystem_Time::fs_TimerFrequency();
+	uint64 Stamp = uint64(NMib::NTime::NPlatform::fg_TimerRaw_PreciseGet());
+	uint64 Frequency = uint64(NMib::NTime::NPlatform::fg_TimerRaw_PreciseFrequency());
 	uint64 LastBytesOut = io_LastBytesOut;
 	uint64 LastStamp = io_LastStamp;
 	io_LastBytesOut = Info.m_BytesOut;
