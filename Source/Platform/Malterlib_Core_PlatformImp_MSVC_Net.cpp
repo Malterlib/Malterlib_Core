@@ -199,9 +199,10 @@ CWindowsSocketContext::~CWindowsSocketContext()
 	// killed by ExitProcess and its corpse makes the terminated-thread check at process detach
 	// veto subsystem teardown for every networked process.
 	// Never under the loader lock though: in a DLL this destructor runs inside
-	// DLL_PROCESS_DETACH, where WSACleanup waits for that helper thread while the thread needs
-	// the lock we hold to exit, and unloads provider DLLs the loader is not reentrant for.
-	// There the reference is left for process exit to reclaim, as before
+	// DLL_PROCESS_DETACH, and the WSACleanup documentation forbids calling it from DllMain —
+	// the final cleanup unloads the provider DLLs, which the loader is not reentrant for. Nor
+	// would it help there: the helper thread cannot finish exiting while we hold the lock its
+	// detach notification needs. The reference is left for process exit to reclaim, as before
 	if (mp_bWsaStarted && !NMib::NPlatform::fg_ThisThreadOwnsDllLock())
 		WSACleanup();
 }
