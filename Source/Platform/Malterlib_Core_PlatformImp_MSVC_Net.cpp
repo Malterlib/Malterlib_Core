@@ -165,6 +165,8 @@ CWindowsSocketContext::CWindowsSocketContext()
 			WSACleanup( );
 			mp_bInitFailed = true;
 		}
+		else if (err == 0)
+			mp_bWsaStarted = true;
 	}
 
 	// A networking process listens for the session ending, as the socket window used to try to
@@ -183,14 +185,21 @@ CWindowsSocketContext::CWindowsSocketContext()
 
 CWindowsSocketContext::~CWindowsSocketContext()
 {
-	// No WSACleanup: another module in the process may still own sockets, and a cleanup here
-	// would fail their later closes. Process exit reclaims the provider
 	if (mp_PollerThread.mp_pLoop)
 	{
 		mp_PollerThread.f_Stop(true);
 		NSys::fg_DestroyIoLoop(mp_PollerThread.mp_pLoop);
 		mp_PollerThread.mp_pLoop = nullptr;
 	}
+
+	// Balance the constructor's WSAStartup once every socket this context owns is gone. The
+	// winsock reference count keeps the provider alive for any module holding its own startup
+	// reference, so only a module leaning on ours without one loses anything. Dropping the last
+	// reference is what makes mswsock retire its helper thread; left running, that thread is
+	// killed by ExitProcess and its corpse makes the terminated-thread check at process detach
+	// veto subsystem teardown for every networked process
+	if (mp_bWsaStarted)
+		WSACleanup();
 }
 
 void CWindowsSocketContext::f_CheckFailed()
