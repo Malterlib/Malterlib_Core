@@ -2779,6 +2779,45 @@ namespace
 
 		return false;
 	}
+
+#if DMibEnableSafeCheck > 0
+	// Waits, bounded, for every registered thread other than the caller to exit. A thread still exiting when the system
+	// is marked deleted leaves its thread local record behind, since the thread detach callback skips a deleted system.
+	// One pass over a snapshot of the registrations: a thread that exited without clearing its record signals at once
+	// for as long as another handle keeps its object alive, so it must not be picked again. The bound keeps a thread that
+	// never exits from holding up process exit
+	void fg_WaitForOtherRegisteredThreads()
+	{
+		constexpr umint c_MaxThreads = 64;
+		umint Threads[c_MaxThreads];
+		umint nThreads = 0;
+		umint ThisUID = NSys::fg_Thread_GetCurrentUID();
+		fg_GetSys()->f_ThreadEnum
+			(
+				[&](umint _ThreadID)
+				{
+					if (_ThreadID != ThisUID && nThreads < c_MaxThreads)
+						Threads[nThreads++] = _ThreadID;
+				}
+			)
+		;
+
+		DWORD Deadline = GetTickCount() + 250;
+		for (umint i = 0; i < nThreads; ++i)
+		{
+			int32 Remaining = (int32)(Deadline - GetTickCount());
+			if (Remaining <= 0)
+				return;
+
+			HANDLE hThread = OpenThread(SYNCHRONIZE, false, (DWORD)Threads[i]);
+			if (!hThread)
+				continue;
+
+			WaitForSingleObject(hThread, (DWORD)Remaining);
+			CloseHandle(hThread);
+		}
+	}
+#endif
 }
 
 
@@ -6856,6 +6895,13 @@ void __cdecl fg_DestroyMalterlib()
 	if (g_bSystemCreated && !g_bSysDeleted)
 	{
 		fg_GetLocalSys()->f_DestroyThreadSpecific();
+
+#if DMibEnableSafeCheck > 0
+		// Once g_bSysDeleted is set, the thread detach callback no longer clears the record of a thread that exits, so wait
+		// for the registered threads that are still exiting. Teardown proceeds either way; a record left behind is what the
+		// thread local teardown check reports
+		fg_WaitForOtherRegisteredThreads();
+#endif
 
 		g_bSysDeleted = true;
 		fg_GetLocalSys()->f_ExitModule();

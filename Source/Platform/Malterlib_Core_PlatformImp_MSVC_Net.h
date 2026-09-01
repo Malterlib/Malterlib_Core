@@ -101,6 +101,7 @@ class CWindowsSocketContext
 {
 protected:
 	bool mp_bInitFailed;
+	bool mp_bWsaStarted = false;
 
 	// Dedicated shared-loop thread; create the loop before starting and destroy it after stopping.
 	struct CPollerThread : public NMib::NThread::CThread

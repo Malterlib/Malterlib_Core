@@ -129,7 +129,7 @@ static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWo
 	pStats->m_nSendBytesRequested.f_FetchAdd(_nRequested, NAtomic::gc_MemoryOrder_Relaxed);
 	pStats->m_nSendBytesSent.f_FetchAdd(_nSent, NAtomic::gc_MemoryOrder_Relaxed);
 	if (_nRequested)
-		pStats->m_SendSizeBuckets[fg_GetHighestBitSet(_nRequested)].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
+		pStats->m_SendSizeBuckets[fg_Min(umint(fg_GetHighestBitSet(_nRequested)), umint(32))].f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	if (_bWouldBlock)
 		pStats->m_nSendWouldBlock.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 	else if (_nSent < _nRequested)
@@ -162,6 +162,8 @@ CWindowsSocketContext::CWindowsSocketContext()
 			WSACleanup( );
 			mp_bInitFailed = true;
 		}
+		else if (err == 0)
+			mp_bWsaStarted = true;
 	}
 
 	// Create the shared loop before its thread; failure must surface before sockets can use it.
@@ -174,7 +176,6 @@ CWindowsSocketContext::CWindowsSocketContext()
 
 CWindowsSocketContext::~CWindowsSocketContext()
 {
-	// Other modules may still own sockets; this subsystem must not tear down their Winsock provider.
 	if (mp_PollerThread.mp_pLoop)
 	{
 		// The poller's exit drain acknowledges the last removals; a socket still open past it
@@ -183,6 +184,14 @@ CWindowsSocketContext::~CWindowsSocketContext()
 		NSys::fg_DestroyIoLoop(mp_PollerThread.mp_pLoop);
 		mp_PollerThread.mp_pLoop = nullptr;
 	}
+
+	// Stop the resolver before balancing WSAStartup so no GetAddrInfoW call outlives Winsock.
+	// The final WSACleanup retires the provider helper thread before process teardown. Never call under loader lock:
+	// provider unloading and thread detach require that lock; hosts bypassing external teardown defer cleanup to process exit.
+	mp_Resolver.f_Stop();
+
+	if (mp_bWsaStarted && !NMib::NPlatform::fg_ThisThreadOwnsDllLock())
+		WSACleanup();
 }
 
 void CWindowsSocketContext::f_CheckFailed()
