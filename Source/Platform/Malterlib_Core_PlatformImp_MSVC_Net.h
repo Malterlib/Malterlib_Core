@@ -131,6 +131,7 @@ class CWindowsSocketContext
 {
 protected:
 	bool mp_bInitFailed;
+	bool mp_bWsaStarted = false;
 
 	// The process wide shared loop for sockets nobody claimed, hosted on a dedicated thread.
 	// Created by the context before the thread starts and destroyed after it stops

@@ -54,6 +54,10 @@ public:
 	CAddressResolver();
 	~CAddressResolver();
 
+	// Stops and joins the worker and drops every request; what the destructor does, for an owner
+	// that must have the worker gone before its own teardown continues
+	void f_Stop();
+
 	void* f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
 	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error);
 	void f_Close(void* _pResolver);

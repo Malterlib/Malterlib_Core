@@ -20,6 +20,11 @@ CAddressResolver::CAddressResolver()
 
 CAddressResolver::~CAddressResolver()
 {
+	f_Stop();
+}
+
+void CAddressResolver::f_Stop()
+{
 	if (mp_pThread)
 	{
 		mp_pThread->f_Stop(true);
