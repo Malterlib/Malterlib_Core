@@ -20,6 +20,12 @@ CAddressResolver::CAddressResolver()
 
 CAddressResolver::~CAddressResolver()
 {
+	f_Stop();
+}
+
+// Stop and join the worker before owner teardown that its requests may still access.
+void CAddressResolver::f_Stop()
+{
 	if (mp_pThread)
 	{
 		mp_pThread->f_Stop(true);
