@@ -6,23 +6,6 @@
 #include "Malterlib_Core_IoSubSystem.h"
 #include <Mib/Time/Stopwatch>
 
-#include <stdlib.h>
-
-namespace
-{
-	// The atexit view of the subsystem for the statistics reports: Windows release exits skip
-	// the subsystem teardown (the ExitProcess hook only runs the full destroy in debug), so the
-	// reports print from an atexit handler there; f_DumpStats' once flag keeps the destructor
-	// and the handler from both reporting
-	NMib::NSys::CIoSubSystem *g_pIoStatsSubSystem = nullptr;
-
-	void fg_DumpIoStatsAtExit()
-	{
-		if (g_pIoStatsSubSystem)
-			g_pIoStatsSubSystem->f_DumpStats();
-	}
-}
-
 namespace NMib::NSys
 {
 	CIoSubSystem::CIoSubSystem()
@@ -67,8 +50,11 @@ namespace NMib::NSys
 	CIoSubSystem::~CIoSubSystem()
 	{
 		f_DumpStats();
+	}
 
-		g_pIoStatsSubSystem = nullptr;
+	void CIoSubSystem::f_ExitModule()
+	{
+		f_DumpStats();
 	}
 
 	void CIoSubSystem::f_RegisterStatsDump(FIoStatsDump _fDump)
@@ -78,12 +64,6 @@ namespace NMib::NSys
 			return;
 
 		mp_StatsDumps.f_Insert(_fDump);
-
-		if (!g_pIoStatsSubSystem)
-		{
-			g_pIoStatsSubSystem = this;
-			atexit(&fg_DumpIoStatsAtExit);
-		}
 	}
 
 	void CIoSubSystem::f_DumpStats()

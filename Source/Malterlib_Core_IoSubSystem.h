@@ -117,12 +117,15 @@ namespace NMib::NSys
 	// Without the io debugging overrides the accessors answer their compile time defaults as
 	// constants, so branches consulting them fold away and no member is even stored.
 	//
-	// The destructor prints the statistics reports the run registered (MalterlibIoStats=1),
-	// which replaces registering them with atexit
+	// The module exit call prints the statistics reports the run registered
+	// (MalterlibIoStats=1), so the reports come out in the subsystem machinery's own ordering
+	// rather than atexit's
 	struct CIoSubSystem : NMib::CSubSystem
 	{
 		CIoSubSystem();
 		~CIoSubSystem() override;
+
+		void f_ExitModule() override;
 
 		// MalterlibIoStats=1: collect and, at destruction, print io statistics
 		inline bool f_StatsEnabled() const;
@@ -165,9 +168,8 @@ namespace NMib::NSys
 		// safe; a report registered twice prints once
 		void f_RegisterStatsDump(FIoStatsDump _fDump);
 
-		// Prints the registered reports once. Runs from the destructor and from an atexit
-		// handler the first registration arms: Windows release exits skip the subsystem
-		// teardown, so only the handler reports there
+		// Prints the registered reports once. Runs from the module exit call and again from the
+		// destructor as a backstop; the once flag keeps the two from both reporting
 		void f_DumpStats();
 
 		// The send window asks pace their path queries by these; raw timer ticks, converted once

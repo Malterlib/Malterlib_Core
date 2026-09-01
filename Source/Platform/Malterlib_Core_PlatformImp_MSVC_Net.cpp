@@ -197,8 +197,12 @@ CWindowsSocketContext::~CWindowsSocketContext()
 	// reference, so only a module leaning on ours without one loses anything. Dropping the last
 	// reference is what makes mswsock retire its helper thread; left running, that thread is
 	// killed by ExitProcess and its corpse makes the terminated-thread check at process detach
-	// veto subsystem teardown for every networked process
-	if (mp_bWsaStarted)
+	// veto subsystem teardown for every networked process.
+	// Never under the loader lock though: in a DLL this destructor runs inside
+	// DLL_PROCESS_DETACH, where WSACleanup waits for that helper thread while the thread needs
+	// the lock we hold to exit, and unloads provider DLLs the loader is not reentrant for.
+	// There the reference is left for process exit to reclaim, as before
+	if (mp_bWsaStarted && !NMib::NPlatform::fg_ThisThreadOwnsDllLock())
 		WSACleanup();
 }
 
