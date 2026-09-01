@@ -198,11 +198,14 @@ CWindowsSocketContext::~CWindowsSocketContext()
 	// reference is what makes mswsock retire its helper thread; left running, that thread is
 	// killed by ExitProcess and its corpse makes the terminated-thread check at process detach
 	// veto subsystem teardown for every networked process.
-	// Never under the loader lock though: in a DLL this destructor runs inside
-	// DLL_PROCESS_DETACH, and the WSACleanup documentation forbids calling it from DllMain —
-	// the final cleanup unloads the provider DLLs, which the loader is not reentrant for. Nor
-	// would it help there: the helper thread cannot finish exiting while we hold the lock its
-	// detach notification needs. The reference is left for process exit to reclaim, as before
+	// This destructor is designed to run outside the loader lock: f_DestroyThreadSpecific
+	// destructs the context from the ExitProcess hook for a program and from
+	// IdsFreeLibraryExternal for a Malterlib DLL, both before the loader is involved. The guard
+	// covers a host that skips IdsFreeLibraryExternal and lets the CRT cleanup reach this from
+	// DllMain, where the WSACleanup documentation forbids the call — the final cleanup unloads
+	// the provider DLLs, which the loader is not reentrant for — and where it could not help
+	// anyway: the helper thread cannot finish exiting while we hold the lock its detach
+	// notification needs. There the reference is left for process exit to reclaim
 	if (mp_bWsaStarted && !NMib::NPlatform::fg_ThisThreadOwnsDllLock())
 		WSACleanup();
 }
