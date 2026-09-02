@@ -57,6 +57,15 @@ function OutputError()
 	fi
 }
 
+# Every module carries this script for a standalone checkout. Run from a module directory
+# inside a workspace it would bootstrap a nested workspace right there instead of acting on
+# the one the module belongs to, so that is refused
+if [ -e ../../mib ] && [ "$(basename "$(dirname "$MalterlibScriptPath")")" == "Malterlib" ]; then
+	OutputError "mib must be run from the workspace root, not from the module directory $MalterlibScriptPath"
+	OutputError "Workspace root: $(cd ../.. && pwd)"
+	exit 1
+fi
+
 BootstrapInit=false
 function BootstrapInit()
 {
