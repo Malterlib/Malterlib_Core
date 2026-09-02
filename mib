@@ -57,6 +57,14 @@ function OutputError()
 	fi
 }
 
+# The Core module carries a copy of this script for the bootstrap that syncs it. Run from the
+# module directory it would bootstrap a nested workspace right there instead of acting on the
+# workspace the module belongs to, so the copy beside the module's own header refuses
+if [ -e Malterlib_Core.MHeader ]; then
+	OutputError "mib must be run from the workspace root, not from the Core module directory $MalterlibScriptPath"
+	exit 1
+fi
+
 BootstrapInit=false
 function BootstrapInit()
 {
