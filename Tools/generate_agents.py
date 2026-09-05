@@ -56,7 +56,7 @@ def expand_file(path: str, *, root_dir: str, stack: List[str], visited: Set[str]
 
     text = read_text(abspath)
     out_lines: List[str] = []
-    rel_self = os.path.relpath(abspath, root_dir)
+    rel_self = os.path.relpath(abspath, root_dir).replace(os.sep, "/")
     out_lines.append(f"<!-- Begin include: {rel_self} -->\n")
 
     # Recurse with this file on the stack
@@ -135,7 +135,7 @@ def convert(input_path: str, output_path: str, repo_root: str) -> None:
     lines = expand_file(start_rel, root_dir=repo_root, stack=[], visited=set())
 
     # Write output
-    with io.open(output_path, "w", encoding="utf-8") as f:
+    with io.open(output_path, "w", encoding="utf-8", newline="\n") as f:
         f.write("<!-- GENERATED FILE: Do not edit manually. Run ./Malterlib/Core/Tools/generate_agents.py to regenerate. -->\n\n")
         f.writelines(lines)
 
