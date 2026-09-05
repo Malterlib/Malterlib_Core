@@ -220,15 +220,9 @@ unset MalterlibRepoRoot
 
 "$ProjectDir/mib" update-repos
 
-AgentsGenerator="$ProjectDir/Malterlib/Core/Tools/generate_agents.py"
-
 echo
-if [ -x "$AgentsGenerator" ]; then
-	InitOutputInfo "Generating AGENTS.md"
-	(cd "$ProjectDir" && "$AgentsGenerator")
-else
-	InitOutputError "Skipping AGENTS.md generation: $AgentsGenerator not found or not executable"
-fi
+InitOutputInfo "Generating AGENTS.md"
+(cd "$ProjectDir" && ./mib update-agents)
 
 echo
 InitOutputHeading "Successfully initialized Malterlib project"

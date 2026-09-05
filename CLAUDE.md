@@ -47,6 +47,9 @@ MalterlibBuildShowProgress=false ./mib test
 # Get repository status
 ./mib status
 
+# Regenerate AGENTS.md from CLAUDE.md and its Markdown includes
+./mib update-agents
+
 # Setup prerequisites (macOS only)
 ./mib setup
 
