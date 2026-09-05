@@ -57,6 +57,10 @@ Property
 		, Disallowed: ["LICENSE.Malterlib", "PROVENANCE.md"]
 		, CommentStyles: [
 			{
+				Path: [".editorconfig", "*/.editorconfig"]
+				, LinePrefix: "# "
+			}
+			, {
 				Path: ["Include/*"]
 				, LinePrefix: "// "
 			}

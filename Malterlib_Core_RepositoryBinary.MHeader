@@ -18,10 +18,22 @@ Property
 	MalterlibBootstrapVersion: int = 5
 
 	MalterlibRootPostCheckoutHooks: [string] = []
+	MalterlibRootPreCommitHooks: [string] = []
+	MalterlibBinaryPreCommitHooks: [string] = []
 
 	MalterlibRootPostCheckoutHooks ["Scripts/GitHooks/post-checkout.sh"->MakeAbsolute()]
 	{
 		!!MalterlibRootPostCheckoutHooks undefined
+	}
+
+	MalterlibRootPreCommitHooks ["Scripts/GitHooks/pre-commit-validate.sh"->MakeAbsolute()]
+	{
+		!!MalterlibRootPreCommitHooks undefined
+	}
+
+	MalterlibBinaryPreCommitHooks ["Scripts/GitHooks/pre-commit-lfs-check.sh"->MakeAbsolute()]
+	{
+		!!MalterlibBinaryPreCommitHooks undefined
 	}
 }
 
@@ -61,6 +73,10 @@ Property
 		Location Builtin.BasePathAbsolute
 		URL MalterlibGitOriginRemote
 		ExcludeFromSeen true
+		Hooks #<"pre-commit"> MalterlibRootPreCommitHooks
+		{
+			!!MalterlibInstallGitHookHelpers true
+		}
 		Hooks #<"post-checkout"> MalterlibRootPostCheckoutHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
@@ -106,7 +122,7 @@ Property
 			}
 		}
 		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
-		Hooks #<"pre-commit"> =+ "Scripts/GitHooks/pre-commit-lfs-check.sh"->MakeAbsolute()
+		Hooks #<"pre-commit"> MalterlibBinaryPreCommitHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
 		}
@@ -231,7 +247,7 @@ Property
 			}
 		}
 		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
-		Hooks #<"pre-commit"> =+ "Scripts/GitHooks/pre-commit-lfs-check.sh"->MakeAbsolute()
+		Hooks #<"pre-commit"> MalterlibBinaryPreCommitHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
 		}
@@ -377,7 +393,7 @@ Property
 			}
 		}
 		LfsReleaseStore MalterlibBinaryRepositoriesUseReleaseLFSStore
-		Hooks #<"pre-commit"> =+ "Scripts/GitHooks/pre-commit-lfs-check.sh"->MakeAbsolute()
+		Hooks #<"pre-commit"> MalterlibBinaryPreCommitHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
 		}

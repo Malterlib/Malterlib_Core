@@ -16,6 +16,10 @@ Property
 	Repository
 	{
 		Type "Malterlib"
+		Hooks #<"pre-commit"> MalterlibSourcePreCommitHooks
+		{
+			!!MalterlibInstallGitHookHelpers true
+		}
 		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
 		{
 			!MalterlibRemotePrefixes undefined

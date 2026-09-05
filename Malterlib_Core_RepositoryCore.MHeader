@@ -29,6 +29,13 @@ Property
 {
 	MalterlibUseGitRepo: bool = true
 
+	MalterlibSourcePreCommitHooks: [string] = []
+
+	MalterlibSourcePreCommitHooks ["Scripts/GitHooks/pre-commit-validate.sh"->MakeAbsolute()]
+	{
+		!!MalterlibSourcePreCommitHooks undefined
+	}
+
 	MalterlibRemotePrefixes: [type(CRemotePrefix)]? // User(Repository)= += [{Name: "remoteexample", UrlPrefix: "https://gitlab.example.com/Malterlib"}]: Specify extra Malterlib remotes
 
 	MalterlibUpstreamAccess: bool = false // User(Repository)=true: Set to true if you have access to https://github.com/Malterlib
@@ -48,6 +55,10 @@ Property
 	Repository
 	{
 		Type "Malterlib"
+		Hooks #<"pre-commit"> MalterlibSourcePreCommitHooks
+		{
+			!!MalterlibInstallGitHookHelpers true
+		}
 		ConfigFile `@("../.."->MakeAbsolute())/@(Repository.Type).MRepo`
 		StateFile `@("../.."->MakeAbsolute())/@(Repository.Type).MRepoState`
 		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
