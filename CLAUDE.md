@@ -126,6 +126,9 @@ Located in `External/` directory:
 3. Generate and build with `MalterlibBuildShowProgress=false ./mib build [workspace]`
 
 ### Running Tests
+
+Always read `Malterlib/Test/CLAUDE.md` before writing or modifying tests in any module.
+
 1. Build and run tests: `./mib test`
 2. To run specific tests: `/opt/Deploy/Tests/RunAllTests --paths '["Module/Test/Name"]'`
 3. Build and run specific tests: `./mib test --paths '["Module/Test/Name"]'`
