@@ -879,6 +879,7 @@ Since Core is the foundation of Malterlib, here are references to all module-spe
 - **Cloud**: `../Cloud/CLAUDE.md` - Cloud services integration
 - **Cryptography**: `../Cryptography/CLAUDE.md` - Cryptographic operations
 - **Database**: `../Database/CLAUDE.md` - Database interfaces and abstractions
+- **Develop**: `../Develop/CLAUDE.md` - Reusable editor, IDE, and developer-tool support, including EditorConfig
 - **File**: `../File/CLAUDE.md` - File system operations
 - **Function**: `../Function/CLAUDE.md` - Function utilities and delegates
 - **Intrusive**: `../Intrusive/CLAUDE.md` - Intrusive data structures
