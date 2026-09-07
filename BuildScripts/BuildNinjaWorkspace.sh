@@ -39,8 +39,18 @@ echo ninja -C "$NinjaBuildDir" $NinjaCommandArgs "Build All"
 StartTimeMs=$(date +%s%N)
 StartTimeMs=${StartTimeMs%??????}
 
+# One ninja per build directory at a time; see BuildLock.sh
+source "$DIR/BuildLock.sh"
+AcquireBuildLock "$NinjaBuildDir" || exit 1
+
 set +e
-ninja -C "$NinjaBuildDir" $NinjaCommandArgs "Build All"
+# Ninja runs in the foreground, so that an interruption reaches it as the terminal delivers
+# one, as a subshell that records its own pid in the lock and then becomes ninja: a wrapper
+# killed on its own leaves that ninja running, and the lock stays with it while it does
+(
+	BuildLockRecordSelfAsChild || exit 1
+	exec ninja -C "$NinjaBuildDir" $NinjaCommandArgs "Build All"
+)
 NinjaExitCode=$?
 set -e
 

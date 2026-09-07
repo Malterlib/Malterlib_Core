@@ -2,7 +2,7 @@
 # Copyright © Unbroken AB
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Usage: ./mib build-target Workspace Target Platform Architecture Configuration
+# Usage: ./mib build-target Workspace Target[,Target...] Platform Architecture Configuration
 
 set -e
 

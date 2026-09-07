@@ -2,7 +2,7 @@
 # Copyright © Unbroken AB
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Usage: BuildNinjaTarget.sh Workspace Target Platform Architecture Configuration
+# Usage: BuildNinjaTarget.sh Workspace Target[,Target...] Platform Architecture Configuration
 
 set -eo pipefail
 
@@ -13,7 +13,7 @@ source "$DIR/DetectSystem.sh"
 source ./BuildSystem/SharedBuildSettings.sh
 
 Workspace="${1:-Tests}"
-Target="${2:-Build All}"
+TargetList="${2:-Build All}"
 
 source "$DIR/ResolveConfig.sh"
 
@@ -21,6 +21,10 @@ Platform="${3:-$MalterlibDefaultPlatform}"
 Architecture="${4:-$MalterlibDefaultArchitecture}"
 Config="${5:-$MalterlibDefaultConfiguration}"
 BuildSystemDir="${6:-${MalterlibGeneratedBuildSystemDir:-BuildSystem/Default}}"
+
+# Several targets come as one comma separated argument, so the platform, architecture and
+# configuration keep their places after it
+IFS=',' read -r -a Targets <<< "$TargetList"
 
 NinjaBuildDir="${BuildSystemDir}/${Workspace}/${Platform} ${Architecture} ${Config}"
 
@@ -34,13 +38,23 @@ if [[ "$NumCPUs" != "" ]]; then
 	NinjaCommandArgs="$NinjaCommandArgs -j $NumCPUs"
 fi
 
-echo ninja -C "$NinjaBuildDir" $NinjaCommandArgs "$Target"
+echo ninja -C "$NinjaBuildDir" $NinjaCommandArgs "${Targets[@]}"
 
 StartTimeMs=$(date +%s%N)
 StartTimeMs=${StartTimeMs%??????}
 
+# One ninja per build directory at a time; see BuildLock.sh
+source "$DIR/BuildLock.sh"
+AcquireBuildLock "$NinjaBuildDir" || exit 1
+
 set +e
-ninja -C "$NinjaBuildDir" $NinjaCommandArgs "$Target"
+# Ninja runs in the foreground, so that an interruption reaches it as the terminal delivers
+# one, as a subshell that records its own pid in the lock and then becomes ninja: a wrapper
+# killed on its own leaves that ninja running, and the lock stays with it while it does
+(
+	BuildLockRecordSelfAsChild || exit 1
+	exec ninja -C "$NinjaBuildDir" $NinjaCommandArgs "${Targets[@]}"
+)
 NinjaExitCode=$?
 set -e
 

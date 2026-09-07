@@ -2,7 +2,7 @@
 # Copyright © Unbroken AB
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Usage: BuildXcodeTarget.sh Workspace Target Platform Architecture Configuration
+# Usage: BuildXcodeTarget.sh Workspace Target[,Target...] Platform Architecture Configuration
 
 set -eo pipefail
 
@@ -15,7 +15,7 @@ source ./BuildSystem/SharedBuildSettings.sh
 export "PATH=/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:$PATH"
 
 Workspace="${1:-Tests}"
-Target="${2:-Build All}"
+TargetList="${2:-Build All}"
 
 source "$DIR/ResolveConfig.sh"
 
@@ -24,8 +24,14 @@ Architecture="${4:-$MalterlibDefaultArchitecture}"
 Config="${5:-$MalterlibDefaultConfiguration}"
 BuildSystemDir="${6:-${MalterlibGeneratedBuildSystemDir:-BuildSystem/Default}}"
 
-echo xcodebuild -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
-xcodebuild -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config" 2>&1 | MTool XcodeBuildFilter
+# Several targets come as one comma separated argument, so the platform, architecture and
+# configuration keep their places after it
+IFS=',' read -r -a Targets <<< "$TargetList"
+
+for Target in "${Targets[@]}"; do
+	echo xcodebuild -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config"
+	xcodebuild -workspace "${BuildSystemDir}/${Workspace}.xcworkspace" -scheme "$Target $Platform $Architecture $Config" 2>&1 | MTool XcodeBuildFilter
+done
 
 exit 0
 
