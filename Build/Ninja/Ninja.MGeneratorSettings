@@ -139,10 +139,13 @@ GeneratorSetting
 		!BuildSystemIgnoredEnvironmentVariables->ContainsListElement(_Key) true
 	}
 
+	// Ninja keeps its build log and dependency log in the build directory, so each configuration
+	// gets its own: sharing one across configurations makes an interrupted build in one of them
+	// truncate the logs for all, and the recovery then rebuilds every one of them from scratch
 	Workspace {
 		DefaultTarget: "Build All"
 		, PoolDepths: Workspace.PoolDepths
-		, BuildDir: Workspace.IntermediateDirectory
+		, BuildDir: Workspace.IntermediateDirectory / `Ninja/@(Platform)/@(Architecture)/@(FullConfiguration)`
 		, OtherRules: []
 		, Environment: {
 			Override: true
