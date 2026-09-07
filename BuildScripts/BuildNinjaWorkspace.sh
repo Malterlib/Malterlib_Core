@@ -39,8 +39,15 @@ echo ninja -C "$NinjaBuildDir" $NinjaCommandArgs "Build All"
 StartTimeMs=$(date +%s%N)
 StartTimeMs=${StartTimeMs%??????}
 
+source "$DIR/BuildLock.sh"
+AcquireBuildLock "$NinjaBuildDir" || exit 1
+
 set +e
-ninja -C "$NinjaBuildDir" $NinjaCommandArgs "Build All"
+# Record the foreground child before exec; a killed wrapper must leave the lock with its surviving Ninja.
+(
+	BuildLockRecordSelfAsChild || exit 1
+	exec ninja -C "$NinjaBuildDir" $NinjaCommandArgs "Build All"
+)
 NinjaExitCode=$?
 set -e
 

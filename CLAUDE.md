@@ -34,9 +34,9 @@ Without this, piping output through `tail`, `head`, etc. will hide non-zero exit
 MalterlibBuildShowProgress=false ./mib build WorkspaceName [Platform] [Architecture] [Configuration]
 # Example: ./mib build Tests
 
-# Generate and build a specific target within a workspace
-MalterlibBuildShowProgress=false ./mib build-target WorkspaceName TargetName [Platform] [Architecture] [Configuration]
-# Example: ./mib build Tests Com_Test_Malterlib_Container
+# Generate and build one or more targets within a workspace, in one build (several targets are comma separated)
+MalterlibBuildShowProgress=false ./mib build-target WorkspaceName TargetName[,TargetName...] [Platform] [Architecture] [Configuration]
+# Example: ./mib build-target Tests Com_Test_Malterlib_Container,Com_Test_Malterlib_String
 
 # Generate, build and run tests
 MalterlibBuildShowProgress=false ./mib test
@@ -76,6 +76,8 @@ MalterlibBuildShowProgress=false ./mib test
 ```
 
 Remember to use MalterlibBuildShowProgress=false when building so you don't get overwhelmed with uncessary output.
+
+Never invoke `ninja` directly, and never run two builds of the same configuration at the same time. Only one build may run in a configuration's build directory at once: `./mib build` and `./mib build-target` hold a lock on it for the whole build and refuse to start while another build holds it, because two ninja processes in one build directory corrupt its build and dependency logs and the recovery then rebuilds everything. To build several targets, pass them comma separated to one `./mib build-target` command instead of starting parallel builds.
 
 To change the platform to target edit BuildSystem/Default/UserSettings.MSettings and change (and uncomment if needed) SingleArchitecture, SingleConfiguration, SinglePlatform
 
