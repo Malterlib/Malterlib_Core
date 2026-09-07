@@ -2,7 +2,6 @@
 # Copyright © Unbroken AB
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Usage: BuildNinjaTarget.sh Workspace Target Platform Architecture Configuration
 
 set -eo pipefail
 
@@ -13,7 +12,7 @@ source "$DIR/DetectSystem.sh"
 source ./BuildSystem/SharedBuildSettings.sh
 
 Workspace="${1:-Tests}"
-Target="${2:-Build All}"
+TargetList="${2:-Build All}"
 
 source "$DIR/ResolveConfig.sh"
 
@@ -21,6 +20,8 @@ Platform="${3:-$MalterlibDefaultPlatform}"
 Architecture="${4:-$MalterlibDefaultArchitecture}"
 Config="${5:-$MalterlibDefaultConfiguration}"
 BuildSystemDir="${6:-${MalterlibGeneratedBuildSystemDir:-BuildSystem/Default}}"
+
+IFS=',' read -r -a Targets <<< "$TargetList"
 
 NinjaBuildDir="${BuildSystemDir}/${Workspace}/${Platform} ${Architecture} ${Config}"
 
@@ -34,13 +35,20 @@ if [[ "$NumCPUs" != "" ]]; then
 	NinjaCommandArgs="$NinjaCommandArgs -j $NumCPUs"
 fi
 
-echo ninja -C "$NinjaBuildDir" $NinjaCommandArgs "$Target"
+echo ninja -C "$NinjaBuildDir" $NinjaCommandArgs "${Targets[@]}"
 
 StartTimeMs=$(date +%s%N)
 StartTimeMs=${StartTimeMs%??????}
 
+source "$DIR/BuildLock.sh"
+AcquireBuildLock "$NinjaBuildDir" || exit 1
+
 set +e
-ninja -C "$NinjaBuildDir" $NinjaCommandArgs "$Target"
+# Record the foreground child before exec; a killed wrapper must leave the lock with its surviving Ninja.
+(
+	BuildLockRecordSelfAsChild || exit 1
+	exec ninja -C "$NinjaBuildDir" $NinjaCommandArgs "${Targets[@]}"
+)
 NinjaExitCode=$?
 set -e
 
