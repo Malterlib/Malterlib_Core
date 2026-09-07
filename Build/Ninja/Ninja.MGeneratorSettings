@@ -139,10 +139,11 @@ GeneratorSetting
 		!BuildSystemIgnoredEnvironmentVariables->ContainsListElement(_Key) true
 	}
 
+	// Keep Ninja logs per configuration; sharing them can make interrupted-build recovery discard other configurations' state.
 	Workspace {
 		DefaultTarget: "Build All"
 		, PoolDepths: Workspace.PoolDepths
-		, BuildDir: Workspace.IntermediateDirectory
+		, BuildDir: Workspace.IntermediateDirectory / `Ninja/@(Platform)/@(Architecture)/@(FullConfiguration)`
 		, OtherRules: []
 		, Environment: {
 			Override: true
