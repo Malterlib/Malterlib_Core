@@ -392,6 +392,11 @@ public:
 
 	NMib::NStorage::TCAggregate<CPOSIXSocketContext, 64> m_SocketContext;
 
+	// Constructed by the first consumer that needs somewhere to watch a descriptor, and destroyed
+	// last of everything that can hold a registration on it. The priority is below the socket
+	// context's so the automatic teardown, which destroys highest first, still runs it afterwards
+	NMib::NStorage::TCAggregate<CSharedIoLoop, 63> m_SharedIoLoop;
+
 	uint64 m_TimerFrequency;
 
 	bool m_bForkedChild = false;
@@ -500,11 +505,13 @@ public:
 	CSystemMacOS()
 		: CSystem(g_bIsSharedLibrary)
 		, m_SocketContext{DAggregateInit}
+		, m_SharedIoLoop{DAggregateInit}
 		, m_FileChangeNoticationContext{DAggregateInit}
 		, m_TimerFrequency{}
 		, m_ForkThreadLocal(TCLimitsInt<pthread_key_t>::mc_Max)
 	{
 		fg_MemClear(m_SocketContext);
+		fg_MemClear(m_SharedIoLoop);
 
 		fp_InitComplete();
 	}
@@ -534,6 +541,12 @@ public:
 			m_FileChangeNoticationContext.f_Destruct();
 
 		CSystem::f_DestructThreadSpecific();
+
+		// After the subsystems: a subsystem's own teardown can still be deregistering from this
+		// loop, and the deregistration is asynchronous, so the loop has to outlive them and drain
+		// their removals on its way out
+		if (m_SharedIoLoop.f_IsConstructed())
+			m_SharedIoLoop.f_Destruct();
 	}
 
 	void f_Destruct()
@@ -3315,6 +3328,11 @@ bool NSys::NFile::fg_ChangeNotification_Supported()
 // *************************************************************************************************************************
 
 #include "Malterlib_Core_PlatformImp_MacOS_Net.imp.h"
+
+NMib::NSys::ICIoLoop *NMib::NSys::fg_GetSharedIoLoop()
+{
+	return fg_GetLocalSys()->m_SharedIoLoop->f_GetLoop();
+}
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {

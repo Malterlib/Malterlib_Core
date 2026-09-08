@@ -140,43 +140,13 @@ protected:
 	bool mp_bInitFailed;
 	bool mp_bWsaStarted = false;
 
-	// The process wide shared loop for sockets nobody claimed, hosted on a dedicated thread.
-	// Created by the context before the thread starts and destroyed after it stops
-	struct CPollerThread : public NMib::NThread::CThread
-	{
-		NStr::CStr f_GetThreadName() override
-		{
-			return CStr("Socket Poller");
-		}
-
-		aint f_Main() override
-		{
-			mp_pLoop->f_SetOwnerThreadToCurrent();
-
-			while (mp_bStop.f_Load() == 0 && f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
-				mp_pLoop->f_WaitAndDispatch();
-
-			// Deregistrations still in progress complete before the loop loses its thread, as the
-			// loop's contract asks of its owner
-			mp_pLoop->f_DrainForShutdown();
-
-			return 0;
-		}
-
-		umint f_Stop(bool _bBlock) override
-		{
-			mp_bStop.f_Store(1);
-			mp_pLoop->f_Wake();
-			return NMib::NThread::CThread::f_Stop(_bBlock);
-		}
-
-		NMib::NSys::ICIoLoop *mp_pLoop = nullptr;
-		NMib::NAtomic::TCAtomic<smint> mp_bStop{0};
-	};
-
 	// The io subsystem the socket policies read their knobs from, cached at construction
 	CIoSubSystem_Windows *mp_pIo = nullptr;
-	CPollerThread mp_PollerThread;
+
+	// The process wide poller, cached at construction: sockets whose owner bound no loop of their
+	// own are registered with it. Null when the platform offers no loop, which is what makes
+	// mp_bInitFailed report that this process has no working sockets
+	NMib::NSys::ICIoLoop *mp_pSharedLoop = nullptr;
 
 	CAddressResolver mp_Resolver;
 

@@ -49,6 +49,11 @@ public:
 
 	NMib::NStorage::TCAggregate<CPOSIXSocketContext> m_SocketContext = { DAggregateInit };
 
+	// Constructed by the first consumer that needs somewhere to watch a descriptor, and destroyed
+	// last of everything that can hold a registration on it. The priority is below the socket
+	// context's so the automatic teardown, which destroys highest first, still runs it afterwards
+	NMib::NStorage::TCAggregate<CSharedIoLoop, 127> m_SharedIoLoop = { DAggregateInit };
+
 	NMib::NStorage::TCUniquePointer<NMib::NDBus::CSystem> m_pDBus; // May be nullptr
 
 	NMib::NAtomic::TCAtomic<umint> m_PasswordManagerCreated;

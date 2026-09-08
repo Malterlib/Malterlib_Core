@@ -382,4 +382,10 @@ namespace NMib::NSys
 	// call that creates the object and cleared again right after
 	void fg_SetThreadIoLoop(ICIoLoop *_pLoop);
 	ICIoLoop *fg_GetThreadIoLoop();
+
+	// The process wide loop for descriptors whose owner did not bind one of its own, hosted on a
+	// thread created the first time somebody asks for it. Every consumer shares it, so a process
+	// pays for one such thread however many subsystems need somewhere to watch a descriptor.
+	// Null where the platform offers no loop at all, which every caller must handle
+	ICIoLoop *fg_GetSharedIoLoop();
 }

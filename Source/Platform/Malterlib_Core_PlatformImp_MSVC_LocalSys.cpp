@@ -37,6 +37,11 @@ public:
 
 	NStorage::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
 
+	// Constructed by the first consumer that needs somewhere to watch a handle, and destroyed last
+	// of everything that can hold a registration on it. The priority is below the socket context's
+	// so the automatic teardown, which destroys highest first, still runs it afterwards
+	NStorage::TCAggregate<CSharedIoLoop, 63> m_SharedIoLoop;
+
 	class CFileChangeNoticationContext
 	{
 	public:
@@ -895,10 +900,12 @@ public:
 	CSystemWindowsMSVC()
 		: CSystem(g_bIsDll)
 		, m_SocketContext(EAggregateInitialization_Force)
+		, m_SharedIoLoop(EAggregateInitialization_Force)
 		, m_FileChangeNoticationContext(EAggregateInitialization_Force)
 	{
 
 		fg_MemClear(m_SocketContext);
+		fg_MemClear(m_SharedIoLoop);
 		fg_MemClear(m_FileChangeNoticationContext);
 
 		m_pSetAssertInfo = nullptr;
@@ -1018,6 +1025,14 @@ public:
 		NMib::NPlatform::fg_StopEndSessionReporting();
 
 		CSystem::f_DestructThreadSpecific();
+
+		// After the subsystems: a subsystem's own teardown can still be deregistering from this
+		// loop, and the deregistration is asynchronous, so the loop has to outlive them and drain
+		// their removals on its way out. That puts it after the socket context has balanced
+		// WSAStartup too, which the drain can live with: every socket was closed and acknowledged
+		// while the poller was running, so there is nothing left for it to settle
+		if (m_SharedIoLoop.f_IsConstructed())
+			m_SharedIoLoop.f_Destruct();
 	}
 
 	void f_Destruct()

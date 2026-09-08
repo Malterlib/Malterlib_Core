@@ -252,40 +252,6 @@ private:
 	void fp_DestroySocket(CPOSIXSocket *_pSocket);
 	void fp_UnlinkUnixListenFile(CPOSIXSocket *_pSocket);
 
-	struct CPollerThread : public NMib::NThread::CThread
-	{
-		NStr::CStr f_GetThreadName() override
-		{
-			return CStr("Socket Poller");
-		}
-
-		aint f_Main() override
-		{
-			mp_pLoop->f_SetOwnerThreadToCurrent();
-
-			while (mp_bStop.f_Load() == 0 && f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
-				mp_pLoop->f_WaitAndDispatch();
-
-			// Deregistrations still in progress complete before the loop loses its thread, as the
-			// loop's contract asks of its owner
-			mp_pLoop->f_DrainForShutdown();
-
-			return 0;
-		}
-
-		umint f_Stop(bool _bBlock) override
-		{
-			mp_bStop.f_Store(1);
-			mp_pLoop->f_Wake();
-			return NMib::NThread::CThread::f_Stop(_bBlock);
-		}
-
-		// The process wide shared loop for sockets nobody claimed, hosted on this dedicated
-		// thread. Created by the context before the thread starts and destroyed after it stops
-		NMib::NSys::ICIoLoop *mp_pLoop = nullptr;
-		NMib::NAtomic::TCAtomic<smint> mp_bStop{0};
-	};
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
 
@@ -358,7 +324,10 @@ private:
 
 	// The io subsystem the socket policies read their knobs from, cached at construction
 	NMib::NSys::CIoSubSystem *mp_pIo = nullptr;
-	CPollerThread mp_PollerThread;
+
+	// The process wide poller, cached at construction: sockets whose owner bound no loop of their
+	// own are registered with it
+	NMib::NSys::ICIoLoop *mp_pSharedLoop = nullptr;
 
 	// TODO: This should be able to be replaced by an imp specific version.
 	CAddressResolver mp_Resolver;

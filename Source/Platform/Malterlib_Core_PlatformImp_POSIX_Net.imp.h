@@ -150,18 +150,16 @@ static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWo
 CPOSIXSocketContext::CPOSIXSocketContext()
 {
 	mp_pIo = &NSys::fg_IoSubSystem();
-	// The shared loop exists before the thread that hosts it, so the thread body never checks
-	mp_PollerThread.mp_pLoop = fg_CreatePlatformIoLoop();
-	mp_PollerThread.f_Start(EExecutionPriority_Highest);
+	// Brings up the process wide poller if this is the first consumer of it, and caches it: every
+	// socket nobody bound to a loop of its own is registered there
+	mp_pSharedLoop = NSys::fg_GetSharedIoLoop();
 	signal(SIGPIPE, SIG_IGN);
 }
 
 CPOSIXSocketContext::~CPOSIXSocketContext()
 {
-	// The poller's exit drain acknowledges the last removals; a socket still open past it is an
-	// error in its owner's teardown order, which the loop's destruction checks
-	mp_PollerThread.f_Stop(true);
-	NSys::fg_DestroyIoLoop(mp_PollerThread.mp_pLoop);
+	// The shared poller outlives this context and drains on its own destruction; a socket still
+	// open past that is an error in its owner's teardown order, which the loop's destruction checks
 }
 
 CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
@@ -1044,7 +1042,7 @@ void CPOSIXSocketContext::f_StartSocket(CPOSIXSocket *_pSocket)
 		DMibErrorNet("Failed to register POSIX socket.");
 
 	NSys::ICIoLoop *pThreadLoop = NSys::fg_GetThreadIoLoop();
-	_pSocket->m_pOwningLoop = pThreadLoop ? pThreadLoop : mp_PollerThread.mp_pLoop;
+	_pSocket->m_pOwningLoop = pThreadLoop ? pThreadLoop : mp_pSharedLoop;
 
 	// The registration-applied notification is what today's read kickstart was: connections whose
 	// readable state predates the registration get it reported once the add lands
@@ -1730,7 +1728,7 @@ bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
 	// deregistering into each other's loops, and quietly deferring the close would leave the
 	// caller believing the descriptor and a listener's socket file are gone when they are not
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
-	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_FD != -1)
+	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_pSharedLoop && _pSocket->m_FD != -1)
 		DMibErrorNet("Synchronous close on a pool-hosted loop; use the asynchronous form");
 
 	// The removal is waited for, so the descriptor is gone on return; a socket that never registered
@@ -2057,7 +2055,7 @@ void *CPOSIXSocketContext::f_GiveUpForInherit(CPOSIXSocket *_pSocket)
 		// shared poller runs on a thread of its own that is always responsive. A socket on a
 		// pool-hosted loop must use the asynchronous form — a blocking wait here could deadlock
 		// two pool threads deregistering into each other's loops
-		if (pOwningLoop != mp_PollerThread.mp_pLoop)
+		if (pOwningLoop != mp_pSharedLoop)
 			DMibErrorNet("Synchronous inherit handoff on a pool-hosted loop; use the asynchronous form");
 
 		pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);

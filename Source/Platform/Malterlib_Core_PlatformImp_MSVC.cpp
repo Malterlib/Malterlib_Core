@@ -6355,6 +6355,11 @@ CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 // Net Implementation
 // *************************************************************************************************************************
 
+NMib::NSys::ICIoLoop *NMib::NSys::fg_GetSharedIoLoop()
+{
+	return fg_GetLocalSys()->m_SharedIoLoop->f_GetLoop();
+}
+
 NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_CreateAddress(_Type, _pData, _nDataBytes);

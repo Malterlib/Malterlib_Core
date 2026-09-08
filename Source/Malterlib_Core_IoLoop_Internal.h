@@ -180,3 +180,30 @@ protected:
 // the shared poller thread hosts one directly, unmarked. Returns nullptr where the platform has
 // no loop to offer
 NMib::NSys::ICIoLoop *fg_CreatePlatformIoLoop();
+
+// The process wide loop and the thread that drives it, for descriptors whose owner did not bind a
+// loop of its own. Sockets nobody claimed use it, and so does anything else that only needs
+// somewhere to watch a descriptor, which is what keeps a process to one such thread instead of one
+// per subsystem. Constructed on demand by NSys::fg_GetSharedIoLoop and owned by the system object,
+// which destroys it after every consumer that can still hold a registration
+struct CSharedIoLoop
+{
+	CSharedIoLoop();
+	~CSharedIoLoop();
+
+	NMib::NSys::ICIoLoop *f_GetLoop() const { return mp_Thread.mp_pLoop; }
+
+private:
+	struct CPollerThread : public NMib::NThread::CThread
+	{
+		NMib::NStr::CStr f_GetThreadName() override;
+		aint f_Main() override;
+		umint f_Stop(bool _bBlock) override;
+
+		// Created by CSharedIoLoop before the thread starts and destroyed after it stops, so the
+		// thread body never checks it
+		NMib::NSys::ICIoLoop *mp_pLoop = nullptr;
+	};
+
+	CPollerThread mp_Thread;
+};
