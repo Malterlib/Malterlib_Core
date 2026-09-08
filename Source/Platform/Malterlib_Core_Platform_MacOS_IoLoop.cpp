@@ -63,22 +63,32 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
 			continue;
 		}
 
-		uint16_t Flags = Change.m_bRemove ? (uint16_t)(EV_CLEAR | EV_DELETE) : (uint16_t)(EV_CLEAR | EV_ADD);
 		auto *pRegistration = Change.m_pRegistration;
+		auto Mask = pRegistration->m_EventMask;
+		if (pRegistration->m_Options.m_bLevelReadiness && !Change.m_bRemove)
+			Mask = EIoLoopEvent(pRegistration->m_RequestedEvents.f_Exchange(0, NAtomic::gc_MemoryOrder_AcquireRelease));
+
+		// ADD may already have consumed a request queued before registration was applied.
+		if (Change.m_bReadinessRequest && Mask == EIoLoopEvent::mc_None)
+			continue;
 
 		static_cast<CKQueueRegistration *>(pRegistration)->m_bAddFailed = false;
 
-		// Close interest is independent of readiness interest: the peer's half-close arrives as EV_EOF
-		// on the read filter and the local shutdown as EV_EOF on the write filter, so every registration
-		// installs both, and the readiness a filter reports outside the mask is dropped at dispatch
-		for (int16_t Filter : {int16_t(EVFILT_READ), int16_t(EVFILT_WRITE)})
+		// Install both filters so ordinary readiness also observes half-close outside the readiness mask.
+		for (auto Direction : {EIoLoopEvent::mc_Read, EIoLoopEvent::mc_Write})
 		{
 			struct kevent CurEvent;
-			fg_MemClear(&CurEvent, sizeof(struct kevent));
+			fg_MemClear(&CurEvent, sizeof(CurEvent));
 			CurEvent.ident = Change.m_Handle;
-			CurEvent.filter = Filter;
-			CurEvent.flags = Flags;
+			CurEvent.filter = Direction == EIoLoopEvent::mc_Read ? EVFILT_READ : EVFILT_WRITE;
 			CurEvent.udata = pRegistration;
+			if (Change.m_bRemove)
+				CurEvent.flags = EV_DELETE;
+			else if (pRegistration->m_Options.m_bLevelReadiness)
+				CurEvent.flags = EV_ADD | EV_DISPATCH | (fg_IsSet(Mask, Direction) ? EV_ENABLE : EV_DISABLE);
+			else
+				CurEvent.flags = EV_ADD | EV_CLEAR;
+
 			ApplyChanges.f_Insert(CurEvent);
 		}
 	}
@@ -201,8 +211,15 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
 		}
 
 		// A filter installed for its close events also reports readiness the registration never asked for
-		if (!fg_IsSet(pRegistration->m_EventMask, Events) && (Events == NSys::EIoLoopEvent::mc_Read || Events == NSys::EIoLoopEvent::mc_Write))
+		if
+		(
+			!pRegistration->m_Options.m_bLevelReadiness
+			&& !fg_IsSet(pRegistration->m_EventMask, Events)
+			&& (Events == NSys::EIoLoopEvent::mc_Read || Events == NSys::EIoLoopEvent::mc_Write)
+		)
+		{
 			continue;
+		}
 
 		++nReported;
 		pRegistration->m_fOnEvents(pRegistration->m_pToken, Events, Error);

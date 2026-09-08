@@ -416,6 +416,8 @@ public:
 
 	NMib::NStorage::TCAggregate<CPOSIXSocketContext, 64> m_SocketContext;
 
+	NMib::NStorage::TCAggregate<CSharedIoLoop, 63> m_SharedIoLoop; // Lower destruction priority than socket contexts, so registration owners tear down first.
+
 	uint64 m_TimerFrequency;
 
 	bool m_bForkedChild = false;
@@ -524,11 +526,13 @@ public:
 	CSystemMacOS()
 		: CSystem(g_bIsSharedLibrary)
 		, m_SocketContext{DAggregateInit}
+		, m_SharedIoLoop{DAggregateInit}
 		, m_FileChangeNoticationContext{DAggregateInit}
 		, m_TimerFrequency{}
 		, m_ForkThreadLocal(TCLimitsInt<pthread_key_t>::mc_Max)
 	{
 		fg_MemClear(m_SocketContext);
+		fg_MemClear(m_SharedIoLoop);
 
 		fp_InitComplete();
 	}
@@ -558,6 +562,10 @@ public:
 			m_FileChangeNoticationContext.f_Destruct();
 
 		CSystem::f_DestructThreadSpecific();
+
+		// Subsystem teardown may still deregister; keep the loop alive until those removals can drain.
+		if (m_SharedIoLoop.f_IsConstructed())
+			m_SharedIoLoop.f_Destruct();
 	}
 
 	void f_Destruct()
@@ -3522,6 +3530,12 @@ bool NSys::NFile::fg_ChangeNotification_Supported()
 // *************************************************************************************************************************
 
 #include "Malterlib_Core_PlatformImp_MacOS_Net.imp.h"
+
+// Constructs the shared poller on first use; returns null if the platform cannot provide an I/O loop.
+NMib::NSys::ICIoLoop *NMib::NSys::fg_GetSharedIoLoop()
+{
+	return fg_GetLocalSys()->m_SharedIoLoop->f_GetLoop();
+}
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {

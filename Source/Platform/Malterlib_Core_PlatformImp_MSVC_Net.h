@@ -105,39 +105,9 @@ protected:
 	bool mp_bInitFailed;
 	bool mp_bWsaStarted = false;
 
-	// Dedicated shared-loop thread; create the loop before starting and destroy it after stopping.
-	struct CPollerThread : public NMib::NThread::CThread
-	{
-		NStr::CStr f_GetThreadName() override
-		{
-			return CStr("Socket Poller");
-		}
-
-		aint f_Main() override
-		{
-			mp_pLoop->f_SetOwnerThreadToCurrent();
-
-			while (mp_bStop.f_Load() == 0 && f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
-				mp_pLoop->f_WaitAndDispatch();
-
-			mp_pLoop->f_DrainForShutdown();
-
-			return 0;
-		}
-
-		umint f_Stop(bool _bBlock) override
-		{
-			mp_bStop.f_Store(1);
-			mp_pLoop->f_Wake();
-			return NMib::NThread::CThread::f_Stop(_bBlock);
-		}
-
-		NMib::NSys::ICIoLoop *mp_pLoop = nullptr;
-		NMib::NAtomic::TCAtomic<smint> mp_bStop{0};
-	};
-
 	CIoSubSystem_Windows *mp_pIo = nullptr;
-	CPollerThread mp_PollerThread;
+
+	NMib::NSys::ICIoLoop *mp_pSharedLoop = nullptr; // Shared poller for unbound sockets; null when the platform cannot provide a loop.
 
 	CAddressResolver mp_Resolver;
 

@@ -219,35 +219,6 @@ private:
 	void fp_DestroySocket(CPOSIXSocket *_pSocket);
 	void fp_UnlinkUnixListenFile(CPOSIXSocket *_pSocket);
 
-	struct CPollerThread : public NMib::NThread::CThread
-	{
-		NStr::CStr f_GetThreadName() override
-		{
-			return CStr("Socket Poller");
-		}
-
-		aint f_Main() override
-		{
-			mp_pLoop->f_SetOwnerThreadToCurrent();
-
-			while (mp_bStop.f_Load() == 0 && f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
-				mp_pLoop->f_WaitAndDispatch();
-
-			mp_pLoop->f_DrainForShutdown();
-
-			return 0;
-		}
-
-		umint f_Stop(bool _bBlock) override
-		{
-			mp_bStop.f_Store(1);
-			mp_pLoop->f_Wake();
-			return NMib::NThread::CThread::f_Stop(_bBlock);
-		}
-
-		NMib::NSys::ICIoLoop *mp_pLoop = nullptr; // Create before starting the shared poller thread; destroy after it stops.
-		NMib::NAtomic::TCAtomic<smint> mp_bStop{0};
-	};
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
@@ -319,7 +290,8 @@ private:
 
 	CPOSIXImpSpecificSocketContext mp_ImpSpecific;
 	NMib::NSys::CIoSubSystem *mp_pIo = nullptr;
-	CPollerThread mp_PollerThread;
+
+	NMib::NSys::ICIoLoop *mp_pSharedLoop = nullptr; // Shared poller used when the socket owner has no loop binding.
 
 	// TODO: This should be able to be replaced by an imp specific version.
 	CAddressResolver mp_Resolver;

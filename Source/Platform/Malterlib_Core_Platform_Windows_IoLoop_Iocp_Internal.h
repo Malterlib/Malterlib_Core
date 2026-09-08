@@ -8,6 +8,8 @@
 // Completion keys can outlive re-registration; resolve registrations through the packet's operation instead.
 constexpr ULONG_PTR gc_IocpKey_Wake = 1;
 constexpr ULONG_PTR gc_IocpKey_Afd = 2;
+// Completion key for a synchronization-object wait packet.
+constexpr ULONG_PTR gc_IocpKey_Wait = 3;
 
 constexpr umint gc_IocpAfdGroupSize = 32; // Bound AFD's per-handle poll-list walk by distributing registrations across handles.
 

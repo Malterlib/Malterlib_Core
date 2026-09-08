@@ -37,6 +37,8 @@ public:
 
 	NStorage::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
 
+	NStorage::TCAggregate<CSharedIoLoop, 63> m_SharedIoLoop; // Lower destruction priority than socket contexts, so registration owners tear down first.
+
 	class CFileChangeNoticationContext
 	{
 	public:
@@ -895,10 +897,12 @@ public:
 	CSystemWindowsMSVC()
 		: CSystem(g_bIsDll)
 		, m_SocketContext(EAggregateInitialization_Force)
+		, m_SharedIoLoop(EAggregateInitialization_Force)
 		, m_FileChangeNoticationContext(EAggregateInitialization_Force)
 	{
 
 		fg_MemClear(m_SocketContext);
+		fg_MemClear(m_SharedIoLoop);
 		fg_MemClear(m_FileChangeNoticationContext);
 
 		m_pSetAssertInfo = nullptr;
@@ -1017,6 +1021,10 @@ public:
 			m_SocketContext.f_Destruct();
 
 		CSystem::f_DestructThreadSpecific();
+
+		// Keep the loop alive for subsystem deregistrations. Socket closes must already be acknowledged before Winsock cleanup.
+		if (m_SharedIoLoop.f_IsConstructed())
+			m_SharedIoLoop.f_Destruct();
 	}
 
 	void f_Destruct()

@@ -581,6 +581,10 @@ void CSystemLinux::f_DestroyThreadSpecific()
 		m_FileChangeNotificationContext.f_Destruct();
 
 	CSystem::f_DestructThreadSpecific();
+
+	// Subsystem teardown may still deregister; keep the loop alive until those removals can drain.
+	if (m_SharedIoLoop.f_IsConstructed())
+		m_SharedIoLoop.f_Destruct();
 }
 
 void CSystemLinux::f_Destruct()
@@ -2463,6 +2467,12 @@ bool NSys::NFile::fg_ChangeNotification_Supported()
 // *************************************************************************************************************************
 
 #include "Malterlib_Core_PlatformImp_Linux_Net.imp.h"
+
+// Constructs the shared poller on first use; returns null if the platform cannot provide an I/O loop.
+NMib::NSys::ICIoLoop *NMib::NSys::fg_GetSharedIoLoop()
+{
+	return fg_GetLocalSys()->m_SharedIoLoop->f_GetLoop();
+}
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {

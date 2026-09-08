@@ -26,6 +26,18 @@ namespace NMib::NSys
 		return fg_SystemThreadLocal().m_pThreadIoLoop;
 	}
 
+	// Called by the loop when it claims the current thread as its owner.
+	void fg_SetOwnedIoLoop(ICIoLoop *_pLoop)
+	{
+		fg_SystemThreadLocal().m_pOwnedIoLoop = _pLoop;
+	}
+
+	// Returns the loop driven by this thread, or null. This is independent of the binding used for new I/O registrations.
+	ICIoLoop *fg_GetOwnedIoLoop()
+	{
+		return fg_SystemThreadLocal().m_pOwnedIoLoop;
+	}
+
 	// Called on the owner before exit; drive pending deregistrations and deferred destruction to quiescence.
 	void ICThreadIoLoop::f_DrainForShutdown()
 	{

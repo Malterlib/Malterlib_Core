@@ -61,6 +61,8 @@ void CIoLoop_Base::fp_RunDeregAcknowledgement(CIoLoopDeferredAck &_Ack)
 void CIoLoop_Base::f_SetOwnerThreadToCurrent()
 {
 	mp_OwnerThreadUID.f_Store((umint)NSys::fg_Thread_GetCurrentUID(), NAtomic::gc_MemoryOrder_Release);
+
+	NSys::fg_SetOwnedIoLoop(this);
 }
 
 bool CIoLoop_Base::fp_IsOwnerThread() const
@@ -130,6 +132,24 @@ void CIoLoop_Base::fp_PushRemoval(NSys::CIoLoopRegistration *_pRegistration, CIo
 	Change.m_pDeregWait = _pDeregWait;
 	Change.m_fOnDeregistered = fg_Move(_fOnDeregistered);
 
+	mp_ChangeQueue.f_Push(fg_Move(Change));
+	fp_SignalWake();
+}
+
+// Rearm the full current interest after draining. epoll/kqueue require m_bLevelReadiness;
+// io_uring and IOCP always need rearming. Empty requests are ignored; pending requests coalesce.
+void CIoLoop_Base::f_RequestReadiness(NSys::CIoLoopRegistration *_pRegistration, NSys::EIoLoopEvent _EventMask)
+{
+	if (!_pRegistration->m_Options.m_bLevelReadiness || _EventMask == NSys::EIoLoopEvent::mc_None)
+		return;
+
+	if (_pRegistration->m_RequestedEvents.f_FetchOr(uint32(_EventMask), NAtomic::gc_MemoryOrder_AcquireRelease))
+		return;
+
+	CIoLoopChange Change;
+	Change.m_bReadinessRequest = true;
+	Change.m_Handle = _pRegistration->m_Handle;
+	Change.m_pRegistration = _pRegistration;
 	mp_ChangeQueue.f_Push(fg_Move(Change));
 	fp_SignalWake();
 }

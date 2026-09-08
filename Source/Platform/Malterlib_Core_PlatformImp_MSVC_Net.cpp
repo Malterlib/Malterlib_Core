@@ -168,24 +168,17 @@ CWindowsSocketContext::CWindowsSocketContext()
 			mp_bWsaStarted = true;
 	}
 
-	// Create the shared loop before its thread; failure must surface before sockets can use it.
-	mp_PollerThread.mp_pLoop = fg_CreatePlatformIoLoop();
-	if (mp_PollerThread.mp_pLoop)
-		mp_PollerThread.f_Start(EExecutionPriority_Highest);
-	else
+	// Register end-session reporting before the shared loop so shutdown preserves that dependency order.
+	NMib::NPlatform::fg_EnsureEndSessionReporting();
+
+	mp_pSharedLoop = NSys::fg_GetSharedIoLoop();
+	if (!mp_pSharedLoop)
 		mp_bInitFailed = true;
 }
 
 CWindowsSocketContext::~CWindowsSocketContext()
 {
-	if (mp_PollerThread.mp_pLoop)
-	{
-		// The poller's exit drain acknowledges the last removals; a socket still open past it
-		// is an error in its owner's teardown order, which the loop's destruction checks
-		mp_PollerThread.f_Stop(true);
-		NSys::fg_DestroyIoLoop(mp_PollerThread.mp_pLoop);
-		mp_PollerThread.mp_pLoop = nullptr;
-	}
+	// Socket deregistrations must finish before Winsock cleanup; the shared loop outlives this context.
 
 	// Stop the resolver before balancing WSAStartup so no GetAddrInfoW call outlives Winsock.
 	// The final WSACleanup retires the provider helper thread before process teardown. Never call under loader lock:
@@ -1072,7 +1065,7 @@ void CWindowsSocketContext::f_StartSocket(CWindowsSocket *_pSocket)
 		DMibErrorNet("Failed to register Windows socket.");
 
 	NSys::ICIoLoop *pThreadLoop = NSys::fg_GetThreadIoLoop();
-	_pSocket->m_pOwningLoop = pThreadLoop ? pThreadLoop : mp_PollerThread.mp_pLoop;
+	_pSocket->m_pOwningLoop = pThreadLoop ? pThreadLoop : mp_pSharedLoop;
 
 	NSys::CIoLoopRegisterOptions RegisterOptions;
 	RegisterOptions.m_bReadinessOnly = _pSocket->m_bInheritable;
@@ -1753,7 +1746,7 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 {
 	// Only shared-poller sockets may close synchronously. Cross-waits between pool-hosted loops can deadlock; use asynchronous close.
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
-	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_Socket != INVALID_SOCKET)
+	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_pSharedLoop && _pSocket->m_Socket != INVALID_SOCKET)
 		DMibErrorNet("Synchronous close on a pool-hosted loop; use the asynchronous form");
 
 	fp_RemoveUnixListenFile(_pSocket);
@@ -2064,7 +2057,7 @@ CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::
 
 	// Adopt before registration; reject an incompatible permanent binding rather than send completions to an unserviced port.
 	NSys::ICIoLoop *pThreadLoop = NSys::fg_GetThreadIoLoop();
-	NSys::ICIoLoop *pOwningLoop = pThreadLoop ? pThreadLoop : mp_PollerThread.mp_pLoop;
+	NSys::ICIoLoop *pOwningLoop = pThreadLoop ? pThreadLoop : mp_pSharedLoop;
 	int AdoptError = 0;
 	if (pOwningLoop && !pOwningLoop->f_AdoptHandle((NSys::CIoLoopHandle)Socket, AdoptError))
 	{
@@ -2149,7 +2142,7 @@ void *CWindowsSocketContext::f_GiveUpForInherit(CWindowsSocket *_pSocket)
 	if (pOwningLoop && _pSocket->m_pIoRegistration)
 	{
 		// Pool-hosted loops require asynchronous handoff to avoid cross-thread deregistration deadlocks.
-		if (pOwningLoop != mp_PollerThread.mp_pLoop)
+		if (pOwningLoop != mp_pSharedLoop)
 			DMibErrorNet("Synchronous inherit handoff on a pool-hosted loop; use the asynchronous form");
 
 		pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);
