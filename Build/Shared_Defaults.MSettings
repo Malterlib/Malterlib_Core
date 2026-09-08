@@ -313,6 +313,8 @@ Property
 
 	MalterlibMemoryManager_AlwaysRelease: bool = Not(DocumentationEnabled) // User(Memory Manager)=false: Enable memory manager to always be compile as if release config (default true)
 
+	MalterlibMemoryManager_BackgroundCleanup: bool = true // User(Memory Manager)=false: Reclaim memory on a background cleanup thread. Off leaves it to the owning threads (default true)
+
 	MalterlibMemoryManager_Debug_Features: one_of(bool, undefined) // User(Memory Manager)=false: Global toggle for debug memory manager. Can be toggled without recompiling everything.
 
 	MalterlibMemoryManager_Debug_EnableFreeValidation: bool = false // User(Memory Manager)=true: Enable validation of freed blocks. Detects double frees and invalid frees. High impact on performance. (default false)
