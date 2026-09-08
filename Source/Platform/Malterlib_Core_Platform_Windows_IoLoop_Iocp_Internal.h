@@ -11,6 +11,9 @@
 // already associated, since the association is permanent for the handle's lifetime
 constexpr ULONG_PTR gc_IocpKey_Wake = 1;
 constexpr ULONG_PTR gc_IocpKey_Afd = 2;
+// A wait completion packet's delivery, for a registered synchronization object; the packet names
+// the registration's wait operation like every other packet names its operation
+constexpr ULONG_PTR gc_IocpKey_Wait = 3;
 
 // Registrations per \Device\Afd handle. AFD keeps the polls outstanding on one device handle in
 // a list it walks on every completion, so the polls are spread over a small pool of handles

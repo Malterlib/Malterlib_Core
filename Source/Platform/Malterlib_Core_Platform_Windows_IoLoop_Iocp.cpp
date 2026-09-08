@@ -13,6 +13,9 @@ CIocpRegistration::CIocpRegistration()
 	m_PollOp.m_pRegistration = this;
 	m_PollOp.m_Kind = EIocpOpKind::mc_Poll;
 
+	m_WaitOp.m_pRegistration = this;
+	m_WaitOp.m_Kind = EIocpOpKind::mc_Wait;
+
 	for (auto &RecvOp : m_RecvOps)
 	{
 		RecvOp.m_pRegistration = this;
@@ -461,6 +464,16 @@ void CIoLoop_Iocp::fp_UpdatePoll(CIocpRegistration *_pRegistration, umint &_nRep
 
 void CIoLoop_Iocp::fp_ArmRequested(CIocpRegistration *_pRegistration, NSys::EIoLoopEvent _EventMask, umint &_nReported)
 {
+	// A synchronization object has one thing to say, that it is signaled, and only a read
+	// request asks for it
+	if (_pRegistration->m_hWaitPacket)
+	{
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Read))
+			fp_ArmWait(_pRegistration, _nReported);
+
+		return;
+	}
+
 	if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Read))
 		_pRegistration->m_bReadWanted = true;
 	if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Write))
@@ -491,8 +504,114 @@ void CIoLoop_Iocp::fp_CancelPoll(CIocpRegistration *_pRegistration)
 	CancelIoEx(_pRegistration->m_PollOp.m_pGroup->m_hAfd, &_pRegistration->m_PollOp.m_Overlapped);
 }
 
+// The packet a registered synchronization object's signal is delivered through. Windows 8 and
+// later; where the entry points are missing the registration is refused with the error the
+// caller can read as unsupported
+bool CIoLoop_Iocp::fp_CreateWaitPacket(CIocpRegistration *_pRegistration, int &o_Error)
+{
+	auto const &Nt = NLocal::g_OptionalFunctions;
+	if (!Nt.m_fNtCreateWaitCompletionPacket || !Nt.m_fNtAssociateWaitCompletionPacket || !Nt.m_fNtCancelWaitCompletionPacket)
+	{
+		o_Error = ERROR_CALL_NOT_IMPLEMENTED;
+		return false;
+	}
+
+	HANDLE hPacket = nullptr;
+	NTSTATUS Status = Nt.m_fNtCreateWaitCompletionPacket(&hPacket, GENERIC_ALL, nullptr);
+	if (Status != gc_NtStatus_Success || !hPacket)
+	{
+		o_Error = (int)Nt.m_fRtlNtStatusToDosError(Status);
+		return false;
+	}
+
+	_pRegistration->m_hWaitPacket = hPacket;
+
+	return true;
+}
+
+// Single shot and level at arm, like a poll: an object already signaled queues its packet at
+// once, so a request after the consumer drained what signaled it is lossless. One packet per
+// arm, counted from here until it is dispatched or the cancel says none is coming
+void CIoLoop_Iocp::fp_ArmWait(CIocpRegistration *_pRegistration, umint &_nReported)
+{
+	if (_pRegistration->m_bWaitArmed || _pRegistration->m_bDeregistering)
+		return;
+
+	CIocpOp &Op = _pRegistration->m_WaitOp;
+	fg_MemClear(&Op.m_Overlapped, sizeof(Op.m_Overlapped));
+	Op.m_Status = 0;
+	Op.m_nBytes = 0;
+	Op.m_Error = 0;
+	Op.m_bCompleted = false;
+
+	auto const &Nt = NLocal::g_OptionalFunctions;
+	BOOLEAN bAlreadySignaled = FALSE;
+	NTSTATUS Status = Nt.m_fNtAssociateWaitCompletionPacket
+		(
+			_pRegistration->m_hWaitPacket
+			, mp_hPort
+			, (HANDLE)_pRegistration->m_Handle
+			, (PVOID)gc_IocpKey_Wait
+			, &Op
+			, gc_NtStatus_Success
+			, 0
+			, &bAlreadySignaled
+		)
+	;
+
+	if (Status != gc_NtStatus_Success)
+	{
+		// Nothing is owed: the wait was never set up. Reported as an error event so a failed arm
+		// dies loudly instead of leaving the consumer waiting forever
+		fp_DispatchReadiness(_pRegistration, NSys::EIoLoopEvent::mc_Error, (int)Nt.m_fRtlNtStatusToDosError(Status), _nReported);
+		return;
+	}
+
+	Op.m_bIssued = true;
+	_pRegistration->m_bWaitArmed = true;
+	++_pRegistration->m_nOutstanding;
+
+#if DMibConfig_IoDebug_Enable
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace(bAlreadySignaled ? "wait-arm-immediate" : "wait-arm", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
+#endif
+}
+
+// Takes an armed wait back. Success says the wait was removed before the object signaled and
+// Cancelled that its queued packet was removed from the port, so in both no packet comes and
+// the obligation is released here. Pending says the packet is already being delivered and
+// settles the obligation when dispatched; any other answer is treated the same way, since an
+// obligation kept too long only delays the acknowledgement while one released too early frees
+// a record a packet still names
+void CIoLoop_Iocp::fp_CancelWait(CIocpRegistration *_pRegistration)
+{
+	if (!_pRegistration->m_bWaitArmed)
+		return;
+
+	auto const &Nt = NLocal::g_OptionalFunctions;
+	NTSTATUS Status = Nt.m_fNtCancelWaitCompletionPacket(_pRegistration->m_hWaitPacket, TRUE);
+	if (Status != gc_NtStatus_Success && Status != gc_NtStatus_Cancelled)
+		return;
+
+	_pRegistration->m_bWaitArmed = false;
+	_pRegistration->m_WaitOp.m_bIssued = false;
+	DMibCheck(_pRegistration->m_nOutstanding != 0);
+	--_pRegistration->m_nOutstanding;
+}
+
+void CIoLoop_Iocp::fp_ReleaseWait(CIocpRegistration *_pRegistration)
+{
+	if (!_pRegistration->m_hWaitPacket)
+		return;
+
+	DMibFastCheck(!_pRegistration->m_bWaitArmed);
+	CloseHandle(_pRegistration->m_hWaitPacket);
+	_pRegistration->m_hWaitPacket = nullptr;
+}
+
 void CIoLoop_Iocp::fp_CancelOutstanding(CIocpRegistration *_pRegistration, umint &_nReported)
 {
+	fp_CancelWait(_pRegistration);
 	fp_CancelPoll(_pRegistration);
 
 	// Every transfer the socket has with the kernel, whichever thread issued it. The caller
@@ -595,6 +714,7 @@ void CIoLoop_Iocp::fp_TryAcknowledge(CIocpRegistration *_pRegistration, umint &_
 	fp_ReleaseSends(_pRegistration);
 	fp_ReleaseStream(_pRegistration);
 	fp_ReleaseAfdGroup(_pRegistration);
+	fp_ReleaseWait(_pRegistration);
 	--mp_nDeregistering;
 
 #if DMibConfig_IoDebug_Enable
@@ -656,6 +776,27 @@ void CIoLoop_Iocp::fp_ProcessChanges(umint &_nReported)
 #endif
 
 			int Error = 0;
+
+			// A synchronization object is neither polled through AFD nor bound to the port: its
+			// packet is armed on request and the port only ever sees that packet
+			if (pRegistration->m_Options.m_bWaitableHandle)
+			{
+				if (!fp_CreateWaitPacket(pRegistration, Error))
+				{
+					fp_DispatchReadiness(pRegistration, NSys::EIoLoopEvent::mc_Error, Error, _nReported);
+
+					continue;
+				}
+
+				NSys::EIoLoopEvent Requested = NSys::EIoLoopEvent(pRegistration->m_RequestedEvents.f_Exchange(0, NAtomic::gc_MemoryOrder_AcquireRelease));
+				fp_ArmRequested(pRegistration, Requested, _nReported);
+
+				if (Change.m_bNotifyRegistered)
+					fp_DispatchReadiness(pRegistration, NSys::EIoLoopEvent::mc_None, 0, _nReported);
+
+				continue;
+			}
+
 			pRegistration->m_pAfdGroup = fp_AcquireAfdGroup();
 			if (!pRegistration->m_pAfdGroup || !fp_Associate(pRegistration, Error))
 			{

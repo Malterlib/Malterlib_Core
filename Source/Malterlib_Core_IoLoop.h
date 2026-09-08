@@ -217,6 +217,14 @@ namespace NMib::NSys
 		// that reports such sends differently — the result at acceptance, the release at the
 		// acknowledgement — reads this at registration, before any send can be submitted
 		bool m_bSendCompletesOnAck = false;
+
+		// The handle is a synchronization object rather than a descriptor the loop polls: a
+		// Windows console input handle, signaled while input records are queued. The loop reports
+		// mc_Read once per request when it is signaled, and nothing else; the consumer consumes
+		// what signaled it and requests again, as after any would-block observation. Only the
+		// Windows loop accepts this, where a wait completion packet carries the signal to its
+		// port with no thread; POSIX consumers have descriptors for such objects and never set it
+		bool m_bWaitableHandle = false;
 	};
 
 	// A loop seen by whatever registers io objects into it. Registration and submission are

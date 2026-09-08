@@ -74,6 +74,8 @@ enum class EIocpOpKind : uint8
 	mc_Poll
 	, mc_Send
 	, mc_Recv
+	// A registered synchronization object's signal, delivered by its wait completion packet
+	, mc_Wait
 };
 
 // One kernel operation: the OVERLAPPED the kernel names it by, first, so the pointer a dequeued
@@ -193,6 +195,16 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	// whichever it likes and the one that asked for it stays pending — so the interest is
 	// combined into one request and the request is cancelled and re-armed when it changes
 	CIocpPollOp m_PollOp;
+
+	// For a registration of a synchronization object rather than a socket
+	// (CIoLoopRegisterOptions::m_bWaitableHandle): the wait completion packet that turns the
+	// handle's signal into a packet on the port, and the operation that packet names. Single
+	// shot like a poll — armed on a read request, reported once when the handle is signaled,
+	// armed again only on the next request — and counted against the registration from arm to
+	// packet like every other operation, so the obligation accounting needs no special case
+	HANDLE m_hWaitPacket = nullptr;
+	CIocpOp m_WaitOp;
+	bool m_bWaitArmed = false;
 
 	// Sends in submission order: issued ones first, then those waiting for a slot. Results are
 	// reported from the head only while the head is complete, so a later completion overtaking
@@ -357,6 +369,12 @@ private:
 	void fp_ArmRequested(CIocpRegistration *_pRegistration, NMib::NSys::EIoLoopEvent _EventMask, umint &_nReported);
 	void fp_CancelPoll(CIocpRegistration *_pRegistration);
 	void fp_CancelOutstanding(CIocpRegistration *_pRegistration, umint &_nReported);
+
+	bool fp_CreateWaitPacket(CIocpRegistration *_pRegistration, int &o_Error);
+	void fp_ArmWait(CIocpRegistration *_pRegistration, umint &_nReported);
+	void fp_CancelWait(CIocpRegistration *_pRegistration);
+	void fp_ReleaseWait(CIocpRegistration *_pRegistration);
+	void fp_DispatchWait(CIocpOp *_pOp, umint &_nReported);
 	void fp_SweepPendingOps(CIocpRegistration *_pRegistration);
 	void fp_TryAcknowledge(CIocpRegistration *_pRegistration, umint &_nReported);
 	void fp_DispatchReadiness(CIocpRegistration *_pRegistration, NMib::NSys::EIoLoopEvent _Events, int _Error, umint &_nReported);
