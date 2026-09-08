@@ -837,6 +837,14 @@ void CPOSIXSocketContext::fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIX
 	{
 		auto &Unix = _Address.f_GetUnix();
 		_pSocket->m_UnixFilePath = Unix.f_GetPath();
+
+		// The file the bind above created is the one this socket's close may remove
+		struct stat FileStat;
+		if (stat(fg_ConvertToPOSIXPath(_pSocket->m_UnixFilePath).f_GetStr(), &FileStat) == 0)
+		{
+			_pSocket->m_UnixFileDevice = FileStat.st_dev;
+			_pSocket->m_UnixFileInode = FileStat.st_ino;
+		}
 	}
 	_pSocket->m_AddressType = AddressType;
 }
@@ -1663,6 +1671,37 @@ void CPOSIXSocketContext::f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunc
 	}
 }
 
+// A listener's socket file goes when its close is initiated rather than with the socket's
+// destruction, which on a pool-hosted loop waits for the loop's acknowledgement: the name is
+// free for an owner reusing it as soon as the close is asked for, and both platforms remove the
+// file at the same point. The file is removed only while it is still this socket's. A later
+// listener on the same path unlinks this one's file and binds its own there, and a close that
+// runs after that must not take that listener's file away: the file found is compared with the
+// one the bind created before anything is unlinked
+void CPOSIXSocketContext::fp_UnlinkUnixListenFile(CPOSIXSocket *_pSocket)
+{
+	if (_pSocket->m_UnixFilePath.f_IsEmpty())
+		return;
+
+	NStr::CStr PosixPath = fg_ConvertToPOSIXPath(_pSocket->m_UnixFilePath);
+	struct stat FileStat;
+	if
+	(
+		!_pSocket->m_UnixFileInode
+		||
+		(
+			stat(PosixPath.f_GetStr(), &FileStat) == 0
+			&& FileStat.st_dev == _pSocket->m_UnixFileDevice
+			&& FileStat.st_ino == _pSocket->m_UnixFileInode
+		)
+	)
+	{
+		unlink(PosixPath.f_GetStr());
+	}
+
+	_pSocket->m_UnixFilePath.f_Clear();
+}
+
 void CPOSIXSocketContext::fp_DestroySocket(CPOSIXSocket *_pSocket)
 {
 	if (_pSocket->m_FD != -1)
@@ -1670,17 +1709,8 @@ void CPOSIXSocketContext::fp_DestroySocket(CPOSIXSocket *_pSocket)
 		DMibLock(_pSocket->m_Lock);
 		close(_pSocket->m_FD);
 	}
-	if (!_pSocket->m_UnixFilePath.f_IsEmpty())
-	{
-		try
-		{
-			if (NFile::CFile::fs_FileExists(_pSocket->m_UnixFilePath))
-				NFile::CFile::fs_DeleteFile(_pSocket->m_UnixFilePath);
-		}
-		catch (NFile::CExceptionFile const &)
-		{
-		}
-	}
+
+	fp_UnlinkUnixListenFile(_pSocket);
 
 #if defined(DPlatformFamily_Linux)
 	if (_pSocket->m_LocalPidFD != -1)
@@ -1734,13 +1764,15 @@ void CPOSIXSocketContext::f_CloseAsync(CPOSIXSocket* _pSocket, NMib::NFunction::
 		// the removal cannot be waited for: whoever hosts the loop may be closing a socket of
 		// this thread's loop at the same time, and the acknowledgement may need actor jobs to run
 		// before it can be produced. No callback fires after the clear below, and the loop
-		// destroys the socket once the removal has been applied. The descriptor, and a
-		// listener's socket file with it, are gone only when the continuation runs, so an owner
-		// that reuses the name must wait for it
+		// destroys the socket once the removal has been applied. The descriptor is gone only
+		// when the continuation runs; a listener's socket file goes now, so an owner reusing the
+		// name binds it afresh at once
 		{
 			DMibLock(_pSocket->m_Lock);
 			_pSocket->m_fOnStateChange.f_Clear();
 		}
+
+		fp_UnlinkUnixListenFile(_pSocket);
 
 		pOwningLoop->f_DeregisterAsync
 			(

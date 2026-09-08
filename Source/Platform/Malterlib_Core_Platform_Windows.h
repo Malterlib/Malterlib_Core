@@ -12,6 +12,11 @@ extern NMib::NAtomic::TCAtomic<smint> g_bDoneMalterlibInitAll;
 extern HINSTANCE g_hDllInstance;
 extern bool g_bIsDll;
 
+namespace NMib::NFile
+{
+	struct CUniqueFileIdentifier;
+}
+
 namespace NMib::NPlatform
 {
 	void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
@@ -39,4 +44,7 @@ namespace NMib::NPlatform
 	// so a process without a window of its own has no other way to be told
 	void fg_EnsureEndSessionReporting();
 	void fg_StopEndSessionReporting();
+
+	bool fg_SetPosixDeleteDisposition(HANDLE _hFile);
+	bool fg_GetUniqueFileIdentifier(HANDLE _hFile, NMib::NFile::CUniqueFileIdentifier &o_Identifier);
 }

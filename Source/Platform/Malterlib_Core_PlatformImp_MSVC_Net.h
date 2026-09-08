@@ -58,6 +58,12 @@ struct CWindowsSocket
 	ENetAddressType m_AddressType = ENetAddressType_None;
 	TCUniquePointer<CUnixListenState> m_pUnixListen;
 
+	// The path a native unix listener is bound to, until its file has been removed, and the
+	// identity of the file the bind created there, so that the removal can tell a successor's
+	// file from its own
+	CStr m_UnixListenPath;
+	NFile::CUniqueFileIdentifier m_UnixListenFileIdentity;
+
 	// The io subsystem, cached at creation so the socket paths need no getter
 	NMib::NSys::CIoSubSystem *m_pIo = nullptr;
 
@@ -232,6 +238,7 @@ protected:
 	// file and frees the object. Runs on the closing thread for poller-owned sockets and on the
 	// loop's thread for the asynchronous path
 	void fp_DestroySocket(CWindowsSocket *_pSocket);
+	void fp_RemoveUnixListenFile(CWindowsSocket *_pSocket);
 
 	TCUniquePointer<CWindowsSocket::CUnixListenState> fp_PrepareUnixListen(CWindowsAddress &o_Address);
 

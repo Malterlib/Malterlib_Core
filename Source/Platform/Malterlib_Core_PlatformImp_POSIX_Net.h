@@ -50,6 +50,13 @@ struct CPOSIXSocket
 	NStr::CStr m_UnixFilePath;
 	NStr::CStr m_PeerUnixFilePath;
 
+	// The identity of the socket file this listener created, so its close removes that file and
+	// not one a later listener on the same path has bound since. An inode of zero names no
+	// file, so it is what a failed stat leaves behind, and the close then removes whatever is
+	// at the path as it always did
+	dev_t m_UnixFileDevice = 0;
+	ino_t m_UnixFileInode = 0;
+
 #if defined(DPlatformFamily_Linux)
 	// Kernel process identity handles pinned for the connection lifetime: a 32-bit kernel recycles
 	// a process's pidfs inode once its last pidfd closes, so releasing these before the peer
@@ -243,6 +250,7 @@ private:
 	// socket file and frees the object. Runs on the closing thread for poller-owned sockets and on
 	// the loop's thread for the asynchronous path
 	void fp_DestroySocket(CPOSIXSocket *_pSocket);
+	void fp_UnlinkUnixListenFile(CPOSIXSocket *_pSocket);
 
 	struct CPollerThread : public NMib::NThread::CThread
 	{
