@@ -27,15 +27,30 @@ namespace NMib::NSys
 				bool m_bInstalled = false;
 			};
 
+			// A thread signal's delivery, owned by the thread that registered it. Held by a shared
+			// pointer so the asynchronous deregistration's continuation keeps it alive: a readiness
+			// callback may still be in flight until the loop acknowledges the removal
+			struct CThreadDispatch
+			{
+				int m_Pipe[2] = {-1, -1};
+				NSys::ICIoLoop *m_pLoop = nullptr;
+				NSys::CIoLoopRegistration *m_pRegistration = nullptr;
+				NFunction::TCFunctionMutable<void ()> m_fOnSignal;
+			};
+
 			struct CThreadLocal
 			{
 				~CThreadLocal()
 				{
-					DMibFastCheck(!m_pThreadHandler); // Handler should have been unregistered already
+					DMibFastCheck(!m_pDispatch); // Handler should have been unregistered already
 				}
 
-				NFunction::TCFunctionMutable<void ()> m_ThreadHandler;
-				NAtomic::TCAtomic<NFunction::TCFunctionMutable<void ()> *> m_pThreadHandler = nullptr;
+				NStorage::TCSharedPointer<CThreadDispatch> m_pDispatch;
+
+				// Read by the signal handler, which may not take a lock or follow a shared pointer
+				// to find the descriptor. Published after the pipe is being watched and cleared
+				// before it goes away
+				NAtomic::TCAtomic<int> m_PipeWrite = -1;
 				int m_ThreadSignal = 0;
 			};
 
@@ -80,6 +95,8 @@ namespace NMib::NSys
 			// Drains the pipe and runs the pending handlers, on the loop's thread
 			void f_DispatchPending();
 			static void fs_OnPipeReadable(void *_pToken, NSys::EIoLoopEvent _Events, int _Error);
+			// Runs a thread signal's functor, on the thread whose loop watches its pipe
+			static void fs_OnThreadPipeReadable(void *_pToken, NSys::EIoLoopEvent _Events, int _Error);
 			// Opens a nonblocking, close on exec self pipe. Throws with the errno on failure
 			static void fs_OpenPipe(ch8 const *_pWhat, int (&o_Pipe)[2]);
 
@@ -118,22 +135,17 @@ namespace NMib::NSys
 			// so a thread that never registered one is simply skipped
 			auto *pThreadLocalEntry = SubSystem.m_ThreadLocal.f_TryGet();
 
-			auto pThreadHandler = pThreadLocalEntry ? pThreadLocalEntry->m_pThreadHandler.f_Load() : nullptr;
-			if (pThreadHandler && _Signal == pThreadLocalEntry->m_ThreadSignal)
+			if (pThreadLocalEntry && _Signal == pThreadLocalEntry->m_ThreadSignal)
 			{
-				sigset_t BlockSet;
-				sigset_t OldSet;
-				sigemptyset(&BlockSet);
-				sigaddset(&BlockSet, _Signal);
-				pthread_sigmask(SIG_BLOCK, &BlockSet, &OldSet);
-
-				auto Cleanup = g_OnScopeExit / [&]
-					{
-						pthread_sigmask(SIG_SETMASK, &OldSet, nullptr);
-					}
-				;
-
-				(*pThreadHandler)();
+				// Handed to this thread's own io loop rather than run here: the functor is ordinary
+				// framework code, and the loop this thread drives dispatches it back on this very
+				// thread, which is what the thread signal contract promises
+				int ThreadPipeWrite = pThreadLocalEntry->m_PipeWrite.f_Load(NAtomic::gc_MemoryOrder_Relaxed);
+				if (ThreadPipeWrite >= 0)
+				{
+					ch8 Byte = 't';
+					(void)!write(ThreadPipeWrite, &Byte, 1);
+				}
 			}
 
 			auto CallOld = g_OnScopeExit / [&]
@@ -215,6 +227,20 @@ namespace NMib::NSys
 			fcntl(o_Pipe[0], F_SETNOSIGPIPE, 1);
 			fcntl(o_Pipe[1], F_SETNOSIGPIPE, 1);
 #endif
+		}
+
+		void CSubSystem_Core_Signal::fs_OnThreadPipeReadable(void *_pToken, NSys::EIoLoopEvent _Events, int _Error)
+		{
+			if (!fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
+				return;
+
+			auto &Dispatch = *static_cast<CThreadDispatch *>(_pToken);
+
+			ch8 Bytes[64];
+			while (read(Dispatch.m_Pipe[0], Bytes, sizeof(Bytes)) > 0)
+				; // Drained in whole so a burst of signals coalesces into one call
+
+			Dispatch.m_fOnSignal();
 		}
 
 		void CSubSystem_Core_Signal::fp_OpenDispatch()
@@ -299,12 +325,38 @@ namespace NMib::NSys
 		auto &SubSystem = *g_SubSystem_Core_Signal;
 		auto &ThreadLocal = *SubSystem.m_ThreadLocal;
 
-		if (ThreadLocal.m_pThreadHandler)
+		if (ThreadLocal.m_pDispatch)
 			DMibError("Only a single thread signal handler can be installed");
 
+		// The functor must run on the registering thread, which is only true if that thread drives
+		// a loop of its own. The binding fg_GetThreadIoLoop answers with is deliberately not used:
+		// it round robins over the pool and names where io objects should be created, so it would
+		// hand the callback to some other thread and quietly break the contract
+		NSys::ICIoLoop *pLoop = NSys::fg_GetOwnedIoLoop();
+		if (!pLoop)
+			DMibError("A thread signal handler can only be installed on a thread that drives an io loop");
+
+		auto pDispatch = NStorage::TCSharedPointer<CSubSystem_Core_Signal::CThreadDispatch>(fg_Construct());
+		pDispatch->m_fOnSignal = fg_Move(_fOnSignal);
+		pDispatch->m_pLoop = pLoop;
+
+		CSubSystem_Core_Signal::fs_OpenPipe("thread signal", pDispatch->m_Pipe);
+
+		pDispatch->m_pRegistration = pLoop->f_Register
+			(
+				pDispatch->m_Pipe[0]
+				, pDispatch.f_Get()
+				, NSys::EIoLoopEvent::mc_Read
+				, &CSubSystem_Core_Signal::fs_OnThreadPipeReadable
+				, false
+			)
+		;
+
 		ThreadLocal.m_ThreadSignal = _Signal;
-		ThreadLocal.m_ThreadHandler = fg_Move(_fOnSignal);
-		ThreadLocal.m_pThreadHandler.f_Store(&ThreadLocal.m_ThreadHandler);
+		ThreadLocal.m_pDispatch = pDispatch;
+
+		// Last, so the handler cannot see a descriptor before it is being watched
+		ThreadLocal.m_PipeWrite.f_Store(pDispatch->m_Pipe[1], NAtomic::gc_MemoryOrder_Relaxed);
 
 		{
 			DMibLock(SubSystem.m_Lock);
@@ -327,8 +379,36 @@ namespace NMib::NSys
 
 				auto &ThreadLocal = *SubSystem.m_ThreadLocal;
 
-				ThreadLocal.m_pThreadHandler.f_Store(nullptr);
-				ThreadLocal.m_ThreadHandler.f_Clear();
+				// Nothing can be delivered once this is cleared, so the pipe and its registration
+				// go away. The removal is asynchronous and the dispatch outlives the detach until
+				// the loop reports that no callback can be in flight
+				ThreadLocal.m_PipeWrite.f_Store(-1, NAtomic::gc_MemoryOrder_Relaxed);
+
+				if (auto pDispatch = fg_Move(ThreadLocal.m_pDispatch))
+				{
+					ThreadLocal.m_pDispatch.f_Clear();
+
+					auto *pLoop = pDispatch->m_pLoop;
+					auto *pRegistration = pDispatch->m_pRegistration;
+
+					pLoop->f_DeregisterAsync
+						(
+							pRegistration
+							, [pDispatch = fg_Move(pDispatch)]() mutable
+							{
+								for (auto &Descriptor : pDispatch->m_Pipe)
+								{
+									if (Descriptor >= 0)
+										close(Descriptor);
+
+									Descriptor = -1;
+								}
+
+								pDispatch.f_Clear();
+							}
+						)
+					;
+				}
 
 				DMibLock(SubSystem.m_Lock);
 				auto &SignalHandler = SubSystem.m_SignalHandlers[_Signal];
