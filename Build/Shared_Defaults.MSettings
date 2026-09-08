@@ -196,6 +196,10 @@ Property
 		!!MalterlibDefaultCompiler undefined
 	}
 
+	// User(Linking)=true: Discard the load command for a framework or library that no surviving
+	// symbol references. Unsafe for anything reached only at runtime, see Shared_Target.MSettings
+	MalterlibDeadStripDylibs: bool = false
+
 	MalterlibCustomCompilerOptions: bool // User(Undocumented)=true: Use custom compiler options only available in patched compiler
 	MalterlibCustomCompilerOptions true
 	{

@@ -1674,6 +1674,19 @@ Target
 		!!MalterlibDefaultCompiler true
 	}
 
+	// Drops the load command for a linked framework or library that no surviving symbol references.
+	// Off by default because the linker cannot see uses that only happen at runtime, so anything
+	// reached through NSClassFromString, dlopen or weak linked availability probing would be
+	// dropped and fail when it is first used rather than at link time
+	LDFlags =+ "-Wl,-dead_strip_dylibs"
+	{
+		&
+		{
+			MalterlibDeadStripDylibs true
+			PlatformIsDarwin true
+		}
+	}
+
 	EmscriptenFastCompiler: bool?
 	EmscriptenEmscriptenRoot: string?
 	EmscriptenLLVMRoot: string?
