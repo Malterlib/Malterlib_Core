@@ -825,6 +825,13 @@ void CPOSIXSocketContext::fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIX
 	{
 		auto &Unix = _Address.f_GetUnix();
 		_pSocket->m_UnixFilePath = Unix.f_GetPath();
+
+		struct stat FileStat;
+		if (stat(fg_ConvertToPOSIXPath(_pSocket->m_UnixFilePath).f_GetStr(), &FileStat) == 0)
+		{
+			_pSocket->m_UnixFileDevice = FileStat.st_dev;
+			_pSocket->m_UnixFileInode = FileStat.st_ino;
+		}
 	}
 	_pSocket->m_AddressType = AddressType;
 }
@@ -1600,6 +1607,32 @@ void CPOSIXSocketContext::f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunc
 	}
 }
 
+// Unlink at close initiation so the name can be rebound before asynchronous destruction.
+// Compare bind-time identity before unlinking to avoid removing a successor's socket file.
+void CPOSIXSocketContext::fp_UnlinkUnixListenFile(CPOSIXSocket *_pSocket)
+{
+	if (_pSocket->m_UnixFilePath.f_IsEmpty())
+		return;
+
+	NStr::CStr PosixPath = fg_ConvertToPOSIXPath(_pSocket->m_UnixFilePath);
+	struct stat FileStat;
+	if
+	(
+		!_pSocket->m_UnixFileInode
+		||
+		(
+			stat(PosixPath.f_GetStr(), &FileStat) == 0
+			&& FileStat.st_dev == _pSocket->m_UnixFileDevice
+			&& FileStat.st_ino == _pSocket->m_UnixFileInode
+		)
+	)
+	{
+		unlink(PosixPath.f_GetStr());
+	}
+
+	_pSocket->m_UnixFilePath.f_Clear();
+}
+
 // Run only after no loop reference remains; closes the descriptor and frees the socket.
 void CPOSIXSocketContext::fp_DestroySocket(CPOSIXSocket *_pSocket)
 {
@@ -1608,17 +1641,8 @@ void CPOSIXSocketContext::fp_DestroySocket(CPOSIXSocket *_pSocket)
 		DMibLock(_pSocket->m_Lock);
 		close(_pSocket->m_FD);
 	}
-	if (!_pSocket->m_UnixFilePath.f_IsEmpty())
-	{
-		try
-		{
-			if (NFile::CFile::fs_FileExists(_pSocket->m_UnixFilePath))
-				NFile::CFile::fs_DeleteFile(_pSocket->m_UnixFilePath);
-		}
-		catch (NFile::CExceptionFile const &)
-		{
-		}
-	}
+
+	fp_UnlinkUnixListenFile(_pSocket);
 
 #if defined(DPlatformFamily_Linux)
 	if (_pSocket->m_LocalPidFD != -1)
@@ -1662,12 +1686,14 @@ void CPOSIXSocketContext::f_CloseAsync(CPOSIXSocket* _pSocket, NMib::NFunction::
 
 	if (pOwningLoop && _pSocket->m_pIoRegistration && _pSocket->m_FD != -1)
 	{
-		// Defer registered sockets through their loop; pool threads cannot block on each other's deregistrations.
-		// Wait for the continuation before reusing the descriptor or listener path.
+		// Defer descriptor destruction through the loop to avoid pool-thread cross-wait deadlocks.
+		// The continuation marks descriptor closure; unlink the listener path now so it can be rebound immediately.
 		{
 			DMibLock(_pSocket->m_Lock);
 			_pSocket->m_fOnStateChange.f_Clear();
 		}
+
+		fp_UnlinkUnixListenFile(_pSocket);
 
 		pOwningLoop->f_DeregisterAsync
 			(

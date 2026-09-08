@@ -50,6 +50,8 @@ struct CWindowsSocket
 	umint m_BindAddressSize = 0;
 	ENetAddressType m_AddressType = ENetAddressType_None;
 	TCUniquePointer<CUnixListenState> m_pUnixListen;
+	CStr m_UnixListenPath; // Cleared after unlink; bind-time identity protects successor socket files.
+	NFile::CUniqueFileIdentifier m_UnixListenFileIdentity;
 
 	NMib::NSys::CIoSubSystem *m_pIo = nullptr;
 
@@ -193,6 +195,7 @@ protected:
 		)
 	;
 	void fp_DestroySocket(CWindowsSocket *_pSocket);
+	void fp_RemoveUnixListenFile(CWindowsSocket *_pSocket);
 
 	TCUniquePointer<CWindowsSocket::CUnixListenState> fp_PrepareUnixListen(CWindowsAddress &o_Address);
 

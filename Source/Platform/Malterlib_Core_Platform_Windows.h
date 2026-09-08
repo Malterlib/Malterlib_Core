@@ -12,6 +12,11 @@ extern NMib::NAtomic::TCAtomic<smint> g_bDoneMalterlibInitAll;
 extern HINSTANCE g_hDllInstance;
 extern bool g_bIsDll;
 
+namespace NMib::NFile
+{
+	struct CUniqueFileIdentifier;
+}
+
 namespace NMib::NPlatform
 {
 	void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
@@ -34,4 +39,7 @@ namespace NMib::NPlatform
 	bool fg_IsShuttingDown();
 	void fg_ReportIsShuttingDown();
 	void fg_EnsureEndSessionReporting();
+
+	bool fg_SetPosixDeleteDisposition(HANDLE _hFile);
+	bool fg_GetUniqueFileIdentifier(HANDLE _hFile, NMib::NFile::CUniqueFileIdentifier &o_Identifier);
 }
