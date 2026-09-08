@@ -124,7 +124,9 @@ namespace NMib::NSys
 	{
 		bool m_bReadinessOnly = false;
 		bool m_bInheritedHandle = false; // Inherited completion notification modes cannot be changed by the new owner.
+		bool m_bLevelReadiness = false; // Explicitly rearm readiness without requiring a preceding would-block observation.
 		bool m_bSendCompletesOnAck = false; // No kernel send buffer: acceptance reports completion, peer acknowledgement releases buffers.
+		bool m_bWaitableHandle = false; // Windows synchronization object: report mc_Read once per request when signaled.
 	};
 
 	// Registration and submission may run on any thread. Callbacks and deregistration continuations run synchronously on the driving thread.
@@ -172,4 +174,9 @@ namespace NMib::NSys
 
 	void fg_SetThreadIoLoop(ICIoLoop *_pLoop);
 	ICIoLoop *fg_GetThreadIoLoop();
+
+	void fg_SetOwnedIoLoop(ICIoLoop *_pLoop);
+	ICIoLoop *fg_GetOwnedIoLoop();
+
+	ICIoLoop *fg_GetSharedIoLoop();
 }

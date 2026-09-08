@@ -82,6 +82,7 @@ namespace NMib
 	{
 		NException::CExceptionFilter *m_pExceptionFilter = nullptr;
 		NSys::ICIoLoop *m_pThreadIoLoop = nullptr; // Binding used by I/O objects started on this thread.
+		NSys::ICIoLoop *m_pOwnedIoLoop = nullptr; // Loop driven by this thread, independent of the binding for new I/O objects.
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
 #if DMibConfig_Tests_Enable
 		NConcurrency::ECoroutineFlag m_ExtraCoroutineFlags = NConcurrency::ECoroutineFlag_None;

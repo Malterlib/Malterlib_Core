@@ -80,6 +80,7 @@ struct CIoLoop_Base : public NMib::NSys::ICIoLoop
 		)
 		-> NMib::NSys::CIoLoopRegistration * override
 	;
+	void f_RequestReadiness(NMib::NSys::CIoLoopRegistration *_pRegistration, NMib::NSys::EIoLoopEvent _EventMask) override;
 	void f_Deregister(NMib::NSys::CIoLoopRegistration *_pRegistration) override;
 	void f_DeregisterAsync(NMib::NSys::CIoLoopRegistration *_pRegistration, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnDeregistered) override;
 
@@ -118,3 +119,24 @@ protected:
 };
 
 NMib::NSys::ICIoLoop *fg_CreatePlatformIoLoop();
+
+// Owns the shared loop and its thread. Must outlive every consumer that can hold a registration.
+struct CSharedIoLoop
+{
+	CSharedIoLoop();
+	~CSharedIoLoop();
+
+	NMib::NSys::ICIoLoop *f_GetLoop() const { return mp_Thread.mp_pLoop; }
+
+private:
+	struct CPollerThread : public NMib::NThread::CThread
+	{
+		NMib::NStr::CStr f_GetThreadName() override;
+		aint f_Main() override;
+		umint f_Stop(bool _bBlock) override;
+
+		NMib::NSys::ICIoLoop *mp_pLoop = nullptr; // Created before the thread starts and destroyed after it stops.
+	};
+
+	CPollerThread mp_Thread;
+};

@@ -101,6 +101,22 @@ namespace NLocal
 		NTSTATUS (NTAPI *m_fNtSetInformationFile)(HANDLE _hFile, PIO_STATUS_BLOCK _pIoStatusBlock, PVOID _pFileInformation, ULONG _Length, FILE_INFORMATION_CLASS _FileInformationClass);
 		ULONG (NTAPI *m_fRtlNtStatusToDosError)(NTSTATUS _Status);
 
+		// Optional Windows 8+ API for delivering synchronization-object signals to an IOCP.
+		NTSTATUS (NTAPI *m_fNtCreateWaitCompletionPacket)(PHANDLE _phPacket, ACCESS_MASK _DesiredAccess, POBJECT_ATTRIBUTES _pObjectAttributes);
+		NTSTATUS (NTAPI *m_fNtAssociateWaitCompletionPacket)
+			(
+				HANDLE _hPacket
+				, HANDLE _hPort
+				, HANDLE _hTarget
+				, PVOID _pKeyContext
+				, PVOID _pApcContext
+				, NTSTATUS _IoStatus
+				, ULONG_PTR _IoStatusInformation
+				, PBOOLEAN _pbAlreadySignaled
+			)
+		;
+		NTSTATUS (NTAPI *m_fNtCancelWaitCompletionPacket)(HANDLE _hPacket, BOOLEAN _bRemoveSignaledPacket);
+
 		NTSTATUS (WINAPI *m_fNtQuerySystemInformation)(DWORD SystemInformationClass, PVOID SystemInformation, DWORD SystemInformationLength, PDWORD ReturnLength);
 
 		NTSTATUS (WINAPI *m_fNtGetNextThread)(HANDLE ProcessHandle, HANDLE ThreadHandle, ACCESS_MASK DesiredAccess, ULONG HandleAttributes, ULONG Flags, PHANDLE NewThreadHandle);

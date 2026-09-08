@@ -101,9 +101,34 @@ void CIoLoop_Iocp::fp_DispatchOp(CIocpOp *_pOp, umint &_nReported)
 		_pOp->m_bCompleted = true;
 		fp_ReportCompletedRecvs(pRegistration, _nReported);
 		break;
+
+	case EIocpOpKind::mc_Wait:
+		fp_DispatchWait(_pOp, _nReported);
+		break;
 	}
 
 	fp_TryAcknowledge(pRegistration, _nReported);
+}
+
+// Signal delivery and an in-flight cancellation carry the same packet status; distinguish them by registration state.
+void CIoLoop_Iocp::fp_DispatchWait(CIocpOp *_pOp, umint &_nReported)
+{
+	CIocpRegistration *pRegistration = _pOp->m_pRegistration;
+
+	DMibCheck(pRegistration->m_nOutstanding != 0);
+	--pRegistration->m_nOutstanding;
+	_pOp->m_bIssued = false;
+	pRegistration->m_bWaitArmed = false;
+
+	if (pRegistration->m_bDeregistering)
+		return;
+
+#if DMibConfig_IoDebug_Enable
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace("wait-event", pRegistration->m_pToken, pRegistration->m_Handle, 0);
+#endif
+
+	fp_DispatchReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read, 0, _nReported);
 }
 
 void CIoLoop_Iocp::fp_DispatchPoll(CIocpPollOp *_pOp, umint &_nReported)

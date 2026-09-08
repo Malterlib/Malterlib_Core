@@ -13,6 +13,9 @@ CIocpRegistration::CIocpRegistration()
 	m_PollOp.m_pRegistration = this;
 	m_PollOp.m_Kind = EIocpOpKind::mc_Poll;
 
+	m_WaitOp.m_pRegistration = this;
+	m_WaitOp.m_Kind = EIocpOpKind::mc_Wait;
+
 	for (auto &RecvOp : m_RecvOps)
 	{
 		RecvOp.m_pRegistration = this;
@@ -419,6 +422,15 @@ void CIoLoop_Iocp::fp_UpdatePoll(CIocpRegistration *_pRegistration, umint &_nRep
 
 void CIoLoop_Iocp::fp_ArmRequested(CIocpRegistration *_pRegistration, NSys::EIoLoopEvent _EventMask, umint &_nReported)
 {
+	// Synchronization objects report only read readiness when signaled.
+	if (_pRegistration->m_hWaitPacket)
+	{
+		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Read))
+			fp_ArmWait(_pRegistration, _nReported);
+
+		return;
+	}
+
 	if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Read))
 		_pRegistration->m_bReadWanted = true;
 	if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Write))
@@ -446,8 +458,106 @@ void CIoLoop_Iocp::fp_CancelPoll(CIocpRegistration *_pRegistration)
 	CancelIoEx(_pRegistration->m_PollOp.m_pGroup->m_hAfd, &_pRegistration->m_PollOp.m_Overlapped);
 }
 
+// Requires Windows 8+ wait-packet APIs; reports unsupported when the entry points are absent.
+bool CIoLoop_Iocp::fp_CreateWaitPacket(CIocpRegistration *_pRegistration, int &o_Error)
+{
+	auto const &Nt = NLocal::g_OptionalFunctions;
+	if (!Nt.m_fNtCreateWaitCompletionPacket || !Nt.m_fNtAssociateWaitCompletionPacket || !Nt.m_fNtCancelWaitCompletionPacket || !Nt.m_fRtlNtStatusToDosError)
+	{
+		o_Error = ERROR_CALL_NOT_IMPLEMENTED;
+		return false;
+	}
+
+	HANDLE hPacket = nullptr;
+	NTSTATUS Status = Nt.m_fNtCreateWaitCompletionPacket(&hPacket, GENERIC_ALL, nullptr);
+	if (Status != gc_NtStatus_Success || !hPacket)
+	{
+		o_Error = (int)Nt.m_fRtlNtStatusToDosError(Status);
+		return false;
+	}
+
+	_pRegistration->m_hWaitPacket = hPacket;
+
+	return true;
+}
+
+// Each arm retains the registration until delivery or confirmed cancellation.
+// An already-signaled object queues its packet immediately.
+void CIoLoop_Iocp::fp_ArmWait(CIocpRegistration *_pRegistration, umint &_nReported)
+{
+	if (_pRegistration->m_bWaitArmed || _pRegistration->m_bDeregistering)
+		return;
+
+	CIocpOp &Op = _pRegistration->m_WaitOp;
+	fg_MemClear(&Op.m_Overlapped, sizeof(Op.m_Overlapped));
+	Op.m_Status = 0;
+	Op.m_nBytes = 0;
+	Op.m_Error = 0;
+	Op.m_bCompleted = false;
+
+	auto const &Nt = NLocal::g_OptionalFunctions;
+	BOOLEAN bAlreadySignaled = FALSE;
+	NTSTATUS Status = Nt.m_fNtAssociateWaitCompletionPacket
+		(
+			_pRegistration->m_hWaitPacket
+			, mp_hPort
+			, (HANDLE)_pRegistration->m_Handle
+			, (PVOID)gc_IocpKey_Wait
+			, &Op
+			, gc_NtStatus_Success
+			, 0
+			, &bAlreadySignaled
+		)
+	;
+
+	if (Status != gc_NtStatus_Success)
+	{
+		// A failed arm owes no packet; report an error so the consumer cannot wait indefinitely.
+		fp_DispatchReadiness(_pRegistration, NSys::EIoLoopEvent::mc_Error, (int)Nt.m_fRtlNtStatusToDosError(Status), _nReported);
+		return;
+	}
+
+	Op.m_bIssued = true;
+	_pRegistration->m_bWaitArmed = true;
+	++_pRegistration->m_nOutstanding;
+
+#if DMibConfig_IoDebug_Enable
+	if (mp_pIo->f_TraceEnabled())
+		mp_pIo->f_Trace(bAlreadySignaled ? "wait-arm-immediate" : "wait-arm", _pRegistration->m_pToken, _pRegistration->m_Handle, 0);
+#endif
+}
+
+// Success or Cancelled confirms that no packet will arrive, so release the registration here.
+// Pending or an unknown status retains it until dispatch to avoid freeing a record still named by a packet.
+void CIoLoop_Iocp::fp_CancelWait(CIocpRegistration *_pRegistration)
+{
+	if (!_pRegistration->m_bWaitArmed)
+		return;
+
+	auto const &Nt = NLocal::g_OptionalFunctions;
+	NTSTATUS Status = Nt.m_fNtCancelWaitCompletionPacket(_pRegistration->m_hWaitPacket, TRUE);
+	if (Status != gc_NtStatus_Success && Status != gc_NtStatus_Cancelled)
+		return;
+
+	_pRegistration->m_bWaitArmed = false;
+	_pRegistration->m_WaitOp.m_bIssued = false;
+	DMibCheck(_pRegistration->m_nOutstanding != 0);
+	--_pRegistration->m_nOutstanding;
+}
+
+void CIoLoop_Iocp::fp_ReleaseWait(CIocpRegistration *_pRegistration)
+{
+	if (!_pRegistration->m_hWaitPacket)
+		return;
+
+	DMibFastCheck(!_pRegistration->m_bWaitArmed);
+	CloseHandle(_pRegistration->m_hWaitPacket);
+	_pRegistration->m_hWaitPacket = nullptr;
+}
+
 void CIoLoop_Iocp::fp_CancelOutstanding(CIocpRegistration *_pRegistration, umint &_nReported)
 {
+	fp_CancelWait(_pRegistration);
 	fp_CancelPoll(_pRegistration);
 
 	// The caller retains the open handle until acknowledgement, making handle-wide cancellation safe.
@@ -535,6 +645,7 @@ void CIoLoop_Iocp::fp_TryAcknowledge(CIocpRegistration *_pRegistration, umint &_
 	fp_ReleaseSends(_pRegistration);
 	fp_ReleaseStream(_pRegistration);
 	fp_ReleaseAfdGroup(_pRegistration);
+	fp_ReleaseWait(_pRegistration);
 	--mp_nDeregistering;
 
 #if DMibConfig_IoDebug_Enable
@@ -591,6 +702,26 @@ void CIoLoop_Iocp::fp_ProcessChanges(umint &_nReported)
 #endif
 
 			int Error = 0;
+
+			// Waitable handles use wait packets rather than AFD polling or direct port association.
+			if (pRegistration->m_Options.m_bWaitableHandle)
+			{
+				if (!fp_CreateWaitPacket(pRegistration, Error))
+				{
+					fp_DispatchReadiness(pRegistration, NSys::EIoLoopEvent::mc_Error, Error, _nReported);
+
+					continue;
+				}
+
+				NSys::EIoLoopEvent Requested = NSys::EIoLoopEvent(pRegistration->m_RequestedEvents.f_Exchange(0, NAtomic::gc_MemoryOrder_AcquireRelease));
+				fp_ArmRequested(pRegistration, Requested, _nReported);
+
+				if (Change.m_bNotifyRegistered)
+					fp_DispatchReadiness(pRegistration, NSys::EIoLoopEvent::mc_None, 0, _nReported);
+
+				continue;
+			}
+
 			pRegistration->m_pAfdGroup = fp_AcquireAfdGroup();
 			if (!pRegistration->m_pAfdGroup || !fp_Associate(pRegistration, Error))
 			{

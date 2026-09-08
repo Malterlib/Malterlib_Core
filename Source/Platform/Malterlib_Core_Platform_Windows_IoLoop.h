@@ -51,6 +51,8 @@ enum class EIocpOpKind : uint8
 	mc_Poll
 	, mc_Send
 	, mc_Recv
+	// Synchronization-object signal delivered by a wait completion packet.
+	, mc_Wait
 };
 
 // OVERLAPPED must be first; IO_STATUS_BLOCK overlays its first two words.
@@ -128,6 +130,10 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	HANDLE m_hBase = nullptr; // Provider base handle used by AFD; differs under layered service providers.
 	CIocpAfdGroup *m_pAfdGroup = nullptr;
 	CIocpPollOp m_PollOp; // One union-interest poll per socket; multiple AFD polls can consume each other's readiness.
+
+	HANDLE m_hWaitPacket = nullptr; // One-shot synchronization-object wait; each armed packet retains the registration until reported.
+	CIocpOp m_WaitOp;
+	bool m_bWaitArmed = false;
 
 	CIocpSendOp *m_pSendHead = nullptr; // Issue-order FIFO; only report complete head entries so port reordering cannot reorder callbacks.
 	CIocpSendOp *m_pSendTail = nullptr;
@@ -240,6 +246,12 @@ private:
 	void fp_ArmRequested(CIocpRegistration *_pRegistration, NMib::NSys::EIoLoopEvent _EventMask, umint &_nReported);
 	void fp_CancelPoll(CIocpRegistration *_pRegistration);
 	void fp_CancelOutstanding(CIocpRegistration *_pRegistration, umint &_nReported);
+
+	bool fp_CreateWaitPacket(CIocpRegistration *_pRegistration, int &o_Error);
+	void fp_ArmWait(CIocpRegistration *_pRegistration, umint &_nReported);
+	void fp_CancelWait(CIocpRegistration *_pRegistration);
+	void fp_ReleaseWait(CIocpRegistration *_pRegistration);
+	void fp_DispatchWait(CIocpOp *_pOp, umint &_nReported);
 	void fp_SweepPendingOps(CIocpRegistration *_pRegistration);
 	void fp_TryAcknowledge(CIocpRegistration *_pRegistration, umint &_nReported);
 	void fp_DispatchReadiness(CIocpRegistration *_pRegistration, NMib::NSys::EIoLoopEvent _Events, int _Error, umint &_nReported);

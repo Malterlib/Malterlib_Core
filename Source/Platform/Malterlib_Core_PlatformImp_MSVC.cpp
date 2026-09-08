@@ -2105,6 +2105,9 @@ void fg_LoadFunctionPointers()
 		(FARPROC &)Functions.m_fNtDeviceIoControlFile = GetProcAddress(g_hNtDll, "NtDeviceIoControlFile");
 		(FARPROC &)Functions.m_fNtSetInformationFile = GetProcAddress(g_hNtDll, "NtSetInformationFile");
 		(FARPROC &)Functions.m_fRtlNtStatusToDosError = GetProcAddress(g_hNtDll, "RtlNtStatusToDosError");
+		(FARPROC &)Functions.m_fNtCreateWaitCompletionPacket = GetProcAddress(g_hNtDll, "NtCreateWaitCompletionPacket");
+		(FARPROC &)Functions.m_fNtAssociateWaitCompletionPacket = GetProcAddress(g_hNtDll, "NtAssociateWaitCompletionPacket");
+		(FARPROC &)Functions.m_fNtCancelWaitCompletionPacket = GetProcAddress(g_hNtDll, "NtCancelWaitCompletionPacket");
 
 		(FARPROC &)Functions.m_fNtQuerySystemInformation = GetProcAddress(g_hNtDll, "NtQuerySystemInformation");
 
@@ -6405,6 +6408,12 @@ CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 // *************************************************************************************************************************
 // Net Implementation
 // *************************************************************************************************************************
+
+// Constructs the shared poller on first use; returns null if the platform cannot provide an I/O loop.
+NMib::NSys::ICIoLoop *NMib::NSys::fg_GetSharedIoLoop()
+{
+	return fg_GetLocalSys()->m_SharedIoLoop->f_GetLoop();
+}
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
 {
