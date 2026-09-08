@@ -1674,6 +1674,16 @@ Target
 		!!MalterlibDefaultCompiler true
 	}
 
+	// Runtime-only library references are invisible to the linker, so stripping is opt-in.
+	LDFlags =+ "-Wl,-dead_strip_dylibs"
+	{
+		&
+		{
+			MalterlibDeadStripDylibs true
+			PlatformIsDarwin true
+		}
+	}
+
 	EmscriptenFastCompiler: bool?
 	EmscriptenEmscriptenRoot: string?
 	EmscriptenLLVMRoot: string?
