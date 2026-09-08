@@ -671,6 +671,7 @@ struct CThreadStartParams
 	void *m_pThreadParam;
 	umint m_ParentThreadID;
 	CStrNonTracked m_ThreadName;
+	EExecutionPriority m_Priority;
 };
 
 void *fg_ThreadStartRoutine(void *_pParams)
@@ -702,6 +703,9 @@ void *fg_ThreadStartRoutine(void *_pParams)
 #ifdef DPlatformFamily_Linux
 	if (NLocal::g_f_pthread_setname_np)
 		NLocal::g_f_pthread_setname_np(pthread_self(), StartParams.m_ThreadName.f_GetStr());
+
+	// Apply on the new thread; its kernel TID is not available to the creator.
+	fg_Linux_ApplyThreadScheduling(StartParams.m_Priority);
 #elif defined(DPlatformFamily_macOS)
 #if DPlatformVersion < 1060
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
@@ -975,6 +979,7 @@ void *NSys::fg_Thread_Create
 	pThreadParams->m_pThreadParam = _pParam;
 	pThreadParams->m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();
 	pThreadParams->m_ThreadName = _pThreadName;
+	pThreadParams->m_Priority = _Priority;
 #ifdef DPlatformFamily_Linux
 	pThreadParams->m_ThreadName = pThreadParams->m_ThreadName.f_Left(15);
 #endif
@@ -1086,6 +1091,12 @@ void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 
 	if (Result != 0)
 		DMibError(NPlatform::fg_FormatErrno("pthread_setschedparam (set thread priority)", Result));
+
+#ifdef DPlatformFamily_Linux
+	// Only the current thread's kernel TID is known here; other threads retain their startup clamp.
+	if ((pthread_t)_pThread == pthread_self())
+		fg_Linux_ApplyThreadScheduling(_Priority);
+#endif
 }
 
 void NSys::fg_Thread_Destroy(void *_pThread)
