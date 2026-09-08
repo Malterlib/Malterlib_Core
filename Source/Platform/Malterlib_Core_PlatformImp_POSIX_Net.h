@@ -48,6 +48,8 @@ struct CPOSIXSocket
 	ENetAddressType m_AddressType = ENetAddressType_None;
 	NStr::CStr m_UnixFilePath;
 	NStr::CStr m_PeerUnixFilePath;
+	dev_t m_UnixFileDevice = 0; // Bind-time file identity; a zero inode means unavailable and permits unconditional unlink.
+	ino_t m_UnixFileInode = 0;
 
 #if defined(DPlatformFamily_Linux)
 	int m_LocalPidFD = -1; // Pin process identities until close; 32-bit kernels may recycle pidfs inodes after the last pidfd closes.
@@ -215,6 +217,7 @@ public:
 private:
 
 	void fp_DestroySocket(CPOSIXSocket *_pSocket);
+	void fp_UnlinkUnixListenFile(CPOSIXSocket *_pSocket);
 
 	struct CPollerThread : public NMib::NThread::CThread
 	{

@@ -4601,32 +4601,43 @@ EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const& _FileNam
 	return fg_GetAttributes(_FileName);
 }
 
+namespace NMib::NPlatform
+{
+	// Returns volume and file ID (128-bit where supported, otherwise 64-bit index); false preserves the platform error.
+	bool fg_GetUniqueFileIdentifier(HANDLE _hFile, NMib::NFile::CUniqueFileIdentifier &o_Identifier)
+	{
+		if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx)
+		{
+			Undocumented_FILE_ID_INFO FileIDInfo;
+			if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx(_hFile, Undocumented_FileIdInfo, &FileIDInfo, sizeof(FileIDInfo)))
+			{
+				o_Identifier.m_VolumeID = FileIDInfo.VolumeSerialNumber;
+				o_Identifier.m_FileID = 0;
+				fg_MemCopy(&o_Identifier.m_FileID, &FileIDInfo.FileId, fg_Min(sizeof(o_Identifier.m_FileID), sizeof(FileIDInfo.FileId)));
+
+				return true;
+			}
+		}
+
+		BY_HANDLE_FILE_INFORMATION FileInfo;
+		if (!GetFileInformationByHandle(_hFile, &FileInfo))
+			return false;
+
+		o_Identifier.m_VolumeID = FileInfo.dwVolumeSerialNumber;
+		o_Identifier.m_FileID = uint64(FileInfo.nFileIndexHigh) << 32;
+		o_Identifier.m_FileID += FileInfo.nFileIndexLow;
+
+		return true;
+	}
+}
+
 NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(void *_pFile)
 {
 	auto pFile = ((CWin32File *)_pFile);
 
-	if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx)
-	{
-		Undocumented_FILE_ID_INFO FileIDInfo;
-		if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx(pFile->m_pFile, Undocumented_FileIdInfo, &FileIDInfo, sizeof(FileIDInfo)))
-		{
-			NMib::NFile::CUniqueFileIdentifier FileID;
-			FileID.m_VolumeID = FileIDInfo.VolumeSerialNumber;
-			FileID.m_FileID = 0;
-			fg_MemCopy(&FileID.m_FileID, &FileIDInfo.FileId, fg_Min(sizeof(FileID.m_FileID), sizeof(FileIDInfo.FileId)));
-
-			return FileID;
-		}
-	}
-
-	BY_HANDLE_FILE_INFORMATION FileInfo;
-	if (!GetFileInformationByHandle(pFile->m_pFile, &FileInfo))
-		DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << pFile->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-
 	NMib::NFile::CUniqueFileIdentifier FileID;
-	FileID.m_VolumeID = FileInfo.dwVolumeSerialNumber;
-	FileID.m_FileID = uint64(FileInfo.nFileIndexHigh) << 32;
-	FileID.m_FileID += FileInfo.nFileIndexLow;
+	if (!NMib::NPlatform::fg_GetUniqueFileIdentifier(pFile->m_pFile, FileID))
+		DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << pFile->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
 	return FileID;
 }
@@ -5930,6 +5941,21 @@ void NSys::NFile::fg_DeleteDirectory(const CStrNonTracked &_File);
 #define FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE  0x00000010
 #endif
 
+namespace NMib::NPlatform
+{
+	// Unlink the name immediately and delete on final handle close. False preserves the platform error.
+	bool fg_SetPosixDeleteDisposition(HANDLE _hFile)
+	{
+		FILE_DISPOSITION_INFO_EX Disposition;
+
+		Disposition.Flags = FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS;
+		if (NLocal::g_VersionInfo.dwBuildNumber >= 17763) // Windows 10 RS5
+			Disposition.Flags |= FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE;
+
+		return !!SetFileInformationByHandle(_hFile, FILE_INFO_BY_HANDLE_CLASS(21) /*FileDispositionInfoEx*/, &Disposition, sizeof(Disposition));
+	}
+}
+
 template <typename tf_CWStr, bool t_bThrowError, typename tf_CStr>
 static bool fg_DeleteGeneric(tf_CStr &_File)
 {
@@ -5940,13 +5966,7 @@ static bool fg_DeleteGeneric(tf_CStr &_File)
 
 	if (auto FileHandle = fg_PreparePosixSemanticsRenameOrDelete(FileName))
 	{
-		FILE_DISPOSITION_INFO_EX FileDispositoinInfo;
-
-		FileDispositoinInfo.Flags = FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS;
-		if (NLocal::g_VersionInfo.dwBuildNumber >= 17763) // Windows 10 RS5
-			FileDispositoinInfo.Flags |= FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE;
-
-		if (SetFileInformationByHandle(FileHandle.m_pHandle, FILE_INFO_BY_HANDLE_CLASS(21) /*FileDispositionInfoEx*/, &FileDispositoinInfo, sizeof(FileDispositoinInfo)))
+		if (NMib::NPlatform::fg_SetPosixDeleteDisposition(FileHandle.m_pHandle))
 			return true;
 
 		if constexpr (t_bThrowError)

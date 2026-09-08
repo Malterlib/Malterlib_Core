@@ -8,6 +8,8 @@
 #include <AclAPI.h>
 #include <mstcpip.h>
 
+#include <Mib/Core/PlatformSpecific/WindowsFilePath>
+
 // Apply Unix socket permission flags as Windows ACLs on the socket file
 static void fg_ApplyUnixSocketPermissions(CUnixAddress const &_UnixAddress)
 {
@@ -1330,15 +1332,53 @@ umint NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const 
 	return pSocket->m_pOwningLoop->f_SubmitSendVectored(pSocket->m_pIoRegistration, _pSpans, _nSpans, fg_Move(_fOnComplete), fg_Move(_fOnBufferReleased));
 }
 
+// Open the Unix socket reparse point itself; the caller closes the returned handle.
+static HANDLE fsg_OpenUnixListenFile(NStr::CStr const &_Path, DWORD _Access)
+{
+	CWStr WindowsPath = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(_Path);
+	return CreateFileW
+		(
+			WindowsPath
+			, _Access
+			, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+			, nullptr
+			, OPEN_EXISTING
+			, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT
+			, nullptr
+		)
+	;
+}
+
+// Empty identity means the platform cannot identify this file.
+static NFile::CUniqueFileIdentifier fsg_GetUnixListenFileIdentity(HANDLE _hFile)
+{
+	NFile::CUniqueFileIdentifier Identity;
+	if (!NMib::NPlatform::fg_GetUniqueFileIdentifier(_hFile, Identity))
+		Identity = {};
+
+	return Identity;
+}
+
 TCUniquePointer<CWindowsSocket::CUnixListenState> CWindowsSocketContext::fp_PrepareUnixListen(CWindowsAddress &o_Address)
 {
 	if (o_Address.f_GetType() == ENetAddressType_Unix)
 	{
 		CUnixAddress const &UnixAddress = o_Address.f_GetUnix();
 
+		// Concurrent listener teardown can remove the stale file first; absence is success.
 		NStr::CStr UnixFilePath = UnixAddress.f_GetPath();
 		if (NFile::CFile::fs_FileExists(UnixFilePath))
-			NFile::CFile::fs_DeleteFile(UnixFilePath);
+		{
+			try
+			{
+				NFile::CFile::fs_DeleteFile(UnixFilePath);
+			}
+			catch (NFile::CExceptionFile const &)
+			{
+				if (NFile::CFile::fs_FileExists(UnixFilePath))
+					throw;
+			}
+		}
 		auto Directory = NFile::CFile::fs_GetPath(UnixFilePath);
 		if (!NFile::CFile::fs_FileExists(Directory))
 			NFile::CFile::fs_CreateDirectory(Directory);
@@ -1420,6 +1460,18 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 	if (_Address.f_GetType() == ENetAddressType_Unix)
 		fg_ApplyUnixSocketPermissions(_Address.f_GetUnix());
 
+	// Capture identity immediately after bind to minimize the window for confusing a successor's file with this one.
+	NFile::CUniqueFileIdentifier UnixListenFileIdentity;
+	if (AddressType == ENetAddressType_Unix && !pUnixListen)
+	{
+		HANDLE hFile = fsg_OpenUnixListenFile(Address.f_GetUnix().f_GetPath(), FILE_READ_ATTRIBUTES);
+		if (hFile != INVALID_HANDLE_VALUE)
+		{
+			UnixListenFileIdentity = fsg_GetUnixListenFileIdentity(hFile);
+			CloseHandle(hFile);
+		}
+	}
+
 	// Accepted sockets inherit the fast path from the listener; only loopback peers that opted
 	// in themselves take it
 	if (AddressType != ENetAddressType_Unix)
@@ -1440,6 +1492,12 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Listen, EWindowsSocketEvent_Read, fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = AddressType;
 	pSocket->m_pUnixListen = fg_Move(pUnixListen);
+
+	if (AddressType == ENetAddressType_Unix && !pSocket->m_pUnixListen)
+	{
+		pSocket->m_UnixListenPath = Address.f_GetUnix().f_GetPath();
+		pSocket->m_UnixListenFileIdentity = UnixListenFileIdentity;
+	}
 
 	if (pSocket->m_pUnixListen)
 	{
@@ -1650,6 +1708,29 @@ static void fsg_DumpTcpInfoAtClose(CWindowsSocket *_pSocket)
 }
 #endif
 
+// Remove the listener path when close starts, before asynchronous socket destruction.
+// Compare and delete through one handle so path replacement cannot delete a successor's file.
+// If bind-time identity was unavailable, removal is unconditional; emulated port files belong to their listen state.
+void CWindowsSocketContext::fp_RemoveUnixListenFile(CWindowsSocket *_pSocket)
+{
+	_pSocket->m_pUnixListen.f_Clear();
+
+	if (_pSocket->m_UnixListenPath.f_IsEmpty())
+		return;
+
+	HANDLE hFile = fsg_OpenUnixListenFile(_pSocket->m_UnixListenPath, DELETE | FILE_READ_ATTRIBUTES);
+	_pSocket->m_UnixListenPath.f_Clear();
+	if (hFile == INVALID_HANDLE_VALUE)
+		return;
+
+	// POSIX delete removes the name while the handle is open; native Unix-socket Windows versions support it.
+	bool bOwn = _pSocket->m_UnixListenFileIdentity == NFile::CUniqueFileIdentifier{} || fsg_GetUnixListenFileIdentity(hFile) == _pSocket->m_UnixListenFileIdentity;
+	if (bOwn)
+		NMib::NPlatform::fg_SetPosixDeleteDisposition(hFile);
+
+	CloseHandle(hFile);
+}
+
 // Run only after no loop reference remains; closes the handle and frees the socket.
 void CWindowsSocketContext::fp_DestroySocket(CWindowsSocket *_pSocket)
 {
@@ -1675,6 +1756,7 @@ bool CWindowsSocketContext::f_Close(CWindowsSocket *_pSocket)
 	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_PollerThread.mp_pLoop && _pSocket->m_Socket != INVALID_SOCKET)
 		DMibErrorNet("Synchronous close on a pool-hosted loop; use the asynchronous form");
 
+	fp_RemoveUnixListenFile(_pSocket);
 	if (_pSocket->m_Socket != INVALID_SOCKET)
 	{
 		if (pOwningLoop && _pSocket->m_pIoRegistration)
@@ -1699,12 +1781,14 @@ void CWindowsSocketContext::f_CloseAsync(CWindowsSocket *_pSocket, NMib::NFuncti
 
 	if (pOwningLoop && _pSocket->m_pIoRegistration && _pSocket->m_Socket != INVALID_SOCKET)
 	{
-		// Always defer registered sockets through their loop; pool threads cannot block on each other's deregistrations.
-		// The handle and socket file are unavailable for reuse until the continuation runs.
+		// Defer descriptor destruction through the loop to avoid pool-thread cross-wait deadlocks.
+		// The continuation marks handle closure; unlink the listener path now so it can be rebound immediately.
 		{
 			DMibLock(_pSocket->m_Lock);
 			_pSocket->m_fOnStateChange.f_Clear();
 		}
+
+		fp_RemoveUnixListenFile(_pSocket);
 
 		pOwningLoop->f_DeregisterAsync
 			(
@@ -1726,6 +1810,7 @@ void CWindowsSocketContext::f_CloseAsync(CWindowsSocket *_pSocket, NMib::NFuncti
 		_pSocket->m_fOnStateChange.f_Clear();
 	}
 
+	fp_RemoveUnixListenFile(_pSocket);
 	fp_DestroySocket(_pSocket);
 	if (_fOnClosed)
 		_fOnClosed();
