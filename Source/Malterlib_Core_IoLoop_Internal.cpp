@@ -60,6 +60,10 @@ void CIoLoop_Base::fp_RunDeregAcknowledgement(CIoLoopDeferredAck &_Ack)
 void CIoLoop_Base::f_SetOwnerThreadToCurrent()
 {
 	mp_OwnerThreadUID.f_Store((umint)NSys::fg_Thread_GetCurrentUID(), NAtomic::gc_MemoryOrder_Release);
+
+	// So this thread can be asked which loop it drives, which is what a consumer needs when the
+	// thread its callbacks run on is part of its contract
+	NSys::fg_SetOwnedIoLoop(this);
 }
 
 bool CIoLoop_Base::fp_IsOwnerThread() const

@@ -84,6 +84,11 @@ namespace NMib
 		// Set while the thread is creating io objects that should belong to a loop it owns, so that
 		// their registration happens with that loop straight away (NSys::fg_SetThreadIoLoop)
 		NSys::ICIoLoop *m_pThreadIoLoop = nullptr;
+		// The loop this thread drives, set when it claims one. Unlike m_pThreadIoLoop, which names
+		// where new io objects should be created and round robins over the pool, this one answers
+		// "whose callbacks run on me", which is what a consumer needs when the thread it runs on is
+		// part of its contract (NSys::fg_GetOwnedIoLoop)
+		NSys::ICIoLoop *m_pOwnedIoLoop = nullptr;
 		CCoroutineHandler *m_pCurrentCoroutineHandler = nullptr;
 #if DMibConfig_Tests_Enable
 		NConcurrency::ECoroutineFlag m_ExtraCoroutineFlags = NConcurrency::ECoroutineFlag_None;

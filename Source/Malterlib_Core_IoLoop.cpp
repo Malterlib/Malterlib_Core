@@ -25,6 +25,16 @@ namespace NMib::NSys
 		return fg_SystemThreadLocal().m_pThreadIoLoop;
 	}
 
+	void fg_SetOwnedIoLoop(ICIoLoop *_pLoop)
+	{
+		fg_SystemThreadLocal().m_pOwnedIoLoop = _pLoop;
+	}
+
+	ICIoLoop *fg_GetOwnedIoLoop()
+	{
+		return fg_SystemThreadLocal().m_pOwnedIoLoop;
+	}
+
 	void ICThreadIoLoop::f_DrainForShutdown()
 	{
 		f_PollAndDispatch();

@@ -383,6 +383,13 @@ namespace NMib::NSys
 	void fg_SetThreadIoLoop(ICIoLoop *_pLoop);
 	ICIoLoop *fg_GetThreadIoLoop();
 
+	// The loop this thread drives, as opposed to fg_GetThreadIoLoop's binding, which names where
+	// new io objects should be created and round robins over the pool. Null on a thread that drives
+	// none. Recorded by the loop itself when a thread claims it, so a consumer whose callbacks must
+	// run on one particular thread can ask for that thread's own loop and no other
+	void fg_SetOwnedIoLoop(ICIoLoop *_pLoop);
+	ICIoLoop *fg_GetOwnedIoLoop();
+
 	// The process wide loop for descriptors whose owner did not bind one of its own, hosted on a
 	// thread created the first time somebody asks for it. Every consumer shares it, so a process
 	// pays for one such thread however many subsystems need somewhere to watch a descriptor.
