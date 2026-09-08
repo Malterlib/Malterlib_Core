@@ -671,6 +671,7 @@ struct CThreadStartParams
 	void *m_pThreadParam;
 	umint m_ParentThreadID;
 	CStrNonTracked m_ThreadName;
+	EExecutionPriority m_Priority;
 };
 
 void *fg_ThreadStartRoutine(void *_pParams)
@@ -698,6 +699,10 @@ void *fg_ThreadStartRoutine(void *_pParams)
 #ifdef DPlatformFamily_Linux
 	if (NLocal::g_f_pthread_setname_np)
 		NLocal::g_f_pthread_setname_np(pthread_self(), StartParams.m_ThreadName.f_GetStr());
+
+	// The band's clamp is per thread and can only be set by the thread itself without its kernel
+	// id, so it is done here, first thing
+	fg_Linux_ApplyThreadScheduling(StartParams.m_Priority);
 #elif defined(DPlatformFamily_macOS)
 #if DPlatformVersion < 1060
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
@@ -971,6 +976,7 @@ void *NSys::fg_Thread_Create
 	pThreadParams->m_pThreadParam = _pParam;
 	pThreadParams->m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();
 	pThreadParams->m_ThreadName = _pThreadName;
+	pThreadParams->m_Priority = _Priority;
 #ifdef DPlatformFamily_Linux
 	pThreadParams->m_ThreadName = pThreadParams->m_ThreadName.f_Left(15);
 #endif
@@ -1082,6 +1088,14 @@ void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 
 	if (Result != 0)
 		DMibError(NPlatform::fg_FormatErrno("pthread_setschedparam (set thread priority)", Result));
+
+#ifdef DPlatformFamily_Linux
+	// The band's clamp follows the priority for the thread itself, as the quality of service does
+	// on macOS above. Another thread's kernel id is not known here, so its clamp stays what it
+	// applied at start; the concurrency pools set their priority before their threads exist
+	if ((pthread_t)_pThread == pthread_self())
+		fg_Linux_ApplyThreadScheduling(_Priority);
+#endif
 }
 
 void NSys::fg_Thread_Destroy(void *_pThread)

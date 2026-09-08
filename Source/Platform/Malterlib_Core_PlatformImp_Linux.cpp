@@ -272,6 +272,7 @@ static inline_small class CSystemLinux *fg_GetLocalSys();
 #define DMibPLinuxKernel
 #define DMibConfig_FutexImplemented
 
+#include "Malterlib_Core_PlatformImp_Linux_Scheduling.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX_PThread.hpp"
 #include "Malterlib_Core_PlatformImp_Linux_PThread.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX.imp.h"
