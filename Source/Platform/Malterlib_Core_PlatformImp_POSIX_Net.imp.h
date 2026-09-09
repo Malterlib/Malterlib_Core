@@ -211,7 +211,6 @@ CPOSIXAddress* CPOSIXSocketContext::f_DuplicateAddress(CPOSIXAddress const &_Add
 	return pNewAddress.f_Detach();
 }
 
-
 NMib::NNetwork::ENetAddressType CPOSIXSocketContext::f_GetAddressType(CPOSIXAddress const &_Address)
 {
 	return _Address.f_GetType();
@@ -322,144 +321,20 @@ tf_CStr fg_FormatGAI(typename tf_CStr::CFormat &&_Desc, int _Err)
 
 CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, ENetAddressType _PreferType, bool _bThrowOnError)
 {
-	NMib::NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct();
-
-	if (_Address.f_StartsWith("UNIX(") || _Address.f_StartsWith("UNIX:"))
-	{
-		auto Address = CUnixAddress::fs_Parse(_Address, _bThrowOnError);
-		if (!Address)
-			return nullptr;
-
-		pAddress->f_Set(fg_Move(*Address));
-		return pAddress.f_Detach();
-	}
-	else if (mp_ImpSpecific.f_ResolveAddress(*pAddress, _Address, _PreferType))
-	{
-		return pAddress.f_Detach();
-	}
-
-	addrinfo AddrHint;
-	fg_MemClear(AddrHint);
-
-	CStr AddressStr = _Address;
-
-	if (_Address.f_StartsWith("IPv4:"))
-	{
-		_PreferType = ENetAddressType_TCPv4;
-		AddressStr = _Address.f_Extract(fg_StrLen("IPv4:"));
-	}
-	else if (_Address.f_StartsWith("IPv6:"))
-	{
-		_PreferType = ENetAddressType_TCPv6;
-		AddressStr = _Address.f_Extract(fg_StrLen("IPv6:"));
-	}
-
-	CStr Service;
-
-	bool bCanParsePort;
-	if (_PreferType == ENetAddressType_TCPv6)
-	{
-		if (AddressStr.f_StartsWith("["))
-			bCanParsePort = true;
-		else if (AddressStr.f_FindChar(':') == AddressStr.f_FindCharReverse(':'))
-			bCanParsePort = true;
-		else
-			bCanParsePort = false;
-	}
-	else
-		bCanParsePort = true;
-
-	if (auto iService = AddressStr.f_FindCharReverse(':'); bCanParsePort && iService >= 0)
-	{
-		Service = AddressStr.f_Extract(iService + 1);
-		AddressStr = AddressStr.f_Left(iService);
-	}
-
-	if (_PreferType == ENetAddressType_TCPv6)
-		AddressStr = AddressStr.f_RemovePrefix("[").f_RemoveSuffix("]");
-
-	if (_PreferType == ENetAddressType_TCPv6)
-		AddrHint.ai_family = AF_INET6;
-	else
-		AddrHint.ai_family = AF_INET;
-
-	AddrHint.ai_socktype = SOCK_STREAM;
-
-	AddrHint.ai_flags = AI_ADDRCONFIG;
-
-	addrinfo* pAddresses = nullptr;
-
-	auto Cleanup = fg_OnScopeExit(
-			[&]()
+	auto Addresses = f_ResolveAddresses(_Address, _PreferType, _bThrowOnError);
+	auto Cleanup = g_OnScopeExit / [&Addresses]
+		{
+			for (auto Address : Addresses)
 			{
-				if (pAddresses != nullptr)
-					freeaddrinfo(pAddresses);
+				NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Explicit(static_cast<CPOSIXAddress *>(Address));
 			}
-		);
+		}
+	;
 
-	int Result = getaddrinfo(AddressStr.f_GetStr(), Service.f_GetStr(), &AddrHint, &pAddresses);
+	if (Addresses.f_IsEmpty())
+		return nullptr;
 
-	// Try TCPv4 first, then v6.
-	if (_PreferType == ENetAddressType_None && Result != 0)
-	{
-		freeaddrinfo(pAddresses);
-		pAddresses = nullptr;
-
-		AddrHint.ai_family = AF_INET6;
-		Result = getaddrinfo(AddressStr.f_GetStr(), Service.f_GetStr(), &AddrHint, &pAddresses);
-	}
-
-	if
-		(
-			Result != 0
-			&&
-			(
-				_Address == NMib::NProcess::NPlatform::fg_Process_GetComputerAddress()
-				|| _Address == NMib::NProcess::NPlatform::fg_Process_GetHostName()
-				|| _Address == NMib::NProcess::NPlatform::fg_Process_GetFullyQualiedHostName()
-			)
-		)
-		Result = getaddrinfo("localhost", Service.f_GetStr(), &AddrHint, &pAddresses);
-
-	if (Result != 0)
-	{
-		if (_bThrowOnError)
-			DMibErrorNet(::fg_FormatGAI<CStr>("getaddrinfo('{}', '{}')"_f << AddressStr << Service, Result));
-		else
-			return nullptr;
-	}
-
-	// Just use the first address of the correct family returned (all should be of the correct family).
-	addrinfo *pChosenAddress = pAddresses;
-	{
-		while(		pChosenAddress && pChosenAddress->ai_family != AF_INET
-				&&	pChosenAddress && pChosenAddress->ai_family != AF_INET6)
-			pChosenAddress = pChosenAddress->ai_next;
-
-		if (!_bThrowOnError && !pChosenAddress)
-			return nullptr;
-		else if (!pChosenAddress)
-			DMibErrorNet("No supported valid address found");
-	}
-
-	if (pChosenAddress->ai_family == AF_INET)
-	{
-		pAddress->f_Set(*(sockaddr_in const*)pChosenAddress->ai_addr);
-	}
-	else if (pChosenAddress->ai_family == AF_INET6)
-	{
-		pAddress->f_Set(*(sockaddr_in6 const*)pChosenAddress->ai_addr);
-	}
-	else
-	{
-//		DMibNeverGetHere;
-		if (_bThrowOnError)
-			DMibErrorNet("Address is not from a supported adress type");
-		else
-			return nullptr;
-	}
-
-	return pAddress.f_Detach();
+	return static_cast<CPOSIXAddress *>(fg_Exchange(Addresses[0], nullptr));
 }
 
 void *CPOSIXSocketContext::f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish)
@@ -2380,3 +2255,5 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 }
 
 #include "Malterlib_Core_PlatformImp_Net.imp.h"
+
+#include "Malterlib_Core_PlatformImp_POSIX_Resolver.hpp"

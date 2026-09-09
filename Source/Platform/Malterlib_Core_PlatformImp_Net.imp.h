@@ -3,8 +3,6 @@
 
 #include "Malterlib_Core_PlatformImp_Net.h"
 
-// NOTE:	The order in which the locks are taken is critical to avoiding deadlocks!
-
 CAddressResolver::CAddressResolver()
 {
 	mp_pThread = NThread::CThreadObject::fs_StartThread
@@ -64,7 +62,7 @@ bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddr
 {
 	CResolveRequest* pReq = (CResolveRequest*)_pResolver;
 
-	DMibLock(pReq->m_Lock);
+	DMibLock(mp_Lock);
 	if (pReq->m_Flags & EFlag_Done)
 	{
 		_oAddress = pReq->m_Address;
@@ -83,58 +81,85 @@ bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddr
 	}
 }
 
-void CAddressResolver::f_Close(void* _pResolver)
+void CAddressResolver::f_Close(void *_pResolver)
 {
-	CResolveRequest* pReq = (CResolveRequest*)_pResolver;
+	if (mp_pThread && mp_pThread->f_CallingFromThread())
+		DMibErrorNet("Use f_CloseAsync from a resolver callback");
 
-	{
-		DMibLock(mp_Lock);
-		NMib::NThread::TCScopeLock<decltype(pReq->m_Lock)> ReqLocker(pReq->m_Lock);
+	NThread::CEventAutoReset Closed;
+	f_CloseAsync
+		(
+			_pResolver
+			, [&Closed]
+			{
+				Closed.f_Signal();
+			}
+		)
+	;
 
-		if (pReq->m_Flags & EFlag_Pending)
-			mp_PendingList.f_Remove(pReq);
-		else
-			mp_DoneOrInProgressList.f_Remove(pReq);
-	}
-	fg_DeleteObject(NMemory::CDefaultAllocator(), pReq);
+	Closed.f_Wait();
 }
 
-aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject* _pThread)
+aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject *_pThread)
 {
-	while(_pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
+	while (_pThread->f_GetState() != NThread::EThreadState_EventWantQuit)
 	{
-		CResolveRequest* pReq;
-
-		while (1)
+		while (true)
 		{
+			CResolveRequest *pReq;
+
 			{
 				DMibLock(mp_Lock);
 				pReq = mp_PendingList.f_Pop();
-
 				if (!pReq)
 					break;
 
 				mp_DoneOrInProgressList.f_Push(pReq);
 				pReq->m_Flags &= ~EFlag_Pending;
-				pReq->m_Lock.f_Lock();
+				pReq->m_Flags |= EFlag_Running;
 			}
+
+			auto Complete = g_OnScopeExit / [this, pReq]
+				{
+					{
+						DMibLock(mp_Lock);
+						pReq->m_Flags &= ~EFlag_Running;
+						if (!(pReq->m_Flags & EFlag_Closing))
+							return;
+
+						mp_DoneOrInProgressList.f_Remove(pReq);
+					}
+
+					fs_CloseRequest(pReq);
+				}
+			;
+
+			NMib::NSys::NNetwork::CAddress Address = nullptr;
+			NStr::CStr Error;
 
 			try
 			{
-				pReq->m_Address = NMib::NSys::NNetwork::fg_ResolveAddress(pReq->m_Name, pReq->m_PreferType);
+				Address = NMib::NSys::NNetwork::fg_ResolveAddress(pReq->m_Name, pReq->m_PreferType);
 			}
-			catch(NMib::NNetwork::CExceptionNet const &_Error)
+			catch (NMib::NNetwork::CExceptionNet const &_Error)
 			{
-				pReq->m_ErrorString = _Error.f_GetErrorStr();
-				pReq->m_Address = nullptr;
+				Error = _Error.f_GetErrorStr();
 			}
 
-			pReq->m_Flags |= pReq->m_Address ? EFlag_Done : EFlag_Error;
+			NMib::NFunction::TCFunctionMutable<void ()> fOnFinish;
 
-			if (pReq->m_fOnFinish)
-				pReq->m_fOnFinish();
+			{
+				DMibLock(mp_Lock);
+				pReq->m_Address = Address;
+				pReq->m_ErrorString = fg_Move(Error);
+				pReq->m_Flags |= Address ? EFlag_Done : EFlag_Error;
 
-			pReq->m_Lock.f_Unlock();
+				if (!(pReq->m_Flags & EFlag_Closing))
+					fOnFinish = fg_Move(pReq->m_fOnFinish);
+			}
+
+			if (fOnFinish)
+				fOnFinish();
 		}
 
 		_pThread->m_EventWantQuit.f_Wait();
@@ -148,7 +173,6 @@ bool CAddressResolver::f_IsEmpty()
 	DMibLock(mp_Lock);
 	return mp_PendingList.f_IsEmpty() && mp_DoneOrInProgressList.f_IsEmpty();
 }
-
 
 NStorage::TCOptional<CUnixAddress> CUnixAddress::fs_Parse(NMib::NStr::CStr const &_Address, bool _bThrowOnError)
 {
@@ -227,6 +251,7 @@ NStorage::TCOptional<CUnixAddress> CUnixAddress::fs_Parse(NMib::NStr::CStr const
 	}
 
 	CUnixAddress AddressWithPermissions;
+	NMemory::fg_MemClear(AddressWithPermissions);
 	AddressWithPermissions.m_Permissions = Permissions;
 
 	auto &AddressUn = AddressWithPermissions.m_UnixAddress;
@@ -240,3 +265,5 @@ NStorage::TCOptional<CUnixAddress> CUnixAddress::fs_Parse(NMib::NStr::CStr const
 
 	return fg_Move(AddressWithPermissions);
 }
+
+#include "Malterlib_Core_PlatformImp_Net_Resolver.hpp"

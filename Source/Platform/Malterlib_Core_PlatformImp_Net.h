@@ -6,7 +6,7 @@
 #include <Mib/Core/Core>
 
 // A simple async name resolver.
-class CAddressResolver
+struct CAddressResolver
 {
 private:
 	enum EFlag
@@ -15,38 +15,36 @@ private:
 		EFlag_Done		= DMibBit(0),
 		EFlag_Error		= DMibBit(1),
 		EFlag_Pending	= DMibBit(2),
+		EFlag_Running	= DMibBit(3),
+		EFlag_Closing	= DMibBit(4),
 	};
 
 	struct CResolveRequest
 	{
-		CResolveRequest()
-			: m_Flags(EFlag_None)
-			, m_Address(nullptr)
-		{}
-
 		~CResolveRequest()
 		{
 			NMib::NSys::NNetwork::fg_FreeAddress(m_Address);
 		}
 
 		NStr::CStr m_Name;
+		NMib::NSys::NNetwork::CAddress m_Address = nullptr;
+		NMib::NFunction::TCFunctionMutable<void ()> m_fOnFinish;
+		NMib::NFunction::TCFunctionMovable<void ()> m_fOnClosed;
+		NMib::NStr::CStr m_ErrorString;
 
-		NThread::CMutual m_Lock;
-			EFlag m_Flags;
-			NMib::NSys::NNetwork::CAddress m_Address;
-			NMib::NFunction::TCFunctionMutable<void ()> m_fOnFinish;
-			NMib::NStr::CStr m_ErrorString;
-			NMib::NNetwork::ENetAddressType m_PreferType;
-
-		// Protected by CResolveThread::mp_Lock.
+		// Request state and list membership are protected by CAddressResolver::mp_Lock.
 		DMibListLinkS_Link(CResolveRequest, m_Link);
+		NMib::NNetwork::ENetAddressType m_PreferType;
+		EFlag m_Flags = EFlag_None;
 	};
 
 	NThread::CMutual mp_Lock;
-		DMibListLinkS_List(CResolveRequest, m_Link) mp_PendingList;
-		DMibListLinkS_List(CResolveRequest, m_Link) mp_DoneOrInProgressList;
+	DMibListLinkS_List(CResolveRequest, m_Link) mp_PendingList;
+	DMibListLinkS_List(CResolveRequest, m_Link) mp_DoneOrInProgressList;
 
 	NStorage::TCUniquePointer<NThread::CThreadObject> mp_pThread;
+
+	static void fs_CloseRequest(CResolveRequest *_pRequest);
 
 	aint fp_ResolveWorker(NThread::CThreadObject* _pThread);
 
@@ -61,6 +59,7 @@ public:
 	void* f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
 	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error);
 	void f_Close(void* _pResolver);
+	void f_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 
 	bool f_IsEmpty();
 };
@@ -121,6 +120,9 @@ public:
 		f_Set(_Unix);
 	}
 
+	template <typename tf_CAddressInfo>
+	static auto fs_FromResolved(tf_CAddressInfo const *_pResults) -> NContainer::TCVector<NSys::NNetwork::CAddress>;
+
 	NMib::NNetwork::ENetAddressType f_GetType() const
 	{
 		return mp_Type;
@@ -154,6 +156,8 @@ public:
 	{
 		f_Set(NMib::NNetwork::ENetAddressType_Unix, &_Unix, sizeof(CUnixAddress));
 	}
+
+	uint32 f_GetScopeID() const;
 
 	umint f_GetFullDataLen() const { return mp_lData.f_GetLen(); }
 	umint f_GetSockAddrLen() const
@@ -199,3 +203,4 @@ public:
 	}
 };
 
+#include "Malterlib_Core_PlatformImp_Net_Address.hpp"

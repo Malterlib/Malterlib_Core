@@ -3351,6 +3351,11 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAd
 	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CPOSIXAddress*)_Address);
 }
 
+uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _Address)
+{
+	return static_cast<CPOSIXAddress const *>(_Address)->f_GetScopeID();
+}
+
 bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -3366,6 +3371,18 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddre
 NSys::NNetwork::CAddress NSys::NNetwork::fg_ResolveAddress(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_ResolveAddress(_Address, _PreferType);
+}
+
+// The caller releases each returned address with fg_FreeAddress.
+auto NSys::NNetwork::fg_ResolveAddresses(NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType) -> NContainer::TCVector<CAddress>
+{
+	return fg_GetLocalSys()->m_SocketContext->f_ResolveAddresses(_Address, _PreferType);
+}
+
+// The caller releases each returned address with fg_FreeAddress.
+auto NSys::NNetwork::fg_ResolveHost(NStr::CStr const &_Host, NMib::NNetwork::ENetAddressType _PreferType) -> NContainer::TCVector<CAddress>
+{
+	return fg_GetLocalSys()->m_SocketContext->f_ResolveHost(_Host, _PreferType);
 }
 
 umint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
@@ -3386,6 +3403,11 @@ bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NN
 void NSys::NNetwork::fg_AsyncResolveAddress_Close(void *_pResolver)
 {
 	fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_Close(_pResolver);
+}
+
+void NSys::NNetwork::fg_AsyncResolveAddress_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
+{
+	fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_CloseAsync(_pResolver, fg_Move(_fOnClosed));
 }
 
 int NSys::NNetwork::fg_CompareAddresses(NSys::NNetwork::CAddress _pFirst, NSys::NNetwork::CAddress _pSecond)

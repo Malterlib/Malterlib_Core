@@ -174,9 +174,16 @@ public:
 		CPOSIXAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError);
 		CPOSIXAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
 
+		auto f_ResolveAddresses(NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError = true)
+			-> NContainer::TCVector<NSys::NNetwork::CAddress>
+		;
+
+		NContainer::TCVector<NSys::NNetwork::CAddress> f_ResolveHost(NStr::CStr const &_Host, NMib::NNetwork::ENetAddressType _PreferType);
+
 		void *f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
 		bool f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress*& _opAddress, NMib::NStr::CStr &_Error);
 		void f_AsyncResolveAddress_Close(void *_pResolver);
+		void f_AsyncResolveAddress_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 
 		int f_CompareAddresses(CPOSIXAddress const& _pFirst, CPOSIXAddress const& _pSecond);
 
