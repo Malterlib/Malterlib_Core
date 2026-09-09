@@ -336,9 +336,33 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 
 CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError)
 {
+	auto Addresses = f_ResolveAddresses(_Address, _PreferType, _bThrowOnError);
+	auto Cleanup = g_OnScopeExit / [&Addresses]
+		{
+			for (auto Address : Addresses)
+			{
+				NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Explicit(static_cast<CWindowsAddress *>(Address));
+			}
+		}
+	;
+
+	if (Addresses.f_IsEmpty())
+		return nullptr;
+
+	return static_cast<CWindowsAddress *>(fg_Exchange(Addresses[0], nullptr));
+}
+
+// Returns an owned local/numeric address, or a hostname and port for DNS. No DNS is performed.
+// Service database and platform-specific address operations may block.
+auto CWindowsSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, NSys::NNetwork::CResolveAddressParameters &o_Parameters, bool _bThrowOnError)
+	-> NSys::NNetwork::CAddress
+{
+	o_Parameters.m_Host.f_Clear();
+	o_Parameters.m_Port = 0;
+
 	f_CheckFailed();
 
-	NMib::NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct();
+	CWindowsAddress ResolvedAddress;
 
 	if (_Address.f_StartsWith("UNIX(") || _Address.f_StartsWith("UNIX:"))
 	{
@@ -346,62 +370,102 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 		if (!Address)
 			return nullptr;
 
-		pAddress->f_Set(fg_Move(*Address));
+		ResolvedAddress.f_Set(fg_Move(*Address));
+		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(fg_Move(ResolvedAddress));
+
 		return pAddress.f_Detach();
 	}
 
-	ADDRINFOW AddrHint;
-	fg_MemClear(AddrHint);
+	NStr::CStr Service;
+	CWindowsAddress::fs_ParseEndpoint(_Address, o_Parameters, Service);
 
-	AddrHint.ai_family = AF_INET;
+	ADDRINFOW Hints{};
+	Hints.ai_family = o_Parameters.m_PreferType == ENetAddressType_TCPv6 ? AF_INET6 : AF_INET;
+	Hints.ai_socktype = SOCK_STREAM;
+	Hints.ai_flags = AI_NUMERICHOST;
+	ADDRINFOW *pResults = nullptr;
+	auto Cleanup = g_OnScopeExit / [&pResults]
+		{
+			if (pResults)
+				FreeAddrInfoW(pResults);
+		}
+	;
 
-	CStr AddressStr = _Address;
-
-	if (_Address.f_StartsWith("IPv4:"))
+	CWStr Host = NStr::NPlatform::fg_StrToWindows(o_Parameters.m_Host);
+	CWStr NativeService = NStr::NPlatform::fg_StrToWindows(Service);
+	int Error = GetAddrInfoW(Host.f_GetStr(), NativeService.f_GetStr(), &Hints, &pResults);
+	if (Error && o_Parameters.m_PreferType == ENetAddressType_None)
 	{
-		_PreferType = ENetAddressType_TCPv4;
-		AddressStr = _Address.f_Extract(fg_StrLen("IPv4:"));
-	}
-	else if (_Address.f_StartsWith("IPv6:"))
-	{
-		_PreferType = ENetAddressType_TCPv6;
-		AddressStr = _Address.f_Extract(fg_StrLen("IPv6:"));
-	}
-
-	CWStr Service;
-
-	bool bCanParsePort;
-	if (_PreferType == ENetAddressType_TCPv6)
-	{
-		if (AddressStr.f_StartsWith("["))
-			bCanParsePort = true;
-		else if (AddressStr.f_FindChar(':') == AddressStr.f_FindCharReverse(':'))
-			bCanParsePort = true;
-		else
-			bCanParsePort = false;
-	}
-	else
-		bCanParsePort = true;
-
-	if (auto iService = AddressStr.f_FindCharReverse(':'); bCanParsePort && iService >= 0)
-	{
-		Service = AddressStr.f_Extract(iService + 1);
-		AddressStr = AddressStr.f_Left(iService);
+		if (pResults)
+			FreeAddrInfoW(pResults);
+		pResults = nullptr;
+		Hints.ai_family = AF_INET6;
+		Error = GetAddrInfoW(Host.f_GetStr(), NativeService.f_GetStr(), &Hints, &pResults);
 	}
 
-	if (_PreferType == ENetAddressType_TCPv6)
-		AddressStr = AddressStr.f_RemovePrefix("[").f_RemoveSuffix("]");
+	if (!Error && pResults)
+	{
+		auto Address = CWindowsAddress::fs_FromNative(pResults->ai_addr, pResults->ai_addrlen);
+		o_Parameters.m_Host.f_Clear();
 
-	if (_PreferType == ENetAddressType_TCPv6)
-		AddrHint.ai_family = AF_INET6;
-	else
-		AddrHint.ai_family = AF_INET;
+		return Address.f_Detach();
+	}
 
+	if (Service.f_IsEmpty())
+		return nullptr;
+
+	if (pResults)
+		FreeAddrInfoW(pResults);
+	pResults = nullptr;
+	Hints.ai_family = AF_INET;
+	Hints.ai_flags = AI_NUMERICHOST | AI_PASSIVE;
+	Error = GetAddrInfoW(nullptr, NativeService.f_GetStr(), &Hints, &pResults);
+	if (Error || !pResults)
+	{
+		o_Parameters.m_Host.f_Clear();
+		if (_bThrowOnError)
+			DMibErrorNet(NStr::fg_Format("Could not resolve service '{}': {}", Service, NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)));
+
+		return nullptr;
+	}
+
+	o_Parameters.m_Port = ntohs(reinterpret_cast<sockaddr_in const *>(pResults->ai_addr)->sin_port);
+
+	return nullptr;
+}
+
+auto CWindowsSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError)
+	-> NContainer::TCVector<NSys::NNetwork::CAddress>
+{
+	NSys::NNetwork::CResolveAddressParameters Parameters;
+	Parameters.m_PreferType = _PreferType;
+	NStorage::TCUniquePointer<CWindowsAddress> Address = fg_Explicit(static_cast<CWindowsAddress *>(f_PrepareResolveAddress(_Address, Parameters, _bThrowOnError)));
+	if (Address)
+	{
+		NContainer::TCVector<NSys::NNetwork::CAddress> Addresses{Address.f_Get()};
+		Address.f_Detach();
+
+		return Addresses;
+	}
+	if (Parameters.m_Host.f_IsEmpty())
+		return {};
+
+	_PreferType = Parameters.m_PreferType;
+	auto const &AddressStr = Parameters.m_Host;
+	CWStr Service = NStr::NPlatform::fg_StrToWindows(NStr::fg_Format("{}", Parameters.m_Port));
+	ADDRINFOW AddrHint{};
+	AddrHint.ai_family = _PreferType == ENetAddressType_TCPv6 ? AF_INET6 : AF_INET;
 	AddrHint.ai_socktype = SOCK_STREAM;
-
-	AddrHint.ai_flags = AI_ADDRCONFIG;
+	AddrHint.ai_flags = AI_ADDRCONFIG | AI_NUMERICSERV;
 
 	ADDRINFOW* pAddresses = nullptr;
+
+	auto Cleanup = g_OnScopeExit / [&pAddresses]
+		{
+			if (pAddresses)
+				FreeAddrInfoW(pAddresses);
+		}
+	;
 
 	CWStr AddressStrWin = NStr::NPlatform::fg_StrToWindows(AddressStr);
 
@@ -410,6 +474,10 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 	// Try TCPv4 first, then v6.
 	if (_PreferType == ENetAddressType_None && Result != 0)
 	{
+		if (pAddresses)
+			FreeAddrInfoW(pAddresses);
+		pAddresses = nullptr;
+
 		AddrHint.ai_family = AF_INET6;
 		Result = GetAddrInfoW(AddressStrWin.f_GetStr(), Service.f_GetStr(), &AddrHint, &pAddresses);
 	}
@@ -418,7 +486,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 	{
 		if (!_bThrowOnError && Result == EAI_NONAME)
 		{
-			return nullptr;
+			return {};
 		}
 		else
 		{
@@ -427,39 +495,57 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 		}
 	}
 
-	// Just use the first address of the correct family returned (all should be of the correct family).
+	// Keep the first supported native result first, matching the single-address API.
 	ADDRINFOW *pChosenAddress = pAddresses;
+	while
+	(
+		pChosenAddress
+		&& pChosenAddress->ai_family != AF_INET
+		&& pChosenAddress->ai_family != AF_INET6
+	)
 	{
-		while(		pChosenAddress && pChosenAddress->ai_family != AF_INET
-				&&	pChosenAddress && pChosenAddress->ai_family != AF_INET6)
-			pChosenAddress = pChosenAddress->ai_next;
-
-		if (!_bThrowOnError && !pChosenAddress)
-			return nullptr;
-		else if (!pChosenAddress)
-			DMibErrorNet("No supported valid address found");
+		pChosenAddress = pChosenAddress->ai_next;
 	}
 
-	if (pChosenAddress->ai_family == AF_INET)
+	if (!pChosenAddress)
 	{
-		pAddress->f_Set(*(sockaddr_in const*)pChosenAddress->ai_addr);
-	}
-	else if (pChosenAddress->ai_family == AF_INET6)
-	{
-		pAddress->f_Set(*(sockaddr_in6 const*)pChosenAddress->ai_addr);
-	}
-	else
-	{
-		//		DMibNeverGetHere;
 		if (_bThrowOnError)
-			DMibErrorNet("Address is not from a supported adress type");
-		else
-			return nullptr;
+			DMibErrorNet("No supported valid address found");
+
+		return {};
 	}
 
-	FreeAddrInfoW(pAddresses);
+	return CWindowsAddress::fs_FromResolved(pChosenAddress);
+}
 
-	return pAddress.f_Detach();
+auto CWindowsSocketContext::f_ResolveHost(NStr::CStr const &_Host, NMib::NNetwork::ENetAddressType _PreferType) -> NContainer::TCVector<NSys::NNetwork::CAddress>
+{
+	using namespace NMib::NNetwork;
+
+	f_CheckFailed();
+
+	ADDRINFOW Hints{};
+	Hints.ai_family = _PreferType == ENetAddressType_TCPv4 ? AF_INET : _PreferType == ENetAddressType_TCPv6 ? AF_INET6 : AF_UNSPEC;
+	Hints.ai_socktype = SOCK_STREAM;
+
+	CWStr Host = NStr::NPlatform::fg_StrToWindows(_Host);
+	ADDRINFOW *pResults = nullptr;
+	int Error = GetAddrInfoW(Host.f_GetStr(), nullptr, &Hints, &pResults);
+	if (Error)
+		DMibErrorNet(NStr::fg_Format("Could not resolve '{}': {}", _Host, Error));
+
+	auto Cleanup = g_OnScopeExit / [pResults]
+		{
+			FreeAddrInfoW(pResults);
+		}
+	;
+
+	auto Addresses = CWindowsAddress::fs_FromResolved(pResults);
+
+	if (Addresses.f_IsEmpty())
+		DMibErrorNet("Name resolution returned no IP addresses");
+
+	return Addresses;
 }
 
 void *CWindowsSocketContext::f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish)
@@ -475,6 +561,11 @@ bool CWindowsSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CW
 void CWindowsSocketContext::f_AsyncResolveAddress_Close(void *_pResolver)
 {
 	return mp_Resolver.f_Close(_pResolver);
+}
+
+void CWindowsSocketContext::f_AsyncResolveAddress_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
+{
+	mp_Resolver.f_CloseAsync(_pResolver, fg_Move(_fOnClosed));
 }
 
 int CWindowsSocketContext::f_CompareAddresses(CWindowsAddress const& _First, CWindowsAddress const& _Second)
