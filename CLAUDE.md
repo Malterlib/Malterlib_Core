@@ -161,6 +161,15 @@ Generate a workspace before building: `./mib generate [WorkspaceName]`
 
 ## Code Standards
 
+### Declarations and Implementations
+
+- `.h` files contain declarations and type definitions only. Never put function implementations
+  directly in `.h` files, including member functions, templates, and inline or `constexpr` functions.
+  This keeps the interface overview compact and discoverable.
+- `.hpp` files contain implementations that need to be included, such as template and inline function
+  implementations. Keep their declarations in `.h` files.
+- `.cpp` files contain all other implementations.
+
 ### Formatting Rules
 
 #### Indentation
@@ -278,6 +287,71 @@ fg_Function
 	, ...
 );
 ```
+
+### Comment Style and Verbosity
+
+Code should communicate its behavior primarily through names, types, structure, and tests. Comments
+are for important information the code cannot express clearly.
+
+#### Make the Code Explain Itself
+
+- Represent meaningful states with enums or separate types instead of undocumented integers or
+  clusters of interacting booleans.
+- Put validation and invariants close to the data or operation they protect. Make invalid states
+  difficult to construct where practical.
+- Remove obsolete parameters, branches, and abstractions. Do not explain why dead structure remains.
+
+#### Write Comments for Durable Information
+
+A useful comment records something a maintainer needs for correctness but cannot readily infer:
+
+- why an obvious or simpler approach is wrong;
+- ownership, lifetime, nullability, sentinel, error, or threading contracts;
+- non-local invariants and ordering requirements;
+- security, portability, protocol, or platform constraints;
+- the intent behind an inherently subtle algorithm.
+
+State the constraint directly and as briefly as possible. Prefer present-tense explanations of why
+the code must have its current shape. Use `// ` for ordinary Malterlib comments, aligned with the code,
+and continue multiline explanations with `//`.
+
+For example, this excerpt from
+`Malterlib/Concurrency/Source/Actor/Malterlib_Concurrency_AsyncGeneratorPrivate.hpp` explains how
+the coroutine can become invalid. The condition alone does not convey those causes.
+
+```cpp
+if (!KeepAlive.f_HasValidCoroutine())
+	co_return {}; // Can happen when f_Suspend throws or co-routines are aborted in fp_DestroyInternal
+```
+
+#### Do Not Use Comments To
+
+- narrate the next statement or restate names and control flow;
+- describe previous implementations, fixes, patches, or reviewer discussions;
+- list every current caller, backend, test, example, or implementation step;
+- duplicate user documentation or architecture documentation;
+- speculate about future features;
+- compensate for unclear naming or unnecessarily complicated structure.
+
+History belongs in version control. User-facing behavior belongs in the relevant module's documentation.
+Broad architecture belongs in the appropriate `CLAUDE.md` or a focused design document; regenerate
+`AGENTS.md` with `./mib update-agents` when changing its source instructions. Tests should express
+regressions through a specific test name, fixture, and assertions; add a comment only when the scenario
+remains unclear.
+
+#### Keep Contracts Local
+
+- Put function documentation immediately before the function implementation, not at its declaration
+  in the header. This keeps the interface overview compact and discoverable. Document inputs, outputs,
+  ownership, lifetime, errors, and constraints callers must honor there, in the `.hpp` or `.cpp` file.
+- Comments inside implementations explain local rationale and implementation invariants.
+- Field comments clarify semantics that the field's name and type cannot carry. Keep each field comment
+  to one line after the field, within the 190-column limit. Only when indentation leaves insufficient
+  room may the comment occupy one line immediately before the field; do not use multiline field comments.
+
+When changing code, verify nearby comments still add information and remain true. Shorten, move, or
+delete them when they do not. A long comment is a prompt to consider better structure or a focused
+document, not an automatic requirement to split the code.
 
 ### Naming Conventions
 
@@ -586,12 +660,15 @@ Platform-specific code uses different file extensions for different purposes:
 - `Malterlib_Core_Platform_MacOS_*.cpp` - macOS-specific features
 - `Malterlib_Core_Platform_POSIX_*.cpp` - POSIX-specific features
 
-**Implementation Headers (.imp.h)**
+**Legacy Implementation Headers (.imp.h)**
+These existing filenames predate the declaration/implementation separation above. Use `.hpp` for
+implementations that need to be included; do not introduce new function implementations in `.imp.h` files.
+
 - `Malterlib_Core_PlatformImp_POSIX.imp.h` - POSIX implementation templates
 - `Malterlib_Core_PlatformImp_*_Net.imp.h` - Network implementations
 - `Malterlib_Core_PlatformImp.imp.h` - Core platform implementation
 
-**Header Templates (.hpp)**
+**Included Implementations (.hpp)**
 - `Malterlib_Core_PlatformImp_POSIX_*.hpp` - POSIX template implementations
 - `Malterlib_Core_Platform_*_*.hpp` - Platform-specific templates
 
