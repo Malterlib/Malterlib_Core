@@ -109,6 +109,7 @@ struct CIoLoop_Base : public NMib::NSys::ICIoLoop
 		)
 		-> NMib::NSys::CIoLoopRegistration * override
 	;
+	void f_RequestReadiness(NMib::NSys::CIoLoopRegistration *_pRegistration, NMib::NSys::EIoLoopEvent _EventMask) override;
 	void f_Deregister(NMib::NSys::CIoLoopRegistration *_pRegistration) override;
 	void f_DeregisterAsync(NMib::NSys::CIoLoopRegistration *_pRegistration, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnDeregistered) override;
 

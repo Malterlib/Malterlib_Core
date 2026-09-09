@@ -66,31 +66,30 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
 			continue;
 		}
 
-		uint16_t Flags = Change.m_bRemove ? (uint16_t)(EV_CLEAR | EV_DELETE) : (uint16_t)(EV_CLEAR | EV_ADD);
 		auto *pRegistration = Change.m_pRegistration;
+		auto Mask = pRegistration->m_EventMask;
+		if (pRegistration->m_Options.m_bLevelReadiness && !Change.m_bRemove)
+			Mask = EIoLoopEvent(pRegistration->m_RequestedEvents.f_Exchange(0, NAtomic::gc_MemoryOrder_AcquireRelease));
 
-		// Fresh for this pass's receipts
 		static_cast<CKQueueRegistration *>(pRegistration)->m_bAddFailed = false;
 
-		if (fg_IsSet(pRegistration->m_EventMask, NSys::EIoLoopEvent::mc_Read))
+		for (auto Direction : {EIoLoopEvent::mc_Read, EIoLoopEvent::mc_Write})
 		{
-			struct kevent CurEvent;
-			fg_MemClear(&CurEvent, sizeof(struct kevent));
-			CurEvent.ident = Change.m_Handle;
-			CurEvent.filter = EVFILT_READ;
-			CurEvent.flags = Flags;
-			CurEvent.udata = pRegistration;
-			ApplyChanges.f_Insert(CurEvent);
-		}
+			if (!fg_IsSet(pRegistration->m_EventMask, Direction))
+				continue;
 
-		if (fg_IsSet(pRegistration->m_EventMask, NSys::EIoLoopEvent::mc_Write))
-		{
 			struct kevent CurEvent;
-			fg_MemClear(&CurEvent, sizeof(struct kevent));
+			fg_MemClear(&CurEvent, sizeof(CurEvent));
 			CurEvent.ident = Change.m_Handle;
-			CurEvent.filter = EVFILT_WRITE;
-			CurEvent.flags = Flags;
+			CurEvent.filter = Direction == EIoLoopEvent::mc_Read ? EVFILT_READ : EVFILT_WRITE;
 			CurEvent.udata = pRegistration;
+			if (Change.m_bRemove)
+				CurEvent.flags = EV_DELETE;
+			else if (pRegistration->m_Options.m_bLevelReadiness)
+				CurEvent.flags = EV_ADD | EV_DISPATCH | (fg_IsSet(Mask, Direction) ? EV_ENABLE : EV_DISABLE);
+			else
+				CurEvent.flags = EV_ADD | EV_CLEAR;
+
 			ApplyChanges.f_Insert(CurEvent);
 		}
 	}

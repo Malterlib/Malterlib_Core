@@ -101,10 +101,15 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock)
 
 			epoll_event Ev;
 			fg_MemClear(&Ev, sizeof(Ev));
-			Ev.events = EPOLLET | EPOLLRDHUP | fg_PollInterestFromIoLoopMask(pRegistration->m_EventMask);
+
+			auto Mask = pRegistration->m_EventMask;
+			if (pRegistration->m_Options.m_bLevelReadiness)
+				Mask = EIoLoopEvent(pRegistration->m_RequestedEvents.f_Exchange(0, NAtomic::gc_MemoryOrder_AcquireRelease));
+
+			Ev.events = (pRegistration->m_Options.m_bLevelReadiness ? EPOLLONESHOT : EPOLLET) | EPOLLRDHUP | fg_PollInterestFromIoLoopMask(Mask);
 			Ev.data.ptr = pRegistration;
 
-			int Return = epoll_ctl(mp_EpollFd, EPOLL_CTL_ADD, Change.m_Handle, &Ev);
+			int Return = epoll_ctl(mp_EpollFd, Change.m_bReadinessRequest ? EPOLL_CTL_MOD : EPOLL_CTL_ADD, Change.m_Handle, &Ev);
 			[[maybe_unused]] int Error = Return == -1 ? errno : 0;
 			// An add can fail environmentally with a correct caller (the max_user_watches
 			// limit, memory pressure). Anything else failing is a broken invariant in this

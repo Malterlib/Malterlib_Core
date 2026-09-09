@@ -206,11 +206,8 @@ namespace NMib::NSys
 	{
 		bool m_bReadinessOnly = false;
 
-		// The handle comes from outside this process, so the completion notification modes its
-		// creator set are already on it and cannot be taken off again. A backend that chooses
-		// such modes takes them as given for this handle rather than deriving them from what it
-		// would have asked for
-		bool m_bInheritedHandle = false;
+		bool m_bInheritedHandle = false; // Preserve completion notification modes already set by the handle's creator.
+		bool m_bLevelReadiness = false; // Explicitly rearm readiness without requiring a preceding would-block observation.
 
 		// The socket sends without a kernel send buffer, so a send's completion arrives only
 		// when the peer has acknowledged the bytes (Windows TCP with SO_SNDBUF=0). A backend

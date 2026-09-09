@@ -142,6 +142,22 @@ void CIoLoop_Base::fp_PushRemoval(NSys::CIoLoopRegistration *_pRegistration, CIo
 	fp_SignalWake();
 }
 
+void CIoLoop_Base::f_RequestReadiness(NSys::CIoLoopRegistration *_pRegistration, NSys::EIoLoopEvent _EventMask)
+{
+	if (!_pRegistration->m_Options.m_bLevelReadiness || _EventMask == NSys::EIoLoopEvent::mc_None)
+		return;
+
+	if (_pRegistration->m_RequestedEvents.f_FetchOr(uint32(_EventMask), NAtomic::gc_MemoryOrder_AcquireRelease))
+		return;
+
+	CIoLoopChange Change;
+	Change.m_bReadinessRequest = true;
+	Change.m_Handle = _pRegistration->m_Handle;
+	Change.m_pRegistration = _pRegistration;
+	mp_ChangeQueue.f_Push(fg_Move(Change));
+	fp_SignalWake();
+}
+
 void CIoLoop_Base::f_Deregister(NSys::CIoLoopRegistration *_pRegistration)
 {
 	CIoLoopDeregWait DeregWait;
