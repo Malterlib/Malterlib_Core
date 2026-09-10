@@ -7,20 +7,14 @@
 
 namespace NMib
 {
-#ifndef DMibObjC_Arc
-	struct CAutoReleasePool
-	{
-		NSAutoreleasePool* m_pPool;
-		CAutoReleasePool();
-		~CAutoReleasePool();
-	};
-#else
 	struct CAutoReleasePool
 	{
 		CAutoReleasePool();
 		~CAutoReleasePool();
+
+	private:
+		void *mp_pPool;
 	};
-#endif
 
 	namespace NPlatform
 	{

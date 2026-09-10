@@ -253,6 +253,8 @@ namespace NMib
 	{
 		void fg_MacOS_NativeHideMainWindow(void * _pNativeWindowHandle)
 		{
+			CAutoReleasePool ARPool;
+
 			[NSApp hide:(__bridge NSView*)_pNativeWindowHandle];
 		}
 
@@ -266,6 +268,8 @@ namespace NMib
 
 		void fg_MacOS_ClearBadgeLabel()
 		{
+			CAutoReleasePool ARPool;
+
 			[[NSApp dockTile] setBadgeLabel:nil];
 		}
 

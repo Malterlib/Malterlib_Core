@@ -5,28 +5,22 @@
 
 #include "Malterlib_Core_Platform_MacOS_ObjC.h"
 
+// The runtime's pool entry points are what @autoreleasepool compiles to; they are not declared
+// by the SDK headers, and NSAutoreleasePool cannot be named under ARC
+extern "C" void *objc_autoreleasePoolPush(void);
+extern "C" void objc_autoreleasePoolPop(void *_pPool);
+
 namespace NMib
 {
-
-#ifndef DMibObjC_Arc
 	CAutoReleasePool::CAutoReleasePool()
-		: m_pPool(nullptr)
+		: mp_pPool(objc_autoreleasePoolPush())
 	{
-		m_pPool = [[NSAutoreleasePool alloc] init];
 	}
 
 	CAutoReleasePool::~CAutoReleasePool()
 	{
-		[m_pPool drain];
+		objc_autoreleasePoolPop(mp_pPool);
 	}
-#else
-	CAutoReleasePool::CAutoReleasePool()
-	{
-	}
-	CAutoReleasePool::~CAutoReleasePool()
-	{
-	}
-#endif
 
 	namespace NPlatform
 	{
