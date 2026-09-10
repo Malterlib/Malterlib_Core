@@ -120,6 +120,10 @@ public:
 		f_Set(_Unix);
 	}
 
+	static void fs_ParseEndpoint(NStr::CStr const &_Address, NSys::NNetwork::CResolveAddressParameters &o_Parameters, NStr::CStr &o_Service);
+
+	static NStorage::TCUniquePointer<CRuntimeNetAddress> fs_FromNative(void const *_pAddress, umint _Size);
+
 	template <typename tf_CAddressInfo>
 	static auto fs_FromResolved(tf_CAddressInfo const *_pResults) -> NContainer::TCVector<NSys::NNetwork::CAddress>;
 

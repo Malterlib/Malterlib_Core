@@ -229,6 +229,8 @@ public:
 		CWindowsAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
 		CWindowsAddress* f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError);
 
+		NSys::NNetwork::CAddress f_PrepareResolveAddress(NStr::CStr const &_Address, NSys::NNetwork::CResolveAddressParameters &o_Parameters, bool _bThrowOnError = true);
+
 		auto f_ResolveAddresses(NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError = true)
 			-> NContainer::TCVector<NSys::NNetwork::CAddress>
 		;

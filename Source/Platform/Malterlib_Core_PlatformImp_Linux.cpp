@@ -2537,6 +2537,11 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENet
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_CreateAddress(_Type, _pData, _nDataBytes);
 }
 
+NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddressFromNative(void const *_pAddress, umint _Size)
+{
+	return CPOSIXAddress::fs_FromNative(_pAddress, _Size).f_Detach();
+}
+
 NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAddress _Address)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
@@ -2564,6 +2569,13 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddre
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CPOSIXAddress*)_Address, _Type, _pRawData, _nDataBytes);
+}
+
+// Returns an address owned by the caller, or null with a hostname/port for DNS. May block on local configuration.
+// m_PreferType supplies the family preference; an endpoint prefix overrides it.
+NSys::NNetwork::CAddress NSys::NNetwork::fg_PrepareResolveAddress(NStr::CStr const &_Address, CResolveAddressParameters &o_Parameters)
+{
+	return fg_GetLocalSys()->m_SocketContext->f_PrepareResolveAddress(_Address, o_Parameters);
 }
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_ResolveAddress(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType)
