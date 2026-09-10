@@ -21,6 +21,8 @@
 
 #include <mach/mach.h>
 #include <mach/mach_time.h>
+#include <mach/mig_errors.h>
+#include <unistd.h>
 #include <sys/utsname.h>
 #include <crt_externs.h>
 #include <sys/clonefile.h>
@@ -73,6 +75,17 @@ namespace
 	#endif
 
 	void fg_PThreadNotificationDestructor(void *_pValue);
+	#ifdef DMibDynamicLibrary
+		void fg_WaitForThreadsOutsideThreadExit();
+	#endif
+
+#if defined(DMibConfig_PThreadIntrospection) && defined(DMibDynamicLibrary)
+	// Write directly to avoid stdio locks during unload; stderr retains its normal blocking behavior.
+	void fg_WriteUnloadDiagnostic(NStr::CStrSpan const &_Message)
+	{
+		(void)write(STDERR_FILENO, _Message.f_GetStr(), _Message.f_GetLen());
+	}
+#endif
 
 	void fg_ReservePThreadNotificationDestructor()
 	{
@@ -82,17 +95,28 @@ namespace
 
 	void fg_FreePThreadNotificationDestructor()
 	{
-	#ifndef DMibDynamicLibrary
-		DMibLock(g_ThreadNotificationLock);
-	#else
-		DMibLock(g_OwnThreadNotificationLock);
-	#endif
-		if (!g_iThreadNotificationDestructor)
-			return;
+		umint iThreadNotificationDestructor;
+		{
+		#ifndef DMibDynamicLibrary
+			DMibLock(g_ThreadNotificationLock);
+		#else
+			DMibLock(g_OwnThreadNotificationLock);
+		#endif
+			if (!g_iThreadNotificationDestructor)
+				return;
 
-		umint iThreadNotificationDestructor = g_iThreadNotificationDestructor;
-		g_iThreadNotificationDestructor = 0;
+			iThreadNotificationDestructor = g_iThreadNotificationDestructor;
+			g_iThreadNotificationDestructor = 0;
+		}
+
 		NSys::fg_Thread_FreeLocalWithDestructor(iThreadNotificationDestructor);
+
+	#ifdef DMibDynamicLibrary
+		// Deleting the key keeps later thread exits from selecting the destructor, which pthread
+		// runs outside any host dispatcher; an exiting thread that already selected it runs it to
+		// the end before this image may go
+		fg_WaitForThreadsOutsideThreadExit();
+	#endif
 	}
 
 	void fg_SetPThreadNotificationActive(umint _ThreadID)
@@ -1502,7 +1526,217 @@ namespace
 		return (CancelState & gc_PThreadCancelStateExiting) != 0;
 	}
 
-#ifdef DMibConfig_PThreadIntrospection
+#if defined(DMibConfig_PThreadIntrospection) && defined(DMibDynamicLibrary)
+	enum EThreadInspection
+	{
+		EThreadInspection_Settled
+		, EThreadInspection_Busy
+	};
+
+	// A malformed request or a lost reply channel cannot be waited out
+	EThreadInspection fg_FaultedInspection(char const *_pCall, kern_return_t _Result)
+	{
+		fg_WriteUnloadDiagnostic((NStr::CFStr256::CFormat("Thread inspection during library unload failed: {} returned {}\n") << _pCall << (int)_Result).f_GetStr().f_Span());
+		DMibPDebugBreak;
+
+		return EThreadInspection_Settled;
+	}
+
+	// libpthread drops a detached thread from its list before the destroy callback returns, so the
+	// TSD base the kernel reports is used. A null pthread has no TSD base and has never entered
+	// libpthread, as with a workqueue thread parked before its first work item
+	kern_return_t fg_PThreadFromSuspendedMachThread(mach_port_t _MachThread, pthread_t &o_pThread)
+	{
+		thread_identifier_info_data_t ThreadInfo = {};
+		mach_msg_type_number_t ThreadInfoCount = THREAD_IDENTIFIER_INFO_COUNT;
+		kern_return_t Result = thread_info(_MachThread, THREAD_IDENTIFIER_INFO, reinterpret_cast<thread_info_t>(&ThreadInfo), &ThreadInfoCount);
+		if (Result != KERN_SUCCESS)
+			return Result;
+
+		if (ThreadInfo.thread_handle < NSys::g_ThreadLocalOffsetPThread)
+			o_pThread = nullptr;
+		else
+			o_pThread = reinterpret_cast<pthread_t>((umint)ThreadInfo.thread_handle - NSys::g_ThreadLocalOffsetPThread);
+
+		return KERN_SUCCESS;
+	}
+
+	// A joiner may reclaim the storage while the kernel thread is still listed
+	kern_return_t fg_ReadSuspendedPThreadField(pthread_t _pThread, umint _OffsetFromTSD, uint16 &o_Value)
+	{
+		vm_address_t Address = (vm_address_t)(reinterpret_cast<uint8 *>(_pThread) + NSys::g_ThreadLocalOffsetPThread - _OffsetFromTSD);
+		vm_size_t nRead = 0;
+
+		kern_return_t Result = vm_read_overwrite(mach_task_self(), Address, sizeof(o_Value), (vm_address_t)&o_Value, &nRead);
+		if (Result == KERN_SUCCESS && nRead != sizeof(o_Value))
+			return KERN_INVALID_ADDRESS;
+
+		return Result;
+	}
+
+	// A port from task_threads fails these ways only once its thread has terminated: the kernel
+	// detaches the thread from the port before the name dies, and a port destroyed with the
+	// request in flight answers with a send-once notification instead of a reply
+	bool fg_ThreadPortIsDead(kern_return_t _Result)
+	{
+		return
+			_Result == KERN_TERMINATED
+			|| _Result == MACH_SEND_INVALID_DEST
+			|| _Result == KERN_INVALID_ARGUMENT
+			|| _Result == MIG_SERVER_DIED
+		;
+	}
+
+	// A dead port or a thread without a pthread cannot be inside
+	template <typename t_CUnsettled>
+	EThreadInspection fg_InspectThread(mach_port_t _MachThread, t_CUnsettled const &_Unsettled, uint16 &o_Value)
+	{
+		kern_return_t Result = thread_suspend(_MachThread);
+		if (fg_ThreadPortIsDead(Result))
+			return EThreadInspection_Settled;
+		if (Result == MACH_SEND_NO_BUFFER)
+			return EThreadInspection_Busy;
+		if (Result != KERN_SUCCESS)
+			return fg_FaultedInspection("thread_suspend", Result);
+
+		// The suspension holds until the resume is accepted
+		auto ResumeThread = g_OnScopeExit / [&]
+			{
+				while (thread_resume(_MachThread) == MACH_SEND_NO_BUFFER)
+					NSys::fg_Thread_Yield();
+			}
+		;
+
+		pthread_t pThread = nullptr;
+		Result = fg_PThreadFromSuspendedMachThread(_MachThread, pThread);
+		if (fg_ThreadPortIsDead(Result))
+			return EThreadInspection_Settled;
+		if (Result == MACH_SEND_NO_BUFFER)
+			return EThreadInspection_Busy;
+		if (Result != KERN_SUCCESS)
+			return fg_FaultedInspection("thread_info", Result);
+		if (!pThread)
+			return EThreadInspection_Settled;
+
+		Result = fg_ReadSuspendedPThreadField(pThread, _Unsettled.m_OffsetFromTSD, o_Value);
+		if (Result == MACH_SEND_NO_BUFFER || Result == KERN_RESOURCE_SHORTAGE || Result == KERN_INVALID_ADDRESS)
+			return EThreadInspection_Busy;
+		if (Result != KERN_SUCCESS)
+			return fg_FaultedInspection("vm_read_overwrite", Result);
+
+		return _Unsettled.f_IsUnsettled(o_Value) ? EThreadInspection_Busy : EThreadInspection_Settled;
+	}
+
+	// Only a thread already inside what _Unsettled looks for when it was replaced can still be
+	// inside it, so the threads one enumeration finds busy are the whole set to wait for.
+	// dlclose runs this under dyld's loader lock, so a host thread that enters dyld from a key
+	// destructor while exiting can never leave; a host must not do that while unloading
+	template <typename t_CUnsettled>
+	void fg_WaitForThreadsClear(t_CUnsettled const &_Unsettled)
+	{
+		mach_port_t CurrentMachThread = pthread_mach_thread_np(pthread_self());
+
+		// User code may not message the task port except through the generated stub, which drops
+		// what a body error did deliver; retrying that would only deepen the shortage
+		thread_act_array_t pThreads = nullptr;
+		mach_msg_type_number_t ThreadCount = 0;
+		for (;;)
+		{
+			kern_return_t EnumerateResult = task_threads(mach_task_self(), &pThreads, &ThreadCount);
+			if (EnumerateResult == KERN_SUCCESS)
+				break;
+			if (EnumerateResult != MACH_SEND_NO_BUFFER && EnumerateResult != KERN_RESOURCE_SHORTAGE)
+			{
+				fg_FaultedInspection("task_threads", EnumerateResult);
+				return;
+			}
+
+			NSys::fg_Thread_Yield();
+		}
+
+		mach_msg_type_number_t nBusy = 0;
+		for (mach_msg_type_number_t i = 0; i < ThreadCount; ++i)
+		{
+			uint16 Value = 0xffff;
+			if (pThreads[i] != CurrentMachThread && fg_InspectThread(pThreads[i], _Unsettled, Value) == EThreadInspection_Busy)
+				pThreads[nBusy++] = pThreads[i];
+			else
+				mach_port_deallocate(mach_task_self(), pThreads[i]);
+		}
+
+		uint64 NextReportTime = clock_gettime_nsec_np(CLOCK_MONOTONIC) + 2000000000ull;
+		while (nBusy)
+		{
+			NSys::fg_Thread_Yield();
+
+			bool bReport = clock_gettime_nsec_np(CLOCK_MONOTONIC) >= NextReportTime;
+			mach_msg_type_number_t nStillBusy = 0;
+			for (mach_msg_type_number_t i = 0; i < nBusy; ++i)
+			{
+				uint16 Value = 0xffff;
+				if (fg_InspectThread(pThreads[i], _Unsettled, Value) != EThreadInspection_Busy)
+				{
+					mach_port_deallocate(mach_task_self(), pThreads[i]);
+					continue;
+				}
+
+				pThreads[nStillBusy++] = pThreads[i];
+				if (bReport)
+					fg_WriteUnloadDiagnostic((NStr::CFStr256::CFormat("Waiting for thread 0x{nh} to settle: value 0x{nh}\n") << (umint)pThreads[i] << (umint)Value).f_GetStr().f_Span());
+			}
+			nBusy = nStillBusy;
+
+			if (bReport)
+				NextReportTime = clock_gettime_nsec_np(CLOCK_MONOTONIC) + 5000000000ull;
+		}
+
+		vm_deallocate(mach_task_self(), (vm_address_t)pThreads, ThreadCount * sizeof(*pThreads));
+	}
+
+	struct CPThreadExitUnsettled
+	{
+		bool f_IsUnsettled(uint16 _CancelState) const;
+
+		umint m_OffsetFromTSD = gc_PThreadCancelStateOffsetFromTSD;
+	};
+
+	bool CPThreadExitUnsettled::f_IsUnsettled(uint16 _CancelState) const
+	{
+		return (_CancelState & gc_PThreadCancelStateExiting) != 0;
+	}
+
+	void fg_WaitForThreadsOutsideThreadExit()
+	{
+		fg_WaitForThreadsClear(CPThreadExitUnsettled{});
+	}
+
+#ifndef DMibAssumeMalterlibHost
+	// Apple libpthread 454.40.3 (macOS 11) through 539.100.4 keep a uint16 introspection marker at
+	// this distance before the TSD base, nonzero in the executing thread around every hook call,
+	// verified against the arm64, arm64e and x86_64 slices of macOS 26.6. The marker belongs to the
+	// thread running the hook, which for the create and destroy events is a creator or joiner
+	constexpr umint gc_PThreadIntrospectionOffsetFromTSD = 0xae;
+
+	struct CPThreadHookUnsettled
+	{
+		bool f_IsUnsettled(uint16 _Marker) const;
+
+		umint m_OffsetFromTSD = gc_PThreadIntrospectionOffsetFromTSD;
+	};
+
+	bool CPThreadHookUnsettled::f_IsUnsettled(uint16 _Marker) const
+	{
+		return _Marker != 0;
+	}
+
+	void fg_WaitForThreadsOutsideIntrospectionHook()
+	{
+		fg_WaitForThreadsClear(CPThreadHookUnsettled{});
+	}
+#endif
+#endif
+
+#if defined(DMibConfig_PThreadIntrospection) && (!defined(DMibDynamicLibrary) || !defined(DMibAssumeMalterlibHost))
 	void fg_Thread_EnumOtherThreadsInProcessKernel(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread)
 	{
 		thread_act_array_t pThreads = nullptr;
@@ -2048,6 +2282,9 @@ extern "C" assure_used module_export NSys::NPrivate::CThreadNotificationCrossMod
 
 namespace
 {
+	NSys::NPrivate::CThreadNotificationCrossModule *g_pHostThreadNotificationCrossModule = nullptr;
+
+#ifndef DMibAssumeMalterlibHost
 	struct COwnThreadNotificationThread
 	{
 		bool m_bTerminated = false;
@@ -2063,7 +2300,6 @@ namespace
 		bool m_bSeeded = false;
 	};
 
-	NSys::NPrivate::CThreadNotificationCrossModule *g_pHostThreadNotificationCrossModule = nullptr;
 	pthread_introspection_hook_t g_fPreviousIntrospectionHook = nullptr;
 	constinit NStorage::TCAggregateSimple<COwnThreadNotificationState> g_OwnThreadNotificationState = {DAggregateInit};
 	constinit umint g_iThreadLocalParentThread = 0;
@@ -2083,6 +2319,7 @@ namespace
 
 		fg_MalterlibThreadTerminatedNotificationLocal(_ThreadID);
 	}
+#endif
 
 	void fg_PThreadNotificationDestructor(void *_pValue)
 	{
@@ -2094,13 +2331,16 @@ namespace
 		{
 			if (g_pHostThreadNotificationCrossModule)
 				fg_MalterlibThreadTerminatedNotificationLocal(NSys::fg_Thread_GetCurrentUID());
+		#ifndef DMibAssumeMalterlibHost
 			else if (g_bOwnIntrospectionHook)
 				fg_NotifyOwnThreadTerminated(*g_OwnThreadNotificationState, NSys::fg_Thread_GetCurrentUID());
+		#endif
 		}
 
 		fg_SetPThreadNotificationDestroyed();
 	}
 
+#ifndef DMibAssumeMalterlibHost
 	void fg_PThreadIntrospectionHook(unsigned int _Event, pthread_t _pThread, void *_pAddress, size_t _Size)
 	{
 		if (g_fPreviousIntrospectionHook)
@@ -2145,6 +2385,7 @@ namespace
 		else if (_Event == PTHREAD_INTROSPECTION_THREAD_DESTROY)
 			g_OwnThreadNotificationState->m_StartingThreads.f_Remove((umint)_pThread);
 	}
+#endif
 
 	void fg_MalterlibThreadForkPrepareLocal()
 	{
@@ -2185,9 +2426,16 @@ namespace
 		auto pInterface = fGetInterface ? fGetInterface(NSys::NPrivate::EThreadNotificationCrossModule_Version) : nullptr;
 
 #ifdef DMibAssumeMalterlibHost
-		DMibFastCheck(!pInterface || pInterface->m_Version >= NSys::NPrivate::EThreadNotificationCrossModule_Version_Min);
-#endif
+		// This build runs only in a Malterlib host, which provides the dispatcher; without it there is no thread registry to fall back to
+		if (!pInterface || pInterface->m_Version < NSys::NPrivate::EThreadNotificationCrossModule_Version_Min)
+		{
+			fg_WriteUnloadDiagnostic(NStr::gc_Str<"This library was built for a Malterlib host, but the host provides no thread notification dispatcher of a supported version\n">.m_Str.f_Span());
+			DMibPDebugBreak;
+		}
 
+		g_pHostThreadNotificationCrossModule = pInterface;
+		pInterface->m_fRegister(&g_ThreadNotificationModule);
+#else
 		if (pInterface && pInterface->m_Version >= NSys::NPrivate::EThreadNotificationCrossModule_Version_Min)
 		{
 			g_pHostThreadNotificationCrossModule = pInterface;
@@ -2221,6 +2469,7 @@ namespace
 			;
 			State.m_bSeeded = true;
 		}
+#endif
 	}
 
 	void fg_UnregisterThreadNotifications()
@@ -2232,26 +2481,47 @@ namespace
 		}
 	}
 
+#ifndef DMibAssumeMalterlibHost
 	void fg_DestroyOwnPThreadIntrospectionHook()
 	{
-		DMibLock(g_OwnThreadNotificationLock);
-		if (!g_bOwnIntrospectionHook)
-			return;
+		umint iThreadLocalParentThread;
+		{
+			DMibLock(g_OwnThreadNotificationLock);
+			if (!g_bOwnIntrospectionHook)
+				return;
 
-		g_bOwnIntrospectionHook = false;
-		umint iThreadLocalParentThread = g_iThreadLocalParentThread;
-		g_iThreadLocalParentThread = 0;
+			g_bOwnIntrospectionHook = false;
+			iThreadLocalParentThread = g_iThreadLocalParentThread;
+			g_iThreadLocalParentThread = 0;
+		}
 
-		// A Malterlib executable hosts the cross-module dispatcher, so a library
-		// reaches this private-hook path only in a non-Malterlib process. That host
-		// must have no other introspection-hook user, or be the sole owner itself.
-		// pthread provides no safe conditional restore, so composing this path with
-		// another hook owner or unloading it while another owner exists is unsupported.
-		[[maybe_unused]] auto fCurrentHook = pthread_introspection_hook_install(g_fPreviousIntrospectionHook);
-		DMibFastCheck(fCurrentHook == &fg_PThreadIntrospectionHook);
+		// pthread checks the hook pointer and loads it again for the call, so a null restore can
+		// still be called; a function that outlives this image stands in, and pthread_self does
+		// nothing with the arguments it is handed
+		pthread_introspection_hook_t fRestore = g_fPreviousIntrospectionHook;
+		if (!fRestore)
+			fRestore = reinterpret_cast<pthread_introspection_hook_t>(&pthread_self);
+
+		// A Malterlib executable hosts the cross-module dispatcher, so a library reaches this
+		// private-hook path only in a non-Malterlib process. The displaced hook must be the one
+		// installed here: another owner installed since is dropped by this restore, and its own
+		// restore later brings back a hook this image no longer serves. pthread offers no
+		// conditional restore, so that is fatal misuse rather than something to continue past
+		auto fDisplaced = pthread_introspection_hook_install(fRestore);
+		if (fDisplaced != &fg_PThreadIntrospectionHook)
+		{
+			fg_WriteUnloadDiagnostic(NStr::gc_Str<"Another pthread introspection hook was installed over this library's; it cannot be unloaded safely\n">.m_Str.f_Span());
+			DMibPDebugBreak;
+		}
+
+		// The pointer swap does not wait for a host thread already on its way into the old hook,
+		// and the lock inside the hook covers nothing before it is taken
+		fg_WaitForThreadsOutsideIntrospectionHook();
+
 		NSys::fg_Thread_FreeLocal(iThreadLocalParentThread);
 		g_OwnThreadNotificationState.f_Destruct();
 	}
+#endif
 }
 
 #endif
@@ -2286,6 +2556,7 @@ void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void
 		return;
 	}
 
+#ifndef DMibAssumeMalterlibHost
 	if (g_bOwnIntrospectionHook)
 	{
 		DMibLock(g_OwnThreadNotificationLock);
@@ -2300,6 +2571,7 @@ void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void
 		}
 		return;
 	}
+#endif
 #endif
 
 	fg_Thread_EnumOtherThreadsInProcessSuspended(_fOnThread);
@@ -2415,7 +2687,7 @@ void NSys::fg_PreDestroyHeap()
 #ifdef DMibConfig_PThreadIntrospection
 	#ifndef DMibDynamicLibrary
 		fg_DestroyPThreadIntrospectionHook();
-	#else
+	#elif !defined(DMibAssumeMalterlibHost)
 		fg_DestroyOwnPThreadIntrospectionHook();
 	#endif
 #endif
@@ -2429,8 +2701,9 @@ void NSys::fg_DestroySystem()
 
 		auto pSys = fg_GetLocalSys();
 		pSys->f_DestroyThreadSpecific();
-		// f_DestroyThreadSpecific() stops and joins every thread before lifecycle
-		// notification state is torn down, so no introspection callback can race the code below.
+		// f_DestroyThreadSpecific() stops and joins every thread of this library's own before
+		// lifecycle notification state is torn down; a host's threads are waited out of the
+		// introspection hook and the key destructor where those are replaced
 
 		pSys->f_ExitModule();
 

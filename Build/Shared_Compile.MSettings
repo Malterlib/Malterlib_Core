@@ -2234,6 +2234,8 @@ Compile
 			MalterlibThread_LinuxUseStaticThreadLocal true
 		}
 	}
+	// A library in a foreign host unloads by reading libpthread's per-thread introspection marker, which macOS 11 introduced;
+	// a build that assumes a Malterlib host never installs the hook itself
 	PreprocessorDefines += "DMibConfig_PThreadIntrospection"
 	{
 		&
@@ -2241,6 +2243,11 @@ Compile
 			PlatformFamily "macOS"
 			MalterlibThread_MacOSPThreadIntrospection true
 			!MalterlibSupportSanitizerEnable_Thread true
+			|
+			{
+				Malterlib_AssumeMalterlibHost true
+				MalterlibMinSupportedMacOSVersion >= "11.0"
+			}
 		}
 	}
 	PreprocessorDefines += "DMibAssumeGlibc"
