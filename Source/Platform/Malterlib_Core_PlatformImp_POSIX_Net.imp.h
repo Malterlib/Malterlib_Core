@@ -855,7 +855,7 @@ static void fg_DispatchSocketIoEvent(void *_pToken, NSys::EIoLoopEvent _Events, 
 
 	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
 	{
-		if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
+		if (pSocket->m_Mode == EPOSIXSocketMode_Connect || pSocket->m_Mode == EPOSIXSocketMode_Datagram)
 			AddedState |= ENetTCPState_Read;
 		else if (pSocket->m_Mode == EPOSIXSocketMode_Listen)
 			AddedState |= ENetTCPState_Connection;
@@ -863,7 +863,7 @@ static void fg_DispatchSocketIoEvent(void *_pToken, NSys::EIoLoopEvent _Events, 
 
 	if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Write))
 	{
-		if (pSocket->m_Mode == EPOSIXSocketMode_Connect)
+		if (pSocket->m_Mode == EPOSIXSocketMode_Connect || pSocket->m_Mode == EPOSIXSocketMode_Datagram)
 			AddedState |= ENetTCPState_Write;
 		else if (pSocket->m_Mode == EPOSIXSocketMode_Connecting)
 		{
@@ -1371,6 +1371,9 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 	if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
 		DMibErrorNet("Unsupported address type");
 
+	if (AddressType == ENetAddressType_TCPv4 || AddressType == ENetAddressType_TCPv6 || AddressType == ENetAddressType_Unix)
+		SocketCreateParams.m_Type = SOCK_DGRAM;
+
 	fp_PrepareUnixListen(_Address);
 
 	int FD;
@@ -1444,6 +1447,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 
 	fp_SetUnixListenAddress(pSocket, _Address);
 
+	pSocket->m_AddressType = AddressType;
 	pSocket->m_BindAddressSize = _Address.f_GetSockAddrLen();
 
 	return pSocket;
