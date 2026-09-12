@@ -3032,6 +3032,41 @@ Property
 			MalterlibNeedsInitProject true
 		}
 	}
+
+	MalterlibPosixUnloadFileName: string?
+
+	MalterlibPosixUnloadFileName `@(MalterlibCompiledFilesWarkspaceBase)/Int/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/@(MalterlibXcodeObjectsDirectory)/@(MalterlibXcodeBuildArchitecture)/Malterlib_Core_PlatformImp_Posix_Unload.o`
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			PlatformFamily "macOS"
+			!MalterlibDisableMalterlib true
+			MalterlibNeedsInitProject true
+		}
+	}
+
+	MalterlibPosixUnloadFileName `@(MalterlibCompiledFilesWarkspaceBase)/Int/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/Malterlib_Core_PlatformImp_Posix_Unload.o`
+	{
+		&
+		{
+			!GeneratorFamily "Xcode"
+			PlatformFamily "macOS"
+			!MalterlibDisableMalterlib true
+			MalterlibNeedsInitProject true
+		}
+	}
+
+	MalterlibPosixUnloadFileName `@(MalterlibCompiledFilesWarkspaceBase)/Int/Lib_Malterlib_Init/@(Platform)/@(Architecture)/@(FullConfiguration)/Malterlib_Core_PlatformImp_Posix_Unload.o`
+	{
+		&
+		{
+			!GeneratorFamily "Xcode"
+			PlatformFamily "Linux"
+			!MalterlibDisableMalterlib true
+			MalterlibNeedsInitProject true
+		}
+	}
 }
 
 Property
@@ -3111,6 +3146,27 @@ Target
 		}
 	}
 
+	// Mach-O and ELF finalize an image in reverse link order, so the object that prepares the
+	// unloading thread goes last, after every object with static destructors. The macOS driver
+	// hoists -force_load inputs ahead of the plain ones, so the object is passed bare
+	LastObjects: [string]?
+
+	LastObjects [MalterlibPosixUnloadFileName]
+	{
+		&
+		{
+			GeneratorFamily "Ninja"
+			!MalterlibDisableMalterlib true
+			!MalterlibPosixUnloadFileName undefined
+			|
+			{
+				Target.Type "DynamicLibrary"
+				Target.Type "SharedDynamicLibrary"
+				Target.Type "XcodeBundle"
+			}
+		}
+	}
+
 	LinkWithLibraries += [["-first_object", MalterlibPosixInitFileName]]
 	{
 		&
@@ -3122,6 +3178,24 @@ Target
 			!MalterlibPosixInitFileName undefined
 			!MalterlibDefaultCompiler true
 			MalterlibCustomCompilerOptions true
+		}
+	}
+
+	LinkWithLibraries += [["-last_object", MalterlibPosixUnloadFileName]]
+	{
+		&
+		{
+			!GeneratorFamily "Ninja"
+			!MalterlibDisableMalterlib true
+			!MalterlibPosixUnloadFileName undefined
+			!MalterlibDefaultCompiler true
+			MalterlibCustomCompilerOptions true
+			|
+			{
+				Target.Type "DynamicLibrary"
+				Target.Type "SharedDynamicLibrary"
+				Target.Type "XcodeBundle"
+			}
 		}
 	}
 

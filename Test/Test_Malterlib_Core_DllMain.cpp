@@ -3,8 +3,31 @@
 
 #include <Mib/Core/Core>
 
+#ifdef DPlatformFamily_Linux
+#include <pthread.h>
+#endif
+
 DMibAppNoClass;
 DMibPMain;
+
+#ifdef DPlatformFamily_Linux
+namespace
+{
+	// Destroyed when the thread that constructed it exits, which can be after the library was closed
+	struct CThreadLocalWithDestructor
+	{
+		~CThreadLocalWithDestructor()
+		{
+			if (m_pDestroyedOnThread)
+				*m_pDestroyedOnThread = (umint)pthread_self();
+		}
+
+		umint *m_pDestroyedOnThread = nullptr;
+	};
+
+	thread_local CThreadLocalWithDestructor g_ThreadLocalWithDestructor;
+}
+#endif
 
 
 
@@ -21,6 +44,13 @@ extern "C"
 			delete (new int);
 		}
 	}
+
+#ifdef DPlatformFamily_Linux
+	module_export void calling_convention_c fg_TestConstructThreadLocalWithDestructor(umint *_pDestroyedOnThread)
+	{
+		g_ThreadLocalWithDestructor.m_pDestroyedOnThread = _pDestroyedOnThread;
+	}
+#endif
 
 	module_export void calling_convention_c fg_TestFileNotifications()
 	{
