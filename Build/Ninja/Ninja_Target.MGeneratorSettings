@@ -287,6 +287,24 @@ GeneratorSetting
 		}
 	}
 
+	// The first and last objects are passed outside the input list; their entries that are not
+	// flags are files the link depends on
+	f_Ninja_ObjectListInputs function(string _Entry) [string] = []
+	f_Ninja_ObjectListInputs =+ _Entry
+	{
+		!_Entry->StartsWith("-") true
+	}
+
+	Ninja_TargetImplicitInputs =+ Target.FirstObjects->ForEach(&GeneratorSetting.f_Ninja_ObjectListInputs)
+	{
+		!Target.FirstObjects undefined
+	}
+
+	Ninja_TargetImplicitInputs =+ Target.LastObjects->ForEach(&GeneratorSetting.f_Ninja_ObjectListInputs)
+	{
+		!Target.LastObjects undefined
+	}
+
 	// Get object files from ObjectLibrary dependencies
 	// For ObjectLibrary dependencies, get Target.AllFiles and calculate linker inputs
 	MaybeGetObjectLibraryInputs: one_of(string, [string]) = []
