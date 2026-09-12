@@ -5,7 +5,7 @@
 #include <Mib/File/File>
 #include <Mib/Atomic/Atomic>
 
-#ifdef DPlatformFamily_macOS
+#if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
 #include <pthread.h>
 #include <dlfcn.h>
 #endif
@@ -19,7 +19,7 @@ void __cdecl fg_ValidDestroyModule();
 
 namespace
 {
-#if defined(DPlatformFamily_macOS) && !defined(DMibSanitizerEnabled_Thread)
+#if (defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)) && !defined(DMibSanitizerEnabled_Thread)
 	// Unloading waits for the threads already in pthread's exit path to leave it, so what the host
 	// does while its threads exit decides whether an unload can finish at all
 	NMib::NAtomic::TCAtomic<bool> g_bUnloadStarted{false};
@@ -60,6 +60,7 @@ namespace
 		return true;
 	}
 
+#ifdef DPlatformFamily_macOS
 	// dlopen and dlsym block for as long as an unloading image runs its destructors, so a host key
 	// destructor that resolves a symbol stays marked as exiting for exactly that long
 	void fg_DyldBoundKeyDestructor(void *)
@@ -79,6 +80,7 @@ namespace
 
 		return nullptr;
 	}
+#endif
 
 	void fg_ChurnKeyDestructor(void *)
 	{
@@ -106,6 +108,33 @@ namespace
 
 		return nullptr;
 	}
+
+#ifdef DPlatformFamily_Linux
+	NMib::NAtomic::TCAtomic<bool> g_bThreadLocalConstructed{false};
+	NMib::NAtomic::TCAtomic<bool> g_bThreadLocalOwnerExit{false};
+	umint g_ThreadLocalDestroyedOnThread = 0;
+	void (calling_convention_c *g_fConstructThreadLocal)(umint *) = nullptr;
+
+	void *fg_ThreadLocalOwnerThread(void *)
+	{
+		g_fConstructThreadLocal(&g_ThreadLocalDestroyedOnThread);
+		g_bThreadLocalConstructed = true;
+		while (!g_bThreadLocalOwnerExit.f_Load())
+			NMib::NSys::fg_Thread_Sleep(0.001);
+
+		return nullptr;
+	}
+
+	// The query holds a handle of its own for a moment, so its close is a loader close as well
+	bool fg_IsLibraryMapped(CStr const &_Path)
+	{
+		void *pMapped = dlopen(_Path.f_GetStr(), RTLD_NOW | RTLD_NOLOAD);
+		if (pMapped)
+			dlclose(pMapped);
+
+		return pMapped != nullptr;
+	}
+#endif
 #endif
 
 	class CDll_Tests : public NMib::NTest::CTest
@@ -332,7 +361,7 @@ namespace
 #endif
 				}
 			};
-#if defined(DPlatformFamily_macOS) && !defined(DMibSanitizerEnabled_Thread)
+#if (defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)) && !defined(DMibSanitizerEnabled_Thread)
 			// Unloading waits for threads to leave their exit path; threads terminating meanwhile, and one
 			// held in a key destructor, must not stall or fault that wait
 			DMibTestSuite("Unload during thread exit")
@@ -385,6 +414,7 @@ namespace
 				pthread_key_delete(SlowKey);
 				DMibTest(DMibExpr(nChurned.f_Load()) > DMibExpr(umint(0)));
 			};
+#ifdef DPlatformFamily_macOS
 			// dyld holds its loader lock across the destructors dlclose runs, so an exiting host thread
 			// that enters dyld meanwhile cannot leave the exit path the unload waits for. Nothing the
 			// library does inside those destructors can change that, and a teardown before dlclose
@@ -412,6 +442,7 @@ namespace
 					pthread_key_delete(DyldKey);
 				}
 			};
+#endif
 			// Only threads already exiting when the key is deleted can still reach its destructor, so
 			// threads that keep retiring must not hold the unload up
 			DMibTestSuite("Unload during sustained thread exit")
@@ -441,6 +472,41 @@ namespace
 				DMibTest(DMibExpr(g_nChurned.f_Load()) > DMibExpr(umint(0)));
 				DMibTest(DMibExpr(bUnloaded));
 			};
+#ifdef DPlatformFamily_Linux
+			// glibc keeps a closed library mapped while a thread still owes it a thread local destructor,
+			// runs that destructor on the owning thread when it exits, and unmaps the library on the
+			// next loader close after that, which is when its static destructors run
+			DMibTestSuite("Unload with a pending thread local destructor")
+			{
+				void *pDll = NMib::NSys::fg_LoadLibrary(DllPath);
+				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
+				(void * &)g_fConstructThreadLocal = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestConstructThreadLocalWithDestructor");
+				DMibTest(DMibExpr(g_fConstructThreadLocal))(ETest_FailAndStop);
+
+				g_bThreadLocalConstructed = false;
+				g_bThreadLocalOwnerExit = false;
+				g_ThreadLocalDestroyedOnThread = 0;
+				pthread_t Owner;
+				DMibTest(DMibExpr(pthread_create(&Owner, nullptr, &fg_ThreadLocalOwnerThread, nullptr)) == DMibExpr(0))(ETest_FailAndStop);
+				while (!g_bThreadLocalConstructed.f_Load())
+					NMib::NSys::fg_Thread_Sleep(0.001);
+
+				DMibTest(DMibExpr(fg_UnloadWithDeadline(pDll, 30000)));
+				bool bMappedWhilePending = fg_IsLibraryMapped(DllPath);
+				DMibTest(DMibExpr(bMappedWhilePending));
+
+				g_bThreadLocalOwnerExit = true;
+				pthread_join(Owner, nullptr);
+				DMibTest(DMibExpr(g_ThreadLocalDestroyedOnThread) == DMibExpr((umint)Owner));
+
+				bool bMappedAfterOwnerExit = fg_IsLibraryMapped(DllPath); // This query's close is the one that unmaps it
+				DMibTest(DMibExpr(bMappedAfterOwnerExit));
+#ifndef DMibSanitizerEnabled_Address // fg_LoadLibrary opens with RTLD_NODELETE under ASan, so the library never unmaps
+				bool bMappedAfterLoaderClose = fg_IsLibraryMapped(DllPath);
+				DMibTest(DMibExpr(bMappedAfterLoaderClose) == DMibExpr(false));
+#endif
+			};
+#endif
 #endif
 			DMibTestSuite(CTestCategory("Performance") << CTestGroup("Performance"))
 			{

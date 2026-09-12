@@ -50,6 +50,7 @@ Property
 				%Group "Unix"
 				{
 					%File "Source/Platform/Malterlib_Core_PlatformImp_Posix_Init.cpp"
+					%File "Source/Platform/Malterlib_Core_PlatformImp_Posix_Unload.cpp"
 				}
 			}
 		}

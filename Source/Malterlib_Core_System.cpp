@@ -10,6 +10,8 @@ void fg_MalterlibMallocOverride_CanStartThreads();
 void fg_MalterlibMallocOverride_DestroyThreads();
 void fg_MalterlibMallocOverride_PreDestroyNonTrackedMemoryManager();
 
+extern bool g_bSysDeleted;
+
 namespace NMib
 {
 	CPromiseKeepAlive::~CPromiseKeepAlive() = default;
@@ -128,10 +130,22 @@ namespace NMib
 	{
 		if (!g_pSys || !NPrivate::g_SubSystem_SystemThreadLocal.f_WasCreated() || fg_GetSys()->f_ThreadDestroyed())
 			return;
-		[[maybe_unused]] auto &Local = *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal;
+
+		fg_SystemThreadInit();
 	}
 
 	uint32 CSystem::ms_PlatformVersion = 0;
+
+	// dlclose runs an image's static destructors on whichever thread unloads it, before the
+	// system is destroyed; the last linked object calls this ahead of them. At process exit the
+	// Linux one runs after the system is gone
+	extern "C" void fg_MalterlibPrepareUnloadThread()
+	{
+		if (::g_bSysDeleted)
+			return;
+
+		fg_MaybeSystemThreadInit();
+	}
 
 	CSystem::CSystem(bool _bIsDll)
 		: m_bIsDll(_bIsDll)

@@ -155,6 +155,12 @@ GeneratorSetting
 		!Target.FirstObjects undefined
 	}
 
+	Ninja_LastObjects: string = ""
+	Ninja_LastObjects ` @(Target.LastObjects->JoinEscaped(" "))`
+	{
+		!Target.LastObjects undefined
+	}
+
 	Ninja_TargetCommand: string
 
 	// Unix/POSIX command format
@@ -164,9 +170,9 @@ GeneratorSetting
 		, "ConsoleExecutable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
 		, "UIExecutable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
 		, "Executable", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
-		, "DynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
-		, "XcodeBundle", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
-		, "SharedDynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
+		, "DynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)@(GeneratorSetting.Ninja_LastObjects)`
+		, "XcodeBundle", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)@(GeneratorSetting.Ninja_LastObjects)`
+		, "SharedDynamicLibrary", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)@(GeneratorSetting.Ninja_LastObjects)`
 		, "Driver", `@(GeneratorSetting.Ninja_TargetExecutable->Escape()) -o @(Builtin.Output)@(GeneratorSetting.Ninja_FirstObjects) @(Builtin.Input) @(Builtin.Flags)`
 		, "Tool", "false"
 	)
@@ -783,6 +789,7 @@ GeneratorSetting
 	Target_IDEDebugPriority =+ {}
 	Target_BuildPriority =+ {}
 	Target_FirstObjects =+ {}
+	Target_LastObjects =+ {}
 	Target_AllFiles =+ {}
 	Target_LinkWithLibraries =+ {}
 	Target_BaseName =+ {}
