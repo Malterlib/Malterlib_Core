@@ -2990,6 +2990,10 @@ public:
 
 void fg_SetThreadName( DWORD _ThreadID, CHAR const *_pThreadName)
 {
+#if DMibEnableSafeCheck > 0
+	fg_GetLocalSys()->f_ThreadLocalSetThreadName(_ThreadID, _pThreadName);
+#endif
+
 	// Thread descriptions support later debugger/profiler attachment on Windows 10 1607+; retain the exception protocol for attached debuggers.
 	if (auto fSetThreadDescription = NLocal::g_OptionalFunctions.m_fSetThreadDescription)
 	{
@@ -3146,6 +3150,28 @@ void *NSys::fg_Thread_Create
 void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread)
 {
 	fg_EnumProcessThreads(_fOnThread);
+}
+
+// The Win32 start address identifies a foreign thread by the module that created it once the thread itself is gone
+void const *NSys::fg_Thread_GetStartAddress(umint _ThreadID)
+{
+	auto fQuery = NLocal::g_OptionalFunctions.m_fNtQueryInformationThread;
+	if (!fQuery)
+		return nullptr;
+
+	bool bCurrent = _ThreadID == GetCurrentThreadId();
+	HANDLE hThread = bCurrent ? GetCurrentThread() : OpenThread(THREAD_QUERY_INFORMATION, false, (DWORD)_ThreadID);
+	if (!hThread)
+		return nullptr;
+
+	PVOID pStart = nullptr;
+	if (!NT_SUCCESS(fQuery(hThread, (::THREADINFOCLASS)NLocal::ThreadQuerySetWin32StartAddress, &pStart, sizeof(pStart), nullptr)))
+		pStart = nullptr;
+
+	if (!bCurrent)
+		CloseHandle(hThread);
+
+	return pStart;
 }
 
 void NSys::fg_Thread_Suspend(void *_pThread)
@@ -6919,8 +6945,10 @@ void __cdecl fg_DestroyMalterlib()
 #if DMibEnableSafeCheck > 0
 		// Once g_bSysDeleted is set, the thread detach callback no longer clears the record of a thread that exits, so wait
 		// for the registered threads that are still exiting. Teardown proceeds either way; a record left behind is what the
-		// thread local teardown check reports
+		// thread local teardown check reports, and the start symbols that name it are resolved here while the debug
+		// subsystem still exists
 		fg_WaitForOtherRegisteredThreads();
+		fg_GetLocalSys()->f_ThreadLocalDescribeOtherThreads();
 #endif
 
 		g_bSysDeleted = true;

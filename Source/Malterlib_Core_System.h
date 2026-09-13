@@ -493,6 +493,10 @@ namespace NMib
 		void f_ThreadLocalFreeThreadFromNotification();
 		void f_ThreadLocalRestoreThread();
 		void f_ThreadLocalCreateThread(umint _ThreadID, umint _ParentThreadID);
+#if DMibEnableSafeCheck > 0
+		void f_ThreadLocalSetThreadName(umint _ThreadID, ch8 const *_pName);
+		void f_ThreadLocalDescribeOtherThreads();
+#endif
 		void *f_ThreadLocalGet(void *_pStorageIndex);
 		void f_ThreadLocalReinitForThread(void *_pStorageIndex);
 		void f_ThreadLocalDestroyForThread(void *_pStorageIndex);

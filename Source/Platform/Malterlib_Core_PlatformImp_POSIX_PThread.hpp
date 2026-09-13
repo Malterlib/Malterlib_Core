@@ -695,6 +695,10 @@ void *fg_ThreadStartRoutine(void *_pParams)
 
 	pThreadParams.f_Clear();
 
+#if DMibEnableSafeCheck > 0
+	fg_GetSys()->f_ThreadLocalSetThreadName(NSys::fg_Thread_GetCurrentUID(), StartParams.m_ThreadName.f_GetStr());
+#endif
+
 #ifdef DPlatformFamily_Linux
 	if (NLocal::g_f_pthread_setname_np)
 		NLocal::g_f_pthread_setname_np(pthread_self(), StartParams.m_ThreadName.f_GetStr());
@@ -1087,6 +1091,11 @@ void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 void NSys::fg_Thread_Destroy(void *_pThread)
 {
 
+}
+
+void const *NSys::fg_Thread_GetStartAddress(umint)
+{
+	return nullptr;
 }
 
 umint NSys::fg_Thread_GetCurrentUIDAlternate()

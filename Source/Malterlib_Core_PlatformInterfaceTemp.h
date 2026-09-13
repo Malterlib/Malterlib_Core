@@ -161,6 +161,7 @@ namespace NMib
 		void fg_Thread_Resume(void *_pThread);
 		void fg_Thread_SmallestSleep();
 		void fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread);
+		void const *fg_Thread_GetStartAddress(umint _ThreadID);
 
 		umint fg_Thread_GetPhysicalCores();
 		umint fg_Thread_GetVirtualCores();
