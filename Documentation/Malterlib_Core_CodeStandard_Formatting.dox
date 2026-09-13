@@ -195,11 +195,11 @@ Incorrect example:
 
 ~~~
 	while
-		(
-			bExprX
-			&& (bExprY || bExprZ)
-			&& bExprA
-		)
+	(
+		bExprX
+		&& (bExprY || bExprZ)
+		&& bExprA
+	)
 	{
 		fg_FuncCall0();
 		fg_FuncCall1();
@@ -228,12 +228,11 @@ Incorrect example:
 		fg_FuncCall1();
 	}
 	while
-		(
-			bExprX
-			&& (bExprY || bExprZ)
-			&& bExprA
-		)
-	;
+	(
+		bExprX
+		&& (bExprY || bExprZ)
+		&& bExprA
+	);
 ~~~
 
 
@@ -279,11 +278,11 @@ Incorrect example:
 
 ~~~
 	switch
-		(
-			Value0
-			+ Value1
-			+ Value2
-		)
+	(
+		Value0
+		+ Value1
+		+ Value2
+	)
 	{
 	default:
 		break;
@@ -343,6 +342,9 @@ You can never split the function into several lines before the function name. If
 \endverbatim
 
 If you would save more space by splitting the parameters, do that instead or in addition to specifying the return type on a separate trailing line.
+
+When the parameter list is split, the function's qualifiers, `override`, `final` and a pure specifier start the line after the
+closing parenthesis, at its indentation, like the trailing return type below them.
 
 Any lines after the line with the function name are indented.
 
@@ -437,6 +439,7 @@ Examples:
 		{
 			uint32 m_Member;
 		};
+
 		using CRetValue = uint32;
 
 		CRetValue f_PublicFunction(CSubStruct const &_Param);
@@ -448,6 +451,7 @@ Examples:
 		{
 			uint32 m_Member;
 		};
+
 		using CProtectedRetValue = uint32;
 
 		CProtectedRetValue fp_ProtectedFunction(CProtectedSubStruct const &_Param);
@@ -459,6 +463,7 @@ Examples:
 		{
 			uint32 m_Member;
 		};
+
 		using CPrivateRetValue = uint32;
 
 		CPrivateRetValue fp_PrivateFunction(CPrivateSubStruct const &_Param);
