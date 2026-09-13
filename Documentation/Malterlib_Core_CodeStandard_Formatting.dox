@@ -195,11 +195,11 @@ Incorrect example:
 
 ~~~
 	while
-		(
-			bExprX
-			&& (bExprY || bExprZ)
-			&& bExprA
-		)
+	(
+		bExprX
+		&& (bExprY || bExprZ)
+		&& bExprA
+	)
 	{
 		fg_FuncCall0();
 		fg_FuncCall1();
@@ -228,12 +228,11 @@ Incorrect example:
 		fg_FuncCall1();
 	}
 	while
-		(
-			bExprX
-			&& (bExprY || bExprZ)
-			&& bExprA
-		)
-	;
+	(
+		bExprX
+		&& (bExprY || bExprZ)
+		&& bExprA
+	);
 ~~~
 
 
@@ -279,11 +278,11 @@ Incorrect example:
 
 ~~~
 	switch
-		(
-			Value0
-			+ Value1
-			+ Value2
-		)
+	(
+		Value0
+		+ Value1
+		+ Value2
+	)
 	{
 	default:
 		break;
@@ -437,6 +436,7 @@ Examples:
 		{
 			uint32 m_Member;
 		};
+
 		using CRetValue = uint32;
 
 		CRetValue f_PublicFunction(CSubStruct const &_Param);
@@ -448,6 +448,7 @@ Examples:
 		{
 			uint32 m_Member;
 		};
+
 		using CProtectedRetValue = uint32;
 
 		CProtectedRetValue fp_ProtectedFunction(CProtectedSubStruct const &_Param);
@@ -459,6 +460,7 @@ Examples:
 		{
 			uint32 m_Member;
 		};
+
 		using CPrivateRetValue = uint32;
 
 		CPrivateRetValue fp_PrivateFunction(CPrivateSubStruct const &_Param);
