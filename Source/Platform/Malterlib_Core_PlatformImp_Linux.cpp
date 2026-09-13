@@ -1778,14 +1778,13 @@ void NSys::fg_DestroySystem()
 {
 	if (g_bCreatedSystem && !g_bSysDeleted)
 	{
-		g_bSysDeleted = true;
-
 		auto pSys = fg_GetLocalSys();
 
 		pSys->f_DestroyThreadSpecific();
 		// f_DestroyThreadSpecific() stops and joins every thread before lifecycle
 		// notification state is torn down, so no thread callback can race the code below.
 
+		g_bSysDeleted = true;
 		pSys->f_ExitModule();
 
 	#ifdef DMibConfig_LinuxPThreadMonitoring

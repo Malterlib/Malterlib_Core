@@ -2697,14 +2697,13 @@ void NSys::fg_DestroySystem()
 {
 	if (g_bCreatedSystem && !g_bSysDeleted)
 	{
-		g_bSysDeleted = true;
-
 		auto pSys = fg_GetLocalSys();
 		pSys->f_DestroyThreadSpecific();
 		// f_DestroyThreadSpecific() stops and joins every thread of this library's own before
 		// lifecycle notification state is torn down; a host's threads are waited out of the
 		// introspection hook and the key destructor where those are replaced
 
+		g_bSysDeleted = true;
 		pSys->f_ExitModule();
 
 #if defined(DMibConfig_PThreadIntrospection) && defined(DMibDynamicLibrary)
