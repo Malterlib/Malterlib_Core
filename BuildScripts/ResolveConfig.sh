@@ -7,7 +7,9 @@
 #
 # Source this script after setting Workspace. It updates the MalterlibDefault*
 # variables so that callers can keep using ${arg:-$MalterlibDefault*} patterns.
+# ResolvedConfigFile identifies the selected ConfigStore JSON file, or is empty if none was found.
 
+ResolvedConfigFile=""
 ResolveConfigBuildSystemDir="${MalterlibGeneratedBuildSystemDir:-BuildSystem/Default}"
 ResolveConfigDir="${ResolveConfigBuildSystemDir}/ConfigStore/${Workspace}/Configs"
 
@@ -28,6 +30,7 @@ if [ -d "$ResolveConfigDir" ]; then
 		esac
 
 		if [ "$Score" -gt "$BestScore" ] || { [ "$Score" -eq "$BestScore" ] && [ "$FilePriority" -gt "$BestPriority" ]; }; then
+			ResolvedConfigFile="$ConfigFile"
 			BestScore=$Score
 			BestPriority=$FilePriority
 			BestPlatform=$FilePlatform

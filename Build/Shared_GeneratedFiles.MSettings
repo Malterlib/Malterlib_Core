@@ -742,9 +742,19 @@ Target
 				!GeneratorFamily "VisualStudio"
 			}
 
-			ContentsJson #<postCopyProject> Target:MalterlibPostCopyProject
+			ContentsJson #<postCopyProject> Target:MalterlibCalculatedPostCopyProject
 			{
-				!Target:MalterlibPostCopyProject undefined
+				!Target:MalterlibCalculatedPostCopyProject undefined
+			}
+
+			ContentsJson #<postCopySource> Target:MalterlibFinalModuleDestination
+			{
+				!Target:MalterlibCalculatedPostCopyProject undefined
+			}
+
+			ContentsJson #<postCopyConfig> Target:MalterlibPostCopyConfigFile
+			{
+				!Target:MalterlibCalculatedPostCopyProject undefined
 			}
 
 			ContentsJson #<postCopyProject2> Target:MalterlibPostCopyProject2

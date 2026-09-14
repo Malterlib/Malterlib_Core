@@ -890,7 +890,28 @@ while true; do
 
 		OutputInfo '[Testing]'
 
-		if "$MalterlibDeployRoot/Tests/RunAllTests" "$@"; then
+		local Workspace=Tests
+		source ./Malterlib/Core/BuildScripts/ResolveConfig.sh
+		if [[ -z "$ResolvedConfigFile" ]]; then
+			OutputError "Could not resolve the Tests build configuration"
+			exit 1
+		fi
+
+		local TargetConfig="$MalterlibGeneratedBuildSystemDir/ConfigStore/Tests/Targets/Com_RunAllTests/Configs/${ResolvedConfigFile##*/}"
+		local RunnerSettings TestSource TestPostCopyConfig TestProject TestDestination
+		RunnerSettings=$(MTool --no-color ReadJson "$TargetConfig" postCopySource postCopyConfig postCopyProject postCopyDestination)
+		RunnerSettings=${RunnerSettings//$'\r'/}
+		IFS=$'\n' read -r -d '' TestSource TestPostCopyConfig TestProject TestDestination <<< "$RunnerSettings" || true
+		if [[ -z "$TestSource" || -z "$TestPostCopyConfig" || -z "$TestProject" ]]; then
+			OutputError "Missing test-runner deployment settings in $TargetConfig"
+			exit 1
+		fi
+
+		local TestRunner
+		TestRunner=$(MTool PostCopy "$TestSource" "Config=$TestPostCopyConfig" "Project=$TestProject" "OutFolder=$TestDestination" "PrintDestination=true")
+		TestRunner=${TestRunner%$'\r'}
+
+		if "$TestRunner" "$@"; then
 			OutputTime
 			OutputHeading Success
 		else
