@@ -362,8 +362,7 @@ Examples:
 		(
 			int _Param0
 			, int _Param1
-		) const volatile
-		= 0
+		) const volatile = 0
 	;
 
 	void fg_Function
