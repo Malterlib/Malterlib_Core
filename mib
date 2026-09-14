@@ -890,7 +890,15 @@ while true; do
 
 		OutputInfo '[Testing]'
 
-		if "$MalterlibDeployRoot/Tests/RunAllTests" "$@"; then
+		local TestExecutable="RunAllTests"
+		if [[ "$HostPlatformFamily" == "Windows" ]]; then
+			TestExecutable+=".exe"
+		fi
+		local TestRunner
+		TestRunner=$(MTool PostCopy "$TestExecutable" "Config=$MalterlibGeneratedBuildSystemDir/PostCopy.MConfig" "Project=Tests" "PrintDestination=true")
+		TestRunner=${TestRunner%$'\r'}
+
+		if "$TestRunner" "$@"; then
 			OutputTime
 			OutputHeading Success
 		else
