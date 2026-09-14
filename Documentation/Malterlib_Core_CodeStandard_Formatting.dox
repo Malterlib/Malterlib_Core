@@ -362,8 +362,8 @@ Examples:
 		(
 			int _Param0
 			, int _Param1
-		)
-		const volatile = 0
+		) const volatile
+		= 0
 	;
 
 	void fg_Function
@@ -403,8 +403,7 @@ Examples:
 		(
 			int _Param0
 			, int _Param1
-		)
-		const volatile
+		) const volatile
 		-> typename TCLongTemplate<tf_CType>::CType
 	{
 	}
