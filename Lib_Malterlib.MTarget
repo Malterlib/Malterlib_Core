@@ -907,7 +907,7 @@ Compile
 {
 	&
 	{
-		MalterlibEnableBreakpad true
+		MalterlibBreakpadActive true
 		|
 		{
 			CompileDialect "C"
@@ -932,7 +932,7 @@ Compile
 	{
 		&
 		{
-			MalterlibEnableBreakpad true
+			MalterlibBreakpadActive true
 			|
 			{
 				Target.Type "Executable"
@@ -964,11 +964,11 @@ Compile
 
 	%Dependency "Lib_Breakpad_Common"
 	{
-		!!MalterlibEnableBreakpad true
+		!!MalterlibBreakpadActive true
 	}
 	%Dependency "Lib_Breakpad_Client"
 	{
-		!!MalterlibEnableBreakpad true
+		!!MalterlibBreakpadActive true
 	}
 }
 
@@ -1074,11 +1074,11 @@ Property
 
 	%Dependency "Lib_Breakpad_Common"
 	{
-		!!MalterlibEnableBreakpad true
+		!!MalterlibBreakpadActive true
 	}
 	%Dependency "Lib_Breakpad_Client"
 	{
-		!!MalterlibEnableBreakpad true
+		!!MalterlibBreakpadActive true
 	}
 }
 
@@ -1088,7 +1088,7 @@ Target
 	{
 		&
 		{
-			MalterlibEnableBreakpad true
+			MalterlibBreakpadActive true
 			TargetIsLaunchableExecutable true
 		}
 	}

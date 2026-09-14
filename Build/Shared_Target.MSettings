@@ -4389,7 +4389,7 @@ Property
 
 
 			{
-				!!MalterlibEnableBreakpad true
+				!!MalterlibBreakpadActive true
 			}
 
 			Contents =+	`	<key>BreakpadRequestEmail</key>\n`\
@@ -4397,7 +4397,7 @@ Property
 			{
 				&
 				{
-					MalterlibEnableBreakpad true
+					MalterlibBreakpadActive true
 					MalterlibBreakpadRequestEmail true
 				}
 			}
@@ -4407,7 +4407,7 @@ Property
 			{
 				&
 				{
-					MalterlibEnableBreakpad true
+					MalterlibBreakpadActive true
 					MalterlibBreakpadRequestComments true
 				}
 			}

@@ -374,6 +374,21 @@ Property
 		}
 	}
 
+	// Breakpad is linked and its handler installed. Not with a sanitizer runtime: that reports a crash with the faulting
+	// thread's stack itself, and Breakpad's in-process dump writer copies the suspended threads' stacks with memcpy, which
+	// the sanitizer intercepts and reports while those threads stay suspended
+	MalterlibBreakpadActive: bool = false
+	MalterlibBreakpadActive true
+	{
+		&
+		{
+			MalterlibEnableBreakpad true
+			!MalterlibSupportSanitizerEnable_Thread true
+			!MalterlibSupportSanitizerEnable_Address true
+			!MalterlibSupportSanitizerEnable_UndefinedBehavior true
+		}
+	}
+
 	MalterlibThread_LinuxUseStaticThreadLocal: bool = false // User(Undocumented)=true: Use static thread locals on Linux. WARNING: This only works for executables, or load time dynamic libraries. Dynamic libraries loaded with dlopen() will not work, unless Malterlib_AssumeMalterlibHost is also specified.
 	MalterlibThread_LinuxAssumeGlibc: bool = true // User(Undocumented)=false: Executable will only work on glibc system. Speeds up thread self access.
 	MalterlibThread_LinuxOptimizeGlibcThreadLocals: bool = true // User(Undocumented)=false: Optimize non-static pthread local allocation and access using the glibc layout.
