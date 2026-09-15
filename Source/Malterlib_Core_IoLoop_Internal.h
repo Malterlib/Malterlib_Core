@@ -65,6 +65,17 @@ struct CIoLoopDeferredAck
 
 void fg_RunDeregAcknowledgement(CIoLoopDeferredAck &_Ack);
 
+struct CIoLoopWaitDeadline
+{
+	CIoLoopWaitDeadline(fp64 _Timeout);
+	fp64 f_Remaining() const;
+	uint32 f_Milliseconds(uint32 _Maximum) const;
+
+private:
+	fp64 mp_Timeout;
+	NMib::NTime::CStopwatch mp_Stopwatch;
+};
+
 struct CIoLoop_Base : public NMib::NSys::ICIoLoop
 {
 	void f_SetOwnerThreadToCurrent() override;
@@ -85,6 +96,7 @@ struct CIoLoop_Base : public NMib::NSys::ICIoLoop
 	void f_DeregisterAsync(NMib::NSys::CIoLoopRegistration *_pRegistration, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnDeregistered) override;
 
 	void f_WaitAndDispatch() override;
+	void f_WaitAndDispatchTimeout(pfp64 _Timeout) override;
 	bool f_PollAndDispatch() override;
 	void f_Wake() override;
 
@@ -101,7 +113,7 @@ protected:
 	bool fp_IsOwnerThread() const;
 	void fp_RunDeregAcknowledgement(CIoLoopDeferredAck &_Ack);
 
-	virtual umint fp_Iterate(bool _bBlock) = 0;
+	virtual umint fp_Iterate(bool _bBlock, fp64 _Timeout = -1.0) = 0;
 	virtual auto fp_CreateRegistration() -> NMib::NSys::CIoLoopRegistration *;
 	virtual void fp_WakeKernel() = 0;
 

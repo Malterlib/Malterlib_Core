@@ -213,8 +213,9 @@ void CIoLoop_IoUring::fp_TryAcknowledge(CUringRegistration *_pRegistration, umin
 	++_nReported;
 }
 
-umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
+umint CIoLoop_IoUring::fp_Iterate(bool _bBlock, fp64 _Timeout)
 {
+	CIoLoopWaitDeadline Deadline(_Timeout);
 	umint nReported = 0;
 
 	// The driving thread must enable the disabled ring to claim single-issuer ownership.
@@ -521,11 +522,11 @@ umint CIoLoop_IoUring::fp_Iterate(bool _bBlock)
 
 	if (bBlock)
 	{
-		[[maybe_unused]] int SubmitRet = mp_Ring.f_Submit(1, true);
+		[[maybe_unused]] int SubmitRet = _Timeout < 0.0 ? mp_Ring.f_Submit(1, true) : mp_Ring.f_WaitTimeout(Deadline.f_Remaining());
 
 		// A busy result means the completion ring overflowed and the reap below drains it;
 		// anything else failing here would spin the parking loop at full speed
-		DMibFastCheck(SubmitRet >= 0 || SubmitRet == -EBUSY);
+		DMibFastCheck(SubmitRet >= 0 || SubmitRet == -EBUSY || SubmitRet == -ETIME || SubmitRet == -EINTR);
 
 		mp_WakeState.f_Store(0, NAtomic::gc_MemoryOrder_Release);
 	}

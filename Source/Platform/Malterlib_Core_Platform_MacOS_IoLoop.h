@@ -17,7 +17,7 @@ struct CIoLoop_KQueue : public CIoLoop_POSIXBase
 	~CIoLoop_KQueue() override;
 
 private:
-	umint fp_Iterate(bool _bBlock) override;
+	umint fp_Iterate(bool _bBlock, fp64 _Timeout = -1.0) override;
 	auto fp_CreateRegistration() -> NMib::NSys::CIoLoopRegistration * override;
 
 	int mp_KQueue = -1;

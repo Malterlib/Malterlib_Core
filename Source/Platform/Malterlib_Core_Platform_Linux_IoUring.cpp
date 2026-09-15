@@ -14,9 +14,9 @@ int CIoUringRing::fs_Setup(uint32 _nEntries, CIoUringParams *_pParams)
 	return (int)syscall(gc_IoUringSyscall_Setup, _nEntries, _pParams);
 }
 
-int CIoUringRing::fs_Enter(int _Fd, uint32 _nToSubmit, uint32 _nMinComplete, uint32 _Flags)
+int CIoUringRing::fs_Enter(int _Fd, uint32 _nToSubmit, uint32 _nMinComplete, uint32 _Flags, void const *_pArg, umint _ArgSize)
 {
-	int Result = (int)syscall(gc_IoUringSyscall_Enter, _Fd, _nToSubmit, _nMinComplete, _Flags, nullptr, 0);
+	int Result = (int)syscall(gc_IoUringSyscall_Enter, _Fd, _nToSubmit, _nMinComplete, _Flags, _pArg, _ArgSize);
 #ifdef DMibSanitizerEnabled_Thread
 	// TSan can defer native handlers during raw syscalls. Its signal-mask interceptor delivers
 	// pending handlers before another blocking enter, allowing their self-pipe writes to wake it.
@@ -254,6 +254,36 @@ int CIoUringRing::f_Submit(uint32 _nMinComplete, bool _bGetEvents)
 	m_nPendingSubmit -= nSubmitted;
 
 	return Ret;
+}
+
+// Submit separately so a wait timeout cannot obscure how many SQEs the kernel consumed.
+int CIoUringRing::f_WaitTimeout(fp64 _Timeout)
+{
+	NMib::NTime::CStopwatch Elapsed{true};
+	int Submitted = f_Submit(0, true);
+	if (Submitted < 0 || m_nPendingSubmit)
+		return Submitted;
+
+	struct CKernelTimespec
+	{
+		int64 m_Seconds;
+		int64 m_Nanoseconds;
+	};
+	struct CGetEventsArg
+	{
+		uint64 m_SignalMask = 0;
+		uint32 m_SignalMaskSize = 0;
+		uint32 m_Padding = 0;
+		uint64 m_Timespec;
+	};
+
+	_Timeout = NMib::fg_Min(NMib::fg_Max(_Timeout - Elapsed.f_GetTime(), fp64(0.0)), fp64(0x7fffffff));
+	CKernelTimespec Timeout{NMib::fg_Convert<int64>(_Timeout), NMib::fg_Convert<int64>((_Timeout - _Timeout.f_Floor()) * 1000000000.0)};
+	CGetEventsArg Arg{.m_Timespec = uint64(umint(&Timeout))};
+	static_assert(sizeof(Timeout) == 16 && sizeof(Arg) == 24);
+
+	int Result = fs_Enter(m_RingFd, 0, 1, gc_IoUringEnter_GetEvents | gc_IoUringEnter_ExtArg, &Arg, sizeof(Arg));
+	return Result < 0 ? -errno : Result;
 }
 
 // Ring mappings and SQE storage charged to the user's locked-memory limit.

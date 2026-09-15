@@ -46,8 +46,9 @@ CIoLoop_Epoll::~CIoLoop_Epoll()
 	close(mp_EpollFd);
 }
 
-umint CIoLoop_Epoll::fp_Iterate(bool _bBlock)
+umint CIoLoop_Epoll::fp_Iterate(bool _bBlock, fp64 _Timeout)
 {
+	CIoLoopWaitDeadline Deadline(_Timeout);
 	static const int nMaxEvents = 64;
 	struct epoll_event IncomingEvents[nMaxEvents];
 	umint nReported = 0;
@@ -143,7 +144,7 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock)
 	int nEvents;
 	do
 	{
-		nEvents = epoll_wait(mp_EpollFd, IncomingEvents, nMaxEvents, bBlock ? -1 : 0);
+		nEvents = epoll_wait(mp_EpollFd, IncomingEvents, nMaxEvents, bBlock ? (_Timeout < 0.0 ? -1 : int(Deadline.f_Milliseconds(0x7fffffff))) : 0);
 	}
 	while (nEvents == -1 && errno == EINTR)
 		;
