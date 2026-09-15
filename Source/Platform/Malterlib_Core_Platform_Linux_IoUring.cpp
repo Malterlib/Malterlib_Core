@@ -3,6 +3,11 @@
 
 #include "Malterlib_Core_Platform_Linux_IoUring.h"
 
+#ifdef DMibSanitizerEnabled_Thread
+#	include <pthread.h>
+#	include <signal.h>
+#endif
+
 
 int CIoUringRing::fs_Setup(uint32 _nEntries, CIoUringParams *_pParams)
 {
@@ -11,7 +16,17 @@ int CIoUringRing::fs_Setup(uint32 _nEntries, CIoUringParams *_pParams)
 
 int CIoUringRing::fs_Enter(int _Fd, uint32 _nToSubmit, uint32 _nMinComplete, uint32 _Flags)
 {
-	return (int)syscall(gc_IoUringSyscall_Enter, _Fd, _nToSubmit, _nMinComplete, _Flags, nullptr, 0);
+	int Result = (int)syscall(gc_IoUringSyscall_Enter, _Fd, _nToSubmit, _nMinComplete, _Flags, nullptr, 0);
+#ifdef DMibSanitizerEnabled_Thread
+	// TSan can defer native handlers during raw syscalls. Its signal-mask interceptor delivers
+	// pending handlers before another blocking enter, allowing their self-pipe writes to wake it.
+	int SavedErrno = errno;
+	sigset_t SignalMask;
+	pthread_sigmask(SIG_SETMASK, nullptr, &SignalMask);
+	errno = SavedErrno;
+#endif
+
+	return Result;
 }
 
 int CIoUringRing::fs_Register(int _Fd, uint32 _Opcode, void *_pArg, uint32 _nArgs)
