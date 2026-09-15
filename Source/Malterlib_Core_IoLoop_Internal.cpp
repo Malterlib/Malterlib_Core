@@ -189,6 +189,37 @@ void CIoLoop_Base::f_DeregisterAsync(NSys::CIoLoopRegistration *_pRegistration, 
 	fp_PushRemoval(_pRegistration, nullptr, fg_Move(_fOnDeregistered));
 }
 
+CIoLoopWaitDeadline::CIoLoopWaitDeadline(fp64 _Timeout)
+	: mp_Timeout(_Timeout)
+{
+	if (_Timeout >= 0.0)
+		mp_Stopwatch.f_Start();
+}
+
+fp64 CIoLoopWaitDeadline::f_Remaining() const
+{
+	return mp_Timeout < 0.0 ? -1.0 : NMib::fg_Max(fp64(0.0), mp_Timeout - mp_Stopwatch.f_GetTime());
+}
+
+uint32 CIoLoopWaitDeadline::f_Milliseconds(uint32 _Maximum) const
+{
+	auto Remaining = f_Remaining();
+	return Remaining < 0.0 ? _Maximum : NMib::fg_Convert<uint32>(NMib::fg_Min(fp64(_Maximum), (Remaining * 1000.0).f_Ceil()));
+}
+
+// May return early for work or a wake; the caller rechecks its absolute deadline.
+void CIoLoop_Base::f_WaitAndDispatchTimeout(pfp64 _Timeout)
+{
+	DMibRequire(_Timeout >= 0.0);
+#if DMibEnableSafeCheck > 0
+	++mp_nDispatchDepth;
+#endif
+	fp_Iterate(true, _Timeout);
+#if DMibEnableSafeCheck > 0
+	--mp_nDispatchDepth;
+#endif
+}
+
 void CIoLoop_Base::f_WaitAndDispatch()
 {
 #if DMibEnableSafeCheck > 0

@@ -53,6 +53,7 @@ namespace NMib::NSys
 		virtual ~ICThreadIoLoop();
 
 		virtual void f_WaitAndDispatch() = 0;
+		virtual void f_WaitAndDispatchTimeout(pfp64 _Timeout) = 0;
 		virtual bool f_PollAndDispatch() = 0;
 		virtual void f_Wake() = 0;
 		virtual void f_DrainForShutdown();

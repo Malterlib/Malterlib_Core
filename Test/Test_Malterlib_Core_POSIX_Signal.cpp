@@ -19,6 +19,9 @@ namespace
 		void f_WaitAndDispatch() override
 		{
 		}
+		void f_WaitAndDispatchTimeout(pfp64) override
+		{
+		}
 		bool f_PollAndDispatch() override
 		{
 			return false;

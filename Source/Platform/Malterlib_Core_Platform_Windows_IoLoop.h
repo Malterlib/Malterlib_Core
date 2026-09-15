@@ -225,8 +225,8 @@ struct CIoLoop_Iocp : public CIoLoop_Base
 	bool f_AdoptHandle(NMib::NSys::CIoLoopHandle _Handle, int &o_Error) override;
 
 private:
-	umint fp_Iterate(bool _bBlock) override;
-	umint fp_IterateTimeout(bool _bBlock, DWORD _TimeoutMs);
+	umint fp_Iterate(bool _bBlock, fp64 _Timeout = -1.0) override;
+	umint fp_IterateTimeout(bool _bBlock, DWORD _TimeoutMs, CIoLoopWaitDeadline const *_pDeadline = nullptr);
 	auto fp_CreateRegistration() -> NMib::NSys::CIoLoopRegistration * override;
 	void fp_WakeKernel() override;
 

@@ -174,6 +174,7 @@ constexpr uint32 gc_IoUringCqe_FNotif = 1 << 3;
 
 constexpr uint32 gc_IoUringEnter_GetEvents = 1 << 0;
 constexpr uint32 gc_IoUringEnter_SqWakeup = 1 << 1;
+constexpr uint32 gc_IoUringEnter_ExtArg = 1 << 3;
 // SQ ring flags word (sq_off.flags): the kernel poller has gone idle and needs a wakeup enter
 constexpr uint32 gc_IoUringSq_NeedWakeup = 1 << 0;
 
@@ -212,7 +213,7 @@ struct CIoUringCaps
 struct CIoUringRing
 {
 	static int fs_Setup(uint32 _nEntries, CIoUringParams *_pParams);
-	static int fs_Enter(int _Fd, uint32 _nToSubmit, uint32 _nMinComplete, uint32 _Flags);
+	static int fs_Enter(int _Fd, uint32 _nToSubmit, uint32 _nMinComplete, uint32 _Flags, void const *_pArg = nullptr, umint _ArgSize = 0);
 	static int fs_Register(int _Fd, uint32 _Opcode, void *_pArg, uint32 _nArgs);
 
 	bool f_Create(uint32 _nSqEntries, uint32 _nCqEntries, bool _bDeferEnable, bool _bSqPoll = false);
@@ -221,6 +222,7 @@ struct CIoUringRing
 
 	CIoUringSqe *f_GetSqe();
 	int f_Submit(uint32 _nMinComplete, bool _bGetEvents);
+	int f_WaitTimeout(fp64 _Timeout);
 
 	CIoUringCqe *f_PeekCqe();
 	void f_AdvanceCq();

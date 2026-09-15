@@ -35,8 +35,9 @@ auto CIoLoop_KQueue::fp_CreateRegistration() -> NSys::CIoLoopRegistration *
 	return fg_ConstructObject<CKQueueRegistration>(CDefaultAllocator());
 }
 
-umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
+umint CIoLoop_KQueue::fp_Iterate(bool _bBlock, fp64 _Timeout)
 {
+	CIoLoopWaitDeadline Deadline(_Timeout);
 	static const int nMaxEvents = 64;
 	struct kevent StackEvents[nMaxEvents];
 	struct kevent *pIncomingEvents = StackEvents;
@@ -121,6 +122,12 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
 	int nEvents;
 	do
 	{
+		if (bBlock && _Timeout >= 0.0)
+		{
+			auto Remaining = fg_Min(Deadline.f_Remaining(), fp64(0x7fffffff));
+			PollTimeout.tv_sec = fg_Convert<time_t>(Remaining);
+			PollTimeout.tv_nsec = fg_Convert<long>((Remaining - fp64(PollTimeout.tv_sec)) * 1000000000.0);
+		}
 		nEvents = kevent
 			(
 				mp_KQueue
@@ -128,7 +135,7 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock)
 				, ApplyChanges.f_GetLen()
 				, pIncomingEvents
 				, nEventCapacity
-				, bBlock ? nullptr : &PollTimeout
+				, bBlock && _Timeout < 0.0 ? nullptr : &PollTimeout
 			)
 		;
 	}

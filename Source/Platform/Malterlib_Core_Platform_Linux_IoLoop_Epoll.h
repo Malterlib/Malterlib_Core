@@ -13,7 +13,7 @@ struct CIoLoop_Epoll : public CIoLoop_POSIXBase
 	~CIoLoop_Epoll() override;
 
 private:
-	umint fp_Iterate(bool _bBlock) override;
+	umint fp_Iterate(bool _bBlock, fp64 _Timeout = -1.0) override;
 
 #if DMibConfig_IoDebug_Enable
 	CIoSubSystem_Linux *mp_pIo = nullptr;

@@ -833,12 +833,13 @@ void CIoLoop_Iocp::fp_ApplyPendingOp(CIocpPendingOp *_pOp, umint &_nReported)
 	fg_DeleteObject(CDefaultAllocator(), _pOp);
 }
 
-umint CIoLoop_Iocp::fp_Iterate(bool _bBlock)
+umint CIoLoop_Iocp::fp_Iterate(bool _bBlock, fp64 _Timeout)
 {
-	return fp_IterateTimeout(_bBlock, _bBlock ? INFINITE : 0);
+	CIoLoopWaitDeadline Deadline(_Timeout);
+	return fp_IterateTimeout(_bBlock, _bBlock ? INFINITE : 0, _Timeout < 0.0 ? nullptr : &Deadline);
 }
 
-umint CIoLoop_Iocp::fp_IterateTimeout(bool _bBlock, DWORD _TimeoutMs)
+umint CIoLoop_Iocp::fp_IterateTimeout(bool _bBlock, DWORD _TimeoutMs, CIoLoopWaitDeadline const *_pDeadline)
 {
 	umint nReported = 0;
 
@@ -865,6 +866,8 @@ umint CIoLoop_Iocp::fp_IterateTimeout(bool _bBlock, DWORD _TimeoutMs)
 
 	OVERLAPPED_ENTRY Entries[gc_IocpDequeueBatch];
 	ULONG nEntries = 0;
+	if (_pDeadline)
+		_TimeoutMs = _pDeadline->f_Milliseconds(INFINITE - 1);
 	if (!GetQueuedCompletionStatusEx(mp_hPort, Entries, gc_IocpDequeueBatch, &nEntries, bBlock ? _TimeoutMs : 0, FALSE))
 		nEntries = 0;
 
