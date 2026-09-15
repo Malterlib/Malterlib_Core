@@ -73,6 +73,7 @@ Property
 		Location Builtin.BasePathAbsolute
 		URL MalterlibGitOriginRemote
 		ExcludeFromSeen true
+		Format true
 		Hooks #<"pre-commit"> MalterlibRootPreCommitHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
