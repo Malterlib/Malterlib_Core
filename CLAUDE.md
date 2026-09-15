@@ -145,6 +145,7 @@ Always read `Malterlib/Test/CLAUDE.md` before writing or modifying tests in any 
 - After creating or rewriting commits in sub-repositories, run `./mib repo-commit` from the workspace root to update parent `.MRepo` references and generate or refresh the `Update repositories` commits. Use this command instead of manually editing or committing repository-reference files.
 - Switch branch: `./mib branch [BranchName]`
 - Push changes: `./mib push`
+- Format the sources of every repository that sets `Repository.Format`: `./mib format`, or `./mib format --check` to report only
 - `mib` supports git worktrees, but avoid them for agent-driven workflows in this repository. Many changes land inside the `Malterlib/*` sub-repositories, and syncing those changes back from the top-level worktree does not behave correctly.
 - Keep the main repository on a named branch when bootstrapping or running `./mib update-repos`. Detached `HEAD` checkouts are intentionally unsupported because sub-repositories are synchronized against the main branch.
 - The system uses git LFS for binary dependencies - ensure it's installed
