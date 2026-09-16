@@ -404,7 +404,7 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, umint _Size)
 #endif
 }
 
-extern bool g_bSysDeleted;
+extern NMib::NAtomic::TCAtomic<bool> g_bSysDeleted;
 inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, umint _Size)
 {
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);

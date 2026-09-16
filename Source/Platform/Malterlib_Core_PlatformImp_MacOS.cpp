@@ -68,6 +68,7 @@ bool g_bForking = false;
 namespace
 {
 	constinit umint g_iThreadNotificationDestructor = 0;
+	constinit bool g_bThreadLocalContextDestroyed = false;
 	#ifndef DMibDynamicLibrary
 		constinit NThread::CLowLevelRecursiveLockAggregate g_ThreadNotificationLock = {DAggregateInit};
 	#else
@@ -1506,7 +1507,7 @@ module_export assure_used extern "C" int __asan_on_delete(void *ptr, size_t size
 }
 #endif
 
-extern bool g_bSysDeleted;
+extern NMib::NAtomic::TCAtomic<bool> g_bSysDeleted;
 
 namespace
 {
@@ -1892,6 +1893,9 @@ namespace
 	// except when a module registers and receives the already existing threads
 	void fg_MalterlibThreadCreatedNotificationLocal(umint _ThreadID, umint _ParentThreadID)
 	{
+#ifdef DMibDynamicLibrary
+		DMibLock(g_OwnThreadNotificationLock);
+#endif
 		if (g_bSysDeleted)
 			return;
 
@@ -1901,6 +1905,12 @@ namespace
 
 	void fg_MalterlibThreadTerminatedNotificationLocal(umint _ThreadID)
 	{
+#ifdef DMibDynamicLibrary
+		DMibLock(g_OwnThreadNotificationLock);
+#endif
+		if (g_bThreadLocalContextDestroyed)
+			return;
+
 		fg_GetLocalSys()->f_OnThreadDestroyed();
 		fg_SetPThreadNotificationDestroyed();
 	}
@@ -1914,7 +1924,14 @@ namespace
 	{
 		auto f_GetModule() const -> NSys::NPrivate::CThreadNotificationModule *
 		{
-			using CNotifications = NContainer::TCMap<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration>;
+			using CNotifications = NContainer::TCMapWithPool
+				<
+					NSys::NPrivate::CThreadNotificationModule *
+					, CThreadNotificationRegistration
+					, CSort_Default
+					, NMemory::CAllocator_VirtualNoTracking
+				>
+			;
 			return CNotifications::fs_GetKey(*this);
 		}
 
@@ -1932,7 +1949,14 @@ namespace
 	{
 		using CThreads = NContainer::TCMapWithPool<umint, CThreadNotificationThread, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
 		using CStartingThreads = NContainer::TCSetWithPool<umint, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
-		using CNotifications = NContainer::TCMap<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration>;
+		using CNotifications = NContainer::TCMapWithPool
+			<
+				NSys::NPrivate::CThreadNotificationModule *
+				, CThreadNotificationRegistration
+				, CSort_Default
+				, NMemory::CAllocator_VirtualNoTracking
+			>
+		;
 
 		CThreads m_LiveThreads;
 		CStartingThreads m_StartingThreads;
@@ -1956,7 +1980,7 @@ namespace
 	pthread_introspection_hook_t g_fPreviousIntrospectionHook = nullptr;
 	constinit umint g_iThreadLocalParentThread = 0;
 	constinit NAtomic::TCAtomic<bool> g_bThreadNotificationsForking{false};
-	bool g_bThreadNotificationsInitialized = false;
+	constinit NAtomic::TCAtomic<bool> g_bThreadNotificationsInitialized{false};
 
 	void fg_NotifyThreadTerminated(CThreadNotificationState &_State, umint _ThreadID, bool _bRestoreThreadLocals)
 	{
@@ -2232,12 +2256,12 @@ void DMibCrossmoduleAPI fg_ThreadNotificationRegister(NSys::NPrivate::CThreadNot
 	}
 }
 
-void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadNotificationModule *_pModule)
+void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadNotificationModule *_pModule, void (*_fDestroyLocals)(void *), void *_pContext)
 {
-	if (g_bSysDeleted)
-		return;
-
 	DMibLock(g_ThreadNotificationLock);
+
+	// Keep registered threads alive until their native TLS slots have been cleared.
+	_fDestroyLocals(_pContext);
 
 	auto &State = *g_ThreadNotificationState;
 	auto pRegistration = State.m_Notifications.f_FindEqual(_pModule);
@@ -2249,10 +2273,9 @@ void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadN
 
 void DMibCrossmoduleAPI fg_ThreadNotificationEnum(NSys::NPrivate::FThreadEnumCallback *_fThread, void *_pContext)
 {
-	if (g_bSysDeleted)
-		return;
-
 	DMibLock(g_ThreadNotificationLock);
+	if (!g_bThreadNotificationsInitialized)
+		return;
 
 	DMibFastCheck(g_ThreadNotificationState->m_bSeeded);
 	umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
@@ -2480,15 +2503,6 @@ namespace
 #endif
 	}
 
-	void fg_UnregisterThreadNotifications()
-	{
-		if (g_pHostThreadNotificationCrossModule)
-		{
-			g_pHostThreadNotificationCrossModule->m_fUnregister(&g_ThreadNotificationModule);
-			g_pHostThreadNotificationCrossModule = nullptr;
-		}
-	}
-
 #ifndef DMibAssumeMalterlibHost
 	void fg_DestroyOwnPThreadIntrospectionHook()
 	{
@@ -2688,16 +2702,41 @@ void NSys::fg_CreateSystem()
 	setlinebuf(stderr); // Default to line buffered output
 }
 
-bool g_bSysDeleted = false;
+constinit NMib::NAtomic::TCAtomic<bool> g_bSysDeleted{false};
 
-void NSys::fg_PreDestroyHeap()
+void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 {
 #ifdef DMibConfig_PThreadIntrospection
-	#ifndef DMibDynamicLibrary
-		fg_DestroyPThreadIntrospectionHook();
-	#elif !defined(DMibAssumeMalterlibHost)
+#ifndef DMibDynamicLibrary
+	DMibLock(g_ThreadNotificationLock);
+	_fDestroy();
+	g_bThreadLocalContextDestroyed = true;
+	fg_DestroyPThreadIntrospectionHook();
+#else
+	auto fDestroy = [](void *_pContext)
+		{
+			DMibLock(g_OwnThreadNotificationLock);
+			(*static_cast<void (**)()>(_pContext))();
+			g_bThreadLocalContextDestroyed = true;
+		}
+	;
+
+	if (g_pHostThreadNotificationCrossModule)
+	{
+		g_pHostThreadNotificationCrossModule->m_fUnregister(&g_ThreadNotificationModule, fDestroy, &_fDestroy);
+		DMibLock(g_OwnThreadNotificationLock);
+		g_pHostThreadNotificationCrossModule = nullptr;
+	}
+	else
+	{
+		fDestroy(&_fDestroy);
+#ifndef DMibAssumeMalterlibHost
 		fg_DestroyOwnPThreadIntrospectionHook();
-	#endif
+#endif
+	}
+#endif
+#else
+	_fDestroy();
 #endif
 }
 
@@ -2711,14 +2750,17 @@ void NSys::fg_DestroySystem()
 		// lifecycle notification state is torn down; a host's threads are waited out of the
 		// introspection hook and the key destructor where those are replaced
 
-		g_bSysDeleted = true;
-		pSys->f_ExitModule();
-
+		{
 #if defined(DMibConfig_PThreadIntrospection) && defined(DMibDynamicLibrary)
-		// Keep termination coordinated while module aggregates release their
-		// thread locals, then unregister before the context and module disappear
-		fg_UnregisterThreadNotifications();
+			DMibLock(g_OwnThreadNotificationLock);
+#elif defined(DMibConfig_PThreadIntrospection)
+			DMibLock(g_ThreadNotificationLock);
 #endif
+			// Finish any in-flight creation callback before subsystem teardown clears its TLS.
+			g_bSysDeleted = true;
+		}
+
+		pSys->f_ExitModule();
 
 		// We need to flush these before the buffer memory is deleted
 		fflush(stdout);

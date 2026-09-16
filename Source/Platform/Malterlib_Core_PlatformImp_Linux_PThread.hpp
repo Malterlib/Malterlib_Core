@@ -18,13 +18,25 @@
 using namespace NMib;
 
 #include "Malterlib_Core_ThreadNotificationCrossModule.h"
+#include <Mib/Container/MapWithPool>
+#include <Mib/Container/SetWithPool>
 
-extern bool g_bSysDeleted;
+extern NMib::NAtomic::TCAtomic<bool> g_bSysDeleted;
 
 namespace
 {
+#ifdef DMibDynamicLibrary
+	constinit NThread::CLowLevelRecursiveLockAggregate g_ThreadCreationNotificationLock = {DAggregateInit};
+#endif
+
 	void fg_MalterlibThreadCreatedNotificationLocal(umint _ThreadID, umint _ParentThreadID)
 	{
+#ifdef DMibDynamicLibrary
+		DMibLock(g_ThreadCreationNotificationLock);
+#endif
+		if (g_bSysDeleted)
+			return;
+
 		fg_GetLocalSys()->f_OnThreadCreated(_ThreadID, _ParentThreadID);
 	}
 
@@ -43,7 +55,14 @@ namespace
 	{
 		auto f_GetModule() const -> NSys::NPrivate::CThreadNotificationModule *
 		{
-			using CNotifications = NContainer::TCMap<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration>;
+			using CNotifications = NContainer::TCMapWithPool
+				<
+					NSys::NPrivate::CThreadNotificationModule *
+					, CThreadNotificationRegistration
+					, CSort_Default
+					, NMemory::CAllocator_VirtualNoTracking
+				>
+			;
 			return CNotifications::fs_GetKey(*this);
 		}
 
@@ -52,9 +71,16 @@ namespace
 
 	struct CThreadNotificationState
 	{
-		using CNotifications = NContainer::TCMap<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration>;
+		using CNotifications = NContainer::TCMapWithPool
+			<
+				NSys::NPrivate::CThreadNotificationModule *
+				, CThreadNotificationRegistration
+				, CSort_Default
+				, NMemory::CAllocator_VirtualNoTracking
+			>
+		;
 
-		NContainer::TCSet<umint> m_LiveThreads;
+		NContainer::TCSetWithPool<umint, CSort_Default, NMemory::CAllocator_VirtualNoTracking> m_LiveThreads;
 		CNotifications m_Notifications;
 		DMibListLinkDS_List(CThreadNotificationRegistration, m_Link) m_NotificationOrder;
 	};
@@ -64,9 +90,17 @@ namespace
 		void *(*m_fStart)(void *);
 		void *m_pArgument;
 		umint m_ParentThreadID;
+		DMibListLinkDS_Link(CPThreadOverrideStartParams, m_Link);
 	};
 
-	constinit NThread::CLowLevelLockAggregate g_ThreadNotificationLock = {DAggregateInit};
+	struct CPThreadStartPool
+	{
+		NMemory::TCPool<CPThreadOverrideStartParams, 64, NThread::CNoLock, NMemory::CPoolType_FreeableSmall, NMemory::CAllocator_VirtualNoTracking> m_Pool;
+		DMibListLinkDS_List(CPThreadOverrideStartParams, m_Link) m_Pending;
+	};
+
+	constinit NStorage::TCAggregateSimple<CPThreadStartPool> g_PThreadStartPool = {DAggregateInit};
+	constinit NThread::CLowLevelRecursiveLockAggregate g_ThreadNotificationLock = {DAggregateInit};
 	constinit NStorage::TCAggregateSimple<CThreadNotificationState> g_ThreadNotificationState = {DAggregateInit};
 	constinit NSys::NPrivate::CThreadNotificationModule g_LocalThreadNotificationModule =
 		{
@@ -79,7 +113,19 @@ namespace
 			, .m_fForkChild = nullptr
 		}
 	;
-	bool g_bThreadNotificationsInitialized = false;
+	constinit NAtomic::TCAtomic<bool> g_bThreadNotificationsInitialized{false};
+
+	// The caller holds g_ThreadNotificationLock.
+	void fg_ReleasePThreadStartParams(CPThreadOverrideStartParams *_pParams)
+	{
+		auto &Pool = *g_PThreadStartPool;
+		_pParams->m_Link.f_Unlink();
+		Pool.m_Pool.f_Delete(_pParams);
+
+		// A child may enter its wrapper after the notification registry has shut down.
+		if (!g_bThreadNotificationsInitialized && Pool.m_Pending.f_IsEmpty())
+			g_PThreadStartPool.f_Destruct();
+	}
 
 	void fg_PThreadTerminated(void *_pThread)
 	{
@@ -102,9 +148,11 @@ namespace
 
 	void *fg_PThreadOverrideStart(void *_pParams)
 	{
-		NStorage::TCUniquePointer<CPThreadOverrideStartParams, NMemory::CAllocator_NonTrackedHeap> pParams
-			= fg_Explicit(reinterpret_cast<CPThreadOverrideStartParams *>(_pParams))
-		;
+		auto *pParams = static_cast<CPThreadOverrideStartParams *>(_pParams);
+		auto fStart = pParams->m_fStart;
+		void *pArgument = pParams->m_pArgument;
+		umint ParentThreadID = pParams->m_ParentThreadID;
+
 		umint ThreadID = NSys::fg_Thread_GetCurrentUID();
 
 	#ifdef DUseGlibcDummyThreadLocalLevel2
@@ -114,6 +162,7 @@ namespace
 
 		{
 			DMibLock(g_ThreadNotificationLock);
+			fg_ReleasePThreadStartParams(pParams);
 
 			if (g_bThreadNotificationsInitialized)
 			{
@@ -121,7 +170,7 @@ namespace
 				if (!State.m_LiveThreads.f_Exists(ThreadID))
 				{
 					for (auto &Registration : State.m_NotificationOrder)
-						Registration.f_GetModule()->m_fCreated(ThreadID, pParams->m_ParentThreadID);
+						Registration.f_GetModule()->m_fCreated(ThreadID, ParentThreadID);
 
 					State.m_LiveThreads.f_Insert(ThreadID);
 				}
@@ -131,10 +180,6 @@ namespace
 	#ifdef DUseGlibcDummyThreadLocalLevel2
 		fg_Glibc_ReplaceDummyThreadLocalLevel2(DummyThreadLocalLevel2);
 	#endif
-
-		auto fStart = pParams->m_fStart;
-		void *pArgument = pParams->m_pArgument;
-		pParams.f_Clear();
 
 		void *pResult;
 		// This runs before glibc destroys pthread-specific data on normal return,
@@ -149,6 +194,7 @@ namespace
 	{
 		DMibFastCheck(NLocal::g_f_pthread_create);
 		DMibFastCheck(!g_bThreadNotificationsInitialized);
+		g_PThreadStartPool.f_Construct();
 		g_ThreadNotificationState.f_Construct();
 
 		{
@@ -171,6 +217,8 @@ namespace
 
 		g_bThreadNotificationsInitialized = false;
 		g_ThreadNotificationState.f_Destruct();
+		if (g_PThreadStartPool->m_Pending.f_IsEmpty())
+			g_PThreadStartPool.f_Destruct();
 	}
 
 	void fg_ThreadNotificationsForkPrepare()
@@ -221,6 +269,16 @@ namespace
 				pModule->m_fForkChild();
 		}
 
+		// Pending starts belong to parent threads; the forking thread has already returned its own record.
+		{
+			auto &Pool = *g_PThreadStartPool;
+			while (auto *pParams = Pool.m_Pending.f_GetFirst())
+			{
+				pParams->m_Link.f_Unlink();
+				Pool.m_Pool.f_Delete(pParams);
+			}
+		}
+
 		State.m_LiveThreads.f_Clear();
 		State.m_LiveThreads.f_Insert(NSys::fg_Thread_GetCurrentUID());
 
@@ -247,14 +305,32 @@ extern "C" assure_used module_export int pthread_create
 	if (!g_bThreadNotificationsInitialized)
 		return NLocal::g_f_pthread_create(_pThread, _pAttributes, _fStart, _pArgument);
 
-	NStorage::TCUniquePointer<CPThreadOverrideStartParams, NMemory::CAllocator_NonTrackedHeap> pParams = fg_Construct();
-	pParams->m_fStart = _fStart;
-	pParams->m_pArgument = _pArgument;
-	pParams->m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();
+	CPThreadOverrideStartParams *pParams = nullptr;
+	{
+		DMibLock(g_ThreadNotificationLock);
+		if (g_bThreadNotificationsInitialized)
+		{
+			auto &Pool = *g_PThreadStartPool;
+			pParams = Pool.m_Pool.f_New();
+			pParams->m_fStart = _fStart;
+			pParams->m_pArgument = _pArgument;
+			pParams->m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();
+			Pool.m_Pending.f_Insert(pParams);
+		}
+	}
+	if (!pParams)
+		return NLocal::g_f_pthread_create(_pThread, _pAttributes, _fStart, _pArgument);
 
-	int Result = NLocal::g_f_pthread_create(_pThread, _pAttributes, &fg_PThreadOverrideStart, pParams.f_Get());
+	auto Cleanup = g_OnScopeExit / [pParams]
+		{
+			DMibLock(g_ThreadNotificationLock);
+			fg_ReleasePThreadStartParams(pParams);
+		}
+	;
+
+	int Result = NLocal::g_f_pthread_create(_pThread, _pAttributes, &fg_PThreadOverrideStart, pParams);
 	if (!Result)
-		pParams.f_Detach();
+		Cleanup.f_Clear();
 
 	return Result;
 }
@@ -280,12 +356,12 @@ void DMibCrossmoduleAPI fg_ThreadNotificationRegister(NSys::NPrivate::CThreadNot
 	}
 }
 
-void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadNotificationModule *_pModule)
+void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadNotificationModule *_pModule, void (*_fDestroyLocals)(void *), void *_pContext)
 {
-	if (g_bSysDeleted)
-		return;
-
 	DMibLock(g_ThreadNotificationLock);
+
+	// Keep registered threads alive until their native TLS slots have been cleared.
+	_fDestroyLocals(_pContext);
 
 	auto &State = *g_ThreadNotificationState;
 	auto pRegistration = State.m_Notifications.f_FindEqual(_pModule);
@@ -297,10 +373,9 @@ void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadN
 
 void DMibCrossmoduleAPI fg_ThreadNotificationEnum(NSys::NPrivate::FThreadEnumCallback *_fThread, void *_pContext)
 {
-	if (g_bSysDeleted)
-		return;
-
 	DMibLock(g_ThreadNotificationLock);
+	if (!g_bThreadNotificationsInitialized)
+		return;
 
 	umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
 	for (auto &Thread : g_ThreadNotificationState->m_LiveThreads)
@@ -337,12 +412,10 @@ void fg_InitializePThreadNotifications()
 	fg_InstallPThreadOverride();
 }
 
-void fg_UnregisterPThreadNotifications()
+void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 {
-}
-
-void fg_DestroyPThreadNotifications()
-{
+	DMibLock(g_ThreadNotificationLock);
+	_fDestroy();
 	fg_DestroyPThreadOverride();
 }
 
@@ -367,17 +440,21 @@ namespace
 
 	void fg_MalterlibThreadForkPrepareLocal()
 	{
+		g_ThreadCreationNotificationLock.f_Lock();
 		fg_GetLocalSys()->f_ThreadLocal_PrepareFork();
 	}
 
 	void fg_MalterlibThreadForkParentLocal()
 	{
 		fg_GetLocalSys()->f_ThreadLocal_ForkedParent();
+		g_ThreadCreationNotificationLock.f_Unlock();
 	}
 
 	void fg_MalterlibThreadForkChildLocal()
 	{
 		fg_GetLocalSys()->f_ThreadLocal_ForkedChild();
+		g_ThreadCreationNotificationLock.f_ForkedChildLocked();
+		g_ThreadCreationNotificationLock.f_Unlock();
 	}
 
 	constinit NSys::NPrivate::CThreadNotificationModule g_ThreadNotificationModule =
@@ -410,17 +487,19 @@ void fg_InitializePThreadNotifications()
 	fg_RegisterPThreadNotifications();
 }
 
-void fg_UnregisterPThreadNotifications()
+void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 {
 	if (!g_pHostThreadNotificationCrossModule)
-		return;
+		return _fDestroy();
 
-	g_pHostThreadNotificationCrossModule->m_fUnregister(&g_ThreadNotificationModule);
+	g_pHostThreadNotificationCrossModule->m_fUnregister
+		(
+			&g_ThreadNotificationModule
+			, [](void *_pContext) { (*static_cast<void (**)()>(_pContext))(); }
+			, &_fDestroy
+		)
+	;
 	g_pHostThreadNotificationCrossModule = nullptr;
-}
-
-void fg_DestroyPThreadNotifications()
-{
 }
 
 void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread)

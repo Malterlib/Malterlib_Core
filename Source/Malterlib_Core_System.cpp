@@ -10,7 +10,7 @@ void fg_MalterlibMallocOverride_CanStartThreads();
 void fg_MalterlibMallocOverride_DestroyThreads();
 void fg_MalterlibMallocOverride_PreDestroyNonTrackedMemoryManager();
 
-extern bool g_bSysDeleted;
+extern NMib::NAtomic::TCAtomic<bool> g_bSysDeleted;
 
 namespace NMib
 {

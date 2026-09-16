@@ -2784,11 +2784,7 @@ namespace
 	}
 
 #if DMibEnableSafeCheck > 0
-	// Waits, bounded, for every registered thread other than the caller to exit. A thread still exiting when the system
-	// is marked deleted leaves its thread local record behind, since the thread detach callback skips a deleted system.
-	// One pass over a snapshot of the registrations: a thread that exited without clearing its record signals at once
-	// for as long as another handle keeps its object alive, so it must not be picked again. The bound keeps a thread that
-	// never exits from holding up process exit
+	// Wait at most 250 ms for a snapshot of other registered threads to exit while diagnostics and TLS are still available.
 	void fg_WaitForOtherRegisteredThreads()
 	{
 		constexpr umint c_MaxThreads = 64;
@@ -2831,7 +2827,21 @@ void __cdecl fg_MalterlibFreeNonTracked(void *_pMem)
 }
 
 
-extern bool g_bSysDeleted;
+extern NMib::NAtomic::TCAtomic<bool> g_bSysDeleted;
+
+namespace
+{
+	constinit bool g_bThreadLocalContextDestroyed = false;
+
+	void fg_NotifyThreadDetached()
+	{
+		if (g_bThreadLocalContextDestroyed)
+			return;
+
+		fg_GetLocalSys()->f_OnThreadDestroyed();
+		NThread::NPlatform::CWindowsCrossModuleProcessInfo::fs_DestroyThreadInfo();
+	}
+}
 
 // wow64 allocates temporary exception/context records on the 32-bit stack a few hundred
 // bytes below the stack pointer that was captured when the 64-bit loader called into
@@ -2873,14 +2883,7 @@ inline_never BOOL WINAPI fg_MalterlibDllMainBody(HANDLE _pInstance, DWORD _Reaso
 		//DMibDTraceSafe("fg_MalterlibDllMain({}): Thread attach {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved);
 	}
 	else if (_Reason == DLL_THREAD_DETACH)
-	{
-		if (!g_bSysDeleted)
-		{
-			//DMibDTraceSafe("fg_MalterlibDllMain({}): Thread dettach {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved);
-			fg_GetLocalSys()->f_OnThreadDestroyed();
-			CWindowsCrossModuleProcessInfo::fs_DestroyThreadInfo();
-		}
-	}
+		fg_NotifyThreadDetached();
 
 	return 1;
 }
@@ -2920,7 +2923,7 @@ inline_never void NTAPI fg_TLSCallbackBody(void *_pInstance, DWORD _Reason, void
 	else if (_Reason == DLL_THREAD_ATTACH)
 	{
 		//DMibDTraceSafe("fg_TLSCallback({}): Thread attach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved, g_bIsDll);
-		if (!g_bSysDeleted)
+		if (!g_bSysDeleted && !g_bThreadLocalContextDestroyed)
 		{
 			// Seems to be needed in Wine to wait until dll/process initialization is done (Windows does not start new threads in Ldr code).
 			while (g_bDoneMalterlibInitAll.f_Load() < 2)
@@ -2929,15 +2932,8 @@ inline_never void NTAPI fg_TLSCallbackBody(void *_pInstance, DWORD _Reason, void
 			fg_GetLocalSys()->f_OnThreadCreated(NSys::fg_Thread_GetCurrentUID(), ParentThread);
 		}
 	}
-	else if (_Reason == DLL_THREAD_DETACH)
-	{
-		if (!g_bSysDeleted && !g_bIsDll)
-		{
-			fg_GetLocalSys()->f_OnThreadDestroyed();
-			CWindowsCrossModuleProcessInfo::fs_DestroyThreadInfo();
-			//DMibDTraceSafe("fg_TLSCallback({}): Thread detach {} {} {}\r\n", NSys::fg_Thread_GetCurrentUID(), _pInstance, _pReserved, g_bIsDll);
-		}
-	}
+	else if (_Reason == DLL_THREAD_DETACH && !g_bIsDll)
+		fg_NotifyThreadDetached();
 }
 
 mark_no_stack_protector inline_never void NTAPI fg_TLSCallback(void *_pInstance, DWORD _Reason, void *_pReserved)
@@ -6793,8 +6789,19 @@ void NSys::fg_DestroySystem()
 {
 }
 
-void NSys::fg_PreDestroyHeap()
+void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 {
+	// Loader callbacks already hold this recursive lock; finalization must use the same lock order.
+	auto *pLoaderLock = fg_GetPEB(fg_GetTEB())->LoaderLock;
+	EnterCriticalSection(pLoaderLock);
+	auto Cleanup = g_OnScopeExit / [pLoaderLock]
+		{
+			LeaveCriticalSection(pLoaderLock);
+		}
+	;
+
+	_fDestroy();
+	g_bThreadLocalContextDestroyed = true;
 }
 
 namespace NMib
@@ -6957,7 +6964,7 @@ void NSys::fg_CreateSystem()
 	}
 }
 
-bool g_bSysDeleted = false;
+constinit NMib::NAtomic::TCAtomic<bool> g_bSysDeleted{false};
 bool g_bAggregatesDestroyed = false;
 
 void NSys::fg_Process_AllowInvalidExit(bool _bAllow)
@@ -6987,15 +6994,19 @@ void __cdecl fg_DestroyMalterlib()
 		fg_GetLocalSys()->f_DestroyThreadSpecific();
 
 #if DMibEnableSafeCheck > 0
-		// Once g_bSysDeleted is set, the thread detach callback no longer clears the record of a thread that exits, so wait
-		// for the registered threads that are still exiting. Teardown proceeds either way; a record left behind is what the
-		// thread local teardown check reports, and the start symbols that name it are resolved here while the debug
-		// subsystem still exists
+		// Resolve thread diagnostics while the debug subsystem still exists.
 		fg_WaitForOtherRegisteredThreads();
 		fg_GetLocalSys()->f_ThreadLocalDescribeOtherThreads();
 #endif
 
-		g_bSysDeleted = true;
+		{
+			// Loader callbacks serialize thread creation; let an in-flight callback finish before clearing TLS.
+			auto *pLoaderLock = fg_GetPEB(fg_GetTEB())->LoaderLock;
+			EnterCriticalSection(pLoaderLock);
+			g_bSysDeleted = true;
+			LeaveCriticalSection(pLoaderLock);
+		}
+
 		fg_GetLocalSys()->f_ExitModule();
 
 		fg_GetLocalSys()->f_Destruct();

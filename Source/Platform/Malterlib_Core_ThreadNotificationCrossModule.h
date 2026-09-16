@@ -7,8 +7,8 @@ namespace NMib::NSys::NPrivate
 {
 	enum
 	{
-		EThreadNotificationCrossModule_Version_Min = 0x100
-		, EThreadNotificationCrossModule_Version = 0x100
+		EThreadNotificationCrossModule_Version_Min = 0x101
+		, EThreadNotificationCrossModule_Version = 0x101
 	};
 
 	typedef void FThreadCreatedNotification(umint _ThreadID, umint _ParentThreadID);
@@ -32,7 +32,7 @@ namespace NMib::NSys::NPrivate
 		uint32 m_Version;
 		umint m_Reserved[8];
 		void (DMibCrossmoduleAPI *m_fRegister)(CThreadNotificationModule *_pModule);
-		void (DMibCrossmoduleAPI *m_fUnregister)(CThreadNotificationModule *_pModule);
+		void (DMibCrossmoduleAPI *m_fUnregister)(CThreadNotificationModule *_pModule, void (*_fDestroyLocals)(void *), void *_pContext);
 		void (DMibCrossmoduleAPI *m_fEnum)(FThreadEnumCallback *_fThread, void *_pContext);
 	};
 

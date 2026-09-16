@@ -239,7 +239,9 @@ namespace NMib
 
 		void fg_CreateSystem();
 		void fg_DestroySystem();
-		void fg_PreDestroyHeap();
+	#if defined(DPlatformFamily_Windows) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_macOS)
+		void fg_Thread_DestroyLocalContext(void (*_fDestroy)());
+	#endif
 
 		void fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes);
 

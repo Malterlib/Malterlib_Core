@@ -1765,14 +1765,14 @@ void NSys::fg_CreateSystem()
 	#endif
 }
 
-bool g_bSysDeleted = false;
+constinit NMib::NAtomic::TCAtomic<bool> g_bSysDeleted{false};
 
-void NSys::fg_PreDestroyHeap()
+#ifndef DMibConfig_LinuxPThreadMonitoring
+void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 {
-#ifdef DMibConfig_LinuxPThreadMonitoring
-	fg_DestroyPThreadNotifications();
-#endif
+	_fDestroy();
 }
+#endif
 
 void NSys::fg_DestroySystem()
 {
@@ -1781,15 +1781,19 @@ void NSys::fg_DestroySystem()
 		auto pSys = fg_GetLocalSys();
 
 		pSys->f_DestroyThreadSpecific();
-		// f_DestroyThreadSpecific() stops and joins every thread before lifecycle
-		// notification state is torn down, so no thread callback can race the code below.
+		// Host threads can still exit while this module destroys its remaining thread locals.
 
-		g_bSysDeleted = true;
+		{
+#if defined(DMibConfig_LinuxPThreadMonitoring) && defined(DMibDynamicLibrary)
+			DMibLock(g_ThreadCreationNotificationLock);
+#elif defined(DMibConfig_LinuxPThreadMonitoring)
+			DMibLock(g_ThreadNotificationLock);
+#endif
+			// Finish any in-flight creation callback before subsystem teardown clears its TLS.
+			g_bSysDeleted = true;
+		}
+
 		pSys->f_ExitModule();
-
-	#ifdef DMibConfig_LinuxPThreadMonitoring
-		fg_UnregisterPThreadNotifications();
-	#endif
 
 		// We need to flush these before the buffer memory is deleted
 		fflush(stdout);
