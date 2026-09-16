@@ -582,6 +582,40 @@ inline_never CMibCodeAddress NSys::fg_System_GetStackTrace(aint _iDepth)
 }
 
 
+#if DMibConfig_Tests_Enable
+namespace
+{
+	// Test runners capture stderr, not OutputDebugString. Avoid heap and console-subsystem dependencies during teardown.
+	void fg_WriteTestDebugOutput(ch8 const *_pData, DWORD _Length)
+	{
+		DWORD LastError = GetLastError();
+		HANDLE hOutput = GetStdHandle(STD_ERROR_HANDLE);
+		while (_Length)
+		{
+			DWORD Written = 0;
+			if (!WriteFile(hOutput, _pData, _Length, &Written, nullptr) || !Written)
+				break;
+
+			_pData += Written;
+			_Length -= Written;
+		}
+
+		SetLastError(LastError);
+	}
+
+	void fg_WriteTestDebugOutput(ch16 const *_pData, DWORD _Length)
+	{
+		DWORD LastError = GetLastError();
+		ch8 UTF8[2048 * 3];
+		int Length = WideCharToMultiByte(CP_UTF8, 0, _pData, int(_Length), UTF8, sizeof(UTF8), nullptr, nullptr);
+		if (Length > 0)
+			fg_WriteTestDebugOutput(UTF8, DWORD(Length));
+
+		SetLastError(LastError);
+	}
+}
+#endif
+
 void NSys::fg_DebugOutput(const ch8 *_pToOutput)
 {
 	ch8 Temp[2048];
@@ -593,6 +627,10 @@ void NSys::fg_DebugOutput(const ch8 *_pToOutput)
 		Len -= nChars;
 		_pToOutput += nChars;
 		OutputDebugStringA(Temp);
+#if DMibConfig_Tests_Enable
+		if (!IsDebuggerPresent())
+			fg_WriteTestDebugOutput(Temp, DWORD(nChars));
+#endif
 	}
 }
 
@@ -607,6 +645,10 @@ void NSys::fg_DebugOutput(const ch16 *_pToOutput)
 		Len -= nChars;
 		_pToOutput += nChars;
 		OutputDebugStringW(Temp);
+#if DMibConfig_Tests_Enable
+		if (!IsDebuggerPresent())
+			fg_WriteTestDebugOutput(Temp, DWORD(nChars));
+#endif
 	}
 }
 
