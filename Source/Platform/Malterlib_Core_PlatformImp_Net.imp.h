@@ -3,18 +3,7 @@
 
 #include "Malterlib_Core_PlatformImp_Net.h"
 
-CAddressResolver::CAddressResolver()
-{
-	mp_pThread = NThread::CThreadObject::fs_StartThread
-		(
-			[this](NThread::CThreadObject* _pThread) -> aint
-			{
-				return fp_ResolveWorker(_pThread);
-			}
-			, "Async Resolver Worker"
-		)
-	;
-}
+CAddressResolver::CAddressResolver() = default;
 
 CAddressResolver::~CAddressResolver()
 {
@@ -24,9 +13,17 @@ CAddressResolver::~CAddressResolver()
 // Stop and join the worker before owner teardown that its requests may still access.
 void CAddressResolver::f_Stop()
 {
-	if (mp_pThread)
+	NThread::CThreadObject *pThread;
 	{
-		mp_pThread->f_Stop(true);
+		DMibLock(mp_Lock);
+		mp_bStopped = true;
+		pThread = mp_pThread.f_Get();
+	}
+
+	if (pThread)
+	{
+		pThread->f_Stop(true);
+		DMibLock(mp_Lock);
 		mp_pThread.f_Clear();
 	}
 
@@ -61,10 +58,25 @@ void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::
 
 	{
 		DMibLock(mp_Lock);
-		mp_PendingList.f_Push(pRet = pReq.f_Detach());
-	}
+		if (mp_bStopped)
+			DMibErrorNet("Address resolver has stopped");
 
-	mp_pThread->m_EventWantQuit.f_Signal();
+		if (!mp_pThread)
+		{
+			mp_pThread = NThread::CThreadObject::fs_StartThread
+				(
+					[this](NThread::CThreadObject* _pThread) -> aint
+					{
+						return fp_ResolveWorker(_pThread);
+					}
+					, "Async Resolver Worker"
+				)
+			;
+		}
+
+		mp_PendingList.f_Push(pRet = pReq.f_Detach());
+		mp_pThread->m_EventWantQuit.f_Signal();
+	}
 
 	return pRet;
 }
@@ -94,8 +106,11 @@ bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddr
 
 void CAddressResolver::f_Close(void *_pResolver)
 {
-	if (mp_pThread && mp_pThread->f_CallingFromThread())
-		DMibErrorNet("Use f_CloseAsync from a resolver callback");
+	{
+		DMibLock(mp_Lock);
+		if (mp_pThread && mp_pThread->f_CallingFromThread())
+			DMibErrorNet("Use f_CloseAsync from a resolver callback");
+	}
 
 	NThread::CEventAutoReset Closed;
 	f_CloseAsync

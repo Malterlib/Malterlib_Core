@@ -43,6 +43,7 @@ private:
 	DMibListLinkS_List(CResolveRequest, m_Link) mp_DoneOrInProgressList;
 
 	NStorage::TCUniquePointer<NThread::CThreadObject> mp_pThread;
+	bool mp_bStopped = false;
 
 	static void fs_CloseRequest(CResolveRequest *_pRequest);
 

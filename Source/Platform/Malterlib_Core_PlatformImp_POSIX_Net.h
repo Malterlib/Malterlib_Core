@@ -300,8 +300,6 @@ private:
 	CPOSIXImpSpecificSocketContext mp_ImpSpecific;
 	NMib::NSys::CIoSubSystem *mp_pIo = nullptr;
 
-	NMib::NSys::ICIoLoop *mp_pSharedLoop = nullptr; // Shared poller used when the socket owner has no loop binding.
-
 	// TODO: This should be able to be replaced by an imp specific version.
 	CAddressResolver mp_Resolver;
 };

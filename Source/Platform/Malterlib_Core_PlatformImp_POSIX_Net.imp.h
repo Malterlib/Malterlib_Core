@@ -141,7 +141,6 @@ static void fg_SocketIoStatsCountSend(umint _nRequested, umint _nSent, bool _bWo
 CPOSIXSocketContext::CPOSIXSocketContext()
 {
 	mp_pIo = &NSys::fg_IoSubSystem();
-	mp_pSharedLoop = NSys::fg_GetSharedIoLoop();
 	signal(SIGPIPE, SIG_IGN);
 }
 
@@ -887,7 +886,9 @@ void CPOSIXSocketContext::f_StartSocket(CPOSIXSocket *_pSocket)
 		DMibErrorNet("Failed to register POSIX socket.");
 
 	NSys::ICIoLoop *pThreadLoop = NSys::fg_GetThreadIoLoop();
-	_pSocket->m_pOwningLoop = pThreadLoop ? pThreadLoop : mp_pSharedLoop;
+	_pSocket->m_pOwningLoop = pThreadLoop ? pThreadLoop : NSys::fg_GetSharedIoLoop();
+	if (!_pSocket->m_pOwningLoop)
+		DMibErrorNet("No I/O loop is available to register the POSIX socket");
 
 	_pSocket->m_pIoRegistration = _pSocket->m_pOwningLoop->f_Register
 		(
@@ -1531,7 +1532,7 @@ bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
 {
 	// Only shared-poller sockets may close synchronously; cross-waits between pool-hosted loops can deadlock.
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
-	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop != mp_pSharedLoop && _pSocket->m_FD != -1)
+	if (pOwningLoop && _pSocket->m_pIoRegistration && pOwningLoop->m_bCreatedAsLoop && _pSocket->m_FD != -1)
 		DMibErrorNet("Synchronous close on a pool-hosted loop; use the asynchronous form");
 
 	if (_pSocket->m_FD != -1)
@@ -1840,7 +1841,7 @@ void *CPOSIXSocketContext::f_GiveUpForInherit(CPOSIXSocket *_pSocket)
 	if (pOwningLoop && _pSocket->m_pIoRegistration)
 	{
 		// Pool-hosted loops require asynchronous handoff to avoid cross-thread deregistration deadlocks.
-		if (pOwningLoop != mp_pSharedLoop)
+		if (pOwningLoop->m_bCreatedAsLoop)
 			DMibErrorNet("Synchronous inherit handoff on a pool-hosted loop; use the asynchronous form");
 
 		pOwningLoop->f_Deregister(_pSocket->m_pIoRegistration);

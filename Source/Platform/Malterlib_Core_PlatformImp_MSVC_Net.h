@@ -107,8 +107,6 @@ protected:
 
 	CIoSubSystem_Windows *mp_pIo = nullptr;
 
-	NMib::NSys::ICIoLoop *mp_pSharedLoop = nullptr; // Shared poller for unbound sockets; null when the platform cannot provide a loop.
-
 	CAddressResolver mp_Resolver;
 
 	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv4 const& _InAddr, sockaddr_in& _OutAddr) const
