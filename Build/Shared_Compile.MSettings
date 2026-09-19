@@ -1784,6 +1784,22 @@ Compile
 		}
 	}
 
+	// The ld64.lld of the macOS x64 toolchain cannot synthesize the objc_msgSendClass$ stubs clang emits when it detects ld64 1250 or newer.
+	// Remove this once that toolchain is built from an llvm-project with "[lld][MachO] Support Objective-C class stubs", as the others are.
+	ExtraCompilerFlags =+ "-fno-objc-msgsend-class-selector-stubs"
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			!MalterlibDefaultCompiler true
+			|
+			{
+				Compile.Type "ObjC"
+				Compile.Type "ObjC++"
+			}
+		}
+	}
+
 	ExtraCompilerFlags =+ "/constexpr:steps4000000"
 	{
 		&
