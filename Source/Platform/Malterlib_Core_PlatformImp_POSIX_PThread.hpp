@@ -911,18 +911,6 @@ void *NSys::fg_Thread_Create
 	}
 #endif
 
-	if (!bAlreadySetPriority)
-	{
-		int Scheduler = SCHED_OTHER;
-		sched_param ScheduleParams;
-		pthread_attr_getschedparam(Data.f_UseThreadAttribs(), &ScheduleParams); // We need to do this to get the correct quantum
-
-		fg_POSIX_MapThreadPriority(_Priority, Scheduler, ScheduleParams.sched_priority);
-
-		pthread_attr_setschedpolicy(Data.f_UseThreadAttribs(), Scheduler);
-		pthread_attr_setschedparam(Data.f_UseThreadAttribs(), &ScheduleParams);
-	}
-
 #if defined DMibSanitizerEnabled_Address
 	if (_StackSize == 0)
 		_StackSize = 512 * 1024;
@@ -987,9 +975,13 @@ void *NSys::fg_Thread_Create
 
 	pThreadParams.f_Detach();
 
-#if defined(DMibPMachKernel)
+	// The scheduling attributes of a thread are only honored together with PTHREAD_EXPLICIT_SCHED, which
+	// makes pthread_create fail outright when the OS denies the policy, so the priority is applied to the
+	// running thread instead. Without this the thread silently keeps the creating thread's priority
 	if (!bAlreadySetPriority)
-		fg_SetMachPriority(ThreadID, _Priority);
+		NSys::fg_Thread_TrySetPriority((void *)ThreadID, _Priority);
+
+#if defined(DMibPMachKernel)
 	if (_Affinity)
 	{
 		mach_port_t MachThread = pthread_mach_thread_np(ThreadID);
