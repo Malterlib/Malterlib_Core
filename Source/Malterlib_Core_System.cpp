@@ -8,6 +8,10 @@
 
 void fg_MalterlibMallocOverride_CanStartThreads();
 void fg_MalterlibMallocOverride_DestroyThreads();
+#ifdef DPlatformFamily_Linux
+void fg_MalterlibThreadSpawn_CanStartThreads();
+void fg_MalterlibThreadSpawn_DestroyThreads();
+#endif
 void fg_MalterlibMallocOverride_PreDestroyNonTrackedMemoryManager();
 
 extern NMib::NAtomic::TCAtomic<bool> g_bSysDeleted;
@@ -245,6 +249,9 @@ namespace NMib
 
 		fg_MalterlibMallocOverride_DestroyThreads();
 		f_MemoryManager_DestroyThreads();
+#ifdef DPlatformFamily_Linux
+		fg_MalterlibThreadSpawn_DestroyThreads();
+#endif
 	}
 
 
@@ -424,6 +431,9 @@ namespace NMib
 #endif
 		f_MemoryManager_CanStartThreads();
 		fg_MalterlibMallocOverride_CanStartThreads();
+#ifdef DPlatformFamily_Linux
+		fg_MalterlibThreadSpawn_CanStartThreads();
+#endif
 	}
 
 	void CSystem::f_InitModule(FConstruct **_pCConstructorsStart, FConstruct **_pCConstructorsEnd, FConstruct **_pCppConstructors, FConstruct **_pCppConstructorsEnd)

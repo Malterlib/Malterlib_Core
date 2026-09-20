@@ -648,6 +648,12 @@ void fg_UseFlags()
 }
 ```
 
+### Thread Priority
+
+`EExecutionPriority` is absolute, and on Linux a thread cannot raise itself above what it inherits
+from its creator. Read `Documentation/ThreadPriority.md` before changing thread priorities, thread
+creation or the priority of Linux daemons.
+
 ## Platform-Specific Implementation
 
 ### File Organization

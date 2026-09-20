@@ -3244,6 +3244,24 @@ bool NSys::fg_Thread_TrySetPriority(void *_pThread, EExecutionPriority _Priority
 	return SetThreadPriority(_pThread, fg_TranslateThreadPrio(_Priority)) != 0;
 }
 
+bool NSys::fg_Thread_CanRestorePriority()
+{
+	return true;
+}
+
+bool NSys::fg_Thread_RegisterSpawnServer(FThreadSpawnServerWake *, void *)
+{
+	return false; // A thread starts at normal priority whatever its creator holds, so creation is never handed off
+}
+
+void NSys::fg_Thread_UnregisterSpawnServer(void *)
+{
+}
+
+void NSys::fg_Thread_ServeSpawnRequests()
+{
+}
+
 void NSys::fg_Thread_SetAffinity(void *_pThread, umint _Affinity)
 {
 	if (!SetThreadAffinityMask(_pThread, _Affinity))

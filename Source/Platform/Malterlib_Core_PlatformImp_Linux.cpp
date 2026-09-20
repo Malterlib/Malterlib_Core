@@ -272,6 +272,7 @@ static inline_small class CSystemLinux *fg_GetLocalSys();
 
 #include "Malterlib_Core_PlatformImp_POSIX_PThread.hpp"
 #include "Malterlib_Core_PlatformImp_Linux_PThread.hpp"
+#include "Malterlib_Core_PlatformImp_Linux_ThreadPriority.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX.imp.h"
 #include "Malterlib_Core_PlatformImp_POSIX_File.hpp"
 #include "Malterlib_Core_PlatformImp_POSIX_Console.hpp"
@@ -432,6 +433,7 @@ void CSystemLinux::fs_ForkPrepare()
 		Sys.m_Posix.m_ForkLock.f_Lock();
 		Sys.m_Posix.m_ForkLock.f_PrepareFork();
 		Sys.f_PrepareFork();
+		fg_Linux_ThreadSpawn_ForkPrepare(); // Thread creation takes this lock while holding the fork lock
 	}
 }
 
@@ -464,6 +466,7 @@ void CSystemLinux::fs_ForkParentOrChild()
 		#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
 			fg_ThreadNotificationsForkParent();
 		#endif
+			fg_Linux_ThreadSpawn_ForkParent();
 		}
 		else
 		{
@@ -473,6 +476,7 @@ void CSystemLinux::fs_ForkParentOrChild()
 		#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
 			fg_ThreadNotificationsForkChild();
 		#endif
+			fg_Linux_ThreadSpawn_ForkChild();
 		}
 	}
 }
@@ -492,6 +496,7 @@ void CSystemLinux::fs_ForkParent()
 	#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
 		fg_ThreadNotificationsForkParent();
 	#endif
+		fg_Linux_ThreadSpawn_ForkParent();
 	}
 }
 
@@ -517,6 +522,7 @@ void CSystemLinux::fs_ForkChild()
 	#if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
 		fg_ThreadNotificationsForkChild();
 	#endif
+		fg_Linux_ThreadSpawn_ForkChild();
 		g_bCanStartThreads = true;
 		Sys.f_MemoryManager_CanStartThreads();
 		fg_MalterlibMallocOverride_CanStartThreads();
@@ -1665,6 +1671,8 @@ void NSys::fg_CreateSystem()
 	NPrivate::fg_InitBaseModuleAddress();
 	NLocal::fg_GetSymbols(); // This uses malloc so needs to be run after memory manager is initialized
 	NPrivate::fg_SetupLimits();
+	fg_Linux_InitThreadPriorityLimits();
+	fg_Linux_InitThreadSpawn();
 
 	if (!g_bIsSharedLibrary) // Only use pthread_atfork in non-dylibs as atfork handlers cannot be unregistered before dlclose
 		pthread_atfork(&CSystemLinux::fs_ForkPrepare, &CSystemLinux::fs_ForkParent, &CSystemLinux::fs_ForkChild);

@@ -86,6 +86,12 @@ namespace NMib
 		, EExecutionPriority_Default		= -1
 	};
 
+	enum EThreadCreateFlag
+	{
+		EThreadCreateFlag_None = 0
+		, EThreadCreateFlag_AutoDestroy = 1 // The thread object destroys itself when the thread exits
+	};
+
 	template <typename t_CType>
 	using TCInitializerList = std::initializer_list<t_CType>;
 

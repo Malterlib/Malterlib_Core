@@ -155,6 +155,22 @@ namespace NMib
 		;
 		void fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority);
 		bool fg_Thread_TrySetPriority(void *_pThread, EExecutionPriority _Priority);
+		bool fg_Thread_CanRestorePriority();
+
+		using FThreadSpawnServerWake = void (void *_pContext);
+		bool fg_Thread_RegisterSpawnServer(FThreadSpawnServerWake *_fWake, void *_pContext);
+		void fg_Thread_UnregisterSpawnServer(void *_pContext);
+		void fg_Thread_ServeSpawnRequests();
+#ifdef DPlatformFamily_Linux
+		struct CLinuxPriorityGrant
+		{
+			uint32 m_StartNice = 0; // Only set when the priority is below normal, a better one is reached through the limit
+			uint32 m_NiceLimit = 0; // RLIMIT_NICE in its raw form, 20 - nice
+			uint32 m_RealTimePriorityLimit = 0; // RLIMIT_RTPRIO, 0 when the priority is not real-time
+		};
+
+		CLinuxPriorityGrant fg_Process_GetLinuxPriorityGrant(EExecutionPriority _Priority);
+#endif
 		void fg_Thread_SetAffinity(void *_pThread, umint _Affinity);
 		void fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode);
 		void fg_Thread_Destroy(void *_pThread);

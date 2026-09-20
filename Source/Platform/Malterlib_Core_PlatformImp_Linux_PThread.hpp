@@ -302,6 +302,11 @@ extern "C" assure_used module_export int pthread_create
 	// DSO may create a thread before CSystem::f_InitModuleThreaded(), so normal
 	// initialization has resolved this pointer before any caller can enter.
 	DMibFastCheck(NLocal::g_f_pthread_create);
+
+	// A foreign thread can lower itself and later create one of ours, so the spawn helper has to exist before it
+	if (!g_bLinuxOwnThreadCreate)
+		fg_Linux_EnsureThreadSpawnHelper();
+
 	if (!g_bThreadNotificationsInitialized)
 		return NLocal::g_f_pthread_create(_pThread, _pAttributes, _fStart, _pArgument);
 

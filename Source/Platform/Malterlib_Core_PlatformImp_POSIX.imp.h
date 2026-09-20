@@ -149,7 +149,26 @@ namespace NMib
 				else
 					DMibDTraceSafe("getrlimit RLIMIT_MEMLOCK failed: {}\n", strerror(errno));
 
+#ifdef DPlatformFamily_Linux
+				// How far a thread may raise its own priority above the one it inherits from its creator
+				if (!getrlimit(RLIMIT_NICE, &Limits))
+				{
+					Limits.rlim_cur = Limits.rlim_max;
+					if (setrlimit(RLIMIT_NICE, &Limits))
+						DMibDTraceSafe("setrlimit RLIMIT_NICE failed: {}\n", strerror(errno));
+				}
+				else
+					DMibDTraceSafe("getrlimit RLIMIT_NICE failed: {}\n", strerror(errno));
 
+				if (!getrlimit(RLIMIT_RTPRIO, &Limits))
+				{
+					Limits.rlim_cur = Limits.rlim_max;
+					if (setrlimit(RLIMIT_RTPRIO, &Limits))
+						DMibDTraceSafe("setrlimit RLIMIT_RTPRIO failed: {}\n", strerror(errno));
+				}
+				else
+					DMibDTraceSafe("getrlimit RLIMIT_RTPRIO failed: {}\n", strerror(errno));
+#endif
 			}
 		}
 	}

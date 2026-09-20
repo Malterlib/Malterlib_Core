@@ -675,6 +675,46 @@ struct CThreadStartParams
 	bool m_bSetPriority; // False when thread creation already carried the priority, as the macOS quality of service attribute does
 };
 
+namespace
+{
+	struct CSetPriorityError
+	{
+		ch8 const *m_pFunction = nullptr; // nullptr when the priority was set
+		int m_ErrNo = 0;
+	};
+
+	struct CThreadCreateParams
+	{
+		FThreadProc *m_pThreadProc = nullptr;
+		void *m_pParam = nullptr;
+		EExecutionPriority m_Priority = EExecutionPriority_Normal;
+		umint m_StackSize = 0;
+		ch8 const *m_pThreadName = nullptr;
+		umint m_Affinity = 0;
+		umint m_ParentThreadID = 0; // The logical parent, which differs from the creating thread when creation was handed off
+#if defined(DMibPLinuxKernel)
+		cpu_set_t const *m_pInheritedAffinity = nullptr; // The logical parent's affinity when creation was handed off
+#endif
+	};
+
+	CSetPriorityError fg_POSIX_SetThreadPriority(void *_pThread, EExecutionPriority _Priority);
+
+#if defined(DMibPLinuxKernel)
+	// Lets the pthread_create interposer tell our creations from foreign ones
+#ifdef DMibDynamicLibrary
+	__attribute__((visibility("hidden"))) __thread bool __attribute__((tls_model("local-dynamic"))) g_bLinuxOwnThreadCreate = false;
+#else
+	__attribute__((visibility("hidden"))) __thread bool __attribute__((tls_model("local-exec"))) g_bLinuxOwnThreadCreate = false;
+#endif
+
+	CSetPriorityError fg_Linux_SetThreadPriority(void *_pThread, EExecutionPriority _Priority);
+	bool fg_Linux_RouteThreadCreate(CThreadCreateParams const &_Params, void *&o_pThread, umint &o_ThreadID);
+	void fg_Linux_EnsureThreadSpawnHelper();
+#endif
+}
+
+static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_ThreadID);
+
 void *fg_ThreadStartRoutine(void *_pParams)
 {
 	signal(SIGPIPE,SIG_IGN);
@@ -719,7 +759,21 @@ void *fg_ThreadStartRoutine(void *_pParams)
 	// they are only honored together with PTHREAD_EXPLICIT_SCHED, which makes creation itself fail when
 	// the OS denies the policy
 	if (StartParams.m_bSetPriority)
-		NSys::fg_Thread_TrySetPriority(NSys::fg_Thread_GetCurrent(), StartParams.m_Priority);
+	{
+		CSetPriorityError Error = fg_POSIX_SetThreadPriority(NSys::fg_Thread_GetCurrent(), StartParams.m_Priority);
+		if (Error.m_pFunction)
+		{
+			DMibDTraceSafe
+				(
+					"Thread '{}' runs below its requested priority {}: {} failed: {}\n"
+					, StartParams.m_ThreadName
+					, (int)StartParams.m_Priority
+					, Error.m_pFunction
+					, strerror(Error.m_ErrNo)
+				)
+			;
+		}
+	}
 
 	aint ReturnCode	= StartParams.m_pThreadProc(StartParams.m_pThreadParam);
 
@@ -727,6 +781,7 @@ void *fg_ThreadStartRoutine(void *_pParams)
 
 }
 
+#if defined(DMibPMachKernel)
 namespace
 {
 	struct CPrioMap
@@ -735,20 +790,13 @@ namespace
 		int m_Scheduler;
 	};
 
+	// Only the fallback for threads fg_SetMachPriority and the quality of service classes do not cover
 	static const CPrioMap gc_MalterlibToPOSIXPriorityMap[] =
 	{
-#if defined(DMibPLinuxKernel)
-			{ 0x0000, SCHED_IDLE }
-		,	{ 0x1FFF, SCHED_OTHER }
-		,	{ 0xe000, SCHED_RR }
-		,	{ 0xe001, SCHED_FIFO }
-		,	{ 0x10000, SCHED_FIFO }
-#elif defined(DMibPMachKernel)
 			{ 0x0000, SCHED_OTHER }
 		,	{ 0x4000, SCHED_RR }
 		,	{ 0xe000, SCHED_FIFO }
 		,	{ 0x10000, SCHED_FIFO }
-#endif
 		,	{ ~umint(0), 0 }
 	};
 };
@@ -796,7 +844,6 @@ static void fg_POSIX_MapThreadPriority(EExecutionPriority _Priority, int& _oSche
 //	DMibLog(Info, "Prio not found: {}", _oPrio);
 }
 
-#if defined(DMibPMachKernel)
 #include <mach/mach_time.h>
 bool fg_SetMachPriority(void *_pThread, EExecutionPriority _Priority)
 {
@@ -853,7 +900,29 @@ void *NSys::fg_Thread_Create
 		, umint &_ThreadID
 	)
 {
+	CThreadCreateParams Params;
+	Params.m_pThreadProc = _pThreadProc;
+	Params.m_pParam = _pParam;
+	Params.m_Priority = _Priority;
+	Params.m_StackSize = _StackSize;
+	Params.m_pThreadName = _pThreadName;
+	Params.m_Affinity = _Affinity;
+	Params.m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();
+
+#if defined(DMibPLinuxKernel)
+	// A thread cannot raise itself above the scheduling it inherits from its creator
+	void *pThread;
+	if (fg_Linux_RouteThreadCreate(Params, pThread, _ThreadID))
+		return pThread;
+#endif
+
+	return fg_POSIX_CreateThread(Params, _ThreadID);
+}
+
+static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_ThreadID)
+{
 	int Result;
+	umint StackSize = _Params.m_StackSize;
 
 	struct CData
 	{
@@ -880,7 +949,7 @@ void *NSys::fg_Thread_Create
 
 				int Result = pthread_attr_init(&mp_ThreadAttribs);
 				if (Result != 0)
-					DMibError(NPlatform::fg_FormatErrno("pthread_attr_init (create thread)", Result));
+					DMibError(NMib::NPlatform::fg_FormatErrno("pthread_attr_init (create thread)", Result));
 			}
 
 			return &mp_ThreadAttribs;
@@ -894,85 +963,71 @@ void *NSys::fg_Thread_Create
 
 	CData Data;
 
-/*
-	Windows style basic thread priorities don't really map to the POSIX scheduling model.
-	This is the mapping we use currently.
-		0x0000	Lowest		(SCHED_IDLE)
-		0x0001				(SCHED_OTHER, Min Prio)
-
-		0x8000	Normal		(SCHED_OTHER, ? Prio)
-
-		0x8001				(SCHED_RR, normal prio)
-		0xe000	_RT_High	(SCHED_RR, high prio)
-
-		0xe001	_RT_Highest (SCHED_FIFO)
-		0x10000	_RT_Highest (SCHED_FIFO)
-*/
-
 	bool bAlreadySetPriority = false;
 #ifdef DPlatformFamily_macOS
 	if (&pthread_attr_set_qos_class_np)
 	{
 		int RelativePriority;
-		auto QosClass = NMib::NPlatform::fg_PriorityToQualityOfService(_Priority, RelativePriority);
+		auto QosClass = NMib::NPlatform::fg_PriorityToQualityOfService(_Params.m_Priority, RelativePriority);
 		if (!pthread_attr_set_qos_class_np(Data.f_UseThreadAttribs(), QosClass, RelativePriority))
 			bAlreadySetPriority = true;
 	}
 #endif
 
 #if defined DMibSanitizerEnabled_Address
-	if (_StackSize == 0)
-		_StackSize = 512 * 1024;
-	_StackSize *= 4;
+	if (StackSize == 0)
+		StackSize = 512 * 1024;
+	StackSize *= 4;
 #endif
 
 #if DMibPPtrBits == 32
 	// The OS default stack (RLIMIT_STACK, usually 8 MiB on Linux) exhausts the
 	// 32-bit address space when many threads are created, so use a smaller
 	// default
-	if (_StackSize == 0)
-		_StackSize = 1024 * 1024;
+	if (StackSize == 0)
+		StackSize = 1024 * 1024;
 #endif
 
-	if (_StackSize != 0)
-		pthread_attr_setstacksize (Data.f_UseThreadAttribs(), _StackSize);
+	if (StackSize != 0)
+		pthread_attr_setstacksize (Data.f_UseThreadAttribs(), StackSize);
 
 #if defined(DMibPLinuxKernel)
-	if (_Affinity)
+	if (_Params.m_Affinity)
 	{
-		// It is likely that we could just pass _Affinity as the cpuset but that would not be super portable.
+		// It is likely that we could just pass the affinity as the cpuset but that would not be super portable.
 		// For processors with > 32 (or 64) CPUs we will need to switch to a dynamic cpu_set_t
 		cpu_set_t CPUSet;
 		CPU_ZERO(&CPUSet);
 
-		umint const nBits = sizeof(_Affinity) * 8;
+		umint const nBits = sizeof(_Params.m_Affinity) * 8;
 		for (umint iB = 0
 			;iB < nBits
 			;++iB)
 		{
-			if (_Affinity & (1 << iB))
+			if (_Params.m_Affinity & (1 << iB))
 				CPU_SET(iB, &CPUSet);
 		}
 
 		Result = pthread_attr_setaffinity_np(Data.f_UseThreadAttribs(), sizeof(cpu_set_t), &CPUSet);
 
 		if (Result != 0)
-			DMibError(NPlatform::fg_FormatErrno("pthread_attr_setaffinity_np (create thread)", Result));
+			DMibError(NMib::NPlatform::fg_FormatErrno("pthread_attr_setaffinity_np (create thread)", Result));
+	}
+	else if (_Params.m_pInheritedAffinity)
+	{
+		Result = pthread_attr_setaffinity_np(Data.f_UseThreadAttribs(), sizeof(cpu_set_t), _Params.m_pInheritedAffinity);
+
+		if (Result != 0)
+			DMibError(NMib::NPlatform::fg_FormatErrno("pthread_attr_setaffinity_np (create thread)", Result));
 	}
 #endif // DMibPLinuxKernel
 
-	if (_bSuspended)
-	{
-		// Implement by waiting for a event in thread
-
-	}
-
 	NStorage::TCUniquePointer<CThreadStartParams, CAllocator_NonTrackedHeap> pThreadParams = fg_Construct();
-	pThreadParams->m_pThreadProc = _pThreadProc;
-	pThreadParams->m_pThreadParam = _pParam;
-	pThreadParams->m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();
-	pThreadParams->m_ThreadName = _pThreadName;
-	pThreadParams->m_Priority = _Priority;
+	pThreadParams->m_pThreadProc = _Params.m_pThreadProc;
+	pThreadParams->m_pThreadParam = _Params.m_pParam;
+	pThreadParams->m_ParentThreadID = _Params.m_ParentThreadID;
+	pThreadParams->m_ThreadName = _Params.m_pThreadName;
+	pThreadParams->m_Priority = _Params.m_Priority;
 	pThreadParams->m_bSetPriority = !bAlreadySetPriority;
 #ifdef DPlatformFamily_Linux
 	pThreadParams->m_ThreadName = pThreadParams->m_ThreadName.f_Left(15);
@@ -980,23 +1035,30 @@ void *NSys::fg_Thread_Create
 
 	pthread_t ThreadID;
 
+#if defined(DMibPLinuxKernel)
+	bool bPreviousOwnThreadCreate = g_bLinuxOwnThreadCreate;
+	g_bLinuxOwnThreadCreate = true;
+#endif
 	Result = pthread_create(&ThreadID, Data.f_GetThreadAttribs(), &fg_ThreadStartRoutine, pThreadParams.f_Get());
+#if defined(DMibPLinuxKernel)
+	g_bLinuxOwnThreadCreate = bPreviousOwnThreadCreate;
+#endif
 	if (Result != 0)
-		DMibError(NPlatform::fg_FormatErrno("pthread_create (create thread)", Result));
+		DMibError(NMib::NPlatform::fg_FormatErrno("pthread_create (create thread)", Result));
 
 	pThreadParams.f_Detach();
 
 #if defined(DMibPMachKernel)
-	if (_Affinity)
+	if (_Params.m_Affinity)
 	{
 		mach_port_t MachThread = pthread_mach_thread_np(ThreadID);
 		thread_affinity_policy Policy;
-		Policy.affinity_tag = _Affinity;
+		Policy.affinity_tag = _Params.m_Affinity;
 		thread_policy_set(MachThread, THREAD_AFFINITY_POLICY, (integer_t *)&Policy, THREAD_AFFINITY_POLICY_COUNT);
 	}
 #endif // DMibPMachKernel
 
-	_ThreadID = (umint)ThreadID;
+	o_ThreadID = (umint)ThreadID;
 	return (void *)ThreadID;
 }
 
@@ -1057,17 +1119,14 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 
 namespace
 {
-	struct CSetPriorityError
-	{
-		ch8 const *m_pFunction = nullptr; // nullptr when the priority was set
-		int m_ErrNo = 0;
-	};
-
 	// The OS denies priority increases to unprivileged processes, so the caller decides whether a
 	// failure is fatal. On Linux a thread that ended up under SCHED_IDLE, which an external scheduler
 	// such as ananicy can do to any process, can only leave it with CAP_SYS_NICE or a raised RLIMIT_NICE
 	CSetPriorityError fg_POSIX_SetThreadPriority(void *_pThread, EExecutionPriority _Priority)
 	{
+#if defined(DMibPLinuxKernel)
+		return fg_Linux_SetThreadPriority(_pThread, _Priority);
+#else
 #ifdef DPlatformFamily_macOS
 		if (&pthread_set_qos_class_self_np && _pThread == NSys::fg_Thread_GetCurrent())
 		{
@@ -1097,8 +1156,29 @@ namespace
 			return {"pthread_setschedparam (set thread priority)", Result};
 
 		return {};
+#endif
 	}
 }
+
+#if !defined(DMibPLinuxKernel)
+bool NSys::fg_Thread_CanRestorePriority()
+{
+	return true;
+}
+
+bool NSys::fg_Thread_RegisterSpawnServer(FThreadSpawnServerWake *, void *)
+{
+	return false; // Threads set their own priority freely here, so creation never needs to be handed off
+}
+
+void NSys::fg_Thread_UnregisterSpawnServer(void *)
+{
+}
+
+void NSys::fg_Thread_ServeSpawnRequests()
+{
+}
+#endif
 
 void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 {
