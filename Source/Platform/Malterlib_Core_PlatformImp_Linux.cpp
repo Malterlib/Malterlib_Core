@@ -434,6 +434,9 @@ void CSystemLinux::fs_ForkPrepare()
 		Sys.m_Posix.m_ForkLock.f_PrepareFork();
 		Sys.f_PrepareFork();
 		fg_Linux_ThreadSpawn_ForkPrepare(); // Thread creation takes this lock while holding the fork lock
+#ifdef DUseGlibcDummyThreadLocalLevel2
+		fg_Glibc_DummyThreadLocals_ForkPrepare();
+#endif
 	}
 }
 
@@ -467,6 +470,9 @@ void CSystemLinux::fs_ForkParentOrChild()
 			fg_ThreadNotificationsForkParent();
 		#endif
 			fg_Linux_ThreadSpawn_ForkParent();
+#ifdef DUseGlibcDummyThreadLocalLevel2
+			fg_Glibc_DummyThreadLocals_ForkParent();
+#endif
 		}
 		else
 		{
@@ -477,6 +483,9 @@ void CSystemLinux::fs_ForkParentOrChild()
 			fg_ThreadNotificationsForkChild();
 		#endif
 			fg_Linux_ThreadSpawn_ForkChild();
+#ifdef DUseGlibcDummyThreadLocalLevel2
+			fg_Glibc_DummyThreadLocals_ForkChild();
+#endif
 		}
 	}
 }
@@ -497,6 +506,9 @@ void CSystemLinux::fs_ForkParent()
 		fg_ThreadNotificationsForkParent();
 	#endif
 		fg_Linux_ThreadSpawn_ForkParent();
+#ifdef DUseGlibcDummyThreadLocalLevel2
+		fg_Glibc_DummyThreadLocals_ForkParent();
+#endif
 	}
 }
 
@@ -523,6 +535,9 @@ void CSystemLinux::fs_ForkChild()
 		fg_ThreadNotificationsForkChild();
 	#endif
 		fg_Linux_ThreadSpawn_ForkChild();
+#ifdef DUseGlibcDummyThreadLocalLevel2
+		fg_Glibc_DummyThreadLocals_ForkChild();
+#endif
 		g_bCanStartThreads = true;
 		Sys.f_MemoryManager_CanStartThreads();
 		fg_MalterlibMallocOverride_CanStartThreads();

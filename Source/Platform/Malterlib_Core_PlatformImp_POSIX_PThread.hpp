@@ -66,9 +66,23 @@ namespace
 	constexpr umint gc_nGlibcThreadLocalWordsPerKey = 2;
 	struct CGlibcDummyThreadLocalLevel2
 	{
+		DMibListLinkDS_Link(CGlibcDummyThreadLocalLevel2, m_Link);
+
 		umint m_Data[gc_nGlibcThreadLocalsPerLevel2 * gc_nGlibcThreadLocalWordsPerKey] = {};
+		uint8 **m_pLevel2Pointer = nullptr;
 		bool m_bInstalled = false;
 	};
+
+	// glibc keeps the level-2 pointers of the threads that no longer exist in a forked child and hands them to the
+	// threads that reuse their stacks, where an installed dummy would be freed as a heap block when the thread exits
+	struct CGlibcInstalledDummyThreadLocals
+	{
+		NThread::CLowLevelLockAggregate m_Lock = {DAggregateInit};
+		DMibListLinkDSA_List(CGlibcDummyThreadLocalLevel2, m_Link) m_Dummies = {DAggregateInit};
+		bool m_bConstructed = false; // An aggregate list is not usable in its constant initialized state
+	};
+
+	constinit CGlibcInstalledDummyThreadLocals g_GlibcInstalledDummyThreadLocals;
 	#endif
 
 	enum EGlibcThreadDbDescriptor
@@ -152,8 +166,18 @@ namespace
 		if (pLevel2Pointers[1])
 			return;
 
+		auto &Installed = g_GlibcInstalledDummyThreadLocals;
+		DMibLock(Installed.m_Lock);
+		if (!Installed.m_bConstructed)
+		{
+			Installed.m_Dummies.f_Construct();
+			Installed.m_bConstructed = true;
+		}
+
 		pLevel2Pointers[1] = reinterpret_cast<uint8 *>(_Dummy.m_Data);
+		_Dummy.m_pLevel2Pointer = &pLevel2Pointers[1];
 		_Dummy.m_bInstalled = true;
+		Installed.m_Dummies.f_Insert(_Dummy);
 	}
 
 	void fg_Glibc_ReplaceDummyThreadLocalLevel2(CGlibcDummyThreadLocalLevel2 &_Dummy)
@@ -174,8 +198,53 @@ namespace
 			)
 		;
 		DMibFastCheck(pLevel2Pointers[1] == reinterpret_cast<uint8 *>(_Dummy.m_Data));
+
+		DMibLock(g_GlibcInstalledDummyThreadLocals.m_Lock);
 		pLevel2Pointers[1] = reinterpret_cast<uint8 *>(pLevel2);
 		_Dummy.m_bInstalled = false;
+		_Dummy.m_Link.f_Unlink();
+	}
+
+	void fg_Glibc_DummyThreadLocals_ForkPrepare()
+	{
+		g_GlibcInstalledDummyThreadLocals.m_Lock.f_Lock();
+	}
+
+	void fg_Glibc_DummyThreadLocals_ForkParent()
+	{
+		g_GlibcInstalledDummyThreadLocals.m_Lock.f_Unlock();
+	}
+
+	void fg_Glibc_DummyThreadLocals_ForkChild()
+	{
+		auto &Installed = g_GlibcInstalledDummyThreadLocals;
+		Installed.m_Lock.f_ForkedChildLocked();
+
+		if (Installed.m_bConstructed)
+		{
+			auto pOwnLevel2Pointers = reinterpret_cast<uint8 **>
+				(
+					reinterpret_cast<uint8 *>(pthread_self())
+						+ _thread_db_pthread_specific[EGlibcThreadDbDescriptor_Offset]
+				)
+			;
+
+			// The stacks of the other threads stay mapped in the child, as glibc caches them for reuse
+			DMibListLinkDSA_List(CGlibcDummyThreadLocalLevel2, m_Link) OwnDummies = {DAggregateInit};
+			OwnDummies.f_Construct();
+
+			while (auto *pDummy = Installed.m_Dummies.f_Pop())
+			{
+				if (pDummy->m_pLevel2Pointer == &pOwnLevel2Pointers[1])
+					OwnDummies.f_Insert(pDummy);
+				else
+					*pDummy->m_pLevel2Pointer = nullptr;
+			}
+
+			Installed.m_Dummies.f_Insert(OwnDummies);
+		}
+
+		Installed.m_Lock.f_Unlock();
 	}
 	#endif
 
