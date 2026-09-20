@@ -671,6 +671,8 @@ struct CThreadStartParams
 	void *m_pThreadParam;
 	umint m_ParentThreadID;
 	CStrNonTracked m_ThreadName;
+	EExecutionPriority m_Priority;
+	bool m_bSetPriority; // False when thread creation already carried the priority, as the macOS quality of service attribute does
 };
 
 void *fg_ThreadStartRoutine(void *_pParams)
@@ -711,6 +713,13 @@ void *fg_ThreadStartRoutine(void *_pParams)
 #else
 #	error "Implement this"
 #endif
+
+	// The thread sets its own priority so that it never runs the thread procedure at the priority it
+	// inherited from the creating thread. The scheduling attributes of pthread_create cannot do this, as
+	// they are only honored together with PTHREAD_EXPLICIT_SCHED, which makes creation itself fail when
+	// the OS denies the policy
+	if (StartParams.m_bSetPriority)
+		NSys::fg_Thread_TrySetPriority(NSys::fg_Thread_GetCurrent(), StartParams.m_Priority);
 
 	aint ReturnCode	= StartParams.m_pThreadProc(StartParams.m_pThreadParam);
 
@@ -963,6 +972,8 @@ void *NSys::fg_Thread_Create
 	pThreadParams->m_pThreadParam = _pParam;
 	pThreadParams->m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();
 	pThreadParams->m_ThreadName = _pThreadName;
+	pThreadParams->m_Priority = _Priority;
+	pThreadParams->m_bSetPriority = !bAlreadySetPriority;
 #ifdef DPlatformFamily_Linux
 	pThreadParams->m_ThreadName = pThreadParams->m_ThreadName.f_Left(15);
 #endif
@@ -974,12 +985,6 @@ void *NSys::fg_Thread_Create
 		DMibError(NPlatform::fg_FormatErrno("pthread_create (create thread)", Result));
 
 	pThreadParams.f_Detach();
-
-	// The scheduling attributes of a thread are only honored together with PTHREAD_EXPLICIT_SCHED, which
-	// makes pthread_create fail outright when the OS denies the policy, so the priority is applied to the
-	// running thread instead. Without this the thread silently keeps the creating thread's priority
-	if (!bAlreadySetPriority)
-		NSys::fg_Thread_TrySetPriority((void *)ThreadID, _Priority);
 
 #if defined(DMibPMachKernel)
 	if (_Affinity)
