@@ -3239,6 +3239,11 @@ void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
 	}
 }
 
+bool NSys::fg_Thread_TrySetPriority(void *_pThread, EExecutionPriority _Priority)
+{
+	return SetThreadPriority(_pThread, fg_TranslateThreadPrio(_Priority)) != 0;
+}
+
 void NSys::fg_Thread_SetAffinity(void *_pThread, umint _Affinity)
 {
 	if (!SetThreadAffinityMask(_pThread, _Affinity))

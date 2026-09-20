@@ -1058,34 +1058,62 @@ void NSys::fg_Thread_EndDestroy(void *_pThreadDestroyContext)
 
 }
 
-void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
+namespace
 {
-#ifdef DPlatformFamily_macOS
-	if (&pthread_set_qos_class_self_np && _pThread == NSys::fg_Thread_GetCurrent())
+	struct CSetPriorityError
 	{
-		int RelativePriority;
-		auto QosClass = NMib::NPlatform::fg_PriorityToQualityOfService(_Priority, RelativePriority);
-		int ErrNo = pthread_set_qos_class_self_np(QosClass, RelativePriority);
-		if (ErrNo)
-			DMibError(NPlatform::fg_FormatErrno("pthread_set_qos_class_self_np (set thread priority)", ErrNo));
-		return;
-	}
+		ch8 const *m_pFunction = nullptr; // nullptr when the priority was set
+		int m_ErrNo = 0;
+	};
+
+	// The OS denies priority increases to unprivileged processes, so the caller decides whether a
+	// failure is fatal. On Linux a thread that ended up under SCHED_IDLE, which an external scheduler
+	// such as ananicy can do to any process, can only leave it with CAP_SYS_NICE or a raised RLIMIT_NICE
+	CSetPriorityError fg_POSIX_SetThreadPriority(void *_pThread, EExecutionPriority _Priority)
+	{
+#ifdef DPlatformFamily_macOS
+		if (&pthread_set_qos_class_self_np && _pThread == NSys::fg_Thread_GetCurrent())
+		{
+			int RelativePriority;
+			auto QosClass = NMib::NPlatform::fg_PriorityToQualityOfService(_Priority, RelativePriority);
+			int ErrNo = pthread_set_qos_class_self_np(QosClass, RelativePriority);
+			if (ErrNo)
+				return {"pthread_set_qos_class_self_np (set thread priority)", ErrNo};
+
+			return {};
+		}
 #endif
 
 #if defined(DMibPMachKernel)
-	if (fg_SetMachPriority(_pThread, _Priority))
-		return;
+		if (fg_SetMachPriority(_pThread, _Priority))
+			return {};
 #endif
-	int Scheduler = SCHED_OTHER;
-	sched_param ScheduleParams;
-	pthread_getschedparam((pthread_t)_pThread, &Scheduler, &ScheduleParams); // We need to do this to get the correct quantum
+		int Scheduler = SCHED_OTHER;
+		sched_param ScheduleParams;
+		pthread_getschedparam((pthread_t)_pThread, &Scheduler, &ScheduleParams); // We need to do this to get the correct quantum
 
-	fg_POSIX_MapThreadPriority(_Priority, Scheduler, ScheduleParams.sched_priority);
+		fg_POSIX_MapThreadPriority(_Priority, Scheduler, ScheduleParams.sched_priority);
 
-	int Result = pthread_setschedparam((pthread_t)_pThread, Scheduler, &ScheduleParams);
+		int Result = pthread_setschedparam((pthread_t)_pThread, Scheduler, &ScheduleParams);
 
-	if (Result != 0)
-		DMibError(NPlatform::fg_FormatErrno("pthread_setschedparam (set thread priority)", Result));
+		if (Result != 0)
+			return {"pthread_setschedparam (set thread priority)", Result};
+
+		return {};
+	}
+}
+
+void NSys::fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority)
+{
+	CSetPriorityError Error = fg_POSIX_SetThreadPriority(_pThread, _Priority);
+
+	if (Error.m_pFunction)
+		DMibError(NPlatform::fg_FormatErrno(Error.m_pFunction, Error.m_ErrNo));
+}
+
+bool NSys::fg_Thread_TrySetPriority(void *_pThread, EExecutionPriority _Priority)
+{
+	return fg_POSIX_SetThreadPriority(_pThread, _Priority).m_pFunction == nullptr;
 }
 
 void NSys::fg_Thread_Destroy(void *_pThread)

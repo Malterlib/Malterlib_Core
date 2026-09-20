@@ -154,6 +154,7 @@ namespace NMib
 			)
 		;
 		void fg_Thread_SetPriority(void *_pThread, EExecutionPriority _Priority);
+		bool fg_Thread_TrySetPriority(void *_pThread, EExecutionPriority _Priority);
 		void fg_Thread_SetAffinity(void *_pThread, umint _Affinity);
 		void fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode);
 		void fg_Thread_Destroy(void *_pThread);
