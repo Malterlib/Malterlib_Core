@@ -231,6 +231,21 @@ GeneratorSetting
 		!PlatformFamily "Windows"
 	}
 
+	// A new compiler has to rebuild everything: clang rejects a precompiled header that another revision of it built. On Windows
+	// clang-cl is a symbolic link that keeps its time stamp when the compiler it points to is replaced.
+	Compile_Type #<Build.implicit_dependencies> =+ MalterlibLLVMHostBinariesDirectory / `bin/clang@(HostExecutableExtension)`
+	{
+		!!PlatformFamily "Windows"
+	}
+	Compile_Type #<Build.implicit_dependencies> =+ `@(MalterlibToolsPrefix)clang@(HostExecutableExtension)`
+	{
+		&
+		{
+			!PlatformFamily "Windows"
+			!MalterlibToolsPrefix undefined
+		}
+	}
+
 	Compile_Type #<Build.description> `Compiling @(this.Identity->GetFile())`
 
 	// Set INCLUDE environment variable for clang-cl to auto-detect MSVC/Windows SDK headers
