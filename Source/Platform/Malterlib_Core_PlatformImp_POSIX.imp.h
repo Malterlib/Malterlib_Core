@@ -138,6 +138,17 @@ namespace NMib
 				else
 					DMibDTraceSafe("getrlimit RLIMIT_NPROC failed: {}\n", strerror(errno));
 
+				// The io_uring rings of the io loops are charged against the locked memory limit on Linux, and
+				// the soft limit the process inherits is usually a few megabytes
+				if (!getrlimit(RLIMIT_MEMLOCK, &Limits))
+				{
+					Limits.rlim_cur = Limits.rlim_max;
+					if (setrlimit(RLIMIT_MEMLOCK, &Limits))
+						DMibDTraceSafe("setrlimit RLIMIT_MEMLOCK failed: {}\n", strerror(errno));
+				}
+				else
+					DMibDTraceSafe("getrlimit RLIMIT_MEMLOCK failed: {}\n", strerror(errno));
+
 
 			}
 		}
