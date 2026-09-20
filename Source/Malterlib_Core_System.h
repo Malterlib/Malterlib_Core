@@ -23,14 +23,20 @@ namespace NMib
 
 	struct CPromiseKeepAlive
 	{
-		CPromiseKeepAlive(umint _Allocsize)
-			: m_VirtualAllocSize(_Allocsize)
+		// The size is only needed where a deleting destructor does not return the
+		// size of the complete object (see -fmalterlib-sized-destructors).
+		CPromiseKeepAlive(umint _AllocSize)
+#ifndef DMibPSizedDestructors
+			: m_VirtualAllocSize(_AllocSize)
+#endif
 		{
 		}
 
 		virtual ~CPromiseKeepAlive() = 0;
 
+#ifndef DMibPSizedDestructors
 		umint m_VirtualAllocSize = 0;
+#endif
 	};
 
 	namespace NConcurrency

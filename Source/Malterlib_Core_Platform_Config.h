@@ -93,6 +93,26 @@
 // Float implementation
 #define DMibPFloat_StdLib
 
+// Sized destruction
+//
+// The compiler sets this feature where it compiles with
+// -fmalterlib-sized-destructors, and every deleting destructor then returns the
+// size and the address of the complete object instead of freeing it when
+// __builtin_malterlib_destroy calls it. The attribute marks the functions that
+// construct such objects for an allocator that later frees them with that size,
+// so that the linker can prove their classes were compiled the same way.
+#if defined(__has_feature)
+#	if __has_feature(malterlib_sized_destructors)
+#		define DMibPSizedDestructors
+#	endif
+#endif
+
+#ifdef DMibPSizedDestructors
+#	define DMibSizedConstruction [[malterlib::sized_construction]]
+#else
+#	define DMibSizedConstruction
+#endif
+
 // New override
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
 #ifdef DMalterlibUseStaticLibCxx

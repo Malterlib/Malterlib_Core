@@ -1586,7 +1586,7 @@ void fg_TerminateHandler()
 		abort();
 }
 
-#if defined(DMibSanitizerEnabled_Address)
+#if defined(DMibSanitizerEnabled_Address) && !defined(DMibPSizedDestructors)
 module_export assure_used extern "C" int __asan_on_delete(void *ptr, size_t size)
 {
 	return NMib::NMemory::CCaptureDefaultDelete::fs_ReportDelete(ptr, size);

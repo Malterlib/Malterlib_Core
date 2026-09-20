@@ -6897,11 +6897,13 @@ extern "C" void __asan_init();
 #pragma comment(linker, "/export:__asan_get_alloc_stack")
 #pragma comment(linker, "/export:__sanitizer_print_memory_profile")
 
+#if !defined(DMibPSizedDestructors)
 assure_used extern "C" int __asan_on_delete(void *ptr, size_t size)
 {
 	return NMib::NMemory::CCaptureDefaultDelete::fs_ReportDelete(ptr, size);
 }
 #pragma comment(linker, "/export:__asan_on_delete")
+#endif
 #endif
 
 #endif

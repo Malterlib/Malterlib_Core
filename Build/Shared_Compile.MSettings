@@ -1784,17 +1784,17 @@ Compile
 		}
 	}
 
-	// The ld64.lld of the macOS x64 toolchain cannot synthesize the objc_msgSendClass$ stubs clang emits when it detects ld64 1250 or newer.
-	// Remove this once that toolchain is built from an llvm-project with "[lld][MachO] Support Objective-C class stubs", as the others are.
-	ExtraCompilerFlags =+ "-fno-objc-msgsend-class-selector-stubs"
+	// Every deleting destructor returns the size and the address of the complete object instead of
+	// freeing it when __builtin_malterlib_destroy calls it, so that an object a custom allocator owns
+	// is freed with the size of its dynamic type.
+	ExtraCompilerFlags =+ "-fmalterlib-sized-destructors"
 	{
 		&
 		{
-			PlatformFamily "macOS"
 			!MalterlibDefaultCompiler true
 			|
 			{
-				Compile.Type "ObjC"
+				Compile.Type "C++"
 				Compile.Type "ObjC++"
 			}
 		}
