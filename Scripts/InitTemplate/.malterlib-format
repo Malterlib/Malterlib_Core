@@ -1,0 +1,8 @@
+# Copyright © Unbroken AB
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# The project's code formatting settings. They extend Malterlib's naming and layout options; add the project's own
+# names here, a list as a mapping holding 'Append' to add to Malterlib's, and set options to override them.
+# Documentation, including every key: https://github.com/Malterlib/Malterlib_Develop/blob/master/Documentation/CodeFormatting.md#naming
+Version: 1
+Extends: Malterlib/Core/.malterlib-format
