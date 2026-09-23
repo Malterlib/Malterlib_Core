@@ -206,6 +206,7 @@ InitOutputInfo "Copying project templates"
 
 MergeGitIgnoreFile "$TemplateDir/.gitignore" "$ProjectDir/.gitignore"
 CopyTemplateFile "$TemplateDir/.editorconfig" "$ProjectDir/.editorconfig"
+CopyTemplateFile "$TemplateDir/.malterlib-format" "$ProjectDir/.malterlib-format"
 CopyTemplateFile "$TemplateDir/CLAUDE.md" "$ProjectDir/CLAUDE.md"
 CopyTemplateFile "$TemplateDir/.vscode/extensions.json" "$ProjectDir/.vscode/extensions.json"
 CopyTemplateFile "$TemplateDir/.vscode/settings.json" "$ProjectDir/.vscode/settings.json"
