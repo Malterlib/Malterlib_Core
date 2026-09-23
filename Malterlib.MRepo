@@ -66,16 +66,16 @@
 		"Hash": "b2cee9bd643672019a488dd796991ec0e7968752"
 	},
 	"../../Binaries/MalterlibTest/Cloud/Linux/x64": {
-		"Hash": "8da80be1a88ae1d6793d25d8fa57d4d5e97b5da9"
+		"Hash": "afe9c00092be2fc2337ebbefe2d0abc455f4b9eb"
 	},
 	"../../Binaries/MalterlibTest/Cloud/OSX/x64": {
 		"Hash": "618764e80ec78a8056b4ae69575e0803191e04e4"
 	},
 	"../../Binaries/MalterlibTest/Cloud/macOS/arm64": {
-		"Hash": "e497dcdb2b17ce6d5c1460b7e9b2a60571438f2a"
+		"Hash": "c93f7022c91523206668854c6fd547ccbd6bd5e2"
 	},
 	"../../Binaries/MalterlibTest/Cloud/macOS/x64": {
-		"Hash": "1dfc99ec681171c77b36f875fa6b22990c10aada"
+		"Hash": "03eb291c7a0f2d83fc94157bc1913e938e1c73d1"
 	},
 	"../../SDK": {
 		"Hash": "619e3098502c3d4cb08b59f907f9b5425c1afb36"
@@ -228,7 +228,7 @@
 		"Hash": "0032558ea8c45053aab99b90395f66818c64d467"
 	},
 	"../UserInterface": {
-		"Hash": "e410a1a388927e715863fe5f6520e281b51449c1"
+		"Hash": "3f5bbb535d67acdd291f1ae07cdfbe1368039f6c"
 	},
 	"../Web": {
 		"Hash": "0f1dfd73b860216f3a25a3375608ccc018134517"
