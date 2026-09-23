@@ -55,6 +55,7 @@ Property
 	Repository
 	{
 		Type "Malterlib"
+		Format true
 		Hooks #<"pre-commit"> MalterlibSourcePreCommitHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
