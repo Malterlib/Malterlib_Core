@@ -343,6 +343,9 @@ You can never split the function into several lines before the function name. If
 
 If you would save more space by splitting the parameters, do that instead or in addition to specifying the return type on a separate trailing line.
 
+When the parameter list is split, the function's qualifiers, `override`, `final` and a pure specifier start the line after the
+closing parenthesis, at its indentation, like the trailing return type below them.
+
 Any lines after the line with the function name are indented.
 
 Examples:
@@ -362,7 +365,8 @@ Examples:
 		(
 			int _Param0
 			, int _Param1
-		) const volatile = 0
+		)
+		const volatile = 0
 	;
 
 	void fg_Function
@@ -402,7 +406,8 @@ Examples:
 		(
 			int _Param0
 			, int _Param1
-		) const volatile
+		)
+		const volatile
 		-> typename TCLongTemplate<tf_CType>::CType
 	{
 	}
