@@ -89,20 +89,23 @@
 	"../Bit": {
 		"Hash": "cc10cc781edf4aa90a15f2e084630c90b03a2875"
 	},
+	"../BuildAutomation": {
+		"Hash": "5b0587eb331d20fc9a95f8ed88fc01d8bb052524"
+	},
 	"../BuildSystem": {
-		"Hash": "b19d2c70d2f39740d9750cb79f0f30226a3025e7"
+		"Hash": "1702ac23c6c8f73141e67782f1f1e9d6191e4ab0"
 	},
 	"../Cloud": {
-		"Hash": "d806f1580a0e335b6ba3a74e0983a936735d4322"
+		"Hash": "8b9fa35a3777d115ea98e63085f991ee6a50949a"
 	},
 	"../CommandLine": {
-		"Hash": "5ce3c66d8a9e385da39f0a2f288b428d51d713ac"
+		"Hash": "a2fca8774933cba453f40cbf57c1ca07a42a5d33"
 	},
 	"../Compression": {
 		"Hash": "33976905807d5687fddfee9f0911b306a8ebb89e"
 	},
 	"../Concurrency": {
-		"Hash": "f6d4f50266388e4051a5f3dc2df9d7ed7bb11f58"
+		"Hash": "7720fd30708172d52aa79bf20195b8a329afe77f"
 	},
 	"../Container": {
 		"Hash": "3b3854adcc55839ca57d695fec6d2c5d7e9f036a"
@@ -114,7 +117,7 @@
 		"Hash": "fa52ca9e54dff070f5485cd2185e0734d23ef15d"
 	},
 	"../Cryptography": {
-		"Hash": "8846eb6dc139e53564863b500e4b6472586b4af9"
+		"Hash": "7a6a4a59509bb80c19d2e495384cf198e41e87ca"
 	},
 	"../Daemon": {
 		"Hash": "503954529afaa61f9d24477886ae39ca926b4087"
@@ -135,19 +138,19 @@
 		"Hash": "81a5440baca4e7cb80164aaa9d0eeba02c0af313"
 	},
 	"../Encoding": {
-		"Hash": "0bbb3a36a8f6cca5b6ab830e68c69e7b8814f840"
+		"Hash": "9c8b57b773b61a492b924f84c870b1fc0351d8dd"
 	},
 	"../Exception": {
 		"Hash": "f1e92263927e48c1bc4cad33556dbbd01859494a"
 	},
 	"../File": {
-		"Hash": "e7e5b3219b306f2c37f55f685372c1613bc08a6e"
+		"Hash": "786f80176902fb8e64e2ceb57a8760d4496f7091"
 	},
 	"../Function": {
 		"Hash": "27e487add61394138aed423249394913c23f6fec"
 	},
 	"../Git": {
-		"Hash": "dda0dbe69dc4eb701490bf9fa8eef22f57baf7fc"
+		"Hash": "15236f954f57468afa6b0c6232c6dc40668554eb"
 	},
 	"../Graphics": {
 		"Hash": "00559ebb93b171d9d7d5a51bcd9e18924fbd477e"
@@ -183,19 +186,19 @@
 		"Hash": "b815d8f193e3f087ca2e21017f145660effb5e20"
 	},
 	"../Perforce": {
-		"Hash": "1e7d9e8a58ec3729f7666cb00ec5a5c8e11b04f7"
+		"Hash": "740b59c319f8fc5dcf421a72519627adff214147"
 	},
 	"../Preprocessor": {
 		"Hash": "7067760cf1bf6f53533af6e3810b8fcef3e45a3e"
 	},
 	"../Process": {
-		"Hash": "bec92b35b3f46055db5c53164baa3863e2a604ff"
+		"Hash": "049c08281e7bb0838b247529f4199f0523967854"
 	},
 	"../Qt": {
 		"Hash": "d0620911f5b4f6f2ebb0c8926c9fa2b685e07ead"
 	},
 	"../SQL": {
-		"Hash": "5a6e8103becb6bc84c0efd47c684a610e8c2891b"
+		"Hash": "9d70ac76223e508d20becaa03250069003586cb1"
 	},
 	"../Security": {
 		"Hash": "0b31f02304c85d08596b08170cafc92bd1b01be8"
@@ -230,11 +233,14 @@
 	"../UserInterface": {
 		"Hash": "e410a1a388927e715863fe5f6520e281b51449c1"
 	},
+	"../Virtualization": {
+		"Hash": "4a52a70439e57c756a2165c8318e980a03241da0"
+	},
 	"../Web": {
 		"Hash": "0f1dfd73b860216f3a25a3375608ccc018134517"
 	},
 	"../WebApp": {
-		"Hash": "782f726dfa1f3ab375ee77aa3c932dc97cd25dfa"
+		"Hash": "50b421e73cedbb3cfbfe7fde00bab5cb0f6bd0ab"
 	},
 	"../XML": {
 		"Hash": "4f2ffd4c583880083fd0fffd94778ee762085312"
