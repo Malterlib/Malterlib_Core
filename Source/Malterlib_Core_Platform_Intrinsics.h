@@ -376,7 +376,7 @@ namespace NMib
 {
 	void fg_OutputDebugBreakFileLine(ch8 const *_pFile, int _Line);
 }
-#	define DMibPDebugBreak { ::NMib::fg_OutputDebugBreakFileLine(DMibPFile, DMibPLine); DMibPDebugBreakImpl; }
+#	define DMibPDebugBreak do { ::NMib::fg_OutputDebugBreakFileLine(DMibPFile, DMibPLine); DMibPDebugBreakImpl; } while (false)
 #else
 #	define DMibPDebugBreak DMibPDebugBreakImpl
 #endif
