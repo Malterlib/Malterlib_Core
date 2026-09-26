@@ -128,7 +128,7 @@ namespace std
 #		define DMibPArglistIntSizeOf(n)   ( (sizeof(n) + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
 #		define DMibPArglistIntAlign(n)   ( (n + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
 		using CMibArgList = void *;
-#		define DMibPArgListStart(_ArgList, _PrevArg) { _ArgList = ((char *)&_PrevArg + DMibPArglistIntSizeOf(_PrevArg)); }
+#		define DMibPArgListStart(_ArgList, _PrevArg) do { _ArgList = ((char *)&_PrevArg + DMibPArglistIntSizeOf(_PrevArg)); } while (false)
 		namespace NMib
 		{
 			namespace NHelpers
