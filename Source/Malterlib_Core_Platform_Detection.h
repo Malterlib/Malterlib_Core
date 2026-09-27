@@ -70,6 +70,18 @@
 #	ifndef DArchitectureExtension_SSE
 #		define DArchitectureExtension_SSE 1
 #	endif
+#	if !defined(DArchitectureExtension_SSE41) && defined(__SSE4_1__)
+#		define DArchitectureExtension_SSE41 1
+#	endif
+#	if !defined(DArchitectureExtension_AVX2) && defined(__AVX2__)
+#		define DArchitectureExtension_AVX2 1
+#	endif
+#endif
+
+#if defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
+#	ifndef DArchitectureExtension_NEON
+#		define DArchitectureExtension_NEON 1
+#	endif
 #endif
 
 // Default debugger if not defined
