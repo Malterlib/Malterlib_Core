@@ -35,7 +35,13 @@ namespace
 		DMibLock(g_ThreadCreationNotificationLock);
 #endif
 		if (g_bSysDeleted)
+		{
+			// The thread gets no locals, and the memory manager must not expect them until the context is destroyed
+			if (_ThreadID == NSys::fg_Thread_GetCurrentUID())
+				NSys::fg_Thread_SetLocalsDestroyed(true);
+
 			return;
+		}
 
 		fg_GetLocalSys()->f_OnThreadCreated(_ThreadID, _ParentThreadID);
 	}
@@ -421,6 +427,7 @@ void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 {
 	DMibLock(g_ThreadNotificationLock);
 	_fDestroy();
+	g_bThreadLocalContextDestroyed.f_Store(true, NAtomic::gc_MemoryOrder_Relaxed);
 	fg_DestroyPThreadOverride();
 }
 
@@ -495,7 +502,11 @@ void fg_InitializePThreadNotifications()
 void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 {
 	if (!g_pHostThreadNotificationCrossModule)
-		return _fDestroy();
+	{
+		_fDestroy();
+		g_bThreadLocalContextDestroyed.f_Store(true, NAtomic::gc_MemoryOrder_Relaxed);
+		return;
+	}
 
 	g_pHostThreadNotificationCrossModule->m_fUnregister
 		(
@@ -504,6 +515,7 @@ void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 			, &_fDestroy
 		)
 	;
+	g_bThreadLocalContextDestroyed.f_Store(true, NAtomic::gc_MemoryOrder_Relaxed);
 	g_pHostThreadNotificationCrossModule = nullptr;
 }
 

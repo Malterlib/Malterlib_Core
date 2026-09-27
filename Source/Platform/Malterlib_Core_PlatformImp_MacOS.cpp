@@ -68,7 +68,7 @@ bool g_bForking = false;
 namespace
 {
 	constinit umint g_iThreadNotificationDestructor = 0;
-	constinit bool g_bThreadLocalContextDestroyed = false;
+	constinit NAtomic::TCAtomic<bool> g_bThreadLocalContextDestroyed{false};
 	#ifndef DMibDynamicLibrary
 		constinit NThread::CLowLevelRecursiveLockAggregate g_ThreadNotificationLock = {DAggregateInit};
 	#else
@@ -94,15 +94,12 @@ namespace
 			g_iThreadNotificationDestructor = NSys::fg_Thread_AllocLocalWithDestructor(&fg_PThreadNotificationDestructor);
 	}
 
+	#ifdef DMibDynamicLibrary
 	void fg_FreePThreadNotificationDestructor()
 	{
 		umint iThreadNotificationDestructor;
 		{
-		#ifndef DMibDynamicLibrary
-			DMibLock(g_ThreadNotificationLock);
-		#else
 			DMibLock(g_OwnThreadNotificationLock);
-		#endif
 			if (!g_iThreadNotificationDestructor)
 				return;
 
@@ -112,13 +109,12 @@ namespace
 
 		NSys::fg_Thread_FreeLocalWithDestructor(iThreadNotificationDestructor);
 
-	#ifdef DMibDynamicLibrary
 		// Deleting the key keeps later thread exits from selecting the destructor, which pthread
 		// runs outside any host dispatcher; an exiting thread that already selected it runs it to
 		// the end before this image may go
 		fg_WaitForThreadsOutsideThreadExit();
-	#endif
 	}
+	#endif
 
 	void fg_SetPThreadNotificationActive(umint _ThreadID)
 	{
@@ -135,6 +131,11 @@ namespace
 
 inline_always_lto bool NSys::fg_Thread_GetLocalsDestroyed(umint)
 {
+	// Once the context is destroyed a thread gets no locals: one the system starts later, such as a dispatch worker freeing memory during
+	// exit, never passes the removed introspection hook, and the key that marks a thread destroyed is freed at the end of the teardown
+	if (g_bThreadLocalContextDestroyed.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+		return true;
+
 	DMibFastCheck(g_iThreadNotificationDestructor);
 	return (umint)NSys::fg_Thread_GetLocal(g_iThreadNotificationDestructor) == TCLimitsInt<umint>::mc_Max;
 }
@@ -1897,7 +1898,13 @@ namespace
 		DMibLock(g_OwnThreadNotificationLock);
 #endif
 		if (g_bSysDeleted)
+		{
+			// The thread gets no locals, and the memory manager must not expect them until the context is destroyed
+			if (_ThreadID == NSys::fg_Thread_GetCurrentUID())
+				fg_SetPThreadNotificationDestroyed();
+
 			return;
+		}
 
 		fg_SetPThreadNotificationActive(_ThreadID);
 		fg_GetLocalSys()->f_OnThreadCreated(_ThreadID, _ParentThreadID);
@@ -1908,7 +1915,7 @@ namespace
 #ifdef DMibDynamicLibrary
 		DMibLock(g_OwnThreadNotificationLock);
 #endif
-		if (g_bThreadLocalContextDestroyed)
+		if (g_bThreadLocalContextDestroyed.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
 			return;
 
 		fg_GetLocalSys()->f_OnThreadDestroyed();
@@ -2710,14 +2717,14 @@ void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 #ifndef DMibDynamicLibrary
 	DMibLock(g_ThreadNotificationLock);
 	_fDestroy();
-	g_bThreadLocalContextDestroyed = true;
+	g_bThreadLocalContextDestroyed.f_Store(true, NAtomic::gc_MemoryOrder_Relaxed);
 	fg_DestroyPThreadIntrospectionHook();
 #else
 	auto fDestroy = [](void *_pContext)
 		{
 			DMibLock(g_OwnThreadNotificationLock);
 			(*static_cast<void (**)()>(_pContext))();
-			g_bThreadLocalContextDestroyed = true;
+			g_bThreadLocalContextDestroyed.f_Store(true, NAtomic::gc_MemoryOrder_Relaxed);
 		}
 	;
 
@@ -2773,7 +2780,9 @@ void NSys::fg_DestroySystem()
 			return; // Forked children have several problems with invalid semaphores etc, so lets just not destroy anything here
 		pSys->~CSystemMacOS();
 
-#ifdef DMibConfig_PThreadIntrospection
+#if defined(DMibConfig_PThreadIntrospection) && defined(DMibDynamicLibrary)
+		// An executable keeps the key until it exits, since a thread can be between reading that the context is destroyed and
+		// reading the key; a library frees it before it unloads, and waits for threads that are in its destructor
 		fg_FreePThreadNotificationDestructor();
 #endif
 

@@ -242,9 +242,15 @@ extern "C"
 #endif
 }
 
+namespace
+{
+	constinit NAtomic::TCAtomic<bool> g_bThreadLocalContextDestroyed{false};
+}
+
 inline_always_lto bool NSys::fg_Thread_GetLocalsDestroyed(umint _iPerThread)
 {
-	return g_MalterlibThreadLocalsDestroyed;
+	// Once the context is destroyed a thread gets no locals: one started later is created without a notification
+	return g_MalterlibThreadLocalsDestroyed || g_bThreadLocalContextDestroyed.f_Load(NAtomic::gc_MemoryOrder_Relaxed);
 }
 
 inline_always_lto void NSys::fg_Thread_SetLocalsDestroyed(bool _bDestroyed)
@@ -1794,6 +1800,7 @@ constinit NMib::NAtomic::TCAtomic<bool> g_bSysDeleted{false};
 void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 {
 	_fDestroy();
+	g_bThreadLocalContextDestroyed.f_Store(true, NAtomic::gc_MemoryOrder_Relaxed);
 }
 #endif
 
