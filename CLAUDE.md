@@ -974,6 +974,7 @@ Since Core is the foundation of Malterlib, here are references to all module-spe
 - **Network**: `../Network/CLAUDE.md` - Networking and communication
 - **Numeric**: `../Numeric/CLAUDE.md` - Numerical operations and math
 - **Process**: `../Process/CLAUDE.md` - Process management and IPC
+- **Render**: `../Render/CLAUDE.md` - 3D engine, GPU layer for Metal, Vulkan and D3D12, and shaders
 - **Stream**: `../Stream/CLAUDE.md` - Stream processing and I/O
 - **Test**: `../Test/CLAUDE.md` - Test framework usage and test-writing conventions
 - **Time**: `../Time/CLAUDE.md` - Time and date utilities
