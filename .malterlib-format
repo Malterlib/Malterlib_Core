@@ -1,0 +1,79 @@
+# Copyright © Unbroken AB
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# Malterlib's naming, which the code formatter reads where C++ itself settles
+# nothing. An entry is a name, or a pattern anchored at both ends: '.' is any
+# character, '[A-Z]' a class, and '*' repeats the atom in front of it. Another
+# module's file extends this one, and a list it holds replaces the one here.
+Version: 1
+
+# Member, private, static and global functions: 'f_Get', 'fg_Hash'.
+FunctionNames:
+  - 'f_.*'
+  - 'fp_.*'
+  - 'fs_.*'
+  - 'fsp_.*'
+  - 'fg_.*'
+  - 'fsg_.*'
+
+# Classes, templates, interfaces, enumerations and function types, and the
+# fundamental aliases: 'CStr', 'TCVector', 'EFlag', 'umint'.
+TypeNames:
+  - 'C[A-Z].*'
+  - 'TC[A-Z].*'
+  - 'IC[A-Z].*'
+  - 'TIC[A-Z].*'
+  - 'E[A-Z].*'
+  - 'F[A-Z].*'
+  - 'int8'
+  - 'int16'
+  - 'int32'
+  - 'int64'
+  - 'uint8'
+  - 'uint16'
+  - 'uint32'
+  - 'uint64'
+  - 'aint'
+  - 'umint'
+  - 'smint'
+  - 'mint'
+  - 'fp32'
+  - 'fp64'
+  - 'ch8'
+  - 'ch16'
+  - 'ch32'
+  - 'uch8'
+  - 'uch16'
+  - 'uch32'
+  - 'usize'
+  - 'ssize'
+
+# Macros, which can expand to anything: 'DMibCheck', 'DMibTestSuite'.
+MacroNames:
+  - 'D[A-Z].*'
+
+# Macros that stand in front of a declaration the way 'inline' does.
+SpecifierMacros:
+  - 'inline_always'
+  - 'inline_always_debug'
+  - 'inline_always_lto'
+  - 'inline_never'
+  - 'inline_never_debug'
+  - 'inline_never_coro_exception_workaround'
+  - 'inline_small'
+  - 'inline_medium'
+  - 'inline_large'
+  - 'inline_extralarge'
+  - 'mark_nodebug'
+  - 'mark_artificial'
+  - 'mark_no_coroutine_debug'
+  - 'mark_no_stack_protector'
+  - 'assure_used'
+  - 'function_does_not_return'
+  - 'malloc_like'
+  - 'only_parameters_aliased'
+  - 'return_not_aliased'
+
+# The markers of the JSON and command line DSLs: '"Key"_o= 5', '_j[1, 2]'.
+DSLMarkers:
+  - '_[a-z]*'

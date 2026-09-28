@@ -14,7 +14,7 @@ max_line_length = 190
 max_line_length = unset
 
 # YAML indentation must use spaces, including clang configuration files.
-[{*.yaml,*.yml,.clangd,.clang-format}]
+[{*.yaml,*.yml,.clangd,.clang-format,.malterlib-format}]
 indent_style = space
 indent_size = 2
 tab_width = 2
