@@ -4,7 +4,8 @@
 # Malterlib's naming, which the code formatter reads where C++ itself settles
 # nothing. An entry is a name, or a pattern anchored at both ends: '.' is any
 # character, '[A-Z]' a class, and '*' repeats the atom in front of it. Another
-# module's file extends this one, and a list it holds replaces the one here.
+# module's file extends this one; a list it holds replaces the one here, or,
+# written as a mapping holding 'Append', adds to it.
 Version: 1
 
 # Member, private, static and global functions: 'f_Get', 'fg_Hash'.
