@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-# The managed dispatcher records the workspace containing the local MTool.
+# mib records the workspace of this worktree, which holds its MTool, for the dispatcher to export.
 # Preserve Git's environment, especially GIT_INDEX_FILE for partial commits.
 RepoRoot=$(git rev-parse --show-toplevel)
 WorkspaceRoot=${MalterlibHookWorkspaceRoot:-$RepoRoot}
