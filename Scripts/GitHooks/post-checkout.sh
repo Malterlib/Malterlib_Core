@@ -43,12 +43,12 @@ fi
 
 # Run update-repos after branch switch.
 #
-# Prefer the root the dispatcher recorded when mib installed these hooks over
+# Prefer the root mib recorded for this worktree when it installed these hooks over
 # asking git. `git rev-parse --show-toplevel` always reports the fully resolved
 # path, so on a checkout reached through a symlink it would hand mib a different
 # root than an interactive run uses, and everything derived from the root would
 # alternate between the two spellings on every checkout.
-RepoRoot="$MalterlibHookWorkspaceRoot"
+RepoRoot="${MalterlibHookWorkspaceRoot:-}"
 if [ -z "$RepoRoot" ]; then
 	RepoRoot="$(git rev-parse --show-toplevel)"
 fi
