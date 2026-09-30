@@ -78,3 +78,14 @@ SpecifierMacros:
 # The markers of the JSON and command line DSLs: '"Key"_o= 5', '_j[1, 2]'.
 DSLMarkers:
   - '_[a-z]*'
+
+# Macros that never return, such as those that throw, so a case ending in one does not
+# fall through to the next: 'case 1: DMibError("...");'.
+NoReturnMacros:
+  - 'DMibError'
+  - 'DError'
+  - 'DMibError[A-Z].*'
+  - 'DMibImpError'
+  - 'DMibImpErrorSpecific'
+  - 'DMibNeverGetHere'
+  - 'DNeverGetHere'
