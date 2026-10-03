@@ -1373,6 +1373,11 @@ GeneratorSetting
 		, Type: "multiple"
 	}
 
+	Compile_MalterlibTidy =+ {
+		Flags: Compile.MalterlibTidy->f_ClangFlags()
+		, Type: "multiple"
+	}
+
 	Compile_StructMemberAlignment =+ {
 		Flags: Compile.StructMemberAlignment->SwitchWithError(
 			"Unsupported option: "
