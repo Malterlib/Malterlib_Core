@@ -2062,6 +2062,7 @@ Compile
 			Compile.NewDeleteVisibilityHidden undefined
 			MalterlibUseStaticLibCxx true
 			PlatformType "Unix"
+			!Target.DriverType "DriverKit"
 		}
 	}
 
