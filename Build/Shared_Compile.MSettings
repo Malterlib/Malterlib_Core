@@ -3359,6 +3359,7 @@ Compile
 }
 
 Import "Shared_Compile_MalterlibFS.MSettings"
+Import "Shared_Compile_MalterlibTidy.MSettings"
 
 Compile
 {

@@ -1,0 +1,124 @@
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+// The checks of the sources of repositories that set Repository.Tidy.Enabled run in their compile, through the
+// Malterlib checks plugin linked into the Malterlib clang. The .clang-tidy files of the sources choose the
+// checks, as they do for mib tidy and clangd. The rules of every repository, in a file the plugin reads, tell
+// which files a compile checks, as mib tidy does: a source or header is checked when the deepest repository it
+// is in sets Repository.Tidy.Enabled, and its path relative to that repository matches
+// Repository.Tidy.IncludeFiles, if there are any, and not Repository.Tidy.ExcludeFiles. So a compile also
+// reports the headers of other repositories: a problem in a template shows where it is instantiated, which can
+// be in the sources of any repository.
+
+Property
+{
+	// On by default in CI where the bootstrap binaries know Repository.Tidy, which reading it needs: version 6 and later.
+	// mib exports the version it runs with.
+	BootstrapVersion: int = 0
+
+	MalterlibTidyInBuild: bool = RunningCI && BootstrapVersion >= 6 // User(Build System)=false: Run the .clang-tidy checks in the compile of repositories that set Repository.Tidy.Enabled
+
+	f_MalterlibTidyCollectLocation: [string] = [Repository.Location]
+	f_MalterlibTidyCollectLocations function(string _Property) [string]
+	f_MalterlibTidyCollectLocations =+ &f_MalterlibTidyCollectLocation->GetProperty(_Property)
+
+	f_MalterlibTidyCollectCheckedLocation: [string] = []
+	f_MalterlibTidyCollectCheckedLocation [Repository.Location]
+	{
+		!!Repository.Tidy<Enabled> true
+	}
+	f_MalterlibTidyCollectCheckedLocations function(string _Property) [string]
+	f_MalterlibTidyCollectCheckedLocations =+ &f_MalterlibTidyCollectCheckedLocation->GetProperty(_Property)
+
+	// Without dot segments or a trailing separator, as the paths of the sources are spelled.
+	f_MalterlibTidyTrimLocation function(string _Location) [string] = []
+	f_MalterlibTidyTrimLocation =+ _Location->MakeAbsolute()->RemoveSuffix("/")
+
+	// Every repository location, and the locations of the repositories that set Repository.Tidy.Enabled.
+	MalterlibTidyRepositoryLocations: [string] = AllRepositories->ForEach(&f_MalterlibTidyCollectLocations)->ForEach(&f_MalterlibTidyTrimLocation)->Unique()
+	MalterlibTidyCheckedLocations: [string] = AllRepositories->ForEach(&f_MalterlibTidyCollectCheckedLocations)->ForEach(&f_MalterlibTidyTrimLocation)->Unique()
+
+	// The rules of every repository, also of those that don't check their files, which tell what nests in them.
+	f_MalterlibTidyRepositoryRules function(string _Property) [
+		{
+			Location: string
+			, Tidy: {Enabled: bool, IncludeFiles: [string], ExcludeFiles: [string]}
+		}
+	]
+	f_MalterlibTidyRepositoryRules =+ {
+		Location: GetProperty(&Repository.Location, _Property)->MakeAbsolute()->RemoveSuffix("/")
+		, Tidy: GetProperty(&Repository.Tidy, _Property)
+	}
+
+	MalterlibTidyRepositoriesFile: string = GeneratedGlobalDirectory / "MalterlibTidyRepositories.json"
+	MalterlibTidyRepositoryRules: string = AllRepositories->ForEach(&f_MalterlibTidyRepositoryRules)->ToString()
+
+	MalterlibTidyPath: string = ""
+
+	// The location when it holds MalterlibTidyPath.
+	f_MalterlibTidyHoldingLocation function(string _Location) [string] = []
+	f_MalterlibTidyHoldingLocation =+ _Location
+	{
+		!!MalterlibTidyPath->StartsWith(`@(_Location)/`) true
+	}
+
+	// The location of the repository a file is in: of the locations that hold it, which are prefixes of one
+	// another, the deepest sorts last.
+	f_MalterlibTidyRepository function(string _File) string
+	f_MalterlibTidyRepository MalterlibTidyRepositoryLocations->ForEach(&f_MalterlibTidyHoldingLocation, {MalterlibTidyPath: _File})->Sort()->Reverse()->Slice(0, 1)->Join("")
+
+	// The plugin arguments for the sources of a repository: none unless it sets Repository.Tidy.Enabled. The
+	// plugin applies Repository.Tidy.IncludeFiles and ExcludeFiles to the source, and the compile depends on the
+	// rules, so it runs again when they change.
+	f_MalterlibTidyRepositoryFlags function(string _Repository) [string] = []
+	f_MalterlibTidyRepositoryFlags =+ [`-fplugin-arg-malterlib-repositories=@(MalterlibTidyRepositoriesFile)`, `-Xclang`, `-fdepfile-entry=@(MalterlibTidyRepositoriesFile)`]
+	{
+		!!MalterlibTidyCheckedLocations->ContainsListElement(_Repository) true
+	}
+
+	f_MalterlibTidyFlags function(string _File) [string]
+	f_MalterlibTidyFlags _File->f_MalterlibTidyRepository()->f_MalterlibTidyRepositoryFlags()
+}
+
+%GenerateFile "MalterlibTidyRepositories"
+{
+	&
+	{
+		MalterlibTidyInBuild true
+		!MalterlibDefaultCompiler true
+		!GeneratorFamily "VisualStudio"
+	}
+
+	GenerateFile
+	{
+		Group `@(Platform) @(Architecture) @(FullConfiguration)`
+		Name MalterlibTidyRepositoriesFile
+		Contents MalterlibTidyRepositoryRules
+		UnicodeBOM false
+	}
+}
+
+Compile
+{
+	MalterlibTidy: [string]?
+
+	// Only the Malterlib clang has the plugin, and only the Clang generator settings, of the Ninja and Xcode
+	// generators, pass its arguments. The arguments depend on the repository of each source.
+	MalterlibTidy this.IdentityAsAbsolutePath->f_MalterlibTidyFlags()
+	{
+		&
+		{
+			this.Type "File"
+			MalterlibTidyInBuild true
+			!MalterlibDefaultCompiler true
+			!GeneratorFamily "VisualStudio"
+			|
+			{
+				Compile.Type "C"
+				Compile.Type "C++"
+				Compile.Type "ObjC"
+				Compile.Type "ObjC++"
+			}
+		}
+	}
+}
