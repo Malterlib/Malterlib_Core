@@ -28,6 +28,15 @@ Property
 
 	MalterlibBuildSystemGenerateCommand `@(Builtin.MalterlibExe->f_ScriptNativeEscapedPath()) generate --build-system @(Builtin.BuildSystemSourceAbsolute->f_ScriptNativeEscapedPath()) --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->f_ScriptNativeEscapedPath()) --use-cached-environment`
 
+	// The commands below run from the ConfigStore's Bash scripts only, so they are spelled for Bash on every platform. The
+	// generate command is also written into the Windows batch files, in the script language of the platform.
+
+	// mib tidy over the generated build system, which the generate command before it has updated.
+	MalterlibBuildSystemTidyCommand: string
+
+	MalterlibBuildSystemTidyCommand `@(Builtin.MalterlibExe->UnixPath()->EscapeBash()) tidy --build-system @(Builtin.BuildSystemSourceAbsolute->UnixPath()->EscapeBash())`\
+		` --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->UnixPath()->EscapeBash()) --use-cached-environment --skip-update`
+
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibBuildSystemGenerateCommand", MalterlibBuildSystemGenerateCommand))\r\n`
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibDisableBuildSystemGeneration", MalterlibDisableBuildSystemGeneration->ToString()))\r\n`
 }
