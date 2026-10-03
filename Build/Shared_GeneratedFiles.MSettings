@@ -626,6 +626,53 @@ Property
 			Executable true
 		}
 	}
+
+	// Run by the IDE like the build scripts, with the same arguments: TidyWorkspace.sh Workspace Platform Architecture
+	// Configuration BuildSystemDir, and TidyTarget.sh Workspace Target Platform Architecture Configuration
+	// BuildSystemDir. A project that is not built by mib can write its own.
+	%GenerateFile "TidyWorkspace"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/TidyWorkspace.sh`
+
+			Contents `#!/bin/bash\n`\
+			`\n`\
+			`set -e\n`\
+			`\n`
+
+			Contents =+ `@(MalterlibBuildSystemGenerateCommand) --no-signal-changed "$1"\n`
+			{
+				!MalterlibDisableBuildSystemGeneration true
+			}
+
+			Contents =+ `@(MalterlibBuildSystemTidyCommand) --mode all --workspace "$1" --config "$2 $3 $4"\n`
+
+			Executable true
+		}
+	}
+
+	%GenerateFile "TidyTarget"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/TidyTarget.sh`
+
+			Contents `#!/bin/bash\n`\
+			`\n`\
+			`set -e\n`\
+			`\n`
+
+			Contents =+ `@(MalterlibBuildSystemGenerateCommand) --no-signal-changed "$1"\n`
+			{
+				!MalterlibDisableBuildSystemGeneration true
+			}
+
+			Contents =+ `@(MalterlibBuildSystemTidyCommand) --mode target --workspace "$1" --target "$2" --config "$3 $4 $5"\n`
+
+			Executable true
+		}
+	}
 }
 
 Type

@@ -28,6 +28,12 @@ Property
 
 	MalterlibBuildSystemGenerateCommand `@(Builtin.MalterlibExe->f_ScriptNativeEscapedPath()) generate --build-system @(Builtin.BuildSystemSourceAbsolute->f_ScriptNativeEscapedPath()) --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->f_ScriptNativeEscapedPath()) --use-cached-environment`
 
+	// mib tidy over the generated build system, which the generate command before it has updated.
+	MalterlibBuildSystemTidyCommand: string
+
+	MalterlibBuildSystemTidyCommand `@(Builtin.MalterlibExe->f_ScriptNativeEscapedPath()) tidy --build-system @(Builtin.BuildSystemSourceAbsolute->f_ScriptNativeEscapedPath())`\
+		` --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->f_ScriptNativeEscapedPath()) --use-cached-environment --skip-update`
+
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibBuildSystemGenerateCommand", MalterlibBuildSystemGenerateCommand))\r\n`
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibDisableBuildSystemGeneration", MalterlibDisableBuildSystemGeneration->ToString()))\r\n`
 }
