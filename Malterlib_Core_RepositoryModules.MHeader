@@ -17,6 +17,7 @@ Property
 	{
 		Type "Malterlib"
 		Format true
+		Tidy {Enabled: true}
 		Hooks #<"pre-commit"> MalterlibSourcePreCommitHooks
 		{
 			!!MalterlibInstallGitHookHelpers true

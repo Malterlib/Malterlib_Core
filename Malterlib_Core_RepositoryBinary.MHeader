@@ -74,6 +74,7 @@ Property
 		URL MalterlibGitOriginRemote
 		ExcludeFromSeen true
 		Format true
+		Tidy {Enabled: true}
 		Hooks #<"pre-commit"> MalterlibRootPreCommitHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
