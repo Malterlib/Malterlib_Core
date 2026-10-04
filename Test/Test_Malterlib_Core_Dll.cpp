@@ -19,6 +19,30 @@ void __cdecl fg_ValidDestroyModule();
 
 namespace
 {
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibSanitizerEnabled_Address) && !defined(DMibSanitizerEnabled_Thread)
+	NMib::NAtomic::TCAtomic<umint> g_nCountedThreadLocalsDestroyed{0};
+
+	struct CCountedThreadLocal
+	{
+		~CCountedThreadLocal()
+		{
+			++g_nCountedThreadLocalsDestroyed;
+		}
+
+		umint m_Value = 0;
+	};
+
+	NMib::NThread::TCThreadLocal<CCountedThreadLocal> g_CountedThreadLocal;
+
+	void *fg_LookedUpPThreadCreateThread(void *)
+	{
+		g_CountedThreadLocal->m_Value = 1;
+		delete (new umint);
+
+		return nullptr;
+	}
+#endif
+
 #if (defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)) && !defined(DMibSanitizerEnabled_Thread)
 	// Unloading waits for the threads already in pthread's exit path to leave it, so what the host
 	// does while its threads exit decides whether an unload can finish at all
@@ -507,6 +531,73 @@ namespace
 #endif
 			};
 #endif
+#endif
+#if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibSanitizerEnabled_Address) && !defined(DMibSanitizerEnabled_Thread)
+			// Libraries that look pthread_create up in a library, as the drivers of NVIDIA do, get the one that tells
+			// Malterlib about the threads, and every other lookup is resolved for the library that made it
+			DMibTestSuite("Looked up pthread_create")
+			{
+				// Malterlib needs glibc 2.34 or later, where libc has the functions of libdl and libpthread
+				void *pLibC = dlopen("libc.so.6", RTLD_NOW | RTLD_NOLOAD);
+				DMibTest(DMibExpr(pLibC))(ETest_FailAndStop);
+				auto Cleanup = NMib::g_OnScopeExit / [&]
+					{
+						dlclose(pLibC);
+					}
+				;
+
+				// The executable defines dlsym where Malterlib replaces malloc, which this file is not told
+				if (dlsym(RTLD_DEFAULT, "dlsym") == dlsym(pLibC, "dlsym"))
+				{
+					DMibConOut("Skipping looked up pthread_create: Malterlib does not replace malloc in this build\n");
+					return;
+				}
+
+				// A library that is preloaded with a pthread_create of its own is what Malterlib calls, and a lookup of the one of
+				// libc is not replaced then
+				Dl_info NextInfo;
+				Dl_info LibCInfo;
+				if
+				(
+					!dladdr(dlsym(RTLD_NEXT, "pthread_create"), &NextInfo)
+					|| !dladdr(reinterpret_cast<void *>(&dlclose), &LibCInfo)
+					|| NextInfo.dli_fbase != LibCInfo.dli_fbase
+				)
+				{
+					DMibConOut("Skipping looked up pthread_create: A preloaded library has pthread_create\n");
+					return;
+				}
+
+				void *pPThreadLibrary = pLibC;
+				char const *pVersion = "GLIBC_2.34"; // The version that dlsym gives
+
+				// A lookup that succeeds clears what dlerror reports, also when it is replaced
+				DMibExpect(dlsym(pPThreadLibrary, "fg_TestMissingFunction"), ==, static_cast<void *>(nullptr));
+				void *pLookedUp = dlsym(pPThreadLibrary, "pthread_create");
+				DMibTest(DMibExpr(pLookedUp) == DMibExpr(reinterpret_cast<void *>(&pthread_create)))(ETest_FailAndStop);
+				DMibExpect(dlerror(), ==, static_cast<char *>(nullptr));
+				DMibExpect(dlvsym(pPThreadLibrary, "pthread_create", pVersion), ==, reinterpret_cast<void *>(&pthread_create));
+				DMibExpect(dlvsym(pPThreadLibrary, "pthread_create", "GLIBC_0.0"), ==, static_cast<void *>(nullptr)); // Only the version that dlsym gives
+				DMibExpect(dlsym(RTLD_NEXT, "pthread_create"), !=, reinterpret_cast<void *>(&pthread_create));
+
+				umint nDestroyedBefore = g_nCountedThreadLocalsDestroyed.f_Load();
+				pthread_t Thread;
+				auto fCreate = reinterpret_cast<decltype(&pthread_create)>(pLookedUp);
+				DMibTest(DMibExpr(fCreate(&Thread, nullptr, &fg_LookedUpPThreadCreateThread, nullptr)) == DMibExpr(0))(ETest_FailAndStop);
+				pthread_join(Thread, nullptr);
+				DMibExpect(g_nCountedThreadLocalsDestroyed.f_Load(), ==, nDestroyedBefore + 1);
+
+				// Loaded into the global scope, which is after the executable, so a lookup that the dynamic linker sees as made
+				// by the executable finds the function of the library, and one made by the library finds nothing
+				void *pDll = dlopen(DllPath.f_GetStr(), RTLD_NOW | RTLD_GLOBAL);
+				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
+				void *(*fLookUpNext)() = nullptr;
+				(void * &)fLookUpNext = dlsym(pDll, "fg_TestLookUpNextOfThisFunction");
+				DMibTest(DMibExpr(fLookUpNext))(ETest_FailAndStop);
+				DMibExpect(dlsym(RTLD_NEXT, "fg_TestLookUpNextOfThisFunction"), ==, reinterpret_cast<void *>(fLookUpNext));
+				DMibExpect(fLookUpNext(), ==, static_cast<void *>(nullptr));
+				dlclose(pDll);
+			};
 #endif
 			DMibTestSuite(CTestCategory("Performance") << CTestGroup("Performance"))
 			{

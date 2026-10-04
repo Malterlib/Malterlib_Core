@@ -346,6 +346,219 @@ extern "C" assure_used module_export int pthread_create
 	return Result;
 }
 
+// Threads that Malterlib does not know about only fail where its memory manager replaces malloc. Sanitizers replace
+// malloc themselves, and look symbols up while they initialize, before what this calls can run
+#if defined(DMibConfig_OverrideSystemMalloc) && !defined(DMibSanitizerEnabled_Address) && !defined(DMibSanitizerEnabled_Thread)
+namespace
+{
+	using FDlsym = void *(void *__restrict _pHandle, char const *__restrict _pName) noexcept;
+	using FDlvsym = void *(void *__restrict _pHandle, char const *__restrict _pName, char const *__restrict _pVersion) noexcept;
+
+	constinit NAtomic::TCAtomic<FDlsym *> g_fRealDlsym{nullptr};
+	constinit NAtomic::TCAtomic<FDlvsym *> g_fRealDlvsym{nullptr};
+
+	// The dynamic linker relocates the addresses in the dynamic section in place on most architectures, and leaves
+	// them relative to the library on some
+	ElfW(Addr) fg_GetDynamicAddress(dl_phdr_info const &_Info, ElfW(Addr) _Address)
+	{
+		return _Address < _Info.dlpi_addr ? _Address + _Info.dlpi_addr : _Address;
+	}
+
+	// The default version of a function that a library defines, found in its hash table, since dlsym is what is being
+	// found
+	void *fg_FindDefinedFunction(dl_phdr_info const &_Info, char const *_pName)
+	{
+		ElfW(Dyn) const *pDynamic = nullptr;
+		for (umint iHeader = 0; iHeader < _Info.dlpi_phnum; ++iHeader)
+		{
+			if (_Info.dlpi_phdr[iHeader].p_type == PT_DYNAMIC)
+				pDynamic = reinterpret_cast<ElfW(Dyn) const *>(_Info.dlpi_addr + _Info.dlpi_phdr[iHeader].p_vaddr);
+		}
+
+		if (!pDynamic)
+			return nullptr;
+
+		uint32 const *pGnuHash = nullptr;
+		ElfW(Word) const *pHash = nullptr;
+		ElfW(Sym) const *pSymbols = nullptr;
+		char const *pStrings = nullptr;
+		ElfW(Half) const *pVersions = nullptr;
+		for (auto *pEntry = pDynamic; pEntry->d_tag != DT_NULL; ++pEntry)
+		{
+			switch (pEntry->d_tag)
+			{
+			case DT_GNU_HASH: pGnuHash = reinterpret_cast<uint32 const *>(fg_GetDynamicAddress(_Info, pEntry->d_un.d_ptr)); break;
+			case DT_HASH: pHash = reinterpret_cast<ElfW(Word) const *>(fg_GetDynamicAddress(_Info, pEntry->d_un.d_ptr)); break;
+			case DT_SYMTAB: pSymbols = reinterpret_cast<ElfW(Sym) const *>(fg_GetDynamicAddress(_Info, pEntry->d_un.d_ptr)); break;
+			case DT_STRTAB: pStrings = reinterpret_cast<char const *>(fg_GetDynamicAddress(_Info, pEntry->d_un.d_ptr)); break;
+			case DT_VERSYM: pVersions = reinterpret_cast<ElfW(Half) const *>(fg_GetDynamicAddress(_Info, pEntry->d_un.d_ptr)); break;
+			}
+		}
+
+		if (!pSymbols || !pStrings)
+			return nullptr;
+
+		// The high bit of the version hides versions that are not the default one
+		auto fIsDefinedFunction = [&](uint32 _iSymbol)
+			{
+				auto &Symbol = pSymbols[_iSymbol];
+
+				return ELF64_ST_TYPE(Symbol.st_info) == STT_FUNC
+					&& Symbol.st_shndx != SHN_UNDEF
+					&& (!pVersions || (pVersions[_iSymbol] & 0x8000) == 0)
+					&& strcmp(pStrings + Symbol.st_name, _pName) == 0
+				;
+			}
+		;
+
+		// Libraries without a GNU hash table have the hash table of System V, whose chain has an entry for each symbol
+		if (!pGnuHash || !pGnuHash[0])
+		{
+			if (!pHash)
+				return nullptr;
+
+			ElfW(Word) nSymbols = pHash[1];
+			for (ElfW(Word) iSymbol = 0; iSymbol < nSymbols; ++iSymbol)
+			{
+				if (fIsDefinedFunction(iSymbol))
+					return reinterpret_cast<void *>(_Info.dlpi_addr + pSymbols[iSymbol].st_value);
+			}
+
+			return nullptr;
+		}
+
+		uint32 nBuckets = pGnuHash[0];
+		uint32 iFirstSymbol = pGnuHash[1];
+		uint32 nBloomWords = pGnuHash[2];
+		auto *pBuckets = reinterpret_cast<uint32 const *>(reinterpret_cast<ElfW(Addr) const *>(pGnuHash + 4) + nBloomWords);
+		auto *pChain = pBuckets + nBuckets;
+
+		uint32 Hash = 5381;
+		for (char const *pCharacter = _pName; *pCharacter; ++pCharacter)
+			Hash = Hash * 33 + uint8(*pCharacter);
+
+		uint32 iSymbol = pBuckets[Hash % nBuckets];
+		if (iSymbol < iFirstSymbol)
+			return nullptr;
+
+		for (;; ++iSymbol)
+		{
+			uint32 ChainHash = pChain[iSymbol - iFirstSymbol];
+			if ((ChainHash | 1) == (Hash | 1) && fIsDefinedFunction(iSymbol))
+				return reinterpret_cast<void *>(_Info.dlpi_addr + pSymbols[iSymbol].st_value);
+
+			if (ChainHash & 1)
+				return nullptr;
+		}
+	}
+
+	// The next definition of the function after the executable in the order that the libraries were loaded, which is what
+	// RTLD_NEXT finds from the executable: one that a preloaded library interposes, or the one of libc, whatever its file is
+	// named. Malterlib needs glibc 2.34 or later, where libc has the functions of libdl and libpthread
+	[[nodiscard]] void *fg_FindRealDynamicLinkerFunction(char const *_pName)
+	{
+		struct CFind
+		{
+			char const *m_pName;
+			void *m_pFunction = nullptr;
+			bool m_bExecutable = true;
+		};
+
+		CFind Find{.m_pName = _pName};
+
+		dl_iterate_phdr
+			(
+				[](dl_phdr_info *_pInfo, size_t, void *_pContext) -> int
+				{
+					auto &Find = *static_cast<CFind *>(_pContext);
+
+					// The executable comes first, and has the functions that are looked for
+					if (Find.m_bExecutable)
+					{
+						Find.m_bExecutable = false;
+						return 0;
+					}
+
+					Find.m_pFunction = fg_FindDefinedFunction(*_pInfo, Find.m_pName);
+					return Find.m_pFunction ? 1 : 0;
+				}
+				, &Find
+			)
+		;
+
+		if (Find.m_pFunction)
+			return Find.m_pFunction;
+
+		// The process cannot look up symbols without them
+		std::abort();
+	}
+
+	FDlsym *fg_GetRealDlsym()
+	{
+		auto *fReal = g_fRealDlsym.f_Load(NAtomic::gc_MemoryOrder_Relaxed);
+		if (fReal)
+			return fReal;
+
+		fReal = reinterpret_cast<FDlsym *>(fg_FindRealDynamicLinkerFunction("dlsym"));
+		g_fRealDlsym.f_Store(fReal, NAtomic::gc_MemoryOrder_Relaxed);
+		return fReal;
+	}
+
+	FDlvsym *fg_GetRealDlvsym()
+	{
+		auto *fReal = g_fRealDlvsym.f_Load(NAtomic::gc_MemoryOrder_Relaxed);
+		if (fReal)
+			return fReal;
+
+		fReal = reinterpret_cast<FDlvsym *>(fg_FindRealDynamicLinkerFunction("dlvsym"));
+		g_fRealDlvsym.f_Store(fReal, NAtomic::gc_MemoryOrder_Relaxed);
+		return fReal;
+	}
+
+	// RTLD_NEXT is how a library that interposes pthread_create finds the one it wraps, and RTLD_DEFAULT finds ours
+	// already. A library that looks pthread_create up in a library of its own choosing gets ours, as if it had
+	// imported it
+	bool fg_IsPThreadCreateLookup(void *_pHandle, char const *_pName)
+	{
+		return _pHandle != RTLD_NEXT && _pHandle != RTLD_DEFAULT && _pName && strcmp(_pName, "pthread_create") == 0;
+	}
+
+	// Only what ours calls is replaced, which is the one of a library that interposes pthread_create, or the default
+	// version of glibc. A library that interposes it, and finds the one of glibc in its library, would otherwise get ours,
+	// which calls it, and the two would call each other. Older versions take attributes of other sizes, which glibc
+	// converts. Nothing is replaced before Malterlib has found what ours calls
+	void *fg_ReplacePThreadCreate(void *_pFound)
+	{
+		return _pFound && _pFound == reinterpret_cast<void *>(NLocal::g_f_pthread_create) ? reinterpret_cast<void *>(&pthread_create) : _pFound;
+	}
+}
+
+// Libraries that look pthread_create up, as the drivers of NVIDIA do, would otherwise create threads that Malterlib
+// does not know about, and that use its memory manager without thread locals. Everything else is passed on as a tail
+// call, so the dynamic linker sees the address that the caller returns to, which RTLD_NEXT is resolved from
+extern "C" assure_used module_export void *dlsym(void *__restrict _pHandle, char const *__restrict _pName) noexcept
+{
+	FDlsym *fReal = fg_GetRealDlsym();
+
+	// The lookup is made, so that what dlerror reports is what it reports for a lookup that was not replaced
+	if (fg_IsPThreadCreateLookup(_pHandle, _pName))
+		return fg_ReplacePThreadCreate(fReal(_pHandle, _pName));
+
+	[[clang::musttail]] return fReal(_pHandle, _pName);
+}
+
+// A lookup in a library of its own choosing does not depend on the caller, so it is made here
+extern "C" assure_used module_export void *dlvsym(void *__restrict _pHandle, char const *__restrict _pName, char const *__restrict _pVersion) noexcept
+{
+	FDlvsym *fReal = fg_GetRealDlvsym();
+
+	if (fg_IsPThreadCreateLookup(_pHandle, _pName))
+		return fg_ReplacePThreadCreate(fReal(_pHandle, _pName, _pVersion));
+
+	[[clang::musttail]] return fReal(_pHandle, _pName, _pVersion);
+}
+#endif
+
 void DMibCrossmoduleAPI fg_ThreadNotificationRegister(NSys::NPrivate::CThreadNotificationModule *_pModule)
 {
 	if (g_bSysDeleted)

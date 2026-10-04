@@ -5,6 +5,7 @@
 
 #ifdef DPlatformFamily_Linux
 #include <pthread.h>
+#include <dlfcn.h>
 #endif
 
 DMibAppNoClass;
@@ -49,6 +50,13 @@ extern "C"
 	module_export void calling_convention_c fg_TestConstructThreadLocalWithDestructor(umint *_pDestroyedOnThread)
 	{
 		g_ThreadLocalWithDestructor.m_pDestroyedOnThread = _pDestroyedOnThread;
+	}
+
+	// Nothing that this library depends on defines this function, so the lookup finds nothing when the dynamic linker
+	// sees this library as the caller. A tail call would make the caller of this function the caller of dlsym
+	[[clang::disable_tail_calls]] module_export void * calling_convention_c fg_TestLookUpNextOfThisFunction()
+	{
+		return dlsym(RTLD_NEXT, "fg_TestLookUpNextOfThisFunction");
 	}
 #endif
 

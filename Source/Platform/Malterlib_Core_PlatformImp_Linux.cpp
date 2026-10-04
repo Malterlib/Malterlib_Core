@@ -21,6 +21,7 @@
 #include <Mib/Core/PlatformSpecific/PosixUser>
 
 #include <malloc.h>
+#include <link.h>
 #include <unwind.h>
 #include <linux/futex.h>
 #include <unistd.h>
@@ -1263,8 +1264,6 @@ namespace NMib
 	}
 
 } // Namespace NMib
-
-#include <link.h>
 
 using namespace NFunction;
 namespace
