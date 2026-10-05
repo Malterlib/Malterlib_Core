@@ -190,6 +190,14 @@ Property
 			EnableArchitecture_x86 true
 		}
 	}
+	MalterlibBinaryLLVMRepositories =+ "MalterlibLLVMBinaries_Linux_arm64"
+	{
+		&
+		{
+			EnablePlatformFamily_Linux true
+			EnableArchitecture_arm64 true
+		}
+	}
 }
 
 Property
