@@ -79,28 +79,53 @@ Property
 
 Property
 {
+	// Host tools build for the host, whatever this build system builds for
 	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_Ubuntu_x64"
 	{
-		&
+		|
 		{
-			EnablePlatform_Linux true
-			EnableArchitecture_x64 true
+			&
+			{
+				EnablePlatform_Linux true
+				EnableArchitecture_x64 true
+			}
+			&
+			{
+				HostPlatformFamily "Linux"
+				HostArchitecture "x64"
+			}
 		}
 	}
 	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_Ubuntu_arm64"
 	{
-		&
+		|
 		{
-			EnablePlatform_Linux true
-			EnableArchitecture_arm64 true
+			&
+			{
+				EnablePlatform_Linux true
+				EnableArchitecture_arm64 true
+			}
+			&
+			{
+				HostPlatformFamily "Linux"
+				HostArchitecture "arm64"
+			}
 		}
 	}
 	MalterlibBinarySDKRepositories =+ "MalterlibBinariesSDK_Linux_Debian_x86"
 	{
-		&
+		|
 		{
-			EnablePlatform_Linux true
-			EnableArchitecture_x86 true
+			&
+			{
+				EnablePlatform_Linux true
+				EnableArchitecture_x86 true
+			}
+			&
+			{
+				HostPlatformFamily "Linux"
+				HostArchitecture "x86"
+			}
 		}
 	}
 

@@ -27,7 +27,7 @@ Property
 	MalterlibDoingProductBuild: bool = false
 
 	BUILDSERVER: bool = false
-	MalterlibBuildServerBuild: bool = BUILDSERVER
+	MalterlibBuildServerBuild: bool = BUILDSERVER && !MalterlibHostToolsBuildSystem // Host tools are built and deployed as on any host
 	RunningCI: bool = false
 	MalterlibBuildSigning: bool = MalterlibBuildServerBuild
 	MalterlibBuildServerTest: bool = false
@@ -351,7 +351,7 @@ Property
 			PlatformFamily "Windows"
 		}
 	}
-	MalterlibDisableBuildSystemGeneration: bool = MalterlibBuildServerBuild
+	MalterlibDisableBuildSystemGeneration: bool = MalterlibBuildServerBuild || MalterlibHostToolsBuildSystem // The builds that run the host tools generate them
 	MalterlibEnableBreakpadUploader: bool = false
 	MalterlibClangVersion: string = "23.1"
 	MalterlibClangVersionMajor: string = MalterlibClangVersion->ParseFormatString("{}.{}", "{0}")

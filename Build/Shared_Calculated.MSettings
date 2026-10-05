@@ -513,7 +513,7 @@ Property
 		}
 	}
 
-	MalterlibReproducibleBuild: bool = false // User(Build System)=true: Set to true to enable reproducible builds, setting dates to a known value
+	MalterlibReproducibleBuild: bool = MalterlibHostToolsBuildSystem // User(Build System)=true: Set to true to enable reproducible builds, setting dates to a known value
 
 	CurrentTimeVersionString: string = DateTime("{YYYY}/{MM}/{DD} {HH}:{MNMN}:{SS}")
 

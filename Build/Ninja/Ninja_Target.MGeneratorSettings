@@ -7,12 +7,14 @@ Property
 	MalterlibThreadsPerLTOLink: int = 4
 }
 
+// HostToolsPool builds one group of host tools at a time, since builds of the same build system use the same build directory
 Workspace
 {
 	PoolDepths: {
 		...: int
 	} = {
 		LTOLinkPool: Clamp((HostSystemInfo<PhysicalMemoryMiB> / MalterlibMemoryPerLTOLink)->AsInteger(), 1, Max(HostSystemInfo<PhysicalThreads> / MalterlibThreadsPerLTOLink, 1))
+		, HostToolsPool: 1
 	}
 }
 
@@ -608,6 +610,9 @@ GeneratorSetting
 	Target_Type #<Rule.build_priority> Target.BuildPriority->ToString()
 
 	Target_Type #<Rule.environment> += Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
+	{
+		!Target.CommandLine_TargetEnvironment false
+	}
 	Target_Type #<Rule.environment> += {
 		PATH: `@(Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
 	}
@@ -616,6 +621,7 @@ GeneratorSetting
 		{
 			!Target.ToolPath undefined
 			!Target.ToolPath []
+			!Target.CommandLine_TargetEnvironment false
 		}
 	}
 
@@ -757,6 +763,11 @@ GeneratorSetting
 	Target_CommandLine_Inputs #<Build.implicit_dependencies> =+ Target.CommandLine_Inputs
 	Target_CommandLine_Outputs #<Build.outputs> =+ Target.CommandLine_Outputs
 	Target_CommandLine_IsGenerator #<Rule.generator> Target.CommandLine_IsGenerator
+	Target_CommandLine_Pool #<Rule.pool> Target.CommandLine_Pool
+	{
+		!Target.CommandLine_Pool undefined
+	}
+	Target_CommandLine_TargetEnvironment {}
 
 	Target_CommandLine_ReBuild {}
 	Target_CommandLine_Clean {}
@@ -908,6 +919,9 @@ GeneratorSetting
 
 	Target_SDKRoot #<Rule.environment> =+ {
 		"SDKROOT": Target.SDKRoot->GeneratorSetting.f_GetSDKPath()
+	}
+	{
+		!Target.CommandLine_TargetEnvironment false
 	}
 
 	// Only used for plist auto generation, not part of link command line
@@ -1370,9 +1384,15 @@ GeneratorSetting
 	Target_QtToolsRoot #<Rule.environment> =+ {
 		"QT_TOOLS_ROOT": Target.QtToolsRoot
 	}
+	{
+		!Target.CommandLine_TargetEnvironment false
+	}
 
 	Target_QtIncludeRoot #<Rule.environment> =+ {
 		"QT_INCLUDE_ROOT": Target.QtIncludeRoot
+	}
+	{
+		!Target.CommandLine_TargetEnvironment false
 	}
 
 	// -object_path_lto is macOS ld64-specific, not supported by lld on Linux

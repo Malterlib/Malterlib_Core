@@ -1,0 +1,67 @@
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+Property
+{
+	MalterlibHostTools: [type(CEntity)] = []
+}
+
+%Workspace "HostTools"
+{
+	!!MalterlibHostToolsBuildSystem true
+
+	Property.MalterlibPostCopyProject "Binaries"
+	{
+		!!TargetIsExecutable true
+	}
+
+	%Group "Tools"
+	{
+		%Target MalterlibHostTools
+	}
+}
+
+Property
+{
+	HostToolsTargets: [string]? // The host tools that a Tool target builds, as a group, in the build system of host tools
+
+	// A Bash command. It generates the host tools from the environment that it runs in, which ninja gives as the environment of
+	// the build system without that of the target, so that the build running them decides their environment. Their build
+	// system does not generate itself (MalterlibDisableBuildSystemGeneration), so the build that follows does not generate
+	// again. The host tools are built for the host whatever configuration that build builds, so the settings that select a
+	// configuration or disable its generation are not passed on. The build system file is, since a checkout can have several.
+	// It waits for another build of host tools also when no ninja runs it
+	MalterlibHostToolsBuildCommand: string = `cd "@(Builtin.BasePathAbsolute)"`\
+		` && unset SinglePlatform SingleArchitecture SingleConfiguration MalterlibDisableBuildSystemGeneration`\
+		` && export Malterlib_BuildSystem="@(Builtin.BuildSystemSourceAbsolute)"`\
+		` && ./mib generate --build-system "@(Builtin.BuildSystemSourceAbsolute)" --generator Ninja`\
+		` --output-directory "@(MalterlibHostToolsBuildSystemDir)" --no-use-cached-environment --skip-update --no-signal-changed HostTools`\
+		` && ./mib build-target --wait-for-lock --output-directory "@(MalterlibHostToolsBuildSystemDir)" HostTools "@(HostToolsTargets->Join(","))"`
+}
+
+// A build of host tools is a no-op when they have not changed, and restat leaves what runs them alone then
+Target
+{
+	&
+	{
+		Target.Type "Tool"
+		!HostToolsTargets undefined
+	}
+
+	CommandLine_Build MalterlibHostToolsBuildCommand
+	CommandLine_Pool "HostToolsPool"
+	CommandLine_TargetEnvironment false
+}
+
+// Visual Studio runs the commands of tools with cmd.exe
+Target
+{
+	&
+	{
+		Target.Type "Tool"
+		!HostToolsTargets undefined
+		!BashScriptPrefix ""
+	}
+
+	CommandLine_Build `@(BashScriptPrefix)-c @(MalterlibHostToolsBuildCommand->EscapeWindows())`
+}

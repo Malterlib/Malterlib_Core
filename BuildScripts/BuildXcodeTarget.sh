@@ -9,7 +9,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/DetectSystem.sh"
 
-source ./BuildSystem/SharedBuildSettings.sh
+# The settings are those of the build system that the arguments name, when they do
+if [ -n "${6:-}" ]; then
+	export MalterlibBuildSystemDir="$6"
+fi
+
+source "$DIR/BuildSystemSettings.sh"
+BuildSystemRefuseImportCaches
 
 export "PATH=/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:$PATH"
 
@@ -21,7 +27,7 @@ source "$DIR/ResolveConfig.sh"
 Platform="${3:-$MalterlibDefaultPlatform}"
 Architecture="${4:-$MalterlibDefaultArchitecture}"
 Config="${5:-$MalterlibDefaultConfiguration}"
-BuildSystemDir="${6:-${MalterlibGeneratedBuildSystemDir:-BuildSystem/Default}}"
+BuildSystemDir="${6:-${MalterlibGeneratedBuildSystemDir:-$MalterlibBuildSystemDir}}"
 
 IFS=',' read -r -a Targets <<< "$TargetList"
 

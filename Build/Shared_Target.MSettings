@@ -597,6 +597,8 @@ Target
 	CommandLine_Outputs: [string]?
 	CommandLine_IsGenerator: bool?
 	CommandLine_AlwaysDirty: bool = true
+	CommandLine_Pool: string? // The ninja pool that the command runs in, of Workspace.PoolDepths
+	CommandLine_TargetEnvironment: bool = true // Ninja runs the command with the environment of the target, as its platform and SDK, too
 
 	CommandLine_Outputs [ToolBuildOutputFile]
 	{
@@ -2922,6 +2924,14 @@ Property
 	}
 
 	MalterlibEnableLinkTimeCodeGeneration: one_of(bool, "Fast") = false
+	MalterlibEnableLinkTimeCodeGeneration false
+	{
+		&
+		{
+			MalterlibEnableLinkTimeCodeGeneration undefined
+			MalterlibHostToolsBuildSystem true
+		}
+	}
 	MalterlibEnableLinkTimeCodeGeneration true
 	{
 		&
@@ -3010,7 +3020,7 @@ Target.Version: string?
 Target
 {
 	!!TargetIsExecutable true
-	Version `@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision)`
+	Version `@(MalterlibCompiledVersionMajor).@(MalterlibCompiledVersionMinor)@(MalterlibCompiledVersionRevision)`
 
 	GenerateDebugInformation: one_of(bool, "DebugFastLink")?
 	GenerateDebugInformation MalterlibDebugSymbolsEnable
@@ -4340,9 +4350,9 @@ Property
 						`	<key>CFBundleInfoDictionaryVersion</key>\n`\
 						`		<string>6.0</string>\n`\
 						`	<key>CFBundleVersion</key>\n`\
-						`		<string>@(ProductVersionMajor->ToString()).@(ProductVersionMinor->ToString()).@(ProductVersionRevision->ToString())</string>\n`\
+						`		<string>@(MalterlibCompiledVersionMajor->ToString()).@(MalterlibCompiledVersionMinor->ToString()).@(MalterlibCompiledVersionRevision->ToString())</string>\n`\
 						`	<key>CFBundleShortVersionString</key>\n`\
-						`		<string>@(ProductVersionMajor->ToString()).@(ProductVersionMinor->ToString()).@(ProductVersionRevision->ToString())</string>\n`\
+						`		<string>@(MalterlibCompiledVersionMajor->ToString()).@(MalterlibCompiledVersionMinor->ToString()).@(MalterlibCompiledVersionRevision->ToString())</string>\n`\
 						`	<key>CFBundleName</key>\n`\
 						`		<string>@(MalterlibTargetFriendlyName)</string>\n`
 
@@ -4363,11 +4373,11 @@ Property
 						`	<key>BuildTime</key>\n`\
 						`		<string>@(CurrentMalterlibTime)</string>\n`\
 						`	<key>ProductVersionMajor</key>\n`\
-						`		<string>@(ProductVersionMajor)</string>\n`\
+						`		<string>@(MalterlibCompiledVersionMajor)</string>\n`\
 						`	<key>ProductVersionMinor</key>\n`\
-						`		<string>@(ProductVersionMinor)</string>\n`\
+						`		<string>@(MalterlibCompiledVersionMinor)</string>\n`\
 						`	<key>ProductVersionRevision</key>\n`\
-						`		<string>@(ProductVersionRevision)</string>\n`\
+						`		<string>@(MalterlibCompiledVersionRevision)</string>\n`\
 						`	<key>ProductVersionExtra</key>\n`\
 						`		<string>@(ProductVersionExtra)</string>\n`\
 						`	<key>CFBundlePackageType</key>\n`\
@@ -4569,9 +4579,9 @@ Property
 						`@(`MalterlibGitBranch=@(MalterlibGitBranch || "")\n`->EJSONToString())\n`\
 						`@(`MalterlibGitCommit=@(MalterlibGitCommit || "")\n`->EJSONToString())\n`\
 						`@(`BuildTime=@(CurrentMalterlibTime)\n`->EJSONToString())\n`\
-						`@(`ProductVersionMajor=@(ProductVersionMajor)\n`->EJSONToString())\n`\
-						`@(`ProductVersionMinor=@(ProductVersionMinor)\n`->EJSONToString())\n`\
-						`@(`ProductVersionRevision=@(ProductVersionRevision)\n`->EJSONToString())\n`\
+						`@(`ProductVersionMajor=@(MalterlibCompiledVersionMajor)\n`->EJSONToString())\n`\
+						`@(`ProductVersionMinor=@(MalterlibCompiledVersionMinor)\n`->EJSONToString())\n`\
+						`@(`ProductVersionRevision=@(MalterlibCompiledVersionRevision)\n`->EJSONToString())\n`\
 						`@(`ProductVersionExtra=@(ProductVersionExtra)\n`->EJSONToString());\n`
 
 			UnicodeBOM true
@@ -4588,7 +4598,7 @@ Property
 
 			Contents	`[Desktop Entry]\n`\
 						`Name=@(MalterlibTargetFriendlyName)\n`\
-						`Version=@(ProductVersionMajor->ToString()).@(ProductVersionMinor->ToString()).@(ProductVersionRevision->ToString())\n`\
+						`Version=@(MalterlibCompiledVersionMajor->ToString()).@(MalterlibCompiledVersionMinor->ToString()).@(MalterlibCompiledVersionRevision->ToString())\n`\
 						`Type=Application\n`
 
 			Contents =+	`Icon=@(MalterlibDeployRoot)/@(MalterlibCalculatedPostCopyProject)/@(MalterlibExeIcon->GetFile())\n`
@@ -4664,8 +4674,8 @@ Property
 								`[assembly: AssemblyCulture("")]\r\n`\
 								`[assembly: ComVisible(false)]\r\n`\
 								`[assembly: Guid(@(CalcGUID->Escape()))]\r\n`\
-								`[assembly: AssemblyFileVersion(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))]\r\n`\
-								`[assembly: AssemblyVersion(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))]\r\n`\
+								`[assembly: AssemblyFileVersion(@(`@(MalterlibCompiledVersionMajor).@(MalterlibCompiledVersionMinor).@(MalterlibCompiledVersionRevision).0`->Escape()))]\r\n`\
+								`[assembly: AssemblyVersion(@(`@(MalterlibCompiledVersionMajor).@(MalterlibCompiledVersionMinor).@(MalterlibCompiledVersionRevision).0`->Escape()))]\r\n`\
 								`@(MalterlibExtraAssemblyInfo)`\
 								`#endif\r\n`
 
@@ -4745,8 +4755,8 @@ Property
 								`[assembly:ComVisible(false)];\r\n`\
 								`[assembly:Guid(@(CalcGUID->Escape()))];\r\n`\
 								`[assembly:CLSCompliantAttribute(true)];\r\n`\
-								`[assembly:AssemblyFileVersionAttribute(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))];\r\n`\
-								`[assembly:AssemblyVersionAttribute(@(`@(ProductVersionMajor).@(ProductVersionMinor).@(ProductVersionRevision).0`->Escape()))];\r\n`\
+								`[assembly:AssemblyFileVersionAttribute(@(`@(MalterlibCompiledVersionMajor).@(MalterlibCompiledVersionMinor).@(MalterlibCompiledVersionRevision).0`->Escape()))];\r\n`\
+								`[assembly:AssemblyVersionAttribute(@(`@(MalterlibCompiledVersionMajor).@(MalterlibCompiledVersionMinor).@(MalterlibCompiledVersionRevision).0`->Escape()))];\r\n`\
 								`#pragma warning(disable:4947) // Request minimum deprecated in .NET 4.0\r\n`\
 								`[assembly:SecurityPermission(SecurityAction::RequestMinimum, UnmanagedCode = true)];\r\n`\
 								`@(MalterlibExtraAssemblyInfo)`
@@ -4813,8 +4823,8 @@ Property
 
 					Contents =+	`#include "winres.h"\r\n`\
 								`VS_VERSION_INFO VERSIONINFO\r\n`\
-								` FILEVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision->AsInteger()->ToString()),0\r\n`\
-								` PRODUCTVERSION @(ProductVersionMajor),@(ProductVersionMinor),@(ProductVersionRevision->AsInteger()->ToString()),0\r\n`\
+								` FILEVERSION @(MalterlibCompiledVersionMajor),@(MalterlibCompiledVersionMinor),@(MalterlibCompiledVersionRevision->AsInteger()->ToString()),0\r\n`\
+								` PRODUCTVERSION @(MalterlibCompiledVersionMajor),@(MalterlibCompiledVersionMinor),@(MalterlibCompiledVersionRevision->AsInteger()->ToString()),0\r\n`\
 								` FILEFLAGSMASK 0x17L\r\n`\
 								`#ifdef _DEBUG\r\n`\
 								` FILEFLAGS VS_FF_DEBUG | VS_FF_PRIVATEBUILD\r\n`\
@@ -4831,12 +4841,12 @@ Property
 								`		BEGIN\r\n`\
 								`			VALUE "CompanyName", @(ProductCompany->Escape())\r\n`\
 								`			VALUE "FileDescription", @(ProductDescription->Escape())\r\n`\
-								`			VALUE "FileVersion", @(`@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)`->Escape())\r\n`\
+								`			VALUE "FileVersion", @(`@(MalterlibCompiledVersionMajor).@(MalterlibCompiledVersionMinor)@(MalterlibCompiledVersionRevision) @(ProductVersionExtra)`->Escape())\r\n`\
 								`			VALUE "InternalName", @(Target:Target.FileName->Escape())\r\n`\
 								`			VALUE "LegalCopyright", @(ProductCopyright->Escape())\r\n`\
 								`			VALUE "OriginalFilename", @(`@(Target:Target.FileName)@(Target:Target.FileExtension)`->Escape())\r\n`\
 								`			VALUE "ProductName", @(ProductName->Escape())\r\n`\
-								`			VALUE "ProductVersion", @(`@(ProductVersionMajor).@(ProductVersionMinor)@(ProductVersionRevision) @(ProductVersionExtra)`->Escape())\r\n`\
+								`			VALUE "ProductVersion", @(`@(MalterlibCompiledVersionMajor).@(MalterlibCompiledVersionMinor)@(MalterlibCompiledVersionRevision) @(ProductVersionExtra)`->Escape())\r\n`\
 								`			VALUE "PrivateBuild", @(PrivateBuildString->Escape()->Replace("\\\"", "\\x22"))\r\n`\
 								`		END\r\n`\
 								`	END\r\n`\
