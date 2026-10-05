@@ -7,12 +7,14 @@ Property
 	MalterlibThreadsPerLTOLink: int = 4
 }
 
+// HostToolsPool builds one group of host tools at a time, since builds of the same build system use the same build directory
 Workspace
 {
 	PoolDepths: {
 		...: int
 	} = {
 		LTOLinkPool: Clamp((HostSystemInfo<PhysicalMemoryMiB> / MalterlibMemoryPerLTOLink)->AsInteger(), 1, Max(HostSystemInfo<PhysicalThreads> / MalterlibThreadsPerLTOLink, 1))
+		, HostToolsPool: 1
 	}
 }
 
@@ -757,6 +759,10 @@ GeneratorSetting
 	Target_CommandLine_Inputs #<Build.implicit_dependencies> =+ Target.CommandLine_Inputs
 	Target_CommandLine_Outputs #<Build.outputs> =+ Target.CommandLine_Outputs
 	Target_CommandLine_IsGenerator #<Rule.generator> Target.CommandLine_IsGenerator
+	Target_CommandLine_Pool #<Rule.pool> Target.CommandLine_Pool
+	{
+		!Target.CommandLine_Pool undefined
+	}
 
 	Target_CommandLine_ReBuild {}
 	Target_CommandLine_Clean {}

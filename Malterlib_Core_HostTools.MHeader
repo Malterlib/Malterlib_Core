@@ -1,0 +1,45 @@
+// Copyright © Unbroken AB
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+// The build system of host tools builds the targets of MalterlibHostTools for the build host and deploys them to
+// MalterlibHostToolsBinaries. Other build systems build them in groups: a Tool target with HostToolsTargets builds those
+// targets in one build, with the files that they deploy as its outputs, and targets that run a tool depend on the group of
+// the tool. Groups are built one at a time, in HostToolsPool
+
+Property
+{
+	MalterlibHostTools: [type(CEntity)] = []
+}
+
+%Workspace "HostTools"
+{
+	!!MalterlibHostToolsBuildSystem true
+
+	Property.MalterlibPostCopyProject "Binaries"
+	{
+		!!TargetIsExecutable true
+	}
+
+	%Group "Tools"
+	{
+		%Target MalterlibHostTools
+	}
+}
+
+Property
+{
+	HostToolsTargets: [string]? // The host tools that a Tool target builds, as a group, in the build system of host tools
+}
+
+// A build of host tools is a no-op when they have not changed, and restat leaves what runs them alone then
+Target
+{
+	&
+	{
+		Target.Type "Tool"
+		!HostToolsTargets undefined
+	}
+
+	CommandLine_Build `cd "@(Builtin.BasePathAbsolute)" && ./mib build-target --output-directory "@(MalterlibHostToolsBuildSystemDir)" HostTools "@(HostToolsTargets->Join(","))"`
+	CommandLine_Pool "HostToolsPool"
+}

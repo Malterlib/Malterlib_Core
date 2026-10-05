@@ -3,22 +3,68 @@
 
 Property
 {
+	// The build system of host tools: the tools that builds run on the build host, as compilers of shaders. Builds of every
+	// platform run them from MalterlibHostToolsBinaries, where the build system deploys them whatever configuration its
+	// UserSettings.MSettings builds. It builds the host platform and architecture in Release unless that says otherwise
+	MalterlibHostToolsBuildSystemDir: string = `@(Builtin.BasePathAbsolute)/BuildSystem/HostTools`
+	MalterlibHostToolsBinaries: string = `@(MalterlibHostToolsBuildSystemDir)/Binaries`
+	MalterlibHostToolsBuildSystem: bool = Builtin.GeneratedBuildSystemDir == MalterlibHostToolsBuildSystemDir
+
+	// The workspaces that the build system generates, all unless it is set. The build system of host tools only generates
+	// HostTools unless its UserSettings.MSettings says otherwise
+	MalterlibGenerateWorkspaces: [string]? // User(Build System)=["Tests"]: Only generate these workspaces
+	MalterlibGenerateWorkspaces ["HostTools"]
+	{
+		&
+		{
+			MalterlibGenerateWorkspaces undefined
+			MalterlibHostToolsBuildSystem true
+		}
+	}
+
+	// The import caches are committed, so that builds do not run CMake. They are generated on a host for each family of
+	// platforms that it can generate: macOS and Linux on macOS, and Windows on Windows. Set it in the UserSettings.MSettings
+	// of each build system that has imports, as BuildSystem/HostTools, run ./mib generate with --output-directory for it,
+	// commit the import caches and remove it again. Builds are refused while it is set
+	MalterlibGenerateImportCaches: bool = false // User(Import)=true: Generate import caches for every platform this host can: macOS and Linux on macOS, Windows on Windows
+
 	DefaultSinglePlatform: string?
 	DefaultSinglePlatform HostPlatform
 	{
-		!MalterlibBuildServerBuild true
+		&
+		{
+			!MalterlibBuildServerBuild true
+			!MalterlibGenerateImportCaches true
+		}
 	}
 
 	DefaultSingleArchitecture: string?
 	DefaultSingleArchitecture HostArchitecture
 	{
-		!MalterlibBuildServerBuild true
+		&
+		{
+			!MalterlibBuildServerBuild true
+			!MalterlibGenerateImportCaches true
+		}
 	}
 
 	DefaultSingleConfiguration: string?
 	DefaultSingleConfiguration "Debug"
 	{
-		!MalterlibBuildServerBuild true
+		&
+		{
+			!MalterlibBuildServerBuild true
+			!MalterlibGenerateImportCaches true
+		}
+	}
+	DefaultSingleConfiguration "Release"
+	{
+		&
+		{
+			!MalterlibBuildServerBuild true
+			!MalterlibGenerateImportCaches true
+			MalterlibHostToolsBuildSystem true
+		}
 	}
 
 	SinglePlatform: string? = DefaultSinglePlatform // User(-  Single Config)="macOS": Enable only a single Platform
@@ -63,6 +109,11 @@ Property
 						&
 						{
 							MalterlibBuildServerBuild true
+							!HostPlatformFamily "Windows"
+						}
+						&
+						{
+							MalterlibGenerateImportCaches true
 							!HostPlatformFamily "Windows"
 						}
 						HostPlatformFamily "Linux"
@@ -155,6 +206,15 @@ Property
 	EnableArchitecture_ArmV7: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ArmV7" : false) // User(- Platform)=false: Enables generation of arm V7 architecture
 	EnableArchitecture_ArmV7s: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ArmV7s" : false) // User(- Platform)=false: Enables generation of arm V7s architecture
 	EnableArchitecture_arm64e: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "arm64e" : false) // User(- Platform)=true: Enables generation of arm arm64e architecture
+	EnableArchitecture_arm64e true
+	{
+		&
+		{
+			SingleArchitecture undefined
+			MalterlibGenerateImportCaches true
+			HostPlatformFamily "macOS"
+		}
+	}
 	EnableArchitecture_Itanium: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "Itanium" : false) // User(- Platform)=true: Enables generation of itanium architecture
 	EnableArchitecture_ppc64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ppc64" : false) // User(- Platform)=true: Enables generation of ppc64 architecture
 	EnableArchitecture_ppc32: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ppc32" : false ) // User(- Platform)=true: Enables generation of ppc32 architecture

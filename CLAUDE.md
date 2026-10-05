@@ -159,6 +159,42 @@ Workspaces are collections of build targets. Common workspaces include:
 
 Generate a workspace before building: `./mib generate [WorkspaceName]`
 
+### Several Generated Build Systems
+`./mib generate`, `./mib build` and `./mib build-target` take `--output-directory <Dir>`, the generated build system
+to use, which is `BuildSystem/Default` unless it is given. Each build system has its own `UserSettings.MSettings`,
+`SharedBuildSettings.sh`, compiled files and configurations. A build system that has not been generated yet is
+generated for Ninja by the first build in it.
+
+A build that finds another build of the same configuration running is refused, so that agents notice. `--wait-for-lock`
+(or `MalterlibBuildLockWait=true`) waits for it instead, and the builds that it runs, such as of host tools, wait too.
+
+### Host Tools
+Tools that builds run on the build host, such as the shader compiler of Render, are built by their own build system,
+`BuildSystem/HostTools`, for the host platform and architecture in Release without link time code generation, with
+reproducible builds and the same defines of the branch and the version for every branch and version
+(`MalterlibFixedVersionDefines`), so that they are not rebuilt when those change. It deploys them to
+`BuildSystem/HostTools/Binaries`, where every build runs them from whatever configuration its `UserSettings.MSettings`
+builds, so a tool can be built in Debug to debug it.
+
+- A module adds the target of a tool to `MalterlibHostTools`.
+- Tools are built in groups, such as the tools that use the same imports. A module defines a `Tool` target for a group
+  with `Property.HostToolsTargets` set to the targets of its tools and the files they deploy as `CommandLine_Outputs`.
+  It runs `./mib build-target --output-directory BuildSystem/HostTools HostTools <Targets>` in every build, which is a
+  no-op when nothing has changed, and ninja reruns what uses a tool only when the tool changed.
+- Targets that run a tool depend on the target of its group and have the file of the tool among their inputs.
+- The groups build one at a time, in the ninja pool `HostToolsPool`, since they share one build directory.
+- Cross compiled builds run the tools of the host, so the targets of host tools only exist in that build system
+  (`MalterlibHostToolsBuildSystem`), as do the imports that only they use.
+- The build system of host tools only generates the `HostTools` workspace. `MalterlibGenerateWorkspaces` in the
+  `UserSettings.MSettings` of a build system sets which workspaces it generates.
+
+### Import Caches
+What CMake configures for an `%Import` is cached in the `ImportCache` directory of the module and committed, so that
+builds do not run CMake. `MalterlibGenerateImportCaches true` in the `UserSettings.MSettings` of a build system makes
+`./mib generate --output-directory <Dir>` generate them for every platform, architecture and configuration that the
+host can: macOS and Linux on macOS, Windows on Windows. Do it in each build system with imports, including
+`BuildSystem/HostTools`, commit the caches and remove the setting. Builds are refused while it is set.
+
 ## Code Standards
 
 ### Declarations and Implementations

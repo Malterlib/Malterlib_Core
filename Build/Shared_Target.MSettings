@@ -597,6 +597,7 @@ Target
 	CommandLine_Outputs: [string]?
 	CommandLine_IsGenerator: bool?
 	CommandLine_AlwaysDirty: bool = true
+	CommandLine_Pool: string? // The ninja pool that the command runs in, of Workspace.PoolDepths
 
 	CommandLine_Outputs [ToolBuildOutputFile]
 	{
@@ -2907,6 +2908,14 @@ Property
 	}
 
 	MalterlibEnableLinkTimeCodeGeneration: one_of(bool, "Fast") = false
+	MalterlibEnableLinkTimeCodeGeneration false
+	{
+		&
+		{
+			MalterlibEnableLinkTimeCodeGeneration undefined
+			MalterlibHostToolsBuildSystem true
+		}
+	}
 	MalterlibEnableLinkTimeCodeGeneration true
 	{
 		&

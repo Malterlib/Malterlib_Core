@@ -10,7 +10,7 @@
 # ResolvedConfigFile identifies the selected ConfigStore JSON file, or is empty if none was found.
 
 ResolvedConfigFile=""
-ResolveConfigBuildSystemDir="${MalterlibGeneratedBuildSystemDir:-BuildSystem/Default}"
+ResolveConfigBuildSystemDir="${MalterlibGeneratedBuildSystemDir:-${MalterlibBuildSystemDir:-BuildSystem/Default}}"
 ResolveConfigDir="${ResolveConfigBuildSystemDir}/ConfigStore/${Workspace}/Configs"
 
 if [ -d "$ResolveConfigDir" ]; then
