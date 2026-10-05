@@ -886,7 +886,7 @@ while true; do
 		./mib build Tests
 		OutputTime
 
-		source BuildSystem/SharedBuildSettings.sh
+		source ./Malterlib/Core/BuildScripts/BuildSystemSettings.sh
 
 		OutputInfo '[Testing]'
 

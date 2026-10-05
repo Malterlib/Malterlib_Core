@@ -86,6 +86,7 @@ Property
 											`@(ScriptExport("MalterlibDefaultArchitecture", SingleArchitecture ?? ""))\r\n`\
 											`@(ScriptExport("MalterlibDefaultConfiguration", SingleConfiguration ?? ""))\r\n`\
 											`@(ScriptExport("MalterlibGeneratedBuildSystemDir", Builtin.GeneratedBuildSystemDir))\r\n`\
+											`@(ScriptExport("MalterlibGenerateImportCaches", MalterlibGenerateImportCaches->ToString()))\r\n`\
 											`\r\n`\
 											`@(ScriptExport("HostPlatformFamily", HostPlatformFamily))\r\n`\
 											`@(ScriptExport("HostPlatform", HostPlatform))\r\n`\
@@ -283,8 +284,16 @@ Property
 	}
 }
 
+Property
+{
+	// The build system that BuildSystem/SharedBuildSettings is for, which scripts read when no other is named. Every
+	// build system also has its own in its directory, which BuildScripts/BuildSystemSettings.sh reads
+	MalterlibDefaultBuildSystemDir: string = `@(Builtin.BasePathAbsolute)/BuildSystem/Default`
+}
+
 %GenerateFile "LocalBuildSettings"
 {
+	!!Builtin.GeneratedBuildSystemDir MalterlibDefaultBuildSystemDir
 	Property
 	{
 		ScriptWindowsBat true
@@ -304,7 +313,11 @@ Property
 
 %GenerateFile "LocalBuildSettingsWindowsBash"
 {
-	!!HostPlatformFamily "Windows"
+	&
+	{
+		HostPlatformFamily "Windows"
+		Builtin.GeneratedBuildSystemDir MalterlibDefaultBuildSystemDir
+	}
 	Property
 	{
 		ScriptWindowsBash true
@@ -312,6 +325,42 @@ Property
 	GenerateFile
 	{
 		Name `BuildSystem/SharedBuildSettings@(ScriptExtension)`
+		Contents `@(ScriptPreamble)@(SharedBuildSettingsScriptContents)`
+		Executable true
+		UnixLineEnds ScriptUnixLineEnds
+		UnicodeBOM false
+	}
+}
+
+%GenerateFile "BuildSystemBuildSettings"
+{
+	Property
+	{
+		ScriptWindowsBat true
+		{
+			!!HostPlatformFamily "Windows"
+		}
+	}
+	GenerateFile
+	{
+		Name `@(Builtin.GeneratedBuildSystemDir)/SharedBuildSettings@(ScriptExtension)`
+		Contents `@(ScriptPreamble)@(SharedBuildSettingsScriptContents)`
+		Executable true
+		UnixLineEnds ScriptUnixLineEnds
+		UnicodeBOM false
+	}
+}
+
+%GenerateFile "BuildSystemBuildSettingsWindowsBash"
+{
+	!!HostPlatformFamily "Windows"
+	Property
+	{
+		ScriptWindowsBash true
+	}
+	GenerateFile
+	{
+		Name `@(Builtin.GeneratedBuildSystemDir)/SharedBuildSettings@(ScriptExtension)`
 		Contents `@(ScriptPreamble)@(SharedBuildSettingsScriptContents)`
 		Executable true
 		UnixLineEnds ScriptUnixLineEnds
@@ -458,11 +507,22 @@ Property
 	}
 }
 
+Property
+{
+	// The revision that the build system was generated from. Build systems differ in it, as the one of host tools, which
+	// builds reproducibly, so each has its own
+	MalterlibLastBuildDir: string = "BuildSystem/LastBuild"
+	MalterlibLastBuildDir `@(Builtin.GeneratedBuildSystemDir)/LastBuild`
+	{
+		!Builtin.GeneratedBuildSystemDir MalterlibDefaultBuildSystemDir
+	}
+}
+
 %GenerateFile "last-build"
 {
 	GenerateFile
 	{
-		Name "BuildSystem/LastBuild/last-build"
+		Name `@(MalterlibLastBuildDir)/last-build`
 		Contents `@(MalterlibRootRevision)\n`
 		UnicodeBOM false
 		UnixLineEnds true
@@ -476,7 +536,7 @@ Property
 	{
 		GenerateFile
 		{
-			Name `BuildSystem/LastBuild/last-build-@(Workspace:this.Identity)`
+			Name `@(MalterlibLastBuildDir)/last-build-@(Workspace:this.Identity)`
 			Contents `@(MalterlibRootRevision)\n`
 			UnicodeBOM false
 			UnixLineEnds true
@@ -492,7 +552,7 @@ Property
 	{
 		GenerateFile
 		{
-			Name `BuildSystem/LastBuild/last-build-@(Workspace:this.Identity)-@(MalterlibGitBranch || "")`
+			Name `@(MalterlibLastBuildDir)/last-build-@(Workspace:this.Identity)-@(MalterlibGitBranch || "")`
 			Contents `@(MalterlibRootRevision)\n`
 			UnicodeBOM false
 			UnixLineEnds true

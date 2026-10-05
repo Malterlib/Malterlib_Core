@@ -11,6 +11,15 @@ Workspace
 			DocumentationEnabled true
 		}
 	}
+	Enabled false
+	{
+		&
+		{
+			Workspace.Enabled undefined
+			!MalterlibGenerateWorkspaces undefined
+			MalterlibGenerateWorkspaces->ContainsListElement(Workspace.Name) false
+		}
+	}
 
 	XcodeNewBuildSystem: bool?
 	XcodeNewBuildSystem true

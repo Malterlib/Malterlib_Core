@@ -131,7 +131,7 @@ for Argument in "$@" ; do
 	fi
 done
 
-source ./BuildSystem/SharedBuildSettings.sh
+source "$DIR/BuildSystemSettings.sh"
 
 Generator="$Malterlib_Generator"
 Extension=MBuildSystem

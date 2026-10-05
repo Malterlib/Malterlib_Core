@@ -304,3 +304,12 @@ Property
 		}
 	}*/
 }
+
+// The build system of host tools deploys its tools to MalterlibHostToolsBinaries, with the post copy project Binaries
+Property
+{
+	MalterlibDeployRoot MalterlibHostToolsBuildSystemDir
+	{
+		!!MalterlibHostToolsBuildSystem true
+	}
+}

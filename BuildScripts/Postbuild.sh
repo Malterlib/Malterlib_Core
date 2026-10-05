@@ -9,7 +9,7 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/DetectSystem.sh"
-source ./BuildSystem/SharedBuildSettings.sh
+source "$DIR/BuildSystemSettings.sh"
 
 for Argument in "$@" ; do
 	echo Cleaning workspace: $Argument

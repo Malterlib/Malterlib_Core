@@ -9,7 +9,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "$DIR/DetectSystem.sh"
 
-source ./BuildSystem/SharedBuildSettings.sh
+source "$DIR/BuildSystemSettings.sh"
 
 Workspace="${1:-Tests}"
 TargetList="${2:-Build All}"
@@ -19,7 +19,10 @@ source "$DIR/ResolveConfig.sh"
 Platform="${3:-$MalterlibDefaultPlatform}"
 Architecture="${4:-$MalterlibDefaultArchitecture}"
 Config="${5:-$MalterlibDefaultConfiguration}"
-BuildSystemDir="${6:-${MalterlibGeneratedBuildSystemDir:-BuildSystem/Default}}"
+BuildSystemDir="${6:-${MalterlibGeneratedBuildSystemDir:-$MalterlibBuildSystemDir}}"
+
+# What ninja runs finds the settings of this build system
+export MalterlibBuildSystemDir="$BuildSystemDir"
 
 IFS=',' read -r -a Targets <<< "$TargetList"
 

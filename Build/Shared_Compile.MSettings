@@ -4,6 +4,16 @@
 Property
 {
 	CompileType: string?
+
+	// The branch and the version that the defines of them are compiled with. With MalterlibFixedVersionDefines they are
+	// the same for every branch and version, so that neither rebuilds everything. On by default in the build system of host
+	// tools
+	MalterlibFixedVersionDefines: bool = MalterlibHostToolsBuildSystem // User(Build System)=true: Compile the defines of the branch and the version the same for every branch and version
+	MalterlibCompiledBranch: string = MalterlibFixedVersionDefines ? "Fixed" : MalterlibFullBranch
+	MalterlibCompiledVersionMajor: string = MalterlibFixedVersionDefines ? "1" : ProductVersionMajor
+	MalterlibCompiledVersionMinor: string = MalterlibFixedVersionDefines ? "0" : ProductVersionMinor
+	MalterlibCompiledVersionRevision: string = MalterlibFixedVersionDefines ? "001" : ProductVersionRevision
+	MalterlibCompiledVersionExtra: string = ProductVersionExtra
 }
 
 // Compile type deduction for native language
@@ -2505,12 +2515,16 @@ Compile
 		!!PlatformType "Windows"
 	}
 	PreprocessorDefines += [
-		`DMalterlibBranch=@(MalterlibFullBranch->Escape())`
-		, `DProductVersion=0x@(ProductVersionMajor)@(ProductVersionMinor)@(ProductVersionRevision)`
-		, `DProductVersionSuffix=@(ProductVersionExtra->Escape())`
-		, `DProductSuffix_@(ProductVersionExtra)`
+		`DMalterlibBranch=@(MalterlibCompiledBranch->Escape())`
+		, `DProductVersion=0x@(MalterlibCompiledVersionMajor)@(MalterlibCompiledVersionMinor)@(MalterlibCompiledVersionRevision)`
+		, `DProductVersionSuffix=@(MalterlibCompiledVersionExtra->Escape())`
+		, `DProductSuffix_@(MalterlibCompiledVersionExtra)`
 	]
-	PreprocessorDefines += [`DProductVersionMajor=@(ProductVersionMajor)`, `DProductVersionMinor=@(ProductVersionMinor)`, `DProductVersionRevision=@(ProductVersionRevision)`]
+	PreprocessorDefines += [
+		`DProductVersionMajor=@(MalterlibCompiledVersionMajor)`
+		, `DProductVersionMinor=@(MalterlibCompiledVersionMinor)`
+		, `DProductVersionRevision=@(MalterlibCompiledVersionRevision)`
+	]
 
 	PreprocessorDefines += `DProductCompanyUniqueIdentifier=@(ProductCompanyUniqueIdentifier)`
 	PreprocessorDefines += `DProductContact=@(ProductContact)`
