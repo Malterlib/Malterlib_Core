@@ -7,6 +7,7 @@
 # start time as well as PID to reject reuse. Takeover renames only the inspected token so it cannot steal a newer owner's lock.
 
 BuildLockToken=
+BuildLockWaitReported=
 
 # The start time and command name of a process, as one line; empty when ps cannot tell
 BuildLockProcessIdentity()
@@ -104,17 +105,36 @@ BuildLockChildRunning()
 	[ -n "$ChildStart" ] && [ "$ChildStart" = "$CurrentStart" ]
 }
 
+# True when the build is to wait for the one that holds the lock and try again, which MalterlibBuildLockWait=true asks for.
+# Without it the build is refused, so that what runs builds notices when another build uses the same configuration.
+BuildLockShouldWait()
+{
+	local BuildDir="$1"
+	local OwnerPid="$2"
+
+	[ "$MalterlibBuildLockWait" = "true" ] || return 1
+
+	if [ -z "$BuildLockWaitReported" ]; then
+		echo "Waiting for the build in '$BuildDir' (process $OwnerPid) to finish" >&2
+		BuildLockWaitReported=1
+	fi
+
+	sleep 1
+}
+
 AcquireBuildLock()
 {
 	local BuildDir="$1"
 	local LockDir="$BuildDir/.mib_build_lock"
 	local Init="$LockDir.init.$$"
-	local Attempt Token OwnerPid OwnerIdentity CurrentIdentity FoundToken
+	local Attempt=0 Token OwnerPid OwnerIdentity CurrentIdentity FoundToken
 
 	# A claim named for this pid was left by a dead process that had the pid before
 	rm -rf "$LockDir/claim.$$"
 
-	for Attempt in 1 2 3 4 5 6; do
+	while [ "$Attempt" -lt 6 ]; do
+		Attempt=$((Attempt + 1))
+
 		if [ ! -d "$LockDir" ]; then
 			# Publish a nonempty lock directory by rename. Detect mv nesting inside an existing target as a lost race.
 			rm -rf "$Init"
@@ -154,9 +174,14 @@ AcquireBuildLock()
 				fi
 				CurrentIdentity=$(BuildLockProcessIdentity "$OwnerPid")
 				if [ -z "$OwnerIdentity" ] || [ -z "$CurrentIdentity" ] || [ "$OwnerIdentity" = "$CurrentIdentity" ]; then
+					if BuildLockShouldWait "$BuildDir" "$OwnerPid"; then
+						Attempt=0
+						continue 2
+					fi
+
 					echo "Another build is already running in '$BuildDir' (process $OwnerPid holds the lock '$LockDir')." >&2
 					echo "Two builds of one configuration overlap on the same build and dependency logs and corrupt them, so this one is refused." >&2
-					echo "To build several targets, pass them comma separated to one build-target command." >&2
+					echo "To build several targets, pass them comma separated to one build-target command. To wait for it, pass --wait-for-lock." >&2
 					return 1
 				fi
 			fi
@@ -164,6 +189,11 @@ AcquireBuildLock()
 			# The owner may be gone while the ninja it started still runs, when the wrapper was
 			# killed on its own; the ninja recorded in the token holds the lock while it lives
 			if BuildLockChildRunning "$Token"; then
+				if BuildLockShouldWait "$BuildDir" "$(cat "$Token/child" 2>/dev/null)"; then
+					Attempt=0
+					continue 2
+				fi
+
 				echo "The ninja of another build (process $(cat "$Token/child")) is still running in '$BuildDir' though the build that started it is gone, so this one is refused." >&2
 				return 1
 			fi
@@ -172,8 +202,14 @@ AcquireBuildLock()
 			# The child rechecks its token after recording, so both sides cannot miss the race.
 			if mv "$Token" "$LockDir/claim.$$" 2>/dev/null; then
 				if BuildLockChildRunning "$LockDir/claim.$$"; then
-					echo "The ninja of another build (process $(cat "$LockDir/claim.$$/child")) is still running in '$BuildDir' though the build that started it is gone, so this one is refused." >&2
+					OwnerPid=$(cat "$LockDir/claim.$$/child" 2>/dev/null)
 					mv "$LockDir/claim.$$" "$Token" 2>/dev/null
+					if BuildLockShouldWait "$BuildDir" "$OwnerPid"; then
+						Attempt=0
+						continue 2
+					fi
+
+					echo "The ninja of another build (process $OwnerPid) is still running in '$BuildDir' though the build that started it is gone, so this one is refused." >&2
 					return 1
 				fi
 
