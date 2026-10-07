@@ -115,6 +115,7 @@ namespace NMib
 		void fg_ConsoleErrorOutput(NMib::NStr::CStrSpan const &_Str);
 		void fg_ConsoleErrorOutput(NMib::NStr::CStrIO const &_Str);
 		void fg_ConsoleErrorOutput(NMib::NStr::CStrNonTracked const &_Str);
+		void fg_ConsoleErrorOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer);
 		void fg_ConsoleErrorOutputFlush();
 		bool fg_ConsoleOutputValid();
 		bool fg_ConsoleErrorOutputValid();

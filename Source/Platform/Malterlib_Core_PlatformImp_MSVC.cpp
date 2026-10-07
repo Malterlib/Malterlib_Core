@@ -909,28 +909,41 @@ void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrSpan const &_Str)
 	fg_ConsoleOutputHelper<CFWStr1024, CFStr1024>(CFStr1024(_Str.f_GetStr(), _Str.f_GetLen()), STD_ERROR_HANDLE, true);
 }
 
+namespace
+{
+	void fg_ConsoleOutputBinaryHelper(NMib::NContainer::CIOByteVector const &_Buffer, DWORD _StdHandle)
+	{
+		uint32 Written = 0;
+		HANDLE hCon = GetStdHandle(_StdHandle);
+
+		if (!hCon)
+			return;
+		uint8 const *pOut = _Buffer.f_GetArray();
+		umint Len = _Buffer.f_GetLen();
+		uint8 Temp[2048];
+		while (Len)
+		{
+			umint ToCopy = fg_Min(Len, 2048u);
+			NMib::NMemory::fg_MemCopy(Temp, pOut, ToCopy);
+			if (!WriteFile(hCon, Temp, ToCopy, &Written, nullptr))
+			{
+				break;
+			}
+			Len -= Written;
+			pOut += Written;
+		}
+		fg_SecureMemClear(Temp);
+	}
+}
+
 void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer)
 {
-	uint32 Written = 0;
-	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
+	fg_ConsoleOutputBinaryHelper(_Buffer, STD_OUTPUT_HANDLE);
+}
 
-	if (!hCon)
-		return;
-	uint8 const *pOut = _Buffer.f_GetArray();
-	umint Len = _Buffer.f_GetLen();
-	uint8 Temp[2048];
-	while (Len)
-	{
-		umint ToCopy = fg_Min(Len, 2048u);
-		NMib::NMemory::fg_MemCopy(Temp, pOut, ToCopy);
-		if (!WriteFile(hCon, Temp, ToCopy, &Written, nullptr))
-		{
-			break;
-		}
-		Len -= Written;
-		pOut += Written;
-	}
-	fg_SecureMemClear(Temp);
+void NSys::fg_ConsoleErrorOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer)
+{
+	fg_ConsoleOutputBinaryHelper(_Buffer, STD_ERROR_HANDLE);
 }
 
 void NSys::fg_ConsoleErrorOutput(const NMib::NStr::CStrNonTracked &_Str)

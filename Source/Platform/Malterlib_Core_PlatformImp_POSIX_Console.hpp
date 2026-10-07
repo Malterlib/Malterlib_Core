@@ -108,6 +108,11 @@ void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer
 	fg_WriteStringToPipe(1, (const ch8 *)_Buffer.f_GetArray(), _Buffer.f_GetLen());
 }
 
+void NSys::fg_ConsoleErrorOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer)
+{
+	fg_WriteStringToPipe(2, (const ch8 *)_Buffer.f_GetArray(), _Buffer.f_GetLen());
+}
+
 NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 {
 	NSys::CConsoleProperties Return;
