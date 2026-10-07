@@ -120,6 +120,9 @@ namespace NMib
 		void fg_Mem_PrepareFork();
 		void fg_Mem_ForkedChild();
 		void fg_Mem_ForkedParent();
+#ifdef DPlatformFamily_macOS
+		int fg_Mem_PrepareSpawnAttributes(void *_pSpawnAttributes);
+#endif
 
 		void *fg_Mem_VirtualAllocInRange(umint &_Size, uint8 *_pLower, uint8 *_pUpper, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default, umint _Alignment = 0);
 		void *fg_Mem_VirtualAlloc(umint &_Size, EAllocationFlag _AllocFlags, ENumaNode _NumaNode = ENumaNode_Default, umint _Alignment = 0);
