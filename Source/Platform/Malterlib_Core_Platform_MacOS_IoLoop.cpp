@@ -122,6 +122,11 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock, fp64 _Timeout)
 	int nEvents;
 	do
 	{
+#ifdef DMibSanitizerEnabled_Thread
+		// The thread sanitizer runs a signal handler that interrupts kevent, which it does not intercept, at the next atomic
+		// operation of the thread. The handler can be what wakes this loop, so it has to run before kevent blocks again
+		mp_WakeState.f_Load(NAtomic::gc_MemoryOrder_Relaxed);
+#endif
 		if (bBlock && _Timeout >= 0.0)
 		{
 			auto Remaining = fg_Min(Deadline.f_Remaining(), fp64(0x7fffffff));
