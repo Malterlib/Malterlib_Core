@@ -4,6 +4,7 @@
 #include <Mib/Core/Core>
 
 #include <Mib/Core/PlatformSpecific/PosixFork>
+#include <Mib/Core/PlatformSpecific/PosixSignal>
 #ifdef DPlatformFamily_Linux
 #	include <Mib/Core/PlatformSpecific/LinuxOptional>
 #endif
@@ -11,6 +12,18 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
+
+namespace
+{
+	// The thread sanitizer runs a handler at the next atomic operation or intercepted call of the interrupted thread. A system call that
+	// SA_RESTART restarts outside an interceptor, such as a futex wait, never gets there, so the handler that would wake it never runs.
+	// Without the sanitizer, restart as signal does
+#ifdef DMibSanitizerEnabled_Thread
+	constexpr int gc_SignalHandlerFlags = 0;
+#else
+	constexpr int gc_SignalHandlerFlags = SA_RESTART;
+#endif
+}
 
 namespace NMib::NSys
 {
@@ -24,6 +37,7 @@ namespace NMib::NSys
 				NAtomic::TCAtomic<umint> m_nPending;
 				NAtomic::TCAtomic<umint> m_nThreadSignals;
 				NContainer::TCLinkedList<NFunction::TCFunctionMutable<void ()>> m_Functions;
+				struct sigaction m_OldAction = {};
 				bool m_bInstalled = false;
 			};
 
@@ -75,6 +89,8 @@ namespace NMib::NSys
 				NSys::CIoLoopRegistration *m_pRegistration = nullptr;
 			};
 
+			void fp_InstallHandler(int _Signal);
+			void fp_RemoveHandler(int _Signal);
 			void fp_OpenDispatch();
 			void fp_CloseDispatch();
 			void f_DispatchPending();
@@ -271,6 +287,33 @@ namespace NMib::NSys
 				Dispatch.m_fOnSignal();
 		}
 
+		// Requires m_Lock. Installs with sigaction for the reason given at fg_SetSignalHandler, and keeps the whole previous action, so
+		// removal restores its flags too
+		void CSubSystem_Core_Signal::fp_InstallHandler(int _Signal)
+		{
+			auto &SignalHandler = m_SignalHandlers[_Signal];
+			if (SignalHandler.m_bInstalled)
+				return;
+
+			struct sigaction Action = {};
+			Action.sa_handler = &fs_SignalHandler;
+			sigemptyset(&Action.sa_mask);
+			Action.sa_flags = gc_SignalHandlerFlags;
+
+			SignalHandler.m_bInstalled = true;
+			sigaction(_Signal, &Action, &SignalHandler.m_OldAction);
+			SignalHandler.m_fOldSignal = SignalHandler.m_OldAction.sa_handler;
+		}
+
+		// Requires m_Lock
+		void CSubSystem_Core_Signal::fp_RemoveHandler(int _Signal)
+		{
+			auto &SignalHandler = m_SignalHandlers[_Signal];
+			SignalHandler.m_bInstalled = false;
+			sigaction(_Signal, &SignalHandler.m_OldAction, nullptr);
+			SignalHandler.m_fOldSignal = nullptr;
+		}
+
 		// Requires m_Lock; called for the first registration.
 		void CSubSystem_Core_Signal::fp_OpenDispatch()
 		{
@@ -383,12 +426,7 @@ namespace NMib::NSys
 
 			auto &SignalHandler = SubSystem.m_SignalHandlers[_Signal];
 			++SignalHandler.m_nThreadSignals;
-
-			if (!SignalHandler.m_bInstalled)
-			{
-				SignalHandler.m_bInstalled = true;
-				SignalHandler.m_fOldSignal = signal(_Signal, &CSubSystem_Core_Signal::fs_SignalHandler);
-			}
+			SubSystem.fp_InstallHandler(_Signal);
 		}
 
 		auto pOnExit = g_OnScopeExitShared / [_Signal, ThreadUID = fg_Thread_GetCurrentUID()]() mutable
@@ -427,11 +465,7 @@ namespace NMib::NSys
 				auto &SignalHandler = SubSystem.m_SignalHandlers[_Signal];
 				umint ThreadSignals = SignalHandler.m_nThreadSignals.f_FetchSub(1) - 1;
 				if (SignalHandler.m_Functions.f_IsEmpty() && ThreadSignals == 0 )
-				{
-					SignalHandler.m_bInstalled = false;
-					signal(_Signal, SignalHandler.m_fOldSignal.f_Load());
-					SignalHandler.m_fOldSignal = nullptr;
-				}
+					SubSystem.fp_RemoveHandler(_Signal);
 			}
 		;
 		return pOnExit;
@@ -460,11 +494,7 @@ namespace NMib::NSys
 			;
 
 			SubSystem.fp_OpenDispatch();
-			if (!SignalHandler.m_bInstalled)
-			{
-				SignalHandler.m_bInstalled = true;
-				SignalHandler.m_fOldSignal = signal(_Signal, &CSubSystem_Core_Signal::fs_SignalHandler);
-			}
+			SubSystem.fp_InstallHandler(_Signal);
 
 			Rollback.f_Clear();
 		}
@@ -479,11 +509,7 @@ namespace NMib::NSys
 				auto &SignalHandler = SubSystem.m_SignalHandlers[_Signal];
 				SignalHandler.m_Functions.f_Remove(*pFunction);
 				if (SignalHandler.m_Functions.f_IsEmpty() && SignalHandler.m_nThreadSignals.f_Load() == 0)
-				{
-					SignalHandler.m_bInstalled = false;
-					signal(_Signal, SignalHandler.m_fOldSignal.f_Load());
-					SignalHandler.m_fOldSignal = nullptr;
-				}
+					SubSystem.fp_RemoveHandler(_Signal);
 
 				// Release the last registration before the concurrency loop can be destroyed.
 				if (--SubSystem.m_nDispatchedHandlers == 0)
@@ -491,5 +517,25 @@ namespace NMib::NSys
 			}
 		;
 		return pOnExit;
+	}
+}
+
+namespace NMib::NPlatform
+{
+	// Sets a handler with the semantics of signal and returns the previous one, or SIG_ERR. It installs with sigaction, as on macOS
+	// the thread sanitizer only wraps handlers installed that way. An unwrapped handler that interrupts a thread inside the
+	// sanitizer runtime deadlocks on the runtime's lock at its first atomic
+	auto fg_SetSignalHandler(int _Signal, void (*_fHandler)(int)) -> void (*)(int)
+	{
+		struct sigaction Action = {};
+		Action.sa_handler = _fHandler;
+		sigemptyset(&Action.sa_mask);
+		Action.sa_flags = gc_SignalHandlerFlags;
+
+		struct sigaction OldAction = {};
+		if (sigaction(_Signal, &Action, &OldAction))
+			return SIG_ERR;
+
+		return OldAction.sa_handler;
 	}
 }
