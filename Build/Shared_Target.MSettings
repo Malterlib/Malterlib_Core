@@ -4473,6 +4473,12 @@ Property
 				}
 			}
 
+			Contents =+	`	<key>LSApplicationCategoryType</key>\n`\
+						`		<string>@(Property.MalterlibMacOSApplicationCategory)</string>\n`
+			{
+				!Property.MalterlibMacOSApplicationCategory undefined
+			}
+
 			Contents =+	`	<key>NSRequiresAquaSystemAppearance</key>\n`\
 						`		<string>YES</string>\n`
 			{

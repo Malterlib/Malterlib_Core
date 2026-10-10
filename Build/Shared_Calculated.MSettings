@@ -677,6 +677,7 @@ Property
 		}
 	}
 	MalterlibMacOSNoDarkMode: bool = false
+	MalterlibMacOSApplicationCategory: string? // LSApplicationCategoryType of the Info.plist. macOS turns Game Mode on for "public.app-category.games" in fullscreen
 }
 
 Property
