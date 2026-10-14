@@ -89,11 +89,14 @@
 	"../Bit": {
 		"Hash": "cc10cc781edf4aa90a15f2e084630c90b03a2875"
 	},
+	"../BuildAutomation": {
+		"Hash": "53bc6b2687ec82e66b4792c3ebb09f31309cfcd2"
+	},
 	"../BuildSystem": {
-		"Hash": "b7038dd5f2d000b3bf005b1fa35c794d1b2d3d11"
+		"Hash": "9c73486eb00572bc3ce5d16e7034abea7ef3c9de"
 	},
 	"../Cloud": {
-		"Hash": "b1949f4bd439e47b1a5c8dd727d7f05db2870e79"
+		"Hash": "42d9a82025f9b8e34ba8d8217b69ac1e18f2ec1d"
 	},
 	"../CommandLine": {
 		"Hash": "03bf3990505ba0475f88c3eedb30ca7119a265ab"
@@ -102,7 +105,7 @@
 		"Hash": "33976905807d5687fddfee9f0911b306a8ebb89e"
 	},
 	"../Concurrency": {
-		"Hash": "4b0936e6e3ec66f66dced5d335bacbc4f0bd59e6"
+		"Hash": "e263bfa0fd01a253ed967be0a4449875706b5a27"
 	},
 	"../Container": {
 		"Hash": "f3623a73c1549db3675984de885fe82118cf6c6f"
@@ -114,7 +117,7 @@
 		"Hash": "fa52ca9e54dff070f5485cd2185e0734d23ef15d"
 	},
 	"../Cryptography": {
-		"Hash": "6bd2eab85ce24dfacdb6d53ec4a6204d6819daa3"
+		"Hash": "2592d8de2156248bd65ebc49d649d2ced084a23c"
 	},
 	"../Daemon": {
 		"Hash": "59040b37a63dc41c6eb0049adde3739232b52f11"
@@ -147,7 +150,7 @@
 		"Hash": "27e487add61394138aed423249394913c23f6fec"
 	},
 	"../Git": {
-		"Hash": "93bd14d60edd49c7f28846fdab169a39587364e6"
+		"Hash": "bb7aa4d59bc7ab72176ac0209256f0ac7a12c490"
 	},
 	"../Graphics": {
 		"Hash": "b7537d87a6bb2925bd9a1fa237c893b54d38dd6c"
@@ -183,19 +186,19 @@
 		"Hash": "b815d8f193e3f087ca2e21017f145660effb5e20"
 	},
 	"../Perforce": {
-		"Hash": "1e7d9e8a58ec3729f7666cb00ec5a5c8e11b04f7"
+		"Hash": "740b59c319f8fc5dcf421a72519627adff214147"
 	},
 	"../Preprocessor": {
 		"Hash": "7067760cf1bf6f53533af6e3810b8fcef3e45a3e"
 	},
 	"../Process": {
-		"Hash": "4818eda85944d87b85e4842f5939d1e953dd17e4"
+		"Hash": "40456da01f4c8e565ab51537b5f77a2f41291928"
 	},
 	"../Qt": {
 		"Hash": "d0620911f5b4f6f2ebb0c8926c9fa2b685e07ead"
 	},
 	"../SQL": {
-		"Hash": "5a6e8103becb6bc84c0efd47c684a610e8c2891b"
+		"Hash": "99b30ad4eece5fea6debd987b15a53cd6dc5336a"
 	},
 	"../Security": {
 		"Hash": "0b31f02304c85d08596b08170cafc92bd1b01be8"
@@ -229,6 +232,9 @@
 	},
 	"../UserInterface": {
 		"Hash": "e410a1a388927e715863fe5f6520e281b51449c1"
+	},
+	"../Virtualization": {
+		"Hash": "4a52a70439e57c756a2165c8318e980a03241da0"
 	},
 	"../Web": {
 		"Hash": "d98238c8b4d9188889f36f44b481d22d8ff7048c"
