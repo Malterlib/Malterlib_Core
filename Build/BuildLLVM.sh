@@ -151,7 +151,8 @@ function UpdateToolChain()
 		|| \
 		( \
 			( ! [ -f "$ToolchainLLVMVersionFile" ] || (( "`cat $ToolchainLLVMVersionFile`" < "$IntegerClangVersion" ))) \
-			|| (( "`cat $ToolchainLLVMVersionFile`" == "$IntegerClangVersion" )) && ( ! [ -f "$ToolchainLLVMSpecificVersionFile" ] || (( `cat $ToolchainLLVMSpecificVersionFile` < $ToolchainVersionTime ))) \
+			|| (( "`cat $ToolchainLLVMVersionFile`" == "$IntegerClangVersion" )) \
+				&& ( ! [ -f "$ToolchainLLVMSpecificVersionFile" ] || (( `cat $ToolchainLLVMSpecificVersionFile` < $ToolchainVersionTime ))) \
 		); then
 		echo Updating tool chain
 		./Scripts/generatetoolchain.sh

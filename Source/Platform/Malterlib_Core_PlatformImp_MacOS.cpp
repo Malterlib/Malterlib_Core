@@ -34,14 +34,14 @@
 #include <exception>
 
 #ifdef DMibConfig_PThreadIntrospection
-#include <Mib/Container/MapWithPool>
-#include <Mib/Container/SetWithPool>
-#include <pthread/introspection.h>
-#include "Malterlib_Core_ThreadNotificationCrossModule.h"
+#	include <Mib/Container/MapWithPool>
+#	include <Mib/Container/SetWithPool>
+#	include <pthread/introspection.h>
+#	include "Malterlib_Core_ThreadNotificationCrossModule.h"
 #endif
 
 #if __has_feature(ptrauth_calls)
-#include <ptrauth.h>
+#	include <ptrauth.h>
 #endif
 
 #include <utility>
@@ -69,24 +69,24 @@ namespace
 {
 	constinit umint g_iThreadNotificationDestructor = 0;
 	constinit NAtomic::TCAtomic<bool> g_bThreadLocalContextDestroyed{false};
-	#ifndef DMibDynamicLibrary
-		constinit NThread::CLowLevelRecursiveLockAggregate g_ThreadNotificationLock = {DAggregateInit};
-	#else
-		constinit NThread::CLowLevelRecursiveLockAggregate g_OwnThreadNotificationLock = {DAggregateInit};
-	#endif
+#	ifndef DMibDynamicLibrary
+	constinit NThread::CLowLevelRecursiveLockAggregate g_ThreadNotificationLock = {DAggregateInit};
+#	else
+	constinit NThread::CLowLevelRecursiveLockAggregate g_OwnThreadNotificationLock = {DAggregateInit};
+#	endif
 
 	void fg_PThreadNotificationDestructor(void *_pValue);
-	#ifdef DMibDynamicLibrary
-		void fg_WaitForThreadsOutsideThreadExit();
-	#endif
+#	ifdef DMibDynamicLibrary
+	void fg_WaitForThreadsOutsideThreadExit();
+#	endif
 
-#if defined(DMibConfig_PThreadIntrospection) && defined(DMibDynamicLibrary)
+#	if defined(DMibConfig_PThreadIntrospection) && defined(DMibDynamicLibrary)
 	// Write directly to avoid stdio locks during unload; stderr retains its normal blocking behavior.
 	void fg_WriteUnloadDiagnostic(NStr::CStrSpan const &_Message)
 	{
 		(void)write(STDERR_FILENO, _Message.f_GetStr(), _Message.f_GetLen());
 	}
-#endif
+#	endif
 
 	void fg_ReservePThreadNotificationDestructor()
 	{
@@ -94,7 +94,7 @@ namespace
 			g_iThreadNotificationDestructor = NSys::fg_Thread_AllocLocalWithDestructor(&fg_PThreadNotificationDestructor);
 	}
 
-	#ifdef DMibDynamicLibrary
+#	ifdef DMibDynamicLibrary
 	void fg_FreePThreadNotificationDestructor()
 	{
 		umint iThreadNotificationDestructor;
@@ -114,7 +114,7 @@ namespace
 		// the end before this image may go
 		fg_WaitForThreadsOutsideThreadExit();
 	}
-	#endif
+#	endif
 
 	void fg_SetPThreadNotificationActive(umint _ThreadID)
 	{
@@ -164,84 +164,90 @@ extern "C"
 	void *nontracked_malloc(size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-#		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(__size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
-#		else
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(__size);
-#		endif
+#if DMibConfig_MalterlibMemoryManager_Debug
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(__size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+#else
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(__size);
+#endif
 	}
 
-	void *nontracked_calloc (size_t __nmemb, size_t __size)
+	void *nontracked_calloc(size_t __nmemb, size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 		umint Size = __nmemb * __size;
-#		if DMibConfig_MalterlibMemoryManager_Debug
-			auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
-#		else
-			auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(Size);
-#		endif
+#if DMibConfig_MalterlibMemoryManager_Debug
+		auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+#else
+		auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(Size);
+#endif
 		fg_MemClear(pMem, Size);
 		return pMem;
 	}
 
-	void *nontracked_realloc (void *__ptr, size_t __size)
+	void *nontracked_realloc(void *__ptr, size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-#		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_ResizeDebug(__ptr, __size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
-#		else
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_Resize(__ptr, __size, 0, EAllocationFlag_SizeNotNeeded);
-#		endif
+#if DMibConfig_MalterlibMemoryManager_Debug
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_ResizeDebug(__ptr, __size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+#else
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Resize(__ptr, __size, 0, EAllocationFlag_SizeNotNeeded);
+#endif
 	}
 
-	void nontracked_free (void *__ptr)
+	void nontracked_free(void *__ptr)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
 	}
 
-	void nontracked_cfree (void *__ptr)
+	void nontracked_cfree(void *__ptr)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
 	}
-	void *nontracked_memalign (size_t __alignment, size_t __size)
+
+	void *nontracked_memalign(size_t __alignment, size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-#		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, __alignment, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
-#		else
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, __alignment);
-#		endif
+#if DMibConfig_MalterlibMemoryManager_Debug
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, __alignment, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+#else
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, __alignment);
+#endif
 	}
+
 	int nontracked_posix_memalign(void **_pOutput, size_t _Alignment, size_t _Size)
 	{
 		*_pOutput = nontracked_memalign(_Alignment, _Size);
 		return 0;
 	}
+
 	void *nontracked_aligned_alloc(size_t _Alignment, size_t _Size)
 	{
 		return nontracked_memalign(_Alignment, _Size);
 	}
-	void *nontracked_valloc (size_t __size)
+
+	void *nontracked_valloc(size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-#		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
-#		else
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
-#		endif
+#if DMibConfig_MalterlibMemoryManager_Debug
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+#else
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
+#endif
 	}
-	void * nontracked_pvalloc (size_t __size)
+
+	void *nontracked_pvalloc(size_t __size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-#		if DMibConfig_MalterlibMemoryManager_Debug
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
-#		else
-			return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
-#		endif
+#if DMibConfig_MalterlibMemoryManager_Debug
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+#else
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
+#endif
 	}
-	size_t nontracked_malloc_usable_size (void *__ptr)
+
+	size_t nontracked_malloc_usable_size(void *__ptr)
 	{
 		if (!__ptr)
 			return 0;
@@ -279,30 +285,29 @@ extern "C"
 //#endif
 extern "C"
 {
-	#include <sys/mman.h>
-	#include <mach-o/getsect.h>
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netdb.h>
-	#include <netinet/in.h>
-	#include <sys/ioctl.h>
-	//#include <time.h>
-	#include <crt_externs.h>
-	#include <sys/kern_control.h>
-	#include <sys/sys_domain.h>
-	#include <sys/param.h>
-	#include <sys/mount.h>
-	#include <libkern/OSAtomic.h>
-	#include <sys/sysctl.h>
-	#include <copyfile.h>
-	#include <execinfo.h>
-	#include <dlfcn.h>
-	#include <sys/event.h>
-	#include <sys/time.h>
-	#include <crt_externs.h>
-	#include <uuid/uuid.h>	// For UUID gen
+#include <sys/mman.h>
+#include <mach-o/getsect.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+//#include <time.h>
+#include <crt_externs.h>
+#include <sys/kern_control.h>
+#include <sys/sys_domain.h>
+#include <sys/param.h>
+#include <sys/mount.h>
+#include <libkern/OSAtomic.h>
+#include <sys/sysctl.h>
+#include <copyfile.h>
+#include <execinfo.h>
+#include <dlfcn.h>
+#include <sys/event.h>
+#include <sys/time.h>
+#include <crt_externs.h>
+#include <uuid/uuid.h>	// For UUID gen
 }
-
 
 #include <mach-o/dyld.h>
 
@@ -314,7 +319,7 @@ extern "C"
 
 #include "Malterlib_Core_PlatformImp_MacOS_ObjCPP.h"
 #if defined(DArchitecture_x64) || defined(DArchitecture_x64)
-#include <xmmintrin.h>
+#	include <xmmintrin.h>
 #endif
 
 static inline_small class CSystemMacOS *fg_GetLocalSys();
@@ -328,12 +333,11 @@ void NSys::fg_System_EnableFloatingPointExceptions()
 
 void calling_convention_c fg_Malterlib_MakeActive()
 {
-
 }
 
 CStr fg_EscapeString(CStr _In)
 {
-	return _In.f_Replace("\"","\\\"");
+	return _In.f_Replace("\"", "\\\"");
 	/*const ch8 *pStr = _In;
 	CStr Ret;
 	while(*pStr)
@@ -360,16 +364,16 @@ void NSys::fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_
 {
 	static_assert(sizeof(uuid_t) == sizeof(_UUID));
 	uuid_generate((unsigned char *)&_UUID);
-#	if DMibEnableSafeCheck > 0
-		uuid_string_t RetStr;
-		uuid_unparse((unsigned char *)&_UUID, RetStr);
-#	endif
+#if DMibEnableSafeCheck > 0
+	uuid_string_t RetStr;
+	uuid_unparse((unsigned char *)&_UUID, RetStr);
+#endif
 	_UUID.m_TimeLow = fg_ByteSwapBE(_UUID.m_TimeLow);
 	_UUID.m_TimeMid = fg_ByteSwapBE(_UUID.m_TimeMid);
 	_UUID.m_TimeHiAndVersion = fg_ByteSwapBE(_UUID.m_TimeHiAndVersion);
-#	if DMibEnableSafeCheck > 0
-		DMibFastCheck(_UUID.f_GetAsStaticString(NCryptography::EUniversallyUniqueIdentifierFormat_Bare).f_CmpNoCase(RetStr) == 0);
-#	endif
+#if DMibEnableSafeCheck > 0
+	DMibFastCheck(_UUID.f_GetAsStaticString(NCryptography::EUniversallyUniqueIdentifierFormat_Bare).f_CmpNoCase(RetStr) == 0);
+#endif
 }
 
 NStr::CStr NSys::fg_System_GenerateUUID()
@@ -402,7 +406,6 @@ void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes)
 	if (NMib::NPlatform::fg_ReadProcFS("/dev/urandom", _pData, _nBytes) != _nBytes)
 		DMibPDebugBreak;
 }
-
 
 NMib::NSys::EDesktopEnvironment NMib::NSys::fg_DesktopEnvironment_Get()
 {
@@ -455,9 +458,7 @@ public:
 
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
 			if (Current != (void *)(umint)getpid())
-			{
 				Sys.m_bForkedChild = true;
-			}
 			if (Current == (void *)(umint)getpid())
 			{
 				Sys.f_ForkedParent(); // Parent
@@ -472,6 +473,7 @@ public:
 			}
 		}
 	}
+
 	static void fs_ForkParent()
 	{
 		auto &Sys = *fg_GetLocalSys();
@@ -583,20 +585,16 @@ public:
 			DMibError(NMib::NPlatform::fg_FormatErrno("pthread_key_delete", ErrNo));
 	}
 
-	static void fs_ThreadDestructionHook(void* _ThreadID)
+	static void fs_ThreadDestructionHook(void *_ThreadID)
 	{
-
 		fg_GetSys()->f_ThreadLocalFreeThread();
 	}
 
 	void f_RegisterDestructionHookForThread()
 	{
-
 	}
 
 	NMib::NStorage::TCAggregate<NMib::NMacOSRuntime::CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
-
-
 };
 
 static inline_small CSystemMacOS *fg_GetLocalSys()
@@ -630,25 +628,24 @@ void NMib::NStr::NPlatform::fg_SystemEncodeAnsiStr(NMib::NStr::CStrNonTracked co
 	fg_SystemEncodeCodePageStr(_In, _Out, 1252, _ErrorChar); // 1252 == Windows Latin 1
 }
 
-
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStr const &_In, NMib::NStr::CStr &_Out)
 {
-	fg_SystemDecodeCodePageStr(_In, _Out, 1252);  // 1252 == Windows Latin 1
+	fg_SystemDecodeCodePageStr(_In, _Out, 1252); // 1252 == Windows Latin 1
 }
 
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::CStr &_Out)
 {
-	fg_SystemDecodeCodePageStr(_pIn, _Out, 1252);  // 1252 == Windows Latin 1
+	fg_SystemDecodeCodePageStr(_pIn, _Out, 1252); // 1252 == Windows Latin 1
 }
 
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStrNonTracked const &_In, NMib::NStr::CStrNonTracked &_Out)
 {
-	fg_SystemDecodeCodePageStr(_In, _Out, 1252);  // 1252 == Windows Latin 1
+	fg_SystemDecodeCodePageStr(_In, _Out, 1252); // 1252 == Windows Latin 1
 }
 
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::CStrNonTracked &_Out)
 {
-	fg_SystemDecodeCodePageStr(_pIn, _Out, 1252);  // 1252 == Windows Latin 1
+	fg_SystemDecodeCodePageStr(_pIn, _Out, 1252); // 1252 == Windows Latin 1
 }
 
 void NMib::NStr::NPlatform::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, uint32 _CodePage, ch8 _ErrorChar)
@@ -657,7 +654,7 @@ void NMib::NStr::NPlatform::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), kCFStringEncodingUTF8, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8 const *)_In.f_GetStr(), _In.f_GetLen(), kCFStringEncodingUTF8, false);
 
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (encode code page str)", errno));
@@ -687,7 +684,7 @@ void NMib::NStr::NPlatform::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracke
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), kCFStringEncodingUTF8, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8 const *)_In.f_GetStr(), _In.f_GetLen(), kCFStringEncodingUTF8, false);
 
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (encode code page str)", errno));
@@ -717,7 +714,7 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr cons
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), CodePage, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8 const *)_In.f_GetStr(), _In.f_GetLen(), CodePage, false);
 
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
@@ -729,12 +726,12 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr cons
 	;
 
 	CFIndex nUniChars = CFStringGetLength(pStringRef);
-	const UniChar * Output = CFStringGetCharactersPtr(pStringRef);
+	UniChar const *Output = CFStringGetCharactersPtr(pStringRef);
 
 	if (Output)
 	{
 		NMib::NStr::CWStr UniString;
-		NMib::NStr::CWStr::CChar* pDest = UniString.f_GetStr(nUniChars);
+		NMib::NStr::CWStr::CChar *pDest = UniString.f_GetStr(nUniChars);
 
 		DMibSafeCheck(pDest, "Out of memory?");
 
@@ -749,13 +746,12 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr cons
 		auto *pChars = UniString.f_GetStr(nUniChars);
 
 		*pChars = NMib::NStr::CWStr::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
-		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
+		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar *)pChars);
 		pChars[nUniChars] = NMib::NStr::CWStr::CChar(0);
 
 		_Out = UniString;
 	}
 }
-
 
 void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NStr::CStr &_Out, uint32 _CodePage)
 {
@@ -763,7 +759,7 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_pIn, fg_StrLen(_pIn), CodePage, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8 const *)_pIn, fg_StrLen(_pIn), CodePage, false);
 
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
@@ -775,12 +771,12 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 	;
 
 	CFIndex nUniChars = CFStringGetLength(pStringRef);
-	const UniChar * Output = CFStringGetCharactersPtr(pStringRef);
+	UniChar const *Output = CFStringGetCharactersPtr(pStringRef);
 
 	if (Output)
 	{
 		NMib::NStr::CWStr UniString;
-		NMib::NStr::CWStr::CChar* pDest = UniString.f_GetStr(nUniChars);
+		NMib::NStr::CWStr::CChar *pDest = UniString.f_GetStr(nUniChars);
 
 		DMibSafeCheck(pDest, "Out of memory?");
 
@@ -795,13 +791,12 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 		auto *pChars = UniString.f_GetStr(nUniChars);
 
 		*pChars = NMib::NStr::CWStr::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
-		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
+		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar *)pChars);
 		pChars[nUniChars] = NMib::NStr::CWStr::CChar(0);
 
 		_Out = UniString;
 	}
 }
-
 
 void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTracked const &_In, NMib::NStr::CStrNonTracked &_Out, uint32 _CodePage)
 {
@@ -809,7 +804,7 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTr
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_In.f_GetStr(), _In.f_GetLen(), CodePage, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8 const *)_In.f_GetStr(), _In.f_GetLen(), CodePage, false);
 
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
@@ -821,12 +816,12 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTr
 	;
 
 	CFIndex nUniChars = CFStringGetLength(pStringRef);
-	const UniChar * Output = CFStringGetCharactersPtr(pStringRef);
+	UniChar const *Output = CFStringGetCharactersPtr(pStringRef);
 
 	if (Output)
 	{
 		NMib::NStr::CWStrNonTracked UniString;
-		NMib::NStr::CWStrNonTracked::CChar* pDest = UniString.f_GetStr(nUniChars);
+		NMib::NStr::CWStrNonTracked::CChar *pDest = UniString.f_GetStr(nUniChars);
 
 		DMibSafeCheck(pDest, "Out of memory?");
 
@@ -841,7 +836,7 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTr
 		auto *pChars = UniString.f_GetStr(nUniChars);
 
 		*pChars = NMib::NStr::CWStrNonTracked::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
-		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
+		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar *)pChars);
 		pChars[nUniChars] = NMib::NStr::CWStrNonTracked::CChar(0);
 
 		_Out = UniString;
@@ -854,7 +849,7 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 	if (CodePage == kCFStringEncodingInvalidId)
 		DMibError(NMib::NStr::CStrNonTracked::CFormat("Codepage {} not supported") << _CodePage);
 
-	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)_pIn, fg_StrLen(_pIn), CodePage, false);
+	CFStringRef pStringRef = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8 const *)_pIn, fg_StrLen(_pIn), CodePage, false);
 
 	if (!pStringRef)
 		DMibError(NMib::NPlatform::fg_FormatErrno("CFStringCreateWithBytes (decode code page str)", errno));
@@ -866,12 +861,12 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 	;
 
 	CFIndex nUniChars = CFStringGetLength(pStringRef);
-	const UniChar * Output = CFStringGetCharactersPtr(pStringRef);
+	UniChar const *Output = CFStringGetCharactersPtr(pStringRef);
 
 	if (Output)
 	{
 		NMib::NStr::CWStrNonTracked UniString;
-		NMib::NStr::CWStrNonTracked::CChar* pDest = UniString.f_GetStr(nUniChars);
+		NMib::NStr::CWStrNonTracked::CChar *pDest = UniString.f_GetStr(nUniChars);
 
 		DMibSafeCheck(pDest, "Out of memory?");
 
@@ -886,13 +881,12 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 		auto *pChars = UniString.f_GetStr(nUniChars);
 
 		*pChars = NMib::NStr::CWStrNonTracked::CChar(0); // We have no idea if the next call with succeed so prepare for it doing nothing.
-		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar*)pChars);
+		CFStringGetCharacters(pStringRef, CFRangeMake(0, nUniChars), (UniChar *)pChars);
 		pChars[nUniChars] = NMib::NStr::CWStrNonTracked::CChar(0);
 
 		_Out = UniString;
 	}
 }
-
 
 NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NMib::NSys::fg_Process_GetEnvironmentVariables_NonProtected()
 {
@@ -900,9 +894,7 @@ NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> NMib::NSys::fg_Process_Get
 
 	CStr Key;
 
-	for (char** pEnvironment = (*_NSGetEnviron())
-		;*pEnvironment
-		;++pEnvironment)
+	for (char **pEnvironment = (*_NSGetEnviron()); *pEnvironment; ++pEnvironment)
 	{
 		CStr VarStr(*pEnvironment);
 		Key = NMib::NStr::fg_GetStrSep(VarStr, "=");
@@ -918,12 +910,11 @@ inline_never bool NSys::fg_Compiler_AlwaysFalse()
 	return false;
 }
 
-inline_never assure_used bool NSys::fg_Compiler_MakeActive(const void *_Reference)
+inline_never assure_used bool NSys::fg_Compiler_MakeActive(void const *_Reference)
 {
 	(void)_Reference;
 	return true;
 }
-
 
 void NSys::fg_Thread_Suspend(void *_pThread)
 {
@@ -954,13 +945,13 @@ void NSys::fg_Thread_SetNumaAffinity(void *_pThread, ENumaNode _NumaNode)
 
 umint NSys::fg_Mem_GetNumNumaNodes()
 {
-  // TODO: Implement
-  return 0;
+	// TODO: Implement
+	return 0;
 }
 
 void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, umint _nNodes)
 {
-  // TODO: Implement
+	// TODO: Implement
 }
 
 void *NSys::fg_InterProcess_MemAlloc(ch8 const *_pName, umint _Size, void * &_pMemory)
@@ -980,10 +971,9 @@ void NSys::fg_Thread_SmallestSleep()
 	fg_Thread_Sleep(0.001);
 }
 
-
 namespace
 {
-	bool fg_ArgIsInternal(ch8 const* _pArg)
+	bool fg_ArgIsInternal(ch8 const *_pArg)
 	{
 		if (fg_StrCmp(_pArg, "--OutputPID") == 0)
 			return true;
@@ -1000,13 +990,13 @@ NMib::NStr::CStr NSys::fg_Process_GetCommandLine()
 	NMib::NStr::CStr Return;
 
 	int NumArgs = *_NSGetArgc();
-	ch8** pArgs = *_NSGetArgv();
+	ch8 **pArgs = *_NSGetArgv();
 	if (pArgs)
 	{
-		for (int i = 0;i < NumArgs; ++i)
+		for (int i = 0; i < NumArgs; ++i)
 		{
-            if (pArgs[i] && !fg_ArgIsInternal(pArgs[i]))
-                Return += CStr("\"") + CStr(pArgs[i]) + CStr("\"");
+			if (pArgs[i] && !fg_ArgIsInternal(pArgs[i]))
+				Return += CStr("\"") + CStr(pArgs[i]) + CStr("\"");
 		}
 	}
 
@@ -1018,45 +1008,41 @@ void NSys::fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> 
 	_List.f_SetLen(0);
 
 	int NumArgs = *_NSGetArgc();
-	ch8** pArgs = *_NSGetArgv();
+	ch8 **pArgs = *_NSGetArgv();
 	if (pArgs)
 	{
-		for (int i = 0;i < NumArgs; ++i)
+		for (int i = 0; i < NumArgs; ++i)
 		{
-            if (pArgs[i] && !fg_ArgIsInternal(pArgs[i]))
-            {
-                _List.f_Insert(CStr(pArgs[i]));
-            }
+			if (pArgs[i] && !fg_ArgIsInternal(pArgs[i]))
+				_List.f_Insert(CStr(pArgs[i]));
 		}
 	}
 }
-
 
 NMib::NStr::CStr NSys::fg_CommandLineParameters()
 {
 	NMib::NStr::CStr Return;
 
 	int NumArgs = *_NSGetArgc();
-	ch8** pArgs = *_NSGetArgv();
+	ch8 **pArgs = *_NSGetArgv();
 	if (pArgs)
 	{
-		for (int i = 1;i < NumArgs; ++i)
+		for (int i = 1; i < NumArgs; ++i)
 		{
-            if (pArgs[i] && !fg_ArgIsInternal(pArgs[i]))
-            {
-                if (i > 1)
-                    Return += CStr(" \"") + CStr(pArgs[i]) + CStr("\"");
-                else
-                    Return += CStr("\"") + CStr(pArgs[i]) + CStr("\"");
-            }
+			if (pArgs[i] && !fg_ArgIsInternal(pArgs[i]))
+			{
+				if (i > 1)
+					Return += CStr(" \"") + CStr(pArgs[i]) + CStr("\"");
+				else
+					Return += CStr("\"") + CStr(pArgs[i]) + CStr("\"");
+			}
 		}
 	}
 	return Return;
 }
 
-void NSys::fg_Message(const ch8 *_pMessageType, const ch8 *_pToOutput)
+void NSys::fg_Message(ch8 const *_pMessageType, ch8 const *_pToOutput)
 {
-
 	bool bCopy = !fg_StrCmpNoCase(_pMessageType, "Copy");
 
 	CStrVMem Message = _pToOutput;
@@ -1071,24 +1057,19 @@ void NSys::fg_Message(const ch8 *_pMessageType, const ch8 *_pToOutput)
 		ClearCurrentScrap();
 		ScrapRef Current;
 		OSStatus ret = GetCurrentScrap(&Current);
-		if ( ret == noErr )
-		{
+		if (ret == noErr)
 			PutScrapFlavor(Current, kScrapFlavorTypeText, 0, Message2.f_GetLen(), Message2.f_GetStr());
-		}
 		else
-		{
 			DMibTrace("Failed to copy text to the scrap\n", 0);
-		}
-
 	}
 #endif
 
-/*	if (!fg_StrCmpNoCase(_pMessageType, "Fatal Error"))
+	/*
+	if (!fg_StrCmpNoCase(_pMessageType, "Fatal Error"))
 	{
 	}*/
 
-
-//	DWORD Answer = MessageBoxA(hWndParent, Message, _pMessageType, uType);
+	// DWORD Answer = MessageBoxA(hWndParent, Message, _pMessageType, uType);
 
 	DMibTrace("{}", Message);
 	if (bCopy)
@@ -1096,7 +1077,7 @@ void NSys::fg_Message(const ch8 *_pMessageType, const ch8 *_pToOutput)
 	}
 }
 
-void NSys::fg_Message(const ch16 *_pMessageType, const ch16 *_pToOutput)
+void NSys::fg_Message(ch16 const *_pMessageType, ch16 const *_pToOutput)
 {
 }
 
@@ -1123,20 +1104,18 @@ void fg_ForkParentOrChild()
 
 namespace NMib
 {
-
 	namespace NSys
 	{
 		// This allows
 		void __attribute__((weak)) fg_InitBreakpad()
 		{
 		}
+
 		void __attribute__((weak)) fg_DestroyBreakpad()
 		{
 		}
 	}
-
 } // Namespace NMib
-
 
 namespace NMib
 {
@@ -1277,7 +1256,6 @@ namespace NMib
 		void fg_CreateSystemVersion();
 		extern umint g_ThreadLocalOffsetPThread;
 	}
-
 }
 
 void fg_DestroySystemAtExit()
@@ -1303,7 +1281,7 @@ extern "C"
 	asm(".desc ___crashreporter_info__, 0x10");
 }
 
-void NSys::fg_System_ReportContractViolation(const NMib::NStr::CStrNonTracked &_Message)
+void NSys::fg_System_ReportContractViolation(NMib::NStr::CStrNonTracked const &_Message)
 {
 	DMibLock(g_CrashReporterLock);
 	if (__crashreporter_info__)
@@ -1341,7 +1319,7 @@ void fg_ReportCurrentException()
 	{
 		throw;
 	}
-	catch (NException::CExceptionBase const& _Exception)
+	catch (NException::CExceptionBase const &_Exception)
 	{
 		CStrNonTracked ExceptionInfo;
 		ExceptionInfo += CStrNonTracked::CFormat(DMibPFileLineFormat " Uncaught exception of type: {}\n") << _Exception.f_GetFile() << _Exception.f_GetLine() << _Exception.f_GetClass();
@@ -1349,7 +1327,7 @@ void fg_ReportCurrentException()
 		NMib::NSys::fg_System_ReportContractViolation(ExceptionInfo);
 		NSys::fg_ConsoleErrorOutput(ExceptionInfo);
 	}
-	catch (std::exception const& _Exception)
+	catch (std::exception const &_Exception)
 	{
 		CStrNonTracked ExceptionInfo;
 		ExceptionInfo += "Uncaught exception of type inherited from: std::exception\n";
@@ -1408,7 +1386,7 @@ void NSys::fg_CreateSystemVersion()
 #elif defined(__arm64__)
 	g_ThreadLocalOffsetPThread = 0x60;
 #else
-	#error "Not Implemented"
+#	error "Not Implemented"
 #endif
 
 	if (g_OperatingSystemMajor > 10 || (g_OperatingSystemMajor == 10 && g_OperatingSystemMinor >= 9))
@@ -1428,7 +1406,7 @@ void NSys::fg_CreateSystemVersion()
 		g_ThreadLocalOffset = 0x60;
 		g_ThreadSelfOffset = 0x60;
 #else
-#error "Not Implemented"
+#	error "Not Implemented"
 #endif
 	}
 	else
@@ -1441,7 +1419,7 @@ namespace NMib::NSys::NPrivate
 {
 	constinit umint g_PageSize = 0;
 
-	void (* g_pDestroyAtExit)(void) = nullptr;
+	void (*g_pDestroyAtExit)(void) = nullptr;
 }
 
 extern "C" void fg_MalterlibDestroySystem_MacOS()
@@ -1519,20 +1497,14 @@ namespace
 
 	DMibSuppressThreadSanitizer inline_never bool fg_PThreadIsExiting(pthread_t _pThread)
 	{
-		auto pCancelState = reinterpret_cast<uint16 *>
-			(
-				reinterpret_cast<uint8 *>(_pThread)
-					+ NSys::g_ThreadLocalOffsetPThread
-					- gc_PThreadCancelStateOffsetFromTSD
-			)
-		;
-	#ifdef DMibSanitizerEnabled_Thread
+		auto pCancelState = reinterpret_cast<uint16 *>(reinterpret_cast<uint8 *>(_pThread) + NSys::g_ThreadLocalOffsetPThread - gc_PThreadCancelStateOffsetFromTSD);
+#ifdef DMibSanitizerEnabled_Thread
 		// TSan does not model Mach thread suspension and reports this private
 		// pthread-state read against its own earlier TLS initialization write.
 		uint16 CancelState = *reinterpret_cast<uint16 volatile *>(pCancelState);
-	#else
+#else
 		uint16 CancelState = reinterpret_cast<NAtomic::TCAtomic<uint16> *>(pCancelState)->f_Load(NAtomic::gc_MemoryOrder_Relaxed);
-	#endif
+#endif
 		return (CancelState & gc_PThreadCancelStateExiting) != 0;
 	}
 
@@ -1589,12 +1561,7 @@ namespace
 	// request in flight answers with a send-once notification instead of a reply
 	bool fg_ThreadPortIsDead(kern_return_t _Result)
 	{
-		return
-			_Result == KERN_TERMINATED
-			|| _Result == MACH_SEND_INVALID_DEST
-			|| _Result == KERN_INVALID_ARGUMENT
-			|| _Result == MIG_SERVER_DIED
-		;
+		return _Result == KERN_TERMINATED || _Result == MACH_SEND_INVALID_DEST || _Result == KERN_INVALID_ARGUMENT || _Result == MIG_SERVER_DIED;
 	}
 
 	// A dead port or a thread without a pthread cannot be inside
@@ -1720,7 +1687,7 @@ namespace
 		fg_WaitForThreadsClear(CPThreadExitUnsettled{});
 	}
 
-#ifndef DMibAssumeMalterlibHost
+#	ifndef DMibAssumeMalterlibHost
 	// Apple libpthread 454.40.3 (macOS 11) through 539.100.4 keep a uint16 introspection marker at
 	// this distance before the TSD base, nonzero in the executing thread around every hook call,
 	// verified against the arm64, arm64e and x86_64 slices of macOS 26.6. The marker belongs to the
@@ -1743,7 +1710,7 @@ namespace
 	{
 		fg_WaitForThreadsClear(CPThreadHookUnsettled{});
 	}
-#endif
+#	endif
 #endif
 
 #if defined(DMibConfig_PThreadIntrospection) && (!defined(DMibDynamicLibrary) || !defined(DMibAssumeMalterlibHost))
@@ -1894,9 +1861,9 @@ namespace
 	// except when a module registers and receives the already existing threads
 	void fg_MalterlibThreadCreatedNotificationLocal(umint _ThreadID, umint _ParentThreadID)
 	{
-#ifdef DMibDynamicLibrary
+#	ifdef DMibDynamicLibrary
 		DMibLock(g_OwnThreadNotificationLock);
-#endif
+#	endif
 		if (g_bSysDeleted)
 		{
 			// The thread gets no locals, and the memory manager must not expect them until the context is destroyed
@@ -1912,9 +1879,9 @@ namespace
 
 	void fg_MalterlibThreadTerminatedNotificationLocal(umint _ThreadID)
 	{
-#ifdef DMibDynamicLibrary
+#	ifdef DMibDynamicLibrary
 		DMibLock(g_OwnThreadNotificationLock);
-#endif
+#	endif
 		if (g_bThreadLocalContextDestroyed.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
 			return;
 
@@ -1923,7 +1890,7 @@ namespace
 	}
 }
 
-#ifndef DMibDynamicLibrary
+#	ifndef DMibDynamicLibrary
 
 namespace
 {
@@ -1956,14 +1923,7 @@ namespace
 	{
 		using CThreads = NContainer::TCMapWithPool<umint, CThreadNotificationThread, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
 		using CStartingThreads = NContainer::TCSetWithPool<umint, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
-		using CNotifications = NContainer::TCMapWithPool
-			<
-				NSys::NPrivate::CThreadNotificationModule *
-				, CThreadNotificationRegistration
-				, CSort_Default
-				, NMemory::CAllocator_VirtualNoTracking
-			>
-		;
+		using CNotifications = NContainer::TCMapWithPool<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
 
 		CThreads m_LiveThreads;
 		CStartingThreads m_StartingThreads;
@@ -2052,15 +2012,8 @@ namespace
 			g_fPreviousIntrospectionHook(_Event, _pThread, _pAddress, _Size);
 
 		DMibLock(g_ThreadNotificationLock);
-		if
-		(
-			!g_bThreadNotificationsInitialized
-			|| !g_iThreadLocalParentThread
-			|| g_bThreadNotificationsForking.f_Load(NAtomic::gc_MemoryOrder_Acquire)
-		)
-		{
+		if (!g_bThreadNotificationsInitialized || !g_iThreadLocalParentThread || g_bThreadNotificationsForking.f_Load(NAtomic::gc_MemoryOrder_Acquire))
 			return;
-		}
 
 		if (_Event == PTHREAD_INTROSPECTION_THREAD_CREATE)
 		{
@@ -2234,7 +2187,6 @@ namespace
 		NSys::fg_Thread_FreeLocal(iThreadLocalParentThread);
 		g_ThreadNotificationState.f_Destruct();
 	}
-
 }
 
 void DMibCrossmoduleAPI fg_ThreadNotificationRegister(NSys::NPrivate::CThreadNotificationModule *_pModule)
@@ -2316,13 +2268,13 @@ extern "C" assure_used module_export NSys::NPrivate::CThreadNotificationCrossMod
 	return &g_ThreadNotificationCrossModule;
 }
 
-#else
+#	else
 
 namespace
 {
 	NSys::NPrivate::CThreadNotificationCrossModule *g_pHostThreadNotificationCrossModule = nullptr;
 
-#ifndef DMibAssumeMalterlibHost
+#		ifndef DMibAssumeMalterlibHost
 	struct COwnThreadNotificationThread
 	{
 		bool m_bTerminated = false;
@@ -2357,7 +2309,7 @@ namespace
 
 		fg_MalterlibThreadTerminatedNotificationLocal(_ThreadID);
 	}
-#endif
+#		endif
 
 	void fg_PThreadNotificationDestructor(void *_pValue)
 	{
@@ -2369,16 +2321,16 @@ namespace
 		{
 			if (g_pHostThreadNotificationCrossModule)
 				fg_MalterlibThreadTerminatedNotificationLocal(NSys::fg_Thread_GetCurrentUID());
-		#ifndef DMibAssumeMalterlibHost
+#		ifndef DMibAssumeMalterlibHost
 			else if (g_bOwnIntrospectionHook)
 				fg_NotifyOwnThreadTerminated(*g_OwnThreadNotificationState, NSys::fg_Thread_GetCurrentUID());
-		#endif
+#		endif
 		}
 
 		fg_SetPThreadNotificationDestroyed();
 	}
 
-#ifndef DMibAssumeMalterlibHost
+#		ifndef DMibAssumeMalterlibHost
 	void fg_PThreadIntrospectionHook(unsigned int _Event, pthread_t _pThread, void *_pAddress, size_t _Size)
 	{
 		if (g_fPreviousIntrospectionHook)
@@ -2423,7 +2375,7 @@ namespace
 		else if (_Event == PTHREAD_INTROSPECTION_THREAD_DESTROY)
 			g_OwnThreadNotificationState->m_StartingThreads.f_Remove((umint)_pThread);
 	}
-#endif
+#		endif
 
 	void fg_MalterlibThreadForkPrepareLocal()
 	{
@@ -2463,17 +2415,21 @@ namespace
 		auto fGetInterface = (NSys::NPrivate::FGetThreadNotificationCrossModule *)dlsym(RTLD_DEFAULT, "fg_MalterlibGetThreadNotificationCrossModule");
 		auto pInterface = fGetInterface ? fGetInterface(NSys::NPrivate::EThreadNotificationCrossModule_Version) : nullptr;
 
-#ifdef DMibAssumeMalterlibHost
+#		ifdef DMibAssumeMalterlibHost
 		// This build runs only in a Malterlib host, which provides the dispatcher; without it there is no thread registry to fall back to
 		if (!pInterface || pInterface->m_Version < NSys::NPrivate::EThreadNotificationCrossModule_Version_Min)
 		{
-			fg_WriteUnloadDiagnostic(NStr::gc_Str<"This library was built for a Malterlib host, but the host provides no thread notification dispatcher of a supported version\n">.m_Str.f_Span());
+			fg_WriteUnloadDiagnostic
+				(
+					NStr::gc_Str<"This library was built for a Malterlib host, but the host provides no thread notification dispatcher of a supported version\n">.m_Str.f_Span()
+				)
+			;
 			DMibPDebugBreak;
 		}
 
 		g_pHostThreadNotificationCrossModule = pInterface;
 		pInterface->m_fRegister(&g_ThreadNotificationModule);
-#else
+#		else
 		if (pInterface && pInterface->m_Version >= NSys::NPrivate::EThreadNotificationCrossModule_Version_Min)
 		{
 			g_pHostThreadNotificationCrossModule = pInterface;
@@ -2507,10 +2463,10 @@ namespace
 			;
 			State.m_bSeeded = true;
 		}
-#endif
+#		endif
 	}
 
-#ifndef DMibAssumeMalterlibHost
+#		ifndef DMibAssumeMalterlibHost
 	void fg_DestroyOwnPThreadIntrospectionHook()
 	{
 		umint iThreadLocalParentThread;
@@ -2550,10 +2506,10 @@ namespace
 		NSys::fg_Thread_FreeLocal(iThreadLocalParentThread);
 		g_OwnThreadNotificationState.f_Destruct();
 	}
-#endif
+#		endif
 }
 
-#endif
+#	endif
 
 #endif
 
@@ -2585,7 +2541,7 @@ void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void
 		return;
 	}
 
-#ifndef DMibAssumeMalterlibHost
+#	ifndef DMibAssumeMalterlibHost
 	if (g_bOwnIntrospectionHook)
 	{
 		DMibLock(g_OwnThreadNotificationLock);
@@ -2600,7 +2556,7 @@ void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void
 		}
 		return;
 	}
-#endif
+#	endif
 #endif
 
 	fg_Thread_EnumOtherThreadsInProcessSuspended(_fOnThread);
@@ -2642,14 +2598,14 @@ void NSys::fg_CreateSystem()
 #endif
 	{
 #ifndef F_SETNOSIGPIPE
-		signal(SIGPIPE,SIG_IGN);
+		signal(SIGPIPE, SIG_IGN);
 #endif
 		if (!g_bRegisteredAtFork)
 		{
 			g_bRegisteredAtFork = true;
 			pthread_atfork(&fg_MalterlibSystem_ForkPrepare, &fg_MalterlibSystem_ForkParent, &fg_MalterlibSystem_ForkChildFinished);
 		}
-		signal(SIGHUP,SIG_IGN);
+		signal(SIGHUP, SIG_IGN);
 	}
 
 	//atexit(&fg_DestroySystemAtExit);
@@ -2658,10 +2614,10 @@ void NSys::fg_CreateSystem()
 
 	{
 		int NumArgs = *_NSGetArgc();
-		ch8** pArgs = *_NSGetArgv();
+		ch8 **pArgs = *_NSGetArgv();
 		if (pArgs)
 		{
-			for (int i = 0;i < NumArgs; ++i)
+			for (int i = 0; i < NumArgs; ++i)
 			{
 				if (pArgs[i])
 				{
@@ -2693,11 +2649,11 @@ void NSys::fg_CreateSystem()
 	umint ThisUID = NSys::fg_Thread_GetCurrentUID();
 	pSystem->f_ThreadLocalCreateThread(ThisUID, 0);
 
-	#ifndef DMibDynamicLibrary
-		fg_InstallPThreadIntrospectionHook();
-	#else
-		fg_RegisterThreadNotifications();
-	#endif
+#	ifndef DMibDynamicLibrary
+	fg_InstallPThreadIntrospectionHook();
+#	else
+	fg_RegisterThreadNotifications();
+#	endif
 	fg_InitMalterlibAllEnumOtherThreads();
 #endif
 
@@ -2714,12 +2670,12 @@ constinit NMib::NAtomic::TCAtomic<bool> g_bSysDeleted{false};
 void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 {
 #ifdef DMibConfig_PThreadIntrospection
-#ifndef DMibDynamicLibrary
+#	ifndef DMibDynamicLibrary
 	DMibLock(g_ThreadNotificationLock);
 	_fDestroy();
 	g_bThreadLocalContextDestroyed.f_Store(true, NAtomic::gc_MemoryOrder_Relaxed);
 	fg_DestroyPThreadIntrospectionHook();
-#else
+#	else
 	auto fDestroy = [](void *_pContext)
 		{
 			DMibLock(g_OwnThreadNotificationLock);
@@ -2737,11 +2693,11 @@ void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 	else
 	{
 		fDestroy(&_fDestroy);
-#ifndef DMibAssumeMalterlibHost
+#		ifndef DMibAssumeMalterlibHost
 		fg_DestroyOwnPThreadIntrospectionHook();
-#endif
+#		endif
 	}
-#endif
+#	endif
 #else
 	_fDestroy();
 #endif
@@ -2797,45 +2753,49 @@ namespace NMib
 	{
 		void fg_MalterlibSystem_ForkPrepare()
 		{
-		#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
 			fg_ThreadNotificationsForkPrepare();
-		#endif
+#endif
 			CSystemMacOS::fs_ForkPrepare();
 		}
+
 		void fg_MalterlibSystem_ForkParent()
 		{
 			CSystemMacOS::fs_ForkParent();
-		#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
 			fg_ThreadNotificationsForkParent();
-		#endif
+#endif
 		}
+
 		void fg_MalterlibSystem_ForkChildOverride()
 		{
 			CSystemMacOS::fs_ForkChildStart();
 		}
+
 		void fg_MalterlibSystem_ForkChildOverrideFinished()
 		{
-			#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
 			fg_ThreadNotificationsForkChild();
-			#endif
+#endif
 			CSystemMacOS::fs_ForkChildFinished();
 			g_bForking = false;
 		}
+
 		void fg_MalterlibSystem_ForkChild()
 		{
 			CSystemMacOS::fs_ForkChildStart();
-		#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
 			fg_ThreadNotificationsForkChild();
-		#endif
+#endif
 			CSystemMacOS::fs_ForkChildFinished();
 		}
 
 		void fg_MalterlibSystem_ForkChildFinished()
 		{
 			CSystemMacOS::fs_ForkChildStart();
-		#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
+#if defined(DMibConfig_PThreadIntrospection) && !defined(DMibDynamicLibrary)
 			fg_ThreadNotificationsForkChild();
-		#endif
+#endif
 			CSystemMacOS::fs_ForkChildFinished();
 
 			g_bForking = false;
@@ -2844,29 +2804,29 @@ namespace NMib
 }
 
 #if !defined(DMibDynamicLibrary) || defined(DMibMemoryOverrideDll)
-	namespace NMib
+namespace NMib
+{
+	namespace NSys
 	{
-		namespace NSys
-		{
-			void * g_pCrossModuleMemoryManagerInterface = nullptr;
-		}
+		void *g_pCrossModuleMemoryManagerInterface = nullptr;
 	}
+}
 
-	// Note: This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
-	extern "C" assure_used module_export void *fg_IdsGetCrossModuleMemoryManagerInterface()
-	{
-		return NMib::NSys::g_pCrossModuleMemoryManagerInterface;
-	}
+// Note: This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
+extern "C" assure_used module_export void *fg_IdsGetCrossModuleMemoryManagerInterface()
+{
+	return NMib::NSys::g_pCrossModuleMemoryManagerInterface;
+}
 #endif
 
 void *NSys::fg_Process_GetCrossModuleMemoryManagerInterface()
 {
 #if defined(DMibDynamicLibrary) && !defined(DMibMemoryOverrideDll)
-	void * ( *fMalterlibGetCrossModuleMemoryManagerInterface)();
+	void *(*fMalterlibGetCrossModuleMemoryManagerInterface)();
 	(void * &)fMalterlibGetCrossModuleMemoryManagerInterface = dlsym(RTLD_DEFAULT, "fg_IdsGetCrossModuleMemoryManagerInterface");
-	if (fMalterlibGetCrossModuleMemoryManagerInterface )
+	if (fMalterlibGetCrossModuleMemoryManagerInterface)
 	{
-		auto pRet = fMalterlibGetCrossModuleMemoryManagerInterface ();
+		auto pRet = fMalterlibGetCrossModuleMemoryManagerInterface();
 		return pRet;
 	}
 	else
@@ -2889,9 +2849,9 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 
 bool NSys::fg_System_BeingDebugged()
 {
-	int                 mib[4];
-	struct kinfo_proc   info;
-	size_t              size;
+	int mib[4];
+	struct kinfo_proc info;
+	size_t size;
 
 	// Initialize the flags so that, if sysctl fails for some bizarre
 	// reason, we get a predictable result.
@@ -2913,31 +2873,27 @@ bool NSys::fg_System_BeingDebugged()
 
 	// We're being debugged if the P_TRACED flag is set.
 
-	return ( (info.kp_proc.p_flag & P_TRACED) != 0 );
+	return ((info.kp_proc.p_flag & P_TRACED) != 0);
 }
 
 ////file handling
 
 namespace NMib
 {
-
 	namespace NSys
 	{
-
 		NMib::NStr::CStr fg_MacOS_GetApplicationSupportDirectory();
 		NMib::NStr::CStr fg_MacOS_GetCachesDirectory();
-        NMib::NStr::CStr fg_MacOS_GetUserHomeDirectory();
+		NMib::NStr::CStr fg_MacOS_GetUserHomeDirectory();
 		NMib::NStr::CStr fg_MacOS_GetLogDirectory();
 
 		NMib::NStr::CStrNonTracked fg_MacOS_GetApplicationSupportDirectoryNonTracked();
 		NMib::NStr::CStrNonTracked fg_MacOS_GetCachesDirectoryNonTracked();
-        NMib::NStr::CStrNonTracked fg_MacOS_GetUserHomeDirectoryNonTracked();
+		NMib::NStr::CStrNonTracked fg_MacOS_GetUserHomeDirectoryNonTracked();
 		NMib::NStr::CStrNonTracked fg_MacOS_GetLogDirectoryNonTracked();
 
 		NMib::NStr::CStr fg_MacOS_GetSystemLanguage();
-
 	} // Namespace NSys
-
 } // Namespace NMib
 
 namespace
@@ -3016,7 +2972,7 @@ NStr::CStrNonTracked NSys::NFile::fg_GetTemporaryDirectoryNonTracked()
 		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMP"));
 	if (TmpDir.f_IsEmpty())
 		TmpDir = fg_Process_GetEnvironmentVariable_NonProtected(CStrNonTracked("TEMPDIR"));
-	if(!TmpDir.f_IsEmpty())
+	if (!TmpDir.f_IsEmpty())
 		return NMib::NFile::CFile::fs_AppendPath(TmpDir, fg_GetProgramUserNameNonTracked());
 	return "/tmp";
 }
@@ -3072,9 +3028,10 @@ namespace NMib
 				uint32 Len = 0;
 				_NSGetExecutablePath(nullptr, &Len);
 				tf_CStr Ret;
-				_NSGetExecutablePath(Ret.f_GetStr(Len+1), &Len);
+				_NSGetExecutablePath(Ret.f_GetStr(Len + 1), &Len);
 				return NMib::NFile::CFile::fs_GetPath(NMib::NFile::CFile::fs_GetExpandedPath(Ret));
 			}
+
 			template <typename tf_CStr>
 			tf_CStr fg_GetProgramPathGeneral()
 			{
@@ -3082,7 +3039,7 @@ namespace NMib
 				uint32 Len = 0;
 				_NSGetExecutablePath(nullptr, &Len);
 				tf_CStr Ret;
-				_NSGetExecutablePath(Ret.f_GetStr(Len+1), &Len);
+				_NSGetExecutablePath(Ret.f_GetStr(Len + 1), &Len);
 				return NMib::NFile::CFile::fs_GetExpandedPath(Ret);
 			}
 		}
@@ -3098,7 +3055,6 @@ CStrNonTracked NSys::NFile::fg_GetProgramDirectoryNonTracked()
 {
 	return fg_GetProgramDirectoryGeneral<CStrNonTracked>();
 }
-
 
 CStr NSys::NFile::fg_GetProgramPath()
 {
@@ -3135,30 +3091,27 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 
 NMib::NStr::CStr NSys::NFile::fg_GetUserHomeDirectory()
 {
-    return fg_MacOS_GetUserHomeDirectory();
+	return fg_MacOS_GetUserHomeDirectory();
 }
 
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserHomeDirectoryNonTracked()
 {
-    return fg_MacOS_GetUserHomeDirectoryNonTracked();
+	return fg_MacOS_GetUserHomeDirectoryNonTracked();
 }
-
 
 NMib::NStr::CStr NSys::NFile::fg_GetLogDirectory()
 {
 	return NMib::NFile::CFile::fs_AppendPath(fg_MacOS_GetLogDirectory(), fg_GetProgramUserName());
 }
 
-
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetLogDirectoryNonTracked()
 {
 	return NMib::NFile::CFile::fs_AppendPath(fg_MacOS_GetLogDirectoryNonTracked(), fg_GetProgramUserNameNonTracked());
 }
 
-
 // see man copyfile
 
-static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, bool _bRename)
+static int fg_CopyOrRename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo, bool _bRename)
 {
 	CStr From = _FileFrom;
 	CStr To = _FileTo;
@@ -3192,7 +3145,7 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 
 struct CCopyFileContext
 {
-	NMib::NFile::CFileProgress* m_pProgress;
+	NMib::NFile::CFileProgress *m_pProgress;
 	CMibFilePos m_nFileSize;
 	NMib::NStr::CStr m_FileFrom;
 	bool m_bSizeInit = false;
@@ -3215,29 +3168,29 @@ struct CCopyFileContext
 	}
 };
 
-static int SingleFileCopyFileCallback(int _What, int _Stage, copyfile_state_t _State, char const* _pSrc, char const* _pDst, void* _pContext)
+static int SingleFileCopyFileCallback(int _What, int _Stage, copyfile_state_t _State, char const *_pSrc, char const *_pDst, void *_pContext)
 {
-	CCopyFileContext* pContext = (CCopyFileContext*)_pContext;
+	CCopyFileContext *pContext = (CCopyFileContext *)_pContext;
 
-	switch(_What)
+	switch (_What)
 	{
-		case COPYFILE_COPY_DATA:
+	case COPYFILE_COPY_DATA:
+		{
+			if (pContext && pContext->m_pProgress)
 			{
-				if (pContext && pContext->m_pProgress)
-				{
-					off_t nBytesCopied = 0;
-					copyfile_state_get(_State, COPYFILE_STATE_COPIED, &nBytesCopied);
+				off_t nBytesCopied = 0;
+				copyfile_state_get(_State, COPYFILE_STATE_COPIED, &nBytesCopied);
 
-					pContext->m_pProgress->f_Progress( CMibFilePos(nBytesCopied), pContext->f_GetSize() );
-				}
+				pContext->m_pProgress->f_Progress(CMibFilePos(nBytesCopied), pContext->f_GetSize());
 			}
+		}
 		break;
 	}
 
 	return COPYFILE_CONTINUE;
 }
 
-static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress& _Progress, bool _bRename)
+static int fg_CopyOrRename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo, NMib::NFile::CFileProgress &_Progress, bool _bRename)
 {
 	CStr From = _FileFrom;
 	CStr To = _FileTo;
@@ -3258,7 +3211,7 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 		Context.m_pProgress = &_Progress;
 		Context.m_FileFrom = _FileFrom;
 
-		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CB, (void*)&SingleFileCopyFileCallback);
+		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CB, (void *)&SingleFileCopyFileCallback);
 		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CTX, &Context);
 	}
 
@@ -3279,7 +3232,7 @@ static int fg_CopyOrRename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::
 	return Result;
 }
 
-void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+void NSys::NFile::fg_Duplicate(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo)
 {
 	if (!&clonefile)
 		DMibErrorFile("clonefile function not available in this version of macOS");
@@ -3288,7 +3241,7 @@ void NSys::NFile::fg_Duplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NS
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("clonefile('{}', '{}')") << _FileFrom << _FileTo, errno));
 }
 
-bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+bool NSys::NFile::fg_TryDuplicate(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo)
 {
 	if (!&clonefile)
 		return false;
@@ -3299,7 +3252,7 @@ bool NSys::NFile::fg_TryDuplicate(const NMib::NStr::CStr &_FileFrom, const NMib:
 	return true;
 }
 
-bool NSys::NFile::fg_TryCloneData(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+bool NSys::NFile::fg_TryCloneData(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo)
 {
 	if (!&fclonefileat)
 		return false;
@@ -3493,13 +3446,13 @@ bool NSys::NFile::fg_TryCloneData(const NMib::NStr::CStr &_FileFrom, const NMib:
 	return true;
 }
 
-void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+void NSys::NFile::fg_Copy(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo)
 {
 	if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, false))
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("copyfile('{}', '{}') when copying file") << _FileFrom << _FileTo, ErrNo));
 }
 
-void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+void NSys::NFile::fg_Rename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo)
 {
 	if (NMib::NFile::CFile::fs_FileExists(_FileFrom, NMib::NFile::EFileAttrib_Directory))
 	{
@@ -3518,13 +3471,13 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 	}
 }
 
-void NSys::NFile::fg_Copy(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
+void NSys::NFile::fg_Copy(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
 	if (auto ErrNo = fg_CopyOrRename(_FileFrom, _FileTo, _Progress, false))
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("copyfile('{}', '{}') when copying file") << _FileFrom << _FileTo, ErrNo));
 }
 
-void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::CFileProgress &_Progress)
+void NSys::NFile::fg_Rename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo, NMib::NFile::CFileProgress &_Progress)
 {
 	if (NMib::NFile::CFile::fs_FileExists(_FileFrom, NMib::NFile::EFileAttrib_Directory))
 	{
@@ -3543,7 +3496,7 @@ void NSys::NFile::fg_Rename(const NMib::NStr::CStr &_FileFrom, const NMib::NStr:
 	}
 }
 
-void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+void NSys::NFile::fg_AtomicReplace(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo)
 {
 	if (rename(_FileFrom, _FileTo))
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("rename('{}', '{}')") << _FileFrom << _FileTo, errno));
@@ -3551,7 +3504,7 @@ void NSys::NFile::fg_AtomicReplace(const NMib::NStr::CStr &_FileFrom, const NMib
 
 #include <CoreServices/CoreServices.h>
 
-void *NSys::NFile::fg_ChangeNotification_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
+void *NSys::NFile::fg_ChangeNotification_Open(CStr const &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 {
 	return fg_GetLocalSys()->m_FileChangeNoticationContext->f_Open(_FileName, _OpenFlags, _pReportTo);
 }
@@ -3588,7 +3541,7 @@ NMib::NSys::ICIoLoop *NMib::NSys::fg_GetSharedIoLoop()
 	return fg_GetLocalSys()->m_SharedIoLoop->f_GetLoop();
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddress(::NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes)
 {
 	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_CreateAddress(_Type, _pData, _nDataBytes);
 }
@@ -3601,13 +3554,13 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddressFromNative(void const *
 NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAddress _Address)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_DuplicateAddress(*(CPOSIXAddress*)_Address);
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_DuplicateAddress(*(CPOSIXAddress *)_Address);
 }
 
 ::NMib::NNetwork::ENetAddressType NSys::NNetwork::fg_GetAddressType(NSys::NNetwork::CAddress _Address)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CPOSIXAddress*)_Address);
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CPOSIXAddress *)_Address);
 }
 
 uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _Address)
@@ -3616,16 +3569,16 @@ uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _Address)
 	return static_cast<CPOSIXAddress const *>(_Address)->f_GetScopeID();
 }
 
-bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress*)_Address, _ExpectedType, _opRawData, _nDataBytes);
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress *)_Address, _ExpectedType, _opRawData, _nDataBytes);
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, umint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CPOSIXAddress*)_Address, _Type, _pRawData, _nDataBytes);
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CPOSIXAddress *)_Address, _Type, _pRawData, _nDataBytes);
 }
 
 // Returns an address owned by the caller, or null with a hostname/port for DNS. May block on local configuration.
@@ -3635,7 +3588,7 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_PrepareResolveAddress(NStr::CStr con
 	return fg_GetLocalSys()->m_SocketContext->f_PrepareResolveAddress(_Address, o_Parameters);
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_ResolveAddress(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_ResolveAddress(NMib::NStr::CStr const &_Address, ::NMib::NNetwork::ENetAddressType _PreferType)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_ResolveAddress(_Address, _PreferType);
 }
@@ -3657,14 +3610,14 @@ umint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
 	return CUnixAddress::mc_MaxAddressLength;
 }
 
-void *NSys::NNetwork::fg_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish)
+void *NSys::NNetwork::fg_AsyncResolveAddress_Open(NMib::NStr::CStr const &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress& _opAddress, NMib::NStr::CStr &_Error)
+bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress &_opAddress, NMib::NStr::CStr &_Error)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CPOSIXAddress*&)_opAddress, _Error);
+	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CPOSIXAddress * &)_opAddress, _Error);
 }
 
 void NSys::NNetwork::fg_AsyncResolveAddress_Close(void *_pResolver)
@@ -3681,18 +3634,18 @@ int NSys::NNetwork::fg_CompareAddresses(NSys::NNetwork::CAddress _pFirst, NSys::
 {
 	DMibSafeCheck(_pFirst != nullptr, "Address is null!");
 	DMibSafeCheck(_pSecond != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_CompareAddresses(*(CPOSIXAddress*)_pFirst, *(CPOSIXAddress*)_pSecond);
+	return fg_GetLocalSys()->m_SocketContext->f_CompareAddresses(*(CPOSIXAddress *)_pFirst, *(CPOSIXAddress *)_pSecond);
 }
 
 void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _Address) // It is OK to free a nullptr address
 {
-	return fg_GetLocalSys()->m_SocketContext->f_FreeAddress((CPOSIXAddress*)_Address);
+	return fg_GetLocalSys()->m_SocketContext->f_FreeAddress((CPOSIXAddress *)_Address);
 }
 
 NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, ENetAddressStringFlag _Flags)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CPOSIXAddress*)_Address, _Flags);
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CPOSIXAddress *)_Address, _Flags);
 }
 
 // Connection Operations
@@ -3704,7 +3657,7 @@ void *NSys::NNetwork::fg_AsyncConnect
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_AsyncConnect(*(CPOSIXAddress*)_Address, fg_Move(_fOnStateChange), (CPOSIXAddress *)_BindAddress);
+	return fg_GetLocalSys()->m_SocketContext->f_AsyncConnect(*(CPOSIXAddress *)_Address, fg_Move(_fOnStateChange), (CPOSIXAddress *)_BindAddress);
 }
 
 void NSys::NNetwork::fg_StartSocket(void *_pSocket)
@@ -3720,7 +3673,7 @@ void *NSys::NNetwork::fg_Listen
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_Listen(*(CPOSIXAddress*)_Address, fg_Move(_fOnStateChange), _Flags);
+	return fg_GetLocalSys()->m_SocketContext->f_Listen(*(CPOSIXAddress *)_Address, fg_Move(_fOnStateChange), _Flags);
 }
 
 void *NSys::NNetwork::fg_ListenDatagram
@@ -3731,84 +3684,84 @@ void *NSys::NNetwork::fg_ListenDatagram
 	)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_ListenDatagram(*(CPOSIXAddress*)_Address, fg_Move(_fOnStateChange), _Flags);
+	return fg_GetLocalSys()->m_SocketContext->f_ListenDatagram(*(CPOSIXAddress *)_Address, fg_Move(_fOnStateChange), _Flags);
 }
 
 void *NSys::NNetwork::fg_Accept(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_Accept((CPOSIXSocket*)_pSocket, fg_Move(_fOnStateChange));
+	return fg_GetLocalSys()->m_SocketContext->f_Accept((CPOSIXSocket *)_pSocket, fg_Move(_fOnStateChange));
 }
 
 void NSys::NNetwork::fg_Close(void *_pSocket) // Closes the socket and connectio
 {
-	fg_GetLocalSys()->m_SocketContext->f_Close((CPOSIXSocket*)_pSocket);
+	fg_GetLocalSys()->m_SocketContext->f_Close((CPOSIXSocket *)_pSocket);
 }
 
 void NSys::NNetwork::fg_Shutdown(void *_pSocket)
 {
-	fg_GetLocalSys()->m_SocketContext->f_Shutdown((CPOSIXSocket*)_pSocket);
+	fg_GetLocalSys()->m_SocketContext->f_Shutdown((CPOSIXSocket *)_pSocket);
 }
 
 umint NSys::NNetwork::fg_Receive(void *_pSocket, void *_pData, umint _DataLen, bool &o_bEndOfStream)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_Receive((CPOSIXSocket*)_pSocket, _pData, _DataLen, o_bEndOfStream);
+	return fg_GetLocalSys()->m_SocketContext->f_Receive((CPOSIXSocket *)_pSocket, _pData, _DataLen, o_bEndOfStream);
 }
 
-umint NSys::NNetwork::fg_Send(void *_pSocket, const void *_pData, umint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_Send(void *_pSocket, void const *_pData, umint _DataLen) // Returns bytes sen
 {
-	return fg_GetLocalSys()->m_SocketContext->f_Send((CPOSIXSocket*)_pSocket, _pData, _DataLen);
+	return fg_GetLocalSys()->m_SocketContext->f_Send((CPOSIXSocket *)_pSocket, _pData, _DataLen);
 }
 
 umint NSys::NNetwork::fg_SendVectored(void *_pSocket, NSys::CIoSpan const *_pSpans, umint _nSpans)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_SendVectored((CPOSIXSocket*)_pSocket, _pSpans, _nSpans);
+	return fg_GetLocalSys()->m_SocketContext->f_SendVectored((CPOSIXSocket *)_pSocket, _pSpans, _nSpans);
 }
 
-umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, const void *_pData, umint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void const *_pData, umint _DataLen) // Returns bytes sen
 {
-	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket*)_pSocket, *((CPOSIXAddress*)_Address), _pData, _DataLen);
+	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_Address), _pData, _DataLen);
 }
 
 umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, umint _DataLen) // Returns bytes sen
 {
-	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket*)_pSocket, *((CPOSIXAddress*)_Address), _pData, _DataLen);
+	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_Address), _pData, _DataLen);
 }
 
 // Socket Properties & State
 
 void NSys::NNetwork::fg_SetOnStateChange(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	fg_GetLocalSys()->m_SocketContext->f_SetOnStateChange((CPOSIXSocket*)_pSocket, fg_Move(_fOnStateChange));
+	fg_GetLocalSys()->m_SocketContext->f_SetOnStateChange((CPOSIXSocket *)_pSocket, fg_Move(_fOnStateChange));
 }
 
 NMib::NNetwork::ENetTCPState NSys::NNetwork::fg_GetState(void *_pSocket) // Get the state of data availabl
 {
-	return fg_GetLocalSys()->m_SocketContext->f_GetState((CPOSIXSocket*)_pSocket);
+	return fg_GetLocalSys()->m_SocketContext->f_GetState((CPOSIXSocket *)_pSocket);
 }
 
 NMib::NStr::CStr NSys::NNetwork::fg_GetCloseReason(void *_pSocket)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_GetCloseReason((CPOSIXSocket*)_pSocket);
+	return fg_GetLocalSys()->m_SocketContext->f_GetCloseReason((CPOSIXSocket *)_pSocket);
 }
 
 void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_InheritHandle2((CPOSIXSocket*)_pSocket, fg_Move(_fOnStateChange));
+	return fg_GetLocalSys()->m_SocketContext->f_InheritHandle2((CPOSIXSocket *)_pSocket, fg_Move(_fOnStateChange));
 }
 
 void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_GiveUpForInherit((CPOSIXSocket*)_pSocket);
+	return fg_GetLocalSys()->m_SocketContext->f_GiveUpForInherit((CPOSIXSocket *)_pSocket);
 }
 
 void NSys::NNetwork::fg_GiveUpForInheritAsync(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle)
 {
-	fg_GetLocalSys()->m_SocketContext->f_GiveUpForInheritAsync((CPOSIXSocket*)_pSocket, fg_Move(_fOnHandle));
+	fg_GetLocalSys()->m_SocketContext->f_GiveUpForInheritAsync((CPOSIXSocket *)_pSocket, fg_Move(_fOnHandle));
 }
 
 void NSys::NNetwork::fg_CloseAsync(void *_pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
 {
-	fg_GetLocalSys()->m_SocketContext->f_CloseAsync((CPOSIXSocket*)_pSocket, fg_Move(_fOnClosed));
+	fg_GetLocalSys()->m_SocketContext->f_CloseAsync((CPOSIXSocket *)_pSocket, fg_Move(_fOnClosed));
 }
 
 void NSys::NNetwork::fg_CloseSocketHandle(void *_pSocketHandle)
@@ -3818,17 +3771,17 @@ void NSys::NNetwork::fg_CloseSocketHandle(void *_pSocketHandle)
 
 void *NSys::NNetwork::fg_GetOSSocket(void *_pSocket)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_GetOSSocket((CPOSIXSocket*)_pSocket);
+	return fg_GetLocalSys()->m_SocketContext->f_GetOSSocket((CPOSIXSocket *)_pSocket);
 }
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_GetPeerAddress(void *_pSocket)
 {
-	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_GetPeerAddress((CPOSIXSocket*)_pSocket);
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_GetPeerAddress((CPOSIXSocket *)_pSocket);
 }
 
 bool NSys::NNetwork::fg_GetProcessIdentity(void *_pSocket, CProcessIdentity &o_LocalIdentity, CProcessIdentity &o_PeerIdentity)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_GetProcessIdentity((CPOSIXSocket*)_pSocket, o_LocalIdentity, o_PeerIdentity);
+	return fg_GetLocalSys()->m_SocketContext->f_GetProcessIdentity((CPOSIXSocket *)_pSocket, o_LocalIdentity, o_PeerIdentity);
 }
 
 bool NSys::NNetwork::fg_HasUnixSocketPeerProcessIdentity()
@@ -3838,10 +3791,10 @@ bool NSys::NNetwork::fg_HasUnixSocketPeerProcessIdentity()
 
 uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_GetListenPort((CPOSIXSocket*)_pSocket);
+	return fg_GetLocalSys()->m_SocketContext->f_GetListenPort((CPOSIXSocket *)_pSocket);
 }
 
-void NSys::NFile::fg_FileEnumOtherHandles(const NMib::NStr::CStr &_FileName, NContainer::TCVector<NMib::NFile::CFileHandle> &_HandleInfo)
+void NSys::NFile::fg_FileEnumOtherHandles(NMib::NStr::CStr const &_FileName, NContainer::TCVector<NMib::NFile::CFileHandle> &_HandleInfo)
 {
 	DMibPDebugBreak; // Not implemented
 }
@@ -4082,34 +4035,34 @@ namespace NMib::NThread
 }
 
 #if __has_include(<os/os_sync_wait_on_address.h>)
-	// The native futex API ships with the macOS 14.4 SDK and later
-	#include <os/os_sync_wait_on_address.h>
-	#define DMibPMacOSHasOsSync 1
+// The native futex API ships with the macOS 14.4 SDK and later
+#	include <os/os_sync_wait_on_address.h>
+#	define DMibPMacOSHasOsSync 1
 #endif
 
 #if !defined(DMibPMacOSHasOsSync) || DPlatformVersion < 140400
-	// Fallback for macOS < 14.4 (or pre-14.4 SDKs) where os_sync_wait_on_address is unavailable.
-	// __ulock_wait/__ulock_wait2/__ulock_wake are private but ABI-stable syscall
-	// wrappers (libc++ atomic waits and os_unfair_lock park through the same ulock
-	// syscalls). __ulock_wait2 (uint64 nanosecond timeout) exists since macOS 11
-	// and is weak-imported; where the symbol is absent the code falls back to
-	// __ulock_wait (macOS 10.12+, uint32 microsecond timeout).
-	// Delete this block when the deployment floor is raised to macOS 14.4.
-	#define DMibPMacOSUseUlockFallback 1
+// Fallback for macOS < 14.4 (or pre-14.4 SDKs) where os_sync_wait_on_address is unavailable.
+// __ulock_wait/__ulock_wait2/__ulock_wake are private but ABI-stable syscall
+// wrappers (libc++ atomic waits and os_unfair_lock park through the same ulock
+// syscalls). __ulock_wait2 (uint64 nanosecond timeout) exists since macOS 11
+// and is weak-imported; where the symbol is absent the code falls back to
+// __ulock_wait (macOS 10.12+, uint32 microsecond timeout).
+// Delete this block when the deployment floor is raised to macOS 14.4.
+#	define DMibPMacOSUseUlockFallback 1
 
-	extern "C"
-	{
-		int __ulock_wait(uint32_t _Operation, void *_pAddress, uint64_t _Value, uint32_t _TimeoutUs);
-		int __ulock_wait2(uint32_t _Operation, void *_pAddress, uint64_t _Value, uint64_t _TimeoutNs, uint64_t _Value2) __attribute__((weak_import));
-		int __ulock_wake(uint32_t _Operation, void *_pAddress, uint64_t _WakeValue);
-	}
+extern "C"
+{
+	int __ulock_wait(uint32_t _Operation, void *_pAddress, uint64_t _Value, uint32_t _TimeoutUs);
+	int __ulock_wait2(uint32_t _Operation, void *_pAddress, uint64_t _Value, uint64_t _TimeoutNs, uint64_t _Value2) __attribute__((weak_import));
+	int __ulock_wake(uint32_t _Operation, void *_pAddress, uint64_t _WakeValue);
+}
 
-	namespace
-	{
-		constexpr uint32 gc_UlockCompareAndWait = 0x00000001; // UL_COMPARE_AND_WAIT
-		constexpr uint32 gc_UlockFlagWakeAll = 0x00000100; // ULF_WAKE_ALL
-		constexpr uint32 gc_UlockFlagNoErrNo = 0x01000000; // ULF_NO_ERRNO
-	}
+namespace
+{
+	constexpr uint32 gc_UlockCompareAndWait = 0x00000001; // UL_COMPARE_AND_WAIT
+	constexpr uint32 gc_UlockFlagWakeAll = 0x00000100; // ULF_WAKE_ALL
+	constexpr uint32 gc_UlockFlagNoErrNo = 0x01000000; // ULF_NO_ERRNO
+}
 #endif
 
 #include <cstdlib>
@@ -4118,7 +4071,7 @@ namespace
 {
 	[[noreturn]] inline_never void fg_AbortFutexWord(int _Error)
 	{
-		[[maybe_unused]] volatile int Error = _Error;
+		[[maybe_unused]] int volatile Error = _Error;
 		DMibPDebugBreak;
 		std::abort();
 	}
@@ -4177,16 +4130,7 @@ bool NSys::fg_Futex_WaitTimeout(uint32 volatile *_pAddress, uint32 _Expected, fp
 	if (__builtin_available(macOS 14.4, iOS 17.4, *))
 #	endif
 	{
-		int Result = os_sync_wait_on_address_with_timeout
-			(
-				(void *)_pAddress
-				, _Expected
-				, sizeof(uint32)
-				, OS_SYNC_WAIT_ON_ADDRESS_NONE
-				, OS_CLOCK_MACH_ABSOLUTE_TIME
-				, TimeoutNs
-			)
-		;
+		int Result = os_sync_wait_on_address_with_timeout((void *)_pAddress, _Expected, sizeof(uint32), OS_SYNC_WAIT_ON_ADDRESS_NONE, OS_CLOCK_MACH_ABSOLUTE_TIME, TimeoutNs);
 		if (Result >= 0)
 			return false;
 
@@ -4344,15 +4288,13 @@ uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
 	return 0;
 }
 
-void* NSys::fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned long long& _nDataBytes)
+void *NSys::fg_GetExeData(char const *_pSegment, char const *_pSection, unsigned long long &_nDataBytes)
 {
-
 	unsigned long nBytes = 0;
-	uint8 * pData = getsectiondata((mach_header_64 const *)_dyld_get_image_header(0), _pSegment, _pSection, &nBytes);
+	uint8 *pData = getsectiondata((mach_header_64 const *)_dyld_get_image_header(0), _pSegment, _pSection, &nBytes);
 
 	_nDataBytes = nBytes;
 	return pData;
-
 }
 
 umint NSys::fg_Thread_GetVirtualCores()
@@ -4379,7 +4321,6 @@ umint NSys::fg_Thread_GetPhysicalCores()
 
 NMib::NStr::CStr NSys::fg_System_GetCPUName()
 {
-
 	CStr Name;
 	size_t DataSize = 1024;
 	int Ret = sysctlbyname("machdep.cpu.brand_string", Name.f_GetStr(1024), &DataSize, nullptr, 0);
@@ -4393,10 +4334,9 @@ NMib::NStr::CStr NSys::fg_System_GetCPUName()
 	return "Unknown";
 }
 
-
 inline_never umint NMib::NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, umint _nMaxDepth)
 {
-	return (umint)backtrace((void**)_pStack, (int)_nMaxDepth);
+	return (umint)backtrace((void **)_pStack, (int)_nMaxDepth);
 }
 
 inline_never CMibCodeAddress NMib::NSys::fg_System_GetStackTrace(aint _iDepth)
@@ -4406,7 +4346,7 @@ inline_never CMibCodeAddress NMib::NSys::fg_System_GetStackTrace(aint _iDepth)
 	CMibCodeAddress StackTraces[256];
 	StackTraces[_iDepth] = 0;
 
-	backtrace((void**)StackTraces, (int)_iDepth + 1);
+	backtrace((void **)StackTraces, (int)_iDepth + 1);
 
 	return StackTraces[_iDepth];
 }
@@ -4418,6 +4358,7 @@ namespace
 		host_cpu_load_info_data_t m_LastLoadStats;
 
 		NMib::NSystem::CSystemCPUUsage m_LastRet;
+
 	public:
 		CCPUUsageMonitorImpl()
 		{
@@ -4428,6 +4369,7 @@ namespace
 			m_LastRet.m_Kernel = 0.0f;
 			m_LastRet.m_Idle = 0.0f;
 		}
+
 		virtual ~CCPUUsageMonitorImpl()
 		{
 		}
@@ -4472,7 +4414,6 @@ namespace
 			return Ret;
 		}
 	};
-
 }
 
 namespace NMib
@@ -4495,10 +4436,8 @@ namespace NMib
 		{
 			return ((CCPUUsageMonitorImpl *)_pHandle)->f_GetUsage(_bChanged);
 		}
-
 	}
 }
-
 
 void NSys::fg_Mem_EnableMemoryToucher(bool _bEnabled, fp64 _CPUUsage)
 {
@@ -4528,9 +4467,9 @@ void *NSys::fg_Mem_VirtualAllocInRange(umint &_Size, uint8 *_pLower, uint8 *_pUp
 
 	while (AllocAddress < EndAddress)
 	{
-		auto err = vm_allocate( MachTask, &AllocAddress, _Size, 0);
+		auto err = vm_allocate(MachTask, &AllocAddress, _Size, 0);
 		if (err == KERN_SUCCESS)
-			return (void *) AllocAddress;
+			return (void *)AllocAddress;
 
 		vm_size_t Size;
 		vm_region_basic_info_64 BasicInfo;
@@ -4538,9 +4477,7 @@ void *NSys::fg_Mem_VirtualAllocInRange(umint &_Size, uint8 *_pLower, uint8 *_pUp
 		mach_port_t ObjectName = MACH_PORT_NULL;
 		err = vm_region_64(MachTask, &AllocAddress, &Size, VM_REGION_BASIC_INFO_64, (vm_region_info_t)&BasicInfo, &InfoCount, &ObjectName);
 		if (err == KERN_SUCCESS)
-		{
 			AllocAddress = AllocAddress + Size;
-		}
 		else
 			AllocAddress += NMib::NSys::NPrivate::g_PageSize;
 
@@ -4555,20 +4492,19 @@ void NSys::fg_Mem_VirtualFlushInstructionCache(void *_pMem, umint _Size)
 {
 	uint8 *pStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	uint8 *pEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
-    if (msync(pStart, pEnd - pStart, MS_INVALIDATE | MS_SYNC))
+	if (msync(pStart, pEnd - pStart, MS_INVALIDATE | MS_SYNC))
 		DMibError(NMib::NPlatform::fg_FormatErrno("msync", errno));
 }
 
-
 void NSys::fg_TerminateProcess(aint _ExitCode)
 {
-//	fflush(stdout);
-//	fflush(stderr);
-//	_exit(_ExitCode);
+	// fflush(stdout);
+	// fflush(stderr);
+	// _exit(_ExitCode);
 	raise(SIGKILL);
 }
 
-bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info)
+bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo &_Info)
 {
 	_Info.m_bDetected = false;
 	_Info.m_pName = nullptr;
@@ -4595,33 +4531,54 @@ ch8 const *NSys::NFile::fg_GetDllExtension()
 
 struct dyld_unwind_sections
 {
-	const struct mach_header*		mh;
-	const void*						dwarf_section;
-	uintptr_t						dwarf_section_length;
-	const void*						compact_unwind_section;
-	uintptr_t						compact_unwind_section_length;
+	struct mach_header const *mh;
+	void const *dwarf_section;
+	uintptr_t dwarf_section_length;
+	void const *compact_unwind_section;
+	uintptr_t compact_unwind_section_length;
 };
 
-#if __LP64__
-#define RELOC_SIZE 3
-#define LC_SEGMENT_COMMAND		LC_SEGMENT_64
-#define LC_ROUTINES_COMMAND		LC_ROUTINES_64
-struct macho_header				: public mach_header_64  {};
-struct macho_segment_command	: public segment_command_64  {};
-struct macho_section			: public section_64  {};
-//struct macho_nlist				: public nlist_64  {};
-struct macho_routines_command	: public routines_command_64  {};
-#else
-#define RELOC_SIZE 2
-#define LC_SEGMENT_COMMAND		LC_SEGMENT
-#define LC_ROUTINES_COMMAND		LC_ROUTINES
-struct macho_header				: public mach_header  {};
-struct macho_segment_command	: public segment_command {};
-struct macho_section			: public section  {};
-//struct macho_nlist				: public nlist  {};
-struct macho_routines_command	: public routines_command  {};
-#endif
+#	if __LP64__
+#		define RELOC_SIZE 3
+#		define LC_SEGMENT_COMMAND		LC_SEGMENT_64
+#		define LC_ROUTINES_COMMAND		LC_ROUTINES_64
+struct macho_header : public mach_header_64
+{
+};
 
+struct macho_segment_command : public segment_command_64
+{
+};
+
+struct macho_section : public section_64
+{
+};
+
+//struct macho_nlist				: public nlist_64  {};
+struct macho_routines_command : public routines_command_64
+{
+};
+#	else
+#		define RELOC_SIZE 2
+#		define LC_SEGMENT_COMMAND		LC_SEGMENT
+#		define LC_ROUTINES_COMMAND		LC_ROUTINES
+struct macho_header : public mach_header
+{
+};
+
+struct macho_segment_command : public segment_command
+{
+};
+
+struct macho_section : public section
+{
+};
+
+//struct macho_nlist				: public nlist  {};
+struct macho_routines_command : public routines_command
+{
+};
+#	endif
 
 /*
 extern uint32_t                    _dyld_image_count(void)                              AVAILABLE_MAC_OS_X_VERSION_10_1_AND_LATER;
@@ -4629,33 +4586,33 @@ extern const struct mach_header*   _dyld_get_image_header(uint32_t image_index) 
 extern intptr_t                    _dyld_get_image_vmaddr_slide(uint32_t image_index)   AVAILABLE_MAC_OS_X_VERSION_10_1_AND_LATER;
 extern const char*                 _dyld_get_image_name(uint32_t image_index)           AVAILABLE_MAC_OS_X_VERSION_10_1_AND_LATER;
 */
-#ifdef DMibNoMacOSCrossModuleExceptions
+#	ifdef DMibNoMacOSCrossModuleExceptions
 namespace
 {
 	constinit NAtomic::TCAtomic<struct mach_header const *> g_ThisModuleImage = nullptr;
 }
-#endif
+#	endif
 
-extern "C" bool _dyld_find_unwind_sections(void* addr, struct dyld_unwind_sections* info)
+extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sections *info)
 {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#ifdef DMibNoMacOSCrossModuleExceptions
+#	pragma clang diagnostic push
+#	pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#	ifdef DMibNoMacOSCrossModuleExceptions
 	if (!g_ThisModuleImage.f_Load(NAtomic::gc_MemoryOrder_Acquire))
-#if __has_feature(ptrauth_calls)
+#		if __has_feature(ptrauth_calls)
 		g_ThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)ptrauth_strip(&_dyld_find_unwind_sections, ptrauth_key_function_pointer)));
-#else
+#		else
 		g_ThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)&_dyld_find_unwind_sections));
-#endif
-#endif
+#		endif
+#	endif
 	auto pHeader = _dyld_get_image_header_containing_address(addr);
-#pragma clang diagnostic pop
+#	pragma clang diagnostic pop
 	if (!pHeader)
 		return false;
-#ifdef DMibNoMacOSCrossModuleExceptions
+#	ifdef DMibNoMacOSCrossModuleExceptions
 	if (pHeader != g_ThisModuleImage)
 		return false; // Just return unwind sections for this module, because we don't want exceptions to travel across module boundraries
-#endif
+#	endif
 	auto nImages = _dyld_image_count();
 	intptr_t Slide = 0;
 	bool bFound = false;
@@ -4675,50 +4632,52 @@ extern "C" bool _dyld_find_unwind_sections(void* addr, struct dyld_unwind_sectio
 	uint32_t fEHFrameSectionOffset = 0;
 	uint32_t fUnwindInfoSectionOffset = 0;
 
-	const uint8_t *fMachOData = (uint8_t const *)pHeader;
+	uint8_t const *fMachOData = (uint8_t const *)pHeader;
 
-	const uint32_t cmd_count = pHeader->ncmds;
-	const struct load_command* const cmds = (struct load_command*) ((char *)pHeader + sizeof(struct macho_header));
-	const struct load_command* cmd = cmds;
+	uint32_t const cmd_count = pHeader->ncmds;
+	struct load_command const * const cmds = (struct load_command *)((char *)pHeader + sizeof(struct macho_header));
+	struct load_command const *cmd = cmds;
 	for (uint32_t i = 0; i < cmd_count; ++i)
 	{
 		switch (cmd->cmd)
 		{
-			case LC_SEGMENT_COMMAND:
+		case LC_SEGMENT_COMMAND:
 			{
-				const struct macho_segment_command* seg = (struct macho_segment_command*)cmd;
-				const bool isTextSeg = (strcmp(seg->segname, "__TEXT") == 0);
+				struct macho_segment_command const *seg = (struct macho_segment_command *)cmd;
+				bool const isTextSeg = (strcmp(seg->segname, "__TEXT") == 0);
 				if (isTextSeg)
 				{
-					const struct macho_section* const sectionsStart = (struct macho_section*)((char*)seg + sizeof(struct macho_segment_command));
-					const struct macho_section* const sectionsEnd = &sectionsStart[seg->nsects];
-					for (const struct macho_section* sect=sectionsStart; sect < sectionsEnd; ++sect) {
-						if ((strcmp(sect->sectname, "__eh_frame") == 0) )
-							fEHFrameSectionOffset = (uint8_t*)sect - fMachOData;
-						else if ((strcmp(sect->sectname, "__unwind_info") == 0) )
-							fUnwindInfoSectionOffset = (uint8_t*)sect - fMachOData;;
+					struct macho_section const * const sectionsStart = (struct macho_section *)((char *)seg + sizeof(struct macho_segment_command));
+					struct macho_section const * const sectionsEnd = &sectionsStart[seg->nsects];
+					for (struct macho_section const *sect = sectionsStart; sect < sectionsEnd; ++sect)
+					{
+						if ((strcmp(sect->sectname, "__eh_frame") == 0))
+							fEHFrameSectionOffset = (uint8_t *)sect - fMachOData;
+						else if ((strcmp(sect->sectname, "__unwind_info") == 0))
+							fUnwindInfoSectionOffset = (uint8_t *)sect - fMachOData;
 					}
 				}
 			}
 			break;
 		}
-		cmd = (const struct load_command*)(((char*)cmd)+cmd->cmdsize);
+		cmd = (struct load_command const *)(((char *)cmd) + cmd->cmdsize);
 	}
-
 
 	info->mh = pHeader;
 	info->dwarf_section = 0;
 	info->dwarf_section_length = 0;
 	info->compact_unwind_section = 0;
 	info->compact_unwind_section_length = 0;
-	if ( fEHFrameSectionOffset != 0 ) {
-		const macho_section* sect = (macho_section*)&fMachOData[fEHFrameSectionOffset];
-		info->dwarf_section = (void*)(sect->addr + Slide);
+	if (fEHFrameSectionOffset != 0)
+	{
+		macho_section const *sect = (macho_section *)&fMachOData[fEHFrameSectionOffset];
+		info->dwarf_section = (void *)(sect->addr + Slide);
 		info->dwarf_section_length = sect->size;
 	}
-	if ( fUnwindInfoSectionOffset != 0 ) {
-		const macho_section* sect = (macho_section*)&fMachOData[fUnwindInfoSectionOffset];
-		info->compact_unwind_section = (void*)(sect->addr + Slide);
+	if (fUnwindInfoSectionOffset != 0)
+	{
+		macho_section const *sect = (macho_section *)&fMachOData[fUnwindInfoSectionOffset];
+		info->compact_unwind_section = (void *)(sect->addr + Slide);
 		info->compact_unwind_section_length = sect->size;
 	}
 	return true;

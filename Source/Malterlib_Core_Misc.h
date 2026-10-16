@@ -16,18 +16,18 @@ namespace NMib
 	{
 		NStr::CStr fg_FormatTime(NTime::CTime &_Time);
 		NStr::CStr fg_FormatTimeFileName(NTime::CTime &_Time);
-		bool fg_CheckAccessRights(NStr::CStr const& _Path, bool _bRandom = true);
-		bool fg_CheckAccessRights(NStr::CStrNonTracked const& _Path, bool _bRandom = true);
+		bool fg_CheckAccessRights(NStr::CStr const &_Path, bool _bRandom = true);
+		bool fg_CheckAccessRights(NStr::CStrNonTracked const &_Path, bool _bRandom = true);
 		bool fg_CheckFileAccessRights(NStr::CStr _Path);
 
 		template <typename tf_CContainer, typename tf_CType>
-		auto fg_FindEqual(tf_CContainer &&_Container, const tf_CType &_ToFind) -> decltype(fg_Forward<tf_CContainer>(_Container).f_FindEqual(_ToFind))
+		auto fg_FindEqual(tf_CContainer &&_Container, tf_CType const &_ToFind) -> decltype(fg_Forward<tf_CContainer>(_Container).f_FindEqual(_ToFind))
 		{
 			return _Container.f_FindEqual(_ToFind);
 		}
 
 		template <typename tf_CContainer, typename tf_CType, typename tf_CDefault>
-		auto fg_FindEqual(tf_CContainer &&_Container, const tf_CType &_ToFind, const tf_CDefault &_Default)
+		auto fg_FindEqual(tf_CContainer &&_Container, tf_CType const &_ToFind, tf_CDefault const &_Default)
 			-> NTraits::TCRemoveReference<decltype(*fg_Forward<tf_CContainer>(_Container).f_FindEqual(_ToFind))>
 		{
 			auto *pFind = _Container.f_FindEqual(_ToFind);
@@ -80,25 +80,29 @@ namespace NMib
 		template <typename t_CType>
 		class TCTypeID
 		{
-			public:
+		public:
 		};
 
 		template <int t_TypeID>
 		class TCTypeIDReverse
 		{
-			public:
+		public:
 		};
 
-#		define DMibTypeID(_Class, _ID) namespace NMib{namespace NMisc{template <> class TCTypeID<_Class > {public: enum {ETypeID = _ID};}; template <> class TCTypeIDReverse<_ID> {public: using CType = _Class;};}}
-
+#define DMibTypeID(_Class, _ID) \
+	namespace NMib{namespace NMisc{template <> class TCTypeID<_Class > {public: enum {ETypeID = _ID};}; template <> class TCTypeIDReverse<_ID> {public: using CType = _Class;};}}
 
 		class CClassContainer
 		{
-			private:
-			public:
+		private:
+		public:
+			CClassContainer()
+			{
+			}
 
-			CClassContainer() {}
-			CClassContainer(CClassContainer const&) {} // Ignore the link.
+			CClassContainer(CClassContainer const &)
+			{
+			} // Ignore the link.
 
 			virtual ~CClassContainer()
 			{
@@ -116,6 +120,7 @@ namespace NMib
 			{
 				return (t_CCast *)fp_GetPointer();
 			}
+
 			/*
 			// Todo add dynamic_cast system
 			template <typename t_CCast, typename t_CBase>
@@ -134,29 +139,29 @@ namespace NMib
 			{
 				return fp_GetContext();
 			}
+
 		protected:
 			virtual void *fp_GetPointer() const = 0;
 			virtual aint fp_GetIdentifier() const = 0;
 			virtual umint fp_GetContext() const = 0;
-
 		};
 
 		template <typename t_CType>
 		class TCClassContainer : public CClassContainer
 		{
-			public:
-
-			const t_CType *m_pContainee;
+		public:
+			t_CType const *m_pContainee;
 			aint m_Identifier;
 			umint m_Context;
 
-			TCClassContainer(const t_CType &_Containee, aint _Identifier)
+			TCClassContainer(t_CType const &_Containee, aint _Identifier)
 			{
 				m_pContainee = &_Containee;
 				m_Identifier = _Identifier;
 				m_Context = 0;
 			}
-			TCClassContainer(const t_CType &_Containee, aint _Identifier, umint _Context)
+
+			TCClassContainer(t_CType const &_Containee, aint _Identifier, umint _Context)
 			{
 				m_pContainee = &_Containee;
 				m_Identifier = _Identifier;
@@ -181,26 +186,25 @@ namespace NMib
 		};
 
 		template <typename t_CType>
-		TCClassContainer<t_CType> fg_GetClassContainer(const t_CType &_Object)
+		TCClassContainer<t_CType> fg_GetClassContainer(t_CType const &_Object)
 		{
 			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::ETypeID));
 		}
 
 		template <typename t_CType>
-		TCClassContainer<t_CType> fg_GetClassContainer(const t_CType &_Object, umint _Context)
+		TCClassContainer<t_CType> fg_GetClassContainer(t_CType const &_Object, umint _Context)
 		{
 			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::ETypeID, _Context));
 		}
 
-#		define DGetCC(_Object)	NMib::NMisc::fg_GetClassContainer(_Object).f_GetVoidPtr()
-#		define DGetCCContext(_Object, _Context)	NMib::NMisc::fg_GetClassContainer(_Object, _Context).f_GetVoidPtr()
+#define DGetCC(_Object)	NMib::NMisc::fg_GetClassContainer(_Object).f_GetVoidPtr()
+#define DGetCCContext(_Object, _Context)	NMib::NMisc::fg_GetClassContainer(_Object, _Context).f_GetVoidPtr()
 
 		class CClassContainerList
 		{
-			public:
-
+		public:
 			DMibListLinkD_List(CClassContainer, m_Link) m_List;
-			using CIter = DMibListLinkD_Iter(CClassContainer, m_Link) ;
+			using CIter = DMibListLinkD_Iter(CClassContainer, m_Link);
 
 			~CClassContainerList()
 			{
@@ -214,7 +218,6 @@ namespace NMib
 		class CRandomShiftRNG
 		{
 		public:
-
 			constexpr CRandomShiftRNG(uint32 _Seed0 = 123456789, uint32 _Seed1 = 362436069, uint32 _Seed2 = 2521288629)
 			{
 				if (_Seed0 != 0)
@@ -275,7 +278,7 @@ namespace NMib
 				return _Min + f_GetValue<tf_CInt>() % (_Max - _Min);
 			}
 
-			constexpr inline_small static uint32 fs_Max()
+			static constexpr inline_small uint32 fs_Max()
 			{
 				return TCLimitsInt<uint32>::mc_Max;
 			}
@@ -354,6 +357,7 @@ namespace NMib
 			{
 				NSys::fg_Debug_PauseDeadlockDetector();
 			}
+
 			~CDeadlockDetocterPause()
 			{
 				NSys::fg_Debug_ResumeDeadlockDetector();
@@ -362,18 +366,18 @@ namespace NMib
 
 #define DMibDeadlockDetectorPause NMib::NMisc::CDeadlockDetocterPause MalterlibDeadlockDetectorPauseScope;
 #ifndef DMibPNoShortCuts
-#define DDeadlockDetectorPause DMibDeadlockDetectorPause
+#	define DDeadlockDetectorPause DMibDeadlockDetectorPause
 #endif
 
 		enum ECompareResult
 		{
-			ECompareResult_LessThan = -1,
-			ECompareResult_Equal = 0,
-			ECompareResult_GreaterThan = 1,
+			ECompareResult_LessThan      = -1
+			, ECompareResult_Equal       = 0
+			, ECompareResult_GreaterThan = 1
 		};
 
 		template <typename t_CLeft, typename t_CRight>
-		inline_small ECompareResult fg_Compare(const t_CLeft &_Left, const t_CRight &_Right)
+		inline_small ECompareResult fg_Compare(t_CLeft const &_Left, t_CRight const &_Right)
 		{
 			if (_Left < _Right)
 				return ECompareResult_LessThan;
@@ -383,7 +387,7 @@ namespace NMib
 		}
 
 		template <typename t_CLeft, typename t_CRight>
-		inline_small ECompareResult fg_Compare(ECompareResult _LastResult, const t_CLeft &_Left, const t_CRight &_Right)
+		inline_small ECompareResult fg_Compare(ECompareResult _LastResult, t_CLeft const &_Left, t_CRight const &_Right)
 		{
 			if (!(_LastResult == ECompareResult_Equal))
 				return _LastResult;
@@ -402,14 +406,12 @@ namespace NMib
 		{
 			int iDollarPos = _Str.f_FindChar('$');
 			if (iDollarPos == -1)
-			{
 				return _Str;
-			}
 			else
 			{
 				tf_CString Result, OptionName, Value;
-				typename tf_CString::CChar const* pRawValue = _Str.f_GetStr();
-				typename tf_CString::CChar const* pStartValue = _Str.f_GetStr();
+				typename tf_CString::CChar const *pRawValue = _Str.f_GetStr();
+				typename tf_CString::CChar const *pStartValue = _Str.f_GetStr();
 				aint nParsed;
 
 				while (iDollarPos != -1)
@@ -426,9 +428,7 @@ namespace NMib
 						OptionName = OptionName.f_Trim();
 
 						if (fg_Forward<tf_CLookupFunc>(_LookupFunc)(OptionName, Value))
-						{
 							Result += Value;
-						}
 						else
 							pRawValue = pStartValue;
 					}
@@ -443,9 +443,7 @@ namespace NMib
 
 					iDollarPos = NStr::fg_StrFindChar(pRawValue, '$');
 					if (iDollarPos == -1)
-					{
 						Result.f_AddStr(pRawValue, NStr::fg_StrLen(pRawValue));
-					}
 				}
 				return Result;
 			}
@@ -567,7 +565,7 @@ namespace NMib
 		}
 
 		template <typename tf_CType>
-		constexpr inline_always tf_CType *end(TCVector<tf_CType>& _Container)
+		constexpr inline_always tf_CType *end(TCVector<tf_CType> &_Container)
 		{
 			return _Container.f_GetArray() + _Container.f_GetLen();
 		}

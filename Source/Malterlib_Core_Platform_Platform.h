@@ -5,26 +5,29 @@
 
 // Code address
 #ifdef DDebugger_lldb
-	struct CMibCodeAddressType
+struct CMibCodeAddressType
+{
+	struct CCodeAddressFunction
 	{
-		struct CCodeAddressFunction
-		{
-		};
-		struct CCodeAddressFile
-		{
-		};
-		struct CCodeAddressLine
-		{
-		};
-		static CCodeAddressFunction *fs_Debug_Function();
-		static CCodeAddressFile *fs_Debug_File();
-		static CCodeAddressLine *fs_Debug_Line();
 	};
-	using CMibCodeAddress = CMibCodeAddressType *;
-#else
-	using CMibCodeAddress = void *;
-#endif
 
+	struct CCodeAddressFile
+	{
+	};
+
+	struct CCodeAddressLine
+	{
+	};
+
+	static CCodeAddressFunction *fs_Debug_Function();
+	static CCodeAddressFile *fs_Debug_File();
+	static CCodeAddressLine *fs_Debug_Line();
+};
+
+using CMibCodeAddress = CMibCodeAddressType *;
+#else
+using CMibCodeAddress = void *;
+#endif
 
 // Error line formatting
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
@@ -45,8 +48,6 @@
 #	error "Implement this"
 #endif
 
-
-
 // Main
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
 #	define DMibPMain int main(){return NMib::fg_GetSys()->f_RunApplication();}
@@ -54,12 +55,12 @@
 #	ifdef DPConsole
 #		define DMibPMain int __cdecl wmain(int argc, wchar_t *argv[], wchar_t *envp[]){return NMib::fg_GetSys()->f_RunApplication();}
 #	else
-#		define DMibPMain int __stdcall wWinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, wchar_t *lpCmdLine,int nShowCmd){return NMib::fg_GetSys()->f_RunApplication();}
+#		define DMibPMain \
+			int __stdcall wWinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, wchar_t *lpCmdLine,int nShowCmd){return NMib::fg_GetSys()->f_RunApplication();}
 #	endif
 #else
 #	error "Implement this"
 #endif
-
 
 // New line
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
@@ -69,5 +70,4 @@
 #else
 #	error "Implement this"
 #endif
-
 

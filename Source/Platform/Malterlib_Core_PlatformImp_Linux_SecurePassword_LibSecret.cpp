@@ -113,18 +113,17 @@ namespace NMib::NSys
 		mutable NThread::CMutual mp_Lock;
 
 	public:
-
 		CLibSecretPasswordManager();
 		~CLibSecretPasswordManager();
 
 		bool f_OK() const override;
 
 		bool f_SecurePassword_IsLocked() override;
-		ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location) override;
-		ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure const& _Password) override;
-		ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const& _Key) override;
-		ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure& _oPassword) override;
-		ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const& _Key) override;
+		ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location) override;
+		ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password) override;
+		ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const &_Key) override;
+		ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword) override;
+		ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key) override;
 	};
 
 	NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLibSecretPasswordManager()
@@ -147,8 +146,8 @@ namespace NMib::NSys
 			, SECRET_SCHEMA_NONE
 			,
 			{
-				{ "key", SECRET_SCHEMA_ATTRIBUTE_STRING }
-				, { "NULL", (SecretSchemaAttributeType)0 }
+				{"key", SECRET_SCHEMA_ATTRIBUTE_STRING}
+				, {"NULL", (SecretSchemaAttributeType)0}
 			}
 		}
 	;
@@ -172,7 +171,7 @@ namespace NMib::NSys
 		return _pResult->message;
 	}
 
-	static void fg_SecurePassword_GNOME_Log(char const* _pFunc, bool _bSuccess, GError const *_pResult)
+	static void fg_SecurePassword_GNOME_Log(char const *_pFunc, bool _bSuccess, GError const *_pResult)
 	{
 		if (_bSuccess)
 			return;
@@ -210,7 +209,7 @@ namespace NMib::NSys
 		return ESecurePassword_Failure;
 	}
 
-	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location)
+	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location)
 	{
 		DMibLock(mp_Lock);
 
@@ -224,13 +223,7 @@ namespace NMib::NSys
 
 		GError *pResult = nullptr;
 
-		auto *pService = mp_KeychainLibrary.secret_service_get_sync
-			(
-				SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS
-				, nullptr
-				, &pResult
-			)
-		;
+		auto *pService = mp_KeychainLibrary.secret_service_get_sync(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS, nullptr, &pResult);
 
 		if (!pService)
 			return true;
@@ -258,7 +251,7 @@ namespace NMib::NSys
 
 		bool bAnyUnlocked = false;
 
-		for(auto pListIter = pCollections; pListIter; pListIter = pListIter->next)
+		for (auto pListIter = pCollections; pListIter; pListIter = pListIter->next)
 		{
 			SecretCollection *pSecetService = fg_AutoStaticCast(pListIter->data);
 			auto pLabel = mp_KeychainLibrary.secret_collection_get_label(pSecetService);
@@ -279,7 +272,7 @@ namespace NMib::NSys
 		return !bAnyUnlocked;
 	}
 
-	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const& _Password)
+	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password)
 	{
 		DMibLock(mp_Lock);
 
@@ -296,29 +289,21 @@ namespace NMib::NSys
 				, "key"
 				, _Key.f_GetStr()
 				, nullptr
-			);
+			)
+		;
 
 		fg_SecurePassword_GNOME_Log("secret_password_store_sync", bSuccess, pResult);
 
 		return fg_SecurePassword_Decode_Result(bSuccess, pResult);
 	}
 
-	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_Remove(NMib::NStr::CStr const& _Key)
+	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_Remove(NMib::NStr::CStr const &_Key)
 	{
 		DMibLock(mp_Lock);
 
 		GError *pResult = nullptr;
 
-		bool bSuccess = mp_KeychainLibrary.secret_password_clear_sync
-			(
-				&gc_SecretSchema
-				, nullptr
-				, &pResult
-				, "key"
-				, _Key.f_GetStr()
-				, nullptr
-			)
-		;
+		bool bSuccess = mp_KeychainLibrary.secret_password_clear_sync(&gc_SecretSchema, nullptr, &pResult, "key", _Key.f_GetStr(), nullptr);
 
 		if (!bSuccess && !pResult)
 			return ESecurePassword_NotFound;
@@ -328,22 +313,13 @@ namespace NMib::NSys
 		return fg_SecurePassword_Decode_Result(bSuccess, pResult);
 	}
 
-	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_Get(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure &o_Password)
+	ESecurePassword CLibSecretPasswordManager::f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password)
 	{
 		DMibLock(mp_Lock);
 
 		GError *pResult = nullptr;
 
-		gchar *pPassword = mp_KeychainLibrary.secret_password_lookup_sync
-			(
-				&gc_SecretSchema
-				, nullptr
-				, &pResult
-				, "key"
-				, _Key.f_GetStr()
-				, nullptr
-			)
-		;
+		gchar *pPassword = mp_KeychainLibrary.secret_password_lookup_sync(&gc_SecretSchema, nullptr, &pResult, "key", _Key.f_GetStr(), nullptr);
 
 		if (!pPassword && !pResult)
 			return ESecurePassword_NotFound;

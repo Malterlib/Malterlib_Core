@@ -10,20 +10,20 @@ namespace NMib
 		namespace NPlatform
 		{
 			template <typename tf_CRet, typename tf_CStr>
-			tf_CRet fg_ConvertToWindowsPathLocal(const tf_CStr &_Path, bool _bForceLong = false);
+			tf_CRet fg_ConvertToWindowsPathLocal(tf_CStr const &_Path, bool _bForceLong = false);
 			template <typename tf_CWindowsStr, typename tf_CRet, typename tf_CSrc>
-			tf_CRet fg_ConvertToWindowsPath(const tf_CSrc &_Path, bool _bAddCurrentDir, aint _MaxLen = _MAX_PATH, bool _bTryShorten = true);
+			tf_CRet fg_ConvertToWindowsPath(tf_CSrc const &_Path, bool _bAddCurrentDir, aint _MaxLen = _MAX_PATH, bool _bTryShorten = true);
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
-			tf_CRet fg_ConvertToShortWindowsPath(const tf_CSource &_Path, bool _bAddCurrentDir);
+			tf_CRet fg_ConvertToShortWindowsPath(tf_CSource const &_Path, bool _bAddCurrentDir);
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
-			tf_CRet fg_ConvertToLongWindowsPath(const tf_CSource &_Path, bool _bAddCurrentDir);
+			tf_CRet fg_ConvertToLongWindowsPath(tf_CSource const &_Path, bool _bAddCurrentDir);
 
-			NStr::CWStr fg_ConvertToWindowsPath(const NStr::CStr &_Path, bool _bAddCurrentDir, aint _MaxLen = _MAX_PATH, bool _bTryShorten = true);
-			NStr::CStr fg_ConvertFromWindowsPath(const NStr::CWStr &_Path);
-			NStr::CStr fg_ConvertFromWindowsPath(const NStr::CStr &_Path);
+			NStr::CWStr fg_ConvertToWindowsPath(NStr::CStr const &_Path, bool _bAddCurrentDir, aint _MaxLen = _MAX_PATH, bool _bTryShorten = true);
+			NStr::CStr fg_ConvertFromWindowsPath(NStr::CWStr const &_Path);
+			NStr::CStr fg_ConvertFromWindowsPath(NStr::CStr const &_Path);
 			template <typename tf_CWindowsStr, typename tf_CRet, typename tf_CSrc>
-			tf_CRet fg_ConvertFromWindowsPath(const tf_CSrc &_Path);
-			NStr::CWStr fg_ConvertToWindowsPathLocal(const NStr::CStr &_Path, bool _bForceLong = false);
+			tf_CRet fg_ConvertFromWindowsPath(tf_CSrc const &_Path);
+			NStr::CWStr fg_ConvertToWindowsPathLocal(NStr::CStr const &_Path, bool _bForceLong = false);
 
 			NStr::CStr fg_ConvertToDevicePath(NStr::CStr const &_In);
 			void fg_DefineDosDevice(NStr::CStr const &_Device, NStr::CStr const &_Path);

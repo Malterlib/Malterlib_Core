@@ -3,12 +3,11 @@
 
 #pragma once
 
-
 #include <Mib/Type/Traits>
 #include <Mib/Core/EnableIf>
 
 template <typename t_CEnum>
-DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator | ( t_CEnum _Left, t_CEnum _Right) noexcept
+DMibSuppressUndefinedSanitizer constexpr inline_small t_CEnum operator | (t_CEnum _Left, t_CEnum _Right) noexcept
 	requires (NMib::NTraits::cIsEnum<t_CEnum>)
 {
 	using CUnderlyingType = NMib::NTraits::TCEnumUnderlyingType<t_CEnum>;

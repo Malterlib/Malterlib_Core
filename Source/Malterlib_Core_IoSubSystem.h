@@ -82,7 +82,7 @@ namespace NMib::NSys
 
 	struct CSort_StatsDump
 	{
-		auto operator()(FIoStatsDump _fLeft, FIoStatsDump _fRight) const
+		auto operator () (FIoStatsDump _fLeft, FIoStatsDump _fRight) const
 		{
 			return (umint)_fLeft <=> (umint)_fRight;
 		}

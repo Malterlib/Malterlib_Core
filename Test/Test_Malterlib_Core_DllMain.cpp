@@ -4,7 +4,7 @@
 #include <Mib/Core/Core>
 
 #ifdef DPlatformFamily_Linux
-#include <pthread.h>
+#	include <pthread.h>
 #endif
 
 DMibAppNoClass;
@@ -28,8 +28,6 @@ namespace
 	thread_local CThreadLocalWithDestructor g_ThreadLocalWithDestructor;
 }
 #endif
-
-
 
 NMib::NThread::TCThreadLocal<NMib::NStr::CStr, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> g_ThreadLocal;
 
@@ -78,7 +76,8 @@ struct CTestClass
 	};
 	~CTestClass()
 	{
-		int x = 0; (void)x;
+		int x = 0;
+		(void)x;
 	}
 };
 

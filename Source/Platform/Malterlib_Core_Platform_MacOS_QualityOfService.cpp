@@ -26,7 +26,6 @@ namespace NMib
 
 				if (_Priority >= EExecutionPriority_High)
 				{
-
 					return
 						{
 							.m_Class = QOS_CLASS_USER_INTERACTIVE

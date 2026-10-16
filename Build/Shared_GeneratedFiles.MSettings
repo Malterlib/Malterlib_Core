@@ -194,7 +194,6 @@ Property
 		!!ScriptWindowsBat false
 	}
 
-
 	SharedBuildSettingsScriptContents =+	`\r\n`\
 											`export NumCPUs=${NumCPUs:-\`getconf _NPROCESSORS_ONLN\`}\r\n`
 	{
@@ -579,7 +578,8 @@ Property
 		!!BuildSystemOutputDir->GetFile() "Default"
 	}
 
-	MalterlibGenerateCompileCommands: bool = ((!MalterlibBuildServerBuild) && (!RunningCI)) // User(Build System)=false: Enable compile_commands.json generation. Slows down generation significantly unless you are using the Ninja generator.
+	// User(Build System)=false: Enable compile_commands.json generation. Slows down generation significantly unless you are using the Ninja generator.
+	MalterlibGenerateCompileCommands: bool = ((!MalterlibBuildServerBuild) && (!RunningCI))
 }
 
 %Group "~Automatic/WorkspaceConfigStore"
@@ -628,9 +628,9 @@ Property
 			Name `@(BuildSystemOutputDir)/ConfigStore/BuildWorkspace.sh`
 
 			Contents `#!/bin/bash\n`\
-			`\n`\
-			`set -e\n`\
-			`\n`
+					 `\n`\
+					 `set -e\n`\
+					 `\n`
 
 			Contents =+ `@(MalterlibBuildSystemGenerateCommand)@(MalterlibGenerateWaitForLock) --no-signal-changed "$1"\n`
 			{
@@ -663,9 +663,9 @@ Property
 			Name `@(BuildSystemOutputDir)/ConfigStore/BuildTarget.sh`
 
 			Contents `#!/bin/bash\n`\
-			`\n`\
-			`set -e\n`\
-			`\n`
+					 `\n`\
+					 `set -e\n`\
+					 `\n`
 
 			Contents =+ `@(MalterlibBuildSystemGenerateCommand)@(MalterlibGenerateWaitForLock) --no-signal-changed "$1"\n`
 			{
@@ -707,9 +707,9 @@ Property
 			Name `@(BuildSystemOutputDir)/ConfigStore/TidyWorkspace.sh`
 
 			Contents `#!/bin/bash\n`\
-			`\n`\
-			`set -e\n`\
-			`\n`
+					 `\n`\
+					 `set -e\n`\
+					 `\n`
 
 			Contents =+ `@(MalterlibBuildSystemGenerateCommand)@(MalterlibGenerateWaitForLock) --no-signal-changed "$1"\n`
 			{
@@ -735,9 +735,9 @@ Property
 			Name `@(BuildSystemOutputDir)/ConfigStore/TidyTarget.sh`
 
 			Contents `#!/bin/bash\n`\
-			`\n`\
-			`set -e\n`\
-			`\n`
+					 `\n`\
+					 `set -e\n`\
+					 `\n`
 
 			Contents =+ `@(MalterlibBuildSystemGenerateCommand)@(MalterlibGenerateWaitForLock) --no-signal-changed "$1"\n`
 			{
@@ -760,10 +760,10 @@ Property
 			Name `@(BuildSystemOutputDir)/ConfigStore/Format.sh`
 
 			Contents `#!/bin/bash\n`\
-			`\n`\
-			`set -e\n`\
-			`\n`\
-			`@(MalterlibBuildSystemFormatCommand)\n`
+					 `\n`\
+					 `set -e\n`\
+					 `\n`\
+					 `@(MalterlibBuildSystemFormatCommand)\n`
 
 			Executable true
 		}
@@ -776,10 +776,10 @@ Property
 			Name `@(BuildSystemOutputDir)/ConfigStore/FormatCheck.sh`
 
 			Contents `#!/bin/bash\n`\
-			`\n`\
-			`set -e\n`\
-			`\n`\
-			`@(MalterlibBuildSystemFormatCommand) --check\n`
+					 `\n`\
+					 `set -e\n`\
+					 `\n`\
+					 `@(MalterlibBuildSystemFormatCommand) --check\n`
 
 			Executable true
 		}
@@ -794,8 +794,8 @@ Property
 			Name `@(BuildSystemOutputDir)/ConfigStore/FormatFile.sh`
 
 			Contents `#!/bin/bash\n`\
-			`\n`\
-			`exec @(MalterlibBuildSystemFormatFileCommand) --file "$1" ${2:+--offset "$2" --length "$3"}\n`
+					 `\n`\
+					 `exec @(MalterlibBuildSystemFormatFileCommand) --file "$1" ${2:+--offset "$2" --length "$3"}\n`
 
 			Executable true
 		}
@@ -1063,10 +1063,7 @@ Target
 					, (
 						(GeneratorFamily == "VisualStudio")
 						? []
-						: (
-							(PlatformFamily == "macOS") ? ["-isysroot", Import.SdkRoot_macOS]
-							: ["-isysroot", MalterlibSysRoot, "--sysroot", MalterlibSysRoot]
-						)
+						: ((PlatformFamily == "macOS") ? ["-isysroot", Import.SdkRoot_macOS] : ["-isysroot", MalterlibSysRoot, "--sysroot", MalterlibSysRoot])
 					)...
 					, GenerateFile.PlatformSpecificOptions...
 					, "-x"
@@ -1086,16 +1083,14 @@ Target
 						, "All", []
 						, undefined, []
 					)...
-					,
-					(
+					, (
 						Compile.Type->SwitchWithError(
 							"Unknown compile type"
 							, "C++", "C++"
 							, "C", "C"
 							, "ObjC++", "C++"
 							, "ObjC", "C"
-						)
-						->SwitchWithError(
+						)->SwitchWithError(
 							"Internal error: Unknown compile type"
 							, "C++", Compile.CxxLanguage->SwitchWithError(
 								"Unsupported option: "

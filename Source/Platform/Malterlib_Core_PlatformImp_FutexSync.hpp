@@ -125,8 +125,7 @@ namespace NMib::NThread
 		uint32 First = m_State.f_Load(NAtomic::gc_MemoryOrder_Acquire);
 		uint32 Observed = First;
 
-		auto fCompleted
-			= [&](uint32 _Current)
+		auto fCompleted = [&](uint32 _Current)
 			{
 				return (_Current & mcp_FlagSignaled) != 0 || ((_Current ^ First) & mcp_GenerationMask) != 0;
 			}

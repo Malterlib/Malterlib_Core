@@ -11,11 +11,7 @@ namespace NMib
 		class CAllocator_Heap;
 		class CAllocator_Virtual;
 
-		template
-		<
-			typename t_CBaseAllocator
-			, bool t_bStatic
-		>
+		template <typename t_CBaseAllocator, bool t_bStatic>
 		class TCAllocator_Secure;
 
 		struct CAllocator_HeapSecure;
@@ -72,7 +68,7 @@ namespace NMib
 	struct TCVoidFunctor
 	{
 		template <typename ...tfp_CParam>
-		t_CReturn operator ()(tfp_CParam && ...) const volatile
+		t_CReturn operator () (tfp_CParam && ...) const volatile
 		{
 			return t_CReturn();
 		}
@@ -82,7 +78,7 @@ namespace NMib
 	struct TCVoidFunctor<void>
 	{
 		template <typename ...tfp_CParam>
-		void operator ()(tfp_CParam && ...) const volatile
+		void operator () (tfp_CParam && ...) const volatile
 		{
 		}
 	};
@@ -98,7 +94,7 @@ namespace NMib
 		using CSharedPointerOptionUnderlying = int32;
 		enum ESharedPointerOption : int32
 		{
-			ESharedPointerOption_None = 0
+			ESharedPointerOption_None                 = 0
 			, ESharedPointerOption_SupportWeakPointer = DMibBit(0)
 		};
 
@@ -120,7 +116,7 @@ namespace NMib
 		template
 		<
 			typename t_CFunction // The function definition to contain
-			, typename... tp_COptions // Arguments, Can be function definition, option (CFunctionSupportEqualityCompareTag, CFunctionSupportOrderedCompareTag) or allocator
+			, typename ...tp_COptions // Arguments, Can be function definition, option (CFunctionSupportEqualityCompareTag, CFunctionSupportOrderedCompareTag) or allocator
 		>
 		class TCFunctionNoAlloc;
 
@@ -129,17 +125,16 @@ namespace NMib
 	}
 }
 
-
 #include "Malterlib_Core_General.h"
 #include "Malterlib_Core_Literals.h"
 
 #include "../../Memory/Source/Malterlib_Memory_Allocator_New.h"
 
 #ifdef DMalterlibUseStaticLibCxx
-#include <__compare/ordering.h>
-#include <__compare/common_comparison_category.h>
+#	include <__compare/ordering.h>
+#	include <__compare/common_comparison_category.h>
 #else
-#include <compare>
+#	include <compare>
 #endif
 
 namespace NMib
@@ -157,8 +152,8 @@ namespace NMib
 			o_Str += "void";
 		}
 	};
-	extern CVoidTag const g_Void;
 
+	extern CVoidTag const g_Void;
 }
 
 #include <Mib/Numeric/Integer>
@@ -219,7 +214,7 @@ using zch32 = NMib::TCAutoClear<ch32>;
 #include <Mib/Debug/Debug>
 
 #if defined(DMibContract_AnyEnabled) || DMibEnableSafeCheck > 0
-	#define DMibNeedDebugException
+#	define DMibNeedDebugException
 #endif
 
 #include <Mib/CommandLine/Console>
@@ -235,12 +230,11 @@ namespace NMib
 {
 	namespace NStorage
 	{
-		template <typename t_CType, typename... tp_COptions>
+		template <typename t_CType, typename ...tp_COptions>
 		class TCSharedPointer;
 
-		template <typename t_CType, typename... tp_COptions>
+		template <typename t_CType, typename ...tp_COptions>
 		class TCWeakPointer;
-
 	}
 
 	// Destruction runs on whichever thread releases the last reference.
@@ -267,7 +261,6 @@ namespace NMib
 #include <Mib/Exception/Exception>
 #include "../../Core/Source/Malterlib_Core_OnScopeExit.h"
 
-
 #include <Mib/Storage/Pointer>
 
 #include <Mib/Thread/Thread>
@@ -287,7 +280,6 @@ namespace NMib
 #include <Mib/Memory/Pool>
 
 #include "../../String/Source/Malterlib_String.h"
-
 
 #include <Mib/Time/Time>
 
@@ -312,7 +304,6 @@ namespace NMib
 #include "../../Core/Source/Malterlib_Core_OnScopeExitShared.h"
 
 #include "../../Memory/Source/Malterlib_Memory_Reporter_CategoriesInterface.h"
-
 
 // Template implementations
 #include "Malterlib_Core_General.hpp"
@@ -340,28 +331,27 @@ namespace NMib
 {
 	namespace NDebug
 	{
-#		if DMibEnableSafeCheck > 0
-			NStr::CStrNonTracked fg_GetLastAssertMessage();
-#		endif
+#if DMibEnableSafeCheck > 0
+		NStr::CStrNonTracked fg_GetLastAssertMessage();
+#endif
 	}
 }
 
-
 #ifndef DMibPNoShortCuts
-	using namespace NMib;
-	using namespace NMib::NMemory;
-	using namespace NMib::NThread;
-	using namespace NMib::NTime;
-	using namespace NMib::NStr;
-	using namespace NMib::NContainer;
-	using namespace NMib::NIntrusive;
-	using namespace NMib::NException;
-	using namespace NMib::NMisc;
-	using namespace NMib::NStream;
-	using namespace NMib::NContainer;
-	using namespace NMib::NAtomic;
-	using namespace NMib::NSystem;
-	#define DNewLine DMibNewLine
+using namespace NMib;
+using namespace NMib::NMemory;
+using namespace NMib::NThread;
+using namespace NMib::NTime;
+using namespace NMib::NStr;
+using namespace NMib::NContainer;
+using namespace NMib::NIntrusive;
+using namespace NMib::NException;
+using namespace NMib::NMisc;
+using namespace NMib::NStream;
+using namespace NMib::NContainer;
+using namespace NMib::NAtomic;
+using namespace NMib::NSystem;
+#	define DNewLine DMibNewLine
 #endif
 
 #endif

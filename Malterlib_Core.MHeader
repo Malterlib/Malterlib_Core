@@ -109,7 +109,17 @@ Import "Lib_Malterlib.MTarget"
 	Property
 	{
 		Malterlib_Core_Dependencies: [type(CEntity)] = []
-		Malterlib_Core_Dependencies =+ ["Lib_Malterlib_File", "Lib_Malterlib_Exception", "Lib_Malterlib_Contract", "Lib_Malterlib_Memory", "Lib_Malterlib_Thread", "Lib_Malterlib_Atomic", "Lib_Malterlib_Time", "Lib_Malterlib_CrashReport", "Lib_Malterlib_String"]
+		Malterlib_Core_Dependencies =+ [
+			"Lib_Malterlib_File"
+			, "Lib_Malterlib_Exception"
+			, "Lib_Malterlib_Contract"
+			, "Lib_Malterlib_Memory"
+			, "Lib_Malterlib_Thread"
+			, "Lib_Malterlib_Atomic"
+			, "Lib_Malterlib_Time"
+			, "Lib_Malterlib_CrashReport"
+			, "Lib_Malterlib_String"
+		]
 
 		Malterlib_Core_DebugDependencies: [type(CEntity)] = []
 		Malterlib_Core_DebugDependencies =+ ["Lib_Malterlib_Debug", "Lib_Malterlib_Contract", "Lib_Malterlib_Log", "Lib_Malterlib_Process"]

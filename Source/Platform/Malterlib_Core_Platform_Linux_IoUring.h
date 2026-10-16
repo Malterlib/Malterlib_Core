@@ -3,7 +3,6 @@
 
 #pragma once
 
-
 #include <Mib/Core/Core>
 
 #include <sys/mman.h>
@@ -65,7 +64,7 @@ struct CIoUringSqe
 	uint64 m_Off;
 	uint64 m_Addr;
 	uint32 m_Len;
-	uint32 m_OpFlags;		// rw_flags / poll32_events / ...
+	uint32 m_OpFlags; // rw_flags / poll32_events / ...
 	uint64 m_UserData;
 	uint16 m_BufIndex;
 	uint16 m_Personality;
@@ -204,9 +203,9 @@ constexpr long gc_IoUringSyscall_Register = 427;
 // Kernel capabilities collected once during startup probing.
 struct CIoUringCaps
 {
-	bool m_bFutexWait = false; // Requires Linux 6.7; permits parking on the queue event inside the ring.
-	bool m_bCompletion = false; // Vectored send operations with asynchronous cancellation.
-	bool m_bSendZeroCopy = false; // Buffers remain pinned until the release notification after the result.
+	bool m_bFutexWait = false;     // Requires Linux 6.7; permits parking on the queue event inside the ring.
+	bool m_bCompletion = false;    // Vectored send operations with asynchronous cancellation.
+	bool m_bSendZeroCopy = false;  // Buffers remain pinned until the release notification after the result.
 	bool m_bReceiveStream = false; // Requires multishot receives and successful incremental buffer-ring registration (Linux 6.12+).
 };
 
@@ -230,7 +229,6 @@ struct CIoUringRing
 
 	static bool fs_Available(CIoUringCaps &o_Caps);
 	static umint fs_RingBytes(uint32 _nSqEntries, uint32 _nCqEntries);
-
 
 	void *m_pSqRing = nullptr;
 	umint m_SqRingSize = 0;

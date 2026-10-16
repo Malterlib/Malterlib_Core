@@ -26,21 +26,15 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 
 	if (m_NotifyDescriptor < 0)
 	{
-		switch(errno)
+		switch (errno)
 		{
-		case EINVAL:
-			DMibError("inotify_init(): EINVAL: Invalid flag");
-		case EMFILE:
-			DMibError("inotify_init(): EMFILE: The user limit on the total number of inotify instances has been reached");
-		case ENFILE:
-			DMibError("inotify_init(): ENFILE: The system limit on the total number of inotify instances has been reached");
-		case ENOMEM:
-			DMibError("inotify_init(): ENOMEM: Insufficient kernel memory is available");
-		default:
-			DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_init(): Unknown error {}") << errno);
+		case EINVAL: DMibError("inotify_init(): EINVAL: Invalid flag");
+		case EMFILE: DMibError("inotify_init(): EMFILE: The user limit on the total number of inotify instances has been reached");
+		case ENFILE: DMibError("inotify_init(): ENFILE: The system limit on the total number of inotify instances has been reached");
+		case ENOMEM: DMibError("inotify_init(): ENOMEM: Insufficient kernel memory is available");
+		default: DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_init(): Unknown error {}") << errno);
 		}
 	}
-
 
 	if (!NLocal::g_f_inotify_init1)
 	{
@@ -48,7 +42,7 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 		fcntl(m_NotifyDescriptor, F_SETFD, fcntl(m_NotifyDescriptor, F_GETFD) | FD_CLOEXEC);
 	}
 
-	int (* fLocal_epoll_create1)(int __flags) __THROW;
+	int (*fLocal_epoll_create1)(int __flags) __THROW;
 
 	(void * &)fLocal_epoll_create1 = dlsym(RTLD_DEFAULT, "epoll_create1");
 
@@ -59,18 +53,13 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 
 	if (m_PollDescriptor < 0)
 	{
-		switch(errno)
+		switch (errno)
 		{
-		case EINVAL:
-			DMibError("epoll_create(): EINVAL: Invalid value specified in flags");
-		case EMFILE:
-			DMibError("epoll_create(): EMFILE: The user limit on the total number of epoll instances has been reached");
-		case ENFILE:
-			DMibError("epoll_create(): ENFILE: The system limit on the total number of open files has been reached");
-		case ENOMEM:
-			DMibError("epoll_create(): ENOMEM: Insufficient kernel memory is available");
-		default:
-			DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_create(): Unknown error {}") << errno);
+		case EINVAL: DMibError("epoll_create(): EINVAL: Invalid value specified in flags");
+		case EMFILE: DMibError("epoll_create(): EMFILE: The user limit on the total number of epoll instances has been reached");
+		case ENFILE: DMibError("epoll_create(): ENFILE: The system limit on the total number of open files has been reached");
+		case ENOMEM: DMibError("epoll_create(): ENOMEM: Insufficient kernel memory is available");
+		default: DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_create(): Unknown error {}") << errno);
 		}
 	}
 
@@ -85,28 +74,70 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 
 		if (Result)
 		{
-			switch(errno)
+			switch (errno)
 			{
-			case EBADF:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EBADF: epfd or fd is not a valid file descriptor") << m_PollDescriptor << m_NotifyDescriptor);
+			case EBADF: DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EBADF: epfd or fd is not a valid file descriptor") << m_PollDescriptor << m_NotifyDescriptor);
 			case EEXIST:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EEXIST: op was EPOLL_CTL_ADD, and the supplied file descriptor fd is already registered with this epoll instance") << m_PollDescriptor << m_NotifyDescriptor);
+				DMibError
+					(
+						NMib::NStr::CStrNonTracked::CFormat
+						(
+							"epoll_ctl({},{}): EEXIST: op was EPOLL_CTL_ADD, and the supplied file descriptor fd is already registered with this epoll instance"
+						)
+						<< m_PollDescriptor
+						<< m_NotifyDescriptor
+					)
+				;
 			case EINVAL:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EINVAL: Not an epoll file descriptor, or fd is the same as epfd, or the requested operation op is not supported by this interface") << m_PollDescriptor << m_NotifyDescriptor);
+				DMibError
+					(
+						NMib::NStr::CStrNonTracked::CFormat
+						(
+							"epoll_ctl({},{}): EINVAL: Not an epoll file descriptor, or fd is the same as epfd, or the requested operation op is not supported by this interface"
+						)
+						<< m_PollDescriptor
+						<< m_NotifyDescriptor
+					)
+				;
 			case EMFILE:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EMFILE: The user limit on the total number of epoll instances has been reached") << m_PollDescriptor << m_NotifyDescriptor);
+				DMibError
+					(
+						NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EMFILE: The user limit on the total number of epoll instances has been reached")
+						<< m_PollDescriptor
+						<< m_NotifyDescriptor
+					)
+				;
 			case ENFILE:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): ENFILE: The system limit on the total number of open files has been reached") << m_PollDescriptor << m_NotifyDescriptor);
-			case ENOMEM:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): ENOMEM: Insufficient kernel memory is available") << m_PollDescriptor << m_NotifyDescriptor);
+				DMibError
+					(
+						NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): ENFILE: The system limit on the total number of open files has been reached")
+						<< m_PollDescriptor
+						<< m_NotifyDescriptor
+					)
+				;
+			case ENOMEM: DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): ENOMEM: Insufficient kernel memory is available") << m_PollDescriptor << m_NotifyDescriptor);
 			case ENOENT:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): ENOENT: op was EPOLL_CTL_MOD or EPOLL_CTL_DEL, and fd is not registered with this epoll instance") << m_PollDescriptor << m_NotifyDescriptor);
+				DMibError
+					(
+						NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): ENOENT: op was EPOLL_CTL_MOD or EPOLL_CTL_DEL, and fd is not registered with this epoll instance")
+						<< m_PollDescriptor
+						<< m_NotifyDescriptor
+					)
+				;
 			case ENOSPC:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): ENOSPC: The limit imposed by /proc/sys/fs/epoll/max_user_watches was encountered while trying to register (EPOLL_CTL_ADD) a new file descriptor on an epoll instance") << m_PollDescriptor << m_NotifyDescriptor);
-			case EPERM:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EPERM: The target file fd does not support epoll") << m_PollDescriptor << m_NotifyDescriptor);
-			default:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): Unknown error {}") << m_PollDescriptor << m_NotifyDescriptor << errno);
+				DMibError
+					(
+						NMib::NStr::CStrNonTracked::CFormat
+						(
+							"epoll_ctl({},{}): ENOSPC: The limit imposed by /proc/sys/fs/epoll/max_user_watches was encountered while trying to register (EPOLL_CTL_ADD) a new file "
+							"descriptor on an epoll instance"
+						)
+						<< m_PollDescriptor
+						<< m_NotifyDescriptor
+					)
+				;
+			case EPERM: DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EPERM: The target file fd does not support epoll") << m_PollDescriptor << m_NotifyDescriptor);
+			default: DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): Unknown error {}") << m_PollDescriptor << m_NotifyDescriptor << errno);
 			}
 		}
 	}
@@ -137,7 +168,6 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 		int Result = epoll_ctl(m_PollDescriptor, EPOLL_CTL_ADD, m_WakeupPipe[0], &Event);
 		if (Result)
 			DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({}, {})") << m_PollDescriptor << m_WakeupPipe[0], errno));
-
 	}
 
 	m_pNotificationThread = fg_Construct(this);
@@ -146,7 +176,6 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 
 CFileChangeNotificationContext::~CFileChangeNotificationContext()
 {
-
 	if (m_pNotificationThread)
 	{
 		// We need to stop this first, otherwise it will have gone out of scope when it's stopped in the super class
@@ -171,7 +200,7 @@ CFileChangeNotificationContext::~CFileChangeNotificationContext()
 
 int CFileChangeNotificationContext::f_Inotify_AddWatch(CStr const &_Path)
 {
-	uint32_t Mask = IN_ONLYDIR | IN_MODIFY | IN_ATTRIB | IN_MOVED_FROM | IN_MOVED_TO | IN_CREATE | IN_DELETE| IN_DELETE_SELF | IN_MOVE_SELF;
+	uint32_t Mask = IN_ONLYDIR | IN_MODIFY | IN_ATTRIB | IN_MOVED_FROM | IN_MOVED_TO | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MOVE_SELF;
 	int WatchDescriptor = NLocal::g_f_inotify_add_watch(m_NotifyDescriptor, _Path.f_GetStr(), Mask);
 	if (WatchDescriptor < 0)
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("inotify_add_watch('{}')") << _Path, errno));
@@ -185,13 +214,11 @@ void CFileChangeNotificationContext::f_Inotify_RemoveWatch(int _Descriptor)
 	{
 		switch (errno)
 		{
-			case EBADF:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EBADF Not a valid file descriptor") << m_NotifyDescriptor << _Descriptor);
-			case EINVAL:
-				return; // This can happen due to race conditions
-//				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EINVAL: The inotify watch descriptor or file descriptor is not valid") << m_NotifyDescriptor << _Descriptor);
-			default:
-				DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{})") << m_NotifyDescriptor << _Descriptor, errno));
+		case EBADF: DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EBADF Not a valid file descriptor") << m_NotifyDescriptor << _Descriptor);
+		case EINVAL: return; // This can happen due to race conditions
+			// DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EINVAL: The inotify watch descriptor or file descriptor is not valid")
+			// 	<< m_NotifyDescriptor << _Descriptor);
+		default: DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{})") << m_NotifyDescriptor << _Descriptor, errno));
 		}
 	}
 }
@@ -204,25 +231,17 @@ ssize_t CFileChangeNotificationContext::f_Inotify_Read(CByteVector &_Buffer)
 	{
 		switch (errno)
 		{
-			case EINVAL:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}): EINVAL Buffer too small") << m_NotifyDescriptor);
-			case EAGAIN:
-				return 0;
-				//DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}): EAGAIN") << m_NotifyDescriptor);
-				// The file descriptor fd refers to a file other than a socket and has
-				// been marked nonblocking (O_NONBLOCK), and the read would block.
-			case EBADF:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EBADF: Not a valid file descriptor or is not open for reading") << m_NotifyDescriptor);
-			case EFAULT:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EFAULT: buf is outside your accessible address space") << m_NotifyDescriptor);
-			case EINTR:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EINTR: The call was interrupted by a signal before any data was read") << m_NotifyDescriptor);
-			case EIO:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EIO: I/O error") << m_NotifyDescriptor);
-			case EISDIR:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EISDIR fd refers to a directory") << m_NotifyDescriptor);
-			default:
-				DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("inotify read({})") << m_NotifyDescriptor, errno));
+		case EINVAL: DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}): EINVAL Buffer too small") << m_NotifyDescriptor);
+		case EAGAIN: return 0;
+			//DMibError(NMib::NStr::CStrNonTracked::CFormat("read({}): EAGAIN") << m_NotifyDescriptor);
+			// The file descriptor fd refers to a file other than a socket and has
+			// been marked nonblocking (O_NONBLOCK), and the read would block.
+		case EBADF: DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EBADF: Not a valid file descriptor or is not open for reading") << m_NotifyDescriptor);
+		case EFAULT: DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EFAULT: buf is outside your accessible address space") << m_NotifyDescriptor);
+		case EINTR: DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EINTR: The call was interrupted by a signal before any data was read") << m_NotifyDescriptor);
+		case EIO: DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EIO: I/O error") << m_NotifyDescriptor);
+		case EISDIR: DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify read({}): EISDIR fd refers to a directory") << m_NotifyDescriptor);
+		default: DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("inotify read({})") << m_NotifyDescriptor, errno));
 		}
 	}
 	return ReadResult;
@@ -260,7 +279,11 @@ CFileChangeNotificationContext::CWatch &CFileChangeNotificationContext::f_LinkWa
 		{
 			// We can't do a subdirectory search directly here, that could cause a race condition, because we must add the watch before scanning a directory
 			for (auto &File : NFile::CFile::fs_FindFilesEx(_Path + "/*", NFile::EFileAttrib_Directory | NFile::EFileAttrib_File, false, false))
-				pWatch->m_ChildFiles[File.m_Path.f_Extract(_Path.f_GetLen() + 1)] = (File.m_Attribs & (NFile::EFileAttrib_Directory | NFile::EFileAttrib_Link)) == NFile::EFileAttrib_Directory;
+			{
+				pWatch->m_ChildFiles[File.m_Path.f_Extract(_Path.f_GetLen() + 1)]
+					= (File.m_Attribs & (NFile::EFileAttrib_Directory | NFile::EFileAttrib_Link)) == NFile::EFileAttrib_Directory
+				;
+			}
 		}
 		catch ([[maybe_unused]] NException::CException const &_Exception)
 		{
@@ -287,21 +310,16 @@ void CFileChangeNotificationContext::f_UnlinkWatch(TCSharedPointer<CWatch> _pWat
 	}
 }
 
-void *CFileChangeNotificationContext::f_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
+void *CFileChangeNotificationContext::f_Open(CStr const &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 {
-
 	CStr FileName = _FileName;
 
 	struct stat FileStat;
 	if (stat(FileName.f_GetStr(), &FileStat) == -1)
-	{
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("stat('{}') when opening file change notification") << FileName, errno));
-	}
 
 	if (!S_ISDIR(FileStat.st_mode & S_IFMT))
-	{
 		DMibErrorFile(CStr::CFormat("File change notifications are not supported on files, only directories ({})") << FileName);
-	}
 
 	auto SelfUniqueID = NFile::CFile::fs_GetUniqueIdentifier(_FileName);
 

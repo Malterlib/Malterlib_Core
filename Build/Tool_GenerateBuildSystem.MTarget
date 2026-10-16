@@ -37,13 +37,13 @@ Property
 	MalterlibBuildSystemTidyCommand: string
 
 	MalterlibBuildSystemTidyCommand `@(Builtin.MalterlibExe->UnixPath()->EscapeBash()) tidy --build-system @(Builtin.BuildSystemSourceAbsolute->UnixPath()->EscapeBash())`\
-		` --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->UnixPath()->EscapeBash()) --use-cached-environment --skip-update`
+									` --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->UnixPath()->EscapeBash()) --use-cached-environment --skip-update`
 
 	// mib format over the repositories that set Repository.Format; it needs no generated build system.
 	MalterlibBuildSystemFormatCommand: string
 
 	MalterlibBuildSystemFormatCommand `@(Builtin.MalterlibExe->UnixPath()->EscapeBash()) format --build-system @(Builtin.BuildSystemSourceAbsolute->UnixPath()->EscapeBash())`\
-		` --output-directory @(Builtin.GeneratedBuildSystemDir->UnixPath()->EscapeBash()) --use-cached-environment --skip-update`
+									  ` --output-directory @(Builtin.GeneratedBuildSystemDir->UnixPath()->EscapeBash()) --use-cached-environment --skip-update`
 
 	// MTool formatting an editor's buffer from stdin. Format is registered under the MTool name only, not under mib's.
 	MalterlibBuildSystemFormatFileCommand: string
@@ -241,7 +241,6 @@ Property
 						}
 					}
 
-
 					Contents =+	`if exist "@(DependencyFile)" "@(Builtin.MToolExe)" CheckDependencies Verbose=true "Directory=@(BuildSystemOutputBasePath)/Binaries"\r\n`\
 								`if not exist "@(UpdatedFile)" (\r\n`\
 								`	echo Updated needed\r\n`\
@@ -254,7 +253,6 @@ Property
 					{
 						&
 						{
-
 							!MalterlibDisableBuildSystemGeneration true
 							ScriptWindowsBat true
 							IsSafeMTool true
@@ -426,4 +424,3 @@ Target.ExtraGroups =+ "~Automatic/Dependencies/Tool_GenerateBuildSystem"
 {
 	!Target:Target.Name "Tool_GenerateBuildSystem"
 }
-

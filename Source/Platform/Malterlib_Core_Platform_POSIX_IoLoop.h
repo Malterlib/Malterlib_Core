@@ -14,5 +14,5 @@ protected:
 
 	void fp_WakeKernel() override;
 
-	int mp_ReadWritePipe[2];		// Used to wake the parked loop up
+	int mp_ReadWritePipe[2]; // Used to wake the parked loop up
 };

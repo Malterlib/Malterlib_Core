@@ -30,7 +30,8 @@ GeneratorSetting
 	}
 
 	VisualStudio_DependencyType SwitchWithError(
-		Dependency.Type, "Unknown dependency type: "
+		Dependency.Type
+		, "Unknown dependency type: "
 		, "", "ProjectReference"
 		, "AssemblyReference", "Reference"
 		, "Library", ""
@@ -40,7 +41,8 @@ GeneratorSetting
 	}
 
 	VisualStudio_DependencyType SwitchWithError(
-		Dependency.Type, "Unknown dependency type: "
+		Dependency.Type
+		, "Unknown dependency type: "
 		, "", "ProjectReference"
 		, "AssemblyReference", "Reference"
 		, "Package", "PackageReference"

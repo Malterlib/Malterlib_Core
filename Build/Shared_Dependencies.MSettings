@@ -7,21 +7,21 @@ Property
 
 	MalterlibBuildDependenciesContents: string = ""
 	MalterlibBuildDependenciesContents	=+ `@("BuildLLVM.sh"->MakeAbsolute()) "@(MalterlibClangVersion)" "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)" @(MalterlibMainMalterlibRepo->EJSONToString("")) false\r\n`\
-		`ErrorLevel=$?\n`\
-		`if [ "$ErrorLevel" != "0" ]; then\n`\
-		`  echo error: Failed to update LLVM dependencies\n`\
-		`  exit 1\n`\
-		`fi\n`
+										   `ErrorLevel=$?\n`\
+										   `if [ "$ErrorLevel" != "0" ]; then\n`\
+										   `  echo error: Failed to update LLVM dependencies\n`\
+										   `  exit 1\n`\
+										   `fi\n`
 	{
 		!!PlatformToolsetCompiler `@(MalterlibDependenciesDirectory)/llvm/@(MalterlibClangVersion)/build/main/bin/clang`
 	}
 
 	MalterlibBuildDependenciesContents	=+ `@("BuildLLVM.sh"->MakeAbsolute()) "@(MalterlibCustomToolchainClangVersion)" "@(MalterlibDependenciesDirectory)/llvm/@(MalterlibCustomToolchainClangVersion)" @(MalterlibMainMalterlibRepo->EJSONToString("")) true\r\n`\
-		`ErrorLevel=$?\n`\
-		`if [ "$ErrorLevel" != "0" ]; then\n`\
-		`  echo error: Failed to update custom LLVM toolchain\n`\
-		`  exit 1\n`\
-		`fi\n`
+										   `ErrorLevel=$?\n`\
+										   `if [ "$ErrorLevel" != "0" ]; then\n`\
+										   `  echo error: Failed to update custom LLVM toolchain\n`\
+										   `  exit 1\n`\
+										   `fi\n`
 	{
 		&
 		{

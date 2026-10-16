@@ -30,7 +30,6 @@
 #	error "Compiler version is not supported"
 #endif
 
-
 #define _SCL_SECURE_NO_WARNINGS 1
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
@@ -50,9 +49,9 @@
 #define DCompiler_MSVC_Workaround 1
 
 #ifdef _DEBUG
-#pragma warning(disable:4714) // force inline not inlined
+#	pragma warning(disable:4714) // force inline not inlined
 #else
-#pragma warning(disable:4714) // force inline not inlined
+#	pragma warning(disable:4714) // force inline not inlined
 //#pragma warning(default:4714) // force inline not inlined
 //#pragma warning(2:4714) // force inline not inlined
 #endif
@@ -81,22 +80,20 @@
 #pragma warning(disable:4595) // non-member operator new or delete functions may not be declared inline
 #pragma warning(disable:4742) // '`string'' has different alignment in -- To workaround seeming bug in microsoft PGO linker
 
-
 #ifdef __EDG__
 
-#pragma warning(disable:1684)
-#pragma warning(disable:383)
-#pragma warning(disable:981)
-#pragma warning(disable:1599)
-#pragma warning(disable:424)
-#pragma warning(disable:1418)
-#pragma warning(disable:444)
-#pragma warning(disable:193)
-
+#	pragma warning(disable:1684)
+#	pragma warning(disable:383)
+#	pragma warning(disable:981)
+#	pragma warning(disable:1599)
+#	pragma warning(disable:424)
+#	pragma warning(disable:1418)
+#	pragma warning(disable:444)
+#	pragma warning(disable:193)
 
 #endif
 
 #if _MSC_FULL_VER == 170051025
-#pragma warning(disable:4554)
+#	pragma warning(disable:4554)
 #endif
 

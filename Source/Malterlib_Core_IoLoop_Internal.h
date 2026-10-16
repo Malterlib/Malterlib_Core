@@ -40,7 +40,7 @@ struct CIoLoopChange
 	NMib::NSys::CIoLoopHandle m_Handle = NMib::NSys::gc_IoLoopHandleInvalid; // For an internal POSIX entry, the wake pipe's read end.
 
 	bool m_bRemove = false;
-	bool m_bInternal = false; // Identifies the loop's wake object rather than an external registration.
+	bool m_bInternal = false;         // Identifies the loop's wake object rather than an external registration.
 	bool m_bNotifyRegistered = false; // Acknowledge an applied add with a callback carrying no events.
 	bool m_bReadinessRequest = false; // Consume and arm the registration's pending readiness request bits.
 };
@@ -103,7 +103,7 @@ struct CIoLoop_Base : public NMib::NSys::ICIoLoop
 protected:
 	enum class EWakeState : uint32
 	{
-		mc_Pending = 1
+		mc_Pending  = 1
 		, mc_Parked = 2
 	};
 
@@ -120,7 +120,7 @@ protected:
 	void fp_SignalWake();
 	void fp_PushRemoval(NMib::NSys::CIoLoopRegistration *_pRegistration, CIoLoopDeregWait *_pDeregWait, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnDeregistered);
 
-	NMib::NAtomic::TCAtomic<uint32> mp_WakeState; // Pending and Parked share one atomic word so owner/waker read-modify-writes are totally ordered.
+	NMib::NAtomic::TCAtomic<uint32> mp_WakeState;        // Pending and Parked share one atomic word so owner/waker read-modify-writes are totally ordered.
 	CIoLoopChangeQueue mp_ChangeQueue;
 	NMib::NAtomic::TCAtomic<umint> mp_nRegistrations{0}; // Includes removals not yet acknowledged.
 	NMib::NAtomic::TCAtomic<umint> mp_OwnerThreadUID{0}; // Allows the owner to drive its own deregistration acknowledgement.
@@ -138,7 +138,10 @@ struct CSharedIoLoop
 	CSharedIoLoop();
 	~CSharedIoLoop();
 
-	NMib::NSys::ICIoLoop *f_GetLoop() const { return mp_Thread.mp_pLoop; }
+	NMib::NSys::ICIoLoop *f_GetLoop() const
+	{
+		return mp_Thread.mp_pLoop;
+	}
 
 private:
 	struct CPollerThread : public NMib::NThread::CThread

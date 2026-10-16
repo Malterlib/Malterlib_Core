@@ -12,7 +12,7 @@ CFileChangeNotificationContext::CNotificationThread::CNotificationThread(CFileCh
 {
 	m_pContext = _pContext;
 	umint MinSize = sizeof(struct inotify_event) + NAME_MAX + 1;
-	m_ChangesBuffer.f_SetLen(fg_Max(64*1024, MinSize));
+	m_ChangesBuffer.f_SetLen(fg_Max(64 * 1024, MinSize));
 }
 
 CFileChangeNotificationContext::CNotificationThread::~CNotificationThread()
@@ -80,7 +80,7 @@ bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 		ssize_t Processed = 0;
 		while (ReadResult > Processed)
 		{
-			inotify_event &Event = *((inotify_event*)(m_ChangesBuffer.f_GetArray() + Processed));
+			inotify_event &Event = *((inotify_event *)(m_ChangesBuffer.f_GetArray() + Processed));
 			int EventSize = sizeof(struct inotify_event) + Event.len;
 			Processed += EventSize;
 
@@ -125,9 +125,7 @@ bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 			CStr FullEventPath = CFile::fs_AppendPath(Watch.f_GetPath(), EventPath);
 
 			if (Event.mask & IN_CREATE)
-			{
 				Watch.m_ChildFiles[EventPath] = CFile::fs_FileExists(FullEventPath, EFileAttrib_Directory);
-			}
 			else if (Event.mask & IN_DELETE)
 				Watch.m_ChildFiles.f_Remove(EventPath);
 			else if (Event.mask & IN_MOVED_FROM)
@@ -209,18 +207,26 @@ aint CFileChangeNotificationContext::CNotificationThread::f_Main()
 
 		if (Result == -1)
 		{
-			switch(errno)
+			switch (errno)
 			{
-			case EINTR:	//	The call was interrupted by a signal handler before either any of the requested events occurred or the timeout expired
+			case EINTR: //	The call was interrupted by a signal handler before either any of the requested events occurred or the timeout expired
 				continue;
-			case EBADF:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_wait({}): EBADF: Invalid file descriptor") << m_pContext->m_PollDescriptor);
+			case EBADF: DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_wait({}): EBADF: Invalid file descriptor") << m_pContext->m_PollDescriptor);
 			case EFAULT:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_wait({}): EFAULT: The memory area pointed to by events is not accessible with write permissions") << m_pContext->m_PollDescriptor);
+				DMibError
+					(
+						NMib::NStr::CStrNonTracked::CFormat("epoll_wait({}): EFAULT: The memory area pointed to by events is not accessible with write permissions")
+						<< m_pContext->m_PollDescriptor
+					)
+				;
 			case EINVAL:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_wait({}): EINVAL: epfd is not an epoll file descriptor, or maxevents is less than or equal to zero") << m_pContext->m_PollDescriptor);
-			default:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_wait({}): unknown error {}") << m_pContext->m_PollDescriptor << errno);
+				DMibError
+					(
+						NMib::NStr::CStrNonTracked::CFormat("epoll_wait({}): EINVAL: epfd is not an epoll file descriptor, or maxevents is less than or equal to zero")
+						<< m_pContext->m_PollDescriptor
+					)
+				;
+			default: DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_wait({}): unknown error {}") << m_pContext->m_PollDescriptor << errno);
 			}
 		}
 		else if (Result && Event.data.fd == m_pContext->m_NotifyDescriptor)

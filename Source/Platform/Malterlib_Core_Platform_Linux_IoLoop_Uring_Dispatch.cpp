@@ -538,9 +538,7 @@ void CIoLoop_IoUring::fp_DispatchCqe(uint64 _UserData, int32 _Res, uint32 _Flags
 		// count mattered
 		break;
 
-	default:
-		DMibFastCheck(false);
-		break;
+	default: DMibFastCheck(false); break;
 	}
 
 	fp_TryAcknowledge(pRegistration, _nReported);

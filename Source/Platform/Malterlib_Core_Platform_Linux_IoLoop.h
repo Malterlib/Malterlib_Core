@@ -29,10 +29,7 @@ constexpr NMib::NSys::EIoLoopEvent fg_IoLoopEventsFromPollBits(uint32 _PollBits)
 
 constexpr uint32 fg_PollInterestFromIoLoopMask(NMib::NSys::EIoLoopEvent _EventMask)
 {
-	return
-		(NMib::fg_IsSet(_EventMask, NMib::NSys::EIoLoopEvent::mc_Read) ? EPOLLIN : 0)
-		| (NMib::fg_IsSet(_EventMask, NMib::NSys::EIoLoopEvent::mc_Write) ? EPOLLOUT : 0)
-	;
+	return (NMib::fg_IsSet(_EventMask, NMib::NSys::EIoLoopEvent::mc_Read) ? EPOLLIN : 0) | (NMib::fg_IsSet(_EventMask, NMib::NSys::EIoLoopEvent::mc_Write) ? EPOLLOUT : 0);
 }
 
 void fg_UringLogMemlockFallback();

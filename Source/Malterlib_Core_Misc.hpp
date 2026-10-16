@@ -7,7 +7,6 @@ namespace NMib
 {
 	namespace NMisc
 	{
-
 		template <typename tf_CIntType>
 		tf_CIntType fg_GetHighEntropyRandomInteger()
 		{
@@ -16,7 +15,5 @@ namespace NMib
 			NSys::fg_Security_GenerateHighEntropyData((uint8 *)&Return, sizeof(Return));
 			return Return;
 		}
-
 	} // Namespace NMisc
-
 } // Namespace NMib

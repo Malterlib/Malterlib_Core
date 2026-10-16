@@ -18,7 +18,6 @@ uint64 fg_IocpStatsNow()
 	return (uint64)((Ticks / Frequency) * 1000000000 + ((Ticks % Frequency) * 1000000000) / Frequency);
 }
 
-
 #endif
 
 // Newest first: the most recently returned block is the hottest

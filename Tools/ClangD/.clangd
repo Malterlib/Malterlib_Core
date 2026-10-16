@@ -6,6 +6,7 @@ CompileFlags:
 Diagnostics:
   UnusedIncludes: None
   MissingIncludes: None
+# malterlib-format off
 SemanticTokens:
   Rules:
     Type|Primitive|Typedef|Class:
@@ -335,3 +336,4 @@ SemanticTokens:
         add: [Custom0, Custom1, Custom2, Custom3, Custom4]  # malterlib.concept
       - regex: '^([binpfro]?[A-Z][A-Za-z0-9_]*)$'
         add: [Custom0, Custom1, Custom2, Custom3, Custom5]  # malterlib.variable
+# malterlib-format on

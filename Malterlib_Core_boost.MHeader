@@ -205,7 +205,6 @@ Property
 			MalterlibIncludeLevel "Target"
 			MalterlibIncludePerConfig true
 		}
-
 	}
 	MalterlibBoostIncludeOutputDir `@(GeneratedDirectoryNoConfig)BoostRootInclude`
 	{
@@ -214,7 +213,6 @@ Property
 			MalterlibIncludeLevel "Target"
 			!MalterlibIncludePerConfig true
 		}
-
 	}
 	MalterlibBoostIncludeOutputDir `@(GeneratedWorkspaceDirectory)BoostRootInclude`
 	{
@@ -223,7 +221,6 @@ Property
 			MalterlibIncludeLevel "Workspace"
 			MalterlibIncludePerConfig true
 		}
-
 	}
 	MalterlibBoostIncludeOutputDir `@(GeneratedWorkspaceDirectoryNoConfig)BoostRootInclude`
 	{
@@ -262,9 +259,9 @@ Compile
 			!!PlatformFamily "Linux"
 		}
 		PreprocessorDefines =+ ["BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE", "_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING"]
-        {
-            !!PlatformFamily "Windows"
-        }
+		{
+			!!PlatformFamily "Windows"
+		}
 	}
 	%Target "Lib_boost_regex"
 	{

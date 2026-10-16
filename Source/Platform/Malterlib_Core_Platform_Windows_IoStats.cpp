@@ -121,6 +121,7 @@ void fg_DumpIocpStats(NMib::NSys::CIoSubSystem &_Io)
 				, fLoad(Stats.m_nWakePosts)
 			)
 		)
-	;}
+	;
+}
 
 #endif

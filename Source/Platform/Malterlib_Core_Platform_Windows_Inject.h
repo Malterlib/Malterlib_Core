@@ -20,9 +20,9 @@ namespace NMib
 			, EInjectDllResult_Delayed
 		};
 
-		EInjectDllResult fg_InjectDLL(DWORD _ProcessID, DWORD _ThreadID, const WCHAR *_pDLLName, NStr::CStr &_Error);
-		EInjectDllResult fg_InjectDLL(HANDLE _hProcess, HANDLE _hThread, const WCHAR *_pDLLName, NStr::CStr &_Error);
-		BOOL fg_DejectDLL(DWORD _ProcessID, const WCHAR *_pDLLName, NStr::CStr &_Error);
+		EInjectDllResult fg_InjectDLL(DWORD _ProcessID, DWORD _ThreadID, WCHAR const *_pDLLName, NStr::CStr &_Error);
+		EInjectDllResult fg_InjectDLL(HANDLE _hProcess, HANDLE _hThread, WCHAR const *_pDLLName, NStr::CStr &_Error);
+		BOOL fg_DejectDLL(DWORD _ProcessID, WCHAR const *_pDLLName, NStr::CStr &_Error);
 #endif
 	}
 }

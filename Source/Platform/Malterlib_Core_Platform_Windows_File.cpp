@@ -12,7 +12,7 @@ namespace NMib
 		{
 			namespace
 			{
-				constexpr static NMib::NTime::CTime const g_FileTimeBase = NMib::NTime::CTime::fs_Create(237148610522659200, 0);
+				static constexpr NMib::NTime::CTime const g_FileTimeBase = NMib::NTime::CTime::fs_Create(237148610522659200, 0);
 			}
 
 			NTime::CTimeSpan fg_Win32_FileTimeToMalterlibTimeSpan(FILETIME const &_FileTime)
@@ -78,14 +78,7 @@ namespace NMib
 
 			void fg_MalterlibTimeToSystemTime(NTime::CTimeConvert::CDateTime const &_DateTime, SYSTEMTIME &o_SysTime)
 			{
-				DMibRequire
-					(
-						_DateTime.m_Fraction >= 0.0
-						&& _DateTime.m_Fraction < 1.0
-						&& (_DateTime.m_Fraction * 1000.0).f_ToIntRound() <= 999
-					)
-					(_DateTime.m_Fraction)
-				;
+				DMibRequire(_DateTime.m_Fraction >= 0.0 && _DateTime.m_Fraction < 1.0 && (_DateTime.m_Fraction * 1000.0).f_ToIntRound() <= 999)(_DateTime.m_Fraction);
 
 				o_SysTime.wYear = _DateTime.m_Year;
 				o_SysTime.wMonth = _DateTime.m_Month;

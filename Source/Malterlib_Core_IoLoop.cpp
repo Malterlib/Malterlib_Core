@@ -157,9 +157,8 @@ namespace NMib::NSys
 		if (nLagTicks)
 		{
 			// Saturate the rate-lag product before adding headroom so neither operation wraps.
-			uint64 nProduct = uint64(_nDeliveryRateBytes) > TCLimitsInt<uint64>::mc_Max / nLagTicks
-				? TCLimitsInt<uint64>::mc_Max
-				: uint64(_nDeliveryRateBytes) * nLagTicks / _nTicksPerSecond
+			uint64 nProduct
+				= uint64(_nDeliveryRateBytes) > TCLimitsInt<uint64>::mc_Max / nLagTicks ? TCLimitsInt<uint64>::mc_Max : uint64(_nDeliveryRateBytes) * nLagTicks / _nTicksPerSecond
 			;
 			if (nProduct >= uint64(_Window.m_nMaxBytes))
 				nTarget = _Window.m_nMaxBytes;
@@ -205,6 +204,7 @@ namespace NMib::NSys
 	{
 		return false;
 	}
+
 	// Adopt before registration. Returns false with the platform error if a permanent completion binding belongs to another loop.
 	bool ICIoLoop::f_AdoptHandle(CIoLoopHandle, int &)
 	{
