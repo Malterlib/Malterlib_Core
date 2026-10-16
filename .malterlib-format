@@ -49,9 +49,15 @@ TypeNames:
   - 'usize'
   - 'ssize'
 
-# Macros, which can expand to anything: 'DMibCheck', 'DMibTestSuite'.
+# Macros, which can expand to anything: 'DMibCheck', 'DMibTestSuite', and the
+# Windows SDK's calling conventions: 'NTSTATUS (NTAPI *m_fQuery)(HANDLE _Thread)'.
 MacroNames:
   - 'D[A-Z].*'
+  - 'WINAPI'
+  - 'NTAPI'
+  - 'APIENTRY'
+  - 'CALLBACK'
+  - 'WSAAPI'
 
 # Macros that stand in front of a declaration the way 'inline' does.
 SpecifierMacros:
