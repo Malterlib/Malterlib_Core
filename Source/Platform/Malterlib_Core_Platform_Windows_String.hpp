@@ -8,7 +8,7 @@ namespace NMib
 		namespace NPlatform
 		{
 			template <typename tf_CRet, typename tf_CSrc>
-			tf_CRet fg_StrToWindows(const tf_CSrc &_Str)
+			tf_CRet fg_StrToWindows(tf_CSrc const &_Str)
 			{
 				tf_CRet Ret = _Str;
 				return Ret;

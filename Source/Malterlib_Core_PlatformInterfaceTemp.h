@@ -9,23 +9,23 @@ namespace NMib
 {
 	enum EProtect
 	{
-		 EProtect_Read			= DMibBit(0)
-		,EProtect_Write			= DMibBit(1)
-		,EProtect_Exec			= DMibBit(2)
-		,EProtect_NoCache		= DMibBit(3)
-		,EProtect_WriteCombine	= DMibBit(4)
-		,EProtect_ReadWrite		= EProtect_Read | EProtect_Write
-		,EProtect_ReadExec		= EProtect_Read | EProtect_Exec
-		,EProtect_WriteExec		= EProtect_Write | EProtect_Exec
-		,EProtect_All			= EProtect_Read | EProtect_Write | EProtect_Exec
+		EProtect_Read           = DMibBit(0)
+		, EProtect_Write        = DMibBit(1)
+		, EProtect_Exec         = DMibBit(2)
+		, EProtect_NoCache      = DMibBit(3)
+		, EProtect_WriteCombine = DMibBit(4)
+		, EProtect_ReadWrite    = EProtect_Read | EProtect_Write
+		, EProtect_ReadExec     = EProtect_Read | EProtect_Exec
+		, EProtect_WriteExec    = EProtect_Write | EProtect_Exec
+		, EProtect_All          = EProtect_Read | EProtect_Write | EProtect_Exec
 	};
 
 	enum EDebugCheckFailureAction
 	{
-		EDebugContractFailureAction_Continue,
-		EDebugContractFailureAction_Break,
-		EDebugContractFailureAction_Abort,
-		EDebugContractFailureAction_NotHandled,
+		EDebugContractFailureAction_Continue
+		, EDebugContractFailureAction_Break
+		, EDebugContractFailureAction_Abort
+		, EDebugContractFailureAction_NotHandled
 	};
 
 	using FThreadProc = aint (void *_pContext);
@@ -49,12 +49,14 @@ namespace NMib
 				, m_Idle(0.0f)
 			{
 			}
+
 			CSystemCPUUsage(CSystemCPUUsage const &_Other)
 				: m_User(_Other.m_User)
 				, m_Kernel(_Other.m_Kernel)
 				, m_Idle(_Other.m_Idle)
 			{
 			}
+
 			CSystemCPUUsage(fp32 _Init)
 				: m_User(_Init)
 				, m_Kernel(_Init)
@@ -66,20 +68,18 @@ namespace NMib
 			{
 				return m_User + m_Kernel;
 			}
-
 		};
-
 	}
 
 	enum EOperatingSystemArch
 	{
-		EOperatingSystemArch_Unknown = -1,
-		EOperatingSystemArch_x86,
-		EOperatingSystemArch_x64,
-		EOperatingSystemArch_PPC,
-		EOperatingSystemArch_PPC64,
-		EOperatingSystemArch_le32,
-		EOperatingSystemArch_arm64,
+		EOperatingSystemArch_Unknown = -1
+		, EOperatingSystemArch_x86
+		, EOperatingSystemArch_x64
+		, EOperatingSystemArch_PPC
+		, EOperatingSystemArch_PPC64
+		, EOperatingSystemArch_le32
+		, EOperatingSystemArch_arm64
 	};
 
 	namespace NSys
@@ -92,20 +92,20 @@ namespace NMib
 		};
 
 		void fg_FreeLibrary(void *_pModule);
-		void* fg_LoadLibrary(NMib::NStr::CStr const& _Library);
-		void* fg_LoadLibrary(NMib::NStr::CStrNonTracked const& _Library);
-		void* fg_LoadLibrary(NMib::NStr::CFStr256 const& _Library);
-		void* fg_GetLibrarySymbol(void* _pModule, char const* _pSymbol);
-		void* fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned long long& _nDataBytes); // Currently only implemented on macOS, a NOP returning nullptr on all others,
+		void *fg_LoadLibrary(NMib::NStr::CStr const &_Library);
+		void *fg_LoadLibrary(NMib::NStr::CStrNonTracked const &_Library);
+		void *fg_LoadLibrary(NMib::NStr::CFStr256 const &_Library);
+		void *fg_GetLibrarySymbol(void *_pModule, char const *_pSymbol);
+		void *fg_GetExeData(char const *_pSegment, char const *_pSection, unsigned long long &_nDataBytes); // Currently only implemented on macOS, a NOP returning nullptr on all others,
 
-		void fg_System_ReportContractViolation(const NMib::NStr::CStrNonTracked &_Message);
+		void fg_System_ReportContractViolation(NMib::NStr::CStrNonTracked const &_Message);
 		NMib::NStr::CStrNonTracked fg_System_GetContractViolationMessage();
 
-		bool fg_System_GetOperatingSystemVersion(int& o_Major, int& o_Minor, int& o_Fix, EOperatingSystemArch &o_Arch, bool _bForceUpdate = false);
+		bool fg_System_GetOperatingSystemVersion(int &o_Major, int &o_Minor, int &o_Fix, EOperatingSystemArch &o_Arch, bool _bForceUpdate = false);
 
 		void fg_System_ExitProcess(aint _ExitCode);
 
-		void fg_ConsoleOutputRaw(const NMib::NStr::CStrNonTracked &_Str);
+		void fg_ConsoleOutputRaw(NMib::NStr::CStrNonTracked const &_Str);
 		void fg_ConsoleOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer);
 		void fg_ConsoleOutput(ch8 const *_pStr, umint _Len);
 		void fg_ConsoleOutput(NMib::NStr::CStrSpan const &_Str);
@@ -149,7 +149,7 @@ namespace NMib
 				, EExecutionPriority _Priority
 				, umint _StackSize
 				, bool _bSuspended
-				, const ch8 *_pThreadName
+				, ch8 const *_pThreadName
 				, umint _Affinity
 				, umint &_ThreadID
 			)
@@ -165,8 +165,8 @@ namespace NMib
 #ifdef DPlatformFamily_Linux
 		struct CLinuxPriorityGrant
 		{
-			uint32 m_StartNice = 0; // Only set when the priority is below normal, a better one is reached through the limit
-			uint32 m_NiceLimit = 0; // RLIMIT_NICE in its raw form, 20 - nice
+			uint32 m_StartNice = 0;             // Only set when the priority is below normal, a better one is reached through the limit
+			uint32 m_NiceLimit = 0;             // RLIMIT_NICE in its raw form, 20 - nice
 			uint32 m_RealTimePriorityLimit = 0; // RLIMIT_RTPRIO, 0 when the priority is not real-time
 		};
 
@@ -191,7 +191,7 @@ namespace NMib
 
 		bool fg_System_BeingDebugged();
 
-		void fg_Debug_DiffStrings(const NMib::NStr::CStr &_FirstStr, const NMib::NStr::CStr &_SecondStr, const NMib::NStr::CStr &_FirstName = "", const NMib::NStr::CStr &_SecondName = "");
+		void fg_Debug_DiffStrings(NMib::NStr::CStr const &_FirstStr, NMib::NStr::CStr const &_SecondStr, NMib::NStr::CStr const &_FirstName = "", NMib::NStr::CStr const &_SecondName = "");
 
 		/*¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*\
 		|	Function:			FDeadlockUserNotify															|
@@ -201,7 +201,6 @@ namespace NMib
 		\*_________________________________________________________________________________________________*/
 		using FDeadlockUserNotify = bool (); // Return true if the user choose to create a crash dump.
 
-
 		void fg_Debug_SetDeadlockNotifyFunction(FDeadlockUserNotify *_pCrashDumpUserNotify);
 		void fg_Debug_StartDeadlockDetector(fp64 _Timeout);
 		void fg_Debug_NotDeadlocked();
@@ -209,24 +208,23 @@ namespace NMib
 		bool fg_Debug_IsDeadlocked();
 		void fg_Debug_EnableCrashDumpCaches();
 		void fg_Debug_EnableCrashDumps();
-		EDebugCheckFailureAction fg_Debug_ReportContractFailure(const ch8 *_pFileName, int32 _Line, void *_pCodePointer, const NMib::NStr::CStrNonTracked &_ErrorMessage);
-
+		EDebugCheckFailureAction fg_Debug_ReportContractFailure(ch8 const *_pFileName, int32 _Line, void *_pCodePointer, NMib::NStr::CStrNonTracked const &_ErrorMessage);
 
 		CMibCodeAddress fg_System_GetStackTrace(aint _iDepth);
 		umint fg_System_GetStackTrace(CMibCodeAddress *_pStack, umint _nMaxDepth);
-		void fg_Debug_GenerateCrashDump(const NMib::NStr::CStr &_Message, const NMib::NStr::CStr &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bool _bDisplayGUI);
+		void fg_Debug_GenerateCrashDump(NMib::NStr::CStr const &_Message, NMib::NStr::CStr const &_ExtraLog, NContainer::TCVector<NMib::NStr::CStr> &_GeneratedLogs, bool _bDisplayGUI);
 		void fg_Debug_GenerateMemoryDump
 			(
-				NMib::NContainer::TCVector<void*, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Locations
-				, NMib::NContainer::TCVector<umint, NMib::NMemory::CAllocator_NonTrackedHeap> const& _Sizes
+				NMib::NContainer::TCVector<void *, NMib::NMemory::CAllocator_NonTrackedHeap> const &_Locations
+				, NMib::NContainer::TCVector<umint, NMib::NMemory::CAllocator_NonTrackedHeap> const &_Sizes
 			)
 		;
 
 		void fg_Debug_BlockingMessage(NMib::NStr::CStr const &_Heading, NMib::NStr::CStr const &_Message);
 
-		void fg_Debug_UndecorateName(const ch8 *_pName, NMib::NStr::CStr &_Destination);
-		void fg_Debug_UndecorateName(const ch8 *_pName, NMib::NStr::CStrNonTracked &_Destination);
-		void fg_Debug_UndecorateName(const ch8 *_pName, ch8 *_pDestination, umint _MaxLen);
+		void fg_Debug_UndecorateName(ch8 const *_pName, NMib::NStr::CStr &_Destination);
+		void fg_Debug_UndecorateName(ch8 const *_pName, NMib::NStr::CStrNonTracked &_Destination);
+		void fg_Debug_UndecorateName(ch8 const *_pName, ch8 *_pDestination, umint _MaxLen);
 
 		/*¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*\
 		|	Function:			FCrashDumpUserNotify														|
@@ -254,10 +252,15 @@ namespace NMib
 		;
 
 		void fg_Debug_SetCrashDumpUserNotifyFunction(FCrashDumpUserNotify *_pCrashDumpUserNotify);
-		void fg_Debug_SetCrashDumpUserNotifyFormats(NMib::NStr::CStrNonTracked const &_CustomMessage, NMib::NStr::CStrNonTracked const &_CanContinueMessage, NMib::NStr::CStrNonTracked const &_NoContinueMessage);
+		void fg_Debug_SetCrashDumpUserNotifyFormats
+			(
+				NMib::NStr::CStrNonTracked const &_CustomMessage
+				, NMib::NStr::CStrNonTracked const &_CanContinueMessage
+				, NMib::NStr::CStrNonTracked const &_NoContinueMessage
+			)
+		;
 
 		void fg_Mem_EnableMemoryToucher(bool _bEnabled, fp64 _CPUUsage = 0.0);
-
 
 		void fg_TerminateProcess(aint _ExitCode);
 
@@ -286,8 +289,8 @@ namespace NMib
 
 		void *fg_Module_Get(umint &_ModuleSize);
 
-		void fg_Message(const ch8 *_pMessageType, const ch8 *_pToOutput);
-		void fg_Message(const ch16 *_pMessageType, const ch16 *_pToOutput);
+		void fg_Message(ch8 const *_pMessageType, ch8 const *_pToOutput);
+		void fg_Message(ch16 const *_pMessageType, ch16 const *_pToOutput);
 
 		void *fg_System_CPUUsageMonitor_Open();
 		void fg_System_CPUUsageMonitor_Close(void *_pHandle);
@@ -297,7 +300,6 @@ namespace NMib
 		void fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface);
 
 		NSystem::CSystemCPUUsage fg_System_CPUUsageMonitor_GetUsage(void *_pHandle, bool &_bChanged);
-
 
 		bool fg_Clipboard_Supported();
 		bool fg_Clipboard_SetText(NMib::NStr::CStr const &_Text);
@@ -309,23 +311,23 @@ namespace NMib
 
 		enum ESecurePassword
 		{
-			ESecurePassword_OK,
-			ESecurePassword_Failure,
-			ESecurePassword_Duplicate,
-			ESecurePassword_NotFound,
-			ESecurePassword_TooLarge,
-			ESecurePassword_AuthFailed,
+			ESecurePassword_OK
+			, ESecurePassword_Failure
+			, ESecurePassword_Duplicate
+			, ESecurePassword_NotFound
+			, ESecurePassword_TooLarge
+			, ESecurePassword_AuthFailed
 		};
 
 		/*
 			On macOS Location defaults to Sys ProgramName and is used to name keychain entries.
 		*/
 		bool fg_SecurePassword_IsLocked();
-		ESecurePassword fg_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location);
-		ESecurePassword fg_SecurePassword_Store(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure const& _Password);
-		ESecurePassword fg_SecurePassword_Remove(NMib::NStr::CStr const& _Key);
-		ESecurePassword fg_SecurePassword_Get(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure& _oPassword);
-		ESecurePassword fg_SecurePassword_Exists(NMib::NStr::CStr const& _Key);
+		ESecurePassword fg_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location);
+		ESecurePassword fg_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password);
+		ESecurePassword fg_SecurePassword_Remove(NMib::NStr::CStr const &_Key);
+		ESecurePassword fg_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword);
+		ESecurePassword fg_SecurePassword_Exists(NMib::NStr::CStr const &_Key);
 		bool fg_SecurePassword_Supported();
 //		ESecurePassword fg_SecurePassword_Enum(NMib::NContainer::TCVector<NMib::NStr::CStr> & _oKeys);
 
@@ -334,8 +336,8 @@ namespace NMib
 		*/
 		enum EUserManagementCreateUserFlag
 		{
-			EUserManagementCreateUserFlag_None = 0
-			, EUserManagementCreateUserFlag_ShellAccess = DMibBit(0)
+			EUserManagementCreateUserFlag_None             = 0
+			, EUserManagementCreateUserFlag_ShellAccess    = DMibBit(0)
 			, EUserManagementCreateUserFlag_SupportUILogin = DMibBit(1)
 		};
 
@@ -369,12 +371,7 @@ namespace NMib
 				, EUserManagementCreateUserFlag _Flags
 			)
 		;
-		void fg_UserManagement_SetUserPassword
-			(
-				NMib::NStr::CStr const &_UserName
-				, NMib::NStr::CStrSecure const &_Password
-			)
-		;
+		void fg_UserManagement_SetUserPassword(NMib::NStr::CStr const &_UserName, NMib::NStr::CStrSecure const &_Password);
 
 		void fg_UserManagement_DeleteUser(NMib::NStr::CStr const &_UserName);
 
@@ -389,23 +386,21 @@ namespace NMib
 		*/
 		enum EDesktopEnvironment
 		{
-				// TODO: Extend these non-linux enums maybe?
-				EDesktopEnvironment_Windows
-			,	EDesktopEnvironment_MacOS
+			// TODO: Extend these non-linux enums maybe?
+			EDesktopEnvironment_Windows
+			, EDesktopEnvironment_MacOS
 
-			,	EDesktopEnvironment_Unity
-			,	EDesktopEnvironment_KDE3
-			,	EDesktopEnvironment_KDE4
-			,	EDesktopEnvironment_XCFE
-			,	EDesktopEnvironment_GNOME
-			,	EDesktopEnvironment_LXDE
-			,	EDesktopEnvironment_Linux
-			,	EDesktopEnvironment_Emscripten
+			, EDesktopEnvironment_Unity
+			, EDesktopEnvironment_KDE3
+			, EDesktopEnvironment_KDE4
+			, EDesktopEnvironment_XCFE
+			, EDesktopEnvironment_GNOME
+			, EDesktopEnvironment_LXDE
+			, EDesktopEnvironment_Linux
+			, EDesktopEnvironment_Emscripten
 		};
 
 		EDesktopEnvironment fg_DesktopEnvironment_Get();
-
 	}
-
 }
 

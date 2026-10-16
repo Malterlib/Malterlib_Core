@@ -18,7 +18,7 @@ namespace NMib
 		return mp_bOK;
 	}
 
-	CDynamicLibraryUtility::operator bool() const
+	CDynamicLibraryUtility::operator bool () const
 	{
 		return mp_bOK;
 	}

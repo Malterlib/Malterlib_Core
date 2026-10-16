@@ -24,7 +24,6 @@
 #	endif
 #endif
 
-
 #ifndef DPlatformFamily
 #	if defined(__APPLE__)
 #		define DPlatformFamily macOS
@@ -64,7 +63,6 @@
 #	endif
 #endif
 
-
 // Enable SSE on x64 and x86
 #if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 #	ifndef DArchitectureExtension_SSE
@@ -89,7 +87,6 @@
 #	endif
 #endif
 
-
 #if defined(DArchitecture_x86) || defined(DArchitecture_armv6) || defined(DArchitecture_le32) || defined(DArchitecture_ppc32)
 #	define DMibPPtrBits 32
 #	define DMibPBits_int 32
@@ -104,7 +101,6 @@
 #	error "Implement this"
 #endif
 
-
 // Endian
 #if defined(DArchitecture_x64)  || defined(DArchitecture_x86) || defined(DArchitecture_armv6) || defined(DArchitecture_le32) || defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
 #	define DMibPLittleEndian
@@ -113,7 +109,6 @@
 #else
 #	error "Implement this"
 #endif
-
 
 // Cacheline size
 #if defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
@@ -127,7 +122,6 @@
 #else
 #	error "Implement this"
 #endif
-
 
 // Compiler version
 #if defined(DCompiler_clang)

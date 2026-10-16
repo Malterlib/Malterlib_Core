@@ -12,7 +12,7 @@ namespace NMib
 {
 	namespace NPlatform
 	{
-		#define RVA2PTR(base, rva) (((PBYTE) base) + rva)
+#define RVA2PTR(base, rva) (((PBYTE) base) + rva)
 
 		//http://jpassing.wordpress.com/2008/01/06/using-import-address-table-hooking-for-testing/
 		/*++
@@ -74,7 +74,8 @@ namespace NMib
 							DWORD dwDummy;
 							MEMORY_BASIC_INFORMATION memInfoThunk;
 
-							//DMibDTraceSafe("{} {} (0x{}) 0x{} -> 0x{}\r\n", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function, _pHookingProc);
+							//DMibDTraceSafe("{} {} (0x{}) 0x{} -> 0x{}\r\n", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)),
+							//	(void *)pFirstThunkIter->u1.Function, _pHookingProc);
 
 							// Make page writable.
 							VirtualQuery(pFirstThunkIter, &memInfoThunk, sizeof(MEMORY_BASIC_INFORMATION));
@@ -83,8 +84,8 @@ namespace NMib
 
 							// Replace function pointers (non-atomically).
 							if (_pOriginalProc)
-								*_pOriginalProc = (void *) pFirstThunkIter->u1.Function;
-							pFirstThunkIter->u1.Function = (umint) _pHookingProc;
+								*_pOriginalProc = (void *)pFirstThunkIter->u1.Function;
+							pFirstThunkIter->u1.Function = (umint)_pHookingProc;
 
 							// Restore page protection.
 							if (!VirtualProtect(memInfoThunk.BaseAddress, memInfoThunk.RegionSize, memInfoThunk.Protect, &dwDummy))
@@ -150,13 +151,13 @@ namespace NMib
 						continue;
 
 					pImportByName = (PIMAGE_IMPORT_BY_NAME) RVA2PTR(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
-					DMibDTraceSafe("{} {} (0x{}) 0x{}\r\n", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function);
+					DMibDTraceSafe("{} {} (0x{}) 0x{}\r\n", psDLLName, (ch8 const *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function);
 				}
 			}
 
 			DMibDTraceSafe("Delay-Load Import Table\r\n", 0);
 
-			pDelayImportDescriptor = (struct _IMAGE_DELAY_IMPORT_DESCRIPTOR *) RVA2PTR(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress);
+			pDelayImportDescriptor = (struct _IMAGE_DELAY_IMPORT_DESCRIPTOR *)RVA2PTR(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress);
 			// Iterate over import descriptors/DLLs.
 			for (uiIter = 0; pDelayImportDescriptor[uiIter].grAttrs != 0; uiIter++)
 			{
@@ -179,7 +180,7 @@ namespace NMib
 						continue;
 
 					pImportByName = (PIMAGE_IMPORT_BY_NAME) RVA2PTR(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
-					DMibDTraceSafe("{} {} (0x{}) 0x{}", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function);
+					DMibDTraceSafe("{} {} (0x{}) 0x{}", psDLLName, (ch8 const *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function);
 				}
 			}
 
@@ -197,7 +198,7 @@ namespace NMib
 			pNTHeader = (PIMAGE_NT_HEADERS) RVA2PTR(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
-			pDelayImportDescriptor = (struct _IMAGE_DELAY_IMPORT_DESCRIPTOR *) RVA2PTR(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress);
+			pDelayImportDescriptor = (struct _IMAGE_DELAY_IMPORT_DESCRIPTOR *)RVA2PTR(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress);
 
 			// Iterate over import descriptors/DLLs.
 			for (uiIter = 0; pDelayImportDescriptor[uiIter].grAttrs != 0; uiIter++)
@@ -227,7 +228,8 @@ namespace NMib
 							DWORD dwDummy;
 							MEMORY_BASIC_INFORMATION memInfoThunk;
 
-							//DMibDTraceSafe("{} {} (0x{}) 0x{} -> 0x{}\r\n", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function, _pHookingProc);
+							//DMibDTraceSafe("{} {} (0x{}) 0x{} -> 0x{}\r\n", psDLLName, (const ch8 *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)),
+							//	(void *)pFirstThunkIter->u1.Function, _pHookingProc);
 
 							// Make page writable.
 							VirtualQuery(pFirstThunkIter, &memInfoThunk, sizeof(MEMORY_BASIC_INFORMATION));
@@ -236,8 +238,8 @@ namespace NMib
 
 							// Replace function pointers (non-atomically).
 							if (_pOriginalProc)
-								*_pOriginalProc = (void *) pFirstThunkIter->u1.Function;
-							pFirstThunkIter->u1.Function = (umint) _pHookingProc;
+								*_pOriginalProc = (void *)pFirstThunkIter->u1.Function;
+							pFirstThunkIter->u1.Function = (umint)_pHookingProc;
 
 							// Restore page protection.
 							if (!VirtualProtect(memInfoThunk.BaseAddress, memInfoThunk.RegionSize, memInfoThunk.Protect, &dwDummy))
@@ -255,12 +257,11 @@ namespace NMib
 #if !defined(DArchitecture_arm64)
 		namespace
 		{
-
-			#define MAXMODULES 1024
+#	define MAXMODULES 1024
 
 			// Returns the HMODULE for module szModNameArg in the process with process-id _PID
 			// Returns NULL when the mudole is not loaded
-			HMODULE fg_GetModuleForProcess(DWORD _PID, const WCHAR *szModNameArg)
+			HMODULE fg_GetModuleForProcess(DWORD _PID, WCHAR const *szModNameArg)
 			{
 				HANDLE hProcess;
 				HMODULE ahmModules[MAXMODULES];
@@ -268,7 +269,7 @@ namespace NMib
 				unsigned int uiIter;
 				TCHAR szModName[MAX_PATH];
 
-				hProcess = OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ, FALSE, _PID);
+				hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, _PID);
 				if (NULL == hProcess)
 					return NULL;
 
@@ -276,7 +277,7 @@ namespace NMib
 				{
 					for (uiIter = 0; uiIter < dwBytes/sizeof(HMODULE); uiIter++)
 					{
-						if (GetModuleBaseName(hProcess, ahmModules[uiIter], szModName, sizeof(szModName)/sizeof(TCHAR)))
+						if (GetModuleBaseName(hProcess, ahmModules[uiIter], szModName, sizeof(szModName) / sizeof(TCHAR)))
 						{
 							if (NStr::fg_StrCmpNoCase(szModName, szModNameArg) == 0)
 							{
@@ -291,15 +292,12 @@ namespace NMib
 
 				return NULL;
 			}
-
-
 		}
-
 
 		// Remove DLL _pDLLName from process with process-id _PID
 		// Don't use a full pathname for _pDLLName
 		// Returns true on succes, false on failure
-		BOOL fg_DejectDLL(DWORD _PID, const WCHAR *_pDLLName, NStr::CStr &_Error)
+		BOOL fg_DejectDLL(DWORD _PID, WCHAR const *_pDLLName, NStr::CStr &_Error)
 		{
 			HMODULE hmKernel32;
 			FARPROC fpFreeLibrary;
@@ -361,7 +359,6 @@ namespace NMib
 			}
 			CloseHandle(hProcess);
 
-
 			return bRet;
 		}
 
@@ -372,29 +369,29 @@ namespace NMib
 
 		uint8 *fg_SkipJumps(uint8 *pbCode)
 		{
-		#if defined(DArchitecture_x86) || defined(DArchitecture_x64)
+#	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 
-		#if defined DArchitecture_x64
+#		if defined DArchitecture_x64
 			if ((pbCode[0] & 0xF0) == 0x40 && pbCode[1] == 0xff && pbCode[2] == 0x25)
 			{
 				// REX PREFIX, just skip it
 				++pbCode;
 			}
-		#endif
+#		endif
 
 			if (pbCode[0] == 0xff && pbCode[1] == 0x25)
 			{
-		#ifdef DArchitecture_x86
+#		ifdef DArchitecture_x86
 				// on x86 we have an absolute pointer...
 				uint8 *pbTarget = *(uint8 **)&pbCode[2];
 				// ... that shows us an absolute pointer.
 				return fg_SkipJumps(*(uint8 **)pbTarget);
-		#elif defined DArchitecture_x64
+#		elif defined DArchitecture_x64
 				// on x64 we have a 32-bit offset...
 				INT32 lOffset = *(INT32 *)&pbCode[2];
 				// ... that shows us an absolute pointer
 				return fg_SkipJumps(*(uint8 **)(pbCode + 6 + lOffset));
-		#endif
+#		endif
 			}
 			else if (pbCode[0] == 0xe9)
 			{
@@ -407,16 +404,15 @@ namespace NMib
 				// and finally an 8-bit offset to the destination
 				return fg_SkipJumps(pbCode + 2 + *(CHAR *)&pbCode[1]);
 			}
-		#else
-		#	error unsupported platform
-		#endif
+#	else
+#		error unsupported platform
+#	endif
 			return pbCode;
 		}
 
-
 		struct CInjectDllData
 		{
-			NTSTATUS  ( __stdcall *m_pLdrLoadDll)(PWCHAR SearchPath, PULONG DllCharacteristics, PUNICODE_STRING ModuleFileName, PHANDLE ModuleHandle);
+			NTSTATUS (__stdcall *m_pLdrLoadDll)(PWCHAR SearchPath, PULONG DllCharacteristics, PUNICODE_STRING ModuleFileName, PHANDLE ModuleHandle);
 			PWCHAR m_pSearchPath;
 			ULONG m_DllCharacteristics;
 			UNICODE_STRING m_ModuleFileName;
@@ -424,35 +420,39 @@ namespace NMib
 		};
 
 		// Runtime checks needs to be off here, as we need this code to be location independant
-		#pragma runtime_checks( "", off )
+#	pragma runtime_checks( "", off )
 
 		inline_never DWORD WINAPI fg_InjectDllRemote(CInjectDllData *_pData)
 		{
 			return _pData->m_pLdrLoadDll(_pData->m_pSearchPath, &_pData->m_DllCharacteristics, &_pData->m_ModuleFileName, &_pData->m_pModuleHandle);
 		}
 
-		#pragma runtime_checks( "", restore )
+#	pragma runtime_checks( "", restore )
 
-		#ifdef DMibSupportCygwin
+#	ifdef DMibSupportCygwin
 		class CWindowsHandle
 		{
 			HANDLE m_Handle;
 			CWindowsHandle(CWindowsHandle const &_Other);
-			CWindowsHandle &operator =(CWindowsHandle const &_Other);
+			CWindowsHandle &operator = (CWindowsHandle const &_Other);
+
 		public:
 			CWindowsHandle()
 				: m_Handle(nullptr)
 			{
 			}
+
 			CWindowsHandle(CWindowsHandle &&_Other)
 				: m_Handle(_Other.m_Handle)
 			{
 				_Other.m_Handle = nullptr;
 			}
+
 			CWindowsHandle(HANDLE _Handle)
 				: m_Handle(_Handle)
 			{
 			}
+
 			~CWindowsHandle()
 			{
 				if (m_Handle && m_Handle != INVALID_HANDLE_VALUE)
@@ -469,7 +469,7 @@ namespace NMib
 				return *this;
 			}
 
-			operator HANDLE()
+			operator HANDLE ()
 			{
 				return m_Handle;
 			}
@@ -494,7 +494,6 @@ namespace NMib
 				//PAGE_READONLY
 				//MapViewOfFile();
 				//;
-
 			}
 
 			~CFileMap()
@@ -503,11 +502,10 @@ namespace NMib
 					UnmapViewOfFile(m_pMemory);
 			}
 
-			operator void *()
+			operator void * ()
 			{
 				return m_pMemory;
 			}
-
 		};
 
 		template <typename tf_CHeaders>
@@ -564,8 +562,7 @@ namespace NMib
 			return false;
 		}
 
-
-		#endif
+#	endif
 
 		extern "C" ULONG
 		NTAPI
@@ -573,7 +570,7 @@ namespace NMib
 			_In_ NTSTATUS Status
 			);
 
-		#pragma comment(lib, "Advapi32.lib")
+#	pragma comment(lib, "Advapi32.lib")
 		// Inject DLL _pDLLName in process with process-id _PID
 		// If the DLL is not in the PATH of the process, use a full pathname for _pDLLName
 		// Returns true on succes, false on failure
@@ -598,12 +595,10 @@ namespace NMib
 			return pRet;
 		}
 
-
-
-		EInjectDllResult fg_InjectDLL(HANDLE _hProcess, HANDLE _hThread, const WCHAR *_pDLLName, NStr::CStr &_Error)
+		EInjectDllResult fg_InjectDLL(HANDLE _hProcess, HANDLE _hThread, WCHAR const *_pDLLName, NStr::CStr &_Error)
 		{
-		//	NMib::NTime::CTimeMeasureTraceScope Scope("fg_InjectDLL");
-		//	DMibTrace("Injecting Dll: {}\r\n", _pDLLName);
+			//	NMib::NTime::CTimeMeasureTraceScope Scope("fg_InjectDLL");
+			//	DMibTrace("Injecting Dll: {}\r\n", _pDLLName);
 			BOOL bRet = true;
 			SIZE_T dwBytes;
 
@@ -611,8 +606,7 @@ namespace NMib
 
 			HANDLE hProcess = _hProcess;
 
-			auto fl_ReportError
-				= [&](NStr::CStr const &_NewError)
+			auto fl_ReportError = [&](NStr::CStr const &_NewError)
 				{
 					if (!_Error.f_IsEmpty())
 						_Error += "\r\n";
@@ -645,14 +639,19 @@ namespace NMib
 				return EInjectDllResult_Failed;
 			}
 
-		#ifdef DMibSupportCygwin
+#	ifdef DMibSupportCygwin
 			NStr::CWStr ImageFileName;
 
 			{
 				UndocumentedPEB Peb;
 				PROCESS_BASIC_INFORMATION BasicInfo;
 				ULONG RetLen = 0;
-				if (NLocal::g_OptionalFunctions.m_fNtQueryInformationProcess && !NLocal::g_OptionalFunctions.m_fNtQueryInformationProcess(hProcess, ProcessBasicInformation, &BasicInfo, sizeof(BasicInfo), &RetLen) && RetLen == sizeof(BasicInfo))
+				if
+				(
+					NLocal::g_OptionalFunctions.m_fNtQueryInformationProcess
+					&& !NLocal::g_OptionalFunctions.m_fNtQueryInformationProcess(hProcess, ProcessBasicInformation, &BasicInfo, sizeof(BasicInfo), &RetLen)
+					&& RetLen == sizeof(BasicInfo)
+				)
 				{
 					SIZE_T ReadBytes = 0;
 					if (ReadProcessMemory(hProcess, BasicInfo.PebBaseAddress, &Peb, sizeof(Peb), &ReadBytes) && ReadBytes == sizeof(Peb))
@@ -664,7 +663,7 @@ namespace NMib
 					}
 				}
 			}
-		#endif
+#	endif
 
 			HMODULE hRemoteNtDll = 0;
 			{
@@ -680,7 +679,8 @@ namespace NMib
 						//NStr::CWStr BaseName;
 						//GetMappedFileNameW(hProcess, (HMODULE)MemInfo.AllocationBase, BaseName.f_GetStr(1024), 1024);
 						//BaseName.f_GetLen();
-						//DTrace("0x{nfh,sj16,sf0} -> 0x{nfh,sj16,sf0}: State: 0x{nfh,sj8,sf0}: {}\n", MemInfo.BaseAddress, ((umint)MemInfo.BaseAddress + MemInfo.RegionSize), MemInfo.State, BaseName);
+						//DTrace("0x{nfh,sj16,sf0} -> 0x{nfh,sj16,sf0}: State: 0x{nfh,sj8,sf0}: {}\n", MemInfo.BaseAddress, ((umint)MemInfo.BaseAddress + MemInfo.RegionSize), MemInfo.State,
+						//	BaseName);
 
 						if (!hRemoteNtDll)
 						{
@@ -711,7 +711,6 @@ namespace NMib
 				return EInjectDllResult_Failed;
 			}
 
-
 			NStr::CWStr DllDirectories = NFile::CFile::fs_GetPath(NStr::CWStr(_pDLLName)).f_ReplaceChar('/', '\\');
 
 			NStr::CWStr Temp;
@@ -731,17 +730,16 @@ namespace NMib
 			}
 			DllDirectories += ";.";
 
-
-			size_t StringMemorySize = (NStr::fg_StrLen(_pDLLName)+1) * 2;
+			size_t StringMemorySize = (NStr::fg_StrLen(_pDLLName) + 1) * 2;
 			size_t RemoteMemorySize = StringMemorySize;
 			size_t DllDirectoriesSize = (DllDirectories.f_GetLen() + 1) * 2;
 			RemoteMemorySize += DllDirectoriesSize;
 
-			RemoteMemorySize += 256+16*4;
+			RemoteMemorySize += 256 + 16 * 4;
 			RemoteMemorySize += sizeof(CInjectDllData);
 
 			// Get memory at an address that is free in this process so eventual fork wont have problems
-			uint8 *lpLocalMemory = (uint8 *)VirtualAllocEx(GetCurrentProcess(), NULL, RemoteMemorySize, MEM_RESERVE|MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+			uint8 *lpLocalMemory = (uint8 *)VirtualAllocEx(GetCurrentProcess(), NULL, RemoteMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 			if (!lpLocalMemory)
 			{
 				HRESULT Error = GetLastError();
@@ -750,9 +748,9 @@ namespace NMib
 			}
 			VirtualFreeEx(GetCurrentProcess(), lpLocalMemory, RemoteMemorySize, MEM_RELEASE);
 
-			uint8 *lpRemoteMemory = (uint8 *)VirtualAllocEx(hProcess, lpLocalMemory, RemoteMemorySize, MEM_RESERVE|MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+			uint8 *lpRemoteMemory = (uint8 *)VirtualAllocEx(hProcess, lpLocalMemory, RemoteMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 			if (!lpRemoteMemory)
-				lpRemoteMemory = (uint8 *)VirtualAllocEx(hProcess, nullptr, RemoteMemorySize, MEM_RESERVE|MEM_COMMIT, PAGE_EXECUTE_READWRITE); // Just alloc anywhere
+				lpRemoteMemory = (uint8 *)VirtualAllocEx(hProcess, nullptr, RemoteMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE); // Just alloc anywhere
 
 			if (!lpRemoteMemory)
 			{
@@ -761,8 +759,7 @@ namespace NMib
 				return EInjectDllResult_Failed;
 			}
 
-			auto CleanupMemory
-				= fg_OnScopeExit
+			auto CleanupMemory = fg_OnScopeExit
 				(
 					[&]
 					{
@@ -782,7 +779,7 @@ namespace NMib
 
 			CInjectDllData InjectData;
 			InjectData.m_ModuleFileName.Buffer = (ch16 *)lpRemoteMemoryOut;
-			InjectData.m_ModuleFileName.Length = (uint16)NStr::fg_StrLen(_pDLLName)*sizeof(ch16);
+			InjectData.m_ModuleFileName.Length = (uint16)NStr::fg_StrLen(_pDLLName) * sizeof(ch16);
 			InjectData.m_ModuleFileName.MaximumLength = (uint16)dwBytes;
 
 			lpRemoteMemoryOut += dwBytes;
@@ -807,7 +804,6 @@ namespace NMib
 
 			uint8 *pRemoteFunction;
 			{
-
 				umint Size = 256; // Guess maximum of dummy function
 				uint8 *pFuncOut = (uint8 *)&fg_InjectDllRemote;
 				// Put function into it's own memory page
@@ -836,7 +832,7 @@ namespace NMib
 
 			lpRemoteMemoryOut += dwBytes;
 			lpRemoteMemoryOut = fg_AlignUp(lpRemoteMemoryOut, 16);
-		#ifdef DMibSupportCygwin
+#	ifdef DMibSupportCygwin
 			bool bIsCygwin = false;
 			if (_hThread && !ImageFileName.f_IsEmpty())
 			{
@@ -854,7 +850,6 @@ namespace NMib
 						(void)_Exception;
 						DDTrace("File mapping failed: {}\n", _Exception.f_GetErrorStr());
 					}
-
 				}
 				while (false)
 					;
@@ -875,11 +870,10 @@ namespace NMib
 				//HANDLE hRemoteThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)fpOtherLoadLibraryA, lpRemoteMemory, 0, &ThreadID);
 			}
 			else
-		#endif
+#	endif
 			{
 				DWORD ThreadID;
 				HANDLE hRemoteThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)pRemoteFunction, pRemoteInjectData, 0, &ThreadID);
-
 
 				if (hRemoteThread)
 				{
@@ -919,7 +913,7 @@ namespace NMib
 			return EInjectDllResult_Done;
 		}
 
-		EInjectDllResult fg_InjectDLL(DWORD _PID, DWORD _ThreadID, const WCHAR *_pDLLName, NStr::CStr &_Error)
+		EInjectDllResult fg_InjectDLL(DWORD _PID, DWORD _ThreadID, WCHAR const *_pDLLName, NStr::CStr &_Error)
 		{
 			HANDLE hThread = nullptr;
 			HANDLE hProcess = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ, FALSE, _PID);
@@ -931,12 +925,9 @@ namespace NMib
 			}
 
 			if (_ThreadID)
-			{
 				hThread = OpenThread(THREAD_SET_CONTEXT, false, _ThreadID);
-			}
 
-			auto Cleanup
-				= fg_OnScopeExit
+			auto Cleanup = fg_OnScopeExit
 				(
 					[&]
 					{

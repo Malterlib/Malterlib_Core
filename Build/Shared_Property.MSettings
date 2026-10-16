@@ -56,7 +56,6 @@ Property
 	}
 	MalterlibCompiledFiles MalterlibCompiledFiles->UnixPath()
 
-
 	MalterlibDependenciesDirectory MalterlibCompiledFiles / "Dependencies"
 	{
 		!!MalterlibDependenciesDirectory undefined
@@ -164,7 +163,6 @@ Property
 			![] "/opt"->FindDirectoriesIn("CompiledFiles")
 		}
 	}
-
 
 	MalterlibDependenciesDirectory `@(HomeDirectory)/.CompiledFiles/Dependencies`
 	{

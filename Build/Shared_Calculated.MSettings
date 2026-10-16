@@ -243,7 +243,7 @@ Property
 		!!Configuration "Profile"
 		!!Configuration "Release"
 		!!Configuration "Optimized"
-	    !!Configuration "Debug Optimized"
+		!!Configuration "Debug Optimized"
 		!!Configuration "Release Testing"
 		!!Configuration "Release Debug"
 	}
@@ -261,7 +261,7 @@ Property
 		!!RealConfiguration "Profile"
 		!!RealConfiguration "Release"
 		!!RealConfiguration "Optimized"
-	    !!RealConfiguration "Debug Optimized"
+		!!RealConfiguration "Debug Optimized"
 		!!RealConfiguration "Release Testing"
 		!!RealConfiguration "Release Debug"
 	}
@@ -496,7 +496,14 @@ Property
 	}
 
 	MalterlibGitOriginRemote: string = ""
-	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, ["ByDigest:", `@(MalterlibGitRepoGitCommonDir)/config`], `git@(HostExecutableExtension)`, "remote", "get-url", "origin")
+	MalterlibGitOriginRemote ExecuteCommand(
+		`@(GeneratedGlobalDirectory)GitOriginRemote.MState`
+		, ["ByDigest:", `@(MalterlibGitRepoGitCommonDir)/config`]
+		, `git@(HostExecutableExtension)`
+		, "remote"
+		, "get-url"
+		, "origin"
+	)
 	{
 		!!MalterlibGitHasOrigin true
 	}
@@ -535,7 +542,15 @@ Property
 	// enables ExecuteCommand's Try mode, so a non-zero exit (unborn HEAD) yields
 	// an empty string instead of throwing.
 	MalterlibGitHeadCommit: string = ""
-	MalterlibGitHeadCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitHeadCommit.MTryState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir), `git@(HostExecutableExtension)`, "rev-parse", "--verify", "--quiet", "HEAD")->Trim()
+	MalterlibGitHeadCommit ExecuteCommand(
+		`@(GeneratedGlobalDirectory)GitHeadCommit.MTryState`
+		, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir)
+		, `git@(HostExecutableExtension)`
+		, "rev-parse"
+		, "--verify"
+		, "--quiet"
+		, "HEAD"
+	)->Trim()
 	{
 		!!MalterlibIsGitRepository true
 	}
@@ -551,7 +566,15 @@ Property
 	}
 
 	MalterlibGitBranch: string?
-	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir), `git@(HostExecutableExtension)`, "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
+	MalterlibGitBranch ExecuteCommand(
+		`@(GeneratedGlobalDirectory)GitBranch.MState`
+		, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir)
+		, `git@(HostExecutableExtension)`
+		, "rev-parse"
+		, "--symbolic-full-name"
+		, "--abbrev-ref"
+		, "HEAD"
+	)->Trim()
 	{
 		&
 		{
@@ -618,7 +641,15 @@ Property
 	MalterlibPerforceRootConfigFiles: [string] = AllRepositories->ForEach(&f_MalterlibCollectPerforceRootConfigFiles)
 
 	MalterlibPerforceChangelist: string = ""
-	MalterlibPerforceChangelist ExecuteCommand(`@(GeneratedGlobalDirectory)@(_MSPDBSRV_ENDPOINT_)P4Changelist.MState`, MalterlibPerforceRootConfigFiles, `p4@(HostExecutableExtension)`, "changes", "-m", "1", "...#have")->Trim()->ParseFormatString("Change {} on {}", "{0}")
+	MalterlibPerforceChangelist ExecuteCommand(
+		`@(GeneratedGlobalDirectory)@(_MSPDBSRV_ENDPOINT_)P4Changelist.MState`
+		, MalterlibPerforceRootConfigFiles
+		, `p4@(HostExecutableExtension)`
+		, "changes"
+		, "-m"
+		, "1"
+		, "...#have"
+	)->Trim()->ParseFormatString("Change {} on {}", "{0}")
 	{
 		&
 		{
@@ -661,7 +692,6 @@ Property
 				Target.Type "Driver"
 			}
 		}
-
 	}
 	MalterlibMacOSHideDockTile: bool = false
 	MalterlibMacOSHideDockTile true
@@ -750,7 +780,9 @@ Property
 	MalterlibIoDebug_Enable: bool = DebugCode // User(Debug)=true: Enable the io loop / io debugging environment overrides read by the io subsystem sources (Malterlib_Core_*IoSubSystem*.cpp)
 
 	Malterlib_RefCountDebugging_Enable: bool = false // User(Debug)=true: Set to true to enable shared pointer reference debugging
-	Malterlib_RefCountLeakDebugging_Enable: bool = false // User(Debug)=true: Set to true to enable tracing information about shared pointer references when displaying memory leaks. Requires Malterlib_RefCountDebugging_Enable to be enabled as well
+	// User(Debug)=true: Set to true to enable tracing information about shared pointer references when displaying memory leaks. Requires Malterlib_RefCountDebugging_Enable to be enabled as
+	// well
+	Malterlib_RefCountLeakDebugging_Enable: bool = false
 
 	Malterlib_Tests_Enable: bool // User(Tests)=true: Force enable or disable of tests (set to true or false)
 	Malterlib_Tests_Enable false
@@ -815,8 +847,11 @@ Property
 	MalterlibMemory_Shims_Lightweight: bool = false // User(Debug)=true: Enable lightweight thread local memory reporters for main memory manager only.
 	MalterlibMemory_Shims_EnableGlobal: bool = true // User(Debug)=false: Enable global memory reporter. Used for for example remote debugger support
 
-	MalterlibMemoryManager_Debug: bool = DebugCode // User(Memory Manager)=true: Enable Enable debug memory manager that reports leaks and checks for overwrites. Toggling will recompile everything. (default true in debug configs, false otherwise)
-	MalterlibMemoryManager_CrossModule_Enable: bool = true // User(Memory Manager)=false: Enables cross module memory manager that shares the memory manager in all dlls with the executables memory manager
+	// User(Memory Manager)=true: Enable debug memory manager that reports leaks and checks for overwrites. Toggling will recompile everything. (default true in debug configs, false
+	// otherwise)
+	MalterlibMemoryManager_Debug: bool = DebugCode
+	// User(Memory Manager)=false: Enables cross module memory manager that shares the memory manager in all dlls with the executables memory manager
+	MalterlibMemoryManager_CrossModule_Enable: bool = true
 	MalterlibMemoryManager_HugePage_Enable: bool = false // User(Memory Manager)=true: Enables transparent huge page support on Linux
 	MalterlibMemoryManager_Stats_Enable: bool = false // User(Memory Manager)=true: Report statistics about memory allocations at the end of the program
 	MalterlibMemoryManager_Stats_EnableCategories: bool = false // User(Memory Manager)=true: Dump statistics about memory allocations through categories

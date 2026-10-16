@@ -172,7 +172,8 @@ AcquireBuildLock()
 			# The child rechecks its token after recording, so both sides cannot miss the race.
 			if mv "$Token" "$LockDir/claim.$$" 2>/dev/null; then
 				if BuildLockChildRunning "$LockDir/claim.$$"; then
-					echo "The ninja of another build (process $(cat "$LockDir/claim.$$/child")) is still running in '$BuildDir' though the build that started it is gone, so this one is refused." >&2
+					echo "The ninja of another build (process $(cat "$LockDir/claim.$$/child")) is still running in '$BuildDir'" \
+						"though the build that started it is gone, so this one is refused." >&2
 					mv "$LockDir/claim.$$" "$Token" 2>/dev/null
 					return 1
 				fi

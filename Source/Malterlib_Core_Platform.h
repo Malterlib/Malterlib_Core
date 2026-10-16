@@ -7,9 +7,9 @@ namespace NMib
 {
 	enum EEndian
 	{
-		EEndian_Native = 0,
-		EEndian_Little = 1,
-		EEndian_Big	= 2
+		EEndian_Native   = 0
+		, EEndian_Little = 1
+		, EEndian_Big    = 2
 	};
 }
 
@@ -28,7 +28,6 @@ namespace NMib
 #include "Malterlib_Core_Platform_Compiler.h"
 #include "Malterlib_Core_Platform_Platform.h"
 
-
 // Shortcuts
 #ifndef DMibPNoShortCuts
 #	define DPtrBits DMibPPtrBits
@@ -45,7 +44,6 @@ namespace NMib
 #	endif
 #endif
 
-
 // Sanity checks
 static_assert(sizeof(ch8) == 1);
 static_assert(sizeof(ch16) == 2);
@@ -59,7 +57,6 @@ static_assert(sizeof(uint8) == 1);
 static_assert(sizeof(uint16) == 2);
 static_assert(sizeof(uint32) == 4);
 static_assert(sizeof(uint64) == 8);
-static_assert(sizeof(void*) == sizeof(umint));
-static_assert(sizeof(void*) == sizeof(smint));
-
+static_assert(sizeof(void *) == sizeof(umint));
+static_assert(sizeof(void *) == sizeof(smint));
 

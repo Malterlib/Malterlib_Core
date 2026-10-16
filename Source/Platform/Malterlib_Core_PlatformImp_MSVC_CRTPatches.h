@@ -18,7 +18,6 @@ void __cdecl fg_MalterlibFreeNonTracked(void *_pMem);
 
 extern "C" BOOL NTAPI fg_MalterlibDllMainCallback(void *_pInstance, DWORD _Reason, void *_pReserved);
 
-
 namespace NMib
 {
 	namespace NSys
@@ -26,7 +25,6 @@ namespace NMib
 		bool fg_Compiler_MakeActive(int _Dummy, ...);
 	}
 }
-
 
 #define DMibCRTPatches
 

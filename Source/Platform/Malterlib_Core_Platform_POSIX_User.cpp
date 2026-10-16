@@ -48,8 +48,7 @@ namespace NMib
 			case EBADF:
 			case EPERM:
 				return 0;
-			default:
-				return _Error;
+			default: return _Error;
 			}
 		}
 

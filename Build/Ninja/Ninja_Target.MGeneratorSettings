@@ -11,17 +11,15 @@ Workspace
 {
 	PoolDepths: {
 		...: int
-	} = {
-		LTOLinkPool: Clamp((HostSystemInfo<PhysicalMemoryMiB> / MalterlibMemoryPerLTOLink)->AsInteger(), 1, Max(HostSystemInfo<PhysicalThreads> / MalterlibThreadsPerLTOLink, 1))
-	}
+	} = { LTOLinkPool: Clamp((HostSystemInfo<PhysicalMemoryMiB> / MalterlibMemoryPerLTOLink)->AsInteger(), 1, Max(HostSystemInfo<PhysicalThreads> / MalterlibThreadsPerLTOLink, 1)) }
 }
-
 
 GeneratorSetting
 {
 	Ninja_TargetType: string
 	Ninja_TargetType SwitchWithError(
-		Target.Type, `Unknown target type: @(Target.Type)`
+		Target.Type
+		, `Unknown target type: @(Target.Type)`
 		, "Executable", "Application"
 		, "ConsoleExecutable", "Application"
 		, "UIExecutable", "Application"
@@ -59,7 +57,9 @@ GeneratorSetting
 	// Windows tool executables using ClangCL toolchain
 	Ninja_TargetExecutable Target.Type->SwitchWithError(
 		"Target executable in native mode is not known for target type: "
-		, "StaticLibrary", (Documentation <==> "Doxygen") ? Builtin.MToolExe->GetPath() / `DoxygenLibTool/libtool@(HostExecutableExtension)` : `@(MalterlibToolsPrefix)llvm-lib@(HostExecutableExtension)`
+		, "StaticLibrary", Documentation <==> "Doxygen"
+			? Builtin.MToolExe->GetPath() / `DoxygenLibTool/libtool@(HostExecutableExtension)`
+			: `@(MalterlibToolsPrefix)llvm-lib@(HostExecutableExtension)`
 		, "ConsoleExecutable", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
 		, "UIExecutable", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
 		, "Executable", `@(MalterlibToolsPrefix)clang++@(HostExecutableExtension)`
@@ -966,7 +966,6 @@ GeneratorSetting
 		!!Target.DriverType "DriverKit"
 	}
 
-
 	Target_EnableModuleDebugging =+ GeneratorSetting.f_SetSharedFlags(
 		[
 			{
@@ -1486,7 +1485,6 @@ GeneratorSetting
 		]
 	)
 
-
 	Target_CLanguage =+ GeneratorSetting.f_SetSharedFlags(
 		[
 			{
@@ -1514,8 +1512,7 @@ GeneratorSetting
 					, "libc++", "-stdlib=libc++"
 					, "libstdc++", "-stdlib=libstdc++"
 				)
-			},
-			{
+			}, {
 				Tools: ["ld", "ld.lld", "lld"]
 				, Flags: Target.CxxStandardLibrary->SwitchWithError(
 					"Unknown C++ stdlib option: "

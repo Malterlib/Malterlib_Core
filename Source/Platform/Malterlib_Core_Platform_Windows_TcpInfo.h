@@ -7,7 +7,7 @@
 
 // SDK target-version guards may hide the Windows 10 1703 TCP-info ABI; older kernels reject the query.
 #if !defined(SIO_TCP_INFO)
-	#define SIO_TCP_INFO _WSAIORW(IOC_VENDOR, 39)
+#	define SIO_TCP_INFO _WSAIORW(IOC_VENDOR, 39)
 #endif
 
 struct CWindowsTcpInfoV0

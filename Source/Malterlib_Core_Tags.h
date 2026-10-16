@@ -19,7 +19,6 @@ namespace NMib
 
 	template <typename t_CTags, typename ...tp_CTagsToAdd>
 	struct TCAddTags;
-
 }
 
 #include "Malterlib_Core_Tags.hpp"

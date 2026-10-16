@@ -325,14 +325,17 @@ Property.MalterlibGenerateScheme: bool = true
 
 Compile
 {
-	BuildPriority: int? // Used for ordering the build in the build graph. Higher value is higher priority. After first build it's inferred from the number of milliseconds the build took, overrides the targets build priority
+	// Used for ordering the build in the build graph. Higher value is higher priority. After first build it's inferred from the number of milliseconds the build took, overrides the targets
+	// build priority
+	BuildPriority: int?
 }
 
 Target
 {
 	IDEDebugPriority: int = 100 // Used for selecting the default debug target in IDEs. Higher value is higher priority
 
-	BuildPriority: int = 100 // Used for ordering the build in the build graph. Higher value is higher priority. After first build it's inferred from the number of milliseconds the build took
+	// Used for ordering the build in the build graph. Higher value is higher priority. After first build it's inferred from the number of milliseconds the build took
+	BuildPriority: int = 100
 
 	BuildPriority 2000
 	{
@@ -505,7 +508,7 @@ Target
 	}
 }
 
-	// File extensions macOS
+// File extensions macOS
 Target
 {
 	&
@@ -809,7 +812,12 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags =+ ["/FORCE:MULTIPLE"->f_LinkerFlag(), "-incremental:no"->f_LinkerFlag(), "clang_rt.asan_dynamic-x86_64.lib"->f_LinkerLibrary(), "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"->f_LinkerFlag()]
+	ExtraLinkerFlags =+ [
+		"/FORCE:MULTIPLE"->f_LinkerFlag()
+		, "-incremental:no"->f_LinkerFlag()
+		, "clang_rt.asan_dynamic-x86_64.lib"->f_LinkerLibrary()
+		, "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"->f_LinkerFlag()
+	]
 	{
 		&
 		{
@@ -821,7 +829,12 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags =+ ["/FORCE:MULTIPLE"->f_LinkerFlag(), "-incremental:no"->f_LinkerFlag(), "clang_rt.asan_dynamic-x86_64.lib"->f_LinkerLibrary(), "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"->f_LinkerFlag()]
+	ExtraLinkerFlags =+ [
+		"/FORCE:MULTIPLE"->f_LinkerFlag()
+		, "-incremental:no"->f_LinkerFlag()
+		, "clang_rt.asan_dynamic-x86_64.lib"->f_LinkerLibrary()
+		, "-wholearchive:clang_rt.asan_static_runtime_thunk-x86_64.lib"->f_LinkerFlag()
+	]
 	{
 		&
 		{
@@ -966,7 +979,6 @@ Target
 			GeneratorFamily "VisualStudio"
 			TargetIsExecutable true
 		}
-
 	}
 
 	ExtraLibFlags += "/ignore:4042"
@@ -977,7 +989,6 @@ Target
 			GeneratorFamily "VisualStudio"
 		}
 	}
-
 
 	ExtraLinkerFlags =+ "/GENPROFILE"
 	{
@@ -1290,20 +1301,12 @@ Property
 	}
 	// .NET 7+ registry layout: <arch>\sharedhost\Path (older .NET 6 used <arch>\InstallLocation directly).
 	// Use HostArchitecture — dotnet is installed for the host arch and the ref packs are arch-neutral.
-	MalterlibDotNetRoot ReadWindowsRegistry(
-		"Win64_LocalMachine"
-		, `SOFTWARE\\dotnet\\Setup\\InstalledVersions\\@(HostArchitecture)\\sharedhost`
-		, "Path"
-	)
+	MalterlibDotNetRoot ReadWindowsRegistry("Win64_LocalMachine", `SOFTWARE\\dotnet\\Setup\\InstalledVersions\\@(HostArchitecture)\\sharedhost`, "Path")
 	{
 		&
 		{
 			HostPlatformFamily "Windows"
-			!ReadWindowsRegistry(
-				"Win64_LocalMachine"
-				, `SOFTWARE\\dotnet\\Setup\\InstalledVersions\\@(HostArchitecture)\\sharedhost`
-				, "Path"
-			) ""
+			!ReadWindowsRegistry("Win64_LocalMachine", `SOFTWARE\\dotnet\\Setup\\InstalledVersions\\@(HostArchitecture)\\sharedhost`, "Path") ""
 		}
 	}
 	MalterlibDotNetRoot "/usr/local/share/dotnet"
@@ -1334,8 +1337,7 @@ Property
 	// Globs Microsoft.NETCore.App.Ref/<Major>.<Minor>.* and returns the highest patch.
 	f_MalterlibDotNetLatestRefVersion function(string _MajorMinor) string? = undefined
 	f_MalterlibDotNetLatestRefVersion (
-		MalterlibDotNetReferencePacksRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Sort()
-		<[MalterlibDotNetReferencePacksRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Length() - 1]>
+		MalterlibDotNetReferencePacksRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Sort()<[MalterlibDotNetReferencePacksRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Length() - 1]>
 	)->GetFile()
 	{
 		&
@@ -1406,8 +1408,7 @@ Property
 
 	f_MalterlibDotNetLatestAppHostVersion function(string _MajorMinor) string? = undefined
 	f_MalterlibDotNetLatestAppHostVersion (
-		MalterlibDotNetAppHostPackRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Sort()
-		<[MalterlibDotNetAppHostPackRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Length() - 1]>
+		MalterlibDotNetAppHostPackRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Sort()<[MalterlibDotNetAppHostPackRoot->FindDirectoriesIn(`@(_MajorMinor).*`)->Length() - 1]>
 	)->GetFile()
 	{
 		&
@@ -2129,7 +2130,9 @@ Target
 		}
 	}
 
-	ExtraLinkerFlags =+ [`-wholearchive:@(MalterlibLLVMBinariesDirectory)/lib/clang/@(MalterlibClangVersionMajor)/lib/Windows/clang_rt.profile-@(MSVCSanitizerArchitecture).lib`->f_LinkerFlag()]
+	ExtraLinkerFlags =+ [
+		`-wholearchive:@(MalterlibLLVMBinariesDirectory)/lib/clang/@(MalterlibClangVersionMajor)/lib/Windows/clang_rt.profile-@(MSVCSanitizerArchitecture).lib`->f_LinkerFlag()
+	]
 	{
 		&
 		{
@@ -2613,7 +2616,6 @@ Target
 		!!Target.SDKRoot undefined
 	}
 
-
 	DeploymentTarget: string?
 	DeploymentTarget "10.13"
 	{
@@ -2895,7 +2897,6 @@ Target
 	}
 //	ValidArchitectures "none"
 //	Architectures "none"
-
 }
 
 Property
@@ -2937,7 +2938,6 @@ Property
 			}
 		}
 	}
-
 }
 
 // Code generating targets
@@ -3211,7 +3211,6 @@ Target
 
 	LinkWithLibraries += [["-sectcreate", "__TEXT", "__info_plist", Target:Target.MalterlibInfoPListFile]]
 	{
-
 		&
 		{
 			!Target:Target.MalterlibInfoPListFile undefined
@@ -3692,7 +3691,6 @@ Target
 // ExeFS
 Property
 {
-
 	MalterlibLocalizationTranslationsPath: string = `@(MalterlibCompiledFilesWarkspaceBase)/Int/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)`
 	MalterlibLocalizationExeFSPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationsExeFS/*`
 	MalterlibLocalizationTranslationHeadersPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationHeaders`
@@ -3789,7 +3787,13 @@ Property
 	MalterlibUniqueConfig: string = GeneratedDirectory->Sanitize()->Replace('-', '_')->Replace('.', '_')
 
 	MalterlibMacOSLinkerVersion: int?
-	MalterlibMacOSLinkerVersion ExecuteCommand(`@(GeneratedGlobalDirectory)MacOSLinkerVersion.MState`, ["/usr/bin/ld"], "bash", "-c", "/usr/bin/ld -v 2>&1")->Trim()->Split("PROJECT:")<[1]>->Split("\n")<[0]>->RemovePrefix("ld64-")->RemovePrefix("ld-")->AsInteger()
+	MalterlibMacOSLinkerVersion ExecuteCommand(
+		`@(GeneratedGlobalDirectory)MacOSLinkerVersion.MState`
+		, ["/usr/bin/ld"]
+		, "bash"
+		, "-c"
+		, "/usr/bin/ld -v 2>&1"
+	)->Trim()->Split("PROJECT:")<[1]>->Split("\n")<[0]>->RemovePrefix("ld64-")->RemovePrefix("ld-")->AsInteger()
 	{
 		&
 		{
@@ -4191,7 +4195,6 @@ Property
 		}
 	}
 
-
 	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy "@(GetProperty(&MalterlibFinalModuleDestination, "Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess"))" @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS`->Escape()) "" 0\r\n`
 	{
 		&
@@ -4381,7 +4384,6 @@ Property
 				!!PlatformFamily "macOS"
 			}
 
-
 			Contents =+	`	<key>BreakpadProduct</key>\n`\
 						`		<string>@(Target:Target.FileName)</string>\n`\
 						`	<key>BreakpadProductDisplay</key>\n`\
@@ -4396,7 +4398,6 @@ Property
 						`		<string>@(Target:Target.Version)</string>\n`\
 						`	<key>BreakpadInProcess</key>\n`\
 						`		<string>YES</string>\n`
-
 
 			{
 				!!MalterlibBreakpadActive true
@@ -4438,13 +4439,11 @@ Property
 				}
 			}
 
-
 			Contents =+	`	<key>NSMainNibFile</key>\n`\
 						`	<string>@(MalterlibExeMainNibFile->GetFileNoExt())</string>\n`
 			{
 				!MalterlibExeMainNibFile undefined
 			}
-
 
 			Contents =+	`	<key>CFBundleURLTypes</key>\n`\
 						`		<array>\n`\
@@ -4849,7 +4848,6 @@ Property
 								'	</asmv3:application>\r\n'\
 								'</assembly>\r\n'
 
-
 					UTF16 false
 					UnicodeBOM true
 				}
@@ -5025,7 +5023,6 @@ Target
 	}
 }
 
-
 // ExeFS
 
 Property
@@ -5051,18 +5048,18 @@ Property
 	MalterlibExeFSSpecContents: string?
 
 	MalterlibExeFSSpecContents =+ `Include\r\n`\
-								`{\r\n`\
-								`	Pattern @(MalterlibExeFSPath->UnixPath()->Escape())\r\n`\
-								`}\r\n`\
-								`Include\r\n`\
-								`{\r\n`\
-								`	Pattern @(MalterlibTempExeFSPath->UnixPath()->Escape())\r\n`\
-								`}\r\n`\
-								`Include\r\n`\
-								`{\r\n`\
-								`	Pattern @(MalterlibSharedTempExeFSPath->UnixPath()->Escape())\r\n`\
-								`}\r\n`\
-								`@(fg_ExpandCopyOptions(MalterlibExeFSExtraFiles)->ForEach(&MalterlibExeFSExtraFilesContentsTemplate))`
+								  `{\r\n`\
+								  `	Pattern @(MalterlibExeFSPath->UnixPath()->Escape())\r\n`\
+								  `}\r\n`\
+								  `Include\r\n`\
+								  `{\r\n`\
+								  `	Pattern @(MalterlibTempExeFSPath->UnixPath()->Escape())\r\n`\
+								  `}\r\n`\
+								  `Include\r\n`\
+								  `{\r\n`\
+								  `	Pattern @(MalterlibSharedTempExeFSPath->UnixPath()->Escape())\r\n`\
+								  `}\r\n`\
+								  `@(fg_ExpandCopyOptions(MalterlibExeFSExtraFiles)->ForEach(&MalterlibExeFSExtraFilesContentsTemplate))`
 	{
 		&
 		{
@@ -5142,16 +5139,29 @@ Target
 
 Property
 {
-	f_GetUrlInfo function(string _Property) [{
-		URL: string,
-		Location: string,
-		Commit: string,
-	}]
+	f_GetUrlInfo function(string _Property) [
+		{
+			URL: string
+			, Location: string
+			, Commit: string
+		}
+	]
 
 	f_GetUrlInfo =+ {
-		URL: GetProperty(&Repository.URL, _Property),
-		Location: GetProperty(&Repository.Location, _Property),
-		Commit: ExecuteCommand(`@(GeneratedGlobalDirectory)GitCommit-@(GetProperty(&Repository.Location, _Property)->HashSHA256()).MState`, f_MalterlibGitRepoInputFiles(f_MalterlibGitDataDir(GetProperty(&Repository.Location, _Property)), f_MalterlibGitCommonDir(f_MalterlibGitDataDir(GetProperty(&Repository.Location, _Property)))), "git", "-C", GetProperty(&Repository.Location, _Property), "rev-parse", "HEAD")->Trim()
+		URL: GetProperty(&Repository.URL, _Property)
+		, Location: GetProperty(&Repository.Location, _Property)
+		, Commit: ExecuteCommand(
+			`@(GeneratedGlobalDirectory)GitCommit-@(GetProperty(&Repository.Location, _Property)->HashSHA256()).MState`
+			, f_MalterlibGitRepoInputFiles(
+				f_MalterlibGitDataDir(GetProperty(&Repository.Location, _Property))
+				, f_MalterlibGitCommonDir(f_MalterlibGitDataDir(GetProperty(&Repository.Location, _Property)))
+			)
+			, "git"
+			, "-C"
+			, GetProperty(&Repository.Location, _Property)
+			, "rev-parse"
+			, "HEAD"
+		)->Trim()
 	}
 
 	MalterlibEnableRepoDebugInfo: bool = MalterlibBuildServerBuild // User(Build System)=true: Enable repository debug information embedded in the executable
@@ -5512,14 +5522,16 @@ Property
 	MalterlibBuildServerPutPathUploadTemplate =+ _DestinationDir / MalterlibBuildServerPutPathUploadTemplateCopyOptions<Destination>
 
 	MalterlibBuildServerPutPathUploadDestinationDirs function(type(CFileCopyOptionsDetailed) _CopyOptions) string
-	MalterlibBuildServerPutPathUploadDestinationDirs MalterlibBuildServerPutPath->f_ToStringArray()->ForEach(&MalterlibBuildServerPutPathUploadTemplate, {MalterlibBuildServerPutPathUploadTemplateCopyOptions: _CopyOptions})->Join(";")
+	MalterlibBuildServerPutPathUploadDestinationDirs MalterlibBuildServerPutPath->f_ToStringArray()->ForEach(
+		&MalterlibBuildServerPutPathUploadTemplate
+		, {MalterlibBuildServerPutPathUploadTemplateCopyOptions: _CopyOptions}
+	)->Join(";")
 
 	MalterlibBuildServerPutPathUploadTemplateOuter function(type(CFileCopyOptionsDetailed) _CopyOptions) string = ""
 	MalterlibBuildServerPutPathUploadTemplateOuter =+ `@(MalterlibBuildServerCommandPrefix)MTool BuildServerPut Recursive=@(_CopyOptions<Recursive> ? "1" : "0") @(`Source=@(_CopyOptions<Pattern>)`->f_ScriptEscapeString()) @(`DestinationDir=@(MalterlibBuildServerPutPathUploadDestinationDirs(_CopyOptions))`->f_ScriptEscapeString())\r\n`
 
 	MalterlibBuildServerPutPathUploadContents: string
 	MalterlibBuildServerPutPathUploadContents =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach(&MalterlibBuildServerPutPathUploadTemplateOuter)
-
 
 	MalterlibTestPutSources: [type(CFileCopyOptions)]
 
@@ -5891,7 +5903,6 @@ Target
 		GeneratorFamily "Ninja"
 	}
 
-
 	PostBuildScriptInputs MalterlibPostBuildScriptInputsContents
 	PostBuildScriptInputs =+ Target.AllFiles_Custom->ForEach(&f_CalculateTargetFilePostBuildImplicitInputs)
 	{
@@ -6123,7 +6134,14 @@ Property
 	}
 
 	MalterlibPostCopyContents2: string?
-	MalterlibPostCopyContents2 fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(&MalterlibPostCopyInternalTemplate, {MalterlibCalculatedPostCopyProject: MalterlibCalculatedPostCopyProject2, MalterlibPostCopyDestination: MalterlibPostCopyDestination2, MalterlibPostCopyHash: MalterlibPostCopyHash2})
+	MalterlibPostCopyContents2 fg_ExpandCopyOptions(MalterlibPostCopySources)->ForEach(
+		&MalterlibPostCopyInternalTemplate
+		, {
+			MalterlibCalculatedPostCopyProject: MalterlibCalculatedPostCopyProject2
+			, MalterlibPostCopyDestination: MalterlibPostCopyDestination2
+			, MalterlibPostCopyHash: MalterlibPostCopyHash2
+		}
+	)
 	{
 		&
 		{
@@ -6382,8 +6400,8 @@ Target
 
 	// Do this before signing as we want to strip the executable
 	PostBuildScript =+ `echo Deploy Symbols:\r\n`\
-					`echo @(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) \\> @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
-					`@(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`
+					   `echo @(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) \\> @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
+					   `@(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`
 	{
 		&
 		{
@@ -6499,7 +6517,6 @@ Target
 		}
 	}
 
-
 	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
 						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
@@ -6546,7 +6563,6 @@ Target
 			MalterlibDeploySymbols true
 		}
 	}
-
 
 	PostBuildScript =+	`sn -Ra "@(MalterlibFinalModuleDestination->WindowsPath())" "@(MalterlibStronglyNamedAssembly->WindowsPath())"\r\n`
 	{
@@ -6663,7 +6679,6 @@ Target
 					MalterlibDriverSigning true
 				}
 			}
-
 		}
 	}
 
@@ -6705,7 +6720,6 @@ Target
 			TargetIsExecutable true
 		}
 	}
-
 
 	PostBuildScript =+	`MTool TouchOrCreate "@(MalterlibTestDeployPath)/@(MalterlibFinalModuleDestination->GetFile()).MainTest"\r\n`
 	{
@@ -6763,7 +6777,6 @@ Target
 			!MalterlibBuildServerPutDisabled true
 		}
 	}
-
 
 	PostBuildScript =+ MalterlibTestPutPathUploadContents
 	{

@@ -5,11 +5,11 @@
 
 #ifdef DMibStaticThreadLocals
 
-#ifdef DArchitecture_arm64
-#define DAddThreadSelfOffset + g_ThreadSelfOffset
-#else
-#define DAddThreadSelfOffset
-#endif
+#	ifdef DArchitecture_arm64
+#		define DAddThreadSelfOffset + g_ThreadSelfOffset
+#	else
+#		define DAddThreadSelfOffset
+#	endif
 
 #endif
 
@@ -17,23 +17,23 @@
 
 using namespace NMib;
 
-#include "Malterlib_Core_ThreadNotificationCrossModule.h"
-#include <Mib/Container/MapWithPool>
-#include <Mib/Container/SetWithPool>
+#	include "Malterlib_Core_ThreadNotificationCrossModule.h"
+#	include <Mib/Container/MapWithPool>
+#	include <Mib/Container/SetWithPool>
 
 extern NMib::NAtomic::TCAtomic<bool> g_bSysDeleted;
 
 namespace
 {
-#ifdef DMibDynamicLibrary
+#	ifdef DMibDynamicLibrary
 	constinit NThread::CLowLevelRecursiveLockAggregate g_ThreadCreationNotificationLock = {DAggregateInit};
-#endif
+#	endif
 
 	void fg_MalterlibThreadCreatedNotificationLocal(umint _ThreadID, umint _ParentThreadID)
 	{
-#ifdef DMibDynamicLibrary
+#	ifdef DMibDynamicLibrary
 		DMibLock(g_ThreadCreationNotificationLock);
-#endif
+#	endif
 		if (g_bSysDeleted)
 		{
 			// The thread gets no locals, and the memory manager must not expect them until the context is destroyed
@@ -53,7 +53,7 @@ namespace
 	}
 }
 
-#ifndef DMibDynamicLibrary
+#	ifndef DMibDynamicLibrary
 
 namespace
 {
@@ -77,14 +77,7 @@ namespace
 
 	struct CThreadNotificationState
 	{
-		using CNotifications = NContainer::TCMapWithPool
-			<
-				NSys::NPrivate::CThreadNotificationModule *
-				, CThreadNotificationRegistration
-				, CSort_Default
-				, NMemory::CAllocator_VirtualNoTracking
-			>
-		;
+		using CNotifications = NContainer::TCMapWithPool<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
 
 		NContainer::TCSetWithPool<umint, CSort_Default, NMemory::CAllocator_VirtualNoTracking> m_LiveThreads;
 		CNotifications m_Notifications;
@@ -161,10 +154,10 @@ namespace
 
 		umint ThreadID = NSys::fg_Thread_GetCurrentUID();
 
-	#ifdef DUseGlibcDummyThreadLocalLevel2
+#		ifdef DUseGlibcDummyThreadLocalLevel2
 		CGlibcDummyThreadLocalLevel2 DummyThreadLocalLevel2;
 		fg_Glibc_InstallDummyThreadLocalLevel2(DummyThreadLocalLevel2);
-	#endif
+#		endif
 
 		{
 			DMibLock(g_ThreadNotificationLock);
@@ -183,9 +176,9 @@ namespace
 			}
 		}
 
-	#ifdef DUseGlibcDummyThreadLocalLevel2
+#		ifdef DUseGlibcDummyThreadLocalLevel2
 		fg_Glibc_ReplaceDummyThreadLocalLevel2(DummyThreadLocalLevel2);
-	#endif
+#		endif
 
 		void *pResult;
 		// This runs before glibc destroys pthread-specific data on normal return,
@@ -291,16 +284,16 @@ namespace
 		g_ThreadNotificationLock.f_ForkedChildLocked();
 		g_ThreadNotificationLock.f_Unlock();
 	}
-
 }
 
 extern "C" assure_used module_export int pthread_create
 	(
-		pthread_t *__restrict _pThread
-		, pthread_attr_t const *__restrict _pAttributes
-		, void * (*_fStart)(void *)
-		, void *__restrict _pArgument
-	) __THROWNL
+		pthread_t * __restrict _pThread
+		, pthread_attr_t const * __restrict _pAttributes
+		, void *(*_fStart)(void *)
+		, void * __restrict _pArgument
+	)
+	__THROWNL
 {
 	// The Malterlib executable must initialize before any dependent DSO constructor
 	// uses Malterlib; memory interposition and cross-module interfaces rely on this
@@ -444,7 +437,7 @@ void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void
 	;
 }
 
-#else
+#	else
 
 namespace
 {
@@ -511,7 +504,10 @@ void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 	g_pHostThreadNotificationCrossModule->m_fUnregister
 		(
 			&g_ThreadNotificationModule
-			, [](void *_pContext) { (*static_cast<void (**)()>(_pContext))(); }
+			, [](void *_pContext)
+			{
+				(*static_cast<void (**)()>(_pContext))();
+			}
 			, &_fDestroy
 		)
 	;
@@ -536,7 +532,7 @@ void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void
 	;
 }
 
-#endif
+#	endif
 
 void fg_InitMalterlibAllEnumOtherThreads()
 {
@@ -557,15 +553,14 @@ void fg_InitMalterlibAllEnumOtherThreads()
 
 using namespace NMib;
 
-#include <unistd.h>
-#include <sys/types.h>
+#	include <unistd.h>
+#	include <sys/types.h>
 
-#include <Mib/Container/BitArrayHierarchical>
+#	include <Mib/Container/BitArrayHierarchical>
 
 // *************************************************************************************************************************
 // POSIX Thread Implementation
 // *************************************************************************************************************************
-
 
 constexpr umint gc_nMalterlibThreadLocals = 256; // 2 KB on 64 bit platforms
 
@@ -574,34 +569,36 @@ constinit NContainer::TCBitArrayHierarchical<gc_nMalterlibThreadLocals> gc_nMalt
 
 extern "C" assure_used umint g_MalterlibLinuxThreadLocalsAreThreadPointerRelative = 1;
 
-#ifdef DMibDynamicLibrary
-	#ifndef DMibAssumeMalterlibHost
-		__thread umint __attribute__((tls_model("initial-exec"))) g_MalterlibThreadLocals[256] = {0};
-		__thread pid_t __attribute__((tls_model("initial-exec"))) g_MalterlibCurrentTID = 0;
-	#endif
-#else
+#	ifdef DMibDynamicLibrary
+#		ifndef DMibAssumeMalterlibHost
+__thread umint __attribute__((tls_model("initial-exec"))) g_MalterlibThreadLocals[256] = {0};
+__thread pid_t __attribute__((tls_model("initial-exec"))) g_MalterlibCurrentTID = 0;
+#		endif
+#	else
 __thread umint __attribute__((tls_model("local-exec"))) g_MalterlibThreadLocals[256] = {0};
 __thread pid_t __attribute__((tls_model("local-exec"))) g_MalterlibCurrentTID = 0;
-#endif
+#	endif
 
 pid_t fg_Malterlib_Thread_GetTID_Local();
 
-#if !defined(DMibDynamicLibrary)
+#	if !defined(DMibDynamicLibrary)
 extern "C" assure_used module_export umint fg_Malterlib_Thread_AllocLocal()
 {
 	return NSys::fg_Thread_AllocLocal();
 }
+
 extern "C" assure_used module_export void fg_Malterlib_Thread_FreeLocal(umint _iStorage)
 {
 	NSys::fg_Thread_FreeLocal(_iStorage);
 }
+
 extern "C" assure_used module_export pid_t fg_Malterlib_Thread_GetTID()
 {
 	return fg_Malterlib_Thread_GetTID_Local();
 }
-#endif
+#	endif
 
-#if defined(DMibDynamicLibrary) && defined(DMibAssumeMalterlibHost)
+#	if defined(DMibDynamicLibrary) && defined(DMibAssumeMalterlibHost)
 extern "C" umint fg_Malterlib_Thread_AllocLocal();
 extern "C" void fg_Malterlib_Thread_FreeLocal(umint _iStorage);
 extern "C" pid_t fg_Malterlib_Thread_GetTID();
@@ -621,7 +618,7 @@ pid_t fg_Malterlib_Thread_GetTID_Local()
 	return fg_Malterlib_Thread_GetTID();
 }
 
-#else
+#	else
 
 pid_t fg_Malterlib_Thread_GetTID_Local()
 {
@@ -660,7 +657,7 @@ void NSys::fg_Thread_FreeLocal(umint _iStorage)
 		gc_nMalterlibThreadLocalsAllocated.f_SetBit(iStorage, false);
 	}
 }
-#endif
+#	endif
 
 void NSys::fg_Thread_SetLocal(umint _iStorage, void *_pData)
 {

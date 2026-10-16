@@ -380,14 +380,9 @@ ULONG CIoLoop_Iocp::fp_WantedPollEvents(CIocpRegistration const *_pRegistration)
 
 	switch (_pRegistration->m_ClosePollState)
 	{
-	case CIocpRegistration::EClosePoll::mc_Disconnect:
-		Events |= gc_AfdPoll_Disconnect | gc_AfdPoll_Abort | gc_AfdPoll_ConnectFail | gc_AfdPoll_LocalClose;
-		break;
-	case CIocpRegistration::EClosePoll::mc_AbortOnly:
-		Events |= gc_AfdPoll_Abort | gc_AfdPoll_LocalClose;
-		break;
-	case CIocpRegistration::EClosePoll::mc_Terminal:
-		break;
+	case CIocpRegistration::EClosePoll::mc_Disconnect: Events |= gc_AfdPoll_Disconnect | gc_AfdPoll_Abort | gc_AfdPoll_ConnectFail | gc_AfdPoll_LocalClose; break;
+	case CIocpRegistration::EClosePoll::mc_AbortOnly: Events |= gc_AfdPoll_Abort | gc_AfdPoll_LocalClose; break;
+	case CIocpRegistration::EClosePoll::mc_Terminal: break;
 	}
 
 	if (_pRegistration->m_bReadWanted && !_pRegistration->m_bCompletionModeRead)

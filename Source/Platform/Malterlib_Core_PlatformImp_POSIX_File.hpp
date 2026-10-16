@@ -44,8 +44,7 @@ using namespace NMib;
 namespace
 {
 	template <typename tf_CStr>
-	auto fg_ConvertToPOSIXPath(tf_CStr const &_Path, bool _bAddCurrentDir = true)
-		-> TCEnableIf<sizeof(typename tf_CStr::CChar) == 1, tf_CStr>
+	auto fg_ConvertToPOSIXPath(tf_CStr const &_Path, bool _bAddCurrentDir = true) -> TCEnableIf<sizeof(typename tf_CStr::CChar) == 1, tf_CStr>
 		requires (sizeof(typename tf_CStr::CChar) == 1) // Incorrect string type
 	{
 		return NFile::CFile::fs_GetExpandedPath(_Path, _bAddCurrentDir);
@@ -62,7 +61,7 @@ namespace NMib
 		namespace NFile
 		{
 			template <typename tf_CStr>
-			bool fg_FileExistsGeneral(const tf_CStr &_FileName, uint32 _AttribMask)
+			bool fg_FileExistsGeneral(tf_CStr const &_FileName, uint32 _AttribMask)
 			{
 				tf_CStr File = fg_ConvertToPOSIXPath(_FileName);
 				struct stat Stats;
@@ -71,15 +70,15 @@ namespace NMib
 				{
 					int Error = errno;
 					if
-						(
-							Error == ENOENT				// A component of _Filename does not exist (or _Filename is empty)
-							|| Error == ENOTDIR			// A component of the path prefix is not a dir.
-							|| Error == EACCES			// No access (permissions)
-							|| Error == ENAMETOOLONG	// Path is too long
-							|| Error == ENOMEM			// Ran out of kernel memory
-							|| Error == EINVAL			// Seen this happen os MacOS if you delete a symlink in the parent path while checking stats
-							|| Error == ESRCH			// Can happen on Linux when checking procfs
-						)
+					(
+						Error == ENOENT // A component of _Filename does not exist (or _Filename is empty)
+						|| Error == ENOTDIR // A component of the path prefix is not a dir.
+						|| Error == EACCES // No access (permissions)
+						|| Error == ENAMETOOLONG // Path is too long
+						|| Error == ENOMEM // Ran out of kernel memory
+						|| Error == EINVAL // Seen this happen os MacOS if you delete a symlink in the parent path while checking stats
+						|| Error == ESRCH // Can happen on Linux when checking procfs
+					)
 					{
 						return false;
 					}
@@ -102,10 +101,10 @@ namespace NMib
 					if (Error == ELOOP) // Too many Symbolic links encountered.
 					{
 						if
-							(
-								(_AttribMask & NMib::NFile::EFileAttrib_Link)
-								|| (_AttribMask & (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory)) == (NMib::NFile::EFileAttrib_File|NMib::NFile::EFileAttrib_Directory)
-							)
+						(
+							(_AttribMask & NMib::NFile::EFileAttrib_Link)
+							|| (_AttribMask & (NMib::NFile::EFileAttrib_File | NMib::NFile::EFileAttrib_Directory)) == (NMib::NFile::EFileAttrib_File | NMib::NFile::EFileAttrib_Directory)
+						)
 						{
 							return true;
 						}
@@ -127,17 +126,17 @@ namespace NMib
 	}
 }
 
-bool NSys::NFile::fg_FileExists(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileAttrib _AttribMask)
+bool NSys::NFile::fg_FileExists(NMib::NStr::CStr const &_FileName, NMib::NFile::EFileAttrib _AttribMask)
 {
 	return fg_FileExistsGeneral(CStr(_FileName), _AttribMask);
 }
 
-bool NSys::NFile::fg_FileExists(const NMib::NStr::CStrNonTracked &_FileName, NMib::NFile::EFileAttrib _AttribMask)
+bool NSys::NFile::fg_FileExists(NMib::NStr::CStrNonTracked const &_FileName, NMib::NFile::EFileAttrib _AttribMask)
 {
 	return fg_FileExistsGeneral(_FileName, _AttribMask);
 }
 
-NMib::NStream::CFilePos NSys::NFile::fg_GetFreeSpace(const NMib::NStr::CStr &_Path)
+NMib::NStream::CFilePos NSys::NFile::fg_GetFreeSpace(NMib::NStr::CStr const &_Path)
 {
 	CStr Path = _Path;
 	struct statvfs Stats;
@@ -147,7 +146,7 @@ NMib::NStream::CFilePos NSys::NFile::fg_GetFreeSpace(const NMib::NStr::CStr &_Pa
 	return NMib::NStream::CFilePos(Stats.f_frsize) * NMib::NStream::CFilePos(Stats.f_bavail);
 }
 
-NMib::NStream::CFilePos NSys::NFile::fg_GetUsedSpace(const NMib::NStr::CStr &_Path)
+NMib::NStream::CFilePos NSys::NFile::fg_GetUsedSpace(NMib::NStr::CStr const &_Path)
 {
 	CStr Path = _Path;
 	struct statvfs Stats;
@@ -157,7 +156,7 @@ NMib::NStream::CFilePos NSys::NFile::fg_GetUsedSpace(const NMib::NStr::CStr &_Pa
 	return NMib::NStream::CFilePos(Stats.f_frsize) * NMib::NStream::CFilePos(Stats.f_blocks - Stats.f_bfree);
 }
 
-NMib::NStream::CFilePos NSys::NFile::fg_GetTotalSpace(const NMib::NStr::CStr &_Path)
+NMib::NStream::CFilePos NSys::NFile::fg_GetTotalSpace(NMib::NStr::CStr const &_Path)
 {
 	CStr Path = _Path;
 	struct statvfs Stats;
@@ -264,7 +263,7 @@ NContainer::TCVector<NStr::CStr> NSys::NFile::fg_GetMounts(NMib::NFile::EFileMou
 		else
 		{
 			if (!(_Types & NMib::NFile::EFileMountType_Special))
-				continue;;
+				continue;
 			Block = "Special";
 		}
 
@@ -316,7 +315,7 @@ NContainer::TCVector<NStr::CStr> NSys::NFile::fg_GetMounts(NMib::NFile::EFileMou
 		else
 		{
 			if (!(_Types & NMib::NFile::EFileMountType_Special))
-				continue;;
+				continue;
 		}
 
 		Return.f_Insert(fg_Move(MountLocation));
@@ -356,7 +355,7 @@ namespace NMib
 		}
 	}
 }
-NMib::NStr::CStr NSys::NFile::fg_ResolveSymbolicLink(const NMib::NStr::CStr &_FileFrom)
+NMib::NStr::CStr NSys::NFile::fg_ResolveSymbolicLink(NMib::NStr::CStr const &_FileFrom)
 {
 	return fg_ResolveSymbolicLink<CStr>(_FileFrom);
 }
@@ -366,7 +365,7 @@ bool NSys::NFile::fg_CanCreateSymbolicLink(NMib::NFile::EFileAttrib _Type, NMib:
 	return true;
 }
 
-void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo, NMib::NFile::EFileAttrib _Type, NMib::NFile::ESymbolicLinkFlag _Flags)
+void NSys::NFile::fg_CreateSymbolicLink(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo, NMib::NFile::EFileAttrib _Type, NMib::NFile::ESymbolicLinkFlag _Flags)
 {
 	CStr FileFrom = _FileFrom;
 
@@ -381,7 +380,7 @@ void NSys::NFile::fg_CreateSymbolicLink(const NMib::NStr::CStr &_FileFrom, const
 	}
 }
 
-void NSys::NFile::fg_CreateHardLink(const NMib::NStr::CStr &_FileFrom, const NMib::NStr::CStr &_FileTo)
+void NSys::NFile::fg_CreateHardLink(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo)
 {
 	CStr FileFrom = fg_ConvertToPOSIXPath(_FileFrom);
 	CStr FileTo = fg_ConvertToPOSIXPath(_FileTo);
@@ -395,7 +394,7 @@ void NSys::NFile::fg_CreateHardLink(const NMib::NStr::CStr &_FileFrom, const NMi
 	}
 }
 
-void NSys::NFile::fg_DeleteDirectory(const NMib::NStr::CStr &_File)
+void NSys::NFile::fg_DeleteDirectory(NMib::NStr::CStr const &_File)
 {
 	if (fg_FileExists(_File, NMib::NFile::EFileAttrib_File))
 		DMibErrorFile("Cannot delete directory, it's a file");
@@ -411,7 +410,7 @@ void NSys::NFile::fg_DeleteDirectory(const NMib::NStr::CStr &_File)
 	}
 }
 
-void NSys::NFile::fg_DeleteDirectory(const NMib::NStr::CStrNonTracked &_File)
+void NSys::NFile::fg_DeleteDirectory(NMib::NStr::CStrNonTracked const &_File)
 {
 	if (fg_FileExists(_File, NMib::NFile::EFileAttrib_File))
 		DMibErrorFile("Cannot delete directory, it's a file");
@@ -427,7 +426,7 @@ void NSys::NFile::fg_DeleteDirectory(const NMib::NStr::CStrNonTracked &_File)
 	}
 }
 
-void NSys::NFile::fg_Delete(const NMib::NStr::CStr &_File)
+void NSys::NFile::fg_Delete(NMib::NStr::CStr const &_File)
 {
 //	if (fg_FileExists(_File, NMib::NFile::EFileAttrib_Directory))
 //		DMibErrorFile("Cannot delete directory as file");
@@ -443,7 +442,7 @@ void NSys::NFile::fg_Delete(const NMib::NStr::CStr &_File)
 	}
 }
 
-void NSys::NFile::fg_Delete(const NMib::NStr::CStrNonTracked &_File)
+void NSys::NFile::fg_Delete(NMib::NStr::CStrNonTracked const &_File)
 {
 	if (fg_FileExists(_File, NMib::NFile::EFileAttrib_Directory))
 		DMibErrorFile("Cannot delete directory as file");
@@ -459,7 +458,6 @@ void NSys::NFile::fg_Delete(const NMib::NStr::CStrNonTracked &_File)
 	}
 }
 
-
 CStr NSys::NFile::fg_GetCurrentDirectory()
 {
 	char *pRet = getcwd(nullptr, 0);
@@ -467,8 +465,7 @@ CStr NSys::NFile::fg_GetCurrentDirectory()
 	if (!pRet)
 		DMibErrorFile(NPlatform::fg_FormatErrno("getcwd when getting current directory", errno));
 
-	auto Cleanup
-		= fg_OnScopeExit
+	auto Cleanup = fg_OnScopeExit
 		(
 			[&]()
 			{
@@ -489,8 +486,7 @@ NStr::CStrNonTracked NSys::NFile::fg_GetCurrentDirectoryNonTracked()
 	if (!pRet)
 		DMibErrorFile(NPlatform::fg_FormatErrno("getcwd when getting current directory", errno));
 
-	auto Cleanup
-		= fg_OnScopeExit
+	auto Cleanup = fg_OnScopeExit
 		(
 			[&]()
 			{
@@ -504,7 +500,7 @@ NStr::CStrNonTracked NSys::NFile::fg_GetCurrentDirectoryNonTracked()
 	return Ret;
 }
 
-void NSys::NFile::fg_SetCurrentDirectory(const NMib::NStr::CStr &_Directory)
+void NSys::NFile::fg_SetCurrentDirectory(NMib::NStr::CStr const &_Directory)
 {
 	CStr Dir = fg_ConvertToPOSIXPath(_Directory);
 
@@ -513,7 +509,7 @@ void NSys::NFile::fg_SetCurrentDirectory(const NMib::NStr::CStr &_Directory)
 }
 
 template <typename tf_CStr>
-void fg_CreateDirectoryHelper(const tf_CStr &_FileDirectory)
+void fg_CreateDirectoryHelper(tf_CStr const &_FileDirectory)
 {
 	tf_CStr FileDirectory = fg_ConvertToPOSIXPath(_FileDirectory);
 
@@ -536,23 +532,23 @@ void fg_CreateDirectoryHelper(const tf_CStr &_FileDirectory)
 		if (!NSys::NFile::fg_FileExistsGeneral(CurrentPath, NMib::NFile::EFileAttrib_Directory))
 		{
 			tf_CStr Canon = CurrentPath;
-			if (mkdir(Canon.f_GetStr(), S_IWUSR|S_IXUSR|S_IRUSR | S_IRGRP|S_IWGRP|S_IXGRP | S_IXOTH|S_IROTH))
+			if (mkdir(Canon.f_GetStr(), S_IWUSR | S_IXUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IXOTH | S_IROTH))
 			{
 				int ErrNo = errno;
 				if (ErrNo != EEXIST || !NSys::NFile::fg_FileExists(CStr(CurrentPath), NMib::NFile::EFileAttrib_Directory)) // Someone else got inbetween and created the same directory
-					DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("mkdir('{}') when creating directory '{}'") << CurrentPath << _FileDirectory,ErrNo));
+					DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("mkdir('{}') when creating directory '{}'") << CurrentPath << _FileDirectory, ErrNo));
 			}
 		}
 		CurrentPath += "/";
 	}
 }
 
-void NSys::NFile::fg_CreateDirectory(const NMib::NStr::CStr &_FileDirectory)
+void NSys::NFile::fg_CreateDirectory(NMib::NStr::CStr const &_FileDirectory)
 {
 	fg_CreateDirectoryHelper(CStr(_FileDirectory));
 }
 
-void NSys::NFile::fg_CreateDirectory(const NMib::NStr::CStrNonTracked &_FileDirectory)
+void NSys::NFile::fg_CreateDirectory(NMib::NStr::CStrNonTracked const &_FileDirectory)
 {
 	fg_CreateDirectoryHelper(_FileDirectory);
 }
@@ -567,6 +563,7 @@ public:
 	virtual ~CPOSIXFile()
 	{
 	}
+
 	int m_BSDFile;
 	virtual ch8 const *f_GetFileName() = 0;
 	virtual void f_Delete() = 0;
@@ -576,15 +573,18 @@ template <typename t_CStr, typename t_CAllocator>
 class TCPOSIXFileImp : public CPOSIXFile
 {
 	t_CStr m_Str;
+
 public:
 	TCPOSIXFileImp(t_CStr const &_Str)
 		: m_Str(_Str)
 	{
 	}
+
 	virtual ch8 const *f_GetFileName() override
 	{
 		return m_Str;
 	}
+
 	virtual void f_Delete() override
 	{
 		NStorage::TCUniquePointer<TCPOSIXFileImp, t_CAllocator> pPtr = fg_Explicit(this);
@@ -595,7 +595,7 @@ template <typename t_CStats>
 static NMib::NFile::EFileAttrib fsg_StatsToAttribs(t_CStats &_Stats)
 {
 	NMib::NFile::EFileAttrib MalterlibAttr = NMib::NFile::EFileAttrib_None;
-	switch(_Stats.st_mode & S_IFMT)
+	switch (_Stats.st_mode & S_IFMT)
 	{
 	case S_IFDIR: // [XSI] directory
 		MalterlibAttr |= NMib::NFile::EFileAttrib_Directory;
@@ -640,7 +640,6 @@ static NMib::NFile::EFileAttrib fsg_StatsToAttribs(t_CStats &_Stats)
 		MalterlibAttr |= NMib::NFile::EFileAttrib_GroupWrite;
 	if (_Stats.st_mode & S_IXGRP)
 		MalterlibAttr |= NMib::NFile::EFileAttrib_GroupExecute;
-
 
 	if (_Stats.st_mode & S_IROTH)
 		MalterlibAttr |= NMib::NFile::EFileAttrib_EveryoneRead;
@@ -730,7 +729,7 @@ void fg_SetUnixHandleOptions(int _File)
 }
 
 template <typename tf_CFileStr, bool tf_bException, typename tf_CStr>
-int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, tf_CStr &_oPosixFileName, NMib::NFile::EFileAttrib _Attributes)
+int fg_OpenHelperBSDFile(tf_CStr const &_FileName, NMib::NFile::EFileOpen _OpenFlags, tf_CStr &_oPosixFileName, NMib::NFile::EFileAttrib _Attributes)
 {
 	using namespace NMib::NFile;
 	if ((_OpenFlags & (EFileOpen_Read | EFileOpen_Write | EFileOpen_ReadAttribs | EFileOpen_WriteAttribs)) == 0)
@@ -759,21 +758,20 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 
 	_oPosixFileName = fg_ConvertToPOSIXPath(_FileName);
 
-	auto & FileName = _oPosixFileName;
+	auto &FileName = _oPosixFileName;
 
 	uint32 CreateDisposition = 0;
 	enum
 	{
-		EDisp_CreateNew,
-		EDisp_OpenExisting,
-		EDisp_TruncateExisting,
-		EDisp_OpenAlways,
-		EDisp_CreateAlways
+		EDisp_CreateNew
+		, EDisp_OpenExisting
+		, EDisp_TruncateExisting
+		, EDisp_OpenAlways
+		, EDisp_CreateAlways
 	};
+
 	if (_OpenFlags & EFileOpen_DontOpenExisting)
-	{
 		CreateDisposition = EDisp_CreateNew;
-	}
 	else if (_OpenFlags & EFileOpen_DontCreate)
 	{
 		if (_OpenFlags & EFileOpen_DontTruncate)
@@ -807,30 +805,30 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 
 	switch (CreateDisposition)
 	{
-		case EDisp_CreateNew:
-			{
-				OpenFlags |= O_CREAT | O_EXCL;
-			}
-			break;
-		case EDisp_OpenExisting:
-			{
-			}
-			break;
-		case EDisp_TruncateExisting:
-			{
-				OpenFlags |= O_TRUNC;
-			}
-			break;
-		case EDisp_OpenAlways:
-			{
-				OpenFlags |= O_CREAT;
-			}
-			break;
-		case EDisp_CreateAlways:
-			{
-				OpenFlags |= O_CREAT | O_TRUNC;
-			}
-			break;
+	case EDisp_CreateNew:
+		{
+			OpenFlags |= O_CREAT | O_EXCL;
+		}
+		break;
+	case EDisp_OpenExisting:
+		{
+		}
+		break;
+	case EDisp_TruncateExisting:
+		{
+			OpenFlags |= O_TRUNC;
+		}
+		break;
+	case EDisp_OpenAlways:
+		{
+			OpenFlags |= O_CREAT;
+		}
+		break;
+	case EDisp_CreateAlways:
+		{
+			OpenFlags |= O_CREAT | O_TRUNC;
+		}
+		break;
 	}
 
 #ifdef DPlatformFamily_Linux
@@ -847,7 +845,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 		if (stat(FileName, &Stats))
 		{
 			if constexpr (tf_bException)
-				DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("stat('{}') when opening file") << FileName,errno));
+				DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CFileStr>(typename tf_CFileStr::CFormat("stat('{}') when opening file") << FileName, errno));
 			else
 				return -1;
 		}
@@ -912,9 +910,9 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 	{
 		int LockFlags = 0;
 		if ((_OpenFlags & (NMib::NFile::EFileOpen_ShareRead | NMib::NFile::EFileOpen_ShareWrite)))
-			LockFlags = LOCK_SH|LOCK_NB;
+			LockFlags = LOCK_SH | LOCK_NB;
 		else
-			LockFlags = LOCK_EX|LOCK_NB;
+			LockFlags = LOCK_EX | LOCK_NB;
 
 		if (flock(iFile, LockFlags))
 		{
@@ -957,7 +955,7 @@ int fg_OpenHelperBSDFile(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenF
 }
 
 template <typename tf_CFileStr, bool tf_bException, typename tf_CStr>
-void *fg_OpenHelper(const tf_CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
+void *fg_OpenHelper(tf_CStr const &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
 	tf_CStr PosixFileName;
 	int iFile = fg_OpenHelperBSDFile<tf_CFileStr, tf_bException, tf_CStr>(_FileName, _OpenFlags, PosixFileName, _Attributes);
@@ -982,8 +980,7 @@ namespace
 		auto Flags = EFileOpen_Read | EFileOpen_ShareAll | EFileOpen_NoLocalCache | EFileOpen_ShareBypass;
 
 		void *pFileHandle = fg_OpenHelper<NMib::NStr::CFStr256, true>(_Path, Flags, EFileAttrib_None);
-		auto Cleanup
-			= fg_OnScopeExit
+		auto Cleanup = fg_OnScopeExit
 			(
 				[&]()
 				{
@@ -999,7 +996,6 @@ namespace
 		ch8 Temp[256];
 		while (1)
 		{
-
 			ssize_t ReadBytes = read(pFile->m_BSDFile, Temp, 256);
 
 			if (ReadBytes > 0)
@@ -1023,8 +1019,7 @@ namespace
 		if (!pFileHandle)
 			return false;
 
-		auto Cleanup
-			= fg_OnScopeExit
+		auto Cleanup = fg_OnScopeExit
 			(
 				[&]()
 				{
@@ -1042,7 +1037,6 @@ namespace
 			ch8 Temp[256];
 			while (1)
 			{
-
 				ssize_t ReadBytes = read(pFile->m_BSDFile, Temp, 256);
 
 				if (ReadBytes > 0)
@@ -1071,8 +1065,7 @@ umint NMib::NPlatform::fg_ReadProcFS(NMib::NStr::CFStr256 const &_Path, uint8 *_
 
 	CFStr256 PosixFileName;
 	int BSDFile = fg_OpenHelperBSDFile<NMib::NStr::CFStr256, true>(_Path, Flags, PosixFileName, EFileAttrib_None);
-	auto Cleanup
-		= fg_OnScopeExit
+	auto Cleanup = fg_OnScopeExit
 		(
 			[&]()
 			{
@@ -1104,12 +1097,12 @@ TCVector<ch8, NMemory::CAllocator_NonTrackedHeap> NMib::NPlatform::fg_ReadProcFS
 	return ::fg_ReadProcFS<NMib::NStr::CStrNonTracked>(_Path);
 }
 
-void *NSys::NFile::fg_Open(const NMib::NStr::CStr &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
+void *NSys::NFile::fg_Open(NMib::NStr::CStr const &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
 	return fg_OpenHelper<NMib::NStr::CStr, true>(CStr(_FileName), _OpenFlags, _Attributes);
 }
 
-void *NSys::NFile::fg_Open(const NMib::NStr::CStrNonTracked &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
+void *NSys::NFile::fg_Open(NMib::NStr::CStrNonTracked const &_FileName, NMib::NFile::EFileOpen _OpenFlags, NMib::NFile::EFileAttrib _Attributes)
 {
 	return fg_OpenHelper<NMib::NStr::CStrNonTracked, true>(_FileName, _OpenFlags, _Attributes);
 }
@@ -1131,7 +1124,7 @@ void NSys::NFile::fg_Close(void *_pFile)
 	pFile->f_Delete();
 }
 
-umint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offset, umint _NumBytes)
+umint NSys::NFile::fg_Read(void *_pFile, void *_pData, CMibFilePos const &_Offset, umint _NumBytes)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
@@ -1170,7 +1163,7 @@ umint NSys::NFile::fg_Read(void *_pFile, void *_pData, const CMibFilePos &_Offse
 	}
 }
 
-umint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos &_Offset, umint _NumBytes)
+umint NSys::NFile::fg_Write(void *_pFile, void const *_pData, CMibFilePos const &_Offset, umint _NumBytes)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
@@ -1208,8 +1201,7 @@ umint NSys::NFile::fg_Write(void *_pFile, const void *_pData, const CMibFilePos 
 	}
 }
 
-
-void NSys::NFile::fg_SetSize(void *_pFile, const CMibFilePos &_Size)
+void NSys::NFile::fg_SetSize(void *_pFile, CMibFilePos const &_Size)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
@@ -1219,7 +1211,7 @@ void NSys::NFile::fg_SetSize(void *_pFile, const CMibFilePos &_Size)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("ftruncate('{}') when setting file length") << pFile->f_GetFileName(), errno));
 }
 
-CMibFilePos NSys::NFile::fg_GetSize(const NMib::NStr::CStr &_FileName)
+CMibFilePos NSys::NFile::fg_GetSize(NMib::NStr::CStr const &_FileName)
 {
 	CStr FileName = fg_ConvertToPOSIXPath(_FileName);
 
@@ -1250,7 +1242,7 @@ void NSys::NFile::fg_Flush(void *_pFile)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fsync('{}') when flushing file") << pFile->f_GetFileName(), errno));
 }
 
-void NSys::NFile::fg_LockRange(void *_pFile, const CMibFilePos &_Offset, const CMibFilePos &_NumBytes, NMib::NFile::EFileLock _Flags)
+void NSys::NFile::fg_LockRange(void *_pFile, CMibFilePos const &_Offset, CMibFilePos const &_NumBytes, NMib::NFile::EFileLock _Flags)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
@@ -1275,7 +1267,7 @@ void NSys::NFile::fg_LockRange(void *_pFile, const CMibFilePos &_Offset, const C
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fcntl('{}', {}, {}) when locking file range") << pFile->f_GetFileName() << _Offset << _NumBytes, errno));
 }
 
-void NSys::NFile::fg_UnlockRange(void *_pFile, const CMibFilePos &_Offset, const CMibFilePos &_NumBytes)
+void NSys::NFile::fg_UnlockRange(void *_pFile, CMibFilePos const &_Offset, CMibFilePos const &_NumBytes)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
@@ -1292,7 +1284,6 @@ void NSys::NFile::fg_UnlockRange(void *_pFile, const CMibFilePos &_Offset, const
 	if (iRet < 0)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fcntl('{}', {}, {}) when unlocking file range") << pFile->f_GetFileName() << _Offset << _NumBytes, errno));
 }
-
 
 NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(void *_pFile)
 {
@@ -1351,7 +1342,6 @@ uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32
 #endif
 	}
 
-
 	return Mode;
 }
 
@@ -1385,24 +1375,19 @@ namespace
 		if (!_DefaultMode)
 			_DefaultMode = Stats.st_mode;
 
-	#ifdef DMibPMachKernel
-		auto fl_MakeWritable
-			= [&]()
+#ifdef DMibPMachKernel
+		auto fl_MakeWritable = [&]()
 			{
 				if (Stats.st_flags & UF_IMMUTABLE)
-				{
-					Stats.st_flags &= ~UF_IMMUTABLE,
-					fchflags(_iFile, Stats.st_flags);
-				}
+					Stats.st_flags &= ~UF_IMMUTABLE, fchflags(_iFile, Stats.st_flags);
 			}
 		;
-	#else
-		auto fl_MakeWritable
-			= [&]()
+#else
+		auto fl_MakeWritable = [&]()
 			{
 			}
 		;
-	#endif
+#endif
 
 		// Set the mode...
 		{
@@ -1416,8 +1401,7 @@ namespace
 			}
 		}
 
-
-	#ifdef DMibPMachKernel
+#ifdef DMibPMachKernel
 		{
 			uint32 Flags = fg_MalterlibAttributesToFlags(Stats.st_flags, _Attributes);
 
@@ -1427,7 +1411,7 @@ namespace
 					DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fchflags('{}') when setting file attributes") << _pFileName, errno));
 			}
 		}
-	#endif
+#endif
 	}
 }
 
@@ -1437,7 +1421,7 @@ void NSys::NFile::fg_SetAttributes(void *_pFile, NMib::NFile::EFileAttrib _Attri
 	fg_SetBSDFileAttributes(pFile->m_BSDFile, 0, _Attributes, pFile->f_GetFileName());
 }
 
-NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const& _Filename)
+NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const &_Filename)
 {
 	CStr Canonical = fg_ConvertToPOSIXPath(_Filename);
 	struct stat Stats;
@@ -1458,7 +1442,7 @@ NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributes(NMib::NStr::CStr const& _
 	return fsg_StatsToAttribs(Stats) | NMib::NFile::EFileAttrib_Link;
 }
 
-NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const& _Filename)
+NMib::NFile::EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const &_Filename)
 {
 	CStr Canonical = fg_ConvertToPOSIXPath(_Filename);
 	struct stat Stats;
@@ -1492,8 +1476,7 @@ NMib::NFile::ECheckFileRights NSys::NFile::fg_CheckFileRights(CStr const &_File,
 	{
 		switch (errno)
 		{
-		case EACCES:
-			return NMib::NFile::ECheckFileRights_NoAccess;
+		case EACCES: return NMib::NFile::ECheckFileRights_NoAccess;
 		}
 
 		return NMib::NFile::ECheckFileRights_Access;
@@ -1518,7 +1501,7 @@ NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(void *_pF
 	return {static_cast<uint64>(Stats.st_dev), Stats.st_ino};
 }
 
-NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NStr::CStr const& _FileName)
+NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NStr::CStr const &_FileName)
 {
 	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
 	struct stat Stats;
@@ -1531,7 +1514,7 @@ NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifier(NMib::NSt
 	return {static_cast<uint64>(Stats.st_dev), Stats.st_ino};
 }
 
-NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifierOnLink(NMib::NStr::CStr const& _FileName)
+NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifierOnLink(NMib::NStr::CStr const &_FileName)
 {
 	CStr Canonical = fg_ConvertToPOSIXPath(_FileName);
 	struct stat Stats;
@@ -1544,12 +1527,12 @@ NMib::NFile::CUniqueFileIdentifier NSys::NFile::fg_GetUniqueIdentifierOnLink(NMi
 	return {static_cast<uint64>(Stats.st_dev), Stats.st_ino};
 }
 
-void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _Filename, NMib::NFile::EFileAttrib _Attributes)
+void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const &_Filename, NMib::NFile::EFileAttrib _Attributes)
 {
 	struct stat Stats;
 	CStr Filename = fg_ConvertToPOSIXPath(_Filename);
 	if (stat(Filename, &Stats))
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("stat('{}') when setting file attributes") << Filename,errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("stat('{}') when setting file attributes") << Filename, errno));
 
 	// Set the mode...
 	{
@@ -1558,7 +1541,7 @@ void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _Filename, NMib::NFil
 		if (Mode != Stats.st_mode)
 		{
 			if (chmod(Filename, Mode))
-				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chmod('{}') when setting file attributes") << Filename,errno));
+				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chmod('{}') when setting file attributes") << Filename, errno));
 		}
 	}
 
@@ -1569,18 +1552,18 @@ void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const& _Filename, NMib::NFil
 		if (Flags != Stats.st_flags)
 		{
 			if (chflags(Filename, Flags))
-				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chflags('{}') when setting file attributes") << Filename,errno));
+				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chflags('{}') when setting file attributes") << Filename, errno));
 		}
 	}
 #endif
 }
 
-void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _Filename, NMib::NFile::EFileAttrib _Attributes)
+void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const &_Filename, NMib::NFile::EFileAttrib _Attributes)
 {
 	struct stat Stats;
 	CStr Filename = fg_ConvertToPOSIXPath(_Filename);
 	if (lstat(Filename, &Stats))
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when setting file attributes") << Filename,errno));
+		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("lstat('{}') when setting file attributes") << Filename, errno));
 
 	// Set the mode...
 	{
@@ -1589,7 +1572,7 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _Filename, NMib
 		if (Mode != Stats.st_mode)
 		{
 			if (lchmod(Filename, Mode))
-				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chmod('{}') when setting file attributes") << Filename,errno));
+				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chmod('{}') when setting file attributes") << Filename, errno));
 		}
 	}
 
@@ -1600,7 +1583,7 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _Filename, NMib
 		if (Flags != Stats.st_flags)
 		{
 			if (lchflags(Filename, Flags))
-				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chflags('{}') when setting file attributes") << Filename,errno));
+				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chflags('{}') when setting file attributes") << Filename, errno));
 		}
 	}
 #endif
@@ -1629,9 +1612,7 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const& _Filename, NMib
 		TimeSpec.tv_nsec = 0;
 	}
 	else
-	{
 		TimeSpec.tv_nsec = static_cast<long>(Nanoseconds);
-	}
 
 	return TimeSpec;
 }
@@ -1668,15 +1649,15 @@ NTime::CTime NSys::NFile::fg_GetCreationTime(void *_pFile)
 	return fsg_TimespecToCTime(Stats.st_mtim);
 #else
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
-#if DPlatformVersion < 1060
+#	if DPlatformVersion < 1060
 	struct stat64 Stats;
 	if (fstat64(pFile->m_BSDFile, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when getting file creation time") << pFile->f_GetFileName(), errno));
-#else
+#	else
 	struct stat Stats;
 	if (fstat(pFile->m_BSDFile, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when getting file creation time") << pFile->f_GetFileName(), errno));
-#endif
+#	endif
 	return fsg_TimespecToCTime(Stats.st_birthtimespec);
 #endif
 }
@@ -1707,7 +1688,7 @@ NTime::CTime NSys::NFile::fg_GetWriteTime(void *_pFile)
 #endif
 }
 
-NTime::CTime NSys::NFile::fg_GetCreationTime(NMib::NStr::CStr const& _FileName)
+NTime::CTime NSys::NFile::fg_GetCreationTime(NMib::NStr::CStr const &_FileName)
 {
 #if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
 	struct stat Stats;
@@ -1715,20 +1696,20 @@ NTime::CTime NSys::NFile::fg_GetCreationTime(NMib::NStr::CStr const& _FileName)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when getting file creation time") << _FileName, errno));
 	return fsg_TimespecToCTime(Stats.st_mtim);
 #else
-#if DPlatformVersion < 1060
+#	if DPlatformVersion < 1060
 	struct stat64 Stats;
 	if (stat64(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat64('{}') when getting file creation time") << _FileName, errno));
-#else
+#	else
 	struct stat Stats;
 	if (stat(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when getting file creation time") << _FileName, errno));
-#endif
+#	endif
 	return fsg_TimespecToCTime(Stats.st_birthtimespec);
 #endif
 }
 
-NTime::CTime NSys::NFile::fg_GetAccessTime(NMib::NStr::CStr const& _FileName)
+NTime::CTime NSys::NFile::fg_GetAccessTime(NMib::NStr::CStr const &_FileName)
 {
 	struct stat Stats;
 	if (stat(_FileName.f_GetStr(), &Stats))
@@ -1740,7 +1721,7 @@ NTime::CTime NSys::NFile::fg_GetAccessTime(NMib::NStr::CStr const& _FileName)
 #endif
 }
 
-NTime::CTime NSys::NFile::fg_GetWriteTime(NMib::NStr::CStr const& _FileName)
+NTime::CTime NSys::NFile::fg_GetWriteTime(NMib::NStr::CStr const &_FileName)
 {
 	struct stat Stats;
 	if (stat(_FileName.f_GetStr(), &Stats))
@@ -1752,7 +1733,7 @@ NTime::CTime NSys::NFile::fg_GetWriteTime(NMib::NStr::CStr const& _FileName)
 #endif
 }
 
-NTime::CTime NSys::NFile::fg_GetCreationTimeOnLink(NMib::NStr::CStr const& _FileName)
+NTime::CTime NSys::NFile::fg_GetCreationTimeOnLink(NMib::NStr::CStr const &_FileName)
 {
 #if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
 	struct stat Stats;
@@ -1760,20 +1741,20 @@ NTime::CTime NSys::NFile::fg_GetCreationTimeOnLink(NMib::NStr::CStr const& _File
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when getting file creation time") << _FileName, errno));
 	return fsg_TimespecToCTime(Stats.st_mtim);
 #else
-#if DPlatformVersion < 1060
+#	if DPlatformVersion < 1060
 	struct stat64 Stats;
 	if (lstat64(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat64('{}') when getting file creation time") << _FileName, errno));
-#else
+#	else
 	struct stat Stats;
 	if (lstat(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when getting file creation time") << _FileName, errno));
-#endif
+#	endif
 	return fsg_TimespecToCTime(Stats.st_birthtimespec);
 #endif
 }
 
-NTime::CTime NSys::NFile::fg_GetAccessTimeOnLink(NMib::NStr::CStr const& _FileName)
+NTime::CTime NSys::NFile::fg_GetAccessTimeOnLink(NMib::NStr::CStr const &_FileName)
 {
 	struct stat Stats;
 	if (lstat(_FileName.f_GetStr(), &Stats))
@@ -1785,7 +1766,7 @@ NTime::CTime NSys::NFile::fg_GetAccessTimeOnLink(NMib::NStr::CStr const& _FileNa
 #endif
 }
 
-NTime::CTime NSys::NFile::fg_GetWriteTimeOnLink(NMib::NStr::CStr const& _FileName)
+NTime::CTime NSys::NFile::fg_GetWriteTimeOnLink(NMib::NStr::CStr const &_FileName)
 {
 	struct stat Stats;
 	if (lstat(_FileName.f_GetStr(), &Stats))
@@ -1799,11 +1780,11 @@ NTime::CTime NSys::NFile::fg_GetWriteTimeOnLink(NMib::NStr::CStr const& _FileNam
 
 #ifdef DPlatformFamily_macOS
 
-void NSys::NFile::fg_SetCreationTime(void *_pFile, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetCreationTime(void *_pFile, NTime::CTime const &_Time)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-	struct attrlist AttributeList = { 0 };
+	struct attrlist AttributeList = {0};
 	AttributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
 	AttributeList.commonattr = ATTR_CMN_CRTIME;
 	struct timespec Time = fsg_CTimeToTimespec(_Time);
@@ -1812,11 +1793,11 @@ void NSys::NFile::fg_SetCreationTime(void *_pFile, const NTime::CTime &_Time)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fsetattrlist('{}') when setting file write time") << pFile->f_GetFileName(), errno));
 }
 
-void NSys::NFile::fg_SetAccessTime(void *_pFile, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetAccessTime(void *_pFile, NTime::CTime const &_Time)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-	struct attrlist AttributeList = { 0 };
+	struct attrlist AttributeList = {0};
 	AttributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
 	AttributeList.commonattr = ATTR_CMN_ACCTIME;
 	struct timespec Time = fsg_CTimeToTimespec(_Time);
@@ -1825,11 +1806,11 @@ void NSys::NFile::fg_SetAccessTime(void *_pFile, const NTime::CTime &_Time)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fsetattrlist('{}') when setting file write time") << pFile->f_GetFileName(), errno));
 }
 
-void NSys::NFile::fg_SetWriteTime(void *_pFile, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetWriteTime(void *_pFile, NTime::CTime const &_Time)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-	struct attrlist AttributeList = { 0 };
+	struct attrlist AttributeList = {0};
 	AttributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
 	AttributeList.commonattr = ATTR_CMN_MODTIME;
 	struct timespec Time = fsg_CTimeToTimespec(_Time);
@@ -1838,9 +1819,9 @@ void NSys::NFile::fg_SetWriteTime(void *_pFile, const NTime::CTime &_Time)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fsetattrlist('{}') when setting file write time") << pFile->f_GetFileName(), errno));
 }
 
-void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-	struct attrlist AttributeList = { 0 };
+	struct attrlist AttributeList = {0};
 	AttributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
 	AttributeList.commonattr = ATTR_CMN_CRTIME;
 	struct timespec Time = fsg_CTimeToTimespec(_Time);
@@ -1849,9 +1830,9 @@ void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, const NT
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("setattrlist('{}') when setting file write time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-	struct attrlist AttributeList = { 0 };
+	struct attrlist AttributeList = {0};
 	AttributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
 	AttributeList.commonattr = ATTR_CMN_ACCTIME;
 	struct timespec Time = fsg_CTimeToTimespec(_Time);
@@ -1860,9 +1841,9 @@ void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, const NTim
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("setattrlist('{}') when setting file write time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-	struct attrlist AttributeList = { 0 };
+	struct attrlist AttributeList = {0};
 	AttributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
 	AttributeList.commonattr = ATTR_CMN_MODTIME;
 	struct timespec Time = fsg_CTimeToTimespec(_Time);
@@ -1871,9 +1852,9 @@ void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, const NTime
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("setattrlist('{}') when setting file write time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-	struct attrlist AttributeList = { 0 };
+	struct attrlist AttributeList = {0};
 	AttributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
 	AttributeList.commonattr = ATTR_CMN_CRTIME;
 	struct timespec Time = fsg_CTimeToTimespec(_Time);
@@ -1882,9 +1863,9 @@ void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, co
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("setattrlist('{}') when setting file write time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-	struct attrlist AttributeList = { 0 };
+	struct attrlist AttributeList = {0};
 	AttributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
 	AttributeList.commonattr = ATTR_CMN_ACCTIME;
 	struct timespec Time = fsg_CTimeToTimespec(_Time);
@@ -1893,9 +1874,9 @@ void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, cons
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("setattrlist('{}') when setting file write time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-	struct attrlist AttributeList = { 0 };
+	struct attrlist AttributeList = {0};
 	AttributeList.bitmapcount = ATTR_BIT_MAP_COUNT;
 	AttributeList.commonattr = ATTR_CMN_MODTIME;
 	struct timespec Time = fsg_CTimeToTimespec(_Time);
@@ -1906,7 +1887,7 @@ void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, const
 
 #else
 
-static timeval fsg_CTimeToTimeVal(const NTime::CTime &_DateTime)
+static timeval fsg_CTimeToTimeVal(NTime::CTime const &_DateTime)
 {
 	static CTime EpochStart = NTime::CTimeConvert::fs_CreateTime(1970, 1, 1);
 	CTimeSpan Span = _DateTime - EpochStart;
@@ -1916,25 +1897,25 @@ static timeval fsg_CTimeToTimeVal(const NTime::CTime &_DateTime)
 	return Ret;
 }
 
-#ifndef TIMEVAL_TO_TIMESPEC
-#define	TIMEVAL_TO_TIMESPEC(tv, ts) { \
-	(ts)->tv_sec = (tv)->tv_sec; \
-	(ts)->tv_nsec = (tv)->tv_usec * 1000; \
-}
-#endif
+#	ifndef TIMEVAL_TO_TIMESPEC
+#		define	TIMEVAL_TO_TIMESPEC(tv, ts) { \
+				(ts)->tv_sec = (tv)->tv_sec; \
+				(ts)->tv_nsec = (tv)->tv_usec * 1000; \
+			}
+#	endif
 
-#ifndef TIMESPEC_TO_TIMEVAL
-#define	TIMESPEC_TO_TIMEVAL(tv, ts) { \
-	(tv)->tv_sec = (ts)->tv_sec; \
-	(tv)->tv_usec = (ts)->tv_nsec / 1000; \
-}
-#endif
+#	ifndef TIMESPEC_TO_TIMEVAL
+#		define	TIMESPEC_TO_TIMEVAL(tv, ts) { \
+				(tv)->tv_sec = (ts)->tv_sec; \
+				(tv)->tv_usec = (ts)->tv_nsec / 1000; \
+			}
+#	endif
 
-void NSys::NFile::fg_SetCreationTime(void *_pFile, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetCreationTime(void *_pFile, NTime::CTime const &_Time)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-#if defined(DPlatformFamily_Linux)
+#	if defined(DPlatformFamily_Linux)
 	if (NLocal::g_f_futimens)
 	{
 		struct timespec TimeSpecs[2] = {0};
@@ -1944,28 +1925,28 @@ void NSys::NFile::fg_SetCreationTime(void *_pFile, const NTime::CTime &_Time)
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimens('{}') when setting file creation time") << pFile->f_GetFileName(), errno));
 		return;
 	}
-#endif
+#	endif
 
 	struct stat Stats;
 	if (fstat(pFile->m_BSDFile, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when setting file creation time") << pFile->f_GetFileName(), errno));
 	timeval Vals[2];
-#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+#	if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
 
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
-#else
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
-#endif
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtim);
+#	else
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtimespec);
+#	endif
 	Vals[0] = fsg_CTimeToTimeVal(_Time);
 	if (futimes(pFile->m_BSDFile, Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimes('{}') when setting file creation time") << pFile->f_GetFileName(), errno));
 }
 
-void NSys::NFile::fg_SetAccessTime(void *_pFile, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetAccessTime(void *_pFile, NTime::CTime const &_Time)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-#if defined(DPlatformFamily_Linux)
+#	if defined(DPlatformFamily_Linux)
 	if (NLocal::g_f_futimens)
 	{
 		struct timespec TimeSpecs[2] = {0};
@@ -1975,27 +1956,27 @@ void NSys::NFile::fg_SetAccessTime(void *_pFile, const NTime::CTime &_Time)
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimens('{}') when setting file creation time") << pFile->f_GetFileName(), errno));
 		return;
 	}
-#endif
+#	endif
 
 	struct stat Stats;
 	if (fstat(pFile->m_BSDFile, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when setting file access time") << pFile->f_GetFileName(), errno));
 	timeval Vals[2];
-#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
-#else
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
-#endif
+#	if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtim);
+#	else
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtimespec);
+#	endif
 	Vals[0] = fsg_CTimeToTimeVal(_Time);
 	if (futimes(pFile->m_BSDFile, Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimes('{}') when setting file access time") << pFile->f_GetFileName(), errno));
 }
 
-void NSys::NFile::fg_SetWriteTime(void *_pFile, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetWriteTime(void *_pFile, NTime::CTime const &_Time)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-#if defined(DPlatformFamily_Linux)
+#	if defined(DPlatformFamily_Linux)
 	if (NLocal::g_f_futimens)
 	{
 		struct timespec TimeSpecs[2] = {0};
@@ -2005,25 +1986,25 @@ void NSys::NFile::fg_SetWriteTime(void *_pFile, const NTime::CTime &_Time)
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimens('{}') when setting file creation time") << pFile->f_GetFileName(), errno));
 		return;
 	}
-#endif
+#	endif
 
 	struct stat Stats;
 	if (fstat(pFile->m_BSDFile, &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("fstat('{}') when setting file write time") << pFile->f_GetFileName(), errno));
 	timeval Vals[2];
-#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+#	if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
 	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atim);
-#else
+#	else
 	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atimespec);
-#endif
+#	endif
 	Vals[1] = fsg_CTimeToTimeVal(_Time);
 	if (futimes(pFile->m_BSDFile, Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimes('{}') when setting file write time") << pFile->f_GetFileName(), errno));
 }
 
-void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-#if defined(DPlatformFamily_Linux)
+#	if defined(DPlatformFamily_Linux)
 	if (NLocal::g_f_utimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
@@ -2033,25 +2014,25 @@ void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, const NT
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
-#endif
+#	endif
 
 	struct stat Stats;
 	if (stat(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when setting file creation time") << _FileName, errno));
 	timeval Vals[2];
-#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
-#else
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
-#endif
+#	if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtim);
+#	else
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtimespec);
+#	endif
 	Vals[0] = fsg_CTimeToTimeVal(_Time);
 	if (utimes(_FileName.f_GetStr(), Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimes('{}') when setting file creation time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-#if defined(DPlatformFamily_Linux)
+#	if defined(DPlatformFamily_Linux)
 	if (NLocal::g_f_utimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
@@ -2061,25 +2042,25 @@ void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, const NTim
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
-#endif
+#	endif
 
 	struct stat Stats;
 	if (stat(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when setting file access time") << _FileName, errno));
 	timeval Vals[2];
-#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
-#else
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
-#endif
+#	if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtim);
+#	else
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtimespec);
+#	endif
 	Vals[0] = fsg_CTimeToTimeVal(_Time);
 	if (utimes(_FileName.f_GetStr(), Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimes('{}') when setting file access time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-#if defined(DPlatformFamily_Linux)
+#	if defined(DPlatformFamily_Linux)
 	if (NLocal::g_f_utimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
@@ -2089,25 +2070,25 @@ void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, const NTime
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
-#endif
+#	endif
 
 	struct stat Stats;
 	if (stat(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("stat('{}') when setting file write time") << _FileName, errno));
 	timeval Vals[2];
-#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+#	if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
 	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atim);
-#else
+#	else
 	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atimespec);
-#endif
+#	endif
 	Vals[1] = fsg_CTimeToTimeVal(_Time);
 	if (utimes(_FileName.f_GetStr(), Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimes('{}') when setting file write time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-#if defined(DPlatformFamily_Linux)
+#	if defined(DPlatformFamily_Linux)
 	if (NLocal::g_f_utimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
@@ -2117,25 +2098,25 @@ void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, co
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
-#endif
+#	endif
 
 	struct stat Stats;
 	if (lstat(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when setting file creation time") << _FileName, errno));
 	timeval Vals[2];
-#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
-#else
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
-#endif
+#	if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtim);
+#	else
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtimespec);
+#	endif
 	Vals[0] = fsg_CTimeToTimeVal(_Time);
 	if (lutimes(_FileName.f_GetStr(), Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lutimes('{}') when setting file creation time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-#if defined(DPlatformFamily_Linux)
+#	if defined(DPlatformFamily_Linux)
 	if (NLocal::g_f_utimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
@@ -2145,25 +2126,25 @@ void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, cons
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
-#endif
+#	endif
 
 	struct stat Stats;
 	if (lstat(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when setting file access time") << _FileName, errno));
 	timeval Vals[2];
-#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtim);
-#else
-	TIMESPEC_TO_TIMEVAL(Vals+1, &Stats.st_mtimespec);
-#endif
+#	if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtim);
+#	else
+	TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtimespec);
+#	endif
 	Vals[0] = fsg_CTimeToTimeVal(_Time);
 	if (lutimes(_FileName.f_GetStr(), Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lutimes('{}') when setting file access time") << _FileName, errno));
 }
 
-void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, const NTime::CTime &_Time)
+void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
-#if defined(DPlatformFamily_Linux)
+#	if defined(DPlatformFamily_Linux)
 	if (NLocal::g_f_utimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
@@ -2173,17 +2154,17 @@ void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, const
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
-#endif
+#	endif
 
 	struct stat Stats;
 	if (lstat(_FileName.f_GetStr(), &Stats))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lstat('{}') when setting file write time") << _FileName, errno));
 	timeval Vals[2];
-#if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
+#	if defined(DPlatformFamily_Linux) || defined (DPlatformFamily_Emscripten)
 	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atim);
-#else
+#	else
 	TIMESPEC_TO_TIMEVAL(Vals, &Stats.st_atimespec);
-#endif
+#	endif
 	Vals[1] = fsg_CTimeToTimeVal(_Time);
 	if (lutimes(_FileName.f_GetStr(), Vals))
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("lutimes('{}') when setting file write time") << _FileName, errno));
@@ -2191,7 +2172,7 @@ void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, const
 
 #endif
 
-NMib::NStr::CStr NSys::NFile::fg_GetOwnerOnLink(const NMib::NStr::CStr &_Path)
+NMib::NStr::CStr NSys::NFile::fg_GetOwnerOnLink(NMib::NStr::CStr const &_Path)
 {
 	CStr UserName;
 
@@ -2214,7 +2195,8 @@ NMib::NStr::CStr NSys::NFile::fg_GetOwnerOnLink(const NMib::NStr::CStr &_Path)
 
 	return UserName;
 }
-NMib::NStr::CStr NSys::NFile::fg_GetGroupOnLink(const NMib::NStr::CStr &_Path)
+
+NMib::NStr::CStr NSys::NFile::fg_GetGroupOnLink(NMib::NStr::CStr const &_Path)
 {
 	CStr GroupName;
 
@@ -2316,7 +2298,7 @@ void NSys::NFile::fg_SetGroup(CStr const &_Path, CStr const &_Group)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chown('{}', {}) when setting group on file") << Canonical << pGroup->gr_gid, errno));
 }
 
-void NSys::NFile::fg_SetOwner(void *_pFile, const NMib::NStr::CStr &_Owner)
+void NSys::NFile::fg_SetOwner(void *_pFile, NMib::NStr::CStr const &_Owner)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 	CStr Name = _Owner;
@@ -2331,7 +2313,7 @@ void NSys::NFile::fg_SetOwner(void *_pFile, const NMib::NStr::CStr &_Owner)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("fchown('{}', {}) when setting owner on file") << pFile->f_GetFileName() << pPasswd->pw_uid, errno));
 }
 
-void NSys::NFile::fg_SetGroup(void *_pFile, const NMib::NStr::CStr &_Group)
+void NSys::NFile::fg_SetGroup(void *_pFile, NMib::NStr::CStr const &_Group)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 	CStr Name = _Group;
@@ -2402,9 +2384,7 @@ CPOSIXFileFind::CPOSIXFileFind()
 CPOSIXFileFind::~CPOSIXFileFind()
 {
 	if (m_pDir)
-	{
 		closedir(m_pDir);
-	}
 }
 
 uint64 CPOSIXFileFind::f_ParseAttrib()
@@ -2425,7 +2405,7 @@ uint64 CPOSIXFileFind::f_ParseAttrib()
 	return fsg_StatsToAttribs(Stats) | (LinkAttribs & NMib::NFile::EFileAttrib_Link);
 }
 
-void *NSys::NFile::fg_FindOpen(const NMib::NStr::CStr &_FindPattern)
+void *NSys::NFile::fg_FindOpen(NMib::NStr::CStr const &_FindPattern)
 {
 //	DMibTrace("fg_FindOpen({})\n", _FindPattern);
 	CStr FileName = fg_ConvertToPOSIXPath(_FindPattern);
@@ -2453,12 +2433,12 @@ void *NSys::NFile::fg_FindOpen(const NMib::NStr::CStr &_FindPattern)
 	return pFind;
 }
 
-static bool fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
+static bool fsg_MatchPattern(ch8 const *_pStr, ch8 const *_pPattern)
 {
 	NStr::CStr Temp0 = NStr::CStr(_pStr).f_UpperCase();
 	NStr::CStr Temp1 = NStr::CStr(_pPattern).f_UpperCase();
-	const char *pParse = Temp0;
-	const char *pPattern = Temp1;
+	char const *pParse = Temp0;
+	char const *pPattern = Temp1;
 	umint nWildCardAttempt = 0; // This ensures that e.g. *.hcl matches 0x0409.Estonian.hcl
 	bool bWildCardSearch = false;
 
@@ -2481,9 +2461,7 @@ static bool fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
 						++iWildCardAttempt;
 					}
 					else
-					{
 						break;
-					}
 				}
 			}
 			else if (*pPattern == '?')
@@ -2501,9 +2479,7 @@ static bool fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
 		}
 
 		if (*pParse == *pPattern)
-		{
 			return true;
-		}
 		else if (bWildCardSearch && *pParse)
 		{
 			++nWildCardAttempt;
@@ -2511,20 +2487,18 @@ static bool fsg_MatchPattern(const ch8 *_pStr, const ch8 *_pPattern)
 			pPattern = Temp1;
 		}
 		else
-		{
 			break;
-		}
 	}
 
 	return false;
 }
 
-const NMib::NStr::CStr *NSys::NFile::fg_FindNext(void *_pFindContext, NMib::NFile::EFileAttrib &_FileAttribs)
+NMib::NStr::CStr const *NSys::NFile::fg_FindNext(void *_pFindContext, NMib::NFile::EFileAttrib &_FileAttribs)
 {
 	if (!_pFindContext)
 		return nullptr;
 
-	CPOSIXFileFind *pFind = (CPOSIXFileFind*)_pFindContext;
+	CPOSIXFileFind *pFind = (CPOSIXFileFind *)_pFindContext;
 
 	if (!pFind->m_pDir)
 		return nullptr;
@@ -2564,7 +2538,7 @@ void NSys::NFile::fg_FindClose(void *_pFindContext)
 {
 	if (!_pFindContext)
 		return;
-	CPOSIXFileFind *pFind = (CPOSIXFileFind*)_pFindContext;
+	CPOSIXFileFind *pFind = (CPOSIXFileFind *)_pFindContext;
 	fg_DeleteObject(NMemory::CDefaultAllocator(), pFind);
 }
 

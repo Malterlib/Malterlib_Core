@@ -176,7 +176,6 @@ Property
 				}
 			}
 		}
-
 	}
 	Property.WorkaroundLTOValue: bool = false
 	%Group "Source"
@@ -357,7 +356,6 @@ Property
 							!PlatformFamily "macOS"
 						}
 					}
-
 				}
 				%Group "ppc"
 				{
@@ -407,7 +405,13 @@ Property
 				!!Compile.Type "Assembler"
 
 				AllCPUSubTypes true
-				PreprocessorDefines =+ ["_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS", "COMPILER_RT_NODEFAULTVISIBILITY", "LIBCXXABI_NODEFAULTVISIBILITY", "LIBUNWIND_NODEFAULTVISIBILITY", "_LIBUNWIND_HIDE_SYMBOLS"]
+				PreprocessorDefines =+ [
+					"_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
+					, "COMPILER_RT_NODEFAULTVISIBILITY"
+					, "LIBCXXABI_NODEFAULTVISIBILITY"
+					, "LIBUNWIND_NODEFAULTVISIBILITY"
+					, "_LIBUNWIND_HIDE_SYMBOLS"
+				]
 			}
 			%File "../../External/llvm-project/libunwind/include/^*"
 			%File "../../External/llvm-project/libunwind/src/*"
@@ -523,7 +527,6 @@ Property
 				MalterlibUseStaticLibCxx true
 			}
 		}
-
 
 		Analyzer false
 	}
@@ -820,9 +823,11 @@ Property
 						}
 						%GenerateFile ["exe_common.inl", "utility.cpp", "dll_dllmain.cpp"]
 						{
+							// malterlib-format off
 							// ./Binaries/Malterlib/Windows/x64/MTool BinaryDiff "/c/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.40.33807/crt/src/vcruntime/utility.cpp" /c/CompiledFiles/Mal18f/Tese5c/Generated/Lib_Malterlib_Runtime/NoConfig/vcruntime/utility.cpp Malterlib/Core/Patches/14.38.33130/VCCrt_utility.cpp.patch
 							// ./Binaries/Malterlib/Windows/x64/MTool BinaryDiff "/c/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.40.33807/crt/src/vcruntime/dll_dllmain.cpp" /c/CompiledFiles/Mal18f/Tese5c/Generated/Lib_Malterlib_Runtime/NoConfig/vcruntime/dll_dllmain.cpp Malterlib/Core/Patches/14.38.33130/VCCrt_dll_dllmain.cpp.patch
 							// ./Binaries/Malterlib/Windows/x64/MTool BinaryDiff "/c/Program Files/Microsoft Visual Studio/2022/Professional/VC/Tools/MSVC/14.40.33807/crt/src/vcruntime/exe_common.inl" /c/CompiledFiles/Mal18f/Tese5c/Generated/Lib_Malterlib_Runtime/NoConfig/vcruntime/exe_common.inl Malterlib/Core/Patches/14.38.33130/VCCrt_exe_common.inl.patch
+							// malterlib-format on
 							GenerateFile
 							{
 								Name `@(GeneratedDirectoryNoConfig)vcruntime/@(this.Identity)`
@@ -1004,7 +1009,13 @@ Property
 			!MalterlibCloud_VersionUploadVersion undefined
 		}
 	}
-	MalterlibCloudVersionInfo_Version Format("{}/{}.{}.{}", MalterlibCloudVersionInfo_BranchForVersion, ProductVersionMajor->AsInteger(), ProductVersionMinor->AsInteger(), ProductVersionRevision->AsInteger())
+	MalterlibCloudVersionInfo_Version Format(
+		"{}/{}.{}.{}"
+		, MalterlibCloudVersionInfo_BranchForVersion
+		, ProductVersionMajor->AsInteger()
+		, ProductVersionMinor->AsInteger()
+		, ProductVersionRevision->AsInteger()
+	)
 	{
 		!!MalterlibCloudVersionInfo_Version undefined
 	}
@@ -1046,9 +1057,9 @@ Property
 						`		}\n`\
 						`	;\n`\
 						`\n`
-						{
-							!MalterlibCloudVersionInfo_Tags->Length() 0
-						}
+			{
+				!MalterlibCloudVersionInfo_Tags->Length() 0
+			}
 
 			Contents =+ `	CBuildMetadata fg_GetBuildMetadata()\n`\
 						`	{\n`\
@@ -1231,7 +1242,6 @@ Property
 			MalterlibIncludeLevel "Target"
 			!MalterlibIncludePerConfig true
 		}
-
 	}
 	MalterlibIncludeOutputDir `@(GeneratedWorkspaceDirectory)RootInclude`
 	{
@@ -1605,7 +1615,10 @@ Property
 	{
 		!!PlatformFamily "macOS"
 
-		LinkWithLibraries [["-undefined", "dynamic_lookup"], `@(MalterlibCompiledFilesWarkspaceBase)/Out/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`]
+		LinkWithLibraries [
+			["-undefined", "dynamic_lookup"]
+			, `@(MalterlibCompiledFilesWarkspaceBase)/Out/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`
+		]
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
 		InstrumentForOptimization false
@@ -1744,4 +1757,3 @@ Property
 		%File "Tools/Helper/Malterlib_Core_Helper.cpp"
 	}
 }
-

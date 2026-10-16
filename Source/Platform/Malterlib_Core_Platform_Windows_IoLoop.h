@@ -64,10 +64,10 @@ struct alignas(16) CIocpOp
 
 	NTSTATUS m_Status = 0; // Completion NTSTATUS; Cancelled denotes cancellation.
 	DWORD m_nBytes = 0;
-	int m_Error = 0; // WSA error from synchronous issue failure without a completion status.
+	int m_Error = 0;       // WSA error from synchronous issue failure without a completion status.
 
 	EIocpOpKind m_Kind = EIocpOpKind::mc_Send;
-	bool m_bIssued = false; // With the kernel or awaiting inline reporting.
+	bool m_bIssued = false;    // With the kernel or awaiting inline reporting.
 	bool m_bCompleted = false; // Result arrived; awaiting its turn in issue order.
 };
 
@@ -129,24 +129,24 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 
 	HANDLE m_hBase = nullptr; // Provider base handle used by AFD; differs under layered service providers.
 	CIocpAfdGroup *m_pAfdGroup = nullptr;
-	CIocpPollOp m_PollOp; // One union-interest poll per socket; multiple AFD polls can consume each other's readiness.
+	CIocpPollOp m_PollOp;     // One union-interest poll per socket; multiple AFD polls can consume each other's readiness.
 
 	HANDLE m_hWaitPacket = nullptr; // One-shot synchronization-object wait; each armed packet retains the registration until reported.
 	CIocpOp m_WaitOp;
 	bool m_bWaitArmed = false;
 
-	CIocpSendOp *m_pSendHead = nullptr; // Issue-order FIFO; only report complete head entries so port reordering cannot reorder callbacks.
+	CIocpSendOp *m_pSendHead = nullptr;     // Issue-order FIFO; only report complete head entries so port reordering cannot reorder callbacks.
 	CIocpSendOp *m_pSendTail = nullptr;
 	CIocpSendOp *m_pSendNextToIssue = nullptr;
 	umint m_nSendsInFlight = 0;
-	umint m_nSendBytesInFlight = 0; // Unreleased bytes for acknowledgement-completing sends.
+	umint m_nSendBytesInFlight = 0;         // Unreleased bytes for acknowledgement-completing sends.
 	umint m_nSendWindowBytes = 0;
 	NMib::NSys::CIoSendWindow m_SendWindow; // Owner-managed except cross-thread release-lag epochs, which use their own lock.
 #if DMibConfig_IoDebug_Enable
 	uint64 m_SendIdleStamp = 0;
 #endif
 
-	CIocpRecvOp m_RecvOps[gc_IocpMaxRecvDepth]; // Receive issue order; report from the head into each buffer's untouched tail.
+	CIocpRecvOp m_RecvOps[gc_IocpMaxRecvDepth];          // Receive issue order; report from the head into each buffer's untouched tail.
 	CIocpRecvOp *m_pRecvHead = nullptr;
 	CIocpRecvOp *m_pRecvTail = nullptr;
 	umint m_nRecvDepth = 0;
@@ -171,7 +171,7 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	EClosePoll m_ClosePollState = EClosePoll::mc_Disconnect;
 	bool m_bDisconnectReported = false; // Held level state; a new close request may replay it even with no further kernel event.
 
-	bool m_bCompletionModeRead = false; // Readiness is disabled independently for directions using completion I/O.
+	bool m_bCompletionModeRead = false;   // Readiness is disabled independently for directions using completion I/O.
 	bool m_bCompletionModeWrite = false;
 	bool m_bDeregistering = false;
 	bool m_bStreamStarted = false;
@@ -180,7 +180,7 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 	bool m_bStreamEnded = false;
 
 	bool m_bSkipSuccess = false; // Synchronous success produces inline reporting instead of a port packet.
-	bool m_bAssociated = false; // Loop-thread state; false forbids transfer submission but permits readiness polls.
+	bool m_bAssociated = false;  // Loop-thread state; false forbids transfer submission but permits readiness polls.
 };
 
 // Issued operations retain registration until reported; the caller keeps the socket open until removal acknowledgement.
@@ -287,7 +287,7 @@ private:
 	HANDLE mp_hPort = nullptr;
 	CIoSubSystem_Windows *mp_pIo = nullptr;
 	NMib::NContainer::TCVector<CIocpAfdGroup *> mp_AfdGroups; // Each AFD handle serves a bounded registration group.
-	umint mp_nDeregistering = 0; // Shutdown iterates until this reaches zero.
+	umint mp_nDeregistering = 0;                              // Shutdown iterates until this reaches zero.
 
 	NMib::NThread::CMutual mp_IoOpLock; // Cross-thread submissions are applied only by the loop.
 	NMib::NContainer::TCVector<CIocpPendingOp *> mp_PendingIoOps;

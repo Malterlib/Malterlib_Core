@@ -18,7 +18,6 @@ public:
 	NMib::NStr::CStr m_FullPath;
 	NMib::NStr::CStr m_SearchPattern;
 	NMib::NStr::CStr m_LastFullName;
-
 };
 
 namespace NMib

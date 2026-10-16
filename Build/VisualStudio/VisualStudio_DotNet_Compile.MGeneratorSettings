@@ -15,10 +15,10 @@ GeneratorSetting
 		VSSettings: {
 			Optimize: Compile.Optimize->SwitchWithError(
 				"Unsupported option: "
-				"Off", "false"
-				"On", "true"
-				"Fast", "true"
-				"Full", "true"
+				, "Off", "false"
+				, "On", "true"
+				, "Fast", "true"
+				, "Full", "true"
 			)
 		}
 	}
@@ -55,10 +55,10 @@ GeneratorSetting
 		VSSettings: {
 			WarningLevel: Compile.Warnings->SwitchWithError(
 				"Unsupported option: "
-				"Off", "0"
-				"Minimal", "1"
-				"On", "3"
-				"Pedantic", "4"
+				, "Off", "0"
+				, "Minimal", "1"
+				, "On", "3"
+				, "Pedantic", "4"
 			)
 		}
 	}

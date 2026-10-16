@@ -65,6 +65,7 @@ struct CLinuxTcpInfo
 	uint32 m_RcvOoopack;
 	uint32 m_SndWnd;
 };
+
 static_assert(offsetof(CLinuxTcpInfo, m_MinRtt) == 148 && offsetof(CLinuxTcpInfo, m_DeliveryRate) == 160, "The layout must be the kernel's");
 static_assert(offsetof(CLinuxTcpInfo, m_BusyTime) == 168 && offsetof(CLinuxTcpInfo, m_SndWnd) == 228, "The layout must be the kernel's");
 

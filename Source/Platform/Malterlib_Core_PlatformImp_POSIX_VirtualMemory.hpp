@@ -24,8 +24,8 @@ using namespace NMib;
 #include <sys/param.h>
 
 #ifdef DPlatformFamily_macOS
-	#include <mach/mach.h>
-	#include <mach/mach_vm.h>
+#	include <mach/mach.h>
+#	include <mach/mach_vm.h>
 #endif
 
 #include "Malterlib_Core_PlatformImp_POSIX.h"
@@ -47,17 +47,16 @@ void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment,
 {
 	int Protection = PROT_READ | PROT_WRITE;
 #ifdef DPlatformFamily_macOS
-#ifdef DMibMacOS_UseMadvise
+#	ifdef DMibMacOS_UseMadvise
 	if ((_Flags & EAllocationFlag_NoCommit) && CSystem::ms_PlatformVersion < 10'06'00)
 		Protection = PROT_NONE;
-#else
+#	else
 	if (_Flags & EAllocationFlag_NoCommit)
 		Protection = PROT_NONE;
-#endif
+#	endif
 #endif
 
-	auto fl_ReportError
-		= [&](int ErrNo)
+	auto fl_ReportError = [&](int ErrNo)
 		{
 			if (ErrNo == ENOMEM)
 				DMibErrorMemory("The OS returned an error from mmap: Out of memory (ENOMEM)");
@@ -124,7 +123,7 @@ void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment,
 			{
 				DMibFastCheck(g_bCreatingSystemDone);
 				DMibLock(g_VirtualMapLock);
-				(*g_VirtualMap)[((umint)pAddress)>>12] = _Size;
+				(*g_VirtualMap)[((umint)pAddress) >> 12] = _Size;
 			}
 			return fSetUncommited(pAddress);
 		}
@@ -167,7 +166,7 @@ void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment,
 			{
 				DMibFastCheck(g_bCreatingSystemDone);
 				DMibLock(g_VirtualMapLock);
-				(*g_VirtualMap)[((umint)pStartAddress)>>12] = _Size;
+				(*g_VirtualMap)[((umint)pStartAddress) >> 12] = _Size;
 			}
 			return fSetUncommited(pStartAddress);
 		}
@@ -183,7 +182,7 @@ void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment,
 		{
 			DMibFastCheck(g_bCreatingSystemDone);
 			DMibLock(g_VirtualMapLock);
-			(*g_VirtualMap)[((umint)pAddress)>>12] = _Size;
+			(*g_VirtualMap)[((umint)pAddress) >> 12] = _Size;
 		}
 
 		return fSetUncommited(pAddress);
@@ -197,11 +196,7 @@ void *NSys::fg_Mem_VirtualAlloc(umint &_Size, EAllocationFlag _AllocFlags, ENuma
 
 void NSys::fg_Mem_VirtualProtect(void *_pMem, umint _Size, uaint _Protect)
 {
-	int Protection =
-		( (_Protect & EProtect_Read) ? PROT_READ : 0 )
-		| ( (_Protect & EProtect_Write) ? PROT_WRITE : 0 )
-		| ( (_Protect & EProtect_Exec) ? PROT_EXEC : 0 )
-	;
+	int Protection = ((_Protect & EProtect_Read) ? PROT_READ : 0) | ((_Protect & EProtect_Write) ? PROT_WRITE : 0) | ((_Protect & EProtect_Exec) ? PROT_EXEC : 0);
 
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
@@ -222,17 +217,7 @@ uaint NSys::fg_Mem_VirtualGetProtect(void const *_pMem)
 	vm_region_basic_info_data_64_t Info;
 	mach_msg_type_number_t Count = VM_REGION_BASIC_INFO_COUNT_64;
 	mach_port_t ObjectName = MACH_PORT_NULL;
-	kern_return_t Result = mach_vm_region
-		(
-			mach_task_self()
-			, &Address
-			, &Size
-			, VM_REGION_BASIC_INFO_64
-			, reinterpret_cast<vm_region_info_t>(&Info)
-			, &Count
-			, &ObjectName
-		)
-	;
+	kern_return_t Result = mach_vm_region(mach_task_self(), &Address, &Size, VM_REGION_BASIC_INFO_64, reinterpret_cast<vm_region_info_t>(&Info), &Count, &ObjectName);
 	if (ObjectName != MACH_PORT_NULL)
 		mach_port_deallocate(mach_task_self(), ObjectName);
 
@@ -241,11 +226,7 @@ uaint NSys::fg_Mem_VirtualGetProtect(void const *_pMem)
 	if (QueryAddress < Address || QueryAddress - Address >= Size)
 		return 0;
 
-	return
-		((Info.protection & VM_PROT_READ) ? EProtect_Read : 0)
-		| ((Info.protection & VM_PROT_WRITE) ? EProtect_Write : 0)
-		| ((Info.protection & VM_PROT_EXECUTE) ? EProtect_Exec : 0)
-	;
+	return ((Info.protection & VM_PROT_READ) ? EProtect_Read : 0) | ((Info.protection & VM_PROT_WRITE) ? EProtect_Write : 0) | ((Info.protection & VM_PROT_EXECUTE) ? EProtect_Exec : 0);
 #else
 	NContainer::TCVector<ch8, NMemory::CAllocator_NonTrackedHeap> FileData;
 	try
@@ -294,11 +275,7 @@ uaint NSys::fg_Mem_VirtualGetProtect(void const *_pMem)
 			continue;
 		}
 
-		return
-			((pLineIterator[0] == 'r') ? EProtect_Read : 0)
-			| ((pLineIterator[1] == 'w') ? EProtect_Write : 0)
-			| ((pLineIterator[2] == 'x') ? EProtect_Exec : 0)
-		;
+		return ((pLineIterator[0] == 'r') ? EProtect_Read : 0) | ((pLineIterator[1] == 'w') ? EProtect_Write : 0) | ((pLineIterator[2] == 'x') ? EProtect_Exec : 0);
 
 		pIterator = pLineEnd + 1;
 	}
@@ -316,8 +293,8 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, umint _Size)
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
 
-#if defined(DPlatformFamily_macOS)
-#ifdef DMibMacOS_UseMadvise
+#	if defined(DPlatformFamily_macOS)
+#		ifdef DMibMacOS_UseMadvise
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
 	{
 		if (madvise(pMemStart, pMemEnd - pMemStart, MADV_FREE_REUSE))
@@ -327,7 +304,7 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, umint _Size)
 		}
 		return;
 	}
-#endif
+#		endif
 	if (mprotect(pMemStart, pMemEnd - pMemStart, PROT_READ | PROT_WRITE))
 	{
 		int ErrNo = errno;
@@ -335,23 +312,23 @@ void NSys::fg_Mem_VirtualCommit(void *_pMem, umint _Size)
 			DMibErrorMemory(NPlatform::fg_FormatErrno("mprotect (virtual commit)", ErrNo));
 		}
 	}
-#else
+#	else
 
 	if (madvise(pMemStart, pMemEnd - pMemStart, MADV_WILLNEED))
 	{
 		int ErrNo = errno;
 
-#ifdef DPlatformFamily_macOS
+#		ifdef DPlatformFamily_macOS
 		if (CSystem::ms_PlatformVersion >= 10'06'00 || ErrNo != EINVAL) // This is a bug in macOS...
-#endif
-#ifdef DPlatformFamily_Linux
+#		endif
+#		ifdef DPlatformFamily_Linux
 		if (ErrNo != EBADF) // Seems that this does not work on Linux because it only works on memory mapped files?
-#endif
+#		endif
 		{
 			DMibErrorMemory(NPlatform::fg_FormatErrno("madvise (virtual commit)", ErrNo));
 		}
 	}
-#endif
+#	endif
 #endif
 }
 
@@ -363,8 +340,8 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, umint _Size)
 	auto pMemStart = fg_AlignDown((uint8 *)_pMem, NMib::NSys::NPrivate::g_PageSize);
 	auto pMemEnd = fg_AlignUp((uint8 *)_pMem + _Size, NMib::NSys::NPrivate::g_PageSize);
 
-#if defined(DPlatformFamily_macOS)
-#ifdef DMibMacOS_UseMadvise
+#	if defined(DPlatformFamily_macOS)
+#		ifdef DMibMacOS_UseMadvise
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
 	{
 		if (madvise(pMemStart, pMemEnd - pMemStart, MADV_FREE_REUSABLE))
@@ -374,7 +351,7 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, umint _Size)
 		}
 		return;
 	}
-#endif
+#		endif
 	if (mprotect(pMemStart, pMemEnd - pMemStart, PROT_NONE))
 	{
 		int ErrNo = errno;
@@ -382,25 +359,25 @@ void NSys::fg_Mem_VirtualDecommit(void *_pMem, umint _Size)
 			DMibErrorMemory(NPlatform::fg_FormatErrno("mprotect (virtual decommit)", ErrNo));
 		}
 	}
-#else
+#	else
 
 	int Advice = MADV_FREE;
-#ifdef DPlatformFamily_Linux
+#		ifdef DPlatformFamily_Linux
 	if (NMib::CSystem::ms_PlatformVersion < 4'005'000)
 		Advice = MADV_DONTNEED;
-#endif
+#		endif
 
 	if (madvise(pMemStart, pMemEnd - pMemStart, Advice))
 	{
 		int ErrNo = errno;
-#ifdef DPlatformFamily_macOS
+#		ifdef DPlatformFamily_macOS
 		if (CSystem::ms_PlatformVersion >= 10'06'00 || ErrNo != EINVAL) // This is a bug in macOS...
-#endif
+#		endif
 		{
 			DMibErrorMemory(NPlatform::fg_FormatErrno("madvise (virtual decommit)", ErrNo));
 		}
 	}
-#endif
+#	endif
 #endif
 }
 
@@ -416,7 +393,7 @@ inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, umint _Size)
 		{
 			//DMibDTraceSafe("Sys exists\n", 0);
 			DMibLock(g_VirtualMapLock);
-			auto pSize = (*g_VirtualMap).f_FindEqual(((umint)_pMem)>>12);
+			auto pSize = (*g_VirtualMap).f_FindEqual(((umint)_pMem) >> 12);
 			if (pSize)
 			{
 				//DMibDTraceSafe("pSize found\n", 0);
@@ -430,7 +407,7 @@ inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, umint _Size)
 				else if (!g_bSysDeleted)
 				{
 					DMibFastCheck(g_bCreatingSystemDone);
-					(*g_VirtualMap).f_Remove(((umint)_pMem)>>12);
+					(*g_VirtualMap).f_Remove(((umint)_pMem) >> 12);
 				}
 				return;
 			}
@@ -452,7 +429,7 @@ inline_never void NSys::fg_Mem_VirtualFree(void *_pMem, umint _Size)
 
 void *NSys::fg_Mem_VirtualRealloc(void *_pMem, umint &_Size, umint _OldSize, EAllocationFlag _AllocFlags, ENumaNode _NumaNode)
 {
-    fg_Mem_VirtualFree(_pMem, _OldSize);
+	fg_Mem_VirtualFree(_pMem, _OldSize);
 	return fg_Mem_VirtualAlloc(_Size, _AllocFlags, _NumaNode);
 }
 
@@ -460,18 +437,18 @@ void *NSys::fg_Mem_VirtualResize(void *_pMem, umint &_Size, umint _OldSize, EAll
 {
 	void *pNewMem = fg_Mem_VirtualAlloc(_Size, _AllocFlags, _NumaNode);
 	fg_MemCopy(pNewMem, _pMem, fg_Min(_Size, _OldSize));
-    fg_Mem_VirtualFree(_pMem, _OldSize);
+	fg_Mem_VirtualFree(_pMem, _OldSize);
 	return pNewMem;
 }
 
-umint NSys::fg_Mem_VirtualSize(const void *_pMem)
+umint NSys::fg_Mem_VirtualSize(void const *_pMem)
 {
 	auto *pSys = fg_GetSys_POSIX();
 	if (pSys)
 	{
 		{
 			DMibLock(g_VirtualMapLock);
-			umint *pFind = (*g_VirtualMap).f_FindEqual(((umint)_pMem)>>12);
+			umint *pFind = (*g_VirtualMap).f_FindEqual(((umint)_pMem) >> 12);
 			if (pFind)
 				return *pFind;
 		}
@@ -479,14 +456,14 @@ umint NSys::fg_Mem_VirtualSize(const void *_pMem)
 	return 0;
 }
 
-umint NSys::fg_Mem_VirtualTrySize(const void *_pMem)
+umint NSys::fg_Mem_VirtualTrySize(void const *_pMem)
 {
 	auto *pSys = fg_GetSys_POSIX();
 	if (pSys)
 	{
 		{
 			DMibLock(g_VirtualMapLock);
-			umint *pFind = (*g_VirtualMap).f_FindEqual(((umint)_pMem)>>12);
+			umint *pFind = (*g_VirtualMap).f_FindEqual(((umint)_pMem) >> 12);
 			if (pFind)
 				return *pFind;
 		}

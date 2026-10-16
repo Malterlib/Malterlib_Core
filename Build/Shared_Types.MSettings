@@ -3,10 +3,13 @@
 
 Type
 {
-	CEntity: one_of(string, {
-		Name: string
-		, Properties: {
-			...: any
+	CEntity: one_of(
+		string
+		, {
+			Name: string
+			, Properties: {
+				...: any
+			}
 		}
-	})
+	)
 }

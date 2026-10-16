@@ -6,6 +6,6 @@ namespace NMib
 {
 	namespace NSys
 	{
-		const ch8* g_LinuxProgramIdentifier = DMibStringize(DMalterlibLinuxProgramIdentifier);
+		ch8 const *g_LinuxProgramIdentifier = DMibStringize(DMalterlibLinuxProgramIdentifier);
 	}
 }

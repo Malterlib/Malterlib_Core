@@ -219,7 +219,6 @@ Property
 						}
 					}
 
-
 					Contents =+	`if exist "@(DependencyFile)" "@(Builtin.MToolExe)" CheckDependencies Verbose=true "Directory=@(BuildSystemOutputBasePath)/Binaries"\r\n`\
 								`if not exist "@(UpdatedFile)" (\r\n`\
 								`	echo Updated needed\r\n`\
@@ -232,7 +231,6 @@ Property
 					{
 						&
 						{
-
 							!MalterlibDisableBuildSystemGeneration true
 							ScriptWindowsBat true
 							IsSafeMTool true
@@ -404,4 +402,3 @@ Target.ExtraGroups =+ "~Automatic/Dependencies/Tool_GenerateBuildSystem"
 {
 	!Target:Target.Name "Tool_GenerateBuildSystem"
 }
-

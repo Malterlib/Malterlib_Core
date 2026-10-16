@@ -12,7 +12,6 @@ namespace NMib
 {
 	namespace NPlatform
 	{
-
 		/*¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*\
 			Class:		A helper class for reading and writing to the windows
 						registry
@@ -30,39 +29,55 @@ namespace NMib
 		class CWin32_Registry
 		{
 		public:
-
 			enum ERegRoot
 			{
-				 ERegRoot_LocalMachine
-				,ERegRoot_CurrentUser
-				,ERegRoot_Classes
-				,ERegRoot_Win64_LocalMachine
-				,ERegRoot_Win64_CurrentUser
-				,ERegRoot_Win64_Classes
+				ERegRoot_LocalMachine
+				, ERegRoot_CurrentUser
+				, ERegRoot_Classes
+				, ERegRoot_Win64_LocalMachine
+				, ERegRoot_Win64_CurrentUser
+				, ERegRoot_Win64_Classes
 			};
 
 		private:
 			HKEY mp_hRootKey;
 			ERegRoot mp_RegRoot;
 			NStr::CStr mp_Root;
-			void fp_DeleteKey(const NStr::CStr &_Key);
-			void fp_EnumValues(const NStr::CStr &_Key, NContainer::TCVector<NStr::CStr> &_Values);
-			void fp_EnumKeys(const NStr::CStr &_Key, NContainer::TCVector<NStr::CStr> &_Keys);
+			void fp_DeleteKey(NStr::CStr const &_Key);
+			void fp_EnumValues(NStr::CStr const &_Key, NContainer::TCVector<NStr::CStr> &_Values);
+			void fp_EnumKeys(NStr::CStr const &_Key, NContainer::TCVector<NStr::CStr> &_Keys);
 			uint32 fp_GetAccess(uint32 _Base);
-			void fp_ReadRegKey(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, DWORD *_pDword, NStr::CStr *_pStr, NContainer::CByteVector *_pMemory, NContainer::TCVector<NStr::CStr> *_pMulti);
-			NStr::CStr fp_GetPath(const NStr::CStr &_SubKey);
-			void fp_WriteRegKey(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const DWORD *_pDword, const NStr::CStr *_pStr, const NContainer::CByteVector *_pMemory, const NContainer::TCVector<NStr::CStr> *_pMulti);
+			void fp_ReadRegKey
+				(
+					NStr::CStr const &_SubKey
+					, NStr::CStr const &_KeyValue
+					, DWORD *_pDword
+					, NStr::CStr *_pStr
+					, NContainer::CByteVector *_pMemory
+					, NContainer::TCVector<NStr::CStr> *_pMulti
+				)
+			;
+			NStr::CStr fp_GetPath(NStr::CStr const &_SubKey);
+			void fp_WriteRegKey
+				(
+					NStr::CStr const &_SubKey
+					, NStr::CStr const &_KeyValue
+					, DWORD const *_pDword
+					, NStr::CStr const *_pStr
+					, NContainer::CByteVector const *_pMemory
+					, NContainer::TCVector<NStr::CStr> const *_pMulti
+				)
+			;
 
 		public:
-
-			CWin32_Registry(ERegRoot _Root = ERegRoot_LocalMachine, const NStr::CStr &_RootPath = NStr::CStr());
-			CWin32_Registry(CWin32_Registry const& _Root, const NStr::CStr &_RootPath = NStr::CStr());
+			CWin32_Registry(ERegRoot _Root = ERegRoot_LocalMachine, NStr::CStr const &_RootPath = NStr::CStr());
+			CWin32_Registry(CWin32_Registry const &_Root, NStr::CStr const &_RootPath = NStr::CStr());
 
 			template <typename tf_CReturnType>
-			tf_CReturnType f_Read(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
+			tf_CReturnType f_Read(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
 
 			template <>
-			uint32 f_Read<uint32>(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
+			uint32 f_Read<uint32>(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
 			{
 				DWORD Temp = 0;
 
@@ -72,7 +87,7 @@ namespace NMib
 			}
 
 			template <>
-			NStr::CStr f_Read<NStr::CStr>(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
+			NStr::CStr f_Read<NStr::CStr>(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
 			{
 				NStr::CStr Temp;
 
@@ -82,7 +97,7 @@ namespace NMib
 			}
 
 			template <>
-			NContainer::CByteVector f_Read<NContainer::CByteVector >(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
+			NContainer::CByteVector f_Read<NContainer::CByteVector>(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
 			{
 				NContainer::CByteVector Temp;
 
@@ -92,7 +107,7 @@ namespace NMib
 			}
 
 			template <>
-			NContainer::TCVector<NStr::CStr> f_Read<NContainer::TCVector<NStr::CStr> >(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue)
+			NContainer::TCVector<NStr::CStr> f_Read<NContainer::TCVector<NStr::CStr>>(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
 			{
 				NContainer::TCVector<NStr::CStr> Temp;
 
@@ -101,34 +116,32 @@ namespace NMib
 				return Temp;
 			}
 
-			bool f_KeyExists(const NStr::CStr &_SubKey);
-			bool f_ValueExists(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
+			bool f_KeyExists(NStr::CStr const &_SubKey);
+			bool f_ValueExists(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
 
-			uint32 f_Read_uint32(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
-			NStr::CStr f_Read_Str(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
-			NContainer::TCVector<NStr::CStr> f_Read_StrMulti(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
-			NContainer::CByteVector f_Read_Bin(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
+			uint32 f_Read_uint32(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
+			NStr::CStr f_Read_Str(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
+			NContainer::TCVector<NStr::CStr> f_Read_StrMulti(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
+			NContainer::CByteVector f_Read_Bin(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
 
-			uint32 f_Read_uint32(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, uint32 _Default);
-			NStr::CStr f_Read_Str(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NStr::CStr &_Default);
-			NContainer::TCVector<NStr::CStr> f_Read_StrMulti(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::TCVector<NStr::CStr> &_Default);
-			NContainer::CByteVector f_Read_Bin(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::CByteVector &_Default);
+			uint32 f_Read_uint32(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, uint32 _Default);
+			NStr::CStr f_Read_Str(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, NStr::CStr const &_Default);
+			NContainer::TCVector<NStr::CStr> f_Read_StrMulti(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, NContainer::TCVector<NStr::CStr> const &_Default);
+			NContainer::CByteVector f_Read_Bin(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, NContainer::CByteVector const &_Default);
 
-			bool f_IsBinary(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
+			bool f_IsBinary(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
 
-			void f_DeleteValue(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue);
-			void f_DeleteKey(const NStr::CStr &_SubKey);
+			void f_DeleteValue(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
+			void f_DeleteKey(NStr::CStr const &_SubKey);
 
-			void f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, uint32 _Value);
-			void f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NStr::CStr &_Value);
-			void f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::CByteVector &_Data);
-			void f_Write(const NStr::CStr &_SubKey, const NStr::CStr &_KeyValue, const NContainer::TCVector<NStr::CStr> &_Multi);
+			void f_Write(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, uint32 _Value);
+			void f_Write(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, NStr::CStr const &_Value);
+			void f_Write(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, NContainer::CByteVector const &_Data);
+			void f_Write(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, NContainer::TCVector<NStr::CStr> const &_Multi);
 
-			void f_EnumValues(const NStr::CStr &_SubKey, NContainer::TCVector<NStr::CStr> &_Values);
+			void f_EnumValues(NStr::CStr const &_SubKey, NContainer::TCVector<NStr::CStr> &_Values);
 
-			void f_EnumKeys(const NStr::CStr &_SubKey, NContainer::TCVector<NStr::CStr> &_Keys);
-
-
+			void f_EnumKeys(NStr::CStr const &_SubKey, NContainer::TCVector<NStr::CStr> &_Keys);
 		};
 	}
 }

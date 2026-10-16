@@ -34,12 +34,9 @@ namespace
 
 		switch (_pIo->f_ZeroCopyOverride())
 		{
-		case EUringZeroCopyOverride::mc_Never:
-			return false;
-		case EUringZeroCopyOverride::mc_Always:
-			return true;
-		case EUringZeroCopyOverride::mc_None:
-			break;
+		case EUringZeroCopyOverride::mc_Never: return false;
+		case EUringZeroCopyOverride::mc_Always: return true;
+		case EUringZeroCopyOverride::mc_None: break;
 		}
 
 		if (Peer.ss_family == AF_INET)

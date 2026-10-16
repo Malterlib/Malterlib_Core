@@ -1,24 +1,32 @@
 // Copyright © Unbroken AB
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <Mib/Core/Core>
+// malterlib-format off
 
+#include <Mib/Core/Core>
 
 template <typename ...tf_CType>
 void fg_Test(tf_CType ...p_bTest)
 {
-	[[maybe_unused]] static auto s_fTest = []{};
+	[[maybe_unused]] static auto s_fTest = []
+		{
+		}
+	;
 }
+
 void fg_Test2()
 {
-	[[maybe_unused]] static auto s_fTest = []{};
+	[[maybe_unused]] static auto s_fTest = []
+		{
+		}
+	;
 }
 
 auto g_Test2 = &fg_Test2;
 
 #if 0
 
-void fg_TestOut(int*& _opTest)
+void fg_TestOut(int * &_opTest)
 {
 	auto pTest = nullptr;
 	if (pTest)
@@ -27,69 +35,66 @@ void fg_TestOut(int*& _opTest)
 	m_PendingAtomic;
 }
 
-void fg_TestOut(int*& o_pTest)
+void fg_TestOut(int * &o_pTest)
 {
 	auto pTest = nullptr;
 	if (pTest)
 		o_pTest = pTest;
 }
 
-void fg_TestOut(TCSet<int>& _ocTest)
+void fg_TestOut(TCSet<int> &_ocTest)
 {
 	_ocTest[55];
 	_ocTest[66];
 }
 
-void fg_TestOut(TCSet<int>& o_cTest)
+void fg_TestOut(TCSet<int> &o_cTest)
 {
 	o_cTest[55];
 	o_cTest[66];
 }
 
-void fg_TestOut(TCSet<int>& _oTest)
+void fg_TestOut(TCSet<int> &_oTest)
 {
 	_oTest[55];
 	_oTest[66];
 }
 
-void fg_TestOut(bool& _obTest)
+void fg_TestOut(bool &_obTest)
 {
 	if (x)
 		_obTest = true;
 }
 
-void fg_TestOut(bool& o_bTest)
+void fg_TestOut(bool &o_bTest)
 {
 	if (x)
 		o_bTest = true;
 }
 
-void fg_TestOut(bool& _oTest)
+void fg_TestOut(bool &_oTest)
 {
 	if (x)
 		_oTest = true;
 }
 
-
-
-void (int& _oTest)
-void (bool& _obTest)
-void (TCSet<int>& _ocTest)
-void (umint& _oiTest)
-void (umint& _onTest)
-void (int*& _opTest)
-void (FTest& _ofTest)
-void f_Func(t_CInt& ...p_oTest)
-void f_Func(t_CBool& ...p_obTest)
-void f_Func(t_CContainer& ...p_ocTest)
-void f_Func(t_CIndex& ...p_oiTest)
-void f_Func(t_CNum& ...p_onTest)
-void f_Func(t_CPointer& ...p_opTest)
-void f_Func(t_FFunc& ...p_ofTest)
+void(int& _oTest)
+void(bool& _obTest)
+void(TCSet<int> & _ocTest)
+void(umint& _oiTest)
+void(umint& _onTest)
+void(int*& _opTest)
+void(FTest& _ofTest)
+void f_Func(t_CInt & ...p_oTest)
+void f_Func(t_CBool & ...p_obTest)
+void f_Func(t_CContainer & ...p_ocTest)
+void f_Func(t_CIndex & ...p_oiTest)
+void f_Func(t_CNum & ...p_onTest)
+void f_Func(t_CPointer & ...p_opTest)
+void f_Func(t_FFunc & ...p_ofTest)
 #endif
 
 #if 0
-
 
 template <uint32 t_Test>
 template <typename t_CTest>
@@ -129,9 +134,11 @@ uint32 m_Category_Var5;
 struct CTest
 {
 };
+
 class CTest
 {
 };
+
 using CTestInt = int;
 
 struct ICTest
@@ -140,7 +147,10 @@ struct ICTest
 };
 
 using FTest = void ();
-FTest* fTest = []{};
+FTest *fTest = []
+	{
+	}
+;
 
 template <typename t_CType>
 struct TCTest
@@ -213,8 +223,6 @@ void fg_rTest()
 
 static void fsg_Test()
 static void fsg_rTest()
-
-
 
 #define DTest
 
@@ -711,3 +719,4 @@ void fg_Test();
 template <int ...tfp_Test>
 void fg_Test();
 
+// malterlib-format on

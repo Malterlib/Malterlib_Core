@@ -6,21 +6,22 @@
 #include <Mib/Core/DynamicLibrary>
 #include <Mib/Desktop/DBus>
 
-
 namespace NMib
 {
 	namespace NSys
 	{
-
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLibSecretPasswordManager();
-		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem* _pDBus);
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem *_pDBus);
 
 		struct CNullPasswordManager : public CLinuxPasswordManager
 		{
 			CNullPasswordManager()
-			{}
+			{
+			}
+
 			~CNullPasswordManager()
-			{}
+			{
+			}
 
 			bool f_OK() const override
 			{
@@ -32,27 +33,27 @@ namespace NMib
 				return true;
 			}
 
-			ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location) override
+			ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location) override
 			{
 				return ESecurePassword_Failure;
 			}
 
-			ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure const& _Password) override
+			ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password) override
 			{
 				return ESecurePassword_Failure;
 			}
 
-			ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const& _Key) override
+			ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const &_Key) override
 			{
 				return ESecurePassword_Failure;
 			}
 
-			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure& _oPassword) override
+			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword) override
 			{
 				return ESecurePassword_Failure;
 			}
 
-			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const& _Key) override
+			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key) override
 			{
 				return ESecurePassword_Failure;
 			}
@@ -61,10 +62,9 @@ namespace NMib
 			{
 				return false;
 			}
-
 		};
 
-		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem* _pDBus)
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem *_pDBus)
 		{
 			NStorage::TCUniquePointer<CLinuxPasswordManager> pManager;
 
@@ -78,8 +78,6 @@ namespace NMib
 
 			return pManager;
 		}
-
 	} // Namespace NSys
-
 } // Namespace NMib
 

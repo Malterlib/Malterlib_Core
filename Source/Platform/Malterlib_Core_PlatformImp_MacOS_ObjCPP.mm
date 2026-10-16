@@ -25,7 +25,7 @@
 #include <Mib/Cryptography/UUID>
 
 #if DPlatformVersion >= 1080
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#	pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 using namespace NMib;
@@ -59,21 +59,21 @@ namespace NMib
 		{
 			CAutoReleasePool ARPool;
 
-			NSString *pString = [[NSString alloc] initWithBytes:_Text.f_GetStr() length:NSUInteger(_Text.f_GetLen()) encoding:NSUTF8StringEncoding];
+			NSString *pString = [[NSString alloc] initWithBytes: _Text.f_GetStr() length: NSUInteger(_Text.f_GetLen()) encoding: NSUTF8StringEncoding];
 			if (!pString)
 				return false;
 
 			NSPasteboard *pPasteboard = NSPasteboard.generalPasteboard;
 			[pPasteboard clearContents];
 
-			return [pPasteboard setString:pString forType:NSPasteboardTypeString];
+			return [pPasteboard setString: pString forType: NSPasteboardTypeString];
 		}
 
 		bool fg_Clipboard_GetText(CStr &o_Text)
 		{
 			CAutoReleasePool ARPool;
 
-			NSString *pString = [NSPasteboard.generalPasteboard stringForType:NSPasteboardTypeString];
+			NSString *pString = [NSPasteboard.generalPasteboard stringForType: NSPasteboardTypeString];
 			if (!pString)
 				return false;
 
@@ -93,7 +93,7 @@ namespace NMib
 			if (!pPaths)
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get application support diretory)", errno));
 
-			NSString *pAppSupport = [pPaths objectAtIndex:0];
+			NSString *pAppSupport = [pPaths objectAtIndex: 0];
 			CStr Out = NMib::NPlatform::fg_MacOS_GetString(pAppSupport);
 
 			return Out;
@@ -109,7 +109,7 @@ namespace NMib
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
 			if (!pPaths)
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get application support diretory)", errno));
-			NSString *pAppSupport = [pPaths objectAtIndex:0];
+			NSString *pAppSupport = [pPaths objectAtIndex: 0];
 
 			CStrNonTracked Out = NMib::NPlatform::fg_MacOS_GetStringUntracked(pAppSupport);
 
@@ -126,7 +126,7 @@ namespace NMib
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
 			if (!pPaths)
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get caches diretory)", errno));
-			NSString *pCaches = [pPaths objectAtIndex:0];
+			NSString *pCaches = [pPaths objectAtIndex: 0];
 
 			CStr Out = NMib::NPlatform::fg_MacOS_GetString(pCaches);
 
@@ -144,7 +144,7 @@ namespace NMib
 			if (!pPaths)
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get caches diretory)", errno));
 
-			NSString *pCaches = [pPaths objectAtIndex:0];
+			NSString *pCaches = [pPaths objectAtIndex: 0];
 
 			CStrNonTracked Out = NMib::NPlatform::fg_MacOS_GetStringUntracked(pCaches);
 
@@ -161,7 +161,7 @@ namespace NMib
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
 			if (!pPaths)
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get log diretory)", errno));
-			NSString *pCaches = [pPaths objectAtIndex:0];
+			NSString *pCaches = [pPaths objectAtIndex: 0];
 
 			CStr Out = NMib::NPlatform::fg_MacOS_GetString(pCaches);
 			Out += "/Logs";
@@ -179,14 +179,13 @@ namespace NMib
 			NSArray *pPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
 			if (!pPaths)
 				DMibErrorFile(NPlatform::fg_FormatErrno("NSSearchPathForDirectoriesInDomains (get log diretory)", errno));
-			NSString *pCaches = [pPaths objectAtIndex:0];
+			NSString *pCaches = [pPaths objectAtIndex: 0];
 
 			CStrNonTracked Out = NMib::NPlatform::fg_MacOS_GetStringUntracked(pCaches);
 			Out += "/Logs";
 
 			return Out;
 		}
-
 
 		CStr fg_MacOS_GetUserHomeDirectory()
 		{
@@ -251,43 +250,42 @@ namespace NMib
 
 	namespace NRuntime
 	{
-		void fg_MacOS_NativeHideMainWindow(void * _pNativeWindowHandle)
+		void fg_MacOS_NativeHideMainWindow(void *_pNativeWindowHandle)
 		{
 			CAutoReleasePool ARPool;
 
-			[NSApp hide:(__bridge NSView*)_pNativeWindowHandle];
+			[NSApp hide: (__bridge NSView *)_pNativeWindowHandle];
 		}
 
-		void fg_MacOS_SetBadgeLabel(NStr::CStr const& _Label)
+		void fg_MacOS_SetBadgeLabel(NStr::CStr const &_Label)
 		{
 			CAutoReleasePool ARPool;
 
-			NSString* pLabel = NPlatform::fg_MacOS_GetString(_Label);
-			[[NSApp dockTile] setBadgeLabel:pLabel];
+			NSString *pLabel = NPlatform::fg_MacOS_GetString(_Label);
+			[[NSApp dockTile] setBadgeLabel: pLabel];
 		}
 
 		void fg_MacOS_ClearBadgeLabel()
 		{
 			CAutoReleasePool ARPool;
 
-			[[NSApp dockTile] setBadgeLabel:nil];
+			[[NSApp dockTile] setBadgeLabel: nil];
 		}
 
-		bool fg_MacOS_PlaySound(uint8 const* _pWaveform, umint _nBytes)
+		bool fg_MacOS_PlaySound(uint8 const *_pWaveform, umint _nBytes)
 		{
 			CAutoReleasePool ARPool;
 
-			NSData* pNSWaveform = [NSData dataWithBytes:_pWaveform length:_nBytes];
+			NSData *pNSWaveform = [NSData dataWithBytes: _pWaveform length: _nBytes];
 			if (!pNSWaveform)
 				return false;
 
-			NSSound* pSound = [[NSSound alloc ]initWithData:pNSWaveform];
+			NSSound *pSound = [[NSSound alloc] initWithData: pNSWaveform];
 			if (!pSound)
 				return false;
 
 			return [pSound play];
 		}
-
 	} // Namespace NRuntime
 }
 
@@ -298,10 +296,8 @@ namespace NMib
 		class CMenuContext
 		{
 		public:
-
 			NFunction::TCFunction<void ()> m_fPause;
 			NFunction::TCFunction<void ()> m_fResume;
-
 		};
 
 		static CMenuContext *fsg_GetContext(id self)
@@ -328,7 +324,7 @@ namespace NMib
 
 		static void fsg_QuitDaemon(id self, SEL cmd, id obj)
 		{
-			[NSApp stop:self];
+			[NSApp stop: self];
 		}
 
 		static void fsg_CancelDaemon(id self, SEL cmd, id obj)
@@ -342,7 +338,7 @@ namespace NMib
 
 		inline_never void fg_CancelRunDaemonStatusAppDoCancel(void *)
 		{
-			[NSApp stop:NSApp];
+			[NSApp stop: NSApp];
 			[NSApp abortModal];
 		}
 
@@ -355,13 +351,7 @@ namespace NMib
 					return;
 			}
 
-			dispatch_async_f
-				(
-					dispatch_get_main_queue()
-					, nullptr
-					, &fg_CancelRunDaemonStatusAppDoCancel
-				)
-			;
+			dispatch_async_f(dispatch_get_main_queue(), nullptr, &fg_CancelRunDaemonStatusAppDoCancel);
 		}
 
 		void fg_RunDaemonStatusApp
@@ -369,7 +359,7 @@ namespace NMib
 				NFunction::TCFunction<void ()> const &_fPause
 				, NFunction::TCFunction<void ()> const &_fResume
 				, NStr::CStr const &_DaemonName
-				, NContainer::CByteVector const& _IconData
+				, NContainer::CByteVector const &_IconData
 				, bool _bRunningAsDaemon
 			)
 		{
@@ -399,10 +389,8 @@ namespace NMib
 
 			NStr::CStr ClassName
 				= "MenuContext_"
-				+ NCryptography::CUniversallyUniqueIdentifier(NCryptography::EUniversallyUniqueIdentifierGenerate_Random).f_GetAsString
-				(
-					NCryptography::EUniversallyUniqueIdentifierFormat_AlphaNum
-				)
+				+ NCryptography::CUniversallyUniqueIdentifier(NCryptography::EUniversallyUniqueIdentifierGenerate_Random)
+				.f_GetAsString(NCryptography::EUniversallyUniqueIdentifierFormat_AlphaNum)
 			;
 
 			Class pMenuContextClass = objc_allocateClassPair([NSObject class], ClassName.f_GetStr(), 0);
@@ -433,57 +421,57 @@ namespace NMib
 			void (*fSetIvarVoidStar)(id, Ivar, void *) = (void (*)(id, Ivar, void *))object_setIvar;
 			fSetIvarVoidStar(pMenuContextObject, pContextIvar, &MenuContext);
 
-			NSMenu* pMenu = [[NSMenu alloc] initWithTitle:@""];
+			NSMenu *pMenu = [[NSMenu alloc] initWithTitle: @""];
 
 			{
-				NSMenuItem* pNameItem = [[NSMenuItem alloc] initWithTitle:NPlatform::fg_MacOS_GetString(_DaemonName) action:NULL keyEquivalent:@""];
+				NSMenuItem *pNameItem = [[NSMenuItem alloc] initWithTitle: NPlatform::fg_MacOS_GetString(_DaemonName) action: NULL keyEquivalent: @""];
 				pNameItem.enabled = false;
-				[pMenu addItem:pNameItem];
+				[pMenu addItem: pNameItem];
 			}
 
 			if (!_bRunningAsDaemon)
 			{
 				NStr::CStr ProgramPath = NFile::CFile::fs_GetProgramPath();
-				NSMenuItem* pNameItem = [[NSMenuItem alloc] initWithTitle:NPlatform::fg_MacOS_GetString(ProgramPath) action:NULL keyEquivalent:@""];
+				NSMenuItem *pNameItem = [[NSMenuItem alloc] initWithTitle: NPlatform::fg_MacOS_GetString(ProgramPath) action: NULL keyEquivalent: @""];
 				pNameItem.enabled = false;
-				[pMenu addItem:pNameItem];
+				[pMenu addItem: pNameItem];
 			}
 
-			[pMenu addItem:[NSMenuItem separatorItem]];
+			[pMenu addItem: [NSMenuItem separatorItem]];
 
 			if (bCanPause)
 			{
-				NSMenuItem* pPauseItem = [[NSMenuItem alloc] initWithTitle:@"Pause" action:NULL keyEquivalent:@""];
+				NSMenuItem *pPauseItem = [[NSMenuItem alloc] initWithTitle: @"Pause" action: NULL keyEquivalent: @""];
 				pPauseItem.target = (id)pMenuContextObject;
 				pPauseItem.action = @selector(doPauseDaemon:);
-				[pMenu addItem:pPauseItem];
+				[pMenu addItem: pPauseItem];
 
-				NSMenuItem* pResumeItem = [[NSMenuItem alloc] initWithTitle:@"Resume" action:NULL keyEquivalent:@""];
+				NSMenuItem *pResumeItem = [[NSMenuItem alloc] initWithTitle: @"Resume" action: NULL keyEquivalent: @""];
 				pResumeItem.target = (id)pMenuContextObject;
 				pResumeItem.action = @selector(doResumeDaemon:);
-				[pMenu addItem:pResumeItem];
+				[pMenu addItem: pResumeItem];
 			}
 
-			NSMenuItem* pQuitItem = [[NSMenuItem alloc] initWithTitle: (_bRunningAsDaemon ? @"Restart" : @"Quit") action:NULL keyEquivalent:@""];
+			NSMenuItem *pQuitItem = [[NSMenuItem alloc] initWithTitle: (_bRunningAsDaemon ? @"Restart" : @"Quit") action: NULL keyEquivalent: @""];
 			pQuitItem.target = (id)pMenuContextObject;
 			pQuitItem.action = @selector(doQuitDaemon:);
 
-			[pMenu addItem:pQuitItem];
-			[pMenu addItem:[NSMenuItem separatorItem]];
+			[pMenu addItem: pQuitItem];
+			[pMenu addItem: [NSMenuItem separatorItem]];
 
-			NSMenuItem* pCancelItem = [[NSMenuItem alloc] initWithTitle:@"Cancel" action:NULL keyEquivalent:@""];
+			NSMenuItem *pCancelItem = [[NSMenuItem alloc] initWithTitle: @"Cancel" action: NULL keyEquivalent: @""];
 			pCancelItem.target = (id)pMenuContextObject;
 			pCancelItem.action = @selector(doCancelDaemon:);
-			[pMenu addItem:pCancelItem];
+			[pMenu addItem: pCancelItem];
 
 			auto *pSystemStatusBar = [NSStatusBar systemStatusBar];
 
-			NSStatusItem* pStatusItem = [pSystemStatusBar statusItemWithLength:NSVariableStatusItemLength];
+			NSStatusItem *pStatusItem = [pSystemStatusBar statusItemWithLength: NSVariableStatusItemLength];
 
 			if (!_IconData.f_IsEmpty())
 			{
-				NSData* pImageData = [NSData dataWithBytes:_IconData.f_GetArray() length:_IconData.f_GetLen()];
-				NSImage* pImage = [[NSImage alloc] initWithData:pImageData];
+				NSData *pImageData = [NSData dataWithBytes: _IconData.f_GetArray() length: _IconData.f_GetLen()];
+				NSImage *pImage = [[NSImage alloc] initWithData: pImageData];
 				double ExpectedHeight = pSystemStatusBar.thickness - 2.0;
 				double Scaling = ExpectedHeight / pImage.size.height;
 				pImage.size = {pImage.size.width * Scaling, pImage.size.height * Scaling};
@@ -516,6 +504,7 @@ namespace NMib
 			CInternal()
 			{
 			}
+
 			CFRunLoopRef m_RunLoopRef = nullptr;
 			CFRunLoopSourceRef m_RunLoopSourceRef = nullptr;
 		};
@@ -561,7 +550,6 @@ namespace NMib
 						CFRunLoopSourceSignal(Internal.m_RunLoopSourceRef);
 						CFRunLoopWakeUp(Internal.m_RunLoopRef);
 					}
-
 				}
 				m_pProcessThread.f_Clear();
 			}
@@ -616,10 +604,12 @@ namespace NMib
 			m_bAddedToRunLoop = false;
 			m_bStreamStarted = false;
 		}
+
 		CFileChangeNoticationContext::CNotification::~CNotification()
 		{
 			f_Clear();
 		}
+
 		void CFileChangeNoticationContext::CNotification::f_Clear()
 		{
 			if (m_bStreamStarted)
@@ -669,9 +659,7 @@ namespace NMib
 					continue;
 				CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath.m_UserPath / Snapshot.m_FullFileName);
 				if (_Context.m_DirsToUpdate(Directory).f_WasCreated())
-				{
 					DMibFileChangeNotificationsDebugOut("ADDED DIRECTORY '{}' from '{}' finding '{}'", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
-				}
 			}
 
 			if (auto *pOldSnapshots = _Context.m_OldSnapshotsByNode.f_FindEqual(FileKey))
@@ -682,22 +670,14 @@ namespace NMib
 						continue;
 					CStr Directory = CFile::fs_GetPath(_Context.m_NotificationPath.m_UserPath / Snapshot.m_FullFileName);
 					if (_Context.m_DirsToUpdate(Directory).f_WasCreated())
-					{
 						DMibFileChangeNotificationsDebugOut("ADDED OLD DIRECTORY '{}' from '{}' finding '{}'", Directory, _Snapshot.m_FullFileName, Snapshot.m_FullFileName);
-					}
 				}
 			}
 
 			Snapshots.f_Insert(_Snapshot);
 		}
 
-		void fgr_UpdateFileSnapshot
-			(
-				CUpdateSnapshotContext &_Context
-				, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot
-				, bool _bRecursive
-				, bool _bRecursiveInfoNeeded
-			)
+		void fgr_UpdateFileSnapshot(CUpdateSnapshotContext &_Context, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot, bool _bRecursive, bool _bRecursiveInfoNeeded)
 		{
 			CStr Path = _Context.m_NotificationPath.m_UserPath / _Snapshot.m_FullFileName;
 
@@ -714,8 +694,7 @@ namespace NMib
 			DIR *pDir = opendir(Path);
 			if (pDir)
 			{
-				auto Cleanup
-					= fg_OnScopeExit
+				auto Cleanup = fg_OnScopeExit
 					(
 						[&]()
 						{
@@ -770,20 +749,8 @@ namespace NMib
 
 					fg_LinkFileSnapshot(_Context, Child);
 
-					if
-						(
-							(Stats.st_mode & S_IFDIR)
-							&& !(Stats.st_mode & S_IFLNK)
-							&& Stats.st_dev == _Snapshot.f_GetKey().st_dev
-							&&
-							(
-								_bRecursive
-								|| (_bRecursiveInfoNeeded && bWasCreated)
-							)
-						)
-					{
+					if ((Stats.st_mode & S_IFDIR) && !(Stats.st_mode & S_IFLNK) && Stats.st_dev == _Snapshot.f_GetKey().st_dev && (_bRecursive || (_bRecursiveInfoNeeded && bWasCreated)))
 						fgr_UpdateFileSnapshot(_Context, Child, _bRecursive, _bRecursiveInfoNeeded);
-					}
 				}
 			}
 
@@ -809,9 +776,7 @@ namespace NMib
 		{
 			DMibTrace("{sj*}{}\n", "", (_Depth * 4), _Snapshot.m_FileName);
 			for (auto iChild = _Snapshot.m_Children.f_GetIterator(); iChild; ++iChild)
-			{
 				fgr_TraceSnapshot(*iChild, _Depth + 1);
-			}
 		}
 
 		void CFileChangeNoticationContext::CNotification::f_AddNotification
@@ -929,12 +894,12 @@ namespace NMib
 				if (m_Flags & EFileChange_Write)
 				{
 					if
-						(
-							_NewSnapshot.m_Stats.st_mtimespec.tv_sec != pOldSnapshot->m_Stats.st_mtimespec.tv_sec
-							|| _NewSnapshot.m_Stats.st_mtimespec.tv_nsec != pOldSnapshot->m_Stats.st_mtimespec.tv_nsec
-							|| _NewSnapshot.m_Stats.st_ctimespec.tv_sec != pOldSnapshot->m_Stats.st_ctimespec.tv_sec
-							|| _NewSnapshot.m_Stats.st_ctimespec.tv_nsec != pOldSnapshot->m_Stats.st_ctimespec.tv_nsec
-						)
+					(
+						_NewSnapshot.m_Stats.st_mtimespec.tv_sec != pOldSnapshot->m_Stats.st_mtimespec.tv_sec
+						|| _NewSnapshot.m_Stats.st_mtimespec.tv_nsec != pOldSnapshot->m_Stats.st_mtimespec.tv_nsec
+						|| _NewSnapshot.m_Stats.st_ctimespec.tv_sec != pOldSnapshot->m_Stats.st_ctimespec.tv_sec
+						|| _NewSnapshot.m_Stats.st_ctimespec.tv_nsec != pOldSnapshot->m_Stats.st_ctimespec.tv_nsec
+					)
 					{
 						bModified = true;
 					}
@@ -943,15 +908,14 @@ namespace NMib
 				if (m_Flags & EFileChange_Security)
 				{
 					if
-						(
-							_NewSnapshot.m_Stats.st_mode != pOldSnapshot->m_Stats.st_mode
-							|| _NewSnapshot.m_Stats.st_uid != pOldSnapshot->m_Stats.st_uid
-							|| _NewSnapshot.m_Stats.st_gid != pOldSnapshot->m_Stats.st_gid
-						)
+					(
+						_NewSnapshot.m_Stats.st_mode != pOldSnapshot->m_Stats.st_mode
+						|| _NewSnapshot.m_Stats.st_uid != pOldSnapshot->m_Stats.st_uid
+						|| _NewSnapshot.m_Stats.st_gid != pOldSnapshot->m_Stats.st_gid
+					)
 					{
 						bModified = true;
 					}
-
 				}
 
 				if (bModified)
@@ -960,14 +924,14 @@ namespace NMib
 				if (bIsDir && _bPotentianllyRecursive)
 				{
 					if
-						(
-							_NewSnapshot.m_Stats.st_size != pOldSnapshot->m_Stats.st_size
-							|| _NewSnapshot.m_Stats.st_nlink != pOldSnapshot->m_Stats.st_nlink
-							|| _NewSnapshot.m_Stats.st_mtimespec.tv_sec != pOldSnapshot->m_Stats.st_mtimespec.tv_sec
-							|| _NewSnapshot.m_Stats.st_mtimespec.tv_nsec != pOldSnapshot->m_Stats.st_mtimespec.tv_nsec
-							|| _NewSnapshot.m_Stats.st_ctimespec.tv_sec != pOldSnapshot->m_Stats.st_ctimespec.tv_sec
-							|| _NewSnapshot.m_Stats.st_ctimespec.tv_nsec != pOldSnapshot->m_Stats.st_ctimespec.tv_nsec
-						)
+					(
+						_NewSnapshot.m_Stats.st_size != pOldSnapshot->m_Stats.st_size
+						|| _NewSnapshot.m_Stats.st_nlink != pOldSnapshot->m_Stats.st_nlink
+						|| _NewSnapshot.m_Stats.st_mtimespec.tv_sec != pOldSnapshot->m_Stats.st_mtimespec.tv_sec
+						|| _NewSnapshot.m_Stats.st_mtimespec.tv_nsec != pOldSnapshot->m_Stats.st_mtimespec.tv_nsec
+						|| _NewSnapshot.m_Stats.st_ctimespec.tv_sec != pOldSnapshot->m_Stats.st_ctimespec.tv_sec
+						|| _NewSnapshot.m_Stats.st_ctimespec.tv_nsec != pOldSnapshot->m_Stats.st_ctimespec.tv_nsec
+					)
 					{
 						_bRecursive = true;
 					}
@@ -1183,10 +1147,10 @@ namespace NMib
 				if (NMib::CSystem::ms_PlatformVersion >= 10'15'00)
 				{
 					if
-						(
-							(!(Flags & kFSEventStreamEventFlagItemIsDir) && !(Flags & kFSEventStreamEventFlagMustScanSubDirs))
-							|| (Flags & (kFSEventStreamEventFlagItemRenamed | kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved))
-						)
+					(
+						(!(Flags & kFSEventStreamEventFlagItemIsDir) && !(Flags & kFSEventStreamEventFlagMustScanSubDirs))
+						|| (Flags & (kFSEventStreamEventFlagItemRenamed | kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved))
+					)
 					{
 						if (Path.f_StartsWith(m_NotificationPathCompare.m_ResolvedPath) || Path.f_StartsWith(m_NotificationPathCompare.m_SyntheticPath))
 							Path = CFile::fs_GetPath(Path);
@@ -1376,12 +1340,12 @@ namespace NMib
 				}
 
 				if
-					(
-						!FindChangesContext.m_ChangesFileNameRename.f_IsEmpty()
-						|| !FindChangesContext.m_ChangesFileNameRemove.f_IsEmpty()
-						|| !FindChangesContext.m_ChangesFileNameAdd.f_IsEmpty()
-						|| !FindChangesContext.m_Changes.f_IsEmpty()
-					)
+				(
+					!FindChangesContext.m_ChangesFileNameRename.f_IsEmpty()
+					|| !FindChangesContext.m_ChangesFileNameRemove.f_IsEmpty()
+					|| !FindChangesContext.m_ChangesFileNameAdd.f_IsEmpty()
+					|| !FindChangesContext.m_Changes.f_IsEmpty()
+				)
 				{
 					DMibLock(m_ChangesLock);
 					m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileNameRename));
@@ -1455,17 +1419,19 @@ namespace NMib
 				}
 
 				if
+				(
+					((Flags & kFSEventStreamEventFlagItemModified) && (m_Flags & NFile::EFileChange_Write))
+					||
 					(
-						((Flags & kFSEventStreamEventFlagItemModified) && (m_Flags & NFile::EFileChange_Write))
-						|| ((Flags & (kFSEventStreamEventFlagItemInodeMetaMod | kFSEventStreamEventFlagItemChangeOwner | kFSEventStreamEventFlagItemXattrMod)) && (m_Flags & NFile::EFileChange_Attributes))
+						(Flags & (kFSEventStreamEventFlagItemInodeMetaMod | kFSEventStreamEventFlagItemChangeOwner | kFSEventStreamEventFlagItemXattrMod))
+						&& (m_Flags & NFile::EFileChange_Attributes)
 					)
+				)
 				{
 					f_AddNotification(FindChangesContext, EFileChangeNotification_Modified, RelativePath);
 				}
 				else if ((Flags & (kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRenamed)) == (kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRenamed))
-				{
 					m_RenamedFromQueue.f_Insert({RelativePath, bIsDir});
-				}
 				else if ((Flags & (kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRenamed)) == kFSEventStreamEventFlagItemRenamed)
 				{
 					if (!m_RenamedFromQueue.f_IsEmpty())
@@ -1507,7 +1473,6 @@ namespace NMib
 					if (m_Flags & (NFile::EFileChange_FileSize | NFile::EFileChange_Attributes))
 						f_AddNotification(FindChangesContext, EFileChangeNotification_Modified, CFile::fs_GetPath(RelativePath));
 				}
-
 			}
 
 			//DMibConErrOut("m_RenamedFromQueue {}\n", m_RenamedFromQueue.f_GetLen());
@@ -1527,12 +1492,12 @@ namespace NMib
 			//DMibConErrOut("GENERATED {}\n", FindChangesContext.m_ChangesFileName.f_GetLen() + FindChangesContext.m_Changes.f_GetLen());
 
 			if
-				(
-					!FindChangesContext.m_ChangesFileNameRename.f_IsEmpty()
-					|| !FindChangesContext.m_ChangesFileNameRemove.f_IsEmpty()
-					|| !FindChangesContext.m_ChangesFileNameAdd.f_IsEmpty()
-					|| !FindChangesContext.m_Changes.f_IsEmpty()
-				)
+			(
+				!FindChangesContext.m_ChangesFileNameRename.f_IsEmpty()
+				|| !FindChangesContext.m_ChangesFileNameRemove.f_IsEmpty()
+				|| !FindChangesContext.m_ChangesFileNameAdd.f_IsEmpty()
+				|| !FindChangesContext.m_Changes.f_IsEmpty()
+			)
 			{
 				DMibLock(m_ChangesLock);
 				m_Changes.f_Insert(fg_Move(FindChangesContext.m_ChangesFileNameRename));
@@ -1617,8 +1582,8 @@ namespace NMib
 				, void *clientCallBackInfo
 				, size_t numEvents
 				, void *eventPaths
-				, const FSEventStreamEventFlags eventFlags[]
-				, const FSEventStreamEventId eventIDs[]
+				, FSEventStreamEventFlags const eventFlags[]
+				, FSEventStreamEventId const eventIDs[]
 			)
 		{
 			if (!numEvents)
@@ -1636,6 +1601,7 @@ namespace NMib
 			else
 				pNotification->f_ProcessChanges(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs, false);
 		}
+
 		void CFileChangeNoticationContext::f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch)
 		{
 			auto &Internal = *m_pInternal;
@@ -1697,13 +1663,7 @@ namespace NMib
 							}
 						;
 
-						CFRunLoopSourceRef pRunLoopSource = CFRunLoopSourceCreate
-							(
-								nullptr
-								, 0
-								, &RunLoopSourceContext
-							)
-						;
+						CFRunLoopSourceRef pRunLoopSource = CFRunLoopSourceCreate(nullptr, 0, &RunLoopSourceContext);
 
 						{
 							DMibLock(m_RunLoopLock);
@@ -1738,7 +1698,6 @@ namespace NMib
 			m_bProcessThreadStarted.f_Exchange(true);
 		}
 
-
 		CStr fg_GetRealPathName(int _FD, CStr const &_Fallback)
 		{
 			char RealPath[MAXPATHLEN];
@@ -1764,7 +1723,7 @@ namespace NMib
 			return Ret;
 		}
 
-		void *CFileChangeNoticationContext::f_Open(const CStr &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
+		void *CFileChangeNoticationContext::f_Open(CStr const &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo)
 		{
 			CStr NotificationPath = _FileName;
 			if (NMib::NFile::CFile::fs_FileExists(NotificationPath, EFileAttrib_File))
@@ -1776,12 +1735,11 @@ namespace NMib
 			CStr UserPath = NotificationPath;
 			NotificationPath = fg_GetRealPathName(NotificationPath); // Account for lower/upper case
 
-			CFStringRef WatchPath = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)NotificationPath.f_GetStr(), NotificationPath.f_GetLen(), kCFStringEncodingUTF8, false);
+			CFStringRef WatchPath = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8 const *)NotificationPath.f_GetStr(), NotificationPath.f_GetLen(), kCFStringEncodingUTF8, false);
 			if (!WatchPath)
 				DMibErrorFile("Open file notification: CFStringCreateWithBytes failed");
 
-			auto Cleanup
-				= fg_OnScopeExit
+			auto Cleanup = fg_OnScopeExit
 				(
 					[&]()
 					{
@@ -1790,13 +1748,12 @@ namespace NMib
 				)
 			;
 
-			CFArrayRef PathsToWatch = CFArrayCreate(NULL, (const void **)&WatchPath, 1, NULL);
+			CFArrayRef PathsToWatch = CFArrayCreate(NULL, (void const **)&WatchPath, 1, NULL);
 
 			if (!WatchPath)
 				DMibErrorFile("Open file notification: CFArrayCreate failed");
 
-			auto Cleanup2
-				= fg_OnScopeExit
+			auto Cleanup2 = fg_OnScopeExit
 				(
 					[&]()
 					{

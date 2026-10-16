@@ -68,7 +68,8 @@ static void fg_ApplyUnixSocketPermissions(CUnixAddress const &_UnixAddress)
 
 	auto SDCleanup = g_OnScopeExit / [&]
 		{
-			if (pSD) LocalFree(pSD);
+			if (pSD)
+				LocalFree(pSD);
 		}
 	;
 
@@ -80,7 +81,8 @@ static void fg_ApplyUnixSocketPermissions(CUnixAddress const &_UnixAddress)
 
 	auto DaclCleanup = g_OnScopeExit / [&]
 		{
-			if (pNewDacl) LocalFree(pNewDacl);
+			if (pNewDacl)
+				LocalFree(pNewDacl);
 		}
 	;
 
@@ -108,7 +110,6 @@ CWindowsSocket::CUnixListenState::~CUnixListenState()
 	{
 	}
 }
-
 
 #if DMibConfig_IoDebug_Enable
 // Null when the statistics are off, so a recording site asks and finds the counters in one read
@@ -149,19 +150,16 @@ CWindowsSocketContext::CWindowsSocketContext()
 		WSADATA wsaData;
 		aint err;
 
-		wVersionRequested = MAKEWORD( 2, 2 );
+		wVersionRequested = MAKEWORD(2, 2);
 
-		err = WSAStartup( wVersionRequested, &wsaData );
+		err = WSAStartup(wVersionRequested, &wsaData);
 
-		if ( err != 0 )
-		{
+		if (err != 0)
 			mp_bInitFailed = true;
-		}
 
-		if (LOBYTE( wsaData.wVersion ) != 2 ||
-			HIBYTE( wsaData.wVersion ) != 2 )
+		if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
 		{
-			WSACleanup( );
+			WSACleanup();
 			mp_bInitFailed = true;
 		}
 		else if (err == 0)
@@ -188,49 +186,47 @@ void CWindowsSocketContext::f_CheckFailed()
 		DMibErrorNet("Initziation of WinSock has faild, cannot use net");
 }
 
-
 // *************************************************************************************************************************
 // WindowsSocketContext Address Methods
 // *************************************************************************************************************************
 
-CWindowsAddress* CWindowsSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
+CWindowsAddress *CWindowsSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes)
 {
-	switch(_Type)
+	switch (_Type)
 	{
+	case NMib::NNetwork::ENetAddressType_TCPv4:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
+				return nullptr;
 
-		case NMib::NNetwork::ENetAddressType_TCPv4:
-			{
-				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
-					return nullptr;
+			sockaddr_in NativeAddr;
+			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv4 *)_pData, NativeAddr);
 
-				sockaddr_in NativeAddr;
-				fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv4*)_pData, NativeAddr);
+			return fg_ConstructObject<CWindowsAddress>(NMemory::CDefaultAllocator(), NativeAddr);
+		}
+		break;
 
-				return fg_ConstructObject<CWindowsAddress>(NMemory::CDefaultAllocator(), NativeAddr);
-			}
-			break;
+	case NMib::NNetwork::ENetAddressType_TCPv6:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
+				return nullptr;
 
-		case NMib::NNetwork::ENetAddressType_TCPv6:
-			{
-				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
-					return nullptr;
+			sockaddr_in6 NativeAddr;
+			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv6 *)_pData, NativeAddr);
 
-				sockaddr_in6 NativeAddr;
-				fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv6*)_pData, NativeAddr);
+			return fg_ConstructObject<CWindowsAddress>(NMemory::CDefaultAllocator(), NativeAddr);
+		}
+		break;
 
-				return fg_ConstructObject<CWindowsAddress>(NMemory::CDefaultAllocator(), NativeAddr);
-			}
-			break;
-
-		case NMib::NNetwork::ENetAddressType_Unix:
-		default:
+	case NMib::NNetwork::ENetAddressType_Unix:
+	default:
 		{
 			return nullptr;
 		}
 	}
 }
 
-CWindowsAddress* CWindowsSocketContext::f_DuplicateAddress(CWindowsAddress* _Address)
+CWindowsAddress *CWindowsSocketContext::f_DuplicateAddress(CWindowsAddress *_Address)
 {
 	TCUniquePointer<CWindowsAddress> pNew = fg_Construct(*_Address);
 	return pNew.f_Detach();
@@ -241,49 +237,48 @@ NMib::NNetwork::ENetAddressType CWindowsSocketContext::f_GetAddressType(CWindows
 	return _Address.f_GetType();
 }
 
-bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes)
+bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes)
 {
 	NMib::NNetwork::ENetAddressType Type = _Address.f_GetType();
 
 	if (Type != _ExpectedType)
 		return false;
 
-	switch(Type)
+	switch (Type)
 	{
-
-		case NMib::NNetwork::ENetAddressType_TCPv4:
-			{
-				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
-					return false;
-
-				NMib::NNetwork::CNetAddressTCPv4& Addr = *(NMib::NNetwork::CNetAddressTCPv4*)_opRawData;
-				fp_FromNative(_Address.f_GetTCPv4(), Addr);
-
-				return true;
-			}
-			break;
-
-		case NMib::NNetwork::ENetAddressType_TCPv6:
-			{
-				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
-					return false;
-
-				NMib::NNetwork::CNetAddressTCPv6& Addr = *(NMib::NNetwork::CNetAddressTCPv6*)_opRawData;
-				fp_FromNative(_Address.f_GetTCPv6(), Addr);
-
-				return true;
-			}
-			break;
-
-		case NMib::NNetwork::ENetAddressType_Unix:
-		default:
-			{
+	case NMib::NNetwork::ENetAddressType_TCPv4:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
 				return false;
-			}
+
+			NMib::NNetwork::CNetAddressTCPv4 &Addr = *(NMib::NNetwork::CNetAddressTCPv4 *)_opRawData;
+			fp_FromNative(_Address.f_GetTCPv4(), Addr);
+
+			return true;
+		}
+		break;
+
+	case NMib::NNetwork::ENetAddressType_TCPv6:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
+				return false;
+
+			NMib::NNetwork::CNetAddressTCPv6 &Addr = *(NMib::NNetwork::CNetAddressTCPv6 *)_opRawData;
+			fp_FromNative(_Address.f_GetTCPv6(), Addr);
+
+			return true;
+		}
+		break;
+
+	case NMib::NNetwork::ENetAddressType_Unix:
+	default:
+		{
+			return false;
+		}
 	}
 }
 
-CWindowsAddress* CWindowsSocketContext::f_SetAddressRaw(CWindowsAddress* _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, umint _nDataBytes)
+CWindowsAddress *CWindowsSocketContext::f_SetAddressRaw(CWindowsAddress *_pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
 {
 	if (_Type != _pAddress->f_GetType())
 	{
@@ -293,49 +288,46 @@ CWindowsAddress* CWindowsSocketContext::f_SetAddressRaw(CWindowsAddress* _pAddre
 
 	NMib::NNetwork::ENetAddressType Type = _pAddress->f_GetType();
 
-	switch(Type)
+	switch (Type)
 	{
+	case NMib::NNetwork::ENetAddressType_TCPv4:
+		{
+			NMib::NNetwork::CNetAddressTCPv4 const &Addr = *(NMib::NNetwork::CNetAddressTCPv4 const *)_pRawData;
+			fp_ToNative(Addr, _pAddress->f_GetTCPv4());
 
-		case NMib::NNetwork::ENetAddressType_TCPv4:
-			{
-				NMib::NNetwork::CNetAddressTCPv4 const& Addr = *(NMib::NNetwork::CNetAddressTCPv4 const*)_pRawData;
-				fp_ToNative(Addr, _pAddress->f_GetTCPv4());
+			return _pAddress;
+		}
+		break;
 
-				return _pAddress;
-			}
-			break;
+	case NMib::NNetwork::ENetAddressType_TCPv6:
+		{
+			NMib::NNetwork::CNetAddressTCPv6 const &Addr = *(NMib::NNetwork::CNetAddressTCPv6 const *)_pRawData;
+			fp_ToNative(Addr, _pAddress->f_GetTCPv6());
 
-		case NMib::NNetwork::ENetAddressType_TCPv6:
-			{
-				NMib::NNetwork::CNetAddressTCPv6 const& Addr = *(NMib::NNetwork::CNetAddressTCPv6 const*)_pRawData;
-				fp_ToNative(Addr, _pAddress->f_GetTCPv6());
-
-				return _pAddress;
-			}
-			break;
-		case NMib::NNetwork::ENetAddressType_Unix:
-		default:
-			{
-				f_FreeAddress(_pAddress);
-				return nullptr;
-			}
+			return _pAddress;
+		}
+		break;
+	case NMib::NNetwork::ENetAddressType_Unix:
+	default:
+		{
+			f_FreeAddress(_pAddress);
+			return nullptr;
+		}
 	}
 }
 
-CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType)
+CWindowsAddress *CWindowsSocketContext::f_ResolveAddress(NMib::NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType)
 {
 	return f_ResolveAddress(_Address, _PreferType, true);
 }
 
-CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError)
+CWindowsAddress *CWindowsSocketContext::f_ResolveAddress(NMib::NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError)
 {
 	auto Addresses = f_ResolveAddresses(_Address, _PreferType, _bThrowOnError);
 	auto Cleanup = g_OnScopeExit / [&Addresses]
 		{
 			for (auto Address : Addresses)
-			{
 				NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Explicit(static_cast<CWindowsAddress *>(Address));
-			}
 		}
 	;
 
@@ -347,8 +339,7 @@ CWindowsAddress* CWindowsSocketContext::f_ResolveAddress(const NMib::NStr::CStr 
 
 // Returns an owned local/numeric address, or a hostname and port for DNS. No DNS is performed.
 // Service database and platform-specific address operations may block.
-auto CWindowsSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, NSys::NNetwork::CResolveAddressParameters &o_Parameters, bool _bThrowOnError)
-	-> NSys::NNetwork::CAddress
+auto CWindowsSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, NSys::NNetwork::CResolveAddressParameters &o_Parameters, bool _bThrowOnError) -> NSys::NNetwork::CAddress
 {
 	o_Parameters.m_Host.f_Clear();
 	o_Parameters.m_Port = 0;
@@ -427,8 +418,7 @@ auto CWindowsSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, 
 	return nullptr;
 }
 
-auto CWindowsSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError)
-	-> NContainer::TCVector<NSys::NNetwork::CAddress>
+auto CWindowsSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError) -> NContainer::TCVector<NSys::NNetwork::CAddress>
 {
 	NSys::NNetwork::CResolveAddressParameters Parameters;
 	Parameters.m_PreferType = _PreferType;
@@ -451,7 +441,7 @@ auto CWindowsSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib:
 	AddrHint.ai_socktype = SOCK_STREAM;
 	AddrHint.ai_flags = AI_ADDRCONFIG | AI_NUMERICSERV;
 
-	ADDRINFOW* pAddresses = nullptr;
+	ADDRINFOW *pAddresses = nullptr;
 
 	auto Cleanup = g_OnScopeExit / [&pAddresses]
 		{
@@ -478,9 +468,7 @@ auto CWindowsSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib:
 	if (Result != 0)
 	{
 		if (!_bThrowOnError && Result == EAI_NONAME)
-		{
 			return {};
-		}
 		else
 		{
 			uint32 Error = WSAGetLastError();
@@ -490,15 +478,8 @@ auto CWindowsSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib:
 
 	// Keep the first supported native result first, matching the single-address API.
 	ADDRINFOW *pChosenAddress = pAddresses;
-	while
-	(
-		pChosenAddress
-		&& pChosenAddress->ai_family != AF_INET
-		&& pChosenAddress->ai_family != AF_INET6
-	)
-	{
+	while (pChosenAddress && pChosenAddress->ai_family != AF_INET && pChosenAddress->ai_family != AF_INET6)
 		pChosenAddress = pChosenAddress->ai_next;
-	}
 
 	if (!pChosenAddress)
 	{
@@ -541,14 +522,19 @@ auto CWindowsSocketContext::f_ResolveHost(NStr::CStr const &_Host, NMib::NNetwor
 	return Addresses;
 }
 
-void *CWindowsSocketContext::f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish)
+void *CWindowsSocketContext::f_AsyncResolveAddress_Open
+	(
+		NMib::NStr::CStr const &_Address
+		, ::NMib::NNetwork::ENetAddressType _PreferType
+		, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish
+	)
 {
 	return mp_Resolver.f_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bool CWindowsSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress*& _opAddress, NMib::NStr::CStr &_Error)
+bool CWindowsSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress * &_opAddress, NMib::NStr::CStr &_Error)
 {
-	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress&)_opAddress, _Error);
+	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress &)_opAddress, _Error);
 }
 
 void CWindowsSocketContext::f_AsyncResolveAddress_Close(void *_pResolver)
@@ -561,12 +547,12 @@ void CWindowsSocketContext::f_AsyncResolveAddress_CloseAsync(void *_pResolver, N
 	mp_Resolver.f_CloseAsync(_pResolver, fg_Move(_fOnClosed));
 }
 
-int CWindowsSocketContext::f_CompareAddresses(CWindowsAddress const& _First, CWindowsAddress const& _Second)
+int CWindowsSocketContext::f_CompareAddresses(CWindowsAddress const &_First, CWindowsAddress const &_Second)
 {
 	return _First.f_Compare(_Second);
 }
 
-void CWindowsSocketContext::f_FreeAddress(CWindowsAddress* _pAddress) // It is OK to free a nullptr address.
+void CWindowsSocketContext::f_FreeAddress(CWindowsAddress *_pAddress) // It is OK to free a nullptr address.
 {
 	if (!_pAddress)
 		return;
@@ -580,7 +566,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 
 	CStr AddressStr;
 
-	switch(_Address.f_GetType())
+	switch (_Address.f_GetType())
 	{
 	case ENetAddressType_TCPv4:
 		{
@@ -673,14 +659,13 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 			break;
 		}
 
-		case ENetAddressType_None:
-			break;
-		default:
-			break;
+	case ENetAddressType_None: break;
+	default: break;
 	}
 
 	return AddressStr;
 }
+
 // *************************************************************************************************************************
 // WindowsSocketContext Connection Operations
 // *************************************************************************************************************************
@@ -771,8 +756,7 @@ namespace
 
 	constexpr NSys::EIoLoopEvent fg_IoLoopMaskFromSocketEvents(EWindowsSocketEvent _Events)
 	{
-		return
-			((_Events & EWindowsSocketEvent_Read) ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
+		return ((_Events & EWindowsSocketEvent_Read) ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
 			| ((_Events & EWindowsSocketEvent_Write) ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None)
 		;
 	}
@@ -1030,15 +1014,8 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 	ENetAddressType AddressType = Address.f_GetType();
 	SOCKET hSock = INVALID_SOCKET;
 
-	if
-	(
-		AddressType != ENetAddressType_TCPv4
-		&& AddressType != ENetAddressType_TCPv6
-		&& AddressType != ENetAddressType_Unix
-	)
-	{
+	if (AddressType != ENetAddressType_TCPv4 && AddressType != ENetAddressType_TCPv6 && AddressType != ENetAddressType_Unix)
 		DMibErrorNet("Invalid address type.");
-	}
 
 	int Family = (AddressType == ENetAddressType_TCPv4) ? PF_INET : PF_INET6;
 	if (AddressType == ENetAddressType_Unix)
@@ -1076,7 +1053,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 
 	if (_pBindAddress)
 	{
-		int Result = bind(hSock, (sockaddr const*)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
+		int Result = bind(hSock, (sockaddr const *)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
 		if (Result != 0)
 		{
 			uint32 Error = WSAGetLastError();
@@ -1088,7 +1065,7 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 
 	EWindowsSocketMode Mode = EWindowsSocketMode_Connect;
 
-	int Result = connect(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
+	int Result = connect(hSock, (sockaddr const *)Address.f_Get(), Address.f_GetSockAddrLen());
 	if (Result != 0)
 	{
 		uint32 Error = WSAGetLastError();
@@ -1214,10 +1191,7 @@ void NSys::NNetwork::fg_RequestReadiness(void *_pSocket, bool _bRead, bool _bWri
 {
 	CWindowsSocket *pSocket = (CWindowsSocket *)_pSocket;
 
-	NSys::EIoLoopEvent EventMask =
-		(_bRead ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
-		| (_bWrite ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None)
-	;
+	NSys::EIoLoopEvent EventMask = (_bRead ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None) | (_bWrite ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None);
 	if (EventMask != NSys::EIoLoopEvent::mc_None)
 		fg_RequestSocketReadiness(pSocket, EventMask);
 }
@@ -1352,10 +1326,7 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 	int BufferSize = (int)fg_Min(_nBytes, umint(TCLimitsInt<int>::mc_Max));
 	if
 	(
-		(
-			pSocket->m_nSendBufferBytesToApply == umint(-1)
-			&& setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
-		)
+		(pSocket->m_nSendBufferBytesToApply == umint(-1) && setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_SNDBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0)
 		|| setsockopt(pSocket->m_Socket, SOL_SOCKET, SO_RCVBUF, (char const *)&BufferSize, sizeof(BufferSize)) != 0
 	)
 	{
@@ -1470,11 +1441,11 @@ TCUniquePointer<CWindowsSocket::CUnixListenState> CWindowsSocketContext::fp_Prep
 			pListenState->m_UnixFileName = UnixFilePath;
 			pListenState->m_UnixFile.f_Open(pListenState->m_UnixFileName, EFileOpen_Write | EFileOpen_NoLocalCache | EFileOpen_ShareRead);
 
-			CNetAddressTCPv4 ListenAddress{ {127, 0, 0, 1}, 0 };
+			CNetAddressTCPv4 ListenAddress{{127, 0, 0, 1}, 0};
 
-			NNetwork::CNetAddress NetAddress{ ListenAddress };
+			NNetwork::CNetAddress NetAddress{ListenAddress};
 
-			o_Address = *((CWindowsAddress*)NetAddress.f_AccessRaw());
+			o_Address = *((CWindowsAddress *)NetAddress.f_AccessRaw());
 
 			return pListenState;
 		}
@@ -1497,15 +1468,8 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 
 	ENetAddressType AddressType = Address.f_GetType();
 
-	if
-		(
-			AddressType != ENetAddressType_TCPv4
-			&& AddressType != ENetAddressType_TCPv6
-			&& AddressType != ENetAddressType_Unix
-		)
-	{
+	if (AddressType != ENetAddressType_TCPv4 && AddressType != ENetAddressType_TCPv6 && AddressType != ENetAddressType_Unix)
 		DMibErrorNet("Invalid address type for listening");
-	}
 
 	int Family = (AddressType == ENetAddressType_TCPv4) ? AF_INET : AF_INET6;
 	if (AddressType == ENetAddressType_Unix)
@@ -1525,10 +1489,10 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
-		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));
+		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const *)&bReuse, sizeof(bReuse));
 	}
 
-	int Result = bind(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
+	int Result = bind(hSock, (sockaddr const *)Address.f_Get(), Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1602,15 +1566,8 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 
 	ENetAddressType AddressType = Address.f_GetType();
 
-	if
-		(
-			AddressType != ENetAddressType_TCPv4
-			&& AddressType != ENetAddressType_TCPv6
-			&& AddressType != ENetAddressType_Unix
-		)
-	{
+	if (AddressType != ENetAddressType_TCPv4 && AddressType != ENetAddressType_TCPv6 && AddressType != ENetAddressType_Unix)
 		DMibErrorNet("Invalid address type for listening");
-	}
 
 	int Family = (AddressType == ENetAddressType_TCPv4) ? AF_INET : AF_INET6;
 	if (AddressType == ENetAddressType_Unix)
@@ -1630,10 +1587,10 @@ CWindowsSocket *CWindowsSocketContext::f_ListenDatagram
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
-		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));
+		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const *)&bReuse, sizeof(bReuse));
 	}
 
-	int Result = bind(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
+	int Result = bind(hSock, (sockaddr const *)Address.f_Get(), Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1935,9 +1892,9 @@ umint CWindowsSocketContext::f_Receive(CWindowsSocket *_pSocket, void *_pData, u
 	return Ret;
 }
 
-umint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, const void *_pData, umint _DataLen)
+umint CWindowsSocketContext::f_Send(CWindowsSocket *_pSocket, void const *_pData, umint _DataLen)
 {
-	int Ret = send(_pSocket->m_Socket, (const char *)_pData, (int)fg_Min(_DataLen, umint(INT_MAX)), 0);
+	int Ret = send(_pSocket->m_Socket, (char const *)_pData, (int)fg_Min(_DataLen, umint(INT_MAX)), 0);
 
 #if DMibConfig_IoDebug_Enable
 	fg_SocketIoStatsCountSend(_DataLen, Ret > 0 ? (umint)Ret : 0, Ret == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK);
@@ -2012,7 +1969,7 @@ umint CWindowsSocketContext::f_SendVectored(CWindowsSocket *_pSocket, NMib::NSys
 
 // The ioctl ships in afunix.h in recent Windows SDKs; define it for older SDK headers
 #ifndef SIO_AF_UNIX_GETPEERPID
-	#define SIO_AF_UNIX_GETPEERPID _WSAIOR(IOC_VENDOR, 256)
+#	define SIO_AF_UNIX_GETPEERPID _WSAIOR(IOC_VENDOR, 256)
 #endif
 
 bool CWindowsSocketContext::f_GetProcessIdentity(CWindowsSocket *_pSocket, NMib::NSys::NNetwork::CProcessIdentity &o_LocalIdentity, NMib::NSys::NNetwork::CProcessIdentity &o_PeerIdentity)
@@ -2044,9 +2001,9 @@ bool CWindowsSocketContext::f_GetProcessIdentity(CWindowsSocket *_pSocket, NMib:
 	return true;
 }
 
-umint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAddress const&_Address, const void *_pData, umint _DataLen)
+umint CWindowsSocketContext::f_SendDatagram(CWindowsSocket *_pSocket, CWindowsAddress const &_Address, void const *_pData, umint _DataLen)
 {
-	int Ret = sendto(_pSocket->m_Socket, (const char *)_pData, (int)fg_Min(_DataLen, umint(INT_MAX)), 0, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	int Ret = sendto(_pSocket->m_Socket, (char const *)_pData, (int)fg_Min(_DataLen, umint(INT_MAX)), 0, (sockaddr const *)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Ret == SOCKET_ERROR)
 	{
@@ -2121,7 +2078,7 @@ NStr::CStr CWindowsSocketContext::f_GetCloseReason(CWindowsSocket *_pSocket)
 	return NStr::CStr(NMib::NPlatform::fg_Win32_GetLastErrorStr((uint32)CloseError));
 }
 
-CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+CWindowsSocket *CWindowsSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	DMibRequire(!!_pOSSocket);
 	f_CheckFailed();
@@ -2132,12 +2089,7 @@ CWindowsSocket* CWindowsSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::
 	if (WSAEventSelect(Socket, nullptr, 0) != 0)
 	{
 		uint32 Error = WSAGetLastError();
-		DMibErrorNet
-			(
-				"Could not clear the event selection of an inherited socket handle, windows returned: {}"_f
-				<< NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)
-			)
-		;
+		DMibErrorNet("Could not clear the event selection of an inherited socket handle, windows returned: {}"_f << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 	}
 	fg_SetNonBlocking(Socket, "inherit");
 
@@ -2172,13 +2124,13 @@ struct CWindowsSocket_OldVersion
 		umint m_nLocked;
 		umint m_ThreadID;
 		aint m_nRecurse;
-		void* m_Event;
+		void *m_Event;
 	};
 
 	CLock m_Lock;
-	void* m_pSocket;
-	void* m_pLink0;
-	void* m_pLink1;
+	void *m_pSocket;
+	void *m_pLink0;
+	void *m_pLink1;
 
 	void *m_pReportTo;
 
@@ -2212,7 +2164,7 @@ void *CWindowsSocketContext::f_GiveUpForInherit(CWindowsSocket *_pSocket)
 	}
 	else
 	{
-		CWindowsSocket_OldVersion* pSocket = (CWindowsSocket_OldVersion*)_pSocket;
+		CWindowsSocket_OldVersion *pSocket = (CWindowsSocket_OldVersion *)_pSocket;
 		auto *pSocketHandle = pSocket->m_pSocket;
 		pSocket->m_State |= DMibBit(31);
 		return pSocketHandle;
@@ -2304,7 +2256,7 @@ void *CWindowsSocketContext::f_GetOSSocket(CWindowsSocket *_pSocket)
 	return (void *)_pSocket->m_Socket;
 }
 
-CWindowsAddress* CWindowsSocketContext::f_GetPeerAddress(CWindowsSocket *_pSocket)
+CWindowsAddress *CWindowsSocketContext::f_GetPeerAddress(CWindowsSocket *_pSocket)
 {
 	sockaddr_storage PeerAddr;
 
@@ -2320,17 +2272,17 @@ CWindowsAddress* CWindowsSocketContext::f_GetPeerAddress(CWindowsSocket *_pSocke
 
 	if (PeerAddr.ss_family == AF_INET)
 	{
-		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(*(sockaddr_in const*)&PeerAddr);
+		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(*(sockaddr_in const *)&PeerAddr);
 		return pAddress.f_Detach();
 	}
 	else if (PeerAddr.ss_family == AF_INET6)
 	{
-		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(*(sockaddr_in6 const*)&PeerAddr);
+		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(*(sockaddr_in6 const *)&PeerAddr);
 		return pAddress.f_Detach();
 	}
 	else if (PeerAddr.ss_family == AF_UNIX)
 	{
-		auto UnixAddress = *(sockaddr_un const*)&PeerAddr;
+		auto UnixAddress = *(sockaddr_un const *)&PeerAddr;
 		if (nAddrBytes <= sizeof(UnixAddress.sun_family))
 			UnixAddress.sun_path[0] = 0;
 
@@ -2340,9 +2292,7 @@ CWindowsAddress* CWindowsSocketContext::f_GetPeerAddress(CWindowsSocket *_pSocke
 		return pAddress.f_Detach();
 	}
 	else
-	{
 		return nullptr;
-	}
 }
 
 uint32 CWindowsSocketContext::f_GetListenPort(CWindowsSocket *_pSocket)
@@ -2361,18 +2311,16 @@ uint32 CWindowsSocketContext::f_GetListenPort(CWindowsSocket *_pSocket)
 
 	if (PeerAddr.ss_family == AF_INET)
 	{
-		auto &Addr = *(sockaddr_in const*)&PeerAddr;
+		auto &Addr = *(sockaddr_in const *)&PeerAddr;
 		return ntohs(Addr.sin_port);
 	}
 	else if (PeerAddr.ss_family == AF_INET6)
 	{
-		auto &Addr = *(sockaddr_in6 const*)&PeerAddr;
+		auto &Addr = *(sockaddr_in6 const *)&PeerAddr;
 		return ntohs(Addr.sin6_port);
 	}
 	else
-	{
 		return 0;
-	}
 }
 
 umint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()

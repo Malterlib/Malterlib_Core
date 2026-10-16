@@ -177,7 +177,7 @@ Compile
 		{
 			this.Type "File"
 			Compile.Type undefined
-            this.Identity ~"*.rc"
+			this.Identity ~"*.rc"
 		}
 	}
 
@@ -509,7 +509,6 @@ Compile
 		}
 	}
 
-
 	Type "HTML"
 	{
 		&
@@ -656,8 +655,6 @@ Compile
 			}
 		}
 	}
-
-
 }
 
 Compile
@@ -768,7 +765,8 @@ Compile
 	PreprocessorDefines += [
 		MalterlibUniqueConfig
 		, `DWorkspace_@(Workspace:this.Identity->Replace(' ', ''))`
-		, `DTarget_@(Target:this.Identity->ReplaceChars(' -', ''))`, `DConfig_@(ConfigNoSpace)`
+		, `DTarget_@(Target:this.Identity->ReplaceChars(' -', ''))`
+		, `DConfig_@(ConfigNoSpace)`
 	]
 
 	PreprocessorDefines += "DPConsole"
@@ -1078,7 +1076,7 @@ Property
 					Compile.Type "DynamicLibrary"
 					Compile.Type "XcodeBundle"
 
-	/*
+/*
 					// Text targets all get tab settings
 					Compile.Type "Assembler"
 					Compile.Type "C++"
@@ -1097,7 +1095,7 @@ Property
 					Compile.Type "ObjC"
 					Compile.Type "MacIcon"
 					Compile.Type "None"
-	*/
+*/
 				}
 			}
 		}
@@ -1892,7 +1890,15 @@ Compile
 		}
 	}
 
-	ExtraCompilerFlags += ["-Wno-invalid-offsetof", "-Wno-reorder-ctor", "-Wno-missing-declarations", "-Wno-unused-value", "-Wno-unused-private-field", "-Wno-microsoft-cast", "-Wno-duplicate-decl-specifier"]
+	ExtraCompilerFlags += [
+		"-Wno-invalid-offsetof"
+		, "-Wno-reorder-ctor"
+		, "-Wno-missing-declarations"
+		, "-Wno-unused-value"
+		, "-Wno-unused-private-field"
+		, "-Wno-microsoft-cast"
+		, "-Wno-duplicate-decl-specifier"
+	]
 	{
 		!!Target.PlatformToolset "ClangCL"
 	}
@@ -2000,7 +2006,6 @@ Compile
 			Compile.VerboseTemplateErrors undefined
 		}
 	}
-
 
 	VerboseTemplateErrors false
 	{
@@ -3094,7 +3099,6 @@ Compile
 		}
 	}
 }
-
 
 // ObjC and ObjC++ Settings
 Compile

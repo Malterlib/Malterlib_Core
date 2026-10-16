@@ -15,14 +15,11 @@ namespace NMib
 	template <typename ...tfp_CTag>
 	struct TCTags
 	{
-		template
-		<
-			typename ...tfp_CTags
-			, TCEnableIf<NPrivate::TCAreTagsCompatible<TCTags<tfp_CTags...>, TCTags>::mc_Value> * = nullptr
-		>
+		template <typename ...tfp_CTags, TCEnableIf<NPrivate::TCAreTagsCompatible<TCTags<tfp_CTags...>, TCTags>::mc_Value> * = nullptr>
 		TCTags(TCTags<tfp_CTags...>)
 		{
 		}
+
 		TCTags()
 		{
 		}
@@ -30,7 +27,6 @@ namespace NMib
 
 	namespace NPrivate
 	{
-
 		template <typename t_CBaseTag, typename t_CDefaultTag, typename ...tp_CTags>
 		struct TCEvalTag;
 
@@ -43,15 +39,8 @@ namespace NMib
 		template <typename t_CBaseTag, typename t_CDefaultTag, typename t_CTag0, typename ...tp_CTags>
 		struct TCEvalTag<t_CBaseTag, t_CDefaultTag, t_CTag0, tp_CTags...>
 		{
-			using CType = TCConditional
-				<
-					NMib::NTraits::cIsConvertible<t_CTag0, t_CBaseTag>
-					, t_CTag0
-					, typename TCEvalTag<t_CBaseTag, t_CDefaultTag, tp_CTags...>::CType
-				>
-			;
+			using CType = TCConditional<NMib::NTraits::cIsConvertible<t_CTag0, t_CBaseTag>, t_CTag0, typename TCEvalTag<t_CBaseTag, t_CDefaultTag, tp_CTags...>::CType>;
 		};
-
 
 		template <typename t_COtherTags, typename ...tp_CTags>
 		struct TCEvalTagCompatible;
@@ -129,8 +118,6 @@ namespace NMib
 				>
 			;
 		};
-
-
 	}
 
 	template <typename ...tp_CTags, typename t_CBaseTag, typename t_CDefaultTag>

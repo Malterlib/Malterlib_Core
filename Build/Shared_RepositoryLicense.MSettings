@@ -59,8 +59,7 @@ Property
 			{
 				Path: [".editorconfig", "*/.editorconfig"]
 				, LinePrefix: "# "
-			}
-			, {
+			}, {
 				Path: ["Include/*"]
 				, LinePrefix: "// "
 			}
@@ -124,13 +123,13 @@ Repository
 		, "Resources/*.ico"
 	]
 
-	License #<ReuseAnnotations> =+ [{
+	License #<ReuseAnnotations> =+ [
+		{
 			Path: ["Build/VisualStudio/VSNASM/*"]
 			, CopyrightText: "ShiftMediaProject"
 			, LicenseIdentifier: "LGPL-2.1-or-later"
 			, Precedence: "override"
-		}
-		, {
+		}, {
 			Path: ["LLVMGenerated/*", "Scripts/InitTemplate/*"]
 			, CopyrightText: "LLVM Project"
 			, LicenseIdentifier: "Apache-2.0 WITH LLVM-exception"

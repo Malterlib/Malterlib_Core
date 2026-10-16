@@ -23,46 +23,45 @@
 #if (defined(DCompiler_MSVC) || defined(DCompiler_clang_cl)) && defined(DArchitecture_arm64)
 // ARM64
 
-#define DMibHelperArm64SysReg(op0, op1, crn, crm, op2) \
-        ( ((op0 & 1) << 14) | \
-          ((op1 & 7) << 11) | \
-          ((crn & 15) << 7) | \
-          ((crm & 15) << 3) | \
-          ((op2 & 7) << 0) )
+#	define DMibHelperArm64SysReg(op0, op1, crn, crm, op2) \
+		( ((op0 & 1) << 14) | \
+		  ((op1 & 7) << 11) | \
+		  ((crn & 15) << 7) | \
+		  ((crm & 15) << 3) | \
+		  ((op2 & 7) << 0) )
 
-#define DMibHelperArm64SysReg_OP1(_Reg_) (((_Reg_) >> 11) & 7)
-#define DMibHelperArm64SysReg_CRN(_Reg_) (((_Reg_) >> 7) & 15)
-#define DMibHelperArm64SysReg_CRM(_Reg_) (((_Reg_) >> 3) & 15)
-#define DMibHelperArm64SysReg_OP2(_Reg_) ((_Reg_) & 7)
+#	define DMibHelperArm64SysReg_OP1(_Reg_) (((_Reg_) >> 11) & 7)
+#	define DMibHelperArm64SysReg_CRN(_Reg_) (((_Reg_) >> 7) & 15)
+#	define DMibHelperArm64SysReg_CRM(_Reg_) (((_Reg_) >> 3) & 15)
+#	define DMibHelperArm64SysReg_OP2(_Reg_) ((_Reg_) & 7)
 
-#define DMibArm64_CNTVCT_EL0        DMibHelperArm64SysReg(3,3,14, 0,2)  // Generic Timer counter register
-#define DMibArm64_CNTFRQ_EL0        DMibHelperArm64SysReg(3,3,14, 0,0)  // Generic Timer counter frequency register
-#define DMibArm64_PMCCNTR_EL0       DMibHelperArm64SysReg(3,3, 9,13,0)  // Cycle Count Register [CP15_PMCCNTR]
-#define DMibArm64_PMSELR_EL0        DMibHelperArm64SysReg(3,3, 9,12,5)  // Event Counter Selection Register [CP15_PMSELR]
-#define DMibArm64_PMXEVCNTR_EL0     DMibHelperArm64SysReg(3,3, 9,13,2)  // Event Count Register [CP15_PMXEVCNTR]
-#define DMibArm64_PMXEVCNTRn_EL0(n) DMibHelperArm64SysReg(3,3,14, 8+((n)/8), (n)%8)    // Direct Event Count Register [n/a]
-#define DMibArm64_TPIDR_EL0         DMibHelperArm64SysReg(3,3,13, 0,2)  // Thread ID Register, User Read/Write [CP15_TPIDRURW]
-#define DMibArm64_TPIDRRO_EL0       DMibHelperArm64SysReg(3,3,13, 0,3)  // Thread ID Register, User Read Only [CP15_TPIDRURO]
-#define DMibArm64_TPIDR_EL1         DMibHelperArm64SysReg(3,0,13, 0,4)  // Thread ID Register, Privileged Only [CP15_TPIDRPRW]
+#	define DMibArm64_CNTVCT_EL0        DMibHelperArm64SysReg(3,3,14, 0,2)  // Generic Timer counter register
+#	define DMibArm64_CNTFRQ_EL0        DMibHelperArm64SysReg(3,3,14, 0,0)  // Generic Timer counter frequency register
+#	define DMibArm64_PMCCNTR_EL0       DMibHelperArm64SysReg(3,3, 9,13,0)  // Cycle Count Register [CP15_PMCCNTR]
+#	define DMibArm64_PMSELR_EL0        DMibHelperArm64SysReg(3,3, 9,12,5)  // Event Counter Selection Register [CP15_PMSELR]
+#	define DMibArm64_PMXEVCNTR_EL0     DMibHelperArm64SysReg(3,3, 9,13,2)  // Event Count Register [CP15_PMXEVCNTR]
+#	define DMibArm64_PMXEVCNTRn_EL0(n) DMibHelperArm64SysReg(3,3,14, 8+((n)/8), (n)%8)    // Direct Event Count Register [n/a]
+#	define DMibArm64_TPIDR_EL0         DMibHelperArm64SysReg(3,3,13, 0,2)  // Thread ID Register, User Read/Write [CP15_TPIDRURW]
+#	define DMibArm64_TPIDRRO_EL0       DMibHelperArm64SysReg(3,3,13, 0,3)  // Thread ID Register, User Read Only [CP15_TPIDRURO]
+#	define DMibArm64_TPIDR_EL1         DMibHelperArm64SysReg(3,0,13, 0,4)  // Thread ID Register, Privileged Only [CP15_TPIDRPRW]
 
 #endif
 
-
 // Memory intrinsics
 #if defined(DPlatformFamily_macOS)
-	extern "C" void	*memcpy(void *, const void *, __SIZE_TYPE__);
-	extern "C" int memcmp(const void *__s1, const void *__s2, size_t __n);
-	extern "C" void	*memset(void *, int, __SIZE_TYPE__);
-	extern "C" void	*memmove(void *, const void *, __SIZE_TYPE__);
+extern "C" void *memcpy(void *, void const *, __SIZE_TYPE__);
+extern "C" int memcmp(void const *__s1, void const *__s2, size_t __n);
+extern "C" void *memset(void *, int, __SIZE_TYPE__);
+extern "C" void *memmove(void *, void const *, __SIZE_TYPE__);
 #	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
 #	define DMibPIntrinsicMemCmp(d_Left, d_Right, d_Size) memcmp(d_Left, d_Right, d_Size)
 #	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
 #	define DMibPIntrinsicMemMove(d_Dest, d_Source, d_Size) memmove(d_Dest, d_Source, d_Size)
 #elif defined(DPlatformFamily_Linux)
-	extern "C" void *memcpy(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) throw () __attribute__ ((__nonnull__ (1, 2)));
-	extern "C" int memcmp (__const void *__s1, __const void *__s2, size_t __n) throw () __attribute_pure__ __nonnull ((1, 2));
-	extern "C" void *memset(void *__s, int __c, __SIZE_TYPE__ __n) throw () __attribute__ ((__nonnull__ (1)));
-	extern "C" void *memmove(void *__dest, __const void *__src, __SIZE_TYPE__ __n) throw () __attribute__((__nonnull__ (1, 2)));
+extern "C" void *memcpy(void * __restrict __dest, __const void * __restrict __src, __SIZE_TYPE__ __n) throw() __attribute__((__nonnull__(1, 2)));
+extern "C" int memcmp(__const void *__s1, __const void *__s2, size_t __n) throw() __attribute_pure__ __nonnull((1, 2));
+extern "C" void *memset(void *__s, int __c, __SIZE_TYPE__ __n) throw() __attribute__((__nonnull__(1)));
+extern "C" void *memmove(void *__dest, __const void *__src, __SIZE_TYPE__ __n) throw() __attribute__((__nonnull__(1, 2)));
 #	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
 #	define DMibPIntrinsicMemCmp(d_Left, d_Right, d_Size) memcmp(d_Left, d_Right, d_Size)
 #	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
@@ -120,71 +119,71 @@
 
 // Highest bit set
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-	namespace NMib
+namespace NMib
+{
+	namespace NPlatformHelpers
 	{
-		namespace NPlatformHelpers
+		constexpr inline_always int fg_GetHighestBitSet32(uint32 _Value)
 		{
-			constexpr inline_always int fg_GetHighestBitSet32(uint32 _Value)
-			{
-				if (!_Value)
-					return -1;
-				return 31 - __builtin_clz(_Value);
-			}
-
-			constexpr inline_always int fg_GetHighestBitSet32NoZero(uint32 _Value)
-			{
-				return 31 - __builtin_clz(_Value);
-			}
-
-			constexpr inline_always int fg_GetLowestBitSet32(uint32 _Value)
-			{
-				if (!_Value)
-					return -1;
-				return __builtin_ctz(_Value);
-			}
-
-			constexpr inline_always int fg_GetLowestBitSet32NoZero(uint32 _Value)
-			{
-				return __builtin_ctz(_Value);
-			}
-
-#			if DMibPPtrBits >= 64
-				constexpr inline_always int fg_GetHighestBitSet64(uint64 _Value)
-				{
-					if (!_Value)
-						return -1;
-					return 63 - __builtin_clzll(_Value);
-				}
-
-				constexpr inline_always int fg_GetHighestBitSet64NoZero(uint64 _Value)
-				{
-					return 63 - __builtin_clzll(_Value);
-				}
-
-				constexpr inline_always int fg_GetLowestBitSet64(uint64 _Value)
-				{
-					if (!_Value)
-						return -1;
-					return __builtin_ctzll(_Value);
-				}
-
-				constexpr inline_always int fg_GetLowestBitSet64NoZero(uint64 _Value)
-				{
-					return __builtin_ctzll(_Value);
-				}
-#			endif
+			if (!_Value)
+				return -1;
+			return 31 - __builtin_clz(_Value);
 		}
+
+		constexpr inline_always int fg_GetHighestBitSet32NoZero(uint32 _Value)
+		{
+			return 31 - __builtin_clz(_Value);
+		}
+
+		constexpr inline_always int fg_GetLowestBitSet32(uint32 _Value)
+		{
+			if (!_Value)
+				return -1;
+			return __builtin_ctz(_Value);
+		}
+
+		constexpr inline_always int fg_GetLowestBitSet32NoZero(uint32 _Value)
+		{
+			return __builtin_ctz(_Value);
+		}
+
+#	if DMibPPtrBits >= 64
+		constexpr inline_always int fg_GetHighestBitSet64(uint64 _Value)
+		{
+			if (!_Value)
+				return -1;
+			return 63 - __builtin_clzll(_Value);
+		}
+
+		constexpr inline_always int fg_GetHighestBitSet64NoZero(uint64 _Value)
+		{
+			return 63 - __builtin_clzll(_Value);
+		}
+
+		constexpr inline_always int fg_GetLowestBitSet64(uint64 _Value)
+		{
+			if (!_Value)
+				return -1;
+			return __builtin_ctzll(_Value);
+		}
+
+		constexpr inline_always int fg_GetLowestBitSet64NoZero(uint64 _Value)
+		{
+			return __builtin_ctzll(_Value);
+		}
+#	endif
 	}
+}
 
 #	define DMibPGetHighestBitSet32(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet32(d_Value)
 #	define DMibPGetHighestBitSet32NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet32NoZero(d_Value)
 #	define DMibPGetLowestBitSet32(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet32(d_Value)
 #	define DMibPGetLowestBitSet32NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet32NoZero(d_Value)
 #	if DMibPPtrBits >= 64
-	#	define DMibPGetHighestBitSet64(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet64(d_Value)
-	#	define DMibPGetHighestBitSet64NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet64NoZero(d_Value)
-	#	define DMibPGetLowestBitSet64(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet64(d_Value)
-	#	define DMibPGetLowestBitSet64NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet64NoZero(d_Value)
+#		define DMibPGetHighestBitSet64(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet64(d_Value)
+#		define DMibPGetHighestBitSet64NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetHighestBitSet64NoZero(d_Value)
+#		define DMibPGetLowestBitSet64(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet64(d_Value)
+#		define DMibPGetLowestBitSet64NoZero(d_Value) ::NMib::NPlatformHelpers::fg_GetLowestBitSet64NoZero(d_Value)
 #	endif
 
 #elif defined(DCompiler_MSVC)
@@ -193,76 +192,76 @@
 #	if DMibPPtrBits >= 64
 #		pragma intrinsic(_BitScanReverse64)
 #	endif
-	namespace NMib
+namespace NMib
+{
+	namespace NPlatformHelpers
 	{
-		namespace NPlatformHelpers
+		inline_always int fg_GetHighestBitSet32(uint32 _Value)
 		{
-			inline_always int fg_GetHighestBitSet32(uint32 _Value)
-			{
-				if (!_Value)
-					return -1;
-				unsigned long Ret;
-				_BitScanReverse(&Ret, _Value);
-				return Ret;
-			}
-
-			inline_always int fg_GetHighestBitSet32NoZero(uint32 _Value)
-			{
-				unsigned long Ret;
-				_BitScanReverse(&Ret, _Value);
-				return Ret;
-			}
-
-			inline_always int fg_GetLowestBitSet32(uint32 _Value)
-			{
-				if (!_Value)
-					return -1;
-				unsigned long Ret;
-				_BitScanForward(&Ret, _Value);
-				return Ret;
-			}
-
-			inline_always int fg_GetLowestBitSet32NoZero(uint32 _Value)
-			{
-				unsigned long Ret;
-				_BitScanForward(&Ret, _Value);
-				return Ret;
-			}
-#			if DMibPPtrBits >= 64
-				inline_always int fg_GetHighestBitSet64(uint64 _Value)
-				{
-					if (!_Value)
-						return -1;
-					unsigned long Ret;
-					_BitScanReverse64(&Ret, _Value);
-					return Ret;
-				}
-
-				inline_always int fg_GetHighestBitSet64NoZero(uint64 _Value)
-				{
-					unsigned long Ret;
-					_BitScanReverse64(&Ret, _Value);
-					return Ret;
-				}
-
-				inline_always int fg_GetLowestBitSet64(uint64 _Value)
-				{
-					if (!_Value)
-						return -1;
-					unsigned long Ret;
-					_BitScanForward64(&Ret, _Value);
-					return Ret;
-				}
-
-				inline_always int fg_GetLowestBitSet64NoZero(uint64 _Value)
-				{
-					unsigned long Ret;
-					_BitScanForward64(&Ret, _Value);
-					return Ret;
-				}
-#			endif
+			if (!_Value)
+				return -1;
+			unsigned long Ret;
+			_BitScanReverse(&Ret, _Value);
+			return Ret;
 		}
+
+		inline_always int fg_GetHighestBitSet32NoZero(uint32 _Value)
+		{
+			unsigned long Ret;
+			_BitScanReverse(&Ret, _Value);
+			return Ret;
+		}
+
+		inline_always int fg_GetLowestBitSet32(uint32 _Value)
+		{
+			if (!_Value)
+				return -1;
+			unsigned long Ret;
+			_BitScanForward(&Ret, _Value);
+			return Ret;
+		}
+
+		inline_always int fg_GetLowestBitSet32NoZero(uint32 _Value)
+		{
+			unsigned long Ret;
+			_BitScanForward(&Ret, _Value);
+			return Ret;
+		}
+#	if DMibPPtrBits >= 64
+		inline_always int fg_GetHighestBitSet64(uint64 _Value)
+		{
+			if (!_Value)
+				return -1;
+			unsigned long Ret;
+			_BitScanReverse64(&Ret, _Value);
+			return Ret;
+		}
+
+		inline_always int fg_GetHighestBitSet64NoZero(uint64 _Value)
+		{
+			unsigned long Ret;
+			_BitScanReverse64(&Ret, _Value);
+			return Ret;
+		}
+
+		inline_always int fg_GetLowestBitSet64(uint64 _Value)
+		{
+			if (!_Value)
+				return -1;
+			unsigned long Ret;
+			_BitScanForward64(&Ret, _Value);
+			return Ret;
+		}
+
+		inline_always int fg_GetLowestBitSet64NoZero(uint64 _Value)
+		{
+			unsigned long Ret;
+			_BitScanForward64(&Ret, _Value);
+			return Ret;
+		}
+#	endif
 	}
+}
 
 #	define DMibPGetHighestBitSet32(d_Value) NMib::NPlatformHelpers::fg_GetHighestBitSet32(d_Value)
 #	define DMibPGetHighestBitSet32NoZero(d_Value) NMib::NPlatformHelpers::fg_GetHighestBitSet32NoZero(d_Value)
@@ -308,7 +307,6 @@
 #	error "Implement this"
 #endif
 
-
 // Byte swap
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define DMibPByteSwap16(d_Value) __builtin_bswap16(d_Value);
@@ -324,7 +322,6 @@
 #else
 #	error "Implement this"
 #endif
-
 
 // Rotate
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
@@ -376,7 +373,7 @@ namespace NMib
 {
 	void fg_OutputDebugBreakFileLine(ch8 const *_pFile, int _Line);
 }
-#	define DMibPDebugBreak { ::NMib::fg_OutputDebugBreakFileLine(DMibPFile, DMibPLine); DMibPDebugBreakImpl; }
+#	define DMibPDebugBreak do { ::NMib::fg_OutputDebugBreakFileLine(DMibPFile, DMibPLine); DMibPDebugBreakImpl; } while (false)
 #else
 #	define DMibPDebugBreak DMibPDebugBreakImpl
 #endif

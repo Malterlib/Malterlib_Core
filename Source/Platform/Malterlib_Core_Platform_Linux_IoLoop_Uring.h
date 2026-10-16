@@ -36,7 +36,7 @@ struct CUringRegistration : public NMib::NSys::CIoLoopRegistration
 
 	CUringSendRing *m_pSendRing = nullptr; // Local peers publish send ranges in FIFO order; remote peers retain zero-copy operations.
 
-	CUringRecvRing *m_pRecvRing = nullptr; // Standing multishot receive; delivered buffers retain their own lifetime and backpressure charge.
+	CUringRecvRing *m_pRecvRing = nullptr;               // Standing multishot receive; delivered buffers retain their own lifetime and backpressure charge.
 	NMib::NFunction::TCFunctionMovable<void (NMib::NSys::CIoStreamSegment &&_Segment)> m_fStreamSink;
 	umint m_nStreamBufferBytes = 0;
 	NMib::NSys::CIoStreamSegment m_PendingStreamSegment; // Merge adjacent arrivals; flush before nonadjacent data, terminal delivery, and reap completion.
@@ -49,11 +49,11 @@ struct CUringRegistration : public NMib::NSys::CIoLoopRegistration
 	EClosePoll m_ClosePoll = EClosePoll::mc_NotArmed;
 	bool m_bReadPollArmed = false;
 	bool m_bWritePollArmed = false;
-	bool m_bCompletionModeRead = false; // Cancel readiness independently per direction when completion I/O takes over.
+	bool m_bCompletionModeRead = false;   // Cancel readiness independently per direction when completion I/O takes over.
 	bool m_bCompletionModeWrite = false;
 	bool m_bDeregistering = false;
 	bool m_bStreamSegmentPending = false; // True exactly while linked in the stream flush queue.
-	bool m_bStreamArmed = false; // Counts one obligation until terminal CQE; never rearm after terminal sink delivery.
+	bool m_bStreamArmed = false;          // Counts one obligation until terminal CQE; never rearm after terminal sink delivery.
 	bool m_bStreamNeedsRearm = false;
 	bool m_bStreamEnded = false;
 
@@ -61,8 +61,8 @@ struct CUringRegistration : public NMib::NSys::CIoLoopRegistration
 	NMib::NAtomic::TCAtomic<bool> m_bZeroCopyEligible = false;
 
 	bool m_bSendPublishStalled = false; // Defer all later sends until ring room returns, preserving publish order.
-	int32 m_SendError = 0; // Failed sends permanently stop publication; the ring may still contain released buffer addresses.
-	umint m_nNotifyPending = 0; // Per-registration occupancy used to exclude self-queued latency samples.
+	int32 m_SendError = 0;              // Failed sends permanently stop publication; the ring may still contain released buffer addresses.
+	umint m_nNotifyPending = 0;         // Per-registration occupancy used to exclude self-queued latency samples.
 };
 
 // Kernel obligations retain registrations until reaped; descriptors stay open until deregistration acknowledgement.

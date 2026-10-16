@@ -36,6 +36,7 @@ public:
 	class CWatch
 	{
 		friend class CFileChangeNotificationContext;
+
 	public:
 		CWatch(int _Descriptor, CStr const &_Path, CWatch *_pParent)
 			: mp_Descriptor(_Descriptor)
@@ -186,7 +187,7 @@ public:
 			TCMap<CStr, bool> m_ChildFilesSnapshot;
 		};
 
-		CNotification(CFileChangeNotificationContext* _pNotificationContext, CStr const &_BasePath);
+		CNotification(CFileChangeNotificationContext *_pNotificationContext, CStr const &_BasePath);
 		~CNotification();
 
 		void f_Clear();
@@ -194,7 +195,7 @@ public:
 		CWatch *f_WatchPath(CWatch *_pParentWatch, CStr const &_Path, bool _bThrow);
 		void f_RegisterChange(CFindChangesContext &o_Context, CStr const &_Path, EFileChangeNotification _Notification, CStr const &_RenameFrom = {});
 		void f_OnEvent(CFindChangesContext &o_Context, inotify_event const &_Event, TCSharedPointer<CWatch> const &_pWatch);
-		void f_OnAdded(CFindChangesContext &o_Context, CStr const &_Path, bool _bIsDir, CWatch* _pWatch);
+		void f_OnAdded(CFindChangesContext &o_Context, CStr const &_Path, bool _bIsDir, CWatch *_pWatch);
 		void f_OnRemovedFromRename(CFindChangesContext &o_Context, CPendingRename const &_PendingRename);
 
 		DMibListLinkDS_Link(CNotification, m_Link);
@@ -236,6 +237,7 @@ public:
 		NTime::CStopwatch m_Stopwatch{true};
 		bool m_bIsDirectory = false;
 	};
+
 	TCMap<uint32, CPendingRename> m_PendingRenames;
 	umint m_nPendingNotificationRenames = 0;
 
@@ -244,6 +246,7 @@ public:
 		NTime::CStopwatch m_Stopwatch{true};
 		TCMap<CStr, bool> m_ChildFiles;
 	};
+
 	TCMap<CStr, CPendingReParent> m_PendingReParents;
 
 	int f_Inotify_AddWatch(CStr const &_Path);
@@ -253,7 +256,7 @@ public:
 	CWatch &f_LinkWatch(int _WatchDescriptor, CStr const &_Path, CNotification *_pNotification, CWatch *_pParentWatch);
 	void f_UnlinkWatch(TCSharedPointer<CWatch> _pWatch, CNotification *_pNotification, bool _bDescriptorInvalid);
 
-	void *f_Open(const CStr &_FileName, EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo);
+	void *f_Open(CStr const &_FileName, EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo);
 	void f_Close(void *_pNotification);
 	bool f_Changed(void *_pNotification);
 	bool f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, CStr &_PathFrom);
@@ -261,7 +264,7 @@ public:
 	int m_NotifyDescriptor;
 	int m_PollDescriptor;
 
-	int m_WakeupPipe[2];		// Used to wake the epoll thread up.
+	int m_WakeupPipe[2]; // Used to wake the epoll thread up.
 
 	TCMap<int, TCSharedPointer<CWatch>> m_Watches;
 	DMibListLinkDS_List(CNotification, m_Link) m_Notifications;

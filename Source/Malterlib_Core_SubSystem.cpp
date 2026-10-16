@@ -128,7 +128,7 @@ namespace NMib
 	void CSystem::fp_SubSystem_PreDestroyThreadSpecific()
 	{
 		DMibLock(mp_SubSystemsLock);
-		for (auto iSubSystem = mp_SubSystems.f_GetIterator();iSubSystem;)
+		for (auto iSubSystem = mp_SubSystems.f_GetIterator(); iSubSystem;)
 		{
 			auto &SubSystem = *iSubSystem;
 			++iSubSystem;
@@ -140,7 +140,7 @@ namespace NMib
 	void CSystem::fp_SubSystem_DestroyThreadSpecific()
 	{
 		DMibLock(mp_SubSystemsLock);
-		for (auto iSubSystem = mp_SubSystems.f_GetIterator();iSubSystem;)
+		for (auto iSubSystem = mp_SubSystems.f_GetIterator(); iSubSystem;)
 		{
 			auto &SubSystem = *iSubSystem;
 			++iSubSystem;
@@ -152,7 +152,7 @@ namespace NMib
 	void CSystem::fp_SubSystem_DestroyThreadLocal()
 	{
 		DMibLock(mp_SubSystemsLock);
-		for (auto iSubSystem = mp_SubSystems.f_GetIterator();iSubSystem;)
+		for (auto iSubSystem = mp_SubSystems.f_GetIterator(); iSubSystem;)
 		{
 			auto &SubSystem = *iSubSystem;
 			++iSubSystem;

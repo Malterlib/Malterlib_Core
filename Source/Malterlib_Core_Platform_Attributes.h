@@ -198,7 +198,6 @@
 #	error "Implement this"
 #endif
 
-
 // Alignment
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define DMibPAlignType(_Type, _Alignment) __attribute__ ((aligned (_Alignment))) _Type

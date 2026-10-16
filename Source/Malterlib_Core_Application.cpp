@@ -26,17 +26,14 @@ namespace NMib
 
 	CApplication::CApplication()
 	{
-
 	}
 
 	CApplication::~CApplication()
 	{
-
 	}
 
 	void CApplication::f_Exit(aint _ExitCode)
 	{
-
 	}
 
 	NStr::CStr CApplication::f_CommandLineParameters()
@@ -53,8 +50,6 @@ namespace NMib
 	{
 		return fg_GetSys()->f_CommandLineParameter(_iIndex);
 	}
-
-
 
 	aint CSystem::f_RunApplication()
 	{
