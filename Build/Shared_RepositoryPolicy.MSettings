@@ -413,6 +413,7 @@ Repository
 					Type: "Team"
 					, Value: "pushers"
 				}
+				, (Repository.LfsReleaseStore ? [] : [{Type: "User", Value: "johanstenson"}])...
 			]
 			, RequiresConversationResolution: true
 			, RequiresLinearHistory: true
