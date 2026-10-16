@@ -202,7 +202,7 @@ Generate a workspace before building: `./mib generate [WorkspaceName]`
 - Coroutine parameters are the exception: follow coroutine safety requirements and pass values as needed so data survives suspension.
 
 #### Unused Parameters
-- Never silence an unused parameter with a `(void)_Param;` cast. Leave the parameter unnamed in C++; in C keep the name and leave it alone. The builds do not warn on unused parameters, only on unused variables.
+- Never silence an unused parameter with a `(void)_Param;` cast. Keep the parameter named and leave it unused: the name tells what the parameter is. The builds do not warn on unused parameters, only on unused variables.
 
 #### Logical Unit Spacing
 - Separate distinct logical units with one blank line: setup, validation, operation execution, result capture, assertions, cleanup, and terminal `return`/`co_return`.
@@ -378,6 +378,7 @@ document, not an automatic requirement to split the code.
 - `t_`: Template parameter
 - `tp_`: Template parameter pack
 - `d_`: Macro parameter
+- Name every parameter, also an unused one and the parameters of function types, like `TCFunction<void (CStr _Message)>`. Only the `int` that tells a postfix `operator ++` or `--` apart stays unnamed.
 
 #### Variable Prefixes
 - No prefix for local variables
