@@ -653,7 +653,8 @@ function BootstrapCore()
 		ResolveCoreGitHash "Malterlib/Core" "$GitHash"
 		GitHash="$ResolvedCoreGitHash"
 
-		if [[ "$MalterlibRepositoryHardReset" == "true" ]] || (git -C Malterlib/Core branch -r --contains HEAD > /dev/null && [ -z "$(git -C Malterlib/Core status --porcelain || echo no)" ]); then
+		if [[ "$MalterlibRepositoryHardReset" == "true" ]] \
+			|| (git -C Malterlib/Core branch -r --contains HEAD > /dev/null && [ -z "$(git -C Malterlib/Core status --porcelain || echo no)" ]); then
 			SyncCoreCheckoutAtHash "Malterlib/Core" "$GitHash"
 		else
 			OutputError "Malterlib/Core is not clean, please resolve the situation before trying to upgrade"
@@ -807,7 +808,8 @@ while true; do
 			MalterlibBinariesPath="$MalterlibBootstrapBinariesPath"
 			export MalterlibBinariesDir="$MalterlibBinariesPath"
 			source "$MalterlibScriptPath/Malterlib/Core/Scripts/Detect.sh"
-		elif ! [ -e "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version" ] || [[ `cat "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version"` != "$BootstrapVersion" ]]; then
+		elif ! [ -e "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version" ] \
+			|| [[ `cat "$MalterlibScriptPath/$MalterlibBinariesPath/Bootstrap.version"` != "$BootstrapVersion" ]]; then
 			MalterlibBinariesPath="$MalterlibBootstrapBinariesPath"
 			export MalterlibBinariesDir="$MalterlibBinariesPath"
 			source "$MalterlibScriptPath/Malterlib/Core/Scripts/Detect.sh"

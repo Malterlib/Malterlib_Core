@@ -10,13 +10,13 @@ namespace NMib
 		namespace NPlatform
 		{
 			template <typename tf_CRet, typename tf_CSrc>
-			tf_CRet fg_StrToWindows(const tf_CSrc &_Str);
+			tf_CRet fg_StrToWindows(tf_CSrc const &_Str);
 
-			CStr fg_StrFromWindowsAnsi(const CAnsiStr &_Str);
-			CWStr fg_StrToWindows(const CStr &_Str);
-			CWStr fg_StrToWindows(const CWStr &_Str);
-			CWStr fg_StrToWindows(const CUStr &_Str);
-			CStr fg_StrFromWindows(const CWStr &_Str);
+			CStr fg_StrFromWindowsAnsi(CAnsiStr const &_Str);
+			CWStr fg_StrToWindows(CStr const &_Str);
+			CWStr fg_StrToWindows(CWStr const &_Str);
+			CWStr fg_StrToWindows(CUStr const &_Str);
+			CStr fg_StrFromWindows(CWStr const &_Str);
 
 			static constexpr umint gc_MaxWindowsEnvVarLength = 32768;
 		}

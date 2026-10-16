@@ -31,7 +31,7 @@ namespace
 	{
 		int m_StartupNice = 0;
 		int m_GrantNice = gc_LinuxNiceNotGranted; // The best nice a thread may raise itself to
-		int m_RealTimePriorityLimit = 0; // 0 when real-time policies are refused
+		int m_RealTimePriorityLimit = 0;          // 0 when real-time policies are refused
 	};
 
 	constinit CLinuxPriorityLimits g_LinuxPriorityLimits;
@@ -274,9 +274,9 @@ namespace
 	struct CLinuxThreadSpawnState
 	{
 		NThread::CLowLevelLockAggregate m_Lock = {DAggregateInit};
-		NThread::CEventAutoResetAggregate m_RequestAdded = {DAggregateInit}; // Wakes the helper
+		NThread::CEventAutoResetAggregate m_RequestAdded = {DAggregateInit};   // Wakes the helper
 		NThread::CEventAutoResetAggregate m_ServerWakeDone = {DAggregateInit}; // Wakes an unregistering server
-		NThread::CEventAggregate m_HelperCreateDone = {DAggregateInit}; // Wakes threads that found the helper half created
+		NThread::CEventAggregate m_HelperCreateDone = {DAggregateInit};        // Wakes threads that found the helper half created
 
 		DMibListLinkDSA_List(CLinuxThreadSpawnRequest, m_Link) m_Requests = {DAggregateInit};
 
@@ -288,7 +288,7 @@ namespace
 
 		void *m_pHelperThread = nullptr;
 		umint m_HelperThreadUID = 0;
-		pid_t m_HelperThreadID = 0; // 0 while the helper is being created
+		pid_t m_HelperThreadID = 0;   // 0 while the helper is being created
 		umint m_HelperCreatorUID = 0;
 		NAtomic::TCAtomic<bool> m_bHelperCreated{false};
 		bool m_bHelperWanted = false; // Asked for while a server was registered or threads could not start
@@ -429,7 +429,7 @@ namespace
 		State.m_HelperCreateDone.f_SetSignaled();
 	}
 
-	bool fg_Linux_RouteThreadCreate(CThreadCreateParams const &_Params, void *&o_pThread, umint &o_ThreadID)
+	bool fg_Linux_RouteThreadCreate(CThreadCreateParams const &_Params, void * &o_pThread, umint &o_ThreadID)
 	{
 		if (_Params.m_Priority == EExecutionPriority_Default || fg_Linux_IsPriorityGranted())
 			return false;

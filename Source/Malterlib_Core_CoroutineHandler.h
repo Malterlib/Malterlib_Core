@@ -74,9 +74,9 @@ namespace NMib
 		bool m_bValid = true;
 	};
 
-	#define DMibThreadLocalScopeDebugMember NMib::CDebugThreadLocalScope m_DebugThreadLocalScope
+#	define DMibThreadLocalScopeDebugMember NMib::CDebugThreadLocalScope m_DebugThreadLocalScope
 #else
-	#define DMibThreadLocalScopeDebugMember
+#	define DMibThreadLocalScopeDebugMember
 #endif
 
 	struct CCrossActorCallStateScope : public CCoroutineThreadLocalHandler

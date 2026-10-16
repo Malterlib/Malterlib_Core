@@ -115,7 +115,6 @@ Property
 					}
 					MalterlibExportSupportQuotes true
 				}
-
 			}
 			CompileFlags_PreprocessorDefines_Template += `-D@(_Define) `
 			{
@@ -158,10 +157,7 @@ Property
 			LDFlags_EntityPath: string = "Workspace:*.Target:Dll_Malterlib_Export_Dll.Target:Dll_Malterlib_Export_Dll"
 			LDFlags_Contents: string = ""
 			LDFlags_Contents fg_RecursiveStringArrayToCommandLine(
-				Concat(
-					GetProperty(&Target.LDFlagsFirst, LDFlags_EntityPath, {Compile.Type: "C++"})
-					, GetProperty(&Target.LDFlags, LDFlags_EntityPath, {Compile.Type: "C++"})
-				)
+				Concat(GetProperty(&Target.LDFlagsFirst, LDFlags_EntityPath, {Compile.Type: "C++"}), GetProperty(&Target.LDFlags, LDFlags_EntityPath, {Compile.Type: "C++"}))
 			)
 			{
 				|
@@ -172,11 +168,7 @@ Property
 			}
 
 			LinkWithLibraries_Contents: string?
-			LinkWithLibraries_Contents fg_RecursiveStringArrayToCommandLine(
-				Concat(
-					GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"})
-				)
-			)
+			LinkWithLibraries_Contents fg_RecursiveStringArrayToCommandLine(Concat(GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"})))
 			{
 				!GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"}) undefined
 			}
@@ -209,10 +201,7 @@ Property
 			LDFlags_EntityPath: string = "Workspace:*.Target:Exe_Malterlib_Export_Exe.Target:Exe_Malterlib_Export_Exe"
 			LDFlags_Contents: string = ""
 			LDFlags_Contents fg_RecursiveStringArrayToCommandLine(
-				Concat(
-					GetProperty(&Target.LDFlagsFirst, LDFlags_EntityPath, {Compile.Type: "C++"})
-					, GetProperty(&Target.LDFlags, LDFlags_EntityPath, {Compile.Type: "C++"})
-				)
+				Concat(GetProperty(&Target.LDFlagsFirst, LDFlags_EntityPath, {Compile.Type: "C++"}), GetProperty(&Target.LDFlags, LDFlags_EntityPath, {Compile.Type: "C++"}))
 			)
 			{
 				|
@@ -223,11 +212,7 @@ Property
 			}
 
 			LinkWithLibraries_Contents: string?
-			LinkWithLibraries_Contents fg_RecursiveStringArrayToCommandLine(
-				Concat(
-					GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"})
-				)
-			)
+			LinkWithLibraries_Contents fg_RecursiveStringArrayToCommandLine(Concat(GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"})))
 			{
 				!GetProperty(&Target.LinkWithLibraries, LDFlags_EntityPath, {Compile.Type: "C++"}) undefined
 			}
@@ -355,4 +340,3 @@ Property
 	%Target "Exe_Malterlib_Export_NoExe"
 	%Target "Dll_Malterlib_Export_Dll"
 }
-

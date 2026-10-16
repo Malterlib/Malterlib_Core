@@ -7,7 +7,7 @@
 
 namespace NMib
 {
-	static constexpr uint32 fg_JenkinsHash(const char * const _pString)
+	static constexpr uint32 fg_JenkinsHash(char const * const _pString)
 	{
 		uint32 Hash = 0;
 		for (char const *pStr = _pString; *pStr; ++pStr)
@@ -22,7 +22,7 @@ namespace NMib
 		return Hash;
 	}
 
-	static constexpr uint32 fg_JenkinsHash(const char * const _pString, umint _Len, char _ExtraChar)
+	static constexpr uint32 fg_JenkinsHash(char const * const _pString, umint _Len, char _ExtraChar)
 	{
 		uint32 Hash = 0;
 		for (char const *pStr = _pString; pStr < _pString + _Len; ++pStr)
@@ -43,7 +43,7 @@ namespace NMib
 		return Hash;
 	}
 
-	static consteval void fg_ParseUntilCallingConvention(char const *&_pParse)
+	static consteval void fg_ParseUntilCallingConvention(char const * &_pParse)
 	{
 		umint nStart = 0;
 
@@ -110,7 +110,7 @@ namespace NMib
 		}
 	}
 
-	static consteval void fg_ParseTypeIdentifierConstexpr(char const *&_pParse)
+	static consteval void fg_ParseTypeIdentifierConstexpr(char const * &_pParse)
 	{
 		umint nStart = 0;
 
@@ -168,19 +168,13 @@ namespace NMib
 		while (*pParse)
 		{
 			if (*pParse == '(')
-			{
 				++nStartParen;
-			}
 			else if (*pParse == ')')
-			{
 				--nStartParen;
-			}
 			else if (!nStartParen)
 			{
 				if (*pParse == '<')
-				{
 					++nStart;
-				}
 				else if (*pParse == '>')
 				{
 					if (nStart == 0)
@@ -210,9 +204,7 @@ namespace NMib
 		while (*pParse)
 		{
 			if (*pParse == '[')
-			{
 				++nStart;
-			}
 			else if (*pParse == ']')
 			{
 				if (--nStart == 0)
@@ -251,20 +243,14 @@ namespace NMib
 			if (nStartParen)
 			{
 				if (*pParse == '(')
-				{
 					++nStartParen;
-				}
 				else if (*pParse == ')')
-				{
 					--nStartParen;
-				}
 			}
 			else
 			{
 				if (*pParse == '<')
-				{
 					++nStart;
-				}
 				else if (*pParse == '>')
 				{
 					if (nStart == 0)
@@ -302,9 +288,7 @@ namespace NMib
 			while (*pParse)
 			{
 				if (*pParse == '[')
-				{
 					++nStart;
-				}
 				else if (*pParse == ']')
 				{
 					if (--nStart == 0)
@@ -315,8 +299,11 @@ namespace NMib
 			NStr::fg_StrCopy(s_ReturnName, pStartType, (pParse - pStartType) + 1);
 			s_bInit.f_Store(2, NAtomic::gc_MemoryOrder_Release);
 		}
-		else while (s_bInit.f_Load(NAtomic::gc_MemoryOrder_Acquire) < 2)
-			NSys::fg_Thread_SmallestSleep();
+		else
+		{
+			while (s_bInit.f_Load(NAtomic::gc_MemoryOrder_Acquire) < 2)
+				NSys::fg_Thread_SmallestSleep();
+		}
 
 		return s_ReturnName;
 
@@ -405,7 +392,7 @@ namespace NMib
 
 #else
 
-	static consteval uint32 fg_GetMemberFunctionNameHash(const char * const _pFunctionName)
+	static consteval uint32 fg_GetMemberFunctionNameHash(char const * const _pFunctionName)
 	{
 		char const *pStartName = nullptr;
 		char const *pEnd = _pFunctionName + NStr::fg_StrLen(_pFunctionName) - 1;
@@ -445,7 +432,7 @@ namespace NMib
 #endif
 
 	template <typename tf_CClass>
-	static consteval uint32 fg_GetMemberFunctionHash(const char * const _pFunctionName)
+	static consteval uint32 fg_GetMemberFunctionHash(char const * const _pFunctionName)
 	{
 		auto ClassTypeName = fg_GetTypeNameConstExpr<tf_CClass>();
 		return fg_JenkinsHash(_pFunctionName) ^ fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len, ']');

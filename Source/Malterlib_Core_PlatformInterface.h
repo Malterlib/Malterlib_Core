@@ -11,15 +11,15 @@ namespace NMib
 {
 	enum EAllocationFlag : uint32
 	{
-		EAllocationFlag_None = 0
-		, EAllocationFlag_NoCommit = DMibBit(1)
-		, EAllocationFlag_LargePages = DMibBit(2)
-		, EAllocationFlag_LocationUp = DMibBit(3)
-		, EAllocationFlag_LocationDown = DMibBit(4)
-		, EAllocationFlag_WillFreeWithSize = DMibBit(5)
-		, EAllocationFlag_MainHeap = DMibBit(6)
+		EAllocationFlag_None                 = 0
+		, EAllocationFlag_NoCommit           = DMibBit(1)
+		, EAllocationFlag_LargePages         = DMibBit(2)
+		, EAllocationFlag_LocationUp         = DMibBit(3)
+		, EAllocationFlag_LocationDown       = DMibBit(4)
+		, EAllocationFlag_WillFreeWithSize   = DMibBit(5)
+		, EAllocationFlag_MainHeap           = DMibBit(6)
 		, EAllocationFlag_NonTrackedMainHeap = DMibBit(7)
-		, EAllocationFlag_SizeNotNeeded = DMibBit(8)
+		, EAllocationFlag_SizeNotNeeded      = DMibBit(8)
 	};
 
 	enum ENumaNode : int32
@@ -30,9 +30,9 @@ namespace NMib
 	class CStackTraceInfo
 	{
 	public:
-		const ch8 *m_pFunctionName;
-		const ch8 *m_pModuleName;
-		const ch8 *m_pSourceFileName;
+		ch8 const *m_pFunctionName;
+		ch8 const *m_pModuleName;
+		ch8 const *m_pSourceFileName;
 		aint m_SourceLine;
 		void *m_pContext; // Opaque pointer used by system implementation
 	};
@@ -40,32 +40,32 @@ namespace NMib
 	enum EProcessorArchitecture
 	{
 		EProcessorArchitecture_Unknown = 0
-		,EProcessorArchitecture_x86
-		,EProcessorArchitecture_x86_64
-		,EProcessorArchitecture_Itanium
-		,EProcessorArchitecture_armv5
-		,EProcessorArchitecture_armv6
-		,EProcessorArchitecture_armv7
-		,EProcessorArchitecture_armv8
-		,EProcessorArchitecture_ppc32
-		,EProcessorArchitecture_ppc64
-		,EProcessorArchitecture_le32 // General purpose 32 bit little endian
-		,EProcessorArchitecture_arm64
-		,EProcessorArchitecture_arm64e
+		, EProcessorArchitecture_x86
+		, EProcessorArchitecture_x86_64
+		, EProcessorArchitecture_Itanium
+		, EProcessorArchitecture_armv5
+		, EProcessorArchitecture_armv6
+		, EProcessorArchitecture_armv7
+		, EProcessorArchitecture_armv8
+		, EProcessorArchitecture_ppc32
+		, EProcessorArchitecture_ppc64
+		, EProcessorArchitecture_le32 // General purpose 32 bit little endian
+		, EProcessorArchitecture_arm64
+		, EProcessorArchitecture_arm64e
 	};
 
 	enum EProcessorFeature
 	{
-		EProcessorFeature_None		= 0
-		,EProcessorFeature_MMX		= DMibBit(0)	// x86, x86_64 (SIMD)
-		,EProcessorFeature_SSE		= DMibBit(1)	// x86, x86_64 (SIMD)
-		,EProcessorFeature_SSE2		= DMibBit(2)	// x86, x86_64 (SIMD)
-		,EProcessorFeature_SSE3		= DMibBit(3)	// x86, x86_64 (SIMD)
-		,EProcessorFeature_SSSE3	= DMibBit(4)	// x86, x86_64 (SIMD)
-		,EProcessorFeature_SSE4_1	= DMibBit(5)	// x86, x86_64 (SIMD)
-		,EProcessorFeature_SSE4_2	= DMibBit(6)	// x86, x86_64 (SIMD)
-		,EProcessorFeature_NEON		= DMibBit(7)	// Armv7+ (SIMD)
-		,EProcessorFeature_VFP		= DMibBit(8)	// Arm* (FPU)
+		EProcessorFeature_None     = 0
+		, EProcessorFeature_MMX    = DMibBit(0) // x86, x86_64 (SIMD)
+		, EProcessorFeature_SSE    = DMibBit(1) // x86, x86_64 (SIMD)
+		, EProcessorFeature_SSE2   = DMibBit(2) // x86, x86_64 (SIMD)
+		, EProcessorFeature_SSE3   = DMibBit(3) // x86, x86_64 (SIMD)
+		, EProcessorFeature_SSSE3  = DMibBit(4) // x86, x86_64 (SIMD)
+		, EProcessorFeature_SSE4_1 = DMibBit(5) // x86, x86_64 (SIMD)
+		, EProcessorFeature_SSE4_2 = DMibBit(6) // x86, x86_64 (SIMD)
+		, EProcessorFeature_NEON   = DMibBit(7) // Armv7+ (SIMD)
+		, EProcessorFeature_VFP    = DMibBit(8) // Arm* (FPU)
 
 		/* Other interesting flags to add:
 				AVX
@@ -74,8 +74,7 @@ namespace NMib
 				3DNow(?)
 		*/
 
-		,EProcessorFeature_HyperVisor = DMibBit(15)	// CPU is running in a hypervisor (emu)
-
+		, EProcessorFeature_HyperVisor = DMibBit(15) // CPU is running in a hypervisor (emu)
 	};
 
 	struct CProcessorInfo
@@ -93,7 +92,7 @@ namespace NMib
 	struct CVirtualMachineInfo
 	{
 		bool m_bDetected;
-		ch8 const* m_pName;
+		ch8 const *m_pName;
 	};
 
 	namespace NSys
@@ -104,8 +103,8 @@ namespace NMib
 		|___________________________________________________________________________________________________|
 		\***************************************************************************************************/
 
-		void fg_HW_GetProcessorInfo(CProcessorInfo& _Info);
-		bool fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo& _Info);
+		void fg_HW_GetProcessorInfo(CProcessorInfo &_Info);
+		bool fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo &_Info);
 		bool fg_HW_MeetsMinimumRequirements();
 
 		/***************************************************************************************************\
@@ -136,8 +135,8 @@ namespace NMib
 		uaint fg_Mem_VirtualGetProtect(void const *_pMem);
 		void fg_Mem_VirtualDecommit(void *_pMem, umint _Size);
 		void fg_Mem_VirtualFree(void *_pMem, umint _Size);
-		umint fg_Mem_VirtualSize(const void *_pMem);
-		umint fg_Mem_VirtualTrySize(const void *_pMem);
+		umint fg_Mem_VirtualSize(void const *_pMem);
+		umint fg_Mem_VirtualTrySize(void const *_pMem);
 		fp32 fg_Mem_VirtualOverhead(void const *_pMem);
 		constexpr bool fg_Mem_VirtualCanCommit();
 		bool fg_Mem_VirtualCanProtect();
@@ -180,10 +179,10 @@ namespace NMib
 
 		umint fg_Thread_AllocLocal();
 
-	#ifdef DMibPSupportThreadLocalDestructors
-		umint fg_Thread_AllocLocalWithDestructor(void (_pDestructor)(void*));
+#ifdef DMibPSupportThreadLocalDestructors
+		umint fg_Thread_AllocLocalWithDestructor(void(_pDestructor)(void *));
 		void fg_Thread_FreeLocalWithDestructor(umint _iStorage);
-	#endif
+#endif
 
 		void fg_Thread_FreeLocal(umint _iStorage);
 		void fg_Thread_SetLocal(umint _iStorage, void *_pData);
@@ -203,12 +202,12 @@ namespace NMib
 		void *fg_Thread_GetLocalAlwaysSetFast(umint _iStorage);
 		void *fg_Thread_GetLocalAlwaysSetFast(umint _ThreadID, umint _iStorage);
 
-	#if defined(DPlatformFamily_Linux) || (defined(DPlatformFamily_macOS) && defined(DMibConfig_PThreadIntrospection))
+#if defined(DPlatformFamily_Linux) || (defined(DPlatformFamily_macOS) && defined(DMibConfig_PThreadIntrospection))
 		bool fg_Thread_GetLocalsDestroyed(umint _iPerThread);
-	#endif
-	#ifdef DPlatformFamily_Linux
+#endif
+#ifdef DPlatformFamily_Linux
 		void fg_Thread_SetLocalsDestroyed(bool _bDestroyed);
-	#endif
+#endif
 
 		/***************************************************************************************************\
 		|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯|
@@ -226,9 +225,10 @@ namespace NMib
 		\***************************************************************************************************/
 
 		inline_never bool fg_Compiler_AlwaysFalse();
-		bool fg_Compiler_MakeActive(const void *_Reference);
+		bool fg_Compiler_MakeActive(void const *_Reference);
 		bool fg_Compiler_MakeActive(int _Dummy, ...);
-/*		template <typename t_CAny>
+		/*
+		template <typename t_CAny>
 		static bool fg_Compiler_MakeActive(t_CAny &&_Other)
 		{
 			return fg_Compiler_MakeActive((const void * &)_Other);
@@ -242,9 +242,9 @@ namespace NMib
 
 		void fg_CreateSystem();
 		void fg_DestroySystem();
-	#if defined(DPlatformFamily_Windows) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_macOS)
+#if defined(DPlatformFamily_Windows) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_macOS)
 		void fg_Thread_DestroyLocalContext(void (*_fDestroy)());
-	#endif
+#endif
 
 		void fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes);
 
@@ -255,15 +255,15 @@ namespace NMib
 		\***************************************************************************************************/
 
 		CStackTraceInfo *fg_Debug_AquireStackTraceInfo(CMibCodeAddress _Address);
-		bool fg_Debug_AquireStackTraceInfo(CStackTraceInfo & _oInfo, CMibCodeAddress _Address, bool _bCanAllocNonTracked);
+		bool fg_Debug_AquireStackTraceInfo(CStackTraceInfo &_oInfo, CMibCodeAddress _Address, bool _bCanAllocNonTracked);
 		void fg_Debug_ReleaseStackTraceInfo(CStackTraceInfo *_pInfo);
 
-		void fg_DebugOutput(const ch8 *_pToOutput);
-		void fg_DebugOutput(const ch16 *_pToOutput);
-		void fg_DebugOutput(const ch32 *_pToOutput);
-		void fg_DebugOutput(const NMib::NStr::CStrNonTracked &_Output);
-		void fg_DebugOutput(const NMib::NStr::CWStrNonTracked &_Output);
-		void fg_DebugOutput(const NMib::NStr::CUStrNonTracked &_Output);
+		void fg_DebugOutput(ch8 const *_pToOutput);
+		void fg_DebugOutput(ch16 const *_pToOutput);
+		void fg_DebugOutput(ch32 const *_pToOutput);
+		void fg_DebugOutput(NMib::NStr::CStrNonTracked const &_Output);
+		void fg_DebugOutput(NMib::NStr::CWStrNonTracked const &_Output);
+		void fg_DebugOutput(NMib::NStr::CUStrNonTracked const &_Output);
 
 		CBuildMetadata fg_GetBuildMetadata();
 	}

@@ -40,7 +40,7 @@ namespace NMib
 	}
 
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
-	mark_nodebug inline_always t_CSubSystem &TCSubSystem<t_CSubSystem, t_DestructionOrder>::operator *()
+	mark_nodebug inline_always t_CSubSystem &TCSubSystem<t_CSubSystem, t_DestructionOrder>::operator * ()
 	{
 		if (mp_bWasCreated.f_Load(NAtomic::gc_MemoryOrder_Acquire)) [[likely]]
 			return *((t_CSubSystem *)mp_ObjectSpace);
@@ -49,7 +49,7 @@ namespace NMib
 	}
 
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
-	mark_nodebug inline_always t_CSubSystem *TCSubSystem<t_CSubSystem, t_DestructionOrder>::operator ->()
+	mark_nodebug inline_always t_CSubSystem *TCSubSystem<t_CSubSystem, t_DestructionOrder>::operator -> ()
 	{
 		if (mp_bWasCreated.f_Load(NAtomic::gc_MemoryOrder_Acquire)) [[likely]]
 			return ((t_CSubSystem *)mp_ObjectSpace);

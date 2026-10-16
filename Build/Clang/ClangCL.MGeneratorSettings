@@ -143,8 +143,7 @@ GeneratorSetting
 					, "UpOnly", GeneratorSetting.f_LDFlag("/DRIVER:UPONLY")
 					, "WDM", GeneratorSetting.f_LDFlag("/DRIVER:WDM")
 				)
-			},
-			{
+			}, {
 				Tools: ["clang", "clang++", "clang-cl", "clang-cl++"]
 				, Flags: `/DRIVER`
 			}

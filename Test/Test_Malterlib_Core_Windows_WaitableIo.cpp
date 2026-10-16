@@ -86,7 +86,17 @@ namespace
 						}
 					;
 
-					DMibExpectTrue(fPollUntil([&] { return Reports.m_Reads || Reports.m_Errors; }));
+					DMibExpectTrue
+						(
+							fPollUntil
+							(
+								[&]
+								{
+									return Reports.m_Reads || Reports.m_Errors;
+								}
+							)
+						)
+					;
 					DMibExpect(Reports.m_Reads, ==, 1);
 					pLoop->f_PollAndDispatch();
 					{
@@ -99,7 +109,17 @@ namespace
 					if (!bManualReset)
 						SetEvent(hEvent);
 					pLoop->f_RequestReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read);
-					DMibExpectTrue(fPollUntil([&] { return Reports.m_Reads == 2 || Reports.m_Errors; }));
+					DMibExpectTrue
+						(
+							fPollUntil
+							(
+								[&]
+								{
+									return Reports.m_Reads == 2 || Reports.m_Errors;
+								}
+							)
+						)
+					;
 					DMibExpect(Reports.m_Reads, ==, 2);
 
 					ResetEvent(hEvent);
@@ -110,9 +130,27 @@ namespace
 					if (bManualReset)
 						SetEvent(hEvent);
 					umint nClosed = 0;
-					pLoop->f_DeregisterAsync(pRegistration, [&] { ++nClosed; });
+					pLoop->f_DeregisterAsync
+						(
+							pRegistration
+							, [&]
+							{
+								++nClosed;
+							}
+						)
+					;
 					pRegistration = nullptr;
-					DMibExpectTrue(fPollUntil([&] { return nClosed != 0; }));
+					DMibExpectTrue
+						(
+							fPollUntil
+							(
+								[&]
+								{
+									return nClosed != 0;
+								}
+							)
+						)
+					;
 
 					umint nReadsAtClose = Reports.m_Reads;
 					SetEvent(hEvent);

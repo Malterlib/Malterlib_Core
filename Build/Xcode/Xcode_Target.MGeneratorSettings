@@ -5,7 +5,8 @@ GeneratorSetting
 {
 	Xcode_TargetType: string
 	Xcode_TargetType SwitchWithError(
-		Target.Type, `Unknown target type: @(Target.Type)`
+		Target.Type
+		, `Unknown target type: @(Target.Type)`
 		, "Executable", "Application"
 		, "ConsoleExecutable", "Application"
 		, "UIExecutable", "Application"

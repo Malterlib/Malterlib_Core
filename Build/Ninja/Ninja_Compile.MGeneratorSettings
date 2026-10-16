@@ -109,7 +109,6 @@ Compile
 
 GeneratorSetting
 {
-
 	// Tool type used for shared flag lookup (clang for C/ObjC/Assembler, clang++ for C++/ObjC++)
 	Ninja_CompileToolType: string
 

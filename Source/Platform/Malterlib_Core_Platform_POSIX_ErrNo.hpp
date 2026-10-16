@@ -82,7 +82,7 @@ namespace NMib
 			return Ret;
 		}
 #else
-	#error "Not implemented"
+#	error "Not implemented"
 #endif
 	}
 }

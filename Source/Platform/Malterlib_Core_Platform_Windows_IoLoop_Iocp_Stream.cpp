@@ -408,12 +408,7 @@ void CIoLoop_Iocp::fp_ReportCompletedRecvs(CIocpRegistration *_pRegistration, um
 void CIoLoop_Iocp::fp_StageStreamSegment(CIocpRegistration *_pRegistration, NSys::CIoStreamSegment &&_Segment, umint &_nReported)
 {
 	CIoStreamSegment &Pending = _pRegistration->m_PendingStreamSegment;
-	if
-	(
-		_pRegistration->m_bStreamSegmentPending
-		&& Pending.m_pOwner == _Segment.m_pOwner
-		&& (uint8 const *)Pending.m_pData + Pending.m_nBytes == (uint8 const *)_Segment.m_pData
-	)
+	if (_pRegistration->m_bStreamSegmentPending && Pending.m_pOwner == _Segment.m_pOwner && (uint8 const *)Pending.m_pData + Pending.m_nBytes == (uint8 const *)_Segment.m_pData)
 	{
 		Pending.m_nBytes += _Segment.m_nBytes;
 		return;

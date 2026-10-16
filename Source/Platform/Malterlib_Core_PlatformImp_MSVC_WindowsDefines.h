@@ -43,12 +43,11 @@
 #pragma comment(lib, "Crypt32.lib")
 
 #ifdef _DEBUG
-#pragma comment(lib, "libcmtd.lib")
+#	pragma comment(lib, "libcmtd.lib")
 #else
-#pragma comment(lib, "libcmt.lib")
+#	pragma comment(lib, "libcmt.lib")
 #endif
 
 #include <crtdbg.h>
-
 
 #include "Malterlib_Core_Platform_Windows_Undocumented.h"

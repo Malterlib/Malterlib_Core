@@ -1153,7 +1153,6 @@ GeneratorSetting
 			, "X86_64_v2", "-march=x86-64-v2"->f_ClangFlag()
 			, "X86_64_v3", "-march=x86-64-v3"->f_ClangFlag()
 			, "X86_64_v4", "-march=x86-64-v4"->f_ClangFlag()
-
 		)
 		, Type: "unique"
 	}

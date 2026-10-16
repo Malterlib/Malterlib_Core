@@ -32,7 +32,8 @@ fi
 
 for Target in "${Targets[@]}"; do
 
-echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" /nodereuse:false $ExtraParams /v:m "\"/target:${Target//\./_}\"" "\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\""
+echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" /nodereuse:false $ExtraParams /v:m "\"/target:${Target//\./_}\"" \
+	"\"/property:Platform=$Platform - $Architecture\"" "\"/property:Configuration=$Config\""
 
 CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln\"" \
 	"\"/consoleLoggerParameters:Verbosity=normal;ForceConsoleColor;NoSummary;ForceNoAlign;DisableConsoleColor;NoItemAndPropertyList\"" \

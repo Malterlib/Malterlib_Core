@@ -102,7 +102,6 @@ NMib::NStr::CStr NSys::fg_UserManagement_GetProcessEffectiveGroupName()
 	return fg_Helper_GetGroupName(getegid());
 }
 
-
 bool NSys::fg_UserManagement_GroupExists(NMib::NStr::CStr const &_GroupName, NMib::NStr::CStr &_ReturnGID)
 {
 	NMib::NPlatform::CGetGrGidState State;
@@ -175,7 +174,7 @@ NMib::NContainer::TCVector<NMib::NStr::CStr> NSys::fg_UserManagement_UserGetMemb
 }
 
 template <typename tf_CType>
-static tf_CType fg_ReadUnaligned(tf_CType const * __attribute((aligned(1))) _pInput)
+static tf_CType fg_ReadUnaligned(tf_CType const *__attribute((aligned(1))) _pInput)
 {
 	tf_CType Return;
 	fg_MemCopy((void *)&Return, (void *)_pInput, sizeof(tf_CType));
@@ -196,10 +195,10 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 	}
 
 	struct group grp;
-	struct group * grpptr=&grp;
-	struct group * tempGrpPtr;
+	struct group *grpptr = &grp;
+	struct group *tempGrpPtr;
 	char grpbuffer[4096];
-	int  grplinelen = sizeof(grpbuffer);
+	int grplinelen = sizeof(grpbuffer);
 
 	if ((getgrnam_r(_GroupName.f_GetStr(), grpptr, grpbuffer, grplinelen, &tempGrpPtr)) != 0)
 		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam_r('{}') when checking if user is member of group") << _GroupName, errno));
@@ -220,5 +219,4 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 
 	return false;
 }
-
 

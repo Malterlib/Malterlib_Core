@@ -21,6 +21,7 @@ struct CInitMalterlib
 	{
 		NMib::NSys::fg_CreateSystem();
 	}
+
 	~CInitMalterlib()
 	{
 		NMib::NSys::fg_DestroySystem();
@@ -30,7 +31,7 @@ struct CInitMalterlib
 // Clang emits C++ initializers first, 101 is lowest allowed prio
 CInitMalterlib g_InitMalterlib __attribute__((init_priority(101)));
 
-#ifdef DMibInitInPreInitArray
+#	ifdef DMibInitInPreInitArray
 
 extern "C" void fg_InitMalterlib(int argc, char **argv, char **envp)
 {
@@ -39,44 +40,39 @@ extern "C" void fg_InitMalterlib(int argc, char **argv, char **envp)
 
 __attribute__((section(".preinit_array"), used)) static decltype(fg_InitMalterlib) *preinit_p = fg_InitMalterlib;
 
-#endif
+#	endif
 
 #else
 
-#ifdef DMalterlibUseStaticLibCxx
+#	ifdef DMalterlibUseStaticLibCxx
 extern "C" void __umodti3();
 extern "C" void __udivmodti4();
-#ifdef DArchitecture_x64
+#		ifdef DArchitecture_x64
 extern "C" void __fixunsxfti();
 extern "C" void __fixxfti();
-#endif
+#		endif
 extern "C" void __divti3();
 extern "C" void __modti3();
 extern "C" void __udivti3();
-#endif
+#	endif
 
-extern "C" void __attribute__ ((constructor(-1111111111))) fg_InitMalterlib()
+extern "C" void __attribute__((constructor(-1111111111))) fg_InitMalterlib()
 {
-#ifdef DMalterlibUseStaticLibCxx
-	__attribute__((used)) static volatile unsigned long long WorkaroundSum
-		= (unsigned long long)&__umodti3
-		+ (unsigned long long)&__udivmodti4
-#ifdef DArchitecture_x64
-		+ (unsigned long long)&__fixunsxfti
-		+ (unsigned long long)&__fixxfti
-#endif
-		+ (unsigned long long)&__divti3
-		+ (unsigned long long)&__modti3
-		+ (unsigned long long)&__udivti3
+#	ifdef DMalterlibUseStaticLibCxx
+	__attribute__((used)) static unsigned long long volatile WorkaroundSum = (unsigned long long)&__umodti3 + (unsigned long long)&__udivmodti4
+#		ifdef DArchitecture_x64
+		+ (unsigned long long)&__fixunsxfti + (unsigned long long)&__fixxfti
+#		endif
+		+ (unsigned long long)&__divti3 + (unsigned long long)&__modti3 + (unsigned long long)&__udivti3
 	;
-#endif
+#	endif
 
 	NMib::NSys::fg_CreateSystem();
 }
 
 extern "C" void fg_MalterlibDestroySystem_MacOS();
 
-extern "C" void __attribute__ ((destructor(-1111111111))) fg_DestroyMalterlib()
+extern "C" void __attribute__((destructor(-1111111111))) fg_DestroyMalterlib()
 {
 	fg_MalterlibDestroySystem_MacOS();
 }

@@ -16,8 +16,7 @@ namespace NMib::NPlatform
 {
 	bool fg_IsVista()
 	{
-		if (NLocal::g_VersionInfo.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-				(NLocal::g_VersionInfo.dwMajorVersion >= 6 ) )
+		if (NLocal::g_VersionInfo.dwPlatformId == VER_PLATFORM_WIN32_NT && (NLocal::g_VersionInfo.dwMajorVersion >= 6))
 			return TRUE;
 
 		return FALSE;

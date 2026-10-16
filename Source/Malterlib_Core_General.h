@@ -14,15 +14,17 @@ namespace NMib
 	class CLineNumber
 	{
 	public:
-	/*	CLineNumber(const CLineNumber& _Src)
+		/*
+		CLineNumber(const CLineNumber& _Src)
 		{
 			m_nLine = _Src.m_nLine;
 		}*/
 
 		CLineNumber(aint _nLine)
-			:m_nLine(_nLine)
+			: m_nLine(_nLine)
 		{
 		}
+
 		aint m_nLine;
 
 		operator aint () const
@@ -33,9 +35,9 @@ namespace NMib
 }
 
 #if DMibConfig_MalterlibMemoryManager_Debug
-#define DMibNew new(DMibPFile, NMib::CLineNumber(DMibPLine))
+#	define DMibNew new(DMibPFile, NMib::CLineNumber(DMibPLine))
 #else
-#define DMibNew new
+#	define DMibNew new
 #endif
 
 namespace NMib
@@ -62,9 +64,9 @@ namespace NMib
 		template <typename t_CType>
 		struct TCForwardHelper
 		{
-		    using CType = t_CType;
+			using CType = t_CType;
 
-			inline_small const t_CType& operator()(const t_CType& _Left) const
+			inline_small t_CType const &operator () (t_CType const &_Left) const
 			{
 				return (_Left);
 			}
@@ -72,23 +74,23 @@ namespace NMib
 	}
 
 	template <typename t_CType>
-	constexpr inline_always_debug t_CType&& fg_Forward(typename NPrivate::TCForwardHelper<t_CType>::CType &_ToForward)
+	constexpr inline_always_debug t_CType &&fg_Forward(typename NPrivate::TCForwardHelper<t_CType>::CType &_ToForward)
 	{
-		return (t_CType&& )_ToForward;
+		return (t_CType &&)_ToForward;
 	}
 #else
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(NTraits::TCRemoveReference<t_CType> &_ToForward) noexcept
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType &&fg_Forward(NTraits::TCRemoveReference<t_CType> &_ToForward) noexcept
 	{
-		return static_cast<t_CType&&>(_ToForward);
+		return static_cast<t_CType &&>(_ToForward);
 	}
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType&& fg_Forward(NTraits::TCRemoveReference<t_CType> &&_ToForward) noexcept
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType &&fg_Forward(NTraits::TCRemoveReference<t_CType> &&_ToForward) noexcept
 	{
 		static_assert(!NTraits::cIsLValueReference<t_CType>, "Cannot be a lvalue reference here");
-		return static_cast<t_CType&&>(_ToForward);
+		return static_cast<t_CType &&>(_ToForward);
 	}
 #endif
 
@@ -110,26 +112,15 @@ namespace NMib
 		template <typename t_CType, typename t_CTypeToCopyTo>
 		struct TCForwardCopyEvalHelper
 		{
-			using CTypeQualifiers = NMib::NTraits::TCCopyQualifiers
-				<
-					NMib::NTraits::TCRemoveReference<t_CType>
-					, NMib::NTraits::TCRemoveReference<t_CTypeToCopyTo>
-				>
-			;
+			using CTypeQualifiers = NMib::NTraits::TCCopyQualifiers<NMib::NTraits::TCRemoveReference<t_CType>, NMib::NTraits::TCRemoveReference<t_CTypeToCopyTo>>;
 
-		    using CType = TCConditional
+			using CType = TCConditional
 				<
 					NMib::NTraits::cIsRValueReference<t_CType>
 					, NMib::NTraits::TCAddRValueReference<CTypeQualifiers>
-					, TCConditional
-					<
-						NMib::NTraits::cIsLValueReference<t_CType>
-						, NMib::NTraits::TCAddLValueReference<CTypeQualifiers>
-						, NMib::NTraits::TCRemoveReference<CTypeQualifiers>
-					>
+					, TCConditional<NMib::NTraits::cIsLValueReference<t_CType>, NMib::NTraits::TCAddLValueReference<CTypeQualifiers>, NMib::NTraits::TCRemoveReference<CTypeQualifiers>>
 				>
 			;
-
 		};
 	}
 
@@ -196,7 +187,7 @@ namespace NMib
 	}
 
 	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType const &fg_Const(t_CType const&_In) noexcept
+	mark_artificial mark_nodebug constexpr inline_always_debug t_CType const &fg_Const(t_CType const &_In) noexcept
 	{
 		return (t_CType const &)_In;
 	}
@@ -221,7 +212,7 @@ namespace NMib
 		{
 		}
 
-		mark_artificial mark_nodebug inline_always t_CValue operator()()
+		mark_artificial mark_nodebug inline_always t_CValue operator () ()
 		{
 			return fg_Move(mp_Value);
 		}
@@ -234,8 +225,8 @@ namespace NMib
 	class TCCopy
 	{
 		t_CType const &m_Data;
-	public:
 
+	public:
 		mark_nodebug TCCopy(t_CType const &_Data)
 			: m_Data(_Data)
 		{
@@ -251,13 +242,14 @@ namespace NMib
 		{
 		}
 
-		mark_nodebug t_CType const &operator *() const
+		mark_nodebug t_CType const &operator * () const
 		{
 			return m_Data;
 		}
 	};
+
 	template <typename t_CType>
-	mark_nodebug inline_always_debug TCCopy<t_CType> fg_Copy(t_CType const&_In)
+	mark_nodebug inline_always_debug TCCopy<t_CType> fg_Copy(t_CType const &_In)
 	{
 		return TCCopy<t_CType>(_In);
 	}
@@ -266,8 +258,8 @@ namespace NMib
 	class TCByValue
 	{
 		t_CType const &m_Data;
-	public:
 
+	public:
 		mark_nodebug TCByValue(t_CType const &_Data)
 			: m_Data(_Data)
 		{
@@ -283,13 +275,14 @@ namespace NMib
 		{
 		}
 
-		mark_nodebug t_CType const &operator *() const
+		mark_nodebug t_CType const &operator * () const
 		{
 			return m_Data;
 		}
 	};
+
 	template <typename t_CType>
-	mark_nodebug inline_always_debug TCByValue<t_CType> fg_ByValue(t_CType const&_In)
+	mark_nodebug inline_always_debug TCByValue<t_CType> fg_ByValue(t_CType const &_In)
 	{
 		return TCByValue<t_CType>(_In);
 	}
@@ -298,15 +291,15 @@ namespace NMib
 	class TCExplicit
 	{
 		t_CType m_Data;
-	public:
 
+	public:
 		template <typename tf_CType>
 		mark_nodebug TCExplicit(tf_CType &&_Data)
 			: m_Data(fg_Forward<tf_CType>(_Data))
 		{
 		}
 
-		mark_nodebug t_CType operator *()
+		mark_nodebug t_CType operator * ()
 		{
 			return fg_Forward<t_CType>(m_Data);
 		}
@@ -362,15 +355,15 @@ namespace NMib
 	class TCAttach
 	{
 		t_CType m_Data;
-	public:
 
+	public:
 		template <typename tf_CType>
 		mark_nodebug TCAttach(tf_CType &&_Data)
 			: m_Data(fg_Forward<tf_CType>(_Data))
 		{
 		}
 
-		mark_nodebug t_CType operator *()
+		mark_nodebug t_CType operator * ()
 		{
 			return fg_Forward<t_CType>(m_Data);
 		}
@@ -410,7 +403,7 @@ namespace NMib
 		struct CDefault
 		{
 			template <typename tf_CReturn>
-			mark_nodebug operator tf_CReturn()
+			mark_nodebug operator tf_CReturn ()
 			{
 				return tf_CReturn();
 			}
@@ -419,7 +412,7 @@ namespace NMib
 		struct CIgnore
 		{
 			template <typename tf_CType>
-			mark_nodebug inline_always_debug CIgnore &operator =(tf_CType &&_Value)
+			mark_nodebug inline_always_debug CIgnore &operator = (tf_CType &&_Value)
 			{
 				return *this;
 			}
@@ -436,7 +429,6 @@ namespace NMib
 		return NInternal::CDefault();
 	}
 
-
 	namespace NInternal
 	{
 		template <typename t_CFrom>
@@ -444,19 +436,18 @@ namespace NMib
 		{
 			t_CFrom m_From;
 
-			template<typename ft_CFrom>
+			template <typename ft_CFrom>
 			mark_nodebug TCAutoStaticCast(ft_CFrom &&_From)
 				: m_From(fg_Forward<ft_CFrom>(_From))
 			{
 			}
 
 			template <typename ft_CTo>
-			mark_nodebug operator ft_CTo()
+			mark_nodebug operator ft_CTo ()
 			{
 				return static_cast<ft_CTo>(m_From);
 			}
 		};
-
 	}
 	template <typename ft_CFrom>
 	mark_nodebug NInternal::TCAutoStaticCast<ft_CFrom> fg_AutoStaticCast(ft_CFrom &&_From)
@@ -471,26 +462,24 @@ namespace NMib
 		{
 			t_CFrom m_From;
 
-			template<typename ft_CFrom>
+			template <typename ft_CFrom>
 			mark_nodebug TCAutoConstCast(ft_CFrom &&_From)
 				: m_From(fg_Forward<ft_CFrom>(_From))
 			{
 			}
 
 			template <typename ft_CTo>
-			mark_nodebug operator ft_CTo()
+			mark_nodebug operator ft_CTo ()
 			{
 				return const_cast<ft_CTo>(m_From);
 			}
 		};
-
 	}
 	template <typename ft_CFrom>
 	mark_nodebug NInternal::TCAutoConstCast<ft_CFrom> fg_AutoConstCast(ft_CFrom &&_From)
 	{
 		return NInternal::TCAutoConstCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
 	}
-
 
 	namespace NInternal
 	{
@@ -499,19 +488,18 @@ namespace NMib
 		{
 			t_CFrom m_From;
 
-			template<typename ft_CFrom>
+			template <typename ft_CFrom>
 			mark_nodebug TCAutoReinterpretCast(ft_CFrom &&_From)
 				: m_From(fg_Forward<ft_CFrom>(_From))
 			{
 			}
 
 			template <typename ft_CTo>
-			mark_nodebug operator ft_CTo()
+			mark_nodebug operator ft_CTo ()
 			{
 				return reinterpret_cast<ft_CTo>(m_From);
 			}
 		};
-
 	}
 	template <typename ft_CFrom>
 	mark_nodebug NInternal::TCAutoReinterpretCast<ft_CFrom> fg_AutoReinterpretCast(ft_CFrom &&_From)
@@ -526,19 +514,18 @@ namespace NMib
 		{
 			t_CFrom m_From;
 
-			template<typename ft_CFrom>
+			template <typename ft_CFrom>
 			mark_nodebug TCAutoCCast(ft_CFrom &&_From)
 				: m_From(fg_Forward<ft_CFrom>(_From))
 			{
 			}
 
 			template <typename ft_CTo>
-			mark_nodebug operator ft_CTo()
+			mark_nodebug operator ft_CTo ()
 			{
 				return (ft_CTo)(m_From);
 			}
 		};
-
 	}
 	template <typename ft_CFrom>
 	mark_nodebug NInternal::TCAutoCCast<ft_CFrom> fg_AutoCCast(ft_CFrom &&_From)
@@ -558,8 +545,8 @@ namespace NMib
 		TCSupportCopyMove(TCSupportCopyMove const &) = default;
 		TCSupportCopyMove(TCSupportCopyMove &&) = delete;
 
-		TCSupportCopyMove &operator =(TCSupportCopyMove const &) = default;
-		TCSupportCopyMove &operator =(TCSupportCopyMove &&) = delete;
+		TCSupportCopyMove &operator = (TCSupportCopyMove const &) = default;
+		TCSupportCopyMove &operator = (TCSupportCopyMove &&) = delete;
 	};
 
 	template <>
@@ -568,8 +555,8 @@ namespace NMib
 		TCSupportCopyMove() = default;
 		TCSupportCopyMove(TCSupportCopyMove const &) = delete;
 		TCSupportCopyMove(TCSupportCopyMove &&) = default;
-		TCSupportCopyMove &operator =(TCSupportCopyMove const &) = delete;
-		TCSupportCopyMove &operator =(TCSupportCopyMove &&) = default;
+		TCSupportCopyMove &operator = (TCSupportCopyMove const &) = delete;
+		TCSupportCopyMove &operator = (TCSupportCopyMove &&) = default;
 	};
 
 	template <>
@@ -578,8 +565,8 @@ namespace NMib
 		TCSupportCopyMove() = default;
 		TCSupportCopyMove(TCSupportCopyMove const &) = delete;
 		TCSupportCopyMove(TCSupportCopyMove &&) = delete;
-		TCSupportCopyMove &operator =(TCSupportCopyMove const &) = delete;
-		TCSupportCopyMove &operator =(TCSupportCopyMove &&) = delete;
+		TCSupportCopyMove &operator = (TCSupportCopyMove const &) = delete;
+		TCSupportCopyMove &operator = (TCSupportCopyMove &&) = delete;
 	};
 
 	template <typename t_CType>
@@ -630,13 +617,12 @@ namespace NMib
 		return fg_Move(const_cast<t_CType &>(_In));
 	}
 
-
 	template <typename t_CType>
 	class TCLambdaMover
 	{
 		t_CType m_Type;
-	public:
 
+	public:
 		mark_nodebug TCLambdaMover(t_CType &&_Other)
 			: m_Type(fg_Move(_Other))
 		{
@@ -662,7 +648,7 @@ namespace NMib
 		{
 		}
 
-		mark_nodebug t_CType &operator *() const
+		mark_nodebug t_CType &operator * () const
 		{
 			return fg_RemoveQualifiers(m_Type);
 		}
@@ -692,7 +678,6 @@ namespace NMib
 		return ((t_CType(1)) << (_Power - 1)) + (((t_CType(1)) << (_Power - 1)) - t_CType(1));
 	}
 
-
 	template <typename t_CType0, typename t_CType1>
 	static inline_small void fg_Swap(t_CType0 &_Left, t_CType1 &_Right)
 	{
@@ -701,9 +686,8 @@ namespace NMib
 		_Right = fg_Move(Temp);
 	}
 
-
 	template <typename t_CTo, typename t_CFrom>
-	constexpr static inline_small t_CTo fg_BitCast(t_CFrom const &_From)
+	static constexpr inline_small t_CTo fg_BitCast(t_CFrom const &_From)
 	{
 		return std::bit_cast<t_CTo>(_From);
 	}
@@ -723,7 +707,8 @@ namespace NMib
 		{
 			EDefaultImplementation = 1
 		};
-		static t_CType fs_Swap(t_CType const& _Data)
+
+		static t_CType fs_Swap(t_CType const &_Data)
 		{
 			umint Size = sizeof(_Data);
 			int iEnd = Size - 1;
@@ -740,7 +725,7 @@ namespace NMib
 		}
 	};
 
-	#ifdef DMibPCanDo_uint8
+#ifdef DMibPCanDo_uint8
 	template <>
 	class TCHelper_ByteSwap<uint8>
 	{
@@ -750,31 +735,32 @@ namespace NMib
 		{
 			EDefaultImplementation = 0
 		};
+
 		static inline_small uint8 fs_Swap(uint8 _Data)
 		{
 			return _Data;
 		}
 	};
-	#endif
+#endif
 
 #define DMibPDefaultSwap_uint16(x) ((((uint16)(x) & 0xff00) >> 8) | \
-                             (((uint16)(x) & 0x00ff) << 8))
+	(((uint16)(x) & 0x00ff) << 8))
 
 #define DMibPDefaultSwap_uint32(x) ((((uint32)(x) & 0xff000000) >> 24) | \
-                             (((uint32)(x) & 0x00ff0000) >>  8) | \
-                             (((uint32)(x) & 0x0000ff00) <<  8) | \
-                             (((uint32)(x) & 0x000000ff) << 24))
+	(((uint32)(x) & 0x00ff0000) >>  8) | \
+	(((uint32)(x) & 0x0000ff00) <<  8) | \
+	(((uint32)(x) & 0x000000ff) << 24))
 
 #define DMibPDefaultSwap_uint64(x) ((((uint64)(x) & 0xff00000000000000ULL) >> 56) | \
-                             (((uint64)(x) & 0x00ff000000000000ULL) >> 40) | \
-                             (((uint64)(x) & 0x0000ff0000000000ULL) >> 24) | \
-                             (((uint64)(x) & 0x000000ff00000000ULL) >>  8) | \
-                             (((uint64)(x) & 0x00000000ff000000ULL) <<  8) | \
-                             (((uint64)(x) & 0x0000000000ff0000ULL) << 24) | \
-                             (((uint64)(x) & 0x000000000000ff00ULL) << 40) | \
-                             (((uint64)(x) & 0x00000000000000ffULL) << 56))
+	(((uint64)(x) & 0x00ff000000000000ULL) >> 40) | \
+	(((uint64)(x) & 0x0000ff0000000000ULL) >> 24) | \
+	(((uint64)(x) & 0x000000ff00000000ULL) >>  8) | \
+	(((uint64)(x) & 0x00000000ff000000ULL) <<  8) | \
+	(((uint64)(x) & 0x0000000000ff0000ULL) << 24) | \
+	(((uint64)(x) & 0x000000000000ff00ULL) << 40) | \
+	(((uint64)(x) & 0x00000000000000ffULL) << 56))
 
-	#ifdef DMibPCanDo_uint16
+#ifdef DMibPCanDo_uint16
 	template <>
 	class TCHelper_ByteSwap<uint16>
 	{
@@ -784,17 +770,18 @@ namespace NMib
 		{
 			EDefaultImplementation = 0
 		};
+
 		static inline_small uint16 fs_Swap(uint16 _Data)
 		{
-			#ifdef DMibPByteSwap16
+#	ifdef DMibPByteSwap16
 			return DMibPByteSwap16(_Data);
-			#else
+#	else
 			return DMibPDefaultSwap_uint16(_Data);
-			#endif
+#	endif
 		}
 	};
-	#endif
-	#ifdef DMibPCanDo_uint32
+#endif
+#ifdef DMibPCanDo_uint32
 	template <>
 	class TCHelper_ByteSwap<uint32>
 	{
@@ -804,17 +791,18 @@ namespace NMib
 		{
 			EDefaultImplementation = 0
 		};
+
 		static inline_small uint32 fs_Swap(uint32 _Data)
 		{
-			#ifdef DMibPByteSwap32
+#	ifdef DMibPByteSwap32
 			return DMibPByteSwap32(_Data);
-			#else
+#	else
 			return DMibPDefaultSwap_uint32(_Data);
-			#endif
+#	endif
 		}
 	};
-	#endif
-	#ifdef DMibPCanDo_uint64
+#endif
+#ifdef DMibPCanDo_uint64
 	template <>
 	class TCHelper_ByteSwap<uint64>
 	{
@@ -824,16 +812,17 @@ namespace NMib
 		{
 			EDefaultImplementation = 0
 		};
+
 		static inline_small uint64 fs_Swap(uint64 _Data)
 		{
-			#ifdef DMibPByteSwap64
+#	ifdef DMibPByteSwap64
 			return DMibPByteSwap64(_Data);
-			#else
+#	else
 			return DMibPDefaultSwap_uint64(_Data);
-			#endif
+#	endif
 		}
 	};
-	#endif
+#endif
 
 	template <umint t_nBytes, typename t_CType>
 	class TCHelper_ByteSwapChooseBySize
@@ -887,31 +876,28 @@ namespace NMib
 	inline_small void fg_ByteSwap(t_CInt *_pIn, umint _Len)
 	{
 		for (umint i = 0; i < _Len; ++i)
-		{
 			_pIn[i] = fg_ByteSwap(_pIn[i]);
-		}
 	}
 
 	template <typename t_CInt>
 	inline_small t_CInt fg_ByteSwapLE(t_CInt _In)
 	{
-		#ifdef DMibPLittleEndian
+#ifdef DMibPLittleEndian
 		return _In;
-		#else
+#else
 		return fg_ByteSwap(_In);
-		#endif
+#endif
 	}
 
 	template <typename t_CInt>
 	inline_small t_CInt fg_ByteSwapBE(t_CInt _In)
 	{
-		#ifdef DMibPLittleEndian
+#ifdef DMibPLittleEndian
 		return fg_ByteSwap(_In);
-		#else
+#else
 		return _In;
-		#endif
+#endif
 	}
-
 
 	template <typename tf_CFirst, typename tf_CSecond>
 	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second)
@@ -923,7 +909,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest && ...p_Rest)
 	{
 		if (fg_Forward<tf_CFirst>(_First) < fg_Forward<tf_CSecond>(_Second))
 			return fg_Min(fg_Forward<tf_CFirst>(_First), fg_Forward<tfp_CRest>(p_Rest)...);
@@ -941,7 +927,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest && ...p_Rest)
 	{
 		if (fg_Forward<tf_CSecond>(_Second) < fg_Forward<tf_CFirst>(_First))
 			return fg_Max(fg_Forward<tf_CFirst>(_First), fg_Forward<tfp_CRest>(p_Rest)...);
@@ -978,7 +964,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_MaxValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_MaxValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest && ...p_Rest)
 	{
 		return fg_MaxValidFloat(fg_MaxValidFloat(fg_Forward<tf_CFirst>(_First), fg_Forward<tf_CSecond>(_Second)), fg_Forward<tfp_CRest>(p_Rest)...);
 	}
@@ -1006,7 +992,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_MinValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_MinValidFloat(tf_CFirst &&_First, tf_CSecond &&_Second, tfp_CRest && ...p_Rest)
 	{
 		return fg_MinValidFloat(fg_MinValidFloat(fg_Forward<tf_CFirst>(_First), fg_Forward<tf_CSecond>(_Second)), fg_Forward<tfp_CRest>(p_Rest)...);
 	}
@@ -1033,7 +1019,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small tf_CFirst fg_MinConstexpr(tf_CFirst _First, tf_CSecond _Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small tf_CFirst fg_MinConstexpr(tf_CFirst _First, tf_CSecond _Second, tfp_CRest && ...p_Rest)
 	{
 		return fg_MinConstexpr((_First < _Second) ? _First : _Second, p_Rest...);
 	}
@@ -1051,7 +1037,7 @@ namespace NMib
 	}
 
 	template <typename tf_CFirst, typename tf_CSecond, typename ...tfp_CRest>
-	constexpr inline_small tf_CFirst fg_MaxConstexpr(tf_CFirst _First, tf_CSecond _Second, tfp_CRest &&...p_Rest)
+	constexpr inline_small tf_CFirst fg_MaxConstexpr(tf_CFirst _First, tf_CSecond _Second, tfp_CRest && ...p_Rest)
 	{
 		return fg_MaxConstexpr((_Second < _First) ? _First : _Second, p_Rest...);
 	}
@@ -1067,7 +1053,6 @@ namespace NMib
 	{
 		return (_First >= tf_CFirst(0)) ? _First : -_First;
 	}
-
 
 	template <typename t_ToAlign>
 	constexpr inline_small t_ToAlign fg_AlignUpConstExpr(t_ToAlign _pMem, umint _Alignment)
@@ -1105,7 +1090,6 @@ namespace NMib
 		static constexpr t_CToAlign mc_Value = (t_Value + (t_Align - 1)) & (~(t_Align - 1));
 	};
 
-
 	template <typename t_CToAlign, t_CToAlign t_Value, t_CToAlign t_Align>
 	struct TCAlignDown
 	{
@@ -1115,58 +1099,38 @@ namespace NMib
 	template <typename t_CType>
 	inline_small t_CType fg_HighPart(t_CType _Data)
 	{
-		return _Data >> (sizeof(_Data)*4);
+		return _Data >> (sizeof(_Data) * 4);
 	}
 
 	template <typename t_CType>
 	inline_small t_CType fg_LowPart(t_CType _Data)
 	{
-		return _Data & ((1 << sizeof(_Data)*4)-1);
+		return _Data & ((1 << sizeof(_Data) * 4) - 1);
 	}
 
 	template <typename tf_CType>
-	TCEnableIf
-	<
-		!NTraits::cIsVoid<tf_CType>
-		&& !NTraits::cIsArray<tf_CType>
-		&& !NTraits::cIsPointer<tf_CType>
-		, void
-	>
-	fg_CallDestructor(tf_CType &_Type)
+	TCEnableIf<!NTraits::cIsVoid<tf_CType> && !NTraits::cIsArray<tf_CType> && !NTraits::cIsPointer<tf_CType>, void> fg_CallDestructor(tf_CType &_Type)
 	{
 		_Type.~tf_CType();
 	}
 
 	template <typename tf_CType>
-	TCEnableIf
-	<
-		NTraits::cIsVoid<tf_CType>
-		|| NTraits::cIsPointer<tf_CType>
-		, void
-	>
-	fg_CallDestructor(tf_CType &_Type)
+	TCEnableIf<NTraits::cIsVoid<tf_CType> || NTraits::cIsPointer<tf_CType>, void> fg_CallDestructor(tf_CType &_Type)
 	{
 	}
 
 	template <typename tf_CType>
-	TCEnableIf
-	<
-		NTraits::cIsArray<tf_CType>
-		, void
-	>
-	fg_CallDestructor(tf_CType &_Type)
+	TCEnableIf<NTraits::cIsArray<tf_CType>, void> fg_CallDestructor(tf_CType &_Type)
 	{
 		aint iElement = NTraits::gc_ArrayExtent<tf_CType> - 1;
 		for (; iElement >= 0; --iElement)
-		{
 			fg_CallDestructor(_Type[iElement]);
-		}
 	}
 
 	struct CSort_Default
 	{
 		template <typename t_CKey0, typename t_CKey1>
-		constexpr inline_small static auto operator() (t_CKey0 &&_Left, t_CKey1 &&_Right) noexcept(noexcept(_Left <=> _Right))
+		static constexpr inline_small auto operator () (t_CKey0 &&_Left, t_CKey1 &&_Right) noexcept(noexcept(_Left <=> _Right))
 		{
 			return _Left <=> _Right;
 		}
@@ -1175,32 +1139,31 @@ namespace NMib
 	namespace NPrivate
 	{
 #ifdef DCompiler_MSVC
-	#pragma warning(push)
-	#pragma warning(disable:4307)
-	#pragma warning(disable:4309)
+#	pragma warning(push)
+#	pragma warning(disable:4307)
+#	pragma warning(disable:4309)
 #endif
 
 		template <typename t_CIntType, bool t_bSigned>
 		struct TCLimitsIntHelper
 		{
-			constexpr static t_CIntType mc_Min = 0;
-			constexpr static t_CIntType mc_Max = t_CIntType(0) - 1;
-			constexpr static t_CIntType mc_AllBits = mc_Max;
+			static constexpr t_CIntType mc_Min = 0;
+			static constexpr t_CIntType mc_Max = t_CIntType(0) - 1;
+			static constexpr t_CIntType mc_AllBits = mc_Max;
 		};
-
 
 		template <typename t_CIntType>
 		struct TCLimitsIntHelper<t_CIntType, 1>
 		{
 			using CUnsigned = NMib::NTraits::TCUnsigned<t_CIntType>;
 
-			constexpr static t_CIntType mc_Min = (t_CIntType(1) << ((sizeof(t_CIntType)*8)-1));
-			constexpr static t_CIntType mc_Max = t_CIntType((CUnsigned(1) << ((sizeof(t_CIntType)*8)-1)) - CUnsigned(1));
-			constexpr static t_CIntType mc_AllBits = t_CIntType(CUnsigned(0) - 1);
+			static constexpr t_CIntType mc_Min = (t_CIntType(1) << ((sizeof(t_CIntType) * 8) - 1));
+			static constexpr t_CIntType mc_Max = t_CIntType((CUnsigned(1) << ((sizeof(t_CIntType) * 8) - 1)) - CUnsigned(1));
+			static constexpr t_CIntType mc_AllBits = t_CIntType(CUnsigned(0) - 1);
 		};
 
 #ifdef DCompiler_MSVC
-	#pragma warning(pop)
+#	pragma warning(pop)
 #endif
 	}
 
@@ -1383,7 +1346,6 @@ namespace NMib
 		}
 	}
 
-
 	namespace NStr
 	{
 		namespace NPrivate
@@ -1394,7 +1356,6 @@ namespace NMib
 
 		template <typename t_CFormatter, typename t_CData>
 		inline_small typename NPrivate::TCDetermineStringFormatterReturnType<t_CFormatter, t_CData>::CType fg_CreateStringFormatter(t_CFormatter &_Formatter, t_CData const &_Data);
-
 	}
 	// Auto clear int
 
@@ -1402,15 +1363,18 @@ namespace NMib
 	class TCAutoClearInt
 	{
 		static t_CInt const &fsp_GetType();
+
 	public:
 		TCAutoClearInt()
 		{
 			m_Int = t_ClearVal;
 		}
-		TCAutoClearInt(const t_CInt &_Int)
+
+		TCAutoClearInt(t_CInt const &_Int)
 		{
 			m_Int = _Int;
 		}
+
 		t_CInt m_Int;
 
 		operator t_CInt & ()
@@ -1418,28 +1382,28 @@ namespace NMib
 			return m_Int;
 		}
 
-		operator const t_CInt & () const
+		operator t_CInt const & () const
 		{
 			return m_Int;
 		}
 
-		t_CInt & f_Get()
+		t_CInt &f_Get()
 		{
 			return m_Int;
 		}
 
-		const t_CInt &f_Get() const
+		t_CInt const &f_Get() const
 		{
 			return m_Int;
 		}
 
-		TCAutoClearInt &operator = (const TCAutoClearInt &_Other)
+		TCAutoClearInt &operator = (TCAutoClearInt const &_Other)
 		{
 			m_Int = _Other.m_Int;
 			return *this;
 		}
 
-		TCAutoClearInt &operator = (const t_CInt &_Other)
+		TCAutoClearInt &operator = (t_CInt const &_Other)
 		{
 			m_Int = _Other;
 			return *this;
@@ -1509,7 +1473,7 @@ namespace NMib
 		TCAutoClear(TCAutoClear const &_Other) = default;
 		TCAutoClear(TCAutoClear &&_Other) = default;
 
-		TCAutoClear(t_CType const& _Value)
+		TCAutoClear(t_CType const &_Value)
 		{
 			m_Value = _Value;
 		}
@@ -1521,7 +1485,7 @@ namespace NMib
 			return m_Value;
 		}
 
-		operator const t_CType & () const
+		operator t_CType const & () const
 		{
 			return m_Value;
 		}
@@ -1531,7 +1495,7 @@ namespace NMib
 			return m_Value;
 		}
 
-		const t_CType &f_Get() const
+		t_CType const &f_Get() const
 		{
 			return m_Value;
 		}
@@ -1539,7 +1503,7 @@ namespace NMib
 		TCAutoClear &operator = (TCAutoClear const &_Other) = default;
 		TCAutoClear &operator = (TCAutoClear &&_Other) = default;
 
-		TCAutoClear &operator = (t_CType const& _Other)
+		TCAutoClear &operator = (t_CType const &_Other)
 		{
 			m_Value = _Other;
 			return *this;
@@ -1689,11 +1653,11 @@ namespace NMib
 		return TCConstExprSubStr<String.m_Len>{String.m_pString};
 	}
 
-	static constexpr uint32 fg_JenkinsHash(const char * const _pString);
-	static constexpr uint32 fg_JenkinsHash(const char * const _pString, umint _Len, char _ExtraChar);
+	static constexpr uint32 fg_JenkinsHash(char const * const _pString);
+	static constexpr uint32 fg_JenkinsHash(char const * const _pString, umint _Len, char _ExtraChar);
 
-	static consteval void fg_ParseTypeIdentifierConstexpr(char const *&_pParse);
-	static consteval void fg_ParseUntilCallingConvention(char const *&_pParse);
+	static consteval void fg_ParseTypeIdentifierConstexpr(char const * &_pParse);
+	static consteval void fg_ParseUntilCallingConvention(char const * &_pParse);
 
 	template <auto tf_pMemberPointer>
 	static consteval CConstExprSubStr fg_GetMemberPointerNameConstExpr();
@@ -1709,23 +1673,23 @@ namespace NMib
 	template <auto tf_pMemberFunction>
 	static consteval uint32 fg_GetMemberFunctionHash();
 
-#define DMibPointerToMemberFunctionForHash(d_FunctionName) d_FunctionName
-#define DMibIfNotSupportMemberNameFromMemberPointer(...)
+#	define DMibPointerToMemberFunctionForHash(d_FunctionName) d_FunctionName
+#	define DMibIfNotSupportMemberNameFromMemberPointer(...)
 
 #else
 
-	static consteval uint32 fg_GetMemberFunctionNameHash(const char * const _pFunctionName);
+	static consteval uint32 fg_GetMemberFunctionNameHash(char const * const _pFunctionName);
 
 	template <auto tf_pMemberFunction>
 	static consteval uint32 fg_GetMemberFunctionHash(uint32 _NameHash);
 
-#define DMibPointerToMemberFunctionForHash(d_FunctionName) d_FunctionName, fg_GetMemberFunctionNameHash(DMibStringize(d_FunctionName))
-#define DMibIfNotSupportMemberNameFromMemberPointer(...) __VA_ARGS__
+#	define DMibPointerToMemberFunctionForHash(d_FunctionName) d_FunctionName, fg_GetMemberFunctionNameHash(DMibStringize(d_FunctionName))
+#	define DMibIfNotSupportMemberNameFromMemberPointer(...) __VA_ARGS__
 
 #endif
 
 	template <typename tf_CClass>
-	static consteval uint32 fg_GetMemberFunctionHash(const char * const _pFunctionName);
+	static consteval uint32 fg_GetMemberFunctionHash(char const * const _pFunctionName);
 
 	template <typename tf_CType>
 	static consteval uint32 fg_GetTypeHash();
@@ -1738,6 +1702,7 @@ namespace NMib
 	{
 		static constexpr uint32 mc_Value = fg_GetTypeHash<t_CType>();
 	};
+
 #	define DMibConstantTypeHash(d_Type) NMib::TCGetTypeHash<d_Type>::mc_Value
 #endif
 }

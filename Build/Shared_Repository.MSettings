@@ -3,7 +3,8 @@
 
 Property
 {
-	MalterlibRepositoryEditor: string // User(Tools)="open -a SourceTree {}": Specify the editor to use for repositories. {} is replaced with the repository directory. The tool is launched from the repository directory.
+	// User(Tools)="open -a SourceTree {}": Specify the editor to use for repositories. {} is replaced with the repository directory. The tool is launched from the repository directory.
+	MalterlibRepositoryEditor: string
 	MalterlibRepositoryEditorSequential: bool = false // User(Tools)=true: Set to true if your repository editor does not support launching concurrently
 	MalterlibRepositoryEditorSleep: float = 0.0
 	MalterlibRepoRoot: string?

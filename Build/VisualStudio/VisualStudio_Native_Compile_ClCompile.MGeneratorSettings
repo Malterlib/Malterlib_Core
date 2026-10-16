@@ -23,7 +23,8 @@ GeneratorSetting
 
 	Compile_Symbols =+ {
 		VSSettings: {
-			DebugInformationFormat: Compile.Symbols->SwitchWithError("Unsupported option: "
+			DebugInformationFormat: Compile.Symbols->SwitchWithError(
+				"Unsupported option: "
 				, "FullForDebug", "EditAndContinue"
 				, "Full", "ProgramDatabase"
 				, "Fast", "OldStyle"
@@ -35,7 +36,8 @@ GeneratorSetting
 
 	Compile_CallingConvention =+ {
 		VSSettings: {
-			CallingConvention: Compile.CallingConvention->SwitchWithError("Unsupported option: "
+			CallingConvention: Compile.CallingConvention->SwitchWithError(
+				"Unsupported option: "
 				, "Cdecl", "Cdecl"
 				, "StdCall", "StdCall"
 				, "FastCall", "FastCall"
@@ -83,7 +85,8 @@ GeneratorSetting
 
 	Compile_Warnings =+ {
 		VSSettings: {
-			WarningLevel: Compile.Warnings->SwitchWithError("Unsupported option: "
+			WarningLevel: Compile.Warnings->SwitchWithError(
+				"Unsupported option: "
 				, "Off", "TurnOffAllWarnings"
 				, "Minimal", "Level1"
 				, "On", "Level3"
@@ -172,7 +175,8 @@ GeneratorSetting
 
 	Compile_FloatingPointModel =+ {
 		VSSettings: {
-			FloatingPointModel: Compile.FloatingPointModel->SwitchWithError("Unsupported option: "
+			FloatingPointModel: Compile.FloatingPointModel->SwitchWithError(
+				"Unsupported option: "
 				, "Precise", "Precise"
 				, "Strict", "Strict"
 			)
@@ -193,7 +197,8 @@ GeneratorSetting
 
 	Compile_ExtendedInstructionSet =+ {
 		VSSettings: {
-			EnableEnhancedInstructionSet: Compile.ExtendedInstructionSet->SwitchWithError("Unsupported option: "
+			EnableEnhancedInstructionSet: Compile.ExtendedInstructionSet->SwitchWithError(
+				"Unsupported option: "
 				, "Off", "NoExtensions"
 				, "SSE1", "StreamingSIMDExtensions"
 				, "SSE2", "StreamingSIMDExtensions2"
@@ -230,7 +235,8 @@ GeneratorSetting
 
 	Compile_RuntimeLibrary =+ {
 		VSSettings: {
-			RuntimeLibrary: Compile.RuntimeLibrary->SwitchWithError("Unsupported option: "
+			RuntimeLibrary: Compile.RuntimeLibrary->SwitchWithError(
+				"Unsupported option: "
 				, "Static", "MultiThreaded"
 				, "StaticDebug", "MultiThreadedDebug"
 				, "Dynamic", "MultiThreadedDLL"
@@ -241,7 +247,8 @@ GeneratorSetting
 
 	Compile_StructMemberAlignment =+ {
 		VSSettings: {
-			StructMemberAlignment: Compile.StructMemberAlignment->SwitchWithError("Unsupported option: "
+			StructMemberAlignment: Compile.StructMemberAlignment->SwitchWithError(
+				"Unsupported option: "
 				, "Default", "Default"
 				, "1", "1Byte"
 				, "2", "2Bytes"
@@ -261,7 +268,8 @@ GeneratorSetting
 
 	Compile_Exceptions =+ {
 		VSSettings: {
-			ExceptionHandling: Compile.Exceptions->SwitchWithError("Unsupported option: "
+			ExceptionHandling: Compile.Exceptions->SwitchWithError(
+				"Unsupported option: "
 				, "Full", "Async"
 				, "C++", "Sync"
 				, "ExternCandC++", "SyncCThrow"
@@ -272,7 +280,8 @@ GeneratorSetting
 
 	Compile_PrecompilePrefixHeader =+ {
 		VSSettings: {
-			PrecompiledHeader: Compile.PrecompilePrefixHeader->SwitchWithError("Unsupported option: "
+			PrecompiledHeader: Compile.PrecompilePrefixHeader->SwitchWithError(
+				"Unsupported option: "
 				, true, "Use"
 				, false, "NotUsing"
 				, "XInternalCreate", "Create"
@@ -308,23 +317,27 @@ GeneratorSetting
 	}
 
 	Compile_Optimize =+ {
-		VSSettings: Compile.Optimize->SwitchWithError("Unsupported option: "
+		VSSettings: Compile.Optimize->SwitchWithError(
+			"Unsupported option: "
 			, "Off", {
 				Optimization: "Disabled"
 				, IntrinsicFunctions: "false"
 				, OmitFramePointers: "false"
 				, FavorSizeOrSpeed: "Neither"
-			}, "On", {
+			}
+			, "On", {
 				Optimization: "Full"
 				, IntrinsicFunctions: "true"
 				, OmitFramePointers: "false"
 				, FavorSizeOrSpeed: "Speed"
-			}, "Fast", {
+			}
+			, "Fast", {
 				Optimization: "Full"
 				, IntrinsicFunctions: "true"
 				, OmitFramePointers: "false"
 				, FavorSizeOrSpeed: "Speed"
-			}, "Full", {
+			}
+			, "Full", {
 				Optimization: "Full"
 				, IntrinsicFunctions: "true"
 				, OmitFramePointers: "true"
@@ -334,20 +347,24 @@ GeneratorSetting
 	}
 
 	Compile_RuntimeChecks =+ {
-		VSSettings: Compile.RuntimeChecks->SwitchWithError("Unsupported option: "
+		VSSettings: Compile.RuntimeChecks->SwitchWithError(
+			"Unsupported option: "
 			, "Off", {
 				BasicRuntimeChecks: "Default"
 				, SmallerTypeCheck: "false"
 				, BufferSecurityCheck: "false"
-			}, "Fast", {
+			}
+			, "Fast", {
 				BasicRuntimeChecks: "Default"
 				, SmallerTypeCheck: "false"
 				, BufferSecurityCheck: "true"
-			}, "On", {
+			}
+			, "On", {
 				BasicRuntimeChecks: "EnableFastChecks"
 				, SmallerTypeCheck: "false"
 				, BufferSecurityCheck: "true"
-			}, "Full", {
+			}
+			, "Full", {
 				BasicRuntimeChecks: "EnableFastChecks"
 				, SmallerTypeCheck: "true"
 				, BufferSecurityCheck: "true"
@@ -357,7 +374,8 @@ GeneratorSetting
 
 	Compile_Inline =+ {
 		VSSettings: {
-			InlineFunctionExpansion: Compile.Inline->SwitchWithError("Unsupported option: "
+			InlineFunctionExpansion: Compile.Inline->SwitchWithError(
+				"Unsupported option: "
 				, "Off", "Disabled"
 				, "Explicit", "OnlyExplicitInline"
 				, "Automatic", "AnySuitable"
@@ -439,7 +457,11 @@ GeneratorSetting
 	Compile_Warnings_Parentheses =+ GeneratorSetting.f_Helper_SetVSWarning("", "parentheses", Compile.Warnings_Parentheses)
 	Compile_Warnings_UnusedLabel =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-label", Compile.Warnings_UnusedLabel)
 	Compile_Warnings_Cxx11Narrowing =+ GeneratorSetting.f_Helper_SetVSWarning("", "c++11-narrowing", Compile.Warnings_Cxx11Narrowing)
-	Compile_Warnings_SingleBitBitfieldConstantConversion =+ GeneratorSetting.f_Helper_SetVSWarning("", "single-bit-bitfield-constant-conversion", Compile.Warnings_SingleBitBitfieldConstantConversion)
+	Compile_Warnings_SingleBitBitfieldConstantConversion =+ GeneratorSetting.f_Helper_SetVSWarning(
+		""
+		, "single-bit-bitfield-constant-conversion"
+		, Compile.Warnings_SingleBitBitfieldConstantConversion
+	)
 	Compile_Warnings_UnusedCommandLineArgument =+ GeneratorSetting.f_Helper_SetVSWarning("", "unused-command-line-argument", Compile.Warnings_UnusedCommandLineArgument)
 	Compile_Warnings_VarArgs =+ GeneratorSetting.f_Helper_SetVSWarning("", "varargs", Compile.Warnings_VarArgs)
 	Compile_Warnings_TautolagicalPointerCompare =+ GeneratorSetting.f_Helper_SetVSWarning("", "tautological-pointer-compare", Compile.Warnings_TautolagicalPointerCompare)

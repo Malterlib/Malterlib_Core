@@ -68,9 +68,7 @@ void CIoLoop_Iocp::fp_DispatchOp(CIocpOp *_pOp, umint &_nReported)
 
 	switch (_pOp->m_Kind)
 	{
-	case EIocpOpKind::mc_Poll:
-		fp_DispatchPoll(static_cast<CIocpPollOp *>(_pOp), _nReported);
-		break;
+	case EIocpOpKind::mc_Poll: fp_DispatchPoll(static_cast<CIocpPollOp *>(_pOp), _nReported); break;
 
 	case EIocpOpKind::mc_Send:
 		_pOp->m_bCompleted = true;
@@ -102,9 +100,7 @@ void CIoLoop_Iocp::fp_DispatchOp(CIocpOp *_pOp, umint &_nReported)
 		fp_ReportCompletedRecvs(pRegistration, _nReported);
 		break;
 
-	case EIocpOpKind::mc_Wait:
-		fp_DispatchWait(_pOp, _nReported);
-		break;
+	case EIocpOpKind::mc_Wait: fp_DispatchWait(_pOp, _nReported); break;
 	}
 
 	fp_TryAcknowledge(pRegistration, _nReported);

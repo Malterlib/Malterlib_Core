@@ -28,7 +28,8 @@ else
 	ExtraParams="-m"
 fi
 
-echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\" "/t:Restore;Build" /nodereuse:false $ExtraParams /v:m "\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
+echo CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\" "/t:Restore;Build" /nodereuse:false $ExtraParams /v:m \
+	"\"/p:Platform=$Platform - $Architecture\"" "\"/p:Configuration=$Config\""
 CallDirect msbuild.exe "\"${BuildSystemDir}/${Workspace}.sln"\" \
 	"\"/consoleLoggerParameters:Verbosity=normal;ForceConsoleColor;NoSummary;ForceNoAlign;DisableConsoleColor;NoItemAndPropertyList\"" \
 	/nologo \

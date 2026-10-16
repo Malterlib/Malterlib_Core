@@ -29,7 +29,8 @@ GeneratorSetting
 	!!Target.Language "C#"
 
 	VisualStudio_FileType: string = SwitchWithError(
-		Compile.Type, "Unknown compile type: "
+		Compile.Type
+		, "Unknown compile type: "
 		, "C#", "Compile"
 		, "C#Component", "Compile"
 		, "ApplicationDefinition", "ApplicationDefinition"
@@ -42,7 +43,8 @@ GeneratorSetting
 	)
 
 	VisualStudio_BuildSupported: bool = SwitchWithDefault(
-		Compile.Type, false
+		Compile.Type
+		, false
 		, "C#", true
 		, "C#Component", true
 		, "ApplicationDefinition", true

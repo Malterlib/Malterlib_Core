@@ -29,7 +29,7 @@ namespace NMib::NSys
 	{
 		NAtomic::TCAtomic<umint> m_nOutstandingBytes = 0; // Charges capacity, not payload, until the buffer's final reference is released.
 
-		umint m_nLimitBytes = 0; // Zero is unlimited; resume below the limit to avoid oscillation.
+		umint m_nLimitBytes = 0;        // Zero is unlimited; resume below the limit to avoid oscillation.
 		umint m_nResumeBytes = 0;
 		umint m_nConsumerHoldBytes = 0; // Maximum payload retained before any release; set before starting so the backend can reserve partial-buffer headroom.
 

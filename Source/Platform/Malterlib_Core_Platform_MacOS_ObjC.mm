@@ -24,9 +24,9 @@ namespace NMib
 
 	namespace NPlatform
 	{
-		NSString* fg_MacOS_GetString(NStr::CStr const& _Str)
+		NSString *fg_MacOS_GetString(NStr::CStr const &_Str)
 		{
-			return [[NSString alloc] initWithUTF8String:_Str.f_GetStr()];
+			return [[NSString alloc] initWithUTF8String: _Str.f_GetStr()];
 		}
 
 		NStr::CStr fg_MacOS_GetString(NSString *_pStr)

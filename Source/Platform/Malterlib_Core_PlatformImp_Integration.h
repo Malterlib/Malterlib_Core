@@ -5,5 +5,5 @@
 #include <Mib/Core/Core>
 
 #ifdef DPlatformFamily_macOS
-	#include "Malterlib_Core_PlatformImp_MacOS_Integration.h"
+#	include "Malterlib_Core_PlatformImp_MacOS_Integration.h"
 #endif

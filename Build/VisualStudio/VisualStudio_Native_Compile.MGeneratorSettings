@@ -30,7 +30,8 @@ GeneratorSetting
 
 	Compile_Verbose =+ {
 		VSSettings: {
-			SuppressStartupBanner: Compile.Verbose->SwitchWithError("Unsupported option: "
+			SuppressStartupBanner: Compile.Verbose->SwitchWithError(
+				"Unsupported option: "
 				, true, ""
 				, false, "true"
 				, "", "true"
@@ -78,7 +79,8 @@ GeneratorSetting
 
 	Compile_PreserveIdentifierCase =+ {
 		VSSettings: {
-			PreserveIdentifierCase: Compile.PreserveIdentifierCase->SwitchWithError("Unsupported option: "
+			PreserveIdentifierCase: Compile.PreserveIdentifierCase->SwitchWithError(
+				"Unsupported option: "
 				, true, "1"
 				, false, "0"
 			)
@@ -201,4 +203,3 @@ GeneratorSetting
 		}
 	}
 }
-

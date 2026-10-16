@@ -12,7 +12,7 @@ Property
 	{
 		MalterlibPostCopyProject "Malterlib"
 	}
-	
+
 	%File "Main.cpp"
 	%Dependency "Lib_Malterlib_Core"
 //	%Dependency "Lib_Malterlib"
@@ -22,14 +22,14 @@ Property
 %Workspace "Malterlib_Minimal"
 {
 	!!MalterlibMinimalEnable true
-	
+
 	//Property.MalterlibLibrary_All true
 	Property.MalterlibSubLibrarySeparate true
 	Property.MalterlibMemoryManager "System"
-	
+
 	//Property.MalterlibUseStaticLibCxx false
 	//Property.MalterlibUseStaticLibCxxABI false
 	//Property.MalterlibDefaultToolset true
-	
+
 	%Target "Malterlib_Minimal"
 }
