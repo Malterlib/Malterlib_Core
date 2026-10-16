@@ -72,14 +72,14 @@ namespace
 
 	enum EExecutionPriority
 	{
-		EExecutionPriority_Lowest			= 0
-		, EExecutionPriority_Low			= 0x2AAA
-		, EExecutionPriority_BelowNormal	= 0x5555
-		, EExecutionPriority_Normal			= 0x8000
-		, EExecutionPriority_AboveNormal	= 0xAAAA
-		, EExecutionPriority_High			= 0xD555
-		, EExecutionPriority_Highest		= 0xFFFF
-		, EExecutionPriority_Default		= -1
+		EExecutionPriority_Lowest = 0
+		, EExecutionPriority_Low = 0x2AAA
+		, EExecutionPriority_BelowNormal = 0x5555
+		, EExecutionPriority_Normal = 0x8000
+		, EExecutionPriority_AboveNormal = 0xAAAA
+		, EExecutionPriority_High = 0xD555
+		, EExecutionPriority_Highest = 0xFFFF
+		, EExecutionPriority_Default = -1
 	};
 
 #ifdef DPlatformFamily_Linux
@@ -120,7 +120,7 @@ namespace
 	}
 
 	template <typename t_CData>
-	constexpr bool fg_CharIsNumber(const t_CData _Character)
+	constexpr bool fg_CharIsNumber(t_CData const _Character)
 	{
 		if (_Character >= '0' && _Character <= '9')
 			return true;
@@ -129,7 +129,7 @@ namespace
 	}
 
 	template <typename t_CChar>
-	constexpr void fg_ParseNumeric(const t_CChar * &_pParse)
+	constexpr void fg_ParseNumeric(t_CChar const * &_pParse)
 	{
 		auto *pParse = _pParse;
 		while (*pParse)
@@ -139,7 +139,7 @@ namespace
 			++pParse;
 		}
 
-		_pParse = (const t_CChar * )pParse;
+		_pParse = (t_CChar const *)pParse;
 	}
 
 	long long int fg_StrToInt(char const *_pParse, size_t _nChars)

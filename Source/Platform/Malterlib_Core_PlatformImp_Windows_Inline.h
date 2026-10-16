@@ -78,7 +78,6 @@ namespace NMib
 		/// Thread locals
 		/// =============
 
-
 		namespace NPrivate
 		{
 			template <typename tf_CType>
@@ -92,7 +91,6 @@ namespace NMib
 					return (tf_CType)__readfsdword(_iIndex);
 #				endif
 			}
-
 		}
 
 		inline_always void *fg_Thread_GetLocal(umint _iStorage)
@@ -101,7 +99,7 @@ namespace NMib
 
 			DMibFastCheck(_iStorage <= CWindowsThreadLocals::mc_ThreadLocalSlots);
 			auto *pThreadLocals = NPrivate::fg_GetTebData<CWindowsThreadLocals *>(CWindowsThreadLocals::ms_ThreadLocalsExtendedLocactionOffset);
- 			if (pThreadLocals)
+			if (pThreadLocals)
 				return pThreadLocals->m_ThreadLocals[_iStorage];
 			return nullptr;
 		}
@@ -150,7 +148,6 @@ namespace NMib
 		{
 			return fg_Thread_GetCurrentUID();
 		}
-
 	}
 }
 

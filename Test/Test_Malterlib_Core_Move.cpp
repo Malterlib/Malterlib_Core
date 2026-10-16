@@ -16,10 +16,12 @@ struct CTestStruct
 	{
 		//DMibTrace("CTestStruct construct\r\n", 0);
 	}
+
 	CTestStruct(CTestStruct const &_Other)
 	{
 		//DMibTrace("CTestStruct copy\r\n", 0);
 	}
+
 	CTestStruct(CTestStruct &&_Other)
 	{
 		//DMibTrace("CTestStruct move\r\n", 0);
@@ -31,12 +33,11 @@ struct CTestStruct2
 	CTestStruct m_Member0;
 	CTestStruct m_Member1;
 
-	const ch8 *f_TestDebugger() const
+	ch8 const *f_TestDebugger() const
 	{
 		return "Hahahaha";
 	}
 };
-
 
 struct CTestLinked
 {
@@ -63,7 +64,7 @@ struct CTestAVLTree
 	class CCompare
 	{
 	public:
-		inline_small NMib::NStr::CStr const & operator () (CTestAVLTree const &_Object) const
+		inline_small NMib::NStr::CStr const &operator () (CTestAVLTree const &_Object) const
 		{
 			return _Object.m_Data;
 		}
@@ -73,8 +74,6 @@ struct CTestAVLTree
 	{
 	}
 };
-
-
 
 enum EParam
 {
@@ -89,7 +88,6 @@ namespace
 	class CMove_Tests : public NMib::NTest::CTest
 	{
 	public:
-
 		void f_DoTests()
 		{
 #if 1
@@ -128,7 +126,7 @@ namespace
 
 			[[maybe_unused]] NMib::NTime::CTime Time = NMib::NTime::CTime::fs_NowUTC();
 
-			[[maybe_unused]] NMib::NTime::CTimeSpan TimeSpan = NMib::NTime::CTimeSpanConvert	::fs_CreateSpan(1,1,1,1,1,0.5);
+			[[maybe_unused]] NMib::NTime::CTimeSpan TimeSpan = NMib::NTime::CTimeSpanConvert::fs_CreateSpan(1, 1, 1, 1, 1, 0.5);
 
 			fp32 Test0 = 3.55f;
 			fp64 Test1 = 3.55;
@@ -141,10 +139,7 @@ namespace
 			List.f_Insert(Test334);
 
 			for (auto Iter = List.f_GetIterator(); Iter; ++Iter)
-			{
 				int y = 0;
-			}
-
 
 			NMib::NContainer::TCVector<CTestLinked> Vector;
 			DMibListLinkD_List(CTestLinked, m_Link) LinkedList;
@@ -167,21 +162,14 @@ namespace
 				LinkedListSingle.f_Insert(Insert2);
 			}
 			for (auto Iter = LinkedList.f_GetIterator(); Iter; ++Iter)
-			{
 				int y = 0;
-			}
 
 			for (auto Iter = LinkedListSingle.f_GetIterator(); Iter; ++Iter)
-			{
 				int y = 0;
-			}
 
 			auto VectorIter = Vector.f_GetIterator();
 			for (; VectorIter; ++VectorIter)
-			{
 				int y = 0;
-			}
-
 
 			NMib::NContainer::TCLinkedList<CTestAVLTree> AVLList;
 			NMib::NIntrusive::TCAVLTree<&CTestAVLTree::m_Link, CTestAVLTree::CCompare> AVLTree;
@@ -201,9 +189,7 @@ namespace
 			}
 
 			for (auto Iter = AVLTree.f_GetIterator(); Iter; ++Iter)
-			{
 				int y = 0;
-			}
 
 			NMib::NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> Map;
 
@@ -212,9 +198,7 @@ namespace
 			Map["Test 3"] = "1";
 
 			for (auto Iter = Map.f_GetIterator(); Iter; ++Iter)
-			{
 				int y = 0;
-			}
 
 			NMib::NContainer::TCSet<NMib::NStr::CStr> Set;
 
@@ -223,9 +207,7 @@ namespace
 			Set["Test 3"];
 
 			for (auto Iter = Set.f_GetIterator(); Iter; ++Iter)
-			{
 				int y = 0;
-			}
 
 			NMib::NStorage::TCAggregateSimple<NMib::NStr::CStr> TestAggregateSimple = {DAggregateInit};
 			TestAggregateSimple.f_Construct();
@@ -265,7 +247,6 @@ namespace
 			pChild->f_SetValue("test2", "66");
 			pChild->f_SetValue("test3", "77");
 
-
 			NMib::NThread::TCThreadLocal<NMib::NStr::CStr> ThreadLocal;
 
 			*ThreadLocal = "Threaded!!!";
@@ -273,7 +254,6 @@ namespace
 			[[maybe_unused]] auto Ref = NMib::fg_Reference(TestStr2);
 			[[maybe_unused]] auto UndefinedRef = NMib::fg_Reference(TestStr2);
 		}
-
 	};
 
 	DMibTestRegister(CMove_Tests, Malterlib::Core);

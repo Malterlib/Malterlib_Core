@@ -60,7 +60,7 @@ GeneratorSetting
 
 	CalculateCommandLine: string
 	CalculateCommandLine `set -eo pipefail\n`\
-	`@(Compile.Custom_CommandLine)\n`
+						 `@(Compile.Custom_CommandLine)\n`
 	{
 		!!Compile.Custom_Shell->FindNoCase("bash") true
 	}
@@ -237,7 +237,6 @@ Compile
 Target
 {
 	AllFiles_Custom: [string] = []
-
 }
 
 GeneratorSetting

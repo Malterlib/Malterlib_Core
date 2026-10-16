@@ -29,7 +29,7 @@ namespace NMib
 
 #if defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
 
-		NStr::CFStr256 fg_FormatErrno(const ch8 *_pDesc, int _Err)
+		NStr::CFStr256 fg_FormatErrno(ch8 const *_pDesc, int _Err)
 		{
 			NStr::CFStr256 Ret;
 			auto pError = strerror_r(_Err, Ret.f_GetStr(256), 256);
@@ -48,7 +48,7 @@ namespace NMib
 
 #elif defined(DPlatformFamily_macOS)
 
-		NStr::CFStr256 fg_FormatErrno(const ch8 *_pDesc, int _Err)
+		NStr::CFStr256 fg_FormatErrno(ch8 const *_pDesc, int _Err)
 		{
 			NStr::CFStr256 ErrorFormat;
 			ch8 const *pError;
@@ -72,6 +72,5 @@ namespace NMib
 #else
 	#error "Not implemented"
 #endif
-
 	}
 }

@@ -118,7 +118,6 @@ namespace NMib
 		class CExceptionFilterScope
 		{
 		public:
-
 			CExceptionFilterScope(CExceptionFilter &_Filter)
 			{
 				auto &ThreadLocal = fg_SystemThreadLocal();
@@ -131,6 +130,7 @@ namespace NMib
 				auto &ThreadLocal = fg_SystemThreadLocal();
 				ThreadLocal.m_pExceptionFilter = m_pOldFilter;
 			}
+
 		private:
 			DMibThreadLocalScopeDebugMember;
 			CExceptionFilter *m_pOldFilter;
@@ -139,7 +139,6 @@ namespace NMib
 		class CDisableExceptionFilterScope
 		{
 		public:
-
 			CDisableExceptionFilterScope()
 			{
 				auto &ThreadLocal = fg_SystemThreadLocal();
@@ -152,6 +151,7 @@ namespace NMib
 				auto &ThreadLocal = fg_SystemThreadLocal();
 				ThreadLocal.m_pExceptionFilter = m_pOldFilter;
 			}
+
 		private:
 			DMibThreadLocalScopeDebugMember;
 			CExceptionFilter *m_pOldFilter;
@@ -200,11 +200,10 @@ namespace NMib
 #define DWorkaroundVirtualLayout
 #endif
 
-
 //	#ifdef DPlatformFamily_macOS
 //		using CMainHeapVirtualAllocator = NMemory::CAllocator_VirtualNoCommit;
 //	#else
-		using CMainHeapVirtualAllocator = NMemory::CAllocator_Virtual;
+	using CMainHeapVirtualAllocator = NMemory::CAllocator_Virtual;
 //	#endif
 
 #ifdef DPlatformFamily_Windows
@@ -220,7 +219,6 @@ namespace NMib
 		friend class CSystemModule;
 
 	private:
-
 		NThread::CMutual mp_SubSystemsLock;
 		DMibListLinkD_List(CSubSystem, m_Link) mp_SubSystems;
 
@@ -292,8 +290,8 @@ namespace NMib
 		NStr::CStrNonTracked m_ProgramRootNonTracked;
 
 #if DMibSysLogSeverities
-		NLog::CLogger* m_pSystemLog;
-		NLog::CLogFile* m_pDefaultLogFile;
+		NLog::CLogger *m_pSystemLog;
+		NLog::CLogFile *m_pDefaultLogFile;
 #if DMibEnableTrace > 0
 		umint m_TraceLoggerDestination = 0;
 #endif
@@ -301,15 +299,14 @@ namespace NMib
 		umint m_FileLoggerDestination = 0;
 #endif
 
-		void fp_InitComplete();	// Called by subclasses to signify they have finished constructing.
+		void fp_InitComplete(); // Called by subclasses to signify they have finished constructing.
 
 	public:
-
 		void f_AddSubSystem(CSubSystem &_SubSystem);
 
 		static bool ms_bDisableMemoryManagerLeakReport;
 
-		CVirtualMachineInfo const& f_GetVirtualMachineInfo() const
+		CVirtualMachineInfo const &f_GetVirtualMachineInfo() const
 		{
 			return mp_VMInfo;
 		}
@@ -324,7 +321,7 @@ namespace NMib
 		void f_AddStdErrLogger();
 		void f_AddFileLogger();
 
-		void f_RegisterProgram(const NStr::CStr &_ProgramName, const NStr::CStr &_SupportEmail, bool _bRunningAsDaemon)
+		void f_RegisterProgram(NStr::CStr const &_ProgramName, NStr::CStr const &_SupportEmail, bool _bRunningAsDaemon)
 		{
 			m_ProgramName = _ProgramName;
 			m_ProgramNameNonTracked = _ProgramName;
@@ -353,7 +350,7 @@ namespace NMib
 			return m_ProgramName;
 		}
 
-		void f_SetCrashHandler(NStr::CStr const& _Path, NStr::CStr const& _Server);
+		void f_SetCrashHandler(NStr::CStr const &_Path, NStr::CStr const &_Server);
 
 		NStr::CStr const &f_GetCrashHandlerPath() const
 		{
@@ -386,7 +383,7 @@ namespace NMib
 		}
 
 		// Thread safety?
-		void f_SetProgramRoot(NStr::CStr const& _Root)
+		void f_SetProgramRoot(NStr::CStr const &_Root)
 		{
 			m_ProgramRoot = _Root;
 			m_ProgramRootNonTracked = _Root;
@@ -396,14 +393,17 @@ namespace NMib
 		{
 			return m_ProgramRoot;
 		}
+
 		NStr::CStrNonTracked const &f_GetProgramRootNonTracked() const
 		{
 			return m_ProgramRootNonTracked;
 		}
 
-
 #if DMibSysLogSeverities
-		NLog::CLogger& f_GetLogger() { return *m_pSystemLog; }
+		NLog::CLogger &f_GetLogger()
+		{
+			return *m_pSystemLog;
+		}
 #endif
 
 		CSystem(bool _bIsDll);
@@ -418,7 +418,7 @@ namespace NMib
 			return m_Lock;
 		}
 
-        /************************************************************************************************\
+		/************************************************************************************************\
         ||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
         || Local stuff
         ||______________________________________________________________________________________________||
@@ -480,13 +480,13 @@ namespace NMib
 		void f_ForkedChild();
 		void f_ForkedParent();
 
-        /************************************************************************************************\
+		/************************************************************************************************\
         ||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
         || Debug
         ||______________________________________________________________________________________________||
         \************************************************************************************************/
 
-		void f_FatalError(const ch8 *_pMessage);
+		void f_FatalError(ch8 const *_pMessage);
 
 		/************************************************************************************************\
         ||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
@@ -575,7 +575,6 @@ namespace NMib
 	class CSystemModule
 	{
 	public:
-
 		CSystem *m_pSystem;
 
 		DMibListLinkDA_List(NStorage::CAggregate, m_Link) m_Aggregates;
@@ -603,7 +602,7 @@ namespace NMib
 	class CAppClasses
 	{
 	public:
-		const ch8 *m_pAppClass;
+		ch8 const *m_pAppClass;
 	};
 
 	// These classes the app has to overide to tell the runtime which classes the app should be. m_pSysImp does not have to be definde
@@ -616,7 +615,6 @@ namespace NMib
 #	ifndef DMibPNoShortCuts
 #		define DAppNoClass DMibAppNoClass
 #	endif
-
 };
 
 #include "Malterlib_Core_SubSystem.hpp"

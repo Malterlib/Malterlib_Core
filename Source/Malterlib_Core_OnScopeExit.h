@@ -17,8 +17,8 @@ namespace NMib
 	template <typename t_FOnExitFunctor, bool t_bNoExcept = true>
 	struct [[nodiscard]] TCOnScopeExit
 	{
-		TCOnScopeExit(TCOnScopeExit const&) = delete;
-		TCOnScopeExit operator=(TCOnScopeExit const&) = delete;
+		TCOnScopeExit(TCOnScopeExit const &) = delete;
+		TCOnScopeExit operator = (TCOnScopeExit const &) = delete;
 		TCOnScopeExit(t_FOnExitFunctor const &_fOnExitFunctor) = delete;
 
 		inline_always TCOnScopeExit(t_FOnExitFunctor &&_fOnExitFunctor)
@@ -52,7 +52,7 @@ namespace NMib
 		}
 
 		template <typename ...tfp_CParam>
-		void operator () (tfp_CParam &&...p_Params)
+		void operator () (tfp_CParam && ...p_Params)
 		{
 			if (mp_bIsValid)
 			{
@@ -82,7 +82,7 @@ namespace NMib
 		bool mp_bIsValid;
 	};
 
-	template<typename tf_FOnExitFunctor>
+	template <typename tf_FOnExitFunctor>
 	inline_always TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>> fg_OnScopeExit(tf_FOnExitFunctor &&_fOnExitFunctor)
 	{
 		return TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
@@ -90,21 +90,23 @@ namespace NMib
 
 	struct COnScopeExitHelper
 	{
-		template<typename tf_FOnExitFunctor>
+		template <typename tf_FOnExitFunctor>
 		inline_always TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
 		{
 			return TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
 		}
 	};
+
 	extern COnScopeExitHelper const &g_OnScopeExit;
 
 	struct COnScopeExitHelperWithException
 	{
-		template<typename tf_FOnExitFunctor>
+		template <typename tf_FOnExitFunctor>
 		inline_always TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>, false> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
 		{
 			return TCOnScopeExit<NTraits::TCRemoveReferenceStorable<tf_FOnExitFunctor>, false>(fg_Forward<tf_FOnExitFunctor>(_fOnExitFunctor));
 		}
 	};
+
 	extern COnScopeExitHelperWithException const &g_OnScopeExitWithException;
 }

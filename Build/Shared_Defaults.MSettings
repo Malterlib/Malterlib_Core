@@ -5,24 +5,24 @@
 
 Property
 {
-    MalterlibTargetExtraSuffix: string = ""
-    MalterlibTargetCustom: string = ""
-    MalterlibDoExeFS: bool = false
-    MalterlibUsesTranslation: bool = false
-    MalterlibDoTranslationExeFS: bool = false
-    MalterlibStronglyNamedAssembly: string?
-    MalterlibNotifyResult: bool = false
-    MalterlibExeFSPath: string = `@(Target:this.IdentityPath->GetPath())/ExeFS/*`
-    MalterlibPostCopyProject: string?
+	MalterlibTargetExtraSuffix: string = ""
+	MalterlibTargetCustom: string = ""
+	MalterlibDoExeFS: bool = false
+	MalterlibUsesTranslation: bool = false
+	MalterlibDoTranslationExeFS: bool = false
+	MalterlibStronglyNamedAssembly: string?
+	MalterlibNotifyResult: bool = false
+	MalterlibExeFSPath: string = `@(Target:this.IdentityPath->GetPath())/ExeFS/*`
+	MalterlibPostCopyProject: string?
 	MalterlibPostCopyHash: bool = false
-    MalterlibPostCopyDestination: string = ""
-    MalterlibPostCopyProject2: string?
+	MalterlibPostCopyDestination: string = ""
+	MalterlibPostCopyProject2: string?
 	MalterlibPostCopyHash2: bool = false
-    MalterlibPostCopyDestination2: string = ""
-    MalterlibConsoleApp: bool = false
-    MalterlibQtSupport: bool = false
+	MalterlibPostCopyDestination2: string = ""
+	MalterlibConsoleApp: bool = false
+	MalterlibQtSupport: bool = false
 	MalterlibOutOfProcessSupport: bool = false
-    MalterlibRWPropertyPages: bool = false
+	MalterlibRWPropertyPages: bool = false
 	MalterlibEnableInternalWorkspaces: bool = false
 	MalterlibDoingProductBuild: bool = false
 
@@ -39,7 +39,7 @@ Property
 	MalterlibManualForeignThreadInitialization: bool = true
 	MalterlibThread_MacOSPThreadIntrospection: bool = true // Initialize foreign threads (dispatch workers, XPC reply threads) through the pthread introspection hook, enabling always-created thread locals on macOS
 
-    MalterlibSigning: bool
+	MalterlibSigning: bool
 	MalterlibSigning true
 	{
 		&
@@ -93,10 +93,10 @@ Property
 		}
 	}
 
-    MalterlibMinSupportediOSVersion: string = "8.1" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
-    MalterlibMaxSupportediOSVersion: string = "Latest" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMinSupportediOSVersion: string = "8.1" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
+	MalterlibMaxSupportediOSVersion: string = "Latest" // User(Platform Version): Max supported iOS version. Set this to smaller version to compile time check that you aren't using disallowed functions without version checks
 
-    MalterlibAllSchemes: bool = false // User(Build System)=true: Enable to generate schemes for all targets, even targets without debug commands
+	MalterlibAllSchemes: bool = false // User(Build System)=true: Enable to generate schemes for all targets, even targets without debug commands
 
 	MalterlibSharedDeployRoot: string = "/Shared"
 
@@ -119,7 +119,7 @@ Property
 	MalterlibForceDeploySymbols: bool = false
 
 	MalterlibDeploySymbols: bool = false
-    MalterlibDeploySymbols true
+	MalterlibDeploySymbols true
 	{
 		&
 		{
@@ -408,7 +408,7 @@ Property
 Property
 {
 	ProductVersionExtra: string
-    ProductVersionExtra "D"
+	ProductVersionExtra "D"
 	{
 		&
 		{
@@ -421,19 +421,19 @@ Property
 		!!ProductVersionExtra undefined
 	}
 
-    ProductVersionMajor: string = "1"
-    ProductVersionMinor: string = "0"
-    ProductVersionRevision: string = "001"
+	ProductVersionMajor: string = "1"
+	ProductVersionMinor: string = "0"
+	ProductVersionRevision: string = "001"
 
-    ProductName: string = "Unnamed Product"
-    ProductCompanyUniqueIdentifier: string = "com.example"
-    ProductCompany: string = "Unknown company"
-    ProductCountry: string = "XX"
-    ProductLocality: string = "Unknown"
-    ProductOrganizationalUnit: string = "Unknown"
-    ProductContact: string = "Malterlib <support@malterlib.com>"
-    ProductCopyright: string = `Copyright © @(DateTime('{YYYY}')) @(ProductCompany). All rights reserved.`
+	ProductName: string = "Unnamed Product"
+	ProductCompanyUniqueIdentifier: string = "com.example"
+	ProductCompany: string = "Unknown company"
+	ProductCountry: string = "XX"
+	ProductLocality: string = "Unknown"
+	ProductOrganizationalUnit: string = "Unknown"
+	ProductContact: string = "Malterlib <support@malterlib.com>"
+	ProductCopyright: string = `Copyright © @(DateTime('{YYYY}')) @(ProductCompany). All rights reserved.`
 	ProductDescription: string = ProductName
-    ProductFileName: string = Workspace:Workspace.Name
+	ProductFileName: string = Workspace:Workspace.Name
 	ProductVersionHex: string = `@(ProductVersionMajor->ParseFormatString("{}", "{sj4,sf0}"))@(ProductVersionMinor)@(ProductVersionRevision)`
 }

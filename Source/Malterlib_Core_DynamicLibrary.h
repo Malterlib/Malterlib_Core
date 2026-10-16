@@ -80,9 +80,9 @@ namespace NMib
 	using CDLFlagUnderlying = int32;
 	enum EDLFlag : int32 // EDynamicLibraryFlag, shortened for typing.
 	{
-		EDLFlag_None			= 0,
-		EDLFlag_NoThrow			= DMibBit(0),		// Do not throw an exception when an error is encountered, use return codes.
-		EDLFlag_AllowMissing	= DMibBit(2),	// Allow symbols to be missing without making the whole object bad.
+		EDLFlag_None = 0
+		, EDLFlag_NoThrow = DMibBit(0) // Do not throw an exception when an error is encountered, use return codes.
+		, EDLFlag_AllowMissing = DMibBit(2) // Allow symbols to be missing without making the whole object bad.
 	};
 
 	struct CDynamicLibraryUtility
@@ -100,7 +100,7 @@ namespace NMib
 
 		~CDynamicLibraryUtility();
 
-		explicit operator bool() const;
+		explicit operator bool () const;
 
 		bool f_OK() const;
 		bool f_Reload(NStr::CStr const &_Filename = {});
@@ -114,8 +114,8 @@ namespace NMib
 
 		bool fp_LoadLibrary(NStr::CStr const &_Filename);
 
-		template<typename t_CType>
-		bool fp_Fetch(t_CType* & _pPtr, ch8 const *_pName)
+		template <typename t_CType>
+		bool fp_Fetch(t_CType * &_pPtr, ch8 const *_pName)
 		{
 			if (!mp_bOK)
 			{
@@ -123,7 +123,7 @@ namespace NMib
 				return false;
 			}
 
-			*(void**)&_pPtr = NSys::fg_GetLibrarySymbol(mp_pLibrary, _pName);
+			*(void **)&_pPtr = NSys::fg_GetLibrarySymbol(mp_pLibrary, _pName);
 			if (!_pPtr)
 			{
 				if (!(mp_Flags & EDLFlag_AllowMissing))

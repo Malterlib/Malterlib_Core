@@ -83,7 +83,7 @@ namespace NMib
 
 					NFile::CFile::fs_CreateDirectory(DumpLocation);
 				}
-				catch (NFile::CExceptionFile const&)
+				catch (NFile::CExceptionFile const &)
 				{
 					DumpLocation = "/tmp";
 				}
@@ -91,19 +91,9 @@ namespace NMib
 
 #if defined(DPlatformFamily_Linux)
 			google_breakpad::MinidumpDescriptor Descriptor(DumpLocation.f_GetStr());
-			m_pExceptionHandler = fg_Construct(Descriptor
-											   , nullptr
-											   , fs_DumpCallback
-											   , this
-											   , true
-											   , -1);
+			m_pExceptionHandler = fg_Construct(Descriptor, nullptr, fs_DumpCallback, this, true, -1);
 #else
-			m_pExceptionHandler = fg_Construct(DumpLocation.f_GetStr()
-											   , nullptr
-											   , fs_DumpCallback
-											   , this
-											   , true
-											   , nullptr);
+			m_pExceptionHandler = fg_Construct(DumpLocation.f_GetStr(), nullptr, fs_DumpCallback, this, true, nullptr);
 #endif
 		}
 
@@ -156,9 +146,9 @@ namespace NMib
 			{
 				// Child process.
 
-				NStr::CStrNonTracked const& ProgramName = fg_GetSys()->f_GetProgramNameNonTracked();
+				NStr::CStrNonTracked const &ProgramName = fg_GetSys()->f_GetProgramNameNonTracked();
 
-				const char* pArgs[] =
+				char const *pArgs[] =
 					{
 						fg_GetSys()->f_GetCrashHandlerPath().f_GetStr()
 						, ProgramName.f_IsEmpty() ? "application" : ProgramName.f_GetStr()
@@ -170,13 +160,11 @@ namespace NMib
 					}
 				;
 
-				execve(pArgs[0], const_cast<char**>(pArgs), pThis->m_EnvList.f_GetArray());
+				execve(pArgs[0], const_cast<char **>(pArgs), pThis->m_EnvList.f_GetArray());
 				NSys::fg_TerminateProcess(1);
 			}
 			else if (Child > 0)
-			{
 				waitpid(Child, nullptr, WNOHANG);
-			}
 
 			_exit(1);
 
@@ -198,6 +186,7 @@ namespace NMib
 			g_Breakpad.f_Construct();
 			fg_InitialiseCrashReporter();
 		}
+
 		void fg_DestroyBreakpad()
 		{
 			g_Breakpad.f_Destruct();

@@ -21,6 +21,7 @@ struct CInitMalterlib
 	{
 		NMib::NSys::fg_CreateSystem();
 	}
+
 	~CInitMalterlib()
 	{
 		NMib::NSys::fg_DestroySystem();
@@ -55,19 +56,14 @@ extern "C" void __modti3();
 extern "C" void __udivti3();
 #endif
 
-extern "C" void __attribute__ ((constructor(-1111111111))) fg_InitMalterlib()
+extern "C" void __attribute__((constructor(-1111111111))) fg_InitMalterlib()
 {
 #ifdef DMalterlibUseStaticLibCxx
-	__attribute__((used)) static volatile unsigned long long WorkaroundSum
-		= (unsigned long long)&__umodti3
-		+ (unsigned long long)&__udivmodti4
+	__attribute__((used)) static unsigned long long volatile WorkaroundSum = (unsigned long long)&__umodti3 + (unsigned long long)&__udivmodti4
 #ifdef DArchitecture_x64
-		+ (unsigned long long)&__fixunsxfti
-		+ (unsigned long long)&__fixxfti
+		+ (unsigned long long)&__fixunsxfti + (unsigned long long)&__fixxfti
 #endif
-		+ (unsigned long long)&__divti3
-		+ (unsigned long long)&__modti3
-		+ (unsigned long long)&__udivti3
+		+ (unsigned long long)&__divti3 + (unsigned long long)&__modti3 + (unsigned long long)&__udivti3
 	;
 #endif
 
@@ -76,7 +72,7 @@ extern "C" void __attribute__ ((constructor(-1111111111))) fg_InitMalterlib()
 
 extern "C" void fg_MalterlibDestroySystem_MacOS();
 
-extern "C" void __attribute__ ((destructor(-1111111111))) fg_DestroyMalterlib()
+extern "C" void __attribute__((destructor(-1111111111))) fg_DestroyMalterlib()
 {
 	fg_MalterlibDestroySystem_MacOS();
 }

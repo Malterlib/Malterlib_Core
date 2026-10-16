@@ -334,15 +334,7 @@ namespace NMib::NSys
 			if (!pDispatch->m_pLoop)
 				DMibError("No I/O loop is available for signal dispatch");
 
-			pDispatch->m_pRegistration = pDispatch->m_pLoop->f_Register
-				(
-					Pipes[0]
-					, this
-					, NSys::EIoLoopEvent::mc_Read
-					, &fs_OnPipeReadable
-					, false
-				)
-			;
+			pDispatch->m_pRegistration = pDispatch->m_pLoop->f_Register(Pipes[0], this, NSys::EIoLoopEvent::mc_Read, &fs_OnPipeReadable, false);
 
 			m_pDispatch = fg_Move(pDispatch);
 
@@ -405,15 +397,7 @@ namespace NMib::NSys
 
 		CSubSystem_Core_Signal::fs_OpenPipe("thread signal", pDispatch->m_Pipe);
 
-		pDispatch->m_pRegistration = pLoop->f_Register
-			(
-				pDispatch->m_Pipe[0]
-				, pDispatch.f_Get()
-				, NSys::EIoLoopEvent::mc_Read
-				, &CSubSystem_Core_Signal::fs_OnThreadPipeReadable
-				, false
-			)
-		;
+		pDispatch->m_pRegistration = pLoop->f_Register(pDispatch->m_Pipe[0], pDispatch.f_Get(), NSys::EIoLoopEvent::mc_Read, &CSubSystem_Core_Signal::fs_OnThreadPipeReadable, false);
 
 		ThreadLocal.m_ThreadSignal = _Signal;
 		ThreadLocal.m_pDispatch = pDispatch;

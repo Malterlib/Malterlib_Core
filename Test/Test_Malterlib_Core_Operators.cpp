@@ -8,12 +8,12 @@
 
 //using namespace NMib;
 
-
 namespace
 {
 	class CTestVal
 	{
 		int32 m_Value;
+
 	public:
 		static int32 &fsp_ValueType();
 		CTestVal(int32 _Value)
@@ -61,38 +61,34 @@ namespace
 		}
 	};
 
-	auto operator <=> (int _Left, const CTestVal &_Right) noexcept
+	auto operator <=> (int _Left, CTestVal const &_Right) noexcept
 	{
 		return _Left <=> _Right.f_GetVal();
 	}
 
-	[[maybe_unused]] bool operator == (int _Left, const CTestVal &_Right) noexcept
+	[[maybe_unused]] bool operator == (int _Left, CTestVal const &_Right) noexcept
 	{
 		return _Left == _Right.f_GetVal();
 	}
 
 	enum ETestOperator
 	{
-		ETestOperator_0 = DMibBit(0),
-		ETestOperator_1 = DMibBit(1),
-		ETestOperator_2 = DMibBit(2),
-		ETestOperator_All = ETestOperator_0 | ETestOperator_1 | ETestOperator_2,
-		ETestOperator_LeftTest1 = 3 << 2,
-		ETestOperator_LeftTest2 = 3 << 4,
-		ETestOperator_Negative = -1
+		ETestOperator_0 = DMibBit(0)
+		, ETestOperator_1 = DMibBit(1)
+		, ETestOperator_2 = DMibBit(2)
+		, ETestOperator_All = ETestOperator_0 | ETestOperator_1 | ETestOperator_2
+		, ETestOperator_LeftTest1 = 3 << 2
+		, ETestOperator_LeftTest2 = 3 << 4
+		, ETestOperator_Negative = -1
 	};
-
-
 
 	static_assert(ETestOperator_All == 7);
 
 	class COperators_Tests : public NMib::NTest::CTest
 	{
 	public:
-
 		void f_DoTests()
 		{
-
 			DMibTestCategory("Enums")
 			{
 				DMibTestSuite("Bitwise Or")
@@ -159,7 +155,6 @@ namespace
 					DMibTest(DMibExpr(EnumValue == -1));
 				};
 	#endif
-
 			};
 
 			DMibTestCategory("Comparison")
@@ -185,7 +180,6 @@ namespace
 					DMibTest(DMibExpr(CTestVal(1)) != DMibExpr(CTestVal(3)));
 					DMibTest(DMibExpr(!(CTestVal(2) != CTestVal(2))));
 				};
-
 
 				DMibTestSuite("Greater Than")
 				{
@@ -228,22 +222,18 @@ namespace
 				bTest = fp64(10.0) < fp32(-1000000000.0);
 
 #if 0
-				DMibTrace("{}\r\n", sizeof(fp64(10.0) * fp32(1.0f/3.0f)));
-				DMibTrace("{}\r\n", sizeof(fp32(10.0f) * fp64(1.0/3.0)));
-				DMibTrace("{}\r\n", fp64(10.0) * fp32(1.0f/3.0f));
-				DMibTrace("{}\r\n", fp32(10.0f) * fp64(1.0/3.0));
+				DMibTrace("{}\r\n", sizeof(fp64(10.0) * fp32(1.0f / 3.0f)));
+				DMibTrace("{}\r\n", sizeof(fp32(10.0f) * fp64(1.0 / 3.0)));
+				DMibTrace("{}\r\n", fp64(10.0) * fp32(1.0f / 3.0f));
+				DMibTrace("{}\r\n", fp32(10.0f) * fp64(1.0 / 3.0));
 #endif
 
 				fp64 fFloat = 1.1111111111111111111111111111111111111111111111111111111111;
 				fFloat = NMib::fg_Clamp(fp64(fp32(fFloat)), -1000000000.0, 1000000000.0);
-
 			};
-
-
 		}
 	};
 
 	DMibTestRegister(COperators_Tests, Malterlib::Core);
 }
-
 

@@ -20,21 +20,20 @@
 #	error "Implement this"
 #endif
 
-
 // Basic types
 
 using pfp32 = float;
 #define DMibPCanDo_fp32
-static_assert(sizeof(pfp32)*8 == 32, "fp32 not supported");
+static_assert(sizeof(pfp32) * 8 == 32, "fp32 not supported");
 
 using pfp64 = double;
 #define DMibPCanDo_fp64
-static_assert(sizeof(pfp64)*8 == 64, "fp64 not supported");
+static_assert(sizeof(pfp64) * 8 == 64, "fp64 not supported");
 
 #if !defined(DCompiler_MSVC) && !defined(DCompiler_clang_cl) && __LDBL_MANT_DIG__ == 64
 using pfp80 = long double;
 #define DMibPCanDo_fp80
-static_assert(sizeof(pfp80)*8 >= 80, "fp80 not supported");
+static_assert(sizeof(pfp80) * 8 >= 80, "fp80 not supported");
 #endif
 
 #if defined(DPlatformFamily_macOS)

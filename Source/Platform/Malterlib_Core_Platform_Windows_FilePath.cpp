@@ -11,7 +11,7 @@ namespace NMib
 	{
 		namespace NPlatform
 		{
-			NStr::CWStr fg_ConvertToWindowsPathLocal(const NStr::CStr &_Path, bool _bForceLong)
+			NStr::CWStr fg_ConvertToWindowsPathLocal(NStr::CStr const &_Path, bool _bForceLong)
 			{
 			#ifdef DMibAlwaysUseLongWindowsPaths
 				_bForceLong = true;
@@ -22,37 +22,39 @@ namespace NMib
 					return fg_ConvertToWindowsPath(_Path, true, _MAX_PATH, false);
 			}
 
-			NStr::CWStr fg_ConvertToShortWindowsPath(const NStr::CStr &_Path, bool _bAddCurrentDir)
+			NStr::CWStr fg_ConvertToShortWindowsPath(NStr::CStr const &_Path, bool _bAddCurrentDir)
 			{
 				return fg_ConvertToShortWindowsPath<NStr::CWStr, NStr::CWStr>(_Path, _bAddCurrentDir);
 			}
 
-
-			NStr::CWStr fg_ConvertToLongWindowsPath(const NStr::CStr &_Path, bool _bAddCurrentDir)
+			NStr::CWStr fg_ConvertToLongWindowsPath(NStr::CStr const &_Path, bool _bAddCurrentDir)
 			{
 				return fg_ConvertToLongWindowsPath<NStr::CWStr, NStr::CWStr>(_Path, _bAddCurrentDir);
 			}
 
-			NStr::CWStr fg_ConvertToWindowsPath(const NStr::CStr &_Path, bool _bAddCurrentDir, aint _MaxLen)
+			NStr::CWStr fg_ConvertToWindowsPath(NStr::CStr const &_Path, bool _bAddCurrentDir, aint _MaxLen)
 			{
 				return fg_ConvertToWindowsPath<NStr::CWStr, NStr::CWStr>(_Path, _bAddCurrentDir, _MaxLen, true);
 			}
 
-			NStr::CWStr fg_ConvertToWindowsPath(const NStr::CStr &_Path, bool _bAddCurrentDir, aint _MaxLen, bool _bTryShorten)
+			NStr::CWStr fg_ConvertToWindowsPath(NStr::CStr const &_Path, bool _bAddCurrentDir, aint _MaxLen, bool _bTryShorten)
 			{
 				return fg_ConvertToWindowsPath<NStr::CWStr, NStr::CWStr>(_Path, _bAddCurrentDir, _MaxLen, _bTryShorten);
 			}
 
-
-			NStr::CStr fg_ConvertFromWindowsPath(const NStr::CWStr &_Path)
+			NStr::CStr fg_ConvertFromWindowsPath(NStr::CWStr const &_Path)
 			{
 				NStr::CStr ToRet = NStr::NPlatform::fg_StrFromWindows(_Path);
 				return fg_ConvertFromWindowsPath(ToRet);
 			}
 
-			NStr::CStr fg_ConvertFromWindowsPath(const NStr::CStr &_Path)
+			NStr::CStr fg_ConvertFromWindowsPath(NStr::CStr const &_Path)
 			{
-				return fg_ConvertFromWindowsPathInternal<NStr::CStr>(fg_ConvertToWindowsPath<NStr::CWStr, NStr::CWStr, NStr::CStr>(fg_ConvertFromWindowsPathInternal<NStr::CStr>(_Path), false, -1));
+				return fg_ConvertFromWindowsPathInternal<NStr::CStr>
+					(
+						fg_ConvertToWindowsPath<NStr::CWStr, NStr::CWStr, NStr::CStr>(fg_ConvertFromWindowsPathInternal<NStr::CStr>(_Path), false, -1)
+					)
+				;
 			}
 
 			NStr::CStr fg_ConvertToDevicePath(NStr::CStr const &_In)
@@ -100,7 +102,15 @@ namespace NMib
 				if (!DefineDosDevice(Flags, NStr::CWStr(_Device), NStr::CWStr(_Path)))
 				{
 					auto Error = GetLastError();
-					DMibErrorFile(NStr::CStr::CFormat("Windows returned an error from DefineDosDevice(0x{nfh}, {}, {}): {}") << Flags << _Device << _Path << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
+					DMibErrorFile
+						(
+							NStr::CStr::CFormat("Windows returned an error from DefineDosDevice(0x{nfh}, {}, {}): {}")
+							<< Flags
+							<< _Device
+							<< _Path
+							<< NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)
+						)
+					;
 				}
 			}
 

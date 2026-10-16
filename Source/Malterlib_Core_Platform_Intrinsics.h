@@ -47,22 +47,21 @@
 
 #endif
 
-
 // Memory intrinsics
 #if defined(DPlatformFamily_macOS)
-	extern "C" void	*memcpy(void *, const void *, __SIZE_TYPE__);
-	extern "C" int memcmp(const void *__s1, const void *__s2, size_t __n);
-	extern "C" void	*memset(void *, int, __SIZE_TYPE__);
-	extern "C" void	*memmove(void *, const void *, __SIZE_TYPE__);
+	extern "C" void *memcpy(void *, void const *, __SIZE_TYPE__);
+	extern "C" int memcmp(void const *__s1, void const *__s2, size_t __n);
+	extern "C" void *memset(void *, int, __SIZE_TYPE__);
+	extern "C" void *memmove(void *, void const *, __SIZE_TYPE__);
 #	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
 #	define DMibPIntrinsicMemCmp(d_Left, d_Right, d_Size) memcmp(d_Left, d_Right, d_Size)
 #	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
 #	define DMibPIntrinsicMemMove(d_Dest, d_Source, d_Size) memmove(d_Dest, d_Source, d_Size)
 #elif defined(DPlatformFamily_Linux)
-	extern "C" void *memcpy(void *__restrict __dest, __const void *__restrict __src, __SIZE_TYPE__ __n) throw () __attribute__ ((__nonnull__ (1, 2)));
-	extern "C" int memcmp (__const void *__s1, __const void *__s2, size_t __n) throw () __attribute_pure__ __nonnull ((1, 2));
-	extern "C" void *memset(void *__s, int __c, __SIZE_TYPE__ __n) throw () __attribute__ ((__nonnull__ (1)));
-	extern "C" void *memmove(void *__dest, __const void *__src, __SIZE_TYPE__ __n) throw () __attribute__((__nonnull__ (1, 2)));
+	extern "C" void *memcpy(void * __restrict __dest, __const void * __restrict __src, __SIZE_TYPE__ __n) throw() __attribute__((__nonnull__(1, 2)));
+	extern "C" int memcmp(__const void *__s1, __const void *__s2, size_t __n) throw() __attribute_pure__ __nonnull((1, 2));
+	extern "C" void *memset(void *__s, int __c, __SIZE_TYPE__ __n) throw() __attribute__((__nonnull__(1)));
+	extern "C" void *memmove(void *__dest, __const void *__src, __SIZE_TYPE__ __n) throw() __attribute__((__nonnull__(1, 2)));
 #	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
 #	define DMibPIntrinsicMemCmp(d_Left, d_Right, d_Size) memcmp(d_Left, d_Right, d_Size)
 #	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
@@ -308,7 +307,6 @@
 #	error "Implement this"
 #endif
 
-
 // Byte swap
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	define DMibPByteSwap16(d_Value) __builtin_bswap16(d_Value);
@@ -324,7 +322,6 @@
 #else
 #	error "Implement this"
 #endif
-
 
 // Rotate
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
@@ -376,7 +373,7 @@ namespace NMib
 {
 	void fg_OutputDebugBreakFileLine(ch8 const *_pFile, int _Line);
 }
-#	define DMibPDebugBreak { ::NMib::fg_OutputDebugBreakFileLine(DMibPFile, DMibPLine); DMibPDebugBreakImpl; }
+#	define DMibPDebugBreak do { ::NMib::fg_OutputDebugBreakFileLine(DMibPFile, DMibPLine); DMibPDebugBreakImpl; } while (false)
 #else
 #	define DMibPDebugBreak DMibPDebugBreakImpl
 #endif

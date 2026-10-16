@@ -115,7 +115,6 @@ Property
 					}
 					MalterlibExportSupportQuotes true
 				}
-
 			}
 			CompileFlags_PreprocessorDefines_Template += `-D@(_Define) `
 			{
@@ -355,4 +354,3 @@ Property
 	%Target "Exe_Malterlib_Export_NoExe"
 	%Target "Dll_Malterlib_Export_Dll"
 }
-

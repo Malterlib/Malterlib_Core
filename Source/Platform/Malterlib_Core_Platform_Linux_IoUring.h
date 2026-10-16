@@ -3,7 +3,6 @@
 
 #pragma once
 
-
 #include <Mib/Core/Core>
 
 #include <sys/mman.h>
@@ -65,7 +64,7 @@ struct CIoUringSqe
 	uint64 m_Off;
 	uint64 m_Addr;
 	uint32 m_Len;
-	uint32 m_OpFlags;		// rw_flags / poll32_events / ...
+	uint32 m_OpFlags; // rw_flags / poll32_events / ...
 	uint64 m_UserData;
 	uint16 m_BufIndex;
 	uint16 m_Personality;
@@ -230,7 +229,6 @@ struct CIoUringRing
 
 	static bool fs_Available(CIoUringCaps &o_Caps);
 	static umint fs_RingBytes(uint32 _nSqEntries, uint32 _nCqEntries);
-
 
 	void *m_pSqRing = nullptr;
 	umint m_SqRingSize = 0;

@@ -63,7 +63,7 @@ Type
 	}
 
 	CCompileSettings: type(CSharedSettings)
- 	CTargetSettings: type(CSharedSettings)
+	CTargetSettings: type(CSharedSettings)
 
 	CNinja_FlagsMap: {
 		...: one_of(string, [one_of(string, [string])])
@@ -160,7 +160,6 @@ GeneratorSetting
 			!(&Target:Target.Name->GetProperty(_Target)) "Tool_GenerateBuildSystem"
 			!(&Target:Target.Disabled->GetProperty(_Target)) true
 		}
-
 	}
 
 	Workspace #<OtherRules> =+ {

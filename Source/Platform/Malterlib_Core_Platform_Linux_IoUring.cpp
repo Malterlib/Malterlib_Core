@@ -8,7 +8,6 @@
 #	include <signal.h>
 #endif
 
-
 int CIoUringRing::fs_Setup(uint32 _nEntries, CIoUringParams *_pParams)
 {
 	return (int)syscall(gc_IoUringSyscall_Setup, _nEntries, _pParams);
@@ -127,12 +126,7 @@ bool CIoUringRing::f_Create(uint32 _nSqEntries, uint32 _nCqEntries, bool _bDefer
 		return false;
 
 	m_Features = Params.m_Features;
-	if
-	(
-		!(m_Features & gc_IoUringFeat_NoDrop)
-		|| !(m_Features & gc_IoUringFeat_SubmitStable)
-		|| !(m_Features & gc_IoUringFeat_ExtArg)
-	)
+	if (!(m_Features & gc_IoUringFeat_NoDrop) || !(m_Features & gc_IoUringFeat_SubmitStable) || !(m_Features & gc_IoUringFeat_ExtArg))
 	{
 		f_Destroy();
 		return false;
@@ -214,7 +208,6 @@ void CIoUringRing::f_Destroy()
 	m_RingFd = -1;
 }
 
-
 // Returns errno-style negative on failure, submitted count otherwise
 int CIoUringRing::f_Submit(uint32 _nMinComplete, bool _bGetEvents)
 {
@@ -269,6 +262,7 @@ int CIoUringRing::f_WaitTimeout(fp64 _Timeout)
 		int64 m_Seconds;
 		int64 m_Nanoseconds;
 	};
+
 	struct CGetEventsArg
 	{
 		uint64 m_SignalMask = 0;

@@ -16,7 +16,6 @@ Workspace
 	}
 }
 
-
 GeneratorSetting
 {
 	Ninja_TargetType: string
@@ -966,7 +965,6 @@ GeneratorSetting
 		!!Target.DriverType "DriverKit"
 	}
 
-
 	Target_EnableModuleDebugging =+ GeneratorSetting.f_SetSharedFlags(
 		[
 			{
@@ -1485,7 +1483,6 @@ GeneratorSetting
 			}
 		]
 	)
-
 
 	Target_CLanguage =+ GeneratorSetting.f_SetSharedFlags(
 		[

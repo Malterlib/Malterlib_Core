@@ -146,9 +146,9 @@ CPOSIXSocketContext::CPOSIXSocketContext()
 
 CPOSIXSocketContext::~CPOSIXSocketContext() = default;
 
-CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
+CPOSIXAddress *CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes)
 {
-	switch(_Type)
+	switch (_Type)
 	{
 	case NMib::NNetwork::ENetAddressType_TCPv4:
 		{
@@ -156,7 +156,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressT
 				return nullptr;
 
 			sockaddr_in NativeAddr;
-			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv4*)_pData, NativeAddr);
+			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv4 *)_pData, NativeAddr);
 
 			return fg_ConstructObject<CPOSIXAddress>(NMemory::CDefaultAllocator(), NativeAddr);
 		}
@@ -167,7 +167,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressT
 				return nullptr;
 
 			sockaddr_in6 NativeAddr;
-			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv6*)_pData, NativeAddr);
+			fp_ToNative(*(NMib::NNetwork::CNetAddressTCPv6 *)_pData, NativeAddr);
 
 			return fg_ConstructObject<CPOSIXAddress>(NMemory::CDefaultAllocator(), NativeAddr);
 		}
@@ -178,18 +178,14 @@ CPOSIXAddress* CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressT
 			NMib::NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct();
 
 			if (mp_ImpSpecific.f_CreateAddress(*pAddress, _Type, _pData, _nDataBytes))
-			{
 				return pAddress.f_Detach();
-			}
 			else
-			{
 				return nullptr;
-			}
 		}
 	}
 }
 
-CPOSIXAddress* CPOSIXSocketContext::f_DuplicateAddress(CPOSIXAddress const &_Address)
+CPOSIXAddress *CPOSIXSocketContext::f_DuplicateAddress(CPOSIXAddress const &_Address)
 {
 	NMib::NStorage::TCUniquePointer<CPOSIXAddress> pNewAddress = fg_Construct(_Address);
 	return pNewAddress.f_Detach();
@@ -200,49 +196,48 @@ NMib::NNetwork::ENetAddressType CPOSIXSocketContext::f_GetAddressType(CPOSIXAddr
 	return _Address.f_GetType();
 }
 
-bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void* _opRawData, umint _nDataBytes)
+bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes)
 {
 	NMib::NNetwork::ENetAddressType Type = _Address.f_GetType();
 
 	if (Type != _ExpectedType)
 		return false;
 
-	switch(Type)
+	switch (Type)
 	{
+	case NMib::NNetwork::ENetAddressType_TCPv4:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
+				return false;
 
-		case NMib::NNetwork::ENetAddressType_TCPv4:
-			{
-				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
-					return false;
+			NMib::NNetwork::CNetAddressTCPv4 &Addr = *(NMib::NNetwork::CNetAddressTCPv4 *)_opRawData;
+			fp_FromNative(_Address.f_GetTCPv4(), Addr);
 
-				NMib::NNetwork::CNetAddressTCPv4& Addr = *(NMib::NNetwork::CNetAddressTCPv4*)_opRawData;
-				fp_FromNative(_Address.f_GetTCPv4(), Addr);
+			return true;
+		}
+		break;
 
-				return true;
-			}
-			break;
+	case NMib::NNetwork::ENetAddressType_TCPv6:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
+				return false;
 
-		case NMib::NNetwork::ENetAddressType_TCPv6:
-			{
-				if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
-					return false;
+			NMib::NNetwork::CNetAddressTCPv6 &Addr = *(NMib::NNetwork::CNetAddressTCPv6 *)_opRawData;
+			fp_FromNative(_Address.f_GetTCPv6(), Addr);
 
-				NMib::NNetwork::CNetAddressTCPv6& Addr = *(NMib::NNetwork::CNetAddressTCPv6*)_opRawData;
-				fp_FromNative(_Address.f_GetTCPv6(), Addr);
+			return true;
+		}
+		break;
 
-				return true;
-			}
-			break;
-
-		case NMib::NNetwork::ENetAddressType_Unix:
-		default:
-			{
-				return mp_ImpSpecific.f_GetAddressRaw(_Address, _ExpectedType, _opRawData, _nDataBytes);
-			}
+	case NMib::NNetwork::ENetAddressType_Unix:
+	default:
+		{
+			return mp_ImpSpecific.f_GetAddressRaw(_Address, _ExpectedType, _opRawData, _nDataBytes);
+		}
 	}
 }
 
-CPOSIXAddress* CPOSIXSocketContext::f_SetAddressRaw(CPOSIXAddress* _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const* _pRawData, umint _nDataBytes)
+CPOSIXAddress *CPOSIXSocketContext::f_SetAddressRaw(CPOSIXAddress *_pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
 {
 	if (_Type != _pAddress->f_GetType())
 	{
@@ -252,36 +247,35 @@ CPOSIXAddress* CPOSIXSocketContext::f_SetAddressRaw(CPOSIXAddress* _pAddress, ::
 
 	NMib::NNetwork::ENetAddressType Type = _pAddress->f_GetType();
 
-	switch(Type)
+	switch (Type)
 	{
+	case NMib::NNetwork::ENetAddressType_TCPv4:
+		{
+			NMib::NNetwork::CNetAddressTCPv4 const &Addr = *(NMib::NNetwork::CNetAddressTCPv4 const *)_pRawData;
+			fp_ToNative(Addr, _pAddress->f_GetTCPv4());
 
-		case NMib::NNetwork::ENetAddressType_TCPv4:
-			{
-				NMib::NNetwork::CNetAddressTCPv4 const& Addr = *(NMib::NNetwork::CNetAddressTCPv4 const*)_pRawData;
-				fp_ToNative(Addr, _pAddress->f_GetTCPv4());
+			return _pAddress;
+		}
+		break;
 
-				return _pAddress;
-			}
-			break;
+	case NMib::NNetwork::ENetAddressType_TCPv6:
+		{
+			NMib::NNetwork::CNetAddressTCPv6 const &Addr = *(NMib::NNetwork::CNetAddressTCPv6 const *)_pRawData;
+			fp_ToNative(Addr, _pAddress->f_GetTCPv6());
 
-		case NMib::NNetwork::ENetAddressType_TCPv6:
-			{
-				NMib::NNetwork::CNetAddressTCPv6 const& Addr = *(NMib::NNetwork::CNetAddressTCPv6 const*)_pRawData;
-				fp_ToNative(Addr, _pAddress->f_GetTCPv6());
+			return _pAddress;
+		}
+		break;
 
-				return _pAddress;
-			}
-			break;
-
-		case NMib::NNetwork::ENetAddressType_Unix:
-		default:
-			{
-				return mp_ImpSpecific.f_SetAddressRaw(_pAddress, _Type, _pRawData, _nDataBytes);
-			}
+	case NMib::NNetwork::ENetAddressType_Unix:
+	default:
+		{
+			return mp_ImpSpecific.f_SetAddressRaw(_pAddress, _Type, _pRawData, _nDataBytes);
+		}
 	}
 }
 
-CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, ENetAddressType _PreferType)
+CPOSIXAddress *CPOSIXSocketContext::f_ResolveAddress(NMib::NStr::CStr const &_Address, ENetAddressType _PreferType)
 {
 	return f_ResolveAddress(_Address, _PreferType, true);
 }
@@ -303,15 +297,13 @@ tf_CStr fg_FormatGAI(typename tf_CStr::CFormat &&_Desc, int _Err)
 	return Ret;
 }
 
-CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Address, ENetAddressType _PreferType, bool _bThrowOnError)
+CPOSIXAddress *CPOSIXSocketContext::f_ResolveAddress(NMib::NStr::CStr const &_Address, ENetAddressType _PreferType, bool _bThrowOnError)
 {
 	auto Addresses = f_ResolveAddresses(_Address, _PreferType, _bThrowOnError);
 	auto Cleanup = g_OnScopeExit / [&Addresses]
 		{
 			for (auto Address : Addresses)
-			{
 				NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Explicit(static_cast<CPOSIXAddress *>(Address));
-			}
 		}
 	;
 
@@ -321,14 +313,19 @@ CPOSIXAddress* CPOSIXSocketContext::f_ResolveAddress(const NMib::NStr::CStr &_Ad
 	return static_cast<CPOSIXAddress *>(fg_Exchange(Addresses[0], nullptr));
 }
 
-void *CPOSIXSocketContext::f_AsyncResolveAddress_Open(const NMib::NStr::CStr &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish)
+void *CPOSIXSocketContext::f_AsyncResolveAddress_Open
+	(
+		NMib::NStr::CStr const &_Address
+		, ::NMib::NNetwork::ENetAddressType _PreferType
+		, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish
+	)
 {
 	return mp_Resolver.f_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bool CPOSIXSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress*& _opAddress, NMib::NStr::CStr &_Error)
+bool CPOSIXSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress * &_opAddress, NMib::NStr::CStr &_Error)
 {
-	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress&)_opAddress, _Error);
+	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress &)_opAddress, _Error);
 }
 
 void CPOSIXSocketContext::f_AsyncResolveAddress_Close(void *_pResolver)
@@ -336,12 +333,12 @@ void CPOSIXSocketContext::f_AsyncResolveAddress_Close(void *_pResolver)
 	mp_Resolver.f_Close(_pResolver);
 }
 
-int CPOSIXSocketContext::f_CompareAddresses(CPOSIXAddress const& _First, CPOSIXAddress const& _Second)
+int CPOSIXSocketContext::f_CompareAddresses(CPOSIXAddress const &_First, CPOSIXAddress const &_Second)
 {
 	return _First.f_Compare(_Second);
 }
 
-void CPOSIXSocketContext::f_FreeAddress(CPOSIXAddress* _pAddress) // It is OK to free a nullptr address.
+void CPOSIXSocketContext::f_FreeAddress(CPOSIXAddress *_pAddress) // It is OK to free a nullptr address.
 {
 	if (!_pAddress)
 		return;
@@ -364,92 +361,92 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 
 	CStr AddressStr;
 
-	switch(_Address.f_GetType())
+	switch (_Address.f_GetType())
 	{
-		case NMib::NNetwork::ENetAddressType_TCPv4:
+	case NMib::NNetwork::ENetAddressType_TCPv4:
+		{
+			auto &Address = _Address.f_GetTCPv4();
+
+			if (_Flags & ENetAddressStringFlag_IncludeType)
+				AddressStr += "TCPv4:";
+
+			AddressStr
+				+= "{}.{}.{}.{}"_f
+				<< ((ntohl(Address.sin_addr.s_addr) >> 24) & 0xFF)
+				<< ((ntohl(Address.sin_addr.s_addr) >> 16) & 0xFF)
+				<< ((ntohl(Address.sin_addr.s_addr) >> 8) & 0xFF)
+				<< ((ntohl(Address.sin_addr.s_addr) >> 0) & 0xFF)
+			;
+
+			if (_Flags & ENetAddressStringFlag_IncludePort)
+				AddressStr += ":{}"_f << ntohs(Address.sin_port);
+		}
+		break;
+
+	case NMib::NNetwork::ENetAddressType_TCPv6:
+		{
+			auto &Address = _Address.f_GetTCPv6();
+			if (_Flags & ENetAddressStringFlag_IncludeType)
+				AddressStr += "TCPv6:";
+
+			AddressStr
+				+= "[{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}]"_f
+				<< ntohs(Address.sin6_addr.s6_addr16[0])
+				<< ntohs(Address.sin6_addr.s6_addr16[1])
+				<< ntohs(Address.sin6_addr.s6_addr16[2])
+				<< ntohs(Address.sin6_addr.s6_addr16[3])
+				<< ntohs(Address.sin6_addr.s6_addr16[4])
+				<< ntohs(Address.sin6_addr.s6_addr16[5])
+				<< ntohs(Address.sin6_addr.s6_addr16[6])
+				<< ntohs(Address.sin6_addr.s6_addr16[7])
+			;
+
+			if (_Flags & ENetAddressStringFlag_IncludePort)
+				AddressStr += ":{}"_f << ntohs(Address.sin6_port);
+		}
+		break;
+	case NMib::NNetwork::ENetAddressType_Unix:
+		{
+			auto &Address = _Address.f_GetUnix();
+
+			using namespace NMib::NFile;
+
+			EFileAttrib Permissions = Address.m_Permissions;
+
+			uint32 UnixPermissions = 0;
+
+			if (Permissions & EFileAttrib_UserExecute)
+				UnixPermissions |= 0100;
+			if (Permissions & EFileAttrib_UserWrite)
+				UnixPermissions |= 0200;
+			if (Permissions & EFileAttrib_UserRead)
+				UnixPermissions |= 0400;
+
+			if (Permissions & EFileAttrib_GroupExecute)
+				UnixPermissions |= 010;
+			if (Permissions & EFileAttrib_GroupWrite)
+				UnixPermissions |= 020;
+			if (Permissions & EFileAttrib_GroupRead)
+				UnixPermissions |= 040;
+
+			if (Permissions & EFileAttrib_EveryoneExecute)
+				UnixPermissions |= 01;
+			if (Permissions & EFileAttrib_EveryoneWrite)
+				UnixPermissions |= 02;
+			if (Permissions & EFileAttrib_EveryoneRead)
+				UnixPermissions |= 04;
+
+			if (_Flags & ENetAddressStringFlag_IncludeType)
 			{
-				auto &Address = _Address.f_GetTCPv4();
-
-				if (_Flags & ENetAddressStringFlag_IncludeType)
-					AddressStr += "TCPv4:";
-
-				AddressStr
-					+= "{}.{}.{}.{}"_f
-					<< ((ntohl(Address.sin_addr.s_addr) >> 24) & 0xFF)
-					<< ((ntohl(Address.sin_addr.s_addr) >> 16) & 0xFF)
-					<< ((ntohl(Address.sin_addr.s_addr) >> 8) & 0xFF)
-					<< ((ntohl(Address.sin_addr.s_addr) >> 0) & 0xFF)
-				;
-
-				if (_Flags & ENetAddressStringFlag_IncludePort)
-					AddressStr += ":{}"_f << ntohs(Address.sin_port);
+				if (UnixPermissions)
+					AddressStr += fg_Format("UNIX({nfo,sj3,sf0}):", UnixPermissions);
+				else
+					AddressStr += "UNIX:";
 			}
-			break;
 
-		case NMib::NNetwork::ENetAddressType_TCPv6:
-			{
-				auto &Address = _Address.f_GetTCPv6();
-				if (_Flags & ENetAddressStringFlag_IncludeType)
-					AddressStr += "TCPv6:";
-
-				AddressStr
-					+= "[{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}:{nfh,sj4,sf0}]"_f
-					<< ntohs(Address.sin6_addr.s6_addr16[0])
-					<< ntohs(Address.sin6_addr.s6_addr16[1])
-					<< ntohs(Address.sin6_addr.s6_addr16[2])
-					<< ntohs(Address.sin6_addr.s6_addr16[3])
-					<< ntohs(Address.sin6_addr.s6_addr16[4])
-					<< ntohs(Address.sin6_addr.s6_addr16[5])
-					<< ntohs(Address.sin6_addr.s6_addr16[6])
-					<< ntohs(Address.sin6_addr.s6_addr16[7])
-				;
-
-				if (_Flags & ENetAddressStringFlag_IncludePort)
-					AddressStr += ":{}"_f << ntohs(Address.sin6_port);
-			}
-			break;
-		case NMib::NNetwork::ENetAddressType_Unix:
-			{
-				auto &Address = _Address.f_GetUnix();
-
-				using namespace NMib::NFile;
-
-				EFileAttrib Permissions = Address.m_Permissions;
-
-				uint32 UnixPermissions = 0;
-
-				if (Permissions & EFileAttrib_UserExecute)
-					UnixPermissions |= 0100;
-				if (Permissions & EFileAttrib_UserWrite)
-					UnixPermissions |= 0200;
-				if (Permissions & EFileAttrib_UserRead)
-					UnixPermissions |= 0400;
-
-				if (Permissions & EFileAttrib_GroupExecute)
-					UnixPermissions |= 010;
-				if (Permissions & EFileAttrib_GroupWrite)
-					UnixPermissions |= 020;
-				if (Permissions & EFileAttrib_GroupRead)
-					UnixPermissions |= 040;
-
-				if (Permissions & EFileAttrib_EveryoneExecute)
-					UnixPermissions |= 01;
-				if (Permissions & EFileAttrib_EveryoneWrite)
-					UnixPermissions |= 02;
-				if (Permissions & EFileAttrib_EveryoneRead)
-					UnixPermissions |= 04;
-
-				if (_Flags & ENetAddressStringFlag_IncludeType)
-				{
-					if (UnixPermissions)
-						AddressStr += fg_Format("UNIX({nfo,sj3,sf0}):", UnixPermissions);
-					else
-						AddressStr += "UNIX:";
-				}
-
-				AddressStr += Address.f_GetPath();
-			}
-			break;
+			AddressStr += Address.f_GetPath();
+		}
+		break;
 /*
 		case ENetAddressType_Kernel:
 			{
@@ -459,10 +456,7 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 
 				AddressStr += "{}.{}.{}.{}"_f << (Address.sin_addr.s_addr & 0xFF);
 			}*/
-		default:
-			AddressStr = "Unknown or invalid address";
-			break;
-
+	default: AddressStr = "Unknown or invalid address"; break;
 	}
 
 	return AddressStr;
@@ -522,7 +516,7 @@ void fg_SetUnixSocketOptions(int _File)
 	}
 }
 
-CPOSIXSocket* CPOSIXSocketContext::fp_Connect
+CPOSIXSocket *CPOSIXSocketContext::fp_Connect
 	(
 		CPOSIXAddress const &_Address
 		, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
@@ -584,7 +578,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 			int bReuse = 1;
 			setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
 
-			int Result = bind(FD, (sockaddr const*)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
+			int Result = bind(FD, (sockaddr const *)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
 			if (Result != 0)
 			{
 				int Error = errno;
@@ -599,7 +593,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (connect set async non blocking)", Error));
 		}
 
-		int Result = connect(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+		int Result = connect(FD, (sockaddr const *)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 		uint16 BindPort = 0;
 		if (_pBindAddress)
@@ -614,9 +608,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 			int Error = errno;
 
 			if (Error == EINPROGRESS)
-			{
 				bConnected = false;
-			}
 			else if (Error == EADDRNOTAVAIL && _pBindAddress && BindPort == 0)
 			{
 				--Retries;
@@ -658,7 +650,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 
 void CPOSIXSocketContext::fp_PrepareUnixListen(CPOSIXAddress const &_Address)
 {
-	if ( _Address.f_GetType() == ENetAddressType_Unix)
+	if (_Address.f_GetType() == ENetAddressType_Unix)
 	{
 		CUnixAddress const &UnixAddress = _Address.f_GetUnix();
 
@@ -672,15 +664,7 @@ void CPOSIXSocketContext::fp_PrepareUnixListen(CPOSIXAddress const &_Address)
 		{
 			// If user want other permissions it needs to make sure that the directory is created beforehand
 			NFile::CFile::fs_CreateDirectory(Directory);
-			NFile::CFile::fs_SetAttributes
-				(
-					Directory
-					, NFile::EFileAttrib_UnixAttributesValid
-					| NFile::EFileAttrib_UserExecute
-					| NFile::EFileAttrib_UserRead
-					| NFile::EFileAttrib_UserWrite
-				)
-			;
+			NFile::CFile::fs_SetAttributes(Directory, NFile::EFileAttrib_UnixAttributesValid | NFile::EFileAttrib_UserExecute | NFile::EFileAttrib_UserRead | NFile::EFileAttrib_UserWrite);
 		}
 	}
 }
@@ -703,7 +687,7 @@ void CPOSIXSocketContext::fp_SetUnixListenAddress(CPOSIXSocket *_pSocket, CPOSIX
 	_pSocket->m_AddressType = AddressType;
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_AsyncConnect
+CPOSIXSocket *CPOSIXSocketContext::f_AsyncConnect
 	(
 		CPOSIXAddress const &_Address
 		, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
@@ -715,8 +699,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_AsyncConnect
 
 static NSys::EIoLoopEvent fg_IoLoopMaskFromSocketEvents(EPOSIXSocketEvent _Events)
 {
-	return
-		((_Events & EPOSIXSocketEvent_Read) ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
+	return ((_Events & EPOSIXSocketEvent_Read) ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
 		| ((_Events & EPOSIXSocketEvent_Write) ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None)
 	;
 }
@@ -890,15 +873,7 @@ void CPOSIXSocketContext::f_StartSocket(CPOSIXSocket *_pSocket)
 	if (!_pSocket->m_pOwningLoop)
 		DMibErrorNet("No I/O loop is available to register the POSIX socket");
 
-	_pSocket->m_pIoRegistration = _pSocket->m_pOwningLoop->f_Register
-		(
-			_pSocket->m_FD
-			, _pSocket
-			, EventMask
-			, &fg_DispatchSocketIoEvent
-			, fg_IsSet(EventMask, NSys::EIoLoopEvent::mc_Read) != 0
-		)
-	;
+	_pSocket->m_pIoRegistration = _pSocket->m_pOwningLoop->f_Register(_pSocket->m_FD, _pSocket, EventMask, &fg_DispatchSocketIoEvent, fg_IsSet(EventMask, NSys::EIoLoopEvent::mc_Read) != 0);
 
 	if (_pSocket->m_nSendWindowBytes)
 		_pSocket->m_pOwningLoop->f_SetSendWindow(_pSocket->m_pIoRegistration, _pSocket->m_nSendWindowBytes);
@@ -927,10 +902,7 @@ void NSys::NNetwork::fg_RequestReadiness(void *_pSocket, bool _bRead, bool _bWri
 {
 	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
 
-	NSys::EIoLoopEvent EventMask =
-		(_bRead ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None)
-		| (_bWrite ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None)
-	;
+	NSys::EIoLoopEvent EventMask = (_bRead ? NSys::EIoLoopEvent::mc_Read : NSys::EIoLoopEvent::mc_None) | (_bWrite ? NSys::EIoLoopEvent::mc_Write : NSys::EIoLoopEvent::mc_None);
 	if (EventMask != NSys::EIoLoopEvent::mc_None)
 		fg_RequestSocketReadiness(pSocket, EventMask);
 }
@@ -1112,11 +1084,7 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 	}
 
 	int BufferSize = int(nBytes);
-	if
-	(
-		setsockopt(pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &BufferSize, sizeof(BufferSize)) != 0
-		|| setsockopt(pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &BufferSize, sizeof(BufferSize)) != 0
-	)
+	if (setsockopt(pSocket->m_FD, SOL_SOCKET, SO_SNDBUF, &BufferSize, sizeof(BufferSize)) != 0 || setsockopt(pSocket->m_FD, SOL_SOCKET, SO_RCVBUF, &BufferSize, sizeof(BufferSize)) != 0)
 	{
 		int Error = errno;
 
@@ -1187,7 +1155,7 @@ umint NSys::NNetwork::fg_SubmitSendVectored(void *_pSocket, NSys::CIoSpan const 
 	return pSocket->m_pOwningLoop->f_SubmitSendVectored(pSocket->m_pIoRegistration, _pSpans, _nSpans, fg_Move(_fOnComplete), fg_Move(_fOnBufferReleased));
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_Listen
+CPOSIXSocket *CPOSIXSocketContext::f_Listen
 	(
 		CPOSIXAddress const &_Address
 		, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
@@ -1260,7 +1228,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 	}
 #endif
 
-	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	int Result = bind(FD, (sockaddr const *)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1290,7 +1258,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 	return pSocket;
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
+CPOSIXSocket *CPOSIXSocketContext::f_ListenDatagram
 	(
 		CPOSIXAddress const &_Address
 		, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
@@ -1358,7 +1326,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 	}
 #endif
 
-	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	int Result = bind(FD, (sockaddr const *)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1385,7 +1353,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_ListenDatagram
 	return pSocket;
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+CPOSIXSocket *CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	int ResultFD;
 #ifdef DPlatformFamily_Linux
@@ -1472,7 +1440,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 	return pSocket;
 }
 
-void CPOSIXSocketContext::f_SetOnStateChange(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+void CPOSIXSocketContext::f_SetOnStateChange(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	{
 		DMibLock(_pSocket->m_Lock);
@@ -1489,19 +1457,8 @@ void CPOSIXSocketContext::fp_UnlinkUnixListenFile(CPOSIXSocket *_pSocket)
 
 	NStr::CStr PosixPath = fg_ConvertToPOSIXPath(_pSocket->m_UnixFilePath);
 	struct stat FileStat;
-	if
-	(
-		!_pSocket->m_UnixFileInode
-		||
-		(
-			stat(PosixPath.f_GetStr(), &FileStat) == 0
-			&& FileStat.st_dev == _pSocket->m_UnixFileDevice
-			&& FileStat.st_ino == _pSocket->m_UnixFileInode
-		)
-	)
-	{
+	if (!_pSocket->m_UnixFileInode || (stat(PosixPath.f_GetStr(), &FileStat) == 0 && FileStat.st_dev == _pSocket->m_UnixFileDevice && FileStat.st_ino == _pSocket->m_UnixFileInode))
 		unlink(PosixPath.f_GetStr());
-	}
 
 	_pSocket->m_UnixFilePath.f_Clear();
 }
@@ -1528,7 +1485,7 @@ void CPOSIXSocketContext::fp_DestroySocket(CPOSIXSocket *_pSocket)
 }
 
 // Synchronous close requires an unregistered or shared-poller socket; pool-hosted loops must use asynchronous close.
-bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
+bool CPOSIXSocketContext::f_Close(CPOSIXSocket *_pSocket)
 {
 	// Only shared-poller sockets may close synchronously; cross-waits between pool-hosted loops can deadlock.
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
@@ -1553,7 +1510,7 @@ bool CPOSIXSocketContext::f_Close(CPOSIXSocket* _pSocket)
 }
 
 // Consumes the socket. Registered sockets complete on their loop after descriptor close; unregistered sockets complete inline.
-void CPOSIXSocketContext::f_CloseAsync(CPOSIXSocket* _pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
+void CPOSIXSocketContext::f_CloseAsync(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
 {
 	auto *pOwningLoop = _pSocket->m_pOwningLoop;
 
@@ -1593,7 +1550,7 @@ void CPOSIXSocketContext::f_CloseAsync(CPOSIXSocket* _pSocket, NMib::NFunction::
 		_fOnClosed();
 }
 
-void CPOSIXSocketContext::f_Shutdown(CPOSIXSocket* _pSocket)
+void CPOSIXSocketContext::f_Shutdown(CPOSIXSocket *_pSocket)
 {
 	int Result = shutdown(_pSocket->m_FD, SHUT_WR);
 
@@ -1654,7 +1611,7 @@ umint CPOSIXSocketContext::f_Receive(CPOSIXSocket *_pSocket, void *_pData, umint
 	return Result;
 }
 
-umint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, umint _DataLen)
+umint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, void const *_pData, umint _DataLen)
 {
 	int Flags = 0;
 #ifdef DPlatformFamily_Linux
@@ -1669,13 +1626,9 @@ umint CPOSIXSocketContext::f_Send(CPOSIXSocket *_pSocket, const void *_pData, um
 	if (Result == -1)
 	{
 		if (errno == EAGAIN)
-		{
 			Result = 0;
-		}
 		else
-		{
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("send (send to socket)", errno));
-		}
 	}
 
 	if ((umint)Result < _DataLen)
@@ -1733,13 +1686,13 @@ umint CPOSIXSocketContext::f_SendVectored(CPOSIXSocket *_pSocket, NMib::NSys::CI
 	return Result;
 }
 
-umint CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address, const void *_pData, umint _DataLen)
+umint CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address, void const *_pData, umint _DataLen)
 {
 	int Flags = 0;
 #ifdef DPlatformFamily_Linux
 	Flags |= MSG_NOSIGNAL;
 #endif
-	int Result = sendto(_pSocket->m_FD, _pData, _DataLen, Flags, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	int Result = sendto(_pSocket->m_FD, _pData, _DataLen, Flags, (sockaddr const *)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Result == -1)
 	{
@@ -1776,7 +1729,7 @@ umint CPOSIXSocketContext::f_ReceiveDatagram(CPOSIXSocket *_pSocket, CPOSIXAddre
 	return Result;
 }
 
-NMib::NStr::CStr CPOSIXSocketContext::f_GetCloseReason(CPOSIXSocket* _pSocket)
+NMib::NStr::CStr CPOSIXSocketContext::f_GetCloseReason(CPOSIXSocket *_pSocket)
 {
 	int CloseReason = 0;
 	bool bGracefulClose = false;
@@ -1817,7 +1770,7 @@ static ENetAddressType fg_AddressTypeOfDescriptor(int _FD)
 	return ENetAddressType_None;
 }
 
-CPOSIXSocket* CPOSIXSocketContext::f_InheritHandle2(void* _pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+CPOSIXSocket *CPOSIXSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	int FD = int(aint(_pOSSocket));
 	auto *pSocket = fp_CreateSocket(FD, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange), true);
@@ -1855,7 +1808,7 @@ void *CPOSIXSocketContext::f_GiveUpForInherit(CPOSIXSocket *_pSocket)
 		_pSocket->m_FD = -1;
 	}
 
-	return (void*)(umint)FD;
+	return (void *)(umint)FD;
 }
 
 void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle)
@@ -1908,10 +1861,10 @@ void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::
 
 void *CPOSIXSocketContext::f_GetOSSocket(CPOSIXSocket *_pSocket)
 {
-	return (void*)(umint)_pSocket->m_FD;
+	return (void *)(umint)_pSocket->m_FD;
 }
 
-CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
+CPOSIXAddress *CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 {
 	sockaddr_storage PeerAddr;
 
@@ -1927,22 +1880,21 @@ CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 
 	if (PeerAddr.ss_family == AF_INET)
 	{
-		NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*(sockaddr_in const*)&PeerAddr);
+		NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*(sockaddr_in const *)&PeerAddr);
 		return pAddress.f_Detach();
 	}
 	else if (PeerAddr.ss_family == AF_INET6)
 	{
-		NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*(sockaddr_in6 const*)&PeerAddr);
+		NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*(sockaddr_in6 const *)&PeerAddr);
 		return pAddress.f_Detach();
 	}
 	else if (PeerAddr.ss_family == AF_UNIX)
 	{
-		auto UnixAddress = *(sockaddr_un const*)&PeerAddr;
+		auto UnixAddress = *(sockaddr_un const *)&PeerAddr;
 		if (nAddrBytes <= sizeof(UnixAddress.sun_family))
 			UnixAddress.sun_path[0] = 0;
 		if (fg_StrLen((ch8 const *)UnixAddress.sun_path) == 0 && !_pSocket->m_PeerUnixFilePath.f_IsEmpty())
 		{
-
 			CUnixAddress Address;
 			Address.m_UnixAddress.sun_family = AF_UNIX;
 #if !defined(DPlatformFamily_Linux)
@@ -1960,9 +1912,7 @@ CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 		return pAddress.f_Detach();
 	}
 	else
-	{
 		return nullptr;
-	}
 }
 
 bool CPOSIXSocketContext::f_GetProcessIdentity(CPOSIXSocket *_pSocket, NMib::NSys::NNetwork::CProcessIdentity &o_LocalIdentity, NMib::NSys::NNetwork::CProcessIdentity &o_PeerIdentity)
@@ -2092,21 +2042,19 @@ uint32 CPOSIXSocketContext::f_GetListenPort(CPOSIXSocket *_pSocket)
 
 	if (PeerAddr.ss_family == AF_INET)
 	{
-		auto &Addr = *(sockaddr_in const*)&PeerAddr;
+		auto &Addr = *(sockaddr_in const *)&PeerAddr;
 		return ntohs(Addr.sin_port);
 	}
 	else if (PeerAddr.ss_family == AF_INET6)
 	{
-		auto &Addr = *(sockaddr_in6 const*)&PeerAddr;
+		auto &Addr = *(sockaddr_in6 const *)&PeerAddr;
 		return ntohs(Addr.sin6_port);
 	}
 	else
-	{
 		return 0;
-	}
 }
 
-CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
+CPOSIXSocket *CPOSIXSocketContext::fp_CreateSocket
 	(
 		int _FD
 		, EPOSIXSocketMode _Mode
@@ -2127,9 +2075,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_CreateSocket
 	pNewSocket->m_pIo = mp_pIo;
 
 	if (_bFromInherit)
-	{
 		pNewSocket->m_bInitialWriteNotification = false;
-	}
 
 	NMib::NNetwork::ENetTCPState StateAdded = NMib::NNetwork::ENetTCPState_Read | NMib::NNetwork::ENetTCPState_Write; // Kickstart
 

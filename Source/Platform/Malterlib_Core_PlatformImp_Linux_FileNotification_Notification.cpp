@@ -5,8 +5,8 @@
 
 using namespace NMib::NFile;
 
-CFileChangeNotificationContext::CNotification::CNotification(CFileChangeNotificationContext* _pNotificationContext, CStr const &_BasePath):
-	m_pContext(_pNotificationContext)
+CFileChangeNotificationContext::CNotification::CNotification(CFileChangeNotificationContext *_pNotificationContext, CStr const &_BasePath)
+	: m_pContext(_pNotificationContext)
 	, m_BasePath(_BasePath)
 {
 	m_pReportTo = nullptr;
@@ -118,7 +118,7 @@ void CFileChangeNotificationContext::CNotification::f_OnRemovedFromRename(CFindC
 		m_pContext->f_UnlinkWatch(_PendingRename.m_pWatch, this, true);
 }
 
-void CFileChangeNotificationContext::CNotification::f_OnAdded(CFindChangesContext &o_Context, CStr const &_Path, bool _bIsDir, CWatch* _pWatch)
+void CFileChangeNotificationContext::CNotification::f_OnAdded(CFindChangesContext &o_Context, CStr const &_Path, bool _bIsDir, CWatch *_pWatch)
 {
 	CWatch *pWatch = nullptr;
 	if ((m_Flags & NFile::EFileChange_Recursive) && _bIsDir)
@@ -162,7 +162,7 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 	if (!EventFileName.f_IsEmpty())
 		EventPath += CStr::CFormat("/{}") << EventFileName;
 
-	CStr RelativePath = EventPath.f_Delete(0, m_BasePath.f_GetLen()+1);
+	CStr RelativePath = EventPath.f_Delete(0, m_BasePath.f_GetLen() + 1);
 	//DMibConOut("f_OnEvent: {} = 0x{nfh,sf0,sj8} 0x{nfh,sf0,sj8}\n", CStr(_Event.name, fg_StrLen(_Event.name, _Event.len)), _Event.mask, _Event.cookie);
 
 	bool bIsDir = (_Event.mask & IN_ISDIR) != 0;
@@ -350,9 +350,7 @@ void CFileChangeNotificationContext::CNotification::f_OnEvent(CFindChangesContex
 		}
 	}
 	else if (!(_Event.mask & (IN_MODIFY | IN_ATTRIB)))
-	{
 		DMibFileChangeNotificationsDebugOut("UNKNOWN(0x{nfh,sf0,sj8}) {} 0x{nfh,sf0,sj8}", _Event.mask, RelativePath, _Event.cookie);
-	}
 
 	if (((_Event.mask & IN_MODIFY) && (m_Flags & NFile::EFileChange_Write)) || ((_Event.mask & IN_ATTRIB) && (m_Flags & NFile::EFileChange_Attributes)))
 	{

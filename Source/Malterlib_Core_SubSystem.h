@@ -15,10 +15,9 @@ namespace NMib
 	class TCSubSystem
 	{
 	public:
-
 		mark_nodebug bool f_WasCreated() const;
-		mark_nodebug t_CSubSystem &operator *();
-		mark_nodebug t_CSubSystem *operator ->();
+		mark_nodebug t_CSubSystem &operator * ();
+		mark_nodebug t_CSubSystem *operator -> ();
 		mark_nodebug t_CSubSystem *f_GetUnsafe();
 
 		mark_nodebug void f_Construct(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);

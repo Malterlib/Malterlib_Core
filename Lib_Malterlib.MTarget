@@ -176,7 +176,6 @@ Property
 				}
 			}
 		}
-
 	}
 	Property.WorkaroundLTOValue: bool = false
 	%Group "Source"
@@ -357,7 +356,6 @@ Property
 							!PlatformFamily "macOS"
 						}
 					}
-
 				}
 				%Group "ppc"
 				{
@@ -523,7 +521,6 @@ Property
 				MalterlibUseStaticLibCxx true
 			}
 		}
-
 
 		Analyzer false
 	}
@@ -1046,9 +1043,9 @@ Property
 						`		}\n`\
 						`	;\n`\
 						`\n`
-						{
-							!MalterlibCloudVersionInfo_Tags->Length() 0
-						}
+			{
+				!MalterlibCloudVersionInfo_Tags->Length() 0
+			}
 
 			Contents =+ `	CBuildMetadata fg_GetBuildMetadata()\n`\
 						`	{\n`\
@@ -1231,7 +1228,6 @@ Property
 			MalterlibIncludeLevel "Target"
 			!MalterlibIncludePerConfig true
 		}
-
 	}
 	MalterlibIncludeOutputDir `@(GeneratedWorkspaceDirectory)RootInclude`
 	{
@@ -1744,4 +1740,3 @@ Property
 		%File "Tools/Helper/Malterlib_Core_Helper.cpp"
 	}
 }
-

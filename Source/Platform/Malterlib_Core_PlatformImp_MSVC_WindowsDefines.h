@@ -50,5 +50,4 @@
 
 #include <crtdbg.h>
 
-
 #include "Malterlib_Core_Platform_Windows_Undocumented.h"

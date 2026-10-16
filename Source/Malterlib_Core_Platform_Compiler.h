@@ -54,7 +54,6 @@
 #define if_not_consteval if (!std::is_constant_evaluated())
 #endif
 
-
 #if DMibPSupportExceptions
 #	ifdef DMalterlibUseStaticLibCxx
 #		include <__exception/exception.h>
@@ -65,6 +64,7 @@
 
 #if DMalterlibUseLibCxx
 
+// malterlib-format off
 _LIBCPP_BEGIN_NAMESPACE_STD
 	class weak_equality;
 	class strong_equality;
@@ -72,6 +72,7 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 	class weak_ordering;
 	class strong_ordering;
 _LIBCPP_END_NAMESPACE_STD
+// malterlib-format on
 
 #	if __has_feature(cxx_rtti)
 #		ifdef DMalterlibUseStaticLibCxx
@@ -128,12 +129,12 @@ namespace std
 #		define DMibPArglistIntSizeOf(n)   ( (sizeof(n) + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
 #		define DMibPArglistIntAlign(n)   ( (n + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
 		using CMibArgList = void *;
-#		define DMibPArgListStart(_ArgList, _PrevArg) { _ArgList = ((char *)&_PrevArg + DMibPArglistIntSizeOf(_PrevArg)); }
+#		define DMibPArgListStart(_ArgList, _PrevArg) do { _ArgList = ((char *)&_PrevArg + DMibPArglistIntSizeOf(_PrevArg)); } while (false)
 		namespace NMib
 		{
 			namespace NHelpers
 			{
-				__forceinline static void * ArgListNextArg(CMibArgList &_ArgList, int _ArgSize)
+				__forceinline static void *ArgListNextArg(CMibArgList &_ArgList, int _ArgSize)
 				{
 					void *pToReturn = _ArgList;
 					_ArgList = (((char *)_ArgList) + DMibPArglistIntAlign(_ArgSize));
@@ -265,6 +266,7 @@ namespace std
 	{
 		fg_UnconsumeUndefined(&o_Value);
 	}
+
 	#define DMibMovedFromValid(d_Value) fg_Unconsume(d_Value)
 	#define DMibClangAnalyzerWorkaround
 #else

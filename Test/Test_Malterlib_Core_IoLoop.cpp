@@ -62,6 +62,7 @@ namespace
 					char const *m_pName;
 					NSys::EIoLoopEvent m_Mask;
 				};
+
 				constexpr CMaskCase c_Cases[] =
 					{
 						{"None", NSys::EIoLoopEvent::mc_None}

@@ -34,6 +34,7 @@ void NSys::fg_ConsoleErrorOutputFlush()
 {
 	fsync(2);
 }
+
 void NSys::fg_ConsoleOutputFlush()
 {
 	fsync(1);
@@ -105,7 +106,7 @@ void NSys::fg_ConsoleOutput(NMib::NStr::CStrIO const &_Str)
 
 void NSys::fg_ConsoleOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer)
 {
-	fg_WriteStringToPipe(1, (const ch8 *)_Buffer.f_GetArray(), _Buffer.f_GetLen());
+	fg_WriteStringToPipe(1, (ch8 const *)_Buffer.f_GetArray(), _Buffer.f_GetLen());
 }
 
 void NSys::fg_ConsoleErrorOutputBinary(NMib::NContainer::CIOByteVector const &_Buffer)
@@ -149,7 +150,7 @@ void NSys::fg_ConsoleErrorOutput(NMib::NStr::CStrNonTracked const &_Str)
 	fg_WriteStringToPipe(2, _Str.f_GetStr(), _Str.f_GetLen());
 }
 
-void NSys::fg_DebugOutput(const ch8 *_pToOutput)
+void NSys::fg_DebugOutput(ch8 const *_pToOutput)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
@@ -157,7 +158,7 @@ void NSys::fg_DebugOutput(const ch8 *_pToOutput)
 	fg_WriteStringToPipe(2, _pToOutput, fg_StrLen(_pToOutput));
 }
 
-void NSys::fg_DebugOutput(const ch16 *_pToOutput)
+void NSys::fg_DebugOutput(ch16 const *_pToOutput)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
@@ -166,7 +167,7 @@ void NSys::fg_DebugOutput(const ch16 *_pToOutput)
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
 }
 
-void NSys::fg_DebugOutput(const ch32 *_pToOutput)
+void NSys::fg_DebugOutput(ch32 const *_pToOutput)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
@@ -175,7 +176,7 @@ void NSys::fg_DebugOutput(const ch32 *_pToOutput)
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
 }
 
-void NSys::fg_DebugOutput(const NMib::NStr::CStrNonTracked &_Output)
+void NSys::fg_DebugOutput(NMib::NStr::CStrNonTracked const &_Output)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
@@ -183,7 +184,7 @@ void NSys::fg_DebugOutput(const NMib::NStr::CStrNonTracked &_Output)
 	fg_WriteStringToPipe(2, _Output.f_GetStr(), _Output.f_GetLen());
 }
 
-void NSys::fg_DebugOutput(const NMib::NStr::CWStrNonTracked &_Output)
+void NSys::fg_DebugOutput(NMib::NStr::CWStrNonTracked const &_Output)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;
@@ -192,7 +193,7 @@ void NSys::fg_DebugOutput(const NMib::NStr::CWStrNonTracked &_Output)
 	fg_WriteStringToPipe(2, Output.f_GetStr(), Output.f_GetLen());
 }
 
-void NSys::fg_DebugOutput(const NMib::NStr::CUStrNonTracked &_Output)
+void NSys::fg_DebugOutput(NMib::NStr::CUStrNonTracked const &_Output)
 {
 	if (g_bCreatedSystem && g_bCreatingSystemDone && fg_GetSys_POSIX()->f_GetMalterlibDisableStdErrLog())
 		return;

@@ -73,8 +73,8 @@ Property
 					GeneratorFamily "Xcode"
 					|
 					{
-						 MalterlibBuildServerBuild true
-						 HostPlatformFamily "Linux"
+						MalterlibBuildServerBuild true
+						HostPlatformFamily "Linux"
 					}
 				}
 			}
@@ -208,7 +208,6 @@ Property
 			}
 			EnablePlatform_Windows true
 		}
-
 	}
 	macOS "macOS plattform"
 	{
@@ -333,35 +332,35 @@ Property
 	{
 		!!EnableDebugConfig true
 	}
-    Fast\ Compile "Minimize compiler time"
+	Fast\ Compile "Minimize compiler time"
 	{
 		!!EnableFastCompileConfig true
 	}
-    Debug\ Inlined "High debuggability with compiler optimizations that does not hurt debuggability"
+	Debug\ Inlined "High debuggability with compiler optimizations that does not hurt debuggability"
 	{
 		!!EnableDebugInlinedConfig true
 	}
-    Debug\ Optimized "All debug code paths, but with optimizations"
+	Debug\ Optimized "All debug code paths, but with optimizations"
 	{
 		!!EnableDebugOptimizedConfig true
 	}
-    Optimized "Fully optimized using latest CPU instructions"
+	Optimized "Fully optimized using latest CPU instructions"
 	{
 		!!EnableOptimizedConfig true
 	}
-    Profile "High performance, but good compile time"
+	Profile "High performance, but good compile time"
 	{
 		!!EnableProfileConfig true
 	}
-    Release\ Debug "Release code paths, but no compiler optimizations"
+	Release\ Debug "Release code paths, but no compiler optimizations"
 	{
 		!!EnableReleaseDebugConfig true
 	}
-    Release\ Testing "Release code with optimizations, but with asserts and contracts enabled"
+	Release\ Testing "Release code with optimizations, but with asserts and contracts enabled"
 	{
 		!!EnableReleaseTestingConfig true
 	}
-    Release "Release code paths with full compiler optizations, but not latest CPU instructions"
+	Release "Release code paths with full compiler optizations, but not latest CPU instructions"
 	{
 		!!EnableReleaseConfig true
 	}

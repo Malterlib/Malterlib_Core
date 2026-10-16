@@ -53,7 +53,7 @@ bool CSystem_POSIX::f_GetMalterlibDisableStdErrLog()
 {
 	if (m_MalterlibDisableStdErrLog.f_Load(NMib::NAtomic::gc_MemoryOrder_Relaxed) == 0)
 	{
-		const char *pEnv = getenv("MalterlibDisableStdErrLog");
+		char const *pEnv = getenv("MalterlibDisableStdErrLog");
 
 		if (pEnv && fg_StrCmp(pEnv, "true") == 0)
 			m_MalterlibDisableStdErrLog = 2;
@@ -82,17 +82,18 @@ namespace NMib
 		{
 			return fg_GetSys_POSIX()->m_ForkLock;
 		}
+
 		void fg_ForkPrepare()
 		{
 			::fg_ForkPrepare();
 		}
+
 		void fg_ForkParentOrChild()
 		{
 			::fg_ForkParentOrChild();
 		}
 	}
 }
-
 
 #ifdef DPlatformFamily_macOS
 #include <sys/sysctl.h>
@@ -118,7 +119,7 @@ namespace NMib
 						size_t Size = sizeof(int);
 						int MaxFiles;
 						if (!sysctl(SysCtl, sizeof(SysCtl) / sizeof(*SysCtl), (void *)&MaxFiles, &Size, NULL, 0))
-							Limits.rlim_cur = fg_Min(fg_Min(Limits.rlim_cur, MaxFiles), Limits.rlim_max);;
+							Limits.rlim_cur = fg_Min(fg_Min(Limits.rlim_cur, MaxFiles), Limits.rlim_max);
 					}
 #else
 					Limits.rlim_cur = Limits.rlim_max;
@@ -174,13 +175,12 @@ namespace NMib
 	}
 }
 
-
 // *************************************************************************************************************************
 // Low Level Query Implementation
 // (Not actually POSIX, more clang/gcc)
 // *************************************************************************************************************************
 
-void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
+void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo &_Info)
 { // Should probably be moved to a file Malterlib_x86_MacOS.cpp or similar.
 
 	_Info.m_Features = NMib::EProcessorFeature_None;
@@ -190,32 +190,16 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 
 	_Info.m_Architecture = NMib::EProcessorArchitecture_Unknown;
 
-	__get_cpuid
-		(
-			0
-			, &CPUInfo[0]
-			, &CPUInfo[1]
-			, &CPUInfo[2]
-			, &CPUInfo[3]
-		)
-	;
+	__get_cpuid(0, &CPUInfo[0], &CPUInfo[1], &CPUInfo[2], &CPUInfo[3]);
 
 	int MaxInfoType = CPUInfo[0];
 
 	if (MaxInfoType >= 1)
 	{
-		__get_cpuid
-			(
-				1
-				, &CPUInfo[0]
-				, &CPUInfo[1]
-				, &CPUInfo[2]
-				, &CPUInfo[3]
-			)
-		;
+		__get_cpuid(1, &CPUInfo[0], &CPUInfo[1], &CPUInfo[2], &CPUInfo[3]);
 
-		_Info.m_Features |=
-			((CPUInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None)
+		_Info.m_Features
+			|= ((CPUInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None)
 			| ((CPUInfo[3] & DMibBit(25)) ? EProcessorFeature_SSE : EProcessorFeature_None)
 			| ((CPUInfo[3] & DMibBit(26)) ? EProcessorFeature_SSE2 : EProcessorFeature_None)
 			| ((CPUInfo[2] & DMibBit(0)) ? EProcessorFeature_SSE3 : EProcessorFeature_None)
@@ -226,7 +210,7 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 		;
 	}
 
-	_Info.m_Architecture = (sizeof(void*) == 4) ? EProcessorArchitecture_x86 : EProcessorArchitecture_x86_64;
+	_Info.m_Architecture = (sizeof(void *) == 4) ? EProcessorArchitecture_x86 : EProcessorArchitecture_x86_64;
 
 #elif defined(DArchitecture_ppc32)
 	_Info.m_Architecture = EProcessorArchitecture_ppc32;
@@ -242,7 +226,6 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo& _Info)
 #error "Not implemented"
 #endif
 }
-
 
 void NMib::NSys::fg_System_ExitProcess(aint _ExitCode)
 {

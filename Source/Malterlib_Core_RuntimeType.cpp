@@ -7,7 +7,6 @@
 
 namespace NMib
 {
-
 	namespace
 	{
 		struct CSubSystem_Core_RunTimeObject : public CSubSystem
@@ -55,12 +54,12 @@ namespace NMib
 		return ToReturn;
 	}
 
-	CRunTimeObjectInfo *CRunTimeObjectInfo::f_GetObject(const ch8 *_pName, umint _NameLen)
+	CRunTimeObjectInfo *CRunTimeObjectInfo::f_GetObject(ch8 const *_pName, umint _NameLen)
 	{
 		CRunTimeObjectInfo *pNamespace = &g_DynamicObjectsSystem->m_GlobalNamespace;
 
 		NStr::CStr Namespace;
-		const ch8 *pNamespaceStr = _pName;
+		ch8 const *pNamespaceStr = _pName;
 		while (1)
 		{
 			DMibFastCheck(umint(pNamespaceStr - _pName) < _NameLen);
@@ -109,12 +108,12 @@ namespace NMib
 		}
 	}
 
-	void CRunTimeObjectInfo::f_Construct(const ch8 *_pName, const ch8 *_pParent, bool _bIsStatic)
+	void CRunTimeObjectInfo::f_Construct(ch8 const *_pName, ch8 const *_pParent, bool _bIsStatic)
 	{
 //		NSys::fg_DebugOutput((NStr::CFStr256::CFormat("Constructing 0x{nfh,sj16,sf0} {} parent {}" DMibNewLine) << (umint)this << _pName << _pParent).f_GetStr());
 
-		const ch8 *pNamespace = NStr::fg_StrAdd(_pName, NStr::fg_StrFindReverse(_pName, "::"));
-		const ch8 *pName = _pName;
+		ch8 const *pNamespace = NStr::fg_StrAdd(_pName, NStr::fg_StrFindReverse(_pName, "::"));
+		ch8 const *pName = _pName;
 
 		if (pNamespace)
 		{
@@ -124,9 +123,7 @@ namespace NMib
 			m_pNamespace = f_GetObject(Namespace.f_GetStr(), Namespace.f_GetLen());
 		}
 		else
-		{
 			m_pNamespace = &g_DynamicObjectsSystem->m_GlobalNamespace;
-		}
 
 		m_pName = pName;
 
@@ -141,9 +138,7 @@ namespace NMib
 		if (pInfo)
 		{
 			if (pInfo->m_bIsStatic || !_bIsStatic)
-			{
 				DMibError("This runtimeclass is already registered");
-			}
 			else
 			{
 				// Transfer children
@@ -186,9 +181,7 @@ namespace NMib
 			}
 		}
 		else
-		{
 			m_pNamespace->m_Namespace.f_Insert(this);
-		}
 
 		if (m_pParent)
 			m_pParent->m_Children.f_Insert(this);
@@ -206,7 +199,7 @@ namespace NMib
 
 		if (!m_Children.f_IsEmpty() || !m_Namespace.f_IsEmpty())
 		{
-			DMibSafeCheck(m_bIsStatic,"If we have reached the destructor and have children left something has gone terribly wrong when we aren't static");
+			DMibSafeCheck(m_bIsStatic, "If we have reached the destructor and have children left something has gone terribly wrong when we aren't static");
 			// Remove from pool
 
 			NStorage::TCUniquePointer<CRunTimeObjectInfoContainer, NMemory::CAllocator_NonTrackedHeap> pNewTempConstruct = fg_Construct();
@@ -247,7 +240,6 @@ namespace NMib
 				m_pNamespace->m_Namespace.f_Remove(this);
 				m_pNamespace->m_Namespace.f_Insert(pNewTemp);
 			}
-
 		}
 		else
 		{
@@ -273,13 +265,13 @@ namespace NMib
 		}
 	}
 
-	CRunTimeObjectInfo *fg_GetRuntimeTypeInfo(const ch8 *_pObjectName)
+	CRunTimeObjectInfo *fg_GetRuntimeTypeInfo(ch8 const *_pObjectName)
 	{
 		aint iNamespace = NStr::fg_StrFind(_pObjectName, "::");
 		if (iNamespace >= 0)
 		{
-			const ch8 *pNamespace = _pObjectName + iNamespace;
-			const ch8 *pNamespaceStart = _pObjectName;
+			ch8 const *pNamespace = _pObjectName + iNamespace;
+			ch8 const *pNamespaceStart = _pObjectName;
 
 			CRunTimeObjectInfo *pRuntimeObject = &g_DynamicObjectsSystem->m_GlobalNamespace;
 
@@ -288,7 +280,7 @@ namespace NMib
 				NStr::CStr Str;
 				Str.f_AddStr(pNamespaceStart, (pNamespace - pNamespaceStart));
 
-				const ch8 *pFind = Str;
+				ch8 const *pFind = Str;
 
 				pRuntimeObject = pRuntimeObject->m_Namespace.f_FindEqual(pFind);
 
@@ -309,7 +301,7 @@ namespace NMib
 			return g_DynamicObjectsSystem->m_GlobalNamespace.m_Namespace.f_FindEqual(_pObjectName);
 	}
 
-	void *fg_CreateRuntimeTypeRawPtr(const ch8 *_pObjectName)
+	void *fg_CreateRuntimeTypeRawPtr(ch8 const *_pObjectName)
 	{
 		auto pInfo = fg_GetRuntimeTypeInfo(_pObjectName);
 		if (!pInfo)

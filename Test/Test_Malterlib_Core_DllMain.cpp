@@ -29,8 +29,6 @@ namespace
 }
 #endif
 
-
-
 NMib::NThread::TCThreadLocal<NMib::NStr::CStr, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> g_ThreadLocal;
 
 extern "C"
@@ -78,7 +76,8 @@ struct CTestClass
 	};
 	~CTestClass()
 	{
-		int x = 0; (void)x;
+		int x = 0;
+		(void)x;
 	}
 };
 

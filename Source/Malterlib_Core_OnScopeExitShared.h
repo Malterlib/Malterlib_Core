@@ -24,6 +24,7 @@ namespace NMib
 			return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>(fg_Move(_fOnExitFunctor));
 		}
 	};
+
 	extern COnScopeExitSharedHelper const &g_OnScopeExitShared;
 
 	struct COnScopeExitSharedWithExceptionHelper
@@ -34,5 +35,6 @@ namespace NMib
 			return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>, false>(fg_Move(_fOnExitFunctor));
 		}
 	};
+
 	extern COnScopeExitSharedWithExceptionHelper const &g_OnScopeExitSharedWithException;
 }

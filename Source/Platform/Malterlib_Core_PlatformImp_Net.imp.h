@@ -44,7 +44,7 @@ void CAddressResolver::f_Stop()
 	}
 }
 
-void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish)
+void *CAddressResolver::f_Open(NMib::NStr::CStr const &_Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish)
 {
 	NStorage::TCUniquePointer<CResolveRequest> pReq = fg_Construct();
 
@@ -54,7 +54,7 @@ void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::
 	pReq->m_Address = nullptr;
 	pReq->m_PreferType = _PreferType;
 
-	CResolveRequest* pRet = nullptr;
+	CResolveRequest *pRet = nullptr;
 
 	{
 		DMibLock(mp_Lock);
@@ -65,7 +65,7 @@ void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::
 		{
 			mp_pThread = NThread::CThreadObject::fs_StartThread
 				(
-					[this](NThread::CThreadObject* _pThread) -> aint
+					[this](NThread::CThreadObject *_pThread) -> aint
 					{
 						return fp_ResolveWorker(_pThread);
 					}
@@ -81,9 +81,9 @@ void* CAddressResolver::f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::
 	return pRet;
 }
 
-bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error)
+bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &_oAddress, NMib::NStr::CStr &_Error)
 {
-	CResolveRequest* pReq = (CResolveRequest*)_pResolver;
+	CResolveRequest *pReq = (CResolveRequest *)_pResolver;
 
 	DMibLock(mp_Lock);
 	if (pReq->m_Flags & EFlag_Done)

@@ -5,7 +5,6 @@
 
 #include "Malterlib_Core_Platform_Linux_IoLoop_Uring_Internal.h"
 
-
 // RLIMIT_MEMLOCK covers rings and pinned sends across the user's processes. Reserve estimated loop capacity plus send headroom;
 // fall back to epoll when it cannot fit. Other processes can consume the budget later, so this is only a startup heuristic.
 constexpr umint gc_UringLoopsPerCore = 3;

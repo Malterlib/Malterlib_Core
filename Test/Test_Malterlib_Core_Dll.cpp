@@ -140,7 +140,6 @@ namespace
 	class CDll_Tests : public NMib::NTest::CTest
 	{
 	public:
-
 		void f_DoTests()
 		{
 #if defined(DCompiler_MSVC_Workaround_DllsBroken)
@@ -161,14 +160,13 @@ namespace
 						[](NMib::NThread::CThreadObject *_pThreadObject) -> aint
 						{
 							while (true)
-							{
 								NMib::NMemory::CAllocator_NonTrackedHeap::f_Free(NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(1));
-							}
 
 							return 0;
 						}
 						, "Leaked thread"
-					).f_Detach()
+					)
+					.f_Detach()
 				;
 
 				NMib::NSys::fg_Thread_Sleep(0.1f);
@@ -194,8 +192,7 @@ namespace
 
 				void (calling_convention_c *pTestFunc)() = nullptr;
 
-				auto fl_ThreadProc
-					= [&](NMib::NThread::CThreadObject *_pThread) -> aint
+				auto fl_ThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
 					{
 						while (_pThread->f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
 						{
@@ -211,13 +208,7 @@ namespace
 					}
 				;
 
-				auto pThread0 = NMib::NThread::CThreadObject::fs_StartThread
-					(
-						fl_ThreadProc
-						, "DllThreadTest"
-					)
-				;
-
+				auto pThread0 = NMib::NThread::CThreadObject::fs_StartThread(fl_ThreadProc, "DllThreadTest");
 
 				ThreadStarted.f_Wait();
 
@@ -236,12 +227,7 @@ namespace
 				ThreadStarted.f_Wait();
 
 				ThreadStarted.f_ResetSignaled();
-				auto pThread1 = NMib::NThread::CThreadObject::fs_StartThread
-					(
-						fl_ThreadProc
-						, "DllThreadTest"
-					)
-				;
+				auto pThread1 = NMib::NThread::CThreadObject::fs_StartThread(fl_ThreadProc, "DllThreadTest");
 				ThreadStarted.f_Wait();
 
 				ThreadStarted.f_ResetSignaled();
@@ -252,12 +238,7 @@ namespace
 				pThread0.f_Clear();
 
 				ThreadStarted.f_ResetSignaled();
-				auto pThread2 = NMib::NThread::CThreadObject::fs_StartThread
-					(
-						fl_ThreadProc
-						, "DllThreadTest"
-					)
-				;
+				auto pThread2 = NMib::NThread::CThreadObject::fs_StartThread(fl_ThreadProc, "DllThreadTest");
 				ThreadStarted.f_Wait();
 
 				ThreadStarted.f_ResetSignaled();
@@ -275,8 +256,7 @@ namespace
 				void *pDll = nullptr;
 				void (calling_convention_c *pTestFunc)() = nullptr;
 
-				auto fl_ThreadProc
-					= [&](NMib::NThread::CThreadObject *_pThread) -> aint
+				auto fl_ThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
 					{
 						pTestFunc();
 						while (_pThread->f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
@@ -315,17 +295,9 @@ namespace
 										NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage2;
 
 										for (auto i = 0; i < 10; ++i)
-										{
-											Threads2[i] = NMib::NThread::CThreadObject::fs_StartThread
-												(
-													fl_ThreadProc
-													, "DllThreadTest"
-												)
-											;
-										}
+											Threads2[i] = NMib::NThread::CThreadObject::fs_StartThread(fl_ThreadProc, "DllThreadTest");
 									}
 									return 0;
-
 								}
 								, "DllThreadTest"
 							)
@@ -370,7 +342,23 @@ namespace
 				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
 
 				pthread_key_t SlowKey;
-				DMibTest(DMibExpr(pthread_key_create(&SlowKey, [](void *) { NMib::NSys::fg_Thread_Sleep(2.0); })) == DMibExpr(0))(ETest_FailAndStop);
+				DMibTest
+					(
+						DMibExpr
+						(
+							pthread_key_create
+							(
+								&SlowKey
+								, [](void *)
+								{
+									NMib::NSys::fg_Thread_Sleep(2.0);
+								}
+							)
+						)
+						== DMibExpr(0)
+					)
+					(ETest_FailAndStop)
+				;
 
 				NMib::NAtomic::TCAtomic<bool> bStop{false};
 				NMib::NAtomic::TCAtomic<umint> nChurned{0};
@@ -395,8 +383,23 @@ namespace
 						while (!Churn.m_pbStop->f_Load())
 						{
 							pthread_t Short;
-							if (pthread_create(&Short, nullptr, [](void *) -> void * { return nullptr; }, nullptr) == 0)
+							if
+							(
+								pthread_create
+								(
+									&Short
+									, nullptr
+									, [](void *) -> void *
+									{
+										return nullptr;
+									}
+									, nullptr
+								)
+								== 0
+							)
+							{
 								pthread_join(Short, nullptr);
+							}
 							Churn.m_pnChurned->f_FetchAdd(1);
 						}
 						return nullptr;
@@ -512,7 +515,7 @@ namespace
 			{
 				CTestPerformanceMeasure MalterlibTime("Malterlib");
 
-				umint nTests = 256*16;
+				umint nTests = 256 * 16;
 #ifdef DMibDebug
 				nTests /= 16;
 #endif
@@ -520,7 +523,7 @@ namespace
 
 				umint nLoops = 1;
 
-				for(umint j = 0; j < nTests; ++j)
+				for (umint j = 0; j < nTests; ++j)
 				{
 					MalterlibTime.f_Start();
 					for (umint i = 0; i < nLoops; ++i)
@@ -537,7 +540,6 @@ namespace
 				CTestPerformance PerfTest(1.0);
 				PerfTest.f_Add(MalterlibTime);
 				DMibTest(DMibExpr(PerfTest));
-
 			};
 		}
 	};

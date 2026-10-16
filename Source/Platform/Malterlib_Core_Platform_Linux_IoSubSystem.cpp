@@ -21,7 +21,7 @@ void fg_UringLogMemlockFallback()
 			Mib/Core/IoLoop
 			, Warning
 			, "io_uring disabled: the locked memory limit (RLIMIT_MEMLOCK, {} KiB) cannot hold the rings of {} io loops ({} KiB) plus {} KiB for zero copy sends. "
-				"Sockets use epoll instead; raise the limit (ulimit -l) to enable io_uring"
+			"Sockets use epoll instead; raise the limit (ulimit -l) to enable io_uring"
 			, Io.m_nUringMemlockLimitBytes / 1024
 			, Io.m_nUringMemlockLoops
 			, Io.m_nUringMemlockLoops * Io.m_nUringMemlockRingBytes / 1024
@@ -71,16 +71,11 @@ CIoSubSystem_Linux::CIoSubSystem_Linux()
 
 	switch (fsp_EnvKnob("MalterlibIoUringZeroCopyLocal"))
 	{
-	case NSys::EIoKnob::mc_Off:
-		m_ZeroCopyOverride = EUringZeroCopyOverride::mc_Never;
-		break;
+	case NSys::EIoKnob::mc_Off: m_ZeroCopyOverride = EUringZeroCopyOverride::mc_Never; break;
 
-	case NSys::EIoKnob::mc_On:
-		m_ZeroCopyOverride = EUringZeroCopyOverride::mc_Always;
-		break;
+	case NSys::EIoKnob::mc_On: m_ZeroCopyOverride = EUringZeroCopyOverride::mc_Always; break;
 
-	case NSys::EIoKnob::mc_Default:
-		break;
+	case NSys::EIoKnob::mc_Default: break;
 	}
 
 	if (f_StatsEnabled())

@@ -113,7 +113,7 @@ namespace NMib
 				return Return;
 			#else
 				#warning "Should be implemented"
-				return  fg_GetThreadSelf_Safe();
+				return fg_GetThreadSelf_Safe();
 			#endif
 		#elif defined(DPlatformFamily_Linux)
 			#ifdef DMibAssumeGlibc
@@ -136,10 +136,10 @@ namespace NMib
 				return fg_GetThreadSelf_Safe();
 			#endif
 		#elif defined(DPlatformFamily_Emscripten)
-			return  fg_GetThreadSelf_Safe();
+			return fg_GetThreadSelf_Safe();
 		#else
 			#warning "Should be implemented"
-			return  fg_GetThreadSelf_Safe();
+			return fg_GetThreadSelf_Safe();
 		#endif
 		}
 

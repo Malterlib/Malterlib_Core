@@ -43,14 +43,12 @@
 #	error "Implement this"
 #endif
 
-
 // System creation
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Windows)
 #	define DMibPAutomaticSystemCreation
 #else
 #	error "Implement this"
 #endif
-
 
 // Safe timer
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
@@ -60,7 +58,6 @@
 #else
 #	error "Implement this"
 #endif
-
 
 // Typeinfo and exceptions
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
@@ -82,13 +79,11 @@
 #	error "Implement this"
 #endif
 
-
 // Boost
 //#define BOOST_NO_STD_TYPEINFO
 #ifndef BOOST_ALL_NO_LIB
 #	define BOOST_ALL_NO_LIB
 #endif
-
 
 // Float implementation
 #define DMibPFloat_StdLib

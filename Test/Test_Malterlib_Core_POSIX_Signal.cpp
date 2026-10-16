@@ -19,31 +19,34 @@ namespace
 		void f_WaitAndDispatch() override
 		{
 		}
+
 		void f_WaitAndDispatchTimeout(pfp64) override
 		{
 		}
+
 		bool f_PollAndDispatch() override
 		{
 			return false;
 		}
+
 		void f_Wake() override
 		{
 		}
+
 		void f_SetOwnerThreadToCurrent() override
 		{
 		}
+
 		void f_Deregister(NSys::CIoLoopRegistration *) override
 		{
 		}
+
 		void f_DeregisterAsync(NSys::CIoLoopRegistration *, NFunction::TCFunctionMovable<void ()> &&_fOnClosed) override
 		{
 			_fOnClosed();
 		}
 
-		auto f_Register
-			(
-				NSys::CIoLoopHandle _Handle, void *, NSys::EIoLoopEvent, NSys::FIoLoopReadinessCallback, bool, NSys::CIoLoopRegisterOptions const &
-			)
+		auto f_Register(NSys::CIoLoopHandle _Handle, void *, NSys::EIoLoopEvent, NSys::FIoLoopReadinessCallback, bool, NSys::CIoLoopRegisterOptions const &)
 			-> NSys::CIoLoopRegistration * override
 		{
 			m_PipeDescriptor = int(_Handle);
@@ -54,13 +57,18 @@ namespace
 
 		bool f_PipeStillOpen() const
 		{
-			struct stat Current{};
+			struct stat Current
+			{
+			};
 
 			return fstat(m_PipeDescriptor, &Current) == 0 && Current.st_dev == m_PipeIdentity.st_dev && Current.st_ino == m_PipeIdentity.st_ino;
 		}
 
 		int m_PipeDescriptor = -1;
-		struct stat m_PipeIdentity{};
+		struct stat m_PipeIdentity
+		{
+		};
+
 		bool m_bSawPipe = false;
 	};
 
@@ -97,9 +105,25 @@ namespace
 						auto fRegister = [&]
 							{
 								if (bThreadSignal)
-									return NSys::fg_System_RegisterForThreadSignal(SIGWINCH, [Lifetime] {});
+								{
+									return NSys::fg_System_RegisterForThreadSignal
+										(
+											SIGWINCH
+											, [Lifetime]
+											{
+											}
+										)
+									;
+								}
 
-								return NSys::fg_System_RegisterForSignal(SIGWINCH, [Lifetime] {});
+								return NSys::fg_System_RegisterForSignal
+									(
+										SIGWINCH
+										, [Lifetime]
+										{
+										}
+									)
+								;
 							}
 						;
 						DMibExpectExceptionType(fRegister(), NException::CException);
@@ -108,16 +132,24 @@ namespace
 						Lifetime.f_Clear();
 						DMibExpect(nReleased, ==, i + 1);
 					}
-
 				}
 			};
 
 			DMibTestSuite("CoalescingAndRemoval")
 			{
-				struct sigaction Ignore{};
-				struct sigaction Previous{};
+				struct sigaction Ignore
+				{
+				};
+
+				struct sigaction Previous
+				{
+				};
+
 				// Darwin can deliver the replaced disposition during concurrent raises; keep the fallback callable.
-				Ignore.sa_handler = [](int) {};
+				Ignore.sa_handler = [](int)
+					{
+					}
+				;
 				sigemptyset(&Ignore.sa_mask);
 				DMibAssert(sigaction(SIGWINCH, &Ignore, &Previous), ==, 0);
 				auto RestoreSignal = g_OnScopeExit / [&]
@@ -156,16 +188,50 @@ namespace
 				umint nFirst = 0;
 				umint nSecond = 0;
 				umint nOtherSignal = 0;
-				auto First = NSys::fg_System_RegisterForSignal(SIGWINCH, [&] { ++nFirst; });
-				auto Second = NSys::fg_System_RegisterForSignal(SIGWINCH, [&] { ++nSecond; });
-				auto Other = NSys::fg_System_RegisterForSignal(SIGUSR2, [&] { ++nOtherSignal; });
+				auto First = NSys::fg_System_RegisterForSignal
+					(
+						SIGWINCH
+						, [&]
+						{
+							++nFirst;
+						}
+					)
+				;
+				auto Second = NSys::fg_System_RegisterForSignal
+					(
+						SIGWINCH
+						, [&]
+						{
+							++nSecond;
+						}
+					)
+				;
+				auto Other = NSys::fg_System_RegisterForSignal
+					(
+						SIGUSR2
+						, [&]
+						{
+							++nOtherSignal;
+						}
+					)
+				;
 
 				for (umint i = 0; i < 16; ++i)
 				{
 					raise(SIGWINCH);
 					raise(SIGUSR2);
 				}
-				DMibAssertTrue(fPollUntil([&] { return nFirst != 0 && nOtherSignal == 16; }));
+				DMibAssertTrue
+					(
+						fPollUntil
+						(
+							[&]
+							{
+								return nFirst != 0 && nOtherSignal == 16;
+							}
+						)
+					)
+				;
 
 				{
 					DMibTestPath("InitialBurst");
@@ -177,7 +243,17 @@ namespace
 
 				First.f_Clear();
 				raise(SIGWINCH);
-				DMibAssertTrue(fPollUntil([&] { return nSecond == 2; }));
+				DMibAssertTrue
+					(
+						fPollUntil
+						(
+							[&]
+							{
+								return nSecond == 2;
+							}
+						)
+					)
+				;
 
 				{
 					DMibTestPath("OneSubscriberRemoved");
@@ -200,16 +276,41 @@ namespace
 
 				{
 					DMibTestPath("PendingSignalOnRemoval");
-					auto Old = NSys::fg_System_RegisterForSignal(SIGWINCH, [] {});
+					auto Old = NSys::fg_System_RegisterForSignal
+						(
+							SIGWINCH
+							, []
+							{
+							}
+						)
+					;
 					raise(SIGWINCH);
 					Old.f_Clear();
 					pLoop->f_DrainForShutdown();
 
 					umint nReopened = 0;
-					auto Reopened = NSys::fg_System_RegisterForSignal(SIGWINCH, [&] { ++nReopened; });
+					auto Reopened = NSys::fg_System_RegisterForSignal
+						(
+							SIGWINCH
+							, [&]
+							{
+								++nReopened;
+							}
+						)
+					;
 					raise(SIGWINCH);
 
-					DMibAssertTrue(fPollUntil([&] { return nReopened != 0; }));
+					DMibAssertTrue
+						(
+							fPollUntil
+							(
+								[&]
+								{
+									return nReopened != 0;
+								}
+							)
+						)
+					;
 					DMibExpect(nReopened, ==, 1);
 					Reopened.f_Clear();
 					pLoop->f_DrainForShutdown();
@@ -239,7 +340,14 @@ namespace
 				for (umint i = 0; i < 64; ++i)
 				{
 					DMibTestPath("DescriptorReuse {}"_f << i);
-					auto Subscription = NSys::fg_System_RegisterForSignal(SIGWINCH, [] {});
+					auto Subscription = NSys::fg_System_RegisterForSignal
+						(
+							SIGWINCH
+							, []
+							{
+							}
+						)
+					;
 					pLoop->f_PollAndDispatch();
 					Subscription.f_Clear();
 					pLoop->f_DrainForShutdown();

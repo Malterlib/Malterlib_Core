@@ -30,7 +30,6 @@
 #	error "Compiler version is not supported"
 #endif
 
-
 #define _SCL_SECURE_NO_WARNINGS 1
 #define _SECURE_SCL 0
 #define _HAS_ITERATOR_DEBUGGING 0
@@ -81,7 +80,6 @@
 #pragma warning(disable:4595) // non-member operator new or delete functions may not be declared inline
 #pragma warning(disable:4742) // '`string'' has different alignment in -- To workaround seeming bug in microsoft PGO linker
 
-
 #ifdef __EDG__
 
 #pragma warning(disable:1684)
@@ -92,7 +90,6 @@
 #pragma warning(disable:1418)
 #pragma warning(disable:444)
 #pragma warning(disable:193)
-
 
 #endif
 

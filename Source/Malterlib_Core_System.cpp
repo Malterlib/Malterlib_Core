@@ -29,7 +29,6 @@ namespace NMib
 
 	namespace NSys
 	{
-
 		bool fg_Compiler_MakeActive(int _Dummy, ...)
 		{
 			CMibArgList Args;
@@ -45,18 +44,19 @@ namespace NMib
 			NMib::CProcessorInfo CPUInfo;
 			fg_HW_GetProcessorInfo(CPUInfo);
 
-			if (	CPUInfo.m_Architecture == EProcessorArchitecture_x86
-				||	CPUInfo.m_Architecture == EProcessorArchitecture_x86_64)
+			if (CPUInfo.m_Architecture == EProcessorArchitecture_x86 || CPUInfo.m_Architecture == EProcessorArchitecture_x86_64)
 			{
 				NMib::EProcessorFeature RequiredFeatures = NMib::EProcessorFeature_MMX | NMib::EProcessorFeature_SSE | NMib::EProcessorFeature_SSE2;
 
 				return (CPUInfo.m_Features & RequiredFeatures) == RequiredFeatures;
 			}
-			else if (	CPUInfo.m_Architecture == EProcessorArchitecture_armv5
-					||	CPUInfo.m_Architecture == EProcessorArchitecture_armv6
-					||	CPUInfo.m_Architecture == EProcessorArchitecture_armv7
-					||	CPUInfo.m_Architecture == EProcessorArchitecture_armv8
-				)
+			else if
+			(
+				CPUInfo.m_Architecture == EProcessorArchitecture_armv5
+				|| CPUInfo.m_Architecture == EProcessorArchitecture_armv6
+				|| CPUInfo.m_Architecture == EProcessorArchitecture_armv7
+				|| CPUInfo.m_Architecture == EProcessorArchitecture_armv8
+			)
 			{
 				NMib::EProcessorFeature RequiredFeatures = NMib::EProcessorFeature_VFP;
 
@@ -71,7 +71,6 @@ namespace NMib
 
 			return false;
 		}
-
 	}
 
 	namespace NPrivate
@@ -184,9 +183,7 @@ namespace NMib
 		m_CommandLineData.f_Construct();
 #if DMibRemoteDebugger_Enabled
 		if (NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("Malterlib_RemoteDebugger")) != "")
-		{
 			NDebug::NRemoteDebugger::fg_RD_InitializeClient();
-		}
 #endif
 		fp_CreateMemoryManager();
 
@@ -253,7 +250,6 @@ namespace NMib
 		fg_MalterlibThreadSpawn_DestroyThreads();
 #endif
 	}
-
 
 	void CSystem::f_Destruct()
 	{
@@ -377,24 +373,18 @@ namespace NMib
 				{ // Condition the program name
 					umint UnderPos = ProgramName.f_FindReverse("_");
 					if (UnderPos != -1)
-					{
 						ProgramName = ProgramName.f_Extract(0, UnderPos);
-					}
 
 					umint Len = ProgramName.f_GetLen();
 
 					umint DIPos = ProgramName.f_FindNoCase("DI");
 					if (DIPos == (Len - 2))
-					{
 						ProgramName = ProgramName.f_Extract(0, Len - 2);
-					}
 					else
 					{
 						umint DPos = ProgramName.f_FindNoCase("D");
-						if (DPos == Len -1)
-						{
+						if (DPos == Len - 1)
 							ProgramName = ProgramName.f_Extract(0, Len - 1);
-						}
 					}
 				}
 				if (ProgramName.f_IsEmpty())
@@ -441,7 +431,7 @@ namespace NMib
 		// Call c constructors
 		while (_pCConstructorsStart < _pCConstructorsEnd)
 		{
-			if ( *_pCConstructorsStart != nullptr )
+			if (*_pCConstructorsStart != nullptr)
 				(**_pCConstructorsStart)();
 			++_pCConstructorsStart;
 		}
@@ -449,12 +439,11 @@ namespace NMib
 		// Call C++ constructors
 		while (_pCppConstructors < _pCppConstructorsEnd)
 		{
-			if ( *_pCppConstructors != nullptr )
+			if (*_pCppConstructors != nullptr)
 				(**_pCppConstructors)();
 			++_pCppConstructors;
 		}
 	}
-
 
 	void CSystem::f_ExitModule()
 	{
@@ -480,6 +469,7 @@ namespace NMib
 		f_MemoryManager_PrepareFork();
 		fp_SubSystem_PrepareFork_AfterMemoryManager();
 	}
+
 	void CSystem::f_ForkedChild()
 	{
 		fp_SubSystem_ForkedChild_AfterMemoryManager();
@@ -497,6 +487,7 @@ namespace NMib
 			m_pSystemLog->f_ForkedChild();
 #endif
 	}
+
 	void CSystem::f_ForkedParent()
 	{
 		fp_SubSystem_ForkedParent_AfterMemoryManager();
@@ -519,6 +510,7 @@ namespace NMib
 	{
 		g_SystemModule.f_DestroyAggregates(false);
 	}
+
 	void CSystem::f_Exit(aint _ExitCode)
 	{
 		f_ExitModule();
@@ -526,8 +518,7 @@ namespace NMib
 		NSys::fg_System_ExitProcess(_ExitCode);
 	}
 
-
-	void CSystem::f_FatalError(const ch8 *_pMessage)
+	void CSystem::f_FatalError(ch8 const *_pMessage)
 	{
 		NSys::fg_Message("Fatal Error", _pMessage);
 		f_Exit(255);
@@ -538,7 +529,7 @@ namespace NMib
 	{
 		int iCurrent = 0;
 
-		const ch8 *pCommandLine = _Source.f_GetStr();
+		ch8 const *pCommandLine = _Source.f_GetStr();
 
 		int Mode = 0;
 
@@ -563,9 +554,7 @@ namespace NMib
 					continue;
 				}
 				else
-				{
 					Current.f_AddChar(Temp);
-				}
 			}
 			else
 			{
@@ -608,9 +597,7 @@ namespace NMib
 								Current.f_AddChar('\n');
 							}
 							else
-							{
 								Current.f_AddChar(Temp);
-							}
 							break;
 						}
 						else if (Mode == 2)
@@ -626,15 +613,12 @@ namespace NMib
 							break;
 						}
 					}
-				default:
-					Current.f_AddChar(Temp);
-					break;
+				default: Current.f_AddChar(Temp); break;
 				}
 			}
 
 			++pCommandLine;
 		}
-
 
 		if (Current.f_GetLen())
 		{
@@ -658,7 +642,7 @@ namespace NMib
 		}
 	}
 
-	void CSystem::f_SetCrashHandler(NStr::CStr const& _Path, NStr::CStr const& _Server)
+	void CSystem::f_SetCrashHandler(NStr::CStr const &_Path, NStr::CStr const &_Server)
 	{
 		m_CrashHandlerPath = _Path;
 		m_CrashHandlerServer = _Server;
@@ -688,7 +672,6 @@ namespace NMib
 		NSys::fg_Process_GetCommandLineArgs(CommandLineArgs);
 		return CommandLineArgs;
 	}
-
 
 	aint CSystem::f_NumCommandLineParameters()
 	{
@@ -728,8 +711,9 @@ namespace NMib
 				return _Left.m_Priority <=> _Right.m_Priority;
 			}
 		};
+
 		m_Aggregates.f_MergeSort(CSort());
-		NStorage::CAggregate * pAggregate = m_Aggregates.f_GetLast();
+		NStorage::CAggregate *pAggregate = m_Aggregates.f_GetLast();
 		while (pAggregate)
 		{
 			if (!_bDestroySystem && pAggregate->m_Priority < 128)
@@ -745,7 +729,6 @@ namespace NMib
 
 		m_Lock.f_Destruct();
 		m_Aggregates.f_Destruct();
-
 	}
 
 	void CSystemModule::f_Init(CSystem *_pSystem)

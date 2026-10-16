@@ -82,8 +82,7 @@ namespace NMib::NPlatform
 					PostQuitMessage(0);
 					return 0;
 
-				default:
-					break;
+				default: break;
 				}
 
 				return DefWindowProcA(_hWnd, _Message, _wParam, _lParam);

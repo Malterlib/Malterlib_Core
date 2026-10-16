@@ -22,7 +22,6 @@ Compile
 	{
 		!!this.Type "File"
 	}
-
 }
 
 // Map Compile.* properties to csc.exe flags. Mirrors VisualStudio_DotNet_Compile.MGeneratorSettings:

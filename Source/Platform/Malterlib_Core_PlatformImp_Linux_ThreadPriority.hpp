@@ -429,7 +429,7 @@ namespace
 		State.m_HelperCreateDone.f_SetSignaled();
 	}
 
-	bool fg_Linux_RouteThreadCreate(CThreadCreateParams const &_Params, void *&o_pThread, umint &o_ThreadID)
+	bool fg_Linux_RouteThreadCreate(CThreadCreateParams const &_Params, void * &o_pThread, umint &o_ThreadID)
 	{
 		if (_Params.m_Priority == EExecutionPriority_Default || fg_Linux_IsPriorityGranted())
 			return false;

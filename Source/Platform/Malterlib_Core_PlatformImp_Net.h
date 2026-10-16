@@ -11,12 +11,12 @@ struct CAddressResolver
 private:
 	enum EFlag
 	{
-		EFlag_None		= 0,
-		EFlag_Done		= DMibBit(0),
-		EFlag_Error		= DMibBit(1),
-		EFlag_Pending	= DMibBit(2),
-		EFlag_Running	= DMibBit(3),
-		EFlag_Closing	= DMibBit(4),
+		EFlag_None = 0
+		, EFlag_Done = DMibBit(0)
+		, EFlag_Error = DMibBit(1)
+		, EFlag_Pending = DMibBit(2)
+		, EFlag_Running = DMibBit(3)
+		, EFlag_Closing = DMibBit(4)
 	};
 
 	// Request state and list membership are protected by CAddressResolver::mp_Lock.
@@ -47,7 +47,7 @@ private:
 
 	static void fs_CloseRequest(CResolveRequest *_pRequest);
 
-	aint fp_ResolveWorker(NThread::CThreadObject* _pThread);
+	aint fp_ResolveWorker(NThread::CThreadObject *_pThread);
 
 public:
 	CAddressResolver();
@@ -55,9 +55,9 @@ public:
 
 	void f_Stop();
 
-	void* f_Open(NMib::NStr::CStr const& _Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
-	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress& _oAddress, NMib::NStr::CStr &_Error);
-	void f_Close(void* _pResolver);
+	void *f_Open(NMib::NStr::CStr const &_Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
+	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &_oAddress, NMib::NStr::CStr &_Error);
+	void f_Close(void *_pResolver);
 	void f_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 
 	bool f_IsEmpty();
@@ -87,27 +87,28 @@ private:
 public:
 	CRuntimeNetAddress()
 		: mp_Type(NMib::NNetwork::ENetAddressType_None)
-	{}
+	{
+	}
 
-	CRuntimeNetAddress(CRuntimeNetAddress const& _ToCopy)
+	CRuntimeNetAddress(CRuntimeNetAddress const &_ToCopy)
 		: mp_Type(_ToCopy.mp_Type)
 		, mp_lData(_ToCopy.mp_lData)
 	{
 	}
 
-	CRuntimeNetAddress(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
+	CRuntimeNetAddress(NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes)
 		: mp_Type(NMib::NNetwork::ENetAddressType_None)
 	{
 		f_Set(_Type, _pData, _nDataBytes);
 	}
 
-	CRuntimeNetAddress(sockaddr_in const& _TCPv4)
+	CRuntimeNetAddress(sockaddr_in const &_TCPv4)
 		: mp_Type(NMib::NNetwork::ENetAddressType_None)
 	{
 		f_Set(_TCPv4);
 	}
 
-	CRuntimeNetAddress(sockaddr_in6 const& _TCPv6)
+	CRuntimeNetAddress(sockaddr_in6 const &_TCPv6)
 		: mp_Type(NMib::NNetwork::ENetAddressType_None)
 	{
 		f_Set(_TCPv6);
@@ -131,7 +132,7 @@ public:
 		return mp_Type;
 	}
 
-	void f_Set(NMib::NNetwork::ENetAddressType _Type, void const* _pData, umint _nDataBytes)
+	void f_Set(NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes)
 	{
 		mp_Type = _Type;
 		mp_lData.f_SetLen(_nDataBytes);
@@ -145,12 +146,12 @@ public:
 		return mp_lData.f_GetArray();
 	}
 
-	void f_Set(sockaddr_in const& _TCPv4)
+	void f_Set(sockaddr_in const &_TCPv4)
 	{
 		f_Set(NMib::NNetwork::ENetAddressType_TCPv4, &_TCPv4, sizeof(sockaddr_in));
 	}
 
-	void f_Set(sockaddr_in6 const& _TCPv6)
+	void f_Set(sockaddr_in6 const &_TCPv6)
 	{
 		f_Set(NMib::NNetwork::ENetAddressType_TCPv6, &_TCPv6, sizeof(sockaddr_in6));
 	}
@@ -162,36 +163,66 @@ public:
 
 	uint32 f_GetScopeID() const;
 
-	umint f_GetFullDataLen() const { return mp_lData.f_GetLen(); }
+	umint f_GetFullDataLen() const
+	{
+		return mp_lData.f_GetLen();
+	}
+
 	umint f_GetSockAddrLen() const
 	{
 		using namespace NMib::NNetwork;
 		switch (mp_Type)
 		{
-			case ENetAddressType_TCPv4: return sizeof(sockaddr_in);
-			case ENetAddressType_TCPv6: return sizeof(sockaddr_in6);
-			case ENetAddressType_Unix: return sizeof(sockaddr_un);
-			default: return f_GetFullDataLen();
+		case ENetAddressType_TCPv4: return sizeof(sockaddr_in);
+		case ENetAddressType_TCPv6: return sizeof(sockaddr_in6);
+		case ENetAddressType_Unix: return sizeof(sockaddr_un);
+		default: return f_GetFullDataLen();
 		}
 	}
-	void const* f_Get() const { return mp_lData.f_GetArray(); }
 
-	sockaddr_in const& f_GetTCPv4() const { return *(sockaddr_in const*)mp_lData.f_GetArray(); }
-	sockaddr_in6 const& f_GetTCPv6() const { return *(sockaddr_in6 const*)mp_lData.f_GetArray(); }
-	CUnixAddress const& f_GetUnix() const { return *(CUnixAddress const*)mp_lData.f_GetArray(); }
-
-	sockaddr_in & f_GetTCPv4() { return *(sockaddr_in *)mp_lData.f_GetArray(); }
-	sockaddr_in6 & f_GetTCPv6() { return *(sockaddr_in6 *)mp_lData.f_GetArray(); }
-	CUnixAddress &f_GetUnix()  { return *(CUnixAddress *)mp_lData.f_GetArray(); }
-
-	template<typename t_CAddrType>
-	t_CAddrType const& f_GetAsType(NMib::NNetwork::ENetAddressType _ExpectedType) const
+	void const *f_Get() const
 	{
-		DMibSafeCheck(mp_Type == _ExpectedType, "Address is not of the expected type.");
-		return *(t_CAddrType const*)mp_lData.f_GetArray();
+		return mp_lData.f_GetArray();
 	}
 
-	int f_Compare(CRuntimeNetAddress const& _Other) const
+	sockaddr_in const &f_GetTCPv4() const
+	{
+		return *(sockaddr_in const *)mp_lData.f_GetArray();
+	}
+
+	sockaddr_in6 const &f_GetTCPv6() const
+	{
+		return *(sockaddr_in6 const *)mp_lData.f_GetArray();
+	}
+
+	CUnixAddress const &f_GetUnix() const
+	{
+		return *(CUnixAddress const *)mp_lData.f_GetArray();
+	}
+
+	sockaddr_in &f_GetTCPv4()
+	{
+		return *(sockaddr_in *)mp_lData.f_GetArray();
+	}
+
+	sockaddr_in6 &f_GetTCPv6()
+	{
+		return *(sockaddr_in6 *)mp_lData.f_GetArray();
+	}
+
+	CUnixAddress &f_GetUnix()
+	{
+		return *(CUnixAddress *)mp_lData.f_GetArray();
+	}
+
+	template <typename t_CAddrType>
+	t_CAddrType const &f_GetAsType(NMib::NNetwork::ENetAddressType _ExpectedType) const
+	{
+		DMibSafeCheck(mp_Type == _ExpectedType, "Address is not of the expected type.");
+		return *(t_CAddrType const *)mp_lData.f_GetArray();
+	}
+
+	int f_Compare(CRuntimeNetAddress const &_Other) const
 	{
 		if (mp_Type < _Other.mp_Type)
 			return -1;

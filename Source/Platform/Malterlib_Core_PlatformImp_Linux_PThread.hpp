@@ -77,14 +77,7 @@ namespace
 
 	struct CThreadNotificationState
 	{
-		using CNotifications = NContainer::TCMapWithPool
-			<
-				NSys::NPrivate::CThreadNotificationModule *
-				, CThreadNotificationRegistration
-				, CSort_Default
-				, NMemory::CAllocator_VirtualNoTracking
-			>
-		;
+		using CNotifications = NContainer::TCMapWithPool<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
 
 		NContainer::TCSetWithPool<umint, CSort_Default, NMemory::CAllocator_VirtualNoTracking> m_LiveThreads;
 		CNotifications m_Notifications;
@@ -291,16 +284,16 @@ namespace
 		g_ThreadNotificationLock.f_ForkedChildLocked();
 		g_ThreadNotificationLock.f_Unlock();
 	}
-
 }
 
 extern "C" assure_used module_export int pthread_create
 	(
-		pthread_t *__restrict _pThread
-		, pthread_attr_t const *__restrict _pAttributes
-		, void * (*_fStart)(void *)
-		, void *__restrict _pArgument
-	) __THROWNL
+		pthread_t * __restrict _pThread
+		, pthread_attr_t const * __restrict _pAttributes
+		, void *(*_fStart)(void *)
+		, void * __restrict _pArgument
+	)
+	__THROWNL
 {
 	// The Malterlib executable must initialize before any dependent DSO constructor
 	// uses Malterlib; memory interposition and cross-module interfaces rely on this
@@ -511,7 +504,10 @@ void NSys::fg_Thread_DestroyLocalContext(void (*_fDestroy)())
 	g_pHostThreadNotificationCrossModule->m_fUnregister
 		(
 			&g_ThreadNotificationModule
-			, [](void *_pContext) { (*static_cast<void (**)()>(_pContext))(); }
+			, [](void *_pContext)
+			{
+				(*static_cast<void (**)()>(_pContext))();
+			}
 			, &_fDestroy
 		)
 	;
@@ -566,7 +562,6 @@ using namespace NMib;
 // POSIX Thread Implementation
 // *************************************************************************************************************************
 
-
 constexpr umint gc_nMalterlibThreadLocals = 256; // 2 KB on 64 bit platforms
 
 constinit NThread::CLowLevelLockAggregate gc_nMalterlibThreadLocalsAllocatedLock = {DAggregateInit};
@@ -591,10 +586,12 @@ extern "C" assure_used module_export umint fg_Malterlib_Thread_AllocLocal()
 {
 	return NSys::fg_Thread_AllocLocal();
 }
+
 extern "C" assure_used module_export void fg_Malterlib_Thread_FreeLocal(umint _iStorage)
 {
 	NSys::fg_Thread_FreeLocal(_iStorage);
 }
+
 extern "C" assure_used module_export pid_t fg_Malterlib_Thread_GetTID()
 {
 	return fg_Malterlib_Thread_GetTID_Local();

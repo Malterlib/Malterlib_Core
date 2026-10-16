@@ -505,7 +505,7 @@ Target
 	}
 }
 
-	// File extensions macOS
+// File extensions macOS
 Target
 {
 	&
@@ -966,7 +966,6 @@ Target
 			GeneratorFamily "VisualStudio"
 			TargetIsExecutable true
 		}
-
 	}
 
 	ExtraLibFlags += "/ignore:4042"
@@ -977,7 +976,6 @@ Target
 			GeneratorFamily "VisualStudio"
 		}
 	}
-
 
 	ExtraLinkerFlags =+ "/GENPROFILE"
 	{
@@ -2613,7 +2611,6 @@ Target
 		!!Target.SDKRoot undefined
 	}
 
-
 	DeploymentTarget: string?
 	DeploymentTarget "10.13"
 	{
@@ -2895,7 +2892,6 @@ Target
 	}
 //	ValidArchitectures "none"
 //	Architectures "none"
-
 }
 
 Property
@@ -2937,7 +2933,6 @@ Property
 			}
 		}
 	}
-
 }
 
 // Code generating targets
@@ -3211,7 +3206,6 @@ Target
 
 	LinkWithLibraries += [["-sectcreate", "__TEXT", "__info_plist", Target:Target.MalterlibInfoPListFile]]
 	{
-
 		&
 		{
 			!Target:Target.MalterlibInfoPListFile undefined
@@ -3692,7 +3686,6 @@ Target
 // ExeFS
 Property
 {
-
 	MalterlibLocalizationTranslationsPath: string = `@(MalterlibCompiledFilesWarkspaceBase)/Int/GeneratedTranslation/@(Platform)/@(Architecture)/@(FullConfiguration)`
 	MalterlibLocalizationExeFSPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationsExeFS/*`
 	MalterlibLocalizationTranslationHeadersPath: string = `@(MalterlibLocalizationTranslationsPath)/TranslationHeaders`
@@ -4191,7 +4184,6 @@ Property
 		}
 	}
 
-
 	MalterlibPostBuildScriptPreSign =+ `MTool DiffCopy "@(GetProperty(&MalterlibFinalModuleDestination, "Group:Libraries.Target:Exe_AOCCOutOfProcess.Target:Exe_AOCCOutOfProcess"))" @(`@(MalterlibFinalModuleDestinationPath)/@(Target.FileName)@(Target.FileExtension)/Contents/MacOS`->Escape()) "" 0\r\n`
 	{
 		&
@@ -4381,7 +4373,6 @@ Property
 				!!PlatformFamily "macOS"
 			}
 
-
 			Contents =+	`	<key>BreakpadProduct</key>\n`\
 						`		<string>@(Target:Target.FileName)</string>\n`\
 						`	<key>BreakpadProductDisplay</key>\n`\
@@ -4396,7 +4387,6 @@ Property
 						`		<string>@(Target:Target.Version)</string>\n`\
 						`	<key>BreakpadInProcess</key>\n`\
 						`		<string>YES</string>\n`
-
 
 			{
 				!!MalterlibBreakpadActive true
@@ -4438,13 +4428,11 @@ Property
 				}
 			}
 
-
 			Contents =+	`	<key>NSMainNibFile</key>\n`\
 						`	<string>@(MalterlibExeMainNibFile->GetFileNoExt())</string>\n`
 			{
 				!MalterlibExeMainNibFile undefined
 			}
-
 
 			Contents =+	`	<key>CFBundleURLTypes</key>\n`\
 						`		<array>\n`\
@@ -4849,7 +4837,6 @@ Property
 								'	</asmv3:application>\r\n'\
 								'</assembly>\r\n'
 
-
 					UTF16 false
 					UnicodeBOM true
 				}
@@ -5025,7 +5012,6 @@ Target
 	}
 }
 
-
 // ExeFS
 
 Property
@@ -5051,18 +5037,18 @@ Property
 	MalterlibExeFSSpecContents: string?
 
 	MalterlibExeFSSpecContents =+ `Include\r\n`\
-								`{\r\n`\
-								`	Pattern @(MalterlibExeFSPath->UnixPath()->Escape())\r\n`\
-								`}\r\n`\
-								`Include\r\n`\
-								`{\r\n`\
-								`	Pattern @(MalterlibTempExeFSPath->UnixPath()->Escape())\r\n`\
-								`}\r\n`\
-								`Include\r\n`\
-								`{\r\n`\
-								`	Pattern @(MalterlibSharedTempExeFSPath->UnixPath()->Escape())\r\n`\
-								`}\r\n`\
-								`@(fg_ExpandCopyOptions(MalterlibExeFSExtraFiles)->ForEach(&MalterlibExeFSExtraFilesContentsTemplate))`
+								  `{\r\n`\
+								  `	Pattern @(MalterlibExeFSPath->UnixPath()->Escape())\r\n`\
+								  `}\r\n`\
+								  `Include\r\n`\
+								  `{\r\n`\
+								  `	Pattern @(MalterlibTempExeFSPath->UnixPath()->Escape())\r\n`\
+								  `}\r\n`\
+								  `Include\r\n`\
+								  `{\r\n`\
+								  `	Pattern @(MalterlibSharedTempExeFSPath->UnixPath()->Escape())\r\n`\
+								  `}\r\n`\
+								  `@(fg_ExpandCopyOptions(MalterlibExeFSExtraFiles)->ForEach(&MalterlibExeFSExtraFilesContentsTemplate))`
 	{
 		&
 		{
@@ -5520,7 +5506,6 @@ Property
 	MalterlibBuildServerPutPathUploadContents: string
 	MalterlibBuildServerPutPathUploadContents =+ fg_ExpandCopyOptions(MalterlibBuildServerPutSources)->ForEach(&MalterlibBuildServerPutPathUploadTemplateOuter)
 
-
 	MalterlibTestPutSources: [type(CFileCopyOptions)]
 
 	MalterlibTestPutSources =+ {Pattern: MalterlibFinalModuleDestination}
@@ -5890,7 +5875,6 @@ Target
 		GeneratorFamily "Xcode"
 		GeneratorFamily "Ninja"
 	}
-
 
 	PostBuildScriptInputs MalterlibPostBuildScriptInputsContents
 	PostBuildScriptInputs =+ Target.AllFiles_Custom->ForEach(&f_CalculateTargetFilePostBuildImplicitInputs)
@@ -6382,8 +6366,8 @@ Target
 
 	// Do this before signing as we want to strip the executable
 	PostBuildScript =+ `echo Deploy Symbols:\r\n`\
-					`echo @(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) \\> @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
-					`@(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`
+					   `echo @(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) \\> @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`\
+					   `@(MalterlibDumpSymsCommand) @(MalterlibFinalModuleDestinationExecutable->Escape()) > @(`@(MalterlibFinalModuleDestination).breakpad`->Escape())\r\n`
 	{
 		&
 		{
@@ -6499,7 +6483,6 @@ Target
 		}
 	}
 
-
 	PostBuildScript =+	`echo @(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`\
 						`@(MalterlibDeploySymbolsTool("$BrekapadOutputPath")) DiffCopy "@(MalterlibFinalModuleDestination).breakpad.zip" "$BrekapadOutputPath" "" 0\r\n`
 	{
@@ -6546,7 +6529,6 @@ Target
 			MalterlibDeploySymbols true
 		}
 	}
-
 
 	PostBuildScript =+	`sn -Ra "@(MalterlibFinalModuleDestination->WindowsPath())" "@(MalterlibStronglyNamedAssembly->WindowsPath())"\r\n`
 	{
@@ -6663,7 +6645,6 @@ Target
 					MalterlibDriverSigning true
 				}
 			}
-
 		}
 	}
 
@@ -6705,7 +6686,6 @@ Target
 			TargetIsExecutable true
 		}
 	}
-
 
 	PostBuildScript =+	`MTool TouchOrCreate "@(MalterlibTestDeployPath)/@(MalterlibFinalModuleDestination->GetFile()).MainTest"\r\n`
 	{
@@ -6763,7 +6743,6 @@ Target
 			!MalterlibBuildServerPutDisabled true
 		}
 	}
-
 
 	PostBuildScript =+ MalterlibTestPutPathUploadContents
 	{

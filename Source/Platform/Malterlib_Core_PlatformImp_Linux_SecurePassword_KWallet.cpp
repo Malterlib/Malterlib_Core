@@ -12,7 +12,6 @@ namespace NMib
 {
 	namespace NSys
 	{
-
 		//
 		// KDE Secure Password Implementation
 		//
@@ -24,7 +23,7 @@ namespace NMib
 			NMib::NStr::CStr mp_Folder;
 
 			NThread::CMutual mp_DBusLock;
-			NDBus::CSystem& mp_DBus;
+			NDBus::CSystem &mp_DBus;
 			NDBus::CConnection mp_Connection;
 			NDBus::CError mp_Error;
 
@@ -32,14 +31,14 @@ namespace NMib
 
 			bool mp_bOK;
 
-			static char const* mc_KWalletService;
-			static char const* mc_KWalletPath;
-			static char const* mc_KWalletInterface;
+			static char const *mc_KWalletService;
+			static char const *mc_KWalletPath;
+			static char const *mc_KWalletInterface;
 
 			bool fp_OpenConnection();
 
-			template<typename... Args>
-			bool fp_MethodCall(NDBus::CMessage& _oReply, char const* _pMethodName, Args const&... _Args)
+			template <typename ...Args>
+			bool fp_MethodCall(NDBus::CMessage &_oReply, char const *_pMethodName, Args const & ..._Args)
 			{
 				NDBus::CMessage Call(NDBus::EMessageType_Method, mc_KWalletService, mc_KWalletPath, mc_KWalletInterface, _pMethodName, mp_DBus);
 
@@ -53,8 +52,8 @@ namespace NMib
 				return mp_Connection.f_BlockingSendWithReply(Call, _oReply);
 			}
 
-			template<typename... Args>
-			bool fp_ParseSimpleMessage(NDBus::CMessage const& _Msg, Args&... _Args)
+			template <typename ...Args>
+			bool fp_ParseSimpleMessage(NDBus::CMessage const &_Msg, Args & ..._Args)
 			{
 				NDBus::CMessageReader Reader(_Msg);
 
@@ -69,28 +68,27 @@ namespace NMib
 
 			int fp_GetWalletHandle();
 			bool fp_LaunchKWallet();
-			void fp_LogConnectionError(char const* _pMsg);
+			void fp_LogConnectionError(char const *_pMsg);
 
 		public:
-
-			CKWalletPasswordManager(NDBus::CSystem& _DBus);
+			CKWalletPasswordManager(NDBus::CSystem &_DBus);
 			~CKWalletPasswordManager();
 
 			bool f_OK() const;
 
 			bool f_SecurePassword_IsLocked();
-			ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location);
-			ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure const& _Password);
-			ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const& _Key);
-			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure& _oPassword);
-			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const& _Key);
+			ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location);
+			ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password);
+			ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const &_Key);
+			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword);
+			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key);
 		};
 
-		char const* CKWalletPasswordManager::mc_KWalletService = "org.kde.kwalletd";
-		char const* CKWalletPasswordManager::mc_KWalletPath = "/modules/kwalletd";
-		char const* CKWalletPasswordManager::mc_KWalletInterface = "org.kde.KWallet";
+		char const *CKWalletPasswordManager::mc_KWalletService = "org.kde.kwalletd";
+		char const *CKWalletPasswordManager::mc_KWalletPath = "/modules/kwalletd";
+		char const *CKWalletPasswordManager::mc_KWalletInterface = "org.kde.KWallet";
 
-		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem* _pDBus)
+		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem *_pDBus)
 		{
 			if (!_pDBus)
 				return nullptr;
@@ -110,7 +108,7 @@ namespace NMib
 		// KDE Secure Password Implementation
 		//
 
-		CKWalletPasswordManager::CKWalletPasswordManager(NDBus::CSystem& _DBus)
+		CKWalletPasswordManager::CKWalletPasswordManager(NDBus::CSystem &_DBus)
 			: mp_DBus(_DBus)
 			, mp_bOK(false)
 			, mp_Connection(_DBus)
@@ -121,18 +119,17 @@ namespace NMib
 			if (!mp_Connection.f_Open(NDBus::EDBusBus_Session))
 				return;
 
-			auto Cleanup = fg_OnScopeExit(
+			auto Cleanup = fg_OnScopeExit
+				(
 					[&]()
 					{
 						if (!mp_bOK)
-						{
 							mp_Connection.f_Close();
-						}
 					}
-				);
+				)
+			;
 
-			auto fl_CheckEnabled =
-				[&](bool _bLog) -> bool
+			auto fl_CheckEnabled = [&](bool _bLog) -> bool
 				{ // Check KWallet is enabled
 					NDBus::CMessage IsEnabledReply(mp_DBus);
 					if (!fp_MethodCall(IsEnabledReply, "isEnabled"))
@@ -158,7 +155,8 @@ namespace NMib
 					}
 
 					return true;
-				};
+				}
+			;
 
 			if (!fl_CheckEnabled(false))
 			{
@@ -204,14 +202,14 @@ namespace NMib
 			return false;
 		}
 
-		ESecurePassword CKWalletPasswordManager::f_SecurePassword_SetLocation(NMib::NStr::CStr const& _Location)
+		ESecurePassword CKWalletPasswordManager::f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location)
 		{
 			mp_Location = _Location;
 			mp_Folder = _Location + " Secure Storage";
 			return ESecurePassword_OK;
 		}
 
-		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Store(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure const& _Password)
+		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password)
 		{
 			DMibLock(mp_DBusLock);
 
@@ -222,14 +220,7 @@ namespace NMib
 				return ESecurePassword_Failure;
 
 			NDBus::CMessage WriteReply(mp_DBus);
-			if (!fp_MethodCall(
-							WriteReply
-						,	"writePassword"
-						,	Handle
-						,	mp_Folder
-						,	_Key
-						,	_Password.f_GetStr()
-						,	mp_Location))
+			if (!fp_MethodCall(WriteReply, "writePassword", Handle, mp_Folder, _Key, _Password.f_GetStr(), mp_Location))
 			{
 				fp_LogConnectionError("KWallet: writePassword failed.");
 				return ESecurePassword_Failure;
@@ -246,25 +237,18 @@ namespace NMib
 			return (Result == 0) ? ESecurePassword_OK : ESecurePassword_Failure;
 		}
 
-		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Remove(NMib::NStr::CStr const& _Key)
+		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Remove(NMib::NStr::CStr const &_Key)
 		{
 			DMibLock(mp_DBusLock);
 
 			// method int org.kde.KWallet.removeEntry(int handle, QString folder, QString key, QString appid)
-
 
 			int32 Handle = fp_GetWalletHandle();
 			if (Handle == -1)
 				return ESecurePassword_Failure;
 
 			NDBus::CMessage RemoveReply(mp_DBus);
-			if (!fp_MethodCall(
-							RemoveReply
-						,	"removeEntry"
-						,	Handle
-						,	mp_Folder
-						,	_Key
-						,	mp_Location))
+			if (!fp_MethodCall(RemoveReply, "removeEntry", Handle, mp_Folder, _Key, mp_Location))
 			{
 				fp_LogConnectionError("removeEntry failed.");
 				return ESecurePassword_Failure;
@@ -289,7 +273,7 @@ namespace NMib
 				return ESecurePassword_OK;
 		}
 
-		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Get(NMib::NStr::CStr const& _Key, NMib::NStr::CStrSecure& _oPassword)
+		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword)
 		{
 			DMibLock(mp_DBusLock);
 
@@ -298,16 +282,10 @@ namespace NMib
 				return ESecurePassword_Failure;
 
 			{ // Check it exists first (to differentiate between no password and an empty password)
-				// method bool org.kde.KWallet.hasEntry(int handle, QString folder, QString key, QString appid)
+			  // method bool org.kde.KWallet.hasEntry(int handle, QString folder, QString key, QString appid)
 
 				NDBus::CMessage HasEntryReply(mp_DBus);
-				if (!fp_MethodCall(
-								HasEntryReply
-							,	"hasEntry"
-							,	Handle
-							,	mp_Folder
-							,	_Key
-							,	mp_Location))
+				if (!fp_MethodCall(HasEntryReply, "hasEntry", Handle, mp_Folder, _Key, mp_Location))
 				{
 					fp_LogConnectionError("hasEntry failed (for SecurePassword_Get).");
 					return ESecurePassword_Failure;
@@ -329,13 +307,7 @@ namespace NMib
 				// method QString org.kde.KWallet.readPassword(int handle, QString folder, QString key, QString appid)
 
 				NDBus::CMessage ReadReply(mp_DBus);
-				if (!fp_MethodCall(
-								ReadReply
-							,	"readPassword"
-							,	Handle
-							,	mp_Folder
-							,	_Key
-							,	mp_Location))
+				if (!fp_MethodCall(ReadReply, "readPassword", Handle, mp_Folder, _Key, mp_Location))
 				{
 					fp_LogConnectionError("readPassword failed.");
 					return ESecurePassword_Failure;
@@ -353,7 +325,7 @@ namespace NMib
 			return ESecurePassword_OK;
 		}
 
-		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Exists(NMib::NStr::CStr const& _Key)
+		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Exists(NMib::NStr::CStr const &_Key)
 		{
 			DMibLock(mp_DBusLock);
 
@@ -364,13 +336,7 @@ namespace NMib
 				return ESecurePassword_Failure;
 
 			NDBus::CMessage HasEntryReply(mp_DBus);
-			if (!fp_MethodCall(
-							HasEntryReply
-						,	"hasEntry"
-						,	Handle
-						,	mp_Folder
-						,	_Key
-						,	mp_Location))
+			if (!fp_MethodCall(HasEntryReply, "hasEntry", Handle, mp_Folder, _Key, mp_Location))
 			{
 				fp_LogConnectionError("hasEntry failed.");
 				return ESecurePassword_Failure;
@@ -453,42 +419,22 @@ namespace NMib
 
 		bool CKWalletPasswordManager::fp_LaunchKWallet()
 		{
-			// method int org.kde.KLauncher.start_service_by_desktop_name(QString serviceName, QStringList urls, QStringList envs, QString startup_id, bool blind, QString& dbusServiceName, QString& error, int& pid)
+			// method int org.kde.KLauncher.start_service_by_desktop_name(QString serviceName, QStringList urls, QStringList envs, QString startup_id, bool blind, QString& dbusServiceName,
+			// QString& error, int& pid)
 
 			NDBus::CMessage LaunchReply(mp_DBus);
 
-			NDBus::CMessage Call
-				(
-					NDBus::EMessageType_Method
-					, "org.kde.klauncher"
-					, "/KLauncher"
-					, "org.kde.KLauncher"
-					, "start_service_by_desktop_name"
-					, mp_DBus
-				)
-			;
+			NDBus::CMessage Call(NDBus::EMessageType_Method, "org.kde.klauncher", "/KLauncher", "org.kde.KLauncher", "start_service_by_desktop_name", mp_DBus);
 
 			{
 				NDBus::CMessageWriter Writer(Call);
 
 				NMib::NContainer::TCVector<NMib::NStr::CStr> lEmptyStrList;
 
-				static char const* pKWalletService = "kwalletd";
+				static char const *pKWalletService = "kwalletd";
 
-				if
-					(
-						!Writer.f_AppendArgs
-						(
-							pKWalletService
-							, lEmptyStrList
-							, lEmptyStrList
-							, NMib::NStr::CStr()
-							, false
-						)
-					)
-				{
+				if (!Writer.f_AppendArgs(pKWalletService, lEmptyStrList, lEmptyStrList, NMib::NStr::CStr(), false))
 					return false;
-				}
 			}
 
 			if (!mp_Connection.f_BlockingSendWithReply(Call, LaunchReply))
@@ -502,17 +448,7 @@ namespace NMib
 			NMib::NStr::CStr ErrorString;
 			int32 PID;
 
-			if
-				(
-					!fp_ParseSimpleMessage
-					(
-						LaunchReply
-						, Result
-						, DubsName
-						, ErrorString
-						, PID
-					)
-				)
+			if (!fp_ParseSimpleMessage(LaunchReply, Result, DubsName, ErrorString, PID))
 			{
 				DMibLog(Error, "KWallet: start_service_by_desktop_name returned an unexpected reply.", 0);
 				return false;
@@ -527,17 +463,14 @@ namespace NMib
 			return true;
 		}
 
-		void CKWalletPasswordManager::fp_LogConnectionError(char const* _pMsg)
+		void CKWalletPasswordManager::fp_LogConnectionError(char const *_pMsg)
 		{
-			NDBus::CError const& Error = mp_Connection.f_GetLastError();
+			NDBus::CError const &Error = mp_Connection.f_GetLastError();
 			(void)Error;
 			DMibLog(Error, "KWallet: {}", _pMsg);
 			DMibLog(Error, "KWallet: ErrorName: \"{}\", Error: \"{}\"", Error.f_GetName(), Error.f_GetMessage());
 		}
-
-
 	} // Namespace NSys
-
 } // Namespace NMib
 
 /*
