@@ -1,0 +1,7 @@
+# Copyright © Unbroken AB
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# The Malterlib clang-tidy checks (malterlib-*) need the Malterlib options file, relative to this file. A .clang-tidy
+# below it that enables checks inherits it with InheritParentConfig: true.
+CheckOptions:
+  malterlib.OptionsFile: Malterlib/Core/ClangTidyOptions.yaml
