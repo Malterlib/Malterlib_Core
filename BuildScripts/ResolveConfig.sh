@@ -20,7 +20,8 @@ if [ -d "$ResolveConfigDir" ]; then
 	for ConfigFile in "$ResolveConfigDir"/*.json; do
 		[ -f "$ConfigFile" ] || continue
 
-		IFS=$'\n' read -r -d '' FilePlatform FileArchitecture FileConfig FilePriority <<< "$(MTool --no-color ReadJson "$ConfigFile" platform architecture configuration configurationPriority 2>/dev/null)" || true
+		IFS=$'\n' read -r -d '' FilePlatform FileArchitecture FileConfig FilePriority \
+			<<< "$(MTool --no-color ReadJson "$ConfigFile" platform architecture configuration configurationPriority 2>/dev/null)" || true
 
 		Score=0
 		if [ "$FilePlatform" = "$MalterlibDefaultPlatform" ]; then Score=$((Score + 1)); fi
