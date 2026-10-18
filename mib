@@ -568,7 +568,7 @@ function CloneAndSyncCoreCheckout()
 }
 
 MalterlibChangingBootstrapVersion="false"
-BootstrapVersion="5"
+BootstrapVersion="6"
 MalterlibCoreBootstrapVersion="2"
 
 function DownloadPrivateGithubAsset
