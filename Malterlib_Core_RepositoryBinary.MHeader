@@ -15,7 +15,7 @@ Property
 
 	MalterlibInstallGitHookHelpers: bool = ((!RunningCI) && (!MalterlibBuildServerBuild)) // User(Repository)=false: Install Malterlib git hook helpers into repositories.
 
-	MalterlibBootstrapVersion: int = 5
+	MalterlibBootstrapVersion: int = 6
 
 	MalterlibRootPostCheckoutHooks: [string] = []
 	MalterlibRootPreCommitHooks: [string] = []
