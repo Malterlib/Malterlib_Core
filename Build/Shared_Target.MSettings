@@ -4940,6 +4940,16 @@ Property
 		!!MalterlibReadElfProgram undefined
 	}
 
+	MalterlibDsymUtilProgram: string
+	MalterlibDsymUtilProgram `@(MalterlibToolsPrefix)dsymutil`
+	{
+		!MalterlibToolsPrefix undefined
+	}
+	MalterlibDsymUtilProgram "dsymutil"
+	{
+		!!MalterlibDsymUtilProgram undefined
+	}
+
 	MalterlibStripOptions: [string] = []
 
 	MalterlibStripOptions =+ ["-u", "-r"]
@@ -6339,7 +6349,7 @@ Target
 
 	// Generate dSYM bundle for non-Xcode builds (Ninja generator)
 	PostBuildScript =+	`echo dsymutil @(MalterlibOriginalModuleDestinationExecutable->Escape()) -o @(`@(MalterlibOriginalModuleDestination).dSYM`->Escape())\r\n`\
-						`dsymutil @(MalterlibOriginalModuleDestinationExecutable->Escape()) -o @(`@(MalterlibOriginalModuleDestination).dSYM`->Escape())\r\n`
+						`@(MalterlibDsymUtilProgram->Escape()) @(MalterlibOriginalModuleDestinationExecutable->Escape()) -o @(`@(MalterlibOriginalModuleDestination).dSYM`->Escape())\r\n`
 	{
 		&
 		{
