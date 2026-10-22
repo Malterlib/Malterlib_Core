@@ -1671,7 +1671,11 @@ Target
 
 	LDFlags =+ "-Wl,-no_warn_duplicate_libraries"
 	{
-		!!MalterlibDefaultCompiler true
+		|
+		{
+			MalterlibDefaultCompiler true
+			MalterlibMacOSAppleLinker true
+		}
 	}
 
 	// Runtime-only library references are invisible to the linker, so stripping is opt-in.
@@ -2275,6 +2279,17 @@ Target
 		{
 			PlatformFamily "macOS"
 			!MalterlibDefaultCompiler true
+			!MalterlibMacOSAppleLinker true
+		}
+	}
+
+	LDFlags =+ `--ld-path=@(MalterlibMacOSAppleLinkerPath)`
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			!MalterlibDefaultCompiler true
+			MalterlibMacOSAppleLinker true
 		}
 	}
 
@@ -3788,6 +3803,22 @@ Property
 
 	MalterlibUniqueConfig: string = GeneratedDirectory->Sanitize()->Replace('-', '_')->Replace('.', '_')
 
+	// ld64.lld doesn't support the authenticated pointers of arm64e, so arm64e links with Apple's linker.
+	MalterlibMacOSAppleLinker: bool = false
+	MalterlibMacOSAppleLinker true
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			|
+			{
+				MalterlibDefaultCompiler true
+				MalterlibNativeClangArchitecture "arm64e"
+			}
+		}
+	}
+	MalterlibMacOSAppleLinkerPath: string = `@(Malterlib_MacOSDeveloperLocaction)/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld`
+
 	MalterlibMacOSLinkerVersion: int?
 	MalterlibMacOSLinkerVersion ExecuteCommand(`@(GeneratedGlobalDirectory)MacOSLinkerVersion.MState`, ["/usr/bin/ld"], "bash", "-c", "/usr/bin/ld -v 2>&1")->Trim()->Split("PROJECT:")<[1]>->Split("\n")<[0]>->RemovePrefix("ld64-")->RemovePrefix("ld-")->AsInteger()
 	{
@@ -3804,6 +3835,11 @@ Property
 	MalterlibBinariesDirectory: string = `@("../../../Binaries/Malterlib"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
 	MalterlibLLVMHostBinariesDirectory: string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(HostPlatformFamily)/@(HostArchitecture)`
 	MalterlibLLVMBinariesDirectory: string = `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(PlatformFamily)/@(Architecture)`
+	// arm64e uses the runtimes of the arm64 distribution
+	MalterlibLLVMBinariesDirectory `@("../../../Binaries/MalterlibLLVM"->MakeAbsolute())/@(PlatformFamily)/arm64`
+	{
+		!!Architecture "arm64e"
+	}
 
 	MalterlibLLVMSanitizerRuntime: string?
 	MalterlibLLVMSanitizerRuntime MalterlibLLVMBinariesDirectory / `lib/clang/@(MalterlibClangVersionMajor)/lib/darwin/libclang_rt.asan_osx_dynamic.dylib`
