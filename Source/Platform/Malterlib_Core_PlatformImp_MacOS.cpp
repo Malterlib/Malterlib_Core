@@ -4347,10 +4347,8 @@ uint16 NSys::fg_Langague_GetSystemLanguage(NMib::NStr::CStr &_Language)
 void* NSys::fg_GetExeData(char const* _pSegment, char const* _pSection, unsigned long long& _nDataBytes)
 {
 
-	unsigned long nBytes;
-	uint8 * pData = (uint8 *)getsectdata(_pSegment, _pSection, &nBytes);
-
-	pData += _dyld_get_image_vmaddr_slide(0);
+	unsigned long nBytes = 0;
+	uint8 * pData = getsectiondata((mach_header_64 const *)_dyld_get_image_header(0), _pSegment, _pSection, &nBytes);
 
 	_nDataBytes = nBytes;
 	return pData;
