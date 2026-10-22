@@ -161,19 +161,6 @@ Property
 
 	MalterlibDefaultToolset: bool = false // User(Undocumented)=true: Use default Xcode toolset with no custom modifications to libc++ or clang
 
-	MalterlibDefaultToolset true
-	{
-		&
-		{
-			MalterlibDefaultToolset undefined
-			&
-			{
-				PlatformFamily "macOS"
-				Architecture "arm64e"
-			}
-		}
-	}
-
 	MalterlibDefaultCompiler: bool // User(Undocumented)=true: Use default Xcode compiler
 	MalterlibDefaultCompiler false
 	{

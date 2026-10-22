@@ -857,6 +857,7 @@ Property
 	{
 		!!Architecture "arm64"
 	}
+	// Kernel extensions and DriverKit drivers run as arm64e, and the DriverKit SDK has no arm64 libraries
 	MalterlibNativeClangArchitecture "arm64e"
 	{
 		|
@@ -866,7 +867,6 @@ Property
 			{
 				Architecture "arm64"
 				Target.Type "Driver"
-				!Target.DriverType "DriverKit"
 				PlatformFamily "macOS"
 			}
 		}

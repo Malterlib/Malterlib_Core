@@ -139,6 +139,11 @@ Import
 		!!PlatformFamily "macOS"
 	}
 
+	CMake_ExcludeFromHash =+ ` --ld-path=@(MalterlibMacOSAppleLinkerPath->EscapeHost())`
+	{
+		!!PlatformFamily "macOS"
+	}
+
 	CMake_ExcludeFromHash =+ PlatformToolsetCompiler->GetPath() + "/"
 	{
 		!PlatformToolsetCompiler undefined
@@ -283,6 +288,17 @@ Import
 		{
 			PlatformFamily "macOS"
 			!MalterlibDefaultCompiler true
+			!MalterlibMacOSAppleLinker true
+		}
+	}
+
+	CMake_Internal_LinkerFlags =+ ` --ld-path=@(MalterlibMacOSAppleLinkerPath->EscapeHost())`
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			!MalterlibDefaultCompiler true
+			MalterlibMacOSAppleLinker true
 		}
 	}
 
