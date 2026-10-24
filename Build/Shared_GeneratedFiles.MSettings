@@ -816,6 +816,13 @@ Target
 				!Workspace.IDEDefaultBuildTarget undefined
 			}
 
+			// The build.ninja BuildTarget.sh runs in for the platform, architecture and configuration above, whose
+			// outputs, object files included, it takes as targets.
+			ContentsJson #<ninjaFile> MalterlibNinjaGeneratorFile
+			{
+				!!GeneratorFamily "Ninja"
+			}
+
 			Contents GenerateFile.ContentsJson->ToString()
 		}
 	}
