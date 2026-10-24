@@ -29,13 +29,26 @@ Property
 	MalterlibBuildSystemGenerateCommand `@(Builtin.MalterlibExe->f_ScriptNativeEscapedPath()) generate --build-system @(Builtin.BuildSystemSourceAbsolute->f_ScriptNativeEscapedPath()) --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->f_ScriptNativeEscapedPath()) --use-cached-environment`
 
 	// The commands below run from the ConfigStore's Bash scripts only, so they are spelled for Bash on every platform. The
-	// generate command is also written into the Windows batch files, in the script language of the platform.
+	// generate command is also written into the Windows batch files, in the script language of the platform. They need
+	// an mib and MTool with tidy, format and Format: the bootstrap binaries Malterlib.MRepo pins are updated to those with
+	// the release that carries these commands, which is outside these sources.
 
 	// mib tidy over the generated build system, which the generate command before it has updated.
 	MalterlibBuildSystemTidyCommand: string
 
 	MalterlibBuildSystemTidyCommand `@(Builtin.MalterlibExe->UnixPath()->EscapeBash()) tidy --build-system @(Builtin.BuildSystemSourceAbsolute->UnixPath()->EscapeBash())`\
 		` --generator "@(Generator)" --output-directory @(Builtin.GeneratedBuildSystemDir->UnixPath()->EscapeBash()) --use-cached-environment --skip-update`
+
+	// mib format over the repositories that set Repository.Format; it needs no generated build system.
+	MalterlibBuildSystemFormatCommand: string
+
+	MalterlibBuildSystemFormatCommand `@(Builtin.MalterlibExe->UnixPath()->EscapeBash()) format --build-system @(Builtin.BuildSystemSourceAbsolute->UnixPath()->EscapeBash())`\
+		` --output-directory @(Builtin.GeneratedBuildSystemDir->UnixPath()->EscapeBash()) --use-cached-environment --skip-update`
+
+	// MTool formatting an editor's buffer from stdin. Format is registered under the MTool name only, not under mib's.
+	MalterlibBuildSystemFormatFileCommand: string
+
+	MalterlibBuildSystemFormatFileCommand `@(Builtin.MToolExe->UnixPath()->EscapeBash()) Format --stdin`
 
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibBuildSystemGenerateCommand", MalterlibBuildSystemGenerateCommand))\r\n`
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibDisableBuildSystemGeneration", MalterlibDisableBuildSystemGeneration->ToString()))\r\n`

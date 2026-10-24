@@ -686,6 +686,56 @@ Property
 			Executable true
 		}
 	}
+
+	// Run by the IDE like the build scripts, with the same arguments, which mib format does not need: Format.sh and
+	// FormatCheck.sh Workspace Platform Architecture Configuration BuildSystemDir.
+	%GenerateFile "Format"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/Format.sh`
+
+			Contents `#!/bin/bash\n`\
+			`\n`\
+			`set -e\n`\
+			`\n`\
+			`@(MalterlibBuildSystemFormatCommand)\n`
+
+			Executable true
+		}
+	}
+
+	%GenerateFile "FormatCheck"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/FormatCheck.sh`
+
+			Contents `#!/bin/bash\n`\
+			`\n`\
+			`set -e\n`\
+			`\n`\
+			`@(MalterlibBuildSystemFormatCommand) --check\n`
+
+			Executable true
+		}
+	}
+
+	// Run by the editor on every format, so it generates nothing first: FormatFile.sh File [Offset Length] formats stdin as
+	// the file, the selection given in bytes, writes the result to stdout and keeps MTool Format --stdin's exit codes.
+	%GenerateFile "FormatFile"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/FormatFile.sh`
+
+			Contents `#!/bin/bash\n`\
+			`\n`\
+			`exec @(MalterlibBuildSystemFormatFileCommand) --file "$1" ${2:+--offset "$2" --length "$3"}\n`
+
+			Executable true
+		}
+	}
 }
 
 Type
