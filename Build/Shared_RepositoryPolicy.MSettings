@@ -325,6 +325,13 @@ Property
 	MalterlibPublicRepositories =+ [MalterlibDefaultModules..., MalterlibOptionalModules...]->Unique()->ForEach(&f_GetMalterlibRepositoryNameFromModules)
 
 	MalterlibPublicRepositories =+ `@(MalterlibRepositoryOrganization)/Malterlib_Core`
+
+	// Only granted on private repositories: collaborators on a public repository run fork pull request workflows without approval
+	MalterlibPrivateRepositoryReaders: {...: string} = {
+		"buildserver01-favro": "read"
+		, "erikolofsson-builds-hansoft": "read"
+		, "kdahlp4": "read"
+	}
 }
 
 Repository
@@ -363,6 +370,7 @@ Repository
 			, "hansoft-testers": "write"
 			, "pushers": "maintain"
 		}
+		, Users: (MalterlibPublicRepositories->ContainsListElement(MalterlibRepositoryName) ? {} : MalterlibPrivateRepositoryReaders)
 		, RemoveOther: true
 	}
 	{
