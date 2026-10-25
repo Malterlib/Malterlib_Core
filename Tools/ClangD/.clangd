@@ -87,7 +87,7 @@ SemanticTokens:
         add: [Custom1, Custom2]  # malterlib.keyword.clr
       - regex: '^(initonly|interface|interior_ptr|literal|ref|safecast|value)$'
         add: [Custom1, Custom2]  # malterlib.keyword.clr
-      - regex: '^(assume|break|case|constant_int64|constant_uint64|continue|default|do|else|for|goto|if|likely|return|switch|unlikely|while|yield_cpu)$'
+      - regex: '^(assume|break|case|continue|default|do|else|for|goto|if|likely|return|switch|unlikely|while|yield_cpu)$'
         add: [Custom1, Custom3]  # malterlib.keyword.control.statement
       - regex: '^(__except|__finally|__leave|__raise|__try|catch|finally|throw|try)$'
         add: [Custom1, Custom4]  # malterlib.keyword.exception.handling
@@ -105,15 +105,17 @@ SemanticTokens:
         add: [Custom2, Custom6]  # malterlib.keyword.other
       - regex: '^(__attribute__|__based|__cdecl|__declspec|__fastcall|__forceinline|__inline|__pragma|__restrict__|__stdcall|__thiscall|__unaligned|align_cacheline|always_inline)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
-      - regex: '^(assure_used|calling_convention_c|carries_dependency|cdecl|constexpr|deprecated|dllexport|dllimport|expect_analyzer|explicit|fallthrough|fastcall|function_does_not_return)$'
+      - regex: '^(assure_used|calling_convention_c|carries_dependency|cdecl|constant_int64|constant_uint64|constexpr|deprecated|dllexport|dllimport|expect_analyzer|explicit|fallthrough)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
-      - regex: '^(function_does_not_return_analyzer|ignore|inline|inline_always|inline_always_debug|inline_always_lambda|inline_always_lto|inline_extralarge|inline_large|inline_medium)$'
+      - regex: '^(fastcall|function_does_not_return|function_does_not_return_analyzer|ignore|inline|inline_always|inline_always_debug|inline_always_lambda|inline_always_lto)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
-      - regex: '^(inline_never|inline_never_coro_exception_workaround|inline_never_debug|inline_small|intrinsic|malloc_like|mark_artificial|mark_no_coroutine_debug|mark_no_stack_protector)$'
+      - regex: '^(inline_extralarge|inline_large|inline_medium|inline_never|inline_never_coro_exception_workaround|inline_never_debug|inline_small|intrinsic|malloc_like|mark_artificial)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
-      - regex: '^(mark_nodebug|maybe_unused|module_export|module_import|naked|no_unique_address|nodiscard|noexcept|noinline|noreturn|nothrow|novtable|only_parameters_aliased)$'
+      - regex: '^(mark_no_coroutine_debug|mark_no_stack_protector|mark_nodebug|maybe_unused|module_export|module_import|naked|no_unique_address|nodiscard|noexcept|noinline|noreturn)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
-      - regex: '^(optimize_for_synchronized|property|return_not_aliased|selectany|stdcall|str_utf16|str_utf32|str_utf8|thread|uuid|variable_not_aliased)$'
+      - regex: '^(nothrow|novtable|only_parameters_aliased|optimize_for_synchronized|property|return_not_aliased|selectany|stdcall|str_utf16|str_utf32|str_utf8|thread|uuid)$'
+        add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
+      - regex: '^variable_not_aliased$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
       - regex: '^(\[\[|\]\])$'
         add: [Custom3, Custom5]  # malterlib.keyword.property.modifiers.brackets
