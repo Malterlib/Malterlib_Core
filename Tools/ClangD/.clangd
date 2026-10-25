@@ -103,15 +103,17 @@ SemanticTokens:
         add: [Custom2, Custom5]  # malterlib.keyword.optimization
       - regex: '^(__event|__if_exists|__if_not_exists|__interface|__multiple_inheritance|__noop|__single_inheritance|__super|__virtual_inheritance)$'
         add: [Custom2, Custom6]  # malterlib.keyword.other
-      - regex: '^(__attribute__|__based|__cdecl|__declspec|__fastcall|__forceinline|__inline|__pragma|__restrict__|__stdcall|__thiscall|__unaligned|align_cacheline|assure_used)$'
+      - regex: '^(__attribute__|__based|__cdecl|__declspec|__fastcall|__forceinline|__inline|__pragma|__restrict__|__stdcall|__thiscall|__unaligned|align_cacheline|always_inline)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
-      - regex: '^(calling_convention_c|carries_dependency|cdecl|constexpr|deprecated|dllexport|dllimport|explicit|fallthrough|fastcall|function_does_not_return|ignore|inline|inline_always)$'
+      - regex: '^(assure_used|calling_convention_c|carries_dependency|cdecl|constexpr|deprecated|dllexport|dllimport|expect_analyzer|explicit|fallthrough|fastcall|function_does_not_return)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
-      - regex: '^(inline_always_debug|inline_always_lambda|inline_extralarge|inline_large|inline_medium|inline_never|inline_never_debug|inline_small|intrinsic|mark_artificial)$'
+      - regex: '^(function_does_not_return_analyzer|ignore|inline|inline_always|inline_always_debug|inline_always_lambda|inline_always_lto|inline_extralarge|inline_large|inline_medium)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
-      - regex: '^(mark_no_coroutine_debug|mark_nodebug|maybe_unused|module_export|module_import|naked|no_unique_address|nodiscard|noexcept|noinline|noreturn|nothrow|novtable)$'
+      - regex: '^(inline_never|inline_never_coro_exception_workaround|inline_never_debug|inline_small|intrinsic|malloc_like|mark_artificial|mark_no_coroutine_debug|mark_no_stack_protector)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
-      - regex: '^(only_parameters_aliased|optimize_for_synchronized|property|return_not_aliased|selectany|stdcall|str_utf16|str_utf32|str_utf8|thread|uuid|variable_not_aliased)$'
+      - regex: '^(mark_nodebug|maybe_unused|module_export|module_import|naked|no_unique_address|nodiscard|noexcept|noinline|noreturn|nothrow|novtable|only_parameters_aliased)$'
+        add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
+      - regex: '^(optimize_for_synchronized|property|return_not_aliased|selectany|stdcall|str_utf16|str_utf32|str_utf8|thread|uuid|variable_not_aliased)$'
         add: [Custom3, Custom4]  # malterlib.keyword.property.modifiers
       - regex: '^(\[\[|\]\])$'
         add: [Custom3, Custom5]  # malterlib.keyword.property.modifiers.brackets
