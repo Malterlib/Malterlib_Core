@@ -108,6 +108,10 @@ Property
 	{
 		Type "Malterlib"
 		GitIgnoreType "GitIgnore"
+		ReconcileRemoved "Leave"
+		{
+			!!MalterlibRepositoryReconcileRemoved true
+		}
 		BootstrapSource (RepoPlatformFamily == HostPlatformFamily && RepoArchitecture == HostArchitecture)
 		Location RepoDir->MakeAbsolute()
 		URL `@(Repository.MalterlibRoot)/@(MalterlibRepoName)`
@@ -243,6 +247,10 @@ Property
 	{
 		Type "Malterlib"
 		GitIgnoreType "GitIgnore"
+		ReconcileRemoved "Leave"
+		{
+			!!MalterlibRepositoryReconcileRemoved true
+		}
 		Location RepoDir->MakeAbsolute()
 		URL `@(Repository.MalterlibRoot)/@(MalterlibRepoName)`
 		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
@@ -389,6 +397,10 @@ Property
 	{
 		Type "Malterlib"
 		GitIgnoreType "GitIgnore"
+		ReconcileRemoved "Leave"
+		{
+			!!MalterlibRepositoryReconcileRemoved true
+		}
 		Location RepoDir->MakeAbsolute()
 		URL `@(Repository.MalterlibRoot)/@(MalterlibRepoName)`
 		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)

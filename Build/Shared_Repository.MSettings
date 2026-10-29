@@ -142,6 +142,13 @@ Property
 	}
 }
 
+Property
+{
+	// MTools before 6 do not know Repository.ReconcileRemoved. Repositories of binaries are left on disk when no build system
+	// of the checkout uses them any more: other build systems can use the ones of other platforms
+	MalterlibRepositoryReconcileRemoved: bool = MToolVersion >= 6
+}
+
 Repository
 {
 	ConvertUnderscoreToPath: bool = false

@@ -169,6 +169,10 @@ Property.MalterlibPublicRepositories =+ MalterlibBinarySDKRepositories->Unique()
 	{
 		Type "Malterlib"
 		GitIgnoreType "GitIgnore"
+		ReconcileRemoved "Leave"
+		{
+			!!MalterlibRepositoryReconcileRemoved true
+		}
 		Location RepoDir->MakeAbsolute()
 		URL `@(Repository.MalterlibRoot)/@(MalterlibRepoName)`
 		Remotes =+ MalterlibRemotePrefixes->ForEach(&f_MalterlibRemotePrefixesTemplate)
