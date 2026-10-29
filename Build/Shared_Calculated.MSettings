@@ -413,6 +413,7 @@ Property
 
 	// MTools before 6 have no locks of their own and ninjas released before them refuse the options that wait for a lock
 	MalterlibBuildLocking: bool = MToolVersion >= 6
+	MalterlibGenerateWaitForLock: string = (MalterlibBuildLocking ? " --wait-for-lock" : "") // Of the generations that builds run
 
 	MalterlibIsGitRepository: bool = false
 	MalterlibIsGitRepository true

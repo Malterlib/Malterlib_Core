@@ -632,7 +632,7 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `@(MalterlibBuildSystemGenerateCommand) --no-signal-changed "$1"\n`
+			Contents =+ `@(MalterlibBuildSystemGenerateCommand)@(MalterlibGenerateWaitForLock) --no-signal-changed "$1"\n`
 			{
 				!MalterlibDisableBuildSystemGeneration true
 			}
@@ -667,7 +667,7 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `@(MalterlibBuildSystemGenerateCommand) --no-signal-changed "$1"\n`
+			Contents =+ `@(MalterlibBuildSystemGenerateCommand)@(MalterlibGenerateWaitForLock) --no-signal-changed "$1"\n`
 			{
 				!MalterlibDisableBuildSystemGeneration true
 			}
@@ -711,7 +711,7 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `@(MalterlibBuildSystemGenerateCommand) --no-signal-changed "$1"\n`
+			Contents =+ `@(MalterlibBuildSystemGenerateCommand)@(MalterlibGenerateWaitForLock) --no-signal-changed "$1"\n`
 			{
 				!MalterlibDisableBuildSystemGeneration true
 			}
@@ -739,7 +739,7 @@ Property
 			`set -e\n`\
 			`\n`
 
-			Contents =+ `@(MalterlibBuildSystemGenerateCommand) --no-signal-changed "$1"\n`
+			Contents =+ `@(MalterlibBuildSystemGenerateCommand)@(MalterlibGenerateWaitForLock) --no-signal-changed "$1"\n`
 			{
 				!MalterlibDisableBuildSystemGeneration true
 			}

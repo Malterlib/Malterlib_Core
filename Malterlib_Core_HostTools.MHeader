@@ -30,11 +30,13 @@ Property
 	// system does not generate itself (MalterlibDisableBuildSystemGeneration), so the build that follows does not generate
 	// again. The host tools are built for the host whatever configuration that build builds, so the settings that select a
 	// configuration or disable its generation are not passed on. The build system file is, since a checkout can have several.
-	// It waits for another build of host tools also when no ninja runs it
+	// It waits for another generation or build of host tools also when no ninja runs it. The two are locked apart, so two builds
+	// with different environments that run it at once can build what the other generated, which is left as is, as the host
+	// tools come out the same
 	MalterlibHostToolsBuildCommand: string = `cd "@(Builtin.BasePathAbsolute)"`\
 		` && unset SinglePlatform SingleArchitecture SingleConfiguration MalterlibDisableBuildSystemGeneration`\
 		` && export Malterlib_BuildSystem="@(Builtin.BuildSystemSourceAbsolute)"`\
-		` && ./mib generate --build-system "@(Builtin.BuildSystemSourceAbsolute)" --generator Ninja`\
+		` && ./mib generate@(MalterlibGenerateWaitForLock) --build-system "@(Builtin.BuildSystemSourceAbsolute)" --generator Ninja`\
 		` --output-directory "@(MalterlibHostToolsBuildSystemDir)" --no-use-cached-environment --skip-update --no-signal-changed HostTools`\
 		` && ./mib build-target --wait-for-lock --output-directory "@(MalterlibHostToolsBuildSystemDir)" HostTools "@(HostToolsTargets->Join(","))"`
 }

@@ -64,10 +64,20 @@ BuildOptionsGenerate()
 		return 0
 	fi
 
+	# Builds of two configurations overlap and both generate, so this waits for another generation instead of refusing. The
+	# MTool that runs can be older than the one that wrote the settings, as after switching to an older branch, and MTools before
+	# bootstrap version 6 refuse the option but ignore the variable
+	local BootstrapVersion
+	BootstrapVersion="$(cat "$MToolDirectory/Bootstrap.version" 2>/dev/null)"
+	local WaitForLock=""
+	if [[ "$BootstrapVersion" =~ ^[0-9]+$ ]] && (( BootstrapVersion >= 6 )); then
+		WaitForLock="--wait-for-lock"
+	fi
+
 	if [ -n "$MalterlibBuildSystemGenerateCommand" ]; then
-		eval "$MalterlibBuildSystemGenerateCommand --no-signal-changed \"$Workspace\""
+		MalterlibBuildLockWait=true eval "$MalterlibBuildSystemGenerateCommand $WaitForLock --no-signal-changed \"$Workspace\""
 	else
-		./mib generate --generator Ninja --output-directory "$MalterlibBuildSystemDir" --no-signal-changed "$Workspace"
+		MalterlibBuildLockWait=true ./mib generate $WaitForLock --generator Ninja --output-directory "$MalterlibBuildSystemDir" --no-signal-changed "$Workspace"
 	fi
 
 	# A generation can change the settings that the build uses, as the generator
