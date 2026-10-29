@@ -23,6 +23,9 @@ if [ -d "$ResolveConfigDir" ]; then
 		IFS=$'\n' read -r -d '' FilePlatform FileArchitecture FileConfig FilePriority \
 			<<< "$(MTool --no-color ReadJson "$ConfigFile" platform architecture configuration configurationPriority 2>/dev/null)" || true
 
+		# A generation running meanwhile can delete the file after it was listed
+		[ -n "$FilePlatform" ] || continue
+
 		Score=0
 		if [ "$FilePlatform" = "$MalterlibDefaultPlatform" ]; then Score=$((Score + 1)); fi
 		if [ "$FileArchitecture" = "$MalterlibDefaultArchitecture" ]; then Score=$((Score + 1)); fi
