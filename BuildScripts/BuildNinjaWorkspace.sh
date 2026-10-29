@@ -43,20 +43,24 @@ if [[ "$NumCPUs" != "" ]]; then
 	NinjaCommandArgs="$NinjaCommandArgs -j $NumCPUs"
 fi
 
+# A build that another build runs, as of host tools, waits whatever these say: ninja tells from NINJA_BUILD_LOCK_CHAIN
+if [[ "$MalterlibBuildLocking" == "true" ]]; then
+	if [[ "$MalterlibBuildLockWait" == "true" ]]; then
+		NinjaCommandArgs="$NinjaCommandArgs --wait-for-lock"
+	fi
+
+	if [[ -n "$MalterlibBuildLockTimeout" ]]; then
+		NinjaCommandArgs="$NinjaCommandArgs --lock-timeout=$MalterlibBuildLockTimeout"
+	fi
+fi
+
 echo ninja -C "$NinjaBuildDir" $NinjaCommandArgs "Build All"
 
 StartTimeMs=$(date +%s%N)
 StartTimeMs=${StartTimeMs%??????}
 
-source "$DIR/BuildLock.sh"
-AcquireBuildLock "$NinjaBuildDir" || exit 1
-
 set +e
-# Record the foreground child before exec; a killed wrapper must leave the lock with its surviving Ninja.
-(
-	BuildLockRecordSelfAsChild || exit 1
-	exec ninja -C "$NinjaBuildDir" $NinjaCommandArgs "Build All"
-)
+ninja -C "$NinjaBuildDir" $NinjaCommandArgs "Build All"
 NinjaExitCode=$?
 set -e
 

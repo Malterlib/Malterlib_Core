@@ -6,7 +6,10 @@
 #   --output-directory <Directory>  The generated build system to build in, relative to the root of the checkout.
 #                                   BuildSystem/Default unless it is given, as for generate
 #   --wait-for-lock                 Wait for another build of the same configuration to finish, instead of refusing
-#                                   to build. Builds that it runs, as of host tools, wait as well
+#                                   to build. Builds that another build runs, as of host tools, always wait
+#   --lock-timeout <Seconds>        Wait for another build of the same configuration for at most this many seconds,
+#                                   which implies --wait-for-lock; negative sets no limit. Builds that it runs use the
+#                                   same timeout
 # BuildOptionsParse exports what the options set and leaves the other arguments in BuildOptionsArguments.
 
 BuildOptionsParse()
@@ -29,6 +32,18 @@ BuildOptionsParse()
 				;;
 			--wait-for-lock)
 				export MalterlibBuildLockWait=true
+				shift
+				;;
+			--lock-timeout)
+				if [ $# -lt 2 ]; then
+					echo "--lock-timeout needs a number of seconds" >&2
+					return 1
+				fi
+				export MalterlibBuildLockTimeout="$2"
+				shift 2
+				;;
+			--lock-timeout=*)
+				export MalterlibBuildLockTimeout="${1#*=}"
 				shift
 				;;
 			*)

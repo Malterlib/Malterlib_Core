@@ -117,6 +117,13 @@ Property
 		, "P4PASSWD"
 	]
 
+	// Builds that a build runs, as of host tools: its lock timeout, and the build directories it and the builds running it
+	// hold, so that a nested build waits for its lock and cannot wait for itself
+	BuildSystemCopiedEnvironmentVariables =+ [
+		"MalterlibBuildLockTimeout"
+		, "NINJA_BUILD_LOCK_CHAIN"
+	]
+
 	// VS Code
 	BuildSystemCopiedEnvironmentVariables =+ [
 		"VSCODE_GIT_ASKPASS_EXTRA_ARGS"
