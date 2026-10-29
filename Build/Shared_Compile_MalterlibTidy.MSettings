@@ -12,11 +12,8 @@
 
 Property
 {
-	// On by default in CI where the bootstrap binaries know Repository.Tidy, which reading it needs: version 6 and later.
-	// mib exports the version it runs with.
-	BootstrapVersion: int = 0
-
-	MalterlibTidyInBuild: bool = RunningCI && BootstrapVersion >= 6 // User(Build System)=false: Run the .clang-tidy checks in the compile of repositories that set Repository.Tidy.Enabled
+	// On by default in CI where the MTool knows Repository.Tidy, which reading it needs: version 6 and later.
+	MalterlibTidyInBuild: bool = RunningCI && MToolVersion >= 6 // User(Build System)=false: Run the .clang-tidy checks in the compile of repositories that set Repository.Tidy.Enabled
 
 	f_MalterlibTidyCollectLocation: [string] = [Repository.Location]
 	f_MalterlibTidyCollectLocations function(string _Property) [string]

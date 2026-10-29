@@ -5,11 +5,18 @@ Type
 {
 	namespace NRepositoryReleasePackage
 	{
+		// The MTool among the files of a package, which must report Version as its MToolVersion
+		CMTool: {
+			File: string
+			, Version: int
+		}
+
 		CPackage: {
 			PackageName: string
 			, Files: [string]
 			, Compress: bool = true
 			, CompressArguments: [string] = ["-a"]
+			, MTool: type(NRepositoryReleasePackage::CMTool)?
 		}
 	}
 

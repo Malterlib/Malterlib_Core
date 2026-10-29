@@ -90,6 +90,7 @@ Property
 											`@(ScriptExport("MalterlibDefaultConfiguration", SingleConfiguration ?? ""))\r\n`\
 											`@(ScriptExport("MalterlibGeneratedBuildSystemDir", Builtin.GeneratedBuildSystemDir))\r\n`\
 											`@(ScriptExport("MalterlibGenerateImportCaches", MalterlibGenerateImportCaches->ToString()))\r\n`\
+											`@(ScriptExport("MalterlibBuildLocking", MalterlibBuildLocking->ToString()))\r\n`\
 											`\r\n`\
 											`@(ScriptExport("HostPlatformFamily", HostPlatformFamily))\r\n`\
 											`@(ScriptExport("HostPlatform", HostPlatform))\r\n`\

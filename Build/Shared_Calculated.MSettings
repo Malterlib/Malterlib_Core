@@ -411,6 +411,9 @@ Property
 
 	MalterlibChangingBootstrapVersion: bool?
 
+	// MTools before 6 have no locks of their own and ninjas released before them refuse the options that wait for a lock
+	MalterlibBuildLocking: bool = MToolVersion >= 6
+
 	MalterlibIsGitRepository: bool = false
 	MalterlibIsGitRepository true
 	{

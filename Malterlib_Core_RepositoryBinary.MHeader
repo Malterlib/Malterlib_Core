@@ -142,6 +142,7 @@ Property
 						, "Linux", ["MTool", "mib", "bsdtar", "zstd", "MalterlibHelper", "LICENSE"]
 						, "Windows", ["MTool.exe", "mib.exe", "bsdtar.exe", "zstd.exe", "LICENSE"]
 					)...]
+					, MTool: {File: (RepoPlatformFamily == "Windows") ? "MTool.exe" : "MTool", Version: MalterlibBootstrapVersion}
 				}
 			]
 		}
