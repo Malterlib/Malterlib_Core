@@ -142,9 +142,6 @@ Always read `Malterlib/Test/CLAUDE.md` before writing or modifying tests in any 
 ### Repository Management
 - Check status: `./mib status`
 - Update all repos: `./mib update-repos`
-- After creating or rewriting commits in sub-repositories, run `./mib repo-commit` from the workspace root to update parent `.MRepo` references and generate or refresh the `Update repositories` commits. Use this command instead of manually editing or committing repository-reference files.
-- Switch branch: `./mib branch [BranchName]`
-- Push changes: `./mib push`
 - Format the sources of every repository that sets `Repository.Format`: `./mib format`, or `./mib format --check` to report only
 - Validate the tracked text files of those repositories: `./mib validate`, `./mib validate --staged`, or `./mib validate --base REF`
 - Run the clang-tidy checks the `.clang-tidy` files enable over every repository that sets `Repository.Tidy {Enabled: true}` (`IncludeFiles`/`ExcludeFiles` wildcards, relative to the repository, narrow its files): `./mib tidy`, or `./mib tidy --staged` / `--base REF` for changed files; generate the build system first
@@ -152,6 +149,98 @@ Always read `Malterlib/Test/CLAUDE.md` before writing or modifying tests in any 
 - Keep the main repository on a named branch when bootstrapping or running `./mib update-repos`. Detached `HEAD` checkouts are intentionally unsupported because sub-repositories are synchronized against the main branch.
 - The system uses git LFS for binary dependencies - ensure it's installed
 - Many directories under `Malterlib/` are separate Git repositories. When checking status or searching history, run Git commands inside the relevant subdirectory (`Malterlib/Concurrency`, `Malterlib/Cloud`, etc.) or use the helper scripts (`./mib git ...`) that fan out across sub-repos.
+
+### Sub-Repositories
+A checkout is a tree of Git repositories that `mib` manages: the root, which is Malterlib itself or a product built on it,
+and the sub-repositories in `Malterlib/*`, `External/*` and `Binaries/*`, plus whatever a product adds. Run Git in the
+repository that owns the files (`git -C Malterlib/Concurrency log`), or `./mib git ...` to run it in all of them.
+
+A parent pins each sub-repository to a commit in a committed `.MRepo` file. The root's `Malterlib.MRepo` pins
+`Malterlib/Core`, which pins the other `Malterlib/*` modules in `Malterlib/Core/Malterlib.MRepo`, and a module pins the
+external repositories it uses in its own `External.MRepo`, as `Malterlib/Tool/External.MRepo` pins `External/ninja`.
+Beside each is a gitignored `.MRepoState` with the commit mib last saw checked out, which is how `./mib update-repos`
+tells which side moved:
+
+- A sub-repository's HEAD moved (you committed in it): mib writes the new HEAD into the parent's `.MRepo`, which then
+  shows as modified in the parent. `./mib status` does this too, and lists what needs committing or pushing in every
+  repository.
+- The pin moved (a checkout, pull or rebase in the parent): the sub-repository has to follow. mib does that by itself
+  only when it creates the sub-repository's branch or the branch is already at the pin. Otherwise it stops with a
+  recommended action per sub-repository (reset, rebase, leave or manual) and the `--reconcile` commands that apply them.
+
+### Reconciling Sub-Repositories
+Reconcile each repository mib lists on its own, never with a `*` wildcard, and research each one to choose its action;
+mib's recommendation is a starting point, not the answer. `update-repos` has no pretend mode, so these checks are the only
+preview. mib prints each repository as `<action> recommended for <from> -> <pin>`, prefixed with
+`Branch switch to '<branch>':` when the branch changes too.
+
+- Reset moves the branch to the pin and drops what is not in it; without a branch switch it is a `git reset --hard`.
+- Rebase replays the branch's own commits on the pin.
+- Leave keeps the repository as it is, and its HEAD becomes the parent's new pin.
+
+1. `git -C <repo> fetch`, so the remote-tracking branches are current.
+2. `git -C <repo> log --oneline <pin>..<from>` and `git -C <repo> log --oneline <from>..<pin>` show what each side has
+   that the other lacks, and `git -C <repo> log --oneline <from> --not --remotes <pin>` the commits that exist only
+   locally: on no remote and not in the pin. Reset drops those.
+3. `git -C <repo> status --porcelain` shows uncommitted changes, which a reset without a branch switch drops. With a
+   branch switch, mib stashes them under the branch it leaves.
+4. Decide from what the commits are: reset when the local side has nothing that isn't on a remote or in the pin, rebase
+   when its own commits belong on top of the pin, leave when its HEAD is what the parent should pin. Apply the actions
+   per repository, naming them as mib does: `./mib update-repos '--reconcile=Malterlib/Core:reset,External/ninja:rebase'`.
+
+When it is unclear which action keeps the right work, report what each side has with mib's recommendation and let the
+user choose.
+
+### What Happens on Checkout
+mib installs a `post-checkout` hook in the root that runs `./mib update-repos` after `git checkout` or `git switch`
+there, so the sub-repositories follow the root's branch:
+
+- With the root on its default branch, each sub-repository goes to its own default branch.
+- With the root on any other branch, every sub-repository goes to a branch of the same name. An existing branch is
+  checked out; a missing one is created at the commit pinned in the `.MRepo`.
+- Uncommitted changes in a sub-repository that switches branch are stashed as `mib-branch-switch:<repo>:<branch>:<id>`,
+  named for the branch it leaves, and popped when that repository switches back to that branch; they don't follow to
+  the new one. Stashes for branches nobody returns to stay behind. Leave
+  them, and ask the user before dropping one.
+
+All of this is expected. Mention a stash in your summary, but don't treat the switch as a problem to review or undo, and
+don't avoid the hook by building commits with Git plumbing or by disabling hooks: the hook keeps the sub-repositories in
+step at every branch switch, where syncing by hand leaves them to be reconciled later without a view of what is in them.
+To read another branch without switching every repository, use `git show <branch>:<path>`, `git log <branch>` or
+`git diff <branch>` rather than checking it out.
+
+The hook does nothing during a rebase, merge or cherry-pick, on a detached HEAD, or when mib itself is doing the
+checkout. `git pull` and `git merge` have no such hook, so after pulling, merging or rebasing the root, run
+`./mib update-repos`.
+
+### Creating and Switching Branches
+- `./mib branch <name>` switches the root to `<name>`, creating it from the current commit if it doesn't exist, then
+  updates the sub-repositories as above. Use it to switch between branches, and to start a new branch from a clean
+  tree, typically the default branch. Uncommitted changes, in the root as well, are stashed under the branch you leave
+  and restored when you `./mib branch` back to it. New sub-repository branches start at the pins in the root's last
+  commit, so sub-repository commits not yet pinned in a root commit stay on the old branch.
+- `./mib unbranch` does the same back to the default branches: `master` in the root, and each sub-repository's own
+  default branch, such as `master`, or `malterlib` in the forks of third-party repositories.
+- `./mib branch -f <name>` runs `git checkout -B <name>` in the root and every sub-repository, keeping each one's current
+  commit and uncommitted changes, and runs no update. Use it to copy the current branch, with everything in progress,
+  to a new name: a feature branch when you already started changing files on the default branch or another feature's
+  branch, a new branch that splits work off the current one, or a backup before rewriting history.
+- `./mib unbranch -f` is the same copy onto each repository's own default branch, for work in progress on a feature
+  branch that belongs on the default branches instead.
+
+`-f` moves a branch that already exists to the current commit, even backwards, in every repository, so preview it with
+`-p` (pretend) first. `-n <wildcard>` limits it to matching repositories.
+
+### Committing and Pushing Sub-Repository Changes
+Commit in the sub-repository first, then record the new pins: `./mib repo-commit` commits every changed `.MRepo` up the
+chain (a `Malterlib/String` commit changes `Malterlib/Core/Malterlib.MRepo`, and that commit changes the root's
+`Malterlib.MRepo`) with `Update repositories` messages that list the sub-repository commits, and refreshes those commits
+after sub-repository commits are rewritten. Use it instead of editing or committing `.MRepo` files by hand.
+`./mib repo-commit --skip-ci` adds `[skip ci]` to the messages, for pushes that should not start CI.
+
+`./mib push` pushes only the repositories whose branch differs from origin's default branch, deepest first, so a pushed
+pin never names a commit others can't fetch. `./mib push -p` (pretend) lists the `git push` commands it would run, group
+by group, without pushing, including which repositories get a new branch on origin; check it before pushing.
 
 ### Working with Workspaces
 Workspaces are collections of build targets. Common workspaces include:
