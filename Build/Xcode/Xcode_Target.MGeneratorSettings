@@ -73,6 +73,7 @@ GeneratorSetting
 	Target_CommandLine_AlwaysDirty {}
 	Target_CommandLine_Pool {}
 	Target_CommandLine_TargetEnvironment {}
+	Target_CommandLine_Environment {}
 }
 
 GeneratorSetting

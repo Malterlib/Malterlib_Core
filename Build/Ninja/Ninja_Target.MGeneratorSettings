@@ -768,6 +768,10 @@ GeneratorSetting
 		!Target.CommandLine_Pool undefined
 	}
 	Target_CommandLine_TargetEnvironment {}
+	Target_CommandLine_Environment #<Rule.override_environment> Target.CommandLine_Environment
+	{
+		!Target.CommandLine_Environment undefined
+	}
 
 	Target_CommandLine_ReBuild {}
 	Target_CommandLine_Clean {}

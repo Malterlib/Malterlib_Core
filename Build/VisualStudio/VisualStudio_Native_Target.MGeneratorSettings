@@ -277,6 +277,7 @@ GeneratorSetting
 	Target_CommandLine_AlwaysDirty {}
 	Target_CommandLine_Pool {}
 	Target_CommandLine_TargetEnvironment {}
+	Target_CommandLine_Environment {}
 	Target_Real_CommandLine_Build {}
 	Target_Real_CommandLine_ReBuild {}
 	Target_Real_CommandLine_Clean {}

@@ -285,9 +285,12 @@ builds, so a tool can be built in Debug to debug it.
   In every build it generates `BuildSystem/HostTools` and runs
   `./mib build-target --output-directory BuildSystem/HostTools HostTools <Targets>`, which is a no-op when nothing has
   changed, and ninja reruns what uses a tool only when the tool changed.
-- The build that runs the host tools decides their environment: they are generated from the environment of its build
-  system, without the cached environment of `BuildSystem/HostTools` or the environment of the target
-  (`CommandLine_TargetEnvironment false`), and `BuildSystem/HostTools` does not generate itself.
+- The build that runs the host tools generates them with an environment of their own: ninja replaces the environment
+  of the build for that command (`CommandLine_Environment`) with the variables of
+  `MalterlibHostToolsCopiedEnvironmentVariables`, copied from its own environment, so that settings meant for the build
+  that runs them stay out, and `BuildSystem/HostTools` does not generate itself. Ninjas before MToolVersion 6, and the
+  Visual Studio and Xcode generators, cannot replace the environment of a command, so the command unsets the other
+  exported variables itself.
 - Targets that run a tool depend on the target of its group and have the file of the tool among their inputs.
 - The groups build one at a time, in the ninja pool `HostToolsPool`, since they share one build directory.
 - Cross compiled builds run the tools of the host, so the targets of host tools only exist in that build system

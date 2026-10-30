@@ -585,6 +585,14 @@ Property
 	ToolBuildOutputFile: string = `@(Target.IntermediateDirectory)ToolBuildOutput.h`
 }
 
+Type
+{
+	CCommandLineEnvironment: {
+		Copy: [string] = []
+		, Set: {...: string} = {}
+	}
+}
+
 Target
 {
 	!!Target.Type "Tool"
@@ -599,6 +607,7 @@ Target
 	CommandLine_AlwaysDirty: bool = true
 	CommandLine_Pool: string? // The ninja pool that the command runs in, of Workspace.PoolDepths
 	CommandLine_TargetEnvironment: bool = true // Ninja runs the command with the environment of the target, as its platform and SDK, too
+	CommandLine_Environment: type(CCommandLineEnvironment)? // Replaces the environment of the build and of the target for the command, with Copy taken from ninja's (MToolVersion 6)
 
 	CommandLine_Outputs [ToolBuildOutputFile]
 	{

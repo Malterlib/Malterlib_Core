@@ -11,6 +11,7 @@ Type
 		, environment?: {
 			...: string
 		}
+		, override_environment?: type(CCommandLineEnvironment)
 
 		, phony?: bool
 
