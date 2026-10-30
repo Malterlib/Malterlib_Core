@@ -41,6 +41,8 @@ Property
 		, "TZ"
 		, "DEVELOPER_DIR"
 	]
+	// A build that leaves out the global user settings leaves them out of its host tools too
+	MalterlibHostToolsCopiedEnvironmentVariables =+ ["MalterlibDisableGlobalUserSettings"]
 	MalterlibHostToolsCopiedEnvironmentVariables =+ [
 		"SystemRoot"
 		, "SystemDrive"

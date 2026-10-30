@@ -1237,6 +1237,12 @@ Property
 {
 	MalterlibUseDefaultClangDFile: bool = true // User(Tools)=false: Use default .clangd file from Malterlib/Core/Tools/ClangD/.clangd
 	MalterlibUseDefaultLLDBInitFile: bool = true // User(Tools)=false: Use default .lldbinit file from Malterlib/Core/Tools/LLDB/.lldbinit
+
+	MalterlibStrictUserSettings: bool = false // User(Build System)=true: Fail when user settings set a property the build system doesn't declare, such as a misspelled one
+
+	// Set in the environment to leave out the global user settings file in the home directory: it is neither read nor written,
+	// and BuildSystem/UserSettingGlobal.MSettings doesn't link to it
+	MalterlibDisableGlobalUserSettings: bool = false
 }
 
 %GenerateFile ".clangd"
@@ -1275,7 +1281,11 @@ Property
 
 %GenerateFile "UserSettingGlobal.MSettings"
 {
-	!!MalterlibUseDefaultLLDBInitFile true
+	&
+	{
+		MalterlibUseDefaultLLDBInitFile true
+		MalterlibDisableGlobalUserSettings false
+	}
 
 	GenerateFile
 	{
