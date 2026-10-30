@@ -77,7 +77,7 @@ MalterlibBuildShowProgress=false ./mib test
 
 Remember to use MalterlibBuildShowProgress=false when building so you don't get overwhelmed with uncessary output.
 
-Never invoke `ninja` directly, and never run two builds of the same configuration at the same time. Only one build may run in a configuration's build directory at once: `./mib build` and `./mib build-target` hold a lock on it for the whole build and refuse to start while another build holds it, because two ninja processes in one build directory corrupt its build and dependency logs and the recovery then rebuilds everything. To build several targets, pass them comma separated to one `./mib build-target` command instead of starting parallel builds.
+Never invoke `ninja` directly, and never run two builds of the same configuration at the same time. Only one build may run in a configuration's build directory at once: ninja locks the build directory for the whole build and refuses to start while another ninja holds it, because two ninja processes in one build directory corrupt its build and dependency logs and the recovery then rebuilds everything. To build several targets, pass them comma separated to one `./mib build-target` command instead of starting parallel builds.
 
 To change the platform to target edit BuildSystem/Default/UserSettings.MSettings and change (and uncomment if needed) SingleArchitecture, SingleConfiguration, SinglePlatform
 
@@ -169,7 +169,18 @@ to use, which is `BuildSystem/Default` unless it is given. Each build system has
 generated for Ninja by the first build in it.
 
 A build that finds another build of the same configuration running is refused, so that agents notice. `--wait-for-lock`
-(or `MalterlibBuildLockWait=true`) waits for it instead, and the builds that it runs, such as of host tools, wait too.
+(or `MalterlibBuildLockWait=true`) waits for it instead, and `--lock-timeout <Seconds>` (or `MalterlibBuildLockTimeout`)
+waits at most that long. Ninja reports the build it waits for or refuses from the `.ninja_build_lock.owner` file beside its
+lock.
+
+- Builds that another build runs, such as of host tools, always wait. A build that would run a build in its own build
+  directory, or nest builds more than 8 deep, stops instead (`NINJA_BUILD_LOCK_CHAIN`).
+- Generations of one build system lock `.mib_generate_lock` in its output directory. `./mib generate` refuses while
+  another generation runs, unless it is given `--wait-for-lock` or `--lock-timeout`; the generation that a build runs
+  always waits.
+- Commands that update repositories wait for each other through `BuildSystem/.mib_repositories_lock`.
+- Ninja and the build scripts only wait with an MTool of `MToolVersion` 6 or later (`MalterlibBuildLocking`): the
+  bootstrap MTool that generates the build system decides, so that older bootstrap binaries still build.
 
 ### Host Tools
 Tools that builds run on the build host, such as the shader compiler of Render, are built by their own build system,
@@ -194,6 +205,8 @@ builds, so a tool can be built in Debug to debug it.
   (`MalterlibHostToolsBuildSystem`), as do the imports that only they use.
 - The build system of host tools only generates the `HostTools` workspace. `MalterlibGenerateWorkspaces` in the
   `UserSettings.MSettings` of a build system sets which workspaces it generates.
+- The tests of the Tool module build and run a test host tool, `TestHostTool`, so every `Tests` build with the Tool
+  module builds the host tools from inside ninja.
 
 ### Import Caches
 What CMake configures for an `%Import` is cached in the `ImportCache` directory of the module and committed, so that
