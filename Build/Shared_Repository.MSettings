@@ -149,6 +149,7 @@ Property
 	MalterlibRepositoryReconcileRemoved: bool = MToolVersion >= 6
 
 	MalterlibFetchPullRequestHeads: bool = false // User(Repository)=true: Fetch the heads of origin's pull requests into refs/remotes/origin-pull
+	MalterlibRepositoryLfsDedup: bool = true // User(Repository)=false: Make the LFS files of repositories an update changes reflinks of the LFS storage
 }
 
 Repository
