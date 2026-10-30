@@ -147,11 +147,18 @@ Property
 	// MTools before 6 do not know Repository.ReconcileRemoved. Repositories of binaries are left on disk when no build system
 	// of the checkout uses them any more: other build systems can use the ones of other platforms
 	MalterlibRepositoryReconcileRemoved: bool = MToolVersion >= 6
+
+	MalterlibFetchPullRequestHeads: bool = false // User(Repository)=true: Fetch the heads of origin's pull requests into refs/remotes/origin-pull
 }
 
 Repository
 {
 	ConvertUnderscoreToPath: bool = false
+
+	ExtraFetchSpecs =+ ["+refs/pull/*/head:refs/remotes/origin-pull/*"]
+	{
+		!!MalterlibFetchPullRequestHeads true
+	}
 
 	UserEmail: string = "" // User(Repository)=email@example.com: Specify user.email to configure for repositories
 	UserName: string = "" // User(Repository)="Example Name": Specify user.name to configure for repositories
