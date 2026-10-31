@@ -454,6 +454,8 @@ GeneratorSetting
 	Compile_Warnings_VariableLengthArray =+ {}
 	Compile_Warnings_MissingCommaVariadicParam =+ {}
 	Compile_Warnings_NonTrivialMemCall =+ {}
+	Compile_Warnings_ArrayBounds =+ {}
+	Compile_Warnings_CharacterConversion =+ {}
 	Compile_Warnings_MainDefinition =+ {}
 	Compile_Warnings_ASANWithoutDebugInfo =+ {}
 	Compile_BuiltinSearchPath =+ {}
