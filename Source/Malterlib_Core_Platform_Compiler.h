@@ -65,6 +65,7 @@
 
 #if DMalterlibUseLibCxx
 
+// malterlib-format off
 _LIBCPP_BEGIN_NAMESPACE_STD
 	class weak_equality;
 	class strong_equality;
@@ -72,6 +73,7 @@ _LIBCPP_BEGIN_NAMESPACE_STD
 	class weak_ordering;
 	class strong_ordering;
 _LIBCPP_END_NAMESPACE_STD
+// malterlib-format on
 
 #	if __has_feature(cxx_rtti)
 #		ifdef DMalterlibUseStaticLibCxx

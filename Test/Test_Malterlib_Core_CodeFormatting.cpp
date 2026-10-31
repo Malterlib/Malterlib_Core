@@ -1,6 +1,8 @@
 // Copyright © Unbroken AB
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// malterlib-format off
+
 #include <Mib/Core/Core>
 
 
@@ -710,4 +712,6 @@ void fg_Test();
 // tfp_
 template <int ...tfp_Test>
 void fg_Test();
+
+// malterlib-format on
 

@@ -92,6 +92,8 @@ namespace NTest
 
 #if 0
 
+// malterlib-format off
+
 // Language
 = * + - % {} [] () <> // #ffffff
 # // #ffffff
@@ -167,5 +169,7 @@ msp_Test // #d56955
 /// Documentation comment #003737 #9bcde6
 /// @Keyword #003737 #f070b6
 /// http://example.com #003737 #9dff70
+
+// malterlib-format on
 
 #endif

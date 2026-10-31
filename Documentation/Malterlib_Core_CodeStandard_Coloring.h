@@ -3,6 +3,8 @@
 
 // Use in editor to test coloring
 
+// malterlib-format off
+
 #if 0
 	#include <Mib/Core/Core>
 	#	include   <Mib/Core/Core>
@@ -193,5 +195,7 @@
 	ms_Test
 	g_Test gs_Test
 	msp_Test
+
+	// malterlib-format on
 
 #endif
