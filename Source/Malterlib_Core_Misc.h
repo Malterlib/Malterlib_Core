@@ -89,8 +89,8 @@ namespace NMib
 			public:
 		};
 
-#		define DMibTypeID(_Class, _ID) namespace NMib{namespace NMisc{template <> class TCTypeID<_Class > {public: enum {ETypeID = _ID};}; template <> class TCTypeIDReverse<_ID> {public: using CType = _Class;};}}
-
+#define DMibTypeID(_Class, _ID) \
+	namespace NMib{namespace NMisc{template <> class TCTypeID<_Class > {public: enum {ETypeID = _ID};}; template <> class TCTypeIDReverse<_ID> {public: using CType = _Class;};}}
 
 		class CClassContainer
 		{

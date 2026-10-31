@@ -54,7 +54,8 @@
 #	ifdef DPConsole
 #		define DMibPMain int __cdecl wmain(int argc, wchar_t *argv[], wchar_t *envp[]){return NMib::fg_GetSys()->f_RunApplication();}
 #	else
-#		define DMibPMain int __stdcall wWinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, wchar_t *lpCmdLine,int nShowCmd){return NMib::fg_GetSys()->f_RunApplication();}
+#		define DMibPMain \
+			int __stdcall wWinMain(struct HINSTANCE__ * hInstance, struct HINSTANCE__ * hPrevInstance, wchar_t *lpCmdLine,int nShowCmd){return NMib::fg_GetSys()->f_RunApplication();}
 #	endif
 #else
 #	error "Implement this"
