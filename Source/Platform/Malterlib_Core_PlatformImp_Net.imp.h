@@ -292,4 +292,85 @@ NStorage::TCOptional<CUnixAddress> CUnixAddress::fs_Parse(NMib::NStr::CStr const
 	return fg_Move(AddressWithPermissions);
 }
 
+namespace
+{
+	constexpr aint gc_StagedUnixSocketSuffixLength = 8;
+	constexpr ch8 const gc_StagedUnixSocketHashCharacters[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+	aint fg_UnixSocketFileNameStart(NStr::CStr const &_Path)
+	{
+		for (aint i = _Path.f_GetLen() - 1; i >= 0; --i)
+		{
+			if (_Path[i] == '/' || _Path[i] == '\\')
+				return i + 1;
+		}
+
+		return 0;
+	}
+
+	bool fg_IsStagedUnixSocketHashCharacter(ch8 _Character)
+	{
+		return (_Character >= '0' && _Character <= '9') || (_Character >= 'a' && _Character <= 'z') || (_Character >= 'A' && _Character <= 'Z');
+	}
+}
+
+// A stream listener binds its staged path and renames it to its path once it listens: a socket refuses connects until it listens,
+// and sweeps of stale sockets delete the files that refuse connects. The staged path is in the same directory and as long as
+// _Path, so it fits the socket path limit wherever _Path does and the rename is atomic. The last bytes of the file name, whole
+// code points of at least 8 bytes or the whole name, become '~' and a hash of _Path, so listeners of different paths stage apart.
+// Names shorter than 9 bytes have less room for the hash, so listeners of such names in one directory can share a staged path.
+// Socket names are not that short in practice.
+NStr::CStr NSys::NNetwork::fg_GetStagedUnixSocketPath(NStr::CStr const &_Path)
+{
+	aint Length = _Path.f_GetLen();
+	aint FileNameStart = fg_UnixSocketFileNameStart(_Path);
+	DMibRequire(FileNameStart < Length);
+
+	aint SuffixStart = fg_Max(FileNameStart, Length - gc_StagedUnixSocketSuffixLength);
+	while (SuffixStart > FileNameStart && (uint8(_Path[SuffixStart]) & 0xC0) == 0x80)
+		--SuffixStart;
+
+	// FNV-1a
+	uint64 Hash = 14695981039346656037ull;
+	for (aint i = 0; i < Length; ++i)
+		Hash = (Hash ^ uint8(_Path[i])) * 1099511628211ull;
+
+	NStr::CStr Staged = _Path.f_Extract(0, SuffixStart);
+	Staged.f_AddChar('~');
+
+	constexpr uint64 c_nHashCharacters = sizeof(gc_StagedUnixSocketHashCharacters) - 1;
+	uint64 RemainingHash = Hash;
+	for (aint i = SuffixStart + 1; i < Length; ++i)
+	{
+		if (RemainingHash < c_nHashCharacters)
+			RemainingHash = Hash = (Hash ^ uint64(i)) * 1099511628211ull;
+
+		Staged.f_AddChar(gc_StagedUnixSocketHashCharacters[RemainingHash % c_nHashCharacters]);
+		RemainingHash /= c_nHashCharacters;
+	}
+
+	return Staged;
+}
+
+// Whether the file name of _Path has the form of a staged path: '~' and only hash characters after it
+bool NSys::NNetwork::fg_IsStagedUnixSocketPath(NStr::CStr const &_Path)
+{
+	aint Length = _Path.f_GetLen();
+	aint FileNameStart = fg_UnixSocketFileNameStart(_Path);
+
+	aint iTilde = Length - 1;
+	while (iTilde >= FileNameStart && fg_IsStagedUnixSocketHashCharacter(_Path[iTilde]))
+		--iTilde;
+
+	return iTilde >= FileNameStart && _Path[iTilde] == '~';
+}
+
+CUnixAddress CUnixAddress::f_GetStaged() const
+{
+	CUnixAddress Staged = *this;
+	NMib::NStr::fg_StrCopy(Staged.m_UnixAddress.sun_path, NSys::NNetwork::fg_GetStagedUnixSocketPath(f_GetPath()), CUnixAddress::mc_MaxAddressLength + 1);
+
+	return Staged;
+}
+
 #include "Malterlib_Core_PlatformImp_Net_Resolver.hpp"

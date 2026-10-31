@@ -47,7 +47,8 @@ struct CPOSIXSocket
 	umint m_BindAddressSize = 0;
 	ENetAddressType m_AddressType = ENetAddressType_None;
 	NStr::CStr m_UnixFilePath;
-	NStr::CStr m_PeerUnixFilePath;
+	NStr::CStr m_PeerUnixFilePath; // The path connected to, or the listener's path for accepted sockets
+	bool m_bPeerIsUnixListener = false; // Connected sockets: the kernel names the listener by the staged path it bound
 	dev_t m_UnixFileDevice = 0; // Bind-time file identity; a zero inode means unavailable and permits unconditional unlink.
 	ino_t m_UnixFileInode = 0;
 

@@ -52,6 +52,8 @@ struct CWindowsSocket
 	TCUniquePointer<CUnixListenState> m_pUnixListen;
 	CStr m_UnixListenPath; // Cleared after unlink; bind-time identity protects successor socket files.
 	NFile::CUniqueFileIdentifier m_UnixListenFileIdentity;
+	CStr m_PeerUnixFilePath; // The path connected to, or the listener's path for accepted sockets
+	bool m_bPeerIsUnixListener = false; // Connected sockets: the kernel names the listener by the staged path it bound
 
 	NMib::NSys::CIoSubSystem *m_pIo = nullptr;
 

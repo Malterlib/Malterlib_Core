@@ -1111,6 +1111,11 @@ CWindowsSocket *CWindowsSocketContext::fp_Connect
 
 	auto *pSocket = fp_CreateSocket(hSock, Mode, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = AddressType;
+	if (AddressType == ENetAddressType_Unix)
+	{
+		pSocket->m_PeerUnixFilePath = Address.f_GetUnix().f_GetPath();
+		pSocket->m_bPeerIsUnixListener = true;
+	}
 
 	return pSocket;
 }
@@ -1438,26 +1443,31 @@ static NFile::CUniqueFileIdentifier fsg_GetUnixListenFileIdentity(HANDLE _hFile)
 	return Identity;
 }
 
+// Concurrent listener teardown can remove the stale file first; absence is success.
+static void fsg_DeleteStaleUnixListenFile(NStr::CStr const &_Path)
+{
+	if (!NFile::CFile::fs_FileExists(_Path))
+		return;
+
+	try
+	{
+		NFile::CFile::fs_DeleteFile(_Path);
+	}
+	catch (NFile::CExceptionFile const &)
+	{
+		if (NFile::CFile::fs_FileExists(_Path))
+			throw;
+	}
+}
+
 TCUniquePointer<CWindowsSocket::CUnixListenState> CWindowsSocketContext::fp_PrepareUnixListen(CWindowsAddress &o_Address)
 {
 	if (o_Address.f_GetType() == ENetAddressType_Unix)
 	{
 		CUnixAddress const &UnixAddress = o_Address.f_GetUnix();
 
-		// Concurrent listener teardown can remove the stale file first; absence is success.
 		NStr::CStr UnixFilePath = UnixAddress.f_GetPath();
-		if (NFile::CFile::fs_FileExists(UnixFilePath))
-		{
-			try
-			{
-				NFile::CFile::fs_DeleteFile(UnixFilePath);
-			}
-			catch (NFile::CExceptionFile const &)
-			{
-				if (NFile::CFile::fs_FileExists(UnixFilePath))
-					throw;
-			}
-		}
+		fsg_DeleteStaleUnixListenFile(UnixFilePath);
 		auto Directory = NFile::CFile::fs_GetPath(UnixFilePath);
 		if (!NFile::CFile::fs_FileExists(Directory))
 			NFile::CFile::fs_CreateDirectory(Directory);
@@ -1507,6 +1517,11 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		DMibErrorNet("Invalid address type for listening");
 	}
 
+	// The emulated listen above turned the address into TCP; a native one binds its staged path, see fg_GetStagedUnixSocketPath
+	CWindowsAddress BindAddress = AddressType == ENetAddressType_Unix ? CWindowsAddress(Address.f_GetUnix().f_GetStaged()) : Address;
+	if (AddressType == ENetAddressType_Unix)
+		fsg_DeleteStaleUnixListenFile(BindAddress.f_GetUnix().f_GetPath());
+
 	int Family = (AddressType == ENetAddressType_TCPv4) ? AF_INET : AF_INET6;
 	if (AddressType == ENetAddressType_Unix)
 		Family = AF_UNIX;
@@ -1528,7 +1543,7 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const*)&bReuse, sizeof(bReuse));
 	}
 
-	int Result = bind(hSock, (sockaddr const*)Address.f_Get(), Address.f_GetSockAddrLen());
+	int Result = bind(hSock, (sockaddr const*)BindAddress.f_Get(), BindAddress.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1536,14 +1551,24 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		DMibErrorNet((CStr::CFormat("Could not bind socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
-	if (_Address.f_GetType() == ENetAddressType_Unix)
+	auto CleanupStaged = g_OnScopeExit / [&]
+		{
+			if (AddressType == ENetAddressType_Unix)
+				DeleteFileW(NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(BindAddress.f_GetUnix().f_GetPath()));
+		}
+	;
+
+	// An emulated listen gives the permissions to its port file
+	if (AddressType == ENetAddressType_Unix)
+		fg_ApplyUnixSocketPermissions(BindAddress.f_GetUnix());
+	else if (_Address.f_GetType() == ENetAddressType_Unix)
 		fg_ApplyUnixSocketPermissions(_Address.f_GetUnix());
 
 	// Capture identity immediately after bind to minimize the window for confusing a successor's file with this one.
 	NFile::CUniqueFileIdentifier UnixListenFileIdentity;
 	if (AddressType == ENetAddressType_Unix && !pUnixListen)
 	{
-		HANDLE hFile = fsg_OpenUnixListenFile(Address.f_GetUnix().f_GetPath(), FILE_READ_ATTRIBUTES);
+		HANDLE hFile = fsg_OpenUnixListenFile(BindAddress.f_GetUnix().f_GetPath(), FILE_READ_ATTRIBUTES);
 		if (hFile != INVALID_HANDLE_VALUE)
 		{
 			UnixListenFileIdentity = fsg_GetUnixListenFileIdentity(hFile);
@@ -1566,6 +1591,26 @@ CWindowsSocket *CWindowsSocketContext::f_Listen
 		DMibErrorNet((CStr::CFormat("Could not listen on socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 	}
 
+	if (AddressType == ENetAddressType_Unix)
+	{
+		CStr StagedPath = BindAddress.f_GetUnix().f_GetPath();
+		CStr Path = Address.f_GetUnix().f_GetPath();
+		CWStr WindowsStagedPath = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(StagedPath);
+		CWStr WindowsPath = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(Path);
+		if (!MoveFileExW(WindowsStagedPath, WindowsPath, MOVEFILE_REPLACE_EXISTING))
+		{
+			DMibErrorNet
+				(
+					"Could not rename unix socket '{}' to '{}', windows returned: {}"_f
+					<< StagedPath
+					<< Path
+					<< NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError())
+				)
+			;
+		}
+	}
+
+	CleanupStaged.f_Clear();
 	Cleanup.f_Clear();
 
 	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Listen, EWindowsSocketEvent_Read, fg_Move(_fOnStateChange));
@@ -1707,6 +1752,7 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Connect, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = _pSocket->m_AddressType;
 	pSocket->m_bInheritable = _pSocket->m_bInheritable;
+	pSocket->m_PeerUnixFilePath = _pSocket->m_UnixListenPath;
 
 	return pSocket;
 }
@@ -2334,6 +2380,10 @@ CWindowsAddress* CWindowsSocketContext::f_GetPeerAddress(CWindowsSocket *_pSocke
 		if (nAddrBytes <= sizeof(UnixAddress.sun_family))
 			UnixAddress.sun_path[0] = 0;
 
+		// See the POSIX implementation
+		if (!_pSocket->m_PeerUnixFilePath.f_IsEmpty() && (_pSocket->m_bPeerIsUnixListener || UnixAddress.sun_path[0] == 0))
+			NMib::NStr::fg_StrCopy(UnixAddress.sun_path, _pSocket->m_PeerUnixFilePath, CUnixAddress::mc_MaxAddressLength + 1);
+
 		CUnixAddress Address;
 		Address.m_UnixAddress = UnixAddress;
 		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(Address);
@@ -2378,6 +2428,11 @@ uint32 CWindowsSocketContext::f_GetListenPort(CWindowsSocket *_pSocket)
 umint NSys::NNetwork::fg_GetMaxUnixSocketNameLength()
 {
 	return CUnixAddress::mc_MaxAddressLength;
+}
+
+bool NSys::NNetwork::fg_HasNativeUnixSockets()
+{
+	return fg_UnixSocketsSupported();
 }
 
 #include "Malterlib_Core_PlatformImp_Net.imp.h"

@@ -651,6 +651,7 @@ CPOSIXSocket* CPOSIXSocketContext::fp_Connect
 	{
 		auto &Unix = _Address.f_GetUnix();
 		pSocket->m_PeerUnixFilePath = Unix.f_GetPath();
+		pSocket->m_bPeerIsUnixListener = true;
 	}
 
 	return pSocket;
@@ -995,6 +996,11 @@ namespace
 	}
 }
 
+bool NSys::NNetwork::fg_HasNativeUnixSockets()
+{
+	return true;
+}
+
 bool NSys::NNetwork::fg_SupportsCompletionIo(void *_pSocket)
 {
 	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
@@ -1200,7 +1206,10 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 	if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
 		DMibErrorNet("Unsupported address type");
 
-	fp_PrepareUnixListen(_Address);
+	// Listeners of one path that start at the same time replace each other's files, as preparing a path removes what is there:
+	// listening on a path that another listener is starting on is not supported
+	CPOSIXAddress BindAddress = AddressType == ENetAddressType_Unix ? CPOSIXAddress(_Address.f_GetUnix().f_GetStaged()) : _Address;
+	fp_PrepareUnixListen(BindAddress);
 
 	int FD;
 	{
@@ -1260,7 +1269,7 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 	}
 #endif
 
-	int Result = bind(FD, (sockaddr const*)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	int Result = bind(FD, (sockaddr const*)BindAddress.f_Get(), BindAddress.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1268,9 +1277,18 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("bind (listen)", Error));
 	}
 
+	// The staged file is renamed and removed by the spelling that bind resolved: expanding the path would remove '..' after a
+	// symbolic link without resolving the link
+	auto CleanupStaged = g_OnScopeExit / [&]
+		{
+			if (AddressType == ENetAddressType_Unix)
+				unlink(BindAddress.f_GetUnix().f_GetPath());
+		}
+	;
+
 	if (AddressType == ENetAddressType_Unix)
 	{
-		auto &UnixAddress = _Address.f_GetUnix();
+		auto &UnixAddress = BindAddress.f_GetUnix();
 		if (UnixAddress.m_Permissions)
 			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
 	}
@@ -1283,6 +1301,18 @@ CPOSIXSocket* CPOSIXSocketContext::f_Listen
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("listen (listen)", Error));
 	}
 
+	if (AddressType == ENetAddressType_Unix)
+	{
+		NStr::CStr StagedPath = BindAddress.f_GetUnix().f_GetPath();
+		NStr::CStr Path = _Address.f_GetUnix().f_GetPath();
+		if (rename(StagedPath.f_GetStr(), Path.f_GetStr()) != 0)
+		{
+			int Error = errno;
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno(NStr::CStr::CFormat("rename('{}', '{}') (listen)") << StagedPath << Path, Error));
+		}
+	}
+
+	CleanupStaged.f_Clear();
 	Cleanup.f_Clear();
 
 	auto pSocket = fp_CreateSocket(FD, EPOSIXSocketMode_Listen, EPOSIXSocketEvent_Read, fg_Move(_fOnStateChange));
@@ -1458,6 +1488,10 @@ CPOSIXSocket* CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 	auto *pSocket = fp_CreateSocket(ResultFD, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = _pSocket->m_AddressType;
 
+	// The kernel names a unix listener by its staged path, which it bound before it renamed it
+	if (!_pSocket->m_UnixFilePath.f_IsEmpty())
+		pSocket->m_PeerUnixFilePath = _pSocket->m_UnixFilePath;
+	else
 	{
 		sockaddr_storage SocketName;
 		socklen_t nAddrBytes = sizeof(SocketName);
@@ -1940,9 +1974,10 @@ CPOSIXAddress* CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 		auto UnixAddress = *(sockaddr_un const*)&PeerAddr;
 		if (nAddrBytes <= sizeof(UnixAddress.sun_family))
 			UnixAddress.sun_path[0] = 0;
-		if (fg_StrLen((ch8 const *)UnixAddress.sun_path) == 0 && !_pSocket->m_PeerUnixFilePath.f_IsEmpty())
+		// The path connected to names the listener, whatever spelling it bound; the listener's path names a client without a name
+		// of its own. An inherited socket only has its descriptor, so it reports the listener's staged path
+		if (!_pSocket->m_PeerUnixFilePath.f_IsEmpty() && (_pSocket->m_bPeerIsUnixListener || UnixAddress.sun_path[0] == 0))
 		{
-
 			CUnixAddress Address;
 			Address.m_UnixAddress.sun_family = AF_UNIX;
 #if !defined(DPlatformFamily_Linux)
