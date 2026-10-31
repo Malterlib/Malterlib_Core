@@ -102,11 +102,19 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 			case ENOENT:
 				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): ENOENT: op was EPOLL_CTL_MOD or EPOLL_CTL_DEL, and fd is not registered with this epoll instance") << m_PollDescriptor << m_NotifyDescriptor);
 			case ENOSPC:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): ENOSPC: The limit imposed by /proc/sys/fs/epoll/max_user_watches was encountered while trying to register (EPOLL_CTL_ADD) a new file descriptor on an epoll instance") << m_PollDescriptor << m_NotifyDescriptor);
-			case EPERM:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EPERM: The target file fd does not support epoll") << m_PollDescriptor << m_NotifyDescriptor);
-			default:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): Unknown error {}") << m_PollDescriptor << m_NotifyDescriptor << errno);
+				DMibError
+					(
+						NMib::NStr::CStrNonTracked::CFormat
+						(
+							"epoll_ctl({},{}): ENOSPC: The limit imposed by /proc/sys/fs/epoll/max_user_watches was encountered while trying to register (EPOLL_CTL_ADD) a new file "
+							"descriptor on an epoll instance"
+						)
+						<< m_PollDescriptor
+						<< m_NotifyDescriptor
+					)
+				;
+			case EPERM: DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): EPERM: The target file fd does not support epoll") << m_PollDescriptor << m_NotifyDescriptor);
+			default: DMibError(NMib::NStr::CStrNonTracked::CFormat("epoll_ctl({},{}): Unknown error {}") << m_PollDescriptor << m_NotifyDescriptor << errno);
 			}
 		}
 	}
