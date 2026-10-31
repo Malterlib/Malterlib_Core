@@ -11,6 +11,7 @@ class CRawMacOSError
 
 static CRawMacOSError gs_MacOSErrors[] =
 	{
+		// malterlib-format rows
 		-50, "paramErr", "error in user parameter list",
 		-200, "noHardwareErr", "Sound Manager Error Returns",
 		-201, "notEnoughHardwareErr", "Sound Manager Error Returns",
