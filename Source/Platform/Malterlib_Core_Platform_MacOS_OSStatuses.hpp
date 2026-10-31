@@ -401,7 +401,8 @@ static CRawMacOSError gs_MacOSErrors[] =
 		-863, "hmCloseViewActive", "Returned from HMRemoveBalloon if CloseView was active",
 		-900, "notInitErr", "PPCToolBox not initialized",
 		-902, "nameTypeErr", "Invalid or inappropriate locationKindSelector in locationName",
-		-903, "noPortErr", "Unable to open port or bad portRefNum.  If you're calling AESend, this is because your application does not have the isHighLevelEventAware bit set in your SIZE resource.",
+		-903, "noPortErr", "Unable to open port or bad portRefNum.  If you're calling AESend, this is because your application does not have the isHighLevelEventAware bit set in your "
+		"SIZE resource.",
 		-904, "noGlobalsErr", "The system is hosed, better re-boot",
 		-905, "localOnlyErr", "Network activity is currently disabled",
 		-906, "destPortErr", "Port does not exist at destination",
@@ -1083,8 +1084,10 @@ static CRawMacOSError gs_MacOSErrors[] =
 		-5040, "afpPwdSameErr", "Someone tried to change their password to the same password on a mantadory password change",
 		-5041, "afpPwdTooShortErr", "The password being set is too short: there is a minimum length that must be met or exceeded",
 		-5042, "afpPwdExpiredErr", "The password being used is too old: this requires the user to change the password before log-in can continue",
-		-5043, "afpInsideSharedErr", "The folder being shared is inside a shared folder OR the folder contains a shared folder and is being moved into a shared folder OR the folder contains a shared folder and is being moved into the descendent of a shared folder.",
-		-5044, "afpInsideTrashErr", "The folder being shared is inside the trash folder OR the shared folder is being moved into the trash folder OR the folder is being moved to the trash and it contains a shared folder",
+		-5043, "afpInsideSharedErr", "The folder being shared is inside a shared folder OR the folder contains a shared folder and is being moved into a shared folder OR the folder "
+		"contains a shared folder and is being moved into the descendent of a shared folder.",
+		-5044, "afpInsideTrashErr", "The folder being shared is inside the trash folder OR the shared folder is being moved into the trash folder OR the folder is being moved to the "
+		"trash and it contains a shared folder",
 		-5045, "afpPwdNeedsChangeErr", "The password needs to be changed",
 		-5046, "afpPwdPolicyErr", "Password does not conform to servers password policy",
 		-5047, "afpAlreadyLoggedInErr", "User has been authenticated but is already logged in from another machine (and that's not allowed on this server)",
@@ -1159,8 +1162,10 @@ static CRawMacOSError gs_MacOSErrors[] =
 		-5551, "gestaltUndefSelectorErr", "undefined selector was passed to Gestalt",
 		-5552, "gestaltDupSelectorErr", "tried to add an entry that already existed",
 		-5553, "gestaltLocationErr", "gestalt function ptr wasn't in sysheap",
-		-5603, "menuPropertyInvalidErr | errInvalidWindowProperty | controlPropertyInvalid", "invalid property creator | tried to access a property tag with private creator | You called SetControlProperty, GetControlProperty, or a similar API with an illegal property creator OSType.",
-		-5604, "menuPropertyNotFoundErr | errWindowPropertyNotFound | controlPropertyNotFoundErr", "specified property wasn't found | tried to get a nonexistent property | You called GetControlProperty or a similar API with a property creator and property tag that does not currently exist on the given control.",
+		-5603, "menuPropertyInvalidErr | errInvalidWindowProperty | controlPropertyInvalid", "invalid property creator | tried to access a property tag with private creator | You called "
+		"SetControlProperty, GetControlProperty, or a similar API with an illegal property creator OSType.",
+		-5604, "menuPropertyNotFoundErr | errWindowPropertyNotFound | controlPropertyNotFoundErr", "specified property wasn't found | tried to get a nonexistent property | You called "
+		"GetControlProperty or a similar API with a property creator and property tag that does not currently exist on the given control.",
 		-5620, "menuNotFoundErr", "specified menu or menu ID wasn't found",
 		-5621, "menuUsesSystemDefErr", "GetMenuDefinition failed because the menu uses the system MDEF",
 		-5622, "menuItemNotFoundErr", "specified menu item wasn't found",
@@ -1312,23 +1317,29 @@ static CRawMacOSError gs_MacOSErrors[] =
 		-7139, "kRANotEnabled", "",
 		-8790, "kATSUInvalidTextLayoutErr", "An attempt was made to use a ATSUTextLayout which hadn't been initialized or is otherwise in an invalid state.",
 		-8791, "kATSUInvalidStyleErr", "An attempt was made to use a ATSUStyle which hadn't been properly allocated or is otherwise in an invalid state.",
-		-8792, "kATSUInvalidTextRangeErr", "An attempt was made to extract information from or perform an operation on a ATSUTextLayout for a range of text not covered by the ATSUTextLayout.",
+		-8792, "kATSUInvalidTextRangeErr", "An attempt was made to extract information from or perform an operation on a ATSUTextLayout for a range of text not covered by the "
+		"ATSUTextLayout.",
 		-8793, "kATSUFontsMatched", "This is not an error code but is returned by ATSUMatchFontsToText() when changes need to be made to the fonts associated with the text.",
 		-8794, "kATSUFontsNotMatched", "This value is returned by ATSUMatchFontsToText() when the text contains Unicode characters which cannot be represented by any installed font.",
-		-8795, "kATSUNoCorrespondingFontErr", "This value is retrned by font ID conversion routines ATSUFONDtoFontID() and ATSUFontIDtoFOND() to indicate that the input font ID is valid but there is no conversion possible.  For example,     data-fork fonts can only be used with ATSUI not     the FontManager, and so converting an ATSUIFontID     for such a font will fail.",
+		-8795, "kATSUNoCorrespondingFontErr", "This value is retrned by font ID conversion routines ATSUFONDtoFontID() and ATSUFontIDtoFOND() to indicate that the input font ID is valid "
+		"but there is no conversion possible.  For example,     data-fork fonts can only be used with ATSUI not     the FontManager, and so converting an ATSUIFontID     for such a "
+		"font will fail.",
 		-8796, "kATSUInvalidFontErr", "Used when an attempt was made to use an invalid font ID.",
 		-8797, "kATSUInvalidAttributeValueErr", "Used when an attempt was made to use an attribute with     a bad or undefined value.",
 		-8798, "kATSUInvalidAttributeSizeErr", "Used when an attempt was made to use an attribute with a     bad size.",
 		-8799, "kATSUInvalidAttributeTagErr", "Used when an attempt was made to use a tag value that    was not appropriate for the function call it was used.",
-		-8800, "kATSUInvalidCacheErr", "Used when an attempt was made to read in style data     from an invalid cache.  Either the format of the     cached data doesn't match that used by Apple Type     Services for UnicodeÂª Imaging, or the cached data     is corrupt.",
-		-8801, "kATSUNotSetErr", "Used when the client attempts to retrieve an attribute,     font feature, or font variation from a style when it     hadn't been set.  In such a case, the default value will    be returned for the attribute's value.",
+		-8800, "kATSUInvalidCacheErr", "Used when an attempt was made to read in style data     from an invalid cache.  Either the format of the     cached data doesn't match that used "
+		"by Apple Type     Services for UnicodeÂª Imaging, or the cached data     is corrupt.",
+		-8801, "kATSUNotSetErr", "Used when the client attempts to retrieve an attribute,     font feature, or font variation from a style when it     hadn't been set.  In such a case, "
+		"the default value will    be returned for the attribute's value.",
 		-8802, "kATSUNoStyleRunsAssignedErr", "Used when an attempt was made to measure, highlight or draw    a ATSUTextLayout object that has no styleRuns associated with it.",
 		-8803, "kATSUQuickDrawTextErr", "Used when QuickDraw Text encounters an error rendering or measuring    a line of ATSUI text.",
 		-8804, "kATSULowLevelErr", "Used when an error was encountered within the low level ATS     mechanism performing an operation requested by ATSUI.",
 		-8805, "kATSUNoFontCmapAvailableErr", "Used when no CMAP table can be accessed or synthesized for the     font passed into a SetAttributes Font call.",
 		-8806, "kATSUNoFontScalerAvailableErr", "Used when no font scaler is available for the font passed    into a SetAttributes Font call.",
 		-8807, "kATSUCoordinateOverflowErr", "Used to indicate the coordinates provided to an ATSUI routine caused    a coordinate overflow (i.e. > 32K).",
-		-8808, "kATSULineBreakInWord", "This is not an error code but is returned by ATSUBreakLine to     indicate that the returned offset is within a word since there was    only less than one word that could fit the requested width.",
+		-8808, "kATSULineBreakInWord", "This is not an error code but is returned by ATSUBreakLine to     indicate that the returned offset is within a word since there was    only less "
+		"than one word that could fit the requested width.",
 		-8809, "kATSUBusyObjectErr", "An ATSUI object is being used by another thread",
 		-8738, "kTextUnsupportedEncodingErr", "specified encoding not supported for this operation",
 		-8739, "kTextMalformedInputErr", "in DBCS, for example, high byte followed by invalid low byte",
@@ -1349,7 +1360,8 @@ static CRawMacOSError gs_MacOSErrors[] =
 		-8771, "kTECItemUnavailableErr", "item (e.g. name) not available for specified region (& encoding if relevant) text conversion status codes",
 		-8783, "kTECUsedFallbacksStatus", "",
 		-8784, "kTECNeedFlushStatus", "",
-		-8785, "kTECOutputBufferFullStatus", "output buffer has no room for conversion of next input text element (partial conversion) deprecated error & status codes for low-level converter",
+		-8785, "kTECOutputBufferFullStatus", "output buffer has no room for conversion of next input text element (partial conversion) deprecated error & status codes for low-level "
+		"converter",
 		-8769, "unicodeChecksumErr", "",
 		-8768, "unicodeNoTableErr", "",
 		-8767, "unicodeVariantErr", "",
@@ -1371,7 +1383,8 @@ static CRawMacOSError gs_MacOSErrors[] =
 		-8902, "kATSUBadStreamErr", "An attempt was made to use a stream which is incorrectly    structured, contains bad or out of range values or is    missing required information.",
 		-8903, "kATSUOutputBufferTooSmallErr", "An attempt was made to use an output buffer which was too small    for the requested operation.",
 		-8904, "kATSUInvalidCallInsideCallbackErr", "A call was made within the context of a callback that could    potetially cause an infinite recursion",
-		-8905, "kATSUNoFontNameErr", "This error is returned when either ATSUFindFontName() or ATSUGetIndFontName()     function cannot find a corresponding font name given the input parameters",
+		-8905, "kATSUNoFontNameErr", "This error is returned when either ATSUFindFontName() or ATSUGetIndFontName()     function cannot find a corresponding font name given the input "
+		"parameters",
 		-8959, "kATSULastErr", "The last ATSUI error code.",
 		-8960, "codecErr", "",
 		-8961, "noCodecErr", "",
@@ -1831,22 +1844,32 @@ static CRawMacOSError gs_MacOSErrors[] =
 		-30566, "themeScriptFontNotFoundErr", "theme font requested for uninstalled script system",
 		-30567, "themeMonitorDepthNotSupportedErr", "theme not supported at monitor depth",
 		-30568, "themeNoAppropriateBrushErr", "theme brush has no corresponding theme text color",
-		-30580, "errMessageNotSupported", "Not exclusively a Control Manager error code. In general, this return value means a control, window, or menu definition does not support the message/event that underlies an API call.",
-		-30581, "errDataNotSupported", "This is returned from GetControlData and SetControlData if the control doesn't support the tag name and/or part code that is passed in. It can also be returned from other APIs - like SetControlFontStyle - which are wrappers around Get/SetControlData.",
-		-30582, "errControlDoesntSupportFocus", "The control you passed to a focusing API doesn't support focusing. This error isn't sent on Mac OS X; instead, you're likely to receive errCouldntSetFocus or eventNotHandledErr.",
-		-30584, "errUnknownControl", "This is a variant of and serves the same purpose as controlHandleInvalidErr. Various Control Manager APIs will return this error if one of the passed-in controls is nullptr or otherwise invalid.",
-		-30585, "errCouldntSetFocus", "The focus couldn't be set to a given control or advanced through a hierarchy of controls. This could be because the control doesn't support focusing, the control isn't currently embedded in a window, or there are no focusable controls in the window when you try to advance the focus.",
-		-30586, "errNoRootControl", "This is returned by GetRootControl before a root control was created for a given non-compositing window. Alternatively, you called a Control Manager API such as ClearKeyboardFocus or AutoEmbedControl that requires a root control, but there is no root control on the window.",
+		-30580, "errMessageNotSupported", "Not exclusively a Control Manager error code. In general, this return value means a control, window, or menu definition does not support the "
+		"message/event that underlies an API call.",
+		-30581, "errDataNotSupported", "This is returned from GetControlData and SetControlData if the control doesn't support the tag name and/or part code that is passed in. It can "
+		"also be returned from other APIs - like SetControlFontStyle - which are wrappers around Get/SetControlData.",
+		-30582, "errControlDoesntSupportFocus", "The control you passed to a focusing API doesn't support focusing. This error isn't sent on Mac OS X; instead, you're likely to receive "
+		"errCouldntSetFocus or eventNotHandledErr.",
+		-30584, "errUnknownControl", "This is a variant of and serves the same purpose as controlHandleInvalidErr. Various Control Manager APIs will return this error if one of the "
+		"passed-in controls is nullptr or otherwise invalid.",
+		-30585, "errCouldntSetFocus", "The focus couldn't be set to a given control or advanced through a hierarchy of controls. This could be because the control doesn't support "
+		"focusing, the control isn't currently embedded in a window, or there are no focusable controls in the window when you try to advance the focus.",
+		-30586, "errNoRootControl", "This is returned by GetRootControl before a root control was created for a given non-compositing window. Alternatively, you called a Control Manager "
+		"API such as ClearKeyboardFocus or AutoEmbedControl that requires a root control, but there is no root control on the window.",
 		-30587, "errRootAlreadyExists", "This is returned by CreateRootControl on the second and successive calls for a given window.",
 		-30588, "errInvalidPartCode", "The ControlPartCode you passed to a Control Manager API is out of range, invalid, or otherwise unsupported.",
-		-30589, "errControlsAlreadyExist", "You called CreateRootControl after creating one or more non-root controls in a window, which is illegal; if you want an embedding hierarchy on a given window, you must call CreateRootControl before creating any other controls for a given window. This will never be returned on Mac OS X, because a root control is created automatically if it doesn't already exist the first time any non-root control is created in a window.",
+		-30589, "errControlsAlreadyExist", "You called CreateRootControl after creating one or more non-root controls in a window, which is illegal; if you want an embedding hierarchy on "
+		"a given window, you must call CreateRootControl before creating any other controls for a given window. This will never be returned on Mac OS X, because a root control is created "
+		"automatically if it doesn't already exist the first time any non-root control is created in a window.",
 		-30590, "errControlIsNotEmbedder", "You passed a control that doesn't support embedding to a Control Manager API which requires the control to support embedding.",
 		-30591, "errDataSizeMismatch", "You called GetControlData or SetControlData with a buffer whose size does not match the size of the data you are attempting to get or set.",
-		-30592, "errControlHiddenOrDisabled", "You called TrackControl, HandleControlClick or a similar mouse tracking API on a control that is invisible or disabled. You cannot track controls that are invisible or disabled.",
+		-30592, "errControlHiddenOrDisabled", "You called TrackControl, HandleControlClick or a similar mouse tracking API on a control that is invisible or disabled. You cannot track "
+		"controls that are invisible or disabled.",
 		-30594, "errCantEmbedIntoSelf", "You called EmbedControl or a similar API with the same control in the parent and child parameters. You cannot embed a control into itself.",
 		-30595, "errCantEmbedRoot", "You called EmbedControl or a similiar API to embed the root control in another control. You cannot embed the root control in any other control.",
 		-30596, "errItemNotControl", "You called GetDialogItemAsControl on a dialog item such as a kHelpDialogItem that is not represented by a control.",
-		-30597, "controlInvalidDataVersionErr", "You called GetControlData or SetControlData with a buffer that represents a versioned structure, but the version is unsupported by the control definition. This can happen with the Tabs control and the kControlTabInfoTag.",
+		-30597, "controlInvalidDataVersionErr", "You called GetControlData or SetControlData with a buffer that represents a versioned structure, but the version is unsupported by the "
+		"control definition. This can happen with the Tabs control and the kControlTabInfoTag.",
 		-30599, "controlHandleInvalidErr", "You passed an invalid ControlRef to a Control Manager API.",
 		-30770, "kURLInvalidURLReferenceError", "",
 		-30771, "kURLProgressAlreadyDisplayedError", "",
