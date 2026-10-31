@@ -458,6 +458,8 @@ GeneratorSetting
 	Compile_Warnings_MainDefinition =+ GeneratorSetting.f_Helper_SetVSWarning("", "main", Compile.Warnings_MainDefinition)
 	Compile_Warnings_MissingCommaVariadicParam =+ GeneratorSetting.f_Helper_SetVSWarning("", "deprecated-missing-comma-variadic-parameter", Compile.Warnings_MissingCommaVariadicParam)
 	Compile_Warnings_NonTrivialMemCall =+ GeneratorSetting.f_Helper_SetVSWarning("", "nontrivial-memcall", Compile.Warnings_NonTrivialMemCall)
+	Compile_Warnings_ArrayBounds =+ GeneratorSetting.f_Helper_SetVSWarning("", "array-bounds", Compile.Warnings_ArrayBounds)
+	Compile_Warnings_CharacterConversion =+ GeneratorSetting.f_Helper_SetVSWarning("", "character-conversion", Compile.Warnings_CharacterConversion)
 
 	Compile_Warnings_DeprecatedEnumConversion =+ {
 		VSSettings: Compile.Warnings_DeprecatedEnumConversion->SwitchWithError(

@@ -1359,6 +1359,24 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_Warnings_ArrayBounds =+ {
+		Flags: Compile.Warnings_ArrayBounds->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-array-bounds"]
+			, true, ["-Warray-bounds"]
+		)
+		, Type: "unique"
+	}
+
+	Compile_Warnings_CharacterConversion =+ {
+		Flags: Compile.Warnings_CharacterConversion->SwitchWithError(
+			"Unsupported option: "
+			, false, ["-Wno-character-conversion"]
+			, true, ["-Wcharacter-conversion"]
+		)
+		, Type: "unique"
+	}
+
 	Compile_Warnings_MainDefinition =+ {
 		Flags: Compile.Warnings_MainDefinition->SwitchWithError(
 			"Unsupported option: "

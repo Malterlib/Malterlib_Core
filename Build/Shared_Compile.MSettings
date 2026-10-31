@@ -1241,6 +1241,8 @@ Compile
 	Warnings_MainDefinition: bool?
 	Warnings_MissingCommaVariadicParam: bool?
 	Warnings_NonTrivialMemCall: bool?
+	Warnings_ArrayBounds: bool?
+	Warnings_CharacterConversion: bool?
 	Warnings_FormatSecurity: bool?
 
 	Warnings_MainDefinition false
