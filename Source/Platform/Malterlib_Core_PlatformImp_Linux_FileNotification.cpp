@@ -185,13 +185,11 @@ void CFileChangeNotificationContext::f_Inotify_RemoveWatch(int _Descriptor)
 	{
 		switch (errno)
 		{
-			case EBADF:
-				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EBADF Not a valid file descriptor") << m_NotifyDescriptor << _Descriptor);
-			case EINVAL:
-				return; // This can happen due to race conditions
-//				DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EINVAL: The inotify watch descriptor or file descriptor is not valid") << m_NotifyDescriptor << _Descriptor);
-			default:
-				DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{})") << m_NotifyDescriptor << _Descriptor, errno));
+		case EBADF: DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EBADF Not a valid file descriptor") << m_NotifyDescriptor << _Descriptor);
+		case EINVAL: return; // This can happen due to race conditions
+			// DMibError(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{}): EINVAL: The inotify watch descriptor or file descriptor is not valid")
+			// 	<< m_NotifyDescriptor << _Descriptor);
+		default: DMibError(NMib::NPlatform::fg_FormatErrno(NMib::NStr::CStrNonTracked::CFormat("inotify_rm_watch({},{})") << m_NotifyDescriptor << _Descriptor, errno));
 		}
 	}
 }

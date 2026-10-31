@@ -139,8 +139,9 @@ struct CUringRecvRing
 
 	NMib::NContainer::TCVector<NMib::NStorage::TCSharedPointer<CUringStreamBuffer>> m_BufferSlots; // Empty slots are parked by backpressure until refill.
 	NMib::NContainer::TCVector<uint16> m_UnfilledBids;
-	NMib::NContainer::TCVector<umint> m_SlotOffsets; // Incremental receive offset; a buffer stays kernel-owned until full.
-	NMib::NContainer::TCVector<uint16> m_PublishOrder; // Kernel consumption order; bundle CQEs name only the first buffer and a partial tail remains at the front.
+	NMib::NContainer::TCVector<umint> m_SlotOffsets;                                               // Incremental receive offset; a buffer stays kernel-owned until full.
+	NMib::NContainer::TCVector<uint16> m_PublishOrder;                                             // Kernel consumption order; bundle CQEs name only the
+	                                                                                               //  first buffer and a partial tail remains at the front.
 	umint m_iOrderHead = 0;
 	umint m_nOrderCount = 0;
 

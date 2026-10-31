@@ -190,9 +190,12 @@ Property
 	}
 
 	// Supported
-	EnableArchitecture_x64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x64" : SupportedArchitecture_x64) // User(- Platform)=false: Enables generation of x64 architecture
-	EnableArchitecture_x86: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x86" : SupportedArchitecture_x86) // User(- Platform)=false: Enables generation of x86 architecture
-	EnableArchitecture_arm64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "arm64" : SupportedArchitecture_arm64) // User(- Platform)=false: Enables generation of arm arm64 architecture
+	// User(- Platform)=false: Enables generation of x64 architecture
+	EnableArchitecture_x64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x64" : SupportedArchitecture_x64)
+	// User(- Platform)=false: Enables generation of x86 architecture
+	EnableArchitecture_x86: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "x86" : SupportedArchitecture_x86)
+	// User(- Platform)=false: Enables generation of arm arm64 architecture
+	EnableArchitecture_arm64: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "arm64" : SupportedArchitecture_arm64)
 
 	// Unsupported
 	EnableArchitecture_ArmV7: bool = ((SingleArchitecture <!=> undefined) ? SingleArchitecture == "ArmV7" : false) // User(- Platform)=false: Enables generation of arm V7 architecture
@@ -224,7 +227,8 @@ Property
 	EnableFastCompileConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Fast Compile" : false) // User(- Configs)=true: Enable 'Fast Compile' configs
 
 	EnableReleaseConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Release" : true) // User(- Configs)=false: Enable 'Release' configuration
-	EnableReleaseTestingConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Release Testing" : true) // User(- Configs)=false: Enable 'Release Testing' configuration
+	// User(- Configs)=false: Enable 'Release Testing' configuration
+	EnableReleaseTestingConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Release Testing" : true)
 	EnableDebugInlinedConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Debug Inlined" : false) // User(- Configs)=false: Enable 'Debug Inlined' configuration
 
 	EnableDebugConfig: bool = ((SingleConfiguration <!=> undefined) ? SingleConfiguration == "Debug" : true) // User(- Configs)=false: Enable 'Debug' configuration

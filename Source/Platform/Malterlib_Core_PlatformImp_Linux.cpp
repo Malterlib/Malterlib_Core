@@ -3852,7 +3852,8 @@ namespace NMib
 // This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
 extern "C" module_export void *fg_IdsGetCrossModuleMemoryManagerInterface()
 {
-//	DMibTraceSafe("fg_IdsGetCrossModuleMemoryManagerInterface({}, {}) = {}\n", &fg_IdsGetCrossModuleMemoryManagerInterface, fg_GetSys()->f_IsDll(), NMib::NSys::g_pCrossModuleMemoryManagerInterface);
+	// DMibTraceSafe("fg_IdsGetCrossModuleMemoryManagerInterface({}, {}) = {}\n", &fg_IdsGetCrossModuleMemoryManagerInterface, fg_GetSys()->f_IsDll(),
+	// 	NMib::NSys::g_pCrossModuleMemoryManagerInterface);
 	return NMib::NSys::g_pCrossModuleMemoryManagerInterface;
 }
 

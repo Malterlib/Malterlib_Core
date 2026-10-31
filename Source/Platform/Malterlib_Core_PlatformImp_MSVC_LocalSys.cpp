@@ -1157,7 +1157,8 @@ public:
 							DWORD OldProtect;
 							if (MemInfo.Protect != PAGE_READWRITE)
 							{
-								// We need to change the protection of the page to read write because right now it's a read only portion of ntdll.dll. This seems to work both running as admin and as a normal user under user account control.
+								// We need to change the protection of the page to read write because right now it's a read only portion of ntdll.dll. This seems to work both running as
+								// admin and as a normal user under user account control.
 								if (VirtualProtect(pAddress, (size_t)pAddressHigh - (size_t)pAddress, PAGE_READWRITE, &OldProtect))
 								{
 									pInfo->Flags &= ~(UNW_FLAG_EHANDLER | UNW_FLAG_UHANDLER);

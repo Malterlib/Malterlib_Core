@@ -453,7 +453,8 @@ namespace NMib
 
 		bool CKWalletPasswordManager::fp_LaunchKWallet()
 		{
-			// method int org.kde.KLauncher.start_service_by_desktop_name(QString serviceName, QStringList urls, QStringList envs, QString startup_id, bool blind, QString& dbusServiceName, QString& error, int& pid)
+			// method int org.kde.KLauncher.start_service_by_desktop_name(QString serviceName, QStringList urls, QStringList envs, QString startup_id, bool blind, QString& dbusServiceName,
+			// QString& error, int& pid)
 
 			NDBus::CMessage LaunchReply(mp_DBus);
 
