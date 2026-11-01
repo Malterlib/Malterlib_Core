@@ -28,10 +28,19 @@ FunctionNames:
   - 'fg_.*'
   - 'fsg_.*'
 
-# Classes, templates, interfaces, enumerations and function types, and the
-# fundamental aliases: 'CStr', 'TCVector', 'EFlag', 'umint'.
+# Classes, templates, interfaces, enumerations and function types, the template
+# parameters that name them, and the fundamental aliases: 'CStr', 'TCVector',
+# 'EFlag', 'tf_CType', 'umint'.
 TypeNames:
   - 'C[A-Z].*'
+  - 't_C[A-Z].*'
+  - 'tf_C[A-Z].*'
+  - 'tp_C[A-Z].*'
+  - 'tfp_C[A-Z].*'
+  - 't_TC[A-Z].*'
+  - 'tf_TC[A-Z].*'
+  - 't_F[A-Z].*'
+  - 'tf_F[A-Z].*'
   - 'TC[A-Z].*'
   - 'IC[A-Z].*'
   - 'TIC[A-Z].*'
