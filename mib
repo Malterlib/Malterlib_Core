@@ -676,7 +676,9 @@ function BootstrapCore()
 
 	export MalterlibBootstrapBinariesPath="$HOME/.Malterlib/bootstrap/$BootstrapVersion"
 	if ! [ -e "$MalterlibBootstrapBinariesPath/Bootstrap.version" ]; then
-		if ! "$MalterlibExecutable" install-binaries &> /dev/null; then
+		# The checkout's MTool installs the bootstrap version of the binaries beside it, which lag behind this script's
+		# until the repositories are updated.
+		if ! "$MalterlibExecutable" install-binaries &> /dev/null || ! [ -e "$MalterlibBootstrapBinariesPath/Bootstrap.version" ]; then
 			BootstrapInit
 			DetectRepoRoot
 			export TempDir=`mktemp -d`
