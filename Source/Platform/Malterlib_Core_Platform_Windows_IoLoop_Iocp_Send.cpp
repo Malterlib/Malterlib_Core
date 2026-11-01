@@ -154,11 +154,7 @@ void CIoLoop_Iocp::fp_IssueDeferredSends(CIocpRegistration *_pRegistration, umin
 	// A socket whose sends finish at the acknowledgement holds its window in the unacknowledged
 	// bytes, so those are issued within the window in bytes rather than within a count of sends
 	bool bByBytes = _pRegistration->f_SendCompletesOnAck() && _pRegistration->m_nSendWindowBytes;
-	while
-	(
-		_pRegistration->m_pSendNextToIssue
-		&& (bByBytes ? _pRegistration->m_nSendBytesInFlight < _pRegistration->m_nSendWindowBytes : _pRegistration->m_nSendsInFlight < nDepth)
-	)
+	while (_pRegistration->m_pSendNextToIssue && (bByBytes ? _pRegistration->m_nSendBytesInFlight < _pRegistration->m_nSendWindowBytes : _pRegistration->m_nSendsInFlight < nDepth))
 	{
 		CIocpSendOp *pOp = _pRegistration->m_pSendNextToIssue;
 		_pRegistration->m_pSendNextToIssue = pOp->m_pNext;
@@ -194,16 +190,7 @@ void CIoLoop_Iocp::fp_ReportSendAtIssue(CIocpRegistration *_pRegistration, CIocp
 
 #if DMibConfig_IoDebug_Enable
 	if (mp_pIo->f_TraceEnabled())
-	{
-		mp_pIo->f_Trace
-			(
-				bRefused ? "send-refused" : "send-accepted"
-				, _pRegistration->m_pToken
-				, _pRegistration->m_Handle
-				, bRefused ? (uint32)Result.m_Error : (uint32)_pOp->m_nRequested
-			)
-		;
-	}
+		mp_pIo->f_Trace(bRefused ? "send-refused" : "send-accepted", _pRegistration->m_pToken, _pRegistration->m_Handle, bRefused ? (uint32)Result.m_Error : (uint32)_pOp->m_nRequested);
 #endif
 
 	++_pRegistration->m_nOutstanding;
@@ -363,9 +350,7 @@ void CIoLoop_Iocp::fp_ReportCompletedSends(CIocpRegistration *_pRegistration, um
 				Result.m_nBytes = pOp->m_nBytes;
 		}
 		else
-		{
 			Result.m_Status = NSys::EIoCompletionStatus::mc_Cancelled;
-		}
 
 #if DMibConfig_IoDebug_Enable
 		if (mp_pIo->f_StatsEnabled())

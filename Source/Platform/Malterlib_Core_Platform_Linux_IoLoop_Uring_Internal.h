@@ -46,7 +46,7 @@ struct alignas(16) CUringIoOp
 	NMib::NSys::FIoStreamSink m_fSink;
 	NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> m_pBackpressure;
 
-	umint m_iNotifyPending = ~umint(0); // All-ones unless retained in the loop's notification list.
+	umint m_iNotifyPending = ~umint(0);                  // All-ones unless retained in the loop's notification list.
 	CUringRegistration *m_pNotifyRegistration = nullptr; // Cleared at deregistration acknowledgement before a late notification can access registration state.
 	uint64 m_ReleaseLagIssueStamp = 0;
 
@@ -59,8 +59,8 @@ struct alignas(16) CUringIoOp
 
 	bool m_bStreamStart = false; // Control message installing the standing stream; not a kernel transfer.
 	bool m_bStreamResume = false;
-	bool m_bZeroCopy = false; // Buffers remain kernel-owned after the result until notification arrives.
-	bool m_bBundle = false; // Carries no payload; completion covers published records in FIFO order.
+	bool m_bZeroCopy = false;    // Buffers remain kernel-owned after the result until notification arrives.
+	bool m_bBundle = false;      // Carries no payload; completion covers published records in FIFO order.
 
 	msghdr m_MsgHdr;
 	iovec m_IoVecs[gc_UringMaxSendVectors];
@@ -172,7 +172,7 @@ struct CUringSendRing
 	uint16 *m_pRingTail = nullptr;
 	umint m_nRingEntries = 0;
 	umint m_nEntriesOutstanding = 0; // Do not overwrite ring entries until completion covers them.
-	umint m_nBytesOutstanding = 0; // A bundle selects at most the signed 32-bit range; an entry cut at that boundary is consumed whole with the cut applied.
+	umint m_nBytesOutstanding = 0;   // A bundle selects at most the signed 32-bit range; an entry cut at that boundary is consumed whole with the cut applied.
 
 	NMib::NContainer::TCLinkedList<CUringSendRecord> m_Records;
 

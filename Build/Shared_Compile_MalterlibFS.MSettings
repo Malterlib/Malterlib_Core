@@ -232,7 +232,6 @@ Property
 
 	Property
 	{
-
 		f_GetGeneratedFiles_Output function(string _File) [type(CEntity)] = []
 		f_GetGeneratedFiles_Output =+ &MalterlibFS_GeneratedFile_Output->GetProperty(_File)
 	}
@@ -296,7 +295,8 @@ Compile
 	{
 		!!Compile.VerboseLogging true
 	}
-	Custom_CommandLine =+ Compile.OutputAsObjectFile->SwitchWithError("Unknown object file format"
+	Custom_CommandLine =+ Compile.OutputAsObjectFile->SwitchWithError(
+		"Unknown object file format"
 		, false, ""
 		, true, " -obj"
 		, "Elf32", " -elf32"

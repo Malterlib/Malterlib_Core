@@ -31,14 +31,15 @@ using namespace NMib;
 
 NMib::NStr::CStr NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName)
 {
-	const char *pEnv = getenv(_VariableName);
+	char const *pEnv = getenv(_VariableName);
 	if (!pEnv) // Not an error, NULL is returned if the env var does not exist.
 		return CStr();
 	return CStr(pEnv);
 }
+
 NMib::NStr::CStrNonTracked NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName)
 {
-	const char *pEnv = getenv(_VariableName);
+	char const *pEnv = getenv(_VariableName);
 	if (!pEnv) // Not an error, NULL is returned if the env var does not exist.
 		return CStrNonTracked();
 	return CStrNonTracked(pEnv);
@@ -46,23 +47,24 @@ NMib::NStr::CStrNonTracked NMib::NSys::fg_Process_GetEnvironmentVariable_NonProt
 
 NMib::NStr::CFStr256 NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CFStr256 const &_VariableName)
 {
-	const char *pEnv = getenv(_VariableName);
+	char const *pEnv = getenv(_VariableName);
 	if (!pEnv) // Not an error, NULL is returned if the env var does not exist.
 		return NMib::NStr::CFStr256();
 	return NMib::NStr::CFStr256(pEnv);
 }
 
-bool NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr& _Value)
+bool NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStr const &_VariableName, NMib::NStr::CStr &_Value)
 {
-	const char *pEnv = getenv(_VariableName);
+	char const *pEnv = getenv(_VariableName);
 	if (!pEnv)
 		return false;
 	_Value = CStr(pEnv);
 	return true;
 }
+
 bool NMib::NSys::fg_Process_GetEnvironmentVariable_NonProtected(NMib::NStr::CStrNonTracked const &_VariableName, NMib::NStr::CStrNonTracked &_Value)
 {
-	const char *pEnv = getenv(_VariableName);
+	char const *pEnv = getenv(_VariableName);
 	if (!pEnv)
 		return false;
 	_Value = CStrNonTracked(pEnv);

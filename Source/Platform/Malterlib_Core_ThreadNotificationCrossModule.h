@@ -8,7 +8,7 @@ namespace NMib::NSys::NPrivate
 	enum
 	{
 		EThreadNotificationCrossModule_Version_Min = 0x101
-		, EThreadNotificationCrossModule_Version = 0x101
+		, EThreadNotificationCrossModule_Version   = 0x101
 	};
 
 	typedef void FThreadCreatedNotification(umint _ThreadID, umint _ParentThreadID);

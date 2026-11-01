@@ -25,7 +25,6 @@ using namespace NMib;
 
 #include "Malterlib_Core_PlatformImp_POSIX.h"
 
-
 // *************************************************************************************************************************
 // POSIX Dynamic Library Implementation
 // *************************************************************************************************************************
@@ -41,7 +40,7 @@ namespace
 #endif
 }
 
-void * NSys::fg_LoadLibrary(CFStr256 const& _Library)
+void *NSys::fg_LoadLibrary(CFStr256 const &_Library)
 {
 	if (!_Library.f_IsEmpty())
 	{
@@ -50,7 +49,7 @@ void * NSys::fg_LoadLibrary(CFStr256 const& _Library)
 		if (pRet)
 		{
 			void (*pMalterlibLoadLibraryExternal)();
-			pMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc*)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
+			pMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
 			if (pMalterlibLoadLibraryExternal)
 				pMalterlibLoadLibraryExternal();
 		}
@@ -59,12 +58,10 @@ void * NSys::fg_LoadLibrary(CFStr256 const& _Library)
 		return pRet;
 	}
 	else
-	{
 		return dlopen(nullptr, RTLD_NOW);
-	}
 }
 
-void *NSys::fg_LoadLibrary(const CStr& _Library)
+void *NSys::fg_LoadLibrary(CStr const &_Library)
 {
 	if (!_Library.f_IsEmpty())
 	{
@@ -73,7 +70,7 @@ void *NSys::fg_LoadLibrary(const CStr& _Library)
 		if (pRet)
 		{
 			void (*pMalterlibLoadLibraryExternal)();
-			pMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc*)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
+			pMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
 			if (pMalterlibLoadLibraryExternal)
 				pMalterlibLoadLibraryExternal();
 		}
@@ -82,12 +79,10 @@ void *NSys::fg_LoadLibrary(const CStr& _Library)
 		return pRet;
 	}
 	else
-	{
 		return dlopen(nullptr, RTLD_NOW);
-	}
 }
 
-void *NSys::fg_LoadLibrary(const CStrNonTracked &_Library)
+void *NSys::fg_LoadLibrary(CStrNonTracked const &_Library)
 {
 	if (!_Library.f_IsEmpty())
 	{
@@ -96,7 +91,7 @@ void *NSys::fg_LoadLibrary(const CStrNonTracked &_Library)
 		if (pRet)
 		{
 			void (*pMalterlibLoadLibraryExternal)();
-			pMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc*)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
+			pMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
 			if (pMalterlibLoadLibraryExternal)
 				pMalterlibLoadLibraryExternal();
 		}
@@ -105,22 +100,20 @@ void *NSys::fg_LoadLibrary(const CStrNonTracked &_Library)
 		return pRet;
 	}
 	else
-	{
 		return dlopen(nullptr, RTLD_NOW);
-	}
 }
 
 void NSys::fg_FreeLibrary(void *_pModule)
 {
 	void (*pMalterlibFreeLibraryExternal)();
-	pMalterlibFreeLibraryExternal = (FMalterlibLibraryFunc*)NSys::fg_GetLibrarySymbol(_pModule, "IdsFreeLibraryExternal");
+	pMalterlibFreeLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(_pModule, "IdsFreeLibraryExternal");
 	if (pMalterlibFreeLibraryExternal)
 		pMalterlibFreeLibraryExternal();
 
 	dlclose(_pModule);
 }
 
-void* NSys::fg_GetLibrarySymbol(void* _pModule, char const* _pSymbol)
+void *NSys::fg_GetLibrarySymbol(void *_pModule, char const *_pSymbol)
 {
 	return dlsym(_pModule, _pSymbol);
 }

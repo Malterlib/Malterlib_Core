@@ -67,7 +67,8 @@ GeneratorSetting
 	}
 
 	Xcode_FileType: string = SwitchWithError(
-		Compile.Type, "Unknown compile type: "
+		Compile.Type
+		, "Unknown compile type: "
 		, "C++", "sourcecode.cpp.cpp"
 		, "C", "sourcecode.c.c"
 		, "Header", "sourcecode.c.h"
@@ -110,9 +111,7 @@ GeneratorSetting
 	}
 
 	Compile =+ GeneratorSetting.f_ExtractSettings(
-		(Compile.Type == "Header" || Compile.Type == "None" || Compile.Disabled) ?
-		[] :
-		GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetSettings)
+		(Compile.Type == "Header" || Compile.Type == "None" || Compile.Disabled) ? [] : GeneratorSetting.DefinedProperties->ForEach(&GeneratorSetting.f_GetSettings)
 	)
 	{
 		//#Debug "TraceEval"

@@ -23,7 +23,7 @@
 
 auto g_String = "String";
 auto g_Char = 'C';
-[[maybe_unused]] const static uint32 gc_GlobalConstant = (55 + 5 * 6 % ((67 | 77) & 88));
+[[maybe_unused]] static uint32 const gc_GlobalConstant = (55 + 5 * 6 % ((67 | 77) & 88));
 [[maybe_unused]] static int gs_ThousandsSeparator = 10'000'000;
 double g_Double = 5.655 + 7.66e10;
 
@@ -76,17 +76,16 @@ namespace NTest
 
 		uint32 m_VariablePublic;
 		static uint32 ms_StaticVariablePublic;
-		constexpr static uint32 mc_ConstantPublic = 0;
+		static constexpr uint32 mc_ConstantPublic = 0;
 
 	private:
 		NMib::NFunction::TCFunction<void ()> mp_fFunctor;
 
 		uint32 mp_VariablePrivate;
 		static uint32 msp_StaticVariablePrivate;
-		constexpr static uint32 mcp_ConstantPrivate = 0;
+		static constexpr uint32 mcp_ConstantPrivate = 0;
 
 		void fp_FunctionPrivate();
-
 	};
 }
 

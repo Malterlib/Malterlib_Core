@@ -3,7 +3,6 @@
 
 namespace NMSVCRuntime
 {
-
 	class CCPUUsageMonitor : public CCPUUsageMonitorLink
 	{
 		FILETIME m_LastIdle;
@@ -11,6 +10,7 @@ namespace NMSVCRuntime
 		FILETIME m_LastKernel;
 
 		NMib::NSystem::CSystemCPUUsage m_LastRet;
+
 	public:
 		CCPUUsageMonitor()
 		{
@@ -19,6 +19,7 @@ namespace NMSVCRuntime
 			m_LastRet.m_Kernel = 0.0f;
 			m_LastRet.m_Idle = 0.0f;
 		}
+
 		virtual ~CCPUUsageMonitor()
 		{
 		}
@@ -66,7 +67,6 @@ namespace NMSVCRuntime
 			return Ret;
 		}
 	};
-
 }
 
 namespace NMib
@@ -89,6 +89,5 @@ namespace NMib
 		{
 			return ((NMSVCRuntime::CCPUUsageMonitor *)_pHandle)->f_GetUsage(_bChanged);
 		}
-
 	}
 }

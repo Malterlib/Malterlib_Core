@@ -10,7 +10,7 @@ int main()
 }
 #else
 
-#include <Mib/Core/Application>
+#	include <Mib/Core/Application>
 
 class CMinimal : public CApplication
 {

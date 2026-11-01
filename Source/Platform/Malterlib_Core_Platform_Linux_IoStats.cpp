@@ -45,16 +45,7 @@ void fg_DumpUringStats(NMib::NSys::CIoSubSystem &_Io)
 		if (!nCount)
 			continue;
 
-		NSys::fg_ConsoleErrorOutput
-			(
-				NStr::fg_Format<NStr::CStrNonTracked>
-				(
-					"[io stats] recv size 2^{}: {}\n"
-					, iBucket
-					, nCount
-				)
-			)
-		;
+		NSys::fg_ConsoleErrorOutput(NStr::fg_Format<NStr::CStrNonTracked>("[io stats] recv size 2^{}: {}\n", iBucket, nCount));
 	}
 
 	uint64 nSendRequested = fLoad(Stats.m_nSendBytesRequested);
@@ -88,17 +79,7 @@ void fg_DumpUringStats(NMib::NSys::CIoSubSystem &_Io)
 		if (!nPlain && !nZc)
 			continue;
 
-		NSys::fg_ConsoleErrorOutput
-			(
-				NStr::fg_Format<NStr::CStrNonTracked>
-				(
-					"[io stats] send size 2^{}: plain={} zc={}\n"
-					, iBucket
-					, nPlain
-					, nZc
-				)
-			)
-		;
+		NSys::fg_ConsoleErrorOutput(NStr::fg_Format<NStr::CStrNonTracked>("[io stats] send size 2^{}: plain={} zc={}\n", iBucket, nPlain, nZc));
 	}
 
 	uint64 nIdleGaps = fLoad(Stats.m_nSendIdleGaps);
@@ -118,15 +99,7 @@ void fg_DumpUringStats(NMib::NSys::CIoSubSystem &_Io)
 		)
 	;
 
-	NSys::fg_ConsoleErrorOutput
-		(
-			NStr::fg_Format<NStr::CStrNonTracked>
-			(
-				"[io stats] errors: send={} recv={}\n"
-				, fLoad(Stats.m_nSendErrors)
-				, fLoad(Stats.m_nRecvErrors)
-			)
-		)
-	;}
+	NSys::fg_ConsoleErrorOutput(NStr::fg_Format<NStr::CStrNonTracked>("[io stats] errors: send={} recv={}\n", fLoad(Stats.m_nSendErrors), fLoad(Stats.m_nRecvErrors)));
+}
 
 #endif

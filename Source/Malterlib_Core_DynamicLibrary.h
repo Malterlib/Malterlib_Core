@@ -2,73 +2,73 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 /*
-	Author:		Michael Wynne
+Author:		Michael Wynne
 
-	Contents:	CDynamicLibraryUtility
+Contents:	CDynamicLibraryUtility
 
-	Docs:
+Docs:
 
-		TCDynamicLibraryUtility
-		---------------------
-		Subclass this to handle loading a dynamic library and extracting symbols from it.
+	TCDynamicLibraryUtility
+	---------------------
+	Subclass this to handle loading a dynamic library and extracting symbols from it.
 
-			struct CDynamicLibraryUtility;
+		struct CDynamicLibraryUtility;
 
-				_Flags			- A flags field of:
-									EDLFlag_None
-									EDLFlag_NoThrow			Do not throw an exception when an error is encountered, use return codes.
-									EDLFlag_AllowMissing	Allow symbols to be missing without making the whole object bad.
+			_Flags			- A flags field of:
+								EDLFlag_None
+								EDLFlag_NoThrow			Do not throw an exception when an error is encountered, use return codes.
+								EDLFlag_AllowMissing	Allow symbols to be missing without making the whole object bad.
 
-		Once a dynamic library object is loaded via f_Reload the library will attempt to find all registered symbols.
+	Once a dynamic library object is loaded via f_Reload the library will attempt to find all registered symbols.
 
-		If the specified dynamic library could not be found or loaded f_OK() will return false.
+	If the specified dynamic library could not be found or loaded f_OK() will return false.
 
-		if EDLFlag_AllowMissing is not specified and some symbols could not be found f_OK() will return false.
+	if EDLFlag_AllowMissing is not specified and some symbols could not be found f_OK() will return false.
 
-		Otherwise f_OK() will return true.
+	Otherwise f_OK() will return true.
 
-		When specifying the name of the shared library to load (either via the macro or in the constructor of TCDynamicLibraryUtility)
-		you can specify more than one name (just comma speparate them). This will cause TCDynamicLibraryUtility to try each name
-		in turn when loading.
+	When specifying the name of the shared library to load (either via the macro or in the constructor of TCDynamicLibraryUtility)
+	you can specify more than one name (just comma speparate them). This will cause TCDynamicLibraryUtility to try each name
+	in turn when loading.
 
-		Example usages:
-		---------------
+	Example usages:
+	---------------
 
-			struct CUUIDLibrary : public CDynamicLibraryUtility
+		struct CUUIDLibrary : public CDynamicLibraryUtility
+		{
+			CUUIDLibrary()
+				: TCDynamicLibraryUtility(gc_Str<"libuuid.so.1">, EDLFlag_NoThrow)
 			{
-				CUUIDLibrary()
-					: TCDynamicLibraryUtility(gc_Str<"libuuid.so.1">, EDLFlag_NoThrow)
-				{
-				}
-
-				decltype(&::uuid_generate) uuid_generate = nullptr;
-				decltype(&::uuid_unparse) uuid_unparse = nullptr;
-
-			protected:
-				void fp_ClearSymbols() override
-				{
-					uuid_generate = nullptr;
-					uuid_unparse = nullptr;
-				}
-
-				void fp_FetchSymbols() override
-				{
-					fp_Fetch(uuid_generate, "uuid_generate");
-					fp_Fetch(uuid_unparse, "uuid_unparse");
-				}
-			};
-
-		And you can use it like this:
-
-			CUUIDLibrary UUIDLibrary;
-
-			UUIDLibrary.f_Reload();
-
-			if (UUIDLibrary.f_OK)
-			{
-				uuid_t UUID;
-				UUIDLibrary.uuid_generate(UUID);
 			}
+
+			decltype(&::uuid_generate) uuid_generate = nullptr;
+			decltype(&::uuid_unparse) uuid_unparse = nullptr;
+
+		protected:
+			void fp_ClearSymbols() override
+			{
+				uuid_generate = nullptr;
+				uuid_unparse = nullptr;
+			}
+
+			void fp_FetchSymbols() override
+			{
+				fp_Fetch(uuid_generate, "uuid_generate");
+				fp_Fetch(uuid_unparse, "uuid_unparse");
+			}
+		};
+
+	And you can use it like this:
+
+		CUUIDLibrary UUIDLibrary;
+
+		UUIDLibrary.f_Reload();
+
+		if (UUIDLibrary.f_OK)
+		{
+			uuid_t UUID;
+			UUIDLibrary.uuid_generate(UUID);
+		}
 */
 
 #pragma once
@@ -80,9 +80,9 @@ namespace NMib
 	using CDLFlagUnderlying = int32;
 	enum EDLFlag : int32 // EDynamicLibraryFlag, shortened for typing.
 	{
-		EDLFlag_None			= 0,
-		EDLFlag_NoThrow			= DMibBit(0),		// Do not throw an exception when an error is encountered, use return codes.
-		EDLFlag_AllowMissing	= DMibBit(2),	// Allow symbols to be missing without making the whole object bad.
+		EDLFlag_None           = 0
+		, EDLFlag_NoThrow      = DMibBit(0) // Do not throw an exception when an error is encountered, use return codes.
+		, EDLFlag_AllowMissing = DMibBit(2) // Allow symbols to be missing without making the whole object bad.
 	};
 
 	struct CDynamicLibraryUtility
@@ -100,7 +100,7 @@ namespace NMib
 
 		~CDynamicLibraryUtility();
 
-		explicit operator bool() const;
+		explicit operator bool () const;
 
 		bool f_OK() const;
 		bool f_Reload(NStr::CStr const &_Filename = {});
@@ -114,8 +114,8 @@ namespace NMib
 
 		bool fp_LoadLibrary(NStr::CStr const &_Filename);
 
-		template<typename t_CType>
-		bool fp_Fetch(t_CType* & _pPtr, ch8 const *_pName)
+		template <typename t_CType>
+		bool fp_Fetch(t_CType * &_pPtr, ch8 const *_pName)
 		{
 			if (!mp_bOK)
 			{
@@ -123,7 +123,7 @@ namespace NMib
 				return false;
 			}
 
-			*(void**)&_pPtr = NSys::fg_GetLibrarySymbol(mp_pLibrary, _pName);
+			*(void **)&_pPtr = NSys::fg_GetLibrarySymbol(mp_pLibrary, _pName);
 			if (!_pPtr)
 			{
 				if (!(mp_Flags & EDLFlag_AllowMissing))

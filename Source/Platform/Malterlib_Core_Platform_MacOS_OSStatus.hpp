@@ -27,7 +27,6 @@ namespace NMib
 				Ret += typename tf_CStr::CFormat(": {} ({} {})") << (pError->m_pLong ? pError->m_pLong : "Unknown") << _Status << (pError->m_pShort ? pError->m_pShort : "Unknown");
 			return Ret;
 		}
-
 	}
 }
 

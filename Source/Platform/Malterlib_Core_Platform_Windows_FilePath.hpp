@@ -11,11 +11,11 @@ namespace NMib
 		namespace NPlatform
 		{
 			template <typename tf_CRet, typename tf_CStr>
-			tf_CRet fg_ConvertToWindowsPathLocal(const tf_CStr &_Path, bool _bForceLong)
+			tf_CRet fg_ConvertToWindowsPathLocal(tf_CStr const &_Path, bool _bForceLong)
 			{
-			#ifdef DMibAlwaysUseLongWindowsPaths
+#ifdef DMibAlwaysUseLongWindowsPaths
 				_bForceLong = true;
-			#endif
+#endif
 				if (_bForceLong)
 					return fg_ConvertToWindowsPath<tf_CRet, tf_CRet>(_Path, true, -1);
 				else
@@ -23,22 +23,18 @@ namespace NMib
 			}
 
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
-			tf_CRet fg_ConvertToWindowsPath(const tf_CSource &_Path, bool _bAddCurrentDir, aint _MaxLen, bool _bTryShorten)
+			tf_CRet fg_ConvertToWindowsPath(tf_CSource const &_Path, bool _bAddCurrentDir, aint _MaxLen, bool _bTryShorten)
 			{
 				if (_Path.f_IsEmpty())
 					return tf_CRet();
 
 				if (_Path.f_StartsWith("//."))
-				{
 					return _Path.f_ReplaceChar('/', '\\');
-				}
 				auto ToRet = NFile::CFile::fs_GetExpandedPath(_Path, _bAddCurrentDir);
 				fg_StrReplaceChar(ToRet, '\\', '/');
 
 				if (ToRet.f_Cmp("//?/", 4) == 0)
-				{
 					ToRet = fg_ConvertFromWindowsPath<tf_CWindows, tf_CRet>(ToRet);
-				}
 
 				auto ToRetW = NStr::NPlatform::fg_StrToWindows<tf_CWindows>(ToRet);
 				fg_StrReplaceChar(ToRetW, '/', '\\');
@@ -68,13 +64,9 @@ namespace NMib
 							DMibSafeCheck(NeededLen2 <= NeededLen, "");
 							TempW = ShortPathW + "\\" + File;
 							if (TempW.f_CmpNoCase("\\\\?\\UNC\\", 8) == 0)
-							{
 								TempW = "\\\\" + TempW.f_Extract(8);
-							}
 							else if (TempW.f_CmpNoCase("\\\\?\\", 4) == 0)
-							{
 								TempW = TempW.f_Extract(4);
-							}
 
 							if (TempW.f_GetLen() < _MaxLen)
 								return TempW;
@@ -96,13 +88,9 @@ namespace NMib
 							DMibSafeCheck(NeededLen2 <= NeededLen, "");
 							auto TempW = ShortPathW;
 							if (TempW.f_CmpNoCase("\\\\?\\UNC\\", 8) == 0)
-							{
 								TempW = "\\\\" + TempW.f_Extract(8);
-							}
 							else if (TempW.f_CmpNoCase("\\\\?\\", 4) == 0)
-							{
 								TempW = TempW.f_Extract(4);
-							}
 							if (TempW.f_GetLen() < _MaxLen)
 								return TempW;
 						}
@@ -115,22 +103,18 @@ namespace NMib
 			}
 
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
-			tf_CRet fg_ConvertToShortWindowsPath(const tf_CSource &_Path, bool _bAddCurrentDir)
+			tf_CRet fg_ConvertToShortWindowsPath(tf_CSource const &_Path, bool _bAddCurrentDir)
 			{
 				if (_Path.f_IsEmpty())
 					return tf_CRet();
 				if (_Path.f_StartsWith("//."))
-				{
 					return _Path.f_ReplaceChar('/', '\\');
-				}
 
 				auto ToRet = NFile::CFile::fs_GetExpandedPath(_Path, _bAddCurrentDir);
 				fg_StrReplaceChar(ToRet, '\\', '/');
 
 				if (ToRet.f_Cmp("//?/", 4) == 0)
-				{
 					ToRet = fg_ConvertFromWindowsPath<tf_CWindows, tf_CRet>(ToRet);
-				}
 
 				auto ToRetW = NStr::NPlatform::fg_StrToWindows<tf_CWindows>(ToRet);
 				fg_StrReplaceChar(ToRetW, '/', '\\');
@@ -142,20 +126,16 @@ namespace NMib
 					DMibSafeCheck(NeededLen2 <= NeededLen, "");
 					auto TempW = ShortPathW;
 					if (TempW.f_CmpNoCase("\\\\?\\UNC\\", 8) == 0)
-					{
 						TempW = "\\\\" + TempW.f_Extract(8);
-					}
 					else if (TempW.f_CmpNoCase("\\\\?\\", 4) == 0)
-					{
 						TempW = TempW.f_Extract(4);
-					}
 					return TempW;
 				}
 				return ToRetW;
 			}
 
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
-			tf_CRet fg_ConvertToLongWindowsPath(const tf_CSource &_Path, bool _bAddCurrentDir)
+			tf_CRet fg_ConvertToLongWindowsPath(tf_CSource const &_Path, bool _bAddCurrentDir)
 			{
 				if (_Path.f_IsEmpty())
 					return tf_CRet();
@@ -163,9 +143,7 @@ namespace NMib
 				fg_StrReplaceChar(ToRet, '\\', '/');
 
 				if (ToRet.f_Cmp("//?/", 4) == 0)
-				{
 					ToRet = fg_ConvertFromWindowsPath<tf_CWindows, tf_CRet>(ToRet);
-				}
 
 				auto ToRetW = NStr::NPlatform::fg_StrToWindows<tf_CWindows>(ToRet);
 				fg_StrReplaceChar(ToRetW, '/', '\\');
@@ -188,7 +166,7 @@ namespace NMib
 			}
 
 			template <typename tf_CRet, typename tf_CSrc>
-			tf_CRet fg_ConvertFromWindowsPathInternal(const tf_CSrc &_Path)
+			tf_CRet fg_ConvertFromWindowsPathInternal(tf_CSrc const &_Path)
 			{
 				auto ToRet = _Path;
 				fg_StrReplaceChar(ToRet, '\\', '/');
@@ -212,7 +190,7 @@ namespace NMib
 			}
 
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSrc>
-			tf_CRet fg_ConvertFromWindowsPath(const tf_CSrc &_Path)
+			tf_CRet fg_ConvertFromWindowsPath(tf_CSrc const &_Path)
 			{
 				return fg_ConvertFromWindowsPathInternal<tf_CRet>(fg_ConvertToWindowsPath<tf_CWindows, tf_CRet>(fg_ConvertFromWindowsPathInternal<tf_CRet>(_Path), false, -1));
 			}

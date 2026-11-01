@@ -202,7 +202,10 @@ GeneratorSetting
 	malterlib-format on
 */
 
-	f_GetSetting ErrorWithPositions(&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : ""). File: @(this.Identity)`)
+	f_GetSetting ErrorWithPositions(
+		&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>
+		, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : ""). File: @(this.Identity)`
+	)
 	{
 		!!GeneratorSetting.f_GetSetting<Value> undefined
 	}
@@ -222,8 +225,6 @@ GeneratorSetting
 	f_GetSettings function(type(CProperty) _Property) [type(CCompileSettingsWithPosition)] = []
 	f_GetSettings =+ GeneratorSetting.f_GetSetting(_Property)
 
-
-
 	f_GetTargetSetting function(type(CProperty) _Property) one_of(type(CTargetSettingsWithPosition), [any])
 	f_GetTargetSetting &GeneratorSetting.@(_Property<Type>)_@(_Property<Name>)->WithPositionOverridingType(&GeneratorSetting.GetTargetSettingType)
 
@@ -240,7 +241,10 @@ GeneratorSetting
 	malterlib-format on
 */
 
-	f_GetTargetSetting ErrorWithPositions(&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : "")`)
+	f_GetTargetSetting ErrorWithPositions(
+		&@(_Property<Type>).@(_Property<Name>)->WithPosition()<Positions>
+		, `No generator setting GeneratorSetting.@(_Property<Type>)_@(_Property<Name>) found for @(_Property<Type>).@(_Property<Name>)@((_Property<Type> == "Compile") ? ` with Compile.Type @(Compile.Type)` : "")`
+	)
 	{
 		!!GeneratorSetting.f_GetTargetSetting<Value> undefined
 	}
@@ -259,6 +263,4 @@ GeneratorSetting
 
 	f_GetTargetSettings function(type(CProperty) _Property) [type(CTargetSettingsWithPosition)] = []
 	f_GetTargetSettings =+ GeneratorSetting.f_GetTargetSetting(_Property)
-
-
 }

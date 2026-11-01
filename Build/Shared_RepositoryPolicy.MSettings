@@ -475,7 +475,8 @@ Repository
 			, BypassActors: [{Actor: {Type: "OrganizationAdmin"}, Mode: "Always"}]
 			, Rules: [{Type: "Creation"}, {Type: "Update", AllowFetchAndMerge: false}, {Type: "FastForwardOnly"}]
 			, Enforcement: "Active"
-		}, "LFS NoDelete": {
+		}
+		, "LFS NoDelete": {
 			Target: "Tag"
 			, IncludeRefNames: ["refs/tags/lfs/*"]
 			, BypassActors: []

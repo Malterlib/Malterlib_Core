@@ -16,7 +16,7 @@ namespace
 	struct CCloseOnlyEventCounts
 	{
 		umint m_nReadClosed = 0; // Half-close reports without a hangup
-		umint m_nClosed = 0; // Hangup or write side closed
+		umint m_nClosed = 0;     // Hangup or write side closed
 		umint m_nOther = 0;
 	};
 
@@ -62,6 +62,7 @@ namespace
 					char const *m_pName;
 					NSys::EIoLoopEvent m_Mask;
 				};
+
 				constexpr CMaskCase c_Cases[] =
 					{
 						{"None", NSys::EIoLoopEvent::mc_None}

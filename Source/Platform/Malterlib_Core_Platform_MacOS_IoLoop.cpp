@@ -38,7 +38,7 @@ auto CIoLoop_KQueue::fp_CreateRegistration() -> NSys::CIoLoopRegistration *
 umint CIoLoop_KQueue::fp_Iterate(bool _bBlock, fp64 _Timeout)
 {
 	CIoLoopWaitDeadline Deadline(_Timeout);
-	static const int nMaxEvents = 64;
+	static int const nMaxEvents = 64;
 	struct kevent StackEvents[nMaxEvents];
 	struct kevent *pIncomingEvents = StackEvents;
 	int nEventCapacity = nMaxEvents;
@@ -133,16 +133,7 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock, fp64 _Timeout)
 			PollTimeout.tv_sec = fg_Convert<time_t>(Remaining);
 			PollTimeout.tv_nsec = fg_Convert<long>((Remaining - fp64(PollTimeout.tv_sec)) * 1000000000.0);
 		}
-		nEvents = kevent
-			(
-				mp_KQueue
-				, ApplyChanges.f_GetArray()
-				, ApplyChanges.f_GetLen()
-				, pIncomingEvents
-				, nEventCapacity
-				, bBlock && _Timeout < 0.0 ? nullptr : &PollTimeout
-			)
-		;
+		nEvents = kevent(mp_KQueue, ApplyChanges.f_GetArray(), ApplyChanges.f_GetLen(), pIncomingEvents, nEventCapacity, bBlock && _Timeout < 0.0 ? nullptr : &PollTimeout);
 	}
 	while (nEvents == -1 && errno == EINTR)
 		;
@@ -172,7 +163,7 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock, fp64 _Timeout)
 				{
 					ReadRet = read(mp_ReadWritePipe[0], Buf, sizeof(Buf));
 				}
-				while(ReadRet > 0)
+				while (ReadRet > 0)
 					;
 			}
 			continue;
@@ -223,15 +214,8 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock, fp64 _Timeout)
 		}
 
 		// A filter installed for its close events also reports readiness the registration never asked for
-		if
-		(
-			!pRegistration->m_Options.m_bLevelReadiness
-			&& !fg_IsSet(pRegistration->m_EventMask, Events)
-			&& (Events == NSys::EIoLoopEvent::mc_Read || Events == NSys::EIoLoopEvent::mc_Write)
-		)
-		{
+		if (!pRegistration->m_Options.m_bLevelReadiness && !fg_IsSet(pRegistration->m_EventMask, Events) && (Events == NSys::EIoLoopEvent::mc_Read || Events == NSys::EIoLoopEvent::mc_Write))
 			continue;
-		}
 
 		++nReported;
 		pRegistration->m_fOnEvents(pRegistration->m_pToken, Events, Error);

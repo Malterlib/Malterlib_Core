@@ -243,7 +243,7 @@ Property
 		!!Configuration "Profile"
 		!!Configuration "Release"
 		!!Configuration "Optimized"
-	    !!Configuration "Debug Optimized"
+		!!Configuration "Debug Optimized"
 		!!Configuration "Release Testing"
 		!!Configuration "Release Debug"
 	}
@@ -261,7 +261,7 @@ Property
 		!!RealConfiguration "Profile"
 		!!RealConfiguration "Release"
 		!!RealConfiguration "Optimized"
-	    !!RealConfiguration "Debug Optimized"
+		!!RealConfiguration "Debug Optimized"
 		!!RealConfiguration "Release Testing"
 		!!RealConfiguration "Release Debug"
 	}
@@ -500,7 +500,14 @@ Property
 	}
 
 	MalterlibGitOriginRemote: string = ""
-	MalterlibGitOriginRemote ExecuteCommand(`@(GeneratedGlobalDirectory)GitOriginRemote.MState`, ["ByDigest:", `@(MalterlibGitRepoGitCommonDir)/config`], `git@(HostExecutableExtension)`, "remote", "get-url", "origin")
+	MalterlibGitOriginRemote ExecuteCommand(
+		`@(GeneratedGlobalDirectory)GitOriginRemote.MState`
+		, ["ByDigest:", `@(MalterlibGitRepoGitCommonDir)/config`]
+		, `git@(HostExecutableExtension)`
+		, "remote"
+		, "get-url"
+		, "origin"
+	)
 	{
 		!!MalterlibGitHasOrigin true
 	}
@@ -539,7 +546,15 @@ Property
 	// enables ExecuteCommand's Try mode, so a non-zero exit (unborn HEAD) yields
 	// an empty string instead of throwing.
 	MalterlibGitHeadCommit: string = ""
-	MalterlibGitHeadCommit ExecuteCommand(`@(GeneratedGlobalDirectory)GitHeadCommit.MTryState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir), `git@(HostExecutableExtension)`, "rev-parse", "--verify", "--quiet", "HEAD")->Trim()
+	MalterlibGitHeadCommit ExecuteCommand(
+		`@(GeneratedGlobalDirectory)GitHeadCommit.MTryState`
+		, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir)
+		, `git@(HostExecutableExtension)`
+		, "rev-parse"
+		, "--verify"
+		, "--quiet"
+		, "HEAD"
+	)->Trim()
 	{
 		!!MalterlibIsGitRepository true
 	}
@@ -555,7 +570,15 @@ Property
 	}
 
 	MalterlibGitBranch: string?
-	MalterlibGitBranch ExecuteCommand(`@(GeneratedGlobalDirectory)GitBranch.MState`, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir), `git@(HostExecutableExtension)`, "rev-parse", "--symbolic-full-name", "--abbrev-ref", "HEAD")->Trim()
+	MalterlibGitBranch ExecuteCommand(
+		`@(GeneratedGlobalDirectory)GitBranch.MState`
+		, f_MalterlibGitRepoInputFiles(MalterlibGitRepoGitDir, MalterlibGitRepoGitCommonDir)
+		, `git@(HostExecutableExtension)`
+		, "rev-parse"
+		, "--symbolic-full-name"
+		, "--abbrev-ref"
+		, "HEAD"
+	)->Trim()
 	{
 		&
 		{
@@ -622,7 +645,15 @@ Property
 	MalterlibPerforceRootConfigFiles: [string] = AllRepositories->ForEach(&f_MalterlibCollectPerforceRootConfigFiles)
 
 	MalterlibPerforceChangelist: string = ""
-	MalterlibPerforceChangelist ExecuteCommand(`@(GeneratedGlobalDirectory)@(_MSPDBSRV_ENDPOINT_)P4Changelist.MState`, MalterlibPerforceRootConfigFiles, `p4@(HostExecutableExtension)`, "changes", "-m", "1", "...#have")->Trim()->ParseFormatString("Change {} on {}", "{0}")
+	MalterlibPerforceChangelist ExecuteCommand(
+		`@(GeneratedGlobalDirectory)@(_MSPDBSRV_ENDPOINT_)P4Changelist.MState`
+		, MalterlibPerforceRootConfigFiles
+		, `p4@(HostExecutableExtension)`
+		, "changes"
+		, "-m"
+		, "1"
+		, "...#have"
+	)->Trim()->ParseFormatString("Change {} on {}", "{0}")
 	{
 		&
 		{
@@ -665,7 +696,6 @@ Property
 				Target.Type "Driver"
 			}
 		}
-
 	}
 	MalterlibMacOSHideDockTile: bool = false
 	MalterlibMacOSHideDockTile true

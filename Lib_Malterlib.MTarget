@@ -176,7 +176,6 @@ Property
 				}
 			}
 		}
-
 	}
 	Property.WorkaroundLTOValue: bool = false
 	%Group "Source"
@@ -357,7 +356,6 @@ Property
 							!PlatformFamily "macOS"
 						}
 					}
-
 				}
 				%Group "ppc"
 				{
@@ -407,7 +405,13 @@ Property
 				!!Compile.Type "Assembler"
 
 				AllCPUSubTypes true
-				PreprocessorDefines =+ ["_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS", "COMPILER_RT_NODEFAULTVISIBILITY", "LIBCXXABI_NODEFAULTVISIBILITY", "LIBUNWIND_NODEFAULTVISIBILITY", "_LIBUNWIND_HIDE_SYMBOLS"]
+				PreprocessorDefines =+ [
+					"_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS"
+					, "COMPILER_RT_NODEFAULTVISIBILITY"
+					, "LIBCXXABI_NODEFAULTVISIBILITY"
+					, "LIBUNWIND_NODEFAULTVISIBILITY"
+					, "_LIBUNWIND_HIDE_SYMBOLS"
+				]
 			}
 			%File "../../External/llvm-project/libunwind/include/^*"
 			%File "../../External/llvm-project/libunwind/src/*"
@@ -523,7 +527,6 @@ Property
 				MalterlibUseStaticLibCxx true
 			}
 		}
-
 
 		Analyzer false
 	}
@@ -1006,7 +1009,13 @@ Property
 			!MalterlibCloud_VersionUploadVersion undefined
 		}
 	}
-	MalterlibCloudVersionInfo_Version Format("{}/{}.{}.{}", MalterlibCloudVersionInfo_BranchForVersion, ProductVersionMajor->AsInteger(), ProductVersionMinor->AsInteger(), ProductVersionRevision->AsInteger())
+	MalterlibCloudVersionInfo_Version Format(
+		"{}/{}.{}.{}"
+		, MalterlibCloudVersionInfo_BranchForVersion
+		, ProductVersionMajor->AsInteger()
+		, ProductVersionMinor->AsInteger()
+		, ProductVersionRevision->AsInteger()
+	)
 	{
 		!!MalterlibCloudVersionInfo_Version undefined
 	}
@@ -1048,9 +1057,9 @@ Property
 						`		}\n`\
 						`	;\n`\
 						`\n`
-						{
-							!MalterlibCloudVersionInfo_Tags->Length() 0
-						}
+			{
+				!MalterlibCloudVersionInfo_Tags->Length() 0
+			}
 
 			Contents =+ `	CBuildMetadata fg_GetBuildMetadata()\n`\
 						`	{\n`\
@@ -1233,7 +1242,6 @@ Property
 			MalterlibIncludeLevel "Target"
 			!MalterlibIncludePerConfig true
 		}
-
 	}
 	MalterlibIncludeOutputDir `@(GeneratedWorkspaceDirectory)RootInclude`
 	{
@@ -1607,7 +1615,10 @@ Property
 	{
 		!!PlatformFamily "macOS"
 
-		LinkWithLibraries [["-undefined", "dynamic_lookup"], `@(MalterlibCompiledFilesWarkspaceBase)/Out/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`]
+		LinkWithLibraries [
+			["-undefined", "dynamic_lookup"]
+			, `@(MalterlibCompiledFilesWarkspaceBase)/Out/Dll_MalterlibOverrideMallocDummy/@(Platform)/@(Architecture)/@(FullConfiguration)/Deployed/MalterlibOverrideMallocDummy.dylib`
+		]
 		CodeCoverageLinkerMapping false
 		CodeCoverageMapping false
 		InstrumentForOptimization false
@@ -1746,4 +1757,3 @@ Property
 		%File "Tools/Helper/Malterlib_Core_Helper.cpp"
 	}
 }
-

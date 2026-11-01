@@ -14,7 +14,7 @@ namespace NMib
 
 namespace NMib::NStorage
 {
-	template <typename t_CType, typename... tp_COptions>
+	template <typename t_CType, typename ...tp_COptions>
 	class TCSharedPointer;
 }
 
@@ -62,18 +62,17 @@ namespace NMib::NSys
 		virtual bool f_ParksOnQueueEvent() const;
 	};
 
-
 	// ReadClosed permits draining buffered input. Hup implies no error by itself; WriteClosed requires querying the socket error.
 	// For Error, a zero callback error means the consumer must query the descriptor.
 	enum class EIoLoopEvent : uint32
 	{
-		mc_None			= 0,
-		mc_Read			= 1 << 0,
-		mc_Write		= 1 << 1,
-		mc_ReadClosed	= 1 << 2,
-		mc_Hup			= 1 << 3,
-		mc_WriteClosed	= 1 << 4,
-		mc_Error		= 1 << 5,
+		mc_None          = 0
+		, mc_Read        = 1 << 0
+		, mc_Write       = 1 << 1
+		, mc_ReadClosed  = 1 << 2
+		, mc_Hup         = 1 << 3
+		, mc_WriteClosed = 1 << 4
+		, mc_Error       = 1 << 5
 	};
 
 	// Called during dispatch on the driving thread. mc_None acknowledges registration when requested; the token is opaque to the loop.
@@ -81,9 +80,9 @@ namespace NMib::NSys
 
 	enum class EIoCompletionStatus : uint8
 	{
-		mc_Done,
-		mc_Cancelled, // Never submitted or cancelled; the kernel has released the buffers and no further completion follows.
-		mc_Error,
+		mc_Done
+		, mc_Cancelled // Never submitted or cancelled; the kernel has released the buffers and no further completion follows.
+		, mc_Error
 	};
 
 	// Result of a completion transfer. A receive that completes with Done and zero bytes is end
@@ -94,7 +93,7 @@ namespace NMib::NSys
 
 		umint m_nBytes = 0;
 		umint m_iTransfer = mc_iTransferNone; // Submitter-owned transfer identity, including operations resolved before reaching the loop.
-		int32 m_Error = 0; // Platform error code when m_Status is Error
+		int32 m_Error = 0;                    // Platform error code when m_Status is Error
 		EIoCompletionStatus m_Status = EIoCompletionStatus::mc_Done;
 	};
 
@@ -124,10 +123,10 @@ namespace NMib::NSys
 	struct CIoLoopRegisterOptions
 	{
 		bool m_bReadinessOnly = false;
-		bool m_bInheritedHandle = false; // Inherited completion notification modes cannot be changed by the new owner.
-		bool m_bLevelReadiness = false; // Explicitly rearm readiness without requiring a preceding would-block observation.
+		bool m_bInheritedHandle = false;    // Inherited completion notification modes cannot be changed by the new owner.
+		bool m_bLevelReadiness = false;     // Explicitly rearm readiness without requiring a preceding would-block observation.
 		bool m_bSendCompletesOnAck = false; // No kernel send buffer: acceptance reports completion, peer acknowledgement releases buffers.
-		bool m_bWaitableHandle = false; // Windows synchronization object: report mc_Read once per request when signaled.
+		bool m_bWaitableHandle = false;     // Windows synchronization object: report mc_Read once per request when signaled.
 	};
 
 	// Registration and submission may run on any thread. Callbacks and deregistration continuations run synchronously on the driving thread.

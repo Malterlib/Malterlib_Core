@@ -8,7 +8,7 @@
 
 namespace NMib
 {
-	template<typename tf_FOnExitFunctor>
+	template <typename tf_FOnExitFunctor>
 	TCOnScopeExit<NFunction::TCFunction<void ()>> fg_OnScopeExitCatch(tf_FOnExitFunctor &&_fOnExitFunctor)
 	{
 		return TCOnScopeExit<NFunction::TCFunction<void ()>>
@@ -29,7 +29,7 @@ namespace NMib
 
 	struct COnScopeExitCatchHelper
 	{
-		template<typename tf_FOnExitFunctor>
+		template <typename tf_FOnExitFunctor>
 		TCOnScopeExit<NFunction::TCFunction<void ()>> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
 		{
 			return TCOnScopeExit<NFunction::TCFunction<void ()>>

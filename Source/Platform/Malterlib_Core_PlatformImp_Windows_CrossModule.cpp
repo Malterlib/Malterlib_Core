@@ -31,15 +31,13 @@ namespace NMib::NThread::NPlatform
 		{
 			void *pMemory = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(CWindowsCrossModuleProcessInfo));
 
-			CWindowsCrossModuleProcessInfo::ms_pThis = new (pMemory) CWindowsCrossModuleProcessInfo();
+			CWindowsCrossModuleProcessInfo::ms_pThis = new(pMemory) CWindowsCrossModuleProcessInfo();
 
 			umint Pointer = (umint)CWindowsCrossModuleProcessInfo::ms_pThis;
 			for (umint i = 0; i < sizeof(umint) * 8; ++i)
 			{
 				if (Pointer & (umint(1) << i))
-				{
 					AddAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << i));
-				}
 			}
 			AddAtomW(str_utf16("MibCrossModuleAtom"));
 		}
@@ -146,7 +144,7 @@ namespace NMib::NThread::NPlatform
 	{
 		void *pMemory = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(CWindowsCrossModuleThreadInfo));
 
-		auto *pThreadInfo = new (pMemory) CWindowsCrossModuleThreadInfo();
+		auto *pThreadInfo = new(pMemory) CWindowsCrossModuleThreadInfo();
 
 		pThreadInfo->m_ThreadID = _ThreadID;
 

@@ -49,8 +49,7 @@ GeneratorSetting
 					, "StaticLibrary", "StaticLibrary"
 					, "Tool", "Utility"
 				)
-			},
-			{
+			}, {
 				Type: "PropertyGroup"
 				, Label: "Configuration"
 				, Key: "ResolveNuGetPackages"
@@ -253,7 +252,9 @@ GeneratorSetting
 {
 	!!Target.Language "Native"
 
-	VisualStudio_FileType: string = (Compile.GenericCompileType <==> "GenericCustom") ? "CustomBuild" : SwitchWithError(Compile.Type, "Unknown compile type: "
+	VisualStudio_FileType: string = (Compile.GenericCompileType <==> "GenericCustom") ? "CustomBuild" : SwitchWithError(
+		Compile.Type
+		, "Unknown compile type: "
 		, "C++", "ClCompile"
 		, "C++Managed", "ClCompile"
 		, "C", "ClCompile"
@@ -272,7 +273,9 @@ GeneratorSetting
 		, "WindowsManifest", "None"
 	)
 
-	VisualStudio_BuildSupported: bool = (Compile.GenericCompileType <==> "GenericCustom") ? true : SwitchWithDefault(Compile.Type, false
+	VisualStudio_BuildSupported: bool = (Compile.GenericCompileType <==> "GenericCustom") ? true : SwitchWithDefault(
+		Compile.Type
+		, false
 		, "C++", true
 		, "C++Managed", true
 		, "C", true

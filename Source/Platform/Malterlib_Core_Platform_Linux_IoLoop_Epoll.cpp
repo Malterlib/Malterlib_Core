@@ -20,7 +20,7 @@ CIoLoop_Epoll::CIoLoop_Epoll()
 	mp_pIo = &fg_IoSubSystem_Linux();
 #endif
 
-	int (* fLocal_epoll_create1)(int __flags) __THROW;
+	int (*fLocal_epoll_create1)(int __flags) __THROW;
 
 	(void * &)fLocal_epoll_create1 = dlsym(RTLD_DEFAULT, "epoll_create1");
 
@@ -49,7 +49,7 @@ CIoLoop_Epoll::~CIoLoop_Epoll()
 umint CIoLoop_Epoll::fp_Iterate(bool _bBlock, fp64 _Timeout)
 {
 	CIoLoopWaitDeadline Deadline(_Timeout);
-	static const int nMaxEvents = 64;
+	static int const nMaxEvents = 64;
 	struct epoll_event IncomingEvents[nMaxEvents];
 	umint nReported = 0;
 
@@ -167,7 +167,7 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock, fp64 _Timeout)
 			{
 				ReadRet = read(mp_ReadWritePipe[0], Buf, sizeof(Buf));
 			}
-			while(ReadRet > 0)
+			while (ReadRet > 0)
 				;
 
 			continue;

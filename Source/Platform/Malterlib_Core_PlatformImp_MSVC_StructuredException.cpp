@@ -29,6 +29,7 @@ class CMemoryToucher : public NMib::CVirtualDestructor
 {
 	class CInternal;
 	NMib::NStorage::TCUniquePointer<CInternal> m_pInternal;
+
 public:
 	CMemoryToucher(fp64 _CPUUsage);
 	~CMemoryToucher();
@@ -36,8 +37,8 @@ public:
 
 class CMemoryToucher::CInternal : public NMib::NThread::CThread
 {
-
 	fp64 m_CPUUsage;
+
 public:
 	CInternal(fp64 _CPUUsage)
 		: m_CPUUsage(NMib::fg_Clamp(_CPUUsage, 0.0, 0.99))
@@ -45,18 +46,15 @@ public:
 	};
 
 private:
-
 	void fp_Touch(void *_pAddress, umint _Size)
 	{
 		try
 		{
-			volatile uint8 *pAddress = (uint8 *)_pAddress;
-			[[maybe_unused]] volatile uint8 ReadTo;
-			volatile uint8 *pEndAddress = pAddress + _Size;
+			uint8 volatile *pAddress = (uint8 *)_pAddress;
+			[[maybe_unused]] uint8 volatile ReadTo;
+			uint8 volatile *pEndAddress = pAddress + _Size;
 			for (; pAddress < pEndAddress; pAddress += 4096)
-			{
 				ReadTo = *pAddress;
-			}
 		}
 		catch (...)
 		{
@@ -67,7 +65,7 @@ private:
 	{
 		umint StartAddress = NMib::TCLimitsInt<umint>::mc_Min;
 		umint CurrentAddress = StartAddress;
-		umint MaxPerTime = 1*1024*1024;
+		umint MaxPerTime = 1 * 1024 * 1024;
 		[[maybe_unused]] umint TotalScannedMemory = 0;
 		bool bUseRunTime = m_CPUUsage != 0.0;
 		fp64 RunTime = 0.0;

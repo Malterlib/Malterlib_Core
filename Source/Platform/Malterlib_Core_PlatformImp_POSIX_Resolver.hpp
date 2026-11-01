@@ -5,8 +5,7 @@
 
 // Returns an owned local/numeric address, or a hostname and port for DNS. No DNS is performed.
 // Service database and platform-specific address operations may block.
-auto CPOSIXSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, NSys::NNetwork::CResolveAddressParameters &o_Parameters, bool _bThrowOnError)
-	-> NSys::NNetwork::CAddress
+auto CPOSIXSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, NSys::NNetwork::CResolveAddressParameters &o_Parameters, bool _bThrowOnError) -> NSys::NNetwork::CAddress
 {
 	o_Parameters.m_Host.f_Clear();
 	o_Parameters.m_Port = 0;
@@ -87,8 +86,7 @@ auto CPOSIXSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, NS
 	return nullptr;
 }
 
-auto CPOSIXSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError)
-	-> NContainer::TCVector<NSys::NNetwork::CAddress>
+auto CPOSIXSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError) -> NContainer::TCVector<NSys::NNetwork::CAddress>
 {
 	NSys::NNetwork::CResolveAddressParameters Parameters;
 	Parameters.m_PreferType = _PreferType;
@@ -111,7 +109,7 @@ auto CPOSIXSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib::N
 	AddrHint.ai_socktype = SOCK_STREAM;
 	AddrHint.ai_flags = AI_ADDRCONFIG | AI_NUMERICSERV;
 
-	addrinfo* pAddresses = nullptr;
+	addrinfo *pAddresses = nullptr;
 
 	auto Cleanup = g_OnScopeExit / [&]()
 		{
@@ -155,15 +153,8 @@ auto CPOSIXSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib::N
 
 	// Keep the first supported native result first, matching the single-address API.
 	addrinfo *pChosenAddress = pAddresses;
-	while
-	(
-		pChosenAddress
-		&& pChosenAddress->ai_family != AF_INET
-		&& pChosenAddress->ai_family != AF_INET6
-	)
-	{
+	while (pChosenAddress && pChosenAddress->ai_family != AF_INET && pChosenAddress->ai_family != AF_INET6)
 		pChosenAddress = pChosenAddress->ai_next;
-	}
 
 	if (!pChosenAddress)
 	{

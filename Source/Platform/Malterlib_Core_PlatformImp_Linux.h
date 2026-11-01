@@ -32,13 +32,13 @@ public:
 	static void fs_ForkChild();
 
 	CSystemLinux();
-	NMib::NSys::CLinuxPasswordManager* f_GetPasswordManager();
+	NMib::NSys::CLinuxPasswordManager *f_GetPasswordManager();
 
 	void f_InitModule();
 	void f_DestroyThreadSpecific();
 
 	void f_Destruct();
-	static void fs_ThreadDestructionHook(void* _ThreadID);
+	static void fs_ThreadDestructionHook(void *_ThreadID);
 
 	void f_RegisterDestructionHookForThread();
 	void f_LoadLibraries();
@@ -47,9 +47,9 @@ public:
 
 	pthread_key_t m_ThreadDestructionHook;
 
-	NMib::NStorage::TCAggregate<CPOSIXSocketContext> m_SocketContext = { DAggregateInit };
+	NMib::NStorage::TCAggregate<CPOSIXSocketContext> m_SocketContext = {DAggregateInit};
 
-	NMib::NStorage::TCAggregate<CSharedIoLoop, 127> m_SharedIoLoop = { DAggregateInit }; // Lower destruction priority than socket contexts, so registration owners tear down first.
+	NMib::NStorage::TCAggregate<CSharedIoLoop, 127> m_SharedIoLoop = {DAggregateInit}; // Lower destruction priority than socket contexts, so registration owners tear down first.
 
 	NMib::NStorage::TCUniquePointer<NMib::NDBus::CSystem> m_pDBus; // May be nullptr
 
@@ -60,5 +60,5 @@ public:
 
 	bool m_bForkedChild = false;
 
-	NMib::NStorage::TCAggregate<CFileChangeNotificationContext> m_FileChangeNotificationContext = { DAggregateInit };
+	NMib::NStorage::TCAggregate<CFileChangeNotificationContext> m_FileChangeNotificationContext = {DAggregateInit};
 };

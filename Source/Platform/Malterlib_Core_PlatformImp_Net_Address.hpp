@@ -24,9 +24,7 @@ inline void CRuntimeNetAddress::fs_ParseEndpoint(NStr::CStr const &_Address, NSy
 		Host = Host.f_Extract(fg_StrLen("IPv6:"));
 	}
 
-	bool bCanParsePort = PreferType != ENetAddressType_TCPv6
-		|| Host.f_StartsWith("[") || Host.f_FindChar(':') == Host.f_FindCharReverse(':')
-	;
+	bool bCanParsePort = PreferType != ENetAddressType_TCPv6 || Host.f_StartsWith("[") || Host.f_FindChar(':') == Host.f_FindCharReverse(':');
 	if (auto iService = Host.f_FindCharReverse(':'); bCanParsePort && iService >= 0)
 	{
 		o_Service = Host.f_Extract(iService + 1);
@@ -58,9 +56,7 @@ auto CRuntimeNetAddress::fs_FromResolved(tf_CAddressInfo const *_pResults) -> NC
 	auto Cleanup = g_OnScopeExit / [&Addresses]
 		{
 			for (auto Address : Addresses)
-			{
 				NStorage::TCUniquePointer<CRuntimeNetAddress> pAddress = fg_Explicit(static_cast<CRuntimeNetAddress *>(Address));
-			}
 		}
 	;
 

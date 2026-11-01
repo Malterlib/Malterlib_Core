@@ -21,19 +21,18 @@ namespace NMib
 		NStr::CStr f_CommandLineParameter(aint _iIndex);
 	};
 
-#	ifdef DMibPIR
-#		define DMibAppImplement(_AppName) \
+#ifdef DMibPIR
+#	define DMibAppImplement(_AppName) \
 		NMib::CAppClasses NMib::g_AppClasses = {"NMib::NAppName::" #_AppName}; \
 		namespace NAppName { DMibRuntimeClassNamed(NMib::CApplication, _AppName, NMib::NAppName::_AppName);}
-#	else
-#		define DMibAppImplement(_AppName) \
+#else
+#	define DMibAppImplement(_AppName) \
 		NMib::CAppClasses NMib::g_AppClasses = {"NMib::NAppName::" #_AppName}; \
 		namespace NAppName { DMibRuntimeClassNamed(NMib::CApplication, _AppName, NMib::NAppName::_AppName);} \
 		DMibPMain
-#	endif
+#endif
 
-#	ifndef DMibPNoShortCuts
-#		define DAppImplement(_AppName) DMibAppImplement(_AppName)
-#	endif
-
+#ifndef DMibPNoShortCuts
+#	define DAppImplement(_AppName) DMibAppImplement(_AppName)
+#endif
 }

@@ -5,26 +5,29 @@
 
 // Code address
 #ifdef DDebugger_lldb
-	struct CMibCodeAddressType
+struct CMibCodeAddressType
+{
+	struct CCodeAddressFunction
 	{
-		struct CCodeAddressFunction
-		{
-		};
-		struct CCodeAddressFile
-		{
-		};
-		struct CCodeAddressLine
-		{
-		};
-		static CCodeAddressFunction *fs_Debug_Function();
-		static CCodeAddressFile *fs_Debug_File();
-		static CCodeAddressLine *fs_Debug_Line();
 	};
-	using CMibCodeAddress = CMibCodeAddressType *;
-#else
-	using CMibCodeAddress = void *;
-#endif
 
+	struct CCodeAddressFile
+	{
+	};
+
+	struct CCodeAddressLine
+	{
+	};
+
+	static CCodeAddressFunction *fs_Debug_Function();
+	static CCodeAddressFile *fs_Debug_File();
+	static CCodeAddressLine *fs_Debug_Line();
+};
+
+using CMibCodeAddress = CMibCodeAddressType *;
+#else
+using CMibCodeAddress = void *;
+#endif
 
 // Error line formatting
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
@@ -45,8 +48,6 @@
 #	error "Implement this"
 #endif
 
-
-
 // Main
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
 #	define DMibPMain int main(){return NMib::fg_GetSys()->f_RunApplication();}
@@ -61,7 +62,6 @@
 #	error "Implement this"
 #endif
 
-
 // New line
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux) || defined(DPlatformFamily_Emscripten)
 #	define DMibNewLine "\n"
@@ -70,5 +70,4 @@
 #else
 #	error "Implement this"
 #endif
-
 

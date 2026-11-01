@@ -78,21 +78,19 @@ namespace NMib
 		/// Thread locals
 		/// =============
 
-
 		namespace NPrivate
 		{
 			template <typename tf_CType>
 			inline_always tf_CType fg_GetTebData(umint _iIndex)
 			{
-#				if defined(DArchitecture_arm64)
-					return (tf_CType)__readx18qword(_iIndex);
-#				elif defined(DArchitecture_x64)
-					return (tf_CType)__readgsqword(_iIndex);
-#				else
-					return (tf_CType)__readfsdword(_iIndex);
-#				endif
+#if defined(DArchitecture_arm64)
+				return (tf_CType)__readx18qword(_iIndex);
+#elif defined(DArchitecture_x64)
+				return (tf_CType)__readgsqword(_iIndex);
+#else
+				return (tf_CType)__readfsdword(_iIndex);
+#endif
 			}
-
 		}
 
 		inline_always void *fg_Thread_GetLocal(umint _iStorage)
@@ -101,7 +99,7 @@ namespace NMib
 
 			DMibFastCheck(_iStorage <= CWindowsThreadLocals::mc_ThreadLocalSlots);
 			auto *pThreadLocals = NPrivate::fg_GetTebData<CWindowsThreadLocals *>(CWindowsThreadLocals::ms_ThreadLocalsExtendedLocactionOffset);
- 			if (pThreadLocals)
+			if (pThreadLocals)
 				return pThreadLocals->m_ThreadLocals[_iStorage];
 			return nullptr;
 		}
@@ -137,20 +135,19 @@ namespace NMib
 		inline_always umint fg_Thread_GetCurrentUID()
 		{
 			// Read directly from TIB (Thread Information Block)
-#			if defined(DArchitecture_arm64)
-				return NPrivate::fg_GetTebData<umint>(0x48);
-#			elif defined(DArchitecture_x64)
-				return NPrivate::fg_GetTebData<umint>(0x48);
-#			else
-				return NPrivate::fg_GetTebData<umint>(0x24);
-#			endif
+#if defined(DArchitecture_arm64)
+			return NPrivate::fg_GetTebData<umint>(0x48);
+#elif defined(DArchitecture_x64)
+			return NPrivate::fg_GetTebData<umint>(0x48);
+#else
+			return NPrivate::fg_GetTebData<umint>(0x24);
+#endif
 		}
 
 		inline_always umint fg_Thread_GetCurrentUIDAlternate()
 		{
 			return fg_Thread_GetCurrentUID();
 		}
-
 	}
 }
 

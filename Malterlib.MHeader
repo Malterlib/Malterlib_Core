@@ -37,4 +37,3 @@ Import "Build/SharedRepositoryOnly.MSettings"
 {
 	!!MalterlibOnlyRepositoryManagement "true"
 }
-
