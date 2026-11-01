@@ -12,8 +12,8 @@
 bool bDTCPDelayEmulation = false;
 umint DTCPDelayEmulation_Rate = 200 * 1024;
 double DTCPDelayEmulation_MinDelay = 0.1;
-//#define DTCPDelayEmulation_Rate 200*1024
-//#define DTCPDelayEmulation_MinDelay 0.1
+//#	define DTCPDelayEmulation_Rate 200*1024
+//#	define DTCPDelayEmulation_MinDelay 0.1
 #	define DTCPDelayEmulation_MaxQueue (DTCPDelayEmulation_MinDelay * DTCPDelayEmulation_Rate)
 #endif
 

@@ -69,19 +69,19 @@ using ch8 = char;
 using ch16 = char16_t;
 using ch32 = char32_t;
 
-//#define DMibPUniqueType_int
-//#define DMibPUniqueType_uint
+//#		define DMibPUniqueType_int
+//#		define DMibPUniqueType_uint
 #		define DMibPUniqueType_mint
 #		define DMibPUniqueType_smint
-//#define DMibPUniqueType_aint
-//#define DMibPUniqueType_uaint
+//#		define DMibPUniqueType_aint
+//#		define DMibPUniqueType_uaint
 #		define DMibPUniqueType_ch8
 #		define DMibPUniqueType_ch16
 #		define DMibPUniqueType_ch32
 
 #		define DMibPSignedType_ch8
-//#define DMibPSignedType_ch16
-//#define DMibPSignedType_ch32
+//#		define DMibPSignedType_ch16
+//#		define DMibPSignedType_ch32
 #	else
 #		define DMibPCanDo_int8
 #		define DMibPCanDo_int16
@@ -110,19 +110,19 @@ using ch8 = char;
 using ch16 = char16_t;
 using ch32 = char32_t;
 
-//#define DMibPUniqueType_int
-//#define DMibPUniqueType_uint
+//#		define DMibPUniqueType_int
+//#		define DMibPUniqueType_uint
 #		define DMibPUniqueType_mint
 #		define DMibPUniqueType_smint
-//#define DMibPUniqueType_aint
-//#define DMibPUniqueType_uaint
+//#		define DMibPUniqueType_aint
+//#		define DMibPUniqueType_uaint
 #		define DMibPUniqueType_ch8
 #		define DMibPUniqueType_ch16
 #		define DMibPUniqueType_ch32
 
 #		define DMibPSignedType_ch8
-//#define DMibPSignedType_ch16
-//#define DMibPSignedType_ch32
+//#		define DMibPSignedType_ch16
+//#		define DMibPSignedType_ch32
 #	endif
 #elif defined(DPlatformFamily_Linux)
 #	if DMibPPtrBits >= 64
@@ -157,12 +157,12 @@ using ch8 = char;
 using ch16 = char16_t;
 using ch32 = char32_t;
 
-//#define DMibPUniqueType_int
-//#define DMibPUniqueType_uint
+//#		define DMibPUniqueType_int
+//#		define DMibPUniqueType_uint
 #		define DMibPUniqueType_mint
 #		define DMibPUniqueType_smint
-//#define DMibPUniqueType_aint
-//#define DMibPUniqueType_uaint
+//#		define DMibPUniqueType_aint
+//#		define DMibPUniqueType_uaint
 #		define DMibPUniqueType_ch8
 #		define DMibPUniqueType_ch16
 #		define DMibPUniqueType_ch32
@@ -170,8 +170,8 @@ using ch32 = char32_t;
 #		if !defined(DArchitecture_arm64)
 #			define DMibPSignedType_ch8
 #		endif
-//#define DMibPSignedType_ch16
-//#define DMibPSignedType_ch32
+//#		define DMibPSignedType_ch16
+//#		define DMibPSignedType_ch32
 #	else
 #		define DMibPCanDo_int8
 #		define DMibPCanDo_int16
@@ -200,19 +200,19 @@ using ch8 = char;
 using ch16 = char16_t;
 using ch32 = char32_t;
 
-//#define DMibPUniqueType_int
-//#define DMibPUniqueType_uint
+//#		define DMibPUniqueType_int
+//#		define DMibPUniqueType_uint
 #		define DMibPUniqueType_mint
 #		define DMibPUniqueType_smint
-//#define DMibPUniqueType_aint
-//#define DMibPUniqueType_uaint
+//#		define DMibPUniqueType_aint
+//#		define DMibPUniqueType_uaint
 #		define DMibPUniqueType_ch8
 #		define DMibPUniqueType_ch16
 #		define DMibPUniqueType_ch32
 
 #		define DMibPSignedType_ch8
-//#define DMibPSignedType_ch16
-//#define DMibPSignedType_ch32
+//#		define DMibPSignedType_ch16
+//#		define DMibPSignedType_ch32
 #	endif
 #elif defined(DPlatformFamily_Windows)
 #	if DMibPPtrBits >= 64
@@ -245,18 +245,18 @@ using ch32 = char32_t;
 
 #		define DMibPUniqueType_int
 #		define DMibPUniqueType_uint
-//#define DMibPUniqueType_mint
-//#define DMibPUniqueType_smint
-//#define DMibPUniqueType_aint
-//#define DMibPUniqueType_uaint
-//#define DMibPUniqueType_ch8
+//#		define DMibPUniqueType_mint
+//#		define DMibPUniqueType_smint
+//#		define DMibPUniqueType_aint
+//#		define DMibPUniqueType_uaint
+//#		define DMibPUniqueType_ch8
 #		ifndef __EDG__
 #			define DMibPUniqueType_ch16
 #		endif
 #		define DMibPUniqueType_ch32
 #		define DMibPSignedType_ch8
-//#define DMibPSignedType_ch16
-//#define DMibPSignedType_ch32
+//#		define DMibPSignedType_ch16
+//#		define DMibPSignedType_ch32
 #	else
 #		define DMibPCanDo_int8
 #		define DMibPCanDo_int16
@@ -283,20 +283,20 @@ using ch8 = int8;
 using ch16 = wchar_t;
 using ch32 = char32_t;
 
-//#define DMibPUniqueType_int
-//#define DMibPUniqueType_uint
+//#		define DMibPUniqueType_int
+//#		define DMibPUniqueType_uint
 #		define DMibPUniqueType_mint
 #		define DMibPUniqueType_smint
-//#define DMibPUniqueType_aint
-//#define DMibPUniqueType_uaint
-//#define DMibPUniqueType_ch8
+//#		define DMibPUniqueType_aint
+//#		define DMibPUniqueType_uaint
+//#		define DMibPUniqueType_ch8
 #		ifndef __EDG__
 #			define DMibPUniqueType_ch16
 #		endif
 #		define DMibPUniqueType_ch32
 #		define DMibPSignedType_ch8
-//#define DMibPSignedType_ch16
-//#define DMibPSignedType_ch32
+//#		define DMibPSignedType_ch16
+//#		define DMibPSignedType_ch32
 #	endif
 #elif defined(DPlatformFamily_Emscripten)
 #	define DMibPCanDo_int8
@@ -324,19 +324,19 @@ using ch8 = char;
 using ch16 = char16_t;
 using ch32 = char32_t;
 
-//#define DMibPUniqueType_int
-//#define DMibPUniqueType_uint
+//#	define DMibPUniqueType_int
+//#	define DMibPUniqueType_uint
 #	define DMibPUniqueType_mint
 #	define DMibPUniqueType_smint
-//#define DMibPUniqueType_aint
-//#define DMibPUniqueType_uaint
+//#	define DMibPUniqueType_aint
+//#	define DMibPUniqueType_uaint
 #	define DMibPUniqueType_ch8
 #	define DMibPUniqueType_ch16
 #	define DMibPUniqueType_ch32
 
 #	define DMibPSignedType_ch8
-//#define DMibPSignedType_ch16
-//#define DMibPSignedType_ch32
+//#	define DMibPSignedType_ch16
+//#	define DMibPSignedType_ch32
 #else
 #	error "Implement this"
 #endif

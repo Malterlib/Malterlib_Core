@@ -572,7 +572,7 @@ namespace NMib
 		// If the DLL is not in the PATH of the process, use a full pathname for _pDLLName
 		// Returns true on succes, false on failure
 
-// #define DMibSupportCygwin
+//#	define DMibSupportCygwin
 
 		PIMAGE_NT_HEADERS fg_GetImageHeaders(HMODULE _hModule)
 		{

@@ -29,7 +29,7 @@
 
 	char const *g_String = "String";
 	auto g_Char = 'C';
-	[[maybe_unused]] constexpr static uint32 gc_GlobalConstant = (55 + 5 * 6 % ((67 | 77) & 88));
+	[[maybe_unused]] static constexpr uint32 gc_GlobalConstant = (55 + 5 * 6 % ((67 | 77) & 88));
 	[[maybe_unused]] static int gs_ThousandsSeparator = 10'000'000;
 	double g_Double = 5.655 + 7.66e10;
 	constexpr double gc_Double2 = 5.655 + 7.66e10;
@@ -86,7 +86,7 @@
 				uint32 Variable = 0;
 				static uint32 s_StaticVariable = 0;
 				static uint32 const s_StaticVariableConst = 0;
-				constexpr static uint32 c_Constant = 0;
+				static constexpr uint32 c_Constant = 0;
 
 				bool bComparable = cComparable<t_CType>;
 
@@ -111,7 +111,7 @@
 			uint32 m_VariablePublic;
 			static uint32 ms_StaticVariablePublic;
 			static uint32 const ms_StaticVariablePublicConst;
-			constexpr static uint32 mc_ConstantPublic = 0;
+			static constexpr uint32 mc_ConstantPublic = 0;
 
 		private:
 			NMib::NFunction::TCFunction<void ()> mp_fFunctor;
@@ -122,7 +122,6 @@
 			static constexpr uint32 mcp_ConstantPrivate = 0;
 
 			void fp_FunctionPrivate();
-
 		};
 	}
 
