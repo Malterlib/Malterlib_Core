@@ -142,13 +142,31 @@ Always read `Malterlib/Test/CLAUDE.md` before writing or modifying tests in any 
 ### Repository Management
 - Check status: `./mib status`
 - Update all repos: `./mib update-repos`
-- Format the sources of every repository that sets `Repository.Format`: `./mib format`, or `./mib format --check` to report only
-- Validate the tracked text files of those repositories: `./mib validate`, `./mib validate --staged`, or `./mib validate --base REF`
-- Run the clang-tidy checks the `.clang-tidy` files enable over every repository that sets `Repository.Tidy {Enabled: true}` (`IncludeFiles`/`ExcludeFiles` wildcards, relative to the repository, narrow its files): `./mib tidy`, or `./mib tidy --staged` / `--base REF` for changed files; generate the build system first
+- Format, validate and tidy the sources: see [Formatting, Validation and Tidy](#formatting-validation-and-tidy)
 - `mib` supports git worktrees, but avoid them for agent-driven workflows in this repository. Many changes land inside the `Malterlib/*` sub-repositories, and syncing those changes back from the top-level worktree does not behave correctly.
 - Keep the main repository on a named branch when bootstrapping or running `./mib update-repos`. Detached `HEAD` checkouts are intentionally unsupported because sub-repositories are synchronized against the main branch.
 - The system uses git LFS for binary dependencies - ensure it's installed
 - Many directories under `Malterlib/` are separate Git repositories. When checking status or searching history, run Git commands inside the relevant subdirectory (`Malterlib/Concurrency`, `Malterlib/Cloud`, etc.) or use the helper scripts (`./mib git ...`) that fan out across sub-repos.
+
+### Formatting, Validation and Tidy
+The repositories that set `Repository.Format` are formatted by the Malterlib code formatter: their `.editorconfig` files
+opt files in with `malterlib_format` and set `max_line_length`. Every commit in them runs `Validate --staged` from the
+pre-commit hook, which refuses a commit whose added or changed lines are not formatted or are too long.
+
+- `./mib format` formats every opted-in file in place. Run it after editing and before committing, and commit what it
+  changes with your change. `--check` reports instead of writing and `--diff` prints the patches.
+- `./mib validate` reports without writing: the formatting of the opted-in files, and the line length of every other text
+  file with a `max_line_length`, such as scripts, workflows and Markdown, which `format` leaves alone. Run it before
+  reporting work done; `--staged` checks what the hook checks, and `--base <Ref>` the committed changes of a branch.
+- A line `format` cannot fix, such as a long string or comment, is reported by both; split it by hand.
+- `./mib tidy` runs the clang-tidy checks the `.clang-tidy` files enable over every repository that sets
+  `Repository.Tidy {Enabled: true}`, where `IncludeFiles` and `ExcludeFiles` wildcards, relative to the repository, narrow
+  its files. It needs a generated build system, since it uses the compile commands of the targets. A full run is slow
+  and repeating it checks everything again, so check your changes with `--staged` or `--base <Ref>`, which take the
+  changed files and the sources that include them, and run it in full only when that is what is needed. `--fix` applies
+  the fixes offered.
+
+Fix what the hook reports instead of committing with `--no-verify`.
 
 ### Sub-Repositories
 A checkout is a tree of Git repositories that `mib` manages: the root, which is Malterlib itself or a product built on it,
@@ -230,6 +248,11 @@ checkout. `git pull` and `git merge` have no such hook, so after pulling, mergin
 
 `-f` moves a branch that already exists to the current commit, even backwards, in every repository, so preview it with
 `-p` (pretend) first. `-n <wildcard>` limits it to matching repositories.
+
+A branch stacked on another branch that hasn't landed yet has that branch as its base: `./mib base <Branch>` sets it for
+the root's current branch, `./mib base` shows it and `./mib base --clear` removes it. `./mib branch <Name> --base-branch
+<Branch>` creates a branch with its base. `repo-commit`, `status` and `list-commits` then compare with the base rather
+than the default branch; see Base Branches in `../BuildSystem/CLAUDE.md`.
 
 ### Committing and Pushing Sub-Repository Changes
 Commit in the sub-repository first, then record the new pins: `./mib repo-commit` commits every changed `.MRepo` up the
