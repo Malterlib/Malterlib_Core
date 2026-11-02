@@ -912,7 +912,6 @@ inline_never bool NSys::fg_Compiler_AlwaysFalse()
 
 inline_never assure_used bool NSys::fg_Compiler_MakeActive(void const *_Reference)
 {
-	(void)_Reference;
 	return true;
 }
 
