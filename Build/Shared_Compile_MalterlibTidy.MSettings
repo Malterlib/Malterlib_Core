@@ -12,8 +12,8 @@
 
 Property
 {
-	// On by default in CI where the MTool knows Repository.Tidy, which reading it needs: version 6 and later.
-	MalterlibTidyInBuild: bool = RunningCI && MToolVersion >= 6 // User(Build System)=false: Run the .clang-tidy checks in the compile of repositories that set Repository.Tidy.Enabled
+	// On by default from MTool version 6, the first that can read Repository.Tidy.
+	MalterlibTidyInBuild: bool = MToolVersion >= 6 // User(Build System)=false: Run the .clang-tidy checks in the compile of repositories that set Repository.Tidy.Enabled
 
 	f_MalterlibTidyCollectLocation: [string] = [Repository.Location]
 	f_MalterlibTidyCollectLocations function(string _Property) [string]

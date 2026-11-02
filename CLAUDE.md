@@ -165,6 +165,9 @@ pre-commit hook, which refuses a commit whose added or changed lines are not for
   and repeating it checks everything again, so check your changes with `--staged` or `--base <Ref>`, which take the
   changed files and the sources that include them, and run it in full only when that is what is needed. `--fix` applies
   the fixes offered.
+- A build runs the same checks in each compile, through the plugin in the Malterlib clang, so `./mib tidy` is mostly for
+  `--fix` and for configurations that are not built. `MalterlibTidyInBuild false` in the user settings turns that off. CI
+  builds the Tests workspace, and runs `./mib tidy` for Linux arm64 Debug over every workspace.
 
 Fix what the hook reports instead of committing with `--no-verify`.
 
