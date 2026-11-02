@@ -21,15 +21,19 @@
 # The functions that move what they are given, by unqualified name.
 MoveFunctions:
   - fg_Move
+
 # The functions that forward what they are given.
 ForwardFunctions:
   - fg_Forward
+
 # The functions that set a value and give the one it had.
 ExchangeFunctions:
   - fg_Exchange
+
 # The functions that swap two values.
 SwapFunctions:
   - fg_Swap
+
 # The functions that give a copy of what they are given.
 CopyFunctions:
   - fg_TempCopy
@@ -69,11 +73,13 @@ SafeCallees:
   - TCActorFunctor
   - fg_ActorFunctorWeak
   - TCActorFunctorWeak
+
 # The classes whose member functions, also operators, run a closure they are
 # given to completion before they return, like the test category of
 # `DMibTestCategory("Name") % [&] () -> TCFuture<void> { ... }`.
 BlockingCallees:
   - CTestCategoryScope
+
 # The classes whose operator / dispatches a closure to another actor, which
 # malterlib-actor-dispatch-this reports a capture of `this` in.
 OtherActorDispatchers:
@@ -117,13 +123,16 @@ RemovingMethods:
   - f_Resize
   - 'f_Take*'
   - 'f_Replace*'
+
 # The member functions that give an iterator, which can remove the entry it is
 # at.
 IteratorMethods:
   - 'f_GetIterator*'
+
 # The functions that make a key that no other entry of a collection has.
 FreshKeyFunctions:
   - fg_RandomID
+
 # The containers whose entries stay where they are when other entries are
 # added or removed.
 NodeStableContainers:
@@ -154,10 +163,12 @@ SmartPointerTypes:
 # The aliases of smart pointers that are handles, named for what they give
 # rather than as pointers, which take no concept prefix: every other alias of a
 # smart pointer is a pointer.
+
 SmartPointerHandleTypes:
   - CActorSubscription
   - COnScopeExitShared
   - COnScopeExitSharedWithException
+
 FunctionObjectTypes:
   - TCFunction
   - TCFunctionMovable
@@ -170,9 +181,11 @@ FunctionObjectTypes:
   - TCActorFunctorWeak
   - TCActorFunctorWithID
   - '*Functor*'
+
 IteratorTypes:
   - '*Iterator*'
   - '*Cursor*'
+
 # Templates that wrap a value whose concept is the wrapper's: `TCAtomic<bool>`
 # is a boolean, `TCAtomic<int *>` a pointer and `TCAtomic<umint>` an integer,
 # which a `b` (a set of flags) or an `i` (an index) can name.
@@ -181,10 +194,12 @@ ValueWrapperTypes:
   - TCAtomic
   - TCAutoClear
   - TCAutoClearInt
+
 # Classes that are a boolean or a set of flags, which the `b` prefix can name
 # without requiring it.
 FlagTypes:
   - CAtomicFlag
+
 # The result of a type trait, which follows `std::integral_constant::value`.
 malterlib-conceptual-prefix.IgnoredNames:
   - mc_Value
@@ -340,10 +355,12 @@ malterlib-no-zero-bit-scan.Functions:
   - fg_GetLowestBitSetNoZero
   - fg_MostSignificantBitNoZero
   - fg_LeastSignificantBitNoZero
+
 malterlib-no-zero-bit-scan.CheckMacros:
   - DMibCheck
   - DMibFastCheck
   - DMibSafeCheck
   - DMibRequire
+
 malterlib-no-zero-bit-scan.AssumeMacros:
   - DMibAnalyzerAssume
