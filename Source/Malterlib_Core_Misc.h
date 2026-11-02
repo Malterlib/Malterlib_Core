@@ -18,7 +18,7 @@ namespace NMib
 		NStr::CStr fg_FormatTimeFileName(NTime::CTime &_Time);
 		bool fg_CheckAccessRights(NStr::CStr const &_Path, bool _bRandom = true);
 		bool fg_CheckAccessRights(NStr::CStrNonTracked const &_Path, bool _bRandom = true);
-		bool fg_CheckFileAccessRights(NStr::CStr _Path);
+		bool fg_CheckFileAccessRights(NStr::CStr const &_Path);
 
 		template <typename tf_CContainer, typename tf_CType>
 		auto fg_FindEqual(tf_CContainer &&_Container, tf_CType const &_ToFind) -> decltype(fg_Forward<tf_CContainer>(_Container).f_FindEqual(_ToFind))

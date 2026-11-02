@@ -123,7 +123,7 @@ namespace NMib
 			;
 		}
 
-		bool fg_CheckFileAccessRights(NStr::CStr _Path)
+		bool fg_CheckFileAccessRights(NStr::CStr const &_Path)
 		{
 			try
 			{

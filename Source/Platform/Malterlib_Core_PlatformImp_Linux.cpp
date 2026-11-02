@@ -317,7 +317,7 @@ void calling_convention_c fg_Malterlib_MakeActive()
 {
 }
 
-CStr fg_EscapeString(CStr _In)
+CStr fg_EscapeString(CStr const &_In)
 {
 	return _In.f_Replace("\"", "\\\"");
 }

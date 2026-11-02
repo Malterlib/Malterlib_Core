@@ -89,7 +89,7 @@ namespace NMib::NSys
 		return false;
 	}
 
-	bool ICIoLoop::f_StartReceiveStream(CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NStorage::TCSharedPointer<CIoStreamBackpressure> _pBackpressure, FIoStreamSink &&_fSink)
+	bool ICIoLoop::f_StartReceiveStream(CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NStorage::TCSharedPointer<CIoStreamBackpressure> &&_pBackpressure, FIoStreamSink &&_fSink)
 	{
 		return false;
 	}

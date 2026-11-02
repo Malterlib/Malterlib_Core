@@ -158,7 +158,9 @@ namespace NMib::NSys
 		virtual umint f_SubmitSendVectored(CIoLoopRegistration *_pRegistration, CIoSpan const *_pSpans, umint _nSpans, FIoCompletion &&_fOnComplete, FIoBufferReleased &&_fOnBufferReleased);
 
 		virtual bool f_SupportsReceiveStream() const;
-		virtual bool f_StartReceiveStream(CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NStorage::TCSharedPointer<CIoStreamBackpressure> _pBackpressure, FIoStreamSink &&_fSink);
+		virtual auto f_StartReceiveStream(CIoLoopRegistration *_pRegistration, umint _nBufferBytes, NStorage::TCSharedPointer<CIoStreamBackpressure> &&_pBackpressure, FIoStreamSink &&_fSink)
+			-> bool
+		;
 		virtual void f_ResumeReceiveStream(CIoLoopRegistration *_pRegistration);
 
 		virtual void f_SetSendWindow(CIoLoopRegistration *_pRegistration, umint _nBytes);

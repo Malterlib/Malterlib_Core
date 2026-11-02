@@ -100,7 +100,7 @@ struct CIoLoop_IoUring : public CIoLoop_POSIXBase
 		(
 			NMib::NSys::CIoLoopRegistration *_pRegistration
 			, umint _nBufferBytes
-			, NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> _pBackpressure
+			, NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> &&_pBackpressure
 			, NMib::NSys::FIoStreamSink &&_fSink
 		)
 		-> bool override

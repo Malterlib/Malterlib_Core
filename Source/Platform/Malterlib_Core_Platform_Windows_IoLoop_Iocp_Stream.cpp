@@ -11,7 +11,7 @@ auto CIoLoop_Iocp::f_StartReceiveStream
 	(
 		NSys::CIoLoopRegistration *_pRegistration
 		, umint _nBufferBytes
-		, NStorage::TCSharedPointer<NSys::CIoStreamBackpressure> _pBackpressure
+		, NStorage::TCSharedPointer<NSys::CIoStreamBackpressure> &&_pBackpressure
 		, NSys::FIoStreamSink &&_fSink
 	)
 	-> bool

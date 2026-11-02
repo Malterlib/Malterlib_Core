@@ -214,7 +214,7 @@ struct CIoLoop_Iocp : public CIoLoop_Base
 		(
 			NMib::NSys::CIoLoopRegistration *_pRegistration
 			, umint _nBufferBytes
-			, NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> _pBackpressure
+			, NMib::NStorage::TCSharedPointer<NMib::NSys::CIoStreamBackpressure> &&_pBackpressure
 			, NMib::NSys::FIoStreamSink &&_fSink
 		)
 		-> bool override

@@ -1596,7 +1596,7 @@ void NSys::fg_TerminateProcess(aint _ExitCode)
 }
 
 // Filters --OutputPID and its argument from a parameters-only string (no executable prefix).
-static NStr::CStr fsg_FilterOutputPID(NStr::CStr _Params)
+static NStr::CStr fsg_FilterOutputPID(NStr::CStr const &_Params)
 {
 	// Fast check: if --OutputPID is not present, return as-is
 	if (_Params.f_Find("--OutputPID") < 0)
