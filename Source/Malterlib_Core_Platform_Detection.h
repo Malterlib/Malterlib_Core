@@ -6,9 +6,9 @@
 #ifndef DCompiler
 #	if defined(__clang__)
 #		define DCompiler clang
-#		define DCompiler_clang
+#		define DCompiler_clang // NOLINT(malterlib-macro-naming)
 #		if defined (_MSC_VER)
-#			define DCompiler_clang_cl
+#			define DCompiler_clang_cl // NOLINT(malterlib-macro-naming)
 #		endif
 #	elif defined (_MSC_VER)
 #		define DCompiler MSVC
@@ -18,7 +18,7 @@
 #		endif
 #	elif defined (__GNUC__)
 #		define DCompiler gcc
-#		define DCompiler_gcc
+#		define DCompiler_gcc // NOLINT(malterlib-macro-naming)
 #	else
 #		error "Compiler not detected"
 #	endif
@@ -27,7 +27,7 @@
 #ifndef DPlatformFamily
 #	if defined(__APPLE__)
 #		define DPlatformFamily macOS
-#		define DPlatformFamily_macOS
+#		define DPlatformFamily_macOS // NOLINT(malterlib-macro-naming)
 #	elif defined(__linux__)
 #		define DPlatformFamily Linux
 #		define DPlatformFamily_Linux
@@ -42,22 +42,22 @@
 #ifndef DArchitecture
 #	if defined(__ARM_ARCH_6K__)
 #		define DArchitecture armv6
-#		define DArchitecture_armv6
+#		define DArchitecture_armv6 // NOLINT(malterlib-macro-naming)
 #	elif defined(__ppc64__)
 #		define DArchitecture ppc64
-#		define DArchitecture_ppc64
+#		define DArchitecture_ppc64 // NOLINT(malterlib-macro-naming)
 #	elif defined(__ppc__)
 #		define DArchitecture ppc32
-#		define DArchitecture_ppc32
+#		define DArchitecture_ppc32 // NOLINT(malterlib-macro-naming)
 #	elif defined(__i386__)
 #		define DArchitecture x86
-#		define DArchitecture_x86
+#		define DArchitecture_x86 // NOLINT(malterlib-macro-naming)
 #	elif defined(__amd64__) || defined(__x86_64__)
 #		define DArchitecture x64
-#		define DArchitecture_x64
+#		define DArchitecture_x64 // NOLINT(malterlib-macro-naming)
 #	elif defined(DPlatformFamily_Emscripten)
 #		define DArchitecture le32
-#		define DArchitecture_le32
+#		define DArchitecture_le32 // NOLINT(malterlib-macro-naming)
 #	else
 #		error "Architecture not detected"
 #	endif
@@ -73,7 +73,7 @@
 // Default debugger if not defined
 #ifndef DDebugger
 #	define DDebugger lldb
-#	define DDebugger_lldb
+#	define DDebugger_lldb // NOLINT(malterlib-macro-naming)
 #endif
 
 // Debug mode
@@ -90,13 +90,13 @@
 #if defined(DArchitecture_x86) || defined(DArchitecture_armv6) || defined(DArchitecture_le32) || defined(DArchitecture_ppc32)
 #	define DMibPPtrBits 32
 #	define DMibPBits_int 32
-#	define DMibPBits_uint 32
-#	define DMibPBits_mint 32
+#	define DMibPBits_uint 32 // NOLINT(malterlib-macro-naming)
+#	define DMibPBits_umint 32
 #elif  defined(DArchitecture_x64) || defined(DArchitecture_ppc64) || defined(DArchitecture_arm64) || defined(DArchitecture_arm64e)
 #	define DMibPPtrBits 64
 #	define DMibPBits_int 64
-#	define DMibPBits_uint 64
-#	define DMibPBits_mint 64
+#	define DMibPBits_uint 64 // NOLINT(malterlib-macro-naming)
+#	define DMibPBits_umint 64
 #else
 #	error "Implement this"
 #endif

@@ -98,29 +98,29 @@ namespace NMib
 		return fg_Explicit(static_cast<tf_CType *>(fg_CreateRuntimeTypeRawPtr(_pObjectName)));
 	}
 
-#define DMibRuntimeClassNamedCastedBase(_Class, _Name, _Cast) ::NMib::TCRuntimeClassNamed<_Class, _Cast> g_RuntimeClassNamed_##_Class(#_Name, nullptr);
-#define DMibRuntimeClassNamedCasted(_Parent, _Class, _Name, _Cast) ::NMib::TCRuntimeClassNamed<_Class, _Cast> g_RuntimeClassNamed_##_Class(#_Name, #_Parent);
-#define DMibRuntimeClassMakeActive(_Name) NMib::NSys::fg_Compiler_MakeActive(0, &g_RuntimeClassNamed_##_Name)
+#define DMibRuntimeClassNamedCastedBase(d_Class, d_Name, d_Cast) ::NMib::TCRuntimeClassNamed<d_Class, d_Cast> g_RuntimeClassNamed_##d_Class(#d_Name, nullptr);
+#define DMibRuntimeClassNamedCasted(d_Parent, d_Class, d_Name, d_Cast) ::NMib::TCRuntimeClassNamed<d_Class, d_Cast> g_RuntimeClassNamed_##d_Class(#d_Name, #d_Parent);
+#define DMibRuntimeClassMakeActive(d_Name) NMib::NSys::fg_Compiler_MakeActive(0, &g_RuntimeClassNamed_##d_Name)
 
-#define DMibRuntimeClassNamed(_Parent, _Class, _Name) DMibRuntimeClassNamedCasted(_Parent, _Class, _Name, void)
-#define DMibRuntimeClass(_Parent, _Class) DMibRuntimeClassNamed(_Parent, _Class, _Class)
-#define DMibRuntimeClassCasted(_Parent, _Class, _Cast) DMibRuntimeClassNamedCasted(_Parent, _Class, _Class, _Cast)
+#define DMibRuntimeClassNamed(d_Parent, d_Class, d_Name) DMibRuntimeClassNamedCasted(d_Parent, d_Class, d_Name, void)
+#define DMibRuntimeClass(d_Parent, d_Class) DMibRuntimeClassNamed(d_Parent, d_Class, d_Class)
+#define DMibRuntimeClassCasted(d_Parent, d_Class, d_Cast) DMibRuntimeClassNamedCasted(d_Parent, d_Class, d_Class, d_Cast)
 
-#define DMibRuntimeClassBaseNamed(_Class, _Name) DMibRuntimeClassNamedCastedBase(_Class, _Name, void)
-#define DMibRuntimeClassBase(_Class) DMibRuntimeClassBaseNamed(_Class, _Class)
-#define DMibRuntimeClassBaseCasted(_Class, _Cast) DMibRuntimeClassNamedCastedBase(_Class, _Class, _Cast)
+#define DMibRuntimeClassBaseNamed(d_Class, d_Name) DMibRuntimeClassNamedCastedBase(d_Class, d_Name, void)
+#define DMibRuntimeClassBase(d_Class) DMibRuntimeClassBaseNamed(d_Class, d_Class)
+#define DMibRuntimeClassBaseCasted(d_Class, d_Cast) DMibRuntimeClassNamedCastedBase(d_Class, d_Class, d_Cast)
 
 #ifndef DMibPNoShortCuts
-#	define DRuntimeClassNamedCastedBase(_Class, _Name, _Cast) DMibRuntimeClassNamedCastedBase(_Class, _Name, _Cast)
-#	define DRuntimeClassNamedCasted(_Parent, _Class, _Name, _Cast) DMibRuntimeClassNamedCasted(_Parent, _Class, _Name, _Cast)
+#	define DRuntimeClassNamedCastedBase(d_Class, d_Name, d_Cast) DMibRuntimeClassNamedCastedBase(d_Class, d_Name, d_Cast)
+#	define DRuntimeClassNamedCasted(d_Parent, d_Class, d_Name, d_Cast) DMibRuntimeClassNamedCasted(d_Parent, d_Class, d_Name, d_Cast)
 
-#	define DRuntimeClassNamed(_Parent, _Class, _Name) DMibRuntimeClassNamed(_Parent, _Class, _Name)
-#	define DRuntimeClass(_Parent, _Class) DMibRuntimeClass(_Parent, _Class)
-#	define DRuntimeClassCasted(_Parent, _Class, _Cast) DMibRuntimeClassCasted(_Parent, _Class, _Cast)
+#	define DRuntimeClassNamed(d_Parent, d_Class, d_Name) DMibRuntimeClassNamed(d_Parent, d_Class, d_Name)
+#	define DRuntimeClass(d_Parent, d_Class) DMibRuntimeClass(d_Parent, d_Class)
+#	define DRuntimeClassCasted(d_Parent, d_Class, d_Cast) DMibRuntimeClassCasted(d_Parent, d_Class, d_Cast)
 
-#	define DRuntimeClassBaseNamed(_Class, _Name) DMibRuntimeClassBaseNamed(_Class, _Name)
-#	define DRuntimeClassBase(_Class) DMibRuntimeClassBase(_Class)
-#	define DRuntimeClassBaseCasted(_Class, _Cast) DMibRuntimeClassBaseCasted(_Class, _Cast)
+#	define DRuntimeClassBaseNamed(d_Class, d_Name) DMibRuntimeClassBaseNamed(d_Class, d_Name)
+#	define DRuntimeClassBase(d_Class) DMibRuntimeClassBase(d_Class)
+#	define DRuntimeClassBaseCasted(d_Class, d_Cast) DMibRuntimeClassBaseCasted(d_Class, d_Cast)
 #	define DRuntimeClassMakeActive DMibRuntimeClassMakeActive
 #endif
 }

@@ -89,8 +89,8 @@ namespace NMib
 		public:
 		};
 
-#define DMibTypeID(_Class, _ID) \
-	namespace NMib{namespace NMisc{template <> class TCTypeID<_Class > {public: enum {ETypeID = _ID};}; template <> class TCTypeIDReverse<_ID> {public: using CType = _Class;};}}
+#define DMibTypeID(d_Class, d_ID) \
+	namespace NMib{namespace NMisc{template <> class TCTypeID<d_Class > {public: enum {ETypeID = d_ID};}; template <> class TCTypeIDReverse<d_ID> {public: using CType = d_Class;};}}
 
 		class CClassContainer
 		{
@@ -197,8 +197,8 @@ namespace NMib
 			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::ETypeID, _Context));
 		}
 
-#define DGetCC(_Object)	NMib::NMisc::fg_GetClassContainer(_Object).f_GetVoidPtr()
-#define DGetCCContext(_Object, _Context)	NMib::NMisc::fg_GetClassContainer(_Object, _Context).f_GetVoidPtr()
+#define DGetCC(d_Object)	NMib::NMisc::fg_GetClassContainer(d_Object).f_GetVoidPtr()
+#define DGetCCContext(d_Object, d_Context)	NMib::NMisc::fg_GetClassContainer(d_Object, d_Context).f_GetVoidPtr()
 
 		class CClassContainerList
 		{

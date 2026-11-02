@@ -30,21 +30,21 @@
 #	error "Compiler version is not supported"
 #endif
 
-#define _SCL_SECURE_NO_WARNINGS 1
-#define _SECURE_SCL 0
-#define _HAS_ITERATOR_DEBUGGING 0
-#define _CRT_SECURE_NO_WARNINGS 1
+#define _SCL_SECURE_NO_WARNINGS 1 // NOLINT(malterlib-macro-naming)
+#define _SECURE_SCL 0 // NOLINT(malterlib-macro-naming)
+#define _HAS_ITERATOR_DEBUGGING 0 // NOLINT(malterlib-macro-naming)
+#define _CRT_SECURE_NO_WARNINGS 1 // NOLINT(malterlib-macro-naming)
 #ifndef _CPPUNWIND
-#	define _CPPUNWIND 1
+#	define _CPPUNWIND 1 // NOLINT(malterlib-macro-naming)
 #endif
-#define _SECURE_SCL 0
-#define _HAS_ITERATOR_DEBUGGING 0
+#define _SECURE_SCL 0 // NOLINT(malterlib-macro-naming)
+#define _HAS_ITERATOR_DEBUGGING 0 // NOLINT(malterlib-macro-naming)
 
 #if !defined(__has_feature)
 #	define __has_feature(d_Feature) 0
 #endif
 
-#define _XKEYCHECK_H
+#define _XKEYCHECK_H // NOLINT(malterlib-macro-naming)
 
 #define DCompiler_MSVC_Workaround 1
 

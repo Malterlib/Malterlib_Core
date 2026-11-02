@@ -8,14 +8,14 @@
 #elif defined(DPlatformFamily_Linux)
 #elif defined(DPlatformFamily_Windows)
 #	ifndef NTDDI_VERSION
-#		define _WIN32_WINNT _WIN32_WINNT_WIN8
-#		define NTDDI_VERSION NTDDI_WIN8
+#		define _WIN32_WINNT _WIN32_WINNT_WIN8 // NOLINT(malterlib-macro-naming)
+#		define NTDDI_VERSION NTDDI_WIN8 // NOLINT(malterlib-macro-naming)
 #	endif
 #	if DMibPPtrBits >= 64
 #		if !defined(_KERNEL32_)
-#			define WINBASEAPI DECLSPEC_IMPORT
+#			define WINBASEAPI DECLSPEC_IMPORT // NOLINT(malterlib-macro-naming)
 #		else
-#			define WINBASEAPI
+#			define WINBASEAPI // NOLINT(malterlib-macro-naming)
 #		endif
 #	endif
 #elif defined(DPlatformFamily_Emscripten)
@@ -26,7 +26,7 @@
 
 #if defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)
 #	if !defined(_LIBCPP_DISABLE_NEW_DELETE) && !defined(DMibDefaultToolset) && defined(DMalterlibUseStaticLibCxx)
-#		define _LIBCPP_DISABLE_NEW_DELETE
+#		define _LIBCPP_DISABLE_NEW_DELETE // NOLINT(malterlib-macro-naming)
 #	endif
 #endif
 
@@ -82,7 +82,7 @@
 // Boost
 //#define BOOST_NO_STD_TYPEINFO
 #ifndef BOOST_ALL_NO_LIB
-#	define BOOST_ALL_NO_LIB
+#	define BOOST_ALL_NO_LIB // NOLINT(malterlib-macro-naming)
 #endif
 
 // Float implementation

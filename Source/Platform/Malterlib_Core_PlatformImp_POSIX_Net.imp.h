@@ -24,13 +24,13 @@
 
 	// Build headers may predate SO_PEERPIDFD (Linux 6.5) and pidfs (6.9); supply absent constants.
 #	ifndef SO_PEERPIDFD
-#		define SO_PEERPIDFD 77
+#		define SO_PEERPIDFD 77 // NOLINT(malterlib-macro-naming)
 #	endif
 #	ifndef PID_FS_MAGIC
-#		define PID_FS_MAGIC 0x50494446
+#		define PID_FS_MAGIC 0x50494446 // NOLINT(malterlib-macro-naming)
 #	endif
 #	ifndef SYS_pidfd_open
-#		define SYS_pidfd_open 434
+#		define SYS_pidfd_open 434 // NOLINT(malterlib-macro-naming): the name of the Linux system call
 #	endif
 
 namespace

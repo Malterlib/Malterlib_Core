@@ -1,7 +1,7 @@
 // Copyright © Unbroken AB
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _LIBCPP_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS
+#define _LIBCPP_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS // NOLINT(malterlib-macro-naming)
 
 #include <Mib/Core/Core>
 
@@ -2099,13 +2099,13 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetModulePathNonTracked(void *_pCode)
 }
 
 #ifndef FICLONE
-#	define FICLONE _IOW(0x94, 9, int)
+#	define FICLONE _IOW(0x94, 9, int) // NOLINT(malterlib-macro-naming)
 #endif
 #ifndef FS_IOC_GETFLAGS
-#	define FS_IOC_GETFLAGS _IOR('f', 1, long)
+#	define FS_IOC_GETFLAGS _IOR('f', 1, long) // NOLINT(malterlib-macro-naming)
 #endif
 #ifndef FS_IOC_SETFLAGS
-#	define FS_IOC_SETFLAGS _IOW('f', 2, long)
+#	define FS_IOC_SETFLAGS _IOW('f', 2, long) // NOLINT(malterlib-macro-naming)
 #endif
 
 // Returns zero on a same-filesystem reflink, errno on failure.

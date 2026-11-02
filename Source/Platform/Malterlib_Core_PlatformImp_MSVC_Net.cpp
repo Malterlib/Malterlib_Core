@@ -2012,7 +2012,7 @@ umint CWindowsSocketContext::f_SendVectored(CWindowsSocket *_pSocket, NMib::NSys
 
 // The ioctl ships in afunix.h in recent Windows SDKs; define it for older SDK headers
 #ifndef SIO_AF_UNIX_GETPEERPID
-#	define SIO_AF_UNIX_GETPEERPID _WSAIOR(IOC_VENDOR, 256)
+#	define SIO_AF_UNIX_GETPEERPID _WSAIOR(IOC_VENDOR, 256) // NOLINT(malterlib-macro-naming)
 #endif
 
 bool CWindowsSocketContext::f_GetProcessIdentity(CWindowsSocket *_pSocket, NMib::NSys::NNetwork::CProcessIdentity &o_LocalIdentity, NMib::NSys::NNetwork::CProcessIdentity &o_PeerIdentity)

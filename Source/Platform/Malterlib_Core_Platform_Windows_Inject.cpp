@@ -12,7 +12,7 @@ namespace NMib
 {
 	namespace NPlatform
 	{
-#define RVA2PTR(base, rva) (((PBYTE) base) + rva)
+#define DRvaToPtr(d_Base, d_Rva) (((PBYTE) d_Base) + d_Rva)
 
 		//http://jpassing.wordpress.com/2008/01/06/using-import-address-table-hooking-for-testing/
 		/*++
@@ -39,10 +39,10 @@ namespace NMib
 			UINT uiIter;
 
 			pDOSHeader = (PIMAGE_DOS_HEADER) _hMod;
-			pNTHeader = (PIMAGE_NT_HEADERS) RVA2PTR(pDOSHeader, pDOSHeader->e_lfanew);
+			pNTHeader = (PIMAGE_NT_HEADERS) DRvaToPtr(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
-			pImportDescriptor = (PIMAGE_IMPORT_DESCRIPTOR) RVA2PTR(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+			pImportDescriptor = (PIMAGE_IMPORT_DESCRIPTOR) DRvaToPtr(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
 
 			// Iterate over import descriptors/DLLs.
 			for (uiIter = 0; pImportDescriptor[uiIter].Characteristics != 0; uiIter++)
@@ -54,21 +54,21 @@ namespace NMib
 				PSTR psDLLName;
 				PIMAGE_IMPORT_BY_NAME pImportByName;
 
-				psDLLName = (PSTR) RVA2PTR(pDOSHeader, pImportDescriptor[uiIter].Name);
+				psDLLName = (PSTR) DRvaToPtr(pDOSHeader, pImportDescriptor[uiIter].Name);
 				if (!NStr::fg_StrCmpNoCase(psDLLName, _pImportedModuleName))
 				{
 					if (!pImportDescriptor[uiIter].FirstThunk || !pImportDescriptor[uiIter].OriginalFirstThunk)
 						return E_INVALIDARG;
 
-					pFirstThunkIter = (PIMAGE_THUNK_DATA) RVA2PTR(pDOSHeader, pImportDescriptor[uiIter].FirstThunk);
-					pOriginalFirstThunkIter = (PIMAGE_THUNK_DATA) RVA2PTR(pDOSHeader, pImportDescriptor[uiIter].OriginalFirstThunk);
+					pFirstThunkIter = (PIMAGE_THUNK_DATA) DRvaToPtr(pDOSHeader, pImportDescriptor[uiIter].FirstThunk);
+					pOriginalFirstThunkIter = (PIMAGE_THUNK_DATA) DRvaToPtr(pDOSHeader, pImportDescriptor[uiIter].OriginalFirstThunk);
 
 					for (; pOriginalFirstThunkIter->u1.Function != NULL; pOriginalFirstThunkIter++, pFirstThunkIter++)
 					{
 						if (pOriginalFirstThunkIter->u1.Ordinal & IMAGE_ORDINAL_FLAG) // Ordinal import - we can handle named imports only, so skip it.
 							continue;
 
-						pImportByName = (PIMAGE_IMPORT_BY_NAME) RVA2PTR(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
+						pImportByName = (PIMAGE_IMPORT_BY_NAME) DRvaToPtr(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
 						if (!NStr::fg_StrCmpNoCase(pImportByName->Name, _pImportedProcName))
 						{
 							DWORD dwDummy;
@@ -123,10 +123,10 @@ namespace NMib
 			PIMAGE_DELAY_IMPORT_DESCRIPTOR pDelayImportDescriptor;
 
 			pDOSHeader = (PIMAGE_DOS_HEADER) _hMod;
-			pNTHeader = (PIMAGE_NT_HEADERS) RVA2PTR(pDOSHeader, pDOSHeader->e_lfanew);
+			pNTHeader = (PIMAGE_NT_HEADERS) DRvaToPtr(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
-			pImportDescriptor = (PIMAGE_IMPORT_DESCRIPTOR) RVA2PTR(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+			pImportDescriptor = (PIMAGE_IMPORT_DESCRIPTOR) DRvaToPtr(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
 
 			DMibDTraceSafe("Import Table\r\n", 0);
 
@@ -138,27 +138,32 @@ namespace NMib
 				[[maybe_unused]] PSTR psDLLName;
 				[[maybe_unused]] PIMAGE_IMPORT_BY_NAME pImportByName;
 
-				psDLLName = (PSTR) RVA2PTR(pDOSHeader, pImportDescriptor[uiIter].Name);
+				psDLLName = (PSTR) DRvaToPtr(pDOSHeader, pImportDescriptor[uiIter].Name);
 				DMibDTraceSafe("{}\r\n", psDLLName);
 				if (!pImportDescriptor[uiIter].FirstThunk || !pImportDescriptor[uiIter].OriginalFirstThunk)
 					return E_INVALIDARG;
 
-				pFirstThunkIter = (PIMAGE_THUNK_DATA) RVA2PTR(pDOSHeader, pImportDescriptor[uiIter].FirstThunk);
-				pOriginalFirstThunkIter = (PIMAGE_THUNK_DATA) RVA2PTR(pDOSHeader, pImportDescriptor[uiIter].OriginalFirstThunk);
+				pFirstThunkIter = (PIMAGE_THUNK_DATA) DRvaToPtr(pDOSHeader, pImportDescriptor[uiIter].FirstThunk);
+				pOriginalFirstThunkIter = (PIMAGE_THUNK_DATA) DRvaToPtr(pDOSHeader, pImportDescriptor[uiIter].OriginalFirstThunk);
 
 				for (; pOriginalFirstThunkIter->u1.Function != NULL; pOriginalFirstThunkIter++, pFirstThunkIter++)
 				{
 					if (pOriginalFirstThunkIter->u1.Ordinal & IMAGE_ORDINAL_FLAG) // Ordinal import - we can handle named imports only, so skip it.
 						continue;
 
-					pImportByName = (PIMAGE_IMPORT_BY_NAME) RVA2PTR(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
+					pImportByName = (PIMAGE_IMPORT_BY_NAME) DRvaToPtr(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
 					DMibDTraceSafe("{} {} (0x{}) 0x{}\r\n", psDLLName, (ch8 const *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function);
 				}
 			}
 
 			DMibDTraceSafe("Delay-Load Import Table\r\n", 0);
 
-			pDelayImportDescriptor = (struct _IMAGE_DELAY_IMPORT_DESCRIPTOR *)RVA2PTR(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress);
+			pDelayImportDescriptor = (struct _IMAGE_DELAY_IMPORT_DESCRIPTOR *)DRvaToPtr
+				(
+					pDOSHeader
+					, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress
+				)
+			;
 			// Iterate over import descriptors/DLLs.
 			for (uiIter = 0; pDelayImportDescriptor[uiIter].grAttrs != 0; uiIter++)
 			{
@@ -167,20 +172,20 @@ namespace NMib
 				[[maybe_unused]] PSTR psDLLName;
 				[[maybe_unused]] PIMAGE_IMPORT_BY_NAME pImportByName;
 
-				psDLLName = (PSTR) RVA2PTR(pDOSHeader, pDelayImportDescriptor[uiIter].szName);
+				psDLLName = (PSTR) DRvaToPtr(pDOSHeader, pDelayImportDescriptor[uiIter].szName);
 				DMibDTraceSafe("{}\r\n", psDLLName);
 				if (!pDelayImportDescriptor[uiIter].pIAT || !pDelayImportDescriptor[uiIter].pINT)
 					return E_INVALIDARG;
 
-				pFirstThunkIter = (PIMAGE_THUNK_DATA) RVA2PTR(pDOSHeader, pDelayImportDescriptor[uiIter].pIAT);
-				pOriginalFirstThunkIter = (PIMAGE_THUNK_DATA) RVA2PTR(pDOSHeader, pDelayImportDescriptor[uiIter].pINT);
+				pFirstThunkIter = (PIMAGE_THUNK_DATA) DRvaToPtr(pDOSHeader, pDelayImportDescriptor[uiIter].pIAT);
+				pOriginalFirstThunkIter = (PIMAGE_THUNK_DATA) DRvaToPtr(pDOSHeader, pDelayImportDescriptor[uiIter].pINT);
 
 				for (; pOriginalFirstThunkIter->u1.Function != NULL; pOriginalFirstThunkIter++, pFirstThunkIter++)
 				{
 					if (pOriginalFirstThunkIter->u1.Ordinal & IMAGE_ORDINAL_FLAG) // Ordinal import - we can handle named imports only, so skip it.
 						continue;
 
-					pImportByName = (PIMAGE_IMPORT_BY_NAME) RVA2PTR(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
+					pImportByName = (PIMAGE_IMPORT_BY_NAME) DRvaToPtr(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
 					DMibDTraceSafe("{} {} (0x{}) 0x{}", psDLLName, (ch8 const *)pImportByName->Name, (void *)(&(pFirstThunkIter->u1.Function)), (void *)pFirstThunkIter->u1.Function);
 				}
 			}
@@ -196,10 +201,15 @@ namespace NMib
 			UINT uiIter;
 
 			pDOSHeader = (PIMAGE_DOS_HEADER) _hMod;
-			pNTHeader = (PIMAGE_NT_HEADERS) RVA2PTR(pDOSHeader, pDOSHeader->e_lfanew);
+			pNTHeader = (PIMAGE_NT_HEADERS) DRvaToPtr(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
-			pDelayImportDescriptor = (struct _IMAGE_DELAY_IMPORT_DESCRIPTOR *)RVA2PTR(pDOSHeader, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress);
+			pDelayImportDescriptor = (struct _IMAGE_DELAY_IMPORT_DESCRIPTOR *)DRvaToPtr
+				(
+					pDOSHeader
+					, pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT].VirtualAddress
+				)
+			;
 
 			// Iterate over import descriptors/DLLs.
 			for (uiIter = 0; pDelayImportDescriptor[uiIter].grAttrs != 0; uiIter++)
@@ -209,21 +219,21 @@ namespace NMib
 				PSTR psDLLName;
 				PIMAGE_IMPORT_BY_NAME pImportByName;
 
-				psDLLName = (PSTR) RVA2PTR(pDOSHeader, pDelayImportDescriptor[uiIter].szName);
+				psDLLName = (PSTR) DRvaToPtr(pDOSHeader, pDelayImportDescriptor[uiIter].szName);
 				if (!NStr::fg_StrCmpNoCase(psDLLName, _pImportedModuleName))
 				{
 					if (!pDelayImportDescriptor[uiIter].pIAT || !pDelayImportDescriptor[uiIter].pINT)
 						return E_INVALIDARG;
 
-					pFirstThunkIter = (PIMAGE_THUNK_DATA) RVA2PTR(pDOSHeader, pDelayImportDescriptor[uiIter].pIAT);
-					pOriginalFirstThunkIter = (PIMAGE_THUNK_DATA) RVA2PTR(pDOSHeader, pDelayImportDescriptor[uiIter].pINT);
+					pFirstThunkIter = (PIMAGE_THUNK_DATA) DRvaToPtr(pDOSHeader, pDelayImportDescriptor[uiIter].pIAT);
+					pOriginalFirstThunkIter = (PIMAGE_THUNK_DATA) DRvaToPtr(pDOSHeader, pDelayImportDescriptor[uiIter].pINT);
 
 					for (; pOriginalFirstThunkIter->u1.Function != NULL; pOriginalFirstThunkIter++, pFirstThunkIter++)
 					{
 						if (pOriginalFirstThunkIter->u1.Ordinal & IMAGE_ORDINAL_FLAG) // Ordinal import - we can handle named imports only, so skip it.
 							continue;
 
-						pImportByName = (PIMAGE_IMPORT_BY_NAME) RVA2PTR(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
+						pImportByName = (PIMAGE_IMPORT_BY_NAME) DRvaToPtr(pDOSHeader, pOriginalFirstThunkIter->u1.AddressOfData);
 						if (!NStr::fg_StrCmpNoCase(pImportByName->Name, _pImportedProcName))
 						{
 							DWORD dwDummy;
@@ -258,14 +268,14 @@ namespace NMib
 #if !defined(DArchitecture_arm64)
 		namespace
 		{
-#	define MAXMODULES 1024
+#	define DMaxModules 1024
 
 			// Returns the HMODULE for module szModNameArg in the process with process-id _PID
 			// Returns NULL when the mudole is not loaded
 			HMODULE fg_GetModuleForProcess(DWORD _PID, WCHAR const *szModNameArg)
 			{
 				HANDLE hProcess;
-				HMODULE ahmModules[MAXMODULES];
+				HMODULE ahmModules[DMaxModules];
 				DWORD dwBytes;
 				unsigned int uiIter;
 				TCHAR szModName[MAX_PATH];

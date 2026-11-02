@@ -22,17 +22,17 @@ namespace NMib
 	};
 
 #ifdef DMibPIR
-#	define DMibAppImplement(_AppName) \
-		NMib::CAppClasses NMib::g_AppClasses = {"NMib::NAppName::" #_AppName}; \
-		namespace NAppName { DMibRuntimeClassNamed(NMib::CApplication, _AppName, NMib::NAppName::_AppName);}
+#	define DMibAppImplement(d_AppName) \
+		NMib::CAppClasses NMib::g_AppClasses = {"NMib::NAppName::" #d_AppName}; \
+		namespace NAppName { DMibRuntimeClassNamed(NMib::CApplication, d_AppName, NMib::NAppName::d_AppName);}
 #else
-#	define DMibAppImplement(_AppName) \
-		NMib::CAppClasses NMib::g_AppClasses = {"NMib::NAppName::" #_AppName}; \
-		namespace NAppName { DMibRuntimeClassNamed(NMib::CApplication, _AppName, NMib::NAppName::_AppName);} \
+#	define DMibAppImplement(d_AppName) \
+		NMib::CAppClasses NMib::g_AppClasses = {"NMib::NAppName::" #d_AppName}; \
+		namespace NAppName { DMibRuntimeClassNamed(NMib::CApplication, d_AppName, NMib::NAppName::d_AppName);} \
 		DMibPMain
 #endif
 
 #ifndef DMibPNoShortCuts
-#	define DAppImplement(_AppName) DMibAppImplement(_AppName)
+#	define DAppImplement(d_AppName) DMibAppImplement(d_AppName)
 #endif
 }

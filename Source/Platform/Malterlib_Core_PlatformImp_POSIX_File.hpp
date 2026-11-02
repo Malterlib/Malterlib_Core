@@ -1898,16 +1898,18 @@ static timeval fsg_CTimeToTimeVal(NTime::CTime const &_DateTime)
 }
 
 #	ifndef TIMEVAL_TO_TIMESPEC
-#		define	TIMEVAL_TO_TIMESPEC(tv, ts) { \
-				(ts)->tv_sec = (tv)->tv_sec; \
-				(ts)->tv_nsec = (tv)->tv_usec * 1000; \
+// NOLINTNEXTLINE(malterlib-macro-naming)
+#		define	TIMEVAL_TO_TIMESPEC(d_Tv, d_Ts) { \
+				(d_Ts)->tv_sec = (d_Tv)->tv_sec; \
+				(d_Ts)->tv_nsec = (d_Tv)->tv_usec * 1000; \
 			}
 #	endif
 
 #	ifndef TIMESPEC_TO_TIMEVAL
-#		define	TIMESPEC_TO_TIMEVAL(tv, ts) { \
-				(tv)->tv_sec = (ts)->tv_sec; \
-				(tv)->tv_usec = (ts)->tv_nsec / 1000; \
+// NOLINTNEXTLINE(malterlib-macro-naming)
+#		define	TIMESPEC_TO_TIMEVAL(d_Tv, d_Ts) { \
+				(d_Tv)->tv_sec = (d_Ts)->tv_sec; \
+				(d_Tv)->tv_usec = (d_Ts)->tv_nsec / 1000; \
 			}
 #	endif
 

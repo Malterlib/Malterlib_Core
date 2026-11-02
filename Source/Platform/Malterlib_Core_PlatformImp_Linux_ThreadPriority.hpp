@@ -8,7 +8,7 @@
 #include <signal.h>
 
 #ifndef SCHED_RESET_ON_FORK
-#	define SCHED_RESET_ON_FORK 0x40000000
+#	define SCHED_RESET_ON_FORK 0x40000000 // NOLINT(malterlib-macro-naming)
 #endif
 
 namespace

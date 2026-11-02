@@ -1,11 +1,11 @@
 // Copyright © Unbroken AB
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CRT_DECLARE_GLOBAL_VARIABLES_DIRECTLY
+#define _CRT_DECLARE_GLOBAL_VARIABLES_DIRECTLY // NOLINT(malterlib-macro-naming)
 
 #pragma warning(disable:4996)
 #pragma warning(disable:4091)
-#define PSAPI_VERSION 1
+#define PSAPI_VERSION 1 // NOLINT(malterlib-macro-naming)
 
 #include <Mib/Core/Core>
 #include <Mib/Core/IoStream>
@@ -105,7 +105,7 @@ static SYSTEM_INFO gs_SysInfo; // useful information about the system
 
 namespace NLocal
 {
-#define PROCESS_CALLBACK_FILTER_ENABLED     0x1
+#define PROCESS_CALLBACK_FILTER_ENABLED     0x1 // NOLINT(malterlib-macro-naming)
 
 	constinit COptionalFunctions g_OptionalFunctions = {};
 	constinit OSVERSIONINFOEX g_VersionInfo = {0};
@@ -5689,11 +5689,11 @@ namespace
 }
 
 #ifndef REPLACEFILE_IGNORE_ACL_ERRORS
-#	define REPLACEFILE_IGNORE_ACL_ERRORS 0x00000004
+#	define REPLACEFILE_IGNORE_ACL_ERRORS 0x00000004 // NOLINT(malterlib-macro-naming)
 #endif
 
 #ifndef FILE_RENAME_IGNORE_READONLY_ATTRIBUTE
-#	define FILE_RENAME_IGNORE_READONLY_ATTRIBUTE 0x00000040
+#	define FILE_RENAME_IGNORE_READONLY_ATTRIBUTE 0x00000040 // NOLINT(malterlib-macro-naming)
 #endif
 
 template <typename tf_CWStr, bool t_bThrowError, typename tf_CStr>
@@ -6059,7 +6059,7 @@ void NSys::NFile::fg_DeleteDirectory(CStr const &_File);
 void NSys::NFile::fg_DeleteDirectory(CStrNonTracked const &_File);
 
 #ifndef FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE
-#	define FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE  0x00000010
+#	define FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE  0x00000010 // NOLINT(malterlib-macro-naming)
 #endif
 
 namespace NMib::NPlatform

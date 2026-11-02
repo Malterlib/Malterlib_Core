@@ -743,22 +743,22 @@ namespace NMib
 	};
 #endif
 
-#define DMibPDefaultSwap_uint16(x) ((((uint16)(x) & 0xff00) >> 8) | \
-	(((uint16)(x) & 0x00ff) << 8))
+#define DMibPDefaultSwap_uint16(d_Value) ((((uint16)(d_Value) & 0xff00) >> 8) | \
+	(((uint16)(d_Value) & 0x00ff) << 8))
 
-#define DMibPDefaultSwap_uint32(x) ((((uint32)(x) & 0xff000000) >> 24) | \
-	(((uint32)(x) & 0x00ff0000) >>  8) | \
-	(((uint32)(x) & 0x0000ff00) <<  8) | \
-	(((uint32)(x) & 0x000000ff) << 24))
+#define DMibPDefaultSwap_uint32(d_Value) ((((uint32)(d_Value) & 0xff000000) >> 24) | \
+	(((uint32)(d_Value) & 0x00ff0000) >>  8) | \
+	(((uint32)(d_Value) & 0x0000ff00) <<  8) | \
+	(((uint32)(d_Value) & 0x000000ff) << 24))
 
-#define DMibPDefaultSwap_uint64(x) ((((uint64)(x) & 0xff00000000000000ULL) >> 56) | \
-	(((uint64)(x) & 0x00ff000000000000ULL) >> 40) | \
-	(((uint64)(x) & 0x0000ff0000000000ULL) >> 24) | \
-	(((uint64)(x) & 0x000000ff00000000ULL) >>  8) | \
-	(((uint64)(x) & 0x00000000ff000000ULL) <<  8) | \
-	(((uint64)(x) & 0x0000000000ff0000ULL) << 24) | \
-	(((uint64)(x) & 0x000000000000ff00ULL) << 40) | \
-	(((uint64)(x) & 0x00000000000000ffULL) << 56))
+#define DMibPDefaultSwap_uint64(d_Value) ((((uint64)(d_Value) & 0xff00000000000000ULL) >> 56) | \
+	(((uint64)(d_Value) & 0x00ff000000000000ULL) >> 40) | \
+	(((uint64)(d_Value) & 0x0000ff0000000000ULL) >> 24) | \
+	(((uint64)(d_Value) & 0x000000ff00000000ULL) >>  8) | \
+	(((uint64)(d_Value) & 0x00000000ff000000ULL) <<  8) | \
+	(((uint64)(d_Value) & 0x0000000000ff0000ULL) << 24) | \
+	(((uint64)(d_Value) & 0x000000000000ff00ULL) << 40) | \
+	(((uint64)(d_Value) & 0x00000000000000ffULL) << 56))
 
 #ifdef DMibPCanDo_uint16
 	template <>
@@ -1710,9 +1710,9 @@ namespace NMib
 #include <Mib/Bit/Bit>
 
 // Gets a pointer to a class wich member is contained in from a pointer to that member
-#define DMibGetParent(_Class, _Member, _Ptr) ((_Class *)(((uint8 *)_Ptr) + ( ((umint)((_Class *)((void*)_Ptr))) - ((umint)(&((_Class *)((void *)_Ptr))->_Member)) )))
+#define DMibGetParent(d_Class, d_Member, d_Ptr) ((d_Class *)(((uint8 *)d_Ptr) + ( ((umint)((d_Class *)((void*)d_Ptr))) - ((umint)(&((d_Class *)((void *)d_Ptr))->d_Member)) )))
 
 #ifndef DMibPNoShortCuts
-#	define DGetParent(_Class, _Member, _Ptr) DMibGetParent(_Class, _Member, _Ptr)
+#	define DGetParent(d_Class, d_Member, d_Ptr) DMibGetParent(d_Class, d_Member, d_Ptr)
 #	define DNew DMibNew
 #endif

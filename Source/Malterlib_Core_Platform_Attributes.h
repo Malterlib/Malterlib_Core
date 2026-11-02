@@ -200,7 +200,7 @@
 
 // Alignment
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define DMibPAlignType(_Type, _Alignment) __attribute__ ((aligned (_Alignment))) _Type
+#	define DMibPAlignType(d_Type, d_Alignment) __attribute__ ((aligned (d_Alignment))) d_Type
 #	define align_cacheline __attribute__ ((aligned (DMibPMemoryCacheLineSize)))
 #	define DMibPMaxAlign 8192
 #elif defined(DCompiler_MSVC)

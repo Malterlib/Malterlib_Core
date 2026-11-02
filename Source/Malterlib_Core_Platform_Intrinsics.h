@@ -23,24 +23,24 @@
 #if (defined(DCompiler_MSVC) || defined(DCompiler_clang_cl)) && defined(DArchitecture_arm64)
 // ARM64
 
-#	define DMibHelperArm64SysReg(op0, op1, crn, crm, op2) \
-		( ((op0 & 1) << 14) | \
-		  ((op1 & 7) << 11) | \
-		  ((crn & 15) << 7) | \
-		  ((crm & 15) << 3) | \
-		  ((op2 & 7) << 0) )
+#	define DMibHelperArm64SysReg(d_Op0, d_Op1, d_Crn, d_Crm, d_Op2) \
+		( ((d_Op0 & 1) << 14) | \
+		  ((d_Op1 & 7) << 11) | \
+		  ((d_Crn & 15) << 7) | \
+		  ((d_Crm & 15) << 3) | \
+		  ((d_Op2 & 7) << 0) )
 
-#	define DMibHelperArm64SysReg_OP1(_Reg_) (((_Reg_) >> 11) & 7)
-#	define DMibHelperArm64SysReg_CRN(_Reg_) (((_Reg_) >> 7) & 15)
-#	define DMibHelperArm64SysReg_CRM(_Reg_) (((_Reg_) >> 3) & 15)
-#	define DMibHelperArm64SysReg_OP2(_Reg_) ((_Reg_) & 7)
+#	define DMibHelperArm64SysReg_OP1(d_Register) (((d_Register) >> 11) & 7)
+#	define DMibHelperArm64SysReg_CRN(d_Register) (((d_Register) >> 7) & 15)
+#	define DMibHelperArm64SysReg_CRM(d_Register) (((d_Register) >> 3) & 15)
+#	define DMibHelperArm64SysReg_OP2(d_Register) ((d_Register) & 7)
 
 #	define DMibArm64_CNTVCT_EL0        DMibHelperArm64SysReg(3,3,14, 0,2)  // Generic Timer counter register
 #	define DMibArm64_CNTFRQ_EL0        DMibHelperArm64SysReg(3,3,14, 0,0)  // Generic Timer counter frequency register
 #	define DMibArm64_PMCCNTR_EL0       DMibHelperArm64SysReg(3,3, 9,13,0)  // Cycle Count Register [CP15_PMCCNTR]
 #	define DMibArm64_PMSELR_EL0        DMibHelperArm64SysReg(3,3, 9,12,5)  // Event Counter Selection Register [CP15_PMSELR]
 #	define DMibArm64_PMXEVCNTR_EL0     DMibHelperArm64SysReg(3,3, 9,13,2)  // Event Count Register [CP15_PMXEVCNTR]
-#	define DMibArm64_PMXEVCNTRn_EL0(n) DMibHelperArm64SysReg(3,3,14, 8+((n)/8), (n)%8)    // Direct Event Count Register [n/a]
+#	define DMibArm64_PMXEVCNTRn_EL0(d_Index) DMibHelperArm64SysReg(3,3,14, 8+((d_Index)/8), (d_Index)%8)    // Direct Event Count Register [n/a]
 #	define DMibArm64_TPIDR_EL0         DMibHelperArm64SysReg(3,3,13, 0,2)  // Thread ID Register, User Read/Write [CP15_TPIDRURW]
 #	define DMibArm64_TPIDRRO_EL0       DMibHelperArm64SysReg(3,3,13, 0,3)  // Thread ID Register, User Read Only [CP15_TPIDRURO]
 #	define DMibArm64_TPIDR_EL1         DMibHelperArm64SysReg(3,0,13, 0,4)  // Thread ID Register, Privileged Only [CP15_TPIDRPRW]
@@ -269,10 +269,10 @@ namespace NMib
 #	define DMibPGetLowestBitSet32NoZero(d_Value) NMib::NPlatformHelpers::fg_GetLowestBitSet32NoZero(d_Value)
 
 #	if DMibPPtrBits >= 64
-#		define DMibPGetHighestBitSet64(value) NMib::NPlatformHelpers::fg_GetHighestBitSet64(value);
-#		define DMibPGetHighestBitSet64NoZero(value) NMib::NPlatformHelpers::fg_GetHighestBitSet64NoZero(value);
-#		define DMibPGetLowestBitSet64(value) NMib::NPlatformHelpers::fg_GetLowestBitSet64(value);
-#		define DMibPGetLowestBitSet64NoZero(value) NMib::NPlatformHelpers::fg_GetLowestBitSet64NoZero(value);
+#		define DMibPGetHighestBitSet64(d_Value) NMib::NPlatformHelpers::fg_GetHighestBitSet64(d_Value);
+#		define DMibPGetHighestBitSet64NoZero(d_Value) NMib::NPlatformHelpers::fg_GetHighestBitSet64NoZero(d_Value);
+#		define DMibPGetLowestBitSet64(d_Value) NMib::NPlatformHelpers::fg_GetLowestBitSet64(d_Value);
+#		define DMibPGetLowestBitSet64NoZero(d_Value) NMib::NPlatformHelpers::fg_GetLowestBitSet64NoZero(d_Value);
 #	endif
 
 #else
@@ -296,7 +296,7 @@ namespace NMib
 #			if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 #				define DMibPNumBitsSet32(d_Value) __popcnt(d_Value)
 #				if defined(DArchitecture_x64)
-#					define DMibPNumBitsSet64(_x) __popcnt64(_x)
+#					define DMibPNumBitsSet64(d_Value) __popcnt64(d_Value)
 #				endif
 #			else
 #				error "Implement this"

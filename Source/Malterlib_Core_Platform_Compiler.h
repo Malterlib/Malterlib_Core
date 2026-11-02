@@ -121,15 +121,15 @@ namespace NMib
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
 #	include <stdarg.h>
 using CMibArgList = __builtin_va_list;
-#	define DMibPArgListStart(_ArgList, _PrevArg) va_start(_ArgList, _PrevArg)
-#	define DMibPArgListNextArg(_ArgList, _ArgType) va_arg(_ArgList, _ArgType)
-#	define DMibPArgListEnd(_ArgList) va_end(_ArgList)
+#	define DMibPArgListStart(d_ArgList, d_PrevArg) va_start(d_ArgList, d_PrevArg)
+#	define DMibPArgListNextArg(d_ArgList, d_ArgType) va_arg(d_ArgList, d_ArgType)
+#	define DMibPArgListEnd(d_ArgList) va_end(d_ArgList)
 #elif defined(DCompiler_MSVC)
 #	if defined(DArchitecture_x86)
-#		define DMibPArglistIntSizeOf(n)   ( (sizeof(n) + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
-#		define DMibPArglistIntAlign(n)   ( (n + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
+#		define DMibPArglistIntSizeOf(d_Type)   ( (sizeof(d_Type) + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
+#		define DMibPArglistIntAlign(d_Size)   ( (d_Size + sizeof(int) - 1) & (~(sizeof(int) - 1)) )
 using CMibArgList = void *;
-#		define DMibPArgListStart(_ArgList, _PrevArg) do { _ArgList = ((char *)&_PrevArg + DMibPArglistIntSizeOf(_PrevArg)); } while (false)
+#		define DMibPArgListStart(d_ArgList, d_PrevArg) do { d_ArgList = ((char *)&d_PrevArg + DMibPArglistIntSizeOf(d_PrevArg)); } while (false)
 namespace NMib
 {
 	namespace NHelpers
@@ -142,23 +142,23 @@ namespace NMib
 		}
 	}
 }
-#		define DMibPArgListNextArg(_ArgList, _ArgType) (*((_ArgType *)NMib::NHelpers::ArgListNextArg(_ArgList, sizeof(_ArgType))))
-#		define DMibPArgListEnd(_ArgList) ((void)0)
+#		define DMibPArgListNextArg(d_ArgList, d_ArgType) (*((d_ArgType *)NMib::NHelpers::ArgListNextArg(d_ArgList, sizeof(d_ArgType))))
+#		define DMibPArgListEnd(d_ArgList) ((void)0)
 #	elif defined(DArchitecture_x64)
 using CMibArgList = char *;
 extern "C" void __cdecl __va_start(CMibArgList *, ...);
-#		define DMibPArgListStart(_ArgList, _PrevArg) ( __va_start(&_ArgList, _PrevArg) )
-#		define DMibPArgListNextArg(_ArgList, _ArgType) \
-			( ( sizeof(_ArgType) > sizeof(__int64) || ( sizeof(_ArgType) & (sizeof(_ArgType) - 1) ) != 0 ) \
-				? **(_ArgType **)( ( _ArgList += sizeof(__int64) ) - sizeof(__int64) ) \
-				:  *(_ArgType  *)( ( _ArgList += sizeof(__int64) ) - sizeof(__int64) ) )
-#		define DMibPArgListEnd(_ArgList) ((void)0)
+#		define DMibPArgListStart(d_ArgList, d_PrevArg) ( __va_start(&d_ArgList, d_PrevArg) )
+#		define DMibPArgListNextArg(d_ArgList, d_ArgType) \
+			( ( sizeof(d_ArgType) > sizeof(__int64) || ( sizeof(d_ArgType) & (sizeof(d_ArgType) - 1) ) != 0 ) \
+				? **(d_ArgType **)( ( d_ArgList += sizeof(__int64) ) - sizeof(__int64) ) \
+				:  *(d_ArgType  *)( ( d_ArgList += sizeof(__int64) ) - sizeof(__int64) ) )
+#		define DMibPArgListEnd(d_ArgList) ((void)0)
 #	else
 #		include <stdarg.h>
 using CMibArgList = va_list;
-#		define DMibPArgListStart(_ArgList, _PrevArg) va_start(_ArgList, _PrevArg)
-#		define DMibPArgListNextArg(_ArgList, _ArgType) va_arg(_ArgList, _ArgType)
-#		define DMibPArgListEnd(_ArgList) va_end(_ArgList)
+#		define DMibPArgListStart(d_ArgList, d_PrevArg) va_start(d_ArgList, d_PrevArg)
+#		define DMibPArgListNextArg(d_ArgList, d_ArgType) va_arg(d_ArgList, d_ArgType)
+#		define DMibPArgListEnd(d_ArgList) va_end(d_ArgList)
 #	endif
 #else
 #	error "Implement this"
@@ -190,9 +190,9 @@ using CMibArgList = va_list;
 
 // Offset
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define DMibPOffsetOf(_Type, _Member) __builtin_offsetof(_Type, _Member)
+#	define DMibPOffsetOf(d_Type, d_Member) __builtin_offsetof(d_Type, d_Member)
 #elif defined(DCompiler_MSVC)
-#	define DMibPOffsetOf(_Type, _Member) __builtin_offsetof(_Type, _Member)
+#	define DMibPOffsetOf(d_Type, d_Member) __builtin_offsetof(d_Type, d_Member)
 //#	define DMibPOffsetOf(_Type, _Member) ((aint)(&((_Type *)0)->_Member))
 #else
 #	error "Implement this"
@@ -274,5 +274,5 @@ void fg_Unconsume(tf_CObject &o_Value)
 #endif
 
 #if defined(__apple_build_version__) && (__apple_build_version__ < 17000000)
-#	define DCompiler_Workaround_Apple_clang
+#	define DCompiler_Workaround_Apple_clang // NOLINT(malterlib-macro-naming)
 #endif

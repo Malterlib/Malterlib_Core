@@ -29,7 +29,7 @@ namespace NLocalWindows
 	typedef UNICODE_STRING OBJECT_NAME_INFORMATION;
 	typedef UNICODE_STRING *POBJECT_NAME_INFORMATION;
 
-#define SystemHandleInformation			16
+#define DSystemHandleInformation			16
 
 	typedef enum _OBJECT_INFORMATION_CLASS
 	{
@@ -41,9 +41,9 @@ namespace NLocalWindows
 	} OBJECT_INFORMATION_CLASS;
 }
 
-#define STATUS_SUCCESS					((NTSTATUS)0x00000000L)
-#define STATUS_INFO_LENGTH_MISMATCH		((NTSTATUS)0xC0000004L)
-#define STATUS_BUFFER_OVERFLOW			((NTSTATUS)0x80000005L)
+#define STATUS_SUCCESS					((NTSTATUS)0x00000000L) // NOLINT(malterlib-macro-naming)
+#define STATUS_INFO_LENGTH_MISMATCH		((NTSTATUS)0xC0000004L) // NOLINT(malterlib-macro-naming)
+#define STATUS_BUFFER_OVERFLOW			((NTSTATUS)0x80000005L) // NOLINT(malterlib-macro-naming)
 // -------------------------------------------------------------------------
 
 class CHandleInformation
@@ -287,19 +287,19 @@ public:
 
 		DWORD dwSize = 16 * 1024 * 1024;
 		NLocalWindows::PSYSTEM_HANDLE_INFORMATION pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[dwSize];
-		NTSTATUS ntReturn = m_fNTQuerySystemInformation(SystemHandleInformation, pHandleInfo, dwSize, &dwSize);
+		NTSTATUS ntReturn = m_fNTQuerySystemInformation(DSystemHandleInformation, pHandleInfo, dwSize, &dwSize);
 		if (ntReturn == STATUS_INFO_LENGTH_MISMATCH)
 		{
 			delete [] pHandleInfo;
 			pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[dwSize];
-			ntReturn = m_fNTQuerySystemInformation(SystemHandleInformation, pHandleInfo, dwSize, &dwSize);
+			ntReturn = m_fNTQuerySystemInformation(DSystemHandleInformation, pHandleInfo, dwSize, &dwSize);
 		}
 		if (ntReturn == STATUS_INFO_LENGTH_MISMATCH)
 		{
 			dwSize *= 2;
 			delete [] pHandleInfo;
 			pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[dwSize];
-			ntReturn = m_fNTQuerySystemInformation(SystemHandleInformation, pHandleInfo, dwSize, &dwSize);
+			ntReturn = m_fNTQuerySystemInformation(DSystemHandleInformation, pHandleInfo, dwSize, &dwSize);
 		}
 		if (ntReturn == STATUS_SUCCESS)
 		{

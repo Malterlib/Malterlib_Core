@@ -5,14 +5,14 @@
 
 // Constant
 #if defined(DCompiler_MSVC) || defined(DCompiler_clang_cl)
-#	define constant_int64(_Number) _Number##i64
-#	define constant_uint64(_Number) _Number##ui64
+#	define constant_int64(d_Number) d_Number##i64
+#	define constant_uint64(d_Number) d_Number##ui64
 #	define str_utf8(d_StringLiteral) d_StringLiteral
 #	define str_utf16(d_StringLiteral) L##d_StringLiteral
 #	define str_utf32(d_StringLiteral) U##d_StringLiteral
 #elif defined(DCompiler_clang) || defined(DCompiler_gcc)
-#	define constant_int64(_Number) _Number##LL
-#	define constant_uint64(_Number) _Number##ULL
+#	define constant_int64(d_Number) d_Number##LL
+#	define constant_uint64(d_Number) d_Number##ULL
 #	define str_utf8(d_StringLiteral) d_StringLiteral
 #	define str_utf16(d_StringLiteral) u##d_StringLiteral
 #	define str_utf32(d_StringLiteral) U##d_StringLiteral
@@ -71,7 +71,7 @@ using ch32 = char32_t;
 
 //#		define DMibPUniqueType_int
 //#		define DMibPUniqueType_uint
-#		define DMibPUniqueType_mint
+#		define DMibPUniqueType_umint
 #		define DMibPUniqueType_smint
 //#		define DMibPUniqueType_aint
 //#		define DMibPUniqueType_uaint
@@ -112,7 +112,7 @@ using ch32 = char32_t;
 
 //#		define DMibPUniqueType_int
 //#		define DMibPUniqueType_uint
-#		define DMibPUniqueType_mint
+#		define DMibPUniqueType_umint
 #		define DMibPUniqueType_smint
 //#		define DMibPUniqueType_aint
 //#		define DMibPUniqueType_uaint
@@ -159,7 +159,7 @@ using ch32 = char32_t;
 
 //#		define DMibPUniqueType_int
 //#		define DMibPUniqueType_uint
-#		define DMibPUniqueType_mint
+#		define DMibPUniqueType_umint
 #		define DMibPUniqueType_smint
 //#		define DMibPUniqueType_aint
 //#		define DMibPUniqueType_uaint
@@ -202,7 +202,7 @@ using ch32 = char32_t;
 
 //#		define DMibPUniqueType_int
 //#		define DMibPUniqueType_uint
-#		define DMibPUniqueType_mint
+#		define DMibPUniqueType_umint
 #		define DMibPUniqueType_smint
 //#		define DMibPUniqueType_aint
 //#		define DMibPUniqueType_uaint
@@ -244,8 +244,8 @@ using ch16 = wchar_t;
 using ch32 = char32_t;
 
 #		define DMibPUniqueType_int
-#		define DMibPUniqueType_uint
-//#		define DMibPUniqueType_mint
+#		define DMibPUniqueType_uint // NOLINT(malterlib-macro-naming)
+//#		define DMibPUniqueType_umint
 //#		define DMibPUniqueType_smint
 //#		define DMibPUniqueType_aint
 //#		define DMibPUniqueType_uaint
@@ -285,7 +285,7 @@ using ch32 = char32_t;
 
 //#		define DMibPUniqueType_int
 //#		define DMibPUniqueType_uint
-#		define DMibPUniqueType_mint
+#		define DMibPUniqueType_umint
 #		define DMibPUniqueType_smint
 //#		define DMibPUniqueType_aint
 //#		define DMibPUniqueType_uaint
@@ -326,7 +326,7 @@ using ch32 = char32_t;
 
 //#	define DMibPUniqueType_int
 //#	define DMibPUniqueType_uint
-#	define DMibPUniqueType_mint
+#	define DMibPUniqueType_umint
 #	define DMibPUniqueType_smint
 //#	define DMibPUniqueType_aint
 //#	define DMibPUniqueType_uaint

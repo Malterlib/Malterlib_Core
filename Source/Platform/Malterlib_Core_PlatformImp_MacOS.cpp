@@ -1,13 +1,13 @@
 // Copyright © Unbroken AB
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _LIBCPP_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS
+#define _LIBCPP_ENABLE_CXX17_REMOVED_UNEXPECTED_FUNCTIONS // NOLINT(malterlib-macro-naming)
 
 #include <Mib/Core/Core>
 #include <Mib/Cryptography/RandomID>
 #include <Mib/Cryptography/UUID>
 
-#define _DARWIN_USE_64_BIT_INODE
+#define _DARWIN_USE_64_BIT_INODE // NOLINT(malterlib-macro-naming)
 
 #define DMibAllowCodeStandardViolations 1
 
@@ -4541,9 +4541,9 @@ struct dyld_unwind_sections
 };
 
 #	if __LP64__
-#		define RELOC_SIZE 3
-#		define LC_SEGMENT_COMMAND		LC_SEGMENT_64
-#		define LC_ROUTINES_COMMAND		LC_ROUTINES_64
+#		define DRelocSize 3
+#		define DLcSegmentCommand		LC_SEGMENT_64
+#		define DLcRoutinesCommand		LC_ROUTINES_64
 struct macho_header : public mach_header_64
 {
 };
@@ -4561,9 +4561,9 @@ struct macho_routines_command : public routines_command_64
 {
 };
 #	else
-#		define RELOC_SIZE 2
-#		define LC_SEGMENT_COMMAND		LC_SEGMENT
-#		define LC_ROUTINES_COMMAND		LC_ROUTINES
+#		define DRelocSize 2
+#		define DLcSegmentCommand		LC_SEGMENT
+#		define DLcRoutinesCommand		LC_ROUTINES
 struct macho_header : public mach_header
 {
 };
@@ -4643,7 +4643,7 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 	{
 		switch (cmd->cmd)
 		{
-		case LC_SEGMENT_COMMAND:
+		case DLcSegmentCommand:
 			{
 				struct macho_segment_command const *seg = (struct macho_segment_command *)cmd;
 				bool const isTextSeg = (strcmp(seg->segname, "__TEXT") == 0);

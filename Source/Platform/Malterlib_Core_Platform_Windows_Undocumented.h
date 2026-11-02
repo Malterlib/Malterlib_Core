@@ -27,7 +27,7 @@ typedef struct _CURDIR
 	HANDLE Handle;
 } CURDIR, *PCURDIR;
 
-#define RTL_MAX_DRIVE_LETTERS 32
+#define RTL_MAX_DRIVE_LETTERS 32 // NOLINT(malterlib-macro-naming)
 
 typedef struct _RTL_DRIVE_LETTER_CURDIR
 {
@@ -330,7 +330,7 @@ namespace NLocal
 #if _M_X64
 
 #	ifndef UNWIND_HISTORY_TABLE_SIZE
-#		define UNWIND_HISTORY_TABLE_SIZE 12
+#		define UNWIND_HISTORY_TABLE_SIZE 12 // NOLINT(malterlib-macro-naming)
 
 typedef struct _UNWIND_HISTORY_TABLE_ENTRY
 {
@@ -338,9 +338,9 @@ typedef struct _UNWIND_HISTORY_TABLE_ENTRY
 	PRUNTIME_FUNCTION FunctionEntry;
 } UNWIND_HISTORY_TABLE_ENTRY, *PUNWIND_HISTORY_TABLE_ENTRY;
 
-#		define UNWIND_HISTORY_TABLE_NONE 0
-#		define UNWIND_HISTORY_TABLE_GLOBAL 1
-#		define UNWIND_HISTORY_TABLE_LOCAL 2
+#		define UNWIND_HISTORY_TABLE_NONE 0 // NOLINT(malterlib-macro-naming)
+#		define UNWIND_HISTORY_TABLE_GLOBAL 1 // NOLINT(malterlib-macro-naming)
+#		define UNWIND_HISTORY_TABLE_LOCAL 2 // NOLINT(malterlib-macro-naming)
 typedef struct _UNWIND_HISTORY_TABLE
 {
 	ULONG Count;
@@ -409,7 +409,7 @@ typedef struct _UNWIND_INFO
 
 #endif
 
-#define MS_VC_EXCEPTION 0x406D1388
+#define MS_VC_EXCEPTION 0x406D1388 // NOLINT(malterlib-macro-naming)
 
 typedef struct tagTHREADNAME_INFO
 {
@@ -419,12 +419,12 @@ typedef struct tagTHREADNAME_INFO
 	DWORD dwFlags;    // Reserved for future use, must be zero.
 } THREADNAME_INFO;
 
-#define IDLE_PRIORITY_CLASS         0x00000040
-#define BELOW_NORMAL_PRIORITY_CLASS 0x00004000
-#define NORMAL_PRIORITY_CLASS       0x00000020
-#define ABOVE_NORMAL_PRIORITY_CLASS 0x00008000
-#define HIGH_PRIORITY_CLASS         0x00000080
-#define REALTIME_PRIORITY_CLASS     0x00000100
+#define IDLE_PRIORITY_CLASS         0x00000040 // NOLINT(malterlib-macro-naming)
+#define BELOW_NORMAL_PRIORITY_CLASS 0x00004000 // NOLINT(malterlib-macro-naming)
+#define NORMAL_PRIORITY_CLASS       0x00000020 // NOLINT(malterlib-macro-naming)
+#define ABOVE_NORMAL_PRIORITY_CLASS 0x00008000 // NOLINT(malterlib-macro-naming)
+#define HIGH_PRIORITY_CLASS         0x00000080 // NOLINT(malterlib-macro-naming)
+#define REALTIME_PRIORITY_CLASS     0x00000100 // NOLINT(malterlib-macro-naming)
 
 typedef struct _REPARSE_DATA_BUFFER
 {

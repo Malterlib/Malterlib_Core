@@ -157,7 +157,7 @@ namespace NMib
 			CExceptionFilter *m_pOldFilter;
 		};
 
-#define DMibExceptionFilter(_Filter) NMib::NException::CExceptionFilterScope ScopeExceptionFilter(_Filter)
+#define DMibExceptionFilter(d_Filter) NMib::NException::CExceptionFilterScope ScopeExceptionFilter(d_Filter)
 	}
 }
 
