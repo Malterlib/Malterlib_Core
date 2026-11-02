@@ -64,17 +64,26 @@ Property
 	f_MalterlibTidyRepository function(string _File) string
 	f_MalterlibTidyRepository MalterlibTidyRepositoryLocations->ForEach(&f_MalterlibTidyHoldingLocation, {MalterlibTidyPath: _File})->Sort()->Reverse()->Slice(0, 1)->Join("")
 
-	// The plugin arguments for the sources of a repository: none unless it sets Repository.Tidy.Enabled. The
-	// plugin applies Repository.Tidy.IncludeFiles and ExcludeFiles to the source, and the compile depends on the
-	// rules, so it runs again when they change.
+	// The plugin applies the repositories' rules itself, also to the source being compiled. The compile depends on the rules
+	// file, so it runs again when they change.
+	MalterlibTidyFlags: [string] = [`-fplugin-arg-malterlib-repositories=@(MalterlibTidyRepositoriesFile)`, `-Xclang`, `-fdepfile-entry=@(MalterlibTidyRepositoriesFile)`]
+
+	// User(Build System)=true: Give the plugin its arguments only for the sources of repositories that set
+	// Repository.Tidy.Enabled, so other compiles don't load it. This looks up the repository of each source, which makes generating slower
+	MalterlibTidyLimitFlagsToCheckedRepositories: bool = false
+
 	f_MalterlibTidyRepositoryFlags function(string _Repository) [string] = []
-	f_MalterlibTidyRepositoryFlags =+ [`-fplugin-arg-malterlib-repositories=@(MalterlibTidyRepositoriesFile)`, `-Xclang`, `-fdepfile-entry=@(MalterlibTidyRepositoriesFile)`]
+	f_MalterlibTidyRepositoryFlags =+ MalterlibTidyFlags
 	{
 		!!MalterlibTidyCheckedLocations->ContainsListElement(_Repository) true
 	}
 
 	f_MalterlibTidyFlags function(string _File) [string]
+	f_MalterlibTidyFlags MalterlibTidyFlags
 	f_MalterlibTidyFlags _File->f_MalterlibTidyRepository()->f_MalterlibTidyRepositoryFlags()
+	{
+		!!MalterlibTidyLimitFlagsToCheckedRepositories true
+	}
 }
 
 %GenerateFile "MalterlibTidyRepositories"
