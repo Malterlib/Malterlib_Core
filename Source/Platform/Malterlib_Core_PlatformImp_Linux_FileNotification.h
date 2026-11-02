@@ -254,7 +254,7 @@ public:
 	ssize_t f_Inotify_Read(CByteVector &_Buffer);
 
 	CWatch &f_LinkWatch(int _WatchDescriptor, CStr const &_Path, CNotification *_pNotification, CWatch *_pParentWatch);
-	void f_UnlinkWatch(TCSharedPointer<CWatch> _pWatch, CNotification *_pNotification, bool _bDescriptorInvalid);
+	void f_UnlinkWatch(TCSharedPointer<CWatch> const &_pWatch, CNotification *_pNotification, bool _bDescriptorInvalid);
 
 	void *f_Open(CStr const &_FileName, EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo);
 	void f_Close(void *_pNotification);

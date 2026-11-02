@@ -296,14 +296,17 @@ CFileChangeNotificationContext::CWatch &CFileChangeNotificationContext::f_LinkWa
 	return *pWatch;
 }
 
-void CFileChangeNotificationContext::f_UnlinkWatch(TCSharedPointer<CWatch> _pWatch, CNotification *_pNotification, bool _bDescriptorInvalid)
+void CFileChangeNotificationContext::f_UnlinkWatch(TCSharedPointer<CWatch> const &_pWatch, CNotification *_pNotification, bool _bDescriptorInvalid)
 {
-	_pNotification->m_Watches.f_Remove(_pWatch->f_GetDescriptor());
-	_pWatch->f_RemoveReference(_pNotification);
+	// _pWatch can be the entry of the notification's watches removed here
+	auto pWatch = _pWatch;
 
-	if (!_pWatch->f_IsReferenced())
+	_pNotification->m_Watches.f_Remove(pWatch->f_GetDescriptor());
+	pWatch->f_RemoveReference(_pNotification);
+
+	if (!pWatch->f_IsReferenced())
 	{
-		int WatchDescriptor = _pWatch->f_GetDescriptor();
+		int WatchDescriptor = pWatch->f_GetDescriptor();
 		if (!_bDescriptorInvalid)
 			f_Inotify_RemoveWatch(WatchDescriptor);
 		m_Watches.f_Remove(WatchDescriptor);
