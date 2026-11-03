@@ -327,7 +327,7 @@ namespace NMib
 		ESecurePassword fg_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location);
 		ESecurePassword fg_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password);
 		ESecurePassword fg_SecurePassword_Remove(NMib::NStr::CStr const &_Key);
-		ESecurePassword fg_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword);
+		ESecurePassword fg_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password);
 		ESecurePassword fg_SecurePassword_Exists(NMib::NStr::CStr const &_Key);
 		bool fg_SecurePassword_Supported();
 		// ESecurePassword fg_SecurePassword_Enum(NMib::NContainer::TCVector<NMib::NStr::CStr> & _oKeys);

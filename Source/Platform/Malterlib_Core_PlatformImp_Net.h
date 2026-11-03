@@ -56,7 +56,7 @@ public:
 	void f_Stop();
 
 	void *f_Open(NMib::NStr::CStr const &_Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
-	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &_oAddress, NMib::NStr::CStr &_Error);
+	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &o_Address, NMib::NStr::CStr &_Error);
 	void f_Close(void *_pResolver);
 	void f_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 
@@ -216,11 +216,11 @@ public:
 		return *(CUnixAddress *)mp_lData.f_GetArray();
 	}
 
-	template <typename t_CAddrType>
-	t_CAddrType const &f_GetAsType(NMib::NNetwork::ENetAddressType _ExpectedType) const
+	template <typename tf_CAddrType>
+	tf_CAddrType const &f_GetAsType(NMib::NNetwork::ENetAddressType _ExpectedType) const
 	{
 		DMibSafeCheck(mp_Type == _ExpectedType, "Address is not of the expected type.");
-		return *(t_CAddrType const *)mp_lData.f_GetArray();
+		return *(tf_CAddrType const *)mp_lData.f_GetArray();
 	}
 
 	int f_Compare(CRuntimeNetAddress const &_Other) const

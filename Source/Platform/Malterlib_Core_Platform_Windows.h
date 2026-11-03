@@ -7,7 +7,7 @@
 #include <Windows.h>
 
 extern VOID (WINAPI *g_fOrgExitProcess)(__in UINT _ExitCode);
-extern BOOL (WINAPI *g_fOrgTerminateProcess)(__in HANDLE _hProcess, __in UINT _ExitCode);
+extern BOOL (WINAPI *g_fOrgTerminateProcess)(__in HANDLE _Process, __in UINT _ExitCode);
 extern NMib::NAtomic::TCAtomic<smint> g_bDoneMalterlibInitAll;
 extern HINSTANCE g_hDllInstance;
 extern bool g_bIsDll;
@@ -40,6 +40,6 @@ namespace NMib::NPlatform
 	void fg_ReportIsShuttingDown();
 	void fg_EnsureEndSessionReporting();
 
-	bool fg_SetPosixDeleteDisposition(HANDLE _hFile);
-	bool fg_GetUniqueFileIdentifier(HANDLE _hFile, NMib::NFile::CUniqueFileIdentifier &o_Identifier);
+	bool fg_SetPosixDeleteDisposition(HANDLE _File);
+	bool fg_GetUniqueFileIdentifier(HANDLE _File, NMib::NFile::CUniqueFileIdentifier &o_Identifier);
 }

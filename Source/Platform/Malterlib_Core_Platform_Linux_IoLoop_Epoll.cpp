@@ -20,7 +20,7 @@ CIoLoop_Epoll::CIoLoop_Epoll()
 	mp_pIo = &fg_IoSubSystem_Linux();
 #endif
 
-	int (*fLocal_epoll_create1)(int __flags) __THROW;
+	int (*fLocal_epoll_create1)(int _Flags) __THROW;
 
 	(void * &)fLocal_epoll_create1 = dlsym(RTLD_DEFAULT, "epoll_create1");
 

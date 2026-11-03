@@ -752,7 +752,7 @@ struct CSystemWindowsMSVC : public CSystem
 
 	NStorage::TCAggregate<CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
 
-	bool f_EnablePrivilege(TCHAR const *pszPrivilege, BOOL bEnable)
+	bool f_EnablePrivilege(TCHAR const *_pPrivilege, BOOL _bEnable)
 	{
 		HANDLE hToken;
 		TOKEN_PRIVILEGES tp;
@@ -781,7 +781,7 @@ struct CSystemWindowsMSVC : public CSystem
 		;
 
 		// get the luid
-		if (!LookupPrivilegeValue(NULL, pszPrivilege, &tp.Privileges[0].Luid))
+		if (!LookupPrivilegeValue(NULL, _pPrivilege, &tp.Privileges[0].Luid))
 		{
 			[[maybe_unused]] uint32 LastError = GetLastError();
 			DMibTrace("LookupPrivilegeValue failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
@@ -791,7 +791,7 @@ struct CSystemWindowsMSVC : public CSystem
 		tp.PrivilegeCount = 1;
 
 		// enable or disable privilege
-		if (bEnable)
+		if (_bEnable)
 			tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 		else
 			tp.Privileges[0].Attributes = 0;
@@ -1064,23 +1064,23 @@ struct CSystemWindowsMSVC : public CSystem
 	}
 #	endif
 
-	static LONG WINAPI fs_VectoredHandler3(struct _EXCEPTION_POINTERS *pExceptionInfo)
+	static LONG WINAPI fs_VectoredHandler3(struct _EXCEPTION_POINTERS *_pExceptionInfo)
 	{
-		if (pExceptionInfo->ExceptionRecord && pExceptionInfo->ExceptionRecord->NumberParameters >= 3 && pExceptionInfo->ExceptionRecord->ExceptionInformation[0] == 0x19930520)
+		if (_pExceptionInfo->ExceptionRecord && _pExceptionInfo->ExceptionRecord->NumberParameters >= 3 && _pExceptionInfo->ExceptionRecord->ExceptionInformation[0] == 0x19930520)
 		{
 			if (fg_SystemThreadLocalWasCreated())
 			{
 				auto &ThreadLocal = fg_SystemThreadLocal();
 				if (ThreadLocal.m_pExceptionFilter)
-					ThreadLocal.m_pExceptionFilter->f_Exception((void *)pExceptionInfo->ExceptionRecord->ExceptionInformation[1]);
+					ThreadLocal.m_pExceptionFilter->f_Exception((void *)_pExceptionInfo->ExceptionRecord->ExceptionInformation[1]);
 			}
 		}
 		return 0;
 	}
 
-	static LONG WINAPI fs_VectoredHandler2(struct _EXCEPTION_POINTERS *ExceptionInfo)
+	static LONG WINAPI fs_VectoredHandler2(struct _EXCEPTION_POINTERS *_pExceptionInfo)
 	{
-		fs_VectoredHandler3(ExceptionInfo);
+		fs_VectoredHandler3(_pExceptionInfo);
 
 		HMODULE pNtDll = NLocal::g_hNtDll;
 

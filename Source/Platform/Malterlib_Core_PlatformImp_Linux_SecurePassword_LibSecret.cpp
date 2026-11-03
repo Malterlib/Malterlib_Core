@@ -122,7 +122,7 @@ namespace NMib::NSys
 		ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location) override;
 		ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password) override;
 		ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const &_Key) override;
-		ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword) override;
+		ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password) override;
 		ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key) override;
 	};
 

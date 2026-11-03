@@ -114,8 +114,8 @@ namespace NMib
 
 		bool fp_LoadLibrary(NStr::CStr const &_Filename);
 
-		template <typename t_CType>
-		bool fp_Fetch(t_CType * &_pPtr, ch8 const *_pName)
+		template <typename tf_CType>
+		bool fp_Fetch(tf_CType * &_pPtr, ch8 const *_pName)
 		{
 			if (!mp_bOK)
 			{

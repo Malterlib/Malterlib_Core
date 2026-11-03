@@ -129,7 +129,7 @@ namespace
 	}
 }
 
-inline_always_lto bool NSys::fg_Thread_GetLocalsDestroyed(umint)
+inline_always_lto bool NSys::fg_Thread_GetLocalsDestroyed(umint _iPerThread)
 {
 	// Once the context is destroyed a thread gets no locals: one the system starts later, such as a dispatch worker freeing memory during
 	// exit, never passes the removed introspection hook, and the key that marks a thread destroyed is freed at the end of the teardown
@@ -1563,8 +1563,8 @@ namespace
 	}
 
 	// A dead port or a thread without a pthread cannot be inside
-	template <typename t_CUnsettled>
-	EThreadInspection fg_InspectThread(mach_port_t _MachThread, t_CUnsettled const &_Unsettled, uint16 &o_Value)
+	template <typename tf_CUnsettled>
+	EThreadInspection fg_InspectThread(mach_port_t _MachThread, tf_CUnsettled const &_Unsettled, uint16 &o_Value)
 	{
 		kern_return_t Result = thread_suspend(_MachThread);
 		if (fg_ThreadPortIsDead(Result))
@@ -1606,8 +1606,8 @@ namespace
 	// inside it, so the threads one enumeration finds busy are the whole set to wait for.
 	// dlclose runs this under dyld's loader lock, so a host thread that enters dyld from a key
 	// destructor while exiting can never leave; a host must not do that while unloading
-	template <typename t_CUnsettled>
-	void fg_WaitForThreadsClear(t_CUnsettled const &_Unsettled)
+	template <typename tf_CUnsettled>
+	void fg_WaitForThreadsClear(tf_CUnsettled const &_Unsettled)
 	{
 		mach_port_t CurrentMachThread = pthread_mach_thread_np(pthread_self());
 
@@ -2213,7 +2213,7 @@ void DMibCrossmoduleAPI fg_ThreadNotificationRegister(NSys::NPrivate::CThreadNot
 	}
 }
 
-void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadNotificationModule *_pModule, void (*_fDestroyLocals)(void *), void *_pContext)
+void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadNotificationModule *_pModule, void (*_fDestroyLocals)(void *_pContext), void *_pContext)
 {
 	DMibLock(g_ThreadNotificationLock);
 
@@ -3567,10 +3567,10 @@ uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _Address)
 	return static_cast<CPOSIXAddress const *>(_Address)->f_GetScopeID();
 }
 
-bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress *)_Address, _ExpectedType, _opRawData, _nDataBytes);
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress *)_Address, _ExpectedType, o_pRawData, _nDataBytes);
 }
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
@@ -3613,9 +3613,9 @@ void *NSys::NNetwork::fg_AsyncResolveAddress_Open(NMib::NStr::CStr const &_Addre
 	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress &_opAddress, NMib::NStr::CStr &_Error)
+bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress &o_pAddress, NMib::NStr::CStr &_Error)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CPOSIXAddress * &)_opAddress, _Error);
+	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CPOSIXAddress * &)o_pAddress, _Error);
 }
 
 void NSys::NNetwork::fg_AsyncResolveAddress_Close(void *_pResolver)

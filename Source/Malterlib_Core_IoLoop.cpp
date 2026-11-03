@@ -200,13 +200,13 @@ namespace NMib::NSys
 
 	// Ask before gathering another batch and again after release. _nStartBytes is the initial window; growth stays within the configured ceiling.
 	// The registration owner sequences this with sends. Kernel-buffered backends return false.
-	bool ICIoLoop::f_IsSendWindowFull(CIoLoopRegistration *, umint, umint)
+	bool ICIoLoop::f_IsSendWindowFull(CIoLoopRegistration *_pRegistration, umint _nUnreleasedBytes, umint _nStartBytes)
 	{
 		return false;
 	}
 
 	// Adopt before registration. Returns false with the platform error if a permanent completion binding belongs to another loop.
-	bool ICIoLoop::f_AdoptHandle(CIoLoopHandle, int &)
+	bool ICIoLoop::f_AdoptHandle(CIoLoopHandle _Handle, int &o_Error)
 	{
 		return true;
 	}

@@ -32,7 +32,7 @@ namespace NMib::NSys::NPrivate
 		uint32 m_Version;
 		umint m_Reserved[8];
 		void (DMibCrossmoduleAPI *m_fRegister)(CThreadNotificationModule *_pModule);
-		void (DMibCrossmoduleAPI *m_fUnregister)(CThreadNotificationModule *_pModule, void (*_fDestroyLocals)(void *), void *_pContext);
+		void (DMibCrossmoduleAPI *m_fUnregister)(CThreadNotificationModule *_pModule, void (*_fDestroyLocals)(void *_pContext), void *_pContext);
 		void (DMibCrossmoduleAPI *m_fEnum)(FThreadEnumCallback *_fThread, void *_pContext);
 	};
 

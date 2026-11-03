@@ -63,7 +63,7 @@ namespace
 #	ifdef DPlatformFamily_macOS
 	// dlopen and dlsym block for as long as an unloading image runs its destructors, so a host key
 	// destructor that resolves a symbol stays marked as exiting for exactly that long
-	void fg_DyldBoundKeyDestructor(void *)
+	void fg_DyldBoundKeyDestructor(void *_pValue)
 	{
 		g_bExitingThreadInDyld = true;
 		while (!g_bUnloadStarted.f_Load())
@@ -82,12 +82,12 @@ namespace
 	}
 #	endif
 
-	void fg_ChurnKeyDestructor(void *)
+	void fg_ChurnKeyDestructor(void *_pValue)
 	{
 		NMib::NSys::fg_Thread_Sleep(0.002);
 	}
 
-	void *fg_ChurnBody(void *)
+	void *fg_ChurnBody(void *_pArgument)
 	{
 		pthread_setspecific(g_ChurnKey, (void *)1);
 
@@ -95,7 +95,7 @@ namespace
 	}
 
 	// Each worker is joined so none of them can reach the churn key after the suite deletes it
-	void *fg_ChurnThread(void *)
+	void *fg_ChurnThread(void *_pArgument)
 	{
 		while (!g_bChurnStop.f_Load())
 		{
@@ -113,9 +113,9 @@ namespace
 	NMib::NAtomic::TCAtomic<bool> g_bThreadLocalConstructed{false};
 	NMib::NAtomic::TCAtomic<bool> g_bThreadLocalOwnerExit{false};
 	umint g_ThreadLocalDestroyedOnThread = 0;
-	void (calling_convention_c *g_fConstructThreadLocal)(umint *) = nullptr;
+	void (calling_convention_c *g_fConstructThreadLocal)(umint *_pDestroyedOnThread) = nullptr;
 
-	void *fg_ThreadLocalOwnerThread(void *)
+	void *fg_ThreadLocalOwnerThread(void *_pArgument)
 	{
 		g_fConstructThreadLocal(&g_ThreadLocalDestroyedOnThread);
 		g_bThreadLocalConstructed = true;
@@ -348,7 +348,7 @@ namespace
 							pthread_key_create
 							(
 								&SlowKey
-								, [](void *)
+								, [](void *_pValue)
 								{
 									NMib::NSys::fg_Thread_Sleep(2.0);
 								}
@@ -388,7 +388,7 @@ namespace
 								(
 									&Short
 									, nullptr
-									, [](void *) -> void *
+									, [](void *_pArgument) -> void *
 									{
 										return nullptr;
 									}

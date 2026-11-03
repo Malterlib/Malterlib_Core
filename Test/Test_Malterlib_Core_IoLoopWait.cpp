@@ -44,7 +44,7 @@ namespace
 				NAtomic::TCAtomic<bool> bSent = false;
 				auto pSender = NThread::CThreadObject::fs_StartThread
 					(
-						[&](NThread::CThreadObject *) -> aint
+						[&](NThread::CThreadObject *_pThread) -> aint
 						{
 							Start.f_Wait();
 							bSent.f_Store(true);

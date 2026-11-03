@@ -72,24 +72,24 @@ namespace NMib
 		};
 	}
 
-	template <typename t_CType>
-	constexpr inline_always_debug t_CType &&fg_Forward(typename NPrivate::TCForwardHelper<t_CType>::CType &_ToForward)
+	template <typename tf_CType>
+	constexpr inline_always_debug tf_CType &&fg_Forward(typename NPrivate::TCForwardHelper<tf_CType>::CType &_ToForward)
 	{
-		return (t_CType &&)_ToForward;
+		return (tf_CType &&)_ToForward;
 	}
 #else
 
-	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType &&fg_Forward(NTraits::TCRemoveReference<t_CType> &_ToForward) noexcept
+	template <typename tf_CType>
+	mark_artificial mark_nodebug constexpr inline_always_debug tf_CType &&fg_Forward(NTraits::TCRemoveReference<tf_CType> &_ToForward) noexcept
 	{
-		return static_cast<t_CType &&>(_ToForward);
+		return static_cast<tf_CType &&>(_ToForward);
 	}
 
-	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType &&fg_Forward(NTraits::TCRemoveReference<t_CType> &&_ToForward) noexcept
+	template <typename tf_CType>
+	mark_artificial mark_nodebug constexpr inline_always_debug tf_CType &&fg_Forward(NTraits::TCRemoveReference<tf_CType> &&_ToForward) noexcept
 	{
-		static_assert(!NTraits::cIsLValueReference<t_CType>, "Cannot be a lvalue reference here");
-		return static_cast<t_CType &&>(_ToForward);
+		static_assert(!NTraits::cIsLValueReference<tf_CType>, "Cannot be a lvalue reference here");
+		return static_cast<tf_CType &&>(_ToForward);
 	}
 #endif
 
@@ -123,37 +123,37 @@ namespace NMib
 		};
 	}
 
-	template <typename t_CType, typename t_CTypeToCopyTo>
-	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_ForwardAs(t_CTypeToCopyTo &&_ToForward) noexcept
+	template <typename tf_CType, typename tf_CTypeToCopyTo>
+	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_ForwardAs(tf_CTypeToCopyTo &&_ToForward) noexcept
 	{
-		return static_cast<typename NPrivate::TCForwardCopyEvalHelper<t_CType &&, t_CTypeToCopyTo>::CType>(_ToForward);
+		return static_cast<typename NPrivate::TCForwardCopyEvalHelper<tf_CType &&, tf_CTypeToCopyTo>::CType>(_ToForward);
 	}
 
-	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug NTraits::TCRemoveReference<t_CType> &&fg_Move(t_CType &&_ToMove) noexcept
-		requires (!NTraits::cIsConst<NTraits::TCRemoveReference<t_CType>>) // Trying to move const value
+	template <typename tf_CType>
+	mark_artificial mark_nodebug constexpr inline_always_debug NTraits::TCRemoveReference<tf_CType> &&fg_Move(tf_CType &&_ToMove) noexcept
+		requires (!NTraits::cIsConst<NTraits::TCRemoveReference<tf_CType>>) // Trying to move const value
 	{
-		return ((NTraits::TCRemoveReference<t_CType> &&)_ToMove);
+		return ((NTraits::TCRemoveReference<tf_CType> &&)_ToMove);
 	}
 
-	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug NTraits::TCRemoveReference<t_CType> fg_ExchangeMove(t_CType &&_ToMove) noexcept
-		requires (!NTraits::cIsConst<NTraits::TCRemoveReference<t_CType>>) // Trying to move const value
+	template <typename tf_CType>
+	mark_artificial mark_nodebug constexpr inline_always_debug NTraits::TCRemoveReference<tf_CType> fg_ExchangeMove(tf_CType &&_ToMove) noexcept
+		requires (!NTraits::cIsConst<NTraits::TCRemoveReference<tf_CType>>) // Trying to move const value
 	{
-		return ((NTraits::TCRemoveReference<t_CType> &&)_ToMove);
+		return ((NTraits::TCRemoveReference<tf_CType> &&)_ToMove);
 	}
 
-	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug NTraits::TCRemoveReference<t_CType> &&fg_MoveAllowConst(t_CType &&_ToMove) noexcept
+	template <typename tf_CType>
+	mark_artificial mark_nodebug constexpr inline_always_debug NTraits::TCRemoveReference<tf_CType> &&fg_MoveAllowConst(tf_CType &&_ToMove) noexcept
 	{
-		return ((NTraits::TCRemoveReference<t_CType> &&)_ToMove);
+		return ((NTraits::TCRemoveReference<tf_CType> &&)_ToMove);
 	}
 
-	template <typename tf_CDestination, typename t_CSetTo>
-	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_Exchange(tf_CDestination &_Destination, t_CSetTo &&_SetTo)
+	template <typename tf_CDestination, typename tf_CSetTo>
+	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_Exchange(tf_CDestination &_Destination, tf_CSetTo &&_SetTo)
 	{
 		auto Temp = fg_Move(_Destination);
-		_Destination = fg_Forward<t_CSetTo>(_SetTo);
+		_Destination = fg_Forward<tf_CSetTo>(_SetTo);
 		return Temp;
 	}
 
@@ -179,28 +179,28 @@ namespace NMib
 			return CToType(fg_Forward<tf_CType>(_Value));
 	}
 
-	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType volatile &fg_Volatile(t_CType &_In) noexcept
+	template <typename tf_CType>
+	mark_artificial mark_nodebug constexpr inline_always_debug tf_CType volatile &fg_Volatile(tf_CType &_In) noexcept
 	{
-		return (t_CType volatile &)_In;
+		return (tf_CType volatile &)_In;
 	}
 
-	template <typename t_CType>
-	mark_artificial mark_nodebug constexpr inline_always_debug t_CType const &fg_Const(t_CType const &_In) noexcept
+	template <typename tf_CType>
+	mark_artificial mark_nodebug constexpr inline_always_debug tf_CType const &fg_Const(tf_CType const &_In) noexcept
 	{
-		return (t_CType const &)_In;
+		return (tf_CType const &)_In;
 	}
 
-	template <typename t_CType, TCEnableIf<NTraits::cIsRValueReference<t_CType> || !NTraits::cIsReference<t_CType>> * = nullptr>
-	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_ConstOrMove(t_CType &&_In) noexcept
+	template <typename tf_CType, TCEnableIf<NTraits::cIsRValueReference<tf_CType> || !NTraits::cIsReference<tf_CType>> * = nullptr>
+	mark_artificial mark_nodebug constexpr inline_always_debug decltype(auto) fg_ConstOrMove(tf_CType &&_In) noexcept
 	{
 		return fg_Move(_In);
 	}
 
-	template <typename t_CType, TCEnableIf<!NTraits::cIsRValueReference<t_CType> && NTraits::cIsReference<t_CType>> * = nullptr>
-	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_ConstOrMove(t_CType &&_In) noexcept -> NTraits::TCRemoveReference<t_CType> const &
+	template <typename tf_CType, TCEnableIf<!NTraits::cIsRValueReference<tf_CType> && NTraits::cIsReference<tf_CType>> * = nullptr>
+	mark_artificial mark_nodebug constexpr inline_always_debug auto fg_ConstOrMove(tf_CType &&_In) noexcept -> NTraits::TCRemoveReference<tf_CType> const &
 	{
-		return static_cast<NTraits::TCRemoveReference<t_CType> const &>(_In);
+		return static_cast<NTraits::TCRemoveReference<tf_CType> const &>(_In);
 	}
 
 	template <typename t_CValue>
@@ -247,10 +247,10 @@ namespace NMib
 		t_CType const &m_Data;
 	};
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug TCCopy<t_CType> fg_Copy(t_CType const &_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug TCCopy<tf_CType> fg_Copy(tf_CType const &_In)
 	{
-		return TCCopy<t_CType>(_In);
+		return TCCopy<tf_CType>(_In);
 	}
 
 	template <typename t_CType>
@@ -280,10 +280,10 @@ namespace NMib
 		t_CType const &m_Data;
 	};
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug TCByValue<t_CType> fg_ByValue(t_CType const &_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug TCByValue<tf_CType> fg_ByValue(tf_CType const &_In)
 	{
-		return TCByValue<t_CType>(_In);
+		return TCByValue<tf_CType>(_In);
 	}
 
 	template <typename t_CType>
@@ -433,23 +433,23 @@ namespace NMib
 		{
 			t_CFrom m_From;
 
-			template <typename ft_CFrom>
-			mark_nodebug TCAutoStaticCast(ft_CFrom &&_From)
-				: m_From(fg_Forward<ft_CFrom>(_From))
+			template <typename tf_CFrom>
+			mark_nodebug TCAutoStaticCast(tf_CFrom &&_From)
+				: m_From(fg_Forward<tf_CFrom>(_From))
 			{
 			}
 
-			template <typename ft_CTo>
-			mark_nodebug operator ft_CTo ()
+			template <typename tf_CTo>
+			mark_nodebug operator tf_CTo ()
 			{
-				return static_cast<ft_CTo>(m_From);
+				return static_cast<tf_CTo>(m_From);
 			}
 		};
 	}
-	template <typename ft_CFrom>
-	mark_nodebug NInternal::TCAutoStaticCast<ft_CFrom> fg_AutoStaticCast(ft_CFrom &&_From)
+	template <typename tf_CFrom>
+	mark_nodebug NInternal::TCAutoStaticCast<tf_CFrom> fg_AutoStaticCast(tf_CFrom &&_From)
 	{
-		return NInternal::TCAutoStaticCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
+		return NInternal::TCAutoStaticCast<tf_CFrom>(fg_Forward<tf_CFrom>(_From));
 	}
 
 	namespace NInternal
@@ -459,23 +459,23 @@ namespace NMib
 		{
 			t_CFrom m_From;
 
-			template <typename ft_CFrom>
-			mark_nodebug TCAutoConstCast(ft_CFrom &&_From)
-				: m_From(fg_Forward<ft_CFrom>(_From))
+			template <typename tf_CFrom>
+			mark_nodebug TCAutoConstCast(tf_CFrom &&_From)
+				: m_From(fg_Forward<tf_CFrom>(_From))
 			{
 			}
 
-			template <typename ft_CTo>
-			mark_nodebug operator ft_CTo ()
+			template <typename tf_CTo>
+			mark_nodebug operator tf_CTo ()
 			{
-				return const_cast<ft_CTo>(m_From);
+				return const_cast<tf_CTo>(m_From);
 			}
 		};
 	}
-	template <typename ft_CFrom>
-	mark_nodebug NInternal::TCAutoConstCast<ft_CFrom> fg_AutoConstCast(ft_CFrom &&_From)
+	template <typename tf_CFrom>
+	mark_nodebug NInternal::TCAutoConstCast<tf_CFrom> fg_AutoConstCast(tf_CFrom &&_From)
 	{
-		return NInternal::TCAutoConstCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
+		return NInternal::TCAutoConstCast<tf_CFrom>(fg_Forward<tf_CFrom>(_From));
 	}
 
 	namespace NInternal
@@ -485,23 +485,23 @@ namespace NMib
 		{
 			t_CFrom m_From;
 
-			template <typename ft_CFrom>
-			mark_nodebug TCAutoReinterpretCast(ft_CFrom &&_From)
-				: m_From(fg_Forward<ft_CFrom>(_From))
+			template <typename tf_CFrom>
+			mark_nodebug TCAutoReinterpretCast(tf_CFrom &&_From)
+				: m_From(fg_Forward<tf_CFrom>(_From))
 			{
 			}
 
-			template <typename ft_CTo>
-			mark_nodebug operator ft_CTo ()
+			template <typename tf_CTo>
+			mark_nodebug operator tf_CTo ()
 			{
-				return reinterpret_cast<ft_CTo>(m_From);
+				return reinterpret_cast<tf_CTo>(m_From);
 			}
 		};
 	}
-	template <typename ft_CFrom>
-	mark_nodebug NInternal::TCAutoReinterpretCast<ft_CFrom> fg_AutoReinterpretCast(ft_CFrom &&_From)
+	template <typename tf_CFrom>
+	mark_nodebug NInternal::TCAutoReinterpretCast<tf_CFrom> fg_AutoReinterpretCast(tf_CFrom &&_From)
 	{
-		return NInternal::TCAutoReinterpretCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
+		return NInternal::TCAutoReinterpretCast<tf_CFrom>(fg_Forward<tf_CFrom>(_From));
 	}
 
 	namespace NInternal
@@ -511,23 +511,23 @@ namespace NMib
 		{
 			t_CFrom m_From;
 
-			template <typename ft_CFrom>
-			mark_nodebug TCAutoCCast(ft_CFrom &&_From)
-				: m_From(fg_Forward<ft_CFrom>(_From))
+			template <typename tf_CFrom>
+			mark_nodebug TCAutoCCast(tf_CFrom &&_From)
+				: m_From(fg_Forward<tf_CFrom>(_From))
 			{
 			}
 
-			template <typename ft_CTo>
-			mark_nodebug operator ft_CTo ()
+			template <typename tf_CTo>
+			mark_nodebug operator tf_CTo ()
 			{
-				return (ft_CTo)(m_From);
+				return (tf_CTo)(m_From);
 			}
 		};
 	}
-	template <typename ft_CFrom>
-	mark_nodebug NInternal::TCAutoCCast<ft_CFrom> fg_AutoCCast(ft_CFrom &&_From)
+	template <typename tf_CFrom>
+	mark_nodebug NInternal::TCAutoCCast<tf_CFrom> fg_AutoCCast(tf_CFrom &&_From)
 	{
-		return NInternal::TCAutoCCast<ft_CFrom>(fg_Forward<ft_CFrom>(_From));
+		return NInternal::TCAutoCCast<tf_CFrom>(fg_Forward<tf_CFrom>(_From));
 	}
 
 	template <bool t_bCopy, bool t_bMove>
@@ -539,79 +539,79 @@ namespace NMib
 	struct TCSupportCopyMove<true, false>
 	{
 		TCSupportCopyMove() = default;
-		TCSupportCopyMove(TCSupportCopyMove const &) = default;
-		TCSupportCopyMove(TCSupportCopyMove &&) = delete;
+		TCSupportCopyMove(TCSupportCopyMove const &_Other) = default;
+		TCSupportCopyMove(TCSupportCopyMove &&_Other) = delete;
 
-		TCSupportCopyMove &operator = (TCSupportCopyMove const &) = default;
-		TCSupportCopyMove &operator = (TCSupportCopyMove &&) = delete;
+		TCSupportCopyMove &operator = (TCSupportCopyMove const &_Other) = default;
+		TCSupportCopyMove &operator = (TCSupportCopyMove &&_Other) = delete;
 	};
 
 	template <>
 	struct TCSupportCopyMove<false, true>
 	{
 		TCSupportCopyMove() = default;
-		TCSupportCopyMove(TCSupportCopyMove const &) = delete;
-		TCSupportCopyMove(TCSupportCopyMove &&) = default;
-		TCSupportCopyMove &operator = (TCSupportCopyMove const &) = delete;
-		TCSupportCopyMove &operator = (TCSupportCopyMove &&) = default;
+		TCSupportCopyMove(TCSupportCopyMove const &_Other) = delete;
+		TCSupportCopyMove(TCSupportCopyMove &&_Other) = default;
+		TCSupportCopyMove &operator = (TCSupportCopyMove const &_Other) = delete;
+		TCSupportCopyMove &operator = (TCSupportCopyMove &&_Other) = default;
 	};
 
 	template <>
 	struct TCSupportCopyMove<false, false>
 	{
 		TCSupportCopyMove() = default;
-		TCSupportCopyMove(TCSupportCopyMove const &) = delete;
-		TCSupportCopyMove(TCSupportCopyMove &&) = delete;
-		TCSupportCopyMove &operator = (TCSupportCopyMove const &) = delete;
-		TCSupportCopyMove &operator = (TCSupportCopyMove &&) = delete;
+		TCSupportCopyMove(TCSupportCopyMove const &_Other) = delete;
+		TCSupportCopyMove(TCSupportCopyMove &&_Other) = delete;
+		TCSupportCopyMove &operator = (TCSupportCopyMove const &_Other) = delete;
+		TCSupportCopyMove &operator = (TCSupportCopyMove &&_Other) = delete;
 	};
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType &fg_RemoveQualifiers(t_CType &_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType &fg_RemoveQualifiers(tf_CType &_In)
 	{
 		return _In;
 	}
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType &fg_RemoveQualifiers(t_CType const &_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType &fg_RemoveQualifiers(tf_CType const &_In)
 	{
-		return const_cast<t_CType &>(_In);
+		return const_cast<tf_CType &>(_In);
 	}
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType &fg_RemoveQualifiers(t_CType volatile &_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType &fg_RemoveQualifiers(tf_CType volatile &_In)
 	{
-		return const_cast<t_CType &>(_In);
+		return const_cast<tf_CType &>(_In);
 	}
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType &fg_RemoveQualifiers(t_CType const volatile &_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType &fg_RemoveQualifiers(tf_CType const volatile &_In)
 	{
-		return const_cast<t_CType &>(_In);
+		return const_cast<tf_CType &>(_In);
 	}
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType &&_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType &&fg_RemoveQualifiers(tf_CType &&_In)
 	{
 		return fg_Move(_In);
 	}
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType const &&_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType &&fg_RemoveQualifiers(tf_CType const &&_In)
 	{
-		return fg_Move(const_cast<t_CType &>(_In));
+		return fg_Move(const_cast<tf_CType &>(_In));
 	}
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType volatile &&_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType &&fg_RemoveQualifiers(tf_CType volatile &&_In)
 	{
-		return fg_Move(const_cast<t_CType &>(_In));
+		return fg_Move(const_cast<tf_CType &>(_In));
 	}
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType &&fg_RemoveQualifiers(t_CType const volatile &&_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType &&fg_RemoveQualifiers(tf_CType const volatile &&_In)
 	{
-		return fg_Move(const_cast<t_CType &>(_In));
+		return fg_Move(const_cast<tf_CType &>(_In));
 	}
 
 	template <typename t_CType>
@@ -663,36 +663,36 @@ namespace NMib
 		return TCLambdaMover<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>>(fg_Move(_Type));
 	}
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType volatile const &fg_ConstVolatile(t_CType &_In)
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType volatile const &fg_ConstVolatile(tf_CType &_In)
 	{
-		return (t_CType volatile const &)_In;
+		return (tf_CType volatile const &)_In;
 	}
 
-	template <typename t_CType>
-	mark_nodebug static constexpr inline_small t_CType fg_PowerOfTwoMinusOne(uaint _Power)
+	template <typename tf_CType>
+	mark_nodebug static constexpr inline_small tf_CType fg_PowerOfTwoMinusOne(uaint _Power)
 	{
-		return ((t_CType(1)) << (_Power - 1)) + (((t_CType(1)) << (_Power - 1)) - t_CType(1));
+		return ((tf_CType(1)) << (_Power - 1)) + (((tf_CType(1)) << (_Power - 1)) - tf_CType(1));
 	}
 
-	template <typename t_CType0, typename t_CType1>
-	static inline_small void fg_Swap(t_CType0 &_Left, t_CType1 &_Right)
+	template <typename tf_CType0, typename tf_CType1>
+	static inline_small void fg_Swap(tf_CType0 &_Left, tf_CType1 &_Right)
 	{
-		t_CType0 Temp = fg_Move(_Left);
+		tf_CType0 Temp = fg_Move(_Left);
 		_Left = fg_Move(_Right);
 		_Right = fg_Move(Temp);
 	}
 
-	template <typename t_CTo, typename t_CFrom>
-	static constexpr inline_small t_CTo fg_BitCast(t_CFrom const &_From)
+	template <typename tf_CTo, typename tf_CFrom>
+	static constexpr inline_small tf_CTo fg_BitCast(tf_CFrom const &_From)
 	{
-		return std::bit_cast<t_CTo>(_From);
+		return std::bit_cast<tf_CTo>(_From);
 	}
 
-	template <typename t_CType>
-	mark_nodebug inline_always_debug t_CType *fg_NullPtr()
+	template <typename tf_CType>
+	mark_nodebug inline_always_debug tf_CType *fg_NullPtr()
 	{
-		return (t_CType *)nullptr;
+		return (tf_CType *)nullptr;
 	}
 
 	template <typename t_CType>
@@ -831,28 +831,28 @@ namespace NMib
 		using CSwapper = TCHelper_ByteSwap<uint64>;
 	};
 
-	template <typename t_CInt>
-	inline_small t_CInt fg_ByteSwap(t_CInt _In)
+	template <typename tf_CInt>
+	inline_small tf_CInt fg_ByteSwap(tf_CInt _In)
 	{
 		// Static branch
-		if constexpr (TCHelper_ByteSwap<t_CInt>::mc_DefaultImplementation)
+		if constexpr (TCHelper_ByteSwap<tf_CInt>::mc_DefaultImplementation)
 		{
-			using CSwapper = typename TCHelper_ByteSwapChooseBySize<sizeof(t_CInt), t_CInt>::CSwapper;
+			using CSwapper = typename TCHelper_ByteSwapChooseBySize<sizeof(tf_CInt), tf_CInt>::CSwapper;
 			return CSwapper::fs_Swap((typename CSwapper::CType &)_In);
 		}
 		else
-			return TCHelper_ByteSwap<t_CInt>::fs_Swap(_In);
+			return TCHelper_ByteSwap<tf_CInt>::fs_Swap(_In);
 	}
 
-	template <typename t_CInt>
-	inline_small void fg_ByteSwap(t_CInt *_pIn, umint _Len)
+	template <typename tf_CInt>
+	inline_small void fg_ByteSwap(tf_CInt *_pIn, umint _Len)
 	{
 		for (umint i = 0; i < _Len; ++i)
 			_pIn[i] = fg_ByteSwap(_pIn[i]);
 	}
 
-	template <typename t_CInt>
-	inline_small t_CInt fg_ByteSwapLE(t_CInt _In)
+	template <typename tf_CInt>
+	inline_small tf_CInt fg_ByteSwapLE(tf_CInt _In)
 	{
 #ifdef DMibPLittleEndian
 		return _In;
@@ -861,8 +861,8 @@ namespace NMib
 #endif
 	}
 
-	template <typename t_CInt>
-	inline_small t_CInt fg_ByteSwapBE(t_CInt _In)
+	template <typename tf_CInt>
+	inline_small tf_CInt fg_ByteSwapBE(tf_CInt _In)
 	{
 #ifdef DMibPLittleEndian
 		return fg_ByteSwap(_In);
@@ -1026,34 +1026,34 @@ namespace NMib
 		return (_First >= tf_CFirst(0)) ? _First : -_First;
 	}
 
-	template <typename t_ToAlign>
-	constexpr inline_small t_ToAlign fg_AlignUpConstExpr(t_ToAlign _pMem, umint _Alignment)
+	template <typename tf_CToAlign>
+	constexpr inline_small tf_CToAlign fg_AlignUpConstExpr(tf_CToAlign _pMem, umint _Alignment)
 	{
-		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
-		return (t_ToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(tf_CToAlign)>>;
+		return (tf_CToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
-	template <typename t_ToAlign>
-	constexpr inline_small t_ToAlign fg_AlignDownConstExpr(t_ToAlign _pMem, umint _Alignment)
+	template <typename tf_CToAlign>
+	constexpr inline_small tf_CToAlign fg_AlignDownConstExpr(tf_CToAlign _pMem, umint _Alignment)
 	{
-		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
-		return (t_ToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(tf_CToAlign)>>;
+		return (tf_CToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
-	template <typename t_ToAlign>
-	inline_small t_ToAlign fg_AlignUp(t_ToAlign _pMem, umint _Alignment)
+	template <typename tf_CToAlign>
+	inline_small tf_CToAlign fg_AlignUp(tf_CToAlign _pMem, umint _Alignment)
 	{
-		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
+		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(tf_CToAlign)>>;
 		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_pMem) == 0);
-		return (t_ToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+		return (tf_CToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
-	template <typename t_ToAlign>
-	inline_small t_ToAlign fg_AlignDown(t_ToAlign _pMem, umint _Alignment)
+	template <typename tf_CToAlign>
+	inline_small tf_CToAlign fg_AlignDown(tf_CToAlign _pMem, umint _Alignment)
 	{
-		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(t_ToAlign)>>;
+		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(tf_CToAlign)>>;
 		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_pMem) == 0);
-		return (t_ToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+		return (tf_CToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
 	template <typename t_CToAlign, t_CToAlign t_Value, t_CToAlign t_Align>
@@ -1068,14 +1068,14 @@ namespace NMib
 		static constexpr t_CToAlign mc_Value = t_Value & (~(t_Align - 1));
 	};
 
-	template <typename t_CType>
-	inline_small t_CType fg_HighPart(t_CType _Data)
+	template <typename tf_CType>
+	inline_small tf_CType fg_HighPart(tf_CType _Data)
 	{
 		return _Data >> (sizeof(_Data) * 4);
 	}
 
-	template <typename t_CType>
-	inline_small t_CType fg_LowPart(t_CType _Data)
+	template <typename tf_CType>
+	inline_small tf_CType fg_LowPart(tf_CType _Data)
 	{
 		return _Data & ((1 << sizeof(_Data) * 4) - 1);
 	}
@@ -1101,8 +1101,8 @@ namespace NMib
 
 	struct CSort_Default
 	{
-		template <typename t_CKey0, typename t_CKey1>
-		static constexpr inline_small auto operator () (t_CKey0 &&_Left, t_CKey1 &&_Right) noexcept(noexcept(_Left <=> _Right))
+		template <typename tf_CKey0, typename tf_CKey1>
+		static constexpr inline_small auto operator () (tf_CKey0 &&_Left, tf_CKey1 &&_Right) noexcept(noexcept(_Left <=> _Right))
 		{
 			return _Left <=> _Right;
 		}
@@ -1173,26 +1173,26 @@ namespace NMib
 	}
 
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-	template <typename t_CInt>
-	constexpr inline_small bool fg_MultiplyOverflow(t_CInt _Left, t_CInt _Right, t_CInt &o_Result) noexcept
-		requires (NTraits::cIsFundamental<t_CInt> && NTraits::cIsInteger<t_CInt> && !NTraits::cIsSame<NTraits::TCRemoveQualifiers<t_CInt>, bool>)
+	template <typename tf_CInt>
+	constexpr inline_small bool fg_MultiplyOverflow(tf_CInt _Left, tf_CInt _Right, tf_CInt &o_Result) noexcept
+		requires (NTraits::cIsFundamental<tf_CInt> && NTraits::cIsInteger<tf_CInt> && !NTraits::cIsSame<NTraits::TCRemoveQualifiers<tf_CInt>, bool>)
 	{
 		return __builtin_mul_overflow(_Left, _Right, &o_Result);
 	}
 #endif
 
-	template <typename t_CInt>
-	constexpr inline_small bool fg_MultiplyOverflow(t_CInt _Left, t_CInt _Right, t_CInt &o_Result) noexcept
+	template <typename tf_CInt>
+	constexpr inline_small bool fg_MultiplyOverflow(tf_CInt _Left, tf_CInt _Right, tf_CInt &o_Result) noexcept
 		requires
 		(
-			NTraits::cIsInteger<t_CInt>
+			NTraits::cIsInteger<tf_CInt>
 #if defined(DCompiler_clang) || defined(DCompiler_gcc)
-			&& !NTraits::cIsFundamental<t_CInt>
+			&& !NTraits::cIsFundamental<tf_CInt>
 #endif
-			&& !NTraits::cIsSame<NTraits::TCRemoveQualifiers<t_CInt>, bool>
+			&& !NTraits::cIsSame<NTraits::TCRemoveQualifiers<tf_CInt>, bool>
 		)
 	{
-		if constexpr (NTraits::cIsSigned<t_CInt>)
+		if constexpr (NTraits::cIsSigned<tf_CInt>)
 		{
 			if (_Left == 0 || _Right == 0)
 			{
@@ -1204,26 +1204,26 @@ namespace NMib
 			{
 				if (_Right > 0)
 				{
-					if (_Left > TCLimitsInt<t_CInt>::mc_Max / _Right)
+					if (_Left > TCLimitsInt<tf_CInt>::mc_Max / _Right)
 						return true;
 				}
-				else if (_Right < TCLimitsInt<t_CInt>::mc_Min / _Left)
+				else if (_Right < TCLimitsInt<tf_CInt>::mc_Min / _Left)
 					return true;
 			}
 			else
 			{
 				if (_Right > 0)
 				{
-					if (_Left < TCLimitsInt<t_CInt>::mc_Min / _Right)
+					if (_Left < TCLimitsInt<tf_CInt>::mc_Min / _Right)
 						return true;
 				}
-				else if (_Right < TCLimitsInt<t_CInt>::mc_Max / _Left)
+				else if (_Right < TCLimitsInt<tf_CInt>::mc_Max / _Left)
 					return true;
 			}
 		}
 		else
 		{
-			if (_Right != 0 && _Left > TCLimitsInt<t_CInt>::mc_Max / _Right)
+			if (_Right != 0 && _Left > TCLimitsInt<tf_CInt>::mc_Max / _Right)
 				return true;
 		}
 
@@ -1231,88 +1231,88 @@ namespace NMib
 		return false;
 	}
 
-	template <typename t_CInt0, typename t_CInt1>
-	bool fg_SafeLargerThan(t_CInt0 const &_Left, t_CInt1 const &_Right)
+	template <typename tf_CInt0, typename tf_CInt1>
+	bool fg_SafeLargerThan(tf_CInt0 const &_Left, tf_CInt1 const &_Right)
 	{
-		if constexpr (sizeof(t_CInt0) > sizeof(t_CInt1))
+		if constexpr (sizeof(tf_CInt0) > sizeof(tf_CInt1))
 		{
-			if constexpr (NTraits::cIsSigned<t_CInt0>)
+			if constexpr (NTraits::cIsSigned<tf_CInt0>)
 			{
-				if constexpr (NTraits::cIsSigned<t_CInt1>)
-					return _Left > t_CInt0(_Right);
+				if constexpr (NTraits::cIsSigned<tf_CInt1>)
+					return _Left > tf_CInt0(_Right);
 				else
 				{
-					t_CInt0 Zero(0);
+					tf_CInt0 Zero(0);
 					if (_Left < Zero)
 						return false;
-					return _Left > t_CInt0(_Right);
+					return _Left > tf_CInt0(_Right);
 				}
 			}
 			else
 			{
-				if constexpr (NTraits::cIsSigned<t_CInt1>)
+				if constexpr (NTraits::cIsSigned<tf_CInt1>)
 				{
-					t_CInt1 Zero(0);
+					tf_CInt1 Zero(0);
 					if (_Right < Zero)
 						return true;
-					return _Left > t_CInt0(_Right);
+					return _Left > tf_CInt0(_Right);
 				}
 				else
-					return _Left > t_CInt0(_Right);
+					return _Left > tf_CInt0(_Right);
 			}
 		}
-		else if constexpr (sizeof(t_CInt0) < sizeof(t_CInt1))
+		else if constexpr (sizeof(tf_CInt0) < sizeof(tf_CInt1))
 		{
-			if constexpr (NTraits::cIsSigned<t_CInt0>)
+			if constexpr (NTraits::cIsSigned<tf_CInt0>)
 			{
-				if constexpr (NTraits::cIsSigned<t_CInt1>)
-					return t_CInt1(_Left) > _Right;
+				if constexpr (NTraits::cIsSigned<tf_CInt1>)
+					return tf_CInt1(_Left) > _Right;
 				else
 				{
-					t_CInt0 Zero(0);
+					tf_CInt0 Zero(0);
 					if (_Left < Zero)
 						return false;
-					return t_CInt1(_Left) > _Right;
+					return tf_CInt1(_Left) > _Right;
 				}
 			}
 			else
 			{
-				if constexpr (NTraits::cIsSigned<t_CInt1>)
+				if constexpr (NTraits::cIsSigned<tf_CInt1>)
 				{
-					t_CInt1 Zero(0);
+					tf_CInt1 Zero(0);
 					if (_Right < Zero)
 						return true;
-					return t_CInt1(_Left) > _Right;
+					return tf_CInt1(_Left) > _Right;
 				}
 				else
-					return t_CInt1(_Left) > _Right;
+					return tf_CInt1(_Left) > _Right;
 			}
 		}
 		else
 		{
-			if constexpr (NTraits::cIsSigned<t_CInt0>)
+			if constexpr (NTraits::cIsSigned<tf_CInt0>)
 			{
-				if constexpr (NTraits::cIsSigned<t_CInt1>)
-					return _Left > t_CInt0(_Right);
+				if constexpr (NTraits::cIsSigned<tf_CInt1>)
+					return _Left > tf_CInt0(_Right);
 				else
 				{
-					t_CInt0 Zero(0);
+					tf_CInt0 Zero(0);
 					if (_Left < Zero)
 						return false;
-					return t_CInt1(_Left) > _Right;
+					return tf_CInt1(_Left) > _Right;
 				}
 			}
 			else
 			{
-				if constexpr (NTraits::cIsSigned<t_CInt1>)
+				if constexpr (NTraits::cIsSigned<tf_CInt1>)
 				{
-					t_CInt1 Zero(0);
+					tf_CInt1 Zero(0);
 					if (_Right < Zero)
 						return true;
-					return _Left > t_CInt0(_Right);
+					return _Left > tf_CInt0(_Right);
 				}
 				else
-					return _Left > t_CInt0(_Right);
+					return _Left > tf_CInt0(_Right);
 			}
 		}
 	}
@@ -1325,8 +1325,8 @@ namespace NMib
 			struct TCDetermineStringFormatterReturnType;
 		}
 
-		template <typename t_CFormatter, typename t_CData>
-		inline_small typename NPrivate::TCDetermineStringFormatterReturnType<t_CFormatter, t_CData>::CType fg_CreateStringFormatter(t_CFormatter &_Formatter, t_CData const &_Data);
+		template <typename tf_CFormatter, typename tf_CData>
+		inline_small typename NPrivate::TCDetermineStringFormatterReturnType<tf_CFormatter, tf_CData>::CType fg_CreateStringFormatter(tf_CFormatter &_Formatter, tf_CData const &_Data);
 	}
 	// Auto clear int
 
@@ -1377,23 +1377,23 @@ namespace NMib
 			return *this;
 		}
 
-		template <typename t_CFormatter>
-		int f_GetStringFormatType(t_CFormatter &_Formatter);
+		template <typename tf_CFormatter>
+		int f_GetStringFormatType(tf_CFormatter &_Formatter);
 
-		template <typename t_CFormatter>
-		auto f_CreateStringFormatter(t_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, m_Int))
+		template <typename tf_CFormatter>
+		auto f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, m_Int))
 		{
 			return NStr::fg_CreateStringFormatter(_Formatter, m_Int);
 		}
 
-		template <typename t_CStream>
-		void f_Feed(t_CStream &_Stream) const
+		template <typename tf_CStream>
+		void f_Feed(tf_CStream &_Stream) const
 		{
 			_Stream << m_Int;
 		}
 
-		template <typename t_CStream>
-		void f_Consume(t_CStream &_Stream)
+		template <typename tf_CStream>
+		void f_Consume(tf_CStream &_Stream)
 		{
 			_Stream >> m_Int;
 		}
@@ -1479,23 +1479,23 @@ namespace NMib
 			return *this;
 		}
 
-		template <typename t_CFormatter>
-		int f_GetStringFormatType(t_CFormatter &_Formatter);
+		template <typename tf_CFormatter>
+		int f_GetStringFormatType(tf_CFormatter &_Formatter);
 
-		template <typename t_CFormatter>
-		auto f_CreateStringFormatter(t_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, m_Value))
+		template <typename tf_CFormatter>
+		auto f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, m_Value))
 		{
 			return NStr::fg_CreateStringFormatter(_Formatter, m_Value);
 		}
 
-		template <typename t_CStream>
-		void f_Feed(t_CStream &_Stream) const
+		template <typename tf_CStream>
+		void f_Feed(tf_CStream &_Stream) const
 		{
 			_Stream << m_Value;
 		}
 
-		template <typename t_CStream>
-		void f_Consume(t_CStream &_Stream)
+		template <typename tf_CStream>
+		void f_Consume(tf_CStream &_Stream)
 		{
 			_Stream >> m_Value;
 		}
@@ -1556,8 +1556,8 @@ namespace NMib
 	template <typename t_CType, t_CType t_Argument0>
 	constexpr inline t_CType gc_ConstantAbs = (t_Argument0 < t_CType(0) ? (t_CType(0) - t_Argument0) : t_Argument0);
 
-	template <typename t_CAny>
-	static t_CAny fg_MakeSymbolActive(t_CAny &&_Other)
+	template <typename tf_CAny>
+	static tf_CAny fg_MakeSymbolActive(tf_CAny &&_Other)
 	{
 		return _Other;
 	}

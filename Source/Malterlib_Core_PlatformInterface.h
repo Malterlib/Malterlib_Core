@@ -179,7 +179,7 @@ namespace NMib
 		umint fg_Thread_AllocLocal();
 
 #ifdef DMibPSupportThreadLocalDestructors
-		umint fg_Thread_AllocLocalWithDestructor(void(_pDestructor)(void *));
+		umint fg_Thread_AllocLocalWithDestructor(void(_pDestructor)(void *_pData));
 		void fg_Thread_FreeLocalWithDestructor(umint _iStorage);
 #endif
 
@@ -254,7 +254,7 @@ namespace NMib
 		\***************************************************************************************************/
 
 		CStackTraceInfo *fg_Debug_AquireStackTraceInfo(CMibCodeAddress _Address);
-		bool fg_Debug_AquireStackTraceInfo(CStackTraceInfo &_oInfo, CMibCodeAddress _Address, bool _bCanAllocNonTracked);
+		bool fg_Debug_AquireStackTraceInfo(CStackTraceInfo &o_Info, CMibCodeAddress _Address, bool _bCanAllocNonTracked);
 		void fg_Debug_ReleaseStackTraceInfo(CStackTraceInfo *_pInfo);
 
 		void fg_DebugOutput(ch8 const *_pToOutput);

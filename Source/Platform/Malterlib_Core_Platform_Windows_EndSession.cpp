@@ -64,18 +64,18 @@ namespace NMib::NPlatform
 			}
 
 		private:
-			static LRESULT WINAPI fsp_WindowProc(HWND _hWnd, UINT _Message, WPARAM _wParam, LPARAM _lParam)
+			static LRESULT WINAPI fsp_WindowProc(HWND _Window, UINT _Message, WPARAM _WParam, LPARAM _LParam)
 			{
 				switch (_Message)
 				{
 				case WM_ENDSESSION:
 					// Another application can veto session end; commit state only for a confirmed WM_ENDSESSION.
-					if (_wParam)
+					if (_WParam)
 						fg_ReportIsShuttingDown();
 					break;
 
 				case WM_CLOSE:
-					DestroyWindow(_hWnd);
+					DestroyWindow(_Window);
 					return 0;
 
 				case WM_DESTROY:
@@ -85,7 +85,7 @@ namespace NMib::NPlatform
 				default: break;
 				}
 
-				return DefWindowProcA(_hWnd, _Message, _wParam, _lParam);
+				return DefWindowProcA(_Window, _Message, _WParam, _LParam);
 			}
 
 			NThread::CEvent mp_WindowSettled;

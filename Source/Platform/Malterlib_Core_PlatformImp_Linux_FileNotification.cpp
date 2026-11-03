@@ -42,7 +42,7 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 		fcntl(m_NotifyDescriptor, F_SETFD, fcntl(m_NotifyDescriptor, F_GETFD) | FD_CLOEXEC);
 	}
 
-	int (*fLocal_epoll_create1)(int __flags) __THROW;
+	int (*fLocal_epoll_create1)(int _Flags) __THROW;
 
 	(void * &)fLocal_epoll_create1 = dlsym(RTLD_DEFAULT, "epoll_create1");
 

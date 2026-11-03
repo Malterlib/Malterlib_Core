@@ -237,7 +237,7 @@ NMib::NNetwork::ENetAddressType CWindowsSocketContext::f_GetAddressType(CWindows
 	return _Address.f_GetType();
 }
 
-bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes)
+bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes)
 {
 	NMib::NNetwork::ENetAddressType Type = _Address.f_GetType();
 
@@ -251,7 +251,7 @@ bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMi
 			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
 				return false;
 
-			NMib::NNetwork::CNetAddressTCPv4 &Addr = *(NMib::NNetwork::CNetAddressTCPv4 *)_opRawData;
+			NMib::NNetwork::CNetAddressTCPv4 &Addr = *(NMib::NNetwork::CNetAddressTCPv4 *)o_pRawData;
 			fp_FromNative(_Address.f_GetTCPv4(), Addr);
 
 			return true;
@@ -263,7 +263,7 @@ bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMi
 			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
 				return false;
 
-			NMib::NNetwork::CNetAddressTCPv6 &Addr = *(NMib::NNetwork::CNetAddressTCPv6 *)_opRawData;
+			NMib::NNetwork::CNetAddressTCPv6 &Addr = *(NMib::NNetwork::CNetAddressTCPv6 *)o_pRawData;
 			fp_FromNative(_Address.f_GetTCPv6(), Addr);
 
 			return true;
@@ -533,9 +533,9 @@ auto CWindowsSocketContext::f_AsyncResolveAddress_Open
 	return mp_Resolver.f_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bool CWindowsSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress * &_opAddress, NMib::NStr::CStr &_Error)
+bool CWindowsSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress * &o_pAddress, NMib::NStr::CStr &_Error)
 {
-	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress &)_opAddress, _Error);
+	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress &)o_pAddress, _Error);
 }
 
 void CWindowsSocketContext::f_AsyncResolveAddress_Close(void *_pResolver)
@@ -1409,10 +1409,10 @@ static HANDLE fsg_OpenUnixListenFile(NStr::CStr const &_Path, DWORD _Access)
 }
 
 // Empty identity means the platform cannot identify this file.
-static NFile::CUniqueFileIdentifier fsg_GetUnixListenFileIdentity(HANDLE _hFile)
+static NFile::CUniqueFileIdentifier fsg_GetUnixListenFileIdentity(HANDLE _File)
 {
 	NFile::CUniqueFileIdentifier Identity;
-	if (!NMib::NPlatform::fg_GetUniqueFileIdentifier(_hFile, Identity))
+	if (!NMib::NPlatform::fg_GetUniqueFileIdentifier(_File, Identity))
 		Identity = {};
 
 	return Identity;

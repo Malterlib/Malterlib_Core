@@ -171,12 +171,12 @@ namespace NMib
 
 			static void fs_EventCallback
 				(
-					ConstFSEventStreamRef streamRef
-					, void *clientCallBackInfo
-					, size_t numEvents
-					, void *eventPaths
-					, FSEventStreamEventFlags const eventFlags[]
-					, FSEventStreamEventId const eventIDs[]
+					ConstFSEventStreamRef _pStream
+					, void *_pClientCallBackInfo
+					, size_t _nEvents
+					, void *_pEventPaths
+					, FSEventStreamEventFlags const _EventFlags[]
+					, FSEventStreamEventId const _EventIDs[]
 				)
 			;
 

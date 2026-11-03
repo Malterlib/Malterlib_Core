@@ -20,7 +20,7 @@ namespace
 		{
 		}
 
-		void f_WaitAndDispatchTimeout(pfp64) override
+		void f_WaitAndDispatchTimeout(pfp64 _Timeout) override
 		{
 		}
 
@@ -37,16 +37,24 @@ namespace
 		{
 		}
 
-		void f_Deregister(NSys::CIoLoopRegistration *) override
+		void f_Deregister(NSys::CIoLoopRegistration *_pRegistration) override
 		{
 		}
 
-		void f_DeregisterAsync(NSys::CIoLoopRegistration *, NFunction::TCFunctionMovable<void ()> &&_fOnClosed) override
+		void f_DeregisterAsync(NSys::CIoLoopRegistration *_pRegistration, NFunction::TCFunctionMovable<void ()> &&_fOnClosed) override
 		{
 			_fOnClosed();
 		}
 
-		auto f_Register(NSys::CIoLoopHandle _Handle, void *, NSys::EIoLoopEvent, NSys::FIoLoopReadinessCallback, bool, NSys::CIoLoopRegisterOptions const &)
+		auto f_Register
+			(
+				NSys::CIoLoopHandle _Handle
+				, void *_pToken
+				, NSys::EIoLoopEvent _EventMask
+				, NSys::FIoLoopReadinessCallback _fOnEvents
+				, bool _bNotifyRegistered
+				, NSys::CIoLoopRegisterOptions const &_Options
+			)
 			-> NSys::CIoLoopRegistration * override
 		{
 			m_PipeDescriptor = int(_Handle);
@@ -146,7 +154,7 @@ namespace
 				};
 
 				// Darwin can deliver the replaced disposition during concurrent raises; keep the fallback callable.
-				Ignore.sa_handler = [](int)
+				Ignore.sa_handler = [](int _Signal)
 					{
 					}
 				;

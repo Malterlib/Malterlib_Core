@@ -121,7 +121,7 @@ private:
 		}
 	};
 
-	NMib::NStr::CStr fp_GetObjectInfo(HANDLE hObject, NLocalWindows::OBJECT_INFORMATION_CLASS objInfoClass, CProcessingInfo &_ProcessInfo)
+	NMib::NStr::CStr fp_GetObjectInfo(HANDLE _Object, NLocalWindows::OBJECT_INFORMATION_CLASS _ObjectInfoClass, CProcessingInfo &_ProcessInfo)
 	{
 		if (m_fNTQueryObject)
 		{
@@ -132,7 +132,7 @@ private:
 			NTSTATUS ntReturn;
 			{
 				DMibUnlock(_ProcessInfo.m_Lock);
-				ntReturn = m_fNTQueryObject(hObject, objInfoClass, pObjectInfo, dwSize, &dwSize);
+				ntReturn = m_fNTQueryObject(_Object, _ObjectInfoClass, pObjectInfo, dwSize, &dwSize);
 			}
 			if ((ntReturn == STATUS_BUFFER_OVERFLOW) || (ntReturn == STATUS_INFO_LENGTH_MISMATCH))
 			{
@@ -140,7 +140,7 @@ private:
 				pObjectInfo = (NLocalWindows::POBJECT_NAME_INFORMATION)_ProcessInfo.m_DataBuffer.f_GetArray();
 				{
 					DMibUnlock(_ProcessInfo.m_Lock);
-					ntReturn = m_fNTQueryObject(hObject, objInfoClass, pObjectInfo, dwSize, &dwSize);
+					ntReturn = m_fNTQueryObject(_Object, _ObjectInfoClass, pObjectInfo, dwSize, &dwSize);
 				}
 			}
 			if ((ntReturn >= STATUS_SUCCESS) && (pObjectInfo->Buffer != nullptr))
@@ -230,15 +230,15 @@ private:
 		}
 	}
 
-	NMib::NStr::CStr fp_GetProcessName(HANDLE _hProcess)
+	NMib::NStr::CStr fp_GetProcessName(HANDLE _Process)
 	{
 		CWStr BaseName;
 		if (m_fGetProcessImageFileNameW)
-			m_fGetProcessImageFileNameW(_hProcess, BaseName.f_GetStr(1024), 1024);
+			m_fGetProcessImageFileNameW(_Process, BaseName.f_GetStr(1024), 1024);
 		else if (m_fGetModuleFileNameExW)
-			m_fGetModuleFileNameExW(_hProcess, nullptr, BaseName.f_GetStr(1024), 1024);
+			m_fGetModuleFileNameExW(_Process, nullptr, BaseName.f_GetStr(1024), 1024);
 		else if (m_fGetModuleBaseNameW)
-			m_fGetModuleBaseNameW(_hProcess, nullptr, BaseName.f_GetStr(1024), 1024);
+			m_fGetModuleBaseNameW(_Process, nullptr, BaseName.f_GetStr(1024), 1024);
 
 		return NFile::NPlatform::fg_ConvertFromWindowsPath(BaseName);
 	}
@@ -334,14 +334,14 @@ public:
 private:
 	// PSAPI
 	HMODULE m_PSAPIDll;
-	BOOL (WINAPI *m_fEnumProcesses)(DWORD *lpidProcess, DWORD cb, DWORD *cbNeeded);
-	DWORD (WINAPI *m_fGetModuleBaseNameW)(HANDLE hProcess, HMODULE hModule, LPWSTR lpBaseName, DWORD nSize);
-	DWORD (WINAPI *m_fGetModuleFileNameExW)(HANDLE hProcess, HMODULE hModule, LPWSTR lpFilename, DWORD nSize);
-	DWORD (WINAPI *m_fGetProcessImageFileNameW)(HANDLE hProcess, LPWSTR lpImageFileName, DWORD nSize);
+	BOOL (WINAPI *m_fEnumProcesses)(DWORD *o_pProcessIDs, DWORD _nBytes, DWORD *o_pBytesNeeded);
+	DWORD (WINAPI *m_fGetModuleBaseNameW)(HANDLE _pProcess, HMODULE _pModule, LPWSTR o_pBaseName, DWORD _nSize);
+	DWORD (WINAPI *m_fGetModuleFileNameExW)(HANDLE _pProcess, HMODULE _pModule, LPWSTR o_pFileName, DWORD _nSize);
+	DWORD (WINAPI *m_fGetProcessImageFileNameW)(HANDLE _pProcess, LPWSTR o_pImageFileName, DWORD _nSize);
 
 	// NTDLL
 	HMODULE m_NTDLLDll;
-	NTSTATUS (WINAPI *m_fNTQuerySystemInformation)(DWORD SystemInformationClass, PVOID SystemInformation, DWORD SystemInformationLength, PDWORD ReturnLength);
-	NTSTATUS (WINAPI *m_fNTQueryObject)(HANDLE ObjectHandle, NLocalWindows::OBJECT_INFORMATION_CLASS ObjectInformationClass, PVOID ObjectInformation, DWORD Length, PDWORD ResultLength);
+	NTSTATUS (WINAPI *m_fNTQuerySystemInformation)(DWORD _SystemInformationClass, PVOID o_pSystemInformation, DWORD _SystemInformationLength, PDWORD o_pReturnLength);
+	NTSTATUS (WINAPI *m_fNTQueryObject)(HANDLE _pObject, NLocalWindows::OBJECT_INFORMATION_CLASS _ObjectInformationClass, PVOID o_pObjectInformation, DWORD _Length, PDWORD o_pResultLength);
 };
 

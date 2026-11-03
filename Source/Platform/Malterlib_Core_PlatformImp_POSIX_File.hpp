@@ -51,8 +51,8 @@ namespace
 	}
 }
 
-template <typename t_CStats>
-static NMib::NFile::EFileAttrib fsg_StatsToAttribs(t_CStats &_Stats);
+template <typename tf_CStats>
+static NMib::NFile::EFileAttrib fsg_StatsToAttribs(tf_CStats &_Stats);
 
 namespace NMib
 {
@@ -590,8 +590,8 @@ private:
 	t_CStr m_Str;
 };
 
-template <typename t_CStats>
-static NMib::NFile::EFileAttrib fsg_StatsToAttribs(t_CStats &_Stats)
+template <typename tf_CStats>
+static NMib::NFile::EFileAttrib fsg_StatsToAttribs(tf_CStats &_Stats)
 {
 	NMib::NFile::EFileAttrib MalterlibAttr = NMib::NFile::EFileAttrib_None;
 	switch (_Stats.st_mode & S_IFMT)
@@ -685,7 +685,7 @@ umint NSys::NFile::fg_MaximumPathLength()
 
 namespace
 {
-	void fg_SetBSDFileAttributes(int _iFile, mode_t DefaultMode, NMib::NFile::EFileAttrib _Attributes, ch8 const *_pFileName);
+	void fg_SetBSDFileAttributes(int _iFile, mode_t _DefaultMode, NMib::NFile::EFileAttrib _Attributes, ch8 const *_pFileName);
 }
 uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32 _Mode = 0644);
 
@@ -728,7 +728,7 @@ void fg_SetUnixHandleOptions(int _File)
 }
 
 template <typename tf_CFileStr, bool tf_bException, typename tf_CStr>
-int fg_OpenHelperBSDFile(tf_CStr const &_FileName, NMib::NFile::EFileOpen _OpenFlags, tf_CStr &_oPosixFileName, NMib::NFile::EFileAttrib _Attributes)
+int fg_OpenHelperBSDFile(tf_CStr const &_FileName, NMib::NFile::EFileOpen _OpenFlags, tf_CStr &o_PosixFileName, NMib::NFile::EFileAttrib _Attributes)
 {
 	using namespace NMib::NFile;
 	if ((_OpenFlags & (EFileOpen_Read | EFileOpen_Write | EFileOpen_ReadAttribs | EFileOpen_WriteAttribs)) == 0)
@@ -755,9 +755,9 @@ int fg_OpenHelperBSDFile(tf_CStr const &_FileName, NMib::NFile::EFileOpen _OpenF
 			return -1;
 	}
 
-	_oPosixFileName = fg_ConvertToPOSIXPath(_FileName);
+	o_PosixFileName = fg_ConvertToPOSIXPath(_FileName);
 
-	auto &FileName = _oPosixFileName;
+	auto &FileName = o_PosixFileName;
 
 	uint32 CreateDisposition = 0;
 	enum EDisp

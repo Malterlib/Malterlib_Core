@@ -17,8 +17,8 @@ namespace NMib
 	template <typename t_FOnExitFunctor, bool t_bNoExcept = true>
 	struct [[nodiscard]] TCOnScopeExit
 	{
-		TCOnScopeExit(TCOnScopeExit const &) = delete;
-		TCOnScopeExit operator = (TCOnScopeExit const &) = delete;
+		TCOnScopeExit(TCOnScopeExit const &_Other) = delete;
+		TCOnScopeExit operator = (TCOnScopeExit const &_Other) = delete;
 		TCOnScopeExit(t_FOnExitFunctor const &_fOnExitFunctor) = delete;
 
 		inline_always TCOnScopeExit(t_FOnExitFunctor &&_fOnExitFunctor)

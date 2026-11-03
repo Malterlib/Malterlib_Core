@@ -40,23 +40,23 @@ using namespace NMib::NContainer;
 
 namespace NLocal
 {
-	int (*g_f_pipe2)(int __pipedes[2], int __flags) __THROW __wur = nullptr;
-	int (*g_f_accept4)(int __fd, __SOCKADDR_ARG __addr, socklen_t * __restrict __addr_len, int __flags) = nullptr;
-	int (*g_f_inotify_init1)(int __flags) __THROW = nullptr;
+	int (*g_f_pipe2)(int _PipeDescriptors[2], int _Flags) __THROW __wur = nullptr;
+	int (*g_f_accept4)(int _FileDescriptor, __SOCKADDR_ARG _pAddress, socklen_t * __restrict _pAddressLength, int _Flags) = nullptr;
+	int (*g_f_inotify_init1)(int _Flags) __THROW = nullptr;
 	int (*g_f_inotify_init)(void) __THROW = nullptr;
-	int (*g_f_inotify_add_watch)(int __fd, char const *__name, uint32_t __mask) __THROW = nullptr;
-	int (*g_f_inotify_rm_watch)(int __fd, int __wd) __THROW = nullptr;
-	int (*g_f_pthread_setname_np)(pthread_t __target_thread, __const char *__name) = nullptr;
+	int (*g_f_inotify_add_watch)(int _FileDescriptor, char const *_pName, uint32_t _Mask) __THROW = nullptr;
+	int (*g_f_inotify_rm_watch)(int _FileDescriptor, int _WatchDescriptor) __THROW = nullptr;
+	int (*g_f_pthread_setname_np)(pthread_t _TargetThread, __const char *_pName) = nullptr;
 #if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
-	int (*g_f_pthread_create)(pthread_t * __restrict _pThread, pthread_attr_t const * __restrict _pAttributes, void *(*_fStart)(void *), void * __restrict _pArgument) = nullptr;
+	int (*g_f_pthread_create)(pthread_t * __restrict _pThread, pthread_attr_t const * __restrict _pAttributes, void *(*_fStart)(void *_pArgument), void * __restrict _pArgument) = nullptr;
 #endif
-	void *(*g_f_memcpy)(void * __restrict __dest, __const void * __restrict __src, __SIZE_TYPE__ __n) = &memmove;
-	int (*g_f_utimensat)(int dirfd, char const *pathname, struct timespec const times[2], int flags) = nullptr;
-	int (*g_f_futimens)(int fd, struct timespec const times[2]) = nullptr;
+	void *(*g_f_memcpy)(void * __restrict _pDestination, __const void * __restrict _pSource, __SIZE_TYPE__ _nBytes) = &memmove;
+	int (*g_f_utimensat)(int _DirectoryFileDescriptor, char const *_pPath, struct timespec const _Times[2], int _Flags) = nullptr;
+	int (*g_f_futimens)(int _FileDescriptor, struct timespec const _Times[2]) = nullptr;
 
-	int (*g_f_posix_spawn_file_actions_addchdir_np)(posix_spawn_file_actions_t * __restrict __actions, char const * __restrict __path) = nullptr;
+	int (*g_f_posix_spawn_file_actions_addchdir_np)(posix_spawn_file_actions_t * __restrict _pFileActions, char const * __restrict _pPath) = nullptr;
 
-	void *(*__real_versioned_memcpy_new)(void * __restrict __dest, __const void * __restrict __src, __SIZE_TYPE__ __n) = nullptr;
+	void *(*__real_versioned_memcpy_new)(void * __restrict _pDestination, __const void * __restrict _pSource, __SIZE_TYPE__ _nBytes) = nullptr;
 
 	pfp64 (*__real_versioned_exp_new)(pfp64 _Value) = nullptr;
 	pfp64 (*__real_versioned_exp2_new)(pfp64 _Value) = nullptr;
@@ -70,42 +70,43 @@ namespace NLocal
 	pfp32 (*__real_versioned_log2f_new)(pfp32 _Value) = nullptr;
 	pfp32 (*__real_versioned_powf_new)(pfp32 _Value, pfp32 _Power) = nullptr;
 
-	unsigned long (*__real_getauxval)(unsigned long type) = nullptr;
+	unsigned long (*__real_getauxval)(unsigned long _Type) = nullptr;
 
-	int (*__real_versioned___sched_cpucount)(size_t __setsize, cpu_set_t const *__setp) = nullptr;
+	int (*__real_versioned___sched_cpucount)(size_t _SetSize, cpu_set_t const *_pSet) = nullptr;
 
-	int (*__real_versioned_clock_getres)(clockid_t __clock_id, struct timespec *__res) __THROW = nullptr;
-	int (*__real_versioned_clock_gettime)(clockid_t __clock_id, struct timespec *__tp) __THROW = nullptr;
+	int (*__real_versioned_clock_getres)(clockid_t _ClockID, struct timespec *o_pResolution) __THROW = nullptr;
+	int (*__real_versioned_clock_gettime)(clockid_t _ClockID, struct timespec *o_pTime) __THROW = nullptr;
 
 	int (*__real_versioned_posix_spawn)
 		(
-			pid_t *pid
-			, char const *path
-			, posix_spawn_file_actions_t const *file_actions
-			, posix_spawnattr_t const *attrp
-			, char * const argv[]
-			, char * const envp[]
+			pid_t *o_pPID
+			, char const *_pPath
+			, posix_spawn_file_actions_t const *_pFileActions
+			, posix_spawnattr_t const *_pAttributes
+			, char * const _Arguments[]
+			, char * const _Environment[]
 		)
 	;
 
 	int (*__real_versioned_posix_spawnp)
 		(
-			pid_t *pid
-			, char const *path
-			, posix_spawn_file_actions_t const *file_actions
-			, posix_spawnattr_t const *attrp
-			, char * const argv[]
-			, char * const envp[]
+			pid_t *o_pPID
+			, char const *_pPath
+			, posix_spawn_file_actions_t const *_pFileActions
+			, posix_spawnattr_t const *_pAttributes
+			, char * const _Arguments[]
+			, char * const _Environment[]
 		)
 	;
 
-	int (*__real_versioned_glob64)(__const char * __restrict __pattern, int __flags, int (*__errfunc)(__const char *, int), glob64_t * __restrict __pglob) __THROW = nullptr;
+	int (*__real_versioned_glob64)(__const char * __restrict _pPattern, int _Flags, int (*_fError)(__const char *_pPath, int _Error), glob64_t * __restrict o_pGlob) __THROW = nullptr;
 
-	int (*__real_pthread_mutexattr_setrobust)(pthread_mutexattr_t *__attr, int __robustness) __THROW = nullptr;
-	int (*__real_pthread_mutex_consistent)(pthread_mutex_t *__mutex) __THROW = nullptr;
-	int (*__real_fcntl64)(int __fd, int __cmd, ...) = nullptr;
+	int (*__real_pthread_mutexattr_setrobust)(pthread_mutexattr_t *_pAttributes, int _Robustness) __THROW = nullptr;
+	int (*__real_pthread_mutex_consistent)(pthread_mutex_t *_pMutex) __THROW = nullptr;
+	int (*__real_fcntl64)(int _FileDescriptor, int _Command, ...) = nullptr;
 
-	int (*__real___isoc99_vsscanf)(char const * __restrict __str, char const * __restrict __format, va_list) = nullptr;
+	// NOLINTNEXTLINE(malterlib-conceptual-prefix): va_list is a pointer on Linux x64 and x86 and a structure on Linux arm64
+	int (*__real___isoc99_vsscanf)(char const * __restrict _pString, char const * __restrict _pFormat, va_list _VaList) = nullptr;
 
 	namespace
 	{
@@ -2500,10 +2501,10 @@ uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _Address)
 	return static_cast<CPOSIXAddress const *>(_Address)->f_GetScopeID();
 }
 
-bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress *)_Address, _ExpectedType, _opRawData, _nDataBytes);
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress *)_Address, _ExpectedType, o_pRawData, _nDataBytes);
 }
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
@@ -2546,9 +2547,9 @@ void *NSys::NNetwork::fg_AsyncResolveAddress_Open(NMib::NStr::CStr const &_Addre
 	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress &_opAddress, NMib::NStr::CStr &_Error)
+bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress &o_pAddress, NMib::NStr::CStr &_Error)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CPOSIXAddress * &)_opAddress, _Error);
+	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CPOSIXAddress * &)o_pAddress, _Error);
 }
 
 void NSys::NNetwork::fg_AsyncResolveAddress_Close(void *_pResolver)
@@ -3306,12 +3307,12 @@ namespace NMib
 			return false;
 		}
 
-		bool fg_Clipboard_SetText(CStr const &)
+		bool fg_Clipboard_SetText(CStr const &_Text)
 		{
 			return false;
 		}
 
-		bool fg_Clipboard_GetText(CStr &)
+		bool fg_Clipboard_GetText(CStr &o_Text)
 		{
 			return false;
 		}
@@ -3336,9 +3337,9 @@ namespace NMib
 			return fg_GetLocalSys()->f_GetPasswordManager()->f_SecurePassword_Remove(_Key);
 		}
 
-		ESecurePassword fg_SecurePassword_Get(CStr const &_Key, CStrSecure &_oPassword)
+		ESecurePassword fg_SecurePassword_Get(CStr const &_Key, CStrSecure &o_Password)
 		{
-			return fg_GetLocalSys()->f_GetPasswordManager()->f_SecurePassword_Get(_Key, _oPassword);
+			return fg_GetLocalSys()->f_GetPasswordManager()->f_SecurePassword_Get(_Key, o_Password);
 		}
 
 		ESecurePassword fg_SecurePassword_Exists(CStr const &_Key)
@@ -3435,6 +3436,7 @@ extern "C" int clock_gettime(clockid_t __clock_id, struct timespec *__tp) __THRO
 	return NLocal::__real_versioned_clock_gettime(__clock_id, __tp);
 }
 
+// NOLINTNEXTLINE(malterlib-parameter-naming): the declaration of the Linux headers, with its parameter names
 extern "C" int glob64(__const char * __restrict __pattern, int __flags, int (*__errfunc)(__const char *, int), glob64_t * __restrict __pglob) __THROW
 {
 	return NLocal::__real_versioned_glob64(__pattern, __flags, __errfunc, __pglob);

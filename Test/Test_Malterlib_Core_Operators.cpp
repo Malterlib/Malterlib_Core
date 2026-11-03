@@ -51,11 +51,11 @@ namespace
 			return m_Value == _Other;
 		}
 
-		template <typename t_CFormatter>
-		auto f_GetStringFormatType(t_CFormatter &_Formatter) -> decltype(NMib::NStr::fg_GetStringFormatType(_Formatter, fsp_ValueType()));
+		template <typename tf_CFormatter>
+		auto f_GetStringFormatType(tf_CFormatter &_Formatter) -> decltype(NMib::NStr::fg_GetStringFormatType(_Formatter, fsp_ValueType()));
 
-		template <typename t_CFormatter>
-		auto f_CreateStringFormatter(t_CFormatter &_Formatter) const -> decltype(NMib::NStr::fg_CreateStringFormatter(_Formatter, fsp_ValueType()))
+		template <typename tf_CFormatter>
+		auto f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NMib::NStr::fg_CreateStringFormatter(_Formatter, fsp_ValueType()))
 		{
 			return NMib::NStr::fg_CreateStringFormatter(_Formatter, m_Value);
 		}

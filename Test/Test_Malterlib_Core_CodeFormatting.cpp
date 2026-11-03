@@ -5,8 +5,8 @@
 
 #include <Mib/Core/Core>
 
-template <typename ...tf_CType>
-void fg_Test(tf_CType ...p_bTest)
+template <typename ...tfp_CType>
+void fg_Test(tfp_CType ...p_bTest)
 {
 	[[maybe_unused]] static auto s_fTest = []
 		{
@@ -446,7 +446,7 @@ struct ICTest
 // PF (Deprecated)
 
 // F
-using FTest = void (int);
+using FTest = void (int _Value);
 
 // pTemplateType:
 // TC
@@ -654,7 +654,7 @@ template <typename t_CTest = int>
 struct TCTest5;
 
 // t_F
-template <typename t_FTest = void (int)>
+template <typename t_FTest = void (int _Value)>
 struct TCTest6;
 
 // tp_C
@@ -674,7 +674,7 @@ template <typename tf_CTest = int>
 void fg_Test2();
 
 // tf_F
-template <typename tf_FTest = void (int)>
+template <typename tf_FTest = void (int _Value)>
 void fg_Test3();
 
 // tfp_C
@@ -689,22 +689,22 @@ void fg_Test();
 // pTemplateTemplateParam:
 // t_T
 
-template <template <typename> class t_TTest>
+template <template <typename> class t_TCTest>
 struct TCTest9;
 
 // tp_T
-template <template <typename> class ...tp_TTest>
+template <template <typename> class ...tp_TCTest>
 struct TCTest10;
 
 // pFunctionTemplateTemplateParam:
 // tf_T
-template <template <typename> class tf_TTest>
-void fg_Test(TCTest10<tf_TTest>)
+template <template <typename> class tf_TCTest>
+void fg_Test(TCTest10<tf_TCTest> _Test)
 {
 }
 
 // tfp_T
-template <template <typename> class ...tfp_TTest>
+template <template <typename> class ...tfp_TCTest>
 void fg_Test()
 {
 }

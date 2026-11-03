@@ -44,46 +44,46 @@ namespace NLocal
 		void *m_pKiUserCallbackDispatcher;
 
 		// Numa functions
-		LPVOID (WINAPI *m_fVirtualAllocExNuma)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect, DWORD nndPreferred);
-		BOOL (WINAPI *m_fGetNumaNodeProcessorMaskEx)(USHORT Node, PGROUP_AFFINITY ProcessorMask);
-		BOOL (WINAPI *m_fSetThreadGroupAffinity)(HANDLE hThread, GROUP_AFFINITY const *GroupAffinity, PGROUP_AFFINITY PreviousGroupAffinity);
+		LPVOID (WINAPI *m_fVirtualAllocExNuma)(HANDLE _pProcess, LPVOID _pAddress, SIZE_T _Size, DWORD _AllocationType, DWORD _Protect, DWORD _PreferredNode);
+		BOOL (WINAPI *m_fGetNumaNodeProcessorMaskEx)(USHORT _Node, PGROUP_AFFINITY o_pProcessorMask);
+		BOOL (WINAPI *m_fSetThreadGroupAffinity)(HANDLE _pThread, GROUP_AFFINITY const *_pGroupAffinity, PGROUP_AFFINITY o_pPreviousGroupAffinity);
 
-		BOOL (WINAPI *m_fSetProcessUserModeExceptionPolicy)(DWORD dwFlags);
-		BOOL (WINAPI *m_fGetProcessUserModeExceptionPolicy)(LPDWORD lpFlags);
+		BOOL (WINAPI *m_fSetProcessUserModeExceptionPolicy)(DWORD _Flags);
+		BOOL (WINAPI *m_fGetProcessUserModeExceptionPolicy)(LPDWORD o_pFlags);
 
 		DWORD (WINAPI *m_fWTSGetActiveConsoleSessionId)();
 
 		BOOL (WINAPI *m_fCreateProcessWithTokenW)
 			(
-				HANDLE hToken
-				, DWORD dwLogonFlags
-				, LPCWSTR lpApplicationName
-				, LPWSTR lpCommandLine
-				, DWORD dwCreationFlags
-				, LPVOID lpEnvironment
-				, LPCWSTR lpCurrentDirectory
-				, LPSTARTUPINFOW lpStartupInfo
-				, LPPROCESS_INFORMATION lpProcessInformation
+				HANDLE _pToken
+				, DWORD _LogonFlags
+				, LPCWSTR _pApplicationName
+				, LPWSTR _pCommandLine
+				, DWORD _CreationFlags
+				, LPVOID _pEnvironment
+				, LPCWSTR _pCurrentDirectory
+				, LPSTARTUPINFOW _pStartupInfo
+				, LPPROCESS_INFORMATION o_pProcessInformation
 			)
 		;
 
-		BOOLEAN (APIENTRY *m_fCreateSymbolicLinkW)(LPCWSTR lpSymlinkFileName, LPCWSTR lpTargetFileName, DWORD dwFlags);
+		BOOLEAN (APIENTRY *m_fCreateSymbolicLinkW)(LPCWSTR _pSymlinkFileName, LPCWSTR _pTargetFileName, DWORD _Flags);
 
-		BOOL (WINAPI *m_fCreateHardLinkW)(LPCWSTR lpFileName, LPCWSTR lpExistingFileName, LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+		BOOL (WINAPI *m_fCreateHardLinkW)(LPCWSTR _pFileName, LPCWSTR _pExistingFileName, LPSECURITY_ATTRIBUTES _pSecurityAttributes);
 
-		BOOL (WINAPI *m_fWow64DisableWow64FsRedirection)(PVOID *OldValue);
-		BOOL (WINAPI *m_fWow64RevertWow64FsRedirection)(PVOID OlValue);
+		BOOL (WINAPI *m_fWow64DisableWow64FsRedirection)(PVOID *o_pOldValue);
+		BOOL (WINAPI *m_fWow64RevertWow64FsRedirection)(PVOID _pOldValue);
 
-		NTSTATUS (NTAPI *m_fNtSetInformationProcess)(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID pProcessInformation, ULONG ProcessInformationLength);
+		NTSTATUS (NTAPI *m_fNtSetInformationProcess)(HANDLE _pProcess, PROCESSINFOCLASS _ProcessInformationClass, PVOID _pProcessInformation, ULONG _ProcessInformationLength);
 
-		BOOL (WINAPI *m_fSetProcessInformation)(HANDLE hProcess, PROCESS_INFORMATION_CLASS ProcessInformationClass, LPVOID ProcessInformation, DWORD ProcessInformationSize);
+		BOOL (WINAPI *m_fSetProcessInformation)(HANDLE _pProcess, PROCESS_INFORMATION_CLASS _ProcessInformationClass, LPVOID _pProcessInformation, DWORD _ProcessInformationSize);
 
-		BOOL (WINAPI *m_fCancelSynchronousIo)(HANDLE hThread);
-		BOOL (WINAPI *m_fCancelIoEx)(HANDLE hFile, LPOVERLAPPED lpOverlapped);
+		BOOL (WINAPI *m_fCancelSynchronousIo)(HANDLE _pThread);
+		BOOL (WINAPI *m_fCancelIoEx)(HANDLE _pFile, LPOVERLAPPED _pOverlapped);
 
 		NTSTATUS (NTAPI *m_fNtCreateFile)
 			(
-				PHANDLE _phFile
+				PHANDLE _pFile
 				, ACCESS_MASK _DesiredAccess
 				, POBJECT_ATTRIBUTES _pObjectAttributes
 				, PIO_STATUS_BLOCK _pIoStatusBlock
@@ -98,8 +98,8 @@ namespace NLocal
 		;
 		NTSTATUS (NTAPI *m_fNtDeviceIoControlFile)
 			(
-				HANDLE _hFile
-				, HANDLE _hEvent
+				HANDLE _File
+				, HANDLE _Event
 				, PIO_APC_ROUTINE _fApcRoutine
 				, PVOID _pApcContext
 				, PIO_STATUS_BLOCK _pIoStatusBlock
@@ -110,52 +110,52 @@ namespace NLocal
 				, ULONG _OutputBufferLength
 			)
 		;
-		NTSTATUS (NTAPI *m_fNtSetInformationFile)(HANDLE _hFile, PIO_STATUS_BLOCK _pIoStatusBlock, PVOID _pFileInformation, ULONG _Length, FILE_INFORMATION_CLASS _FileInformationClass);
+		NTSTATUS (NTAPI *m_fNtSetInformationFile)(HANDLE _File, PIO_STATUS_BLOCK _pIoStatusBlock, PVOID _pFileInformation, ULONG _Length, FILE_INFORMATION_CLASS _FileInformationClass);
 		ULONG (NTAPI *m_fRtlNtStatusToDosError)(NTSTATUS _Status);
 
 		// Optional Windows 8+ API for delivering synchronization-object signals to an IOCP.
-		NTSTATUS (NTAPI *m_fNtCreateWaitCompletionPacket)(PHANDLE _phPacket, ACCESS_MASK _DesiredAccess, POBJECT_ATTRIBUTES _pObjectAttributes);
+		NTSTATUS (NTAPI *m_fNtCreateWaitCompletionPacket)(PHANDLE _pPacket, ACCESS_MASK _DesiredAccess, POBJECT_ATTRIBUTES _pObjectAttributes);
 		NTSTATUS (NTAPI *m_fNtAssociateWaitCompletionPacket)
 			(
-				HANDLE _hPacket
-				, HANDLE _hPort
-				, HANDLE _hTarget
+				HANDLE _Packet
+				, HANDLE _Port
+				, HANDLE _Target
 				, PVOID _pKeyContext
 				, PVOID _pApcContext
 				, NTSTATUS _IoStatus
 				, ULONG_PTR _IoStatusInformation
-				, PBOOLEAN _pbAlreadySignaled
+				, PBOOLEAN _pAlreadySignaled
 			)
 		;
-		NTSTATUS (NTAPI *m_fNtCancelWaitCompletionPacket)(HANDLE _hPacket, BOOLEAN _bRemoveSignaledPacket);
+		NTSTATUS (NTAPI *m_fNtCancelWaitCompletionPacket)(HANDLE _Packet, BOOLEAN _bRemoveSignaledPacket);
 
-		NTSTATUS (WINAPI *m_fNtQuerySystemInformation)(DWORD SystemInformationClass, PVOID SystemInformation, DWORD SystemInformationLength, PDWORD ReturnLength);
+		NTSTATUS (WINAPI *m_fNtQuerySystemInformation)(DWORD _SystemInformationClass, PVOID o_pSystemInformation, DWORD _SystemInformationLength, PDWORD o_pReturnLength);
 
-		NTSTATUS (WINAPI *m_fNtGetNextThread)(HANDLE ProcessHandle, HANDLE ThreadHandle, ACCESS_MASK DesiredAccess, ULONG HandleAttributes, ULONG Flags, PHANDLE NewThreadHandle);
+		NTSTATUS (WINAPI *m_fNtGetNextThread)(HANDLE _pProcess, HANDLE _pThread, ACCESS_MASK _DesiredAccess, ULONG _HandleAttributes, ULONG _Flags, PHANDLE o_pNewThread);
 
-		DWORD (WINAPI *m_fGetThreadId)(HANDLE Thread);
+		DWORD (WINAPI *m_fGetThreadId)(HANDLE _pThread);
 
-		HRESULT (WINAPI *m_fSetThreadDescription)(HANDLE hThread, PCWSTR lpThreadDescription);
+		HRESULT (WINAPI *m_fSetThreadDescription)(HANDLE _pThread, PCWSTR _pThreadDescription);
 
 		NTSTATUS (WINAPI *m_fNtQueryInformationProcess)
 			(
-				HANDLE ProcessHandle
-				, PROCESSINFOCLASS ProcessInformationClass
-				, PVOID ProcessInformation
-				, ULONG ProcessInformationLength
-				, PULONG ReturnLength
+				HANDLE _pProcess
+				, PROCESSINFOCLASS _ProcessInformationClass
+				, PVOID o_pProcessInformation
+				, ULONG _ProcessInformationLength
+				, PULONG o_pReturnLength
 			)
 		;
 
-		NTSTATUS (WINAPI *m_fLdrDisableThreadCalloutsForDll)(IN PVOID BaseAddress);
-		NTSTATUS (WINAPI *m_fRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
-		BOOL (WINAPI *m_fPrivIsDllSynchronizationHeld)(PBOOL);
+		NTSTATUS (WINAPI *m_fLdrDisableThreadCalloutsForDll)(IN PVOID _pBaseAddress);
+		NTSTATUS (WINAPI *m_fRtlGetVersion)(PRTL_OSVERSIONINFOW o_pVersionInformation);
+		BOOL (WINAPI *m_fPrivIsDllSynchronizationHeld)(PBOOL _pSynchronizationHeld);
 
-		BOOL (WINAPI *m_fGetFileInformationByHandleEx)(HANDLE hFile, Undocumented_FILE_INFO_BY_HANDLE_CLASS FileInformationClass, LPVOID lpFileInformation, DWORD dwBufferSize);
+		BOOL (WINAPI *m_fGetFileInformationByHandleEx)(HANDLE _pFile, Undocumented_FILE_INFO_BY_HANDLE_CLASS _FileInformationClass, LPVOID o_pFileInformation, DWORD _BufferSize);
 
-		BOOL (WINAPI *m_fSystemTimeToTzSpecificLocalTimeEx)(DYNAMIC_TIME_ZONE_INFORMATION const *lpTimeZoneInformation, SYSTEMTIME const *lpUniversalTime, LPSYSTEMTIME lpLocalTime);
-		BOOL (WINAPI *m_fTzSpecificLocalTimeToSystemTimeEx)(DYNAMIC_TIME_ZONE_INFORMATION const *lpTimeZoneInformation, SYSTEMTIME const *lpLocalTime, LPSYSTEMTIME lpUniversalTime);
-		BOOL (WINAPI *m_fGetTimeZoneInformationForYear)(USHORT wYear, PDYNAMIC_TIME_ZONE_INFORMATION pdtzi, LPTIME_ZONE_INFORMATION ptzi);
+		BOOL (WINAPI *m_fSystemTimeToTzSpecificLocalTimeEx)(DYNAMIC_TIME_ZONE_INFORMATION const *_pTimeZoneInformation, SYSTEMTIME const *_pUniversalTime, LPSYSTEMTIME o_pLocalTime);
+		BOOL (WINAPI *m_fTzSpecificLocalTimeToSystemTimeEx)(DYNAMIC_TIME_ZONE_INFORMATION const *_pTimeZoneInformation, SYSTEMTIME const *_pLocalTime, LPSYSTEMTIME o_pUniversalTime);
+		BOOL (WINAPI *m_fGetTimeZoneInformationForYear)(USHORT _Year, PDYNAMIC_TIME_ZONE_INFORMATION o_pDynamicTimeZoneInformation, LPTIME_ZONE_INFORMATION o_pTimeZoneInformation);
 	};
 
 	extern OSVERSIONINFOEX g_VersionInfo;

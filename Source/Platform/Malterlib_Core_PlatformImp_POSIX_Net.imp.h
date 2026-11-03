@@ -196,7 +196,7 @@ NMib::NNetwork::ENetAddressType CPOSIXSocketContext::f_GetAddressType(CPOSIXAddr
 	return _Address.f_GetType();
 }
 
-bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes)
+bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes)
 {
 	NMib::NNetwork::ENetAddressType Type = _Address.f_GetType();
 
@@ -210,7 +210,7 @@ bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::N
 			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv4))
 				return false;
 
-			NMib::NNetwork::CNetAddressTCPv4 &Addr = *(NMib::NNetwork::CNetAddressTCPv4 *)_opRawData;
+			NMib::NNetwork::CNetAddressTCPv4 &Addr = *(NMib::NNetwork::CNetAddressTCPv4 *)o_pRawData;
 			fp_FromNative(_Address.f_GetTCPv4(), Addr);
 
 			return true;
@@ -222,7 +222,7 @@ bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::N
 			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressTCPv6))
 				return false;
 
-			NMib::NNetwork::CNetAddressTCPv6 &Addr = *(NMib::NNetwork::CNetAddressTCPv6 *)_opRawData;
+			NMib::NNetwork::CNetAddressTCPv6 &Addr = *(NMib::NNetwork::CNetAddressTCPv6 *)o_pRawData;
 			fp_FromNative(_Address.f_GetTCPv6(), Addr);
 
 			return true;
@@ -232,7 +232,7 @@ bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::N
 	case NMib::NNetwork::ENetAddressType_Unix:
 	default:
 		{
-			return mp_ImpSpecific.f_GetAddressRaw(_Address, _ExpectedType, _opRawData, _nDataBytes);
+			return mp_ImpSpecific.f_GetAddressRaw(_Address, _ExpectedType, o_pRawData, _nDataBytes);
 		}
 	}
 }
@@ -324,9 +324,9 @@ auto CPOSIXSocketContext::f_AsyncResolveAddress_Open
 	return mp_Resolver.f_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bool CPOSIXSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress * &_opAddress, NMib::NStr::CStr &_Error)
+bool CPOSIXSocketContext::f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress * &o_pAddress, NMib::NStr::CStr &_Error)
 {
-	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress &)_opAddress, _Error);
+	return mp_Resolver.f_GetResult(_pResolver, (NMib::NSys::NNetwork::CAddress &)o_pAddress, _Error);
 }
 
 void CPOSIXSocketContext::f_AsyncResolveAddress_Close(void *_pResolver)
@@ -1032,7 +1032,7 @@ void NSys::NNetwork::fg_ResumeReceiveStream(void *_pSocket)
 }
 
 // POSIX descriptors have no permanent loop binding, so inheritance needs no special registration mode.
-void NSys::NNetwork::fg_SetInheritable(void *)
+void NSys::NNetwork::fg_SetInheritable(void *_pSocket)
 {
 }
 

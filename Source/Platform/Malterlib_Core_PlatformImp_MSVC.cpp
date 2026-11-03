@@ -52,7 +52,7 @@ static NAtomic::TCAtomic<smint> gs_LibraryRefCount{smint(-1)};
 static umint gs_ThreadLocalParentThread = 0xFFFFFFFF;
 
 VOID (WINAPI *g_fOrgExitProcess)(__in UINT _ExitCode) = nullptr;
-BOOL (WINAPI *g_fOrgTerminateProcess)(__in HANDLE _hProcess, __in UINT _ExitCode) = nullptr;
+BOOL (WINAPI *g_fOrgTerminateProcess)(__in HANDLE _Process, __in UINT _ExitCode) = nullptr;
 
 extern NAtomic::TCAtomic<smint> g_bDoneMalterlibInitAll;
 
@@ -678,7 +678,7 @@ NMib::NStr::CStrNonTracked NSys::fg_System_GetContractViolationMessage()
 
 namespace
 {
-	template <typename tf_CWinStr, typename tf_UTF8Str, typename tf_CStr>
+	template <typename tf_CWinStr, typename tf_CUTF8Str, typename tf_CStr>
 	void fg_ConsoleOutputHelper(tf_CStr const &_Str, DWORD _StdHandle, bool _bRaw)
 	{
 		static bool bEnableTerminalProcessing = true;
@@ -731,7 +731,7 @@ namespace
 			}
 			else
 			{
-				tf_UTF8Str Output = _Str;
+				tf_CUTF8Str Output = _Str;
 				ch8 const *pOut = Output;
 				umint Len = fg_StrLen(Output);
 				while (Len)
@@ -2908,7 +2908,7 @@ extern "C" mark_no_stack_protector inline_never BOOL WINAPI fg_MalterlibDllMain(
 	return fg_MalterlibDllMainBody(_pInstance, _Reason, _pReserved);
 }
 
-extern "C" BOOL (WINAPI * const _pRawDllMain)(HANDLE, DWORD, LPVOID) = &fg_MalterlibDllMain;
+extern "C" BOOL (WINAPI * const _pRawDllMain)(HANDLE _pInstance, DWORD _Reason, LPVOID _pReserved) = &fg_MalterlibDllMain;
 
 inline_never void NTAPI fg_TLSCallbackBody(void *_pInstance, DWORD _Reason, void *_pReserved)
 {
@@ -3214,12 +3214,12 @@ bool NSys::fg_Thread_CanRestorePriority()
 	return true;
 }
 
-bool NSys::fg_Thread_RegisterSpawnServer(FThreadSpawnServerWake *, void *)
+bool NSys::fg_Thread_RegisterSpawnServer(FThreadSpawnServerWake *_fWake, void *_pContext)
 {
 	return false; // A thread starts at normal priority whatever its creator holds, so creation is never handed off
 }
 
-void NSys::fg_Thread_UnregisterSpawnServer(void *)
+void NSys::fg_Thread_UnregisterSpawnServer(void *_pContext)
 {
 }
 
@@ -4704,12 +4704,12 @@ EFileAttrib NSys::NFile::fg_GetAttributesOnLink(NMib::NStr::CStr const &_FileNam
 namespace NMib::NPlatform
 {
 	// Returns volume and file ID (128-bit where supported, otherwise 64-bit index); false preserves the platform error.
-	bool fg_GetUniqueFileIdentifier(HANDLE _hFile, NMib::NFile::CUniqueFileIdentifier &o_Identifier)
+	bool fg_GetUniqueFileIdentifier(HANDLE _File, NMib::NFile::CUniqueFileIdentifier &o_Identifier)
 	{
 		if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx)
 		{
 			Undocumented_FILE_ID_INFO FileIDInfo;
-			if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx(_hFile, Undocumented_FileIdInfo, &FileIDInfo, sizeof(FileIDInfo)))
+			if (NLocal::g_OptionalFunctions.m_fGetFileInformationByHandleEx(_File, Undocumented_FileIdInfo, &FileIDInfo, sizeof(FileIDInfo)))
 			{
 				o_Identifier.m_VolumeID = FileIDInfo.VolumeSerialNumber;
 				o_Identifier.m_FileID = 0;
@@ -4720,7 +4720,7 @@ namespace NMib::NPlatform
 		}
 
 		BY_HANDLE_FILE_INFORMATION FileInfo;
-		if (!GetFileInformationByHandle(_hFile, &FileInfo))
+		if (!GetFileInformationByHandle(_File, &FileInfo))
 			return false;
 
 		o_Identifier.m_VolumeID = FileInfo.dwVolumeSerialNumber;
@@ -5270,8 +5270,8 @@ static DWORD CALLBACK fsg_CopyProgressRoutine
 		, LARGE_INTEGER _StreamBytesTransferred
 		, DWORD _StreamNumber
 		, DWORD _CallbackReason
-		, HANDLE _hSourceFile
-		, HANDLE _hDestinationFile
+		, HANDLE _SourceFile
+		, HANDLE _DestinationFile
 		, void *_pData
 	)
 {
@@ -5695,7 +5695,7 @@ namespace
 #	define FILE_RENAME_IGNORE_READONLY_ATTRIBUTE 0x00000040 // NOLINT(malterlib-macro-naming)
 #endif
 
-template <typename tf_CWStr, bool t_bThrowError, typename tf_CStr>
+template <typename tf_CWStr, bool tf_bThrowError, typename tf_CStr>
 static bool fg_DeleteGeneric(tf_CStr &_File);
 
 static DWORD fg_AtomicReplaceImplementation(CStr const &_FileFrom, CStr const &_FileTo, bool _bRecursive)
@@ -6064,7 +6064,7 @@ void NSys::NFile::fg_DeleteDirectory(CStrNonTracked const &_File);
 namespace NMib::NPlatform
 {
 	// Unlink the name immediately and delete on final handle close. False preserves the platform error.
-	bool fg_SetPosixDeleteDisposition(HANDLE _hFile)
+	bool fg_SetPosixDeleteDisposition(HANDLE _File)
 	{
 		FILE_DISPOSITION_INFO_EX Disposition;
 
@@ -6072,11 +6072,11 @@ namespace NMib::NPlatform
 		if (NLocal::g_VersionInfo.dwBuildNumber >= 17763) // Windows 10 RS5
 			Disposition.Flags |= FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE;
 
-		return !!SetFileInformationByHandle(_hFile, FILE_INFO_BY_HANDLE_CLASS(21) /*FileDispositionInfoEx*/, &Disposition, sizeof(Disposition));
+		return !!SetFileInformationByHandle(_File, FILE_INFO_BY_HANDLE_CLASS(21) /*FileDispositionInfoEx*/, &Disposition, sizeof(Disposition));
 	}
 }
 
-template <typename tf_CWStr, bool t_bThrowError, typename tf_CStr>
+template <typename tf_CWStr, bool tf_bThrowError, typename tf_CStr>
 static bool fg_DeleteGeneric(tf_CStr &_File)
 {
 	auto FileName = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal<tf_CWStr>(_File);
@@ -6089,12 +6089,12 @@ static bool fg_DeleteGeneric(tf_CStr &_File)
 		if (NMib::NPlatform::fg_SetPosixDeleteDisposition(FileHandle.m_pHandle))
 			return true;
 
-		if constexpr (t_bThrowError)
+		if constexpr (tf_bThrowError)
 			PosixSemanticsError = GetLastError();
 		else
 			return false;
 	}
-	else if constexpr (t_bThrowError)
+	else if constexpr (tf_bThrowError)
 		PosixSemanticsOpenError = GetLastError();
 
 	if (!DeleteFileW(FileName))
@@ -6105,7 +6105,7 @@ static bool fg_DeleteGeneric(tf_CStr &_File)
 			return true;
 		}
 
-		if constexpr (t_bThrowError)
+		if constexpr (tf_bThrowError)
 		{
 			CStr DeleteFileError = "Windows returned an error from DeleteFile({}): {}"_f << _File << NMib::NPlatform::fg_Win32_GetLastErrorStr();
 			if (PosixSemanticsError)
@@ -6510,10 +6510,10 @@ uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _Address)
 	return static_cast<CWindowsAddress const *>(_Address)->f_GetScopeID();
 }
 
-bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes)
 {
 	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CWindowsAddress *)_Address, _ExpectedType, _opRawData, _nDataBytes);
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CWindowsAddress *)_Address, _ExpectedType, o_pRawData, _nDataBytes);
 }
 
 NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
@@ -6551,9 +6551,9 @@ void *NSys::NNetwork::fg_AsyncResolveAddress_Open(NMib::NStr::CStr const &_Addre
 	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_Open(_Address, _PreferType, fg_Move(_fOnFinish));
 }
 
-bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress &_opAddress, NMib::NStr::CStr &_Error)
+bool NSys::NNetwork::fg_AsyncResolveAddress_GetResult(void *_pResolver, NSys::NNetwork::CAddress &o_pAddress, NMib::NStr::CStr &_Error)
 {
-	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CWindowsAddress * &)_opAddress, _Error);
+	return fg_GetLocalSys()->m_SocketContext->f_AsyncResolveAddress_GetResult(_pResolver, (CWindowsAddress * &)o_pAddress, _Error);
 }
 
 void NSys::NNetwork::fg_AsyncResolveAddress_Close(void *_pResolver)
@@ -6838,16 +6838,16 @@ VOID WINAPI fg_HookExitProcess(__in UINT _ExitCode)
 	g_fOrgExitProcess(_ExitCode);
 }
 
-BOOL WINAPI fg_HookTerminateProcess(__in HANDLE _hProcess, __in UINT _ExitCode)
+BOOL WINAPI fg_HookTerminateProcess(__in HANDLE _Process, __in UINT _ExitCode)
 {
-	// DMibTraceSafe("fg_HookTerminateProcess {} {}\r\n", _hProcess, _ExitCode);
-	if (_hProcess == GetCurrentProcess() && !g_bAllowInvalidExit)
+	// DMibTraceSafe("fg_HookTerminateProcess {} {}\r\n", _Process, _ExitCode);
+	if (_Process == GetCurrentProcess() && !g_bAllowInvalidExit)
 	{
 		NMib::NContainer::TCVector<CStr> GeneratedDumps;
 		NSys::fg_Debug_GenerateCrashDump((CStr::CFormat("TerminateProcess was called with exit code {}") << int32(_ExitCode)).f_GetStr(), "", GeneratedDumps, true);
 	}
 
-	return g_fOrgTerminateProcess(_hProcess, _ExitCode);
+	return g_fOrgTerminateProcess(_Process, _ExitCode);
 }
 
 bool g_bPatchedExitProcess = false;

@@ -260,7 +260,7 @@ using CMibArgList = va_list;
 #endif
 
 #ifdef __clang_analyzer__
-void fg_UnconsumeUndefined(void *);
+void fg_UnconsumeUndefined(void *_pValue);
 template <typename tf_CObject>
 void fg_Unconsume(tf_CObject &o_Value)
 {

@@ -6,7 +6,7 @@
 #include <winternl.h>
 
 // NOLINTBEGIN(malterlib-type-naming): the names of undocumented Windows types
-typedef void (*PPEBLOCKROUTINE)(PVOID PebLock);
+typedef void (*PPEBLOCKROUTINE)(PVOID _pPebLock);
 
 typedef struct _PEB_FREE_BLOCK
 {
@@ -356,7 +356,7 @@ typedef struct _UNWIND_HISTORY_TABLE
 
 extern "C" PRUNTIME_FUNCTION WINAPI RtlLookupFunctionEntry(IN ULONG64 ControlPc, OUT PULONG64 ImageBase, IN OUT PUNWIND_HISTORY_TABLE HistoryTable OPTIONAL);
 #	endif
-typedef LONG (NTAPI *PC_LANGUAGE_EXCEPTION_HANDLER)(__in PEXCEPTION_POINTERS ExceptionPointers, __in ULONG64 EstablisherFrame);
+typedef LONG (NTAPI *PC_LANGUAGE_EXCEPTION_HANDLER)(__in PEXCEPTION_POINTERS _pExceptionPointers, __in ULONG64 _EstablisherFrame);
 
 enum
 {
@@ -376,10 +376,10 @@ enum
 
 typedef EXCEPTION_DISPOSITION (*PEXCEPTION_ROUTINE)
 	(
-		IN struct _EXCEPTION_RECORD *ExceptionRecord
-		, IN PVOID EstablisherFrame
-		, IN OUT struct _CONTEXT *ContextRecord
-		, IN OUT PVOID DispatcherContext
+		IN struct _EXCEPTION_RECORD *_pExceptionRecord
+		, IN PVOID _pEstablisherFrame
+		, IN OUT struct _CONTEXT *_pContextRecord
+		, IN OUT PVOID _pDispatcherContext
 	)
 ;
 

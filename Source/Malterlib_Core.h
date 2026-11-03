@@ -54,11 +54,11 @@ namespace NMib
 	using COrdering_Weak = std::weak_ordering;
 	using COrdering_Strong = std::strong_ordering;
 
-	template <typename tf_CType>
+	template <typename t_CType>
 	concept cIsOrderType
-		= NTraits::cIsSame<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>, COrdering_Partial>
-		|| NTraits::cIsSame<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>, COrdering_Weak>
-		|| NTraits::cIsSame<NTraits::TCRemoveReferenceAndQualifiers<tf_CType>, COrdering_Strong>
+		= NTraits::cIsSame<NTraits::TCRemoveReferenceAndQualifiers<t_CType>, COrdering_Partial>
+		|| NTraits::cIsSame<NTraits::TCRemoveReferenceAndQualifiers<t_CType>, COrdering_Weak>
+		|| NTraits::cIsSame<NTraits::TCRemoveReferenceAndQualifiers<t_CType>, COrdering_Strong>
 	;
 
 	template <typename tf_CType>
@@ -95,14 +95,14 @@ namespace NMib
 	template <typename t_CType>
 	using TCInitializerList = std::initializer_list<t_CType>;
 
-	template <typename tf_C1, typename tf_C2>
-	constexpr inline_small NTraits::TCRemoveReference<tf_C1> fg_Min(tf_C1 &&_First, tf_C2 &&_Second);
+	template <typename tf_CFirst, typename tf_CSecond>
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Min(tf_CFirst &&_First, tf_CSecond &&_Second);
 
-	template <typename tf_C1, typename tf_C2>
-	constexpr inline_small NTraits::TCRemoveReference<tf_C1> fg_Max(tf_C1 &&_First, tf_C2 &&_Second);
+	template <typename tf_CFirst, typename tf_CSecond>
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Max(tf_CFirst &&_First, tf_CSecond &&_Second);
 
-	template <typename tf_C1>
-	constexpr inline_small NTraits::TCRemoveReference<tf_C1> fg_Abs(tf_C1 &&_First);
+	template <typename tf_CFirst>
+	constexpr inline_small NTraits::TCRemoveReference<tf_CFirst> fg_Abs(tf_CFirst &&_First);
 
 	[[noreturn]] void fg_NoReturn();
 }

@@ -111,9 +111,9 @@ struct CPOSIXImpSpecificSocketContext
 	CPOSIXImpSpecificSocketContext();
 	~CPOSIXImpSpecificSocketContext();
 
-	bool f_CreateAddress(CPOSIXAddress &_oAddr, NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes);
-	bool f_ResolveAddress(CPOSIXAddress &_oAddr, NMib::NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
-	bool f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes);
+	bool f_CreateAddress(CPOSIXAddress &o_Addr, NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes);
+	bool f_ResolveAddress(CPOSIXAddress &o_Addr, NMib::NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
+	bool f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes);
 	CPOSIXAddress *f_SetAddressRaw(CPOSIXAddress *_Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const *_pRawData, umint _nDataBytes);
 
 	struct CSocketCreateParams
@@ -123,7 +123,7 @@ struct CPOSIXImpSpecificSocketContext
 		int m_Protocol;
 	};
 
-	bool f_GetSocketCreateParams(::NMib::NNetwork::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams);
+	bool f_GetSocketCreateParams(::NMib::NNetwork::ENetAddressType _ExpectedType, CSocketCreateParams &o_Params);
 
 private:
 	struct CInternal;
@@ -141,8 +141,8 @@ struct CPOSIXSocketContext
 	CPOSIXAddress *f_DuplicateAddress(CPOSIXAddress const &_Address);
 
 	NMib::NNetwork::ENetAddressType f_GetAddressType(CPOSIXAddress const &_pAddress);
-	bool f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes);
-	CPOSIXAddress *f_SetAddressRaw(CPOSIXAddress *_Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const *_opRawData, umint _nDataBytes);
+	bool f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes);
+	CPOSIXAddress *f_SetAddressRaw(CPOSIXAddress *_Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const *_pRawData, umint _nDataBytes);
 
 	CPOSIXAddress *f_ResolveAddress(NMib::NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError);
 	CPOSIXAddress *f_ResolveAddress(NMib::NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
@@ -154,7 +154,7 @@ struct CPOSIXSocketContext
 	NContainer::TCVector<NSys::NNetwork::CAddress> f_ResolveHost(NStr::CStr const &_Host, NMib::NNetwork::ENetAddressType _PreferType);
 
 	void *f_AsyncResolveAddress_Open(NMib::NStr::CStr const &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
-	bool f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress * &_opAddress, NMib::NStr::CStr &_Error);
+	bool f_AsyncResolveAddress_GetResult(void *_pResolver, CPOSIXAddress * &o_pAddress, NMib::NStr::CStr &_Error);
 	void f_AsyncResolveAddress_Close(void *_pResolver);
 	void f_AsyncResolveAddress_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 

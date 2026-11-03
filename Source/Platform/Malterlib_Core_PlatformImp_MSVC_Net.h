@@ -182,8 +182,8 @@ public:
 	CWindowsAddress *f_DuplicateAddress(CWindowsAddress *_Address);
 
 	NMib::NNetwork::ENetAddressType f_GetAddressType(CWindowsAddress const &_pAddress);
-	bool f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *_opRawData, umint _nDataBytes);
-	CWindowsAddress *f_SetAddressRaw(CWindowsAddress *_pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const *_opRawData, umint _nDataBytes);
+	bool f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes);
+	CWindowsAddress *f_SetAddressRaw(CWindowsAddress *_pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes);
 
 	CWindowsAddress *f_ResolveAddress(NMib::NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
 	CWindowsAddress *f_ResolveAddress(NMib::NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType, bool _bThrowOnError);
@@ -195,7 +195,7 @@ public:
 	NContainer::TCVector<NSys::NNetwork::CAddress> f_ResolveHost(NStr::CStr const &_Host, NMib::NNetwork::ENetAddressType _PreferType);
 
 	void *f_AsyncResolveAddress_Open(NMib::NStr::CStr const &_Address, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
-	bool f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress * &_opAddress, NMib::NStr::CStr &_Error);
+	bool f_AsyncResolveAddress_GetResult(void *_pResolver, CWindowsAddress * &o_pAddress, NMib::NStr::CStr &_Error);
 	void f_AsyncResolveAddress_Close(void *_pResolver);
 	void f_AsyncResolveAddress_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 

@@ -299,34 +299,34 @@ namespace NMib
 			NFunction::TCFunction<void ()> m_fResume;
 		};
 
-		static CMenuContext *fsg_GetContext(id self)
+		static CMenuContext *fsg_GetContext(id _pSelf)
 		{
-			auto Class = object_getClass(self);
+			auto Class = object_getClass(_pSelf);
 			auto pContextIvar = class_getInstanceVariable(Class, "m_pContext");
-			void *(*fGetIvarVoidStar)(id, Ivar) = (void *(*)(id, Ivar))object_getIvar;
-			return (CMenuContext *)fGetIvarVoidStar(self, pContextIvar);
+			void *(*fGetIvarVoidStar)(id _pObject, Ivar _pIvar) = (void *(*)(id _pObject, Ivar _pIvar))object_getIvar;
+			return (CMenuContext *)fGetIvarVoidStar(_pSelf, pContextIvar);
 		}
 
-		static void fsg_PauseDaemon(id self, SEL cmd, id obj)
+		static void fsg_PauseDaemon(id _pSelf, SEL _pSelector, id _pSender)
 		{
-			CMenuContext *pContext = fsg_GetContext(self);
+			CMenuContext *pContext = fsg_GetContext(_pSelf);
 			if (pContext && pContext->m_fPause)
 				pContext->m_fPause();
 		}
 
-		static void fsg_ResumeDaemon(id self, SEL cmd, id obj)
+		static void fsg_ResumeDaemon(id _pSelf, SEL _pSelector, id _pSender)
 		{
-			CMenuContext *pContext = fsg_GetContext(self);
+			CMenuContext *pContext = fsg_GetContext(_pSelf);
 			if (pContext && pContext->m_fResume)
 				pContext->m_fResume();
 		}
 
-		static void fsg_QuitDaemon(id self, SEL cmd, id obj)
+		static void fsg_QuitDaemon(id _pSelf, SEL _pSelector, id _pSender)
 		{
-			[NSApp stop: self];
+			[NSApp stop: _pSelf];
 		}
 
-		static void fsg_CancelDaemon(id self, SEL cmd, id obj)
+		static void fsg_CancelDaemon(id _pSelf, SEL _pSelector, id _pSender)
 		{
 			// Do nothing.
 		}
@@ -335,7 +335,7 @@ namespace NMib
 		static NSApplication *gs_pSerivceApplication = nullptr;
 		static bool gs_bPendingQuit = false;
 
-		inline_never void fg_CancelRunDaemonStatusAppDoCancel(void *)
+		inline_never void fg_CancelRunDaemonStatusAppDoCancel(void *_pContext)
 		{
 			[NSApp stop: NSApp];
 			[NSApp abortModal];
@@ -417,7 +417,7 @@ namespace NMib
 
 			id pMenuContextObject = [[pMenuContextClass alloc] init];
 
-			void (*fSetIvarVoidStar)(id, Ivar, void *) = (void (*)(id, Ivar, void *))object_setIvar;
+			void (*fSetIvarVoidStar)(id _pObject, Ivar _pIvar, void *_pValue) = (void (*)(id _pObject, Ivar _pIvar, void *_pValue))object_setIvar;
 			fSetIvarVoidStar(pMenuContextObject, pContextIvar, &MenuContext);
 
 			NSMenu *pMenu = [[NSMenu alloc] initWithTitle: @""];
@@ -1577,28 +1577,28 @@ namespace NMib
 
 		void CFileChangeNoticationContext::fs_EventCallback
 			(
-				ConstFSEventStreamRef streamRef
-				, void *clientCallBackInfo
-				, size_t numEvents
-				, void *eventPaths
-				, FSEventStreamEventFlags const eventFlags[]
-				, FSEventStreamEventId const eventIDs[]
+				ConstFSEventStreamRef _pStream
+				, void *_pClientCallBackInfo
+				, size_t _nEvents
+				, void *_pEventPaths
+				, FSEventStreamEventFlags const _EventFlags[]
+				, FSEventStreamEventId const _EventIDs[]
 			)
 		{
-			if (!numEvents)
+			if (!_nEvents)
 				return;
 
 			// Syncronize with previously returned virtual memory
 			g_ForceMmapSequence.f_FetchAdd(1);
 
-			CNotification *pNotification = (CNotification *)clientCallBackInfo;
+			CNotification *pNotification = (CNotification *)_pClientCallBackInfo;
 
 			if (pNotification->m_bPathHintsOnly)
-				pNotification->f_ProcessChangesHints(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs);
+				pNotification->f_ProcessChangesHints(_nEvents, (ch8 const **)_pEventPaths, _EventFlags, _EventIDs);
 			else if (pNotification->m_bPerFileEvents)
-				pNotification->f_ProcessChangesPerFile(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs);
+				pNotification->f_ProcessChangesPerFile(_nEvents, (ch8 const **)_pEventPaths, _EventFlags, _EventIDs);
 			else
-				pNotification->f_ProcessChanges(numEvents, (ch8 const **)eventPaths, eventFlags, eventIDs, false);
+				pNotification->f_ProcessChanges(_nEvents, (ch8 const **)_pEventPaths, _EventFlags, _EventIDs, false);
 		}
 
 		void CFileChangeNoticationContext::f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch)

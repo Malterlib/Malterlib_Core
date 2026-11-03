@@ -37,30 +37,30 @@ namespace NMib
 
 			bool fp_OpenConnection();
 
-			template <typename ...Args>
-			bool fp_MethodCall(NDBus::CMessage &_oReply, char const *_pMethodName, Args const & ..._Args)
+			template <typename ...tfp_CArgs>
+			bool fp_MethodCall(NDBus::CMessage &o_Reply, char const *_pMethodName, tfp_CArgs const & ...p_Args)
 			{
 				NDBus::CMessage Call(NDBus::EMessageType_Method, mc_KWalletService, mc_KWalletPath, mc_KWalletInterface, _pMethodName, mp_DBus);
 
 				{
 					NDBus::CMessageWriter Writer(Call);
 
-					if (!Writer.f_AppendArgs(_Args...))
+					if (!Writer.f_AppendArgs(p_Args...))
 						return false;
 				}
 
-				return mp_Connection.f_BlockingSendWithReply(Call, _oReply);
+				return mp_Connection.f_BlockingSendWithReply(Call, o_Reply);
 			}
 
-			template <typename ...Args>
-			bool fp_ParseSimpleMessage(NDBus::CMessage const &_Msg, Args & ..._Args)
+			template <typename ...tfp_CArgs>
+			bool fp_ParseSimpleMessage(NDBus::CMessage const &_Msg, tfp_CArgs & ...po_Args)
 			{
 				NDBus::CMessageReader Reader(_Msg);
 
 				if (!Reader.f_ArgAvailable())
 					return false;
 
-				if (!Reader.f_PopArgs(_Args...))
+				if (!Reader.f_PopArgs(po_Args...))
 					return false;
 
 				return true;
@@ -80,7 +80,7 @@ namespace NMib
 			ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location);
 			ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password);
 			ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const &_Key);
-			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword);
+			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password);
 			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key);
 		};
 
@@ -273,7 +273,7 @@ namespace NMib
 				return ESecurePassword_OK;
 		}
 
-		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword)
+		ESecurePassword CKWalletPasswordManager::f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password)
 		{
 			DMibLock(mp_DBusLock);
 
@@ -313,13 +313,13 @@ namespace NMib
 					return ESecurePassword_Failure;
 				}
 
-				if (!fp_ParseSimpleMessage(ReadReply, _oPassword))
+				if (!fp_ParseSimpleMessage(ReadReply, o_Password))
 				{
 					DMibLog(Error, "KWallet: readPassword returned an unexpected reply.", 0);
 					return ESecurePassword_Failure;
 				}
 
-				// DMibLog(Info, "KWaller: readPassword returned \"{}\" for \"{}\"", _oPassword.f_GetStr(), _Key );
+				// DMibLog(Info, "KWaller: readPassword returned \"{}\" for \"{}\"", o_Password.f_GetStr(), _Key );
 			}
 
 			return ESecurePassword_OK;

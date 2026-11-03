@@ -119,8 +119,8 @@ namespace
 #endif
 	}
 
-	template <typename t_CData>
-	constexpr bool fg_CharIsNumber(t_CData const _Character)
+	template <typename tf_CData>
+	constexpr bool fg_CharIsNumber(tf_CData const _Character)
 	{
 		if (_Character >= '0' && _Character <= '9')
 			return true;
@@ -128,8 +128,8 @@ namespace
 		return false;
 	}
 
-	template <typename t_CChar>
-	constexpr void fg_ParseNumeric(t_CChar const * &_pParse)
+	template <typename tf_CChar>
+	constexpr void fg_ParseNumeric(tf_CChar const * &_pParse)
 	{
 		auto *pParse = _pParse;
 		while (*pParse)
@@ -139,7 +139,7 @@ namespace
 			++pParse;
 		}
 
-		_pParse = (t_CChar const *)pParse;
+		_pParse = (tf_CChar const *)pParse;
 	}
 
 	long long int fg_StrToInt(char const *_pParse, size_t _nChars)

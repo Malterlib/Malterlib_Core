@@ -464,7 +464,7 @@ static_assert(sizeof(pid_t) <= sizeof(umint), "pid_t must be the same size or sm
 // POSIX Thread Implementation
 // *************************************************************************************************************************
 
-umint NSys::fg_Thread_AllocLocalWithDestructor(void(_pDestructor)(void *))
+umint NSys::fg_Thread_AllocLocalWithDestructor(void(_pDestructor)(void *_pData))
 {
 #if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
 #	ifdef DUseGlibcDummyThreadLocalLevel2
@@ -813,7 +813,7 @@ namespace
 	;
 };
 
-static void fg_POSIX_MapThreadPriority(EExecutionPriority _Priority, int &_oSched, int &_oPrio)
+static void fg_POSIX_MapThreadPriority(EExecutionPriority _Priority, int &o_Sched, int &o_Prio)
 {
 	CPrioMap const *pCurEntry = & gc_MalterlibToPOSIXPriorityMap[0];
 	CPrioMap const *pNextEntry;
@@ -824,16 +824,16 @@ static void fg_POSIX_MapThreadPriority(EExecutionPriority _Priority, int &_oSche
 
 		if (_Priority < pNextEntry->m_MalterlibPriority)
 		{
-			_oSched = pCurEntry->m_Scheduler;
+			o_Sched = pCurEntry->m_Scheduler;
 
-			int MinPrio = sched_get_priority_min(_oSched);
-			int MaxPrio = sched_get_priority_max(_oSched);
+			int MinPrio = sched_get_priority_min(o_Sched);
+			int MaxPrio = sched_get_priority_max(o_Sched);
 
 			if (MaxPrio > MinPrio)
-				_oPrio = MinPrio + ((fp64(_Priority) / fp64(EExecutionPriority_Highest)) * fp64(MaxPrio - MinPrio)).f_ToInt();
+				o_Prio = MinPrio + ((fp64(_Priority) / fp64(EExecutionPriority_Highest)) * fp64(MaxPrio - MinPrio)).f_ToInt();
 			else
-				_oPrio = MinPrio;
-			// DMibLog(Info, "Prio found: {} = {} = {} -> {} CurEntry: {}", _Priority, _oPrio, MinPrio, MaxPrio, pCurEntry->m_MalterlibPriority);
+				o_Prio = MinPrio;
+			// DMibLog(Info, "Prio found: {} = {} = {} -> {} CurEntry: {}", _Priority, o_Prio, MinPrio, MaxPrio, pCurEntry->m_MalterlibPriority);
 
 			return;
 		}
@@ -841,11 +841,11 @@ static void fg_POSIX_MapThreadPriority(EExecutionPriority _Priority, int &_oSche
 		++pCurEntry;
 	}
 
-	_oSched = SCHED_OTHER;
-	int MinPrio = sched_get_priority_min(_oSched);
-	int MaxPrio = sched_get_priority_max(_oSched);
-	_oPrio = (MaxPrio - MinPrio) >> 1;
-	// DMibLog(Info, "Prio not found: {}", _oPrio);
+	o_Sched = SCHED_OTHER;
+	int MinPrio = sched_get_priority_min(o_Sched);
+	int MaxPrio = sched_get_priority_max(o_Sched);
+	o_Prio = (MaxPrio - MinPrio) >> 1;
+	// DMibLog(Info, "Prio not found: {}", o_Prio);
 }
 
 #		include <mach/mach_time.h>
@@ -1157,12 +1157,12 @@ bool NSys::fg_Thread_CanRestorePriority()
 	return true;
 }
 
-bool NSys::fg_Thread_RegisterSpawnServer(FThreadSpawnServerWake *, void *)
+bool NSys::fg_Thread_RegisterSpawnServer(FThreadSpawnServerWake *_fWake, void *_pContext)
 {
 	return false; // Threads set their own priority freely here, so creation never needs to be handed off
 }
 
-void NSys::fg_Thread_UnregisterSpawnServer(void *)
+void NSys::fg_Thread_UnregisterSpawnServer(void *_pContext)
 {
 }
 
@@ -1188,7 +1188,7 @@ void NSys::fg_Thread_Destroy(void *_pThread)
 {
 }
 
-void const *NSys::fg_Thread_GetStartAddress(umint)
+void const *NSys::fg_Thread_GetStartAddress(umint _ThreadID)
 {
 	return nullptr;
 }

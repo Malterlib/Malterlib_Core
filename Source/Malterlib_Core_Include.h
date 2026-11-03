@@ -68,7 +68,7 @@ namespace NMib
 	struct TCVoidFunctor
 	{
 		template <typename ...tfp_CParam>
-		t_CReturn operator () (tfp_CParam && ...) const volatile
+		t_CReturn operator () (tfp_CParam && ...p_Params) const volatile
 		{
 			return t_CReturn();
 		}
@@ -78,7 +78,7 @@ namespace NMib
 	struct TCVoidFunctor<void>
 	{
 		template <typename ...tfp_CParam>
-		void operator () (tfp_CParam && ...) const volatile
+		void operator () (tfp_CParam && ...p_Params) const volatile
 		{
 		}
 	};
@@ -98,14 +98,14 @@ namespace NMib
 			, ESharedPointerOption_SupportWeakPointer = DMibBit(0)
 		};
 
-		template <CSharedPointerOptionUnderlying t_Options = ESharedPointerOption_None, typename t_CountType = smint>
+		template <CSharedPointerOptionUnderlying t_Options = ESharedPointerOption_None, typename t_CCountType = smint>
 		struct TCIntrusiveRefCount;
 
-		template <typename t_CountType>
-		struct TCIntrusiveRefCount<ESharedPointerOption_None, t_CountType>;
+		template <typename t_CCountType>
+		struct TCIntrusiveRefCount<ESharedPointerOption_None, t_CCountType>;
 
-		template <typename t_CountType>
-		struct TCIntrusiveRefCount<ESharedPointerOption_SupportWeakPointer, t_CountType>;
+		template <typename t_CCountType>
+		struct TCIntrusiveRefCount<ESharedPointerOption_SupportWeakPointer, t_CCountType>;
 	}
 
 	template <typename t_CIntType>

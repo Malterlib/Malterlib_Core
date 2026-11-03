@@ -20,7 +20,7 @@ namespace NMib
 		Replace the function pointer in a module's IAT.
 
 		Parameters:
-		_hMod              - Module to use IAT from.
+		_Module            - Module to use IAT from.
 		_pImportedModuleName  - Name of imported DLL from which
 		function is imported.
 		_pImportedProcName    - Name of imported function.
@@ -31,14 +31,14 @@ namespace NMib
 		S_OK on success.
 		(any HRESULT) on failure.
 		--*/
-		HRESULT fg_PatchIAT(HMODULE _hMod, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
+		HRESULT fg_PatchIAT(HMODULE _Module, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
 		{
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;
 			PIMAGE_IMPORT_DESCRIPTOR pImportDescriptor;
 			UINT uiIter;
 
-			pDOSHeader = (PIMAGE_DOS_HEADER) _hMod;
+			pDOSHeader = (PIMAGE_DOS_HEADER) _Module;
 			pNTHeader = (PIMAGE_NT_HEADERS) DRvaToPtr(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
@@ -116,7 +116,7 @@ namespace NMib
 		typedef IMAGE_DELAY_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_DELAY_IMPORT_DESCRIPTOR;
 		// NOLINTEND(malterlib-type-naming)
 
-		HRESULT fg_DumpIATs(HMODULE _hMod)
+		HRESULT fg_DumpIATs(HMODULE _Module)
 		{
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;
@@ -124,7 +124,7 @@ namespace NMib
 			UINT uiIter;
 			PIMAGE_DELAY_IMPORT_DESCRIPTOR pDelayImportDescriptor;
 
-			pDOSHeader = (PIMAGE_DOS_HEADER) _hMod;
+			pDOSHeader = (PIMAGE_DOS_HEADER) _Module;
 			pNTHeader = (PIMAGE_NT_HEADERS) DRvaToPtr(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
@@ -195,14 +195,14 @@ namespace NMib
 			return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
 		}
 
-		HRESULT fg_PatchDIAT(HMODULE _hMod, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
+		HRESULT fg_PatchDIAT(HMODULE _Module, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
 		{
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;
 			PIMAGE_DELAY_IMPORT_DESCRIPTOR pDelayImportDescriptor;
 			UINT uiIter;
 
-			pDOSHeader = (PIMAGE_DOS_HEADER) _hMod;
+			pDOSHeader = (PIMAGE_DOS_HEADER) _Module;
 			pNTHeader = (PIMAGE_NT_HEADERS) DRvaToPtr(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
@@ -272,9 +272,9 @@ namespace NMib
 		{
 #	define DMaxModules 1024
 
-			// Returns the HMODULE for module szModNameArg in the process with process-id _PID
+			// Returns the HMODULE for module _pModuleName in the process with process-id _PID
 			// Returns NULL when the mudole is not loaded
-			HMODULE fg_GetModuleForProcess(DWORD _PID, WCHAR const *szModNameArg)
+			HMODULE fg_GetModuleForProcess(DWORD _PID, WCHAR const *_pModuleName)
 			{
 				HANDLE hProcess;
 				HMODULE ahmModules[DMaxModules];
@@ -292,7 +292,7 @@ namespace NMib
 					{
 						if (GetModuleBaseName(hProcess, ahmModules[uiIter], szModName, sizeof(szModName) / sizeof(TCHAR)))
 						{
-							if (NStr::fg_StrCmpNoCase(szModName, szModNameArg) == 0)
+							if (NStr::fg_StrCmpNoCase(szModName, _pModuleName) == 0)
 							{
 								CloseHandle(hProcess);
 								return ahmModules[uiIter];
@@ -375,57 +375,57 @@ namespace NMib
 			return bRet;
 		}
 
-		inline_never DWORD WINAPI fg_DummyThreadProc(LPVOID lpParameter)
+		inline_never DWORD WINAPI fg_DummyThreadProc(LPVOID _pParameter)
 		{
 			return 0;
 		}
 
-		uint8 *fg_SkipJumps(uint8 *pbCode)
+		uint8 *fg_SkipJumps(uint8 *_pCode)
 		{
 #	if defined(DArchitecture_x86) || defined(DArchitecture_x64)
 
 #		if defined DArchitecture_x64
-			if ((pbCode[0] & 0xF0) == 0x40 && pbCode[1] == 0xff && pbCode[2] == 0x25)
+			if ((_pCode[0] & 0xF0) == 0x40 && _pCode[1] == 0xff && _pCode[2] == 0x25)
 			{
 				// REX PREFIX, just skip it
-				++pbCode;
+				++_pCode;
 			}
 #		endif
 
-			if (pbCode[0] == 0xff && pbCode[1] == 0x25)
+			if (_pCode[0] == 0xff && _pCode[1] == 0x25)
 			{
 #		ifdef DArchitecture_x86
 				// on x86 we have an absolute pointer...
-				uint8 *pbTarget = *(uint8 **)&pbCode[2];
+				uint8 *pbTarget = *(uint8 **)&_pCode[2];
 				// ... that shows us an absolute pointer.
 				return fg_SkipJumps(*(uint8 **)pbTarget);
 #		elif defined DArchitecture_x64
 				// on x64 we have a 32-bit offset...
-				INT32 lOffset = *(INT32 *)&pbCode[2];
+				INT32 lOffset = *(INT32 *)&_pCode[2];
 				// ... that shows us an absolute pointer
-				return fg_SkipJumps(*(uint8 **)(pbCode + 6 + lOffset));
+				return fg_SkipJumps(*(uint8 **)(_pCode + 6 + lOffset));
 #		endif
 			}
-			else if (pbCode[0] == 0xe9)
+			else if (_pCode[0] == 0xe9)
 			{
 				// here the behavior is identical, we have...
 				// ...a 32-bit offset to the destination.
-				return fg_SkipJumps(pbCode + 5 + *(INT32 *)&pbCode[1]);
+				return fg_SkipJumps(_pCode + 5 + *(INT32 *)&_pCode[1]);
 			}
-			else if (pbCode[0] == 0xeb)
+			else if (_pCode[0] == 0xeb)
 			{
 				// and finally an 8-bit offset to the destination
-				return fg_SkipJumps(pbCode + 2 + *(CHAR *)&pbCode[1]);
+				return fg_SkipJumps(_pCode + 2 + *(CHAR *)&_pCode[1]);
 			}
 #	else
 #		error unsupported platform
 #	endif
-			return pbCode;
+			return _pCode;
 		}
 
 		struct CInjectDllData
 		{
-			NTSTATUS (__stdcall *m_pLdrLoadDll)(PWCHAR SearchPath, PULONG DllCharacteristics, PUNICODE_STRING ModuleFileName, PHANDLE ModuleHandle);
+			NTSTATUS (__stdcall *m_pLdrLoadDll)(PWCHAR _pSearchPath, PULONG _pDllCharacteristics, PUNICODE_STRING _pModuleFileName, PHANDLE o_pModule);
 			PWCHAR m_pSearchPath;
 			ULONG m_DllCharacteristics;
 			UNICODE_STRING m_ModuleFileName;
@@ -586,16 +586,16 @@ namespace NMib
 
 //#	define DMibSupportCygwin
 
-		PIMAGE_NT_HEADERS fg_GetImageHeaders(HMODULE _hModule)
+		PIMAGE_NT_HEADERS fg_GetImageHeaders(HMODULE _Module)
 		{
-			PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)_hModule;
+			PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)_Module;
 
 			if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
 				return nullptr;
 
-			PIMAGE_NT_HEADERS pRet = (PIMAGE_NT_HEADERS)((uint8 *)_hModule + pDosHeader->e_lfanew);
+			PIMAGE_NT_HEADERS pRet = (PIMAGE_NT_HEADERS)((uint8 *)_Module + pDosHeader->e_lfanew);
 			// Our buffer is 4096 bytes max
-			if (((uint8 *)(pRet + 1) - (uint8 *)_hModule) > 4096)
+			if (((uint8 *)(pRet + 1) - (uint8 *)_Module) > 4096)
 				return nullptr;
 
 			if (pRet->Signature != IMAGE_NT_SIGNATURE)
@@ -604,7 +604,7 @@ namespace NMib
 			return pRet;
 		}
 
-		EInjectDllResult fg_InjectDLL(HANDLE _hProcess, HANDLE _hThread, WCHAR const *_pDLLName, NStr::CStr &_Error)
+		EInjectDllResult fg_InjectDLL(HANDLE _Process, HANDLE _Thread, WCHAR const *_pDLLName, NStr::CStr &_Error)
 		{
 			// NMib::NTime::CTimeMeasureTraceScope Scope("fg_InjectDLL");
 			// DMibTrace("Injecting Dll: {}\r\n", _pDLLName);
@@ -613,7 +613,7 @@ namespace NMib
 
 			// LoadLibraryW(_pDLLName);
 
-			HANDLE hProcess = _hProcess;
+			HANDLE hProcess = _Process;
 
 			auto fl_ReportError = [&](NStr::CStr const &_NewError)
 				{
@@ -681,7 +681,7 @@ namespace NMib
 				while (true)
 				{
 					MEMORY_BASIC_INFORMATION MemInfo;
-					if (!VirtualQueryEx(_hProcess, (void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
+					if (!VirtualQueryEx(_Process, (void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
 						break;
 					if (MemInfo.BaseAddress == MemInfo.AllocationBase && (MemInfo.Type & MEM_IMAGE))
 					{
@@ -843,7 +843,7 @@ namespace NMib
 			lpRemoteMemoryOut = fg_AlignUp(lpRemoteMemoryOut, 16);
 #	ifdef DMibSupportCygwin
 			bool bIsCygwin = false;
-			if (_hThread && !ImageFileName.f_IsEmpty())
+			if (_Thread && !ImageFileName.f_IsEmpty())
 			{
 				do
 				{
@@ -864,9 +864,9 @@ namespace NMib
 					;
 			}
 
-			if (_hThread && bIsCygwin)
+			if (_Thread && bIsCygwin)
 			{
-				if (!QueueUserAPC((PAPCFUNC)pRemoteFunction, _hThread, (umint)pRemoteInjectData))
+				if (!QueueUserAPC((PAPCFUNC)pRemoteFunction, _Thread, (umint)pRemoteInjectData))
 				{
 					HRESULT Error = GetLastError();
 					fl_ReportError(NStr::CStr::CFormat("Failed to queue user APC: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));

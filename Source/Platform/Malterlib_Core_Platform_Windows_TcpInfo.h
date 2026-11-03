@@ -35,7 +35,7 @@ struct CWindowsTcpInfoV0
 
 // Derive delivery rate from successive cumulative byte samples. Below both congestion and receive windows,
 // the sender is application-limited; that rate must not shrink the send window.
-inline bool fg_Windows_QueryPathDeliveryRate(SOCKET _Socket, uint64 &io_LastBytesOut, uint64 &io_LastStamp, umint &o_nBytesPerSecond, bool &o_bAppLimited)
+inline bool fg_Windows_QueryPathDeliveryRate(SOCKET _Socket, uint64 &o_LastBytesOut, uint64 &o_LastStamp, umint &o_nBytesPerSecond, bool &o_bAppLimited)
 {
 	DWORD Version = 0;
 	CWindowsTcpInfoV0 Info;
@@ -45,10 +45,10 @@ inline bool fg_Windows_QueryPathDeliveryRate(SOCKET _Socket, uint64 &io_LastByte
 
 	uint64 Stamp = uint64(NMib::NTime::NPlatform::fg_TimerRaw_PreciseGet());
 	uint64 Frequency = uint64(NMib::NTime::NPlatform::fg_TimerRaw_PreciseFrequency());
-	uint64 LastBytesOut = io_LastBytesOut;
-	uint64 LastStamp = io_LastStamp;
-	io_LastBytesOut = Info.m_BytesOut;
-	io_LastStamp = Stamp;
+	uint64 LastBytesOut = o_LastBytesOut;
+	uint64 LastStamp = o_LastStamp;
+	o_LastBytesOut = Info.m_BytesOut;
+	o_LastStamp = Stamp;
 
 	if (!LastStamp || Stamp <= LastStamp || Info.m_BytesOut <= LastBytesOut)
 		return false;

@@ -96,7 +96,7 @@ namespace NMib
 			{
 			}
 
-			CClassContainer(CClassContainer const &)
+			CClassContainer(CClassContainer const &_Other)
 			{
 			} // Ignore the link.
 
@@ -111,10 +111,10 @@ namespace NMib
 				return (void *)this;
 			}
 
-			template <typename t_CCast>
-			t_CCast *f_Get() const
+			template <typename tf_CCast>
+			tf_CCast *f_Get() const
 			{
-				return (t_CCast *)fp_GetPointer();
+				return (tf_CCast *)fp_GetPointer();
 			}
 
 			/*
@@ -182,16 +182,16 @@ namespace NMib
 			}
 		};
 
-		template <typename t_CType>
-		TCClassContainer<t_CType> fg_GetClassContainer(t_CType const &_Object)
+		template <typename tf_CType>
+		TCClassContainer<tf_CType> fg_GetClassContainer(tf_CType const &_Object)
 		{
-			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::mc_TypeID));
+			return fg_Move(TCClassContainer<tf_CType>(_Object, TCTypeID<tf_CType>::mc_TypeID));
 		}
 
-		template <typename t_CType>
-		TCClassContainer<t_CType> fg_GetClassContainer(t_CType const &_Object, umint _Context)
+		template <typename tf_CType>
+		TCClassContainer<tf_CType> fg_GetClassContainer(tf_CType const &_Object, umint _Context)
 		{
-			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::mc_TypeID, _Context));
+			return fg_Move(TCClassContainer<tf_CType>(_Object, TCTypeID<tf_CType>::mc_TypeID, _Context));
 		}
 
 #define DGetCC(d_Object)	NMib::NMisc::fg_GetClassContainer(d_Object).f_GetVoidPtr()
@@ -369,8 +369,8 @@ namespace NMib
 			, ECompareResult_GreaterThan = 1
 		};
 
-		template <typename t_CLeft, typename t_CRight>
-		inline_small ECompareResult fg_Compare(t_CLeft const &_Left, t_CRight const &_Right)
+		template <typename tf_CLeft, typename tf_CRight>
+		inline_small ECompareResult fg_Compare(tf_CLeft const &_Left, tf_CRight const &_Right)
 		{
 			if (_Left < _Right)
 				return ECompareResult_LessThan;
@@ -379,8 +379,8 @@ namespace NMib
 			return ECompareResult_Equal;
 		}
 
-		template <typename t_CLeft, typename t_CRight>
-		inline_small ECompareResult fg_Compare(ECompareResult _LastResult, t_CLeft const &_Left, t_CRight const &_Right)
+		template <typename tf_CLeft, typename tf_CRight>
+		inline_small ECompareResult fg_Compare(ECompareResult _LastResult, tf_CLeft const &_Left, tf_CRight const &_Right)
 		{
 			if (!(_LastResult == ECompareResult_Equal))
 				return _LastResult;
@@ -540,7 +540,7 @@ namespace NMib
 		}
 
 		template <typename tf_CContainer>
-		constexpr inline_always CIteratorEndSentinel end(tf_CContainer &&_Container, TCEnableIf<!NTraits::cIsVoid<decltype(_Container.f_GetIterator())>, bool> = true)
+		constexpr inline_always CIteratorEndSentinel end(tf_CContainer &&_Container, TCEnableIf<!NTraits::cIsVoid<decltype(_Container.f_GetIterator())>, bool> _bHasIterator = true)
 		{
 			return CIteratorEndSentinel();
 		}

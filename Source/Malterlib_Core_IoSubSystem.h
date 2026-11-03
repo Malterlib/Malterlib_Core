@@ -78,7 +78,7 @@ namespace NMib::NSys
 	struct CIoSubSystem;
 
 	// Invoked by the subsystem destructor on the subsystem where it was registered.
-	using FIoStatsDump = void (*)(CIoSubSystem &);
+	using FIoStatsDump = void (*)(CIoSubSystem &_Io);
 
 	struct CSort_StatsDump
 	{

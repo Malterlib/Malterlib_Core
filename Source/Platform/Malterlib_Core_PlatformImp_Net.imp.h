@@ -81,14 +81,14 @@ void *CAddressResolver::f_Open(NMib::NStr::CStr const &_Name, ::NMib::NNetwork::
 	return pRet;
 }
 
-bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &_oAddress, NMib::NStr::CStr &_Error)
+bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &o_Address, NMib::NStr::CStr &_Error)
 {
 	CResolveRequest *pReq = (CResolveRequest *)_pResolver;
 
 	DMibLock(mp_Lock);
 	if (pReq->m_Flags & EFlag_Done)
 	{
-		_oAddress = pReq->m_Address;
+		o_Address = pReq->m_Address;
 		pReq->m_Address = nullptr;
 		return true;
 	}

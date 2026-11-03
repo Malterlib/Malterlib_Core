@@ -48,7 +48,7 @@ namespace NMib
 				return ESecurePassword_Failure;
 			}
 
-			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &_oPassword) override
+			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password) override
 			{
 				return ESecurePassword_Failure;
 			}

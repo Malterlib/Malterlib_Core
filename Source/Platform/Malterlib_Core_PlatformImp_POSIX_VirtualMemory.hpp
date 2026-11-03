@@ -56,12 +56,12 @@ void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment,
 #	endif
 #endif
 
-	auto fl_ReportError = [&](int ErrNo)
+	auto fl_ReportError = [&](int _ErrNo)
 		{
-			if (ErrNo == ENOMEM)
+			if (_ErrNo == ENOMEM)
 				DMibErrorMemory("The OS returned an error from mmap: Out of memory (ENOMEM)");
 
-			DMibErrorMemory(NMib::NPlatform::fg_FormatErrno("mmap (alloc virtual memory)", ErrNo));
+			DMibErrorMemory(NMib::NPlatform::fg_FormatErrno("mmap (alloc virtual memory)", _ErrNo));
 		}
 	;
 

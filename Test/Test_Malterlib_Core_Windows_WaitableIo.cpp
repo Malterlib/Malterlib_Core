@@ -67,7 +67,7 @@ namespace
 							(NSys::CIoLoopHandle)(umint)hEvent
 							, &Reports
 							, NSys::EIoLoopEvent::mc_Read
-							, [](void *_pToken, NSys::EIoLoopEvent _Events, int)
+							, [](void *_pToken, NSys::EIoLoopEvent _Events, int _Error)
 							{
 								auto &Reports = *static_cast<CReports *>(_pToken);
 								if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))

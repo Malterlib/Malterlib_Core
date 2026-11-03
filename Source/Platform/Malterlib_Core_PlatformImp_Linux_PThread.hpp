@@ -86,7 +86,7 @@ namespace
 
 	struct CPThreadOverrideStartParams
 	{
-		void *(*m_fStart)(void *);
+		void *(*m_fStart)(void *_pArgument);
 		void *m_pArgument;
 		umint m_ParentThreadID;
 		DMibListLinkDS_Link(CPThreadOverrideStartParams, m_Link);
@@ -290,7 +290,7 @@ extern "C" assure_used module_export int pthread_create
 	(
 		pthread_t * __restrict _pThread
 		, pthread_attr_t const * __restrict _pAttributes
-		, void *(*_fStart)(void *)
+		, void *(*_fStart)(void *_pArgument)
 		, void * __restrict _pArgument
 	)
 	__THROWNL
@@ -360,7 +360,7 @@ void DMibCrossmoduleAPI fg_ThreadNotificationRegister(NSys::NPrivate::CThreadNot
 	}
 }
 
-void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadNotificationModule *_pModule, void (*_fDestroyLocals)(void *), void *_pContext)
+void DMibCrossmoduleAPI fg_ThreadNotificationUnregister(NSys::NPrivate::CThreadNotificationModule *_pModule, void (*_fDestroyLocals)(void *_pContext), void *_pContext)
 {
 	DMibLock(g_ThreadNotificationLock);
 

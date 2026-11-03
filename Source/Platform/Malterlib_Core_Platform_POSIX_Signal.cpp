@@ -33,7 +33,7 @@ namespace NMib::NSys
 		{
 			struct CSignalHandlers
 			{
-				NAtomic::TCAtomic<void (*)(int)> m_fOldSignal = nullptr;
+				NAtomic::TCAtomic<void (*)(int _Signal)> m_fOldSignal = nullptr;
 				NAtomic::TCAtomic<umint> m_nPending;
 				NAtomic::TCAtomic<umint> m_nThreadSignals;
 				NContainer::TCLinkedList<NFunction::TCFunctionMutable<void ()>> m_Functions;
@@ -509,7 +509,7 @@ namespace NMib::NPlatform
 	// Sets a handler with the semantics of signal and returns the previous one, or SIG_ERR. It installs with sigaction, as on macOS
 	// the thread sanitizer only wraps handlers installed that way. An unwrapped handler that interrupts a thread inside the
 	// sanitizer runtime deadlocks on the runtime's lock at its first atomic
-	auto fg_SetSignalHandler(int _Signal, void (*_fHandler)(int)) -> void (*)(int)
+	auto fg_SetSignalHandler(int _Signal, void (*_fHandler)(int _Signal)) -> void (*)(int _Signal)
 	{
 		struct sigaction Action = {};
 		Action.sa_handler = _fHandler;

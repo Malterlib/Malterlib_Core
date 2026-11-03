@@ -355,7 +355,7 @@ namespace
 		}
 	}
 
-	aint fg_Linux_ThreadSpawnHelperMain(void *)
+	aint fg_Linux_ThreadSpawnHelperMain(void *_pContext)
 	{
 		auto &State = g_LinuxThreadSpawn;
 

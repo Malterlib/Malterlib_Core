@@ -5,6 +5,6 @@ namespace NMib
 {
 	namespace NPlatform
 	{
-		auto fg_SetSignalHandler(int _Signal, void (*_fHandler)(int)) -> void (*)(int);
+		auto fg_SetSignalHandler(int _Signal, void (*_fHandler)(int _Signal)) -> void (*)(int _Signal);
 	}
 }

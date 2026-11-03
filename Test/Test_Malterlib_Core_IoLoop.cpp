@@ -20,7 +20,7 @@ namespace
 		umint m_nOther = 0;
 	};
 
-	void fg_CountCloseOnlyEvents(void *_pToken, NSys::EIoLoopEvent _Events, int)
+	void fg_CountCloseOnlyEvents(void *_pToken, NSys::EIoLoopEvent _Events, int _Error)
 	{
 		auto &Counts = *(CCloseOnlyEventCounts *)_pToken;
 		if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Hup) || fg_IsSet(_Events, NSys::EIoLoopEvent::mc_WriteClosed))
