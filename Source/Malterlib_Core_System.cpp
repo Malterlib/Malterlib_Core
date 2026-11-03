@@ -44,7 +44,7 @@ namespace NMib
 			NMib::CProcessorInfo CPUInfo;
 			fg_HW_GetProcessorInfo(CPUInfo);
 
-			if (CPUInfo.m_Architecture == EProcessorArchitecture_x86 || CPUInfo.m_Architecture == EProcessorArchitecture_x86_64)
+			if (CPUInfo.m_Architecture == EProcessorArchitecture_X86 || CPUInfo.m_Architecture == EProcessorArchitecture_X86_64)
 			{
 				NMib::EProcessorFeature RequiredFeatures = NMib::EProcessorFeature_MMX | NMib::EProcessorFeature_SSE | NMib::EProcessorFeature_SSE2;
 
@@ -52,17 +52,17 @@ namespace NMib
 			}
 			else if
 			(
-				CPUInfo.m_Architecture == EProcessorArchitecture_armv5
-				|| CPUInfo.m_Architecture == EProcessorArchitecture_armv6
-				|| CPUInfo.m_Architecture == EProcessorArchitecture_armv7
-				|| CPUInfo.m_Architecture == EProcessorArchitecture_armv8
+				CPUInfo.m_Architecture == EProcessorArchitecture_ArmV5
+				|| CPUInfo.m_Architecture == EProcessorArchitecture_ArmV6
+				|| CPUInfo.m_Architecture == EProcessorArchitecture_ArmV7
+				|| CPUInfo.m_Architecture == EProcessorArchitecture_ArmV8
 			)
 			{
 				NMib::EProcessorFeature RequiredFeatures = NMib::EProcessorFeature_VFP;
 
 				return (CPUInfo.m_Features & RequiredFeatures) == RequiredFeatures;
 			}
-			else if (CPUInfo.m_Architecture == EProcessorArchitecture_arm64)
+			else if (CPUInfo.m_Architecture == EProcessorArchitecture_Arm64)
 			{
 				NMib::EProcessorFeature RequiredFeatures = NMib::EProcessorFeature_None;
 

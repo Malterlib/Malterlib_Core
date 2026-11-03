@@ -374,7 +374,7 @@ class CTest
 
 class CTest
 {
-	static const uint32 mc_Test = 0;
+	static const uint32 ETest = 0;
 	static const bool mc_bTest = true;
 	static const umint mc_iTest = 0;
 	static const umint mc_nTest = 0;
@@ -554,7 +554,7 @@ struct CTest2
 
 	// pMemberConstantPublic:
 	// mc_
-	static const uint32 mc_Test = 0;
+	static const uint32 ETest = 0;
 
 private:
 

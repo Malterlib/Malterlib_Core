@@ -22,10 +22,10 @@ namespace NMib
 
 	enum EDebugCheckFailureAction
 	{
-		EDebugContractFailureAction_Continue
-		, EDebugContractFailureAction_Break
-		, EDebugContractFailureAction_Abort
-		, EDebugContractFailureAction_NotHandled
+		EDebugCheckFailureAction_Continue
+		, EDebugCheckFailureAction_Break
+		, EDebugCheckFailureAction_Abort
+		, EDebugCheckFailureAction_NotHandled
 	};
 
 	using FThreadProc = aint (void *_pContext);
@@ -74,12 +74,12 @@ namespace NMib
 	enum EOperatingSystemArch
 	{
 		EOperatingSystemArch_Unknown = -1
-		, EOperatingSystemArch_x86
-		, EOperatingSystemArch_x64
+		, EOperatingSystemArch_X86
+		, EOperatingSystemArch_X64
 		, EOperatingSystemArch_PPC
 		, EOperatingSystemArch_PPC64
-		, EOperatingSystemArch_le32
-		, EOperatingSystemArch_arm64
+		, EOperatingSystemArch_Le32
+		, EOperatingSystemArch_Arm64
 	};
 
 	namespace NSys

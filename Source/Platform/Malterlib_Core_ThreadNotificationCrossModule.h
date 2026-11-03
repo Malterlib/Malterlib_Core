@@ -5,7 +5,7 @@
 
 namespace NMib::NSys::NPrivate
 {
-	enum
+	enum EThreadNotificationCrossModule
 	{
 		EThreadNotificationCrossModule_Version_Min = 0x101
 		, EThreadNotificationCrossModule_Version   = 0x101

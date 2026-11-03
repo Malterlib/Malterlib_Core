@@ -386,7 +386,7 @@ NMib::NSys::EDesktopEnvironment fg_DeduceDesktopEnvironment()
 	return EDesktopEnvironment_Linux;
 }
 
-using uuid_string_t = char[256];
+using uuid_string_t = char[256]; // NOLINT(malterlib-type-naming): the name on macOS, which shares this code
 
 struct CUUIDLibrary final : public NMib::CDynamicLibraryUtility
 {
@@ -1302,11 +1302,11 @@ bool NSys::fg_System_GetOperatingSystemVersion(int &o_Major, int &o_Minor, int &
 	Machine.f_SetConstPtr(NameInfo.machine, fg_StrLen(NameInfo.machine));
 
 	if (Machine == "i386" || Machine == "i486" || Machine == "i586" || Machine == "i686")
-		g_OperatingSystemArch = EOperatingSystemArch_x86;
+		g_OperatingSystemArch = EOperatingSystemArch_X86;
 	else if (Machine == "x86_64")
-		g_OperatingSystemArch = EOperatingSystemArch_x64;
+		g_OperatingSystemArch = EOperatingSystemArch_X64;
 	else if (Machine == "aarch64")
-		g_OperatingSystemArch = EOperatingSystemArch_arm64;
+		g_OperatingSystemArch = EOperatingSystemArch_Arm64;
 	else
 	{
 		DMibFastCheck(false);
@@ -3627,7 +3627,7 @@ extern "C" unsigned long getauxval(unsigned long _Type)
 	{
 		auto Data = NMib::NPlatform::fg_ReadProcFS("/proc/self/auxv");
 
-		NStream::CBinaryStreamMemoryPtr<> Stream;
+		NStream::TCBinaryStreamMemoryPtr<> Stream;
 		Stream.f_OpenRead((uint8 const *)Data.f_GetArray(), Data.f_GetLen());
 
 		struct CAuxvEntry

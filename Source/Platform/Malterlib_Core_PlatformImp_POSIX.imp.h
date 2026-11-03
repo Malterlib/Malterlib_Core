@@ -210,18 +210,18 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo &_Info)
 		;
 	}
 
-	_Info.m_Architecture = (sizeof(void *) == 4) ? EProcessorArchitecture_x86 : EProcessorArchitecture_x86_64;
+	_Info.m_Architecture = (sizeof(void *) == 4) ? EProcessorArchitecture_X86 : EProcessorArchitecture_X86_64;
 
 #elif defined(DArchitecture_ppc32)
-	_Info.m_Architecture = EProcessorArchitecture_ppc32;
+	_Info.m_Architecture = EProcessorArchitecture_Ppc32;
 #elif defined(DArchitecture_ppc64)
-	_Info.m_Architecture = EProcessorArchitecture_ppc64;
+	_Info.m_Architecture = EProcessorArchitecture_Ppc64;
 #elif defined(DArchitecture_le32)
-	_Info.m_Architecture = EProcessorArchitecture_le32;
+	_Info.m_Architecture = EProcessorArchitecture_Le32;
 #elif defined(DArchitecture_arm64)
-	_Info.m_Architecture = EProcessorArchitecture_arm64;
+	_Info.m_Architecture = EProcessorArchitecture_Arm64;
 #elif defined(DArchitecture_arm64e)
-	_Info.m_Architecture = EProcessorArchitecture_arm64e;
+	_Info.m_Architecture = EProcessorArchitecture_Arm64e;
 #else
 #	error "Not implemented"
 #endif

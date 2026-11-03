@@ -100,6 +100,7 @@ namespace NMib
 			return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
 		}
 
+		// NOLINTBEGIN(malterlib-type-naming): the names in the Windows headers
 		typedef struct _IMAGE_DELAY_IMPORT_DESCRIPTOR
 		{
 			DWORD grAttrs;
@@ -113,6 +114,7 @@ namespace NMib
 		} IMAGE_DELAY_IMPORT_DESCRIPTOR;
 
 		typedef IMAGE_DELAY_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_DELAY_IMPORT_DESCRIPTOR;
+		// NOLINTEND(malterlib-type-naming)
 
 		HRESULT fg_DumpIATs(HMODULE _hMod)
 		{

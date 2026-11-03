@@ -43,37 +43,25 @@ namespace NMib
 	template <bool t_bFirstType, int t_Val0, int t_Val1>
 	struct TCChooseInt<int, t_bFirstType, t_Val0, t_Val1>
 	{
-		enum
-		{
-			mc_Value = t_Val0
-		};
+		static constexpr int mc_Value = t_Val0;
 	};
 
 	template <int t_Val0, int t_Val1>
 	struct TCChooseInt<int, false, t_Val0, t_Val1>
 	{
-		enum
-		{
-			mc_Value = t_Val1
-		};
+		static constexpr int mc_Value = t_Val1;
 	};
 
 	template <bool t_bFirstType, bool t_Val0, bool t_Val1>
 	struct TCChooseInt<bool, t_bFirstType, t_Val0, t_Val1>
 	{
-		enum
-		{
-			mc_Value = t_Val0
-		};
+		static constexpr bool mc_Value = t_Val0;
 	};
 
 	template <bool t_Val0, bool t_Val1>
 	struct TCChooseInt<bool, false, t_Val0, t_Val1>
 	{
-		enum
-		{
-			mc_Value = t_Val1
-		};
+		static constexpr bool mc_Value = t_Val1;
 	};
 
 	template <auto t_fFunction>

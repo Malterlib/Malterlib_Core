@@ -88,7 +88,7 @@ namespace NMib
 		};
 
 #define DMibTypeID(d_Class, d_ID) \
-	namespace NMib{namespace NMisc{template <> struct TCTypeID<d_Class > {enum {ETypeID = d_ID};}; template <> struct TCTypeIDReverse<d_ID> {using CType = d_Class;};}}
+	namespace NMib{namespace NMisc{template <> struct TCTypeID<d_Class > {static constexpr aint mc_TypeID = d_ID;}; template <> struct TCTypeIDReverse<d_ID> {using CType = d_Class;};}}
 
 		struct CClassContainer
 		{
@@ -185,13 +185,13 @@ namespace NMib
 		template <typename t_CType>
 		TCClassContainer<t_CType> fg_GetClassContainer(t_CType const &_Object)
 		{
-			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::ETypeID));
+			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::mc_TypeID));
 		}
 
 		template <typename t_CType>
 		TCClassContainer<t_CType> fg_GetClassContainer(t_CType const &_Object, umint _Context)
 		{
-			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::ETypeID, _Context));
+			return fg_Move(TCClassContainer<t_CType>(_Object, TCTypeID<t_CType>::mc_TypeID, _Context));
 		}
 
 #define DGetCC(d_Object)	NMib::NMisc::fg_GetClassContainer(d_Object).f_GetVoidPtr()

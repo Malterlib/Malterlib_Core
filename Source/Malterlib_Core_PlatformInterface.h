@@ -39,18 +39,18 @@ namespace NMib
 	enum EProcessorArchitecture
 	{
 		EProcessorArchitecture_Unknown = 0
-		, EProcessorArchitecture_x86
-		, EProcessorArchitecture_x86_64
+		, EProcessorArchitecture_X86
+		, EProcessorArchitecture_X86_64
 		, EProcessorArchitecture_Itanium
-		, EProcessorArchitecture_armv5
-		, EProcessorArchitecture_armv6
-		, EProcessorArchitecture_armv7
-		, EProcessorArchitecture_armv8
-		, EProcessorArchitecture_ppc32
-		, EProcessorArchitecture_ppc64
-		, EProcessorArchitecture_le32 // General purpose 32 bit little endian
-		, EProcessorArchitecture_arm64
-		, EProcessorArchitecture_arm64e
+		, EProcessorArchitecture_ArmV5
+		, EProcessorArchitecture_ArmV6
+		, EProcessorArchitecture_ArmV7
+		, EProcessorArchitecture_ArmV8
+		, EProcessorArchitecture_Ppc32
+		, EProcessorArchitecture_Ppc64
+		, EProcessorArchitecture_Le32 // General purpose 32 bit little endian
+		, EProcessorArchitecture_Arm64
+		, EProcessorArchitecture_Arm64e
 	};
 
 	enum EProcessorFeature

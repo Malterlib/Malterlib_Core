@@ -760,7 +760,7 @@ int fg_OpenHelperBSDFile(tf_CStr const &_FileName, NMib::NFile::EFileOpen _OpenF
 	auto &FileName = _oPosixFileName;
 
 	uint32 CreateDisposition = 0;
-	enum
+	enum EDisp
 	{
 		EDisp_CreateNew
 		, EDisp_OpenExisting

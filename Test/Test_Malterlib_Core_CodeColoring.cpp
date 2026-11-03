@@ -109,7 +109,7 @@ int bool void uint32 // #ff5966
 // Constant values
 15 60.6 // #ff0080
 t_Test // #ff5bad
-gc_Test ETest_Value mc_Test gc_Test c_Test true false nullptr // #ff8ac5
+gc_Test ETest_Value ETest gc_Test c_Test true false nullptr // #ff8ac5
 mcp_Test // #ca97b1
 tf_Test // #ffb7db
 

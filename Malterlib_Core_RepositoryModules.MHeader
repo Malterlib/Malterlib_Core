@@ -17,10 +17,10 @@ Property
 	{
 		Type "Malterlib"
 		Format true
-		// The imported third-party code doesn't follow the Malterlib standard.
-		Tidy {Enabled: true, ExcludeFiles: ["ImportCache/*", "*/ImportCache/*", "IC/*"]}
+		// The imported and generated third-party code doesn't follow the Malterlib standard.
+		Tidy {Enabled: true, ExcludeFiles: ["ImportCache/*", "*/ImportCache/*", "IC/*", "SourceGenerated/*"]}
 		// Neither does what mig generates, or the vendored TCMalloc.
-		Tidy {Enabled: true, ExcludeFiles: ["ImportCache/*", "*/ImportCache/*", "IC/*", "Source/Mig/*", "Source/TCMalloc/*"]}
+		Tidy {Enabled: true, ExcludeFiles: ["ImportCache/*", "*/ImportCache/*", "IC/*", "SourceGenerated/*", "Source/Mig/*", "Source/TCMalloc/*"]}
 		{
 			!!MalterlibRepoName "Malterlib_Memory.git"
 		}

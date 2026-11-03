@@ -1559,7 +1559,9 @@ void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::
 void NSys::fg_System_ExitProcess(aint _ExitCode)
 {
 	HMODULE hmod;
+	// NOLINTBEGIN(malterlib-type-naming): the names in the Windows headers
 	typedef void (WINAPI *PFN_EXIT_PROCESS)(UINT _ExitCode);
+	// NOLINTEND(malterlib-type-naming)
 	PFN_EXIT_PROCESS pfn;
 
 	hmod = GetModuleHandleA("mscoree.dll");
@@ -2140,6 +2142,7 @@ extern "C" void __cdecl __security_init_cookie(void);
 
 namespace NLocal
 {
+	// NOLINTBEGIN(malterlib-type-naming): the names in the Windows headers
 	typedef enum
 	{
 		StateInitialized
@@ -2285,6 +2288,8 @@ namespace NLocal
 		, SystemCurrentTimeZoneInformation      // 44
 		, SystemLookasideInformation            // 45
 	} SYSTEM_INFORMATION_CLASS, *PSYSTEM_INFORMATION_CLASS;
+
+	// NOLINTEND(malterlib-type-naming)
 }
 
 void fg_EnumProcessThreads(TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread);
@@ -3615,12 +3620,15 @@ void NMib::NSys::fg_Process_SetEnvironmentVariable_Unsafe(NMib::NStr::CStrNonTra
 }
 
 #if _MSC_VER >= 1900
+// NOLINTBEGIN(malterlib-type-naming): the names in the Windows headers
 typedef enum _crt_argv_mode
 {
 	_crt_argv_no_arguments
 	, _crt_argv_unexpanded_arguments
 	, _crt_argv_expanded_arguments
 } _crt_argv_mode;
+
+// NOLINTEND(malterlib-type-naming)
 
 extern "C" _crt_argv_mode __CRTDECL _get_startup_argv_mode();
 extern "C" errno_t __cdecl _configure_wide_argv(_crt_argv_mode const mode);
@@ -4440,15 +4448,12 @@ struct CMalterlibExtendedAttributes
 	{
 	}
 
-	enum
-	{
-		EVersion = 0x101
-	};
+	static constexpr uint32 mc_Version = 0x101;
 
 	template <typename tf_CStream>
 	void f_Feed(tf_CStream &_Stream) const
 	{
-		_Stream << EVersion;
+		_Stream << mc_Version;
 		_Stream << m_ExtendedAttributes;
 	}
 
@@ -4457,7 +4462,7 @@ struct CMalterlibExtendedAttributes
 	{
 		uint32 Version;
 		_Stream >> Version;
-		if (Version > EVersion)
+		if (Version > mc_Version)
 			return;
 		_Stream >> m_ExtendedAttributes;
 	}
@@ -5290,9 +5295,9 @@ bool NMib::NSys::fg_System_GetOperatingSystemVersion(int &o_Major, int &o_Minor,
 
 	switch (gs_SysInfo.dwProcessorType)
 	{
-	case PROCESSOR_ARCHITECTURE_INTEL: o_Arch = EOperatingSystemArch_x86; break;
-	case PROCESSOR_ARCHITECTURE_AMD64: o_Arch = EOperatingSystemArch_x64; break;
-	case PROCESSOR_ARCHITECTURE_ARM64: o_Arch = EOperatingSystemArch_arm64; break;
+	case PROCESSOR_ARCHITECTURE_INTEL: o_Arch = EOperatingSystemArch_X86; break;
+	case PROCESSOR_ARCHITECTURE_AMD64: o_Arch = EOperatingSystemArch_X64; break;
+	case PROCESSOR_ARCHITECTURE_ARM64: o_Arch = EOperatingSystemArch_Arm64; break;
 	default: o_Arch = EOperatingSystemArch_Unknown; break;
 	}
 
@@ -5352,10 +5357,7 @@ bool NSys::NFile::fg_CanCreateSymbolicLink(EFileAttrib _Type, ESymbolicLinkFlag 
 	return fg_GetLocalSys()->f_EnableSymLinkSupport();
 }
 
-enum
-{
-	EEmulateLinkVersion = 0x101
-};
+constexpr uint32 gc_EmulateLinkVersion = 0x101;
 
 void NSys::NFile::fg_CreateSymbolicLink(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr const &_FileTo, EFileAttrib _Type, ESymbolicLinkFlag _Flags)
 {
@@ -5465,7 +5467,7 @@ void NSys::NFile::fg_CreateSymbolicLink(NMib::NStr::CStr const &_FileFrom, NMib:
 	{
 		TCBinaryStreamFile<> File;
 		File.f_Open(_FileTo, EFileOpen_Write | EFileOpen_ShareAll);
-		File << EEmulateLinkVersion;
+		File << gc_EmulateLinkVersion;
 		File << _FileFrom;
 		File.m_File.f_SetAttributes(File.m_File.f_GetAttributes() | EFileAttrib_Link | EFileAttrib_EmulatedLink | _Type); // Save link emulated
 
@@ -5500,8 +5502,8 @@ NMib::NStr::CStr NSys::NFile::fg_ResolveSymbolicLink(NMib::NStr::CStr const &_Fi
 
 		uint32 Version;
 		File >> Version;
-		if (Version > EEmulateLinkVersion)
-			DMibErrorFile(CStr(CStr::CFormat("Invalid emulated link version ({nfh} > {nfh})") << Version << EEmulateLinkVersion));
+		if (Version > gc_EmulateLinkVersion)
+			DMibErrorFile(CStr(CStr::CFormat("Invalid emulated link version ({nfh} > {nfh})") << Version << gc_EmulateLinkVersion));
 		CStr Link;
 		File >> Link;
 
@@ -7109,7 +7111,7 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo &_Info)
 	_Info.m_Architecture = NMib::EProcessorArchitecture_Unknown;
 	_Info.m_Features = NMib::EProcessorFeature_None;
 #if defined(DArchitecture_arm64)
-	_Info.m_Architecture = EProcessorArchitecture_arm64;
+	_Info.m_Architecture = EProcessorArchitecture_Arm64;
 	_Info.m_Features |= EProcessorFeature_NEON;
 #else
 	int CPUInfo[4];
@@ -7133,7 +7135,7 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo &_Info)
 		;
 	}
 
-	_Info.m_Architecture = (sizeof(void *) == 4) ? EProcessorArchitecture_x86 : EProcessorArchitecture_x86_64;
+	_Info.m_Architecture = (sizeof(void *) == 4) ? EProcessorArchitecture_X86 : EProcessorArchitecture_X86_64;
 #endif
 }
 

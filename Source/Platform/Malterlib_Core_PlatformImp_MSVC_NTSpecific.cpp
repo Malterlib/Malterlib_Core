@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------
 typedef LONG NTSTATUS;
 
+// NOLINTBEGIN(malterlib-type-naming): the names in the Windows headers
 typedef VOID *POBJECT;
 
 #define DMibAllowCodeStandardViolations 1
@@ -40,6 +41,8 @@ namespace NLocalWindows
 		, ObjectHandleInformation
 	} OBJECT_INFORMATION_CLASS;
 }
+
+// NOLINTEND(malterlib-type-naming)
 
 #define STATUS_SUCCESS					((NTSTATUS)0x00000000L) // NOLINT(malterlib-macro-naming)
 #define STATUS_INFO_LENGTH_MISMATCH		((NTSTATUS)0xC0000004L) // NOLINT(malterlib-macro-naming)

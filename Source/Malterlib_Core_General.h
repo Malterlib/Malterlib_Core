@@ -699,10 +699,7 @@ namespace NMib
 	struct TCHelper_ByteSwap
 	{
 		using CType = t_CType;
-		enum
-		{
-			EDefaultImplementation = 1
-		};
+		static constexpr aint mc_DefaultImplementation = 1;
 
 		static t_CType fs_Swap(t_CType const &_Data)
 		{
@@ -726,10 +723,7 @@ namespace NMib
 	struct TCHelper_ByteSwap<uint8>
 	{
 		using CType = uint8;
-		enum
-		{
-			EDefaultImplementation = 0
-		};
+		static constexpr aint mc_DefaultImplementation = 0;
 
 		static inline_small uint8 fs_Swap(uint8 _Data)
 		{
@@ -760,10 +754,7 @@ namespace NMib
 	struct TCHelper_ByteSwap<uint16>
 	{
 		using CType = uint16;
-		enum
-		{
-			EDefaultImplementation = 0
-		};
+		static constexpr aint mc_DefaultImplementation = 0;
 
 		static inline_small uint16 fs_Swap(uint16 _Data)
 		{
@@ -780,10 +771,7 @@ namespace NMib
 	struct TCHelper_ByteSwap<uint32>
 	{
 		using CType = uint32;
-		enum
-		{
-			EDefaultImplementation = 0
-		};
+		static constexpr aint mc_DefaultImplementation = 0;
 
 		static inline_small uint32 fs_Swap(uint32 _Data)
 		{
@@ -800,10 +788,7 @@ namespace NMib
 	struct TCHelper_ByteSwap<uint64>
 	{
 		using CType = uint64;
-		enum
-		{
-			EDefaultImplementation = 0
-		};
+		static constexpr aint mc_DefaultImplementation = 0;
 
 		static inline_small uint64 fs_Swap(uint64 _Data)
 		{
@@ -850,7 +835,7 @@ namespace NMib
 	inline_small t_CInt fg_ByteSwap(t_CInt _In)
 	{
 		// Static branch
-		if constexpr (TCHelper_ByteSwap<t_CInt>::EDefaultImplementation)
+		if constexpr (TCHelper_ByteSwap<t_CInt>::mc_DefaultImplementation)
 		{
 			using CSwapper = typename TCHelper_ByteSwapChooseBySize<sizeof(t_CInt), t_CInt>::CSwapper;
 			return CSwapper::fs_Swap((typename CSwapper::CType &)_In);

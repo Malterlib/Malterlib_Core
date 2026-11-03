@@ -76,8 +76,8 @@ struct CTestAVLTree
 
 enum EParam
 {
-	EParam_void
-	, EParam_int
+	EParam_Void
+	, EParam_Int
 	, EParam_CStr
 	, EParam_CMStr
 };
@@ -225,8 +225,8 @@ namespace
 			NMib::NStorage::TCStreamableVariant
 				<
 					EParam
-					, NMib::NStorage::TCMember<void, EParam_void>
-					, NMib::NStorage::TCMember<int, EParam_int>
+					, NMib::NStorage::TCMember<void, EParam_Void>
+					, NMib::NStorage::TCMember<int, EParam_Int>
 					, NMib::NStorage::TCMember<NMib::NStr::CStr, EParam_CStr>
 					, NMib::NStorage::TCMember<NMib::NStr::CMStrDeprecated, EParam_CMStr>
 				>

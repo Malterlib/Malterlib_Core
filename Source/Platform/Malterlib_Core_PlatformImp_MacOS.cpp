@@ -1161,7 +1161,7 @@ namespace NMib
 						VersionString = un.release;
 
 					if (fg_StrCmpNoCase(un.machine, "arm64") == 0)
-						g_OperatingSystemArch = EOperatingSystemArch_arm64;
+						g_OperatingSystemArch = EOperatingSystemArch_Arm64;
 					else
 					{
 						int b64bitCPU = false;
@@ -1172,9 +1172,9 @@ namespace NMib
 						if (fg_StrCmpNoCase(un.machine, "i386") == 0 || fg_StrCmpNoCase(un.machine, "x86_64") == 0)
 						{
 							if (b64bitCPU)
-								g_OperatingSystemArch = EOperatingSystemArch_x64;
+								g_OperatingSystemArch = EOperatingSystemArch_X64;
 							else
-								g_OperatingSystemArch = EOperatingSystemArch_x86;
+								g_OperatingSystemArch = EOperatingSystemArch_X86;
 						}
 						else if (fg_StrCmpNoCase(un.machine, "powerpc") == 0 || fg_StrCmpNoCase(un.machine, "ppc64") == 0)
 						{
@@ -4530,7 +4530,7 @@ ch8 const *NSys::NFile::fg_GetDllExtension()
 
 #if DPlatformVersion <= 1050 || defined(DMibNoMacOSCrossModuleExceptions)
 
-struct dyld_unwind_sections
+struct dyld_unwind_sections // NOLINT(malterlib-type-naming): the name in the macOS SDK
 {
 	struct mach_header const *mh;
 	void const *dwarf_section;
@@ -4543,40 +4543,40 @@ struct dyld_unwind_sections
 #		define DRelocSize 3
 #		define DLcSegmentCommand		LC_SEGMENT_64
 #		define DLcRoutinesCommand		LC_ROUTINES_64
-struct macho_header : public mach_header_64
+struct CMachoHeader : public mach_header_64
 {
 };
 
-struct macho_segment_command : public segment_command_64
+struct CMachoSegmentCommand : public segment_command_64
 {
 };
 
-struct macho_section : public section_64
+struct CMachoSection : public section_64
 {
 };
 
 //struct macho_nlist				: public nlist_64  {};
-struct macho_routines_command : public routines_command_64
+struct CMachoRoutinesCommand : public routines_command_64
 {
 };
 #	else
 #		define DRelocSize 2
 #		define DLcSegmentCommand		LC_SEGMENT
 #		define DLcRoutinesCommand		LC_ROUTINES
-struct macho_header : public mach_header
+struct CMachoHeader : public mach_header
 {
 };
 
-struct macho_segment_command : public segment_command
+struct CMachoSegmentCommand : public segment_command
 {
 };
 
-struct macho_section : public section
+struct CMachoSection : public section
 {
 };
 
 //struct macho_nlist				: public nlist  {};
-struct macho_routines_command : public routines_command
+struct CMachoRoutinesCommand : public routines_command
 {
 };
 #	endif
@@ -4594,7 +4594,7 @@ namespace
 }
 #	endif
 
-extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sections *info)
+extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sections *info) // NOLINT(malterlib-type-naming): the name in the macOS SDK
 {
 #	pragma clang diagnostic push
 #	pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -4636,7 +4636,7 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 	uint8_t const *fMachOData = (uint8_t const *)pHeader;
 
 	uint32_t const cmd_count = pHeader->ncmds;
-	struct load_command const * const cmds = (struct load_command *)((char *)pHeader + sizeof(struct macho_header));
+	struct load_command const * const cmds = (struct load_command *)((char *)pHeader + sizeof(struct CMachoHeader));
 	struct load_command const *cmd = cmds;
 	for (uint32_t i = 0; i < cmd_count; ++i)
 	{
@@ -4644,13 +4644,13 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 		{
 		case DLcSegmentCommand:
 			{
-				struct macho_segment_command const *seg = (struct macho_segment_command *)cmd;
+				struct CMachoSegmentCommand const *seg = (struct CMachoSegmentCommand *)cmd;
 				bool const isTextSeg = (strcmp(seg->segname, "__TEXT") == 0);
 				if (isTextSeg)
 				{
-					struct macho_section const * const sectionsStart = (struct macho_section *)((char *)seg + sizeof(struct macho_segment_command));
-					struct macho_section const * const sectionsEnd = &sectionsStart[seg->nsects];
-					for (struct macho_section const *sect = sectionsStart; sect < sectionsEnd; ++sect)
+					struct CMachoSection const * const sectionsStart = (struct CMachoSection *)((char *)seg + sizeof(struct CMachoSegmentCommand));
+					struct CMachoSection const * const sectionsEnd = &sectionsStart[seg->nsects];
+					for (struct CMachoSection const *sect = sectionsStart; sect < sectionsEnd; ++sect)
 					{
 						if ((strcmp(sect->sectname, "__eh_frame") == 0))
 							fEHFrameSectionOffset = (uint8_t *)sect - fMachOData;
@@ -4671,13 +4671,13 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 	info->compact_unwind_section_length = 0;
 	if (fEHFrameSectionOffset != 0)
 	{
-		macho_section const *sect = (macho_section *)&fMachOData[fEHFrameSectionOffset];
+		CMachoSection const *sect = (CMachoSection *)&fMachOData[fEHFrameSectionOffset];
 		info->dwarf_section = (void *)(sect->addr + Slide);
 		info->dwarf_section_length = sect->size;
 	}
 	if (fUnwindInfoSectionOffset != 0)
 	{
-		macho_section const *sect = (macho_section *)&fMachOData[fUnwindInfoSectionOffset];
+		CMachoSection const *sect = (CMachoSection *)&fMachOData[fUnwindInfoSectionOffset];
 		info->compact_unwind_section = (void *)(sect->addr + Slide);
 		info->compact_unwind_section_length = sect->size;
 	}

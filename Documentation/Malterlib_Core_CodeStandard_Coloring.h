@@ -141,7 +141,7 @@
 	// Constant values
 	15 60.6
 	t_Test
-	gc_Test ETest_Value mc_Test gc_Test c_Test true false nullptr
+	gc_Test ETest_Value ETest gc_Test c_Test true false nullptr
 	mcp_Test
 	tf_Test
 

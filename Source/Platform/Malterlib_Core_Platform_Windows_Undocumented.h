@@ -5,6 +5,7 @@
 
 #include <winternl.h>
 
+// NOLINTBEGIN(malterlib-type-naming): the names of undocumented Windows types
 typedef void (*PPEBLOCKROUTINE)(PVOID PebLock);
 
 typedef struct _PEB_FREE_BLOCK
@@ -168,6 +169,8 @@ typedef struct _ACTIVATION_CONTEXT_STACK
 	LIST_ENTRY FrameListCache;
 } ACTIVATION_CONTEXT_STACK, *PACTIVATION_CONTEXT_STACK;
 
+// NOLINTEND(malterlib-type-naming)
+
 struct CUndocumentedTEB
 { // win32/win64
 	NT_TIB Tib;                                      // 000/0000
@@ -282,6 +285,7 @@ struct CUndocumentedTEB
 	_GUID EffectiveContainerId;  // /1828
 };
 
+// NOLINTBEGIN(malterlib-type-naming): the names of undocumented Windows types
 namespace NLocal
 {
 	typedef enum _THREAD_INFORMATION_CLASS
@@ -575,3 +579,5 @@ struct Undocumented_FILE_ID_INFO
 	ULONGLONG VolumeSerialNumber;
 	FILE_ID_128 FileId;
 };
+
+// NOLINTEND(malterlib-type-naming)

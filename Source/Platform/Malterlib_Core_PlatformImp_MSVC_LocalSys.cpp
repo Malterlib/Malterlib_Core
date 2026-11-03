@@ -483,10 +483,7 @@ struct CSystemWindowsMSVC : public CSystem
 				return "Malterlib_Core_PlatformImp_FileChangeNot";
 			}
 
-			enum
-			{
-				ENumNotifications = MAXIMUM_WAIT_OBJECTS - 1
-			};
+			static constexpr aint mc_NumNotifications = MAXIMUM_WAIT_OBJECTS - 1;
 
 			CFileChangeNoticationContext *m_pContext;
 
@@ -500,7 +497,7 @@ struct CSystemWindowsMSVC : public CSystem
 				, m_bQuit(0)
 			{
 				m_pContext = _pContext;
-				for (umint i = 0; i < ENumNotifications; ++i)
+				for (umint i = 0; i < mc_NumNotifications; ++i)
 				{
 					m_Notifications[i].m_pBundle = this;
 					m_Free.f_Insert(m_Notifications[i]);
@@ -535,7 +532,7 @@ struct CSystemWindowsMSVC : public CSystem
 				return f_Stop();
 			}
 
-			CNotification m_Notifications[ENumNotifications];
+			CNotification m_Notifications[mc_NumNotifications];
 			DMibListLinkDS_List(CNotification, m_Link) m_Free;
 			DMibListLinkDS_List(CNotification, m_Link) m_Used;
 

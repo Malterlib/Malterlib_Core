@@ -88,7 +88,7 @@ namespace
 	enum EGlibcThreadDbDescriptor
 	{
 		EGlibcThreadDbDescriptor_SizeBits
-		, EGlibcThreadDbDescriptor_nElements
+		, EGlibcThreadDbDescriptor_NElements
 		, EGlibcThreadDbDescriptor_Offset
 	};
 
@@ -99,16 +99,16 @@ namespace
 			|| _thread_db_pthread_key_data_data[EGlibcThreadDbDescriptor_SizeBits] != sizeof(umint) * 8
 			|| _thread_db_pthread_key_data_seq[EGlibcThreadDbDescriptor_SizeBits] != sizeof(umint) * 8
 			|| _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_SizeBits] != _thread_db_sizeof_pthread_key_data * 8
-			|| !_thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_nElements]
+			|| !_thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_NElements]
 		;
 #	ifdef DMibConfig_LinuxOptimizeGlibcThreadLocals
 		bInvalid
 			= bInvalid
 			|| _thread_db___pthread_keys[EGlibcThreadDbDescriptor_SizeBits] != _thread_db_sizeof_pthread_key_struct * 8
-			|| _thread_db___pthread_keys[EGlibcThreadDbDescriptor_nElements] <= gc_nGlibcThreadLocalsPerLevel2
+			|| _thread_db___pthread_keys[EGlibcThreadDbDescriptor_NElements] <= gc_nGlibcThreadLocalsPerLevel2
 			|| _thread_db_pthread_key_data_data[EGlibcThreadDbDescriptor_Offset] != sizeof(umint)
 			|| _thread_db_pthread_key_data_seq[EGlibcThreadDbDescriptor_Offset] != 0
-			|| _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_nElements] != gc_nGlibcThreadLocalsPerLevel2
+			|| _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_NElements] != gc_nGlibcThreadLocalsPerLevel2
 			|| _thread_db_pthread_key_struct_destr[EGlibcThreadDbDescriptor_SizeBits] != sizeof(umint) * 8
 			|| _thread_db_pthread_key_struct_destr[EGlibcThreadDbDescriptor_Offset] != sizeof(umint)
 			|| _thread_db_pthread_key_struct_seq[EGlibcThreadDbDescriptor_SizeBits] != sizeof(umint) * 8
@@ -118,7 +118,7 @@ namespace
 			||
 			(
 				_thread_db_pthread_specific[EGlibcThreadDbDescriptor_SizeBits] / 8 / sizeof(umint) * gc_nGlibcThreadLocalsPerLevel2
-				< _thread_db___pthread_keys[EGlibcThreadDbDescriptor_nElements]
+				< _thread_db___pthread_keys[EGlibcThreadDbDescriptor_NElements]
 			)
 		;
 #	endif
@@ -243,7 +243,7 @@ namespace
 		// The first glibc level-2 block gives fast storage a fixed single-block lookup.
 		// Normal allocation starts at the second block so it never consumes a fast key.
 		umint iBegin = _bFast ? 1 : gc_nGlibcThreadLocalsPerLevel2;
-		umint iEnd = _bFast ? gc_nGlibcThreadLocalsPerLevel2 : _thread_db___pthread_keys[EGlibcThreadDbDescriptor_nElements];
+		umint iEnd = _bFast ? gc_nGlibcThreadLocalsPerLevel2 : _thread_db___pthread_keys[EGlibcThreadDbDescriptor_NElements];
 
 		for (umint iStorage = iBegin; iStorage < iEnd; ++iStorage)
 		{
@@ -271,7 +271,7 @@ namespace
 	{
 		fg_Glibc_ValidateThreadLocalLayout();
 
-		umint nPerLevel2 = _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_nElements];
+		umint nPerLevel2 = _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_NElements];
 		umint nLevel2 = _thread_db_pthread_specific[EGlibcThreadDbDescriptor_SizeBits] / 8 / sizeof(umint);
 		umint iLevel2 = _iStorage / nPerLevel2;
 		if (iLevel2 >= nLevel2)
@@ -300,7 +300,7 @@ namespace
 
 	NAtomic::TCAtomic<umint> *fg_Glibc_GetThreadLocalField(uint8 *_pLevel2, umint _iStorage, uint32 const (&_Descriptor)[3])
 	{
-		umint nPerLevel2 = _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_nElements];
+		umint nPerLevel2 = _thread_db_pthread_key_data_level2_data[EGlibcThreadDbDescriptor_NElements];
 		umint iData = _iStorage % nPerLevel2;
 		return reinterpret_cast<NAtomic::TCAtomic<umint> *>(_pLevel2 + iData * _thread_db_sizeof_pthread_key_data + _Descriptor[EGlibcThreadDbDescriptor_Offset]);
 	}
