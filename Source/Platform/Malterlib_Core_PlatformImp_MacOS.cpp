@@ -3166,7 +3166,7 @@ struct CCopyFileContext
 	}
 };
 
-static int SingleFileCopyFileCallback(int _What, int _Stage, copyfile_state_t _State, char const *_pSrc, char const *_pDst, void *_pContext)
+static int fg_SingleFileCopyFileCallback(int _What, int _Stage, copyfile_state_t _State, char const *_pSrc, char const *_pDst, void *_pContext)
 {
 	CCopyFileContext *pContext = (CCopyFileContext *)_pContext;
 
@@ -3209,7 +3209,7 @@ static int fg_CopyOrRename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr c
 		Context.m_pProgress = &_Progress;
 		Context.m_FileFrom = _FileFrom;
 
-		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CB, (void *)&SingleFileCopyFileCallback);
+		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CB, (void *)&fg_SingleFileCopyFileCallback);
 		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CTX, &Context);
 	}
 

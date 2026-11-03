@@ -496,11 +496,11 @@ uint32 g_Test;
 {
 }
 
-// fsgr_
-[[maybe_unused]] static void fsgr_Test()
+// fsg_, recursive
+[[maybe_unused]] static void fsg_TestRecursive()
 {
 	if (g_Test)
-		return fsgr_Test();
+		return fsg_TestRecursive();
 }
 
 // pFunction:
@@ -509,11 +509,11 @@ void fg_Test()
 {
 }
 
-// fgr_
-void fgr_Test()
+// fg_, recursive
+void fg_TestRecursive()
 {
 	if (g_Test)
-		return fgr_Test();
+		return fg_TestRecursive();
 }
 
 
@@ -524,11 +524,11 @@ struct CTest2
 	void f_Test()
 	{
 	}
-	// fr_
-	void fr_Test()
+	// f_, recursive
+	void f_TestRecursive()
 	{
 		if (g_Test)
-			return fr_Test();
+			return f_TestRecursive();
 	}
 
 	// pMemberStaticFunctionPublic
@@ -537,11 +537,11 @@ struct CTest2
 	{
 	}
 
-	// fsr_
-	static void fsr_Test()
+	// fs_, recursive
+	static void fs_TestRecursive()
 	{
 		if (g_Test)
-			return fsr_Test();
+			return fs_TestRecursive();
 	}
 
 	// pMemberVariablePublic:
@@ -564,11 +564,11 @@ private:
 	{
 	}
 
-	// fpr_
-	void fpr_Test()
+	// fp_, recursive
+	void fp_TestRecursive()
 	{
 		if (g_Test)
-			return fpr_Test();
+			return fp_TestRecursive();
 	}
 
 	// pMemberStaticFunctionPrivate
@@ -577,11 +577,11 @@ private:
 	{
 	}
 
-	// fspr_
-	static void fspr_Test()
+	// fsp_, recursive
+	static void fsp_TestRecursive()
 	{
 		if (g_Test)
-			return fspr_Test();
+			return fsp_TestRecursive();
 	}
 
 	// pMemberVariablePrivate:

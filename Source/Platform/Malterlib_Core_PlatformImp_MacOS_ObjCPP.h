@@ -130,7 +130,7 @@ namespace NMib
 				CSnapshotsByNode m_SnapshotsByNode;
 
 				void f_AddNotification(CFindChangesContext &o_Context, EFileChangeNotification _Type, NStr::CStr const &_RelativePath, NStr::CStr const &_RenameFrom = {});
-				void fr_FindChanges(CFindChangesContext &o_Context, CFileSnapshot const &_NewSnapshot, bool _bRecursive, bool _bPotentianllyRecursive, bool _bFirstRecursive);
+				void f_FindChanges(CFindChangesContext &o_Context, CFileSnapshot const &_NewSnapshot, bool _bRecursive, bool _bPotentianllyRecursive, bool _bFirstRecursive);
 				void f_ScanDir(NStr::CStr const &_Path, bool _bInitial, bool _bNeedSubDirs, CUpdateSnapshotContext &_UpdateContext, CFileSnapshot &o_NewSnapshot);
 				void f_InitialScan();
 				void f_FullRescan();

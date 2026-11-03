@@ -121,7 +121,7 @@ struct CFileChangeNotificationContext
 		}
 
 		template <typename tf_FOnFile>
-		void fr_ForEachChildFile(CStr const &_BasePath, tf_FOnFile &&_fOnFile, bool _bRecursive)
+		void f_ForEachChildFileRecursive(CStr const &_BasePath, tf_FOnFile &&_fOnFile, bool _bRecursive)
 		{
 			for (auto &bIsDir : m_ChildFiles)
 				_fOnFile(CFile::fs_AppendPath(_BasePath, m_ChildFiles.fs_GetKey(bIsDir)), bIsDir);
@@ -130,13 +130,13 @@ struct CFileChangeNotificationContext
 				return;
 
 			for (auto &Child : mp_Children)
-				Child.fr_ForEachChildFile(CFile::fs_AppendPath(_BasePath, Child.mp_FileName), _fOnFile, true);
+				Child.f_ForEachChildFileRecursive(CFile::fs_AppendPath(_BasePath, Child.mp_FileName), _fOnFile, true);
 		}
 
 		template <typename tf_FOnFile>
 		void f_ForEachChildFile(tf_FOnFile &&_fOnFile, bool _bRecursive)
 		{
-			fr_ForEachChildFile("", _fOnFile, _bRecursive);
+			f_ForEachChildFileRecursive("", _fOnFile, _bRecursive);
 		}
 
 		CIntrusiveRefCount m_RefCount;

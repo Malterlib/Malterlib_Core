@@ -326,7 +326,7 @@ namespace NMib
 	void CSystem::f_InitModule()
 	{
 		g_SystemModule.f_Init(this);
-		fs_ParseCommandLine();
+		fp_ParseCommandLine();
 		// Set the default program root.
 		m_ProgramRoot = NSys::NFile::fg_GetProgramDirectory();
 		m_ProgramRootNonTracked = m_ProgramRoot;
@@ -630,7 +630,7 @@ namespace NMib
 		return iCurrent;
 	}
 
-	void CSystem::fs_ParseCommandLine()
+	void CSystem::fp_ParseCommandLine()
 	{
 		m_CommandLineData->m_CommandLine = NSys::fg_CommandLineParameters();
 

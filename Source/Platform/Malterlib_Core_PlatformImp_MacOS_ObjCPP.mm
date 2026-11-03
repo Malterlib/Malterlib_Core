@@ -676,7 +676,7 @@ namespace NMib
 			Snapshots.f_Insert(_Snapshot);
 		}
 
-		void fgr_UpdateFileSnapshot(CUpdateSnapshotContext &_Context, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot, bool _bRecursive, bool _bRecursiveInfoNeeded)
+		void fg_UpdateFileSnapshot(CUpdateSnapshotContext &_Context, CFileChangeNoticationContext::CNotification::CFileSnapshot &_Snapshot, bool _bRecursive, bool _bRecursiveInfoNeeded)
 		{
 			CStr Path = _Context.m_NotificationPath.m_UserPath / _Snapshot.m_FullFileName;
 
@@ -749,7 +749,7 @@ namespace NMib
 					fg_LinkFileSnapshot(_Context, Child);
 
 					if ((Stats.st_mode & S_IFDIR) && !(Stats.st_mode & S_IFLNK) && Stats.st_dev == _Snapshot.f_GetKey().st_dev && (_bRecursive || (_bRecursiveInfoNeeded && bWasCreated)))
-						fgr_UpdateFileSnapshot(_Context, Child, _bRecursive, _bRecursiveInfoNeeded);
+						fg_UpdateFileSnapshot(_Context, Child, _bRecursive, _bRecursiveInfoNeeded);
 				}
 			}
 
@@ -771,11 +771,11 @@ namespace NMib
 			}
 		}
 
-		void fgr_TraceSnapshot(CFileChangeNoticationContext::CNotification::CFileSnapshot const &_Snapshot, umint _Depth)
+		void fg_TraceSnapshot(CFileChangeNoticationContext::CNotification::CFileSnapshot const &_Snapshot, umint _Depth)
 		{
 			DMibTrace("{sj*}{}\n", "", (_Depth * 4), _Snapshot.m_FileName);
 			for (auto iChild = _Snapshot.m_Children.f_GetIterator(); iChild; ++iChild)
-				fgr_TraceSnapshot(*iChild, _Depth + 1);
+				fg_TraceSnapshot(*iChild, _Depth + 1);
 		}
 
 		void CFileChangeNoticationContext::CNotification::f_AddNotification
@@ -812,7 +812,7 @@ namespace NMib
 				Child.f_PotentiallyRemoved(o_Context);
 		}
 
-		void CFileChangeNoticationContext::CNotification::fr_FindChanges
+		void CFileChangeNoticationContext::CNotification::f_FindChanges
 			(
 				CFindChangesContext &o_Context
 				, CFileSnapshot const &_NewSnapshot
@@ -955,7 +955,7 @@ namespace NMib
 				// New directories need full recursion to generate Added for all children
 				bool bChildRecursive = _bRecursive || bNewDirectory;
 				for (auto &Child : _NewSnapshot.m_Children)
-					fr_FindChanges(o_Context, Child, bChildRecursive, _bPotentianllyRecursive, false);
+					f_FindChanges(o_Context, Child, bChildRecursive, _bPotentianllyRecursive, false);
 			}
 		}
 
@@ -1042,7 +1042,7 @@ namespace NMib
 						NMemory::fg_MemClear(pFindSnapshot->m_Stats);
 					else
 						fg_LinkFileSnapshot(_UpdateContext, *pFindSnapshot);
-					fgr_UpdateFileSnapshot(_UpdateContext, *pFindSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
+					fg_UpdateFileSnapshot(_UpdateContext, *pFindSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
 
 					for (auto iSnap = pFindSnapshot->m_Children.f_GetIterator(); iSnap;)
 					{
@@ -1068,13 +1068,13 @@ namespace NMib
 						NMemory::fg_MemClear(o_NewSnapshot.m_Stats);
 					else
 						fg_LinkFileSnapshot(_UpdateContext, o_NewSnapshot);
-					fgr_UpdateFileSnapshot(_UpdateContext, o_NewSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
+					fg_UpdateFileSnapshot(_UpdateContext, o_NewSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
 					auto &bChangedPathRecursive = _UpdateContext.m_ChangedPaths[""];
 					if (bRecursive)
 						bChangedPathRecursive = true;
 				}
 
-				//fgr_TraceSnapshot(NewSnapshot, 0);
+				//fg_TraceSnapshot(NewSnapshot, 0);
 			}
 			else
 			{
@@ -1083,7 +1083,7 @@ namespace NMib
 					NMemory::fg_MemClear(o_NewSnapshot.m_Stats);
 				else
 					fg_LinkFileSnapshot(_UpdateContext, o_NewSnapshot);
-				fgr_UpdateFileSnapshot(_UpdateContext, o_NewSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
+				fg_UpdateFileSnapshot(_UpdateContext, o_NewSnapshot, bRecursive, (m_Flags & EFileChange_Recursive) != 0);
 				auto &bChangedPathRecursive = _UpdateContext.m_ChangedPaths[""];
 				if (bRecursive)
 					bChangedPathRecursive = true;
@@ -1232,7 +1232,7 @@ namespace NMib
 					}
 
 					if (pFindSnapshot && pFindSnapshot->m_Stats.st_dev != 0)
-						fr_FindChanges(FindChangesContext, *pFindSnapshot, bChangedPathRecursive, bRecursiveSetting, true);
+						f_FindChanges(FindChangesContext, *pFindSnapshot, bChangedPathRecursive, bRecursiveSetting, true);
 					else
 					{
 						if (ChangedPathComponents.f_IsEmpty())

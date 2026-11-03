@@ -2760,7 +2760,7 @@ namespace NMib::NThread
 		constexpr uint32 gc_FutexThreadMask = uint32(FUTEX_TID_MASK);
 	}
 
-	uint32 call_futex(NAtomic::TCAtomic<CLowLevelLockAggregateLockType> &_Value, int _Operation)
+	static uint32 fsg_CallFutex(NAtomic::TCAtomic<CLowLevelLockAggregateLockType> &_Value, int _Operation)
 	{
 		return syscall(SYS_futex, (int *)&_Value, _Operation, 0, nullptr, nullptr, 0);
 	}
@@ -2855,7 +2855,7 @@ namespace NMib::NThread
 
 			if (OldValue & gc_FutexThreadMask)
 			{
-				if (!call_futex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
+				if (!fsg_CallFutex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
 					break;
 
 				auto Error = errno;
@@ -2888,7 +2888,7 @@ namespace NMib::NThread
 		if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::gc_MemoryOrder_Release, NAtomic::gc_MemoryOrder_Relaxed))
 		{
 			// Contended
-			if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
+			if (fsg_CallFutex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
 				fg_AbortFutex(errno);
 		}
 
@@ -2938,7 +2938,7 @@ namespace NMib::NThread
 
 			if (OldValue & gc_FutexThreadMask)
 			{
-				if (!call_futex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
+				if (!fsg_CallFutex(m_Lock, FUTEX_LOCK_PI_PRIVATE))
 					break;
 
 				auto Error = errno;
@@ -2974,7 +2974,7 @@ namespace NMib::NThread
 		if (!m_Lock.f_CompareExchangeStrong(OldValue, 0, NAtomic::gc_MemoryOrder_Release, NAtomic::gc_MemoryOrder_Relaxed))
 		{
 			// Contended
-			if (call_futex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
+			if (fsg_CallFutex(m_Lock, FUTEX_UNLOCK_PI_PRIVATE))
 				fg_AbortFutex(errno);
 		}
 	}

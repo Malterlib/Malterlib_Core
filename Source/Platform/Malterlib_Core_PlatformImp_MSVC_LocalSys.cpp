@@ -134,6 +134,7 @@ struct CSystemWindowsMSVC : public CSystem
 						m_pParent->m_Children.f_Remove(this);
 				}
 
+			private:
 				template <typename tf_FOnNode>
 				void fp_ForEach(CStr const &_Path, tf_FOnNode &&_fOnNode)
 				{
@@ -142,6 +143,7 @@ struct CSystemWindowsMSVC : public CSystem
 						Child.fp_ForEach(CFile::fs_AppendPath(_Path, Child.m_FileName), _fOnNode);
 				}
 
+			public:
 				template <typename tf_FOnNode>
 				void f_ForEach(tf_FOnNode &&_fOnNode)
 				{
@@ -272,7 +274,7 @@ struct CSystemWindowsMSVC : public CSystem
 
 			CFindChangesContext m_ChangesContext;
 
-			static void __stdcall CompletionRoutine(DWORD _ErrorCode, DWORD _NumberOfBytesTransfered, LPOVERLAPPED _pOverlapped)
+			static void __stdcall fs_CompletionRoutine(DWORD _ErrorCode, DWORD _NumberOfBytesTransfered, LPOVERLAPPED _pOverlapped)
 			{
 				CNotification *pThis = (CNotification *)_pOverlapped->hEvent;
 
@@ -462,7 +464,7 @@ struct CSystemWindowsMSVC : public CSystem
 						, Flags
 						, &Dummy
 						, &m_ChangesOverlapped
-						, &CompletionRoutine
+						, &fs_CompletionRoutine
 					)
 				)
 				{
@@ -1040,7 +1042,7 @@ struct CSystemWindowsMSVC : public CSystem
 		void *m_pExceptionHandlingFunction;
 	};
 
-	static CExceptionHandler *RtlGetRegistrationHead()
+	static CExceptionHandler *fs_RtlGetRegistrationHead()
 	{
 		CExceptionHandler *pRet = (CExceptionHandler *)(void *)(size_t)-1;
 		__asm
@@ -1052,7 +1054,7 @@ struct CSystemWindowsMSVC : public CSystem
 	}
 
 #		pragma warning(disable:4733)
-	static void RtlSetRegistrationHead(CExceptionHandler *_pHandler)
+	static void fs_RtlSetRegistrationHead(CExceptionHandler *_pHandler)
 	{
 		__asm
 		{
@@ -1062,7 +1064,7 @@ struct CSystemWindowsMSVC : public CSystem
 	}
 #	endif
 
-	static LONG WINAPI VectoredHandler3(struct _EXCEPTION_POINTERS *pExceptionInfo)
+	static LONG WINAPI fs_VectoredHandler3(struct _EXCEPTION_POINTERS *pExceptionInfo)
 	{
 		if (pExceptionInfo->ExceptionRecord && pExceptionInfo->ExceptionRecord->NumberParameters >= 3 && pExceptionInfo->ExceptionRecord->ExceptionInformation[0] == 0x19930520)
 		{
@@ -1076,9 +1078,9 @@ struct CSystemWindowsMSVC : public CSystem
 		return 0;
 	}
 
-	static LONG WINAPI VectoredHandler2(struct _EXCEPTION_POINTERS *ExceptionInfo)
+	static LONG WINAPI fs_VectoredHandler2(struct _EXCEPTION_POINTERS *ExceptionInfo)
 	{
-		VectoredHandler3(ExceptionInfo);
+		fs_VectoredHandler3(ExceptionInfo);
 
 		HMODULE pNtDll = NLocal::g_hNtDll;
 
@@ -1174,7 +1176,7 @@ struct CSystemWindowsMSVC : public CSystem
 #	else
 
 		// Unlink the exception handler from the list of exception handlers. Is this really safe?
-		CExceptionHandler *pExceptionHandler = RtlGetRegistrationHead();
+		CExceptionHandler *pExceptionHandler = fs_RtlGetRegistrationHead();
 		CExceptionHandler *pLastExceptionHandler = nullptr;
 		aint iMaxRecurse = 1024; // Max 1024 recurse to guard against circular lists
 		while ((size_t)pExceptionHandler != size_t(-1) && iMaxRecurse > 0)
@@ -1188,7 +1190,7 @@ struct CSystemWindowsMSVC : public CSystem
 					pLastExceptionHandler->m_pNextHandler = pExceptionHandler->m_pNextHandler;
 				}
 				else
-					RtlSetRegistrationHead(pExceptionHandler->m_pNextHandler);
+					fs_RtlSetRegistrationHead(pExceptionHandler->m_pNextHandler);
 			}
 			pLastExceptionHandler = pExceptionHandler;
 			pExceptionHandler = pExceptionHandler->m_pNextHandler;
@@ -1229,13 +1231,13 @@ struct CSystemWindowsMSVC : public CSystem
 					if (NativeSystemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
 					{
 						// We need to add our hack
-						m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1, VectoredHandler2);
+						m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1, fs_VectoredHandler2);
 						bInstalled = true;
 					}
 				}
 			}
 			if (!bInstalled)
-				m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1, VectoredHandler3);
+				m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1, fs_VectoredHandler3);
 		}
 	}
 

@@ -78,7 +78,7 @@ namespace NMib::NSys
 			{
 				// Release the dispatch registration before its owning loop is destroyed.
 				DMibLock(m_Lock);
-				fp_CloseDispatch();
+				f_CloseDispatch();
 			}
 
 			static void fs_SignalHandler(int _Signal);
@@ -89,10 +89,10 @@ namespace NMib::NSys
 				NSys::CIoLoopRegistration *m_pRegistration = nullptr;
 			};
 
-			void fp_InstallHandler(int _Signal);
-			void fp_RemoveHandler(int _Signal);
-			void fp_OpenDispatch();
-			void fp_CloseDispatch();
+			void f_InstallHandler(int _Signal);
+			void f_RemoveHandler(int _Signal);
+			void f_OpenDispatch();
+			void f_CloseDispatch();
 			void f_DispatchPending();
 			static void fs_OnPipeReadable(void *_pToken, NSys::EIoLoopEvent _Events, int _Error);
 			static void fs_OnThreadPipeReadable(void *_pToken, NSys::EIoLoopEvent _Events, int _Error);
@@ -289,7 +289,7 @@ namespace NMib::NSys
 
 		// Requires m_Lock. Installs with sigaction for the reason given at fg_SetSignalHandler, and keeps the whole previous action, so
 		// removal restores its flags too
-		void CSubSystem_Core_Signal::fp_InstallHandler(int _Signal)
+		void CSubSystem_Core_Signal::f_InstallHandler(int _Signal)
 		{
 			auto &SignalHandler = m_SignalHandlers[_Signal];
 			if (SignalHandler.m_bInstalled)
@@ -306,7 +306,7 @@ namespace NMib::NSys
 		}
 
 		// Requires m_Lock
-		void CSubSystem_Core_Signal::fp_RemoveHandler(int _Signal)
+		void CSubSystem_Core_Signal::f_RemoveHandler(int _Signal)
 		{
 			auto &SignalHandler = m_SignalHandlers[_Signal];
 			SignalHandler.m_bInstalled = false;
@@ -315,7 +315,7 @@ namespace NMib::NSys
 		}
 
 		// Requires m_Lock; called for the first registration.
-		void CSubSystem_Core_Signal::fp_OpenDispatch()
+		void CSubSystem_Core_Signal::f_OpenDispatch()
 		{
 			if (m_pDispatch)
 				return;
@@ -343,7 +343,7 @@ namespace NMib::NSys
 		}
 
 		// Requires m_Lock and no registered handlers. Removal must finish before the owning loop is destroyed.
-		void CSubSystem_Core_Signal::fp_CloseDispatch()
+		void CSubSystem_Core_Signal::f_CloseDispatch()
 		{
 			if (!m_pDispatch)
 				return;
@@ -410,7 +410,7 @@ namespace NMib::NSys
 
 			auto &SignalHandler = SubSystem.m_SignalHandlers[_Signal];
 			++SignalHandler.m_nThreadSignals;
-			SubSystem.fp_InstallHandler(_Signal);
+			SubSystem.f_InstallHandler(_Signal);
 		}
 
 		auto pOnExit = g_OnScopeExitShared / [_Signal, ThreadUID = fg_Thread_GetCurrentUID()]() mutable
@@ -449,7 +449,7 @@ namespace NMib::NSys
 				auto &SignalHandler = SubSystem.m_SignalHandlers[_Signal];
 				umint ThreadSignals = SignalHandler.m_nThreadSignals.f_FetchSub(1) - 1;
 				if (SignalHandler.m_Functions.f_IsEmpty() && ThreadSignals == 0)
-					SubSystem.fp_RemoveHandler(_Signal);
+					SubSystem.f_RemoveHandler(_Signal);
 			}
 		;
 		return pOnExit;
@@ -473,12 +473,12 @@ namespace NMib::NSys
 				{
 					SignalHandler.m_Functions.f_Remove(*pFunction);
 					if (--SubSystem.m_nDispatchedHandlers == 0)
-						SubSystem.fp_CloseDispatch();
+						SubSystem.f_CloseDispatch();
 				}
 			;
 
-			SubSystem.fp_OpenDispatch();
-			SubSystem.fp_InstallHandler(_Signal);
+			SubSystem.f_OpenDispatch();
+			SubSystem.f_InstallHandler(_Signal);
 
 			Rollback.f_Clear();
 		}
@@ -493,11 +493,11 @@ namespace NMib::NSys
 				auto &SignalHandler = SubSystem.m_SignalHandlers[_Signal];
 				SignalHandler.m_Functions.f_Remove(*pFunction);
 				if (SignalHandler.m_Functions.f_IsEmpty() && SignalHandler.m_nThreadSignals.f_Load() == 0)
-					SubSystem.fp_RemoveHandler(_Signal);
+					SubSystem.f_RemoveHandler(_Signal);
 
 				// Release the last registration before the concurrency loop can be destroyed.
 				if (--SubSystem.m_nDispatchedHandlers == 0)
-					SubSystem.fp_CloseDispatch();
+					SubSystem.f_CloseDispatch();
 			}
 		;
 		return pOnExit;

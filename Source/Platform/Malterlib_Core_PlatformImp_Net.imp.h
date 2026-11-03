@@ -40,7 +40,7 @@ void CAddressResolver::f_Stop()
 		if (!pRequest)
 			break;
 
-		fs_CloseRequest(pRequest);
+		fsp_CloseRequest(pRequest);
 	}
 }
 
@@ -156,7 +156,7 @@ aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject *_pThread)
 						mp_DoneOrInProgressList.f_Remove(pReq);
 					}
 
-					fs_CloseRequest(pReq);
+					fsp_CloseRequest(pReq);
 				}
 			;
 

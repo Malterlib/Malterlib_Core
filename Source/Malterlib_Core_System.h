@@ -428,9 +428,6 @@ namespace NMib
 		bool f_ThreadDestroyed() const;
 		bool f_ThreadCreated() const;
 
-		void fp_ThreadLocalCreate();
-		void fp_ThreadLocalDestroy();
-
 		///
 		/// Command line
 		/// ============
@@ -474,7 +471,7 @@ namespace NMib
 
 		CVirtualMachineInfo mp_VMInfo;
 
-		void fs_ParseCommandLine();
+		void fp_ParseCommandLine();
 
 		NThread::CMutual m_Lock;
 
@@ -498,6 +495,9 @@ namespace NMib
 		void fp_CreateGlobalMemoryReporter();
 		void fp_DestroyGlobalMemoryReporter();
 #endif
+
+		void fp_ThreadLocalCreate();
+		void fp_ThreadLocalDestroy();
 
 		void fp_CreateNonTrackedMemoryManager();
 		void fp_DestroyNonTrackedMemoryManager();

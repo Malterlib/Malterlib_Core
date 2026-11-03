@@ -33,7 +33,7 @@ namespace NMib
 		NStr::CStr f_GetNamespaceName();
 		NStr::CStr f_GetFullName();
 
-		static CRunTimeObjectInfo *f_GetObject(ch8 const *_pName, umint _NameLen);
+		static CRunTimeObjectInfo *fs_GetObject(ch8 const *_pName, umint _NameLen);
 
 		void f_ForEachLeafChild(NFunction::TCFunction<void (CRunTimeObjectInfo const &_RuntimeObjectInfo)> const &_fOnChild) const;
 		void f_Construct(ch8 const *_pName, ch8 const *_pParent, bool _bIsStatic = true);

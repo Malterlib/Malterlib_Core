@@ -12,7 +12,10 @@ namespace
 {
 	struct CTestVal
 	{
+	private:
 		static int32 &fsp_ValueType();
+
+	public:
 		CTestVal(int32 _Value)
 			: m_Value(_Value)
 		{

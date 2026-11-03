@@ -45,7 +45,7 @@ private:
 	NStorage::TCUniquePointer<NThread::CThreadObject> mp_pThread;
 	bool mp_bStopped = false;
 
-	static void fs_CloseRequest(CResolveRequest *_pRequest);
+	static void fsp_CloseRequest(CResolveRequest *_pRequest);
 
 	aint fp_ResolveWorker(NThread::CThreadObject *_pThread);
 

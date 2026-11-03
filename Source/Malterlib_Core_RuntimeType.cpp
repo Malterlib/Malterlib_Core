@@ -54,7 +54,7 @@ namespace NMib
 		return ToReturn;
 	}
 
-	CRunTimeObjectInfo *CRunTimeObjectInfo::f_GetObject(ch8 const *_pName, umint _NameLen)
+	CRunTimeObjectInfo *CRunTimeObjectInfo::fs_GetObject(ch8 const *_pName, umint _NameLen)
 	{
 		CRunTimeObjectInfo *pNamespace = &g_DynamicObjectsSystem->m_GlobalNamespace;
 
@@ -120,7 +120,7 @@ namespace NMib
 			NStr::CStr Namespace;
 			Namespace.f_AddStr(_pName, pNamespace - _pName);
 			pName = pNamespace + 2;
-			m_pNamespace = f_GetObject(Namespace.f_GetStr(), Namespace.f_GetLen());
+			m_pNamespace = fs_GetObject(Namespace.f_GetStr(), Namespace.f_GetLen());
 		}
 		else
 			m_pNamespace = &g_DynamicObjectsSystem->m_GlobalNamespace;
@@ -131,7 +131,7 @@ namespace NMib
 
 		auto *pInfo = m_pNamespace->m_Namespace.f_FindEqual(pName);
 		if (_pParent)
-			m_pParent = f_GetObject(_pParent, NStr::fg_StrLen(_pParent));
+			m_pParent = fs_GetObject(_pParent, NStr::fg_StrLen(_pParent));
 		else
 			m_pParent = nullptr;
 
