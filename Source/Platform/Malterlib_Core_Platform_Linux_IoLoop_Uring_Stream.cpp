@@ -140,15 +140,15 @@ void CIoLoop_IoUring::fp_ArmStream(CUringRegistration *_pRegistration)
 bool CIoLoop_IoUring::fp_RefillBid(CUringRegistration *_pRegistration, uint16 _Bid)
 {
 	CUringRecvRing *pRing = _pRegistration->m_pRecvRing;
-	auto &Backpressure = pRing->m_pBackpressure;
+	auto &pBackpressure = pRing->m_pBackpressure;
 
-	if (Backpressure && Backpressure->m_nLimitBytes)
+	if (pBackpressure && pBackpressure->m_nLimitBytes)
 	{
-		if (Backpressure->m_nOutstandingBytes.f_Load(NAtomic::gc_MemoryOrder_Acquire) >= Backpressure->m_nLimitBytes)
+		if (pBackpressure->m_nOutstandingBytes.f_Load(NAtomic::gc_MemoryOrder_Acquire) >= pBackpressure->m_nLimitBytes)
 		{
-			Backpressure->m_bParked.f_Store(1, NAtomic::gc_MemoryOrder_SequentiallyConsistent);
+			pBackpressure->m_bParked.f_Store(1, NAtomic::gc_MemoryOrder_SequentiallyConsistent);
 
-			if (Backpressure->m_nOutstandingBytes.f_Load(NAtomic::gc_MemoryOrder_Acquire) >= Backpressure->m_nLimitBytes)
+			if (pBackpressure->m_nOutstandingBytes.f_Load(NAtomic::gc_MemoryOrder_Acquire) >= pBackpressure->m_nLimitBytes)
 			{
 				pRing->m_UnfilledBids.f_Insert(_Bid);
 
@@ -164,7 +164,7 @@ bool CIoLoop_IoUring::fp_RefillBid(CUringRegistration *_pRegistration, uint16 _B
 
 			// Clear the parked flag only when no earlier bids remain parked; otherwise they can permanently disappear from the ring.
 			if (pRing->m_UnfilledBids.f_IsEmpty())
-				Backpressure->m_bParked.f_Exchange(0, NAtomic::gc_MemoryOrder_AcquireRelease);
+				pBackpressure->m_bParked.f_Exchange(0, NAtomic::gc_MemoryOrder_AcquireRelease);
 		}
 	}
 
@@ -188,7 +188,7 @@ bool CIoLoop_IoUring::fp_RefillBid(CUringRegistration *_pRegistration, uint16 _B
 #endif
 	pBuffer->m_nDataBytes = pRing->m_nBufferBytes;
 	pBuffer->m_pRecycler = pRing->m_pRecycler;
-	pBuffer->m_pBackpressure = Backpressure;
+	pBuffer->m_pBackpressure = pBackpressure;
 	// Charged when the first bytes are delivered from it; a buffer the kernel never fills
 	// releases nothing
 	pBuffer->m_nCharged = 0;

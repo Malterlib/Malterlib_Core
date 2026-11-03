@@ -226,9 +226,9 @@ CWindowsAddress *CWindowsSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddr
 	}
 }
 
-CWindowsAddress *CWindowsSocketContext::f_DuplicateAddress(CWindowsAddress *_Address)
+CWindowsAddress *CWindowsSocketContext::f_DuplicateAddress(CWindowsAddress *_pAddress)
 {
-	TCUniquePointer<CWindowsAddress> pNew = fg_Construct(*_Address);
+	TCUniquePointer<CWindowsAddress> pNew = fg_Construct(*_pAddress);
 	return pNew.f_Detach();
 }
 
@@ -326,8 +326,8 @@ CWindowsAddress *CWindowsSocketContext::f_ResolveAddress(NMib::NStr::CStr const 
 	auto Addresses = f_ResolveAddresses(_Address, _PreferType, _bThrowOnError);
 	auto Cleanup = g_OnScopeExit / [&Addresses]
 		{
-			for (auto Address : Addresses)
-				NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Explicit(static_cast<CWindowsAddress *>(Address));
+			for (auto pResolvedAddress : Addresses)
+				NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Explicit(static_cast<CWindowsAddress *>(pResolvedAddress));
 		}
 	;
 
@@ -389,10 +389,10 @@ auto CWindowsSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, 
 
 	if (!Error && pResults)
 	{
-		auto Address = CWindowsAddress::fs_FromNative(pResults->ai_addr, pResults->ai_addrlen);
+		auto pAddress = CWindowsAddress::fs_FromNative(pResults->ai_addr, pResults->ai_addrlen);
 		o_Parameters.m_Host.f_Clear();
 
-		return Address.f_Detach();
+		return pAddress.f_Detach();
 	}
 
 	if (Service.f_IsEmpty())
@@ -422,11 +422,11 @@ auto CWindowsSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib:
 {
 	NSys::NNetwork::CResolveAddressParameters Parameters;
 	Parameters.m_PreferType = _PreferType;
-	NStorage::TCUniquePointer<CWindowsAddress> Address = fg_Explicit(static_cast<CWindowsAddress *>(f_PrepareResolveAddress(_Address, Parameters, _bThrowOnError)));
-	if (Address)
+	NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Explicit(static_cast<CWindowsAddress *>(f_PrepareResolveAddress(_Address, Parameters, _bThrowOnError)));
+	if (pAddress)
 	{
-		NContainer::TCVector<NSys::NNetwork::CAddress> Addresses{Address.f_Get()};
-		Address.f_Detach();
+		NContainer::TCVector<NSys::NNetwork::CAddress> Addresses{pAddress.f_Get()};
+		pAddress.f_Detach();
 
 		return Addresses;
 	}
@@ -1409,10 +1409,10 @@ static HANDLE fsg_OpenUnixListenFile(NStr::CStr const &_Path, DWORD _Access)
 }
 
 // Empty identity means the platform cannot identify this file.
-static NFile::CUniqueFileIdentifier fsg_GetUnixListenFileIdentity(HANDLE _File)
+static NFile::CUniqueFileIdentifier fsg_GetUnixListenFileIdentity(HANDLE _pFile)
 {
 	NFile::CUniqueFileIdentifier Identity;
-	if (!NMib::NPlatform::fg_GetUniqueFileIdentifier(_File, Identity))
+	if (!NMib::NPlatform::fg_GetUniqueFileIdentifier(_pFile, Identity))
 		Identity = {};
 
 	return Identity;
@@ -1537,11 +1537,11 @@ auto CWindowsSocketContext::f_Listen
 	NFile::CUniqueFileIdentifier UnixListenFileIdentity;
 	if (AddressType == ENetAddressType_Unix && !pUnixListen)
 	{
-		HANDLE File = fsg_OpenUnixListenFile(BindAddress.f_GetUnix().f_GetPath(), FILE_READ_ATTRIBUTES);
-		if (File != INVALID_HANDLE_VALUE)
+		HANDLE pFile = fsg_OpenUnixListenFile(BindAddress.f_GetUnix().f_GetPath(), FILE_READ_ATTRIBUTES);
+		if (pFile != INVALID_HANDLE_VALUE)
 		{
-			UnixListenFileIdentity = fsg_GetUnixListenFileIdentity(File);
-			CloseHandle(File);
+			UnixListenFileIdentity = fsg_GetUnixListenFileIdentity(pFile);
+			CloseHandle(pFile);
 		}
 	}
 
@@ -1797,17 +1797,17 @@ void CWindowsSocketContext::fp_RemoveUnixListenFile(CWindowsSocket *_pSocket)
 	if (_pSocket->m_UnixListenPath.f_IsEmpty())
 		return;
 
-	HANDLE File = fsg_OpenUnixListenFile(_pSocket->m_UnixListenPath, DELETE | FILE_READ_ATTRIBUTES);
+	HANDLE pFile = fsg_OpenUnixListenFile(_pSocket->m_UnixListenPath, DELETE | FILE_READ_ATTRIBUTES);
 	_pSocket->m_UnixListenPath.f_Clear();
-	if (File == INVALID_HANDLE_VALUE)
+	if (pFile == INVALID_HANDLE_VALUE)
 		return;
 
 	// POSIX delete removes the name while the handle is open; native Unix-socket Windows versions support it.
-	bool bOwn = _pSocket->m_UnixListenFileIdentity == NFile::CUniqueFileIdentifier{} || fsg_GetUnixListenFileIdentity(File) == _pSocket->m_UnixListenFileIdentity;
+	bool bOwn = _pSocket->m_UnixListenFileIdentity == NFile::CUniqueFileIdentifier{} || fsg_GetUnixListenFileIdentity(pFile) == _pSocket->m_UnixListenFileIdentity;
 	if (bOwn)
-		NMib::NPlatform::fg_SetPosixDeleteDisposition(File);
+		NMib::NPlatform::fg_SetPosixDeleteDisposition(pFile);
 
-	CloseHandle(File);
+	CloseHandle(pFile);
 }
 
 // Run only after no loop reference remains; closes the handle and frees the socket.
@@ -2167,7 +2167,7 @@ struct CWindowsSocket_OldVersion
 		umint m_nLocked;
 		umint m_ThreadID;
 		aint m_nRecurse;
-		void *m_Event;
+		void *m_pEvent;
 	};
 
 	CLock m_Lock;

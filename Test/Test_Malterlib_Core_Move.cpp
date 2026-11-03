@@ -136,7 +136,7 @@ namespace
 			List.f_Insert(Test334);
 			List.f_Insert(Test334);
 
-			for (auto Iter = List.f_GetIterator(); Iter; ++Iter)
+			for (auto iString = List.f_GetIterator(); iString; ++iString)
 				int Breakpoint = 0;
 
 			NMib::NContainer::TCVector<CTestLinked> Vector;
@@ -159,14 +159,14 @@ namespace
 				LinkedList.f_Insert(Insert2);
 				LinkedListSingle.f_Insert(Insert2);
 			}
-			for (auto Iter = LinkedList.f_GetIterator(); Iter; ++Iter)
+			for (auto iEntry = LinkedList.f_GetIterator(); iEntry; ++iEntry)
 				int Breakpoint = 0;
 
-			for (auto Iter = LinkedListSingle.f_GetIterator(); Iter; ++Iter)
+			for (auto iEntry = LinkedListSingle.f_GetIterator(); iEntry; ++iEntry)
 				int Breakpoint = 0;
 
-			auto VectorIter = Vector.f_GetIterator();
-			for (; VectorIter; ++VectorIter)
+			auto iVector = Vector.f_GetIterator();
+			for (; iVector; ++iVector)
 				int Breakpoint = 0;
 
 			NMib::NContainer::TCLinkedList<CTestAVLTree> AVLList;
@@ -186,7 +186,7 @@ namespace
 				AVLTree.f_Insert(Insert2);
 			}
 
-			for (auto Iter = AVLTree.f_GetIterator(); Iter; ++Iter)
+			for (auto iEntry = AVLTree.f_GetIterator(); iEntry; ++iEntry)
 				int Breakpoint = 0;
 
 			NMib::NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> Map;
@@ -195,7 +195,7 @@ namespace
 			Map["Test 2"] = "2";
 			Map["Test 3"] = "1";
 
-			for (auto Iter = Map.f_GetIterator(); Iter; ++Iter)
+			for (auto iEntry = Map.f_GetIterator(); iEntry; ++iEntry)
 				int Breakpoint = 0;
 
 			NMib::NContainer::TCSet<NMib::NStr::CStr> Set;
@@ -204,7 +204,7 @@ namespace
 			Set["Test 2"];
 			Set["Test 3"];
 
-			for (auto Iter = Set.f_GetIterator(); Iter; ++Iter)
+			for (auto iEntry = Set.f_GetIterator(); iEntry; ++iEntry)
 				int Breakpoint = 0;
 
 			NMib::NStorage::TCAggregateSimple<NMib::NStr::CStr> TestAggregateSimple = {DAggregateInit};

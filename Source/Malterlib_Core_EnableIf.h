@@ -52,16 +52,16 @@ namespace NMib
 		static constexpr int mc_Value = t_Val1;
 	};
 
-	template <bool t_bFirstType, bool t_Val0, bool t_Val1>
-	struct TCChooseInt<bool, t_bFirstType, t_Val0, t_Val1>
+	template <bool t_bFirstType, bool t_bVal0, bool t_bVal1>
+	struct TCChooseInt<bool, t_bFirstType, t_bVal0, t_bVal1>
 	{
-		static constexpr bool mc_Value = t_Val0;
+		static constexpr bool mc_Value = t_bVal0;
 	};
 
-	template <bool t_Val0, bool t_Val1>
-	struct TCChooseInt<bool, false, t_Val0, t_Val1>
+	template <bool t_bVal0, bool t_bVal1>
+	struct TCChooseInt<bool, false, t_bVal0, t_bVal1>
 	{
-		static constexpr bool mc_Value = t_Val1;
+		static constexpr bool mc_Value = t_bVal1;
 	};
 
 	template <auto t_fFunction>

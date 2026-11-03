@@ -45,7 +45,7 @@ namespace
 		g_bUnloadFinished = false;
 		g_bUnloadStarted = true;
 
-		pthread_t Unloader;
+		pthread_t Unloader; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
 		if (pthread_create(&Unloader, nullptr, &fg_UnloadLibraryThread, _pDll) != 0)
 			return false;
 
@@ -99,7 +99,7 @@ namespace
 	{
 		while (!g_bChurnStop.f_Load())
 		{
-			pthread_t Short;
+			pthread_t Short; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
 			if (pthread_create(&Short, nullptr, &fg_ChurnBody, nullptr) == 0)
 				pthread_join(Short, nullptr);
 
@@ -189,7 +189,7 @@ namespace
 
 				ThreadStarted.f_ResetSignaled();
 
-				void (calling_convention_c *pTestFunc)() = nullptr;
+				void (calling_convention_c *fTestFunc)() = nullptr;
 
 				auto fThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
 					{
@@ -197,8 +197,8 @@ namespace
 						{
 							if (pDll)
 							{
-								if (pTestFunc)
-									pTestFunc();
+								if (fTestFunc)
+									fTestFunc();
 							}
 							ThreadStarted.f_SetSignaled();
 							_pThread->m_EventWantQuit.f_Wait();
@@ -216,10 +216,10 @@ namespace
 				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
 
 				if (NMib::NFile::CFileChangeNotification::fs_Supported())
-					(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
+					(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
 				else
-					(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
-				DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop);
+					(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
+				DMibTest(DMibExpr(fTestFunc))(ETest_FailAndStop);
 
 				ThreadStarted.f_ResetSignaled();
 				pThread0->m_EventWantQuit.f_Signal();
@@ -253,14 +253,14 @@ namespace
 			DMibTestSuite("Thread stress")
 			{
 				void *pDll = nullptr;
-				void (calling_convention_c *pTestFunc)() = nullptr;
+				void (calling_convention_c *fTestFunc)() = nullptr;
 
 				auto fThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
 					{
-						pTestFunc();
+						fTestFunc();
 						while (_pThread->f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
 						{
-							pTestFunc();
+							fTestFunc();
 							_pThread->m_EventWantQuit.f_Wait();
 						}
 						return 0;
@@ -273,9 +273,9 @@ namespace
 				Threads.f_SetLen(100);
 				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
 
-				(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
-				DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop);
-				pTestFunc();
+				(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
+				DMibTest(DMibExpr(fTestFunc))(ETest_FailAndStop);
+				fTestFunc();
 
 				for (umint iRound = 0; iRound < 10; ++iRound)
 				{
@@ -316,16 +316,16 @@ namespace
 				for (int iLoad = 0; iLoad < 16; ++iLoad)
 				{
 					void *pDll = nullptr;
-					void (calling_convention_c *pTestFunc)() = nullptr;
+					void (calling_convention_c *fTestFunc)() = nullptr;
 					pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 					DMibTest(DMibExpr(pDll))(ETest_FailAndStop)(ETestFlag_Aggregated);
 					if (NMib::NFile::CFileChangeNotification::fs_Supported())
-						(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
+						(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
 					else
-						(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
-					DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop)(ETestFlag_Aggregated);
+						(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
+					DMibTest(DMibExpr(fTestFunc))(ETest_FailAndStop)(ETestFlag_Aggregated);
 					for (int iCall = 0; iCall < 2; ++iCall)
-						pTestFunc();
+						fTestFunc();
 
 #if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
 					NMib::NSys::fg_FreeLibrary(pDll);
@@ -361,8 +361,8 @@ namespace
 
 				NMib::NAtomic::TCAtomic<bool> bStop{false};
 				NMib::NAtomic::TCAtomic<umint> nChurned{0};
-				pthread_t SlowThread;
-				pthread_t ChurnThread;
+				pthread_t SlowThread; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
+				pthread_t ChurnThread; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
 				struct CChurn
 				{
 					NMib::NAtomic::TCAtomic<bool> *m_pStop;
@@ -381,7 +381,7 @@ namespace
 						auto &Churn = *(CChurn *)_pChurn;
 						while (!Churn.m_pStop->f_Load())
 						{
-							pthread_t Short;
+							pthread_t Short; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
 							if
 							(
 								pthread_create
@@ -430,8 +430,8 @@ namespace
 				pthread_key_t DyldKey;
 				DMibTest(DMibExpr(pthread_key_create(&DyldKey, &fg_DyldBoundKeyDestructor)) == DMibExpr(0))(ETest_FailAndStop);
 
-				pthread_t Exiting;
-				DMibTest(DMibExpr(pthread_create(&Exiting, nullptr, &fg_ExitThroughDyldThread, &DyldKey)) == DMibExpr(0))(ETest_FailAndStop);
+				pthread_t pExiting;
+				DMibTest(DMibExpr(pthread_create(&pExiting, nullptr, &fg_ExitThroughDyldThread, &DyldKey)) == DMibExpr(0))(ETest_FailAndStop);
 				while (!g_bExitingThreadInDyld.f_Load())
 					NMib::NSys::fg_Thread_Sleep(0.001);
 
@@ -440,7 +440,7 @@ namespace
 
 				if (bUnloaded)
 				{
-					pthread_join(Exiting, nullptr);
+					pthread_join(pExiting, nullptr);
 					pthread_key_delete(DyldKey);
 				}
 			};

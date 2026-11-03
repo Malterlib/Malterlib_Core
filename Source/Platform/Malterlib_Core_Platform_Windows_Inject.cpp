@@ -20,7 +20,7 @@ namespace NMib
 		Replace the function pointer in a module's IAT.
 
 		Parameters:
-		_Module            - Module to use IAT from.
+		_pModule           - Module to use IAT from.
 		_pImportedModuleName  - Name of imported DLL from which
 		function is imported.
 		_pImportedProcName    - Name of imported function.
@@ -31,14 +31,14 @@ namespace NMib
 		S_OK on success.
 		(any HRESULT) on failure.
 		--*/
-		HRESULT fg_PatchIAT(HMODULE _Module, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
+		HRESULT fg_PatchIAT(HMODULE _pModule, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
 		{
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;
 			PIMAGE_IMPORT_DESCRIPTOR pImportDescriptor;
 			UINT iDescriptor;
 
-			pDOSHeader = (PIMAGE_DOS_HEADER) _Module;
+			pDOSHeader = (PIMAGE_DOS_HEADER) _pModule;
 			pNTHeader = (PIMAGE_NT_HEADERS) DRvaToPtr(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
@@ -102,6 +102,7 @@ namespace NMib
 
 		// NOLINTBEGIN(malterlib-variable-naming): the declarations of the Windows SDK, with their names
 		// NOLINTBEGIN(malterlib-type-naming): the names in the Windows headers
+		// NOLINTBEGIN(malterlib-conceptual-prefix): the declarations of the Windows SDK, with their names
 		typedef struct _IMAGE_DELAY_IMPORT_DESCRIPTOR
 		{
 			DWORD grAttrs;
@@ -115,10 +116,11 @@ namespace NMib
 		} IMAGE_DELAY_IMPORT_DESCRIPTOR;
 
 		typedef IMAGE_DELAY_IMPORT_DESCRIPTOR UNALIGNED *PIMAGE_DELAY_IMPORT_DESCRIPTOR;
+		// NOLINTEND(malterlib-conceptual-prefix)
 		// NOLINTEND(malterlib-type-naming)
 		// NOLINTEND(malterlib-variable-naming)
 
-		HRESULT fg_DumpIATs(HMODULE _Module)
+		HRESULT fg_DumpIATs(HMODULE _pModule)
 		{
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;
@@ -126,7 +128,7 @@ namespace NMib
 			UINT iDescriptor;
 			PIMAGE_DELAY_IMPORT_DESCRIPTOR pDelayImportDescriptor;
 
-			pDOSHeader = (PIMAGE_DOS_HEADER) _Module;
+			pDOSHeader = (PIMAGE_DOS_HEADER) _pModule;
 			pNTHeader = (PIMAGE_NT_HEADERS) DRvaToPtr(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
@@ -197,14 +199,14 @@ namespace NMib
 			return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
 		}
 
-		HRESULT fg_PatchDIAT(HMODULE _Module, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
+		HRESULT fg_PatchDIAT(HMODULE _pModule, CHAR const *_pImportedModuleName, CHAR const *_pImportedProcName, PVOID _pHookingProc, PVOID *_pOriginalProc)
 		{
 			PIMAGE_DOS_HEADER pDOSHeader;
 			PIMAGE_NT_HEADERS pNTHeader;
 			PIMAGE_DELAY_IMPORT_DESCRIPTOR pDelayImportDescriptor;
 			UINT iDescriptor;
 
-			pDOSHeader = (PIMAGE_DOS_HEADER) _Module;
+			pDOSHeader = (PIMAGE_DOS_HEADER) _pModule;
 			pNTHeader = (PIMAGE_NT_HEADERS) DRvaToPtr(pDOSHeader, pDOSHeader->e_lfanew);
 			if (IMAGE_NT_SIGNATURE != pNTHeader->Signature)
 				return HRESULT_FROM_WIN32(ERROR_BAD_EXE_FORMAT);
@@ -278,32 +280,32 @@ namespace NMib
 			// Returns NULL when the mudole is not loaded
 			HMODULE fg_GetModuleForProcess(DWORD _PID, WCHAR const *_pModuleName)
 			{
-				HANDLE Process;
+				HANDLE pProcess;
 				HMODULE Modules[DMaxModules];
 				DWORD nModuleBytes;
 				unsigned int iModule;
 				TCHAR ModuleName[MAX_PATH];
 
-				Process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, _PID);
-				if (NULL == Process)
+				pProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, _PID);
+				if (NULL == pProcess)
 					return NULL;
 
-				if (EnumProcessModules(Process, Modules, sizeof(Modules), &nModuleBytes))
+				if (EnumProcessModules(pProcess, Modules, sizeof(Modules), &nModuleBytes))
 				{
 					for (iModule = 0; iModule < nModuleBytes/sizeof(HMODULE); iModule++)
 					{
-						if (GetModuleBaseName(Process, Modules[iModule], ModuleName, sizeof(ModuleName) / sizeof(TCHAR)))
+						if (GetModuleBaseName(pProcess, Modules[iModule], ModuleName, sizeof(ModuleName) / sizeof(TCHAR)))
 						{
 							if (NStr::fg_StrCmpNoCase(ModuleName, _pModuleName) == 0)
 							{
-								CloseHandle(Process);
+								CloseHandle(pProcess);
 								return Modules[iModule];
 							}
 						}
 					}
 				}
 
-				CloseHandle(Process);
+				CloseHandle(pProcess);
 
 				return NULL;
 			}
@@ -314,22 +316,22 @@ namespace NMib
 		// Returns true on succes, false on failure
 		BOOL fg_DejectDLL(DWORD _PID, WCHAR const *_pDLLName, NStr::CStr &_Error)
 		{
-			HMODULE Kernel32;
+			HMODULE pKernel32;
 			FARPROC fFreeLibrary;
-			HANDLE Process;
-			HMODULE DllModule;
-			HANDLE RemoteThread;
+			HANDLE pProcess;
+			HMODULE pDllModule;
+			HANDLE pRemoteThread;
 			BOOL bRet;
 
-			Kernel32 = GetModuleHandle(str_utf16("Kernel32"));
-			if (NULL == Kernel32)
+			pKernel32 = GetModuleHandle(str_utf16("Kernel32"));
+			if (NULL == pKernel32)
 			{
 				HRESULT Error = GetLastError();
 				_Error = NStr::CStr::CFormat("Get kernel32 module handle failed: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error);
 				return FALSE;
 			}
 
-			fFreeLibrary = GetProcAddress(Kernel32, "FreeLibrary");
+			fFreeLibrary = GetProcAddress(pKernel32, "FreeLibrary");
 			if (NULL == fFreeLibrary)
 			{
 				HRESULT Error = GetLastError();
@@ -337,19 +339,19 @@ namespace NMib
 				return FALSE;
 			}
 
-			Process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, _PID);
-			if (NULL == Process)
+			pProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, _PID);
+			if (NULL == pProcess)
 			{
 				HRESULT Error = GetLastError();
 				_Error = NStr::CStr::CFormat("Open process failed: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error);
 				return FALSE;
 			}
 
-			DllModule = fg_GetModuleForProcess(_PID, _pDLLName);
-			if (NULL == DllModule)
+			pDllModule = fg_GetModuleForProcess(_PID, _pDLLName);
+			if (NULL == pDllModule)
 			{
 				_Error = NStr::CStr::CFormat("Could not find module in process");
-				CloseHandle(Process);
+				CloseHandle(pProcess);
 				return FALSE;
 			}
 
@@ -358,10 +360,10 @@ namespace NMib
 
 			while (ExitCode && bRet)
 			{
-				RemoteThread = CreateRemoteThread(Process, NULL, 0, (LPTHREAD_START_ROUTINE)fFreeLibrary, DllModule, 0, NULL);
+				pRemoteThread = CreateRemoteThread(pProcess, NULL, 0, (LPTHREAD_START_ROUTINE)fFreeLibrary, pDllModule, 0, NULL);
 
-				if (0 != RemoteThread)
-					bRet = WaitForSingleObject(RemoteThread, 1000) != WAIT_TIMEOUT;
+				if (0 != pRemoteThread)
+					bRet = WaitForSingleObject(pRemoteThread, 1000) != WAIT_TIMEOUT;
 				else
 				{
 					HRESULT Error = GetLastError();
@@ -369,10 +371,10 @@ namespace NMib
 					bRet = FALSE;
 				}
 
-				GetExitCodeThread(RemoteThread, &ExitCode);
-				CloseHandle(RemoteThread);
+				GetExitCodeThread(pRemoteThread, &ExitCode);
+				CloseHandle(pRemoteThread);
 			}
-			CloseHandle(Process);
+			CloseHandle(pProcess);
 
 			return bRet;
 		}
@@ -427,7 +429,7 @@ namespace NMib
 
 		struct CInjectDllData
 		{
-			NTSTATUS (__stdcall *m_pLdrLoadDll)(PWCHAR _pSearchPath, PULONG _pDllCharacteristics, PUNICODE_STRING _pModuleFileName, PHANDLE o_pModule);
+			NTSTATUS (__stdcall *m_fLdrLoadDll)(PWCHAR _pSearchPath, PULONG _pDllCharacteristics, PUNICODE_STRING _pModuleFileName, PHANDLE o_pModule);
 			PWCHAR m_pSearchPath;
 			ULONG m_DllCharacteristics;
 			UNICODE_STRING m_ModuleFileName;
@@ -439,7 +441,7 @@ namespace NMib
 
 		inline_never DWORD WINAPI fg_InjectDllRemote(CInjectDllData *_pData)
 		{
-			return _pData->m_pLdrLoadDll(_pData->m_pSearchPath, &_pData->m_DllCharacteristics, &_pData->m_ModuleFileName, &_pData->m_pModuleHandle);
+			return _pData->m_fLdrLoadDll(_pData->m_pSearchPath, &_pData->m_DllCharacteristics, &_pData->m_ModuleFileName, &_pData->m_pModuleHandle);
 		}
 
 #	pragma runtime_checks( "", restore )
@@ -588,16 +590,16 @@ namespace NMib
 
 //#	define DMibSupportCygwin
 
-		PIMAGE_NT_HEADERS fg_GetImageHeaders(HMODULE _Module)
+		PIMAGE_NT_HEADERS fg_GetImageHeaders(HMODULE _pModule)
 		{
-			PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)_Module;
+			PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)_pModule;
 
 			if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
 				return nullptr;
 
-			PIMAGE_NT_HEADERS pRet = (PIMAGE_NT_HEADERS)((uint8 *)_Module + pDosHeader->e_lfanew);
+			PIMAGE_NT_HEADERS pRet = (PIMAGE_NT_HEADERS)((uint8 *)_pModule + pDosHeader->e_lfanew);
 			// Our buffer is 4096 bytes max
-			if (((uint8 *)(pRet + 1) - (uint8 *)_Module) > 4096)
+			if (((uint8 *)(pRet + 1) - (uint8 *)_pModule) > 4096)
 				return nullptr;
 
 			if (pRet->Signature != IMAGE_NT_SIGNATURE)
@@ -606,7 +608,7 @@ namespace NMib
 			return pRet;
 		}
 
-		EInjectDllResult fg_InjectDLL(HANDLE _Process, HANDLE _Thread, WCHAR const *_pDLLName, NStr::CStr &_Error)
+		EInjectDllResult fg_InjectDLL(HANDLE _pProcess, HANDLE _pThread, WCHAR const *_pDLLName, NStr::CStr &_Error)
 		{
 			// NMib::NTime::CTimeMeasureTraceScope Scope("fg_InjectDLL");
 			// DMibTrace("Injecting Dll: {}\r\n", _pDLLName);
@@ -615,7 +617,7 @@ namespace NMib
 
 			// LoadLibraryW(_pDLLName);
 
-			HANDLE Process = _Process;
+			HANDLE pProcess = _pProcess;
 
 			auto fReportError = [&](NStr::CStr const &_NewError)
 				{
@@ -625,15 +627,15 @@ namespace NMib
 				}
 			;
 
-			HMODULE ThisNtDll = NLocal::g_NtDll;
-			if (!ThisNtDll)
+			HMODULE pThisNtDll = NLocal::g_pNtDll;
+			if (!pThisNtDll)
 			{
 				HRESULT Error = GetLastError();
 				fReportError(NStr::CStr::CFormat("Get kernel32 module handle failed: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 				return EInjectDllResult_Failed;
 			}
 
-			FARPROC fLdrLoadDll = GetProcAddress(ThisNtDll, "LdrLoadDll");
+			FARPROC fLdrLoadDll = GetProcAddress(pThisNtDll, "LdrLoadDll");
 			if (!fLdrLoadDll)
 			{
 				HRESULT Error = GetLastError();
@@ -641,7 +643,7 @@ namespace NMib
 				return EInjectDllResult_Failed;
 			}
 
-			auto pThisNtDllHeaders = fg_GetImageHeaders(ThisNtDll);
+			auto pThisNtDllHeaders = fg_GetImageHeaders(pThisNtDll);
 
 			if (!pThisNtDllHeaders)
 			{
@@ -660,50 +662,50 @@ namespace NMib
 				if
 				(
 					NLocal::g_OptionalFunctions.m_fNtQueryInformationProcess
-					&& !NLocal::g_OptionalFunctions.m_fNtQueryInformationProcess(Process, ProcessBasicInformation, &BasicInfo, sizeof(BasicInfo), &RetLen)
+					&& !NLocal::g_OptionalFunctions.m_fNtQueryInformationProcess(pProcess, ProcessBasicInformation, &BasicInfo, sizeof(BasicInfo), &RetLen)
 					&& RetLen == sizeof(BasicInfo)
 				)
 				{
 					SIZE_T ReadBytes = 0;
-					if (ReadProcessMemory(Process, BasicInfo.PebBaseAddress, &Peb, sizeof(Peb), &ReadBytes) && ReadBytes == sizeof(Peb))
+					if (ReadProcessMemory(pProcess, BasicInfo.PebBaseAddress, &Peb, sizeof(Peb), &ReadBytes) && ReadBytes == sizeof(Peb))
 					{
 						auto pData = ImageFileName.f_GetStr(NMib::NFile::NPlatform::gc_MaxWindowsPath);
 						pData[0] = 0;
-						GetMappedFileNameW(Process, (HMODULE)Peb.ImageBaseAddress, pData, NMib::NFile::NPlatform::gc_MaxWindowsPath);
+						GetMappedFileNameW(pProcess, (HMODULE)Peb.ImageBaseAddress, pData, NMib::NFile::NPlatform::gc_MaxWindowsPath);
 						ImageFileName.f_GetLen();
 					}
 				}
 			}
 #	endif
 
-			HMODULE RemoteNtDll = 0;
+			HMODULE pRemoteNtDll = 0;
 			{
 				umint StartAddress = TCLimitsInt<umint>::mc_Min;
 				umint CurrentAddress = StartAddress;
 				while (true)
 				{
 					MEMORY_BASIC_INFORMATION MemInfo;
-					if (!VirtualQueryEx(_Process, (void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
+					if (!VirtualQueryEx(_pProcess, (void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
 						break;
 					if (MemInfo.BaseAddress == MemInfo.AllocationBase && (MemInfo.Type & MEM_IMAGE))
 					{
 						//NStr::CWStr BaseName;
-						//GetMappedFileNameW(Process, (HMODULE)MemInfo.AllocationBase, BaseName.f_GetStr(1024), 1024);
+						//GetMappedFileNameW(pProcess, (HMODULE)MemInfo.AllocationBase, BaseName.f_GetStr(1024), 1024);
 						//BaseName.f_GetLen();
 						//DTrace("0x{nfh,sj16,sf0} -> 0x{nfh,sj16,sf0}: State: 0x{nfh,sj8,sf0}: {}\n", MemInfo.BaseAddress, ((umint)MemInfo.BaseAddress + MemInfo.RegionSize), MemInfo.State,
 						//	BaseName);
 
-						if (!RemoteNtDll)
+						if (!pRemoteNtDll)
 						{
 							uint8 Temp[4096];
-							if (ReadProcessMemory(Process, MemInfo.BaseAddress, Temp, 4096, &nBytes) && nBytes == 4096)
+							if (ReadProcessMemory(pProcess, MemInfo.BaseAddress, Temp, 4096, &nBytes) && nBytes == 4096)
 							{
 								auto pRemoteHeaders = fg_GetImageHeaders((HMODULE)Temp);
 
 								if (pRemoteHeaders && NMemory::fg_MemCmp((uint8 *)pRemoteHeaders, (uint8 *)pThisNtDllHeaders, sizeof(*pThisNtDllHeaders)) == 0)
 								{
 									// If the headers are the same, it means that the checksum is the same
-									RemoteNtDll = (HMODULE)MemInfo.AllocationBase;
+									pRemoteNtDll = (HMODULE)MemInfo.AllocationBase;
 									break;
 								}
 							}
@@ -716,7 +718,7 @@ namespace NMib
 				}
 			}
 
-			if (!RemoteNtDll)
+			if (!pRemoteNtDll)
 			{
 				fReportError("Failed to find ntdll.dll in remote process.\r\n");
 				return EInjectDllResult_Failed;
@@ -759,9 +761,9 @@ namespace NMib
 			}
 			VirtualFreeEx(GetCurrentProcess(), pLocalMemory, RemoteMemorySize, MEM_RELEASE);
 
-			uint8 *pRemoteMemory = (uint8 *)VirtualAllocEx(Process, pLocalMemory, RemoteMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+			uint8 *pRemoteMemory = (uint8 *)VirtualAllocEx(pProcess, pLocalMemory, RemoteMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 			if (!pRemoteMemory)
-				pRemoteMemory = (uint8 *)VirtualAllocEx(Process, nullptr, RemoteMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE); // Just alloc anywhere
+				pRemoteMemory = (uint8 *)VirtualAllocEx(pProcess, nullptr, RemoteMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE); // Just alloc anywhere
 
 			if (!pRemoteMemory)
 			{
@@ -774,14 +776,14 @@ namespace NMib
 				(
 					[&]
 					{
-						VirtualFreeEx(Process, pRemoteMemory, RemoteMemorySize, MEM_RELEASE);
+						VirtualFreeEx(pProcess, pRemoteMemory, RemoteMemorySize, MEM_RELEASE);
 					}
 				)
 			;
 
 			// Write String
 			uint8 *pRemoteMemoryOut = pRemoteMemory;
-			if (!WriteProcessMemory(Process, pRemoteMemoryOut, _pDLLName, StringMemorySize, &nBytes))
+			if (!WriteProcessMemory(pProcess, pRemoteMemoryOut, _pDLLName, StringMemorySize, &nBytes))
 			{
 				HRESULT Error = GetLastError();
 				fReportError(NStr::CStr::CFormat("Failed to write to remote memory: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
@@ -796,7 +798,7 @@ namespace NMib
 			pRemoteMemoryOut += nBytes;
 			pRemoteMemoryOut = fg_AlignUp(pRemoteMemoryOut, 16);
 
-			if (!WriteProcessMemory(Process, pRemoteMemoryOut, DllDirectories.f_GetStr(), DllDirectoriesSize, &nBytes))
+			if (!WriteProcessMemory(pProcess, pRemoteMemoryOut, DllDirectories.f_GetStr(), DllDirectoriesSize, &nBytes))
 			{
 				HRESULT Error = GetLastError();
 				fReportError(NStr::CStr::CFormat("Failed to write to remote memory: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
@@ -808,7 +810,7 @@ namespace NMib
 			pRemoteMemoryOut += nBytes;
 			pRemoteMemoryOut = fg_AlignUp(pRemoteMemoryOut, 16);
 
-			InjectData.m_pLdrLoadDll = fg_AutoStaticCast((void *)((umint)RemoteNtDll + ((umint)fLdrLoadDll - (umint)ThisNtDll)));
+			InjectData.m_fLdrLoadDll = fg_AutoStaticCast((void *)((umint)pRemoteNtDll + ((umint)fLdrLoadDll - (umint)pThisNtDll)));
 
 			InjectData.m_DllCharacteristics = 0;
 			InjectData.m_pModuleHandle = nullptr;
@@ -819,7 +821,7 @@ namespace NMib
 				uint8 *pFuncOut = (uint8 *)&fg_InjectDllRemote;
 				// Put function into it's own memory page
 				pFuncOut = fg_SkipJumps(pFuncOut);
-				if (!WriteProcessMemory(Process, pRemoteMemoryOut, pFuncOut, Size, &nBytes))
+				if (!WriteProcessMemory(pProcess, pRemoteMemoryOut, pFuncOut, Size, &nBytes))
 				{
 					HRESULT Error = GetLastError();
 					fReportError(NStr::CStr::CFormat("Failed to write to remote memory: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
@@ -830,11 +832,11 @@ namespace NMib
 				pRemoteMemoryOut += nBytes;
 				pRemoteMemoryOut = fg_AlignUp(pRemoteMemoryOut, 16);
 				// Flush cache needed as we are writing code here
-				FlushInstructionCache(Process, pRemoteMemoryOut, nBytes);
+				FlushInstructionCache(pProcess, pRemoteMemoryOut, nBytes);
 			}
 
 			CInjectDllData *pRemoteInjectData = (CInjectDllData *)pRemoteMemoryOut;
-			if (!WriteProcessMemory(Process, pRemoteMemoryOut, &InjectData, sizeof(InjectData), &nBytes))
+			if (!WriteProcessMemory(pProcess, pRemoteMemoryOut, &InjectData, sizeof(InjectData), &nBytes))
 			{
 				HRESULT Error = GetLastError();
 				fReportError(NStr::CStr::CFormat("Failed to write to remote memory: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
@@ -845,7 +847,7 @@ namespace NMib
 			pRemoteMemoryOut = fg_AlignUp(pRemoteMemoryOut, 16);
 #	ifdef DMibSupportCygwin
 			bool bIsCygwin = false;
-			if (_Thread && !ImageFileName.f_IsEmpty())
+			if (_pThread && !ImageFileName.f_IsEmpty())
 			{
 				do
 				{
@@ -866,9 +868,9 @@ namespace NMib
 					;
 			}
 
-			if (_Thread && bIsCygwin)
+			if (_pThread && bIsCygwin)
 			{
-				if (!QueueUserAPC((PAPCFUNC)pRemoteFunction, _Thread, (umint)pRemoteInjectData))
+				if (!QueueUserAPC((PAPCFUNC)pRemoteFunction, _pThread, (umint)pRemoteInjectData))
 				{
 					HRESULT Error = GetLastError();
 					fReportError(NStr::CStr::CFormat("Failed to queue user APC: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
@@ -878,33 +880,33 @@ namespace NMib
 					CleanupMemory.f_Clear();
 
 				return EInjectDllResult_Delayed;
-				//HANDLE RemoteThread = CreateRemoteThread(Process, NULL, 0, (LPTHREAD_START_ROUTINE)fpOtherLoadLibraryA, pRemoteMemory, 0, &ThreadID);
+				//HANDLE pRemoteThread = CreateRemoteThread(pProcess, NULL, 0, (LPTHREAD_START_ROUTINE)fpOtherLoadLibraryA, pRemoteMemory, 0, &ThreadID);
 			}
 			else
 #	endif
 			{
 				DWORD ThreadID;
-				HANDLE RemoteThread = CreateRemoteThread(Process, NULL, 0, (LPTHREAD_START_ROUTINE)pRemoteFunction, pRemoteInjectData, 0, &ThreadID);
+				HANDLE pRemoteThread = CreateRemoteThread(pProcess, NULL, 0, (LPTHREAD_START_ROUTINE)pRemoteFunction, pRemoteInjectData, 0, &ThreadID);
 
-				if (RemoteThread)
+				if (pRemoteThread)
 				{
 					HRESULT ErrorCreateRemote = GetLastError();
-					bRet = WaitForSingleObject(RemoteThread, INFINITE) != WAIT_TIMEOUT;
+					bRet = WaitForSingleObject(pRemoteThread, INFINITE) != WAIT_TIMEOUT;
 					if (!bRet)
 					{
 						HRESULT Error = GetLastError();
 						fReportError
 							(
 								NStr::CStr::CFormat("Failed to join remote thread({}): {} CreateRemote: {}")
-								<< RemoteThread
+								<< pRemoteThread
 								<< NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)
 								<< NMib::NPlatform::fg_Win32_GetLastErrorStr(ErrorCreateRemote)
 							)
 						;
 					}
 					DWORD ExitCode = 0;
-					GetExitCodeThread(RemoteThread, &ExitCode);
-					CloseHandle(RemoteThread);
+					GetExitCodeThread(pRemoteThread, &ExitCode);
+					CloseHandle(pRemoteThread);
 
 					if (ExitCode != 0)
 					{
@@ -926,9 +928,9 @@ namespace NMib
 
 		EInjectDllResult fg_InjectDLL(DWORD _PID, DWORD _ThreadID, WCHAR const *_pDLLName, NStr::CStr &_Error)
 		{
-			HANDLE Thread = nullptr;
-			HANDLE Process = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ, FALSE, _PID);
-			if (NULL == Process)
+			HANDLE pThread = nullptr;
+			HANDLE pProcess = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ, FALSE, _PID);
+			if (NULL == pProcess)
 			{
 				HRESULT Error = GetLastError();
 				_Error = NStr::CStr::CFormat("Open process failed: {}\r\n") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error);
@@ -936,20 +938,20 @@ namespace NMib
 			}
 
 			if (_ThreadID)
-				Thread = OpenThread(THREAD_SET_CONTEXT, false, _ThreadID);
+				pThread = OpenThread(THREAD_SET_CONTEXT, false, _ThreadID);
 
 			auto Cleanup = fg_OnScopeExit
 				(
 					[&]
 					{
-						if (Thread)
-							CloseHandle(Thread);
-						CloseHandle(Process);
+						if (pThread)
+							CloseHandle(pThread);
+						CloseHandle(pProcess);
 					}
 				)
 			;
 
-			return fg_InjectDLL(Process, Thread, _pDLLName, _Error);
+			return fg_InjectDLL(pProcess, pThread, _pDLLName, _Error);
 		}
 #endif
 	}

@@ -23,19 +23,19 @@ namespace NMib::NPlatform
 				memset(&WndClass, 0, sizeof(WndClass));
 				WndClass.lpszClassName = ClassName;
 				WndClass.lpfnWndProc = &fsp_WindowProc;
-				WndClass.hInstance = g_DllInstance;
+				WndClass.hInstance = g_pDllInstanceHandle;
 				if (!RegisterClassA(&WndClass))
 				{
 					mp_WindowSettled.f_SetSignaled();
 					return 0;
 				}
 
-				mp_Window = CreateWindowExA(0, ClassName, ClassName, WS_OVERLAPPED, 0, 0, 0, 0, nullptr, nullptr, g_DllInstance, nullptr);
+				mp_pWindow = CreateWindowExA(0, ClassName, ClassName, WS_OVERLAPPED, 0, 0, 0, 0, nullptr, nullptr, g_pDllInstanceHandle, nullptr);
 				mp_WindowSettled.f_SetSignaled();
 
-				if (!mp_Window)
+				if (!mp_pWindow)
 				{
-					UnregisterClassA(ClassName, g_DllInstance);
+					UnregisterClassA(ClassName, g_pDllInstanceHandle);
 					return 0;
 				}
 
@@ -46,7 +46,7 @@ namespace NMib::NPlatform
 					DispatchMessageA(&Message);
 				}
 
-				UnregisterClassA(ClassName, g_DllInstance);
+				UnregisterClassA(ClassName, g_pDllInstanceHandle);
 
 				return 0;
 			}
@@ -56,15 +56,15 @@ namespace NMib::NPlatform
 				if (f_GetState() == NThread::EThreadState_Running)
 				{
 					mp_WindowSettled.f_Wait();
-					if (mp_Window)
-						PostMessageA(mp_Window, WM_CLOSE, 0, 0);
+					if (mp_pWindow)
+						PostMessageA(mp_pWindow, WM_CLOSE, 0, 0);
 				}
 
 				return NThread::CThread::f_Stop(_bBlock);
 			}
 
 		private:
-			static LRESULT WINAPI fsp_WindowProc(HWND _Window, UINT _Message, WPARAM _WParam, LPARAM _LParam)
+			static LRESULT WINAPI fsp_WindowProc(HWND _pWindow, UINT _Message, WPARAM _WParam, LPARAM _LParam)
 			{
 				switch (_Message)
 				{
@@ -75,7 +75,7 @@ namespace NMib::NPlatform
 					break;
 
 				case WM_CLOSE:
-					DestroyWindow(_Window);
+					DestroyWindow(_pWindow);
 					return 0;
 
 				case WM_DESTROY:
@@ -85,11 +85,11 @@ namespace NMib::NPlatform
 				default: break;
 				}
 
-				return DefWindowProcA(_Window, _Message, _WParam, _LParam);
+				return DefWindowProcA(_pWindow, _Message, _WParam, _LParam);
 			}
 
 			NThread::CEvent mp_WindowSettled;
-			HWND mp_Window = nullptr;
+			HWND mp_pWindow = nullptr;
 		};
 
 		struct CSubSystem_Core_EndSession : public CSubSystem

@@ -51,7 +51,7 @@ void *CAddressResolver::f_Open(NMib::NStr::CStr const &_Name, ::NMib::NNetwork::
 	pReq->m_Name = _Name;
 	pReq->m_Flags = EFlag_Pending;
 	pReq->m_fOnFinish = fg_Move(_fOnFinish);
-	pReq->m_Address = nullptr;
+	pReq->m_pAddress = nullptr;
 	pReq->m_PreferType = _PreferType;
 
 	CResolveRequest *pRet = nullptr;
@@ -81,15 +81,15 @@ void *CAddressResolver::f_Open(NMib::NStr::CStr const &_Name, ::NMib::NNetwork::
 	return pRet;
 }
 
-bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &o_Address, NMib::NStr::CStr &_Error)
+bool CAddressResolver::f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &o_pAddress, NMib::NStr::CStr &_Error)
 {
 	CResolveRequest *pReq = (CResolveRequest *)_pResolver;
 
 	DMibLock(mp_Lock);
 	if (pReq->m_Flags & EFlag_Done)
 	{
-		o_Address = pReq->m_Address;
-		pReq->m_Address = nullptr;
+		o_pAddress = pReq->m_pAddress;
+		pReq->m_pAddress = nullptr;
 		return true;
 	}
 	else if (pReq->m_Flags & EFlag_Error)
@@ -160,12 +160,12 @@ aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject *_pThread)
 				}
 			;
 
-			NMib::NSys::NNetwork::CAddress Address = nullptr;
+			NMib::NSys::NNetwork::CAddress pAddress = nullptr;
 			NStr::CStr Error;
 
 			try
 			{
-				Address = NMib::NSys::NNetwork::fg_ResolveAddress(pReq->m_Name, pReq->m_PreferType);
+				pAddress = NMib::NSys::NNetwork::fg_ResolveAddress(pReq->m_Name, pReq->m_PreferType);
 			}
 			catch (NMib::NNetwork::CExceptionNet const &_Error)
 			{
@@ -176,9 +176,9 @@ aint CAddressResolver::fp_ResolveWorker(NThread::CThreadObject *_pThread)
 
 			{
 				DMibLock(mp_Lock);
-				pReq->m_Address = Address;
+				pReq->m_pAddress = pAddress;
 				pReq->m_ErrorString = fg_Move(Error);
-				pReq->m_Flags |= Address ? EFlag_Done : EFlag_Error;
+				pReq->m_Flags |= pAddress ? EFlag_Done : EFlag_Error;
 
 				if (!(pReq->m_Flags & EFlag_Closing))
 					fOnFinish = fg_Move(pReq->m_fOnFinish);

@@ -207,6 +207,7 @@ namespace NMib
 			}
 		};
 
+		// NOLINTNEXTLINE(malterlib-conceptual-prefix): CMibArgList is va_list, a pointer on macOS and Windows and an array on Linux
 		CClassContainerList *fg_GetClassContainerListArgList(CClassContainerList &_List, CMibArgList &_Args);
 		CClassContainerList *fg_GetClassContainerList(CClassContainerList *_pList, ...);
 

@@ -413,7 +413,7 @@ namespace NMib::NSys
 			SubSystem.f_InstallHandler(_Signal);
 		}
 
-		auto pOnExit = g_OnScopeExitShared / [_Signal, ThreadUID = fg_Thread_GetCurrentUID()]() mutable
+		auto OnExit = g_OnScopeExitShared / [_Signal, ThreadUID = fg_Thread_GetCurrentUID()]() mutable
 			{
 				DMibFastCheck(fg_Thread_GetCurrentUID() == ThreadUID);
 
@@ -452,7 +452,7 @@ namespace NMib::NSys
 					SubSystem.f_RemoveHandler(_Signal);
 			}
 		;
-		return pOnExit;
+		return OnExit;
 	}
 
 	// Callbacks run on the selected I/O-loop thread under the subsystem lock. They must not block
@@ -483,7 +483,7 @@ namespace NMib::NSys
 			Rollback.f_Clear();
 		}
 
-		auto pOnExit = g_OnScopeExitShared / [pFunction, _Signal]() mutable
+		auto OnExit = g_OnScopeExitShared / [pFunction, _Signal]() mutable
 			{
 				auto &SubSystem = *g_SubSystem_Core_Signal;
 				if (SubSystem.m_bWasDestroyed.f_Load())
@@ -500,7 +500,7 @@ namespace NMib::NSys
 					SubSystem.f_CloseDispatch();
 			}
 		;
-		return pOnExit;
+		return OnExit;
 	}
 }
 

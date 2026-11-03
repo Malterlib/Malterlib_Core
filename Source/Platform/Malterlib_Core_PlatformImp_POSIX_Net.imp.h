@@ -59,10 +59,10 @@ namespace
 	// Pid <= 0 means reaped or invisible; multiple NSpid entries mean a descendant namespace.
 	bool fg_GetPeerSameNamespacePid(int _PidFD, pid_t &o_PeerPID)
 	{
-		char pPath[64];
-		snprintf(pPath, sizeof(pPath), "/proc/self/fdinfo/%d", _PidFD);
+		char Path[64];
+		snprintf(Path, sizeof(Path), "/proc/self/fdinfo/%d", _PidFD);
 
-		int FDInfoFD = open(pPath, O_RDONLY | O_CLOEXEC);
+		int FDInfoFD = open(Path, O_RDONLY | O_CLOEXEC);
 		if (FDInfoFD < 0)
 			return false;
 
@@ -72,14 +72,14 @@ namespace
 			}
 		;
 
-		char pBuffer[4096];
-		auto nBytes = read(FDInfoFD, pBuffer, sizeof(pBuffer) - 1);
+		char Buffer[4096];
+		auto nBytes = read(FDInfoFD, Buffer, sizeof(Buffer) - 1);
 		if (nBytes <= 0)
 			return false;
 
-		pBuffer[nBytes] = 0;
+		Buffer[nBytes] = 0;
 
-		char const *pPid = strstr(pBuffer, "\nPid:");
+		char const *pPid = strstr(Buffer, "\nPid:");
 		if (!pPid)
 			return false;
 
@@ -89,7 +89,7 @@ namespace
 
 		// An absent NSpid line means the kernel is built without pid namespaces, so same-namespace
 		// holds trivially
-		if (char const *pNSPid = strstr(pBuffer, "\nNSpid:"))
+		if (char const *pNSPid = strstr(Buffer, "\nNSpid:"))
 		{
 			char *pEnd = nullptr;
 			long FirstNSPid = strtol(pNSPid + 7, &pEnd, 10);
@@ -302,8 +302,8 @@ CPOSIXAddress *CPOSIXSocketContext::f_ResolveAddress(NMib::NStr::CStr const &_Ad
 	auto Addresses = f_ResolveAddresses(_Address, _PreferType, _bThrowOnError);
 	auto Cleanup = g_OnScopeExit / [&Addresses]
 		{
-			for (auto Address : Addresses)
-				NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Explicit(static_cast<CPOSIXAddress *>(Address));
+			for (auto pResolvedAddress : Addresses)
+				NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Explicit(static_cast<CPOSIXAddress *>(pResolvedAddress));
 		}
 	;
 

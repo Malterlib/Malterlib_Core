@@ -332,7 +332,7 @@ namespace NMib
 {
 	namespace NSys
 	{
-		extern ch8 const *g_LinuxProgramIdentifier;
+		extern ch8 const *g_pLinuxProgramIdentifier;
 	}
 }
 
@@ -446,17 +446,17 @@ void CSystemLinux::fs_ForkPrepare()
 void CSystemLinux::fs_ForkParentOrChild()
 {
 	auto &Sys = *fg_GetLocalSys();
-	void *Current = pthread_getspecific(Sys.m_ThreadDestructionHook);
-	if (Current)
+	void *pCurrent = pthread_getspecific(Sys.m_ThreadDestructionHook);
+	if (pCurrent)
 	{
 #ifdef DMibSanitizerEnabled_Thread
-		if (Current == (void *)(umint)getpid())
+		if (pCurrent == (void *)(umint)getpid())
 			__tsan_forked_parent();
 		else
 			__tsan_forked_child();
 #endif
 		pthread_setspecific(Sys.m_ThreadDestructionHook, nullptr);
-		if (Current != (void *)(umint)getpid())
+		if (pCurrent != (void *)(umint)getpid())
 		{
 #if !defined(DMibDynamicLibrary) || (defined(DMibDynamicLibrary) && !defined(DMibAssumeMalterlibHost))
 			g_MalterlibCurrentTID = syscall(SYS_gettid);
@@ -464,7 +464,7 @@ void CSystemLinux::fs_ForkParentOrChild()
 			Sys.m_bForkedChild = true;
 			g_bCanStackTrace = false;
 		}
-		if (Current == (void *)(umint)getpid())
+		if (pCurrent == (void *)(umint)getpid())
 		{
 			Sys.f_ForkedParent(); // Parent
 			Sys.m_Posix.m_ForkLock.f_ForkedParent();
@@ -624,7 +624,7 @@ void CSystemLinux::f_Destruct()
 	pthread_key_delete(m_ThreadDestructionHook);
 }
 
-void CSystemLinux::fs_ThreadDestructionHook(void *_ThreadID)
+void CSystemLinux::fs_ThreadDestructionHook(void *_pThreadID)
 {
 	fg_GetSys()->f_ThreadLocalFreeThread();
 }
@@ -714,16 +714,16 @@ void NMib::NStr::NPlatform::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, 
 	auto &Cache = *g_CodePageCache;
 
 	_Out.f_Clear();
-	auto Iter = Utf8.f_GetUnicodeIterator();
-	while (Iter)
+	auto iChar = Utf8.f_GetUnicodeIterator();
+	while (iChar)
 	{
-		ch8 *pChar = Cache.m_Cache.f_FindEqual(*Iter);
+		ch8 *pChar = Cache.m_Cache.f_FindEqual(*iChar);
 		if (pChar)
 			_Out.f_AddChar(*pChar);
 		else
 			_Out.f_AddChar(_ErrorChar);
 
-		++Iter;
+		++iChar;
 	}
 }
 
@@ -734,16 +734,16 @@ void NMib::NStr::NPlatform::fg_SystemEncodeAnsiStr(NMib::NStr::CStrNonTracked co
 	auto &Cache = *g_CodePageCache;
 
 	_Out.f_Clear();
-	auto Iter = Utf8.f_GetUnicodeIterator();
-	while (Iter)
+	auto iChar = Utf8.f_GetUnicodeIterator();
+	while (iChar)
 	{
-		ch8 *pChar = Cache.m_Cache.f_FindEqual(*Iter);
+		ch8 *pChar = Cache.m_Cache.f_FindEqual(*iChar);
 		if (pChar)
 			_Out.f_AddChar(*pChar);
 		else
 			_Out.f_AddChar(_ErrorChar);
 
-		++Iter;
+		++iChar;
 	}
 }
 
@@ -832,7 +832,7 @@ inline_never bool NSys::fg_Compiler_AlwaysFalse()
 	return false;
 }
 
-assure_used inline_never bool NSys::fg_Compiler_MakeActive(void const *_Reference)
+assure_used inline_never bool NSys::fg_Compiler_MakeActive(void const *_pReference)
 {
 	return true;
 }
@@ -1366,8 +1366,8 @@ void NSys::fg_CreateSystemVersion()
 		// .preinit_array with malloc overridden before the memory manager is
 		// initialized, so only raw syscalls and a trap are safe here — abort()
 		// flushes stdio on older glibc, which touches libc state and locks
-		static constexpr char c_pKernelTooOld[] = "Malterlib requires Linux kernel 2.6.28 or later\n";
-		[[maybe_unused]] auto Written = write(2, c_pKernelTooOld, sizeof(c_pKernelTooOld) - 1);
+		static constexpr char c_KernelTooOld[] = "Malterlib requires Linux kernel 2.6.28 or later\n";
+		[[maybe_unused]] auto Written = write(2, c_KernelTooOld, sizeof(c_KernelTooOld) - 1);
 		__builtin_trap();
 	}
 }
@@ -1387,7 +1387,7 @@ namespace NMib
 				struct dl_phdr_info FirstHeader;
 				fg_MemClear(FirstHeader);
 
-				TCFunction<int (struct dl_phdr_info *_pInfo, size_t _Size)> Iterate = [&](struct dl_phdr_info *_pInfo, size_t _Size) -> int
+				TCFunction<int (struct dl_phdr_info *_pInfo, size_t _Size)> fIterate = [&](struct dl_phdr_info *_pInfo, size_t _Size) -> int
 					{
 						// We rely on the first image being the main executable
 						if (bFirst)
@@ -1399,7 +1399,7 @@ namespace NMib
 					}
 				;
 
-				dl_iterate_phdr(fg_DlIterate, &Iterate);
+				dl_iterate_phdr(fg_DlIterate, &fIterate);
 
 				if (bFirst)
 					DMibPDebugBreak;
@@ -1561,23 +1561,23 @@ void fg_ReportCurrentException()
 	}
 }
 
-static std::unexpected_handler gs_DefaultUnexpectedHandler = nullptr;
+static std::unexpected_handler gs_fDefaultUnexpectedHandler = nullptr;
 void fg_UnexpectedExceptionHandler()
 {
 	fg_ReportCurrentException();
-	if (gs_DefaultUnexpectedHandler)
-		gs_DefaultUnexpectedHandler();
+	if (gs_fDefaultUnexpectedHandler)
+		gs_fDefaultUnexpectedHandler();
 	else
 		abort();
 }
 
-static std::terminate_handler gs_DefaultTerminateHandler = nullptr;
+static std::terminate_handler gs_fDefaultTerminateHandler = nullptr;
 
 void fg_TerminateHandler()
 {
 	fg_ReportCurrentException();
-	if (gs_DefaultTerminateHandler)
-		gs_DefaultTerminateHandler();
+	if (gs_fDefaultTerminateHandler)
+		gs_fDefaultTerminateHandler();
 	else
 		abort();
 }
@@ -1662,8 +1662,8 @@ void NSys::fg_CreateSystem()
 	NSys::fg_Compiler_MakeActive(&pSystem);
 	DMibFastCheck((void *)pSystem == pSystemMemory);
 
-	gs_DefaultTerminateHandler = std::set_terminate(&fg_TerminateHandler);
-	gs_DefaultUnexpectedHandler = std::set_unexpected(&fg_UnexpectedExceptionHandler);
+	gs_fDefaultTerminateHandler = std::set_terminate(&fg_TerminateHandler);
+	gs_fDefaultUnexpectedHandler = std::set_unexpected(&fg_UnexpectedExceptionHandler);
 
 #ifndef DMibPAutomaticSystemCreation
 	NMib::g_pSys = pSystem;
@@ -2483,34 +2483,34 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddressFromNative(void const *
 	return CPOSIXAddress::fs_FromNative(_pAddress, _Size).f_Detach();
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAddress _Address)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAddress _pAddress)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_DuplicateAddress(*(CPOSIXAddress *)_Address);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_DuplicateAddress(*(CPOSIXAddress *)_pAddress);
 }
 
-::NMib::NNetwork::ENetAddressType NSys::NNetwork::fg_GetAddressType(NSys::NNetwork::CAddress _Address)
+::NMib::NNetwork::ENetAddressType NSys::NNetwork::fg_GetAddressType(NSys::NNetwork::CAddress _pAddress)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CPOSIXAddress *)_Address);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CPOSIXAddress *)_pAddress);
 }
 
-uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _Address)
+uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _pAddress)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return static_cast<CPOSIXAddress const *>(_Address)->f_GetScopeID();
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return static_cast<CPOSIXAddress const *>(_pAddress)->f_GetScopeID();
 }
 
-bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _pAddress, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress *)_Address, _ExpectedType, o_pRawData, _nDataBytes);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress *)_pAddress, _ExpectedType, o_pRawData, _nDataBytes);
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CPOSIXAddress *)_Address, _Type, _pRawData, _nDataBytes);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CPOSIXAddress *)_pAddress, _Type, _pRawData, _nDataBytes);
 }
 
 // Returns an address owned by the caller, or null with a hostname/port for DNS. May block on local configuration.
@@ -2569,28 +2569,28 @@ int NSys::NNetwork::fg_CompareAddresses(NSys::NNetwork::CAddress _pFirst, NSys::
 	return fg_GetLocalSys()->m_SocketContext->f_CompareAddresses(*(CPOSIXAddress *)_pFirst, *(CPOSIXAddress *)_pSecond);
 }
 
-void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _Address) // It is OK to free a nullptr address
+void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _pAddress) // It is OK to free a nullptr address
 {
-	return fg_GetLocalSys()->m_SocketContext->f_FreeAddress((CPOSIXAddress *)_Address);
+	return fg_GetLocalSys()->m_SocketContext->f_FreeAddress((CPOSIXAddress *)_pAddress);
 }
 
-NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, ENetAddressStringFlag _Flags)
+NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _pAddress, ENetAddressStringFlag _Flags)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CPOSIXAddress *)_Address, _Flags);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CPOSIXAddress *)_pAddress, _Flags);
 }
 
 // Connection Operations
 auto NSys::NNetwork::fg_AsyncConnect
 	(
-		NSys::NNetwork::CAddress _Address
+		NSys::NNetwork::CAddress _pAddress
 		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-		, NSys::NNetwork::CAddress _BindAddress
+		, NSys::NNetwork::CAddress _pBindAddress
 	)
 	-> void *
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_AsyncConnect(*(CPOSIXAddress *)_Address, fg_Move(_fOnStateChange), (CPOSIXAddress *)_BindAddress);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_AsyncConnect(*(CPOSIXAddress *)_pAddress, fg_Move(_fOnStateChange), (CPOSIXAddress *)_pBindAddress);
 }
 
 void NSys::NNetwork::fg_StartSocket(void *_pSocket)
@@ -2600,26 +2600,26 @@ void NSys::NNetwork::fg_StartSocket(void *_pSocket)
 
 auto NSys::NNetwork::fg_Listen
 	(
-		NSys::NNetwork::CAddress _Address
+		NSys::NNetwork::CAddress _pAddress
 		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 		, NMib::NNetwork::ENetFlag _Flags
 	)
 	-> void *
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_Listen(*(CPOSIXAddress *)_Address, fg_Move(_fOnStateChange), _Flags);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_Listen(*(CPOSIXAddress *)_pAddress, fg_Move(_fOnStateChange), _Flags);
 }
 
 auto NSys::NNetwork::fg_ListenDatagram
 	(
-		NSys::NNetwork::CAddress _Address
+		NSys::NNetwork::CAddress _pAddress
 		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 		, NMib::NNetwork::ENetFlag _Flags
 	)
 	-> void *
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_ListenDatagram(*(CPOSIXAddress *)_Address, fg_Move(_fOnStateChange), _Flags);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_ListenDatagram(*(CPOSIXAddress *)_pAddress, fg_Move(_fOnStateChange), _Flags);
 }
 
 void *NSys::NNetwork::fg_Accept(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
@@ -2652,14 +2652,14 @@ umint NSys::NNetwork::fg_SendVectored(void *_pSocket, NSys::CIoSpan const *_pSpa
 	return fg_GetLocalSys()->m_SocketContext->f_SendVectored((CPOSIXSocket *)_pSocket, _pSpans, _nSpans);
 }
 
-umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void const *_pData, umint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _pAddress, void const *_pData, umint _DataLen) // Returns bytes sen
 {
-	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_Address), _pData, _DataLen);
+	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_pAddress), _pData, _DataLen);
 }
 
-umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, umint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _pAddress, void *_pData, umint _DataLen) // Returns bytes sen
 {
-	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_Address), _pData, _DataLen);
+	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_pAddress), _pData, _DataLen);
 }
 
 // Socket Properties & State

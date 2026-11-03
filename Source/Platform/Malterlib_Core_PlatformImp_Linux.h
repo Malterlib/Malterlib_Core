@@ -37,7 +37,7 @@ struct CSystemLinux : public NMib::CSystem
 	void f_DestroyThreadSpecific();
 
 	void f_Destruct();
-	static void fs_ThreadDestructionHook(void *_ThreadID);
+	static void fs_ThreadDestructionHook(void *_pThreadID);
 
 	void f_RegisterDestructionHookForThread();
 	void f_LoadLibraries();

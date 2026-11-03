@@ -31,7 +31,7 @@ constexpr ULONG gc_AfdPoll_ConnectFail = 0x0100;
 
 struct CAfdPollHandleInfo
 {
-	HANDLE m_Handle;
+	HANDLE m_pHandle;
 	ULONG m_Events;
 	NTSTATUS m_Status;
 };
@@ -56,7 +56,7 @@ constexpr ULONG gc_NtFileInformation_ReplaceCompletionInformation = 61;
 
 struct CNtFileCompletionInformation
 {
-	HANDLE m_Port;
+	HANDLE m_pPort;
 	PVOID m_pKey;
 };
 

@@ -34,8 +34,8 @@ CIoLoop_Iocp::CIoLoop_Iocp()
 {
 	mp_pIo = &fg_IoSubSystem_Windows();
 	// One concurrent thread: the port is parked in by exactly the thread that hosts the loop
-	mp_Port = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
-	mp_bCreated = mp_Port != nullptr;
+	mp_pPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
+	mp_bCreated = mp_pPort != nullptr;
 }
 
 CIoLoop_Iocp::~CIoLoop_Iocp()
@@ -48,12 +48,12 @@ CIoLoop_Iocp::~CIoLoop_Iocp()
 
 	for (CIocpAfdGroup *pGroup : mp_AfdGroups)
 	{
-		CloseHandle(pGroup->m_Afd);
+		CloseHandle(pGroup->m_pAfd);
 		fg_DeleteObject(CDefaultAllocator(), pGroup);
 	}
 
-	if (mp_Port)
-		CloseHandle(mp_Port);
+	if (mp_pPort)
+		CloseHandle(mp_pPort);
 }
 
 bool CIoLoop_Iocp::f_IsCreated() const
@@ -73,7 +73,7 @@ void CIoLoop_Iocp::fp_WakeKernel()
 		mp_pIo->m_IocpStats.m_nWakePosts.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
-	PostQueuedCompletionStatus(mp_Port, 0, gc_IocpKey_Wake, nullptr);
+	PostQueuedCompletionStatus(mp_pPort, 0, gc_IocpKey_Wake, nullptr);
 }
 
 void CIoLoop_Iocp::f_RequestReadiness(NSys::CIoLoopRegistration *_pRegistration, NSys::EIoLoopEvent _EventMask)
@@ -151,21 +151,21 @@ CIocpAfdGroup *CIoLoop_Iocp::fp_AcquireAfdGroup()
 	InitializeObjectAttributes(&Attributes, &Name, 0, nullptr, nullptr);
 
 	IO_STATUS_BLOCK IoStatus;
-	HANDLE Afd = nullptr;
-	NTSTATUS Status = Nt.m_fNtCreateFile(&Afd, SYNCHRONIZE, &Attributes, &IoStatus, nullptr, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, gc_NtFile_Open, 0, nullptr, 0);
-	if (Status != gc_NtStatus_Success || !Afd)
+	HANDLE pAfd = nullptr;
+	NTSTATUS Status = Nt.m_fNtCreateFile(&pAfd, SYNCHRONIZE, &Attributes, &IoStatus, nullptr, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, gc_NtFile_Open, 0, nullptr, 0);
+	if (Status != gc_NtStatus_Success || !pAfd)
 		return nullptr;
 
-	if (!CreateIoCompletionPort(Afd, mp_Port, gc_IocpKey_Afd, 0))
+	if (!CreateIoCompletionPort(pAfd, mp_pPort, gc_IocpKey_Afd, 0))
 	{
-		CloseHandle(Afd);
+		CloseHandle(pAfd);
 		return nullptr;
 	}
 
-	SetFileCompletionNotificationModes(Afd, FILE_SKIP_SET_EVENT_ON_HANDLE);
+	SetFileCompletionNotificationModes(pAfd, FILE_SKIP_SET_EVENT_ON_HANDLE);
 
 	auto *pGroup = fg_ConstructObject<CIocpAfdGroup>(CDefaultAllocator());
-	pGroup->m_Afd = Afd;
+	pGroup->m_pAfd = pAfd;
 	pGroup->m_nRegistrations = 1;
 	mp_AfdGroups.f_InsertLast(pGroup);
 
@@ -187,17 +187,17 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 {
 	SOCKET Socket = (SOCKET)_pRegistration->m_Handle;
 
-	HANDLE Base = nullptr;
+	HANDLE pBase = nullptr;
 	DWORD nBytes = 0;
-	if (WSAIoctl(Socket, SIO_BASE_HANDLE, nullptr, 0, &Base, sizeof(Base), &nBytes, nullptr, nullptr) != 0 || !Base)
-		Base = (HANDLE)Socket;
-	_pRegistration->m_Base = Base;
+	if (WSAIoctl(Socket, SIO_BASE_HANDLE, nullptr, 0, &pBase, sizeof(pBase), &nBytes, nullptr, nullptr) != 0 || !pBase)
+		pBase = (HANDLE)Socket;
+	_pRegistration->m_pBase = pBase;
 
 	// Never bound, and no notification modes either: those stick to the handle as well
 	if (_pRegistration->m_Options.m_bReadinessOnly)
 		return true;
 
-	if (CreateIoCompletionPort((HANDLE)Socket, mp_Port, (ULONG_PTR)_pRegistration, 0))
+	if (CreateIoCompletionPort((HANDLE)Socket, mp_pPort, (ULONG_PTR)_pRegistration, 0))
 		_pRegistration->m_bAssociated = true;
 	else
 	{
@@ -212,7 +212,7 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 		if (Nt.m_fNtSetInformationFile)
 		{
 			CNtFileCompletionInformation Information;
-			Information.m_Port = mp_Port;
+			Information.m_pPort = mp_pPort;
 			Information.m_pKey = _pRegistration;
 
 			IO_STATUS_BLOCK IoStatus;
@@ -241,7 +241,7 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 	bool bWantSkipSuccess = mp_pIo->f_SkipSuccessEnabled() || _pRegistration->m_Options.m_bInheritedHandle;
 
 	UCHAR Modes = FILE_SKIP_SET_EVENT_ON_HANDLE;
-	if (bWantSkipSuccess && Base == (HANDLE)Socket)
+	if (bWantSkipSuccess && pBase == (HANDLE)Socket)
 	{
 		WSAPROTOCOL_INFOW ProtocolInfo;
 		int nProtocolInfo = sizeof(ProtocolInfo);
@@ -277,7 +277,7 @@ bool CIoLoop_Iocp::fp_Associate(CIocpRegistration *_pRegistration, int &o_Error)
 // Adopt with an unused key; packets identify operations. Rebind existing associations or reject handles whose completions would go elsewhere.
 bool CIoLoop_Iocp::f_AdoptHandle(NSys::CIoLoopHandle _Handle, int &o_Error)
 {
-	if (CreateIoCompletionPort((HANDLE)_Handle, mp_Port, 0, 0))
+	if (CreateIoCompletionPort((HANDLE)_Handle, mp_pPort, 0, 0))
 		return true;
 
 	o_Error = (int)GetLastError();
@@ -289,7 +289,7 @@ bool CIoLoop_Iocp::f_AdoptHandle(NSys::CIoLoopHandle _Handle, int &o_Error)
 		return false;
 
 	CNtFileCompletionInformation Information;
-	Information.m_Port = mp_Port;
+	Information.m_pPort = mp_pPort;
 	Information.m_pKey = nullptr;
 
 	IO_STATUS_BLOCK IoStatus;
@@ -331,14 +331,14 @@ bool CIoLoop_Iocp::fp_ArmPoll(CIocpRegistration *_pRegistration, ULONG _AfdEvent
 	Op.m_PollInfo.m_Timeout.QuadPart = INT64_MAX;
 	Op.m_PollInfo.m_nHandles = 1;
 	Op.m_PollInfo.m_bExclusive = FALSE;
-	Op.m_PollInfo.m_Handles[0].m_Handle = _pRegistration->m_Base;
+	Op.m_PollInfo.m_Handles[0].m_pHandle = _pRegistration->m_pBase;
 	Op.m_PollInfo.m_Handles[0].m_Events = _AfdEvents;
 	Op.m_PollInfo.m_Handles[0].m_Status = 0;
 
 	auto const &Nt = NLocal::g_OptionalFunctions;
 	NTSTATUS Status = Nt.m_fNtDeviceIoControlFile
 		(
-			Op.m_pGroup->m_Afd
+			Op.m_pGroup->m_pAfd
 			, nullptr
 			, nullptr
 			, &Op.m_Overlapped
@@ -418,7 +418,7 @@ void CIoLoop_Iocp::fp_UpdatePoll(CIocpRegistration *_pRegistration, umint &_nRep
 void CIoLoop_Iocp::fp_ArmRequested(CIocpRegistration *_pRegistration, NSys::EIoLoopEvent _EventMask, umint &_nReported)
 {
 	// Synchronization objects report only read readiness when signaled.
-	if (_pRegistration->m_WaitPacket)
+	if (_pRegistration->m_pWaitPacket)
 	{
 		if (fg_IsSet(_EventMask, NSys::EIoLoopEvent::mc_Read))
 			fp_ArmWait(_pRegistration, _nReported);
@@ -450,7 +450,7 @@ void CIoLoop_Iocp::fp_CancelPoll(CIocpRegistration *_pRegistration)
 		mp_pIo->m_IocpStats.m_nPollCancels.f_FetchAdd(1, NAtomic::gc_MemoryOrder_Relaxed);
 #endif
 
-	CancelIoEx(_pRegistration->m_PollOp.m_pGroup->m_Afd, &_pRegistration->m_PollOp.m_Overlapped);
+	CancelIoEx(_pRegistration->m_PollOp.m_pGroup->m_pAfd, &_pRegistration->m_PollOp.m_Overlapped);
 }
 
 // Requires Windows 8+ wait-packet APIs; reports unsupported when the entry points are absent.
@@ -463,15 +463,15 @@ bool CIoLoop_Iocp::fp_CreateWaitPacket(CIocpRegistration *_pRegistration, int &o
 		return false;
 	}
 
-	HANDLE Packet = nullptr;
-	NTSTATUS Status = Nt.m_fNtCreateWaitCompletionPacket(&Packet, GENERIC_ALL, nullptr);
-	if (Status != gc_NtStatus_Success || !Packet)
+	HANDLE pPacket = nullptr;
+	NTSTATUS Status = Nt.m_fNtCreateWaitCompletionPacket(&pPacket, GENERIC_ALL, nullptr);
+	if (Status != gc_NtStatus_Success || !pPacket)
 	{
 		o_Error = (int)Nt.m_fRtlNtStatusToDosError(Status);
 		return false;
 	}
 
-	_pRegistration->m_WaitPacket = Packet;
+	_pRegistration->m_pWaitPacket = pPacket;
 
 	return true;
 }
@@ -494,8 +494,8 @@ void CIoLoop_Iocp::fp_ArmWait(CIocpRegistration *_pRegistration, umint &_nReport
 	BOOLEAN bAlreadySignaled = FALSE;
 	NTSTATUS Status = Nt.m_fNtAssociateWaitCompletionPacket
 		(
-			_pRegistration->m_WaitPacket
-			, mp_Port
+			_pRegistration->m_pWaitPacket
+			, mp_pPort
 			, (HANDLE)_pRegistration->m_Handle
 			, (PVOID)gc_IocpKey_Wait
 			, &Op
@@ -530,7 +530,7 @@ void CIoLoop_Iocp::fp_CancelWait(CIocpRegistration *_pRegistration)
 		return;
 
 	auto const &Nt = NLocal::g_OptionalFunctions;
-	NTSTATUS Status = Nt.m_fNtCancelWaitCompletionPacket(_pRegistration->m_WaitPacket, TRUE);
+	NTSTATUS Status = Nt.m_fNtCancelWaitCompletionPacket(_pRegistration->m_pWaitPacket, TRUE);
 	if (Status != gc_NtStatus_Success && Status != gc_NtStatus_Cancelled)
 		return;
 
@@ -542,12 +542,12 @@ void CIoLoop_Iocp::fp_CancelWait(CIocpRegistration *_pRegistration)
 
 void CIoLoop_Iocp::fp_ReleaseWait(CIocpRegistration *_pRegistration)
 {
-	if (!_pRegistration->m_WaitPacket)
+	if (!_pRegistration->m_pWaitPacket)
 		return;
 
 	DMibFastCheck(!_pRegistration->m_bWaitArmed);
-	CloseHandle(_pRegistration->m_WaitPacket);
-	_pRegistration->m_WaitPacket = nullptr;
+	CloseHandle(_pRegistration->m_pWaitPacket);
+	_pRegistration->m_pWaitPacket = nullptr;
 }
 
 void CIoLoop_Iocp::fp_CancelOutstanding(CIocpRegistration *_pRegistration, umint &_nReported)
@@ -863,7 +863,7 @@ umint CIoLoop_Iocp::fp_IterateTimeout(bool _bBlock, DWORD _TimeoutMs, CIoLoopWai
 	ULONG nEntries = 0;
 	if (_pDeadline)
 		_TimeoutMs = _pDeadline->f_Milliseconds(INFINITE - 1);
-	if (!GetQueuedCompletionStatusEx(mp_Port, Entries, gc_IocpDequeueBatch, &nEntries, bBlock ? _TimeoutMs : 0, FALSE))
+	if (!GetQueuedCompletionStatusEx(mp_pPort, Entries, gc_IocpDequeueBatch, &nEntries, bBlock ? _TimeoutMs : 0, FALSE))
 		nEntries = 0;
 
 #if DMibConfig_IoDebug_Enable

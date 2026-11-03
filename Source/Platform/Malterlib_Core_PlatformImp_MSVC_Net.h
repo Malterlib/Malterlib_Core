@@ -179,9 +179,9 @@ public:
 
 	// Address
 	CWindowsAddress *f_CreateAddress(NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes);
-	CWindowsAddress *f_DuplicateAddress(CWindowsAddress *_Address);
+	CWindowsAddress *f_DuplicateAddress(CWindowsAddress *_pAddress);
 
-	NMib::NNetwork::ENetAddressType f_GetAddressType(CWindowsAddress const &_pAddress);
+	NMib::NNetwork::ENetAddressType f_GetAddressType(CWindowsAddress const &_Address);
 	bool f_GetAddressRaw(CWindowsAddress const &_Address, NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes);
 	CWindowsAddress *f_SetAddressRaw(CWindowsAddress *_pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes);
 
@@ -199,7 +199,7 @@ public:
 	void f_AsyncResolveAddress_Close(void *_pResolver);
 	void f_AsyncResolveAddress_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 
-	int f_CompareAddresses(CWindowsAddress const &_pFirst, CWindowsAddress const &_pSecond);
+	int f_CompareAddresses(CWindowsAddress const &_First, CWindowsAddress const &_Second);
 
 	void f_FreeAddress(CWindowsAddress *_pAddress); // It is OK to free a nullptr address.
 

@@ -22,18 +22,18 @@ namespace NMib::NPlatform
 		return FALSE;
 	}
 
-	constinit static NAtomic::TCAtomic<bool> gs_ShuttingDown = false;
+	constinit static NAtomic::TCAtomic<bool> gs_bShuttingDown = false;
 
 	void fg_ReportIsShuttingDown()
 	{
-		gs_ShuttingDown.f_Exchange(true);
+		gs_bShuttingDown.f_Exchange(true);
 	}
 
 	bool fg_IsShuttingDown()
 	{
 		fg_EnsureEndSessionReporting();
 
-		if (gs_ShuttingDown.f_Load())
+		if (gs_bShuttingDown.f_Load())
 			return true;
 
 		return GetSystemMetrics(SM_SHUTTINGDOWN) != 0;

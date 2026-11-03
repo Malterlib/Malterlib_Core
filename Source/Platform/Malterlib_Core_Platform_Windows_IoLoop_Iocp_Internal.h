@@ -24,7 +24,7 @@ constexpr umint gc_IocpRecyclerMaxFreeBytes = 8 * 1024 * 1024; // Retain message
 
 struct CIocpAfdGroup
 {
-	HANDLE m_Afd = nullptr;
+	HANDLE m_pAfd = nullptr;
 	umint m_nRegistrations = 0;
 };
 

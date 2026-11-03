@@ -31,16 +31,16 @@ namespace NMib
 
 			bool mp_bOK;
 
-			static constexpr char const *mcp_KWalletService = "org.kde.kwalletd";
-			static constexpr char const *mcp_KWalletPath = "/modules/kwalletd";
-			static constexpr char const *mcp_KWalletInterface = "org.kde.KWallet";
+			static constexpr char const *mcp_pKWalletService = "org.kde.kwalletd";
+			static constexpr char const *mcp_pKWalletPath = "/modules/kwalletd";
+			static constexpr char const *mcp_pKWalletInterface = "org.kde.KWallet";
 
 			bool fp_OpenConnection();
 
 			template <typename ...tfp_CArgs>
 			bool fp_MethodCall(NDBus::CMessage &o_Reply, char const *_pMethodName, tfp_CArgs const & ...p_Args)
 			{
-				NDBus::CMessage Call(NDBus::EMessageType_Method, mcp_KWalletService, mcp_KWalletPath, mcp_KWalletInterface, _pMethodName, mp_DBus);
+				NDBus::CMessage Call(NDBus::EMessageType_Method, mcp_pKWalletService, mcp_pKWalletPath, mcp_pKWalletInterface, _pMethodName, mp_DBus);
 
 				{
 					NDBus::CMessageWriter Writer(Call);

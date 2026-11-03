@@ -19,7 +19,7 @@
 #	include <sys/resource.h>
 #endif
 
-extern char **environ; // NOLINT(malterlib-variable-naming): the name the C library defines
+extern char **environ; // NOLINT(malterlib-variable-naming, malterlib-conceptual-prefix): the name the C library defines
 
 namespace
 {

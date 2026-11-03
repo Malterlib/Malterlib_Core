@@ -53,11 +53,11 @@ using CMibCodeAddress = void *;
 #	define DMibPMain int main(){return NMib::fg_GetSys()->f_RunApplication();}
 #elif defined(DPlatformFamily_Windows)
 #	ifdef DPConsole
-#		define DMibPMain int __cdecl wmain(int _nArguments, wchar_t *_pArguments[], wchar_t *_pEnvironment[]){return NMib::fg_GetSys()->f_RunApplication();}
+#		define DMibPMain int __cdecl wmain(int _nArguments, wchar_t *_Arguments[], wchar_t *_Environment[]){return NMib::fg_GetSys()->f_RunApplication();}
 #	else
 #		define DMibPMain \
 			/* NOLINTNEXTLINE(malterlib-type-naming): the name in the Windows headers */ \
-			int __stdcall wWinMain(struct HINSTANCE__ *_Instance, struct HINSTANCE__ *_PreviousInstance, wchar_t *_pCommandLine, int _ShowCommand) \
+			int __stdcall wWinMain(struct HINSTANCE__ *_pInstance, struct HINSTANCE__ *_pPreviousInstance, wchar_t *_pCommandLine, int _ShowCommand) \
 			{ \
 				return NMib::fg_GetSys()->f_RunApplication(); \
 			}

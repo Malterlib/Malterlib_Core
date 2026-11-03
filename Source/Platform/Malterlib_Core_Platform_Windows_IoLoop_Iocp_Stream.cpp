@@ -98,15 +98,15 @@ bool CIoLoop_Iocp::fp_StartStream(CIocpRegistration *_pRegistration, NStorage::T
 // Recheck capacity after parking so a concurrent release cannot strand a stream below its limit.
 NStorage::TCSharedPointer<CIocpStreamBuffer> CIoLoop_Iocp::fp_TakeStreamBuffer(CIocpRegistration *_pRegistration)
 {
-	auto &Backpressure = _pRegistration->m_pBackpressure;
+	auto &pBackpressure = _pRegistration->m_pBackpressure;
 
-	if (Backpressure && Backpressure->m_nLimitBytes)
+	if (pBackpressure && pBackpressure->m_nLimitBytes)
 	{
-		if (Backpressure->m_nOutstandingBytes.f_Load(NAtomic::gc_MemoryOrder_Acquire) >= Backpressure->m_nLimitBytes)
+		if (pBackpressure->m_nOutstandingBytes.f_Load(NAtomic::gc_MemoryOrder_Acquire) >= pBackpressure->m_nLimitBytes)
 		{
-			Backpressure->m_bParked.f_Store(1, NAtomic::gc_MemoryOrder_SequentiallyConsistent);
+			pBackpressure->m_bParked.f_Store(1, NAtomic::gc_MemoryOrder_SequentiallyConsistent);
 
-			if (Backpressure->m_nOutstandingBytes.f_Load(NAtomic::gc_MemoryOrder_Acquire) >= Backpressure->m_nLimitBytes)
+			if (pBackpressure->m_nOutstandingBytes.f_Load(NAtomic::gc_MemoryOrder_Acquire) >= pBackpressure->m_nLimitBytes)
 			{
 #if DMibConfig_IoDebug_Enable
 				if (mp_pIo->f_StatsEnabled())
@@ -120,7 +120,7 @@ NStorage::TCSharedPointer<CIocpStreamBuffer> CIoLoop_Iocp::fp_TakeStreamBuffer(C
 
 			// Keep the parked flag while earlier posts still need resume; clearing it could permanently lose receive slots.
 			if (!_pRegistration->m_bStreamNeedsRearm)
-				Backpressure->m_bParked.f_Exchange(0, NAtomic::gc_MemoryOrder_AcquireRelease);
+				pBackpressure->m_bParked.f_Exchange(0, NAtomic::gc_MemoryOrder_AcquireRelease);
 		}
 	}
 
@@ -141,7 +141,7 @@ NStorage::TCSharedPointer<CIocpStreamBuffer> CIoLoop_Iocp::fp_TakeStreamBuffer(C
 #endif
 	pBuffer->m_nDataBytes = _pRegistration->m_nRecvBufferBytes;
 	pBuffer->m_pRecycler = _pRegistration->m_pRecycler;
-	pBuffer->m_pBackpressure = Backpressure;
+	pBuffer->m_pBackpressure = pBackpressure;
 	// Charged when the first bytes are delivered from it; a buffer the kernel never fills
 	// releases nothing
 	pBuffer->m_nCharged = 0;

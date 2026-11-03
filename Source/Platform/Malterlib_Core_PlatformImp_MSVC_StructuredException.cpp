@@ -8,14 +8,14 @@ namespace NMib
 {
 	namespace NPlatform
 	{
-		void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData))
+		void fg_GenerateExcetionHandler(void *_pData, LONG (*_fCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData))
 		{
 #if !defined(DCompiler_clang_cl) // clang-cl-workaround
 			__try
 			{
 				*((int volatile *)0) = 0;
 			}
-			__except(_pCallback(GetExceptionInformation(), _pData))
+			__except(_fCallback(GetExceptionInformation(), _pData))
 			{
 			}
 #else

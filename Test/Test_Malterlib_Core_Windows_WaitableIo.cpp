@@ -33,11 +33,11 @@ namespace
 				{
 					DMibTestPath(bManualReset ? "ManualReset" : "AutoReset");
 
-					HANDLE Event = CreateEventW(nullptr, bManualReset, FALSE, nullptr);
-					DMibAssertTrue(Event != nullptr);
-					auto Close = g_OnScopeExit / [Event]
+					HANDLE pEvent = CreateEventW(nullptr, bManualReset, FALSE, nullptr);
+					DMibAssertTrue(pEvent != nullptr);
+					auto Close = g_OnScopeExit / [pEvent]
 						{
-							CloseHandle(Event);
+							CloseHandle(pEvent);
 						}
 					;
 
@@ -61,10 +61,10 @@ namespace
 						}
 					;
 
-					DMibExpectTrue(SetEvent(Event) != 0);
+					DMibExpectTrue(SetEvent(pEvent) != 0);
 					auto *pRegistration = pLoop->f_Register
 						(
-							(NSys::CIoLoopHandle)(umint)Event
+							(NSys::CIoLoopHandle)(umint)pEvent
 							, &Reports
 							, NSys::EIoLoopEvent::mc_Read
 							, [](void *_pToken, NSys::EIoLoopEvent _Events, int _Error)
@@ -107,7 +107,7 @@ namespace
 
 					// A manual-reset event remains signaled; an auto-reset event needs another signal.
 					if (!bManualReset)
-						SetEvent(Event);
+						SetEvent(pEvent);
 					pLoop->f_RequestReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read);
 					DMibExpectTrue
 						(
@@ -122,13 +122,13 @@ namespace
 					;
 					DMibExpect(Reports.m_Reads, ==, 2);
 
-					ResetEvent(Event);
+					ResetEvent(pEvent);
 					pLoop->f_RequestReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read);
 					pLoop->f_PollAndDispatch();
 
 					// Exercise cancellation with both a pending wait and a packet racing with removal.
 					if (bManualReset)
-						SetEvent(Event);
+						SetEvent(pEvent);
 					umint nClosed = 0;
 					pLoop->f_DeregisterAsync
 						(
@@ -153,7 +153,7 @@ namespace
 					;
 
 					umint nReadsAtClose = Reports.m_Reads;
-					SetEvent(Event);
+					SetEvent(pEvent);
 					for (umint iPoll = 0; iPoll < 16; ++iPoll)
 						pLoop->f_PollAndDispatch();
 

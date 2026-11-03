@@ -1027,33 +1027,33 @@ namespace NMib
 	}
 
 	template <typename tf_CToAlign>
-	constexpr inline_small tf_CToAlign fg_AlignUpConstExpr(tf_CToAlign _pMem, umint _Alignment)
+	constexpr inline_small tf_CToAlign fg_AlignUpConstExpr(tf_CToAlign _Mem, umint _Alignment)
 	{
 		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(tf_CToAlign)>>;
-		return (tf_CToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+		return (tf_CToAlign)((((CIntegerType)_Mem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
 	template <typename tf_CToAlign>
-	constexpr inline_small tf_CToAlign fg_AlignDownConstExpr(tf_CToAlign _pMem, umint _Alignment)
+	constexpr inline_small tf_CToAlign fg_AlignDownConstExpr(tf_CToAlign _Mem, umint _Alignment)
 	{
 		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(tf_CToAlign)>>;
-		return (tf_CToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+		return (tf_CToAlign)(((CIntegerType)_Mem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
 	template <typename tf_CToAlign>
-	inline_small tf_CToAlign fg_AlignUp(tf_CToAlign _pMem, umint _Alignment)
+	inline_small tf_CToAlign fg_AlignUp(tf_CToAlign _Mem, umint _Alignment)
 	{
 		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(tf_CToAlign)>>;
-		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_pMem) == 0);
-		return (tf_CToAlign)((((CIntegerType)_pMem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_Mem) == 0);
+		return (tf_CToAlign)((((CIntegerType)_Mem) + CIntegerType(_Alignment - 1)) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
 	template <typename tf_CToAlign>
-	inline_small tf_CToAlign fg_AlignDown(tf_CToAlign _pMem, umint _Alignment)
+	inline_small tf_CToAlign fg_AlignDown(tf_CToAlign _Mem, umint _Alignment)
 	{
 		using CIntegerType = NTraits::TCUnsigned<NTraits::TCIntFromSizeLarger<sizeof(tf_CToAlign)>>;
-		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_pMem) == 0);
-		return (tf_CToAlign)(((CIntegerType)_pMem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
+		DMibFastCheck(_Alignment > 0 || ((CIntegerType)_Mem) == 0);
+		return (tf_CToAlign)(((CIntegerType)_Mem) & (~(CIntegerType(_Alignment) - CIntegerType(1))));
 	}
 
 	template <typename t_CToAlign, t_CToAlign t_Value, t_CToAlign t_Align>
@@ -1629,7 +1629,7 @@ namespace NMib
 	static consteval void fg_ParseTypeIdentifierConstexpr(char const * &_pParse);
 	static consteval void fg_ParseUntilCallingConvention(char const * &_pParse);
 
-	template <auto tf_pMemberPointer>
+	template <auto tf_MemberPointer>
 	static consteval CConstExprSubStr fg_GetMemberPointerNameConstExpr();
 
 #ifdef DCompiler_MSVC_Workaround
@@ -1640,7 +1640,7 @@ namespace NMib
 
 #if DMibSupportMemberNameFromMemberPointer
 
-	template <auto tf_pMemberFunction>
+	template <auto tf_MemberFunction>
 	static consteval uint32 fg_GetMemberFunctionHash();
 
 #	define DMibPointerToMemberFunctionForHash(d_FunctionName) d_FunctionName
@@ -1650,7 +1650,7 @@ namespace NMib
 
 	static consteval uint32 fg_GetMemberFunctionNameHash(char const * const _pFunctionName);
 
-	template <auto tf_pMemberFunction>
+	template <auto tf_MemberFunction>
 	static consteval uint32 fg_GetMemberFunctionHash(uint32 _NameHash);
 
 #	define DMibPointerToMemberFunctionForHash(d_FunctionName) d_FunctionName, fg_GetMemberFunctionNameHash(DMibStringize(d_FunctionName))

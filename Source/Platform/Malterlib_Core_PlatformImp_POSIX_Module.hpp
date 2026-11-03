@@ -48,10 +48,10 @@ void *NSys::fg_LoadLibrary(CFStr256 const &_Library)
 		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | gc_ExtraDlOpenFlags);
 		if (pRet)
 		{
-			void (*pMalterlibLoadLibraryExternal)();
-			pMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
-			if (pMalterlibLoadLibraryExternal)
-				pMalterlibLoadLibraryExternal();
+			void (*fMalterlibLoadLibraryExternal)();
+			fMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
+			if (fMalterlibLoadLibraryExternal)
+				fMalterlibLoadLibraryExternal();
 		}
 		//else
 		//	DMibDTraceSafe("{}\n", fg_FormatErrno(CFStr256::CFormat("dlopen('{}') {}") << _Library << dlerror(), errno));
@@ -69,10 +69,10 @@ void *NSys::fg_LoadLibrary(CStr const &_Library)
 		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | gc_ExtraDlOpenFlags);
 		if (pRet)
 		{
-			void (*pMalterlibLoadLibraryExternal)();
-			pMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
-			if (pMalterlibLoadLibraryExternal)
-				pMalterlibLoadLibraryExternal();
+			void (*fMalterlibLoadLibraryExternal)();
+			fMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
+			if (fMalterlibLoadLibraryExternal)
+				fMalterlibLoadLibraryExternal();
 		}
 		//else
 		//	DMibDTraceSafe("{}\n", fg_FormatErrno(CFStr256::CFormat("dlopen('{}') {} ") << _Library << dlerror(), errno));
@@ -90,10 +90,10 @@ void *NSys::fg_LoadLibrary(CStrNonTracked const &_Library)
 		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | gc_ExtraDlOpenFlags);
 		if (pRet)
 		{
-			void (*pMalterlibLoadLibraryExternal)();
-			pMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
-			if (pMalterlibLoadLibraryExternal)
-				pMalterlibLoadLibraryExternal();
+			void (*fMalterlibLoadLibraryExternal)();
+			fMalterlibLoadLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(pRet, "IdsLoadLibraryExternal");
+			if (fMalterlibLoadLibraryExternal)
+				fMalterlibLoadLibraryExternal();
 		}
 		//else
 		//	DMibDTraceSafe("{}\n", fg_FormatErrno(CFStr256::CFormat("dlopen('{}') {} ") << _Library << dlerror(), errno));
@@ -105,10 +105,10 @@ void *NSys::fg_LoadLibrary(CStrNonTracked const &_Library)
 
 void NSys::fg_FreeLibrary(void *_pModule)
 {
-	void (*pMalterlibFreeLibraryExternal)();
-	pMalterlibFreeLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(_pModule, "IdsFreeLibraryExternal");
-	if (pMalterlibFreeLibraryExternal)
-		pMalterlibFreeLibraryExternal();
+	void (*fMalterlibFreeLibraryExternal)();
+	fMalterlibFreeLibraryExternal = (FMalterlibLibraryFunc *)NSys::fg_GetLibrarySymbol(_pModule, "IdsFreeLibraryExternal");
+	if (fMalterlibFreeLibraryExternal)
+		fMalterlibFreeLibraryExternal();
 
 	dlclose(_pModule);
 }

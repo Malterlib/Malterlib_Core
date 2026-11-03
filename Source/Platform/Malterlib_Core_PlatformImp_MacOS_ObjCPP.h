@@ -140,7 +140,7 @@ namespace NMib
 
 				DMibListLinkDS_Link(CNotification, m_Link);
 
-				FSEventStreamRef m_pEventStream;
+				FSEventStreamRef m_pEventStream; // NOLINT(malterlib-conceptual-prefix): FSEventStreamRef is a pointer, which the check takes for a function type by its name
 				CFileChangeNoticationContext *m_pContext;
 				NMib::NFile::EFileChange m_Flags;
 				CNotificationPath m_NotificationPath;
@@ -190,7 +190,7 @@ namespace NMib
 			NMib::NContainer::TCThreadSafeQueue<NMib::NFunction::TCFunctionMovable<void ()>> m_DispatchQueue;
 			NMib::NContainer::TCMap<NStr::CStr, NStr::CStr> m_SyntheticPaths;
 
-			void f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch);
+			void f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_fDispatch);
 			void f_StartThread();
 			void *f_Open(NMib::NStr::CStr const &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo);
 

@@ -6,6 +6,7 @@
 #include <winternl.h>
 
 // NOLINTBEGIN(malterlib-variable-naming): the declarations of the Windows SDK, with their names
+// NOLINTBEGIN(malterlib-conceptual-prefix): the declarations of the Windows SDK, with their names
 // NOLINTBEGIN(malterlib-type-naming): the names of undocumented Windows types
 typedef void (*PPEBLOCKROUTINE)(PVOID _pPebLock);
 
@@ -520,6 +521,7 @@ enum Undocumented_PROCESSINFOCLASS
 };
 
 // NOLINTEND(malterlib-type-naming)
+// NOLINTEND(malterlib-conceptual-prefix)
 // NOLINTEND(malterlib-variable-naming)
 // NOLINTBEGIN(malterlib-type-naming): the names of undocumented Windows types
 
@@ -580,11 +582,13 @@ enum Undocumented_FILE_INFO_BY_HANDLE_CLASS
 };
 
 // NOLINTBEGIN(malterlib-variable-naming): the declarations of the Windows SDK, with their names
+// NOLINTBEGIN(malterlib-conceptual-prefix): the declarations of the Windows SDK, with their names
 struct Undocumented_FILE_ID_INFO
 {
 	ULONGLONG VolumeSerialNumber;
 	FILE_ID_128 FileId;
 };
 
+// NOLINTEND(malterlib-conceptual-prefix)
 // NOLINTEND(malterlib-variable-naming)
 // NOLINTEND(malterlib-type-naming)

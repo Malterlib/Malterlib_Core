@@ -445,20 +445,20 @@ struct CSystemMacOS : public CSystem
 		auto &Sys = *fg_GetLocalSys();
 		if (Sys.m_ForkThreadLocal == TCLimitsInt<pthread_key_t>::mc_Max)
 			return;
-		void *Current = pthread_getspecific(Sys.m_ForkThreadLocal);
-		if (Current)
+		void *pCurrent = pthread_getspecific(Sys.m_ForkThreadLocal);
+		if (pCurrent)
 		{
 #ifdef DMibSanitizerEnabled_Thread
-			if (Current == (void *)(umint)getpid())
+			if (pCurrent == (void *)(umint)getpid())
 				__tsan_forked_parent();
 			else
 				__tsan_forked_child();
 #endif
 
 			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
-			if (Current != (void *)(umint)getpid())
+			if (pCurrent != (void *)(umint)getpid())
 				Sys.m_bForkedChild = true;
-			if (Current == (void *)(umint)getpid())
+			if (pCurrent == (void *)(umint)getpid())
 			{
 				Sys.f_ForkedParent(); // Parent
 				Sys.m_Posix.m_ForkLock.f_ForkedParent();
@@ -584,7 +584,7 @@ struct CSystemMacOS : public CSystem
 			DMibError(NMib::NPlatform::fg_FormatErrno("pthread_key_delete", ErrNo));
 	}
 
-	static void fs_ThreadDestructionHook(void *_ThreadID)
+	static void fs_ThreadDestructionHook(void *_pThreadID)
 	{
 		fg_GetSys()->f_ThreadLocalFreeThread();
 	}
@@ -725,16 +725,16 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStr cons
 	;
 
 	CFIndex nUniChars = CFStringGetLength(pStringRef);
-	UniChar const *Output = CFStringGetCharactersPtr(pStringRef);
+	UniChar const *pOutput = CFStringGetCharactersPtr(pStringRef);
 
-	if (Output)
+	if (pOutput)
 	{
 		NMib::NStr::CWStr UniString;
 		NMib::NStr::CWStr::CChar *pDest = UniString.f_GetStr(nUniChars);
 
 		DMibSafeCheck(pDest, "Out of memory?");
 
-		fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
+		fg_MemCopy(pDest, pOutput, nUniChars * sizeof(UniChar));
 		pDest[nUniChars] = 0;
 
 		_Out = UniString;
@@ -770,16 +770,16 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 	;
 
 	CFIndex nUniChars = CFStringGetLength(pStringRef);
-	UniChar const *Output = CFStringGetCharactersPtr(pStringRef);
+	UniChar const *pOutput = CFStringGetCharactersPtr(pStringRef);
 
-	if (Output)
+	if (pOutput)
 	{
 		NMib::NStr::CWStr UniString;
 		NMib::NStr::CWStr::CChar *pDest = UniString.f_GetStr(nUniChars);
 
 		DMibSafeCheck(pDest, "Out of memory?");
 
-		fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
+		fg_MemCopy(pDest, pOutput, nUniChars * sizeof(UniChar));
 		pDest[nUniChars] = 0;
 
 		_Out = UniString;
@@ -815,16 +815,16 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(NMib::NStr::CAnsiStrNonTr
 	;
 
 	CFIndex nUniChars = CFStringGetLength(pStringRef);
-	UniChar const *Output = CFStringGetCharactersPtr(pStringRef);
+	UniChar const *pOutput = CFStringGetCharactersPtr(pStringRef);
 
-	if (Output)
+	if (pOutput)
 	{
 		NMib::NStr::CWStrNonTracked UniString;
 		NMib::NStr::CWStrNonTracked::CChar *pDest = UniString.f_GetStr(nUniChars);
 
 		DMibSafeCheck(pDest, "Out of memory?");
 
-		fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
+		fg_MemCopy(pDest, pOutput, nUniChars * sizeof(UniChar));
 		pDest[nUniChars] = 0;
 
 		_Out = UniString;
@@ -860,16 +860,16 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 	;
 
 	CFIndex nUniChars = CFStringGetLength(pStringRef);
-	UniChar const *Output = CFStringGetCharactersPtr(pStringRef);
+	UniChar const *pOutput = CFStringGetCharactersPtr(pStringRef);
 
-	if (Output)
+	if (pOutput)
 	{
 		NMib::NStr::CWStrNonTracked UniString;
 		NMib::NStr::CWStrNonTracked::CChar *pDest = UniString.f_GetStr(nUniChars);
 
 		DMibSafeCheck(pDest, "Out of memory?");
 
-		fg_MemCopy(pDest, Output, nUniChars * sizeof(UniChar));
+		fg_MemCopy(pDest, pOutput, nUniChars * sizeof(UniChar));
 		pDest[nUniChars] = 0;
 
 		_Out = UniString;
@@ -909,7 +909,7 @@ inline_never bool NSys::fg_Compiler_AlwaysFalse()
 	return false;
 }
 
-inline_never assure_used bool NSys::fg_Compiler_MakeActive(void const *_Reference)
+inline_never assure_used bool NSys::fg_Compiler_MakeActive(void const *_pReference)
 {
 	return true;
 }
@@ -1342,23 +1342,23 @@ void fg_ReportCurrentException()
 	}
 }
 
-static std::unexpected_handler gs_DefaultUnexpectedHandler = nullptr;
+static std::unexpected_handler gs_fDefaultUnexpectedHandler = nullptr;
 void fg_UnexpectedExceptionHandler()
 {
 	fg_ReportCurrentException();
-	if (gs_DefaultUnexpectedHandler)
-		gs_DefaultUnexpectedHandler();
+	if (gs_fDefaultUnexpectedHandler)
+		gs_fDefaultUnexpectedHandler();
 	else
 		abort();
 }
 
-static std::terminate_handler gs_DefaultTerminateHandler = nullptr;
+static std::terminate_handler gs_fDefaultTerminateHandler = nullptr;
 
 void fg_TerminateHandler()
 {
 	fg_ReportCurrentException();
-	if (gs_DefaultTerminateHandler)
-		gs_DefaultTerminateHandler();
+	if (gs_fDefaultTerminateHandler)
+		gs_fDefaultTerminateHandler();
 	else
 		abort();
 }
@@ -1417,13 +1417,13 @@ namespace NMib::NSys::NPrivate
 {
 	constinit umint g_PageSize = 0;
 
-	void (*g_pDestroyAtExit)(void) = nullptr;
+	void (*g_fDestroyAtExit)(void) = nullptr;
 }
 
 extern "C" void fg_MalterlibDestroySystem_MacOS()
 {
-	if (NMib::NSys::NPrivate::g_pDestroyAtExit)
-		NMib::NSys::NPrivate::g_pDestroyAtExit();
+	if (NMib::NSys::NPrivate::g_fDestroyAtExit)
+		NMib::NSys::NPrivate::g_fDestroyAtExit();
 }
 
 void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
@@ -1458,14 +1458,14 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 	g_bCanUseSystemMalloc = true;
 
 	if (!_bProvideDestroySystem)
-		NPrivate::g_pDestroyAtExit = &fg_DestroySystemAtExit;
+		NPrivate::g_fDestroyAtExit = &fg_DestroySystemAtExit;
 	else
-		NPrivate::g_pDestroyAtExit = &fg_DestroySystemThreadsAtExit;
+		NPrivate::g_fDestroyAtExit = &fg_DestroySystemThreadsAtExit;
 
 	pSystem->f_InitThreadLocal();
 
-	gs_DefaultTerminateHandler = std::set_terminate(&fg_TerminateHandler);
-	gs_DefaultUnexpectedHandler = std::set_unexpected(&fg_UnexpectedExceptionHandler);
+	gs_fDefaultTerminateHandler = std::set_terminate(&fg_TerminateHandler);
+	gs_fDefaultUnexpectedHandler = std::set_unexpected(&fg_UnexpectedExceptionHandler);
 }
 
 extern "C" void fg_Malterlib_CreateSystem()
@@ -3120,10 +3120,10 @@ static int fg_CopyOrRename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr c
 	CStr From = _FileFrom;
 	CStr To = _FileTo;
 
-	copyfile_state_t CopyState;
+	copyfile_state_t pCopyState;
 	errno = 0;
-	CopyState = copyfile_state_alloc();
-	if (!CopyState)
+	pCopyState = copyfile_state_alloc();
+	if (!pCopyState)
 	{
 		if (!errno)
 			return 1;
@@ -3135,14 +3135,14 @@ static int fg_CopyOrRename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr c
 		Flags |= COPYFILE_MOVE;
 
 	errno = 0;
-	int Result = copyfile(From.f_GetStr(), To.f_GetStr(), CopyState, Flags);
+	int Result = copyfile(From.f_GetStr(), To.f_GetStr(), pCopyState, Flags);
 	if (Result != 0)
 	{
 		if (errno)
 			Result = errno;
 	}
 
-	copyfile_state_free(CopyState);
+	copyfile_state_free(pCopyState);
 
 	return Result;
 }
@@ -3172,7 +3172,7 @@ struct CCopyFileContext
 	}
 };
 
-static int fg_SingleFileCopyFileCallback(int _What, int _Stage, copyfile_state_t _State, char const *_pSrc, char const *_pDst, void *_pContext)
+static int fg_SingleFileCopyFileCallback(int _What, int _Stage, copyfile_state_t _pState, char const *_pSrc, char const *_pDst, void *_pContext)
 {
 	CCopyFileContext *pContext = (CCopyFileContext *)_pContext;
 
@@ -3183,7 +3183,7 @@ static int fg_SingleFileCopyFileCallback(int _What, int _Stage, copyfile_state_t
 			if (pContext && pContext->m_pProgress)
 			{
 				off_t nBytesCopied = 0;
-				copyfile_state_get(_State, COPYFILE_STATE_COPIED, &nBytesCopied);
+				copyfile_state_get(_pState, COPYFILE_STATE_COPIED, &nBytesCopied);
 
 				pContext->m_pProgress->f_Progress(CMibFilePos(nBytesCopied), pContext->f_GetSize());
 			}
@@ -3199,10 +3199,10 @@ static int fg_CopyOrRename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr c
 	CStr From = _FileFrom;
 	CStr To = _FileTo;
 
-	copyfile_state_t CopyState;
+	copyfile_state_t pCopyState;
 	errno = 0;
-	CopyState = copyfile_state_alloc();
-	if (!CopyState)
+	pCopyState = copyfile_state_alloc();
+	if (!pCopyState)
 	{
 		if (!errno)
 			return 1;
@@ -3215,8 +3215,8 @@ static int fg_CopyOrRename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr c
 		Context.m_pProgress = &_Progress;
 		Context.m_FileFrom = _FileFrom;
 
-		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CB, (void *)&fg_SingleFileCopyFileCallback);
-		copyfile_state_set(CopyState, COPYFILE_STATE_STATUS_CTX, &Context);
+		copyfile_state_set(pCopyState, COPYFILE_STATE_STATUS_CB, (void *)&fg_SingleFileCopyFileCallback);
+		copyfile_state_set(pCopyState, COPYFILE_STATE_STATUS_CTX, &Context);
 	}
 
 	uint32_t Flags = COPYFILE_ALL;
@@ -3224,14 +3224,14 @@ static int fg_CopyOrRename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr c
 		Flags |= COPYFILE_MOVE;
 
 	errno = 0;
-	int Result = copyfile(From.f_GetStr(), To.f_GetStr(), CopyState, Flags);
+	int Result = copyfile(From.f_GetStr(), To.f_GetStr(), pCopyState, Flags);
 	if (Result != 0)
 	{
 		if (errno)
 			Result = errno;
 	}
 
-	copyfile_state_free(CopyState);
+	copyfile_state_free(pCopyState);
 
 	return Result;
 }
@@ -3293,11 +3293,11 @@ bool NSys::NFile::fg_TryCloneData(NMib::NStr::CStr const &_FileFrom, NMib::NStr:
 	// Probe creation defaults at the destination: directory ACLs affect them. Never change the process-wide umask to inspect it.
 	// Callers must exclude concurrent writers to the destination path.
 	mode_t FreshMode;
-	acl_t ProbeAcl = nullptr;
+	acl_t pProbeAcl = nullptr;
 	auto FreeProbeAcl = g_OnScopeExit / [&]
 		{
-			if (ProbeAcl)
-				acl_free(ProbeAcl);
+			if (pProbeAcl)
+				acl_free(pProbeAcl);
 		}
 	;
 	{
@@ -3308,7 +3308,7 @@ bool NSys::NFile::fg_TryCloneData(NMib::NStr::CStr const &_FileFrom, NMib::NStr:
 		struct stat ProbeStat;
 		bool bProbeStated = fstat(ProbeFile, &ProbeStat) == 0;
 
-		ProbeAcl = acl_get_fd_np(ProbeFile, ACL_TYPE_EXTENDED);
+		pProbeAcl = acl_get_fd_np(ProbeFile, ACL_TYPE_EXTENDED);
 
 		close(ProbeFile);
 		unlink(_FileTo);
@@ -3354,12 +3354,12 @@ bool NSys::NFile::fg_TryCloneData(NMib::NStr::CStr const &_FileFrom, NMib::NStr:
 
 	// Inherited ACL entries can grant access despite mode 0700; remove them before cloning.
 	{
-		acl_t EmptyAcl = acl_init(1);
-		if (!EmptyAcl)
+		acl_t pEmptyAcl = acl_init(1);
+		if (!pEmptyAcl)
 			return false;
 
-		int AclReturn = acl_set_fd_np(StagingDirFd, EmptyAcl, ACL_TYPE_EXTENDED);
-		acl_free(EmptyAcl);
+		int AclReturn = acl_set_fd_np(StagingDirFd, pEmptyAcl, ACL_TYPE_EXTENDED);
+		acl_free(pEmptyAcl);
 		if (AclReturn != 0)
 			return false;
 	}
@@ -3413,13 +3413,13 @@ bool NSys::NFile::fg_TryCloneData(NMib::NStr::CStr const &_FileFrom, NMib::NStr:
 
 	// ACLs are invisible to listxattr; restore the destination's creation ACL explicitly, using an empty set for none.
 	{
-		acl_t FreshAcl = ProbeAcl ? ProbeAcl : acl_init(1);
-		if (!FreshAcl)
+		acl_t pFreshAcl = pProbeAcl ? pProbeAcl : acl_init(1);
+		if (!pFreshAcl)
 			return false;
 
-		int AclReturn = acl_set_fd_np(StagedFileFd, FreshAcl, ACL_TYPE_EXTENDED);
-		if (!ProbeAcl)
-			acl_free(FreshAcl);
+		int AclReturn = acl_set_fd_np(StagedFileFd, pFreshAcl, ACL_TYPE_EXTENDED);
+		if (!pProbeAcl)
+			acl_free(pFreshAcl);
 		if (AclReturn != 0)
 			return false;
 	}
@@ -3555,34 +3555,34 @@ NSys::NNetwork::CAddress NSys::NNetwork::fg_CreateAddressFromNative(void const *
 	return CPOSIXAddress::fs_FromNative(_pAddress, _Size).f_Detach();
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAddress _Address)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_DuplicateAddress(NSys::NNetwork::CAddress _pAddress)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_DuplicateAddress(*(CPOSIXAddress *)_Address);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_DuplicateAddress(*(CPOSIXAddress *)_pAddress);
 }
 
-::NMib::NNetwork::ENetAddressType NSys::NNetwork::fg_GetAddressType(NSys::NNetwork::CAddress _Address)
+::NMib::NNetwork::ENetAddressType NSys::NNetwork::fg_GetAddressType(NSys::NNetwork::CAddress _pAddress)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CPOSIXAddress *)_Address);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressType(*(CPOSIXAddress *)_pAddress);
 }
 
-uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _Address)
+uint32 NSys::NNetwork::fg_GetAddressScopeID(NSys::NNetwork::CAddress _pAddress)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return static_cast<CPOSIXAddress const *>(_Address)->f_GetScopeID();
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return static_cast<CPOSIXAddress const *>(_pAddress)->f_GetScopeID();
 }
 
-bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes)
+bool NSys::NNetwork::fg_GetAddressRaw(NSys::NNetwork::CAddress _pAddress, ::NMib::NNetwork::ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress *)_Address, _ExpectedType, o_pRawData, _nDataBytes);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressRaw(*(CPOSIXAddress *)_pAddress, _ExpectedType, o_pRawData, _nDataBytes);
 }
 
-NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _Address, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
+NSys::NNetwork::CAddress NSys::NNetwork::fg_SetAddressRaw(NSys::NNetwork::CAddress _pAddress, ::NMib::NNetwork::ENetAddressType _Type, void const *_pRawData, umint _nDataBytes)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CPOSIXAddress *)_Address, _Type, _pRawData, _nDataBytes);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return (NSys::NNetwork::CAddress)fg_GetLocalSys()->m_SocketContext->f_SetAddressRaw((CPOSIXAddress *)_pAddress, _Type, _pRawData, _nDataBytes);
 }
 
 // Returns an address owned by the caller, or null with a hostname/port for DNS. May block on local configuration.
@@ -3641,28 +3641,28 @@ int NSys::NNetwork::fg_CompareAddresses(NSys::NNetwork::CAddress _pFirst, NSys::
 	return fg_GetLocalSys()->m_SocketContext->f_CompareAddresses(*(CPOSIXAddress *)_pFirst, *(CPOSIXAddress *)_pSecond);
 }
 
-void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _Address) // It is OK to free a nullptr address
+void NSys::NNetwork::fg_FreeAddress(NSys::NNetwork::CAddress _pAddress) // It is OK to free a nullptr address
 {
-	return fg_GetLocalSys()->m_SocketContext->f_FreeAddress((CPOSIXAddress *)_Address);
+	return fg_GetLocalSys()->m_SocketContext->f_FreeAddress((CPOSIXAddress *)_pAddress);
 }
 
-NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _Address, ENetAddressStringFlag _Flags)
+NMib::NStr::CStr NSys::NNetwork::fg_GetAddressString(NSys::NNetwork::CAddress _pAddress, ENetAddressStringFlag _Flags)
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CPOSIXAddress *)_Address, _Flags);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_GetAddressString(*(CPOSIXAddress *)_pAddress, _Flags);
 }
 
 // Connection Operations
 auto NSys::NNetwork::fg_AsyncConnect
 	(
-		NSys::NNetwork::CAddress _Address
+		NSys::NNetwork::CAddress _pAddress
 		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-		, NSys::NNetwork::CAddress _BindAddress
+		, NSys::NNetwork::CAddress _pBindAddress
 	)
 	-> void *
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_AsyncConnect(*(CPOSIXAddress *)_Address, fg_Move(_fOnStateChange), (CPOSIXAddress *)_BindAddress);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_AsyncConnect(*(CPOSIXAddress *)_pAddress, fg_Move(_fOnStateChange), (CPOSIXAddress *)_pBindAddress);
 }
 
 void NSys::NNetwork::fg_StartSocket(void *_pSocket)
@@ -3672,26 +3672,26 @@ void NSys::NNetwork::fg_StartSocket(void *_pSocket)
 
 auto NSys::NNetwork::fg_Listen
 	(
-		NSys::NNetwork::CAddress _Address
+		NSys::NNetwork::CAddress _pAddress
 		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 		, NMib::NNetwork::ENetFlag _Flags
 	)
 	-> void *
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_Listen(*(CPOSIXAddress *)_Address, fg_Move(_fOnStateChange), _Flags);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_Listen(*(CPOSIXAddress *)_pAddress, fg_Move(_fOnStateChange), _Flags);
 }
 
 auto NSys::NNetwork::fg_ListenDatagram
 	(
-		NSys::NNetwork::CAddress _Address
+		NSys::NNetwork::CAddress _pAddress
 		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
 		, NMib::NNetwork::ENetFlag _Flags
 	)
 	-> void *
 {
-	DMibSafeCheck(_Address != nullptr, "Address is null!");
-	return fg_GetLocalSys()->m_SocketContext->f_ListenDatagram(*(CPOSIXAddress *)_Address, fg_Move(_fOnStateChange), _Flags);
+	DMibSafeCheck(_pAddress != nullptr, "Address is null!");
+	return fg_GetLocalSys()->m_SocketContext->f_ListenDatagram(*(CPOSIXAddress *)_pAddress, fg_Move(_fOnStateChange), _Flags);
 }
 
 void *NSys::NNetwork::fg_Accept(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
@@ -3724,14 +3724,14 @@ umint NSys::NNetwork::fg_SendVectored(void *_pSocket, NSys::CIoSpan const *_pSpa
 	return fg_GetLocalSys()->m_SocketContext->f_SendVectored((CPOSIXSocket *)_pSocket, _pSpans, _nSpans);
 }
 
-umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void const *_pData, umint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_SendDatagram(void *_pSocket, NSys::NNetwork::CAddress _pAddress, void const *_pData, umint _DataLen) // Returns bytes sen
 {
-	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_Address), _pData, _DataLen);
+	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_pAddress), _pData, _DataLen);
 }
 
-umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _Address, void *_pData, umint _DataLen) // Returns bytes sen
+umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddress _pAddress, void *_pData, umint _DataLen) // Returns bytes sen
 {
-	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_Address), _pData, _DataLen);
+	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_pAddress), _pData, _DataLen);
 }
 
 // Socket Properties & State
@@ -4537,6 +4537,7 @@ ch8 const *NSys::NFile::fg_GetDllExtension()
 #if DPlatformVersion <= 1050 || defined(DMibNoMacOSCrossModuleExceptions)
 
 // NOLINTBEGIN(malterlib-variable-naming): the declarations of the macOS SDK, with their names
+// NOLINTBEGIN(malterlib-conceptual-prefix): the declarations of the macOS SDK, with their names
 struct dyld_unwind_sections // NOLINT(malterlib-type-naming): the name in the macOS SDK
 {
 	struct mach_header const *mh;
@@ -4546,6 +4547,7 @@ struct dyld_unwind_sections // NOLINT(malterlib-type-naming): the name in the ma
 	uintptr_t compact_unwind_section_length;
 };
 
+// NOLINTEND(malterlib-conceptual-prefix)
 // NOLINTEND(malterlib-variable-naming)
 
 #	if __LP64__
@@ -4599,7 +4601,7 @@ extern const char*                 _dyld_get_image_name(uint32_t image_index)   
 #	ifdef DMibNoMacOSCrossModuleExceptions
 namespace
 {
-	constinit NAtomic::TCAtomic<struct mach_header const *> g_ThisModuleImage = nullptr;
+	constinit NAtomic::TCAtomic<struct mach_header const *> g_pThisModuleImage = nullptr;
 }
 #	endif
 
@@ -4608,11 +4610,11 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 #	pragma clang diagnostic push
 #	pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #	ifdef DMibNoMacOSCrossModuleExceptions
-	if (!g_ThisModuleImage.f_Load(NAtomic::gc_MemoryOrder_Acquire))
+	if (!g_pThisModuleImage.f_Load(NAtomic::gc_MemoryOrder_Acquire))
 #		if __has_feature(ptrauth_calls)
-		g_ThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)ptrauth_strip(&_dyld_find_unwind_sections, ptrauth_key_function_pointer)));
+		g_pThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)ptrauth_strip(&_dyld_find_unwind_sections, ptrauth_key_function_pointer)));
 #		else
-		g_ThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)&_dyld_find_unwind_sections));
+		g_pThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)&_dyld_find_unwind_sections));
 #		endif
 #	endif
 	auto pHeader = _dyld_get_image_header_containing_address(addr);
@@ -4620,7 +4622,7 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 	if (!pHeader)
 		return false;
 #	ifdef DMibNoMacOSCrossModuleExceptions
-	if (pHeader != g_ThisModuleImage)
+	if (pHeader != g_pThisModuleImage)
 		return false; // Just return unwind sections for this module, because we don't want exceptions to travel across module boundraries
 #	endif
 	auto nImages = _dyld_image_count();
@@ -4639,10 +4641,10 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 	if (!bFound)
 		return false;
 
-	uint32_t fEHFrameSectionOffset = 0;
-	uint32_t fUnwindInfoSectionOffset = 0;
+	uint32_t EHFrameSectionOffset = 0;
+	uint32_t UnwindInfoSectionOffset = 0;
 
-	uint8_t const *fMachOData = (uint8_t const *)pHeader;
+	uint8_t const *pMachOData = (uint8_t const *)pHeader;
 
 	uint32_t const nCommands = pHeader->ncmds;
 	struct load_command const * const pCommands = (struct load_command *)((char *)pHeader + sizeof(struct CMachoHeader));
@@ -4662,9 +4664,9 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 					for (struct CMachoSection const *pSection = pSectionsStart; pSection < pSectionsEnd; ++pSection)
 					{
 						if ((strcmp(pSection->sectname, "__eh_frame") == 0))
-							fEHFrameSectionOffset = (uint8_t *)pSection - fMachOData;
+							EHFrameSectionOffset = (uint8_t *)pSection - pMachOData;
 						else if ((strcmp(pSection->sectname, "__unwind_info") == 0))
-							fUnwindInfoSectionOffset = (uint8_t *)pSection - fMachOData;
+							UnwindInfoSectionOffset = (uint8_t *)pSection - pMachOData;
 					}
 				}
 			}
@@ -4678,15 +4680,15 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 	info->dwarf_section_length = 0;
 	info->compact_unwind_section = 0;
 	info->compact_unwind_section_length = 0;
-	if (fEHFrameSectionOffset != 0)
+	if (EHFrameSectionOffset != 0)
 	{
-		CMachoSection const *pSection = (CMachoSection *)&fMachOData[fEHFrameSectionOffset];
+		CMachoSection const *pSection = (CMachoSection *)&pMachOData[EHFrameSectionOffset];
 		info->dwarf_section = (void *)(pSection->addr + Slide);
 		info->dwarf_section_length = pSection->size;
 	}
-	if (fUnwindInfoSectionOffset != 0)
+	if (UnwindInfoSectionOffset != 0)
 	{
-		CMachoSection const *pSection = (CMachoSection *)&fMachOData[fUnwindInfoSectionOffset];
+		CMachoSection const *pSection = (CMachoSection *)&pMachOData[UnwindInfoSectionOffset];
 		info->compact_unwind_section = (void *)(pSection->addr + Slide);
 		info->compact_unwind_section_length = pSection->size;
 	}

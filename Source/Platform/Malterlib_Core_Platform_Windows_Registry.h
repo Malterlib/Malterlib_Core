@@ -39,7 +39,7 @@ namespace NMib
 			};
 
 		private:
-			HKEY mp_RootKey;
+			HKEY mp_pRootKey;
 			ERegRoot mp_RegRoot;
 			NStr::CStr mp_Root;
 			void fp_DeleteKey(NStr::CStr const &_Key);

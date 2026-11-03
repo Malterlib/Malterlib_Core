@@ -144,7 +144,7 @@ namespace NMib
 		void fg_Thread_Sleep(fp32 _Seconds);
 		auto fg_Thread_Create
 			(
-				FThreadProc *_pThreadProc
+				FThreadProc *_fThreadProc
 				, void *_pParam
 				, EExecutionPriority _Priority
 				, umint _StackSize
@@ -202,7 +202,7 @@ namespace NMib
 		\*_________________________________________________________________________________________________*/
 		using FDeadlockUserNotify = bool (); // Return true if the user choose to create a crash dump.
 
-		void fg_Debug_SetDeadlockNotifyFunction(FDeadlockUserNotify *_pCrashDumpUserNotify);
+		void fg_Debug_SetDeadlockNotifyFunction(FDeadlockUserNotify *_fCrashDumpUserNotify);
 		void fg_Debug_StartDeadlockDetector(fp64 _Timeout);
 		void fg_Debug_NotDeadlocked();
 		void fg_Debug_StopDeadlockDetector();
@@ -252,7 +252,7 @@ namespace NMib
 			)
 		;
 
-		void fg_Debug_SetCrashDumpUserNotifyFunction(FCrashDumpUserNotify *_pCrashDumpUserNotify);
+		void fg_Debug_SetCrashDumpUserNotifyFunction(FCrashDumpUserNotify *_fCrashDumpUserNotify);
 		void fg_Debug_SetCrashDumpUserNotifyFormats
 			(
 				NMib::NStr::CStrNonTracked const &_CustomMessage

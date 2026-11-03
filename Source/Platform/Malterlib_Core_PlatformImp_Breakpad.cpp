@@ -148,7 +148,7 @@ namespace NMib
 
 				NStr::CStrNonTracked const &ProgramName = fg_GetSys()->f_GetProgramNameNonTracked();
 
-				char const *pArgs[] =
+				char const *Args[] =
 					{
 						fg_GetSys()->f_GetCrashHandlerPath().f_GetStr()
 						, ProgramName.f_IsEmpty() ? "application" : ProgramName.f_GetStr()
@@ -160,7 +160,7 @@ namespace NMib
 					}
 				;
 
-				execve(pArgs[0], const_cast<char **>(pArgs), pThis->m_EnvList.f_GetArray());
+				execve(Args[0], const_cast<char **>(Args), pThis->m_EnvList.f_GetArray());
 				NSys::fg_TerminateProcess(1);
 			}
 			else if (Child > 0)

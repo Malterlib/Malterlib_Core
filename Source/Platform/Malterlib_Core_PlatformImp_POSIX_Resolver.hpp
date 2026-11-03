@@ -57,10 +57,10 @@ auto CPOSIXSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, NS
 
 	if (!Error && pResults)
 	{
-		auto Address = CPOSIXAddress::fs_FromNative(pResults->ai_addr, pResults->ai_addrlen);
+		auto pAddress = CPOSIXAddress::fs_FromNative(pResults->ai_addr, pResults->ai_addrlen);
 		o_Parameters.m_Host.f_Clear();
 
-		return Address.f_Detach();
+		return pAddress.f_Detach();
 	}
 
 	if (Service.f_IsEmpty())
@@ -90,11 +90,11 @@ auto CPOSIXSocketContext::f_ResolveAddresses(NStr::CStr const &_Address, NMib::N
 {
 	NSys::NNetwork::CResolveAddressParameters Parameters;
 	Parameters.m_PreferType = _PreferType;
-	NStorage::TCUniquePointer<CPOSIXAddress> Address = fg_Explicit(static_cast<CPOSIXAddress *>(f_PrepareResolveAddress(_Address, Parameters, _bThrowOnError)));
-	if (Address)
+	NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Explicit(static_cast<CPOSIXAddress *>(f_PrepareResolveAddress(_Address, Parameters, _bThrowOnError)));
+	if (pAddress)
 	{
-		NContainer::TCVector<NSys::NNetwork::CAddress> Addresses{Address.f_Get()};
-		Address.f_Detach();
+		NContainer::TCVector<NSys::NNetwork::CAddress> Addresses{pAddress.f_Get()};
+		pAddress.f_Detach();
 
 		return Addresses;
 	}

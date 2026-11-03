@@ -9,13 +9,13 @@ using namespace NMib;
 
 extern "C" int __cdecl wmain(int argc, wchar_t *argv[], wchar_t *envp[]);
 
-int __cdecl main(int _nArguments, char *_pArguments[], char *_pEnvironment[])
+int __cdecl main(int _nArguments, char *_Arguments[], char *_Environment[])
 {
 	NContainer::TCVector<NStr::CWStr> Arguments;
 	NContainer::TCVector<wchar_t *> ArgumentPointers;
 
 	for (auto iArgument = 0; iArgument < _nArguments; ++iArgument)
-		Arguments.f_Insert(NStr::CStr(_pArguments[iArgument]));
+		Arguments.f_Insert(NStr::CStr(_Arguments[iArgument]));
 
 	for (auto iArgument = 0; iArgument < _nArguments; ++iArgument)
 		ArgumentPointers.f_Insert(Arguments[iArgument].f_GetStrWritable());
@@ -25,7 +25,7 @@ int __cdecl main(int _nArguments, char *_pArguments[], char *_pEnvironment[])
 	NContainer::TCVector<NStr::CWStr> Environment;
 	NContainer::TCVector<wchar_t *> EnvironmentPointers;
 
-	for (auto pEnvironment = _pEnvironment; *pEnvironment; ++pEnvironment)
+	for (auto pEnvironment = _Environment; *pEnvironment; ++pEnvironment)
 		Environment.f_Insert(NStr::CStr(*pEnvironment));
 
 	for (auto &EnvVar : Environment)

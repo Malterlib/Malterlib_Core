@@ -8,19 +8,19 @@
 
 namespace NLocal
 {
-	extern HMODULE g_NtDll;
-	extern HMODULE g_Kernel32;
-	extern HMODULE g_AdvAPI32;
+	extern HMODULE g_pNtDll;
+	extern HMODULE g_pKernel32;
+	extern HMODULE g_pAdvAPI32;
 
 	struct COptionalFunctions
 	{
 		NTSTATUS (NTAPI *m_fNtQueryInformationThread)
 			(
-				IN HANDLE _ThreadHandle
+				IN HANDLE _pThreadHandle
 				, IN THREADINFOCLASS _ThreadInformationClass
-				, OUT PVOID _ThreadInformation
+				, OUT PVOID _pThreadInformation
 				, IN ULONG _ThreadInformationLength
-				, OUT PULONG _ReturnLength OPTIONAL
+				, OUT PULONG _pReturnLength OPTIONAL
 			)
 		;
 
@@ -32,7 +32,7 @@ namespace NLocal
 
 		void (WINAPI *m_fGetNativeSystemInfo)(__out LPSYSTEM_INFO _pSystemInfo);
 #if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
-		PVOID (WINAPI *m_fAddVectoredExceptionHandler)(ULONG _First, PVECTORED_EXCEPTION_HANDLER _pHandler);
+		PVOID (WINAPI *m_fAddVectoredExceptionHandler)(ULONG _First, PVECTORED_EXCEPTION_HANDLER _fHandler);
 		ULONG (WINAPI *m_fRemoveVectoredExceptionHandler)(PVOID _pHandler);
 #endif
 
@@ -98,8 +98,8 @@ namespace NLocal
 		;
 		NTSTATUS (NTAPI *m_fNtDeviceIoControlFile)
 			(
-				HANDLE _File
-				, HANDLE _Event
+				HANDLE _pFile
+				, HANDLE _pEvent
 				, PIO_APC_ROUTINE _fApcRoutine
 				, PVOID _pApcContext
 				, PIO_STATUS_BLOCK _pIoStatusBlock
@@ -110,16 +110,17 @@ namespace NLocal
 				, ULONG _OutputBufferLength
 			)
 		;
-		NTSTATUS (NTAPI *m_fNtSetInformationFile)(HANDLE _File, PIO_STATUS_BLOCK _pIoStatusBlock, PVOID _pFileInformation, ULONG _Length, FILE_INFORMATION_CLASS _FileInformationClass);
+		// NOLINTNEXTLINE(malterlib-conceptual-prefix): FILE_INFORMATION_CLASS is an enumeration, which the check takes for a function type by its name
+		NTSTATUS (NTAPI *m_fNtSetInformationFile)(HANDLE _pFile, PIO_STATUS_BLOCK _pIoStatusBlock, PVOID _pFileInformation, ULONG _Length, FILE_INFORMATION_CLASS _FileInformationClass);
 		ULONG (NTAPI *m_fRtlNtStatusToDosError)(NTSTATUS _Status);
 
 		// Optional Windows 8+ API for delivering synchronization-object signals to an IOCP.
 		NTSTATUS (NTAPI *m_fNtCreateWaitCompletionPacket)(PHANDLE _pPacket, ACCESS_MASK _DesiredAccess, POBJECT_ATTRIBUTES _pObjectAttributes);
 		NTSTATUS (NTAPI *m_fNtAssociateWaitCompletionPacket)
 			(
-				HANDLE _Packet
-				, HANDLE _Port
-				, HANDLE _Target
+				HANDLE _pPacket
+				, HANDLE _pPort
+				, HANDLE _pTarget
 				, PVOID _pKeyContext
 				, PVOID _pApcContext
 				, NTSTATUS _IoStatus
@@ -127,7 +128,7 @@ namespace NLocal
 				, PBOOLEAN _pAlreadySignaled
 			)
 		;
-		NTSTATUS (NTAPI *m_fNtCancelWaitCompletionPacket)(HANDLE _Packet, BOOLEAN _bRemoveSignaledPacket);
+		NTSTATUS (NTAPI *m_fNtCancelWaitCompletionPacket)(HANDLE _pPacket, BOOLEAN _bRemoveSignaledPacket);
 
 		NTSTATUS (WINAPI *m_fNtQuerySystemInformation)(DWORD _SystemInformationClass, PVOID o_pSystemInformation, DWORD _SystemInformationLength, PDWORD o_pReturnLength);
 

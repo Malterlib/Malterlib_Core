@@ -301,8 +301,8 @@ namespace NMib
 
 		static CMenuContext *fsg_GetContext(id _pSelf)
 		{
-			auto Class = object_getClass(_pSelf);
-			auto pContextIvar = class_getInstanceVariable(Class, "m_pContext");
+			auto pClass = object_getClass(_pSelf);
+			auto pContextIvar = class_getInstanceVariable(pClass, "m_pContext");
 			void *(*fGetIvarVoidStar)(id _pObject, Ivar _pIvar) = (void *(*)(id _pObject, Ivar _pIvar))object_getIvar;
 			return (CMenuContext *)fGetIvarVoidStar(_pSelf, pContextIvar);
 		}
@@ -504,8 +504,8 @@ namespace NMib
 			{
 			}
 
-			CFRunLoopRef m_RunLoopRef = nullptr;
-			CFRunLoopSourceRef m_RunLoopSourceRef = nullptr;
+			CFRunLoopRef m_pRunLoopRef = nullptr;
+			CFRunLoopSourceRef m_pRunLoopSourceRef = nullptr;
 		};
 
 		using namespace NFile;
@@ -544,10 +544,10 @@ namespace NMib
 				m_pProcessThread->f_Stop(false);
 				{
 					DMibLock(m_RunLoopLock);
-					if (Internal.m_RunLoopSourceRef)
+					if (Internal.m_pRunLoopSourceRef)
 					{
-						CFRunLoopSourceSignal(Internal.m_RunLoopSourceRef);
-						CFRunLoopWakeUp(Internal.m_RunLoopRef);
+						CFRunLoopSourceSignal(Internal.m_pRunLoopSourceRef);
+						CFRunLoopWakeUp(Internal.m_pRunLoopRef);
 					}
 				}
 				m_pProcessThread.f_Clear();
@@ -1141,6 +1141,7 @@ namespace NMib
 				if (PathLen > 0 && Path.f_GetAt(PathLen - 1) == '/')
 					Path = Path.f_Left(PathLen - 1);
 
+				// NOLINTNEXTLINE(malterlib-conceptual-prefix): FSEventStreamEventFlags is an integer, which the check takes for a function type by its name
 				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, iEvent);
 
 				if (NMib::CSystem::ms_PlatformVersion >= 10'15'00)
@@ -1388,6 +1389,7 @@ namespace NMib
 				if (EventPath.f_EndsWith("/"))
 					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
 
+				// NOLINTNEXTLINE(malterlib-conceptual-prefix): FSEventStreamEventFlags is an integer, which the check takes for a function type by its name
 				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, iEvent);
 
 				if (ProtectedDirs.f_FindEqual(EventPath))
@@ -1526,6 +1528,7 @@ namespace NMib
 				if (EventPath.f_EndsWith("/"))
 					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
 
+				// NOLINTNEXTLINE(malterlib-conceptual-prefix): FSEventStreamEventFlags is an integer, which the check takes for a function type by its name
 				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, iEvent);
 
 				// Events name the resolved or synthetic root; hints are relative to the root the user gave
@@ -1601,18 +1604,18 @@ namespace NMib
 				pNotification->f_ProcessChanges(_nEvents, (ch8 const **)_pEventPaths, _EventFlags, _EventIDs, false);
 		}
 
-		void CFileChangeNoticationContext::f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_Dispatch)
+		void CFileChangeNoticationContext::f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_fDispatch)
 		{
 			auto &Internal = *m_pInternal;
-			m_DispatchQueue.f_Push(fg_Move(_Dispatch));
+			m_DispatchQueue.f_Push(fg_Move(_fDispatch));
 			{
 				DMibLock(m_RunLoopLock);
-				if (Internal.m_RunLoopRef)
+				if (Internal.m_pRunLoopRef)
 				{
 					auto pThis = this;
 					CFRunLoopPerformBlock
 						(
-							Internal.m_RunLoopRef
+							Internal.m_pRunLoopRef
 							, kCFRunLoopDefaultMode
 							, ^()
 							{
@@ -1621,7 +1624,7 @@ namespace NMib
 							}
 						)
 					;
-					CFRunLoopWakeUp(Internal.m_RunLoopRef);
+					CFRunLoopWakeUp(Internal.m_pRunLoopRef);
 				}
 			}
 
@@ -1656,7 +1659,7 @@ namespace NMib
 								, [](void *_pInternal)
 								{
 									CInternal &Internal = *((CInternal *)_pInternal);
-									CFRunLoopStop(Internal.m_RunLoopRef);
+									CFRunLoopStop(Internal.m_pRunLoopRef);
 								}
 							}
 						;
@@ -1665,19 +1668,19 @@ namespace NMib
 
 						{
 							DMibLock(m_RunLoopLock);
-							Internal.m_RunLoopRef = CFRunLoopGetCurrent();
-							Internal.m_RunLoopSourceRef = pRunLoopSource;
-							CFRunLoopAddSource(Internal.m_RunLoopRef, pRunLoopSource, kCFRunLoopDefaultMode);
+							Internal.m_pRunLoopRef = CFRunLoopGetCurrent();
+							Internal.m_pRunLoopSourceRef = pRunLoopSource;
+							CFRunLoopAddSource(Internal.m_pRunLoopRef, pRunLoopSource, kCFRunLoopDefaultMode);
 						}
 
 						auto Cleanup = g_OnScopeExit / [&]
 							{
 								{
 									DMibLock(m_RunLoopLock);
-									CFRunLoopRemoveSource(Internal.m_RunLoopRef, pRunLoopSource, kCFRunLoopDefaultMode);
+									CFRunLoopRemoveSource(Internal.m_pRunLoopRef, pRunLoopSource, kCFRunLoopDefaultMode);
 									CFRelease(pRunLoopSource);
-									Internal.m_RunLoopRef = nullptr;
-									Internal.m_RunLoopSourceRef = nullptr;
+									Internal.m_pRunLoopRef = nullptr;
+									Internal.m_pRunLoopSourceRef = nullptr;
 								}
 							}
 						;
@@ -1733,29 +1736,29 @@ namespace NMib
 			CStr UserPath = NotificationPath;
 			NotificationPath = fg_GetRealPathName(NotificationPath); // Account for lower/upper case
 
-			CFStringRef WatchPath = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8 const *)NotificationPath.f_GetStr(), NotificationPath.f_GetLen(), kCFStringEncodingUTF8, false);
-			if (!WatchPath)
+			CFStringRef pWatchPath = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8 const *)NotificationPath.f_GetStr(), NotificationPath.f_GetLen(), kCFStringEncodingUTF8, false);
+			if (!pWatchPath)
 				DMibErrorFile("Open file notification: CFStringCreateWithBytes failed");
 
 			auto Cleanup = fg_OnScopeExit
 				(
 					[&]()
 					{
-						CFRelease(WatchPath);
+						CFRelease(pWatchPath);
 					}
 				)
 			;
 
-			CFArrayRef PathsToWatch = CFArrayCreate(NULL, (void const **)&WatchPath, 1, NULL);
+			CFArrayRef pPathsToWatch = CFArrayCreate(NULL, (void const **)&pWatchPath, 1, NULL);
 
-			if (!WatchPath)
+			if (!pWatchPath)
 				DMibErrorFile("Open file notification: CFArrayCreate failed");
 
 			auto Cleanup2 = fg_OnScopeExit
 				(
 					[&]()
 					{
-						CFRelease(PathsToWatch);
+						CFRelease(pPathsToWatch);
 					}
 				)
 			;
@@ -1785,7 +1788,7 @@ namespace NMib
 			pNotification->m_NotificationPathCompare.m_ResolvedPath = NotificationPath + "/";
 			pNotification->m_NotificationPathCompare.m_SyntheticPath = SyntheticPath + "/";
 
-			FSEventStreamContext CallbackContext;
+			FSEventStreamContext CallbackContext; // NOLINT(malterlib-conceptual-prefix): FSEventStreamContext is a struct, which the check takes for a function type by its name
 			CallbackContext.version = 0;
 			CallbackContext.info = pNotification.f_Get();
 			CallbackContext.retain = nullptr;
@@ -1798,7 +1801,7 @@ namespace NMib
 			// Path hints never trust flags, so accumulated flags are harmless there
 			pNotification->m_bPathHintsOnly = (_OpenFlags & NFile::EFileChange_PathHintsOnly) != 0;
 
-			FSEventStreamRef pStream;
+			FSEventStreamRef pStream; // NOLINT(malterlib-conceptual-prefix): FSEventStreamRef is a pointer, which the check takes for a function type by its name
 
 			/* Create the stream, passing in a callback */
 			pStream = FSEventStreamCreate
@@ -1806,7 +1809,7 @@ namespace NMib
 					NULL
 					, &fs_EventCallback
 					, &CallbackContext
-					, PathsToWatch
+					, pPathsToWatch
 					, kFSEventStreamEventIdSinceNow
 					, CFAbsoluteTime(0.0)
 					, kFSEventStreamCreateFlagNoDefer
@@ -1842,7 +1845,7 @@ namespace NMib
 						if (m_bDestroying)
 							return;
 						auto &Internal = *m_pInternal;
-						FSEventStreamScheduleWithRunLoop(pNotification->m_pEventStream, Internal.m_RunLoopRef, kCFRunLoopDefaultMode);
+						FSEventStreamScheduleWithRunLoop(pNotification->m_pEventStream, Internal.m_pRunLoopRef, kCFRunLoopDefaultMode);
 						pNotification->m_bAddedToRunLoop = true;
 						FSEventStreamStart(pNotification->m_pEventStream);
 						pNotification->m_bStreamStarted = true;

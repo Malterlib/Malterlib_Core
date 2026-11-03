@@ -236,7 +236,7 @@ namespace
 #	endif
 
 #	if defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
-	umint fg_Glibc_Thread_AllocLocal(bool _bFast, void(_pDestructor)(void *))
+	umint fg_Glibc_Thread_AllocLocal(bool _bFast, void(_fDestructor)(void *))
 	{
 		fg_Glibc_ValidateThreadLocalLayout();
 
@@ -257,7 +257,7 @@ namespace
 				continue;
 
 			auto pDestructor = reinterpret_cast<void (**)(void *)>(fg_Glibc_GetThreadKey(iStorage) + _thread_db_pthread_key_struct_destr[EGlibcThreadDbDescriptor_Offset]);
-			*pDestructor = _pDestructor;
+			*pDestructor = _fDestructor;
 
 			return iStorage;
 		}
@@ -464,38 +464,38 @@ static_assert(sizeof(pid_t) <= sizeof(umint), "pid_t must be the same size or sm
 // POSIX Thread Implementation
 // *************************************************************************************************************************
 
-umint NSys::fg_Thread_AllocLocalWithDestructor(void(_pDestructor)(void *_pData))
+umint NSys::fg_Thread_AllocLocalWithDestructor(void(_fDestructor)(void *_pData))
 {
 #if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
 #	ifdef DUseGlibcDummyThreadLocalLevel2
 	// Lifecycle keys must work before a new thread's allocator can create its
 	// second-level block
-	return fg_Glibc_Thread_AllocLocal(true, _pDestructor);
+	return fg_Glibc_Thread_AllocLocal(true, _fDestructor);
 #	else
-	return fg_Glibc_Thread_AllocLocal(false, _pDestructor);
+	return fg_Glibc_Thread_AllocLocal(false, _fDestructor);
 #	endif
 #else
-	pthread_key_t pKey = 0;
-	if (auto ErrNo = pthread_key_create(&pKey, _pDestructor))
+	pthread_key_t Key = 0;
+	if (auto ErrNo = pthread_key_create(&Key, _fDestructor))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", ErrNo));
-	else if (pKey == 0)
+	else if (Key == 0)
 	{
 		// We don't support the key being 0, allocate the next key if this happens
-		if (auto ErrNo = pthread_key_create(&pKey, _pDestructor))
+		if (auto ErrNo = pthread_key_create(&Key, _fDestructor))
 			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc with destructor)", ErrNo));
-		DMibFastCheck(pKey != 0);
+		DMibFastCheck(Key != 0);
 	}
 
-	if (auto ErrNo = pthread_setspecific(pKey, nullptr))
+	if (auto ErrNo = pthread_setspecific(Key, nullptr))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc with destructor)", ErrNo));
-	return (umint)pKey;
+	return (umint)Key;
 #endif
 }
 
 void NSys::fg_Thread_FreeLocalWithDestructor(umint _iStorage)
 {
-	pthread_key_t pKey = (pthread_key_t)_iStorage;
-	if (auto ErrNo = pthread_key_delete(pKey))
+	pthread_key_t Key = (pthread_key_t)_iStorage;
+	if (auto ErrNo = pthread_key_delete(Key))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_delete (thread local free)", ErrNo));
 }
 
@@ -516,8 +516,8 @@ void NSys::fg_Thread_SetLocalDestructor(umint _ThreadID, umint _iStorage, void *
 	umint ThisThread = fg_Thread_GetCurrentUID();
 	if (ThisThread == _ThreadID)
 	{
-		pthread_key_t pKey = (pthread_key_t)_iStorage;
-		if (auto ErrNo = pthread_setspecific(pKey, _pData))
+		pthread_key_t Key = (pthread_key_t)_iStorage;
+		if (auto ErrNo = pthread_setspecific(Key, _pData))
 			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", ErrNo));
 		return;
 	}
@@ -540,18 +540,18 @@ umint NSys::fg_Thread_AllocLocal()
 #	if defined(DPlatformFamily_Linux) && defined(DMibConfig_LinuxOptimizeGlibcThreadLocals)
 	return fg_Glibc_Thread_AllocLocal(false, nullptr);
 #	else
-	pthread_key_t pKey = 0;
-	if (auto ErrNo = pthread_key_create(&pKey, nullptr))
+	pthread_key_t Key = 0;
+	if (auto ErrNo = pthread_key_create(&Key, nullptr))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc)", ErrNo));
-	else if (pKey == 0)
+	else if (Key == 0)
 	{
-		if (auto ErrNo = pthread_key_create(&pKey, nullptr))
+		if (auto ErrNo = pthread_key_create(&Key, nullptr))
 			DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_create (thread local alloc)", ErrNo));
-		DMibFastCheck(pKey != 0);
+		DMibFastCheck(Key != 0);
 	}
-	if (auto ErrNo = pthread_setspecific(pKey, nullptr))
+	if (auto ErrNo = pthread_setspecific(Key, nullptr))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local alloc)", ErrNo));
-	return (umint)pKey;
+	return (umint)Key;
 #	endif
 }
 
@@ -564,15 +564,15 @@ umint NSys::fg_Thread_AllocLocalFast()
 
 void NSys::fg_Thread_FreeLocal(umint _iStorage)
 {
-	pthread_key_t pKey = (pthread_key_t)_iStorage;
-	if (auto ErrNo = pthread_key_delete(pKey))
+	pthread_key_t Key = (pthread_key_t)_iStorage;
+	if (auto ErrNo = pthread_key_delete(Key))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_key_delete (thread local free)", ErrNo));
 }
 
 void NSys::fg_Thread_SetLocal(umint _iStorage, void *_pData)
 {
-	pthread_key_t pKey = (pthread_key_t)_iStorage;
-	if (auto ErrNo = pthread_setspecific(pKey, _pData))
+	pthread_key_t Key = (pthread_key_t)_iStorage;
+	if (auto ErrNo = pthread_setspecific(Key, _pData))
 		DMibErrorSystemImp(NPlatform::fg_FormatErrno("pthread_setspecific (thread local set)", ErrNo));
 }
 
@@ -679,7 +679,7 @@ void NSys::fg_Thread_Sleep(fp32 _Seconds)
 
 struct CThreadStartParams
 {
-	FThreadProc *m_pThreadProc;
+	FThreadProc *m_fThreadProc;
 	void *m_pThreadParam;
 	umint m_ParentThreadID;
 	CStrNonTracked m_ThreadName;
@@ -697,7 +697,7 @@ namespace
 
 	struct CThreadCreateParams
 	{
-		FThreadProc *m_pThreadProc = nullptr;
+		FThreadProc *m_fThreadProc = nullptr;
 		void *m_pParam = nullptr;
 		EExecutionPriority m_Priority = EExecutionPriority_Normal;
 		umint m_StackSize = 0;
@@ -787,7 +787,7 @@ void *fg_ThreadStartRoutine(void *_pParams)
 		}
 	}
 
-	aint ReturnCode = StartParams.m_pThreadProc(StartParams.m_pThreadParam);
+	aint ReturnCode = StartParams.m_fThreadProc(StartParams.m_pThreadParam);
 
 	return (void *)ReturnCode;
 }
@@ -886,7 +886,7 @@ bool fg_SetMachPriority(void *_pThread, EExecutionPriority _Priority)
 
 auto NSys::fg_Thread_Create
 	(
-		FThreadProc *_pThreadProc
+		FThreadProc *_fThreadProc
 		, void *_pParam
 		, EExecutionPriority _Priority
 		, umint _StackSize
@@ -898,7 +898,7 @@ auto NSys::fg_Thread_Create
 	-> void *
 {
 	CThreadCreateParams Params;
-	Params.m_pThreadProc = _pThreadProc;
+	Params.m_fThreadProc = _fThreadProc;
 	Params.m_pParam = _pParam;
 	Params.m_Priority = _Priority;
 	Params.m_StackSize = _StackSize;
@@ -1019,7 +1019,7 @@ static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_
 #	endif // DMibPLinuxKernel
 
 	NStorage::TCUniquePointer<CThreadStartParams, CAllocator_NonTrackedHeap> pThreadParams = fg_Construct();
-	pThreadParams->m_pThreadProc = _Params.m_pThreadProc;
+	pThreadParams->m_fThreadProc = _Params.m_fThreadProc;
 	pThreadParams->m_pThreadParam = _Params.m_pParam;
 	pThreadParams->m_ParentThreadID = _Params.m_ParentThreadID;
 	pThreadParams->m_ThreadName = _Params.m_pThreadName;
@@ -1029,7 +1029,7 @@ static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_
 	pThreadParams->m_ThreadName = pThreadParams->m_ThreadName.f_Left(15);
 #	endif
 
-	pthread_t ThreadID;
+	pthread_t ThreadID; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
 
 #	if defined(DMibPLinuxKernel)
 	bool bPreviousOwnThreadCreate = g_bLinuxOwnThreadCreate;
@@ -1060,7 +1060,7 @@ static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_
 
 void NSys::fg_Thread_SetAffinity(void *_pThread, umint _Affinity)
 {
-	pthread_t ThreadID = (pthread_t)_pThread;
+	pthread_t ThreadID = (pthread_t)_pThread; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
 
 #	if defined(DMibPMachKernel)
 

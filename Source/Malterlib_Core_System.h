@@ -424,7 +424,7 @@ namespace NMib
 		void f_ThreadLocal_ForkedChild();
 		void f_ThreadLocal_ForkedParent();
 
-		void f_ThreadEnum(NFunction::TCFunction<void (umint _ThreadID)> const &_EnumFunc);
+		void f_ThreadEnum(NFunction::TCFunction<void (umint _ThreadID)> const &_fEnumFunc);
 		bool f_ThreadDestroyed() const;
 		bool f_ThreadCreated() const;
 

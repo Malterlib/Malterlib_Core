@@ -22,7 +22,7 @@ void fg_Test2()
 	;
 }
 
-auto g_Test2 = &fg_Test2;
+auto g_fTest2 = &fg_Test2;
 
 #if 0
 

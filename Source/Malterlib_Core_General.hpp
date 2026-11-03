@@ -310,7 +310,7 @@ namespace NMib
 #endif
 	}
 
-	template <auto tf_pMemberPointer>
+	template <auto tf_MemberPointer>
 	static consteval CConstExprSubStr fg_GetMemberPointerNameConstExpr()
 	{
 #if defined(DCompiler_MSVC)
@@ -360,11 +360,11 @@ namespace NMib
 
 #if DMibSupportMemberNameFromMemberPointer
 
-	template <auto tf_pMemberFunction>
+	template <auto tf_MemberFunction>
 	static consteval uint32 fg_GetMemberFunctionHash()
 	{
-		using CMemberFunction = decltype(tf_pMemberFunction);
-		auto FunctionName = fg_GetMemberPointerNameConstExpr<tf_pMemberFunction>();
+		using CMemberFunction = decltype(tf_MemberFunction);
+		auto FunctionName = fg_GetMemberPointerNameConstExpr<tf_MemberFunction>();
 		char const *pStartName = nullptr;
 		char const *pEnd = FunctionName.m_pString + FunctionName.m_Len - 1;
 
@@ -415,18 +415,18 @@ namespace NMib
 		return fg_JenkinsHash(pStartName);
 	}
 
-	template <auto tf_pMemberFunction>
+	template <auto tf_MemberFunction>
 	static consteval uint32 fg_GetMemberFunctionHash(uint32 _NameHash)
 	{
-		using CMemberFunction = decltype(tf_pMemberFunction);
+		using CMemberFunction = decltype(tf_MemberFunction);
 		auto ClassTypeName = fg_GetTypeNameConstExpr<typename NTraits::TCMemberFunctionPointerTraits<CMemberFunction>::CClass>();
 		return _NameHash ^ fg_JenkinsHash(ClassTypeName.m_pString, ClassTypeName.m_Len, ']');
 	}
 
-	template <auto tf_pMemberFunction, uint32 t_NameHash>
+	template <auto tf_MemberFunction, uint32 t_NameHash>
 	static consteval uint32 fg_GetMemberFunctionHash()
 	{
-		return fg_GetMemberFunctionHash<tf_pMemberFunction>(t_NameHash);
+		return fg_GetMemberFunctionHash<tf_MemberFunction>(t_NameHash);
 	}
 
 #endif

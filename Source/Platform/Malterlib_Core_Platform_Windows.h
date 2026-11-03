@@ -7,9 +7,9 @@
 #include <Windows.h>
 
 extern VOID (WINAPI *g_fOrgExitProcess)(__in UINT _ExitCode);
-extern BOOL (WINAPI *g_fOrgTerminateProcess)(__in HANDLE _Process, __in UINT _ExitCode);
+extern BOOL (WINAPI *g_fOrgTerminateProcess)(__in HANDLE _pProcess, __in UINT _ExitCode);
 extern NMib::NAtomic::TCAtomic<smint> g_bDoneMalterlibInitAll;
-extern HINSTANCE g_DllInstance;
+extern HINSTANCE g_pDllInstanceHandle;
 extern bool g_bIsDll;
 
 namespace NMib::NFile
@@ -19,7 +19,7 @@ namespace NMib::NFile
 
 namespace NMib::NPlatform
 {
-	void fg_GenerateExcetionHandler(void *_pData, LONG (*_pCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
+	void fg_GenerateExcetionHandler(void *_pData, LONG (*_fCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
 
 	inline_small bool fg_IsGoodStackPtr(void *_pAddr, umint _Len, umint _StackStart, umint _StackEnd)
 	{
@@ -40,6 +40,6 @@ namespace NMib::NPlatform
 	void fg_ReportIsShuttingDown();
 	void fg_EnsureEndSessionReporting();
 
-	bool fg_SetPosixDeleteDisposition(HANDLE _File);
-	bool fg_GetUniqueFileIdentifier(HANDLE _File, NMib::NFile::CUniqueFileIdentifier &o_Identifier);
+	bool fg_SetPosixDeleteDisposition(HANDLE _pFile);
+	bool fg_GetUniqueFileIdentifier(HANDLE _pFile, NMib::NFile::CUniqueFileIdentifier &o_Identifier);
 }

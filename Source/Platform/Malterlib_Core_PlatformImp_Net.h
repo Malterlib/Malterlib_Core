@@ -24,11 +24,11 @@ private:
 	{
 		~CResolveRequest()
 		{
-			NMib::NSys::NNetwork::fg_FreeAddress(m_Address);
+			NMib::NSys::NNetwork::fg_FreeAddress(m_pAddress);
 		}
 
 		NStr::CStr m_Name;
-		NMib::NSys::NNetwork::CAddress m_Address = nullptr;
+		NMib::NSys::NNetwork::CAddress m_pAddress = nullptr;
 		NMib::NFunction::TCFunctionMutable<void ()> m_fOnFinish;
 		NMib::NFunction::TCFunctionMovable<void ()> m_fOnClosed;
 		NMib::NStr::CStr m_ErrorString;
@@ -56,7 +56,7 @@ public:
 	void f_Stop();
 
 	void *f_Open(NMib::NStr::CStr const &_Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
-	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &o_Address, NMib::NStr::CStr &_Error);
+	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &o_pAddress, NMib::NStr::CStr &_Error);
 	void f_Close(void *_pResolver);
 	void f_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
 

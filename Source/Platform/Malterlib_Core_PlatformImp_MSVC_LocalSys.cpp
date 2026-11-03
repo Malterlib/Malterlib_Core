@@ -160,7 +160,7 @@ struct CSystemWindowsMSVC : public CSystem
 				: m_RootNode(nullptr)
 			{
 				m_pBundle = nullptr;
-				m_Handle = INVALID_HANDLE_VALUE;
+				m_pHandle = INVALID_HANDLE_VALUE;
 				m_pReportTo = nullptr;
 				m_Flags = EFileChange_None;
 				m_bDoneRead = false;
@@ -204,10 +204,10 @@ struct CSystemWindowsMSVC : public CSystem
 					m_LinkUpdated.f_Unlink();
 				}
 
-				if (m_Handle != INVALID_HANDLE_VALUE)
+				if (m_pHandle != INVALID_HANDLE_VALUE)
 				{
-					CloseHandle(m_Handle);
-					m_Handle = INVALID_HANDLE_VALUE;
+					CloseHandle(m_pHandle);
+					m_pHandle = INVALID_HANDLE_VALUE;
 				}
 
 				m_Changes.f_Clear();
@@ -215,7 +215,7 @@ struct CSystemWindowsMSVC : public CSystem
 
 			void f_Cancel()
 			{
-				CancelIo(m_Handle);
+				CancelIo(m_pHandle);
 			}
 
 			DMibListLinkDS_Link(CNotification, m_Link);
@@ -224,7 +224,7 @@ struct CSystemWindowsMSVC : public CSystem
 
 			CFileTreeNode m_RootNode;
 			CStr m_RenameFromFilename;
-			HANDLE m_Handle;
+			HANDLE m_pHandle;
 			CNotificationBundle *m_pBundle;
 			CStr m_RootDirectory;
 			bool m_bDoneRead;
@@ -457,7 +457,7 @@ struct CSystemWindowsMSVC : public CSystem
 				(
 					ReadDirectoryChangesW
 					(
-						m_Handle
+						m_pHandle
 						, m_ChangesBuffer.f_GetArray()
 						, m_ChangesBuffer.f_GetLen()
 						, (m_Flags & EFileChange_Recursive) != 0
@@ -491,11 +491,11 @@ struct CSystemWindowsMSVC : public CSystem
 
 			// Raw Win32 event: the notification thread needs an alertable
 			// WaitForSingleObjectEx for APC delivery, which futex events cannot provide
-			HANDLE m_WakeEvent;
+			HANDLE m_pWakeEvent;
 			NAtomic::TCAtomic<uint32> m_bQuit;
 
 			CNotificationBundle(CFileChangeNoticationContext *_pContext)
-				: m_WakeEvent(CreateEventA(nullptr, false, false, nullptr))
+				: m_pWakeEvent(CreateEventA(nullptr, false, false, nullptr))
 				, m_bQuit(0)
 			{
 				m_pContext = _pContext;
@@ -508,21 +508,21 @@ struct CSystemWindowsMSVC : public CSystem
 
 			~CNotificationBundle()
 			{
-				// The worker may still be blocked on m_WakeEvent; it must be stopped
+				// The worker may still be blocked on m_pWakeEvent; it must be stopped
 				// before the handle is closed (closing a handle with a pending wait is
 				// undefined, and the base destructor's f_Stop would come too late)
 				f_StopBundle();
 
-				if (m_WakeEvent)
+				if (m_pWakeEvent)
 				{
-					::CloseHandle(m_WakeEvent);
-					m_WakeEvent = nullptr;
+					::CloseHandle(m_pWakeEvent);
+					m_pWakeEvent = nullptr;
 				}
 			}
 
 			void f_Wake()
 			{
-				SetEvent(m_WakeEvent);
+				SetEvent(m_pWakeEvent);
 			}
 
 			umint f_StopBundle()
@@ -530,7 +530,7 @@ struct CSystemWindowsMSVC : public CSystem
 				// Set the quit flag before waking so the thread cannot re-park
 				// between the wake and CThread::f_Stop's state change
 				m_bQuit.f_Store(1);
-				SetEvent(m_WakeEvent);
+				SetEvent(m_pWakeEvent);
 				return f_Stop();
 			}
 
@@ -577,7 +577,7 @@ struct CSystemWindowsMSVC : public CSystem
 						}
 					}
 
-					WaitForSingleObjectEx(m_WakeEvent, INFINITE, true);
+					WaitForSingleObjectEx(m_pWakeEvent, INFINITE, true);
 					{
 						CNotification *pPop;
 						{
@@ -618,7 +618,7 @@ struct CSystemWindowsMSVC : public CSystem
 			CStr AbsolutePath = CFile::fs_GetExpandedPath(_FileName);
 			CWStr WindowStr = NFile::NPlatform::fg_ConvertToWindowsPathLocal(AbsolutePath);
 
-			HANDLE Handle = CreateFile
+			HANDLE pHandle = CreateFile
 				(
 					WindowStr
 					, FILE_LIST_DIRECTORY
@@ -630,18 +630,18 @@ struct CSystemWindowsMSVC : public CSystem
 				)
 			;
 
-			if (Handle == INVALID_HANDLE_VALUE)
+			if (pHandle == INVALID_HANDLE_VALUE)
 				DMibErrorFile((CStr::CFormat("Windows returned an error from CreateFile({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
 			auto Cleanup = g_OnScopeExit / [&]
 				{
-					CloseHandle(Handle);
+					CloseHandle(pHandle);
 				}
 			;
 
 			BY_HANDLE_FILE_INFORMATION Info;
 
-			if (!GetFileInformationByHandle(Handle, &Info))
+			if (!GetFileInformationByHandle(pHandle, &Info))
 				DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
 			if (!(Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
@@ -668,7 +668,7 @@ struct CSystemWindowsMSVC : public CSystem
 					pBundle->f_Start();
 				}
 				pNot = pBundle->m_Free.f_Pop();
-				pNot->m_Handle = Handle;
+				pNot->m_pHandle = pHandle;
 				pNot->m_RootDirectory = AbsolutePath;
 				Cleanup.f_Clear();
 				pNot->m_pReportTo = _pReportTo;
@@ -754,13 +754,13 @@ struct CSystemWindowsMSVC : public CSystem
 
 	bool f_EnablePrivilege(TCHAR const *_pPrivilege, BOOL _bEnable)
 	{
-		HANDLE Token;
+		HANDLE pToken;
 		TOKEN_PRIVILEGES TokenPrivileges;
 		BOOL bAdjusted;
 		DWORD Error;
 
 		// open process token
-		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &Token))
+		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &pToken))
 		{
 			[[maybe_unused]] uint32 LastError = GetLastError();
 			DMibTrace("OpenProcessToken failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
@@ -771,7 +771,7 @@ struct CSystemWindowsMSVC : public CSystem
 				[&]()
 				{
 					// close the handle
-					if (!CloseHandle(Token))
+					if (!CloseHandle(pToken))
 					{
 						[[maybe_unused]] uint32 LastError = GetLastError();
 						DMibTrace("CloseHandle failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
@@ -797,7 +797,7 @@ struct CSystemWindowsMSVC : public CSystem
 			TokenPrivileges.Privileges[0].Attributes = 0;
 
 		// enable or disable privilege
-		bAdjusted = AdjustTokenPrivileges(Token, FALSE, &TokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+		bAdjusted = AdjustTokenPrivileges(pToken, FALSE, &TokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
 
 		// It is possible for AdjustTokenPrivileges to return TRUE and still not succeed.
 		// So always check for the last error value.
@@ -906,7 +906,7 @@ struct CSystemWindowsMSVC : public CSystem
 		fg_MemClear(m_SharedIoLoop);
 		fg_MemClear(m_FileChangeNoticationContext);
 
-		m_pSetAssertInfo = nullptr;
+		m_fSetAssertInfo = nullptr;
 
 		fp_InitComplete();
 	}
@@ -925,7 +925,7 @@ struct CSystemWindowsMSVC : public CSystem
 
 	using FSetAssertInfo = void DMibCrossmoduleAPI (int32 _AssertType, ch8 const *_pAssertMessage);
 
-	FSetAssertInfo *m_pSetAssertInfo;
+	FSetAssertInfo *m_fSetAssertInfo;
 	NThread::CMutual m_ContractInfoLock;
 	CStrNonTracked m_ContractAssertInfo;
 	static void DMibCrossmoduleAPI fs_SetAssertInfo(int32 _AssertType, ch8 const *_pAssertMessage)
@@ -951,8 +951,8 @@ struct CSystemWindowsMSVC : public CSystem
 
 	void f_DebugReportContractViolation(NStr::CStrNonTracked const &_Message)
 	{
-		if (m_pSetAssertInfo)
-			m_pSetAssertInfo(1, _Message);
+		if (m_fSetAssertInfo)
+			m_fSetAssertInfo(1, _Message);
 	}
 
 	void f_InitModuleThreaded()
@@ -967,8 +967,8 @@ struct CSystemWindowsMSVC : public CSystem
 			if (!FindAtom(str_utf16("IdsAssertAtom")))
 			{
 				AddAtom(str_utf16("IdsAssertAtom"));
-				m_pSetAssertInfo = &fs_SetAssertInfo;
-				umint PausePointer = (umint)m_pSetAssertInfo;
+				m_fSetAssertInfo = &fs_SetAssertInfo;
+				umint PausePointer = (umint)m_fSetAssertInfo;
 				for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 				{
 					if (PausePointer & (umint(1) << iBit))
@@ -983,7 +983,7 @@ struct CSystemWindowsMSVC : public CSystem
 					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit)))
 						PausePointer |= (umint(1) << iBit);
 				}
-				m_pSetAssertInfo = (FSetAssertInfo *)PausePointer;
+				m_fSetAssertInfo = (FSetAssertInfo *)PausePointer;
 			}
 		}
 		else
@@ -996,7 +996,7 @@ struct CSystemWindowsMSVC : public CSystem
 					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit)))
 						PausePointer |= (umint(1) << iBit);
 				}
-				m_pSetAssertInfo = (FSetAssertInfo *)PausePointer;
+				m_fSetAssertInfo = (FSetAssertInfo *)PausePointer;
 			}
 		}
 	}
@@ -1082,7 +1082,7 @@ struct CSystemWindowsMSVC : public CSystem
 	{
 		fs_VectoredHandler3(_pExceptionInfo);
 
-		HMODULE pNtDll = NLocal::g_NtDll;
+		HMODULE pNtDll = NLocal::g_pNtDll;
 
 		if (!pNtDll)
 			return 0;
@@ -1099,8 +1099,8 @@ struct CSystemWindowsMSVC : public CSystem
 			CONTEXT Context;
 			KNONVOLATILE_CONTEXT_POINTERS NvContext;
 			UNWIND_HISTORY_TABLE UnwindHistoryTable;
-			PRUNTIME_FUNCTION RuntimeFunction;
-			PVOID HandlerData;
+			PRUNTIME_FUNCTION pRuntimeFunction;
+			PVOID pHandlerData;
 			ULONG64 EstablisherFrame;
 			ULONG64 ImageBase;
 
@@ -1114,11 +1114,11 @@ struct CSystemWindowsMSVC : public CSystem
 				// Try to look up unwind metadata for the current function.
 				//
 
-				RuntimeFunction = RtlLookupFunctionEntry(Context.Rip, &ImageBase, &UnwindHistoryTable);
+				pRuntimeFunction = RtlLookupFunctionEntry(Context.Rip, &ImageBase, &UnwindHistoryTable);
 
 				RtlZeroMemory(&NvContext, sizeof(KNONVOLATILE_CONTEXT_POINTERS));
 
-				if (!RuntimeFunction)
+				if (!pRuntimeFunction)
 				{
 					//
 					// If we don't have a RUNTIME_FUNCTION, then we've encountered
@@ -1131,7 +1131,7 @@ struct CSystemWindowsMSVC : public CSystem
 				else
 				{
 					// Now lets patch the unwind info structure for the function that uses KiUserCallbackDispatcherHandler as it's exception handler (KiUserCallbackDispatcherContinue).
-					UNWIND_INFO *pInfo = (UNWIND_INFO *)(ImageBase + RuntimeFunction->UnwindData);
+					UNWIND_INFO *pInfo = (UNWIND_INFO *)(ImageBase + pRuntimeFunction->UnwindData);
 					ULONG *pExceptionHandlerData = (ULONG *)&pInfo->UnwindCode[pInfo->CountOfCodes];
 					void *pExceptionHandler = (void *)(ImageBase + *pExceptionHandlerData);
 					//void *pExceptionData = (void *)(ImageBase + pExceptionHandlerData[1]);
@@ -1160,7 +1160,7 @@ struct CSystemWindowsMSVC : public CSystem
 					// us.
 					//
 
-					RtlVirtualUnwind(UNW_FLAG_EHANDLER, ImageBase, Context.Rip, RuntimeFunction, &Context, &HandlerData, &EstablisherFrame, &NvContext);
+					RtlVirtualUnwind(UNW_FLAG_EHANDLER, ImageBase, Context.Rip, pRuntimeFunction, &Context, &pHandlerData, &EstablisherFrame, &NvContext);
 				}
 
 				//

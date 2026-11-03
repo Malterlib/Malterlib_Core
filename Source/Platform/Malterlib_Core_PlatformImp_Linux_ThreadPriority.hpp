@@ -400,7 +400,7 @@ namespace
 			DMibDTraceSafe("The thread spawn helper is created from a lowered thread (policy {}, nice {}) and cannot restore priorities\n", Schedule.m_Policy, Schedule.m_Nice);
 
 		CThreadCreateParams Params;
-		Params.m_pThreadProc = &fg_Linux_ThreadSpawnHelperMain;
+		Params.m_fThreadProc = &fg_Linux_ThreadSpawnHelperMain;
 		Params.m_Priority = EExecutionPriority_Default; // Keeps the inherited priority
 		Params.m_pThreadName = "Thread spawner";
 		Params.m_ParentThreadID = NSys::fg_Thread_GetCurrentUID();

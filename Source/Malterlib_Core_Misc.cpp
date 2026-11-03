@@ -187,19 +187,20 @@ namespace NMib
 			return fg_CheckAccessRightsTemplated(_Path, _bRandom);
 		}
 
+		// NOLINTNEXTLINE(malterlib-conceptual-prefix): CMibArgList is va_list, a pointer on macOS and Windows and an array on Linux
 		CClassContainerList *fg_GetClassContainerListArgList(CClassContainerList &_List, CMibArgList &_Args)
 		{
-			void *CurrentPtr = DMibPArgListNextArg(_Args, void *);
+			void *pCurrent = DMibPArgListNextArg(_Args, void *);
 
-			while (CurrentPtr)
+			while (pCurrent)
 			{
 //#ifdef DDebug
 				// TODO: Add dynamic cast fix
-				// DSafeCheck(dynamic_cast<CClassContainer *>((CClassContainer *) CurrentPtr), "Not a class container");
+				// DSafeCheck(dynamic_cast<CClassContainer *>((CClassContainer *) pCurrent), "Not a class container");
 //#endif
-				_List.m_List.f_Insert((CClassContainer *)CurrentPtr);
+				_List.m_List.f_Insert((CClassContainer *)pCurrent);
 
-				CurrentPtr = DMibPArgListNextArg(_Args, void *);
+				pCurrent = DMibPArgListNextArg(_Args, void *);
 			}
 
 			return &_List;
@@ -207,7 +208,7 @@ namespace NMib
 
 		CClassContainerList *fg_GetClassContainerList(CClassContainerList *_pList, ...)
 		{
-			CMibArgList Args;
+			CMibArgList Args; // NOLINT(malterlib-conceptual-prefix): CMibArgList is va_list, a pointer on macOS and Windows and an array on Linux
 			DMibPArgListStart(Args, _pList);
 
 			return fg_GetClassContainerListArgList(*_pList, Args);

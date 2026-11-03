@@ -55,8 +55,8 @@ auto CRuntimeNetAddress::fs_FromResolved(tf_CAddressInfo const *_pResults) -> NC
 	NContainer::TCVector<NSys::NNetwork::CAddress> Addresses;
 	auto Cleanup = g_OnScopeExit / [&Addresses]
 		{
-			for (auto Address : Addresses)
-				NStorage::TCUniquePointer<CRuntimeNetAddress> pAddress = fg_Explicit(static_cast<CRuntimeNetAddress *>(Address));
+			for (auto pResolvedAddress : Addresses)
+				NStorage::TCUniquePointer<CRuntimeNetAddress> pAddress = fg_Explicit(static_cast<CRuntimeNetAddress *>(pResolvedAddress));
 		}
 	;
 

@@ -30,9 +30,9 @@ bool CPOSIXImpSpecificSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Addre
 	return false;
 }
 
-CPOSIXAddress *CPOSIXImpSpecificSocketContext::f_SetAddressRaw(CPOSIXAddress *_Address, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const *_pRawData, umint _nDataBytes)
+CPOSIXAddress *CPOSIXImpSpecificSocketContext::f_SetAddressRaw(CPOSIXAddress *_pAddress, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const *_pRawData, umint _nDataBytes)
 {
-	NMib::NSys::NNetwork::fg_FreeAddress(_Address);
+	NMib::NSys::NNetwork::fg_FreeAddress(_pAddress);
 	return nullptr;
 }
 
