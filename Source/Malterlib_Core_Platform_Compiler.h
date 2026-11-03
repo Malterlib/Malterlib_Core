@@ -262,10 +262,7 @@ using CMibArgList = va_list;
 #ifdef __clang_analyzer__
 void fg_UnconsumeUndefined(void *_pValue);
 template <typename tf_CObject>
-void fg_Unconsume(tf_CObject &o_Value)
-{
-	fg_UnconsumeUndefined(&o_Value);
-}
+void fg_Unconsume(tf_CObject &o_Value);
 
 #	define DMibMovedFromValid(d_Value) fg_Unconsume(d_Value)
 #	define DMibClangAnalyzerWorkaround
@@ -273,6 +270,4 @@ void fg_Unconsume(tf_CObject &o_Value)
 #	define DMibMovedFromValid(d_Value)
 #endif
 
-#if defined(__apple_build_version__) && (__apple_build_version__ < 17000000)
-#	define DCompiler_Workaround_Apple_clang // NOLINT(malterlib-macro-naming)
-#endif
+#include "Malterlib_Core_Platform_Compiler.hpp"

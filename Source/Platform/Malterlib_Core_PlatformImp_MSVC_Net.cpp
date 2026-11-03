@@ -111,6 +111,23 @@ CWindowsSocket::CUnixListenState::~CUnixListenState()
 	}
 }
 
+CWindowsSocket::CWindowsSocket
+	(
+		SOCKET _Socket
+		, EWindowsSocketMode _Mode
+		, EWindowsSocketEvent _Events
+		, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+	)
+	: m_Socket(_Socket)
+	, m_Mode(_Mode)
+	, m_RegisteredEvents(_Events)
+	, m_bInitialWriteNotification(true)
+	, m_fOnStateChange(fg_Move(_fOnStateChange))
+	, m_StateAtomic(NMib::NNetwork::ENetTCPState_Write)
+	, m_CloseError(0)
+{
+}
+
 #if DMibConfig_IoDebug_Enable
 // Null when the statistics are off, so a recording site asks and finds the counters in one read
 NSys::CSocketIoStats *fg_SocketIoStats()
@@ -938,6 +955,42 @@ static ENetAddressType fsg_AddressTypeOfSocket(SOCKET _Socket)
 		return ENetAddressType_TCPv6;
 
 	return ENetAddressType_None;
+}
+
+void CWindowsSocketContext::fp_ToNative(NMib::NNetwork::CNetAddressTCPv4 const &_InAddr, sockaddr_in &_OutAddr) const
+{
+	fg_MemClear(_OutAddr);
+	_OutAddr.sin_family = AF_INET;
+
+	_OutAddr.sin_addr.s_addr = _InAddr.m_IP[3] << 24 | _InAddr.m_IP[2] << 16 | _InAddr.m_IP[1] << 8 | _InAddr.m_IP[0];
+
+	_OutAddr.sin_port = htons(_InAddr.m_Port);
+}
+
+void CWindowsSocketContext::fp_ToNative(NMib::NNetwork::CNetAddressTCPv6 const &_InAddr, sockaddr_in6 &_OutAddr) const
+{
+	fg_MemClear(_OutAddr);
+	_OutAddr.sin6_family = AF_INET6;
+
+	fg_MemCopy(&_OutAddr.sin6_addr.s6_addr, &_InAddr.m_IP, sizeof(uint8) * 16);
+
+	_OutAddr.sin6_port = htons(_InAddr.m_Port);
+}
+
+void CWindowsSocketContext::fp_FromNative(sockaddr_in const &_InAddr, NMib::NNetwork::CNetAddressTCPv4 &_OutAddr) const
+{
+	uint32 IP = _InAddr.sin_addr.s_addr;
+	_OutAddr.m_IP[0] = 0xFF & (IP);
+	_OutAddr.m_IP[1] = 0xFF & (IP >> 8);
+	_OutAddr.m_IP[2] = 0xFF & (IP >> 16);
+	_OutAddr.m_IP[3] = 0xFF & (IP >> 24);
+	_OutAddr.m_Port = ntohs(_InAddr.sin_port);
+}
+
+void CWindowsSocketContext::fp_FromNative(sockaddr_in6 const &_InAddr, NMib::NNetwork::CNetAddressTCPv6 &_OutAddr) const
+{
+	fg_MemCopy(&_OutAddr.m_IP, &_InAddr.sin6_addr.s6_addr, sizeof(uint8) * 16);
+	_OutAddr.m_Port = ntohs(_InAddr.sin6_port);
 }
 
 auto CWindowsSocketContext::fp_CreateSocket

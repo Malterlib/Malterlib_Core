@@ -20,10 +20,7 @@ namespace NMib
 		DMibListLinkD_Link(CSubSystem, m_Link);
 		ESubSystemDestruction m_DestructionOrder;
 
-		bool f_IsAfterMemoryManager() const
-		{
-			return m_DestructionOrder >= ESubSystemDestruction_BeforeThreadLocals;
-		}
+		bool f_IsAfterMemoryManager() const;
 
 		CSubSystem();
 		virtual ~CSubSystem();

@@ -10,6 +10,15 @@ namespace NMib
 {
 	namespace NSys
 	{
+		CLinuxPasswordManager::~CLinuxPasswordManager()
+		{
+		}
+
+		bool CLinuxPasswordManager::f_SecurePassword_Supported()
+		{
+			return true;
+		}
+
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLibSecretPasswordManager();
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem *_pDBus);
 

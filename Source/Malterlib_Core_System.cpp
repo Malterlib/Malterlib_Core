@@ -18,6 +18,15 @@ extern NMib::NAtomic::TCAtomic<bool> g_bSysDeleted;
 
 namespace NMib
 {
+	// The size is only needed where a deleting destructor does not return the
+	// size of the complete object (see -fmalterlib-sized-destructors).
+	CPromiseKeepAlive::CPromiseKeepAlive(umint _AllocSize)
+#ifndef DMibPSizedDestructors
+		: m_VirtualAllocSize(_AllocSize)
+#endif
+	{
+	}
+
 	CPromiseKeepAlive::~CPromiseKeepAlive() = default;
 
 	namespace NMemory
@@ -120,6 +129,39 @@ namespace NMib
 		return *NPrivate::g_SubSystem_SystemThreadLocal->m_ThreadLocal.f_GetForThread(_ThreadID);
 	}
 
+	namespace NException
+	{
+		CExceptionFilterScope::CExceptionFilterScope(CExceptionFilter &_Filter)
+		{
+			auto &ThreadLocal = fg_SystemThreadLocal();
+			mp_pOldFilter = ThreadLocal.m_pExceptionFilter;
+			ThreadLocal.m_pExceptionFilter = &_Filter;
+		}
+
+		CExceptionFilterScope::~CExceptionFilterScope()
+		{
+			auto &ThreadLocal = fg_SystemThreadLocal();
+			ThreadLocal.m_pExceptionFilter = mp_pOldFilter;
+		}
+
+		CDisableExceptionFilterScope::CDisableExceptionFilterScope()
+		{
+			auto &ThreadLocal = fg_SystemThreadLocal();
+			mp_pOldFilter = ThreadLocal.m_pExceptionFilter;
+			ThreadLocal.m_pExceptionFilter = nullptr;
+		}
+
+		CDisableExceptionFilterScope::~CDisableExceptionFilterScope()
+		{
+			auto &ThreadLocal = fg_SystemThreadLocal();
+			ThreadLocal.m_pExceptionFilter = mp_pOldFilter;
+		}
+	}
+
+	CVirtualDestructor::~CVirtualDestructor()
+	{
+	}
+
 	/************************************************************************************************\
 	||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
 	|| CSystem
@@ -149,6 +191,94 @@ namespace NMib
 
 		fg_MaybeSystemThreadInit();
 	}
+
+	CVirtualMachineInfo const &CSystem::f_GetVirtualMachineInfo() const
+	{
+		return mp_VMInfo;
+	}
+
+	void CSystem::f_RegisterProgram(NStr::CStr const &_ProgramName, NStr::CStr const &_SupportEmail, bool _bRunningAsDaemon)
+	{
+		mp_ProgramName = _ProgramName;
+		mp_ProgramNameNonTracked = _ProgramName;
+		mp_SupportEmail = _SupportEmail;
+		mp_SupportEmailNonTracked = _SupportEmail;
+		mp_bRunningAsDaemon = _bRunningAsDaemon;
+	}
+
+	bool CSystem::f_IsDll() const
+	{
+		return mp_bIsDll;
+	}
+
+	NStr::CStr const &CSystem::f_GetSupportEmail() const
+	{
+		return mp_SupportEmail;
+	}
+
+	NStr::CStrNonTracked const &CSystem::f_GetSupportEmailNonTracked() const
+	{
+		return mp_SupportEmailNonTracked;
+	}
+
+	NStr::CStr const &CSystem::f_GetProgramName() const
+	{
+		return mp_ProgramName;
+	}
+
+	NStr::CStr const &CSystem::f_GetCrashHandlerPath() const
+	{
+		return mp_CrashHandlerPath;
+	}
+
+	NStr::CStr const &CSystem::f_GetCrashHandlerServer() const
+	{
+		return mp_CrashHandlerServer;
+	}
+
+	NStr::CStr const &CSystem::f_GetCrashHandlerExePath() const
+	{
+		return mp_CrashHandlerExePath;
+	}
+
+	NStr::CStrNonTracked const &CSystem::f_GetProgramNameNonTracked() const
+	{
+		return mp_ProgramNameNonTracked;
+	}
+
+	bool CSystem::f_GetRunningAsDaemon() const
+	{
+		return mp_bRunningAsDaemon;
+	}
+
+	void CSystem::f_SetRunningAsDaemon(bool _bRunningAsDaemon)
+	{
+		mp_bRunningAsDaemon = _bRunningAsDaemon;
+	}
+
+	// Thread safety?
+	void CSystem::f_SetProgramRoot(NStr::CStr const &_Root)
+	{
+		mp_ProgramRoot = _Root;
+		mp_ProgramRootNonTracked = _Root;
+	}
+
+	NStr::CStr const &CSystem::f_GetProgramRoot() const
+	{
+		return mp_ProgramRoot;
+	}
+
+	NStr::CStrNonTracked const &CSystem::f_GetProgramRootNonTracked() const
+	{
+		return mp_ProgramRootNonTracked;
+	}
+
+#if DMibSysLogSeverities
+	NLog::CLogger &CSystem::f_GetLogger()
+	{
+		return *mp_pSystemLog;
+	}
+#endif
 
 	CSystem::CSystem(bool _bIsDll)
 		: mp_bIsDll(_bIsDll)
@@ -274,10 +404,25 @@ namespace NMib
 		fp_DestroyMemoryManager();
 	}
 
+	NThread::CMutual &CSystem::f_GetLock()
+	{
+		return mp_Lock;
+	}
+
 	void CSystem::f_Init()
 	{
 		// Pre-alloctate exception thread local
 		NException::fg_UncaughtExceptions();
+	}
+
+	bool CSystem::f_InitDone()
+	{
+		return mp_bInitDone;
+	}
+
+	bool CSystem::f_DestroyingThreadSpecific()
+	{
+		return mp_bDestroyingThreadSpecific.f_Load();
 	}
 
 	void CSystem::f_RemoveAllLoggers()

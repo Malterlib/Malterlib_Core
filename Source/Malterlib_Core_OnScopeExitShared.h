@@ -11,18 +11,12 @@ namespace NMib
 	using COnScopeExitShared = NStorage::TCSharedPointer<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>;
 	using COnScopeExitSharedWithException = NStorage::TCSharedPointer<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>, false>>;
 
-	inline_always COnScopeExitShared fg_OnScopeExitShared(NFunction::TCFunctionMovable<void ()> &&_fOnExitFunctor)
-	{
-		return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>(fg_Move(_fOnExitFunctor));
-	}
+	inline_always COnScopeExitShared fg_OnScopeExitShared(NFunction::TCFunctionMovable<void ()> &&_fOnExitFunctor);
 
 	struct COnScopeExitSharedHelper
 	{
 		template <typename tf_FOnScopeExit>
-		COnScopeExitShared operator / (tf_FOnScopeExit &&_fOnExitFunctor) const
-		{
-			return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>>(fg_Move(_fOnExitFunctor));
-		}
+		COnScopeExitShared operator / (tf_FOnScopeExit &&_fOnExitFunctor) const;
 	};
 
 	extern COnScopeExitSharedHelper const &g_OnScopeExitShared;
@@ -30,11 +24,10 @@ namespace NMib
 	struct COnScopeExitSharedWithExceptionHelper
 	{
 		template <typename tf_FOnScopeExit>
-		COnScopeExitSharedWithException operator / (tf_FOnScopeExit &&_fOnExitFunctor) const
-		{
-			return fg_Construct<TCOnScopeExit<NFunction::TCFunctionMovable<void ()>>, false>(fg_Move(_fOnExitFunctor));
-		}
+		COnScopeExitSharedWithException operator / (tf_FOnScopeExit &&_fOnExitFunctor) const;
 	};
 
 	extern COnScopeExitSharedWithExceptionHelper const &g_OnScopeExitSharedWithException;
 }
+
+#include "Malterlib_Core_OnScopeExitShared.hpp"

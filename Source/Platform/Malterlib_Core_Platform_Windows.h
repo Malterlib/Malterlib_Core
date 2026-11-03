@@ -21,18 +21,7 @@ namespace NMib::NPlatform
 {
 	void fg_GenerateExcetionHandler(void *_pData, LONG (*_fCallback)(struct _EXCEPTION_POINTERS *_pExceptionInfo, void *_pData));
 
-	inline_small bool fg_IsGoodStackPtr(void *_pAddr, umint _Len, umint _StackStart, umint _StackEnd)
-	{
-		umint StackStart = _StackStart;
-		umint StackEnd = _StackEnd;
-		umint AddrStart = (umint)_pAddr;
-		umint AddrEnd = AddrStart + _Len;
-
-		if (AddrEnd < AddrStart)
-			return false;
-
-		return AddrEnd <= StackStart && AddrStart >= StackEnd;
-	}
+	inline_small bool fg_IsGoodStackPtr(void *_pAddr, umint _Len, umint _StackStart, umint _StackEnd);
 
 	bool fg_IsVista();
 	bool fg_ThisThreadOwnsDllLock();
@@ -43,3 +32,5 @@ namespace NMib::NPlatform
 	bool fg_SetPosixDeleteDisposition(HANDLE _pFile);
 	bool fg_GetUniqueFileIdentifier(HANDLE _pFile, NMib::NFile::CUniqueFileIdentifier &o_Identifier);
 }
+
+#include "Malterlib_Core_Platform_Windows.hpp"

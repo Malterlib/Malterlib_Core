@@ -9,46 +9,15 @@
 namespace NMib
 {
 	template <typename tf_FOnExitFunctor>
-	TCOnScopeExit<NFunction::TCFunction<void ()>> fg_OnScopeExitCatch(tf_FOnExitFunctor &&_fOnExitFunctor)
-	{
-		return TCOnScopeExit<NFunction::TCFunction<void ()>>
-			(
-				[_fOnExitFunctor]()
-				{
-					try
-					{
-						_fOnExitFunctor();
-					}
-					catch (NException::CException const &)
-					{
-					}
-				}
-			)
-		;
-	}
+	TCOnScopeExit<NFunction::TCFunction<void ()>> fg_OnScopeExitCatch(tf_FOnExitFunctor &&_fOnExitFunctor);
 
 	struct COnScopeExitCatchHelper
 	{
 		template <typename tf_FOnExitFunctor>
-		TCOnScopeExit<NFunction::TCFunction<void ()>> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const
-		{
-			return TCOnScopeExit<NFunction::TCFunction<void ()>>
-				(
-					[_fOnExitFunctor]()
-					{
-						try
-						{
-							_fOnExitFunctor();
-						}
-						catch (NException::CException const &)
-						{
-						}
-					}
-				)
-			;
-		}
+		TCOnScopeExit<NFunction::TCFunction<void ()>> operator / (tf_FOnExitFunctor &&_fOnExitFunctor) const;
 	};
 
 	extern COnScopeExitCatchHelper const &g_OnScopeExitCatch;
 }
 
+#include "Malterlib_Core_OnScopeExitCatch.hpp"

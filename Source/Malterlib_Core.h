@@ -20,9 +20,7 @@ namespace NMib
 
 	struct CVirtualDummy
 	{
-		virtual void f_Dummy()
-		{
-		}
+		virtual void f_Dummy();
 	};
 }
 
@@ -62,11 +60,7 @@ namespace NMib
 	;
 
 	template <typename tf_CType>
-	constexpr tf_CType fg_CheckOrdering(tf_CType _Order)
-	{
-		static_assert(cIsOrderType<tf_CType>);
-		return _Order;
-	}
+	constexpr tf_CType fg_CheckOrdering(tf_CType _Order);
 
 #ifdef DMibPLittleEndian
 	static constexpr EEndian gc_MachineEndian = EEndian_Little;
@@ -114,10 +108,7 @@ namespace NMib
 	{
 		using CDefault = int;
 
-		static constexpr inline_small t_CType0 fs_Convert(t_CType1 const &_From)
-		{
-			return t_CType0(_From);
-		}
+		static constexpr inline_small t_CType0 fs_Convert(t_CType1 const &_From);
 	};
 
 	namespace NConvertPrivate
@@ -132,10 +123,7 @@ namespace NMib
 		concept cIsDefault = sizeof(fg_IsDefault<TCConvert<t_CType0, t_CType1, t_CPrio>>(0)) == sizeof(NMib::NTraits::CFalseBySize);
 
 		template <typename tf_CType0, typename tf_CType1>
-		constexpr inline_small TCEnableIf<cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2>>, tf_CType0> fg_ConvertPrivate(tf_CType1 const &_From)
-		{
-			return TCConvert<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2>>::fs_Convert(_From);
-		}
+		constexpr inline_small TCEnableIf<cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2>>, tf_CType0> fg_ConvertPrivate(tf_CType1 const &_From);
 
 		template <typename tf_CType0, typename tf_CType1>
 		constexpr inline_small auto fg_ConvertPrivate(tf_CType1 const &_From)
@@ -144,9 +132,7 @@ namespace NMib
 				cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 1>> && !cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2>>
 				, tf_CType0
 			>
-		{
-			return TCConvert<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 1>>::fs_Convert(_From);
-		}
+		;
 
 		template <typename tf_CType0, typename tf_CType1>
 		constexpr inline_small auto fg_ConvertPrivate(tf_CType1 const &_From)
@@ -155,22 +141,14 @@ namespace NMib
 				!cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 1>> && !cIsDefault<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 2>>
 				, tf_CType0
 			>
-		{
-			return TCConvert<tf_CType0, tf_CType1, NMib::NTraits::TCCompileTimeConstant<int, 0>>::fs_Convert(_From);
-		}
+		;
 	}
 
 	template <typename tf_CType0, typename tf_CType1>
-	constexpr inline_small TCDisableIf<NTraits::cIsSame<tf_CType0, tf_CType1>, tf_CType0> fg_Convert(tf_CType1 const &_From)
-	{
-		return NConvertPrivate::fg_ConvertPrivate<tf_CType0, tf_CType1>(_From);
-	}
+	constexpr inline_small TCDisableIf<NTraits::cIsSame<tf_CType0, tf_CType1>, tf_CType0> fg_Convert(tf_CType1 const &_From);
 
 	template <typename tf_CType0, typename tf_CType1>
-	constexpr inline_small TCEnableIf<NTraits::cIsSame<tf_CType0, tf_CType1>, tf_CType0> fg_Convert(tf_CType1 const &_From)
-	{
-		return _From;
-	}
+	constexpr inline_small TCEnableIf<NTraits::cIsSame<tf_CType0, tf_CType1>, tf_CType0> fg_Convert(tf_CType1 const &_From);
 }
 
 #include <Mib/Bit/Static>
@@ -324,7 +302,7 @@ namespace NMib
 #include <Mib/Network/Address>
 #include <Mib/Network/PlatformSocket>
 
-#include "../../Core/Source/Malterlib_Core_Misc.hpp"
-
 #undef DMibSafety_IncMalterlib_H
+
+#include "Malterlib_Core.hpp"
 

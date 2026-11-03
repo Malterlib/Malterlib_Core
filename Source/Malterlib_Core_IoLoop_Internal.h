@@ -138,10 +138,7 @@ struct CSharedIoLoop
 	CSharedIoLoop();
 	~CSharedIoLoop();
 
-	NMib::NSys::ICIoLoop *f_GetLoop() const
-	{
-		return mp_Thread.m_pLoop;
-	}
+	NMib::NSys::ICIoLoop *f_GetLoop() const;
 
 private:
 	struct CPollerThread : public NMib::NThread::CThread

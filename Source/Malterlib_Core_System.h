@@ -23,14 +23,7 @@ namespace NMib
 
 	struct CPromiseKeepAlive
 	{
-		// The size is only needed where a deleting destructor does not return the
-		// size of the complete object (see -fmalterlib-sized-destructors).
-		CPromiseKeepAlive(umint _AllocSize)
-#ifndef DMibPSizedDestructors
-			: m_VirtualAllocSize(_AllocSize)
-#endif
-		{
-		}
+		CPromiseKeepAlive(umint _AllocSize);
 
 		virtual ~CPromiseKeepAlive() = 0;
 
@@ -116,18 +109,8 @@ namespace NMib
 
 		struct CExceptionFilterScope
 		{
-			CExceptionFilterScope(CExceptionFilter &_Filter)
-			{
-				auto &ThreadLocal = fg_SystemThreadLocal();
-				mp_pOldFilter = ThreadLocal.m_pExceptionFilter;
-				ThreadLocal.m_pExceptionFilter = &_Filter;
-			}
-
-			~CExceptionFilterScope()
-			{
-				auto &ThreadLocal = fg_SystemThreadLocal();
-				ThreadLocal.m_pExceptionFilter = mp_pOldFilter;
-			}
+			CExceptionFilterScope(CExceptionFilter &_Filter);
+			~CExceptionFilterScope();
 
 		private:
 			DMibThreadLocalScopeDebugMember;
@@ -136,18 +119,8 @@ namespace NMib
 
 		struct CDisableExceptionFilterScope
 		{
-			CDisableExceptionFilterScope()
-			{
-				auto &ThreadLocal = fg_SystemThreadLocal();
-				mp_pOldFilter = ThreadLocal.m_pExceptionFilter;
-				ThreadLocal.m_pExceptionFilter = nullptr;
-			}
-
-			~CDisableExceptionFilterScope()
-			{
-				auto &ThreadLocal = fg_SystemThreadLocal();
-				ThreadLocal.m_pExceptionFilter = mp_pOldFilter;
-			}
+			CDisableExceptionFilterScope();
+			~CDisableExceptionFilterScope();
 
 		private:
 			DMibThreadLocalScopeDebugMember;
@@ -186,9 +159,7 @@ namespace NMib
 
 	struct CVirtualDestructor
 	{
-		virtual ~CVirtualDestructor()
-		{
-		}
+		virtual ~CVirtualDestructor();
 	};
 
 #if defined(DCompiler_MSVC) || defined(DCompiler_clang_cl)
@@ -215,10 +186,7 @@ namespace NMib
 
 		static bool ms_bDisableMemoryManagerLeakReport;
 
-		CVirtualMachineInfo const &f_GetVirtualMachineInfo() const
-		{
-			return mp_VMInfo;
-		}
+		CVirtualMachineInfo const &f_GetVirtualMachineInfo() const;
 
 		static NContainer::TCVector<NStr::CStr> fs_ParseCommandLine(NStr::CStr const &_CommandLine);
 
@@ -230,89 +198,26 @@ namespace NMib
 		void f_AddStdErrLogger();
 		void f_AddFileLogger();
 
-		void f_RegisterProgram(NStr::CStr const &_ProgramName, NStr::CStr const &_SupportEmail, bool _bRunningAsDaemon)
-		{
-			mp_ProgramName = _ProgramName;
-			mp_ProgramNameNonTracked = _ProgramName;
-			mp_SupportEmail = _SupportEmail;
-			mp_SupportEmailNonTracked = _SupportEmail;
-			mp_bRunningAsDaemon = _bRunningAsDaemon;
-		}
-
-		bool f_IsDll() const
-		{
-			return mp_bIsDll;
-		}
-
-		NStr::CStr const &f_GetSupportEmail() const
-		{
-			return mp_SupportEmail;
-		}
-
-		NStr::CStrNonTracked const &f_GetSupportEmailNonTracked() const
-		{
-			return mp_SupportEmailNonTracked;
-		}
-
-		NStr::CStr const &f_GetProgramName() const
-		{
-			return mp_ProgramName;
-		}
+		void f_RegisterProgram(NStr::CStr const &_ProgramName, NStr::CStr const &_SupportEmail, bool _bRunningAsDaemon);
+		bool f_IsDll() const;
+		NStr::CStr const &f_GetSupportEmail() const;
+		NStr::CStrNonTracked const &f_GetSupportEmailNonTracked() const;
+		NStr::CStr const &f_GetProgramName() const;
 
 		void f_SetCrashHandler(NStr::CStr const &_Path, NStr::CStr const &_Server);
 
-		NStr::CStr const &f_GetCrashHandlerPath() const
-		{
-			return mp_CrashHandlerPath;
-		}
-
-		NStr::CStr const &f_GetCrashHandlerServer() const
-		{
-			return mp_CrashHandlerServer;
-		}
-
-		NStr::CStr const &f_GetCrashHandlerExePath() const
-		{
-			return mp_CrashHandlerExePath;
-		}
-
-		NStr::CStrNonTracked const &f_GetProgramNameNonTracked() const
-		{
-			return mp_ProgramNameNonTracked;
-		}
-
-		bool f_GetRunningAsDaemon() const
-		{
-			return mp_bRunningAsDaemon;
-		}
-
-		void f_SetRunningAsDaemon(bool _bRunningAsDaemon)
-		{
-			mp_bRunningAsDaemon = _bRunningAsDaemon;
-		}
-
-		// Thread safety?
-		void f_SetProgramRoot(NStr::CStr const &_Root)
-		{
-			mp_ProgramRoot = _Root;
-			mp_ProgramRootNonTracked = _Root;
-		}
-
-		NStr::CStr const &f_GetProgramRoot() const
-		{
-			return mp_ProgramRoot;
-		}
-
-		NStr::CStrNonTracked const &f_GetProgramRootNonTracked() const
-		{
-			return mp_ProgramRootNonTracked;
-		}
+		NStr::CStr const &f_GetCrashHandlerPath() const;
+		NStr::CStr const &f_GetCrashHandlerServer() const;
+		NStr::CStr const &f_GetCrashHandlerExePath() const;
+		NStr::CStrNonTracked const &f_GetProgramNameNonTracked() const;
+		bool f_GetRunningAsDaemon() const;
+		void f_SetRunningAsDaemon(bool _bRunningAsDaemon);
+		void f_SetProgramRoot(NStr::CStr const &_Root);
+		NStr::CStr const &f_GetProgramRoot() const;
+		NStr::CStrNonTracked const &f_GetProgramRootNonTracked() const;
 
 #if DMibSysLogSeverities
-		NLog::CLogger &f_GetLogger()
-		{
-			return *mp_pSystemLog;
-		}
+		NLog::CLogger &f_GetLogger();
 #endif
 
 		CSystem(bool _bIsDll);
@@ -322,10 +227,7 @@ namespace NMib
 		void f_DestructThreadSpecific();
 		void f_Destruct();
 
-		NThread::CMutual &f_GetLock()
-		{
-			return mp_Lock;
-		}
+		NThread::CMutual &f_GetLock();
 
 		/************************************************************************************************\
 		||¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯||
@@ -336,15 +238,8 @@ namespace NMib
 		void f_Exit(aint _ExitCode);
 		void f_Init();
 
-		bool f_InitDone()
-		{
-			return mp_bInitDone;
-		}
-
-		bool f_DestroyingThreadSpecific()
-		{
-			return mp_bDestroyingThreadSpecific.f_Load();
-		}
+		bool f_InitDone();
+		bool f_DestroyingThreadSpecific();
 
 		void f_InitModule(FConstruct **_pCConstructorsStart, FConstruct **_pCConstructorsEnd, FConstruct **_pCppConstructors, FConstruct **_pCppConstructorsEnd);
 		void f_InitModule();
@@ -554,19 +449,7 @@ namespace NMib
 	extern umint g_bMemoryManagerNeededAfterDestroy;
 	extern umint g_bCreatedSystem;
 
-	static inline_small CSystem *fg_GetSys()
-	{
-#ifdef DMibPAutomaticSystemCreation
-		DMibFastCheck(g_bCreatingSystemDone);
-		return (CSystem *)g_SystemMemory;
-#else
-
-		if (!g_pSys)
-			NSys::fg_CreateSystem();
-
-		return g_pSys;
-#endif
-	}
+	static inline_small CSystem *fg_GetSys();
 
 	struct CSystemModule
 	{
@@ -589,10 +472,7 @@ namespace NMib
 
 	extern CSystemModule g_SystemModule;
 
-	static inline_small CSystemModule *fg_GetModule()
-	{
-		return &g_SystemModule;
-	}
+	static inline_small CSystemModule *fg_GetModule();
 
 	struct CAppClasses
 	{
@@ -612,3 +492,4 @@ namespace NMib
 };
 
 #include "Malterlib_Core_SubSystem.hpp"
+#include "Malterlib_Core_System.hpp"

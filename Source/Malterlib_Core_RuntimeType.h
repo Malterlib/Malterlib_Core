@@ -18,15 +18,8 @@ namespace NMib
 	{
 		struct CCompare
 		{
-			ch8 const *operator () (CRunTimeObjectInfo const &_Info)
-			{
-				return _Info.m_pName;
-			}
-
-			auto operator () (ch8 const *_pLeft, ch8 const *_pRight)
-			{
-				return NStr::fg_StrCmp(_pLeft, _pRight) <=> 0;
-			}
+			ch8 const *operator () (CRunTimeObjectInfo const &_Info);
+			auto operator () (ch8 const *_pLeft, ch8 const *_pRight);
 		};
 
 		NStr::CStr f_GetName();
@@ -54,21 +47,11 @@ namespace NMib
 
 	struct CRunTimeObjectInfoContainer : public CRunTimeObjectInfo
 	{
-		~CRunTimeObjectInfoContainer()
-		{
-			f_Destruct();
-		}
+		~CRunTimeObjectInfoContainer();
 
-		void f_Construct(ch8 const *_pName)
-		{
-			m_Name = _pName;
-			CRunTimeObjectInfo::f_Construct(m_Name, nullptr, false);
-		}
+		void f_Construct(ch8 const *_pName);
 
-		virtual void *f_CreateObject() const
-		{
-			DMibError("Trying to create an run time object with an unregistered class");
-		}
+		virtual void *f_CreateObject() const;
 
 		NStr::CStr m_Name;
 	};
@@ -76,27 +59,15 @@ namespace NMib
 	template <typename t_CObject, typename t_CCastClass = void>
 	struct TCRuntimeClassNamed : public CRunTimeObjectInfo
 	{
-		TCRuntimeClassNamed(ch8 const *_pName, ch8 const *_pParent)
-		{
-			f_Construct(_pName, _pParent);
-		}
+		TCRuntimeClassNamed(ch8 const *_pName, ch8 const *_pParent);
 
-		virtual void *f_CreateObject() const
-		{
-			if constexpr (NTraits::cIsAbstract<t_CObject>)
-				DMibError("Cannot construct an abstract class");
-			else
-				return fg_ConstructObject<t_CObject>(NMemory::CDefaultAllocator());
-		}
+		virtual void *f_CreateObject() const;
 	};
 
 	CRunTimeObjectInfo *fg_GetRuntimeTypeInfo(ch8 const *_pObjectName);
 	void *fg_CreateRuntimeTypeRawPtr(ch8 const *_pObjectName);
 	template <typename tf_CType>
-	NStorage::TCUniquePointer<tf_CType> fg_CreateRuntimeType(ch8 const *_pObjectName)
-	{
-		return fg_Explicit(static_cast<tf_CType *>(fg_CreateRuntimeTypeRawPtr(_pObjectName)));
-	}
+	NStorage::TCUniquePointer<tf_CType> fg_CreateRuntimeType(ch8 const *_pObjectName);
 
 #define DMibRuntimeClassNamedCastedBase(d_Class, d_Name, d_Cast) ::NMib::TCRuntimeClassNamed<d_Class, d_Cast> g_RuntimeClassNamed_##d_Class(#d_Name, nullptr);
 #define DMibRuntimeClassNamedCasted(d_Parent, d_Class, d_Name, d_Cast) ::NMib::TCRuntimeClassNamed<d_Class, d_Cast> g_RuntimeClassNamed_##d_Class(#d_Name, #d_Parent);
@@ -124,3 +95,5 @@ namespace NMib
 #	define DRuntimeClassMakeActive DMibRuntimeClassMakeActive
 #endif
 }
+
+#include "Malterlib_Core_RuntimeType.hpp"

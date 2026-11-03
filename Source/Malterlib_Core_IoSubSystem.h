@@ -82,10 +82,7 @@ namespace NMib::NSys
 
 	struct CSort_StatsDump
 	{
-		auto operator () (FIoStatsDump _fLeft, FIoStatsDump _fRight) const
-		{
-			return (umint)_fLeft <=> (umint)_fRight;
-		}
+		auto operator () (FIoStatsDump _fLeft, FIoStatsDump _fRight) const;
 	};
 
 	// Reads environment overrides once at construction; non-debug accessors return compile-time defaults.

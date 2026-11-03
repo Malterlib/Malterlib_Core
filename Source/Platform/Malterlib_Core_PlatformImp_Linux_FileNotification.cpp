@@ -198,6 +198,87 @@ CFileChangeNotificationContext::~CFileChangeNotificationContext()
 		close(m_PollDescriptor);
 }
 
+CFileChangeNotificationContext::CWatch::CWatch(int _Descriptor, CStr const &_Path, CWatch *_pParent)
+	: mp_Descriptor(_Descriptor)
+	, mp_Path(_Path)
+	, mp_FileName(CFile::fs_GetFile(_Path))
+	, mp_pParent(_pParent)
+{
+	if (mp_pParent)
+		mp_pParent->mp_Children.f_Insert(*this);
+}
+
+CFileChangeNotificationContext::CWatch::~CWatch()
+{
+}
+
+auto CFileChangeNotificationContext::CWatch::f_GetParent() const -> CWatch *
+{
+	return mp_pParent;
+}
+
+void CFileChangeNotificationContext::CWatch::f_SetParent(CWatch *_pParent, CStr const &_Path)
+{
+	mp_Link.f_Unlink();
+	mp_pParent = _pParent;
+	if (mp_pParent)
+	{
+		mp_FileName = CFile::fs_GetFile(_Path);
+		mp_Path = _Path;
+		mp_pParent->mp_Children.f_Insert(this);
+	}
+}
+
+void CFileChangeNotificationContext::CWatch::f_AddReference(CNotification *_pReference)
+{
+	mp_References[_pReference];
+}
+
+void CFileChangeNotificationContext::CWatch::f_RemoveReference(CNotification *_pReference)
+{
+	mp_References.f_Remove(_pReference);
+}
+
+bool CFileChangeNotificationContext::CWatch::f_IsReferenced()
+{
+	return !mp_References.f_IsEmpty();
+}
+
+int CFileChangeNotificationContext::CWatch::f_GetDescriptor()
+{
+	return mp_Descriptor;
+}
+
+auto CFileChangeNotificationContext::CWatch::f_GetReferences() -> TCSet<CNotification *>
+{
+	return mp_References;
+}
+
+int CFileChangeNotificationContext::CWatch::f_GetReferencesCount()
+{
+	return mp_References.f_GetLen();
+}
+
+CStr CFileChangeNotificationContext::CWatch::f_GetPath() const
+{
+	return mp_Path;
+}
+
+auto CFileChangeNotificationContext::CWatch::f_GetChild(CStr const &_FileName) -> CWatch *
+{
+	for (auto &Child : mp_Children)
+	{
+		if (Child.mp_FileName == _FileName)
+			return &Child;
+	}
+	return nullptr;
+}
+
+bool CFileChangeNotificationContext::CWatch::f_HasNotification(CNotification *_pNotification)
+{
+	return mp_References.f_FindEqual(_pNotification);
+}
+
 int CFileChangeNotificationContext::f_Inotify_AddWatch(CStr const &_Path)
 {
 	uint32_t Mask = IN_ONLYDIR | IN_MODIFY | IN_ATTRIB | IN_MOVED_FROM | IN_MOVED_TO | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MOVE_SELF;

@@ -52,3 +52,8 @@ CSharedIoLoop::~CSharedIoLoop()
 	NSys::fg_DestroyIoLoop(mp_Thread.m_pLoop);
 	mp_Thread.m_pLoop = nullptr;
 }
+
+NMib::NSys::ICIoLoop *CSharedIoLoop::f_GetLoop() const
+{
+	return mp_Thread.m_pLoop;
+}

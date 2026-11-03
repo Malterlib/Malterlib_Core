@@ -5,6 +5,16 @@
 
 namespace NMib
 {
+	CLineNumber::CLineNumber(aint _nLine)
+		: m_nLine(_nLine)
+	{
+	}
+
+	CLineNumber::operator aint () const
+	{
+		return m_nLine;
+	}
+
 	constexpr CExplicitHelper gc_ExplicitInit{};
 	CExplicitHelper const &g_Explicit = gc_ExplicitInit;
 

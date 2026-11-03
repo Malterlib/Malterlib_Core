@@ -39,11 +39,7 @@ namespace NMib
 
 					auto operator <=> (CFileKey const &_Right) const noexcept = default;
 
-					CFileKey(struct stat const &_Init)
-						: m_Device(_Init.st_dev)
-						, m_Inode(_Init.st_ino)
-					{
-					}
+					CFileKey(struct stat const &_Init);
 				};
 
 				struct CFindChangesContext
@@ -63,16 +59,10 @@ namespace NMib
 
 					struct CCompare
 					{
-						inline_small NMib::NStr::CStr const &operator () (CFileSnapshot const &_Node) const
-						{
-							return _Node.m_FileName;
-						}
+						inline_small NMib::NStr::CStr const &operator () (CFileSnapshot const &_Node) const;
 					};
 
-					CFileKey f_GetKey() const
-					{
-						return CFileKey(m_Stats);
-					}
+					CFileKey f_GetKey() const;
 
 					//
 					struct stat m_Stats;
@@ -107,13 +97,7 @@ namespace NMib
 
 				struct CUpdateSnapshotContext
 				{
-					CUpdateSnapshotContext(CSnapshotsByNode &_SnapshotsByNode, CSnapshotsByNode &_OldSnapshotsByNode, uint64 _UpdateSequence, CNotificationPath const &_NotificationPath)
-						: m_SnapshotsByNode(_SnapshotsByNode)
-						, m_OldSnapshotsByNode(_OldSnapshotsByNode)
-						, m_UpdateSequence(_UpdateSequence)
-						, m_NotificationPath(_NotificationPath)
-					{
-					}
+					CUpdateSnapshotContext(CSnapshotsByNode &_SnapshotsByNode, CSnapshotsByNode &_OldSnapshotsByNode, uint64 _UpdateSequence, CNotificationPath const &_NotificationPath);
 
 					CSnapshotsByNode &m_SnapshotsByNode;
 					CSnapshotsByNode &m_OldSnapshotsByNode;
@@ -200,3 +184,5 @@ namespace NMib
 		};
 	}
 } // Namespace NMib
+
+#include "Malterlib_Core_PlatformImp_MacOS_ObjCPP.hpp"

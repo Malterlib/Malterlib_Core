@@ -187,6 +187,27 @@ namespace NMib
 			return fg_CheckAccessRightsTemplated(_Path, _bRandom);
 		}
 
+		CClassContainer::CClassContainer()
+		{
+		}
+
+		CClassContainer::CClassContainer(CClassContainer const &_Other)
+		{
+		}
+
+		CClassContainer::~CClassContainer()
+		{
+		}
+
+		void *CClassContainer::f_GetVoidPtr() const
+		{
+			return (void *)this;
+		}
+
+		CClassContainerList::~CClassContainerList()
+		{
+		}
+
 		// NOLINTNEXTLINE(malterlib-conceptual-prefix): CMibArgList is va_list, a pointer on macOS and Windows and an array on Linux
 		CClassContainerList *fg_GetClassContainerListArgList(CClassContainerList &_List, CMibArgList &_Args)
 		{
@@ -212,6 +233,16 @@ namespace NMib
 			DMibPArgListStart(Args, _pList);
 
 			return fg_GetClassContainerListArgList(*_pList, Args);
+		}
+
+		CDeadlockDetocterPause::CDeadlockDetocterPause()
+		{
+			NSys::fg_Debug_PauseDeadlockDetector();
+		}
+
+		CDeadlockDetocterPause::~CDeadlockDetocterPause()
+		{
+			NSys::fg_Debug_ResumeDeadlockDetector();
 		}
 	}
 }

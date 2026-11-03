@@ -17,6 +17,11 @@ namespace NMib
 		constinit TCSubSystem<CSubSystem_Core_RunTimeObject, ESubSystemDestruction_BeforeMemoryManager> g_DynamicObjectsSystem = {DAggregateInit};
 	}
 
+	ch8 const *CRunTimeObjectInfo::CCompare::operator () (CRunTimeObjectInfo const &_Info)
+	{
+		return _Info.m_pName;
+	}
+
 	NStr::CStr CRunTimeObjectInfo::f_GetName()
 	{
 		NStr::CStr ToReturn = m_pName;
@@ -263,6 +268,22 @@ namespace NMib
 				}
 			}
 		}
+	}
+
+	CRunTimeObjectInfoContainer::~CRunTimeObjectInfoContainer()
+	{
+		f_Destruct();
+	}
+
+	void CRunTimeObjectInfoContainer::f_Construct(ch8 const *_pName)
+	{
+		m_Name = _pName;
+		CRunTimeObjectInfo::f_Construct(m_Name, nullptr, false);
+	}
+
+	void *CRunTimeObjectInfoContainer::f_CreateObject() const
+	{
+		DMibError("Trying to create an run time object with an unregistered class");
 	}
 
 	CRunTimeObjectInfo *fg_GetRuntimeTypeInfo(ch8 const *_pObjectName)

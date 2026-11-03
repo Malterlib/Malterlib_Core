@@ -68,19 +68,14 @@ namespace NMib
 	struct TCVoidFunctor
 	{
 		template <typename ...tfp_CParam>
-		t_CReturn operator () (tfp_CParam && ...p_Params) const volatile
-		{
-			return t_CReturn();
-		}
+		t_CReturn operator () (tfp_CParam && ...p_Params) const volatile;
 	};
 
 	template <>
 	struct TCVoidFunctor<void>
 	{
 		template <typename ...tfp_CParam>
-		void operator () (tfp_CParam && ...p_Params) const volatile
-		{
-		}
+		void operator () (tfp_CParam && ...p_Params) const volatile;
 	};
 
 	using CVoidFunctor = TCVoidFunctor<void>;
@@ -147,10 +142,7 @@ namespace NMib
 		auto operator <=> (CVoidTag const &_Right) const noexcept = default;
 
 		template <typename tf_CStr>
-		void f_Format(tf_CStr &o_Str) const
-		{
-			o_Str += "void";
-		}
+		void f_Format(tf_CStr &o_Str) const;
 	};
 
 	extern CVoidTag const g_Void;
@@ -307,7 +299,7 @@ namespace NMib
 
 // Template implementations
 #include "Malterlib_Core_General.hpp"
-#include "../../Memory/Source/Malterlib_Memory_Pool_Implementation.h"
+#include "../../Memory/Source/Malterlib_Memory_Pool_Implementation.hpp"
 #include "../../Exception/Source/Malterlib_Exception.hpp"
 #include "../../Exception/Source/Malterlib_Exception_FastExceptions.hpp"
 #include "../../Thread/Source/Malterlib_Thread.hpp"
@@ -353,6 +345,8 @@ using namespace NMib::NAtomic;
 using namespace NMib::NSystem;
 #	define DNewLine DMibNewLine
 #endif
+
+#include "Malterlib_Core_Include.hpp"
 
 #endif
 

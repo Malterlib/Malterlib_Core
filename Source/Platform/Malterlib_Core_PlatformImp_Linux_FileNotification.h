@@ -34,110 +34,27 @@ struct CFileChangeNotificationContext
 	struct CNotification;
 	struct CWatch
 	{
-		CWatch(int _Descriptor, CStr const &_Path, CWatch *_pParent)
-			: mp_Descriptor(_Descriptor)
-			, mp_Path(_Path)
-			, mp_FileName(CFile::fs_GetFile(_Path))
-			, mp_pParent(_pParent)
-		{
-			if (mp_pParent)
-				mp_pParent->mp_Children.f_Insert(*this);
-		}
+		CWatch(int _Descriptor, CStr const &_Path, CWatch *_pParent);
+		~CWatch();
 
-		~CWatch()
-		{
-		}
-
-		CWatch *f_GetParent() const
-		{
-			return mp_pParent;
-		}
-
-		void f_SetParent(CWatch *_pParent, CStr const &_Path)
-		{
-			mp_Link.f_Unlink();
-			mp_pParent = _pParent;
-			if (mp_pParent)
-			{
-				mp_FileName = CFile::fs_GetFile(_Path);
-				mp_Path = _Path;
-				mp_pParent->mp_Children.f_Insert(this);
-			}
-		}
-
-		auto &f_GetChildren()
-		{
-			return mp_Children;
-		}
-
-		void f_AddReference(CNotification *_pReference)
-		{
-			mp_References[_pReference];
-		}
-
-		void f_RemoveReference(CNotification *_pReference)
-		{
-			mp_References.f_Remove(_pReference);
-		}
-
-		bool f_IsReferenced()
-		{
-			return !mp_References.f_IsEmpty();
-		}
-
-		int f_GetDescriptor()
-		{
-			return mp_Descriptor;
-		}
-
-		TCSet<CNotification *> f_GetReferences()
-		{
-			return mp_References;
-		}
-
-		int f_GetReferencesCount()
-		{
-			return mp_References.f_GetLen();
-		}
-
-		CStr f_GetPath() const
-		{
-			return mp_Path;
-		}
-
-		CWatch *f_GetChild(CStr const &_FileName)
-		{
-			for (auto &Child : mp_Children)
-			{
-				if (Child.mp_FileName == _FileName)
-					return &Child;
-			}
-			return nullptr;
-		}
-
-		bool f_HasNotification(CNotification *_pNotification)
-		{
-			return mp_References.f_FindEqual(_pNotification);
-		}
+		CWatch *f_GetParent() const;
+		void f_SetParent(CWatch *_pParent, CStr const &_Path);
+		auto &f_GetChildren();
+		void f_AddReference(CNotification *_pReference);
+		void f_RemoveReference(CNotification *_pReference);
+		bool f_IsReferenced();
+		int f_GetDescriptor();
+		TCSet<CNotification *> f_GetReferences();
+		int f_GetReferencesCount();
+		CStr f_GetPath() const;
+		CWatch *f_GetChild(CStr const &_FileName);
+		bool f_HasNotification(CNotification *_pNotification);
 
 		template <typename tf_FOnFile>
-		void f_ForEachChildFileRecursive(CStr const &_BasePath, tf_FOnFile &&_fOnFile, bool _bRecursive)
-		{
-			for (auto &bIsDir : mp_ChildFiles)
-				_fOnFile(CFile::fs_AppendPath(_BasePath, mp_ChildFiles.fs_GetKey(bIsDir)), bIsDir);
-
-			if (!_bRecursive)
-				return;
-
-			for (auto &Child : mp_Children)
-				Child.f_ForEachChildFileRecursive(CFile::fs_AppendPath(_BasePath, Child.mp_FileName), _fOnFile, true);
-		}
+		void f_ForEachChildFileRecursive(CStr const &_BasePath, tf_FOnFile &&_fOnFile, bool _bRecursive);
 
 		template <typename tf_FOnFile>
-		void f_ForEachChildFile(tf_FOnFile &&_fOnFile, bool _bRecursive)
-		{
-			f_ForEachChildFileRecursive("", _fOnFile, _bRecursive);
-		}
+		void f_ForEachChildFile(tf_FOnFile &&_fOnFile, bool _bRecursive);
 
 		CIntrusiveRefCount m_RefCount;
 
@@ -266,3 +183,5 @@ struct CFileChangeNotificationContext
 	CMutual m_ContextLock;
 	TCUniquePointer<CNotificationThread> m_pNotificationThread;
 };
+
+#include "Malterlib_Core_PlatformImp_Linux_FileNotification.hpp"

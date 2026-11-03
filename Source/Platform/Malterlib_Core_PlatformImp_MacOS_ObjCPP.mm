@@ -568,9 +568,20 @@ namespace NMib
 			}
 		}
 
+		CFileChangeNoticationContext::CNotification::CFileKey::CFileKey(struct stat const &_Init)
+			: m_Device(_Init.st_dev)
+			, m_Inode(_Init.st_ino)
+		{
+		}
+
 		CFileChangeNoticationContext::CNotification::CFileSnapshot::CFileSnapshot(CFileSnapshot *_pParent)
 			: m_pParent(_pParent)
 		{
+		}
+
+		auto CFileChangeNoticationContext::CNotification::CFileSnapshot::f_GetKey() const -> CFileKey
+		{
+			return CFileKey(m_Stats);
 		}
 
 		CFileChangeNoticationContext::CNotification::CFileSnapshot::CFileSnapshot(CFileSnapshot const &_Other, CFileSnapshot *_pParent, CSnapshotsByNode &_SnapshotsByNode)
@@ -591,6 +602,20 @@ namespace NMib
 					Snapshots.f_Insert(NewChild);
 				}
 			}
+		}
+
+		CFileChangeNoticationContext::CNotification::CUpdateSnapshotContext::CUpdateSnapshotContext
+			(
+				CSnapshotsByNode &_SnapshotsByNode
+				, CSnapshotsByNode &_OldSnapshotsByNode
+				, uint64 _UpdateSequence
+				, CNotificationPath const &_NotificationPath
+			)
+			: m_SnapshotsByNode(_SnapshotsByNode)
+			, m_OldSnapshotsByNode(_OldSnapshotsByNode)
+			, m_UpdateSequence(_UpdateSequence)
+			, m_NotificationPath(_NotificationPath)
+		{
 		}
 
 		CFileChangeNoticationContext::CNotification::CNotification(CFileChangeNoticationContext *_pContext)

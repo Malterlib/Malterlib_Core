@@ -75,46 +75,6 @@ namespace NMib
 			template <typename tf_CReturnType>
 			tf_CReturnType f_Read(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
 
-			template <>
-			uint32 f_Read<uint32>(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
-			{
-				DWORD Temp = 0;
-
-				fp_ReadRegKey(_SubKey, _KeyValue, &Temp, nullptr, nullptr, nullptr);
-
-				return Temp;
-			}
-
-			template <>
-			NStr::CStr f_Read<NStr::CStr>(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
-			{
-				NStr::CStr Temp;
-
-				fp_ReadRegKey(_SubKey, _KeyValue, nullptr, &Temp, nullptr, nullptr);
-
-				return Temp;
-			}
-
-			template <>
-			NContainer::CByteVector f_Read<NContainer::CByteVector>(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
-			{
-				NContainer::CByteVector Temp;
-
-				fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, &Temp, nullptr);
-
-				return Temp;
-			}
-
-			template <>
-			NContainer::TCVector<NStr::CStr> f_Read<NContainer::TCVector<NStr::CStr>>(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
-			{
-				NContainer::TCVector<NStr::CStr> Temp;
-
-				fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, nullptr, &Temp);
-
-				return Temp;
-			}
-
 			bool f_KeyExists(NStr::CStr const &_SubKey);
 			bool f_ValueExists(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
 
@@ -144,5 +104,7 @@ namespace NMib
 		};
 	}
 }
+
+#include "Malterlib_Core_Platform_Windows_Registry.hpp"
 
 #endif

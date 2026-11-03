@@ -3,7 +3,7 @@
 
 #pragma once
 
-inline void CAddressResolver::fsp_CloseRequest(CResolveRequest *_pRequest)
+void CAddressResolver::fsp_CloseRequest(CResolveRequest *_pRequest)
 {
 	NStorage::TCUniquePointer<CResolveRequest> pRequest = fg_Explicit(_pRequest);
 	auto fOnClosed = fg_Move(pRequest->m_fOnClosed);
@@ -13,7 +13,7 @@ inline void CAddressResolver::fsp_CloseRequest(CResolveRequest *_pRequest)
 		fOnClosed();
 }
 
-inline void CAddressResolver::f_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
+void CAddressResolver::f_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed)
 {
 	auto *pReq = static_cast<CResolveRequest *>(_pResolver);
 

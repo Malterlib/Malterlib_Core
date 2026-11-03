@@ -43,31 +43,11 @@ namespace NMib
 			fp32 m_User;
 			fp32 m_Kernel;
 			fp32 m_Idle;
-			CSystemCPUUsage()
-				: m_User(0.0f)
-				, m_Kernel(0.0f)
-				, m_Idle(0.0f)
-			{
-			}
+			CSystemCPUUsage();
+			CSystemCPUUsage(CSystemCPUUsage const &_Other);
+			CSystemCPUUsage(fp32 _Init);
 
-			CSystemCPUUsage(CSystemCPUUsage const &_Other)
-				: m_User(_Other.m_User)
-				, m_Kernel(_Other.m_Kernel)
-				, m_Idle(_Other.m_Idle)
-			{
-			}
-
-			CSystemCPUUsage(fp32 _Init)
-				: m_User(_Init)
-				, m_Kernel(_Init)
-				, m_Idle(_Init)
-			{
-			}
-
-			fp32 f_GetUsage() const
-			{
-				return m_User + m_Kernel;
-			}
+			fp32 f_GetUsage() const;
 		};
 	}
 
@@ -404,4 +384,3 @@ namespace NMib
 		EDesktopEnvironment fg_DesktopEnvironment_Get();
 	}
 }
-

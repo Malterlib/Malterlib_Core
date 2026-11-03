@@ -23,12 +23,7 @@ namespace NMib
 
 	public:
 		TCSubSystem() = delete;
-		constexpr TCSubSystem(EAggregateInitialization _Init)
-			: mp_ObjectSpace{}
-			, mp_Lock{_Init}
-			, mp_bWasCreated{false}
-		{
-		}
+		constexpr TCSubSystem(EAggregateInitialization _Init);
 
 	private:
 		alignas(t_CSubSystem) uint8 mp_ObjectSpace[sizeof(t_CSubSystem)];

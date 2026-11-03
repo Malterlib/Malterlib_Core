@@ -5,6 +5,11 @@
 
 namespace NMib
 {
+	bool CSubSystem::f_IsAfterMemoryManager() const
+	{
+		return m_DestructionOrder >= ESubSystemDestruction_BeforeThreadLocals;
+	}
+
 	CSubSystem::CSubSystem()
 	{
 	}

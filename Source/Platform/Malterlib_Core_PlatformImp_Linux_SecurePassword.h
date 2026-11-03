@@ -10,9 +10,7 @@ namespace NMib
 	{
 		struct CLinuxPasswordManager
 		{
-			virtual ~CLinuxPasswordManager()
-			{
-			}
+			virtual ~CLinuxPasswordManager();
 
 			virtual bool f_OK() const = 0;
 
@@ -23,10 +21,7 @@ namespace NMib
 			virtual ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password) = 0;
 			virtual ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key) = 0;
 
-			virtual bool f_SecurePassword_Supported()
-			{
-				return true;
-			}
+			virtual bool f_SecurePassword_Supported();
 		};
 
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem *_pDBus);

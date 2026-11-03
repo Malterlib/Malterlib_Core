@@ -62,5 +62,13 @@ namespace NMib
 	{
 		return ((t_CSubSystem *)mp_ObjectSpace);
 	}
+
+	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
+	constexpr TCSubSystem<t_CSubSystem, t_DestructionOrder>::TCSubSystem(EAggregateInitialization _Init)
+		: mp_ObjectSpace{}
+		, mp_Lock{_Init}
+		, mp_bWasCreated{false}
+	{
+	}
 };
 

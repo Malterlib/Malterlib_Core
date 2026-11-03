@@ -13,6 +13,11 @@ namespace NMib::NSys
 		return _Knob == EIoKnob::mc_On;
 	}
 
+	inline auto CSort_StatsDump::operator () (FIoStatsDump _fLeft, FIoStatsDump _fRight) const
+	{
+		return (umint)_fLeft <=> (umint)_fRight;
+	}
+
 	inline bool CIoSubSystem::f_StatsEnabled() const
 	{
 #if DMibConfig_IoDebug_Enable
