@@ -5,7 +5,7 @@
 
 namespace NMib
 {
-	template <typename ...tfp_CTag>
+	template <typename ...tp_CTag>
 	struct TCTags;
 
 	template <typename t_CTags, typename t_CBaseTag, typename t_CDefaultTag = t_CBaseTag>

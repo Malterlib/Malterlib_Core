@@ -9,9 +9,9 @@ namespace NMib
 {
 	namespace NSys
 	{
-		BreakpadRef g_Breakpad = nullptr;
+		BreakpadRef g_pBreakpad = nullptr;
 
-		static BreakpadRef InitBreakpad(void)
+		static BreakpadRef fsg_InitBreakpad(void)
 		{
 			if (!BreakpadVersion)
 				return nullptr;
@@ -22,10 +22,10 @@ namespace NMib
 			if (!BreakpadCreate)
 				return nullptr;
 
-			NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-			BreakpadRef breakpad = 0;
-			NSMutableDictionary *plist = [NSMutableDictionary dictionaryWithDictionary: [[NSBundle mainBundle] infoDictionary]];
-			if (plist)
+			NSAutoreleasePool *pPool = [[NSAutoreleasePool alloc] init];
+			BreakpadRef pBreakpad = 0;
+			NSMutableDictionary *pPropertyList = [NSMutableDictionary dictionaryWithDictionary: [[NSBundle mainBundle] infoDictionary]];
+			if (pPropertyList)
 			{
 				NMib::NStr::CStr TempDir
 					= NMib::NFile::CFile::fs_GetTemporaryDirectory()
@@ -37,7 +37,7 @@ namespace NMib
 				{
 					NMib::NFile::CFile::fs_CreateDirectory(TempDir);
 
-					[plist setObject: [[NSString alloc] initWithUTF8String: TempDir.f_GetStr()] forKey: @"BreakpadMinidumpLocation"];
+					[pPropertyList setObject: [[NSString alloc] initWithUTF8String: TempDir.f_GetStr()] forKey: @"BreakpadMinidumpLocation"];
 
 					/*for (id key in plist) {
 
@@ -47,27 +47,27 @@ namespace NMib
 
 					// Note: version 1.0.0.4 of the framework changed the type of the argument
 					// from CFDictionaryRef to NSDictionary * on the next line:
-					breakpad = BreakpadCreate(plist);
+					pBreakpad = BreakpadCreate(pPropertyList);
 				}
 				catch (NMib::NFile::CExceptionFile const &)
 				{
 				}
 			}
-			[pool release];
-			return breakpad;
+			[pPool release];
+			return pBreakpad;
 		}
 
 		void fg_InitBreakpad()
 		{
 			//DMibTraceSafe("Init breakpad called\n", 0);
-			g_Breakpad = InitBreakpad();
+			g_pBreakpad = fsg_InitBreakpad();
 		}
 
 		void fg_DestroyBreakpad()
 		{
 			//DMibTraceSafe("Destroy breakpad called\n", 0);
-			if (g_Breakpad && BreakpadRelease)
-				BreakpadRelease(g_Breakpad);
+			if (g_pBreakpad && BreakpadRelease)
+				BreakpadRelease(g_pBreakpad);
 		}
 	}
 } // Namespace NMib
