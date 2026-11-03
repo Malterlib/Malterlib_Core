@@ -78,8 +78,7 @@ struct CHandleInformation
 	{
 		if (mp_pPSAPIDll)
 			FreeLibrary(mp_pPSAPIDll);
-		if (mp_pNTDLLDll)
-			FreeLibrary(mp_pNTDLLDll);
+		// mp_pNTDLLDll is NLocal::g_pNtDll, from GetModuleHandle, which takes no reference to release.
 	}
 
 	struct CHandleInfo
