@@ -441,13 +441,8 @@ namespace NMib
 #	pragma runtime_checks( "", restore )
 
 #	ifdef DMibSupportCygwin
-		class CWindowsHandle
+		struct CWindowsHandle
 		{
-			HANDLE m_Handle;
-			CWindowsHandle(CWindowsHandle const &_Other);
-			CWindowsHandle &operator = (CWindowsHandle const &_Other);
-
-		public:
 			CWindowsHandle()
 				: m_Handle(nullptr)
 			{
@@ -484,6 +479,11 @@ namespace NMib
 			{
 				return m_Handle;
 			}
+
+		private:
+			HANDLE m_Handle;
+			CWindowsHandle(CWindowsHandle const &_Other);
+			CWindowsHandle &operator = (CWindowsHandle const &_Other);
 		};
 
 		struct CFileMap

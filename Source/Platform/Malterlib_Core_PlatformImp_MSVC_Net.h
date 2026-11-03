@@ -101,7 +101,7 @@ NSys::CSocketIoStats *fg_SocketIoStats();
 
 struct CIoSubSystem_Windows;
 
-class CWindowsSocketContext
+struct CWindowsSocketContext
 {
 protected:
 	bool mp_bInitFailed;

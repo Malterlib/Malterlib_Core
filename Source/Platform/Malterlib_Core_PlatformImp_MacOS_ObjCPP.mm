@@ -293,9 +293,8 @@ namespace NMib
 {
 	namespace NDaemon
 	{
-		class CMenuContext
+		struct CMenuContext
 		{
-		public:
 			NFunction::TCFunction<void ()> m_fPause;
 			NFunction::TCFunction<void ()> m_fResume;
 		};

@@ -12,9 +12,8 @@
 namespace NMib
 {
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
-	class TCSubSystem
+	struct TCSubSystem
 	{
-	public:
 		mark_nodebug bool f_WasCreated() const;
 		mark_nodebug t_CSubSystem &operator * ();
 		mark_nodebug t_CSubSystem *operator -> ();

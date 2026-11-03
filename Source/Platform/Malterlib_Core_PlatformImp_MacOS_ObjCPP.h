@@ -12,22 +12,19 @@ namespace NMib
 	namespace NMacOSRuntime
 	{
 		using namespace NFile;
-		class CFileChangeNoticationContext
+		struct CFileChangeNoticationContext
 		{
-		public:
 			CFileChangeNoticationContext();
 			~CFileChangeNoticationContext();
 
-			class CNotification
+			struct CNotification
 			{
-			public:
 				CNotification(CFileChangeNoticationContext *_pContext);
 				~CNotification();
 				void f_Clear();
 
-				class CChange
+				struct CChange
 				{
-				public:
 					NFile::EFileChangeNotification m_Notification = NFile::EFileChangeNotification_Undefined;
 					NMib::NStr::CStr m_Path;
 					NMib::NStr::CStr m_PathFrom;
@@ -64,9 +61,8 @@ namespace NMib
 				{
 					CFileSnapshot(CFileSnapshot *_pParent);
 
-					class CCompare
+					struct CCompare
 					{
-					public:
 						inline_small NMib::NStr::CStr const &operator () (CFileSnapshot const &_Node) const
 						{
 							return _Node.m_FileName;

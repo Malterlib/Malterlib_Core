@@ -25,27 +25,26 @@ namespace NMib
 	}
 }
 
-class CMemoryToucher : public NMib::CVirtualDestructor
+struct CMemoryToucher : public NMib::CVirtualDestructor
 {
-	class CInternal;
-	NMib::NStorage::TCUniquePointer<CInternal> m_pInternal;
-
-public:
 	CMemoryToucher(fp64 _CPUUsage);
 	~CMemoryToucher();
+
+private:
+	struct CInternal;
+	NMib::NStorage::TCUniquePointer<CInternal> m_pInternal;
 };
 
-class CMemoryToucher::CInternal : public NMib::NThread::CThread
+struct CMemoryToucher::CInternal : public NMib::NThread::CThread
 {
-	fp64 m_CPUUsage;
-
-public:
 	CInternal(fp64 _CPUUsage)
 		: m_CPUUsage(NMib::fg_Clamp(_CPUUsage, 0.0, 0.99))
 	{
 	};
 
 private:
+	fp64 m_CPUUsage;
+
 	void fp_Touch(void *_pAddress, umint _Size)
 	{
 		try

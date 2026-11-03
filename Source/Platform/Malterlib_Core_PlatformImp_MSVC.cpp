@@ -111,7 +111,7 @@ namespace NLocal
 	constinit OSVERSIONINFOEX g_VersionInfo = {0};
 }
 
-static inline_small class CSystemWindowsMSVC *fg_GetLocalSys();
+static inline_small struct CSystemWindowsMSVC *fg_GetLocalSys();
 //static inline_small class CSharedSystemWindowsMSVC &GetLocalSharedSys();
 
 void fg_DestroySystem();
@@ -119,9 +119,8 @@ void __cdecl fg_DestroyMalterlib();
 void __cdecl fg_DestroyMalterlibAggregates();
 void __cdecl fg_CreateMalterlib();
 
-class CWin32File
+struct CWin32File
 {
-public:
 	virtual ~CWin32File()
 	{
 	}
@@ -134,11 +133,8 @@ public:
 };
 
 template <typename t_CStr, typename t_CAllocator>
-class TCWin32File : public CWin32File
+struct TCWin32File : public CWin32File
 {
-	t_CStr m_FileName;
-
-public:
 	TCWin32File(t_CStr const &_FileName)
 		: m_FileName(_FileName)
 	{
@@ -160,6 +156,9 @@ public:
 	{
 		return !t_CAllocator::mc_Reporting;
 	}
+
+private:
+	t_CStr m_FileName;
 };
 
 namespace
@@ -365,14 +364,14 @@ inline_never assure_used bool NSys::fg_Compiler_MakeActive(void const *_pReferen
 	return true;
 }
 
-class CMemoryToucher : public CVirtualDestructor
+struct CMemoryToucher : public CVirtualDestructor
 {
-	class CInternal;
-	TCUniquePointer<CInternal> m_pInternal;
-
-public:
 	CMemoryToucher(fp64 _CPUUsage);
 	~CMemoryToucher();
+
+private:
+	struct CInternal;
+	TCUniquePointer<CInternal> m_pInternal;
 };
 
 void NSys::fg_Mem_EnableMemoryToucher(bool _bEnabled, fp64 _CPUUsage)
@@ -2986,9 +2985,8 @@ void fg_MakeTlsActive()
 	NSys::fg_Compiler_MakeActive(0, &g_MalterlibTlsCallback);
 }
 
-class CThreadParameters
+struct CThreadParameters
 {
-public:
 	FThreadProc *m_pProc;
 	void *m_pParam;
 	NStr::CStrNonTracked m_Name;
@@ -5146,9 +5144,8 @@ void NSys::NFile::fg_SetGroupOnLink(CStr const &_Path, CStr const &_Group)
 {
 }
 
-class CWin32FileFind
+struct CWin32FileFind
 {
-public:
 	CWin32FileFind()
 	{
 		m_pFindHandle = nullptr;

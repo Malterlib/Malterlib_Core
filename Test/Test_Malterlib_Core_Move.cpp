@@ -61,9 +61,8 @@ struct CTestAVLTree
 	NMib::NStr::CStr m_Data;
 	NMib::NIntrusive::TCAVLLink<> m_Link;
 
-	class CCompare
+	struct CCompare
 	{
-	public:
 		inline_small NMib::NStr::CStr const &operator () (CTestAVLTree const &_Object) const
 		{
 			return _Object.m_Data;
@@ -85,9 +84,8 @@ enum EParam
 
 namespace
 {
-	class CMove_Tests : public NMib::NTest::CTest
+	struct CMove_Tests : public NMib::NTest::CTest
 	{
-	public:
 		void f_DoTests()
 		{
 #if 1

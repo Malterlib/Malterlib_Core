@@ -322,7 +322,7 @@ extern "C"
 #	include <xmmintrin.h>
 #endif
 
-static inline_small class CSystemMacOS *fg_GetLocalSys();
+static inline_small struct CSystemMacOS *fg_GetLocalSys();
 
 void NSys::fg_System_EnableFloatingPointExceptions()
 {
@@ -412,9 +412,8 @@ NMib::NSys::EDesktopEnvironment NMib::NSys::fg_DesktopEnvironment_Get()
 	return EDesktopEnvironment_MacOS;
 }
 
-class CSystemMacOS : public CSystem
+struct CSystemMacOS : public CSystem
 {
-public:
 	CSystem_POSIX m_Posix;
 
 	pthread_key_t m_ForkThreadLocal;
@@ -4355,13 +4354,8 @@ inline_never CMibCodeAddress NMib::NSys::fg_System_GetStackTrace(aint _iDepth)
 
 namespace
 {
-	class CCPUUsageMonitorImpl
+	struct CCPUUsageMonitorImpl
 	{
-		host_cpu_load_info_data_t m_LastLoadStats;
-
-		NMib::NSystem::CSystemCPUUsage m_LastRet;
-
-	public:
 		CCPUUsageMonitorImpl()
 		{
 			mach_msg_type_number_t Count = HOST_CPU_LOAD_INFO_COUNT;
@@ -4415,6 +4409,11 @@ namespace
 			m_LastRet = Ret;
 			return Ret;
 		}
+
+	private:
+		host_cpu_load_info_data_t m_LastLoadStats;
+
+		NMib::NSystem::CSystemCPUUsage m_LastRet;
 	};
 }
 

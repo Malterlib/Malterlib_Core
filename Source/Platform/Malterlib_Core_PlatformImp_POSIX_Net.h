@@ -79,9 +79,8 @@ struct CPOSIXSocket
 	// This is protected by the context m_Lock.
 	NMib::NIntrusive::TCAVLLink<> m_FDToSocketLink;
 
-	class CAVLCompare_CPOSIXSocket
+	struct CAVLCompare_CPOSIXSocket
 	{
-	public:
 		inline_small int operator () (CPOSIXSocket const &_Sock) const
 		{
 			return _Sock.m_FD;
@@ -107,13 +106,8 @@ struct CPOSIXSocket
 
 using CPOSIXAddress = CRuntimeNetAddress;
 
-class CPOSIXImpSpecificSocketContext
+struct CPOSIXImpSpecificSocketContext
 {
-private:
-	class CInternal;
-	NMib::NStorage::TCUniquePointer<CInternal> mp_pInternal;
-
-public:
 	CPOSIXImpSpecificSocketContext();
 	~CPOSIXImpSpecificSocketContext();
 
@@ -130,11 +124,14 @@ public:
 	};
 
 	bool f_GetSocketCreateParams(::NMib::NNetwork::ENetAddressType _ExpectedType, CSocketCreateParams &_oParams);
+
+private:
+	struct CInternal;
+	NMib::NStorage::TCUniquePointer<CInternal> mp_pInternal;
 };
 
-class CPOSIXSocketContext
+struct CPOSIXSocketContext
 {
-public:
 	CPOSIXSocketContext();
 	~CPOSIXSocketContext();
 

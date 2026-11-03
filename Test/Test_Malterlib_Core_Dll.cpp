@@ -137,9 +137,8 @@ namespace
 #	endif
 #endif
 
-	class CDll_Tests : public NMib::NTest::CTest
+	struct CDll_Tests : public NMib::NTest::CTest
 	{
-	public:
 		void f_DoTests()
 		{
 #if defined(DCompiler_MSVC_Workaround_DllsBroken)

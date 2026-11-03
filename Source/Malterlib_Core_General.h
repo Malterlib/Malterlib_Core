@@ -11,9 +11,8 @@
 
 namespace NMib
 {
-	class CLineNumber
+	struct CLineNumber
 	{
-	public:
 		/*
 		CLineNumber(const CLineNumber& _Src)
 		{
@@ -222,11 +221,8 @@ namespace NMib
 	};
 
 	template <typename t_CType>
-	class TCCopy
+	struct TCCopy
 	{
-		t_CType const &m_Data;
-
-	public:
 		mark_nodebug TCCopy(t_CType const &_Data)
 			: m_Data(_Data)
 		{
@@ -246,6 +242,9 @@ namespace NMib
 		{
 			return m_Data;
 		}
+
+	private:
+		t_CType const &m_Data;
 	};
 
 	template <typename t_CType>
@@ -255,11 +254,8 @@ namespace NMib
 	}
 
 	template <typename t_CType>
-	class TCByValue
+	struct TCByValue
 	{
-		t_CType const &m_Data;
-
-	public:
 		mark_nodebug TCByValue(t_CType const &_Data)
 			: m_Data(_Data)
 		{
@@ -279,6 +275,9 @@ namespace NMib
 		{
 			return m_Data;
 		}
+
+	private:
+		t_CType const &m_Data;
 	};
 
 	template <typename t_CType>
@@ -288,11 +287,8 @@ namespace NMib
 	}
 
 	template <typename t_CType>
-	class TCExplicit
+	struct TCExplicit
 	{
-		t_CType m_Data;
-
-	public:
 		template <typename tf_CType>
 		mark_nodebug TCExplicit(tf_CType &&_Data)
 			: m_Data(fg_Forward<tf_CType>(_Data))
@@ -303,12 +299,14 @@ namespace NMib
 		{
 			return fg_Forward<t_CType>(m_Data);
 		}
+
+	private:
+		t_CType m_Data;
 	};
 
 	template <>
-	class TCExplicit<void>
+	struct TCExplicit<void>
 	{
-	public:
 	};
 
 	template <typename tf_CType, TCEnableIf<NTraits::cIsReference<tf_CType>> * = nullptr>
@@ -352,11 +350,8 @@ namespace NMib
 	extern CExplicitHelper const &g_Explicit;
 
 	template <typename t_CType>
-	class TCAttach
+	struct TCAttach
 	{
-		t_CType m_Data;
-
-	public:
 		template <typename tf_CType>
 		mark_nodebug TCAttach(tf_CType &&_Data)
 			: m_Data(fg_Forward<tf_CType>(_Data))
@@ -367,12 +362,14 @@ namespace NMib
 		{
 			return fg_Forward<t_CType>(m_Data);
 		}
+
+	private:
+		t_CType m_Data;
 	};
 
 	template <>
-	class TCAttach<void>
+	struct TCAttach<void>
 	{
-	public:
 	};
 
 	template <typename tf_CType, TCEnableIf<NTraits::cIsReference<tf_CType>> * = nullptr>
@@ -618,11 +615,8 @@ namespace NMib
 	}
 
 	template <typename t_CType>
-	class TCLambdaMover
+	struct TCLambdaMover
 	{
-		t_CType m_Type;
-
-	public:
 		mark_nodebug TCLambdaMover(t_CType &&_Other)
 			: m_Type(fg_Move(_Other))
 		{
@@ -652,6 +646,9 @@ namespace NMib
 		{
 			return fg_RemoveQualifiers(m_Type);
 		}
+
+	private:
+		t_CType m_Type;
 	};
 
 	template <typename tf_CType>
@@ -699,9 +696,8 @@ namespace NMib
 	}
 
 	template <typename t_CType>
-	class TCHelper_ByteSwap
+	struct TCHelper_ByteSwap
 	{
-	public:
 		using CType = t_CType;
 		enum
 		{
@@ -727,9 +723,8 @@ namespace NMib
 
 #ifdef DMibPCanDo_uint8
 	template <>
-	class TCHelper_ByteSwap<uint8>
+	struct TCHelper_ByteSwap<uint8>
 	{
-	public:
 		using CType = uint8;
 		enum
 		{
@@ -762,9 +757,8 @@ namespace NMib
 
 #ifdef DMibPCanDo_uint16
 	template <>
-	class TCHelper_ByteSwap<uint16>
+	struct TCHelper_ByteSwap<uint16>
 	{
-	public:
 		using CType = uint16;
 		enum
 		{
@@ -783,9 +777,8 @@ namespace NMib
 #endif
 #ifdef DMibPCanDo_uint32
 	template <>
-	class TCHelper_ByteSwap<uint32>
+	struct TCHelper_ByteSwap<uint32>
 	{
-	public:
 		using CType = uint32;
 		enum
 		{
@@ -804,9 +797,8 @@ namespace NMib
 #endif
 #ifdef DMibPCanDo_uint64
 	template <>
-	class TCHelper_ByteSwap<uint64>
+	struct TCHelper_ByteSwap<uint64>
 	{
-	public:
 		using CType = uint64;
 		enum
 		{
@@ -825,37 +817,32 @@ namespace NMib
 #endif
 
 	template <umint t_nBytes, typename t_CType>
-	class TCHelper_ByteSwapChooseBySize
+	struct TCHelper_ByteSwapChooseBySize
 	{
-	public:
 		using CSwapper = TCHelper_ByteSwap<t_CType>;
 	};
 
 	template <typename t_CType>
-	class TCHelper_ByteSwapChooseBySize<1, t_CType>
+	struct TCHelper_ByteSwapChooseBySize<1, t_CType>
 	{
-	public:
 		using CSwapper = TCHelper_ByteSwap<uint8>;
 	};
 
 	template <typename t_CType>
-	class TCHelper_ByteSwapChooseBySize<2, t_CType>
+	struct TCHelper_ByteSwapChooseBySize<2, t_CType>
 	{
-	public:
 		using CSwapper = TCHelper_ByteSwap<uint16>;
 	};
 
 	template <typename t_CType>
-	class TCHelper_ByteSwapChooseBySize<4, t_CType>
+	struct TCHelper_ByteSwapChooseBySize<4, t_CType>
 	{
-	public:
 		using CSwapper = TCHelper_ByteSwap<uint32>;
 	};
 
 	template <typename t_CType>
-	class TCHelper_ByteSwapChooseBySize<8, t_CType>
+	struct TCHelper_ByteSwapChooseBySize<8, t_CType>
 	{
-	public:
 		using CSwapper = TCHelper_ByteSwap<uint64>;
 	};
 
@@ -1168,9 +1155,8 @@ namespace NMib
 	}
 
 	template <typename t_CIntType>
-	class TCLimitsInt : public NMib::NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::cIsSigned<t_CIntType>>
+	struct TCLimitsInt : public NMib::NPrivate::TCLimitsIntHelper<t_CIntType, NTraits::cIsSigned<t_CIntType>>
 	{
-	public:
 	};
 
 	struct CAutoLimitMin
@@ -1360,11 +1346,8 @@ namespace NMib
 	// Auto clear int
 
 	template <typename t_CInt, t_CInt t_ClearVal = 0>
-	class TCAutoClearInt
+	struct TCAutoClearInt
 	{
-		static t_CInt const &fsp_GetType();
-
-	public:
 		TCAutoClearInt()
 		{
 			m_Int = t_ClearVal;
@@ -1463,12 +1446,14 @@ namespace NMib
 		{
 			return f_Get() == _Right.f_Get();
 		}
+
+	private:
+		static t_CInt const &fsp_GetType();
 	};
 
 	template <typename t_CType>
-	class TCAutoClear
+	struct TCAutoClear
 	{
-	public:
 		TCAutoClear() = default;
 		TCAutoClear(TCAutoClear const &_Other) = default;
 		TCAutoClear(TCAutoClear &&_Other) = default;

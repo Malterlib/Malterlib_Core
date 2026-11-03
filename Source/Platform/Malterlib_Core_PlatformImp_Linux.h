@@ -20,12 +20,11 @@ namespace NMib::NSys
 
 namespace NMib::NDBus
 {
-	class CSystem;
+	struct CSystem;
 }
 
-class CSystemLinux : public NMib::CSystem
+struct CSystemLinux : public NMib::CSystem
 {
-public:
 	static void fs_ForkPrepare();
 	static void fs_ForkParentOrChild();
 	static void fs_ForkParent();

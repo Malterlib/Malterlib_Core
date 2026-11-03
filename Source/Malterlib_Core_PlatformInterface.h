@@ -27,9 +27,8 @@ namespace NMib
 		ENumaNode_Default = -1
 	};
 
-	class CStackTraceInfo
+	struct CStackTraceInfo
 	{
-	public:
 		ch8 const *m_pFunctionName;
 		ch8 const *m_pModuleName;
 		ch8 const *m_pSourceFileName;

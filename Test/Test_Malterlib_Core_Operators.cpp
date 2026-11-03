@@ -10,11 +10,8 @@
 
 namespace
 {
-	class CTestVal
+	struct CTestVal
 	{
-		int32 m_Value;
-
-	public:
 		static int32 &fsp_ValueType();
 		CTestVal(int32 _Value)
 			: m_Value(_Value)
@@ -59,6 +56,9 @@ namespace
 		{
 			return NMib::NStr::fg_CreateStringFormatter(_Formatter, m_Value);
 		}
+
+	private:
+		int32 m_Value;
 	};
 
 	auto operator <=> (int _Left, CTestVal const &_Right) noexcept
@@ -84,9 +84,8 @@ namespace
 
 	static_assert(ETestOperator_All == 7);
 
-	class COperators_Tests : public NMib::NTest::CTest
+	struct COperators_Tests : public NMib::NTest::CTest
 	{
-	public:
 		void f_DoTests()
 		{
 			DMibTestCategory("Enums")

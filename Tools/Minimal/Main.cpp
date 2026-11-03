@@ -12,8 +12,9 @@ int main()
 
 #	include <Mib/Core/Application>
 
-class CMinimal : public CApplication
+struct CMinimal : public CApplication
 {
+private:
 	aint f_Main()
 	{
 		return 0;

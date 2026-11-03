@@ -1,10 +1,9 @@
 // Copyright © Unbroken AB
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-class CPOSIXImpSpecificSocketContext::CInternal
+struct CPOSIXImpSpecificSocketContext::CInternal
 {
 private:
-public:
 };
 
 CPOSIXImpSpecificSocketContext::CPOSIXImpSpecificSocketContext()

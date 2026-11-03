@@ -265,7 +265,7 @@ void fg_ForkParentOrChild();
 int fg_GetUnixOpenFlags();
 void fg_SetUnixHandleOptions(int _File);
 void fg_MalterlibMallocOverride_CanStartThreads();
-static inline_small class CSystemLinux *fg_GetLocalSys();
+static inline_small struct CSystemLinux *fg_GetLocalSys();
 
 #include "Malterlib_Core_Platform_POSIX_ErrNo.h"
 
@@ -3143,48 +3143,8 @@ NMib::NStr::CStr NSys::fg_System_GetCPUName()
 
 namespace
 {
-	class CCPUUsageMonitorImpl
+	struct CCPUUsageMonitorImpl
 	{
-		struct CLoadInfo
-		{
-			uint64 m_User;
-			uint64 m_Nice;
-			uint64 m_System;
-			uint64 m_Idle;
-		};
-
-		CLoadInfo m_LastLoadStats;
-
-		NMib::NSystem::CSystemCPUUsage m_LastRet;
-
-		CLoadInfo fp_GetLoadStats() const
-		{
-			CLoadInfo Ret;
-			fg_MemClear(Ret);
-
-			auto FileData = fg_ReadProcFS<CStrNonTracked>("/proc/stat");
-			auto pParse = FileData.f_GetArray();
-
-			while (*pParse)
-			{
-				auto *pStart = pParse;
-				fg_ParseToEndOfLine(pParse);
-				if (fg_StrStartsWith(pStart, "cpu "))
-				{
-					pStart += fg_StrLen("cpu ");
-					if (pStart < pParse)
-					{
-						fg_ParseWhiteSpace(pStart);
-						(CStr::CParse("{} {} {} {}") >> Ret.m_User >> Ret.m_Nice >> Ret.m_System >> Ret.m_Idle).f_Parse(pStart);
-					}
-					break;
-				}
-				fg_ParseEndOfLine(pParse);
-			}
-			return Ret;
-		}
-
-	public:
 		CCPUUsageMonitorImpl()
 		{
 			m_LastLoadStats = fp_GetLoadStats();
@@ -3233,6 +3193,46 @@ namespace
 			m_LastLoadStats = LoadStats;
 
 			m_LastRet = Ret;
+			return Ret;
+		}
+
+	private:
+		struct CLoadInfo
+		{
+			uint64 m_User;
+			uint64 m_Nice;
+			uint64 m_System;
+			uint64 m_Idle;
+		};
+
+		CLoadInfo m_LastLoadStats;
+
+		NMib::NSystem::CSystemCPUUsage m_LastRet;
+
+		CLoadInfo fp_GetLoadStats() const
+		{
+			CLoadInfo Ret;
+			fg_MemClear(Ret);
+
+			auto FileData = fg_ReadProcFS<CStrNonTracked>("/proc/stat");
+			auto pParse = FileData.f_GetArray();
+
+			while (*pParse)
+			{
+				auto *pStart = pParse;
+				fg_ParseToEndOfLine(pParse);
+				if (fg_StrStartsWith(pStart, "cpu "))
+				{
+					pStart += fg_StrLen("cpu ");
+					if (pStart < pParse)
+					{
+						fg_ParseWhiteSpace(pStart);
+						(CStr::CParse("{} {} {} {}") >> Ret.m_User >> Ret.m_Nice >> Ret.m_System >> Ret.m_Idle).f_Parse(pStart);
+					}
+					break;
+				}
+				fg_ParseEndOfLine(pParse);
+			}
 			return Ret;
 		}
 	};

@@ -1,9 +1,8 @@
 // Copyright © Unbroken AB
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-class CRawMacOSError
+struct CRawMacOSError
 {
-public:
 	int m_Code;
 	char const *m_pShort;
 	char const *m_pLong;

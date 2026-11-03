@@ -6,9 +6,8 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-class CPOSIXFileFind
+struct CPOSIXFileFind
 {
-public:
 	CPOSIXFileFind();
 	~CPOSIXFileFind();
 	uint64 f_ParseAttrib();

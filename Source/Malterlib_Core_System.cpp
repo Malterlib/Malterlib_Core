@@ -703,9 +703,8 @@ namespace NMib
 	{
 		fg_GetSys()->fp_SubSystem_DestroyAggregates(_bDestroySystem);
 		// Destroy aggregates in reverse order of construction
-		class CSort
+		struct CSort
 		{
-		public:
 			inline_small auto operator () (NStorage::CAggregate const &_Left, NStorage::CAggregate const &_Right)
 			{
 				return _Left.m_Priority <=> _Right.m_Priority;

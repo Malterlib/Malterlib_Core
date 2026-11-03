@@ -517,9 +517,8 @@ void fgr_Test()
 }
 
 
-class CTest2
+struct CTest2
 {
-public:
 	// pMemberFunctionPublic:
 	// f_
 	void f_Test()

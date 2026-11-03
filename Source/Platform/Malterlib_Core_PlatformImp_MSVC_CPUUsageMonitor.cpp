@@ -3,15 +3,8 @@
 
 namespace NMSVCRuntime
 {
-	class CCPUUsageMonitor : public CCPUUsageMonitorLink
+	struct CCPUUsageMonitor : public CCPUUsageMonitorLink
 	{
-		FILETIME m_LastIdle;
-		FILETIME m_LastUser;
-		FILETIME m_LastKernel;
-
-		NMib::NSystem::CSystemCPUUsage m_LastRet;
-
-	public:
 		CCPUUsageMonitor()
 		{
 			GetSystemTimes(&m_LastIdle, &m_LastKernel, &m_LastUser);
@@ -66,6 +59,13 @@ namespace NMSVCRuntime
 			m_LastRet = Ret;
 			return Ret;
 		}
+
+	private:
+		FILETIME m_LastIdle;
+		FILETIME m_LastUser;
+		FILETIME m_LastKernel;
+
+		NMib::NSystem::CSystemCPUUsage m_LastRet;
 	};
 }
 

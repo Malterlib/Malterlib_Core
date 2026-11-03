@@ -8,9 +8,8 @@
 
 namespace NMib
 {
-	class CApplication
+	struct CApplication
 	{
-	public:
 		CApplication();
 		virtual ~CApplication();
 		virtual aint f_Main() = 0;

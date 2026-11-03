@@ -26,9 +26,8 @@ namespace NMib
 						end.
 
 		\*____________________________________________________________________*/
-		class CWin32_Registry
+		struct CWin32_Registry
 		{
-		public:
 			enum ERegRoot
 			{
 				ERegRoot_LocalMachine

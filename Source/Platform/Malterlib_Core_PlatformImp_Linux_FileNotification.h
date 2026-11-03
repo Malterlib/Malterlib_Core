@@ -26,18 +26,14 @@ using namespace NMib::NStorage;
 #include <Mib/Core/PlatformSpecific/PosixErrNo>
 #include "Malterlib_Core_Platform_Linux_Optional.h"
 
-class CFileChangeNotificationContext
+struct CFileChangeNotificationContext
 {
-public:
 	CFileChangeNotificationContext();
 	~CFileChangeNotificationContext();
 
-	class CNotification;
-	class CWatch
+	struct CNotification;
+	struct CWatch
 	{
-		friend class CFileChangeNotificationContext;
-
-	public:
 		CWatch(int _Descriptor, CStr const &_Path, CWatch *_pParent)
 			: mp_Descriptor(_Descriptor)
 			, mp_Path(_Path)
@@ -146,6 +142,8 @@ public:
 		CIntrusiveRefCount m_RefCount;
 
 	private:
+		friend struct CFileChangeNotificationContext;
+
 		TCMap<CStr, bool> m_ChildFiles;
 		DMibListLinkDS_Link(CWatch, mp_Link);
 		DMibListLinkDS_List(CWatch, mp_Link) mp_Children;
@@ -156,14 +154,12 @@ public:
 		int mp_Descriptor;
 	};
 
-	class CNotificationThread;
+	struct CNotificationThread;
 
-	class CNotification
+	struct CNotification
 	{
-	public:
-		class CChange
+		struct CChange
 		{
-		public:
 			EFileChangeNotification m_Notification = EFileChangeNotification_Undefined;
 			CStr m_Path;
 			NStr::CStr m_PathFrom;
@@ -216,9 +212,8 @@ public:
 		bool m_bSelfValid = true;
 	};
 
-	class CNotificationThread : public NMib::NThread::CThread
+	struct CNotificationThread : public NMib::NThread::CThread
 	{
-	public:
 		CNotificationThread(CFileChangeNotificationContext *_pContext);
 		~CNotificationThread();
 

@@ -18,7 +18,7 @@ namespace NMib
 {
 	namespace NException
 	{
-		class CExceptionFilter;
+		struct CExceptionFilter;
 	}
 
 	struct CPromiseKeepAlive
@@ -109,15 +109,13 @@ namespace NMib
 
 	namespace NException
 	{
-		class CExceptionFilter
+		struct CExceptionFilter
 		{
-		public:
 			virtual void f_Exception(void *_pExceptionData) = 0;
 		};
 
-		class CExceptionFilterScope
+		struct CExceptionFilterScope
 		{
-		public:
 			CExceptionFilterScope(CExceptionFilter &_Filter)
 			{
 				auto &ThreadLocal = fg_SystemThreadLocal();
@@ -136,9 +134,8 @@ namespace NMib
 			CExceptionFilter *m_pOldFilter;
 		};
 
-		class CDisableExceptionFilterScope
+		struct CDisableExceptionFilterScope
 		{
-		public:
 			CDisableExceptionFilterScope()
 			{
 				auto &ThreadLocal = fg_SystemThreadLocal();
@@ -171,7 +168,7 @@ namespace NMib
 #if DMibSysLogSeverities
 	namespace NLog
 	{
-		class CLogger;
+		struct CLogger;
 		struct CLogFile;
 	};
 #endif
@@ -180,7 +177,7 @@ namespace NMib
 	using FConstruct = void calling_convention_c (void);
 	using FDestruct = void calling_convention_c (void);
 
-	class CSystemShared;
+	struct CSystemShared;
 
 	namespace NSys
 	{
@@ -212,96 +209,8 @@ namespace NMib
 	using CSystemEnvironment = NContainer::TCMap<NStr::CStr, NStr::CStr>;
 #endif
 
-	class CSystem
+	struct CSystem
 	{
-		friend struct CRunTimeObjectInfo;
-		friend class NThread::CSemaphoreAggregate;
-		friend class CSystemModule;
-
-	private:
-		NThread::CMutual mp_SubSystemsLock;
-		DMibListLinkD_List(CSubSystem, m_Link) mp_SubSystems;
-
-		class CCommandLineData
-		{
-		public:
-			NStr::CStr m_CommandLine;
-			NContainer::TCVector<NStr::CStr> m_lCommandLineParameters;
-		};
-
-		NMib::NStorage::TCAggregateSimple<CCommandLineData> m_CommandLineData;
-
-		CVirtualMachineInfo mp_VMInfo;
-
-		void fs_ParseCommandLine();
-
-		NThread::CMutual m_Lock;
-
-		NStr::CStr m_ProgramName;
-
-		NStr::CStr m_CrashHandlerPath;
-		NStr::CStr m_CrashHandlerExePath;
-		NStr::CStr m_CrashHandlerServer;
-
-		NStr::CStr m_SupportEmail;
-		NStr::CStrNonTracked m_ProgramNameNonTracked;
-		NStr::CStrNonTracked m_SupportEmailNonTracked;
-		bool m_bRunningAsDaemon;
-
-		bool m_bInitDone;
-		bool m_bIsDll;
-
-		NAtomic::TCAtomic<bool> m_bDestroyingThreadSpecific = false;
-
-#if DMibConfig_Memory_Shims_EnableGlobal
-		void fp_CreateGlobalMemoryReporter();
-		void fp_DestroyGlobalMemoryReporter();
-#endif
-
-		void fp_CreateNonTrackedMemoryManager();
-		void fp_DestroyNonTrackedMemoryManager();
-		void fp_CreateMemoryManager();
-		void fp_DestroyMemoryManager();
-
-		void fp_SubSystem_PrepareFork_BeforeMemoryManager();
-		void fp_SubSystem_ForkedChild_BeforeMemoryManager();
-		void fp_SubSystem_ForkedParent_BeforeMemoryManager();
-
-		void fp_SubSystem_PrepareFork_AfterMemoryManager();
-		void fp_SubSystem_ForkedChild_AfterMemoryManager();
-		void fp_SubSystem_ForkedParent_AfterMemoryManager();
-		void fp_SubSystem_ForkedChild_AfterThreadLocal();
-		void fp_SubSystem_ForkedParent_AfterThreadLocal();
-
-		void fp_SubSystem_DestroyThreadLocal();
-		void fp_SubSystem_DestroyThreadSpecific();
-		void fp_SubSystem_PreDestroyThreadSpecific();
-		void fp_SubSystem_DestroyBeforeMemoryManager();
-		void fp_SubSystem_DestroyBeforeNonTrackedMemoryManager();
-		void fp_SubSystem_DestroyBeforeThreadLocals();
-		void fp_SubSystem_Destroy();
-		void fp_SubSystem_ExitModule();
-		void fp_SubSystem_DestroyAggregates(bool _bDestroySystem);
-
-		void fp_SubSystem_DestroySubsystems(ESubSystemDestruction _ToDestroy);
-
-	protected:
-		NStr::CStr m_ProgramRoot;
-		NStr::CStrNonTracked m_ProgramRootNonTracked;
-
-#if DMibSysLogSeverities
-		NLog::CLogger *m_pSystemLog;
-		NLog::CLogFile *m_pDefaultLogFile;
-#	if DMibEnableTrace > 0
-		umint m_TraceLoggerDestination = 0;
-#	endif
-		umint m_StdErrLoggerDestination = 0;
-		umint m_FileLoggerDestination = 0;
-#endif
-
-		void fp_InitComplete(); // Called by subclasses to signify they have finished constructing.
-
-	public:
 		void f_AddSubSystem(CSubSystem &_SubSystem);
 
 		static bool ms_bDisableMemoryManagerLeakReport;
@@ -545,6 +454,93 @@ namespace NMib
 		NStr::CStr f_GetProtectedEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Default = {}, bool *o_pExists = nullptr) const;
 
 		static uint32 ms_PlatformVersion;
+
+	private:
+		friend struct CRunTimeObjectInfo;
+		friend struct NThread::CSemaphoreAggregate;
+		friend struct CSystemModule;
+
+	private:
+		NThread::CMutual mp_SubSystemsLock;
+		DMibListLinkD_List(CSubSystem, m_Link) mp_SubSystems;
+
+		struct CCommandLineData
+		{
+			NStr::CStr m_CommandLine;
+			NContainer::TCVector<NStr::CStr> m_lCommandLineParameters;
+		};
+
+		NMib::NStorage::TCAggregateSimple<CCommandLineData> m_CommandLineData;
+
+		CVirtualMachineInfo mp_VMInfo;
+
+		void fs_ParseCommandLine();
+
+		NThread::CMutual m_Lock;
+
+		NStr::CStr m_ProgramName;
+
+		NStr::CStr m_CrashHandlerPath;
+		NStr::CStr m_CrashHandlerExePath;
+		NStr::CStr m_CrashHandlerServer;
+
+		NStr::CStr m_SupportEmail;
+		NStr::CStrNonTracked m_ProgramNameNonTracked;
+		NStr::CStrNonTracked m_SupportEmailNonTracked;
+		bool m_bRunningAsDaemon;
+
+		bool m_bInitDone;
+		bool m_bIsDll;
+
+		NAtomic::TCAtomic<bool> m_bDestroyingThreadSpecific = false;
+
+#if DMibConfig_Memory_Shims_EnableGlobal
+		void fp_CreateGlobalMemoryReporter();
+		void fp_DestroyGlobalMemoryReporter();
+#endif
+
+		void fp_CreateNonTrackedMemoryManager();
+		void fp_DestroyNonTrackedMemoryManager();
+		void fp_CreateMemoryManager();
+		void fp_DestroyMemoryManager();
+
+		void fp_SubSystem_PrepareFork_BeforeMemoryManager();
+		void fp_SubSystem_ForkedChild_BeforeMemoryManager();
+		void fp_SubSystem_ForkedParent_BeforeMemoryManager();
+
+		void fp_SubSystem_PrepareFork_AfterMemoryManager();
+		void fp_SubSystem_ForkedChild_AfterMemoryManager();
+		void fp_SubSystem_ForkedParent_AfterMemoryManager();
+		void fp_SubSystem_ForkedChild_AfterThreadLocal();
+		void fp_SubSystem_ForkedParent_AfterThreadLocal();
+
+		void fp_SubSystem_DestroyThreadLocal();
+		void fp_SubSystem_DestroyThreadSpecific();
+		void fp_SubSystem_PreDestroyThreadSpecific();
+		void fp_SubSystem_DestroyBeforeMemoryManager();
+		void fp_SubSystem_DestroyBeforeNonTrackedMemoryManager();
+		void fp_SubSystem_DestroyBeforeThreadLocals();
+		void fp_SubSystem_Destroy();
+		void fp_SubSystem_ExitModule();
+		void fp_SubSystem_DestroyAggregates(bool _bDestroySystem);
+
+		void fp_SubSystem_DestroySubsystems(ESubSystemDestruction _ToDestroy);
+
+	protected:
+		NStr::CStr m_ProgramRoot;
+		NStr::CStrNonTracked m_ProgramRootNonTracked;
+
+#if DMibSysLogSeverities
+		NLog::CLogger *m_pSystemLog;
+		NLog::CLogFile *m_pDefaultLogFile;
+#	if DMibEnableTrace > 0
+		umint m_TraceLoggerDestination = 0;
+#	endif
+		umint m_StdErrLoggerDestination = 0;
+		umint m_FileLoggerDestination = 0;
+#endif
+
+		void fp_InitComplete(); // Called by subclasses to signify they have finished constructing.
 	};
 
 #ifdef DMibPAutomaticSystemCreation
@@ -572,9 +568,8 @@ namespace NMib
 #endif
 	}
 
-	class CSystemModule
+	struct CSystemModule
 	{
-	public:
 		CSystem *m_pSystem;
 
 		DMibListLinkDA_List(NStorage::CAggregate, m_Link) m_Aggregates;
@@ -599,9 +594,8 @@ namespace NMib
 		return &g_SystemModule;
 	}
 
-	class CAppClasses
+	struct CAppClasses
 	{
-	public:
 		ch8 const *m_pAppClass;
 	};
 

@@ -19,9 +19,8 @@ double DTCPDelayEmulation_MinDelay = 0.1;
 
 #include "Malterlib_Core_PlatformImp_MSVC_Net.cpp"
 
-class CCPUUsageMonitorLink
+struct CCPUUsageMonitorLink
 {
-public:
 	DMibListLinkDS_Link(CCPUUsageMonitorLink, m_Link);
 
 	virtual ~CCPUUsageMonitorLink()
@@ -29,18 +28,16 @@ public:
 	}
 };
 
-class CSystemWindowsMSVC : public CSystem
+struct CSystemWindowsMSVC : public CSystem
 {
-public:
 	bool m_bDestroying;
 
 	NStorage::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
 
 	NStorage::TCAggregate<CSharedIoLoop, 63> m_SharedIoLoop; // Lower destruction priority than socket contexts, so registration owners tear down first.
 
-	class CFileChangeNoticationContext
+	struct CFileChangeNoticationContext
 	{
-	public:
 		CFileChangeNoticationContext()
 		{
 		}
@@ -51,10 +48,9 @@ public:
 			m_FullBundles.f_DeleteAllDefiniteType();
 		}
 
-		class CNotificationBundle;
-		class CNotification
+		struct CNotificationBundle;
+		struct CNotification
 		{
-		public:
 			struct CFileTreeNode
 			{
 				CFileTreeNode(CFileTreeNode *_pParent)
@@ -234,9 +230,8 @@ public:
 
 			EFileChange m_Flags;
 
-			class CChange
+			struct CChange
 			{
-			public:
 				EFileChangeNotification m_Notification = EFileChangeNotification_Undefined;
 				CStr m_Path;
 				NStr::CStr m_PathFrom;
@@ -481,9 +476,8 @@ public:
 
 		using CNotificationIter = DMibListLinkDS_Iter(CNotification, m_Link);
 
-		class CNotificationBundle : public NThread::CThread
+		struct CNotificationBundle : public NThread::CThread
 		{
-		public:
 			virtual NStr::CStr f_GetThreadName()
 			{
 				return "Malterlib_Core_PlatformImp_FileChangeNot";
@@ -1043,9 +1037,8 @@ public:
 
 #	ifdef _M_IX86
 
-	class CExceptionHandler
+	struct CExceptionHandler
 	{
-	public:
 		CExceptionHandler *m_pNextHandler;
 		void *m_pExceptionHandlingFunction;
 	};

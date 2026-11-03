@@ -5,9 +5,8 @@
 
 namespace
 {
-	class CStdLib_Tests : public NMib::NTest::CTest
+	struct CStdLib_Tests : public NMib::NTest::CTest
 	{
-	public:
 		void f_DoTests()
 		{
 			DMibTestSuite("FileSystem")

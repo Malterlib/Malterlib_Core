@@ -46,21 +46,8 @@ namespace NLocalWindows
 #define STATUS_BUFFER_OVERFLOW			((NTSTATUS)0x80000005L) // NOLINT(malterlib-macro-naming)
 // -------------------------------------------------------------------------
 
-class CHandleInformation
+struct CHandleInformation
 {
-	// PSAPI
-	HMODULE m_PSAPIDll;
-	BOOL (WINAPI *m_fEnumProcesses)(DWORD *lpidProcess, DWORD cb, DWORD *cbNeeded);
-	DWORD (WINAPI *m_fGetModuleBaseNameW)(HANDLE hProcess, HMODULE hModule, LPWSTR lpBaseName, DWORD nSize);
-	DWORD (WINAPI *m_fGetModuleFileNameExW)(HANDLE hProcess, HMODULE hModule, LPWSTR lpFilename, DWORD nSize);
-	DWORD (WINAPI *m_fGetProcessImageFileNameW)(HANDLE hProcess, LPWSTR lpImageFileName, DWORD nSize);
-
-	// NTDLL
-	HMODULE m_NTDLLDll;
-	NTSTATUS (WINAPI *m_fNTQuerySystemInformation)(DWORD SystemInformationClass, PVOID SystemInformation, DWORD SystemInformationLength, PDWORD ReturnLength);
-	NTSTATUS (WINAPI *m_fNTQueryObject)(HANDLE ObjectHandle, NLocalWindows::OBJECT_INFORMATION_CLASS ObjectInformationClass, PVOID ObjectInformation, DWORD Length, PDWORD ResultLength);
-
-public:
 	CHandleInformation()
 	{
 		m_PSAPIDll = LoadLibrary(str_utf16("psapi.dll"));
@@ -90,9 +77,8 @@ public:
 			FreeLibrary(m_NTDLLDll);
 	}
 
-	class CHandleInfo
+	struct CHandleInfo
 	{
-	public:
 		uint32 m_ProcessID;
 		uint32 m_HandleID;
 		CStr m_ProcessName;
@@ -100,9 +86,8 @@ public:
 	};
 
 private:
-	class CProcessingInfo
+	struct CProcessingInfo
 	{
-	public:
 		CProcessingInfo(CHandleInformation *_pThis, int32 _FileTypeID)
 		{
 			m_pThis = _pThis;
@@ -342,5 +327,18 @@ public:
 
 		delete [] pHandleInfo;
 	}
+
+private:
+	// PSAPI
+	HMODULE m_PSAPIDll;
+	BOOL (WINAPI *m_fEnumProcesses)(DWORD *lpidProcess, DWORD cb, DWORD *cbNeeded);
+	DWORD (WINAPI *m_fGetModuleBaseNameW)(HANDLE hProcess, HMODULE hModule, LPWSTR lpBaseName, DWORD nSize);
+	DWORD (WINAPI *m_fGetModuleFileNameExW)(HANDLE hProcess, HMODULE hModule, LPWSTR lpFilename, DWORD nSize);
+	DWORD (WINAPI *m_fGetProcessImageFileNameW)(HANDLE hProcess, LPWSTR lpImageFileName, DWORD nSize);
+
+	// NTDLL
+	HMODULE m_NTDLLDll;
+	NTSTATUS (WINAPI *m_fNTQuerySystemInformation)(DWORD SystemInformationClass, PVOID SystemInformation, DWORD SystemInformationLength, PDWORD ReturnLength);
+	NTSTATUS (WINAPI *m_fNTQueryObject)(HANDLE ObjectHandle, NLocalWindows::OBJECT_INFORMATION_CLASS ObjectInformationClass, PVOID ObjectInformation, DWORD Length, PDWORD ResultLength);
 };
 

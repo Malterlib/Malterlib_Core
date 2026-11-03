@@ -78,24 +78,20 @@ namespace NMib
 		}
 
 		template <typename t_CType>
-		class TCTypeID
+		struct TCTypeID
 		{
-		public:
 		};
 
 		template <int t_TypeID>
-		class TCTypeIDReverse
+		struct TCTypeIDReverse
 		{
-		public:
 		};
 
 #define DMibTypeID(d_Class, d_ID) \
-	namespace NMib{namespace NMisc{template <> class TCTypeID<d_Class > {public: enum {ETypeID = d_ID};}; template <> class TCTypeIDReverse<d_ID> {public: using CType = d_Class;};}}
+	namespace NMib{namespace NMisc{template <> struct TCTypeID<d_Class > {enum {ETypeID = d_ID};}; template <> struct TCTypeIDReverse<d_ID> {using CType = d_Class;};}}
 
-		class CClassContainer
+		struct CClassContainer
 		{
-		private:
-		public:
 			CClassContainer()
 			{
 			}
@@ -144,12 +140,13 @@ namespace NMib
 			virtual void *fp_GetPointer() const = 0;
 			virtual aint fp_GetIdentifier() const = 0;
 			virtual umint fp_GetContext() const = 0;
+
+		private:
 		};
 
 		template <typename t_CType>
-		class TCClassContainer : public CClassContainer
+		struct TCClassContainer : public CClassContainer
 		{
-		public:
 			t_CType const *m_pContainee;
 			aint m_Identifier;
 			umint m_Context;
@@ -200,9 +197,8 @@ namespace NMib
 #define DGetCC(d_Object)	NMib::NMisc::fg_GetClassContainer(d_Object).f_GetVoidPtr()
 #define DGetCCContext(d_Object, d_Context)	NMib::NMisc::fg_GetClassContainer(d_Object, d_Context).f_GetVoidPtr()
 
-		class CClassContainerList
+		struct CClassContainerList
 		{
-		public:
 			DMibListLinkD_List(CClassContainer, m_Link) m_List;
 			using CIter = DMibListLinkD_Iter(CClassContainer, m_Link);
 
@@ -215,9 +211,8 @@ namespace NMib
 		CClassContainerList *fg_GetClassContainerList(CClassContainerList *_pList, ...);
 
 		// Marsaglias xorshf generator, period 2^96-1
-		class CRandomShiftRNG
+		struct CRandomShiftRNG
 		{
-		public:
 			constexpr CRandomShiftRNG(uint32 _Seed0 = 123456789, uint32 _Seed1 = 362436069, uint32 _Seed2 = 2521288629)
 			{
 				if (_Seed0 != 0)
@@ -289,9 +284,8 @@ namespace NMib
 			uint32 mp_Z;
 		};
 
-		class CAutoRandom : public CRandomShiftRNG
+		struct CAutoRandom : public CRandomShiftRNG
 		{
-		public:
 			CAutoRandom();
 		};
 
@@ -350,9 +344,8 @@ namespace NMib
 		template <typename tf_CIntType>
 		tf_CIntType fg_GetHighEntropyRandomInteger();
 
-		class CDeadlockDetocterPause
+		struct CDeadlockDetocterPause
 		{
-		public:
 			CDeadlockDetocterPause()
 			{
 				NSys::fg_Debug_PauseDeadlockDetector();

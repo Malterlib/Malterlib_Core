@@ -557,9 +557,8 @@ void NSys::NFile::fg_CreateDirectory(NMib::NStr::CStrNonTracked const &_FileDire
 // POSIX File Operations Implementation
 // *************************************************************************************************************************
 
-class CPOSIXFile
+struct CPOSIXFile
 {
-public:
 	virtual ~CPOSIXFile()
 	{
 	}
@@ -570,11 +569,8 @@ public:
 };
 
 template <typename t_CStr, typename t_CAllocator>
-class TCPOSIXFileImp : public CPOSIXFile
+struct TCPOSIXFileImp : public CPOSIXFile
 {
-	t_CStr m_Str;
-
-public:
 	TCPOSIXFileImp(t_CStr const &_Str)
 		: m_Str(_Str)
 	{
@@ -589,6 +585,9 @@ public:
 	{
 		NStorage::TCUniquePointer<TCPOSIXFileImp, t_CAllocator> pPtr = fg_Explicit(this);
 	}
+
+private:
+	t_CStr m_Str;
 };
 
 template <typename t_CStats>

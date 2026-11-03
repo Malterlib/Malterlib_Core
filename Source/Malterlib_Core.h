@@ -110,9 +110,8 @@ namespace NMib
 namespace NMib
 {
 	template <typename t_CType0, typename t_CType1, typename t_CPrio = NTraits::TCCompileTimeConstant<int, 0>>
-	class TCConvert
+	struct TCConvert
 	{
-	public:
 		using CDefault = int;
 
 		static constexpr inline_small t_CType0 fs_Convert(t_CType1 const &_From)

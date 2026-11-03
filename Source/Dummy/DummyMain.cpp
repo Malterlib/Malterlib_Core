@@ -4,8 +4,9 @@
 #include <Mib/Core/Core>
 #include <Mib/Core/Application>
 
-class CApp : public NMib::CApplication
+struct CApp : public NMib::CApplication
 {
+private:
 	aint f_Main()
 	{
 		return 0;

@@ -15,12 +15,12 @@ namespace NMib
 namespace NMib::NStorage
 {
 	template <typename t_CType, typename ...tp_COptions>
-	class TCSharedPointer;
+	struct TCSharedPointer;
 }
 
 namespace NMib::NThread
 {
-	class CEventAutoReset;
+	struct CEventAutoReset;
 }
 
 namespace NMib::NFunction

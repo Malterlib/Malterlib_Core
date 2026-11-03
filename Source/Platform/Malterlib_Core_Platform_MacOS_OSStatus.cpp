@@ -9,14 +9,12 @@ namespace NMib
 	{
 #include "Malterlib_Core_Platform_MacOS_OSStatuses.hpp"
 
-		class CSubSystem_Core_MacOS_ErrorStore : public CSubSystem
+		struct CSubSystem_Core_MacOS_ErrorStore : public CSubSystem
 		{
-		public:
 			struct CError : public CMacOSError
 			{
-				class CCompare
+				struct CCompare
 				{
-				public:
 					inline_small int operator () (CError const &_Node) const
 					{
 						return _Node.m_Code;

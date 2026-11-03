@@ -8,11 +8,11 @@ namespace NMib
 {
 	namespace NMemory
 	{
-		class CAllocator_Heap;
-		class CAllocator_Virtual;
+		struct CAllocator_Heap;
+		struct CAllocator_Virtual;
 
 		template <typename t_CBaseAllocator, bool t_bStatic>
-		class TCAllocator_Secure;
+		struct TCAllocator_Secure;
 
 		struct CAllocator_HeapSecure;
 
@@ -21,9 +21,9 @@ namespace NMib
 
 	namespace NThread
 	{
-		class CNoLock;
+		struct CNoLock;
 		template <typename t_CEvent, bool t_bAllowRecursive>
-		class TCMutual;
+		struct TCMutual;
 		struct CEventAutoResetAggregate;
 	}
 
@@ -109,7 +109,7 @@ namespace NMib
 	}
 
 	template <typename t_CIntType>
-	class TCLimitsInt;
+	struct TCLimitsInt;
 
 	namespace NFunction
 	{
@@ -118,7 +118,7 @@ namespace NMib
 			typename t_CFunction // The function definition to contain
 			, typename ...tp_COptions // Arguments, Can be function definition, option (CFunctionSupportEqualityCompareTag, CFunctionSupportOrderedCompareTag) or allocator
 		>
-		class TCFunctionNoAlloc;
+		struct TCFunctionNoAlloc;
 
 		template <typename t_CSignature>
 		struct TCFunctionMovable;
@@ -231,10 +231,10 @@ namespace NMib
 	namespace NStorage
 	{
 		template <typename t_CType, typename ...tp_COptions>
-		class TCSharedPointer;
+		struct TCSharedPointer;
 
 		template <typename t_CType, typename ...tp_COptions>
-		class TCWeakPointer;
+		struct TCWeakPointer;
 	}
 
 	// Destruction runs on whichever thread releases the last reference.
