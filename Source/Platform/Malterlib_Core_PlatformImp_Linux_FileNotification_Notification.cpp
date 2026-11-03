@@ -46,10 +46,10 @@ auto CFileChangeNotificationContext::CNotification::f_WatchPath(CWatch *_pParent
 		return nullptr;
 	}
 
-	for (auto &bDirectory : pWatch->m_ChildFiles)
+	for (auto &bDirectory : pWatch->mp_ChildFiles)
 	{
 		if (bDirectory && (m_Flags & NFile::EFileChange_Recursive))
-			f_WatchPath(pWatch, CFile::fs_AppendPath(pWatch->f_GetPath(), pWatch->m_ChildFiles.fs_GetKey(bDirectory)), false);
+			f_WatchPath(pWatch, CFile::fs_AppendPath(pWatch->f_GetPath(), pWatch->mp_ChildFiles.fs_GetKey(bDirectory)), false);
 	}
 	return pWatch;
 }

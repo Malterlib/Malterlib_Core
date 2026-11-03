@@ -23,7 +23,7 @@
 
 auto g_String = "String";
 auto g_Char = 'C';
-[[maybe_unused]] static uint32 const gc_GlobalConstant = (55 + 5 * 6 % ((67 | 77) & 88));
+[[maybe_unused]] static constexpr uint32 gc_GlobalConstant = (55 + 5 * 6 % ((67 | 77) & 88));
 [[maybe_unused]] static int gs_ThousandsSeparator = 10'000'000;
 double g_Double = 5.655 + 7.66e10;
 

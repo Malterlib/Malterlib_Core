@@ -83,7 +83,7 @@ struct CRuntimeNetAddress
 {
 private:
 	NMib::NNetwork::ENetAddressType mp_Type;
-	CByteVector mp_lData;
+	CByteVector mp_Data;
 
 public:
 	CRuntimeNetAddress()
@@ -93,7 +93,7 @@ public:
 
 	CRuntimeNetAddress(CRuntimeNetAddress const &_ToCopy)
 		: mp_Type(_ToCopy.mp_Type)
-		, mp_lData(_ToCopy.mp_lData)
+		, mp_Data(_ToCopy.mp_Data)
 	{
 	}
 
@@ -136,15 +136,15 @@ public:
 	void f_Set(NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes)
 	{
 		mp_Type = _Type;
-		mp_lData.f_SetLen(_nDataBytes);
-		fg_MemCopy(mp_lData.f_GetArray(), _pData, _nDataBytes);
+		mp_Data.f_SetLen(_nDataBytes);
+		fg_MemCopy(mp_Data.f_GetArray(), _pData, _nDataBytes);
 	}
 
 	void *f_GetForWrite(NMib::NNetwork::ENetAddressType _Type, umint _nDataBytes)
 	{
 		mp_Type = _Type;
-		mp_lData.f_SetLen(_nDataBytes);
-		return mp_lData.f_GetArray();
+		mp_Data.f_SetLen(_nDataBytes);
+		return mp_Data.f_GetArray();
 	}
 
 	void f_Set(sockaddr_in const &_TCPv4)
@@ -166,7 +166,7 @@ public:
 
 	umint f_GetFullDataLen() const
 	{
-		return mp_lData.f_GetLen();
+		return mp_Data.f_GetLen();
 	}
 
 	umint f_GetSockAddrLen() const
@@ -183,44 +183,44 @@ public:
 
 	void const *f_Get() const
 	{
-		return mp_lData.f_GetArray();
+		return mp_Data.f_GetArray();
 	}
 
 	sockaddr_in const &f_GetTCPv4() const
 	{
-		return *(sockaddr_in const *)mp_lData.f_GetArray();
+		return *(sockaddr_in const *)mp_Data.f_GetArray();
 	}
 
 	sockaddr_in6 const &f_GetTCPv6() const
 	{
-		return *(sockaddr_in6 const *)mp_lData.f_GetArray();
+		return *(sockaddr_in6 const *)mp_Data.f_GetArray();
 	}
 
 	CUnixAddress const &f_GetUnix() const
 	{
-		return *(CUnixAddress const *)mp_lData.f_GetArray();
+		return *(CUnixAddress const *)mp_Data.f_GetArray();
 	}
 
 	sockaddr_in &f_GetTCPv4()
 	{
-		return *(sockaddr_in *)mp_lData.f_GetArray();
+		return *(sockaddr_in *)mp_Data.f_GetArray();
 	}
 
 	sockaddr_in6 &f_GetTCPv6()
 	{
-		return *(sockaddr_in6 *)mp_lData.f_GetArray();
+		return *(sockaddr_in6 *)mp_Data.f_GetArray();
 	}
 
 	CUnixAddress &f_GetUnix()
 	{
-		return *(CUnixAddress *)mp_lData.f_GetArray();
+		return *(CUnixAddress *)mp_Data.f_GetArray();
 	}
 
 	template <typename tf_CAddrType>
 	tf_CAddrType const &f_GetAsType(NMib::NNetwork::ENetAddressType _ExpectedType) const
 	{
 		DMibSafeCheck(mp_Type == _ExpectedType, "Address is not of the expected type.");
-		return *(tf_CAddrType const *)mp_lData.f_GetArray();
+		return *(tf_CAddrType const *)mp_Data.f_GetArray();
 	}
 
 	int f_Compare(CRuntimeNetAddress const &_Other) const
@@ -229,12 +229,12 @@ public:
 			return -1;
 		else if (mp_Type > _Other.mp_Type)
 			return 1;
-		else if (mp_lData.f_GetLen() < _Other.mp_lData.f_GetLen())
+		else if (mp_Data.f_GetLen() < _Other.mp_Data.f_GetLen())
 			return -1;
-		else if (mp_lData.f_GetLen() > _Other.mp_lData.f_GetLen())
+		else if (mp_Data.f_GetLen() > _Other.mp_Data.f_GetLen())
 			return 1;
 		else
-			return fg_MemCmp(mp_lData.f_GetArray(), _Other.mp_lData.f_GetArray(), _Other.mp_lData.f_GetLen());
+			return fg_MemCmp(mp_Data.f_GetArray(), _Other.mp_Data.f_GetArray(), _Other.mp_Data.f_GetLen());
 	}
 };
 

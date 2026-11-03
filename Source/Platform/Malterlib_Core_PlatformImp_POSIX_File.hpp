@@ -572,13 +572,13 @@ template <typename t_CStr, typename t_CAllocator>
 struct TCPOSIXFileImp : public CPOSIXFile
 {
 	TCPOSIXFileImp(t_CStr const &_Str)
-		: m_Str(_Str)
+		: mp_Str(_Str)
 	{
 	}
 
 	virtual ch8 const *f_GetFileName() override
 	{
-		return m_Str;
+		return mp_Str;
 	}
 
 	virtual void f_Delete() override
@@ -587,7 +587,7 @@ struct TCPOSIXFileImp : public CPOSIXFile
 	}
 
 private:
-	t_CStr m_Str;
+	t_CStr mp_Str;
 };
 
 template <typename tf_CStats>
@@ -1375,14 +1375,14 @@ namespace
 			_DefaultMode = Stats.st_mode;
 
 #ifdef DMibPMachKernel
-		auto fl_MakeWritable = [&]()
+		auto fMakeWritable = [&]()
 			{
 				if (Stats.st_flags & UF_IMMUTABLE)
 					Stats.st_flags &= ~UF_IMMUTABLE, fchflags(_iFile, Stats.st_flags);
 			}
 		;
 #else
-		auto fl_MakeWritable = [&]()
+		auto fMakeWritable = [&]()
 			{
 			}
 		;
@@ -1394,7 +1394,7 @@ namespace
 
 			if ((Mode & ~S_IFMT) != (Stats.st_mode & ~S_IFMT))
 			{
-				fl_MakeWritable();
+				fMakeWritable();
 				if (fchmod(_iFile, Mode))
 					DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("chmod('{}') when setting file attributes") << _pFileName, errno));
 			}
@@ -1590,22 +1590,22 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const &_Filename, NMib
 
 [[maybe_unused]] static timespec fsg_CTimeToTimespec(NTime::CTime const &_Time)
 {
-	static CTime EpochStart = NTime::CTimeConvert::fs_CreateTime(1970, 1, 1);
-	auto Span = _Time - EpochStart;
+	static constexpr CTime c_EpochStart = NTime::CTimeConvert::fs_CreateTimeConstExpr(1970, 1, 1);
+	auto Span = _Time - c_EpochStart;
 	timespec TimeSpec;
 	TimeSpec.tv_sec = Span.f_GetSeconds();
 
 	// Convert fraction to nanoseconds using integer arithmetic with rounding
 	// to avoid precision loss from floating-point truncation
 	uint64 FractionInt = Span.f_GetFractionInt();
-	constexpr uint64 Billion = 1'000'000'000;
-	constexpr uint64 Divisor = NTime::NPrivate::CConst::mc_FractionDividend / Billion;
+	constexpr uint64 c_Billion = 1'000'000'000;
+	constexpr uint64 c_Divisor = NTime::NPrivate::CConst::mc_FractionDividend / c_Billion;
 
 	// Integer division with rounding: (a + b/2) / b rounds to nearest
-	uint64 Nanoseconds = (FractionInt + Divisor / 2) / Divisor;
+	uint64 Nanoseconds = (FractionInt + c_Divisor / 2) / c_Divisor;
 
 	// Handle overflow if nanoseconds rounds to 1 second
-	if (Nanoseconds >= Billion)
+	if (Nanoseconds >= c_Billion)
 	{
 		++TimeSpec.tv_sec;
 		TimeSpec.tv_nsec = 0;
@@ -1618,24 +1618,24 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const &_Filename, NMib
 
 static NTime::CTime fsg_TimespecToCTime(timespec const &_DateTime)
 {
-	static CTime EpochStart = NTime::CTimeConvert::fs_CreateTime(1970, 1, 1);
+	static constexpr CTime c_EpochStart = NTime::CTimeConvert::fs_CreateTimeConstExpr(1970, 1, 1);
 
 	// Convert nanoseconds to internal fraction using integer arithmetic
 	// FractionInt = Nanoseconds * mc_FractionDividend / 1e9
 	//             = Nanoseconds * (Divisor * 1e9 + Remainder) / 1e9
 	//             = Nanoseconds * Divisor + Nanoseconds * Remainder / 1e9
-	constexpr uint64 Billion = 1'000'000'000;
-	constexpr uint64 Divisor = NTime::NPrivate::CConst::mc_FractionDividend / Billion;
-	constexpr uint64 Remainder = NTime::NPrivate::CConst::mc_FractionDividend % Billion;
+	constexpr uint64 c_Billion = 1'000'000'000;
+	constexpr uint64 c_Divisor = NTime::NPrivate::CConst::mc_FractionDividend / c_Billion;
+	constexpr uint64 c_Remainder = NTime::NPrivate::CConst::mc_FractionDividend % c_Billion;
 
 	uint64 Nanoseconds = _DateTime.tv_nsec;
-	uint64 FractionInt = Nanoseconds * Divisor + Nanoseconds * Remainder / Billion;
+	uint64 FractionInt = Nanoseconds * c_Divisor + Nanoseconds * c_Remainder / c_Billion;
 
 	CTimeSpan Span;
 	Span.f_SetSecondsNoFraction(_DateTime.tv_sec);
 	Span.f_SetFractionInt(FractionInt);
 
-	return EpochStart + Span;
+	return c_EpochStart + Span;
 }
 
 NTime::CTime NSys::NFile::fg_GetCreationTime(void *_pFile)
@@ -1888,8 +1888,8 @@ void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, NTime
 
 static timeval fsg_CTimeToTimeVal(NTime::CTime const &_DateTime)
 {
-	static CTime EpochStart = NTime::CTimeConvert::fs_CreateTime(1970, 1, 1);
-	CTimeSpan Span = _DateTime - EpochStart;
+	static constexpr CTime c_EpochStart = NTime::CTimeConvert::fs_CreateTimeConstExpr(1970, 1, 1);
+	CTimeSpan Span = _DateTime - c_EpochStart;
 	timeval Ret;
 	Ret.tv_usec = (Span.f_GetFraction() * fp64(1000000)).f_ToInt();
 	Ret.tv_sec = Span.f_GetSeconds();
@@ -1917,12 +1917,12 @@ void NSys::NFile::fg_SetCreationTime(void *_pFile, NTime::CTime const &_Time)
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
 #	if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_futimens)
+	if (NLocal::g_fFutimens)
 	{
 		struct timespec TimeSpecs[2] = {0};
 		TimeSpecs[0].tv_nsec = UTIME_OMIT;
 		TimeSpecs[1] = fsg_CTimeToTimespec(_Time);
-		if (NLocal::g_f_futimens(pFile->m_BSDFile, TimeSpecs))
+		if (NLocal::g_fFutimens(pFile->m_BSDFile, TimeSpecs))
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimens('{}') when setting file creation time") << pFile->f_GetFileName(), errno));
 		return;
 	}
@@ -1948,12 +1948,12 @@ void NSys::NFile::fg_SetAccessTime(void *_pFile, NTime::CTime const &_Time)
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
 #	if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_futimens)
+	if (NLocal::g_fFutimens)
 	{
 		struct timespec TimeSpecs[2] = {0};
 		TimeSpecs[1].tv_nsec = UTIME_OMIT;
 		TimeSpecs[0] = fsg_CTimeToTimespec(_Time);
-		if (NLocal::g_f_futimens(pFile->m_BSDFile, TimeSpecs))
+		if (NLocal::g_fFutimens(pFile->m_BSDFile, TimeSpecs))
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimens('{}') when setting file creation time") << pFile->f_GetFileName(), errno));
 		return;
 	}
@@ -1978,12 +1978,12 @@ void NSys::NFile::fg_SetWriteTime(void *_pFile, NTime::CTime const &_Time)
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
 #	if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_futimens)
+	if (NLocal::g_fFutimens)
 	{
 		struct timespec TimeSpecs[2] = {0};
 		TimeSpecs[0].tv_nsec = UTIME_OMIT;
 		TimeSpecs[1] = fsg_CTimeToTimespec(_Time);
-		if (NLocal::g_f_futimens(pFile->m_BSDFile, TimeSpecs))
+		if (NLocal::g_fFutimens(pFile->m_BSDFile, TimeSpecs))
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("futimens('{}') when setting file creation time") << pFile->f_GetFileName(), errno));
 		return;
 	}
@@ -2006,12 +2006,12 @@ void NSys::NFile::fg_SetWriteTime(void *_pFile, NTime::CTime const &_Time)
 void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
 #	if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_utimensat)
+	if (NLocal::g_fUtimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
 		TimeSpecs[0].tv_nsec = UTIME_OMIT;
 		TimeSpecs[1] = fsg_CTimeToTimespec(_Time);
-		if (NLocal::g_f_utimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, 0))
+		if (NLocal::g_fUtimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, 0))
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
@@ -2034,12 +2034,12 @@ void NSys::NFile::fg_SetCreationTime(NMib::NStr::CStr const &_FileName, NTime::C
 void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
 #	if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_utimensat)
+	if (NLocal::g_fUtimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
 		TimeSpecs[1].tv_nsec = UTIME_OMIT;
 		TimeSpecs[0] = fsg_CTimeToTimespec(_Time);
-		if (NLocal::g_f_utimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, 0))
+		if (NLocal::g_fUtimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, 0))
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
@@ -2062,12 +2062,12 @@ void NSys::NFile::fg_SetAccessTime(NMib::NStr::CStr const &_FileName, NTime::CTi
 void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
 #	if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_utimensat)
+	if (NLocal::g_fUtimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
 		TimeSpecs[0].tv_nsec = UTIME_OMIT;
 		TimeSpecs[1] = fsg_CTimeToTimespec(_Time);
-		if (NLocal::g_f_utimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, 0))
+		if (NLocal::g_fUtimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, 0))
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
@@ -2090,12 +2090,12 @@ void NSys::NFile::fg_SetWriteTime(NMib::NStr::CStr const &_FileName, NTime::CTim
 void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
 #	if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_utimensat)
+	if (NLocal::g_fUtimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
 		TimeSpecs[0].tv_nsec = UTIME_OMIT;
 		TimeSpecs[1] = fsg_CTimeToTimespec(_Time);
-		if (NLocal::g_f_utimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, AT_SYMLINK_NOFOLLOW))
+		if (NLocal::g_fUtimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, AT_SYMLINK_NOFOLLOW))
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
@@ -2118,12 +2118,12 @@ void NSys::NFile::fg_SetCreationTimeOnLink(NMib::NStr::CStr const &_FileName, NT
 void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
 #	if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_utimensat)
+	if (NLocal::g_fUtimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
 		TimeSpecs[1].tv_nsec = UTIME_OMIT;
 		TimeSpecs[0] = fsg_CTimeToTimespec(_Time);
-		if (NLocal::g_f_utimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, AT_SYMLINK_NOFOLLOW))
+		if (NLocal::g_fUtimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, AT_SYMLINK_NOFOLLOW))
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}
@@ -2146,12 +2146,12 @@ void NSys::NFile::fg_SetAccessTimeOnLink(NMib::NStr::CStr const &_FileName, NTim
 void NSys::NFile::fg_SetWriteTimeOnLink(NMib::NStr::CStr const &_FileName, NTime::CTime const &_Time)
 {
 #	if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_utimensat)
+	if (NLocal::g_fUtimensat)
 	{
 		struct timespec TimeSpecs[2] = {0};
 		TimeSpecs[0].tv_nsec = UTIME_OMIT;
 		TimeSpecs[1] = fsg_CTimeToTimespec(_Time);
-		if (NLocal::g_f_utimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, AT_SYMLINK_NOFOLLOW))
+		if (NLocal::g_fUtimensat(AT_FDCWD, _FileName.f_GetStr(), TimeSpecs, AT_SYMLINK_NOFOLLOW))
 			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("utimensat('{}') when setting file creation time") << _FileName, errno));
 		return;
 	}

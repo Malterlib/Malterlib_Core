@@ -11,15 +11,15 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 	m_WakeupPipe[0] = -1;
 	m_WakeupPipe[1] = -1;
 
-	if (NLocal::g_f_inotify_init1)
-		m_NotifyDescriptor = NLocal::g_f_inotify_init1(IN_NONBLOCK | IN_CLOEXEC); // This should never block, epoll takes care of that.
-	else if (NLocal::g_f_inotify_init)
+	if (NLocal::g_fInotifyInit1)
+		m_NotifyDescriptor = NLocal::g_fInotifyInit1(IN_NONBLOCK | IN_CLOEXEC); // This should never block, epoll takes care of that.
+	else if (NLocal::g_fInotifyInit)
 	{
-		if (!NLocal::g_f_inotify_add_watch)
+		if (!NLocal::g_fInotifyAddWatch)
 			DMibError("inotify_init(): Missing inotify_add_watch");
-		if (!NLocal::g_f_inotify_rm_watch)
+		if (!NLocal::g_fInotifyRmWatch)
 			DMibError("inotify_init(): Missing inotify_rm_watch");
-		m_NotifyDescriptor = NLocal::g_f_inotify_init();
+		m_NotifyDescriptor = NLocal::g_fInotifyInit();
 	}
 	else
 		DMibError("inotify_init(): not available on system");
@@ -36,18 +36,18 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 		}
 	}
 
-	if (!NLocal::g_f_inotify_init1)
+	if (!NLocal::g_fInotifyInit1)
 	{
 		fcntl(m_NotifyDescriptor, F_SETFL, fcntl(m_NotifyDescriptor, F_GETFL) | O_NONBLOCK);
 		fcntl(m_NotifyDescriptor, F_SETFD, fcntl(m_NotifyDescriptor, F_GETFD) | FD_CLOEXEC);
 	}
 
-	int (*fLocal_epoll_create1)(int _Flags) __THROW;
+	int (*fEpollCreate1)(int _Flags) __THROW;
 
-	(void * &)fLocal_epoll_create1 = dlsym(RTLD_DEFAULT, "epoll_create1");
+	(void * &)fEpollCreate1 = dlsym(RTLD_DEFAULT, "epoll_create1");
 
-	if (fLocal_epoll_create1)
-		m_PollDescriptor = fLocal_epoll_create1(EPOLL_CLOEXEC);
+	if (fEpollCreate1)
+		m_PollDescriptor = fEpollCreate1(EPOLL_CLOEXEC);
 	else
 		m_PollDescriptor = epoll_create(1);
 
@@ -63,7 +63,7 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 		}
 	}
 
-	if (!fLocal_epoll_create1)
+	if (!fEpollCreate1)
 		fcntl(m_PollDescriptor, F_SETFD, fcntl(m_PollDescriptor, F_GETFD) | FD_CLOEXEC);
 
 	{
@@ -144,8 +144,8 @@ CFileChangeNotificationContext::CFileChangeNotificationContext()
 
 	{
 		int PipeRet;
-		if (NLocal::g_f_pipe2)
-			PipeRet = NLocal::g_f_pipe2(m_WakeupPipe, O_NONBLOCK | O_CLOEXEC);
+		if (NLocal::g_fPipe2)
+			PipeRet = NLocal::g_fPipe2(m_WakeupPipe, O_NONBLOCK | O_CLOEXEC);
 		else
 		{
 			PipeRet = pipe(m_WakeupPipe);
@@ -201,7 +201,7 @@ CFileChangeNotificationContext::~CFileChangeNotificationContext()
 int CFileChangeNotificationContext::f_Inotify_AddWatch(CStr const &_Path)
 {
 	uint32_t Mask = IN_ONLYDIR | IN_MODIFY | IN_ATTRIB | IN_MOVED_FROM | IN_MOVED_TO | IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MOVE_SELF;
-	int WatchDescriptor = NLocal::g_f_inotify_add_watch(m_NotifyDescriptor, _Path.f_GetStr(), Mask);
+	int WatchDescriptor = NLocal::g_fInotifyAddWatch(m_NotifyDescriptor, _Path.f_GetStr(), Mask);
 	if (WatchDescriptor < 0)
 		DMibErrorFile(NMib::NPlatform::fg_FormatErrno(CStr::CFormat("inotify_add_watch('{}')") << _Path, errno));
 	return WatchDescriptor;
@@ -209,7 +209,7 @@ int CFileChangeNotificationContext::f_Inotify_AddWatch(CStr const &_Path)
 
 void CFileChangeNotificationContext::f_Inotify_RemoveWatch(int _Descriptor)
 {
-	int Result = NLocal::g_f_inotify_rm_watch(m_NotifyDescriptor, _Descriptor);
+	int Result = NLocal::g_fInotifyRmWatch(m_NotifyDescriptor, _Descriptor);
 	if (Result < 0)
 	{
 		switch (errno)
@@ -280,7 +280,7 @@ CFileChangeNotificationContext::CWatch &CFileChangeNotificationContext::f_LinkWa
 			// We can't do a subdirectory search directly here, that could cause a race condition, because we must add the watch before scanning a directory
 			for (auto &File : NFile::CFile::fs_FindFilesEx(_Path + "/*", NFile::EFileAttrib_Directory | NFile::EFileAttrib_File, false, false))
 			{
-				pWatch->m_ChildFiles[File.m_Path.f_Extract(_Path.f_GetLen() + 1)]
+				pWatch->mp_ChildFiles[File.m_Path.f_Extract(_Path.f_GetLen() + 1)]
 					= (File.m_Attribs & (NFile::EFileAttrib_Directory | NFile::EFileAttrib_Link)) == NFile::EFileAttrib_Directory
 				;
 			}

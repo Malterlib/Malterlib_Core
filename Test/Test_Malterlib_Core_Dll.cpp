@@ -49,7 +49,7 @@ namespace
 		if (pthread_create(&Unloader, nullptr, &fg_UnloadLibraryThread, _pDll) != 0)
 			return false;
 
-		for (umint i = 0; i < _DeadlineMilliseconds / 10 && !g_bUnloadFinished.f_Load(); ++i)
+		for (umint iWait = 0; iWait < _DeadlineMilliseconds / 10 && !g_bUnloadFinished.f_Load(); ++iWait)
 			NMib::NSys::fg_Thread_Sleep(0.01);
 
 		if (!g_bUnloadFinished.f_Load())
@@ -191,7 +191,7 @@ namespace
 
 				void (calling_convention_c *pTestFunc)() = nullptr;
 
-				auto fl_ThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
+				auto fThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
 					{
 						while (_pThread->f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
 						{
@@ -207,7 +207,7 @@ namespace
 					}
 				;
 
-				auto pThread0 = NMib::NThread::CThreadObject::fs_StartThread(fl_ThreadProc, "DllThreadTest");
+				auto pThread0 = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
 
 				ThreadStarted.f_Wait();
 
@@ -226,7 +226,7 @@ namespace
 				ThreadStarted.f_Wait();
 
 				ThreadStarted.f_ResetSignaled();
-				auto pThread1 = NMib::NThread::CThreadObject::fs_StartThread(fl_ThreadProc, "DllThreadTest");
+				auto pThread1 = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
 				ThreadStarted.f_Wait();
 
 				ThreadStarted.f_ResetSignaled();
@@ -237,7 +237,7 @@ namespace
 				pThread0.f_Clear();
 
 				ThreadStarted.f_ResetSignaled();
-				auto pThread2 = NMib::NThread::CThreadObject::fs_StartThread(fl_ThreadProc, "DllThreadTest");
+				auto pThread2 = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
 				ThreadStarted.f_Wait();
 
 				ThreadStarted.f_ResetSignaled();
@@ -255,7 +255,7 @@ namespace
 				void *pDll = nullptr;
 				void (calling_convention_c *pTestFunc)() = nullptr;
 
-				auto fl_ThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
+				auto fThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
 					{
 						pTestFunc();
 						while (_pThread->f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
@@ -277,15 +277,15 @@ namespace
 				DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop);
 				pTestFunc();
 
-				for (umint i = 0; i < 10; ++i)
+				for (umint iRound = 0; iRound < 10; ++iRound)
 				{
-					for (auto i = 0; i < 64; ++i)
+					for (auto iThread = 0; iThread < 64; ++iThread)
 					{
-						Threads[i] = NMib::NThread::CThreadObject::fs_StartThread
+						Threads[iThread] = NMib::NThread::CThreadObject::fs_StartThread
 							(
 								[&](NMib::NThread::CThreadObject *_pThread) -> aint
 								{
-									fl_ThreadProc(_pThread);
+									fThreadProc(_pThread);
 									NMib::NContainer::TCVector<NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject>> Threads2;
 									Threads2.f_SetLen(10);
 
@@ -293,8 +293,8 @@ namespace
 									{
 										NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage2;
 
-										for (auto i = 0; i < 10; ++i)
-											Threads2[i] = NMib::NThread::CThreadObject::fs_StartThread(fl_ThreadProc, "DllThreadTest");
+										for (auto iInnerThread = 0; iInnerThread < 10; ++iInnerThread)
+											Threads2[iInnerThread] = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
 									}
 									return 0;
 								}
@@ -313,7 +313,7 @@ namespace
 			DMibTestSuite("Dll stress")
 			{
 				NMib::NFile::CFile::fs_CreateDirectory(NMib::NFile::CFile::fs_GetProgramDirectory() / "DllStress");
-				for (int i = 0; i < 16; ++i)
+				for (int iLoad = 0; iLoad < 16; ++iLoad)
 				{
 					void *pDll = nullptr;
 					void (calling_convention_c *pTestFunc)() = nullptr;
@@ -324,7 +324,7 @@ namespace
 					else
 						(void * &)pTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
 					DMibTest(DMibExpr(pTestFunc))(ETest_FailAndStop)(ETestFlag_Aggregated);
-					for (int i = 0; i < 2; ++i)
+					for (int iCall = 0; iCall < 2; ++iCall)
 						pTestFunc();
 
 #if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
@@ -365,8 +365,8 @@ namespace
 				pthread_t ChurnThread;
 				struct CChurn
 				{
-					NMib::NAtomic::TCAtomic<bool> *m_pbStop;
-					NMib::NAtomic::TCAtomic<umint> *m_pnChurned;
+					NMib::NAtomic::TCAtomic<bool> *m_pStop;
+					NMib::NAtomic::TCAtomic<umint> *m_pChurned;
 					pthread_key_t m_SlowKey;
 				} Churn{&bStop, &nChurned, SlowKey};
 
@@ -379,7 +379,7 @@ namespace
 				auto fChurn = [](void *_pChurn) -> void *
 					{
 						auto &Churn = *(CChurn *)_pChurn;
-						while (!Churn.m_pbStop->f_Load())
+						while (!Churn.m_pStop->f_Load())
 						{
 							pthread_t Short;
 							if
@@ -399,7 +399,7 @@ namespace
 							{
 								pthread_join(Short, nullptr);
 							}
-							Churn.m_pnChurned->f_FetchAdd(1);
+							Churn.m_pChurned->f_FetchAdd(1);
 						}
 						return nullptr;
 					}
@@ -456,7 +456,7 @@ namespace
 				constexpr umint c_nChurners = 16;
 				pthread_t Churners[c_nChurners];
 				umint nStarted = 0;
-				for (umint i = 0; i < c_nChurners; ++i)
+				for (umint iChurner = 0; iChurner < c_nChurners; ++iChurner)
 				{
 					if (pthread_create(&Churners[nStarted], nullptr, &fg_ChurnThread, nullptr) == 0)
 						++nStarted;
@@ -467,8 +467,8 @@ namespace
 				bool bUnloaded = fg_UnloadWithDeadline(pDll, 30000);
 
 				g_bChurnStop = true;
-				for (umint i = 0; i < nStarted; ++i)
-					pthread_join(Churners[i], nullptr);
+				for (umint iChurner = 0; iChurner < nStarted; ++iChurner)
+					pthread_join(Churners[iChurner], nullptr);
 
 				pthread_key_delete(g_ChurnKey);
 				DMibTest(DMibExpr(g_nChurned.f_Load()) > DMibExpr(umint(0)));
@@ -522,10 +522,10 @@ namespace
 
 				umint nLoops = 1;
 
-				for (umint j = 0; j < nTests; ++j)
+				for (umint iTest = 0; iTest < nTests; ++iTest)
 				{
 					MalterlibTime.f_Start();
-					for (umint i = 0; i < nLoops; ++i)
+					for (umint iLoop = 0; iLoop < nLoops; ++iLoop)
 					{
 						auto pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 						DMibTest(DMibExpr(pDll))(ETestFlag_Aggregated);

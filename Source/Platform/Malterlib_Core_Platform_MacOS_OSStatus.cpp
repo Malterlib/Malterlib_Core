@@ -30,10 +30,10 @@ namespace NMib
 			CSubSystem_Core_MacOS_ErrorStore()
 			{
 				int nErrors = sizeof(gs_MacOSErrors) / sizeof(CMacOSError);
-				for (int i = 0; i < nErrors; ++i)
+				for (int iError = 0; iError < nErrors; ++iError)
 				{
-					CError &Err = m_Errors[i];
-					auto &OSErr = gs_MacOSErrors[i];
+					CError &Err = m_Errors[iError];
+					auto &OSErr = gs_MacOSErrors[iError];
 
 					CError *pErr = m_Tree.f_FindEqual(OSErr.m_Code);
 

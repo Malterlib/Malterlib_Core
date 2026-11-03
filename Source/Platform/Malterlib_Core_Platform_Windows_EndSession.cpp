@@ -23,19 +23,19 @@ namespace NMib::NPlatform
 				memset(&WndClass, 0, sizeof(WndClass));
 				WndClass.lpszClassName = ClassName;
 				WndClass.lpfnWndProc = &fsp_WindowProc;
-				WndClass.hInstance = g_hDllInstance;
+				WndClass.hInstance = g_DllInstance;
 				if (!RegisterClassA(&WndClass))
 				{
 					mp_WindowSettled.f_SetSignaled();
 					return 0;
 				}
 
-				mp_hWnd = CreateWindowExA(0, ClassName, ClassName, WS_OVERLAPPED, 0, 0, 0, 0, nullptr, nullptr, g_hDllInstance, nullptr);
+				mp_Window = CreateWindowExA(0, ClassName, ClassName, WS_OVERLAPPED, 0, 0, 0, 0, nullptr, nullptr, g_DllInstance, nullptr);
 				mp_WindowSettled.f_SetSignaled();
 
-				if (!mp_hWnd)
+				if (!mp_Window)
 				{
-					UnregisterClassA(ClassName, g_hDllInstance);
+					UnregisterClassA(ClassName, g_DllInstance);
 					return 0;
 				}
 
@@ -46,7 +46,7 @@ namespace NMib::NPlatform
 					DispatchMessageA(&Message);
 				}
 
-				UnregisterClassA(ClassName, g_hDllInstance);
+				UnregisterClassA(ClassName, g_DllInstance);
 
 				return 0;
 			}
@@ -56,8 +56,8 @@ namespace NMib::NPlatform
 				if (f_GetState() == NThread::EThreadState_Running)
 				{
 					mp_WindowSettled.f_Wait();
-					if (mp_hWnd)
-						PostMessageA(mp_hWnd, WM_CLOSE, 0, 0);
+					if (mp_Window)
+						PostMessageA(mp_Window, WM_CLOSE, 0, 0);
 				}
 
 				return NThread::CThread::f_Stop(_bBlock);
@@ -89,7 +89,7 @@ namespace NMib::NPlatform
 			}
 
 			NThread::CEvent mp_WindowSettled;
-			HWND mp_hWnd = nullptr;
+			HWND mp_Window = nullptr;
 		};
 
 		struct CSubSystem_Core_EndSession : public CSubSystem

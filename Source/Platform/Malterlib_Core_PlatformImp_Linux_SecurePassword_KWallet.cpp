@@ -31,16 +31,16 @@ namespace NMib
 
 			bool mp_bOK;
 
-			static char const *mc_KWalletService;
-			static char const *mc_KWalletPath;
-			static char const *mc_KWalletInterface;
+			static constexpr char const *mcp_KWalletService = "org.kde.kwalletd";
+			static constexpr char const *mcp_KWalletPath = "/modules/kwalletd";
+			static constexpr char const *mcp_KWalletInterface = "org.kde.KWallet";
 
 			bool fp_OpenConnection();
 
 			template <typename ...tfp_CArgs>
 			bool fp_MethodCall(NDBus::CMessage &o_Reply, char const *_pMethodName, tfp_CArgs const & ...p_Args)
 			{
-				NDBus::CMessage Call(NDBus::EMessageType_Method, mc_KWalletService, mc_KWalletPath, mc_KWalletInterface, _pMethodName, mp_DBus);
+				NDBus::CMessage Call(NDBus::EMessageType_Method, mcp_KWalletService, mcp_KWalletPath, mcp_KWalletInterface, _pMethodName, mp_DBus);
 
 				{
 					NDBus::CMessageWriter Writer(Call);
@@ -84,10 +84,6 @@ namespace NMib
 			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key);
 		};
 
-		char const *CKWalletPasswordManager::mc_KWalletService = "org.kde.kwalletd";
-		char const *CKWalletPasswordManager::mc_KWalletPath = "/modules/kwalletd";
-		char const *CKWalletPasswordManager::mc_KWalletInterface = "org.kde.KWallet";
-
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem *_pDBus)
 		{
 			if (!_pDBus)
@@ -129,7 +125,7 @@ namespace NMib
 				)
 			;
 
-			auto fl_CheckEnabled = [&](bool _bLog) -> bool
+			auto fCheckEnabled = [&](bool _bLog) -> bool
 				{ // Check KWallet is enabled
 					NDBus::CMessage IsEnabledReply(mp_DBus);
 					if (!fp_MethodCall(IsEnabledReply, "isEnabled"))
@@ -158,11 +154,11 @@ namespace NMib
 				}
 			;
 
-			if (!fl_CheckEnabled(false))
+			if (!fCheckEnabled(false))
 			{
 				if (fp_LaunchKWallet())
 				{
-					if (!fl_CheckEnabled(true))
+					if (!fCheckEnabled(true))
 						return;
 				}
 				else
@@ -429,11 +425,11 @@ namespace NMib
 			{
 				NDBus::CMessageWriter Writer(Call);
 
-				NMib::NContainer::TCVector<NMib::NStr::CStr> lEmptyStrList;
+				NMib::NContainer::TCVector<NMib::NStr::CStr> EmptyStrList;
 
-				static char const *pKWalletService = "kwalletd";
+				constexpr char const *c_pKWalletService = "kwalletd";
 
-				if (!Writer.f_AppendArgs(pKWalletService, lEmptyStrList, lEmptyStrList, NMib::NStr::CStr(), false))
+				if (!Writer.f_AppendArgs(c_pKWalletService, EmptyStrList, EmptyStrList, NMib::NStr::CStr(), false))
 					return false;
 			}
 

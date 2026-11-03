@@ -12,7 +12,7 @@ namespace NMib
 		{
 			namespace
 			{
-				static constexpr NMib::NTime::CTime const g_FileTimeBase = NMib::NTime::CTime::fs_Create(237148610522659200, 0);
+				static constexpr NMib::NTime::CTime const gc_FileTimeBase = NMib::NTime::CTime::fs_Create(237148610522659200, 0);
 			}
 
 			NTime::CTimeSpan fg_Win32_FileTimeToMalterlibTimeSpan(FILETIME const &_FileTime)
@@ -27,13 +27,13 @@ namespace NMib
 
 				// Convert 100-nanosecond units to internal fraction using integer arithmetic
 				// FractionInt = Nano100Remainder * mc_FractionDividend / 10,000,000
-				//             = Nano100Remainder * (Divisor * 10,000,000 + Remainder) / 10,000,000
-				//             = Nano100Remainder * Divisor + Nano100Remainder * Remainder / 10,000,000
-				constexpr uint64 TenMillion = 10'000'000;
-				constexpr uint64 Divisor = NTime::NPrivate::CConst::mc_FractionDividend / TenMillion;
-				constexpr uint64 Remainder = NTime::NPrivate::CConst::mc_FractionDividend % TenMillion;
+				//             = Nano100Remainder * (c_Divisor * 10,000,000 + c_Remainder) / 10,000,000
+				//             = Nano100Remainder * c_Divisor + Nano100Remainder * c_Remainder / 10,000,000
+				constexpr uint64 c_TenMillion = 10'000'000;
+				constexpr uint64 c_Divisor = NTime::NPrivate::CConst::mc_FractionDividend / c_TenMillion;
+				constexpr uint64 c_Remainder = NTime::NPrivate::CConst::mc_FractionDividend % c_TenMillion;
 
-				uint64 FractionInt = Nano100Remainder * Divisor + Nano100Remainder * Remainder / TenMillion;
+				uint64 FractionInt = Nano100Remainder * c_Divisor + Nano100Remainder * c_Remainder / c_TenMillion;
 
 				NTime::CTimeSpan FileTimeSpan;
 				FileTimeSpan.f_SetSecondsNoFraction(nSeconds);
@@ -44,31 +44,31 @@ namespace NMib
 
 			NTime::CTime fg_Win32_FileTimeToMalterlibTime(FILETIME const &_FileTime)
 			{
-				NTime::CTime BaseTime = g_FileTimeBase;
+				NTime::CTime BaseTime = gc_FileTimeBase;
 
 				return BaseTime + fg_Win32_FileTimeToMalterlibTimeSpan(_FileTime);
 			}
 
 			void fg_Win32_MalterlibTimeToFileTime(NTime::CTime const &_Time, FILETIME &o_FileTime)
 			{
-				NTime::CTime BaseTime = g_FileTimeBase;
+				NTime::CTime BaseTime = gc_FileTimeBase;
 				NTime::CTimeSpan FileTimeSpan = _Time - BaseTime;
 
 				// Convert internal fraction to 100-nanosecond units using integer arithmetic with rounding
 				// Nano100 = FractionInt * 10,000,000 / mc_FractionDividend
-				//         = (FractionInt + Divisor/2) / Divisor  (with rounding)
-				constexpr uint64 TenMillion = 10'000'000;
-				constexpr uint64 Divisor = NTime::NPrivate::CConst::mc_FractionDividend / TenMillion;
+				//         = (FractionInt + c_Divisor/2) / c_Divisor  (with rounding)
+				constexpr uint64 c_TenMillion = 10'000'000;
+				constexpr uint64 c_Divisor = NTime::NPrivate::CConst::mc_FractionDividend / c_TenMillion;
 
 				uint64 FractionInt = FileTimeSpan.f_GetFractionInt();
-				uint64 Nano100 = (FractionInt + Divisor / 2) / Divisor;
+				uint64 Nano100 = (FractionInt + c_Divisor / 2) / c_Divisor;
 
 				LARGE_INTEGER Temp;
-				Temp.QuadPart = FileTimeSpan.f_GetSeconds() * TenMillion;
+				Temp.QuadPart = FileTimeSpan.f_GetSeconds() * c_TenMillion;
 
-				// Handle overflow if Nano100 rounds to TenMillion
-				if (Nano100 >= TenMillion)
-					Temp.QuadPart += TenMillion;
+				// Handle overflow if Nano100 rounds to c_TenMillion
+				if (Nano100 >= c_TenMillion)
+					Temp.QuadPart += c_TenMillion;
 				else
 					Temp.QuadPart += Nano100;
 

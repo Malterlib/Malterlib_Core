@@ -17,38 +17,38 @@ namespace
 
 	public:
 		CTestVal(int32 _Value)
-			: m_Value(_Value)
+			: mp_Value(_Value)
 		{
 		}
 
 		int f_GetVal() const
 		{
-			return m_Value;
+			return mp_Value;
 		}
 
 		operator bool () const
 		{
-			return m_Value != 0;
+			return mp_Value != 0;
 		}
 
 		auto operator <=> (CTestVal const &_Other) const noexcept
 		{
-			return m_Value <=> _Other.m_Value;
+			return mp_Value <=> _Other.mp_Value;
 		}
 
 		bool operator == (CTestVal const &_Other) const noexcept
 		{
-			return m_Value == _Other.m_Value;
+			return mp_Value == _Other.mp_Value;
 		}
 
 		auto operator <=> (int _Other) const noexcept
 		{
-			return m_Value <=> _Other;
+			return mp_Value <=> _Other;
 		}
 
 		bool operator == (int _Other) const noexcept
 		{
-			return m_Value == _Other;
+			return mp_Value == _Other;
 		}
 
 		template <typename tf_CFormatter>
@@ -57,11 +57,11 @@ namespace
 		template <typename tf_CFormatter>
 		auto f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NMib::NStr::fg_CreateStringFormatter(_Formatter, fsp_ValueType()))
 		{
-			return NMib::NStr::fg_CreateStringFormatter(_Formatter, m_Value);
+			return NMib::NStr::fg_CreateStringFormatter(_Formatter, mp_Value);
 		}
 
 	private:
-		int32 m_Value;
+		int32 mp_Value;
 	};
 
 	auto operator <=> (int _Left, CTestVal const &_Right) noexcept

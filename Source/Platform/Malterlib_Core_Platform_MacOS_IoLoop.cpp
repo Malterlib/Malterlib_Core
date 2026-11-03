@@ -38,10 +38,10 @@ auto CIoLoop_KQueue::fp_CreateRegistration() -> NSys::CIoLoopRegistration *
 umint CIoLoop_KQueue::fp_Iterate(bool _bBlock, fp64 _Timeout)
 {
 	CIoLoopWaitDeadline Deadline(_Timeout);
-	static int const nMaxEvents = 64;
-	struct kevent StackEvents[nMaxEvents];
+	static constexpr int c_nMaxEvents = 64;
+	struct kevent StackEvents[c_nMaxEvents];
 	struct kevent *pIncomingEvents = StackEvents;
-	int nEventCapacity = nMaxEvents;
+	int nEventCapacity = c_nMaxEvents;
 	timespec PollTimeout = {0, 0};
 	umint nReported = 0;
 
@@ -110,7 +110,7 @@ umint CIoLoop_KQueue::fp_Iterate(bool _bBlock, fp64 _Timeout)
 
 	// Reserve one event slot per change; otherwise an EV_ERROR receipt can stop kevent before the remaining changes apply.
 	NContainer::TCVector<struct kevent> LargeEvents;
-	if (ApplyChanges.f_GetLen() > umint(nMaxEvents))
+	if (ApplyChanges.f_GetLen() > umint(c_nMaxEvents))
 	{
 		LargeEvents.f_SetLen(ApplyChanges.f_GetLen());
 		pIncomingEvents = LargeEvents.f_GetArray();

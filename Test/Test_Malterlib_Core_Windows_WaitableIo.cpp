@@ -33,11 +33,11 @@ namespace
 				{
 					DMibTestPath(bManualReset ? "ManualReset" : "AutoReset");
 
-					HANDLE hEvent = CreateEventW(nullptr, bManualReset, FALSE, nullptr);
-					DMibAssertTrue(hEvent != nullptr);
-					auto Close = g_OnScopeExit / [hEvent]
+					HANDLE Event = CreateEventW(nullptr, bManualReset, FALSE, nullptr);
+					DMibAssertTrue(Event != nullptr);
+					auto Close = g_OnScopeExit / [Event]
 						{
-							CloseHandle(hEvent);
+							CloseHandle(Event);
 						}
 					;
 
@@ -51,7 +51,7 @@ namespace
 
 					auto fPollUntil = [&](auto const &_fDone)
 						{
-							for (umint i = 0; i < 5000 && !_fDone(); ++i)
+							for (umint iPoll = 0; iPoll < 5000 && !_fDone(); ++iPoll)
 							{
 								pLoop->f_PollAndDispatch();
 								NSys::fg_Thread_Sleep(0.001);
@@ -61,10 +61,10 @@ namespace
 						}
 					;
 
-					DMibExpectTrue(SetEvent(hEvent) != 0);
+					DMibExpectTrue(SetEvent(Event) != 0);
 					auto *pRegistration = pLoop->f_Register
 						(
-							(NSys::CIoLoopHandle)(umint)hEvent
+							(NSys::CIoLoopHandle)(umint)Event
 							, &Reports
 							, NSys::EIoLoopEvent::mc_Read
 							, [](void *_pToken, NSys::EIoLoopEvent _Events, int _Error)
@@ -107,7 +107,7 @@ namespace
 
 					// A manual-reset event remains signaled; an auto-reset event needs another signal.
 					if (!bManualReset)
-						SetEvent(hEvent);
+						SetEvent(Event);
 					pLoop->f_RequestReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read);
 					DMibExpectTrue
 						(
@@ -122,13 +122,13 @@ namespace
 					;
 					DMibExpect(Reports.m_Reads, ==, 2);
 
-					ResetEvent(hEvent);
+					ResetEvent(Event);
 					pLoop->f_RequestReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read);
 					pLoop->f_PollAndDispatch();
 
 					// Exercise cancellation with both a pending wait and a packet racing with removal.
 					if (bManualReset)
-						SetEvent(hEvent);
+						SetEvent(Event);
 					umint nClosed = 0;
 					pLoop->f_DeregisterAsync
 						(
@@ -153,8 +153,8 @@ namespace
 					;
 
 					umint nReadsAtClose = Reports.m_Reads;
-					SetEvent(hEvent);
-					for (umint i = 0; i < 16; ++i)
+					SetEvent(Event);
+					for (umint iPoll = 0; iPoll < 16; ++iPoll)
 						pLoop->f_PollAndDispatch();
 
 					DMibExpect(nClosed, ==, 1);

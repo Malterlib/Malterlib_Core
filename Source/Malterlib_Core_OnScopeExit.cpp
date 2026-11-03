@@ -7,19 +7,19 @@
 
 namespace NMib
 {
-	constexpr COnScopeExitHelper g_OnScopeExitInit{};
-	COnScopeExitHelper const &g_OnScopeExit = g_OnScopeExitInit;
+	constexpr COnScopeExitHelper gc_OnScopeExitInit{};
+	COnScopeExitHelper const &g_OnScopeExit = gc_OnScopeExitInit;
 
-	constexpr COnScopeExitHelperWithException g_OnScopeExitWithExceptionInit{};
-	COnScopeExitHelperWithException const &g_OnScopeExitWithException = g_OnScopeExitWithExceptionInit;
+	constexpr COnScopeExitHelperWithException gc_OnScopeExitWithExceptionInit{};
+	COnScopeExitHelperWithException const &g_OnScopeExitWithException = gc_OnScopeExitWithExceptionInit;
 
-	constexpr COnScopeExitCatchHelper g_OnScopeExitCatchInit{};
-	COnScopeExitCatchHelper const &g_OnScopeExitCatch = g_OnScopeExitCatchInit;
+	constexpr COnScopeExitCatchHelper gc_OnScopeExitCatchInit{};
+	COnScopeExitCatchHelper const &g_OnScopeExitCatch = gc_OnScopeExitCatchInit;
 
-	constexpr COnScopeExitSharedHelper g_OnScopeExitSharedInit{};
-	COnScopeExitSharedHelper const &g_OnScopeExitShared = g_OnScopeExitSharedInit;
+	constexpr COnScopeExitSharedHelper gc_OnScopeExitSharedInit{};
+	COnScopeExitSharedHelper const &g_OnScopeExitShared = gc_OnScopeExitSharedInit;
 
-	constexpr COnScopeExitSharedWithExceptionHelper g_OnScopeExitSharedWithExceptionInit{};
-	COnScopeExitSharedWithExceptionHelper const &g_OnScopeExitSharedWithException = g_OnScopeExitSharedWithExceptionInit;
+	constexpr COnScopeExitSharedWithExceptionHelper gc_OnScopeExitSharedWithExceptionInit{};
+	COnScopeExitSharedWithExceptionHelper const &g_OnScopeExitSharedWithException = gc_OnScopeExitSharedWithExceptionInit;
 }
 

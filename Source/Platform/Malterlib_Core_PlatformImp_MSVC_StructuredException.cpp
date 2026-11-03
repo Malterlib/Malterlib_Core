@@ -32,18 +32,18 @@ struct CMemoryToucher : public NMib::CVirtualDestructor
 
 private:
 	struct CInternal;
-	NMib::NStorage::TCUniquePointer<CInternal> m_pInternal;
+	NMib::NStorage::TCUniquePointer<CInternal> mp_pInternal;
 };
 
 struct CMemoryToucher::CInternal : public NMib::NThread::CThread
 {
 	CInternal(fp64 _CPUUsage)
-		: m_CPUUsage(NMib::fg_Clamp(_CPUUsage, 0.0, 0.99))
+		: mp_CPUUsage(NMib::fg_Clamp(_CPUUsage, 0.0, 0.99))
 	{
 	};
 
 private:
-	fp64 m_CPUUsage;
+	fp64 mp_CPUUsage;
 
 	void fp_Touch(void *_pAddress, umint _Size)
 	{
@@ -66,10 +66,10 @@ private:
 		umint CurrentAddress = StartAddress;
 		umint MaxPerTime = 1 * 1024 * 1024;
 		[[maybe_unused]] umint TotalScannedMemory = 0;
-		bool bUseRunTime = m_CPUUsage != 0.0;
+		bool bUseRunTime = mp_CPUUsage != 0.0;
 		fp64 RunTime = 0.0;
 		if (bUseRunTime)
-			RunTime = -(m_CPUUsage / (fp64(10.0) * m_CPUUsage - fp64(10.0)));
+			RunTime = -(mp_CPUUsage / (fp64(10.0) * mp_CPUUsage - fp64(10.0)));
 		NMib::NTime::CStopwatch TotalStopwatch;
 		TotalStopwatch.f_Start();
 		while (f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
@@ -77,7 +77,7 @@ private:
 			umint ScannedMemory = 0;
 			NMib::NTime::CStopwatch Stopwatch;
 			Stopwatch.f_Start();
-			for (umint i = 0; true; ++i)
+			for (umint iIteration = 0; true; ++iIteration)
 			{
 				MEMORY_BASIC_INFORMATION MemInfo;
 				if (!VirtualQuery((void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
@@ -112,7 +112,7 @@ private:
 				}
 				else
 					CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
-				if ((ScannedMemory > MaxPerTime || i > 1000) && (!bUseRunTime || Stopwatch.f_GetTime() > RunTime))
+				if ((ScannedMemory > MaxPerTime || iIteration > 1000) && (!bUseRunTime || Stopwatch.f_GetTime() > RunTime))
 					break;
 			}
 			m_EventWantQuit.f_WaitTimeout(0.1);
@@ -128,12 +128,12 @@ private:
 
 CMemoryToucher::CMemoryToucher(fp64 _CPUUsage)
 {
-	m_pInternal = NMib::fg_Construct(_CPUUsage);
-	m_pInternal->f_Start();
+	mp_pInternal = NMib::fg_Construct(_CPUUsage);
+	mp_pInternal->f_Start();
 }
 
 CMemoryToucher::~CMemoryToucher()
 {
-	m_pInternal->f_Stop();
-	m_pInternal.f_Clear();
+	mp_pInternal->f_Stop();
+	mp_pInternal.f_Clear();
 }

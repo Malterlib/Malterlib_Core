@@ -17,7 +17,7 @@
 NSys::CSocketIoStats *fg_SocketIoStats();
 #endif
 
-static uint32 const ENetAddressType_Kernel = 3;
+static constexpr uint32 gc_NetAddressType_Kernel = 3;
 
 using namespace NMib;
 using namespace NMib::NMemory;

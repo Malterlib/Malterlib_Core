@@ -34,10 +34,10 @@ namespace NMib::NThread::NPlatform
 			CWindowsCrossModuleProcessInfo::ms_pThis = new(pMemory) CWindowsCrossModuleProcessInfo();
 
 			umint Pointer = (umint)CWindowsCrossModuleProcessInfo::ms_pThis;
-			for (umint i = 0; i < sizeof(umint) * 8; ++i)
+			for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 			{
-				if (Pointer & (umint(1) << i))
-					AddAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << i));
+				if (Pointer & (umint(1) << iBit))
+					AddAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << iBit));
 			}
 			AddAtomW(str_utf16("MibCrossModuleAtom"));
 		}
@@ -47,10 +47,10 @@ namespace NMib::NThread::NPlatform
 			// This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
 			if (FindAtomW(str_utf16("MibCrossModuleAtom")))
 			{
-				for (umint i = 0; i < sizeof(umint) * 8; ++i)
+				for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 				{
-					if (FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << i)))
-						Pointer |= (umint(1) << i);
+					if (FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << iBit)))
+						Pointer |= (umint(1) << iBit);
 				}
 			}
 
@@ -80,10 +80,10 @@ namespace NMib::NThread::NPlatform
 		if (CWindowsCrossModuleProcessInfo::ms_pThis->m_RefCount.f_FetchSub(1) == 1)
 		{
 			umint Pointer = (umint)CWindowsCrossModuleProcessInfo::ms_pThis;
-			for (umint i = 0; i < sizeof(umint) * 8; ++i)
+			for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 			{
-				if (Pointer & (umint(1) << i))
-					DeleteAtom(FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << i)));
+				if (Pointer & (umint(1) << iBit))
+					DeleteAtom(FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("MibCrossModuleAtom{}")) << iBit)));
 			}
 			DeleteAtom(FindAtomW(str_utf16("MibCrossModuleAtom")));
 

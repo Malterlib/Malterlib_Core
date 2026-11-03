@@ -106,8 +106,8 @@ namespace
 
 			NMib::NStr::CMStrDeprecated Source(NMib::NStr::CWStr(str_utf16("Testing 日本語 !")));
 
-			std::string strtest = "testing!!!";
-			CStdUTF16String strtestw = str_utf16("testing!!!");
+			std::string StdString = "testing!!!";
+			CStdUTF16String StdUTF16String = str_utf16("testing!!!");
 			NMib::NStr::CStr TestStr2;
 			NMib::NStr::CStr TestStr(Source);
 
@@ -137,7 +137,7 @@ namespace
 			List.f_Insert(Test334);
 
 			for (auto Iter = List.f_GetIterator(); Iter; ++Iter)
-				int y = 0;
+				int Breakpoint = 0;
 
 			NMib::NContainer::TCVector<CTestLinked> Vector;
 			DMibListLinkD_List(CTestLinked, m_Link) LinkedList;
@@ -160,14 +160,14 @@ namespace
 				LinkedListSingle.f_Insert(Insert2);
 			}
 			for (auto Iter = LinkedList.f_GetIterator(); Iter; ++Iter)
-				int y = 0;
+				int Breakpoint = 0;
 
 			for (auto Iter = LinkedListSingle.f_GetIterator(); Iter; ++Iter)
-				int y = 0;
+				int Breakpoint = 0;
 
 			auto VectorIter = Vector.f_GetIterator();
 			for (; VectorIter; ++VectorIter)
-				int y = 0;
+				int Breakpoint = 0;
 
 			NMib::NContainer::TCLinkedList<CTestAVLTree> AVLList;
 			NMib::NIntrusive::TCAVLTree<&CTestAVLTree::m_Link, CTestAVLTree::CCompare> AVLTree;
@@ -187,7 +187,7 @@ namespace
 			}
 
 			for (auto Iter = AVLTree.f_GetIterator(); Iter; ++Iter)
-				int y = 0;
+				int Breakpoint = 0;
 
 			NMib::NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> Map;
 
@@ -196,7 +196,7 @@ namespace
 			Map["Test 3"] = "1";
 
 			for (auto Iter = Map.f_GetIterator(); Iter; ++Iter)
-				int y = 0;
+				int Breakpoint = 0;
 
 			NMib::NContainer::TCSet<NMib::NStr::CStr> Set;
 
@@ -205,7 +205,7 @@ namespace
 			Set["Test 3"];
 
 			for (auto Iter = Set.f_GetIterator(); Iter; ++Iter)
-				int y = 0;
+				int Breakpoint = 0;
 
 			NMib::NStorage::TCAggregateSimple<NMib::NStr::CStr> TestAggregateSimple = {DAggregateInit};
 			TestAggregateSimple.f_Construct();
@@ -215,11 +215,11 @@ namespace
 			{
 				NMib::NStorage::TCAggregate<NMib::NStr::CStr> TestAggregate = {DAggregateInit};
 				*TestAggregate = "Test aggregate";
-				int x = 0;
+				int BreakpointBeforeClear = 0;
 				TestAggregate.f_Clear();
 				*TestAggregate = "Test aggregate";
 				TestAggregate.f_Destruct();
-				int y = 0;
+				int BreakpointAfterDestruct = 0;
 			}
 
 			NMib::NStorage::TCStreamableVariant

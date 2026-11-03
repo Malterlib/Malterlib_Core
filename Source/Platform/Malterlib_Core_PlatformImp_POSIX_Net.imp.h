@@ -449,7 +449,7 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 		}
 		break;
 	/*
-	case ENetAddressType_Kernel:
+	case gc_NetAddressType_Kernel:
 		{
 			auto &Address = _Address.f_GetKernel();
 			if (_Flags & ENetAddressStringFlag_IncludeType)
@@ -1392,9 +1392,9 @@ CPOSIXSocket *CPOSIXSocketContext::f_Accept(CPOSIXSocket *_pSocket, NMib::NFunct
 {
 	int ResultFD;
 #ifdef DPlatformFamily_Linux
-	if (NLocal::g_f_accept4)
+	if (NLocal::g_fAccept4)
 	{
-		ResultFD = NLocal::g_f_accept4(_pSocket->m_FD, NULL, NULL, SOCK_CLOEXEC);
+		ResultFD = NLocal::g_fAccept4(_pSocket->m_FD, NULL, NULL, SOCK_CLOEXEC);
 
 		if (ResultFD == -1)
 		{
@@ -1567,11 +1567,11 @@ void CPOSIXSocketContext::f_CloseAsync(CPOSIXSocket *_pSocket, NMib::NFunction::
 		pOwningLoop->f_DeregisterAsync
 			(
 				_pSocket->m_pIoRegistration
-				, [this, _pSocket, _fOnClosed = fg_Move(_fOnClosed)]() mutable
+				, [this, _pSocket, fOnClosed = fg_Move(_fOnClosed)]() mutable
 				{
 					fp_DestroySocket(_pSocket);
-					if (_fOnClosed)
-						_fOnClosed();
+					if (fOnClosed)
+						fOnClosed();
 				}
 			)
 		;
@@ -1867,7 +1867,7 @@ void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::
 		pOwningLoop->f_DeregisterAsync
 			(
 				pRegistration
-				, [this, _pSocket, _fOnHandle = fg_Move(_fOnHandle)]() mutable
+				, [this, _pSocket, fOnHandle = fg_Move(_fOnHandle)]() mutable
 				{
 					int FD = -1;
 					{
@@ -1877,7 +1877,7 @@ void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::
 					}
 
 					fp_DestroySocket(_pSocket);
-					_fOnHandle((void *)(umint)FD);
+					fOnHandle((void *)(umint)FD);
 				}
 			)
 		;
@@ -2108,8 +2108,8 @@ auto CPOSIXSocketContext::fp_CreateSocket
 #ifdef DPlatformFamily_macOS
 	{
 		// Disable sigpipe from being sent to program. We handle this in exceptions
-		int set = 1;
-		setsockopt(_FD, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+		int NoSigPipe = 1;
+		setsockopt(_FD, SOL_SOCKET, SO_NOSIGPIPE, (void *)&NoSigPipe, sizeof(int));
 	}
 #endif
 

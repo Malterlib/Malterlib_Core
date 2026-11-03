@@ -5,6 +5,7 @@
 
 #include <winternl.h>
 
+// NOLINTBEGIN(malterlib-variable-naming): the declarations of the Windows SDK, with their names
 // NOLINTBEGIN(malterlib-type-naming): the names of undocumented Windows types
 typedef void (*PPEBLOCKROUTINE)(PVOID _pPebLock);
 
@@ -518,6 +519,10 @@ enum Undocumented_PROCESSINFOCLASS
 	, MaxProcessInfoClass               // MaxProcessInfoClass should always be the last enum
 };
 
+// NOLINTEND(malterlib-type-naming)
+// NOLINTEND(malterlib-variable-naming)
+// NOLINTBEGIN(malterlib-type-naming): the names of undocumented Windows types
+
 inline_always CUndocumentedTEB *fg_GetTEB()
 {
 #if defined(DArchitecture_arm64)
@@ -574,10 +579,12 @@ enum Undocumented_FILE_INFO_BY_HANDLE_CLASS
 	, Undocumented_MaximumFileInfoByHandleClass
 };
 
+// NOLINTBEGIN(malterlib-variable-naming): the declarations of the Windows SDK, with their names
 struct Undocumented_FILE_ID_INFO
 {
 	ULONGLONG VolumeSerialNumber;
 	FILE_ID_128 FileId;
 };
 
+// NOLINTEND(malterlib-variable-naming)
 // NOLINTEND(malterlib-type-naming)

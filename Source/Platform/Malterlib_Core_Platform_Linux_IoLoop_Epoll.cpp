@@ -20,12 +20,12 @@ CIoLoop_Epoll::CIoLoop_Epoll()
 	mp_pIo = &fg_IoSubSystem_Linux();
 #endif
 
-	int (*fLocal_epoll_create1)(int _Flags) __THROW;
+	int (*fEpollCreate1)(int _Flags) __THROW;
 
-	(void * &)fLocal_epoll_create1 = dlsym(RTLD_DEFAULT, "epoll_create1");
+	(void * &)fEpollCreate1 = dlsym(RTLD_DEFAULT, "epoll_create1");
 
-	if (fLocal_epoll_create1)
-		mp_EpollFd = fLocal_epoll_create1(EPOLL_CLOEXEC);
+	if (fEpollCreate1)
+		mp_EpollFd = fEpollCreate1(EPOLL_CLOEXEC);
 	else
 		mp_EpollFd = epoll_create(1);
 
@@ -37,7 +37,7 @@ CIoLoop_Epoll::CIoLoop_Epoll()
 		DMibPDebugBreak;
 	}
 
-	if (!fLocal_epoll_create1)
+	if (!fEpollCreate1)
 		fcntl(mp_EpollFd, F_SETFD, fcntl(mp_EpollFd, F_GETFD) | FD_CLOEXEC);
 }
 
@@ -49,8 +49,8 @@ CIoLoop_Epoll::~CIoLoop_Epoll()
 umint CIoLoop_Epoll::fp_Iterate(bool _bBlock, fp64 _Timeout)
 {
 	CIoLoopWaitDeadline Deadline(_Timeout);
-	static int const nMaxEvents = 64;
-	struct epoll_event IncomingEvents[nMaxEvents];
+	constexpr int c_nMaxEvents = 64;
+	struct epoll_event IncomingEvents[c_nMaxEvents];
 	umint nReported = 0;
 
 	{
@@ -144,7 +144,7 @@ umint CIoLoop_Epoll::fp_Iterate(bool _bBlock, fp64 _Timeout)
 	int nEvents;
 	do
 	{
-		nEvents = epoll_wait(mp_EpollFd, IncomingEvents, nMaxEvents, bBlock ? (_Timeout < 0.0 ? -1 : int(Deadline.f_Milliseconds(0x7fffffff))) : 0);
+		nEvents = epoll_wait(mp_EpollFd, IncomingEvents, c_nMaxEvents, bBlock ? (_Timeout < 0.0 ? -1 : int(Deadline.f_Milliseconds(0x7fffffff))) : 0);
 	}
 	while (nEvents == -1 && errno == EINTR)
 		;

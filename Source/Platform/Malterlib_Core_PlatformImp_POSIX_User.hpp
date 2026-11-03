@@ -194,22 +194,22 @@ bool NSys::fg_UserManagement_UserIsMemberOfGroup(NMib::NStr::CStr const &_GroupN
 			DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getpwnam_r('{}') when checking if user is member of group") << _UserName, State.m_Error));
 	}
 
-	struct group grp;
-	struct group *grpptr = &grp;
-	struct group *tempGrpPtr;
-	char grpbuffer[4096];
-	int grplinelen = sizeof(grpbuffer);
+	struct group Group;
+	struct group *pGroup = &Group;
+	struct group *pResult;
+	char GroupBuffer[4096];
+	int GroupBufferLen = sizeof(GroupBuffer);
 
-	if ((getgrnam_r(_GroupName.f_GetStr(), grpptr, grpbuffer, grplinelen, &tempGrpPtr)) != 0)
+	if ((getgrnam_r(_GroupName.f_GetStr(), pGroup, GroupBuffer, GroupBufferLen, &pResult)) != 0)
 		DMibError(NPlatform::fg_FormatErrno(CStr::CFormat("getgrnam_r('{}') when checking if user is member of group") << _GroupName, errno));
 
-	if (tempGrpPtr == nullptr)
+	if (pResult == nullptr)
 		DMibError(CStr::CFormat("Group does not exists: {}") << _GroupName);
 
-	if (grp.gr_gid == pPassword->pw_gid)
+	if (Group.gr_gid == pPassword->pw_gid)
 		return true;
 
-	for (char **pMemberIterator = grp.gr_mem; fg_ReadUnaligned(pMemberIterator) != nullptr; pMemberIterator++)
+	for (char **pMemberIterator = Group.gr_mem; fg_ReadUnaligned(pMemberIterator) != nullptr; pMemberIterator++)
 	{
 		CStrPtr Ptr;
 		Ptr.f_SetConstPtr(fg_ReadUnaligned(pMemberIterator), fg_StrLen(fg_ReadUnaligned(pMemberIterator)));

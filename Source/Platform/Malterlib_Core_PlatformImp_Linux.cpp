@@ -40,44 +40,44 @@ using namespace NMib::NContainer;
 
 namespace NLocal
 {
-	int (*g_f_pipe2)(int _PipeDescriptors[2], int _Flags) __THROW __wur = nullptr;
-	int (*g_f_accept4)(int _FileDescriptor, __SOCKADDR_ARG _pAddress, socklen_t * __restrict _pAddressLength, int _Flags) = nullptr;
-	int (*g_f_inotify_init1)(int _Flags) __THROW = nullptr;
-	int (*g_f_inotify_init)(void) __THROW = nullptr;
-	int (*g_f_inotify_add_watch)(int _FileDescriptor, char const *_pName, uint32_t _Mask) __THROW = nullptr;
-	int (*g_f_inotify_rm_watch)(int _FileDescriptor, int _WatchDescriptor) __THROW = nullptr;
-	int (*g_f_pthread_setname_np)(pthread_t _TargetThread, __const char *_pName) = nullptr;
+	int (*g_fPipe2)(int _PipeDescriptors[2], int _Flags) __THROW __wur = nullptr;
+	int (*g_fAccept4)(int _FileDescriptor, __SOCKADDR_ARG _pAddress, socklen_t * __restrict _pAddressLength, int _Flags) = nullptr;
+	int (*g_fInotifyInit1)(int _Flags) __THROW = nullptr;
+	int (*g_fInotifyInit)(void) __THROW = nullptr;
+	int (*g_fInotifyAddWatch)(int _FileDescriptor, char const *_pName, uint32_t _Mask) __THROW = nullptr;
+	int (*g_fInotifyRmWatch)(int _FileDescriptor, int _WatchDescriptor) __THROW = nullptr;
+	int (*g_fPThreadSetnameNP)(pthread_t _TargetThread, __const char *_pName) = nullptr;
 #if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
-	int (*g_f_pthread_create)(pthread_t * __restrict _pThread, pthread_attr_t const * __restrict _pAttributes, void *(*_fStart)(void *_pArgument), void * __restrict _pArgument) = nullptr;
+	int (*g_fPThreadCreate)(pthread_t * __restrict _pThread, pthread_attr_t const * __restrict _pAttributes, void *(*_fStart)(void *_pArgument), void * __restrict _pArgument) = nullptr;
 #endif
-	void *(*g_f_memcpy)(void * __restrict _pDestination, __const void * __restrict _pSource, __SIZE_TYPE__ _nBytes) = &memmove;
-	int (*g_f_utimensat)(int _DirectoryFileDescriptor, char const *_pPath, struct timespec const _Times[2], int _Flags) = nullptr;
-	int (*g_f_futimens)(int _FileDescriptor, struct timespec const _Times[2]) = nullptr;
+	void *(*g_fMemcpy)(void * __restrict _pDestination, __const void * __restrict _pSource, __SIZE_TYPE__ _nBytes) = &memmove;
+	int (*g_fUtimensat)(int _DirectoryFileDescriptor, char const *_pPath, struct timespec const _Times[2], int _Flags) = nullptr;
+	int (*g_fFutimens)(int _FileDescriptor, struct timespec const _Times[2]) = nullptr;
 
-	int (*g_f_posix_spawn_file_actions_addchdir_np)(posix_spawn_file_actions_t * __restrict _pFileActions, char const * __restrict _pPath) = nullptr;
+	int (*g_fPosixSpawnFileActionsAddchdirNP)(posix_spawn_file_actions_t * __restrict _pFileActions, char const * __restrict _pPath) = nullptr;
 
-	void *(*__real_versioned_memcpy_new)(void * __restrict _pDestination, __const void * __restrict _pSource, __SIZE_TYPE__ _nBytes) = nullptr;
+	void *(*g_fRealVersionedMemcpyNew)(void * __restrict _pDestination, __const void * __restrict _pSource, __SIZE_TYPE__ _nBytes) = nullptr;
 
-	pfp64 (*__real_versioned_exp_new)(pfp64 _Value) = nullptr;
-	pfp64 (*__real_versioned_exp2_new)(pfp64 _Value) = nullptr;
-	pfp64 (*__real_versioned_log_new)(pfp64 _Value) = nullptr;
-	pfp64 (*__real_versioned_log2_new)(pfp64 _Value) = nullptr;
-	pfp64 (*__real_versioned_pow_new)(pfp64 _Value, pfp64 _Power) = nullptr;
+	pfp64 (*g_fRealVersionedExpNew)(pfp64 _Value) = nullptr;
+	pfp64 (*g_fRealVersionedExp2New)(pfp64 _Value) = nullptr;
+	pfp64 (*g_fRealVersionedLogNew)(pfp64 _Value) = nullptr;
+	pfp64 (*g_fRealVersionedLog2New)(pfp64 _Value) = nullptr;
+	pfp64 (*g_fRealVersionedPowNew)(pfp64 _Value, pfp64 _Power) = nullptr;
 
-	pfp32 (*__real_versioned_expf_new)(pfp32 _Value) = nullptr;
-	pfp32 (*__real_versioned_exp2f_new)(pfp32 _Value) = nullptr;
-	pfp32 (*__real_versioned_logf_new)(pfp32 _Value) = nullptr;
-	pfp32 (*__real_versioned_log2f_new)(pfp32 _Value) = nullptr;
-	pfp32 (*__real_versioned_powf_new)(pfp32 _Value, pfp32 _Power) = nullptr;
+	pfp32 (*g_fRealVersionedExpfNew)(pfp32 _Value) = nullptr;
+	pfp32 (*g_fRealVersionedExp2fNew)(pfp32 _Value) = nullptr;
+	pfp32 (*g_fRealVersionedLogfNew)(pfp32 _Value) = nullptr;
+	pfp32 (*g_fRealVersionedLog2fNew)(pfp32 _Value) = nullptr;
+	pfp32 (*g_fRealVersionedPowfNew)(pfp32 _Value, pfp32 _Power) = nullptr;
 
-	unsigned long (*__real_getauxval)(unsigned long _Type) = nullptr;
+	unsigned long (*g_fRealGetauxval)(unsigned long _Type) = nullptr;
 
-	int (*__real_versioned___sched_cpucount)(size_t _SetSize, cpu_set_t const *_pSet) = nullptr;
+	int (*g_fRealVersionedSchedCpucount)(size_t _SetSize, cpu_set_t const *_pSet) = nullptr;
 
-	int (*__real_versioned_clock_getres)(clockid_t _ClockID, struct timespec *o_pResolution) __THROW = nullptr;
-	int (*__real_versioned_clock_gettime)(clockid_t _ClockID, struct timespec *o_pTime) __THROW = nullptr;
+	int (*g_fRealVersionedClockGetres)(clockid_t _ClockID, struct timespec *o_pResolution) __THROW = nullptr;
+	int (*g_fRealVersionedClockGettime)(clockid_t _ClockID, struct timespec *o_pTime) __THROW = nullptr;
 
-	int (*__real_versioned_posix_spawn)
+	int (*g_fRealVersionedPosixSpawn)
 		(
 			pid_t *o_pPID
 			, char const *_pPath
@@ -88,7 +88,7 @@ namespace NLocal
 		)
 	;
 
-	int (*__real_versioned_posix_spawnp)
+	int (*g_fRealVersionedPosixSpawnp)
 		(
 			pid_t *o_pPID
 			, char const *_pPath
@@ -99,14 +99,14 @@ namespace NLocal
 		)
 	;
 
-	int (*__real_versioned_glob64)(__const char * __restrict _pPattern, int _Flags, int (*_fError)(__const char *_pPath, int _Error), glob64_t * __restrict o_pGlob) __THROW = nullptr;
+	int (*g_fRealVersionedGlob64)(__const char * __restrict _pPattern, int _Flags, int (*_fError)(__const char *_pPath, int _Error), glob64_t * __restrict o_pGlob) __THROW = nullptr;
 
-	int (*__real_pthread_mutexattr_setrobust)(pthread_mutexattr_t *_pAttributes, int _Robustness) __THROW = nullptr;
-	int (*__real_pthread_mutex_consistent)(pthread_mutex_t *_pMutex) __THROW = nullptr;
-	int (*__real_fcntl64)(int _FileDescriptor, int _Command, ...) = nullptr;
+	int (*g_fRealPThreadMutexattrSetrobust)(pthread_mutexattr_t *_pAttributes, int _Robustness) __THROW = nullptr;
+	int (*g_fRealPThreadMutexConsistent)(pthread_mutex_t *_pMutex) __THROW = nullptr;
+	int (*g_fRealFcntl64)(int _FileDescriptor, int _Command, ...) = nullptr;
 
 	// NOLINTNEXTLINE(malterlib-conceptual-prefix): va_list is a pointer on Linux x64 and x86 and a structure on Linux arm64
-	int (*__real___isoc99_vsscanf)(char const * __restrict _pString, char const * __restrict _pFormat, va_list _VaList) = nullptr;
+	int (*g_fRealIsoc99Vsscanf)(char const * __restrict _pString, char const * __restrict _pFormat, va_list _VaList) = nullptr;
 
 	namespace
 	{
@@ -120,113 +120,113 @@ namespace NLocal
 
 		g_bSymbolsGotten = true;
 
-		(void * &)g_f_pipe2 = dlsym(RTLD_DEFAULT, "pipe2");
-		(void * &)g_f_accept4 = dlsym(RTLD_DEFAULT, "accept4");
-		(void * &)g_f_inotify_init1 = dlsym(RTLD_DEFAULT, "inotify_init1");
-		(void * &)g_f_inotify_init = dlsym(RTLD_DEFAULT, "inotify_init");
-		(void * &)g_f_inotify_add_watch = dlsym(RTLD_DEFAULT, "inotify_add_watch");
-		(void * &)g_f_inotify_rm_watch = dlsym(RTLD_DEFAULT, "inotify_rm_watch");
-		(void * &)g_f_pthread_setname_np = dlsym(RTLD_DEFAULT, "pthread_setname_np");
+		(void * &)g_fPipe2 = dlsym(RTLD_DEFAULT, "pipe2");
+		(void * &)g_fAccept4 = dlsym(RTLD_DEFAULT, "accept4");
+		(void * &)g_fInotifyInit1 = dlsym(RTLD_DEFAULT, "inotify_init1");
+		(void * &)g_fInotifyInit = dlsym(RTLD_DEFAULT, "inotify_init");
+		(void * &)g_fInotifyAddWatch = dlsym(RTLD_DEFAULT, "inotify_add_watch");
+		(void * &)g_fInotifyRmWatch = dlsym(RTLD_DEFAULT, "inotify_rm_watch");
+		(void * &)g_fPThreadSetnameNP = dlsym(RTLD_DEFAULT, "pthread_setname_np");
 #if defined(DMibConfig_LinuxPThreadMonitoring) && !defined(DMibDynamicLibrary)
 #	if defined(DMibSanitizerEnabled_Address) || defined(DMibSanitizerEnabled_Thread)
-		(void * &)g_f_pthread_create = dlsym(RTLD_DEFAULT, "__interceptor_pthread_create");
+		(void * &)g_fPThreadCreate = dlsym(RTLD_DEFAULT, "__interceptor_pthread_create");
 #	endif
-		if (!g_f_pthread_create)
-			(void * &)g_f_pthread_create = dlsym(RTLD_NEXT, "pthread_create");
+		if (!g_fPThreadCreate)
+			(void * &)g_fPThreadCreate = dlsym(RTLD_NEXT, "pthread_create");
 #endif
-		(void * &)g_f_memcpy = dlsym(RTLD_NEXT, "memcpy");
-		(void * &)g_f_utimensat = dlsym(RTLD_DEFAULT, "utimensat");
-		(void * &)g_f_futimens = dlsym(RTLD_DEFAULT, "futimens");
+		(void * &)g_fMemcpy = dlsym(RTLD_NEXT, "memcpy");
+		(void * &)g_fUtimensat = dlsym(RTLD_DEFAULT, "utimensat");
+		(void * &)g_fFutimens = dlsym(RTLD_DEFAULT, "futimens");
 
-		(void * &)__real_versioned_exp_new = dlvsym(RTLD_DEFAULT, "exp", "GLIBC_2.29");
-		if (!__real_versioned_exp_new)
-			(void * &)__real_versioned_exp_new = dlsym(RTLD_DEFAULT, "exp");
+		(void * &)g_fRealVersionedExpNew = dlvsym(RTLD_DEFAULT, "exp", "GLIBC_2.29");
+		if (!g_fRealVersionedExpNew)
+			(void * &)g_fRealVersionedExpNew = dlsym(RTLD_DEFAULT, "exp");
 
-		(void * &)__real_versioned_exp2_new = dlvsym(RTLD_DEFAULT, "exp2", "GLIBC_2.29");
-		if (!__real_versioned_exp2_new)
-			(void * &)__real_versioned_exp2_new = dlsym(RTLD_DEFAULT, "exp2");
+		(void * &)g_fRealVersionedExp2New = dlvsym(RTLD_DEFAULT, "exp2", "GLIBC_2.29");
+		if (!g_fRealVersionedExp2New)
+			(void * &)g_fRealVersionedExp2New = dlsym(RTLD_DEFAULT, "exp2");
 
-		(void * &)__real_versioned_log_new = dlvsym(RTLD_DEFAULT, "log", "GLIBC_2.29");
-		if (!__real_versioned_log_new)
-			(void * &)__real_versioned_log_new = dlsym(RTLD_DEFAULT, "log");
+		(void * &)g_fRealVersionedLogNew = dlvsym(RTLD_DEFAULT, "log", "GLIBC_2.29");
+		if (!g_fRealVersionedLogNew)
+			(void * &)g_fRealVersionedLogNew = dlsym(RTLD_DEFAULT, "log");
 
-		(void * &)__real_versioned_log2_new = dlvsym(RTLD_DEFAULT, "log2", "GLIBC_2.29");
-		if (!__real_versioned_log2_new)
-			(void * &)__real_versioned_log2_new = dlsym(RTLD_DEFAULT, "log2");
+		(void * &)g_fRealVersionedLog2New = dlvsym(RTLD_DEFAULT, "log2", "GLIBC_2.29");
+		if (!g_fRealVersionedLog2New)
+			(void * &)g_fRealVersionedLog2New = dlsym(RTLD_DEFAULT, "log2");
 
-		(void * &)__real_versioned_pow_new = dlvsym(RTLD_DEFAULT, "pow", "GLIBC_2.29");
-		if (!__real_versioned_pow_new)
-			(void * &)__real_versioned_pow_new = dlsym(RTLD_DEFAULT, "pow");
+		(void * &)g_fRealVersionedPowNew = dlvsym(RTLD_DEFAULT, "pow", "GLIBC_2.29");
+		if (!g_fRealVersionedPowNew)
+			(void * &)g_fRealVersionedPowNew = dlsym(RTLD_DEFAULT, "pow");
 
-		(void * &)__real_versioned_expf_new = dlvsym(RTLD_DEFAULT, "expf", "GLIBC_2.27");
-		if (!__real_versioned_expf_new)
-			(void * &)__real_versioned_expf_new = dlsym(RTLD_DEFAULT, "expf");
+		(void * &)g_fRealVersionedExpfNew = dlvsym(RTLD_DEFAULT, "expf", "GLIBC_2.27");
+		if (!g_fRealVersionedExpfNew)
+			(void * &)g_fRealVersionedExpfNew = dlsym(RTLD_DEFAULT, "expf");
 
-		(void * &)__real_versioned_exp2f_new = dlvsym(RTLD_DEFAULT, "exp2f", "GLIBC_2.27");
-		if (!__real_versioned_exp2f_new)
-			(void * &)__real_versioned_exp2f_new = dlsym(RTLD_DEFAULT, "exp2f");
+		(void * &)g_fRealVersionedExp2fNew = dlvsym(RTLD_DEFAULT, "exp2f", "GLIBC_2.27");
+		if (!g_fRealVersionedExp2fNew)
+			(void * &)g_fRealVersionedExp2fNew = dlsym(RTLD_DEFAULT, "exp2f");
 
-		(void * &)__real_versioned_logf_new = dlvsym(RTLD_DEFAULT, "logf", "GLIBC_2.27");
-		if (!__real_versioned_logf_new)
-			(void * &)__real_versioned_logf_new = dlsym(RTLD_DEFAULT, "logf");
+		(void * &)g_fRealVersionedLogfNew = dlvsym(RTLD_DEFAULT, "logf", "GLIBC_2.27");
+		if (!g_fRealVersionedLogfNew)
+			(void * &)g_fRealVersionedLogfNew = dlsym(RTLD_DEFAULT, "logf");
 
-		(void * &)__real_versioned_log2f_new = dlvsym(RTLD_DEFAULT, "log2f", "GLIBC_2.27");
-		if (!__real_versioned_log2f_new)
-			(void * &)__real_versioned_log2f_new = dlsym(RTLD_DEFAULT, "log2f");
+		(void * &)g_fRealVersionedLog2fNew = dlvsym(RTLD_DEFAULT, "log2f", "GLIBC_2.27");
+		if (!g_fRealVersionedLog2fNew)
+			(void * &)g_fRealVersionedLog2fNew = dlsym(RTLD_DEFAULT, "log2f");
 
-		(void * &)__real_versioned_powf_new = dlvsym(RTLD_DEFAULT, "powf", "GLIBC_2.27");
-		if (!__real_versioned_powf_new)
-			(void * &)__real_versioned_powf_new = dlsym(RTLD_DEFAULT, "powf");
+		(void * &)g_fRealVersionedPowfNew = dlvsym(RTLD_DEFAULT, "powf", "GLIBC_2.27");
+		if (!g_fRealVersionedPowfNew)
+			(void * &)g_fRealVersionedPowfNew = dlsym(RTLD_DEFAULT, "powf");
 
-		(void * &)__real_getauxval = dlvsym(RTLD_DEFAULT, "getauxval", "GLIBC_2.16");
-		if (!__real_getauxval)
-			(void * &)__real_getauxval = dlsym(RTLD_DEFAULT, "getauxval");
+		(void * &)g_fRealGetauxval = dlvsym(RTLD_DEFAULT, "getauxval", "GLIBC_2.16");
+		if (!g_fRealGetauxval)
+			(void * &)g_fRealGetauxval = dlsym(RTLD_DEFAULT, "getauxval");
 
-		(void * &)__real_versioned___sched_cpucount = dlvsym(RTLD_DEFAULT, "__sched_cpucount", "GLIBC_2.6");
-		if (!__real_versioned___sched_cpucount)
-			(void * &)__real_versioned___sched_cpucount = dlsym(RTLD_DEFAULT, "__sched_cpucount");
+		(void * &)g_fRealVersionedSchedCpucount = dlvsym(RTLD_DEFAULT, "__sched_cpucount", "GLIBC_2.6");
+		if (!g_fRealVersionedSchedCpucount)
+			(void * &)g_fRealVersionedSchedCpucount = dlsym(RTLD_DEFAULT, "__sched_cpucount");
 
-		(void * &)__real_versioned_memcpy_new = dlvsym(RTLD_DEFAULT, "memcpy", "GLIBC_2.14");
-		if (!__real_versioned_memcpy_new)
-			(void * &)__real_versioned_memcpy_new = dlsym(RTLD_DEFAULT, "memcpy");
+		(void * &)g_fRealVersionedMemcpyNew = dlvsym(RTLD_DEFAULT, "memcpy", "GLIBC_2.14");
+		if (!g_fRealVersionedMemcpyNew)
+			(void * &)g_fRealVersionedMemcpyNew = dlsym(RTLD_DEFAULT, "memcpy");
 
-		(void * &)__real_versioned_clock_getres = dlvsym(RTLD_DEFAULT, "clock_getres", "GLIBC_2.17");
-		if (!__real_versioned_clock_getres)
-			(void * &)__real_versioned_clock_getres = dlsym(RTLD_DEFAULT, "clock_getres");
+		(void * &)g_fRealVersionedClockGetres = dlvsym(RTLD_DEFAULT, "clock_getres", "GLIBC_2.17");
+		if (!g_fRealVersionedClockGetres)
+			(void * &)g_fRealVersionedClockGetres = dlsym(RTLD_DEFAULT, "clock_getres");
 
-		(void * &)__real_versioned_clock_gettime = dlvsym(RTLD_DEFAULT, "clock_gettime", "GLIBC_2.17");
-		if (!__real_versioned_clock_gettime)
-			(void * &)__real_versioned_clock_gettime = dlsym(RTLD_DEFAULT, "clock_gettime");
+		(void * &)g_fRealVersionedClockGettime = dlvsym(RTLD_DEFAULT, "clock_gettime", "GLIBC_2.17");
+		if (!g_fRealVersionedClockGettime)
+			(void * &)g_fRealVersionedClockGettime = dlsym(RTLD_DEFAULT, "clock_gettime");
 
-		(void * &)__real_versioned_posix_spawn = dlvsym(RTLD_DEFAULT, "posix_spawn", "GLIBC_2.15");
-		if (!__real_versioned_posix_spawn)
-			(void * &)__real_versioned_posix_spawn = dlsym(RTLD_DEFAULT, "posix_spawn");
+		(void * &)g_fRealVersionedPosixSpawn = dlvsym(RTLD_DEFAULT, "posix_spawn", "GLIBC_2.15");
+		if (!g_fRealVersionedPosixSpawn)
+			(void * &)g_fRealVersionedPosixSpawn = dlsym(RTLD_DEFAULT, "posix_spawn");
 
-		(void * &)__real_versioned_posix_spawnp = dlvsym(RTLD_DEFAULT, "posix_spawnp", "GLIBC_2.15");
-		if (!__real_versioned_posix_spawnp)
-			(void * &)__real_versioned_posix_spawnp = dlsym(RTLD_DEFAULT, "posix_spawnp");
+		(void * &)g_fRealVersionedPosixSpawnp = dlvsym(RTLD_DEFAULT, "posix_spawnp", "GLIBC_2.15");
+		if (!g_fRealVersionedPosixSpawnp)
+			(void * &)g_fRealVersionedPosixSpawnp = dlsym(RTLD_DEFAULT, "posix_spawnp");
 
-		(void * &)g_f_posix_spawn_file_actions_addchdir_np = dlsym(RTLD_DEFAULT, "posix_spawn_file_actions_addchdir_np");
+		(void * &)g_fPosixSpawnFileActionsAddchdirNP = dlsym(RTLD_DEFAULT, "posix_spawn_file_actions_addchdir_np");
 
-		(void * &)__real_versioned_glob64 = dlvsym(RTLD_DEFAULT, "glob64", "GLIBC_2.27");
-		if (!__real_versioned_glob64)
-			(void * &)__real_versioned_glob64 = dlsym(RTLD_DEFAULT, "glob64");
+		(void * &)g_fRealVersionedGlob64 = dlvsym(RTLD_DEFAULT, "glob64", "GLIBC_2.27");
+		if (!g_fRealVersionedGlob64)
+			(void * &)g_fRealVersionedGlob64 = dlsym(RTLD_DEFAULT, "glob64");
 
-		(void * &)__real_pthread_mutexattr_setrobust = dlsym(RTLD_DEFAULT, "pthread_mutexattr_setrobust");
-		if (!__real_pthread_mutexattr_setrobust)
-			(void * &)__real_pthread_mutexattr_setrobust = dlsym(RTLD_DEFAULT, "pthread_mutexattr_setrobust_np");
+		(void * &)g_fRealPThreadMutexattrSetrobust = dlsym(RTLD_DEFAULT, "pthread_mutexattr_setrobust");
+		if (!g_fRealPThreadMutexattrSetrobust)
+			(void * &)g_fRealPThreadMutexattrSetrobust = dlsym(RTLD_DEFAULT, "pthread_mutexattr_setrobust_np");
 
-		(void * &)__real_pthread_mutex_consistent = dlsym(RTLD_DEFAULT, "pthread_mutex_consistent");
-		if (!__real_pthread_mutex_consistent)
-			(void * &)__real_pthread_mutex_consistent = dlsym(RTLD_DEFAULT, "pthread_mutex_consistent_np");
+		(void * &)g_fRealPThreadMutexConsistent = dlsym(RTLD_DEFAULT, "pthread_mutex_consistent");
+		if (!g_fRealPThreadMutexConsistent)
+			(void * &)g_fRealPThreadMutexConsistent = dlsym(RTLD_DEFAULT, "pthread_mutex_consistent_np");
 
-		(void * &)__real_fcntl64 = dlsym(RTLD_DEFAULT, "fcntl64");
-		if (!__real_fcntl64)
-			(void * &)__real_fcntl64 = dlsym(RTLD_DEFAULT, "fcntl64");
+		(void * &)g_fRealFcntl64 = dlsym(RTLD_DEFAULT, "fcntl64");
+		if (!g_fRealFcntl64)
+			(void * &)g_fRealFcntl64 = dlsym(RTLD_DEFAULT, "fcntl64");
 
-		(void * &)__real___isoc99_vsscanf = dlsym(RTLD_DEFAULT, "__isoc99_vsscanf");
-		if (!__real___isoc99_vsscanf)
-			(void * &)__real___isoc99_vsscanf = dlsym(RTLD_DEFAULT, "__isoc99_vsscanf");
+		(void * &)g_fRealIsoc99Vsscanf = dlsym(RTLD_DEFAULT, "__isoc99_vsscanf");
+		if (!g_fRealIsoc99Vsscanf)
+			(void * &)g_fRealIsoc99Vsscanf = dlsym(RTLD_DEFAULT, "__isoc99_vsscanf");
 	}
 }
 
@@ -396,20 +396,20 @@ struct CUUIDLibrary final : public NMib::CDynamicLibraryUtility
 	{
 	}
 
-	decltype(&::uuid_generate) uuid_generate = nullptr;
-	decltype(&::uuid_unparse) uuid_unparse = nullptr;
+	decltype(&::uuid_generate) m_fUUIDGenerate = nullptr;
+	decltype(&::uuid_unparse) m_fUUIDUnparse = nullptr;
 
 protected:
 	void fp_ClearSymbols() override
 	{
-		uuid_generate = nullptr;
-		uuid_unparse = nullptr;
+		m_fUUIDGenerate = nullptr;
+		m_fUUIDUnparse = nullptr;
 	}
 
 	void fp_FetchSymbols() override
 	{
-		fp_Fetch(uuid_generate, "uuid_generate");
-		fp_Fetch(uuid_unparse, "uuid_unparse");
+		fp_Fetch(m_fUUIDGenerate, "uuid_generate");
+		fp_Fetch(m_fUUIDUnparse, "uuid_unparse");
 	}
 };
 
@@ -654,10 +654,10 @@ void NSys::fg_System_GenerateUUID(NCryptography::CUniversallyUniqueIdentifier &_
 	auto &Library = *g_UUIDLibrary;
 	if (Library.f_OK())
 	{
-		Library.uuid_generate((unsigned char *)&_UUID);
+		Library.m_fUUIDGenerate((unsigned char *)&_UUID);
 #if DMibEnableSafeCheck > 0
 		uuid_string_t RetStr;
-		Library.uuid_unparse((unsigned char *)&_UUID, RetStr);
+		Library.m_fUUIDUnparse((unsigned char *)&_UUID, RetStr);
 #endif
 		_UUID.m_TimeLow = fg_ByteSwapBE(_UUID.m_TimeLow);
 		_UUID.m_TimeMid = fg_ByteSwapBE(_UUID.m_TimeMid);
@@ -676,9 +676,9 @@ NStr::CStr NSys::fg_System_GenerateUUID()
 	if (Library.f_OK())
 	{
 		uuid_t Ret;
-		Library.uuid_generate(Ret);
+		Library.m_fUUIDGenerate(Ret);
 		uuid_string_t RetStr;
-		Library.uuid_unparse(Ret, RetStr);
+		Library.m_fUUIDUnparse(Ret, RetStr);
 
 		// {7EE072A7-458D-491f-ACCF-447AD4BE8DBF}
 		return CStr(CStr::CFormat("{{{}}") << RetStr);
@@ -692,15 +692,15 @@ struct CCodePageCache
 	TCMap<ch32, ch8, CSort_Default, CAllocator_NonTrackedHeap> m_Cache;
 	CCodePageCache()
 	{
-		for (int i = 0; i < 256; ++i)
+		for (int iCode = 0; iCode < 256; ++iCode)
 		{
 			ch32 Char = NMib::NTraits::TCUnsigned<ch32>
 				(
-					NMib::NTraits::TCUnsigned<ch16>(NMib::NStr::TCCharEncodingConverter<NMib::NStr::ECharacterEncoding_Windows_1252>::ms_Table[i].m_UnicodeChar)
+					NMib::NTraits::TCUnsigned<ch16>(NMib::NStr::TCCharEncodingConverter<NMib::NStr::ECharacterEncoding_Windows_1252>::ms_Table[iCode].m_UnicodeChar)
 				)
 			;
 			if (Char != 0xFFFF)
-				m_Cache[Char] = i;
+				m_Cache[Char] = iCode;
 		}
 	}
 };
@@ -1034,7 +1034,7 @@ NMib::NStr::CStr NSys::fg_Process_GetCommandLine()
 	return Return;
 }
 
-static char const *gc_SysVendorLookup[] =
+static constexpr char const *gc_SysVendorLookup[] =
 	{
 		"VMware"
 		, "VMware"
@@ -1048,7 +1048,7 @@ static char const *gc_SysVendorLookup[] =
 	}
 ;
 
-static char const *gc_BiosVendorLookup[] =
+static constexpr char const *gc_BiosVendorLookup[] =
 	{
 		"Xen"
 		, "Xen"
@@ -1058,7 +1058,7 @@ static char const *gc_BiosVendorLookup[] =
 	}
 ;
 
-static char const *gc_ProductNameLookup[] =
+static constexpr char const *gc_ProductNameLookup[] =
 	{
 		"KVM"
 		, "kvm"
@@ -1087,7 +1087,7 @@ bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo &_Info)
 		{
 			auto SysVendorData = fg_ReadProcFS<CStrNonTracked>("/sys/class/dmi/id/sys_vendor");
 
-			char const **pVendorLookup = gc_SysVendorLookup;
+			char const * const *pVendorLookup = gc_SysVendorLookup;
 
 			while (*pVendorLookup)
 			{
@@ -1117,7 +1117,7 @@ bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo &_Info)
 		{
 			auto BiosVendorData = fg_ReadProcFS<CStrNonTracked>("/sys/devices/virtual/dmi/id/bios_vendor");
 
-			char const **pVendorLookup = gc_BiosVendorLookup;
+			char const * const *pVendorLookup = gc_BiosVendorLookup;
 
 			while (*pVendorLookup)
 			{
@@ -1147,7 +1147,7 @@ bool NSys::fg_HW_GetVirtualMachineInfo(CVirtualMachineInfo &_Info)
 		{
 			auto ProductNameData = fg_ReadProcFS<CStrNonTracked>("/sys/devices/virtual/dmi/id/product_name");
 
-			char const **pProductLookup = gc_ProductNameLookup;
+			char const * const *pProductLookup = gc_ProductNameLookup;
 
 			while (*pProductLookup)
 			{
@@ -1366,8 +1366,8 @@ void NSys::fg_CreateSystemVersion()
 		// .preinit_array with malloc overridden before the memory manager is
 		// initialized, so only raw syscalls and a trap are safe here — abort()
 		// flushes stdio on older glibc, which touches libc state and locks
-		static constexpr char gc_pKernelTooOld[] = "Malterlib requires Linux kernel 2.6.28 or later\n";
-		[[maybe_unused]] auto Written = write(2, gc_pKernelTooOld, sizeof(gc_pKernelTooOld) - 1);
+		static constexpr char c_pKernelTooOld[] = "Malterlib requires Linux kernel 2.6.28 or later\n";
+		[[maybe_unused]] auto Written = write(2, c_pKernelTooOld, sizeof(c_pKernelTooOld) - 1);
 		__builtin_trap();
 	}
 }
@@ -1561,23 +1561,23 @@ void fg_ReportCurrentException()
 	}
 }
 
-static std::unexpected_handler g_DefaultUnexpectedHandler = nullptr;
+static std::unexpected_handler gs_DefaultUnexpectedHandler = nullptr;
 void fg_UnexpectedExceptionHandler()
 {
 	fg_ReportCurrentException();
-	if (g_DefaultUnexpectedHandler)
-		g_DefaultUnexpectedHandler();
+	if (gs_DefaultUnexpectedHandler)
+		gs_DefaultUnexpectedHandler();
 	else
 		abort();
 }
 
-static std::terminate_handler g_DefaultTerminateHandler = nullptr;
+static std::terminate_handler gs_DefaultTerminateHandler = nullptr;
 
 void fg_TerminateHandler()
 {
 	fg_ReportCurrentException();
-	if (g_DefaultTerminateHandler)
-		g_DefaultTerminateHandler();
+	if (gs_DefaultTerminateHandler)
+		gs_DefaultTerminateHandler();
 	else
 		abort();
 }
@@ -1662,8 +1662,8 @@ void NSys::fg_CreateSystem()
 	NSys::fg_Compiler_MakeActive(&pSystem);
 	DMibFastCheck((void *)pSystem == pSystemMemory);
 
-	g_DefaultTerminateHandler = std::set_terminate(&fg_TerminateHandler);
-	g_DefaultUnexpectedHandler = std::set_unexpected(&fg_UnexpectedExceptionHandler);
+	gs_DefaultTerminateHandler = std::set_terminate(&fg_TerminateHandler);
+	gs_DefaultUnexpectedHandler = std::set_unexpected(&fg_UnexpectedExceptionHandler);
 
 #ifndef DMibPAutomaticSystemCreation
 	NMib::g_pSys = pSystem;
@@ -2458,7 +2458,7 @@ bool NSys::NFile::fg_ChangeNotification_GetNotification(void *_pNotification, NM
 
 bool NSys::NFile::fg_ChangeNotification_Supported()
 {
-	return NLocal::g_f_inotify_init && NLocal::g_f_inotify_rm_watch && NLocal::g_f_inotify_add_watch;
+	return NLocal::g_fInotifyInit && NLocal::g_fInotifyRmWatch && NLocal::g_fInotifyAddWatch;
 }
 
 // *************************************************************************************************************************
@@ -3148,11 +3148,11 @@ namespace
 	{
 		CCPUUsageMonitorImpl()
 		{
-			m_LastLoadStats = fp_GetLoadStats();
+			mp_LastLoadStats = fp_GetLoadStats();
 
-			m_LastRet.m_User = 0.0f;
-			m_LastRet.m_Kernel = 0.0f;
-			m_LastRet.m_Idle = 0.0f;
+			mp_LastRet.m_User = 0.0f;
+			mp_LastRet.m_Kernel = 0.0f;
+			mp_LastRet.m_Idle = 0.0f;
 		}
 
 		virtual ~CCPUUsageMonitorImpl()
@@ -3168,9 +3168,9 @@ namespace
 			uint64 UserTime = LoadStats.m_User + LoadStats.m_Nice;
 			uint64 KernelTime = LoadStats.m_System;
 
-			uint64 LastIdleTime = m_LastLoadStats.m_Idle;
-			uint64 LastUserTime = m_LastLoadStats.m_User + m_LastLoadStats.m_Nice;
-			uint64 LastKernelTime = m_LastLoadStats.m_System;
+			uint64 LastIdleTime = mp_LastLoadStats.m_Idle;
+			uint64 LastUserTime = mp_LastLoadStats.m_User + mp_LastLoadStats.m_Nice;
+			uint64 LastKernelTime = mp_LastLoadStats.m_System;
 
 			uint64 DiffIdleTime = IdleTime - LastIdleTime;
 			uint64 DiffUserTime = UserTime - LastUserTime;
@@ -3181,7 +3181,7 @@ namespace
 			if (TotalTime < 100)
 			{
 				_bChanged = false;
-				return m_LastRet; // Guarantee 1 % resolution
+				return mp_LastRet; // Guarantee 1 % resolution
 			}
 
 			_bChanged = true;
@@ -3191,9 +3191,9 @@ namespace
 			Ret.m_User = fp64(DiffUserTime) / fp64(TotalTime);
 			Ret.m_Kernel = fp64(DiffKernelTime) / fp64(TotalTime);
 
-			m_LastLoadStats = LoadStats;
+			mp_LastLoadStats = LoadStats;
 
-			m_LastRet = Ret;
+			mp_LastRet = Ret;
 			return Ret;
 		}
 
@@ -3206,9 +3206,9 @@ namespace
 			uint64 m_Idle;
 		};
 
-		CLoadInfo m_LastLoadStats;
+		CLoadInfo mp_LastLoadStats;
 
-		NMib::NSystem::CSystemCPUUsage m_LastRet;
+		NMib::NSystem::CSystemCPUUsage mp_LastRet;
 
 		CLoadInfo fp_GetLoadStats() const
 		{
@@ -3367,8 +3367,8 @@ __asm__(".symver __real_versioned_memcpy,memcpy@GLIBC_2.2.5");
 extern "C" void *__real_versioned_memcpy(void * __restrict __dest, __const void * __restrict __src, __SIZE_TYPE__ __n);
 extern "C" void *memcpy(void * __restrict __dest, __const void * __restrict __src, __SIZE_TYPE__ __n) __attribute__((no_builtin))
 {
-	if (NLocal::__real_versioned_memcpy_new)
-		return NLocal::__real_versioned_memcpy_new(__dest, __src, __n);
+	if (NLocal::g_fRealVersionedMemcpyNew)
+		return NLocal::g_fRealVersionedMemcpyNew(__dest, __src, __n);
 	return __real_versioned_memcpy(__dest, __src, __n);
 }
 
@@ -3378,78 +3378,78 @@ extern "C" void *memcpy(void * __restrict __dest, __const void * __restrict __sr
 
 extern "C" pfp64 exp(pfp64 _Value) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_exp_new(_Value);
+	return NLocal::g_fRealVersionedExpNew(_Value);
 }
 
 extern "C" pfp64 exp2(pfp64 _Value) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_exp2_new(_Value);
+	return NLocal::g_fRealVersionedExp2New(_Value);
 }
 
 extern "C" pfp64 log(pfp64 _Value) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_log_new(_Value);
+	return NLocal::g_fRealVersionedLogNew(_Value);
 }
 
 extern "C" pfp64 log2(pfp64 _Value) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_log2_new(_Value);
+	return NLocal::g_fRealVersionedLog2New(_Value);
 }
 
 extern "C" pfp64 pow(pfp64 _Value, pfp64 _Power) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_pow_new(_Value, _Power);
+	return NLocal::g_fRealVersionedPowNew(_Value, _Power);
 }
 
 extern "C" pfp32 expf(pfp32 _Value) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_expf_new(_Value);
+	return NLocal::g_fRealVersionedExpfNew(_Value);
 }
 
 extern "C" pfp32 exp2f(pfp32 _Value) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_exp2f_new(_Value);
+	return NLocal::g_fRealVersionedExp2fNew(_Value);
 }
 
 extern "C" pfp32 logf(pfp32 _Value) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_logf_new(_Value);
+	return NLocal::g_fRealVersionedLogfNew(_Value);
 }
 
 extern "C" pfp32 log2f(pfp32 _Value) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_log2f_new(_Value);
+	return NLocal::g_fRealVersionedLog2fNew(_Value);
 }
 
 extern "C" pfp32 powf(pfp32 _Value, pfp32 _Power) __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_powf_new(_Value, _Power);
+	return NLocal::g_fRealVersionedPowfNew(_Value, _Power);
 }
 
 extern "C" int clock_getres(clockid_t __clock_id, struct timespec *__res) __THROW __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_clock_getres(__clock_id, __res);
+	return NLocal::g_fRealVersionedClockGetres(__clock_id, __res);
 }
 
 extern "C" int clock_gettime(clockid_t __clock_id, struct timespec *__tp) __THROW __attribute__((no_builtin))
 {
-	return NLocal::__real_versioned_clock_gettime(__clock_id, __tp);
+	return NLocal::g_fRealVersionedClockGettime(__clock_id, __tp);
 }
 
 // NOLINTNEXTLINE(malterlib-parameter-naming): the declaration of the Linux headers, with its parameter names
 extern "C" int glob64(__const char * __restrict __pattern, int __flags, int (*__errfunc)(__const char *, int), glob64_t * __restrict __pglob) __THROW
 {
-	return NLocal::__real_versioned_glob64(__pattern, __flags, __errfunc, __pglob);
+	return NLocal::g_fRealVersionedGlob64(__pattern, __flags, __errfunc, __pglob);
 }
 
 extern "C" int pthread_mutexattr_setrobust(pthread_mutexattr_t *__attr, int __robustness) __THROW
 {
-	return NLocal::__real_pthread_mutexattr_setrobust(__attr, __robustness);
+	return NLocal::g_fRealPThreadMutexattrSetrobust(__attr, __robustness);
 }
 
 extern "C" int pthread_mutex_consistent(pthread_mutex_t *__mutex) __THROW
 {
-	return NLocal::__real_pthread_mutex_consistent(__mutex);
+	return NLocal::g_fRealPThreadMutexConsistent(__mutex);
 }
 
 extern "C" int __isoc99_vsscanf(char const * __restrict _pString, char const * __restrict _pFormat, va_list _VaList)
@@ -3458,8 +3458,8 @@ extern "C" int __isoc99_vsscanf(char const * __restrict _pString, char const * _
 	va_copy(VaList, _VaList);
 
 	int Return;
-	if (NLocal::__real___isoc99_vsscanf)
-		Return = NLocal::__real___isoc99_vsscanf(_pString, _pFormat, VaList);
+	if (NLocal::g_fRealIsoc99Vsscanf)
+		Return = NLocal::g_fRealIsoc99Vsscanf(_pString, _pFormat, VaList);
 	else
 		Return = sscanf(_pString, _pFormat, VaList);
 
@@ -3483,8 +3483,8 @@ extern "C" int fcntl64(int _FileDescriptor, int _Command, ...)
 	auto fHandleVoid = [&]
 		{
 			va_end(VarArgs);
-			if (NLocal::__real_fcntl64)
-				return NLocal::__real_fcntl64(_FileDescriptor, _Command);
+			if (NLocal::g_fRealFcntl64)
+				return NLocal::g_fRealFcntl64(_FileDescriptor, _Command);
 			else
 				return (int)syscall(c_SysCallNumber, _FileDescriptor, _Command);
 		}
@@ -3492,8 +3492,8 @@ extern "C" int fcntl64(int _FileDescriptor, int _Command, ...)
 
 	auto fHandleInt = [&]
 		{
-			if (NLocal::__real_fcntl64)
-				Result = NLocal::__real_fcntl64(_FileDescriptor, _Command, va_arg(VarArgs, int));
+			if (NLocal::g_fRealFcntl64)
+				Result = NLocal::g_fRealFcntl64(_FileDescriptor, _Command, va_arg(VarArgs, int));
 			else
 				Result = syscall(c_SysCallNumber, _FileDescriptor, _Command, va_arg(VarArgs, int));
 			va_end(VarArgs);
@@ -3503,8 +3503,8 @@ extern "C" int fcntl64(int _FileDescriptor, int _Command, ...)
 
 	auto fHandleFlockPtr = [&]
 		{
-			if (NLocal::__real_fcntl64)
-				Result = NLocal::__real_fcntl64(_FileDescriptor, _Command, va_arg(VarArgs, struct flock64 *));
+			if (NLocal::g_fRealFcntl64)
+				Result = NLocal::g_fRealFcntl64(_FileDescriptor, _Command, va_arg(VarArgs, struct flock64 *));
 			else
 				Result = syscall(c_SysCallNumber, _FileDescriptor, _Command, va_arg(VarArgs, struct flock64 *));
 			va_end(VarArgs);
@@ -3514,8 +3514,8 @@ extern "C" int fcntl64(int _FileDescriptor, int _Command, ...)
 
 	auto fHandleOwnerExPtr = [&]
 		{
-			if (NLocal::__real_fcntl64)
-				Result = NLocal::__real_fcntl64(_FileDescriptor, _Command, va_arg(VarArgs, struct f_owner_ex *));
+			if (NLocal::g_fRealFcntl64)
+				Result = NLocal::g_fRealFcntl64(_FileDescriptor, _Command, va_arg(VarArgs, struct f_owner_ex *));
 			else
 				Result = syscall(c_SysCallNumber, _FileDescriptor, _Command, va_arg(VarArgs, struct f_owner_ex *));
 			va_end(VarArgs);
@@ -3525,8 +3525,8 @@ extern "C" int fcntl64(int _FileDescriptor, int _Command, ...)
 
 	auto fHandleUint64Ptr = [&]
 		{
-			if (NLocal::__real_fcntl64)
-				Result = NLocal::__real_fcntl64(_FileDescriptor, _Command, va_arg(VarArgs, uint64_t *));
+			if (NLocal::g_fRealFcntl64)
+				Result = NLocal::g_fRealFcntl64(_FileDescriptor, _Command, va_arg(VarArgs, uint64_t *));
 			else
 				Result = syscall(c_SysCallNumber, _FileDescriptor, _Command, va_arg(VarArgs, uint64_t *));
 			va_end(VarArgs);
@@ -3622,8 +3622,8 @@ extern "C" unsigned long getauxval(unsigned long _Type)
 		NLocal::fg_GetSymbols();
 #	endif
 
-	if (NLocal::__real_getauxval)
-		return NLocal::__real_getauxval(_Type);
+	if (NLocal::g_fRealGetauxval)
+		return NLocal::g_fRealGetauxval(_Type);
 
 	try
 	{
@@ -3657,8 +3657,8 @@ extern "C" unsigned long getauxval(unsigned long _Type)
 
 extern "C" int __sched_cpucount(size_t _SetSize, cpu_set_t const *_pSet)
 {
-	if (NLocal::__real_versioned___sched_cpucount)
-		return NLocal::__real_versioned___sched_cpucount(_SetSize, _pSet);
+	if (NLocal::g_fRealVersionedSchedCpucount)
+		return NLocal::g_fRealVersionedSchedCpucount(_SetSize, _pSet);
 
 	int CpuCount = 0;
 	auto const *pSetIterator = _pSet->__bits;
@@ -3694,18 +3694,18 @@ extern "C" int __sched_cpucount(size_t _SetSize, cpu_set_t const *_pSet)
 
 extern "C" int posix_spawn(pid_t *pid, char const *path, posix_spawn_file_actions_t const *file_actions, posix_spawnattr_t const *attrp, char * const argv[], char * const envp[])
 {
-	return NLocal::__real_versioned_posix_spawn(pid, path, file_actions, attrp, argv, envp);
+	return NLocal::g_fRealVersionedPosixSpawn(pid, path, file_actions, attrp, argv, envp);
 }
 
 extern "C" int posix_spawnp(pid_t *pid, char const *path, posix_spawn_file_actions_t const *file_actions, posix_spawnattr_t const *attrp, char * const argv[], char * const envp[])
 {
-	return NLocal::__real_versioned_posix_spawnp(pid, path, file_actions, attrp, argv, envp);
+	return NLocal::g_fRealVersionedPosixSpawnp(pid, path, file_actions, attrp, argv, envp);
 }
 
 extern "C" int utimensat(int dirfd, char const *pathname, struct timespec const times[2], int flags)
 {
-	if (NLocal::g_f_utimensat)
-		return NLocal::g_f_utimensat(dirfd, pathname, times, flags);
+	if (NLocal::g_fUtimensat)
+		return NLocal::g_fUtimensat(dirfd, pathname, times, flags);
 
 	timeval Vals[2];
 
@@ -3747,8 +3747,8 @@ extern "C" int utimensat(int dirfd, char const *pathname, struct timespec const 
 
 extern "C" int futimens(int fd, struct timespec const times[2])
 {
-	if (NLocal::g_f_futimens)
-		return NLocal::g_f_futimens(fd, times);
+	if (NLocal::g_fFutimens)
+		return NLocal::g_fFutimens(fd, times);
 
 	timeval Vals[2];
 
@@ -3839,12 +3839,12 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 
 extern "C" int __isoc99_sscanf(char const *s, char const *format, ...)
 {
-	va_list arg;
-	int done;
-	va_start(arg, format);
-	done = vsscanf(s, format, arg);
-	va_end(arg);
-	return done;
+	va_list VaList;
+	int Result;
+	va_start(VaList, format);
+	Result = vsscanf(s, format, VaList);
+	va_end(VaList);
+	return Result;
 }
 
 #ifdef DMibSanitizerEnabled_Address

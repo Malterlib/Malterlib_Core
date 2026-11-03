@@ -127,11 +127,11 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 
 	umint m_nOutstanding = 0; // Kernel operations plus callback pins; zero permits removal acknowledgement.
 
-	HANDLE m_hBase = nullptr; // Provider base handle used by AFD; differs under layered service providers.
+	HANDLE m_Base = nullptr; // Provider base handle used by AFD; differs under layered service providers.
 	CIocpAfdGroup *m_pAfdGroup = nullptr;
-	CIocpPollOp m_PollOp;     // One union-interest poll per socket; multiple AFD polls can consume each other's readiness.
+	CIocpPollOp m_PollOp;    // One union-interest poll per socket; multiple AFD polls can consume each other's readiness.
 
-	HANDLE m_hWaitPacket = nullptr; // One-shot synchronization-object wait; each armed packet retains the registration until reported.
+	HANDLE m_WaitPacket = nullptr; // One-shot synchronization-object wait; each armed packet retains the registration until reported.
 	CIocpOp m_WaitOp;
 	bool m_bWaitArmed = false;
 
@@ -284,7 +284,7 @@ private:
 	void fp_DrainInlineCompletions(umint &_nReported);
 	int fp_OpError(CIocpRegistration *_pRegistration, CIocpOp *_pOp);
 
-	HANDLE mp_hPort = nullptr;
+	HANDLE mp_Port = nullptr;
 	CIoSubSystem_Windows *mp_pIo = nullptr;
 	NMib::NContainer::TCVector<CIocpAfdGroup *> mp_AfdGroups; // Each AFD handle serves a bounded registration group.
 	umint mp_nDeregistering = 0;                              // Shutdown iterates until this reaches zero.

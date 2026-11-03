@@ -119,19 +119,19 @@ namespace NMib
 			CExceptionFilterScope(CExceptionFilter &_Filter)
 			{
 				auto &ThreadLocal = fg_SystemThreadLocal();
-				m_pOldFilter = ThreadLocal.m_pExceptionFilter;
+				mp_pOldFilter = ThreadLocal.m_pExceptionFilter;
 				ThreadLocal.m_pExceptionFilter = &_Filter;
 			}
 
 			~CExceptionFilterScope()
 			{
 				auto &ThreadLocal = fg_SystemThreadLocal();
-				ThreadLocal.m_pExceptionFilter = m_pOldFilter;
+				ThreadLocal.m_pExceptionFilter = mp_pOldFilter;
 			}
 
 		private:
 			DMibThreadLocalScopeDebugMember;
-			CExceptionFilter *m_pOldFilter;
+			CExceptionFilter *mp_pOldFilter;
 		};
 
 		struct CDisableExceptionFilterScope
@@ -139,19 +139,19 @@ namespace NMib
 			CDisableExceptionFilterScope()
 			{
 				auto &ThreadLocal = fg_SystemThreadLocal();
-				m_pOldFilter = ThreadLocal.m_pExceptionFilter;
+				mp_pOldFilter = ThreadLocal.m_pExceptionFilter;
 				ThreadLocal.m_pExceptionFilter = nullptr;
 			}
 
 			~CDisableExceptionFilterScope()
 			{
 				auto &ThreadLocal = fg_SystemThreadLocal();
-				ThreadLocal.m_pExceptionFilter = m_pOldFilter;
+				ThreadLocal.m_pExceptionFilter = mp_pOldFilter;
 			}
 
 		private:
 			DMibThreadLocalScopeDebugMember;
-			CExceptionFilter *m_pOldFilter;
+			CExceptionFilter *mp_pOldFilter;
 		};
 
 #define DMibExceptionFilter(d_Filter) NMib::NException::CExceptionFilterScope ScopeExceptionFilter(d_Filter)
@@ -232,86 +232,86 @@ namespace NMib
 
 		void f_RegisterProgram(NStr::CStr const &_ProgramName, NStr::CStr const &_SupportEmail, bool _bRunningAsDaemon)
 		{
-			m_ProgramName = _ProgramName;
-			m_ProgramNameNonTracked = _ProgramName;
-			m_SupportEmail = _SupportEmail;
-			m_SupportEmailNonTracked = _SupportEmail;
-			m_bRunningAsDaemon = _bRunningAsDaemon;
+			mp_ProgramName = _ProgramName;
+			mp_ProgramNameNonTracked = _ProgramName;
+			mp_SupportEmail = _SupportEmail;
+			mp_SupportEmailNonTracked = _SupportEmail;
+			mp_bRunningAsDaemon = _bRunningAsDaemon;
 		}
 
 		bool f_IsDll() const
 		{
-			return m_bIsDll;
+			return mp_bIsDll;
 		}
 
 		NStr::CStr const &f_GetSupportEmail() const
 		{
-			return m_SupportEmail;
+			return mp_SupportEmail;
 		}
 
 		NStr::CStrNonTracked const &f_GetSupportEmailNonTracked() const
 		{
-			return m_SupportEmailNonTracked;
+			return mp_SupportEmailNonTracked;
 		}
 
 		NStr::CStr const &f_GetProgramName() const
 		{
-			return m_ProgramName;
+			return mp_ProgramName;
 		}
 
 		void f_SetCrashHandler(NStr::CStr const &_Path, NStr::CStr const &_Server);
 
 		NStr::CStr const &f_GetCrashHandlerPath() const
 		{
-			return m_CrashHandlerPath;
+			return mp_CrashHandlerPath;
 		}
 
 		NStr::CStr const &f_GetCrashHandlerServer() const
 		{
-			return m_CrashHandlerServer;
+			return mp_CrashHandlerServer;
 		}
 
 		NStr::CStr const &f_GetCrashHandlerExePath() const
 		{
-			return m_CrashHandlerExePath;
+			return mp_CrashHandlerExePath;
 		}
 
 		NStr::CStrNonTracked const &f_GetProgramNameNonTracked() const
 		{
-			return m_ProgramNameNonTracked;
+			return mp_ProgramNameNonTracked;
 		}
 
 		bool f_GetRunningAsDaemon() const
 		{
-			return m_bRunningAsDaemon;
+			return mp_bRunningAsDaemon;
 		}
 
 		void f_SetRunningAsDaemon(bool _bRunningAsDaemon)
 		{
-			m_bRunningAsDaemon = _bRunningAsDaemon;
+			mp_bRunningAsDaemon = _bRunningAsDaemon;
 		}
 
 		// Thread safety?
 		void f_SetProgramRoot(NStr::CStr const &_Root)
 		{
-			m_ProgramRoot = _Root;
-			m_ProgramRootNonTracked = _Root;
+			mp_ProgramRoot = _Root;
+			mp_ProgramRootNonTracked = _Root;
 		}
 
 		NStr::CStr const &f_GetProgramRoot() const
 		{
-			return m_ProgramRoot;
+			return mp_ProgramRoot;
 		}
 
 		NStr::CStrNonTracked const &f_GetProgramRootNonTracked() const
 		{
-			return m_ProgramRootNonTracked;
+			return mp_ProgramRootNonTracked;
 		}
 
 #if DMibSysLogSeverities
 		NLog::CLogger &f_GetLogger()
 		{
-			return *m_pSystemLog;
+			return *mp_pSystemLog;
 		}
 #endif
 
@@ -324,7 +324,7 @@ namespace NMib
 
 		NThread::CMutual &f_GetLock()
 		{
-			return m_Lock;
+			return mp_Lock;
 		}
 
 		/************************************************************************************************\
@@ -338,12 +338,12 @@ namespace NMib
 
 		bool f_InitDone()
 		{
-			return m_bInitDone;
+			return mp_bInitDone;
 		}
 
 		bool f_DestroyingThreadSpecific()
 		{
-			return m_bDestroyingThreadSpecific.f_Load();
+			return mp_bDestroyingThreadSpecific.f_Load();
 		}
 
 		void f_InitModule(FConstruct **_pCConstructorsStart, FConstruct **_pCConstructorsEnd, FConstruct **_pCppConstructors, FConstruct **_pCppConstructorsEnd);
@@ -464,32 +464,32 @@ namespace NMib
 		struct CCommandLineData
 		{
 			NStr::CStr m_CommandLine;
-			NContainer::TCVector<NStr::CStr> m_lCommandLineParameters;
+			NContainer::TCVector<NStr::CStr> m_CommandLineParameters;
 		};
 
-		NMib::NStorage::TCAggregateSimple<CCommandLineData> m_CommandLineData;
+		NMib::NStorage::TCAggregateSimple<CCommandLineData> mp_CommandLineData;
 
 		CVirtualMachineInfo mp_VMInfo;
 
 		void fp_ParseCommandLine();
 
-		NThread::CMutual m_Lock;
+		NThread::CMutual mp_Lock;
 
-		NStr::CStr m_ProgramName;
+		NStr::CStr mp_ProgramName;
 
-		NStr::CStr m_CrashHandlerPath;
-		NStr::CStr m_CrashHandlerExePath;
-		NStr::CStr m_CrashHandlerServer;
+		NStr::CStr mp_CrashHandlerPath;
+		NStr::CStr mp_CrashHandlerExePath;
+		NStr::CStr mp_CrashHandlerServer;
 
-		NStr::CStr m_SupportEmail;
-		NStr::CStrNonTracked m_ProgramNameNonTracked;
-		NStr::CStrNonTracked m_SupportEmailNonTracked;
-		bool m_bRunningAsDaemon;
+		NStr::CStr mp_SupportEmail;
+		NStr::CStrNonTracked mp_ProgramNameNonTracked;
+		NStr::CStrNonTracked mp_SupportEmailNonTracked;
+		bool mp_bRunningAsDaemon;
 
-		bool m_bInitDone;
-		bool m_bIsDll;
+		bool mp_bInitDone;
+		bool mp_bIsDll;
 
-		NAtomic::TCAtomic<bool> m_bDestroyingThreadSpecific = false;
+		NAtomic::TCAtomic<bool> mp_bDestroyingThreadSpecific = false;
 
 #if DMibConfig_Memory_Shims_EnableGlobal
 		void fp_CreateGlobalMemoryReporter();
@@ -527,17 +527,17 @@ namespace NMib
 		void fp_SubSystem_DestroySubsystems(ESubSystemDestruction _ToDestroy);
 
 	protected:
-		NStr::CStr m_ProgramRoot;
-		NStr::CStrNonTracked m_ProgramRootNonTracked;
+		NStr::CStr mp_ProgramRoot;
+		NStr::CStrNonTracked mp_ProgramRootNonTracked;
 
 #if DMibSysLogSeverities
-		NLog::CLogger *m_pSystemLog;
-		NLog::CLogFile *m_pDefaultLogFile;
+		NLog::CLogger *mp_pSystemLog;
+		NLog::CLogFile *mp_pDefaultLogFile;
 #	if DMibEnableTrace > 0
-		umint m_TraceLoggerDestination = 0;
+		umint mp_TraceLoggerDestination = 0;
 #	endif
-		umint m_StdErrLoggerDestination = 0;
-		umint m_FileLoggerDestination = 0;
+		umint mp_StdErrLoggerDestination = 0;
+		umint mp_FileLoggerDestination = 0;
 #endif
 
 		void fp_InitComplete(); // Called by subclasses to signify they have finished constructing.

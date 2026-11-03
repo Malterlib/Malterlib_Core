@@ -146,23 +146,23 @@ CWindowsSocketContext::CWindowsSocketContext()
 	mp_bInitFailed = false;
 
 	{
-		WORD wVersionRequested;
-		WSADATA wsaData;
-		aint err;
+		WORD VersionRequested;
+		WSADATA WsaData;
+		aint Error;
 
-		wVersionRequested = MAKEWORD(2, 2);
+		VersionRequested = MAKEWORD(2, 2);
 
-		err = WSAStartup(wVersionRequested, &wsaData);
+		Error = WSAStartup(VersionRequested, &WsaData);
 
-		if (err != 0)
+		if (Error != 0)
 			mp_bInitFailed = true;
 
-		if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
+		if (LOBYTE(WsaData.wVersion) != 2 || HIBYTE(WsaData.wVersion) != 2)
 		{
 			WSACleanup();
 			mp_bInitFailed = true;
 		}
-		else if (err == 0)
+		else if (Error == 0)
 			mp_bWsaStarted = true;
 	}
 }
@@ -1015,7 +1015,7 @@ auto CWindowsSocketContext::fp_Connect
 	}
 
 	ENetAddressType AddressType = Address.f_GetType();
-	SOCKET hSock = INVALID_SOCKET;
+	SOCKET Socket = INVALID_SOCKET;
 
 	if (AddressType != ENetAddressType_TCPv4 && AddressType != ENetAddressType_TCPv6 && AddressType != ENetAddressType_Unix)
 		DMibErrorNet("Invalid address type.");
@@ -1024,9 +1024,9 @@ auto CWindowsSocketContext::fp_Connect
 	if (AddressType == ENetAddressType_Unix)
 		Family = PF_UNIX;
 
-	hSock = socket(Family, SOCK_STREAM, 0);
+	Socket = socket(Family, SOCK_STREAM, 0);
 
-	if (hSock == INVALID_SOCKET)
+	if (Socket == INVALID_SOCKET)
 	{
 		uint32 Error = WSAGetLastError();
 		DMibErrorNet((CStr::CFormat("Could not create a socket for connection, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
@@ -1034,14 +1034,14 @@ auto CWindowsSocketContext::fp_Connect
 
 	auto SocketCleanup = g_OnScopeExit / [&]
 		{
-			closesocket(hSock);
+			closesocket(Socket);
 		}
 	;
 
 	if (AddressType != ENetAddressType_Unix)
 	{
 		BOOL NoDelay = true;
-		if (setsockopt(hSock, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
+		if (setsockopt(Socket, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
 		{
 			uint32 Error = WSAGetLastError();
 			DMibErrorNet((CStr::CFormat("Could not set connect socket NoDelay setting, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
@@ -1049,14 +1049,14 @@ auto CWindowsSocketContext::fp_Connect
 
 		if (fg_IsLoopbackAddress(Address))
 		{
-			fg_EnableLoopbackFastPath(mp_pIo, hSock);
-			fg_SizeLoopbackTcpBuffers(hSock);
+			fg_EnableLoopbackFastPath(mp_pIo, Socket);
+			fg_SizeLoopbackTcpBuffers(Socket);
 		}
 	}
 
 	if (_pBindAddress)
 	{
-		int Result = bind(hSock, (sockaddr const *)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
+		int Result = bind(Socket, (sockaddr const *)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
 		if (Result != 0)
 		{
 			uint32 Error = WSAGetLastError();
@@ -1064,11 +1064,11 @@ auto CWindowsSocketContext::fp_Connect
 		}
 	}
 
-	fg_SetNonBlocking(hSock, "connect");
+	fg_SetNonBlocking(Socket, "connect");
 
 	EWindowsSocketMode Mode = EWindowsSocketMode_Connect;
 
-	int Result = connect(hSock, (sockaddr const *)Address.f_Get(), Address.f_GetSockAddrLen());
+	int Result = connect(Socket, (sockaddr const *)Address.f_Get(), Address.f_GetSockAddrLen());
 	if (Result != 0)
 	{
 		uint32 Error = WSAGetLastError();
@@ -1089,7 +1089,7 @@ auto CWindowsSocketContext::fp_Connect
 
 	SocketCleanup.f_Clear();
 
-	auto *pSocket = fp_CreateSocket(hSock, Mode, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
+	auto *pSocket = fp_CreateSocket(Socket, Mode, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = AddressType;
 	if (AddressType == ENetAddressType_Unix)
 	{
@@ -1495,24 +1495,24 @@ auto CWindowsSocketContext::f_Listen
 	if (AddressType == ENetAddressType_Unix)
 		Family = AF_UNIX;
 
-	SOCKET hSock = socket(Family, SOCK_STREAM, 0);
+	SOCKET Socket = socket(Family, SOCK_STREAM, 0);
 
-	if (hSock == INVALID_SOCKET)
+	if (Socket == INVALID_SOCKET)
 		DMibErrorNet("Could not create a socket for listening");
 
 	auto Cleanup = g_OnScopeExit / [&]
 		{
-			closesocket(hSock);
+			closesocket(Socket);
 		}
 	;
 
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
-		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const *)&bReuse, sizeof(bReuse));
+		setsockopt(Socket, SOL_SOCKET, SO_REUSEADDR, (char const *)&bReuse, sizeof(bReuse));
 	}
 
-	int Result = bind(hSock, (sockaddr const *)BindAddress.f_Get(), BindAddress.f_GetSockAddrLen());
+	int Result = bind(Socket, (sockaddr const *)BindAddress.f_Get(), BindAddress.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1537,22 +1537,22 @@ auto CWindowsSocketContext::f_Listen
 	NFile::CUniqueFileIdentifier UnixListenFileIdentity;
 	if (AddressType == ENetAddressType_Unix && !pUnixListen)
 	{
-		HANDLE hFile = fsg_OpenUnixListenFile(BindAddress.f_GetUnix().f_GetPath(), FILE_READ_ATTRIBUTES);
-		if (hFile != INVALID_HANDLE_VALUE)
+		HANDLE File = fsg_OpenUnixListenFile(BindAddress.f_GetUnix().f_GetPath(), FILE_READ_ATTRIBUTES);
+		if (File != INVALID_HANDLE_VALUE)
 		{
-			UnixListenFileIdentity = fsg_GetUnixListenFileIdentity(hFile);
-			CloseHandle(hFile);
+			UnixListenFileIdentity = fsg_GetUnixListenFileIdentity(File);
+			CloseHandle(File);
 		}
 	}
 
 	// Accepted sockets inherit the fast path from the listener; only loopback peers that opted
 	// in themselves take it
 	if (AddressType != ENetAddressType_Unix)
-		fg_EnableLoopbackFastPath(mp_pIo, hSock);
+		fg_EnableLoopbackFastPath(mp_pIo, Socket);
 
-	fg_SetNonBlocking(hSock, "listen");
+	fg_SetNonBlocking(Socket, "listen");
 
-	Result = listen(hSock, SOMAXCONN);
+	Result = listen(Socket, SOMAXCONN);
 
 	if (Result != 0)
 	{
@@ -1573,7 +1573,7 @@ auto CWindowsSocketContext::f_Listen
 	CleanupStaged.f_Clear();
 	Cleanup.f_Clear();
 
-	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Listen, EWindowsSocketEvent_Read, fg_Move(_fOnStateChange));
+	auto *pSocket = fp_CreateSocket(Socket, EWindowsSocketMode_Listen, EWindowsSocketEvent_Read, fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = AddressType;
 	pSocket->m_pUnixListen = fg_Move(pUnixListen);
 
@@ -1615,24 +1615,24 @@ auto CWindowsSocketContext::f_ListenDatagram
 	if (AddressType == ENetAddressType_Unix)
 		Family = AF_UNIX;
 
-	SOCKET hSock = socket(Family, SOCK_DGRAM, 0);
+	SOCKET Socket = socket(Family, SOCK_DGRAM, 0);
 
-	if (hSock == INVALID_SOCKET)
+	if (Socket == INVALID_SOCKET)
 		DMibErrorNet("Could not create a socket for listening");
 
 	auto Cleanup = g_OnScopeExit / [&]
 		{
-			closesocket(hSock);
+			closesocket(Socket);
 		}
 	;
 
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
-		setsockopt(hSock, SOL_SOCKET, SO_REUSEADDR, (char const *)&bReuse, sizeof(bReuse));
+		setsockopt(Socket, SOL_SOCKET, SO_REUSEADDR, (char const *)&bReuse, sizeof(bReuse));
 	}
 
-	int Result = bind(hSock, (sockaddr const *)Address.f_Get(), Address.f_GetSockAddrLen());
+	int Result = bind(Socket, (sockaddr const *)Address.f_Get(), Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1643,11 +1643,11 @@ auto CWindowsSocketContext::f_ListenDatagram
 	if (_Address.f_GetType() == ENetAddressType_Unix)
 		fg_ApplyUnixSocketPermissions(_Address.f_GetUnix());
 
-	fg_SetNonBlocking(hSock, "listen datagram");
+	fg_SetNonBlocking(Socket, "listen datagram");
 
 	Cleanup.f_Clear();
 
-	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Datagram, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
+	auto *pSocket = fp_CreateSocket(Socket, EWindowsSocketMode_Datagram, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = AddressType;
 	pSocket->m_BindAddressSize = Address.f_GetSockAddrLen();
 	pSocket->m_pUnixListen = fg_Move(pUnixListen);
@@ -1666,8 +1666,8 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 {
 	f_CheckFailed();
 
-	SOCKET hSock = accept(_pSocket->m_Socket, nullptr, 0);
-	if (hSock == INVALID_SOCKET)
+	SOCKET Socket = accept(_pSocket->m_Socket, nullptr, 0);
+	if (Socket == INVALID_SOCKET)
 	{
 		int LastError = WSAGetLastError();
 		if (LastError == WSAEWOULDBLOCK)
@@ -1681,29 +1681,29 @@ CWindowsSocket *CWindowsSocketContext::f_Accept(CWindowsSocket *_pSocket, NMib::
 
 	auto Cleanup = g_OnScopeExit / [&]
 		{
-			closesocket(hSock);
+			closesocket(Socket);
 		}
 	;
 
 	if (_pSocket->m_AddressType != ENetAddressType_Unix)
 	{
 		BOOL NoDelay = true;
-		if (setsockopt(hSock, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
+		if (setsockopt(Socket, IPPROTO_TCP, TCP_NODELAY, (char *)&NoDelay, sizeof(NoDelay)))
 		{
 			uint32 Error = WSAGetLastError();
 			DMibErrorNet((CStr::CFormat("Could not accept socket (TCP_NODELAY), windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 		}
 
-		if (fg_IsLoopbackPeer(hSock))
-			fg_SizeLoopbackTcpBuffers(hSock);
+		if (fg_IsLoopbackPeer(Socket))
+			fg_SizeLoopbackTcpBuffers(Socket);
 	}
 
 	// Explicit rather than trusting inheritance from the listener
-	fg_SetNonBlocking(hSock, "accept");
+	fg_SetNonBlocking(Socket, "accept");
 
 	Cleanup.f_Clear();
 
-	auto *pSocket = fp_CreateSocket(hSock, EWindowsSocketMode_Connect, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
+	auto *pSocket = fp_CreateSocket(Socket, EWindowsSocketMode_Connect, EWindowsSocketEvent(EWindowsSocketEvent_Read | EWindowsSocketEvent_Write), fg_Move(_fOnStateChange));
 	pSocket->m_AddressType = _pSocket->m_AddressType;
 	pSocket->m_bInheritable = _pSocket->m_bInheritable;
 	pSocket->m_PeerUnixFilePath = _pSocket->m_UnixListenPath;
@@ -1797,17 +1797,17 @@ void CWindowsSocketContext::fp_RemoveUnixListenFile(CWindowsSocket *_pSocket)
 	if (_pSocket->m_UnixListenPath.f_IsEmpty())
 		return;
 
-	HANDLE hFile = fsg_OpenUnixListenFile(_pSocket->m_UnixListenPath, DELETE | FILE_READ_ATTRIBUTES);
+	HANDLE File = fsg_OpenUnixListenFile(_pSocket->m_UnixListenPath, DELETE | FILE_READ_ATTRIBUTES);
 	_pSocket->m_UnixListenPath.f_Clear();
-	if (hFile == INVALID_HANDLE_VALUE)
+	if (File == INVALID_HANDLE_VALUE)
 		return;
 
 	// POSIX delete removes the name while the handle is open; native Unix-socket Windows versions support it.
-	bool bOwn = _pSocket->m_UnixListenFileIdentity == NFile::CUniqueFileIdentifier{} || fsg_GetUnixListenFileIdentity(hFile) == _pSocket->m_UnixListenFileIdentity;
+	bool bOwn = _pSocket->m_UnixListenFileIdentity == NFile::CUniqueFileIdentifier{} || fsg_GetUnixListenFileIdentity(File) == _pSocket->m_UnixListenFileIdentity;
 	if (bOwn)
-		NMib::NPlatform::fg_SetPosixDeleteDisposition(hFile);
+		NMib::NPlatform::fg_SetPosixDeleteDisposition(File);
 
-	CloseHandle(hFile);
+	CloseHandle(File);
 }
 
 // Run only after no loop reference remains; closes the handle and frees the socket.
@@ -1872,11 +1872,11 @@ void CWindowsSocketContext::f_CloseAsync(CWindowsSocket *_pSocket, NMib::NFuncti
 		pOwningLoop->f_DeregisterAsync
 			(
 				_pSocket->m_pIoRegistration
-				, [this, _pSocket, _fOnClosed = fg_Move(_fOnClosed)]() mutable
+				, [this, _pSocket, fOnClosed = fg_Move(_fOnClosed)]() mutable
 				{
 					fp_DestroySocket(_pSocket);
-					if (_fOnClosed)
-						_fOnClosed();
+					if (fOnClosed)
+						fOnClosed();
 				}
 			)
 		;
@@ -2257,7 +2257,7 @@ void CWindowsSocketContext::f_GiveUpForInheritAsync(CWindowsSocket *_pSocket, NM
 		pOwningLoop->f_DeregisterAsync
 			(
 				pRegistration
-				, [this, _pSocket, _fOnHandle = fg_Move(_fOnHandle)]() mutable
+				, [this, _pSocket, fOnHandle = fg_Move(_fOnHandle)]() mutable
 				{
 					SOCKET Socket = INVALID_SOCKET;
 					{
@@ -2267,7 +2267,7 @@ void CWindowsSocketContext::f_GiveUpForInheritAsync(CWindowsSocket *_pSocket, NM
 					}
 
 					fp_DestroySocket(_pSocket);
-					_fOnHandle((void *)Socket);
+					fOnHandle((void *)Socket);
 				}
 			)
 		;

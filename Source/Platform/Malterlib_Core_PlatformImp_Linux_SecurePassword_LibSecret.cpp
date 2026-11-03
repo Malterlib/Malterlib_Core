@@ -20,41 +20,41 @@ namespace NMib::NSys
 		{
 		}
 
-		decltype(&::secret_password_store_sync) secret_password_store_sync = nullptr;
-		decltype(&::secret_password_lookup_sync) secret_password_lookup_sync = nullptr;
-		decltype(&::secret_password_clear_sync) secret_password_clear_sync = nullptr;
-		decltype(&::secret_password_free) secret_password_free = nullptr;
-		decltype(&::secret_service_get_sync) secret_service_get_sync = nullptr;
-		decltype(&::secret_service_get_collections) secret_service_get_collections = nullptr;
-		decltype(&::secret_service_ensure_session_sync) secret_service_ensure_session_sync = nullptr;
-		decltype(&::secret_collection_get_label) secret_collection_get_label = nullptr;
-		decltype(&::secret_collection_get_locked) secret_collection_get_locked = nullptr;
+		decltype(&::secret_password_store_sync) m_fSecretPasswordStoreSync = nullptr;
+		decltype(&::secret_password_lookup_sync) m_fSecretPasswordLookupSync = nullptr;
+		decltype(&::secret_password_clear_sync) m_fSecretPasswordClearSync = nullptr;
+		decltype(&::secret_password_free) m_fSecretPasswordFree = nullptr;
+		decltype(&::secret_service_get_sync) m_fSecretServiceGetSync = nullptr;
+		decltype(&::secret_service_get_collections) m_fSecretServiceGetCollections = nullptr;
+		decltype(&::secret_service_ensure_session_sync) m_fSecretServiceEnsureSessionSync = nullptr;
+		decltype(&::secret_collection_get_label) m_fSecretCollectionGetLabel = nullptr;
+		decltype(&::secret_collection_get_locked) m_fSecretCollectionGetLocked = nullptr;
 
 	protected:
 		void fp_ClearSymbols() override
 		{
-			secret_password_store_sync = nullptr;
-			secret_password_lookup_sync = nullptr;
-			secret_password_clear_sync = nullptr;
-			secret_password_free = nullptr;
-			secret_service_get_sync = nullptr;
-			secret_service_get_collections = nullptr;
-			secret_service_ensure_session_sync = nullptr;
-			secret_collection_get_label = nullptr;
-			secret_collection_get_locked = nullptr;
+			m_fSecretPasswordStoreSync = nullptr;
+			m_fSecretPasswordLookupSync = nullptr;
+			m_fSecretPasswordClearSync = nullptr;
+			m_fSecretPasswordFree = nullptr;
+			m_fSecretServiceGetSync = nullptr;
+			m_fSecretServiceGetCollections = nullptr;
+			m_fSecretServiceEnsureSessionSync = nullptr;
+			m_fSecretCollectionGetLabel = nullptr;
+			m_fSecretCollectionGetLocked = nullptr;
 		}
 
 		void fp_FetchSymbols() override
 		{
-			fp_Fetch(secret_password_store_sync, "secret_password_store_sync");
-			fp_Fetch(secret_password_lookup_sync, "secret_password_lookup_sync");
-			fp_Fetch(secret_password_clear_sync, "secret_password_clear_sync");
-			fp_Fetch(secret_password_free, "secret_password_free");
-			fp_Fetch(secret_service_get_sync, "secret_service_get_sync");
-			fp_Fetch(secret_service_get_collections, "secret_service_get_collections");
-			fp_Fetch(secret_service_ensure_session_sync, "secret_service_ensure_session_sync");
-			fp_Fetch(secret_collection_get_label, "secret_collection_get_label");
-			fp_Fetch(secret_collection_get_locked, "secret_collection_get_locked");
+			fp_Fetch(m_fSecretPasswordStoreSync, "secret_password_store_sync");
+			fp_Fetch(m_fSecretPasswordLookupSync, "secret_password_lookup_sync");
+			fp_Fetch(m_fSecretPasswordClearSync, "secret_password_clear_sync");
+			fp_Fetch(m_fSecretPasswordFree, "secret_password_free");
+			fp_Fetch(m_fSecretServiceGetSync, "secret_service_get_sync");
+			fp_Fetch(m_fSecretServiceGetCollections, "secret_service_get_collections");
+			fp_Fetch(m_fSecretServiceEnsureSessionSync, "secret_service_ensure_session_sync");
+			fp_Fetch(m_fSecretCollectionGetLabel, "secret_collection_get_label");
+			fp_Fetch(m_fSecretCollectionGetLocked, "secret_collection_get_locked");
 		}
 	};
 
@@ -65,20 +65,20 @@ namespace NMib::NSys
 		{
 		}
 
-		decltype(&::g_list_free_full) g_list_free_full = nullptr;
-		decltype(&::g_free) g_free = nullptr;
+		decltype(&::g_list_free_full) m_fGListFreeFull = nullptr;
+		decltype(&::g_free) m_fGFree = nullptr;
 
 	protected:
 		void fp_ClearSymbols() override
 		{
-			g_list_free_full = nullptr;
-			g_free = nullptr;
+			m_fGListFreeFull = nullptr;
+			m_fGFree = nullptr;
 		}
 
 		void fp_FetchSymbols() override
 		{
-			fp_Fetch(g_list_free_full, "g_list_free_full");
-			fp_Fetch(g_free, "g_free");
+			fp_Fetch(m_fGListFreeFull, "g_list_free_full");
+			fp_Fetch(m_fGFree, "g_free");
 		}
 	};
 
@@ -89,17 +89,17 @@ namespace NMib::NSys
 		{
 		}
 
-		decltype(&::g_object_unref) g_object_unref = nullptr;
+		decltype(&::g_object_unref) m_fGObjectUnref = nullptr;
 
 	protected:
 		void fp_ClearSymbols() override
 		{
-			g_object_unref = nullptr;
+			m_fGObjectUnref = nullptr;
 		}
 
 		void fp_FetchSymbols() override
 		{
-			fp_Fetch(g_object_unref, "g_object_unref");
+			fp_Fetch(m_fGObjectUnref, "g_object_unref");
 		}
 	};
 
@@ -140,7 +140,7 @@ namespace NMib::NSys
 	// GNOME Secure Password Implementation
 	//
 
-	static SecretSchema const gc_SecretSchema =
+	static constexpr SecretSchema gc_SecretSchema =
 		{
 			"org.malterlib.Password"
 			, SECRET_SCHEMA_NONE
@@ -223,29 +223,29 @@ namespace NMib::NSys
 
 		GError *pResult = nullptr;
 
-		auto *pService = mp_KeychainLibrary.secret_service_get_sync(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS, nullptr, &pResult);
+		auto *pService = mp_KeychainLibrary.m_fSecretServiceGetSync(SECRET_SERVICE_OPEN_SESSION | SECRET_SERVICE_LOAD_COLLECTIONS, nullptr, &pResult);
 
 		if (!pService)
 			return true;
 
 		auto CleanupService = g_OnScopeExit / [&]
 			{
-				mp_GnomeObjectLibrary.g_object_unref(pService);
+				mp_GnomeObjectLibrary.m_fGObjectUnref(pService);
 			}
 		;
 
-		bool bSuccess = mp_KeychainLibrary.secret_service_ensure_session_sync(pService, nullptr, &pResult);
+		bool bSuccess = mp_KeychainLibrary.m_fSecretServiceEnsureSessionSync(pService, nullptr, &pResult);
 
 		if (!bSuccess)
 			return true;
 
-		auto *pCollections = mp_KeychainLibrary.secret_service_get_collections(pService);
+		auto *pCollections = mp_KeychainLibrary.m_fSecretServiceGetCollections(pService);
 		if (!pCollections)
 			return true;
 
 		auto CleanupCollections = g_OnScopeExit / [&]
 			{
-				mp_GnomeLibrary.g_list_free_full(pCollections, mp_GnomeObjectLibrary.g_object_unref);
+				mp_GnomeLibrary.m_fGListFreeFull(pCollections, mp_GnomeObjectLibrary.m_fGObjectUnref);
 			}
 		;
 
@@ -254,17 +254,17 @@ namespace NMib::NSys
 		for (auto pListIter = pCollections; pListIter; pListIter = pListIter->next)
 		{
 			SecretCollection *pSecetService = fg_AutoStaticCast(pListIter->data);
-			auto pLabel = mp_KeychainLibrary.secret_collection_get_label(pSecetService);
+			auto pLabel = mp_KeychainLibrary.m_fSecretCollectionGetLabel(pSecetService);
 			if (!pLabel)
 				continue;
 			auto Cleanup = g_OnScopeExit / [&]
 				{
-					mp_GnomeLibrary.g_free(pLabel);
+					mp_GnomeLibrary.m_fGFree(pLabel);
 				}
 			;
 			if (!NMib::NStr::CStr(pLabel))
 				continue;
-			bool bLocked = mp_KeychainLibrary.secret_collection_get_locked(pSecetService);
+			bool bLocked = mp_KeychainLibrary.m_fSecretCollectionGetLocked(pSecetService);
 			if (!bLocked)
 				bAnyUnlocked = true;
 		}
@@ -278,7 +278,7 @@ namespace NMib::NSys
 
 		GError *pResult = nullptr;
 
-		bool bSuccess = mp_KeychainLibrary.secret_password_store_sync
+		bool bSuccess = mp_KeychainLibrary.m_fSecretPasswordStoreSync
 			(
 				&gc_SecretSchema
 				, SECRET_COLLECTION_DEFAULT
@@ -303,7 +303,7 @@ namespace NMib::NSys
 
 		GError *pResult = nullptr;
 
-		bool bSuccess = mp_KeychainLibrary.secret_password_clear_sync(&gc_SecretSchema, nullptr, &pResult, "key", _Key.f_GetStr(), nullptr);
+		bool bSuccess = mp_KeychainLibrary.m_fSecretPasswordClearSync(&gc_SecretSchema, nullptr, &pResult, "key", _Key.f_GetStr(), nullptr);
 
 		if (!bSuccess && !pResult)
 			return ESecurePassword_NotFound;
@@ -319,7 +319,7 @@ namespace NMib::NSys
 
 		GError *pResult = nullptr;
 
-		gchar *pPassword = mp_KeychainLibrary.secret_password_lookup_sync(&gc_SecretSchema, nullptr, &pResult, "key", _Key.f_GetStr(), nullptr);
+		gchar *pPassword = mp_KeychainLibrary.m_fSecretPasswordLookupSync(&gc_SecretSchema, nullptr, &pResult, "key", _Key.f_GetStr(), nullptr);
 
 		if (!pPassword && !pResult)
 			return ESecurePassword_NotFound;
@@ -327,7 +327,7 @@ namespace NMib::NSys
 		if (pPassword)
 		{
 			o_Password = pPassword;
-			mp_KeychainLibrary.secret_password_free(pPassword);
+			mp_KeychainLibrary.m_fSecretPasswordFree(pPassword);
 		}
 
 		fg_SecurePassword_GNOME_Log("secret_password_lookup_sync", !!pPassword, pResult);

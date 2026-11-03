@@ -33,8 +33,8 @@ CIoLoop_POSIXBase::CIoLoop_POSIXBase()
 {
 	int PipeRet;
 #if defined(DPlatformFamily_Linux)
-	if (NLocal::g_f_pipe2)
-		PipeRet = NLocal::g_f_pipe2(mp_ReadWritePipe, O_NONBLOCK | O_CLOEXEC);
+	if (NLocal::g_fPipe2)
+		PipeRet = NLocal::g_fPipe2(mp_ReadWritePipe, O_NONBLOCK | O_CLOEXEC);
 	else
 	{
 		PipeRet = pipe(mp_ReadWritePipe);

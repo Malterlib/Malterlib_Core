@@ -69,9 +69,9 @@ namespace NMib
 	}
 
 #ifdef DMibPLittleEndian
-	static EEndian const gc_MachineEndian = EEndian_Little;
+	static constexpr EEndian gc_MachineEndian = EEndian_Little;
 #else
-	static EEndian const gc_MachineEndian = EEndian_Big;
+	static constexpr EEndian gc_MachineEndian = EEndian_Big;
 #endif
 
 	enum EExecutionPriority

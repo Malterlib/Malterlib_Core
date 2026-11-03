@@ -34,9 +34,9 @@ using FMalterlibLibraryFunc = void calling_convention_c ();
 namespace
 {
 #if defined(DMibSanitizerEnabled_Address)
-	static constexpr int g_ExtraDlOpenFlags = RTLD_NODELETE;
+	static constexpr int gc_ExtraDlOpenFlags = RTLD_NODELETE;
 #else
-	static constexpr int g_ExtraDlOpenFlags = 0;
+	static constexpr int gc_ExtraDlOpenFlags = 0;
 #endif
 }
 
@@ -45,7 +45,7 @@ void *NSys::fg_LoadLibrary(CFStr256 const &_Library)
 	if (!_Library.f_IsEmpty())
 	{
 		auto Library = _Library;
-		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | g_ExtraDlOpenFlags);
+		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | gc_ExtraDlOpenFlags);
 		if (pRet)
 		{
 			void (*pMalterlibLoadLibraryExternal)();
@@ -66,7 +66,7 @@ void *NSys::fg_LoadLibrary(CStr const &_Library)
 	if (!_Library.f_IsEmpty())
 	{
 		auto Library = _Library;
-		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | g_ExtraDlOpenFlags);
+		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | gc_ExtraDlOpenFlags);
 		if (pRet)
 		{
 			void (*pMalterlibLoadLibraryExternal)();
@@ -87,7 +87,7 @@ void *NSys::fg_LoadLibrary(CStrNonTracked const &_Library)
 	if (!_Library.f_IsEmpty())
 	{
 		auto Library = _Library;
-		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | g_ExtraDlOpenFlags);
+		void *pRet = dlopen(Library.f_GetStr(), RTLD_NOW | RTLD_LOCAL | gc_ExtraDlOpenFlags);
 		if (pRet)
 		{
 			void (*pMalterlibLoadLibraryExternal)();

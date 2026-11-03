@@ -59,7 +59,7 @@ extern "C" void __udivti3();
 extern "C" void __attribute__((constructor(-1111111111))) fg_InitMalterlib()
 {
 #	ifdef DMalterlibUseStaticLibCxx
-	__attribute__((used)) static unsigned long long volatile WorkaroundSum = (unsigned long long)&__umodti3 + (unsigned long long)&__udivmodti4
+	__attribute__((used)) static unsigned long long volatile s_WorkaroundSum = (unsigned long long)&__umodti3 + (unsigned long long)&__udivmodti4
 #		ifdef DArchitecture_x64
 		+ (unsigned long long)&__fixunsxfti + (unsigned long long)&__fixxfti
 #		endif

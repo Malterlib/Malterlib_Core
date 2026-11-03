@@ -216,17 +216,17 @@ namespace NMib
 			constexpr CRandomShiftRNG(uint32 _Seed0 = 123456789, uint32 _Seed1 = 362436069, uint32 _Seed2 = 2521288629)
 			{
 				if (_Seed0 != 0)
-					mp_X = _Seed0;
+					mp_StateX = _Seed0;
 				else
-					mp_X = 123456789;
+					mp_StateX = 123456789;
 				if (_Seed1 != 0)
-					mp_Y = _Seed1;
+					mp_StateY = _Seed1;
 				else
-					mp_Y = 362436069;
+					mp_StateY = 362436069;
 				if (_Seed2 != 0)
-					mp_Z = _Seed2;
+					mp_StateZ = _Seed2;
 				else
-					mp_Z = 2521288629;
+					mp_StateZ = 2521288629;
 				// Propagate seed
 				f_GetValue<uint32>();
 				f_GetValue<uint32>();
@@ -236,20 +236,20 @@ namespace NMib
 			template <typename tf_CInt>
 			constexpr inline_small tf_CInt f_GetValue()
 			{
-				uint32 t;
-				mp_X ^= mp_X << 16;
-				mp_X ^= mp_X >> 5;
-				mp_X ^= mp_X << 1;
+				uint32 Temp;
+				mp_StateX ^= mp_StateX << 16;
+				mp_StateX ^= mp_StateX >> 5;
+				mp_StateX ^= mp_StateX << 1;
 
-				t = mp_X;
-				mp_X = mp_Y;
-				mp_Y = mp_Z;
-				mp_Z = t ^ mp_X ^ mp_Y;
+				Temp = mp_StateX;
+				mp_StateX = mp_StateY;
+				mp_StateY = mp_StateZ;
+				mp_StateZ = Temp ^ mp_StateX ^ mp_StateY;
 
 				if constexpr (sizeof(tf_CInt) > 4)
 				{
-					tf_CInt Return = mp_Z;
-					for (umint i = 1; i < (sizeof(tf_CInt) + 3) / 4; ++i)
+					tf_CInt Return = mp_StateZ;
+					for (umint iWord = 1; iWord < (sizeof(tf_CInt) + 3) / 4; ++iWord)
 					{
 						Return <<= 32;
 						Return |= f_GetValue<uint32>();
@@ -258,7 +258,7 @@ namespace NMib
 					return Return;
 				}
 				else
-					return (tf_CInt)mp_Z;
+					return (tf_CInt)mp_StateZ;
 			}
 
 			template <typename tf_CInt>
@@ -279,9 +279,9 @@ namespace NMib
 			}
 
 		private:
-			uint32 mp_X;
-			uint32 mp_Y;
-			uint32 mp_Z;
+			uint32 mp_StateX;
+			uint32 mp_StateY;
+			uint32 mp_StateZ;
 		};
 
 		struct CAutoRandom : public CRandomShiftRNG
@@ -475,9 +475,9 @@ namespace NMib
 		constexpr bool fg_IsSorted(tf_CType const *_pArray, umint _Len, tf_FCompare &&_fCompare)
 		{
 			tf_CType const *pArray = _pArray;
-			for (umint i = 0, j = 1; j != _Len; ++i, ++j)
+			for (umint iPrevious = 0, iCurrent = 1; iCurrent != _Len; ++iPrevious, ++iCurrent)
 			{
-				if (fg_CheckOrdering(_fCompare(pArray[j], pArray[i])) < 0)
+				if (fg_CheckOrdering(_fCompare(pArray[iCurrent], pArray[iPrevious])) < 0)
 					return false;
 			}
 

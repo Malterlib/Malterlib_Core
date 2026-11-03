@@ -45,7 +45,7 @@ using namespace NMib::NTime;
 using namespace NMib::NFunction;
 using namespace NMib::NStorage;
 
-HINSTANCE g_hDllInstance = 0;
+HINSTANCE g_DllInstance = 0;
 bool g_bIsDll = false;
 
 static NAtomic::TCAtomic<smint> gs_LibraryRefCount{smint(-1)};
@@ -68,7 +68,7 @@ namespace NMib::NPlatform
 
 	void *fg_GetWindowsDllInstance()
 	{
-		return g_hDllInstance;
+		return g_DllInstance;
 	}
 }
 
@@ -136,14 +136,14 @@ template <typename t_CStr, typename t_CAllocator>
 struct TCWin32File : public CWin32File
 {
 	TCWin32File(t_CStr const &_FileName)
-		: m_FileName(_FileName)
+		: mp_FileName(_FileName)
 	{
 	}
 
 	virtual CWStrPtr f_GetName() const override
 	{
 		CWStrPtr Ret;
-		Ret.f_SetConstPtr(m_FileName.f_GetStr(), m_FileName.f_GetLen());
+		Ret.f_SetConstPtr(mp_FileName.f_GetStr(), mp_FileName.f_GetLen());
 		return Ret;
 	}
 
@@ -158,7 +158,7 @@ struct TCWin32File : public CWin32File
 	}
 
 private:
-	t_CStr m_FileName;
+	t_CStr mp_FileName;
 };
 
 namespace
@@ -205,10 +205,10 @@ namespace NMib
 {
 	namespace NSys
 	{
-		static LPTOP_LEVEL_EXCEPTION_FILTER g_pExpectedFilter = nullptr;
+		static LPTOP_LEVEL_EXCEPTION_FILTER gs_pExpectedFilter = nullptr;
 		void fg_Windows_ExpectedFilter(LPTOP_LEVEL_EXCEPTION_FILTER _pFilter)
 		{
-			g_pExpectedFilter = _pFilter;
+			gs_pExpectedFilter = _pFilter;
 		}
 	}
 }
@@ -228,10 +228,10 @@ void *NSys::fg_LoadLibrary(CFStr256 const &_Library)
 				pMalterlibLoadLibraryExternal();
 		}
 
-		if (g_pExpectedFilter)
+		if (gs_pExpectedFilter)
 		{
-			LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(g_pExpectedFilter);
-			if (pFilterNew != g_pExpectedFilter)
+			LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(gs_pExpectedFilter);
+			if (pFilterNew != gs_pExpectedFilter)
 				DMibDTrace("---------------------------------------- Restored unhandled exception filter after DLL load\n", 0);
 		}
 		return pRet;
@@ -263,10 +263,10 @@ void *NSys::fg_LoadLibrary(CStr const &_Library)
 				pMalterlibLoadLibraryExternal();
 		}
 
-		if (g_pExpectedFilter)
+		if (gs_pExpectedFilter)
 		{
-			LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(g_pExpectedFilter);
-			if (pFilterNew != g_pExpectedFilter)
+			LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(gs_pExpectedFilter);
+			if (pFilterNew != gs_pExpectedFilter)
 				DMibDTrace("---------------------------------------- Restored unhandled exception filter after DLL load\n", 0);
 		}
 		return pRet;
@@ -298,10 +298,10 @@ void *NSys::fg_LoadLibrary(CStrNonTracked const &_Library)
 				pMalterlibLoadLibraryExternal();
 		}
 
-		if (g_pExpectedFilter)
+		if (gs_pExpectedFilter)
 		{
-			LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(g_pExpectedFilter);
-			if (pFilterNew != g_pExpectedFilter)
+			LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(gs_pExpectedFilter);
+			if (pFilterNew != gs_pExpectedFilter)
 				DMibDTrace("---------------------------------------- Restored unhandled exception filter after DLL load\n", 0);
 		}
 		return pRet;
@@ -326,10 +326,10 @@ void NSys::fg_FreeLibrary(void *_pModule)
 		pMalterlibFreeLibraryExternal();
 	FreeLibrary((HMODULE)_pModule);
 
-	if (g_pExpectedFilter)
+	if (gs_pExpectedFilter)
 	{
-		LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(g_pExpectedFilter);
-		if (pFilterNew != g_pExpectedFilter)
+		LPTOP_LEVEL_EXCEPTION_FILTER pFilterNew = SetUnhandledExceptionFilter(gs_pExpectedFilter);
+		if (pFilterNew != gs_pExpectedFilter)
 			DMibDTrace("--------------------------------------- Restored unhandled exception filter after DLL unload\n", 0);
 	}
 }
@@ -371,7 +371,7 @@ struct CMemoryToucher : public CVirtualDestructor
 
 private:
 	struct CInternal;
-	TCUniquePointer<CInternal> m_pInternal;
+	TCUniquePointer<CInternal> mp_pInternal;
 };
 
 void NSys::fg_Mem_EnableMemoryToucher(bool _bEnabled, fp64 _CPUUsage)
@@ -571,11 +571,11 @@ namespace
 	void fg_WriteTestDebugOutput(ch8 const *_pData, DWORD _Length)
 	{
 		DWORD LastError = GetLastError();
-		HANDLE hOutput = GetStdHandle(STD_ERROR_HANDLE);
+		HANDLE Output = GetStdHandle(STD_ERROR_HANDLE);
 		while (_Length)
 		{
 			DWORD Written = 0;
-			if (!WriteFile(hOutput, _pData, _Length, &Written, nullptr) || !Written)
+			if (!WriteFile(Output, _pData, _Length, &Written, nullptr) || !Written)
 				break;
 
 			_pData += Written;
@@ -681,10 +681,10 @@ namespace
 	template <typename tf_CWinStr, typename tf_CUTF8Str, typename tf_CStr>
 	void fg_ConsoleOutputHelper(tf_CStr const &_Str, DWORD _StdHandle, bool _bRaw)
 	{
-		static bool bEnableTerminalProcessing = true;
-		if (bEnableTerminalProcessing)
+		static bool s_bEnableTerminalProcessing = true;
+		if (s_bEnableTerminalProcessing)
 		{
-			bEnableTerminalProcessing = false;
+			s_bEnableTerminalProcessing = false;
 			uint32 Mode = 0;
 			auto fEnableVT = [&](HANDLE _File)
 				{
@@ -707,10 +707,10 @@ namespace
 		// printf("%s", _pToOutput);
 
 		uint32 Written = 0;
-		HANDLE hCon = GetStdHandle(_StdHandle);
-		if (hCon)
+		HANDLE Console = GetStdHandle(_StdHandle);
+		if (Console)
 		{
-			if (GetFileType(hCon) == FILE_TYPE_CHAR)
+			if (GetFileType(Console) == FILE_TYPE_CHAR)
 			{
 				ch16 const *pOut = WideChar;
 				umint Len = WideChar.f_GetLen();
@@ -721,10 +721,10 @@ namespace
 					umint nChars = pTemp - Temp;
 					Len -= nChars;
 					pOut += nChars;
-					if (!WriteConsoleW(hCon, Temp, nChars, &Written, nullptr))
+					if (!WriteConsoleW(Console, Temp, nChars, &Written, nullptr))
 					{
 						// CFStr256 Error = NMib::NPlatform::fg_Win32_GetLastErrorStr();
-						// DMibError((CFStr256::CFormat("Windows returned an error from WriteFile(hCon): {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+						// DMibError((CFStr256::CFormat("Windows returned an error from WriteFile(Console): {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 						break;
 					}
 				}
@@ -741,10 +741,10 @@ namespace
 					umint nChars = pTemp - Temp;
 					Len -= nChars;
 					pOut += nChars;
-					if (!WriteFile(hCon, Temp, nChars, &Written, nullptr))
+					if (!WriteFile(Console, Temp, nChars, &Written, nullptr))
 					{
 						// CFStr256 Error = NMib::NPlatform::fg_Win32_GetLastErrorStr();
-						// DMibDTrace("Windows returned an error from WriteFile(hCon): {}", NMib::NPlatform::fg_Win32_GetLastErrorStr());
+						// DMibDTrace("Windows returned an error from WriteFile(Console): {}", NMib::NPlatform::fg_Win32_GetLastErrorStr());
 						break;
 					}
 				}
@@ -755,10 +755,10 @@ namespace
 
 bool NSys::fg_ConsoleOutputValid()
 {
-	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (hCon)
+	HANDLE Console = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (Console)
 	{
-		int FileType = GetFileType(hCon);
+		int FileType = GetFileType(Console);
 		if (FileType == FILE_TYPE_UNKNOWN)
 		{
 			if (GetLastError() != NO_ERROR)
@@ -766,16 +766,16 @@ bool NSys::fg_ConsoleOutputValid()
 		}
 		return true;
 	}
-	//MessageBox(nullptr, CWStr(CWStr::CFormat(str_utf16("{} {}")) << hCon << fileType), str_utf16("onetuho"), MB_OK);
+	//MessageBox(nullptr, CWStr(CWStr::CFormat(str_utf16("{} {}")) << Console << fileType), str_utf16("onetuho"), MB_OK);
 	return false;
 }
 
 bool NSys::fg_ConsoleInputValid()
 {
-	HANDLE hCon = GetStdHandle(STD_INPUT_HANDLE);
-	if (hCon)
+	HANDLE Console = GetStdHandle(STD_INPUT_HANDLE);
+	if (Console)
 	{
-		int FileType = GetFileType(hCon);
+		int FileType = GetFileType(Console);
 		if (FileType == FILE_TYPE_UNKNOWN)
 		{
 			if (GetLastError() != NO_ERROR)
@@ -783,26 +783,26 @@ bool NSys::fg_ConsoleInputValid()
 		}
 		return true;
 	}
-	//MessageBox(nullptr, CWStr(CWStr::CFormat(str_utf16("{} {}")) << hCon << fileType), str_utf16("onetuho"), MB_OK);
+	//MessageBox(nullptr, CWStr(CWStr::CFormat(str_utf16("{} {}")) << Console << fileType), str_utf16("onetuho"), MB_OK);
 	return false;
 }
 
 bool NSys::fg_ConsoleInputIsTerminal()
 {
-	HANDLE hCon = GetStdHandle(STD_INPUT_HANDLE);
-	if (!hCon || hCon == INVALID_HANDLE_VALUE)
+	HANDLE Console = GetStdHandle(STD_INPUT_HANDLE);
+	if (!Console || Console == INVALID_HANDLE_VALUE)
 		return false;
 
 	DWORD Mode;
-	return GetConsoleMode(hCon, &Mode) != 0;
+	return GetConsoleMode(Console, &Mode) != 0;
 }
 
 bool NSys::fg_ConsoleErrorOutputValid()
 {
-	HANDLE hCon = GetStdHandle(STD_ERROR_HANDLE);
-	if (hCon)
+	HANDLE Console = GetStdHandle(STD_ERROR_HANDLE);
+	if (Console)
 	{
-		int FileType = GetFileType(hCon);
+		int FileType = GetFileType(Console);
 		if (FileType == FILE_TYPE_UNKNOWN)
 		{
 			if (GetLastError() != NO_ERROR)
@@ -810,7 +810,7 @@ bool NSys::fg_ConsoleErrorOutputValid()
 		}
 		return true;
 	}
-	//MessageBox(nullptr, CWStr(CWStr::CFormat(str_utf16("{} {}")) << hCon << fileType), str_utf16("onetuho"), MB_OK);
+	//MessageBox(nullptr, CWStr(CWStr::CFormat(str_utf16("{} {}")) << Console << fileType), str_utf16("onetuho"), MB_OK);
 	return false;
 }
 
@@ -837,11 +837,11 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 	CONSOLE_SCREEN_BUFFER_INFO ConsoleScreenBufferInfo;
 	fg_MemClear(ConsoleScreenBufferInfo);
 
-	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (!GetConsoleScreenBufferInfo(hConsole, &ConsoleScreenBufferInfo))
+	HANDLE Console = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (!GetConsoleScreenBufferInfo(Console, &ConsoleScreenBufferInfo))
 	{
-		hConsole = GetStdHandle(STD_ERROR_HANDLE);
-		if (!GetConsoleScreenBufferInfo(hConsole, &ConsoleScreenBufferInfo))
+		Console = GetStdHandle(STD_ERROR_HANDLE);
+		if (!GetConsoleScreenBufferInfo(Console, &ConsoleScreenBufferInfo))
 			return Return;
 	}
 
@@ -851,7 +851,7 @@ NSys::CConsoleProperties NSys::fg_GetConsoleProperties()
 	CONSOLE_FONT_INFOEX FontInfo;
 	fg_MemClear(FontInfo);
 	FontInfo.cbSize = sizeof(FontInfo);
-	if (GetCurrentConsoleFontEx(hConsole, FALSE, &FontInfo))
+	if (GetCurrentConsoleFontEx(Console, FALSE, &FontInfo))
 	{
 		Return.m_GlyphWidth = uint32(FontInfo.dwFontSize.X);
 		Return.m_GlyphHeight = uint32(FontInfo.dwFontSize.Y);
@@ -895,9 +895,9 @@ namespace
 	void fg_ConsoleOutputBinaryHelper(NMib::NContainer::CIOByteVector const &_Buffer, DWORD _StdHandle)
 	{
 		uint32 Written = 0;
-		HANDLE hCon = GetStdHandle(_StdHandle);
+		HANDLE Console = GetStdHandle(_StdHandle);
 
-		if (!hCon)
+		if (!Console)
 			return;
 		uint8 const *pOut = _Buffer.f_GetArray();
 		umint Len = _Buffer.f_GetLen();
@@ -906,7 +906,7 @@ namespace
 		{
 			umint ToCopy = fg_Min(Len, 2048u);
 			NMib::NMemory::fg_MemCopy(Temp, pOut, ToCopy);
-			if (!WriteFile(hCon, Temp, ToCopy, &Written, nullptr))
+			if (!WriteFile(Console, Temp, ToCopy, &Written, nullptr))
 				break;
 			Len -= Written;
 			pOut += Written;
@@ -1091,19 +1091,19 @@ umint NSys::fg_Mem_GetNumNumaNodes()
 	if (HighestNumber == 0)
 		return 0;
 	int32 Ret = 0;
-	for (uint32 i = 0; i <= HighestNumber; ++i)
+	for (uint32 iNode = 0; iNode <= HighestNumber; ++iNode)
 	{
 		if (NLocal::g_OptionalFunctions.m_fGetNumaNodeProcessorMaskEx)
 		{
 			GROUP_AFFINITY Affinity;
 			fg_MemClear(Affinity);
-			if (NLocal::g_OptionalFunctions.m_fGetNumaNodeProcessorMaskEx(i, &Affinity))
+			if (NLocal::g_OptionalFunctions.m_fGetNumaNodeProcessorMaskEx(iNode, &Affinity))
 				++Ret;
 		}
 		else
 		{
 			ULONGLONG Mask = 0;
-			if (GetNumaNodeProcessorMask(i, &Mask))
+			if (GetNumaNodeProcessorMask(iNode, &Mask))
 				++Ret;
 		}
 	}
@@ -1122,15 +1122,15 @@ void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, umint _nNodes)
 	if (HighestNumber == 0)
 		return;
 	umint Ret = 0;
-	for (uint32 i = 0; i <= HighestNumber; ++i)
+	for (uint32 iNode = 0; iNode <= HighestNumber; ++iNode)
 	{
 		if (NLocal::g_OptionalFunctions.m_fGetNumaNodeProcessorMaskEx)
 		{
 			GROUP_AFFINITY Affinity;
 			fg_MemClear(Affinity);
-			if (NLocal::g_OptionalFunctions.m_fGetNumaNodeProcessorMaskEx(i, &Affinity))
+			if (NLocal::g_OptionalFunctions.m_fGetNumaNodeProcessorMaskEx(iNode, &Affinity))
 			{
-				_pNodes[Ret] = ENumaNode(i);
+				_pNodes[Ret] = ENumaNode(iNode);
 				++Ret;
 				if (Ret >= _nNodes)
 					return;
@@ -1139,9 +1139,9 @@ void NSys::fg_Mem_GetNumaNodes(ENumaNode *_pNodes, umint _nNodes)
 		else
 		{
 			ULONGLONG Mask = 0;
-			if (GetNumaNodeProcessorMask(i, &Mask))
+			if (GetNumaNodeProcessorMask(iNode, &Mask))
 			{
-				_pNodes[Ret] = ENumaNode(i);
+				_pNodes[Ret] = ENumaNode(iNode);
 				++Ret;
 				if (Ret >= _nNodes)
 					return;
@@ -1558,18 +1558,18 @@ void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::
 
 void NSys::fg_System_ExitProcess(aint _ExitCode)
 {
-	HMODULE hmod;
+	HMODULE CoreLibrary;
 	// NOLINTBEGIN(malterlib-type-naming): the names in the Windows headers
 	typedef void (WINAPI *PFN_EXIT_PROCESS)(UINT _ExitCode);
 	// NOLINTEND(malterlib-type-naming)
-	PFN_EXIT_PROCESS pfn;
+	PFN_EXIT_PROCESS fCorExitProcess;
 
-	hmod = GetModuleHandleA("mscoree.dll");
-	if (hmod != nullptr)
+	CoreLibrary = GetModuleHandleA("mscoree.dll");
+	if (CoreLibrary != nullptr)
 	{
-		pfn = (PFN_EXIT_PROCESS)GetProcAddress(hmod, "CorExitProcess");
-		if (pfn != nullptr)
-			pfn(_ExitCode);
+		fCorExitProcess = (PFN_EXIT_PROCESS)GetProcAddress(CoreLibrary, "CorExitProcess");
+		if (fCorExitProcess != nullptr)
+			fCorExitProcess(_ExitCode);
 	}
 
 	/*
@@ -1674,12 +1674,12 @@ void fg_SetThreadLocalForOtherThread(umint _ThreadID, umint _iStorage, void *_pD
 
 	DMibFastCheck(_iStorage < CWindowsThreadLocals::mc_ThreadLocalSlots);
 
-	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
-	if (hThread)
+	HANDLE Thread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
+	if (Thread)
 	{
 		[[maybe_unused]] bool bSuccess = false;
 		CFStr256 ErrorStr;
-		if (SuspendThread(hThread) != 0xFFFFFFFF)
+		if (SuspendThread(Thread) != 0xFFFFFFFF)
 		{
 			NLocal::THREAD_BASIC_INFORMATION ThreadInfo;
 			if
@@ -1688,7 +1688,7 @@ void fg_SetThreadLocalForOtherThread(umint _ThreadID, umint _iStorage, void *_pD
 				(
 					NLocal::g_OptionalFunctions.m_fNtQueryInformationThread
 					(
-						hThread
+						Thread
 						, (::THREADINFOCLASS)NLocal::ThreadBasicInformation
 						, &ThreadInfo
 						, sizeof(NLocal::THREAD_BASIC_INFORMATION)
@@ -1729,11 +1729,11 @@ void fg_SetThreadLocalForOtherThread(umint _ThreadID, umint _iStorage, void *_pD
 			else
 				ErrorStr = "NtQueryInformationThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
 
-			ResumeThread(hThread);
+			ResumeThread(Thread);
 		}
 		else
 			ErrorStr = "SuspendThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
-		CloseHandle(hThread);
+		CloseHandle(Thread);
 
 		// if (!bSuccess && !g_bProcessDetached)
 		// 	DMibError((CFStr256::CFormat("Failed to set thread storage for another thread ({}): {}") << _ThreadID << ErrorStr).f_GetStr());
@@ -1747,12 +1747,12 @@ void *fg_GetThreadLocalForOtherThread(umint _ThreadID, umint _iStorage)
 	DMibFastCheck(_iStorage < CWindowsThreadLocals::mc_ThreadLocalSlots);
 
 	void *pRet = nullptr;
-	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
-	if (hThread)
+	HANDLE Thread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
+	if (Thread)
 	{
 		bool bSuccess = false;
 		CFStr256 ErrorStr;
-		if (SuspendThread(hThread) != 0xFFFFFFFF)
+		if (SuspendThread(Thread) != 0xFFFFFFFF)
 		{
 			NLocal::THREAD_BASIC_INFORMATION ThreadInfo;
 			if
@@ -1761,7 +1761,7 @@ void *fg_GetThreadLocalForOtherThread(umint _ThreadID, umint _iStorage)
 				(
 					NLocal::g_OptionalFunctions.m_fNtQueryInformationThread
 					(
-						hThread
+						Thread
 						, (::THREADINFOCLASS)NLocal::ThreadBasicInformation
 						, &ThreadInfo
 						, sizeof(NLocal::THREAD_BASIC_INFORMATION)
@@ -1785,11 +1785,11 @@ void *fg_GetThreadLocalForOtherThread(umint _ThreadID, umint _iStorage)
 			else
 				ErrorStr = "NtQueryInformationThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
 
-			ResumeThread(hThread);
+			ResumeThread(Thread);
 		}
 		else
 			ErrorStr = "SuspendThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
-		CloseHandle(hThread);
+		CloseHandle(Thread);
 
 		if (!bSuccess && !g_bProcessDetached)
 			DMibError((CFStr256::CFormat("Failed to get thread storage for another thread ({}): {}") << _ThreadID << ErrorStr).f_GetStr());
@@ -1803,12 +1803,12 @@ void fg_SetThreadLocalForOtherThreadFast(umint _ThreadID, umint _iStorage, void 
 	DMibFastCheck(_iStorage >= NLocal::fg_TlsIndexToTebOffset(0));
 	DMibFastCheck(_iStorage < NLocal::fg_TlsIndexToTebOffset(64));
 
-	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
-	if (hThread)
+	HANDLE Thread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
+	if (Thread)
 	{
 		[[maybe_unused]] bool bSuccess = false;
 		CFStr256 ErrorStr;
-		if (SuspendThread(hThread) != 0xFFFFFFFF)
+		if (SuspendThread(Thread) != 0xFFFFFFFF)
 		{
 			NLocal::THREAD_BASIC_INFORMATION ThreadInfo;
 			if
@@ -1817,7 +1817,7 @@ void fg_SetThreadLocalForOtherThreadFast(umint _ThreadID, umint _iStorage, void 
 				(
 					NLocal::g_OptionalFunctions.m_fNtQueryInformationThread
 					(
-						hThread
+						Thread
 						, (::THREADINFOCLASS)NLocal::ThreadBasicInformation
 						, &ThreadInfo
 						, sizeof(NLocal::THREAD_BASIC_INFORMATION)
@@ -1835,11 +1835,11 @@ void fg_SetThreadLocalForOtherThreadFast(umint _ThreadID, umint _iStorage, void 
 			else
 				ErrorStr = "NtQueryInformationThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
 
-			ResumeThread(hThread);
+			ResumeThread(Thread);
 		}
 		else
 			ErrorStr = "SuspendThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
-		CloseHandle(hThread);
+		CloseHandle(Thread);
 
 		// if (!bSuccess && !g_bProcessDetached)
 		// 	DMibError((CFStr256::CFormat("Failed to set thread storage for another thread ({}): {}") << _ThreadID << ErrorStr).f_GetStr());
@@ -1852,12 +1852,12 @@ void *fg_GetThreadLocalForOtherThreadFast(umint _ThreadID, umint _iStorage)
 	DMibFastCheck(_iStorage < NLocal::fg_TlsIndexToTebOffset(64));
 
 	void *pRet = nullptr;
-	HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
-	if (hThread)
+	HANDLE Thread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, false, _ThreadID);
+	if (Thread)
 	{
 		bool bSuccess = false;
 		CFStr256 ErrorStr;
-		if (SuspendThread(hThread) != 0xFFFFFFFF)
+		if (SuspendThread(Thread) != 0xFFFFFFFF)
 		{
 			NLocal::THREAD_BASIC_INFORMATION ThreadInfo;
 			if
@@ -1866,7 +1866,7 @@ void *fg_GetThreadLocalForOtherThreadFast(umint _ThreadID, umint _iStorage)
 				(
 					NLocal::g_OptionalFunctions.m_fNtQueryInformationThread
 					(
-						hThread
+						Thread
 						, (::THREADINFOCLASS)NLocal::ThreadBasicInformation
 						, &ThreadInfo
 						, sizeof(NLocal::THREAD_BASIC_INFORMATION)
@@ -1884,11 +1884,11 @@ void *fg_GetThreadLocalForOtherThreadFast(umint _ThreadID, umint _iStorage)
 			else
 				ErrorStr = "NtQueryInformationThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
 
-			ResumeThread(hThread);
+			ResumeThread(Thread);
 		}
 		else
 			ErrorStr = "SuspendThread: " + NMib::NPlatform::fg_Win32_GetLastErrorStr(GetLastError());
-		CloseHandle(hThread);
+		CloseHandle(Thread);
 
 		if (!bSuccess && !g_bProcessDetached)
 			DMibError((CFStr256::CFormat("Failed to get thread storage for another thread ({}): {}") << _ThreadID << ErrorStr).f_GetStr());
@@ -2049,82 +2049,82 @@ void __cdecl fg_FixFunctionPointers_Alloc()
 void fg_LoadFunctionPointers()
 {
 	using namespace NLocal;
-	if (!g_hKernel32)
+	if (!g_Kernel32)
 	{
-		g_hKernel32 = GetModuleHandle(str_utf16("kernel32.dll"));
-		g_hNtDll = GetModuleHandle(str_utf16("ntdll.dll"));
-		g_hAdvAPI32 = GetModuleHandle(str_utf16("advapi32.dll"));
+		g_Kernel32 = GetModuleHandle(str_utf16("kernel32.dll"));
+		g_NtDll = GetModuleHandle(str_utf16("ntdll.dll"));
+		g_AdvAPI32 = GetModuleHandle(str_utf16("advapi32.dll"));
 		auto &Functions = g_OptionalFunctions;
 
-		(FARPROC &)Functions.m_fGetLogicalProcessorInformation = GetProcAddress(g_hKernel32, "GetLogicalProcessorInformation");
-		(FARPROC &)Functions.m_fRtlAcquirePebLock = GetProcAddress(g_hNtDll, "RtlAcquirePebLock");
-		(FARPROC &)Functions.m_fRtlReleasePebLock = GetProcAddress(g_hNtDll, "RtlReleasePebLock");
-		(FARPROC &)Functions.m_fRtlFindClearBitsAndSet = GetProcAddress(g_hNtDll, "RtlFindClearBitsAndSet");
-		(FARPROC &)Functions.m_fRtlClearBits = GetProcAddress(g_hNtDll, "RtlClearBits");
-		(FARPROC &)Functions.m_fNtQueryInformationThread = GetProcAddress(g_hNtDll, "NtQueryInformationThread");
+		(FARPROC &)Functions.m_fGetLogicalProcessorInformation = GetProcAddress(g_Kernel32, "GetLogicalProcessorInformation");
+		(FARPROC &)Functions.m_fRtlAcquirePebLock = GetProcAddress(g_NtDll, "RtlAcquirePebLock");
+		(FARPROC &)Functions.m_fRtlReleasePebLock = GetProcAddress(g_NtDll, "RtlReleasePebLock");
+		(FARPROC &)Functions.m_fRtlFindClearBitsAndSet = GetProcAddress(g_NtDll, "RtlFindClearBitsAndSet");
+		(FARPROC &)Functions.m_fRtlClearBits = GetProcAddress(g_NtDll, "RtlClearBits");
+		(FARPROC &)Functions.m_fNtQueryInformationThread = GetProcAddress(g_NtDll, "NtQueryInformationThread");
 
-		(FARPROC &)Functions.m_fGetNativeSystemInfo = GetProcAddress(g_hKernel32, "GetNativeSystemInfo");
+		(FARPROC &)Functions.m_fGetNativeSystemInfo = GetProcAddress(g_Kernel32, "GetNativeSystemInfo");
 #if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
-		(FARPROC &)Functions.m_fAddVectoredExceptionHandler = GetProcAddress(g_hKernel32, "AddVectoredExceptionHandler");
-		(FARPROC &)Functions.m_fRemoveVectoredExceptionHandler = GetProcAddress(g_hKernel32, "RemoveVectoredExceptionHandler");
+		(FARPROC &)Functions.m_fAddVectoredExceptionHandler = GetProcAddress(g_Kernel32, "AddVectoredExceptionHandler");
+		(FARPROC &)Functions.m_fRemoveVectoredExceptionHandler = GetProcAddress(g_Kernel32, "RemoveVectoredExceptionHandler");
 #endif
 
-		(FARPROC &)Functions.m_fSetProcessUserModeExceptionPolicy = GetProcAddress(g_hKernel32, "SetProcessUserModeExceptionPolicy");
-		(FARPROC &)Functions.m_fGetProcessUserModeExceptionPolicy = GetProcAddress(g_hKernel32, "GetProcessUserModeExceptionPolicy");
+		(FARPROC &)Functions.m_fSetProcessUserModeExceptionPolicy = GetProcAddress(g_Kernel32, "SetProcessUserModeExceptionPolicy");
+		(FARPROC &)Functions.m_fGetProcessUserModeExceptionPolicy = GetProcAddress(g_Kernel32, "GetProcessUserModeExceptionPolicy");
 
-		(FARPROC &)Functions.m_pKiUserApcDispatcher = GetProcAddress(g_hNtDll, "KiUserApcDispatcher");
-		(FARPROC &)Functions.m_pKiUserCallbackDispatcher = GetProcAddress(g_hNtDll, "KiUserCallbackDispatcher");
+		(FARPROC &)Functions.m_pKiUserApcDispatcher = GetProcAddress(g_NtDll, "KiUserApcDispatcher");
+		(FARPROC &)Functions.m_pKiUserCallbackDispatcher = GetProcAddress(g_NtDll, "KiUserCallbackDispatcher");
 
-		(FARPROC &)Functions.m_fWineGetVersion = GetProcAddress(g_hNtDll, "wine_get_version");
+		(FARPROC &)Functions.m_fWineGetVersion = GetProcAddress(g_NtDll, "wine_get_version");
 
-		(FARPROC &)Functions.m_fLargePageMinimum = GetProcAddress(g_hKernel32, "GetLargePageMinimum");
+		(FARPROC &)Functions.m_fLargePageMinimum = GetProcAddress(g_Kernel32, "GetLargePageMinimum");
 
-		(FARPROC &)Functions.m_fVirtualAllocExNuma = GetProcAddress(g_hKernel32, "VirtualAllocExNuma");
-		(FARPROC &)Functions.m_fGetNumaNodeProcessorMaskEx = GetProcAddress(g_hKernel32, "GetNumaNodeProcessorMaskEx");
-		(FARPROC &)Functions.m_fSetThreadGroupAffinity = GetProcAddress(g_hKernel32, "SetThreadGroupAffinity");
+		(FARPROC &)Functions.m_fVirtualAllocExNuma = GetProcAddress(g_Kernel32, "VirtualAllocExNuma");
+		(FARPROC &)Functions.m_fGetNumaNodeProcessorMaskEx = GetProcAddress(g_Kernel32, "GetNumaNodeProcessorMaskEx");
+		(FARPROC &)Functions.m_fSetThreadGroupAffinity = GetProcAddress(g_Kernel32, "SetThreadGroupAffinity");
 
-		(FARPROC &)Functions.m_fWTSGetActiveConsoleSessionId = GetProcAddress(g_hKernel32, "WTSGetActiveConsoleSessionId");
+		(FARPROC &)Functions.m_fWTSGetActiveConsoleSessionId = GetProcAddress(g_Kernel32, "WTSGetActiveConsoleSessionId");
 
-		(FARPROC &)Functions.m_fCreateProcessWithTokenW = GetProcAddress(g_hAdvAPI32, "CreateProcessWithTokenW");
-		(FARPROC &)Functions.m_fCreateSymbolicLinkW = GetProcAddress(g_hKernel32, "CreateSymbolicLinkW");
-		(FARPROC &)Functions.m_fCreateHardLinkW = GetProcAddress(g_hKernel32, "CreateHardLinkW");
+		(FARPROC &)Functions.m_fCreateProcessWithTokenW = GetProcAddress(g_AdvAPI32, "CreateProcessWithTokenW");
+		(FARPROC &)Functions.m_fCreateSymbolicLinkW = GetProcAddress(g_Kernel32, "CreateSymbolicLinkW");
+		(FARPROC &)Functions.m_fCreateHardLinkW = GetProcAddress(g_Kernel32, "CreateHardLinkW");
 
-		(FARPROC &)Functions.m_fWow64DisableWow64FsRedirection = GetProcAddress(g_hKernel32, "Wow64DisableWow64FsRedirection");
-		(FARPROC &)Functions.m_fWow64RevertWow64FsRedirection = GetProcAddress(g_hKernel32, "Wow64RevertWow64FsRedirection");
+		(FARPROC &)Functions.m_fWow64DisableWow64FsRedirection = GetProcAddress(g_Kernel32, "Wow64DisableWow64FsRedirection");
+		(FARPROC &)Functions.m_fWow64RevertWow64FsRedirection = GetProcAddress(g_Kernel32, "Wow64RevertWow64FsRedirection");
 
-		(FARPROC &)Functions.m_fNtSetInformationProcess = GetProcAddress(g_hNtDll, "NtSetInformationProcess");
+		(FARPROC &)Functions.m_fNtSetInformationProcess = GetProcAddress(g_NtDll, "NtSetInformationProcess");
 
-		(FARPROC &)Functions.m_fSetProcessInformation = GetProcAddress(g_hKernel32, "SetProcessInformation");
+		(FARPROC &)Functions.m_fSetProcessInformation = GetProcAddress(g_Kernel32, "SetProcessInformation");
 
-		(FARPROC &)Functions.m_fCancelSynchronousIo = GetProcAddress(g_hKernel32, "CancelSynchronousIo");
-		(FARPROC &)Functions.m_fCancelIoEx = GetProcAddress(g_hKernel32, "CancelIoEx");
+		(FARPROC &)Functions.m_fCancelSynchronousIo = GetProcAddress(g_Kernel32, "CancelSynchronousIo");
+		(FARPROC &)Functions.m_fCancelIoEx = GetProcAddress(g_Kernel32, "CancelIoEx");
 
-		(FARPROC &)Functions.m_fNtCreateFile = GetProcAddress(g_hNtDll, "NtCreateFile");
-		(FARPROC &)Functions.m_fNtDeviceIoControlFile = GetProcAddress(g_hNtDll, "NtDeviceIoControlFile");
-		(FARPROC &)Functions.m_fNtSetInformationFile = GetProcAddress(g_hNtDll, "NtSetInformationFile");
-		(FARPROC &)Functions.m_fRtlNtStatusToDosError = GetProcAddress(g_hNtDll, "RtlNtStatusToDosError");
-		(FARPROC &)Functions.m_fNtCreateWaitCompletionPacket = GetProcAddress(g_hNtDll, "NtCreateWaitCompletionPacket");
-		(FARPROC &)Functions.m_fNtAssociateWaitCompletionPacket = GetProcAddress(g_hNtDll, "NtAssociateWaitCompletionPacket");
-		(FARPROC &)Functions.m_fNtCancelWaitCompletionPacket = GetProcAddress(g_hNtDll, "NtCancelWaitCompletionPacket");
+		(FARPROC &)Functions.m_fNtCreateFile = GetProcAddress(g_NtDll, "NtCreateFile");
+		(FARPROC &)Functions.m_fNtDeviceIoControlFile = GetProcAddress(g_NtDll, "NtDeviceIoControlFile");
+		(FARPROC &)Functions.m_fNtSetInformationFile = GetProcAddress(g_NtDll, "NtSetInformationFile");
+		(FARPROC &)Functions.m_fRtlNtStatusToDosError = GetProcAddress(g_NtDll, "RtlNtStatusToDosError");
+		(FARPROC &)Functions.m_fNtCreateWaitCompletionPacket = GetProcAddress(g_NtDll, "NtCreateWaitCompletionPacket");
+		(FARPROC &)Functions.m_fNtAssociateWaitCompletionPacket = GetProcAddress(g_NtDll, "NtAssociateWaitCompletionPacket");
+		(FARPROC &)Functions.m_fNtCancelWaitCompletionPacket = GetProcAddress(g_NtDll, "NtCancelWaitCompletionPacket");
 
-		(FARPROC &)Functions.m_fNtQuerySystemInformation = GetProcAddress(g_hNtDll, "NtQuerySystemInformation");
+		(FARPROC &)Functions.m_fNtQuerySystemInformation = GetProcAddress(g_NtDll, "NtQuerySystemInformation");
 
-		(FARPROC &)Functions.m_fNtGetNextThread = GetProcAddress(g_hNtDll, "NtGetNextThread");
+		(FARPROC &)Functions.m_fNtGetNextThread = GetProcAddress(g_NtDll, "NtGetNextThread");
 
-		(FARPROC &)Functions.m_fGetThreadId = GetProcAddress(g_hKernel32, "GetThreadId");
-		(FARPROC &)Functions.m_fSetThreadDescription = GetProcAddress(g_hKernel32, "SetThreadDescription");
+		(FARPROC &)Functions.m_fGetThreadId = GetProcAddress(g_Kernel32, "GetThreadId");
+		(FARPROC &)Functions.m_fSetThreadDescription = GetProcAddress(g_Kernel32, "SetThreadDescription");
 
-		(FARPROC &)Functions.m_fNtQueryInformationProcess = GetProcAddress(g_hNtDll, "NtQueryInformationProcess");
-		(FARPROC &)Functions.m_fLdrDisableThreadCalloutsForDll = GetProcAddress(g_hNtDll, "LdrDisableThreadCalloutsForDll");
-		(FARPROC &)Functions.m_fRtlGetVersion = GetProcAddress(g_hNtDll, "RtlGetVersion");
+		(FARPROC &)Functions.m_fNtQueryInformationProcess = GetProcAddress(g_NtDll, "NtQueryInformationProcess");
+		(FARPROC &)Functions.m_fLdrDisableThreadCalloutsForDll = GetProcAddress(g_NtDll, "LdrDisableThreadCalloutsForDll");
+		(FARPROC &)Functions.m_fRtlGetVersion = GetProcAddress(g_NtDll, "RtlGetVersion");
 
-		(FARPROC &)Functions.m_fGetFileInformationByHandleEx = GetProcAddress(g_hKernel32, "GetFileInformationByHandleEx");
+		(FARPROC &)Functions.m_fGetFileInformationByHandleEx = GetProcAddress(g_Kernel32, "GetFileInformationByHandleEx");
 
-		(FARPROC &)Functions.m_fPrivIsDllSynchronizationHeld = GetProcAddress(g_hKernel32, "PrivIsDllSynchronizationHeld");
+		(FARPROC &)Functions.m_fPrivIsDllSynchronizationHeld = GetProcAddress(g_Kernel32, "PrivIsDllSynchronizationHeld");
 
-		(FARPROC &)Functions.m_fSystemTimeToTzSpecificLocalTimeEx = GetProcAddress(g_hKernel32, "SystemTimeToTzSpecificLocalTimeEx");
-		(FARPROC &)Functions.m_fTzSpecificLocalTimeToSystemTimeEx = GetProcAddress(g_hKernel32, "TzSpecificLocalTimeToSystemTimeEx");
-		(FARPROC &)Functions.m_fGetTimeZoneInformationForYear = GetProcAddress(g_hKernel32, "GetTimeZoneInformationForYear");
+		(FARPROC &)Functions.m_fSystemTimeToTzSpecificLocalTimeEx = GetProcAddress(g_Kernel32, "SystemTimeToTzSpecificLocalTimeEx");
+		(FARPROC &)Functions.m_fTzSpecificLocalTimeToSystemTimeEx = GetProcAddress(g_Kernel32, "TzSpecificLocalTimeToSystemTimeEx");
+		(FARPROC &)Functions.m_fGetTimeZoneInformationForYear = GetProcAddress(g_Kernel32, "GetTimeZoneInformationForYear");
 
 		g_VersionInfo.dwOSVersionInfoSize = sizeof(g_VersionInfo);
 		if (Functions.m_fRtlGetVersion)
@@ -2142,6 +2142,7 @@ extern "C" void __cdecl __security_init_cookie(void);
 
 namespace NLocal
 {
+	// NOLINTBEGIN(malterlib-variable-naming): the declarations of the Windows SDK, with their names
 	// NOLINTBEGIN(malterlib-type-naming): the names in the Windows headers
 	typedef enum
 	{
@@ -2290,6 +2291,7 @@ namespace NLocal
 	} SYSTEM_INFORMATION_CLASS, *PSYSTEM_INFORMATION_CLASS;
 
 	// NOLINTEND(malterlib-type-naming)
+	// NOLINTEND(malterlib-variable-naming)
 }
 
 void fg_EnumProcessThreads(TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread);
@@ -2316,20 +2318,20 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (umint _ThreadID, HAND
 	if (NLocal::g_OptionalFunctions.m_fNtGetNextThread && NLocal::g_OptionalFunctions.m_fGetThreadId)
 	{
 		auto CurrentProcess = GetCurrentProcess();
-		HANDLE hThread = nullptr;
-		NLocal::g_OptionalFunctions.m_fNtGetNextThread(CurrentProcess, nullptr, THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, 0, 0, &hThread);
-		while (hThread)
+		HANDLE Thread = nullptr;
+		NLocal::g_OptionalFunctions.m_fNtGetNextThread(CurrentProcess, nullptr, THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, 0, 0, &Thread);
+		while (Thread)
 		{
-			auto ThreadID = NLocal::g_OptionalFunctions.m_fGetThreadId(hThread);
+			auto ThreadID = NLocal::g_OptionalFunctions.m_fGetThreadId(Thread);
 
 			bool bCloseHandle = true;
 			if (ThreadID && ThreadID != ThisUID)
-				bCloseHandle = !_fOnThread(ThreadID, hThread);
-			HANDLE hPrevThread = hThread;
-			hThread = nullptr;
-			NLocal::g_OptionalFunctions.m_fNtGetNextThread(CurrentProcess, hPrevThread, THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, 0, 0, &hThread);
+				bCloseHandle = !_fOnThread(ThreadID, Thread);
+			HANDLE PreviousThread = Thread;
+			Thread = nullptr;
+			NLocal::g_OptionalFunctions.m_fNtGetNextThread(CurrentProcess, PreviousThread, THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, 0, 0, &Thread);
 			if (bCloseHandle)
-				CloseHandle(hPrevThread);
+				CloseHandle(PreviousThread);
 		}
 
 		return;
@@ -2355,9 +2357,9 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (umint _ThreadID, HAND
 		{
 			if ((umint)pInfo->UniqueProcessId == CurrentProcess)
 			{
-				for (umint i = 0; i < pInfo->NumberOfThreads; ++i)
+				for (umint iThread = 0; iThread < pInfo->NumberOfThreads; ++iThread)
 				{
-					auto &Thread = pInfo->Threads[i];
+					auto &Thread = pInfo->Threads[iThread];
 					umint ThreadID = (umint)Thread.ClientId.UniqueThread;
 					if (Thread.State != NLocal::StateTerminated && ThreadID != ThisUID)
 						_fOnThread((umint)ThreadID, nullptr);
@@ -2374,30 +2376,30 @@ void fg_EnumProcessThreadsInternal(TCFunctionNoAlloc<bool (umint _ThreadID, HAND
 	}
 
 	{
-		HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, GetCurrentProcessId());
-		if (h != INVALID_HANDLE_VALUE)
+		HANDLE Snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, GetCurrentProcessId());
+		if (Snapshot != INVALID_HANDLE_VALUE)
 		{
-			THREADENTRY32 te;
-			te.dwSize = sizeof(te);
-			if (Thread32First(h, &te))
+			THREADENTRY32 ThreadEntry;
+			ThreadEntry.dwSize = sizeof(ThreadEntry);
+			if (Thread32First(Snapshot, &ThreadEntry))
 			{
 				do
 				{
 					if
 					(
-						(te.dwSize >= (FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) + sizeof(te.th32OwnerProcessID)))
-						&& te.th32OwnerProcessID == CurrentProcess
-						&& te.th32ThreadID != ThisUID
+						(ThreadEntry.dwSize >= (FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) + sizeof(ThreadEntry.th32OwnerProcessID)))
+						&& ThreadEntry.th32OwnerProcessID == CurrentProcess
+						&& ThreadEntry.th32ThreadID != ThisUID
 					)
 					{
-						//DMibTrace("Process {} Thread {}\n", te.th32OwnerProcessID, te.th32ThreadID);
-						_fOnThread(te.th32ThreadID, nullptr);
+						//DMibTrace("Process {} Thread {}\n", ThreadEntry.th32OwnerProcessID, ThreadEntry.th32ThreadID);
+						_fOnThread(ThreadEntry.th32ThreadID, nullptr);
 					}
-					te.dwSize = sizeof(te);
+					ThreadEntry.dwSize = sizeof(ThreadEntry);
 				}
-				while (Thread32Next(h, &te));
+				while (Thread32Next(Snapshot, &ThreadEntry));
 			}
-			CloseHandle(h);
+			CloseHandle(Snapshot);
 		}
 	}
 }
@@ -2623,12 +2625,12 @@ inline_never void fg_InitMalterlibAllInternalComplex(void *_pInstance)
 		if (_pInstance == nullptr || _pInstance == pPeb->ImageBaseAddress)
 		{
 			g_bIsDll = false;
-			g_hDllInstance = (HINSTANCE)(pPeb->ImageBaseAddress);
+			g_DllInstance = (HINSTANCE)(pPeb->ImageBaseAddress);
 		}
 		else
 		{
 			g_bIsDll = true;
-			g_hDllInstance = (HINSTANCE)_pInstance;
+			g_DllInstance = (HINSTANCE)_pInstance;
 		}
 	}
 
@@ -2732,8 +2734,8 @@ namespace
 				[&](umint _ThreadID)
 				{
 					++nThreads;
-					HANDLE hThread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT, false, _ThreadID);
-					if (!hThread)
+					HANDLE Thread = OpenThread(THREAD_QUERY_INFORMATION | THREAD_GET_CONTEXT, false, _ThreadID);
+					if (!Thread)
 					{
 						//DMibTraceSafe("BAD thread: {}\n", _ThreadID);
 						bTerminatedThread = true;
@@ -2747,7 +2749,7 @@ namespace
 							(
 								NLocal::g_OptionalFunctions.m_fNtQueryInformationThread
 								(
-									hThread
+									Thread
 									, (::THREADINFOCLASS)NLocal::ThreadBasicInformation
 									, &ThreadInfo
 									, sizeof(NLocal::THREAD_BASIC_INFORMATION)
@@ -2764,7 +2766,7 @@ namespace
 							bTerminatedThread = true;
 						}
 
-						CloseHandle(hThread);
+						CloseHandle(Thread);
 					}
 				}
 			)
@@ -2816,18 +2818,18 @@ namespace
 		;
 
 		DWORD Deadline = GetTickCount() + 250;
-		for (umint i = 0; i < nThreads; ++i)
+		for (umint iThread = 0; iThread < nThreads; ++iThread)
 		{
 			int32 Remaining = (int32)(Deadline - GetTickCount());
 			if (Remaining <= 0)
 				return;
 
-			HANDLE hThread = OpenThread(SYNCHRONIZE, false, (DWORD)Threads[i]);
-			if (!hThread)
+			HANDLE Thread = OpenThread(SYNCHRONIZE, false, (DWORD)Threads[iThread]);
+			if (!Thread)
 				continue;
 
-			WaitForSingleObject(hThread, (DWORD)Remaining);
-			CloseHandle(hThread);
+			WaitForSingleObject(Thread, (DWORD)Remaining);
+			CloseHandle(Thread);
 		}
 	}
 #endif
@@ -3011,10 +3013,10 @@ void fg_SetThreadName(DWORD _ThreadID, CHAR const *_pThreadName)
 		{
 			if (_ThreadID == GetCurrentThreadId())
 				fSetThreadDescription(GetCurrentThread(), Name);
-			else if (HANDLE hThread = OpenThread(THREAD_SET_LIMITED_INFORMATION, FALSE, _ThreadID))
+			else if (HANDLE Thread = OpenThread(THREAD_SET_LIMITED_INFORMATION, FALSE, _ThreadID))
 			{
-				fSetThreadDescription(hThread, Name);
-				CloseHandle(hThread);
+				fSetThreadDescription(Thread, Name);
+				CloseHandle(Thread);
 			}
 		}
 	}
@@ -3023,15 +3025,15 @@ void fg_SetThreadName(DWORD _ThreadID, CHAR const *_pThreadName)
 	if (!pPeb->BeingDebugged)
 		return;
 
-	THREADNAME_INFO info;
-	info.dwType = 0x1000;
-	info.szName = _pThreadName;
-	info.dwThreadID = _ThreadID;
-	info.dwFlags = 0;
+	THREADNAME_INFO ThreadNameInfo;
+	ThreadNameInfo.dwType = 0x1000;
+	ThreadNameInfo.szName = _pThreadName;
+	ThreadNameInfo.dwThreadID = _ThreadID;
+	ThreadNameInfo.dwFlags = 0;
 
 	__try
 	{
-		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR *)&info);
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(ThreadNameInfo) / sizeof(ULONG_PTR), (ULONG_PTR *)&ThreadNameInfo);
 	}
 	__except(EXCEPTION_CONTINUE_EXECUTION)
 	{
@@ -3122,8 +3124,8 @@ auto NSys::fg_Thread_Create
 	pThreadParameters->m_Name = _pThreadName;
 
 	DWORD ThreadID;
-	HANDLE hThread = CreateThread(nullptr, _StackSize, fg_MalterlibMSVC_ThreadProc, pThreadParameters.f_Get(), CREATE_SUSPENDED, &ThreadID);
-	if (!hThread)
+	HANDLE Thread = CreateThread(nullptr, _StackSize, fg_MalterlibMSVC_ThreadProc, pThreadParameters.f_Get(), CREATE_SUSPENDED, &ThreadID);
+	if (!Thread)
 		DMibErrorSystemImp((CFStr256::CFormat("Windows returned an error from CreateThread: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
 	pThreadParameters.f_Detach();
@@ -3136,7 +3138,7 @@ auto NSys::fg_Thread_Create
 		(
 			NT_SUCCESS
 			(
-				NLocal::g_OptionalFunctions.m_fNtQueryInformationThread(hThread, (::THREADINFOCLASS)NLocal::ThreadBasicInformation, &ThreadInfo, sizeof(NLocal::THREAD_BASIC_INFORMATION), 0)
+				NLocal::g_OptionalFunctions.m_fNtQueryInformationThread(Thread, (::THREADINFOCLASS)NLocal::ThreadBasicInformation, &ThreadInfo, sizeof(NLocal::THREAD_BASIC_INFORMATION), 0)
 			)
 		)
 		{
@@ -3149,14 +3151,14 @@ auto NSys::fg_Thread_Create
 
 	_ThreadID = ThreadID;
 	if (_Affinity)
-		SetThreadAffinityMask(hThread, _Affinity);
+		SetThreadAffinityMask(Thread, _Affinity);
 
-	fg_Thread_SetPriority(hThread, _Priority);
+	fg_Thread_SetPriority(Thread, _Priority);
 
 	if (!_bSuspended)
-		ResumeThread(hThread);
+		ResumeThread(Thread);
 
-	return hThread;
+	return Thread;
 }
 
 void NSys::fg_Thread_EnumOtherThreadsInProcess(NFunction::TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOnThread)
@@ -3172,16 +3174,16 @@ void const *NSys::fg_Thread_GetStartAddress(umint _ThreadID)
 		return nullptr;
 
 	bool bCurrent = _ThreadID == GetCurrentThreadId();
-	HANDLE hThread = bCurrent ? GetCurrentThread() : OpenThread(THREAD_QUERY_INFORMATION, false, (DWORD)_ThreadID);
-	if (!hThread)
+	HANDLE Thread = bCurrent ? GetCurrentThread() : OpenThread(THREAD_QUERY_INFORMATION, false, (DWORD)_ThreadID);
+	if (!Thread)
 		return nullptr;
 
 	PVOID pStart = nullptr;
-	if (!NT_SUCCESS(fQuery(hThread, (::THREADINFOCLASS)NLocal::ThreadQuerySetWin32StartAddress, &pStart, sizeof(pStart), nullptr)))
+	if (!NT_SUCCESS(fQuery(Thread, (::THREADINFOCLASS)NLocal::ThreadQuerySetWin32StartAddress, &pStart, sizeof(pStart), nullptr)))
 		pStart = nullptr;
 
 	if (!bCurrent)
-		CloseHandle(hThread);
+		CloseHandle(Thread);
 
 	return pStart;
 }
@@ -3247,10 +3249,10 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 	{
 		AddAtomW(str_utf16("IdsCrossModuleMemManAtom"));
 		umint Pointer = (umint)_pInterface;
-		for (umint i = 0; i < sizeof(umint) * 8; ++i)
+		for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 		{
-			if (Pointer & (umint(1) << i))
-				AddAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsCrossModuleMemManAtom{}")) << i));
+			if (Pointer & (umint(1) << iBit))
+				AddAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsCrossModuleMemManAtom{}")) << iBit));
 		}
 	}
 	else
@@ -3265,10 +3267,10 @@ void *NSys::fg_Process_GetCrossModuleMemoryManagerInterface()
 	// This needs to be named exactly like this to be compatible with old versions of library (when Malterlib was named Ids)
 	if (FindAtomW(str_utf16("IdsCrossModuleMemManAtom")))
 	{
-		for (umint i = 0; i < sizeof(umint) * 8; ++i)
+		for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 		{
-			if (FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("IdsCrossModuleMemManAtom{}")) << i)))
-				Pointer |= (umint(1) << i);
+			if (FindAtomW(CFWStr128(CFWStr128::CFormat(str_utf16("IdsCrossModuleMemManAtom{}")) << iBit)))
+				Pointer |= (umint(1) << iBit);
 		}
 	}
 	return (void *)Pointer;
@@ -3276,21 +3278,21 @@ void *NSys::fg_Process_GetCrossModuleMemoryManagerInterface()
 
 void NSys::fg_Security_GenerateHighEntropyData(uint8 *_pData, umint _nBytes)
 {
-	HCRYPTPROV hProvider = 0;
+	HCRYPTPROV Provider = 0;
 
 	// Entropy failure is unrecoverable; callers require this path not to throw.
-	if (!CryptAcquireContextW(&hProvider, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+	if (!CryptAcquireContextW(&Provider, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
 		DMibPDebugBreak;
 
 	auto Cleanup = fg_OnScopeExit
 		(
 			[&]()
 			{
-				CryptReleaseContext(hProvider, 0);
+				CryptReleaseContext(Provider, 0);
 			}
 		)
 	;
-	if (!CryptGenRandom(hProvider, _nBytes, _pData))
+	if (!CryptGenRandom(Provider, _nBytes, _pData))
 		DMibPDebugBreak;
 }
 
@@ -3381,17 +3383,17 @@ bool NSys::fg_Clipboard_SetText(NStr::CStr const &_Text)
 	memset(&WndClass, 0, sizeof(WndClass));
 	WndClass.lpszClassName = ClassName;
 	WndClass.lpfnWndProc = &DefWindowProcA;
-	WndClass.hInstance = g_hDllInstance;
+	WndClass.hInstance = g_DllInstance;
 	if (!RegisterClassA(&WndClass) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
 		return false;
 
-	HWND hWnd = CreateWindowExA(0, ClassName, ClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, g_hDllInstance, nullptr);
-	if (!hWnd)
+	HWND Window = CreateWindowExA(0, ClassName, ClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, g_DllInstance, nullptr);
+	if (!Window)
 		return false;
 
 	bool bSuccess = false;
 
-	if (OpenClipboard(hWnd))
+	if (OpenClipboard(Window))
 	{
 		EmptyClipboard();
 
@@ -3415,7 +3417,7 @@ bool NSys::fg_Clipboard_SetText(NStr::CStr const &_Text)
 		CloseClipboard();
 	}
 
-	DestroyWindow(hWnd);
+	DestroyWindow(Window);
 
 	return bSuccess;
 }
@@ -3651,12 +3653,12 @@ void NSys::fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> 
 		_wsetargv();
 
 	int NumArgs = __argc;
-	for (int i = 0; i < NumArgs; ++i)
+	for (int iArgument = 0; iArgument < NumArgs; ++iArgument)
 	{
-		CStr Arg = CWStr(__wargv[i]);
+		CStr Arg = CWStr(__wargv[iArgument]);
 		if (Arg == "--OutputPID")
 		{
-			++i; // Skip the pipe base name argument
+			++iArgument; // Skip the pipe base name argument
 			continue;
 		}
 		_List.f_Insert(Arg);
@@ -3666,12 +3668,12 @@ void NSys::fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> 
 		_configure_wide_argv(_get_startup_argv_mode());
 
 	int NumArgs = __argc;
-	for (int i = 0; i < NumArgs; ++i)
+	for (int iArgument = 0; iArgument < NumArgs; ++iArgument)
 	{
-		CStr Arg = CWStr(__wargv[i]);
+		CStr Arg = CWStr(__wargv[iArgument]);
 		if (Arg == "--OutputPID")
 		{
-			++i; // Skip the pipe base name argument
+			++iArgument; // Skip the pipe base name argument
 			continue;
 		}
 		_List.f_Insert(Arg);
@@ -3690,7 +3692,7 @@ NMib::NStr::CStr NSys::fg_System_GetCPUName()
 
 umint NSys::fg_Thread_GetPhysicalCores()
 {
-	HMODULE pKernel32 = NLocal::g_hKernel32;
+	HMODULE pKernel32 = NLocal::g_Kernel32;
 	if (pKernel32)
 	{
 		if (NLocal::g_OptionalFunctions.m_fGetLogicalProcessorInformation)
@@ -3971,7 +3973,7 @@ umint NSys::fg_Thread_GetCurrentUID()
 
 void NSys::fg_Message(ch8 const *_pMessageType, ch8 const *_pToOutput)
 {
-	HWND hWndParent = nullptr;
+	HWND ParentWindow = nullptr;
 	BOOL fNonInteractive = FALSE;
 
 	/*
@@ -3984,9 +3986,9 @@ void NSys::fg_Message(ch8 const *_pMessageType, ch8 const *_pToOutput)
 	* retrieved the address of GetProcessWindowStation above).
 	*/
 
-	DWORD uType = MB_OK;
-	HWINSTA hwinsta;
-	USEROBJECTFLAGS uof;
+	DWORD Type = MB_OK;
+	HWINSTA WindowStation;
+	USEROBJECTFLAGS UserObjectFlags;
 	DWORD nDummy;
 
 	bool bCopy = !NMib::NStr::fg_StrCmpNoCase(_pMessageType, "Copy");
@@ -4003,31 +4005,38 @@ void NSys::fg_Message(ch8 const *_pMessageType, ch8 const *_pToOutput)
 		// CFStr256 Message3 = "Test";
 		// Message3 = "hula" + Message3;
 
-		uType = MB_OKCANCEL;
+		Type = MB_OKCANCEL;
 	}
 
 	if (!NMib::NStr::fg_StrCmpNoCase(_pMessageType, "Fatal Error"))
-		uType |= MB_ICONERROR;
+		Type |= MB_ICONERROR;
 
-	if ((nullptr == (hwinsta = GetProcessWindowStation())) || !GetUserObjectInformationA(hwinsta, UOI_FLAGS, &uof, sizeof(uof), &nDummy) || (uof.dwFlags & WSF_VISIBLE) == 0)
+	if
+	(
+		(nullptr == (WindowStation = GetProcessWindowStation()))
+		|| !GetUserObjectInformationA(WindowStation, UOI_FLAGS, &UserObjectFlags, sizeof(UserObjectFlags), &nDummy)
+		|| (UserObjectFlags.dwFlags & WSF_VISIBLE) == 0
+	)
+	{
 		fNonInteractive = TRUE;
+	}
 
 	if (fNonInteractive)
 	{
 		if (NLocal::g_VersionInfo.dwMajorVersion >= 4)
-			uType |= MB_SERVICE_NOTIFICATION;
+			Type |= MB_SERVICE_NOTIFICATION;
 		else
-			uType |= MB_SERVICE_NOTIFICATION_NT3X;
+			Type |= MB_SERVICE_NOTIFICATION_NT3X;
 	}
 	else
 	{
-		hWndParent = GetActiveWindow();
+		ParentWindow = GetActiveWindow();
 
-		if (hWndParent != nullptr)
-			hWndParent = GetLastActivePopup(hWndParent);
+		if (ParentWindow != nullptr)
+			ParentWindow = GetLastActivePopup(ParentWindow);
 	}
 
-	DWORD Answer = MessageBoxA(hWndParent, Message, _pMessageType, uType);
+	DWORD Answer = MessageBoxA(ParentWindow, Message, _pMessageType, Type);
 
 	if (bCopy)
 	{
@@ -4055,7 +4064,7 @@ void NSys::fg_Message(ch8 const *_pMessageType, ch8 const *_pToOutput)
 
 void NSys::fg_Message(ch16 const *_pMessageType, ch16 const *_pToOutput)
 {
-	HWND hWndParent = nullptr;
+	HWND ParentWindow = nullptr;
 	BOOL fNonInteractive = FALSE;
 
 	/*
@@ -4068,33 +4077,40 @@ void NSys::fg_Message(ch16 const *_pMessageType, ch16 const *_pToOutput)
 	* retrieved the address of GetProcessWindowStation above).
 	*/
 
-	HWINSTA hwinsta;
-	USEROBJECTFLAGS uof;
+	HWINSTA WindowStation;
+	USEROBJECTFLAGS UserObjectFlags;
 	DWORD nDummy;
-	DWORD uType = MB_OK;
+	DWORD Type = MB_OK;
 
 	if (!NMib::NStr::fg_StrCmpNoCase(_pMessageType, "Fatal Error"))
-		uType |= MB_ICONERROR;
+		Type |= MB_ICONERROR;
 
-	if ((nullptr == (hwinsta = GetProcessWindowStation())) || !GetUserObjectInformationA(hwinsta, UOI_FLAGS, &uof, sizeof(uof), &nDummy) || (uof.dwFlags & WSF_VISIBLE) == 0)
+	if
+	(
+		(nullptr == (WindowStation = GetProcessWindowStation()))
+		|| !GetUserObjectInformationA(WindowStation, UOI_FLAGS, &UserObjectFlags, sizeof(UserObjectFlags), &nDummy)
+		|| (UserObjectFlags.dwFlags & WSF_VISIBLE) == 0
+	)
+	{
 		fNonInteractive = TRUE;
+	}
 
 	if (fNonInteractive)
 	{
 		if (NLocal::g_VersionInfo.dwMajorVersion >= 4)
-			uType |= MB_SERVICE_NOTIFICATION;
+			Type |= MB_SERVICE_NOTIFICATION;
 		else
-			uType |= MB_SERVICE_NOTIFICATION_NT3X;
+			Type |= MB_SERVICE_NOTIFICATION_NT3X;
 	}
 	else
 	{
-		hWndParent = GetActiveWindow();
+		ParentWindow = GetActiveWindow();
 
-		if (hWndParent != nullptr)
-			hWndParent = GetLastActivePopup(hWndParent);
+		if (ParentWindow != nullptr)
+			ParentWindow = GetLastActivePopup(ParentWindow);
 	}
 
-	MessageBoxW(hWndParent, (LPCWSTR)_pToOutput, (LPCWSTR)_pMessageType, uType);
+	MessageBoxW(ParentWindow, (LPCWSTR)_pToOutput, (LPCWSTR)_pMessageType, Type);
 }
 
 EFileSystemFeature NSys::NFile::fg_GetFileSystemFeatures()
@@ -4171,37 +4187,37 @@ ECheckFileRights NSys::NFile::fg_CheckFileRights(CStr const &_File, NMib::NFile:
 	Path = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal<CWStr, CWStr>(_File);
 
 	bool bRet = false;
-	DWORD length = 0;
-	if (!::GetFileSecurity(Path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, NULL, NULL, &length) && ERROR_INSUFFICIENT_BUFFER == ::GetLastError())
+	DWORD Length = 0;
+	if (!::GetFileSecurity(Path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, NULL, NULL, &Length) && ERROR_INSUFFICIENT_BUFFER == ::GetLastError())
 	{
-		PSECURITY_DESCRIPTOR security = static_cast<PSECURITY_DESCRIPTOR>(::malloc(length));
-		if (security && ::GetFileSecurity(Path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, security, length, &length))
+		PSECURITY_DESCRIPTOR pSecurityDescriptor = static_cast<PSECURITY_DESCRIPTOR>(::malloc(Length));
+		if (pSecurityDescriptor && ::GetFileSecurity(Path, OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, pSecurityDescriptor, Length, &Length))
 		{
-			HANDLE hToken = NULL;
-			if (::OpenProcessToken(::GetCurrentProcess(), TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_DUPLICATE | STANDARD_RIGHTS_READ, &hToken))
+			HANDLE Token = NULL;
+			if (::OpenProcessToken(::GetCurrentProcess(), TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_DUPLICATE | STANDARD_RIGHTS_READ, &Token))
 			{
-				HANDLE hImpersonatedToken = NULL;
-				if (::DuplicateToken(hToken, SecurityImpersonation, &hImpersonatedToken))
+				HANDLE ImpersonatedToken = NULL;
+				if (::DuplicateToken(Token, SecurityImpersonation, &ImpersonatedToken))
 				{
-					GENERIC_MAPPING mapping = {0xFFFFFFFF};
-					PRIVILEGE_SET privileges = {0};
-					DWORD grantedAccess = 0, privilegesLength = sizeof(privileges);
-					BOOL result = FALSE;
+					GENERIC_MAPPING Mapping = {0xFFFFFFFF};
+					PRIVILEGE_SET Privileges = {0};
+					DWORD GrantedAccess = 0, PrivilegesLength = sizeof(Privileges);
+					BOOL bResult = FALSE;
 
-					mapping.GenericRead = FILE_GENERIC_READ;
-					mapping.GenericWrite = FILE_GENERIC_WRITE;
-					mapping.GenericExecute = FILE_GENERIC_EXECUTE;
-					mapping.GenericAll = FILE_ALL_ACCESS;
+					Mapping.GenericRead = FILE_GENERIC_READ;
+					Mapping.GenericWrite = FILE_GENERIC_WRITE;
+					Mapping.GenericExecute = FILE_GENERIC_EXECUTE;
+					Mapping.GenericAll = FILE_ALL_ACCESS;
 
-					::MapGenericMask(&GenericRights, &mapping);
-					if (::AccessCheck(security, hImpersonatedToken, GenericRights, &mapping, &privileges, &privilegesLength, &grantedAccess, &result))
-						bRet = (result == TRUE);
+					::MapGenericMask(&GenericRights, &Mapping);
+					if (::AccessCheck(pSecurityDescriptor, ImpersonatedToken, GenericRights, &Mapping, &Privileges, &PrivilegesLength, &GrantedAccess, &bResult))
+						bRet = (bResult == TRUE);
 
-					::CloseHandle(hImpersonatedToken);
+					::CloseHandle(ImpersonatedToken);
 				}
-				::CloseHandle(hToken);
+				::CloseHandle(Token);
 			}
-			::free(security);
+			::free(pSecurityDescriptor);
 		}
 	}
 	else
@@ -4824,9 +4840,9 @@ void NSys::NFile::fg_FileEnumOtherHandles(NMib::NStr::CStr const &_FileName, NCo
 	CHandleInformation::CHandleInfo *pThisHandle = nullptr;
 	umint nHandles = Handles.f_GetLen();
 	CStr ToTrace;
-	for (umint i = 0; i < nHandles; ++i)
+	for (umint iHandle = 0; iHandle < nHandles; ++iHandle)
 	{
-		CHandleInformation::CHandleInfo &Handle = Handles[i];
+		CHandleInformation::CHandleInfo &Handle = Handles[iHandle];
 		DMibDTrace("{} - {} - {}\r\n", Handle.m_HandleName, Handle.m_ProcessID, Handle.m_HandleID);
 		if (Handle.m_ProcessID == CurrentProcessID && Handle.m_HandleID == (uint32)(umint)pFileHandle)
 		{
@@ -4839,9 +4855,9 @@ void NSys::NFile::fg_FileEnumOtherHandles(NMib::NStr::CStr const &_FileName, NCo
 		CStr BasePath = NMib::NFile::CFile::fs_GetPath(pThisHandle->m_HandleName.f_ReplaceChar('\\', '/'));
 		CStr FileToFind = BasePath + "/" + FindFile;
 		umint nHandles = Handles.f_GetLen();
-		for (umint i = 0; i < nHandles; ++i)
+		for (umint iHandle = 0; iHandle < nHandles; ++iHandle)
 		{
-			CHandleInformation::CHandleInfo &Handle = Handles[i];
+			CHandleInformation::CHandleInfo &Handle = Handles[iHandle];
 			if (Handle.m_HandleName.f_ReplaceChar('\\', '/') == FileToFind)
 			{
 				NMib::NFile::CFileHandle &NewHandle = _HandleInfo.f_Insert();
@@ -4874,9 +4890,9 @@ void NSys::NFile::fg_FileEnumOtherHandles(void *_pFile, NContainer::TCVector<NMi
 	CHandleInformation::CHandleInfo *pThisHandle = nullptr;
 	umint nHandles = Handles.f_GetLen();
 	CStr ToTrace;
-	for (umint i = 0; i < nHandles; ++i)
+	for (umint iHandle = 0; iHandle < nHandles; ++iHandle)
 	{
-		CHandleInformation::CHandleInfo &Handle = Handles[i];
+		CHandleInformation::CHandleInfo &Handle = Handles[iHandle];
 		if (Handle.m_ProcessID == CurrentProcessID && Handle.m_HandleID == (uint32)(umint)pFileHandle)
 		{
 			pThisHandle = &Handle;
@@ -4886,9 +4902,9 @@ void NSys::NFile::fg_FileEnumOtherHandles(void *_pFile, NContainer::TCVector<NMi
 	if (pThisHandle)
 	{
 		umint nHandles = Handles.f_GetLen();
-		for (umint i = 0; i < nHandles; ++i)
+		for (umint iHandle = 0; iHandle < nHandles; ++iHandle)
 		{
-			CHandleInformation::CHandleInfo &Handle = Handles[i];
+			CHandleInformation::CHandleInfo &Handle = Handles[iHandle];
 			if (Handle.m_HandleName == pThisHandle->m_HandleName && &Handle != pThisHandle)
 			{
 				NMib::NFile::CFileHandle &NewHandle = _HandleInfo.f_Insert();
@@ -6233,15 +6249,15 @@ CStr NSys::NFile::fg_GetCurrentDirectory()
 #include <shlobj.h>
 NStr::CStr NSys::NFile::fg_GetUserProgramDirectory()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_APPDATA | CSIDL_FLAG_CREATE, nullptr, 0, szPath)))
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_APPDATA | CSIDL_FLAG_CREATE, nullptr, 0, Path)))
 	{
 		CStr FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPath());
 		aint iFind = FileName.f_FindReverse("_x");
 		if (iFind >= 0)
 			FileName = FileName.f_Left(iFind);
 
-		CStr Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(szPath));
+		CStr Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(Path));
 		Ret += "/";
 		Ret += FileName;
 		return Ret;
@@ -6252,14 +6268,14 @@ NStr::CStr NSys::NFile::fg_GetUserProgramDirectory()
 
 NStr::CStr NSys::NFile::fg_GetUserLocalProgramDirectory()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, nullptr, 0, szPath)))
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, nullptr, 0, Path)))
 	{
 		CStr FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPath());
 		aint iFind = FileName.f_FindReverse("_x");
 		if (iFind >= 0)
 			FileName = FileName.f_Left(iFind);
-		CStr Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(szPath));
+		CStr Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(Path));
 		Ret += "/";
 		Ret += FileName;
 		return Ret;
@@ -6275,14 +6291,14 @@ NStr::CStr NSys::NFile::fg_GetUserLocalProgramCacheDirectory()
 
 NStr::CStr NSys::NFile::fg_GetTemporaryDirectory()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(GetTempPath(MAX_PATH, szPath)))
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(GetTempPath(MAX_PATH, Path)))
 	{
 		CStr FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPath());
 		aint iFind = FileName.f_FindReverse("_x");
 		if (iFind >= 0)
 			FileName = FileName.f_Left(iFind);
-		CStr Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(szPath));
+		CStr Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(Path));
 		Ret += "/";
 		Ret += FileName;
 		return Ret;
@@ -6293,18 +6309,18 @@ NStr::CStr NSys::NFile::fg_GetTemporaryDirectory()
 
 NStr::CStr NSys::NFile::fg_GetRawTemporaryDirectory()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(GetTempPath(MAX_PATH, szPath)))
-		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(szPath));
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(GetTempPath(MAX_PATH, Path)))
+		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(Path));
 
 	return fg_GetProgramDirectory();
 }
 
 NMib::NStr::CStr NSys::NFile::fg_GetUserHomeDirectory()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_PROFILE | CSIDL_FLAG_CREATE, nullptr, 0, szPath)))
-		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(szPath));
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_PROFILE | CSIDL_FLAG_CREATE, nullptr, 0, Path)))
+		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr(Path));
 
 	return fg_GetProgramDirectory();
 }
@@ -6356,15 +6372,15 @@ CStrNonTracked NSys::NFile::fg_GetCurrentDirectoryNonTracked()
 
 CStrNonTracked NSys::NFile::fg_GetUserProgramDirectoryNonTracked()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_APPDATA | CSIDL_FLAG_CREATE, nullptr, 0, szPath)))
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_APPDATA | CSIDL_FLAG_CREATE, nullptr, 0, Path)))
 	{
 		CStrNonTracked FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPathNonTracked());
 		aint iFind = FileName.f_FindReverse("_x");
 		if (iFind >= 0)
 			FileName = FileName.f_Left(iFind);
 
-		CStrNonTracked Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CWStrNonTracked(szPath));
+		CStrNonTracked Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CWStrNonTracked(Path));
 		Ret += "/";
 		Ret += FileName;
 		return Ret;
@@ -6374,14 +6390,14 @@ CStrNonTracked NSys::NFile::fg_GetUserProgramDirectoryNonTracked()
 
 CStrNonTracked NSys::NFile::fg_GetUserLocalProgramDirectoryNonTracked()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, nullptr, 0, szPath)))
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, nullptr, 0, Path)))
 	{
 		CStrNonTracked FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPathNonTracked());
 		aint iFind = FileName.f_FindReverse("_x");
 		if (iFind >= 0)
 			FileName = FileName.f_Left(iFind);
-		CStrNonTracked Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CWStrNonTracked(szPath));
+		CStrNonTracked Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CWStrNonTracked(Path));
 		Ret += "/";
 		Ret += FileName;
 		return Ret;
@@ -6402,14 +6418,14 @@ NMib::NStr::CStrNonTracked NSys::NFile::fg_GetLogDirectoryNonTracked()
 
 NMib::NStr::CStrNonTracked NSys::NFile::fg_GetUserHomeDirectoryNonTracked()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_PROFILE | CSIDL_FLAG_CREATE, nullptr, 0, szPath)))
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_PROFILE | CSIDL_FLAG_CREATE, nullptr, 0, Path)))
 	{
 		CStrNonTracked FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPathNonTracked());
 		aint iFind = FileName.f_FindReverse("_x");
 		if (iFind >= 0)
 			FileName = FileName.f_Left(iFind);
-		CStrNonTracked Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(szPath));
+		CStrNonTracked Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(Path));
 		return Ret;
 	}
 
@@ -6423,14 +6439,14 @@ CStrNonTracked NSys::NFile::fg_GetUserLocalProgramCacheDirectoryNonTracked()
 
 CStrNonTracked NSys::NFile::fg_GetTemporaryDirectoryNonTracked()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(GetTempPath(MAX_PATH, szPath)))
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(GetTempPath(MAX_PATH, Path)))
 	{
 		CStrNonTracked FileName = NMib::NFile::CFile::fs_GetFileNoExt(fg_GetProgramPathNonTracked());
 		aint iFind = FileName.f_FindReverse("_x");
 		if (iFind >= 0)
 			FileName = FileName.f_Left(iFind);
-		CStrNonTracked Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(szPath));
+		CStrNonTracked Ret = NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(Path));
 		Ret += "/";
 		Ret += FileName;
 		return Ret;
@@ -6441,9 +6457,9 @@ CStrNonTracked NSys::NFile::fg_GetTemporaryDirectoryNonTracked()
 
 CStrNonTracked NSys::NFile::fg_GetRawTemporaryDirectoryNonTracked()
 {
-	WCHAR szPath[MAX_PATH];
-	if (SUCCEEDED(GetTempPath(MAX_PATH, szPath)))
-		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(szPath));
+	WCHAR Path[MAX_PATH];
+	if (SUCCEEDED(GetTempPath(MAX_PATH, Path)))
+		return NMib::NFile::NPlatform::fg_ConvertFromWindowsPath<CWStrNonTracked, CStrNonTracked>(CStrNonTracked(Path));
 	return fg_GetProgramDirectoryNonTracked();
 }
 
@@ -6797,9 +6813,9 @@ uint32 NSys::NNetwork::fg_GetListenPort(void *_pSocket)
 
 namespace NLocal
 {
-	HMODULE g_hNtDll = nullptr;
-	HMODULE g_hKernel32 = nullptr;
-	HMODULE g_hAdvAPI32 = nullptr;
+	HMODULE g_NtDll = nullptr;
+	HMODULE g_Kernel32 = nullptr;
+	HMODULE g_AdvAPI32 = nullptr;
 }
 
 bool g_bValidExitProcess = false;
@@ -6943,9 +6959,9 @@ void NSys::fg_CreateSystem()
 	// if (!g_bIsDll)
 #ifndef DMibSanitizerEnabled_Address
 	{
-		if (S_OK == NMib::NPlatform::fg_PatchIAT(g_hDllInstance, "KERNEL32.dll", "ExitProcess", (PVOID) fg_HookExitProcess, (PVOID *)&g_fOrgExitProcess))
+		if (S_OK == NMib::NPlatform::fg_PatchIAT(g_DllInstance, "KERNEL32.dll", "ExitProcess", (PVOID) fg_HookExitProcess, (PVOID *)&g_fOrgExitProcess))
 			g_bPatchedExitProcess = true;
-		if (S_OK == NMib::NPlatform::fg_PatchIAT(g_hDllInstance, "KERNEL32.dll", "TerminateProcess", (PVOID) fg_HookTerminateProcess, (PVOID *)&g_fOrgTerminateProcess))
+		if (S_OK == NMib::NPlatform::fg_PatchIAT(g_DllInstance, "KERNEL32.dll", "TerminateProcess", (PVOID) fg_HookTerminateProcess, (PVOID *)&g_fOrgTerminateProcess))
 			g_bPatchedTerminateProcess = true;
 	}
 #endif
@@ -6991,19 +7007,19 @@ void NSys::fg_CreateSystem()
 					// Open stdout pipe (write end)
 					{
 						CWStr StdOutPipeName = PipeBaseName + "_StdOut";
-						HANDLE hStdOut = CreateFileW(StdOutPipeName.f_GetStr(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+						HANDLE StdOut = CreateFileW(StdOutPipeName.f_GetStr(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-						if (hStdOut && hStdOut != INVALID_HANDLE_VALUE)
-							SetStdHandle(STD_OUTPUT_HANDLE, hStdOut);
+						if (StdOut && StdOut != INVALID_HANDLE_VALUE)
+							SetStdHandle(STD_OUTPUT_HANDLE, StdOut);
 					}
 
 					// Open stderr pipe (write end) - may not exist if parent didn't request separate stderr
 					{
 						CWStr StdErrPipeName = PipeBaseName + "_StdErr";
-						HANDLE hStdErr = CreateFileW(StdErrPipeName.f_GetStr(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+						HANDLE StdErr = CreateFileW(StdErrPipeName.f_GetStr(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-						if (hStdErr && hStdErr != INVALID_HANDLE_VALUE)
-							SetStdHandle(STD_ERROR_HANDLE, hStdErr);
+						if (StdErr && StdErr != INVALID_HANDLE_VALUE)
+							SetStdHandle(STD_ERROR_HANDLE, StdErr);
 						else
 							SetStdHandle(STD_ERROR_HANDLE, GetStdHandle(STD_OUTPUT_HANDLE));
 					}
@@ -7011,10 +7027,10 @@ void NSys::fg_CreateSystem()
 					// Open stdin pipe (read end)
 					{
 						CWStr StdInPipeName = PipeBaseName + "_StdIn";
-						HANDLE hStdIn = CreateFileW(StdInPipeName.f_GetStr(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+						HANDLE StdIn = CreateFileW(StdInPipeName.f_GetStr(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-						if (hStdIn && hStdIn != INVALID_HANDLE_VALUE)
-							SetStdHandle(STD_INPUT_HANDLE, hStdIn);
+						if (StdIn && StdIn != INVALID_HANDLE_VALUE)
+							SetStdHandle(STD_INPUT_HANDLE, StdIn);
 					}
 
 					break;

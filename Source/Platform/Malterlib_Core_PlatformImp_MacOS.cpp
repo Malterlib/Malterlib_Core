@@ -991,10 +991,10 @@ NMib::NStr::CStr NSys::fg_Process_GetCommandLine()
 	ch8 **pArgs = *_NSGetArgv();
 	if (pArgs)
 	{
-		for (int i = 0; i < NumArgs; ++i)
+		for (int iArg = 0; iArg < NumArgs; ++iArg)
 		{
-			if (pArgs[i] && !fg_ArgIsInternal(pArgs[i]))
-				Return += CStr("\"") + CStr(pArgs[i]) + CStr("\"");
+			if (pArgs[iArg] && !fg_ArgIsInternal(pArgs[iArg]))
+				Return += CStr("\"") + CStr(pArgs[iArg]) + CStr("\"");
 		}
 	}
 
@@ -1009,10 +1009,10 @@ void NSys::fg_Process_GetCommandLineArgs(NContainer::TCVector<NMib::NStr::CStr> 
 	ch8 **pArgs = *_NSGetArgv();
 	if (pArgs)
 	{
-		for (int i = 0; i < NumArgs; ++i)
+		for (int iArg = 0; iArg < NumArgs; ++iArg)
 		{
-			if (pArgs[i] && !fg_ArgIsInternal(pArgs[i]))
-				_List.f_Insert(CStr(pArgs[i]));
+			if (pArgs[iArg] && !fg_ArgIsInternal(pArgs[iArg]))
+				_List.f_Insert(CStr(pArgs[iArg]));
 		}
 	}
 }
@@ -1025,14 +1025,14 @@ NMib::NStr::CStr NSys::fg_CommandLineParameters()
 	ch8 **pArgs = *_NSGetArgv();
 	if (pArgs)
 	{
-		for (int i = 1; i < NumArgs; ++i)
+		for (int iArg = 1; iArg < NumArgs; ++iArg)
 		{
-			if (pArgs[i] && !fg_ArgIsInternal(pArgs[i]))
+			if (pArgs[iArg] && !fg_ArgIsInternal(pArgs[iArg]))
 			{
-				if (i > 1)
-					Return += CStr(" \"") + CStr(pArgs[i]) + CStr("\"");
+				if (iArg > 1)
+					Return += CStr(" \"") + CStr(pArgs[iArg]) + CStr("\"");
 				else
-					Return += CStr("\"") + CStr(pArgs[i]) + CStr("\"");
+					Return += CStr("\"") + CStr(pArgs[iArg]) + CStr("\"");
 			}
 		}
 	}
@@ -1153,14 +1153,14 @@ namespace NMib
 
 			// Arch
 			{
-				struct utsname un;
-				int Res = uname(&un);
+				struct utsname UtsName;
+				int Res = uname(&UtsName);
 				if (Res >= 0)
 				{
 					if (VersionString.f_IsEmpty())
-						VersionString = un.release;
+						VersionString = UtsName.release;
 
-					if (fg_StrCmpNoCase(un.machine, "arm64") == 0)
+					if (fg_StrCmpNoCase(UtsName.machine, "arm64") == 0)
 						g_OperatingSystemArch = EOperatingSystemArch_Arm64;
 					else
 					{
@@ -1169,14 +1169,14 @@ namespace NMib
 						size_t DataSize = sizeof(b64bitCPU);
 						sysctlbyname("hw.cpu64bit_capable", &b64bitCPU, &DataSize, nullptr, 0);
 
-						if (fg_StrCmpNoCase(un.machine, "i386") == 0 || fg_StrCmpNoCase(un.machine, "x86_64") == 0)
+						if (fg_StrCmpNoCase(UtsName.machine, "i386") == 0 || fg_StrCmpNoCase(UtsName.machine, "x86_64") == 0)
 						{
 							if (b64bitCPU)
 								g_OperatingSystemArch = EOperatingSystemArch_X64;
 							else
 								g_OperatingSystemArch = EOperatingSystemArch_X86;
 						}
-						else if (fg_StrCmpNoCase(un.machine, "powerpc") == 0 || fg_StrCmpNoCase(un.machine, "ppc64") == 0)
+						else if (fg_StrCmpNoCase(UtsName.machine, "powerpc") == 0 || fg_StrCmpNoCase(UtsName.machine, "ppc64") == 0)
 						{
 							if (b64bitCPU)
 								g_OperatingSystemArch = EOperatingSystemArch_PPC64;
@@ -1342,23 +1342,23 @@ void fg_ReportCurrentException()
 	}
 }
 
-static std::unexpected_handler g_DefaultUnexpectedHandler = nullptr;
+static std::unexpected_handler gs_DefaultUnexpectedHandler = nullptr;
 void fg_UnexpectedExceptionHandler()
 {
 	fg_ReportCurrentException();
-	if (g_DefaultUnexpectedHandler)
-		g_DefaultUnexpectedHandler();
+	if (gs_DefaultUnexpectedHandler)
+		gs_DefaultUnexpectedHandler();
 	else
 		abort();
 }
 
-static std::terminate_handler g_DefaultTerminateHandler = nullptr;
+static std::terminate_handler gs_DefaultTerminateHandler = nullptr;
 
 void fg_TerminateHandler()
 {
 	fg_ReportCurrentException();
-	if (g_DefaultTerminateHandler)
-		g_DefaultTerminateHandler();
+	if (gs_DefaultTerminateHandler)
+		gs_DefaultTerminateHandler();
 	else
 		abort();
 }
@@ -1464,8 +1464,8 @@ void NSys::fg_CreateSystemMalloc(bool _bProvideDestroySystem)
 
 	pSystem->f_InitThreadLocal();
 
-	g_DefaultTerminateHandler = std::set_terminate(&fg_TerminateHandler);
-	g_DefaultUnexpectedHandler = std::set_unexpected(&fg_UnexpectedExceptionHandler);
+	gs_DefaultTerminateHandler = std::set_terminate(&fg_TerminateHandler);
+	gs_DefaultUnexpectedHandler = std::set_unexpected(&fg_UnexpectedExceptionHandler);
 }
 
 extern "C" void fg_Malterlib_CreateSystem()
@@ -1630,13 +1630,13 @@ namespace
 		}
 
 		mach_msg_type_number_t nBusy = 0;
-		for (mach_msg_type_number_t i = 0; i < ThreadCount; ++i)
+		for (mach_msg_type_number_t iThread = 0; iThread < ThreadCount; ++iThread)
 		{
 			uint16 Value = 0xffff;
-			if (pThreads[i] != CurrentMachThread && fg_InspectThread(pThreads[i], _Unsettled, Value) == EThreadInspection_Busy)
-				pThreads[nBusy++] = pThreads[i];
+			if (pThreads[iThread] != CurrentMachThread && fg_InspectThread(pThreads[iThread], _Unsettled, Value) == EThreadInspection_Busy)
+				pThreads[nBusy++] = pThreads[iThread];
 			else
-				mach_port_deallocate(mach_task_self(), pThreads[i]);
+				mach_port_deallocate(mach_task_self(), pThreads[iThread]);
 		}
 
 		uint64 NextReportTime = clock_gettime_nsec_np(CLOCK_MONOTONIC) + 2000000000ull;
@@ -1646,18 +1646,24 @@ namespace
 
 			bool bReport = clock_gettime_nsec_np(CLOCK_MONOTONIC) >= NextReportTime;
 			mach_msg_type_number_t nStillBusy = 0;
-			for (mach_msg_type_number_t i = 0; i < nBusy; ++i)
+			for (mach_msg_type_number_t iThread = 0; iThread < nBusy; ++iThread)
 			{
 				uint16 Value = 0xffff;
-				if (fg_InspectThread(pThreads[i], _Unsettled, Value) != EThreadInspection_Busy)
+				if (fg_InspectThread(pThreads[iThread], _Unsettled, Value) != EThreadInspection_Busy)
 				{
-					mach_port_deallocate(mach_task_self(), pThreads[i]);
+					mach_port_deallocate(mach_task_self(), pThreads[iThread]);
 					continue;
 				}
 
-				pThreads[nStillBusy++] = pThreads[i];
+				pThreads[nStillBusy++] = pThreads[iThread];
 				if (bReport)
-					fg_WriteUnloadDiagnostic((NStr::CFStr256::CFormat("Waiting for thread 0x{nh} to settle: value 0x{nh}\n") << (umint)pThreads[i] << (umint)Value).f_GetStr().f_Span());
+				{
+					fg_WriteUnloadDiagnostic
+						(
+							(NStr::CFStr256::CFormat("Waiting for thread 0x{nh} to settle: value 0x{nh}\n") << (umint)pThreads[iThread] << (umint)Value).f_GetStr().f_Span()
+						)
+					;
+				}
 			}
 			nBusy = nStillBusy;
 
@@ -1720,9 +1726,9 @@ namespace
 			return;
 
 		umint CurrentThread = NSys::fg_Thread_GetCurrentUID();
-		for (mach_msg_type_number_t i = 0; i < ThreadCount; ++i)
+		for (mach_msg_type_number_t iThread = 0; iThread < ThreadCount; ++iThread)
 		{
-			mach_port_t MachThread = pThreads[i];
+			mach_port_t MachThread = pThreads[iThread];
 			// Resolve the pthread while the target can still release libpthread's
 			// global list lock. Matching MACH_THREAD_SELF also proves TSD setup.
 			pthread_t pThread = pthread_from_mach_thread_np(MachThread);
@@ -1775,19 +1781,19 @@ namespace
 
 			auto CleanupThreads = g_OnScopeExit / [&]
 				{
-					for (mach_msg_type_number_t i = 0; i < ThreadCount; ++i)
+					for (mach_msg_type_number_t iThread = 0; iThread < ThreadCount; ++iThread)
 					{
-						if (pThreads[i] != MACH_PORT_NULL)
-							mach_port_deallocate(mach_task_self(), pThreads[i]);
+						if (pThreads[iThread] != MACH_PORT_NULL)
+							mach_port_deallocate(mach_task_self(), pThreads[iThread]);
 					}
 
 					vm_deallocate(mach_task_self(), (vm_address_t)pThreads, ThreadCount * sizeof(*pThreads));
 				}
 			;
 
-			for (mach_msg_type_number_t i = 0; i < ThreadCount; ++i)
+			for (mach_msg_type_number_t iThread = 0; iThread < ThreadCount; ++iThread)
 			{
-				mach_port_t MachThread = pThreads[i];
+				mach_port_t MachThread = pThreads[iThread];
 				if (MachThread == CurrentMachThread || SeenThreads.f_Exists(MachThread))
 					continue;
 
@@ -1821,7 +1827,7 @@ namespace
 					continue;
 
 				SuspendedThreads.f_Insert(CSuspendedThread{MachThread, ThreadID});
-				pThreads[i] = MACH_PORT_NULL;
+				pThreads[iThread] = MACH_PORT_NULL;
 				ResumeThread.f_Clear();
 			}
 		}
@@ -2615,15 +2621,15 @@ void NSys::fg_CreateSystem()
 		ch8 **pArgs = *_NSGetArgv();
 		if (pArgs)
 		{
-			for (int i = 0; i < NumArgs; ++i)
+			for (int iArg = 0; iArg < NumArgs; ++iArg)
 			{
-				if (pArgs[i])
+				if (pArgs[iArg])
 				{
-					if (fg_StrCmp(pArgs[i], "--OutputPID") == 0)
+					if (fg_StrCmp(pArgs[iArg], "--OutputPID") == 0)
 						NSys::fg_ConsoleOutput((CFStr256::CFormat("{nfh,sj16,sf0}") << (umint)getpid()).f_GetStr().f_Span());
-					else if (fg_StrCmp(pArgs[i], "--OutputStdErrToStdOut") == 0)
+					else if (fg_StrCmp(pArgs[iArg], "--OutputStdErrToStdOut") == 0)
 						dup2(1, 2);
-					else if (fg_StrCmp(pArgs[i], "--NoStdErr") == 0)
+					else if (fg_StrCmp(pArgs[iArg], "--NoStdErr") == 0)
 					{
 						int DevNull = open("/dev/null", O_WRONLY);
 						if (DevNull >= 0)
@@ -2847,31 +2853,31 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 
 bool NSys::fg_System_BeingDebugged()
 {
-	int mib[4];
-	struct kinfo_proc info;
-	size_t size;
+	int Mib[4];
+	struct kinfo_proc Info;
+	size_t Size;
 
 	// Initialize the flags so that, if sysctl fails for some bizarre
 	// reason, we get a predictable result.
 
-	info.kp_proc.p_flag = 0;
+	Info.kp_proc.p_flag = 0;
 
-	// Initialize mib, which tells sysctl the info we want, in this case
+	// Initialize Mib, which tells sysctl the info we want, in this case
 	// we're looking for information about a specific process ID.
 
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_PROC;
-	mib[2] = KERN_PROC_PID;
-	mib[3] = getpid();
+	Mib[0] = CTL_KERN;
+	Mib[1] = KERN_PROC;
+	Mib[2] = KERN_PROC_PID;
+	Mib[3] = getpid();
 
 	// Call sysctl.
 
-	size = sizeof(info);
-	sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
+	Size = sizeof(Info);
+	sysctl(Mib, sizeof(Mib) / sizeof(*Mib), &Info, &Size, NULL, 0);
 
 	// We're being debugged if the P_TRACED flag is set.
 
-	return ((info.kp_proc.p_flag & P_TRACED) != 0);
+	return ((Info.kp_proc.p_flag & P_TRACED) != 0);
 }
 
 ////file handling
@@ -4359,11 +4365,11 @@ namespace
 		CCPUUsageMonitorImpl()
 		{
 			mach_msg_type_number_t Count = HOST_CPU_LOAD_INFO_COUNT;
-			host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&m_LastLoadStats, &Count);
+			host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&mp_LastLoadStats, &Count);
 
-			m_LastRet.m_User = 0.0f;
-			m_LastRet.m_Kernel = 0.0f;
-			m_LastRet.m_Idle = 0.0f;
+			mp_LastRet.m_User = 0.0f;
+			mp_LastRet.m_Kernel = 0.0f;
+			mp_LastRet.m_Idle = 0.0f;
 		}
 
 		virtual ~CCPUUsageMonitorImpl()
@@ -4381,9 +4387,9 @@ namespace
 			uint64 UserTime = LoadStats.cpu_ticks[CPU_STATE_USER] + LoadStats.cpu_ticks[CPU_STATE_NICE];
 			uint64 KernelTime = LoadStats.cpu_ticks[CPU_STATE_SYSTEM];
 
-			uint64 LastIdleTime = m_LastLoadStats.cpu_ticks[CPU_STATE_IDLE];
-			uint64 LastUserTime = m_LastLoadStats.cpu_ticks[CPU_STATE_USER] + m_LastLoadStats.cpu_ticks[CPU_STATE_NICE];
-			uint64 LastKernelTime = m_LastLoadStats.cpu_ticks[CPU_STATE_SYSTEM];
+			uint64 LastIdleTime = mp_LastLoadStats.cpu_ticks[CPU_STATE_IDLE];
+			uint64 LastUserTime = mp_LastLoadStats.cpu_ticks[CPU_STATE_USER] + mp_LastLoadStats.cpu_ticks[CPU_STATE_NICE];
+			uint64 LastKernelTime = mp_LastLoadStats.cpu_ticks[CPU_STATE_SYSTEM];
 
 			uint64 DiffIdleTime = IdleTime - LastIdleTime;
 			uint64 DiffUserTime = UserTime - LastUserTime;
@@ -4394,7 +4400,7 @@ namespace
 			if (TotalTime < 100)
 			{
 				_bChanged = false;
-				return m_LastRet; // Guarantee 1 % resolution
+				return mp_LastRet; // Guarantee 1 % resolution
 			}
 
 			_bChanged = true;
@@ -4404,16 +4410,16 @@ namespace
 			Ret.m_User = fp64(DiffUserTime) / fp64(TotalTime);
 			Ret.m_Kernel = fp64(DiffKernelTime) / fp64(TotalTime);
 
-			m_LastLoadStats = LoadStats;
+			mp_LastLoadStats = LoadStats;
 
-			m_LastRet = Ret;
+			mp_LastRet = Ret;
 			return Ret;
 		}
 
 	private:
-		host_cpu_load_info_data_t m_LastLoadStats;
+		host_cpu_load_info_data_t mp_LastLoadStats;
 
-		NMib::NSystem::CSystemCPUUsage m_LastRet;
+		NMib::NSystem::CSystemCPUUsage mp_LastRet;
 	};
 }
 
@@ -4468,16 +4474,16 @@ void *NSys::fg_Mem_VirtualAllocInRange(umint &_Size, uint8 *_pLower, uint8 *_pUp
 
 	while (AllocAddress < EndAddress)
 	{
-		auto err = vm_allocate(MachTask, &AllocAddress, _Size, 0);
-		if (err == KERN_SUCCESS)
+		auto Result = vm_allocate(MachTask, &AllocAddress, _Size, 0);
+		if (Result == KERN_SUCCESS)
 			return (void *)AllocAddress;
 
 		vm_size_t Size;
 		vm_region_basic_info_64 BasicInfo;
 		mach_msg_type_number_t InfoCount = VM_REGION_BASIC_INFO_COUNT_64;
 		mach_port_t ObjectName = MACH_PORT_NULL;
-		err = vm_region_64(MachTask, &AllocAddress, &Size, VM_REGION_BASIC_INFO_64, (vm_region_info_t)&BasicInfo, &InfoCount, &ObjectName);
-		if (err == KERN_SUCCESS)
+		Result = vm_region_64(MachTask, &AllocAddress, &Size, VM_REGION_BASIC_INFO_64, (vm_region_info_t)&BasicInfo, &InfoCount, &ObjectName);
+		if (Result == KERN_SUCCESS)
 			AllocAddress = AllocAddress + Size;
 		else
 			AllocAddress += NMib::NSys::NPrivate::g_PageSize;
@@ -4530,6 +4536,7 @@ ch8 const *NSys::NFile::fg_GetDllExtension()
 
 #if DPlatformVersion <= 1050 || defined(DMibNoMacOSCrossModuleExceptions)
 
+// NOLINTBEGIN(malterlib-variable-naming): the declarations of the macOS SDK, with their names
 struct dyld_unwind_sections // NOLINT(malterlib-type-naming): the name in the macOS SDK
 {
 	struct mach_header const *mh;
@@ -4538,6 +4545,8 @@ struct dyld_unwind_sections // NOLINT(malterlib-type-naming): the name in the ma
 	void const *compact_unwind_section;
 	uintptr_t compact_unwind_section_length;
 };
+
+// NOLINTEND(malterlib-variable-naming)
 
 #	if __LP64__
 #		define DRelocSize 3
@@ -4617,11 +4626,11 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 	auto nImages = _dyld_image_count();
 	intptr_t Slide = 0;
 	bool bFound = false;
-	for (auto i = 0; i < nImages; ++i)
+	for (auto iImage = 0; iImage < nImages; ++iImage)
 	{
-		if (_dyld_get_image_header(i) == pHeader)
+		if (_dyld_get_image_header(iImage) == pHeader)
 		{
-			Slide = _dyld_get_image_vmaddr_slide(i);
+			Slide = _dyld_get_image_vmaddr_slide(iImage);
 			bFound = true;
 			break;
 		}
@@ -4635,33 +4644,33 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 
 	uint8_t const *fMachOData = (uint8_t const *)pHeader;
 
-	uint32_t const cmd_count = pHeader->ncmds;
-	struct load_command const * const cmds = (struct load_command *)((char *)pHeader + sizeof(struct CMachoHeader));
-	struct load_command const *cmd = cmds;
-	for (uint32_t i = 0; i < cmd_count; ++i)
+	uint32_t const nCommands = pHeader->ncmds;
+	struct load_command const * const pCommands = (struct load_command *)((char *)pHeader + sizeof(struct CMachoHeader));
+	struct load_command const *pCommand = pCommands;
+	for (uint32_t iCommand = 0; iCommand < nCommands; ++iCommand)
 	{
-		switch (cmd->cmd)
+		switch (pCommand->cmd)
 		{
 		case DLcSegmentCommand:
 			{
-				struct CMachoSegmentCommand const *seg = (struct CMachoSegmentCommand *)cmd;
-				bool const isTextSeg = (strcmp(seg->segname, "__TEXT") == 0);
-				if (isTextSeg)
+				struct CMachoSegmentCommand const *pSegment = (struct CMachoSegmentCommand *)pCommand;
+				bool const bIsTextSegment = (strcmp(pSegment->segname, "__TEXT") == 0);
+				if (bIsTextSegment)
 				{
-					struct CMachoSection const * const sectionsStart = (struct CMachoSection *)((char *)seg + sizeof(struct CMachoSegmentCommand));
-					struct CMachoSection const * const sectionsEnd = &sectionsStart[seg->nsects];
-					for (struct CMachoSection const *sect = sectionsStart; sect < sectionsEnd; ++sect)
+					struct CMachoSection const * const pSectionsStart = (struct CMachoSection *)((char *)pSegment + sizeof(struct CMachoSegmentCommand));
+					struct CMachoSection const * const pSectionsEnd = &pSectionsStart[pSegment->nsects];
+					for (struct CMachoSection const *pSection = pSectionsStart; pSection < pSectionsEnd; ++pSection)
 					{
-						if ((strcmp(sect->sectname, "__eh_frame") == 0))
-							fEHFrameSectionOffset = (uint8_t *)sect - fMachOData;
-						else if ((strcmp(sect->sectname, "__unwind_info") == 0))
-							fUnwindInfoSectionOffset = (uint8_t *)sect - fMachOData;
+						if ((strcmp(pSection->sectname, "__eh_frame") == 0))
+							fEHFrameSectionOffset = (uint8_t *)pSection - fMachOData;
+						else if ((strcmp(pSection->sectname, "__unwind_info") == 0))
+							fUnwindInfoSectionOffset = (uint8_t *)pSection - fMachOData;
 					}
 				}
 			}
 			break;
 		}
-		cmd = (struct load_command const *)(((char *)cmd) + cmd->cmdsize);
+		pCommand = (struct load_command const *)(((char *)pCommand) + pCommand->cmdsize);
 	}
 
 	info->mh = pHeader;
@@ -4671,15 +4680,15 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 	info->compact_unwind_section_length = 0;
 	if (fEHFrameSectionOffset != 0)
 	{
-		CMachoSection const *sect = (CMachoSection *)&fMachOData[fEHFrameSectionOffset];
-		info->dwarf_section = (void *)(sect->addr + Slide);
-		info->dwarf_section_length = sect->size;
+		CMachoSection const *pSection = (CMachoSection *)&fMachOData[fEHFrameSectionOffset];
+		info->dwarf_section = (void *)(pSection->addr + Slide);
+		info->dwarf_section_length = pSection->size;
 	}
 	if (fUnwindInfoSectionOffset != 0)
 	{
-		CMachoSection const *sect = (CMachoSection *)&fMachOData[fUnwindInfoSectionOffset];
-		info->compact_unwind_section = (void *)(sect->addr + Slide);
-		info->compact_unwind_section_length = sect->size;
+		CMachoSection const *pSection = (CMachoSection *)&fMachOData[fUnwindInfoSectionOffset];
+		info->compact_unwind_section = (void *)(pSection->addr + Slide);
+		info->compact_unwind_section_length = pSection->size;
 	}
 	return true;
 }

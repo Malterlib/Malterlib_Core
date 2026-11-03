@@ -8,9 +8,9 @@
 
 namespace NLocal
 {
-	extern HMODULE g_hNtDll;
-	extern HMODULE g_hKernel32;
-	extern HMODULE g_hAdvAPI32;
+	extern HMODULE g_NtDll;
+	extern HMODULE g_Kernel32;
+	extern HMODULE g_AdvAPI32;
 
 	struct COptionalFunctions
 	{

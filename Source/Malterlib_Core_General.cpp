@@ -5,8 +5,8 @@
 
 namespace NMib
 {
-	constexpr CExplicitHelper g_ExplicitInit{};
-	CExplicitHelper const &g_Explicit = g_ExplicitInit;
+	constexpr CExplicitHelper gc_ExplicitInit{};
+	CExplicitHelper const &g_Explicit = gc_ExplicitInit;
 
 	CVoidTag const g_Void;
 

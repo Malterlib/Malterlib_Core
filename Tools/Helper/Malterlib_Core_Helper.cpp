@@ -19,7 +19,7 @@
 #	include <sys/resource.h>
 #endif
 
-extern char **environ;
+extern char **environ; // NOLINT(malterlib-variable-naming): the name the C library defines
 
 namespace
 {
@@ -326,8 +326,8 @@ int main(int _nArgs, char *_Arguments[])
 
 		_Arguments[0] = (char *)pExecutableToLaunch;
 
-		for (int i = 2; i < _nArgs; ++i)
-			_Arguments[i - 1] = _Arguments[i];
+		for (int iArg = 2; iArg < _nArgs; ++iArg)
+			_Arguments[iArg - 1] = _Arguments[iArg];
 		_Arguments[_nArgs - 1] = nullptr;
 
 		execve(pExecutableToLaunch, _Arguments, pEnvironment);

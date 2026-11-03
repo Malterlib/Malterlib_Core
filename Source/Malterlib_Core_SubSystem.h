@@ -30,12 +30,11 @@ namespace NMib
 		{
 		}
 
-	public: // check if we can use private on MSVC and still get static initialization
+	private:
 		alignas(t_CSubSystem) uint8 mp_ObjectSpace[sizeof(t_CSubSystem)];
 		NThread::CLowLevelLockAggregate mp_Lock;
 		NAtomic::TCAtomic<bool> mp_bWasCreated;
 
-	private:
 		inline_never t_CSubSystem *fp_Create(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
 	};
 };

@@ -185,8 +185,8 @@ bool CIoUringRing::f_Create(uint32 _nSqEntries, uint32 _nCqEntries, bool _bDefer
 	m_CqRingMask = *(uint32 *)((uint8 *)m_pCqRing + Params.m_CqOff.m_RingMask);
 	m_pCqes = (CIoUringCqe *)((uint8 *)m_pCqRing + Params.m_CqOff.m_Cqes);
 
-	for (uint32 i = 0; i < m_nSqEntries; ++i)
-		m_pSqArray[i] = i;
+	for (uint32 iEntry = 0; iEntry < m_nSqEntries; ++iEntry)
+		m_pSqArray[iEntry] = iEntry;
 
 	return true;
 }

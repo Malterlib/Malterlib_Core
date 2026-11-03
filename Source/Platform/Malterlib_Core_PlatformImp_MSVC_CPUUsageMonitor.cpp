@@ -7,10 +7,10 @@ namespace NMSVCRuntime
 	{
 		CCPUUsageMonitor()
 		{
-			GetSystemTimes(&m_LastIdle, &m_LastKernel, &m_LastUser);
-			m_LastRet.m_User = 0.0f;
-			m_LastRet.m_Kernel = 0.0f;
-			m_LastRet.m_Idle = 0.0f;
+			GetSystemTimes(&mp_LastIdle, &mp_LastKernel, &mp_LastUser);
+			mp_LastRet.m_User = 0.0f;
+			mp_LastRet.m_Kernel = 0.0f;
+			mp_LastRet.m_Idle = 0.0f;
 		}
 
 		virtual ~CCPUUsageMonitor()
@@ -29,9 +29,9 @@ namespace NMSVCRuntime
 			uint64 UserTime = uint64(LastUser.dwHighDateTime) << 32 | uint64(LastUser.dwLowDateTime);
 			uint64 KernelTime = (uint64(LastKernel.dwHighDateTime) << 32 | uint64(LastKernel.dwLowDateTime)) - IdleTime;
 
-			uint64 LastIdleTime = uint64(m_LastIdle.dwHighDateTime) << 32 | uint64(m_LastIdle.dwLowDateTime);
-			uint64 LastUserTime = uint64(m_LastUser.dwHighDateTime) << 32 | uint64(m_LastUser.dwLowDateTime);
-			uint64 LastKernelTime = (uint64(m_LastKernel.dwHighDateTime) << 32 | uint64(m_LastKernel.dwLowDateTime)) - LastIdleTime;
+			uint64 LastIdleTime = uint64(mp_LastIdle.dwHighDateTime) << 32 | uint64(mp_LastIdle.dwLowDateTime);
+			uint64 LastUserTime = uint64(mp_LastUser.dwHighDateTime) << 32 | uint64(mp_LastUser.dwLowDateTime);
+			uint64 LastKernelTime = (uint64(mp_LastKernel.dwHighDateTime) << 32 | uint64(mp_LastKernel.dwLowDateTime)) - LastIdleTime;
 
 			uint64 DiffIdleTime = IdleTime - LastIdleTime;
 			uint64 DiffUserTime = UserTime - LastUserTime;
@@ -42,7 +42,7 @@ namespace NMSVCRuntime
 			if (TotalTime < 100)
 			{
 				_bChanged = false;
-				return m_LastRet; // Guarantee 1 % resolution
+				return mp_LastRet; // Guarantee 1 % resolution
 			}
 
 			_bChanged = true;
@@ -52,20 +52,20 @@ namespace NMSVCRuntime
 			Ret.m_User = fp64(DiffUserTime) / fp64(TotalTime);
 			Ret.m_Kernel = fp64(DiffKernelTime) / fp64(TotalTime);
 
-			m_LastIdle = LastIdle;
-			m_LastUser = LastUser;
-			m_LastKernel = LastKernel;
+			mp_LastIdle = LastIdle;
+			mp_LastUser = LastUser;
+			mp_LastKernel = LastKernel;
 
-			m_LastRet = Ret;
+			mp_LastRet = Ret;
 			return Ret;
 		}
 
 	private:
-		FILETIME m_LastIdle;
-		FILETIME m_LastUser;
-		FILETIME m_LastKernel;
+		FILETIME mp_LastIdle;
+		FILETIME mp_LastUser;
+		FILETIME mp_LastKernel;
 
-		NMib::NSystem::CSystemCPUUsage m_LastRet;
+		NMib::NSystem::CSystemCPUUsage mp_LastRet;
 	};
 }
 

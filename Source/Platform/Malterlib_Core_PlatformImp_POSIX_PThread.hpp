@@ -754,8 +754,8 @@ void *fg_ThreadStartRoutine(void *_pParams)
 #	endif
 
 #	ifdef DPlatformFamily_Linux
-	if (NLocal::g_f_pthread_setname_np)
-		NLocal::g_f_pthread_setname_np(pthread_self(), StartParams.m_ThreadName.f_GetStr());
+	if (NLocal::g_fPThreadSetnameNP)
+		NLocal::g_fPThreadSetnameNP(pthread_self(), StartParams.m_ThreadName.f_GetStr());
 #	elif defined(DPlatformFamily_macOS)
 #		if DPlatformVersion < 1060
 	if (CSystem::ms_PlatformVersion >= 10'06'00)
@@ -802,7 +802,7 @@ namespace
 	};
 
 	// Only the fallback for threads fg_SetMachPriority and the quality of service classes do not cover
-	static CPrioMap const gc_MalterlibToPOSIXPriorityMap[] =
+	static constexpr CPrioMap gc_MalterlibToPOSIXPriorityMap[] =
 		{
 			{0x0000, SCHED_OTHER}
 			, {0x4000, SCHED_RR}
@@ -998,10 +998,10 @@ static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_
 		CPU_ZERO(&CPUSet);
 
 		umint const nBits = sizeof(_Params.m_Affinity) * 8;
-		for (umint iB = 0; iB < nBits; ++iB)
+		for (umint iBit = 0; iBit < nBits; ++iBit)
 		{
-			if (_Params.m_Affinity & (1 << iB))
-				CPU_SET(iB, &CPUSet);
+			if (_Params.m_Affinity & (1 << iBit))
+				CPU_SET(iBit, &CPUSet);
 		}
 
 		Result = pthread_attr_setaffinity_np(Data.f_UseThreadAttribs(), sizeof(cpu_set_t), &CPUSet);
@@ -1076,10 +1076,10 @@ void NSys::fg_Thread_SetAffinity(void *_pThread, umint _Affinity)
 	CPU_ZERO(&CPUSet);
 
 	umint const nBits = sizeof(_Affinity) * 8;
-	for (umint iB = 0; iB < nBits; ++iB)
+	for (umint iBit = 0; iBit < nBits; ++iBit)
 	{
-		if (_Affinity & (1 << iB))
-			CPU_SET(iB, &CPUSet);
+		if (_Affinity & (1 << iBit))
+			CPU_SET(iBit, &CPUSet);
 	}
 
 	pthread_setaffinity_np(ThreadID, sizeof(cpu_set_t), &CPUSet);

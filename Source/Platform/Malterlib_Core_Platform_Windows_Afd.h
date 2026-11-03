@@ -56,7 +56,7 @@ constexpr ULONG gc_NtFileInformation_ReplaceCompletionInformation = 61;
 
 struct CNtFileCompletionInformation
 {
-	HANDLE m_hPort;
+	HANDLE m_Port;
 	PVOID m_pKey;
 };
 

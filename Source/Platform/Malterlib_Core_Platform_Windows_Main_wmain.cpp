@@ -14,11 +14,11 @@ int __cdecl wmain(int _nArguments, wchar_t *_pArguments[], wchar_t *_pEnvironmen
 	NContainer::TCVector<NStr::CStr> Arguments;
 	NContainer::TCVector<char *> ArgumentPointers;
 
-	for (auto i = 0; i < _nArguments; ++i)
-		Arguments.f_Insert(NStr::CWStr(_pArguments[i]));
+	for (auto iArgument = 0; iArgument < _nArguments; ++iArgument)
+		Arguments.f_Insert(NStr::CWStr(_pArguments[iArgument]));
 
-	for (auto i = 0; i < _nArguments; ++i)
-		ArgumentPointers.f_Insert(Arguments[i].f_GetStrWritable());
+	for (auto iArgument = 0; iArgument < _nArguments; ++iArgument)
+		ArgumentPointers.f_Insert(Arguments[iArgument].f_GetStrWritable());
 
 	ArgumentPointers.f_Insert((char *)nullptr);
 

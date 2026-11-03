@@ -65,7 +65,7 @@ namespace
 
 				auto fDispatchFor = [&](umint _nPasses)
 					{
-						for (umint i = 0; i < _nPasses; ++i)
+						for (umint iPass = 0; iPass < _nPasses; ++iPass)
 						{
 							pLoop->f_PollAndDispatch();
 							NSys::fg_Thread_Sleep(0.002);

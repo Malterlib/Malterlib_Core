@@ -299,10 +299,10 @@ namespace
 
 	aint fg_UnixSocketFileNameStart(NStr::CStr const &_Path)
 	{
-		for (aint i = _Path.f_GetLen() - 1; i >= 0; --i)
+		for (aint iChar = _Path.f_GetLen() - 1; iChar >= 0; --iChar)
 		{
-			if (_Path[i] == '/' || _Path[i] == '\\')
-				return i + 1;
+			if (_Path[iChar] == '/' || _Path[iChar] == '\\')
+				return iChar + 1;
 		}
 
 		return 0;
@@ -332,18 +332,18 @@ NStr::CStr NSys::NNetwork::fg_GetStagedUnixSocketPath(NStr::CStr const &_Path)
 
 	// FNV-1a
 	uint64 Hash = 14695981039346656037ull;
-	for (aint i = 0; i < Length; ++i)
-		Hash = (Hash ^ uint8(_Path[i])) * 1099511628211ull;
+	for (aint iChar = 0; iChar < Length; ++iChar)
+		Hash = (Hash ^ uint8(_Path[iChar])) * 1099511628211ull;
 
 	NStr::CStr Staged = _Path.f_Extract(0, SuffixStart);
 	Staged.f_AddChar('~');
 
 	constexpr uint64 c_nHashCharacters = sizeof(gc_StagedUnixSocketHashCharacters) - 1;
 	uint64 RemainingHash = Hash;
-	for (aint i = SuffixStart + 1; i < Length; ++i)
+	for (aint iChar = SuffixStart + 1; iChar < Length; ++iChar)
 	{
 		if (RemainingHash < c_nHashCharacters)
-			RemainingHash = Hash = (Hash ^ uint64(i)) * 1099511628211ull;
+			RemainingHash = Hash = (Hash ^ uint64(iChar)) * 1099511628211ull;
 
 		Staged.f_AddChar(gc_StagedUnixSocketHashCharacters[RemainingHash % c_nHashCharacters]);
 		RemainingHash /= c_nHashCharacters;

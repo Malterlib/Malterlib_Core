@@ -26,13 +26,13 @@ void fg_RunDeregAcknowledgement(CIoLoopDeferredAck &_Ack)
 void CIoLoopChangeQueue::f_Push(CIoLoopChange &&_Change)
 {
 	DMibLock(mp_Lock);
-	mp_lQueue.f_Insert(NMib::fg_Move(_Change));
+	mp_Queue.f_Insert(NMib::fg_Move(_Change));
 }
 
 NMib::NContainer::TCVector<CIoLoopChange> CIoLoopChangeQueue::f_Take()
 {
 	DMibLock(mp_Lock);
-	return NMib::fg_Move(mp_lQueue);
+	return NMib::fg_Move(mp_Queue);
 }
 
 CIoLoop_Base::CIoLoop_Base()

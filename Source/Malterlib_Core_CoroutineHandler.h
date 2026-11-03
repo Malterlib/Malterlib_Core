@@ -74,7 +74,7 @@ namespace NMib
 		bool m_bValid = true;
 	};
 
-#	define DMibThreadLocalScopeDebugMember NMib::CDebugThreadLocalScope m_DebugThreadLocalScope
+#	define DMibThreadLocalScopeDebugMember NMib::CDebugThreadLocalScope mp_DebugThreadLocalScope
 #else
 #	define DMibThreadLocalScopeDebugMember
 #endif

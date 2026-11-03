@@ -45,8 +45,8 @@ namespace NMib
 		{
 			bool fg_OverrideHome()
 			{
-				static bool bOverrideHome = fg_GetSys()->f_GetEnvironmentVariable("MalterlibOverrideHome") == "true";
-				return bOverrideHome;
+				static bool s_bOverrideHome = fg_GetSys()->f_GetEnvironmentVariable("MalterlibOverrideHome") == "true";
+				return s_bOverrideHome;
 			}
 		}
 
@@ -215,19 +215,19 @@ namespace NMib
 
 		NMib::NStr::CStr fg_MacOS_GetSystemLanguage()
 		{
-			CFArrayRef lLanguages = CFLocaleCopyPreferredLanguages();
+			CFArrayRef pLanguages = CFLocaleCopyPreferredLanguages();
 
 			auto CleanupLanguages = g_OnScopeExit / [&]
 				{
-					if (lLanguages)
-						CFRelease(lLanguages);
+					if (pLanguages)
+						CFRelease(pLanguages);
 				}
 			;
 
-			if (!lLanguages || CFArrayGetCount(lLanguages) == 0)
+			if (!pLanguages || CFArrayGetCount(pLanguages) == 0)
 				return "en";
 
-			CFStringRef pCode = (CFStringRef)CFArrayGetValueAtIndex(lLanguages, 0);
+			CFStringRef pCode = (CFStringRef)CFArrayGetValueAtIndex(pLanguages, 0);
 
 			CFDataRef pData = CFStringCreateExternalRepresentation(kCFAllocatorDefault, pCode, kCFStringEncodingUTF8, '?');
 
@@ -748,7 +748,7 @@ namespace NMib
 
 					fg_LinkFileSnapshot(_Context, Child);
 
-					if ((Stats.st_mode & S_IFDIR) && !(Stats.st_mode & S_IFLNK) && Stats.st_dev == _Snapshot.f_GetKey().st_dev && (_bRecursive || (_bRecursiveInfoNeeded && bWasCreated)))
+					if ((Stats.st_mode & S_IFDIR) && !(Stats.st_mode & S_IFLNK) && Stats.st_dev == _Snapshot.f_GetKey().m_Device && (_bRecursive || (_bRecursiveInfoNeeded && bWasCreated)))
 						fg_UpdateFileSnapshot(_Context, Child, _bRecursive, _bRecursiveInfoNeeded);
 				}
 			}
@@ -1134,14 +1134,14 @@ namespace NMib
 
 			CUpdateSnapshotContext UpdateContext{NewSnapshotsByNode, m_SnapshotsByNode, m_UpdateSequence, m_NotificationPath};
 
-			for (umint i = 0; i < _nEvents; ++i)
+			for (umint iEvent = 0; iEvent < _nEvents; ++iEvent)
 			{
-				CStr Path(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, i)));
+				CStr Path(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, iEvent)));
 				auto PathLen = Path.f_GetLen();
 				if (PathLen > 0 && Path.f_GetAt(PathLen - 1) == '/')
 					Path = Path.f_Left(PathLen - 1);
 
-				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, i);
+				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, iEvent);
 
 				if (NMib::CSystem::ms_PlatformVersion >= 10'15'00)
 				{
@@ -1382,23 +1382,23 @@ namespace NMib
 			CFindChangesContext FindChangesContext;
 
 			TCSet<CStr> ProtectedDirs;
-			for (umint i = 0; i < _nEvents; ++i)
+			for (umint iEvent = 0; iEvent < _nEvents; ++iEvent)
 			{
-				CStr EventPath(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, i)));
+				CStr EventPath(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, iEvent)));
 				if (EventPath.f_EndsWith("/"))
 					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
 
-				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, i);
+				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, iEvent);
 
 				if (ProtectedDirs.f_FindEqual(EventPath))
 				{
-					//DMibConErrOut("IGNORE Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, i));
+					//DMibConErrOut("IGNORE Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, iEvent));
 					continue;
 				}
 
 				CStr RelativePath = NMib::NFile::CFile::fs_MakePathRelative(EventPath, m_NotificationPath.m_UserPath);
 
-				//DMibConErrOut("Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, i));
+				//DMibConErrOut("Change: {} = {nfh} - {}\n", EventPath, Flags, fg_ReadArrayTSanWorkaround(_IDs, iEvent));
 
 				bool bIsDir = (Flags & kFSEventStreamEventFlagItemIsDir) && !(Flags & kFSEventStreamEventFlagItemIsSymlink);
 
@@ -1519,14 +1519,14 @@ namespace NMib
 			// No snapshot exists in path-hint mode; only root-change flags are reliable.
 			CFindChangesContext FindChangesContext;
 
-			for (umint i = 0; i < _nEvents; ++i)
+			for (umint iEvent = 0; iEvent < _nEvents; ++iEvent)
 			{
-				CStr EventPath(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, i)));
+				CStr EventPath(fg_ReadStringTSanWorkaround(fg_ReadArrayTSanWorkaround(_pPaths, iEvent)));
 
 				if (EventPath.f_EndsWith("/"))
 					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
 
-				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, i);
+				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, iEvent);
 
 				// Events name the resolved or synthetic root; hints are relative to the root the user gave
 				if (EventPath == m_NotificationPath.m_ResolvedPath || EventPath == m_NotificationPath.m_SyntheticPath)

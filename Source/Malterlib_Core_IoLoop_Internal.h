@@ -52,7 +52,7 @@ struct CIoLoopChangeQueue
 
 private:
 	NMib::NThread::CMutual mp_Lock;
-	NMib::NContainer::TCVector<CIoLoopChange> mp_lQueue;
+	NMib::NContainer::TCVector<CIoLoopChange> mp_Queue;
 };
 
 // A removal acknowledgement may run only when nothing can still name the registration.
@@ -140,7 +140,7 @@ struct CSharedIoLoop
 
 	NMib::NSys::ICIoLoop *f_GetLoop() const
 	{
-		return mp_Thread.mp_pLoop;
+		return mp_Thread.m_pLoop;
 	}
 
 private:
@@ -150,7 +150,7 @@ private:
 		aint f_Main() override;
 		umint f_Stop(bool _bBlock) override;
 
-		NMib::NSys::ICIoLoop *mp_pLoop = nullptr; // Created before the thread starts and destroyed after it stops.
+		NMib::NSys::ICIoLoop *m_pLoop = nullptr; // Created before the thread starts and destroyed after it stops.
 	};
 
 	CPollerThread mp_Thread;

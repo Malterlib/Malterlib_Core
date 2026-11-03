@@ -125,16 +125,16 @@ bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 			CStr FullEventPath = CFile::fs_AppendPath(Watch.f_GetPath(), EventPath);
 
 			if (Event.mask & IN_CREATE)
-				Watch.m_ChildFiles[EventPath] = CFile::fs_FileExists(FullEventPath, EFileAttrib_Directory);
+				Watch.mp_ChildFiles[EventPath] = CFile::fs_FileExists(FullEventPath, EFileAttrib_Directory);
 			else if (Event.mask & IN_DELETE)
-				Watch.m_ChildFiles.f_Remove(EventPath);
+				Watch.mp_ChildFiles.f_Remove(EventPath);
 			else if (Event.mask & IN_MOVED_FROM)
 			{
 				bool bIsDirectory = false;
-				if (auto *pIsDir = Watch.m_ChildFiles.f_FindEqual(EventPath))
+				if (auto *pIsDir = Watch.mp_ChildFiles.f_FindEqual(EventPath))
 				{
 					bIsDirectory = *pIsDir;
-					Watch.m_ChildFiles.f_Remove(EventPath);
+					Watch.mp_ChildFiles.f_Remove(EventPath);
 				}
 				auto *pChild = Watch.f_GetChild(EventPath);
 				if (pChild)
@@ -144,12 +144,12 @@ bool CFileChangeNotificationContext::CNotificationThread::f_ReadEvents()
 			{
 				if (auto pRenameFrom = PendingRenames.f_FindEqual(Event.cookie))
 				{
-					Watch.m_ChildFiles[EventPath] = pRenameFrom->m_bIsDirectory;
+					Watch.mp_ChildFiles[EventPath] = pRenameFrom->m_bIsDirectory;
 					pRenameFrom->m_pWatch->f_SetParent(&Watch, FullEventPath);
 					PendingRenames.f_Remove(pRenameFrom);
 				}
 				else
-					Watch.m_ChildFiles[EventPath] = CFile::fs_FileExists(FullEventPath, EFileAttrib_Directory);
+					Watch.mp_ChildFiles[EventPath] = CFile::fs_FileExists(FullEventPath, EFileAttrib_Directory);
 			}
 		}
 	}

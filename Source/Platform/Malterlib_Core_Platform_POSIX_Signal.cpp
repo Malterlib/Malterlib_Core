@@ -109,7 +109,7 @@ namespace NMib::NSys
 		};
 
 		// Published before installing signal handlers and cleared after removal; handlers read it without locks.
-		constinit NAtomic::TCAtomic<int> gs_SignalPipeWrite = -1;
+		constinit NAtomic::TCAtomic<int> g_SignalPipeWrite = -1;
 		constinit NAtomic::TCAtomic<umint> g_nSignalWriters = 0;
 
 		constinit TCSubSystem<CSubSystem_Core_Signal, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Signal = {DAggregateInit};
@@ -179,7 +179,7 @@ namespace NMib::NSys
 				}
 			}
 
-			int PipeWrite = gs_SignalPipeWrite.f_Load();
+			int PipeWrite = g_SignalPipeWrite.f_Load();
 			if (PipeWrite < 0)
 				return;
 
@@ -212,7 +212,7 @@ namespace NMib::NSys
 				if (iSignal == SIGWINCH && nPending)
 					nPending = 1;
 
-				for (umint i = 0; i < nPending; ++i)
+				for (umint iPending = 0; iPending < nPending; ++iPending)
 				{
 					for (auto &fOnSignal : Handler.m_Functions)
 						fOnSignal();
@@ -234,9 +234,9 @@ namespace NMib::NSys
 			using namespace NMib::NStr;
 
 #ifdef DPlatformFamily_Linux
-			if (NLocal::g_f_pipe2)
+			if (NLocal::g_fPipe2)
 			{
-				if (NLocal::g_f_pipe2(o_Pipe, O_CLOEXEC | O_NONBLOCK))
+				if (NLocal::g_fPipe2(o_Pipe, O_CLOEXEC | O_NONBLOCK))
 					DMibError("pipe2 ({}) failed with errno {}"_f << _pWhat << errno);
 			}
 			else
@@ -339,7 +339,7 @@ namespace NMib::NSys
 			m_pDispatch = fg_Move(pDispatch);
 
 			// Last, so no handler can observe a descriptor before it is being watched
-			gs_SignalPipeWrite.f_Store(Pipes[1]);
+			g_SignalPipeWrite.f_Store(Pipes[1]);
 		}
 
 		// Requires m_Lock and no registered handlers. Removal must finish before the owning loop is destroyed.
@@ -349,7 +349,7 @@ namespace NMib::NSys
 				return;
 
 			// Stop publishing the descriptor before queuing its asynchronous close.
-			gs_SignalPipeWrite.f_Store(-1);
+			g_SignalPipeWrite.f_Store(-1);
 			fg_WaitForSignalWriters();
 
 			// A replacement pipe must not inherit pending counts whose wake byte belonged to this pipe.

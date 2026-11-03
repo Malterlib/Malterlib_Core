@@ -191,7 +191,7 @@ namespace
 
 	void fg_InstallPThreadOverride()
 	{
-		DMibFastCheck(NLocal::g_f_pthread_create);
+		DMibFastCheck(NLocal::g_fPThreadCreate);
 		DMibFastCheck(!g_bThreadNotificationsInitialized);
 		g_PThreadStartPool.f_Construct();
 		g_ThreadNotificationState.f_Construct();
@@ -300,14 +300,14 @@ extern "C" assure_used module_export int pthread_create
 	// process-wide ordering. In particular, neither the executable nor a load-time
 	// DSO may create a thread before CSystem::f_InitModuleThreaded(), so normal
 	// initialization has resolved this pointer before any caller can enter.
-	DMibFastCheck(NLocal::g_f_pthread_create);
+	DMibFastCheck(NLocal::g_fPThreadCreate);
 
 	// A foreign thread can lower itself and later create one of ours, so the spawn helper has to exist before it
 	if (!g_bLinuxOwnThreadCreate)
 		fg_Linux_EnsureThreadSpawnHelper();
 
 	if (!g_bThreadNotificationsInitialized)
-		return NLocal::g_f_pthread_create(_pThread, _pAttributes, _fStart, _pArgument);
+		return NLocal::g_fPThreadCreate(_pThread, _pAttributes, _fStart, _pArgument);
 
 	CPThreadOverrideStartParams *pParams = nullptr;
 	{
@@ -323,7 +323,7 @@ extern "C" assure_used module_export int pthread_create
 		}
 	}
 	if (!pParams)
-		return NLocal::g_f_pthread_create(_pThread, _pAttributes, _fStart, _pArgument);
+		return NLocal::g_fPThreadCreate(_pThread, _pAttributes, _fStart, _pArgument);
 
 	auto Cleanup = g_OnScopeExit / [pParams]
 		{
@@ -332,7 +332,7 @@ extern "C" assure_used module_export int pthread_create
 		}
 	;
 
-	int Result = NLocal::g_f_pthread_create(_pThread, _pAttributes, &fg_PThreadOverrideStart, pParams);
+	int Result = NLocal::g_fPThreadCreate(_pThread, _pAttributes, &fg_PThreadOverrideStart, pParams);
 	if (!Result)
 		Cleanup.f_Clear();
 
@@ -564,8 +564,8 @@ using namespace NMib;
 
 constexpr umint gc_nMalterlibThreadLocals = 256; // 2 KB on 64 bit platforms
 
-constinit NThread::CLowLevelLockAggregate gc_nMalterlibThreadLocalsAllocatedLock = {DAggregateInit};
-constinit NContainer::TCBitArrayHierarchical<gc_nMalterlibThreadLocals> gc_nMalterlibThreadLocalsAllocated{};
+constinit NThread::CLowLevelLockAggregate g_MalterlibThreadLocalsAllocatedLock = {DAggregateInit};
+constinit NContainer::TCBitArrayHierarchical<gc_nMalterlibThreadLocals> g_MalterlibThreadLocalsAllocated{};
 
 extern "C" assure_used umint g_MalterlibLinuxThreadLocalsAreThreadPointerRelative = 1;
 
@@ -632,8 +632,8 @@ umint NSys::fg_Thread_AllocLocal()
 {
 	aint iThreadLocal;
 	{
-		DMibLock(gc_nMalterlibThreadLocalsAllocatedLock);
-		iThreadLocal = gc_nMalterlibThreadLocalsAllocated.f_FindFreeBitAndSet();
+		DMibLock(g_MalterlibThreadLocalsAllocatedLock);
+		iThreadLocal = g_MalterlibThreadLocalsAllocated.f_FindFreeBitAndSet();
 	}
 	if (iThreadLocal < 0)
 		DMibErrorSystemImp("Out of thread local indices");
@@ -650,11 +650,11 @@ void NSys::fg_Thread_FreeLocal(umint _iStorage)
 		DMibErrorSystemImp("Thread local index out of range");
 	bool bAllocated;
 	{
-		DMibLock(gc_nMalterlibThreadLocalsAllocatedLock);
-		bAllocated = gc_nMalterlibThreadLocalsAllocated.f_GetBit(iStorage);
+		DMibLock(g_MalterlibThreadLocalsAllocatedLock);
+		bAllocated = g_MalterlibThreadLocalsAllocated.f_GetBit(iStorage);
 		if (!bAllocated) [[unlikely]]
 			DMibErrorSystemImp("Thread local index has not been allocated");
-		gc_nMalterlibThreadLocalsAllocated.f_SetBit(iStorage, false);
+		g_MalterlibThreadLocalsAllocated.f_SetBit(iStorage, false);
 	}
 }
 #	endif

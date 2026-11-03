@@ -123,8 +123,8 @@ struct CFileChangeNotificationContext
 		template <typename tf_FOnFile>
 		void f_ForEachChildFileRecursive(CStr const &_BasePath, tf_FOnFile &&_fOnFile, bool _bRecursive)
 		{
-			for (auto &bIsDir : m_ChildFiles)
-				_fOnFile(CFile::fs_AppendPath(_BasePath, m_ChildFiles.fs_GetKey(bIsDir)), bIsDir);
+			for (auto &bIsDir : mp_ChildFiles)
+				_fOnFile(CFile::fs_AppendPath(_BasePath, mp_ChildFiles.fs_GetKey(bIsDir)), bIsDir);
 
 			if (!_bRecursive)
 				return;
@@ -144,7 +144,7 @@ struct CFileChangeNotificationContext
 	private:
 		friend struct CFileChangeNotificationContext;
 
-		TCMap<CStr, bool> m_ChildFiles;
+		TCMap<CStr, bool> mp_ChildFiles;
 		DMibListLinkDS_Link(CWatch, mp_Link);
 		DMibListLinkDS_List(CWatch, mp_Link) mp_Children;
 		CWatch *mp_pParent;

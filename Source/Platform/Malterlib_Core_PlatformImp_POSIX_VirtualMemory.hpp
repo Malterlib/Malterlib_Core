@@ -56,7 +56,7 @@ void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment,
 #	endif
 #endif
 
-	auto fl_ReportError = [&](int _ErrNo)
+	auto fReportError = [&](int _ErrNo)
 		{
 			if (_ErrNo == ENOMEM)
 				DMibErrorMemory("The OS returned an error from mmap: Out of memory (ENOMEM)");
@@ -116,7 +116,7 @@ void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment,
 		uint8 *pAddress = (uint8 *)mmap(nullptr, _Size, Protection, MapOptions, DVmTag(Tag), 0);
 
 		if (!pAddress || pAddress == MAP_FAILED)
-			fl_ReportError(errno);
+			fReportError(errno);
 
 		if (!((umint)pAddress & (_Alignment - 1)))
 		{
@@ -139,7 +139,7 @@ void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment,
 			pAddress = (uint8 *)mmap(nullptr, AllocSize, Protection, MapOptions, DVmTag(Tag + 1), 0);
 
 			if (!pAddress || pAddress == MAP_FAILED)
-				fl_ReportError(errno);
+				fReportError(errno);
 
 			uint8 *pEndAlignment = pAddress + AllocSize;
 
@@ -177,7 +177,7 @@ void *fg_AllocVirtualMemory(umint &_Size, ENumaNode _NumaNode, umint _Alignment,
 		void *pAddress = mmap(nullptr, _Size, Protection, MapOptions, DVmTag(Tag + 2), 0);
 
 		if (!pAddress || pAddress == MAP_FAILED)
-			fl_ReportError(errno);
+			fReportError(errno);
 
 		if (!(_Flags & EAllocationFlag_WillFreeWithSize))
 		{

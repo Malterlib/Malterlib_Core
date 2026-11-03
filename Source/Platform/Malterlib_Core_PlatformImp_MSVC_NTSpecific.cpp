@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------
 typedef LONG NTSTATUS;
 
+// NOLINTBEGIN(malterlib-variable-naming): the declarations of the Windows SDK, with their names
 // NOLINTBEGIN(malterlib-type-naming): the names in the Windows headers
 typedef VOID *POBJECT;
 
@@ -43,6 +44,7 @@ namespace NLocalWindows
 }
 
 // NOLINTEND(malterlib-type-naming)
+// NOLINTEND(malterlib-variable-naming)
 
 #define STATUS_SUCCESS					((NTSTATUS)0x00000000L) // NOLINT(malterlib-macro-naming)
 #define STATUS_INFO_LENGTH_MISMATCH		((NTSTATUS)0xC0000004L) // NOLINT(malterlib-macro-naming)
@@ -53,20 +55,20 @@ struct CHandleInformation
 {
 	CHandleInformation()
 	{
-		m_PSAPIDll = LoadLibrary(str_utf16("psapi.dll"));
-		if (m_PSAPIDll)
+		mp_PSAPIDll = LoadLibrary(str_utf16("psapi.dll"));
+		if (mp_PSAPIDll)
 		{
-			(FARPROC &)m_fEnumProcesses = GetProcAddress(m_PSAPIDll, "EnumProcesses");
-			(FARPROC &)m_fGetModuleBaseNameW = GetProcAddress(m_PSAPIDll, "GetModuleBaseNameW");
-			(FARPROC &)m_fGetModuleFileNameExW = GetProcAddress(m_PSAPIDll, "GetModuleFileNameExW");
-			(FARPROC &)m_fGetProcessImageFileNameW = GetProcAddress(m_PSAPIDll, "GetProcessImageFileNameW");
+			(FARPROC &)mp_fEnumProcesses = GetProcAddress(mp_PSAPIDll, "EnumProcesses");
+			(FARPROC &)mp_fGetModuleBaseNameW = GetProcAddress(mp_PSAPIDll, "GetModuleBaseNameW");
+			(FARPROC &)mp_fGetModuleFileNameExW = GetProcAddress(mp_PSAPIDll, "GetModuleFileNameExW");
+			(FARPROC &)mp_fGetProcessImageFileNameW = GetProcAddress(mp_PSAPIDll, "GetProcessImageFileNameW");
 		}
 
-		m_NTDLLDll = NLocal::g_hNtDll;
-		if (m_NTDLLDll)
+		mp_NTDLLDll = NLocal::g_NtDll;
+		if (mp_NTDLLDll)
 		{
-			(FARPROC &)m_fNTQuerySystemInformation = GetProcAddress(m_NTDLLDll, "NtQuerySystemInformation");
-			(FARPROC &)m_fNTQueryObject = GetProcAddress(m_NTDLLDll, "NtQueryObject");
+			(FARPROC &)mp_fNTQuerySystemInformation = GetProcAddress(mp_NTDLLDll, "NtQuerySystemInformation");
+			(FARPROC &)mp_fNTQueryObject = GetProcAddress(mp_NTDLLDll, "NtQueryObject");
 		}
 
 		fp_EnableDebugPrivilege();
@@ -74,10 +76,10 @@ struct CHandleInformation
 
 	~CHandleInformation()
 	{
-		if (m_PSAPIDll)
-			FreeLibrary(m_PSAPIDll);
-		if (m_NTDLLDll)
-			FreeLibrary(m_NTDLLDll);
+		if (mp_PSAPIDll)
+			FreeLibrary(mp_PSAPIDll);
+		if (mp_NTDLLDll)
+			FreeLibrary(mp_NTDLLDll);
 	}
 
 	struct CHandleInfo
@@ -94,8 +96,8 @@ private:
 		CProcessingInfo(CHandleInformation *_pThis, int32 _FileTypeID)
 		{
 			m_pThis = _pThis;
-			m_hProcess = nullptr;
-			m_hObject = nullptr;
+			m_Process = nullptr;
+			m_Object = nullptr;
 			m_FileTypeID = _FileTypeID;
 		}
 
@@ -106,44 +108,44 @@ private:
 		NThread::CMutual m_Lock;
 		NThread::CEventAutoReset m_Event;
 
-		HANDLE m_hProcess;
-		HANDLE m_hObject;
+		HANDLE m_Process;
+		HANDLE m_Object;
 
 		CByteVector m_DataBuffer;
 
 		void f_Cleanup()
 		{
-			if (m_hObject)
-				CloseHandle(m_hObject);
-			if (m_hProcess)
-				CloseHandle(m_hProcess);
+			if (m_Object)
+				CloseHandle(m_Object);
+			if (m_Process)
+				CloseHandle(m_Process);
 			m_DataBuffer.f_Clear();
 		}
 	};
 
 	NMib::NStr::CStr fp_GetObjectInfo(HANDLE _Object, NLocalWindows::OBJECT_INFORMATION_CLASS _ObjectInfoClass, CProcessingInfo &_ProcessInfo)
 	{
-		if (m_fNTQueryObject)
+		if (mp_fNTQueryObject)
 		{
-			DWORD dwSize = sizeof(NLocalWindows::OBJECT_NAME_INFORMATION);
+			DWORD Size = sizeof(NLocalWindows::OBJECT_NAME_INFORMATION);
 			CByteVector DataBuffer;
-			_ProcessInfo.m_DataBuffer.f_SetLen(dwSize);
+			_ProcessInfo.m_DataBuffer.f_SetLen(Size);
 			NLocalWindows::POBJECT_NAME_INFORMATION pObjectInfo = (NLocalWindows::POBJECT_NAME_INFORMATION)_ProcessInfo.m_DataBuffer.f_GetArray();
-			NTSTATUS ntReturn;
+			NTSTATUS Status;
 			{
 				DMibUnlock(_ProcessInfo.m_Lock);
-				ntReturn = m_fNTQueryObject(_Object, _ObjectInfoClass, pObjectInfo, dwSize, &dwSize);
+				Status = mp_fNTQueryObject(_Object, _ObjectInfoClass, pObjectInfo, Size, &Size);
 			}
-			if ((ntReturn == STATUS_BUFFER_OVERFLOW) || (ntReturn == STATUS_INFO_LENGTH_MISMATCH))
+			if ((Status == STATUS_BUFFER_OVERFLOW) || (Status == STATUS_INFO_LENGTH_MISMATCH))
 			{
-				_ProcessInfo.m_DataBuffer.f_SetLen(dwSize);
+				_ProcessInfo.m_DataBuffer.f_SetLen(Size);
 				pObjectInfo = (NLocalWindows::POBJECT_NAME_INFORMATION)_ProcessInfo.m_DataBuffer.f_GetArray();
 				{
 					DMibUnlock(_ProcessInfo.m_Lock);
-					ntReturn = m_fNTQueryObject(_Object, _ObjectInfoClass, pObjectInfo, dwSize, &dwSize);
+					Status = mp_fNTQueryObject(_Object, _ObjectInfoClass, pObjectInfo, Size, &Size);
 				}
 			}
-			if ((ntReturn >= STATUS_SUCCESS) && (pObjectInfo->Buffer != nullptr))
+			if ((Status >= STATUS_SUCCESS) && (pObjectInfo->Buffer != nullptr))
 			{
 				NMib::NStr::CWStr TempStr;
 				umint StrLen = fg_StrLen(pObjectInfo->Buffer, pObjectInfo->Length / 2);
@@ -161,25 +163,25 @@ private:
 		{
 			TCVector<NLocalWindows::SYSTEM_HANDLE> &Iter = *_pProcessInfo->m_Iter;
 			DWORD Process = _pProcessInfo->m_Iter.f_GetKey();
-			_pProcessInfo->m_hProcess = OpenProcess(PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, Process);
+			_pProcessInfo->m_Process = OpenProcess(PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, Process);
 
-			if (_pProcessInfo->m_hProcess && _pProcessInfo->m_hProcess != INVALID_HANDLE_VALUE)
+			if (_pProcessInfo->m_Process && _pProcessInfo->m_Process != INVALID_HANDLE_VALUE)
 			{
 				umint nHandles = Iter.f_GetLen();
-				for (umint i = 0; i < nHandles; ++i)
+				for (umint iHandle = 0; iHandle < nHandles; ++iHandle)
 				{
-					NLocalWindows::SYSTEM_HANDLE &SysHandle = Iter[i];
+					NLocalWindows::SYSTEM_HANDLE &SysHandle = Iter[iHandle];
 					if (SysHandle.ObjectType != _pProcessInfo->m_FileTypeID)
 						continue;
-					_pProcessInfo->m_hObject = nullptr;
+					_pProcessInfo->m_Object = nullptr;
 					if
 					(
 						DuplicateHandle
 						(
-							_pProcessInfo->m_hProcess
+							_pProcessInfo->m_Process
 							, (HANDLE)(umint)SysHandle.Handle
 							, GetCurrentProcess()
-							, &_pProcessInfo->m_hObject
+							, &_pProcessInfo->m_Object
 							, STANDARD_RIGHTS_REQUIRED
 							, FALSE
 							, DUPLICATE_SAME_ACCESS
@@ -187,23 +189,23 @@ private:
 						!= FALSE
 					)
 					{
-						CStr Name = _pProcessInfo->m_pThis->fp_GetObjectInfo(_pProcessInfo->m_hObject, NLocalWindows::ObjectNameInformation, *_pProcessInfo);
+						CStr Name = _pProcessInfo->m_pThis->fp_GetObjectInfo(_pProcessInfo->m_Object, NLocalWindows::ObjectNameInformation, *_pProcessInfo);
 
 						if (!Name.f_IsEmpty())
 						{
 							CHandleInfo &Handle = _pProcessInfo->m_pHandles->f_Insert();
-							Handle.m_ProcessName = _pProcessInfo->m_pThis->fp_GetProcessName(_pProcessInfo->m_hProcess);
+							Handle.m_ProcessName = _pProcessInfo->m_pThis->fp_GetProcessName(_pProcessInfo->m_Process);
 							Handle.m_ProcessID = Process;
 							Handle.m_HandleName = Name;
 							Handle.m_HandleID = SysHandle.Handle;
 						}
-						CloseHandle(_pProcessInfo->m_hObject);
-						_pProcessInfo->m_hObject = nullptr;
+						CloseHandle(_pProcessInfo->m_Object);
+						_pProcessInfo->m_Object = nullptr;
 					}
 					_pProcessInfo->m_Event.f_Signal();
 				}
-				CloseHandle(_pProcessInfo->m_hProcess);
-				_pProcessInfo->m_hProcess = nullptr;
+				CloseHandle(_pProcessInfo->m_Process);
+				_pProcessInfo->m_Process = nullptr;
 			}
 			++_pProcessInfo->m_Iter;
 		}
@@ -213,32 +215,32 @@ private:
 
 	void fp_EnableDebugPrivilege()
 	{
-		HANDLE hToken;
-		TOKEN_PRIVILEGES tokenPriv;
-		LUID luidDebug;
-		if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken) != FALSE)
+		HANDLE Token;
+		TOKEN_PRIVILEGES TokenPrivileges;
+		LUID DebugLuid;
+		if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &Token) != FALSE)
 		{
-			if (LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &luidDebug) != FALSE)
+			if (LookupPrivilegeValue(nullptr, SE_DEBUG_NAME, &DebugLuid) != FALSE)
 			{
-				tokenPriv.PrivilegeCount = 1;
-				tokenPriv.Privileges[0].Luid = luidDebug;
-				tokenPriv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-				if (AdjustTokenPrivileges(hToken, FALSE, &tokenPriv, sizeof(tokenPriv), nullptr, nullptr) != FALSE)
+				TokenPrivileges.PrivilegeCount = 1;
+				TokenPrivileges.Privileges[0].Luid = DebugLuid;
+				TokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+				if (AdjustTokenPrivileges(Token, FALSE, &TokenPrivileges, sizeof(TokenPrivileges), nullptr, nullptr) != FALSE)
 					DMibDTraceSafe("AdjustTokenPrivileges successful\r\n", 0);
 			}
-			CloseHandle(hToken);
+			CloseHandle(Token);
 		}
 	}
 
 	NMib::NStr::CStr fp_GetProcessName(HANDLE _Process)
 	{
 		CWStr BaseName;
-		if (m_fGetProcessImageFileNameW)
-			m_fGetProcessImageFileNameW(_Process, BaseName.f_GetStr(1024), 1024);
-		else if (m_fGetModuleFileNameExW)
-			m_fGetModuleFileNameExW(_Process, nullptr, BaseName.f_GetStr(1024), 1024);
-		else if (m_fGetModuleBaseNameW)
-			m_fGetModuleBaseNameW(_Process, nullptr, BaseName.f_GetStr(1024), 1024);
+		if (mp_fGetProcessImageFileNameW)
+			mp_fGetProcessImageFileNameW(_Process, BaseName.f_GetStr(1024), 1024);
+		else if (mp_fGetModuleFileNameExW)
+			mp_fGetModuleFileNameExW(_Process, nullptr, BaseName.f_GetStr(1024), 1024);
+		else if (mp_fGetModuleBaseNameW)
+			mp_fGetModuleBaseNameW(_Process, nullptr, BaseName.f_GetStr(1024), 1024);
 
 		return NFile::NPlatform::fg_ConvertFromWindowsPath(BaseName);
 	}
@@ -246,7 +248,7 @@ private:
 public:
 	void f_EnumHandles(TCVector<CHandleInfo> &_Handles)
 	{
-		if (!m_fNTQuerySystemInformation)
+		if (!mp_fNTQuerySystemInformation)
 			return;
 
 		int32 FileTypeID = 28;
@@ -273,38 +275,38 @@ public:
 		else
 			return; // Unsupported
 
-		DWORD dwSize = 16 * 1024 * 1024;
-		NLocalWindows::PSYSTEM_HANDLE_INFORMATION pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[dwSize];
-		NTSTATUS ntReturn = m_fNTQuerySystemInformation(DSystemHandleInformation, pHandleInfo, dwSize, &dwSize);
-		if (ntReturn == STATUS_INFO_LENGTH_MISMATCH)
+		DWORD Size = 16 * 1024 * 1024;
+		NLocalWindows::PSYSTEM_HANDLE_INFORMATION pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[Size];
+		NTSTATUS Status = mp_fNTQuerySystemInformation(DSystemHandleInformation, pHandleInfo, Size, &Size);
+		if (Status == STATUS_INFO_LENGTH_MISMATCH)
 		{
 			delete [] pHandleInfo;
-			pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[dwSize];
-			ntReturn = m_fNTQuerySystemInformation(DSystemHandleInformation, pHandleInfo, dwSize, &dwSize);
+			pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[Size];
+			Status = mp_fNTQuerySystemInformation(DSystemHandleInformation, pHandleInfo, Size, &Size);
 		}
-		if (ntReturn == STATUS_INFO_LENGTH_MISMATCH)
+		if (Status == STATUS_INFO_LENGTH_MISMATCH)
 		{
-			dwSize *= 2;
+			Size *= 2;
 			delete [] pHandleInfo;
-			pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[dwSize];
-			ntReturn = m_fNTQuerySystemInformation(DSystemHandleInformation, pHandleInfo, dwSize, &dwSize);
+			pHandleInfo = (NLocalWindows::PSYSTEM_HANDLE_INFORMATION) DMibNew BYTE[Size];
+			Status = mp_fNTQuerySystemInformation(DSystemHandleInformation, pHandleInfo, Size, &Size);
 		}
-		if (ntReturn == STATUS_SUCCESS)
+		if (Status == STATUS_SUCCESS)
 		{
 			TCMap<uint32, TCVector<NLocalWindows::SYSTEM_HANDLE>> ProcessMap;
-			for (DWORD dwIdx = 0; dwIdx < pHandleInfo->uCount; dwIdx++)
+			for (DWORD iHandle = 0; iHandle < pHandleInfo->uCount; iHandle++)
 			{
-				DWORD Process = pHandleInfo->Handles[dwIdx].uIdProcess;
-				ProcessMap[Process].f_Insert(pHandleInfo->Handles[dwIdx]);
+				DWORD Process = pHandleInfo->Handles[iHandle].uIdProcess;
+				ProcessMap[Process].f_Insert(pHandleInfo->Handles[iHandle]);
 			}
 
 			CProcessingInfo ProcessInfo(this, FileTypeID);
 			ProcessInfo.m_pHandles = &_Handles;
-			DWORD tid;
-			HANDLE hthread;
+			DWORD ThreadID;
+			HANDLE Thread;
 			{
 				DMibLock(ProcessInfo.m_Lock);
-				hthread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)fsp_ProcessThread, &ProcessInfo, 0, &tid);
+				Thread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)fsp_ProcessThread, &ProcessInfo, 0, &ThreadID);
 				ProcessInfo.m_Iter = ProcessMap;
 				while (ProcessInfo.m_Iter)
 				{
@@ -316,16 +318,16 @@ public:
 					if (bWasTimeout)
 					{
 						DMibDTraceSafe("Killed Thread!!\r\n", 0);
-						TerminateThread(hthread, 0);
-						CloseHandle(hthread);
+						TerminateThread(Thread, 0);
+						CloseHandle(Thread);
 						ProcessInfo.f_Cleanup();
 						++ProcessInfo.m_Iter;
-						hthread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)fsp_ProcessThread, &ProcessInfo, 0, &tid);
+						Thread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)fsp_ProcessThread, &ProcessInfo, 0, &ThreadID);
 					}
 				}
 			}
-			WaitForSingleObject(hthread, INFINITE);
-			CloseHandle(hthread);
+			WaitForSingleObject(Thread, INFINITE);
+			CloseHandle(Thread);
 		}
 
 		delete [] pHandleInfo;
@@ -333,15 +335,15 @@ public:
 
 private:
 	// PSAPI
-	HMODULE m_PSAPIDll;
-	BOOL (WINAPI *m_fEnumProcesses)(DWORD *o_pProcessIDs, DWORD _nBytes, DWORD *o_pBytesNeeded);
-	DWORD (WINAPI *m_fGetModuleBaseNameW)(HANDLE _pProcess, HMODULE _pModule, LPWSTR o_pBaseName, DWORD _nSize);
-	DWORD (WINAPI *m_fGetModuleFileNameExW)(HANDLE _pProcess, HMODULE _pModule, LPWSTR o_pFileName, DWORD _nSize);
-	DWORD (WINAPI *m_fGetProcessImageFileNameW)(HANDLE _pProcess, LPWSTR o_pImageFileName, DWORD _nSize);
+	HMODULE mp_PSAPIDll;
+	BOOL (WINAPI *mp_fEnumProcesses)(DWORD *o_pProcessIDs, DWORD _nBytes, DWORD *o_pBytesNeeded);
+	DWORD (WINAPI *mp_fGetModuleBaseNameW)(HANDLE _pProcess, HMODULE _pModule, LPWSTR o_pBaseName, DWORD _nSize);
+	DWORD (WINAPI *mp_fGetModuleFileNameExW)(HANDLE _pProcess, HMODULE _pModule, LPWSTR o_pFileName, DWORD _nSize);
+	DWORD (WINAPI *mp_fGetProcessImageFileNameW)(HANDLE _pProcess, LPWSTR o_pImageFileName, DWORD _nSize);
 
 	// NTDLL
-	HMODULE m_NTDLLDll;
-	NTSTATUS (WINAPI *m_fNTQuerySystemInformation)(DWORD _SystemInformationClass, PVOID o_pSystemInformation, DWORD _SystemInformationLength, PDWORD o_pReturnLength);
-	NTSTATUS (WINAPI *m_fNTQueryObject)(HANDLE _pObject, NLocalWindows::OBJECT_INFORMATION_CLASS _ObjectInformationClass, PVOID o_pObjectInformation, DWORD _Length, PDWORD o_pResultLength);
+	HMODULE mp_NTDLLDll;
+	NTSTATUS (WINAPI *mp_fNTQuerySystemInformation)(DWORD _SystemInformationClass, PVOID o_pSystemInformation, DWORD _SystemInformationLength, PDWORD o_pReturnLength);
+	NTSTATUS (WINAPI *mp_fNTQueryObject)(HANDLE _pObject, NLocalWindows::OBJECT_INFORMATION_CLASS _ObjectInformationClass, PVOID o_pObjectInformation, DWORD _Length, PDWORD o_pResultLength);
 };
 

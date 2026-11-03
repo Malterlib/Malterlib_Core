@@ -102,9 +102,9 @@ namespace
 				{
 					DMibTestPath(bThreadSignal ? "Thread" : "Process");
 					umint nReleased = 0;
-					for (umint i = 0; i < 8; ++i)
+					for (umint iAttempt = 0; iAttempt < 8; ++iAttempt)
 					{
-						DMibTestPath("Attempt {}"_f << i);
+						DMibTestPath("Attempt {}"_f << iAttempt);
 						auto Lifetime = g_OnScopeExitShared / [&]
 							{
 								++nReleased;
@@ -138,7 +138,7 @@ namespace
 						DMibExpectTrue(Loop.m_bSawPipe);
 						DMibExpectFalse(Loop.f_PipeStillOpen());
 						Lifetime.f_Clear();
-						DMibExpect(nReleased, ==, i + 1);
+						DMibExpect(nReleased, ==, iAttempt + 1);
 					}
 				}
 			};
@@ -182,7 +182,7 @@ namespace
 
 				auto fPollUntil = [&](auto const &_fReady)
 					{
-						for (umint i = 0; i < 5000 && !_fReady(); ++i)
+						for (umint iPoll = 0; iPoll < 5000 && !_fReady(); ++iPoll)
 						{
 							pLoop->f_PollAndDispatch();
 							if (!_fReady())
@@ -224,7 +224,7 @@ namespace
 					)
 				;
 
-				for (umint i = 0; i < 16; ++i)
+				for (umint iRaise = 0; iRaise < 16; ++iRaise)
 				{
 					raise(SIGWINCH);
 					raise(SIGUSR2);
@@ -345,9 +345,9 @@ namespace
 					}
 				;
 
-				for (umint i = 0; i < 64; ++i)
+				for (umint iReuse = 0; iReuse < 64; ++iReuse)
 				{
-					DMibTestPath("DescriptorReuse {}"_f << i);
+					DMibTestPath("DescriptorReuse {}"_f << iReuse);
 					auto Subscription = NSys::fg_System_RegisterForSignal
 						(
 							SIGWINCH

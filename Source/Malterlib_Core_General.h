@@ -224,27 +224,27 @@ namespace NMib
 	struct TCCopy
 	{
 		mark_nodebug TCCopy(t_CType const &_Data)
-			: m_Data(_Data)
+			: mp_Data(_Data)
 		{
 		}
 
 		mark_nodebug TCCopy(TCCopy const &_Other)
-			: m_Data(_Other.m_Data)
+			: mp_Data(_Other.mp_Data)
 		{
 		}
 
 		mark_nodebug TCCopy(TCCopy &&_Other)
-			: m_Data(_Other.m_Data)
+			: mp_Data(_Other.mp_Data)
 		{
 		}
 
 		mark_nodebug t_CType const &operator * () const
 		{
-			return m_Data;
+			return mp_Data;
 		}
 
 	private:
-		t_CType const &m_Data;
+		t_CType const &mp_Data;
 	};
 
 	template <typename tf_CType>
@@ -257,27 +257,27 @@ namespace NMib
 	struct TCByValue
 	{
 		mark_nodebug TCByValue(t_CType const &_Data)
-			: m_Data(_Data)
+			: mp_Data(_Data)
 		{
 		}
 
 		mark_nodebug TCByValue(TCByValue const &_Other)
-			: m_Data(_Other.m_Data)
+			: mp_Data(_Other.mp_Data)
 		{
 		}
 
 		mark_nodebug TCByValue(TCByValue &&_Other)
-			: m_Data(_Other.m_Data)
+			: mp_Data(_Other.mp_Data)
 		{
 		}
 
 		mark_nodebug t_CType const &operator * () const
 		{
-			return m_Data;
+			return mp_Data;
 		}
 
 	private:
-		t_CType const &m_Data;
+		t_CType const &mp_Data;
 	};
 
 	template <typename tf_CType>
@@ -291,17 +291,17 @@ namespace NMib
 	{
 		template <typename tf_CType>
 		mark_nodebug TCExplicit(tf_CType &&_Data)
-			: m_Data(fg_Forward<tf_CType>(_Data))
+			: mp_Data(fg_Forward<tf_CType>(_Data))
 		{
 		}
 
 		mark_nodebug t_CType operator * ()
 		{
-			return fg_Forward<t_CType>(m_Data);
+			return fg_Forward<t_CType>(mp_Data);
 		}
 
 	private:
-		t_CType m_Data;
+		t_CType mp_Data;
 	};
 
 	template <>
@@ -354,17 +354,17 @@ namespace NMib
 	{
 		template <typename tf_CType>
 		mark_nodebug TCAttach(tf_CType &&_Data)
-			: m_Data(fg_Forward<tf_CType>(_Data))
+			: mp_Data(fg_Forward<tf_CType>(_Data))
 		{
 		}
 
 		mark_nodebug t_CType operator * ()
 		{
-			return fg_Forward<t_CType>(m_Data);
+			return fg_Forward<t_CType>(mp_Data);
 		}
 
 	private:
-		t_CType m_Data;
+		t_CType mp_Data;
 	};
 
 	template <>
@@ -618,37 +618,37 @@ namespace NMib
 	struct TCLambdaMover
 	{
 		mark_nodebug TCLambdaMover(t_CType &&_Other)
-			: m_Type(fg_Move(_Other))
+			: mp_Type(fg_Move(_Other))
 		{
 		}
 
 		mark_nodebug TCLambdaMover(TCCopy<t_CType> &&_Other)
-			: m_Type(*_Other)
+			: mp_Type(*_Other)
 		{
 		}
 
 		mark_nodebug TCLambdaMover(TCLambdaMover const &_Other)
-			: m_Type(fg_Move(fg_RemoveQualifiers(_Other.m_Type)))
+			: mp_Type(fg_Move(fg_RemoveQualifiers(_Other.mp_Type)))
 		{
 		}
 
 		mark_nodebug TCLambdaMover(TCLambdaMover &_Other)
-			: m_Type(fg_Move(fg_RemoveQualifiers(_Other.m_Type)))
+			: mp_Type(fg_Move(fg_RemoveQualifiers(_Other.mp_Type)))
 		{
 		}
 
 		mark_nodebug TCLambdaMover(TCLambdaMover &&_Other)
-			: m_Type(fg_Move(_Other.m_Type))
+			: mp_Type(fg_Move(_Other.mp_Type))
 		{
 		}
 
 		mark_nodebug t_CType &operator * () const
 		{
-			return fg_RemoveQualifiers(m_Type);
+			return fg_RemoveQualifiers(mp_Type);
 		}
 
 	private:
-		t_CType m_Type;
+		t_CType mp_Type;
 	};
 
 	template <typename tf_CType>
@@ -847,8 +847,8 @@ namespace NMib
 	template <typename tf_CInt>
 	inline_small void fg_ByteSwap(tf_CInt *_pIn, umint _Len)
 	{
-		for (umint i = 0; i < _Len; ++i)
-			_pIn[i] = fg_ByteSwap(_pIn[i]);
+		for (umint iValue = 0; iValue < _Len; ++iValue)
+			_pIn[iValue] = fg_ByteSwap(_pIn[iValue]);
 	}
 
 	template <typename tf_CInt>
@@ -1608,8 +1608,8 @@ namespace NMib
 		constexpr TCConstExprSubStr(char const *_pString)
 			: CConstExprSubStr(m_String, t_nCharacters)
 		{
-			for (umint i = 0; i < t_nCharacters; ++i)
-				m_String[i] = _pString[i];
+			for (umint iChar = 0; iChar < t_nCharacters; ++iChar)
+				m_String[iChar] = _pString[iChar];
 			m_String[t_nCharacters] = 0;
 		}
 
@@ -1619,8 +1619,8 @@ namespace NMib
 	template <typename tf_CType>
 	static constexpr auto fg_GetTypeNameConstExprArray()
 	{
-		constexpr auto String = fg_GetTypeNameConstExpr<tf_CType>();
-		return TCConstExprSubStr<String.m_Len>{String.m_pString};
+		constexpr auto c_String = fg_GetTypeNameConstExpr<tf_CType>();
+		return TCConstExprSubStr<c_String.m_Len>{c_String.m_pString};
 	}
 
 	static constexpr uint32 fg_JenkinsHash(char const * const _pString);

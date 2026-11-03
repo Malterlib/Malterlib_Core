@@ -26,9 +26,9 @@ namespace
 				pLoop->f_SetOwnerThreadToCurrent();
 				pLoop->f_PollAndDispatch();
 
-				for (umint i = 0; i < 3; ++i)
+				for (umint iAttempt = 0; iAttempt < 3; ++iAttempt)
 				{
-					DMibTestPath("Deadline {}"_f << i);
+					DMibTestPath("Deadline {}"_f << iAttempt);
 					NTime::CStopwatch Elapsed{true};
 					umint nWaits = 0;
 					while (Elapsed.f_GetTime() < 0.02 && nWaits < 16)

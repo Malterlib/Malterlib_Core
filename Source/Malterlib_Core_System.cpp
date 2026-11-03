@@ -151,9 +151,9 @@ namespace NMib
 	}
 
 	CSystem::CSystem(bool _bIsDll)
-		: m_bIsDll(_bIsDll)
+		: mp_bIsDll(_bIsDll)
 #ifdef DCompiler_clang
-		, m_CommandLineData{DAggregateInit}
+		, mp_CommandLineData{DAggregateInit}
 #endif
 
 	{
@@ -162,13 +162,13 @@ namespace NMib
 			g_bMemoryManagerNeededAfterDestroy = true;
 #endif
 		// Things set in motion might need the g_pSys pointer
-		m_bInitDone = false;
+		mp_bInitDone = false;
 		g_pSys = this;
-		m_bRunningAsDaemon = false;
+		mp_bRunningAsDaemon = false;
 
 #if DMibSysLogSeverities
-		m_pSystemLog = nullptr;
-		m_pDefaultLogFile = nullptr;
+		mp_pSystemLog = nullptr;
+		mp_pDefaultLogFile = nullptr;
 #endif
 
 		// Construct things
@@ -180,7 +180,7 @@ namespace NMib
 		fp_CreateGlobalMemoryReporter();
 #endif
 
-		m_CommandLineData.f_Construct();
+		mp_CommandLineData.f_Construct();
 #if DMibRemoteDebugger_Enabled
 		if (NSys::fg_Process_GetEnvironmentVariable_NonProtected(NStr::CStrNonTracked("Malterlib_RemoteDebugger")) != "")
 			NDebug::NRemoteDebugger::fg_RD_InitializeClient();
@@ -199,9 +199,9 @@ namespace NMib
 
 	CSystem::~CSystem()
 	{
-		m_ProgramNameNonTracked.f_Clear();
-		m_SupportEmailNonTracked.f_Clear();
-		m_ProgramRootNonTracked.f_Clear();
+		mp_ProgramNameNonTracked.f_Clear();
+		mp_SupportEmailNonTracked.f_Clear();
+		mp_ProgramRootNonTracked.f_Clear();
 
 		fp_SubSystem_DestroyThreadLocal();
 
@@ -221,12 +221,12 @@ namespace NMib
 
 	void CSystem::fp_InitComplete()
 	{
-		m_bInitDone = true;
+		mp_bInitDone = true;
 	}
 
 	void CSystem::f_PreDestructThreadSpecific()
 	{
-		m_bDestroyingThreadSpecific = true;
+		mp_bDestroyingThreadSpecific = true;
 		fp_SubSystem_PreDestroyThreadSpecific();
 	}
 
@@ -239,7 +239,7 @@ namespace NMib
 #endif
 
 #if DMibSysLogSeverities
-		m_pSystemLog->f_SetDispatcher(nullptr);
+		mp_pSystemLog->f_SetDispatcher(nullptr);
 #endif
 
 		fp_SubSystem_DestroyThreadSpecific();
@@ -254,22 +254,22 @@ namespace NMib
 	void CSystem::f_Destruct()
 	{
 #if DMibSysLogSeverities
-		if (m_pSystemLog)
-			fg_DeleteObject(NMemory::CDefaultAllocator(), m_pSystemLog);
-		m_pSystemLog = nullptr;
+		if (mp_pSystemLog)
+			fg_DeleteObject(NMemory::CDefaultAllocator(), mp_pSystemLog);
+		mp_pSystemLog = nullptr;
 
-		if (m_pDefaultLogFile)
-			fg_DeleteObject(NMemory::CDefaultAllocator(), m_pDefaultLogFile);
-		m_pDefaultLogFile = nullptr;
+		if (mp_pDefaultLogFile)
+			fg_DeleteObject(NMemory::CDefaultAllocator(), mp_pDefaultLogFile);
+		mp_pDefaultLogFile = nullptr;
 #endif
 
-		m_ProgramName.f_Clear();
-		m_CrashHandlerPath.f_Clear();
-		m_CrashHandlerExePath.f_Clear();
-		m_CrashHandlerServer.f_Clear();
-		m_SupportEmail.f_Clear();
-		m_ProgramRoot.f_Clear();
-		m_CommandLineData.f_Destruct();
+		mp_ProgramName.f_Clear();
+		mp_CrashHandlerPath.f_Clear();
+		mp_CrashHandlerExePath.f_Clear();
+		mp_CrashHandlerServer.f_Clear();
+		mp_SupportEmail.f_Clear();
+		mp_ProgramRoot.f_Clear();
+		mp_CommandLineData.f_Destruct();
 		fp_SubSystem_DestroyBeforeMemoryManager();
 		fp_DestroyMemoryManager();
 	}
@@ -283,20 +283,20 @@ namespace NMib
 	void CSystem::f_RemoveAllLoggers()
 	{
 #if DMibSysLogSeverities
-		while (m_pSystemLog->f_PopGlobalDestination())
+		while (mp_pSystemLog->f_PopGlobalDestination())
 			;
 #	if DMibEnableTrace > 0
-		m_TraceLoggerDestination = 0;
+		mp_TraceLoggerDestination = 0;
 #	endif
-		m_StdErrLoggerDestination = 0;
-		m_FileLoggerDestination = 0;
+		mp_StdErrLoggerDestination = 0;
+		mp_FileLoggerDestination = 0;
 #endif
 	}
 
 	bool CSystem::f_HasTraceLogger() const
 	{
 #if DMibEnableTrace > 0 && DMibSysLogSeverities != 0
-		return m_TraceLoggerDestination != 0;
+		return mp_TraceLoggerDestination != 0;
 #else
 		return false;
 #endif
@@ -306,10 +306,10 @@ namespace NMib
 	{
 #if DMibEnableTrace > 0
 #	if DMibSysLogSeverities
-		if (m_TraceLoggerDestination)
+		if (mp_TraceLoggerDestination)
 		{
-			m_pSystemLog->f_RemoveGlobalDestination(m_TraceLoggerDestination);
-			m_TraceLoggerDestination = 0;
+			mp_pSystemLog->f_RemoveGlobalDestination(mp_TraceLoggerDestination);
+			mp_TraceLoggerDestination = 0;
 		}
 #	endif
 #endif
@@ -318,8 +318,8 @@ namespace NMib
 	void CSystem::f_AddStdErrLogger()
 	{
 #if DMibSysLogSeverities
-		if (!m_StdErrLoggerDestination)
-			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr());
+		if (!mp_StdErrLoggerDestination)
+			mp_StdErrLoggerDestination = mp_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr());
 #endif
 	}
 
@@ -328,15 +328,15 @@ namespace NMib
 		g_SystemModule.f_Init(this);
 		fp_ParseCommandLine();
 		// Set the default program root.
-		m_ProgramRoot = NSys::NFile::fg_GetProgramDirectory();
-		m_ProgramRootNonTracked = m_ProgramRoot;
+		mp_ProgramRoot = NSys::NFile::fg_GetProgramDirectory();
+		mp_ProgramRootNonTracked = mp_ProgramRoot;
 
 		NSys::fg_HW_GetVirtualMachineInfo(mp_VMInfo);
 
 #if DMibSysLogSeverities
-		m_pSystemLog = fg_ConstructObject<NLog::CLogger>(NMemory::CDefaultAllocator());
+		mp_pSystemLog = fg_ConstructObject<NLog::CLogger>(NMemory::CDefaultAllocator());
 
-		if (!m_pSystemLog->f_ReadConfig("Malterlib_Log_Config.txt"))
+		if (!mp_pSystemLog->f_ReadConfig("Malterlib_Log_Config.txt"))
 		{
 			[[maybe_unused]] bool bDebugOut = false;
 
@@ -349,10 +349,10 @@ namespace NMib
 
 #	if DMibEnableTrace > 0
 			if (bDebugOut)
-				m_TraceLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_DebugOut());
+				mp_TraceLoggerDestination = mp_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_DebugOut());
 #	endif
 #	if DMibSysLogStdErr
-			m_StdErrLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr());
+			mp_StdErrLoggerDestination = mp_pSystemLog->f_PushGlobalDestination(NLog::fg_LogTo_StdErr());
 #	endif
 			if (!bDisableSystemLog)
 				f_AddFileLogger();
@@ -363,7 +363,7 @@ namespace NMib
 	void CSystem::f_AddFileLogger()
 	{
 #if DMibSysLogSeverities
-		if (!m_FileLoggerDestination)
+		if (!mp_FileLoggerDestination)
 		{
 			NLog::CLogStr ProgramName = fg_GetSys()->f_GetProgramNameNonTracked();
 			if (ProgramName.f_IsEmpty())
@@ -391,10 +391,10 @@ namespace NMib
 					ProgramName = "Malterlib";
 			}
 
-			m_pDefaultLogFile = fg_ConstructObject<NLog::CLogFile>(NMemory::CDefaultAllocator());
-			//m_pDefaultLogFile->m_Filename = ProgramName + "_%TIME%.txt";
-			m_pDefaultLogFile->m_Filename = ProgramName + ".log";
-			m_FileLoggerDestination = m_pSystemLog->f_PushGlobalDestination(NLog::CFileLogger(m_pDefaultLogFile));
+			mp_pDefaultLogFile = fg_ConstructObject<NLog::CLogFile>(NMemory::CDefaultAllocator());
+			//mp_pDefaultLogFile->m_Filename = ProgramName + "_%TIME%.txt";
+			mp_pDefaultLogFile->m_Filename = ProgramName + ".log";
+			mp_FileLoggerDestination = mp_pSystemLog->f_PushGlobalDestination(NLog::CFileLogger(mp_pDefaultLogFile));
 		}
 #endif
 	}
@@ -402,14 +402,14 @@ namespace NMib
 	void CSystem::f_SetDefaultLogFileName(NLog::CLogStr const &_Name)
 	{
 #if DMibSysLogSeverities
-		m_pDefaultLogFile->m_Filename = _Name;
+		mp_pDefaultLogFile->m_Filename = _Name;
 #endif
 	}
 
 	void CSystem::f_SetDefaultLogFileDirectory(NLog::CLogStr const &_Directory)
 	{
 #if DMibSysLogSeverities
-		m_pDefaultLogFile->m_Directory = _Directory;
+		mp_pDefaultLogFile->m_Directory = _Directory;
 #endif
 	}
 
@@ -456,11 +456,11 @@ namespace NMib
 	void CSystem::f_PrepareFork()
 	{
 #if DMibSysLogSeverities
-		if (m_pSystemLog)
-			m_pSystemLog->f_PrepareFork();
+		if (mp_pSystemLog)
+			mp_pSystemLog->f_PrepareFork();
 
-		if (m_pDefaultLogFile)
-			m_pDefaultLogFile->f_PrepareFork();
+		if (mp_pDefaultLogFile)
+			mp_pDefaultLogFile->f_PrepareFork();
 #endif
 		mp_SubSystemsLock.f_Lock();
 		mp_SubSystemsLock.f_PrepareFork();
@@ -480,11 +480,11 @@ namespace NMib
 		mp_SubSystemsLock.f_ForkedChild();
 		mp_SubSystemsLock.f_Unlock();
 #if DMibSysLogSeverities
-		if (m_pDefaultLogFile)
-			m_pDefaultLogFile->f_ForkedChild();
+		if (mp_pDefaultLogFile)
+			mp_pDefaultLogFile->f_ForkedChild();
 
-		if (m_pSystemLog)
-			m_pSystemLog->f_ForkedChild();
+		if (mp_pSystemLog)
+			mp_pSystemLog->f_ForkedChild();
 #endif
 	}
 
@@ -498,11 +498,11 @@ namespace NMib
 		mp_SubSystemsLock.f_ForkedParent();
 		mp_SubSystemsLock.f_Unlock();
 #if DMibSysLogSeverities
-		if (m_pDefaultLogFile)
-			m_pDefaultLogFile->f_ForkedParent();
+		if (mp_pDefaultLogFile)
+			mp_pDefaultLogFile->f_ForkedParent();
 
-		if (m_pSystemLog)
-			m_pSystemLog->f_ForkedParent();
+		if (mp_pSystemLog)
+			mp_pSystemLog->f_ForkedParent();
 #endif
 	}
 
@@ -632,21 +632,21 @@ namespace NMib
 
 	void CSystem::fp_ParseCommandLine()
 	{
-		m_CommandLineData->m_CommandLine = NSys::fg_CommandLineParameters();
+		mp_CommandLineData->m_CommandLine = NSys::fg_CommandLineParameters();
 
-		int nParams = fsg_ParseCommandLine(m_CommandLineData->m_CommandLine, nullptr);
+		int nParams = fsg_ParseCommandLine(mp_CommandLineData->m_CommandLine, nullptr);
 		if (nParams)
 		{
-			m_CommandLineData->m_lCommandLineParameters.f_SetLen(nParams);
-			fsg_ParseCommandLine(m_CommandLineData->m_CommandLine, m_CommandLineData->m_lCommandLineParameters.f_GetArray());
+			mp_CommandLineData->m_CommandLineParameters.f_SetLen(nParams);
+			fsg_ParseCommandLine(mp_CommandLineData->m_CommandLine, mp_CommandLineData->m_CommandLineParameters.f_GetArray());
 		}
 	}
 
 	void CSystem::f_SetCrashHandler(NStr::CStr const &_Path, NStr::CStr const &_Server)
 	{
-		m_CrashHandlerPath = _Path;
-		m_CrashHandlerServer = _Server;
-		m_CrashHandlerExePath = NFile::CFile::fs_GetProgramPath();
+		mp_CrashHandlerPath = _Path;
+		mp_CrashHandlerServer = _Server;
+		mp_CrashHandlerExePath = NFile::CFile::fs_GetProgramPath();
 	}
 
 	NContainer::TCVector<NStr::CStr> CSystem::fs_ParseCommandLine(NStr::CStr const &_CommandLine)
@@ -663,7 +663,7 @@ namespace NMib
 
 	NStr::CStr CSystem::f_CommandLineParameters()
 	{
-		return m_CommandLineData->m_CommandLine;
+		return mp_CommandLineData->m_CommandLine;
 	}
 
 	NContainer::TCVector<NMib::NStr::CStr> CSystem::f_GetCommandLineArgs() const
@@ -675,12 +675,12 @@ namespace NMib
 
 	aint CSystem::f_NumCommandLineParameters()
 	{
-		return m_CommandLineData->m_lCommandLineParameters.f_GetLen();
+		return mp_CommandLineData->m_CommandLineParameters.f_GetLen();
 	}
 
 	NStr::CStr CSystem::f_CommandLineParameter(aint _iIndex)
 	{
-		return m_CommandLineData->m_lCommandLineParameters[_iIndex];
+		return mp_CommandLineData->m_CommandLineParameters[_iIndex];
 	}
 
 	/************************************************************************************************\

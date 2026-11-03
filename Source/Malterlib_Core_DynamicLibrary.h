@@ -41,20 +41,20 @@ Docs:
 			{
 			}
 
-			decltype(&::uuid_generate) uuid_generate = nullptr;
-			decltype(&::uuid_unparse) uuid_unparse = nullptr;
+			decltype(&::uuid_generate) m_fUUIDGenerate = nullptr;
+			decltype(&::uuid_unparse) m_fUUIDUnparse = nullptr;
 
 		protected:
 			void fp_ClearSymbols() override
 			{
-				uuid_generate = nullptr;
-				uuid_unparse = nullptr;
+				m_fUUIDGenerate = nullptr;
+				m_fUUIDUnparse = nullptr;
 			}
 
 			void fp_FetchSymbols() override
 			{
-				fp_Fetch(uuid_generate, "uuid_generate");
-				fp_Fetch(uuid_unparse, "uuid_unparse");
+				fp_Fetch(m_fUUIDGenerate, "uuid_generate");
+				fp_Fetch(m_fUUIDUnparse, "uuid_unparse");
 			}
 		};
 
@@ -67,7 +67,7 @@ Docs:
 		if (UUIDLibrary.f_OK)
 		{
 			uuid_t UUID;
-			UUIDLibrary.uuid_generate(UUID);
+			UUIDLibrary.m_fUUIDGenerate(UUID);
 		}
 */
 

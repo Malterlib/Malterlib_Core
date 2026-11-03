@@ -34,14 +34,14 @@ namespace NMib
 
 				struct CFileKey
 				{
-					decltype(stat::st_dev) st_dev;
-					decltype(stat::st_ino) st_ino;
+					decltype(stat::st_dev) m_Device;
+					decltype(stat::st_ino) m_Inode;
 
 					auto operator <=> (CFileKey const &_Right) const noexcept = default;
 
 					CFileKey(struct stat const &_Init)
-						: st_dev(_Init.st_dev)
-						, st_ino(_Init.st_ino)
+						: m_Device(_Init.st_dev)
+						, m_Inode(_Init.st_ino)
 					{
 					}
 				};

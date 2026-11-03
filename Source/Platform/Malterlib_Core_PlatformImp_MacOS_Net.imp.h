@@ -63,15 +63,15 @@ bool CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress &o_Addr, NMi
 		sockaddr_ctl SockAddr;
 		fg_MemClear(SockAddr);
 
-		int fd = socket(PF_SYSTEM, SocketType, SYSPROTO_CONTROL);
-		if (fd == -1)
+		int Socket = socket(PF_SYSTEM, SocketType, SYSPROTO_CONTROL);
+		if (Socket == -1)
 			return false;
 
 		auto Cleanup = fg_OnScopeExit
 			(
 				[&]()
 				{
-					close(fd);
+					close(Socket);
 				}
 			)
 		;
@@ -83,7 +83,7 @@ bool CPOSIXImpSpecificSocketContext::f_ResolveAddress(CPOSIXAddress &o_Addr, NMi
 		fg_MemClear(CtlInfo);
 		fg_StrCopy(CtlInfo.ctl_name, Address.f_GetStr(), sizeof(CtlInfo.ctl_name));
 
-		if (ioctl(fd, CTLIOCGINFO, &CtlInfo))
+		if (ioctl(Socket, CTLIOCGINFO, &CtlInfo))
 			return false;
 
 		SockAddr.sc_id = CtlInfo.ctl_id;

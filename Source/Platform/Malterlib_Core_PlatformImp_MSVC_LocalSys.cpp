@@ -491,38 +491,38 @@ struct CSystemWindowsMSVC : public CSystem
 
 			// Raw Win32 event: the notification thread needs an alertable
 			// WaitForSingleObjectEx for APC delivery, which futex events cannot provide
-			HANDLE m_hWakeEvent;
+			HANDLE m_WakeEvent;
 			NAtomic::TCAtomic<uint32> m_bQuit;
 
 			CNotificationBundle(CFileChangeNoticationContext *_pContext)
-				: m_hWakeEvent(CreateEventA(nullptr, false, false, nullptr))
+				: m_WakeEvent(CreateEventA(nullptr, false, false, nullptr))
 				, m_bQuit(0)
 			{
 				m_pContext = _pContext;
-				for (umint i = 0; i < mc_NumNotifications; ++i)
+				for (umint iNotification = 0; iNotification < mc_NumNotifications; ++iNotification)
 				{
-					m_Notifications[i].m_pBundle = this;
-					m_Free.f_Insert(m_Notifications[i]);
+					m_Notifications[iNotification].m_pBundle = this;
+					m_Free.f_Insert(m_Notifications[iNotification]);
 				}
 			}
 
 			~CNotificationBundle()
 			{
-				// The worker may still be blocked on m_hWakeEvent; it must be stopped
+				// The worker may still be blocked on m_WakeEvent; it must be stopped
 				// before the handle is closed (closing a handle with a pending wait is
 				// undefined, and the base destructor's f_Stop would come too late)
 				f_StopBundle();
 
-				if (m_hWakeEvent)
+				if (m_WakeEvent)
 				{
-					::CloseHandle(m_hWakeEvent);
-					m_hWakeEvent = nullptr;
+					::CloseHandle(m_WakeEvent);
+					m_WakeEvent = nullptr;
 				}
 			}
 
 			void f_Wake()
 			{
-				SetEvent(m_hWakeEvent);
+				SetEvent(m_WakeEvent);
 			}
 
 			umint f_StopBundle()
@@ -530,7 +530,7 @@ struct CSystemWindowsMSVC : public CSystem
 				// Set the quit flag before waking so the thread cannot re-park
 				// between the wake and CThread::f_Stop's state change
 				m_bQuit.f_Store(1);
-				SetEvent(m_hWakeEvent);
+				SetEvent(m_WakeEvent);
 				return f_Stop();
 			}
 
@@ -577,7 +577,7 @@ struct CSystemWindowsMSVC : public CSystem
 						}
 					}
 
-					WaitForSingleObjectEx(m_hWakeEvent, INFINITE, true);
+					WaitForSingleObjectEx(m_WakeEvent, INFINITE, true);
 					{
 						CNotification *pPop;
 						{
@@ -754,13 +754,13 @@ struct CSystemWindowsMSVC : public CSystem
 
 	bool f_EnablePrivilege(TCHAR const *_pPrivilege, BOOL _bEnable)
 	{
-		HANDLE hToken;
-		TOKEN_PRIVILEGES tp;
-		BOOL status;
-		DWORD error;
+		HANDLE Token;
+		TOKEN_PRIVILEGES TokenPrivileges;
+		BOOL bAdjusted;
+		DWORD Error;
 
 		// open process token
-		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &Token))
 		{
 			[[maybe_unused]] uint32 LastError = GetLastError();
 			DMibTrace("OpenProcessToken failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
@@ -771,7 +771,7 @@ struct CSystemWindowsMSVC : public CSystem
 				[&]()
 				{
 					// close the handle
-					if (!CloseHandle(hToken))
+					if (!CloseHandle(Token))
 					{
 						[[maybe_unused]] uint32 LastError = GetLastError();
 						DMibTrace("CloseHandle failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
@@ -781,30 +781,30 @@ struct CSystemWindowsMSVC : public CSystem
 		;
 
 		// get the luid
-		if (!LookupPrivilegeValue(NULL, _pPrivilege, &tp.Privileges[0].Luid))
+		if (!LookupPrivilegeValue(NULL, _pPrivilege, &TokenPrivileges.Privileges[0].Luid))
 		{
 			[[maybe_unused]] uint32 LastError = GetLastError();
 			DMibTrace("LookupPrivilegeValue failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
 			return false;
 		}
 
-		tp.PrivilegeCount = 1;
+		TokenPrivileges.PrivilegeCount = 1;
 
 		// enable or disable privilege
 		if (_bEnable)
-			tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+			TokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 		else
-			tp.Privileges[0].Attributes = 0;
+			TokenPrivileges.Privileges[0].Attributes = 0;
 
 		// enable or disable privilege
-		status = AdjustTokenPrivileges(hToken, FALSE, &tp, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+		bAdjusted = AdjustTokenPrivileges(Token, FALSE, &TokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
 
 		// It is possible for AdjustTokenPrivileges to return TRUE and still not succeed.
 		// So always check for the last error value.
-		error = GetLastError();
-		if (!status || (error != ERROR_SUCCESS))
+		Error = GetLastError();
+		if (!bAdjusted || (Error != ERROR_SUCCESS))
 		{
-			[[maybe_unused]] uint32 LastError = error;
+			[[maybe_unused]] uint32 LastError = Error;
 			DMibTrace("AdjustTokenPrivileges failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
 			return false;
 		}
@@ -886,8 +886,8 @@ struct CSystemWindowsMSVC : public CSystem
 		m_ProgramDir_CStrNonTracked = m_ProgramDir_CStr;
 		m_ProgramPath_CStrNonTracked = m_ProgramPath_CStr;
 
-		m_ProgramRoot = m_ProgramDir_CStr;
-		m_ProgramRootNonTracked = m_ProgramRoot;
+		mp_ProgramRoot = m_ProgramDir_CStr;
+		mp_ProgramRootNonTracked = mp_ProgramRoot;
 	}
 
 	~CSystemWindowsMSVC()
@@ -969,19 +969,19 @@ struct CSystemWindowsMSVC : public CSystem
 				AddAtom(str_utf16("IdsAssertAtom"));
 				m_pSetAssertInfo = &fs_SetAssertInfo;
 				umint PausePointer = (umint)m_pSetAssertInfo;
-				for (umint i = 0; i < sizeof(umint) * 8; ++i)
+				for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 				{
-					if (PausePointer & (umint(1) << i))
-						AddAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << i));
+					if (PausePointer & (umint(1) << iBit))
+						AddAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit));
 				}
 			}
 			else
 			{
 				umint PausePointer = 0;
-				for (umint i = 0; i < sizeof(umint) * 8; ++i)
+				for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 				{
-					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << i)))
-						PausePointer |= (umint(1) << i);
+					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit)))
+						PausePointer |= (umint(1) << iBit);
 				}
 				m_pSetAssertInfo = (FSetAssertInfo *)PausePointer;
 			}
@@ -991,10 +991,10 @@ struct CSystemWindowsMSVC : public CSystem
 			if (FindAtom(str_utf16("IdsAssertAtom")))
 			{
 				umint PausePointer = 0;
-				for (umint i = 0; i < sizeof(umint) * 8; ++i)
+				for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 				{
-					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << i)))
-						PausePointer |= (umint(1) << i);
+					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit)))
+						PausePointer |= (umint(1) << iBit);
 				}
 				m_pSetAssertInfo = (FSetAssertInfo *)PausePointer;
 			}
@@ -1082,7 +1082,7 @@ struct CSystemWindowsMSVC : public CSystem
 	{
 		fs_VectoredHandler3(_pExceptionInfo);
 
-		HMODULE pNtDll = NLocal::g_hNtDll;
+		HMODULE pNtDll = NLocal::g_NtDll;
 
 		if (!pNtDll)
 			return 0;
@@ -1208,11 +1208,11 @@ struct CSystemWindowsMSVC : public CSystem
 			bool bInstalled = false;
 			if (NLocal::g_OptionalFunctions.m_fGetProcessUserModeExceptionPolicy)
 			{
-				DWORD dwFlags;
-				if (NLocal::g_OptionalFunctions.m_fGetProcessUserModeExceptionPolicy(&dwFlags))
+				DWORD Flags;
+				if (NLocal::g_OptionalFunctions.m_fGetProcessUserModeExceptionPolicy(&Flags))
 				{
-					dwFlags = dwFlags & ~PROCESS_CALLBACK_FILTER_ENABLED;
-					NLocal::g_OptionalFunctions.m_fSetProcessUserModeExceptionPolicy(dwFlags);
+					Flags = Flags & ~PROCESS_CALLBACK_FILTER_ENABLED;
+					NLocal::g_OptionalFunctions.m_fSetProcessUserModeExceptionPolicy(Flags);
 				}
 			}
 			else if (NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo)
