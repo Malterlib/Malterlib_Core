@@ -236,7 +236,7 @@ namespace
 #	endif
 
 #	if defined(DMibConfig_LinuxOptimizeGlibcThreadLocals) && !defined(DMibStaticThreadLocals)
-	umint fg_Glibc_Thread_AllocLocal(bool _bFast, void(_fDestructor)(void *))
+	umint fg_Glibc_Thread_AllocLocal(bool _bFast, void(_fDestructor)(void *_pData))
 	{
 		fg_Glibc_ValidateThreadLocalLayout();
 
@@ -256,7 +256,7 @@ namespace
 			if (!pSequence->f_CompareExchangeStrong(Expected, Sequence + 1, NAtomic::gc_MemoryOrder_AcquireRelease, NAtomic::gc_MemoryOrder_Acquire))
 				continue;
 
-			auto pDestructor = reinterpret_cast<void (**)(void *)>(fg_Glibc_GetThreadKey(iStorage) + _thread_db_pthread_key_struct_destr[EGlibcThreadDbDescriptor_Offset]);
+			auto pDestructor = reinterpret_cast<void (**)(void *_pData)>(fg_Glibc_GetThreadKey(iStorage) + _thread_db_pthread_key_struct_destr[EGlibcThreadDbDescriptor_Offset]);
 			*pDestructor = _fDestructor;
 
 			return iStorage;
