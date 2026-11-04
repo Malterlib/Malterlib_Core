@@ -74,7 +74,9 @@ Property
 		URL MalterlibGitOriginRemote
 		ExcludeFromSeen true
 		Format true
-		Tidy {Enabled: true}
+		// BuildSystem holds only what the build generates, which also includes third-party headers when the compiled files
+		// are in the checkout, as on the CI runners.
+		Tidy {Enabled: true, ExcludeFiles: ["BuildSystem/*"]}
 		Hooks #<"pre-commit"> MalterlibRootPreCommitHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
