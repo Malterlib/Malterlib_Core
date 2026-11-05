@@ -24,54 +24,66 @@ namespace NMib
 
 		struct CNullPasswordManager : public CLinuxPasswordManager
 		{
-			CNullPasswordManager()
-			{
-			}
+			CNullPasswordManager();
+			~CNullPasswordManager();
 
-			~CNullPasswordManager()
-			{
-			}
-
-			bool f_OK() const override
-			{
-				return true;
-			}
-
-			bool f_SecurePassword_IsLocked() override
-			{
-				return true;
-			}
-
-			ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location) override
-			{
-				return ESecurePassword_Failure;
-			}
-
-			ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password) override
-			{
-				return ESecurePassword_Failure;
-			}
-
-			ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const &_Key) override
-			{
-				return ESecurePassword_Failure;
-			}
-
-			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password) override
-			{
-				return ESecurePassword_Failure;
-			}
-
-			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key) override
-			{
-				return ESecurePassword_Failure;
-			}
-
-			bool f_SecurePassword_Supported() override
-			{
-				return false;
-			}
+			bool f_OK() const override;
+			bool f_SecurePassword_IsLocked() override;
+			ESecurePassword f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location) override;
+			ESecurePassword f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password) override;
+			ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const &_Key) override;
+			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password) override;
+			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key) override;
+			bool f_SecurePassword_Supported() override;
 		};
+
+		CNullPasswordManager::CNullPasswordManager()
+		{
+		}
+
+		CNullPasswordManager::~CNullPasswordManager()
+		{
+		}
+
+		bool CNullPasswordManager::f_OK() const
+		{
+			return true;
+		}
+
+		bool CNullPasswordManager::f_SecurePassword_IsLocked()
+		{
+			return true;
+		}
+
+		ESecurePassword CNullPasswordManager::f_SecurePassword_SetLocation(NMib::NStr::CStr const &_Location)
+		{
+			return ESecurePassword_Failure;
+		}
+
+		ESecurePassword CNullPasswordManager::f_SecurePassword_Store(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure const &_Password)
+		{
+			return ESecurePassword_Failure;
+		}
+
+		ESecurePassword CNullPasswordManager::f_SecurePassword_Remove(NMib::NStr::CStr const &_Key)
+		{
+			return ESecurePassword_Failure;
+		}
+
+		ESecurePassword CNullPasswordManager::f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password)
+		{
+			return ESecurePassword_Failure;
+		}
+
+		ESecurePassword CNullPasswordManager::f_SecurePassword_Exists(NMib::NStr::CStr const &_Key)
+		{
+			return ESecurePassword_Failure;
+		}
+
+		bool CNullPasswordManager::f_SecurePassword_Supported()
+		{
+			return false;
+		}
 
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLinuxPasswordManager(NDBus::CSystem *_pDBus)
 		{

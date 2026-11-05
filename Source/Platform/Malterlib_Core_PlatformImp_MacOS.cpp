@@ -414,6 +414,24 @@ NMib::NSys::EDesktopEnvironment NMib::NSys::fg_DesktopEnvironment_Get()
 
 struct CSystemMacOS : public CSystem
 {
+	CSystemMacOS();
+	~CSystemMacOS();
+
+	static void fs_ForkPrepare();
+	static void fs_ForkParentOrChild();
+	static void fs_ForkParent();
+	static void fs_ForkChild();
+	static void fs_ForkChildStart();
+	static void fs_ForkChildFinished();
+
+	void f_InitThreadLocal();
+	void f_Init();
+	void f_DestroyThreadSpecific();
+	void f_Destruct();
+
+	static void fs_ThreadDestructionHook(void *_pThreadID);
+	void f_RegisterDestructionHookForThread();
+
 	CSystem_POSIX m_Posix;
 
 	pthread_key_t m_ForkThreadLocal;
@@ -426,175 +444,175 @@ struct CSystemMacOS : public CSystem
 
 	bool m_bForkedChild = false;
 
-	static void fs_ForkPrepare()
-	{
-		auto &Sys = *fg_GetLocalSys();
-		if (!pthread_getspecific(Sys.m_ForkThreadLocal))
-		{
-			pthread_setspecific(Sys.m_ForkThreadLocal, (void *)(umint)getpid());
-			Sys.m_Posix.f_GetMalterlibDisableStdErrLog(); // getenv fails on forked process, to workaround this here
+	NMib::NStorage::TCAggregate<NMib::NMacOSRuntime::CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
+};
 
-			Sys.m_Posix.m_ForkLock.f_Lock();
-			Sys.m_Posix.m_ForkLock.f_PrepareFork();
-			Sys.f_PrepareFork();
-		}
+CSystemMacOS::CSystemMacOS()
+	: CSystem(g_bIsSharedLibrary)
+	, m_SocketContext{DAggregateInit}
+	, m_SharedIoLoop{DAggregateInit}
+	, m_FileChangeNoticationContext{DAggregateInit}
+	, m_TimerFrequency{}
+	, m_ForkThreadLocal(TCLimitsInt<pthread_key_t>::mc_Max)
+{
+	fg_MemClear(m_SocketContext);
+	fg_MemClear(m_SharedIoLoop);
+
+	fp_InitComplete();
+}
+
+CSystemMacOS::~CSystemMacOS()
+{
+}
+
+void CSystemMacOS::fs_ForkPrepare()
+{
+	auto &Sys = *fg_GetLocalSys();
+	if (!pthread_getspecific(Sys.m_ForkThreadLocal))
+	{
+		pthread_setspecific(Sys.m_ForkThreadLocal, (void *)(umint)getpid());
+		Sys.m_Posix.f_GetMalterlibDisableStdErrLog(); // getenv fails on forked process, to workaround this here
+
+		Sys.m_Posix.m_ForkLock.f_Lock();
+		Sys.m_Posix.m_ForkLock.f_PrepareFork();
+		Sys.f_PrepareFork();
 	}
+}
 
-	static void fs_ForkParentOrChild()
+void CSystemMacOS::fs_ForkParentOrChild()
+{
+	auto &Sys = *fg_GetLocalSys();
+	if (Sys.m_ForkThreadLocal == TCLimitsInt<pthread_key_t>::mc_Max)
+		return;
+	void *pCurrent = pthread_getspecific(Sys.m_ForkThreadLocal);
+	if (pCurrent)
 	{
-		auto &Sys = *fg_GetLocalSys();
-		if (Sys.m_ForkThreadLocal == TCLimitsInt<pthread_key_t>::mc_Max)
-			return;
-		void *pCurrent = pthread_getspecific(Sys.m_ForkThreadLocal);
-		if (pCurrent)
-		{
 #ifdef DMibSanitizerEnabled_Thread
-			if (pCurrent == (void *)(umint)getpid())
-				__tsan_forked_parent();
-			else
-				__tsan_forked_child();
-#endif
-
-			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
-			if (pCurrent != (void *)(umint)getpid())
-				Sys.m_bForkedChild = true;
-			if (pCurrent == (void *)(umint)getpid())
-			{
-				Sys.f_ForkedParent(); // Parent
-				Sys.m_Posix.m_ForkLock.f_ForkedParent();
-				Sys.m_Posix.m_ForkLock.f_Unlock();
-			}
-			else
-			{
-				Sys.f_ForkedChild(); // Child
-				Sys.m_Posix.m_ForkLock.f_ForkedChild();
-				Sys.m_Posix.m_ForkLock.f_Unlock();
-			}
-		}
-	}
-
-	static void fs_ForkParent()
-	{
-		auto &Sys = *fg_GetLocalSys();
-		if (pthread_getspecific(Sys.m_ForkThreadLocal))
-		{
-#ifdef DMibSanitizerEnabled_Thread
+		if (pCurrent == (void *)(umint)getpid())
 			__tsan_forked_parent();
+		else
+			__tsan_forked_child();
 #endif
-			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
-			Sys.f_ForkedParent();
+
+		pthread_setspecific(Sys.m_ForkThreadLocal, 0);
+		if (pCurrent != (void *)(umint)getpid())
+			Sys.m_bForkedChild = true;
+		if (pCurrent == (void *)(umint)getpid())
+		{
+			Sys.f_ForkedParent(); // Parent
 			Sys.m_Posix.m_ForkLock.f_ForkedParent();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
 		}
-	}
-
-	static void fs_ForkChild()
-	{
-		fs_ForkChildStart();
-		fs_ForkChildFinished();
-	}
-
-	static void fs_ForkChildStart()
-	{
-		auto &Sys = *fg_GetLocalSys();
-		if (pthread_getspecific(Sys.m_ForkThreadLocal))
+		else
 		{
-			g_bForking = true;
-#ifdef DMibSanitizerEnabled_Thread
-			__tsan_forked_child();
-#endif
-			pthread_setspecific(Sys.m_ForkThreadLocal, 0);
-			Sys.m_bForkedChild = true;
-			g_bCanStartThreads = false;
-			Sys.f_ForkedChild();
+			Sys.f_ForkedChild(); // Child
 			Sys.m_Posix.m_ForkLock.f_ForkedChild();
 			Sys.m_Posix.m_ForkLock.f_Unlock();
-
-			if (!g_bRegisteredAtFork)
-				g_bForking = false;
 		}
 	}
+}
 
-	static void fs_ForkChildFinished()
+void CSystemMacOS::fs_ForkParent()
+{
+	auto &Sys = *fg_GetLocalSys();
+	if (pthread_getspecific(Sys.m_ForkThreadLocal))
 	{
-		if (!g_bCanStartThreads)
-		{
-			g_bCanStartThreads = true;
-			auto &Sys = *fg_GetLocalSys();
-			Sys.f_MemoryManager_CanStartThreads();
-			fg_MalterlibMallocOverride_CanStartThreads();
-		}
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_forked_parent();
+#endif
+		pthread_setspecific(Sys.m_ForkThreadLocal, 0);
+		Sys.f_ForkedParent();
+		Sys.m_Posix.m_ForkLock.f_ForkedParent();
+		Sys.m_Posix.m_ForkLock.f_Unlock();
 	}
+}
 
-	CSystemMacOS()
-		: CSystem(g_bIsSharedLibrary)
-		, m_SocketContext{DAggregateInit}
-		, m_SharedIoLoop{DAggregateInit}
-		, m_FileChangeNoticationContext{DAggregateInit}
-		, m_TimerFrequency{}
-		, m_ForkThreadLocal(TCLimitsInt<pthread_key_t>::mc_Max)
+void CSystemMacOS::fs_ForkChild()
+{
+	fs_ForkChildStart();
+	fs_ForkChildFinished();
+}
+
+void CSystemMacOS::fs_ForkChildStart()
+{
+	auto &Sys = *fg_GetLocalSys();
+	if (pthread_getspecific(Sys.m_ForkThreadLocal))
 	{
-		fg_MemClear(m_SocketContext);
-		fg_MemClear(m_SharedIoLoop);
+		g_bForking = true;
+#ifdef DMibSanitizerEnabled_Thread
+		__tsan_forked_child();
+#endif
+		pthread_setspecific(Sys.m_ForkThreadLocal, 0);
+		Sys.m_bForkedChild = true;
+		g_bCanStartThreads = false;
+		Sys.f_ForkedChild();
+		Sys.m_Posix.m_ForkLock.f_ForkedChild();
+		Sys.m_Posix.m_ForkLock.f_Unlock();
 
-		fp_InitComplete();
+		if (!g_bRegisteredAtFork)
+			g_bForking = false;
 	}
+}
 
-	~CSystemMacOS()
+void CSystemMacOS::fs_ForkChildFinished()
+{
+	if (!g_bCanStartThreads)
 	{
+		g_bCanStartThreads = true;
+		auto &Sys = *fg_GetLocalSys();
+		Sys.f_MemoryManager_CanStartThreads();
+		fg_MalterlibMallocOverride_CanStartThreads();
 	}
+}
 
-	void f_InitThreadLocal()
-	{
-		if (auto ErrNo = pthread_key_create(&m_ForkThreadLocal, nullptr))
-			DMibError(NMib::NPlatform::fg_FormatErrno("pthread_key_create", ErrNo));
-	}
+void CSystemMacOS::f_InitThreadLocal()
+{
+	if (auto ErrNo = pthread_key_create(&m_ForkThreadLocal, nullptr))
+		DMibError(NMib::NPlatform::fg_FormatErrno("pthread_key_create", ErrNo));
+}
 
-	void f_Init()
-	{
-		CSystem::f_Init();
-	}
+void CSystemMacOS::f_Init()
+{
+	CSystem::f_Init();
+}
 
-	void f_DestroyThreadSpecific()
-	{
-		CSystem::f_PreDestructThreadSpecific();
+void CSystemMacOS::f_DestroyThreadSpecific()
+{
+	CSystem::f_PreDestructThreadSpecific();
 
-		m_Posix.f_DestroyThreadSpecific();
+	m_Posix.f_DestroyThreadSpecific();
 
-		if (m_FileChangeNoticationContext.f_IsConstructed())
-			m_FileChangeNoticationContext.f_Destruct();
+	if (m_FileChangeNoticationContext.f_IsConstructed())
+		m_FileChangeNoticationContext.f_Destruct();
 
-		CSystem::f_DestructThreadSpecific();
+	CSystem::f_DestructThreadSpecific();
 
-		// Subsystem teardown may still deregister; keep the loop alive until those removals can drain.
-		if (m_SharedIoLoop.f_IsConstructed())
-			m_SharedIoLoop.f_Destruct();
-	}
+	// Subsystem teardown may still deregister; keep the loop alive until those removals can drain.
+	if (m_SharedIoLoop.f_IsConstructed())
+		m_SharedIoLoop.f_Destruct();
+}
 
-	void f_Destruct()
-	{
-		m_Posix.f_Destruct();
+void CSystemMacOS::f_Destruct()
+{
+	m_Posix.f_Destruct();
 
-		if (m_SocketContext.f_IsConstructed())
-			m_SocketContext.f_Destruct();
+	if (m_SocketContext.f_IsConstructed())
+		m_SocketContext.f_Destruct();
 
-		CSystem::f_Destruct();
+	CSystem::f_Destruct();
 
-		if (auto ErrNo = pthread_key_delete(m_ForkThreadLocal))
-			DMibError(NMib::NPlatform::fg_FormatErrno("pthread_key_delete", ErrNo));
-	}
+	if (auto ErrNo = pthread_key_delete(m_ForkThreadLocal))
+		DMibError(NMib::NPlatform::fg_FormatErrno("pthread_key_delete", ErrNo));
+}
 
-	static void fs_ThreadDestructionHook(void *_pThreadID)
-	{
-		fg_GetSys()->f_ThreadLocalFreeThread();
-	}
+void CSystemMacOS::fs_ThreadDestructionHook(void *_pThreadID)
+{
+	fg_GetSys()->f_ThreadLocalFreeThread();
+}
 
-	void f_RegisterDestructionHookForThread()
-	{
-	}
-
-	NMib::NStorage::TCAggregate<NMib::NMacOSRuntime::CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
-};
+void CSystemMacOS::f_RegisterDestructionHookForThread()
+{
+}
 
 static inline_small CSystemMacOS *fg_GetLocalSys()
 {
@@ -1900,21 +1918,16 @@ namespace
 {
 	struct CThreadNotificationRegistration
 	{
-		auto f_GetModule() const -> NSys::NPrivate::CThreadNotificationModule *
-		{
-			using CNotifications = NContainer::TCMapWithPool
-				<
-					NSys::NPrivate::CThreadNotificationModule *
-					, CThreadNotificationRegistration
-					, CSort_Default
-					, NMemory::CAllocator_VirtualNoTracking
-				>
-			;
-			return CNotifications::fs_GetKey(*this);
-		}
+		auto f_GetModule() const -> NSys::NPrivate::CThreadNotificationModule *;
 
 		DMibListLinkDS_Link(CThreadNotificationRegistration, m_Link);
 	};
+
+	auto CThreadNotificationRegistration::f_GetModule() const -> NSys::NPrivate::CThreadNotificationModule *
+	{
+		using CNotifications = NContainer::TCMapWithPool<NSys::NPrivate::CThreadNotificationModule *, CThreadNotificationRegistration, CSort_Default, NMemory::CAllocator_VirtualNoTracking>;
+		return CNotifications::fs_GetKey(*this);
+	}
 
 	struct CThreadNotificationThread
 	{
@@ -3149,28 +3162,30 @@ static int fg_CopyOrRename(NMib::NStr::CStr const &_FileFrom, NMib::NStr::CStr c
 
 struct CCopyFileContext
 {
+	CMibFilePos f_GetSize();
+
 	NMib::NFile::CFileProgress *m_pProgress;
 	CMibFilePos m_nFileSize;
 	NMib::NStr::CStr m_FileFrom;
 	bool m_bSizeInit = false;
-
-	CMibFilePos f_GetSize()
-	{
-		if (!m_bSizeInit)
-		{
-			m_bSizeInit = true;
-			m_nFileSize = 0;
-			try
-			{
-				m_nFileSize = NSys::NFile::fg_GetSize(m_FileFrom);
-			}
-			catch (NFile::CExceptionFile const &)
-			{
-			}
-		}
-		return m_nFileSize;
-	}
 };
+
+CMibFilePos CCopyFileContext::f_GetSize()
+{
+	if (!m_bSizeInit)
+	{
+		m_bSizeInit = true;
+		m_nFileSize = 0;
+		try
+		{
+			m_nFileSize = NSys::NFile::fg_GetSize(m_FileFrom);
+		}
+		catch (NFile::CExceptionFile const &)
+		{
+		}
+	}
+	return m_nFileSize;
+}
 
 static int fg_SingleFileCopyFileCallback(int _What, int _Stage, copyfile_state_t _pState, char const *_pSrc, char const *_pDst, void *_pContext)
 {
@@ -4362,65 +4377,70 @@ namespace
 {
 	struct CCPUUsageMonitorImpl
 	{
-		CCPUUsageMonitorImpl()
-		{
-			mach_msg_type_number_t Count = HOST_CPU_LOAD_INFO_COUNT;
-			host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&mp_LastLoadStats, &Count);
+		CCPUUsageMonitorImpl();
 
-			mp_LastRet.m_User = 0.0f;
-			mp_LastRet.m_Kernel = 0.0f;
-			mp_LastRet.m_Idle = 0.0f;
-		}
+		virtual ~CCPUUsageMonitorImpl();
 
-		virtual ~CCPUUsageMonitorImpl()
-		{
-		}
-
-	public:
-		NMib::NSystem::CSystemCPUUsage f_GetUsage(bool &_bChanged)
-		{
-			host_cpu_load_info_data_t LoadStats;
-			mach_msg_type_number_t Count = HOST_CPU_LOAD_INFO_COUNT;
-			host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&LoadStats, &Count);
-
-			uint64 IdleTime = LoadStats.cpu_ticks[CPU_STATE_IDLE];
-			uint64 UserTime = LoadStats.cpu_ticks[CPU_STATE_USER] + LoadStats.cpu_ticks[CPU_STATE_NICE];
-			uint64 KernelTime = LoadStats.cpu_ticks[CPU_STATE_SYSTEM];
-
-			uint64 LastIdleTime = mp_LastLoadStats.cpu_ticks[CPU_STATE_IDLE];
-			uint64 LastUserTime = mp_LastLoadStats.cpu_ticks[CPU_STATE_USER] + mp_LastLoadStats.cpu_ticks[CPU_STATE_NICE];
-			uint64 LastKernelTime = mp_LastLoadStats.cpu_ticks[CPU_STATE_SYSTEM];
-
-			uint64 DiffIdleTime = IdleTime - LastIdleTime;
-			uint64 DiffUserTime = UserTime - LastUserTime;
-			uint64 DiffKernelTime = KernelTime - LastKernelTime;
-
-			uint64 TotalTime = DiffIdleTime + DiffUserTime + DiffKernelTime;
-
-			if (TotalTime < 100)
-			{
-				_bChanged = false;
-				return mp_LastRet; // Guarantee 1 % resolution
-			}
-
-			_bChanged = true;
-
-			NMib::NSystem::CSystemCPUUsage Ret;
-			Ret.m_Idle = fp64(DiffIdleTime) / fp64(TotalTime);
-			Ret.m_User = fp64(DiffUserTime) / fp64(TotalTime);
-			Ret.m_Kernel = fp64(DiffKernelTime) / fp64(TotalTime);
-
-			mp_LastLoadStats = LoadStats;
-
-			mp_LastRet = Ret;
-			return Ret;
-		}
+		NMib::NSystem::CSystemCPUUsage f_GetUsage(bool &_bChanged);
 
 	private:
 		host_cpu_load_info_data_t mp_LastLoadStats;
 
 		NMib::NSystem::CSystemCPUUsage mp_LastRet;
 	};
+
+	CCPUUsageMonitorImpl::CCPUUsageMonitorImpl()
+	{
+		mach_msg_type_number_t Count = HOST_CPU_LOAD_INFO_COUNT;
+		host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&mp_LastLoadStats, &Count);
+
+		mp_LastRet.m_User = 0.0f;
+		mp_LastRet.m_Kernel = 0.0f;
+		mp_LastRet.m_Idle = 0.0f;
+	}
+
+	CCPUUsageMonitorImpl::~CCPUUsageMonitorImpl()
+	{
+	}
+
+	NMib::NSystem::CSystemCPUUsage CCPUUsageMonitorImpl::f_GetUsage(bool &_bChanged)
+	{
+		host_cpu_load_info_data_t LoadStats;
+		mach_msg_type_number_t Count = HOST_CPU_LOAD_INFO_COUNT;
+		host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&LoadStats, &Count);
+
+		uint64 IdleTime = LoadStats.cpu_ticks[CPU_STATE_IDLE];
+		uint64 UserTime = LoadStats.cpu_ticks[CPU_STATE_USER] + LoadStats.cpu_ticks[CPU_STATE_NICE];
+		uint64 KernelTime = LoadStats.cpu_ticks[CPU_STATE_SYSTEM];
+
+		uint64 LastIdleTime = mp_LastLoadStats.cpu_ticks[CPU_STATE_IDLE];
+		uint64 LastUserTime = mp_LastLoadStats.cpu_ticks[CPU_STATE_USER] + mp_LastLoadStats.cpu_ticks[CPU_STATE_NICE];
+		uint64 LastKernelTime = mp_LastLoadStats.cpu_ticks[CPU_STATE_SYSTEM];
+
+		uint64 DiffIdleTime = IdleTime - LastIdleTime;
+		uint64 DiffUserTime = UserTime - LastUserTime;
+		uint64 DiffKernelTime = KernelTime - LastKernelTime;
+
+		uint64 TotalTime = DiffIdleTime + DiffUserTime + DiffKernelTime;
+
+		if (TotalTime < 100)
+		{
+			_bChanged = false;
+			return mp_LastRet; // Guarantee 1 % resolution
+		}
+
+		_bChanged = true;
+
+		NMib::NSystem::CSystemCPUUsage Ret;
+		Ret.m_Idle = fp64(DiffIdleTime) / fp64(TotalTime);
+		Ret.m_User = fp64(DiffUserTime) / fp64(TotalTime);
+		Ret.m_Kernel = fp64(DiffKernelTime) / fp64(TotalTime);
+
+		mp_LastLoadStats = LoadStats;
+
+		mp_LastRet = Ret;
+		return Ret;
+	}
 }
 
 namespace NMib

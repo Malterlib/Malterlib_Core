@@ -40,6 +40,15 @@ enum EPOSIXSocketMode
 
 struct CPOSIXSocket
 {
+	struct CAVLCompare_CPOSIXSocket
+	{
+		inline_small int operator () (CPOSIXSocket const &_Sock) const;
+	};
+
+	CPOSIXSocket(int _FD, EPOSIXSocketMode _Mode, EPOSIXSocketEvent _Events, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
+
+	~CPOSIXSocket();
+
 	// This info is set once and never changed.
 	int m_FD;
 	EPOSIXSocketMode m_Mode;
@@ -78,21 +87,19 @@ struct CPOSIXSocket
 
 	// This is protected by the context m_Lock.
 	NMib::NIntrusive::TCAVLLink<> m_FDToSocketLink;
-
-	struct CAVLCompare_CPOSIXSocket
-	{
-		inline_small int operator () (CPOSIXSocket const &_Sock) const;
-	};
-
-	CPOSIXSocket(int _FD, EPOSIXSocketMode _Mode, EPOSIXSocketEvent _Events, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
-
-	~CPOSIXSocket();
 };
 
 using CPOSIXAddress = CRuntimeNetAddress;
 
 struct CPOSIXImpSpecificSocketContext
 {
+	struct CSocketCreateParams
+	{
+		int m_Domain;
+		int m_Type;
+		int m_Protocol;
+	};
+
 	CPOSIXImpSpecificSocketContext();
 	~CPOSIXImpSpecificSocketContext();
 
@@ -100,13 +107,6 @@ struct CPOSIXImpSpecificSocketContext
 	bool f_ResolveAddress(CPOSIXAddress &o_Addr, NMib::NStr::CStr const &_Address, NMib::NNetwork::ENetAddressType _PreferType = NMib::NNetwork::ENetAddressType_None);
 	bool f_GetAddressRaw(CPOSIXAddress const &_Address, ENetAddressType _ExpectedType, void *o_pRawData, umint _nDataBytes);
 	CPOSIXAddress *f_SetAddressRaw(CPOSIXAddress *_pAddress, ::NMib::NNetwork::ENetAddressType _ExpectedType, void const *_pRawData, umint _nDataBytes);
-
-	struct CSocketCreateParams
-	{
-		int m_Domain;
-		int m_Type;
-		int m_Protocol;
-	};
 
 	bool f_GetSocketCreateParams(::NMib::NNetwork::ENetAddressType _ExpectedType, CSocketCreateParams &o_Params);
 

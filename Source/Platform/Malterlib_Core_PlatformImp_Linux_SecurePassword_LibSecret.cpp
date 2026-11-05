@@ -15,10 +15,7 @@ namespace NMib::NSys
 
 	struct CGNOMEKeychainLibrary : public NMib::CDynamicLibraryUtility
 	{
-		constexpr CGNOMEKeychainLibrary()
-			: NMib::CDynamicLibraryUtility(NMib::NStr::gc_Str<"libsecret-1.so.0">, EDLFlag_NoThrow)
-		{
-		}
+		constexpr CGNOMEKeychainLibrary();
 
 		decltype(&::secret_password_store_sync) m_fSecretPasswordStoreSync = nullptr;
 		decltype(&::secret_password_lookup_sync) m_fSecretPasswordLookupSync = nullptr;
@@ -31,88 +28,98 @@ namespace NMib::NSys
 		decltype(&::secret_collection_get_locked) m_fSecretCollectionGetLocked = nullptr;
 
 	protected:
-		void fp_ClearSymbols() override
-		{
-			m_fSecretPasswordStoreSync = nullptr;
-			m_fSecretPasswordLookupSync = nullptr;
-			m_fSecretPasswordClearSync = nullptr;
-			m_fSecretPasswordFree = nullptr;
-			m_fSecretServiceGetSync = nullptr;
-			m_fSecretServiceGetCollections = nullptr;
-			m_fSecretServiceEnsureSessionSync = nullptr;
-			m_fSecretCollectionGetLabel = nullptr;
-			m_fSecretCollectionGetLocked = nullptr;
-		}
-
-		void fp_FetchSymbols() override
-		{
-			fp_Fetch(m_fSecretPasswordStoreSync, "secret_password_store_sync");
-			fp_Fetch(m_fSecretPasswordLookupSync, "secret_password_lookup_sync");
-			fp_Fetch(m_fSecretPasswordClearSync, "secret_password_clear_sync");
-			fp_Fetch(m_fSecretPasswordFree, "secret_password_free");
-			fp_Fetch(m_fSecretServiceGetSync, "secret_service_get_sync");
-			fp_Fetch(m_fSecretServiceGetCollections, "secret_service_get_collections");
-			fp_Fetch(m_fSecretServiceEnsureSessionSync, "secret_service_ensure_session_sync");
-			fp_Fetch(m_fSecretCollectionGetLabel, "secret_collection_get_label");
-			fp_Fetch(m_fSecretCollectionGetLocked, "secret_collection_get_locked");
-		}
+		void fp_ClearSymbols() override;
+		void fp_FetchSymbols() override;
 	};
+
+	constexpr CGNOMEKeychainLibrary::CGNOMEKeychainLibrary()
+		: NMib::CDynamicLibraryUtility(NMib::NStr::gc_Str<"libsecret-1.so.0">, EDLFlag_NoThrow)
+	{
+	}
+
+	void CGNOMEKeychainLibrary::fp_ClearSymbols()
+	{
+		m_fSecretPasswordStoreSync = nullptr;
+		m_fSecretPasswordLookupSync = nullptr;
+		m_fSecretPasswordClearSync = nullptr;
+		m_fSecretPasswordFree = nullptr;
+		m_fSecretServiceGetSync = nullptr;
+		m_fSecretServiceGetCollections = nullptr;
+		m_fSecretServiceEnsureSessionSync = nullptr;
+		m_fSecretCollectionGetLabel = nullptr;
+		m_fSecretCollectionGetLocked = nullptr;
+	}
+
+	void CGNOMEKeychainLibrary::fp_FetchSymbols()
+	{
+		fp_Fetch(m_fSecretPasswordStoreSync, "secret_password_store_sync");
+		fp_Fetch(m_fSecretPasswordLookupSync, "secret_password_lookup_sync");
+		fp_Fetch(m_fSecretPasswordClearSync, "secret_password_clear_sync");
+		fp_Fetch(m_fSecretPasswordFree, "secret_password_free");
+		fp_Fetch(m_fSecretServiceGetSync, "secret_service_get_sync");
+		fp_Fetch(m_fSecretServiceGetCollections, "secret_service_get_collections");
+		fp_Fetch(m_fSecretServiceEnsureSessionSync, "secret_service_ensure_session_sync");
+		fp_Fetch(m_fSecretCollectionGetLabel, "secret_collection_get_label");
+		fp_Fetch(m_fSecretCollectionGetLocked, "secret_collection_get_locked");
+	}
 
 	struct CGnomeLib : public NMib::CDynamicLibraryUtility
 	{
-		constexpr CGnomeLib()
-			: NMib::CDynamicLibraryUtility(NMib::NStr::gc_Str<"libglib-2.0.so.0">, EDLFlag_NoThrow)
-		{
-		}
+		constexpr CGnomeLib();
 
 		decltype(&::g_list_free_full) m_fGListFreeFull = nullptr;
 		decltype(&::g_free) m_fGFree = nullptr;
 
 	protected:
-		void fp_ClearSymbols() override
-		{
-			m_fGListFreeFull = nullptr;
-			m_fGFree = nullptr;
-		}
-
-		void fp_FetchSymbols() override
-		{
-			fp_Fetch(m_fGListFreeFull, "g_list_free_full");
-			fp_Fetch(m_fGFree, "g_free");
-		}
+		void fp_ClearSymbols() override;
+		void fp_FetchSymbols() override;
 	};
+
+	constexpr CGnomeLib::CGnomeLib()
+		: NMib::CDynamicLibraryUtility(NMib::NStr::gc_Str<"libglib-2.0.so.0">, EDLFlag_NoThrow)
+	{
+	}
+
+	void CGnomeLib::fp_ClearSymbols()
+	{
+		m_fGListFreeFull = nullptr;
+		m_fGFree = nullptr;
+	}
+
+	void CGnomeLib::fp_FetchSymbols()
+	{
+		fp_Fetch(m_fGListFreeFull, "g_list_free_full");
+		fp_Fetch(m_fGFree, "g_free");
+	}
 
 	struct CGnomeObjectLib : public NMib::CDynamicLibraryUtility
 	{
-		constexpr CGnomeObjectLib()
-			: NMib::CDynamicLibraryUtility(NMib::NStr::gc_Str<"libgobject-2.0.so.0">, EDLFlag_NoThrow)
-		{
-		}
+		constexpr CGnomeObjectLib();
 
 		decltype(&::g_object_unref) m_fGObjectUnref = nullptr;
 
 	protected:
-		void fp_ClearSymbols() override
-		{
-			m_fGObjectUnref = nullptr;
-		}
-
-		void fp_FetchSymbols() override
-		{
-			fp_Fetch(m_fGObjectUnref, "g_object_unref");
-		}
+		void fp_ClearSymbols() override;
+		void fp_FetchSymbols() override;
 	};
+
+	constexpr CGnomeObjectLib::CGnomeObjectLib()
+		: NMib::CDynamicLibraryUtility(NMib::NStr::gc_Str<"libgobject-2.0.so.0">, EDLFlag_NoThrow)
+	{
+	}
+
+	void CGnomeObjectLib::fp_ClearSymbols()
+	{
+		m_fGObjectUnref = nullptr;
+	}
+
+	void CGnomeObjectLib::fp_FetchSymbols()
+	{
+		fp_Fetch(m_fGObjectUnref, "g_object_unref");
+	}
 
 	struct CLibSecretPasswordManager : public CLinuxPasswordManager
 	{
-	private:
-		CGnomeLib mp_GnomeLibrary;
-		CGnomeObjectLib mp_GnomeObjectLibrary;
-		CGNOMEKeychainLibrary mp_KeychainLibrary;
-		NMib::NStr::CStr mp_Location;
-		mutable NThread::CMutual mp_Lock;
-
-	public:
 		CLibSecretPasswordManager();
 		~CLibSecretPasswordManager();
 
@@ -124,6 +131,13 @@ namespace NMib::NSys
 		ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const &_Key) override;
 		ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password) override;
 		ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key) override;
+
+	private:
+		CGnomeLib mp_GnomeLibrary;
+		CGnomeObjectLib mp_GnomeObjectLibrary;
+		CGNOMEKeychainLibrary mp_KeychainLibrary;
+		NMib::NStr::CStr mp_Location;
+		mutable NThread::CMutual mp_Lock;
 	};
 
 	NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateLibSecretPasswordManager()

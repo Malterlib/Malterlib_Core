@@ -139,408 +139,410 @@ namespace
 
 	struct CDll_Tests : public NMib::NTest::CTest
 	{
-		void f_DoTests()
-		{
+		void f_DoTests();
+	};
+
+	void CDll_Tests::f_DoTests()
+	{
 #if defined(DCompiler_MSVC_Workaround_DllsBroken)
-			return;
+		return;
 #endif
-			// tsan does not currently support unloading dlls
-			CStr DllPath = CStr("Test_Malterlib_Helper_Core") + NMib::NFile::CFile::fs_GetDllExtension();
+		// tsan does not currently support unloading dlls
+		CStr DllPath = CStr("Test_Malterlib_Helper_Core") + NMib::NFile::CFile::fs_GetDllExtension();
 #ifdef DPlatformFamily_Linux
-			DllPath = NMib::NFile::CFile::fs_AppendPath(NMib::NFile::CFile::fs_GetProgramDirectory(), DllPath);
+		DllPath = NMib::NFile::CFile::fs_AppendPath(NMib::NFile::CFile::fs_GetProgramDirectory(), DllPath);
 #endif
 #if 0
-			DMibTestSuite("DllLoadNotUnload")
-			{
-				auto pDll = NMib::NSys::fg_LoadLibrary(DllPath);
+		DMibTestSuite("DllLoadNotUnload")
+		{
+			auto pDll = NMib::NSys::fg_LoadLibrary(DllPath);
 
-				NMib::NThread::CThreadObject::fs_StartThread
-					(
-						[](NMib::NThread::CThreadObject *_pThreadObject) -> aint
-						{
-							while (true)
-								NMib::NMemory::CAllocator_NonTrackedHeap::f_Free(NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(1));
-
-							return 0;
-						}
-						, "Leaked thread"
-					)
-					.f_Detach()
-				;
-
-				NMib::NSys::fg_Thread_Sleep(0.1f);
-				fg_ValidExitProcess();
-				fg_ValidDestroyModule();
-				NMib::NSys::fg_System_ExitProcess(2);
-			};
-#endif
-			DMibTestSuite("MemoryTrackWithoutDll")
-			{
-				DMibMemLightweightTrackAddFlagsScope(NMib::NMemory::EMemoryReportLightweightScopeFlag_InCScope);
-				DMibMemLightweightTrackDisableScope;
-				delete (new int);
-			};
-			DMibTestSuite("DllLoad")
-			{
-				void *pDll = nullptr;
-				NMib::NThread::CEvent ThreadStarted;
-
-				NMib::NFile::CFile::fs_CreateDirectory(NMib::NFile::CFile::fs_GetProgramDirectory() / "DllStress");
-
-				ThreadStarted.f_ResetSignaled();
-
-				void (calling_convention_c *fTestFunc)() = nullptr;
-
-				auto fThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
+			NMib::NThread::CThreadObject::fs_StartThread
+				(
+					[](NMib::NThread::CThreadObject *_pThreadObject) -> aint
 					{
-						while (_pThread->f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
-						{
-							if (pDll)
-							{
-								if (fTestFunc)
-									fTestFunc();
-							}
-							ThreadStarted.f_SetSignaled();
-							_pThread->m_EventWantQuit.f_Wait();
-						}
+						while (true)
+							NMib::NMemory::CAllocator_NonTrackedHeap::f_Free(NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(1));
+
 						return 0;
 					}
-				;
+					, "Leaked thread"
+				)
+				.f_Detach()
+			;
 
-				auto pThread0 = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
+			NMib::NSys::fg_Thread_Sleep(0.1f);
+			fg_ValidExitProcess();
+			fg_ValidDestroyModule();
+			NMib::NSys::fg_System_ExitProcess(2);
+		};
+#endif
+		DMibTestSuite("MemoryTrackWithoutDll")
+		{
+			DMibMemLightweightTrackAddFlagsScope(NMib::NMemory::EMemoryReportLightweightScopeFlag_InCScope);
+			DMibMemLightweightTrackDisableScope;
+			delete (new int);
+		};
+		DMibTestSuite("DllLoad")
+		{
+			void *pDll = nullptr;
+			NMib::NThread::CEvent ThreadStarted;
 
-				ThreadStarted.f_Wait();
+			NMib::NFile::CFile::fs_CreateDirectory(NMib::NFile::CFile::fs_GetProgramDirectory() / "DllStress");
 
+			ThreadStarted.f_ResetSignaled();
+
+			void (calling_convention_c *fTestFunc)() = nullptr;
+
+			auto fThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
+				{
+					while (_pThread->f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
+					{
+						if (pDll)
+						{
+							if (fTestFunc)
+								fTestFunc();
+						}
+						ThreadStarted.f_SetSignaled();
+						_pThread->m_EventWantQuit.f_Wait();
+					}
+					return 0;
+				}
+			;
+
+			auto pThread0 = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
+
+			ThreadStarted.f_Wait();
+
+			pDll = NMib::NSys::fg_LoadLibrary(DllPath);
+
+			DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
+
+			if (NMib::NFile::CFileChangeNotification::fs_Supported())
+				(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
+			else
+				(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
+			DMibTest(DMibExpr(fTestFunc))(ETest_FailAndStop);
+
+			ThreadStarted.f_ResetSignaled();
+			pThread0->m_EventWantQuit.f_Signal();
+			ThreadStarted.f_Wait();
+
+			ThreadStarted.f_ResetSignaled();
+			auto pThread1 = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
+			ThreadStarted.f_Wait();
+
+			ThreadStarted.f_ResetSignaled();
+			pThread1->m_EventWantQuit.f_Signal();
+			ThreadStarted.f_Wait();
+			pThread1.f_Clear();
+
+			pThread0.f_Clear();
+
+			ThreadStarted.f_ResetSignaled();
+			auto pThread2 = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
+			ThreadStarted.f_Wait();
+
+			ThreadStarted.f_ResetSignaled();
+			pThread2->m_EventWantQuit.f_Signal();
+			ThreadStarted.f_Wait();
+
+			pThread2.f_Clear();
+
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
+			NMib::NSys::fg_FreeLibrary(pDll);
+#endif
+		};
+		DMibTestSuite("Thread stress")
+		{
+			void *pDll = nullptr;
+			void (calling_convention_c *fTestFunc)() = nullptr;
+
+			auto fThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
+				{
+					fTestFunc();
+					while (_pThread->f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
+					{
+						fTestFunc();
+						_pThread->m_EventWantQuit.f_Wait();
+					}
+					return 0;
+				}
+			;
+
+			pDll = NMib::NSys::fg_LoadLibrary(DllPath);
+
+			NMib::NContainer::TCVector<NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject>> Threads;
+			Threads.f_SetLen(100);
+			DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
+
+			(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
+			DMibTest(DMibExpr(fTestFunc))(ETest_FailAndStop);
+			fTestFunc();
+
+			for (umint iRound = 0; iRound < 10; ++iRound)
+			{
+				for (auto iThread = 0; iThread < 64; ++iThread)
+				{
+					Threads[iThread] = NMib::NThread::CThreadObject::fs_StartThread
+						(
+							[&](NMib::NThread::CThreadObject *_pThread) -> aint
+							{
+								fThreadProc(_pThread);
+								NMib::NContainer::TCVector<NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject>> Threads2;
+								Threads2.f_SetLen(10);
+
+								NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage;
+								{
+									NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage2;
+
+									for (auto iInnerThread = 0; iInnerThread < 10; ++iInnerThread)
+										Threads2[iInnerThread] = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
+								}
+								return 0;
+							}
+							, "DllThreadTest"
+						)
+					;
+				}
+			}
+
+			Threads.f_Clear();
+
+#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
+			NMib::NSys::fg_FreeLibrary(pDll);
+#endif
+		};
+		DMibTestSuite("Dll stress")
+		{
+			NMib::NFile::CFile::fs_CreateDirectory(NMib::NFile::CFile::fs_GetProgramDirectory() / "DllStress");
+			for (int iLoad = 0; iLoad < 16; ++iLoad)
+			{
+				void *pDll = nullptr;
+				void (calling_convention_c *fTestFunc)() = nullptr;
 				pDll = NMib::NSys::fg_LoadLibrary(DllPath);
-
-				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
-
+				DMibTest(DMibExpr(pDll))(ETest_FailAndStop)(ETestFlag_Aggregated);
 				if (NMib::NFile::CFileChangeNotification::fs_Supported())
 					(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
 				else
 					(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
-				DMibTest(DMibExpr(fTestFunc))(ETest_FailAndStop);
-
-				ThreadStarted.f_ResetSignaled();
-				pThread0->m_EventWantQuit.f_Signal();
-				ThreadStarted.f_Wait();
-
-				ThreadStarted.f_ResetSignaled();
-				auto pThread1 = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
-				ThreadStarted.f_Wait();
-
-				ThreadStarted.f_ResetSignaled();
-				pThread1->m_EventWantQuit.f_Signal();
-				ThreadStarted.f_Wait();
-				pThread1.f_Clear();
-
-				pThread0.f_Clear();
-
-				ThreadStarted.f_ResetSignaled();
-				auto pThread2 = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
-				ThreadStarted.f_Wait();
-
-				ThreadStarted.f_ResetSignaled();
-				pThread2->m_EventWantQuit.f_Signal();
-				ThreadStarted.f_Wait();
-
-				pThread2.f_Clear();
+				DMibTest(DMibExpr(fTestFunc))(ETest_FailAndStop)(ETestFlag_Aggregated);
+				for (int iCall = 0; iCall < 2; ++iCall)
+					fTestFunc();
 
 #if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
 				NMib::NSys::fg_FreeLibrary(pDll);
 #endif
-			};
-			DMibTestSuite("Thread stress")
+			}
+		};
+#if (defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)) && !defined(DMibSanitizerEnabled_Thread)
+		// Unloading waits for threads to leave their exit path; threads terminating meanwhile, and one
+		// held in a key destructor, must not stall or fault that wait
+		DMibTestSuite("Unload during thread exit")
+		{
+			void *pDll = NMib::NSys::fg_LoadLibrary(DllPath);
+			DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
+
+			pthread_key_t SlowKey;
+			DMibTest
+				(
+					DMibExpr
+					(
+						pthread_key_create
+						(
+							&SlowKey
+							, [](void *_pValue)
+							{
+								NMib::NSys::fg_Thread_Sleep(2.0);
+							}
+						)
+					)
+					== DMibExpr(0)
+				)
+				(ETest_FailAndStop)
+			;
+
+			NMib::NAtomic::TCAtomic<bool> bStop{false};
+			NMib::NAtomic::TCAtomic<umint> nChurned{0};
+			pthread_t SlowThread;
+			pthread_t ChurnThread;
+			struct CChurn
 			{
-				void *pDll = nullptr;
-				void (calling_convention_c *fTestFunc)() = nullptr;
+				NMib::NAtomic::TCAtomic<bool> *m_pStop;
+				NMib::NAtomic::TCAtomic<umint> *m_pChurned;
+				pthread_key_t m_SlowKey;
+			} Churn{&bStop, &nChurned, SlowKey};
 
-				auto fThreadProc = [&](NMib::NThread::CThreadObject *_pThread) -> aint
-					{
-						fTestFunc();
-						while (_pThread->f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
-						{
-							fTestFunc();
-							_pThread->m_EventWantQuit.f_Wait();
-						}
-						return 0;
-					}
-				;
-
-				pDll = NMib::NSys::fg_LoadLibrary(DllPath);
-
-				NMib::NContainer::TCVector<NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject>> Threads;
-				Threads.f_SetLen(100);
-				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
-
-				(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
-				DMibTest(DMibExpr(fTestFunc))(ETest_FailAndStop);
-				fTestFunc();
-
-				for (umint iRound = 0; iRound < 10; ++iRound)
+			auto fSlow = [](void *_pKey) -> void *
 				{
-					for (auto iThread = 0; iThread < 64; ++iThread)
-					{
-						Threads[iThread] = NMib::NThread::CThreadObject::fs_StartThread
-							(
-								[&](NMib::NThread::CThreadObject *_pThread) -> aint
-								{
-									fThreadProc(_pThread);
-									NMib::NContainer::TCVector<NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject>> Threads2;
-									Threads2.f_SetLen(10);
-
-									NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage;
-									{
-										NMib::NThread::TCThreadLocal<NMib::TCAutoClearInt<int32>, NMib::NMemory::CAllocator_Heap, NMib::NThread::EThreadLocalFlag_AlwaysCreated> TestStorage2;
-
-										for (auto iInnerThread = 0; iInnerThread < 10; ++iInnerThread)
-											Threads2[iInnerThread] = NMib::NThread::CThreadObject::fs_StartThread(fThreadProc, "DllThreadTest");
-									}
-									return 0;
-								}
-								, "DllThreadTest"
-							)
-						;
-					}
+					pthread_setspecific(*(pthread_key_t *)_pKey, (void *)1);
+					return nullptr;
 				}
-
-				Threads.f_Clear();
-
-#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
-				NMib::NSys::fg_FreeLibrary(pDll);
-#endif
-			};
-			DMibTestSuite("Dll stress")
-			{
-				NMib::NFile::CFile::fs_CreateDirectory(NMib::NFile::CFile::fs_GetProgramDirectory() / "DllStress");
-				for (int iLoad = 0; iLoad < 16; ++iLoad)
+			;
+			auto fChurn = [](void *_pChurn) -> void *
 				{
-					void *pDll = nullptr;
-					void (calling_convention_c *fTestFunc)() = nullptr;
-					pDll = NMib::NSys::fg_LoadLibrary(DllPath);
-					DMibTest(DMibExpr(pDll))(ETest_FailAndStop)(ETestFlag_Aggregated);
-					if (NMib::NFile::CFileChangeNotification::fs_Supported())
-						(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestFileNotifications");
-					else
-						(void * &)fTestFunc = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_Test");
-					DMibTest(DMibExpr(fTestFunc))(ETest_FailAndStop)(ETestFlag_Aggregated);
-					for (int iCall = 0; iCall < 2; ++iCall)
-						fTestFunc();
+					auto &Churn = *(CChurn *)_pChurn;
+					while (!Churn.m_pStop->f_Load())
+					{
+						pthread_t Short;
+						if
+						(
+							pthread_create
+							(
+								&Short
+								, nullptr
+								, [](void *_pArgument) -> void *
+								{
+									return nullptr;
+								}
+								, nullptr
+							)
+							== 0
+						)
+						{
+							pthread_join(Short, nullptr);
+						}
+						Churn.m_pChurned->f_FetchAdd(1);
+					}
+					return nullptr;
+				}
+			;
+			DMibTest(DMibExpr(pthread_create(&SlowThread, nullptr, fSlow, &SlowKey)) == DMibExpr(0))(ETest_FailAndStop);
+			DMibTest(DMibExpr(pthread_create(&ChurnThread, nullptr, fChurn, &Churn)) == DMibExpr(0))(ETest_FailAndStop);
+			NMib::NSys::fg_Thread_Sleep(0.2);
 
+			NMib::NSys::fg_FreeLibrary(pDll);
+
+			bStop = true;
+			pthread_join(ChurnThread, nullptr);
+			pthread_join(SlowThread, nullptr);
+			pthread_key_delete(SlowKey);
+			DMibTest(DMibExpr(nChurned.f_Load()) > DMibExpr(umint(0)));
+		};
+#	ifdef DPlatformFamily_macOS
+		// dyld holds its loader lock across the destructors dlclose runs, so an exiting host thread
+		// that enters dyld meanwhile cannot leave the exit path the unload waits for. Nothing the
+		// library does inside those destructors can change that, and a teardown before dlclose
+		// would run ahead of the image's own static destructors, so a host must not enter dyld
+		// from a key destructor while it unloads. Kept to show the stall, not to pass
+		DMibTestSuite(CTestCategory("Unload with a thread exiting through dyld") << CTestGroup("Manual"))
+		{
+			void *pDll = NMib::NSys::fg_LoadLibrary(DllPath);
+			DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
+
+			pthread_key_t DyldKey;
+			DMibTest(DMibExpr(pthread_key_create(&DyldKey, &fg_DyldBoundKeyDestructor)) == DMibExpr(0))(ETest_FailAndStop);
+
+			pthread_t ExitingThread;
+			DMibTest(DMibExpr(pthread_create(&ExitingThread, nullptr, &fg_ExitThroughDyldThread, &DyldKey)) == DMibExpr(0))(ETest_FailAndStop);
+			while (!g_bExitingThreadInDyld.f_Load())
+				NMib::NSys::fg_Thread_Sleep(0.001);
+
+			bool bUnloaded = fg_UnloadWithDeadline(pDll, 30000);
+			DMibTest(DMibExpr(bUnloaded));
+
+			if (bUnloaded)
+			{
+				pthread_join(ExitingThread, nullptr);
+				pthread_key_delete(DyldKey);
+			}
+		};
+#	endif
+		// Only threads already exiting when the key is deleted can still reach its destructor, so
+		// threads that keep retiring must not hold the unload up
+		DMibTestSuite("Unload during sustained thread exit")
+		{
+			void *pDll = NMib::NSys::fg_LoadLibrary(DllPath);
+			DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
+			DMibTest(DMibExpr(pthread_key_create(&g_ChurnKey, &fg_ChurnKeyDestructor)) == DMibExpr(0))(ETest_FailAndStop);
+
+			constexpr umint c_nChurners = 16;
+			pthread_t Churners[c_nChurners];
+			umint nStarted = 0;
+			for (umint iChurner = 0; iChurner < c_nChurners; ++iChurner)
+			{
+				if (pthread_create(&Churners[nStarted], nullptr, &fg_ChurnThread, nullptr) == 0)
+					++nStarted;
+			}
+			DMibTest(DMibExpr(nStarted) == DMibExpr(c_nChurners))(ETest_FailAndStop);
+			NMib::NSys::fg_Thread_Sleep(0.2);
+
+			bool bUnloaded = fg_UnloadWithDeadline(pDll, 30000);
+
+			g_bChurnStop = true;
+			for (umint iChurner = 0; iChurner < nStarted; ++iChurner)
+				pthread_join(Churners[iChurner], nullptr);
+
+			pthread_key_delete(g_ChurnKey);
+			DMibTest(DMibExpr(g_nChurned.f_Load()) > DMibExpr(umint(0)));
+			DMibTest(DMibExpr(bUnloaded));
+		};
+#	ifdef DPlatformFamily_Linux
+		// glibc keeps a closed library mapped while a thread still owes it a thread local destructor,
+		// runs that destructor on the owning thread when it exits, and unmaps the library on the
+		// next loader close after that, which is when its static destructors run
+		DMibTestSuite("Unload with a pending thread local destructor")
+		{
+			void *pDll = NMib::NSys::fg_LoadLibrary(DllPath);
+			DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
+			(void * &)g_fConstructThreadLocal = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestConstructThreadLocalWithDestructor");
+			DMibTest(DMibExpr(g_fConstructThreadLocal))(ETest_FailAndStop);
+
+			g_bThreadLocalConstructed = false;
+			g_bThreadLocalOwnerExit = false;
+			g_ThreadLocalDestroyedOnThread = 0;
+			pthread_t Owner;
+			DMibTest(DMibExpr(pthread_create(&Owner, nullptr, &fg_ThreadLocalOwnerThread, nullptr)) == DMibExpr(0))(ETest_FailAndStop);
+			while (!g_bThreadLocalConstructed.f_Load())
+				NMib::NSys::fg_Thread_Sleep(0.001);
+
+			DMibTest(DMibExpr(fg_UnloadWithDeadline(pDll, 30000)));
+			bool bMappedWhilePending = fg_IsLibraryMapped(DllPath);
+			DMibTest(DMibExpr(bMappedWhilePending));
+
+			g_bThreadLocalOwnerExit = true;
+			pthread_join(Owner, nullptr);
+			DMibTest(DMibExpr(g_ThreadLocalDestroyedOnThread) == DMibExpr((umint)Owner));
+
+			bool bMappedAfterOwnerExit = fg_IsLibraryMapped(DllPath); // This query's close is the one that unmaps it
+			DMibTest(DMibExpr(bMappedAfterOwnerExit));
+#		ifndef DMibSanitizerEnabled_Address // fg_LoadLibrary opens with RTLD_NODELETE under ASan, so the library never unmaps
+			bool bMappedAfterLoaderClose = fg_IsLibraryMapped(DllPath);
+			DMibTest(DMibExpr(bMappedAfterLoaderClose) == DMibExpr(false));
+#		endif
+		};
+#	endif
+#endif
+		DMibTestSuite(CTestCategory("Performance") << CTestGroup("Performance"))
+		{
+			CTestPerformanceMeasure MalterlibTime("Malterlib");
+
+			umint nTests = 256 * 16;
+#ifdef DMibDebug
+			nTests /= 16;
+#endif
+			nTests += 1;
+
+			umint nLoops = 1;
+
+			for (umint iTest = 0; iTest < nTests; ++iTest)
+			{
+				MalterlibTime.f_Start();
+				for (umint iLoop = 0; iLoop < nLoops; ++iLoop)
+				{
+					auto pDll = NMib::NSys::fg_LoadLibrary(DllPath);
+					DMibTest(DMibExpr(pDll))(ETestFlag_Aggregated);
 #if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
 					NMib::NSys::fg_FreeLibrary(pDll);
 #endif
 				}
-			};
-#if (defined(DPlatformFamily_macOS) || defined(DPlatformFamily_Linux)) && !defined(DMibSanitizerEnabled_Thread)
-			// Unloading waits for threads to leave their exit path; threads terminating meanwhile, and one
-			// held in a key destructor, must not stall or fault that wait
-			DMibTestSuite("Unload during thread exit")
-			{
-				void *pDll = NMib::NSys::fg_LoadLibrary(DllPath);
-				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
+				MalterlibTime.f_Stop(nLoops);
+			}
 
-				pthread_key_t SlowKey;
-				DMibTest
-					(
-						DMibExpr
-						(
-							pthread_key_create
-							(
-								&SlowKey
-								, [](void *_pValue)
-								{
-									NMib::NSys::fg_Thread_Sleep(2.0);
-								}
-							)
-						)
-						== DMibExpr(0)
-					)
-					(ETest_FailAndStop)
-				;
-
-				NMib::NAtomic::TCAtomic<bool> bStop{false};
-				NMib::NAtomic::TCAtomic<umint> nChurned{0};
-				pthread_t SlowThread;
-				pthread_t ChurnThread;
-				struct CChurn
-				{
-					NMib::NAtomic::TCAtomic<bool> *m_pStop;
-					NMib::NAtomic::TCAtomic<umint> *m_pChurned;
-					pthread_key_t m_SlowKey;
-				} Churn{&bStop, &nChurned, SlowKey};
-
-				auto fSlow = [](void *_pKey) -> void *
-					{
-						pthread_setspecific(*(pthread_key_t *)_pKey, (void *)1);
-						return nullptr;
-					}
-				;
-				auto fChurn = [](void *_pChurn) -> void *
-					{
-						auto &Churn = *(CChurn *)_pChurn;
-						while (!Churn.m_pStop->f_Load())
-						{
-							pthread_t Short;
-							if
-							(
-								pthread_create
-								(
-									&Short
-									, nullptr
-									, [](void *_pArgument) -> void *
-									{
-										return nullptr;
-									}
-									, nullptr
-								)
-								== 0
-							)
-							{
-								pthread_join(Short, nullptr);
-							}
-							Churn.m_pChurned->f_FetchAdd(1);
-						}
-						return nullptr;
-					}
-				;
-				DMibTest(DMibExpr(pthread_create(&SlowThread, nullptr, fSlow, &SlowKey)) == DMibExpr(0))(ETest_FailAndStop);
-				DMibTest(DMibExpr(pthread_create(&ChurnThread, nullptr, fChurn, &Churn)) == DMibExpr(0))(ETest_FailAndStop);
-				NMib::NSys::fg_Thread_Sleep(0.2);
-
-				NMib::NSys::fg_FreeLibrary(pDll);
-
-				bStop = true;
-				pthread_join(ChurnThread, nullptr);
-				pthread_join(SlowThread, nullptr);
-				pthread_key_delete(SlowKey);
-				DMibTest(DMibExpr(nChurned.f_Load()) > DMibExpr(umint(0)));
-			};
-#	ifdef DPlatformFamily_macOS
-			// dyld holds its loader lock across the destructors dlclose runs, so an exiting host thread
-			// that enters dyld meanwhile cannot leave the exit path the unload waits for. Nothing the
-			// library does inside those destructors can change that, and a teardown before dlclose
-			// would run ahead of the image's own static destructors, so a host must not enter dyld
-			// from a key destructor while it unloads. Kept to show the stall, not to pass
-			DMibTestSuite(CTestCategory("Unload with a thread exiting through dyld") << CTestGroup("Manual"))
-			{
-				void *pDll = NMib::NSys::fg_LoadLibrary(DllPath);
-				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
-
-				pthread_key_t DyldKey;
-				DMibTest(DMibExpr(pthread_key_create(&DyldKey, &fg_DyldBoundKeyDestructor)) == DMibExpr(0))(ETest_FailAndStop);
-
-				pthread_t ExitingThread;
-				DMibTest(DMibExpr(pthread_create(&ExitingThread, nullptr, &fg_ExitThroughDyldThread, &DyldKey)) == DMibExpr(0))(ETest_FailAndStop);
-				while (!g_bExitingThreadInDyld.f_Load())
-					NMib::NSys::fg_Thread_Sleep(0.001);
-
-				bool bUnloaded = fg_UnloadWithDeadline(pDll, 30000);
-				DMibTest(DMibExpr(bUnloaded));
-
-				if (bUnloaded)
-				{
-					pthread_join(ExitingThread, nullptr);
-					pthread_key_delete(DyldKey);
-				}
-			};
-#	endif
-			// Only threads already exiting when the key is deleted can still reach its destructor, so
-			// threads that keep retiring must not hold the unload up
-			DMibTestSuite("Unload during sustained thread exit")
-			{
-				void *pDll = NMib::NSys::fg_LoadLibrary(DllPath);
-				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
-				DMibTest(DMibExpr(pthread_key_create(&g_ChurnKey, &fg_ChurnKeyDestructor)) == DMibExpr(0))(ETest_FailAndStop);
-
-				constexpr umint c_nChurners = 16;
-				pthread_t Churners[c_nChurners];
-				umint nStarted = 0;
-				for (umint iChurner = 0; iChurner < c_nChurners; ++iChurner)
-				{
-					if (pthread_create(&Churners[nStarted], nullptr, &fg_ChurnThread, nullptr) == 0)
-						++nStarted;
-				}
-				DMibTest(DMibExpr(nStarted) == DMibExpr(c_nChurners))(ETest_FailAndStop);
-				NMib::NSys::fg_Thread_Sleep(0.2);
-
-				bool bUnloaded = fg_UnloadWithDeadline(pDll, 30000);
-
-				g_bChurnStop = true;
-				for (umint iChurner = 0; iChurner < nStarted; ++iChurner)
-					pthread_join(Churners[iChurner], nullptr);
-
-				pthread_key_delete(g_ChurnKey);
-				DMibTest(DMibExpr(g_nChurned.f_Load()) > DMibExpr(umint(0)));
-				DMibTest(DMibExpr(bUnloaded));
-			};
-#	ifdef DPlatformFamily_Linux
-			// glibc keeps a closed library mapped while a thread still owes it a thread local destructor,
-			// runs that destructor on the owning thread when it exits, and unmaps the library on the
-			// next loader close after that, which is when its static destructors run
-			DMibTestSuite("Unload with a pending thread local destructor")
-			{
-				void *pDll = NMib::NSys::fg_LoadLibrary(DllPath);
-				DMibTest(DMibExpr(pDll))(ETest_FailAndStop);
-				(void * &)g_fConstructThreadLocal = NMib::NSys::fg_GetLibrarySymbol(pDll, "fg_TestConstructThreadLocalWithDestructor");
-				DMibTest(DMibExpr(g_fConstructThreadLocal))(ETest_FailAndStop);
-
-				g_bThreadLocalConstructed = false;
-				g_bThreadLocalOwnerExit = false;
-				g_ThreadLocalDestroyedOnThread = 0;
-				pthread_t Owner;
-				DMibTest(DMibExpr(pthread_create(&Owner, nullptr, &fg_ThreadLocalOwnerThread, nullptr)) == DMibExpr(0))(ETest_FailAndStop);
-				while (!g_bThreadLocalConstructed.f_Load())
-					NMib::NSys::fg_Thread_Sleep(0.001);
-
-				DMibTest(DMibExpr(fg_UnloadWithDeadline(pDll, 30000)));
-				bool bMappedWhilePending = fg_IsLibraryMapped(DllPath);
-				DMibTest(DMibExpr(bMappedWhilePending));
-
-				g_bThreadLocalOwnerExit = true;
-				pthread_join(Owner, nullptr);
-				DMibTest(DMibExpr(g_ThreadLocalDestroyedOnThread) == DMibExpr((umint)Owner));
-
-				bool bMappedAfterOwnerExit = fg_IsLibraryMapped(DllPath); // This query's close is the one that unmaps it
-				DMibTest(DMibExpr(bMappedAfterOwnerExit));
-#		ifndef DMibSanitizerEnabled_Address // fg_LoadLibrary opens with RTLD_NODELETE under ASan, so the library never unmaps
-				bool bMappedAfterLoaderClose = fg_IsLibraryMapped(DllPath);
-				DMibTest(DMibExpr(bMappedAfterLoaderClose) == DMibExpr(false));
-#		endif
-			};
-#	endif
-#endif
-			DMibTestSuite(CTestCategory("Performance") << CTestGroup("Performance"))
-			{
-				CTestPerformanceMeasure MalterlibTime("Malterlib");
-
-				umint nTests = 256 * 16;
-#ifdef DMibDebug
-				nTests /= 16;
-#endif
-				nTests += 1;
-
-				umint nLoops = 1;
-
-				for (umint iTest = 0; iTest < nTests; ++iTest)
-				{
-					MalterlibTime.f_Start();
-					for (umint iLoop = 0; iLoop < nLoops; ++iLoop)
-					{
-						auto pDll = NMib::NSys::fg_LoadLibrary(DllPath);
-						DMibTest(DMibExpr(pDll))(ETestFlag_Aggregated);
-#if !(defined(DMibSanitizerEnabled_Thread) && defined(DPlatformFamily_macOS))
-						NMib::NSys::fg_FreeLibrary(pDll);
-#endif
-					}
-					MalterlibTime.f_Stop(nLoops);
-				}
-
-				CTestPerformance PerfTest(1.0);
-				PerfTest.f_Add(MalterlibTime);
-				DMibTest(DMibExpr(PerfTest));
-			};
-		}
-	};
+			CTestPerformance PerfTest(1.0);
+			PerfTest.f_Add(MalterlibTime);
+			DMibTest(DMibExpr(PerfTest));
+		};
+	}
 }
 DMibTestRegister(CDll_Tests, Malterlib::Core);

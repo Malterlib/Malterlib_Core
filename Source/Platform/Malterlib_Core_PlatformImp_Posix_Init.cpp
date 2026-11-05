@@ -17,16 +17,19 @@ namespace NMib
 
 struct CInitMalterlib
 {
-	CInitMalterlib()
-	{
-		NMib::NSys::fg_CreateSystem();
-	}
-
-	~CInitMalterlib()
-	{
-		NMib::NSys::fg_DestroySystem();
-	}
+	CInitMalterlib();
+	~CInitMalterlib();
 };
+
+CInitMalterlib::CInitMalterlib()
+{
+	NMib::NSys::fg_CreateSystem();
+}
+
+CInitMalterlib::~CInitMalterlib()
+{
+	NMib::NSys::fg_DestroySystem();
+}
 
 // Clang emits C++ initializers first, 101 is lowest allowed prio
 CInitMalterlib g_InitMalterlib __attribute__((init_priority(101)));

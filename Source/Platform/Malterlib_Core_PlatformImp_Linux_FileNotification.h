@@ -28,9 +28,6 @@ using namespace NMib::NStorage;
 
 struct CFileChangeNotificationContext
 {
-	CFileChangeNotificationContext();
-	~CFileChangeNotificationContext();
-
 	struct CNotification;
 	struct CWatch
 	{
@@ -77,11 +74,11 @@ struct CFileChangeNotificationContext
 	{
 		struct CChange
 		{
+			auto operator <=> (CChange const &_Right) const noexcept = default;
+
 			EFileChangeNotification m_Notification = EFileChangeNotification_Undefined;
 			CStr m_Path;
 			NStr::CStr m_PathFrom;
-
-			auto operator <=> (CChange const &_Right) const noexcept = default;
 		};
 
 		struct CFindChangesContext
@@ -150,16 +147,14 @@ struct CFileChangeNotificationContext
 		bool m_bIsDirectory = false;
 	};
 
-	TCMap<uint32, CPendingRename> m_PendingRenames;
-	umint m_nPendingNotificationRenames = 0;
-
 	struct CPendingReParent
 	{
 		NTime::CStopwatch m_Stopwatch{true};
 		TCMap<CStr, bool> m_ChildFiles;
 	};
 
-	TCMap<CStr, CPendingReParent> m_PendingReParents;
+	CFileChangeNotificationContext();
+	~CFileChangeNotificationContext();
 
 	int f_Inotify_AddWatch(CStr const &_Path);
 	void f_Inotify_RemoveWatch(int _Descriptor);
@@ -172,6 +167,11 @@ struct CFileChangeNotificationContext
 	void f_Close(void *_pNotification);
 	bool f_Changed(void *_pNotification);
 	bool f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, CStr &_PathFrom);
+
+	TCMap<uint32, CPendingRename> m_PendingRenames;
+	umint m_nPendingNotificationRenames = 0;
+
+	TCMap<CStr, CPendingReParent> m_PendingReParents;
 
 	int m_NotifyDescriptor;
 	int m_PollDescriptor;

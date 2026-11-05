@@ -15,8 +15,6 @@ struct CUringSendRing;
 // Loop-thread state addressed by CQE user data. Retain the record until all counted kernel obligations and callback pins are released.
 struct CUringRegistration : public NMib::NSys::CIoLoopRegistration
 {
-	NMib::NSys::CIoSendWindow m_SendWindow; // Owner-managed except release-lag epochs, which use their own lock.
-
 	// A multishot poll reports each socket wakeup that carries a close bit, so a later local shutdown
 	// or error is seen after a half-close. A one-shot poll could not be rearmed then: the kernel folds
 	// EPOLLRDHUP into every poll mask, and the standing half-close would complete it at once
@@ -26,6 +24,8 @@ struct CUringRegistration : public NMib::NSys::CIoLoopRegistration
 		, mc_Armed
 		, mc_Terminal
 	};
+
+	NMib::NSys::CIoSendWindow m_SendWindow; // Owner-managed except release-lag epochs, which use their own lock.
 
 	umint m_nOutstanding = 0; // Kernel obligations plus callback pins; zero permits deregistration acknowledgement.
 

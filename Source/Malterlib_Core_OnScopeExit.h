@@ -18,15 +18,15 @@ namespace NMib
 	struct [[nodiscard]] TCOnScopeExit
 	{
 		TCOnScopeExit(TCOnScopeExit const &_Other) = delete;
-		TCOnScopeExit operator = (TCOnScopeExit const &_Other) = delete;
 		TCOnScopeExit(t_FOnExitFunctor const &_fOnExitFunctor) = delete;
 
 		inline_always TCOnScopeExit(t_FOnExitFunctor &&_fOnExitFunctor);
 		inline_always TCOnScopeExit(TCOnScopeExit &&_Other);
 
-		TCOnScopeExit &operator = (TCOnScopeExit &&_Other);
-
 		inline_always ~TCOnScopeExit() noexcept(t_bNoExcept);
+
+		TCOnScopeExit operator = (TCOnScopeExit const &_Other) = delete;
+		TCOnScopeExit &operator = (TCOnScopeExit &&_Other);
 
 		template <typename ...tfp_CParam>
 		void operator () (tfp_CParam && ...p_Params);

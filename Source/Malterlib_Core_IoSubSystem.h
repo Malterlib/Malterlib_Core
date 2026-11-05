@@ -112,6 +112,8 @@ namespace NMib::NSys
 
 		void f_RegisterStatsDump(FIoStatsDump _fDump);
 
+		void f_DumpStats();
+
 		umint m_nWindowQueryIntervalTicks = 0;
 		umint m_nWindowShrinkAfterTicks = 0;
 		umint m_nTicksPerSecond = 0;
@@ -120,8 +122,6 @@ namespace NMib::NSys
 		CSocketIoStats m_SocketIoStats;
 		CNetIoStats m_NetIoStats;
 #endif
-
-		void f_DumpStats();
 
 	protected:
 #if DMibConfig_IoDebug_Enable

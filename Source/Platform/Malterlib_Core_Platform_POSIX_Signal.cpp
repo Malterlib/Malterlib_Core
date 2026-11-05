@@ -58,10 +58,7 @@ namespace NMib::NSys
 
 			struct CThreadLocal
 			{
-				~CThreadLocal()
-				{
-					DMibFastCheck(!m_pDispatch);
-				}
+				~CThreadLocal();
 
 				NStorage::TCSharedPointer<CThreadDispatch> m_pDispatch;
 
@@ -69,25 +66,17 @@ namespace NMib::NSys
 				int m_ThreadSignal = 0;
 			};
 
-			~CSubSystem_Core_Signal()
-			{
-				m_bWasDestroyed.f_Store(true);
-			}
-
-			void f_DestroyThreadSpecific() override
-			{
-				// Release the dispatch registration before its owning loop is destroyed.
-				DMibLock(m_Lock);
-				f_CloseDispatch();
-			}
-
-			static void fs_SignalHandler(int _Signal);
-
 			struct CDispatch : CSignalPipe
 			{
 				NSys::ICIoLoop *m_pLoop = nullptr; // Chosen at first registration; callbacks run on this loop's owner thread.
 				NSys::CIoLoopRegistration *m_pRegistration = nullptr;
 			};
+
+			~CSubSystem_Core_Signal();
+
+			void f_DestroyThreadSpecific() override;
+
+			static void fs_SignalHandler(int _Signal);
 
 			void f_InstallHandler(int _Signal);
 			void f_RemoveHandler(int _Signal);
@@ -132,6 +121,23 @@ namespace NMib::NSys
 				if (Descriptor >= 0)
 					close(Descriptor);
 			}
+		}
+
+		CSubSystem_Core_Signal::CThreadLocal::~CThreadLocal()
+		{
+			DMibFastCheck(!m_pDispatch);
+		}
+
+		CSubSystem_Core_Signal::~CSubSystem_Core_Signal()
+		{
+			m_bWasDestroyed.f_Store(true);
+		}
+
+		void CSubSystem_Core_Signal::f_DestroyThreadSpecific()
+		{
+			// Release the dispatch registration before its owning loop is destroyed.
+			DMibLock(m_Lock);
+			f_CloseDispatch();
 		}
 
 		void CSubSystem_Core_Signal::fs_SignalHandler(int _Signal)
