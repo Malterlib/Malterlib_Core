@@ -4,6 +4,7 @@
 #pragma once
 #include <Mib/Preprocessor/Preprocessor>
 #include <Mib/Core/Platform>
+#include <Mib/Core/TidyAnnotations>
 #include <initializer_list>
 
 namespace NMib
