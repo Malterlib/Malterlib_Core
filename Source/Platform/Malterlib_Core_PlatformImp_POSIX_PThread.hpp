@@ -1029,7 +1029,7 @@ static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_
 	pThreadParams->m_ThreadName = pThreadParams->m_ThreadName.f_Left(15);
 #	endif
 
-	pthread_t ThreadID; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
+	pthread_t ThreadID;
 
 #	if defined(DMibPLinuxKernel)
 	bool bPreviousOwnThreadCreate = g_bLinuxOwnThreadCreate;
@@ -1060,7 +1060,7 @@ static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_
 
 void NSys::fg_Thread_SetAffinity(void *_pThread, umint _Affinity)
 {
-	pthread_t ThreadID = (pthread_t)_pThread; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
+	pthread_t ThreadID = (pthread_t)_pThread;
 
 #	if defined(DMibPMachKernel)
 
