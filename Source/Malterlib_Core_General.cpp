@@ -21,7 +21,7 @@ namespace NMib
 	CVoidTag const g_Void;
 
 #ifdef DMibFileLineOnDebugBreak
-	void fg_OutputDebugBreakFileLine(ch8 const *_pFile, int _Line)
+	void fg_OutputDebugBreakFileLine(ch8 const *_pFile, int _Line) noexcept
 	{
 		NMib::NSys::fg_ConsoleErrorOutput((NStr::CFStr1024::CFormat(DMibPFileLineFormat " Debug Break\n") << _pFile << _Line).f_GetStr().f_Span());
 	}
