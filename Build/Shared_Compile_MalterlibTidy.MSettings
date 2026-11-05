@@ -31,9 +31,22 @@ Property
 	f_MalterlibTidyTrimLocation function(string _Location) [string] = []
 	f_MalterlibTidyTrimLocation =+ _Location->MakeAbsolute()->RemoveSuffix("/")
 
+	// The rules of a Perforce root, which has no %Repository. Generating sets them, and an MTool that doesn't leaves them empty.
+	PerforceRootTidyRules: [{Location: string, Tidy: {Enabled: bool, IncludeFiles: [string], ExcludeFiles: [string]}}] = []
+	f_MalterlibTidyRuleLocation function({Location: string, Tidy: {Enabled: bool, IncludeFiles: [string], ExcludeFiles: [string]}} _Rule) [string] = [_Rule<Location>]
+	f_MalterlibTidyRuleCheckedLocation function({Location: string, Tidy: {Enabled: bool, IncludeFiles: [string], ExcludeFiles: [string]}} _Rule) [string] = []
+	f_MalterlibTidyRuleCheckedLocation =+ [_Rule<Location>]
+	{
+		!!_Rule<Tidy><Enabled> true
+	}
+
 	// Every repository location, and the locations of the repositories that set Repository.Tidy.Enabled.
-	MalterlibTidyRepositoryLocations: [string] = AllRepositories->ForEach(&f_MalterlibTidyCollectLocations)->ForEach(&f_MalterlibTidyTrimLocation)->Unique()
-	MalterlibTidyCheckedLocations: [string] = AllRepositories->ForEach(&f_MalterlibTidyCollectCheckedLocations)->ForEach(&f_MalterlibTidyTrimLocation)->Unique()
+	MalterlibTidyPerforceRootLocations: [string] = PerforceRootTidyRules->ForEach(&f_MalterlibTidyRuleLocation)
+	MalterlibTidyPerforceRootCheckedLocations: [string] = PerforceRootTidyRules->ForEach(&f_MalterlibTidyRuleCheckedLocation)
+	MalterlibTidyAllLocations: [string] = AllRepositories->ForEach(&f_MalterlibTidyCollectLocations)->Concat(MalterlibTidyPerforceRootLocations)
+	MalterlibTidyAllCheckedLocations: [string] = AllRepositories->ForEach(&f_MalterlibTidyCollectCheckedLocations)->Concat(MalterlibTidyPerforceRootCheckedLocations)
+	MalterlibTidyRepositoryLocations: [string] = MalterlibTidyAllLocations->ForEach(&f_MalterlibTidyTrimLocation)->Unique()
+	MalterlibTidyCheckedLocations: [string] = MalterlibTidyAllCheckedLocations->ForEach(&f_MalterlibTidyTrimLocation)->Unique()
 
 	// The rules of every repository, also of those that don't check their files, which tell what nests in them.
 	f_MalterlibTidyRepositoryRules function(string _Property) [
@@ -48,7 +61,7 @@ Property
 	}
 
 	MalterlibTidyRepositoriesFile: string = GeneratedGlobalDirectory / "MalterlibTidyRepositories.json"
-	MalterlibTidyRepositoryRules: string = AllRepositories->ForEach(&f_MalterlibTidyRepositoryRules)->ToString()
+	MalterlibTidyRepositoryRules: string = AllRepositories->ForEach(&f_MalterlibTidyRepositoryRules)->Concat(PerforceRootTidyRules)->ToString()
 
 	MalterlibTidyPath: string = ""
 

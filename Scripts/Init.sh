@@ -153,6 +153,155 @@ InitOutputInfo "Creating $BuildSystemFile"
 EOF
 } > "$BuildSystemFile"
 
+# A Perforce root is a project directory without .git that has a P4CONFIG file. It has no %Repository, so the settings
+# that Core's %Repository "." gives a git root go in PerforceRoot, and the template's ignore rules in the ignore file p4 reads.
+
+function IsAbsolutePath()
+{
+	[[ "$1" == /* || "$1" == \\* || "$1" =~ ^[A-Za-z]:[\\/] ]]
+}
+
+# The P4CONFIG files p4 reads in the project directory, the nearest first: the file P4CONFIG names when it is a path, or else
+# the file of that name in the project directory and in each directory above it.
+function GetP4ConfigFiles()
+{
+	if [[ -z "$P4ConfigName" ]]; then
+		return 0
+	fi
+
+	if IsAbsolutePath "$P4ConfigName"; then
+		if [[ -f "$P4ConfigName" ]]; then
+			echo "$P4ConfigName"
+		fi
+		return 0
+	fi
+
+	local Directory="$ProjectDir"
+	while true; do
+		if [[ -f "$Directory/$P4ConfigName" ]]; then
+			echo "$Directory/$P4ConfigName"
+		fi
+		local Parent
+		Parent="$(dirname "$Directory")"
+		if [[ "$Parent" == "$Directory" ]]; then
+			return 0
+		fi
+		Directory="$Parent"
+	done
+}
+
+# A p4 setting with $home in it replaced by the home directory, as p4 replaces it: USERPROFILE on Windows and HOME elsewhere,
+# without a trailing slash.
+function ExpandP4Home()
+{
+	local Value="$1"
+	local Home="$HOME"
+	if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
+		Home="${USERPROFILE:-$HOME}"
+	fi
+	Home="${Home%/}"
+	Home="${Home%\\}"
+	# Piece by piece, as a pattern substitution reads an & in the home directory as the match in Bash 5.2 and later, and
+	# quoting it there inserts the quotes in Bash 3.2, which is /bin/bash on macOS.
+	local Result=""
+	while [[ "$Value" == *'$home'* ]]; do
+		Result="$Result${Value%%\$home*}$Home"
+		Value="${Value#*\$home}"
+	done
+	echo "$Result$Value"
+}
+
+# A p4 setting as p4 takes it in the project directory: from the P4CONFIG files, the nearest first, then the environment, also
+# when set empty, then p4 set, whose output on Windows ends its lines with CR. P4CONFIG itself comes from the last two only.
+# Without p4 in PATH, what p4 set stored is not considered.
+function GetP4Setting()
+{
+	local Name="$1"
+	local Value=""
+	if [[ "$Name" != P4CONFIG ]]; then
+		local ConfigFile
+		# As p4 parses a P4CONFIG file: a CR before the line end and the trailing spaces after it, but not tabs, are no part of
+		# a line, and the nearest file that sets the variable wins, also when it sets it empty.
+		local Line
+		while IFS= read -r ConfigFile; do
+			Line="$(sed -e $'s/\r$//' -e 's/ *$//' "$ConfigFile" | grep -m 1 "^$Name=" || true)"
+			if [[ -n "$Line" ]]; then
+				ExpandP4Home "${Line#*=}"
+				return 0
+			fi
+		done < <(GetP4ConfigFiles)
+	fi
+
+	if [[ -n "${!Name+x}" ]]; then
+		Value="${!Name}"
+	elif command -v p4 > /dev/null 2>&1; then
+		Value="$(p4 set -q "$Name" 2> /dev/null | tr -d '\r' | sed -n "s/^$Name=//p" || true)"
+	fi
+	ExpandP4Home "$Value"
+}
+
+# Without P4CONFIG, p4 reads no P4CONFIG file, and mib takes no directory for a Perforce root.
+P4ConfigName="$(GetP4Setting P4CONFIG)"
+if [[ ! -e "$ProjectDir/.git" ]] && ! command -v p4 > /dev/null 2>&1; then
+	InitOutputNote "p4 is not in PATH, so the Perforce settings stored with p4 set are not considered, only the environment and the P4CONFIG files"
+fi
+
+# The ignore file p4 reads in the project directory: the first name of P4IGNORE that is not a path, as p4 looks for those in
+# every directory above a file. Without P4IGNORE, p4 reads .p4ignore.
+P4IgnoreName=".p4ignore"
+P4IgnoreNames="$(GetP4Setting P4IGNORE)"
+# P4IGNORE=unset turns ignore files off, for p4 and mib alike.
+if [[ "$P4IgnoreNames" == "unset" ]]; then
+	P4IgnoreName=""
+elif [[ -n "$P4IgnoreNames" ]]; then
+	P4IgnoreName=""
+	if [[ "$OSTYPE" != msys* && "$OSTYPE" != cygwin* ]]; then
+		P4IgnoreNames="${P4IgnoreNames//:/;}"
+	fi
+	IFS=';' read -ra P4IgnoreList <<< "$P4IgnoreNames"
+	for Name in "${P4IgnoreList[@]}"; do
+		if [[ -n "$Name" && "$Name" != */* && "$Name" != *\\* ]]; then
+			P4IgnoreName="$Name"
+			break
+		fi
+	done
+fi
+
+# A P4CONFIG that is a path names the file itself, as mib takes it too.
+P4ConfigFile=""
+if [[ -n "$P4ConfigName" ]]; then
+	P4ConfigFile="$ProjectDir/$P4ConfigName"
+	if IsAbsolutePath "$P4ConfigName"; then
+		P4ConfigFile="$P4ConfigName"
+	fi
+fi
+
+IsPerforceRoot=false
+if [[ ! -e "$ProjectDir/.git" ]] && [[ -n "$P4ConfigFile" ]] && [[ -f "$P4ConfigFile" ]]; then
+	IsPerforceRoot=true
+elif [[ ! -e "$ProjectDir/.git" ]] && [[ -z "$P4ConfigName" ]] && [[ -f "$ProjectDir/.p4config" ]]; then
+	InitOutputNote "The project has a .p4config, but P4CONFIG is not set, so p4 and mib do not use it. For ./mib format and"
+	InitOutputNote "./mib tidy to cover the root, set P4CONFIG=.p4config and add PerforceRoot settings to $BuildSystemFile"
+fi
+
+if [[ "$IsPerforceRoot" == true ]]; then
+	cat >> "$BuildSystemFile" <<'EOF'
+
+Property
+{
+	// A Perforce root has no %Repository: these are the settings Core's %Repository "." gives a git root. Like a git root,
+	// it checks no licenses until CheckLicense and License are set here.
+	PerforceRoot {Format: true, Tidy: {Enabled: true, ExcludeFiles: ["BuildSystem/*"]}}
+}
+EOF
+fi
+
+# Core's %Repository "." formats and tidies a git root, but only one that has an origin remote, as a repository needs a URL.
+GitRootWithoutOrigin=false
+if [[ -e "$ProjectDir/.git" ]] && ! git -C "$ProjectDir" remote get-url origin > /dev/null 2>&1; then
+	GitRootWithoutOrigin=true
+fi
+
 function CopyTemplateFile()
 {
 	local Source="$1"
@@ -205,6 +354,18 @@ echo
 InitOutputInfo "Copying project templates"
 
 MergeGitIgnoreFile "$TemplateDir/.gitignore" "$ProjectDir/.gitignore"
+if [[ "$IsPerforceRoot" == true ]]; then
+	if [[ -n "$P4IgnoreName" ]]; then
+		MergeGitIgnoreFile "$TemplateDir/.gitignore" "$ProjectDir/$P4IgnoreName"
+	else
+		if [[ "$P4IgnoreNames" == "unset" ]]; then
+			InitOutputNote "P4IGNORE is unset, which turns ignore files off, so ./mib format and ./mib tidy would include the generated files."
+			InitOutputNote "Set P4IGNORE (or remove the setting to use .p4ignore) and add the entries of $TemplateDir/.gitignore to that file"
+		else
+			InitOutputNote "P4IGNORE names no ignore file of the project directory ($P4IgnoreNames): add the entries of $TemplateDir/.gitignore to one of its files"
+		fi
+	fi
+fi
 CopyTemplateFile "$TemplateDir/.editorconfig" "$ProjectDir/.editorconfig"
 CopyTemplateFile "$TemplateDir/.clang-tidy" "$ProjectDir/.clang-tidy"
 CopyTemplateFile "$TemplateDir/.malterlib-format" "$ProjectDir/.malterlib-format"
@@ -230,9 +391,13 @@ echo
 InitOutputHeading "Successfully initialized Malterlib project"
 echo
 echo "Next steps:"
-echo "  1. Edit $BuildSystemFile to set ProductCompany and ProductCompanyUniqueIdentifier"
-echo "  2. Run ./mib generate to generate the default Tests workspace"
-echo "  3. Prompt your favourite agent, for example:"
+iStep=1
+echo "  $((iStep++)). Edit $BuildSystemFile to set ProductCompany and ProductCompanyUniqueIdentifier"
+if [[ "$GitRootWithoutOrigin" == true ]]; then
+	echo "  $((iStep++)). Add the remote of the project with git remote add origin <URL>: ./mib format and ./mib tidy cover the root only once it has one"
+fi
+echo "  $((iStep++)). Run ./mib generate to generate the default Tests workspace"
+echo "  $((iStep++)). Prompt your favourite agent, for example:"
 echo
 echo "     Create a distributed app tool that reports the weather."
 echo "     * Use the table renderer."
