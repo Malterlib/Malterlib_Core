@@ -846,8 +846,8 @@ void NSys::fg_Thread_Resume(void *_pThread)
 	DMibError("Thread supension not available on linux");
 }
 
-extern "C" _Unwind_Reason_Code _Unwind_Backtrace(_Unwind_Trace_Fn, void *);
-extern "C" uintptr_t _Unwind_GetIP(struct _Unwind_Context *context);
+extern "C" _Unwind_Reason_Code _Unwind_Backtrace(_Unwind_Trace_Fn _fTrace, void *_pContext);
+extern "C" uintptr_t _Unwind_GetIP(struct _Unwind_Context *_pContext);
 
 inline_never umint NSys::fg_System_GetStackTrace(CMibCodeAddress *_pStack, umint _nMaxDepth)
 {
@@ -1415,20 +1415,20 @@ namespace NMib
 
 extern "C"
 {
-	void *nontracked_malloc(size_t __size) __THROW __wur
+	void *nontracked_malloc(size_t _Size) __THROW __wur
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(__size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(_Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(__size);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(_Size);
 #endif
 	}
 
-	void *nontracked_calloc(size_t __nmemb, size_t __size) __THROW __wur
+	void *nontracked_calloc(size_t _nItems, size_t _Size) __THROW __wur
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		umint Size = __nmemb * __size;
+		umint Size = _nItems * _Size;
 #if DMibConfig_MalterlibMemoryManager_Debug
 		auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
@@ -1438,35 +1438,35 @@ extern "C"
 		return pMem;
 	}
 
-	void *nontracked_realloc(void *__ptr, size_t __size) __THROW
+	void *nontracked_realloc(void *_pMemory, size_t _Size) __THROW
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_ResizeDebug(__ptr, __size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_ResizeDebug(_pMemory, _Size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Resize(__ptr, __size, 0, EAllocationFlag_SizeNotNeeded);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Resize(_pMemory, _Size, 0, EAllocationFlag_SizeNotNeeded);
 #endif
 	}
 
-	void nontracked_free(void *__ptr) __THROW
+	void nontracked_free(void *_pMemory) __THROW
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(_pMemory);
 	}
 
-	void nontracked_cfree(void *__ptr) __THROW
+	void nontracked_cfree(void *_pMemory) __THROW
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(_pMemory);
 	}
 
-	void *nontracked_memalign(size_t __alignment, size_t __size) __THROW __wur
+	void *nontracked_memalign(size_t _Alignment, size_t _Size) __THROW __wur
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, __alignment, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(_Size, _Alignment, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, __alignment);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(_Size, _Alignment);
 #endif
 	}
 
@@ -1481,33 +1481,33 @@ extern "C"
 		return nontracked_memalign(_Alignment, _Size);
 	}
 
-	void *nontracked_valloc(size_t __size) __THROW __wur
+	void *nontracked_valloc(size_t _Size) __THROW __wur
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(_Size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(_Size, NMib::NSys::NPrivate::g_PageSize);
 #endif
 	}
 
-	void *nontracked_pvalloc(size_t __size) __THROW __wur
+	void *nontracked_pvalloc(size_t _Size) __THROW __wur
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(_Size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(_Size, NMib::NSys::NPrivate::g_PageSize);
 #endif
 	}
 
-	size_t nontracked_malloc_usable_size(void *__ptr) __THROW
+	size_t nontracked_malloc_usable_size(void *_pMemory) __THROW
 	{
-		if (!__ptr)
+		if (!_pMemory)
 			return 0;
 
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Size(__ptr);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Size(_pMemory);
 	}
 }
 
@@ -1582,19 +1582,19 @@ void fg_TerminateHandler()
 }
 
 #if defined(DMibSanitizerEnabled_Address) && !defined(DMibPSizedDestructors)
-module_export assure_used extern "C" int __asan_on_delete(void *ptr, size_t size)
+module_export assure_used extern "C" int __asan_on_delete(void *_pMemory, size_t _Size)
 {
-	return NMib::NMemory::CCaptureDefaultDelete::fs_ReportDelete(ptr, size);
+	return NMib::NMemory::CCaptureDefaultDelete::fs_ReportDelete(_pMemory, _Size);
 }
 #endif
 
 namespace NMib::NSys
 {
 #ifdef DMibInitInPreInitArray
-	void fg_CreateSystem_Early(char **envp)
+	void fg_CreateSystem_Early(char **_pEnvironment)
 	{
-		__environ = envp;
-		environ = envp;
+		__environ = _pEnvironment;
+		environ = _pEnvironment;
 		NSys::fg_CreateSystem();
 	}
 #endif
@@ -3363,12 +3363,12 @@ namespace NMib
 #if !defined(DMibSanitizerEnabled) && defined(DArchitecture_x64)
 __asm__(".symver __real_versioned_memcpy,memcpy@GLIBC_2.2.5");
 
-extern "C" void *__real_versioned_memcpy(void * __restrict __dest, __const void * __restrict __src, __SIZE_TYPE__ __n);
-extern "C" void *memcpy(void * __restrict __dest, __const void * __restrict __src, __SIZE_TYPE__ __n) __attribute__((no_builtin))
+extern "C" void *__real_versioned_memcpy(void * __restrict _pDestination, __const void * __restrict _pSource, __SIZE_TYPE__ _nBytes);
+extern "C" void *memcpy(void * __restrict _pDestination, __const void * __restrict _pSource, __SIZE_TYPE__ _nBytes) __attribute__((no_builtin))
 {
 	if (NLocal::g_fRealVersionedMemcpyNew)
-		return NLocal::g_fRealVersionedMemcpyNew(__dest, __src, __n);
-	return __real_versioned_memcpy(__dest, __src, __n);
+		return NLocal::g_fRealVersionedMemcpyNew(_pDestination, _pSource, _nBytes);
+	return __real_versioned_memcpy(_pDestination, _pSource, _nBytes);
 }
 
 #endif
@@ -3425,30 +3425,29 @@ extern "C" pfp32 powf(pfp32 _Value, pfp32 _Power) __attribute__((no_builtin))
 	return NLocal::g_fRealVersionedPowfNew(_Value, _Power);
 }
 
-extern "C" int clock_getres(clockid_t __clock_id, struct timespec *__res) __THROW __attribute__((no_builtin))
+extern "C" int clock_getres(clockid_t _ClockID, struct timespec *o_pResolution) __THROW __attribute__((no_builtin))
 {
-	return NLocal::g_fRealVersionedClockGetres(__clock_id, __res);
+	return NLocal::g_fRealVersionedClockGetres(_ClockID, o_pResolution);
 }
 
-extern "C" int clock_gettime(clockid_t __clock_id, struct timespec *__tp) __THROW __attribute__((no_builtin))
+extern "C" int clock_gettime(clockid_t _ClockID, struct timespec *o_pTime) __THROW __attribute__((no_builtin))
 {
-	return NLocal::g_fRealVersionedClockGettime(__clock_id, __tp);
+	return NLocal::g_fRealVersionedClockGettime(_ClockID, o_pTime);
 }
 
-// NOLINTNEXTLINE(malterlib-parameter-naming): the declaration of the Linux headers, with its parameter names
-extern "C" int glob64(__const char * __restrict __pattern, int __flags, int (*__errfunc)(__const char *, int), glob64_t * __restrict __pglob) __THROW
+extern "C" int glob64(__const char * __restrict _pPattern, int _Flags, int (*_fError)(__const char *_pPath, int _Error), glob64_t * __restrict o_pGlob) __THROW
 {
-	return NLocal::g_fRealVersionedGlob64(__pattern, __flags, __errfunc, __pglob);
+	return NLocal::g_fRealVersionedGlob64(_pPattern, _Flags, _fError, o_pGlob);
 }
 
-extern "C" int pthread_mutexattr_setrobust(pthread_mutexattr_t *__attr, int __robustness) __THROW
+extern "C" int pthread_mutexattr_setrobust(pthread_mutexattr_t *_pAttributes, int _Robustness) __THROW
 {
-	return NLocal::g_fRealPThreadMutexattrSetrobust(__attr, __robustness);
+	return NLocal::g_fRealPThreadMutexattrSetrobust(_pAttributes, _Robustness);
 }
 
-extern "C" int pthread_mutex_consistent(pthread_mutex_t *__mutex) __THROW
+extern "C" int pthread_mutex_consistent(pthread_mutex_t *_pMutex) __THROW
 {
-	return NLocal::g_fRealPThreadMutexConsistent(__mutex);
+	return NLocal::g_fRealPThreadMutexConsistent(_pMutex);
 }
 
 extern "C" int __isoc99_vsscanf(char const * __restrict _pString, char const * __restrict _pFormat, va_list _VaList)
@@ -3606,10 +3605,10 @@ extern "C" int fcntl64(int _FileDescriptor, int _Command, ...)
 #ifdef DArchitecture_x64
 __asm__(".symver __real_versioned___strtok_r_1c,__strtok_r_1c@GLIBC_2.2.5");
 
-extern "C" char *__real_versioned___strtok_r_1c(char *__s, char __sep, char **__nextp);
-extern "C" char *__strtok_r_1c(char *__s, char __sep, char **__nextp) __attribute__((no_builtin))
+extern "C" char *__real_versioned___strtok_r_1c(char *_pString, char _Separator, char **_pRemaining);
+extern "C" char *__strtok_r_1c(char *_pString, char _Separator, char **_pRemaining) __attribute__((no_builtin))
 {
-	return __real_versioned___strtok_r_1c(__s, __sep, __nextp);
+	return __real_versioned___strtok_r_1c(_pString, _Separator, _pRemaining);
 }
 #endif
 
@@ -3691,97 +3690,113 @@ extern "C" int __sched_cpucount(size_t _SetSize, cpu_set_t const *_pSet)
 	return CpuCount;
 }
 
-extern "C" int posix_spawn(pid_t *pid, char const *path, posix_spawn_file_actions_t const *file_actions, posix_spawnattr_t const *attrp, char * const argv[], char * const envp[])
+extern "C" int posix_spawn
+	(
+		pid_t *o_pPID
+		, char const *_pPath
+		, posix_spawn_file_actions_t const *_pFileActions
+		, posix_spawnattr_t const *_pAttributes
+		, char * const _Arguments[]
+		, char * const _Environment[]
+	)
 {
-	return NLocal::g_fRealVersionedPosixSpawn(pid, path, file_actions, attrp, argv, envp);
+	return NLocal::g_fRealVersionedPosixSpawn(o_pPID, _pPath, _pFileActions, _pAttributes, _Arguments, _Environment);
 }
 
-extern "C" int posix_spawnp(pid_t *pid, char const *path, posix_spawn_file_actions_t const *file_actions, posix_spawnattr_t const *attrp, char * const argv[], char * const envp[])
+extern "C" int posix_spawnp
+	(
+		pid_t *o_pPID
+		, char const *_pPath
+		, posix_spawn_file_actions_t const *_pFileActions
+		, posix_spawnattr_t const *_pAttributes
+		, char * const _Arguments[]
+		, char * const _Environment[]
+	)
 {
-	return NLocal::g_fRealVersionedPosixSpawnp(pid, path, file_actions, attrp, argv, envp);
+	return NLocal::g_fRealVersionedPosixSpawnp(o_pPID, _pPath, _pFileActions, _pAttributes, _Arguments, _Environment);
 }
 
-extern "C" int utimensat(int dirfd, char const *pathname, struct timespec const times[2], int flags)
+extern "C" int utimensat(int _DirectoryFileDescriptor, char const *_pPath, struct timespec const _Times[2], int _Flags)
 {
 	if (NLocal::g_fUtimensat)
-		return NLocal::g_fUtimensat(dirfd, pathname, times, flags);
+		return NLocal::g_fUtimensat(_DirectoryFileDescriptor, _pPath, _Times, _Flags);
 
 	timeval Vals[2];
 
-	if (times[0].tv_nsec == UTIME_OMIT || times[1].tv_nsec == UTIME_OMIT)
+	if (_Times[0].tv_nsec == UTIME_OMIT || _Times[1].tv_nsec == UTIME_OMIT)
 	{
 		struct stat Stats;
-		if (auto Return = fstatat(dirfd, pathname, &Stats, flags))
+		if (auto Return = fstatat(_DirectoryFileDescriptor, _pPath, &Stats, _Flags))
 			return Return;
 
-		if (times[0].tv_nsec == UTIME_OMIT)
+		if (_Times[0].tv_nsec == UTIME_OMIT)
 			TIMESPEC_TO_TIMEVAL(Vals + 0, &Stats.st_atim);
-		if (times[1].tv_nsec == UTIME_OMIT)
+		if (_Times[1].tv_nsec == UTIME_OMIT)
 			TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtim);
 	}
 
-	if (times[0].tv_nsec == UTIME_NOW || times[1].tv_nsec == UTIME_NOW)
+	if (_Times[0].tv_nsec == UTIME_NOW || _Times[1].tv_nsec == UTIME_NOW)
 	{
 		struct timeval Now;
 		if (auto Return = gettimeofday(&Now, NULL))
 			return Return;
 
-		if (times[0].tv_nsec == UTIME_NOW)
+		if (_Times[0].tv_nsec == UTIME_NOW)
 			Vals[0] = Now;
-		if (times[1].tv_nsec == UTIME_NOW)
+		if (_Times[1].tv_nsec == UTIME_NOW)
 			Vals[1] = Now;
 	}
 
-	if (times[0].tv_nsec != UTIME_NOW && times[0].tv_nsec != UTIME_OMIT)
-		TIMESPEC_TO_TIMEVAL(Vals + 0, times + 0);
+	if (_Times[0].tv_nsec != UTIME_NOW && _Times[0].tv_nsec != UTIME_OMIT)
+		TIMESPEC_TO_TIMEVAL(Vals + 0, _Times + 0);
 
-	if (times[1].tv_nsec != UTIME_NOW && times[1].tv_nsec != UTIME_OMIT)
-		TIMESPEC_TO_TIMEVAL(Vals + 1, times + 1);
+	if (_Times[1].tv_nsec != UTIME_NOW && _Times[1].tv_nsec != UTIME_OMIT)
+		TIMESPEC_TO_TIMEVAL(Vals + 1, _Times + 1);
 
-	if (auto Result = futimesat(dirfd, pathname, Vals))
+	if (auto Result = futimesat(_DirectoryFileDescriptor, _pPath, Vals))
 		return Result;
 
 	return 0;
 }
 
-extern "C" int futimens(int fd, struct timespec const times[2])
+extern "C" int futimens(int _FileDescriptor, struct timespec const _Times[2])
 {
 	if (NLocal::g_fFutimens)
-		return NLocal::g_fFutimens(fd, times);
+		return NLocal::g_fFutimens(_FileDescriptor, _Times);
 
 	timeval Vals[2];
 
-	if (times[0].tv_nsec == UTIME_OMIT || times[1].tv_nsec == UTIME_OMIT)
+	if (_Times[0].tv_nsec == UTIME_OMIT || _Times[1].tv_nsec == UTIME_OMIT)
 	{
 		struct stat Stats;
-		if (auto Return = fstat(fd, &Stats))
+		if (auto Return = fstat(_FileDescriptor, &Stats))
 			return Return;
 
-		if (times[0].tv_nsec == UTIME_OMIT)
+		if (_Times[0].tv_nsec == UTIME_OMIT)
 			TIMESPEC_TO_TIMEVAL(Vals + 0, &Stats.st_atim);
-		if (times[1].tv_nsec == UTIME_OMIT)
+		if (_Times[1].tv_nsec == UTIME_OMIT)
 			TIMESPEC_TO_TIMEVAL(Vals + 1, &Stats.st_mtim);
 	}
 
-	if (times[0].tv_nsec == UTIME_NOW || times[1].tv_nsec == UTIME_NOW)
+	if (_Times[0].tv_nsec == UTIME_NOW || _Times[1].tv_nsec == UTIME_NOW)
 	{
 		struct timeval Now;
 		if (auto Return = gettimeofday(&Now, NULL))
 			return Return;
 
-		if (times[0].tv_nsec == UTIME_NOW)
+		if (_Times[0].tv_nsec == UTIME_NOW)
 			Vals[0] = Now;
-		if (times[1].tv_nsec == UTIME_NOW)
+		if (_Times[1].tv_nsec == UTIME_NOW)
 			Vals[1] = Now;
 	}
 
-	if (times[0].tv_nsec != UTIME_NOW && times[0].tv_nsec != UTIME_OMIT)
-		TIMESPEC_TO_TIMEVAL(Vals + 0, times + 0);
+	if (_Times[0].tv_nsec != UTIME_NOW && _Times[0].tv_nsec != UTIME_OMIT)
+		TIMESPEC_TO_TIMEVAL(Vals + 0, _Times + 0);
 
-	if (times[1].tv_nsec != UTIME_NOW && times[1].tv_nsec != UTIME_OMIT)
-		TIMESPEC_TO_TIMEVAL(Vals + 1, times + 1);
+	if (_Times[1].tv_nsec != UTIME_NOW && _Times[1].tv_nsec != UTIME_OMIT)
+		TIMESPEC_TO_TIMEVAL(Vals + 1, _Times + 1);
 
-	if (auto Result = futimes(fd, Vals))
+	if (auto Result = futimes(_FileDescriptor, Vals))
 		return Result;
 
 	return 0;
@@ -3836,12 +3851,12 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 
 #include <stdarg.h>
 
-extern "C" int __isoc99_sscanf(char const *s, char const *format, ...)
+extern "C" int __isoc99_sscanf(char const *_pString, char const *_pFormat, ...)
 {
 	va_list VaList;
 	int Result;
-	va_start(VaList, format);
-	Result = vsscanf(s, format, VaList);
+	va_start(VaList, _pFormat);
+	Result = vsscanf(_pString, _pFormat, VaList);
 	va_end(VaList);
 	return Result;
 }

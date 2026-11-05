@@ -711,12 +711,12 @@ void fg_SetUnixHandleOptions(int _File)
 #endif
 
 	// Set CloseOnExec so that child processes do not get our open files.
-	int FDFlags = fcntl(_File, F_GETFD);
-	if (FDFlags != -1)
+	int DescriptorFlags = fcntl(_File, F_GETFD);
+	if (DescriptorFlags != -1)
 	{
-		FDFlags |= FD_CLOEXEC;
+		DescriptorFlags |= FD_CLOEXEC;
 
-		if (fcntl(_File, F_SETFD, FDFlags) == -1)
+		if (fcntl(_File, F_SETFD, DescriptorFlags) == -1)
 		{
 			// We let this go deliberately. Nothing overly bad can happen.
 		}

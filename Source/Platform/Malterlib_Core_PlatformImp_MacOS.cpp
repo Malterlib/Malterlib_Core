@@ -161,20 +161,20 @@ namespace NMib
 
 extern "C"
 {
-	void *nontracked_malloc(size_t __size)
+	void *nontracked_malloc(size_t _Size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(__size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(_Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(__size);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Alloc(_Size);
 #endif
 	}
 
-	void *nontracked_calloc(size_t __nmemb, size_t __size)
+	void *nontracked_calloc(size_t _nItems, size_t _Size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		umint Size = __nmemb * __size;
+		umint Size = _nItems * _Size;
 #if DMibConfig_MalterlibMemoryManager_Debug
 		auto pMem = NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocDebug(Size, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
@@ -184,35 +184,35 @@ extern "C"
 		return pMem;
 	}
 
-	void *nontracked_realloc(void *__ptr, size_t __size)
+	void *nontracked_realloc(void *_pMemory, size_t _Size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_ResizeDebug(__ptr, __size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_ResizeDebug(_pMemory, _Size, 0, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Resize(__ptr, __size, 0, EAllocationFlag_SizeNotNeeded);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Resize(_pMemory, _Size, 0, EAllocationFlag_SizeNotNeeded);
 #endif
 	}
 
-	void nontracked_free(void *__ptr)
+	void nontracked_free(void *_pMemory)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(_pMemory);
 	}
 
-	void nontracked_cfree(void *__ptr)
+	void nontracked_cfree(void *_pMemory)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(__ptr);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_FreeNoSize(_pMemory);
 	}
 
-	void *nontracked_memalign(size_t __alignment, size_t __size)
+	void *nontracked_memalign(size_t _Alignment, size_t _Size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, __alignment, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(_Size, _Alignment, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, __alignment);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(_Size, _Alignment);
 #endif
 	}
 
@@ -227,33 +227,33 @@ extern "C"
 		return nontracked_memalign(_Alignment, _Size);
 	}
 
-	void *nontracked_valloc(size_t __size)
+	void *nontracked_valloc(size_t _Size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(_Size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(_Size, NMib::NSys::NPrivate::g_PageSize);
 #endif
 	}
 
-	void *nontracked_pvalloc(size_t __size)
+	void *nontracked_pvalloc(size_t _Size)
 	{
 		DMibFastCheck(g_bCanUseSystemMalloc);
 #if DMibConfig_MalterlibMemoryManager_Debug
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(__size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAlignedDebug(_Size, NMib::NSys::NPrivate::g_PageSize, DMibPFile, DMibPLine, EHeapDebugFlag_Ignore);
 #else
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(__size, NMib::NSys::NPrivate::g_PageSize);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_AllocAligned(_Size, NMib::NSys::NPrivate::g_PageSize);
 #endif
 	}
 
-	size_t nontracked_malloc_usable_size(void *__ptr)
+	size_t nontracked_malloc_usable_size(void *_pMemory)
 	{
-		if (!__ptr)
+		if (!_pMemory)
 			return 0;
 
 		DMibFastCheck(g_bCanUseSystemMalloc);
-		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Size(__ptr);
+		return NMib::NMemory::CAllocator_NonTrackedHeap::f_Size(_pMemory);
 	}
 }
 
@@ -1493,9 +1493,9 @@ namespace
 	constexpr umint gc_PThreadCancelStateOffsetFromTSD = 0x2a + 2 * sizeof(void *);
 	constexpr uint16 gc_PThreadCancelStateExiting = 0x20;
 
-	DMibSuppressThreadSanitizer inline_never bool fg_PThreadIsExiting(pthread_t _pThread)
+	DMibSuppressThreadSanitizer inline_never bool fg_PThreadIsExiting(pthread_t _Thread)
 	{
-		auto pCancelState = reinterpret_cast<uint16 *>(reinterpret_cast<uint8 *>(_pThread) + NSys::g_ThreadLocalOffsetPThread - gc_PThreadCancelStateOffsetFromTSD);
+		auto pCancelState = reinterpret_cast<uint16 *>(reinterpret_cast<uint8 *>(_Thread) + NSys::g_ThreadLocalOffsetPThread - gc_PThreadCancelStateOffsetFromTSD);
 #ifdef DMibSanitizerEnabled_Thread
 		// TSan does not model Mach thread suspension and reports this private
 		// pthread-state read against its own earlier TLS initialization write.
@@ -1525,7 +1525,7 @@ namespace
 	// libpthread drops a detached thread from its list before the destroy callback returns, so the
 	// TSD base the kernel reports is used. A null pthread has no TSD base and has never entered
 	// libpthread, as with a workqueue thread parked before its first work item
-	kern_return_t fg_PThreadFromSuspendedMachThread(mach_port_t _MachThread, pthread_t &o_pThread)
+	kern_return_t fg_PThreadFromSuspendedMachThread(mach_port_t _MachThread, pthread_t &o_Thread)
 	{
 		thread_identifier_info_data_t ThreadInfo = {};
 		mach_msg_type_number_t ThreadInfoCount = THREAD_IDENTIFIER_INFO_COUNT;
@@ -1534,17 +1534,17 @@ namespace
 			return Result;
 
 		if (ThreadInfo.thread_handle < NSys::g_ThreadLocalOffsetPThread)
-			o_pThread = nullptr;
+			o_Thread = nullptr;
 		else
-			o_pThread = reinterpret_cast<pthread_t>((umint)ThreadInfo.thread_handle - NSys::g_ThreadLocalOffsetPThread);
+			o_Thread = reinterpret_cast<pthread_t>((umint)ThreadInfo.thread_handle - NSys::g_ThreadLocalOffsetPThread);
 
 		return KERN_SUCCESS;
 	}
 
 	// A joiner may reclaim the storage while the kernel thread is still listed
-	kern_return_t fg_ReadSuspendedPThreadField(pthread_t _pThread, umint _OffsetFromTSD, uint16 &o_Value)
+	kern_return_t fg_ReadSuspendedPThreadField(pthread_t _Thread, umint _OffsetFromTSD, uint16 &o_Value)
 	{
-		vm_address_t Address = (vm_address_t)(reinterpret_cast<uint8 *>(_pThread) + NSys::g_ThreadLocalOffsetPThread - _OffsetFromTSD);
+		vm_address_t Address = (vm_address_t)(reinterpret_cast<uint8 *>(_Thread) + NSys::g_ThreadLocalOffsetPThread - _OffsetFromTSD);
 		vm_size_t nRead = 0;
 
 		kern_return_t Result = vm_read_overwrite(mach_task_self(), Address, sizeof(o_Value), (vm_address_t)&o_Value, &nRead);
@@ -1582,18 +1582,18 @@ namespace
 			}
 		;
 
-		pthread_t pThread = nullptr;
-		Result = fg_PThreadFromSuspendedMachThread(_MachThread, pThread);
+		pthread_t Thread = nullptr;
+		Result = fg_PThreadFromSuspendedMachThread(_MachThread, Thread);
 		if (fg_ThreadPortIsDead(Result))
 			return EThreadInspection_Settled;
 		if (Result == MACH_SEND_NO_BUFFER)
 			return EThreadInspection_Busy;
 		if (Result != KERN_SUCCESS)
 			return fg_FaultedInspection("thread_info", Result);
-		if (!pThread)
+		if (!Thread)
 			return EThreadInspection_Settled;
 
-		Result = fg_ReadSuspendedPThreadField(pThread, _Unsettled.m_OffsetFromTSD, o_Value);
+		Result = fg_ReadSuspendedPThreadField(Thread, _Unsettled.m_OffsetFromTSD, o_Value);
 		if (Result == MACH_SEND_NO_BUFFER || Result == KERN_RESOURCE_SHORTAGE || Result == KERN_INVALID_ADDRESS)
 			return EThreadInspection_Busy;
 		if (Result != KERN_SUCCESS)
@@ -1731,8 +1731,8 @@ namespace
 			mach_port_t MachThread = pThreads[iThread];
 			// Resolve the pthread while the target can still release libpthread's
 			// global list lock. Matching MACH_THREAD_SELF also proves TSD setup.
-			pthread_t pThread = pthread_from_mach_thread_np(MachThread);
-			if (!pThread || (umint)pThread == CurrentThread)
+			pthread_t Thread = pthread_from_mach_thread_np(MachThread);
+			if (!Thread || (umint)Thread == CurrentThread)
 			{
 				mach_port_deallocate(mach_task_self(), MachThread);
 				continue;
@@ -1751,8 +1751,8 @@ namespace
 				}
 			;
 
-			if (!fg_PThreadIsExiting(pThread))
-				_fOnThread((umint)pThread);
+			if (!fg_PThreadIsExiting(Thread))
+				_fOnThread((umint)Thread);
 		}
 
 		vm_deallocate(mach_task_self(), (vm_address_t)pThreads, ThreadCount * sizeof(*pThreads));
@@ -1987,11 +1987,11 @@ namespace
 	{
 		DMibFastCheck(!_Thread.m_bCleanupInstalled);
 
-		pthread_t pThread = pthread_self();
+		pthread_t CurrentThread = pthread_self();
 		_Thread.m_CleanupHandler.__routine = &fg_PThreadCleanup;
 		_Thread.m_CleanupHandler.__arg = (void *)_ThreadID;
-		_Thread.m_CleanupHandler.__next = pThread->__cleanup_stack;
-		pThread->__cleanup_stack = &_Thread.m_CleanupHandler;
+		_Thread.m_CleanupHandler.__next = CurrentThread->__cleanup_stack;
+		CurrentThread->__cleanup_stack = &_Thread.m_CleanupHandler;
 		_Thread.m_bCleanupInstalled = true;
 	}
 
@@ -2010,10 +2010,10 @@ namespace
 		fg_SetPThreadNotificationDestroyed();
 	}
 
-	void fg_PThreadIntrospectionHook(unsigned int _Event, pthread_t _pThread, void *_pAddress, size_t _Size)
+	void fg_PThreadIntrospectionHook(unsigned int _Event, pthread_t _Thread, void *_pAddress, size_t _Size)
 	{
 		if (g_fPreviousIntrospectionHook)
-			g_fPreviousIntrospectionHook(_Event, _pThread, _pAddress, _Size);
+			g_fPreviousIntrospectionHook(_Event, _Thread, _pAddress, _Size);
 
 		DMibLock(g_ThreadNotificationLock);
 		if (!g_bThreadNotificationsInitialized || !g_iThreadLocalParentThread || g_bThreadNotificationsForking.f_Load(NAtomic::gc_MemoryOrder_Acquire))
@@ -2023,9 +2023,9 @@ namespace
 		{
 			// The creating thread stores itself in the new thread's storage
 			// before the thread starts, mirroring the Windows implementation
-			NSys::fg_Thread_SetLocal((umint)_pThread, g_iThreadLocalParentThread, (void *)NSys::fg_Thread_GetCurrentUID());
+			NSys::fg_Thread_SetLocal((umint)_Thread, g_iThreadLocalParentThread, (void *)NSys::fg_Thread_GetCurrentUID());
 
-			g_ThreadNotificationState->m_StartingThreads.f_Insert((umint)_pThread);
+			g_ThreadNotificationState->m_StartingThreads.f_Insert((umint)_Thread);
 		}
 		else if (_Event == PTHREAD_INTROSPECTION_THREAD_START)
 		{
@@ -2057,7 +2057,7 @@ namespace
 			State.m_LiveThreads.f_Remove(CurrentThread);
 		}
 		else if (_Event == PTHREAD_INTROSPECTION_THREAD_DESTROY)
-			g_ThreadNotificationState->m_StartingThreads.f_Remove((umint)_pThread);
+			g_ThreadNotificationState->m_StartingThreads.f_Remove((umint)_Thread);
 	}
 
 	void fg_ThreadNotificationsForkPrepare()
@@ -2335,10 +2335,10 @@ namespace
 	}
 
 #		ifndef DMibAssumeMalterlibHost
-	void fg_PThreadIntrospectionHook(unsigned int _Event, pthread_t _pThread, void *_pAddress, size_t _Size)
+	void fg_PThreadIntrospectionHook(unsigned int _Event, pthread_t _Thread, void *_pAddress, size_t _Size)
 	{
 		if (g_fPreviousIntrospectionHook)
-			g_fPreviousIntrospectionHook(_Event, _pThread, _pAddress, _Size);
+			g_fPreviousIntrospectionHook(_Event, _Thread, _pAddress, _Size);
 
 		DMibLock(g_OwnThreadNotificationLock);
 		if (!g_bOwnIntrospectionHook || !g_iThreadLocalParentThread)
@@ -2346,9 +2346,9 @@ namespace
 
 		if (_Event == PTHREAD_INTROSPECTION_THREAD_CREATE)
 		{
-			NSys::fg_Thread_SetLocal((umint)_pThread, g_iThreadLocalParentThread, (void *)NSys::fg_Thread_GetCurrentUID());
+			NSys::fg_Thread_SetLocal((umint)_Thread, g_iThreadLocalParentThread, (void *)NSys::fg_Thread_GetCurrentUID());
 
-			g_OwnThreadNotificationState->m_StartingThreads.f_Insert((umint)_pThread);
+			g_OwnThreadNotificationState->m_StartingThreads.f_Insert((umint)_Thread);
 		}
 		else if (_Event == PTHREAD_INTROSPECTION_THREAD_START)
 		{
@@ -2377,7 +2377,7 @@ namespace
 			State.m_LiveThreads.f_Remove(CurrentThread);
 		}
 		else if (_Event == PTHREAD_INTROSPECTION_THREAD_DESTROY)
-			g_OwnThreadNotificationState->m_StartingThreads.f_Remove((umint)_pThread);
+			g_OwnThreadNotificationState->m_StartingThreads.f_Remove((umint)_Thread);
 	}
 #		endif
 
@@ -4605,7 +4605,7 @@ namespace
 }
 #	endif
 
-extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sections *info) // NOLINT(malterlib-type-naming): the name in the macOS SDK
+extern "C" bool _dyld_find_unwind_sections(void *_pAddress, struct dyld_unwind_sections *o_pSections) // NOLINT(malterlib-type-naming): the name in the macOS SDK
 {
 #	pragma clang diagnostic push
 #	pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -4617,7 +4617,7 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 		g_pThisModuleImage.f_Store(_dyld_get_image_header_containing_address((void *)&_dyld_find_unwind_sections));
 #		endif
 #	endif
-	auto pHeader = _dyld_get_image_header_containing_address(addr);
+	auto pHeader = _dyld_get_image_header_containing_address(_pAddress);
 #	pragma clang diagnostic pop
 	if (!pHeader)
 		return false;
@@ -4641,7 +4641,7 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 	if (!bFound)
 		return false;
 
-	uint32_t EHFrameSectionOffset = 0;
+	uint32_t ExceptionFrameSectionOffset = 0;
 	uint32_t UnwindInfoSectionOffset = 0;
 
 	uint8_t const *pMachOData = (uint8_t const *)pHeader;
@@ -4664,7 +4664,7 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 					for (struct CMachoSection const *pSection = pSectionsStart; pSection < pSectionsEnd; ++pSection)
 					{
 						if ((strcmp(pSection->sectname, "__eh_frame") == 0))
-							EHFrameSectionOffset = (uint8_t *)pSection - pMachOData;
+							ExceptionFrameSectionOffset = (uint8_t *)pSection - pMachOData;
 						else if ((strcmp(pSection->sectname, "__unwind_info") == 0))
 							UnwindInfoSectionOffset = (uint8_t *)pSection - pMachOData;
 					}
@@ -4675,22 +4675,22 @@ extern "C" bool _dyld_find_unwind_sections(void *addr, struct dyld_unwind_sectio
 		pCommand = (struct load_command const *)(((char *)pCommand) + pCommand->cmdsize);
 	}
 
-	info->mh = pHeader;
-	info->dwarf_section = 0;
-	info->dwarf_section_length = 0;
-	info->compact_unwind_section = 0;
-	info->compact_unwind_section_length = 0;
-	if (EHFrameSectionOffset != 0)
+	o_pSections->mh = pHeader;
+	o_pSections->dwarf_section = 0;
+	o_pSections->dwarf_section_length = 0;
+	o_pSections->compact_unwind_section = 0;
+	o_pSections->compact_unwind_section_length = 0;
+	if (ExceptionFrameSectionOffset != 0)
 	{
-		CMachoSection const *pSection = (CMachoSection *)&pMachOData[EHFrameSectionOffset];
-		info->dwarf_section = (void *)(pSection->addr + Slide);
-		info->dwarf_section_length = pSection->size;
+		CMachoSection const *pSection = (CMachoSection *)&pMachOData[ExceptionFrameSectionOffset];
+		o_pSections->dwarf_section = (void *)(pSection->addr + Slide);
+		o_pSections->dwarf_section_length = pSection->size;
 	}
 	if (UnwindInfoSectionOffset != 0)
 	{
 		CMachoSection const *pSection = (CMachoSection *)&pMachOData[UnwindInfoSectionOffset];
-		info->compact_unwind_section = (void *)(pSection->addr + Slide);
-		info->compact_unwind_section_length = pSection->size;
+		o_pSections->compact_unwind_section = (void *)(pSection->addr + Slide);
+		o_pSections->compact_unwind_section_length = pSection->size;
 	}
 	return true;
 }

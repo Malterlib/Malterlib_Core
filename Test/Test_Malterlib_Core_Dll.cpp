@@ -430,8 +430,8 @@ namespace
 				pthread_key_t DyldKey;
 				DMibTest(DMibExpr(pthread_key_create(&DyldKey, &fg_DyldBoundKeyDestructor)) == DMibExpr(0))(ETest_FailAndStop);
 
-				pthread_t pExiting;
-				DMibTest(DMibExpr(pthread_create(&pExiting, nullptr, &fg_ExitThroughDyldThread, &DyldKey)) == DMibExpr(0))(ETest_FailAndStop);
+				pthread_t ExitingThread;
+				DMibTest(DMibExpr(pthread_create(&ExitingThread, nullptr, &fg_ExitThroughDyldThread, &DyldKey)) == DMibExpr(0))(ETest_FailAndStop);
 				while (!g_bExitingThreadInDyld.f_Load())
 					NMib::NSys::fg_Thread_Sleep(0.001);
 
@@ -440,7 +440,7 @@ namespace
 
 				if (bUnloaded)
 				{
-					pthread_join(pExiting, nullptr);
+					pthread_join(ExitingThread, nullptr);
 					pthread_key_delete(DyldKey);
 				}
 			};
