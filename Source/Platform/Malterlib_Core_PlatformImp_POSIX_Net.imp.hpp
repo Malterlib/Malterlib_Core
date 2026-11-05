@@ -9,11 +9,11 @@ namespace
 	// Returns false without pidfs: older pidfds share an anonymous inode and cannot identify a process.
 	bool fg_GetPidFSIdentity(int _PidFD, uint64 &o_Device, uint64 &o_Inode)
 	{
-		struct statfs FSInfo;
-		if (fstatfs(_PidFD, &FSInfo) != 0)
+		struct statfs FileSystemInfo;
+		if (fstatfs(_PidFD, &FileSystemInfo) != 0)
 			return false;
 
-		if (FSInfo.f_type != PID_FS_MAGIC)
+		if (FileSystemInfo.f_type != PID_FS_MAGIC)
 			return false;
 
 		struct stat PidStat;
@@ -33,18 +33,18 @@ namespace
 		char Path[64];
 		snprintf(Path, sizeof(Path), "/proc/self/fdinfo/%d", _PidFD);
 
-		int FDInfoFD = open(Path, O_RDONLY | O_CLOEXEC);
-		if (FDInfoFD < 0)
+		int InfoFileDescriptor = open(Path, O_RDONLY | O_CLOEXEC);
+		if (InfoFileDescriptor < 0)
 			return false;
 
-		auto CleanupFDInfoFD = g_OnScopeExit / [&]
+		auto CleanupInfoFileDescriptor = g_OnScopeExit / [&]
 			{
-				close(FDInfoFD);
+				close(InfoFileDescriptor);
 			}
 		;
 
 		char Buffer[4096];
-		auto nBytes = read(FDInfoFD, Buffer, sizeof(Buffer) - 1);
+		auto nBytes = read(InfoFileDescriptor, Buffer, sizeof(Buffer) - 1);
 		if (nBytes <= 0)
 			return false;
 
@@ -529,12 +529,12 @@ void fg_SetUnixSocketOptions(int _File)
 	return;
 #endif
 	// Set CloseOnExec so that child processes do not get our open files.
-	int FDFlags = fcntl(_File, F_GETFD);
-	if (FDFlags != -1)
+	int DescriptorFlags = fcntl(_File, F_GETFD);
+	if (DescriptorFlags != -1)
 	{
-		FDFlags |= FD_CLOEXEC;
+		DescriptorFlags |= FD_CLOEXEC;
 
-		if (fcntl(_File, F_SETFD, FDFlags) == -1)
+		if (fcntl(_File, F_SETFD, DescriptorFlags) == -1)
 		{
 			// We let this go deliberately. Nothing overly bad can happen.
 		}
@@ -554,7 +554,7 @@ auto CPOSIXSocketContext::fp_Connect
 	-> CPOSIXSocket *
 {
 	umint Retries = 32;
-	int FD;
+	int FileDescriptor;
 	bool bConnected;
 	while (Retries)
 	{
@@ -576,19 +576,19 @@ auto CPOSIXSocketContext::fp_Connect
 				}
 			;
 
-			FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | SocketFlags, SocketCreateParams.m_Protocol);
+			FileDescriptor = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | SocketFlags, SocketCreateParams.m_Protocol);
 
-			if (FD == -1)
+			if (FileDescriptor == -1)
 			{
 				int Error = errno;
 				DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (connect)", Error));
 			}
 
-			fg_SetUnixSocketOptions(FD);
+			fg_SetUnixSocketOptions(FileDescriptor);
 		}
 		auto Cleanup = g_OnScopeExit / [&]
 			{
-				close(FD);
+				close(FileDescriptor);
 			}
 		;
 
@@ -596,7 +596,7 @@ auto CPOSIXSocketContext::fp_Connect
 		{
 			int bNoDelay = 1;
 
-			if (setsockopt(FD, IPPROTO_TCP, TCP_NODELAY, &bNoDelay, sizeof(bNoDelay)) != 0)
+			if (setsockopt(FileDescriptor, IPPROTO_TCP, TCP_NODELAY, &bNoDelay, sizeof(bNoDelay)) != 0)
 			{
 				int Error = errno;
 				DMibErrorNet(NMib::NPlatform::fg_FormatErrno("setsockopt (connect)", Error));
@@ -606,9 +606,9 @@ auto CPOSIXSocketContext::fp_Connect
 		if (_pBindAddress)
 		{
 			int bReuse = 1;
-			setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
+			setsockopt(FileDescriptor, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
 
-			int Result = bind(FD, (sockaddr const *)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
+			int Result = bind(FileDescriptor, (sockaddr const *)_pBindAddress->f_Get(), _pBindAddress->f_GetSockAddrLen());
 			if (Result != 0)
 			{
 				int Error = errno;
@@ -617,13 +617,13 @@ auto CPOSIXSocketContext::fp_Connect
 		}
 
 		int Flags;
-		if ((Flags = fcntl(FD, F_GETFL)) == -1 || fcntl(FD, F_SETFL, Flags | O_NONBLOCK) == -1)
+		if ((Flags = fcntl(FileDescriptor, F_GETFL)) == -1 || fcntl(FileDescriptor, F_SETFL, Flags | O_NONBLOCK) == -1)
 		{
 			int Error = errno;
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (connect set async non blocking)", Error));
 		}
 
-		int Result = connect(FD, (sockaddr const *)_Address.f_Get(), _Address.f_GetSockAddrLen());
+		int Result = connect(FileDescriptor, (sockaddr const *)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 		uint16 BindPort = 0;
 		if (_pBindAddress)
@@ -664,7 +664,14 @@ auto CPOSIXSocketContext::fp_Connect
 		break;
 	}
 
-	auto *pSocket = fp_CreateSocket(FD, bConnected ? EPOSIXSocketMode_Connect : EPOSIXSocketMode_Connecting, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
+	auto *pSocket = fp_CreateSocket
+		(
+			FileDescriptor
+			, bConnected ? EPOSIXSocketMode_Connect : EPOSIXSocketMode_Connecting
+			, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write
+			, fg_Move(_fOnStateChange)
+		)
+	;
 
 	ENetAddressType AddressType = _Address.f_GetType();
 	pSocket->m_AddressType = AddressType;
@@ -1208,7 +1215,7 @@ auto CPOSIXSocketContext::f_Listen
 	CPOSIXAddress BindAddress = AddressType == ENetAddressType_Unix ? CPOSIXAddress(_Address.f_GetUnix().f_GetStaged()) : _Address;
 	fp_PrepareUnixListen(BindAddress);
 
-	int FD;
+	int FileDescriptor;
 	{
 		auto SocketFlags = fg_GetUnixSocketFlags();
 		if (!SocketFlags)
@@ -1220,26 +1227,26 @@ auto CPOSIXSocketContext::f_Listen
 			}
 		;
 
-		FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | SocketFlags, SocketCreateParams.m_Protocol);
+		FileDescriptor = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | SocketFlags, SocketCreateParams.m_Protocol);
 
-		if (FD == -1)
+		if (FileDescriptor == -1)
 		{
 			int Error = errno;
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (listen)", Error));
 		}
 
-		fg_SetUnixSocketOptions(FD);
+		fg_SetUnixSocketOptions(FileDescriptor);
 	}
 
 	auto Cleanup = g_OnScopeExit / [&]
 		{
-			close(FD);
+			close(FileDescriptor);
 		}
 	;
 
 	{
 		int Flags;
-		if ((Flags = fcntl(FD, F_GETFL)) == -1 || fcntl(FD, F_SETFL, Flags | O_NONBLOCK) == -1)
+		if ((Flags = fcntl(FileDescriptor, F_GETFL)) == -1 || fcntl(FileDescriptor, F_SETFL, Flags | O_NONBLOCK) == -1)
 		{
 			int Error = errno;
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (listen set non blocking)", Error));
@@ -1250,23 +1257,23 @@ auto CPOSIXSocketContext::f_Listen
 	{
 		// Only IPV6
 		int bV6Only = 1;
-		setsockopt(FD, IPPROTO_IPV6, IPV6_V6ONLY, &bV6Only, sizeof(bV6Only));
+		setsockopt(FileDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, &bV6Only, sizeof(bV6Only));
 	}
 
 	{
 		int bReuse = 1;
-		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
+		setsockopt(FileDescriptor, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
 	}
 
 #ifdef DPlatformFamily_macOS
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
-		setsockopt(FD, SOL_SOCKET, SO_REUSEPORT, &bReuse, sizeof(bReuse));
+		setsockopt(FileDescriptor, SOL_SOCKET, SO_REUSEPORT, &bReuse, sizeof(bReuse));
 	}
 #endif
 
-	int Result = bind(FD, (sockaddr const *)BindAddress.f_Get(), BindAddress.f_GetSockAddrLen());
+	int Result = bind(FileDescriptor, (sockaddr const *)BindAddress.f_Get(), BindAddress.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1290,7 +1297,7 @@ auto CPOSIXSocketContext::f_Listen
 			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
 	}
 
-	Result = listen(FD, SOMAXCONN);
+	Result = listen(FileDescriptor, SOMAXCONN);
 
 	if (Result != 0)
 	{
@@ -1312,7 +1319,7 @@ auto CPOSIXSocketContext::f_Listen
 	CleanupStaged.f_Clear();
 	Cleanup.f_Clear();
 
-	auto pSocket = fp_CreateSocket(FD, EPOSIXSocketMode_Listen, EPOSIXSocketEvent_Read, fg_Move(_fOnStateChange));
+	auto pSocket = fp_CreateSocket(FileDescriptor, EPOSIXSocketMode_Listen, EPOSIXSocketEvent_Read, fg_Move(_fOnStateChange));
 	fp_SetUnixListenAddress(pSocket, _Address);
 	return pSocket;
 }
@@ -1336,7 +1343,7 @@ auto CPOSIXSocketContext::f_ListenDatagram
 
 	fp_PrepareUnixListen(_Address);
 
-	int FD;
+	int FileDescriptor;
 	{
 		auto SocketFlags = fg_GetUnixSocketFlags();
 		if (!SocketFlags)
@@ -1348,26 +1355,26 @@ auto CPOSIXSocketContext::f_ListenDatagram
 			}
 		;
 
-		FD = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | SocketFlags, SocketCreateParams.m_Protocol);
+		FileDescriptor = socket(SocketCreateParams.m_Domain, SocketCreateParams.m_Type | SocketFlags, SocketCreateParams.m_Protocol);
 
-		if (FD == -1)
+		if (FileDescriptor == -1)
 		{
 			int Error = errno;
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("socket (listen)", Error));
 		}
 
-		fg_SetUnixSocketOptions(FD);
+		fg_SetUnixSocketOptions(FileDescriptor);
 	}
 
 	auto Cleanup = g_OnScopeExit / [&]
 		{
-			close(FD);
+			close(FileDescriptor);
 		}
 	;
 
 	{
 		int Flags;
-		if ((Flags = fcntl(FD, F_GETFL)) == -1 || fcntl(FD, F_SETFL, Flags | O_NONBLOCK) == -1)
+		if ((Flags = fcntl(FileDescriptor, F_GETFL)) == -1 || fcntl(FileDescriptor, F_SETFL, Flags | O_NONBLOCK) == -1)
 		{
 			int Error = errno;
 			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (listen set non blocking)", Error));
@@ -1375,18 +1382,18 @@ auto CPOSIXSocketContext::f_ListenDatagram
 	}
 	{
 		int bReuse = 1;
-		setsockopt(FD, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
+		setsockopt(FileDescriptor, SOL_SOCKET, SO_REUSEADDR, &bReuse, sizeof(bReuse));
 	}
 
 #ifdef DPlatformFamily_macOS
 	if (_Flags & NNetwork::ENetFlag_ReusePort)
 	{
 		int bReuse = 1;
-		setsockopt(FD, SOL_SOCKET, SO_REUSEPORT, &bReuse, sizeof(bReuse));
+		setsockopt(FileDescriptor, SOL_SOCKET, SO_REUSEPORT, &bReuse, sizeof(bReuse));
 	}
 #endif
 
-	int Result = bind(FD, (sockaddr const *)_Address.f_Get(), _Address.f_GetSockAddrLen());
+	int Result = bind(FileDescriptor, (sockaddr const *)_Address.f_Get(), _Address.f_GetSockAddrLen());
 
 	if (Result != 0)
 	{
@@ -1403,7 +1410,7 @@ auto CPOSIXSocketContext::f_ListenDatagram
 
 	Cleanup.f_Clear();
 
-	auto pSocket = fp_CreateSocket(FD, EPOSIXSocketMode_Datagram, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
+	auto pSocket = fp_CreateSocket(FileDescriptor, EPOSIXSocketMode_Datagram, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
 
 	fp_SetUnixListenAddress(pSocket, _Address);
 
@@ -1836,12 +1843,12 @@ static ENetAddressType fg_AddressTypeOfDescriptor(int _FD)
 
 CPOSIXSocket *CPOSIXSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
-	int FD = int(aint(_pOSSocket));
-	auto *pSocket = fp_CreateSocket(FD, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange), true);
+	int FileDescriptor = int(aint(_pOSSocket));
+	auto *pSocket = fp_CreateSocket(FileDescriptor, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange), true);
 
 	// Query the inherited descriptor's family before applying TCP-only options.
 	if (pSocket)
-		pSocket->m_AddressType = fg_AddressTypeOfDescriptor(FD);
+		pSocket->m_AddressType = fg_AddressTypeOfDescriptor(FileDescriptor);
 
 	return pSocket;
 }
@@ -1865,14 +1872,14 @@ void *CPOSIXSocketContext::f_GiveUpForInherit(CPOSIXSocket *_pSocket)
 		_pSocket->m_pIoRegistration = nullptr;
 	}
 
-	int FD = -1;
+	int FileDescriptor = -1;
 	{
 		DMibLock(_pSocket->m_Lock);
-		FD = _pSocket->m_FD;
+		FileDescriptor = _pSocket->m_FD;
 		_pSocket->m_FD = -1;
 	}
 
-	return (void *)(umint)FD;
+	return (void *)(umint)FileDescriptor;
 }
 
 void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle)
@@ -1894,15 +1901,15 @@ void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::
 				pRegistration
 				, [this, _pSocket, fOnHandle = fg_Move(_fOnHandle)]() mutable
 				{
-					int FD = -1;
+					int FileDescriptor = -1;
 					{
 						DMibLock(_pSocket->m_Lock);
-						FD = _pSocket->m_FD;
+						FileDescriptor = _pSocket->m_FD;
 						_pSocket->m_FD = -1;
 					}
 
 					fp_DestroySocket(_pSocket);
-					fOnHandle((void *)(umint)FD);
+					fOnHandle((void *)(umint)FileDescriptor);
 				}
 			)
 		;
@@ -1912,15 +1919,15 @@ void CPOSIXSocketContext::f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::
 
 	// Never registered: no loop to defer to, so the descriptor is produced on the calling thread
 
-	int FD = -1;
+	int FileDescriptor = -1;
 	{
 		DMibLock(_pSocket->m_Lock);
-		FD = _pSocket->m_FD;
+		FileDescriptor = _pSocket->m_FD;
 		_pSocket->m_FD = -1;
 	}
 
 	fp_DestroySocket(_pSocket);
-	_fOnHandle((void *)(umint)FD);
+	_fOnHandle((void *)(umint)FileDescriptor);
 }
 
 void *CPOSIXSocketContext::f_GetOSSocket(CPOSIXSocket *_pSocket)
@@ -2074,11 +2081,11 @@ bool CPOSIXSocketContext::f_GetProcessIdentity(CPOSIXSocket *_pSocket, NMib::NSy
 		}
 		else
 		{
-			pid_t FDInfoPeerPID = 0;
-			if (!fg_GetPeerSameNamespacePid(PeerPidFD, FDInfoPeerPID))
+			pid_t SameNamespacePeerPID = 0;
+			if (!fg_GetPeerSameNamespacePid(PeerPidFD, SameNamespacePeerPID))
 				return false;
 
-			PeerPID = FDInfoPeerPID;
+			PeerPID = SameNamespacePeerPID;
 		}
 	}
 #else

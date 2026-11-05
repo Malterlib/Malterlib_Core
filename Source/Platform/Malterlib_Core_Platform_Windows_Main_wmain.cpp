@@ -7,7 +7,7 @@
 
 using namespace NMib;
 
-extern "C" int __cdecl main(int argc, char *argv[], char *envp[]);
+extern "C" int __cdecl main(int _nArguments, char *_Arguments[], char *_Environment[]);
 
 int __cdecl wmain(int _nArguments, wchar_t *_Arguments[], wchar_t *_Environment[])
 {

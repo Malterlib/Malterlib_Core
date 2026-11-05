@@ -581,7 +581,7 @@ namespace NMib
 
 #	endif
 
-		extern "C" ULONG NTAPI LsaNtStatusToWinError(_In_ NTSTATUS Status);
+		extern "C" ULONG NTAPI LsaNtStatusToWinError(_In_ NTSTATUS _Status);
 
 #	pragma comment(lib, "Advapi32.lib")
 		// Inject DLL _pDLLName in process with process-id _PID

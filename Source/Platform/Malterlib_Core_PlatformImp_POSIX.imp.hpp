@@ -125,27 +125,27 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo &_Info)
 	_Info.m_Features = NMib::EProcessorFeature_None;
 
 #if defined(DArchitecture_x86) || defined(DArchitecture_x64)
-	unsigned int CPUInfo[4];
+	unsigned int ProcessorInfo[4];
 
 	_Info.m_Architecture = NMib::EProcessorArchitecture_Unknown;
 
-	__get_cpuid(0, &CPUInfo[0], &CPUInfo[1], &CPUInfo[2], &CPUInfo[3]);
+	__get_cpuid(0, &ProcessorInfo[0], &ProcessorInfo[1], &ProcessorInfo[2], &ProcessorInfo[3]);
 
-	int MaxInfoType = CPUInfo[0];
+	int MaxInfoType = ProcessorInfo[0];
 
 	if (MaxInfoType >= 1)
 	{
-		__get_cpuid(1, &CPUInfo[0], &CPUInfo[1], &CPUInfo[2], &CPUInfo[3]);
+		__get_cpuid(1, &ProcessorInfo[0], &ProcessorInfo[1], &ProcessorInfo[2], &ProcessorInfo[3]);
 
 		_Info.m_Features
-			|= ((CPUInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None)
-			| ((CPUInfo[3] & DMibBit(25)) ? EProcessorFeature_SSE : EProcessorFeature_None)
-			| ((CPUInfo[3] & DMibBit(26)) ? EProcessorFeature_SSE2 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(0)) ? EProcessorFeature_SSE3 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(9)) ? EProcessorFeature_SSSE3 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(19)) ? EProcessorFeature_SSE4_1 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(20)) ? EProcessorFeature_SSE4_2 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(31)) ? EProcessorFeature_HyperVisor : EProcessorFeature_None)
+			|= ((ProcessorInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None)
+			| ((ProcessorInfo[3] & DMibBit(25)) ? EProcessorFeature_SSE : EProcessorFeature_None)
+			| ((ProcessorInfo[3] & DMibBit(26)) ? EProcessorFeature_SSE2 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(0)) ? EProcessorFeature_SSE3 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(9)) ? EProcessorFeature_SSSE3 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(19)) ? EProcessorFeature_SSE4_1 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(20)) ? EProcessorFeature_SSE4_2 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(31)) ? EProcessorFeature_HyperVisor : EProcessorFeature_None)
 		;
 	}
 

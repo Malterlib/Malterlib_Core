@@ -49,19 +49,19 @@
 
 // Memory intrinsics
 #if defined(DPlatformFamily_macOS)
-extern "C" void *memcpy(void *, void const *, __SIZE_TYPE__);
-extern "C" int memcmp(void const *__s1, void const *__s2, size_t __n);
-extern "C" void *memset(void *, int, __SIZE_TYPE__);
-extern "C" void *memmove(void *, void const *, __SIZE_TYPE__);
+extern "C" void *memcpy(void *_pDestination, void const *_pSource, __SIZE_TYPE__ _nBytes);
+extern "C" int memcmp(void const *_pLeft, void const *_pRight, size_t _nBytes);
+extern "C" void *memset(void *_pDestination, int _Value, __SIZE_TYPE__ _nBytes);
+extern "C" void *memmove(void *_pDestination, void const *_pSource, __SIZE_TYPE__ _nBytes);
 #	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
 #	define DMibPIntrinsicMemCmp(d_Left, d_Right, d_Size) memcmp(d_Left, d_Right, d_Size)
 #	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)
 #	define DMibPIntrinsicMemMove(d_Dest, d_Source, d_Size) memmove(d_Dest, d_Source, d_Size)
 #elif defined(DPlatformFamily_Linux)
-extern "C" void *memcpy(void * __restrict __dest, __const void * __restrict __src, __SIZE_TYPE__ __n) throw() __attribute__((__nonnull__(1, 2)));
-extern "C" int memcmp(__const void *__s1, __const void *__s2, size_t __n) throw() __attribute_pure__ __nonnull((1, 2));
-extern "C" void *memset(void *__s, int __c, __SIZE_TYPE__ __n) throw() __attribute__((__nonnull__(1)));
-extern "C" void *memmove(void *__dest, __const void *__src, __SIZE_TYPE__ __n) throw() __attribute__((__nonnull__(1, 2)));
+extern "C" void *memcpy(void * __restrict _pDestination, __const void * __restrict _pSource, __SIZE_TYPE__ _nBytes) throw() __attribute__((__nonnull__(1, 2)));
+extern "C" int memcmp(__const void *_pLeft, __const void *_pRight, size_t _nBytes) throw() __attribute_pure__ __nonnull((1, 2));
+extern "C" void *memset(void *_pDestination, int _Value, __SIZE_TYPE__ _nBytes) throw() __attribute__((__nonnull__(1)));
+extern "C" void *memmove(void *_pDestination, __const void *_pSource, __SIZE_TYPE__ _nBytes) throw() __attribute__((__nonnull__(1, 2)));
 #	define DMibPIntrinsicMemCopy(d_Dest, d_Source, d_Size) memcpy(d_Dest, d_Source, d_Size)
 #	define DMibPIntrinsicMemCmp(d_Left, d_Right, d_Size) memcmp(d_Left, d_Right, d_Size)
 #	define DMibPIntrinsicMemSet(d_Dest, d_Value, d_Size) memset(d_Dest, d_Value, d_Size)

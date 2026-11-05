@@ -994,17 +994,17 @@ static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_
 	{
 		// It is likely that we could just pass the affinity as the cpuset but that would not be super portable.
 		// For processors with > 32 (or 64) CPUs we will need to switch to a dynamic cpu_set_t
-		cpu_set_t CPUSet;
-		CPU_ZERO(&CPUSet);
+		cpu_set_t AffinitySet;
+		CPU_ZERO(&AffinitySet);
 
 		umint const nBits = sizeof(_Params.m_Affinity) * 8;
 		for (umint iBit = 0; iBit < nBits; ++iBit)
 		{
 			if (_Params.m_Affinity & (1 << iBit))
-				CPU_SET(iBit, &CPUSet);
+				CPU_SET(iBit, &AffinitySet);
 		}
 
-		Result = pthread_attr_setaffinity_np(Data.f_UseThreadAttribs(), sizeof(cpu_set_t), &CPUSet);
+		Result = pthread_attr_setaffinity_np(Data.f_UseThreadAttribs(), sizeof(cpu_set_t), &AffinitySet);
 
 		if (Result != 0)
 			DMibError(NMib::NPlatform::fg_FormatErrno("pthread_attr_setaffinity_np (create thread)", Result));
@@ -1072,17 +1072,17 @@ void NSys::fg_Thread_SetAffinity(void *_pThread, umint _Affinity)
 
 	// It is likely that we could just pass _Affinity as the cpuset but that would not be super portable.
 	// For processors with > 32 (or 64) CPUs we will need to switch to a dynamic cpu_set_t
-	cpu_set_t CPUSet;
-	CPU_ZERO(&CPUSet);
+	cpu_set_t AffinitySet;
+	CPU_ZERO(&AffinitySet);
 
 	umint const nBits = sizeof(_Affinity) * 8;
 	for (umint iBit = 0; iBit < nBits; ++iBit)
 	{
 		if (_Affinity & (1 << iBit))
-			CPU_SET(iBit, &CPUSet);
+			CPU_SET(iBit, &AffinitySet);
 	}
 
-	pthread_setaffinity_np(ThreadID, sizeof(cpu_set_t), &CPUSet);
+	pthread_setaffinity_np(ThreadID, sizeof(cpu_set_t), &AffinitySet);
 
 #	endif // DMibPLinuxKernel
 }
