@@ -24,6 +24,13 @@ set -o pipefail
 
 Without this, piping output through `tail`, `head`, etc. will hide non-zero exit codes from the original command.
 
+### Searching the Code
+
+Search with ripgrep: the Grep and Glob tools, or `rg` in the shell. It skips `.git`, build output and the directories
+in `.rgignore` (`ImportCache`, `IC`), and still searches the sub-repositories. Don't run `grep -r`, `find` or similar
+over the checkout: they walk all of that, which is slow. When you need ignored files, name the path, or run
+`rg --no-ignore` on that path only.
+
 ### Common Build Commands
 
 ```bash
