@@ -38,37 +38,6 @@ namespace NMib
 				, ERegRoot_Win64_Classes
 			};
 
-		private:
-			HKEY mp_pRootKey;
-			ERegRoot mp_RegRoot;
-			NStr::CStr mp_Root;
-			void fp_DeleteKey(NStr::CStr const &_Key);
-			void fp_EnumValues(NStr::CStr const &_Key, NContainer::TCVector<NStr::CStr> &_Values);
-			void fp_EnumKeys(NStr::CStr const &_Key, NContainer::TCVector<NStr::CStr> &_Keys);
-			uint32 fp_GetAccess(uint32 _Base);
-			void fp_ReadRegKey
-				(
-					NStr::CStr const &_SubKey
-					, NStr::CStr const &_KeyValue
-					, DWORD *_pDword
-					, NStr::CStr *_pStr
-					, NContainer::CByteVector *_pMemory
-					, NContainer::TCVector<NStr::CStr> *_pMulti
-				)
-			;
-			NStr::CStr fp_GetPath(NStr::CStr const &_SubKey);
-			void fp_WriteRegKey
-				(
-					NStr::CStr const &_SubKey
-					, NStr::CStr const &_KeyValue
-					, DWORD const *_pDword
-					, NStr::CStr const *_pStr
-					, NContainer::CByteVector const *_pMemory
-					, NContainer::TCVector<NStr::CStr> const *_pMulti
-				)
-			;
-
-		public:
 			CWin32_Registry(ERegRoot _Root = ERegRoot_LocalMachine, NStr::CStr const &_RootPath = NStr::CStr());
 			CWin32_Registry(CWin32_Registry const &_Root, NStr::CStr const &_RootPath = NStr::CStr());
 
@@ -101,6 +70,37 @@ namespace NMib
 			void f_EnumValues(NStr::CStr const &_SubKey, NContainer::TCVector<NStr::CStr> &_Values);
 
 			void f_EnumKeys(NStr::CStr const &_SubKey, NContainer::TCVector<NStr::CStr> &_Keys);
+
+		private:
+			void fp_DeleteKey(NStr::CStr const &_Key);
+			void fp_EnumValues(NStr::CStr const &_Key, NContainer::TCVector<NStr::CStr> &_Values);
+			void fp_EnumKeys(NStr::CStr const &_Key, NContainer::TCVector<NStr::CStr> &_Keys);
+			uint32 fp_GetAccess(uint32 _Base);
+			void fp_ReadRegKey
+				(
+					NStr::CStr const &_SubKey
+					, NStr::CStr const &_KeyValue
+					, DWORD *_pDword
+					, NStr::CStr *_pStr
+					, NContainer::CByteVector *_pMemory
+					, NContainer::TCVector<NStr::CStr> *_pMulti
+				)
+			;
+			NStr::CStr fp_GetPath(NStr::CStr const &_SubKey);
+			void fp_WriteRegKey
+				(
+					NStr::CStr const &_SubKey
+					, NStr::CStr const &_KeyValue
+					, DWORD const *_pDword
+					, NStr::CStr const *_pStr
+					, NContainer::CByteVector const *_pMemory
+					, NContainer::TCVector<NStr::CStr> const *_pMulti
+				)
+			;
+
+			HKEY mp_pRootKey;
+			ERegRoot mp_RegRoot;
+			NStr::CStr mp_Root;
 		};
 	}
 }

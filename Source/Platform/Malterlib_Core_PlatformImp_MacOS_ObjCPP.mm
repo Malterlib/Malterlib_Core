@@ -500,13 +500,15 @@ namespace NMib
 	{
 		struct CFileChangeNoticationContext::CInternal
 		{
-			CInternal()
-			{
-			}
+			CInternal();
 
 			CFRunLoopRef m_pRunLoopRef = nullptr;
 			CFRunLoopSourceRef m_pRunLoopSourceRef = nullptr;
 		};
+
+		CFileChangeNoticationContext::CInternal::CInternal()
+		{
+		}
 
 		using namespace NFile;
 		CFileChangeNoticationContext::CFileChangeNoticationContext()

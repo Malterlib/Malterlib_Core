@@ -182,9 +182,10 @@ namespace NMib
 
 	struct CSystem
 	{
-		void f_AddSubSystem(CSubSystem &_SubSystem);
+		CSystem(bool _bIsDll);
+		~CSystem();
 
-		static bool ms_bDisableMemoryManagerLeakReport;
+		void f_AddSubSystem(CSubSystem &_SubSystem);
 
 		CVirtualMachineInfo const &f_GetVirtualMachineInfo() const;
 
@@ -219,9 +220,6 @@ namespace NMib
 #if DMibSysLogSeverities
 		NLog::CLogger &f_GetLogger();
 #endif
-
-		CSystem(bool _bIsDll);
-		~CSystem();
 
 		void f_PreDestructThreadSpecific();
 		void f_DestructThreadSpecific();
@@ -345,16 +343,16 @@ namespace NMib
 		void f_ProtectEnvironmentVariable(NStr::CStr const &_Variable);
 		NStr::CStr f_GetProtectedEnvironmentVariable(NStr::CStr const &_Name, NStr::CStr const &_Default = {}, bool *o_pExists = nullptr) const;
 
+		static bool ms_bDisableMemoryManagerLeakReport;
 		static uint32 ms_PlatformVersion;
+
+	protected:
+		void fp_InitComplete(); // Called by subclasses to signify they have finished constructing.
 
 	private:
 		friend struct CRunTimeObjectInfo;
 		friend struct NThread::CSemaphoreAggregate;
 		friend struct CSystemModule;
-
-	private:
-		NThread::CMutual mp_SubSystemsLock;
-		DMibListLinkD_List(CSubSystem, m_Link) mp_SubSystems;
 
 		struct CCommandLineData
 		{
@@ -362,34 +360,12 @@ namespace NMib
 			NContainer::TCVector<NStr::CStr> m_CommandLineParameters;
 		};
 
-		NMib::NStorage::TCAggregateSimple<CCommandLineData> mp_CommandLineData;
-
-		CVirtualMachineInfo mp_VMInfo;
-
-		void fp_ParseCommandLine();
-
-		NThread::CMutual mp_Lock;
-
-		NStr::CStr mp_ProgramName;
-
-		NStr::CStr mp_CrashHandlerPath;
-		NStr::CStr mp_CrashHandlerExePath;
-		NStr::CStr mp_CrashHandlerServer;
-
-		NStr::CStr mp_SupportEmail;
-		NStr::CStrNonTracked mp_ProgramNameNonTracked;
-		NStr::CStrNonTracked mp_SupportEmailNonTracked;
-		bool mp_bRunningAsDaemon;
-
-		bool mp_bInitDone;
-		bool mp_bIsDll;
-
-		NAtomic::TCAtomic<bool> mp_bDestroyingThreadSpecific = false;
-
 #if DMibConfig_Memory_Shims_EnableGlobal
 		void fp_CreateGlobalMemoryReporter();
 		void fp_DestroyGlobalMemoryReporter();
 #endif
+
+		void fp_ParseCommandLine();
 
 		void fp_ThreadLocalCreate();
 		void fp_ThreadLocalDestroy();
@@ -421,7 +397,32 @@ namespace NMib
 
 		void fp_SubSystem_DestroySubsystems(ESubSystemDestruction _ToDestroy);
 
-	protected:
+		NThread::CMutual mp_SubSystemsLock;
+		DMibListLinkD_List(CSubSystem, m_Link) mp_SubSystems;
+
+		NMib::NStorage::TCAggregateSimple<CCommandLineData> mp_CommandLineData;
+
+		CVirtualMachineInfo mp_VMInfo;
+
+		NThread::CMutual mp_Lock;
+
+		NStr::CStr mp_ProgramName;
+
+		NStr::CStr mp_CrashHandlerPath;
+		NStr::CStr mp_CrashHandlerExePath;
+		NStr::CStr mp_CrashHandlerServer;
+
+		NStr::CStr mp_SupportEmail;
+		NStr::CStrNonTracked mp_ProgramNameNonTracked;
+		NStr::CStrNonTracked mp_SupportEmailNonTracked;
+		bool mp_bRunningAsDaemon;
+
+		bool mp_bInitDone;
+		bool mp_bIsDll;
+
+		NAtomic::TCAtomic<bool> mp_bDestroyingThreadSpecific = false;
+
+	protected: // NOLINT(malterlib-member-order): these follow the private data members, as data member order decides initialization, destruction and layout
 		NStr::CStr mp_ProgramRoot;
 		NStr::CStrNonTracked mp_ProgramRootNonTracked;
 
@@ -434,8 +435,6 @@ namespace NMib
 		umint mp_StdErrLoggerDestination = 0;
 		umint mp_FileLoggerDestination = 0;
 #endif
-
-		void fp_InitComplete(); // Called by subclasses to signify they have finished constructing.
 	};
 
 #ifdef DMibPAutomaticSystemCreation
@@ -453,12 +452,6 @@ namespace NMib
 
 	struct CSystemModule
 	{
-		CSystem *m_pSystem;
-
-		DMibListLinkDA_List(NStorage::CAggregate, m_Link) m_Aggregates;
-
-		NThread::CMutualAggregate m_Lock;
-
 		constexpr CSystemModule(EAggregateInitialization _Init);
 
 		void f_Destroy();
@@ -468,6 +461,12 @@ namespace NMib
 
 		void f_AddAggregate(NStorage::CAggregate *_pAggregate);
 		void f_RemoveAggregate(NStorage::CAggregate *_pAggregate);
+
+		CSystem *m_pSystem;
+
+		DMibListLinkDA_List(NStorage::CAggregate, m_Link) m_Aggregates;
+
+		NThread::CMutualAggregate m_Lock;
 	};
 
 	extern CSystemModule g_SystemModule;

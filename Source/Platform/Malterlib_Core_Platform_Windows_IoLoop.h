@@ -113,10 +113,6 @@ struct CIocpRecvOp : public CIocpOp
 // Kernel operations and callback pins retain the record; release only after the outstanding count reaches zero.
 struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 {
-	CIocpRegistration();
-
-	bool f_SendCompletesOnAck() const;
-
 	// Keep close interest for idle/completion streams. After half-close, poll only aborts; repeating level-set close state would spin.
 	enum class EClosePoll : uint8
 	{
@@ -124,6 +120,10 @@ struct CIocpRegistration : public NMib::NSys::CIoLoopRegistration
 		, mc_AbortOnly
 		, mc_Terminal
 	};
+
+	CIocpRegistration();
+
+	bool f_SendCompletesOnAck() const;
 
 	umint m_nOutstanding = 0; // Kernel operations plus callback pins; zero permits removal acknowledgement.
 

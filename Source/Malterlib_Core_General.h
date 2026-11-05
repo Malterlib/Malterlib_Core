@@ -21,9 +21,9 @@ namespace NMib
 
 		CLineNumber(aint _nLine);
 
-		aint m_nLine;
-
 		operator aint () const;
+
+		aint m_nLine;
 	};
 }
 
@@ -298,13 +298,13 @@ namespace NMib
 		template <typename t_CFrom>
 		struct TCAutoStaticCast
 		{
-			t_CFrom m_From;
-
 			template <typename tf_CFrom>
 			mark_nodebug TCAutoStaticCast(tf_CFrom &&_From);
 
 			template <typename tf_CTo>
 			mark_nodebug operator tf_CTo ();
+
+			t_CFrom m_From;
 		};
 	}
 	template <typename tf_CFrom>
@@ -315,13 +315,13 @@ namespace NMib
 		template <typename t_CFrom>
 		struct TCAutoConstCast
 		{
-			t_CFrom m_From;
-
 			template <typename tf_CFrom>
 			mark_nodebug TCAutoConstCast(tf_CFrom &&_From);
 
 			template <typename tf_CTo>
 			mark_nodebug operator tf_CTo ();
+
+			t_CFrom m_From;
 		};
 	}
 	template <typename tf_CFrom>
@@ -332,13 +332,13 @@ namespace NMib
 		template <typename t_CFrom>
 		struct TCAutoReinterpretCast
 		{
-			t_CFrom m_From;
-
 			template <typename tf_CFrom>
 			mark_nodebug TCAutoReinterpretCast(tf_CFrom &&_From);
 
 			template <typename tf_CTo>
 			mark_nodebug operator tf_CTo ();
+
+			t_CFrom m_From;
 		};
 	}
 	template <typename tf_CFrom>
@@ -349,13 +349,13 @@ namespace NMib
 		template <typename t_CFrom>
 		struct TCAutoCCast
 		{
-			t_CFrom m_From;
-
 			template <typename tf_CFrom>
 			mark_nodebug TCAutoCCast(tf_CFrom &&_From);
 
 			template <typename tf_CTo>
 			mark_nodebug operator tf_CTo ();
+
+			t_CFrom m_From;
 		};
 	}
 	template <typename tf_CFrom>
@@ -461,9 +461,10 @@ namespace NMib
 	struct TCHelper_ByteSwap
 	{
 		using CType = t_CType;
-		static constexpr aint mc_DefaultImplementation = 1;
 
 		static t_CType fs_Swap(t_CType const &_Data);
+
+		static constexpr aint mc_DefaultImplementation = 1;
 	};
 
 #ifdef DMibPCanDo_uint8
@@ -471,9 +472,10 @@ namespace NMib
 	struct TCHelper_ByteSwap<uint8>
 	{
 		using CType = uint8;
-		static constexpr aint mc_DefaultImplementation = 0;
 
 		static inline_small uint8 fs_Swap(uint8 _Data);
+
+		static constexpr aint mc_DefaultImplementation = 0;
 	};
 #endif
 
@@ -499,9 +501,10 @@ namespace NMib
 	struct TCHelper_ByteSwap<uint16>
 	{
 		using CType = uint16;
-		static constexpr aint mc_DefaultImplementation = 0;
 
 		static inline_small uint16 fs_Swap(uint16 _Data);
+
+		static constexpr aint mc_DefaultImplementation = 0;
 	};
 #endif
 #ifdef DMibPCanDo_uint32
@@ -509,9 +512,10 @@ namespace NMib
 	struct TCHelper_ByteSwap<uint32>
 	{
 		using CType = uint32;
-		static constexpr aint mc_DefaultImplementation = 0;
 
 		static inline_small uint32 fs_Swap(uint32 _Data);
+
+		static constexpr aint mc_DefaultImplementation = 0;
 	};
 #endif
 #ifdef DMibPCanDo_uint64
@@ -519,9 +523,10 @@ namespace NMib
 	struct TCHelper_ByteSwap<uint64>
 	{
 		using CType = uint64;
-		static constexpr aint mc_DefaultImplementation = 0;
 
 		static inline_small uint64 fs_Swap(uint64 _Data);
+
+		static constexpr aint mc_DefaultImplementation = 0;
 	};
 #endif
 
@@ -818,8 +823,6 @@ namespace NMib
 
 		TCAutoClearInt(t_CInt const &_Int);
 
-		t_CInt m_Int;
-
 		operator t_CInt & ();
 
 		operator t_CInt const & () const;
@@ -836,7 +839,7 @@ namespace NMib
 		int f_GetStringFormatType(tf_CFormatter &_Formatter);
 
 		template <typename tf_CFormatter>
-		auto f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, m_Int));
+		auto f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, fg_GetType<t_CInt const &>()));
 
 		template <typename tf_CStream>
 		void f_Feed(tf_CStream &_Stream) const;
@@ -860,6 +863,8 @@ namespace NMib
 		template <typename tf_CRight, tf_CRight tf_RightValue>
 		bool operator == (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const noexcept(noexcept(f_Get() == _Right.f_Get()));
 
+		t_CInt m_Int;
+
 	private:
 		static t_CInt const &fsp_GetType();
 	};
@@ -872,8 +877,6 @@ namespace NMib
 		TCAutoClear(TCAutoClear &&_Other) = default;
 
 		TCAutoClear(t_CType const &_Value);
-
-		t_CType m_Value = 0;
 
 		operator t_CType & ();
 
@@ -892,7 +895,7 @@ namespace NMib
 		int f_GetStringFormatType(tf_CFormatter &_Formatter);
 
 		template <typename tf_CFormatter>
-		auto f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, m_Value));
+		auto f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, fg_GetType<t_CType const &>()));
 
 		template <typename tf_CStream>
 		void f_Feed(tf_CStream &_Stream) const;
@@ -921,6 +924,8 @@ namespace NMib
 
 		template <typename tf_CRight, tf_CRight tf_RightValue>
 		bool operator == (TCAutoClearInt<tf_CRight, tf_RightValue> const &_Right) const noexcept(noexcept(f_Get() == _Right.f_Get()));
+
+		t_CType m_Value = 0;
 	};
 
 	template <typename t_CType, t_CType t_Argument0, t_CType t_Argument1>

@@ -952,7 +952,7 @@ namespace NMib
 
 	template <typename t_CInt, t_CInt t_ClearVal>
 	template <typename tf_CFormatter>
-	auto TCAutoClearInt<t_CInt, t_ClearVal>::f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, m_Int))
+	auto TCAutoClearInt<t_CInt, t_ClearVal>::f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, fg_GetType<t_CInt const &>()))
 	{
 		return NStr::fg_CreateStringFormatter(_Formatter, m_Int);
 	}
@@ -1050,7 +1050,7 @@ namespace NMib
 
 	template <typename t_CType>
 	template <typename tf_CFormatter>
-	auto TCAutoClear<t_CType>::f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, m_Value))
+	auto TCAutoClear<t_CType>::f_CreateStringFormatter(tf_CFormatter &_Formatter) const -> decltype(NStr::fg_CreateStringFormatter(_Formatter, fg_GetType<t_CType const &>()))
 	{
 		return NStr::fg_CreateStringFormatter(_Formatter, m_Value);
 	}

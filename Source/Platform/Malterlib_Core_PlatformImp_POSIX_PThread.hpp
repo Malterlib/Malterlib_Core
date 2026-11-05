@@ -923,11 +923,6 @@ static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_
 
 	struct CData
 	{
-	private:
-		bool mp_bThreadAttribsRequired = false;
-		pthread_attr_t mp_ThreadAttribs;
-
-	public:
 		CData()
 			: mp_bThreadAttribsRequired(false)
 		{
@@ -957,6 +952,10 @@ static void *fg_POSIX_CreateThread(CThreadCreateParams const &_Params, umint &o_
 		{
 			return mp_bThreadAttribsRequired ? &mp_ThreadAttribs : nullptr;
 		}
+
+	private:
+		bool mp_bThreadAttribsRequired = false;
+		pthread_attr_t mp_ThreadAttribs;
 	};
 
 	CData Data;

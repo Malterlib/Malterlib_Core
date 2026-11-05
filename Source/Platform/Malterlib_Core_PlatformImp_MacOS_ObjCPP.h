@@ -14,32 +14,25 @@ namespace NMib
 		using namespace NFile;
 		struct CFileChangeNoticationContext
 		{
-			CFileChangeNoticationContext();
-			~CFileChangeNoticationContext();
-
 			struct CNotification
 			{
-				CNotification(CFileChangeNoticationContext *_pContext);
-				~CNotification();
-				void f_Clear();
-
 				struct CChange
 				{
+					auto operator <=> (CChange const &_Right) const noexcept = default;
+
 					NFile::EFileChangeNotification m_Notification = NFile::EFileChangeNotification_Undefined;
 					NMib::NStr::CStr m_Path;
 					NMib::NStr::CStr m_PathFrom;
-
-					auto operator <=> (CChange const &_Right) const noexcept = default;
 				};
 
 				struct CFileKey
 				{
-					decltype(stat::st_dev) m_Device;
-					decltype(stat::st_ino) m_Inode;
+					CFileKey(struct stat const &_Init);
 
 					auto operator <=> (CFileKey const &_Right) const noexcept = default;
 
-					CFileKey(struct stat const &_Init);
+					decltype(stat::st_dev) m_Device;
+					decltype(stat::st_ino) m_Inode;
 				};
 
 				struct CFindChangesContext
@@ -55,14 +48,15 @@ namespace NMib
 
 				struct CFileSnapshot
 				{
-					CFileSnapshot(CFileSnapshot *_pParent);
-
 					struct CCompare
 					{
 						inline_small NMib::NStr::CStr const &operator () (CFileSnapshot const &_Node) const;
 					};
 
+					CFileSnapshot(CFileSnapshot *_pParent);
+
 					CFileKey f_GetKey() const;
+					void f_PotentiallyRemoved(CFindChangesContext &o_Context) const;
 
 					//
 					struct stat m_Stats;
@@ -80,10 +74,12 @@ namespace NMib
 					NContainer::TCLinkedList<CFileSnapshot> m_Children;
 					NMib::NIntrusive::TCAVLTree<&CFileSnapshot::m_Link, CCompare> m_ChildrenByName;
 
+					// NOLINTNEXTLINE(malterlib-member-order): its parameter type uses the link translator that DMibListLinkDS_Link(CFileSnapshot, m_LinkNode) declares
 					CFileSnapshot(CFileSnapshot const &_Other, CFileSnapshot *_pParent, NContainer::TCMap<CFileKey, DMibListLinkDS_List(CFileSnapshot, m_LinkNode)> &_SnapshotsByNode);
+					// NOLINTNEXTLINE(malterlib-member-order): its parameter type uses the link translator that DMibListLinkDS_Link(CFileSnapshot, m_LinkNode) declares
 					void f_Clear(NContainer::TCMap<CFileKey, DMibListLinkDS_List(CFileSnapshot, m_LinkNode)> &_SnapshotsByNode);
+					// NOLINTNEXTLINE(malterlib-member-order): its parameter type uses the link translator that DMibListLinkDS_Link(CFileSnapshot, m_LinkNode) declares
 					void f_RemoveFromNodeMap(NContainer::TCMap<CFileKey, DMibListLinkDS_List(CFileSnapshot, m_LinkNode)> &_Map);
-					void f_PotentiallyRemoved(CFindChangesContext &o_Context) const;
 				};
 
 				using CSnapshotsByNode = NContainer::TCMap<CFileKey, DMibListLinkDS_List(CFileSnapshot, m_LinkNode)>;
@@ -108,11 +104,10 @@ namespace NMib
 					NContainer::TCMap<NStr::CStr, zbool> m_ChangedPaths;
 				};
 
-				NStorage::CIntrusiveRefCount m_RefCount;
+				CNotification(CFileChangeNoticationContext *_pContext);
+				~CNotification();
 
-				CFileSnapshot m_RootSnapshot;
-				CSnapshotsByNode m_SnapshotsByNode;
-
+				void f_Clear();
 				void f_AddNotification(CFindChangesContext &o_Context, EFileChangeNotification _Type, NStr::CStr const &_RelativePath, NStr::CStr const &_RenameFrom = {});
 				void f_FindChanges(CFindChangesContext &o_Context, CFileSnapshot const &_NewSnapshot, bool _bRecursive, bool _bPotentianllyRecursive, bool _bFirstRecursive);
 				void f_ScanDir(NStr::CStr const &_Path, bool _bInitial, bool _bNeedSubDirs, CUpdateSnapshotContext &_UpdateContext, CFileSnapshot &o_NewSnapshot);
@@ -121,6 +116,11 @@ namespace NMib
 				void f_ProcessChanges(umint _nEvents, ch8 const **_pPaths, FSEventStreamEventFlags const _Flags[], FSEventStreamEventId const _IDs[], bool _bInitialScan);
 				void f_ProcessChangesPerFile(umint _nEvents, ch8 const **_pPaths, FSEventStreamEventFlags const _Flags[], FSEventStreamEventId const _IDs[]);
 				void f_ProcessChangesHints(umint _nEvents, ch8 const **_pPaths, FSEventStreamEventFlags const _Flags[], FSEventStreamEventId const _IDs[]);
+
+				NStorage::CIntrusiveRefCount m_RefCount;
+
+				CFileSnapshot m_RootSnapshot;
+				CSnapshotsByNode m_SnapshotsByNode;
 
 				DMibListLinkDS_Link(CNotification, m_Link);
 
@@ -146,12 +146,10 @@ namespace NMib
 
 			using CNotificationIter = DMibListLinkDS_Iter(CNotification, m_Link);
 
-			NThread::CMutual m_Lock;
+			struct CInternal;
 
-			DMibListLinkDS_List(CNotification, m_Link) m_OpenNotifications;
-
-			NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject> m_pProcessThread;
-			NMib::NAtomic::TCAtomic<bool> m_bProcessThreadStarted = false;
+			CFileChangeNoticationContext();
+			~CFileChangeNoticationContext();
 
 			static void fs_EventCallback
 				(
@@ -164,7 +162,20 @@ namespace NMib
 				)
 			;
 
-			struct CInternal;
+			void f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_fDispatch);
+			void f_StartThread();
+			void *f_Open(NMib::NStr::CStr const &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo);
+
+			void f_Close(void *_pNotification);
+			bool f_Changed(void *_pNotification);
+			bool f_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom);
+
+			NThread::CMutual m_Lock;
+
+			DMibListLinkDS_List(CNotification, m_Link) m_OpenNotifications;
+
+			NMib::NStorage::TCUniquePointer<NMib::NThread::CThreadObject> m_pProcessThread;
+			NMib::NAtomic::TCAtomic<bool> m_bProcessThreadStarted = false;
 
 			NStorage::TCUniquePointer<CInternal> m_pInternal;
 
@@ -173,14 +184,6 @@ namespace NMib
 
 			NMib::NContainer::TCThreadSafeQueue<NMib::NFunction::TCFunctionMovable<void ()>> m_DispatchQueue;
 			NMib::NContainer::TCMap<NStr::CStr, NStr::CStr> m_SyntheticPaths;
-
-			void f_DispatchOnThread(NMib::NFunction::TCFunctionMovable<void ()> &&_fDispatch);
-			void f_StartThread();
-			void *f_Open(NMib::NStr::CStr const &_FileName, NMib::NFile::EFileChange _OpenFlags, NMib::NThread::CSemaphoreAggregate *_pReportTo);
-
-			void f_Close(void *_pNotification);
-			bool f_Changed(void *_pNotification);
-			bool f_GetNotification(void *_pNotification, NMib::NStr::CStr &_Path, NFile::EFileChangeNotification &_Notification, NMib::NStr::CStr &_PathFrom);
 		};
 	}
 } // Namespace NMib

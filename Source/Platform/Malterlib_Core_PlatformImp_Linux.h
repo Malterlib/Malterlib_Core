@@ -25,12 +25,13 @@ namespace NMib::NDBus
 
 struct CSystemLinux : public NMib::CSystem
 {
+	CSystemLinux();
+
 	static void fs_ForkPrepare();
 	static void fs_ForkParentOrChild();
 	static void fs_ForkParent();
 	static void fs_ForkChild();
 
-	CSystemLinux();
 	NMib::NSys::CLinuxPasswordManager *f_GetPasswordManager();
 
 	void f_InitModule();

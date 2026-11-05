@@ -19,14 +19,16 @@ namespace NMib
 
 		struct CSubSystem_Misc_Random : public CSubSystem
 		{
-			void f_ForkedChildAfterThreadLocal() override
-			{
-				// Reset random - this will destroy and recreate on next access
-				m_Random.f_DestroyForThread();
-			}
+			void f_ForkedChildAfterThreadLocal() override;
 
 			NThread::TCThreadLocal<CRandomThreadLocal, NMemory::CAllocator_NonTrackedHeap> m_Random;
 		};
+
+		void CSubSystem_Misc_Random::f_ForkedChildAfterThreadLocal()
+		{
+			// Reset random - this will destroy and recreate on next access
+			m_Random.f_DestroyForThread();
+		}
 
 		constinit TCSubSystem<CSubSystem_Misc_Random, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Misc_Random = {DAggregateInit};
 

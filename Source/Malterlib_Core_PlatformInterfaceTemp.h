@@ -39,15 +39,16 @@ namespace NMib
 	{
 		struct CSystemCPUUsage
 		{
-			//
-			fp32 m_User;
-			fp32 m_Kernel;
-			fp32 m_Idle;
 			CSystemCPUUsage();
 			CSystemCPUUsage(CSystemCPUUsage const &_Other);
 			CSystemCPUUsage(fp32 _Init);
 
 			fp32 f_GetUsage() const;
+
+			//
+			fp32 m_User;
+			fp32 m_Kernel;
+			fp32 m_Idle;
 		};
 	}
 

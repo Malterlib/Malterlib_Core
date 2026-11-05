@@ -7,14 +7,16 @@ namespace
 {
 	struct CStdLib_Tests : public NMib::NTest::CTest
 	{
-		void f_DoTests()
-		{
-			DMibTestSuite("FileSystem")
-			{
-				[[maybe_unused]] auto CurrentPath = std::filesystem::current_path();
-				[[maybe_unused]] auto AbsolutePath = std::filesystem::absolute(".");
-			};
-		}
+		void f_DoTests();
 	};
+
+	void CStdLib_Tests::f_DoTests()
+	{
+		DMibTestSuite("FileSystem")
+		{
+			[[maybe_unused]] auto CurrentPath = std::filesystem::current_path();
+			[[maybe_unused]] auto AbsolutePath = std::filesystem::absolute(".");
+		};
+	}
 }
 DMibTestRegister(CStdLib_Tests, Malterlib::Core);

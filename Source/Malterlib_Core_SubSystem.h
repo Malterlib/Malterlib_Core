@@ -14,6 +14,9 @@ namespace NMib
 	template <typename t_CSubSystem, ESubSystemDestruction t_DestructionOrder>
 	struct TCSubSystem
 	{
+		TCSubSystem() = delete;
+		constexpr TCSubSystem(EAggregateInitialization _Init);
+
 		mark_nodebug bool f_WasCreated() const;
 		mark_nodebug t_CSubSystem &operator * ();
 		mark_nodebug t_CSubSystem *operator -> ();
@@ -21,16 +24,12 @@ namespace NMib
 
 		mark_nodebug void f_Construct(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
 
-	public:
-		TCSubSystem() = delete;
-		constexpr TCSubSystem(EAggregateInitialization _Init);
-
 	private:
+		inline_never t_CSubSystem *fp_Create(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
+
 		alignas(t_CSubSystem) uint8 mp_ObjectSpace[sizeof(t_CSubSystem)];
 		NThread::CLowLevelLockAggregate mp_Lock;
 		NAtomic::TCAtomic<bool> mp_bWasCreated;
-
-		inline_never t_CSubSystem *fp_Create(NFunction::TCFunctionNoAlloc<t_CSubSystem *(void *_pMemory)> const &_fConstruct);
 	};
 };
 

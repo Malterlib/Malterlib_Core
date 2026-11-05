@@ -8,6 +8,18 @@
 // A simple async name resolver.
 struct CAddressResolver
 {
+	CAddressResolver();
+	~CAddressResolver();
+
+	void f_Stop();
+
+	void *f_Open(NMib::NStr::CStr const &_Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
+	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &o_pAddress, NMib::NStr::CStr &_Error);
+	void f_Close(void *_pResolver);
+	void f_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
+
+	bool f_IsEmpty();
+
 private:
 	enum EFlag
 	{
@@ -35,39 +47,26 @@ private:
 		EFlag m_Flags = EFlag_None;
 	};
 
+	static void fsp_CloseRequest(CResolveRequest *_pRequest);
+
+	aint fp_ResolveWorker(NThread::CThreadObject *_pThread);
+
 	NThread::CMutual mp_Lock;
 	DMibListLinkS_List(CResolveRequest, m_Link) mp_PendingList;
 	DMibListLinkS_List(CResolveRequest, m_Link) mp_DoneOrInProgressList;
 
 	NStorage::TCUniquePointer<NThread::CThreadObject> mp_pThread;
 	bool mp_bStopped = false;
-
-	static void fsp_CloseRequest(CResolveRequest *_pRequest);
-
-	aint fp_ResolveWorker(NThread::CThreadObject *_pThread);
-
-public:
-	CAddressResolver();
-	~CAddressResolver();
-
-	void f_Stop();
-
-	void *f_Open(NMib::NStr::CStr const &_Name, ::NMib::NNetwork::ENetAddressType _PreferType, NMib::NFunction::TCFunctionMutable<void ()> &&_fOnFinish);
-	bool f_GetResult(void *_pResolver, NMib::NSys::NNetwork::CAddress &o_pAddress, NMib::NStr::CStr &_Error);
-	void f_Close(void *_pResolver);
-	void f_CloseAsync(void *_pResolver, NMib::NFunction::TCFunctionMovable<void ()> &&_fOnClosed);
-
-	bool f_IsEmpty();
 };
 
 struct CUnixAddress
 {
-	static constexpr umint mc_MaxAddressLength = sizeof(sockaddr_un::sun_path) - 1;
-
 	ch8 const *f_GetPath() const;
 
 	static NStorage::TCOptional<CUnixAddress> fs_Parse(NMib::NStr::CStr const &_Address, bool _bThrowOnError);
 	CUnixAddress f_GetStaged() const;
+
+	static constexpr umint mc_MaxAddressLength = sizeof(sockaddr_un::sun_path) - 1;
 
 	sockaddr_un m_UnixAddress;
 	NFile::EFileAttrib m_Permissions = NFile::EFileAttrib_None;
@@ -75,11 +74,6 @@ struct CUnixAddress
 
 struct CRuntimeNetAddress
 {
-private:
-	NMib::NNetwork::ENetAddressType mp_Type;
-	CByteVector mp_Data;
-
-public:
 	CRuntimeNetAddress();
 	CRuntimeNetAddress(CRuntimeNetAddress const &_ToCopy);
 	CRuntimeNetAddress(NMib::NNetwork::ENetAddressType _Type, void const *_pData, umint _nDataBytes);
@@ -117,6 +111,10 @@ public:
 	tf_CAddrType const &f_GetAsType(NMib::NNetwork::ENetAddressType _ExpectedType) const;
 
 	int f_Compare(CRuntimeNetAddress const &_Other) const;
+
+private:
+	NMib::NNetwork::ENetAddressType mp_Type;
+	CByteVector mp_Data;
 };
 
 #include "Malterlib_Core_PlatformImp_Net_Address.hpp"

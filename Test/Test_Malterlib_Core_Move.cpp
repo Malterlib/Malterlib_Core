@@ -12,67 +12,83 @@
 
 struct CTestStruct
 {
-	CTestStruct()
-	{
-		//DMibTrace("CTestStruct construct\r\n", 0);
-	}
+	CTestStruct();
 
-	CTestStruct(CTestStruct const &_Other)
-	{
-		//DMibTrace("CTestStruct copy\r\n", 0);
-	}
+	CTestStruct(CTestStruct const &_Other);
 
-	CTestStruct(CTestStruct &&_Other)
-	{
-		//DMibTrace("CTestStruct move\r\n", 0);
-	}
+	CTestStruct(CTestStruct &&_Other);
 };
+
+CTestStruct::CTestStruct()
+{
+	//DMibTrace("CTestStruct construct\r\n", 0);
+}
+
+CTestStruct::CTestStruct(CTestStruct const &_Other)
+{
+	//DMibTrace("CTestStruct copy\r\n", 0);
+}
+
+CTestStruct::CTestStruct(CTestStruct &&_Other)
+{
+	//DMibTrace("CTestStruct move\r\n", 0);
+}
 
 struct CTestStruct2
 {
+	ch8 const *f_TestDebugger() const;
+
 	CTestStruct m_Member0;
 	CTestStruct m_Member1;
-
-	ch8 const *f_TestDebugger() const
-	{
-		return "Hahahaha";
-	}
 };
+
+ch8 const *CTestStruct2::f_TestDebugger() const
+{
+	return "Hahahaha";
+}
 
 struct CTestLinked
 {
+	CTestLinked();
+
+	CTestLinked(CTestLinked &&_Other);
+
 	NMib::NStr::CStr m_Data;
 	DMibListLinkD_Link(CTestLinked, m_Link);
 	DMibListLinkS_Link(CTestLinked, m_SingleLink);
-
-	CTestLinked()
-	{
-	}
-
-	CTestLinked(CTestLinked &&_Other)
-		: m_Data(NMib::fg_Move(_Other.m_Data))
-		, m_Link(NMib::fg_Move(_Other.m_Link))
-	{
-	}
 };
+
+CTestLinked::CTestLinked()
+{
+}
+
+CTestLinked::CTestLinked(CTestLinked &&_Other)
+	: m_Data(NMib::fg_Move(_Other.m_Data))
+	, m_Link(NMib::fg_Move(_Other.m_Link))
+{
+}
 
 struct CTestAVLTree
 {
-	NMib::NStr::CStr m_Data;
-	NMib::NIntrusive::TCAVLLink<> m_Link;
-
 	struct CCompare
 	{
-		inline_small NMib::NStr::CStr const &operator () (CTestAVLTree const &_Object) const
-		{
-			return _Object.m_Data;
-		}
+		inline_small NMib::NStr::CStr const &operator () (CTestAVLTree const &_Object) const;
 	};
 
-	CTestAVLTree()
-	{
-	}
+	CTestAVLTree();
+
+	NMib::NStr::CStr m_Data;
+	NMib::NIntrusive::TCAVLLink<> m_Link;
 };
+
+NMib::NStr::CStr const &CTestAVLTree::CCompare::operator () (CTestAVLTree const &_Object) const
+{
+	return _Object.m_Data;
+}
+
+CTestAVLTree::CTestAVLTree()
+{
+}
 
 enum EParam
 {
@@ -86,173 +102,175 @@ namespace
 {
 	struct CMove_Tests : public NMib::NTest::CTest
 	{
-		void f_DoTests()
-		{
-#if 1
-			CTestStruct2 Struct;
-			Struct.f_TestDebugger();
+		void f_DoTests();
+	};
 
-			CTestStruct2 Struct2(NMib::fg_Move(Struct));
+	void CMove_Tests::f_DoTests()
+	{
+#if 1
+		CTestStruct2 Struct;
+		Struct.f_TestDebugger();
+
+		CTestStruct2 Struct2(NMib::fg_Move(Struct));
 
 #	ifdef DMalterlibUseLibCxx
-			using CStdUTF16String = std::u16string;
+		using CStdUTF16String = std::u16string;
 #	else
-			using CStdUTF16String = std::wstring;
+		using CStdUTF16String = std::wstring;
 #	endif
 
-			std::pair<std::string, CStdUTF16String> Test("Testing1", str_utf16("Testing2"));
+		std::pair<std::string, CStdUTF16String> Test("Testing1", str_utf16("Testing2"));
 
-			std::tuple<std::string, CStdUTF16String> Test33("Testing1", str_utf16("Testing2"));
+		std::tuple<std::string, CStdUTF16String> Test33("Testing1", str_utf16("Testing2"));
 
-			NMib::NStr::CMStrDeprecated Source(NMib::NStr::CWStr(str_utf16("Testing 日本語 !")));
+		NMib::NStr::CMStrDeprecated Source(NMib::NStr::CWStr(str_utf16("Testing 日本語 !")));
 
-			std::string StdString = "testing!!!";
-			CStdUTF16String StdUTF16String = str_utf16("testing!!!");
-			NMib::NStr::CStr TestStr2;
-			NMib::NStr::CStr TestStr(Source);
+		std::string StdString = "testing!!!";
+		CStdUTF16String StdUTF16String = str_utf16("testing!!!");
+		NMib::NStr::CStr TestStr2;
+		NMib::NStr::CStr TestStr(Source);
 
-			TestStr2 = NMib::fg_Move(TestStr);
+		TestStr2 = NMib::fg_Move(TestStr);
 
-			ch8 const *pStr = "Testing!";
+		ch8 const *pStr = "Testing!";
 
-			NMib::NStr::CWStr TestStr3 = Source;
-			NMib::NStr::CUStr TestStr4 = Source;
+		NMib::NStr::CWStr TestStr3 = Source;
+		NMib::NStr::CUStr TestStr4 = Source;
 
-			NMib::NStr::CFStr128 TestStr5 = Source;
-			NMib::NStr::CFWStr128 TestStr6 = Source;
-			NMib::NStr::CFUStr128 TestStr7 = Source;
+		NMib::NStr::CFStr128 TestStr5 = Source;
+		NMib::NStr::CFWStr128 TestStr6 = Source;
+		NMib::NStr::CFUStr128 TestStr7 = Source;
 
-			[[maybe_unused]] NMib::NTime::CTime Time = NMib::NTime::CTime::fs_NowUTC();
+		[[maybe_unused]] NMib::NTime::CTime Time = NMib::NTime::CTime::fs_NowUTC();
 
-			[[maybe_unused]] NMib::NTime::CTimeSpan TimeSpan = NMib::NTime::CTimeSpanConvert::fs_CreateSpan(1, 1, 1, 1, 1, 0.5);
+		[[maybe_unused]] NMib::NTime::CTimeSpan TimeSpan = NMib::NTime::CTimeSpanConvert::fs_CreateSpan(1, 1, 1, 1, 1, 0.5);
 
-			fp32 Test0 = 3.55f;
-			fp64 Test1 = 3.55;
-			fp128 Test2 = fp64(6.55);
+		fp32 Test0 = 3.55f;
+		fp64 Test1 = 3.55;
+		fp128 Test2 = fp64(6.55);
 
-			NMib::NStr::CMStrDeprecated Test334 = "Hahaha";
-			NMib::NContainer::TCLinkedList<NMib::NStr::CMStrDeprecated> List;
-			List.f_Insert(Test334);
-			List.f_Insert(Test334);
-			List.f_Insert(Test334);
+		NMib::NStr::CMStrDeprecated Test334 = "Hahaha";
+		NMib::NContainer::TCLinkedList<NMib::NStr::CMStrDeprecated> List;
+		List.f_Insert(Test334);
+		List.f_Insert(Test334);
+		List.f_Insert(Test334);
 
-			for (auto iString = List.f_GetIterator(); iString; ++iString)
-				int Breakpoint = 0;
+		for (auto iString = List.f_GetIterator(); iString; ++iString)
+			int Breakpoint = 0;
 
-			NMib::NContainer::TCVector<CTestLinked> Vector;
-			DMibListLinkD_List(CTestLinked, m_Link) LinkedList;
-			DMibListLinkS_List(CTestLinked, m_SingleLink) LinkedListSingle;
+		NMib::NContainer::TCVector<CTestLinked> Vector;
+		DMibListLinkD_List(CTestLinked, m_Link) LinkedList;
+		DMibListLinkS_List(CTestLinked, m_SingleLink) LinkedListSingle;
 
-			{
-				auto &Insert0 = Vector.f_Insert();
-				Insert0.m_Data = "Insert 0";
-				LinkedList.f_Insert(Insert0);
-				LinkedListSingle.f_Insert(Insert0);
+		{
+			auto &Insert0 = Vector.f_Insert();
+			Insert0.m_Data = "Insert 0";
+			LinkedList.f_Insert(Insert0);
+			LinkedListSingle.f_Insert(Insert0);
 
-				auto &Insert1 = Vector.f_Insert();
-				Insert1.m_Data = "Insert 1";
-				LinkedList.f_Insert(Insert1);
-				LinkedListSingle.f_Insert(Insert1);
+			auto &Insert1 = Vector.f_Insert();
+			Insert1.m_Data = "Insert 1";
+			LinkedList.f_Insert(Insert1);
+			LinkedListSingle.f_Insert(Insert1);
 
-				auto &Insert2 = Vector.f_Insert();
-				Insert2.m_Data = "Insert 2";
-				LinkedList.f_Insert(Insert2);
-				LinkedListSingle.f_Insert(Insert2);
-			}
-			for (auto iEntry = LinkedList.f_GetIterator(); iEntry; ++iEntry)
-				int Breakpoint = 0;
+			auto &Insert2 = Vector.f_Insert();
+			Insert2.m_Data = "Insert 2";
+			LinkedList.f_Insert(Insert2);
+			LinkedListSingle.f_Insert(Insert2);
+		}
+		for (auto iEntry = LinkedList.f_GetIterator(); iEntry; ++iEntry)
+			int Breakpoint = 0;
 
-			for (auto iEntry = LinkedListSingle.f_GetIterator(); iEntry; ++iEntry)
-				int Breakpoint = 0;
+		for (auto iEntry = LinkedListSingle.f_GetIterator(); iEntry; ++iEntry)
+			int Breakpoint = 0;
 
-			auto iVector = Vector.f_GetIterator();
-			for (; iVector; ++iVector)
-				int Breakpoint = 0;
+		auto iVector = Vector.f_GetIterator();
+		for (; iVector; ++iVector)
+			int Breakpoint = 0;
 
-			NMib::NContainer::TCLinkedList<CTestAVLTree> AVLList;
-			NMib::NIntrusive::TCAVLTree<&CTestAVLTree::m_Link, CTestAVLTree::CCompare> AVLTree;
+		NMib::NContainer::TCLinkedList<CTestAVLTree> AVLList;
+		NMib::NIntrusive::TCAVLTree<&CTestAVLTree::m_Link, CTestAVLTree::CCompare> AVLTree;
 
-			{
-				auto &Insert0 = AVLList.f_Insert();
-				Insert0.m_Data = "Insert 0";
-				AVLTree.f_Insert(Insert0);
+		{
+			auto &Insert0 = AVLList.f_Insert();
+			Insert0.m_Data = "Insert 0";
+			AVLTree.f_Insert(Insert0);
 
-				auto &Insert1 = AVLList.f_Insert();
-				Insert1.m_Data = "Insert 1";
-				AVLTree.f_Insert(Insert1);
+			auto &Insert1 = AVLList.f_Insert();
+			Insert1.m_Data = "Insert 1";
+			AVLTree.f_Insert(Insert1);
 
-				auto &Insert2 = AVLList.f_Insert();
-				Insert2.m_Data = "Insert 2";
-				AVLTree.f_Insert(Insert2);
-			}
+			auto &Insert2 = AVLList.f_Insert();
+			Insert2.m_Data = "Insert 2";
+			AVLTree.f_Insert(Insert2);
+		}
 
-			for (auto iEntry = AVLTree.f_GetIterator(); iEntry; ++iEntry)
-				int Breakpoint = 0;
+		for (auto iEntry = AVLTree.f_GetIterator(); iEntry; ++iEntry)
+			int Breakpoint = 0;
 
-			NMib::NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> Map;
+		NMib::NContainer::TCMap<NMib::NStr::CStr, NMib::NStr::CStr> Map;
 
-			Map["Test 1"] = "3";
-			Map["Test 2"] = "2";
-			Map["Test 3"] = "1";
+		Map["Test 1"] = "3";
+		Map["Test 2"] = "2";
+		Map["Test 3"] = "1";
 
-			for (auto iEntry = Map.f_GetIterator(); iEntry; ++iEntry)
-				int Breakpoint = 0;
+		for (auto iEntry = Map.f_GetIterator(); iEntry; ++iEntry)
+			int Breakpoint = 0;
 
-			NMib::NContainer::TCSet<NMib::NStr::CStr> Set;
+		NMib::NContainer::TCSet<NMib::NStr::CStr> Set;
 
-			Set["Test 1"];
-			Set["Test 2"];
-			Set["Test 3"];
+		Set["Test 1"];
+		Set["Test 2"];
+		Set["Test 3"];
 
-			for (auto iEntry = Set.f_GetIterator(); iEntry; ++iEntry)
-				int Breakpoint = 0;
+		for (auto iEntry = Set.f_GetIterator(); iEntry; ++iEntry)
+			int Breakpoint = 0;
 
-			NMib::NStorage::TCAggregateSimple<NMib::NStr::CStr> TestAggregateSimple = {DAggregateInit};
-			TestAggregateSimple.f_Construct();
-			*TestAggregateSimple = "Test aggregate";
-			TestAggregateSimple.f_Destruct();
+		NMib::NStorage::TCAggregateSimple<NMib::NStr::CStr> TestAggregateSimple = {DAggregateInit};
+		TestAggregateSimple.f_Construct();
+		*TestAggregateSimple = "Test aggregate";
+		TestAggregateSimple.f_Destruct();
 
-			{
-				NMib::NStorage::TCAggregate<NMib::NStr::CStr> TestAggregate = {DAggregateInit};
-				*TestAggregate = "Test aggregate";
-				int BreakpointBeforeClear = 0;
-				TestAggregate.f_Clear();
-				*TestAggregate = "Test aggregate";
-				TestAggregate.f_Destruct();
-				int BreakpointAfterDestruct = 0;
-			}
+		{
+			NMib::NStorage::TCAggregate<NMib::NStr::CStr> TestAggregate = {DAggregateInit};
+			*TestAggregate = "Test aggregate";
+			int BreakpointBeforeClear = 0;
+			TestAggregate.f_Clear();
+			*TestAggregate = "Test aggregate";
+			TestAggregate.f_Destruct();
+			int BreakpointAfterDestruct = 0;
+		}
 
-			NMib::NStorage::TCStreamableVariant
-				<
-					EParam
-					, NMib::NStorage::TCMember<void, EParam_Void>
-					, NMib::NStorage::TCMember<int, EParam_Int>
-					, NMib::NStorage::TCMember<NMib::NStr::CStr, EParam_CStr>
-					, NMib::NStorage::TCMember<NMib::NStr::CMStrDeprecated, EParam_CMStr>
-				>
-				Variant0
-			;
+		NMib::NStorage::TCStreamableVariant
+			<
+				EParam
+				, NMib::NStorage::TCMember<void, EParam_Void>
+				, NMib::NStorage::TCMember<int, EParam_Int>
+				, NMib::NStorage::TCMember<NMib::NStr::CStr, EParam_CStr>
+				, NMib::NStorage::TCMember<NMib::NStr::CMStrDeprecated, EParam_CMStr>
+			>
+			Variant0
+		;
 
-			Variant0 = 5;
-			Variant0 = "Test 55";
-			Variant0 = NMib::NStr::CMStrDeprecated("Testing 66");
+		Variant0 = 5;
+		Variant0 = "Test 55";
+		Variant0 = NMib::NStr::CMStrDeprecated("Testing 66");
 
 #endif
-			NMib::NContainer::CRegistry Registry;
-			auto *pChild = Registry.f_CreateChild("RootChild");
-			pChild->f_SetValue("test", "Mega");
-			pChild->f_SetValue("test1", "Test ");
-			pChild->f_SetValue("test2", "66");
-			pChild->f_SetValue("test3", "77");
+		NMib::NContainer::CRegistry Registry;
+		auto *pChild = Registry.f_CreateChild("RootChild");
+		pChild->f_SetValue("test", "Mega");
+		pChild->f_SetValue("test1", "Test ");
+		pChild->f_SetValue("test2", "66");
+		pChild->f_SetValue("test3", "77");
 
-			NMib::NThread::TCThreadLocal<NMib::NStr::CStr> ThreadLocal;
+		NMib::NThread::TCThreadLocal<NMib::NStr::CStr> ThreadLocal;
 
-			*ThreadLocal = "Threaded!!!";
+		*ThreadLocal = "Threaded!!!";
 
-			[[maybe_unused]] auto Ref = NMib::fg_Reference(TestStr2);
-			[[maybe_unused]] auto UndefinedRef = NMib::fg_Reference(TestStr2);
-		}
-	};
+		[[maybe_unused]] auto Ref = NMib::fg_Reference(TestStr2);
+		[[maybe_unused]] auto UndefinedRef = NMib::fg_Reference(TestStr2);
+	}
 
 	DMibTestRegister(CMove_Tests, Malterlib::Core);
 }

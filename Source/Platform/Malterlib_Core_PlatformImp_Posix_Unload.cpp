@@ -20,11 +20,13 @@ extern "C" void __attribute__((destructor)) fg_PrepareUnloadMalterlib()
 
 struct CPrepareUnloadMalterlib
 {
-	~CPrepareUnloadMalterlib()
-	{
-		fg_MalterlibPrepareUnloadThread();
-	}
+	~CPrepareUnloadMalterlib();
 };
+
+CPrepareUnloadMalterlib::~CPrepareUnloadMalterlib()
+{
+	fg_MalterlibPrepareUnloadThread();
+}
 
 CPrepareUnloadMalterlib g_PrepareUnloadMalterlib;
 

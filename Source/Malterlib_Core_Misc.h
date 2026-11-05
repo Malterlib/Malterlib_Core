@@ -92,13 +92,13 @@ namespace NMib
 		template <typename t_CType>
 		struct TCClassContainer : public CClassContainer
 		{
-			t_CType const *m_pContainee;
-			aint m_Identifier;
-			umint m_Context;
-
 			TCClassContainer(t_CType const &_Containee, aint _Identifier);
 
 			TCClassContainer(t_CType const &_Containee, aint _Identifier, umint _Context);
+
+			t_CType const *m_pContainee;
+			aint m_Identifier;
+			umint m_Context;
 
 		protected:
 			virtual aint fp_GetIdentifier() const;
@@ -119,10 +119,11 @@ namespace NMib
 
 		struct CClassContainerList
 		{
-			DMibListLinkD_List(CClassContainer, m_Link) m_List;
 			using CIter = DMibListLinkD_Iter(CClassContainer, m_Link);
 
 			~CClassContainerList();
+
+			DMibListLinkD_List(CClassContainer, m_Link) m_List;
 		};
 
 		CClassContainerList *fg_GetClassContainerListArgList(CClassContainerList &_List, CMibArgList &_Args);

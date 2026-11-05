@@ -16,14 +16,16 @@ namespace
 	// Destroyed when the thread that constructed it exits, which can be after the library was closed
 	struct CThreadLocalWithDestructor
 	{
-		~CThreadLocalWithDestructor()
-		{
-			if (m_pDestroyedOnThread)
-				*m_pDestroyedOnThread = (umint)pthread_self();
-		}
+		~CThreadLocalWithDestructor();
 
 		umint *m_pDestroyedOnThread = nullptr;
 	};
+
+	CThreadLocalWithDestructor::~CThreadLocalWithDestructor()
+	{
+		if (m_pDestroyedOnThread)
+			*m_pDestroyedOnThread = (umint)pthread_self();
+	}
 
 	thread_local CThreadLocalWithDestructor g_ThreadLocalWithDestructor;
 }

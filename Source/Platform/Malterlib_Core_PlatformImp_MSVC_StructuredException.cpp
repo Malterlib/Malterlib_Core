@@ -37,94 +37,102 @@ private:
 
 struct CMemoryToucher::CInternal : public NMib::NThread::CThread
 {
-	CInternal(fp64 _CPUUsage)
-		: mp_CPUUsage(NMib::fg_Clamp(_CPUUsage, 0.0, 0.99))
-	{
-	};
+	CInternal(fp64 _CPUUsage);
 
 private:
+	void fp_Touch(void *_pAddress, umint _Size);
+
+	aint f_Main() override;
+
+	NMib::NStr::CStr f_GetThreadName() override;
+
 	fp64 mp_CPUUsage;
-
-	void fp_Touch(void *_pAddress, umint _Size)
-	{
-		try
-		{
-			uint8 volatile *pAddress = (uint8 *)_pAddress;
-			[[maybe_unused]] uint8 volatile ReadTo;
-			uint8 volatile *pEndAddress = pAddress + _Size;
-			for (; pAddress < pEndAddress; pAddress += 4096)
-				ReadTo = *pAddress;
-		}
-		catch (...)
-		{
-		}
-	}
-
-	aint f_Main() override
-	{
-		umint StartAddress = NMib::TCLimitsInt<umint>::mc_Min;
-		umint CurrentAddress = StartAddress;
-		umint MaxPerTime = 1 * 1024 * 1024;
-		[[maybe_unused]] umint TotalScannedMemory = 0;
-		bool bUseRunTime = mp_CPUUsage != 0.0;
-		fp64 RunTime = 0.0;
-		if (bUseRunTime)
-			RunTime = -(mp_CPUUsage / (fp64(10.0) * mp_CPUUsage - fp64(10.0)));
-		NMib::NTime::CStopwatch TotalStopwatch;
-		TotalStopwatch.f_Start();
-		while (f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
-		{
-			umint ScannedMemory = 0;
-			NMib::NTime::CStopwatch Stopwatch;
-			Stopwatch.f_Start();
-			for (umint iIteration = 0; true; ++iIteration)
-			{
-				MEMORY_BASIC_INFORMATION MemInfo;
-				if (!VirtualQuery((void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
-				{
-#ifdef DConfig_ReleaseTesting
-					DMibTrace("Scanned {} bytes in {} seconds!!!\r\n", TotalScannedMemory, TotalStopwatch.f_GetTime());
-#endif
-					TotalScannedMemory = 0;
-					CurrentAddress = StartAddress;
-					TotalStopwatch.f_Start();
-					continue;
-				}
-				if
-				(
-					(MemInfo.State & MEM_COMMIT)
-					&& (MemInfo.Protect & (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY | PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY))
-					&& !(MemInfo.Protect & (PAGE_GUARD | PAGE_WRITECOMBINE | PAGE_NOCACHE))
-				)
-				{
-					fp_Touch(MemInfo.BaseAddress, MemInfo.RegionSize);
-					ScannedMemory += MemInfo.RegionSize;
-					TotalScannedMemory += MemInfo.RegionSize;
-				}
-				if (CurrentAddress == (umint)MemInfo.BaseAddress + MemInfo.RegionSize)
-				{
-#ifdef DConfig_ReleaseTesting
-					DMibTrace("Scanned {} bytes in {} seconds 2!!!\r\n", TotalScannedMemory, TotalStopwatch.f_GetTime());
-#endif
-					TotalScannedMemory = 0;
-					CurrentAddress = StartAddress;
-					TotalStopwatch.f_Start();
-				}
-				else
-					CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
-				if ((ScannedMemory > MaxPerTime || iIteration > 1000) && (!bUseRunTime || Stopwatch.f_GetTime() > RunTime))
-					break;
-			}
-			m_EventWantQuit.f_WaitTimeout(0.1);
-		}
-		return 0;
-	}
-
-	NMib::NStr::CStr f_GetThreadName() override
-	{
-		return "Memory Toucher";
-	}
 };
+
+CMemoryToucher::CInternal::CInternal(fp64 _CPUUsage)
+	: mp_CPUUsage(NMib::fg_Clamp(_CPUUsage, 0.0, 0.99))
+{
+}
+
+void CMemoryToucher::CInternal::fp_Touch(void *_pAddress, umint _Size)
+{
+	try
+	{
+		uint8 volatile *pAddress = (uint8 *)_pAddress;
+		[[maybe_unused]] uint8 volatile ReadTo;
+		uint8 volatile *pEndAddress = pAddress + _Size;
+		for (; pAddress < pEndAddress; pAddress += 4096)
+			ReadTo = *pAddress;
+	}
+	catch (...)
+	{
+	}
+}
+
+aint CMemoryToucher::CInternal::f_Main()
+{
+	umint StartAddress = NMib::TCLimitsInt<umint>::mc_Min;
+	umint CurrentAddress = StartAddress;
+	umint MaxPerTime = 1 * 1024 * 1024;
+	[[maybe_unused]] umint TotalScannedMemory = 0;
+	bool bUseRunTime = mp_CPUUsage != 0.0;
+	fp64 RunTime = 0.0;
+	if (bUseRunTime)
+		RunTime = -(mp_CPUUsage / (fp64(10.0) * mp_CPUUsage - fp64(10.0)));
+	NMib::NTime::CStopwatch TotalStopwatch;
+	TotalStopwatch.f_Start();
+	while (f_GetState() != NMib::NThread::EThreadState_EventWantQuit)
+	{
+		umint ScannedMemory = 0;
+		NMib::NTime::CStopwatch Stopwatch;
+		Stopwatch.f_Start();
+		for (umint iIteration = 0; true; ++iIteration)
+		{
+			MEMORY_BASIC_INFORMATION MemInfo;
+			if (!VirtualQuery((void *)CurrentAddress, &MemInfo, sizeof(MemInfo)))
+			{
+#ifdef DConfig_ReleaseTesting
+				DMibTrace("Scanned {} bytes in {} seconds!!!\r\n", TotalScannedMemory, TotalStopwatch.f_GetTime());
+#endif
+				TotalScannedMemory = 0;
+				CurrentAddress = StartAddress;
+				TotalStopwatch.f_Start();
+				continue;
+			}
+			if
+			(
+				(MemInfo.State & MEM_COMMIT)
+				&& (MemInfo.Protect & (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY | PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY))
+				&& !(MemInfo.Protect & (PAGE_GUARD | PAGE_WRITECOMBINE | PAGE_NOCACHE))
+			)
+			{
+				fp_Touch(MemInfo.BaseAddress, MemInfo.RegionSize);
+				ScannedMemory += MemInfo.RegionSize;
+				TotalScannedMemory += MemInfo.RegionSize;
+			}
+			if (CurrentAddress == (umint)MemInfo.BaseAddress + MemInfo.RegionSize)
+			{
+#ifdef DConfig_ReleaseTesting
+				DMibTrace("Scanned {} bytes in {} seconds 2!!!\r\n", TotalScannedMemory, TotalStopwatch.f_GetTime());
+#endif
+				TotalScannedMemory = 0;
+				CurrentAddress = StartAddress;
+				TotalStopwatch.f_Start();
+			}
+			else
+				CurrentAddress = (umint)MemInfo.BaseAddress + MemInfo.RegionSize;
+			if ((ScannedMemory > MaxPerTime || iIteration > 1000) && (!bUseRunTime || Stopwatch.f_GetTime() > RunTime))
+				break;
+		}
+		m_EventWantQuit.f_WaitTimeout(0.1);
+	}
+	return 0;
+}
+
+NMib::NStr::CStr CMemoryToucher::CInternal::f_GetThreadName()
+{
+	return "Memory Toucher";
+}
 
 CMemoryToucher::CMemoryToucher(fp64 _CPUUsage)
 {
