@@ -110,7 +110,6 @@ namespace NLocal
 				, ULONG _OutputBufferLength
 			)
 		;
-		// NOLINTNEXTLINE(malterlib-conceptual-prefix): FILE_INFORMATION_CLASS is an enumeration, which the check takes for a function type by its name
 		NTSTATUS (NTAPI *m_fNtSetInformationFile)(HANDLE _pFile, PIO_STATUS_BLOCK _pIoStatusBlock, PVOID _pFileInformation, ULONG _Length, FILE_INFORMATION_CLASS _FileInformationClass);
 		ULONG (NTAPI *m_fRtlNtStatusToDosError)(NTSTATUS _Status);
 

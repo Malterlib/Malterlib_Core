@@ -208,7 +208,6 @@ namespace NMib
 		{
 		}
 
-		// NOLINTNEXTLINE(malterlib-conceptual-prefix): CMibArgList is va_list, a pointer on macOS and Windows and an array on Linux
 		CClassContainerList *fg_GetClassContainerListArgList(CClassContainerList &_List, CMibArgList &_Args)
 		{
 			void *pCurrent = DMibPArgListNextArg(_Args, void *);
@@ -229,7 +228,7 @@ namespace NMib
 
 		CClassContainerList *fg_GetClassContainerList(CClassContainerList *_pList, ...)
 		{
-			CMibArgList Args; // NOLINT(malterlib-conceptual-prefix): CMibArgList is va_list, a pointer on macOS and Windows and an array on Linux
+			CMibArgList Args;
 			DMibPArgListStart(Args, _pList);
 
 			return fg_GetClassContainerListArgList(*_pList, Args);

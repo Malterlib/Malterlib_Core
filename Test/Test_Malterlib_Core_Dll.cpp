@@ -45,7 +45,7 @@ namespace
 		g_bUnloadFinished = false;
 		g_bUnloadStarted = true;
 
-		pthread_t Unloader; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
+		pthread_t Unloader;
 		if (pthread_create(&Unloader, nullptr, &fg_UnloadLibraryThread, _pDll) != 0)
 			return false;
 
@@ -99,7 +99,7 @@ namespace
 	{
 		while (!g_bChurnStop.f_Load())
 		{
-			pthread_t Short; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
+			pthread_t Short;
 			if (pthread_create(&Short, nullptr, &fg_ChurnBody, nullptr) == 0)
 				pthread_join(Short, nullptr);
 
@@ -361,8 +361,8 @@ namespace
 
 				NMib::NAtomic::TCAtomic<bool> bStop{false};
 				NMib::NAtomic::TCAtomic<umint> nChurned{0};
-				pthread_t SlowThread; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
-				pthread_t ChurnThread; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
+				pthread_t SlowThread;
+				pthread_t ChurnThread;
 				struct CChurn
 				{
 					NMib::NAtomic::TCAtomic<bool> *m_pStop;
@@ -381,7 +381,7 @@ namespace
 						auto &Churn = *(CChurn *)_pChurn;
 						while (!Churn.m_pStop->f_Load())
 						{
-							pthread_t Short; // NOLINT(malterlib-conceptual-prefix): pthread_t is a pointer on macOS and an integer on Linux
+							pthread_t Short;
 							if
 							(
 								pthread_create

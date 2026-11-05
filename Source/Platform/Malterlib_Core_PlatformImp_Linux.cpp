@@ -105,7 +105,6 @@ namespace NLocal
 	int (*g_fRealPThreadMutexConsistent)(pthread_mutex_t *_pMutex) __THROW = nullptr;
 	int (*g_fRealFcntl64)(int _FileDescriptor, int _Command, ...) = nullptr;
 
-	// NOLINTNEXTLINE(malterlib-conceptual-prefix): va_list is a pointer on Linux x64 and x86 and a structure on Linux arm64
 	int (*g_fRealIsoc99Vsscanf)(char const * __restrict _pString, char const * __restrict _pFormat, va_list _VaList) = nullptr;
 
 	namespace
@@ -3454,7 +3453,7 @@ extern "C" int pthread_mutex_consistent(pthread_mutex_t *__mutex) __THROW
 
 extern "C" int __isoc99_vsscanf(char const * __restrict _pString, char const * __restrict _pFormat, va_list _VaList)
 {
-	va_list VaList; // NOLINT(malterlib-conceptual-prefix): va_list is a pointer on Linux x86 and an array on Linux x64
+	va_list VaList;
 	va_copy(VaList, _VaList);
 
 	int Return;
@@ -3471,7 +3470,7 @@ extern "C" int __isoc99_vsscanf(char const * __restrict _pString, char const * _
 extern "C" int fcntl64(int _FileDescriptor, int _Command, ...)
 {
 	int Result;
-	va_list VarArgs; // NOLINT(malterlib-conceptual-prefix): va_list is a pointer on Linux x86 and an array on Linux x64
+	va_list VarArgs;
 	va_start(VarArgs, _Command);
 
 #ifdef SYS_fcntl64
@@ -3839,7 +3838,7 @@ void NSys::fg_Process_SetCrossModuleMemoryManagerInterface(void *_pInterface)
 
 extern "C" int __isoc99_sscanf(char const *s, char const *format, ...)
 {
-	va_list VaList; // NOLINT(malterlib-conceptual-prefix): va_list is a pointer on Linux x86 and an array on Linux x64
+	va_list VaList;
 	int Result;
 	va_start(VaList, format);
 	Result = vsscanf(s, format, VaList);

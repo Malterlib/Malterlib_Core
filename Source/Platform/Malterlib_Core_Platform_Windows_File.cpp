@@ -15,7 +15,6 @@ namespace NMib
 				static constexpr NMib::NTime::CTime const gc_FileTimeBase = NMib::NTime::CTime::fs_Create(237148610522659200, 0);
 			}
 
-			// NOLINTNEXTLINE(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
 			NTime::CTimeSpan fg_Win32_FileTimeToMalterlibTimeSpan(FILETIME const &_FileTime)
 			{
 				LARGE_INTEGER Temp;
@@ -43,7 +42,6 @@ namespace NMib
 				return FileTimeSpan;
 			}
 
-			// NOLINTNEXTLINE(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
 			NTime::CTime fg_Win32_FileTimeToMalterlibTime(FILETIME const &_FileTime)
 			{
 				NTime::CTime BaseTime = gc_FileTimeBase;
@@ -51,7 +49,6 @@ namespace NMib
 				return BaseTime + fg_Win32_FileTimeToMalterlibTimeSpan(_FileTime);
 			}
 
-			// NOLINTNEXTLINE(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
 			void fg_Win32_MalterlibTimeToFileTime(NTime::CTime const &_Time, FILETIME &o_FileTime)
 			{
 				NTime::CTime BaseTime = gc_FileTimeBase;
