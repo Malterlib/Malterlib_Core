@@ -591,13 +591,13 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 			if (_Flags & ENetAddressStringFlag_IncludeType)
 				AddressStr += "TCPv4:";
 
-			CNetAddressTCPv4 TCPv4;
-			f_GetAddressRaw(_Address, ENetAddressType_TCPv4, &TCPv4, sizeof(TCPv4));
+			CNetAddressTCPv4 IPv4TCP;
+			f_GetAddressRaw(_Address, ENetAddressType_TCPv4, &IPv4TCP, sizeof(IPv4TCP));
 
-			AddressStr += "{}.{}.{}.{}"_f << TCPv4.m_IP[0] << TCPv4.m_IP[1] << TCPv4.m_IP[2] << TCPv4.m_IP[3];
+			AddressStr += "{}.{}.{}.{}"_f << IPv4TCP.m_IP[0] << IPv4TCP.m_IP[1] << IPv4TCP.m_IP[2] << IPv4TCP.m_IP[3];
 
 			if (_Flags & ENetAddressStringFlag_IncludePort)
-				AddressStr += ":{}"_f << TCPv4.m_Port;
+				AddressStr += ":{}"_f << IPv4TCP.m_Port;
 
 			break;
 		}
@@ -606,31 +606,31 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 			if (_Flags & ENetAddressStringFlag_IncludeType)
 				AddressStr += "TCPv6:";
 
-			CNetAddressTCPv6 TCPv6;
-			f_GetAddressRaw(_Address, ENetAddressType_TCPv6, &TCPv6, sizeof(TCPv6));
+			CNetAddressTCPv6 IPv6TCP;
+			f_GetAddressRaw(_Address, ENetAddressType_TCPv6, &IPv6TCP, sizeof(IPv6TCP));
 
 			AddressStr += "[{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:"
 				"{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}:{nfh,sj2,sf0}{nfh,sj2,sf0}]"_f
-				<< TCPv6.m_IP[0]
-				<< TCPv6.m_IP[1]
-				<< TCPv6.m_IP[2]
-				<< TCPv6.m_IP[3]
-				<< TCPv6.m_IP[4]
-				<< TCPv6.m_IP[5]
-				<< TCPv6.m_IP[6]
-				<< TCPv6.m_IP[7]
-				<< TCPv6.m_IP[8]
-				<< TCPv6.m_IP[9]
-				<< TCPv6.m_IP[10]
-				<< TCPv6.m_IP[11]
-				<< TCPv6.m_IP[12]
-				<< TCPv6.m_IP[13]
-				<< TCPv6.m_IP[14]
-				<< TCPv6.m_IP[15]
+				<< IPv6TCP.m_IP[0]
+				<< IPv6TCP.m_IP[1]
+				<< IPv6TCP.m_IP[2]
+				<< IPv6TCP.m_IP[3]
+				<< IPv6TCP.m_IP[4]
+				<< IPv6TCP.m_IP[5]
+				<< IPv6TCP.m_IP[6]
+				<< IPv6TCP.m_IP[7]
+				<< IPv6TCP.m_IP[8]
+				<< IPv6TCP.m_IP[9]
+				<< IPv6TCP.m_IP[10]
+				<< IPv6TCP.m_IP[11]
+				<< IPv6TCP.m_IP[12]
+				<< IPv6TCP.m_IP[13]
+				<< IPv6TCP.m_IP[14]
+				<< IPv6TCP.m_IP[15]
 			;
 
 			if (_Flags & ENetAddressStringFlag_IncludePort)
-				AddressStr += ":{}"_f << TCPv6.m_Port;
+				AddressStr += ":{}"_f << IPv6TCP.m_Port;
 
 			break;
 		}

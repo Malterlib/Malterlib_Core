@@ -3635,7 +3635,7 @@ typedef enum _crt_argv_mode
 // NOLINTEND(malterlib-type-naming)
 
 extern "C" _crt_argv_mode __CRTDECL _get_startup_argv_mode();
-extern "C" errno_t __cdecl _configure_wide_argv(_crt_argv_mode const mode);
+extern "C" errno_t __cdecl _configure_wide_argv(_crt_argv_mode const _Mode);
 extern int __argc;
 extern "C" char **__argv;
 extern wchar_t **__wargv;
@@ -7155,24 +7155,24 @@ void NMib::NSys::fg_HW_GetProcessorInfo(NMib::CProcessorInfo &_Info)
 	_Info.m_Architecture = EProcessorArchitecture_Arm64;
 	_Info.m_Features |= EProcessorFeature_NEON;
 #else
-	int CPUInfo[4];
-	__cpuid(CPUInfo, 0);
+	int ProcessorInfo[4];
+	__cpuid(ProcessorInfo, 0);
 
-	int MaxInfoType = CPUInfo[0];
+	int MaxInfoType = ProcessorInfo[0];
 
 	if (MaxInfoType >= 1)
 	{
-		__cpuid(CPUInfo, 1);
+		__cpuid(ProcessorInfo, 1);
 
 		_Info.m_Features
-			|= ((CPUInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None)
-			| ((CPUInfo[3] & DMibBit(25)) ? EProcessorFeature_SSE : EProcessorFeature_None)
-			| ((CPUInfo[3] & DMibBit(26)) ? EProcessorFeature_SSE2 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(0)) ? EProcessorFeature_SSE3 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(9)) ? EProcessorFeature_SSSE3 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(19)) ? EProcessorFeature_SSE4_1 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(20)) ? EProcessorFeature_SSE4_2 : EProcessorFeature_None)
-			| ((CPUInfo[2] & DMibBit(31)) ? EProcessorFeature_HyperVisor : EProcessorFeature_None)
+			|= ((ProcessorInfo[3] & DMibBit(23)) ? EProcessorFeature_MMX : EProcessorFeature_None)
+			| ((ProcessorInfo[3] & DMibBit(25)) ? EProcessorFeature_SSE : EProcessorFeature_None)
+			| ((ProcessorInfo[3] & DMibBit(26)) ? EProcessorFeature_SSE2 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(0)) ? EProcessorFeature_SSE3 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(9)) ? EProcessorFeature_SSSE3 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(19)) ? EProcessorFeature_SSE4_1 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(20)) ? EProcessorFeature_SSE4_2 : EProcessorFeature_None)
+			| ((ProcessorInfo[2] & DMibBit(31)) ? EProcessorFeature_HyperVisor : EProcessorFeature_None)
 		;
 	}
 

@@ -50,32 +50,32 @@ namespace NMib
 
 		bool fg_HW_MeetsMinimumRequirements()
 		{
-			NMib::CProcessorInfo CPUInfo;
-			fg_HW_GetProcessorInfo(CPUInfo);
+			NMib::CProcessorInfo ProcessorInfo;
+			fg_HW_GetProcessorInfo(ProcessorInfo);
 
-			if (CPUInfo.m_Architecture == EProcessorArchitecture_X86 || CPUInfo.m_Architecture == EProcessorArchitecture_X86_64)
+			if (ProcessorInfo.m_Architecture == EProcessorArchitecture_X86 || ProcessorInfo.m_Architecture == EProcessorArchitecture_X86_64)
 			{
 				NMib::EProcessorFeature RequiredFeatures = NMib::EProcessorFeature_MMX | NMib::EProcessorFeature_SSE | NMib::EProcessorFeature_SSE2;
 
-				return (CPUInfo.m_Features & RequiredFeatures) == RequiredFeatures;
+				return (ProcessorInfo.m_Features & RequiredFeatures) == RequiredFeatures;
 			}
 			else if
 			(
-				CPUInfo.m_Architecture == EProcessorArchitecture_ArmV5
-				|| CPUInfo.m_Architecture == EProcessorArchitecture_ArmV6
-				|| CPUInfo.m_Architecture == EProcessorArchitecture_ArmV7
-				|| CPUInfo.m_Architecture == EProcessorArchitecture_ArmV8
+				ProcessorInfo.m_Architecture == EProcessorArchitecture_ArmV5
+				|| ProcessorInfo.m_Architecture == EProcessorArchitecture_ArmV6
+				|| ProcessorInfo.m_Architecture == EProcessorArchitecture_ArmV7
+				|| ProcessorInfo.m_Architecture == EProcessorArchitecture_ArmV8
 			)
 			{
 				NMib::EProcessorFeature RequiredFeatures = NMib::EProcessorFeature_VFP;
 
-				return (CPUInfo.m_Features & RequiredFeatures) == RequiredFeatures;
+				return (ProcessorInfo.m_Features & RequiredFeatures) == RequiredFeatures;
 			}
-			else if (CPUInfo.m_Architecture == EProcessorArchitecture_Arm64)
+			else if (ProcessorInfo.m_Architecture == EProcessorArchitecture_Arm64)
 			{
 				NMib::EProcessorFeature RequiredFeatures = NMib::EProcessorFeature_None;
 
-				return (CPUInfo.m_Features & RequiredFeatures) == RequiredFeatures;
+				return (ProcessorInfo.m_Features & RequiredFeatures) == RequiredFeatures;
 			}
 
 			return false;

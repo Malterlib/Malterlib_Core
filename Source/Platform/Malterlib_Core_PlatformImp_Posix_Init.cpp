@@ -8,7 +8,7 @@ namespace NMib
 		void fg_CreateSystem();
 		void fg_DestroySystem();
 #if DPlatformFamily_Linux && defined(DMibInitInPreInitArray)
-		void fg_CreateSystem_Early(char **envp);
+		void fg_CreateSystem_Early(char **_pEnvironment);
 #endif
 	}
 }
@@ -33,12 +33,12 @@ CInitMalterlib g_InitMalterlib __attribute__((init_priority(101)));
 
 #	ifdef DMibInitInPreInitArray
 
-extern "C" void fg_InitMalterlib(int argc, char **argv, char **envp)
+extern "C" void fg_InitMalterlib(int _nArguments, char **_pArguments, char **_pEnvironment)
 {
-	NMib::NSys::fg_CreateSystem_Early(envp);
+	NMib::NSys::fg_CreateSystem_Early(_pEnvironment);
 }
 
-__attribute__((section(".preinit_array"), used)) static decltype(fg_InitMalterlib) *preinit_p = fg_InitMalterlib;
+__attribute__((section(".preinit_array"), used)) static decltype(fg_InitMalterlib) *gs_fInitMalterlibPreInit = fg_InitMalterlib;
 
 #	endif
 
