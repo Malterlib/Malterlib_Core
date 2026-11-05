@@ -22,6 +22,8 @@ namespace NMib
 			auto operator () (ch8 const *_pLeft, ch8 const *_pRight);
 		};
 
+		virtual ~CRunTimeObjectInfo();
+
 		NStr::CStr f_GetName();
 		NStr::CStr f_GetNamespaceName();
 		NStr::CStr f_GetFullName();
@@ -31,8 +33,6 @@ namespace NMib
 		void f_ForEachLeafChild(NFunction::TCFunction<void (CRunTimeObjectInfo const &_RuntimeObjectInfo)> const &_fOnChild) const;
 		void f_Construct(ch8 const *_pName, ch8 const *_pParent, bool _bIsStatic = true);
 		void f_Destruct();
-
-		virtual ~CRunTimeObjectInfo();
 
 		virtual void *f_CreateObject() const = 0;
 

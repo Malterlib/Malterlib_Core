@@ -13,157 +13,159 @@ namespace
 
 	struct CWaitableIo_Tests : NTest::CTest
 	{
-		void f_DoTests()
-		{
-			DMibTestSuite("ArmRearmAndCancel")
-			{
-				auto *pLoop = NSys::fg_CreateIoLoop();
-				DMibAssertTrue(pLoop != nullptr);
+		void f_DoTests();
+	};
 
-				auto *pPreviousLoop = NSys::fg_GetOwnedIoLoop();
-				auto DestroyLoop = g_OnScopeExit / [pLoop, pPreviousLoop]
+	void CWaitableIo_Tests::f_DoTests()
+	{
+		DMibTestSuite("ArmRearmAndCancel")
+		{
+			auto *pLoop = NSys::fg_CreateIoLoop();
+			DMibAssertTrue(pLoop != nullptr);
+
+			auto *pPreviousLoop = NSys::fg_GetOwnedIoLoop();
+			auto DestroyLoop = g_OnScopeExit / [pLoop, pPreviousLoop]
+				{
+					NSys::fg_DestroyIoLoop(pLoop);
+					NSys::fg_SetOwnedIoLoop(pPreviousLoop);
+				}
+			;
+			pLoop->f_SetOwnerThreadToCurrent();
+
+			for (bool bManualReset : {false, true})
+			{
+				DMibTestPath(bManualReset ? "ManualReset" : "AutoReset");
+
+				HANDLE pEvent = CreateEventW(nullptr, bManualReset, FALSE, nullptr);
+				DMibAssertTrue(pEvent != nullptr);
+				auto Close = g_OnScopeExit / [pEvent]
 					{
-						NSys::fg_DestroyIoLoop(pLoop);
-						NSys::fg_SetOwnedIoLoop(pPreviousLoop);
+						CloseHandle(pEvent);
 					}
 				;
-				pLoop->f_SetOwnerThreadToCurrent();
 
-				for (bool bManualReset : {false, true})
+				struct CReports
 				{
-					DMibTestPath(bManualReset ? "ManualReset" : "AutoReset");
+					umint m_Reads = 0;
+					umint m_Errors = 0;
+				};
 
-					HANDLE pEvent = CreateEventW(nullptr, bManualReset, FALSE, nullptr);
-					DMibAssertTrue(pEvent != nullptr);
-					auto Close = g_OnScopeExit / [pEvent]
-						{
-							CloseHandle(pEvent);
-						}
-					;
+				CReports Reports;
 
-					struct CReports
+				auto fPollUntil = [&](auto const &_fDone)
 					{
-						umint m_Reads = 0;
-						umint m_Errors = 0;
-					};
-
-					CReports Reports;
-
-					auto fPollUntil = [&](auto const &_fDone)
+						for (umint iPoll = 0; iPoll < 5000 && !_fDone(); ++iPoll)
 						{
-							for (umint iPoll = 0; iPoll < 5000 && !_fDone(); ++iPoll)
-							{
-								pLoop->f_PollAndDispatch();
-								NSys::fg_Thread_Sleep(0.001);
-							}
-
-							return _fDone();
+							pLoop->f_PollAndDispatch();
+							NSys::fg_Thread_Sleep(0.001);
 						}
-					;
 
-					DMibExpectTrue(SetEvent(pEvent) != 0);
-					auto *pRegistration = pLoop->f_Register
-						(
-							(NSys::CIoLoopHandle)(umint)pEvent
-							, &Reports
-							, NSys::EIoLoopEvent::mc_Read
-							, [](void *_pToken, NSys::EIoLoopEvent _Events, int _Error)
-							{
-								auto &Reports = *static_cast<CReports *>(_pToken);
-								if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
-									++Reports.m_Reads;
-								if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Error))
-									++Reports.m_Errors;
-							}
-							, false
-							, {.m_bWaitableHandle = true}
-						)
-					;
-					auto Deregister = g_OnScopeExit / [&]
-						{
-							if (pRegistration)
-								pLoop->f_Deregister(pRegistration);
-						}
-					;
-
-					DMibExpectTrue
-						(
-							fPollUntil
-							(
-								[&]
-								{
-									return Reports.m_Reads || Reports.m_Errors;
-								}
-							)
-						)
-					;
-					DMibExpect(Reports.m_Reads, ==, 1);
-					pLoop->f_PollAndDispatch();
-					{
-						DMibTestPath("NoAutomaticRearm");
-
-						DMibExpect(Reports.m_Reads, ==, 1);
+						return _fDone();
 					}
+				;
 
-					// A manual-reset event remains signaled; an auto-reset event needs another signal.
-					if (!bManualReset)
-						SetEvent(pEvent);
-					pLoop->f_RequestReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read);
-					DMibExpectTrue
+				DMibExpectTrue(SetEvent(pEvent) != 0);
+				auto *pRegistration = pLoop->f_Register
+					(
+						(NSys::CIoLoopHandle)(umint)pEvent
+						, &Reports
+						, NSys::EIoLoopEvent::mc_Read
+						, [](void *_pToken, NSys::EIoLoopEvent _Events, int _Error)
+						{
+							auto &Reports = *static_cast<CReports *>(_pToken);
+							if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Read))
+								++Reports.m_Reads;
+							if (fg_IsSet(_Events, NSys::EIoLoopEvent::mc_Error))
+								++Reports.m_Errors;
+						}
+						, false
+						, {.m_bWaitableHandle = true}
+					)
+				;
+				auto Deregister = g_OnScopeExit / [&]
+					{
+						if (pRegistration)
+							pLoop->f_Deregister(pRegistration);
+					}
+				;
+
+				DMibExpectTrue
+					(
+						fPollUntil
 						(
-							fPollUntil
-							(
-								[&]
-								{
-									return Reports.m_Reads == 2 || Reports.m_Errors;
-								}
-							)
-						)
-					;
-					DMibExpect(Reports.m_Reads, ==, 2);
-
-					ResetEvent(pEvent);
-					pLoop->f_RequestReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read);
-					pLoop->f_PollAndDispatch();
-
-					// Exercise cancellation with both a pending wait and a packet racing with removal.
-					if (bManualReset)
-						SetEvent(pEvent);
-					umint nClosed = 0;
-					pLoop->f_DeregisterAsync
-						(
-							pRegistration
-							, [&]
+							[&]
 							{
-								++nClosed;
+								return Reports.m_Reads || Reports.m_Errors;
 							}
 						)
-					;
-					pRegistration = nullptr;
-					DMibExpectTrue
-						(
-							fPollUntil
-							(
-								[&]
-								{
-									return nClosed != 0;
-								}
-							)
-						)
-					;
+					)
+				;
+				DMibExpect(Reports.m_Reads, ==, 1);
+				pLoop->f_PollAndDispatch();
+				{
+					DMibTestPath("NoAutomaticRearm");
 
-					umint nReadsAtClose = Reports.m_Reads;
-					SetEvent(pEvent);
-					for (umint iPoll = 0; iPoll < 16; ++iPoll)
-						pLoop->f_PollAndDispatch();
-
-					DMibExpect(nClosed, ==, 1);
-					DMibExpect(Reports.m_Reads, ==, nReadsAtClose);
-					DMibExpect(Reports.m_Errors, ==, 0);
+					DMibExpect(Reports.m_Reads, ==, 1);
 				}
-			};
-		}
-	};
+
+				// A manual-reset event remains signaled; an auto-reset event needs another signal.
+				if (!bManualReset)
+					SetEvent(pEvent);
+				pLoop->f_RequestReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read);
+				DMibExpectTrue
+					(
+						fPollUntil
+						(
+							[&]
+							{
+								return Reports.m_Reads == 2 || Reports.m_Errors;
+							}
+						)
+					)
+				;
+				DMibExpect(Reports.m_Reads, ==, 2);
+
+				ResetEvent(pEvent);
+				pLoop->f_RequestReadiness(pRegistration, NSys::EIoLoopEvent::mc_Read);
+				pLoop->f_PollAndDispatch();
+
+				// Exercise cancellation with both a pending wait and a packet racing with removal.
+				if (bManualReset)
+					SetEvent(pEvent);
+				umint nClosed = 0;
+				pLoop->f_DeregisterAsync
+					(
+						pRegistration
+						, [&]
+						{
+							++nClosed;
+						}
+					)
+				;
+				pRegistration = nullptr;
+				DMibExpectTrue
+					(
+						fPollUntil
+						(
+							[&]
+							{
+								return nClosed != 0;
+							}
+						)
+					)
+				;
+
+				umint nReadsAtClose = Reports.m_Reads;
+				SetEvent(pEvent);
+				for (umint iPoll = 0; iPoll < 16; ++iPoll)
+					pLoop->f_PollAndDispatch();
+
+				DMibExpect(nClosed, ==, 1);
+				DMibExpect(Reports.m_Reads, ==, nReadsAtClose);
+				DMibExpect(Reports.m_Errors, ==, 0);
+			}
+		};
+	}
 
 	DMibTestRegister(CWaitableIo_Tests, Malterlib::Core);
 }

@@ -390,27 +390,32 @@ using uuid_string_t = char[256]; // NOLINT(malterlib-type-naming): the name on m
 
 struct CUUIDLibrary final : public NMib::CDynamicLibraryUtility
 {
-	constexpr CUUIDLibrary()
-		: NMib::CDynamicLibraryUtility(gc_Str<"libuuid.so.1">, EDLFlag_NoThrow)
-	{
-	}
+	constexpr CUUIDLibrary();
 
 	decltype(&::uuid_generate) m_fUUIDGenerate = nullptr;
 	decltype(&::uuid_unparse) m_fUUIDUnparse = nullptr;
 
 protected:
-	void fp_ClearSymbols() override
-	{
-		m_fUUIDGenerate = nullptr;
-		m_fUUIDUnparse = nullptr;
-	}
-
-	void fp_FetchSymbols() override
-	{
-		fp_Fetch(m_fUUIDGenerate, "uuid_generate");
-		fp_Fetch(m_fUUIDUnparse, "uuid_unparse");
-	}
+	void fp_ClearSymbols() override;
+	void fp_FetchSymbols() override;
 };
+
+constexpr CUUIDLibrary::CUUIDLibrary()
+	: NMib::CDynamicLibraryUtility(gc_Str<"libuuid.so.1">, EDLFlag_NoThrow)
+{
+}
+
+void CUUIDLibrary::fp_ClearSymbols()
+{
+	m_fUUIDGenerate = nullptr;
+	m_fUUIDUnparse = nullptr;
+}
+
+void CUUIDLibrary::fp_FetchSymbols()
+{
+	fp_Fetch(m_fUUIDGenerate, "uuid_generate");
+	fp_Fetch(m_fUUIDUnparse, "uuid_unparse");
+}
 
 constinit TCAggregateSimple<CUUIDLibrary> g_UUIDLibrary = {DAggregateInit};
 
@@ -688,21 +693,24 @@ NStr::CStr NSys::fg_System_GenerateUUID()
 
 struct CCodePageCache
 {
+	CCodePageCache();
+
 	TCMap<ch32, ch8, CSort_Default, CAllocator_NonTrackedHeap> m_Cache;
-	CCodePageCache()
-	{
-		for (int iCode = 0; iCode < 256; ++iCode)
-		{
-			ch32 Char = NMib::NTraits::TCUnsigned<ch32>
-				(
-					NMib::NTraits::TCUnsigned<ch16>(NMib::NStr::TCCharEncodingConverter<NMib::NStr::ECharacterEncoding_Windows_1252>::ms_Table[iCode].m_UnicodeChar)
-				)
-			;
-			if (Char != 0xFFFF)
-				m_Cache[Char] = iCode;
-		}
-	}
 };
+
+CCodePageCache::CCodePageCache()
+{
+	for (int iCode = 0; iCode < 256; ++iCode)
+	{
+		ch32 Char = NMib::NTraits::TCUnsigned<ch32>
+			(
+				NMib::NTraits::TCUnsigned<ch16>(NMib::NStr::TCCharEncodingConverter<NMib::NStr::ECharacterEncoding_Windows_1252>::ms_Table[iCode].m_UnicodeChar)
+			)
+		;
+		if (Char != 0xFFFF)
+			m_Cache[Char] = iCode;
+	}
+}
 
 constinit NMib::NStorage::TCAggregate<CCodePageCache> g_CodePageCache = {DAggregateInit};
 
@@ -3145,56 +3153,10 @@ namespace
 {
 	struct CCPUUsageMonitorImpl
 	{
-		CCPUUsageMonitorImpl()
-		{
-			mp_LastLoadStats = fp_GetLoadStats();
+		CCPUUsageMonitorImpl();
+		virtual ~CCPUUsageMonitorImpl();
 
-			mp_LastRet.m_User = 0.0f;
-			mp_LastRet.m_Kernel = 0.0f;
-			mp_LastRet.m_Idle = 0.0f;
-		}
-
-		virtual ~CCPUUsageMonitorImpl()
-		{
-		}
-
-	public:
-		NMib::NSystem::CSystemCPUUsage f_GetUsage(bool &_bChanged)
-		{
-			CLoadInfo LoadStats = fp_GetLoadStats();
-
-			uint64 IdleTime = LoadStats.m_Idle;
-			uint64 UserTime = LoadStats.m_User + LoadStats.m_Nice;
-			uint64 KernelTime = LoadStats.m_System;
-
-			uint64 LastIdleTime = mp_LastLoadStats.m_Idle;
-			uint64 LastUserTime = mp_LastLoadStats.m_User + mp_LastLoadStats.m_Nice;
-			uint64 LastKernelTime = mp_LastLoadStats.m_System;
-
-			uint64 DiffIdleTime = IdleTime - LastIdleTime;
-			uint64 DiffUserTime = UserTime - LastUserTime;
-			uint64 DiffKernelTime = KernelTime - LastKernelTime;
-
-			uint64 TotalTime = DiffIdleTime + DiffUserTime + DiffKernelTime;
-
-			if (TotalTime < 100)
-			{
-				_bChanged = false;
-				return mp_LastRet; // Guarantee 1 % resolution
-			}
-
-			_bChanged = true;
-
-			NMib::NSystem::CSystemCPUUsage Ret;
-			Ret.m_Idle = fp64(DiffIdleTime) / fp64(TotalTime);
-			Ret.m_User = fp64(DiffUserTime) / fp64(TotalTime);
-			Ret.m_Kernel = fp64(DiffKernelTime) / fp64(TotalTime);
-
-			mp_LastLoadStats = LoadStats;
-
-			mp_LastRet = Ret;
-			return Ret;
-		}
+		NMib::NSystem::CSystemCPUUsage f_GetUsage(bool &_bChanged);
 
 	private:
 		struct CLoadInfo
@@ -3205,37 +3167,89 @@ namespace
 			uint64 m_Idle;
 		};
 
+		CLoadInfo fp_GetLoadStats() const;
+
 		CLoadInfo mp_LastLoadStats;
 
 		NMib::NSystem::CSystemCPUUsage mp_LastRet;
-
-		CLoadInfo fp_GetLoadStats() const
-		{
-			CLoadInfo Ret;
-			fg_MemClear(Ret);
-
-			auto FileData = fg_ReadProcFS<CStrNonTracked>("/proc/stat");
-			auto pParse = FileData.f_GetArray();
-
-			while (*pParse)
-			{
-				auto *pStart = pParse;
-				fg_ParseToEndOfLine(pParse);
-				if (fg_StrStartsWith(pStart, "cpu "))
-				{
-					pStart += fg_StrLen("cpu ");
-					if (pStart < pParse)
-					{
-						fg_ParseWhiteSpace(pStart);
-						(CStr::CParse("{} {} {} {}") >> Ret.m_User >> Ret.m_Nice >> Ret.m_System >> Ret.m_Idle).f_Parse(pStart);
-					}
-					break;
-				}
-				fg_ParseEndOfLine(pParse);
-			}
-			return Ret;
-		}
 	};
+
+	CCPUUsageMonitorImpl::CCPUUsageMonitorImpl()
+	{
+		mp_LastLoadStats = fp_GetLoadStats();
+
+		mp_LastRet.m_User = 0.0f;
+		mp_LastRet.m_Kernel = 0.0f;
+		mp_LastRet.m_Idle = 0.0f;
+	}
+
+	CCPUUsageMonitorImpl::~CCPUUsageMonitorImpl()
+	{
+	}
+
+	NMib::NSystem::CSystemCPUUsage CCPUUsageMonitorImpl::f_GetUsage(bool &_bChanged)
+	{
+		CLoadInfo LoadStats = fp_GetLoadStats();
+
+		uint64 IdleTime = LoadStats.m_Idle;
+		uint64 UserTime = LoadStats.m_User + LoadStats.m_Nice;
+		uint64 KernelTime = LoadStats.m_System;
+
+		uint64 LastIdleTime = mp_LastLoadStats.m_Idle;
+		uint64 LastUserTime = mp_LastLoadStats.m_User + mp_LastLoadStats.m_Nice;
+		uint64 LastKernelTime = mp_LastLoadStats.m_System;
+
+		uint64 DiffIdleTime = IdleTime - LastIdleTime;
+		uint64 DiffUserTime = UserTime - LastUserTime;
+		uint64 DiffKernelTime = KernelTime - LastKernelTime;
+
+		uint64 TotalTime = DiffIdleTime + DiffUserTime + DiffKernelTime;
+
+		if (TotalTime < 100)
+		{
+			_bChanged = false;
+			return mp_LastRet; // Guarantee 1 % resolution
+		}
+
+		_bChanged = true;
+
+		NMib::NSystem::CSystemCPUUsage Ret;
+		Ret.m_Idle = fp64(DiffIdleTime) / fp64(TotalTime);
+		Ret.m_User = fp64(DiffUserTime) / fp64(TotalTime);
+		Ret.m_Kernel = fp64(DiffKernelTime) / fp64(TotalTime);
+
+		mp_LastLoadStats = LoadStats;
+
+		mp_LastRet = Ret;
+		return Ret;
+	}
+
+	CCPUUsageMonitorImpl::CLoadInfo CCPUUsageMonitorImpl::fp_GetLoadStats() const
+	{
+		CLoadInfo Ret;
+		fg_MemClear(Ret);
+
+		auto FileData = fg_ReadProcFS<CStrNonTracked>("/proc/stat");
+		auto pParse = FileData.f_GetArray();
+
+		while (*pParse)
+		{
+			auto *pStart = pParse;
+			fg_ParseToEndOfLine(pParse);
+			if (fg_StrStartsWith(pStart, "cpu "))
+			{
+				pStart += fg_StrLen("cpu ");
+				if (pStart < pParse)
+				{
+					fg_ParseWhiteSpace(pStart);
+					(CStr::CParse("{} {} {} {}") >> Ret.m_User >> Ret.m_Nice >> Ret.m_System >> Ret.m_Idle).f_Parse(pStart);
+				}
+				break;
+			}
+			fg_ParseEndOfLine(pParse);
+		}
+		return Ret;
+	}
 }
 
 namespace NMib

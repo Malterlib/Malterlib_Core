@@ -17,13 +17,10 @@ namespace NMib
 
 	struct CSubSystem
 	{
-		DMibListLinkD_Link(CSubSystem, m_Link);
-		ESubSystemDestruction m_DestructionOrder;
-
-		bool f_IsAfterMemoryManager() const;
-
 		CSubSystem();
 		virtual ~CSubSystem();
+
+		bool f_IsAfterMemoryManager() const;
 
 		virtual void f_DestroyAggregates(bool _bDestroySystem);
 
@@ -38,6 +35,9 @@ namespace NMib
 		virtual void f_DestroyThreadLocal();
 
 		virtual void f_ExitModule();
+
+		DMibListLinkD_Link(CSubSystem, m_Link);
+		ESubSystemDestruction m_DestructionOrder;
 	};
 };
 

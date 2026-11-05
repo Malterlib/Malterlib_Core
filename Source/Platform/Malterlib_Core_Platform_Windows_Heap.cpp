@@ -9,11 +9,13 @@ namespace NMib::NPlatform
 	{
 		struct CInit
 		{
-			CInit()
-			{
-				fg_GetSys();
-			}
+			CInit();
 		};
+
+		CInit::CInit()
+		{
+			fg_GetSys();
+		}
 
 		CInit g_Init;
 	}

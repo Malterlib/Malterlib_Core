@@ -18,59 +18,6 @@ namespace NMib
 
 		struct CKWalletPasswordManager : public CLinuxPasswordManager
 		{
-		private:
-			NMib::NStr::CStr mp_Location;
-			NMib::NStr::CStr mp_Folder;
-
-			NThread::CMutual mp_DBusLock;
-			NDBus::CSystem &mp_DBus;
-			NDBus::CConnection mp_Connection;
-			NDBus::CError mp_Error;
-
-			NMib::NStr::CStr mp_WalletName;
-
-			bool mp_bOK;
-
-			static constexpr char const *mcp_pKWalletService = "org.kde.kwalletd";
-			static constexpr char const *mcp_pKWalletPath = "/modules/kwalletd";
-			static constexpr char const *mcp_pKWalletInterface = "org.kde.KWallet";
-
-			bool fp_OpenConnection();
-
-			template <typename ...tfp_CArgs>
-			bool fp_MethodCall(NDBus::CMessage &o_Reply, char const *_pMethodName, tfp_CArgs const & ...p_Args)
-			{
-				NDBus::CMessage Call(NDBus::EMessageType_Method, mcp_pKWalletService, mcp_pKWalletPath, mcp_pKWalletInterface, _pMethodName, mp_DBus);
-
-				{
-					NDBus::CMessageWriter Writer(Call);
-
-					if (!Writer.f_AppendArgs(p_Args...))
-						return false;
-				}
-
-				return mp_Connection.f_BlockingSendWithReply(Call, o_Reply);
-			}
-
-			template <typename ...tfp_CArgs>
-			bool fp_ParseSimpleMessage(NDBus::CMessage const &_Msg, tfp_CArgs & ...po_Args)
-			{
-				NDBus::CMessageReader Reader(_Msg);
-
-				if (!Reader.f_ArgAvailable())
-					return false;
-
-				if (!Reader.f_PopArgs(po_Args...))
-					return false;
-
-				return true;
-			}
-
-			int fp_GetWalletHandle();
-			bool fp_LaunchKWallet();
-			void fp_LogConnectionError(char const *_pMsg);
-
-		public:
 			CKWalletPasswordManager(NDBus::CSystem &_DBus);
 			~CKWalletPasswordManager();
 
@@ -82,7 +29,65 @@ namespace NMib
 			ESecurePassword f_SecurePassword_Remove(NMib::NStr::CStr const &_Key);
 			ESecurePassword f_SecurePassword_Get(NMib::NStr::CStr const &_Key, NMib::NStr::CStrSecure &o_Password);
 			ESecurePassword f_SecurePassword_Exists(NMib::NStr::CStr const &_Key);
+
+		private:
+			bool fp_OpenConnection();
+
+			template <typename ...tfp_CArgs>
+			bool fp_MethodCall(NDBus::CMessage &o_Reply, char const *_pMethodName, tfp_CArgs const & ...p_Args);
+
+			template <typename ...tfp_CArgs>
+			bool fp_ParseSimpleMessage(NDBus::CMessage const &_Msg, tfp_CArgs & ...po_Args);
+
+			int fp_GetWalletHandle();
+			bool fp_LaunchKWallet();
+			void fp_LogConnectionError(char const *_pMsg);
+
+			static constexpr char const *mcp_pKWalletService = "org.kde.kwalletd";
+			static constexpr char const *mcp_pKWalletPath = "/modules/kwalletd";
+			static constexpr char const *mcp_pKWalletInterface = "org.kde.KWallet";
+
+			NMib::NStr::CStr mp_Location;
+			NMib::NStr::CStr mp_Folder;
+
+			NThread::CMutual mp_DBusLock;
+			NDBus::CSystem &mp_DBus;
+			NDBus::CConnection mp_Connection;
+			NDBus::CError mp_Error;
+
+			NMib::NStr::CStr mp_WalletName;
+
+			bool mp_bOK;
 		};
+
+		template <typename ...tfp_CArgs>
+		bool CKWalletPasswordManager::fp_MethodCall(NDBus::CMessage &o_Reply, char const *_pMethodName, tfp_CArgs const & ...p_Args)
+		{
+			NDBus::CMessage Call(NDBus::EMessageType_Method, mcp_pKWalletService, mcp_pKWalletPath, mcp_pKWalletInterface, _pMethodName, mp_DBus);
+
+			{
+				NDBus::CMessageWriter Writer(Call);
+
+				if (!Writer.f_AppendArgs(p_Args...))
+					return false;
+			}
+
+			return mp_Connection.f_BlockingSendWithReply(Call, o_Reply);
+		}
+
+		template <typename ...tfp_CArgs>
+		bool CKWalletPasswordManager::fp_ParseSimpleMessage(NDBus::CMessage const &_Msg, tfp_CArgs & ...po_Args)
+		{
+			NDBus::CMessageReader Reader(_Msg);
+
+			if (!Reader.f_ArgAvailable())
+				return false;
+
+			if (!Reader.f_PopArgs(po_Args...))
+				return false;
+
+			return true;
+		}
 
 		NStorage::TCUniquePointer<CLinuxPasswordManager> fg_CreateKWalletPasswordManager(NDBus::CSystem *_pDBus)
 		{

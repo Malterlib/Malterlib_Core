@@ -23,200 +23,75 @@ struct CCPUUsageMonitorLink
 {
 	DMibListLinkDS_Link(CCPUUsageMonitorLink, m_Link);
 
-	virtual ~CCPUUsageMonitorLink()
-	{
-	}
+	virtual ~CCPUUsageMonitorLink();
 };
+
+CCPUUsageMonitorLink::~CCPUUsageMonitorLink()
+{
+}
 
 struct CSystemWindowsMSVC : public CSystem
 {
-	bool m_bDestroying;
-
-	NStorage::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
-
-	NStorage::TCAggregate<CSharedIoLoop, 63> m_SharedIoLoop; // Lower destruction priority than socket contexts, so registration owners tear down first.
-
 	struct CFileChangeNoticationContext
 	{
-		CFileChangeNoticationContext()
-		{
-		}
-
-		~CFileChangeNoticationContext()
-		{
-			m_FreeBundles.f_DeleteAllDefiniteType();
-			m_FullBundles.f_DeleteAllDefiniteType();
-		}
-
 		struct CNotificationBundle;
 		struct CNotification
 		{
 			struct CFileTreeNode
 			{
-				CFileTreeNode(CFileTreeNode *_pParent)
-					: m_pParent(_pParent)
-				{
-				}
+				CFileTreeNode(CFileTreeNode *_pParent);
 
-				CFileTreeNode &f_MapFile(CStr const &_FileName, bool _bDirectory)
-				{
-					CStr PathLeft = _FileName;
-					CStr FileName = fg_GetStrSep(PathLeft, "/");
+				CFileTreeNode &f_MapFile(CStr const &_FileName, bool _bDirectory);
 
-					auto &Child = *m_Children(FileName, this);
-					Child.m_FileName = FileName;
+				CFileTreeNode *f_GetFile(CStr const &_FileName);
 
-					if (PathLeft.f_IsEmpty())
-					{
-						Child.m_bDirectory = _bDirectory;
-						return Child;
-					}
-					else
-					{
-						Child.m_bDirectory = true;
-						return Child.f_MapFile(PathLeft, _bDirectory);
-					}
-				}
+				CStr f_GetPath() const;
 
-				CFileTreeNode *f_GetFile(CStr const &_FileName)
-				{
-					CStr PathLeft = _FileName;
-					CStr FileName = fg_GetStrSep(PathLeft, "/");
+				void f_SetFileName(CStr const &_FileName);
 
-					auto pChild = m_Children.f_FindEqual(FileName);
+				void f_Remove();
 
-					if (!pChild)
-						return nullptr;
-
-					DMibFastCheck(pChild->m_pParent == this);
-
-					if (PathLeft.f_IsEmpty())
-						return pChild;
-					else
-						return pChild->f_GetFile(PathLeft);
-				}
-
-				CStr f_GetPath() const
-				{
-					auto pParent = this;
-					if (pParent->m_pParent)
-					{
-						CStr Path;
-						while (pParent)
-						{
-							Path = CFile::fs_AppendPath(pParent->m_FileName, Path);
-							pParent = pParent->m_pParent;
-						}
-						return Path;
-					}
-					else
-						return "";
-				}
-
-				void f_SetFileName(CStr const &_FileName)
-				{
-					if (m_FileName != _FileName)
-					{
-						auto pParent = m_pParent;
-						auto Temp = fg_Move(*this);
-						pParent->m_Children.f_Remove(Temp.m_FileName);
-						auto &This = *pParent->m_Children(_FileName, fg_Move(Temp));
-						This.m_FileName = _FileName;
-						This.m_pParent = pParent;
-						for (auto &Child : This.m_Children)
-							Child.m_pParent = &This;
-					}
-				}
-
-				void f_Remove()
-				{
-					if (m_pParent)
-						m_pParent->m_Children.f_Remove(this);
-				}
-
-			private:
 				template <typename tf_FOnNode>
-				void fp_ForEach(CStr const &_Path, tf_FOnNode &&_fOnNode)
-				{
-					_fOnNode(_Path, m_bDirectory);
-					for (auto &Child : m_Children)
-						Child.fp_ForEach(CFile::fs_AppendPath(_Path, Child.m_FileName), _fOnNode);
-				}
-
-			public:
-				template <typename tf_FOnNode>
-				void f_ForEach(tf_FOnNode &&_fOnNode)
-				{
-					fp_ForEach(f_GetPath(), _fOnNode);
-				}
+				void f_ForEach(tf_FOnNode &&_fOnNode);
 
 				CStr m_FileName;
 				CFileTreeNode *m_pParent = nullptr;
 				TCMap<CStr, CFileTreeNode> m_Children;
 				bool m_bDirectory = false;
+
+			private:
+				template <typename tf_FOnNode>
+				void fp_ForEach(CStr const &_Path, tf_FOnNode &&_fOnNode);
 			};
 
-			CNotification()
-				: m_RootNode(nullptr)
+			struct CChange
 			{
-				m_pBundle = nullptr;
-				m_pHandle = INVALID_HANDLE_VALUE;
-				m_pReportTo = nullptr;
-				m_Flags = EFileChange_None;
-				m_bDoneRead = false;
-				m_bCancelled = false;
-			}
+				auto operator <=> (CChange const &_Right) const noexcept = default;
 
-			~CNotification()
+				EFileChangeNotification m_Notification = EFileChangeNotification_Undefined;
+				CStr m_Path;
+				NStr::CStr m_PathFrom;
+			};
+
+			struct CFindChangesContext
 			{
-				f_Clear();
-			}
+				void f_AddChange(EFileChangeNotification _Notification, CStr const &_Path, CStr const &_PathFrom = {});
 
-			void f_Clear()
-			{
-				{
-					DMibLock(m_pBundle->m_UpdateLock);
-					m_bCancelled = true;
-					if (m_bDoneRead)
-					{
-						{
-							m_pBundle->m_ToCancel.f_Insert(this);
-							m_pBundle->f_Wake();
-						}
+				TCLinkedList<CChange> m_ChangesFileName;
+				TCLinkedList<CChange> m_Changes;
+				TCSet<CChange> m_ChangesSet;
+			};
 
-						if (m_pBundle)
-						{
-							while (1)
-							{
-								{
-									if (!m_bDoneRead)
-										break;
-								}
-								{
-									DMibUnlock(m_pBundle->m_UpdateLock);
-									SleepEx(0, true);
-								}
-							}
-						}
-					}
-					else
-						m_LinkUpdate.f_Unlink();
-					m_LinkUpdated.f_Unlink();
-				}
+			CNotification();
+			~CNotification();
 
-				if (m_pHandle != INVALID_HANDLE_VALUE)
-				{
-					CloseHandle(m_pHandle);
-					m_pHandle = INVALID_HANDLE_VALUE;
-				}
+			void f_Clear();
 
-				m_Changes.f_Clear();
-			}
+			void f_Cancel();
 
-			void f_Cancel()
-			{
-				CancelIo(m_pHandle);
-			}
+			static void __stdcall fs_CompletionRoutine(DWORD _ErrorCode, DWORD _NumberOfBytesTransfered, LPOVERLAPPED _pOverlapped);
+
+			void f_DoRead();
 
 			DMibListLinkDS_Link(CNotification, m_Link);
 			DMibListLinkDS_Link(CNotification, m_LinkUpdate);
@@ -232,37 +107,6 @@ struct CSystemWindowsMSVC : public CSystem
 
 			EFileChange m_Flags;
 
-			struct CChange
-			{
-				EFileChangeNotification m_Notification = EFileChangeNotification_Undefined;
-				CStr m_Path;
-				NStr::CStr m_PathFrom;
-
-				auto operator <=> (CChange const &_Right) const noexcept = default;
-			};
-
-			struct CFindChangesContext
-			{
-				TCLinkedList<CChange> m_ChangesFileName;
-				TCLinkedList<CChange> m_Changes;
-				TCSet<CChange> m_ChangesSet;
-
-				void f_AddChange(EFileChangeNotification _Notification, CStr const &_Path, CStr const &_PathFrom = {})
-				{
-					CChange Change;
-					Change.m_Notification = _Notification;
-					Change.m_Path = _Path;
-					Change.m_PathFrom = _PathFrom;
-					if (!m_ChangesSet(Change).f_WasCreated())
-						return;
-
-					if (_Notification == EFileChangeNotification_Removed || _Notification == EFileChangeNotification_Added || _Notification == EFileChangeNotification_Renamed)
-						m_ChangesFileName.f_Insert(fg_Move(Change));
-					else
-						m_Changes.f_Insert(fg_Move(Change));
-				}
-			};
-
 			NThread::CMutual m_ChangesLock;
 			NThread::CEvent m_FirstReadDoneEvent;
 			TCLinkedList<CChange> m_Changes;
@@ -273,217 +117,22 @@ struct CSystemWindowsMSVC : public CSystem
 			NThread::CSemaphoreAggregate *m_pReportTo;
 
 			CFindChangesContext m_ChangesContext;
-
-			static void __stdcall fs_CompletionRoutine(DWORD _ErrorCode, DWORD _NumberOfBytesTransfered, LPOVERLAPPED _pOverlapped)
-			{
-				CNotification *pThis = (CNotification *)_pOverlapped->hEvent;
-
-				DMibLock(pThis->m_pBundle->m_UpdateLock);
-
-				auto &Context = pThis->m_ChangesContext;
-
-				if (!pThis->m_LinkUpdated.f_IsInList())
-					pThis->m_pBundle->m_Updated.f_Insert(pThis);
-
-				if (_ErrorCode == 0)
-				{
-					if (_NumberOfBytesTransfered != 0)
-					{
-						FILE_NOTIFY_INFORMATION *pNotification = (FILE_NOTIFY_INFORMATION *)(pThis->m_ChangesBuffer.f_GetArray());
-
-						while (pNotification)
-						{
-							CStr Path = NFile::NPlatform::fg_ConvertFromWindowsPath
-								(
-									CWStr::fs_Create(pNotification->FileName, pNotification->FileNameLength/sizeof(pNotification->FileName[0]))
-								)
-							;
-
-							auto fAdded = [&]
-								{
-									bool bRecursive = (pThis->m_Flags & EFileChange_Recursive) != 0;
-
-									CStr AbsolutePath = CFile::fs_AppendPath(pThis->m_RootDirectory, Path);
-
-									pThis->m_RootNode.f_MapFile(Path, CFile::fs_FileExists(AbsolutePath, EFileAttrib_Directory));
-
-									Context.f_AddChange(EFileChangeNotification_Added, Path);
-
-									try
-									{
-										for (auto &File : CFile::fs_FindFilesEx(AbsolutePath + "/*", EFileAttrib_File | EFileAttrib_Directory, bRecursive, false))
-										{
-											CStr RelativePath = File.m_Path.f_Extract(pThis->m_RootDirectory.f_GetLen() + 1);
-											pThis->m_RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);
-											Context.f_AddChange(EFileChangeNotification_Added, RelativePath);
-										}
-									}
-									catch (CExceptionFile const &_Exception)
-									{
-										(void)_Exception;
-										DMibDTrace("Error enumerating children in file change notification: {}\n", _Exception);
-									}
-
-									if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
-										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
-								}
-							;
-
-							auto fRemoved = [&](CStr const &_Path)
-								{
-									auto *pOldNode = pThis->m_RootNode.f_GetFile(_Path);
-									if (pOldNode)
-									{
-										pOldNode->f_ForEach
-											(
-												[&](CStr const &_RelativePath, bool _bDirectory)
-												{
-													Context.f_AddChange(EFileChangeNotification_Removed, _RelativePath);
-												}
-											)
-										;
-										pOldNode->f_Remove();
-									}
-									else
-										Context.f_AddChange(EFileChangeNotification_Removed, Path);
-									if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
-										Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
-								}
-							;
-
-							switch (pNotification->Action)
-							{
-							case FILE_ACTION_ADDED:
-								{
-									fAdded();
-								}
-								break;
-							case FILE_ACTION_REMOVED:
-								{
-									fRemoved(Path);
-								}
-								break;
-							case FILE_ACTION_MODIFIED:
-								{
-									Context.f_AddChange(EFileChangeNotification_Modified, Path);
-								}
-								break;
-							case FILE_ACTION_RENAMED_OLD_NAME:
-								{
-									pThis->m_RenameFromFilename = Path;
-								}
-								break;
-							case FILE_ACTION_RENAMED_NEW_NAME:
-								{
-									auto *pOldNode = pThis->m_RootNode.f_GetFile(pThis->m_RenameFromFilename);
-									if (pOldNode && CFile::fs_GetPath(Path) == CFile::fs_GetPath(pThis->m_RenameFromFilename))
-									{
-										CStr OldPrefix = pThis->m_RenameFromFilename;
-										pOldNode->f_ForEach
-											(
-												[&](CStr const &_RelativePath, bool _bDirectory)
-												{
-													CStr NewPath = CFile::fs_AppendPath(Path, _RelativePath.f_Extract(OldPrefix.f_GetLen() + 1));
-													Context.f_AddChange(EFileChangeNotification_Renamed, NewPath, _RelativePath);
-												}
-											)
-										;
-										pOldNode->f_SetFileName(CFile::fs_GetFile(Path));
-
-										if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
-										{
-											Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(pThis->m_RenameFromFilename));
-											Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
-										}
-									}
-									else
-									{
-										if (!pThis->m_RenameFromFilename.f_IsEmpty())
-											fRemoved(pThis->m_RenameFromFilename);
-										fAdded();
-									}
-
-									pThis->m_RenameFromFilename.f_Clear();
-								}
-								break;
-							default:
-								{
-									Context.f_AddChange(EFileChangeNotification_Unknown, {});
-								}
-							}
-
-							if (pNotification->NextEntryOffset)
-								pNotification = (FILE_NOTIFY_INFORMATION *)((umint)pNotification + pNotification->NextEntryOffset);
-							else
-								pNotification = nullptr;
-						}
-					}
-					else
-						Context.f_AddChange(EFileChangeNotification_Unknown, {});
-
-					pThis->f_DoRead();
-				}
-				else
-					pThis->m_bDoneRead = false;
-			}
-
-			void f_DoRead()
-			{
-				if (m_bCancelled)
-				{
-					m_bDoneRead = false;
-					return;
-				}
-				uint32 Flags = 0;
-				if (m_Flags & EFileChange_FileName)
-					Flags |= FILE_NOTIFY_CHANGE_FILE_NAME;
-				if (m_Flags & EFileChange_DirectoryName)
-					Flags |= FILE_NOTIFY_CHANGE_DIR_NAME;
-				if (m_Flags & EFileChange_Attributes)
-					Flags |= FILE_NOTIFY_CHANGE_ATTRIBUTES;
-				if (m_Flags & EFileChange_FileSize)
-					Flags |= FILE_NOTIFY_CHANGE_SIZE;
-				if (m_Flags & EFileChange_Write)
-					Flags |= FILE_NOTIFY_CHANGE_LAST_WRITE;
-				if (m_Flags & EFileChange_Security)
-					Flags |= FILE_NOTIFY_CHANGE_SECURITY;
-
-				m_ChangesBuffer.f_SetLen(64 * 1024);
-				DWORD Dummy;
-				NMemory::fg_MemClear(m_ChangesOverlapped);
-				m_ChangesOverlapped.hEvent = this;
-
-				if
-				(
-					ReadDirectoryChangesW
-					(
-						m_pHandle
-						, m_ChangesBuffer.f_GetArray()
-						, m_ChangesBuffer.f_GetLen()
-						, (m_Flags & EFileChange_Recursive) != 0
-						, Flags
-						, &Dummy
-						, &m_ChangesOverlapped
-						, &fs_CompletionRoutine
-					)
-				)
-				{
-					m_bDoneRead = true;
-				}
-				else
-					m_bDoneRead = false;
-				m_FirstReadDoneEvent.f_SetSignaled();
-			}
 		};
 
 		using CNotificationIter = DMibListLinkDS_Iter(CNotification, m_Link);
 
 		struct CNotificationBundle : public NThread::CThread
 		{
-			virtual NStr::CStr f_GetThreadName()
-			{
-				return "Malterlib_Core_PlatformImp_FileChangeNot";
-			}
+			CNotificationBundle(CFileChangeNoticationContext *_pContext);
+			~CNotificationBundle();
+
+			virtual NStr::CStr f_GetThreadName();
+
+			void f_Wake();
+
+			umint f_StopBundle();
+
+			aint f_Main();
 
 			static constexpr aint mc_NumNotifications = MAXIMUM_WAIT_OBJECTS - 1;
 
@@ -493,46 +142,6 @@ struct CSystemWindowsMSVC : public CSystem
 			// WaitForSingleObjectEx for APC delivery, which futex events cannot provide
 			HANDLE m_pWakeEvent;
 			NAtomic::TCAtomic<uint32> m_bQuit;
-
-			CNotificationBundle(CFileChangeNoticationContext *_pContext)
-				: m_pWakeEvent(CreateEventA(nullptr, false, false, nullptr))
-				, m_bQuit(0)
-			{
-				m_pContext = _pContext;
-				for (umint iNotification = 0; iNotification < mc_NumNotifications; ++iNotification)
-				{
-					m_Notifications[iNotification].m_pBundle = this;
-					m_Free.f_Insert(m_Notifications[iNotification]);
-				}
-			}
-
-			~CNotificationBundle()
-			{
-				// The worker may still be blocked on m_pWakeEvent; it must be stopped
-				// before the handle is closed (closing a handle with a pending wait is
-				// undefined, and the base destructor's f_Stop would come too late)
-				f_StopBundle();
-
-				if (m_pWakeEvent)
-				{
-					::CloseHandle(m_pWakeEvent);
-					m_pWakeEvent = nullptr;
-				}
-			}
-
-			void f_Wake()
-			{
-				SetEvent(m_pWakeEvent);
-			}
-
-			umint f_StopBundle()
-			{
-				// Set the quit flag before waking so the thread cannot re-park
-				// between the wake and CThread::f_Stop's state change
-				m_bQuit.f_Store(1);
-				SetEvent(m_pWakeEvent);
-				return f_Stop();
-			}
 
 			CNotification m_Notifications[mc_NumNotifications];
 			DMibListLinkDS_List(CNotification, m_Link) m_Free;
@@ -544,324 +153,98 @@ struct CSystemWindowsMSVC : public CSystem
 			DMibListLinkDS_List(CNotification, m_LinkUpdated) m_Updated;
 
 			DMibListLinkDS_Link(CNotificationBundle, m_Link);
-
-			aint f_Main()
-			{
-				while (f_GetState() != NThread::EThreadState_EventWantQuit && !m_bQuit.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
-				{
-					{
-						CNotification *pPop;
-						{
-							DMibLock(m_UpdateLock);
-							pPop = m_ToRead.f_Pop();
-							while (pPop)
-							{
-								pPop->f_DoRead();
-								{
-									DMibUnlock(m_UpdateLock);
-								}
-								pPop = m_ToRead.f_Pop();
-							}
-						}
-					}
-					{
-						CNotification *pPop;
-						{
-							DMibLock(m_UpdateLock);
-							pPop = m_ToCancel.f_Pop();
-							while (pPop)
-							{
-								pPop->f_Cancel();
-								pPop = m_ToCancel.f_Pop();
-							}
-						}
-					}
-
-					WaitForSingleObjectEx(m_pWakeEvent, INFINITE, true);
-					{
-						CNotification *pPop;
-						{
-							DMibLock(m_UpdateLock);
-							pPop = m_Updated.f_Pop();
-							while (pPop)
-							{
-								if (!pPop->m_ChangesContext.m_ChangesFileName.f_IsEmpty() || !pPop->m_ChangesContext.m_Changes.f_IsEmpty())
-								{
-									DMibLock(pPop->m_ChangesLock);
-
-									pPop->m_Changes.f_Insert(fg_Move(pPop->m_ChangesContext.m_ChangesFileName));
-									pPop->m_Changes.f_Insert(fg_Move(pPop->m_ChangesContext.m_Changes));
-
-									if (pPop->m_pReportTo)
-										pPop->m_pReportTo->f_Signal();
-								}
-
-								pPop->m_ChangesContext = CNotification::CFindChangesContext();
-
-								pPop = m_Updated.f_Pop();
-							}
-						}
-					}
-				}
-
-				return 0;
-			}
 		};
+
+		CFileChangeNoticationContext();
+		~CFileChangeNoticationContext();
+
+		void *f_Open(CStr const &_FileName, EFileChange _OpenFlags, NThread::CSemaphoreAggregate *_pReportTo);
+
+		void f_Close(void *_pNotification);
+
+		bool f_Changed(void *_pNotification);
+
+		bool f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, NStr::CStr &_PathFrom);
 
 		DMibListLinkDS_List(CNotificationBundle, m_Link) m_FreeBundles;
 		DMibListLinkDS_List(CNotificationBundle, m_Link) m_FullBundles;
 
 		NThread::CMutual m_Lock;
-
-		void *f_Open(CStr const &_FileName, EFileChange _OpenFlags, NThread::CSemaphoreAggregate *_pReportTo)
-		{
-			CStr AbsolutePath = CFile::fs_GetExpandedPath(_FileName);
-			CWStr WindowStr = NFile::NPlatform::fg_ConvertToWindowsPathLocal(AbsolutePath);
-
-			HANDLE pHandle = CreateFile
-				(
-					WindowStr
-					, FILE_LIST_DIRECTORY
-					, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE
-					, nullptr
-					, OPEN_EXISTING
-					, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED
-					, nullptr
-				)
-			;
-
-			if (pHandle == INVALID_HANDLE_VALUE)
-				DMibErrorFile((CStr::CFormat("Windows returned an error from CreateFile({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-
-			auto Cleanup = g_OnScopeExit / [&]
-				{
-					CloseHandle(pHandle);
-				}
-			;
-
-			BY_HANDLE_FILE_INFORMATION Info;
-
-			if (!GetFileInformationByHandle(pHandle, &Info))
-				DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-
-			if (!(Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-				DMibErrorFile((CStr::CFormat("You can get notifications for file changes on directories, not files ({})") << WindowStr).f_GetStr());
-
-			CNotification::CFileTreeNode RootNode(nullptr);
-
-			bool bRecursive = (_OpenFlags & EFileChange_Recursive) != 0;
-
-			for (auto &File : CFile::fs_FindFilesEx(AbsolutePath + "/*", EFileAttrib_File | EFileAttrib_Directory, bRecursive, false))
-			{
-				CStr RelativePath = File.m_Path.f_Extract(AbsolutePath.f_GetLen() + 1);
-				RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);
-			}
-
-			CNotification *pNot;
-			{
-				DMibLock(m_Lock);
-
-				CNotificationBundle *pBundle = m_FreeBundles.f_GetFirst();
-				if (!pBundle)
-				{
-					pBundle = fg_ConstructObject<CNotificationBundle>(NMemory::CDefaultAllocator(), this);
-					pBundle->f_Start();
-				}
-				pNot = pBundle->m_Free.f_Pop();
-				pNot->m_pHandle = pHandle;
-				pNot->m_RootDirectory = AbsolutePath;
-				Cleanup.f_Clear();
-				pNot->m_pReportTo = _pReportTo;
-				pNot->m_Flags = _OpenFlags;
-				pNot->m_RootNode = fg_Move(RootNode);
-				for (auto &Child : pNot->m_RootNode.m_Children)
-					Child.m_pParent = &pNot->m_RootNode;
-
-				pBundle->m_Used.f_Insert(pNot);
-
-				if (pBundle->m_Free.f_IsEmpty())
-					m_FullBundles.f_Insert(pBundle);
-
-				{
-					DMibLock(pBundle->m_UpdateLock);
-					pBundle->m_ToRead.f_Insert(pNot);
-				}
-
-				pBundle->f_Wake();
-			}
-			pNot->m_FirstReadDoneEvent.f_Wait();
-			return pNot;
-		}
-
-		void f_Close(void *_pNotification)
-		{
-			DMibLock(m_Lock);
-			CNotification *pNotification = (CNotification *)_pNotification;
-			pNotification->f_Clear();
-			CNotificationBundle *pBundle = pNotification->m_pBundle;
-			pBundle->m_Free.f_Insert(pNotification);
-			pBundle->f_Wake();
-			if (pBundle->m_Used.f_IsEmpty())
-			{
-				pBundle->m_Link.f_Unlink();
-				{
-					DMibUnlock(m_Lock);
-					pBundle->f_StopBundle();
-					fg_DeleteObject(NMemory::CDefaultAllocator(), pBundle);
-				}
-			}
-			else
-				m_FreeBundles.f_Insert(pBundle);
-		}
-
-		bool f_Changed(void *_pNotification)
-		{
-			DMibLock(m_Lock);
-			CNotification *pNotification = (CNotification *)_pNotification;
-			bool bChanged = false;
-			{
-				DMibLock(pNotification->m_ChangesLock);
-				bChanged = !pNotification->m_Changes.f_IsEmpty();
-				pNotification->m_Changes.f_Clear();
-			}
-			return bChanged;
-		}
-
-		bool f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, NStr::CStr &_PathFrom)
-		{
-			DMibLock(m_Lock);
-			CNotification *pNotification = (CNotification *)_pNotification;
-			{
-				DMibLock(pNotification->m_ChangesLock);
-
-				if (!pNotification->m_Changes.f_IsEmpty())
-				{
-					auto &Change = pNotification->m_Changes.f_GetFirst();
-
-					_Path = Change.m_Path;
-					_Notification = Change.m_Notification;
-					_PathFrom = Change.m_PathFrom;
-
-					pNotification->m_Changes.f_Remove(Change);
-					return true;
-				}
-			}
-			return false;
-		}
 	};
 
-	NStorage::TCAggregate<CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
+	using FSetAssertInfo = void DMibCrossmoduleAPI (int32 _AssertType, ch8 const *_pAssertMessage);
 
-	bool f_EnablePrivilege(TCHAR const *_pPrivilege, BOOL _bEnable)
+#if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
+#	ifdef _M_IX86
+	struct CExceptionHandler
 	{
-		HANDLE pToken;
-		TOKEN_PRIVILEGES TokenPrivileges;
-		BOOL bAdjusted;
-		DWORD Error;
+		CExceptionHandler *m_pNextHandler;
+		void *m_pExceptionHandlingFunction;
+	};
+#	endif
+#endif
 
-		// open process token
-		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &pToken))
-		{
-			[[maybe_unused]] uint32 LastError = GetLastError();
-			DMibTrace("OpenProcessToken failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
-			return false;
-		}
-		auto Cleanup = fg_OnScopeExit
-			(
-				[&]()
-				{
-					// close the handle
-					if (!CloseHandle(pToken))
-					{
-						[[maybe_unused]] uint32 LastError = GetLastError();
-						DMibTrace("CloseHandle failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
-					}
-				}
-			)
-		;
+	CSystemWindowsMSVC();
+	~CSystemWindowsMSVC();
 
-		// get the luid
-		if (!LookupPrivilegeValue(NULL, _pPrivilege, &TokenPrivileges.Privileges[0].Luid))
-		{
-			[[maybe_unused]] uint32 LastError = GetLastError();
-			DMibTrace("LookupPrivilegeValue failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
-			return false;
-		}
+	bool f_EnablePrivilege(TCHAR const *_pPrivilege, BOOL _bEnable);
 
-		TokenPrivileges.PrivilegeCount = 1;
+	bool f_EnableLargeMemorySupport();
 
-		// enable or disable privilege
-		if (_bEnable)
-			TokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-		else
-			TokenPrivileges.Privileges[0].Attributes = 0;
+	bool f_EnableBackupSupport();
 
-		// enable or disable privilege
-		bAdjusted = AdjustTokenPrivileges(pToken, FALSE, &TokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+	bool f_EnableSymLinkSupport();
 
-		// It is possible for AdjustTokenPrivileges to return TRUE and still not succeed.
-		// So always check for the last error value.
-		Error = GetLastError();
-		if (!bAdjusted || (Error != ERROR_SUCCESS))
-		{
-			[[maybe_unused]] uint32 LastError = Error;
-			DMibTrace("AdjustTokenPrivileges failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
-			return false;
-		}
+	void f_UpdateProgramPath();
 
-		return true;
-	}
+	void f_InitModule();
+
+	static void DMibCrossmoduleAPI fs_SetAssertInfo(int32 _AssertType, ch8 const *_pAssertMessage);
+
+	void f_SetContractInfo(ch8 const *_pAssertMessage);
+
+	CStrNonTracked f_DebugContractViolationMessage();
+
+	void f_DebugReportContractViolation(NStr::CStrNonTracked const &_Message);
+
+	void f_InitModuleThreaded();
+
+	void f_DestroyThreadSpecific();
+
+	void f_Destruct();
+
+#if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
+#	ifdef _M_IX86
+	static CExceptionHandler *fs_RtlGetRegistrationHead();
+	static void fs_RtlSetRegistrationHead(CExceptionHandler *_pHandler);
+#	endif
+
+	static LONG WINAPI fs_VectoredHandler3(struct _EXCEPTION_POINTERS *_pExceptionInfo);
+	static LONG WINAPI fs_VectoredHandler2(struct _EXCEPTION_POINTERS *_pExceptionInfo);
+
+	void f_InstallVistaExceptionHack();
+	void f_UninstallVistaExceptionHack();
+#endif
+
+	bool m_bDestroying;
+
+	NStorage::TCAggregate<CWindowsSocketContext, 64> m_SocketContext;
+
+	NStorage::TCAggregate<CSharedIoLoop, 63> m_SharedIoLoop; // Lower destruction priority than socket contexts, so registration owners tear down first.
+
+	NStorage::TCAggregate<CFileChangeNoticationContext, 64> m_FileChangeNoticationContext;
 
 	CMutual m_LargeMemorySupportLock;
 	bool m_bEnabledLargeMemorySupport = false;
 	bool m_bTriedEnableLargeMemorySupport = false;
-	bool f_EnableLargeMemorySupport()
-	{
-		if (m_bTriedEnableLargeMemorySupport)
-			return m_bEnabledLargeMemorySupport;
-		DMibLock(m_LargeMemorySupportLock);
-		if (m_bTriedEnableLargeMemorySupport)
-			return m_bEnabledLargeMemorySupport;
-
-		m_bTriedEnableLargeMemorySupport = true;
-		// Grant large page access
-		m_bEnabledLargeMemorySupport = f_EnablePrivilege(SE_LOCK_MEMORY_NAME, true);
-		return m_bEnabledLargeMemorySupport;
-	}
 
 	CMutual m_BackupSupportLock;
 	bool m_bEnabledBackupSupport = false;
 	bool m_bTriedEnableBackupSupport = false;
-	bool f_EnableBackupSupport()
-	{
-		if (m_bTriedEnableBackupSupport)
-			return m_bEnabledBackupSupport;
-		DMibLock(m_BackupSupportLock);
-		if (m_bTriedEnableBackupSupport)
-			return m_bEnabledBackupSupport;
-
-		m_bTriedEnableBackupSupport = true;
-		// Grant large page access
-		m_bEnabledBackupSupport = f_EnablePrivilege(SE_BACKUP_NAME, true);
-		return m_bEnabledBackupSupport;
-	}
 
 	CMutual m_SymLinkSupportLock;
 	bool m_bEnabledSymLinkSupport = false;
 	bool m_bTriedEnableSymLinkSupport = false;
-	bool f_EnableSymLinkSupport()
-	{
-		if (m_bTriedEnableSymLinkSupport)
-			return m_bEnabledSymLinkSupport;
-		DMibLock(m_SymLinkSupportLock);
-		if (m_bTriedEnableSymLinkSupport)
-			return m_bEnabledSymLinkSupport;
-
-		m_bTriedEnableSymLinkSupport = true;
-		// Grant large page access
-		m_bEnabledSymLinkSupport = f_EnablePrivilege(SE_CREATE_SYMBOLIC_LINK_NAME, true);
-		return m_bEnabledSymLinkSupport;
-	}
 
 	CStr m_ProgramPath_CStr;
 	CStr m_ProgramDir_CStr;
@@ -871,388 +254,1111 @@ struct CSystemWindowsMSVC : public CSystem
 	CMutual m_MemoryToucherLock;
 	TCUniquePointer<CVirtualDestructor> m_pMemoryToucher;
 
-	void f_UpdateProgramPath()
-	{
-		auto pPEB = fg_GetPEB(fg_GetTEB());
-
-		CWStr BaseName;
-
-		BaseName.f_AddStr(pPEB->ProcessParameters->ImagePathName.Buffer, pPEB->ProcessParameters->ImagePathName.Length);
-
-		m_ProgramPath_CStr = NFile::NPlatform::fg_ConvertFromWindowsPath(BaseName); // Make sure unicode conversion is correct
-
-		m_ProgramDir_CStr = CFile::fs_GetPath(m_ProgramPath_CStr);
-
-		m_ProgramDir_CStrNonTracked = m_ProgramDir_CStr;
-		m_ProgramPath_CStrNonTracked = m_ProgramPath_CStr;
-
-		mp_ProgramRoot = m_ProgramDir_CStr;
-		mp_ProgramRootNonTracked = mp_ProgramRoot;
-	}
-
-	~CSystemWindowsMSVC()
-	{
-		m_ProgramDir_CStrNonTracked.f_Clear();
-		m_ProgramPath_CStrNonTracked.f_Clear();
-	}
-
-	CSystemWindowsMSVC()
-		: CSystem(g_bIsDll)
-		, m_SocketContext(EAggregateInitialization_Force)
-		, m_SharedIoLoop(EAggregateInitialization_Force)
-		, m_FileChangeNoticationContext(EAggregateInitialization_Force)
-	{
-		fg_MemClear(m_SocketContext);
-		fg_MemClear(m_SharedIoLoop);
-		fg_MemClear(m_FileChangeNoticationContext);
-
-		m_fSetAssertInfo = nullptr;
-
-		fp_InitComplete();
-	}
-
-	void f_InitModule()
-	{
-		f_UpdateProgramPath();
-
-		__super::f_InitModule();
-
-#if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
-		if (gs_LibraryRefCount.f_Load() == -1)
-			f_InstallVistaExceptionHack();
-#endif
-	}
-
-	using FSetAssertInfo = void DMibCrossmoduleAPI (int32 _AssertType, ch8 const *_pAssertMessage);
-
 	FSetAssertInfo *m_fSetAssertInfo;
 	NThread::CMutual m_ContractInfoLock;
 	CStrNonTracked m_ContractAssertInfo;
-	static void DMibCrossmoduleAPI fs_SetAssertInfo(int32 _AssertType, ch8 const *_pAssertMessage)
+
+#if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
+	void *m_pVistaExceptinoHackVectoredHandler;
+#endif
+};
+
+CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::CFileTreeNode(CFileTreeNode *_pParent)
+	: m_pParent(_pParent)
+{
+}
+
+auto CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::f_MapFile(CStr const &_FileName, bool _bDirectory) -> CFileTreeNode &
+{
+	CStr PathLeft = _FileName;
+	CStr FileName = fg_GetStrSep(PathLeft, "/");
+
+	auto &Child = *m_Children(FileName, this);
+	Child.m_FileName = FileName;
+
+	if (PathLeft.f_IsEmpty())
 	{
-		fg_GetLocalSys()->f_SetContractInfo(_pAssertMessage);
+		Child.m_bDirectory = _bDirectory;
+		return Child;
+	}
+	else
+	{
+		Child.m_bDirectory = true;
+		return Child.f_MapFile(PathLeft, _bDirectory);
+	}
+}
+
+auto CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::f_GetFile(CStr const &_FileName) -> CFileTreeNode *
+{
+	CStr PathLeft = _FileName;
+	CStr FileName = fg_GetStrSep(PathLeft, "/");
+
+	auto pChild = m_Children.f_FindEqual(FileName);
+
+	if (!pChild)
+		return nullptr;
+
+	DMibFastCheck(pChild->m_pParent == this);
+
+	if (PathLeft.f_IsEmpty())
+		return pChild;
+	else
+		return pChild->f_GetFile(PathLeft);
+}
+
+CStr CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::f_GetPath() const
+{
+	auto pParent = this;
+	if (pParent->m_pParent)
+	{
+		CStr Path;
+		while (pParent)
+		{
+			Path = CFile::fs_AppendPath(pParent->m_FileName, Path);
+			pParent = pParent->m_pParent;
+		}
+		return Path;
+	}
+	else
+		return "";
+}
+
+void CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::f_SetFileName(CStr const &_FileName)
+{
+	if (m_FileName != _FileName)
+	{
+		auto pParent = m_pParent;
+		auto Temp = fg_Move(*this);
+		pParent->m_Children.f_Remove(Temp.m_FileName);
+		auto &This = *pParent->m_Children(_FileName, fg_Move(Temp));
+		This.m_FileName = _FileName;
+		This.m_pParent = pParent;
+		for (auto &Child : This.m_Children)
+			Child.m_pParent = &This;
+	}
+}
+
+void CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::f_Remove()
+{
+	if (m_pParent)
+		m_pParent->m_Children.f_Remove(this);
+}
+
+template <typename tf_FOnNode>
+void CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::f_ForEach(tf_FOnNode &&_fOnNode)
+{
+	fp_ForEach(f_GetPath(), _fOnNode);
+}
+
+template <typename tf_FOnNode>
+void CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::fp_ForEach(CStr const &_Path, tf_FOnNode &&_fOnNode)
+{
+	_fOnNode(_Path, m_bDirectory);
+	for (auto &Child : m_Children)
+		Child.fp_ForEach(CFile::fs_AppendPath(_Path, Child.m_FileName), _fOnNode);
+}
+
+void CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFindChangesContext::f_AddChange(EFileChangeNotification _Notification, CStr const &_Path, CStr const &_PathFrom)
+{
+	CChange Change;
+	Change.m_Notification = _Notification;
+	Change.m_Path = _Path;
+	Change.m_PathFrom = _PathFrom;
+	if (!m_ChangesSet(Change).f_WasCreated())
+		return;
+
+	if (_Notification == EFileChangeNotification_Removed || _Notification == EFileChangeNotification_Added || _Notification == EFileChangeNotification_Renamed)
+		m_ChangesFileName.f_Insert(fg_Move(Change));
+	else
+		m_Changes.f_Insert(fg_Move(Change));
+}
+
+CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CNotification()
+	: m_RootNode(nullptr)
+{
+	m_pBundle = nullptr;
+	m_pHandle = INVALID_HANDLE_VALUE;
+	m_pReportTo = nullptr;
+	m_Flags = EFileChange_None;
+	m_bDoneRead = false;
+	m_bCancelled = false;
+}
+
+CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::~CNotification()
+{
+	f_Clear();
+}
+
+void CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::f_Clear()
+{
+	{
+		DMibLock(m_pBundle->m_UpdateLock);
+		m_bCancelled = true;
+		if (m_bDoneRead)
+		{
+			{
+				m_pBundle->m_ToCancel.f_Insert(this);
+				m_pBundle->f_Wake();
+			}
+
+			if (m_pBundle)
+			{
+				while (1)
+				{
+					{
+						if (!m_bDoneRead)
+							break;
+					}
+					{
+						DMibUnlock(m_pBundle->m_UpdateLock);
+						SleepEx(0, true);
+					}
+				}
+			}
+		}
+		else
+			m_LinkUpdate.f_Unlink();
+		m_LinkUpdated.f_Unlink();
 	}
 
-	void f_SetContractInfo(ch8 const *_pAssertMessage)
+	if (m_pHandle != INVALID_HANDLE_VALUE)
 	{
-		CStrNonTracked AssertInfo;
-		AssertInfo.f_AddStr(_pAssertMessage);
+		CloseHandle(m_pHandle);
+		m_pHandle = INVALID_HANDLE_VALUE;
+	}
+
+	m_Changes.f_Clear();
+}
+
+void CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::f_Cancel()
+{
+	CancelIo(m_pHandle);
+}
+
+void __stdcall CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::fs_CompletionRoutine(DWORD _ErrorCode, DWORD _NumberOfBytesTransfered, LPOVERLAPPED _pOverlapped)
+{
+	CNotification *pThis = (CNotification *)_pOverlapped->hEvent;
+
+	DMibLock(pThis->m_pBundle->m_UpdateLock);
+
+	auto &Context = pThis->m_ChangesContext;
+
+	if (!pThis->m_LinkUpdated.f_IsInList())
+		pThis->m_pBundle->m_Updated.f_Insert(pThis);
+
+	if (_ErrorCode == 0)
+	{
+		if (_NumberOfBytesTransfered != 0)
 		{
-			DMibLock(m_ContractInfoLock);
-			m_ContractAssertInfo = AssertInfo;
+			FILE_NOTIFY_INFORMATION *pNotification = (FILE_NOTIFY_INFORMATION *)(pThis->m_ChangesBuffer.f_GetArray());
+
+			while (pNotification)
+			{
+				CStr Path = NFile::NPlatform::fg_ConvertFromWindowsPath
+					(
+						CWStr::fs_Create(pNotification->FileName, pNotification->FileNameLength/sizeof(pNotification->FileName[0]))
+					)
+				;
+
+				auto fAdded = [&]
+					{
+						bool bRecursive = (pThis->m_Flags & EFileChange_Recursive) != 0;
+
+						CStr AbsolutePath = CFile::fs_AppendPath(pThis->m_RootDirectory, Path);
+
+						pThis->m_RootNode.f_MapFile(Path, CFile::fs_FileExists(AbsolutePath, EFileAttrib_Directory));
+
+						Context.f_AddChange(EFileChangeNotification_Added, Path);
+
+						try
+						{
+							for (auto &File : CFile::fs_FindFilesEx(AbsolutePath + "/*", EFileAttrib_File | EFileAttrib_Directory, bRecursive, false))
+							{
+								CStr RelativePath = File.m_Path.f_Extract(pThis->m_RootDirectory.f_GetLen() + 1);
+								pThis->m_RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);
+								Context.f_AddChange(EFileChangeNotification_Added, RelativePath);
+							}
+						}
+						catch (CExceptionFile const &_Exception)
+						{
+							(void)_Exception;
+							DMibDTrace("Error enumerating children in file change notification: {}\n", _Exception);
+						}
+
+						if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
+							Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
+					}
+				;
+
+				auto fRemoved = [&](CStr const &_Path)
+					{
+						auto *pOldNode = pThis->m_RootNode.f_GetFile(_Path);
+						if (pOldNode)
+						{
+							pOldNode->f_ForEach
+								(
+									[&](CStr const &_RelativePath, bool _bDirectory)
+									{
+										Context.f_AddChange(EFileChangeNotification_Removed, _RelativePath);
+									}
+								)
+							;
+							pOldNode->f_Remove();
+						}
+						else
+							Context.f_AddChange(EFileChangeNotification_Removed, Path);
+						if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
+							Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
+					}
+				;
+
+				switch (pNotification->Action)
+				{
+				case FILE_ACTION_ADDED:
+					{
+						fAdded();
+					}
+					break;
+				case FILE_ACTION_REMOVED:
+					{
+						fRemoved(Path);
+					}
+					break;
+				case FILE_ACTION_MODIFIED:
+					{
+						Context.f_AddChange(EFileChangeNotification_Modified, Path);
+					}
+					break;
+				case FILE_ACTION_RENAMED_OLD_NAME:
+					{
+						pThis->m_RenameFromFilename = Path;
+					}
+					break;
+				case FILE_ACTION_RENAMED_NEW_NAME:
+					{
+						auto *pOldNode = pThis->m_RootNode.f_GetFile(pThis->m_RenameFromFilename);
+						if (pOldNode && CFile::fs_GetPath(Path) == CFile::fs_GetPath(pThis->m_RenameFromFilename))
+						{
+							CStr OldPrefix = pThis->m_RenameFromFilename;
+							pOldNode->f_ForEach
+								(
+									[&](CStr const &_RelativePath, bool _bDirectory)
+									{
+										CStr NewPath = CFile::fs_AppendPath(Path, _RelativePath.f_Extract(OldPrefix.f_GetLen() + 1));
+										Context.f_AddChange(EFileChangeNotification_Renamed, NewPath, _RelativePath);
+									}
+								)
+							;
+							pOldNode->f_SetFileName(CFile::fs_GetFile(Path));
+
+							if (pThis->m_Flags & (EFileChange_DirectoryName | EFileChange_FileName))
+							{
+								Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(pThis->m_RenameFromFilename));
+								Context.f_AddChange(EFileChangeNotification_Modified, CFile::fs_GetPath(Path));
+							}
+						}
+						else
+						{
+							if (!pThis->m_RenameFromFilename.f_IsEmpty())
+								fRemoved(pThis->m_RenameFromFilename);
+							fAdded();
+						}
+
+						pThis->m_RenameFromFilename.f_Clear();
+					}
+					break;
+				default:
+					{
+						Context.f_AddChange(EFileChangeNotification_Unknown, {});
+					}
+				}
+
+				if (pNotification->NextEntryOffset)
+					pNotification = (FILE_NOTIFY_INFORMATION *)((umint)pNotification + pNotification->NextEntryOffset);
+				else
+					pNotification = nullptr;
+			}
+		}
+		else
+			Context.f_AddChange(EFileChangeNotification_Unknown, {});
+
+		pThis->f_DoRead();
+	}
+	else
+		pThis->m_bDoneRead = false;
+}
+
+void CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::f_DoRead()
+{
+	if (m_bCancelled)
+	{
+		m_bDoneRead = false;
+		return;
+	}
+	uint32 Flags = 0;
+	if (m_Flags & EFileChange_FileName)
+		Flags |= FILE_NOTIFY_CHANGE_FILE_NAME;
+	if (m_Flags & EFileChange_DirectoryName)
+		Flags |= FILE_NOTIFY_CHANGE_DIR_NAME;
+	if (m_Flags & EFileChange_Attributes)
+		Flags |= FILE_NOTIFY_CHANGE_ATTRIBUTES;
+	if (m_Flags & EFileChange_FileSize)
+		Flags |= FILE_NOTIFY_CHANGE_SIZE;
+	if (m_Flags & EFileChange_Write)
+		Flags |= FILE_NOTIFY_CHANGE_LAST_WRITE;
+	if (m_Flags & EFileChange_Security)
+		Flags |= FILE_NOTIFY_CHANGE_SECURITY;
+
+	m_ChangesBuffer.f_SetLen(64 * 1024);
+	DWORD Dummy;
+	NMemory::fg_MemClear(m_ChangesOverlapped);
+	m_ChangesOverlapped.hEvent = this;
+
+	if
+	(
+		ReadDirectoryChangesW
+		(
+			m_pHandle
+			, m_ChangesBuffer.f_GetArray()
+			, m_ChangesBuffer.f_GetLen()
+			, (m_Flags & EFileChange_Recursive) != 0
+			, Flags
+			, &Dummy
+			, &m_ChangesOverlapped
+			, &fs_CompletionRoutine
+		)
+	)
+	{
+		m_bDoneRead = true;
+	}
+	else
+		m_bDoneRead = false;
+	m_FirstReadDoneEvent.f_SetSignaled();
+}
+
+CSystemWindowsMSVC::CFileChangeNoticationContext::CNotificationBundle::CNotificationBundle(CFileChangeNoticationContext *_pContext)
+	: m_pWakeEvent(CreateEventA(nullptr, false, false, nullptr))
+	, m_bQuit(0)
+{
+	m_pContext = _pContext;
+	for (umint iNotification = 0; iNotification < mc_NumNotifications; ++iNotification)
+	{
+		m_Notifications[iNotification].m_pBundle = this;
+		m_Free.f_Insert(m_Notifications[iNotification]);
+	}
+}
+
+CSystemWindowsMSVC::CFileChangeNoticationContext::CNotificationBundle::~CNotificationBundle()
+{
+	// The worker may still be blocked on m_pWakeEvent; it must be stopped
+	// before the handle is closed (closing a handle with a pending wait is
+	// undefined, and the base destructor's f_Stop would come too late)
+	f_StopBundle();
+
+	if (m_pWakeEvent)
+	{
+		::CloseHandle(m_pWakeEvent);
+		m_pWakeEvent = nullptr;
+	}
+}
+
+NStr::CStr CSystemWindowsMSVC::CFileChangeNoticationContext::CNotificationBundle::f_GetThreadName()
+{
+	return "Malterlib_Core_PlatformImp_FileChangeNot";
+}
+
+void CSystemWindowsMSVC::CFileChangeNoticationContext::CNotificationBundle::f_Wake()
+{
+	SetEvent(m_pWakeEvent);
+}
+
+umint CSystemWindowsMSVC::CFileChangeNoticationContext::CNotificationBundle::f_StopBundle()
+{
+	// Set the quit flag before waking so the thread cannot re-park
+	// between the wake and CThread::f_Stop's state change
+	m_bQuit.f_Store(1);
+	SetEvent(m_pWakeEvent);
+	return f_Stop();
+}
+
+aint CSystemWindowsMSVC::CFileChangeNoticationContext::CNotificationBundle::f_Main()
+{
+	while (f_GetState() != NThread::EThreadState_EventWantQuit && !m_bQuit.f_Load(NAtomic::gc_MemoryOrder_Relaxed))
+	{
+		{
+			CNotification *pPop;
+			{
+				DMibLock(m_UpdateLock);
+				pPop = m_ToRead.f_Pop();
+				while (pPop)
+				{
+					pPop->f_DoRead();
+					{
+						DMibUnlock(m_UpdateLock);
+					}
+					pPop = m_ToRead.f_Pop();
+				}
+			}
+		}
+		{
+			CNotification *pPop;
+			{
+				DMibLock(m_UpdateLock);
+				pPop = m_ToCancel.f_Pop();
+				while (pPop)
+				{
+					pPop->f_Cancel();
+					pPop = m_ToCancel.f_Pop();
+				}
+			}
+		}
+
+		WaitForSingleObjectEx(m_pWakeEvent, INFINITE, true);
+		{
+			CNotification *pPop;
+			{
+				DMibLock(m_UpdateLock);
+				pPop = m_Updated.f_Pop();
+				while (pPop)
+				{
+					if (!pPop->m_ChangesContext.m_ChangesFileName.f_IsEmpty() || !pPop->m_ChangesContext.m_Changes.f_IsEmpty())
+					{
+						DMibLock(pPop->m_ChangesLock);
+
+						pPop->m_Changes.f_Insert(fg_Move(pPop->m_ChangesContext.m_ChangesFileName));
+						pPop->m_Changes.f_Insert(fg_Move(pPop->m_ChangesContext.m_Changes));
+
+						if (pPop->m_pReportTo)
+							pPop->m_pReportTo->f_Signal();
+					}
+
+					pPop->m_ChangesContext = CNotification::CFindChangesContext();
+
+					pPop = m_Updated.f_Pop();
+				}
+			}
 		}
 	}
 
-	CStrNonTracked f_DebugContractViolationMessage()
-	{
-		DMibLock(m_ContractInfoLock);
-		return m_ContractAssertInfo;
-	}
+	return 0;
+}
 
-	void f_DebugReportContractViolation(NStr::CStrNonTracked const &_Message)
-	{
-		if (m_fSetAssertInfo)
-			m_fSetAssertInfo(1, _Message);
-	}
+CSystemWindowsMSVC::CFileChangeNoticationContext::CFileChangeNoticationContext()
+{
+}
 
-	void f_InitModuleThreaded()
-	{
-		__super::f_InitModuleThreaded();
+CSystemWindowsMSVC::CFileChangeNoticationContext::~CFileChangeNoticationContext()
+{
+	m_FreeBundles.f_DeleteAllDefiniteType();
+	m_FullBundles.f_DeleteAllDefiniteType();
+}
 
-		NSys::fg_Debug_EnableCrashDumps();
+void *CSystemWindowsMSVC::CFileChangeNoticationContext::f_Open(CStr const &_FileName, EFileChange _OpenFlags, NThread::CSemaphoreAggregate *_pReportTo)
+{
+	CStr AbsolutePath = CFile::fs_GetExpandedPath(_FileName);
+	CWStr WindowStr = NFile::NPlatform::fg_ConvertToWindowsPathLocal(AbsolutePath);
 
-		if (!g_bIsDll)
+	HANDLE pHandle = CreateFile
+		(
+			WindowStr
+			, FILE_LIST_DIRECTORY
+			, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE
+			, nullptr
+			, OPEN_EXISTING
+			, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED
+			, nullptr
+		)
+	;
+
+	if (pHandle == INVALID_HANDLE_VALUE)
+		DMibErrorFile((CStr::CFormat("Windows returned an error from CreateFile({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+
+	auto Cleanup = g_OnScopeExit / [&]
 		{
-			// This needs to be named exactly like this to be compatibly with old versions of the library (when Malterlib was named Ids)
-			if (!FindAtom(str_utf16("IdsAssertAtom")))
+			CloseHandle(pHandle);
+		}
+	;
+
+	BY_HANDLE_FILE_INFORMATION Info;
+
+	if (!GetFileInformationByHandle(pHandle, &Info))
+		DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileInformationByHandle({}): {}") << WindowStr << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+
+	if (!(Info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		DMibErrorFile((CStr::CFormat("You can get notifications for file changes on directories, not files ({})") << WindowStr).f_GetStr());
+
+	CNotification::CFileTreeNode RootNode(nullptr);
+
+	bool bRecursive = (_OpenFlags & EFileChange_Recursive) != 0;
+
+	for (auto &File : CFile::fs_FindFilesEx(AbsolutePath + "/*", EFileAttrib_File | EFileAttrib_Directory, bRecursive, false))
+	{
+		CStr RelativePath = File.m_Path.f_Extract(AbsolutePath.f_GetLen() + 1);
+		RootNode.f_MapFile(RelativePath, File.m_Attribs & EFileAttrib_Directory);
+	}
+
+	CNotification *pNot;
+	{
+		DMibLock(m_Lock);
+
+		CNotificationBundle *pBundle = m_FreeBundles.f_GetFirst();
+		if (!pBundle)
+		{
+			pBundle = fg_ConstructObject<CNotificationBundle>(NMemory::CDefaultAllocator(), this);
+			pBundle->f_Start();
+		}
+		pNot = pBundle->m_Free.f_Pop();
+		pNot->m_pHandle = pHandle;
+		pNot->m_RootDirectory = AbsolutePath;
+		Cleanup.f_Clear();
+		pNot->m_pReportTo = _pReportTo;
+		pNot->m_Flags = _OpenFlags;
+		pNot->m_RootNode = fg_Move(RootNode);
+		for (auto &Child : pNot->m_RootNode.m_Children)
+			Child.m_pParent = &pNot->m_RootNode;
+
+		pBundle->m_Used.f_Insert(pNot);
+
+		if (pBundle->m_Free.f_IsEmpty())
+			m_FullBundles.f_Insert(pBundle);
+
+		{
+			DMibLock(pBundle->m_UpdateLock);
+			pBundle->m_ToRead.f_Insert(pNot);
+		}
+
+		pBundle->f_Wake();
+	}
+	pNot->m_FirstReadDoneEvent.f_Wait();
+	return pNot;
+}
+
+void CSystemWindowsMSVC::CFileChangeNoticationContext::f_Close(void *_pNotification)
+{
+	DMibLock(m_Lock);
+	CNotification *pNotification = (CNotification *)_pNotification;
+	pNotification->f_Clear();
+	CNotificationBundle *pBundle = pNotification->m_pBundle;
+	pBundle->m_Free.f_Insert(pNotification);
+	pBundle->f_Wake();
+	if (pBundle->m_Used.f_IsEmpty())
+	{
+		pBundle->m_Link.f_Unlink();
+		{
+			DMibUnlock(m_Lock);
+			pBundle->f_StopBundle();
+			fg_DeleteObject(NMemory::CDefaultAllocator(), pBundle);
+		}
+	}
+	else
+		m_FreeBundles.f_Insert(pBundle);
+}
+
+bool CSystemWindowsMSVC::CFileChangeNoticationContext::f_Changed(void *_pNotification)
+{
+	DMibLock(m_Lock);
+	CNotification *pNotification = (CNotification *)_pNotification;
+	bool bChanged = false;
+	{
+		DMibLock(pNotification->m_ChangesLock);
+		bChanged = !pNotification->m_Changes.f_IsEmpty();
+		pNotification->m_Changes.f_Clear();
+	}
+	return bChanged;
+}
+
+bool CSystemWindowsMSVC::CFileChangeNoticationContext::f_GetNotification(void *_pNotification, CStr &_Path, EFileChangeNotification &_Notification, NStr::CStr &_PathFrom)
+{
+	DMibLock(m_Lock);
+	CNotification *pNotification = (CNotification *)_pNotification;
+	{
+		DMibLock(pNotification->m_ChangesLock);
+
+		if (!pNotification->m_Changes.f_IsEmpty())
+		{
+			auto &Change = pNotification->m_Changes.f_GetFirst();
+
+			_Path = Change.m_Path;
+			_Notification = Change.m_Notification;
+			_PathFrom = Change.m_PathFrom;
+
+			pNotification->m_Changes.f_Remove(Change);
+			return true;
+		}
+	}
+	return false;
+}
+
+CSystemWindowsMSVC::CSystemWindowsMSVC()
+	: CSystem(g_bIsDll)
+	, m_SocketContext(EAggregateInitialization_Force)
+	, m_SharedIoLoop(EAggregateInitialization_Force)
+	, m_FileChangeNoticationContext(EAggregateInitialization_Force)
+{
+	fg_MemClear(m_SocketContext);
+	fg_MemClear(m_SharedIoLoop);
+	fg_MemClear(m_FileChangeNoticationContext);
+
+	m_fSetAssertInfo = nullptr;
+
+	fp_InitComplete();
+}
+
+CSystemWindowsMSVC::~CSystemWindowsMSVC()
+{
+	m_ProgramDir_CStrNonTracked.f_Clear();
+	m_ProgramPath_CStrNonTracked.f_Clear();
+}
+
+bool CSystemWindowsMSVC::f_EnablePrivilege(TCHAR const *_pPrivilege, BOOL _bEnable)
+{
+	HANDLE pToken;
+	TOKEN_PRIVILEGES TokenPrivileges;
+	BOOL bAdjusted;
+	DWORD Error;
+
+	// open process token
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &pToken))
+	{
+		[[maybe_unused]] uint32 LastError = GetLastError();
+		DMibTrace("OpenProcessToken failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
+		return false;
+	}
+	auto Cleanup = fg_OnScopeExit
+		(
+			[&]()
 			{
-				AddAtom(str_utf16("IdsAssertAtom"));
-				m_fSetAssertInfo = &fs_SetAssertInfo;
-				umint PausePointer = (umint)m_fSetAssertInfo;
-				for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
+				// close the handle
+				if (!CloseHandle(pToken))
 				{
-					if (PausePointer & (umint(1) << iBit))
-						AddAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit));
+					[[maybe_unused]] uint32 LastError = GetLastError();
+					DMibTrace("CloseHandle failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
 				}
 			}
-			else
+		)
+	;
+
+	// get the luid
+	if (!LookupPrivilegeValue(NULL, _pPrivilege, &TokenPrivileges.Privileges[0].Luid))
+	{
+		[[maybe_unused]] uint32 LastError = GetLastError();
+		DMibTrace("LookupPrivilegeValue failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
+		return false;
+	}
+
+	TokenPrivileges.PrivilegeCount = 1;
+
+	// enable or disable privilege
+	if (_bEnable)
+		TokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+	else
+		TokenPrivileges.Privileges[0].Attributes = 0;
+
+	// enable or disable privilege
+	bAdjusted = AdjustTokenPrivileges(pToken, FALSE, &TokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+
+	// It is possible for AdjustTokenPrivileges to return TRUE and still not succeed.
+	// So always check for the last error value.
+	Error = GetLastError();
+	if (!bAdjusted || (Error != ERROR_SUCCESS))
+	{
+		[[maybe_unused]] uint32 LastError = Error;
+		DMibTrace("AdjustTokenPrivileges failed: {}\n", NMib::NPlatform::fg_Win32_GetLastErrorStr(LastError));
+		return false;
+	}
+
+	return true;
+}
+
+bool CSystemWindowsMSVC::f_EnableLargeMemorySupport()
+{
+	if (m_bTriedEnableLargeMemorySupport)
+		return m_bEnabledLargeMemorySupport;
+	DMibLock(m_LargeMemorySupportLock);
+	if (m_bTriedEnableLargeMemorySupport)
+		return m_bEnabledLargeMemorySupport;
+
+	m_bTriedEnableLargeMemorySupport = true;
+	// Grant large page access
+	m_bEnabledLargeMemorySupport = f_EnablePrivilege(SE_LOCK_MEMORY_NAME, true);
+	return m_bEnabledLargeMemorySupport;
+}
+
+bool CSystemWindowsMSVC::f_EnableBackupSupport()
+{
+	if (m_bTriedEnableBackupSupport)
+		return m_bEnabledBackupSupport;
+	DMibLock(m_BackupSupportLock);
+	if (m_bTriedEnableBackupSupport)
+		return m_bEnabledBackupSupport;
+
+	m_bTriedEnableBackupSupport = true;
+	// Grant large page access
+	m_bEnabledBackupSupport = f_EnablePrivilege(SE_BACKUP_NAME, true);
+	return m_bEnabledBackupSupport;
+}
+
+bool CSystemWindowsMSVC::f_EnableSymLinkSupport()
+{
+	if (m_bTriedEnableSymLinkSupport)
+		return m_bEnabledSymLinkSupport;
+	DMibLock(m_SymLinkSupportLock);
+	if (m_bTriedEnableSymLinkSupport)
+		return m_bEnabledSymLinkSupport;
+
+	m_bTriedEnableSymLinkSupport = true;
+	// Grant large page access
+	m_bEnabledSymLinkSupport = f_EnablePrivilege(SE_CREATE_SYMBOLIC_LINK_NAME, true);
+	return m_bEnabledSymLinkSupport;
+}
+
+void CSystemWindowsMSVC::f_UpdateProgramPath()
+{
+	auto pPEB = fg_GetPEB(fg_GetTEB());
+
+	CWStr BaseName;
+
+	BaseName.f_AddStr(pPEB->ProcessParameters->ImagePathName.Buffer, pPEB->ProcessParameters->ImagePathName.Length);
+
+	m_ProgramPath_CStr = NFile::NPlatform::fg_ConvertFromWindowsPath(BaseName); // Make sure unicode conversion is correct
+
+	m_ProgramDir_CStr = CFile::fs_GetPath(m_ProgramPath_CStr);
+
+	m_ProgramDir_CStrNonTracked = m_ProgramDir_CStr;
+	m_ProgramPath_CStrNonTracked = m_ProgramPath_CStr;
+
+	mp_ProgramRoot = m_ProgramDir_CStr;
+	mp_ProgramRootNonTracked = mp_ProgramRoot;
+}
+
+void CSystemWindowsMSVC::f_InitModule()
+{
+	f_UpdateProgramPath();
+
+	__super::f_InitModule();
+
+#if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
+	if (gs_LibraryRefCount.f_Load() == -1)
+		f_InstallVistaExceptionHack();
+#endif
+}
+
+void DMibCrossmoduleAPI CSystemWindowsMSVC::fs_SetAssertInfo(int32 _AssertType, ch8 const *_pAssertMessage)
+{
+	fg_GetLocalSys()->f_SetContractInfo(_pAssertMessage);
+}
+
+void CSystemWindowsMSVC::f_SetContractInfo(ch8 const *_pAssertMessage)
+{
+	CStrNonTracked AssertInfo;
+	AssertInfo.f_AddStr(_pAssertMessage);
+	{
+		DMibLock(m_ContractInfoLock);
+		m_ContractAssertInfo = AssertInfo;
+	}
+}
+
+CStrNonTracked CSystemWindowsMSVC::f_DebugContractViolationMessage()
+{
+	DMibLock(m_ContractInfoLock);
+	return m_ContractAssertInfo;
+}
+
+void CSystemWindowsMSVC::f_DebugReportContractViolation(NStr::CStrNonTracked const &_Message)
+{
+	if (m_fSetAssertInfo)
+		m_fSetAssertInfo(1, _Message);
+}
+
+void CSystemWindowsMSVC::f_InitModuleThreaded()
+{
+	__super::f_InitModuleThreaded();
+
+	NSys::fg_Debug_EnableCrashDumps();
+
+	if (!g_bIsDll)
+	{
+		// This needs to be named exactly like this to be compatibly with old versions of the library (when Malterlib was named Ids)
+		if (!FindAtom(str_utf16("IdsAssertAtom")))
+		{
+			AddAtom(str_utf16("IdsAssertAtom"));
+			m_fSetAssertInfo = &fs_SetAssertInfo;
+			umint PausePointer = (umint)m_fSetAssertInfo;
+			for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 			{
-				umint PausePointer = 0;
-				for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
-				{
-					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit)))
-						PausePointer |= (umint(1) << iBit);
-				}
-				m_fSetAssertInfo = (FSetAssertInfo *)PausePointer;
+				if (PausePointer & (umint(1) << iBit))
+					AddAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit));
 			}
 		}
 		else
 		{
-			if (FindAtom(str_utf16("IdsAssertAtom")))
+			umint PausePointer = 0;
+			for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
 			{
-				umint PausePointer = 0;
-				for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
-				{
-					if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit)))
-						PausePointer |= (umint(1) << iBit);
-				}
-				m_fSetAssertInfo = (FSetAssertInfo *)PausePointer;
+				if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit)))
+					PausePointer |= (umint(1) << iBit);
 			}
+			m_fSetAssertInfo = (FSetAssertInfo *)PausePointer;
 		}
 	}
-
-	void f_DestroyThreadSpecific()
+	else
 	{
-		CSystem::f_PreDestructThreadSpecific();
-
-		m_pMemoryToucher.f_Clear();
-
-		if (m_FileChangeNoticationContext.f_IsConstructed())
-			m_FileChangeNoticationContext.f_Destruct();
-		if (m_SocketContext.f_IsConstructed())
-			m_SocketContext.f_Destruct();
-
-		CSystem::f_DestructThreadSpecific();
-
-		// Keep the loop alive for subsystem deregistrations. Socket closes must already be acknowledged before Winsock cleanup.
-		if (m_SharedIoLoop.f_IsConstructed())
-			m_SharedIoLoop.f_Destruct();
+		if (FindAtom(str_utf16("IdsAssertAtom")))
+		{
+			umint PausePointer = 0;
+			for (umint iBit = 0; iBit < sizeof(umint) * 8; ++iBit)
+			{
+				if (FindAtom(CFWStr128(CFWStr128::CFormat(str_utf16("IdsAssertAtom{}")) << iBit)))
+					PausePointer |= (umint(1) << iBit);
+			}
+			m_fSetAssertInfo = (FSetAssertInfo *)PausePointer;
+		}
 	}
+}
 
-	void f_Destruct()
-	{
-		m_ProgramDir_CStr.f_Clear();
-		m_ProgramPath_CStr.f_Clear();
-		m_ContractAssertInfo.f_Clear();
-		CSystem::f_Destruct();
-		m_bDestroying = true;
+void CSystemWindowsMSVC::f_DestroyThreadSpecific()
+{
+	CSystem::f_PreDestructThreadSpecific();
+
+	m_pMemoryToucher.f_Clear();
+
+	if (m_FileChangeNoticationContext.f_IsConstructed())
+		m_FileChangeNoticationContext.f_Destruct();
+	if (m_SocketContext.f_IsConstructed())
+		m_SocketContext.f_Destruct();
+
+	CSystem::f_DestructThreadSpecific();
+
+	// Keep the loop alive for subsystem deregistrations. Socket closes must already be acknowledged before Winsock cleanup.
+	if (m_SharedIoLoop.f_IsConstructed())
+		m_SharedIoLoop.f_Destruct();
+}
+
+void CSystemWindowsMSVC::f_Destruct()
+{
+	m_ProgramDir_CStr.f_Clear();
+	m_ProgramPath_CStr.f_Clear();
+	m_ContractAssertInfo.f_Clear();
+	CSystem::f_Destruct();
+	m_bDestroying = true;
 
 #if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
-		f_UninstallVistaExceptionHack();
+	f_UninstallVistaExceptionHack();
 #endif
-	}
+}
 
 #if !defined(DMibSanitizerEnabled_Address) && !defined(DArchitecture_arm64)
-
 #	ifdef _M_IX86
 
-	struct CExceptionHandler
+CSystemWindowsMSVC::CExceptionHandler *CSystemWindowsMSVC::fs_RtlGetRegistrationHead()
+{
+	CExceptionHandler *pRet = (CExceptionHandler *)(void *)(size_t)-1;
+	__asm
 	{
-		CExceptionHandler *m_pNextHandler;
-		void *m_pExceptionHandlingFunction;
-	};
-
-	static CExceptionHandler *fs_RtlGetRegistrationHead()
-	{
-		CExceptionHandler *pRet = (CExceptionHandler *)(void *)(size_t)-1;
-		__asm
-		{
-			mov eax, dword ptr fs:[0h]
-			mov [pRet], eax
-		}
-		return pRet;
+		mov eax, dword ptr fs:[0h]
+		mov [pRet], eax
 	}
+	return pRet;
+}
 
 #		pragma warning(disable:4733)
-	static void fs_RtlSetRegistrationHead(CExceptionHandler *_pHandler)
+void CSystemWindowsMSVC::fs_RtlSetRegistrationHead(CExceptionHandler *_pHandler)
+{
+	__asm
 	{
-		__asm
-		{
-			mov eax, [_pHandler]
-			mov dword ptr fs:[0h], eax
-		}
+		mov eax, [_pHandler]
+		mov dword ptr fs:[0h], eax
 	}
+}
 #	endif
 
-	static LONG WINAPI fs_VectoredHandler3(struct _EXCEPTION_POINTERS *_pExceptionInfo)
+LONG WINAPI CSystemWindowsMSVC::fs_VectoredHandler3(struct _EXCEPTION_POINTERS *_pExceptionInfo)
+{
+	if (_pExceptionInfo->ExceptionRecord && _pExceptionInfo->ExceptionRecord->NumberParameters >= 3 && _pExceptionInfo->ExceptionRecord->ExceptionInformation[0] == 0x19930520)
 	{
-		if (_pExceptionInfo->ExceptionRecord && _pExceptionInfo->ExceptionRecord->NumberParameters >= 3 && _pExceptionInfo->ExceptionRecord->ExceptionInformation[0] == 0x19930520)
+		if (fg_SystemThreadLocalWasCreated())
 		{
-			if (fg_SystemThreadLocalWasCreated())
-			{
-				auto &ThreadLocal = fg_SystemThreadLocal();
-				if (ThreadLocal.m_pExceptionFilter)
-					ThreadLocal.m_pExceptionFilter->f_Exception((void *)_pExceptionInfo->ExceptionRecord->ExceptionInformation[1]);
-			}
+			auto &ThreadLocal = fg_SystemThreadLocal();
+			if (ThreadLocal.m_pExceptionFilter)
+				ThreadLocal.m_pExceptionFilter->f_Exception((void *)_pExceptionInfo->ExceptionRecord->ExceptionInformation[1]);
 		}
-		return 0;
 	}
+	return 0;
+}
 
-	static LONG WINAPI fs_VectoredHandler2(struct _EXCEPTION_POINTERS *_pExceptionInfo)
-	{
-		fs_VectoredHandler3(_pExceptionInfo);
+LONG WINAPI CSystemWindowsMSVC::fs_VectoredHandler2(struct _EXCEPTION_POINTERS *_pExceptionInfo)
+{
+	fs_VectoredHandler3(_pExceptionInfo);
 
-		HMODULE pNtDll = NLocal::g_pNtDll;
+	HMODULE pNtDll = NLocal::g_pNtDll;
 
-		if (!pNtDll)
-			return 0;
+	if (!pNtDll)
+		return 0;
 
-		// We can't get the address of KiUserCallbackDispatcherHandler without debug symbols, lets just assume it's between KiUserApcDispatcher and KiUserCallbackDispatcher
-		void *pStartNtDll = NLocal::g_OptionalFunctions.m_pKiUserApcDispatcher;
-		void *pEndNtDll = NLocal::g_OptionalFunctions.m_pKiUserCallbackDispatcher;
-		if (!pStartNtDll || !pEndNtDll)
-			return 0;
+	// We can't get the address of KiUserCallbackDispatcherHandler without debug symbols, lets just assume it's between KiUserApcDispatcher and KiUserCallbackDispatcher
+	void *pStartNtDll = NLocal::g_OptionalFunctions.m_pKiUserApcDispatcher;
+	void *pEndNtDll = NLocal::g_OptionalFunctions.m_pKiUserCallbackDispatcher;
+	if (!pStartNtDll || !pEndNtDll)
+		return 0;
 
 #	ifdef _M_X64
 
+	{
+		CONTEXT Context;
+		KNONVOLATILE_CONTEXT_POINTERS NvContext;
+		UNWIND_HISTORY_TABLE UnwindHistoryTable;
+		PRUNTIME_FUNCTION pRuntimeFunction;
+		PVOID pHandlerData;
+		ULONG64 EstablisherFrame;
+		ULONG64 ImageBase;
+
+		RtlCaptureContext(&Context);
+
+		RtlZeroMemory(&UnwindHistoryTable, sizeof(UNWIND_HISTORY_TABLE));
+
+		for ([[maybe_unused]] ULONG Frame = 0;; Frame++)
 		{
-			CONTEXT Context;
-			KNONVOLATILE_CONTEXT_POINTERS NvContext;
-			UNWIND_HISTORY_TABLE UnwindHistoryTable;
-			PRUNTIME_FUNCTION pRuntimeFunction;
-			PVOID pHandlerData;
-			ULONG64 EstablisherFrame;
-			ULONG64 ImageBase;
+			//
+			// Try to look up unwind metadata for the current function.
+			//
 
-			RtlCaptureContext(&Context);
+			pRuntimeFunction = RtlLookupFunctionEntry(Context.Rip, &ImageBase, &UnwindHistoryTable);
 
-			RtlZeroMemory(&UnwindHistoryTable, sizeof(UNWIND_HISTORY_TABLE));
+			RtlZeroMemory(&NvContext, sizeof(KNONVOLATILE_CONTEXT_POINTERS));
 
-			for ([[maybe_unused]] ULONG Frame = 0;; Frame++)
+			if (!pRuntimeFunction)
 			{
 				//
-				// Try to look up unwind metadata for the current function.
+				// If we don't have a RUNTIME_FUNCTION, then we've encountered
+				// a leaf function.  Adjust the stack approprately.
 				//
 
-				pRuntimeFunction = RtlLookupFunctionEntry(Context.Rip, &ImageBase, &UnwindHistoryTable);
+				Context.Rip = (ULONG64)(*(PULONG64)Context.Rsp);
+				Context.Rsp += 8;
+			}
+			else
+			{
+				// Now lets patch the unwind info structure for the function that uses KiUserCallbackDispatcherHandler as it's exception handler (KiUserCallbackDispatcherContinue).
+				UNWIND_INFO *pInfo = (UNWIND_INFO *)(ImageBase + pRuntimeFunction->UnwindData);
+				ULONG *pExceptionHandlerData = (ULONG *)&pInfo->UnwindCode[pInfo->CountOfCodes];
+				void *pExceptionHandler = (void *)(ImageBase + *pExceptionHandlerData);
+				//void *pExceptionData = (void *)(ImageBase + pExceptionHandlerData[1]);
 
-				RtlZeroMemory(&NvContext, sizeof(KNONVOLATILE_CONTEXT_POINTERS));
+				void *pAddress = (void *)((size_t)pInfo & (~size_t(4095)));
+				void *pAddressHigh = (void *)(((size_t)pInfo + 4096) & (~size_t(4095)));
 
-				if (!pRuntimeFunction)
+				if (pExceptionHandler >= pStartNtDll && pExceptionHandler <= pEndNtDll)
 				{
-					//
-					// If we don't have a RUNTIME_FUNCTION, then we've encountered
-					// a leaf function.  Adjust the stack approprately.
-					//
-
-					Context.Rip = (ULONG64)(*(PULONG64)Context.Rsp);
-					Context.Rsp += 8;
-				}
-				else
-				{
-					// Now lets patch the unwind info structure for the function that uses KiUserCallbackDispatcherHandler as it's exception handler (KiUserCallbackDispatcherContinue).
-					UNWIND_INFO *pInfo = (UNWIND_INFO *)(ImageBase + pRuntimeFunction->UnwindData);
-					ULONG *pExceptionHandlerData = (ULONG *)&pInfo->UnwindCode[pInfo->CountOfCodes];
-					void *pExceptionHandler = (void *)(ImageBase + *pExceptionHandlerData);
-					//void *pExceptionData = (void *)(ImageBase + pExceptionHandlerData[1]);
-
-					void *pAddress = (void *)((size_t)pInfo & (~size_t(4095)));
-					void *pAddressHigh = (void *)(((size_t)pInfo + 4096) & (~size_t(4095)));
-
-					if (pExceptionHandler >= pStartNtDll && pExceptionHandler <= pEndNtDll)
+					MEMORY_BASIC_INFORMATION MemInfo;
+					if (VirtualQuery(pAddress, &MemInfo, sizeof(MemInfo)))
 					{
-						MEMORY_BASIC_INFORMATION MemInfo;
-						if (VirtualQuery(pAddress, &MemInfo, sizeof(MemInfo)))
+						DWORD OldProtect;
+						if (MemInfo.Protect != PAGE_READWRITE)
 						{
-							DWORD OldProtect;
-							if (MemInfo.Protect != PAGE_READWRITE)
-							{
-								// We need to change the protection of the page to read write because right now it's a read only portion of ntdll.dll. This seems to work both running as
-								// admin and as a normal user under user account control.
-								if (VirtualProtect(pAddress, (size_t)pAddressHigh - (size_t)pAddress, PAGE_READWRITE, &OldProtect))
-									pInfo->Flags &= ~(UNW_FLAG_EHANDLER | UNW_FLAG_UHANDLER);
-							}
+							// We need to change the protection of the page to read write because right now it's a read only portion of ntdll.dll. This seems to work both running as
+							// admin and as a normal user under user account control.
+							if (VirtualProtect(pAddress, (size_t)pAddressHigh - (size_t)pAddress, PAGE_READWRITE, &OldProtect))
+								pInfo->Flags &= ~(UNW_FLAG_EHANDLER | UNW_FLAG_UHANDLER);
 						}
 					}
-
-					//
-					// Otherwise, call upon RtlVirtualUnwind to execute the unwind for
-					// us.
-					//
-
-					RtlVirtualUnwind(UNW_FLAG_EHANDLER, ImageBase, Context.Rip, pRuntimeFunction, &Context, &pHandlerData, &EstablisherFrame, &NvContext);
 				}
 
 				//
-				// If we reach an RIP of zero, this means that we've walked off the end
-				// of the call stack and are done.
+				// Otherwise, call upon RtlVirtualUnwind to execute the unwind for
+				// us.
 				//
 
-				if (!Context.Rip)
-					break;
+				RtlVirtualUnwind(UNW_FLAG_EHANDLER, ImageBase, Context.Rip, pRuntimeFunction, &Context, &pHandlerData, &EstablisherFrame, &NvContext);
 			}
+
+			//
+			// If we reach an RIP of zero, this means that we've walked off the end
+			// of the call stack and are done.
+			//
+
+			if (!Context.Rip)
+				break;
 		}
+	}
 
 #	else
 
-		// Unlink the exception handler from the list of exception handlers. Is this really safe?
-		CExceptionHandler *pExceptionHandler = fs_RtlGetRegistrationHead();
-		CExceptionHandler *pLastExceptionHandler = nullptr;
-		aint iMaxRecurse = 1024; // Max 1024 recurse to guard against circular lists
-		while ((size_t)pExceptionHandler != size_t(-1) && iMaxRecurse > 0)
+	// Unlink the exception handler from the list of exception handlers. Is this really safe?
+	CExceptionHandler *pExceptionHandler = fs_RtlGetRegistrationHead();
+	CExceptionHandler *pLastExceptionHandler = nullptr;
+	aint iMaxRecurse = 1024; // Max 1024 recurse to guard against circular lists
+	while ((size_t)pExceptionHandler != size_t(-1) && iMaxRecurse > 0)
+	{
+		--iMaxRecurse;
+		if (pExceptionHandler->m_pExceptionHandlingFunction >= pStartNtDll && pExceptionHandler->m_pExceptionHandlingFunction <= pEndNtDll)
 		{
-			--iMaxRecurse;
-			if (pExceptionHandler->m_pExceptionHandlingFunction >= pStartNtDll && pExceptionHandler->m_pExceptionHandlingFunction <= pEndNtDll)
+			if (pLastExceptionHandler)
 			{
-				if (pLastExceptionHandler)
-				{
-					// Unlink the stupid exception handler!
-					pLastExceptionHandler->m_pNextHandler = pExceptionHandler->m_pNextHandler;
-				}
-				else
-					fs_RtlSetRegistrationHead(pExceptionHandler->m_pNextHandler);
+				// Unlink the stupid exception handler!
+				pLastExceptionHandler->m_pNextHandler = pExceptionHandler->m_pNextHandler;
 			}
-			pLastExceptionHandler = pExceptionHandler;
-			pExceptionHandler = pExceptionHandler->m_pNextHandler;
+			else
+				fs_RtlSetRegistrationHead(pExceptionHandler->m_pNextHandler);
 		}
+		pLastExceptionHandler = pExceptionHandler;
+		pExceptionHandler = pExceptionHandler->m_pNextHandler;
+	}
 #	endif
-		return 0;
-	}
+	return 0;
+}
 
-	void *m_pVistaExceptinoHackVectoredHandler;
-	void f_InstallVistaExceptionHack()
+void CSystemWindowsMSVC::f_InstallVistaExceptionHack()
+{
+	m_pVistaExceptinoHackVectoredHandler = nullptr;
+	if (NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler && NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo)
 	{
+		bool bInstalled = false;
+		if (NLocal::g_OptionalFunctions.m_fGetProcessUserModeExceptionPolicy)
+		{
+			DWORD Flags;
+			if (NLocal::g_OptionalFunctions.m_fGetProcessUserModeExceptionPolicy(&Flags))
+			{
+				Flags = Flags & ~PROCESS_CALLBACK_FILTER_ENABLED;
+				NLocal::g_OptionalFunctions.m_fSetProcessUserModeExceptionPolicy(Flags);
+			}
+		}
+		else if (NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo)
+		{
+			SYSTEM_INFO NativeSystemInfo;
+			NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo(&NativeSystemInfo);
+			// Check that we are running Vista SP1 or later
+			if
+			(
+				NLocal::g_VersionInfo.dwMajorVersion == 6
+				&& NLocal::g_VersionInfo.dwMinorVersion < 2 // Fixed in Windows 8
+				&& (NLocal::g_VersionInfo.wServicePackMajor >= 1 || NLocal::g_VersionInfo.dwMinorVersion > 0)
+			)
+			{
+				// Check that we are running on AMD64
+				if (NativeSystemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
+				{
+					// We need to add our hack
+					m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1, fs_VectoredHandler2);
+					bInstalled = true;
+				}
+			}
+		}
+		if (!bInstalled)
+			m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1, fs_VectoredHandler3);
+	}
+}
+
+void CSystemWindowsMSVC::f_UninstallVistaExceptionHack()
+{
+	if (m_pVistaExceptinoHackVectoredHandler)
+	{
+		if (NLocal::g_OptionalFunctions.m_fRemoveVectoredExceptionHandler)
+			NLocal::g_OptionalFunctions.m_fRemoveVectoredExceptionHandler(m_pVistaExceptinoHackVectoredHandler);
+
 		m_pVistaExceptinoHackVectoredHandler = nullptr;
-		if (NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler && NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo)
-		{
-			bool bInstalled = false;
-			if (NLocal::g_OptionalFunctions.m_fGetProcessUserModeExceptionPolicy)
-			{
-				DWORD Flags;
-				if (NLocal::g_OptionalFunctions.m_fGetProcessUserModeExceptionPolicy(&Flags))
-				{
-					Flags = Flags & ~PROCESS_CALLBACK_FILTER_ENABLED;
-					NLocal::g_OptionalFunctions.m_fSetProcessUserModeExceptionPolicy(Flags);
-				}
-			}
-			else if (NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo)
-			{
-				SYSTEM_INFO NativeSystemInfo;
-				NLocal::g_OptionalFunctions.m_fGetNativeSystemInfo(&NativeSystemInfo);
-				// Check that we are running Vista SP1 or later
-				if
-				(
-					NLocal::g_VersionInfo.dwMajorVersion == 6
-					&& NLocal::g_VersionInfo.dwMinorVersion < 2 // Fixed in Windows 8
-					&& (NLocal::g_VersionInfo.wServicePackMajor >= 1 || NLocal::g_VersionInfo.dwMinorVersion > 0)
-				)
-				{
-					// Check that we are running on AMD64
-					if (NativeSystemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-					{
-						// We need to add our hack
-						m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1, fs_VectoredHandler2);
-						bInstalled = true;
-					}
-				}
-			}
-			if (!bInstalled)
-				m_pVistaExceptinoHackVectoredHandler = NLocal::g_OptionalFunctions.m_fAddVectoredExceptionHandler(1, fs_VectoredHandler3);
-		}
 	}
-
-	void f_UninstallVistaExceptionHack()
-	{
-		if (m_pVistaExceptinoHackVectoredHandler)
-		{
-			if (NLocal::g_OptionalFunctions.m_fRemoveVectoredExceptionHandler)
-				NLocal::g_OptionalFunctions.m_fRemoveVectoredExceptionHandler(m_pVistaExceptinoHackVectoredHandler);
-
-			m_pVistaExceptinoHackVectoredHandler = nullptr;
-		}
-	}
+}
 #endif
-};
 
 static inline_small CSystemWindowsMSVC *fg_GetLocalSys()
 {

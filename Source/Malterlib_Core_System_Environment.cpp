@@ -11,50 +11,58 @@ namespace NMib
 	{
 		struct CSubSystem_Core_Environment : public CSubSystem
 		{
-			CSubSystem_Core_Environment()
-				: m_Environment(NSys::fg_Process_GetEnvironmentVariables_NonProtected())
-			{
-				auto *pProtected = m_Environment.f_FindEqual("MalterlibProtectedEnvironment");
-				if (!pProtected)
-					return;
+			CSubSystem_Core_Environment();
 
-				CStr ToProtect = *pProtected;
-				m_Environment.f_Remove(pProtected);
+			void f_PrepareFork() override;
 
-				for (auto &Variable : ToProtect.f_Split<true>(";"))
-				{
-					auto *pValue = m_Environment.f_FindEqual(Variable);
-					if (!pValue)
-						continue;
-					m_ProtectedEnvironment[Variable] = *pValue;
-					m_Environment.f_Remove(Variable);
-				}
+			void f_ForkedParent() override;
 
-				m_ProtectedEnvironment["MalterlibProtectedEnvironment"] = ToProtect;
-			}
-
-			void f_PrepareFork() override
-			{
-				m_Lock.f_Lock();
-				m_Lock.f_PrepareFork();
-			}
-
-			void f_ForkedParent() override
-			{
-				m_Lock.f_ForkedParent();
-				m_Lock.f_Unlock();
-			}
-
-			void f_ForkedChild() override
-			{
-				m_Lock.f_ForkedChild();
-				m_Lock.f_Unlock();
-			}
+			void f_ForkedChild() override;
 
 			NThread::CMutualManyRead m_Lock;
 			CSystemEnvironment m_Environment;
 			CSystemEnvironment m_ProtectedEnvironment;
 		};
+
+		CSubSystem_Core_Environment::CSubSystem_Core_Environment()
+			: m_Environment(NSys::fg_Process_GetEnvironmentVariables_NonProtected())
+		{
+			auto *pProtected = m_Environment.f_FindEqual("MalterlibProtectedEnvironment");
+			if (!pProtected)
+				return;
+
+			CStr ToProtect = *pProtected;
+			m_Environment.f_Remove(pProtected);
+
+			for (auto &Variable : ToProtect.f_Split<true>(";"))
+			{
+				auto *pValue = m_Environment.f_FindEqual(Variable);
+				if (!pValue)
+					continue;
+				m_ProtectedEnvironment[Variable] = *pValue;
+				m_Environment.f_Remove(Variable);
+			}
+
+			m_ProtectedEnvironment["MalterlibProtectedEnvironment"] = ToProtect;
+		}
+
+		void CSubSystem_Core_Environment::f_PrepareFork()
+		{
+			m_Lock.f_Lock();
+			m_Lock.f_PrepareFork();
+		}
+
+		void CSubSystem_Core_Environment::f_ForkedParent()
+		{
+			m_Lock.f_ForkedParent();
+			m_Lock.f_Unlock();
+		}
+
+		void CSubSystem_Core_Environment::f_ForkedChild()
+		{
+			m_Lock.f_ForkedChild();
+			m_Lock.f_Unlock();
+		}
 
 		constinit TCSubSystem<CSubSystem_Core_Environment, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Environment = {DAggregateInit};
 	}

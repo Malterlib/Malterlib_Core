@@ -41,6 +41,15 @@ struct CWindowsSocket
 		TCBinaryStreamFile<> m_UnixFile;
 	};
 
+	CWindowsSocket
+		(
+			SOCKET _Socket
+			, EWindowsSocketMode _Mode
+			, EWindowsSocketEvent _Events
+			, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+		)
+	;
+
 	uint32 m_Magic = 0x4EA11E49; // Cross-module ABI: preserve the first three member offsets for older socket layouts.
 	uint32 m_Version = 0x102;
 
@@ -76,15 +85,6 @@ struct CWindowsSocket
 	NMib::NSys::CIoLoopRegistration *m_pIoRegistration = nullptr; // Non-null while registered; the loop owns this opaque registration.
 	bool m_bInheritable = false;                                  // Set before start to avoid permanent completion binding; listeners pass it to accepted sockets.
 	bool m_bFromInherit = false;                                  // Handed over by another process, see CIoLoopRegisterOptions::m_bInheritedHandle
-
-	CWindowsSocket
-		(
-			SOCKET _Socket
-			, EWindowsSocketMode _Mode
-			, EWindowsSocketEvent _Events
-			, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-		)
-	;
 };
 
 #if DMibConfig_IoDebug_Enable
@@ -95,44 +95,6 @@ struct CIoSubSystem_Windows;
 
 struct CWindowsSocketContext
 {
-protected:
-	bool mp_bInitFailed;
-	bool mp_bWsaStarted = false;
-
-	CIoSubSystem_Windows *mp_pIo = nullptr;
-
-	CAddressResolver mp_Resolver;
-
-	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv4 const &_InAddr, sockaddr_in &_OutAddr) const;
-	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv6 const &_InAddr, sockaddr_in6 &_OutAddr) const;
-	void fp_FromNative(sockaddr_in const &_InAddr, NMib::NNetwork::CNetAddressTCPv4 &_OutAddr) const;
-	void fp_FromNative(sockaddr_in6 const &_InAddr, NMib::NNetwork::CNetAddressTCPv6 &_OutAddr) const;
-
-	auto fp_Connect
-		(
-			CWindowsAddress const &_Address
-			, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			, CWindowsAddress const *_pBindAddress
-		)
-		-> CWindowsSocket *
-	;
-
-	auto fp_CreateSocket
-		(
-			SOCKET _Socket
-			, EWindowsSocketMode _Mode
-			, EWindowsSocketEvent _Events
-			, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
-			, bool _bFromInherit = false
-		)
-		-> CWindowsSocket *
-	;
-	void fp_DestroySocket(CWindowsSocket *_pSocket);
-	void fp_RemoveUnixListenFile(CWindowsSocket *_pSocket);
-
-	TCUniquePointer<CWindowsSocket::CUnixListenState> fp_PrepareUnixListen(CWindowsAddress &o_Address);
-
-public:
 	CWindowsSocketContext();
 	~CWindowsSocketContext();
 
@@ -218,4 +180,41 @@ public:
 
 	CWindowsAddress *f_GetPeerAddress(CWindowsSocket *_pSocket);
 	uint32 f_GetListenPort(CWindowsSocket *_pSocket);
+
+protected:
+	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv4 const &_InAddr, sockaddr_in &_OutAddr) const;
+	void fp_ToNative(NMib::NNetwork::CNetAddressTCPv6 const &_InAddr, sockaddr_in6 &_OutAddr) const;
+	void fp_FromNative(sockaddr_in const &_InAddr, NMib::NNetwork::CNetAddressTCPv4 &_OutAddr) const;
+	void fp_FromNative(sockaddr_in6 const &_InAddr, NMib::NNetwork::CNetAddressTCPv6 &_OutAddr) const;
+
+	auto fp_Connect
+		(
+			CWindowsAddress const &_Address
+			, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			, CWindowsAddress const *_pBindAddress
+		)
+		-> CWindowsSocket *
+	;
+
+	auto fp_CreateSocket
+		(
+			SOCKET _Socket
+			, EWindowsSocketMode _Mode
+			, EWindowsSocketEvent _Events
+			, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange
+			, bool _bFromInherit = false
+		)
+		-> CWindowsSocket *
+	;
+	void fp_DestroySocket(CWindowsSocket *_pSocket);
+	void fp_RemoveUnixListenFile(CWindowsSocket *_pSocket);
+
+	TCUniquePointer<CWindowsSocket::CUnixListenState> fp_PrepareUnixListen(CWindowsAddress &o_Address);
+
+	bool mp_bInitFailed;
+	bool mp_bWsaStarted = false;
+
+	CIoSubSystem_Windows *mp_pIo = nullptr;
+
+	CAddressResolver mp_Resolver;
 };

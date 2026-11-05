@@ -521,28 +521,20 @@ struct CTest2
 {
 	// pMemberFunctionPublic:
 	// f_
-	void f_Test()
-	{
-	}
+	void f_Test();
 	// f_, recursive
-	void f_TestRecursive()
-	{
-		if (g_Test)
-			return f_TestRecursive();
-	}
+	void f_TestRecursive();
 
 	// pMemberStaticFunctionPublic
 	// fs_
-	static void fs_Test()
-	{
-	}
+	static void fs_Test();
 
 	// fs_, recursive
-	static void fs_TestRecursive()
-	{
-		if (g_Test)
-			return fs_TestRecursive();
-	}
+	static void fs_TestRecursive();
+
+	// pMemberConstantPublic:
+	// mc_
+	static constexpr uint32 mc_Test = 0;
 
 	// pMemberVariablePublic:
 	// m_
@@ -552,37 +544,25 @@ struct CTest2
 	// ms_
 	static uint32 ms_Test;
 
-	// pMemberConstantPublic:
-	// mc_
-	static constexpr uint32 mc_Test = 0;
-
 private:
 
 	// pMemberFunctionPrivate:
 	// fp_
-	void fp_Test()
-	{
-	}
+	void fp_Test();
 
 	// fp_, recursive
-	void fp_TestRecursive()
-	{
-		if (g_Test)
-			return fp_TestRecursive();
-	}
+	void fp_TestRecursive();
 
 	// pMemberStaticFunctionPrivate
 	// fsp_
-	static void fsp_Test()
-	{
-	}
+	static void fsp_Test();
 
 	// fsp_, recursive
-	static void fsp_TestRecursive()
-	{
-		if (g_Test)
-			return fsp_TestRecursive();
-	}
+	static void fsp_TestRecursive();
+
+	// pMemberConstantPrivate:
+	// mcp_
+	static constexpr uint32 mcp_Test = 0;
 
 	// pMemberVariablePrivate:
 	// mp_
@@ -592,11 +572,47 @@ private:
 	// msp_
 	static uint32 msp_Test;
 
-	// pMemberConstantPrivate:
-	// mcp_
-	static constexpr uint32 mcp_Test = 0;
-
 };
+
+void CTest2::f_Test()
+{
+}
+
+void CTest2::f_TestRecursive()
+{
+	if (g_Test)
+		return f_TestRecursive();
+}
+
+void CTest2::fs_Test()
+{
+}
+
+void CTest2::fs_TestRecursive()
+{
+	if (g_Test)
+		return fs_TestRecursive();
+}
+
+void CTest2::fp_Test()
+{
+}
+
+void CTest2::fp_TestRecursive()
+{
+	if (g_Test)
+		return fp_TestRecursive();
+}
+
+void CTest2::fsp_Test()
+{
+}
+
+void CTest2::fsp_TestRecursive()
+{
+	if (g_Test)
+		return fsp_TestRecursive();
+}
 
 // Params
 

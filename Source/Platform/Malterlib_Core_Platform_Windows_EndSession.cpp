@@ -10,102 +10,114 @@ namespace NMib::NPlatform
 		// Session-end broadcasts need a hidden top-level window; message-only windows never receive them.
 		struct CEndSessionThread : public NThread::CThread
 		{
-			NStr::CStr f_GetThreadName() override
-			{
-				return NStr::CStr("End Session Listener");
-			}
+			NStr::CStr f_GetThreadName() override;
 
-			aint f_Main() override
-			{
-				NStr::CFStr256 ClassName = NStr::CFStr256::CFormat("MalterlibEndSessionClass_PID_0x{nfh}_THIS_0x{nfh}") << (umint)GetCurrentProcessId() << (umint)this;
+			aint f_Main() override;
 
-				WNDCLASSA WndClass;
-				memset(&WndClass, 0, sizeof(WndClass));
-				WndClass.lpszClassName = ClassName;
-				WndClass.lpfnWndProc = &fsp_WindowProc;
-				WndClass.hInstance = g_pDllInstanceHandle;
-				if (!RegisterClassA(&WndClass))
-				{
-					mp_WindowSettled.f_SetSignaled();
-					return 0;
-				}
-
-				mp_pWindow = CreateWindowExA(0, ClassName, ClassName, WS_OVERLAPPED, 0, 0, 0, 0, nullptr, nullptr, g_pDllInstanceHandle, nullptr);
-				mp_WindowSettled.f_SetSignaled();
-
-				if (!mp_pWindow)
-				{
-					UnregisterClassA(ClassName, g_pDllInstanceHandle);
-					return 0;
-				}
-
-				MSG Message;
-				while (GetMessageA(&Message, nullptr, 0, 0) > 0)
-				{
-					TranslateMessage(&Message);
-					DispatchMessageA(&Message);
-				}
-
-				UnregisterClassA(ClassName, g_pDllInstanceHandle);
-
-				return 0;
-			}
-
-			umint f_Stop(bool _bBlock) override
-			{
-				if (f_GetState() == NThread::EThreadState_Running)
-				{
-					mp_WindowSettled.f_Wait();
-					if (mp_pWindow)
-						PostMessageA(mp_pWindow, WM_CLOSE, 0, 0);
-				}
-
-				return NThread::CThread::f_Stop(_bBlock);
-			}
+			umint f_Stop(bool _bBlock) override;
 
 		private:
-			static LRESULT WINAPI fsp_WindowProc(HWND _pWindow, UINT _Message, WPARAM _WParam, LPARAM _LParam)
-			{
-				switch (_Message)
-				{
-				case WM_ENDSESSION:
-					// Another application can veto session end; commit state only for a confirmed WM_ENDSESSION.
-					if (_WParam)
-						fg_ReportIsShuttingDown();
-					break;
-
-				case WM_CLOSE:
-					DestroyWindow(_pWindow);
-					return 0;
-
-				case WM_DESTROY:
-					PostQuitMessage(0);
-					return 0;
-
-				default: break;
-				}
-
-				return DefWindowProcA(_pWindow, _Message, _WParam, _LParam);
-			}
+			static LRESULT WINAPI fsp_WindowProc(HWND _pWindow, UINT _Message, WPARAM _WParam, LPARAM _LParam);
 
 			NThread::CEvent mp_WindowSettled;
 			HWND mp_pWindow = nullptr;
 		};
 
-		struct CSubSystem_Core_EndSession : public CSubSystem
+		NStr::CStr CEndSessionThread::f_GetThreadName()
 		{
-			CSubSystem_Core_EndSession()
+			return NStr::CStr("End Session Listener");
+		}
+
+		aint CEndSessionThread::f_Main()
+		{
+			NStr::CFStr256 ClassName = NStr::CFStr256::CFormat("MalterlibEndSessionClass_PID_0x{nfh}_THIS_0x{nfh}") << (umint)GetCurrentProcessId() << (umint)this;
+
+			WNDCLASSA WndClass;
+			memset(&WndClass, 0, sizeof(WndClass));
+			WndClass.lpszClassName = ClassName;
+			WndClass.lpfnWndProc = &fsp_WindowProc;
+			WndClass.hInstance = g_pDllInstanceHandle;
+			if (!RegisterClassA(&WndClass))
 			{
-				m_Thread.f_Start(EExecutionPriority_High);
+				mp_WindowSettled.f_SetSignaled();
+				return 0;
 			}
 
-			void f_DestroyThreadSpecific() override
+			mp_pWindow = CreateWindowExA(0, ClassName, ClassName, WS_OVERLAPPED, 0, 0, 0, 0, nullptr, nullptr, g_pDllInstanceHandle, nullptr);
+			mp_WindowSettled.f_SetSignaled();
+
+			if (!mp_pWindow)
 			{
-				m_Thread.f_Stop(true);
+				UnregisterClassA(ClassName, g_pDllInstanceHandle);
+				return 0;
 			}
+
+			MSG Message;
+			while (GetMessageA(&Message, nullptr, 0, 0) > 0)
+			{
+				TranslateMessage(&Message);
+				DispatchMessageA(&Message);
+			}
+
+			UnregisterClassA(ClassName, g_pDllInstanceHandle);
+
+			return 0;
+		}
+
+		umint CEndSessionThread::f_Stop(bool _bBlock)
+		{
+			if (f_GetState() == NThread::EThreadState_Running)
+			{
+				mp_WindowSettled.f_Wait();
+				if (mp_pWindow)
+					PostMessageA(mp_pWindow, WM_CLOSE, 0, 0);
+			}
+
+			return NThread::CThread::f_Stop(_bBlock);
+		}
+
+		LRESULT WINAPI CEndSessionThread::fsp_WindowProc(HWND _pWindow, UINT _Message, WPARAM _WParam, LPARAM _LParam)
+		{
+			switch (_Message)
+			{
+			case WM_ENDSESSION:
+				// Another application can veto session end; commit state only for a confirmed WM_ENDSESSION.
+				if (_WParam)
+					fg_ReportIsShuttingDown();
+				break;
+
+			case WM_CLOSE:
+				DestroyWindow(_pWindow);
+				return 0;
+
+			case WM_DESTROY:
+				PostQuitMessage(0);
+				return 0;
+
+			default: break;
+			}
+
+			return DefWindowProcA(_pWindow, _Message, _WParam, _LParam);
+		}
+
+		struct CSubSystem_Core_EndSession : public CSubSystem
+		{
+			CSubSystem_Core_EndSession();
+
+			void f_DestroyThreadSpecific() override;
 
 			CEndSessionThread m_Thread;
 		};
+
+		CSubSystem_Core_EndSession::CSubSystem_Core_EndSession()
+		{
+			m_Thread.f_Start(EExecutionPriority_High);
+		}
+
+		void CSubSystem_Core_EndSession::f_DestroyThreadSpecific()
+		{
+			m_Thread.f_Stop(true);
+		}
 
 		constinit TCSubSystem<CSubSystem_Core_EndSession, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_EndSession = {DAggregateInit};
 	}

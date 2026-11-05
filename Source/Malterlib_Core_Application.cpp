@@ -13,13 +13,15 @@ namespace NMib
 	{
 		struct CSubSystem_Core_Application : public CSubSystem
 		{
-			NStorage::TCUniquePointer<CApplication> m_pApplication;
+			void f_ExitModule() override;
 
-			void f_ExitModule() override
-			{
-				m_pApplication.f_Clear();
-			}
+			NStorage::TCUniquePointer<CApplication> m_pApplication;
 		};
+
+		void CSubSystem_Core_Application::f_ExitModule()
+		{
+			m_pApplication.f_Clear();
+		}
 
 		constinit TCSubSystem<CSubSystem_Core_Application, ESubSystemDestruction_BeforeMemoryManager> g_SubSystem_Core_Application = {DAggregateInit};
 	}

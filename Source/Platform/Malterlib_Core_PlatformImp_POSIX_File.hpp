@@ -563,9 +563,10 @@ struct CPOSIXFile
 	{
 	}
 
-	int m_BSDFile;
 	virtual ch8 const *f_GetFileName() = 0;
 	virtual void f_Delete() = 0;
+
+	int m_BSDFile;
 };
 
 template <typename t_CStr, typename t_CAllocator>

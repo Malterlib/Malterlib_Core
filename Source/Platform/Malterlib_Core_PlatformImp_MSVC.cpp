@@ -121,45 +121,60 @@ void __cdecl fg_CreateMalterlib();
 
 struct CWin32File
 {
-	virtual ~CWin32File()
-	{
-	}
+	virtual ~CWin32File();
 
-	void *m_pFile;
-	NMib::NFile::EFileOpen m_Flags;
 	virtual CWStrPtr f_GetName() const = 0;
 	virtual void f_Delete() = 0;
 	virtual bool f_IsNonTracked() = 0;
+
+	void *m_pFile;
+	NMib::NFile::EFileOpen m_Flags;
 };
+
+CWin32File::~CWin32File()
+{
+}
 
 template <typename t_CStr, typename t_CAllocator>
 struct TCWin32File : public CWin32File
 {
-	TCWin32File(t_CStr const &_FileName)
-		: mp_FileName(_FileName)
-	{
-	}
+	TCWin32File(t_CStr const &_FileName);
 
-	virtual CWStrPtr f_GetName() const override
-	{
-		CWStrPtr Ret;
-		Ret.f_SetConstPtr(mp_FileName.f_GetStr(), mp_FileName.f_GetLen());
-		return Ret;
-	}
+	virtual CWStrPtr f_GetName() const override;
 
-	virtual void f_Delete() override
-	{
-		TCUniquePointer<TCWin32File, t_CAllocator> pPtr = fg_Explicit(this);
-	}
+	virtual void f_Delete() override;
 
-	virtual bool f_IsNonTracked() override
-	{
-		return !t_CAllocator::mc_Reporting;
-	}
+	virtual bool f_IsNonTracked() override;
 
 private:
 	t_CStr mp_FileName;
 };
+
+template <typename t_CStr, typename t_CAllocator>
+TCWin32File<t_CStr, t_CAllocator>::TCWin32File(t_CStr const &_FileName)
+	: mp_FileName(_FileName)
+{
+}
+
+template <typename t_CStr, typename t_CAllocator>
+CWStrPtr TCWin32File<t_CStr, t_CAllocator>::f_GetName() const
+{
+	CWStrPtr Ret;
+	Ret.f_SetConstPtr(mp_FileName.f_GetStr(), mp_FileName.f_GetLen());
+	return Ret;
+}
+
+template <typename t_CStr, typename t_CAllocator>
+void TCWin32File<t_CStr, t_CAllocator>::f_Delete()
+{
+	TCUniquePointer<TCWin32File, t_CAllocator> pPtr = fg_Explicit(this);
+}
+
+template <typename t_CStr, typename t_CAllocator>
+bool TCWin32File<t_CStr, t_CAllocator>::f_IsNonTracked()
+{
+	return !t_CAllocator::mc_Reporting;
+}
 
 namespace
 {
@@ -2416,21 +2431,27 @@ namespace
 
 	struct CEnumThreadEntrySort
 	{
-		COrdering_Partial operator () (CEnumThreadEntry const &_Left, CEnumThreadEntry const &_Right) const
-		{
-			return _Left.m_ThreadID <=> _Right.m_ThreadID;
-		}
+		COrdering_Partial operator () (CEnumThreadEntry const &_Left, CEnumThreadEntry const &_Right) const;
 
-		COrdering_Partial operator () (CEnumThreadEntry const &_Left, umint _Right) const
-		{
-			return _Left.m_ThreadID <=> _Right;
-		}
+		COrdering_Partial operator () (CEnumThreadEntry const &_Left, umint _Right) const;
 
-		COrdering_Partial operator () (umint _Left, CEnumThreadEntry const &_Right) const
-		{
-			return _Left <=> _Right.m_ThreadID;
-		}
+		COrdering_Partial operator () (umint _Left, CEnumThreadEntry const &_Right) const;
 	};
+
+	COrdering_Partial CEnumThreadEntrySort::operator () (CEnumThreadEntry const &_Left, CEnumThreadEntry const &_Right) const
+	{
+		return _Left.m_ThreadID <=> _Right.m_ThreadID;
+	}
+
+	COrdering_Partial CEnumThreadEntrySort::operator () (CEnumThreadEntry const &_Left, umint _Right) const
+	{
+		return _Left.m_ThreadID <=> _Right;
+	}
+
+	COrdering_Partial CEnumThreadEntrySort::operator () (umint _Left, CEnumThreadEntry const &_Right) const
+	{
+		return _Left <=> _Right.m_ThreadID;
+	}
 
 	bool fg_ThreadReady(HANDLE _pThread, bool &o_bValid)
 	{
@@ -4460,36 +4481,47 @@ void NSys::NFile::fg_UnlockRange(void *_pFile, CMibFilePos const &_Offset, CMibF
 
 struct CMalterlibExtendedAttributes
 {
-	EFileAttrib m_ExtendedAttributes;
-	CMalterlibExtendedAttributes()
-		: m_ExtendedAttributes(NFile::EFileAttrib_None)
-	{
-	}
+	CMalterlibExtendedAttributes();
+
+	template <typename tf_CStream>
+	void f_Feed(tf_CStream &_Stream) const;
+
+	template <typename tf_CStream>
+	void f_Consume(tf_CStream &_Stream);
+
+	bool operator == (CMalterlibExtendedAttributes const &_Right) const noexcept;
 
 	static constexpr uint32 mc_Version = 0x101;
 
-	template <typename tf_CStream>
-	void f_Feed(tf_CStream &_Stream) const
-	{
-		_Stream << mc_Version;
-		_Stream << m_ExtendedAttributes;
-	}
-
-	template <typename tf_CStream>
-	void f_Consume(tf_CStream &_Stream)
-	{
-		uint32 Version;
-		_Stream >> Version;
-		if (Version > mc_Version)
-			return;
-		_Stream >> m_ExtendedAttributes;
-	}
-
-	bool operator == (CMalterlibExtendedAttributes const &_Right) const noexcept
-	{
-		return m_ExtendedAttributes == _Right.m_ExtendedAttributes;
-	}
+	EFileAttrib m_ExtendedAttributes;
 };
+
+CMalterlibExtendedAttributes::CMalterlibExtendedAttributes()
+	: m_ExtendedAttributes(NFile::EFileAttrib_None)
+{
+}
+
+template <typename tf_CStream>
+void CMalterlibExtendedAttributes::f_Feed(tf_CStream &_Stream) const
+{
+	_Stream << mc_Version;
+	_Stream << m_ExtendedAttributes;
+}
+
+template <typename tf_CStream>
+void CMalterlibExtendedAttributes::f_Consume(tf_CStream &_Stream)
+{
+	uint32 Version;
+	_Stream >> Version;
+	if (Version > mc_Version)
+		return;
+	_Stream >> m_ExtendedAttributes;
+}
+
+bool CMalterlibExtendedAttributes::operator == (CMalterlibExtendedAttributes const &_Right) const noexcept
+{
+	return m_ExtendedAttributes == _Right.m_ExtendedAttributes;
+}
 
 namespace
 {
@@ -5169,27 +5201,11 @@ void NSys::NFile::fg_SetGroupOnLink(CStr const &_Path, CStr const &_Group)
 
 struct CWin32FileFind
 {
-	CWin32FileFind()
-	{
-		m_pFindHandle = nullptr;
-		m_Mode = 0;
-	}
+	CWin32FileFind();
 
-	~CWin32FileFind()
-	{
-		if (m_pFindHandle)
-			FindClose(m_pFindHandle);
-	}
+	~CWin32FileFind();
 
-	EFileAttrib f_ParseAttrib()
-	{
-		uint32 FileAttribs = m_FindData.dwFileAttributes;
-		CWStr OriginalFileName = m_FullPath + m_FindData.cFileName;
-
-		EFileAttrib MalterlibAttr = fg_GetAttributesInternalWithAttribs<CWStr, CStr, false>(OriginalFileName, FileAttribs);
-
-		return MalterlibAttr;
-	}
+	EFileAttrib f_ParseAttrib();
 
 	CWStr m_FullPath;
 	CStr m_LastFullName;
@@ -5197,6 +5213,28 @@ struct CWin32FileFind
 	void *m_pFindHandle;
 	umint m_Mode;
 };
+
+CWin32FileFind::CWin32FileFind()
+{
+	m_pFindHandle = nullptr;
+	m_Mode = 0;
+}
+
+CWin32FileFind::~CWin32FileFind()
+{
+	if (m_pFindHandle)
+		FindClose(m_pFindHandle);
+}
+
+EFileAttrib CWin32FileFind::f_ParseAttrib()
+{
+	uint32 FileAttribs = m_FindData.dwFileAttributes;
+	CWStr OriginalFileName = m_FullPath + m_FindData.cFileName;
+
+	EFileAttrib MalterlibAttr = fg_GetAttributesInternalWithAttribs<CWStr, CStr, false>(OriginalFileName, FileAttribs);
+
+	return MalterlibAttr;
+}
 
 //fs_GetExpandedPath
 
@@ -5670,35 +5708,45 @@ namespace
 	{
 		CWindowsHandle() = default;
 
-		CWindowsHandle(HANDLE _pHandle)
-			: m_pHandle(_pHandle)
-		{
-		}
+		CWindowsHandle(HANDLE _pHandle);
 
-		CWindowsHandle(CWindowsHandle &&_Other)
-			: m_pHandle(fg_Exchange(_Other.m_pHandle, nullptr))
-		{
-		}
+		CWindowsHandle(CWindowsHandle &&_Other);
 
-		~CWindowsHandle()
-		{
-			if (m_pHandle)
-				CloseHandle(m_pHandle);
-		}
+		~CWindowsHandle();
 
-		void f_Clear()
-		{
-			if (m_pHandle)
-				CloseHandle(fg_Exchange(m_pHandle, nullptr));
-		}
+		void f_Clear();
 
-		operator bool () const
-		{
-			return !!m_pHandle;
-		}
+		operator bool () const;
 
 		HANDLE m_pHandle = nullptr;
 	};
+
+	CWindowsHandle::CWindowsHandle(HANDLE _pHandle)
+		: m_pHandle(_pHandle)
+	{
+	}
+
+	CWindowsHandle::CWindowsHandle(CWindowsHandle &&_Other)
+		: m_pHandle(fg_Exchange(_Other.m_pHandle, nullptr))
+	{
+	}
+
+	CWindowsHandle::~CWindowsHandle()
+	{
+		if (m_pHandle)
+			CloseHandle(m_pHandle);
+	}
+
+	void CWindowsHandle::f_Clear()
+	{
+		if (m_pHandle)
+			CloseHandle(fg_Exchange(m_pHandle, nullptr));
+	}
+
+	CWindowsHandle::operator bool () const
+	{
+		return !!m_pHandle;
+	}
 
 	template <typename tf_CWStr>
 	static CWindowsHandle fg_PreparePosixSemanticsRenameOrDelete(tf_CWStr const &_WindowsFile)

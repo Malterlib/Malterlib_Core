@@ -11,11 +11,13 @@ namespace NMib::NPlatform
 	{
 		struct CAllowInvalidExit
 		{
-			CAllowInvalidExit()
-			{
-				g_bAllowInvalidExit = true;
-			}
+			CAllowInvalidExit();
 		};
+
+		CAllowInvalidExit::CAllowInvalidExit()
+		{
+			g_bAllowInvalidExit = true;
+		}
 
 		CAllowInvalidExit g_AllowInvalidExit;
 	}
