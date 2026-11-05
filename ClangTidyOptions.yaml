@@ -182,6 +182,30 @@ FunctionObjectTypes:
   - TCActorFunctorWithID
   - '*Functor*'
 
+# The classes FunctionObjectTypes matches that aren't function objects, also through a base: the call operators of the
+# actor functor helpers and of the builders they give, `g_ActorFunctor(Actor)`, only bind an actor or a subscription and
+# give a builder.
+NotFunctionObjectTypes:
+  - CActorFunctorHelper
+  - TCActorFunctorHelper
+  - CActorFunctorWeakHelper
+  - TCActorFunctorWeakHelper
+  - CActorFunctorHelperWithProperties
+  - TCActorFunctorHelperWithProperties
+  - CActorFunctorWeakHelperWithProperties
+  - TCActorFunctorWeakHelperWithProperties
+
+# The opaque handles of systems that are pointers on some targets and an integer, an array or a structure on others,
+# which take no concept prefix, as none would fit every target, also through an alias of one.
+OpaqueHandleTypes:
+  - pthread_t
+  - pthread_mutex_t
+  - va_list
+  - CMibArgList
+  - posix_spawn_file_actions_t
+  - posix_spawnattr_t
+  - CMdbMutexType
+
 IteratorTypes:
   - '*Iterator*'
   - '*Cursor*'
