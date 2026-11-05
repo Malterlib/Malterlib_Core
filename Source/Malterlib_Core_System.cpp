@@ -40,7 +40,7 @@ namespace NMib
 	{
 		bool fg_Compiler_MakeActive(int _Dummy, ...)
 		{
-			CMibArgList Args; // NOLINT(malterlib-conceptual-prefix): CMibArgList is va_list, a pointer on macOS and Windows and an array on Linux
+			CMibArgList Args;
 			DMibPArgListStart(Args, _Dummy);
 			bool bRet = fg_Compiler_MakeActive(DMibPArgListNextArg(Args, void *));
 			DMibPArgListEnd(Args);

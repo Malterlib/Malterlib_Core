@@ -1166,7 +1166,6 @@ namespace NMib
 				if (PathLen > 0 && Path.f_GetAt(PathLen - 1) == '/')
 					Path = Path.f_Left(PathLen - 1);
 
-				// NOLINTNEXTLINE(malterlib-conceptual-prefix): FSEventStreamEventFlags is an integer, which the check takes for a function type by its name
 				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, iEvent);
 
 				if (NMib::CSystem::ms_PlatformVersion >= 10'15'00)
@@ -1414,7 +1413,6 @@ namespace NMib
 				if (EventPath.f_EndsWith("/"))
 					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
 
-				// NOLINTNEXTLINE(malterlib-conceptual-prefix): FSEventStreamEventFlags is an integer, which the check takes for a function type by its name
 				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, iEvent);
 
 				if (ProtectedDirs.f_FindEqual(EventPath))
@@ -1553,7 +1551,6 @@ namespace NMib
 				if (EventPath.f_EndsWith("/"))
 					EventPath = EventPath.f_Left(EventPath.f_GetLen() - 1);
 
-				// NOLINTNEXTLINE(malterlib-conceptual-prefix): FSEventStreamEventFlags is an integer, which the check takes for a function type by its name
 				FSEventStreamEventFlags Flags = fg_ReadArrayTSanWorkaround(_Flags, iEvent);
 
 				// Events name the resolved or synthetic root; hints are relative to the root the user gave
@@ -1813,7 +1810,7 @@ namespace NMib
 			pNotification->m_NotificationPathCompare.m_ResolvedPath = NotificationPath + "/";
 			pNotification->m_NotificationPathCompare.m_SyntheticPath = SyntheticPath + "/";
 
-			FSEventStreamContext CallbackContext; // NOLINT(malterlib-conceptual-prefix): FSEventStreamContext is a struct, which the check takes for a function type by its name
+			FSEventStreamContext CallbackContext;
 			CallbackContext.version = 0;
 			CallbackContext.info = pNotification.f_Get();
 			CallbackContext.retain = nullptr;
@@ -1826,7 +1823,7 @@ namespace NMib
 			// Path hints never trust flags, so accumulated flags are harmless there
 			pNotification->m_bPathHintsOnly = (_OpenFlags & NFile::EFileChange_PathHintsOnly) != 0;
 
-			FSEventStreamRef pStream; // NOLINT(malterlib-conceptual-prefix): FSEventStreamRef is a pointer, which the check takes for a function type by its name
+			FSEventStreamRef pStream;
 
 			/* Create the stream, passing in a callback */
 			pStream = FSEventStreamCreate

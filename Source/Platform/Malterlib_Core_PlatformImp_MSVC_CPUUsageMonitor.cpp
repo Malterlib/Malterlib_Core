@@ -20,11 +20,9 @@ namespace NMSVCRuntime
 	public:
 		NMib::NSystem::CSystemCPUUsage f_GetUsage(bool &_bChanged)
 		{
-			// NOLINTBEGIN(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
 			FILETIME LastIdle;
 			FILETIME LastUser;
 			FILETIME LastKernel;
-			// NOLINTEND(malterlib-conceptual-prefix)
 			GetSystemTimes(&LastIdle, &LastKernel, &LastUser);
 
 			uint64 IdleTime = uint64(LastIdle.dwHighDateTime) << 32 | uint64(LastIdle.dwLowDateTime);
@@ -63,11 +61,9 @@ namespace NMSVCRuntime
 		}
 
 	private:
-		// NOLINTBEGIN(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
 		FILETIME mp_LastIdle;
 		FILETIME mp_LastUser;
 		FILETIME mp_LastKernel;
-		// NOLINTEND(malterlib-conceptual-prefix)
 
 		NMib::NSystem::CSystemCPUUsage mp_LastRet;
 	};

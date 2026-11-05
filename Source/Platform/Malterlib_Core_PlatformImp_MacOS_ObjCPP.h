@@ -124,7 +124,7 @@ namespace NMib
 
 				DMibListLinkDS_Link(CNotification, m_Link);
 
-				FSEventStreamRef m_pEventStream; // NOLINT(malterlib-conceptual-prefix): FSEventStreamRef is a pointer, which the check takes for a function type by its name
+				FSEventStreamRef m_pEventStream;
 				CFileChangeNoticationContext *m_pContext;
 				NMib::NFile::EFileChange m_Flags;
 				CNotificationPath m_NotificationPath;

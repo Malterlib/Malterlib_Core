@@ -2500,12 +2500,10 @@ void fg_EnumProcessThreads(TCFunctionNoAlloc<void (umint _ThreadID)> const &_fOn
 					}
 					if (SuspendThread(_pThread) == 0xFFFFFFFF)
 					{
-						// NOLINTBEGIN(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
 						FILETIME CreationTime = {0};
 						FILETIME ExitTime = {0};
 						FILETIME KernelTime = {0};
 						FILETIME UserTime = {0};
-						// NOLINTEND(malterlib-conceptual-prefix)
 
 						GetThreadTimes(_pThread, &CreationTime, &ExitTime, &KernelTime, &UserTime);
 
@@ -4922,7 +4920,7 @@ void NSys::NFile::fg_FileEnumOtherHandles(void *_pFile, NContainer::TCVector<NMi
 
 void NSys::NFile::fg_SetCreationTime(void *_pFile, NTime::CTime const &_Time)
 {
-	FILETIME Time; // NOLINT(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
+	FILETIME Time;
 	NMib::NFile::NPlatform::fg_Win32_MalterlibTimeToFileTime(_Time, Time);
 
 	if (!SetFileTime(((CWin32File *)_pFile)->m_pFile, &Time, nullptr, nullptr))
@@ -4931,7 +4929,7 @@ void NSys::NFile::fg_SetCreationTime(void *_pFile, NTime::CTime const &_Time)
 
 void NSys::NFile::fg_SetAccessTime(void *_pFile, NTime::CTime const &_Time)
 {
-	FILETIME Time; // NOLINT(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
+	FILETIME Time;
 	NMib::NFile::NPlatform::fg_Win32_MalterlibTimeToFileTime(_Time, Time);
 
 	if (!SetFileTime(((CWin32File *)_pFile)->m_pFile, nullptr, &Time, nullptr))
@@ -4940,7 +4938,7 @@ void NSys::NFile::fg_SetAccessTime(void *_pFile, NTime::CTime const &_Time)
 
 void NSys::NFile::fg_SetWriteTime(void *_pFile, NTime::CTime const &_Time)
 {
-	FILETIME Time; // NOLINT(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
+	FILETIME Time;
 	NMib::NFile::NPlatform::fg_Win32_MalterlibTimeToFileTime(_Time, Time);
 
 	if (!SetFileTime(((CWin32File *)_pFile)->m_pFile, nullptr, nullptr, &Time))
@@ -4949,7 +4947,7 @@ void NSys::NFile::fg_SetWriteTime(void *_pFile, NTime::CTime const &_Time)
 
 NTime::CTime NSys::NFile::fg_GetCreationTime(void *_pFile)
 {
-	FILETIME Time; // NOLINT(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
+	FILETIME Time;
 	if (!GetFileTime(((CWin32File *)_pFile)->m_pFile, &Time, nullptr, nullptr))
 		DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileTime({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
@@ -4958,7 +4956,7 @@ NTime::CTime NSys::NFile::fg_GetCreationTime(void *_pFile)
 
 NTime::CTime NSys::NFile::fg_GetAccessTime(void *_pFile)
 {
-	FILETIME Time; // NOLINT(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
+	FILETIME Time;
 	if (!GetFileTime(((CWin32File *)_pFile)->m_pFile, nullptr, &Time, nullptr))
 		DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileTime({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
@@ -4967,7 +4965,7 @@ NTime::CTime NSys::NFile::fg_GetAccessTime(void *_pFile)
 
 NTime::CTime NSys::NFile::fg_GetWriteTime(void *_pFile)
 {
-	FILETIME Time; // NOLINT(malterlib-conceptual-prefix): FILETIME is a struct, which the check takes for a function type by its name
+	FILETIME Time;
 	if (!GetFileTime(((CWin32File *)_pFile)->m_pFile, nullptr, nullptr, &Time))
 		DMibErrorFile((CStr::CFormat("Windows returned an error from GetFileTime({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
 
@@ -6109,7 +6107,7 @@ namespace NMib::NPlatform
 	// Unlink the name immediately and delete on final handle close. False preserves the platform error.
 	bool fg_SetPosixDeleteDisposition(HANDLE _pFile)
 	{
-		FILE_DISPOSITION_INFO_EX Disposition; // NOLINT(malterlib-conceptual-prefix): FILE_DISPOSITION_INFO_EX is a struct, which the check takes for a function type by its name
+		FILE_DISPOSITION_INFO_EX Disposition;
 
 		Disposition.Flags = FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS;
 		if (NLocal::g_VersionInfo.dwBuildNumber >= 17763) // Windows 10 RS5
