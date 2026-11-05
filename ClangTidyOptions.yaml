@@ -142,6 +142,12 @@ NodeStableContainers:
   - TCSetWithPool
   - TCLinkedList
 
+# The futures, whose destruction doesn't end what makes their results.
+FutureTypes:
+  - TCFuture
+  - TCFutureWithFlags
+  - TCUnsafeFuture
+
 # The smart pointers, function objects and iterators, which the conceptual
 # prefixes p, f and i are for.
 SmartPointerTypes:
