@@ -418,6 +418,30 @@ Repository
 			, AllowsDeletions: false
 			, BypassForcePushAllowances: []
 		}
+		, "favro": {
+			RequiresApprovingReviews: true
+			, RequiredApprovingReviewCount: 1
+			, DismissesStaleReviews: true
+			, BypassPullRequestAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}
+			]
+			, RequiresConversationResolution: true
+			, RequiresLinearHistory: true
+			, RestrictsPushes: true
+			, PushAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}
+			]
+			, IsAdminEnforced: true
+			, AllowsForcePushes: false
+			, AllowsDeletions: false
+			, BypassForcePushAllowances: []
+		}
 		, "hansoft": {
 			RequiresApprovingReviews: true
 			, RequiredApprovingReviewCount: 1
@@ -600,6 +624,35 @@ Repository
 				}, {
 					Type: "App"
 					, Value: "malterlib-review-bot"
+				}
+			]
+		}
+		, "favro": {
+			RequiresApprovingReviews: true
+			, RequiredApprovingReviewCount: 1
+			, DismissesStaleReviews: true
+			, BypassPullRequestAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}
+			]
+			, RequiresConversationResolution: true
+			, RequiresLinearHistory: false
+			, RestrictsPushes: true
+			, PushAllowances: [
+				{
+					Type: "Team"
+					, Value: "pushers"
+				}
+			]
+			, IsAdminEnforced: true
+			, AllowsForcePushes: false
+			, AllowsDeletions: false
+			, BypassForcePushAllowances: [
+				{
+					Type: "Team"
+					, Value: "force-pushers"
 				}
 			]
 		}
