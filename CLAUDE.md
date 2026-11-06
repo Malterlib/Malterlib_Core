@@ -370,6 +370,14 @@ host can: macOS and Linux on macOS, Windows on Windows. Do it in each build syst
 - Space between keyword and parenthesis
 - Use `struct`, not `class`, for Malterlib types. Do not add a leading `public:` section just to expose the default interface. Only use `class` when editing third-party code or when an external API requires that exact spelling.
 
+#### Class Layout
+- Sections come in the order public, protected, private. Write each access label once: no label that repeats the access already in effect, like `public:` after the public members a struct starts with, or a second `private:` after a private section.
+- Within a section, members come in this order: types (nested classes, enums, aliases), constructors and the destructor, other functions (also operators), constants, variables (static and non-static data members).
+- Constants are the static members that are `constexpr`, those declared `const` without their value whose definition is `constexpr` or isn't in the translation unit, and the enumerators a using declaration brings in, `using EKind::EKind_First;` and `using enum EKind;`. A static member declared `const` whose definition isn't `constexpr` is a variable. In a class template only the declaration in the class decides, and a static member declared `const` without its value isn't ordered.
+- A friend declaration that only declares, `friend struct CExample;` or `friend void fg_Run();`, comes first in the private section, before its types, or first in the protected section when a class has protected members but no private ones. A friend class in a class with no bases and no private or protected members of its own grants nothing; with a base it can be needed for inherited protected members or a private base. A friend function in a class without private or protected members can be what makes the function found by argument-dependent lookup, and isn't ordered. A friend that defines a function in the class, a hidden friend, and one a macro writes aren't ordered.
+- When an earlier member is needed to compile, like a private type a public declaration uses, keep it there with a `NOLINT(malterlib-member-order)` that gives the reason.
+- `malterlib-member-order` and `malterlib-struct-not-class` check these rules; `External/llvm-project/clang-tools-extra/docs/clang-tidy/checks/malterlib/member-order.rst` describes the full classification.
+
 #### Parameter Ownership
 - For non-coroutine function parameters that would otherwise take an owning object by value, choose explicit semantics: use `const &` when borrowing/read-only, or `&&` when consuming/moving from the argument.
 - Do not use by-value parameters as a default sink pattern just to allow temporaries and lvalues. If a callsite needs to pass an lvalue to a consuming `&&` parameter, make the copy explicit at the callsite with `fg_TempCopy`.
