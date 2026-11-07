@@ -548,6 +548,41 @@ function AddCoreWorktreeAtHash()
 	AddWorktreeAtHash "$MainSubRepo" "$ExpectedBranch" "$MalterlibScriptPath/Malterlib/Core" "$GitHash"
 }
 
+# Whether a failed clone's output looks like a network or server failure that can pass, the same failures mib retries
+# when it clones repositories.
+function CloneFailureLooksTransient()
+{
+	grep -qE \
+		-e "RPC failed|Recv failure|Send failure|No buffer space available|Connection reset|Operation timed out" \
+		-e "Failed to connect|Could not resolve host|transfer closed|unexpected disconnect|remote end hung up unexpectedly" \
+		-e "early EOF|invalid index-pack output|SSL_ERROR_SYSCALL|HTTP/2 stream|The requested URL returned error: 50[0234]" \
+		"$1"
+}
+
+# Runs git clone with the given arguments, and runs it again, up to six times with a growing delay, while it fails in a
+# way that looks transient.
+function GitCloneWithRetry()
+{
+	local LogFile
+	LogFile=`mktemp`
+
+	local Attempt
+	for Attempt in 1 2 3 4 5 6; do
+		if git clone "$@" 2>&1 | tee "$LogFile"; then
+			rm -f "$LogFile"
+			return 0
+		fi
+
+		if [[ $Attempt == 6 ]] || ! CloneFailureLooksTransient "$LogFile"; then
+			rm -f "$LogFile"
+			return 1
+		fi
+
+		OutputInfo "Clone failed, retrying in $((Attempt * 5)) seconds"
+		sleep $((Attempt * 5))
+	done
+}
+
 function CloneAndSyncCoreCheckout()
 {
 	local GitHash="$1"
@@ -558,7 +593,7 @@ function CloneAndSyncCoreCheckout()
 	RequireMainBranch "Cannot bootstrap Malterlib/Core: main repository is in detached HEAD state"
 
 	OutputInfo "Cloning Malterlib/Core"
-	git clone -n "$MalterlibRepoRoot/Malterlib_Core.git" Malterlib/Core
+	GitCloneWithRetry -n "$MalterlibRepoRoot/Malterlib_Core.git" Malterlib/Core
 
 	ResolveCoreGitHash "Malterlib/Core" "$GitHash"
 	# git clone -n still creates the local default branch at origin/HEAD.
