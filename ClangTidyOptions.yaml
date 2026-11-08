@@ -30,6 +30,17 @@ ForwardFunctions:
 ExchangeFunctions:
   - fg_Exchange
 
+# The function objects that call what they are made of where they are called,
+# on that thread, before the call returns: a local one made of a closure, only
+# called, is that closure. Not the actor functors, which run it on an actor.
+SynchronousFunctionTypes:
+  - TCFunction
+  - TCFunctionMovable
+  - TCFunctionMutable
+  - TCFunctionNoAlloc
+  - TCFunctionSmall
+  - TCFunctionFastCall
+
 # The functions that swap two values.
 SwapFunctions:
   - fg_Swap
