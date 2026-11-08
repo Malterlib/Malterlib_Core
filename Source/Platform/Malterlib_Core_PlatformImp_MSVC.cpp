@@ -5238,6 +5238,16 @@ void *NSys::NFile::fg_FindOpen(CStr const &_FindPattern)
 
 	pFind->m_FullPath = FullPath;
 	pFind->m_pFindHandle = FindFirstFileW(FindPattern, &pFind->m_FindData);
+	if (pFind->m_pFindHandle == INVALID_HANDLE_VALUE)
+	{
+		// As on POSIX, a missing directory or no match is an empty result, and any other failure fails the find.
+		DWORD Error = GetLastError();
+		if (Error != ERROR_FILE_NOT_FOUND && Error != ERROR_PATH_NOT_FOUND && Error != ERROR_NO_MORE_FILES)
+		{
+			fg_DeleteObject(NMemory::CDefaultAllocator(), pFind);
+			DMibErrorFile((CStr::CFormat("Windows returned an error from FindFirstFile({}): {}") << _FindPattern << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+		}
+	}
 	return pFind;
 }
 
@@ -5261,7 +5271,20 @@ CStr const *NSys::NFile::fg_FindNext(void *_pFindContext, EFileAttrib &_FileAttr
 			{
 				if (!FindNextFileW(pFind->m_pFindHandle, &pFind->m_FindData))
 				{
+					DWORD Error = GetLastError();
 					++pFind->m_Mode;
+					if (Error != ERROR_NO_MORE_FILES)
+					{
+						DMibErrorFile
+							(
+								(
+									CStr::CFormat("Windows returned an error from FindNextFile({}): {}")
+									<< pFind->m_FullPath
+									<< NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)
+								).f_GetStr()
+							)
+						;
+					}
 					return nullptr;
 				}
 			}
