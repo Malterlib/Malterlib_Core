@@ -114,14 +114,20 @@ ViewTypes:
   - '*StrSpan'
   - CIoSpan
 
-# The types that own the data they hold in a buffer on the heap: made of
-# anything else they copy it, and moved, the one moved to keeps the buffer at
-# the same address. Of a template, only with the defaults of its arguments
-# after the first, like the heap allocator of TCVector, not one that can keep
-# its data in it.
-BufferOwningTypes:
-  - TCVector
-  - 'TCStr<CStrTraits_CStr*>'
+# The owners, `Type=kind`, by what keeps what they own alive, a property of
+# the type and the operation, never of how the type is written: `shared`, a
+# copy and a move, counting references; `weak`, nothing; `unique`, a move;
+# `buffer`, the data held in a buffer on the heap, which a move gives to the
+# one moved to at the same address, and which one made of anything else
+# copies. Of a template of the `buffer` kind, only with the defaults of its
+# arguments after the first, like the heap allocator of TCVector, not one
+# that can keep its data in it.
+OwnerTypes:
+  - TCSharedPointer=shared
+  - TCWeakPointer=weak
+  - TCUniquePointer=unique
+  - TCVector=buffer
+  - 'TCStr<CStrTraits_CStr*>=buffer'
 
 # The member functions that remove entries of a collection.
 RemovingMethods:
@@ -167,12 +173,6 @@ FutureTypes:
   - TCFuture
   - TCFutureWithFlags
   - TCUnsafeFuture
-
-# The owning pointers whose copies share what they point to, counting
-# references.
-SharedPointerTypes:
-  - TCSharedPointer
-  - TCWeakPointer
 
 # The member functions whose calls on a member of the object look up again
 # each time an fg_OnResume callback runs.
