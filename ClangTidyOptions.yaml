@@ -122,8 +122,8 @@ ViewTypes:
 # copies; `sharedbuffer`, a buffer that copies share, counting references,
 # and copy before they change it, a copy and a move, which one made of
 # anything else copies. Of a template of the `buffer` or `sharedbuffer`
-# kind, only with the defaults of its arguments after the first, like the
-# heap allocator of TCVector, not one that can keep its data in it.
+# kind, not one that can keep its data in it: one whose members or bases
+# hold an array, like a TCVector with a static allocator.
 OwnerTypes:
   - TCSharedPointer=shared
   - TCWeakPointer=weak
