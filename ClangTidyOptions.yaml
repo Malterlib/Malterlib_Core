@@ -119,15 +119,17 @@ ViewTypes:
 # copy and a move, counting references; `weak`, nothing; `unique`, a move;
 # `buffer`, the data held in a buffer on the heap, which a move gives to the
 # one moved to at the same address, and which one made of anything else
-# copies. Of a template of the `buffer` kind, only with the defaults of its
-# arguments after the first, like the heap allocator of TCVector, not one
-# that can keep its data in it.
+# copies; `sharedbuffer`, a buffer that copies share, counting references,
+# and copy before they change it, a copy and a move, which one made of
+# anything else copies. Of a template of the `buffer` or `sharedbuffer`
+# kind, only with the defaults of its arguments after the first, like the
+# heap allocator of TCVector, not one that can keep its data in it.
 OwnerTypes:
   - TCSharedPointer=shared
   - TCWeakPointer=weak
   - TCUniquePointer=unique
   - TCVector=buffer
-  - 'TCStr<CStrTraits_CStr*>=buffer'
+  - 'TCStr<CStrTraits_CStr*>=sharedbuffer'
 
 # The member functions that remove entries of a collection.
 RemovingMethods:
