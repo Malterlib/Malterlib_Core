@@ -265,7 +265,6 @@ template <typename tf_CObject>
 void fg_Unconsume(tf_CObject &o_Value);
 
 #	define DMibMovedFromValid(d_Value) fg_Unconsume(d_Value)
-#	define DMibClangAnalyzerWorkaround
 #else
 #	define DMibMovedFromValid(d_Value)
 #endif
