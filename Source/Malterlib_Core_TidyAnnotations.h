@@ -26,6 +26,15 @@
 // DMibNamedAsMemberFunction: a static member function named as if it weren't static, as it shares its name with the non-static
 //   functions of the same interface, like f_Alloc and f_Free of the allocators. A function of the same name in a derived class
 //   takes it from the base.
+//
+// DMibRunsGivenFunction: a function that calls its first callable argument with its remaining arguments, and keeps both until the
+//   result of that call is done. The parameters of a closure given to it are initialized from those arguments.
+// DMibKeepsArgument: a parameter whose pointer, reference or view the function keeps after it returns. The object a constructor
+//   makes keeps it, and uses it where the object is used or destroyed.
+// DMibSetByOwnClass: a pointer or reference member that only points where the constructors and member functions of its class point
+//   it. Without it, what such a member points to can't be told.
+// DMibKeepsThis: an owner parameter of a member function that owns the object the function runs on. Without it, an owner parameter
+//   doesn't keep the object alive.
 
 #if defined(__clang__)
 #	define DMibActorEntries(...) [[clang::annotate("malterlib-actor-entries", #__VA_ARGS__)]]
@@ -37,6 +46,10 @@
 #	define DMibRunsToCompletionEntry [[clang::annotate("malterlib-runs-to-completion-entry")]]
 #	define DMibResultEndsBeforeObject [[clang::annotate("malterlib-result-ends-before-object")]]
 #	define DMibNamedAsMemberFunction [[clang::annotate("malterlib-named-as-member-function")]]
+#	define DMibRunsGivenFunction [[clang::annotate("malterlib-runs-given-function")]]
+#	define DMibKeepsArgument [[clang::annotate("malterlib-keeps-argument")]]
+#	define DMibSetByOwnClass [[clang::annotate("malterlib-set-by-own-class")]]
+#	define DMibKeepsThis [[clang::annotate("malterlib-keeps-this")]]
 #else
 #	define DMibActorEntries(...)
 #	define DMibActorPhase(...)
@@ -47,4 +60,8 @@
 #	define DMibRunsToCompletionEntry
 #	define DMibResultEndsBeforeObject
 #	define DMibNamedAsMemberFunction
+#	define DMibRunsGivenFunction
+#	define DMibKeepsArgument
+#	define DMibSetByOwnClass
+#	define DMibKeepsThis
 #endif
