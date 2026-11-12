@@ -35,6 +35,8 @@
 //   it. Without it, what such a member points to can't be told.
 // DMibKeepsThis: an owner parameter of a member function that owns the object the function runs on. Without it, an owner parameter
 //   doesn't keep the object alive.
+// DMibDistinct: a parameter that refers to, and owns, no object any other parameter of the function refers to or owns. Without it,
+//   two parameters of one type may be the same object.
 
 #if defined(__clang__)
 #	define DMibActorEntries(...) [[clang::annotate("malterlib-actor-entries", #__VA_ARGS__)]]
@@ -50,6 +52,7 @@
 #	define DMibKeepsArgument [[clang::annotate("malterlib-keeps-argument")]]
 #	define DMibSetByOwnClass [[clang::annotate("malterlib-set-by-own-class")]]
 #	define DMibKeepsThis [[clang::annotate("malterlib-keeps-this")]]
+#	define DMibDistinct [[clang::annotate("malterlib-distinct")]]
 #else
 #	define DMibActorEntries(...)
 #	define DMibActorPhase(...)
@@ -64,4 +67,5 @@
 #	define DMibKeepsArgument
 #	define DMibSetByOwnClass
 #	define DMibKeepsThis
+#	define DMibDistinct
 #endif
