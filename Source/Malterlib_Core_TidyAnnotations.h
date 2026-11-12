@@ -35,8 +35,8 @@
 //   it. Without it, what such a member points to can't be told.
 // DMibKeepsThis: an owner parameter of a member function that owns the object the function runs on. Without it, an owner parameter
 //   doesn't keep the object alive. On a member function: its result owns the object the function runs on.
-// DMibDistinct: a parameter that refers to, and owns, no object any other parameter of the function refers to or owns. Without it,
-//   two parameters of one type may be the same object.
+// DMibDistinct: a parameter that refers to, and owns, no object any other parameter of the function refers to or owns, nor the object
+//   a member function runs on. Without it, two parameters of one type, or a parameter and that object, may be the same object.
 // DMibReturnsNew: a function whose result owns a new object each time it is called. Without it, the results of two calls of a
 //   function whose body isn't seen may own the same object.
 
