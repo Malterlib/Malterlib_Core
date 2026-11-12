@@ -34,9 +34,11 @@
 // DMibSetByOwnClass: a pointer or reference member that only points where the constructors and member functions of its class point
 //   it. Without it, what such a member points to can't be told.
 // DMibKeepsThis: an owner parameter of a member function that owns the object the function runs on. Without it, an owner parameter
-//   doesn't keep the object alive.
+//   doesn't keep the object alive. On a member function: its result owns the object the function runs on.
 // DMibDistinct: a parameter that refers to, and owns, no object any other parameter of the function refers to or owns. Without it,
 //   two parameters of one type may be the same object.
+// DMibReturnsNew: a function whose result owns a new object each time it is called. Without it, the results of two calls of a
+//   function whose body isn't seen may own the same object.
 
 #if defined(__clang__)
 #	define DMibActorEntries(...) [[clang::annotate("malterlib-actor-entries", #__VA_ARGS__)]]
@@ -53,6 +55,7 @@
 #	define DMibSetByOwnClass [[clang::annotate("malterlib-set-by-own-class")]]
 #	define DMibKeepsThis [[clang::annotate("malterlib-keeps-this")]]
 #	define DMibDistinct [[clang::annotate("malterlib-distinct")]]
+#	define DMibReturnsNew [[clang::annotate("malterlib-returns-new")]]
 #else
 #	define DMibActorEntries(...)
 #	define DMibActorPhase(...)
@@ -68,4 +71,5 @@
 #	define DMibSetByOwnClass
 #	define DMibKeepsThis
 #	define DMibDistinct
+#	define DMibReturnsNew
 #endif
