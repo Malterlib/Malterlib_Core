@@ -43,6 +43,9 @@ Property
 	]
 	// A build that leaves out the global user settings leaves them out of its host tools too
 	MalterlibHostToolsCopiedEnvironmentVariables =+ ["MalterlibDisableGlobalUserSettings"]
+	// A build given its compiler in the environment builds its host tools with it too, as the training build of the LLVM
+	// distribution, whose only compiler is the instrumented one it trains
+	MalterlibHostToolsCopiedEnvironmentVariables =+ ["PlatformToolsetCompiler"]
 	MalterlibHostToolsCopiedEnvironmentVariables =+ [
 		"SystemRoot"
 		, "SystemDrive"
