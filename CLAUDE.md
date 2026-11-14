@@ -323,7 +323,8 @@ builds, so a tool can be built in Debug to debug it.
   `MalterlibHostToolsCopiedEnvironmentVariables`, copied from its own environment, so that settings meant for the build
   that runs them stay out, and `BuildSystem/HostTools` does not generate itself. Ninjas before MToolVersion 6, and the
   Visual Studio and Xcode generators, cannot replace the environment of a command, so the command unsets the other
-  exported variables itself.
+  exported variables itself. A compiler given in the environment (`PlatformToolsetCompiler`) is copied, so a build whose
+  only compiler is that one, as the training build of the LLVM distribution, builds its host tools with it.
 - Targets that run a tool depend on the target of its group and have the file of the tool among their inputs.
 - The groups build one at a time, in the ninja pool `HostToolsPool`, since they share one build directory.
 - Cross compiled builds run the tools of the host, so the targets of host tools only exist in that build system
