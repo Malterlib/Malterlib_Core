@@ -114,6 +114,23 @@ ViewTypes:
   - '*StrSpan'
   - CIoSpan
 
+# The owners, `Type=kind`, by what keeps what they own alive, a property of
+# the type and the operation, never of how the type is written: `shared`, a
+# copy and a move, counting references; `weak`, nothing; `unique`, a move;
+# `buffer`, the data held in a buffer on the heap, which a move gives to the
+# one moved to at the same address, and which one made of anything else
+# copies; `sharedbuffer`, a buffer that copies share, counting references,
+# and copy before they change it, a copy and a move, which one made of
+# anything else copies. Of a template of the `buffer` or `sharedbuffer`
+# kind, not one that can keep its data in it: one whose members or bases
+# hold an array, like a TCVector with a static allocator.
+OwnerTypes:
+  - TCSharedPointer=shared
+  - TCWeakPointer=weak
+  - TCUniquePointer=unique
+  - TCVector=buffer
+  - 'TCStr<CStrTraits_CStr*>=sharedbuffer'
+
 # The member functions that remove entries of a collection.
 RemovingMethods:
   - 'f_Remove*'
