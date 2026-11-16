@@ -56,7 +56,8 @@ Property
 	{
 		Type "Malterlib"
 		Format true
-		Tidy {Enabled: true}
+		// The headers the build of libc++ generates, which LLVMGenerated has copies of, are LLVM's code.
+		Tidy {Enabled: true, ExcludeFiles: ["LLVMGenerated/*"]}
 		Hooks #<"pre-commit"> MalterlibSourcePreCommitHooks
 		{
 			!!MalterlibInstallGitHookHelpers true
