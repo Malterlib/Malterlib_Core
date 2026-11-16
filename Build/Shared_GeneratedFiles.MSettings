@@ -800,6 +800,23 @@ Property
 			Executable true
 		}
 	}
+
+	// Kept running by the editor, for every format: FormatServer.sh answers the requests stdin gives, a JSON object on each
+	// line, with one for each on stdout, as MTool Format --server does: the source of a file formatted, or code it shows
+	// outside a file, like the types of a hover. An MTool without --server fails with an error.
+	%GenerateFile "FormatServer"
+	{
+		GenerateFile
+		{
+			Name `@(BuildSystemOutputDir)/ConfigStore/FormatServer.sh`
+
+			Contents `#!/bin/bash\n`\
+					 `\n`\
+					 `exec @(MalterlibBuildSystemFormatServerCommand) "$@@"\n`
+
+			Executable true
+		}
+	}
 }
 
 Type

@@ -50,6 +50,11 @@ Property
 
 	MalterlibBuildSystemFormatFileCommand `@(Builtin.MToolExe->UnixPath()->EscapeBash()) Format --stdin`
 
+	// MTool answering the formatting requests stdin gives.
+	MalterlibBuildSystemFormatServerCommand: string
+
+	MalterlibBuildSystemFormatServerCommand `@(Builtin.MToolExe->UnixPath()->EscapeBash()) Format --server`
+
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibBuildSystemGenerateCommand", MalterlibBuildSystemGenerateCommand))\r\n`
 	SharedBuildSettingsScriptContents =+ `@(ScriptExport("MalterlibDisableBuildSystemGeneration", MalterlibDisableBuildSystemGeneration->ToString()))\r\n`
 }
