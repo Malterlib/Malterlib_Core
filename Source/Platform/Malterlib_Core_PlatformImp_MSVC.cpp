@@ -5313,11 +5313,7 @@ CStr const *NSys::NFile::fg_FindNext(void *_pFindContext, EFileAttrib &_FileAttr
 					{
 						DMibErrorFile
 							(
-								(
-									CStr::CFormat("Windows returned an error from FindNextFile({}): {}")
-									<< pFind->m_FullPath
-									<< NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)
-								).f_GetStr()
+								(CStr::CFormat("Windows returned an error from FindNextFile({}): {}") << pFind->m_FullPath << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr()
 							)
 						;
 					}

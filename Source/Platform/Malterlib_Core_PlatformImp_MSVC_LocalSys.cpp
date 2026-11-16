@@ -454,11 +454,7 @@ void __stdcall CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::
 
 			while (pNotification)
 			{
-				CStr Path = NFile::NPlatform::fg_ConvertFromWindowsPath
-					(
-						CWStr::fs_Create(pNotification->FileName, pNotification->FileNameLength/sizeof(pNotification->FileName[0]))
-					)
-				;
+				CStr Path = NFile::NPlatform::fg_ConvertFromWindowsPath(CWStr::fs_Create(pNotification->FileName, pNotification->FileNameLength/sizeof(pNotification->FileName[0])));
 
 				auto fAdded = [&]
 					{
