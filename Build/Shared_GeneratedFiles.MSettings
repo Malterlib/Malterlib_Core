@@ -843,6 +843,8 @@ Property
 	CompileCommandsFile `@(BuildSystemOutputDir)/ConfigStore/@(Workspace:Workspace.Name)/Targets/@(Target:Target.Name)/@(Platform) @(Architecture) @(FullConfiguration)/compile_commands.json`
 }
 
+// The documentation is built by compiling each header by itself. With those commands, tools such as clangd would compile
+// a header with them instead of in the source that includes it, so the documentation has no compile_commands.json.
 Target
 {
 	CompileCommandsFile CompileCommandsFile
@@ -851,6 +853,7 @@ Target
 		{
 			MalterlibGenerateCompileCommands true
 			GeneratorFamily "Ninja"
+			!Documentation "Doxygen"
 		}
 	}
 }
@@ -999,6 +1002,7 @@ Target
 				&
 				{
 					!Target.Type "Tool"
+					!Documentation "Doxygen"
 				}
 			}
 
@@ -1013,6 +1017,7 @@ Target
 			MalterlibGenerateCompileCommands true
 			!Target.Type "Tool"
 			!GeneratorFamily "Ninja"
+			!Documentation "Doxygen"
 		}
 
 		GenerateFile
