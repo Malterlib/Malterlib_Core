@@ -7,10 +7,12 @@
 struct CApp : public NMib::CApplication
 {
 private:
-	aint f_Main()
-	{
-		return 0;
-	}
+	aint f_Main();
 };
+
+aint CApp::f_Main()
+{
+	return 0;
+}
 
 DMibAppImplement(CApp);
