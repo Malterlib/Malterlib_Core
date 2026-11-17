@@ -178,6 +178,23 @@ pre-commit hook, which refuses a commit whose added or changed lines are not for
 
 Fix what the hook reports instead of committing with `--no-verify`.
 
+#### Responding to the Malterlib checks
+Read the documentation of a check before changing code for it:
+`External/llvm-project/clang-tools-extra/docs/clang-tidy/checks/malterlib/<name>.rst` for `malterlib-<name>`, and
+`External/llvm-project/clang-tools-extra/docs/clang-tidy/MalterlibOptionsFile.rst` for the shared options. It tells what the
+check can and can't see, and how to describe code it can't see.
+
+- Fix the code when the check found a real problem.
+- When the code is correct, don't restructure it, copy data or make it slower only so the check stops reporting it, and
+  don't switch to `TCUnsafeFuture` to avoid one. Describe the code to the check instead: the annotations in
+  `Mib/Core/TidyAnnotations`, such as `DMibActorEntries` or `DMibKeepsArgument`, or the lists in
+  `Malterlib/Core/ClangTidyOptions.yaml`, such as `SafeCallees` for a function that keeps a closure alive while it runs
+  it, which matches by unqualified name and so covers every function of that name. Use them only where what they state
+  is true of the code.
+- When nothing fits, suppress the report with `// NOLINTNEXTLINE(malterlib-<name>): <why the code is correct>`, and
+  report the false positive or the limitation in Favro, in the Malterlib organization: the check, a minimal example of
+  the code and why it is correct.
+
 ### Sub-Repositories
 A checkout is a tree of Git repositories that `mib` manages: the root, which is Malterlib itself or a product built on it,
 and the sub-repositories in `Malterlib/*`, `External/*` and `Binaries/*`, plus whatever a product adds. Run Git in the
