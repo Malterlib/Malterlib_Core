@@ -77,6 +77,28 @@ Compile
 	SearchPath += Import.CMake_CacheDirectory
 }
 
+Property
+{
+	// Expands the markers that import caches write in files for paths that differ per build, for the tools of CMake that read those
+	// files during the build. See cmSystemTools::GetMalterlibReplacePaths
+	MalterlibImportReplacePaths: string = ""
+	MalterlibImportReplacePaths [
+		`#(CMakeIntermediateDirectory)/=@(CMakeIntermediateDirectory)/`
+		, `#(CMakeCacheDirectory)/=@(Import.CMake_CacheDirectory)/`
+	]->Join(";")
+	{
+		!!HasParentEntity("Import") true
+	}
+}
+
+Target
+{
+	ExportScriptEnvironment =+ "MalterlibImportReplacePaths"
+	{
+		!!HasParentEntity("Import") true
+	}
+}
+
 Import
 {
 	CMake_AlwaysFullRebuild: bool = true // User(Import)=false: Always do a full rebuild of cmake generation when the cache is outdated
