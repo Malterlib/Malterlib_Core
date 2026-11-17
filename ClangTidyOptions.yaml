@@ -77,6 +77,8 @@ SafeCallees:
   - fg_OneshotTimer
   - fg_OneshotTimerAbortable
   - TCDistributedActor
+  - f_WithTransaction
+  - f_WithReadTransaction
   - CTestCategoryScope
   - fg_CallSafeDispatched
   - fg_CallSafeDispatchedOn
