@@ -395,6 +395,8 @@ Compile
 	FrameworkSearchPath: [string]?
 	FrameworkSearchPath =+ (Target:Target.FrameworkSearchPath || [])
 
+	SystemFrameworkSearchPath: [string]?
+
 	// SDK root for DriverKit
 	SDKRoot: string?
 	SDKRoot Target:Target.SDKRoot
@@ -1691,6 +1693,9 @@ Compile
 	{
 		!!Compile.PrefixHeader `@(Builtin.BasePathAbsolute)/Malterlib/Core/Source/PrefixHeader/PCH.h`
 	}
+
+	// Searched after the framework search paths, with their warnings suppressed as for system include directories
+	SystemFrameworkSearchPath: [string]?
 
 	FrameworkSearchPath: [string]?
 	FrameworkSearchPath += `$(PLATFORM_DIR)/Developer/Library/Frameworks`
