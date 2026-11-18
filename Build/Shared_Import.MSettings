@@ -149,6 +149,7 @@ Import
 		, "*/MalterlibFullRebuildVersion"
 		, "*/.NoDartCoverage"
 		, "*/compile_commands.json"
+		, "*/.ninja_build_lock*"
 	]
 
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
