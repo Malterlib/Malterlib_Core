@@ -89,6 +89,11 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_SystemFrameworkSearchPath =+ {
+		Flags: Compile.SystemFrameworkSearchPath->f_PrefixFlags("-iframework")
+		, Type: "unique"
+	}
+
 	Compile_PreprocessorDefines =+ {
 		Flags: Compile.PreprocessorDefines->f_PrefixFlags("-D")
 		, Type: "unique"

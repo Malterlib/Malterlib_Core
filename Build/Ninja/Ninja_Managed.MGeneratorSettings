@@ -351,6 +351,7 @@ GeneratorSetting
 	Compile_DefaultVisibility =+ {}
 	Compile_DefaultLibraries =+ {}
 	Compile_FrameworkSearchPath =+ {}
+	Compile_SystemFrameworkSearchPath =+ {}
 	Compile_SysRoot =+ {}
 	Compile_ToolPrefix =+ {}
 	Compile_PositionIndependantCode =+ {}

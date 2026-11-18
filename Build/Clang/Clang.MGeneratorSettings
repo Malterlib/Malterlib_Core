@@ -280,6 +280,11 @@ GeneratorSetting
 		, Type: "unique"
 	}
 
+	Compile_SystemFrameworkSearchPath =+ {
+		Flags: Compile.SystemFrameworkSearchPath->f_PrefixFlags("-iframework"->f_ClangFlag())
+		, Type: "unique"
+	}
+
 	Compile_ProfileGuidedOptimizationGenerate =+ {
 		Flags: Compile.ProfileGuidedOptimizationGenerate->SwitchWithError(
 			"Unsupported option: "
