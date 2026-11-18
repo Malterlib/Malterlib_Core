@@ -1105,9 +1105,13 @@ GeneratorSetting
 				, "C89", "c89"
 				, "C99", "c99"
 				, "C11", "c11"
+				, "C17", "c17"
+				, "C2x", "c23"
 				, "GNU89", "GNU89"
 				, "GNU99", "GNU99"
 				, "GNU11", "GNU11"
+				, "GNU17", "gnu17"
+				, "GNU2x", "gnu23"
 			)
 		}
 	}

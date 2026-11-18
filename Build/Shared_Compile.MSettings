@@ -2227,10 +2227,14 @@ Compile
 			{
 				Compile.CLanguage "C99"
 				Compile.CLanguage "C11"
+				Compile.CLanguage "C17"
+				Compile.CLanguage "C2x"
 				Compile.CLanguage "GNU99"
 				Compile.CLanguage "C89"
 				Compile.CLanguage "GNU89"
 				Compile.CLanguage "GNU11"
+				Compile.CLanguage "GNU17"
+				Compile.CLanguage "GNU2x"
 			}
 		}
 	}
