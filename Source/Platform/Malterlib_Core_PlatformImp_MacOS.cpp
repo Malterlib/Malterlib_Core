@@ -3038,17 +3038,8 @@ namespace NMib
 	{
 		namespace NFile
 		{
-			template <typename tf_CStr>
-			tf_CStr fg_GetProgramDirectoryGeneral()
-			{
-				static_assert(tf_CStr::mc_Type == EStrType_UTF && sizeof(typename tf_CStr::CChar) == 1);
-				uint32 Len = 0;
-				_NSGetExecutablePath(nullptr, &Len);
-				tf_CStr Ret;
-				_NSGetExecutablePath(Ret.f_GetStr(Len + 1), &Len);
-				return NMib::NFile::CFile::fs_GetPath(NMib::NFile::CFile::fs_GetExpandedPath(Ret));
-			}
-
+			// The path that the program was started with. A `..` in it can follow a symlinked directory, which the kernel went
+			// through, so collapsing it lexically would name another file: the path up to the last `..` is resolved first.
 			template <typename tf_CStr>
 			tf_CStr fg_GetProgramPathGeneral()
 			{
@@ -3057,7 +3048,31 @@ namespace NMib
 				_NSGetExecutablePath(nullptr, &Len);
 				tf_CStr Ret;
 				_NSGetExecutablePath(Ret.f_GetStr(Len + 1), &Len);
+				Ret.f_TrimSize();
+
+				aint iLastParent = Ret.f_FindReverse("/../");
+				if (iLastParent >= 0)
+				{
+					umint nToResolve = iLastParent + 3;
+					tf_CStr ToResolve = Ret.f_Left(nToResolve);
+					char Resolved[PATH_MAX];
+					if (realpath(ToResolve, Resolved))
+					{
+						// The rest starts with a separator, and of the resolved paths only the root ends with one
+						tf_CStr Prefix(Resolved);
+						if (Prefix == "/")
+							Prefix.f_Clear();
+						Ret = Prefix + Ret.f_Extract(nToResolve);
+					}
+				}
+
 				return NMib::NFile::CFile::fs_GetExpandedPath(Ret);
+			}
+
+			template <typename tf_CStr>
+			tf_CStr fg_GetProgramDirectoryGeneral()
+			{
+				return NMib::NFile::CFile::fs_GetPath(fg_GetProgramPathGeneral<tf_CStr>());
 			}
 		}
 	}
