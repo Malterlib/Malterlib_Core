@@ -41,6 +41,8 @@ Property
 {
 	MToolCMakePath: string
 	MToolCMakePath MToolDirectory / ("MToolCMake" + (Builtin.MToolExe->GetExtension() && ("." + Builtin.MToolExe->GetExtension())))
+	MToolCTestPath: string
+	MToolCTestPath MToolDirectory / ("MToolCTest" + (Builtin.MToolExe->GetExtension() && ("." + Builtin.MToolExe->GetExtension())))
 
 	CMakeIntermediateDirectory: string = `@(MalterlibCompiledFilesWarkspaceBase)/Int/CMake/@(Platform)/@(Architecture)/@(FullConfiguration)`
 
@@ -151,6 +153,8 @@ Import
 
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
+	CMake_ExcludeFromHash =+ `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
+	CMake_ExcludeFromHash =+ `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
 	CMake_ExcludeFromHash =+ VisualStudioMSVCRootPath / MalterlibMSVCVersion
 	{
 		!!PlatformFamily "Windows"
@@ -203,6 +207,8 @@ Import
 	CMake_CacheReplaceContents =+ [
 		{Find: `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`, Replace: "MToolCMake"}
 		, {Find: `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`, Replace: "MToolCMake"}
+		, {Find: `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute())`, Replace: "MToolCTest"}
+		, {Find: `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute()->EscapeHost())`, Replace: "MToolCTest"}
 		, {Find: "/opt/local/bin/", Replace: ""}
 		, {Find: "/usr/bin/", Replace: ""}
 		, {Find: "/opt/homebrew/bin/", Replace: ""}
