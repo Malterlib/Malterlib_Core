@@ -508,8 +508,11 @@ void NSys::NFile::fg_SetCurrentDirectory(NMib::NStr::CStr const &_Directory)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chdir('{}') when setting current directory") << _Directory, errno));
 }
 
+// Without _bOwnerAccessInCreatedParents a created parent stays as mkdir and the umask leave it, so one without owner write or search fails the
+// next mkdir unless the caller overrides access checks. The temporary mode changes that give it that access can fail where mkdir alone succeeds,
+// as when they clear an inherited set-group-ID bit, so only callers that ask for a mode make them.
 template <typename tf_CStr>
-void fg_CreateDirectoryHelper(tf_CStr const &_FileDirectory)
+void fg_CreateDirectoryHelper(tf_CStr const &_FileDirectory, mode_t _Mode = S_IRWXU | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH, bool _bOwnerAccessInCreatedParents = false)
 {
 	tf_CStr FileDirectory = fg_ConvertToPOSIXPath(_FileDirectory);
 
@@ -523,23 +526,215 @@ void fg_CreateDirectoryHelper(tf_CStr const &_FileDirectory)
 		CurrentPath = "/";
 		NewPath = NewPath.f_Extract(1);
 	}
-	while (!NewPath.f_IsEmpty())
-	{
-		tf_CStr Current;
-		Current = NMib::NStr::fg_GetStrSepNoTrim(NewPath, "/");
-		CurrentPath += Current;
 
-		if (!NSys::NFile::fg_FileExistsGeneral(CurrentPath, NMib::NFile::EFileAttrib_Directory))
+	// The next mkdir needs owner write and search in a created parent, so a parent created without them, by the mode or by the umask, gets
+	// them while the directories below it are created. Only the owner gains access meanwhile. Owner read, which opening a parent to change
+	// its mode needs, is only added along with them: a mode with owner write and search needs no change unless the umask removes one.
+	mode_t const ParentOnlyBits = ((S_IWUSR | S_IXUSR) & ~_Mode) ? (S_IRWXU & ~_Mode) : 0;
+	struct CCreatedParent
+	{
+		tf_CStr m_Path;
+		dev_t m_Device = 0;
+		ino_t m_Inode = 0;
+		mode_t m_Mode = 0; // The mode masked by the umask, without ParentOnlyBits
+		bool m_bRestricted = false;
+	};
+
+	NContainer::TCVector<CCreatedParent, typename tf_CStr::CAllocator> CreatedParents;
+
+	auto fFormatParentError = [&](tf_CStr const &_Path, ch8 const *_pOperation, int _ErrNo) -> tf_CStr
 		{
-			tf_CStr Canon = CurrentPath;
-			if (mkdir(Canon.f_GetStr(), S_IWUSR | S_IXUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IXOTH | S_IROTH))
-			{
-				int ErrNo = errno;
-				if (ErrNo != EEXIST || !NSys::NFile::fg_FileExists(CStr(CurrentPath), NMib::NFile::EFileAttrib_Directory)) // Someone else got inbetween and created the same directory
-					DMibErrorFile(NMib::NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("mkdir('{}') when creating directory '{}'") << CurrentPath << _FileDirectory, ErrNo));
-			}
+			return NMib::NPlatform::fg_FormatErrno<tf_CStr>
+				(
+					typename tf_CStr::CFormat("{}('{}') when restricting directory created for '{}'") << _pOperation << _Path << _FileDirectory
+					, _ErrNo
+				)
+			;
 		}
-		CurrentPath += "/";
+	;
+
+	auto fRestrictCreatedParent = [&](CCreatedParent const &_Parent) -> tf_CStr
+		{
+			int iDirectory = open(_Parent.m_Path.f_GetStr(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+			if (iDirectory < 0)
+				return fFormatParentError(_Parent.m_Path, "open", errno);
+
+			auto CloseDirectory = g_OnScopeExit / [&]
+				{
+					close(iDirectory);
+				}
+			;
+
+			struct stat Stats;
+			if (fstat(iDirectory, &Stats))
+				return fFormatParentError(_Parent.m_Path, "fstat", errno);
+
+			if (Stats.st_dev != _Parent.m_Device || Stats.st_ino != _Parent.m_Inode)
+				return typename tf_CStr::CFormat("'{}' is no longer the directory created for '{}'") << _Parent.m_Path << _FileDirectory;
+
+			if (fchmod(iDirectory, _Parent.m_Mode))
+				return fFormatParentError(_Parent.m_Path, "fchmod", errno);
+
+			return {};
+		}
+	;
+
+	// Parents are restored deepest first and opened again by path, which a parent above that still has its temporary mode lets through, so a
+	// final mode without owner search needs one descriptor at a time however deep the path is.
+	auto fRestrictCreatedParents = [&](umint _nParents, bool _bOnlyWithSearch) -> tf_CStr
+		{
+			tf_CStr Errors;
+			for (umint iParent = _nParents; iParent > 0; --iParent)
+			{
+				auto &Parent = CreatedParents[iParent - 1];
+				if (Parent.m_bRestricted || (_bOnlyWithSearch && !(Parent.m_Mode & S_IXUSR)))
+					continue;
+
+				Parent.m_bRestricted = true;
+				if (tf_CStr Error = fRestrictCreatedParent(Parent); !Error.f_IsEmpty())
+					NStr::fg_AddStrSep(Errors, Error, "; ");
+			}
+			return Errors;
+		}
+	;
+
+	auto RestrictParents = g_OnScopeExit / [&]
+		{
+			// Parents are left here only when an exception other than a file error unwinds, and that exception is the error reported
+			fRestrictCreatedParents(CreatedParents.f_GetLen(), false);
+		}
+	;
+
+	// The mode of a parent only changes through a descriptor verified, by device and inode also when it is opened again to restore its mode, to
+	// be the directory lstat finds after mkdir, so whatever replaces it at its path after that keeps its own mode. A directory put in its place
+	// before lstat needs a user who can write the parent, who can remove or rename anything there anyway: the change of mode only adds owner
+	// write and search and removes owner bits the mode lacks, which needs the caller to own that directory or be privileged, and rmdir only
+	// removes it empty, which that user can do too. Opening it needs owner read, which the umask can remove, and a parent that can't be opened
+	// is removed again, since it would keep the owner write and search that mkdir gave it. On Linux a change of mode clears the set-group-ID bit
+	// a parent inherits when the caller is not in its group, and its children would then get the caller's group, so the first change shows
+	// whether the bit survives before any child exists, and a parent that loses it is removed again.
+	auto fOpenCreatedParent = [&](tf_CStr const &_Path) -> tf_CStr
+		{
+			struct stat Stats;
+			if (lstat(_Path.f_GetStr(), &Stats))
+				return fFormatParentError(_Path, "lstat", errno);
+
+			if (!S_ISDIR(Stats.st_mode))
+				return typename tf_CStr::CFormat("'{}' is no longer the directory created for '{}'") << _Path << _FileDirectory;
+
+			mode_t const CreatedMode = Stats.st_mode & 07777;
+			mode_t const TemporaryMode = CreatedMode | S_IWUSR | S_IXUSR;
+			mode_t const FinalMode = CreatedMode & ~ParentOnlyBits;
+			if (TemporaryMode == CreatedMode && FinalMode == CreatedMode)
+				return {};
+
+			int iDirectory = open(_Path.f_GetStr(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+			if (iDirectory < 0)
+			{
+				tf_CStr Error = fFormatParentError(_Path, "open", errno);
+				if (rmdir(_Path.f_GetStr()))
+					NStr::fg_AddStrSep(Error, fFormatParentError(_Path, "rmdir", errno), "; ");
+
+				return Error;
+			}
+
+			auto CloseDirectory = g_OnScopeExit / [&]
+				{
+					close(iDirectory);
+				}
+			;
+
+			struct stat OpenedStats;
+			if (fstat(iDirectory, &OpenedStats))
+				return fFormatParentError(_Path, "fstat", errno);
+
+			if (OpenedStats.st_dev != Stats.st_dev || OpenedStats.st_ino != Stats.st_ino)
+				return typename tf_CStr::CFormat("'{}' is no longer the directory created for '{}'") << _Path << _FileDirectory;
+
+			auto &Parent = CreatedParents.f_Insert();
+			Parent.m_Path = _Path;
+			Parent.m_Device = Stats.st_dev;
+			Parent.m_Inode = Stats.st_ino;
+			Parent.m_Mode = FinalMode;
+
+			if (fchmod(iDirectory, TemporaryMode))
+				return fFormatParentError(_Path, "fchmod", errno);
+
+			if (!(CreatedMode & S_ISGID))
+				return {};
+
+			if (fstat(iDirectory, &OpenedStats))
+				return fFormatParentError(_Path, "fstat", errno);
+
+			if (!(OpenedStats.st_mode & S_ISGID))
+			{
+				tf_CStr Error = typename tf_CStr::CFormat("Changing the mode of '{}' cleared the set-group-ID bit it inherits when creating '{}'") << _Path << _FileDirectory;
+
+				// No change of mode restores the bit, and a later creation would find the directory and give its children the caller's group
+				CreatedParents.f_Remove(CreatedParents.f_GetLen() - 1);
+				if (rmdir(_Path.f_GetStr()))
+					NStr::fg_AddStrSep(Error, fFormatParentError(_Path, "rmdir", errno), "; ");
+
+				return Error;
+			}
+
+			return {};
+		}
+	;
+
+	try
+	{
+		while (!NewPath.f_IsEmpty())
+		{
+			tf_CStr Current;
+			Current = NMib::NStr::fg_GetStrSepNoTrim(NewPath, "/");
+			CurrentPath += Current;
+
+			umint nAncestors = CreatedParents.f_GetLen();
+			if (!NSys::NFile::fg_FileExistsGeneral(CurrentPath, NMib::NFile::EFileAttrib_Directory))
+			{
+				tf_CStr Canon = CurrentPath;
+				bool bParent = !NewPath.f_IsEmpty();
+				if (mkdir(Canon.f_GetStr(), bParent ? _Mode | ParentOnlyBits : _Mode))
+				{
+					int ErrNo = errno;
+					if (ErrNo != EEXIST || !NSys::NFile::fg_FileExists(CStr(CurrentPath), NMib::NFile::EFileAttrib_Directory)) // Someone else got inbetween and created the same directory
+					{
+						DMibErrorFile
+							(
+								NMib::NPlatform::fg_FormatErrno<tf_CStr>(typename tf_CStr::CFormat("mkdir('{}') when creating directory '{}'") << CurrentPath << _FileDirectory, ErrNo)
+							)
+						;
+					}
+				}
+				else if (bParent && _bOwnerAccessInCreatedParents)
+				{
+					if (tf_CStr Error = fOpenCreatedParent(Canon); !Error.f_IsEmpty())
+						DMibErrorFile(Error);
+				}
+			}
+
+			// The ancestors of a directory that exists no longer need owner write
+			if (tf_CStr Errors = fRestrictCreatedParents(nAncestors, true); !Errors.f_IsEmpty())
+				DMibErrorFile(Errors);
+
+			CurrentPath += "/";
+		}
+
+		if (tf_CStr Errors = fRestrictCreatedParents(CreatedParents.f_GetLen(), false); !Errors.f_IsEmpty())
+			DMibErrorFile(Errors);
+	}
+	catch (NMib::NFile::CExceptionFile const &_Exception)
+	{
+		// The parents created before the failure get the modes asked for, not the owner access they had meanwhile, even where a mode without
+		// owner search keeps the caller from reaching below them to create the rest again
+		tf_CStr RestrictErrors = fRestrictCreatedParents(CreatedParents.f_GetLen(), false);
+		if (RestrictErrors.f_IsEmpty())
+			throw;
+
+		tf_CStr Error = _Exception.f_GetErrorStr();
+		NStr::fg_AddStrSep(Error, RestrictErrors, "; ");
+		DMibErrorFile(Error);
 	}
 }
 
@@ -1346,6 +1541,19 @@ uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32
 	}
 
 	return Mode;
+}
+
+// The directories it creates get the unix permissions of _Attributes, masked by the umask, from the start; existing ones keep theirs. On Linux a
+// default ACL of a parent takes the place of the umask, and they get the permissions of _Attributes limited by that ACL. On macOS they also
+// inherit the inheritable entries of the ACL of their parent, which the mode doesn't limit. A created parent that
+// needs a change of mode fails the creation when it has no owner read, or on Linux when the change clears its set-group-ID bit.
+// Without EFileAttrib_UnixAttributesValid they get the default permissions, since no other attribute describes the access to a directory.
+void NSys::NFile::fg_CreateDirectory(NMib::NStr::CStr const &_FileDirectory, NMib::NFile::EFileAttrib _Attributes)
+{
+	if (!(_Attributes & NMib::NFile::EFileAttrib_UnixAttributesValid))
+		return fg_CreateDirectoryHelper(CStr(_FileDirectory));
+
+	fg_CreateDirectoryHelper(CStr(_FileDirectory), mode_t(fg_MalterlibAttributesToMode(_Attributes, S_IRWXU | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH)), true);
 }
 
 namespace
