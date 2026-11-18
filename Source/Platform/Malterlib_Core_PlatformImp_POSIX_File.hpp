@@ -508,8 +508,13 @@ void NSys::NFile::fg_SetCurrentDirectory(NMib::NStr::CStr const &_Directory)
 		DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chdir('{}') when setting current directory") << _Directory, errno));
 }
 
+namespace
+{
+	constexpr mode_t gc_DefaultDirectoryMode = S_IRWXU | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH;
+}
+
 template <typename tf_CStr>
-void fg_CreateDirectoryHelper(tf_CStr const &_FileDirectory)
+void fg_CreateDirectoryHelper(tf_CStr const &_FileDirectory, mode_t _Mode = gc_DefaultDirectoryMode, mode_t _ParentMode = gc_DefaultDirectoryMode)
 {
 	tf_CStr FileDirectory = fg_ConvertToPOSIXPath(_FileDirectory);
 
@@ -532,7 +537,7 @@ void fg_CreateDirectoryHelper(tf_CStr const &_FileDirectory)
 		if (!NSys::NFile::fg_FileExistsGeneral(CurrentPath, NMib::NFile::EFileAttrib_Directory))
 		{
 			tf_CStr Canon = CurrentPath;
-			if (mkdir(Canon.f_GetStr(), S_IWUSR | S_IXUSR | S_IRUSR | S_IRGRP | S_IWGRP | S_IXGRP | S_IXOTH | S_IROTH))
+			if (mkdir(Canon.f_GetStr(), NewPath.f_IsEmpty() ? _Mode : _ParentMode))
 			{
 				int ErrNo = errno;
 				if (ErrNo != EEXIST || !NSys::NFile::fg_FileExists(CStr(CurrentPath), NMib::NFile::EFileAttrib_Directory)) // Someone else got inbetween and created the same directory
@@ -1347,6 +1352,25 @@ uint32 fg_MalterlibAttributesToMode(NMib::NFile::EFileAttrib _Attributes, uint32
 	}
 
 	return Mode;
+}
+
+// The mode of created parents must give the owner write and search, so that the directories below them can be created
+void NSys::NFile::fg_CreateDirectory(NMib::NStr::CStr const &_FileDirectory, NMib::NFile::EFileAttrib _Attributes, NMib::NFile::EFileAttrib _ParentAttributes)
+{
+	auto fMode = [](NMib::NFile::EFileAttrib _DirectoryAttributes) -> mode_t
+		{
+			if (!(_DirectoryAttributes & NMib::NFile::EFileAttrib_UnixAttributesValid))
+				return gc_DefaultDirectoryMode;
+
+			return mode_t(fg_MalterlibAttributesToMode(_DirectoryAttributes, gc_DefaultDirectoryMode));
+		}
+	;
+
+	mode_t ParentMode = fMode(_ParentAttributes);
+	if ((ParentMode & (S_IWUSR | S_IXUSR)) != (S_IWUSR | S_IXUSR))
+		DMibErrorFile(CStr::CFormat("The mode of the parents created for '{}' doesn't give the owner write and search") << _FileDirectory);
+
+	fg_CreateDirectoryHelper(CStr(_FileDirectory), fMode(_Attributes), ParentMode);
 }
 
 namespace

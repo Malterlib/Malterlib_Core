@@ -6148,6 +6148,12 @@ void NSys::NFile::fg_CreateDirectory(CStrNonTracked const &_FileDirectory)
 	fg_CreateDirectoryHelper<CWStrNonTracked, CStrNonTracked>(_FileDirectory);
 }
 
+// Windows directories take the access control their parent passes on, and the unix permissions of the attributes don't apply
+void NSys::NFile::fg_CreateDirectory(CStr const &_FileDirectory, NMib::NFile::EFileAttrib _Attributes, NMib::NFile::EFileAttrib _ParentAttributes)
+{
+	fg_CreateDirectoryHelper<CWStr, CStr>(_FileDirectory);
+}
+
 void NSys::NFile::fg_DeleteDirectory(CStr const &_File);
 void NSys::NFile::fg_DeleteDirectory(CStrNonTracked const &_File);
 
