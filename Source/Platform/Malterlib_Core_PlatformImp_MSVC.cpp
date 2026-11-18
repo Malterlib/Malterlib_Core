@@ -4380,11 +4380,21 @@ void *NSys::NFile::fg_Open(CStrNonTracked const &_FileName, NMib::NFile::EFileOp
 	return fg_OpenHelper<CWStrNonTracked, CStrNonTracked>(_FileName, _OpenFlags, _Attributes);
 }
 
+// A failed close throws leaving the wrapper without its handle, and closing that wrapper again only frees it
 void NSys::NFile::fg_Close(void *_pFile)
 {
-	if (!CloseHandle(((CWin32File *)_pFile)->m_pFile))
-		DMibErrorFile((CStr::CFormat("Windows returned an error from CloseHandle: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
-	((CWin32File *)_pFile)->f_Delete();
+	CWin32File *pFile = (CWin32File *)_pFile;
+
+	if (pFile->m_pFile != INVALID_HANDLE_VALUE)
+	{
+		// The wrapper gives up the handle even when CloseHandle fails, also for a handle left open by HANDLE_FLAG_PROTECT_FROM_CLOSE: CFile closes a
+		// wrapper whose close failed again from its catch handler, where a second failure would throw out of the destructor and terminate. Whoever
+		// protects a handle CFile owns closes it.
+		if (!CloseHandle(fg_Exchange(pFile->m_pFile, INVALID_HANDLE_VALUE)))
+			DMibErrorFile((CStr::CFormat("Windows returned an error from CloseHandle: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	}
+
+	pFile->f_Delete();
 }
 
 CMibFilePos NMib::NSys::NFile::fg_GetSize(NMib::NStr::CStr const &_FileName)

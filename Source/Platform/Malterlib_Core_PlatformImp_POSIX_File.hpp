@@ -1113,13 +1113,16 @@ void *NSys::NFile::fg_GetOSFile(void *_pFile)
 	return (void *)(umint)((CPOSIXFile *)_pFile)->m_BSDFile;
 }
 
+// close releases the descriptor even when it fails, so a failed close throws leaving the wrapper without one, and closing that wrapper again only frees it
 void NSys::NFile::fg_Close(void *_pFile)
 {
 	CPOSIXFile *pFile = (CPOSIXFile *)_pFile;
 
-	int ErrNo = close(pFile->m_BSDFile);
-	if (ErrNo)
-		DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("close('{}') when closing file") << pFile->f_GetFileName(), errno));
+	if (pFile->m_BSDFile >= 0)
+	{
+		if (close(fg_Exchange(pFile->m_BSDFile, -1)))
+			DMibErrorFile(NPlatform::fg_FormatErrno(CStrNonTracked::CFormat("close('{}') when closing file") << pFile->f_GetFileName(), errno));
+	}
 
 	pFile->f_Delete();
 }
