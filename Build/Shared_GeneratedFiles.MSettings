@@ -1123,7 +1123,7 @@ Target
 							, "ObjC", "C"
 						)->SwitchWithError(
 							"Internal error: Unknown compile type"
-							, "C++", Compile.CxxLanguage->SwitchWithError(
+							, "C++", GetProperty(&Compile.CxxLanguage, _File)->SwitchWithError(
 								"Unsupported option: "
 								, "GNU++11", ["-std=gnu++11"]
 								, "GNU++14", ["-std=gnu++14"]
@@ -1139,7 +1139,7 @@ Target
 								, "", ["-std=c++26", "-Wno-c23-extensions"]
 								, undefined, ["-std=c++26", "-Wno-c23-extensions"]
 							)
-							, "C", ((GeneratorFamily == "VisualStudio") ? "C99" : Compile.CLanguage)->SwitchWithError(
+							, "C", GetProperty(&Compile.CLanguage, _File)->SwitchWithError(
 								"Unsupported option: "
 								, "C89", ["-std=c89"]
 								, "C99", ["-std=c99"]
