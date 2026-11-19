@@ -1044,6 +1044,15 @@ Target
 			f_GenerateFrameworkInclude function(string _Path) [string] = []
 			f_GenerateFrameworkInclude += `-F@(_Path->Replace("$(PLATFORM_DIR)", GenerateFile.XcodePlatformDir))`
 
+			f_GenerateSystemInclude function(string _Path) [string] = []
+			f_GenerateSystemInclude += `-isystem@(_Path)`
+			{
+				!_Path "{578185E0-2E2A-4481-A34E-BCC3F64CDCA2}"
+			}
+
+			f_GenerateSystemFrameworkInclude function(string _Path) [string] = []
+			f_GenerateSystemFrameworkInclude += `-iframework@(_Path->Replace("$(PLATFORM_DIR)", GenerateFile.XcodePlatformDir))`
+
 			f_GenerateCompileCommands function(string _File) [type(CCompileCommandsEntry)] = []
 			f_OptionalOption function(string _Option, string? _OptionValue) [string] = []
 			f_OptionalOption [_Option, _OptionValue]
@@ -1153,6 +1162,8 @@ Target
 					, GetProperty(&Compile.PreprocessorDefines, _File)->ForEach(&GenerateFile.f_GenerateDefine)...
 					, GetProperty(&Compile.SearchPath, _File)->ForEach(&GenerateFile.f_GenerateInclude)...
 					, (GetProperty(&Compile.FrameworkSearchPath, _File) || [])->ForEach(&GenerateFile.f_GenerateFrameworkInclude)...
+					, (GetProperty(&Compile.SystemSearchPath, _File) || [])->ForEach(&GenerateFile.f_GenerateSystemInclude)...
+					, (GetProperty(&Compile.SystemFrameworkSearchPath, _File) || [])->ForEach(&GenerateFile.f_GenerateSystemFrameworkInclude)...
 					, GenerateFile.f_OptionalOption("-include", GetProperty(&Compile.PrefixHeader, _File))...
 					, "-Wno-inline-new-delete"
 					, "-Wno-invalid-offsetof"
