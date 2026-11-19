@@ -637,7 +637,7 @@ GeneratorSetting
 			, Build: {
 				outputs: [`@(Target.IntermediateDirectory / MalterlibOriginalModuleDestinationExecutable->GetFile()).prep`]
 				, description: `Preparing @(Builtin.Dollar)target`
-				, inputs: GeneratorSetting.Ninja_TargetInputs
+				, inputs: GeneratorSetting.Ninja_TargetInputs->Unique()
 				, implicit_dependencies: GeneratorSetting.Ninja_TargetImplicitInputs
 				, order_dependencies: GeneratorSetting.Ninja_TargetOrderDependencies
 				, target: MalterlibOriginalModuleDestinationExecutable->EscapeBash()->EscapeBash()->RemovePrefix('"')->RemoveSuffix('"')
@@ -806,7 +806,9 @@ GeneratorSetting
 	Target_Type #<Build.outputs> =+ MalterlibOriginalModuleDestinationExecutable
 	Target_Type #<Build.outputs> =+ GeneratorSetting.Ninja_TargetOutputs
 
-	Target_Type #<Build.inputs> =+ GeneratorSetting.Ninja_TargetInputs
+	// A file that several files of the target give as a link input, as a generated object among the sources that the command
+	// that generates it also links, is linked once
+	Target_Type #<Build.inputs> =+ GeneratorSetting.Ninja_TargetInputs->Unique()
 	Target_Type #<Build.order_dependencies> =+ `@(Target.IntermediateDirectory / MalterlibOriginalModuleDestinationExecutable->GetFile()).prep`
 	{
 		!!Target.Type "StaticLibrary"
