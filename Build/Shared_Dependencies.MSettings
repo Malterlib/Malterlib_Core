@@ -40,6 +40,11 @@ Dependency
 
 	Stage: one_of("Compile", "Link", "Runtime", "None") = "Link"
 
+	// The target compiles after the files that the commands of the dependency generate, and of what the dependency depends on,
+	// as CMake orders the objects of a target after the commands of the targets that it links. The other stages order after the
+	// whole dependency. Only Ninja orders within targets; the other generators build a dependency before the target.
+	CompileAfterGenerated: bool = false
+
 	Target Dependency:this.Identity
 	{
 		!!Dependency.Target undefined

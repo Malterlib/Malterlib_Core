@@ -128,6 +128,7 @@ GeneratorSetting
 	Dependency_LinkWithObjectFiles {}
 	Dependency_Indirect {}
 	Dependency_IndirectOrdered {}
+	Dependency_CompileAfterGenerated {}
 }
 
 Import "Xcode_Target.MGeneratorSettings"

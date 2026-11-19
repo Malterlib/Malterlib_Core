@@ -452,6 +452,7 @@ GeneratorSetting
 {
 	Compile_RealCustom_Inputs =+ {}
 	Compile_BuildDisabled =+ {}
+	Compile_GeneratedOutputs =+ {}
 	Compile_LinkerInputs  =+ {}
 	Compile_LinkerImplicitInputs =+ {}
 	Compile_LinkerManifestInputs =+ {}

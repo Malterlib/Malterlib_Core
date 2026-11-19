@@ -49,6 +49,12 @@ Compile
 	}
 
 	BuildDisabled: bool = false
+
+	// The files that the build statement of the file generates for other compiles, as the outputs of a custom file. A compile type
+	// adds them where it gives them to its rule as outputs, so that what waits for generated files only waits for those that a
+	// rule writes: a file can have the settings of another compile type than its own, as the outputs of a custom command from its
+	// group or for another configuration.
+	GeneratedOutputs: [string] = []
 }
 
 GeneratorSetting
@@ -228,6 +234,7 @@ Compile
 		!Compile.Disabled true
 	}
 
+	GeneratedOutputs =+ (Compile.Custom_Outputs || [])
 	LinkerInputs =+ (Compile.Custom_Outputs || [])->ForEach(&f_GetObjectOutputs)
 	PostBuildImplicitInputs =+ (Compile.Custom_Outputs || [])
 	{

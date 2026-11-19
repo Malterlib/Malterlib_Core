@@ -55,6 +55,18 @@ Compile
 	IIG_HeaderOutput: string = Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).h`
 	IIG_ImplOutput: string = Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).iig.cpp`
 	DepFileName Target.IntermediateDirectory / `@(this.Identity->GetFileNoExt()).iig.d`
+
+	// The header and the implementation that the interface generator writes are generated files of the target, which what compiles
+	// after them waits for as for the outputs of custom files
+	GeneratedOutputs =+ [Compile.IIG_HeaderOutput, Compile.IIG_ImplOutput]
+	{
+		&
+		{
+			PlatformFamily "macOS"
+			!Compile.Disabled true
+			!Compile.BuildDisabled true
+		}
+	}
 }
 
 GeneratorSetting

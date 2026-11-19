@@ -568,6 +568,85 @@ GeneratorSetting
 	f_GetCompileDependencies function(string _Dependency) [string] = []
 	f_GetCompileDependencies =+ &GeneratorSetting.MaybeGetCompileDependency->GetProperty(_Dependency)
 
+	// The files that the commands of a target generate, and of the targets that it depends on to build it, not of those that it
+	// only needs to run, which the build validates after it
+	MaybeGetGeneratedDependency: one_of(string, [string]) = []
+	MaybeGetGeneratedDependency `Generated @(Dependency.Name)`
+	{
+		&
+		{
+			|
+			{
+				!Dependency.IndirectEvaluated true
+				Dependency.IndirectOrdered true
+			}
+			Dependency.Type ""
+			!Dependency.Stage "Runtime"
+			!Dependency.Stage "None"
+		}
+	}
+
+	f_GetGeneratedDependencies function(string _Dependency) [string] = []
+	f_GetGeneratedDependencies =+ &GeneratorSetting.MaybeGetGeneratedDependency->GetProperty(_Dependency)
+
+	MaybeGetCompileAfterGeneratedDependency: one_of(string, [string]) = []
+	MaybeGetCompileAfterGeneratedDependency `Generated @(Dependency.Name)`
+	{
+		&
+		{
+			|
+			{
+				!Dependency.IndirectEvaluated true
+				Dependency.IndirectOrdered true
+			}
+			Dependency.CompileAfterGenerated true
+			Dependency.Type ""
+			!Dependency.Stage "Runtime"
+			// The stage None only orders the build when the target links the dependency all the same
+			|
+			{
+				!Dependency.Stage "None"
+				Dependency.Link true
+			}
+		}
+	}
+
+	f_GetCompileAfterGeneratedDependencies function(string _Dependency) [string] = []
+	f_GetCompileAfterGeneratedDependencies =+ &GeneratorSetting.MaybeGetCompileAfterGeneratedDependency->GetProperty(_Dependency)
+
+	// What the command of a file generates, which the compile types whose rules write files give, as custom files and the
+	// interfaces of DriverKit
+	f_GetGeneratedOutputs function(string _File) [string] = []
+	f_GetGeneratedOutputs =+ &Compile.GeneratedOutputs->GetProperty(_File)
+
+	// The scripts of a target that generate files before what depends on them compiles: the pre-build script, and the post-build
+	// script of a target that doesn't link, which has the build events of a custom target of an import, before the compiles of
+	// what depends on it as in CMake's Ninja. A target that links deploys in its post-build script, after the link.
+	Ninja_TargetGeneratedScriptOutputs: [string] = Target:Target.PreBuildScriptOutputs
+	Ninja_TargetGeneratedScriptOutputs [Target:Target.PreBuildScriptOutputs..., Target:Target.PostBuildScriptOutputs...]
+	{
+		!TargetIsLinkable true
+	}
+
+	// What the commands of the target generate, and of the targets that it depends on to build it: the outputs of every file that
+	// runs a command, of every compile type that does, as custom files, Qt forms and Malterlib file systems
+	Target #<OtherRules> =+ {
+		TargetGenerated: {
+			Positions: []
+			, Rule: {
+				phony: true
+			}
+			, Build: {
+				outputs: [GeneratorSetting.TargetPhony_Generated]
+				, order_dependencies: [
+					Target.AllFiles->ForEach(&GeneratorSetting.f_GetGeneratedOutputs)...
+					, GeneratorSetting.Ninja_TargetGeneratedScriptOutputs...
+					, Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetGeneratedDependencies)...
+				]
+			}
+		}
+	}
+
 	Target #<OtherRules> =+ {
 		TargetCompileDependencies: {
 			Positions: []
@@ -576,7 +655,10 @@ GeneratorSetting
 			}
 			, Build: {
 				outputs: [GeneratorSetting.TargetPhony_CompileDependencies]
-				, order_dependencies: Target:Target.PreBuildScriptOutputs
+				, order_dependencies: [
+					Target:Target.PreBuildScriptOutputs...
+					, Target:Target.Dependencies->ForEach(&GeneratorSetting.f_GetCompileAfterGeneratedDependencies)...
+				]
 			}
 		}
 	}
