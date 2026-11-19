@@ -17,6 +17,7 @@ GeneratorSetting
 	}
 	Dependency_Target {}
 	Dependency_Stage {}
+	Dependency_CompileAfterGenerated {}
 	Dependency_IndirectOrderedEvaluated {}
 	Dependency_IndirectEvaluated {}
 

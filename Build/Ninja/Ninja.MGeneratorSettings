@@ -124,6 +124,7 @@ Type
 GeneratorSetting
 {
 	TargetPhony_CompileDependencies: string = `Compile Dependencies @(Target:Target.Name)`
+	TargetPhony_Generated: string = `Generated @(Target:Target.Name)`
 	TargetPhony_LinkDependencies: string = `Link Dependencies @(Target:Target.Name)`
 	TargetPhony_ValidationDependencies: string = `Validation Dependencies @(Target:Target.Name)`
 }
@@ -270,6 +271,7 @@ GeneratorSetting
 	Dependency_LinkWithObjectFiles {}
 	Dependency_Indirect {}
 	Dependency_IndirectOrdered {}
+	Dependency_CompileAfterGenerated {}
 }
 
 Import "Ninja_Target.MGeneratorSettings"
