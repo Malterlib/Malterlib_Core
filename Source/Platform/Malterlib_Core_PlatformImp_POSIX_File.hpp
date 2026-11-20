@@ -1586,6 +1586,33 @@ void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const &_Filename, NMib::NFil
 #endif
 }
 
+#ifdef DPlatformFamily_Linux
+// Changes the mode of _pPath without following a symbolic link in its last component, as the procfs fallback of glibc's lchmod does, and refuses a
+// symbolic link. Returns whether the mode was changed.
+static bool fsg_ChangeModeOnLinkThroughProcFS(char const *_pPath, mode_t _Mode)
+{
+	int iFile = open(_pPath, O_PATH | O_NOFOLLOW | O_CLOEXEC);
+	if (iFile < 0)
+		return false;
+
+	auto CloseFile = g_OnScopeExit / [&]
+		{
+			close(iFile);
+		}
+	;
+
+	struct stat Stats;
+	if (fstat(iFile, &Stats))
+		return false;
+
+	// Like glibc, refuse symbolic links: changing their mode through procfs gives inconsistent results on different filesystems
+	if (S_ISLNK(Stats.st_mode))
+		return false;
+
+	return chmod(CStr(CStr::CFormat("/proc/self/fd/{}") << iFile), _Mode) == 0;
+}
+#endif
+
 void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const &_Filename, NMib::NFile::EFileAttrib _Attributes)
 {
 	struct stat Stats;
@@ -1600,7 +1627,17 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const &_Filename, NMib
 		if (Mode != Stats.st_mode)
 		{
 			if (lchmod(Filename, Mode))
-				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chmod('{}') when setting file attributes") << Filename, errno));
+			{
+				int ErrNo = errno;
+#ifdef DPlatformFamily_Linux
+				// Newer glibc's lchmod uses fchmodat2, which some seccomp filters refuse with EPERM while they allow chmod. On EPERM the procfs
+				// fallback is tried. When it fails too, the EPERM is reported, since it can be a real permission error.
+				if (ErrNo == EPERM && fsg_ChangeModeOnLinkThroughProcFS(Filename, Mode))
+					ErrNo = 0;
+#endif
+				if (ErrNo)
+					DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chmod('{}') when setting file attributes") << Filename, ErrNo));
+			}
 		}
 	}
 

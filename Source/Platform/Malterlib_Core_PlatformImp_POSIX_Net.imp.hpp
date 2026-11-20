@@ -1293,8 +1293,10 @@ auto CPOSIXSocketContext::f_Listen
 	if (AddressType == ENetAddressType_Unix)
 	{
 		auto &UnixAddress = BindAddress.f_GetUnix();
+		// Others who can write the directory can replace the bound file with a symbolic link before the mode is set, so the mode is set without
+		// following a link in the last component of the expanded path. On Linux that can need procfs, and the listen fails when procfs is missing.
 		if (UnixAddress.m_Permissions)
-			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
+			NMib::NFile::CFile::fs_SetAttributesOnLink(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
 	}
 
 	Result = listen(FileDescriptor, SOMAXCONN);
@@ -1401,13 +1403,24 @@ auto CPOSIXSocketContext::f_ListenDatagram
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("bind (listen)", Error));
 	}
 
+	// If setting the mode fails, the bound file is unlinked, and a failure to unlink it is ignored
+	auto CleanupBound = g_OnScopeExit / [&]
+		{
+			if (AddressType == ENetAddressType_Unix)
+				unlink(_Address.f_GetUnix().f_GetPath());
+		}
+	;
+
 	if (AddressType == ENetAddressType_Unix)
 	{
 		auto &UnixAddress = _Address.f_GetUnix();
+		// Others who can write the directory can replace the bound file with a symbolic link before the mode is set, so the mode is set without
+		// following a link in the last component of the expanded path. On Linux that can need procfs, and the listen fails when procfs is missing.
 		if (UnixAddress.m_Permissions)
-			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
+			NMib::NFile::CFile::fs_SetAttributesOnLink(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
 	}
 
+	CleanupBound.f_Clear();
 	Cleanup.f_Clear();
 
 	auto pSocket = fp_CreateSocket(FileDescriptor, EPOSIXSocketMode_Datagram, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
