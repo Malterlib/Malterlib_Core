@@ -328,7 +328,7 @@ GeneratorSetting
 	{
 		&
 		{
-			Dependency.Link true
+			Dependency.LinkEvaluated true
 			!Dependency.IndirectEvaluated true
 			Dependency.ObjectLibrary true
 		}
@@ -349,7 +349,7 @@ GeneratorSetting
 	{
 		&
 		{
-			Dependency.Link true
+			Dependency.LinkEvaluated true
 			!Dependency.IndirectEvaluated true
 			Dependency.Type ""
 			!Dependency.ObjectLibrary true
@@ -365,7 +365,7 @@ GeneratorSetting
 	{
 		&
 		{
-			Dependency.Link true
+			Dependency.LinkEvaluated true
 			!Dependency.IndirectEvaluated true
 			Dependency.Type ""
 			!Dependency.ObjectLibrary true
@@ -382,7 +382,7 @@ GeneratorSetting
 	{
 		&
 		{
-			Dependency.Link true
+			Dependency.LinkEvaluated true
 			!Dependency.IndirectEvaluated true
 			Dependency.Type ""
 			!Dependency.ObjectLibrary true
@@ -508,9 +508,9 @@ GeneratorSetting
 			|
 			{
 				!Dependency.IndirectEvaluated true
-				Dependency.IndirectOrdered true
+				Dependency.IndirectOrderedEvaluated true
 			}
-			Dependency.Stage "Link"
+			Dependency.StageEvaluated "Link"
 			Dependency.Type ""
 		}
 	}
@@ -572,9 +572,9 @@ GeneratorSetting
 			|
 			{
 				!Dependency.IndirectEvaluated true
-				Dependency.IndirectOrdered true
+				Dependency.IndirectOrderedEvaluated true
 			}
-			Dependency.Stage "Runtime"
+			Dependency.StageEvaluated "Runtime"
 			Dependency.Type ""
 		}
 	}
@@ -603,9 +603,9 @@ GeneratorSetting
 			|
 			{
 				!Dependency.IndirectEvaluated true
-				Dependency.IndirectOrdered true
+				Dependency.IndirectOrderedEvaluated true
 			}
-			Dependency.Stage "Compile"
+			Dependency.StageEvaluated "Compile"
 			Dependency.Type ""
 		}
 	}
@@ -614,7 +614,7 @@ GeneratorSetting
 	f_GetCompileDependencies =+ &GeneratorSetting.MaybeGetCompileDependency->GetProperty(_Dependency)
 
 	// The files that the commands of a target generate, and of the targets that it depends on to build it, not of those that it
-	// only needs to run, which the build validates after it
+	// only needs to run, which the build validates after it, unless it compiles after the files that they generate
 	MaybeGetGeneratedDependency: one_of(string, [string]) = []
 	MaybeGetGeneratedDependency `Generated @(Dependency.Name)`
 	{
@@ -623,11 +623,15 @@ GeneratorSetting
 			|
 			{
 				!Dependency.IndirectEvaluated true
-				Dependency.IndirectOrdered true
+				Dependency.IndirectOrderedEvaluated true
+			}
+			|
+			{
+				!Dependency.StageEvaluated "Runtime"
+				Dependency.CompileAfterGeneratedEvaluated true
 			}
 			Dependency.Type ""
-			!Dependency.Stage "Runtime"
-			!Dependency.Stage "None"
+			Dependency.OrderedEvaluated true
 		}
 	}
 
@@ -642,17 +646,11 @@ GeneratorSetting
 			|
 			{
 				!Dependency.IndirectEvaluated true
-				Dependency.IndirectOrdered true
+				Dependency.IndirectOrderedEvaluated true
 			}
-			Dependency.CompileAfterGenerated true
+			Dependency.CompileAfterGeneratedEvaluated true
 			Dependency.Type ""
-			!Dependency.Stage "Runtime"
-			// The stage None only orders the build when the target links the dependency all the same
-			|
-			{
-				!Dependency.Stage "None"
-				Dependency.Link true
-			}
+			Dependency.OrderedEvaluated true
 		}
 	}
 

@@ -20,6 +20,12 @@ GeneratorSetting
 	Dependency_CompileAfterGenerated {}
 	Dependency_IndirectOrderedEvaluated {}
 	Dependency_IndirectEvaluated {}
+	// What the build system decides from the declarations of a dependency, which the generators read
+	Dependency_Ordered {}
+	Dependency_StageEvaluated {}
+	Dependency_LinkEvaluated {}
+	Dependency_CompileAfterGeneratedEvaluated {}
+	Dependency_OrderedEvaluated {}
 
 	Dependency_Type {
 		VSSettings: {

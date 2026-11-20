@@ -140,7 +140,7 @@ GeneratorSetting
 	{
 		&
 		{
-			Dependency.Link true
+			Dependency.LinkEvaluated true
 			!Dependency.IndirectEvaluated true
 			Dependency.Type ""
 			!Dependency.ObjectLibrary true

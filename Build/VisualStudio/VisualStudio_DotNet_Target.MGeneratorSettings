@@ -14,7 +14,7 @@ GeneratorSetting
 
 	Dependency_Link {
 		VSSettings: {
-			ReferenceOutputAssembly: Dependency.Link->f_BoolToString()
+			ReferenceOutputAssembly: Dependency.LinkEvaluated->f_BoolToString()
 		}
 	}
 

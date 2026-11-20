@@ -315,7 +315,7 @@ GeneratorSetting
 
 	Dependency_Link {
 		VSSettings: {
-			LinkLibraryDependencies: Dependency.Link->f_BoolToString()
+			LinkLibraryDependencies: Dependency.LinkEvaluated->f_BoolToString()
 			, Private: false->f_BoolToString()
 			, ReferenceOutputAssembly: false->f_BoolToString()
 		}
@@ -323,7 +323,7 @@ GeneratorSetting
 
 	Dependency_LinkWithObjectFiles =+ {
 		VSSettings: {
-			UseLibraryDependencyInputs: (Dependency.LinkWithObjectFiles && Dependency.Link)->f_BoolToString()
+			UseLibraryDependencyInputs: (Dependency.LinkWithObjectFiles && Dependency.LinkEvaluated)->f_BoolToString()
 		}
 	}
 

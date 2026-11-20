@@ -38,12 +38,48 @@ Dependency
 		!!Dependency.Name undefined
 	}
 
+	// None gives the target the properties of the dependency, as the paths of its files, without building it, ordering the build
+	// after it or linking it. The target of the dependency is in the workspace, as the targets of all dependencies are, so a build
+	// of the whole workspace builds it. A Dependency.Link true of the target links it all the same, which orders the build after it
+	// too, as the link needs its file.
+	// The stages are of dependencies on targets: an external dependency, of a library or framework of the system that a
+	// Dependency.Type names, is linked whatever its stage.
 	Stage: one_of("Compile", "Link", "Runtime", "None") = "Link"
+
+	Link false
+	{
+		!!Dependency.Stage "None"
+	}
+
+	// Whether the declaration orders the build, which the build system decides by, and the generators by OrderedEvaluated: every
+	// stage but None, which only does where the target links the dependency or compiles after the files that it generates all the
+	// same, as the link needs its file and the compiles its generated files
+	Ordered: bool = true
+	Ordered false
+	{
+		&
+		{
+			Dependency.Stage "None"
+			!Dependency.Link true
+			!Dependency.CompileAfterGenerated true
+		}
+	}
 
 	// The target compiles after the files that the commands of the dependency generate, and of what the dependency depends on,
 	// as CMake orders the objects of a target after the commands of the targets that it links. The other stages order after the
 	// whole dependency. Only Ninja orders within targets; the other generators build a dependency before the target.
 	CompileAfterGenerated: bool = false
+
+	// The stage, the link, the compiles after generated files and the ordering of the dependency over every declaration of it in the
+	// target, which the generators read: the most restrictive stage, where a declaration that links the dependency counts as the
+	// stage Link at least, and linked, compiled after generated files or ordering the build where any declaration is. The build
+	// system merges them; with an MTool that doesn't, they are those of the declaration. The declaration that is left of a merged
+	// dependency is evaluated again with the merged values, as whether it is indirect, so its own values can differ from when it
+	// was merged.
+	StageEvaluated: one_of("Compile", "Link", "Runtime", "None") = Dependency.Stage
+	LinkEvaluated: bool = Dependency.Link
+	CompileAfterGeneratedEvaluated: bool = Dependency.CompileAfterGenerated
+	OrderedEvaluated: bool = Dependency.Ordered
 
 	Target Dependency:this.Identity
 	{
