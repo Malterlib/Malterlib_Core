@@ -38,7 +38,15 @@ Dependency
 		!!Dependency.Name undefined
 	}
 
+	// None gives the target the properties of the dependency, as the paths of its files, without building it, ordering the build
+	// after it or linking it. The target of the dependency is in the workspace, as the targets of all dependencies are, so a build
+	// of the whole workspace builds it.
 	Stage: one_of("Compile", "Link", "Runtime", "None") = "Link"
+
+	Link false
+	{
+		!!Dependency.Stage "None"
+	}
 
 	// The target compiles after the files that the commands of the dependency generate, and of what the dependency depends on,
 	// as CMake orders the objects of a target after the commands of the targets that it links. The other stages order after the
