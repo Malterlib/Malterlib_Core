@@ -151,6 +151,9 @@ Import
 		, "*/compile_commands.json"
 		, "*/.ninja_build_lock*"
 	]
+	// The files that CMake attaches the commands of custom targets to, which a build that finds a command up to date by its
+	// files, as Visual Studio does, needs to exist
+	CMake_CacheIncludePatterns =+ ["*/CMakeFiles/*.rule"]
 
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
