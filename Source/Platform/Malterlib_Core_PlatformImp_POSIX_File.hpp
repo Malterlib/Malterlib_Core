@@ -1769,6 +1769,35 @@ void NSys::NFile::fg_SetAttributes(NMib::NStr::CStr const &_Filename, NMib::NFil
 #endif
 }
 
+#ifdef DPlatformFamily_Linux
+// Changes the mode of _pPath without following a link at it, as the procfs fallback of glibc's lchmod does. Returns the errno of the failure, or 0
+static int fsg_ChangeModeOnLinkThroughProcFS(char const *_pPath, mode_t _Mode)
+{
+	int iFile = open(_pPath, O_PATH | O_NOFOLLOW | O_CLOEXEC);
+	if (iFile < 0)
+		return errno;
+
+	auto CloseFile = g_OnScopeExit / [&]
+		{
+			close(iFile);
+		}
+	;
+
+	struct stat Stats;
+	if (fstat(iFile, &Stats))
+		return errno;
+
+	// Linux has no modes on links
+	if (S_ISLNK(Stats.st_mode))
+		return EOPNOTSUPP;
+
+	if (chmod(CStr(CStr::CFormat("/proc/self/fd/{}") << iFile), _Mode))
+		return errno;
+
+	return 0;
+}
+#endif
+
 void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const &_Filename, NMib::NFile::EFileAttrib _Attributes)
 {
 	struct stat Stats;
@@ -1783,7 +1812,17 @@ void NSys::NFile::fg_SetAttributesOnLink(NMib::NStr::CStr const &_Filename, NMib
 		if (Mode != Stats.st_mode)
 		{
 			if (lchmod(Filename, Mode))
-				DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chmod('{}') when setting file attributes") << Filename, errno));
+			{
+				int ErrNo = errno;
+#ifdef DPlatformFamily_Linux
+				// glibc's lchmod uses fchmodat2 and only falls back to procfs when the kernel lacks it, but a seccomp filter can refuse it with
+				// EPERM where it allows chmod. A real lack of permission fails the fallback the same way
+				if (ErrNo == EPERM)
+					ErrNo = fsg_ChangeModeOnLinkThroughProcFS(Filename, Mode);
+#endif
+				if (ErrNo)
+					DMibErrorFile(NPlatform::fg_FormatErrno(CStr::CFormat("chmod('{}') when setting file attributes") << Filename, ErrNo));
+			}
 		}
 	}
 

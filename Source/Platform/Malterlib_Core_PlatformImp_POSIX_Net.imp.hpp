@@ -1293,8 +1293,12 @@ auto CPOSIXSocketContext::f_Listen
 	if (AddressType == ENetAddressType_Unix)
 	{
 		auto &UnixAddress = BindAddress.f_GetUnix();
+		// Others that can write the directory, like the root of a container that mounts it, can replace the bound file with a link to
+		// another file before the mode is applied. On Linux without fchmodat2, or with a seccomp filter that refuses it, the mode changes
+		// without following links only through procfs, which Malterlib needs on Linux anyway, like for the program path, so without procfs
+		// the listen fails instead
 		if (UnixAddress.m_Permissions)
-			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
+			NMib::NFile::CFile::fs_SetAttributesOnLink(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
 	}
 
 	Result = listen(FileDescriptor, SOMAXCONN);
@@ -1401,13 +1405,26 @@ auto CPOSIXSocketContext::f_ListenDatagram
 		DMibErrorNet(NMib::NPlatform::fg_FormatErrno("bind (listen)", Error));
 	}
 
+	// A listen that fails after bind removes the file it bound, which no socket would read from
+	auto CleanupBound = g_OnScopeExit / [&]
+		{
+			if (AddressType == ENetAddressType_Unix)
+				unlink(_Address.f_GetUnix().f_GetPath());
+		}
+	;
+
 	if (AddressType == ENetAddressType_Unix)
 	{
 		auto &UnixAddress = _Address.f_GetUnix();
+		// Others that can write the directory, like the root of a container that mounts it, can replace the bound file with a link to
+		// another file before the mode is applied. On Linux without fchmodat2, or with a seccomp filter that refuses it, the mode changes
+		// without following links only through procfs, which Malterlib needs on Linux anyway, like for the program path, so without procfs
+		// the listen fails instead
 		if (UnixAddress.m_Permissions)
-			NMib::NFile::CFile::fs_SetAttributes(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
+			NMib::NFile::CFile::fs_SetAttributesOnLink(UnixAddress.f_GetPath(), UnixAddress.m_Permissions | NFile::EFileAttrib_UnixAttributesValid);
 	}
 
+	CleanupBound.f_Clear();
 	Cleanup.f_Clear();
 
 	auto pSocket = fp_CreateSocket(FileDescriptor, EPOSIXSocketMode_Datagram, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange));
