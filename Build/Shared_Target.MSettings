@@ -5404,6 +5404,23 @@ Compile
 			Executable true
 		}
 	}
+	// The pre-link script, which Ninja runs in a step of its own between the compiles of the target and its link. The stamp is
+	// written, not touched: on Windows a written file gets the coarse time of the file system, as the link after it does, while
+	// touch gives it the precise time, which can be later than that of the link and would link the target again.
+	%GenerateFile "PreLink"
+	{
+		!!Target:Target.HasPreLinkScript true
+
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name GeneratedDirectory / "PreLink.sh"
+			Contents `set -eo pipefail\n@(Target:Target.PreLinkScript)\necho > @(Target:Target.PreLinkStampFile->EscapeBash())\n`
+			UnixLineEnds true
+			UnicodeBOM false
+			Executable true
+		}
+	}
 	%GenerateFile "PostBuild"
 	{
 		GenerateFile
@@ -5418,14 +5435,90 @@ Compile
 	}
 }
 
+// In Xcode, the scripts that run the pre-link script in the command that links or archives the target
+%Group "~Automatic/LinkScripts"
+{
+	%GenerateFile "LinkLinker"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			Target:Target.HasPreLinkScript true
+			!Target:Target.Type "StaticLibrary"
+		}
+
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name LinkLinkerFile
+			Contents `@(LinkToolPreamble)Tool=@(LinkCompiler->EscapeBash())\n@(LinkToolEnvironment)@(LinkToolBefore)"$Tool" "$@@"\n@(LinkToolAfter)`
+			UnixLineEnds true
+			UnicodeBOM false
+			Executable true
+		}
+	}
+	%GenerateFile "LinkLinkerPlusPlus"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			Target:Target.HasPreLinkScript true
+			!Target:Target.Type "StaticLibrary"
+		}
+
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name LinkLinkerPlusPlusFile
+			Contents `@(LinkToolPreamble)Tool=@(LinkCompilerPlusPlus->EscapeBash())\n@(LinkToolEnvironment)@(LinkToolBefore)"$Tool" "$@@"\n@(LinkToolAfter)`
+			UnixLineEnds true
+			UnicodeBOM false
+			Executable true
+		}
+	}
+	%GenerateFile "LinkLibTool"
+	{
+		&
+		{
+			GeneratorFamily "Xcode"
+			Target:Target.HasPreLinkScript true
+			Target:Target.Type "StaticLibrary"
+		}
+
+		GenerateFile
+		{
+			Group `@(Platform) @(Architecture) @(FullConfiguration)`
+			Name LinkLibToolFile
+			Contents `@(LinkToolPreamble)Tool=@((Target:Target.PlatformToolsetLibTool ?? "libtool")->EscapeBash())\n@(LinkToolEnvironment)@(LinkToolBefore)"$Tool" "$@@"\n@(LinkToolAfter)`
+			UnixLineEnds true
+			UnicodeBOM false
+			Executable true
+		}
+	}
+}
+
 Target
 {
 	!!GeneratorFamily "Ninja"
 
 	PostBuildScriptFile: string? = GeneratedDirectory / "PostBuild.sh"
 	PreBuildScriptFile: string? = GeneratedDirectory / "PreBuild.sh"
+	PreLinkScriptFile: string? = GeneratedDirectory / "PreLink.sh"
+	// Of the pre-link step, which the link builds after
+	PreLinkStampFile: string? = `@(Target.IntermediateDirectory)PreLink.stamp`
 
 	ExtraGroups =+ "~Automatic/BuildScripts"
+}
+
+Target
+{
+	&
+	{
+		GeneratorFamily "Xcode"
+		Target.HasPreLinkScript true
+	}
+
+	ExtraGroups =+ "~Automatic/LinkScripts"
 }
 
 %Group "~Automatic/Utility Build"
@@ -5819,6 +5912,39 @@ Property
 	}
 
 	PreBuildOutputFile: string = `@(Target.IntermediateDirectory)PreBuildOutput.h`
+
+	// In Xcode, the scripts that run the pre-link script in the tool that links or archives the target
+	LinkLinkerFile: string = GeneratedDirectory / "LinkLinker.sh"
+	LinkLinkerPlusPlusFile: string = GeneratedDirectory / "LinkLinkerPlusPlus.sh"
+	LinkLibToolFile: string = GeneratedDirectory / "LinkLibTool.sh"
+	LinkToolPreamble: string = `#!/bin/bash\nset -eo pipefail\n`
+	// The tool is found in the PATH that Xcode gives, as of its toolchain, before the PATH of the scripts changes it
+	LinkToolEnvironment: string = `Tool=$(command -v -- "$Tool") || { echo "error: $Tool, which links, is missing" >&2; exit 1; }\n`\
+								  `export PATH=@(Target:Target.ToolPath->Join(":")->EscapeBash()):"$PATH"\n@(Target:Target.ExportScriptEnvironmentContents ?? "")`
+	// Xcode also runs the tools without an output, as to find their versions with -V, where the scripts don't run. A missing
+	// input fails, as in Ninja.
+	LinkToolBefore: string = `Link=false\nDependencyInfo=""\nPrevious=""\nfor Argument in "$@@"; do\n\tif [ "$Argument" = "-o" ]; then\n\t\tLink=true\n\tfi\n\tif [ "$Previous" = "-dependency_info" ]; then\n\t\tDependencyInfo=$Argument\n\tfi\n\tif [ "$Argument" != "-Xlinker" ]; then\n\t\tPrevious=$Argument\n\tfi\ndone\nif [ "$Link" = true ]; then\n\tfor Input in @(Target:Target.PreLinkScriptInputs->JoinEscaped(" ")); do\n\t\tif [ ! -e "$Input" ]; then\n\t\t\techo "error: The input of the pre-link script is missing: $Input" >&2\n\t\t\texit 1\n\t\tfi\n\tdone\n@(Target:Target.PreLinkScript)\nfi\n`
+	// Xcode links again when one of the files of the dependency info of the link changes or is missing, so the inputs and outputs
+	// of the script, and this script itself, go there as inputs of the link
+	LinkToolAfter: string = `if [ "$Link" = true ] && [ -n "$DependencyInfo" ]; then\n\tfor File in "$0" @(Target:Target.PreLinkScriptInputs->JoinEscaped(" ")) @(Target:Target.PreLinkScriptOutputs->JoinEscaped(" ")); do\n\t\tprintf '\\x10%s\\0' "$File" >> "$DependencyInfo"\n\tdone\nfi\n`
+	LinkCompiler: string = Target:Target.PlatformToolsetCompiler ?? "clang"
+	// The C++ compiler, as the Xcode generator gives LDPLUSPLUS: the compiler itself when it is MTool
+	LinkCompilerPlusPlus: string = (LinkCompiler->GetFileNoExt() == "MTool") ? LinkCompiler : `@(LinkCompiler)++`
+}
+
+// The pre-link script runs between the compiles of the target and its link, whenever the target is linked, as the PRE_LINK build
+// events of CMake's Ninja generator. HasPreLinkScript is set with it: whether the script is empty is only known once the
+// dependencies of the target are, whose files it can name.
+Target
+{
+	PreLinkScript: string = ""
+	PreLinkScriptInputs: [string] = []
+	PreLinkScriptOutputs: [string] = []
+	HasPreLinkScript: bool = false
+
+	// The POST_BUILD of a CMake target of an import runs on the file that it links, before the file is signed and deployed, as
+	// in CMake, instead of on the signed and deployed file, which can't run where executables have to be signed
+	CMakePostBuildOnLinkedFile: bool = false
 }
 
 Target
@@ -6218,6 +6344,8 @@ Property
 
 Property
 {
+	MalterlibPostBuildScript_First: string? // Runs on the linked file before it's copied to its final destination
+	MalterlibPostBuildScript_Signed: string? // Runs on the file at its final destination once it's signed, before it's deployed
 	MalterlibPostBuildScript_Last: string?
 	MalterlibTestDeployPath: string?
 	MalterlibExtraPostBuildScript: string?
@@ -6351,6 +6479,11 @@ Target
 			PlatformType "Unix"
 			GeneratorFamily "Ninja"
 		}
+	}
+
+	PostBuildScript =+ MalterlibPostBuildScript_First
+	{
+		!MalterlibPostBuildScript_First undefined
 	}
 
 	PostBuildScript =+ "env\r\n"
@@ -6762,6 +6895,11 @@ Target
 			MalterlibDriverSigning true
 			!MalterlibDriverINFFile undefined
 		}
+	}
+
+	PostBuildScript =+ MalterlibPostBuildScript_Signed
+	{
+		!MalterlibPostBuildScript_Signed undefined
 	}
 
 	PostBuildScript =+	`echo Deploy Symbols:\r\n`\

@@ -506,6 +506,38 @@ GeneratorSetting
 	f_GetLinkDependencies function(string _Dependency) [string] = []
 	f_GetLinkDependencies =+ &GeneratorSetting.MaybeGetLinkDependency->GetProperty(_Dependency)
 
+	// The pre-link script runs in a step of its own, after what the link reads and before the link, which reads what the step
+	// writes, so that it runs whenever the target is linked for what it links, as CMake's PRE_LINK
+	Target #<OtherRules> =+ {
+		TargetPreLink: {
+			Positions: []
+			, Rule: {
+				command: `@(GeneratorSetting.Ninja_BashExecutable->Escape()) @(Builtin.Dollar)script_file`
+				, restat: true
+				, environment: {
+					PATH: `@(Target:Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
+					, <<: Target:Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
+				}
+				, build_priority: Target.BuildPriority->ToString()
+			}
+			, Build: {
+				description: `@(Target:Target.Name) pre link`
+				, outputs: [Target:Target.PreLinkStampFile, Target:Target.PreLinkScriptOutputs...]
+				, implicit_dependencies: [
+					Target:Target.PreLinkScriptFile
+					, Target:Target.PreLinkScriptInputs...
+					, GeneratorSetting.Ninja_TargetInputs...
+					, GeneratorSetting.Ninja_TargetImplicitInputs...
+				]
+				, order_dependencies: GeneratorSetting.Ninja_TargetOrderDependencies
+				, script_file: Target:Target.PreLinkScriptFile->Escape()
+			}
+		}
+	}
+	{
+		!!Target.HasPreLinkScript true
+	}
+
 	Target #<OtherRules> =+ {
 		TargetLinkDependencies: {
 			Positions: []
@@ -892,6 +924,10 @@ GeneratorSetting
 
 	Target_Type #<Build.implicit_outputs> =+ GeneratorSetting.Ninja_TargetImplicitOutputs
 	Target_Type #<Build.implicit_dependencies> =+ GeneratorSetting.Ninja_TargetImplicitInputs
+	Target_Type #<Build.implicit_dependencies> =+ [Target.PreLinkStampFile, Target.PreLinkScriptOutputs...]
+	{
+		!!Target.HasPreLinkScript true
+	}
 }
 
 GeneratorSetting
@@ -1235,6 +1271,9 @@ GeneratorSetting
 	Target_PostBuildScript =+ {}
 
 	Target_PreBuildScriptFile =+ {}
+	Target_PreLinkScript =+ {}
+	Target_PreLinkScriptFile =+ {}
+	Target_PreLinkStampFile =+ {}
 	Target_PostBuildScriptFile =+ {}
 
 	// Add -dynamiclib or -bundle flag for dynamic library targets on macOS
@@ -1708,6 +1747,10 @@ GeneratorSetting
 	Target_PostBuildScriptOutputs =+ {}
 	Target_PreBuildScriptInputs =+ {}
 	Target_PreBuildScriptOutputs =+ {}
+	Target_PreLinkScriptInputs =+ {}
+	Target_PreLinkScriptOutputs =+ {}
+	Target_HasPreLinkScript =+ {}
+	Target_CMakePostBuildOnLinkedFile =+ {}
 
 	Target_CodeCoverageMapping =+ GeneratorSetting.f_SetSharedFlags(
 		[
