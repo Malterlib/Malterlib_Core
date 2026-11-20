@@ -350,6 +350,35 @@ GeneratorSetting
 		}
 	}
 
+	// The pre-link script runs in the command that links or archives the target, from the scripts that run it before the tool, as
+	// the build system of Xcode doesn't order the link after the build phases that come before it
+	Target_PreLinkScript =+ {}
+	Target_PreLinkScript =+ {
+		XCConfigs: {
+			"MALTERLIB_LINK_LD": LinkLinkerFile
+			, "MALTERLIB_LINK_LDPLUSPLUS": LinkLinkerPlusPlusFile
+		}
+	}
+	{
+		&
+		{
+			Target.HasPreLinkScript true
+			!Target.Type "StaticLibrary"
+		}
+	}
+	Target_PreLinkScript =+ {
+		XCConfigs: {
+			"MALTERLIB_LINK_LIBTOOL": LinkLibToolFile
+		}
+	}
+	{
+		&
+		{
+			Target.HasPreLinkScript true
+			Target.Type "StaticLibrary"
+		}
+	}
+
 	f_ExtractLibraryDependencies function(string _ExternalDependency) [one_of([string], string)] = []
 
 	f_FlagOrAbsolute function(string _Library) string
@@ -1174,6 +1203,12 @@ GeneratorSetting
 			"PreBuildScriptOutputs": Target.PreBuildScriptOutputs
 		}
 	}
+
+	// The tool that runs the pre-link script decides when it runs
+	Target_PreLinkScriptInputs =+ {}
+	Target_PreLinkScriptOutputs =+ {}
+	Target_HasPreLinkScript =+ {}
+	Target_CMakePostBuildOnLinkedFile =+ {}
 
 	Target_CodeCoverageMapping =+ {
 		XCConfigs: {

@@ -131,6 +131,25 @@ GeneratorSetting
 		]
 	}
 
+	Target_PreLinkScript =+ {}
+	Target_PreLinkScriptInputs =+ {}
+	Target_PreLinkScriptOutputs =+ {}
+	Target_HasPreLinkScript =+ {}
+	Target_CMakePostBuildOnLinkedFile =+ {}
+	Target_PreLinkScript =+ {
+		VSSettings: [
+			{
+				Type: "ItemDefinitionGroup"
+				, Name: "PreLinkEvent"
+				, Key: "Command"
+				, Value: `@(Target.ExportScriptEnvironmentContents->EscapeMSBuild())\r\n@(Target.PreLinkScript->EscapeMSBuild())`
+			}
+		]
+	}
+	{
+		!!Target.HasPreLinkScript true
+	}
+
 	Target_PreBuildScript =+ {
 		VSSettings: [
 			{

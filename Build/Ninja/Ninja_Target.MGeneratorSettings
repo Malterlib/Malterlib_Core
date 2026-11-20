@@ -244,6 +244,7 @@ GeneratorSetting
 
 	Ninja_TargetInputs: [string] = []
 	Ninja_TargetImplicitInputs: [string] = []
+	Ninja_PreLinkImplicitInputs: [string] = []
 	Ninja_TargetOutputs: [string] = []
 	Ninja_TargetImplicitOutputs: [string] = []
 	Ninja_TargetOrderDependencies: [string] = []
@@ -279,6 +280,17 @@ GeneratorSetting
 	f_Ninja_CalculateTargetFileImplicitInputs =+ &Compile.LinkerImplicitInputs->GetProperty(_File)
 
 	Ninja_TargetImplicitInputs =+ Target.AllFiles->ForEach(&GeneratorSetting.f_Ninja_CalculateTargetFileImplicitInputs)
+
+	// The Info.plist that the link of a target that isn't a bundle embeds, which its pre-link script runs before too, as it does
+	// for the other files that the link reads
+	Ninja_PreLinkImplicitInputs =+ [Target:Target.MalterlibInfoPListFile]
+	{
+		&
+		{
+			!Target:Target.MalterlibInfoPListFile undefined
+			!MalterlibIsMacOSBundle true
+		}
+	}
 
 	// Add library dependencies as implicit inputs for executables
 	// This ensures Ninja rebuilds when dependent libraries change
@@ -505,6 +517,39 @@ GeneratorSetting
 
 	f_GetLinkDependencies function(string _Dependency) [string] = []
 	f_GetLinkDependencies =+ &GeneratorSetting.MaybeGetLinkDependency->GetProperty(_Dependency)
+
+	// The pre-link script runs in a step of its own, after what the link reads and before the link, which reads what the step
+	// writes, so that it runs whenever the target is linked for what it links, as CMake's PRE_LINK
+	Target #<OtherRules> =+ {
+		TargetPreLink: {
+			Positions: []
+			, Rule: {
+				command: `@(GeneratorSetting.Ninja_BashExecutable->Escape()) @(Builtin.Dollar)script_file`
+				, restat: true
+				, environment: {
+					PATH: `@(Target:Target.ToolPath->Join(PathSeparator))@(PathSeparator)@(PATH)`
+					, <<: Target:Target.ExportScriptEnvironment->ForEach(&fg_ExportScriptEnvironmentContentsNinja_Template)
+				}
+				, build_priority: Target.BuildPriority->ToString()
+			}
+			, Build: {
+				description: `@(Target:Target.Name) pre link`
+				, outputs: [Target:Target.PreLinkStampFile, Target:Target.PreLinkScriptOutputs...]
+				, implicit_dependencies: [
+					Target:Target.PreLinkScriptFile
+					, Target:Target.PreLinkScriptInputs...
+					, GeneratorSetting.Ninja_TargetInputs...
+					, GeneratorSetting.Ninja_TargetImplicitInputs...
+					, GeneratorSetting.Ninja_PreLinkImplicitInputs...
+				]
+				, order_dependencies: GeneratorSetting.Ninja_TargetOrderDependencies
+				, script_file: Target:Target.PreLinkScriptFile->Escape()
+			}
+		}
+	}
+	{
+		!!Target.HasPreLinkScript true
+	}
 
 	Target #<OtherRules> =+ {
 		TargetLinkDependencies: {
@@ -898,6 +943,10 @@ GeneratorSetting
 
 	Target_Type #<Build.implicit_outputs> =+ GeneratorSetting.Ninja_TargetImplicitOutputs
 	Target_Type #<Build.implicit_dependencies> =+ GeneratorSetting.Ninja_TargetImplicitInputs
+	Target_Type #<Build.implicit_dependencies> =+ [Target.PreLinkStampFile, Target.PreLinkScriptOutputs...]
+	{
+		!!Target.HasPreLinkScript true
+	}
 }
 
 GeneratorSetting
@@ -1241,6 +1290,9 @@ GeneratorSetting
 	Target_PostBuildScript =+ {}
 
 	Target_PreBuildScriptFile =+ {}
+	Target_PreLinkScript =+ {}
+	Target_PreLinkScriptFile =+ {}
+	Target_PreLinkStampFile =+ {}
 	Target_PostBuildScriptFile =+ {}
 
 	// Add -dynamiclib or -bundle flag for dynamic library targets on macOS
@@ -1714,6 +1766,10 @@ GeneratorSetting
 	Target_PostBuildScriptOutputs =+ {}
 	Target_PreBuildScriptInputs =+ {}
 	Target_PreBuildScriptOutputs =+ {}
+	Target_PreLinkScriptInputs =+ {}
+	Target_PreLinkScriptOutputs =+ {}
+	Target_HasPreLinkScript =+ {}
+	Target_CMakePostBuildOnLinkedFile =+ {}
 
 	Target_CodeCoverageMapping =+ GeneratorSetting.f_SetSharedFlags(
 		[

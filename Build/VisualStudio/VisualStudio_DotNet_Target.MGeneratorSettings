@@ -185,6 +185,13 @@ GeneratorSetting
 		]
 	}
 
+	// .NET targets have no link
+	Target_PreLinkScript =+ {}
+	Target_PreLinkScriptInputs =+ {}
+	Target_PreLinkScriptOutputs =+ {}
+	Target_HasPreLinkScript =+ {}
+	Target_CMakePostBuildOnLinkedFile =+ {}
+
 	Target_PreBuildScript =+ {
 		VSSettings: [
 			{
