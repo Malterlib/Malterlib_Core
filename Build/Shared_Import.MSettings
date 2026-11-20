@@ -154,6 +154,8 @@ Import
 	// The files that CMake attaches the commands of custom targets to, which a build that finds a command up to date by its
 	// files, as Visual Studio does, needs to exist
 	CMake_CacheIncludePatterns =+ ["*/CMakeFiles/*.rule"]
+	// The Info.plist that CMake generates for an application bundle, which the bundle that Malterlib builds has
+	CMake_CacheIncludePatterns =+ ["*.app/Contents/Info.plist"]
 
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
