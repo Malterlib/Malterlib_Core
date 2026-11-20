@@ -157,8 +157,11 @@ Import
 
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
 	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
+	// As the generator escapes for bash the scripts that bash runs on Windows, as of build events with Ninja
+	CMake_ExcludeFromHash =+ `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeBash())`->EJSONToString()
 	CMake_ExcludeFromHash =+ `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute())`->EJSONToString()
 	CMake_ExcludeFromHash =+ `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute()->EscapeHost())`->EJSONToString()
+	CMake_ExcludeFromHash =+ `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute()->EscapeBash())`->EJSONToString()
 	CMake_ExcludeFromHash =+ VisualStudioMSVCRootPath / MalterlibMSVCVersion
 	{
 		!!PlatformFamily "Windows"
@@ -211,8 +214,10 @@ Import
 	CMake_CacheReplaceContents =+ [
 		{Find: `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute())`, Replace: "MToolCMake"}
 		, {Find: `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeHost())`, Replace: "MToolCMake"}
+		, {Find: `@@(@((MToolCMakePath)->EJSONToString())->MakeAbsolute()->EscapeBash())`, Replace: "MToolCMake"}
 		, {Find: `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute())`, Replace: "MToolCTest"}
 		, {Find: `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute()->EscapeHost())`, Replace: "MToolCTest"}
+		, {Find: `@@(@((MToolCTestPath)->EJSONToString())->MakeAbsolute()->EscapeBash())`, Replace: "MToolCTest"}
 		, {Find: "/opt/local/bin/", Replace: ""}
 		, {Find: "/usr/bin/", Replace: ""}
 		, {Find: "/opt/homebrew/bin/", Replace: ""}
