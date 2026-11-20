@@ -21,6 +21,28 @@ GeneratorSetting
 	{
 		!!GeneratorSetting.Target_CharacterSet undefined
 	}
+	// Visual Studio sets the C language of each compile (Compile_CLanguage)
+	Target_CLanguage {}
+	{
+		!!GeneratorSetting.Target_CLanguage undefined
+	}
+	// The events of MSBuild have no inputs and outputs
+	Target_PreBuildScriptInputs {}
+	{
+		!!GeneratorSetting.Target_PreBuildScriptInputs undefined
+	}
+	Target_PreBuildScriptOutputs {}
+	{
+		!!GeneratorSetting.Target_PreBuildScriptOutputs undefined
+	}
+	Target_PostBuildScriptInputs {}
+	{
+		!!GeneratorSetting.Target_PostBuildScriptInputs undefined
+	}
+	Target_PostBuildScriptOutputs {}
+	{
+		!!GeneratorSetting.Target_PostBuildScriptOutputs undefined
+	}
 	Target_UseOfMfc {}
 	{
 		!!GeneratorSetting.Target_UseOfMfc undefined
