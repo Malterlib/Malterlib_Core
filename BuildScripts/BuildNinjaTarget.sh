@@ -44,6 +44,13 @@ if [[ "$NumCPUs" != "" ]]; then
 	NinjaCommandArgs="$NinjaCommandArgs -j $NumCPUs"
 fi
 
+# Arguments of the environment for ninja, as -d explain, which tells why it builds what it builds, split into words as the shell
+# splits them, so that a quoted argument can have spaces
+NinjaExtraArgs=()
+if [[ -n "$MalterlibNinjaArgs" ]]; then
+	eval "NinjaExtraArgs=($MalterlibNinjaArgs)"
+fi
+
 # A build that another build runs, as of host tools, waits whatever these say: ninja tells from NINJA_BUILD_LOCK_CHAIN
 if [[ "$MalterlibBuildLocking" == "true" ]]; then
 	if [[ "$MalterlibBuildLockWait" == "true" ]]; then
@@ -55,13 +62,13 @@ if [[ "$MalterlibBuildLocking" == "true" ]]; then
 	fi
 fi
 
-echo ninja -C "$NinjaBuildDir" $NinjaCommandArgs "${Targets[@]}"
+echo ninja -C "$NinjaBuildDir" $NinjaCommandArgs ${NinjaExtraArgs[@]+"${NinjaExtraArgs[@]}"} "${Targets[@]}"
 
 StartTimeMs=$(date +%s%N)
 StartTimeMs=${StartTimeMs%??????}
 
 set +e
-ninja -C "$NinjaBuildDir" $NinjaCommandArgs "${Targets[@]}"
+ninja -C "$NinjaBuildDir" $NinjaCommandArgs ${NinjaExtraArgs[@]+"${NinjaExtraArgs[@]}"} "${Targets[@]}"
 NinjaExitCode=$?
 set -e
 
