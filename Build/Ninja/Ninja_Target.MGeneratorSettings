@@ -1726,6 +1726,7 @@ GeneratorSetting
 		]
 	)
 
+	// The versions of the libraries of Apple platforms, which the linkers of other platforms don't take
 	Target_CompatibilityVersion =+ GeneratorSetting.f_SetSharedFlags(
 		[
 			{
@@ -1735,7 +1736,11 @@ GeneratorSetting
 		]
 	)
 	{
-		!!Target.Type "SharedDynamicLibrary"
+		&
+		{
+			Target.Type "SharedDynamicLibrary"
+			PlatformIsDarwin true
+		}
 	}
 
 	Target_CurrentVersion =+ GeneratorSetting.f_SetSharedFlags(
@@ -1747,17 +1752,29 @@ GeneratorSetting
 		]
 	)
 	{
-		!!Target.Type "SharedDynamicLibrary"
+		&
+		{
+			Target.Type "SharedDynamicLibrary"
+			PlatformIsDarwin true
+		}
 	}
 
 	Target_CompatibilityVersion =+ {}
 	{
-		!Target.Type "SharedDynamicLibrary"
+		|
+		{
+			!Target.Type "SharedDynamicLibrary"
+			!PlatformIsDarwin true
+		}
 	}
 
 	Target_CurrentVersion =+ {}
 	{
-		!Target.Type "SharedDynamicLibrary"
+		|
+		{
+			!Target.Type "SharedDynamicLibrary"
+			!PlatformIsDarwin true
+		}
 	}
 
 	Target_PostBuildScriptInputs =+ {}
