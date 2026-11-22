@@ -525,6 +525,10 @@ State the constraint directly and as briefly as possible. Prefer present-tense e
 the code must have its current shape. Use `// ` for ordinary Malterlib comments, aligned with the code,
 and continue multiline explanations with `//`.
 
+Write comments as plain, complete sentences that a maintainer who doesn't know the change can follow
+from the comment and the code beside it: no shorthand nouns, and no pronouns without a clear referent.
+Short is good only while it stays that clear.
+
 For example, this excerpt from
 `Malterlib/Concurrency/Source/Actor/Malterlib_Concurrency_AsyncGeneratorPrivate.hpp` explains how
 the coroutine can become invalid. The condition alone does not convey those causes.
