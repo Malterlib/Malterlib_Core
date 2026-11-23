@@ -1471,14 +1471,19 @@ static NFile::CUniqueFileIdentifier fsg_GetUnixListenFileIdentity(HANDLE _pFile)
 	return Identity;
 }
 
-// Concurrent listener teardown can remove the stale file first; absence is success.
+// Concurrent listener teardown can remove the stale file first, also between the checks here; absence is success. A directory is never a stale
+// socket, and the Windows delete would remove an empty one where POSIX unlink refuses it.
 static void fsg_DeleteStaleUnixListenFile(NStr::CStr const &_Path)
 {
-	if (!NFile::CFile::fs_FileExists(_Path))
-		return;
-
 	try
 	{
+		if (!NFile::CFile::fs_FileExists(_Path))
+			return;
+
+		NFile::EFileAttrib Attributes = NFile::CFile::fs_GetAttributesOnLink(_Path);
+		if ((Attributes & NFile::EFileAttrib_Directory) && !(Attributes & NFile::EFileAttrib_Link))
+			DMibErrorFile(NStr::CStr::CFormat("'{}' is a directory, not a unix socket") << _Path);
+
 		NFile::CFile::fs_DeleteFile(_Path);
 	}
 	catch (NFile::CExceptionFile const &)
