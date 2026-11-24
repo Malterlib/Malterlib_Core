@@ -378,6 +378,102 @@ CUnixAddress CUnixAddress::f_GetStaged() const
 	return Staged;
 }
 
+// Every byte is cleared, since addresses compare by their bytes
+CVSockAddress::CVSockAddress()
+{
+	NMemory::fg_MemClear(m_Address);
+#ifndef DPlatformFamily_Windows
+	m_Address.svm_family = AF_VSOCK;
+#	ifdef DPlatformFamily_macOS
+	m_Address.svm_len = sizeof(m_Address);
+#	endif
+#endif
+}
+
+CVSockAddress::CVSockAddress(NMib::NNetwork::CNetAddressVSock const &_Address)
+	: CVSockAddress()
+{
+#ifdef DPlatformFamily_Windows
+	m_Address = _Address;
+#else
+	m_Address.svm_cid = _Address.m_ContextID;
+	m_Address.svm_port = _Address.m_Port;
+#endif
+}
+
+NMib::NNetwork::CNetAddressVSock CVSockAddress::f_GetAddress() const
+{
+#ifdef DPlatformFamily_Windows
+	return m_Address;
+#else
+	return {.m_ContextID = m_Address.svm_cid, .m_Port = m_Address.svm_port};
+#endif
+}
+
+namespace
+{
+	// Decimal digits only, up to the next ':' or the end, within the range of uint32
+	bool fg_ParseVSockNumber(ch8 const * &_pParse, uint32 &o_Value)
+	{
+		uint64 Value = 0;
+		ch8 const *pStart = _pParse;
+		while (*_pParse >= '0' && *_pParse <= '9')
+		{
+			Value = Value * 10 + uint64(*_pParse - '0');
+			if (Value > TCLimitsInt<uint32>::mc_Max)
+				return false;
+
+			++_pParse;
+		}
+
+		if (_pParse == pStart)
+			return false;
+
+		o_Value = uint32(Value);
+
+		return true;
+	}
+}
+
+// Parses VSOCK:<Context ID>:<Port>, with both numbers in decimal
+NStorage::TCOptional<CVSockAddress> CVSockAddress::fs_Parse(NMib::NStr::CStr const &_Address, bool _bThrowOnError)
+{
+	NMib::NNetwork::CNetAddressVSock Address;
+
+	bool bValid = _Address.f_StartsWith("VSOCK:");
+	if (bValid)
+	{
+		ch8 const *pParse = _Address.f_GetStr() + fg_StrLen("VSOCK:");
+		bValid = fg_ParseVSockNumber(pParse, Address.m_ContextID) && *pParse++ == ':' && fg_ParseVSockNumber(pParse, Address.m_Port) && *pParse == 0;
+	}
+
+	if (!bValid)
+	{
+		if (_bThrowOnError)
+			DMibErrorNet(NMib::NStr::fg_Format("Invalid virtio socket address '{}', the form is VSOCK:<Context ID>:<Port>", _Address));
+
+		return {};
+	}
+
+	return CVSockAddress(Address);
+}
+
+NMib::NStr::CStr CVSockAddress::f_GetString(NMib::NNetwork::ENetAddressStringFlag _Flags) const
+{
+	auto Address = f_GetAddress();
+
+	NMib::NStr::CStr String;
+	if (_Flags & NMib::NNetwork::ENetAddressStringFlag_IncludeType)
+		String += "VSOCK:";
+
+	String += NMib::NStr::fg_Format("{}", Address.m_ContextID);
+
+	if (_Flags & NMib::NNetwork::ENetAddressStringFlag_IncludePort)
+		String += NMib::NStr::fg_Format(":{}", Address.m_Port);
+
+	return String;
+}
+
 CRuntimeNetAddress::CRuntimeNetAddress()
 	: mp_Type(NMib::NNetwork::ENetAddressType_None)
 {
@@ -411,6 +507,12 @@ CRuntimeNetAddress::CRuntimeNetAddress(CUnixAddress const &_Unix)
 	: mp_Type(NMib::NNetwork::ENetAddressType_None)
 {
 	f_Set(_Unix);
+}
+
+CRuntimeNetAddress::CRuntimeNetAddress(CVSockAddress const &_VSock)
+	: mp_Type(NMib::NNetwork::ENetAddressType_None)
+{
+	f_Set(_VSock);
 }
 
 NMib::NNetwork::ENetAddressType CRuntimeNetAddress::f_GetType() const
@@ -447,6 +549,11 @@ void CRuntimeNetAddress::f_Set(CUnixAddress const &_Unix)
 	f_Set(NMib::NNetwork::ENetAddressType_Unix, &_Unix, sizeof(CUnixAddress));
 }
 
+void CRuntimeNetAddress::f_Set(CVSockAddress const &_VSock)
+{
+	f_Set(NMib::NNetwork::ENetAddressType_VSock, &_VSock, sizeof(CVSockAddress));
+}
+
 umint CRuntimeNetAddress::f_GetFullDataLen() const
 {
 	return mp_Data.f_GetLen();
@@ -460,6 +567,7 @@ umint CRuntimeNetAddress::f_GetSockAddrLen() const
 	case ENetAddressType_TCPv4: return sizeof(sockaddr_in);
 	case ENetAddressType_TCPv6: return sizeof(sockaddr_in6);
 	case ENetAddressType_Unix: return sizeof(sockaddr_un);
+	case ENetAddressType_VSock: return sizeof(CVSockAddress::m_Address);
 	default: return f_GetFullDataLen();
 	}
 }
@@ -482,6 +590,11 @@ sockaddr_in6 const &CRuntimeNetAddress::f_GetTCPv6() const
 CUnixAddress const &CRuntimeNetAddress::f_GetUnix() const
 {
 	return *(CUnixAddress const *)mp_Data.f_GetArray();
+}
+
+CVSockAddress const &CRuntimeNetAddress::f_GetVSock() const
+{
+	return *(CVSockAddress const *)mp_Data.f_GetArray();
 }
 
 sockaddr_in &CRuntimeNetAddress::f_GetTCPv4()

@@ -8,6 +8,11 @@
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#if defined(DPlatformFamily_macOS)
+#	include <sys/vsock.h>
+#elif defined(DPlatformFamily_Linux)
+#	include <linux/vm_sockets.h>
+#endif
 #include "../Malterlib_Core_IoSubSystem.h"
 
 #include "Malterlib_Core_PlatformImp_Net.h"

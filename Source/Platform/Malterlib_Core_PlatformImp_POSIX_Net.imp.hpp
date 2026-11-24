@@ -162,6 +162,14 @@ CPOSIXAddress *CPOSIXSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddressT
 			return fg_ConstructObject<CPOSIXAddress>(NMemory::CDefaultAllocator(), NativeAddr);
 		}
 		break;
+	case NMib::NNetwork::ENetAddressType_VSock:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressVSock))
+				return nullptr;
+
+			return fg_ConstructObject<CPOSIXAddress>(NMemory::CDefaultAllocator(), CVSockAddress(*(NMib::NNetwork::CNetAddressVSock const *)_pData));
+		}
+		break;
 	case NMib::NNetwork::ENetAddressType_Unix:
 	default:
 		{
@@ -219,6 +227,17 @@ bool CPOSIXSocketContext::f_GetAddressRaw(CPOSIXAddress const &_Address, NMib::N
 		}
 		break;
 
+	case NMib::NNetwork::ENetAddressType_VSock:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressVSock))
+				return false;
+
+			*(NMib::NNetwork::CNetAddressVSock *)o_pRawData = _Address.f_GetVSock().f_GetAddress();
+
+			return true;
+		}
+		break;
+
 	case NMib::NNetwork::ENetAddressType_Unix:
 	default:
 		{
@@ -252,6 +271,20 @@ CPOSIXAddress *CPOSIXSocketContext::f_SetAddressRaw(CPOSIXAddress *_pAddress, ::
 		{
 			NMib::NNetwork::CNetAddressTCPv6 const &Addr = *(NMib::NNetwork::CNetAddressTCPv6 const *)_pRawData;
 			fp_ToNative(Addr, _pAddress->f_GetTCPv6());
+
+			return _pAddress;
+		}
+		break;
+
+	case NMib::NNetwork::ENetAddressType_VSock:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressVSock))
+			{
+				f_FreeAddress(_pAddress);
+				return nullptr;
+			}
+
+			_pAddress->f_Set(CVSockAddress(*(NMib::NNetwork::CNetAddressVSock const *)_pRawData));
 
 			return _pAddress;
 		}
@@ -429,6 +462,7 @@ NMib::NStr::CStr CPOSIXSocketContext::f_GetAddressString(CPOSIXAddress const &_A
 			AddressStr += Address.f_GetPath();
 		}
 		break;
+	case NMib::NNetwork::ENetAddressType_VSock: AddressStr = _Address.f_GetVSock().f_GetString(_Flags); break;
 	/*
 	case gc_NetAddressType_Kernel:
 		{
@@ -498,6 +532,12 @@ bool CPOSIXSocketContext::fp_GetSocketCreateParams(NMib::NNetwork::ENetAddressTy
 		if (_AddressType == ENetAddressType_Unix)
 		{
 			o_Params.m_Domain = PF_UNIX;
+			o_Params.m_Type = SOCK_STREAM;
+			o_Params.m_Protocol = 0;
+		}
+		else if (_AddressType == ENetAddressType_VSock)
+		{
+			o_Params.m_Domain = AF_VSOCK;
 			o_Params.m_Type = SOCK_STREAM;
 			o_Params.m_Protocol = 0;
 		}
@@ -651,6 +691,11 @@ auto CPOSIXSocketContext::fp_Connect
 				{
 					auto &Unix = _Address.f_GetUnix();
 					DMibErrorNet(NMib::NPlatform::fg_FormatErrno(fg_Format("connect ({}, connect)", Unix.f_GetPath()), Error));
+				}
+				else if (AddressType == ENetAddressType_VSock)
+				{
+					CStr AddressString = _Address.f_GetVSock().f_GetString(ENetAddressStringFlag_IncludeType | ENetAddressStringFlag_IncludePort);
+					DMibErrorNet(NMib::NPlatform::fg_FormatErrno(fg_Format("connect ({}, connect)", AddressString), Error));
 				}
 				else
 					DMibErrorNet(NMib::NPlatform::fg_FormatErrno("connect (connect)", Error));
@@ -1142,7 +1187,7 @@ void NSys::NNetwork::fg_SetSendWindow(void *_pSocket, umint _nBytes, bool _bConf
 	// TCP_NOTSENT_LOWAT bounds unsent bytes so backpressure fills the caller's pipeline,
 	// while TCP bounds unacknowledged bytes and autotunes its buffers.
 	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
-	if (pSocket->m_FD == -1 || !_nBytes || pSocket->m_AddressType == ENetAddressType_Unix)
+	if (pSocket->m_FD == -1 || !_nBytes || pSocket->m_AddressType == ENetAddressType_Unix || pSocket->m_AddressType == ENetAddressType_VSock)
 		return;
 
 	pSocket->m_nSendWindowBytes = _nBytes;
@@ -1169,7 +1214,7 @@ bool NSys::NNetwork::fg_QueryPathDeliveryRate(void *_pSocket, umint &o_nBytes, b
 {
 #if defined(DPlatformFamily_Linux)
 	CPOSIXSocket *pSocket = (CPOSIXSocket *)_pSocket;
-	if (pSocket->m_FD == -1 || pSocket->m_AddressType == ENetAddressType_Unix)
+	if (pSocket->m_FD == -1 || pSocket->m_AddressType == ENetAddressType_Unix || pSocket->m_AddressType == ENetAddressType_VSock)
 		return false;
 
 	return fg_Linux_QueryPathDeliveryRate(pSocket->m_FD, o_nBytes, o_bAppLimited);
@@ -1339,6 +1384,9 @@ auto CPOSIXSocketContext::f_ListenDatagram
 	CPOSIXImpSpecificSocketContext::CSocketCreateParams SocketCreateParams;
 	if (!fp_GetSocketCreateParams(AddressType, SocketCreateParams))
 		DMibErrorNet("Unsupported address type");
+
+	if (AddressType == ENetAddressType_VSock)
+		DMibErrorNet("Virtio sockets only support streams");
 
 	if (AddressType == ENetAddressType_TCPv4 || AddressType == ENetAddressType_TCPv6 || AddressType == ENetAddressType_Unix)
 		SocketCreateParams.m_Type = SOCK_DGRAM;
@@ -1850,6 +1898,8 @@ static ENetAddressType fg_AddressTypeOfDescriptor(int _FD)
 		return ENetAddressType_TCPv4;
 	if (Address.ss_family == AF_INET6)
 		return ENetAddressType_TCPv6;
+	if (Address.ss_family == AF_VSOCK)
+		return ENetAddressType_VSock;
 
 	return ENetAddressType_None;
 }
@@ -1997,6 +2047,8 @@ CPOSIXAddress *CPOSIXSocketContext::f_GetPeerAddress(CPOSIXSocket *_pSocket)
 		NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(Address);
 		return pAddress.f_Detach();
 	}
+	else if (PeerAddr.ss_family == AF_VSOCK)
+		return CPOSIXAddress::fs_FromNative(&PeerAddr, nAddrBytes).f_Detach();
 	else
 		return nullptr;
 }
@@ -2136,6 +2188,8 @@ uint32 CPOSIXSocketContext::f_GetListenPort(CPOSIXSocket *_pSocket)
 		auto &Addr = *(sockaddr_in6 const *)&PeerAddr;
 		return ntohs(Addr.sin6_port);
 	}
+	else if (PeerAddr.ss_family == AF_VSOCK)
+		return ((sockaddr_vm const *)&PeerAddr)->svm_port;
 	else
 		return 0;
 }

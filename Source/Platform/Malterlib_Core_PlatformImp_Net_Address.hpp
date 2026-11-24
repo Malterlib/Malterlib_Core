@@ -37,7 +37,8 @@ inline void CRuntimeNetAddress::fs_ParseEndpoint(NStr::CStr const &_Address, NSy
 
 inline auto CRuntimeNetAddress::fs_FromNative(void const *_pAddress, umint _Size) -> NStorage::TCUniquePointer<CRuntimeNetAddress>
 {
-	if (!_pAddress || _Size < sizeof(sockaddr))
+	// Only the family is read before its size is checked, since an address can be shorter than sockaddr, as the sockaddr_vm of macOS is
+	if (!_pAddress || _Size < DMibPOffsetOf(sockaddr, sa_family) + sizeof(sockaddr::sa_family))
 		DMibErrorNet("Invalid native socket address");
 
 	auto *pAddress = static_cast<sockaddr const *>(_pAddress);
@@ -45,6 +46,13 @@ inline auto CRuntimeNetAddress::fs_FromNative(void const *_pAddress, umint _Size
 		return fg_Construct(*static_cast<sockaddr_in const *>(_pAddress));
 	if (pAddress->sa_family == AF_INET6 && _Size >= sizeof(sockaddr_in6))
 		return fg_Construct(*static_cast<sockaddr_in6 const *>(_pAddress));
+#ifndef DPlatformFamily_Windows
+	if (pAddress->sa_family == AF_VSOCK && _Size >= sizeof(sockaddr_vm))
+	{
+		auto const &Native = *static_cast<sockaddr_vm const *>(_pAddress);
+		return fg_Construct(CVSockAddress({.m_ContextID = Native.svm_cid, .m_Port = Native.svm_port}));
+	}
+#endif
 
 	DMibErrorNet("Unsupported native socket address");
 }

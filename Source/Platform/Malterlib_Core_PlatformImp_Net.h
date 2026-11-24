@@ -72,6 +72,24 @@ struct CUnixAddress
 	NFile::EFileAttrib m_Permissions = NFile::EFileAttrib_None;
 };
 
+// Holds the sockaddr_vm that sockets bind and connect with. Windows has no virtio sockets, so there it holds the address of the network module
+struct CVSockAddress
+{
+	CVSockAddress();
+	explicit CVSockAddress(NMib::NNetwork::CNetAddressVSock const &_Address);
+
+	static NStorage::TCOptional<CVSockAddress> fs_Parse(NMib::NStr::CStr const &_Address, bool _bThrowOnError);
+
+	NMib::NNetwork::CNetAddressVSock f_GetAddress() const;
+	NMib::NStr::CStr f_GetString(NMib::NNetwork::ENetAddressStringFlag _Flags) const;
+
+#ifdef DPlatformFamily_Windows
+	NMib::NNetwork::CNetAddressVSock m_Address;
+#else
+	sockaddr_vm m_Address;
+#endif
+};
+
 struct CRuntimeNetAddress
 {
 	CRuntimeNetAddress();
@@ -80,6 +98,7 @@ struct CRuntimeNetAddress
 	CRuntimeNetAddress(sockaddr_in const &_TCPv4);
 	CRuntimeNetAddress(sockaddr_in6 const &_TCPv6);
 	CRuntimeNetAddress(CUnixAddress const &_Unix);
+	CRuntimeNetAddress(CVSockAddress const &_VSock);
 
 	static void fs_ParseEndpoint(NStr::CStr const &_Address, NSys::NNetwork::CResolveAddressParameters &o_Parameters, NStr::CStr &o_Service);
 
@@ -94,6 +113,7 @@ struct CRuntimeNetAddress
 	void f_Set(sockaddr_in const &_TCPv4);
 	void f_Set(sockaddr_in6 const &_TCPv6);
 	void f_Set(CUnixAddress const &_Unix);
+	void f_Set(CVSockAddress const &_VSock);
 
 	uint32 f_GetScopeID() const;
 
@@ -103,6 +123,7 @@ struct CRuntimeNetAddress
 	sockaddr_in const &f_GetTCPv4() const;
 	sockaddr_in6 const &f_GetTCPv6() const;
 	CUnixAddress const &f_GetUnix() const;
+	CVSockAddress const &f_GetVSock() const;
 	sockaddr_in &f_GetTCPv4();
 	sockaddr_in6 &f_GetTCPv6();
 	CUnixAddress &f_GetUnix();

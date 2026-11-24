@@ -235,6 +235,15 @@ CWindowsAddress *CWindowsSocketContext::f_CreateAddress(NMib::NNetwork::ENetAddr
 		}
 		break;
 
+	case NMib::NNetwork::ENetAddressType_VSock:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressVSock))
+				return nullptr;
+
+			return fg_ConstructObject<CWindowsAddress>(NMemory::CDefaultAllocator(), CVSockAddress(*(NMib::NNetwork::CNetAddressVSock const *)_pData));
+		}
+		break;
+
 	case NMib::NNetwork::ENetAddressType_Unix:
 	default:
 		{
@@ -287,6 +296,17 @@ bool CWindowsSocketContext::f_GetAddressRaw(CWindowsAddress const &_Address, NMi
 		}
 		break;
 
+	case NMib::NNetwork::ENetAddressType_VSock:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressVSock))
+				return false;
+
+			*(NMib::NNetwork::CNetAddressVSock *)o_pRawData = _Address.f_GetVSock().f_GetAddress();
+
+			return true;
+		}
+		break;
+
 	case NMib::NNetwork::ENetAddressType_Unix:
 	default:
 		{
@@ -320,6 +340,19 @@ CWindowsAddress *CWindowsSocketContext::f_SetAddressRaw(CWindowsAddress *_pAddre
 		{
 			NMib::NNetwork::CNetAddressTCPv6 const &Addr = *(NMib::NNetwork::CNetAddressTCPv6 const *)_pRawData;
 			fp_ToNative(Addr, _pAddress->f_GetTCPv6());
+
+			return _pAddress;
+		}
+		break;
+	case NMib::NNetwork::ENetAddressType_VSock:
+		{
+			if (_nDataBytes != sizeof(NMib::NNetwork::CNetAddressVSock))
+			{
+				f_FreeAddress(_pAddress);
+				return nullptr;
+			}
+
+			_pAddress->f_Set(CVSockAddress(*(NMib::NNetwork::CNetAddressVSock const *)_pRawData));
 
 			return _pAddress;
 		}
@@ -373,6 +406,16 @@ auto CWindowsSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, 
 
 		ResolvedAddress.f_Set(fg_Move(*Address));
 		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(fg_Move(ResolvedAddress));
+
+		return pAddress.f_Detach();
+	}
+	else if (_Address.f_StartsWith("VSOCK:"))
+	{
+		auto Address = CVSockAddress::fs_Parse(_Address, _bThrowOnError);
+		if (!Address)
+			return nullptr;
+
+		NStorage::TCUniquePointer<CWindowsAddress> pAddress = fg_Construct(*Address);
 
 		return pAddress.f_Detach();
 	}
@@ -676,6 +719,7 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 			AddressStr += Address.f_GetPath();
 			break;
 		}
+	case NMib::NNetwork::ENetAddressType_VSock: AddressStr = _Address.f_GetVSock().f_GetString(_Flags); break;
 
 	case ENetAddressType_None: break;
 	default: break;
@@ -691,6 +735,13 @@ NMib::NStr::CStr CWindowsSocketContext::f_GetAddressString(CWindowsAddress const
 static bool fg_UnixSocketsSupported()
 {
 	return CSystem::ms_PlatformVersion >= 10'0'017063;
+}
+
+// Hyper-V sockets are a different address family, which virtio socket addresses don't name
+static void fsg_CheckNotVSock(CWindowsAddress const &_Address)
+{
+	if (_Address.f_GetType() == ENetAddressType_VSock)
+		DMibErrorNet("Virtio sockets (VSOCK:) are not supported on Windows");
 }
 
 namespace
@@ -1033,6 +1084,7 @@ auto CWindowsSocketContext::fp_Connect
 	-> CWindowsSocket *
 {
 	f_CheckFailed();
+	fsg_CheckNotVSock(_Address);
 
 	CWindowsAddress Address = _Address;
 
@@ -1535,6 +1587,7 @@ auto CWindowsSocketContext::f_Listen
 	-> CWindowsSocket *
 {
 	f_CheckFailed();
+	fsg_CheckNotVSock(_Address);
 
 	CWindowsAddress Address = _Address;
 	auto pUnixListen = fp_PrepareUnixListen(Address);
@@ -1660,6 +1713,7 @@ auto CWindowsSocketContext::f_ListenDatagram
 	-> CWindowsSocket *
 {
 	f_CheckFailed();
+	fsg_CheckNotVSock(_Address);
 
 	CWindowsAddress Address = _Address;
 	auto pUnixListen = fp_PrepareUnixListen(Address);

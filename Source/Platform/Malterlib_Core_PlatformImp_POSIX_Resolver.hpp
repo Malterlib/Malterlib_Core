@@ -23,6 +23,16 @@ auto CPOSIXSocketContext::f_PrepareResolveAddress(NStr::CStr const &_Address, NS
 
 		return pAddress.f_Detach();
 	}
+	else if (_Address.f_StartsWith("VSOCK:"))
+	{
+		auto Address = CVSockAddress::fs_Parse(_Address, _bThrowOnError);
+		if (!Address)
+			return nullptr;
+
+		NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(*Address);
+
+		return pAddress.f_Detach();
+	}
 	else if (mp_ImpSpecific.f_ResolveAddress(ResolvedAddress, _Address, o_Parameters.m_PreferType))
 	{
 		NStorage::TCUniquePointer<CPOSIXAddress> pAddress = fg_Construct(fg_Move(ResolvedAddress));
