@@ -493,7 +493,9 @@ Property
 					"	exit 1\r\n"\
 					")\r\n"
 		UnicodeBOM false
-		UnixLineEnds ScriptUnixLineEnds
+		// A script of cmd, which every build system of the checkout writes, also one with Unix scripts: with their line ends, each would
+		// rewrite it and make the others generate again
+		UnixLineEnds false
 		Executable true
 	}
 }
