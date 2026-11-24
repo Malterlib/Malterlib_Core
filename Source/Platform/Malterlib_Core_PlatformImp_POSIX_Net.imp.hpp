@@ -1907,6 +1907,19 @@ static ENetAddressType fg_AddressTypeOfDescriptor(int _FD)
 CPOSIXSocket *CPOSIXSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	int FileDescriptor = int(aint(_pOSSocket));
+
+	// The socket reads and writes without blocking, also when another API created the descriptor in blocking mode. The descriptor is owned here,
+	// so it is closed when it can't be used
+	{
+		int Flags;
+		if ((Flags = fcntl(FileDescriptor, F_GETFL)) == -1 || fcntl(FileDescriptor, F_SETFL, Flags | O_NONBLOCK) == -1)
+		{
+			int Error = errno;
+			close(FileDescriptor);
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("fcntl (inherit set non blocking)", Error));
+		}
+	}
+
 	auto *pSocket = fp_CreateSocket(FileDescriptor, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange), true);
 
 	// Query the inherited descriptor's family before applying TCP-only options.
