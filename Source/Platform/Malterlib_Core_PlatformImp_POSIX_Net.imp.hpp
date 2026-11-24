@@ -668,7 +668,7 @@ auto CPOSIXSocketContext::fp_Connect
 		uint16 BindPort = 0;
 		if (_pBindAddress)
 		{
-			CNetAddress BindAddress((void *)&_pBindAddress);
+			CNetAddress BindAddress((void *)_pBindAddress);
 			BindPort = BindAddress.f_GetPort();
 			BindAddress.f_Detach();
 		}
