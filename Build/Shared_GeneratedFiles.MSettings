@@ -166,7 +166,8 @@ Property
 		}
 	}
 
-	SharedBuildSettingsScriptContents =+	`source "$MalterlibBaseDir/BuildSystem/SharedBuildSettingsVCVars.sh"\r\n`\
+	// The environment of the Visual Studio of the build system, which each build system has of its own
+	SharedBuildSettingsScriptContents =+	`source "$MalterlibGeneratedBuildSystemDir/SharedBuildSettingsVCVars.sh"\r\n`\
 											`\r\n`
 	{
 		&
@@ -381,7 +382,7 @@ Property
 	}
 	GenerateFile
 	{
-		Name `BuildSystem/SharedBuildSettingsVCVars@(ScriptExtension)`
+		Name `@(Builtin.GeneratedBuildSystemDir)/SharedBuildSettingsVCVars@(ScriptExtension)`
 		Executable true
 		UnixLineEnds ScriptUnixLineEnds
 		UnicodeBOM false
@@ -402,7 +403,7 @@ Property
 	}
 	GenerateFile
 	{
-		Name `BuildSystem/SharedBuildSettingsVCVars@(ScriptExtension)`
+		Name `@(Builtin.GeneratedBuildSystemDir)/SharedBuildSettingsVCVars@(ScriptExtension)`
 		Executable true
 		UnixLineEnds ScriptUnixLineEnds
 		UnicodeBOM false
