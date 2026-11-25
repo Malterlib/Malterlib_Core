@@ -12,7 +12,7 @@ namespace NMib::NPlatform
 	{
 		DWORD Temp = 0;
 
-		fp_ReadRegKey(_SubKey, _KeyValue, &Temp, nullptr, nullptr, nullptr);
+		fp_ReadRegKey(_SubKey, _KeyValue, &Temp, nullptr, nullptr);
 
 		return Temp;
 	}
@@ -22,7 +22,7 @@ namespace NMib::NPlatform
 	{
 		NStr::CStr Temp;
 
-		fp_ReadRegKey(_SubKey, _KeyValue, nullptr, &Temp, nullptr, nullptr);
+		fp_ReadRegKey(_SubKey, _KeyValue, nullptr, &Temp, nullptr);
 
 		return Temp;
 	}
@@ -30,11 +30,7 @@ namespace NMib::NPlatform
 	template <>
 	inline NContainer::CByteVector CWin32_Registry::f_Read<NContainer::CByteVector>(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
 	{
-		NContainer::CByteVector Temp;
-
-		fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, &Temp, nullptr);
-
-		return Temp;
+		return f_Read_Bin(_SubKey, _KeyValue);
 	}
 
 	template <>
@@ -42,7 +38,7 @@ namespace NMib::NPlatform
 	{
 		NContainer::TCVector<NStr::CStr> Temp;
 
-		fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, nullptr, &Temp);
+		fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, &Temp);
 
 		return Temp;
 	}

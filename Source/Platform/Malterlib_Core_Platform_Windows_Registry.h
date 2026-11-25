@@ -36,9 +36,24 @@ namespace NMib
 				, ERegRoot_Win64_LocalMachine
 				, ERegRoot_Win64_CurrentUser
 				, ERegRoot_Win64_Classes
+				, ERegRoot_Win32_LocalMachine // The 32-bit view, which 32-bit programs see and 64-bit ones built to share their settings use
+				, ERegRoot_Win32_CurrentUser
+				, ERegRoot_Win32_Classes
 			};
 
-			CWin32_Registry(ERegRoot _Root = ERegRoot_LocalMachine, NStr::CStr const &_RootPath = NStr::CStr());
+			enum class EAccess
+			{
+				mc_Read        // Keys are opened with the access the function needs
+				, mc_ReadWrite // Keys are opened for writing too, so a key that can't be written can't be read either
+			};
+
+			struct CRawValue
+			{
+				NContainer::CByteVector m_Data;
+				uint32 m_Type = REG_NONE;
+			};
+
+			CWin32_Registry(ERegRoot _Root = ERegRoot_LocalMachine, NStr::CStr const &_RootPath = NStr::CStr(), EAccess _Access = EAccess::mc_Read);
 			CWin32_Registry(CWin32_Registry const &_Root, NStr::CStr const &_RootPath = NStr::CStr());
 
 			template <typename tf_CReturnType>
@@ -58,6 +73,7 @@ namespace NMib
 			NContainer::CByteVector f_Read_Bin(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, NContainer::CByteVector const &_Default);
 
 			bool f_IsBinary(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
+			bool f_ReadRaw(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, CRawValue &o_Value);
 
 			void f_DeleteValue(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
 			void f_DeleteKey(NStr::CStr const &_SubKey);
@@ -76,16 +92,10 @@ namespace NMib
 			void fp_EnumValues(NStr::CStr const &_Key, NContainer::TCVector<NStr::CStr> &_Values);
 			void fp_EnumKeys(NStr::CStr const &_Key, NContainer::TCVector<NStr::CStr> &_Keys);
 			uint32 fp_GetAccess(uint32 _Base);
-			void fp_ReadRegKey
-				(
-					NStr::CStr const &_SubKey
-					, NStr::CStr const &_KeyValue
-					, DWORD *_pDword
-					, NStr::CStr *_pStr
-					, NContainer::CByteVector *_pMemory
-					, NContainer::TCVector<NStr::CStr> *_pMulti
-				)
-			;
+			uint32 fp_GetView();
+			void fp_ReadRegKey(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, DWORD *_pDword, NStr::CStr *_pStr, NContainer::TCVector<NStr::CStr> *_pMulti);
+			LSTATUS fp_ReadRaw(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, CRawValue &o_Value, ch8 const * &o_pFunction);
+			CRawValue fp_ReadValue(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue);
 			NStr::CStr fp_GetPath(NStr::CStr const &_SubKey);
 			void fp_WriteRegKey
 				(
@@ -101,6 +111,7 @@ namespace NMib
 			HKEY mp_pRootKey;
 			ERegRoot mp_RegRoot;
 			NStr::CStr mp_Root;
+			EAccess mp_Access = EAccess::mc_Read;
 		};
 	}
 }

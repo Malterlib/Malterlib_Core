@@ -11,29 +11,42 @@ namespace NMib
 {
 	namespace NPlatform
 	{
+		namespace
+		{
+			// Whether a value of the type is read as its bytes or as strings: the types of strings and of binary data.
+			bool fg_IsStoredAsBytes(DWORD _Type)
+			{
+				return _Type == REG_SZ || _Type == REG_MULTI_SZ || _Type == REG_EXPAND_SZ || _Type == REG_BINARY || _Type == REG_RESOURCE_REQUIREMENTS_LIST || _Type == REG_RESOURCE_LIST;
+			}
+		}
+
 		/*************************************************************************************************\
 		|¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 		| CWin32_Registry
 		|__________________________________________________________________________________________________
 		\*************************************************************************************************/
 
-		CWin32_Registry::CWin32_Registry(ERegRoot _Root, NStr::CStr const &_RootPath)
+		CWin32_Registry::CWin32_Registry(ERegRoot _Root, NStr::CStr const &_RootPath, EAccess _Access)
 		{
 			mp_Root = _RootPath;
 			mp_RegRoot = _Root;
+			mp_Access = _Access;
 			mp_pRootKey = HKEY_LOCAL_MACHINE;
 			switch (_Root)
 			{
 			case ERegRoot_LocalMachine:
 			case ERegRoot_Win64_LocalMachine:
+			case ERegRoot_Win32_LocalMachine:
 				mp_pRootKey = HKEY_LOCAL_MACHINE;
 				break;
 			case ERegRoot_CurrentUser:
 			case ERegRoot_Win64_CurrentUser:
+			case ERegRoot_Win32_CurrentUser:
 				mp_pRootKey = HKEY_CURRENT_USER;
 				break;
 			case ERegRoot_Classes:
 			case ERegRoot_Win64_Classes:
+			case ERegRoot_Win32_Classes:
 				mp_pRootKey = HKEY_CLASSES_ROOT;
 				break;
 			}
@@ -48,20 +61,32 @@ namespace NMib
 
 			mp_pRootKey = _Root.mp_pRootKey;
 			mp_RegRoot = _Root.mp_RegRoot;
+			mp_Access = _Root.mp_Access;
 		}
 
 		uint32 CWin32_Registry::fp_GetAccess(uint32 _Base)
 		{
-			if (mp_RegRoot == ERegRoot_Win64_LocalMachine || mp_RegRoot == ERegRoot_Win64_CurrentUser || mp_RegRoot == ERegRoot_Win64_Classes)
-				_Base |= KEY_WOW64_64KEY;
+			_Base |= fp_GetView();
+			if (mp_Access == EAccess::mc_ReadWrite)
+				_Base |= KEY_READ | KEY_WRITE;
 			return _Base;
+		}
+
+		// The registry view of the root, the process's own for the roots without one.
+		uint32 CWin32_Registry::fp_GetView()
+		{
+			if (mp_RegRoot == ERegRoot_Win64_LocalMachine || mp_RegRoot == ERegRoot_Win64_CurrentUser || mp_RegRoot == ERegRoot_Win64_Classes)
+				return KEY_WOW64_64KEY;
+			if (mp_RegRoot == ERegRoot_Win32_LocalMachine || mp_RegRoot == ERegRoot_Win32_CurrentUser || mp_RegRoot == ERegRoot_Win32_Classes)
+				return KEY_WOW64_32KEY;
+			return 0;
 		}
 
 		uint32 CWin32_Registry::f_Read_uint32(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
 		{
 			DWORD Temp = 0;
 
-			fp_ReadRegKey(_SubKey, _KeyValue, &Temp, nullptr, nullptr, nullptr);
+			fp_ReadRegKey(_SubKey, _KeyValue, &Temp, nullptr, nullptr);
 
 			return Temp;
 		}
@@ -70,7 +95,7 @@ namespace NMib
 		{
 			NStr::CStr Temp;
 
-			fp_ReadRegKey(_SubKey, _KeyValue, nullptr, &Temp, nullptr, nullptr);
+			fp_ReadRegKey(_SubKey, _KeyValue, nullptr, &Temp, nullptr);
 
 			return Temp;
 		}
@@ -79,18 +104,19 @@ namespace NMib
 		{
 			NContainer::TCVector<NStr::CStr> Temp;
 
-			fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, nullptr, &Temp);
+			fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, &Temp);
 
 			return Temp;
 		}
 
+		// The value's data as it is stored, of a type of strings or binary data.
 		NContainer::CByteVector CWin32_Registry::f_Read_Bin(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
 		{
-			NContainer::CByteVector Temp;
+			CRawValue Value = fp_ReadValue(_SubKey, _KeyValue);
+			if (!fg_IsStoredAsBytes(Value.m_Type))
+				DMibError("Wrong valuetype");
 
-			fp_ReadRegKey(_SubKey, _KeyValue, nullptr, nullptr, &Temp, nullptr);
-
-			return Temp;
+			return fg_Move(Value.m_Data);
 		}
 
 		uint32 CWin32_Registry::f_Read_uint32(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, uint32 _Default)
@@ -215,33 +241,42 @@ namespace NMib
 			return ValueType == REG_BINARY;
 		}
 
-		void CWin32_Registry::fp_ReadRegKey
-			(
-				NStr::CStr const &_SubKey
-				, NStr::CStr const &_KeyValue
-				, DWORD *_pDword
-				, NStr::CStr *_pStr
-				, NContainer::CByteVector *_pMemory
-				, NContainer::TCVector<NStr::CStr> *_pMulti
-			)
+		// The value's type and data as they are stored, whatever the type, or false when the key can't be opened or has no such value.
+		bool CWin32_Registry::f_ReadRaw(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, CRawValue &o_Value)
 		{
-			DWORD ValueSize = 0;
+			ch8 const *pFunction = nullptr;
+			return fp_ReadRaw(_SubKey, _KeyValue, o_Value, pFunction) == ERROR_SUCCESS;
+		}
+
+		// The value as fp_ReadRaw reads it, with one opening of the key, or an error naming the call that failed with Windows' text of its
+		// status.
+		auto CWin32_Registry::fp_ReadValue(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue) -> CRawValue
+		{
+			CRawValue Value;
+			ch8 const *pFunction = nullptr;
+			if (LSTATUS Status = fp_ReadRaw(_SubKey, _KeyValue, Value, pFunction); Status != ERROR_SUCCESS)
+				DMibError((NStr::CStr::CFormat("{} failed with: {}") << pFunction << NMib::NPlatform::fg_Win32_GetLastErrorStr(uint32(Status))).f_GetStr());
+
+			return Value;
+		}
+
+		// f_ReadRaw with the status of the call that failed, and in o_pFunction its name. The value can change between the queries of
+		// its size and its data, which are retried.
+		LSTATUS CWin32_Registry::fp_ReadRaw(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, CRawValue &o_Value, ch8 const * &o_pFunction)
+		{
 			HKEY pPathKey = nullptr;
-			DWORD ValueType;
 			NStr::CStr SubKey = fp_GetPath(_SubKey);
 			NStr::CWStr KeyValue;
-			ch16 const *pKeyValue;
-			if (_KeyValue.f_IsEmpty())
-				pKeyValue = nullptr;
-			else
+			ch16 const *pKeyValue = nullptr;
+			if (!_KeyValue.f_IsEmpty())
 			{
 				KeyValue = NStr::NPlatform::fg_StrToWindows(_KeyValue);
 				pKeyValue = KeyValue;
 			}
 
-			HRESULT Error;
-			if ((Error = RegOpenKeyExW(mp_pRootKey, NStr::NPlatform::fg_StrToWindows(SubKey), 0, fp_GetAccess(KEY_READ), &pPathKey)) != ERROR_SUCCESS)
-				DMibError((NStr::CStr::CFormat("RegOpenKeyExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			o_pFunction = "RegOpenKeyExW";
+			if (LSTATUS Status = RegOpenKeyExW(mp_pRootKey, NStr::NPlatform::fg_StrToWindows(SubKey), 0, fp_GetAccess(KEY_READ), &pPathKey); Status != ERROR_SUCCESS)
+				return Status;
 
 			auto Cleanup = fg_OnScopeExit
 				(
@@ -252,80 +287,74 @@ namespace NMib
 				)
 			;
 
-			if ((Error = RegQueryValueExW(pPathKey, pKeyValue, 0, &ValueType, nullptr, nullptr)) != ERROR_SUCCESS)
-				DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			o_pFunction = "RegQueryValueExW";
+			while (true)
+			{
+				DWORD Type = REG_NONE;
+				DWORD Size = 0;
+				if (LSTATUS Status = RegQueryValueExW(pPathKey, pKeyValue, nullptr, &Type, nullptr, &Size); Status != ERROR_SUCCESS)
+					return Status;
 
-			if ((ValueType == REG_DWORD) || (ValueType == REG_DWORD_LITTLE_ENDIAN) || (ValueType == REG_DWORD_BIG_ENDIAN))
+				// A buffer even for a value without data, so one that grew since the query reports ERROR_MORE_DATA rather than its size alone.
+				o_Value.m_Data.f_SetLen(fg_Max(Size, DWORD(1)));
+				Size = DWORD(o_Value.m_Data.f_GetLen());
+				LSTATUS Status = RegQueryValueExW(pPathKey, pKeyValue, nullptr, &Type, o_Value.m_Data.f_GetArray(), &Size);
+				if (Status == ERROR_MORE_DATA)
+					continue;
+				if (Status != ERROR_SUCCESS)
+					return Status;
+
+				o_Value.m_Data.f_SetLen(Size);
+				o_Value.m_Type = Type;
+				return ERROR_SUCCESS;
+			}
+		}
+
+		// The value read as the type its reader takes: a DWORD as the 4 bytes it is stored as, the first the lowest, and a string or the
+		// strings of a multi-string as UTF-16 units, each ended by a NUL or the data's end.
+		void CWin32_Registry::fp_ReadRegKey(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue, DWORD *_pDword, NStr::CStr *_pStr, NContainer::TCVector<NStr::CStr> *_pMulti)
+		{
+			CRawValue Value = fp_ReadValue(_SubKey, _KeyValue);
+			if (Value.m_Type == REG_DWORD || Value.m_Type == REG_DWORD_LITTLE_ENDIAN || Value.m_Type == REG_DWORD_BIG_ENDIAN)
 			{
 				if (!_pDword)
 					DMibError("Wrong valuetype");
 
-				ValueSize = 4;
-				if ((Error = RegQueryValueExW(pPathKey, pKeyValue, 0, nullptr, (unsigned char *)_pDword, &ValueSize)) != ERROR_SUCCESS)
-					DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-			}
-			else if
-			(
-				(ValueType == REG_SZ || ValueType == REG_MULTI_SZ || ValueType == REG_EXPAND_SZ)
-				|| (ValueType == REG_BINARY)
-				|| (ValueType == REG_RESOURCE_REQUIREMENTS_LIST)
-				|| (ValueType == REG_RESOURCE_LIST)
-			)
-			{
-				if ((Error = RegQueryValueExW(pPathKey, pKeyValue, 0, nullptr, nullptr, &ValueSize)) == ERROR_SUCCESS)
-				{
-					if (_pMulti)
-					{
-						NContainer::TCVector<ch16> Temp;
-						ValueSize = (((ValueSize + 1) / 2) + 2) * 2;
-						Temp.f_SetLen(ValueSize);
-						if ((Error = RegQueryValueExW(pPathKey, pKeyValue, 0, nullptr, (uint8 *)Temp.f_GetArray(), &ValueSize)) != ERROR_SUCCESS)
-							DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+				if (Value.m_Data.f_GetLen() != sizeof(DWORD))
+					DMibError((NStr::CStr::CFormat("The registry value '{}' of '{}' holds {} bytes, where a DWORD has 4") << _KeyValue << _SubKey << Value.m_Data.f_GetLen()).f_GetStr());
 
-						ch16 const *pParse = Temp.f_GetArray();
-						ch16 const *pParseEnd = pParse + ValueSize / 2;
-						while (1)
-						{
-							ch16 const *pParseStart = pParse;
-							while (*pParse && pParse < pParseEnd)
-								++pParse;
-							if (pParseStart != pParse)
-							{
-								NStr::CWStr ToInsert;
-								ToInsert.f_AddStr(pParseStart, pParse - pParseStart);
-								_pMulti->f_Insert(NStr::CStr(ToInsert));
-								++pParse;
-							}
-							else
-								break; // End
-						}
-					}
-					else if (_pStr)
-					{
-						NStr::CWStr Temp;
-						ValueSize = (((ValueSize + 1) / 2) + 2) * 2;
-						if ((Error = RegQueryValueExW(pPathKey, pKeyValue, 0, nullptr, (uint8 *)Temp.f_GetStr(ValueSize / 2 + 1), &ValueSize)) != ERROR_SUCCESS)
-							DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-						Temp.f_SetAt(ValueSize / 2, 0);
-						*_pStr = Temp;
-					}
-					else if (_pMemory)
-					{
-						// Without a buffer the query reports the size only, and a value that shrank since is shorter.
-						_pMemory->f_SetLen(fg_Max(ValueSize, DWORD(1)));
-						ValueSize = DWORD(_pMemory->f_GetLen());
-						if ((Error = RegQueryValueExW(pPathKey, pKeyValue, 0, nullptr, _pMemory->f_GetArray(), &ValueSize)) != ERROR_SUCCESS)
-							DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
-						_pMemory->f_SetLen(ValueSize);
-					}
-					else
-						DMibError("Wrong valuetype");
+				DWORD Dword = 0;
+				NMemory::fg_MemCopy(&Dword, Value.m_Data.f_GetArray(), sizeof(Dword));
+				*_pDword = fg_ByteSwapLE(Dword);
+				return;
+			}
+
+			if (!fg_IsStoredAsBytes(Value.m_Type))
+				DMibError("Unknown valuetype");
+
+			ch16 const *pUnits = (ch16 const *)Value.m_Data.f_GetArray();
+			umint nUnits = Value.m_Data.f_GetLen() / 2;
+			if (_pMulti)
+			{
+				for (umint iUnit = 0; iUnit < nUnits && pUnits[iUnit];)
+				{
+					umint nString = NStr::fg_StrLen(pUnits + iUnit, nUnits - iUnit);
+					NStr::CWStr String;
+					String.f_AddStr(pUnits + iUnit, aint(nString));
+					_pMulti->f_Insert(NStr::CStr(String));
+					iUnit += nString + 1;
 				}
-				else
-					DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			}
+			else if (_pStr)
+			{
+				NStr::CWStr String;
+				if (umint nString = nUnits ? NStr::fg_StrLen(pUnits, nUnits) : 0)
+					String.f_AddStr(pUnits, aint(nString));
+
+				*_pStr = String;
 			}
 			else
-				DMibError("Unknown valuetype");
+				DMibError("Wrong valuetype");
 		}
 
 		void CWin32_Registry::f_DeleteValue(NStr::CStr const &_SubKey, NStr::CStr const &_KeyValue)
@@ -367,8 +396,8 @@ namespace NMib
 				fp_DeleteKey(_Key + "\\" + Children[iChild]);
 
 			HRESULT Error;
-			if ((Error = RegDeleteKeyW(mp_pRootKey, NStr::NPlatform::fg_StrToWindows(_Key))) != ERROR_SUCCESS)
-				DMibError(NStr::CStr::CFormat("RegDeleteKeyW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
+			if ((Error = RegDeleteKeyExW(mp_pRootKey, NStr::NPlatform::fg_StrToWindows(_Key), fp_GetView(), 0)) != ERROR_SUCCESS)
+				DMibError(NStr::CStr::CFormat("RegDeleteKeyExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 		}
 
 		void CWin32_Registry::f_DeleteKey(NStr::CStr const &_SubKey)
@@ -506,7 +535,7 @@ namespace NMib
 			HKEY pPathKey = nullptr;
 			NStr::CStr SubKey = _Key;
 
-			if (RegOpenKeyW(mp_pRootKey, NStr::NPlatform::fg_StrToWindows(SubKey), &pPathKey) != ERROR_SUCCESS)
+			if (RegOpenKeyExW(mp_pRootKey, NStr::NPlatform::fg_StrToWindows(SubKey), 0, fp_GetAccess(KEY_READ), &pPathKey) != ERROR_SUCCESS)
 				return;
 
 			auto Cleanup = fg_OnScopeExit
@@ -546,8 +575,8 @@ namespace NMib
 			NStr::CStr SubKey = _Key;
 
 			HRESULT Error;
-			if ((Error = RegOpenKeyW(mp_pRootKey, NStr::NPlatform::fg_StrToWindows(SubKey), &pPathKey)) != ERROR_SUCCESS)
-				DMibError(NStr::CStr::CFormat("RegOpenKeyW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
+			if ((Error = RegOpenKeyExW(mp_pRootKey, NStr::NPlatform::fg_StrToWindows(SubKey), 0, fp_GetAccess(KEY_READ), &pPathKey)) != ERROR_SUCCESS)
+				DMibError(NStr::CStr::CFormat("RegOpenKeyExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 
 			auto Cleanup = fg_OnScopeExit
 				(
