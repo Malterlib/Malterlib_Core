@@ -284,6 +284,12 @@ Type
 			CAllowedActions: one_of(type(CAllowedAction_All), type(CAllowedAction_LocalOnly), type(CAllowedAction_Selected))
 		}
 
+		// Delete the branch protection rules and generic rulesets that the policy doesn't list, also when it lists none
+		CRemoveOther: {
+			BranchProtection?: bool
+			, GenericRules?: bool
+		}
+
 		CActions: {
 			ActionsEnabled?: bool
 			, AllowedActions?: type(NActions::CAllowedActions)
@@ -303,6 +309,7 @@ Type
 			...: type(NRepositoryPolicy::CGenericRule)
 		}
 		, ActionsSettings?: type(NRepositoryPolicy::CActions)
+		, RemoveOther?: type(NRepositoryPolicy::CRemoveOther)
 	}
 }
 
