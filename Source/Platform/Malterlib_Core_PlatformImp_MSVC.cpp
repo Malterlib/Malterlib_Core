@@ -6805,6 +6805,21 @@ void *NSys::NNetwork::fg_InheritDatagramHandle(void *_pSocket, NMib::NFunction::
 	DMibErrorNet("Inheriting a datagram socket is not supported on Windows yet");
 }
 
+NContainer::TCVector<NMib::NNetwork::CNetInterfaceAddressIPv4> NSys::NNetwork::fg_GetInterfaceAddressesIPv4()
+{
+	DMibErrorNet("Listing the interface addresses is not supported on Windows yet");
+}
+
+void *NSys::NNetwork::fg_OpenInterfaceAddressChangesIPv4()
+{
+	DMibErrorNet("Watching the interface addresses is not supported on Windows yet");
+}
+
+bool NSys::NNetwork::fg_IsInterfaceAddressChange(void const *_pMessage, umint _nBytes)
+{
+	return false;
+}
+
 void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GiveUpForInherit((CWindowsSocket *)_pSocket);

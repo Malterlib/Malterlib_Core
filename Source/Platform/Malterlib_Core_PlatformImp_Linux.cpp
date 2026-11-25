@@ -2706,6 +2706,21 @@ void *NSys::NNetwork::fg_InheritDatagramHandle(void *_pSocket, NMib::NFunction::
 	return fg_GetLocalSys()->m_SocketContext->f_InheritDatagramHandle((CPOSIXSocket *)_pSocket, fg_Move(_fOnStateChange));
 }
 
+NContainer::TCVector<NMib::NNetwork::CNetInterfaceAddressIPv4> NSys::NNetwork::fg_GetInterfaceAddressesIPv4()
+{
+	DMibErrorNet("Listing the interface addresses is not supported on Linux yet");
+}
+
+void *NSys::NNetwork::fg_OpenInterfaceAddressChangesIPv4()
+{
+	DMibErrorNet("Watching the interface addresses is not supported on Linux yet");
+}
+
+bool NSys::NNetwork::fg_IsInterfaceAddressChange(void const *_pMessage, umint _nBytes)
+{
+	return false;
+}
+
 void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_GiveUpForInherit((CPOSIXSocket *)_pSocket);
