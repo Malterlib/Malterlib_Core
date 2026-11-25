@@ -81,6 +81,10 @@ Type
 			Type: one_of("OrganizationAdmin")
 		}
 
+		CDeployKey: {
+			Type: one_of("DeployKey")
+		}
+
 		CRequiredStatusCheck: {
 			Context: string
 			, App?: string
@@ -123,7 +127,7 @@ Type
 			EBypassActorMode: one_of("Always", "PullRequest")
 			EStringMatchOperator: one_of("StartsWith", "EndsWith", "Contains", "Regex")
 
-			CActor: one_of(type(CTeam), type(CApp), type(CRepositoryRole), type(COrganizationAdmin), type(CUser))
+			CActor: one_of(type(CTeam), type(CApp), type(CRepositoryRole), type(COrganizationAdmin), type(CUser), type(CDeployKey))
 
 			CBypassActor: {
 				Actor: type(CActor)
