@@ -257,7 +257,9 @@ checkout. `git pull` and `git merge` have no such hook, so after pulling, mergin
   branch that belongs on the default branches instead.
 
 `-f` moves a branch that already exists to the current commit, even backwards, in every repository, so preview it with
-`-p` (pretend) first. `-n <wildcard>` limits it to matching repositories.
+`-p` (pretend) first. `-n <wildcard>` limits it to matching repositories, and `-n '<Wildcard>,<Wildcard>'` to those that
+match any of several. `status`, `list-repos`, `git`, `repo-run`, `push`, `list-commits`, `cleanup-branches`,
+`cleanup-tags`, `format`, `validate`, `tidy`, `release-package` and `check-license` take the same `-n`.
 
 A branch stacked on another branch that hasn't landed yet has that branch as its base: `./mib base <Branch>` sets it for
 the root's current branch, `./mib base` shows it and `./mib base --clear` removes it. `./mib branch <Name> --base-branch
