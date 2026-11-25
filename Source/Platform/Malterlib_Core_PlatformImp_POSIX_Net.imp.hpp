@@ -1996,7 +1996,17 @@ auto CPOSIXSocketContext::fp_InheritHandle(void *_pOSSocket, EPOSIXSocketMode _M
 
 	// Query the inherited descriptor's family before applying TCP-only options.
 	if (pSocket)
+	{
 		pSocket->m_AddressType = fg_AddressTypeOfDescriptor(FileDescriptor);
+
+		// A receive of a datagram with its sender writes the sender address in the space of an address of the socket's family
+		if (_Mode == EPOSIXSocketMode_Datagram)
+		{
+			CPOSIXAddress Address;
+			Address.f_GetForWrite(pSocket->m_AddressType, 0);
+			pSocket->m_BindAddressSize = Address.f_GetSockAddrLen();
+		}
+	}
 
 	return pSocket;
 }
