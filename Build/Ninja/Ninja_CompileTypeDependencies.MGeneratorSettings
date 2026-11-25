@@ -13,10 +13,11 @@ Property
 
 GeneratorSetting
 {
+	// A file that isn't built has no build statement, so nothing generates its outputs
 	GetCompileTypeOutputs: [string] = []
 	GetCompileTypeOutputs =+ GeneratorSetting.CompileTypeOutputs_@(CompileType)
 	{
-		!Compile.Disabled true
+		!!Compile.HasBuildStatement true
 	}
 
 	f_GetCompileTypeOutput function(string _File) [string] = []

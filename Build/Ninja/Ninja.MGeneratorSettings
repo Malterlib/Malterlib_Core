@@ -133,7 +133,7 @@ GeneratorSetting
 {
 	Compile {
 		Type: Compile.Type
-		, Disabled: (Compile.Disabled || Compile.BuildDisabled || Compile.Type == "None")
+		, Disabled: !Compile.HasBuildStatement
 	}
 
 	f_FilterEnvironmentVariable function(string _Key, string _Value) {...: string} = {}

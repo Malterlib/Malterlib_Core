@@ -63,8 +63,7 @@ Compile
 		&
 		{
 			PlatformFamily "macOS"
-			!Compile.Disabled true
-			!Compile.BuildDisabled true
+			Compile.HasBuildStatement true
 		}
 	}
 }

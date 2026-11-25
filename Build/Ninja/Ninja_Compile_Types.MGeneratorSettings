@@ -50,6 +50,19 @@ Compile
 
 	BuildDisabled: bool = false
 
+	// Whether Ninja writes a build statement for the file, which is what generates its outputs. What waits for the outputs of files
+	// reads it, so that it only waits for those that a build statement writes.
+	HasBuildStatement: bool = true
+	HasBuildStatement false
+	{
+		|
+		{
+			Compile.Disabled true
+			Compile.BuildDisabled true
+			Compile.Type "None"
+		}
+	}
+
 	// The files that the build statement of the file generates for other compiles, as the outputs of a custom file. A compile type
 	// adds them where it gives them to its rule as outputs, so that what waits for generated files only waits for those that a
 	// rule writes: a file can have the settings of another compile type than its own, as the outputs of a custom command from its
@@ -231,7 +244,7 @@ Compile
 			Compile.Type "Custom"
 			Compile.GenericCompileType "GenericCustom"
 		}
-		!Compile.Disabled true
+		Compile.HasBuildStatement true // Nothing generates the outputs of a file that isn't built
 	}
 
 	GeneratedOutputs =+ (Compile.Custom_Outputs || [])
