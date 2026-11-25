@@ -127,6 +127,7 @@ GeneratorSetting
 			, "C++17", "-std=c++17"
 			, "C++20", "-std=c++20"
 			, "C++23", "-std=c++23"
+			, "C++26", "-std=c++2c"
 			, "GNU++11", "-std=gnu++11"
 			, "GNU++14", "-std=gnu++14"
 			, "GNU++17", "-std=gnu++17"
