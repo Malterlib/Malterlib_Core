@@ -134,7 +134,7 @@ namespace NMib
 		bool CWin32_Registry::f_KeyExists(NStr::CStr const &_SubKey)
 		{
 			HKEY pPathKey = nullptr;
-			NStr::CWStr SubKey = NStr::NPlatform::fg_StrToWindows(_SubKey);
+			NStr::CWStr SubKey = NStr::NPlatform::fg_StrToWindows(fp_GetPath(_SubKey));
 
 			if (RegOpenKeyExW(mp_pRootKey, SubKey, 0, fp_GetAccess(KEY_READ), &pPathKey) != ERROR_SUCCESS)
 				return false;
@@ -311,9 +311,12 @@ namespace NMib
 					}
 					else if (_pMemory)
 					{
-						_pMemory->f_SetLen(ValueSize);
+						// Without a buffer the query reports the size only, and a value that shrank since is shorter.
+						_pMemory->f_SetLen(fg_Max(ValueSize, DWORD(1)));
+						ValueSize = DWORD(_pMemory->f_GetLen());
 						if ((Error = RegQueryValueExW(pPathKey, pKeyValue, 0, nullptr, _pMemory->f_GetArray(), &ValueSize)) != ERROR_SUCCESS)
 							DMibError((NStr::CStr::CFormat("RegQueryValueExW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+						_pMemory->f_SetLen(ValueSize);
 					}
 					else
 						DMibError("Wrong valuetype");
