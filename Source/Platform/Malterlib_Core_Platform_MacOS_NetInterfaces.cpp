@@ -64,7 +64,8 @@ NMib::NContainer::TCVector<NMib::NNetwork::CNetInterfaceAddressIPv4> NMib::NSys:
 
 // Returns a non-blocking routing socket handle that the caller owns, from which the kernel delivers a message for each change of the IPv4
 // routes and addresses of the host, for fg_IsInterfaceAddressChange to tell the address changes apart. A full socket drops messages without
-// reporting it. Throws CExceptionNet when the socket can't be opened
+// reporting it, and the kernel sends none for an address added or removed on a network whose route another address or a static route
+// provides, so callers also list the addresses periodically. Throws CExceptionNet when the socket can't be opened
 void *NMib::NSys::NNetwork::fg_OpenInterfaceAddressChangesIPv4()
 {
 	int File;
