@@ -1446,12 +1446,45 @@ umint NSys::fg_Mem_PageSize()
 	return gs_SysInfo.dwPageSize;
 }
 
+namespace
+{
+	// The ANSI code page of the thread's locale, which CP_THREAD_ACP selects. A locale without one, which is Unicode only, has the
+	// process's.
+	uint32 fg_ThreadAnsiCodePage()
+	{
+		DWORD CodePage = 0;
+		int nCharacters = GetLocaleInfoW(GetThreadLocale(), LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER, (LPWSTR)&CodePage, sizeof(CodePage) / sizeof(WCHAR));
+		if (nCharacters == 0 || CodePage == CP_ACP)
+			return GetACP();
+
+		return CodePage;
+	}
+
+	// WideCharToMultiByte rejects a default character for UTF-7 and UTF-8, also where CP_ACP, CP_OEMCP or CP_THREAD_ACP selects
+	// one, as a process or thread with a UTF-8 code page has.
+	ch8 const *fg_DefaultCharacter(uint32 _CodePage, ch8 const *_pDefault)
+	{
+		uint32 CodePage = _CodePage;
+		if (CodePage == CP_ACP)
+			CodePage = GetACP();
+		else if (CodePage == CP_OEMCP)
+			CodePage = GetOEMCP();
+		else if (CodePage == CP_THREAD_ACP)
+			CodePage = fg_ThreadAnsiCodePage();
+
+		if (CodePage == CP_UTF8 || CodePage == CP_UTF7)
+			return nullptr;
+
+		return _pDefault;
+	}
+}
+
 void NMib::NStr::NPlatform::fg_SystemEncodeCodePageStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, uint32 _CodePage, ch8 _ErrorChar)
 {
 	CWStr Temp = _In;
 	ch8 ErrorStr[] = {_ErrorChar, 0};
-	int Len = WideCharToMultiByte(_CodePage, 0, Temp.f_GetStr(), -1, nullptr, 0, ErrorStr, nullptr);
-	if (WideCharToMultiByte(_CodePage, 0, Temp.f_GetStr(), -1, _Out.f_GetStr(Len), Len, ErrorStr, nullptr))
+	int Len = WideCharToMultiByte(_CodePage, 0, Temp.f_GetStr(), -1, nullptr, 0, fg_DefaultCharacter(_CodePage, ErrorStr), nullptr);
+	if (WideCharToMultiByte(_CodePage, 0, Temp.f_GetStr(), -1, _Out.f_GetStr(Len), Len, fg_DefaultCharacter(_CodePage, ErrorStr), nullptr))
 		;
 	else
 		DMibErrorSystemImp((CStr::CFormat("Windows returned an error from WideCharToMultiByte: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
@@ -1479,13 +1512,7 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 
 void NMib::NStr::NPlatform::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, NMib::NStr::CAnsiStr &_Out, ch8 _ErrorChar)
 {
-	CWStr Temp = _In;
-	ch8 ErrorStr[] = {_ErrorChar, 0};
-	int Len = WideCharToMultiByte(CP_ACP, 0, Temp.f_GetStr(), -1, nullptr, 0, ErrorStr, nullptr);
-	if (WideCharToMultiByte(CP_ACP, 0, Temp.f_GetStr(), -1, _Out.f_GetStr(Len), Len, ErrorStr, nullptr))
-		;
-	else
-		DMibErrorSystemImp((CStr::CFormat("Windows returned an error from WideCharToMultiByte: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	fg_SystemEncodeCodePageStr(_In, _Out, CP_ACP, _ErrorChar);
 }
 
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStr const &_In, NMib::NStr::CStr &_Out)
@@ -1513,8 +1540,8 @@ void NMib::NStr::NPlatform::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracke
 	CWStrNonTracked Temp = _In;
 	CAnsiStrNonTracked Out;
 	ch8 ErrorStr[] = {_ErrorChar, 0};
-	int Len = WideCharToMultiByte(_CodePage, 0, Temp.f_GetStr(), -1, nullptr, 0, ErrorStr, nullptr);
-	if (WideCharToMultiByte(_CodePage, 0, Temp.f_GetStr(), -1, Out.f_GetStr(Len), Len, ErrorStr, nullptr))
+	int Len = WideCharToMultiByte(_CodePage, 0, Temp.f_GetStr(), -1, nullptr, 0, fg_DefaultCharacter(_CodePage, ErrorStr), nullptr);
+	if (WideCharToMultiByte(_CodePage, 0, Temp.f_GetStr(), -1, Out.f_GetStr(Len), Len, fg_DefaultCharacter(_CodePage, ErrorStr), nullptr))
 		_Out = Out;
 	else
 		DMibErrorSystemImp((CStr::CFormat("Windows returned an error from WideCharToMultiByte: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
@@ -1542,13 +1569,7 @@ void NMib::NStr::NPlatform::fg_SystemDecodeCodePageStr(ch8 const *_pIn, NMib::NS
 
 void NMib::NStr::NPlatform::fg_SystemEncodeAnsiStr(NMib::NStr::CStrNonTracked const &_In, NMib::NStr::CAnsiStrNonTracked &_Out, ch8 _ErrorChar)
 {
-	CWStrNonTracked Temp = _In;
-	ch8 ErrorStr[] = {_ErrorChar, 0};
-	int Len = WideCharToMultiByte(CP_ACP, 0, Temp.f_GetStr(), -1, nullptr, 0, ErrorStr, nullptr);
-	if (WideCharToMultiByte(CP_ACP, 0, Temp.f_GetStr(), -1, _Out.f_GetStr(Len), Len, ErrorStr, nullptr))
-		;
-	else
-		DMibErrorSystemImp((CStr::CFormat("Windows returned an error from WideCharToMultiByte: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	fg_SystemEncodeCodePageStr(_In, _Out, CP_ACP, _ErrorChar);
 }
 
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStrNonTracked const &_In, NMib::NStr::CStrNonTracked &_Out)
