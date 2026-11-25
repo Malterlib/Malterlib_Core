@@ -126,6 +126,7 @@ Type
 			EEnforcement: one_of("Disabled", "Active", "Evaluate")
 			EBypassActorMode: one_of("Always", "PullRequest")
 			EStringMatchOperator: one_of("StartsWith", "EndsWith", "Contains", "Regex")
+			EMergeMethod: one_of("Merge", "Squash", "Rebase")
 
 			CActor: one_of(type(CTeam), type(CApp), type(CRepositoryRole), type(COrganizationAdmin), type(CUser), type(CDeployKey))
 
@@ -167,6 +168,7 @@ Type
 				, RequireCodeOwnerReview: bool
 				, RequireLastPushApproval: bool
 				, RequireReviewThreadResolution: bool
+				, AllowedMergeMethods?: [type(EMergeMethod)]
 			}
 
 			CRule_StatusChecks: {
