@@ -153,42 +153,15 @@ InitOutputInfo "Creating $BuildSystemFile"
 EOF
 } > "$BuildSystemFile"
 
-# A Perforce root is a project directory without .git that has a P4CONFIG file. It has no %Repository, so the settings
-# that Core's %Repository "." gives a git root go in PerforceRoot, and the template's ignore rules in the ignore file p4 reads.
+# A Perforce root is a project directory without .git that has a .p4config file. It has no %Repository, so the settings that
+# Core's %Repository "." gives a git root go in PerforceRoot, and the template's ignore rules in the ignore file p4 reads.
 
-function IsAbsolutePath()
-{
-	[[ "$1" == /* || "$1" == \\* || "$1" =~ ^[A-Za-z]:[\\/] ]]
-}
-
-# The P4CONFIG files p4 reads in the project directory, the nearest first: the file P4CONFIG names when it is a path, or else
-# the file of that name in the project directory and in each directory above it.
-function GetP4ConfigFiles()
-{
-	if [[ -z "$P4ConfigName" ]]; then
-		return 0
-	fi
-
-	if IsAbsolutePath "$P4ConfigName"; then
-		if [[ -f "$P4ConfigName" ]]; then
-			echo "$P4ConfigName"
-		fi
-		return 0
-	fi
-
-	local Directory="$ProjectDir"
-	while true; do
-		if [[ -f "$Directory/$P4ConfigName" ]]; then
-			echo "$Directory/$P4ConfigName"
-		fi
-		local Parent
-		Parent="$(dirname "$Directory")"
-		if [[ "$Parent" == "$Directory" ]]; then
-			return 0
-		fi
-		Directory="$Parent"
-	done
-}
+# The project directory's .p4config, whatever P4CONFIG is, when it is a regular file, also through a symbolic link: like mib, init
+# reads no P4CONFIG file outside the project, where p4 would read those of every directory above it.
+P4ConfigFile=""
+if [[ -f "$ProjectDir/.p4config" ]]; then
+	P4ConfigFile="$ProjectDir/.p4config"
+fi
 
 # A p4 setting with $home in it replaced by the home directory, as p4 replaces it: USERPROFILE on Windows and HOME elsewhere,
 # without a trailing slash.
@@ -211,39 +184,82 @@ function ExpandP4Home()
 	echo "$Result$Value"
 }
 
-# A p4 setting as p4 takes it in the project directory: from the P4CONFIG files, the nearest first, then the environment, also
-# when set empty, then p4 set, whose output on Windows ends its lines with CR. P4CONFIG itself comes from the last two only.
-# Without p4 in PATH, what p4 set stored is not considered.
+# Runs p4 with P4CONFIG naming an absent file in a fresh directory, by an absolute path, as p4 looks for a relative one in
+# every directory it climbs, so that no P4CONFIG file gives p4 set settings. Where that path can't be made, p4 doesn't run.
+function RunP4WithoutConfigFiles()
+{
+	local Directory
+	if ! Directory="$(mktemp -d)" || [[ -z "$Directory" ]]; then
+		return 1
+	fi
+	if [[ "$Directory" != /* && ! "$Directory" =~ ^[A-Za-z]:[/\\] ]]; then
+		Directory="$PWD/$Directory"
+	fi
+
+	local ConfigFile="$Directory/none"
+	if command -v cygpath > /dev/null 2>&1; then
+		if ! ConfigFile="$(cygpath -w "$ConfigFile")" || [[ -z "$ConfigFile" ]]; then
+			rmdir "$Directory"
+			return 1
+		fi
+	fi
+
+	local Result=0
+	P4CONFIG="$ConfigFile" p4 "$@" 2> /dev/null || Result=$?
+	rmdir "$Directory"
+	return $Result
+}
+
+# A p4 setting as mib takes it in the project directory, where an empty one is unset: from its .p4config file, as p4 parses one,
+# where a CR ending a line and then the spaces ending it, but not tabs, are no part of it, the first line setting the variable wins
+# and the names' case is folded on Windows and macOS; else from the environment; else from what p4 set reports from the enviro
+# file and, on Windows, the registry, in lines that end with CR on Windows. Without p4 in PATH, what p4 set stored is not
+# considered.
 function GetP4Setting()
 {
 	local Name="$1"
-	local Value=""
-	if [[ "$Name" != P4CONFIG ]]; then
-		local ConfigFile
-		# As p4 parses a P4CONFIG file: a CR before the line end and the trailing spaces after it, but not tabs, are no part of
-		# a line, and the nearest file that sets the variable wins, also when it sets it empty.
-		local Line
-		while IFS= read -r ConfigFile; do
-			Line="$(sed -e $'s/\r$//' -e 's/ *$//' "$ConfigFile" | grep -m 1 "^$Name=" || true)"
-			if [[ -n "$Line" ]]; then
-				ExpandP4Home "${Line#*=}"
-				return 0
-			fi
-		done < <(GetP4ConfigFiles)
+	local CaseOption=""
+	if [[ "$OSTYPE" == darwin* || "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ]]; then
+		CaseOption="-i"
 	fi
 
-	if [[ -n "${!Name+x}" ]]; then
-		Value="${!Name}"
-	elif command -v p4 > /dev/null 2>&1; then
-		Value="$(p4 set -q "$Name" 2> /dev/null | tr -d '\r' | sed -n "s/^$Name=//p" || true)"
+	local Line=""
+	if [[ -n "$P4ConfigFile" ]]; then
+		Line="$(LC_ALL=C sed -e $'s/\r$//' -e 's/ *$//' "$P4ConfigFile" 2> /dev/null | LC_ALL=C grep -a $CaseOption -m 1 "^$Name=" || true)"
 	fi
-	ExpandP4Home "$Value"
+
+	# Windows' environment ignores the case of names, which bash keeps as Windows hands them over.
+	local Value="${!Name:-}"
+	if [[ -z "$Value" && ( "$OSTYPE" == msys* || "$OSTYPE" == cygwin* ) ]]; then
+		local Variable
+		while IFS= read -r Variable; do
+			if [[ -n "${!Variable:-}" ]]; then
+				Value="${!Variable}"
+				break
+			fi
+		done < <(env | LC_ALL=C sed -n 's/=.*//p' | LC_ALL=C grep -a -ix "$Name")
+	fi
+
+	if [[ -n "$Line" ]]; then
+		ExpandP4Home "${Line#*=}"
+	elif [[ -n "$Value" ]]; then
+		ExpandP4Home "$Value"
+	elif command -v p4 > /dev/null 2>&1; then
+		# Without the environment's empty value, which p4 set would report ahead of what it stored, in whatever case Windows hands
+		# the variable's name to bash. p4 set reports only the setting p4 takes, with its name spelled as it is stored.
+		ExpandP4Home "$(
+			while IFS= read -r Variable; do
+				if [[ -z "${!Variable:-}" ]]; then
+					unset "$Variable"
+				fi
+			done < <(env | LC_ALL=C sed -n 's/=.*//p' | LC_ALL=C grep -a -ix "$Name")
+			RunP4WithoutConfigFiles set -q "$Name" | LC_ALL=C tr -d '\r' | LC_ALL=C grep -a -i -m 1 "^$Name=" | LC_ALL=C sed 's/^[^=]*=//' || true
+		)"
+	fi
 }
 
-# Without P4CONFIG, p4 reads no P4CONFIG file, and mib takes no directory for a Perforce root.
-P4ConfigName="$(GetP4Setting P4CONFIG)"
 if [[ ! -e "$ProjectDir/.git" ]] && ! command -v p4 > /dev/null 2>&1; then
-	InitOutputNote "p4 is not in PATH, so the Perforce settings stored with p4 set are not considered, only the environment and the P4CONFIG files"
+	InitOutputNote "p4 is not in PATH, so the Perforce settings stored with p4 set are not considered, only the environment and the .p4config file"
 fi
 
 # The ignore file p4 reads in the project directory: the first name of P4IGNORE that is not a path, as p4 looks for those in
@@ -267,21 +283,10 @@ elif [[ -n "$P4IgnoreNames" ]]; then
 	done
 fi
 
-# A P4CONFIG that is a path names the file itself, as mib takes it too.
-P4ConfigFile=""
-if [[ -n "$P4ConfigName" ]]; then
-	P4ConfigFile="$ProjectDir/$P4ConfigName"
-	if IsAbsolutePath "$P4ConfigName"; then
-		P4ConfigFile="$P4ConfigName"
-	fi
-fi
-
 IsPerforceRoot=false
-if [[ ! -e "$ProjectDir/.git" ]] && [[ -n "$P4ConfigFile" ]] && [[ -f "$P4ConfigFile" ]]; then
+if [[ ! -e "$ProjectDir/.git" ]] && [[ -n "$P4ConfigFile" ]]; then
 	IsPerforceRoot=true
-elif [[ ! -e "$ProjectDir/.git" ]] && [[ -z "$P4ConfigName" ]] && [[ -f "$ProjectDir/.p4config" ]]; then
-	InitOutputNote "The project has a .p4config, but P4CONFIG is not set, so p4 and mib do not use it. For ./mib format and"
-	InitOutputNote "./mib tidy to cover the root, set P4CONFIG=.p4config and add PerforceRoot settings to $BuildSystemFile"
+	InitOutputNote "mib reads the project's .p4config whatever P4CONFIG is. p4 itself reads that file only with P4CONFIG=.p4config set"
 fi
 
 if [[ "$IsPerforceRoot" == true ]]; then
