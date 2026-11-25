@@ -1855,8 +1855,68 @@ umint CPOSIXSocketContext::f_ReceiveDatagram(CPOSIXSocket *_pSocket, CPOSIXAddre
 			Result = 0;
 		}
 		else
-			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("send (send to socket)", errno));
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("recvfrom (receive from socket)", errno));
 	}
+
+	return Result;
+}
+
+// Sends to the peer of a connected datagram socket. Returns false when the socket can't take the datagram now. Only EAGAIN requests write
+// readiness: macOS reports a full receive buffer of a unix datagram peer as ENOBUFS while the socket stays writable
+bool CPOSIXSocketContext::f_SendDatagram(CPOSIXSocket *_pSocket, void const *_pData, umint _DataLen)
+{
+	int Flags = 0;
+#ifdef DPlatformFamily_Linux
+	Flags |= MSG_NOSIGNAL;
+#endif
+	ssize_t Result = send(_pSocket->m_FD, _pData, _DataLen, Flags);
+
+	if (Result == -1)
+	{
+		int Error = errno;
+		if (Error == EAGAIN)
+		{
+			fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Write);
+			return false;
+		}
+
+		if (Error != ENOBUFS)
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("send (send datagram to socket)", Error));
+
+		return false;
+	}
+
+	return true;
+}
+
+// Receives one datagram from a connected or bound datagram socket without its address. A datagram longer than _DataLen is truncated, and the rest
+// of it is discarded
+NMib::NNetwork::CDatagramReceiveResult CPOSIXSocketContext::f_ReceiveDatagram(CPOSIXSocket *_pSocket, void *_pData, umint _DataLen)
+{
+	iovec IoVector;
+	IoVector.iov_base = _pData;
+	IoVector.iov_len = _DataLen;
+
+	msghdr Header = {};
+	Header.msg_iov = &IoVector;
+	Header.msg_iovlen = 1;
+
+	NMib::NNetwork::CDatagramReceiveResult Result;
+
+	ssize_t nReceived = recvmsg(_pSocket->m_FD, &Header, 0);
+	if (nReceived == -1)
+	{
+		int Error = errno;
+		if (Error != EAGAIN)
+			DMibErrorNet(NMib::NPlatform::fg_FormatErrno("recvmsg (receive datagram from socket)", Error));
+
+		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);
+		return Result;
+	}
+
+	Result.m_nBytes = umint(nReceived);
+	Result.m_bReceived = true;
+	Result.m_bTruncated = (Header.msg_flags & MSG_TRUNC) != 0;
 
 	return Result;
 }
@@ -1906,6 +1966,18 @@ static ENetAddressType fg_AddressTypeOfDescriptor(int _FD)
 
 CPOSIXSocket *CPOSIXSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
+	return fp_InheritHandle(_pOSSocket, EPOSIXSocketMode_Connect, fg_Move(_fOnStateChange));
+}
+
+// Takes over a datagram socket, such as one end of a socket pair, which reports readable datagrams and readiness to send as a datagram listen does
+CPOSIXSocket *CPOSIXSocketContext::f_InheritDatagramHandle(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+{
+	return fp_InheritHandle(_pOSSocket, EPOSIXSocketMode_Datagram, fg_Move(_fOnStateChange));
+}
+
+auto CPOSIXSocketContext::fp_InheritHandle(void *_pOSSocket, EPOSIXSocketMode _Mode, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+	-> CPOSIXSocket *
+{
 	int FileDescriptor = int(aint(_pOSSocket));
 
 	// The socket reads and writes without blocking, also when another API created the descriptor in blocking mode. The descriptor is owned here,
@@ -1920,7 +1992,7 @@ CPOSIXSocket *CPOSIXSocketContext::f_InheritHandle2(void *_pOSSocket, NMib::NFun
 		}
 	}
 
-	auto *pSocket = fp_CreateSocket(FileDescriptor, EPOSIXSocketMode_Connect, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange), true);
+	auto *pSocket = fp_CreateSocket(FileDescriptor, _Mode, EPOSIXSocketEvent_Read | EPOSIXSocketEvent_Write, fg_Move(_fOnStateChange), true);
 
 	// Query the inherited descriptor's family before applying TCP-only options.
 	if (pSocket)

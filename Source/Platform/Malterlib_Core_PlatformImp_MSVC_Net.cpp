@@ -2183,7 +2183,7 @@ umint CWindowsSocketContext::f_ReceiveDatagram(CWindowsSocket *_pSocket, CWindow
 	{
 		int Error = WSAGetLastError();
 		if (Error != WSAEWOULDBLOCK)
-			DMibErrorNet((CStr::CFormat("Could not sendfrom socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
+			DMibErrorNet((CStr::CFormat("Could not receive from socket, windows returned: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error)).f_GetStr());
 
 		// Would-block only: a short datagram read is a truncated datagram, not an empty queue
 		fg_RequestSocketReadiness(_pSocket, NSys::EIoLoopEvent::mc_Read);

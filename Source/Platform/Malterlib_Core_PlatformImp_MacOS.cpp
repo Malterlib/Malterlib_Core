@@ -3749,6 +3749,16 @@ umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddres
 	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket *)_pSocket, *((CPOSIXAddress *)_pAddress), _pData, _DataLen);
 }
 
+bool NSys::NNetwork::fg_SendDatagram(void *_pSocket, void const *_pData, umint _DataLen)
+{
+	return fg_GetLocalSys()->m_SocketContext->f_SendDatagram((CPOSIXSocket *)_pSocket, _pData, _DataLen);
+}
+
+NMib::NNetwork::CDatagramReceiveResult NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, void *_pData, umint _DataLen)
+{
+	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CPOSIXSocket *)_pSocket, _pData, _DataLen);
+}
+
 // Socket Properties & State
 
 void NSys::NNetwork::fg_SetOnStateChange(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
@@ -3769,6 +3779,11 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetCloseReason(void *_pSocket)
 void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_InheritHandle2((CPOSIXSocket *)_pSocket, fg_Move(_fOnStateChange));
+}
+
+void *NSys::NNetwork::fg_InheritDatagramHandle(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+{
+	return fg_GetLocalSys()->m_SocketContext->f_InheritDatagramHandle((CPOSIXSocket *)_pSocket, fg_Move(_fOnStateChange));
 }
 
 void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)

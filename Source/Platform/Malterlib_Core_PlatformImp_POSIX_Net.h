@@ -187,6 +187,8 @@ struct CPOSIXSocketContext
 	umint f_SendVectored(CPOSIXSocket *_pSocket, NMib::NSys::CIoSpan const *_pSpans, umint _nSpans);
 	umint f_SendDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress const &_Address, void const *_pData, umint _DataLen);
 	umint f_ReceiveDatagram(CPOSIXSocket *_pSocket, CPOSIXAddress &_Address, void *_pData, umint _DataLen);
+	bool f_SendDatagram(CPOSIXSocket *_pSocket, void const *_pData, umint _DataLen);
+	NMib::NNetwork::CDatagramReceiveResult f_ReceiveDatagram(CPOSIXSocket *_pSocket, void *_pData, umint _DataLen);
 
 	// Socket Properties & State
 
@@ -197,6 +199,7 @@ struct CPOSIXSocketContext
 	NMib::NStr::CStr f_GetCloseReason(CPOSIXSocket *_pSocket);
 
 	CPOSIXSocket *f_InheritHandle2(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
+	CPOSIXSocket *f_InheritDatagramHandle(void *_pOSSocket, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange);
 	void *f_GiveUpForInherit(CPOSIXSocket *_pSocket);
 	void f_GiveUpForInheritAsync(CPOSIXSocket *_pSocket, NMib::NFunction::TCFunctionMovable<void (void *_pSocketHandle)> &&_fOnHandle);
 	void *f_GetOSSocket(CPOSIXSocket *_pSocket);
@@ -215,6 +218,8 @@ private:
 	void fp_FromNative(sockaddr_in6 const &_InAddr, NMib::NNetwork::CNetAddressTCPv6 &_OutAddr) const;
 
 	bool fp_GetSocketCreateParams(NMib::NNetwork::ENetAddressType _AddressType, CPOSIXImpSpecificSocketContext::CSocketCreateParams &o_Params);
+
+	auto fp_InheritHandle(void *_pOSSocket, EPOSIXSocketMode _Mode, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange) -> CPOSIXSocket *;
 
 	auto fp_Connect(CPOSIXAddress const &_Address, NMib::NFunction::TCFunctionMovable<void (NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange, CPOSIXAddress const *_pBindAddress)
 		-> CPOSIXSocket *

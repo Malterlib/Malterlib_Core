@@ -6766,6 +6766,16 @@ umint NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, NSys::NNetwork::CAddres
 	return fg_GetLocalSys()->m_SocketContext->f_ReceiveDatagram((CWindowsSocket *)_pSocket, *((CWindowsAddress *)_pAddress), _pData, _DataLen);
 }
 
+bool NSys::NNetwork::fg_SendDatagram(void *_pSocket, void const *_pData, umint _DataLen)
+{
+	DMibErrorNet("Sending on a connected datagram socket is not supported on Windows yet");
+}
+
+NMib::NNetwork::CDatagramReceiveResult NSys::NNetwork::fg_ReceiveDatagram(void *_pSocket, void *_pData, umint _DataLen)
+{
+	DMibErrorNet("Receiving on a connected datagram socket is not supported on Windows yet");
+}
+
 // Socket Properties & State
 
 void NSys::NNetwork::fg_SetOnStateChange(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
@@ -6786,6 +6796,13 @@ NMib::NStr::CStr NSys::NNetwork::fg_GetCloseReason(void *_pSocket)
 void *NSys::NNetwork::fg_InheritHandle2(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
 {
 	return fg_GetLocalSys()->m_SocketContext->f_InheritHandle2((CWindowsSocket *)_pSocket, fg_Move(_fOnStateChange));
+}
+
+// Consumes the handle, as the inheritance of a stream socket does
+void *NSys::NNetwork::fg_InheritDatagramHandle(void *_pSocket, NMib::NFunction::TCFunctionMovable<void (::NMib::NNetwork::ENetTCPState _StateAdded)> &&_fOnStateChange)
+{
+	fg_CloseSocketHandle(_pSocket);
+	DMibErrorNet("Inheriting a datagram socket is not supported on Windows yet");
 }
 
 void *NSys::NNetwork::fg_GiveUpForInherit(void *_pSocket)
