@@ -4,6 +4,7 @@
 #include <Mib/Test/Exception>
 
 #ifdef DPlatformFamily_Windows
+#include <Mib/Core/PlatformSpecific/WindowsString>
 #include <Windows.h>
 
 namespace
@@ -61,6 +62,13 @@ namespace
 				NStr::NPlatform::fg_SystemEncodeCodePageStr(CStr("a\u6f22"), Encoded, CP_THREAD_ACP, '#');
 				DMibExpect(Encoded, ==, CAnsiStr("a#"));
 			}
+		};
+
+		// Windows compares the names of its environment and its registry regardless of case, also of letters outside ASCII and Latin-1.
+		DMibTestSuite("UpperCaseName")
+		{
+			DMibExpect(NStr::NPlatform::fg_WindowsUpperCaseName("p4_d\u00e9\u0434\u03c3_charset"), ==, "P4_D\u00c9\u0414\u03a3_CHARSET");
+			DMibExpect(NStr::NPlatform::fg_WindowsUpperCaseName(""), ==, "");
 		};
 	}
 

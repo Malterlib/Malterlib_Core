@@ -17,6 +17,7 @@ namespace NMib
 			CWStr fg_StrToWindows(CWStr const &_Str);
 			CWStr fg_StrToWindows(CUStr const &_Str);
 			CStr fg_StrFromWindows(CWStr const &_Str);
+			CStr fg_WindowsUpperCaseName(CStr const &_Name);
 
 			static constexpr umint gc_MaxWindowsEnvVarLength = 32768;
 		}
