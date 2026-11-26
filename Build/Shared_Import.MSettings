@@ -585,6 +585,17 @@ Import
 	CMake_Variables =+ Import.CMake_CrossCompileValue
 	CMake_ExcludeFromHash =+ Import.CMake_CrossCompileValue
 
+	// A configure that isn't cross compiled runs what it builds, as try_run does. That links the libc++ of the toolchain
+	// dynamically, which the programs of the toolchain find through their RUNPATH; the programs of the build link it statically
+	CMake_EnvironmentWithPaths =+ {LD_LIBRARY_PATH: `@(MalterlibLLVMBinariesDirectory)/lib/@(MalterlibClangLibraryTargetTriple)`}
+	{
+		&
+		{
+			PlatformFamily "Linux"
+			Import.CMake_CrossCompileValue "CMAKE_CROSSCOMPILING=OFF"
+		}
+	}
+
 	CMake_CCompiler PlatformToolsetCompiler->UnixPath()
 	{
 		&
