@@ -4177,7 +4177,11 @@ bool NSys::NFile::fg_FileExists(CStr const &_FileName, EFileAttrib _AttribMask)
 	CWStr DriveW = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(Drive);
 	if (Temp.f_CmpNoCase(DriveW) == 0)
 	{
-		UINT Ret = GetDriveType(DriveW + "\\");
+		// The root of a drive has its backslash already, a UNC server doesn't
+		if (!DriveW.f_EndsWith("\\"))
+			DriveW += "\\";
+
+		UINT Ret = GetDriveType(DriveW);
 		if ((_AttribMask & NMib::NFile::EFileAttrib_Directory) && Ret != DRIVE_NO_ROOT_DIR)
 			return true;
 		return false;
@@ -4204,7 +4208,11 @@ bool NSys::NFile::fg_FileExists(CStrNonTracked const &_FileName, EFileAttrib _At
 	CWStrNonTracked DriveW = NMib::NFile::NPlatform::fg_ConvertToWindowsPathLocal(Drive);
 	if (Temp.f_CmpNoCase(DriveW) == 0)
 	{
-		UINT Ret = GetDriveType(DriveW + "\\");
+		// The root of a drive has its backslash already, a UNC server doesn't
+		if (!DriveW.f_EndsWith("\\"))
+			DriveW += "\\";
+
+		UINT Ret = GetDriveType(DriveW);
 		if ((_AttribMask & NMib::NFile::EFileAttrib_Directory) && Ret != DRIVE_NO_ROOT_DIR)
 			return true;
 		return false;

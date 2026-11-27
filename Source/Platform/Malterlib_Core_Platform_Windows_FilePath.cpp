@@ -50,11 +50,7 @@ namespace NMib
 
 			NStr::CStr fg_ConvertFromWindowsPath(NStr::CStr const &_Path)
 			{
-				return fg_ConvertFromWindowsPathInternal<NStr::CStr>
-					(
-						fg_ConvertToWindowsPath<NStr::CWStr, NStr::CWStr, NStr::CStr>(fg_ConvertFromWindowsPathInternal<NStr::CStr>(_Path), false, -1)
-					)
-				;
+				return fg_ConvertFromWindowsPath<NStr::CWStr, NStr::CStr>(_Path);
 			}
 
 			NStr::CStr fg_ConvertToDevicePath(NStr::CStr const &_In)

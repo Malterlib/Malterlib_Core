@@ -22,6 +22,23 @@ namespace NMib
 					return fg_ConvertToWindowsPath<tf_CRet, tf_CRet>(_Path, true, _MAX_PATH, false);
 			}
 
+			// Paths spell the root of a drive C:, as fs_GetPath and fs_GetDrive do, while Windows reads C: as the drive's current directory
+			// and \\?\C: as its volume, so the root gets its slash here
+			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
+			tf_CSource fg_ExpandPathForWindows(tf_CSource const &_Path, bool _bAddCurrentDir)
+			{
+				auto ToRet = NFile::CFile::fs_GetExpandedPath(_Path, _bAddCurrentDir);
+				fg_StrReplaceChar(ToRet, '\\', '/');
+
+				if (ToRet.f_Cmp("//?/", 4) == 0)
+					ToRet = fg_ConvertFromWindowsPath<tf_CWindows, tf_CRet>(ToRet);
+
+				if (ToRet.f_GetLen() == 2 && fg_Const(ToRet)[1] == ':')
+					ToRet.f_AddChar('/');
+
+				return ToRet;
+			}
+
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
 			tf_CRet fg_ConvertToWindowsPath(tf_CSource const &_Path, bool _bAddCurrentDir, aint _MaxLen, bool _bTryShorten)
 			{
@@ -30,11 +47,7 @@ namespace NMib
 
 				if (_Path.f_StartsWith("//."))
 					return _Path.f_ReplaceChar('/', '\\');
-				auto ToRet = NFile::CFile::fs_GetExpandedPath(_Path, _bAddCurrentDir);
-				fg_StrReplaceChar(ToRet, '\\', '/');
-
-				if (ToRet.f_Cmp("//?/", 4) == 0)
-					ToRet = fg_ConvertFromWindowsPath<tf_CWindows, tf_CRet>(ToRet);
+				auto ToRet = fg_ExpandPathForWindows<tf_CWindows, tf_CRet>(_Path, _bAddCurrentDir);
 
 				auto ToRetW = NStr::NPlatform::fg_StrToWindows<tf_CWindows>(ToRet);
 				fg_StrReplaceChar(ToRetW, '/', '\\');
@@ -110,11 +123,7 @@ namespace NMib
 				if (_Path.f_StartsWith("//."))
 					return _Path.f_ReplaceChar('/', '\\');
 
-				auto ToRet = NFile::CFile::fs_GetExpandedPath(_Path, _bAddCurrentDir);
-				fg_StrReplaceChar(ToRet, '\\', '/');
-
-				if (ToRet.f_Cmp("//?/", 4) == 0)
-					ToRet = fg_ConvertFromWindowsPath<tf_CWindows, tf_CRet>(ToRet);
+				auto ToRet = fg_ExpandPathForWindows<tf_CWindows, tf_CRet>(_Path, _bAddCurrentDir);
 
 				auto ToRetW = NStr::NPlatform::fg_StrToWindows<tf_CWindows>(ToRet);
 				fg_StrReplaceChar(ToRetW, '/', '\\');
@@ -139,11 +148,7 @@ namespace NMib
 			{
 				if (_Path.f_IsEmpty())
 					return tf_CRet();
-				auto ToRet = NFile::CFile::fs_GetExpandedPath(_Path, _bAddCurrentDir);
-				fg_StrReplaceChar(ToRet, '\\', '/');
-
-				if (ToRet.f_Cmp("//?/", 4) == 0)
-					ToRet = fg_ConvertFromWindowsPath<tf_CWindows, tf_CRet>(ToRet);
+				auto ToRet = fg_ExpandPathForWindows<tf_CWindows, tf_CRet>(_Path, _bAddCurrentDir);
 
 				auto ToRetW = NStr::NPlatform::fg_StrToWindows<tf_CWindows>(ToRet);
 				fg_StrReplaceChar(ToRetW, '/', '\\');
@@ -192,7 +197,13 @@ namespace NMib
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSrc>
 			tf_CRet fg_ConvertFromWindowsPath(tf_CSrc const &_Path)
 			{
-				return fg_ConvertFromWindowsPathInternal<tf_CRet>(fg_ConvertToWindowsPath<tf_CWindows, tf_CRet>(fg_ConvertFromWindowsPathInternal<tf_CRet>(_Path), false, -1));
+				auto Path = fg_ConvertFromWindowsPathInternal<tf_CRet>(fg_ConvertToWindowsPath<tf_CWindows, tf_CRet>(fg_ConvertFromWindowsPathInternal<tf_CRet>(_Path), false, -1));
+
+				// The root of a drive stays C:, without the slash fg_ExpandPathForWindows gives Windows
+				if (Path.f_GetLen() == 3 && fg_Const(Path)[1] == ':' && fg_Const(Path)[2] == '/')
+					Path = Path.f_Left(2);
+
+				return Path;
 			}
 		}
 	}

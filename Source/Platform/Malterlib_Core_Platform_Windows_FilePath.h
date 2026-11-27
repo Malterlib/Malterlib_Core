@@ -11,6 +11,8 @@ namespace NMib
 		{
 			template <typename tf_CRet, typename tf_CStr>
 			tf_CRet fg_ConvertToWindowsPathLocal(tf_CStr const &_Path, bool _bForceLong = false);
+			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
+			tf_CSource fg_ExpandPathForWindows(tf_CSource const &_Path, bool _bAddCurrentDir);
 			template <typename tf_CWindowsStr, typename tf_CRet, typename tf_CSrc>
 			tf_CRet fg_ConvertToWindowsPath(tf_CSrc const &_Path, bool _bAddCurrentDir, aint _MaxLen = _MAX_PATH, bool _bTryShorten = true);
 			template <typename tf_CWindows, typename tf_CRet, typename tf_CSource>
