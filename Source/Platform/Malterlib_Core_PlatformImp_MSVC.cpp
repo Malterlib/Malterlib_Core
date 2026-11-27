@@ -4435,34 +4435,77 @@ void *NSys::NFile::fg_GetOSFile(void *_pFile)
 	return ((CWin32File *)_pFile)->m_pFile;
 }
 
+// ReadFile and WriteFile take a 32-bit byte count, so larger transfers are split as on POSIX
 umint NSys::NFile::fg_Read(void *_pFile, void *_pData, CMibFilePos const &_Offset, umint _NumBytes)
 {
-	uint32 BytesRead;
+	umint ReturnBytes = 0;
+	uint8 *pData = (uint8 *)_pData;
+	CMibFilePos Offset = _Offset;
 
-	OVERLAPPED Overlapped;
-	NMib::NMemory::fg_MemClear(Overlapped);
-	Overlapped.Offset = _Offset & 0xffffffffll;
-	Overlapped.OffsetHigh = (_Offset >> 32) & 0xffffffffll;
+	while (ReturnBytes < _NumBytes)
+	{
+		uint32 ThisTime = uint32(fg_Min(_NumBytes - ReturnBytes, umint(1) * 1024 * 1024 * 1024));
+		uint32 BytesRead;
 
-	if (!ReadFile(((CWin32File *)_pFile)->m_pFile, _pData, _NumBytes, &BytesRead, &Overlapped))
-		DMibErrorFile((CStr::CFormat("Windows returned an error from ReadFile({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+		OVERLAPPED Overlapped;
+		NMib::NMemory::fg_MemClear(Overlapped);
+		Overlapped.Offset = Offset & 0xffffffffll;
+		Overlapped.OffsetHigh = (Offset >> 32) & 0xffffffffll;
 
-	return BytesRead;
+		if (!ReadFile(((CWin32File *)_pFile)->m_pFile, pData, ThisTime, &BytesRead, &Overlapped))
+		{
+			DMibErrorFile
+				(
+					(CStr::CFormat("Windows returned an error from ReadFile({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr()
+				)
+			;
+		}
+
+		ReturnBytes += BytesRead;
+		pData += BytesRead;
+		Offset += BytesRead;
+
+		if (BytesRead != ThisTime)
+			break;
+	}
+
+	return ReturnBytes;
 }
 
 umint NSys::NFile::fg_Write(void *_pFile, void const *_pData, CMibFilePos const &_Offset, umint _NumBytes)
 {
-	uint32 BytesWritten;
+	umint ReturnBytes = 0;
+	uint8 const *pData = (uint8 const *)_pData;
+	CMibFilePos Offset = _Offset;
 
-	OVERLAPPED Overlapped;
-	NMib::NMemory::fg_MemClear(Overlapped);
-	Overlapped.Offset = _Offset & 0xffffffffll;
-	Overlapped.OffsetHigh = (_Offset >> 32) & 0xffffffffll;
+	while (ReturnBytes < _NumBytes)
+	{
+		uint32 ThisTime = uint32(fg_Min(_NumBytes - ReturnBytes, umint(1) * 1024 * 1024 * 1024));
+		uint32 BytesWritten;
 
-	if (!WriteFile(((CWin32File *)_pFile)->m_pFile, _pData, _NumBytes, &BytesWritten, &Overlapped))
-		DMibErrorFile((CStr::CFormat("Windows returned an error from WriteFile({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+		OVERLAPPED Overlapped;
+		NMib::NMemory::fg_MemClear(Overlapped);
+		Overlapped.Offset = Offset & 0xffffffffll;
+		Overlapped.OffsetHigh = (Offset >> 32) & 0xffffffffll;
 
-	return BytesWritten;
+		if (!WriteFile(((CWin32File *)_pFile)->m_pFile, pData, ThisTime, &BytesWritten, &Overlapped))
+		{
+			DMibErrorFile
+				(
+					(CStr::CFormat("Windows returned an error from WriteFile({}): {}") << ((CWin32File *)_pFile)->f_GetName() << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr()
+				)
+			;
+		}
+
+		ReturnBytes += BytesWritten;
+		pData += BytesWritten;
+		Offset += BytesWritten;
+
+		if (BytesWritten != ThisTime)
+			break;
+	}
+
+	return ReturnBytes;
 }
 
 void NSys::NFile::fg_Flush(void *_pFile)
