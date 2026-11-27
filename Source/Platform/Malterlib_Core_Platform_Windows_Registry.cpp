@@ -18,6 +18,39 @@ namespace NMib
 			{
 				return _Type == REG_SZ || _Type == REG_MULTI_SZ || _Type == REG_EXPAND_SZ || _Type == REG_BINARY || _Type == REG_RESOURCE_REQUIREMENTS_LIST || _Type == REG_RESOURCE_LIST;
 			}
+
+			// The names of a key's values or subkeys, which _fEnum, the call named _pFunction, gives by index, starting with room for
+			// _Capacity characters. They are enumerated until there are no more, and a name that grew since the longest was asked for is
+			// asked for again with room for it. A name is taken by the length the enumeration gives, as a failed call leaves the buffer
+			// unended.
+			template <typename tf_FEnum>
+			void fg_EnumNames(DWORD _Capacity, ch8 const *_pFunction, tf_FEnum &&_fEnum, NContainer::TCVector<NStr::CStr> &o_Names)
+			{
+				o_Names.f_Clear();
+				DWORD Capacity = _Capacity;
+				for (DWORD iName = 0;; ++iName)
+				{
+					NContainer::TCVector<NStr::CWStr::CChar> Buffer;
+					DWORD Length = 0;
+					LSTATUS Error;
+					while (true)
+					{
+						Buffer.f_SetLen(Capacity);
+						Length = Capacity;
+						Error = _fEnum(iName, Buffer.f_GetArray(), &Length);
+						if (Error != ERROR_MORE_DATA)
+							break;
+						Capacity *= 2;
+					}
+
+					if (Error == ERROR_NO_MORE_ITEMS)
+						break;
+					if (Error != ERROR_SUCCESS)
+						DMibError(NStr::CStr::CFormat("{} failed with: {}") << _pFunction << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
+
+					o_Names.f_Insert() = NStr::CWStr(Buffer.f_GetArray(), Length);
+				}
+			}
 		}
 
 		/*************************************************************************************************\
@@ -547,21 +580,27 @@ namespace NMib
 				)
 			;
 
-			DWORD nValues;
-			DWORD LongestValueName, TmpLength;
-			RegQueryInfoKey(pPathKey, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &nValues, &LongestValueName, nullptr, nullptr, nullptr);
-			_Values.f_SetLen(nValues);
-			LongestValueName++;
-
-			for (umint iValue = 0; iValue < nValues; ++iValue)
+			DWORD LongestValueName = 0;
+			if
+			(
+				LSTATUS Error = RegQueryInfoKeyW(pPathKey, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, &LongestValueName, nullptr, nullptr, nullptr)
+				; Error != ERROR_SUCCESS
+			)
 			{
-				NStr::CWStr Temp;
-				TmpLength = LongestValueName;
-				if (RegEnumValueW(pPathKey, iValue, Temp.f_GetStr(LongestValueName), &TmpLength, nullptr, nullptr, nullptr, nullptr) == ERROR_NO_MORE_ITEMS)
-					break;
-				Temp.f_SetModified();
-				_Values[iValue] = Temp;
+				DMibError(NStr::CStr::CFormat("RegQueryInfoKeyW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(Error));
 			}
+
+			fg_EnumNames
+				(
+					LongestValueName + 1
+					, "RegEnumValueW"
+					, [&](DWORD _iValue, NStr::CWStr::CChar *_pName, DWORD *_pLength)
+					{
+						return RegEnumValueW(pPathKey, _iValue, _pName, _pLength, nullptr, nullptr, nullptr, nullptr);
+					}
+					, _Values
+				)
+			;
 		}
 
 		void CWin32_Registry::f_EnumValues(NStr::CStr const &_SubKey, NContainer::TCVector<NStr::CStr> &_Values)
@@ -587,20 +626,27 @@ namespace NMib
 				)
 			;
 
-			DWORD nSubKeys;
-			DWORD LongestSubKey;
-			RegQueryInfoKey(pPathKey, nullptr, nullptr, nullptr, &nSubKeys, &LongestSubKey, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
-			_Keys.f_SetLen(nSubKeys);
-			LongestSubKey++;
-
-			for (umint iSubKey = 0; iSubKey < nSubKeys; ++iSubKey)
+			DWORD LongestSubKey = 0;
+			if
+			(
+				LSTATUS QueryError = RegQueryInfoKeyW(pPathKey, nullptr, nullptr, nullptr, nullptr, &LongestSubKey, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr)
+				; QueryError != ERROR_SUCCESS
+			)
 			{
-				NStr::CWStr Temp;
-				if (RegEnumKeyW(pPathKey, iSubKey, Temp.f_GetStr(LongestSubKey), LongestSubKey) == ERROR_NO_MORE_ITEMS)
-					break;
-				Temp.f_SetModified();
-				_Keys[iSubKey] = Temp;
+				DMibError(NStr::CStr::CFormat("RegQueryInfoKeyW failed with: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr(QueryError));
 			}
+
+			fg_EnumNames
+				(
+					LongestSubKey + 1
+					, "RegEnumKeyExW"
+					, [&](DWORD _iSubKey, NStr::CWStr::CChar *_pName, DWORD *_pLength)
+					{
+						return RegEnumKeyExW(pPathKey, _iSubKey, _pName, _pLength, nullptr, nullptr, nullptr, nullptr);
+					}
+					, _Keys
+				)
+			;
 		}
 
 		void CWin32_Registry::f_EnumKeys(NStr::CStr const &_SubKey, NContainer::TCVector<NStr::CStr> &_Keys)
