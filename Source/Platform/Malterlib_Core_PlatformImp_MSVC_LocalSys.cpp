@@ -271,7 +271,7 @@ CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::
 auto CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::f_MapFile(CStr const &_FileName, bool _bDirectory) -> CFileTreeNode &
 {
 	CStr PathLeft = _FileName;
-	CStr FileName = fg_GetStrSep(PathLeft, "/");
+	CStr FileName = fg_GetStrSepNoTrim(PathLeft, "/");
 
 	auto &Child = *m_Children(FileName, this);
 	Child.m_FileName = FileName;
@@ -291,7 +291,7 @@ auto CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeN
 auto CSystemWindowsMSVC::CFileChangeNoticationContext::CNotification::CFileTreeNode::f_GetFile(CStr const &_FileName) -> CFileTreeNode *
 {
 	CStr PathLeft = _FileName;
-	CStr FileName = fg_GetStrSep(PathLeft, "/");
+	CStr FileName = fg_GetStrSepNoTrim(PathLeft, "/");
 
 	auto pChild = m_Children.f_FindEqual(FileName);
 
