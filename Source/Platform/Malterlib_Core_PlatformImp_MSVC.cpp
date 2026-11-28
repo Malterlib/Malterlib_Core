@@ -1517,22 +1517,12 @@ void NMib::NStr::NPlatform::fg_SystemEncodeAnsiStr(NMib::NStr::CStr const &_In, 
 
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStr const &_In, NMib::NStr::CStr &_Out)
 {
-	CWStr Out;
-	int Len = MultiByteToWideChar(CP_ACP, 0, _In.f_GetStr(), -1, nullptr, 0);
-	if (MultiByteToWideChar(CP_ACP, 0, _In.f_GetStr(), -1, Out.f_GetStr(Len), Len))
-		_Out = Out;
-	else
-		DMibErrorSystemImp((CStr::CFormat("Windows returned an error from MultiByteToWideChar: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	fg_SystemDecodeCodePageStr(_In, _Out, CP_ACP);
 }
 
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::CStr &_Out)
 {
-	CWStr Out;
-	int Len = MultiByteToWideChar(CP_ACP, 0, _pIn, -1, nullptr, 0);
-	if (MultiByteToWideChar(CP_ACP, 0, _pIn, -1, Out.f_GetStr(Len), Len))
-		_Out = Out;
-	else
-		DMibErrorSystemImp((CStr::CFormat("Windows returned an error from MultiByteToWideChar: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	fg_SystemDecodeCodePageStr(_pIn, _Out, CP_ACP);
 }
 
 void NMib::NStr::NPlatform::fg_SystemEncodeCodePageStr(NMib::NStr::CStrNonTracked const &_In, NMib::NStr::CAnsiStrNonTracked &_Out, uint32 _CodePage, ch8 _ErrorChar)
@@ -1574,22 +1564,12 @@ void NMib::NStr::NPlatform::fg_SystemEncodeAnsiStr(NMib::NStr::CStrNonTracked co
 
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(NMib::NStr::CAnsiStrNonTracked const &_In, NMib::NStr::CStrNonTracked &_Out)
 {
-	CWStrNonTracked Out;
-	int Len = MultiByteToWideChar(CP_ACP, 0, _In.f_GetStr(), -1, nullptr, 0);
-	if (MultiByteToWideChar(CP_ACP, 0, _In.f_GetStr(), -1, Out.f_GetStr(Len), Len))
-		_Out = Out;
-	else
-		DMibErrorSystemImp((CStr::CFormat("Windows returned an error from MultiByteToWideChar: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	fg_SystemDecodeCodePageStr(_In, _Out, CP_ACP);
 }
 
 void NMib::NStr::NPlatform::fg_SystemDecodeAnsiStr(ch8 const *_pIn, NMib::NStr::CStrNonTracked &_Out)
 {
-	CWStrNonTracked Out;
-	int Len = MultiByteToWideChar(CP_ACP, 0, _pIn, -1, nullptr, 0);
-	if (MultiByteToWideChar(CP_ACP, 0, _pIn, -1, Out.f_GetStr(Len), Len))
-		_Out = Out;
-	else
-		DMibErrorSystemImp((CStr::CFormat("Windows returned an error from MultiByteToWideChar: {}") << NMib::NPlatform::fg_Win32_GetLastErrorStr()).f_GetStr());
+	fg_SystemDecodeCodePageStr(_pIn, _Out, CP_ACP);
 }
 
 void NSys::fg_System_ExitProcess(aint _ExitCode)
